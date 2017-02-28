@@ -19,7 +19,7 @@ int drawMenuString(char* text)
     return result;
 }
 
-void unpauseGame()
+void initPauseSatus()
 {
     pauseEngine[0] = 0;
     pauseEngine[1] = 0;
@@ -28,15 +28,17 @@ void unpauseGame()
 
 void resetEngine()
 {
-    // Stuff
-
-    unpauseGame();
-
-    // Stuff
-
+    //initVBlankData();
+    //initBackupReady();
+    //initFileSystem();
+    //resetInputs();
+    initPauseSatus();
     resetTasks();
+    //initHeap();
+    //initVDP1();
+    initVDP2();
 
-    // Stuff
+    //...
 
     resetMenu(menuUnk0, 0, 0, 1);
 
