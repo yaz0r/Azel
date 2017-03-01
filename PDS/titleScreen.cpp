@@ -102,7 +102,7 @@ void pressStartButtonTaskDraw(void* pTypelessWorkArea)
         if ((--pWorkArea->m_timming) >= 0)
             return;
 
-        vdp2DebugPrintPosition.field_10 = 0xD000;
+        vdp2PrintStatus.field_10 = 0xD000;
 
         if (VDP2Regs_.TVSTAT & 1)
             vdp2DebugPrintSetPosition(13, -2);
@@ -207,12 +207,14 @@ void titleScreenDraw(void* pTypelessWorkArea)
         if (--pWorkArea->m_delay)
             return;
 
-        resetMenu(menuUnk0, titleScreenDrawSub1(menuUnk0), 0x8000, 30);
+        resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
         titleScreenDrawSub3(3);
 
         pWorkArea->m_status++;
     case 6:
-        if (menuUnk0[32])
+
+        assert(false);
+        //if (menuUnk0[32]) <- wrong?
         {
             initialTaskStatus.m_pendingTask = startSegaLogoModule;
         }

@@ -8,7 +8,7 @@ u8* VDP2_CRamStart = vdp2CRam;
 
 u16* vdp2TextMemory = (u16*)&vdp2Ram[0x6000];
 
-s_Vdp2PrintStatus vdp2DebugPrintPosition;
+s_Vdp2PrintStatus vdp2PrintStatus;
 s_VDP2Regs VDP2Regs_;
 
 struct sVdp2Controls
@@ -18,7 +18,7 @@ struct sVdp2Controls
     u32 m_8;
     u32 m_C;
     u32 m_10;
-    u32 m_14;
+    u32 m_isDirty;
     u32 m_18;
     u32 m_1C;
 
@@ -33,19 +33,19 @@ void vdp2DebugPrintSetPosition(s32 x, s32 y)
     if (y < 0)
         y += 28;
 
-    vdp2DebugPrintPosition.X = x;
-    vdp2DebugPrintPosition.Y = y;
+    vdp2PrintStatus.X = x;
+    vdp2PrintStatus.Y = y;
 }
 
 int renderVdp2String(char* text)
 {
     int r12 = 0;
-    s32 r3 = vdp2DebugPrintPosition.X;
-    s32 r6 = vdp2DebugPrintPosition.Y;
+    s32 r3 = vdp2PrintStatus.X;
+    s32 r6 = vdp2PrintStatus.Y;
 
     u16* pOutput = vdp2TextMemory + (r3 + r6 * 64);
 
-    s32 r0 = vdp2DebugPrintPosition.field_10;
+    s32 r0 = vdp2PrintStatus.field_10;
 
     u16 r8 = 0xDE;
     u16 r9 = r8 - 0x3D; // ?
@@ -85,7 +85,7 @@ int renderVdp2String(char* text)
 
 void clearVdp2Text()
 {
-    u16* pOutput = vdp2TextMemory + (vdp2DebugPrintPosition.X + vdp2DebugPrintPosition.Y * 64);
+    u16* pOutput = vdp2TextMemory + (vdp2PrintStatus.X + vdp2PrintStatus.Y * 64);
 
     while (*pOutput)
     {
@@ -310,6 +310,155 @@ void resetVdp2RegsCopies()
     updateVDP2Regs();
 }
 
+void setupVdp2TextLayerColor()
+{
+    menuUnk0.m_4C = 0;
+    menuUnk0.m_4D = 5;
+    menuUnk0.m_4A = 0xC210;
+    menuUnk0.m_48 = 0xC210;
+
+    vdp2Controls.m_registers[0].N1COEN = 0x7F;
+    vdp2Controls.m_registers[1].N1COEN = 0x7F;
+
+    if (menuUnk0.m_4D >= menuUnk0.m_4C) //?
+    {
+        vdp2Controls.m_registers[0].N1COSL = 0;
+        vdp2Controls.m_registers[1].N1COSL = 0;
+    }
+
+    menuUnk0.m_field0.m_field20 = 1;
+    menuUnk0.m_field24.m_field20 = 1;
+
+    menuUnk0.m_field0.m_field0[0] = 0;
+    menuUnk0.m_field0.m_field0[1] = 0;
+    menuUnk0.m_field0.m_field0[2] = 0;
+
+    menuUnk0.m_field24.m_field0[0] = 0;
+    menuUnk0.m_field24.m_field0[1] = 0;
+    menuUnk0.m_field24.m_field0[2] = 0;
+
+    VDP2Regs_.COAR = 0;
+    VDP2Regs_.COAG = 0;
+    VDP2Regs_.COAB = 0;
+
+    VDP2Regs_.COBR = 0;
+    VDP2Regs_.COBG = 0;
+    VDP2Regs_.COBB = 0;
+
+    vdp2Controls.m_registers[0].COAR = 0;
+    vdp2Controls.m_registers[0].COAG = 0;
+    vdp2Controls.m_registers[0].COAB = 0;
+    vdp2Controls.m_registers[0].COBR = 0;
+    vdp2Controls.m_registers[0].COBG = 0;
+    vdp2Controls.m_registers[0].COBB = 0;
+
+    vdp2Controls.m_registers[1].COAR = 0;
+    vdp2Controls.m_registers[1].COAG = 0;
+    vdp2Controls.m_registers[1].COAB = 0;
+    vdp2Controls.m_registers[1].COBR = 0;
+    vdp2Controls.m_registers[1].COBG = 0;
+    vdp2Controls.m_registers[1].COBB = 0;
+}
+
+u32 textLayerVdp2Setup[] = {
+    2, 0, // N3CHCN
+    5, 0, // N3CHSZ
+    6, 1, // N3PNB
+    7, 1, // N3CNSM
+    12, 0, // N3PLSZ0
+    40, 7, // N3CAOS0
+    0
+};
+
+void setupBG3(u32* setup)
+{
+    while (u32 command = *(setup++))
+    {
+        u32 arg = *(setup++);
+
+        switch (command)
+        {
+        case 2:
+            vdp2Controls.m_pendingVdp2Regs->CHCTLB = (vdp2Controls.m_pendingVdp2Regs->CHCTLB & 0xFFDF) | (arg << 5);
+            break;
+        case 5:
+            vdp2Controls.m_pendingVdp2Regs->CHCTLB = (vdp2Controls.m_pendingVdp2Regs->CHCTLB & 0xFFEF) | (arg << 4);
+            break;
+        case 6:
+            vdp2Controls.m_pendingVdp2Regs->PNCN3 = (vdp2Controls.m_pendingVdp2Regs->PNCN3 & 0x7FFF) | (arg << 15);
+            break;
+        case 7:
+            vdp2Controls.m_pendingVdp2Regs->PNCN3 = (vdp2Controls.m_pendingVdp2Regs->PNCN3 & 0xBFFF) | (arg << 14);
+            break;
+        case 12:
+            vdp2Controls.m_pendingVdp2Regs->PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ & 0xFF3F) | (arg << 6);
+            break;
+        case 40:
+            vdp2Controls.m_pendingVdp2Regs->CRAOFA = (vdp2Controls.m_pendingVdp2Regs->CRAOFA & 0x8FFF) | (arg << 12);
+            break;
+        default:
+            assert(false);
+            break;
+        }
+
+        //unnecessary as this is done at function exit anyway
+        //vdp2Controls.m_isDirty = true;
+    };
+
+    // force BG layer 3 on
+    vdp2Controls.m_pendingVdp2Regs->BGON = (vdp2Controls.m_pendingVdp2Regs->BGON & 0xFFF7) | 0x8;
+
+    vdp2Controls.m_isDirty = true;
+}
+
+void initVdp2TextLayerSub1(u32, u16*, u16*, u16*)
+{
+
+}
+
+u32 characterMap1[0x80];
+u16 characterMap2[0x1000];
+
+void resetCharacterMap1()
+{
+    for (int i = 0; i < 0x80; i++)
+    {
+        characterMap1[i] = 0;
+    }
+}
+
+void resetCharacterMaps()
+{
+    resetCharacterMap1();
+
+    for (int i = 0; i < 0x1000; i++)
+    {
+        characterMap2[i] = 0;
+    }
+}
+
+void clearVdp2TextMemory()
+{
+    memset(vdp2TextMemory, 0, 0x10 * 0x1000);
+    resetCharacterMaps();
+}
+
+void initVdp2TextLayer()
+{
+    setupBG3(textLayerVdp2Setup);
+
+    initVdp2TextLayerSub1(3, vdp2TextMemory, vdp2TextMemory, vdp2TextMemory);
+
+    clearVdp2TextMemory();
+
+    vdp2DebugPrintSetPosition(0, 0);
+
+    vdp2PrintStatus.oldX = vdp2PrintStatus.X;
+    vdp2PrintStatus.oldY = vdp2PrintStatus.Y;
+    vdp2PrintStatus.field_10 = 0xC000;
+    vdp2PrintStatus.field_12 = 0xC000;
+}
+
 void initVDP2()
 {
     vdp2Controls.m_0 = 0;
@@ -322,8 +471,8 @@ void initVDP2()
     //initVdp2Var1();
     //initVdp2Var2();
 
-    //setupVdp2TextLayerColor();
+    setupVdp2TextLayerColor();
     loadFont();
-    //initVdp2TextLayer();
+    initVdp2TextLayer();
     //setupVdp2TextLayerCharacterMaps();
 }

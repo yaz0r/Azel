@@ -4,9 +4,12 @@ struct s_Vdp2PrintStatus
 {
     s32 X;
     s32 Y;
+    s32 oldX;
+    s32 oldY;
     u16 field_10;
+    u16 field_12;
 };
-extern s_Vdp2PrintStatus vdp2DebugPrintPosition;
+extern s_Vdp2PrintStatus vdp2PrintStatus;
 
 struct s_VDP2Regs
 {
@@ -93,6 +96,10 @@ struct s_VDP2Regs
     u16 SPCTL;
     //
 
+    u16 CRAOFA;
+
+    u16 N1COEN;
+    u16 N1COSL;
     u16 COAR;
     u16 COAG;
     u16 COAB;

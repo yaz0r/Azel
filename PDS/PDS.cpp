@@ -11,10 +11,10 @@ int drawMenuString(char* text)
 {
     int result = renderVdp2String(text);
 
-    vdp2DebugPrintPosition.X = 0;
-    vdp2DebugPrintPosition.Y += 2;
-    if (vdp2DebugPrintPosition.Y > 0x3F)
-        vdp2DebugPrintPosition.Y = 0;
+    vdp2PrintStatus.X = 0;
+    vdp2PrintStatus.Y += 2;
+    if (vdp2PrintStatus.Y > 0x3F)
+        vdp2PrintStatus.Y = 0;
 
     return result;
 }
@@ -40,7 +40,7 @@ void resetEngine()
 
     //...
 
-    resetMenu(menuUnk0, 0, 0, 1);
+    resetMenu(&menuUnk0, 0, 0, 1);
 
     // Stuff
 

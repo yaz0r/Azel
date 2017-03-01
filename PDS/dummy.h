@@ -2,11 +2,29 @@
 
 extern u32 isInMenu2;
 
-extern u32 menuUnk0[8];
+struct sMenuUnk0Sub
+{
+    u32 m_field0[8];
+    u8 m_field20;
+};
+
+struct sMenuUnk0
+{
+    sMenuUnk0Sub m_field0;
+
+    sMenuUnk0Sub m_field24;
+
+    u16 m_48;
+    u16 m_4A;
+    u8 m_4C;
+    u8 m_4D;
+};
+
+extern sMenuUnk0 menuUnk0;
 
 void playSoundEffect(int);
 bool keyboardIsKeyDown(u8 keycode);
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2);
-u32 titleScreenDrawSub1(u32* arrayData);
-void resetMenu(u32* arrayData, u32, u32, u32);
+u32 titleScreenDrawSub1(sMenuUnk0* arrayData);
+void resetMenu(sMenuUnk0* arrayData, u32, u32, u32);
 void titleScreenDrawSub3(u32);
