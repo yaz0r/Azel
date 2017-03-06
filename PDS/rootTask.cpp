@@ -15,7 +15,7 @@ void initialTask_Init(void* pTypelessWorkArea)
     pWorkArea->m_4 = 0;
 
     initialTaskStatus.m_currentTask = 0;
-    if (!initialTaskStatus.m_showWarningTask)
+    if (initialTaskStatus.m_showWarningTask)
     {
         initialTaskStatus.m_pendingTask = startLoadWarningTask;
     }

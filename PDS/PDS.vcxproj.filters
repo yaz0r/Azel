@@ -5,6 +5,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source Files\Overlays">
+      <UniqueIdentifier>{08f9152b-46f0-4d1f-8897-302a79378556}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="task.cpp">
@@ -25,6 +28,9 @@
     <ClCompile Include="dummy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="o_title.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PDS.h">
@@ -44,6 +50,9 @@
     </ClInclude>
     <ClInclude Include="dummy.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="o_title.h">
+      <Filter>Source Files\Overlays</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

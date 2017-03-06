@@ -149,7 +149,7 @@ struct s_titleScreenWorkArea
 {
     u32 m_status;
     u32 m_delay;
-    u32 m_8;
+    s_task* m_overlayTask;
 };
 
 void titleScreenDraw(void* pTypelessWorkArea)
@@ -159,7 +159,7 @@ void titleScreenDraw(void* pTypelessWorkArea)
     switch (pWorkArea->m_status)
     {
     case 0:
-        if (pWorkArea->m_8)
+        if (pWorkArea->m_overlayTask)
         {
 
         }
@@ -232,8 +232,7 @@ void titleScreenInit(void* pTypelessWorkArea)
 {
     s_titleScreenWorkArea* pWorkArea = (s_titleScreenWorkArea*)pTypelessWorkArea;
 
-    // this should load title screen graphics
-    // and store result in pWorkArea->m_8
+    pWorkArea->m_overlayTask = TITLE_OVERLAY::overlayStart(pWorkArea);
 }
 
 s_taskDefinition titleScreenTaskDefinition = { titleScreenInit, NULL, titleScreenDraw, NULL };
@@ -243,10 +242,80 @@ s_task* createTitleScreenTask(void* workArea)
     return createTask_NoArgs(workArea, &titleScreenTaskDefinition, sizeof(s_titleScreenWorkArea));
 }
 
-s_task* startLoadWarningTask(void*)
-{
-    assert(0);
+// WarningTask
 
-    return NULL;
+struct s_warningWorkArea
+{
+    u32 m_0;
+    u32 m_4;
+};
+
+void warningTaskInit(void* pTypelessWorkArea)
+{
+    s_warningWorkArea* pWorkArea = (s_warningWorkArea*)pTypelessWorkArea;
+
+    /*
+    if (checkSaves())
+    {
+        assert(0);
+    }
+    ...
+    */
+
+
+
+}
+
+s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL };
+
+s_task* startWarningTask(void* workArea)
+{
+    return createTask_NoArgs(workArea, &warningTaskDefinition, sizeof(s_warningWorkArea));
+}
+
+// loadWarningTask
+
+struct s_loadWarningWorkArea
+{
+    u32 m_0;
+    u32 m_4;
+    s_task* m_warningTask;
+};
+
+void loadWarningTaskInit(void* pTypelessWorkArea)
+{
+    s_loadWarningWorkArea* pWorkArea = (s_loadWarningWorkArea*)pTypelessWorkArea;
+
+    pWorkArea->m_warningTask = startWarningTask(pTypelessWorkArea);
+}
+
+void loadWarningTaskDraw(void* pTypelessWorkArea)
+{
+    s_loadWarningWorkArea* pWorkArea = (s_loadWarningWorkArea*)pTypelessWorkArea;
+
+    if (pWorkArea->m_warningTask)
+    {
+        if(!(pWorkArea->m_warningTask->m_flags & 1))
+        {
+            return;
+        }
+    }
+
+    /*
+    if (playIntroMovie)
+    {
+        initialTaskStatus.m_pendingTask = startTitleScreenVideo;
+    }
+    else*/
+    {
+        initialTaskStatus.m_pendingTask = createTitleScreenTask;
+    }
+}
+
+s_taskDefinition loadWarningTaskDefinition = { loadWarningTaskInit, NULL, loadWarningTaskDraw, NULL };
+
+s_task* startLoadWarningTask(void* workArea)
+{
+    return createTask_NoArgs(workArea, &loadWarningTaskDefinition, sizeof(s_loadWarningWorkArea));
 }
 

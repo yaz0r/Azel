@@ -150,11 +150,13 @@
     <ClCompile Include="PDS.cpp" />
     <ClCompile Include="rootTask.cpp" />
     <ClCompile Include="task.cpp" />
+    <ClCompile Include="o_title.cpp" />
     <ClCompile Include="titleScreen.cpp" />
     <ClCompile Include="VDP2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dummy.h" />
+    <ClInclude Include="o_title.h" />
     <ClInclude Include="PDS.h" />
     <ClInclude Include="rootTask.h" />
     <ClInclude Include="task.h" />

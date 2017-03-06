@@ -29,7 +29,7 @@ void initPauseSatus()
 void resetEngine()
 {
     //initVBlankData();
-    //initBackupReady();
+    //initDmaChain();
     //initFileSystem();
     //resetInputs();
     initPauseSatus();

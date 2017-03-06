@@ -36,3 +36,5 @@ extern bool debugEnabled;
 extern int enableDebugTask;
 extern char pauseEngine[3];
 
+#include "o_title.h"
+

@@ -98,6 +98,10 @@ struct s_VDP2Regs
 
     u16 CRAOFA;
 
+    u16 PRINA;
+    u16 PRINB;
+    u16 PRIR;
+
     u16 N1COEN;
     u16 N1COSL;
     u16 COAR;
@@ -109,8 +113,59 @@ struct s_VDP2Regs
 };
 extern s_VDP2Regs VDP2Regs_;
 
+struct sVdp2Controls
+{
+    u32 m_0;
+    s_VDP2Regs* m_pendingVdp2Regs;
+    u32 m_8;
+    u32 m_C;
+    u32 m_10;
+    u32 m_isDirty;
+    u32 m_18;
+    u32 m_1C;
+
+    // 0x20
+    s_VDP2Regs m_registers[2];
+};
+extern sVdp2Controls vdp2Controls;
+
+enum eVdp2LayerConfig
+{
+    END = 0,
+    CHCN = 2,
+    CHSZ = 5,
+    PNB = 6,
+    CNSM = 7,
+    PLSZ0 = 12,
+    CAOS0 = 40,
+};
+
+struct sLayerConfig
+{
+    eVdp2LayerConfig m_configType;
+    u32 m_value;
+};
+
+extern u8 incrementVar;
+void updateVDP2CoordinatesIncrement(u32, u32);
+
 void initVDP2();
+void reinitVdp2();
+
+void setupNBG0(sLayerConfig* setup);
+void setupNBG1(sLayerConfig* setup);
+void setupNBG2(sLayerConfig* setup);
+void setupNBG3(sLayerConfig* setup);
 
 void vdp2DebugPrintSetPosition(s32 x, s32 y);
 void clearVdp2Text();
 int renderVdp2String(char* text);
+
+u8* getVdp2Vram(u32 offset);
+u8* getVdp2Cram(u32 offset);
+
+void loadFile(const char* fileName, u8* destination, u32 unk0);
+void addToVDP2MemoryLayout(u8* pointer, u32 unk0);
+void asyncDmaCopy(void* source, void* target, u32 size, u32 unk);
+
+void initVdp2TextLayerSub1(u32, u8*, u8*, u8*);

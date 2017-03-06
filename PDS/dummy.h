@@ -28,3 +28,6 @@ void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenu
 u32 titleScreenDrawSub1(sMenuUnk0* arrayData);
 void resetMenu(sMenuUnk0* arrayData, u32, u32, u32);
 void titleScreenDrawSub3(u32);
+
+void soundFunc0(u8 unk0, u8 unk1);
+bool soundFunc1();

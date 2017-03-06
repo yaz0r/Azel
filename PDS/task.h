@@ -25,3 +25,5 @@ s_task* createTask_NoArgs(void* workArea, s_taskDefinition* pDefinition, int siz
 
 s_task* createRootTask(s_taskDefinition* pDefinition, int size);
 
+s_task* getTaskFromWorkArea(void*);
+
