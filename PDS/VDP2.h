@@ -148,6 +148,7 @@ struct sLayerConfig
 
 extern u8 incrementVar;
 void updateVDP2CoordinatesIncrement(u32, u32);
+void updateVDP2CoordinatesIncrement2(u32, u32);
 
 void initVDP2();
 void reinitVdp2();
@@ -168,4 +169,4 @@ void loadFile(const char* fileName, u8* destination, u32 unk0);
 void addToVDP2MemoryLayout(u8* pointer, u32 unk0);
 void asyncDmaCopy(void* source, void* target, u32 size, u32 unk);
 
-void initVdp2TextLayerSub1(u32, u8*, u8*, u8*);
+void initLayerPlanes(u32 layer, u8* planeA, u8* planeB, u8* planeC, u8* planeD);

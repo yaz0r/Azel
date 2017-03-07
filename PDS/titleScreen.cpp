@@ -246,24 +246,118 @@ s_task* createTitleScreenTask(void* workArea)
 
 struct s_warningWorkArea
 {
-    u32 m_0;
-    u32 m_4;
+    u32 m_status;
+    u32 m_delay;
 };
+
+u32 checkForActionReplay()
+{
+    return 1;
+}
+
+void warningTaskDraw(void* pTypelessWorkArea)
+{
+    s_warningWorkArea* pWorkArea = (s_warningWorkArea*)pTypelessWorkArea;
+
+    switch (pWorkArea->m_status)
+    {
+    case 0: // init delay
+        pWorkArea->m_delay = 60;
+        pWorkArea->m_status++;
+    case 1: // wait delay
+        if (--pWorkArea->m_delay)
+            return;
+        pWorkArea->m_status++;
+    case 2: // fade out init?
+        if (!(PortData2.field_8 & 8))
+            return;
+        resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), 0, 30);
+        pWorkArea->m_status++;
+    case 3: // wait faide out
+        if (!menuUnk0.m_field0.m_field20)
+            return;
+        if (pTypelessWorkArea)
+        {
+            getTaskFromWorkArea(pTypelessWorkArea)->m_flags |= 1; // finish task
+        }
+        break;
+    default:
+        assert(0);
+    }
+}
+
+u8 titleScreenPalette[32] = {
+    0x00, 0x00, 0x08, 0x42, 0x10, 0x84, 0x18, 0xC6, 0x21, 0x08, 0x29, 0x4A, 0x31, 0x8C, 0x39, 0xCE,
+    0x42, 0x10, 0x46, 0x31, 0x52, 0x94, 0x5E, 0xF7, 0x67, 0x39, 0x6F, 0x7B, 0x77, 0xBD, 0x7F, 0xFF,
+};
+
+sLayerConfig warningBG0Setup[] =
+{
+    CHCN,  0,
+    CHSZ,  1,
+    PNB,  1,
+    CNSM,  1,
+    END,
+};
+
+void loadWarningFile(u32 index)
+{
+    reinitVdp2();
+
+    loadFile("WARNING.SCB", getVdp2Vram(0x10000), 0);
+    loadFile("WARNING.PNB", getVdp2Vram(0x1C800), 0);
+
+    asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 32, 0);
+
+    vdp2Controls.m_pendingVdp2Regs->CYCA0 = 0x3FF47FF;
+
+    setupNBG0(warningBG0Setup);
+
+    initLayerPlanes(0, getVdp2Vram(0x1C800) + index * 0x800, 0, 0, 0);
+
+    vdp2Controls.m_pendingVdp2Regs->PRINA = 6;
+    vdp2Controls.m_pendingVdp2Regs->PRINB = 0x700;
+    vdp2Controls.m_pendingVdp2Regs->PRIR = 0;
+    vdp2Controls.m_isDirty = 1;
+
+    if (VDP2Regs_.TVSTAT & 1)
+    {
+        incrementVar = 0;
+        updateVDP2CoordinatesIncrement2(0x0, 0x100000);
+        incrementVar = 4;
+    }
+}
 
 void warningTaskInit(void* pTypelessWorkArea)
 {
     s_warningWorkArea* pWorkArea = (s_warningWorkArea*)pTypelessWorkArea;
 
-    /*
-    if (checkSaves())
+    u32 cartdrigePresent = checkForActionReplay();
+    if (cartdrigePresent == 0)
     {
-        assert(0);
+        if (pTypelessWorkArea)
+        {
+            s_task* pTask = getTaskFromWorkArea(pTypelessWorkArea);
+            pTask->m_flags |= 1;
+        }
+        return;
     }
-    ...
-    */
 
+    if (cartdrigePresent == 1)
+    {
+        s_task* pTask = getTaskFromWorkArea(pTypelessWorkArea);
+        pTask->m_pLateUpdate = warningTaskDraw;
+    }
 
+    loadWarningFile(cartdrigePresent - 1);
 
+    if (menuUnk0.m_4D >= menuUnk0.m_4C)
+    {
+        vdp2Controls.m_registers[0].N1COSL = 0;
+        vdp2Controls.m_registers[1].N1COSL = 0;
+    }
+
+    resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
 }
 
 s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL };

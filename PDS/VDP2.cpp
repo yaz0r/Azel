@@ -380,6 +380,18 @@ void setupNBG0(sLayerConfig* setup)
 
         switch (command)
         {
+        case CHCN:
+            vdp2Controls.m_pendingVdp2Regs->CHCTLA = (vdp2Controls.m_pendingVdp2Regs->CHCTLA & 0xFF8F) | (arg << 4);
+            break;
+        case CHSZ:
+            vdp2Controls.m_pendingVdp2Regs->CHCTLA = (vdp2Controls.m_pendingVdp2Regs->CHCTLA & 0xFFFE) | (arg << 0);
+            break;
+        case PNB:
+            vdp2Controls.m_pendingVdp2Regs->PNCN0 = (vdp2Controls.m_pendingVdp2Regs->PNCN0 & 0x7FFF) | (arg << 15);
+            break;
+        case CNSM:
+            vdp2Controls.m_pendingVdp2Regs->PNCN0 = (vdp2Controls.m_pendingVdp2Regs->PNCN0 & 0xBFFF) | (arg << 14);
+            break;
         default:
             assert(false);
             break;
@@ -397,6 +409,7 @@ void setupNBG1(sLayerConfig* setup)
 
         switch (command)
         {
+
         default:
             assert(false);
             break;
@@ -447,9 +460,68 @@ void setupNBG3(sLayerConfig* setup)
     vdp2Controls.m_isDirty = true;
 }
 
-void initVdp2TextLayerSub1(u32, u8*, u8*, u8*)
+u32 rotateRightR0ByR1(u32 r0, u32 r1)
 {
+    return r0 >> r1;
+}
 
+void initLayerPlanes(u32 layer, u8* planeA, u8* planeB, u8* planeC, u8* planeD)
+{
+    u32 characterSize = 0;
+    u32 patternNameDataSize = 0;
+
+    switch (layer)
+    {
+    case 0:
+        characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLA & 1;
+        patternNameDataSize = vdp2Controls.m_pendingVdp2Regs->PNCN0 & 0x8000;
+        break;
+    case 3:
+        characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLB & 0x10;
+        patternNameDataSize = vdp2Controls.m_pendingVdp2Regs->PNCN3 & 0x8000;
+        break;
+    default:
+        assert(0);
+    }
+
+    u32 size;
+    if (patternNameDataSize)
+    {
+        if (characterSize)
+            size = 0xB;
+        else
+            size = 0xD;
+    }
+    else
+    {
+        if (characterSize)
+            size = 0xC;
+        else
+            size = 0xE;
+    }
+
+    u32 planeAOffset = planeA - VDP2_VRamStart;
+    u32 planeBOffset = planeB - VDP2_VRamStart;
+    u32 planeCOffset = planeC - VDP2_VRamStart;
+    u32 planeDOffset = planeD - VDP2_VRamStart;
+
+    u32 mapOffset = (rotateRightR0ByR1(planeAOffset, size + 6)) & 7;
+
+    switch (layer)
+    {
+    case 0:
+        vdp2Controls.m_pendingVdp2Regs->MPOFN = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 0xFFF0) | (mapOffset);
+        vdp2Controls.m_pendingVdp2Regs->MPABN0 = ((rotateRightR0ByR1(planeBOffset, size) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, size);
+        vdp2Controls.m_pendingVdp2Regs->MPCDN0 = ((rotateRightR0ByR1(planeDOffset, size) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, size);
+        break;
+    case 3:
+        vdp2Controls.m_pendingVdp2Regs->MPOFN = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 0x0FFF) | (mapOffset << 12);
+        vdp2Controls.m_pendingVdp2Regs->MPABN3 = ((rotateRightR0ByR1(planeBOffset, size) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, size);
+        vdp2Controls.m_pendingVdp2Regs->MPCDN3 = ((rotateRightR0ByR1(planeDOffset, size) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, size);
+        break;
+    default:
+        assert(0);
+    }
 }
 
 u32 characterMap1[0x80];
@@ -483,7 +555,7 @@ void initVdp2TextLayer()
 {
     setupNBG3(textLayerVdp2Setup);
 
-    initVdp2TextLayerSub1(3, (u8*)vdp2TextMemory, (u8*)vdp2TextMemory, (u8*)vdp2TextMemory);
+    initLayerPlanes(3, (u8*)vdp2TextMemory, (u8*)vdp2TextMemory, (u8*)vdp2TextMemory, (u8*)vdp2TextMemory);
 
     clearVdp2TextMemory();
 
@@ -578,6 +650,10 @@ void reinitVdp2()
 
 u8 incrementVar;
 void updateVDP2CoordinatesIncrement(u32 unk0, u32 unk1)
+{
+
+}
+void updateVDP2CoordinatesIncrement2(u32 unk0, u32 unk1)
 {
 
 }

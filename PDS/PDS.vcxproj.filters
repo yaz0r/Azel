@@ -8,6 +8,12 @@
     <Filter Include="Source Files\Overlays">
       <UniqueIdentifier>{08f9152b-46f0-4d1f-8897-302a79378556}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\imgui">
+      <UniqueIdentifier>{1ed79b1d-eea5-4141-ad8f-265ec6093df1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui\gl3w">
+      <UniqueIdentifier>{4bb80b23-7ce6-4dbe-94bb-a5cdb54e298e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="task.cpp">
@@ -31,6 +37,21 @@
     <ClCompile Include="o_title.cpp">
       <Filter>Source Files\Overlays</Filter>
     </ClCompile>
+    <ClCompile Include="renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\examples\libs\gl3w\GL\gl3w.c">
+      <Filter>Source Files\imgui\gl3w</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PDS.h">
@@ -53,6 +74,18 @@
     </ClInclude>
     <ClInclude Include="o_title.h">
       <Filter>Source Files\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>Source Files\imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

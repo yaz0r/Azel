@@ -119,7 +119,7 @@ void loadTitleScreenGraphics()
     vdp2Controls.m_pendingVdp2Regs->CYCB1 = 0x44FFFFF;
 
     setupNBG0(titleNBG0Setup);
-    initVdp2TextLayerSub1(0, getVdp2Vram(0x10000), getVdp2Vram(0x10800), getVdp2Vram(0x10000));
+    initLayerPlanes(0, getVdp2Vram(0x10000), getVdp2Vram(0x10800), getVdp2Vram(0x10000), getVdp2Vram(0x10800));
 
     vdp2Controls.m_pendingVdp2Regs->PRINA = 0x706; // Layer0 = 6, Layer1 = 7
     vdp2Controls.m_pendingVdp2Regs->PRINB = 0;
@@ -134,7 +134,7 @@ void loadTitleScreenGraphics()
     }
 
     setupNBG1(titleNBG1Setup);
-    initVdp2TextLayerSub1(1, getVdp2Vram(0x6000), getVdp2Vram(0x6000), getVdp2Vram(0x6000));
+    initLayerPlanes(1, getVdp2Vram(0x6000), getVdp2Vram(0x6000), getVdp2Vram(0x6000), getVdp2Vram(0x6000));
 
     incrementVar = 1;
     updateVDP2CoordinatesIncrement(0x8000, 0x8000);

@@ -130,3 +130,8 @@ s_task* createRootTask(s_taskDefinition* pDefinition, int size)
 
     return pTask;
 }
+
+s_task* getTaskFromWorkArea(void* pWorkArea)
+{
+    return (s_task*)(((u8*)pWorkArea) - sizeof(s_task));
+}

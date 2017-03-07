@@ -2,6 +2,9 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <SDL.h>
+#include <imgui.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -23,6 +26,8 @@ typedef INT32 s32;
 
 #include "VDP2.h"
 #include "titleScreen.h"
+
+#include "renderer.h"
 
 int drawMenuString(char* text);
 

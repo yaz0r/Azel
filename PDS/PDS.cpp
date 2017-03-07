@@ -1,5 +1,11 @@
 #include "PDS.h"
 
+#ifdef _WIN32
+#pragma comment(lib, "Winmm.lib")
+#pragma comment(lib, "Imm32.lib")
+#pragma comment(lib, "Version.lib")
+#endif
+
 bool debugEnabled = false; // watchdog bit 1
 
 int enableDebugTask;
@@ -65,11 +71,15 @@ void azelInit()
 
 int main(int argc, char* argv[])
 {
+    azelSdl2_Init();
+
     azelInit();
     resetEngine();
 
     do 
     {
+        azelSdl2_StartFrame();
+
         //updateDebug();
 
         //copySMPCOutputStatus();
@@ -87,7 +97,6 @@ int main(int argc, char* argv[])
         //updateSound();
 
         //lastUpdateFunction();
-
-    } while (1);
+    } while (azelSdl2_EndFrame());
     return 0;
 }
