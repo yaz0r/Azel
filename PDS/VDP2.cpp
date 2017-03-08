@@ -24,6 +24,27 @@ u8* getVdp2Cram(u32 offset)
     return vdp2CRam + offset;
 }
 
+u8 getVdp2VramU8(u32 offset)
+{
+    return *(u8*)getVdp2Vram(offset);
+}
+
+u16 getVdp2VramU16(u32 offset)
+{
+    u32 high = *(u8*)getVdp2Vram(offset);
+    u32 low = *(u8*)getVdp2Vram(offset+1);
+
+    return (high << 8) | low;
+}
+
+u16 getVdp2CramU16(u32 offset)
+{
+    u32 high = *(u8*)getVdp2Cram(offset);
+    u32 low = *(u8*)getVdp2Cram(offset + 1);
+
+    return (high << 8) | low;
+}
+
 void vdp2DebugPrintSetPosition(s32 x, s32 y)
 {
     if (x < 0)
@@ -465,7 +486,7 @@ u32 rotateRightR0ByR1(u32 r0, u32 r1)
     return r0 >> r1;
 }
 
-void initLayerPlanes(u32 layer, u8* planeA, u8* planeB, u8* planeC, u8* planeD)
+void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
 {
     u32 characterSize = 0;
     u32 patternNameDataSize = 0;
@@ -484,40 +505,54 @@ void initLayerPlanes(u32 layer, u8* planeA, u8* planeB, u8* planeC, u8* planeD)
         assert(0);
     }
 
-    u32 size;
+    u32 shitValue;
     if (patternNameDataSize)
     {
+        // 1 word
         if (characterSize)
-            size = 0xB;
+        {
+            // 2x2
+            shitValue = 11; // 0x800
+        }
         else
-            size = 0xD;
+        {
+            // 1x1
+            shitValue = 13; // 0x2000
+        }
     }
     else
     {
+        // 2 words
         if (characterSize)
-            size = 0xC;
+        {
+            // 2x2
+            shitValue = 12; // 0x1000
+        }
         else
-            size = 0xE;
+        {
+            // 1x1
+            shitValue = 14; // 0x4000
+        }
     }
 
-    u32 planeAOffset = planeA - VDP2_VRamStart;
-    u32 planeBOffset = planeB - VDP2_VRamStart;
-    u32 planeCOffset = planeC - VDP2_VRamStart;
-    u32 planeDOffset = planeD - VDP2_VRamStart;
+    u32 planeAOffset = planeA;// - 0x25E00000;
+    u32 planeBOffset = planeB;// - 0x25E00000;
+    u32 planeCOffset = planeC;// - 0x25E00000;
+    u32 planeDOffset = planeD;// - 0x25E00000;
 
-    u32 mapOffset = (rotateRightR0ByR1(planeAOffset, size + 6)) & 7;
+    u32 mapOffset = (rotateRightR0ByR1(planeAOffset, shitValue + 6)) & 7;
 
     switch (layer)
     {
     case 0:
         vdp2Controls.m_pendingVdp2Regs->MPOFN = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 0xFFF0) | (mapOffset);
-        vdp2Controls.m_pendingVdp2Regs->MPABN0 = ((rotateRightR0ByR1(planeBOffset, size) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, size);
-        vdp2Controls.m_pendingVdp2Regs->MPCDN0 = ((rotateRightR0ByR1(planeDOffset, size) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, size);
+        vdp2Controls.m_pendingVdp2Regs->MPABN0 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
+        vdp2Controls.m_pendingVdp2Regs->MPCDN0 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
         break;
     case 3:
         vdp2Controls.m_pendingVdp2Regs->MPOFN = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 0x0FFF) | (mapOffset << 12);
-        vdp2Controls.m_pendingVdp2Regs->MPABN3 = ((rotateRightR0ByR1(planeBOffset, size) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, size);
-        vdp2Controls.m_pendingVdp2Regs->MPCDN3 = ((rotateRightR0ByR1(planeDOffset, size) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, size);
+        vdp2Controls.m_pendingVdp2Regs->MPABN3 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
+        vdp2Controls.m_pendingVdp2Regs->MPCDN3 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
         break;
     default:
         assert(0);
@@ -555,7 +590,7 @@ void initVdp2TextLayer()
 {
     setupNBG3(textLayerVdp2Setup);
 
-    initLayerPlanes(3, (u8*)vdp2TextMemory, (u8*)vdp2TextMemory, (u8*)vdp2TextMemory, (u8*)vdp2TextMemory);
+    initLayerMap(3, 0x6000, 0x6000, 0x6000, 0x6000);
 
     clearVdp2TextMemory();
 

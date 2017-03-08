@@ -250,7 +250,7 @@ struct s_warningWorkArea
     u32 m_delay;
 };
 
-u32 checkForActionReplay()
+u32 checkCartdrigeMemory()
 {
     return 1;
 }
@@ -293,10 +293,10 @@ u8 titleScreenPalette[32] = {
 
 sLayerConfig warningBG0Setup[] =
 {
-    CHCN,  0,
-    CHSZ,  1,
-    PNB,  1,
-    CNSM,  1,
+    CHCN,  0, // 16 colors
+    CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
+    PNB,  1, // pattern data size is 1 word
+    CNSM,  1, // character number is 12 bit, no flip
     END,
 };
 
@@ -313,7 +313,7 @@ void loadWarningFile(u32 index)
 
     setupNBG0(warningBG0Setup);
 
-    initLayerPlanes(0, getVdp2Vram(0x1C800) + index * 0x800, 0, 0, 0);
+    initLayerMap(0, 0x1C800 + index * 0x800, 0, 0, 0);
 
     vdp2Controls.m_pendingVdp2Regs->PRINA = 6;
     vdp2Controls.m_pendingVdp2Regs->PRINB = 0x700;
@@ -332,7 +332,7 @@ void warningTaskInit(void* pTypelessWorkArea)
 {
     s_warningWorkArea* pWorkArea = (s_warningWorkArea*)pTypelessWorkArea;
 
-    u32 cartdrigePresent = checkForActionReplay();
+    u32 cartdrigePresent = checkCartdrigeMemory();
     if (cartdrigePresent == 0)
     {
         if (pTypelessWorkArea)

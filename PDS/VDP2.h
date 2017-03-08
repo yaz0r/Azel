@@ -162,6 +162,11 @@ void vdp2DebugPrintSetPosition(s32 x, s32 y);
 void clearVdp2Text();
 int renderVdp2String(char* text);
 
+u16 getVdp2VramU16(u32 offset);
+u8 getVdp2VramU8(u32 offset);
+
+u16 getVdp2CramU16(u32 offset);
+
 u8* getVdp2Vram(u32 offset);
 u8* getVdp2Cram(u32 offset);
 
@@ -169,4 +174,4 @@ void loadFile(const char* fileName, u8* destination, u32 unk0);
 void addToVDP2MemoryLayout(u8* pointer, u32 unk0);
 void asyncDmaCopy(void* source, void* target, u32 size, u32 unk);
 
-void initLayerPlanes(u32 layer, u8* planeA, u8* planeB, u8* planeC, u8* planeD);
+void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD);
