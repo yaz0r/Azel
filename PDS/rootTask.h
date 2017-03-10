@@ -2,9 +2,9 @@
 
 struct s_initialTaskStatus
 {
-    s_task* (*m_pendingTask)(void*);
-    s_task*(*m_currentTask)(void*);
-    s_task*(*m_previousTask)(void*);
+    p_workArea (*m_pendingTask)(void*);
+    p_workArea (*m_currentTask)(void*);
+    p_workArea (*m_previousTask)(void*);
     u32 m_showWarningTask;
 };
 

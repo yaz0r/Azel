@@ -75,15 +75,15 @@ void titleMenuTaskDraw(void* pTypelessWorkArea)
 
 s_taskDefinition titleMenuTaskDefinition = { titleMenuTaskInit, NULL, titleMenuTaskDraw, NULL };
 
-s_task* startSegaLogoModule(void* workArea)
+p_workArea startSegaLogoModule(void* workArea)
 {
     assert(false);
     return NULL;
 }
 
-s_task* createTitleMenuTask(void* workArea)
+p_workArea createTitleMenuTask(p_workArea workArea)
 {
-    return createTask_NoArgs(workArea, &titleMenuTaskDefinition, sizeof(s_titleMenuWorkArea));
+    return createTask_NoArgs(workArea, &titleMenuTaskDefinition, sizeof(s_titleMenuWorkArea), "titleMenuTask");
 }
 
 struct s_pressStartButtonTaskWorkArea
@@ -149,7 +149,7 @@ struct s_titleScreenWorkArea
 {
     u32 m_status;
     u32 m_delay;
-    s_task* m_overlayTask;
+    p_workArea m_overlayTask;
 };
 
 void titleScreenDraw(void* pTypelessWorkArea)
@@ -182,7 +182,7 @@ void titleScreenDraw(void* pTypelessWorkArea)
         }
         pWorkArea->m_status++;
     case 4:
-        createTask_NoArgs(pWorkArea, &pressStartButtonTask, 8);
+        createTask_NoArgs(pWorkArea, &pressStartButtonTask, 8, "pressStartButtonTask");
 
         pWorkArea->m_delay = 44 * 60;
         if (VDP2Regs_.TVSTAT & 1)
@@ -237,9 +237,9 @@ void titleScreenInit(void* pTypelessWorkArea)
 
 s_taskDefinition titleScreenTaskDefinition = { titleScreenInit, NULL, titleScreenDraw, NULL };
 
-s_task* createTitleScreenTask(void* workArea)
+p_workArea createTitleScreenTask(void* workArea)
 {
-    return createTask_NoArgs(workArea, &titleScreenTaskDefinition, sizeof(s_titleScreenWorkArea));
+    return createTask_NoArgs(workArea, &titleScreenTaskDefinition, sizeof(s_titleScreenWorkArea), "titleScreen");
 }
 
 // WarningTask
@@ -252,7 +252,7 @@ struct s_warningWorkArea
 
 u32 checkCartdrigeMemory()
 {
-    return 1;
+    return 0;
 }
 
 void warningTaskDraw(void* pTypelessWorkArea)
@@ -362,9 +362,9 @@ void warningTaskInit(void* pTypelessWorkArea)
 
 s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL };
 
-s_task* startWarningTask(void* workArea)
+p_workArea startWarningTask(void* workArea)
 {
-    return createTask_NoArgs(workArea, &warningTaskDefinition, sizeof(s_warningWorkArea));
+    return createTask_NoArgs(workArea, &warningTaskDefinition, sizeof(s_warningWorkArea), "warning");
 }
 
 // loadWarningTask
@@ -373,7 +373,7 @@ struct s_loadWarningWorkArea
 {
     u32 m_0;
     u32 m_4;
-    s_task* m_warningTask;
+    p_workArea m_warningTask;
 };
 
 void loadWarningTaskInit(void* pTypelessWorkArea)
@@ -389,7 +389,7 @@ void loadWarningTaskDraw(void* pTypelessWorkArea)
 
     if (pWorkArea->m_warningTask)
     {
-        if(!(pWorkArea->m_warningTask->m_flags & 1))
+        if(!(getTaskFromWorkArea(pWorkArea->m_warningTask)->m_flags & 1))
         {
             return;
         }
@@ -408,8 +408,8 @@ void loadWarningTaskDraw(void* pTypelessWorkArea)
 
 s_taskDefinition loadWarningTaskDefinition = { loadWarningTaskInit, NULL, loadWarningTaskDraw, NULL };
 
-s_task* startLoadWarningTask(void* workArea)
+p_workArea startLoadWarningTask(void* workArea)
 {
-    return createTask_NoArgs(workArea, &loadWarningTaskDefinition, sizeof(s_loadWarningWorkArea));
+    return createTask_NoArgs(workArea, &loadWarningTaskDefinition, sizeof(s_loadWarningWorkArea), "loadWarning");
 }
 

@@ -186,9 +186,9 @@ void titleOverlay_Update(void* pTypelessWorkArea)
 
 s_taskDefinition titleOVLTask = { NULL, NULL, titleOverlay_Update, NULL };
 
-s_task* overlayStart(void* workArea)
+p_workArea overlayStart(void* workArea)
 {
-    return createTask_NoArgs(workArea, &titleOVLTask, sizeof(s_titleOverlayWorkArea));
+    return createTask_NoArgs(workArea, &titleOVLTask, sizeof(s_titleOverlayWorkArea), "titleOVL");
 }
 };
 

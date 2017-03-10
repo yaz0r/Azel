@@ -3,7 +3,7 @@
 struct s_initialTaskWorkArea
 {
     u32 m_state;
-    s_task* m_4;
+    p_workArea m_4;
 };
 
 s_initialTaskStatus initialTaskStatus;
@@ -43,7 +43,8 @@ void initialTask_Update(void* pTypelessWorkArea)
         {
             if (pWorkArea->m_4)
             {
-                assert(0);
+                s_task* pTask = getTaskFromWorkArea(pWorkArea->m_4);
+                pTask->m_flags |= 1;
             }
 
             initialTaskStatus.m_previousTask = initialTaskStatus.m_currentTask;

@@ -2,6 +2,6 @@
 
 namespace TITLE_OVERLAY
 {
-    s_task* overlayStart(void* workArea);
+    p_workArea overlayStart(void* workArea);
 };
 

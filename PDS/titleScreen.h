@@ -1,5 +1,5 @@
 #pragma once
 
 // Title task
-s_task* createTitleScreenTask(void* workArea);
-s_task* startLoadWarningTask(void*);
+p_workArea createTitleScreenTask(void* workArea);
+p_workArea startLoadWarningTask(void*);
