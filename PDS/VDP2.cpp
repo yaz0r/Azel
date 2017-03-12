@@ -6,6 +6,7 @@ u8* VDP2_VRamStart = vdp2Ram;
 u8 vdp2CRam[0x1000];
 u8* VDP2_CRamStart = vdp2CRam;
 
+u32 vdp2TextMemoryOffset = 0x6000;
 u16* vdp2TextMemory = (u16*)&vdp2Ram[0x6000];
 u8* vdp2FontPalettes = VDP2_CRamStart + 0xE00;
 
@@ -37,6 +38,12 @@ u16 getVdp2VramU16(u32 offset)
     return (high << 8) | low;
 }
 
+void setVdp2VramU16(u32 offset, u16 value)
+{
+    *(u8*)getVdp2Vram(offset) = (value >> 8) & 0xFF;
+    *(u8*)getVdp2Vram(offset+1) = value & 0xFF;
+}
+
 u16 getVdp2CramU16(u32 offset)
 {
     u32 high = *(u8*)getVdp2Cram(offset);
@@ -62,17 +69,19 @@ int renderVdp2String(char* text)
     s32 r3 = vdp2PrintStatus.X;
     s32 r6 = vdp2PrintStatus.Y;
 
-    u16* pOutput = vdp2TextMemory + (r3 + r6 * 64);
+    u32 pOutput = 0x6000 + 2*(r3 + r6 * 64);
 
-    s32 r0 = vdp2PrintStatus.field_10;
+    s32 r0 = vdp2PrintStatus.palette;
 
     u16 r8 = 0xDE;
     u16 r9 = r8 - 0x3D; // ?
     u8 r11 = 0x80;
 
+    u32 r7 = r0 + 0x63;
+
     while (char currentChar = *(text++))
     {
-        u16* r14 = pOutput + 0x40;
+        u32 r14 = pOutput + 0x80;
 
         if (currentChar >= r9)
         {
@@ -84,10 +93,10 @@ int renderVdp2String(char* text)
             {
                 currentChar -= 0x20;
 
-                u16 finalValue = 0x63 + (u16)currentChar * 2;
+                u16 finalValue = r7 + (u16)currentChar * 2;
 
-                *pOutput = finalValue;
-                *r14 = finalValue + 1;
+                setVdp2VramU16(pOutput, finalValue);
+                setVdp2VramU16(r14, finalValue + 1);
             }
             else
             {
@@ -95,7 +104,7 @@ int renderVdp2String(char* text)
             }
         }
 
-        pOutput++;
+        pOutput+=2;
         r12++;
     }
 
@@ -386,8 +395,8 @@ sLayerConfig textLayerVdp2Setup[] = {
     CHSZ, 0,
     PNB, 1,
     CNSM, 1,
-    PLSZ0, 0,
-    CAOS0, 7,
+    PLSZ, 0,
+    CAOS, 7,
     END
 };
 
@@ -430,7 +439,24 @@ void setupNBG1(sLayerConfig* setup)
 
         switch (command)
         {
-
+        case CHCN:
+            vdp2Controls.m_pendingVdp2Regs->CHCTLA = (vdp2Controls.m_pendingVdp2Regs->CHCTLA & 0x8FFF) | (arg << 12);
+            break;
+        case CHSZ:
+            vdp2Controls.m_pendingVdp2Regs->CHCTLA = (vdp2Controls.m_pendingVdp2Regs->CHCTLA & 0xFEFF) | (arg << 8);
+            break;
+        case PNB:
+            vdp2Controls.m_pendingVdp2Regs->PNCN1 = (vdp2Controls.m_pendingVdp2Regs->PNCN1 & 0x7FFF) | (arg << 15);
+            break;
+        case CNSM:
+            vdp2Controls.m_pendingVdp2Regs->PNCN1 = (vdp2Controls.m_pendingVdp2Regs->PNCN1 & 0xBFFF) | (arg << 14);
+            break;
+        case PLSZ:
+            vdp2Controls.m_pendingVdp2Regs->PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ & 0xFFF3) | (arg << 2);
+            break;
+        case CAOS:
+            vdp2Controls.m_pendingVdp2Regs->CRAOFA = (vdp2Controls.m_pendingVdp2Regs->CRAOFA & 0xFF8F) | (arg << 4);
+            break;
         default:
             assert(false);
             break;
@@ -460,10 +486,10 @@ void setupNBG3(sLayerConfig* setup)
         case CNSM:
             vdp2Controls.m_pendingVdp2Regs->PNCN3 = (vdp2Controls.m_pendingVdp2Regs->PNCN3 & 0xBFFF) | (arg << 14);
             break;
-        case PLSZ0:
+        case PLSZ:
             vdp2Controls.m_pendingVdp2Regs->PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ & 0xFF3F) | (arg << 6);
             break;
-        case CAOS0:
+        case CAOS:
             vdp2Controls.m_pendingVdp2Regs->CRAOFA = (vdp2Controls.m_pendingVdp2Regs->CRAOFA & 0x8FFF) | (arg << 12);
             break;
         default:
@@ -496,6 +522,10 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
     case 0:
         characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLA & 1;
         patternNameDataSize = vdp2Controls.m_pendingVdp2Regs->PNCN0 & 0x8000;
+        break;
+    case 1:
+        characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLA & 100;
+        patternNameDataSize = vdp2Controls.m_pendingVdp2Regs->PNCN1 & 0x8000;
         break;
     case 3:
         characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLB & 0x10;
@@ -549,6 +579,16 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
         vdp2Controls.m_pendingVdp2Regs->MPABN0 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
         vdp2Controls.m_pendingVdp2Regs->MPCDN0 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
         break;
+    case 1:
+        vdp2Controls.m_pendingVdp2Regs->MPOFN = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 0xFF0F) | (mapOffset << 4);
+        vdp2Controls.m_pendingVdp2Regs->MPABN1 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
+        vdp2Controls.m_pendingVdp2Regs->MPCDN1 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        break;
+    case 2:
+        vdp2Controls.m_pendingVdp2Regs->MPOFN = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 0xF0FF) | (mapOffset << 8);
+        vdp2Controls.m_pendingVdp2Regs->MPABN2 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
+        vdp2Controls.m_pendingVdp2Regs->MPCDN2 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        break;
     case 3:
         vdp2Controls.m_pendingVdp2Regs->MPOFN = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 0x0FFF) | (mapOffset << 12);
         vdp2Controls.m_pendingVdp2Regs->MPABN3 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
@@ -598,8 +638,8 @@ void initVdp2TextLayer()
 
     vdp2PrintStatus.oldX = vdp2PrintStatus.X;
     vdp2PrintStatus.oldY = vdp2PrintStatus.Y;
-    vdp2PrintStatus.field_10 = 0xC000;
-    vdp2PrintStatus.field_12 = 0xC000;
+    vdp2PrintStatus.palette = 0xC000;
+    vdp2PrintStatus.oldPalette = 0xC000;
 }
 
 // 16 palettes of 16 u16

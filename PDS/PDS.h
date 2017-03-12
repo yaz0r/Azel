@@ -21,6 +21,7 @@ typedef INT32 s32;
 
 #include "dummy.h"
 
+#include "heap.h"
 #include "task.h"
 #include "rootTask.h"
 

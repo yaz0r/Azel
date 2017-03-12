@@ -40,7 +40,7 @@ void resetEngine()
     //resetInputs();
     initPauseSatus();
     resetTasks();
-    //initHeap();
+    initHeap();
     //initVDP1();
     initVDP2();
 

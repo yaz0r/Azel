@@ -48,6 +48,10 @@ struct s_task
     {
         return m_workArea;
     }
+    s_heapNode* getHeapNode()
+    {
+        return ((s_heapNode*)(this)) - 1;
+    }
 
     bool isFinished()
     {

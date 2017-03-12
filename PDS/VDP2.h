@@ -6,8 +6,8 @@ struct s_Vdp2PrintStatus
     s32 Y;
     s32 oldX;
     s32 oldY;
-    u16 field_10;
-    u16 field_12;
+    u16 palette;
+    u16 oldPalette;
 };
 extern s_Vdp2PrintStatus vdp2PrintStatus;
 
@@ -136,8 +136,8 @@ enum eVdp2LayerConfig
     CHSZ = 5,
     PNB = 6,
     CNSM = 7,
-    PLSZ0 = 12,
-    CAOS0 = 40,
+    PLSZ = 12,
+    CAOS = 40,
 };
 
 struct sLayerConfig
@@ -168,6 +168,7 @@ u8 getVdp2VramU8(u32 offset);
 u16 getVdp2CramU16(u32 offset);
 
 u8* getVdp2Vram(u32 offset);
+void setVdp2VramU16(u32 offset, u16 value);
 u8* getVdp2Cram(u32 offset);
 
 void loadFile(const char* fileName, u8* destination, u32 unk0);

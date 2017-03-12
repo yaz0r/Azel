@@ -3,12 +3,12 @@
 s_task* taskListHead;
 int numActiveTask;
 
-void processTasks(s_task* pRootTask)
+void processTasks(s_task** ppTask)
 {
-    s_task* pTask = pRootTask;
+    s_task* pTask = *ppTask;
+    
     do
     {
-        s_task* pNextTask = NULL;
         if (!(pTask->isFinished()))
         {
             if (!(pTask->isPaused()))
@@ -42,7 +42,7 @@ void processTasks(s_task* pRootTask)
 
             if (pTask->m_pSubTask)
             {
-                processTasks(pTask->m_pSubTask);
+                processTasks(&pTask->m_pSubTask);
             }
 
             // finished but not deleting yet
@@ -53,40 +53,46 @@ void processTasks(s_task* pRootTask)
                     pTask->m_pDelete(pTask->getWorkArea());
                 }
                 numActiveTask--;
-                pNextTask = pTask->m_pNextTask;
             }
             else
             {
-                s_task* r4 = pTask->m_pSubTask;
+                s_heapNode* r4 = pTask->getHeapNode()->m_nextNode;
                 while (r4)
                 {
-                    s_task* pNextTask = r4->m_pNextTask;
-                    //free(r4);
+                    assert(0);
+                    s_heapNode* pNextTask = r4->m_nextNode;
+                    freeHeap(r4->getUserData());
                     r4 = pNextTask;
                 }
 
-                pNextTask = pTask->m_pNextTask;
-                //free(pTask);
+                *ppTask = pTask->m_pNextTask;
+                freeHeap(pTask);
+//                pTask = *ppTask;
             }
         }
         else
         {
             if (pTask->m_pSubTask)
             {
-                processTasks(pTask->m_pSubTask);
+                processTasks(&pTask->m_pSubTask);
             }
-            pNextTask = pTask->m_pNextTask;
         }
 
-        pTask = pNextTask;
-    } while (pTask);
+        pTask = *ppTask;
+
+        if (pTask == NULL)
+            return;
+        
+        ppTask = &pTask->m_pNextTask;
+        pTask = *ppTask;
+    }while (pTask);
 }
 
 void runTasks()
 {
     if (taskListHead)
     {
-        processTasks(taskListHead);
+        processTasks(&taskListHead);
     }
 }
 
@@ -98,19 +104,19 @@ void resetTasks()
 
 p_workArea createTask_NoArgs(p_workArea parentWorkArea, s_taskDefinition* pDefinition, p_workArea newWorkArea, const char* taskName)
 {
-    s_task* pTask = new s_task;
+    s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
     if (pTask)
     {
         numActiveTask++;
 
         s_task* pParentTask = parentWorkArea->getTask();
 
-        while (pParentTask->m_pSubTask)
+        while (pParentTask->m_pNextTask)
         {
-            pParentTask = pParentTask->m_pSubTask;
+            pParentTask = pParentTask->m_pNextTask;
         }
 
-        pParentTask->m_pSubTask = pTask;
+        pParentTask->m_pNextTask = pTask;
 
         pTask->m_pNextTask = NULL;
         pTask->m_pSubTask = NULL;
@@ -135,7 +141,7 @@ p_workArea createTask_NoArgs(p_workArea parentWorkArea, s_taskDefinition* pDefin
 
 s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea newWorkArea)
 {
-    s_task* pTask = new s_task;
+    s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
     if (pTask)
     {
         numActiveTask++;

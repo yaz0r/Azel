@@ -78,8 +78,8 @@ u8 titleScreenPalette[512] =
 
 sLayerConfig titleNBG0Setup[] =
 {
-    CHCN,  1,
-    CHSZ,  1,
+    CHCN,  1, //256 colors
+    CHSZ,  1, //pattern is 1x1
     PNB,  1,
     CNSM,  1,
     END,
@@ -87,12 +87,12 @@ sLayerConfig titleNBG0Setup[] =
 
 sLayerConfig titleNBG1Setup[] =
 {
-    CHCN,  0,
-    CHSZ,  0,
-    PNB,  1,
-    CNSM,  1,
-    PLSZ0, 0,
-    CAOS0, 7,
+    CHCN,  0, // 16 colors
+    CHSZ,  0, // pattern is 1x1
+    PNB,  1, // 1 word
+    CNSM,  1, // Character Number Supplementary mode 1 (12bits)
+    PLSZ, 0, // plane is 1H x 1V
+    CAOS, 7, // palette offset is 7 * 0x200 = 0xE00 (where the palette for the text is stored)
     END,
 };
 

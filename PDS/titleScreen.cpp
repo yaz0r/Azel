@@ -102,7 +102,7 @@ void pressStartButtonTaskDraw(s_workArea* pTypelessWorkArea)
         if ((--pWorkArea->m_timming) >= 0)
             return;
 
-        vdp2PrintStatus.field_10 = 0xD000;
+        vdp2PrintStatus.palette = 0xD000;
 
         if (VDP2Regs_.TVSTAT & 1)
             vdp2DebugPrintSetPosition(13, -2);
@@ -252,7 +252,7 @@ struct s_warningWorkArea : public s_workArea
 
 u32 checkCartdrigeMemory()
 {
-    return 1;
+    return 0;
 }
 
 void warningTaskDraw(p_workArea pTypelessWorkArea)
