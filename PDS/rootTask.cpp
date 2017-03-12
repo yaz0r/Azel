@@ -1,6 +1,6 @@
 #include "PDS.h"
 
-struct s_initialTaskWorkArea
+struct s_initialTaskWorkArea : public s_workArea
 {
     u32 m_state;
     p_workArea m_4;
@@ -8,9 +8,9 @@ struct s_initialTaskWorkArea
 
 s_initialTaskStatus initialTaskStatus;
 
-void initialTask_Init(void* pTypelessWorkArea)
+void initialTask_Init(s_workArea* pTypelessWorkArea)
 {
-    s_initialTaskWorkArea* pWorkArea = (s_initialTaskWorkArea*)pTypelessWorkArea;
+    s_initialTaskWorkArea* pWorkArea = static_cast<s_initialTaskWorkArea*>(pTypelessWorkArea);
     pWorkArea->m_state = 0;
     pWorkArea->m_4 = 0;
 
@@ -26,9 +26,9 @@ void initialTask_Init(void* pTypelessWorkArea)
 
     //resetNamesForNewGame();
 }
-void initialTask_Update(void* pTypelessWorkArea)
+void initialTask_Update(s_workArea* pTypelessWorkArea)
 {
-    s_initialTaskWorkArea* pWorkArea = (s_initialTaskWorkArea*)pTypelessWorkArea;
+    s_initialTaskWorkArea* pWorkArea = static_cast<s_initialTaskWorkArea*>(pTypelessWorkArea);
 
     switch (pWorkArea->m_state)
     {
@@ -43,7 +43,7 @@ void initialTask_Update(void* pTypelessWorkArea)
         {
             if (pWorkArea->m_4)
             {
-                s_task* pTask = getTaskFromWorkArea(pWorkArea->m_4);
+                s_task* pTask = pWorkArea->m_4->getTask();
                 pTask->m_flags |= 1;
             }
 
@@ -66,5 +66,5 @@ s_taskDefinition initialTask = { initialTask_Init , NULL, initialTask_Update , N
 
 void startInitialTask()
 {
-    createRootTask(&initialTask, sizeof(s_initialTaskWorkArea));
+    createRootTask(&initialTask, new s_initialTaskWorkArea);
 }

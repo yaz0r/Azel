@@ -2,7 +2,7 @@
 
 namespace TITLE_OVERLAY {
 
-struct s_titleOverlayWorkArea
+struct s_titleOverlayWorkArea : public s_workArea
 {
     u32 m_status;
     u32 m_4;
@@ -141,9 +141,9 @@ void loadTitleScreenGraphics()
     incrementVar = 2;
 }
 
-void titleOverlay_Update(void* pTypelessWorkArea)
+void titleOverlay_Update(s_workArea* pTypelessWorkArea)
 {
-    s_titleOverlayWorkArea* pWorkArea = (s_titleOverlayWorkArea*)pTypelessWorkArea;
+    s_titleOverlayWorkArea* pWorkArea = static_cast<s_titleOverlayWorkArea*>(pTypelessWorkArea);
 
     switch (pWorkArea->m_status)
     {
@@ -186,9 +186,9 @@ void titleOverlay_Update(void* pTypelessWorkArea)
 
 s_taskDefinition titleOVLTask = { NULL, NULL, titleOverlay_Update, NULL };
 
-p_workArea overlayStart(void* workArea)
+p_workArea overlayStart(s_workArea* workArea)
 {
-    return createTask_NoArgs(workArea, &titleOVLTask, sizeof(s_titleOverlayWorkArea), "titleOVL");
+    return createTask_NoArgs(workArea, &titleOVLTask, new s_titleOverlayWorkArea, "titleOVL");
 }
 };
 

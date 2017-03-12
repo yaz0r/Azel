@@ -8,7 +8,7 @@ struct s_titleMenuEntry
     void(*m_createTask)();
 };
 
-struct s_titleMenuWorkArea
+struct s_titleMenuWorkArea : public s_workArea
 {
     u16 m_status; //0
     
@@ -35,9 +35,9 @@ s_titleMenuEntry mainMenuDebug[] = {
 };
 
 
-void titleMenuTaskInit(void* pTypelessWorkArea)
+void titleMenuTaskInit(p_workArea pTypelessWorkArea)
 {
-    s_titleMenuWorkArea* pWorkArea = (s_titleMenuWorkArea*)pTypelessWorkArea;
+    s_titleMenuWorkArea* pWorkArea = static_cast<s_titleMenuWorkArea*>(pTypelessWorkArea);
 
     // if we are not coming from the title screen (is this possible?)
     if (initialTaskStatus.m_previousTask != createTitleScreenTask)
@@ -48,9 +48,9 @@ void titleMenuTaskInit(void* pTypelessWorkArea)
     isInMenu2 = 1;
 }
 
-void titleMenuTaskDraw(void* pTypelessWorkArea)
+void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
 {
-    s_titleMenuWorkArea* pWorkArea = (s_titleMenuWorkArea*)pTypelessWorkArea;
+    s_titleMenuWorkArea* pWorkArea = static_cast<s_titleMenuWorkArea*>(pTypelessWorkArea);
 
     switch (pWorkArea->m_status)
     {
@@ -75,7 +75,7 @@ void titleMenuTaskDraw(void* pTypelessWorkArea)
 
 s_taskDefinition titleMenuTaskDefinition = { titleMenuTaskInit, NULL, titleMenuTaskDraw, NULL };
 
-p_workArea startSegaLogoModule(void* workArea)
+p_workArea startSegaLogoModule(p_workArea workArea)
 {
     assert(false);
     return NULL;
@@ -83,18 +83,18 @@ p_workArea startSegaLogoModule(void* workArea)
 
 p_workArea createTitleMenuTask(p_workArea workArea)
 {
-    return createTask_NoArgs(workArea, &titleMenuTaskDefinition, sizeof(s_titleMenuWorkArea), "titleMenuTask");
+    return createTask_NoArgs(workArea, &titleMenuTaskDefinition, new s_titleMenuWorkArea, "titleMenuTask");
 }
 
-struct s_pressStartButtonTaskWorkArea
+struct s_pressStartButtonTaskWorkArea : public s_workArea
 {
     u32 m_status;
     s32 m_timming;
 };
 
-void pressStartButtonTaskDraw(void* pTypelessWorkArea)
+void pressStartButtonTaskDraw(s_workArea* pTypelessWorkArea)
 {
-    s_pressStartButtonTaskWorkArea* pWorkArea = (s_pressStartButtonTaskWorkArea*)pTypelessWorkArea;
+    s_pressStartButtonTaskWorkArea* pWorkArea = static_cast<s_pressStartButtonTaskWorkArea*>(pTypelessWorkArea);
 
     switch (pWorkArea->m_status)
     {
@@ -133,7 +133,7 @@ void pressStartButtonTaskDraw(void* pTypelessWorkArea)
     }
 }
 
-void pressStartButtonTaskDelete(void* pTypelessWorkArea)
+void pressStartButtonTaskDelete(s_workArea* pTypelessWorkArea)
 {
     if (VDP2Regs_.TVSTAT & 1)
         vdp2DebugPrintSetPosition(13, -2);
@@ -145,16 +145,16 @@ void pressStartButtonTaskDelete(void* pTypelessWorkArea)
 
 s_taskDefinition pressStartButtonTask = { NULL, NULL, pressStartButtonTaskDraw, pressStartButtonTaskDelete };
 
-struct s_titleScreenWorkArea
+struct s_titleScreenWorkArea : public s_workArea
 {
     u32 m_status;
     u32 m_delay;
     p_workArea m_overlayTask;
 };
 
-void titleScreenDraw(void* pTypelessWorkArea)
+void titleScreenDraw(p_workArea pTypelessWorkArea)
 {
-    s_titleScreenWorkArea* pWorkArea = (s_titleScreenWorkArea*)pTypelessWorkArea;
+    s_titleScreenWorkArea* pWorkArea = static_cast<s_titleScreenWorkArea*>(pTypelessWorkArea);
 
     switch (pWorkArea->m_status)
     {
@@ -182,7 +182,7 @@ void titleScreenDraw(void* pTypelessWorkArea)
         }
         pWorkArea->m_status++;
     case 4:
-        createTask_NoArgs(pWorkArea, &pressStartButtonTask, 8, "pressStartButtonTask");
+        createTask_NoArgs(pWorkArea, &pressStartButtonTask, new s_pressStartButtonTaskWorkArea, "pressStartButtonTask");
 
         pWorkArea->m_delay = 44 * 60;
         if (VDP2Regs_.TVSTAT & 1)
@@ -228,23 +228,23 @@ void titleScreenDraw(void* pTypelessWorkArea)
     }
 }
 
-void titleScreenInit(void* pTypelessWorkArea)
+void titleScreenInit(s_workArea* pTypelessWorkArea)
 {
-    s_titleScreenWorkArea* pWorkArea = (s_titleScreenWorkArea*)pTypelessWorkArea;
+    s_titleScreenWorkArea* pWorkArea = static_cast<s_titleScreenWorkArea*>(pTypelessWorkArea);
 
     pWorkArea->m_overlayTask = TITLE_OVERLAY::overlayStart(pWorkArea);
 }
 
 s_taskDefinition titleScreenTaskDefinition = { titleScreenInit, NULL, titleScreenDraw, NULL };
 
-p_workArea createTitleScreenTask(void* workArea)
+p_workArea createTitleScreenTask(p_workArea workArea)
 {
-    return createTask_NoArgs(workArea, &titleScreenTaskDefinition, sizeof(s_titleScreenWorkArea), "titleScreen");
+    return createTask_NoArgs(workArea, &titleScreenTaskDefinition, new s_titleScreenWorkArea, "titleScreen");
 }
 
 // WarningTask
 
-struct s_warningWorkArea
+struct s_warningWorkArea : public s_workArea
 {
     u32 m_status;
     u32 m_delay;
@@ -252,12 +252,12 @@ struct s_warningWorkArea
 
 u32 checkCartdrigeMemory()
 {
-    return 0;
+    return 1;
 }
 
-void warningTaskDraw(void* pTypelessWorkArea)
+void warningTaskDraw(p_workArea pTypelessWorkArea)
 {
-    s_warningWorkArea* pWorkArea = (s_warningWorkArea*)pTypelessWorkArea;
+    s_warningWorkArea* pWorkArea = static_cast<s_warningWorkArea*>(pTypelessWorkArea);
 
     switch (pWorkArea->m_status)
     {
@@ -273,12 +273,12 @@ void warningTaskDraw(void* pTypelessWorkArea)
             return;
         resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), 0, 30);
         pWorkArea->m_status++;
-    case 3: // wait faide out
+    case 3: // wait fade out
         if (!menuUnk0.m_field0.m_field20)
             return;
         if (pTypelessWorkArea)
         {
-            getTaskFromWorkArea(pTypelessWorkArea)->m_flags |= 1; // finish task
+            pTypelessWorkArea->getTask()->m_flags |= 1; // finish task
         }
         break;
     default:
@@ -328,16 +328,16 @@ void loadWarningFile(u32 index)
     }
 }
 
-void warningTaskInit(void* pTypelessWorkArea)
+void warningTaskInit(p_workArea pTypelessWorkArea)
 {
-    s_warningWorkArea* pWorkArea = (s_warningWorkArea*)pTypelessWorkArea;
+    s_warningWorkArea* pWorkArea = static_cast<s_warningWorkArea*>(pTypelessWorkArea);
 
     u32 cartdrigePresent = checkCartdrigeMemory();
     if (cartdrigePresent == 0)
     {
         if (pTypelessWorkArea)
         {
-            s_task* pTask = getTaskFromWorkArea(pTypelessWorkArea);
+            s_task* pTask = pWorkArea->getTask();
             pTask->m_flags |= 1;
         }
         return;
@@ -345,7 +345,7 @@ void warningTaskInit(void* pTypelessWorkArea)
 
     if (cartdrigePresent == 1)
     {
-        s_task* pTask = getTaskFromWorkArea(pTypelessWorkArea);
+        s_task* pTask = pWorkArea->getTask();
         pTask->m_pLateUpdate = warningTaskDraw;
     }
 
@@ -362,34 +362,34 @@ void warningTaskInit(void* pTypelessWorkArea)
 
 s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL };
 
-p_workArea startWarningTask(void* workArea)
+p_workArea startWarningTask(s_workArea* workArea)
 {
-    return createTask_NoArgs(workArea, &warningTaskDefinition, sizeof(s_warningWorkArea), "warning");
+    return createTask_NoArgs(workArea, &warningTaskDefinition, new s_warningWorkArea, "warning");
 }
 
 // loadWarningTask
 
-struct s_loadWarningWorkArea
+struct s_loadWarningWorkArea : public s_workArea
 {
     u32 m_0;
     u32 m_4;
     p_workArea m_warningTask;
 };
 
-void loadWarningTaskInit(void* pTypelessWorkArea)
+void loadWarningTaskInit(s_workArea* pTypelessWorkArea)
 {
-    s_loadWarningWorkArea* pWorkArea = (s_loadWarningWorkArea*)pTypelessWorkArea;
+    s_loadWarningWorkArea* pWorkArea = static_cast<s_loadWarningWorkArea*>(pTypelessWorkArea);
 
     pWorkArea->m_warningTask = startWarningTask(pTypelessWorkArea);
 }
 
-void loadWarningTaskDraw(void* pTypelessWorkArea)
+void loadWarningTaskDraw(s_workArea* pTypelessWorkArea)
 {
-    s_loadWarningWorkArea* pWorkArea = (s_loadWarningWorkArea*)pTypelessWorkArea;
+    s_loadWarningWorkArea* pWorkArea = static_cast<s_loadWarningWorkArea*>(pTypelessWorkArea);
 
     if (pWorkArea->m_warningTask)
     {
-        if(!(getTaskFromWorkArea(pWorkArea->m_warningTask)->m_flags & 1))
+        if(!(pWorkArea->m_warningTask->getTask()->m_flags & 1))
         {
             return;
         }
@@ -408,8 +408,8 @@ void loadWarningTaskDraw(void* pTypelessWorkArea)
 
 s_taskDefinition loadWarningTaskDefinition = { loadWarningTaskInit, NULL, loadWarningTaskDraw, NULL };
 
-p_workArea startLoadWarningTask(void* workArea)
+p_workArea startLoadWarningTask(s_workArea* workArea)
 {
-    return createTask_NoArgs(workArea, &loadWarningTaskDefinition, sizeof(s_loadWarningWorkArea), "loadWarning");
+    return createTask_NoArgs(workArea, &loadWarningTaskDefinition, new s_loadWarningWorkArea, "loadWarning");
 }
 

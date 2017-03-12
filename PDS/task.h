@@ -1,14 +1,32 @@
 #pragma once
 
-struct s_taskDefinition
+struct s_workArea
 {
-    void(*m_pInit)(void*);
-    void(*m_pUpdate)(void*);
-    void(*m_pLateUpdate)(void*);
-    void(*m_pDelete)(void*);
+    struct s_task* m_pTask;
+
+    s_task* getTask()
+    {
+        return m_pTask;
+    }
+
+    void* operator new(size_t size)
+    {
+        void* ptr = malloc(size);
+        memset(ptr, 0, size);
+
+        return ptr;
+    }
 };
 
-typedef void* p_workArea;
+struct s_taskDefinition
+{
+    void(*m_pInit)(s_workArea*);
+    void(*m_pUpdate)(s_workArea*);
+    void(*m_pLateUpdate)(s_workArea*);
+    void(*m_pDelete)(s_workArea*);
+};
+
+typedef s_workArea* p_workArea;
 
 #define TASK_FLAGS_FINISHED 1
 #define TASK_FLAGS_PAUSED 2
@@ -18,15 +36,17 @@ struct s_task
 {
     s_task* m_pNextTask;
     s_task* m_pSubTask;
-    void(*m_pLateUpdate)(void*);
-    void(*m_pDelete)(void*);
-    void(*m_pUpdate)(void*);
+    void(*m_pLateUpdate)(p_workArea);
+    void(*m_pDelete)(p_workArea);
+    void(*m_pUpdate)(p_workArea);
     u32 m_flags;
     const char* m_taskName;
 
+    s_workArea* m_workArea;
+
     p_workArea getWorkArea()
     {
-        return this + 1;
+        return m_workArea;
     }
 
     bool isFinished()
@@ -58,9 +78,7 @@ struct s_task
 void resetTasks();
 void runTasks();
 
-p_workArea createTask_NoArgs(p_workArea workArea, s_taskDefinition* pDefinition, int size, const char* taskName);
+p_workArea createTask_NoArgs(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea, const char* taskName);
 
-s_task* createRootTask(s_taskDefinition* pDefinition, int size);
-
-s_task* getTaskFromWorkArea(p_workArea);
+s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
 

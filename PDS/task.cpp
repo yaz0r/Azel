@@ -96,14 +96,14 @@ void resetTasks()
     numActiveTask = 0;
 }
 
-p_workArea createTask_NoArgs(void* workArea, s_taskDefinition* pDefinition, int size, const char* taskName)
+p_workArea createTask_NoArgs(p_workArea parentWorkArea, s_taskDefinition* pDefinition, p_workArea newWorkArea, const char* taskName)
 {
-    s_task* pTask = (s_task*)malloc(size + sizeof(s_task));
+    s_task* pTask = new s_task;
     if (pTask)
     {
         numActiveTask++;
 
-        s_task* pParentTask = ((s_task*)workArea) - 1;
+        s_task* pParentTask = parentWorkArea->getTask();
 
         while (pParentTask->m_pSubTask)
         {
@@ -121,21 +121,21 @@ p_workArea createTask_NoArgs(void* workArea, s_taskDefinition* pDefinition, int 
 
         pTask->m_taskName = taskName;
 
-        u8* pTaskWorkArea = (u8*)(pTask + 1);
-        memset(pTaskWorkArea, 0, size);
+        newWorkArea->m_pTask = pTask;
+        pTask->m_workArea = newWorkArea;
 
         if (pDefinition->m_pInit)
         {
-            pDefinition->m_pInit(pTaskWorkArea);
+            pDefinition->m_pInit(newWorkArea);
         }
     }
 
-    return (u8*)(pTask->getWorkArea());
+    return pTask->getWorkArea();
 }
 
-s_task* createRootTask(s_taskDefinition* pDefinition, int size)
+s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea newWorkArea)
 {
-    s_task* pTask = (s_task*)malloc(size + sizeof(s_task));
+    s_task* pTask = new s_task;
     if (pTask)
     {
         numActiveTask++;
@@ -148,12 +148,14 @@ s_task* createRootTask(s_taskDefinition* pDefinition, int size)
         pTask->m_pDelete = pDefinition->m_pDelete;
         pTask->m_flags = 0;
 
-        u8* pTaskWorkArea = (u8*)(pTask + 1);
-        memset(pTaskWorkArea, 0, size);
+        pTask->m_taskName = "rootTask";
+
+        newWorkArea->m_pTask = pTask;
+        pTask->m_workArea = newWorkArea;
 
         if (pDefinition->m_pInit)
         {
-            pDefinition->m_pInit(pTaskWorkArea);
+            pDefinition->m_pInit(newWorkArea);
         }
     }
 
