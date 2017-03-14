@@ -13,7 +13,9 @@ int enableDebugTask;
 char pauseEngine[3];
 sPortData2 PortData2;
 
-int drawMenuString(char* text)
+u32 azelCdNumber = 0;
+
+int drawMenuString(const char* text)
 {
     int result = renderVdp2String(text);
 

@@ -12,3 +12,6 @@ void resetMenu(sMenuUnk0* arrayData, u32, u32, u32) {}
 void titleScreenDrawSub3(u32) {}
 void soundFunc0(u8 unk0, u8 unk1) {}
 bool soundFunc1() { return 0; }
+
+void initRandomSeed(u32 init) {}
+u32 randomNumber() { return rand(); }

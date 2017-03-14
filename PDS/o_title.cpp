@@ -188,7 +188,7 @@ s_taskDefinition titleOVLTask = { NULL, NULL, titleOverlay_Update, NULL };
 
 p_workArea overlayStart(s_workArea* workArea)
 {
-    return createTask_NoArgs(workArea, &titleOVLTask, new s_titleOverlayWorkArea, "titleOVL");
+    return createSubTask(workArea, &titleOVLTask, new s_titleOverlayWorkArea, "titleOVL");
 }
 };
 

@@ -82,7 +82,7 @@ struct s_task
 void resetTasks();
 void runTasks();
 
-p_workArea createTask_NoArgs(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea, const char* taskName);
+p_workArea createSubTask(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea, const char* taskName);
 
 s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
 

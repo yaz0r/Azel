@@ -2,12 +2,12 @@
 
 struct s_Vdp2PrintStatus
 {
-    s32 X;
-    s32 Y;
-    s32 oldX;
-    s32 oldY;
-    u16 palette;
-    u16 oldPalette;
+    s32 X; //0
+    s32 Y; //4
+    s32 oldX; //8
+    s32 oldY; //C
+    u16 palette; //10
+    u16 oldPalette; //14
 };
 extern s_Vdp2PrintStatus vdp2PrintStatus;
 
@@ -160,7 +160,7 @@ void setupNBG3(sLayerConfig* setup);
 
 void vdp2DebugPrintSetPosition(s32 x, s32 y);
 void clearVdp2Text();
-int renderVdp2String(char* text);
+int renderVdp2String(const char* text);
 
 u16 getVdp2VramU16(u32 offset);
 u8 getVdp2VramU8(u32 offset);

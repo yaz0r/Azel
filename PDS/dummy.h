@@ -31,3 +31,7 @@ void titleScreenDrawSub3(u32);
 
 void soundFunc0(u8 unk0, u8 unk1);
 bool soundFunc1();
+
+void initRandomSeed(u32 init);
+u32 randomNumber();
+

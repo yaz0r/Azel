@@ -2,7 +2,7 @@
 
 struct s_titleMenuEntry
 {
-    u16 m_var0;
+    u16 m_isEnabled;
     s16 m_var2;
     const char* m_text;
     void(*m_createTask)();
@@ -11,9 +11,12 @@ struct s_titleMenuEntry
 struct s_titleMenuWorkArea : public s_workArea
 {
     u16 m_status; //0
-    
+    u16 m_status2; //2
+    u16 m_currentSelection; // 4
     u16 m_numMenuEntry; // 6
     s_titleMenuEntry* m_menu; // 8
+    u16 m_vertialLocation; // C
+    s16 m_blinkDelay;
     
 };
 
@@ -48,6 +51,11 @@ void titleMenuTaskInit(p_workArea pTypelessWorkArea)
     isInMenu2 = 1;
 }
 
+bool hasSaveGame()
+{
+    return false;
+}
+
 void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
 {
     s_titleMenuWorkArea* pWorkArea = static_cast<s_titleMenuWorkArea*>(pTypelessWorkArea);
@@ -67,6 +75,102 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
 
             titleMenuToggleTutorials(&mainMenu[2], &mainMenu[3]);
         }
+        pWorkArea->m_vertialLocation = 0;
+
+        if (VDP2Regs_.TVSTAT & 1)
+        {
+            assert(0);
+        }
+
+        // make "continue" the default
+        pWorkArea->m_currentSelection = 1;
+        pWorkArea->m_menu[0].m_isEnabled = (azelCdNumber == 0); // new game enabled only is first disk
+
+        // if first disk and no saves, make "new game" the default
+        if ((azelCdNumber == 0) && (!hasSaveGame()))
+        {
+            pWorkArea->m_currentSelection = 0;
+        }
+
+        {
+            u32 numActiveEntries = 0;
+            u32 palette = 0x9000;
+            for (u32 i = 0; i < pWorkArea->m_numMenuEntry; i++)
+            {
+                if (pWorkArea->m_menu[i].m_isEnabled)
+                {
+                    numActiveEntries++;
+
+                    if (numActiveEntries > 1)
+                    {
+                        vdp2PrintStatus.palette = palette;
+
+                        vdp2DebugPrintSetPosition(0xF, pWorkArea->m_vertialLocation + 0x17);
+                        drawMenuString("\x40"); // previous
+
+                        vdp2DebugPrintSetPosition(0x1C, pWorkArea->m_vertialLocation + 0x17);
+                        drawMenuString("\x7F"); // next
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        initRandomSeed(0);
+        pWorkArea->m_status++;
+    case 1:
+        randomNumber(); // to increment seed
+
+        // start or A?
+        if (PortData2.field_8 & 0xE)
+        {
+            playSoundEffect(0);
+
+            assert(0);
+        }
+
+        if (PortData2.field_C & 0x40)
+        {
+            assert(0);
+        }
+
+        if (PortData2.field_C & 0x80)
+        {
+            assert(0);
+        }
+
+        switch (pWorkArea->m_status2)
+        {
+        case 0:
+            if ((--pWorkArea->m_blinkDelay) >= 0)
+            {
+                return;
+            }
+            pWorkArea->m_blinkDelay = 6;
+
+            pWorkArea->m_status2++;
+        case 1:
+            vdp2PrintStatus.palette = 0xC000;
+            vdp2DebugPrintSetPosition(0x11, pWorkArea->m_vertialLocation + 0x17);
+            drawMenuString(pWorkArea->m_menu[pWorkArea->m_currentSelection].m_text);
+
+            pWorkArea->m_status2++;
+        case 2:
+            if ((--pWorkArea->m_blinkDelay) >= 0)
+            {
+                return;
+            }
+            vdp2DebugPrintSetPosition(0x11, pWorkArea->m_vertialLocation + 0x17);
+            clearVdp2Text();
+
+            pWorkArea->m_blinkDelay = 3;
+            pWorkArea->m_status2 = 0;
+            break;
+        }
+
+        break;
+
     default:
         assert(0);
         break;
@@ -83,7 +187,7 @@ p_workArea startSegaLogoModule(p_workArea workArea)
 
 p_workArea createTitleMenuTask(p_workArea workArea)
 {
-    return createTask_NoArgs(workArea, &titleMenuTaskDefinition, new s_titleMenuWorkArea, "titleMenuTask");
+    return createSubTask(workArea, &titleMenuTaskDefinition, new s_titleMenuWorkArea, "titleMenuTask");
 }
 
 struct s_pressStartButtonTaskWorkArea : public s_workArea
@@ -182,7 +286,7 @@ void titleScreenDraw(p_workArea pTypelessWorkArea)
         }
         pWorkArea->m_status++;
     case 4:
-        createTask_NoArgs(pWorkArea, &pressStartButtonTask, new s_pressStartButtonTaskWorkArea, "pressStartButtonTask");
+        createSubTask(pWorkArea, &pressStartButtonTask, new s_pressStartButtonTaskWorkArea, "pressStartButtonTask");
 
         pWorkArea->m_delay = 44 * 60;
         if (VDP2Regs_.TVSTAT & 1)
@@ -239,7 +343,7 @@ s_taskDefinition titleScreenTaskDefinition = { titleScreenInit, NULL, titleScree
 
 p_workArea createTitleScreenTask(p_workArea workArea)
 {
-    return createTask_NoArgs(workArea, &titleScreenTaskDefinition, new s_titleScreenWorkArea, "titleScreen");
+    return createSubTask(workArea, &titleScreenTaskDefinition, new s_titleScreenWorkArea, "titleScreen");
 }
 
 // WarningTask
@@ -252,7 +356,7 @@ struct s_warningWorkArea : public s_workArea
 
 u32 checkCartdrigeMemory()
 {
-    return 0;
+    return 1;
 }
 
 void warningTaskDraw(p_workArea pTypelessWorkArea)
@@ -364,7 +468,7 @@ s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL };
 
 p_workArea startWarningTask(s_workArea* workArea)
 {
-    return createTask_NoArgs(workArea, &warningTaskDefinition, new s_warningWorkArea, "warning");
+    return createSubTask(workArea, &warningTaskDefinition, new s_warningWorkArea, "warning");
 }
 
 // loadWarningTask
@@ -396,7 +500,7 @@ void loadWarningTaskDraw(s_workArea* pTypelessWorkArea)
     }
 
     /*
-    if (playIntroMovie)
+    if (azelCdNumber == 0)
     {
         initialTaskStatus.m_pendingTask = startTitleScreenVideo;
     }
@@ -410,6 +514,6 @@ s_taskDefinition loadWarningTaskDefinition = { loadWarningTaskInit, NULL, loadWa
 
 p_workArea startLoadWarningTask(s_workArea* workArea)
 {
-    return createTask_NoArgs(workArea, &loadWarningTaskDefinition, new s_loadWarningWorkArea, "loadWarning");
+    return createSubTask(workArea, &loadWarningTaskDefinition, new s_loadWarningWorkArea, "loadWarning");
 }
 

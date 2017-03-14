@@ -62,6 +62,16 @@ void azelSdl2_StartFrame()
             closeApp = true;
     }
 
+    PortData2.field_8 = 0;
+
+    if (event.type == SDL_KEYUP)
+    {
+        if (event.key.keysym.scancode == SDL_SCANCODE_RETURN)
+        {
+            PortData2.field_8 |= 8;
+        }
+    }
+
     ImGui_ImplSdlGL3_NewFrame(gWindow);
 }
 
@@ -77,7 +87,7 @@ void computePosition(u32 patternX, u32 patternY, u32 patternDimension, u32 cellX
     *outputY = dotY + cellY * cellStride + patternY * patternStride;
 }
 
-struct s_planeData
+struct s_layerData
 {
     u32 CHSZ;
     u32 CHCN;
@@ -89,19 +99,32 @@ struct s_planeData
     u32 planeOffsets[4];
 };
 
-void renderPlane2(s_planeData& planeData, u32 textureWidth, u32 textureHeight, u32* textureOutput)
+void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u32* textureOutput)
 {
     u32 cellDotDimension = 8;
-    u32 characterPatternDotDimension = cellDotDimension * ((planeData.CHSZ == 0) ? 1 : 2);
+    u32 characterPatternDotDimension = cellDotDimension * ((layerData.CHSZ == 0) ? 1 : 2);
     u32 pageDotDimension = 8 * 64; /* A page is always 64x64 cells, so 512 * 512 dots*/ /*characterPatternDimension * ((planeData.CHSZ == 0) ? 64 : 32);*/
-    u32 planeDotWidth = pageDotDimension * ((planeData.PLSZ & 1) ? 2 : 1);
-    u32 planeDotHeight = pageDotDimension * ((planeData.PLSZ & 2) ? 2 : 1);
+    u32 planeDotWidth = pageDotDimension * ((layerData.PLSZ & 1) ? 2 : 1);
+    u32 planeDotHeight = pageDotDimension * ((layerData.PLSZ & 2) ? 2 : 1);
     u32 mapDotWidth = planeDotWidth * 2; // because scrollScreen
     u32 mapDotHeight = planeDotHeight * 2; // because scrollScreen
 
-    u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
-    u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
+    u32 pageDimension = (layerData.CHSZ == 0) ? 64 : 32;
+    u32 patternSize = (layerData.PNB == 0) ? 4 : 2;
     u32 pageSize = pageDimension * pageDimension * patternSize;
+
+    u32 cellSizeInByte = 8 * 8;
+    switch (layerData.CHCN)
+    {
+        // 4bpp
+    case 0:
+        cellSizeInByte /= 2;
+        break;
+        // 8bpp
+    case 1:
+        cellSizeInByte *= 1;
+        break;
+    }
 
     for (u32 outputY = 0; outputY < textureHeight; outputY++)
     {
@@ -127,8 +150,8 @@ void renderPlane2(s_planeData& planeData, u32 textureWidth, u32 textureHeight, u
             u32 dotInCellX = dotInCharacterPatternX % cellDotDimension;
             u32 dotInCellY = dotInCharacterPatternY % cellDotDimension;
 
-            u32 planeNumber = planeY * ((planeData.PLSZ & 1) ? 2 : 1) + planeX;
-            u32 startOfPlane = planeData.planeOffsets[planeNumber];
+            u32 planeNumber = planeY * ((layerData.PLSZ & 1) ? 2 : 1) + planeX;
+            u32 startOfPlane = layerData.planeOffsets[planeNumber];
 
             u32 pageNumber = pageY * pageDimension + pageX;
             u32 startOfPage = startOfPlane + pageNumber * pageSize;
@@ -150,7 +173,7 @@ void renderPlane2(s_planeData& planeData, u32 textureWidth, u32 textureHeight, u
                 
                 paletteNumber = (patternName >> 12) & 0xF;
 
-                switch (planeData.CNSM)
+                switch (layerData.CNSM)
                 {
                 case 0:
                     characterNumber = patternName & 0x3FF;
@@ -160,7 +183,7 @@ void renderPlane2(s_planeData& planeData, u32 textureWidth, u32 textureHeight, u
                     break;
                 }
 
-                if (planeData.CHSZ == 1)
+                if (layerData.CHSZ == 1)
                 {
                     characterNumber <<= 2;
                 }
@@ -189,12 +212,13 @@ void renderPlane2(s_planeData& planeData, u32 textureWidth, u32 textureHeight, u
                 assert(0);
             }
 
-            u32 cellOffset = characterOffset + (cellY * 8 + cellX) * 8;
+            u32 cellIndex = cellX + cellY * 2;
+            u32 cellOffset = characterOffset + cellIndex * cellSizeInByte;
 
             u8 dotColor = 0;
             u32 paletteOffset = 0;
 
-            switch (planeData.CHCN)
+            switch (layerData.CHCN)
             {
                 // 16 colors, 4bits
                 case 0:
@@ -210,8 +234,6 @@ void renderPlane2(s_planeData& planeData, u32 textureWidth, u32 textureHeight, u
                     {
                         dotColor >>= 4;
                     }
-
-                    paletteOffset = ((paletteNumber << 4) + dotColor) * 2 + planeData.CAOS * 0x200;
                     break;
                 }
                 // 256 colors, 8bits
@@ -219,145 +241,20 @@ void renderPlane2(s_planeData& planeData, u32 textureWidth, u32 textureHeight, u
                 {
                     u32 dotOffset = cellOffset + dotInCellY * 8 + dotInCellX;
                     dotColor = getVdp2VramU8(dotOffset);
-                    paletteOffset = ((paletteNumber << 4) + dotColor) * 2 + planeData.CAOS * 0x200;
                     break;
                 }
                 default:
                     assert(0);
             }
 
-
-            u16 color = getVdp2CramU16(paletteOffset);
-            u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
-
-            textureOutput[outputY * textureWidth + outputX] = finalColor;
-        }
-    }
-}
-
-void renderPlane(s_planeData& planeData, u32 textureWidth, u32 textureHeight, u32* textureOutput)
-{
-    u32 characterPatternSizeVH = (planeData.CHSZ == 0) ? 1 : 2;
-    u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
-    u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
-
-    u32 characterSize = planeData.CHSZ;
-    u32 patternNameDataSize = planeData.PNB;
-
-    u32 planeOffsets[4] =
-    {
-        planeData.planeOffsets[0],
-        planeData.planeOffsets[1],
-        planeData.planeOffsets[2],
-        planeData.planeOffsets[3]
-    };
-
-    u32* currentOutput = textureOutput;
-
-    u32 planeOffset = planeOffsets[0];
-    if (planeOffset)
-    {
-        int numPages = 1;
-
-        u32 currentMemoryOffset = planeOffset;
-
-        for (int pageIdx = 0; pageIdx < numPages; pageIdx++)
-        {
-            u32 pageOutputX = 0;
-            u32 pageOutputY = 0;
-            u32 pageOutputStart = 0;
-
-            for (int patternY = 0; patternY < pageDimension; patternY++)
+            if(dotColor)
             {
-                for (int patternX = 0; patternX < pageDimension; patternX++)
-                {
-                    u32 characterNumber;
-                    u32 paletteNumber;
-                    u32 characterOffset;
+                paletteOffset = ((paletteNumber << 4) + dotColor) * 2 + layerData.CAOS * 0x200;
+                u16 color = getVdp2CramU16(paletteOffset);
+                u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
 
-                    switch (patternSize)
-                    {
-                    case 2:
-                    {
-                        u16 patternName = getVdp2VramU16(currentMemoryOffset);
-                        currentMemoryOffset += 2;
-
-                        // assuming supplement mode 0 with no data
-                        characterNumber = patternName & 0x3FF;
-                        paletteNumber = (patternName >> 12) & 0xF;
-
-                        characterOffset = (characterNumber << 1) * 0x10;
-
-                        if (patternName)
-                        {
-                            patternName = patternName;
-                        }
-                        break;
-                    }
-                    case 4:
-                    {
-                        u16 data1 = getVdp2VramU16(currentMemoryOffset);
-                        u16 data2 = getVdp2VramU16(currentMemoryOffset + 2);
-                        currentMemoryOffset += 4;
-
-                        // assuming supplement mode 0 with no data
-                        characterNumber = data2 & 0x7FFF;
-                        paletteNumber = data1 & 0x7F;
-
-                        characterOffset = characterNumber;
-                        break;
-                    }
-                    default:
-                        assert(0);
-                    }
-
-                    // character is 2X2
-                    u32 currentCellOffset = characterOffset;
-                    for (int cellY = 0; cellY < characterPatternSizeVH; cellY++)
-                    {
-                        for (int cellX = 0; cellX < characterPatternSizeVH; cellX++)
-                        {
-                            u32 dotStart = currentCellOffset;
-                            for (int dotX = 0; dotX < 8; dotX++)
-                            {
-                                for (int dotY = 0; dotY < 8; dotY++)
-                                {
-                                    // assume 4bpp
-                                    u32 dotOffset = dotStart + dotY * 4 + dotX / 2;
-                                    u8 dotColor = getVdp2VramU8(dotOffset);
-
-                                    if (dotX & 1)
-                                    {
-                                        dotColor &= 0xF;
-                                    }
-                                    else
-                                    {
-                                        dotColor >>= 4;
-                                    }
-
-                                    u32 paletteOffset = ((paletteNumber << 4) + dotColor)*2 + planeData.CAOS * 0x200;
-
-                                    u16 color = getVdp2CramU16(paletteOffset);
-
-                                    //*(currentOutput++) = //(((tmp & 0x1F) << 3) | ((tmp & 0x03E0) << 6) | ((tmp & 0x7C00) << 9)) | ((tmp & 0x8000) << 16);
-
-                                    u32 finalColor = (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
-
-                                    u32 outputX = 0;
-                                    u32 outputY = 0;
-
-                                    computePosition(patternX, patternY, pageDimension, cellX, cellY, characterPatternSizeVH, dotX, dotY, 8, &outputX, &outputY);
-                                    if((outputY < textureHeight) && (outputX < textureWidth))
-                                        currentOutput[outputY * textureWidth + outputX] = finalColor | 0xFF000000;
-                                }
-                            }
-                            currentCellOffset += 32; // also assume 4bpp
-                        }
-                    }
-                }
+                textureOutput[outputY * textureWidth + outputX] = finalColor;
             }
-
-
         }
     }
 }
@@ -370,7 +267,7 @@ void renderBG0(u32 width, u32 height)
     u32* textureOutput = new u32[textureWidth * textureHeight];
     memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
-    s_planeData planeData;
+    s_layerData planeData;
 
     planeData.CHSZ = vdp2Controls.m_pendingVdp2Regs->CHCTLA & 1;
     planeData.CHCN = (vdp2Controls.m_pendingVdp2Regs->CHCTLA >> 4) & 7;
@@ -389,7 +286,7 @@ void renderBG0(u32 width, u32 height)
     planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN0 & 0x3F) * pageSize;
     planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN0 >> 8) & 0x3F) * pageSize;
 
-    renderPlane2(planeData, textureWidth, textureHeight, textureOutput);
+    renderLayer(planeData, textureWidth, textureHeight, textureOutput);
 
     glBindTexture(GL_TEXTURE_2D, gNBG0Texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
@@ -408,7 +305,7 @@ void renderBG1(u32 width, u32 height)
     u32* textureOutput = new u32[textureWidth * textureHeight];
     memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
-    s_planeData planeData;
+    s_layerData planeData;
 
     planeData.CHSZ = (vdp2Controls.m_pendingVdp2Regs->CHCTLA >> 8) & 0x1;
     planeData.CHCN = (vdp2Controls.m_pendingVdp2Regs->CHCTLA >> 12) & 3;
@@ -428,7 +325,7 @@ void renderBG1(u32 width, u32 height)
     planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN1 & 0x3F) * pageSize;
     planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN1 >> 8) & 0x3F) * pageSize;
 
-    renderPlane2(planeData, textureWidth, textureHeight, textureOutput);
+    renderLayer(planeData, textureWidth, textureHeight, textureOutput);
 
     glBindTexture(GL_TEXTURE_2D, gNBG1Texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
@@ -483,7 +380,7 @@ void renderBG3(u32 width, u32 height)
     u32* textureOutput = new u32[textureWidth * textureHeight];
     memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
-    s_planeData planeData;
+    s_layerData planeData;
 
     planeData.CHSZ = (vdp2Controls.m_pendingVdp2Regs->CHCTLB >> 4) & 0x1;
     planeData.CHCN = (vdp2Controls.m_pendingVdp2Regs->CHCTLB >> 5) & 0x1;
@@ -503,7 +400,7 @@ void renderBG3(u32 width, u32 height)
     planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN3 & 0x3F) * pageSize;
     planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN3 >> 8) & 0x3F) * pageSize;
 
-    renderPlane2(planeData, textureWidth, textureHeight, textureOutput);
+    renderLayer(planeData, textureWidth, textureHeight, textureOutput);
 
     glBindTexture(GL_TEXTURE_2D, gNBG3Texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
@@ -515,8 +412,35 @@ void renderBG3(u32 width, u32 height)
 
 bool azelSdl2_EndFrame()
 {
-    u32 vdp2ResolutionWidth = 704;
-    u32 vdp2ResolutionHeight = 448;
+    u32 outputResolutionWidth = 0;
+    u32 outputResolutionHeight = 0;
+
+    u32 LSMD = (vdp2Controls.m_pendingVdp2Regs->TVMD >> 6) & 3;
+    u32 VRESO = (vdp2Controls.m_pendingVdp2Regs->TVMD >> 4) & 3;
+    u32 HRESO = (vdp2Controls.m_pendingVdp2Regs->TVMD) & 7;
+
+    switch (VRESO)
+    {
+    case 0:
+        outputResolutionHeight = 224;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    switch (HRESO)
+    {
+    case 1:
+        outputResolutionWidth = 352;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    u32 vdp2ResolutionWidth = outputResolutionWidth;
+    u32 vdp2ResolutionHeight = outputResolutionHeight;
 
 
     renderBG0(vdp2ResolutionWidth, vdp2ResolutionHeight);

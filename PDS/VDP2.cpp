@@ -63,7 +63,7 @@ void vdp2DebugPrintSetPosition(s32 x, s32 y)
     vdp2PrintStatus.Y = y;
 }
 
-int renderVdp2String(char* text)
+int renderVdp2String(const char* text)
 {
     int r12 = 0;
     s32 r3 = vdp2PrintStatus.X;

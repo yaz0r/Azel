@@ -102,7 +102,7 @@ void resetTasks()
     numActiveTask = 0;
 }
 
-p_workArea createTask_NoArgs(p_workArea parentWorkArea, s_taskDefinition* pDefinition, p_workArea newWorkArea, const char* taskName)
+p_workArea createSubTask(p_workArea parentWorkArea, s_taskDefinition* pDefinition, p_workArea newWorkArea, const char* taskName)
 {
     s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
     if (pTask)
@@ -116,7 +116,7 @@ p_workArea createTask_NoArgs(p_workArea parentWorkArea, s_taskDefinition* pDefin
             pParentTask = pParentTask->m_pNextTask;
         }
 
-        pParentTask->m_pNextTask = pTask;
+        pParentTask->m_pSubTask = pTask;
 
         pTask->m_pNextTask = NULL;
         pTask->m_pSubTask = NULL;

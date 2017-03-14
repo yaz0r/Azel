@@ -30,17 +30,19 @@ typedef INT32 s32;
 
 #include "renderer.h"
 
-int drawMenuString(char* text);
+int drawMenuString(const char* text);
 
 struct sPortData2
 {
     u16 field_8;
+    u16 field_C;
 };
 extern sPortData2 PortData2;
 
 extern bool debugEnabled;
 extern int enableDebugTask;
 extern char pauseEngine[3];
+extern u32 azelCdNumber;
 
 #include "o_title.h"
 
