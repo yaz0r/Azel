@@ -160,6 +160,7 @@ void setupNBG3(sLayerConfig* setup);
 
 void vdp2DebugPrintSetPosition(s32 x, s32 y);
 void clearVdp2Text();
+void clearVdp2TextMemory();
 int renderVdp2String(const char* text);
 
 u16 getVdp2VramU16(u32 offset);

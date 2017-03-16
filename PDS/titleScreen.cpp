@@ -5,7 +5,7 @@ struct s_titleMenuEntry
     u16 m_isEnabled;
     s16 m_var2;
     const char* m_text;
-    void(*m_createTask)();
+    p_workArea(*m_createTask)(p_workArea);
 };
 
 struct s_titleMenuWorkArea : public s_workArea
@@ -16,7 +16,7 @@ struct s_titleMenuWorkArea : public s_workArea
     u16 m_numMenuEntry; // 6
     s_titleMenuEntry* m_menu; // 8
     u16 m_vertialLocation; // C
-    s16 m_blinkDelay;
+    s16 m_blinkDelay; // E
     
 };
 
@@ -28,13 +28,13 @@ s_titleMenuEntry mainMenu[] = {
 };
 
 s_titleMenuEntry mainMenuDebug[] = {
-    {1, -8, " NEW GAME ", NULL /*createNewGameTask*/},
-    {1, -7, " CONTINUE ", NULL /*createContinueTask*/},
-    {1, -6, "   TOWN   ", NULL },
-    {1, -5, "  FIELD   ", NULL },
-    {1, -4, "  BATTLE  ", NULL },
-    {1, -3, "  SOUND   ", NULL },
-    {1, -2, "  MOVIE   ", NULL },
+    {1, -8, " NEW GAME ", NULL /*createNewGameTask*/ },
+    {1, -7, " CONTINUE ", NULL /*createContinueTask*/ },
+    {1, -6, "   TOWN   ", createTownDebugTask },
+    {1, -5, "  FIELD   ", createFieldDebugTask },
+    {1, -4, "  BATTLE  ", createBattleDebugTask },
+    {1, -3, "  SOUND   ", createSoundDebugTask },
+    {1, -2, "  MOVIE   ", createMovieDebugTask },
 };
 
 
@@ -63,18 +63,18 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
     switch (pWorkArea->m_status)
     {
     case 0:
-        if (keyboardIsKeyDown(0xF6))
+        //if (keyboardIsKeyDown(0xF6))
         {
             pWorkArea->m_menu = mainMenuDebug;
             pWorkArea->m_numMenuEntry = 7;
         }
-        else
+        /*else
         {
             pWorkArea->m_menu = mainMenu;
             pWorkArea->m_numMenuEntry = 4;
 
             titleMenuToggleTutorials(&mainMenu[2], &mainMenu[3]);
-        }
+        }*/
         pWorkArea->m_vertialLocation = 0;
 
         if (VDP2Regs_.TVSTAT & 1)
@@ -127,17 +127,54 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
         {
             playSoundEffect(0);
 
-            assert(0);
+            clearVdp2TextMemory();
+            initialTaskStatus.m_pendingTask = pWorkArea->m_menu[pWorkArea->m_currentSelection].m_createTask;
+
+            titleScreenDrawSub3(2);
+            resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
+            return;
         }
 
         if (PortData2.field_C & 0x40)
         {
-            assert(0);
+            int newSelection = pWorkArea->m_currentSelection;
+            do 
+            {
+                newSelection--;
+                if (newSelection < 0)
+                {
+                    newSelection = pWorkArea->m_numMenuEntry - 1;
+                }
+            } while (!pWorkArea->m_menu[newSelection].m_isEnabled);
+
+            if (newSelection != pWorkArea->m_currentSelection)
+            {
+                playSoundEffect(10);
+                pWorkArea->m_currentSelection = newSelection;
+                pWorkArea->m_status2 = 1;
+                pWorkArea->m_blinkDelay = 15;
+            }
         }
 
         if (PortData2.field_C & 0x80)
         {
-            assert(0);
+            int newSelection = pWorkArea->m_currentSelection;
+            do
+            {
+                newSelection++;
+                if (newSelection > pWorkArea->m_numMenuEntry-1)
+                {
+                    newSelection = 0;
+                }
+            } while (!pWorkArea->m_menu[newSelection].m_isEnabled);
+
+            if (newSelection != pWorkArea->m_currentSelection)
+            {
+                playSoundEffect(10);
+                pWorkArea->m_currentSelection = newSelection;
+                pWorkArea->m_status2 = 1;
+                pWorkArea->m_blinkDelay = 15;
+            }
         }
 
         switch (pWorkArea->m_status2)

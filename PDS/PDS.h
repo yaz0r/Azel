@@ -29,6 +29,7 @@ typedef INT32 s32;
 #include "titleScreen.h"
 
 #include "renderer.h"
+#include "mainMenuDebugTasks.h"
 
 int drawMenuString(const char* text);
 
@@ -41,7 +42,7 @@ extern sPortData2 PortData2;
 
 extern bool debugEnabled;
 extern int enableDebugTask;
-extern char pauseEngine[3];
+extern u8 pauseEngine[4];
 extern u32 azelCdNumber;
 
 #include "o_title.h"

@@ -55,6 +55,9 @@
     <ClCompile Include="heap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mainMenuDebugTasks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PDS.h">
@@ -91,6 +94,9 @@
       <Filter>Source Files\imgui</Filter>
     </ClInclude>
     <ClInclude Include="heap.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mainMenuDebugTasks.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
