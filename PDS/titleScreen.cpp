@@ -214,7 +214,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
     }
 }
 
-s_taskDefinition titleMenuTaskDefinition = { titleMenuTaskInit, NULL, titleMenuTaskDraw, NULL };
+s_taskDefinition titleMenuTaskDefinition = { titleMenuTaskInit, NULL, titleMenuTaskDraw, NULL, "titleMenu" };
 
 p_workArea startSegaLogoModule(p_workArea workArea)
 {
@@ -224,7 +224,7 @@ p_workArea startSegaLogoModule(p_workArea workArea)
 
 p_workArea createTitleMenuTask(p_workArea workArea)
 {
-    return createSubTask(workArea, &titleMenuTaskDefinition, new s_titleMenuWorkArea, "titleMenuTask");
+    return createSubTask(workArea, &titleMenuTaskDefinition, new s_titleMenuWorkArea);
 }
 
 struct s_pressStartButtonTaskWorkArea : public s_workArea
@@ -284,7 +284,7 @@ void pressStartButtonTaskDelete(s_workArea* pTypelessWorkArea)
     clearVdp2Text();
 }
 
-s_taskDefinition pressStartButtonTask = { NULL, NULL, pressStartButtonTaskDraw, pressStartButtonTaskDelete };
+s_taskDefinition pressStartButtonTask = { NULL, NULL, pressStartButtonTaskDraw, pressStartButtonTaskDelete, "pressStartButtonTask"};
 
 struct s_titleScreenWorkArea : public s_workArea
 {
@@ -323,7 +323,7 @@ void titleScreenDraw(p_workArea pTypelessWorkArea)
         }
         pWorkArea->m_status++;
     case 4:
-        createSubTask(pWorkArea, &pressStartButtonTask, new s_pressStartButtonTaskWorkArea, "pressStartButtonTask");
+        createSubTask(pWorkArea, &pressStartButtonTask, new s_pressStartButtonTaskWorkArea);
 
         pWorkArea->m_delay = 44 * 60;
         if (VDP2Regs_.TVSTAT & 1)
@@ -369,18 +369,18 @@ void titleScreenDraw(p_workArea pTypelessWorkArea)
     }
 }
 
-void titleScreenInit(s_workArea* pTypelessWorkArea)
+void titleScreenInit(p_workArea pTypelessWorkArea)
 {
     s_titleScreenWorkArea* pWorkArea = static_cast<s_titleScreenWorkArea*>(pTypelessWorkArea);
 
     pWorkArea->m_overlayTask = TITLE_OVERLAY::overlayStart(pWorkArea);
 }
 
-s_taskDefinition titleScreenTaskDefinition = { titleScreenInit, NULL, titleScreenDraw, NULL };
+s_taskDefinition titleScreenTaskDefinition = { titleScreenInit, NULL, titleScreenDraw, NULL, "titleScreen" };
 
 p_workArea createTitleScreenTask(p_workArea workArea)
 {
-    return createSubTask(workArea, &titleScreenTaskDefinition, new s_titleScreenWorkArea, "titleScreen");
+    return createSubTask(workArea, &titleScreenTaskDefinition, new s_titleScreenWorkArea);
 }
 
 // WarningTask
@@ -476,7 +476,7 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
     u32 cartdrigePresent = checkCartdrigeMemory();
     if (cartdrigePresent == 0)
     {
-        if (pTypelessWorkArea)
+        if (pWorkArea)
         {
             s_task* pTask = pWorkArea->getTask();
             pTask->m_flags |= 1;
@@ -501,11 +501,11 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
     resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
 }
 
-s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL };
+s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL, "warning" };
 
 p_workArea startWarningTask(s_workArea* workArea)
 {
-    return createSubTask(workArea, &warningTaskDefinition, new s_warningWorkArea, "warning");
+    return createSubTask(workArea, &warningTaskDefinition, new s_warningWorkArea);
 }
 
 // loadWarningTask
@@ -517,11 +517,11 @@ struct s_loadWarningWorkArea : public s_workArea
     p_workArea m_warningTask;
 };
 
-void loadWarningTaskInit(s_workArea* pTypelessWorkArea)
+void loadWarningTaskInit(p_workArea pTypelessWorkArea)
 {
     s_loadWarningWorkArea* pWorkArea = static_cast<s_loadWarningWorkArea*>(pTypelessWorkArea);
 
-    pWorkArea->m_warningTask = startWarningTask(pTypelessWorkArea);
+    pWorkArea->m_warningTask = startWarningTask(pWorkArea);
 }
 
 void loadWarningTaskDraw(s_workArea* pTypelessWorkArea)
@@ -547,10 +547,10 @@ void loadWarningTaskDraw(s_workArea* pTypelessWorkArea)
     }
 }
 
-s_taskDefinition loadWarningTaskDefinition = { loadWarningTaskInit, NULL, loadWarningTaskDraw, NULL };
+s_taskDefinition loadWarningTaskDefinition = { loadWarningTaskInit, NULL, loadWarningTaskDraw, NULL, "loadWarning" };
 
 p_workArea startLoadWarningTask(s_workArea* workArea)
 {
-    return createSubTask(workArea, &loadWarningTaskDefinition, new s_loadWarningWorkArea, "loadWarning");
+    return createSubTask(workArea, &loadWarningTaskDefinition, new s_loadWarningWorkArea);
 }
 

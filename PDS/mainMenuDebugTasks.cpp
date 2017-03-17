@@ -61,7 +61,7 @@ const s_dragonPerLevelMaxHPBP dragonPerLevelMaxHPBP[9] = {
 
 void computeDragonSprAndAglFromCursor()
 {
-    assert(0);
+    //assert(0);
 }
 
 void updateDragonStatsFromLevel()
@@ -212,41 +212,96 @@ void initNewGameState()
     }
 }
 
-struct s_fieldDebugTaskWorkArea : public s_workArea
+struct s_fieldTaskWorkArea : public s_workArea
 {
-
+    u32 fStatus; // 0x28
+    u8 field_35;
+    u8 fieldTaskState;
+    u8 field_3D;
+    // size: 0x50
 };
 
-void fieldDebugTaskInit(p_workArea workArea)
+s_fieldTaskWorkArea* fieldTaskPtr = NULL;
+
+u32 fieldTaskVar0;
+u32 fieldTaskVar1;
+u32 fieldTaskVar2;
+
+void fieldTaskInit(p_workArea pTypelessWorkArea, u32 battleArgument)
 {
+    s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
+
+    fieldTaskPtr = pWorkArea;
+    fieldTaskVar0 = 0;
+    fieldTaskVar1 = 0;
+    fieldTaskVar2 = 0;
+
+    pWorkArea->field_35 = battleArgument;
+    pWorkArea->field_3D = -1;
+
+    if (battleArgument)
+    {
+        assert(0);
+    }
+    else
+    {
+        pWorkArea->fStatus = 1;
+    }
+}
+void fieldTaskUpdate(p_workArea pTypelessWorkArea)
+{
+
+}
+void fieldTaskDelete(p_workArea pTypelessWorkArea)
+{
+
+}
+
+s_taskDefinitionWithArg fieldTaskDefinition = { fieldTaskInit, fieldTaskUpdate, NULL, fieldTaskDelete, "field task" };
+
+p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg)
+{
+    return createSubTaskWithArg(pTypelessWorkArea, &fieldTaskDefinition, new s_fieldTaskWorkArea, arg);
+}
+
+struct s_fieldDebugTaskWorkArea : public s_workArea
+{
+    p_workArea field_8; // 8
+    // size: 0xC
+};
+
+void fieldDebugTaskInit(p_workArea pTypelessWorkArea)
+{
+    s_fieldDebugTaskWorkArea* pWorkArea = static_cast<s_fieldDebugTaskWorkArea*>(pTypelessWorkArea);
+
     pauseEngine[2] = 0;
 
     initNewGameState();
-    /*workArea->field_8 = createFieldTask(workArea, 0);
-    createLoadingTask(workArea->field_8);
+    pWorkArea->field_8 = createFieldTask(pTypelessWorkArea, 0);
+    /*createLoadingTask(workArea->field_8);
     createTask_1Arg(workArea->field_8, flagEditTask, 0x10);*/
 }
 
-void genericTaskRestartGameWhenFinished(p_workArea workArea)
+void genericTaskRestartGameWhenFinished(p_workArea pTypelessWorkArea)
 {
     assert(0);
 }
 
-void genericOptionMenuDelete(p_workArea workArea)
+void genericOptionMenuDelete(p_workArea pTypelessWorkArea)
 {
     assert(0);
 }
 
-s_taskDefinition fieldDebugModule = { fieldDebugTaskInit, NULL, genericTaskRestartGameWhenFinished, genericOptionMenuDelete };
+s_taskDefinition fieldDebugModule = { fieldDebugTaskInit, NULL, genericTaskRestartGameWhenFinished, genericOptionMenuDelete, "fieldDebugTask" };
 
-p_workArea createTownDebugTask(p_workArea)
+p_workArea createTownDebugTask(p_workArea pTypelessWorkArea)
 {
     assert(0);
     return NULL;
 }
 p_workArea createFieldDebugTask(p_workArea pWorkArea)
 {
-    return createSubTask(pWorkArea, &fieldDebugModule, new s_fieldDebugTaskWorkArea, "fieldDebugTAsk");
+    return createSubTask(pWorkArea, &fieldDebugModule, new s_fieldDebugTaskWorkArea);
 }
 p_workArea createBattleDebugTask(p_workArea)
 {

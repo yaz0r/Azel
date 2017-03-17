@@ -184,11 +184,11 @@ void titleOverlay_Update(s_workArea* pTypelessWorkArea)
     //unk_6000014 = SYS_EXECDMP;
 }
 
-s_taskDefinition titleOVLTask = { NULL, NULL, titleOverlay_Update, NULL };
+s_taskDefinition titleOVLTask = { NULL, NULL, titleOverlay_Update, NULL, "titleOVL" };
 
 p_workArea overlayStart(s_workArea* workArea)
 {
-    return createSubTask(workArea, &titleOVLTask, new s_titleOverlayWorkArea, "titleOVL");
+    return createSubTask(workArea, &titleOVLTask, new s_titleOverlayWorkArea);
 }
 };
 

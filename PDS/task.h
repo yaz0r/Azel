@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 struct s_workArea
 {
     struct s_task* m_pTask;
@@ -24,6 +26,16 @@ struct s_taskDefinition
     void(*m_pUpdate)(s_workArea*);
     void(*m_pLateUpdate)(s_workArea*);
     void(*m_pDelete)(s_workArea*);
+    const char* m_taskName;
+};
+
+struct s_taskDefinitionWithArg
+{
+    void(*m_pInit)(s_workArea*, u32 argument);
+    void(*m_pUpdate)(s_workArea*);
+    void(*m_pLateUpdate)(s_workArea*);
+    void(*m_pDelete)(s_workArea*);
+    const char* m_taskName;
 };
 
 typedef s_workArea* p_workArea;
@@ -82,7 +94,8 @@ struct s_task
 void resetTasks();
 void runTasks();
 
-p_workArea createSubTask(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea, const char* taskName);
+p_workArea createSubTask(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
+p_workArea createSubTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, u32 argument);
 
 s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
 

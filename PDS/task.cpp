@@ -102,38 +102,77 @@ void resetTasks()
     numActiveTask = 0;
 }
 
-p_workArea createSubTask(p_workArea parentWorkArea, s_taskDefinition* pDefinition, p_workArea newWorkArea, const char* taskName)
+p_workArea createSubTask(p_workArea parentWorkArea, s_taskDefinition* pDefinition, p_workArea newWorkArea)
 {
     s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
-    if (pTask)
+    assert(pTask);
+
+    numActiveTask++;
+
+    s_task* pParentTask = parentWorkArea->getTask();
+
+    s_task** taskDestination = &pParentTask->m_pSubTask;
+    while (*taskDestination)
     {
-        numActiveTask++;
+        taskDestination = &(*taskDestination)->m_pNextTask;
+    }
 
-        s_task* pParentTask = parentWorkArea->getTask();
+    (*taskDestination) = pTask;
 
-        while (pParentTask->m_pNextTask)
-        {
-            pParentTask = pParentTask->m_pNextTask;
-        }
+    pTask->m_pNextTask = NULL;
+    pTask->m_pSubTask = NULL;
+    pTask->m_pUpdate = pDefinition->m_pUpdate;
+    pTask->m_pLateUpdate = pDefinition->m_pLateUpdate;
+    pTask->m_pDelete = pDefinition->m_pDelete;
+    pTask->m_flags = 0;
 
-        pParentTask->m_pSubTask = pTask;
+    assert(pDefinition->m_taskName);
+    pTask->m_taskName = pDefinition->m_taskName;
 
-        pTask->m_pNextTask = NULL;
-        pTask->m_pSubTask = NULL;
-        pTask->m_pUpdate = pDefinition->m_pUpdate;
-        pTask->m_pLateUpdate = pDefinition->m_pLateUpdate;
-        pTask->m_pDelete = pDefinition->m_pDelete;
-        pTask->m_flags = 0;
+    newWorkArea->m_pTask = pTask;
+    pTask->m_workArea = newWorkArea;
 
-        pTask->m_taskName = taskName;
+    if (pDefinition->m_pInit)
+    {
+        pDefinition->m_pInit(newWorkArea);
+    }
 
-        newWorkArea->m_pTask = pTask;
-        pTask->m_workArea = newWorkArea;
+    return pTask->getWorkArea();
+}
 
-        if (pDefinition->m_pInit)
-        {
-            pDefinition->m_pInit(newWorkArea);
-        }
+p_workArea createSubTaskWithArg(p_workArea parentWorkArea, s_taskDefinitionWithArg* pDefinition, p_workArea newWorkArea, u32 argument)
+{
+    s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
+    assert(pTask);
+
+    numActiveTask++;
+
+    s_task* pParentTask = parentWorkArea->getTask();
+
+    s_task** taskDestination = &pParentTask->m_pSubTask;
+    while (*taskDestination)
+    {
+        taskDestination = &(*taskDestination)->m_pNextTask;
+    }
+
+    (*taskDestination) = pTask;
+
+    pTask->m_pNextTask = NULL;
+    pTask->m_pSubTask = NULL;
+    pTask->m_pUpdate = pDefinition->m_pUpdate;
+    pTask->m_pLateUpdate = pDefinition->m_pLateUpdate;
+    pTask->m_pDelete = pDefinition->m_pDelete;
+    pTask->m_flags = 0;
+
+    assert(pDefinition->m_taskName);
+    pTask->m_taskName = pDefinition->m_taskName;
+
+    newWorkArea->m_pTask = pTask;
+    pTask->m_workArea = newWorkArea;
+
+    if (pDefinition->m_pInit)
+    {
+        pDefinition->m_pInit(newWorkArea, argument);
     }
 
     return pTask->getWorkArea();
@@ -142,27 +181,27 @@ p_workArea createSubTask(p_workArea parentWorkArea, s_taskDefinition* pDefinitio
 s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea newWorkArea)
 {
     s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
-    if (pTask)
+    assert(pTask);
+
+    numActiveTask++;
+    taskListHead = pTask;
+
+    pTask->m_pNextTask = NULL;
+    pTask->m_pSubTask = NULL;
+    pTask->m_pUpdate = pDefinition->m_pUpdate;
+    pTask->m_pLateUpdate = pDefinition->m_pLateUpdate;
+    pTask->m_pDelete = pDefinition->m_pDelete;
+    pTask->m_flags = 0;
+
+    assert(pDefinition->m_taskName);
+    pTask->m_taskName = pDefinition->m_taskName;
+
+    newWorkArea->m_pTask = pTask;
+    pTask->m_workArea = newWorkArea;
+
+    if (pDefinition->m_pInit)
     {
-        numActiveTask++;
-        taskListHead = pTask;
-
-        pTask->m_pNextTask = NULL;
-        pTask->m_pSubTask = NULL;
-        pTask->m_pUpdate = pDefinition->m_pUpdate;
-        pTask->m_pLateUpdate = pDefinition->m_pLateUpdate;
-        pTask->m_pDelete = pDefinition->m_pDelete;
-        pTask->m_flags = 0;
-
-        pTask->m_taskName = "rootTask";
-
-        newWorkArea->m_pTask = pTask;
-        pTask->m_workArea = newWorkArea;
-
-        if (pDefinition->m_pInit)
-        {
-            pDefinition->m_pInit(newWorkArea);
-        }
+        pDefinition->m_pInit(newWorkArea);
     }
 
     return pTask;

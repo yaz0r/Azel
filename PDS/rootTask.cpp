@@ -8,7 +8,7 @@ struct s_initialTaskWorkArea : public s_workArea
 
 s_initialTaskStatus initialTaskStatus;
 
-void initialTask_Init(s_workArea* pTypelessWorkArea)
+void initialTask_Init(p_workArea pTypelessWorkArea)
 {
     s_initialTaskWorkArea* pWorkArea = static_cast<s_initialTaskWorkArea*>(pTypelessWorkArea);
     pWorkArea->m_state = 0;
@@ -62,7 +62,7 @@ void initialTask_Update(s_workArea* pTypelessWorkArea)
     }
 }
 
-s_taskDefinition initialTask = { initialTask_Init , NULL, initialTask_Update , NULL };
+s_taskDefinition initialTask = { initialTask_Init , NULL, initialTask_Update , NULL, "inital task" };
 
 void startInitialTask()
 {
