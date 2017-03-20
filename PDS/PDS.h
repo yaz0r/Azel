@@ -31,8 +31,6 @@ typedef INT32 s32;
 #include "renderer.h"
 #include "mainMenuDebugTasks.h"
 
-int drawMenuString(const char* text);
-
 struct sPortData2
 {
     u16 field_8;

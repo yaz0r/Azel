@@ -159,9 +159,14 @@ void setupNBG2(sLayerConfig* setup);
 void setupNBG3(sLayerConfig* setup);
 
 void vdp2DebugPrintSetPosition(s32 x, s32 y);
-void clearVdp2Text();
+void clearVdp2StringFieldDebugList();
+void clearVdp2TextSmallFont();
+void clearVdp2TextLargeFont();
 void clearVdp2TextMemory();
-int renderVdp2String(const char* text);
+int drawStringLargeFont(const char* text);
+int drawStringSmallFont(const char* text);
+int drawLineLargeFont(const char* text);
+int drawLineSmallFont(const char* text);
 
 u16 getVdp2VramU16(u32 offset);
 u8 getVdp2VramU8(u32 offset);

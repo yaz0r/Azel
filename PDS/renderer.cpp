@@ -472,14 +472,14 @@ bool azelSdl2_EndFrame()
         ImGui::Image((ImTextureID)gNBG2Texture, ImVec2(1024, 1024));
     }
     ImGui::End();
-    
+    */
     renderBG3(vdp2ResolutionWidth, vdp2ResolutionHeight);
     ImGui::Begin("NBG3");
     {
         ImGui::Image((ImTextureID)gNBG3Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
     }
     ImGui::End();
-   */
+   
     glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);

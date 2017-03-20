@@ -173,7 +173,7 @@ void titleOverlay_Update(s_workArea* pTypelessWorkArea)
             vdp2Controls.m_registers[1].N1COSL = 0;
         }
 
-        resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
+        resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
 
 
         break;

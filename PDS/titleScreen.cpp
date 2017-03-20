@@ -106,10 +106,10 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
                         vdp2PrintStatus.palette = palette;
 
                         vdp2DebugPrintSetPosition(0xF, pWorkArea->m_vertialLocation + 0x17);
-                        drawMenuString("\x40"); // previous
+                        drawLineLargeFont("\x40"); // previous
 
                         vdp2DebugPrintSetPosition(0x1C, pWorkArea->m_vertialLocation + 0x17);
-                        drawMenuString("\x7F"); // next
+                        drawLineLargeFont("\x7F"); // next
 
                         break;
                     }
@@ -131,7 +131,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
             initialTaskStatus.m_pendingTask = pWorkArea->m_menu[pWorkArea->m_currentSelection].m_createTask;
 
             titleScreenDrawSub3(2);
-            resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
+            resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
             return;
         }
 
@@ -190,7 +190,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
         case 1:
             vdp2PrintStatus.palette = 0xC000;
             vdp2DebugPrintSetPosition(0x11, pWorkArea->m_vertialLocation + 0x17);
-            drawMenuString(pWorkArea->m_menu[pWorkArea->m_currentSelection].m_text);
+            drawLineLargeFont(pWorkArea->m_menu[pWorkArea->m_currentSelection].m_text);
 
             pWorkArea->m_status2++;
         case 2:
@@ -199,7 +199,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
                 return;
             }
             vdp2DebugPrintSetPosition(0x11, pWorkArea->m_vertialLocation + 0x17);
-            clearVdp2Text();
+            clearVdp2TextLargeFont();
 
             pWorkArea->m_blinkDelay = 3;
             pWorkArea->m_status2 = 0;
@@ -250,7 +250,7 @@ void pressStartButtonTaskDraw(s_workArea* pTypelessWorkArea)
         else
             vdp2DebugPrintSetPosition(13, -5);
 
-        drawMenuString("PRESS START BUTTON");
+        drawLineLargeFont("PRESS START BUTTON");
 
         pWorkArea->m_timming = 15;
         pWorkArea->m_status++;
@@ -263,7 +263,7 @@ void pressStartButtonTaskDraw(s_workArea* pTypelessWorkArea)
         else
             vdp2DebugPrintSetPosition(13, -5);
 
-        clearVdp2Text();
+        clearVdp2TextLargeFont();
 
         pWorkArea->m_status = 0;
         pWorkArea->m_timming = 6;
@@ -281,7 +281,7 @@ void pressStartButtonTaskDelete(s_workArea* pTypelessWorkArea)
     else
         vdp2DebugPrintSetPosition(13, -5);
 
-    clearVdp2Text();
+    clearVdp2TextLargeFont();
 }
 
 s_taskDefinition pressStartButtonTask = { NULL, NULL, pressStartButtonTaskDraw, pressStartButtonTaskDelete, "pressStartButtonTask"};
@@ -348,7 +348,7 @@ void titleScreenDraw(p_workArea pTypelessWorkArea)
         if (--pWorkArea->m_delay)
             return;
 
-        resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
+        resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
         titleScreenDrawSub3(3);
 
         pWorkArea->m_status++;
@@ -393,7 +393,7 @@ struct s_warningWorkArea : public s_workArea
 
 u32 checkCartdrigeMemory()
 {
-    return 1;
+    return 0;
 }
 
 void warningTaskDraw(p_workArea pTypelessWorkArea)
@@ -412,7 +412,7 @@ void warningTaskDraw(p_workArea pTypelessWorkArea)
     case 2: // fade out init?
         if (!(PortData2.field_8 & 8))
             return;
-        resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), 0, 30);
+        resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0, 30);
         pWorkArea->m_status++;
     case 3: // wait fade out
         if (!menuUnk0.m_field0.m_field20)
@@ -498,7 +498,7 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
         vdp2Controls.m_registers[1].N1COSL = 0;
     }
 
-    resetMenu(&menuUnk0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
+    resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
 }
 
 s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL, "warning" };

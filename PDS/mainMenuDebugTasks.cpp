@@ -249,8 +249,13 @@ void initNewGameState()
 struct s_fieldTaskWorkArea : public s_workArea
 {
     u32 fStatus; // 0x28
-    u8 field_35;
-    u16 field_36;
+    s16 currentFieldIndex; // 0x2C
+    s16 currentSubFieldIndex; // 0x2E;
+    s16 field_30; // 0x30
+    u8 field_35; // 0x35
+    u16 fieldIndexMenuSelection; // 0x36
+    s16 subFieldIndexMenuSelection; // 0x38
+    s16 field_3A; // 0x3A
     u8 fieldTaskState;
     u8 field_3D;
     // size: 0x50
@@ -293,6 +298,7 @@ void fieldTaskInit(p_workArea pTypelessWorkArea, u32 battleArgument)
 struct s_fieldDebugListWorkArea : public s_workArea
 {
     u32 m_ticks; //0
+    u32 m_4; // 4
     u32 m_8; // 8
 };
 
@@ -522,7 +528,46 @@ const s_fieldDefinition fieldDefinitions[] =
 void fieldDebugListTaskInit(p_workArea pTypelessWorkArea)
 {
     s_fieldDebugListWorkArea* pWorkArea = static_cast<s_fieldDebugListWorkArea*>(pTypelessWorkArea);
+
+    s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
+
+    pFieldTask->fieldIndexMenuSelection = pFieldTask->currentFieldIndex;
+    pFieldTask->subFieldIndexMenuSelection = pFieldTask->currentSubFieldIndex;
+    pFieldTask->field_3A = pFieldTask->field_30;
+    pFieldTask->currentSubFieldIndex = -1;
+
+    if (pFieldTask->fieldIndexMenuSelection < 0)
+    {
+        pFieldTask->fieldIndexMenuSelection = 0;
+    }
+
+    while (!fieldEnabledTable[pFieldTask->fieldIndexMenuSelection])
+    {
+        pFieldTask->fieldIndexMenuSelection++;
+    }
+
+    reinitVdp2();
     
+    vdp2Controls.m_pendingVdp2Regs->CYCA0 = 0x3FFF7FFF;
+    vdp2Controls.m_isDirty = true;
+
+    vdp2Controls.m_pendingVdp2Regs->PRINB = (vdp2Controls.m_pendingVdp2Regs->PRINB & 0xF8FF) | 0x700;
+    vdp2Controls.m_isDirty = true;
+
+    if (menuUnk0.m_4D >= menuUnk0.m_4C)
+    {
+        vdp2Controls.m_registers[0].N1COSL = 0x10;
+        vdp2Controls.m_registers[1].N1COSL = 0x10;
+    }
+    
+    resetMenu(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
+    resetMenu(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
+}
+
+void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
+{
+    s_fieldDebugListWorkArea* pWorkArea = static_cast<s_fieldDebugListWorkArea*>(pTypelessWorkArea);
+
     pWorkArea->m_ticks++;
     s_fieldTaskWorkArea*r14 = getFieldTaskPtr();
 
@@ -561,10 +606,10 @@ void fieldDebugListTaskInit(p_workArea pTypelessWorkArea)
     }
 
     u32 r8 = 3;
-    for (u32 r12 = 0; r12 < 19; r12++)
+    for (u32 r12 = 0; r12 < 23; r12++)
     {
         vdp2DebugPrintSetPosition(0xA, r8);
-        if (r14->field_36 == r12) // is this the selected field?
+        if (r14->fieldIndexMenuSelection == r12) // is this the selected field?
         {
             vdp2PrintStatus.palette = 0x8000;
         }
@@ -576,23 +621,41 @@ void fieldDebugListTaskInit(p_workArea pTypelessWorkArea)
             vdp2PrintStatus.palette = selectedColor[pWorkArea->m_8] << 12;
         }
 
-        if(fieldEnabledTable[r12])
+        if (fieldEnabledTable[r12])
         {
-            printf(fieldDefinitions[r12].m_name);
-        }
-        
+            drawLineSmallFont(fieldDefinitions[r12].m_name);
 
-        if (pWorkArea->m_8 == 0)
-        {
+            // if selecting field
+            if (pWorkArea->m_8 == 0)
+            {
+                if (r14->fieldIndexMenuSelection == r12)
+                {
+                    vdp2PrintStatus.palette = 0xD000;
+                    vdp2DebugPrintSetPosition(0xA, r8);
+                    drawLineSmallFont("\x7F");
+                }
+            }
 
+            r8++;
         }
     }
-}
 
-void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
-{
-    s_fieldDebugListWorkArea* pWorkArea = static_cast<s_fieldDebugListWorkArea*>(pTypelessWorkArea);
-    assert(0);
+    u32 var_2C = 0;
+
+    u32 numSubFields = fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields;
+    const char** subFields = fieldDefinitions[r14->fieldIndexMenuSelection].m_subFields;
+
+    s16 r2 = r14->subFieldIndexMenuSelection;
+    if (r2 < 0)
+    {
+        r2 += 0xF;
+    }
+
+    pWorkArea->m_4 = (r2 >> 4) << 4;
+
+    clearVdp2StringFieldDebugList();
+
+    assert(0);// to be continued
 }
 
 s_taskDefinition fieldDebugListTaskDefinition = { fieldDebugListTaskInit, fieldDebugListTaskUpdate, NULL, NULL, "field debug list" };

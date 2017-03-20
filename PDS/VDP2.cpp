@@ -63,7 +63,7 @@ void vdp2DebugPrintSetPosition(s32 x, s32 y)
     vdp2PrintStatus.Y = y;
 }
 
-int renderVdp2String(const char* text)
+int drawStringLargeFont(const char* text)
 {
     int r12 = 0;
     s32 r3 = vdp2PrintStatus.X;
@@ -111,7 +111,36 @@ int renderVdp2String(const char* text)
     return 0;
 }
 
-void clearVdp2Text()
+int drawStringSmallFont(const char* text)
+{
+    s32 r3 = vdp2PrintStatus.X;
+    s32 r6 = vdp2PrintStatus.Y;
+
+    u32 pOutput = 0x6000 + 2 * (r3 + r6 * 64);
+
+    s32 r0 = vdp2PrintStatus.palette;
+    s32 r1 = r0 + 3;
+
+    int count = 0;
+
+    while (char currentChar = *(text++))
+    {
+        currentChar -= 0x20;
+        if (currentChar < 0x60)
+        {
+            u16 finalValue = r1 + (u16)currentChar;
+
+            setVdp2VramU16(pOutput, finalValue);
+            pOutput += 2;
+            count++;
+        }
+    }
+
+    return count;
+}
+
+
+void clearVdp2TextLargeFont()
 {
     u16* pOutput = vdp2TextMemory + (vdp2PrintStatus.X + vdp2PrintStatus.Y * 64);
 
@@ -119,6 +148,18 @@ void clearVdp2Text()
     {
         *pOutput = 0;
         *(pOutput + 0x40) = 0;
+
+        pOutput++;
+    }
+}
+
+void clearVdp2TextSmallFont()
+{
+    u16* pOutput = vdp2TextMemory + (vdp2PrintStatus.X + vdp2PrintStatus.Y * 64);
+
+    while (*pOutput)
+    {
+        *pOutput = 0;
 
         pOutput++;
     }
@@ -732,3 +773,44 @@ void updateVDP2CoordinatesIncrement2(u32 unk0, u32 unk1)
 {
 
 }
+
+int drawLineLargeFont(const char* text)
+{
+    int result = drawStringLargeFont(text);
+
+    vdp2PrintStatus.X = 0;
+    vdp2PrintStatus.Y += 2;
+    if (vdp2PrintStatus.Y > 0x3F)
+    {
+        vdp2PrintStatus.Y = 0;
+    }
+
+    return result;
+}
+
+int  drawLineSmallFont(const char* string)
+{
+    int result = drawStringSmallFont(string);
+
+    vdp2PrintStatus.X = 0;
+    vdp2PrintStatus.Y++;
+
+    if (vdp2PrintStatus.Y > 0x3F)
+    {
+        vdp2PrintStatus.Y = 0;
+    }
+
+    return result;
+}
+
+void clearVdp2StringFieldDebugList()
+{
+    clearVdp2TextSmallFont();
+
+    for (int i = 3; i < 19; i++)
+    {
+        vdp2DebugPrintSetPosition(18, i);
+        clearVdp2TextSmallFont();
+    }
+}
+
