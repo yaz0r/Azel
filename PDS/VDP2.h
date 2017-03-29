@@ -167,6 +167,8 @@ int drawStringLargeFont(const char* text);
 int drawStringSmallFont(const char* text);
 int drawLineLargeFont(const char* text);
 int drawLineSmallFont(const char* text);
+void vdp2PrintfSmallFont(const char* format, ...);
+void vdp2PrintfLargeFont(const char* format, ...);
 
 u16 getVdp2VramU16(u32 offset);
 u8 getVdp2VramU8(u32 offset);

@@ -71,6 +71,14 @@ void azelSdl2_StartFrame()
         {
             PortData2.field_8 |= 8;
         }
+        if (event.key.keysym.scancode == SDL_SCANCODE_UP)
+        {
+            PortData2.field_C |= 0x10;
+        }
+        if (event.key.keysym.scancode == SDL_SCANCODE_DOWN)
+        {
+            PortData2.field_C |= 0x20;
+        }
         if (event.key.keysym.scancode == SDL_SCANCODE_LEFT)
         {
             PortData2.field_C |= 0x40;

@@ -33,8 +33,11 @@ typedef INT32 s32;
 
 struct sPortData2
 {
-    u16 field_8;
-    u16 field_C;
+    u16 field_8; // 8: start
+    u16 field_C; // 0x10: up
+                 // 0x20: down
+                 // 0x40: left
+                 // 0x80: right
 };
 extern sPortData2 PortData2;
 

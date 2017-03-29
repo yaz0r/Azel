@@ -814,3 +814,41 @@ void clearVdp2StringFieldDebugList()
     }
 }
 
+void vdp2PrintfSmallFont(const char* format, ...)
+{
+    const u32 stringSize = 128;
+    char buffer[stringSize];
+    int length;
+
+    va_list args;
+
+    va_start(args, format);
+    {
+        length = vsnprintf(buffer, stringSize, format, args);
+    }
+    va_end(args);
+
+    assert(length < stringSize);
+
+    drawLineSmallFont(buffer);
+}
+
+void vdp2PrintfLargeFont(const char* format, ...)
+{
+    const u32 stringSize = 128;
+    char buffer[stringSize];
+    int length;
+
+    va_list args;
+
+    va_start(args, format);
+    {
+        length = vsnprintf(buffer, stringSize, format, args);
+    }
+    va_end(args);
+
+    assert(length < stringSize);
+
+    drawLineLargeFont(buffer);
+}
+

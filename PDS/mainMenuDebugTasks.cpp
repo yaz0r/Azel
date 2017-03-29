@@ -248,6 +248,7 @@ void initNewGameState()
 
 struct s_fieldTaskWorkArea : public s_workArea
 {
+    s_task* pSubFieldData; // 0x8
     u32 fStatus; // 0x28
     s16 currentFieldIndex; // 0x2C
     s16 currentSubFieldIndex; // 0x2E;
@@ -256,8 +257,9 @@ struct s_fieldTaskWorkArea : public s_workArea
     u16 fieldIndexMenuSelection; // 0x36
     s16 subFieldIndexMenuSelection; // 0x38
     s16 field_3A; // 0x3A
-    u8 fieldTaskState;
-    u8 field_3D;
+    u8 fieldTaskState; // 0x3C
+    s8 field_3D; // 0x3D
+    u8 updateDragonAndRiderOnInit; // 0x3E
     // size: 0x50
 };
 
@@ -298,8 +300,8 @@ void fieldTaskInit(p_workArea pTypelessWorkArea, u32 battleArgument)
 struct s_fieldDebugListWorkArea : public s_workArea
 {
     u32 m_ticks; //0
-    u32 m_4; // 4
-    u32 m_8; // 8
+    u32 m_selectedSubField; // 4
+    u32 m_isSelectingSubfield; // 8
 };
 
 u32 performModulo(u32 r0, u32 r1)
@@ -573,25 +575,45 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
 
     u32 var_24 = performModulo(30, pWorkArea->m_ticks);
 
-    if (pWorkArea->m_8)
+    if (pWorkArea->m_isSelectingSubfield)
     {
         assert(0);
     }
     else
     {
-        if (PortData2.field_8 & 0x80)
+        if (PortData2.field_8 & 0x60)
         {
-            pWorkArea->m_8 = 1;
+            pWorkArea->m_isSelectingSubfield = 1;
         }
 
-        if (PortData2.field_C & 0x60)
+        if (PortData2.field_C & 0x20) // bottom
         {
-            assert(0);
+            clearVdp2StringFieldDebugList();
+            r14->subFieldIndexMenuSelection = 0;
+
+            do
+            {
+                r14->fieldIndexMenuSelection++;
+                if (r14->fieldIndexMenuSelection >= 23)
+                {
+                    r14->fieldIndexMenuSelection = 0;
+                }
+            } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
         }
 
-        if (PortData2.field_C & 0x10)
+        if (PortData2.field_C & 0x10) // up
         {
-            assert(0);
+            clearVdp2StringFieldDebugList();
+            r14->subFieldIndexMenuSelection = 0;
+
+            do
+            {
+                r14->fieldIndexMenuSelection--;
+                if (r14->fieldIndexMenuSelection < 0)
+                {
+                    r14->fieldIndexMenuSelection = 22;
+                }
+            } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
         }
     }
 
@@ -616,9 +638,9 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
         else
         {
             u16 selectedColor[] = { 0xD, 0xD };
-            assert(pWorkArea->m_8 >= 0);
-            assert(pWorkArea->m_8 <= 1);
-            vdp2PrintStatus.palette = selectedColor[pWorkArea->m_8] << 12;
+            assert(pWorkArea->m_isSelectingSubfield >= 0);
+            assert(pWorkArea->m_isSelectingSubfield <= 1);
+            vdp2PrintStatus.palette = selectedColor[pWorkArea->m_isSelectingSubfield] << 12;
         }
 
         if (fieldEnabledTable[r12])
@@ -626,7 +648,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             drawLineSmallFont(fieldDefinitions[r12].m_name);
 
             // if selecting field
-            if (pWorkArea->m_8 == 0)
+            if (pWorkArea->m_isSelectingSubfield == 0)
             {
                 if (r14->fieldIndexMenuSelection == r12)
                 {
@@ -651,11 +673,115 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
         r2 += 0xF;
     }
 
-    pWorkArea->m_4 = (r2 >> 4) << 4;
+    pWorkArea->m_selectedSubField = (r2 >> 4) << 4;
 
     clearVdp2StringFieldDebugList();
 
-    assert(0);// to be continued
+    u32 r12 = pWorkArea->m_selectedSubField;
+
+    while(true)
+    {
+        u32 r4 = pWorkArea->m_selectedSubField + 16;
+        u32 maxNumFields;
+        if (numSubFields < r4)
+        {
+            maxNumFields = numSubFields;
+        }
+        else
+        {
+            maxNumFields = r4;
+        }
+
+        if (r12 < maxNumFields)
+        {
+            vdp2DebugPrintSetPosition(0x12, var_2C + 3);
+            var_2C++;
+
+            if (r12 == r14->fieldIndexMenuSelection)
+            {
+                vdp2PrintStatus.palette = 0x9000;
+            }
+            else
+            {
+                vdp2PrintStatus.palette = 0x8000;
+            }
+
+            drawLineSmallFont(subFields[r12]);
+        }
+        else
+        {
+            break;
+        }
+
+        r12++;
+    }
+
+    if (pWorkArea->m_isSelectingSubfield)
+    {
+        vdp2PrintStatus.palette = 0x9000;
+        vdp2DebugPrintSetPosition(0x12, pWorkArea->m_selectedSubField - r14->subFieldIndexMenuSelection + 3);
+        drawLineSmallFont("\x7F");
+    }
+
+    vdp2PrintStatus.palette = 0x9000;
+    vdp2DebugPrintSetPosition(0x1D, 3);
+    vdp2PrintfSmallFont("%d   ", r14->field_3A);
+
+    vdp2PrintStatus.palette = 0x7000;
+    vdp2DebugPrintSetPosition(3, 0x18);
+    vdp2PrintfLargeFont("GO:%2d  ", r14->field_3D);
+
+    vdp2DebugPrintSetPosition(3, -2);
+    if (var_24 < 21)
+    {
+        const char* buildType[] = {
+            "      ",
+            "(N)   ",
+            "(I)   ",
+            "(NI)  ",
+            "(T)   ",
+            "(NT)  ",
+            "(IT)  ",
+            "(NIT) ",
+            "(H)   ",
+            "(HN)  ",
+            "(HI)  ",
+            "(HNI) ",
+            "(HT)  ",
+            "(HNT) ",
+            "(HIT) ",
+            "(HNIT)",
+        };
+        vdp2PrintfSmallFont("%s %s", "Ver. 11/14 ", buildType[0]);
+    }
+    else
+    {
+        clearVdp2TextSmallFont();
+    }
+
+    vdp2PrintStatus.palette = 0xC000;
+
+    u8 inputValue = PortData2.field_8 & 0xF;
+    if (inputValue == 0)
+    {
+        return;
+    }
+
+    if (inputValue & 3)
+    {
+        assert(0); //060116DA
+    }
+
+    if (menuUnk0.m_4D >= menuUnk0.m_4C)
+    {
+        vdp2Controls.m_registers[0].N1COSL = 0x10;
+        vdp2Controls.m_registers[1].N1COSL = 0x10;
+    }
+
+    resetMenu(&menuUnk0.m_field0, 0, 0, 1);
+    resetMenu(&menuUnk0.m_field24, 0, 0, 1);
+
+    r14->fieldTaskState++;
 }
 
 s_taskDefinition fieldDebugListTaskDefinition = { fieldDebugListTaskInit, fieldDebugListTaskUpdate, NULL, NULL, "field debug list" };
@@ -663,6 +789,243 @@ s_taskDefinition fieldDebugListTaskDefinition = { fieldDebugListTaskInit, fieldD
 p_workArea createFieldInputTask(p_workArea pTypelessWorkArea)
 {
     return createSubTask(pTypelessWorkArea, &fieldDebugListTaskDefinition, new s_fieldDebugListWorkArea);
+}
+
+struct s_dramAllocation
+{
+    u8* var_0; //0
+    u32 var_4; // 4
+    u8* allocationStart; //0x8
+    u8* allocationEnd; // 0xC
+    s_dramAllocation* m_nextNode; // 0x10
+    u32 var_14;
+}; // size 18
+
+s_dramAllocation* dramAllocationHead = NULL;
+s_dramAllocation* unkAllocatorHead = NULL;
+void* vramAllocationHead = NULL;
+
+void resetDramAndVramAllocators()
+{
+    dramAllocationHead = NULL;
+    unkAllocatorHead = NULL;
+    vramAllocationHead = NULL;
+}
+
+void loadRamResource(s_workArea* pWorkArea)
+{
+    if (dramAllocationHead)
+    {
+        assert(0);
+    }
+}
+
+u8 playerDataMemoryBuffer[0x28000];
+
+void allocateTaskMemoryBuffer(s_workArea* pWorkArea, u8* dest, u32 size, const char** assetList)
+{
+    loadRamResource(pWorkArea);
+
+    u32 r14 = sizeof(s_dramAllocation);
+
+    if (assetList)
+    {
+        assert(0);
+    }
+
+    s_dramAllocation* pDramNode = (s_dramAllocation*)allocateHeapForTask(pWorkArea, r14);
+    
+    pDramNode->allocationStart = dest;
+    pDramNode->allocationEnd = dest + size;
+    pDramNode->m_nextNode = dramAllocationHead;
+    dramAllocationHead = pDramNode;
+
+    unkAllocatorHead = pDramNode + 1;
+
+    u32 r13 = 0;
+
+    if (assetList)
+    {
+        assert(0);
+    }
+
+    pDramNode->var_0 = dest;
+    pDramNode->var_4 = r13;
+
+    ((u32*)dest)[0] = r13;
+    ((u32*)dest)[1] = size;
+
+    addToVDP2MemoryLayout(dest, 8);
+}
+
+struct s_dragonFiles {
+    const char* MCB;
+    const char* CGB;
+};
+
+struct s_dragonFileConfig {
+    s_dragonFiles m_base;
+    s_dragonFiles m_M;
+    s_dragonFiles m_C;
+};
+
+const s_dragonFiles dragonFilenameTable[] = {
+    { "DRAGON0.MCB",    "DRAGON0.CGB"},
+    { NULL,             NULL },
+    { "DRAGONC0.MCB",   "DRAGONC0.CGB" },
+
+    { "DRAGON1.MCB",     "DRAGON1.CGB" },
+    { "DRAGONM1.MCB",    "DRAGONM1.CGB" },
+    { "DRAGONC1.MCB",    "DRAGONC1.CGB" },
+
+    { "DRAGON2.MCB",     "DRAGON2.CGB" },
+    { "DRAGONM2.MCB",    "DRAGONM2.CGB" },
+    { "DRAGONC2.MCB",    "DRAGONC2.CGB" },
+
+    { "DRAGON3.MCB",     "DRAGON3.CGB" },
+    { "DRAGONM3.MCB",    "DRAGONM3.CGB" },
+    { "DRAGONC3.MCB",    "DRAGONC3.CGB" },
+
+    { "DRAGON4.MCB",     "DRAGON4.CGB" },
+    { "DRAGONM4.MCB",    "DRAGONM4.CGB" },
+    { "DRAGONC4.MCB",    "DRAGONC4.CGB" },
+
+    { "DRAGON5.MCB",     "DRAGON5.CGB" },
+    { "DRAGONM5.MCB",    "DRAGONM5.CGB" },
+    { NULL,              NULL },
+
+    { "DRAGON6.MCB",    "DRAGON6.CGB" },
+    { NULL,             NULL },
+    { NULL,             NULL },
+
+    { "DRAGON7.MCB",     "DRAGON7.CGB" },
+    { "DRAGONM7.MCB",    "DRAGONM7.CGB" },
+    { NULL,              NULL },
+
+    { "KTEI.MCB",       "KTEI.CGB" },
+    { NULL,             NULL },
+    { NULL,             NULL },
+};
+
+void loadDragon(s_workArea* pWorkArea)
+{
+    assert(0);
+}
+
+void loadCurrentRider(s_workArea* pWorkArea)
+{
+    assert(0);
+}
+
+void loadCurrentRider2(s_workArea* pWorkArea)
+{
+    assert(0);
+}
+
+void updateDragonIfCursorChanged(u32 level)
+{
+    assert(0);
+}
+
+void loadRiderIfChanged(u32 rider)
+{
+    assert(0);
+}
+
+void loadRider2IfChanged(u32 rider)
+{
+    assert(0);
+}
+
+void freeRamResource()
+{
+    assert(0);
+}
+
+void fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMenuSelection, u32 field_3A, u32 currentSubFieldIndex)
+{
+    assert(0);
+}
+
+void setupPlayer(u32 fieldIndex)
+{
+    if (fieldTaskPtr->updateDragonAndRiderOnInit)
+    {
+        const u8 perFieldDragonLevel[] =
+        {
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            5,
+            3,
+            3,
+            3,
+            4,
+            4,
+            4,
+            4,
+            5,
+            5,
+        };
+
+        mainGameState.gameStats.dragonLevel = perFieldDragonLevel[fieldIndex];
+    }
+
+    if (mainGameState.gameStats.dragonLevel == 8)
+    {
+        assert(0);
+    }
+
+    //setup riders
+    mainGameState.gameStats.rider1 = 1; // edge is rider
+
+    switch (fieldIndex)
+    {
+    case 3:
+        mainGameState.gameStats.rider2 = 2;
+        break;
+    case 18: // tower
+        mainGameState.gameStats.rider2 = 5;
+        break;
+    default:
+        mainGameState.gameStats.rider2 = 0;
+        break;
+    }
+
+    resetDramAndVramAllocators();
+
+    allocateTaskMemoryBuffer(fieldTaskPtr, playerDataMemoryBuffer, sizeof(playerDataMemoryBuffer), NULL);
+
+    switch (fieldTaskPtr->updateDragonAndRiderOnInit)
+    {
+    case 0:
+        loadDragon(fieldTaskPtr);
+        loadCurrentRider(fieldTaskPtr);
+        loadCurrentRider2(fieldTaskPtr);
+        fieldTaskPtr->updateDragonAndRiderOnInit = 2;
+        break;
+    case 1:
+        updateDragonIfCursorChanged(mainGameState.gameStats.dragonLevel);
+        loadRiderIfChanged(mainGameState.gameStats.rider1);
+        loadRider2IfChanged(mainGameState.gameStats.rider2);
+        break;
+    case 2:
+        break;
+    default:
+        assert(false);
+    }
+
+    mainGameState.gameStats.currentHP = mainGameState.gameStats.maxHP;
+    mainGameState.gameStats.currentBP = mainGameState.gameStats.maxBP;
+
+    freeRamResource();
 }
 
 void fieldTaskUpdate(p_workArea pTypelessWorkArea)
@@ -678,6 +1041,39 @@ void fieldTaskUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->fieldTaskState++;
         break;
     case 1: //do nothing
+        break;
+    case 2: //start field
+        setupPlayer(pWorkArea->fieldIndexMenuSelection);
+        vdp2DebugPrintSetPosition(3, 24);
+        vdp2PrintStatus.palette = 0xD000;
+        drawLineLargeFont("LOADING...");
+        pWorkArea->fieldTaskState++;
+    case 3:
+        fieldTaskUpdateSub0(pWorkArea->fieldIndexMenuSelection, pWorkArea->subFieldIndexMenuSelection, pWorkArea->field_3A, pWorkArea->currentSubFieldIndex);
+
+        if (pWorkArea->pSubFieldData)
+        {
+            assert(0);
+        }
+        pWorkArea->fieldTaskState = 1;
+        break;
+    case 4:
+        break;
+    case 5:
+        pauseEngine[2] = 0;
+        pWorkArea->fieldTaskState++;
+        break;
+    case 6:
+        if (pWorkArea->pSubFieldData == NULL)
+        {
+            pWorkArea->fieldTaskState = 3;
+        }
+        break;
+    case 7:
+        if (fieldTaskVar0 == 0)
+        {
+            pWorkArea->fieldTaskState = 0;
+        }
         break;
     default:
         assert(0);
