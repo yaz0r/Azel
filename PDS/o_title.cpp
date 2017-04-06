@@ -80,9 +80,9 @@ sLayerConfig titleNBG0Setup[] =
 {
     CHCN,  1, //256 colors
     CHSZ,  1, //pattern is 1x1
-    PNB,  1,
+    PNB,  1, // 1 word
     CNSM,  1,
-    END,
+    END, // Character Number Supplementary mode 1 (12bits)
 };
 
 sLayerConfig titleNBG1Setup[] =

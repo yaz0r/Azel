@@ -468,6 +468,11 @@ void setupNBG0(sLayerConfig* setup)
             break;
         }
     };
+
+    // force BG layer 0 on
+    vdp2Controls.m_pendingVdp2Regs->BGON = (vdp2Controls.m_pendingVdp2Regs->BGON & 0xFFFE) | 0x1;
+
+    vdp2Controls.m_isDirty = true;
 }
 
 void setupNBG1(sLayerConfig* setup)
@@ -503,6 +508,11 @@ void setupNBG1(sLayerConfig* setup)
             break;
         }
     };
+
+    // force BG layer 1 on
+    vdp2Controls.m_pendingVdp2Regs->BGON = (vdp2Controls.m_pendingVdp2Regs->BGON & 0xFFFD) | 0x2;
+
+    vdp2Controls.m_isDirty = true;
 }
 
 void setupNBG3(sLayerConfig* setup)

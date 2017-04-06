@@ -31,6 +31,20 @@ typedef INT32 s32;
 #include "renderer.h"
 #include "mainMenuDebugTasks.h"
 
+enum e_dragonLevel : unsigned char {
+    DR_0_BASIC_WING = 0,
+    DR_1_VALIANT_WING,
+    DR_2_STRIPE_WING,
+    DR_3_PANZER_WING,
+    DR_4_EYE_WING,
+    DR_5_ARM_WING,
+    DR_6_LIGHT_WING,
+    DR_7_SOLO_WING,
+    DR_8_FLOATER,
+
+    DRAGON_MAX
+};
+
 struct sPortData2
 {
     u16 field_8; // 8: start

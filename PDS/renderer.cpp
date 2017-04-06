@@ -461,33 +461,19 @@ bool azelSdl2_EndFrame()
 
 
     renderBG0(vdp2ResolutionWidth, vdp2ResolutionHeight);
-    ImGui::Begin("NBG0");
-    {
-        ImGui::Image((ImTextureID)gNBG0Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
-    }
-    ImGui::End();
-
     renderBG1(vdp2ResolutionWidth, vdp2ResolutionHeight);
-    ImGui::Begin("NBG1");
-    {
-        ImGui::Image((ImTextureID)gNBG1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
-    }
-    ImGui::End();
-    /*
-    renderBG2();
-    ImGui::Begin("NBG2");
-    {
-        ImGui::Image((ImTextureID)gNBG2Texture, ImVec2(1024, 1024));
-    }
-    ImGui::End();
-    */
+    //renderBG2(vdp2ResolutionWidth, vdp2ResolutionHeight);
     renderBG3(vdp2ResolutionWidth, vdp2ResolutionHeight);
-    ImGui::Begin("NBG3");
+
+    if(ImGui::Begin(""))
     {
+        ImGui::Image((ImTextureID)gNBG0Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight)); ImGui::SameLine();
+        ImGui::Image((ImTextureID)gNBG1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
+        ImGui::Image((ImTextureID)gNBG2Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight)); ImGui::SameLine();
         ImGui::Image((ImTextureID)gNBG3Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
     }
     ImGui::End();
-   
+
     glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);

@@ -67,7 +67,7 @@ struct s_task
 
     bool isFinished()
     {
-        return m_flags & TASK_FLAGS_FINISHED;
+        return (m_flags & TASK_FLAGS_FINISHED) ? true : false;
     }
     void markFinished()
     {
@@ -75,7 +75,7 @@ struct s_task
     }
     bool isPaused()
     {
-        return m_flags & TASK_FLAGS_PAUSED;
+        return (m_flags & TASK_FLAGS_PAUSED) ? true : false;
     }
     void markPaused()
     {
@@ -83,7 +83,7 @@ struct s_task
     }
     bool isDeleting()
     {
-        return m_flags & TASK_FLAGS_DELETING;
+        return (m_flags & TASK_FLAGS_DELETING) ? true : false;
     }
     void markDeleting()
     {
@@ -96,6 +96,8 @@ void runTasks();
 
 p_workArea createSubTask(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
 p_workArea createSubTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, u32 argument);
+
+p_workArea createSubTaskFromFunction(p_workArea workArea, void(*pFunction)(p_workArea), p_workArea pNewWorkArea, const char* name);
 
 s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
 

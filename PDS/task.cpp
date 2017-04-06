@@ -178,6 +178,39 @@ p_workArea createSubTaskWithArg(p_workArea parentWorkArea, s_taskDefinitionWithA
     return pTask->getWorkArea();
 }
 
+p_workArea createSubTaskFromFunction(p_workArea parentWorkArea, void(*pFunction)(p_workArea), p_workArea newWorkArea, const char* name)
+{
+    s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
+    assert(pTask);
+
+    numActiveTask++;
+
+    s_task* pParentTask = parentWorkArea->getTask();
+
+    s_task** taskDestination = &pParentTask->m_pSubTask;
+    while (*taskDestination)
+    {
+        taskDestination = &(*taskDestination)->m_pNextTask;
+    }
+
+    (*taskDestination) = pTask;
+
+    pTask->m_pNextTask = NULL;
+    pTask->m_pSubTask = NULL;
+    pTask->m_pUpdate = pFunction;
+    pTask->m_pLateUpdate = NULL;
+    pTask->m_pDelete = NULL;
+    pTask->m_flags = 0;
+
+    pTask->m_taskName = name;
+
+    newWorkArea->m_pTask = pTask;
+    pTask->m_workArea = newWorkArea;
+
+    return pTask->getWorkArea();
+
+}
+
 s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea newWorkArea)
 {
     s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
