@@ -1288,7 +1288,23 @@ const s_dragonData2 dragonData2[DRAGON_MAX] = {
 
 struct s_dragonStateSubData1
 {
+    struct s_dragonState* pDragonState; //0
+    u8* pDragonModel; //4
 
+    u16 field_8; //8
+    u16 field_A; //A
+    u16 field_C; //C
+
+    u16 field_12; //12
+    u16 field_14; //14
+    u16 field_16; //16
+
+    u8* field_2C; //2C
+
+    u8* field_34; //34
+    u32 field_38; //38
+
+    u8* field_3C; //3C
 };
 
 struct s_dragonState : public s_workArea
@@ -1303,12 +1319,72 @@ struct s_dragonState : public s_workArea
     const u16* dragonData2; //20
     u32 dragonData2Count; //24
     s_dragonStateSubData1 dragonStateSubData1; //28
+
+    u8 dragonStateSubData2[16]; // 78
+    u32 field_88;//88
 };
 
 s_dragonState* gDragonState = NULL;
 
-u8 dragonModel[0x16500];
-u8 dragonVram[0x4000];
+u8 gDragonModel[0x16500];
+u8 gDragonVram[0x4000];
+
+u32 createDragonStateSubData1(s_dragonState* pDragonState, s_dragonStateSubData1* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pModelData2, u32 unkArg2, void* unkArg3)
+{
+    pDragonStateData1->pDragonState = pDragonState;
+    pDragonStateData1->pDragonModel = pDragonModel;
+    pDragonStateData1->field_C = unkArg1;
+    pDragonStateData1->field_34 = pModelData2;
+    pDragonStateData1->field_38 = unkArg2;
+    pDragonStateData1->field_14 = 0;
+    pDragonStateData1->field_16 = 0;
+    pDragonStateData1->field_8 = 1;
+
+    if (pModelData1)
+    {
+        pDragonStateData1->field_A = READ_BE_U16(pModelData1) | unkArg0;
+        pDragonStateData1->field_12 = READ_BE_U16(pModelData1 + 2);
+    }
+    else
+    {
+        pDragonStateData1->field_A = unkArg0;
+        pDragonStateData1->field_12 = 0;
+        assert(0);
+    }
+
+    void* data1 = allocateHeapForTask(pDragonState, pDragonStateData1->field_12 * 180);
+    if (data1 == NULL)
+        return 0;
+
+    pDragonStateData1->field_2C = static_cast<u8*>(data1);
+    if (pDragonStateData1->field_A & 0x200)
+    {
+        assert(0);
+    }
+    else
+    {
+        pDragonStateData1->field_3C = 0;
+        pDragonStateData1->field_8 &= 0xFFFD;
+    }
+    assert(0);
+}
+
+void createDragonStateSubData2(s_dragonState* pDragonState, s_dragonStateSubData1* pDragonStateData1, u8* pDragonStateData2, void* dragonAnims)
+{
+    assert(0);
+}
+
+void* getDragonDataByIndex(e_dragonLevel dragonLevel)
+{
+    assert(0);
+
+    return NULL;
+}
+
+void loadDragonSoundBank(e_dragonLevel dragonLevel)
+{
+    assert(0);
+}
 
 void createDragonState(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 {
@@ -1317,20 +1393,29 @@ void createDragonState(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
     s_dragonState* pDragonState = static_cast<s_dragonState*>(createSubTaskFromFunction(pWorkArea, NULL, new s_dragonState, "dragonState"));
 
-    pDragonState->pDragonModel = dragonModel;
+    pDragonState->pDragonModel = gDragonModel;
     pDragonState->dragonType = dragonLevel;
     pDragonState->field_14 = pDragonData3->m_field_8[0].m_field_0[0];
     pDragonState->field_18 = pDragonData3->m_field_8[0].m_field_0[1];
     pDragonState->dragonData2 = pDragonData2->m_data;
     pDragonState->dragonData2Count = pDragonData2->m_count;
+    pDragonState->field_88 = 1;
 
-    assert(0);
+    u8* pDragonModel = pDragonState->pDragonModel;
+    u8* pModelData1 = pDragonModel + READ_BE_U32(pDragonModel + pDragonState->dragonData2[0]);
+    u8* pModelData2 = pDragonModel + READ_BE_U32(pDragonModel + pDragonData3->m_field_8[0].m_field_0[2]);
+
+    createDragonStateSubData1(pDragonState, &pDragonState->dragonStateSubData1, 0x300, pDragonModel, pDragonState->field_14, pModelData1, pModelData2, 0, pDragonData3->m_field_8[0].m_field_8);
+
+    createDragonStateSubData2(pDragonState, &pDragonState->dragonStateSubData1, pDragonState->dragonStateSubData2, getDragonDataByIndex(dragonLevel));
+
+    loadDragonSoundBank(dragonLevel);
 }
 
 void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 {
-    loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, dragonModel, 0x2400);
-    loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, dragonVram, 0);
+    loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, gDragonModel, 0x2400);
+    loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, gDragonVram, 0);
 
     createDragonState(pWorkArea, dragonLevel);
 }

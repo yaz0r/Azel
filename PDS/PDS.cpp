@@ -90,3 +90,17 @@ int main(int argc, char* argv[])
     } while (azelSdl2_EndFrame());
     return 0;
 }
+
+u32 READ_BE_U32(const void* ptr)
+{
+    u32 data = *(u32*)(ptr);
+    data = ((data >> 24) & 0xFF) | ((data >> 8) & 0xFF00) | ((data << 8) & 0xFF0000) | ((data << 24) & 0xFF000000);
+    return data;
+}
+
+u16 READ_BE_U16(const void* ptr)
+{
+    u16 data = *(u16*)(ptr);
+    data = ((data >> 8) & 0xFF) | ((data & 0xFF) << 8);
+    return data;
+}

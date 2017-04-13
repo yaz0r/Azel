@@ -60,5 +60,8 @@ extern int enableDebugTask;
 extern u8 pauseEngine[4];
 extern u32 azelCdNumber;
 
+u32 READ_BE_U32(const void* ptr);
+u16 READ_BE_U16(const void* ptr);
+
 #include "o_title.h"
 
