@@ -1286,6 +1286,23 @@ const s_dragonData2 dragonData2[DRAGON_MAX] = {
     { dragonData2_8, 4 },
 };
 
+struct sPoseData
+{
+    u32 m_0;
+    u32 m_4;
+    u32 m_8;
+
+    u32 m_C;
+    u32 m_10;
+    u32 m_14;
+
+    u32 m_18;
+    u32 m_1C;
+    u32 m_20;
+
+    u32 field_48[9][3];
+};
+
 struct s_dragonStateSubData1
 {
     struct s_dragonState* pDragonState; //0
@@ -1295,16 +1312,26 @@ struct s_dragonStateSubData1
     u16 field_A; //A
     u16 field_C; //C
 
+    u16 field_10; //10
     u16 field_12; //12
     u16 field_14; //14
     u16 field_16; //16
 
-    u8* field_2C; //2C
+    void* drawFunction;
+    void* addToDisplayListFunction;
+    void* positionUpdateFunction;
+    void* rotationUpdateFunction;
+    void* scaleUpdateFunction;
+    sPoseData* poseData; //2C
+
+    u8* field_30; //30
 
     u8* field_34; //34
     u32 field_38; //38
 
     u8* field_3C; //3C
+
+    u32 field_40; //40
 };
 
 struct s_dragonState : public s_workArea
@@ -1329,6 +1356,163 @@ s_dragonState* gDragonState = NULL;
 u8 gDragonModel[0x16500];
 u8 gDragonVram[0x4000];
 
+void unimplementedUpdate(s_dragonStateSubData1* pDragonStateData1)
+{
+    assert(0);
+}
+
+void unimplementedDraw(s_dragonStateSubData1* pDragonStateData1)
+{
+    assert(0);
+}
+
+void* modelMode4_position0 = unimplementedUpdate;
+void* modelMode4_position1 = unimplementedUpdate;
+void* modelMode4_rotation = unimplementedUpdate;
+void* modelMode4_scale = unimplementedUpdate;
+
+void* modelDrawFunction3 = unimplementedDraw;
+
+void copyPosePosition(s_dragonStateSubData1* pDragonStateData1)
+{
+    sPoseData* pOutputPose = pDragonStateData1->poseData;
+    u8* r5 = pDragonStateData1->field_34;
+    u16 r7 = pDragonStateData1->field_12;
+
+    for (u32 i = 0; i < r7; i++)
+    {
+        pOutputPose->m_0 = READ_BE_U32(r5 + 0);
+        pOutputPose->m_4 = READ_BE_U32(r5 + 4);
+        pOutputPose->m_8 = READ_BE_U32(r5 + 8);
+
+        pOutputPose++;
+        r5 += 0x24;
+    }
+}
+
+void copyPoseRotation(s_dragonStateSubData1* pDragonStateData1)
+{
+    sPoseData* pOutputPose = pDragonStateData1->poseData;
+    u8* r5 = pDragonStateData1->field_34;
+    u16 r7 = pDragonStateData1->field_12;
+
+    for (u32 i = 0; i < r7; i++)
+    {
+        pOutputPose->m_C = READ_BE_U32(r5 + 0xC);
+        pOutputPose->m_10 = READ_BE_U32(r5 + 0x10);
+        pOutputPose->m_14 = READ_BE_U32(r5 + 0x14);
+
+        pOutputPose++;
+        r5 += 0x24;
+    }
+}
+
+void resetPoseScale(s_dragonStateSubData1* pDragonStateData1)
+{
+    sPoseData* pOutputPose = pDragonStateData1->poseData;
+    u16 r7 = pDragonStateData1->field_12;
+
+    for (u32 i = 0; i < r7; i++)
+    {
+        pOutputPose->m_18 = 0x10000;
+        pOutputPose->m_1C = 0x10000;
+        pOutputPose->m_20 = 0x10000;
+
+        pOutputPose++;
+    }
+}
+
+u32 createDragonStateSubData1Sub1Sub1(s_dragonStateSubData1* pDragonStateData1, u8* pModelData1)
+{
+    u16 flags = READ_BE_U16(pModelData1);
+
+    switch (flags & 7)
+    {
+    case 4:
+        if (pDragonStateData1->field_A & 0x100)
+        {
+            pDragonStateData1->positionUpdateFunction = modelMode4_position0;
+        }
+        else
+        {
+            pDragonStateData1->positionUpdateFunction = modelMode4_position1;
+        }
+        pDragonStateData1->rotationUpdateFunction = modelMode4_rotation;
+        pDragonStateData1->scaleUpdateFunction = modelMode4_scale;
+
+        for (u32 i = 0; i < pDragonStateData1->field_12; i++)
+        {
+            for (u32 j = 0; j < 9; j++)
+            {
+                pDragonStateData1->poseData[i].field_48[j][0] = 0;
+                pDragonStateData1->poseData[i].field_48[j][1] = 0;
+                pDragonStateData1->poseData[i].field_48[j][2] = 0;
+            }
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    return 1;
+}
+
+u32 createDragonStateSubData1Sub1(s_dragonStateSubData1* pDragonStateData1, u8* pModelData1)
+{
+    pDragonStateData1->field_30 = pModelData1;
+    pDragonStateData1->field_10 = 0;
+
+    u16 flags = READ_BE_U16(pModelData1);
+
+    if ((flags & 8) || (pDragonStateData1->field_A & 0xA))
+    {
+        copyPosePosition(pDragonStateData1);
+    }
+
+    if (flags & 0x10)
+    {
+        copyPoseRotation(pDragonStateData1);
+    }
+
+    if (flags & 0x20)
+    {
+        resetPoseScale(pDragonStateData1);
+    }
+
+    return createDragonStateSubData1Sub1Sub1(pDragonStateData1, pModelData1);
+}
+
+void addObjectToDrawList()
+{
+    assert(0);
+}
+
+void initModelDrawFunction(s_dragonStateSubData1* pDragonStateData1)
+{
+    if (pDragonStateData1->field_8 & 2)
+    {
+        if (pDragonStateData1->field_40)
+        {
+            assert(0);
+        }
+        else
+        {
+            if (pDragonStateData1->field_38)
+            {
+                assert(0);
+            }
+            else
+            {
+                pDragonStateData1->drawFunction = modelDrawFunction3;
+            }
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+}
+
 u32 createDragonStateSubData1(s_dragonState* pDragonState, s_dragonStateSubData1* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pModelData2, u32 unkArg2, void* unkArg3)
 {
     pDragonStateData1->pDragonState = pDragonState;
@@ -1352,21 +1536,46 @@ u32 createDragonStateSubData1(s_dragonState* pDragonState, s_dragonStateSubData1
         assert(0);
     }
 
-    void* data1 = allocateHeapForTask(pDragonState, pDragonStateData1->field_12 * 180);
-    if (data1 == NULL)
-        return 0;
+    pDragonStateData1->poseData = static_cast<sPoseData*>(allocateHeapForTask(pDragonState, pDragonStateData1->field_12 * sizeof(sPoseData)));
+    assert(pDragonStateData1->poseData);
 
-    pDragonStateData1->field_2C = static_cast<u8*>(data1);
     if (pDragonStateData1->field_A & 0x200)
     {
-        assert(0);
+        pDragonStateData1->field_3C = static_cast<u8*>(allocateHeapForTask(pDragonState, pDragonStateData1->field_12 * 48));
+        assert(pDragonStateData1->field_3C);
+
+        pDragonStateData1->field_8 |= 2;
     }
     else
     {
         pDragonStateData1->field_3C = 0;
         pDragonStateData1->field_8 &= 0xFFFD;
     }
-    assert(0);
+
+    if (unkArg3)
+    {
+        assert(0);
+    }
+    else
+    {
+        pDragonStateData1->field_40 = 0;
+    }
+
+    if (pModelData1)
+    {
+        if (createDragonStateSubData1Sub1(pDragonStateData1, pModelData1) == 0)
+            return NULL;
+    }
+    else
+    {
+        assert(0);
+    }
+
+    initModelDrawFunction(pDragonStateData1);
+
+    pDragonStateData1->addToDisplayListFunction = addObjectToDrawList;
+
+    return 1;
 }
 
 void createDragonStateSubData2(s_dragonState* pDragonState, s_dragonStateSubData1* pDragonStateData1, u8* pDragonStateData2, void* dragonAnims)
