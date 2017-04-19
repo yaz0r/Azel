@@ -84,7 +84,7 @@ struct s_dragonPerLevelMaxHPBP
     u16 maxBP;
 };
 
-const s_dragonPerLevelMaxHPBP dragonPerLevelMaxHPBP[DRAGON_MAX] = {
+const s_dragonPerLevelMaxHPBP dragonPerLevelMaxHPBP[DR_LEVEL_MAX] = {
     { 400, 100 },//DR_0_BASIC_WING = 0,
     { 400, 100 },//DR_1_VALIANT_WING,
     { 400, 100 },//DR_2_STRIPE_WING,
@@ -102,9 +102,9 @@ void computeDragonSprAndAglFromCursor()
 
     switch (mainGameState.gameStats.dragonLevel)
     {
-    case DR_0_BASIC_WING:
-    case DR_6_LIGHT_WING:
-    case DR_8_FLOATER:
+    case DR_LEVEL_0_BASIC_WING:
+    case DR_LEVEL_6_LIGHT_WING:
+    case DR_LEVEL_8_FLOATER:
         mainGameState.gameStats.dragonCursorX = 0;
         mainGameState.gameStats.dragonCursorY = 0;
         break;
@@ -118,7 +118,7 @@ void updateDragonStatsFromLevel()
 {
     s_gameStats& gameStats = mainGameState.gameStats;
 
-    if (gameStats.dragonLevel < DR_8_FLOATER)
+    if (gameStats.dragonLevel < DR_LEVEL_8_FLOATER)
     {
         gameStats.maxHP = gameStats.classMaxHP + dragonPerLevelMaxHPBP[gameStats.dragonLevel].maxHP;
         gameStats.maxBP = gameStats.classMaxBP + dragonPerLevelMaxHPBP[gameStats.dragonLevel].maxBP;
@@ -885,64 +885,64 @@ struct s_dragonFileConfig {
     s_dragonFiles m_C;
 };
 
-const s_dragonFileConfig dragonFilenameTable[DRAGON_MAX] = {
-    //DR_0_BASIC_WING
+const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX] = {
+    //DR_LEVEL_0_BASIC_WING
     {
         { "DRAGON0.MCB",    "DRAGON0.CGB"},
         { NULL,             NULL },
         { "DRAGONC0.MCB",   "DRAGONC0.CGB" },
     },
 
-    //DR_1_VALIANT_WING
+    //DR_LEVEL_1_VALIANT_WING
     {
         { "DRAGON1.MCB",     "DRAGON1.CGB" },
         { "DRAGONM1.MCB",    "DRAGONM1.CGB" },
         { "DRAGONC1.MCB",    "DRAGONC1.CGB" },
     },
 
-    //DR_2_STRIPE_WING
+    //DR_LEVEL_2_STRIPE_WING
     {
         { "DRAGON2.MCB",     "DRAGON2.CGB" },
         { "DRAGONM2.MCB",    "DRAGONM2.CGB" },
         { "DRAGONC2.MCB",    "DRAGONC2.CGB" },
     },
 
-    //DR_3_PANZER_WING
+    //DR_LEVEL_3_PANZER_WING
     {
         { "DRAGON3.MCB",     "DRAGON3.CGB" },
         { "DRAGONM3.MCB",    "DRAGONM3.CGB" },
         { "DRAGONC3.MCB",    "DRAGONC3.CGB" },
     },
 
-    //DR_4_EYE_WING
+    //DR_LEVEL_4_EYE_WING
     {
         { "DRAGON4.MCB",     "DRAGON4.CGB" },
         { "DRAGONM4.MCB",    "DRAGONM4.CGB" },
         { "DRAGONC4.MCB",    "DRAGONC4.CGB" },
     },
 
-    //DR_5_ARM_WING
+    //DR_LEVEL_5_ARM_WING
     {
         { "DRAGON5.MCB",     "DRAGON5.CGB" },
         { "DRAGONM5.MCB",    "DRAGONM5.CGB" },
         { NULL,              NULL },
     },
 
-    //DR_6_LIGHT_WING
+    //DR_LEVEL_6_LIGHT_WING
     {
         { "DRAGON6.MCB",    "DRAGON6.CGB" },
         { NULL,             NULL },
         { NULL,             NULL },
     },
 
-    //DR_7_SOLO_WING
+    //DR_LEVEL_7_SOLO_WING
     {
         { "DRAGON7.MCB",     "DRAGON7.CGB" },
         { "DRAGONM7.MCB",    "DRAGONM7.CGB" },
         { NULL,              NULL },
     },
 
-    //DR_8_FLOATER
+    //DR_LEVEL_8_FLOATER
     {
         { "KTEI.MCB",       "KTEI.CGB" },
         { NULL,             NULL },
@@ -963,7 +963,7 @@ struct sDragonData3
     sDragonData3Sub m_field_8[7];
 };
 
-const sDragonData3 dragonData3[DRAGON_MAX] =
+const sDragonData3 dragonData3[DR_LEVEL_MAX] =
 {
     //0
     {
@@ -1274,7 +1274,7 @@ const u16 dragonData2_8[] = {
     0xDC,
 };
 
-const s_dragonData2 dragonData2[DRAGON_MAX] = {
+const s_dragonData2 dragonData2[DR_LEVEL_MAX] = {
     { dragonData2_0, 0x12 },
     { dragonData2_1, 0x12 },
     { dragonData2_2, 0x12 },
@@ -1334,6 +1334,29 @@ struct s_dragonStateSubData1
     u32 field_40; //40
 };
 
+struct sMatrix4x3
+{
+    u32 matrix[4 * 3];
+};
+
+struct s_dragonStateSubData2SubData
+{
+    sMatrix4x3 matrix; // 0
+    sMatrix4x3 matrix2; // 30
+    const struct sDragonAnimDataSub* dataSource; // 60
+};
+
+struct s_dragonStateSubData2
+{
+    const struct sDragonAnimData* field_0; // 0
+    u8* field_4; // 4;
+    s_dragonStateSubData2SubData* field_8; // 8
+    u8 countAnims; // C
+    u8 count0; // D
+    u8 count1; // E
+    u8 count2; // F
+};
+
 struct s_dragonState : public s_workArea
 {
     u8* pDragonModel; //0
@@ -1347,7 +1370,7 @@ struct s_dragonState : public s_workArea
     u32 dragonData2Count; //24
     s_dragonStateSubData1 dragonStateSubData1; //28
 
-    u8 dragonStateSubData2[16]; // 78
+    s_dragonStateSubData2 dragonStateSubData2; // 78
     u32 field_88;//88
 };
 
@@ -1578,16 +1601,176 @@ u32 createDragonStateSubData1(s_dragonState* pDragonState, s_dragonStateSubData1
     return 1;
 }
 
-void createDragonStateSubData2(s_dragonState* pDragonState, s_dragonStateSubData1* pDragonStateData1, u8* pDragonStateData2, void* dragonAnims)
+struct sDragonAnimDataSub
 {
+    s32 count;
+    const sMatrix4x3* m_data;
+};
+
+struct sDragonAnimData
+{
+    const sDragonAnimDataSub* m_0;
+    const sDragonAnimDataSub* m_4;
+    const sDragonAnimDataSub* m_8;
+    const sDragonAnimDataSub* m_C;
+};
+
+const sMatrix4x3 dragon0AnimsData0 =
+{
+    0x2423,
+    0x2423,
+    0x2423,
+    0xB800,
+    0xB800,
+    0xB800,
+    0xE38E38,
+    0xE38E38,
+    0xE38E38,
+    0xFF1C71C8,
+    0xFF1C71C8,
+    0xFF1C71C8,
+};
+const sMatrix4x3 dragon0AnimsData1 =
+{
+    0x400,
+    0x400,
+    0x400,
+    0x1000,
+    0x1000,
+    0x1000,
+    0xE38E38,
+    0xE38E38,
+    0xE38E38,
+    0xFF1C71C8,
+    0xFF1C71C8,
+    0xFF1C71C8,
+};
+
+const sDragonAnimDataSub dragon0Anims0[] =
+{
+    { 0x01, &dragon0AnimsData0 },
+    { 0x0E, &dragon0AnimsData1 },
+    { 0x0F, &dragon0AnimsData1 },
+    { 0x10, &dragon0AnimsData1 },
+    { 0x11, &dragon0AnimsData1 },
+    { -1, NULL},
+};
+
+const sDragonAnimDataSub dragon0Anims2[] =
+{
+    { 0x02, &dragon0AnimsData0 },
+    { 0x03, &dragon0AnimsData0 },
+    { 0x04, &dragon0AnimsData0 },
+    { 0x05, &dragon0AnimsData0 },
+    { 0x06, &dragon0AnimsData0 },
+    { -1, NULL },
+};
+
+const sDragonAnimData dragon0Anims =
+{
+    dragon0Anims0,
+    &dragon0Anims0[1],
+    dragon0Anims2,
+    NULL,
+};
+
+const sDragonAnimData* dragonAnimData[DR_ANIM_MAX] =
+{
+    &dragon0Anims,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+};
+
+u32 countNumAnimData(s_dragonStateSubData2* pDragonStateData2, const sDragonAnimData* dragonAnims)
+{
+    pDragonStateData2->count0 = 0;
+    pDragonStateData2->count1 = 0;
+    pDragonStateData2->count2 = 0;
+
+    const sDragonAnimDataSub* r6 = dragonAnims->m_4;
+    if (r6)
+    {
+        while (r6->count >= 0)
+        {
+            pDragonStateData2->count0++;
+            r6++;
+        }
+    }
+
+    r6 = dragonAnims->m_8;
+    if (r6)
+    {
+        while (r6->count >= 0)
+        {
+            pDragonStateData2->count1++;
+            r6++;
+        }
+    }
+
+    r6 = dragonAnims->m_C;
+    if (r6)
+    {
+        while (r6->count >= 0)
+        {
+            pDragonStateData2->count2++;
+            r6++;
+        }
+    }
+
+    return pDragonStateData2->count0 + pDragonStateData2->count1 + pDragonStateData2->count2 + 1;
+}
+
+void copyAnimMatrix(const sMatrix4x3* source, sMatrix4x3* destination)
+{
+    for (u32 i = 0; i < 4 * 3; i++)
+    {
+        destination[i] = source[i];
+    }
+}
+
+void initRuntimeAnimDataSub1(const sDragonAnimDataSub* animDataSub, s_dragonStateSubData2SubData* subData)
+{
+    for (u32 i = 0; i < 4 * 3; i++)
+    {
+        subData->matrix.matrix[i] = 0;
+    }
+
+    copyAnimMatrix(animDataSub->m_data, &subData->matrix2);
+
+    subData->dataSource = animDataSub;
+}
+
+void initRuntimeAnimData(const sDragonAnimData* dragonAnims, s_dragonStateSubData2SubData* subData)
+{
+    initRuntimeAnimDataSub1(dragonAnims->m_0, subData);
+    u32 r14 = 1;
+
     assert(0);
 }
 
-void* getDragonDataByIndex(e_dragonLevel dragonLevel)
+void createDragonStateSubData2(s_dragonState* pDragonState, s_dragonStateSubData1* pDragonStateData1, s_dragonStateSubData2* pDragonStateData2, const sDragonAnimData* dragonAnims)
 {
-    assert(0);
+    pDragonStateData2->field_0 = dragonAnims;
 
-    return NULL;
+    pDragonStateData2->countAnims = countNumAnimData(pDragonStateData2, dragonAnims);
+
+    pDragonStateData2->field_4 = pDragonStateData1->field_3C;
+
+    pDragonStateData2->field_8 = static_cast<s_dragonStateSubData2SubData*>(allocateHeapForTask(pDragonState, pDragonStateData2->countAnims * sizeof(s_dragonStateSubData2SubData)));
+
+    initRuntimeAnimData(dragonAnims, pDragonStateData2->field_8);
+}
+
+const sDragonAnimData* getDragonDataByIndex(e_dragonLevel dragonLevel)
+{
+    return dragonAnimData[dragonLevel];
 }
 
 void loadDragonSoundBank(e_dragonLevel dragonLevel)
@@ -1616,7 +1799,7 @@ void createDragonState(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
     createDragonStateSubData1(pDragonState, &pDragonState->dragonStateSubData1, 0x300, pDragonModel, pDragonState->field_14, pModelData1, pModelData2, 0, pDragonData3->m_field_8[0].m_field_8);
 
-    createDragonStateSubData2(pDragonState, &pDragonState->dragonStateSubData1, pDragonState->dragonStateSubData2, getDragonDataByIndex(dragonLevel));
+    createDragonStateSubData2(pDragonState, &pDragonState->dragonStateSubData1, &pDragonState->dragonStateSubData2, getDragonDataByIndex(dragonLevel));
 
     loadDragonSoundBank(dragonLevel);
 }
@@ -1710,26 +1893,26 @@ void setupPlayer(u32 fieldIndex)
     {
         const e_dragonLevel perFieldDragonLevel[] =
         {
-            DR_0_BASIC_WING,
-            DR_0_BASIC_WING,
-            DR_0_BASIC_WING,
-            DR_0_BASIC_WING,
-            DR_1_VALIANT_WING,
-            DR_1_VALIANT_WING,
-            DR_1_VALIANT_WING,
-            DR_1_VALIANT_WING,
-            DR_2_STRIPE_WING,
-            DR_2_STRIPE_WING,
-            DR_5_ARM_WING,
-            DR_3_PANZER_WING,
-            DR_3_PANZER_WING,
-            DR_3_PANZER_WING,
-            DR_4_EYE_WING,
-            DR_4_EYE_WING,
-            DR_4_EYE_WING,
-            DR_4_EYE_WING,
-            DR_5_ARM_WING,
-            DR_5_ARM_WING,
+            DR_LEVEL_0_BASIC_WING,
+            DR_LEVEL_0_BASIC_WING,
+            DR_LEVEL_0_BASIC_WING,
+            DR_LEVEL_0_BASIC_WING,
+            DR_LEVEL_1_VALIANT_WING,
+            DR_LEVEL_1_VALIANT_WING,
+            DR_LEVEL_1_VALIANT_WING,
+            DR_LEVEL_1_VALIANT_WING,
+            DR_LEVEL_2_STRIPE_WING,
+            DR_LEVEL_2_STRIPE_WING,
+            DR_LEVEL_5_ARM_WING,
+            DR_LEVEL_3_PANZER_WING,
+            DR_LEVEL_3_PANZER_WING,
+            DR_LEVEL_3_PANZER_WING,
+            DR_LEVEL_4_EYE_WING,
+            DR_LEVEL_4_EYE_WING,
+            DR_LEVEL_4_EYE_WING,
+            DR_LEVEL_4_EYE_WING,
+            DR_LEVEL_5_ARM_WING,
+            DR_LEVEL_5_ARM_WING,
         };
 
         mainGameState.gameStats.dragonLevel = perFieldDragonLevel[fieldIndex];
