@@ -807,30 +807,36 @@ p_workArea createFieldInputTask(p_workArea pTypelessWorkArea)
     return createSubTask(pTypelessWorkArea, &fieldDebugListTaskDefinition, new s_fieldDebugListWorkArea);
 }
 
-struct s_dramAllocation
+struct s_dramAllocationNode
 {
-    u8* var_0; //0
-    u32 var_4; // 4
+    s_dramAllocationNode* m_pNext;
+    u32 size;
+};
+
+struct s_dramAllocator
+{
+    s_dramAllocationNode* buffer; //0
+    u32 pNext; // 4
     u8* allocationStart; //0x8
     u8* allocationEnd; // 0xC
-    s_dramAllocation* m_nextNode; // 0x10
+    s_dramAllocator* m_nextNode; // 0x10
     u32 var_14;
 }; // size 18
 
-s_dramAllocation* dramAllocationHead = NULL;
-s_dramAllocation* unkAllocatorHead = NULL;
-void* vramAllocationHead = NULL;
+s_dramAllocator* dramAllocatorHead = NULL;
+s_dramAllocator* dramAllocatorEnd = NULL;
+void* vdp1AllocatorHead = NULL;
 
-void resetDramAndVramAllocators()
+void resetTempAllocators()
 {
-    dramAllocationHead = NULL;
-    unkAllocatorHead = NULL;
-    vramAllocationHead = NULL;
+    dramAllocatorHead = NULL;
+    dramAllocatorEnd = NULL;
+    vdp1AllocatorHead = NULL;
 }
 
 void loadRamResource(s_workArea* pWorkArea)
 {
-    if (dramAllocationHead)
+    if (dramAllocatorHead)
     {
         assert(0);
     }
@@ -838,40 +844,88 @@ void loadRamResource(s_workArea* pWorkArea)
 
 u8 playerDataMemoryBuffer[0x28000];
 
-void allocateTaskMemoryBuffer(s_workArea* pWorkArea, u8* dest, u32 size, const char** assetList)
+void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** assetList)
 {
     loadRamResource(pWorkArea);
 
-    u32 r14 = sizeof(s_dramAllocation);
+    u32 r14 = sizeof(s_dramAllocator);
 
     if (assetList)
     {
         assert(0);
     }
 
-    s_dramAllocation* pDramNode = (s_dramAllocation*)allocateHeapForTask(pWorkArea, r14);
+    s_dramAllocator* pDramAllocator = (s_dramAllocator*)allocateHeapForTask(pWorkArea, r14);
     
-    pDramNode->allocationStart = dest;
-    pDramNode->allocationEnd = dest + size;
-    pDramNode->m_nextNode = dramAllocationHead;
-    dramAllocationHead = pDramNode;
+    pDramAllocator->allocationStart = dest;
+    pDramAllocator->allocationEnd = dest + size;
+    pDramAllocator->m_nextNode = dramAllocatorHead;
+    dramAllocatorHead = pDramAllocator;
 
-    unkAllocatorHead = pDramNode + 1;
+    dramAllocatorEnd = pDramAllocator + 1;
 
-    u32 r13 = 0;
+    u32 pNext = 0;
 
     if (assetList)
     {
         assert(0);
     }
 
-    pDramNode->var_0 = dest;
-    pDramNode->var_4 = r13;
+    s_dramAllocationNode* pNode = (s_dramAllocationNode*)dest;
 
-    ((u32*)dest)[0] = r13;
-    ((u32*)dest)[1] = size;
+    pDramAllocator->buffer = pNode;
+    pDramAllocator->pNext = pNext;
+
+    pNode->m_pNext = NULL;
+    pNode->size = size;
 
     addToVDP2MemoryLayout(dest, 8);
+}
+
+u8* dramAllocate(u32 size, u32 unk)
+{
+    if (size == 0)
+        return NULL;
+
+    // TODO: does the alignment stuff still works in 64bits?
+    u32 paddedSize = (size + sizeof(s_dramAllocationNode) + 0xF) & 0xFFFFFFF0;
+
+    s_dramAllocationNode** r5 = &dramAllocatorHead->buffer;
+
+    while (s_dramAllocationNode* r14 = *r5)
+    {
+        u32 blockSize = r14->size;
+
+        if (blockSize >= paddedSize)
+        {
+            if (paddedSize == blockSize)
+            {
+                *r5 = r14->m_pNext;
+            }
+            else
+            {
+                s_dramAllocationNode* pNewNode = (s_dramAllocationNode*)(((u8*)r14) + paddedSize);
+
+                u32 newNodeSize = blockSize - paddedSize;
+
+                *r5 = pNewNode;
+
+                pNewNode->m_pNext = r14->m_pNext;
+                pNewNode->size = newNodeSize;
+
+                addToVDP2MemoryLayout((u8*)pNewNode, 8);
+
+                r14->size = paddedSize;
+            }
+
+            r14->m_pNext = NULL;
+            return (u8*)(r14 + 1);
+        }
+
+        r5 = &r14->m_pNext;
+    }
+
+    return NULL;
 }
 
 struct s_dragonFiles {
@@ -1305,7 +1359,7 @@ struct sPoseData
 
 struct s_dragonStateSubData1
 {
-    struct s_dragonState* pDragonState; //0
+    s_workArea* pDragonState; //0
     u8* pDragonModel; //4
 
     u16 field_8; //8
@@ -1536,9 +1590,9 @@ void initModelDrawFunction(s_dragonStateSubData1* pDragonStateData1)
     }
 }
 
-u32 createDragonStateSubData1(s_dragonState* pDragonState, s_dragonStateSubData1* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pModelData2, u32 unkArg2, void* unkArg3)
+u32 createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pModelData2, u32 unkArg2, void* unkArg3)
 {
-    pDragonStateData1->pDragonState = pDragonState;
+    pDragonStateData1->pDragonState = pWorkArea;
     pDragonStateData1->pDragonModel = pDragonModel;
     pDragonStateData1->field_C = unkArg1;
     pDragonStateData1->field_34 = pModelData2;
@@ -1555,16 +1609,15 @@ u32 createDragonStateSubData1(s_dragonState* pDragonState, s_dragonStateSubData1
     else
     {
         pDragonStateData1->field_A = unkArg0;
-        pDragonStateData1->field_12 = 0;
+        pDragonStateData1->field_12 = 0;;
         assert(0);
     }
 
-    pDragonStateData1->poseData = static_cast<sPoseData*>(allocateHeapForTask(pDragonState, pDragonStateData1->field_12 * sizeof(sPoseData)));
-    assert(pDragonStateData1->poseData);
+    pDragonStateData1->poseData = static_cast<sPoseData*>(allocateHeapForTask(pWorkArea, pDragonStateData1->field_12 * sizeof(sPoseData)));
 
     if (pDragonStateData1->field_A & 0x200)
     {
-        pDragonStateData1->field_3C = static_cast<u8*>(allocateHeapForTask(pDragonState, pDragonStateData1->field_12 * 48));
+        pDragonStateData1->field_3C = static_cast<u8*>(allocateHeapForTask(pWorkArea, pDragonStateData1->field_12 * 48));
         assert(pDragonStateData1->field_3C);
 
         pDragonStateData1->field_8 |= 2;
@@ -1749,10 +1802,44 @@ void initRuntimeAnimDataSub1(const sDragonAnimDataSub* animDataSub, s_dragonStat
 
 void initRuntimeAnimData(const sDragonAnimData* dragonAnims, s_dragonStateSubData2SubData* subData)
 {
-    initRuntimeAnimDataSub1(dragonAnims->m_0, subData);
+    initRuntimeAnimDataSub1(dragonAnims->m_0, &subData[0]);
     u32 r14 = 1;
 
-    assert(0);
+    if (dragonAnims->m_4)
+    {
+        const sDragonAnimDataSub* r12 = dragonAnims->m_4;
+
+        while (r12->count >= 0)
+        {
+            initRuntimeAnimDataSub1(r12, &subData[r14]);
+            r14++;
+            r12++;
+        }
+    }
+    
+    if (dragonAnims->m_8)
+    {
+        const sDragonAnimDataSub* r12 = dragonAnims->m_8;
+
+        while (r12->count >= 0)
+        {
+            initRuntimeAnimDataSub1(r12, &subData[r14]);
+            r14++;
+            r12++;
+        }
+    }
+
+    if (dragonAnims->m_C)
+    {
+        const sDragonAnimDataSub* r12 = dragonAnims->m_C;
+
+        while (r12->count >= 0)
+        {
+            initRuntimeAnimDataSub1(r12, &subData[r14]);
+            r14++;
+            r12++;
+        }
+    }
 }
 
 void createDragonStateSubData2(s_dragonState* pDragonState, s_dragonStateSubData1* pDragonStateData1, s_dragonStateSubData2* pDragonStateData2, const sDragonAnimData* dragonAnims)
@@ -1775,7 +1862,7 @@ const sDragonAnimData* getDragonDataByIndex(e_dragonLevel dragonLevel)
 
 void loadDragonSoundBank(e_dragonLevel dragonLevel)
 {
-    assert(0);
+    //assert(0);
 }
 
 void createDragonState(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
@@ -1802,6 +1889,8 @@ void createDragonState(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     createDragonStateSubData2(pDragonState, &pDragonState->dragonStateSubData1, &pDragonState->dragonStateSubData2, getDragonDataByIndex(dragonLevel));
 
     loadDragonSoundBank(dragonLevel);
+
+    gDragonState = pDragonState;
 }
 
 void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
@@ -1814,23 +1903,90 @@ void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
 struct s_loadDragonWorkArea : public s_workArea
 {
-    u32 m_8;//8
+    u8* dramAllocation; //0
+    u8* vramAllocation;//4
+    u16 MCBOffsetInDram;//8
+    u16 CGBOffsetInDram;//A
 };
 
 s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 {
-    assert(0);
-    return NULL;
+    s_loadDragonWorkArea* pLoadDragonWorkArea = static_cast<s_loadDragonWorkArea*>(createSubTaskFromFunction(pWorkArea, NULL, new s_loadDragonWorkArea, "loadDragonModel"));
+
+    pLoadDragonWorkArea->dramAllocation = dramAllocate(0x1F600, 0);
+    pLoadDragonWorkArea->vramAllocation = NULL;
+    pLoadDragonWorkArea->MCBOffsetInDram = 0x18E00;
+    pLoadDragonWorkArea->CGBOffsetInDram = 0;
+
+    if (dragonFilenameTable[dragonLevel].m_M.MCB)
+    {
+        assert(0);
+        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->dramAllocation, pLoadDragonWorkArea->MCBOffsetInDram / 8);
+        loadFile(dragonFilenameTable[dragonLevel].m_M.CGB, pLoadDragonWorkArea->dramAllocation + pLoadDragonWorkArea->MCBOffsetInDram, 0);
+
+    }
+    return pLoadDragonWorkArea;
 }
 
 void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_dragonStateSubData1* pDragonStateSubData1, u32 unk0, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY)
 {
-    assert(0);
+    if (pDragonData3->m_field_0 == 0)
+    {
+        return;
+    }
+
+    const sDragonData3Sub* r13 = &pDragonData3->m_field_8[1];
+    const sDragonData3Sub* r11 = &pDragonData3->m_field_8[5];
+
+    assert(false);
+}
+
+void dramFree(u8* ptr)
+{
+    yLog("dramFree not implemented");
+}
+
+void vdp1Free(u8* ptr)
+{
+    yLog("vdp1Free not implemented");
+}
+
+void loadDragonSub1Sub1(s_loadDragonWorkArea* pLoadDragonWorkArea)
+{
+    /*
+    if (pLoadDragonWorkArea->MCBOffsetInDram >= 0)
+    {
+        deleteLoadedFile(pLoadDragonWorkArea->MCBOffsetInDram);
+        pLoadDragonWorkArea->MCBOffsetInDram = -1;
+    }
+
+    if (pLoadDragonWorkArea->CGBOffsetInDram >= 0)
+    {
+        deleteLoadedFile(pLoadDragonWorkArea->CGBOffsetInDram);
+        CGBOffsetInDram->MCBOffsetInDram = -1;
+    }
+    */
+    if (pLoadDragonWorkArea->dramAllocation)
+    {
+        dramFree(pLoadDragonWorkArea->dramAllocation);
+        pLoadDragonWorkArea->dramAllocation = NULL;
+    }
+
+    if (pLoadDragonWorkArea->vramAllocation)
+    {
+        vdp1Free(pLoadDragonWorkArea->vramAllocation);
+        pLoadDragonWorkArea->vramAllocation = NULL;
+    }
 }
 
 void loadDragonSub1(s_loadDragonWorkArea* pLoadDragonWorkArea)
 {
-    assert(0);
+    if (pLoadDragonWorkArea)
+    {
+        loadDragonSub1Sub1(pLoadDragonWorkArea);
+
+        pLoadDragonWorkArea->getTask()->markFinished();
+    }
 }
 
 void loadDragon(s_workArea* pWorkArea)
@@ -1847,14 +2003,99 @@ void loadDragon(s_workArea* pWorkArea)
 
     s_loadDragonWorkArea* pLoadDragonWorkArea = loadDragonModel(pWorkArea, mainGameState.gameStats.dragonLevel);
 
-    morphDragon(pLoadDragonWorkArea, &gDragonState->dragonStateSubData1, pLoadDragonWorkArea->m_8, pDragonData3, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
+    morphDragon(pLoadDragonWorkArea, &gDragonState->dragonStateSubData1, pLoadDragonWorkArea->MCBOffsetInDram, pDragonData3, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
 
     loadDragonSub1(pLoadDragonWorkArea);
 }
 
+struct s_RiderDefinition
+{
+    const char* m_MCBName; //0
+    const char* m_CGBName; //4
+    u16 m_flags; //8
+    u16 m_flags2; //A
+    void* m_pExtraData; //C
+};
+
+const s_RiderDefinition gRiderTable[] = {
+    { "RIDER0.MCB",  NULL,          0x4,    0x08, NULL},
+    { "EDGE.MCB",   "EDGE.CGB",     0x4,    0x28, (void*)1 },
+    { "GUSH.MCB",   "GUSH.CGB",     0x4,    0x20, NULL },
+    { "PAET.MCB",   "PAET.CGB",     0x4,    0x20, NULL },
+    { "AZCT.MCB",   "AZCT.CGB",     0x4,    0x20, NULL },
+    { "AZEL.MCB",   "AZEL.CGB",     0x4,    0x20, NULL },
+    { NULL,         NULL,           0x8,    0xC4, (void*)1 },
+    { NULL,         NULL,           0xC,    0xC8, NULL },
+};
+
+struct s_loadRiderWorkArea : public s_workArea
+{
+    u8* m_riderModel; //0
+    u32 m4; //4
+    s_workArea* m_ParentWorkArea; //8
+    u32 m_riderType; //C
+    u32 m_data0; // 10
+    u32 m_14; //14
+
+
+    s_dragonStateSubData1 m_18;//18
+};
+
+s_loadRiderWorkArea* pRiderState = NULL;
+
+u8 riderModel[0x4F00];
+u8 riderVRam[0x1400];
+
+s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
+{
+    const s_RiderDefinition* r13 = &gRiderTable[riderType];
+
+    u8* pModelData1 = NULL;
+
+    s_loadRiderWorkArea* pLoadRiderWorkArea = static_cast<s_loadRiderWorkArea*>(createSubTaskFromFunction(pWorkArea, NULL, new s_loadRiderWorkArea, "LoadRider"));
+
+    pLoadRiderWorkArea->m4 = 0;
+    pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
+    pLoadRiderWorkArea->m_riderType = riderType;
+    pLoadRiderWorkArea->m_data0 = r13->m_flags;
+
+    pRiderState = pLoadRiderWorkArea;
+
+    if (riderType < 6)
+    {
+        pLoadRiderWorkArea->m_riderModel = riderModel;
+        if (riderType == 1)
+        {
+            pLoadRiderWorkArea->m_14 = 0x24;
+        }
+        else
+        {
+            pLoadRiderWorkArea->m_14 = 0;
+        }
+
+        loadFile(r13->m_MCBName, riderModel, 0x2C00);
+
+        if (r13->m_CGBName)
+        {
+            loadFile(r13->m_CGBName, riderVRam, 0);
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+
+    u8* pModel = pLoadRiderWorkArea->m_riderModel;
+    u8* pModelData2 = pModel + READ_BE_U32(pModel + r13->m_flags2);
+
+    createDragonStateSubData1(pLoadRiderWorkArea, &pLoadRiderWorkArea->m_18, 0, pModel, pLoadRiderWorkArea->m_data0, pModelData1, pModelData2, 0, r13->m_pExtraData);
+
+    return pLoadRiderWorkArea;
+}
+
 void loadCurrentRider(s_workArea* pWorkArea)
 {
-    assert(0);
+    loadRider(pWorkArea, mainGameState.gameStats.rider1);
 }
 
 void loadCurrentRider2(s_workArea* pWorkArea)
@@ -1939,9 +2180,9 @@ void setupPlayer(u32 fieldIndex)
         break;
     }
 
-    resetDramAndVramAllocators();
+    resetTempAllocators();
 
-    allocateTaskMemoryBuffer(fieldTaskPtr, playerDataMemoryBuffer, sizeof(playerDataMemoryBuffer), NULL);
+    initDramAllocator(fieldTaskPtr, playerDataMemoryBuffer, sizeof(playerDataMemoryBuffer), NULL);
 
     switch (fieldTaskPtr->updateDragonAndRiderOnInit)
     {

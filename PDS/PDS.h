@@ -19,6 +19,8 @@ typedef INT16 s16;
 typedef UINT32 u32;
 typedef INT32 s32;
 
+void yLog(...);
+
 #include "dummy.h"
 
 #include "heap.h"

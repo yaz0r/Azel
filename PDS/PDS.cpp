@@ -104,3 +104,9 @@ u16 READ_BE_U16(const void* ptr)
     data = ((data >> 8) & 0xFF) | ((data & 0xFF) << 8);
     return data;
 }
+
+void yLog(...)
+{
+
+}
+
