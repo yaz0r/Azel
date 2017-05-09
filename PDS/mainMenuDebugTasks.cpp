@@ -1385,7 +1385,8 @@ struct s_dragonStateSubData1
 
     u8* field_3C; //3C
 
-    u32 field_40; //40
+    u8* field_40; //40
+    u8** field_44; //44
 };
 
 struct sMatrix4x3
@@ -1590,6 +1591,58 @@ void initModelDrawFunction(s_dragonStateSubData1* pDragonStateData1)
     }
 }
 
+void createDragonStateSubData1Sub3(s_dragonStateSubData1* pDragonStateData1, u8* pDragonModelData, u8* pStartOfData)
+{
+    do
+    {
+        pDragonStateData1->field_12++;
+        if (READ_BE_U32(pDragonModelData + 4))
+        {
+            createDragonStateSubData1Sub3(pDragonStateData1, pStartOfData + READ_BE_U32(pDragonModelData + 4), pStartOfData);
+        }
+
+        if (READ_BE_U32(pDragonModelData + 8))
+        {
+            pDragonModelData = pStartOfData + READ_BE_U32(pDragonModelData + 8);
+        }
+        else
+        {
+            break;
+        }
+    }while (true);
+}
+
+bool createDragonStateSubData1Sub2(s_dragonStateSubData1* pDragonStateData1, u8* unkArg)
+{
+    pDragonStateData1->field_40 = unkArg;
+
+    pDragonStateData1->field_44 = static_cast<u8**>(allocateHeapForTask(pDragonStateData1->pDragonState, pDragonStateData1->field_12 * sizeof(u8*)));
+
+    if (pDragonStateData1->field_44 == NULL)
+        return false;
+
+    u8* r12 = pDragonStateData1->field_40;
+
+    for(u32 i=0; i<pDragonStateData1->field_12; i++)
+    {
+        s32 r3 = READ_BE_S32(r12 + 4);
+        if (r3 > 0)
+        {
+            pDragonStateData1->field_44[i] = (u8*)allocateHeapForTask(pDragonStateData1->pDragonState, r3 * 12);
+            if (pDragonStateData1->field_44[i] == NULL)
+                return false;
+        }
+        else
+        {
+            pDragonStateData1->field_44[i] = NULL;
+        }
+
+        r12 += 8;
+    }
+
+    return true;
+}
+
 u32 createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pModelData2, u32 unkArg2, void* unkArg3)
 {
     pDragonStateData1->pDragonState = pWorkArea;
@@ -1609,8 +1662,8 @@ u32 createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDra
     else
     {
         pDragonStateData1->field_A = unkArg0;
-        pDragonStateData1->field_12 = 0;;
-        assert(0);
+        pDragonStateData1->field_12 = 0;
+        createDragonStateSubData1Sub3(pDragonStateData1, pDragonModel + READ_BE_U32(pDragonModel + pDragonStateData1->field_C), pDragonModel);
     }
 
     pDragonStateData1->poseData = static_cast<sPoseData*>(allocateHeapForTask(pWorkArea, pDragonStateData1->field_12 * sizeof(sPoseData)));
@@ -1630,7 +1683,9 @@ u32 createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDra
 
     if (unkArg3)
     {
+        createDragonStateSubData1Sub2(pDragonStateData1, (u8*)unkArg3);
         assert(0);
+
     }
     else
     {
