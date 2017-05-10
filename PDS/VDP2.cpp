@@ -370,7 +370,7 @@ void updateVDP2Regs()
     // skip padding
     VDP2Regs_.RAMCTL = vdp2Controls.m_pendingVdp2Regs->RAMCTL;
 
-    memcpy(&VDP2Regs_.CYCA0, &vdp2Controls.m_pendingVdp2Regs->CYCA0, sizeof(s_VDP2Regs) - (u32)(&((s_VDP2Regs*)NULL)->CYCA0));
+    memcpy(&VDP2Regs_.CYCA0, &vdp2Controls.m_pendingVdp2Regs->CYCA0, sizeof(s_VDP2Regs) - (intptr_t)(&((s_VDP2Regs*)NULL)->CYCA0));
 }
 
 void resetVdp2RegsCopies()

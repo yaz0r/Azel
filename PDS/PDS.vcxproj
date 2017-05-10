@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="common.cpp" />
     <ClCompile Include="dummy.cpp" />
     <ClCompile Include="heap.cpp" />
     <ClCompile Include="imgui\examples\libs\gl3w\GL\gl3w.c" />
@@ -155,6 +156,7 @@
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="mainMenuDebugTasks.cpp" />
+    <ClCompile Include="o_fld_a3.cpp" />
     <ClCompile Include="PDS.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="rootTask.cpp" />
@@ -164,12 +166,14 @@
     <ClCompile Include="VDP2.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common.h" />
     <ClInclude Include="dummy.h" />
     <ClInclude Include="heap.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="mainMenuDebugTasks.h" />
+    <ClInclude Include="o_fld_a3.h" />
     <ClInclude Include="o_title.h" />
     <ClInclude Include="PDS.h" />
     <ClInclude Include="renderer.h" />

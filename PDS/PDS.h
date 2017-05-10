@@ -10,14 +10,12 @@
 #include <assert.h>
 #include <string.h>
 
-#include <basetsd.h>
-
-typedef UINT8 u8;
-typedef INT8 s8;
-typedef UINT16 u16;
-typedef INT16 s16;
-typedef UINT32 u32;
-typedef INT32 s32;
+typedef uint8_t u8;
+typedef int8_t s8;
+typedef uint16_t u16;
+typedef int16_t s16;
+typedef uint32_t u32;
+typedef int32_t s32;
 
 void yLog(...);
 
@@ -30,37 +28,9 @@ void yLog(...);
 #include "VDP2.h"
 #include "titleScreen.h"
 
+#include "common.h"
 #include "renderer.h"
 #include "mainMenuDebugTasks.h"
-
-enum e_dragonLevel : unsigned char {
-    DR_LEVEL_0_BASIC_WING = 0,
-    DR_LEVEL_1_VALIANT_WING,
-    DR_LEVEL_2_STRIPE_WING,
-    DR_LEVEL_3_PANZER_WING,
-    DR_LEVEL_4_EYE_WING,
-    DR_LEVEL_5_ARM_WING,
-    DR_LEVEL_6_LIGHT_WING,
-    DR_LEVEL_7_SOLO_WING,
-    DR_LEVEL_8_FLOATER,
-
-    DR_LEVEL_MAX
-};
-
-enum e_dragonAnim : unsigned char {
-    DR_ANIM_0_BASIC_WING = 0,
-    DR_ANIM_1_VALIANT_WING,
-    DR_ANIM_2_STRIPE_WING,
-    DR_ANIM_3_PANZER_WING,
-    DR_ANIM_4_EYE_WING,
-    DR_ANIM_5_ARM_WING,
-    DR_ANIM_6_LIGHT_WING,
-    DR_ANIM_7_SOLO_WING,
-    DR_ANIM_8_FLOATER,
-    DR_ANIM_9_PUP,
-
-    DR_ANIM_MAX
-};
 
 struct sPortData2
 {
@@ -83,4 +53,5 @@ u16 READ_BE_U16(const void* ptr);
 s16 READ_BE_S16(const void* ptr);
 
 #include "o_title.h"
+#include "o_fld_a3.h"
 

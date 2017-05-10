@@ -1,100 +1,9 @@
 #include "PDS.h"
 
-const u8 bitMasks[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
-const u8 reverseBitMasks[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xF8, 0xFD, 0xFE };
-
-struct s_gameStats
-{
-    u8 level;
-    e_dragonLevel dragonLevel;
-    u8 rider1;
-    u8 rider2;
-
-    u16 currentHP; // 0x10
-    u16 classMaxHP; // 0x12
-    u16 currentBP; // 0x14
-    u16 classMaxBP; // 0x16
-    u16 field_18; // 0x18
-    s16 dragonCursorX; //1A
-    s16 dragonCursorY; //1C
-
-    char playerName[17];
-    char dragonName[17];
-    u8 dragonArchetype;//B6
-
-    u16 maxHP; // B8
-    u16 maxBP; // BA;
-    u16 dragonDef; // BC
-    u16 dragonAtt; // BE
-    u16 dragonAgl; // C0
-    u16 dragonSpr; // C2
-};
-
-struct sBitfieldMapEntry
-{
-    u32 m_bitOffset;
-    u32 m_bitSize;
-    const char* m_name;
-};
-
-struct s_mainGameState
-{
-private:
-    u8 bitField[630];
-    std::vector<sBitfieldMapEntry> m_bitFieldMap;
-
-public:
-    s_gameStats gameStats;
-
-    void reset()
-    {
-        m_bitFieldMap.clear();
-        memset(bitField, 0, sizeof(bitField));
-        memset(&gameStats, 0, sizeof(gameStats));
-    }
-
-    void setPackedBits(u32 firstBitOffset, u32 numBits, u32 value)
-    {
-        void setPackedBits(u8* bitField, u32 firstBitOffset, u32 numBits, u32 value);
-
-        setPackedBits(bitField, firstBitOffset, numBits, value);
-    }
-
-    void setBit(u32 bitIndex)
-    {
-        bitField[bitIndex / 8] |= 1 << (bitIndex % 8);
-    }
-
-    void clearBit(u32 bitIndex)
-    {
-        bitField[bitIndex / 8] &= ~(1 << (bitIndex % 8));
-    }
-};
-
-s_mainGameState mainGameState;
-
 u32 getPanzerZweiPlayTime(u32 slot)
 {
     return 0;
 }
-
-struct s_dragonPerLevelMaxHPBP
-{
-    u16 maxHP;
-    u16 maxBP;
-};
-
-const s_dragonPerLevelMaxHPBP dragonPerLevelMaxHPBP[DR_LEVEL_MAX] = {
-    { 400, 100 },//DR_0_BASIC_WING = 0,
-    { 400, 100 },//DR_1_VALIANT_WING,
-    { 400, 100 },//DR_2_STRIPE_WING,
-    { 400, 100 },//DR_3_PANZER_WING,
-    { 400, 100 },//DR_4_EYE_WING,
-    { 400, 100 },//DR_5_ARM_WING,
-    { 400, 100 },//DR_6_LIGHT_WING,
-    { 400, 100 },//DR_7_SOLO_WING,
-    { 1200, 0 }  //DR_8_FLOATER,
-};
 
 void computeDragonSprAndAglFromCursor()
 {
@@ -137,42 +46,6 @@ void updateDragonStatsFromLevel()
 
     computeDragonSprAndAglFromCursor();
 }
-
-const u32 longBitMask[] = {
-0x0,
-0x1,
-0x3,
-0x7,
-0xF,
-0x1F,
-0x3F,
-0x7F,
-0xFF,
-0x1FF,
-0x3FF,
-0x7FF,
-0xFFF,
-0x1FFF,
-0x3FFF,
-0x7FFF,
-0xFFFF,
-0x1FFFF,
-0x3FFFF,
-0x7FFFF,
-0xFFFFF,
-0x1FFFFF,
-0x3FFFFF,
-0x7FFFFF,
-0xFFFFFF,
-0x1FFFFFF,
-0x3FFFFFF,
-0x7FFFFFF,
-0xFFFFFFF,
-0x1FFFFFFF,
-0x3FFFFFFF,
-0x7FFFFFFF,
-0xFFFFFFFF,
-};
 
 void rotl(u32& value)
 {
@@ -262,13 +135,26 @@ void initNewGameState()
     }
 }
 
+struct s_FieldSubTaskWorkArea : public s_workArea
+{
+    u16 field_354; // 354
+    u16 fieldSubTaskStatus; // 358
+    void* pUpdateFunction2; // 35C
+    u16 fieldDebuggerWho; // 370
+
+    void* pUpdateFunction1; // 374
+};
+
 struct s_fieldTaskWorkArea : public s_workArea
 {
-    s_task* pSubFieldData; // 0x8
+    s_workArea* field_0; // 0
+    s_workArea* overlayTaskData;//8
+    s_FieldSubTaskWorkArea* pSubFieldData; // 0x8
     u32 fStatus; // 0x28
     s16 currentFieldIndex; // 0x2C
     s16 currentSubFieldIndex; // 0x2E;
     s16 field_30; // 0x30
+    s16 field_32; // 0x32
     u8 field_35; // 0x35
     u16 fieldIndexMenuSelection; // 0x36
     s16 subFieldIndexMenuSelection; // 0x38
@@ -281,7 +167,7 @@ struct s_fieldTaskWorkArea : public s_workArea
 
 s_fieldTaskWorkArea* fieldTaskPtr = NULL;
 
-u32 fieldTaskVar0;
+p_workArea fieldTaskVar0;
 p_workArea fieldInputTaskWorkArea;
 u32 fieldTaskVar2;
 u8 fieldTaskVar3;
@@ -296,8 +182,8 @@ void fieldTaskInit(p_workArea pTypelessWorkArea, u32 battleArgument)
     s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
 
     fieldTaskPtr = pWorkArea;
-    fieldTaskVar0 = 0;
-    fieldInputTaskWorkArea = 0;
+    fieldTaskVar0 = NULL;
+    fieldInputTaskWorkArea = NULL;
     fieldTaskVar2 = 0;
 
     pWorkArea->field_35 = battleArgument;
@@ -326,222 +212,6 @@ u32 performModulo(u32 r0, u32 r1)
 
     return r1 % r0;
 }
-
-const u32 fieldEnabledTable[23] = {
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1
-};
-
-struct s_fieldDefinition
-{
-    const char* m_name;
-    const char* m_prg;
-    const char* m_fnt;
-    u32 m_numSubFields;
-    const char** m_subFields;
-};
-
-const char* m_A2Fields[] = {
-    "  A2_0",
-};
-
-const char* m_A3Fields[] = {
-    "  A3_0",
-    "  A3_1",
-    "  A3_2",
-    "  A3_3",
-    "  A3_4",
-    "  A3_5",
-    "  A3_6",
-    "  A3_7",
-    "  A3_8",
-    "  A3_9",
-    "  A3_A",
-    "  A3_B",
-    "  A3_C",
-};
-
-const char* m_A5Fields[] = {
-    "  A5_0",
-    "  A5_1",
-    "  A5_2",
-    "  A5_3",
-    "  A5_4",
-    "  A5_5",
-    "  A5_6",
-    "  A5_7",
-    "  A5_8",
-    "  A5_9",
-    "  A5_A",
-    "  A5_B",
-    "  A5_C",
-};
-const char* m_A7Fields[] = {
-    "  A7_0",
-    "  A7_1",
-    "  A7_2",
-};
-
-const char* m_B1Fields[] = {
-    "  B1_0",
-    "  B1_1",
-};
-
-const char* m_B3Fields[] = {
-    "  B3_0",
-};
-
-const char* m_B2Fields[] = {
-    "  B2_1",
-    "  B2_3",
-    "  B2_4",
-    "  B2_5",
-};
-
-const char* m_B5Fields[] = {
-    "  B5_0",
-    "  B5_1",
-    "  B5_2",
-    "  B5_3",
-    "  B5_4",
-    "  B5_5",
-    "  B5_6",
-};
-
-const char* m_B6Fields[] = {
-    "  B6_0",
-    "  B6_1",
-    "  B6_2",
-    "  B6_3",
-    "  B6_4",
-    "  B6_5",
-    "  B6_6",
-    "  B6_7",
-    "  B6_8",
-    "  B6_9",
-};
-
-const char* m_C2Fields[] = {
-    "  C2_0",
-    "  C2_1",
-    "  C2_2",
-};
-
-const char* m_C4Fields[] = {
-    "  C4_0",
-    "  C4_1",
-    "  C4_2",
-    "  C4_3",
-    "  C4_4",
-    "  C4_5",
-    "  C4_6",
-    "  C4_7",
-    "  C4_8",
-};
-
-const char* m_TowerFields[] = {
-    "  T0_0",
-    "  T0_1",
-    "  T0_2",
-    "  T0_3",
-    "  T0_4",
-    "  T0_5",
-
-    "  T1_0",
-    "  T1_1",
-    "  T1_2",
-
-    "  T2_0",
-    "  T2_1",
-    "  T2_2",
-    "  T2_3",
-    "  T2_4",
-    "  T2_5",
-    "  T2_6",
-    "  T2_7",
-    "  T2_8",
-    "  T2_9",
-    "  T2_a",
-    "  T2_b",
-    "  T2_c",
-    "  T2_d",
-
-    "  T3_0",
-    "  T3_1",
-    "  T3_2",
-
-    "  T7_0",
-    "  T7_1",
-    "  T7_2",
-    "  T7_3",
-    "  T7_4",
-    "  T7_5",
-    "  T7_6",
-    "  T7_7",
-};
-
-const char* m_D2Fields[] = {
-    "  D2_0",
-    "  D2_1",
-};
-
-const char* m_D3Fields[] = {
-    "  D3_0",
-};
-
-const char* m_D5Fields[] = {
-    "  D5_0",
-};
-
-const char* m_DummyFields[] = {
-    "  DUMM",
-};
-
-const char* m_NameFields[] = {
-    "  NAME",
-};
-
-const char* m_DemoFields[] = {
-    "  DEMO",
-};
-
-const char* m_GameFields[] = {
-    "  OVER",
-};
-
-const char* m_BTFields[] = {
-    "  BT  ",
-};
-
-const s_fieldDefinition fieldDefinitions[] =
-{
-    { "  A0  ", "FLD_D5.PRG", "FLD_D5.FNT", sizeof(m_NameFields) / sizeof(m_NameFields[0]), m_NameFields },
-    { "  A2  ", "FLD_A3.PRG", "FLD_A3.FNT", sizeof(m_A2Fields) / sizeof(m_A2Fields[0]), m_A2Fields },
-    { "  A3  ", "FLD_A3.PRG", "FLD_A3.FNT", sizeof(m_A3Fields) / sizeof(m_A3Fields[0]), m_A3Fields },
-    { "  A5  ", "FLD_A5.PRG", "FLD_A5.FNT", sizeof(m_A5Fields) / sizeof(m_A5Fields[0]), m_A5Fields },
-    { "  A7  ", "FLD_A7.PRG", "FLD_A7.FNT", sizeof(m_A7Fields) / sizeof(m_A7Fields[0]), m_A7Fields },
-
-    { "  B1  ", "FLD_B1.PRG", "FLD_B1.FNT", sizeof(m_B1Fields) / sizeof(m_B1Fields[0]), m_B1Fields },
-    { "  B3  ", "FLD_B2.PRG", "FLD_B2.FNT", sizeof(m_B3Fields) / sizeof(m_B3Fields[0]), m_B3Fields },
-    { "  B2  ", "FLD_B2.PRG", "FLD_B2.FNT", sizeof(m_B2Fields) / sizeof(m_B2Fields[0]), m_B2Fields },
-    { "  B4  ", "FLD_B5.PRG", "FLD_B5.FNT", sizeof(m_DemoFields) / sizeof(m_DemoFields[0]), m_DemoFields },
-    { "  B5  ", "FLD_B5.PRG", "FLD_B5.FNT", sizeof(m_B5Fields) / sizeof(m_B5Fields[0]), m_B5Fields },
-    { "  B6  ", "FLD_B6.PRG", "FLD_B6.FNT", sizeof(m_B6Fields) / sizeof(m_B6Fields[0]), m_B6Fields },
-
-    { "  C2  ", "FLD_C2.PRG", "FLD_C2.FNT", sizeof(m_C2Fields) / sizeof(m_C2Fields[0]), m_C2Fields },
-    { "  C3  ", "FLD_C4.PRG", "FLD_C4.FNT", sizeof(m_DemoFields) / sizeof(m_DemoFields[0]), m_DemoFields },
-    { "  C4  ", "FLD_C4.PRG", "FLD_C4.FNT", sizeof(m_C4Fields) / sizeof(m_C4Fields[0]), m_C4Fields },
-    { "  C5  ", NULL,         NULL,         sizeof(m_DummyFields) / sizeof(m_DummyFields[0]), m_DummyFields },
-    { "  C8  ", "FLD_C8.PRG", "FLD_T0.FNT", sizeof(m_TowerFields) / sizeof(m_TowerFields[0]), m_TowerFields },
-
-    { "  D2  ", "FLD_D2.PRG", "FLD_D2.FNT", sizeof(m_D2Fields) / sizeof(m_D2Fields[0]), m_D2Fields },
-    { "  D3  ", "FLD_D3.PRG", "FLD_D3.FNT", sizeof(m_D3Fields) / sizeof(m_D3Fields[0]), m_D3Fields },
-    { "  D4  ", "FLD_C8.PRG", "FLD_T0.FNT", sizeof(m_TowerFields) / sizeof(m_TowerFields[0]), m_TowerFields },
-    { "  D5  ", "FLD_D5.PRG", "FLD_D5.FNT", sizeof(m_D5Fields) / sizeof(m_D5Fields[0]), m_D5Fields },
-
-    { "  GAME", "FLD_D5.PRG", "FLD_D5.FNT", sizeof(m_GameFields) / sizeof(m_GameFields[0]), m_GameFields },
-    { "  BT0 ", "FLD_A3.PRG", "FLD_A3.FNT", sizeof(m_BTFields) / sizeof(m_BTFields[0]), m_BTFields },
-    { "  BT1 ", "FLD_A7.PRG", "FLD_A7.FNT", sizeof(m_BTFields) / sizeof(m_BTFields[0]), m_BTFields },
-};
 
 void fieldDebugListTaskInit(p_workArea pTypelessWorkArea)
 {
@@ -928,509 +598,6 @@ u8* dramAllocate(u32 size, u32 unk)
     return NULL;
 }
 
-struct s_dragonFiles {
-    const char* MCB;
-    const char* CGB;
-};
-
-struct s_dragonFileConfig {
-    s_dragonFiles m_base;
-    s_dragonFiles m_M;
-    s_dragonFiles m_C;
-};
-
-const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX] = {
-    //DR_LEVEL_0_BASIC_WING
-    {
-        { "DRAGON0.MCB",    "DRAGON0.CGB"},
-        { NULL,             NULL },
-        { "DRAGONC0.MCB",   "DRAGONC0.CGB" },
-    },
-
-    //DR_LEVEL_1_VALIANT_WING
-    {
-        { "DRAGON1.MCB",     "DRAGON1.CGB" },
-        { "DRAGONM1.MCB",    "DRAGONM1.CGB" },
-        { "DRAGONC1.MCB",    "DRAGONC1.CGB" },
-    },
-
-    //DR_LEVEL_2_STRIPE_WING
-    {
-        { "DRAGON2.MCB",     "DRAGON2.CGB" },
-        { "DRAGONM2.MCB",    "DRAGONM2.CGB" },
-        { "DRAGONC2.MCB",    "DRAGONC2.CGB" },
-    },
-
-    //DR_LEVEL_3_PANZER_WING
-    {
-        { "DRAGON3.MCB",     "DRAGON3.CGB" },
-        { "DRAGONM3.MCB",    "DRAGONM3.CGB" },
-        { "DRAGONC3.MCB",    "DRAGONC3.CGB" },
-    },
-
-    //DR_LEVEL_4_EYE_WING
-    {
-        { "DRAGON4.MCB",     "DRAGON4.CGB" },
-        { "DRAGONM4.MCB",    "DRAGONM4.CGB" },
-        { "DRAGONC4.MCB",    "DRAGONC4.CGB" },
-    },
-
-    //DR_LEVEL_5_ARM_WING
-    {
-        { "DRAGON5.MCB",     "DRAGON5.CGB" },
-        { "DRAGONM5.MCB",    "DRAGONM5.CGB" },
-        { NULL,              NULL },
-    },
-
-    //DR_LEVEL_6_LIGHT_WING
-    {
-        { "DRAGON6.MCB",    "DRAGON6.CGB" },
-        { NULL,             NULL },
-        { NULL,             NULL },
-    },
-
-    //DR_LEVEL_7_SOLO_WING
-    {
-        { "DRAGON7.MCB",     "DRAGON7.CGB" },
-        { "DRAGONM7.MCB",    "DRAGONM7.CGB" },
-        { NULL,              NULL },
-    },
-
-    //DR_LEVEL_8_FLOATER
-    {
-        { "KTEI.MCB",       "KTEI.CGB" },
-        { NULL,             NULL },
-        { NULL,             NULL },
-    },
-};
-
-struct sDragonData3Sub
-{
-    u16 m_field_0[4];
-    void* m_field_8;
-};
-
-struct sDragonData3
-{
-    u32 m_field_0;
-    u32 m_field_4;
-    sDragonData3Sub m_field_8[7];
-};
-
-const sDragonData3 dragonData3[DR_LEVEL_MAX] =
-{
-    //0
-    {
-        0,
-        0,
-        {
-            4,8,260,0, NULL /*off_2021A4*/,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,8,260,0, NULL /*off_205DD4*/,
-        }
-    },
-    //1
-    {
-        75,
-        32,
-        {
-            4,8,268,1424, NULL,
-            4,24,1324,1424, NULL,
-            8,28,1328,1724, NULL,
-            12,32,1332,2024, NULL,
-            16,36,1336,2324, NULL,
-            20,40,1340,2624, NULL,
-            4,8,268,1424, NULL,
-        }
-    },
-    //2
-    {
-        77,
-        32,
-        {
-            4,8,268,1540, NULL,
-            4,24,1324,1540, NULL,
-            8,28,1328,1848, NULL,
-            12,32,1332,2156, NULL,
-            16,36,1336,2464, NULL,
-            20,40,1340,2772, NULL,
-            4,8,268,1540, NULL,
-        }
-    },
-    //3
-    {
-        78,
-        31,
-        {
-            4,8,260,1612, NULL,
-            4,24,1284,1612, NULL,
-            8,28,1288,1924, NULL,
-            12,32,1292,2236, NULL,
-            16,36,1296,2548, NULL,
-            20,40,1300,2860, NULL,
-            4,8,260,1612, NULL,
-        }
-    },
-    //4
-    {
-        77,
-        33,
-        {
-            4,8,276,1568, NULL,
-            4,24,1364,1568, NULL,
-            8,28,1368,1876, NULL,
-            12,32,1372,2184, NULL,
-            16,36,1376,2492, NULL,
-            20,40,1380,2800, NULL,
-            4,8,276,1568, NULL,
-        }
-    },
-    //5
-    {
-        80,
-        30,
-        {
-            4,8,252,1628, NULL,
-            4,24,1244,1628, NULL,
-            8,28,1248,1948, NULL,
-            12,32,1252,2268, NULL,
-            16,36,1256,2588, NULL,
-            20,40,1260,2908, NULL,
-            4,0,0,0, NULL,
-        }
-    },
-    //6
-    {
-        0,
-        0,
-        {
-            4,8,220,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-        }
-    },
-    //7
-    {
-        80,
-        28,
-        {
-            4,8,236,1680, NULL,
-            4,24,1164,1680, NULL,
-            8,28,1168,2000, NULL,
-            12,32,1172,2320, NULL,
-            16,36,1176,2640, NULL,
-            20,40,1180,2960, NULL,
-            4,0,0,0, NULL,
-        }
-    },
-    //8
-    {
-        0,
-        0,
-        {
-            4,0,192,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-        }
-    },
-};
-
-struct s_dragonData2
-{
-    const u16* m_data;
-    u32 m_count;
-};
-
-const u16 dragonData2_0[] = {
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150
-};
-
-const u16 dragonData2_1[] = {
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150,
-    0x154,
-    0x158,
-};
-
-const u16 dragonData2_2[] = {
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150,
-    0x154,
-    0x158,
-};
-
-const u16 dragonData2_3[] = {
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150
-};
-
-const u16 dragonData2_4[] = {
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150,
-    0x154,
-    0x158,
-    0x15C,
-    0x160
-};
-
-const u16 dragonData2_5[] = {
-    0x104,
-    0x108,
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-};
-
-const u16 dragonData2_6[] = {
-    0xE4,
-    0xE8,
-    0xEC,
-    0xF0,
-    0xF4,
-    0xF8,
-    0xFC,
-    0x100,
-    0x104,
-    0x108,
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-};
-
-const u16 dragonData2_7[] = {
-    0xF4,
-    0xF8,
-    0xFC,
-    0x100,
-    0x104,
-    0x108,
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-};
-
-const u16 dragonData2_8[] = {
-    0xD0,
-    0xD4,
-    0xD8,
-    0xDC,
-};
-
-const s_dragonData2 dragonData2[DR_LEVEL_MAX] = {
-    { dragonData2_0, 0x12 },
-    { dragonData2_1, 0x12 },
-    { dragonData2_2, 0x12 },
-    { dragonData2_3, 0x12 },
-    { dragonData2_4, 0x12 },
-    { dragonData2_5, 0x12 },
-    { dragonData2_6, 0x12 },
-    { dragonData2_7, 0x12 },
-    { dragonData2_8, 4 },
-};
-
-struct sPoseData
-{
-    u32 m_0;
-    u32 m_4;
-    u32 m_8;
-
-    u32 m_C;
-    u32 m_10;
-    u32 m_14;
-
-    u32 m_18;
-    u32 m_1C;
-    u32 m_20;
-
-    u32 field_48[9][3];
-};
-
-struct s_dragonStateSubData1
-{
-    s_workArea* pDragonState; //0
-    u8* pDragonModel; //4
-
-    u16 field_8; //8
-    u16 field_A; //A
-    u16 field_C; //C
-
-    u16 field_10; //10
-    u16 field_12; //12
-    u16 field_14; //14
-    u16 field_16; //16
-
-    void* drawFunction;
-    void* addToDisplayListFunction;
-    void* positionUpdateFunction;
-    void* rotationUpdateFunction;
-    void* scaleUpdateFunction;
-    sPoseData* poseData; //2C
-
-    u8* field_30; //30
-
-    u8* field_34; //34
-    u32 field_38; //38
-
-    u8* field_3C; //3C
-
-    u8* field_40; //40
-    u8** field_44; //44
-};
-
-struct sMatrix4x3
-{
-    u32 matrix[4 * 3];
-};
-
-struct s_dragonStateSubData2SubData
-{
-    sMatrix4x3 matrix; // 0
-    sMatrix4x3 matrix2; // 30
-    const struct sDragonAnimDataSub* dataSource; // 60
-};
-
-struct s_dragonStateSubData2
-{
-    const struct sDragonAnimData* field_0; // 0
-    u8* field_4; // 4;
-    s_dragonStateSubData2SubData* field_8; // 8
-    u8 countAnims; // C
-    u8 count0; // D
-    u8 count1; // E
-    u8 count2; // F
-};
-
-struct s_dragonState : public s_workArea
-{
-    u8* pDragonModel; //0
-    u32 dragonType;//C
-    s16 cursorX;//10
-    s16 cursorY;//12
-    u32 field_14;//14
-    u32 field_18;//18
-    u32 dragonArchetype; //1C
-    const u16* dragonData2; //20
-    u32 dragonData2Count; //24
-    s_dragonStateSubData1 dragonStateSubData1; //28
-
-    s_dragonStateSubData2 dragonStateSubData2; // 78
-    u32 field_88;//88
-};
-
-s_dragonState* gDragonState = NULL;
-
 u8 gDragonModel[0x16500];
 u8 gDragonVram[0x4000];
 
@@ -1449,15 +616,23 @@ void* modelMode4_position1 = unimplementedUpdate;
 void* modelMode4_rotation = unimplementedUpdate;
 void* modelMode4_scale = unimplementedUpdate;
 
+void* modelDrawFunction0 = unimplementedDraw;
+void* modelDrawFunction1 = unimplementedDraw;
+void* modelDrawFunction2 = unimplementedDraw;
 void* modelDrawFunction3 = unimplementedDraw;
+
+void* modelDrawFunction5 = unimplementedDraw;
+void* modelDrawFunction6 = unimplementedDraw;
+
+void* modelDrawFunction9 = unimplementedDraw;
+void* modelDrawFunction10 = unimplementedDraw;
 
 void copyPosePosition(s_dragonStateSubData1* pDragonStateData1)
 {
     sPoseData* pOutputPose = pDragonStateData1->poseData;
     u8* r5 = pDragonStateData1->field_34;
-    u16 r7 = pDragonStateData1->field_12;
 
-    for (u32 i = 0; i < r7; i++)
+    for (u32 i = 0; i < pDragonStateData1->numBones; i++)
     {
         pOutputPose->m_0 = READ_BE_U32(r5 + 0);
         pOutputPose->m_4 = READ_BE_U32(r5 + 4);
@@ -1472,9 +647,8 @@ void copyPoseRotation(s_dragonStateSubData1* pDragonStateData1)
 {
     sPoseData* pOutputPose = pDragonStateData1->poseData;
     u8* r5 = pDragonStateData1->field_34;
-    u16 r7 = pDragonStateData1->field_12;
 
-    for (u32 i = 0; i < r7; i++)
+    for (u32 i = 0; i < pDragonStateData1->numBones; i++)
     {
         pOutputPose->m_C = READ_BE_U32(r5 + 0xC);
         pOutputPose->m_10 = READ_BE_U32(r5 + 0x10);
@@ -1488,9 +662,8 @@ void copyPoseRotation(s_dragonStateSubData1* pDragonStateData1)
 void resetPoseScale(s_dragonStateSubData1* pDragonStateData1)
 {
     sPoseData* pOutputPose = pDragonStateData1->poseData;
-    u16 r7 = pDragonStateData1->field_12;
 
-    for (u32 i = 0; i < r7; i++)
+    for (u32 i = 0; i < pDragonStateData1->numBones; i++)
     {
         pOutputPose->m_18 = 0x10000;
         pOutputPose->m_1C = 0x10000;
@@ -1518,7 +691,7 @@ u32 createDragonStateSubData1Sub1Sub1(s_dragonStateSubData1* pDragonStateData1, 
         pDragonStateData1->rotationUpdateFunction = modelMode4_rotation;
         pDragonStateData1->scaleUpdateFunction = modelMode4_scale;
 
-        for (u32 i = 0; i < pDragonStateData1->field_12; i++)
+        for (u32 i = 0; i < pDragonStateData1->numBones; i++)
         {
             for (u32 j = 0; j < 9; j++)
             {
@@ -1571,13 +744,20 @@ void initModelDrawFunction(s_dragonStateSubData1* pDragonStateData1)
     {
         if (pDragonStateData1->field_40)
         {
-            assert(0);
+            if (pDragonStateData1->field_38)
+            {
+                pDragonStateData1->drawFunction = modelDrawFunction0;
+            }
+            else
+            {
+                pDragonStateData1->drawFunction = modelDrawFunction1;
+            }
         }
         else
         {
             if (pDragonStateData1->field_38)
             {
-                assert(0);
+                pDragonStateData1->drawFunction = modelDrawFunction2;
             }
             else
             {
@@ -1587,18 +767,54 @@ void initModelDrawFunction(s_dragonStateSubData1* pDragonStateData1)
     }
     else
     {
-        assert(0);
+        if (pDragonStateData1->field_40)
+        {
+            if (pDragonStateData1->field_A & 0x20)
+            {
+                assert(0);
+            }
+            else
+            {
+                if (pDragonStateData1->field_38)
+                {
+                    pDragonStateData1->drawFunction = modelDrawFunction5;
+                }
+                else
+                {
+                    pDragonStateData1->drawFunction = modelDrawFunction6;
+                }
+            }
+        }
+        else
+        {
+            if (pDragonStateData1->field_A & 0x20)
+            {
+                assert(0);
+            }
+            else
+            {
+                if (pDragonStateData1->field_38)
+                {
+                    pDragonStateData1->drawFunction = modelDrawFunction9;
+                }
+                else
+                {
+                    pDragonStateData1->drawFunction = modelDrawFunction10;
+                }
+            }
+
+        }
     }
 }
 
-void createDragonStateSubData1Sub3(s_dragonStateSubData1* pDragonStateData1, u8* pDragonModelData, u8* pStartOfData)
+void countNumBonesInModel(s_dragonStateSubData1* pDragonStateData1, u8* pDragonModelData, u8* pStartOfData)
 {
     do
     {
-        pDragonStateData1->field_12++;
+        pDragonStateData1->numBones++;
         if (READ_BE_U32(pDragonModelData + 4))
         {
-            createDragonStateSubData1Sub3(pDragonStateData1, pStartOfData + READ_BE_U32(pDragonModelData + 4), pStartOfData);
+            countNumBonesInModel(pDragonStateData1, pStartOfData + READ_BE_U32(pDragonModelData + 4), pStartOfData);
         }
 
         if (READ_BE_U32(pDragonModelData + 8))
@@ -1612,23 +828,22 @@ void createDragonStateSubData1Sub3(s_dragonStateSubData1* pDragonStateData1, u8*
     }while (true);
 }
 
-bool createDragonStateSubData1Sub2(s_dragonStateSubData1* pDragonStateData1, u8* unkArg)
+bool createDragonStateSubData1Sub2(s_dragonStateSubData1* pDragonStateData1, const s_RiderDefinitionSub* unkArg)
 {
     pDragonStateData1->field_40 = unkArg;
 
-    pDragonStateData1->field_44 = static_cast<u8**>(allocateHeapForTask(pDragonStateData1->pDragonState, pDragonStateData1->field_12 * sizeof(u8*)));
+    pDragonStateData1->field_44 = static_cast<u8**>(allocateHeapForTask(pDragonStateData1->pDragonState, pDragonStateData1->numBones * sizeof(u8*)));
 
     if (pDragonStateData1->field_44 == NULL)
         return false;
 
-    u8* r12 = pDragonStateData1->field_40;
+    const s_RiderDefinitionSub* r12 = pDragonStateData1->field_40;
 
-    for(u32 i=0; i<pDragonStateData1->field_12; i++)
+    for(u32 i=0; i<pDragonStateData1->numBones; i++)
     {
-        s32 r3 = READ_BE_S32(r12 + 4);
-        if (r3 > 0)
+        if (r12->m_count > 0)
         {
-            pDragonStateData1->field_44[i] = (u8*)allocateHeapForTask(pDragonStateData1->pDragonState, r3 * 12);
+            pDragonStateData1->field_44[i] = (u8*)allocateHeapForTask(pDragonStateData1->pDragonState, r12->m_count * 12);
             if (pDragonStateData1->field_44[i] == NULL)
                 return false;
         }
@@ -1637,13 +852,13 @@ bool createDragonStateSubData1Sub2(s_dragonStateSubData1* pDragonStateData1, u8*
             pDragonStateData1->field_44[i] = NULL;
         }
 
-        r12 += 8;
+        r12 ++;
     }
 
     return true;
 }
 
-u32 createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pModelData2, u32 unkArg2, void* unkArg3)
+bool createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pModelData2, u32 unkArg2, const s_RiderDefinitionSub* unkArg3)
 {
     pDragonStateData1->pDragonState = pWorkArea;
     pDragonStateData1->pDragonModel = pDragonModel;
@@ -1657,20 +872,20 @@ u32 createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDra
     if (pModelData1)
     {
         pDragonStateData1->field_A = READ_BE_U16(pModelData1) | unkArg0;
-        pDragonStateData1->field_12 = READ_BE_U16(pModelData1 + 2);
+        pDragonStateData1->numBones = READ_BE_U16(pModelData1 + 2);
     }
     else
     {
         pDragonStateData1->field_A = unkArg0;
-        pDragonStateData1->field_12 = 0;
-        createDragonStateSubData1Sub3(pDragonStateData1, pDragonModel + READ_BE_U32(pDragonModel + pDragonStateData1->field_C), pDragonModel);
+        pDragonStateData1->numBones = 0;
+        countNumBonesInModel(pDragonStateData1, pDragonModel + READ_BE_U32(pDragonModel + pDragonStateData1->field_C), pDragonModel);
     }
 
-    pDragonStateData1->poseData = static_cast<sPoseData*>(allocateHeapForTask(pWorkArea, pDragonStateData1->field_12 * sizeof(sPoseData)));
+    pDragonStateData1->poseData = static_cast<sPoseData*>(allocateHeapForTask(pWorkArea, pDragonStateData1->numBones * sizeof(sPoseData)));
 
     if (pDragonStateData1->field_A & 0x200)
     {
-        pDragonStateData1->field_3C = static_cast<u8*>(allocateHeapForTask(pWorkArea, pDragonStateData1->field_12 * 48));
+        pDragonStateData1->field_3C = static_cast<u8*>(allocateHeapForTask(pWorkArea, pDragonStateData1->numBones * 48));
         assert(pDragonStateData1->field_3C);
 
         pDragonStateData1->field_8 |= 2;
@@ -1683,9 +898,8 @@ u32 createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDra
 
     if (unkArg3)
     {
-        createDragonStateSubData1Sub2(pDragonStateData1, (u8*)unkArg3);
-        assert(0);
-
+        if (!createDragonStateSubData1Sub2(pDragonStateData1, unkArg3))
+            return false;
     }
     else
     {
@@ -1695,18 +909,23 @@ u32 createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDra
     if (pModelData1)
     {
         if (createDragonStateSubData1Sub1(pDragonStateData1, pModelData1) == 0)
-            return NULL;
+            return false;
     }
     else
     {
-        assert(0);
+        pDragonStateData1->field_30 = NULL;
+        pDragonStateData1->field_10 = 0;
+
+        copyPosePosition(pDragonStateData1);
+        copyPoseRotation(pDragonStateData1);
+        resetPoseScale(pDragonStateData1);
     }
 
     initModelDrawFunction(pDragonStateData1);
 
     pDragonStateData1->addToDisplayListFunction = addObjectToDrawList;
 
-    return 1;
+    return true;
 }
 
 struct sDragonAnimDataSub
@@ -1785,15 +1004,15 @@ const sDragonAnimData dragon0Anims =
 const sDragonAnimData* dragonAnimData[DR_ANIM_MAX] =
 {
     &dragon0Anims,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
+    (const sDragonAnimData*)1,
+    (const sDragonAnimData*)1,
+    (const sDragonAnimData*)1,
+    (const sDragonAnimData*)1,
+    (const sDragonAnimData*)1,
+    (const sDragonAnimData*)1,
+    (const sDragonAnimData*)1,
+    (const sDragonAnimData*)1,
+    (const sDragonAnimData*)1,
 };
 
 u32 countNumAnimData(s_dragonStateSubData2* pDragonStateData2, const sDragonAnimData* dragonAnims)
@@ -2063,23 +1282,24 @@ void loadDragon(s_workArea* pWorkArea)
     loadDragonSub1(pLoadDragonWorkArea);
 }
 
-struct s_RiderDefinition
+const s_RiderDefinitionSub gEdgeExtraData[] =
 {
-    const char* m_MCBName; //0
-    const char* m_CGBName; //4
-    u16 m_flags; //8
-    u16 m_flags2; //A
-    void* m_pExtraData; //C
+    { NULL, 0 },
+    { NULL, 0 },
+    { NULL, 0 },
+    { NULL, 0 },
+    { NULL, 0 },
+    { (void*)1, 1 },
 };
 
 const s_RiderDefinition gRiderTable[] = {
     { "RIDER0.MCB",  NULL,          0x4,    0x08, NULL},
-    { "EDGE.MCB",   "EDGE.CGB",     0x4,    0x28, (void*)1 },
+    { "EDGE.MCB",   "EDGE.CGB",     0x4,    0x28, gEdgeExtraData },
     { "GUSH.MCB",   "GUSH.CGB",     0x4,    0x20, NULL },
     { "PAET.MCB",   "PAET.CGB",     0x4,    0x20, NULL },
     { "AZCT.MCB",   "AZCT.CGB",     0x4,    0x20, NULL },
     { "AZEL.MCB",   "AZEL.CGB",     0x4,    0x20, NULL },
-    { NULL,         NULL,           0x8,    0xC4, (void*)1 },
+    { NULL,         NULL,           0x8,    0xC4, (s_RiderDefinitionSub*)1 },
     { NULL,         NULL,           0xC,    0xC8, NULL },
 };
 
@@ -2097,9 +1317,12 @@ struct s_loadRiderWorkArea : public s_workArea
 };
 
 s_loadRiderWorkArea* pRiderState = NULL;
+s_loadRiderWorkArea* pRider2State = NULL;
 
 u8 riderModel[0x4F00];
+u8 rider2Model[0xC00];
 u8 riderVRam[0x1400];
+u8 rider2VRam[0x1400];
 
 s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
 {
@@ -2114,7 +1337,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
     pLoadRiderWorkArea->m_riderType = riderType;
     pLoadRiderWorkArea->m_data0 = r13->m_flags;
 
-    pRiderState = pLoadRiderWorkArea;
+    pRider2State = pLoadRiderWorkArea;
 
     if (riderType < 6)
     {
@@ -2148,6 +1371,53 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
     return pLoadRiderWorkArea;
 }
 
+s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
+{
+    const s_RiderDefinition* r13 = &gRiderTable[riderType];
+
+    u8* pModelData1 = NULL;
+
+    s_loadRiderWorkArea* pLoadRiderWorkArea = static_cast<s_loadRiderWorkArea*>(createSubTaskFromFunction(pWorkArea, NULL, new s_loadRiderWorkArea, "LoadRider2"));
+
+    pLoadRiderWorkArea->m4 = 0;
+    pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
+    pLoadRiderWorkArea->m_riderType = riderType;
+    pLoadRiderWorkArea->m_data0 = r13->m_flags;
+
+    pRiderState = pLoadRiderWorkArea;
+
+    if (riderType < 6)
+    {
+        pLoadRiderWorkArea->m_riderModel = rider2Model;
+        if (riderType == 1)
+        {
+            pLoadRiderWorkArea->m_14 = 0x24;
+        }
+        else
+        {
+            pLoadRiderWorkArea->m_14 = 0;
+        }
+
+        loadFile(r13->m_MCBName, rider2Model, 0x2E80);
+
+        if (r13->m_CGBName)
+        {
+            loadFile(r13->m_CGBName, rider2VRam, 0);
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+
+    u8* pModel = pLoadRiderWorkArea->m_riderModel;
+    u8* pModelData2 = pModel + READ_BE_U32(pModel + r13->m_flags2);
+
+    createDragonStateSubData1(pLoadRiderWorkArea, &pLoadRiderWorkArea->m_18, 0, pModel, pLoadRiderWorkArea->m_data0, pModelData1, pModelData2, 0, r13->m_pExtraData);
+
+    return pLoadRiderWorkArea;
+}
+
 void loadCurrentRider(s_workArea* pWorkArea)
 {
     loadRider(pWorkArea, mainGameState.gameStats.rider1);
@@ -2155,7 +1425,7 @@ void loadCurrentRider(s_workArea* pWorkArea)
 
 void loadCurrentRider2(s_workArea* pWorkArea)
 {
-    assert(0);
+    loadRider2(pWorkArea, mainGameState.gameStats.rider2);
 }
 
 void updateDragonIfCursorChanged(u32 level)
@@ -2175,12 +1445,210 @@ void loadRider2IfChanged(u32 rider)
 
 void freeRamResource()
 {
+    yLog("Unimplemented freeRamResource");
+}
+
+void loadFnt(const char*)
+{
+    yLog("Unimplemented loadFnt");
+}
+
+void unloadFnt(const char*)
+{
+    yLog("Unimplemented unloadFnt");
+}
+
+u8 fieldSubTaskVar0;
+
+void setFieldSubTaskVar0(u32 value)
+{
+    fieldSubTaskVar0 = value;
+}
+
+void fieldSubTaskInit(s_workArea* pWorkArea)
+{
+    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = static_cast<s_FieldSubTaskWorkArea*>(pWorkArea);
+
+    fieldTaskPtr->pSubFieldData = pFieldSubTaskWorkArea;
+    fieldTaskPtr->pSubFieldData->fieldDebuggerWho = 0;
+
+    setFieldSubTaskVar0(1);
+
+    if ((fieldTaskPtr->currentFieldIndex != 8) && (fieldTaskPtr->currentFieldIndex != 12))
+    {
+        resetTempAllocators();
+    }
+
+    menuUnk0.m_48 = 0xC210;
+    menuUnk0.m_4A = 0xC210;
+
+    FLD_D5_OVERLAY::overlayStart(pWorkArea, 0);
+
+    fieldTaskPtr->fieldTaskState = 4;
+
+    if (fieldTaskPtr->field_35)
+    {
+        fieldTaskPtr->fStatus = 0;
+    }
+    else
+    {
+        fieldTaskPtr->fStatus = 1;
+    }
+}
+
+void* openFileListHead = NULL;
+
+bool readKeyboardToggle()
+{
+    return false;
+}
+
+void fieldSubTaskUpdate(s_workArea* pWorkArea)
+{
+    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = static_cast<s_FieldSubTaskWorkArea*>(pWorkArea);
+
+    mainGameState.setPackedBits(0, 2, 0);
+
+    switch (pFieldSubTaskWorkArea->fieldSubTaskStatus)
+    {
+    case 0:
+        if (openFileListHead == NULL)
+        {
+            if (!soundFunc1())
+            {
+                menuUnk0.m_4D = 6;
+
+                if (menuUnk0.m_4D >= menuUnk0.m_4C)
+                {
+                    vdp2Controls.m_registers[0].N1COSL = 0x10;
+                    vdp2Controls.m_registers[1].N1COSL = 0x10;
+                }
+
+                resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
+                resetMenu(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_4A, 30);
+
+                pFieldSubTaskWorkArea->fieldSubTaskStatus++;
+            }
+        }
+    default:
+    case 1:
+        mainGameState.gameStats.field_70++;
+        pFieldSubTaskWorkArea->field_354++;
+
+        if (readKeyboardToggle())
+        {
+            assert(0);
+        }
+        break;
+    }
+}
+
+void fieldSubTaskDraw(s_workArea* pWorkArea)
+{
+    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = static_cast<s_FieldSubTaskWorkArea*>(pWorkArea);
+
+    if (pFieldSubTaskWorkArea->pUpdateFunction1)
+    {
+        assert(0);
+    }
+
+    if (pFieldSubTaskWorkArea->pUpdateFunction2)
+    {
+        assert(0);
+    }
+
+}
+
+void fieldSubTaskDelete(s_workArea* pWorkArea)
+{
+    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = static_cast<s_FieldSubTaskWorkArea*>(pWorkArea);
+
     assert(0);
 }
 
-void fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMenuSelection, u32 field_3A, u32 currentSubFieldIndex)
+s_taskDefinition fieldSubTaskDefinition = { fieldSubTaskInit, fieldSubTaskUpdate, fieldSubTaskDraw, fieldSubTaskDelete, "field sub task" };
+
+void fieldStartOverlayTaskInit(s_workArea* pWorkArea)
 {
-    assert(0);
+    const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->currentFieldIndex];
+
+    if(pFieldDefinition->m_fnt)
+    {
+        loadFnt(pFieldDefinition->m_fnt);
+    }
+
+    if(pFieldDefinition->m_prg)
+    {
+        //loadFile(pFieldDefinition->m_prg, NULL, 0);
+
+        createSubTask(pWorkArea, &fieldSubTaskDefinition, new s_FieldSubTaskWorkArea);
+    }
+}
+
+void fieldStartOverlayTaskDelete(s_workArea* pWorkArea)
+{
+    const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->currentFieldIndex];
+
+    if (pFieldDefinition->m_fnt)
+    {
+        unloadFnt(pFieldDefinition->m_fnt);
+    }
+
+    fieldTaskPtr->overlayTaskData = NULL;
+}
+
+s_taskDefinition fieldStartOverlayTask = { fieldStartOverlayTaskInit, NULL, NULL, fieldStartOverlayTaskDelete, "field start overlay task" };
+
+void fieldSub1TaskInit(s_workArea* pWorkArea)
+{
+    fieldTaskPtr->field_0 = pWorkArea;
+    createSubTask(pWorkArea, &fieldStartOverlayTask, new s_workArea);
+}
+
+void fieldSub1TaskDelete(s_workArea* pWorkArea)
+{
+    fieldTaskPtr->field_0 = NULL;
+}
+
+s_taskDefinition fieldSub1TaskDefinition = { fieldSub1TaskInit, NULL, NULL, fieldSub1TaskDelete, "field sub1 task" };
+
+void fieldSub0TaskInit(s_workArea* pWorkArea)
+{
+    fieldTaskVar0 = pWorkArea;
+    createSubTask(pWorkArea, &fieldSub1TaskDefinition, new s_workArea);
+}
+
+void fieldSub0TaskDelete(s_workArea* pWorkArea)
+{
+    fieldTaskVar0 = NULL;
+}
+
+s_taskDefinition fieldSub0TaskDefinition = { fieldSub0TaskInit, NULL, NULL, fieldSub0TaskDelete, "field sub0 task" };
+
+p_workArea fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMenuSelection, u32 field_3A, u32 currentSubFieldIndex)
+{
+    fieldTaskPtr->currentFieldIndex = fieldIndexMenuSelection;
+    fieldTaskPtr->currentSubFieldIndex = subFieldIndexMenuSelection;
+    fieldTaskPtr->field_30 = field_3A;
+    fieldTaskPtr->field_32 = currentSubFieldIndex;
+
+    if (fieldTaskVar0 == NULL)
+    {
+        createSubTask(fieldTaskPtr, &fieldSub0TaskDefinition, new s_workArea);
+    }
+    else
+    {
+        if (fieldTaskPtr->field_0 == NULL)
+        {
+            createSubTask(fieldTaskPtr, &fieldSub1TaskDefinition, new s_workArea);
+        }
+        else
+        {
+            createSubTask(fieldTaskPtr->overlayTaskData, &fieldSubTaskDefinition, new s_FieldSubTaskWorkArea);
+        }
+    }
+
+    return fieldTaskVar0;
 }
 
 void setupPlayer(u32 fieldIndex)
@@ -2289,7 +1757,13 @@ void fieldTaskUpdate(p_workArea pTypelessWorkArea)
 
         if (pWorkArea->pSubFieldData)
         {
-            assert(0);
+            if (fieldInputTaskWorkArea)
+            {
+                fieldInputTaskWorkArea->getTask()->markFinished();
+                fieldInputTaskWorkArea = NULL;
+            }
+
+            pauseEngine[2] = 1;
         }
         pWorkArea->fieldTaskState = 1;
         break;
