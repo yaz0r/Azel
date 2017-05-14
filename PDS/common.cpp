@@ -3,6 +3,10 @@
 const u8 bitMasks[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
 const u8 reverseBitMasks[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xF8, 0xFD, 0xFE };
 
+s_vdp1AllocatorNode* vdp1AllocatorHead = NULL;
+
+u8 playerDataMemoryBuffer[0x28000];
+
 s_mainGameState mainGameState;
 
 const s_dragonPerLevelMaxHPBP dragonPerLevelMaxHPBP[DR_LEVEL_MAX] = {

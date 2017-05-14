@@ -135,38 +135,6 @@ void initNewGameState()
     }
 }
 
-struct s_FieldSubTaskWorkArea : public s_workArea
-{
-    u16 field_354; // 354
-    u16 fieldSubTaskStatus; // 358
-    void* pUpdateFunction2; // 35C
-    u16 fieldDebuggerWho; // 370
-
-    void* pUpdateFunction1; // 374
-};
-
-struct s_fieldTaskWorkArea : public s_workArea
-{
-    s_workArea* field_0; // 0
-    s_workArea* overlayTaskData;//8
-    s_FieldSubTaskWorkArea* pSubFieldData; // 0x8
-    u32 fStatus; // 0x28
-    s16 currentFieldIndex; // 0x2C
-    s16 currentSubFieldIndex; // 0x2E;
-    s16 field_30; // 0x30
-    s16 field_32; // 0x32
-    u8 field_35; // 0x35
-    u16 fieldIndexMenuSelection; // 0x36
-    s16 subFieldIndexMenuSelection; // 0x38
-    s16 field_3A; // 0x3A
-    u8 fieldTaskState; // 0x3C
-    s8 field_3D; // 0x3D
-    u8 updateDragonAndRiderOnInit; // 0x3E
-    // size: 0x50
-};
-
-s_fieldTaskWorkArea* fieldTaskPtr = NULL;
-
 p_workArea fieldTaskVar0;
 p_workArea fieldInputTaskWorkArea;
 u32 fieldTaskVar2;
@@ -495,7 +463,6 @@ struct s_dramAllocator
 
 s_dramAllocator* dramAllocatorHead = NULL;
 s_dramAllocator* dramAllocatorEnd = NULL;
-void* vdp1AllocatorHead = NULL;
 
 void resetTempAllocators()
 {
@@ -511,8 +478,6 @@ void loadRamResource(s_workArea* pWorkArea)
         assert(0);
     }
 }
-
-u8 playerDataMemoryBuffer[0x28000];
 
 void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** assetList)
 {
@@ -611,21 +576,21 @@ void unimplementedDraw(s_dragonStateSubData1* pDragonStateData1)
     assert(0);
 }
 
-void* modelMode4_position0 = unimplementedUpdate;
-void* modelMode4_position1 = unimplementedUpdate;
-void* modelMode4_rotation = unimplementedUpdate;
-void* modelMode4_scale = unimplementedUpdate;
+void (*modelMode4_position0)(s_dragonStateSubData1*) = unimplementedUpdate;
+void (*modelMode4_position1)(s_dragonStateSubData1*) = unimplementedUpdate;
+void (*modelMode4_rotation)(s_dragonStateSubData1*) = unimplementedUpdate;
+void (*modelMode4_scale)(s_dragonStateSubData1*) = unimplementedUpdate;
 
-void* modelDrawFunction0 = unimplementedDraw;
-void* modelDrawFunction1 = unimplementedDraw;
-void* modelDrawFunction2 = unimplementedDraw;
-void* modelDrawFunction3 = unimplementedDraw;
+void (*modelDrawFunction0)(s_dragonStateSubData1*) = unimplementedDraw;
+void (*modelDrawFunction1)(s_dragonStateSubData1*) = unimplementedDraw;
+void (*modelDrawFunction2)(s_dragonStateSubData1*) = unimplementedDraw;
+void (*modelDrawFunction3)(s_dragonStateSubData1*) = unimplementedDraw;
 
-void* modelDrawFunction5 = unimplementedDraw;
-void* modelDrawFunction6 = unimplementedDraw;
+void (*modelDrawFunction5)(s_dragonStateSubData1*) = unimplementedDraw;
+void (*modelDrawFunction6)(s_dragonStateSubData1*) = unimplementedDraw;
 
-void* modelDrawFunction9 = unimplementedDraw;
-void* modelDrawFunction10 = unimplementedDraw;
+void (*modelDrawFunction9)(s_dragonStateSubData1*) = unimplementedDraw;
+void (*modelDrawFunction10)(s_dragonStateSubData1*) = unimplementedDraw;
 
 void copyPosePosition(s_dragonStateSubData1* pDragonStateData1)
 {
@@ -1482,7 +1447,7 @@ void fieldSubTaskInit(s_workArea* pWorkArea)
     menuUnk0.m_48 = 0xC210;
     menuUnk0.m_4A = 0xC210;
 
-    FLD_D5_OVERLAY::overlayStart(pWorkArea, 0);
+    FLD_A3_OVERLAY::overlayStart(pWorkArea, 0);
 
     fieldTaskPtr->fieldTaskState = 4;
 
@@ -1571,6 +1536,10 @@ s_taskDefinition fieldSubTaskDefinition = { fieldSubTaskInit, fieldSubTaskUpdate
 void fieldStartOverlayTaskInit(s_workArea* pWorkArea)
 {
     const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->currentFieldIndex];
+
+    fieldTaskPtr->overlayTaskData = pWorkArea;
+
+    yLog("Missing createEncouterTask");
 
     if(pFieldDefinition->m_fnt)
     {

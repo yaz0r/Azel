@@ -27,6 +27,9 @@ bool initField(p_workArea workArea, const char** fieldFileList, u32 arg)
 
     setupFileList(fieldFileList);
 
+    assert(false);
+    /*
+
     if (getFieldMemoryAreaRemain() < 0)
     {
         return false;
@@ -52,7 +55,7 @@ bool initField(p_workArea workArea, const char** fieldFileList, u32 arg)
     getFieldTaskPtr()->pSubFieldData->pUpdateFunction1 = fieldUpdateFunction1;
 
     pauseEngine[2] = 1;
-
+    */
     return true;
 }
 

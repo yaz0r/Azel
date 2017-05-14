@@ -209,11 +209,11 @@ struct s_dragonStateSubData1
     u16 field_14; //14
     u16 field_16; //16
 
-    void* drawFunction;
-    void* addToDisplayListFunction;
-    void* positionUpdateFunction;
-    void* rotationUpdateFunction;
-    void* scaleUpdateFunction;
+    void(*drawFunction)(s_dragonStateSubData1*);
+    void (*addToDisplayListFunction)();
+    void(*positionUpdateFunction)(s_dragonStateSubData1*);
+    void(*rotationUpdateFunction)(s_dragonStateSubData1*);
+    void(*scaleUpdateFunction)(s_dragonStateSubData1*);
     sPoseData* poseData; //2C
 
     u8* field_30; //30
@@ -268,4 +268,15 @@ struct s_dragonState : public s_workArea
 };
 
 extern s_dragonState* gDragonState;
+
+extern u8 playerDataMemoryBuffer[0x28000];
+
+struct s_vdp1AllocatorNode
+{
+    s_vdp1AllocatorNode* m_nextAllocator;
+    s_vdp1AllocatorNode* m_nextNode;
+};
+extern s_vdp1AllocatorNode* vdp1AllocatorHead;
+
+void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** assetList);
 

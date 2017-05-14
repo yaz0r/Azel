@@ -30,7 +30,9 @@ void yLog(...);
 
 #include "common.h"
 #include "renderer.h"
+#include "3dEngine.h"
 #include "mainMenuDebugTasks.h"
+#include "field.h"
 
 struct sPortData2
 {
