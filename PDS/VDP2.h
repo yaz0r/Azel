@@ -180,7 +180,7 @@ void setVdp2VramU16(u32 offset, u16 value);
 u8* getVdp2Cram(u32 offset);
 
 void loadFile(const char* fileName, u8* destination, u32 unk0);
-void addToVDP2MemoryLayout(u8* pointer, u32 unk0);
+void addToMemoryLayout(u8* pointer, u32 unk0);
 void asyncDmaCopy(void* source, void* target, u32 size, u32 unk);
 
 void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD);

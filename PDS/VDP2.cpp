@@ -190,10 +190,6 @@ void loadFile(const char* fileName, u8* destination, u32 unk0)
     fclose(fHandle);
 }
 
-void addToVDP2MemoryLayout(u8* pointer, u32 unk0)
-{
-}
-
 void unpackGraphicsToVDP2(u8* compressedData, u8* destination)
 {
     u8 r6 = *(compressedData++);
@@ -315,7 +311,7 @@ void loadFont()
 
     loadFile("ASCII.CGZ", fontFile, 0);
 
-    addToVDP2MemoryLayout(fontFile, 1);
+    addToMemoryLayout(fontFile, 1);
 
     unpackGraphicsToVDP2(fontFile, VDP2_VRamStart);
 

@@ -106,10 +106,10 @@ void loadTitleScreenGraphics()
     vdp2Controls.m_isDirty = 1; // because why not?
 
     loadFile("TITLEE.SCB", getVdp2Vram(0x20000), 0);
-    addToVDP2MemoryLayout(getVdp2Vram(0x20000), 1);
+    addToMemoryLayout(getVdp2Vram(0x20000), 1);
 
     loadFile("TITLEE.PNB", getVdp2Vram(0x10000), 0);
-    addToVDP2MemoryLayout(getVdp2Vram(0x10000), 1);
+    addToMemoryLayout(getVdp2Vram(0x10000), 1);
 
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 0x200, 0);
 

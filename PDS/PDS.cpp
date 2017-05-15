@@ -51,8 +51,95 @@ void initInitialTaskStatsAndDebug()
     //iniitInitialTaskStatsAndDebugSub();
 }
 
+struct sFileInfoSub
+{
+    sFileInfoSub* pNext;
+};
+
+struct sFileInfo
+{
+    u8 field_3; //3
+    u8 displayMemoryLayout; //5
+    u16 field_8; //8
+
+    sFileInfoSub* freeHead; //2C
+    sFileInfoSub* allocatedHead; //30
+    sFileInfoSub linkedList[15]; //34
+} fileInfoStruct;
+
+void initFileSystemSub1()
+{
+    yLog("Unimplemented initFileSystemSub1");
+}
+
+void initFileSystemSub2()
+{
+    sFileInfoSub** r5 = &fileInfoStruct.allocatedHead;
+    sFileInfoSub* r4 = &fileInfoStruct.linkedList[0];
+
+    for (u32 i = 0; i < 15; i++)
+    {
+        *r5 = r4;
+        r5 = &r4->pNext;
+        r4++;
+    }
+
+    *r5 = NULL;
+    fileInfoStruct.freeHead = NULL;
+}
+
+struct sMemoryLayoutNode
+{
+    sMemoryLayoutNode* pNext; //0
+};
+
+struct sMemoryLayout
+{
+    sMemoryLayoutNode* pAllocatedHead;
+    sMemoryLayoutNode* pFreeHead;
+    sMemoryLayoutNode m_nodes[64];
+} memoryLayout;
+
+void addToMemoryLayout(u8* pointer, u32 unk0)
+{
+}
+
+void initFileLayoutTable()
+{
+    sMemoryLayoutNode** r5 = &memoryLayout.pFreeHead;
+    sMemoryLayoutNode* r4 = &memoryLayout.m_nodes[0];
+
+    for (u32 i = 0; i < 64; i++)
+    {
+        *r5 = r4;
+        r5 = &r4->pNext;
+        r4++;
+    }
+
+    *r5 = NULL;
+    memoryLayout.pAllocatedHead = NULL;
+}
+
+void initFileInfoStruct()
+{
+    fileInfoStruct.field_3 = 7;
+    fileInfoStruct.displayMemoryLayout = 0;
+
+    initFileSystemSub1();
+
+    fileInfoStruct.field_8 = -1;
+
+    initFileSystemSub2();
+
+    initFileLayoutTable();
+}
+
 void azelInit()
 {
+    // stuff
+
+    initFileInfoStruct();
+
     // stuff
     initInitialTaskStatsAndDebug();
 

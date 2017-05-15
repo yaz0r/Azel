@@ -514,7 +514,7 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
     pNode->m_pNext = NULL;
     pNode->size = size;
 
-    addToVDP2MemoryLayout(dest, 8);
+    addToMemoryLayout(dest, 8);
 }
 
 u8* dramAllocate(u32 size, u32 unk)
@@ -548,7 +548,7 @@ u8* dramAllocate(u32 size, u32 unk)
                 pNewNode->m_pNext = r14->m_pNext;
                 pNewNode->size = newNodeSize;
 
-                addToVDP2MemoryLayout((u8*)pNewNode, 8);
+                addToMemoryLayout((u8*)pNewNode, 8);
 
                 r14->size = paddedSize;
             }
