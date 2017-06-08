@@ -165,31 +165,6 @@ void clearVdp2TextSmallFont()
     }
 }
 
-u32 getFileSize(const char* fileName)
-{
-    FILE* fHandle = fopen(fileName, "rb");
-    assert(fHandle);
-
-    fseek(fHandle, 0, SEEK_END);
-    u32 fileSize = ftell(fHandle);
-
-    fclose(fHandle);
-
-    return fileSize;
-}
-
-void loadFile(const char* fileName, u8* destination, u32 unk0)
-{
-    u32 fileSize = getFileSize(fileName);
-
-    FILE* fHandle = fopen(fileName, "rb");
-    assert(fHandle);
-
-    fread(destination, fileSize, 1, fHandle);
-
-    fclose(fHandle);
-}
-
 void unpackGraphicsToVDP2(u8* compressedData, u8* destination)
 {
     u8 r6 = *(compressedData++);

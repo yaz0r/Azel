@@ -80,16 +80,104 @@ void loadCommonFieldResources()
     initFieldVdp1Area(vdp1FieldArea, sizeof(vdp1FieldArea));
 }
 
-void checkFilesExists(const char** fileList)
+bool findMandatoryFileOnDisc(const char* fileName)
 {
-    assert(0);
+    FILE* fHandle = fopen(fileName, "rb");
+
+    if (fHandle == NULL)
+        return false;
+
+    fclose(fHandle);
+    return true;
 }
 
-void setupFileList(const char** fileList)
+u32 getFileSizeFromFileId(const char* fileName)
+{
+    FILE* fHandle = fopen(fileName, "rb");
+
+    if (fHandle == NULL)
+        return 0;
+
+    fseek(fHandle, 0, SEEK_END);
+    u32 fileSize = ftell(fHandle);
+
+    fclose(fHandle);
+    return fileSize;
+}
+
+void checkFilesExists(const s_MCB_CGB* fileList)
+{
+    u32* MCBSizes = fieldTaskPtr->pSubFieldData->MCBFilesSizes;
+    u32* CGBSizes = fieldTaskPtr->pSubFieldData->CGBFilesSizes;
+
+    while (fileList->MCB || fileList->CGB)
+    {
+        assert(findMandatoryFileOnDisc(fileList->MCB));
+        *(MCBSizes++) = getFileSizeFromFileId(fileList->MCB);
+
+        assert(findMandatoryFileOnDisc(fileList->CGB));
+        *(CGBSizes++) = getFileSizeFromFileId(fileList->CGB);
+
+        fileList++;
+    }
+}
+
+void setupFileList(const s_MCB_CGB* fileList)
 {
     fieldTaskPtr->pSubFieldData->fileList = fileList;
 
     checkFilesExists(fileList);
 
-    assert(0);
+    fieldTaskPtr->pSubFieldData->memoryArea[0] = fieldTaskPtr->pSubFieldData->memoryArea_bottom;
+    fieldTaskPtr->pSubFieldData->memoryArea[1] = fieldTaskPtr->pSubFieldData->memoryArea[0] + fieldTaskPtr->pSubFieldData->MCBFilesSizes[0]; // TODO: should be aligned
+    fieldTaskPtr->pSubFieldData->memoryArea[2] = fieldTaskPtr->pSubFieldData->memoryArea[1] + fieldTaskPtr->pSubFieldData->MCBFilesSizes[1]; // TODO: should be aligned
+
+    fieldTaskPtr->pSubFieldData->characterArea[0] = fieldTaskPtr->pSubFieldData->characterArea_bottom;
+    fieldTaskPtr->pSubFieldData->characterArea[1] = fieldTaskPtr->pSubFieldData->characterArea[0] + fieldTaskPtr->pSubFieldData->CGBFilesSizes[0]; // TODO: should be aligned
+    fieldTaskPtr->pSubFieldData->characterArea[2] = fieldTaskPtr->pSubFieldData->characterArea[1] + fieldTaskPtr->pSubFieldData->CGBFilesSizes[1]; // TODO: should be aligned
+
+    u32 currentFileIndex = 2;
+    const s_MCB_CGB* currentFileList = fileList + currentFileIndex;
+
+    u32 largestMCB = 0;
+    u32 largestCGB = 0;
+
+    while (currentFileList->MCB)
+    {
+        largestMCB = std::max(fieldTaskPtr->pSubFieldData->MCBFilesSizes[currentFileIndex], largestMCB);
+        largestCGB = std::max(fieldTaskPtr->pSubFieldData->CGBFilesSizes[currentFileIndex], largestCGB);
+
+        currentFileList++;
+        currentFileIndex++;
+    }
+
+    fieldTaskPtr->pSubFieldData->memoryArea_edge = fieldTaskPtr->pSubFieldData->memoryArea[2] + largestMCB; // TODO: should be aligned
+    fieldTaskPtr->pSubFieldData->characterArea_edge = fieldTaskPtr->pSubFieldData->characterArea[2] + largestCGB; // TODO: should be aligned
+}
+
+s32 getFieldMemoryAreaRemain()
+{
+    return fieldTaskPtr->pSubFieldData->memoryArea_top - fieldTaskPtr->pSubFieldData->memoryArea_edge;
+}
+
+s32 getFieldCharacterAreaRemain()
+{
+    return fieldTaskPtr->pSubFieldData->characterArea_top - fieldTaskPtr->pSubFieldData->characterArea_edge;
+}
+
+void loadFileFromFileList(u32 index)
+{
+    const s_MCB_CGB* pFileData = &fieldTaskPtr->pSubFieldData->fileList[index];
+
+    int slot = std::min(2, (int)index);
+
+    if (pFileData->MCB)
+    {
+        loadFile(pFileData->MCB, fieldTaskPtr->pSubFieldData->memoryArea[slot], fieldTaskPtr->pSubFieldData->characterArea[slot]);
+    }
+
+    if (pFileData->CGB)
+    {
+        loadFile(pFileData->CGB, fieldTaskPtr->pSubFieldData->characterArea[slot], NULL);
+    }
 }

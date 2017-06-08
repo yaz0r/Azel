@@ -101,3 +101,14 @@ p_workArea createSubTaskFromFunction(p_workArea workArea, void(*pFunction)(p_wor
 
 s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
 
+void dummyTaskInit(s_workArea* pWorkArea);
+void dummyTaskInitWithArg(s_workArea* pWorkArea, u32 arg);
+void dummyTaskUpdate(s_workArea* pWorkArea);
+void dummyTaskDraw(s_workArea* pWorkArea);
+void dummyTaskDelete(s_workArea* pWorkArea);
+
+struct s_dummyWorkArea : s_workArea
+{
+
+};
+

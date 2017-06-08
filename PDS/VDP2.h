@@ -179,7 +179,7 @@ u8* getVdp2Vram(u32 offset);
 void setVdp2VramU16(u32 offset, u16 value);
 u8* getVdp2Cram(u32 offset);
 
-void loadFile(const char* fileName, u8* destination, u32 unk0);
+int loadFile(const char* fileName, u8* destination, u8* characterAreaPointer);
 void addToMemoryLayout(u8* pointer, u32 unk0);
 void asyncDmaCopy(void* source, void* target, u32 size, u32 unk);
 

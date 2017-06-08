@@ -127,15 +127,15 @@ struct s_fieldDefinition
 
 extern const s_fieldDefinition fieldDefinitions[];
 
-struct s_dragonFiles {
+struct s_MCB_CGB {
     const char* MCB;
     const char* CGB;
 };
 
 struct s_dragonFileConfig {
-    s_dragonFiles m_base;
-    s_dragonFiles m_M;
-    s_dragonFiles m_C;
+    s_MCB_CGB m_base;
+    s_MCB_CGB m_M;
+    s_MCB_CGB m_C;
 };
 
 extern const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX];

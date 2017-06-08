@@ -1134,8 +1134,8 @@ void createDragonState(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
 void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 {
-    loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, gDragonModel, 0x2400);
-    loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, gDragonVram, 0);
+    loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, gDragonModel, gDragonVram);
+    loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, gDragonVram, NULL);
 
     createDragonState(pWorkArea, dragonLevel);
 }
@@ -1160,7 +1160,7 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
     if (dragonFilenameTable[dragonLevel].m_M.MCB)
     {
         assert(0);
-        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->dramAllocation, pLoadDragonWorkArea->MCBOffsetInDram / 8);
+        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->dramAllocation, pLoadDragonWorkArea->dramAllocation + pLoadDragonWorkArea->MCBOffsetInDram);
         loadFile(dragonFilenameTable[dragonLevel].m_M.CGB, pLoadDragonWorkArea->dramAllocation + pLoadDragonWorkArea->MCBOffsetInDram, 0);
 
     }
@@ -1316,7 +1316,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
             pLoadRiderWorkArea->m_14 = 0;
         }
 
-        loadFile(r13->m_MCBName, riderModel, 0x2C00);
+        loadFile(r13->m_MCBName, riderModel, riderVRam);
 
         if (r13->m_CGBName)
         {
@@ -1363,7 +1363,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
             pLoadRiderWorkArea->m_14 = 0;
         }
 
-        loadFile(r13->m_MCBName, rider2Model, 0x2E80);
+        loadFile(r13->m_MCBName, rider2Model, rider2VRam);
 
         if (r13->m_CGBName)
         {

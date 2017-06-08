@@ -2,13 +2,17 @@
 
 struct s_FieldSubTaskWorkArea : public s_workArea
 {
+    u8* memoryArea[3]; // 0
+    u8* characterArea[3]; // C
     u8* memoryArea_edge; // 18
     u8* characterArea_edge; // 1C
     u8* memoryArea_bottom; // 20
     u8* memoryArea_top; // 24
     u8* characterArea_bottom; // 28
     u8* characterArea_top; // 2C
-    const char** fileList; // 30
+    const s_MCB_CGB* fileList; // 30
+    u32 MCBFilesSizes[32]; // 34
+    u32 CGBFilesSizes[32]; // 1B4
     u16 field_354; // 354
     u16 fieldSubTaskStatus; // 358
     void* pUpdateFunction2; // 35C
@@ -40,5 +44,10 @@ struct s_fieldTaskWorkArea : public s_workArea
 extern s_fieldTaskWorkArea* fieldTaskPtr;
 
 void loadCommonFieldResources();
-void setupFileList(const char** fileList);
+void setupFileList(const s_MCB_CGB* fileList);
 
+s32 getFieldMemoryAreaRemain();
+s32 getFieldCharacterAreaRemain();
+
+void loadFileFromFileList(u32 index);
+s_fieldTaskWorkArea* getFieldTaskPtr();

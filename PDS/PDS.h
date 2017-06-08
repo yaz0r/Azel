@@ -10,6 +10,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include <algorithm>
+
 typedef uint8_t u8;
 typedef int8_t s8;
 typedef uint16_t u16;
@@ -53,6 +55,8 @@ u32 READ_BE_U32(const void* ptr);
 s32 READ_BE_S32(const void* ptr);
 u16 READ_BE_U16(const void* ptr);
 s16 READ_BE_S16(const void* ptr);
+
+u32 getFileSize(const char* fileName);
 
 #include "o_title.h"
 #include "o_fld_a3.h"

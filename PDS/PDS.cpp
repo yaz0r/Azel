@@ -53,19 +53,202 @@ void initInitialTaskStatsAndDebug()
 
 struct sFileInfoSub
 {
-    sFileInfoSub* pNext;
+    sFileInfoSub* pNext; // 0
+    char m_fileName[32]; // 4 was file id before
+    FILE* fHandle;//8
+    //u32 m_numSectors;//C
+    u32 m_fileSize; //10 ?
+    //u32 m_14;//14 ?
+    u16 m_18;//18 ? word
+    u8* m_patchPointerType; //1A ? word
 };
 
 struct sFileInfo
 {
+    u8 field_0; //0
     u8 field_3; //3
     u8 displayMemoryLayout; //5
     u16 field_8; //8
 
-    sFileInfoSub* freeHead; //2C
-    sFileInfoSub* allocatedHead; //30
+    sFileInfoSub* allocatedHead; //2C
+    sFileInfoSub* freeHead; //30
     sFileInfoSub linkedList[15]; //34
 } fileInfoStruct;
+
+sFileInfoSub* getFileHandle(const char* fileName)
+{
+    sFileInfoSub* r3 = fileInfoStruct.allocatedHead;
+
+    while (r3)
+    {
+        if (strcmp(r3->m_fileName, fileName) == 0)
+        {
+            return r3;
+        }
+
+        r3 = r3->pNext;
+    }
+
+    return NULL;
+}
+
+sFileInfoSub* allocateFileInfoStruct()
+{
+    sFileInfoSub* pFree = fileInfoStruct.freeHead;
+    if (pFree == NULL)
+        return NULL;
+
+    sFileInfoSub** r4 = &fileInfoStruct.allocatedHead;
+
+    while (*r4)
+    {
+        r4 = &(*r4)->pNext;
+    }
+
+    *r4 = pFree;
+    fileInfoStruct.freeHead = pFree->pNext;
+    pFree->pNext = NULL;
+
+    return pFree;
+}
+
+void freeFileInfoStruct(sFileInfoSub* pInfo)
+{
+    sFileInfoSub** r5 = &fileInfoStruct.allocatedHead;
+
+    while (*r5 != pInfo)
+    {
+        r5 = &(*r5)->pNext;
+    }
+
+    *r5 = pInfo->pNext;
+    pInfo->pNext = fileInfoStruct.freeHead;
+    fileInfoStruct.freeHead = pInfo;
+}
+
+u32 getFileSize(const char* fileName)
+{
+    FILE* fHandle = fopen(fileName, "rb");
+    assert(fHandle);
+
+    fseek(fHandle, 0, SEEK_END);
+    u32 fileSize = ftell(fHandle);
+
+    fclose(fHandle);
+
+    return fileSize;
+}
+
+sFileInfoSub* openFileHandle(const char* fileName)
+{
+    sFileInfoSub* pFileHandle = getFileHandle(fileName);
+    if (pFileHandle)
+        return pFileHandle;
+
+    pFileHandle = allocateFileInfoStruct();
+    strcpy(pFileHandle->m_fileName, fileName);
+
+    FILE* fHandle = fopen(fileName, "rb");
+    pFileHandle->fHandle = fHandle;
+
+    fseek(fHandle, 0, SEEK_END);
+    u32 fileSize = ftell(fHandle);
+    fseek(fHandle, 0, SEEK_SET);
+
+    pFileHandle->m_fileSize = fileSize;
+
+    return pFileHandle;
+}
+
+struct sMemoryLayoutNode // size is 0x10
+{
+    sMemoryLayoutNode* pNext; //0
+    char m_fileName[32]; //4
+    u8* m_6;//6
+    u8* m_destination;//8
+    u32 m_size;//C
+};
+
+struct sMemoryLayout
+{
+    sMemoryLayoutNode* pAllocatedHead; // 0
+    sMemoryLayoutNode* pFreeHead; // 4
+    sMemoryLayoutNode m_nodes[64]; // 8
+} memoryLayout;
+
+void displayMemoryLayout()
+{
+    if (fileInfoStruct.displayMemoryLayout)
+    {
+        assert(0);
+    }
+}
+
+
+bool addFileToMemoryLayout(const char* fileName, u8* destination, u32 fileSize, u8* characterArea)
+{
+    sMemoryLayoutNode** r13 = &memoryLayout.pAllocatedHead;
+
+    while (*r13)
+    {
+        assert(0);
+    }
+
+    if (memoryLayout.pFreeHead)
+    {
+        sMemoryLayoutNode* pNode = memoryLayout.pFreeHead;
+        memoryLayout.pFreeHead = pNode->pNext;
+        pNode->pNext = NULL;
+
+        strcpy(pNode->m_fileName, fileName);
+        pNode->m_6 = characterArea;
+        pNode->m_destination = destination;
+        pNode->m_size = fileSize;
+    }
+
+    displayMemoryLayout();
+    return false;
+}
+
+int loadFile(const char* fileName, u8* destination, u8* characterArea)
+{
+    sFileInfoSub* pFileHandle = openFileHandle(fileName);
+
+    if (pFileHandle == NULL)
+    {
+        return -1;
+    }
+
+    if (addFileToMemoryLayout(fileName, destination, pFileHandle->m_fileSize, characterArea))
+    {
+        assert(0);
+    }
+
+    //writeLoadingFileDebugInfo(fileInfoStruct.field_0, fileName);
+
+    fileInfoStruct.field_0 = 1;
+
+    pFileHandle->m_18 = 0;
+    pFileHandle->m_patchPointerType = characterArea;
+
+    fread(destination, pFileHandle->m_fileSize, 1, pFileHandle->fHandle);
+
+    if (characterArea)
+    {
+        //patchFilePointers(destination, patchPointerType);
+    }
+
+    fclose(pFileHandle->fHandle);
+
+    freeFileInfoStruct(pFileHandle);
+
+    if (enableDebugTask)
+    {
+        assert(0);
+    }
+
+    return 0;
+}
 
 void initFileSystemSub1()
 {
@@ -74,7 +257,7 @@ void initFileSystemSub1()
 
 void initFileSystemSub2()
 {
-    sFileInfoSub** r5 = &fileInfoStruct.allocatedHead;
+    sFileInfoSub** r5 = &fileInfoStruct.freeHead;
     sFileInfoSub* r4 = &fileInfoStruct.linkedList[0];
 
     for (u32 i = 0; i < 15; i++)
@@ -85,23 +268,19 @@ void initFileSystemSub2()
     }
 
     *r5 = NULL;
-    fileInfoStruct.freeHead = NULL;
+    fileInfoStruct.allocatedHead = NULL;
 }
 
-struct sMemoryLayoutNode
+void addToMemoryLayout(u8* pointer, u32 size)
 {
-    sMemoryLayoutNode* pNext; //0
-};
+    sMemoryLayoutNode** r5 = &memoryLayout.pAllocatedHead;
 
-struct sMemoryLayout
-{
-    sMemoryLayoutNode* pAllocatedHead;
-    sMemoryLayoutNode* pFreeHead;
-    sMemoryLayoutNode m_nodes[64];
-} memoryLayout;
+    while (*r5)
+    {
+        assert(0);
+    }
 
-void addToMemoryLayout(u8* pointer, u32 unk0)
-{
+    displayMemoryLayout();
 }
 
 void initFileLayoutTable()

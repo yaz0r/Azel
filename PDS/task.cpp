@@ -244,3 +244,29 @@ s_task* getTaskFromWorkArea(p_workArea pWorkArea)
 {
     return (s_task*)(((u8*)pWorkArea) - sizeof(s_task));
 }
+
+void dummyTaskInit(s_workArea* pWorkArea)
+{
+
+}
+
+void dummyTaskInitWithArg(s_workArea* pWorkArea, u32 arg)
+{
+
+}
+
+void dummyTaskUpdate(s_workArea* pWorkArea)
+{
+
+}
+
+void dummyTaskDraw(s_workArea* pWorkArea)
+{
+
+}
+
+void dummyTaskDelete(s_workArea* pWorkArea)
+{
+
+}
+
