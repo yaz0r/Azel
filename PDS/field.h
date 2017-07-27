@@ -1,5 +1,145 @@
 #pragma once
 
+struct s_fieldOverlaySubTaskWorkArea : public s_workArea
+{
+    u8 field_50D; // 50D
+    u8 field_50E; // 50E
+};
+
+struct s_scriptData1
+{
+    u32 field_0;
+    u32 field_4;
+    u32 field_8;
+    u32 field_C;
+    u32 field_10;
+    u32 field_14;
+    u32 field_18;
+    u32 field_1C;
+    u32 field_20;
+    u32 field_24;
+    u32 field_28;
+    u32 field_2C;
+    u32 field_30;
+    u32 field_34;
+    u32 field_38;
+};
+
+struct s_scriptData2
+{
+    u32 field_0;
+    u32 field_4;
+    u32 field_8;
+    u32 field_C;
+    u32 field_10;
+    u32 field_14;
+    u32 field_18;
+    u32 field_1C;
+    u32 field_20;
+};
+
+struct s_scriptData3
+{
+    u32 field_0;
+    u32 field_4;
+    u32 field_8;
+    u32 field_C;
+    u32 field_10;
+    u32 field_14;
+    u32 field_18;
+    u32 field_1C;
+};
+
+struct s_scriptData4
+{
+    u8 field_0;
+    u8 field_1;
+    u16 field_2;
+};
+
+struct s_fieldScriptWorkArea : public s_workArea
+{
+    void* field_8;
+    void* field_2C; // dunno what that is yet
+
+    u32 field_6C;
+    u32 field_70;
+
+    s_scriptData1* field_88;
+    s_scriptData2* field_8C;
+    s_scriptData3* field_90;
+    s_scriptData4* field_94;
+};
+
+struct s_memoryAreaOutput
+{
+    u8* mainMemory;
+    u8* characterArea;
+};
+
+struct s_dragonTaskWorkArea_1F0
+{
+    u32 m_0;
+    u32 m_4;
+    u32 m_8;
+    u32 m_C;
+    u16 m_E;
+    u16 m_10;
+};
+
+struct s_dragonTaskWorkArea_48
+{
+    s32 matrix[4 * 3]; //0
+
+    u32 field_30; //30
+    u32 field_34; //34
+    u32 field_38; //38
+    u8 field_3C;
+};
+
+struct s_dragonTaskWorkArea : s_workArea
+{
+    s_memoryAreaOutput field_0;
+
+    s32 posX; // 8
+    s32 posY; // C
+    s32 posZ; // 10
+
+    s32 angleX; // 20
+    s32 angleY; // 24
+    s32 angleZ; // 28
+
+    s_dragonTaskWorkArea_48 field_48;
+
+    s32 matrix[4 * 3];
+
+    u32 field_150;
+    u32 field_154;
+
+    u32 field_178[4];
+
+    u32 field_1B8;
+    u32 field_1BC;
+
+    u32 field_1CC;
+
+    s_dragonTaskWorkArea_1F0 field_1F0;
+
+    u32 field_208;
+    u32 field_20C;
+    u32 field_210;
+    u32 field_214;
+    s32 field_21C[5];
+    u32 field_228;
+    u32 field_22C;
+    u32 field_230;
+    u8 field_234;
+    u8 field_235;
+
+    u8 field_237;
+    u8 field_238;
+};
+
 struct s_FieldSubTaskWorkArea : public s_workArea
 {
     u8* memoryArea[3]; // 0
@@ -13,12 +153,20 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     const s_MCB_CGB* fileList; // 30
     u32 MCBFilesSizes[32]; // 34
     u32 CGBFilesSizes[32]; // 1B4
+    s_fieldOverlaySubTaskWorkArea* field_334;
+    s_dragonTaskWorkArea* pDragonTask; // 338
+    s_fieldScriptWorkArea* ptrToE; // 34C
     u16 field_354; // 354
     u16 fieldSubTaskStatus; // 358
-    void* pUpdateFunction2; // 35C
+    void (*pUpdateFunction2)(); // 35C
+    u8 field_369; // 369
     u16 fieldDebuggerWho; // 370
+    u8 debugMenuStatus1_a; // 37C
+    u8 debugMenuStatus1_b; // 37D
+    u8 debugMenuStatus2_a; // 37E
+    u8 debugMenuStatus3; //380
 
-    void* pUpdateFunction1; // 374
+    void (*pUpdateFunction1)(); // 374
 };
 
 struct s_fieldTaskWorkArea : public s_workArea
@@ -38,6 +186,10 @@ struct s_fieldTaskWorkArea : public s_workArea
     u8 fieldTaskState; // 0x3C
     s8 field_3D; // 0x3D
     u8 updateDragonAndRiderOnInit; // 0x3E
+    s_scriptData1* field_40; // 0x40
+    s_scriptData2* field_44; // 0x44
+    s_scriptData3* field_48; // 0x48
+    s_scriptData4* field_4C; // 0x4C
                                    // size: 0x50
 };
 
@@ -50,4 +202,7 @@ s32 getFieldMemoryAreaRemain();
 s32 getFieldCharacterAreaRemain();
 
 void loadFileFromFileList(u32 index);
+
+void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex);
+
 s_fieldTaskWorkArea* getFieldTaskPtr();

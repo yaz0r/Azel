@@ -181,3 +181,14 @@ void loadFileFromFileList(u32 index)
         loadFile(pFileData->CGB, fieldTaskPtr->pSubFieldData->characterArea[slot], NULL);
     }
 }
+
+void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex)
+{
+    if (areaIndex > 2)
+    {
+        areaIndex = 2;
+    }
+
+    pOutput->mainMemory = fieldTaskPtr->pSubFieldData->memoryArea[areaIndex];
+    pOutput->characterArea = fieldTaskPtr->pSubFieldData->characterArea[areaIndex];
+}

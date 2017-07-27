@@ -15,3 +15,5 @@ bool soundFunc1() { return 0; }
 
 void initRandomSeed(u32 init) {}
 u32 randomNumber() { return rand(); }
+bool readKeyboardToggle(u8 keyIndex) { return false; }
+

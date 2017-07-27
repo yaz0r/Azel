@@ -58,6 +58,8 @@ s16 READ_BE_S16(const void* ptr);
 
 u32 getFileSize(const char* fileName);
 
+void unimplemented(const char* name);
+
 #include "o_title.h"
 #include "o_fld_a3.h"
 

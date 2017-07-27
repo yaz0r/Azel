@@ -65,3 +65,10 @@ void reset3dEngine()
 
     //addSlaveCommand(0, 0, 0, j_resetProjectVectorSlave);
 }
+
+void resetProjectVector()
+{
+    j_resetProjectVectorMaster();
+
+    //addSlaveCommand(0, 0, 0, j_resetProjectVectorSlave);
+}

@@ -247,26 +247,26 @@ s_task* getTaskFromWorkArea(p_workArea pWorkArea)
 
 void dummyTaskInit(s_workArea* pWorkArea)
 {
-
+    printf("Unimplmenmented Init task for %s\n", pWorkArea->getTask()->m_taskName);
 }
 
 void dummyTaskInitWithArg(s_workArea* pWorkArea, u32 arg)
 {
-
+    printf("Unimplmenmented Init task for %s\n", pWorkArea->getTask()->m_taskName);
 }
 
 void dummyTaskUpdate(s_workArea* pWorkArea)
 {
-
+    printf("Unimplmenmented Update task for %s\n", pWorkArea->getTask()->m_taskName);
 }
 
 void dummyTaskDraw(s_workArea* pWorkArea)
 {
-
+    printf("Unimplmenmented Draw task for %s\n", pWorkArea->getTask()->m_taskName);
 }
 
 void dummyTaskDelete(s_workArea* pWorkArea)
 {
-
+    printf("Unimplmenmented Delete task for %s\n", pWorkArea->getTask()->m_taskName);
 }
 

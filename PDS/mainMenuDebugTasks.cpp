@@ -1021,10 +1021,7 @@ u32 countNumAnimData(s_dragonStateSubData2* pDragonStateData2, const sDragonAnim
 
 void copyAnimMatrix(const sMatrix4x3* source, sMatrix4x3* destination)
 {
-    for (u32 i = 0; i < 4 * 3; i++)
-    {
-        destination[i] = source[i];
-    }
+    *destination = *source;
 }
 
 void initRuntimeAnimDataSub1(const sDragonAnimDataSub* animDataSub, s_dragonStateSubData2SubData* subData)
@@ -1514,12 +1511,12 @@ void fieldSubTaskDraw(s_workArea* pWorkArea)
 
     if (pFieldSubTaskWorkArea->pUpdateFunction1)
     {
-        assert(0);
+        pFieldSubTaskWorkArea->pUpdateFunction1();
     }
 
     if (pFieldSubTaskWorkArea->pUpdateFunction2)
     {
-        assert(0);
+        pFieldSubTaskWorkArea->pUpdateFunction2();
     }
 
 }

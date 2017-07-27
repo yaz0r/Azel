@@ -8,6 +8,8 @@ void initHeap()
 {
     s_heapNode* heapStart = (s_heapNode*)heap;
 
+    memset(heap, 0xFF, 0x30000);
+
     heapRoot.m_nextNode = heapStart;
     heapRoot.m_size = 0;
 
@@ -20,7 +22,13 @@ void* allocateHeap(u32 size)
     if (size == 0)
         return NULL;
 
-    size += 0x17; // does that still work with 64bit pointers?
+    assert(sizeof(s_heapNode) <= 0x10);
+
+    // account for header size
+    size += 0x10;
+
+    // align to 16
+    size += 0xF;
     size &= 0xFFFFFFF0;
 
     s_heapNode* previousBlock = &heapRoot;
@@ -46,8 +54,15 @@ void* allocateHeap(u32 size)
 
             // pCurrentBlock is a block of expected size
             pCurrentBlock->m_nextNode = NULL;
-            return pCurrentBlock + 1; // return the user data of that block
+
+            u8* userData = ((u8*)pCurrentBlock) + 0x10;
+
+            memset(userData, 0xCC, pCurrentBlock->m_size - 0x10);
+
+            return userData; // return the user data of that block
         }
+
+        previousBlock = pCurrentBlock;
     }
 
     return NULL;
@@ -58,11 +73,16 @@ void* allocateHeapForTask(s_workArea* pWorkArea, u32 size)
     if (size == 0)
         return NULL;
 
-    s_heapNode* pTaskHeapNode = pWorkArea->getTask()->getHeapNode();
+    assert(sizeof(s_heapNode) <= 0x10);
 
-    size += 0x17; // does that still work with 64bit pointers?
+    // account for header size
+    size += 0x10;
+
+    // align to 16
+    size += 0xF;
     size &= 0xFFFFFFF0;
 
+    s_heapNode* pTaskHeapNode = pWorkArea->getTask()->getHeapNode();
     s_heapNode* previousBlock = &heapRoot;
 
     while (s_heapNode* pCurrentBlock = previousBlock->m_nextNode)
@@ -87,8 +107,15 @@ void* allocateHeapForTask(s_workArea* pWorkArea, u32 size)
             // pCurrentBlock is a block of expected size
             pCurrentBlock->m_nextNode = pTaskHeapNode->m_nextNode;
             pTaskHeapNode->m_nextNode = pCurrentBlock;
-            return pCurrentBlock + 1; // return the user data of that block
+
+            u8* userData = ((u8*)pCurrentBlock) + 0x10;
+
+            memset(userData, 0xCC, pCurrentBlock->m_size - 0x10);
+
+            return userData; // return the user data of that block
         }
+
+        previousBlock = pCurrentBlock;
     }
 
     return NULL;

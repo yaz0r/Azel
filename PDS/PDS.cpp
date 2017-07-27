@@ -383,3 +383,8 @@ void yLog(...)
 
 }
 
+void unimplemented(const char* name)
+{
+    printf("Unimplemented: %s\n", name);
+}
+
