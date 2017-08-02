@@ -1,7 +1,14 @@
 #pragma once
 
+struct sFieldCameraStatus
+{
+    s32 angle_y;
+};
+
 struct s_fieldOverlaySubTaskWorkArea : public s_workArea
 {
+    sFieldCameraStatus field_3E4[1]; // size isn't known yet
+    u8 field_50C;
     u8 field_50D; // 50D
     u8 field_50E; // 50E
 };
@@ -111,7 +118,24 @@ struct s_dragonTaskWorkArea : s_workArea
 
     s_dragonTaskWorkArea_48 field_48;
 
-    s32 matrix[4 * 3];
+    s32 matrix[4 * 3]; // 88
+
+    u32 field_C0;
+    u32 field_C4;
+    u8 field_C8[3];
+    u8 field_CB[3];
+    u8 field_CE[3];
+    u8 field_D1[3];
+    u8 field_D4[3];
+
+    u32 field_130;
+    u32 field_134;
+    u32 field_138;
+    u32 field_13C;
+    u32 field_140;
+    u32 field_144;
+    u32 field_148;
+    u32 field_14C;
 
     u32 field_150;
     u32 field_154;

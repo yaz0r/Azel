@@ -284,6 +284,11 @@ void dragonFieldTaskInitSub2Sub5(u32 arg)
     }
 }
 
+sFieldCameraStatus* getFieldCameraStatus()
+{
+    return &getFieldTaskPtr()->pSubFieldData->field_334->field_3E4[getFieldTaskPtr()->pSubFieldData->field_334->field_50C];
+}
+
 void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 {
     initDragonFieldSubTask2(pWorkArea);
@@ -329,7 +334,46 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
     pWorkArea->field_230 = 0x1999;
     
     //060738C0
-    assert(0);
+
+    pWorkArea->field_154 = pWorkArea->field_21C[pWorkArea->field_235];
+
+    pWorkArea->field_238 = 0;
+    pWorkArea->field_237 = 0;
+    pWorkArea->field_C0 = 0xC000000;
+    pWorkArea->field_C4 = 0;
+
+    pWorkArea->field_C8[0] = 0x10;
+    pWorkArea->field_C8[1] = 0x10;
+    pWorkArea->field_C8[2] = 0x10;
+
+    pWorkArea->field_CB[0] = 0x8;
+    pWorkArea->field_CB[1] = 0x8;
+    pWorkArea->field_CB[2] = 0x8;
+
+    pWorkArea->field_CE[0] = 0x14;
+    pWorkArea->field_CE[1] = 0x14;
+    pWorkArea->field_CE[2] = 0x14;
+
+    pWorkArea->field_D1[0] = 0xC;
+    pWorkArea->field_D1[1] = 0xC;
+    pWorkArea->field_D1[2] = 0xC;
+
+    pWorkArea->field_D4[0] = 0x10;
+    pWorkArea->field_D4[1] = 0x10;
+    pWorkArea->field_D4[2] = 0x10;
+
+    sFieldCameraStatus* pFieldCameraStatus = getFieldCameraStatus();
+
+    pFieldCameraStatus->angle_y = pWorkArea->angleY;
+
+    pWorkArea->field_14C = 0x2AAAAAA;
+    pWorkArea->field_148 = -0x2AAAAAA;
+    pWorkArea->field_140 = 0x300000;
+    pWorkArea->field_134 = -0x300000;
+    pWorkArea->field_130 = 0x80000000;
+    pWorkArea->field_13C = 0x7FFFFFFF;
+    pWorkArea->field_138 = 0x80000000;
+    pWorkArea->field_144 = 0x7FFFFFFF;
 }
 
 void dragonFieldTaskInit(s_workArea* pWorkArea, u32 arg)
