@@ -576,7 +576,102 @@ void unimplementedDraw(s_dragonStateSubData1* pDragonStateData1)
     assert(0);
 }
 
-void (*modelMode4_position0)(s_dragonStateSubData1*) = unimplementedUpdate;
+s16 modelMode4_position0Sub1(s32* r4, u8* r5, u16 r6)
+{
+    int r0 = 0;
+
+    if (r4[1] < 0)
+    {
+        assert(0);
+    }
+
+    if (r4[0])
+    {
+        //06022D5A
+        r0 = READ_BE_S16(r5 + r4[0] * 2);
+        int r3 = r0;
+        r0 &= 0xF;
+        r0 ^= r3;
+        r0--;
+        r4[1] = r0;
+        r0 = r3;
+    }
+    else
+    {
+        //06022D6E
+        r4[1] = 0;
+        r0 = READ_BE_S16(r5) * 16;
+    }
+
+    r4[2] = r0;
+
+    if (r6 >= r4[0] + 1)
+    {
+        r4[0] = r4[0] + 1;
+    }
+    else
+    {
+        r4[0] = 0;
+    }
+
+    return r0;
+}
+
+void modelMode4_position0(s_dragonStateSubData1* pDragonStateData1)
+{
+    sPoseData* pPoseData = pDragonStateData1->poseData;
+    u8* r13 = pDragonStateData1->field_30 + READ_BE_U32(pDragonStateData1->field_30 + 8);
+    u8* r4 = pDragonStateData1->field_34;
+
+    if (pDragonStateData1->field_10 & 1)
+    {
+        //06022616
+        assert(0);
+    }
+
+    //06022638
+    if (pDragonStateData1->field_10)
+    {
+        assert(0);
+    }
+    else
+    //0602265A
+    if (pDragonStateData1->field_8 & 4)
+    {
+        assert(0);
+    }
+    else
+    {
+        pPoseData->m_0 = READ_BE_U32(r4);
+        pPoseData->m_4 = READ_BE_U32(r4 + 4);
+        pPoseData->m_8 = READ_BE_U32(r4 + 8);
+
+        modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0));
+        modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2));
+        modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4));
+    }
+
+    //60226BA
+    s16 r3;
+    if (READ_BE_U32(pDragonStateData1->field_30))
+    {
+        r3 = READ_BE_S16(pDragonStateData1->field_30 + 4);
+    }
+    else
+    {
+        r3 = 0;
+    }
+
+    r3--;
+    if (r3 >= pDragonStateData1->field_10)
+    {
+        pPoseData->field_48[3][0] = modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
+        pPoseData->field_48[3][1] = modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
+        pPoseData->field_48[3][2] = modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
+    }
+    
+}
+
 void (*modelMode4_position1)(s_dragonStateSubData1*) = unimplementedUpdate;
 void (*modelMode4_rotation)(s_dragonStateSubData1*) = unimplementedUpdate;
 void (*modelMode4_scale)(s_dragonStateSubData1*) = unimplementedUpdate;
@@ -680,9 +775,36 @@ u32 createDragonStateSubData1Sub1(s_dragonStateSubData1* pDragonStateData1, u8* 
 
     u16 flags = READ_BE_U16(pModelData1);
 
-    if ((flags & 8) || (pDragonStateData1->field_A & 0xA))
+    if ((flags & 8) || (pDragonStateData1->field_A & 0x100))
     {
         copyPosePosition(pDragonStateData1);
+    }
+
+    if (flags & 0x10)
+    {
+        copyPoseRotation(pDragonStateData1);
+    }
+
+    if (flags & 0x20)
+    {
+        resetPoseScale(pDragonStateData1);
+    }
+
+    return createDragonStateSubData1Sub1Sub1(pDragonStateData1, pModelData1);
+}
+
+u32 dragonFieldTaskInitSub3Sub1Sub1(s_dragonStateSubData1* pDragonStateData1, u8* pModelData1)
+{
+    pDragonStateData1->field_30 = pModelData1;
+    pDragonStateData1->field_10 = 0;
+
+    u16 flags = READ_BE_U16(pModelData1);
+
+    if ((flags & 8) || (pDragonStateData1->field_A & 0x100))
+    {
+        pDragonStateData1->poseData->m_0 = READ_BE_U32(pDragonStateData1->field_34 + 0);
+        pDragonStateData1->poseData->m_4 = READ_BE_U32(pDragonStateData1->field_34 + 4);
+        pDragonStateData1->poseData->m_8 = READ_BE_U32(pDragonStateData1->field_34 + 8);
     }
 
     if (flags & 0x10)
@@ -770,6 +892,102 @@ void initModelDrawFunction(s_dragonStateSubData1* pDragonStateData1)
 
         }
     }
+}
+
+u32 dragonFieldTaskInitSub3Sub1(s_dragonStateSubData1* pDragonStateData1, u8* r5)
+{
+    if (r5 == NULL)
+    {
+        assert(0);
+    }
+    else
+    {
+        if (pDragonStateData1->field_30 == NULL)
+        {
+            assert(0);
+        }
+        else
+        {
+            if (READ_BE_U16(pDragonStateData1->field_30) != READ_BE_U16(r5))
+            {
+                assert(0); // untested
+                pDragonStateData1->field_A &= 0xFFC7;
+                pDragonStateData1->field_A |= READ_BE_U16(r5);
+                initModelDrawFunction(pDragonStateData1);
+                return dragonFieldTaskInitSub3Sub1Sub1(pDragonStateData1, r5);
+            }
+            // 6021728
+            pDragonStateData1->field_30 = r5;
+            pDragonStateData1->field_10 = 0;
+
+            u16 r0 = READ_BE_U16(r5) & 7;
+            if ((r0 != 1) && (r0 != 4) && (r0 != 5))
+            {
+                return 1;
+            }
+
+            for (int i = 0; i < pDragonStateData1->numBones; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    pDragonStateData1->poseData[i].field_48[j][0] = 0;
+                    pDragonStateData1->poseData[i].field_48[j][1] = 0;
+                    pDragonStateData1->poseData[i].field_48[j][2] = 0;
+                }
+            }
+
+            return 1;
+        }
+        assert(0);
+    }
+    assert(0);
+}
+
+u32 dragonFieldTaskInitSub3Sub2Sub1(s_dragonStateSubData1* pDragonStateData1)
+{
+    if ((pDragonStateData1->field_A & 0x38) == 0)
+    {
+        return 0;
+    }
+
+    if (READ_BE_U16(pDragonStateData1->field_30) & 8)
+    {
+        pDragonStateData1->positionUpdateFunction(pDragonStateData1);
+    }
+
+    if (READ_BE_U16(pDragonStateData1->field_30) & 0x10)
+    {
+        pDragonStateData1->rotationUpdateFunction(pDragonStateData1);
+    }
+
+    if (READ_BE_U16(pDragonStateData1->field_30) & 0x20)
+    {
+        pDragonStateData1->scaleUpdateFunction, (pDragonStateData1);
+    }
+
+    pDragonStateData1->field_16 = pDragonStateData1->field_10;
+    pDragonStateData1->field_10++;
+
+    // animation reset
+    if (READ_BE_U16(pDragonStateData1->field_30 + 4) >= pDragonStateData1->field_10)
+    {
+        pDragonStateData1->field_10 = 0;
+    }
+
+    return pDragonStateData1->field_16;
+}
+
+void dragonFieldTaskInitSub3Sub2Sub2(s_dragonStateSubData1* pDragonStateData1)
+{
+    assert(0);
+}
+
+u32 dragonFieldTaskInitSub3Sub2(s_dragonStateSubData1* pDragonStateData1)
+{
+    u32 r0 = dragonFieldTaskInitSub3Sub2Sub1(pDragonStateData1);
+    dragonFieldTaskInitSub3Sub2Sub2(pDragonStateData1);
+
+    return r0;
 }
 
 void countNumBonesInModel(s_dragonStateSubData1* pDragonStateData1, u8* pDragonModelData, u8* pStartOfData)

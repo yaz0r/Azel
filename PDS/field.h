@@ -162,6 +162,9 @@ struct s_dragonTaskWorkArea : s_workArea
 
     u8 field_237;
     u8 field_238;
+
+    u8 field_23A;
+    u8 field_23B;
 };
 
 struct s_FieldSubTaskWorkArea : public s_workArea

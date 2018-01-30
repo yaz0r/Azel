@@ -376,6 +376,16 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
     pWorkArea->field_144 = 0x7FFFFFFF;
 }
 
+void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDragonState, int param2)
+{
+    dragonFieldTaskInitSub3Sub1(&pDragonState->dragonStateSubData1, pDragonState->pDragonModel + READ_BE_U32(pDragonState->pDragonModel + pDragonState->dragonData2[param2]));
+    dragonFieldTaskInitSub3Sub2(&pDragonState->dragonStateSubData1);
+
+    pWorkArea->field_23A = param2;
+    pWorkArea->field_237 = pWorkArea->field_238;
+    pWorkArea->field_23B = 1;
+}
+
 void dragonFieldTaskInit(s_workArea* pWorkArea, u32 arg)
 {
     s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
@@ -384,8 +394,8 @@ void dragonFieldTaskInit(s_workArea* pWorkArea, u32 arg)
 
     getMemoryArea(&pTypedWorkArea->field_0, 0);
     dragonFieldTaskInitSub2(pTypedWorkArea);
-    /*dragonFieldTaskInitSub3(pTypedWorkArea, gDragonState, 5);
-    pTypedWorkArea->field_F0 = dragonFieldTaskInitSub4;
+    dragonFieldTaskInitSub3(pTypedWorkArea, gDragonState, 5);
+    /*pTypedWorkArea->field_F0 = dragonFieldTaskInitSub4;
 
     createSubTask(pWorkArea, &dragonFieldSubTaskDefinition, new s_dummyWorkArea);
     */

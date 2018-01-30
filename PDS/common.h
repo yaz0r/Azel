@@ -192,7 +192,7 @@ struct sPoseData
     u32 m_1C;
     u32 m_20;
 
-    u32 field_48[9][3];
+    s32 field_48[9][3];
 };
 
 struct s_dragonStateSubData1
