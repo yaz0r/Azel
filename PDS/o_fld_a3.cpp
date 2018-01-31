@@ -13,6 +13,173 @@ const s_MCB_CGB fieldFileList[] =
     {NULL, NULL}
 };
 
+const void* FLD_A3_Scripts[]
+{
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+    (void*)1,
+};
+
+s_DataTable3 fieldA3_0_dataTable3 =
+{
+    (u8*)1,
+    (u8*)1,
+    NULL,
+    2,
+    4,
+    0xC,
+    0x100000,
+    0x100000,
+    0,
+    /*
+    {
+        0x1002AC,
+        0x1402B0,
+        0x1802B4,
+        0x2402C0,
+        0x5402F0,
+        0x640300,
+        0x4402E0,
+        0x1C02B8,
+        0x740310,
+        0x840320,
+    }
+    */
+};
+u8 fieldA3_0_dataTable2[] = { 1 };
+u8 fieldA3_0_dataTable1[] = { 1 };
+
+void fieldA3_0_startTasks(p_workArea workArea)
+{
+    assert(0);
+}
+
+void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
+{
+    s_fieldCameraTask1WorkArea* pFieldCameraTask1 = getFieldTaskPtr()->pSubFieldData->pFieldCameraTask1;
+    if (pFieldCameraTask1->field_38)
+    {
+        assert(0);
+    }
+
+    pFieldCameraTask1->field_38 = createSubTaskFromFunction(pFieldCameraTask1, NULL, new s_dummyWorkArea, "Unnamed");
+
+    if (r4)
+    {
+        pFieldCameraTask1->field_30 = r4;
+        pFieldCameraTask1->field_20 = r4->field_18 * 2;
+        pFieldCameraTask1->field_24 = r4->field_1C * 2;
+        pFieldCameraTask1->field_28 = r4->field_20;
+        loadFileFromFileList(r4->field_C);
+
+        if (pFieldCameraTask1->field_28 & 1)
+        {
+            //06070FE0
+            assert(0);
+        }
+        else
+        {
+            //0607100A
+            assert(0);
+        }
+        //06071032
+        assert(0);
+    }
+    else
+    {
+        //pFieldCameraTask1->field_20 = graphicEngineStatus->field_4070;
+        //pFieldCameraTask1->field_24 = graphicEngineStatus->field_4070;
+    }
+
+    if (r5)
+    {
+        r5(pFieldCameraTask1->field_38);
+    }
+}
+
+void setupFieldSub1(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea))
+{
+    s_fieldCameraTask1WorkArea* pFieldCameraTask1 = getFieldTaskPtr()->pSubFieldData->pFieldCameraTask1;
+
+    setupField2(r4, r6);
+
+    if (r5)
+    {
+        assert(0);
+    }
+}
+
+void setupField(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea), u8* r7)
+{
+    getFieldTaskPtr()->pSubFieldData->pFieldCameraTask1->field_34 = r7;
+
+    setupFieldSub1(r4, r5, r6);
+}
+
+void subfieldA3_0(p_workArea workArea)
+{
+    playPCM(workArea, 100);
+    playPCM(workArea, 101);
+
+    setupField(&fieldA3_0_dataTable3, fieldA3_0_dataTable2, fieldA3_0_startTasks, fieldA3_0_dataTable1);
+
+    assert(0);
+}
+void subfieldA3_1(p_workArea workArea) { unimplemented("subfieldA3_1"); }
+void subfieldA3_2(p_workArea workArea) { unimplemented("subfieldA3_2"); }
+void subfieldA3_3(p_workArea workArea) { unimplemented("subfieldA3_3"); }
+void subfieldA3_4(p_workArea workArea) { unimplemented("subfieldA3_4"); }
+void subfieldA3_5(p_workArea workArea) { unimplemented("subfieldA3_5"); }
+void subfieldA3_6(p_workArea workArea) { unimplemented("subfieldA3_6"); }
+void subfieldA3_7(p_workArea workArea) { unimplemented("subfieldA3_7"); }
+void subfieldA3_8(p_workArea workArea) { unimplemented("subfieldA3_8"); }
+void subfieldA3_9(p_workArea workArea) { unimplemented("subfieldA3_9"); }
+void subfieldA3_A(p_workArea workArea) { unimplemented("subfieldA3_A"); }
+void subfieldA3_B(p_workArea workArea) { unimplemented("subfieldA3_B"); }
+void subfieldA3_C(p_workArea workArea) { unimplemented("subfieldA3_C"); }
+
+void(*subfieldTable1[])(p_workArea workArea) =
+{
+    subfieldA3_0,
+    subfieldA3_1,
+    subfieldA3_2,
+    subfieldA3_3,
+    subfieldA3_4,
+    subfieldA3_5,
+    subfieldA3_6,
+    subfieldA3_7,
+    subfieldA3_8,
+    subfieldA3_9,
+    subfieldA3_A,
+    subfieldA3_B,
+    subfieldA3_C,
+};
+
 void initScriptTable1(s_scriptData1* pData1)
 {
     for (int i = 0; i < 0x11; i++)
@@ -386,6 +553,25 @@ void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDr
     pWorkArea->field_23B = 1;
 }
 
+void dragonFieldTaskInitSub4()
+{
+    assert(0);
+}
+
+void dragonFieldTaskInitSub5(s_dragonTaskWorkArea* pTypedWorkArea)
+{
+    unimplemented("dragonFieldTaskInitSub5");
+}
+
+bool shouldLoadPup()
+{
+    if (mainGameState.getBit(0x29 * 8 + 0))
+    {
+        assert(0);
+    }
+    return false;
+}
+
 void dragonFieldTaskInit(s_workArea* pWorkArea, u32 arg)
 {
     s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
@@ -395,11 +581,21 @@ void dragonFieldTaskInit(s_workArea* pWorkArea, u32 arg)
     getMemoryArea(&pTypedWorkArea->field_0, 0);
     dragonFieldTaskInitSub2(pTypedWorkArea);
     dragonFieldTaskInitSub3(pTypedWorkArea, gDragonState, 5);
-    /*pTypedWorkArea->field_F0 = dragonFieldTaskInitSub4;
+    pTypedWorkArea->field_F0 = dragonFieldTaskInitSub4;
 
     createSubTask(pWorkArea, &dragonFieldSubTaskDefinition, new s_dummyWorkArea);
-    */
-    assert(0);
+
+    if (gDragonState->dragonType == DR_LEVEL_6_LIGHT_WING)
+    {
+        assert(0);
+    }
+
+    dragonFieldTaskInitSub5(pTypedWorkArea);
+
+    if (shouldLoadPup())
+    {
+        assert(0);
+    }
 }
 
 s_taskDefinitionWithArg dragonFieldTaskDefinition = { dragonFieldTaskInit, dummyTaskUpdate, dummyTaskDraw, dummyTaskDelete, "dragonFieldTask" };
@@ -436,13 +632,42 @@ void createFieldOverlaySubTask2(s_workArea* pWorkArea)
     createSubTask(pWorkArea, &fieldOverlaySubTask2Definition, new s_dummyWorkArea);
 }
 
-s_taskDefinition fieldCameraTask1Definition = { dummyTaskInit, dummyTaskUpdate, dummyTaskDraw, NULL, "fieldCameraTask1" };
-s_taskDefinition fieldCameraTask2Definition = { dummyTaskInit, NULL, dummyTaskDraw, NULL, "fieldCameraTask2" };
+void fieldCameraTask1InitSub1()
+{
+    assert(0);
+}
+
+void fieldCameraTask1InitSub2()
+{
+    assert(0);
+}
+
+u8* fieldCameraTask1InitData1 = (u8*)1;
+
+void fieldCameraTask1Init(s_workArea* pWorkArea)
+{
+    s_fieldCameraTask1WorkArea* pTypedWorkArea = static_cast<s_fieldCameraTask1WorkArea*>(pWorkArea);
+    getFieldTaskPtr()->pSubFieldData->pFieldCameraTask1 = pTypedWorkArea;
+
+    pTypedWorkArea->field_12F8 = fieldCameraTask1InitSub1;
+    pTypedWorkArea->field_12FC = fieldCameraTask1InitSub2;
+    pTypedWorkArea->field_12F2 = 2;
+
+    pTypedWorkArea->field_18 = -1;
+    pTypedWorkArea->field_1C = -1;
+    pTypedWorkArea->field_30 = 0;
+    pTypedWorkArea->field_34 = 0;
+    pTypedWorkArea->field_2C = fieldCameraTask1InitData1;
+    pTypedWorkArea->field_1300 = 3;
+}
+
+s_taskDefinition fieldCameraTask1Definition = { fieldCameraTask1Init, dummyTaskUpdate, dummyTaskDraw, NULL, "fieldCameraTask1" };
+s_taskDefinition LCSTaskDefinition = { dummyTaskInit, NULL, dummyTaskDraw, NULL, "LCSTask" };
 
 void createFieldCameraTask(s_workArea* pWorkArea)
 {
-    createSubTask(pWorkArea, &fieldCameraTask1Definition, new s_dummyWorkArea);
-    createSubTask(pWorkArea, &fieldCameraTask2Definition, new s_dummyWorkArea);
+    createSubTask(pWorkArea, &fieldCameraTask1Definition, new s_fieldCameraTask1WorkArea);
+    createSubTask(pWorkArea, &LCSTaskDefinition, new s_dummyWorkArea);
 }
 
 s_taskDefinition randomBattleTaskDefinition = { dummyTaskInit, NULL, dummyTaskDraw, NULL, "randomBattleTask" };
@@ -536,9 +761,59 @@ bool initField(p_workArea workArea, const s_MCB_CGB* fieldFileList, u32 arg)
     return true;
 }
 
+void overlayStart_Sub1()
+{
+    unimplemented("overlayStart_Sub1");
+}
+
 p_workArea overlayStart(p_workArea workArea, u32 arg)
 {
-    initField(workArea, fieldFileList, arg);
+    if (!initField(workArea, fieldFileList, arg))
+    {
+        return NULL;
+    }
+
+    if (getFieldTaskPtr()->currentSubFieldIndex == 2)
+    {
+        playMusic(3, 0);
+    }
+    else
+    {
+        if (getFieldTaskPtr()->field_32 == -1)
+        {
+            playMusic(1, 0);
+        }
+        else
+        {
+            playMusic(2, 0);
+        }
+    }
+    //0605404C
+    loadFileFromFileList(1);
+    /*
+    graphicEngineStatus.field_406C = 0x3000;
+    graphicEngineStatus.field_408C = resetDivideUnit(0x10000, 0x3000);
+
+    graphicEngineStatus.field_4070 = 0x200000;
+    graphicEngineStatus.field_4094 = resetDivideUnit(0x8000, 0x200000);
+
+    graphicEngineStatus.field_4090 = graphicEngineStatus.field_4094 << 8;
+    */
+    getFieldTaskPtr()->pSubFieldData->field_334->field_50E = 1;
+    getFieldTaskPtr()->pSubFieldData->ptrToE->pScripts = FLD_A3_Scripts;
+
+    switch (getFieldTaskPtr()->currentFieldIndex)
+    {
+    case 1:
+        assert(0);
+    case 2:
+        assert(0);
+    default:
+        subfieldTable1[0](workArea);
+        break;
+    }
+
+    getFieldTaskPtr()->pSubFieldData->pUpdateFunction3 = overlayStart_Sub1;
 
     return NULL;
 }

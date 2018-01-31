@@ -620,7 +620,7 @@ s16 modelMode4_position0Sub1(s32* r4, u8* r5, u16 r6)
 void modelMode4_position0(s_dragonStateSubData1* pDragonStateData1)
 {
     sPoseData* pPoseData = pDragonStateData1->poseData;
-    u8* r13 = pDragonStateData1->field_30 + READ_BE_U32(pDragonStateData1->field_30 + 8);
+    u8* r13 = pDragonStateData1->pCurrentAnimation + READ_BE_U32(pDragonStateData1->pCurrentAnimation + 8);
     u8* r4 = pDragonStateData1->field_34;
 
     if (pDragonStateData1->field_10 & 1)
@@ -646,16 +646,16 @@ void modelMode4_position0(s_dragonStateSubData1* pDragonStateData1)
         pPoseData->m_4 = READ_BE_U32(r4 + 4);
         pPoseData->m_8 = READ_BE_U32(r4 + 8);
 
-        modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0));
-        modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2));
-        modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4));
+        modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0));
+        modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2));
+        modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4));
     }
 
     //60226BA
     s16 r3;
-    if (READ_BE_U32(pDragonStateData1->field_30))
+    if (READ_BE_U32(pDragonStateData1->pCurrentAnimation))
     {
-        r3 = READ_BE_S16(pDragonStateData1->field_30 + 4);
+        r3 = READ_BE_S16(pDragonStateData1->pCurrentAnimation + 4);
     }
     else
     {
@@ -665,9 +665,9 @@ void modelMode4_position0(s_dragonStateSubData1* pDragonStateData1)
     r3--;
     if (r3 >= pDragonStateData1->field_10)
     {
-        pPoseData->field_48[3][0] = modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
-        pPoseData->field_48[3][1] = modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
-        pPoseData->field_48[3][2] = modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->field_30 + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
+        pPoseData->field_48[3][0] = modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
+        pPoseData->field_48[3][1] = modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
+        pPoseData->field_48[3][2] = modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
     }
     
 }
@@ -770,7 +770,7 @@ u32 createDragonStateSubData1Sub1Sub1(s_dragonStateSubData1* pDragonStateData1, 
 
 u32 createDragonStateSubData1Sub1(s_dragonStateSubData1* pDragonStateData1, u8* pModelData1)
 {
-    pDragonStateData1->field_30 = pModelData1;
+    pDragonStateData1->pCurrentAnimation = pModelData1;
     pDragonStateData1->field_10 = 0;
 
     u16 flags = READ_BE_U16(pModelData1);
@@ -795,7 +795,7 @@ u32 createDragonStateSubData1Sub1(s_dragonStateSubData1* pDragonStateData1, u8* 
 
 u32 dragonFieldTaskInitSub3Sub1Sub1(s_dragonStateSubData1* pDragonStateData1, u8* pModelData1)
 {
-    pDragonStateData1->field_30 = pModelData1;
+    pDragonStateData1->pCurrentAnimation = pModelData1;
     pDragonStateData1->field_10 = 0;
 
     u16 flags = READ_BE_U16(pModelData1);
@@ -902,13 +902,13 @@ u32 dragonFieldTaskInitSub3Sub1(s_dragonStateSubData1* pDragonStateData1, u8* r5
     }
     else
     {
-        if (pDragonStateData1->field_30 == NULL)
+        if (pDragonStateData1->pCurrentAnimation == NULL)
         {
             assert(0);
         }
         else
         {
-            if (READ_BE_U16(pDragonStateData1->field_30) != READ_BE_U16(r5))
+            if (READ_BE_U16(pDragonStateData1->pCurrentAnimation) != READ_BE_U16(r5))
             {
                 assert(0); // untested
                 pDragonStateData1->field_A &= 0xFFC7;
@@ -917,7 +917,7 @@ u32 dragonFieldTaskInitSub3Sub1(s_dragonStateSubData1* pDragonStateData1, u8* r5
                 return dragonFieldTaskInitSub3Sub1Sub1(pDragonStateData1, r5);
             }
             // 6021728
-            pDragonStateData1->field_30 = r5;
+            pDragonStateData1->pCurrentAnimation = r5;
             pDragonStateData1->field_10 = 0;
 
             u16 r0 = READ_BE_U16(r5) & 7;
@@ -950,17 +950,17 @@ u32 dragonFieldTaskInitSub3Sub2Sub1(s_dragonStateSubData1* pDragonStateData1)
         return 0;
     }
 
-    if (READ_BE_U16(pDragonStateData1->field_30) & 8)
+    if (READ_BE_U16(pDragonStateData1->pCurrentAnimation) & 8)
     {
         pDragonStateData1->positionUpdateFunction(pDragonStateData1);
     }
 
-    if (READ_BE_U16(pDragonStateData1->field_30) & 0x10)
+    if (READ_BE_U16(pDragonStateData1->pCurrentAnimation) & 0x10)
     {
-        pDragonStateData1->rotationUpdateFunction(pDragonStateData1);
+        //pDragonStateData1->rotationUpdateFunction(pDragonStateData1);
     }
 
-    if (READ_BE_U16(pDragonStateData1->field_30) & 0x20)
+    if (READ_BE_U16(pDragonStateData1->pCurrentAnimation) & 0x20)
     {
         pDragonStateData1->scaleUpdateFunction, (pDragonStateData1);
     }
@@ -969,7 +969,7 @@ u32 dragonFieldTaskInitSub3Sub2Sub1(s_dragonStateSubData1* pDragonStateData1)
     pDragonStateData1->field_10++;
 
     // animation reset
-    if (READ_BE_U16(pDragonStateData1->field_30 + 4) >= pDragonStateData1->field_10)
+    if (READ_BE_U16(pDragonStateData1->pCurrentAnimation + 4) >= pDragonStateData1->field_10)
     {
         pDragonStateData1->field_10 = 0;
     }
@@ -979,7 +979,10 @@ u32 dragonFieldTaskInitSub3Sub2Sub1(s_dragonStateSubData1* pDragonStateData1)
 
 void dragonFieldTaskInitSub3Sub2Sub2(s_dragonStateSubData1* pDragonStateData1)
 {
-    assert(0);
+    if (pDragonStateData1->field_48)
+    {
+        assert(0);
+    }
 }
 
 u32 dragonFieldTaskInitSub3Sub2(s_dragonStateSubData1* pDragonStateData1)
@@ -1096,7 +1099,7 @@ bool createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDr
     }
     else
     {
-        pDragonStateData1->field_30 = NULL;
+        pDragonStateData1->pCurrentAnimation = NULL;
         pDragonStateData1->field_10 = 0;
 
         copyPosePosition(pDragonStateData1);

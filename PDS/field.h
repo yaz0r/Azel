@@ -66,6 +66,8 @@ struct s_scriptData4
 
 struct s_fieldScriptWorkArea : public s_workArea
 {
+    void* pScripts; //0
+
     void* field_8;
     void* field_2C; // dunno what that is yet
 
@@ -128,6 +130,8 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 field_D1[3];
     u8 field_D4[3];
 
+    void(*field_F0); //F0
+
     u32 field_130;
     u32 field_134;
     u32 field_138;
@@ -167,6 +171,39 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 field_23B;
 };
 
+struct s_DataTable3
+{
+    u8* field_0;
+    u8* field_4;
+    u8* field_8;
+    u32 field_C;
+    u32 field_10;
+    u32 field_14;
+    u32 field_18;
+    u32 field_1C;
+    u32 field_20;
+    //u32 field_24[];
+};
+
+struct s_fieldCameraTask1WorkArea : public s_workArea
+{
+    s32 field_18;
+    s32 field_1C;
+    u32 field_20;
+    u32 field_24;
+    u32 field_28;
+    u8* field_2C;
+    s_DataTable3* field_30; // 30
+    u8* field_34; // field_34
+    p_workArea field_38; // 38
+
+    u16 field_12F2; // 12F2
+    void(*field_12F8); // 12F8
+    void(*field_12FC); // 12F8
+    u8 field_1300;
+    //size: 1304
+};
+
 struct s_FieldSubTaskWorkArea : public s_workArea
 {
     u8* memoryArea[3]; // 0
@@ -182,18 +219,19 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     u32 CGBFilesSizes[32]; // 1B4
     s_fieldOverlaySubTaskWorkArea* field_334;
     s_dragonTaskWorkArea* pDragonTask; // 338
+    s_fieldCameraTask1WorkArea* pFieldCameraTask1; // 348
     s_fieldScriptWorkArea* ptrToE; // 34C
     u16 field_354; // 354
     u16 fieldSubTaskStatus; // 358
     void (*pUpdateFunction2)(); // 35C
+    void(*pUpdateFunction3)(); // 35C
     u8 field_369; // 369
     u16 fieldDebuggerWho; // 370
+    void(*pUpdateFunction1)(); // 374
     u8 debugMenuStatus1_a; // 37C
     u8 debugMenuStatus1_b; // 37D
     u8 debugMenuStatus2_a; // 37E
     u8 debugMenuStatus3; //380
-
-    void (*pUpdateFunction1)(); // 374
 };
 
 struct s_fieldTaskWorkArea : public s_workArea

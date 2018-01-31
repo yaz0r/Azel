@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-
+#include "heap.h"
 struct s_workArea
 {
     struct s_task* m_pTask;

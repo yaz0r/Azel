@@ -93,12 +93,19 @@ public:
 
     void setBit(u32 bitIndex)
     {
-        bitField[bitIndex / 8] |= 1 << (bitIndex % 8);
+        bitField[bitIndex / 8] |= 0x80 >> (bitIndex % 8);
     }
 
     void clearBit(u32 bitIndex)
     {
-        bitField[bitIndex / 8] &= ~(1 << (bitIndex % 8));
+        bitField[bitIndex / 8] &= ~(0x80 >> (bitIndex % 8));
+    }
+
+    bool getBit(u32 bitIndex)
+    {
+        if (bitField[bitIndex / 8] &= 0x80 >> (bitIndex % 8))
+            return true;
+        return false;
     }
 };
 
@@ -216,7 +223,7 @@ struct s_dragonStateSubData1
     void(*scaleUpdateFunction)(s_dragonStateSubData1*);
     sPoseData* poseData; //2C
 
-    u8* field_30; //30
+    u8* pCurrentAnimation; //30
 
     u8* field_34; //34
     u32 field_38; //38
@@ -225,6 +232,7 @@ struct s_dragonStateSubData1
 
     const s_RiderDefinitionSub* field_40; //40
     u8** field_44; //44
+    u32 field_48; //48
 };
 
 struct sMatrix4x3
