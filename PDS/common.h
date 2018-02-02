@@ -235,9 +235,10 @@ struct s_dragonStateSubData1
     u32 field_48; //48
 };
 
+typedef s32 sVec3[3];
 struct sMatrix4x3
 {
-    u32 matrix[4 * 3];
+    s32 matrix[4 * 3];
 };
 
 struct s_dragonStateSubData2SubData
@@ -274,7 +275,6 @@ struct s_dragonState : public s_workArea
     s_dragonStateSubData2 dragonStateSubData2; // 78
     u32 field_88;//88
 };
-
 extern s_dragonState* gDragonState;
 
 extern u8 playerDataMemoryBuffer[0x28000];

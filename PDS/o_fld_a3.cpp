@@ -13,10 +13,76 @@ const s_MCB_CGB fieldFileList[] =
     {NULL, NULL}
 };
 
+#define WRITE_SCRIPT_U16(value) value & 0xFF, (value >> 8) & 0xFF
+#define WRITE_SCRIPT_U32(value) value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF
+#if 0
+#define WRITE_SCRIPT_POINTER(stringPtr) (u64)stringPtr & 0xFF, ((u64)stringPtr >> 8) & 0xFF, ((u64)stringPtr >> 16) & 0xFF, ((u64)stringPtr >> 24) & 0xFF, ((u64)stringPtr >> 32) & 0xFF, ((u64)stringPtr >> 40) & 0xFF, ((u64)stringPtr >> 48) & 0xFF, ((u64)stringPtr >> 56) & 0xFF
+#else 
+#define WRITE_SCRIPT_POINTER(stringPtr) WRITE_SCRIPT_U32(0)
+#endif
+
+#define op_END() 0x1
+#define op_CALL_NATIVE_0(funcPtr) 0xE, 0x0, WRITE_SCRIPT_POINTER(funcPtr)
+#define op_CALL_NATIVE_1(funcPtr, arg0) 0xE, 0x1, WRITE_SCRIPT_POINTER(funcPtr), WRITE_SCRIPT_U32(arg0)
+#define op_START_CUTSCENE() 0x18
+#define op_WAIT(delay) 0x02, WRITE_SCRIPT_U16(delay)
+#define op_DISPLAY_DIALOG_STRING(stringPtr) 0x15, WRITE_SCRIPT_POINTER(stringPtr)
+#define op_CLEAR_DIALOG_STRING() 0x16
+#define op_ADD_CINEMATIC_BARS() 0x19
+#define op_END_CUTSCENE() 0x1A
+#define op_PLAY_PCM(stringPtr) 0x22, WRITE_SCRIPT_POINTER(stringPtr)
+
+const char EV03_1_PCM[] = "EV03_1.PCM";
+
+const char FLD_A3_Script_0_String0[] = "(Imperial piece of crap.)";
+const char FLD_A3_Script_1_String0[] = "Damn!";
+const char FLD_A3_Script_1_String1[] = "A wind net to keep monsters away.";
+
+void playRiderAnimFans()
+{
+    assert(0);
+}
+
+const u8 FLD_A3_Script_0[] =
+{
+    op_START_CUTSCENE(),
+    op_WAIT(10),
+    op_WAIT(0),
+    op_DISPLAY_DIALOG_STRING(FLD_A3_Script_0_String0), //"(Imperial piece of crap.)"
+    op_WAIT(45),
+    op_CLEAR_DIALOG_STRING(),
+    op_END_CUTSCENE(),
+    op_END()
+};
+
+const u8 FLD_A3_Script_1[] =
+{
+    op_CALL_NATIVE_0(playRiderAnimFans),
+    op_ADD_CINEMATIC_BARS(),
+    op_CALL_NATIVE_0(sub_606AD04),
+    op_WAIT(100),
+    op_PLAY_PCM(0, EV03_1_PCM),
+    op_WAIT(0),
+    op_DISPLAY_DIALOG_STRING(FLD_A3_Script_1_String0), //"Damn!"
+    op_WAIT(50),
+    op_CLEAR_DIALOG_STRING(),
+    op_WAIT(5),
+    op_DISPLAY_DIALOG_STRING(FLD_A3_Script_1_String1), //"A wind net to keep monsters away."
+    op_WAIT(80),
+    op_CLEAR_DIALOG_STRING(),
+    op_WAIT(0),
+    op_CALL_NATIVE_1(sub_6067E68, 10),
+    op_WAIT(10),
+    op_CALL_NATIVE_0(sub_606ACEC),
+    op_CALL_NATIVE_0(sub_6057E1C),
+    op_END_CUTSCENE(),
+    op_CALL_NATIVE_1(sub_6067EC0, 10),
+    op_END()
+};
 const void* FLD_A3_Scripts[]
 {
-    (void*)1,
-    (void*)1,
+    FLD_A3_Script_0,
+    FLD_A3_Script_1,
     (void*)1,
     (void*)1,
     (void*)1,
@@ -45,14 +111,45 @@ const void* FLD_A3_Scripts[]
     (void*)1,
 };
 
+u32* fieldA3_0_dataTable3_grid1[4 * 12] =
+{
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, (u32*)1, 0,
+    0, (u32*)1, (u32*)1, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, (u32*)1,
+    (u32*)1, (u32*)1, (u32*)1, (u32*)1,
+    (u32*)1, (u32*)1, 0, 0,
+    (u32*)1, 0, 0, 0,
+};
+
+u32* fieldA3_0_dataTable3_grid2[4 * 12] =
+{
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, 0,
+    0, 0, 0, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, (u32*)1, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, 0,
+    0, (u32*)1, 0, 0,
+    (u32*)1, 0, 0, 0,
+    (u32*)1, 0, 0, 0,
+};
+
 s_DataTable3 fieldA3_0_dataTable3 =
 {
-    (u8*)1,
-    (u8*)1,
+    fieldA3_0_dataTable3_grid1,
+    fieldA3_0_dataTable3_grid2,
     NULL,
     2,
-    4,
-    0xC,
+    {4, 12}, // grid size
     0x100000,
     0x100000,
     0,
@@ -78,6 +175,74 @@ void fieldA3_0_startTasks(p_workArea workArea)
 {
     assert(0);
 }
+
+s_taskDefinition fieldGridTaskDefinition = { NULL, dummyTaskUpdate, dummyTaskDraw, NULL, "fieldGridTask" };
+
+void setupField2CreateGridTaskSub1(s_fieldCameraTask1WorkArea* r4, s_gridTaskWorkArea* r5, int index)
+{
+    getMemoryArea(&r5->memoryLayout, r4->field_30->field_C);
+    r5->index = index;
+    if (r4->field_30->environmentGrid)
+    {
+        r5->pEnvironmentCell = r4->field_30->environmentGrid[index];
+    }
+    if (r4->field_30->field_4)
+    {
+        r5->pCell2 = r4->field_30->field_4[index];
+    }
+    if (r4->field_30->field_8)
+    {
+        r5->pCell3 = r4->field_30->field_8[index];
+    }
+}
+
+
+void setupField2CreateGridTaskArraySub0(p_workArea)
+{
+    assert(0);
+}
+
+void setupField2CreateGridTaskArraySub1(p_workArea)
+{
+    assert(0);
+}
+
+void setupField2CreateGridTaskArraySub2(p_workArea)
+{
+    assert(0);
+}
+
+
+void(*setupField2CreateGridTaskArray[3])(p_workArea) =
+{
+    setupField2CreateGridTaskArraySub0, // untextured
+    setupField2CreateGridTaskArraySub1, // textures collision geo
+    setupField2CreateGridTaskArraySub2, // normal textured
+};
+
+s_gridTaskWorkArea* setupField2CreateGridTask(s_fieldCameraTask1WorkArea* r4, p_workArea r5, int index)
+{
+    s_gridTaskWorkArea* pNewTask = (s_gridTaskWorkArea*)createSubTask(r5, &fieldGridTaskDefinition, new s_gridTaskWorkArea);
+
+    if (pNewTask)
+    {
+        setupField2CreateGridTaskSub1(r4, pNewTask, index);
+
+        pNewTask->getTask()->m_pLateUpdate = setupField2CreateGridTaskArray[r4->renderMode];
+    }
+
+    return pNewTask;
+}
+
+void setupField2Sub1(s_fieldCameraTask1WorkArea* r14)
+{
+    assert(0);
+}
+void setupField2Sub2(p_workArea)
+{
+    assert(0);
+}
+
 
 void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
 {
@@ -105,10 +270,48 @@ void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
         else
         {
             //0607100A
-            assert(0);
+            {
+                s32 r3 = r4->gridSize[0] * pFieldCameraTask1->field_20;
+                if (r3 < 0)
+                {
+                    r3++;
+                }
+                r3 /= 2;
+                pFieldCameraTask1->field_C = r3 / 2;
+                
+            }
+            pFieldCameraTask1->field_10 = 0;
+            {
+                s32 r3 = -(r4->gridSize[1] * pFieldCameraTask1->field_24);
+                if (r3 < 0)
+                {
+                    r3++;
+                }
+                pFieldCameraTask1->field_14 = r3 / 2;
+            }
         }
         //06071032
-        assert(0);
+
+        pFieldCameraTask1->field_0[0] = cameraProperties2.field_0[0];
+        pFieldCameraTask1->field_0[1] = cameraProperties2.field_0[1];
+        pFieldCameraTask1->field_0[2] = cameraProperties2.field_0[2];
+
+        pFieldCameraTask1->field_12F8(pFieldCameraTask1);
+
+        s32* var_1C = pFieldCameraTask1->field_30->gridSize;
+        int gridSize = pFieldCameraTask1->field_30->gridSize[0] * pFieldCameraTask1->field_30->gridSize[1];
+
+        pFieldCameraTask1->field_3C = (s_gridTaskWorkArea**)allocateHeapForTask(pFieldCameraTask1->field_38, gridSize * sizeof(s_gridTaskWorkArea*));
+
+        for (int r13 = 0; r13 < gridSize; r13++)
+        {
+            pFieldCameraTask1->field_3C[r13] = setupField2CreateGridTask(pFieldCameraTask1, pFieldCameraTask1->field_38, r13);
+            pFieldCameraTask1->field_3C[r13]->getTask()->markPaused();
+        }
+
+        //060710C4
+        setupField2Sub1(pFieldCameraTask1);
+        pFieldCameraTask1->getTask()->m_pUpdate = setupField2Sub2;
     }
     else
     {
@@ -331,9 +534,19 @@ void fieldOverlaySubTaskInitSub5(u32 r4)
     unimplemented("fieldOverlaySubTaskInitSub5");
 }
 
-void fieldOverlaySubTaskInitSub6(s_workArea* pWorkArea)
+void fieldOverlaySubTaskInitSub6(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
 {
-    unimplemented("fieldOverlaySubTaskInitSub6");
+    assert(pTypedWorkArea->field_50C == 0);
+    sFieldCameraStatus* r13 = &pTypedWorkArea->field_3E4[pTypedWorkArea->field_50C];
+    s16 r15[3];
+    r15[0] = r13->angle_y >> 16;
+    r15[1] = r13->field_10 >> 16;
+    r15[2] = r13->field_14 >> 16;
+
+    fieldOverlaySubTaskInitSub6Sub1(&cameraProperties2, r13, r15);
+
+    copyMatrix(pCurrentMatrix, &pTypedWorkArea->field_384);
+    copyMatrix(&unkMatrix, &pTypedWorkArea->field_3B4);
 }
 
 void *unk_6092EF0 = NULL;
@@ -391,27 +604,9 @@ void dragonFieldTaskInitSub2Sub3(s_dragonTaskWorkArea* pWorkArea)
     pWorkArea->field_1F0.m_10 = 0;
 }
 
-void initMatrixToIdentity(s32* matrix)
-{
-    matrix[0] = 0x10000;
-    matrix[1] = 0;
-    matrix[2] = 0;
-    matrix[3] = 0;
-
-    matrix[4] = 0;
-    matrix[5] = 0x10000;
-    matrix[6] = 0;
-    matrix[7] = 0;
-
-    matrix[8] = 0;
-    matrix[9] = 0;
-    matrix[10] = 0x10000;
-    matrix[11] = 0;
-}
-
 void dragonFieldTaskInitSub2Sub4(s_dragonTaskWorkArea_48* field_48)
 {
-    initMatrixToIdentity(field_48->matrix);
+    initMatrixToIdentity(&field_48->matrix);
 
     field_48->field_30 = 0;
     field_48->field_34 = 0;
@@ -483,7 +678,7 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
     pWorkArea->field_1B8 = 0xB333;
     pWorkArea->field_1BC = 0x200000;
 
-    initMatrixToIdentity(pWorkArea->matrix);
+    initMatrixToIdentity(&pWorkArea->matrix);
 
     dragonFieldTaskInitSub2Sub4(&pWorkArea->field_48);
 
@@ -632,9 +827,9 @@ void createFieldOverlaySubTask2(s_workArea* pWorkArea)
     createSubTask(pWorkArea, &fieldOverlaySubTask2Definition, new s_dummyWorkArea);
 }
 
-void fieldCameraTask1InitSub1()
+void fieldCameraTask1InitSub1(s_fieldCameraTask1WorkArea* pFieldCameraTask1)
 {
-    assert(0);
+    unimplemented("fieldCameraTask1InitSub1");
 }
 
 void fieldCameraTask1InitSub2()
@@ -651,7 +846,7 @@ void fieldCameraTask1Init(s_workArea* pWorkArea)
 
     pTypedWorkArea->field_12F8 = fieldCameraTask1InitSub1;
     pTypedWorkArea->field_12FC = fieldCameraTask1InitSub2;
-    pTypedWorkArea->field_12F2 = 2;
+    pTypedWorkArea->renderMode = 2;
 
     pTypedWorkArea->field_18 = -1;
     pTypedWorkArea->field_1C = -1;

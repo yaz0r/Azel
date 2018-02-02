@@ -1,12 +1,9 @@
 #pragma once
 
-struct sFieldCameraStatus
-{
-    s32 angle_y;
-};
-
 struct s_fieldOverlaySubTaskWorkArea : public s_workArea
 {
+    sMatrix4x3 field_384;
+    sMatrix4x3 field_3B4;
     sFieldCameraStatus field_3E4[1]; // size isn't known yet
     u8 field_50C;
     u8 field_50D; // 50D
@@ -98,7 +95,7 @@ struct s_dragonTaskWorkArea_1F0
 
 struct s_dragonTaskWorkArea_48
 {
-    s32 matrix[4 * 3]; //0
+    sMatrix4x3 matrix; //0
 
     u32 field_30; //30
     u32 field_34; //34
@@ -120,7 +117,7 @@ struct s_dragonTaskWorkArea : s_workArea
 
     s_dragonTaskWorkArea_48 field_48;
 
-    s32 matrix[4 * 3]; // 88
+    sMatrix4x3 matrix; // 88
 
     u32 field_C0;
     u32 field_C4;
@@ -173,32 +170,44 @@ struct s_dragonTaskWorkArea : s_workArea
 
 struct s_DataTable3
 {
-    u8* field_0;
-    u8* field_4;
-    u8* field_8;
+    u32** environmentGrid;
+    u32** field_4;
+    u32** field_8;
     u32 field_C;
-    u32 field_10;
-    u32 field_14;
+    s32 gridSize[2]; // 10
     u32 field_18;
     u32 field_1C;
     u32 field_20;
     //u32 field_24[];
 };
 
+struct s_gridTaskWorkArea : public s_workArea
+{
+    s_memoryAreaOutput memoryLayout; // 0
+    u32* pEnvironmentCell; // 8
+    u32* pCell2; // 0xC
+    u32* pCell3; // 0x10
+    u32 index; // 14
+}; // size is 0x18
+
 struct s_fieldCameraTask1WorkArea : public s_workArea
 {
+    sVec3 field_0; // 0
+    s32 field_C;
+    s32 field_10;
+    s32 field_14;
     s32 field_18;
     s32 field_1C;
     u32 field_20;
-    u32 field_24;
+    s32 field_24;
     u32 field_28;
     u8* field_2C;
     s_DataTable3* field_30; // 30
     u8* field_34; // field_34
     p_workArea field_38; // 38
-
-    u16 field_12F2; // 12F2
-    void(*field_12F8); // 12F8
+    s_gridTaskWorkArea** field_3C; // 3C (an array of tasks)
+    u16 renderMode; // 12F2
+    void(*field_12F8)(s_fieldCameraTask1WorkArea* pFieldCameraTask1); // 12F8
     void(*field_12FC); // 12F8
     u8 field_1300;
     //size: 1304
