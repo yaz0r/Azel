@@ -111,6 +111,10 @@ struct s_dragonTaskWorkArea : s_workArea
     s32 posY; // C
     s32 posZ; // 10
 
+    s32 oldPosX; // 14
+    s32 oldPosY; // 18
+    s32 oldPosZ; // 1C
+
     s32 angleX; // 20
     s32 angleY; // 24
     s32 angleZ; // 28
@@ -127,7 +131,10 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 field_D1[3];
     u8 field_D4[3];
 
-    void(*field_F0); //F0
+    void(*field_F0)(s_dragonTaskWorkArea*); //F0
+
+    u32 field_F8; // F8 Flags
+    u32 field_FC[2]; // FC
 
     u32 field_130;
     u32 field_134;
@@ -166,13 +173,30 @@ struct s_dragonTaskWorkArea : s_workArea
 
     u8 field_23A;
     u8 field_23B;
+
+    u8 field_249;
+};
+
+struct s_grid1
+{
+    // size 18
+};
+
+struct s_grid2
+{
+    // size 10
+};
+
+struct s_grid3
+{
+    // size 10
 };
 
 struct s_DataTable3
 {
-    u32** environmentGrid;
-    u32** field_4;
-    u32** field_8;
+    s_grid1** environmentGrid;
+    s_grid2** field_4;
+    s_grid3** field_8;
     u32 field_C;
     s32 gridSize[2]; // 10
     u32 field_18;
@@ -184,11 +208,17 @@ struct s_DataTable3
 struct s_gridTaskWorkArea : public s_workArea
 {
     s_memoryAreaOutput memoryLayout; // 0
-    u32* pEnvironmentCell; // 8
-    u32* pCell2; // 0xC
-    u32* pCell3; // 0x10
+    s_grid1* pEnvironmentCell; // 8
+    s_grid2* pCell2; // 0xC
+    s_grid3* pCell3; // 0x10
     u32 index; // 14
 }; // size is 0x18
+
+struct sCameraVisibility
+{
+    s8 field_0;
+    u8 field_1;
+};
 
 struct s_fieldCameraTask1WorkArea : public s_workArea
 {
@@ -196,18 +226,18 @@ struct s_fieldCameraTask1WorkArea : public s_workArea
     s32 field_C;
     s32 field_10;
     s32 field_14;
-    s32 field_18;
-    s32 field_1C;
+    s32 cameraGridLocation[2]; // 18 Grid location
     u32 field_20;
     s32 field_24;
     u32 field_28;
     u8* field_2C;
     s_DataTable3* field_30; // 30
-    u8* field_34; // field_34
+    sCameraVisibility** cameraVisibilityTable; // field_34
     p_workArea field_38; // 38
-    s_gridTaskWorkArea** field_3C; // 3C (an array of tasks)
+    s_gridTaskWorkArea** cellRenderingTasks; // 3C (an array of tasks)
     u16 renderMode; // 12F2
-    void(*field_12F8)(s_fieldCameraTask1WorkArea* pFieldCameraTask1); // 12F8
+    u8 updateVisibleCells;
+    u8(*field_12F8)(s_fieldCameraTask1WorkArea* pFieldCameraTask1); // 12F8
     void(*field_12FC); // 12F8
     u8 field_1300;
     //size: 1304
@@ -246,7 +276,7 @@ struct s_FieldSubTaskWorkArea : public s_workArea
 struct s_fieldTaskWorkArea : public s_workArea
 {
     s_workArea* field_0; // 0
-    s_workArea* overlayTaskData;//8
+    s_workArea* overlayTaskData;//4
     s_FieldSubTaskWorkArea* pSubFieldData; // 0x8
     u32 fStatus; // 0x28
     s16 currentFieldIndex; // 0x2C

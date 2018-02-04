@@ -77,6 +77,10 @@ struct s_task
     {
         return (m_flags & TASK_FLAGS_PAUSED) ? true : false;
     }
+    void clearPaused()
+    {
+        m_flags &= ~TASK_FLAGS_PAUSED;
+    }
     void markPaused()
     {
         m_flags |= TASK_FLAGS_PAUSED;

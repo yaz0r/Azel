@@ -111,36 +111,36 @@ const void* FLD_A3_Scripts[]
     (void*)1,
 };
 
-u32* fieldA3_0_dataTable3_grid1[4 * 12] =
+s_grid1* fieldA3_0_dataTable3_grid1[4 * 12] =
 {
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, (u32*)1, 0,
-    0, (u32*)1, (u32*)1, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, (u32*)1,
-    (u32*)1, (u32*)1, (u32*)1, (u32*)1,
-    (u32*)1, (u32*)1, 0, 0,
-    (u32*)1, 0, 0, 0,
+    0, (s_grid1*)1, 0, 0,
+    0, (s_grid1*)1, 0, 0,
+    0, (s_grid1*)1, 0, 0,
+    0, (s_grid1*)1, 0, 0,
+    0, (s_grid1*)1, 0, 0,
+    0, (s_grid1*)1, (s_grid1*)1, 0,
+    0, (s_grid1*)1, (s_grid1*)1, 0,
+    0, (s_grid1*)1, 0, 0,
+    0, (s_grid1*)1, 0, (s_grid1*)1,
+    (s_grid1*)1, (s_grid1*)1, (s_grid1*)1, (s_grid1*)1,
+    (s_grid1*)1, (s_grid1*)1, 0, 0,
+    (s_grid1*)1, 0, 0, 0,
 };
 
-u32* fieldA3_0_dataTable3_grid2[4 * 12] =
+s_grid2* fieldA3_0_dataTable3_grid2[4 * 12] =
 {
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, 0,
+    0, (s_grid2*)1, 0, 0,
+    0, (s_grid2*)1, 0, 0,
+    0, (s_grid2*)1, 0, 0,
+    0, (s_grid2*)1, 0, 0,
     0, 0, 0, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, (u32*)1, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, 0,
-    0, (u32*)1, 0, 0,
-    (u32*)1, 0, 0, 0,
-    (u32*)1, 0, 0, 0,
+    0, (s_grid2*)1, 0, 0,
+    0, (s_grid2*)1, (s_grid2*)1, 0,
+    0, (s_grid2*)1, 0, 0,
+    0, (s_grid2*)1, 0, 0,
+    0, (s_grid2*)1, 0, 0,
+    (s_grid2*)1, 0, 0, 0,
+    (s_grid2*)1, 0, 0, 0,
 };
 
 s_DataTable3 fieldA3_0_dataTable3 =
@@ -169,11 +169,27 @@ s_DataTable3 fieldA3_0_dataTable3 =
     */
 };
 u8 fieldA3_0_dataTable2[] = { 1 };
-u8 fieldA3_0_dataTable1[] = { 1 };
+
+sCameraVisibility fieldA3_0_dataTable1_0[] =
+{
+    { -1, 0 },
+};
+
+sCameraVisibility fieldA3_0_dataTable1_1[] =
+{
+    { 1, 1 },
+    { 1, 0 },
+    { -1, 0 },
+};
+
+sCameraVisibility* fieldA3_0_dataTable1[] = {
+    fieldA3_0_dataTable1_0,
+    fieldA3_0_dataTable1_1
+};
 
 void fieldA3_0_startTasks(p_workArea workArea)
 {
-    assert(0);
+    unimplemented("fieldA3_0_startTasks");
 }
 
 s_taskDefinition fieldGridTaskDefinition = { NULL, dummyTaskUpdate, dummyTaskDraw, NULL, "fieldGridTask" };
@@ -207,9 +223,24 @@ void setupField2CreateGridTaskArraySub1(p_workArea)
     assert(0);
 }
 
-void setupField2CreateGridTaskArraySub2(p_workArea)
+void setupField2CreateGridTaskArraySub2(p_workArea workArea)
 {
-    assert(0);
+    s_gridTaskWorkArea* pTypedWorkAread = static_cast<s_gridTaskWorkArea*>(workArea);
+
+    if (pTypedWorkAread->pEnvironmentCell)
+    {
+        assert(0);
+    }
+
+    if (pTypedWorkAread->pCell2)
+    {
+        assert(0);
+    }
+
+    if (pTypedWorkAread->pCell3)
+    {
+        assert(0);
+    }
 }
 
 
@@ -234,13 +265,93 @@ s_gridTaskWorkArea* setupField2CreateGridTask(s_fieldCameraTask1WorkArea* r4, p_
     return pNewTask;
 }
 
-void setupField2Sub1(s_fieldCameraTask1WorkArea* r14)
+void enableCellsBasedOnVisibilityList(s_fieldCameraTask1WorkArea* r14, sCameraVisibility* r5)
 {
-    assert(0);
+    // TODO: Original was different, but I think it was buggy
+    while (r5->field_0 >= 0)
+    {
+        r14->cellRenderingTasks[(r14->field_30->gridSize[0] * r5->field_1) + r5->field_0]->getTask()->clearPaused();
+        r5++;
+    }
 }
-void setupField2Sub2(p_workArea)
+
+s32 setupField2Sub1Data[9][2] =
 {
-    assert(0);
+    {-1,-1},
+    {0,-1},
+    {1,-1},
+    {-1,0},
+    {0,0},
+    {1,0},
+    {-1,1},
+    {0,1},
+    {1,1}
+};
+
+void enableCellsAroundCamera(s_fieldCameraTask1WorkArea* r14)
+{
+    if (r14->field_30 == NULL)
+        return;
+
+    if (r14->cellRenderingTasks == NULL)
+        return;
+
+    if (r14->cameraVisibilityTable &&
+        (r14->cameraGridLocation[0] >= 0) &&
+        (r14->cameraGridLocation[0] < r14->field_30->gridSize[0]) &&
+        (r14->cameraGridLocation[1] >= 0) &&
+        (r14->cameraGridLocation[1] < r14->field_30->gridSize[1]) &&
+        (r14->cameraVisibilityTable[r14->cameraGridLocation[0] + r14->cameraGridLocation[1] * r14->field_30->gridSize[0]]))
+    {
+        return enableCellsBasedOnVisibilityList(r14, r14->cameraVisibilityTable[r14->cameraGridLocation[0] + r14->cameraGridLocation[1] * r14->field_30->gridSize[0]]);
+    }
+
+    for (int i = 0; i < 9; i++)
+    {
+        s32 r5 = r14->cameraGridLocation[0] + setupField2Sub1Data[i][0];
+        s32 r6 = r14->cameraGridLocation[1] + setupField2Sub1Data[i][1];
+
+        if ((r5 >= 0) && (r5 < r14->field_30->gridSize[0]) && (r6 >= 0) && (r6 < r14->field_30->gridSize[1]))
+        {
+            r14->cellRenderingTasks[r5 + r6 * r14->field_30->gridSize[0]]->getTask()->clearPaused();
+        }
+    }
+}
+
+void pauseAllCells(s_fieldCameraTask1WorkArea* pFieldCameraTask1)
+{
+    if (pFieldCameraTask1->field_30 == NULL)
+        return;
+
+    if (pFieldCameraTask1->cellRenderingTasks == NULL)
+        return;
+
+    for (int i = 0; i < pFieldCameraTask1->field_30->gridSize[0] * pFieldCameraTask1->field_30->gridSize[1]; i++)
+    {
+        pFieldCameraTask1->cellRenderingTasks[i]->getTask()->markPaused();
+    }
+}
+
+void setupField2Sub2Sub1(s_fieldCameraTask1WorkArea* pFieldCameraTask1)
+{
+    if (pFieldCameraTask1->updateVisibleCells)
+    {
+        pauseAllCells(pFieldCameraTask1);
+        enableCellsAroundCamera(pFieldCameraTask1);
+    }
+}
+
+void setupField2Sub2(p_workArea workArea)
+{
+    s_fieldCameraTask1WorkArea* pFieldCameraTask1 = static_cast<s_fieldCameraTask1WorkArea*>(workArea);
+
+    pFieldCameraTask1->field_0[0] = cameraProperties2.field_0[0];
+    pFieldCameraTask1->field_0[1] = cameraProperties2.field_0[1];
+    pFieldCameraTask1->field_0[2] = cameraProperties2.field_0[2];
+
+    pFieldCameraTask1->updateVisibleCells = pFieldCameraTask1->field_12F8(pFieldCameraTask1);
+
+    setupField2Sub2Sub1(pFieldCameraTask1);
 }
 
 
@@ -301,16 +412,16 @@ void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
         s32* var_1C = pFieldCameraTask1->field_30->gridSize;
         int gridSize = pFieldCameraTask1->field_30->gridSize[0] * pFieldCameraTask1->field_30->gridSize[1];
 
-        pFieldCameraTask1->field_3C = (s_gridTaskWorkArea**)allocateHeapForTask(pFieldCameraTask1->field_38, gridSize * sizeof(s_gridTaskWorkArea*));
+        pFieldCameraTask1->cellRenderingTasks = (s_gridTaskWorkArea**)allocateHeapForTask(pFieldCameraTask1->field_38, gridSize * sizeof(s_gridTaskWorkArea*));
 
         for (int r13 = 0; r13 < gridSize; r13++)
         {
-            pFieldCameraTask1->field_3C[r13] = setupField2CreateGridTask(pFieldCameraTask1, pFieldCameraTask1->field_38, r13);
-            pFieldCameraTask1->field_3C[r13]->getTask()->markPaused();
+            pFieldCameraTask1->cellRenderingTasks[r13] = setupField2CreateGridTask(pFieldCameraTask1, pFieldCameraTask1->field_38, r13);
+            pFieldCameraTask1->cellRenderingTasks[r13]->getTask()->markPaused();
         }
 
         //060710C4
-        setupField2Sub1(pFieldCameraTask1);
+        enableCellsAroundCamera(pFieldCameraTask1);
         pFieldCameraTask1->getTask()->m_pUpdate = setupField2Sub2;
     }
     else
@@ -333,13 +444,13 @@ void setupFieldSub1(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea))
 
     if (r5)
     {
-        assert(0);
+        unimplemented("setupFieldSub1");
     }
 }
 
-void setupField(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea), u8* r7)
+void setupField(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea), sCameraVisibility** r7)
 {
-    getFieldTaskPtr()->pSubFieldData->pFieldCameraTask1->field_34 = r7;
+    getFieldTaskPtr()->pSubFieldData->pFieldCameraTask1->cameraVisibilityTable = r7;
 
     setupFieldSub1(r4, r5, r6);
 }
@@ -351,7 +462,7 @@ void subfieldA3_0(p_workArea workArea)
 
     setupField(&fieldA3_0_dataTable3, fieldA3_0_dataTable2, fieldA3_0_startTasks, fieldA3_0_dataTable1);
 
-    assert(0);
+    unimplemented("subfieldA3_0");
 }
 void subfieldA3_1(p_workArea workArea) { unimplemented("subfieldA3_1"); }
 void subfieldA3_2(p_workArea workArea) { unimplemented("subfieldA3_2"); }
@@ -748,8 +859,11 @@ void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDr
     pWorkArea->field_23B = 1;
 }
 
-void dragonFieldTaskInitSub4()
+void dragonFieldTaskInitSub4(s_dragonTaskWorkArea* pTypedWorkArea)
 {
+    getFieldTaskPtr()->fStatus |= 0x10000;
+
+    //pTypedWorkArea->field_1D4
     assert(0);
 }
 
@@ -793,7 +907,43 @@ void dragonFieldTaskInit(s_workArea* pWorkArea, u32 arg)
     }
 }
 
-s_taskDefinitionWithArg dragonFieldTaskDefinition = { dragonFieldTaskInit, dummyTaskUpdate, dummyTaskDraw, dummyTaskDelete, "dragonFieldTask" };
+void dragonFieldTaskUpdateSub1Sub1()
+{
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->pSubFieldData->pDragonTask;
+
+    if (pDragonTask->field_F8 & 0x400)
+        return;
+
+    if (!pDragonTask->field_249)
+        return;
+
+    assert(0);
+}
+
+void dragonFieldTaskUpdateSub1(s_dragonTaskWorkArea* pTypedWorkArea)
+{
+    pTypedWorkArea->field_FC[0] = 0;
+    pTypedWorkArea->field_FC[1] = 0;
+
+    pTypedWorkArea->oldPosX = pTypedWorkArea->posX;
+    pTypedWorkArea->oldPosY = pTypedWorkArea->posY;
+    pTypedWorkArea->oldPosZ = pTypedWorkArea->posZ;
+
+    pTypedWorkArea->field_F0(pTypedWorkArea);
+
+    dragonFieldTaskUpdateSub1Sub1();
+}
+
+void dragonFieldTaskUpdate(s_workArea* pWorkArea)
+{
+    s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
+
+    dragonFieldTaskUpdateSub1(pTypedWorkArea);
+
+    assert(0);
+}
+
+s_taskDefinitionWithArg dragonFieldTaskDefinition = { dragonFieldTaskInit, dragonFieldTaskUpdate, dummyTaskDraw, dummyTaskDelete, "dragonFieldTask" };
 
 void initFieldDragon(s_workArea* pWorkArea, u32 param)
 {
@@ -827,9 +977,48 @@ void createFieldOverlaySubTask2(s_workArea* pWorkArea)
     createSubTask(pWorkArea, &fieldOverlaySubTask2Definition, new s_dummyWorkArea);
 }
 
-void fieldCameraTask1InitSub1(s_fieldCameraTask1WorkArea* pFieldCameraTask1)
+s32 performDivision(s32 r0, s32 r1)
 {
-    unimplemented("fieldCameraTask1InitSub1");
+    return r1 / r0;
+}
+
+u8 fieldCameraTask1InitSub1(s_fieldCameraTask1WorkArea* pFieldCameraTask1)
+{
+    u8 bDirty = 0;
+    s32 X;
+
+    if (pFieldCameraTask1->field_28 & 1)
+    {
+        assert(0);
+    }
+    else
+    {
+        X = performDivision(pFieldCameraTask1->field_20, pFieldCameraTask1->field_0[0]);
+        if (pFieldCameraTask1->field_0[0] < 0)
+        {
+            X--;
+        }
+    }
+
+    s32 Z = performDivision(pFieldCameraTask1->field_24, pFieldCameraTask1->field_0[2]);
+    if (pFieldCameraTask1->field_0[2] < 0)
+    {
+        Z--;
+    }
+
+    if (pFieldCameraTask1->cameraGridLocation[0] != X)
+    {
+        pFieldCameraTask1->cameraGridLocation[0] = X;
+        bDirty = 1;
+    }
+
+    if (pFieldCameraTask1->cameraGridLocation[1] != Z)
+    {
+        pFieldCameraTask1->cameraGridLocation[1] = Z;
+        bDirty = 1;
+    }
+
+    return bDirty;
 }
 
 void fieldCameraTask1InitSub2()
@@ -848,10 +1037,10 @@ void fieldCameraTask1Init(s_workArea* pWorkArea)
     pTypedWorkArea->field_12FC = fieldCameraTask1InitSub2;
     pTypedWorkArea->renderMode = 2;
 
-    pTypedWorkArea->field_18 = -1;
-    pTypedWorkArea->field_1C = -1;
+    pTypedWorkArea->cameraGridLocation[0] = -1;
+    pTypedWorkArea->cameraGridLocation[1] = -1;
     pTypedWorkArea->field_30 = 0;
-    pTypedWorkArea->field_34 = 0;
+    pTypedWorkArea->cameraVisibilityTable = 0;
     pTypedWorkArea->field_2C = fieldCameraTask1InitData1;
     pTypedWorkArea->field_1300 = 3;
 }
