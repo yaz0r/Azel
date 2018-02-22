@@ -28,8 +28,8 @@ s_titleMenuEntry mainMenu[] = {
 };
 
 s_titleMenuEntry mainMenuDebug[] = {
-    {1, -8, " NEW GAME ", NULL /*createNewGameTask*/ },
-    {1, -7, " CONTINUE ", NULL /*createContinueTask*/ },
+    {1, -8, " NEW GAME ", createNewGameTask },
+    {1, -7, " CONTINUE ", createContinueTask },
     {1, -6, "   TOWN   ", createTownDebugTask },
     {1, -5, "  FIELD   ", createFieldDebugTask },
     {1, -4, "  BATTLE  ", createBattleDebugTask },
@@ -131,7 +131,9 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
             initialTaskStatus.m_pendingTask = pWorkArea->m_menu[pWorkArea->m_currentSelection].m_createTask;
 
             titleScreenDrawSub3(2);
-            resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
+
+            // fade out to black
+            fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
             return;
         }
 
@@ -348,7 +350,7 @@ void titleScreenDraw(p_workArea pTypelessWorkArea)
         if (--pWorkArea->m_delay)
             return;
 
-        resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
+        fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
         titleScreenDrawSub3(3);
 
         pWorkArea->m_status++;
@@ -412,7 +414,7 @@ void warningTaskDraw(p_workArea pTypelessWorkArea)
     case 2: // fade out init?
         if (!(PortData2.field_8 & 8))
             return;
-        resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0, 30);
+        fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0, 30);
         pWorkArea->m_status++;
     case 3: // wait fade out
         if (!menuUnk0.m_field0.m_field20)
@@ -498,7 +500,7 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
         vdp2Controls.m_registers[1].N1COSL = 0;
     }
 
-    resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
+    fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
 }
 
 s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL, "warning" };

@@ -36,7 +36,11 @@ void resetEngine()
 
     //...
 
-    resetMenu(&menuUnk0.m_field0, 0, 0, 1);
+    resetVdp2Strings();
+
+    //...
+
+    fadePalette(&menuUnk0.m_field0, 0, 0, 1);
 
     // Stuff
 
@@ -51,29 +55,7 @@ void initInitialTaskStatsAndDebug()
     //iniitInitialTaskStatsAndDebugSub();
 }
 
-struct sFileInfoSub
-{
-    sFileInfoSub* pNext; // 0
-    char m_fileName[32]; // 4 was file id before
-    FILE* fHandle;//8
-    //u32 m_numSectors;//C
-    u32 m_fileSize; //10 ?
-    //u32 m_14;//14 ?
-    u16 m_18;//18 ? word
-    u8* m_patchPointerType; //1A ? word
-};
-
-struct sFileInfo
-{
-    u8 field_0; //0
-    u8 field_3; //3
-    u8 displayMemoryLayout; //5
-    u16 field_8; //8
-
-    sFileInfoSub* allocatedHead; //2C
-    sFileInfoSub* freeHead; //30
-    sFileInfoSub linkedList[15]; //34
-} fileInfoStruct;
+sFileInfo fileInfoStruct;
 
 sFileInfoSub* getFileHandle(const char* fileName)
 {

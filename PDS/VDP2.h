@@ -92,6 +92,8 @@ struct s_VDP2Regs
 
     u16 SCRCTL;
 
+    u32 BKTA;
+
     //
     u16 SPCTL;
     //
@@ -146,6 +148,8 @@ struct sLayerConfig
     u32 m_value;
 };
 
+extern u8* vdp2Palette;
+
 extern u8 incrementVar;
 void updateVDP2CoordinatesIncrement(u32, u32);
 void updateVDP2CoordinatesIncrement2(u32, u32);
@@ -169,6 +173,25 @@ int drawLineLargeFont(const char* text);
 int drawLineSmallFont(const char* text);
 void vdp2PrintfSmallFont(const char* format, ...);
 void vdp2PrintfLargeFont(const char* format, ...);
+
+extern u8* MENU_SCB;
+
+struct sVdp2StringControl
+{
+    u32 field_0;
+    u32 field_4;
+    u32 field_8;
+    u32 field_C;
+    u32 field_10;
+    u8 field_14;
+    u8 field_15;
+    u32 field_18;
+    u32 field_1C;
+};
+
+extern sVdp2StringControl* pVdp2StringControl;
+
+void resetVdp2Strings();
 
 u16 getVdp2VramU16(u32 offset);
 u8 getVdp2VramU8(u32 offset);

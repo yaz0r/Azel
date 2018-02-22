@@ -426,8 +426,8 @@ void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
     }
     else
     {
-        //pFieldCameraTask1->field_20 = graphicEngineStatus->field_4070;
-        //pFieldCameraTask1->field_24 = graphicEngineStatus->field_4070;
+        pFieldCameraTask1->field_20 = graphicEngineStatus.field_4070;
+        pFieldCameraTask1->field_24 = graphicEngineStatus.field_4070;
     }
 
     if (r5)
@@ -881,9 +881,10 @@ bool shouldLoadPup()
     return false;
 }
 
-void dragonFieldTaskInit(s_workArea* pWorkArea, u32 arg)
+void dragonFieldTaskInit(s_workArea* pWorkArea, void* argument)
 {
     s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
+    u32 arg = (u32)argument;
 
     getFieldTaskPtr()->pSubFieldData->pDragonTask = pTypedWorkArea;
 
@@ -966,7 +967,7 @@ void initFieldDragon(s_workArea* pWorkArea, u32 param)
     }
     else
     {
-        createSubTaskWithArg(pWorkArea, &dragonFieldTaskDefinition, new s_dragonTaskWorkArea, param);
+        createSubTaskWithArg(pWorkArea, &dragonFieldTaskDefinition, new s_dragonTaskWorkArea, (void*)param);
     }
 }
 
@@ -1174,6 +1175,8 @@ p_workArea overlayStart(p_workArea workArea, u32 arg)
     }
     //0605404C
     loadFileFromFileList(1);
+
+    assert(0);
     /*
     graphicEngineStatus.field_406C = 0x3000;
     graphicEngineStatus.field_408C = resetDivideUnit(0x10000, 0x3000);

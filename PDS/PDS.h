@@ -47,6 +47,32 @@ struct sPortData2
 };
 extern sPortData2 PortData2;
 
+struct sFileInfoSub
+{
+    sFileInfoSub* pNext; // 0
+    char m_fileName[32]; // 4 was file id before
+    FILE* fHandle;//8
+                  //u32 m_numSectors;//C
+    u32 m_fileSize; //10 ?
+                    //u32 m_14;//14 ?
+    u16 m_18;//18 ? word
+    u8* m_patchPointerType; //1A ? word
+};
+
+struct sFileInfo
+{
+    u8 field_0; //0
+    u8 field_3; //3
+    u8 displayMemoryLayout; //5
+    u16 field_8; //8
+
+    sFileInfoSub* allocatedHead; //2C
+    sFileInfoSub* freeHead; //30
+    sFileInfoSub linkedList[15]; //34
+};
+
+extern sFileInfo fileInfoStruct;
+
 extern bool debugEnabled;
 extern int enableDebugTask;
 extern u8 pauseEngine[4];
@@ -62,5 +88,6 @@ u32 getFileSize(const char* fileName);
 void unimplemented(const char* name);
 
 #include "o_title.h"
+#include "o_menuEn.h"
 #include "o_fld_a3.h"
 

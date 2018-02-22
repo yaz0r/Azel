@@ -31,7 +31,7 @@ struct s_taskDefinition
 
 struct s_taskDefinitionWithArg
 {
-    void(*m_pInit)(s_workArea*, u32 argument);
+    void(*m_pInit)(s_workArea*, void* argument);
     void(*m_pUpdate)(s_workArea*);
     void(*m_pLateUpdate)(s_workArea*);
     void(*m_pDelete)(s_workArea*);
@@ -99,7 +99,8 @@ void resetTasks();
 void runTasks();
 
 p_workArea createSubTask(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
-p_workArea createSubTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, u32 argument);
+p_workArea createSubTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument);
+p_workArea createSiblingTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument);
 
 p_workArea createSubTaskFromFunction(p_workArea workArea, void(*pFunction)(p_workArea), p_workArea pNewWorkArea, const char* name);
 

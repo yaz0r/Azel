@@ -9,6 +9,9 @@ u8* VDP2_CRamStart = vdp2CRam;
 u32 vdp2TextMemoryOffset = 0x6000;
 u16* vdp2TextMemory = (u16*)&vdp2Ram[0x6000];
 u8* vdp2FontPalettes = VDP2_CRamStart + 0xE00;
+u8* vdp2Palette = VDP2_CRamStart + 0xC00;
+
+u8* MENU_SCB = (u8*)&vdp2Ram[0x71C00];
 
 s_Vdp2PrintStatus vdp2PrintStatus;
 s_VDP2Regs VDP2Regs_;
@@ -831,5 +834,32 @@ void vdp2PrintfLargeFont(const char* format, ...)
     assert(length < stringSize);
 
     drawLineLargeFont(buffer);
+}
+
+sVdp2StringControl vdp2StringControlBuffer;
+sVdp2StringControl* pVdp2StringControl = NULL;
+
+void initVdp2StringControl()
+{
+    pVdp2StringControl = &vdp2StringControlBuffer;
+
+    pVdp2StringControl->field_0 = 0;
+    pVdp2StringControl->field_4 = 0;
+    pVdp2StringControl->field_8 = 0;
+    pVdp2StringControl->field_C = 0;
+    pVdp2StringControl->field_10 = 0;
+    pVdp2StringControl->field_14 = 0;
+    pVdp2StringControl->field_15 = 0;
+    pVdp2StringControl->field_18 = 0;
+    pVdp2StringControl->field_1C = 0;
+}
+
+void resetVdp2Strings()
+{
+    initVdp2StringControl();
+
+    // ..
+
+    resetCharacterMaps();
 }
 

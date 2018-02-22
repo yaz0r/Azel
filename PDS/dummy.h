@@ -28,7 +28,7 @@ void playSoundEffect(int);
 bool keyboardIsKeyDown(u8 keycode);
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2);
 u32 titleScreenDrawSub1(sMenuUnk0* arrayData);
-void resetMenu(sMenuUnk0Sub* arrayData, u32, u32, u32);
+void fadePalette(sMenuUnk0Sub* arrayData, u32, u32, u32);
 void titleScreenDrawSub3(u32);
 
 void playMusic(u8 unk0, u8 unk1);

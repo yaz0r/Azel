@@ -1,5 +1,54 @@
 #include "PDS.h"
 
+u8 MENU_CGB[0x2000];
+
+p_workArea createLoadingTask(p_workArea parentTask)
+{
+    //createSiblingTaskWithArg(parentTask, &loadingTask, new s_dummyWorkArea, parentTask);
+
+    return NULL;
+}
+
+struct s_flagEditTaskWorkArea : public s_workArea
+{
+    u32 state;
+    p_workArea field_4; //4
+};
+
+void flagEditTaskInit(s_workArea* pTypelessWorkArea, void* argument)
+{
+    s_flagEditTaskWorkArea* pWorkArea = static_cast<s_flagEditTaskWorkArea*>(pTypelessWorkArea);
+
+    pWorkArea->field_4 = static_cast<p_workArea>(argument);
+}
+
+void flagEditTaskUpdate(s_workArea* pTypelessWorkArea)
+{
+    s_flagEditTaskWorkArea* pWorkArea = static_cast<s_flagEditTaskWorkArea*>(pTypelessWorkArea);
+
+    switch (pWorkArea->state)
+    {
+    case 0:
+        if (readKeyboardToggle(0x85))
+        {
+            assert(0);
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    if (pWorkArea->field_4)
+    {
+        if (pWorkArea->field_4->getTask()->isFinished())
+        {
+            pWorkArea->getTask()->markFinished();
+        }
+    }
+}
+
+s_taskDefinitionWithArg flagEditTask = { flagEditTaskInit, NULL, flagEditTaskUpdate, NULL, "flagEditTask" };
+
 u32 getPanzerZweiPlayTime(u32 slot)
 {
     return 0;
@@ -145,9 +194,26 @@ s_fieldTaskWorkArea* getFieldTaskPtr()
     return fieldTaskPtr;
 }
 
-void fieldTaskInit(p_workArea pTypelessWorkArea, u32 battleArgument)
+void updateFieldTaskNoBattleOverride(p_workArea pTypelessWorkArea)
 {
     s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
+
+    switch (pWorkArea->fieldTaskState)
+    {
+    case 0:
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    return;
+}
+
+void fieldTaskInit(p_workArea pTypelessWorkArea, void* battleArgumentVoid)
+{
+    s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
+    u32 battleArgument = (u32)battleArgumentVoid;
 
     fieldTaskPtr = pWorkArea;
     fieldTaskVar0 = NULL;
@@ -159,7 +225,8 @@ void fieldTaskInit(p_workArea pTypelessWorkArea, u32 battleArgument)
 
     if (battleArgument)
     {
-        assert(0);
+        pWorkArea->fStatus = 0;
+        pWorkArea->getTask()->m_pUpdate = updateFieldTaskNoBattleOverride;
     }
     else
     {
@@ -216,8 +283,8 @@ void fieldDebugListTaskInit(p_workArea pTypelessWorkArea)
         vdp2Controls.m_registers[1].N1COSL = 0x10;
     }
     
-    resetMenu(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
-    resetMenu(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
+    fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
+    fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
 }
 
 void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
@@ -432,8 +499,8 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
         vdp2Controls.m_registers[1].N1COSL = 0x10;
     }
 
-    resetMenu(&menuUnk0.m_field0, 0, 0, 1);
-    resetMenu(&menuUnk0.m_field24, 0, 0, 1);
+    fadePalette(&menuUnk0.m_field0, 0, 0, 1);
+    fadePalette(&menuUnk0.m_field24, 0, 0, 1);
 
     r14->fieldTaskState++;
 }
@@ -1631,9 +1698,10 @@ void freeRamResource()
     yLog("Unimplemented freeRamResource");
 }
 
-void loadFnt(const char*)
+u16 loadFnt(const char*)
 {
     yLog("Unimplemented loadFnt");
+    return 0;
 }
 
 void unloadFnt(const char*)
@@ -1707,8 +1775,8 @@ void fieldSubTaskUpdate(s_workArea* pWorkArea)
                     vdp2Controls.m_registers[1].N1COSL = 0x10;
                 }
 
-                resetMenu(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
-                resetMenu(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_4A, 30);
+                fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
+                fadePalette(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_4A, 30);
 
                 pFieldSubTaskWorkArea->fieldSubTaskStatus++;
             }
@@ -1986,7 +2054,7 @@ s_taskDefinitionWithArg fieldTaskDefinition = { fieldTaskInit, fieldTaskUpdate, 
 
 p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg)
 {
-    return createSubTaskWithArg(pTypelessWorkArea, &fieldTaskDefinition, new s_fieldTaskWorkArea, arg);
+    return createSubTaskWithArg(pTypelessWorkArea, &fieldTaskDefinition, new s_fieldTaskWorkArea, (void*)arg);
 }
 
 struct s_fieldDebugTaskWorkArea : public s_workArea
@@ -2003,8 +2071,11 @@ void fieldDebugTaskInit(p_workArea pTypelessWorkArea)
 
     initNewGameState();
     pWorkArea->field_8 = createFieldTask(pTypelessWorkArea, 0);
-    /*createLoadingTask(workArea->field_8);
-    createTask_1Arg(workArea->field_8, flagEditTask, 0x10);*/
+    
+    createLoadingTask(pWorkArea->field_8);
+    createSiblingTaskWithArg(pWorkArea->field_8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->field_8);
+
+    assert(0);
 }
 
 void genericTaskRestartGameWhenFinished(p_workArea pTypelessWorkArea)
@@ -2024,15 +2095,42 @@ void genericOptionMenuDelete(p_workArea pTypelessWorkArea)
 
 s_taskDefinition fieldDebugModule = { fieldDebugTaskInit, NULL, genericTaskRestartGameWhenFinished, genericOptionMenuDelete, "fieldDebugTask" };
 
-p_workArea createTownDebugTask(p_workArea pTypelessWorkArea)
+
+void townDebugTaskInit(p_workArea pTypelessWorkArea)
 {
+    s_fieldDebugTaskWorkArea* pWorkArea = static_cast<s_fieldDebugTaskWorkArea*>(pTypelessWorkArea);
+
+    pauseEngine[2] = 0;
+
+    initNewGameState();
+
     assert(0);
-    return NULL;
+    /*
+    pWorkArea->field_8 = createLocationTask(pWorkArea, 0);
+
+    resetTempAllocators();
+    initDramAllocator(pWorkArea->field_8, playerDataMemoryBuffer, 0x28000, NULL);
+
+    loadDragon(pWorkArea->field_8);
+    loadCurrentRider(pWorkArea->field_8);
+    loadCurrentRider2(pWorkArea->field_8);
+    freeRamResource();
+    createMenuTask();
+    createSiblingTaskWithArg(pWorkArea->field_8, flagEditTask, 0x10, pWorkArea->field_8);
+    */
+}
+
+s_taskDefinition townDebugTask = { townDebugTaskInit, NULL, genericTaskRestartGameWhenFinished, genericOptionMenuDelete, "townDebugTask" };
+
+p_workArea createTownDebugTask(p_workArea pWorkArea)
+{
+    return createSubTask(pWorkArea, &townDebugTask, new s_fieldDebugTaskWorkArea);
 }
 p_workArea createFieldDebugTask(p_workArea pWorkArea)
 {
     return createSubTask(pWorkArea, &fieldDebugModule, new s_fieldDebugTaskWorkArea);
 }
+
 p_workArea createBattleDebugTask(p_workArea)
 {
     assert(0);
@@ -2048,3 +2146,395 @@ p_workArea createMovieDebugTask(p_workArea)
     assert(0);
     return NULL;
 }
+
+struct s_exitMenuTaskSub1Task : public s_workArea
+{
+    u32 state; // 0
+    u32 field_8;
+    u32 field_C;
+};
+
+struct {
+    s8 field_0;
+    s8 field_1;
+    s8 field_2;
+    s8 field_3;
+    u16 field_4;
+    u16 field_6;
+    u16 field_8;
+} var_60525F4;
+
+struct {
+    u8 field_8;
+    u8 field_9;
+    u8 field_A;
+    u8 field_B;
+} var_60525E8;
+
+void exitMenuTaskSub1TaskInitSub2(u32 r4)
+{
+    if (var_60525F4.field_8 == 0)
+    {
+        var_60525F4.field_8 = r4;
+        var_60525F4.field_2 = 0;
+    }
+}
+
+u8 array_24BCA0[0x104];
+
+void exitMenuTaskSub1TaskInitSub1()
+{
+    memset(array_24BCA0, 0, 0x104);
+}
+
+u8 array_250000[0x20000];
+
+struct s_menuGraphicsTask : public s_workArea
+{
+    u32 state; // 0
+    p_workArea field_4;
+    p_workArea field_8;
+};
+
+void menuGraphicsTaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
+{
+    s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
+    p_workArea parentTask = (p_workArea)voidArgument;
+
+    pWordArea->field_4 = parentTask;
+    graphicEngineStatus.field_40AC.field_C = pWordArea;
+    graphicEngineStatus.field_40AC.field_1 = 0;
+    graphicEngineStatus.field_40AC.field_3 = 0;
+    graphicEngineStatus.field_40AC.field_0 = 0;
+    graphicEngineStatus.field_40AC.field_2 = 0;
+    graphicEngineStatus.field_40AC.field_4 = 0;
+    graphicEngineStatus.field_40AC.field_5 = 0;
+    graphicEngineStatus.field_40AC.field_6 = 0;
+    graphicEngineStatus.field_40AC.field_7 = 0;
+
+    addToMemoryLayout(MENU_SCB, 0x14000);
+    loadFile("MENU.SCB", MENU_SCB, 0);
+    loadFile("MENU.CGB", MENU_CGB, 0);
+    graphicEngineStatus.field_40AC.field_A = loadFnt("MENU.FNT");
+}
+
+void menuGraphicsTaskDrawSub1()
+{
+    graphicEngineStatus.field_40E4 = (s_graphicEngineStatus_40E4*)allocateHeap(sizeof(s_graphicEngineStatus_40E4));
+    assert(graphicEngineStatus.field_40E4);
+
+    memcpy_dma(&graphicEngineStatus.field_405C, &graphicEngineStatus.field_40E4->field_0, sizeof(s_graphicEngineStatus_405C));
+    memcpy_dma(&vdp2Controls, &graphicEngineStatus.field_40E4->field_50, sizeof(sVdp2Controls));
+    memcpy_dma(&menuUnk0, &graphicEngineStatus.field_40E4->field_2B0, sizeof(sMenuUnk0));
+    asyncDmaCopy(vdp2Palette, &graphicEngineStatus.field_40E4->field_300, 512, 0);
+
+    u32 backScreenTableOffset = vdp2Controls.m_pendingVdp2Regs->BKTA & 0x7FFFF;
+    graphicEngineStatus.field_40E4->field_400 = getVdp2VramU16(backScreenTableOffset);
+    graphicEngineStatus.field_40E4->field_402 = pVdp2StringControl->field_0;
+}
+
+void setupVdp2ForMenu()
+{
+    assert(0);
+    //..
+    loadFile("MENU.SCB", MENU_SCB, 0);
+    loadFile("MENU.CGB", MENU_CGB, 0);
+
+    //unpackGraphicsToVDP2()
+}
+
+p_workArea createMainMenuTask(p_workArea workArea)
+{
+    //assert(0);
+    return NULL;
+}
+
+p_workArea createInventoryMenuTask(p_workArea workArea)
+{
+    assert(0);
+    return NULL;
+}
+
+p_workArea createMainDragonMenuTask(p_workArea workArea)
+{
+    assert(0);
+    return NULL;
+}
+
+p_workArea createEnemyListMenuTask(p_workArea workArea)
+{
+    assert(0);
+    return NULL;
+}
+
+p_workArea createMapTask(p_workArea workArea)
+{
+    assert(0);
+    return NULL;
+}
+
+p_workArea createSystemMenuTask(p_workArea workArea)
+{
+    assert(0);
+    return NULL;
+}
+
+p_workArea createLoadTask(p_workArea workArea)
+{
+    assert(0);
+    return NULL;
+}
+
+p_workArea createSaveTask(p_workArea workArea)
+{
+    assert(0);
+    return NULL;
+}
+
+p_workArea createMenuBKTask(p_workArea workArea)
+{
+    assert(0);
+    return NULL;
+}
+
+p_workArea(*menuTaskMenuArray[])(p_workArea) = 
+{
+    NULL,
+    createMainMenuTask,
+    createInventoryMenuTask,
+    createMainDragonMenuTask,
+    createEnemyListMenuTask,
+    createMapTask,
+    createSystemMenuTask,
+    createLoadTask,
+    createSaveTask,
+    createMenuBKTask,
+};
+
+void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
+{
+    s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
+    
+    // not exactly that in the original code, but same idea
+    if ((pWordArea->field_4 == NULL) || pWordArea->field_4->getTask()->isFinished())
+    {
+        pWordArea->getTask()->markFinished();
+        return;
+    }
+
+    switch (pWordArea->state)
+    {
+    case 0:
+        graphicEngineStatus.field_40AC.field_8 = 0;
+        //if (graphicEngineStatus.field_4514.field_8 & 8)
+        {
+            // flag menu to be entered
+            graphicEngineStatus.field_40AC.field_0 = 1;
+            if (graphicEngineStatus.field_40AC.field_1)
+            {
+                playSoundEffect(0);
+            }
+        }
+
+        // enter menu
+        // this isn't exactly correct
+        if (graphicEngineStatus.field_40AC.field_0)
+        {
+            graphicEngineStatus.field_40AC.field_8 = 1;
+            graphicEngineStatus.field_40AC.field_9 = 1;
+
+            // pause the gameplay system
+            pWordArea->field_4->getTask()->markPaused();
+
+            menuGraphicsTaskDrawSub1();
+            fadePalette(&menuUnk0.m_field0, 0, 0, 1);
+            fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+            pWordArea->state++;
+        }
+        break;
+    case 1:
+        if (fileInfoStruct.allocatedHead == NULL) // wait for loading to finish
+        {
+            graphicEngineStatus.field_40AC.field_2 = 0;
+            setupVdp2ForMenu();
+
+            pWordArea->field_8 = menuTaskMenuArray[graphicEngineStatus.field_40AC.field_0](pWordArea);
+            pWordArea->state++;
+        }
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void menuGraphicsDelete(s_workArea* pTypelessWorkArea)
+{
+    s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
+    assert(0);
+}
+
+s_taskDefinitionWithArg menuGraphicsTask = { menuGraphicsTaskInit, NULL, menuGraphicsTaskDraw, menuGraphicsDelete, "menuGraphicsTask" };
+
+p_workArea createMenuTask(p_workArea parentTask)
+{
+    return createSiblingTaskWithArg(parentTask, &menuGraphicsTask, new s_menuGraphicsTask, parentTask);
+}
+
+void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
+{
+    s_exitMenuTaskSub1Task* pWorkArea = static_cast<s_exitMenuTaskSub1Task*>(pTypelessWorkArea);
+    u32 menuID = (u32)voidArgument;
+
+    pWorkArea->field_8 = 0;
+    pWorkArea->field_C = 0;
+
+    var_60525F4.field_0 = -1;
+    var_60525F4.field_1 = -1;
+    var_60525F4.field_3 = 0;
+    var_60525F4.field_4 = 0;
+    var_60525F4.field_6 = 0;
+    var_60525F4.field_8 = 0;
+
+    if (menuID == 3)
+    {
+        mainGameState.gameStats.dragonLevel = DR_LEVEL_1_VALIANT_WING;
+    }
+    else
+    {
+        mainGameState.gameStats.dragonLevel = DR_LEVEL_0_BASIC_WING;
+    }
+
+    mainGameState.gameStats.rider1 = 1;
+    mainGameState.gameStats.rider2 = 0;
+
+    var_60525E8.field_8 = 0;
+    var_60525E8.field_9 = 0;
+    var_60525E8.field_A = 0;
+    var_60525E8.field_B = 0;
+
+    exitMenuTaskSub1TaskInitSub1();
+
+    createMenuTask(pWorkArea);
+    createFieldTask(pWorkArea, 1);
+    createLoadingTask(pWorkArea);
+    resetTempAllocators();
+    initDramAllocator(pWorkArea, array_250000, 0x28000, 0);
+
+    loadDragon(pWorkArea);
+    loadCurrentRider(pWorkArea);
+    loadCurrentRider2(pWorkArea);
+    freeRamResource();
+
+    if (keyboardIsKeyDown(0xF6))
+    {
+        assert(0);
+    }
+
+    switch (menuID)
+    {
+    case 0:
+        return exitMenuTaskSub1TaskInitSub2(1);
+    case 1:
+        return exitMenuTaskSub1TaskInitSub2(0x4A);
+    case 2:
+        return exitMenuTaskSub1TaskInitSub2(0x71);
+    case 3:
+        return exitMenuTaskSub1TaskInitSub2(0x72);
+    default:
+        assert(0);
+    }
+
+    assert(0);
+}
+
+u32 vblankData[8] = { 0,0,0,0,0,0,0,0 };
+
+void exitMenuTaskSub1TaskUpdate(s_workArea* pTypelessWorkArea)
+{
+    mainGameState.gameStats.frameCounter += vblankData[3];
+}
+
+void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
+{
+    s_exitMenuTaskSub1Task* pWorkArea = static_cast<s_exitMenuTaskSub1Task*>(pTypelessWorkArea);
+
+    switch (pWorkArea->state)
+    {
+    case 0:
+        if (keyboardIsKeyDown(0xE7) || keyboardIsKeyDown(0xE4))
+        {
+            assert(0);
+        }
+
+        // 602739A
+
+        if (var_60525F4.field_8)
+        {
+            if (var_60525F4.field_2 == 0)
+            {
+                if (pWorkArea->field_8)
+                {
+                    //60273AA
+                    assert(0);
+                }
+            }
+            else
+            {
+                //60273F4
+                assert(0);
+            }
+        }
+        else
+        {
+            //602745C
+            assert(0);
+        }
+
+        // 06027474
+        graphicEngineStatus.field_4 = 1;
+        pauseEngine[2] = 0;
+        graphicEngineStatus.field_40AC.field_1 = 0;
+        var_60525F4.field_0 = -1;
+        pWorkArea->state++;
+        break;
+    case 1:
+        break;
+    default:
+        assert(0);
+    }
+}
+
+s_taskDefinitionWithArg exitMenuTaskSub1Task = { exitMenuTaskSub1TaskInit, exitMenuTaskSub1TaskUpdate, exitMenuTaskSub1TaskDraw, NULL, "exitMenuTaskSub1Task" };
+
+p_workArea initExitMenuTaskSub1(p_workArea pTypelessWorkArea, u32 menuID)
+{
+    return createSubTaskWithArg(pTypelessWorkArea, &exitMenuTaskSub1Task, new s_exitMenuTaskSub1Task, (void*)menuID);
+}
+
+void initExitMenuTask(p_workArea pTypelessWorkArea, void* argument)
+{
+    s_fieldDebugTaskWorkArea* pWorkArea = static_cast<s_fieldDebugTaskWorkArea*>(pTypelessWorkArea);
+    u32 menuID = (u32)argument;
+
+    pauseEngine[2] = 0;
+
+    pWorkArea->field_8 = initExitMenuTaskSub1(pWorkArea, menuID);
+
+    createSiblingTaskWithArg(pWorkArea->field_8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->field_8);
+
+    fadePalette(&menuUnk0.m_field0, 0x8000, 0x8000, 1);
+    fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);
+}
+
+s_taskDefinitionWithArg exitMenuTask = { initExitMenuTask, NULL, genericTaskRestartGameWhenFinished, genericOptionMenuDelete, "exitMenuTask" };
+
+p_workArea createNewGameTask(p_workArea pWorkArea)
+{
+    return createSubTaskWithArg(pWorkArea, &exitMenuTask, new s_fieldDebugTaskWorkArea, (void*)0);
+}
+
+p_workArea createContinueTask(p_workArea pWorkArea)
+{
+    return createSubTaskWithArg(pWorkArea, &exitMenuTask, new s_fieldDebugTaskWorkArea, (void*)1);
+}
+

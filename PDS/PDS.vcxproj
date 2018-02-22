@@ -159,6 +159,7 @@
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="mainMenuDebugTasks.cpp" />
     <ClCompile Include="o_fld_a3.cpp" />
+    <ClCompile Include="o_menuEn.cpp" />
     <ClCompile Include="PDS.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="rootTask.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="mainMenuDebugTasks.h" />
     <ClInclude Include="o_fld_a3.h" />
+    <ClInclude Include="o_menuEn.h" />
     <ClInclude Include="o_title.h" />
     <ClInclude Include="PDS.h" />
     <ClInclude Include="renderer.h" />

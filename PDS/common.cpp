@@ -1,5 +1,7 @@
 #include "PDS.h"
 
+s_graphicEngineStatus graphicEngineStatus;
+
 const u8 bitMasks[] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
 const u8 reverseBitMasks[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xF8, 0xFD, 0xFE };
 
@@ -681,4 +683,9 @@ const s_dragonData2 dragonData2[DR_LEVEL_MAX] = {
 };
 
 s_dragonState* gDragonState = NULL;
+
+void memcpy_dma(void* src, void* dst, u32 size)
+{
+    memcpy(dst, src, size);
+}
 

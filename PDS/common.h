@@ -47,6 +47,8 @@ struct s_gameStats
     s16 dragonCursorX; //1A
     s16 dragonCursorY; //1C
 
+    u32 frameCounter; //3C
+
     u32 field_70; //70
 
     char playerName[17];
@@ -285,6 +287,57 @@ struct s_vdp1AllocatorNode
     s_vdp1AllocatorNode* m_nextNode;
 };
 extern s_vdp1AllocatorNode* vdp1AllocatorHead;
+
+struct s_graphicEngineStatus_40AC
+{
+    u8 field_0;
+    u8 field_1;
+    u8 field_2;
+    u8 field_3;
+    u8 field_4;
+    u8 field_5;
+    u8 field_6;
+    u8 field_7;
+    u8 field_8;
+    u8 field_9;
+    u16 field_A;
+    p_workArea field_C;
+};
+
+struct s_graphicEngineStatus_4514
+{
+    u16 field_8;
+};
+
+struct s_graphicEngineStatus_405C
+{
+
+};
+
+struct s_graphicEngineStatus_40E4
+{
+    s_graphicEngineStatus_405C field_0;
+    sVdp2Controls field_50;
+    sMenuUnk0 field_2B0;
+    u8 field_300[512];
+    u16 field_400;
+    u16 field_402;
+};
+
+struct s_graphicEngineStatus
+{
+    u32 field_4;
+    u16 field_4070;
+
+    s_graphicEngineStatus_405C field_405C;
+    s_graphicEngineStatus_40E4* field_40E4;
+    s_graphicEngineStatus_40AC field_40AC;
+    s_graphicEngineStatus_4514 field_4514;
+};
+
+extern s_graphicEngineStatus graphicEngineStatus;
+
+void memcpy_dma(void* src, void* dst, u32 size);
 
 void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** assetList);
 
