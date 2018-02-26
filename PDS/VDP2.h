@@ -95,11 +95,21 @@ struct s_VDP2Regs
     u32 BKTA;
 
     //
+    u16 WCTLA;
+    u16 WCTLB;
+
+    //
     u16 SPCTL;
     //
 
     u16 CRAOFA;
 
+    u16 CCCTL;
+
+    u16 PRISA;
+    u16 PRISB;
+    u16 PRISC;
+    u16 PRISD;
     u16 PRINA;
     u16 PRINB;
     u16 PRIR;
@@ -138,8 +148,12 @@ enum eVdp2LayerConfig
     CHSZ = 5,
     PNB = 6,
     CNSM = 7,
+    SCN = 11,
     PLSZ = 12,
     CAOS = 40,
+    W0E = 34,
+    W0A = 37,
+    CCEN = 44,
 };
 
 struct sLayerConfig
@@ -190,6 +204,8 @@ struct sVdp2StringControl
 };
 
 extern sVdp2StringControl* pVdp2StringControl;
+
+void unpackGraphicsToVDP2(u8* compressedData, u8* destination);
 
 void resetVdp2Strings();
 

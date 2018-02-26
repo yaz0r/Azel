@@ -437,6 +437,15 @@ void setupNBG0(sLayerConfig* setup)
         case CNSM:
             vdp2Controls.m_pendingVdp2Regs->PNCN0 = (vdp2Controls.m_pendingVdp2Regs->PNCN0 & 0xBFFF) | (arg << 14);
             break;
+        case SCN:
+            vdp2Controls.m_pendingVdp2Regs->PNCN0 = (vdp2Controls.m_pendingVdp2Regs->PNCN0 & 0xFFE0) | (arg << 0);
+            break;
+        case PLSZ:
+            vdp2Controls.m_pendingVdp2Regs->PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ & 0xFFFC) | (arg << 0);
+            break;
+        case CAOS:
+            vdp2Controls.m_pendingVdp2Regs->CRAOFA = (vdp2Controls.m_pendingVdp2Regs->CRAOFA & 0xFFF8) | (arg << 0);
+            break;
         default:
             assert(false);
             break;
@@ -471,6 +480,9 @@ void setupNBG1(sLayerConfig* setup)
         case CNSM:
             vdp2Controls.m_pendingVdp2Regs->PNCN1 = (vdp2Controls.m_pendingVdp2Regs->PNCN1 & 0xBFFF) | (arg << 14);
             break;
+        case SCN:
+            vdp2Controls.m_pendingVdp2Regs->PNCN1 = (vdp2Controls.m_pendingVdp2Regs->PNCN1 & 0xFFE0) | (arg << 0);
+            break;
         case PLSZ:
             vdp2Controls.m_pendingVdp2Regs->PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ & 0xFFF3) | (arg << 2);
             break;
@@ -485,6 +497,58 @@ void setupNBG1(sLayerConfig* setup)
 
     // force BG layer 1 on
     vdp2Controls.m_pendingVdp2Regs->BGON = (vdp2Controls.m_pendingVdp2Regs->BGON & 0xFFFD) | 0x2;
+
+    vdp2Controls.m_isDirty = true;
+}
+
+void setupNBG2(sLayerConfig* setup)
+{
+    while (eVdp2LayerConfig command = setup->m_configType)
+    {
+        u32 arg = setup->m_value;
+
+        setup++;
+
+        switch (command)
+        {
+        case CHCN:
+            vdp2Controls.m_pendingVdp2Regs->CHCTLB = (vdp2Controls.m_pendingVdp2Regs->CHCTLB & 0xFFFD) | (arg << 1);
+            break;
+        case CHSZ:
+            vdp2Controls.m_pendingVdp2Regs->CHCTLB = (vdp2Controls.m_pendingVdp2Regs->CHCTLB & 0xFFFE) | (arg << 0);
+            break;
+        case PNB:
+            vdp2Controls.m_pendingVdp2Regs->PNCN2 = (vdp2Controls.m_pendingVdp2Regs->PNCN2 & 0x7FFF) | (arg << 15);
+            break;
+        case CNSM:
+            vdp2Controls.m_pendingVdp2Regs->PNCN2 = (vdp2Controls.m_pendingVdp2Regs->PNCN2 & 0xBFFF) | (arg << 14);
+            break;
+        case SCN:
+            vdp2Controls.m_pendingVdp2Regs->PNCN2 = (vdp2Controls.m_pendingVdp2Regs->PNCN2 & 0xFFE0) | (arg << 0);
+            break;
+        case PLSZ:
+            vdp2Controls.m_pendingVdp2Regs->PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ & 0xFFCF) | (arg << 4);
+            break;
+        case W0E:
+            vdp2Controls.m_pendingVdp2Regs->WCTLB = (vdp2Controls.m_pendingVdp2Regs->WCTLB & 0xFFFD) | (arg << 1);
+            break;
+        case W0A:
+            vdp2Controls.m_pendingVdp2Regs->WCTLB = (vdp2Controls.m_pendingVdp2Regs->WCTLB & 0xFFFE) | (arg << 0);
+            break;
+        case CAOS:
+            vdp2Controls.m_pendingVdp2Regs->CRAOFA = (vdp2Controls.m_pendingVdp2Regs->CRAOFA & 0xF8FF) | (arg << 8);
+            break;
+        case CCEN:
+            vdp2Controls.m_pendingVdp2Regs->CCCTL = (vdp2Controls.m_pendingVdp2Regs->CCCTL & 0xFFCF) | (arg << 2);
+            break;
+        default:
+            assert(false);
+            break;
+        }
+    };
+
+    // force BG layer 2 on
+    vdp2Controls.m_pendingVdp2Regs->BGON = (vdp2Controls.m_pendingVdp2Regs->BGON & 0xFFCF) | 0x4;
 
     vdp2Controls.m_isDirty = true;
 }
@@ -552,12 +616,17 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
         characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLA & 100;
         patternNameDataSize = vdp2Controls.m_pendingVdp2Regs->PNCN1 & 0x8000;
         break;
+    case 2:
+        characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLB & 0x1;
+        patternNameDataSize = vdp2Controls.m_pendingVdp2Regs->PNCN2 & 0x8000;
+        break;
     case 3:
         characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLB & 0x10;
         patternNameDataSize = vdp2Controls.m_pendingVdp2Regs->PNCN3 & 0x8000;
         break;
     default:
         assert(0);
+        break;
     }
 
     u32 shitValue;

@@ -112,6 +112,7 @@ struct s_layerData
     u32 CNSM;
     u32 CAOS;
     u32 PLSZ;
+    u32 SCN;
 
     u32 planeOffsets[4];
 };
@@ -185,18 +186,20 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
             case 2:
             {
                 u16 patternName = getVdp2VramU16(startOfPattern);
+                u16 supplementalCharacterName = layerData.SCN;
 
                 // assuming supplement mode 0 with no data
-                
                 paletteNumber = (patternName >> 12) & 0xF;
 
                 switch (layerData.CNSM)
                 {
                 case 0:
                     characterNumber = patternName & 0x3FF;
+                    characterNumber |= supplementalCharacterName << 10;
                     break;
                 case 1:
                     characterNumber = patternName & 0xFFF;
+                    characterNumber |= supplementalCharacterName << 12;
                     break;
                 }
 
@@ -292,16 +295,19 @@ void renderBG0(u32 width, u32 height)
     planeData.CNSM = (vdp2Controls.m_pendingVdp2Regs->PNCN0 >> 14) & 0x1;
     planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA) & 0x7;
     planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ) & 3;
+    planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN0) & 0x1F;
 
     u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
     u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
 
     u32 pageSize = pageDimension * pageDimension * patternSize;
 
-    planeData.planeOffsets[0] = (vdp2Controls.m_pendingVdp2Regs->MPABN0 & 0x3F) * pageSize;
-    planeData.planeOffsets[1] = ((vdp2Controls.m_pendingVdp2Regs->MPABN0>>8) & 0x3F) * pageSize;
-    planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN0 & 0x3F) * pageSize;
-    planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN0 >> 8) & 0x3F) * pageSize;
+    u32 offset = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 7) << 6;
+
+    planeData.planeOffsets[0] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPABN0 & 0x3F)) * pageSize;
+    planeData.planeOffsets[1] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPABN0>>8) & 0x3F)) * pageSize;
+    planeData.planeOffsets[2] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPCDN0 & 0x3F)) * pageSize;
+    planeData.planeOffsets[3] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPCDN0 >> 8) & 0x3F)) * pageSize;
 
     renderLayer(planeData, textureWidth, textureHeight, textureOutput);
 
@@ -330,7 +336,7 @@ void renderBG1(u32 width, u32 height)
     planeData.CNSM = (vdp2Controls.m_pendingVdp2Regs->PNCN1 >> 14) & 0x1;
     planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA >> 4) & 0x7;
     planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ >> 2) & 3;
-
+    planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN1) & 0x1F;
 
     u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
     u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -405,6 +411,7 @@ void renderBG3(u32 width, u32 height)
     planeData.CNSM = (vdp2Controls.m_pendingVdp2Regs->PNCN3 >> 14) & 0x1;
     planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA >> 12) & 0x7;
     planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ >> 6) & 3;
+    planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN3) & 0x1F;
 
 
     u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
