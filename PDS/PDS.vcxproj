@@ -158,6 +158,8 @@
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="mainMenuDebugTasks.cpp" />
+    <ClCompile Include="menu_dragon.cpp" />
+    <ClCompile Include="menu_dragonMorph.cpp" />
     <ClCompile Include="o_fld_a3.cpp" />
     <ClCompile Include="o_menuEn.cpp" />
     <ClCompile Include="PDS.cpp" />
@@ -178,6 +180,8 @@
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="mainMenuDebugTasks.h" />
+    <ClInclude Include="menu_dragon.h" />
+    <ClInclude Include="menu_dragonMorph.h" />
     <ClInclude Include="o_fld_a3.h" />
     <ClInclude Include="o_menuEn.h" />
     <ClInclude Include="o_title.h" />

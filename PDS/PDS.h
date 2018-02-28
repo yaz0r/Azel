@@ -37,6 +37,11 @@ void yLog(...);
 #include "mainMenuDebugTasks.h"
 #include "field.h"
 
+#include "menu_dragon.h"
+#include "menu_dragonMorph.h"
+
+extern u8 COMMON_DAT[0x98000];
+
 struct sPortData2
 {
     u16 field_8; // 8: start

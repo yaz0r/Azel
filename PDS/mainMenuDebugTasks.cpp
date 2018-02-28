@@ -2194,6 +2194,8 @@ struct s_menuGraphicsTask : public s_workArea
     u32 state; // 0
     p_workArea field_4;
     p_workArea field_8;
+    u8 field_C;
+    u8 field_D;
 };
 
 void menuGraphicsTaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
@@ -2245,7 +2247,7 @@ sLayerConfig menuNBG01Setup[] =
     END,
 };
 
-sLayerConfig menuNBG02Setup[] =
+sLayerConfig menuNBG2Setup[] =
 {
     CHCN,  0, // 16 colors
     CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
@@ -2618,7 +2620,7 @@ void setupVdp2ForMenu()
 
     setupNBG0(menuNBG01Setup);
     setupNBG1(menuNBG01Setup);
-    setupNBG2(menuNBG02Setup);
+    setupNBG2(menuNBG2Setup);
 
     initLayerMap(0, 0x71800, 0x71800, 0x71800, 0x71800);
     initLayerMap(1, 0x71000, 0x71000, 0x71000, 0x71000);
@@ -2651,19 +2653,29 @@ void setupVdp2ForMenu()
     }
 }
 
+void mainMenuTaskInit(p_workArea typelessWorkArea)
+{
+    assert(0);
+}
+
+void mainMenuTaskDraw(p_workArea typelessWorkArea)
+{
+    unimplemented("mainMenuTaskDraw");
+}
+
+void mainMenuTaskDelete(p_workArea typelessWorkArea)
+{
+    unimplemented("mainMenuTaskDelete");
+}
+
+s_taskDefinition mainMenuTaskDefinition = { mainMenuTaskInit, NULL, mainMenuTaskDraw, mainMenuTaskDelete, "main menu task" };
+
 p_workArea createMainMenuTask(p_workArea workArea)
 {
-    //assert(0);
-    return NULL;
+    return createSubTask(workArea, &mainMenuTaskDefinition, new s_dummyWorkArea);
 }
 
 p_workArea createInventoryMenuTask(p_workArea workArea)
-{
-    assert(0);
-    return NULL;
-}
-
-p_workArea createMainDragonMenuTask(p_workArea workArea)
 {
     assert(0);
     return NULL;
@@ -2719,6 +2731,21 @@ p_workArea(*menuTaskMenuArray[])(p_workArea) =
     createMenuBKTask,
 };
 
+void menuGraphicsTaskDrawSub2Sub1(u16 r4)
+{
+    unimplemented("menuGraphicsTaskDrawSub2Sub1");
+}
+
+void menuGraphicsTaskDrawSub2()
+{
+    if (graphicEngineStatus.field_40E4)
+    {
+        memcpy_dma(&graphicEngineStatus.field_40E4->field_0, &graphicEngineStatus.field_405C, sizeof(s_graphicEngineStatus_405C));
+
+        menuGraphicsTaskDrawSub2Sub1(graphicEngineStatus.field_40E4->field_402);
+    }
+}
+
 void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
 {
     s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
@@ -2737,7 +2764,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
         //if (graphicEngineStatus.field_4514.field_8 & 8)
         {
             // flag menu to be entered
-            graphicEngineStatus.field_40AC.field_0 = 1;
+            graphicEngineStatus.field_40AC.field_0 = 3;
             if (graphicEngineStatus.field_40AC.field_1)
             {
                 playSoundEffect(0);
@@ -2771,7 +2798,34 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
         }
         break;
     case 2:
-        //assert(0);
+        if (pWordArea->field_8 && !pWordArea->field_8->getTask()->isFinished())
+        {
+            if (graphicEngineStatus.field_40AC.field_4)
+            {
+                //menuGraphicsTaskDrawSub3();
+                assert(0);
+            }
+            if (graphicEngineStatus.field_4514.field_8 & 8)
+            {
+                assert(0);
+            }
+            if (graphicEngineStatus.field_4514.field_8 & 2)
+            {
+                assert(0);
+            }
+        }
+        else
+        {
+            menuGraphicsTaskDrawSub2();
+
+            graphicEngineStatus.field_40AC.field_0 = 0;
+            pWordArea->field_C = pauseEngine[0];
+
+            pWordArea->field_4->getTask()->clearPaused();
+
+            pWordArea->field_D = graphicEngineStatus.field_40AC.field_9;
+            pWordArea->state = 5;
+        }
         break;
     default:
         assert(0);

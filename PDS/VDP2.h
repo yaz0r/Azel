@@ -176,6 +176,7 @@ void setupNBG1(sLayerConfig* setup);
 void setupNBG2(sLayerConfig* setup);
 void setupNBG3(sLayerConfig* setup);
 
+void setupVDP2StringRendering(u32 r4, u32 r5, u32 r6, u32 r7);
 void vdp2DebugPrintSetPosition(s32 x, s32 y);
 void clearVdp2StringFieldDebugList();
 void clearVdp2TextSmallFont();

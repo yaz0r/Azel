@@ -73,6 +73,12 @@
     <ClCompile Include="o_menuEn.cpp">
       <Filter>Source Files\Overlays</Filter>
     </ClCompile>
+    <ClCompile Include="menu_dragon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="menu_dragonMorph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PDS.h">
@@ -128,6 +134,12 @@
     </ClInclude>
     <ClInclude Include="o_menuEn.h">
       <Filter>Source Files\Overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="menu_dragon.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="menu_dragonMorph.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

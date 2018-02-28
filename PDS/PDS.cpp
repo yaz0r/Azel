@@ -15,6 +15,8 @@ sPortData2 PortData2;
 
 u32 azelCdNumber = 0;
 
+u8 COMMON_DAT[0x98000];
+
 void initPauseSatus()
 {
     pauseEngine[0] = 0;
@@ -300,6 +302,10 @@ void azelInit()
     // stuff
 
     initFileInfoStruct();
+
+    // stuff
+
+    loadFile("COMMON.DAT", COMMON_DAT, 0);
 
     // stuff
     initInitialTaskStatsAndDebug();

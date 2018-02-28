@@ -932,3 +932,8 @@ void resetVdp2Strings()
     resetCharacterMaps();
 }
 
+void setupVDP2StringRendering(u32 r4, u32 r5, u32 r6, u32 r7)
+{
+    unimplemented("setupVDP2StringRendering");
+}
+

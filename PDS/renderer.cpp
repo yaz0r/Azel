@@ -194,18 +194,33 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
                 switch (layerData.CNSM)
                 {
                 case 0:
-                    characterNumber = patternName & 0x3FF;
-                    characterNumber |= supplementalCharacterName << 10;
+                    switch (layerData.CHSZ)
+                    {
+                    case 0:
+                        characterNumber = patternName & 0x3FF;
+                        characterNumber |= (supplementalCharacterName & 0x1F) << 10;
+                        break;
+                    case 1:
+                        characterNumber = (patternName & 0x3FF) << 2;
+                        characterNumber |= supplementalCharacterName & 3;
+                        characterNumber |= (supplementalCharacterName & 0x1C) << 10;
+                        break;
+                    }
                     break;
                 case 1:
-                    characterNumber = patternName & 0xFFF;
-                    characterNumber |= supplementalCharacterName << 12;
+                    switch (layerData.CHSZ)
+                    {
+                    case 0:
+                        characterNumber = patternName & 0xFFF;
+                        characterNumber |= (supplementalCharacterName & 0x1C) << 10;
+                        break;
+                    case 1:
+                        characterNumber = (patternName & 0xFFF) << 2;
+                        characterNumber |= supplementalCharacterName & 3;
+                        characterNumber |= (supplementalCharacterName & 0x10) << 10;
+                        break;
+                    }
                     break;
-                }
-
-                if (layerData.CHSZ == 1)
-                {
-                    characterNumber <<= 2;
                 }
 
                 characterOffset = (characterNumber) * 0x20;

@@ -290,7 +290,7 @@ extern s_vdp1AllocatorNode* vdp1AllocatorHead;
 
 struct s_graphicEngineStatus_40AC
 {
-    u8 field_0;
+    u8 field_0; // what menu to open
     u8 field_1;
     u8 field_2;
     u8 field_3;
@@ -306,7 +306,7 @@ struct s_graphicEngineStatus_40AC
 
 struct s_graphicEngineStatus_4514
 {
-    u16 field_8;
+    u16 field_8; // gamepad input bitmask
 };
 
 struct s_graphicEngineStatus_405C
@@ -324,6 +324,14 @@ struct s_graphicEngineStatus_40E4
     u16 field_402;
 };
 
+struct s_graphicEngineStatus_40BC
+{
+    u16 field_0;
+    u16 field_2;
+
+    u16 field_8;
+};
+
 struct s_graphicEngineStatus
 {
     u32 field_4;
@@ -332,6 +340,7 @@ struct s_graphicEngineStatus
     s_graphicEngineStatus_405C field_405C;
     s_graphicEngineStatus_40E4* field_40E4;
     s_graphicEngineStatus_40AC field_40AC;
+    s_graphicEngineStatus_40BC field_40BC[4]; // not sure about size, at least 4
     s_graphicEngineStatus_4514 field_4514;
 };
 
