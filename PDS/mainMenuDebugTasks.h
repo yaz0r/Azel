@@ -12,4 +12,14 @@ p_workArea createContinueTask(p_workArea pWorkArea);
 u32 dragonFieldTaskInitSub3Sub1(s_dragonStateSubData1* r4, u8* r5);
 u32 dragonFieldTaskInitSub3Sub2(s_dragonStateSubData1* r4);
 
+struct s_loadDragonWorkArea : public s_workArea
+{
+    u8* dramAllocation; //0
+    u8* vramAllocation;//4
+    u16 MCBOffsetInDram;//8
+    u16 CGBOffsetInDram;//A
+};
+
+s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel);
+
 extern u32 vblankData[8];

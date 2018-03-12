@@ -2,6 +2,7 @@
 
 void reset3dEngine();
 void resetProjectVector();
+void pushProjectionStack();
 
 struct s_cameraProperties2
 {

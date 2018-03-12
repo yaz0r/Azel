@@ -50,16 +50,33 @@ void resetCamera(u32 x0, u32 y0, u32 x1, u32 y1, u32 centerX, u32 centerY)
 
 u16 loc_601FA9E;
 
-u32* unk_601FE64[5];
+u16 projectionStack[8];
+u16* projectionStackTop = &projectionStack[8];
 
 void resetProjectVectorMaster()
 {
     loc_601FA9E = 0x6103;
 }
 
-void j_resetProjectVectorMaster()
+void pushProjectionStack_Master()
 {
-    unk_601FE64[0] = (u32*)&unk_601FE64[5];
+    u16* r2 = projectionStackTop;
+    *(--r2) = loc_601FA9E;
+    projectionStack[0] = *r2;
+
+    resetProjectVectorMaster();
+}
+
+void pushProjectionStack()
+{
+    pushProjectionStack_Master();
+
+    //addSlaveCommand(0, 0, 0, MenuEnTaskInitSub1Sub1_Slave);
+}
+
+void initProjectionStack_Master()
+{
+    projectionStackTop = &projectionStack[8];
     resetProjectVectorMaster();
 }
 
@@ -67,16 +84,16 @@ void reset3dEngine()
 {
     resetCamera(0, 0, 224, 352, 176, 112);
 
-    j_resetProjectVectorMaster();
+    initProjectionStack_Master();
 
-    //addSlaveCommand(0, 0, 0, j_resetProjectVectorSlave);
+    //addSlaveCommand(0, 0, 0, initProjectionStack_Slave);
 }
 
 void resetProjectVector()
 {
-    j_resetProjectVectorMaster();
+    initProjectionStack_Master();
 
-    //addSlaveCommand(0, 0, 0, j_resetProjectVectorSlave);
+    //addSlaveCommand(0, 0, 0, initProjectionStack_Slave);
 }
 
 void initMatrixToIdentity(sMatrix4x3* matrix)

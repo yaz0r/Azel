@@ -19,8 +19,11 @@ typedef int16_t s16;
 typedef uint32_t u32;
 typedef int32_t s32;
 typedef uint64_t u64;
+typedef int64_t s64;
 
 void yLog(...);
+
+#include "fixedPoint.h"
 
 #include "dummy.h"
 
@@ -28,6 +31,7 @@ void yLog(...);
 #include "task.h"
 #include "rootTask.h"
 
+#include "VDP1.h"
 #include "VDP2.h"
 #include "titleScreen.h"
 
@@ -91,6 +95,8 @@ s16 READ_BE_S16(const void* ptr);
 u32 getFileSize(const char* fileName);
 
 void unimplemented(const char* name);
+
+void initVDP1Projection(fixedPoint r4, u32 mode);
 
 #include "o_title.h"
 #include "o_menuEn.h"

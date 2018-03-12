@@ -218,11 +218,11 @@ struct s_dragonStateSubData1
     u16 field_14; //14
     u16 field_16; //16
 
-    void(*drawFunction)(s_dragonStateSubData1*);
-    void (*addToDisplayListFunction)();
-    void(*positionUpdateFunction)(s_dragonStateSubData1*);
-    void(*rotationUpdateFunction)(s_dragonStateSubData1*);
-    void(*scaleUpdateFunction)(s_dragonStateSubData1*);
+    void(*drawFunction)(s_dragonStateSubData1*); // 18
+    void (*addToDisplayListFunction)(); // 1C
+    void(*positionUpdateFunction)(s_dragonStateSubData1*); // 20
+    void(*rotationUpdateFunction)(s_dragonStateSubData1*); // 24
+    void(*scaleUpdateFunction)(s_dragonStateSubData1*); // 28
     sPoseData* poseData; //2C
 
     u8* pCurrentAnimation; //30
@@ -235,6 +235,9 @@ struct s_dragonStateSubData1
     const s_RiderDefinitionSub* field_40; //40
     u8** field_44; //44
     u32 field_48; //48
+
+    u16 field_4C; //4C
+    u16 field_4E; //4E
 };
 
 typedef s32 sVec3[3];
@@ -311,7 +314,32 @@ struct s_graphicEngineStatus_4514
 
 struct s_graphicEngineStatus_405C
 {
+    u16 field_0;
+    u16 field_2;
+    u16 field_4;
+    u16 field_6;
+    u16 field_8;
+    u16 field_A;
+    u16 field_C;
+    u16 field_E;
 
+    fixedPoint field_18;
+    fixedPoint field_1C;
+    fixedPoint field_20;
+    fixedPoint field_24;
+    fixedPoint field_28;
+    fixedPoint field_2C;
+
+    u16 VDP1_X1; // 3C
+    u16 VDP1_Y1; // 3E
+    u16 VDP1_X2; // 40
+    u16 VDP1_Y2; // 42
+    u16 localCoordinatesX; // 44
+    u16 localCoordinatesY; // 46
+    u32 setClippingCoordinatesEA; // 0x48 ptr in VDP1 Memory
+    u32 setLocalCoordinatesEA; // 0x4C ptr in VDP1 Memory
+
+    // size should be 50
 };
 
 struct s_graphicEngineStatus_40E4
@@ -332,12 +360,48 @@ struct s_graphicEngineStatus_40BC
     u16 field_8;
 };
 
+struct s_graphicEngineStatus_14_2024
+{
+    u32 field_0;
+    u32 field_4;
+    u32 field_8;
+    u32 field_C;
+    u32 field_10;
+    u32 field_14;
+    u32 field_18;
+    u32 field_1C;
+    u8* field_20;
+    u8 buffer[0x2000];
+    // size should be 2024
+};
+
+struct s_graphicEngineStatus_14
+{
+    s_graphicEngineStatus_14_2024 field_0;
+    s_graphicEngineStatus_14_2024 field_2024;
+};
+
 struct s_graphicEngineStatus
 {
-    u32 field_4;
-    u16 field_4070;
+    u16 field_0;
+    u8 field_2;
+    u8 field_3;
+    u8 field_4;
+    u8 field_5;
+    u16 field_6; // vdp1 write offset
+    u32 field_8; // vdp1 write EA for user clipping parameters
+    u32 field_C; // vdp1 write EA of background sprite
 
+    s_graphicEngineStatus_14 field_14;
     s_graphicEngineStatus_405C field_405C;
+
+    u32 field_406C;
+
+    u16 field_4070;
+    s32 field_408C;
+    u32 field_4090;
+    s32 field_4094;
+    
     s_graphicEngineStatus_40E4* field_40E4;
     s_graphicEngineStatus_40AC field_40AC;
     s_graphicEngineStatus_40BC field_40BC[4]; // not sure about size, at least 4
@@ -349,4 +413,7 @@ extern s_graphicEngineStatus graphicEngineStatus;
 void memcpy_dma(void* src, void* dst, u32 size);
 
 void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** assetList);
+
+fixedPoint getCos(u32 value);
+fixedPoint getSin(u32 value);
 

@@ -793,7 +793,7 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 
     dragonFieldTaskInitSub2Sub4(&pWorkArea->field_48);
 
-    pWorkArea->field_1CC = 0x38E38E3;
+    pWorkArea->field_1CC = 0x38E38E3; // field of view
     pWorkArea->field_234 = 0;
 
     pWorkArea->field_21C[0] = 0;

@@ -79,6 +79,15 @@
     <ClCompile Include="menu_dragonMorph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VDP1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="common_generated.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fixedPoint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PDS.h">
@@ -139,6 +148,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="menu_dragonMorph.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VDP1.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fixedPoint.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

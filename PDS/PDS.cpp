@@ -24,6 +24,229 @@ void initPauseSatus()
     pauseEngine[2] = 0;
 }
 
+s32 setDividend(s32 r4, s32 r5, s32 divisor)
+{
+    s64 divident = (s64)r4 * (s64)r5;
+    return (s32)(divident / divisor);
+}
+
+fixedPoint FP_Mul(fixedPoint r4, fixedPoint r5)
+{
+    return (s32)(((s64)r4 * (s64)r5) >> 16);
+}
+
+fixedPoint MTH_Product2d(fixedPoint (&r4)[2], fixedPoint (&r5)[2])
+{
+    s64 mac = 0;
+    mac += r4[0] * r5[0];
+    mac += r4[1] * r5[1];
+
+    return fixedPoint(mac);
+}
+
+fixedPoint initVDP1Sub1Sub1(fixedPoint r4)
+{
+    s32 r1 = 0x40000000;
+    int r3 = 16;
+
+    for (int i = 16; i >= 0;)
+    {
+        i--;
+        if (r1 < r4)
+        {
+            r4 -= r1;
+
+            fixedPoint r0 = r1;
+            r1 >>= 2;
+
+            do 
+            {
+                fixedPoint r2 = r0 + r1;
+
+                r0 >>= 1;
+
+                if (r4 > r2)
+                {
+                    r4 -= r2;
+                    r0 += r1;
+                }
+
+                r1 >>= 2;
+            } while (--i);
+
+            return r0;
+        }
+
+        r1 >>= 2;
+    }
+
+    return 0;
+}
+
+void initVDP1Projection(fixedPoint r4, u32 mode)
+{
+    u32 angle = FP_GetIntegerPortion(r4) & 0xFFF;
+
+    fixedPoint sin = getSin(angle);
+    fixedPoint cos = getCos(angle);
+
+    s32 VDP1_Width = graphicEngineStatus.field_405C.VDP1_X2 - graphicEngineStatus.field_405C.VDP1_X1;
+
+    fixedPoint r0 = setDividend(VDP1_Width / 2, sin, cos);
+
+    switch (mode)
+    {
+    case 0:
+        graphicEngineStatus.field_405C.field_18 = FP_Mul(r0, fixedPoint(0x11999));
+        graphicEngineStatus.field_405C.field_1C = FP_Mul(r0, fixedPoint(0xEEEE));
+        break;
+    case 1:
+        graphicEngineStatus.field_405C.field_18 = FP_Mul(r0, fixedPoint(0xD333));
+        graphicEngineStatus.field_405C.field_1C = FP_Mul(r0, fixedPoint(0xEEEE));
+        break;
+    case 2:
+        graphicEngineStatus.field_405C.field_18 = FP_Mul(r0, fixedPoint(0xD333));
+        graphicEngineStatus.field_405C.field_1C = FP_Mul(r0, fixedPoint(0xB333));
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    fixedPoint array[2];
+
+    array[0] = 352/2;
+    array[1] = graphicEngineStatus.field_405C.field_18;
+    graphicEngineStatus.field_405C.field_2C = FP_Div(array[0], array[1]);
+    graphicEngineStatus.field_405C.field_28 = FP_Div(initVDP1Sub1Sub1(MTH_Product2d(array, array)), array[1]);
+
+    array[0] = 224 / 2;
+    array[1] = graphicEngineStatus.field_405C.field_1C;
+    graphicEngineStatus.field_405C.field_24 = FP_Div(array[0], array[1]);
+    graphicEngineStatus.field_405C.field_20 = FP_Div(initVDP1Sub1Sub1(MTH_Product2d(array, array)), array[1]);
+}
+
+void initVDP1()
+{
+    graphicEngineStatus.field_0 = 0;
+    VDP1_PTMR = 2;
+    VDP1_EWDR = 0;
+    VDP1_EWLR = 0;
+    VDP1_EWRR = 0x58E0;
+
+    graphicEngineStatus.field_3 = 1;
+    graphicEngineStatus.field_2 = 0;
+    graphicEngineStatus.field_4 = 0;
+    graphicEngineStatus.field_5 = 0;
+
+    graphicEngineStatus.field_405C.VDP1_X1 = 0;
+    graphicEngineStatus.field_405C.VDP1_Y1 = 0;
+
+    graphicEngineStatus.field_405C.VDP1_X2 = 352;
+    graphicEngineStatus.field_405C.VDP1_Y2 = 224;
+
+    graphicEngineStatus.field_405C.localCoordinatesX = 176;
+    graphicEngineStatus.field_405C.localCoordinatesY = 112;
+
+    graphicEngineStatus.field_406C = 0x999;
+    graphicEngineStatus.field_408C = FP_Div(0x10000, 0x999);
+
+    graphicEngineStatus.field_4070 = 0x200000;
+    graphicEngineStatus.field_4094 = FP_Div(0x8000, 0x200000);
+
+    graphicEngineStatus.field_4090 = graphicEngineStatus.field_4094 << 8;
+
+    graphicEngineStatus.field_405C.field_0 = 242;
+    graphicEngineStatus.field_405C.field_2 = -242;
+    graphicEngineStatus.field_405C.field_4 = -326;
+    graphicEngineStatus.field_405C.field_6 = 326;
+    graphicEngineStatus.field_405C.field_8 = 0x70;
+    graphicEngineStatus.field_405C.field_A = -112;
+    graphicEngineStatus.field_405C.field_C = -64;
+    graphicEngineStatus.field_405C.field_E = 176;
+
+    initVDP1Projection(0x1C71C71, 0);
+
+    u32 vdp1WriteEA = 0x25C00000;
+    setVdp1VramU16(vdp1WriteEA + 0x00, 9); // command 9: set system clipping coordinates
+    setVdp1VramU16(vdp1WriteEA + 0x14, 0x160);
+    setVdp1VramU16(vdp1WriteEA + 0x16, 0x160 - 0x80);
+    vdp1WriteEA += 0x40;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0xA); // command 10: set local coordinates
+    setVdp1VramU16(vdp1WriteEA + 0x0C, 0x160 - 0x80 - 0x30);
+    setVdp1VramU16(vdp1WriteEA + 0x0E, 0x6F);
+    vdp1WriteEA += 0x20;
+    graphicEngineStatus.field_C = vdp1WriteEA;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x4); // command 4: polygon draw
+    setVdp1VramU16(vdp1WriteEA + 0x04, 0xC0); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, 0); // CMDCOLR
+    setVdp1VramS16(vdp1WriteEA + 0x0C, -176); // XA
+    setVdp1VramU16(vdp1WriteEA + 0x0E, 79); // YA
+    setVdp1VramU16(vdp1WriteEA + 0x10, 175); // XB
+    setVdp1VramU16(vdp1WriteEA + 0x12, 79); // YB
+    setVdp1VramU16(vdp1WriteEA + 0x14, 175); // XC
+    setVdp1VramU16(vdp1WriteEA + 0x16, 112); // YC
+    setVdp1VramS16(vdp1WriteEA + 0x18, -176); //XD
+    setVdp1VramU16(vdp1WriteEA + 0x1A, 112); // YD
+    vdp1WriteEA += 0x20;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0xA); // command 10: set local coordinates
+    setVdp1VramU16(vdp1WriteEA + 0x0C, 176);
+    setVdp1VramU16(vdp1WriteEA + 0x0E, 111);
+    graphicEngineStatus.field_405C.setLocalCoordinatesEA = vdp1WriteEA;
+    vdp1WriteEA += 0x20;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1008); // command 8: user clipping coordinates
+    setVdp1VramU16(vdp1WriteEA + 0x0C, 0);
+    setVdp1VramU16(vdp1WriteEA + 0x0E, 0);
+    setVdp1VramU16(vdp1WriteEA + 0x14, 352);
+    setVdp1VramU16(vdp1WriteEA + 0x16, 224);
+    graphicEngineStatus.field_405C.setClippingCoordinatesEA = vdp1WriteEA;
+    graphicEngineStatus.field_8 = vdp1WriteEA + 2;
+    vdp1WriteEA += 0x20;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x8000); // END
+
+    u32 vdp1Offset = vdp1WriteEA - 0x25C00000;
+    graphicEngineStatus.field_6 = vdp1Offset >> 3;
+    vdp1WriteEA += 0x20;
+
+    setVdp1VramU16(graphicEngineStatus.field_8, graphicEngineStatus.field_6);
+
+    graphicEngineStatus.field_14.field_0.field_4 = vdp1WriteEA;
+    graphicEngineStatus.field_14.field_0.field_8 = graphicEngineStatus.field_8;
+    graphicEngineStatus.field_14.field_2024.field_4 = 0x25C07FE0;
+    graphicEngineStatus.field_14.field_2024.field_8 = 0x25C0FFE0;
+
+    graphicEngineStatus.field_14.field_0.field_0 = vdp1WriteEA;
+    graphicEngineStatus.field_14.field_0.field_C = 0;
+    graphicEngineStatus.field_14.field_2024.field_0 = 0x25C07FE0;
+    graphicEngineStatus.field_14.field_2024.field_C = 0;
+
+    graphicEngineStatus.field_14.field_0.field_14 = 0x25C7C000;
+    graphicEngineStatus.field_14.field_0.field_10 = 0x25C7C000;
+    graphicEngineStatus.field_14.field_0.field_18 = 0x25C7E000;
+
+    graphicEngineStatus.field_14.field_2024.field_14 = 0x25C7DFF8;
+    graphicEngineStatus.field_14.field_2024.field_10 = 0x25C7DFF8;
+    graphicEngineStatus.field_14.field_2024.field_18 = 0x25C7FFF8;
+
+    graphicEngineStatus.field_14.field_0.field_20 = graphicEngineStatus.field_14.field_0.buffer;
+    graphicEngineStatus.field_14.field_0.field_1C = 0;
+
+    graphicEngineStatus.field_14.field_2024.field_20 = graphicEngineStatus.field_14.field_2024.buffer;
+    graphicEngineStatus.field_14.field_2024.field_1C = 0;
+
+    //addSlaveCommand(graphicEngineStatus, 0x40AC, 0, copyMatrix_0);
+
+    if (VDP2Regs_.TVSTAT & 1)
+    {
+        assert(0); // clear some lines in the vdp1 framebuffer in pal
+    }
+}
+
 void resetEngine()
 {
     //initVBlankData();
@@ -33,7 +256,7 @@ void resetEngine()
     initPauseSatus();
     resetTasks();
     initHeap();
-    //initVDP1();
+    initVDP1();
     initVDP2();
 
     //...

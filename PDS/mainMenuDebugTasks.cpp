@@ -1425,14 +1425,6 @@ void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     createDragonState(pWorkArea, dragonLevel);
 }
 
-struct s_loadDragonWorkArea : public s_workArea
-{
-    u8* dramAllocation; //0
-    u8* vramAllocation;//4
-    u16 MCBOffsetInDram;//8
-    u16 CGBOffsetInDram;//A
-};
-
 s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 {
     s_loadDragonWorkArea* pLoadDragonWorkArea = static_cast<s_loadDragonWorkArea*>(createSubTaskFromFunction(pWorkArea, NULL, new s_loadDragonWorkArea, "loadDragonModel"));
