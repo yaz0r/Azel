@@ -31,6 +31,12 @@ struct s_dragonMenuDragonWorkArea : public s_workArea
     s_dragonMenuDragonWorkAreaSub1 field_34;
 };
 
+const sVec3 defaultCameraVectors[3] = {
+    {0, 0x4000, 0},
+    {0, 0x4000, 0x10000},
+    {0, 0x10000, 0},
+};
+
 void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
 {
     memcpy_dma(&graphicEngineStatus.field_405C, &r4->field_120, sizeof(s_graphicEngineStatus_405C));
@@ -114,7 +120,7 @@ void setupVdp1LocalCoordinatesAndClipping()
 
     if (graphicEngineStatus.field_405C.VDP1_X2 < 0x160)
     {
-        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0x14, graphicEngineStatus.field_405C.VDP1_Y1);
+        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0x14, graphicEngineStatus.field_405C.VDP1_X2);
     }
     else
     {
@@ -173,6 +179,207 @@ void generateLightFalloffMap(u32 r4, u32 r5, u32 r6)
     //addSlaveCommand(0,0,0, copyFalloffTableToSlave);
 }
 
+s32 FP_Pow2(s32 r4)
+{
+    s64 result = ((s64)r4) * ((s64)r4);
+    return (s32)(result >> 16);
+}
+
+s32 generateCameraMatrixSub3(s32 r4, s32 r5)
+{
+    // same as not function, but not on FP
+    return 0;
+}
+
+// this is atan2
+s32 generateCameraMatrixSub1Sub3(s32 r4, s32 r5)
+{
+    if (r5)
+    {
+        u32 r1 = 0;
+        if (r4 < 0)
+        {
+            r4 = -r4;
+            r1 = 1;
+        }
+
+        if (r5 < 0)
+        {
+            r5 = -r5;
+            r1 += 2;
+        }
+
+        assert(r4 == 0);
+        assert(r5 == 0x10000);
+
+        return 0;
+
+        if (r4 > r5)
+        {
+            r5 ^= r4;
+            r4 ^= r5;
+            r5 ^= r4;
+            r1 += 1;
+        }
+
+        r4 <<= 10;
+        r5 <<= 10;
+        // TO BE CONTINUED
+
+    }
+    if (r4)
+    {
+        if (r4 >= 0)
+        {
+            return 0x400 << 16; //90
+        }
+        else
+        {
+            return 0xC00 << 16; //270
+        }
+    }
+
+    return 0;
+}
+
+void generateCameraMatrixSub1(sVec3& r4, u32(&r5)[2])
+{
+    if ((r4[0] == 0) && (r4[2] == 0))
+    {
+        assert(0);
+    }
+    else
+    {
+        s32 r0 = sqrt_F(FP_Pow2(r4[0]) + FP_Pow2(r4[2]));
+
+        if (r4[1] >= 0)
+        {
+            r5[0] = generateCameraMatrixSub1Sub3(r4[1], r0);
+        }
+        else
+        {
+            r5[2] = generateCameraMatrixSub1Sub3(-r4[1], -r0);
+        }
+
+        r5[1] = generateCameraMatrixSub1Sub3(-r4[0], -r4[2]);
+    }
+}
+
+void transformVec(sVec3& r4, sVec3& r5, sMatrix4x3& r6)
+{
+    s64 mac = 0;
+    mac += (s64)r6.matrix[0] * (s64)r4[0];
+    mac += (s64)r6.matrix[1] * (s64)r4[1];
+    mac += (s64)r6.matrix[2] * (s64)r4[2];
+    r5[0] = mac >> 16;
+
+    mac = 0;
+    mac += (s64)r6.matrix[4] * (s64)r4[0];
+    mac += (s64)r6.matrix[5] * (s64)r4[1];
+    mac += (s64)r6.matrix[6] * (s64)r4[2];
+    r5[1] = mac >> 16;
+
+    mac = 0;
+    mac += (s64)r6.matrix[8] * (s64)r4[0];
+    mac += (s64)r6.matrix[9] * (s64)r4[1];
+    mac += (s64)r6.matrix[10] * (s64)r4[2];
+    r5[2] = mac >> 16;
+}
+
+void generateCameraMatrix(s_cameraProperties2* r4, const sVec3& r13, const sVec3& r6, const sVec3& r7)
+{
+    u32 var_4[2];
+    sVec3 var_C;
+    sVec3 var_18;
+    sVec3 var_24;
+    sMatrix4x3 var_30;
+
+    var_18[0] = r6[0] - r13[0];
+    var_18[1] = r6[1] - r13[1];
+    var_18[2] = r6[2] - r13[2];
+
+    var_C[0] = r7[0] - r13[0];
+    var_C[1] = r7[1] - r13[1];
+    var_C[2] = r7[2] - r13[2];
+
+    r4->field_20[0] = r4->field_C[0];
+    r4->field_20[1] = r4->field_C[1];
+    r4->field_20[2] = r4->field_C[2];
+
+    r4->field_14[0] = r4->field_0[0];
+    r4->field_14[1] = r4->field_0[1];
+    r4->field_14[2] = r4->field_0[2];
+
+    generateCameraMatrixSub1(var_18, var_4);
+
+    r4->field_C[0] = var_4[0] >> 16;
+    r4->field_C[1] = var_4[1] >> 16;
+
+    initMatrixToIdentity(&var_30);
+    rotateMatrixX(-r4->field_C[0]);
+    rotateMatrixY(-r4->field_C[1]);
+
+    transformVec(var_C, var_24, var_30);
+
+    r4->field_C[2] = generateCameraMatrixSub3(-var_24[0], var_24[1]);
+
+    r4->field_0[0] = r13[0];
+    var_24[0] = -r13[0];
+    
+    r4->field_0[1] = r13[1];
+    var_24[1] = -r13[1];
+
+    r4->field_0[2] = r13[2];
+    var_24[2] = -r13[2];
+
+    resetMatrixStack();
+
+    rotateCurrentMatrixZ(-r4->field_C[2]);
+    rotateCurrentMatrixX(-r4->field_C[0]);
+
+    copyMatrix(pCurrentMatrix, &r4->field_88);
+
+    rotateCurrentMatrixY(-r4->field_C[1]);
+
+    translateCurrentMatrix(&var_24);
+
+    rotateMatrixY(0x800, &r4->field_88);
+
+    copyMatrix(&r4->field_28[0], &r4->field_28[1]);
+
+    initMatrixToIdentity(&r4->field_28[0]);
+    translateMatrix(&r4->field_0, &r4->field_28[0]);
+    rotateMatrixY(r4->field_C[1], &r4->field_28[0]);
+    rotateMatrixX(r4->field_C[0], &r4->field_28[0]);
+    rotateMatrixZ(r4->field_C[2], &r4->field_28[0]);
+
+    r4->field_28[0].matrix[2] = -r4->field_28[0].matrix[2];
+    r4->field_28[0].matrix[6] = -r4->field_28[0].matrix[6];
+    r4->field_28[0].matrix[10] = -r4->field_28[0].matrix[10];
+}
+
+void resetCameraProperties2(s_cameraProperties2* r4)
+{
+    r4->field_0[2] = 0;
+    r4->field_0[1] = 0;
+    r4->field_0[0] = 0;
+
+    r4->field_C[2] = 0;
+    r4->field_C[1] = 0;
+    r4->field_C[0] = 0;
+
+    r4->field_14[0] = r4->field_0[0];
+    r4->field_14[1] = r4->field_0[1];
+    r4->field_14[2] = r4->field_0[2];
+
+    r4->field_20[0] = r4->field_C[0];
+    r4->field_20[1] = r4->field_C[1];
+    r4->field_20[2] = r4->field_C[2];
+
+    initMatrixToIdentity(&r4->field_28[0]);
+    initMatrixToIdentity(&r4->field_28[1]);
+}
+
 void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
 {
     s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
@@ -209,13 +416,13 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
 
     graphicEngineStatus.field_4090 = graphicEngineStatus.field_4094 << 8;
 
-    generateLightFalloffMap(0x30102, 0, 0);;
+    generateLightFalloffMap(0x30102, 0, 0);
 
     initVDP1Projection(fixedPoint(0x1C71C71), 0);
 
-    //resetCameraProperties2(&cameraProperties2);
+    resetCameraProperties2(&cameraProperties2);
 
-    assert(0);
+    generateCameraMatrix(&cameraProperties2, defaultCameraVectors[0], defaultCameraVectors[1], defaultCameraVectors[2]);
 }
 
 void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)

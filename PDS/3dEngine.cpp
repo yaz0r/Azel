@@ -116,9 +116,9 @@ void initMatrixToIdentity(sMatrix4x3* matrix)
 
 void fieldOverlaySubTaskInitSub6Sub1(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6)
 {
-    r4->field_C = r6[0];
-    r4->field_E = r6[1];
-    r4->field_10 = r6[2];
+    r4->field_C[0] = r6[0];
+    r4->field_C[1] = r6[1];
+    r4->field_C[2] = r6[2];
 
     sVec3 translation;
 
@@ -131,18 +131,18 @@ void fieldOverlaySubTaskInitSub6Sub1(s_cameraProperties2* r4, sFieldCameraStatus
 
     resetMatrixStack();
 
-    rotateCurrentMatrixZ(-r4->field_10);
-    rotateCurrentMatrixX(-r4->field_C);
+    rotateCurrentMatrixZ(-r4->field_C[0]);
+    rotateCurrentMatrixX(-r4->field_C[2]);
     copyMatrix(pCurrentMatrix, &r4->field_88);
-    rotateCurrentMatrixY(-r4->field_E);
+    rotateCurrentMatrixY(-r4->field_C[1]);
     translateCurrentMatrix(&translation);
     rotateMatrixY(0x800, &r4->field_88);
     copyMatrix(&r4->field_28[0], &r4->field_28[1]);
     initMatrixToIdentity(&r4->field_28[0]);
     translateMatrix(&r4->field_0, &r4->field_28[0]);
-    rotateMatrixY(r4->field_E, &r4->field_28[0]);
-    rotateMatrixX(r4->field_C, &r4->field_28[0]);
-    rotateMatrixZ(r4->field_10, &r4->field_28[0]);
+    rotateMatrixY(r4->field_C[1], &r4->field_28[0]);
+    rotateMatrixX(r4->field_C[0], &r4->field_28[0]);
+    rotateMatrixZ(r4->field_C[2], &r4->field_28[0]);
 
     r4->field_28[0].matrix[2] = -r4->field_28[0].matrix[2];
     r4->field_28[0].matrix[6] = -r4->field_28[0].matrix[6];

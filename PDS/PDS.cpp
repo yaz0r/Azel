@@ -44,7 +44,46 @@ fixedPoint MTH_Product2d(fixedPoint (&r4)[2], fixedPoint (&r5)[2])
     return fixedPoint(mac);
 }
 
-fixedPoint initVDP1Sub1Sub1(fixedPoint r4)
+fixedPoint sqrt_F(fixedPoint r4)
+{
+    s32 r1 = 0x40000000;
+    int r3 = 16;
+
+    for (int i = 16; i >= 0;)
+    {
+        i--;
+        if (r1 < r4)
+        {
+            r4 -= r1;
+
+            fixedPoint r0 = r1;
+            r1 >>= 2;
+
+            do
+            {
+                fixedPoint r2 = r0 + r1;
+
+                r0 >>= 1;
+
+                if (r4 > r2)
+                {
+                    r4 -= r2;
+                    r0 += r1;
+                }
+
+                r1 >>= 2;
+            } while (--i);
+
+            return r0 >> 16;
+        }
+
+        r1 >>= 2;
+    }
+
+    return 0;
+}
+
+fixedPoint sqrt_I(fixedPoint r4)
 {
     s32 r1 = 0x40000000;
     int r3 = 16;
@@ -118,12 +157,12 @@ void initVDP1Projection(fixedPoint r4, u32 mode)
     array[0] = 352/2;
     array[1] = graphicEngineStatus.field_405C.field_18;
     graphicEngineStatus.field_405C.field_2C = FP_Div(array[0], array[1]);
-    graphicEngineStatus.field_405C.field_28 = FP_Div(initVDP1Sub1Sub1(MTH_Product2d(array, array)), array[1]);
+    graphicEngineStatus.field_405C.field_28 = FP_Div(sqrt_I(MTH_Product2d(array, array)), array[1]);
 
     array[0] = 224 / 2;
     array[1] = graphicEngineStatus.field_405C.field_1C;
     graphicEngineStatus.field_405C.field_24 = FP_Div(array[0], array[1]);
-    graphicEngineStatus.field_405C.field_20 = FP_Div(initVDP1Sub1Sub1(MTH_Product2d(array, array)), array[1]);
+    graphicEngineStatus.field_405C.field_20 = FP_Div(sqrt_I(MTH_Product2d(array, array)), array[1]);
 }
 
 void initVDP1()
