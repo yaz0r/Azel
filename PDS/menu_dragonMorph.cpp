@@ -20,8 +20,7 @@ struct s_dragonMenuDragonWorkArea : public s_workArea
 {
     s_loadDragonWorkArea* field_0;
     const sDragonData3* field_4;
-    u32 field_14;
-    u32 field_18;
+    sVec3 field_10;
     fixedPoint field_1C;
     fixedPoint field_20;
     fixedPoint field_24;
@@ -316,8 +315,8 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3& r13, const sVec3
     r4->field_C[1] = var_4[1] >> 16;
 
     initMatrixToIdentity(&var_30);
-    rotateMatrixX(-r4->field_C[0]);
-    rotateMatrixY(-r4->field_C[1]);
+    rotateMatrixX(-r4->field_C[0], &var_30);
+    rotateMatrixY(-r4->field_C[1], &var_30);
 
     transformVec(var_C, var_24, var_30);
 
@@ -393,8 +392,8 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     pWorkArea->field_0 = loadDragonModel(pWorkArea, mainGameState.gameStats.dragonLevel);
 
     pWorkArea->field_4 = &dragonData3[mainGameState.gameStats.dragonLevel];
-    pWorkArea->field_14 = 0x4000;
-    pWorkArea->field_18 = 0xA000;
+    pWorkArea->field_10[1] = 0x4000;
+    pWorkArea->field_10[2] = 0xA000;
     pWorkArea->field_1C = fixedPoint(0xE38E38);
     pWorkArea->field_20 = fixedPoint(0x638E38E);
     pWorkArea->field_24 = fixedPoint(0xF555555);
@@ -430,9 +429,39 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
     unimplemented("dragonMenuDragonUpdate");
 }
 
-void dragonMenuDragonInitDraw(p_workArea pTypelessWorkArea)
+void dragonMenuDragonDrawSub1(s_dragonStateSubData1* r4, u32 r5, u32 r6, sVec3* r7, sVec3* arg8)
 {
-    unimplemented("dragonMenuDragonInitDraw");
+    sMatrix4x3 var_28;
+
+    initMatrixToIdentity(&var_28);
+    translateMatrix(r7, &var_28);
+    rotateMatrixYXZ(arg8, &var_28);
+
+    if (r6)
+    {
+        unimplemented("parts of dragonMenuDragonDrawSub1");
+    }
+
+    pushCurrentMatrix();
+    multiplyCurrentMatrix(&var_28);
+
+    r4->field_C = r5;
+
+    r4->drawFunction(r4);
+
+    popMatrix();
+}
+
+void dragonMenuDragonDraw(p_workArea pTypelessWorkArea)
+{
+    s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
+
+    // this might be very incorrect
+    sVec3 rotationVector;
+    rotationVector[0] = 0;
+    rotationVector[1] = 0;
+    rotationVector[2] = 0;
+    dragonMenuDragonDrawSub1(&gDragonState->dragonStateSubData1, gDragonState->field_14, gDragonState->field_18, &pWorkArea->field_10, &rotationVector);
 }
 
 void dragonMenuDragonDelete(p_workArea pTypelessWorkArea)
@@ -440,7 +469,7 @@ void dragonMenuDragonDelete(p_workArea pTypelessWorkArea)
     unimplemented("dragonMenuDragonDelete");
 }
 
-s_taskDefinition dragonMenuDragonTaskDefinition = { dragonMenuDragonInit, dragonMenuDragonUpdate, dragonMenuDragonInitDraw, dragonMenuDragonDelete, "dragonMenuDragon" };
+s_taskDefinition dragonMenuDragonTaskDefinition = { dragonMenuDragonInit, dragonMenuDragonUpdate, dragonMenuDragonDraw, dragonMenuDragonDelete, "dragonMenuDragon" };
 
 p_workArea createDragonMenuMorhTask(p_workArea pWorkArea)
 {

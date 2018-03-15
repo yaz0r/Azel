@@ -29,11 +29,16 @@ struct sFieldCameraStatus
 extern sMatrix4x3* pCurrentMatrix;
 extern sMatrix4x3 unkMatrix;
 
+void addObjectToDrawList(u8* pObjectData);
+
 void fieldOverlaySubTaskInitSub6Sub1(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6);
 
 void copyMatrix(sMatrix4x3* pSrc, sMatrix4x3* pDst);
 void initMatrixToIdentity(sMatrix4x3* matrix);
 void resetMatrixStack();
+void pushCurrentMatrix();
+void popMatrix();
+
 void rotateMatrixX(s32 rotX, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixX(s32 rotX);
 void rotateMatrixY(s32 rotY, sMatrix4x3* pMatrix);
@@ -42,3 +47,5 @@ void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixZ(s32 rotZ);
 void translateMatrix(sVec3* translation, sMatrix4x3* pMatrix);
 void translateCurrentMatrix(sVec3* translation);
+void rotateMatrixYXZ(sVec3* rotationVec, sMatrix4x3* pMatrix);
+void multiplyCurrentMatrix(sMatrix4x3* arg4);

@@ -215,3 +215,33 @@ void translateCurrentMatrix(sVec3* translation)
     translateMatrix(translation, pCurrentMatrix);
 }
 
+void pushCurrentMatrix()
+{
+    sMatrix4x3* pNextMatrix = pCurrentMatrix+1;
+    copyMatrix(pCurrentMatrix, pNextMatrix);
+    pCurrentMatrix = pNextMatrix;
+}
+
+void popMatrix()
+{
+    pCurrentMatrix--;
+}
+
+void multiplyCurrentMatrix(sMatrix4x3* arg4)
+{
+    s32* r4 = pCurrentMatrix->matrix;
+    s32* r5 = pCurrentMatrix->matrix;
+}
+
+void rotateMatrixYXZ(sVec3* rotationVec, sMatrix4x3* pMatrix)
+{
+    rotateMatrixY((*rotationVec)[1], pMatrix);
+    rotateMatrixX((*rotationVec)[0], pMatrix);
+    rotateMatrixZ((*rotationVec)[2], pMatrix);
+}
+
+void addObjectToDrawList(u8* pObjectData)
+{
+    unimplemented("addObjectToDrawList");
+}
+

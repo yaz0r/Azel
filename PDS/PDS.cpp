@@ -17,6 +17,15 @@ u32 azelCdNumber = 0;
 
 u8 COMMON_DAT[0x98000];
 
+extern sSaturnMemoryFile gCommonFile =
+{
+    "common.dat",
+    COMMON_DAT,
+    0x98000,
+    0x00200000,
+};
+
+
 void initPauseSatus()
 {
     pauseEngine[0] = 0;

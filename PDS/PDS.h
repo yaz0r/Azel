@@ -2,7 +2,10 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#ifndef HEADLESS_TOOL
 #include <SDL.h>
+#endif
+
 #include <imgui.h>
 
 #include <stdlib.h>
@@ -22,6 +25,27 @@ typedef uint64_t u64;
 typedef int64_t s64;
 
 void yLog(...);
+
+struct sSaturnMemoryFile
+{
+    char* m_name;
+    u8* m_data;
+    u32 m_dataSize;
+    u32 m_base;
+};
+
+struct sSaturnPtr
+{
+    u32 m_offset;
+    sSaturnMemoryFile* m_file;
+
+    sSaturnPtr operator + (unsigned int i) const
+    {
+        sSaturnPtr newPtr = *this;
+        newPtr.m_offset += i;
+        return newPtr;
+    }
+};
 
 #include "fixedPoint.h"
 
@@ -45,6 +69,7 @@ void yLog(...);
 #include "menu_dragonMorph.h"
 
 extern u8 COMMON_DAT[0x98000];
+extern sSaturnMemoryFile gCommonFile;
 
 struct sPortData2
 {

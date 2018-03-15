@@ -332,7 +332,7 @@ const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX] = {
 };
 
 s_RiderDefinitionSub dragon0_sub0[31] = {
-    { (void*)1, 2 },
+    { {0x20212C, &gCommonFile }, 2 },
     { NULL, 0 },
     { NULL, 0 },
     { NULL, 0 },
@@ -341,15 +341,15 @@ s_RiderDefinitionSub dragon0_sub0[31] = {
     { NULL, 0 },
     { NULL, 0 },
     { NULL, 0 },
-    { (void*)1, 1 },
+    { { -1, &gCommonFile }, 1 },
     { NULL, 0 },
     { NULL, 0 },
-    { (void*)1, 1 },
+    { { -1, &gCommonFile }, 1 },
     { NULL, 0 },
     { NULL, 0 },
     { NULL, 0 },
     { NULL, 0 },
-    { (void*)1, 2 },
+    { { -1, &gCommonFile }, 2 },
     { NULL, 0 },
     { NULL, 0 },
     { NULL, 0 },
@@ -699,4 +699,24 @@ fixedPoint getCos(u32 value)
 fixedPoint getSin(u32 value)
 {
     return fixedPoint(CosSinTable[value + 1024]);
+}
+
+s32 readSaturnS32(sSaturnPtr& ptr)
+{
+    sSaturnMemoryFile* pFile = ptr.m_file;
+    u32 offsetInFile = ptr.m_offset - pFile->m_base;
+    assert(offsetInFile + 4 <= pFile->m_dataSize);
+
+    return READ_BE_U32(pFile->m_data + offsetInFile);
+}
+
+sVec3 readSaturnVec3(sSaturnPtr& ptr)
+{
+    sVec3 newVec;
+
+    newVec[0] = readSaturnS32(ptr + 0);
+    newVec[1] = readSaturnS32(ptr + 4);
+    newVec[2] = readSaturnS32(ptr + 8);
+
+    return newVec;
 }

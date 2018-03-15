@@ -739,12 +739,84 @@ void modelMode4_position0(s_dragonStateSubData1* pDragonStateData1)
     
 }
 
+void modeDrawFunction1Sub1(u8* pModelData, sMatrix4x3* r5, const s_RiderDefinitionSub* r6, sVec3** r7)
+{
+    do 
+    {
+        pushCurrentMatrix();
+        multiplyCurrentMatrix(r5);
+
+        if (READ_BE_U32(pModelData))
+        {
+            addObjectToDrawList(pModelData);
+        }
+
+        for (u32 i = 0; i < r6->m_count; r6++)
+        {
+            sSaturnPtr r4 = r6->m_ptr + (i * 20) + 4;
+            sVec3 input = readSaturnVec3(r4);
+            sVec3* output = (*r7) + i;
+            //modeDrawFunction1Sub1Sub1(r4, output);
+        }
+
+        if (READ_BE_U32(pModelData + 4))
+        {
+            // next matrix
+            r5++;
+            // next bone stuff
+            r6++;
+            // next ???
+            r7++;
+
+            modeDrawFunction1Sub1(pModelData + READ_BE_U32(pModelData + 4), r5, r6, r7);
+        }
+
+        popMatrix();
+
+        // End of model
+        if (READ_BE_U32(pModelData + 8) == 0)
+        {
+            return;
+        }
+
+        // next matrix
+        r5++;
+        // next bone stuff
+        r6++;
+        // next ???
+        r7++;
+
+        pModelData += READ_BE_U32(pModelData + 8);
+    } while (1);
+}
+
+void modeDrawFunction1Sub2(u8* pModelData, sMatrix4x3* r5, const s_RiderDefinitionSub* r6, sVec3** r7)
+{
+    assert(0);
+}
+
 void (*modelMode4_position1)(s_dragonStateSubData1*) = unimplementedUpdate;
 void (*modelMode4_rotation)(s_dragonStateSubData1*) = unimplementedUpdate;
 void (*modelMode4_scale)(s_dragonStateSubData1*) = unimplementedUpdate;
 
-void (*modelDrawFunction0)(s_dragonStateSubData1*) = unimplementedDraw;
-void (*modelDrawFunction1)(s_dragonStateSubData1*) = unimplementedDraw;
+void(*modelDrawFunction0)(s_dragonStateSubData1*) = unimplementedDraw;
+void modelDrawFunction1(s_dragonStateSubData1* pDragonStateData1)
+{
+    sVec3** var_0 = pDragonStateData1->field_44;
+    sMatrix4x3* var_8 = pDragonStateData1->field_3C;
+    const s_RiderDefinitionSub* var_4 = pDragonStateData1->field_40;
+
+    if (pDragonStateData1->field_8 & 1)
+    {
+        u8* r4 = pDragonStateData1->pDragonModel + READ_BE_U32(pDragonStateData1->pDragonModel + pDragonStateData1->field_C);
+        modeDrawFunction1Sub1(r4, var_8, var_4, var_0);
+    }
+    else
+    {
+        u8* r4 = pDragonStateData1->pDragonModel + READ_BE_U32(pDragonStateData1->pDragonModel + pDragonStateData1->field_C);
+        modeDrawFunction1Sub2(r4, var_8, var_4, var_0);
+    }
+}
 void (*modelDrawFunction2)(s_dragonStateSubData1*) = unimplementedDraw;
 void (*modelDrawFunction3)(s_dragonStateSubData1*) = unimplementedDraw;
 
@@ -885,11 +957,6 @@ u32 dragonFieldTaskInitSub3Sub1Sub1(s_dragonStateSubData1* pDragonStateData1, u8
     }
 
     return createDragonStateSubData1Sub1Sub1(pDragonStateData1, pModelData1);
-}
-
-void addObjectToDrawList()
-{
-    assert(0);
 }
 
 void initModelDrawFunction(s_dragonStateSubData1* pDragonStateData1)
@@ -1085,7 +1152,7 @@ bool createDragonStateSubData1Sub2(s_dragonStateSubData1* pDragonStateData1, con
 {
     pDragonStateData1->field_40 = unkArg;
 
-    pDragonStateData1->field_44 = static_cast<u8**>(allocateHeapForTask(pDragonStateData1->pDragonState, pDragonStateData1->numBones * sizeof(u8*)));
+    pDragonStateData1->field_44 = static_cast<sVec3**>(allocateHeapForTask(pDragonStateData1->pDragonState, pDragonStateData1->numBones * sizeof(sVec3*)));
 
     if (pDragonStateData1->field_44 == NULL)
         return false;
@@ -1096,7 +1163,7 @@ bool createDragonStateSubData1Sub2(s_dragonStateSubData1* pDragonStateData1, con
     {
         if (r12->m_count > 0)
         {
-            pDragonStateData1->field_44[i] = (u8*)allocateHeapForTask(pDragonStateData1->pDragonState, r12->m_count * 12);
+            pDragonStateData1->field_44[i] = (sVec3*)allocateHeapForTask(pDragonStateData1->pDragonState, r12->m_count * sizeof(sVec3));
             if (pDragonStateData1->field_44[i] == NULL)
                 return false;
         }
@@ -1138,7 +1205,7 @@ bool createDragonStateSubData1(s_workArea* pWorkArea, s_dragonStateSubData1* pDr
 
     if (pDragonStateData1->field_A & 0x200)
     {
-        pDragonStateData1->field_3C = static_cast<u8*>(allocateHeapForTask(pWorkArea, pDragonStateData1->numBones * 48));
+        pDragonStateData1->field_3C = static_cast<sMatrix4x3*>(allocateHeapForTask(pWorkArea, pDragonStateData1->numBones * sizeof(sMatrix4x3)));
         assert(pDragonStateData1->field_3C);
 
         pDragonStateData1->field_8 |= 2;
@@ -1531,7 +1598,7 @@ const s_RiderDefinitionSub gEdgeExtraData[] =
     { NULL, 0 },
     { NULL, 0 },
     { NULL, 0 },
-    { (void*)1, 1 },
+    { { -1, &gCommonFile }, 1 },
 };
 
 const s_RiderDefinition gRiderTable[] = {

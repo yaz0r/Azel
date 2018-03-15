@@ -3,6 +3,28 @@
 extern const u8 bitMasks[];
 extern const u8 reverseBitMasks[];
 
+struct sVec3
+{
+    s32 m_value[3];
+
+    s32 operator[](int i) const
+    {
+        return m_value[i];
+    }
+
+    s32& operator[](int i)
+    {
+        return m_value[i];
+    }
+};
+
+sVec3 readSaturnVec3(sSaturnPtr& ptr);
+
+struct sMatrix4x3
+{
+    s32 matrix[4 * 3];
+};
+
 enum e_dragonLevel : unsigned char {
     DR_LEVEL_0_BASIC_WING = 0,
     DR_LEVEL_1_VALIANT_WING,
@@ -151,7 +173,7 @@ extern const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX];
 
 struct s_RiderDefinitionSub
 {
-    void* m_ptr;
+    sSaturnPtr m_ptr;
     u32 m_count;
 };
 
@@ -219,7 +241,7 @@ struct s_dragonStateSubData1
     u16 field_16; //16
 
     void(*drawFunction)(s_dragonStateSubData1*); // 18
-    void (*addToDisplayListFunction)(); // 1C
+    void (*addToDisplayListFunction)(u8*); // 1C
     void(*positionUpdateFunction)(s_dragonStateSubData1*); // 20
     void(*rotationUpdateFunction)(s_dragonStateSubData1*); // 24
     void(*scaleUpdateFunction)(s_dragonStateSubData1*); // 28
@@ -230,20 +252,14 @@ struct s_dragonStateSubData1
     u8* field_34; //34
     u32 field_38; //38
 
-    u8* field_3C; //3C
+    sMatrix4x3* field_3C; //3C
 
     const s_RiderDefinitionSub* field_40; //40
-    u8** field_44; //44
+    sVec3** field_44; //44
     u32 field_48; //48
 
     u16 field_4C; //4C
     u16 field_4E; //4E
-};
-
-typedef s32 sVec3[3];
-struct sMatrix4x3
-{
-    s32 matrix[4 * 3];
 };
 
 struct s_dragonStateSubData2SubData
@@ -256,7 +272,7 @@ struct s_dragonStateSubData2SubData
 struct s_dragonStateSubData2
 {
     const struct sDragonAnimData* field_0; // 0
-    u8* field_4; // 4;
+    sMatrix4x3* field_4; // 4;
     s_dragonStateSubData2SubData* field_8; // 8
     u8 countAnims; // C
     u8 count0; // D

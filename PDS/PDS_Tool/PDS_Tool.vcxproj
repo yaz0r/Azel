@@ -90,6 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..;$(SolutionDir)\PDS\SDL2\include;$(SolutionDir)\PDS\imgui;$(SolutionDir)\PDS\imgui\examples\sdl_opengl3_example;$(SolutionDir)\PDS\imgui\examples\libs\gl3w;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
