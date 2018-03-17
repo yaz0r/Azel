@@ -180,6 +180,7 @@
     <ClInclude Include="field.h" />
     <ClInclude Include="fixedPoint.h" />
     <ClInclude Include="heap.h" />
+    <ClInclude Include="imgui\examples\libs\gl3w\GL\gl3w.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />

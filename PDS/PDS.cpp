@@ -41,22 +41,24 @@ s32 setDividend(s32 r4, s32 r5, s32 divisor)
 
 fixedPoint FP_Mul(fixedPoint r4, fixedPoint r5)
 {
-    return (s32)(((s64)r4 * (s64)r5) >> 16);
+    return fixedPoint::fromS32(((s64)r4.asS32() * (s64)r5.asS32()) >> 16);
 }
 
-fixedPoint MTH_Product2d(fixedPoint (&r4)[2], fixedPoint (&r5)[2])
+s32 MTH_Product2d(s32 (&r4)[2], s32 (&r5)[2])
 {
     s64 mac = 0;
     mac += r4[0] * r5[0];
     mac += r4[1] * r5[1];
 
-    return fixedPoint(mac);
+    return mac;
 }
 
-fixedPoint sqrt_F(fixedPoint r4)
+fixedPoint sqrt_F(fixedPoint r4fp)
 {
     s32 r1 = 0x40000000;
     int r3 = 16;
+
+    s32 r4 = r4fp.asS32();
 
     for (int i = 16; i >= 0;)
     {
@@ -65,12 +67,12 @@ fixedPoint sqrt_F(fixedPoint r4)
         {
             r4 -= r1;
 
-            fixedPoint r0 = r1;
+            s32 r0 = r1;
             r1 >>= 2;
 
             do
             {
-                fixedPoint r2 = r0 + r1;
+                s32 r2 = r0 + r1;
 
                 r0 >>= 1;
 
@@ -83,16 +85,16 @@ fixedPoint sqrt_F(fixedPoint r4)
                 r1 >>= 2;
             } while (--i);
 
-            return r0 >> 16;
+            return fixedPoint::fromS32(r0 >> 16);
         }
 
         r1 >>= 2;
     }
 
-    return 0;
+    return fixedPoint::fromS32(0);
 }
 
-fixedPoint sqrt_I(fixedPoint r4)
+s32 sqrt_I(s32 r4)
 {
     s32 r1 = 0x40000000;
     int r3 = 16;
@@ -104,12 +106,12 @@ fixedPoint sqrt_I(fixedPoint r4)
         {
             r4 -= r1;
 
-            fixedPoint r0 = r1;
+            s32 r0 = r1;
             r1 >>= 2;
 
             do 
             {
-                fixedPoint r2 = r0 + r1;
+                s32 r2 = r0 + r1;
 
                 r0 >>= 1;
 
@@ -133,7 +135,7 @@ fixedPoint sqrt_I(fixedPoint r4)
 
 void initVDP1Projection(fixedPoint r4, u32 mode)
 {
-    u32 angle = FP_GetIntegerPortion(r4) & 0xFFF;
+    u32 angle = r4.getInteger();
 
     fixedPoint sin = getSin(angle);
     fixedPoint cos = getCos(angle);
@@ -161,7 +163,7 @@ void initVDP1Projection(fixedPoint r4, u32 mode)
         break;
     }
 
-    fixedPoint array[2];
+    s32 array[2];
 
     array[0] = 352/2;
     array[1] = graphicEngineStatus.field_405C.field_18;

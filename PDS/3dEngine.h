@@ -6,9 +6,9 @@ void pushProjectionStack();
 
 struct s_cameraProperties2
 {
-    sVec3 field_0; //0
+    sVec3_FP field_0; //0
     s16 field_C[3];
-    sVec3 field_14; //14
+    sVec3_FP field_14; //14
     s16 field_20[3]; // 20
     sMatrix4x3 field_28[2]; // 28
 
@@ -45,7 +45,9 @@ void rotateMatrixY(s32 rotY, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixY(s32 rotY);
 void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixZ(s32 rotZ);
-void translateMatrix(sVec3* translation, sMatrix4x3* pMatrix);
-void translateCurrentMatrix(sVec3* translation);
-void rotateMatrixYXZ(sVec3* rotationVec, sMatrix4x3* pMatrix);
+void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix);
+void translateCurrentMatrix(sVec3_FP* translation);
+void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
 void multiplyCurrentMatrix(sMatrix4x3* arg4);
+
+void flushObjectsToDrawList();

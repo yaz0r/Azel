@@ -222,7 +222,7 @@ struct sCameraVisibility
 
 struct s_fieldCameraTask1WorkArea : public s_workArea
 {
-    sVec3 field_0; // 0
+    sVec3_FP field_0; // 0
     s32 field_C;
     s32 field_10;
     s32 field_14;

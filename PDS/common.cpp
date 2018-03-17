@@ -710,9 +710,9 @@ s32 readSaturnS32(sSaturnPtr& ptr)
     return READ_BE_U32(pFile->m_data + offsetInFile);
 }
 
-sVec3 readSaturnVec3(sSaturnPtr& ptr)
+sVec3_FP readSaturnVec3(sSaturnPtr& ptr)
 {
-    sVec3 newVec;
+    sVec3_FP newVec;
 
     newVec[0] = readSaturnS32(ptr + 0);
     newVec[1] = readSaturnS32(ptr + 4);

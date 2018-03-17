@@ -23,3 +23,5 @@ struct s_loadDragonWorkArea : public s_workArea
 s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel);
 
 extern u32 vblankData[8];
+
+extern u8 gDragonModel[0x16500];

@@ -20,7 +20,7 @@ struct s_dragonMenuDragonWorkArea : public s_workArea
 {
     s_loadDragonWorkArea* field_0;
     const sDragonData3* field_4;
-    sVec3 field_10;
+    sVec3_FP field_10;
     fixedPoint field_1C;
     fixedPoint field_20;
     fixedPoint field_24;
@@ -30,7 +30,7 @@ struct s_dragonMenuDragonWorkArea : public s_workArea
     s_dragonMenuDragonWorkAreaSub1 field_34;
 };
 
-const sVec3 defaultCameraVectors[3] = {
+const sVec3_FP defaultCameraVectors[3] = {
     {0, 0x4000, 0},
     {0, 0x4000, 0x10000},
     {0, 0x10000, 0},
@@ -178,10 +178,10 @@ void generateLightFalloffMap(u32 r4, u32 r5, u32 r6)
     //addSlaveCommand(0,0,0, copyFalloffTableToSlave);
 }
 
-s32 FP_Pow2(s32 r4)
+fixedPoint FP_Pow2(fixedPoint r4)
 {
-    s64 result = ((s64)r4) * ((s64)r4);
-    return (s32)(result >> 16);
+    s64 result = ((s64)r4.asS32()) * ((s64)r4.asS32());
+    return fixedPoint::fromS32(result >> 16);
 }
 
 s32 generateCameraMatrixSub3(s32 r4, s32 r5)
@@ -241,7 +241,7 @@ s32 generateCameraMatrixSub1Sub3(s32 r4, s32 r5)
     return 0;
 }
 
-void generateCameraMatrixSub1(sVec3& r4, u32(&r5)[2])
+void generateCameraMatrixSub1(sVec3_FP& r4, u32(&r5)[2])
 {
     if ((r4[0] == 0) && (r4[2] == 0))
     {
@@ -249,6 +249,7 @@ void generateCameraMatrixSub1(sVec3& r4, u32(&r5)[2])
     }
     else
     {
+
         s32 r0 = sqrt_F(FP_Pow2(r4[0]) + FP_Pow2(r4[2]));
 
         if (r4[1] >= 0)
@@ -264,33 +265,33 @@ void generateCameraMatrixSub1(sVec3& r4, u32(&r5)[2])
     }
 }
 
-void transformVec(sVec3& r4, sVec3& r5, sMatrix4x3& r6)
+void transformVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6)
 {
     s64 mac = 0;
-    mac += (s64)r6.matrix[0] * (s64)r4[0];
-    mac += (s64)r6.matrix[1] * (s64)r4[1];
-    mac += (s64)r6.matrix[2] * (s64)r4[2];
+    mac += (s64)r6.matrix[0] * (s64)r4[0].asS32();
+    mac += (s64)r6.matrix[1] * (s64)r4[1].asS32();
+    mac += (s64)r6.matrix[2] * (s64)r4[2].asS32();
     r5[0] = mac >> 16;
 
     mac = 0;
-    mac += (s64)r6.matrix[4] * (s64)r4[0];
-    mac += (s64)r6.matrix[5] * (s64)r4[1];
-    mac += (s64)r6.matrix[6] * (s64)r4[2];
+    mac += (s64)r6.matrix[4] * (s64)r4[0].asS32();
+    mac += (s64)r6.matrix[5] * (s64)r4[1].asS32();
+    mac += (s64)r6.matrix[6] * (s64)r4[2].asS32();
     r5[1] = mac >> 16;
 
     mac = 0;
-    mac += (s64)r6.matrix[8] * (s64)r4[0];
-    mac += (s64)r6.matrix[9] * (s64)r4[1];
-    mac += (s64)r6.matrix[10] * (s64)r4[2];
+    mac += (s64)r6.matrix[8] * (s64)r4[0].asS32();
+    mac += (s64)r6.matrix[9] * (s64)r4[1].asS32();
+    mac += (s64)r6.matrix[10] * (s64)r4[2].asS32();
     r5[2] = mac >> 16;
 }
 
-void generateCameraMatrix(s_cameraProperties2* r4, const sVec3& r13, const sVec3& r6, const sVec3& r7)
+void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sVec3_FP& r6, const sVec3_FP& r7)
 {
     u32 var_4[2];
-    sVec3 var_C;
-    sVec3 var_18;
-    sVec3 var_24;
+    sVec3_FP var_C;
+    sVec3_FP var_18;
+    sVec3_FP var_24;
     sMatrix4x3 var_30;
 
     var_18[0] = r6[0] - r13[0];
@@ -429,7 +430,7 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
     unimplemented("dragonMenuDragonUpdate");
 }
 
-void dragonMenuDragonDrawSub1(s_dragonStateSubData1* r4, u32 r5, u32 r6, sVec3* r7, sVec3* arg8)
+void dragonMenuDragonDrawSub1(s_dragonStateSubData1* r4, u32 r5, u32 r6, sVec3_FP* r7, sVec3_FP* arg8)
 {
     sMatrix4x3 var_28;
 
@@ -457,10 +458,10 @@ void dragonMenuDragonDraw(p_workArea pTypelessWorkArea)
     s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
 
     // this might be very incorrect
-    sVec3 rotationVector;
-    rotationVector[0] = 0;
-    rotationVector[1] = 0;
-    rotationVector[2] = 0;
+    sVec3_FP rotationVector;
+    rotationVector[0] = fixedPoint::fromS32(0);
+    rotationVector[1] = fixedPoint::fromS32(0);
+    rotationVector[2] = fixedPoint::fromS32(0);
     dragonMenuDragonDrawSub1(&gDragonState->dragonStateSubData1, gDragonState->field_14, gDragonState->field_18, &pWorkArea->field_10, &rotationVector);
 }
 

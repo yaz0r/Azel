@@ -3,26 +3,26 @@
 extern const u8 bitMasks[];
 extern const u8 reverseBitMasks[];
 
-struct sVec3
+struct sVec3_FP
 {
-    s32 m_value[3];
+    fixedPoint m_value[3];
 
-    s32 operator[](int i) const
+    fixedPoint operator[](int i) const
     {
         return m_value[i];
     }
 
-    s32& operator[](int i)
+    fixedPoint& operator[](int i)
     {
         return m_value[i];
     }
 };
 
-sVec3 readSaturnVec3(sSaturnPtr& ptr);
+sVec3_FP readSaturnVec3(sSaturnPtr& ptr);
 
 struct sMatrix4x3
 {
-    s32 matrix[4 * 3];
+    fixedPoint matrix[4 * 3];
 };
 
 enum e_dragonLevel : unsigned char {
@@ -211,9 +211,7 @@ extern const s_dragonData2 dragonData2[DR_LEVEL_MAX];
 
 struct sPoseData
 {
-    u32 m_0;
-    u32 m_4;
-    u32 m_8;
+    sVec3_FP m_0;
 
     u32 m_C;
     u32 m_10;
@@ -223,7 +221,7 @@ struct sPoseData
     u32 m_1C;
     u32 m_20;
 
-    s32 field_48[9][3];
+    sVec3_FP field_48[9];
 };
 
 struct s_dragonStateSubData1
@@ -255,7 +253,7 @@ struct s_dragonStateSubData1
     sMatrix4x3* field_3C; //3C
 
     const s_RiderDefinitionSub* field_40; //40
-    sVec3** field_44; //44
+    sVec3_FP** field_44; //44
     u32 field_48; //48
 
     u16 field_4C; //4C

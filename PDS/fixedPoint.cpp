@@ -2,13 +2,13 @@
 
 s32 FP_GetIntegerPortion(fixedPoint& FP)
 {
-    return FP >> 16;
+    return FP.asS32() >> 16;
 }
 
-s32 FP_Div(fixedPoint divident, fixedPoint divisor)
+fixedPoint FP_Div(fixedPoint divident, fixedPoint divisor)
 {
-    if (divident == 0)
-        return 0;
+    if (divident.asS32() == 0)
+        return fixedPoint::fromS32(0);
     /*
     VCRDIV = 0xFFFFFF00;
     DVSR = divisor;
@@ -18,5 +18,5 @@ s32 FP_Div(fixedPoint divident, fixedPoint divisor)
     VCRDIV = 0;
     */
 
-    return (fixedPoint)((((s64)divident) << 16) / divisor);
+    return fixedPoint::fromS32((((s64)divident.asS32()) << 16) / divisor.asS32());
 }

@@ -156,5 +156,8 @@
     <ClInclude Include="fixedPoint.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="imgui\examples\libs\gl3w\GL\gl3w.h">
+      <Filter>Source Files\imgui\gl3w</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
