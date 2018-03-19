@@ -28,6 +28,12 @@ public:
         return newFixedPoint;
     }
 
+    fixedPoint operator += (const fixedPoint& otherValue)
+    {
+        value += otherValue.value;
+        return *this;
+    }
+
     s32 asS32()
     {
         return value;

@@ -88,6 +88,9 @@
     <ClCompile Include="fixedPoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="3dEngine_flush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PDS.h">
@@ -158,6 +161,9 @@
     </ClInclude>
     <ClInclude Include="imgui\examples\libs\gl3w\GL\gl3w.h">
       <Filter>Source Files\imgui\gl3w</Filter>
+    </ClInclude>
+    <ClInclude Include="3dEngine_flush.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

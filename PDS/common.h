@@ -16,6 +16,25 @@ struct sVec3_FP
     {
         return m_value[i];
     }
+
+    sVec3_FP operator-(sVec3_FP otherVec) const
+    {
+        sVec3_FP result;
+        result[0] = m_value[0] - otherVec[0];
+        result[1] = m_value[1] - otherVec[1];
+        result[2] = m_value[2] - otherVec[2];
+
+        return result;
+    }
+
+    sVec3_FP& operator+=(const sVec3_FP otherVec)
+    {
+        m_value[0] += otherVec[0];
+        m_value[1] += otherVec[1];
+        m_value[2] += otherVec[2];
+
+        return *this;
+    }
 };
 
 sVec3_FP readSaturnVec3(sSaturnPtr& ptr);
@@ -224,25 +243,25 @@ struct sPoseData
     sVec3_FP field_48[9];
 };
 
-struct s_dragonStateSubData1
+struct s_3dModel
 {
-    s_workArea* pDragonState; //0
-    u8* pDragonModel; //4
+    s_workArea* pOwnerTask; //0
+    u8* pModelFile; //4
 
     u16 field_8; //8
     u16 field_A; //A
-    u16 field_C; //C
+    u16 modelIndexOffset; //C
 
     u16 field_10; //10
     u16 numBones; //12
     u16 field_14; //14
     u16 field_16; //16
 
-    void(*drawFunction)(s_dragonStateSubData1*); // 18
+    void(*drawFunction)(s_3dModel*); // 18
     void (*addToDisplayListFunction)(u8*); // 1C
-    void(*positionUpdateFunction)(s_dragonStateSubData1*); // 20
-    void(*rotationUpdateFunction)(s_dragonStateSubData1*); // 24
-    void(*scaleUpdateFunction)(s_dragonStateSubData1*); // 28
+    void(*positionUpdateFunction)(s_3dModel*); // 20
+    void(*rotationUpdateFunction)(s_3dModel*); // 24
+    void(*scaleUpdateFunction)(s_3dModel*); // 28
     sPoseData* poseData; //2C
 
     u8* pCurrentAnimation; //30
@@ -267,7 +286,7 @@ struct s_dragonStateSubData2SubData
     const struct sDragonAnimDataSub* dataSource; // 60
 };
 
-struct s_dragonStateSubData2
+struct s3DModelAnimData
 {
     const struct sDragonAnimData* field_0; // 0
     sMatrix4x3* field_4; // 4;
@@ -280,7 +299,7 @@ struct s_dragonStateSubData2
 
 struct s_dragonState : public s_workArea
 {
-    u8* pDragonModel; //0
+    u8* pDragonModelRawData; //0
     u32 dragonType;//C
     s16 cursorX;//10
     s16 cursorY;//12
@@ -289,9 +308,9 @@ struct s_dragonState : public s_workArea
     u32 dragonArchetype; //1C
     const u16* dragonData2; //20
     u32 dragonData2Count; //24
-    s_dragonStateSubData1 dragonStateSubData1; //28
+    s_3dModel dragon3dModel; //28
 
-    s_dragonStateSubData2 dragonStateSubData2; // 78
+    s3DModelAnimData animData; // 78
     u32 field_88;//88
 };
 extern s_dragonState* gDragonState;

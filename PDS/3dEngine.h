@@ -50,4 +50,3 @@ void translateCurrentMatrix(sVec3_FP* translation);
 void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
 void multiplyCurrentMatrix(sMatrix4x3* arg4);
 
-void flushObjectsToDrawList();

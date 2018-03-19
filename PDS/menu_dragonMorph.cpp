@@ -49,7 +49,7 @@ void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
     pushProjectionStack();
 }
 
-u32 dragonMenuDragonInitSub2Sub1(s_dragonStateSubData1* pDragonStateData1, u32 r5)
+u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 r5)
 {
     if ((r5 > 0) && (pDragonStateData1->field_38 == 0))
     {
@@ -74,7 +74,7 @@ u32 dragonMenuDragonInitSub2Sub1(s_dragonStateSubData1* pDragonStateData1, u32 r
     }
 }
 
-void dragonMenuDragonInitSub2(s_dragonStateSubData1* pDragonStateData1, u8* r5, u32 r6)
+void dragonMenuDragonInitSub2(s_3dModel* pDragonStateData1, u8* r5, u32 r6)
 {
     if (dragonMenuDragonInitSub2Sub1(pDragonStateData1, r6))
     {
@@ -86,7 +86,7 @@ void dragonMenuDragonInitSub2(s_dragonStateSubData1* pDragonStateData1, u8* r5, 
     }
 }
 
-void dragonMenuDragonInitSub3(s_dragonStateSubData2* pDragonStateData2)
+void dragonMenuDragonInitSub3(s3DModelAnimData* pDragonStateData2)
 {
     for (int i = 0; i < pDragonStateData2->countAnims; i++)
     {
@@ -191,44 +191,44 @@ s32 generateCameraMatrixSub3(s32 r4, s32 r5)
 }
 
 // this is atan2
-s32 generateCameraMatrixSub1Sub3(s32 r4, s32 r5)
+s32 atan2_FP(s32 y, s32 x)
 {
-    if (r5)
+    if (x)
     {
         u32 r1 = 0;
-        if (r4 < 0)
+        if (y < 0)
         {
-            r4 = -r4;
+            y = -y;
             r1 = 1;
         }
 
-        if (r5 < 0)
+        if (x < 0)
         {
-            r5 = -r5;
+            x = -x;
             r1 += 2;
         }
 
-        assert(r4 == 0);
-        assert(r5 == 0x10000);
+        assert(y == 0);
+        assert(x == 0x10000);
 
         return 0;
 
-        if (r4 > r5)
+        if (y > x)
         {
-            r5 ^= r4;
-            r4 ^= r5;
-            r5 ^= r4;
+            x ^= y;
+            y ^= x;
+            x ^= y;
             r1 += 1;
         }
 
-        r4 <<= 10;
-        r5 <<= 10;
+        y <<= 10;
+        x <<= 10;
         // TO BE CONTINUED
 
     }
-    if (r4)
+    if (y)
     {
-        if (r4 >= 0)
+        if (y >= 0)
         {
             return 0x400 << 16; //90
         }
@@ -254,14 +254,14 @@ void generateCameraMatrixSub1(sVec3_FP& r4, u32(&r5)[2])
 
         if (r4[1] >= 0)
         {
-            r5[0] = generateCameraMatrixSub1Sub3(r4[1], r0);
+            r5[0] = atan2_FP(r4[1], r0);
         }
         else
         {
-            r5[2] = generateCameraMatrixSub1Sub3(-r4[1], -r0);
+            r5[2] = atan2_FP(-r4[1], -r0);
         }
 
-        r5[1] = generateCameraMatrixSub1Sub3(-r4[0], -r4[2]);
+        r5[1] = atan2_FP(-r4[0], -r4[2]);
     }
 }
 
@@ -289,26 +289,17 @@ void transformVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6)
 void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sVec3_FP& r6, const sVec3_FP& r7)
 {
     u32 var_4[2];
-    sVec3_FP var_C;
-    sVec3_FP var_18;
     sVec3_FP var_24;
     sMatrix4x3 var_30;
 
-    var_18[0] = r6[0] - r13[0];
-    var_18[1] = r6[1] - r13[1];
-    var_18[2] = r6[2] - r13[2];
-
-    var_C[0] = r7[0] - r13[0];
-    var_C[1] = r7[1] - r13[1];
-    var_C[2] = r7[2] - r13[2];
+    sVec3_FP var_18 = r6 - r13;
+    sVec3_FP var_C = r7 - r13;
 
     r4->field_20[0] = r4->field_C[0];
     r4->field_20[1] = r4->field_C[1];
     r4->field_20[2] = r4->field_C[2];
 
-    r4->field_14[0] = r4->field_0[0];
-    r4->field_14[1] = r4->field_0[1];
-    r4->field_14[2] = r4->field_0[2];
+    r4->field_14 = r4->field_0;
 
     generateCameraMatrixSub1(var_18, var_4);
 
@@ -387,8 +378,8 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     dragonMenuDragonInitSub1(&pWorkArea->field_34);
 
     pWorkArea->field_30 = getVdp2VramU16(0x25002);
-    pWorkArea->field_28 = gDragonState->dragonStateSubData1.pCurrentAnimation;
-    pWorkArea->field_2C = gDragonState->dragonStateSubData1.field_16;
+    pWorkArea->field_28 = gDragonState->dragon3dModel.pCurrentAnimation;
+    pWorkArea->field_2C = gDragonState->dragon3dModel.field_16;
 
     pWorkArea->field_0 = loadDragonModel(pWorkArea, mainGameState.gameStats.dragonLevel);
 
@@ -399,9 +390,9 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     pWorkArea->field_20 = fixedPoint(0x638E38E);
     pWorkArea->field_24 = fixedPoint(0xF555555);
 
-    dragonMenuDragonInitSub2(&gDragonState->dragonStateSubData1, gDragonState->pDragonModel + READ_BE_U32(gDragonState->pDragonModel + gDragonState->dragonData2[0]), 0); // Todo: is the [0] correct?
+    dragonMenuDragonInitSub2(&gDragonState->dragon3dModel, gDragonState->pDragonModelRawData + READ_BE_U32(gDragonState->pDragonModelRawData + gDragonState->dragonData2[0]), 0); // Todo: is the [0] correct?
 
-    dragonMenuDragonInitSub3(&gDragonState->dragonStateSubData2);
+    dragonMenuDragonInitSub3(&gDragonState->animData);
 
     graphicEngineStatus.field_405C.localCoordinatesX = 0x78;
     graphicEngineStatus.field_405C.localCoordinatesY = 0x70;
@@ -430,26 +421,30 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
     unimplemented("dragonMenuDragonUpdate");
 }
 
-void dragonMenuDragonDrawSub1(s_dragonStateSubData1* r4, u32 r5, u32 r6, sVec3_FP* r7, sVec3_FP* arg8)
+void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 normalModelIndex, u32 shadowModelIndex, sVec3_FP* r7, sVec3_FP* arg8)
 {
-    sMatrix4x3 var_28;
+    sVec3_FP var_18;
+    sMatrix4x3 var_28; // 28 - 58
 
     initMatrixToIdentity(&var_28);
     translateMatrix(r7, &var_28);
     rotateMatrixYXZ(arg8, &var_28);
 
-    if (r6)
+    if (shadowModelIndex)
     {
-        unimplemented("parts of dragonMenuDragonDrawSub1");
+        unimplemented("Shader rendering in dragonMenuDragonDrawSub1");
+        /*
+        pushCurrentMatrix();
+        multiplyCurrentMatrix(&var_28);
+        r4->drawFunction(r4);
+        popMatrix();
+        */
     }
 
     pushCurrentMatrix();
     multiplyCurrentMatrix(&var_28);
-
-    r4->field_C = r5;
-
-    r4->drawFunction(r4);
-
+    p3dModel->modelIndexOffset = normalModelIndex;
+    p3dModel->drawFunction(p3dModel);
     popMatrix();
 }
 
@@ -462,7 +457,7 @@ void dragonMenuDragonDraw(p_workArea pTypelessWorkArea)
     rotationVector[0] = fixedPoint::fromS32(0);
     rotationVector[1] = fixedPoint::fromS32(0);
     rotationVector[2] = fixedPoint::fromS32(0);
-    dragonMenuDragonDrawSub1(&gDragonState->dragonStateSubData1, gDragonState->field_14, gDragonState->field_18, &pWorkArea->field_10, &rotationVector);
+    submitModelAndShadowModelToRendering(&gDragonState->dragon3dModel, gDragonState->field_14, gDragonState->field_18, &pWorkArea->field_10, &rotationVector);
 }
 
 void dragonMenuDragonDelete(p_workArea pTypelessWorkArea)

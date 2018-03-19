@@ -851,8 +851,8 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 
 void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDragonState, int param2)
 {
-    dragonFieldTaskInitSub3Sub1(&pDragonState->dragonStateSubData1, pDragonState->pDragonModel + READ_BE_U32(pDragonState->pDragonModel + pDragonState->dragonData2[param2]));
-    dragonFieldTaskInitSub3Sub2(&pDragonState->dragonStateSubData1);
+    dragonFieldTaskInitSub3Sub1(&pDragonState->dragon3dModel, pDragonState->pDragonModelRawData + READ_BE_U32(pDragonState->pDragonModelRawData + pDragonState->dragonData2[param2]));
+    dragonFieldTaskInitSub3Sub2(&pDragonState->dragon3dModel);
 
     pWorkArea->field_23A = param2;
     pWorkArea->field_237 = pWorkArea->field_238;
