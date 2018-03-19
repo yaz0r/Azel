@@ -34,6 +34,12 @@ public:
         return *this;
     }
 
+    fixedPoint operator -= (const fixedPoint& otherValue)
+    {
+        value -= otherValue.value;
+        return *this;
+    }
+
     s32 asS32()
     {
         return value;
@@ -57,6 +63,9 @@ public:
     }
 };
 
+s64 MUL_FP(fixedPoint& A, fixedPoint& B);
+
 s32 FP_GetIntegerPortion(fixedPoint& FP);
-fixedPoint FP_Div(fixedPoint divident, fixedPoint divisor);
+fixedPoint FP_Div(s32 divident, fixedPoint divisor);
+fixedPoint performDivision(fixedPoint r0, fixedPoint r1);
 

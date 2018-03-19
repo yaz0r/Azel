@@ -20,16 +20,18 @@ void transposeMatrix(float* pMatrix)
 struct s_objectToRender
 {
     u8* m_pObject;
+    u32 m_offset;
     sMatrix4x3 m_modelMatrix;
     s16 m_lightColor[3];
 };
 
 std::vector<s_objectToRender> objectRenderList;
 
-void addObjectToDrawList(u8* pObjectData)
+void addObjectToDrawList(u8* pObjectData, u32 offset)
 {
     s_objectToRender newObject;
     newObject.m_pObject = pObjectData;
+    newObject.m_offset = offset;
     newObject.m_modelMatrix = *pCurrentMatrix;
 
     objectRenderList.push_back(newObject);
@@ -330,7 +332,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
         */
     }
 
-    u8* objectHeader = pObject->m_pObject;
+    u8* objectHeader = pObject->m_pObject + pObject->m_offset;
 
     {
         u32 currentBlockId = 0;
@@ -357,7 +359,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                     u32 headerUnk = READ_BE_U32(objectHeader + 0); // bounding size?
                     u32 numUniqueVertices = READ_BE_U32(objectHeader + 4); // r13
                     u8* verticesOffset = pObject->m_pObject + READ_BE_U32(objectHeader + 8); // r12
-                    u8* startOfQuad = pObject->m_pObject + currentBlockOffset + 12;
+                    u8* startOfQuad = objectHeader + currentBlockOffset + 12;
                     u8* pointsEA = startOfQuad;
                     u32 instanceEA = 0;// pObject->m_instanceDataEA;
 

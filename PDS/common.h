@@ -228,19 +228,21 @@ struct s_dragonData2
 
 extern const s_dragonData2 dragonData2[DR_LEVEL_MAX];
 
+struct sAnimTrackStatus
+{
+    s32 field_0; //0
+    s32 delay; //4
+    s32 value; //8
+};
+
 struct sPoseData
 {
-    sVec3_FP m_0;
+    sVec3_FP m_translation; // 0
+    sVec3_FP m_rotation; // C
+    sVec3_FP m_scale; // 18
+    s32 field_24[3]; // 24
 
-    u32 m_C;
-    u32 m_10;
-    u32 m_14;
-
-    u32 m_18;
-    u32 m_1C;
-    u32 m_20;
-
-    sVec3_FP field_48[9];
+    sAnimTrackStatus field_48[9];
 };
 
 struct s_3dModel
@@ -258,7 +260,7 @@ struct s_3dModel
     u16 field_16; //16
 
     void(*drawFunction)(s_3dModel*); // 18
-    void (*addToDisplayListFunction)(u8*); // 1C
+    void (*addToDisplayListFunction)(u8*, u32); // 1C
     void(*positionUpdateFunction)(s_3dModel*); // 20
     void(*rotationUpdateFunction)(s_3dModel*); // 24
     void(*scaleUpdateFunction)(s_3dModel*); // 28
@@ -269,10 +271,10 @@ struct s_3dModel
     u8* field_34; //34
     u32 field_38; //38
 
-    sMatrix4x3* field_3C; //3C
+    sMatrix4x3* boneMatrices; //3C
 
     const s_RiderDefinitionSub* field_40; //40
-    sVec3_FP** field_44; //44
+    sVec3_FP** field_44; //44 one entry per bone, and each bone get an array of vertex (number of vertex per bones?)
     u32 field_48; //48
 
     u16 field_4C; //4C
@@ -342,7 +344,9 @@ struct s_graphicEngineStatus_40AC
 
 struct s_graphicEngineStatus_4514
 {
+    u16 field_6;
     u16 field_8; // gamepad input bitmask
+    u16 field_E;
 };
 
 struct s_graphicEngineStatus_405C

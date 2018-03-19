@@ -2,6 +2,10 @@
 
 struct s_lightSetup
 {
+    fixedPoint field_0;
+    fixedPoint field_4;
+    fixedPoint field_8;
+    fixedPoint field_C;
     u32 field_10;
     u32 field_14;
     u32 field_18;
@@ -20,6 +24,7 @@ struct s_dragonMenuDragonWorkArea : public s_workArea
 {
     s_loadDragonWorkArea* field_0;
     const sDragonData3* field_4;
+    u16 field_8;
     sVec3_FP field_10;
     fixedPoint field_1C;
     fixedPoint field_20;
@@ -416,9 +421,161 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     generateCameraMatrix(&cameraProperties2, defaultCameraVectors[0], defaultCameraVectors[1], defaultCameraVectors[2]);
 }
 
+struct sCurrentLightVector
+{
+    fixedPoint field_0;
+    fixedPoint field_4;
+    fixedPoint field_8;
+
+    u16 field_C;
+    u16 field_E;
+    u16 field_10;
+}currentLightVector_M;
+
+void setLightVector_M(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7)
+{
+    currentLightVector_M.field_0 = r4;
+    currentLightVector_M.field_4 = r5;
+    currentLightVector_M.field_8 = r6;
+
+    currentLightVector_M.field_10 = r7 & 0xFF;
+    currentLightVector_M.field_E = (r7 >> 8) & 0xFF;
+    currentLightVector_M.field_C = (r7 >> 16) & 0xFF;
+}
+
+void setupLight(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7)
+{
+    lightSetup.field_0 = r4;
+    lightSetup.field_4 = r5;
+    lightSetup.field_8 = r6;
+    lightSetup.field_C = r7;
+
+    setLightVector_M(-r4 >> 4, -r5 >> 4, -r6 >> 4, r7);
+
+    //addSlaveCommand(X, X, X, setLightVector_S);
+}
+
+void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
+{
+    u32 r9 = r5->numBones;
+    if (r9)
+    {
+        sMatrix4x3* r14 = r4->field_4;
+        if (r5->field_48)
+        {
+            assert(0);
+        }
+        else
+        {
+            sPoseData* r13 = r5->poseData;
+
+            do 
+            {
+                initMatrixToIdentity(r14);
+                translateMatrix(&r13->m_translation, r14);
+                rotateMatrixZYX(&r13->m_rotation, r14);
+                r13++;
+                r14++;
+            } while (--r9);
+        }
+    }
+}
+
+void updateAnimationMatricesSub2(s3DModelAnimData* r4)
+{
+    //updateAnimationMatricesSub2Sub1(r4->field_8)
+}
+
+void updateAnimationMatrices(s3DModelAnimData* r4, s_3dModel* r5)
+{
+    updateAnimationMatricesSub1(r4, r5);
+    updateAnimationMatricesSub2(r4);
+//    updateAnimationMatricesSub3(r4);
+}
+
 void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
 {
-    unimplemented("dragonMenuDragonUpdate");
+    s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
+
+    gDragonState->cursorX = mainGameState.gameStats.dragonCursorX;
+    gDragonState->cursorY = mainGameState.gameStats.dragonCursorY;
+    gDragonState->dragonArchetype = mainGameState.gameStats.dragonArchetype;
+
+    fixedPoint r0 = sqrt_F(FP_Pow2(performDivision(0x880, mainGameState.gameStats.dragonCursorX << 16)) + FP_Pow2(performDivision(0x880, mainGameState.gameStats.dragonCursorY << 16)));
+
+    fixedPoint r6;
+    s32 r10;
+    s32 r9;
+
+    if (r0)
+    {
+        assert(0);
+    }
+    else
+    {
+        setupLight(0, 0, 0x10000, 0x161918);
+    }
+
+    if (graphicEngineStatus.field_4514.field_6 & 0x800)
+    {
+        pWorkArea->field_20 += 0x16C16C;
+    }
+
+    if (graphicEngineStatus.field_4514.field_E & 0x800)
+    {
+        pWorkArea->field_20 -= 0x5B05B0;
+    }
+
+    if (graphicEngineStatus.field_4514.field_6 & 0x8000)
+    {
+        pWorkArea->field_20 += 0x16C16C;
+    }
+
+    if (graphicEngineStatus.field_4514.field_E & 0x8000)
+    {
+        pWorkArea->field_20 += 0x16C16C;
+    }
+
+    unimplemented("Complicated input stuff in dragonMenuDragonUpdate");
+    /*
+    if (graphicEngineStatus.field_4514.field_6C.field_6 & 0x8000)
+    {
+        assert(0);
+    }
+    else
+    {
+        assert(0)
+    }
+    */
+
+    if (readKeyboardToggle(0x10B))
+    {
+        assert(0);
+    }
+
+    if (readKeyboardToggle(0x10C))
+    {
+        assert(0);
+    }
+
+    if (readKeyboardToggle(0x107))
+    {
+        assert(0);
+    }
+
+    if (readKeyboardToggle(0x108))
+    {
+        assert(0);
+    }
+
+    if (pWorkArea->field_8 == 0)
+    {
+        unimplemented("pWorkArea->field_8 in dragonMenuDragonUpdate");
+    }
+
+    dragonFieldTaskInitSub3Sub2(&gDragonState->dragon3dModel);
+    updateAnimationMatrices(&gDragonState->animData, &gDragonState->dragon3dModel);
+    morphDragon(pWorkArea->field_0, &gDragonState->dragon3dModel, pWorkArea->field_0->MCBOffsetInDram, pWorkArea->field_4, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
 }
 
 void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 normalModelIndex, u32 shadowModelIndex, sVec3_FP* r7, sVec3_FP* arg8)

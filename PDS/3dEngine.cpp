@@ -293,44 +293,43 @@ void multiplyMatrix(sMatrix4x3* matrixA, sMatrix4x3* matrixB)
     for(int i=0; i<3; i++)
     {
         s64 mac = 0;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r4 += 3;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r4 += 3;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r5 -= 3;
         r4 -= 8;
-        s64 r0 = mac;
+        s64 r0 = mac >> 16;
 
         mac = 0;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r4 += 3;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r4 += 3;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r5 -= 3;
         r4 -= 8;
-        s64 r1 = mac;
+        s64 r1 = mac >> 16;
 
         mac = 0;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r4 += 3;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r4 += 3;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r5 -= 3;
         r4 -= 8;
-        s64 r2 = mac;
+        s64 r2 = mac >> 16;
 
         mac = 0;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r4 += 3;
-        mac += *(r4++) * *(r5++);
+        mac += MUL_FP(*(r4++), *(r5++));
         r4 += 3;
-        mac += *(r4++) * *(r5++);
-        r5 -= 3;
+        mac += MUL_FP(*(r4++), *(r5++));
         r4 -= 12;
-        s64 r3 = mac + *(r5++);
+        s64 r3 = (mac >> 16) + *(r5++);
 
         *(--r5) = r3;
         *(--r5) = r2;
@@ -352,4 +351,10 @@ void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
     rotateMatrixZ((*rotationVec)[2].getInteger(), pMatrix);
 }
 
+void rotateMatrixZYX(sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
+{
+    rotateMatrixZ((*rotationVec)[2].getInteger(), pMatrix);
+    rotateMatrixY((*rotationVec)[1].getInteger(), pMatrix);
+    rotateMatrixX((*rotationVec)[0].getInteger(), pMatrix);
+}
 

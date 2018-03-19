@@ -978,11 +978,6 @@ void createFieldOverlaySubTask2(s_workArea* pWorkArea)
     createSubTask(pWorkArea, &fieldOverlaySubTask2Definition, new s_dummyWorkArea);
 }
 
-s32 performDivision(s32 r0, s32 r1)
-{
-    return r1 / r0;
-}
-
 u8 fieldCameraTask1InitSub1(s_fieldCameraTask1WorkArea* pFieldCameraTask1)
 {
     u8 bDirty = 0;

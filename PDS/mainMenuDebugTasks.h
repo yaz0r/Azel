@@ -21,6 +21,7 @@ struct s_loadDragonWorkArea : public s_workArea
 };
 
 s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel);
+void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u32 unk0, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY);
 
 extern u32 vblankData[8];
 

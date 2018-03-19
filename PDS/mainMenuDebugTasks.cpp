@@ -643,42 +643,43 @@ void unimplementedDraw(s_3dModel* pDragonStateData1)
     assert(0);
 }
 
-s16 modelMode4_position0Sub1(sVec3_FP r4, u8* r5, u16 r6)
+s16 modelMode4_position0Sub1(sAnimTrackStatus&r4, u8* r5, u16 r6)
 {
     int r0 = 0;
 
-    if (r4[1] < 0)
+    if (r4.delay > 0)
     {
-        assert(0);
+        r4.delay -= 1;
+        return r4.value;
     }
 
-    if (r4[0])
+    if (r4.field_0)
     {
         //06022D5A
-        r0 = READ_BE_S16(r5 + r4[0] * 2);
+        r0 = READ_BE_S16(r5 + r4.field_0 * 2);
         int r3 = r0;
         r0 &= 0xF;
         r0 ^= r3;
         r0--;
-        r4[1] = r0;
+        r4.delay = r0;
         r0 = r3;
     }
     else
     {
         //06022D6E
-        r4[1] = 0;
+        r4.delay = 0;
         r0 = READ_BE_S16(r5) * 16;
     }
 
-    r4[2] = r0;
+    r4.value = r0;
 
-    if (r6 >= r4[0] + 1)
+    if (r6 >= r4.field_0 + 1)
     {
-        r4[0] = r4[0] + 1;
+        r4.field_0 = r4.field_0 + 1;
     }
     else
     {
-        r4[0] = 0;
+        r4.field_0 = 0;
     }
 
     return r0;
@@ -709,9 +710,9 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
     }
     else
     {
-        pPoseData->m_0[0] = READ_BE_U32(r4);
-        pPoseData->m_0[1] = READ_BE_U32(r4 + 4);
-        pPoseData->m_0[2] = READ_BE_U32(r4 + 8);
+        pPoseData->m_translation[0] = READ_BE_U32(r4);
+        pPoseData->m_translation[1] = READ_BE_U32(r4 + 4);
+        pPoseData->m_translation[2] = READ_BE_U32(r4 + 8);
 
         modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0));
         modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2));
@@ -732,9 +733,9 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
     r3--;
     if (r3 >= pDragonStateData1->field_10)
     {
-        pPoseData->field_48[3][0] = modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
-        pPoseData->field_48[3][1] = modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
-        pPoseData->field_48[3][2] = modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
+        pPoseData->field_24[0] = modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
+        pPoseData->field_24[1] = modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
+        pPoseData->field_24[2] = modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
     }
     
 }
@@ -765,7 +766,7 @@ void transformAndAddVecByCurrentMatrix(sVec3_FP* r4, sVec3_FP* r5)
     transformAndAddVec(*r4, *r5, *pCurrentMatrix);
 }
 
-void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, sMatrix4x3* modelMatrix, const s_RiderDefinitionSub* r6, sVec3_FP** r7)
+void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, sMatrix4x3*& modelMatrix, const s_RiderDefinitionSub*& r6, sVec3_FP**& r7)
 {
     do 
     {
@@ -774,7 +775,12 @@ void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, sMatrix4x3* mode
 
         if (u32 offset = READ_BE_U32(pModelData))
         {
-            addObjectToDrawList(pModelDataRoot + offset);
+            addObjectToDrawList(pModelDataRoot, offset);
+        }
+
+        if (r6->m_count == 0)
+        {
+            assert((*r7) == NULL);
         }
 
         for (u32 i = 0; i < r6->m_count; i++)
@@ -816,7 +822,7 @@ void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, sMatrix4x3* mode
     } while (1);
 }
 
-void modeDrawFunction1Sub2(u8* pModelDataRoot, u8* pModelData, sMatrix4x3* r5, const s_RiderDefinitionSub* r6, sVec3_FP** r7)
+void modeDrawFunction1Sub2(u8* pModelDataRoot, u8* pModelData, sMatrix4x3* r5, const s_RiderDefinitionSub*& r6, sVec3_FP**& r7)
 {
     assert(0);
 }
@@ -829,7 +835,7 @@ void(*modelDrawFunction0)(s_3dModel*) = unimplementedDraw;
 void modelDrawFunction1(s_3dModel* pDragonStateData1)
 {
     sVec3_FP** var_0 = pDragonStateData1->field_44;
-    sMatrix4x3* var_8 = pDragonStateData1->field_3C;
+    sMatrix4x3* var_8 = pDragonStateData1->boneMatrices;
     const s_RiderDefinitionSub* var_4 = pDragonStateData1->field_40;
 
     if (pDragonStateData1->field_8 & 1)
@@ -854,32 +860,26 @@ void (*modelDrawFunction10)(s_3dModel*) = unimplementedDraw;
 
 void copyPosePosition(s_3dModel* pDragonStateData1)
 {
-    sPoseData* pOutputPose = pDragonStateData1->poseData;
     u8* r5 = pDragonStateData1->field_34;
 
     for (u32 i = 0; i < pDragonStateData1->numBones; i++)
     {
-        pOutputPose->m_0[0] = READ_BE_U32(r5 + 0);
-        pOutputPose->m_0[1] = READ_BE_U32(r5 + 4);
-        pOutputPose->m_0[2] = READ_BE_U32(r5 + 8);
-
-        pOutputPose++;
+        pDragonStateData1->poseData[i].m_translation[0] = READ_BE_U32(r5 + 0);
+        pDragonStateData1->poseData[i].m_translation[1] = READ_BE_U32(r5 + 4);
+        pDragonStateData1->poseData[i].m_translation[2] = READ_BE_U32(r5 + 8);
         r5 += 0x24;
     }
 }
 
 void copyPoseRotation(s_3dModel* pDragonStateData1)
 {
-    sPoseData* pOutputPose = pDragonStateData1->poseData;
     u8* r5 = pDragonStateData1->field_34;
 
     for (u32 i = 0; i < pDragonStateData1->numBones; i++)
     {
-        pOutputPose->m_C = READ_BE_U32(r5 + 0xC);
-        pOutputPose->m_10 = READ_BE_U32(r5 + 0x10);
-        pOutputPose->m_14 = READ_BE_U32(r5 + 0x14);
-
-        pOutputPose++;
+        pDragonStateData1->poseData[i].m_rotation[0] = READ_BE_U32(r5 + 0xC);
+        pDragonStateData1->poseData[i].m_rotation[1] = READ_BE_U32(r5 + 0x10);
+        pDragonStateData1->poseData[i].m_rotation[2] = READ_BE_U32(r5 + 0x14);
         r5 += 0x24;
     }
 }
@@ -890,9 +890,9 @@ void resetPoseScale(s_3dModel* pDragonStateData1)
 
     for (u32 i = 0; i < pDragonStateData1->numBones; i++)
     {
-        pOutputPose->m_18 = 0x10000;
-        pOutputPose->m_1C = 0x10000;
-        pOutputPose->m_20 = 0x10000;
+        pOutputPose->m_scale[0] = 0x10000;
+        pOutputPose->m_scale[1] = 0x10000;
+        pOutputPose->m_scale[2] = 0x10000;
 
         pOutputPose++;
     }
@@ -920,9 +920,9 @@ u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, u8* pModelData)
         {
             for (u32 j = 0; j < 9; j++)
             {
-                p3dModel->poseData[i].field_48[j][0] = 0;
-                p3dModel->poseData[i].field_48[j][1] = 0;
-                p3dModel->poseData[i].field_48[j][2] = 0;
+                p3dModel->poseData[i].field_48[j].field_0 = 0;
+                p3dModel->poseData[i].field_48[j].delay = 0;
+                p3dModel->poseData[i].field_48[j].value = 0;
             }
         }
         break;
@@ -967,9 +967,9 @@ u32 dragonFieldTaskInitSub3Sub1Sub1(s_3dModel* pDragonStateData1, u8* pModelData
 
     if ((flags & 8) || (pDragonStateData1->field_A & 0x100))
     {
-        pDragonStateData1->poseData->m_0[0] = READ_BE_U32(pDragonStateData1->field_34 + 0);
-        pDragonStateData1->poseData->m_0[1] = READ_BE_U32(pDragonStateData1->field_34 + 4);
-        pDragonStateData1->poseData->m_0[2] = READ_BE_U32(pDragonStateData1->field_34 + 8);
+        pDragonStateData1->poseData->m_translation[0] = READ_BE_U32(pDragonStateData1->field_34 + 0);
+        pDragonStateData1->poseData->m_translation[1] = READ_BE_U32(pDragonStateData1->field_34 + 4);
+        pDragonStateData1->poseData->m_translation[2] = READ_BE_U32(pDragonStateData1->field_34 + 8);
     }
 
     if (flags & 0x10)
@@ -1090,9 +1090,9 @@ u32 dragonFieldTaskInitSub3Sub1(s_3dModel* pDragonStateData1, u8* r5)
             {
                 for (int j = 0; j < 9; j++)
                 {
-                    pDragonStateData1->poseData[i].field_48[j][0] = 0;
-                    pDragonStateData1->poseData[i].field_48[j][1] = 0;
-                    pDragonStateData1->poseData[i].field_48[j][2] = 0;
+                    pDragonStateData1->poseData[i].field_48[j].field_0 = 0;
+                    pDragonStateData1->poseData[i].field_48[j].delay = 0;
+                    pDragonStateData1->poseData[i].field_48[j].value = 0;
                 }
             }
 
@@ -1179,7 +1179,6 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     pDragonStateData1->field_40 = unkArg;
 
     pDragonStateData1->field_44 = static_cast<sVec3_FP**>(allocateHeapForTask(pDragonStateData1->pOwnerTask, pDragonStateData1->numBones * sizeof(sVec3_FP*)));
-
     if (pDragonStateData1->field_44 == NULL)
         return false;
 
@@ -1231,14 +1230,14 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32
 
     if (pDragonStateData1->field_A & 0x200)
     {
-        pDragonStateData1->field_3C = static_cast<sMatrix4x3*>(allocateHeapForTask(pWorkArea, pDragonStateData1->numBones * sizeof(sMatrix4x3)));
-        assert(pDragonStateData1->field_3C);
+        pDragonStateData1->boneMatrices = static_cast<sMatrix4x3*>(allocateHeapForTask(pWorkArea, pDragonStateData1->numBones * sizeof(sMatrix4x3)));
+        assert(pDragonStateData1->boneMatrices);
 
         pDragonStateData1->field_8 |= 2;
     }
     else
     {
-        pDragonStateData1->field_3C = 0;
+        pDragonStateData1->boneMatrices = 0;
         pDragonStateData1->field_8 &= 0xFFFD;
     }
 
@@ -1469,7 +1468,7 @@ void init3DModelAnims(s_dragonState* pDragonState, s_3dModel* pDragonStateData1,
 
     pDragonStateData2->countAnims = countNumAnimData(pDragonStateData2, dragonAnims);
 
-    pDragonStateData2->field_4 = pDragonStateData1->field_3C;
+    pDragonStateData2->field_4 = pDragonStateData1->boneMatrices;
 
     pDragonStateData2->field_8 = static_cast<s_dragonStateSubData2SubData*>(allocateHeapForTask(pDragonState, pDragonStateData2->countAnims * sizeof(s_dragonStateSubData2SubData)));
 
