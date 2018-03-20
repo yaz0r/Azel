@@ -7,6 +7,13 @@ struct sVec3_FP
 {
     fixedPoint m_value[3];
 
+    void zero()
+    {
+        m_value[0] = 0;
+        m_value[1] = 0;
+        m_value[2] = 0;
+    }
+
     fixedPoint operator[](int i) const
     {
         return m_value[i];
@@ -241,7 +248,7 @@ struct sPoseData
     sVec3_FP m_rotation; // C
     sVec3_FP m_scale; // 18
     s32 field_24[3]; // 24
-
+    sVec3_FP field_30;
     sAnimTrackStatus field_48[9];
 };
 
@@ -268,31 +275,35 @@ struct s_3dModel
 
     u8* pCurrentAnimation; //30
 
-    u8* field_34; //34
+    u8* defaultPose; //34
     u32 field_38; //38
 
     sMatrix4x3* boneMatrices; //3C
 
     const s_RiderDefinitionSub* field_40; //40
-    sVec3_FP** field_44; //44 one entry per bone, and each bone get an array of vertex (number of vertex per bones?)
+    sVec3_FP** field_44; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
     u32 field_48; //48
 
     u16 field_4C; //4C
     u16 field_4E; //4E
 };
 
-struct s_dragonStateSubData2SubData
+struct s_runtimeAnimData
 {
-    sMatrix4x3 matrix; // 0
-    sMatrix4x3 matrix2; // 30
+    sVec3_FP m_vec_0; // 0 Sometimes used as a matrix
+    sVec3_FP m_vec_C; // C
+    sVec3_FP m_vec_18; // 18
+    sVec3_FP m_vec_24; // 24
+
+    sMatrix4x3 m_matrix; // 30
     const struct sDragonAnimDataSub* dataSource; // 60
 };
 
 struct s3DModelAnimData
 {
-    const struct sDragonAnimData* field_0; // 0
-    sMatrix4x3* field_4; // 4;
-    s_dragonStateSubData2SubData* field_8; // 8
+    const struct sDragonAnimData* animData; // 0
+    sMatrix4x3* boneMatrices; // 4;
+    s_runtimeAnimData* runtimeAnimData; // 8 one per countAnims
     u8 countAnims; // C
     u8 count0; // D
     u8 count1; // E

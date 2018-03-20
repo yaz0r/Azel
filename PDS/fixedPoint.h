@@ -63,6 +63,7 @@ public:
     }
 };
 
+fixedPoint MTH_Mul(fixedPoint a, fixedPoint b);
 s64 MUL_FP(fixedPoint& A, fixedPoint& B);
 
 s32 FP_GetIntegerPortion(fixedPoint& FP);

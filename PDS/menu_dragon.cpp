@@ -6,17 +6,17 @@ struct s_dragonMenuSubTask1WorkArea : public s_workArea
 
 void dragonMenuSubTask1Init(p_workArea pTypelessWorkArea)
 {
-    unimplemented("dragonMenuTaskUpdate");
+    unimplemented("dragonMenuSubTask1Init");
 }
 
 void dragonMenuSubTask1Draw(p_workArea pTypelessWorkArea)
 {
-    unimplemented("dragonMenuTaskUpdate");
+    unimplemented("dragonMenuSubTask1Draw");
 }
 
 void dragonMenuSubTask1Delete(p_workArea pTypelessWorkArea)
 {
-    unimplemented("dragonMenuTaskDelete");
+    unimplemented("dragonMenuSubTask1Delete");
 }
 
 s_taskDefinition dragonMenuSubTask1Definition = { dragonMenuSubTask1Init, NULL, dragonMenuSubTask1Draw, dragonMenuSubTask1Delete, "dragonMenuSubTask1" };

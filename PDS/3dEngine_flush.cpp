@@ -131,8 +131,9 @@ const GLchar azel_ps[] =
 "   //distanceValue = clamp(distanceValue, 0, 1); \n"
 "	vec4 fallout = texture2D(s_falloff, vec2(distanceValue,0)); \n"
 "	vec4 txcol = texture2D(s_texture, v_texcoord);		\n"
-"   if(txcol.a <= 0) discard;\n"
+"   /*if(txcol.a <= 0) discard;*/\n"
 "   fragColor = (clamp(txcol, 0, 1) * s_textureInfluence) + v_color;									\n"
+"   fragColor = vec4(1,1,1,1);"
 "   fragColor.w = 1;								\n"
 "}														\n"
 ;
@@ -667,7 +668,9 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
 
                                     char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
                                     checkGL();
+                                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                                     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
+                                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                                     //glDrawArrays(GL_TRIANGLES, 0, 6);
                                     checkGL();
                                     glDisableVertexAttribArray(vertexp);

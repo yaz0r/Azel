@@ -30,3 +30,8 @@ s64 MUL_FP(fixedPoint& A, fixedPoint& B)
 {
     return (s64)A.asS32() * (s64)B.asS32();
 }
+
+fixedPoint MTH_Mul(fixedPoint a, fixedPoint b)
+{
+    return fixedPoint(((s64)a.asS32() * (s64)b.asS32()) >> 16);
+}

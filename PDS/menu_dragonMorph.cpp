@@ -95,7 +95,10 @@ void dragonMenuDragonInitSub3(s3DModelAnimData* pDragonStateData2)
 {
     for (int i = 0; i < pDragonStateData2->countAnims; i++)
     {
-        memset(&pDragonStateData2->field_8[i].matrix, 0, sizeof(sMatrix4x3));
+        pDragonStateData2->runtimeAnimData[i].m_vec_0.zero();
+        pDragonStateData2->runtimeAnimData[i].m_vec_C.zero();
+        pDragonStateData2->runtimeAnimData[i].m_vec_18.zero();
+        pDragonStateData2->runtimeAnimData[i].m_vec_24.zero();
     }
 }
 
@@ -460,7 +463,7 @@ void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
     u32 r9 = r5->numBones;
     if (r9)
     {
-        sMatrix4x3* r14 = r4->field_4;
+        sMatrix4x3* r14 = r4->boneMatrices;
         if (r5->field_48)
         {
             assert(0);
@@ -481,9 +484,108 @@ void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
     }
 }
 
+void updateAnimationMatricesSub2Sub1(s_runtimeAnimData* r4, sVec3_FP& r5, sVec3_FP& r6)
+{
+    r4->m_vec_0.m_value[0] = MTH_Mul(r4->m_matrix.matrix[0], r5.m_value[0] - r6.m_value[0]) - MTH_Mul(0x10000 - r4->m_matrix.matrix[3], r4->m_vec_C.m_value[0]);
+    r4->m_vec_0.m_value[1] = MTH_Mul(r4->m_matrix.matrix[1], r5.m_value[1] - r6.m_value[1]) - MTH_Mul(0x10000 - r4->m_matrix.matrix[7], r4->m_vec_C.m_value[1]);
+    r4->m_vec_0.m_value[2] = MTH_Mul(r4->m_matrix.matrix[2], r5.m_value[2] - r6.m_value[2]) - MTH_Mul(0x10000 - r4->m_matrix.matrix[11], r4->m_vec_C.m_value[2]);
+}
+
+void updateAnimationMatricesSub2Sub2(s_runtimeAnimData* r4)
+{
+    r4->m_vec_C += r4->m_vec_0;
+}
+
+void updateAnimationMatricesSub2Sub3(s_runtimeAnimData* r4)
+{
+    r4->m_vec_18 += r4->m_vec_C;
+
+    if (r4->m_vec_18.m_value[0].asS32() & 0x8000000)
+    {
+        r4->m_vec_18.m_value[0] = r4->m_vec_18.m_value[0].asS32() | 0xF0000000;
+    }
+    else
+    {
+        r4->m_vec_18.m_value[0] = r4->m_vec_18.m_value[0].asS32() & 0xFFFFFFF;
+    }
+
+    if (r4->m_vec_18.m_value[1].asS32() & 0x8000000)
+    {
+        r4->m_vec_18.m_value[1] = r4->m_vec_18.m_value[1].asS32() | 0xF0000000;
+    }
+    else
+    {
+        r4->m_vec_18.m_value[1] = r4->m_vec_18.m_value[1].asS32() & 0xFFFFFFF;
+    }
+
+    if (r4->m_vec_18.m_value[2].asS32() & 0x8000000)
+    {
+        r4->m_vec_18.m_value[2] = r4->m_vec_18.m_value[2].asS32() | 0xF0000000;
+    }
+    else
+    {
+        r4->m_vec_18.m_value[2] = r4->m_vec_18.m_value[2].asS32() & 0xFFFFFFF;
+    }
+
+    if (r4->m_vec_18.m_value[0] > r4->m_matrix.matrix[6])
+    {
+        r4->m_vec_18.m_value[0] = r4->m_matrix.matrix[6];
+        r4->m_vec_C[0] = 0;
+    }
+    else
+    {
+        if (r4->m_vec_18.m_value[0] < r4->m_matrix.matrix[9])
+        {
+            r4->m_vec_18.m_value[0] = r4->m_matrix.matrix[9];
+            r4->m_vec_C[0] = 0;
+        }
+    }
+
+    if (r4->m_vec_18.m_value[1] > r4->m_matrix.matrix[7])
+    {
+        r4->m_vec_18.m_value[1] = r4->m_matrix.matrix[7];
+        r4->m_vec_C[1] = 0;
+    }
+    else
+    {
+        if (r4->m_vec_18.m_value[1] < r4->m_matrix.matrix[10])
+        {
+            r4->m_vec_18.m_value[1] = r4->m_matrix.matrix[10];
+            r4->m_vec_C[1] = 0;
+        }
+    }
+
+    if (r4->m_vec_18.m_value[2] > r4->m_matrix.matrix[8])
+    {
+        r4->m_vec_18.m_value[2] = r4->m_matrix.matrix[8];
+        r4->m_vec_C[2] = 0;
+    }
+    else
+    {
+        if (r4->m_vec_18.m_value[2] < r4->m_matrix.matrix[11])
+        {
+            r4->m_vec_18.m_value[2] = r4->m_matrix.matrix[11];
+            r4->m_vec_C[2] = 0;
+        }
+    }
+}
+
+sVec3_FP updateAnimationMatricesSub2Vec = { 0,0,0 };
+
 void updateAnimationMatricesSub2(s3DModelAnimData* r4)
 {
-    //updateAnimationMatricesSub2Sub1(r4->field_8)
+    s_runtimeAnimData* r14 = r4->runtimeAnimData;
+
+    updateAnimationMatricesSub2Sub1(r14, r14->m_vec_18, updateAnimationMatricesSub2Vec);
+
+    r14->m_vec_0 += r14->m_vec_24;
+
+    updateAnimationMatricesSub2Sub2(r14);
+    updateAnimationMatricesSub2Sub3(r14);
+
+    r14->m_vec_24[0] = 0;
+    r14->m_vec_24[1] = 0;
+    r14->m_vec_24[2] = 0;
 }
 
 void updateAnimationMatrices(s3DModelAnimData* r4, s_3dModel* r5)
@@ -589,7 +691,7 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 normalModelIn
 
     if (shadowModelIndex)
     {
-        unimplemented("Shader rendering in dragonMenuDragonDrawSub1");
+        unimplemented("Shadow rendering in dragonMenuDragonDrawSub1");
         /*
         pushCurrentMatrix();
         multiplyCurrentMatrix(&var_28);
