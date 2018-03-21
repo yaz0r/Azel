@@ -185,10 +185,12 @@ void rotateMatrixX(s32 rotX, sMatrix4x3* pMatrix)
     for (int i = 0; i < 3; i++)
     {
         tempMatrix.matrix[i * 4 + 0] = (pMatrix->matrix[i * 4 + 0]);
-        tempMatrix.matrix[i * 4 + 1] = (pMatrix->matrix[i * 4 + 0] * cos + pMatrix->matrix[i * 4 + 1] * sin) >> 16;
-        tempMatrix.matrix[i * 4 + 2] = (-pMatrix->matrix[i * 4 + 0] * sin + pMatrix->matrix[i * 4 + 2] * cos) >> 16;
+        tempMatrix.matrix[i * 4 + 1] = ((s64)pMatrix->matrix[i * 4 + 1] * cos + (s64)pMatrix->matrix[i * 4 + 2] * sin) >> 16;
+        tempMatrix.matrix[i * 4 + 2] = ((s64)-pMatrix->matrix[i * 4 + 1] * sin + (s64)pMatrix->matrix[i * 4 + 2] * cos) >> 16;
         tempMatrix.matrix[i * 4 + 3] = (pMatrix->matrix[i * 4 + 3]);
     }
+
+    *pMatrix = tempMatrix;
 }
 
 void rotateCurrentMatrixX(s32 rotX)
@@ -205,11 +207,13 @@ void rotateMatrixY(s32 rotY, sMatrix4x3* pMatrix)
     sMatrix4x3 tempMatrix;
     for (int i = 0; i < 3; i++)
     {
-        tempMatrix.matrix[i * 4 + 0] = (pMatrix->matrix[i * 4 + 0] * cos - pMatrix->matrix[i * 4 + 2] * sin) >> 16;
+        tempMatrix.matrix[i * 4 + 0] = ((s64)pMatrix->matrix[i * 4 + 0] * cos - (s64)pMatrix->matrix[i * 4 + 2] * sin) >> 16;
         tempMatrix.matrix[i * 4 + 1] = (pMatrix->matrix[i * 4 + 1]);
-        tempMatrix.matrix[i * 4 + 2] = (pMatrix->matrix[i * 4 + 0] * sin + pMatrix->matrix[i * 4 + 2] * cos) >> 16;
+        tempMatrix.matrix[i * 4 + 2] = ((s64)pMatrix->matrix[i * 4 + 0] * sin + (s64)pMatrix->matrix[i * 4 + 2] * cos) >> 16;
         tempMatrix.matrix[i * 4 + 3] = (pMatrix->matrix[i * 4 + 3]);
     }
+
+    *pMatrix = tempMatrix;
 }
 
 void rotateCurrentMatrixY(s32 rotY)
@@ -226,11 +230,13 @@ void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix)
     sMatrix4x3 tempMatrix;
     for(int i=0; i<3; i++)
     {
-        tempMatrix.matrix[i * 4 + 0] = ( pMatrix->matrix[i * 4 + 0] * cos + pMatrix->matrix[i * 4 + 1] * sin) >> 16;
-        tempMatrix.matrix[i * 4 + 1] = (-pMatrix->matrix[i * 4 + 0] * cos + pMatrix->matrix[i * 4 + 1] * sin) >> 16;
+        tempMatrix.matrix[i * 4 + 0] = ((s64)pMatrix->matrix[i * 4 + 0] * cos + (s64)pMatrix->matrix[i * 4 + 1] * sin) >> 16;
+        tempMatrix.matrix[i * 4 + 1] = ((s64)-pMatrix->matrix[i * 4 + 0] * sin + (s64)pMatrix->matrix[i * 4 + 1] * cos) >> 16;
         tempMatrix.matrix[i * 4 + 2] = ( pMatrix->matrix[i * 4 + 2]);
         tempMatrix.matrix[i * 4 + 3] = ( pMatrix->matrix[i * 4 + 3]);
     }
+
+    *pMatrix = tempMatrix;
 }
 
 void rotateCurrentMatrixZ(s32 rotZ)

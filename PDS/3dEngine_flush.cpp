@@ -285,7 +285,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
 {
     checkGL();
 
-    float quantisation = (float)0x1000;
+    float quantisation = (float)0x10000;
     float objectMatrix[4 * 4];
     {
 
@@ -849,5 +849,5 @@ void flushObjectsToDrawList()
     checkGL();
     glUseProgram(0);
 
-    objectRenderList.empty();
+    objectRenderList.clear();
 }

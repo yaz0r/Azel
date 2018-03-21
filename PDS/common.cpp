@@ -693,12 +693,12 @@ extern s32 CosSinTable[4096];
 
 fixedPoint getCos(u32 value)
 {
-    return fixedPoint(CosSinTable[value]);
+    return fixedPoint(CosSinTable[value + 1024]);
 }
 
 fixedPoint getSin(u32 value)
 {
-    return fixedPoint(CosSinTable[value + 1024]);
+    return fixedPoint(CosSinTable[value]);
 }
 
 s32 readSaturnS32(sSaturnPtr& ptr)

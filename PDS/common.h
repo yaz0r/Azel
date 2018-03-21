@@ -237,7 +237,7 @@ extern const s_dragonData2 dragonData2[DR_LEVEL_MAX];
 
 struct sAnimTrackStatus
 {
-    s32 field_0; //0
+    s32 currentStep; //0
     s32 delay; //4
     s32 value; //8
 };
@@ -247,8 +247,8 @@ struct sPoseData
     sVec3_FP m_translation; // 0
     sVec3_FP m_rotation; // C
     sVec3_FP m_scale; // 18
-    s32 field_24[3]; // 24
-    sVec3_FP field_30;
+    sVec3_FP halfTranslation; // 24
+    sVec3_FP halfRotation; // 30
     sAnimTrackStatus field_48[9];
 };
 
@@ -261,7 +261,7 @@ struct s_3dModel
     u16 field_A; //A
     u16 modelIndexOffset; //C
 
-    u16 field_10; //10
+    u16 currentAnimationFrame; //10
     u16 numBones; //12
     u16 field_14; //14
     u16 field_16; //16
