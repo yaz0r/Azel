@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PDS", "PDS\PDS.vcxproj", "{BC44D584-B13C-4C22-95A4-C75BBA733862}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2", "PDS\SDL2\VisualC\SDL\SDL.vcxproj", "{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{AF19136A-BE8C-482A-AD97-41A548BE7A1B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PDS_Tool", "PDS\PDS_Tool\PDS_Tool.vcxproj", "{AACC6B2E-C78D-4824-AB75-85C313EBE729}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +45,14 @@ Global
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|x64.Build.0 = Release|x64
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|x86.ActiveCfg = Release|Win32
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|x86.Build.0 = Release|Win32
+		{AACC6B2E-C78D-4824-AB75-85C313EBE729}.Debug|x64.ActiveCfg = Debug|x64
+		{AACC6B2E-C78D-4824-AB75-85C313EBE729}.Debug|x64.Build.0 = Debug|x64
+		{AACC6B2E-C78D-4824-AB75-85C313EBE729}.Debug|x86.ActiveCfg = Debug|Win32
+		{AACC6B2E-C78D-4824-AB75-85C313EBE729}.Debug|x86.Build.0 = Debug|Win32
+		{AACC6B2E-C78D-4824-AB75-85C313EBE729}.Release|x64.ActiveCfg = Release|x64
+		{AACC6B2E-C78D-4824-AB75-85C313EBE729}.Release|x64.Build.0 = Release|x64
+		{AACC6B2E-C78D-4824-AB75-85C313EBE729}.Release|x86.ActiveCfg = Release|Win32
+		{AACC6B2E-C78D-4824-AB75-85C313EBE729}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,5 +60,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A} = {AF19136A-BE8C-482A-AD97-41A548BE7A1B}
 		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68} = {AF19136A-BE8C-482A-AD97-41A548BE7A1B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8E1EF02C-AA1C-456E-9AF9-81A5C15E66FE}
 	EndGlobalSection
 EndGlobal

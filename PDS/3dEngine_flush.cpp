@@ -34,6 +34,8 @@ void addObjectToDrawList(u8* pObjectData, u32 offset)
     newObject.m_offset = offset;
     newObject.m_modelMatrix = *pCurrentMatrix;
 
+    newObject.m_modelMatrix.matrix[11] += 0xD000;
+
     objectRenderList.push_back(newObject);
 }
 
@@ -299,6 +301,8 @@ void drawObject_SingleDrawCall(s_objectToRender* pObject, float* projectionMatri
         }
         objectMatrix[15] = 1.f;
 
+        objectMatrix[9] += 5000;
+
         transposeMatrix(objectMatrix);
 
         //glMatrixMode(GL_MODELVIEW);
@@ -307,25 +311,6 @@ void drawObject_SingleDrawCall(s_objectToRender* pObject, float* projectionMatri
 
     float objectProjMatrix[4 * 4];
     multiplyMatrices(objectMatrix, projectionMatrix, objectProjMatrix);
-
-    {
-        checkGL();
-        GLuint modelProjection = glGetUniformLocation(shaderProgram, (const GLchar *)"u_mvpMatrix");
-        checkGL();
-        if (modelProjection != -1)
-        {
-            glUniformMatrix4fv(modelProjection, 1, GL_FALSE, projectionMatrix);
-        }
-        checkGL();
-
-        GLuint modelMatrixId = glGetUniformLocation(shaderProgram, (const GLchar *)"u_modelMatrix");
-        checkGL();
-        if (modelMatrixId != -1)
-        {
-            glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, objectMatrix);
-        }
-        checkGL();
-    }
 
     s32 lightVectorModelSpace[3] = { 0,0,0 };
     {
@@ -604,6 +589,25 @@ void drawObject_SingleDrawCall(s_objectToRender* pObject, float* projectionMatri
 
     {
         checkGL();
+        GLuint modelProjection = glGetUniformLocation(shaderProgram, (const GLchar *)"u_mvpMatrix");
+        checkGL();
+        if (modelProjection != -1)
+        {
+            glUniformMatrix4fv(modelProjection, 1, GL_FALSE, projectionMatrix);
+        }
+        checkGL();
+
+        GLuint modelMatrixId = glGetUniformLocation(shaderProgram, (const GLchar *)"u_modelMatrix");
+        checkGL();
+        if (modelMatrixId != -1)
+        {
+            glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, objectMatrix);
+        }
+        checkGL();
+    }
+
+    {
+        checkGL();
 
         GLuint vertexp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_position");
         GLuint texcoordp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_texcoord");
@@ -698,8 +702,8 @@ void drawObject_SingleDrawCall(s_objectToRender* pObject, float* projectionMatri
 
 void drawObject(s_objectToRender* pObject, float* projectionMatrix)
 {
-    //drawObject_SingleDrawCall(pObject, projectionMatrix);
-    //return;
+    //return drawObject_SingleDrawCall(pObject, projectionMatrix);
+
     checkGL();
 
     float quantisation = (float)0x10000;
@@ -1252,6 +1256,29 @@ void flushObjectsToDrawList()
     fEarlyProjectionMatrix[15] = 0;
 
     transposeMatrix(fEarlyProjectionMatrix);
+
+    ImGui::Begin("Objects");
+    for(int i=0; i<objectRenderList.size(); i++)
+    {
+        char buffer[256];
+        sprintf(buffer, "Object %i", i);
+        ImGui::PushID(buffer);
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                float vertex[4];
+                vertex[0] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 0] / (float)0x10000;
+                vertex[1] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 1] / (float)0x10000;
+                vertex[2] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 2] / (float)0x10000;
+                vertex[3] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 3] / (float)0x10000;
+
+                sprintf(buffer, "M%d", j);
+                ImGui::InputFloat4(buffer, vertex);
+            }
+        }
+        ImGui::PopID();
+    }
+    ImGui::End();
 
     checkGL();
 

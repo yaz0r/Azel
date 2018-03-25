@@ -681,7 +681,7 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
 {
     sPoseData* pPoseData = pDragonStateData1->poseData;
     u8* r13 = pDragonStateData1->pCurrentAnimation + READ_BE_U32(pDragonStateData1->pCurrentAnimation + 8);
-    u8* r4 = pDragonStateData1->defaultPose;
+    u8* r4 = pDragonStateData1->pDefaultPose;
 
     if (pDragonStateData1->currentAnimationFrame & 1)
     {
@@ -878,6 +878,12 @@ void modelMode4_rotation(s_3dModel* p3dModel)
         u8* r13 = p3dModel->pCurrentAnimation + READ_BE_U32(p3dModel->pCurrentAnimation + 8);
         for (int i = 0; i < p3dModel->numBones; i++)
         {
+            // HACKKKKK!
+            unimplemented("HACK in anim reset for rotation");
+            pPoseData[i].field_48[3].currentStep = 0;
+            pPoseData[i].field_48[4].currentStep = 0;
+            pPoseData[i].field_48[5].currentStep = 0;
+            // HACKKKKK
             pPoseData[i].m_rotation.m_value[0] = modelMode4_position0Sub1(pPoseData[i].field_48[3], p3dModel->pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 12;
             pPoseData[i].m_rotation.m_value[1] = modelMode4_position0Sub1(pPoseData[i].field_48[4], p3dModel->pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 12;
             pPoseData[i].m_rotation.m_value[2] = modelMode4_position0Sub1(pPoseData[i].field_48[5], p3dModel->pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 12;
@@ -928,7 +934,7 @@ void (*modelDrawFunction10)(s_3dModel*) = unimplementedDraw;
 
 void copyPosePosition(s_3dModel* pDragonStateData1)
 {
-    u8* r5 = pDragonStateData1->defaultPose;
+    u8* r5 = pDragonStateData1->pDefaultPose;
 
     for (u32 i = 0; i < pDragonStateData1->numBones; i++)
     {
@@ -941,7 +947,7 @@ void copyPosePosition(s_3dModel* pDragonStateData1)
 
 void copyPoseRotation(s_3dModel* pDragonStateData1)
 {
-    u8* r5 = pDragonStateData1->defaultPose;
+    u8* r5 = pDragonStateData1->pDefaultPose;
 
     for (u32 i = 0; i < pDragonStateData1->numBones; i++)
     {
@@ -1035,9 +1041,9 @@ u32 dragonFieldTaskInitSub3Sub1Sub1(s_3dModel* pDragonStateData1, u8* pModelData
 
     if ((flags & 8) || (pDragonStateData1->field_A & 0x100))
     {
-        pDragonStateData1->poseData->m_translation[0] = READ_BE_U32(pDragonStateData1->defaultPose + 0);
-        pDragonStateData1->poseData->m_translation[1] = READ_BE_U32(pDragonStateData1->defaultPose + 4);
-        pDragonStateData1->poseData->m_translation[2] = READ_BE_U32(pDragonStateData1->defaultPose + 8);
+        pDragonStateData1->poseData->m_translation[0] = READ_BE_U32(pDragonStateData1->pDefaultPose + 0);
+        pDragonStateData1->poseData->m_translation[1] = READ_BE_U32(pDragonStateData1->pDefaultPose + 4);
+        pDragonStateData1->poseData->m_translation[2] = READ_BE_U32(pDragonStateData1->pDefaultPose + 8);
     }
 
     if (flags & 0x10)
@@ -1271,12 +1277,12 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     return true;
 }
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pModelData2, u32 unkArg2, const s_RiderDefinitionSub* unkArg3)
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pDefaultPose, u32 unkArg2, const s_RiderDefinitionSub* unkArg3)
 {
     pDragonStateData1->pOwnerTask = pWorkArea;
     pDragonStateData1->pModelFile = pDragonModel;
     pDragonStateData1->modelIndexOffset = unkArg1;
-    pDragonStateData1->defaultPose = pModelData2;
+    pDragonStateData1->pDefaultPose = pDefaultPose;
     pDragonStateData1->field_38 = unkArg2;
     pDragonStateData1->field_14 = 0;
     pDragonStateData1->field_16 = 0;
@@ -1570,9 +1576,9 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
     u8* pDragonModel = pDragonState->pDragonModelRawData;
     u8* pModelData1 = pDragonModel + READ_BE_U32(pDragonModel + pDragonState->dragonData2[0]);
-    u8* pModelData2 = pDragonModel + READ_BE_U32(pDragonModel + pDragonData3->m_field_8[0].m_field_0[2]);
+    u8* defaultPose = pDragonModel + READ_BE_U32(pDragonModel + pDragonData3->m_field_8[0].m_field_0[2]);
 
-    init3DModelRawData(pDragonState, &pDragonState->dragon3dModel, 0x300, pDragonModel, pDragonState->field_14, pModelData1, pModelData2, 0, pDragonData3->m_field_8[0].m_field_8);
+    init3DModelRawData(pDragonState, &pDragonState->dragon3dModel, 0x300, pDragonModel, pDragonState->field_14, pModelData1, defaultPose, 0, pDragonData3->m_field_8[0].m_field_8);
 
     init3DModelAnims(pDragonState, &pDragonState->dragon3dModel, &pDragonState->animData, getDragonDataByIndex(dragonLevel));
 

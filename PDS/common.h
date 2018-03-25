@@ -275,7 +275,7 @@ struct s_3dModel
 
     u8* pCurrentAnimation; //30
 
-    u8* defaultPose; //34
+    u8* pDefaultPose; //34
     u32 field_38; //38
 
     sMatrix4x3* boneMatrices; //3C
