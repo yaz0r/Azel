@@ -654,13 +654,9 @@ s32 modelMode4_position0Sub1(sAnimTrackStatus&r4, u8* r5, u16 maxStep)
     if (r4.currentStep)
     {
         //06022D5A
-        s16 r0 = READ_BE_S16(r5 + r4.currentStep * 2);
-        int r3 = r0;
-        r0 &= 0xF;
-        r0 ^= r3;
-        r0--;
-        r4.delay = r0;
-        r4.value = r3;
+        u16 r0 = READ_BE_U16(r5 + r4.currentStep * 2);
+        r4.delay = (r0 & 0xF) -1;
+        r4.value = (s16)(r0 & 0xFFF0);
     }
     else
     {
@@ -671,7 +667,7 @@ s32 modelMode4_position0Sub1(sAnimTrackStatus&r4, u8* r5, u16 maxStep)
 
     if (maxStep >= r4.currentStep + 1)
     {
-        r4.currentStep = r4.currentStep + 1;
+        r4.currentStep++;
     }
     else
     {
@@ -709,12 +705,14 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
         }
 
         r3--;
-        if (r3 >= pDragonStateData1->currentAnimationFrame)
+        if (pDragonStateData1->currentAnimationFrame >= r3)
         {
-            pPoseData->halfTranslation[0] = modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
-            pPoseData->halfTranslation[1] = modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
-            pPoseData->halfTranslation[2] = modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
+            return;
         }
+
+        pPoseData->halfTranslation[0] = modelMode4_position0Sub1(pPoseData->field_48[0], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
+        pPoseData->halfTranslation[1] = modelMode4_position0Sub1(pPoseData->field_48[1], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
+        pPoseData->halfTranslation[2] = modelMode4_position0Sub1(pPoseData->field_48[2], pDragonStateData1->pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
     }
     else
     //0602265A
@@ -856,6 +854,7 @@ void modelMode4_rotation(s_3dModel* p3dModel)
     if (p3dModel->currentAnimationFrame & 1)
     {
         addAnimationFrame(pPoseData, p3dModel);
+        return;
     }
 
     if (p3dModel->currentAnimationFrame)
@@ -1345,7 +1344,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32
 struct sDragonAnimDataSub
 {
     s32 count;
-    const sMatrix4x3* m_data;
+    const sDragonAnimDataSubRanges* m_data;
 };
 
 struct sDragonAnimData
@@ -1356,35 +1355,35 @@ struct sDragonAnimData
     const sDragonAnimDataSub* m_C;
 };
 
-const sMatrix4x3 dragon0AnimsData0 =
+const sDragonAnimDataSubRanges dragon0AnimsData0 =
 {
+    {0x2423,
     0x2423,
-    0x2423,
-    0x2423,
+    0x2423},
+    {0xB800,
     0xB800,
-    0xB800,
-    0xB800,
+    0xB800},
+    {0xE38E38,
     0xE38E38,
-    0xE38E38,
-    0xE38E38,
-    0xFF1C71C8,
-    0xFF1C71C8,
-    0xFF1C71C8,
+    0xE38E38},
+    {-0xE38E38,
+    -0xE38E38,
+    -0xE38E38},
 };
-const sMatrix4x3 dragon0AnimsData1 =
+const sDragonAnimDataSubRanges dragon0AnimsData1 =
 {
+    {0x400,
     0x400,
-    0x400,
-    0x400,
+    0x400},
+    {0x1000,
     0x1000,
-    0x1000,
-    0x1000,
+    0x1000},
+    {0xE38E38,
     0xE38E38,
-    0xE38E38,
-    0xE38E38,
+    0xE38E38},
+    {0xFF1C71C8,
     0xFF1C71C8,
-    0xFF1C71C8,
-    0xFF1C71C8,
+    0xFF1C71C8},
 };
 
 const sDragonAnimDataSub dragon0Anims0[1] =
@@ -1472,7 +1471,7 @@ u32 countNumAnimData(s3DModelAnimData* pDragonStateData2, const sDragonAnimData*
     return pDragonStateData2->count0 + pDragonStateData2->count1 + pDragonStateData2->count2 + 1;
 }
 
-void copyAnimMatrix(const sMatrix4x3* source, sMatrix4x3* destination)
+void copyAnimMatrix(const sDragonAnimDataSubRanges* source, sDragonAnimDataSubRanges* destination)
 {
     *destination = *source;
 }
@@ -1484,7 +1483,7 @@ void initRuntimeAnimDataSub1(const sDragonAnimDataSub* animDataSub, s_runtimeAni
     subData->m_vec_18.zero();
     subData->m_vec_24.zero();
 
-    copyAnimMatrix(animDataSub->m_data, &subData->m_matrix);
+    copyAnimMatrix(animDataSub->m_data, &subData->m_factors);
 
     subData->dataSource = animDataSub;
 }

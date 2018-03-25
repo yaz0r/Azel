@@ -7,7 +7,7 @@ void pushProjectionStack();
 struct s_cameraProperties2
 {
     sVec3_FP field_0; //0
-    s16 field_C[3];
+    s16 m_rotation[3];
     sVec3_FP field_14; //14
     s16 field_20[3]; // 20
     sMatrix4x3 field_28[2]; // 28

@@ -303,24 +303,24 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
     sVec3_FP var_18 = r6 - r13;
     sVec3_FP var_C = r7 - r13;
 
-    r4->field_20[0] = r4->field_C[0];
-    r4->field_20[1] = r4->field_C[1];
-    r4->field_20[2] = r4->field_C[2];
+    r4->field_20[0] = r4->m_rotation[0];
+    r4->field_20[1] = r4->m_rotation[1];
+    r4->field_20[2] = r4->m_rotation[2];
 
     r4->field_14 = r4->field_0;
 
     generateCameraMatrixSub1(var_18, var_4);
 
-    r4->field_C[0] = var_4[0] >> 16;
-    r4->field_C[1] = var_4[1] >> 16;
+    r4->m_rotation[0] = var_4[0] >> 16;
+    r4->m_rotation[1] = var_4[1] >> 16;
 
     initMatrixToIdentity(&var_30);
-    rotateMatrixX(-r4->field_C[0], &var_30);
-    rotateMatrixY(-r4->field_C[1], &var_30);
+    rotateMatrixX(-r4->m_rotation[0], &var_30);
+    rotateMatrixY(-r4->m_rotation[1], &var_30);
 
     transformVec(var_C, var_24, var_30);
 
-    r4->field_C[2] = generateCameraMatrixSub3(-var_24[0], var_24[1]);
+    r4->m_rotation[2] = generateCameraMatrixSub3(-var_24[0], var_24[1]);
 
     r4->field_0[0] = r13[0];
     var_24[0] = -r13[0];
@@ -333,12 +333,12 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
 
     resetMatrixStack();
 
-    rotateCurrentMatrixZ(-r4->field_C[2]);
-    rotateCurrentMatrixX(-r4->field_C[0]);
+    rotateCurrentMatrixZ(-r4->m_rotation[2]);
+    rotateCurrentMatrixX(-r4->m_rotation[0]);
 
     copyMatrix(pCurrentMatrix, &r4->field_88);
 
-    rotateCurrentMatrixY(-r4->field_C[1]);
+    rotateCurrentMatrixY(-r4->m_rotation[1]);
 
     translateCurrentMatrix(&var_24);
 
@@ -348,9 +348,9 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
 
     initMatrixToIdentity(&r4->field_28[0]);
     translateMatrix(&r4->field_0, &r4->field_28[0]);
-    rotateMatrixY(r4->field_C[1], &r4->field_28[0]);
-    rotateMatrixX(r4->field_C[0], &r4->field_28[0]);
-    rotateMatrixZ(r4->field_C[2], &r4->field_28[0]);
+    rotateMatrixY(r4->m_rotation[1], &r4->field_28[0]);
+    rotateMatrixX(r4->m_rotation[0], &r4->field_28[0]);
+    rotateMatrixZ(r4->m_rotation[2], &r4->field_28[0]);
 
     r4->field_28[0].matrix[2] = -r4->field_28[0].matrix[2];
     r4->field_28[0].matrix[6] = -r4->field_28[0].matrix[6];
@@ -363,17 +363,17 @@ void resetCameraProperties2(s_cameraProperties2* r4)
     r4->field_0[1] = 0;
     r4->field_0[0] = 0;
 
-    r4->field_C[2] = 0;
-    r4->field_C[1] = 0;
-    r4->field_C[0] = 0;
+    r4->m_rotation[2] = 0;
+    r4->m_rotation[1] = 0;
+    r4->m_rotation[0] = 0;
 
     r4->field_14[0] = r4->field_0[0];
     r4->field_14[1] = r4->field_0[1];
     r4->field_14[2] = r4->field_0[2];
 
-    r4->field_20[0] = r4->field_C[0];
-    r4->field_20[1] = r4->field_C[1];
-    r4->field_20[2] = r4->field_C[2];
+    r4->field_20[0] = r4->m_rotation[0];
+    r4->field_20[1] = r4->m_rotation[1];
+    r4->field_20[2] = r4->m_rotation[2];
 
     initMatrixToIdentity(&r4->field_28[0]);
     initMatrixToIdentity(&r4->field_28[1]);
@@ -486,9 +486,9 @@ void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
 
 void updateAnimationMatricesSub2Sub1(s_runtimeAnimData* r4, sVec3_FP& r5, sVec3_FP& r6)
 {
-    r4->m_vec_0.m_value[0] = MTH_Mul(r4->m_matrix.matrix[0], r5.m_value[0] - r6.m_value[0]) - MTH_Mul(0x10000 - r4->m_matrix.matrix[3], r4->m_vec_C.m_value[0]);
-    r4->m_vec_0.m_value[1] = MTH_Mul(r4->m_matrix.matrix[1], r5.m_value[1] - r6.m_value[1]) - MTH_Mul(0x10000 - r4->m_matrix.matrix[7], r4->m_vec_C.m_value[1]);
-    r4->m_vec_0.m_value[2] = MTH_Mul(r4->m_matrix.matrix[2], r5.m_value[2] - r6.m_value[2]) - MTH_Mul(0x10000 - r4->m_matrix.matrix[11], r4->m_vec_C.m_value[2]);
+    r4->m_vec_0.m_value[0] = MTH_Mul(r4->m_factors.m_vec0[0], r6.m_value[0] - r5.m_value[0]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[0], r4->m_vec_C.m_value[0]);
+    r4->m_vec_0.m_value[1] = MTH_Mul(r4->m_factors.m_vec0[1], r6.m_value[1] - r5.m_value[1]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[1], r4->m_vec_C.m_value[1]);
+    r4->m_vec_0.m_value[2] = MTH_Mul(r4->m_factors.m_vec0[2], r6.m_value[2] - r5.m_value[2]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[2], r4->m_vec_C.m_value[2]);
 }
 
 void updateAnimationMatricesSub2Sub2(s_runtimeAnimData* r4)
@@ -527,44 +527,44 @@ void updateAnimationMatricesSub2Sub3(s_runtimeAnimData* r4)
         r4->m_vec_18.m_value[2] = r4->m_vec_18.m_value[2].asS32() & 0xFFFFFFF;
     }
 
-    if (r4->m_vec_18.m_value[0] > r4->m_matrix.matrix[6])
+    if (r4->m_vec_18.m_value[0] > r4->m_factors.m_max[0])
     {
-        r4->m_vec_18.m_value[0] = r4->m_matrix.matrix[6];
+        r4->m_vec_18.m_value[0] = r4->m_factors.m_max[0];
         r4->m_vec_C[0] = 0;
     }
     else
     {
-        if (r4->m_vec_18.m_value[0] < r4->m_matrix.matrix[9])
+        if (r4->m_vec_18.m_value[0] < r4->m_factors.m_min[0])
         {
-            r4->m_vec_18.m_value[0] = r4->m_matrix.matrix[9];
+            r4->m_vec_18.m_value[0] = r4->m_factors.m_min[0];
             r4->m_vec_C[0] = 0;
         }
     }
 
-    if (r4->m_vec_18.m_value[1] > r4->m_matrix.matrix[7])
+    if (r4->m_vec_18.m_value[1] > r4->m_factors.m_max[1])
     {
-        r4->m_vec_18.m_value[1] = r4->m_matrix.matrix[7];
+        r4->m_vec_18.m_value[1] = r4->m_factors.m_max[1];
         r4->m_vec_C[1] = 0;
     }
     else
     {
-        if (r4->m_vec_18.m_value[1] < r4->m_matrix.matrix[10])
+        if (r4->m_vec_18.m_value[1] < r4->m_factors.m_min[1])
         {
-            r4->m_vec_18.m_value[1] = r4->m_matrix.matrix[10];
+            r4->m_vec_18.m_value[1] = r4->m_factors.m_min[1];
             r4->m_vec_C[1] = 0;
         }
     }
 
-    if (r4->m_vec_18.m_value[2] > r4->m_matrix.matrix[8])
+    if (r4->m_vec_18.m_value[2] > r4->m_factors.m_max[2])
     {
-        r4->m_vec_18.m_value[2] = r4->m_matrix.matrix[8];
+        r4->m_vec_18.m_value[2] = r4->m_factors.m_max[2];
         r4->m_vec_C[2] = 0;
     }
     else
     {
-        if (r4->m_vec_18.m_value[2] < r4->m_matrix.matrix[11])
+        if (r4->m_vec_18.m_value[2] < r4->m_factors.m_min[2])
         {
-            r4->m_vec_18.m_value[2] = r4->m_matrix.matrix[11];
+            r4->m_vec_18.m_value[2] = r4->m_factors.m_min[2];
             r4->m_vec_C[2] = 0;
         }
     }
@@ -588,11 +588,16 @@ void updateAnimationMatricesSub2(s3DModelAnimData* r4)
     r14->m_vec_24[2] = 0;
 }
 
+void updateAnimationMatricesSub3(s3DModelAnimData* r4)
+{
+    unimplemented("updateAnimationMatricesSub3");
+}
+
 void updateAnimationMatrices(s3DModelAnimData* r4, s_3dModel* r5)
 {
     updateAnimationMatricesSub1(r4, r5);
     updateAnimationMatricesSub2(r4);
-//    updateAnimationMatricesSub3(r4);
+    updateAnimationMatricesSub3(r4);
 }
 
 void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)

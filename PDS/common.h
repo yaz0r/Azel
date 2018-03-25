@@ -288,14 +288,22 @@ struct s_3dModel
     u16 field_4E; //4E
 };
 
+struct sDragonAnimDataSubRanges
+{
+    sVec3_FP m_vec0;
+    sVec3_FP m_vecC;
+    sVec3_FP m_max;
+    sVec3_FP m_min;
+};
+
 struct s_runtimeAnimData
 {
-    sVec3_FP m_vec_0; // 0 Sometimes used as a matrix
+    sVec3_FP m_vec_0; // 0
     sVec3_FP m_vec_C; // C
     sVec3_FP m_vec_18; // 18
     sVec3_FP m_vec_24; // 24
 
-    sMatrix4x3 m_matrix; // 30
+    sDragonAnimDataSubRanges m_factors; // 30 //6-8 min 9-11 max
     const struct sDragonAnimDataSub* dataSource; // 60
 };
 

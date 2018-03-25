@@ -116,9 +116,9 @@ void initMatrixToIdentity(sMatrix4x3* matrix)
 
 void fieldOverlaySubTaskInitSub6Sub1(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6)
 {
-    r4->field_C[0] = r6[0];
-    r4->field_C[1] = r6[1];
-    r4->field_C[2] = r6[2];
+    r4->m_rotation[0] = r6[0];
+    r4->m_rotation[1] = r6[1];
+    r4->m_rotation[2] = r6[2];
 
     sVec3_FP translation;
 
@@ -131,18 +131,18 @@ void fieldOverlaySubTaskInitSub6Sub1(s_cameraProperties2* r4, sFieldCameraStatus
 
     resetMatrixStack();
 
-    rotateCurrentMatrixZ(-r4->field_C[0]);
-    rotateCurrentMatrixX(-r4->field_C[2]);
+    rotateCurrentMatrixZ(-r4->m_rotation[0]);
+    rotateCurrentMatrixX(-r4->m_rotation[2]);
     copyMatrix(pCurrentMatrix, &r4->field_88);
-    rotateCurrentMatrixY(-r4->field_C[1]);
+    rotateCurrentMatrixY(-r4->m_rotation[1]);
     translateCurrentMatrix(&translation);
     rotateMatrixY(0x800, &r4->field_88);
     copyMatrix(&r4->field_28[0], &r4->field_28[1]);
     initMatrixToIdentity(&r4->field_28[0]);
     translateMatrix(&r4->field_0, &r4->field_28[0]);
-    rotateMatrixY(r4->field_C[1], &r4->field_28[0]);
-    rotateMatrixX(r4->field_C[0], &r4->field_28[0]);
-    rotateMatrixZ(r4->field_C[2], &r4->field_28[0]);
+    rotateMatrixY(r4->m_rotation[1], &r4->field_28[0]);
+    rotateMatrixX(r4->m_rotation[0], &r4->field_28[0]);
+    rotateMatrixZ(r4->m_rotation[2], &r4->field_28[0]);
 
     r4->field_28[0].matrix[2] = -r4->field_28[0].matrix[2];
     r4->field_28[0].matrix[6] = -r4->field_28[0].matrix[6];
@@ -181,16 +181,69 @@ void rotateMatrixX(s32 rotX, sMatrix4x3* pMatrix)
     fixedPoint sin = getSin(angle);
     fixedPoint cos = getCos(angle);
 
-    sMatrix4x3 tempMatrix;
-    for (int i = 0; i < 3; i++)
+    if(0)
     {
-        tempMatrix.matrix[i * 4 + 0] = (pMatrix->matrix[i * 4 + 0]);
-        tempMatrix.matrix[i * 4 + 1] = ((s64)pMatrix->matrix[i * 4 + 1] * cos + (s64)pMatrix->matrix[i * 4 + 2] * sin) >> 16;
-        tempMatrix.matrix[i * 4 + 2] = ((s64)-pMatrix->matrix[i * 4 + 1] * sin + (s64)pMatrix->matrix[i * 4 + 2] * cos) >> 16;
-        tempMatrix.matrix[i * 4 + 3] = (pMatrix->matrix[i * 4 + 3]);
-    }
+        fixedPoint stack[4];
+        stack[0] = sin;
+        stack[1] = cos;
+        stack[2] = cos;
+        stack[3] = -sin;
 
-    *pMatrix = tempMatrix;
+        fixedPoint* r4 = stack;
+        fixedPoint* r5 = pMatrix->matrix;
+
+        s64 mac = 0;
+        r5++;
+        mac += MUL_FP(*(r4++), *(r5++));
+        mac += MUL_FP(*(r4++), *(r5++));
+        r5 -= 2;
+        s64 r1 = mac >> 16;
+        mac = 0;
+        mac += MUL_FP(*(r4++), *(r5++));
+        mac += MUL_FP(*(r4++), *(r5++));
+        *(--r5) = r1;
+        *(--r5) = mac >> 16;
+
+        r4 = stack;
+        r5 += 0x10 / 4;
+        mac = 0;
+        mac += MUL_FP(*(r4++), *(r5++));
+        mac += MUL_FP(*(r4++), *(r5++));
+        r5 -= 2;
+        r1 = mac >> 16;
+        mac = 0;
+        mac += MUL_FP(*(r4++), *(r5++));
+        mac += MUL_FP(*(r4++), *(r5++));
+        *(--r5) = r1;
+        *(--r5) = mac >> 16;
+
+        r4 = stack;
+        r5 += 0x10 / 4;
+        mac = 0;
+        mac += MUL_FP(*(r4++), *(r5++));
+        mac += MUL_FP(*(r4++), *(r5++));
+        r5 -= 2;
+        r1 = mac >> 16;
+        mac = 0;
+        mac += MUL_FP(*(r4++), *(r5++));
+        mac += MUL_FP(*(r4++), *(r5++));
+        *(--r5) = r1;
+        *(--r5) = mac >> 16;
+
+    }
+    else
+    {
+        sMatrix4x3 tempMatrix;
+        for (int i = 0; i < 3; i++)
+        {
+            tempMatrix.matrix[i * 4 + 0] = (pMatrix->matrix[i * 4 + 0]);
+            tempMatrix.matrix[i * 4 + 1] = ((s64)pMatrix->matrix[i * 4 + 1] * cos + (s64)pMatrix->matrix[i * 4 + 2] * sin) >> 16;
+            tempMatrix.matrix[i * 4 + 2] = ((s64)-pMatrix->matrix[i * 4 + 1] * sin + (s64)pMatrix->matrix[i * 4 + 2] * cos) >> 16;
+            tempMatrix.matrix[i * 4 + 3] = (pMatrix->matrix[i * 4 + 3]);
+        }
+
+        *pMatrix = tempMatrix;
+    }
 }
 
 void rotateCurrentMatrixX(s32 rotX)
@@ -204,16 +257,51 @@ void rotateMatrixY(s32 rotY, sMatrix4x3* pMatrix)
     fixedPoint sin = getSin(angle);
     fixedPoint cos = getCos(angle);
 
-    sMatrix4x3 tempMatrix;
-    for (int i = 0; i < 3; i++)
+    if (0)
     {
-        tempMatrix.matrix[i * 4 + 0] = ((s64)pMatrix->matrix[i * 4 + 0] * cos - (s64)pMatrix->matrix[i * 4 + 2] * sin) >> 16;
-        tempMatrix.matrix[i * 4 + 1] = (pMatrix->matrix[i * 4 + 1]);
-        tempMatrix.matrix[i * 4 + 2] = ((s64)pMatrix->matrix[i * 4 + 0] * sin + (s64)pMatrix->matrix[i * 4 + 2] * cos) >> 16;
-        tempMatrix.matrix[i * 4 + 3] = (pMatrix->matrix[i * 4 + 3]);
-    }
+        fixedPoint stack[4];
+        stack[0] = -sin;
+        stack[1] = cos;
+        stack[2] = cos;
+        stack[3] = sin;
 
-    *pMatrix = tempMatrix;
+        s64 mac = 0;
+        s64 r1 = 0;
+        fixedPoint* r4 = stack;
+        fixedPoint* r5 = pMatrix->matrix;
+
+        for (int i = 0; i < 3; i++)
+        {
+            mac = 0;
+            mac += MUL_FP(*(r4++), *(r5++));
+            r5++;
+            mac += MUL_FP(*(r4++), *(r5++));
+            r5 -= 3;
+            r1 = mac >> 16;
+            mac = 0;
+            mac += MUL_FP(*(r4++), *(r5++));
+            r5++;
+            mac += MUL_FP(*(r4++), *(r5++));
+            *(--r5) = r1;
+            r5 -= 1;
+            *(--r5) = mac >> 16;
+            r4 = stack;
+            r5 += 0x10 / 4;
+        }
+    }
+    else
+    {
+        sMatrix4x3 tempMatrix;
+        for (int i = 0; i < 3; i++)
+        {
+            tempMatrix.matrix[i * 4 + 0] = ((s64)pMatrix->matrix[i * 4 + 0] * cos - (s64)pMatrix->matrix[i * 4 + 2] * sin) >> 16;
+            tempMatrix.matrix[i * 4 + 1] = (pMatrix->matrix[i * 4 + 1]);
+            tempMatrix.matrix[i * 4 + 2] = ((s64)pMatrix->matrix[i * 4 + 0] * sin + (s64)pMatrix->matrix[i * 4 + 2] * cos) >> 16;
+            tempMatrix.matrix[i * 4 + 3] = (pMatrix->matrix[i * 4 + 3]);
+        }
+
+        *pMatrix = tempMatrix;
+    }
 }
 
 void rotateCurrentMatrixY(s32 rotY)
@@ -227,16 +315,48 @@ void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix)
     fixedPoint sin = getSin(angle);
     fixedPoint cos = getCos(angle);
 
-    sMatrix4x3 tempMatrix;
-    for(int i=0; i<3; i++)
+    if (0)
     {
-        tempMatrix.matrix[i * 4 + 0] = ((s64)pMatrix->matrix[i * 4 + 0] * cos + (s64)pMatrix->matrix[i * 4 + 1] * sin) >> 16;
-        tempMatrix.matrix[i * 4 + 1] = ((s64)-pMatrix->matrix[i * 4 + 0] * sin + (s64)pMatrix->matrix[i * 4 + 1] * cos) >> 16;
-        tempMatrix.matrix[i * 4 + 2] = ( pMatrix->matrix[i * 4 + 2]);
-        tempMatrix.matrix[i * 4 + 3] = ( pMatrix->matrix[i * 4 + 3]);
-    }
+        fixedPoint stack[4];
+        stack[0] = sin;
+        stack[1] = cos;
+        stack[2] = cos;
+        stack[3] = -sin;
 
-    *pMatrix = tempMatrix;
+        s64 mac = 0;
+        s64 r1 = 0;
+        fixedPoint* r4 = stack;
+        fixedPoint* r5 = pMatrix->matrix;
+
+        for (int i = 0; i < 3; i++)
+        {
+            mac = MUL_FP(*(r4++), *(r5++));
+            mac += MUL_FP(*(r4++), *(r5++));
+            r5 -= 2;
+            r1 = mac >> 16;
+
+            mac = MUL_FP(*(r4++), *(r5++));
+            mac += MUL_FP(*(r4++), *(r5++));
+
+            *(--r5) = r1;
+            *(--r5) = mac >> 16;
+            r4 = stack;
+            r5 += 0x10 / 4;
+        }
+    }
+    else
+    {
+        sMatrix4x3 tempMatrix;
+        for (int i = 0; i < 3; i++)
+        {
+            tempMatrix.matrix[i * 4 + 0] = ((s64)pMatrix->matrix[i * 4 + 0] * cos + (s64)pMatrix->matrix[i * 4 + 1] * sin) >> 16;
+            tempMatrix.matrix[i * 4 + 1] = ((s64)-pMatrix->matrix[i * 4 + 0] * sin + (s64)pMatrix->matrix[i * 4 + 1] * cos) >> 16;
+            tempMatrix.matrix[i * 4 + 2] = (pMatrix->matrix[i * 4 + 2]);
+            tempMatrix.matrix[i * 4 + 3] = (pMatrix->matrix[i * 4 + 3]);
+        }
+
+        *pMatrix = tempMatrix;
+    }
 }
 
 void rotateCurrentMatrixZ(s32 rotZ)
@@ -246,32 +366,17 @@ void rotateCurrentMatrixZ(s32 rotZ)
 
 void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix)
 {
-    fixedPoint* r4 = &(*translation)[0];
-    fixedPoint* r5 = &pMatrix->matrix[0];
+    fixedPoint* r5 = pMatrix->matrix;
 
-    s64 mac = 0;
-    mac += *(r4++) * *(r5++);
-    mac += *(r4++) * *(r5++);
-    mac += *(r4++) * *(r5++);
-    r4 -= 3;
-    *(r5) = *(r5) + (mac >> 16);
-    r5++;
-
-    mac = 0;
-    mac += *(r4++) * *(r5++);
-    mac += *(r4++) * *(r5++);
-    mac += *(r4++) * *(r5++);
-    r4 -= 3;
-    *(r5) = *(r5)+(mac >> 16);
-    r5++;
-
-    mac = 0;
-    mac += *(r4++) * *(r5++);
-    mac += *(r4++) * *(r5++);
-    mac += *(r4++) * *(r5++);
-    r4 -= 3;
-    *(r5) = *(r5)+(mac >> 16);
-    r5++;
+    for(int i=0; i<3; i++)
+    {
+        s64 mac = 0;
+        mac += MUL_FP(translation->m_value[0], r5[0]);
+        mac += MUL_FP(translation->m_value[1], r5[1]);
+        mac += MUL_FP(translation->m_value[2], r5[2]);
+        r5[3] += mac >> 16;
+        r5 += 4;
+    }
 }
 
 void translateCurrentMatrix(sVec3_FP* translation)
