@@ -22,15 +22,15 @@ struct s_dragonMenuDragonWorkAreaSub1
 
 struct s_dragonMenuDragonWorkArea : public s_workArea
 {
-    s_loadDragonWorkArea* field_0;
-    const sDragonData3* field_4;
-    u16 field_8;
-    sVec3_FP modelTranslation;
-    sVec3_FP modelRotation;
-    u8* field_28;
-    u32 field_2C;
-    u16 field_30;
-    s_dragonMenuDragonWorkAreaSub1 field_34;
+    s_loadDragonWorkArea* field_0; //0
+    const sDragonData3* field_4; //4
+    u16 field_8; //88
+    sVec3_FP modelTranslation; //10
+    sVec3_FP modelRotation; //1C
+    u8* field_28; //28
+    u32 field_2C; //2C
+    u16 field_30; //30
+    s_dragonMenuDragonWorkAreaSub1 field_34; //34
 };
 
 const sVec3_FP defaultCameraVectors[3] = {
@@ -184,111 +184,6 @@ void generateLightFalloffMap(u32 r4, u32 r5, u32 r6)
     //addSlaveCommand(0,0,0, copyFalloffTableToSlave);
 }
 
-fixedPoint FP_Pow2(fixedPoint r4)
-{
-    s64 result = ((s64)r4.asS32()) * ((s64)r4.asS32());
-    return fixedPoint::fromS32(result >> 16);
-}
-
-s32 generateCameraMatrixSub3(s32 r4, s32 r5)
-{
-    // same as not function, but not on FP
-    return 0;
-}
-
-// this is atan2
-s32 atan2_FP(s32 y, s32 x)
-{
-    if (x)
-    {
-        if (abs(x) > abs(y))
-        {
-            s32 z = y / x;
-            if (x > 0)
-            {
-                return atanTable[z] << 16;
-            }
-            else if (y >= 0)
-            {
-                return (atanTable[z] + 0x800) << 16;
-            }
-            else
-            {
-                assert(0);
-                return (atanTable[z] - 0x800) << 16;
-            }
-        }
-        else
-        {
-            assert(0);
-        }
-    }
-    if (y)
-    {
-        if (y >= 0)
-        {
-            return 0x400 << 16; //90
-        }
-        else
-        {
-            return 0xC00 << 16; //270
-        }
-    }
-
-    return 0;
-}
-
-#if 0
-s32 atan2_FP(s32 y, s32 x)
-{
-    if (x)
-    {
-        u32 r1 = 0;
-        if (y < 0)
-        {
-            y = -y;
-            r1 = 1;
-        }
-
-        if (x < 0)
-        {
-            x = -x;
-            r1 += 2;
-        }
-
-        assert(y == 0);
-        assert(x == 0x10000);
-
-        return 0;
-
-        if (y > x)
-        {
-            x ^= y;
-            y ^= x;
-            x ^= y;
-            r1 += 1;
-        }
-
-        y <<= 10;
-        x <<= 10;
-        // TO BE CONTINUED
-
-    }
-    if (y)
-    {
-        if (y >= 0)
-        {
-            return 0x400 << 16; //90
-        }
-        else
-        {
-            return 0xC00 << 16; //270
-        }
-    }
-
-    return 0;
-}
-#endif
 void generateCameraMatrixSub1(sVec3_FP& r4, u32(&r5)[2])
 {
     if ((r4[0] == 0) && (r4[2] == 0))
@@ -360,7 +255,7 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
 
     transformVec(var_C, var_24, var_30);
 
-    r4->m_rotation[2] = generateCameraMatrixSub3(-var_24[0], var_24[1]);
+    r4->m_rotation[2] = atan2(-var_24[0], var_24[1]);
 
     r4->field_0[0] = r13[0];
     var_24[0] = -r13[0];
@@ -466,24 +361,20 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
 
 struct sCurrentLightVector
 {
-    fixedPoint field_0;
-    fixedPoint field_4;
-    fixedPoint field_8;
+    sVec3_FP m_lightVector;
 
-    u16 field_C;
-    u16 field_E;
-    u16 field_10;
+    u16 m_color[3];
 }currentLightVector_M;
 
 void setLightVector_M(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7)
 {
-    currentLightVector_M.field_0 = r4;
-    currentLightVector_M.field_4 = r5;
-    currentLightVector_M.field_8 = r6;
+    currentLightVector_M.m_lightVector[0] = r4;
+    currentLightVector_M.m_lightVector[1] = r5;
+    currentLightVector_M.m_lightVector[2] = r6;
 
-    currentLightVector_M.field_10 = r7 & 0xFF;
-    currentLightVector_M.field_E = (r7 >> 8) & 0xFF;
-    currentLightVector_M.field_C = (r7 >> 16) & 0xFF;
+    currentLightVector_M.m_color[2] = r7 & 0xFF;
+    currentLightVector_M.m_color[1] = (r7 >> 8) & 0xFF;
+    currentLightVector_M.m_color[0] = (r7 >> 16) & 0xFF;
 }
 
 void setupLight(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7)
@@ -725,7 +616,7 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
     morphDragon(pWorkArea->field_0, &gDragonState->dragon3dModel, pWorkArea->field_0->MCBOffsetInDram, pWorkArea->field_4, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
 }
 
-void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u32 shadowModelIndex, sVec3_FP* translation, sVec3_FP* rotation)
+void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u32 shadowModelIndex, sVec3_FP* translation, sVec3_FP* rotation, fixedPoint shadowHeight)
 {
     sVec3_FP var_18;
     sMatrix4x3 modelMatrix; // 28 - 58
@@ -736,13 +627,26 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
 
     if (shadowModelIndex)
     {
-        unimplemented("Shadow rendering in dragonMenuDragonDrawSub1");
-        /*
+        fixedPoint old4 = modelMatrix.matrix[4];
+        fixedPoint old5 = modelMatrix.matrix[5];
+        fixedPoint old6 = modelMatrix.matrix[6];
+        fixedPoint old7 = modelMatrix.matrix[7];
+
+        modelMatrix.matrix[4] = 0;
+        modelMatrix.matrix[5] = 0;
+        modelMatrix.matrix[6] = 0;
+        modelMatrix.matrix[7] = shadowHeight;
+
         pushCurrentMatrix();
-        multiplyCurrentMatrix(&var_28);
-        r4->drawFunction(r4);
+        multiplyCurrentMatrix(&modelMatrix);
+        p3dModel->modelIndexOffset = shadowModelIndex;
+        p3dModel->drawFunction(p3dModel);
         popMatrix();
-        */
+
+        modelMatrix.matrix[4] = old4;
+        modelMatrix.matrix[5] = old5;
+        modelMatrix.matrix[6] = old6;
+        modelMatrix.matrix[7] = old7;
     }
 
     pushCurrentMatrix();
@@ -755,7 +659,7 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
 void dragonMenuDragonDraw(p_workArea pTypelessWorkArea)
 {
     s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
-    submitModelAndShadowModelToRendering(&gDragonState->dragon3dModel, gDragonState->modelIndex, gDragonState->shadowModelIndex, &pWorkArea->modelTranslation, &pWorkArea->modelRotation);
+    submitModelAndShadowModelToRendering(&gDragonState->dragon3dModel, gDragonState->modelIndex, gDragonState->shadowModelIndex, &pWorkArea->modelTranslation, &pWorkArea->modelRotation, 0);
 }
 
 void dragonMenuDragonDelete(p_workArea pTypelessWorkArea)

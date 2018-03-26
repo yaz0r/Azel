@@ -69,4 +69,7 @@ s64 MUL_FP(fixedPoint& A, fixedPoint& B);
 s32 FP_GetIntegerPortion(fixedPoint& FP);
 fixedPoint FP_Div(s32 divident, fixedPoint divisor);
 fixedPoint performDivision(fixedPoint r0, fixedPoint r1);
+s32 atan2_FP(s32 y, s32 x);
+s32 atan2(s32 y, s32 x);
+fixedPoint FP_Pow2(fixedPoint r4);
 

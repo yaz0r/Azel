@@ -1275,11 +1275,11 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     return true;
 }
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 unkArg1, u8* pModelData1, u8* pDefaultPose, u32 unkArg2, const s_RiderDefinitionSub* unkArg3)
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 modelIndexOffset, u8* pModelData1, u8* pDefaultPose, u32 unkArg2, const s_RiderDefinitionSub* unkArg3)
 {
     pDragonStateData1->pOwnerTask = pWorkArea;
     pDragonStateData1->pModelFile = pDragonModel;
-    pDragonStateData1->modelIndexOffset = unkArg1;
+    pDragonStateData1->modelIndexOffset = modelIndexOffset;
     pDragonStateData1->pDefaultPose = pDefaultPose;
     pDragonStateData1->field_38 = unkArg2;
     pDragonStateData1->field_14 = 0;
@@ -1361,33 +1361,17 @@ struct sDragonAnimData
 
 const sDragonAnimDataSubRanges dragon0AnimsData0 =
 {
-    {0x2423,
-    0x2423,
-    0x2423},
-    {0xB800,
-    0xB800,
-    0xB800},
-    {0xE38E38,
-    0xE38E38,
-    0xE38E38},
-    {-0xE38E38,
-    -0xE38E38,
-    -0xE38E38},
+    {0x2423, 0x2423, 0x2423},
+    {0xB800, 0xB800, 0xB800},
+    {0xE38E38, 0xE38E38, 0xE38E38},
+    {-0xE38E38, -0xE38E38, -0xE38E38},
 };
 const sDragonAnimDataSubRanges dragon0AnimsData1 =
 {
-    {0x400,
-    0x400,
-    0x400},
-    {0x1000,
-    0x1000,
-    0x1000},
-    {0xE38E38,
-    0xE38E38,
-    0xE38E38},
-    {0xFF1C71C8,
-    0xFF1C71C8,
-    0xFF1C71C8},
+    {0x400, 0x400, 0x400},
+    {0x1000, 0x1000, 0x1000},
+    {0xE38E38, 0xE38E38, 0xE38E38},
+    {0xFF1C71C8, 0xFF1C71C8, 0xFF1C71C8},
 };
 
 const sDragonAnimDataSub dragon0Anims0[1] =
@@ -1719,11 +1703,11 @@ struct s_loadRiderWorkArea : public s_workArea
     u32 m4; //4
     s_workArea* m_ParentWorkArea; //8
     u32 m_riderType; //C
-    u32 m_data0; // 10
+    u32 m_modelIndex; // 10
     u32 m_14; //14
 
 
-    s_3dModel m_18;//18
+    s_3dModel m_3dModel;//18
 };
 
 s_loadRiderWorkArea* pRiderState = NULL;
@@ -1745,7 +1729,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
     pLoadRiderWorkArea->m4 = 0;
     pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
     pLoadRiderWorkArea->m_riderType = riderType;
-    pLoadRiderWorkArea->m_data0 = r13->m_flags;
+    pLoadRiderWorkArea->m_modelIndex = r13->m_flags;
 
     pRider2State = pLoadRiderWorkArea;
 
@@ -1774,9 +1758,9 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
     }
 
     u8* pModel = pLoadRiderWorkArea->m_riderModel;
-    u8* pModelData2 = pModel + READ_BE_U32(pModel + r13->m_flags2);
+    u8* pDefaultPose = pModel + READ_BE_U32(pModel + r13->m_flags2);
 
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m_18, 0, pModel, pLoadRiderWorkArea->m_data0, pModelData1, pModelData2, 0, r13->m_pExtraData);
+    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m_3dModel, 0, pModel, pLoadRiderWorkArea->m_modelIndex, pModelData1, pDefaultPose, 0, r13->m_pExtraData);
 
     return pLoadRiderWorkArea;
 }
@@ -1792,7 +1776,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
     pLoadRiderWorkArea->m4 = 0;
     pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
     pLoadRiderWorkArea->m_riderType = riderType;
-    pLoadRiderWorkArea->m_data0 = r13->m_flags;
+    pLoadRiderWorkArea->m_modelIndex = r13->m_flags;
 
     pRiderState = pLoadRiderWorkArea;
 
@@ -1823,7 +1807,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
     u8* pModel = pLoadRiderWorkArea->m_riderModel;
     u8* pModelData2 = pModel + READ_BE_U32(pModel + r13->m_flags2);
 
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m_18, 0, pModel, pLoadRiderWorkArea->m_data0, pModelData1, pModelData2, 0, r13->m_pExtraData);
+    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m_3dModel, 0, pModel, pLoadRiderWorkArea->m_modelIndex, pModelData1, pModelData2, 0, r13->m_pExtraData);
 
     return pLoadRiderWorkArea;
 }
