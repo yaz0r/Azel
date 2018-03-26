@@ -34,8 +34,6 @@ void addObjectToDrawList(u8* pObjectData, u32 offset)
     newObject.m_offset = offset;
     newObject.m_modelMatrix = *pCurrentMatrix;
 
-    newObject.m_modelMatrix.matrix[11] += 0xD000;
-
     objectRenderList.push_back(newObject);
 }
 
@@ -299,7 +297,6 @@ void drawObject_SingleDrawCall(s_objectToRender* pObject, float* projectionMatri
         {
             objectMatrix[i] = pObject->m_modelMatrix.matrix[i] / quantisation;
         }
-        objectMatrix[15] = 1.f;
 
         objectMatrix[9] += 5000;
 
@@ -861,9 +858,9 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                                 float fY = ((s16)READ_BE_U16(vertexEA + 2)) / quantisation;
                                 float fZ = ((s16)READ_BE_U16(vertexEA + 4)) / quantisation;
 
-                                tempQuad.m_vertices[i].m_originalVertices[0] = fX;
-                                tempQuad.m_vertices[i].m_originalVertices[1] = fY;
-                                tempQuad.m_vertices[i].m_originalVertices[2] = fZ;
+                                tempQuad.m_vertices[i].m_originalVertices[0] = fX * 16;
+                                tempQuad.m_vertices[i].m_originalVertices[1] = fY * 16;
+                                tempQuad.m_vertices[i].m_originalVertices[2] = fZ * 16;
                                 tempQuad.m_vertices[i].m_originalVertices[3] = 1.f;
                             }
 

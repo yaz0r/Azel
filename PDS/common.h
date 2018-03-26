@@ -324,8 +324,8 @@ struct s_dragonState : public s_workArea
     u32 dragonType;//C
     s16 cursorX;//10
     s16 cursorY;//12
-    u32 field_14;//14
-    u32 field_18;//18
+    u32 modelIndex;//14
+    u32 shadowModelIndex;//18
     u32 dragonArchetype; //1C
     const u16* dragonData2; //20
     u32 dragonData2Count; //24
@@ -472,4 +472,6 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
 
 fixedPoint getCos(u32 value);
 fixedPoint getSin(u32 value);
+
+extern u16 atanTable[2049];
 
