@@ -65,6 +65,16 @@ enum e_dragonLevel : unsigned char {
     DR_LEVEL_MAX
 };
 
+enum e_dragonArchetype : unsigned char {
+    DR_ARCHETYPE_0_NORMAL = 0,
+    DR_ARCHETYPE_1_DEFENSE,
+    DR_ARCHETYPE_2_ATTACK,
+    DR_ARCHETYPE_3_AGILITY,
+    DR_ARCHETYPE_4_SPIRITUAL,
+
+    DR_ARCHETYPE_MAX
+};
+
 enum e_dragonAnim : unsigned char {
     DR_ANIM_0_BASIC_WING = 0,
     DR_ANIM_1_VALIANT_WING,
@@ -233,7 +243,7 @@ struct s_dragonData2
     u32 m_count;
 };
 
-extern const s_dragonData2 dragonData2[DR_LEVEL_MAX];
+extern const s_dragonData2 dragonAnimOffsets[DR_LEVEL_MAX];
 
 struct sAnimTrackStatus
 {
@@ -327,8 +337,8 @@ struct s_dragonState : public s_workArea
     u32 modelIndex;//14
     u32 shadowModelIndex;//18
     u32 dragonArchetype; //1C
-    const u16* dragonData2; //20
-    u32 dragonData2Count; //24
+    const u16* dragonAnimOffsets; //20
+    u32 dragonAnimCount; //24
     s_3dModel dragon3dModel; //28
 
     s3DModelAnimData animData; // 78
@@ -366,6 +376,7 @@ struct s_graphicEngineStatus_4514
     u16 field_6;
     u16 field_8; // gamepad input bitmask
     u16 field_E;
+    u16 field_72;
 };
 
 struct s_graphicEngineStatus_405C

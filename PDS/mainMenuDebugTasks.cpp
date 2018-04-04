@@ -1544,7 +1544,7 @@ void loadDragonSoundBank(e_dragonLevel dragonLevel)
 void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 {
     const sDragonData3* pDragonData3 = &dragonData3[dragonLevel];
-    const s_dragonData2* pDragonData2 = &dragonData2[dragonLevel];
+    const s_dragonData2* pDragonAnimOffsets = &dragonAnimOffsets[dragonLevel];
 
     s_dragonState* pDragonState = static_cast<s_dragonState*>(createSubTaskFromFunction(pWorkArea, NULL, new s_dragonState, "dragonState"));
 
@@ -1552,15 +1552,15 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     pDragonState->dragonType = dragonLevel;
     pDragonState->modelIndex = pDragonData3->m_field_8[0].m_field_0[0];
     pDragonState->shadowModelIndex = pDragonData3->m_field_8[0].m_field_0[1];
-    pDragonState->dragonData2 = pDragonData2->m_data;
-    pDragonState->dragonData2Count = pDragonData2->m_count;
+    pDragonState->dragonAnimOffsets = pDragonAnimOffsets->m_data;
+    pDragonState->dragonAnimCount = pDragonAnimOffsets->m_count;
     pDragonState->field_88 = 1;
 
     u8* pDragonModel = pDragonState->pDragonModelRawData;
-    u8* pModelData1 = pDragonModel + READ_BE_U32(pDragonModel + pDragonState->dragonData2[0]);
+    u8* pDefaultAnimationData = pDragonModel + READ_BE_U32(pDragonModel + pDragonState->dragonAnimOffsets[0]);
     u8* defaultPose = pDragonModel + READ_BE_U32(pDragonModel + pDragonData3->m_field_8[0].m_field_0[2]);
 
-    init3DModelRawData(pDragonState, &pDragonState->dragon3dModel, 0x300, pDragonModel, pDragonState->modelIndex, pModelData1, defaultPose, 0, pDragonData3->m_field_8[0].m_field_8);
+    init3DModelRawData(pDragonState, &pDragonState->dragon3dModel, 0x300, pDragonModel, pDragonState->modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_field_8[0].m_field_8);
 
     init3DModelAnims(pDragonState, &pDragonState->dragon3dModel, &pDragonState->animData, getDragonDataByIndex(dragonLevel));
 

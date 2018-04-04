@@ -670,7 +670,7 @@ const u16 dragonData2_8[] = {
     0xDC,
 };
 
-const s_dragonData2 dragonData2[DR_LEVEL_MAX] = {
+const s_dragonData2 dragonAnimOffsets[DR_LEVEL_MAX] = {
     { dragonData2_0, 0x12 },
     { dragonData2_1, 0x12 },
     { dragonData2_2, 0x12 },

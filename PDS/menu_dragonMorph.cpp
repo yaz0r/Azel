@@ -24,7 +24,8 @@ struct s_dragonMenuDragonWorkArea : public s_workArea
 {
     s_loadDragonWorkArea* field_0; //0
     const sDragonData3* field_4; //4
-    u16 field_8; //88
+    u16 field_8; //8
+    u32 field_C; //C
     sVec3_FP modelTranslation; //10
     sVec3_FP modelRotation; //1C
     u8* field_28; //28
@@ -77,7 +78,7 @@ u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 r5)
     }
 }
 
-void dragonMenuDragonInitSub2(s_3dModel* pDragonStateData1, u8* r5, u32 r6)
+void playAnimation(s_3dModel* pDragonStateData1, u8* r5, u32 r6)
 {
     if (dragonMenuDragonInitSub2Sub1(pDragonStateData1, r6))
     {
@@ -333,7 +334,7 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     pWorkArea->modelRotation[1] = fixedPoint(0x638E38E);
     pWorkArea->modelRotation[2] = fixedPoint(0xF555555);
 
-    dragonMenuDragonInitSub2(&gDragonState->dragon3dModel, gDragonState->pDragonModelRawData + READ_BE_U32(gDragonState->pDragonModelRawData + gDragonState->dragonData2[0]), 0); // Todo: is the [0] correct?
+    playAnimation(&gDragonState->dragon3dModel, gDragonState->pDragonModelRawData + READ_BE_U32(gDragonState->pDragonModelRawData + gDragonState->dragonAnimOffsets[0]), 0); // Todo: is the [0] correct?
 
     dragonMenuDragonInitSub3(&gDragonState->animData);
 
@@ -531,6 +532,118 @@ void updateAnimationMatrices(s3DModelAnimData* r4, s_3dModel* r5)
     updateAnimationMatricesSub3(r4);
 }
 
+struct s_animLoop
+{
+    u16 m_count;
+    u16 m_values[];
+};
+
+s_animLoop dragonAnimLoop_0 = {
+    1,
+    {0}
+};
+
+s_animLoop dragonAnimLoop_0_2 = {
+    2,
+    { 0, 2 }
+};
+
+s_animLoop dragonAnimLoop_0_2_2 = {
+    3,
+    { 0, 2, 2 }
+};
+
+s_animLoop dragonAnimLoop_0_0_2 = {
+    3,
+    { 0, 0, 2 }
+};
+
+s_animLoop dragonAnimLoop_0_2_2_2 = {
+    4,
+    { 0, 2, 2, 2 }
+};
+
+s_animLoop dragonAnimLoop_0_0_2_2 = {
+    4,
+    { 0, 0, 2, 2 }
+};
+
+s_animLoop* dragonAnimLoop[DR_LEVEL_MAX][DR_ARCHETYPE_MAX] =
+{
+    //DR_LEVEL_0_BASIC_WING
+    {
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+    },
+
+    {
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0_2,
+        &dragonAnimLoop_0_2_2,
+        &dragonAnimLoop_0_0_2,
+    },
+
+    {
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0_2,
+        &dragonAnimLoop_0_2_2,
+        &dragonAnimLoop_0_0_2,
+    },
+
+    {
+        &dragonAnimLoop_0_2,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0_2_2,
+        &dragonAnimLoop_0_2_2_2,
+        &dragonAnimLoop_0_0_2,
+    },
+
+    {
+        &dragonAnimLoop_0_2,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0_2_2,
+        &dragonAnimLoop_0_2_2_2,
+        &dragonAnimLoop_0_0_2,
+    },
+
+    {
+        &dragonAnimLoop_0_2,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0_2_2,
+        &dragonAnimLoop_0_2_2_2,
+        &dragonAnimLoop_0_0_2,
+    },
+
+    {
+        &dragonAnimLoop_0_2,
+        &dragonAnimLoop_0_2,
+        &dragonAnimLoop_0_2,
+        &dragonAnimLoop_0_2,
+        &dragonAnimLoop_0_2,
+    },
+
+    {
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0_0_2,
+        &dragonAnimLoop_0_0_2_2,
+        &dragonAnimLoop_0_2_2,
+        &dragonAnimLoop_0,
+    },
+
+    {
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+        &dragonAnimLoop_0,
+    },
+};
+
 void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
 {
     s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
@@ -574,17 +687,37 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    unimplemented("Complicated input stuff in dragonMenuDragonUpdate");
-    /*
-    if (graphicEngineStatus.field_4514.field_6C.field_6 & 0x8000)
+    if (graphicEngineStatus.field_4514.field_72 & 0x8000)
     {
         assert(0);
     }
     else
     {
-        assert(0)
+        if (graphicEngineStatus.field_4514.field_72 & 0x10)
+        {
+            assert(0);
+        }
+        if (graphicEngineStatus.field_4514.field_72 & 0x20)
+        {
+            assert(0);
+        }
+        if (graphicEngineStatus.field_4514.field_72 & 0x40)
+        {
+            assert(0);
+        }
+        if (graphicEngineStatus.field_4514.field_72 & 0x80)
+        {
+            assert(0);
+        }
+        if (graphicEngineStatus.field_4514.field_72 & 0x4000)
+        {
+            assert(0);
+        }
+        if (graphicEngineStatus.field_4514.field_72 & 0x4)
+        {
+            assert(0);
+        }
     }
-    */
 
     if (readKeyboardToggle(0x10B))
     {
@@ -608,7 +741,33 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
 
     if (pWorkArea->field_8 == 0)
     {
-        unimplemented("pWorkArea->field_8 in dragonMenuDragonUpdate");
+        int r3;
+        if (gDragonState->dragon3dModel.pCurrentAnimation == NULL)
+        {
+            r3 = 0;
+        }
+        else
+        {
+            r3 = READ_BE_S16(gDragonState->dragon3dModel.pCurrentAnimation + 4);
+        }
+        r3--;
+        if (gDragonState->dragon3dModel.field_16 >= r3)
+        {
+            s_animLoop* pAnimLoop = dragonAnimLoop[gDragonState->dragonType][gDragonState->dragonArchetype];
+
+            if (pWorkArea->field_C + 1 < pAnimLoop->m_count)
+            {
+                pWorkArea->field_C++;
+            }
+            else
+            {
+                pWorkArea->field_C = 0;
+            }
+
+            u16 animIndex = pAnimLoop->m_values[pWorkArea->field_C];
+            u32 animOffset = gDragonState->dragonAnimOffsets[animIndex];
+            playAnimation(&gDragonState->dragon3dModel, gDragonState->pDragonModelRawData + READ_BE_U32(gDragonState->pDragonModelRawData + animOffset), 0);
+        }
     }
 
     dragonFieldTaskInitSub3Sub2(&gDragonState->dragon3dModel);
