@@ -485,4 +485,4 @@ fixedPoint getCos(u32 value);
 fixedPoint getSin(u32 value);
 
 extern u16 atanTable[2049];
-
+extern u16 resetVdp2StringsData[4106];

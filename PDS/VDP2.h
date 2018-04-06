@@ -176,7 +176,7 @@ void setupNBG1(sLayerConfig* setup);
 void setupNBG2(sLayerConfig* setup);
 void setupNBG3(sLayerConfig* setup);
 
-void setupVDP2StringRendering(u32 r4, u32 r5, u32 r6, u32 r7);
+void setupVDP2StringRendering(s32 x, s32 y, s32 width, s32 height);
 void vdp2DebugPrintSetPosition(s32 x, s32 y);
 void clearVdp2StringFieldDebugList();
 void clearVdp2TextSmallFont();
@@ -193,15 +193,15 @@ extern u8* MENU_SCB;
 
 struct sVdp2StringControl
 {
-    u32 field_0;
+    u32 index;
     u32 field_4;
-    u32 field_8;
-    u32 field_C;
+    u16* field_8;
+    u16* field_C;
     u32 field_10;
     u8 field_14;
     u8 field_15;
-    u32 field_18;
-    u32 field_1C;
+    sVdp2StringControl* pPrevious;
+    sVdp2StringControl* pNext;
 };
 
 extern sVdp2StringControl* pVdp2StringControl;

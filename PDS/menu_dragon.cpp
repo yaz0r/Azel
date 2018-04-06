@@ -2,6 +2,7 @@
 
 struct s_dragonMenuSubTask1WorkArea : public s_workArea
 {
+    u32 status; //0
 };
 
 void dragonMenuSubTask1Init(p_workArea pTypelessWorkArea)
@@ -9,9 +10,33 @@ void dragonMenuSubTask1Init(p_workArea pTypelessWorkArea)
     unimplemented("dragonMenuSubTask1Init");
 }
 
+void dragonMenuSubTaskAdjustSoundFromCursor()
+{
+    unimplemented("dragonMenuSubTaskAdjustSoundFromCursor");
+}
+
+void dragonMenuSubTask1DrawSub1()
+{
+    unimplemented("dragonMenuSubTask1DrawSub1");
+}
+
 void dragonMenuSubTask1Draw(p_workArea pTypelessWorkArea)
 {
-    unimplemented("dragonMenuSubTask1Draw");
+    s_dragonMenuSubTask1WorkArea* pWorkArea = static_cast<s_dragonMenuSubTask1WorkArea*>(pTypelessWorkArea);
+
+    switch (pWorkArea->status)
+    {
+    case 20:
+        dragonMenuSubTask1DrawSub1();
+        pWorkArea->status++;
+        break;
+    case 30:
+        dragonMenuSubTaskAdjustSoundFromCursor();
+        break;
+    default:
+        pWorkArea->status++;
+        break;
+    }
 }
 
 void dragonMenuSubTask1Delete(p_workArea pTypelessWorkArea)
@@ -81,7 +106,7 @@ void initVdp2ForDragonMenu(u32 r4)
         
         initVdp2ForDragonMenuSub2();
 
-        setupVDP2StringRendering(0, 0x22, 0x26, 0x1C);
+        setupVDP2StringRendering(0, 34, 44, 28);
 
         initVdp2ForDragonMenuSub3();
     }

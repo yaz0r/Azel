@@ -2376,7 +2376,7 @@ void menuGraphicsTaskDrawSub1()
 
     u32 backScreenTableOffset = vdp2Controls.m_pendingVdp2Regs->BKTA & 0x7FFFF;
     graphicEngineStatus.field_40E4->field_400 = getVdp2VramU16(backScreenTableOffset);
-    graphicEngineStatus.field_40E4->field_402 = pVdp2StringControl->field_0;
+    graphicEngineStatus.field_40E4->field_402 = pVdp2StringControl->index;
 }
 
 sLayerConfig menuNBG01Setup[] =

@@ -912,28 +912,193 @@ void initVdp2StringControl()
 {
     pVdp2StringControl = &vdp2StringControlBuffer;
 
-    pVdp2StringControl->field_0 = 0;
+    pVdp2StringControl->index = 0;
     pVdp2StringControl->field_4 = 0;
     pVdp2StringControl->field_8 = 0;
     pVdp2StringControl->field_C = 0;
     pVdp2StringControl->field_10 = 0;
     pVdp2StringControl->field_14 = 0;
     pVdp2StringControl->field_15 = 0;
-    pVdp2StringControl->field_18 = 0;
-    pVdp2StringControl->field_1C = 0;
+    pVdp2StringControl->pPrevious = 0;
+    pVdp2StringControl->pNext = 0;
+}
+
+struct {
+    u32 field_0;
+    s32 cursorX; // 4
+    s32 cursorY; // 8
+    s32 X; // C
+    s32 Y; // 10
+    s32 Width; // 14
+    s32 Height; // 18
+    u32 field_1C; // 1C
+    u32 field_20; // 20
+    u32 field_24; // 24
+    u32 field_28; // 28
+    u32 field_2C; // 2C
+    u32 field_30; // 30
+    u32 field_34; // 34
+    u32 field_38; // 38
+    u32 field_3C; // 3C
+}vdp2StringContext;
+
+struct {
+    u32 field_0;
+    u32 field_4; // 4
+    u32 field_8; // 8
+    u32 field_C; // C
+}vdp2StringContext2;
+
+void resetVdp2StringContext2()
+{
+    vdp2StringContext2.field_0 = 0;
+    vdp2StringContext2.field_4 = 0;
+    vdp2StringContext2.field_8 = 0;
+    vdp2StringContext2.field_C = 0;
+}
+
+void resetVdp2StringContext()
+{
+    vdp2StringContext.field_0 = 0;
+    vdp2StringContext.cursorX = 0;
+    vdp2StringContext.cursorY = 0;
+    vdp2StringContext.X = 0;
+    vdp2StringContext.Y = 0;
+    vdp2StringContext.Width = 44;
+    vdp2StringContext.Height = 30;
+    vdp2StringContext.field_1C = 0;
+    vdp2StringContext.field_20 = 0;
+    vdp2StringContext.field_24 = 0;
+    vdp2StringContext.field_28 = 0;
+    vdp2StringContext.field_2C = 0;
+    vdp2StringContext.field_30 = 0;
+    vdp2StringContext.field_34 = 0;
+    vdp2StringContext.field_38 = 0;
+    vdp2StringContext.field_3C = 0x8421;
+}
+
+sVdp2StringControl* getEndOfvdp2StringControlBufferList()
+{
+    sVdp2StringControl* r4 = &vdp2StringControlBuffer;
+    while (r4->pNext)
+    {
+        r4 = r4->pNext;
+    }
+
+    return r4;
+}
+
+sVdp2StringControl* var_60525E4;
+
+void loadCharacterToVdp2(s16 index, s16 offset)
+{
+    assert(0);
+}
+
+void resetVdp2StringsSub1Sub1()
+{
+    s16 r14 = 0x80;
+
+    do 
+    {
+        r14--;
+        loadCharacterToVdp2(r14, r14 + 0x8000);
+    } while (r14);
+}
+
+s32 resetVdp2StringsSub1(u16* pData)
+{
+    sVdp2StringControl* pOld = getEndOfvdp2StringControlBufferList();
+
+    sVdp2StringControl* pNew = static_cast<sVdp2StringControl*>(allocateHeap(sizeof(sVdp2StringControl)));
+    assert(pNew);
+
+    pNew->index = pOld->index + 1;
+    pNew->field_4 = pData[0];
+    pNew->field_8 = pData;
+    pNew->field_C = 0;
+    pNew->field_10 = 0;
+    pNew->pPrevious = pOld;
+    pNew->pNext = NULL;
+    pNew->field_14 = pData[1];
+
+    bool r12 = false;
+
+    switch (pNew->field_14)
+    {
+    case 4:
+        pNew->field_C = pData + 0x10 / 2;
+        break;
+    case 5:
+        pNew->field_C = pData + 0x10 / 2;
+        var_60525E4 = pNew;
+        r12 = true;
+        break;
+    default:
+        break;
+    }
+
+    pVdp2StringControl = pNew;
+    resetCharacterMaps();
+
+    if (r12)
+    {
+        resetVdp2StringsSub1Sub1();
+    }
+
+    return pVdp2StringControl->index;
 }
 
 void resetVdp2Strings()
 {
     initVdp2StringControl();
 
-    // ..
+    resetVdp2StringContext2();
+
+    resetVdp2StringContext();
 
     resetCharacterMaps();
+
+    resetVdp2StringsSub1(resetVdp2StringsData);
 }
 
-void setupVDP2StringRendering(u32 r4, u32 r5, u32 r6, u32 r7)
+void setupVDP2StringRendering(s32 x, s32 y, s32 width, s32 height)
 {
-    unimplemented("setupVDP2StringRendering");
+    if (x < 0)
+    {
+        x = 0;
+    }
+
+    if (x > 63)
+    {
+        x = 63;
+    }
+
+    if (y < 0)
+    {
+        y = 0;
+    }
+
+    if (y > 63)
+    {
+        y = 63;
+    }
+
+    if (x + width > 63)
+    {
+        width = 63 - x;
+    }
+
+    if (y + height > 63)
+    {
+        height = 63 - y;
+    }
+
+    vdp2StringContext.cursorX = x;
+    vdp2StringContext.cursorY = y;
+    vdp2StringContext.X = x;
+    vdp2StringContext.Y = y;
+    vdp2StringContext.Width = width;
+    vdp2StringContext.Height = height;
 }
 
