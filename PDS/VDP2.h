@@ -191,18 +191,44 @@ void vdp2PrintfLargeFont(const char* format, ...);
 
 extern u8* MENU_SCB;
 
+struct sVdp2StringContext {
+    u32 field_0;
+    s32 cursorX; // 4
+    s32 cursorY; // 8
+    s32 X; // C
+    s32 Y; // 10
+    s32 Width; // 14
+    s32 Height; // 18
+    u32 field_1C; // 1C
+    u32 field_20; // 20
+    u32 field_24; // 24
+    u32 field_28; // 28
+    u32 field_2C; // 2C
+    u32 field_30; // 30
+    u32 field_34; // 34
+    u32 field_38; // 38
+    u32 field_3C; // 3C
+};
+
+extern sVdp2StringContext vdp2StringContext;
+
 struct sVdp2StringControl
 {
     u32 index;
     u32 field_4;
     u16* field_8;
     u16* field_C;
-    u32 field_10;
+    const char* field_10;
     u8 field_14;
     u8 field_15;
     sVdp2StringControl* pPrevious;
     sVdp2StringControl* pNext;
 };
+
+extern u32 characterMap1[0x80];
+extern u16 characterMap2[0x1000];
+//extern u16* vdp2TextMemory;
+extern u32 vdp2TextMemoryOffset;
 
 extern sVdp2StringControl* pVdp2StringControl;
 
@@ -224,3 +250,6 @@ void addToMemoryLayout(u8* pointer, u32 unk0);
 void asyncDmaCopy(void* source, void* target, u32 size, u32 unk);
 
 void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD);
+s32 resetVdp2StringsSub1(u16* pData);
+
+void VDP2DrawString(const char*);

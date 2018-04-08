@@ -4,6 +4,7 @@ u8 MENU_CGB[0x2000];
 
 p_workArea createLoadingTask(p_workArea parentTask)
 {
+    unimplemented("createLoadingTask");
     //createSiblingTaskWithArg(parentTask, &loadingTask, new s_dummyWorkArea, parentTask);
 
     return NULL;
@@ -1842,10 +1843,23 @@ void freeRamResource()
     yLog("Unimplemented freeRamResource");
 }
 
-u16 loadFnt(const char*)
+u16 loadFnt(const char* filename)
 {
-    yLog("Unimplemented loadFnt");
-    return 0;
+    u32 fileSize = getFileSize(filename);
+    u8* fileBuffer = (u8*)allocateHeap(fileSize);
+    assert(fileBuffer);
+    loadFile(filename, fileBuffer, 0);
+    addToMemoryLayout(fileBuffer, 1);
+    for (int i = 0; i < fileSize / 2; i++)
+    {
+        *(u16*)(fileBuffer + i * 2) = READ_BE_U16(fileBuffer + i * 2);
+    }
+    s32 index = resetVdp2StringsSub1((u16*)fileBuffer);
+    assert(index != -1);
+
+    pVdp2StringControl->field_10 = filename;
+    pVdp2StringControl->field_15 |= 1;
+    return index;
 }
 
 void unloadFnt(const char*)
@@ -2890,6 +2904,63 @@ void menuGraphicsTaskDrawSub2()
     }
 }
 
+void setupVDP2CoordinatesIncrement2(s32 scrollX, s32 scrollY)
+{
+    if (pauseEngine[4] == 0)
+    {
+        vdp2Controls.m_registers->SCXDN0 = scrollX;
+        vdp2Controls.m_pendingVdp2Regs->SCXDN0 = scrollX;
+        vdp2Controls.m_registers->SCYDN0 = scrollY;
+        vdp2Controls.m_pendingVdp2Regs->SCYDN0 = scrollY;
+    }
+    else if (pauseEngine[4] == 1)
+    {
+        vdp2Controls.m_registers->SCXDN1 = scrollX;
+        vdp2Controls.m_pendingVdp2Regs->SCXDN1 = scrollX;
+        vdp2Controls.m_registers->SCYDN1 = scrollY;
+        vdp2Controls.m_pendingVdp2Regs->SCYDN1 = scrollY;
+    }
+    else if (pauseEngine[4] == 2)
+    {
+        vdp2Controls.m_registers->SCXN2 = scrollX;
+        vdp2Controls.m_pendingVdp2Regs->SCXN2 = scrollX;
+        vdp2Controls.m_registers->SCYN2 = scrollY;
+        vdp2Controls.m_pendingVdp2Regs->SCYN2 = scrollY;
+    }
+    else if (pauseEngine[4] == 3)
+    {
+        vdp2Controls.m_registers->SCXN3 = scrollX;
+        vdp2Controls.m_pendingVdp2Regs->SCXN3 = scrollX;
+        vdp2Controls.m_registers->SCYN3 = scrollY;
+        vdp2Controls.m_pendingVdp2Regs->SCYN3 = scrollY;
+    }
+}
+
+void scrollMenu()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        if (graphicEngineStatus.field_40BC[4].field_8)
+        {
+            assert(0);
+        }
+    }
+
+    pauseEngine[4] = 0;
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.field_40BC[0].field_0 << 16, graphicEngineStatus.field_40BC[0].field_2 << 16);
+
+    pauseEngine[4] = 1;
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.field_40BC[1].field_0 << 16, graphicEngineStatus.field_40BC[1].field_2 << 16);
+
+    pauseEngine[4] = 2;
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.field_40BC[2].field_0, graphicEngineStatus.field_40BC[2].field_2);
+
+    pauseEngine[4] = 3;
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.field_40BC[3].field_0, graphicEngineStatus.field_40BC[3].field_2);
+
+    pauseEngine[4] = 4;
+}
+
 void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
 {
     s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
@@ -2944,10 +3015,9 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
     case 2:
         if (pWordArea->field_8 && !pWordArea->field_8->getTask()->isFinished())
         {
-            if (graphicEngineStatus.field_40AC.field_4)
+            if (!graphicEngineStatus.field_40AC.field_4)
             {
-                //menuGraphicsTaskDrawSub3();
-                assert(0);
+                scrollMenu();
             }
             if (graphicEngineStatus.field_4514.field_8 & 8)
             {

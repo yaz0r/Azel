@@ -134,7 +134,7 @@ void loadTitleScreenGraphics()
     }
 
     setupNBG1(titleNBG1Setup);
-    initLayerMap(1, (0x6000), (0x6000), (0x6000), (0x6000));
+    initLayerMap(1, vdp2TextMemoryOffset, vdp2TextMemoryOffset, vdp2TextMemoryOffset, vdp2TextMemoryOffset);
 
     incrementVar = 1;
     updateVDP2CoordinatesIncrement(0x8000, 0x8000);

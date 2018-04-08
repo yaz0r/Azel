@@ -10,7 +10,7 @@ bool debugEnabled = false; // watchdog bit 1
 
 int enableDebugTask;
 
-u8 pauseEngine[4];
+u8 pauseEngine[8];
 sPortData2 PortData2;
 
 u32 azelCdNumber = 0;

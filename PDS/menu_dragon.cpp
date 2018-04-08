@@ -52,6 +52,9 @@ struct s_dragonMenuWorkArea : public s_workArea
     u32 field_4;
 
     p_workArea field_C;
+    p_workArea field_10;
+    p_workArea field_14;
+    p_workArea field_1C;
 };
 
 void dragonMenuTaskInit(p_workArea pTypelessWorkArea)
@@ -91,9 +94,63 @@ void initVdp2ForDragonMenuSub2()
     }
 }
 
-void initVdp2ForDragonMenuSub3()
+void clearVdp2TextAreaSub1Sub1(u16 r4)
 {
-    unimplemented("initVdp2ForDragonMenuSub3");
+    if (r4 >= 0x80)
+    {
+        //assert((characterMap1[r4 - 0x80] >> 16) == 0);
+        characterMap1[r4 - 0x80]--; // this only affect lower 16 bits
+    }
+}
+
+u32 clearVdp2TextAreaSub1(u16 r4, s32 x, s32 y)
+{
+    if (r4 == 0)
+    {
+        setVdp2VramU16(vdp2TextMemoryOffset + (y * 64 + x)*2, 0);
+    }
+
+    u16 var0 = characterMap2[(y << 6) + x];
+    u16 r13 = var0;
+    if (r13 == r4)
+    {
+        return 0;
+    }
+    if (r13 == 0)
+    {
+        return 2;
+    }
+
+    u16* var_14 = characterMap2 + ((x - (r13 & 1)) << 7);
+    y -= (2 & r13) >> 1;
+    var0 = (y << 1);
+    *(var_14 + (var0>>1)) = 0;
+
+    u16* var_10 = characterMap2 + ((x + 1) << 7);
+    *(var_10 + (var0>>1)) = 0;
+    *(var_14 + (y + 1)) = 0;
+    
+    *(var_10 + (y + 1)) = 0;
+
+    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x) * 2, 0);
+    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x)*2 + 2, 0);
+    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x)*2 + 0x80, 0);
+    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x)*2 + 0x82, 0);
+
+    clearVdp2TextAreaSub1Sub1(((r13 & 0x7FF) - 0x400) >> 2);
+
+    return 1;
+}
+
+void clearVdp2TextArea()
+{
+    for (int x = vdp2StringContext.X; x < vdp2StringContext.X + vdp2StringContext.Width; x++)
+    {
+        for (int y = vdp2StringContext.Y; y < vdp2StringContext.Y + vdp2StringContext.Height; y++)
+        {
+            clearVdp2TextAreaSub1(0, x, y);
+        }
+    }
 }
 
 void initVdp2ForDragonMenu(u32 r4)
@@ -108,11 +165,169 @@ void initVdp2ForDragonMenu(u32 r4)
 
         setupVDP2StringRendering(0, 34, 44, 28);
 
-        initVdp2ForDragonMenuSub3();
+        clearVdp2TextArea();
     }
 
     unpackGraphicsToVDP2(COMMON_DAT + 0xFE38, getVdp2Vram(0x71000));
 }
+
+void drawDragonMenuStatsTaskInit(p_workArea)
+{
+    menuGraphicsTaskDrawSub2Sub1(graphicEngineStatus.field_40AC.field_A);
+}
+
+struct s_stringStatusQuery
+{
+    s32 cursorX;
+    s32 cursorY;
+    s32 windowWidth;
+    s32 windowHeight;
+    s32 windowX1;
+    s32 windowY1;
+    s32 windowX2;
+    s32 windowY2;
+    const char* string;
+    u32 vdp2MemoryOffset;
+    u32 field_28;
+    u32 field_2C;
+};
+
+void addStringToVdp2(const char* string, s_stringStatusQuery* vars)
+{
+    vars->cursorX = vdp2StringContext.cursorX;
+    vars->cursorY = vdp2StringContext.cursorY;
+    vars->windowX1 = vdp2StringContext.X;
+    vars->windowY1 = vdp2StringContext.Y;
+    vars->windowWidth = vdp2StringContext.Width;
+    vars->windowHeight = vdp2StringContext.Height;
+    vars->windowX2 = vdp2StringContext.X + vdp2StringContext.Width;
+    vars->windowY2 = vdp2StringContext.Y + vdp2StringContext.Height;
+    vars->string = string;
+    vars->vdp2MemoryOffset = vdp2TextMemoryOffset + ((vdp2StringContext.cursorY << 6) + vdp2StringContext.cursorX)*2;
+    vars->field_28 = vdp2StringContext.field_0;
+    vars->field_2C = vdp2StringContext.field_38;
+}
+
+void moveVdp2TextCursor(s_stringStatusQuery* vars)
+{
+    vdp2StringContext.cursorX = vars->cursorX;
+    vdp2StringContext.cursorY = vars->cursorY;
+}
+
+u32 printVdp2StringTable[10] = {
+    12, 13, 7, 8, 9, 10, 11, 13, 7, 14
+};
+
+void printVdp2StringNewLine(s_stringStatusQuery* vars)
+{
+    unimplemented("printVdp2StringNewLine");
+}
+
+void printVdp2String(s_stringStatusQuery* vars)
+{
+    u32 r11 = (printVdp2StringTable[vars->field_28] << 12) + 0x63;
+
+    vars->vdp2MemoryOffset = vdp2TextMemoryOffset + (((vars->cursorY << 6) + vars->cursorX))*2;
+
+    while (u8 r4 = *(vars->string++))
+    {
+        switch (r4)
+        {
+        case 0xA:
+        case '%':
+            assert(0);
+        default:
+            setVdp2VramU16(vars->vdp2MemoryOffset, r11 + (r4 - 0x20) * 2);
+            setVdp2VramU16(vars->vdp2MemoryOffset + 0x80, r11 + (r4 - 0x20) * 2 + 1);
+            vars->vdp2MemoryOffset+=2;
+            vars->cursorX++;
+            break;
+        }
+
+        if (vars->windowWidth)
+        {
+            if (vars->windowX2 - vars->cursorX < 1)
+            {
+                printVdp2StringNewLine(vars);
+            }
+        }
+
+        if(vars->windowHeight)
+        {
+            if (vars->windowY2 - vars->cursorY < 1)
+            {
+                break;
+            }
+        }
+    }
+
+    vars->string--;
+}
+
+void drawInventoryString(const char* string)
+{
+    s_stringStatusQuery vars;
+    addStringToVdp2(string, &vars);
+    printVdp2String(&vars);
+    moveVdp2TextCursor(&vars);
+}
+
+void drawDragonMenuStatsTaskDraw(p_workArea)
+{
+    setupVDP2StringRendering(30, 36, 14, 14);
+    vdp2PrintStatus.palette = 0xC000;
+    
+    vdp2StringContext.field_0 = 0;
+    vdp2StringContext.cursorX = vdp2StringContext.X;
+    vdp2StringContext.cursorY = vdp2StringContext.Y;
+
+    switch (mainGameState.gameStats.dragonLevel)
+    {
+    case DR_LEVEL_0_BASIC_WING:
+        drawInventoryString(" BASE TYPE");
+        break;
+    default:
+        assert(0);
+    }
+
+    vdp2StringContext.cursorX = vdp2StringContext.X;
+    vdp2StringContext.cursorY = vdp2StringContext.Y + 3;
+    drawInventoryString("ATT PWR");
+    vdp2DebugPrintSetPosition(37, 39);
+    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonAtt);
+
+    vdp2StringContext.cursorX = vdp2StringContext.X;
+    vdp2StringContext.cursorY = vdp2StringContext.Y + 6;
+    drawInventoryString("DEF PWR");
+    vdp2DebugPrintSetPosition(37, 42);
+    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonDef);
+
+    vdp2StringContext.cursorX = vdp2StringContext.X;
+    vdp2StringContext.cursorY = vdp2StringContext.Y + 9;
+    drawInventoryString("SPR PWR");
+    vdp2DebugPrintSetPosition(37, 45);
+    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonSpr);
+
+    vdp2StringContext.cursorX = vdp2StringContext.X;
+    vdp2StringContext.cursorY = vdp2StringContext.Y + 12;
+    drawInventoryString("AGL PWR");
+    vdp2DebugPrintSetPosition(37, 48);
+    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonAgl);
+
+    if (mainGameState.gameStats.dragonLevel < 8)
+    {
+        if (mainGameState.getBit(0x1B, 5))
+        {
+            setupVDP2StringRendering(25, 56, 16, 2);
+            VDP2DrawString(mainGameState.gameStats.dragonName);
+        }
+    }
+
+}
+
+s_taskDefinition dragonMenuStatsTaskDefinition = { drawDragonMenuStatsTaskInit, NULL, drawDragonMenuStatsTaskDraw, dummyTaskDelete, "dragonMenuStatsTask" };
+s_taskDefinition dragonMenuStatsTask2Definition = { NULL, NULL, dummyTaskDraw, NULL, "dragonMenuStatsTask2" };
+s_taskDefinition dragonMenuMorphCursorTaskDefinition = { dummyTaskInit, NULL, dummyTaskDraw, NULL, "dragonMenuMorphCursorTask" };
 
 void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
 {
@@ -137,11 +352,9 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
         
         pWorkArea->field_C = createDragonMenuMorhTask(pWorkArea);
 
-        /*
-        pWorkArea->field_10 = createSubTask(pWorkArea, &dragonMenuStatsTaskDefinition, NULL);
-        pWorkArea->field_14 = createSubTask(pWorkArea, &dragonMenuStatsTask2Definition, NULL);
-        pWorkArea->field_1C = createSubTask(pWorkArea, &dragonMenuMorphCursorTaskDefinition, NULL);
-        */
+        pWorkArea->field_10 = createSubTask(pWorkArea, &dragonMenuStatsTaskDefinition, new s_workArea);
+        pWorkArea->field_14 = createSubTask(pWorkArea, &dragonMenuStatsTask2Definition, new s_dummyWorkArea);
+        pWorkArea->field_1C = createSubTask(pWorkArea, &dragonMenuMorphCursorTaskDefinition, new s_dummyWorkArea);
 
         if (graphicEngineStatus.field_40AC.field_0 != 1)
         {

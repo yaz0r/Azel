@@ -92,10 +92,10 @@ enum e_dragonAnim : unsigned char {
 
 struct s_gameStats
 {
-    u8 level;
-    e_dragonLevel dragonLevel;
-    u8 rider1;
-    u8 rider2;
+    u8 level; // 0
+    e_dragonLevel dragonLevel; // 1
+    u8 rider1; // 2
+    u8 rider2; // 3
 
     u16 currentHP; // 0x10
     u16 classMaxHP; // 0x12
@@ -164,6 +164,13 @@ public:
     bool getBit(u32 bitIndex)
     {
         if (bitField[bitIndex / 8] &= 0x80 >> (bitIndex % 8))
+            return true;
+        return false;
+    }
+
+    bool getBit(u32 byteIndex, u32 bitIndex)
+    {
+        if (bitField[byteIndex] &= 0x80 >> (bitIndex))
             return true;
         return false;
     }

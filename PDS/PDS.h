@@ -110,7 +110,7 @@ extern sFileInfo fileInfoStruct;
 
 extern bool debugEnabled;
 extern int enableDebugTask;
-extern u8 pauseEngine[4];
+extern u8 pauseEngine[8];
 extern u32 azelCdNumber;
 
 u32 READ_BE_U32(const void* ptr);

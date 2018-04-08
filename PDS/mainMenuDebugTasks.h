@@ -12,6 +12,8 @@ p_workArea createContinueTask(p_workArea pWorkArea);
 u32 dragonFieldTaskInitSub3Sub1(s_3dModel* r4, u8* r5);
 u32 dragonFieldTaskInitSub3Sub2(s_3dModel* r4);
 
+void menuGraphicsTaskDrawSub2Sub1(u16 r4);
+
 struct s_loadDragonWorkArea : public s_workArea
 {
     u8* dramAllocation; //0

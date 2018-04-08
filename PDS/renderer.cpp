@@ -116,6 +116,9 @@ struct s_layerData
     u32 SCN;
 
     u32 planeOffsets[4];
+
+    s32 scrollX;
+    s32 scrollY;
 };
 
 void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u32* textureOutput)
@@ -145,10 +148,13 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
         break;
     }
 
-    for (u32 outputY = 0; outputY < textureHeight; outputY++)
+    for (u32 rawOutputY = 0; rawOutputY < textureHeight; rawOutputY++)
     {
-        for (u32 outputX = 0; outputX < textureWidth; outputX++)
+        for (u32 rawOutputX = 0; rawOutputX < textureWidth; rawOutputX++)
         {
+            s32 outputX = rawOutputX + layerData.scrollX;
+            s32 outputY = rawOutputY + layerData.scrollY;
+
             u32 planeX = outputX / planeDotWidth;
             u32 planeY = outputY / planeDotHeight;
             u32 dotInPlaneX = outputX % planeDotWidth;
@@ -289,7 +295,7 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
                 u16 color = getVdp2CramU16(paletteOffset);
                 u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
 
-                textureOutput[outputY * textureWidth + outputX] = finalColor;
+                textureOutput[rawOutputY * textureWidth + rawOutputX] = finalColor;
             }
         }
     }
@@ -312,6 +318,8 @@ void renderBG0(u32 width, u32 height)
     planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA) & 0x7;
     planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ) & 3;
     planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN0) & 0x1F;
+    planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXDN0 >> 16;
+    planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYDN0 >> 16;
 
     u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
     u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -353,6 +361,8 @@ void renderBG1(u32 width, u32 height)
     planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA >> 4) & 0x7;
     planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ >> 2) & 3;
     planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN1) & 0x1F;
+    planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXDN1 >> 16;
+    planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYDN1 >> 16;
 
     u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
     u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -428,7 +438,8 @@ void renderBG3(u32 width, u32 height)
     planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA >> 12) & 0x7;
     planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ >> 6) & 3;
     planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN3) & 0x1F;
-
+    planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXN3;
+    planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYN3;
 
     u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
     u32 patternSize = (planeData.PNB == 0) ? 4 : 2;

@@ -7,15 +7,15 @@ u8 vdp2CRam[0x1000];
 u8* VDP2_CRamStart = vdp2CRam;
 
 u32 vdp2TextMemoryOffset = 0x6000;
-u16* vdp2TextMemory = (u16*)&vdp2Ram[0x6000];
+//u16 vdp2TextMemory = (u16*)&vdp2Ram[0x6000];
 u8* vdp2FontPalettes = VDP2_CRamStart + 0xE00;
 u8* vdp2Palette = VDP2_CRamStart + 0xC00;
-
 u8* MENU_SCB = (u8*)&vdp2Ram[0x71C00];
 
 s_Vdp2PrintStatus vdp2PrintStatus;
 s_VDP2Regs VDP2Regs_;
 
+sVdp2StringContext vdp2StringContext;
 sVdp2Controls vdp2Controls;
 
 u8* getVdp2Vram(u32 offset)
@@ -72,7 +72,7 @@ int drawStringLargeFont(const char* text)
     s32 r3 = vdp2PrintStatus.X;
     s32 r6 = vdp2PrintStatus.Y;
 
-    u32 pOutput = 0x6000 + 2*(r3 + r6 * 64);
+    u32 pOutput = vdp2TextMemoryOffset + 2*(r3 + r6 * 64);
 
     s32 r0 = vdp2PrintStatus.palette;
 
@@ -119,7 +119,7 @@ int drawStringSmallFont(const char* text)
     s32 r3 = vdp2PrintStatus.X;
     s32 r6 = vdp2PrintStatus.Y;
 
-    u32 pOutput = 0x6000 + 2 * (r3 + r6 * 64);
+    u32 pOutput = vdp2TextMemoryOffset + 2 * (r3 + r6 * 64);
 
     s32 r0 = vdp2PrintStatus.palette;
     s32 r1 = r0 + 3;
@@ -145,26 +145,24 @@ int drawStringSmallFont(const char* text)
 
 void clearVdp2TextLargeFont()
 {
-    u16* pOutput = vdp2TextMemory + (vdp2PrintStatus.X + vdp2PrintStatus.Y * 64);
+    u32 pOutputOffset = vdp2TextMemoryOffset + (vdp2PrintStatus.X + vdp2PrintStatus.Y * 64) * 2;
 
-    while (*pOutput)
+    while (getVdp2VramU16(pOutputOffset))
     {
-        *pOutput = 0;
-        *(pOutput + 0x40) = 0;
-
-        pOutput++;
+        setVdp2VramU16(pOutputOffset,0);
+        setVdp2VramU16(pOutputOffset + 0x80, 0);
+        pOutputOffset+=2;
     }
 }
 
 void clearVdp2TextSmallFont()
 {
-    u16* pOutput = vdp2TextMemory + (vdp2PrintStatus.X + vdp2PrintStatus.Y * 64);
+    u32 pOutputOffset = vdp2TextMemoryOffset + (vdp2PrintStatus.X + vdp2PrintStatus.Y * 64) * 2;
 
-    while (*pOutput)
+    while (getVdp2VramU16(pOutputOffset))
     {
-        *pOutput = 0;
-
-        pOutput++;
+        setVdp2VramU16(pOutputOffset, 0);
+        pOutputOffset+=2;
     }
 }
 
@@ -716,7 +714,7 @@ void resetCharacterMaps()
 
 void clearVdp2TextMemory()
 {
-    memset(vdp2TextMemory, 0, 0x10 * 0x1000);
+    memset(getVdp2Vram(vdp2TextMemoryOffset), 0, 0x10 * 0x1000);
     resetCharacterMaps();
 }
 
@@ -724,7 +722,7 @@ void initVdp2TextLayer()
 {
     setupNBG3(textLayerVdp2Setup);
 
-    initLayerMap(3, 0x6000, 0x6000, 0x6000, 0x6000);
+    initLayerMap(3, vdp2TextMemoryOffset, vdp2TextMemoryOffset, vdp2TextMemoryOffset, vdp2TextMemoryOffset);
 
     clearVdp2TextMemory();
 
@@ -925,25 +923,6 @@ void initVdp2StringControl()
 
 struct {
     u32 field_0;
-    s32 cursorX; // 4
-    s32 cursorY; // 8
-    s32 X; // C
-    s32 Y; // 10
-    s32 Width; // 14
-    s32 Height; // 18
-    u32 field_1C; // 1C
-    u32 field_20; // 20
-    u32 field_24; // 24
-    u32 field_28; // 28
-    u32 field_2C; // 2C
-    u32 field_30; // 30
-    u32 field_34; // 34
-    u32 field_38; // 38
-    u32 field_3C; // 3C
-}vdp2StringContext;
-
-struct {
-    u32 field_0;
     u32 field_4; // 4
     u32 field_8; // 8
     u32 field_C; // C
@@ -992,7 +971,114 @@ sVdp2StringControl* var_60525E4;
 
 void loadCharacterToVdp2(s16 index, s16 offset)
 {
-    assert(0);
+    u8* vdp2FontBase = getVdp2Vram(0x8000);
+
+    s16 r5 = offset - 0x8000;
+    u16* r6 = pVdp2StringControl->field_C;
+
+    if (pVdp2StringControl->field_14 == 4)
+    {
+        assert(0);
+    }
+    else
+    {
+        offset &= 0xFFFF;
+    }
+
+    u16* r11 = r6 + (r5 << 4);
+    u8* r14 = vdp2FontBase + (index << 7);
+    
+    u8 var_28[8];
+    u8* var_2C = var_28 + 7;
+
+    for (int counter = 2; counter > 0; counter--)
+    {
+        for (int r10 = 8; r10 > 0; r10--)
+        {
+            u16 r13 = *r11;
+            u16 r6 = (r13 << 1) | (r13 >> 1);
+
+            u16 r2 = r11[-1];
+            u16 r7 = r11[-1];
+            u16 r3 = r11[0];
+
+            r7 |= r3;
+            r7 &= r6;
+
+            r2 |= r3;
+            r2 |= r7 >> 1;
+
+            r6 |= r2;
+
+            {
+                u8* r8 = var_2C;
+                for (int r15 = 8; r15 > 0; r15--)
+                {
+                    u32 r9 = r13 & 3;
+                    *r8 = ((r9 << 3) | r9) & 0x11;
+                    r13 >>= 2;
+                    r8--;
+                }
+            }
+
+            {
+                u8* r13 = var_28;
+                {
+                    u8 r3 = *(r13++);
+                    u32 r9 = (r7 >> 10) & 0x30;
+                    u32 r8 = (r6 >> 9) & 0x60;
+                    r14[0] = ((r8 + (r8 >> 3)) & 0x44) + ((r9 + (r9 >> 3)) & 0x22) + r3;
+                }
+                {
+                    u8 r3 = *(r13++);
+                    u32 r8 = (r7 >> 8) & 0x30;
+                    u32 r9 = (r6 >> 7) & 0x60;
+                    r14[1] = ((r9 + (r9 >> 3)) & 0x44) + ((r8 + (r8 >> 3)) & 0x22) + r3;
+                }
+                {
+                    u8 r3 = *(r13++);
+                    u32 r9 = (r7 >> 6) & 0x30;
+                    u32 r8 = (r6 >> 5) & 0x60;
+                    r14[2] = ((r8 + (r8 >> 3)) & 0x44) + ((r9 + (r9 >> 3)) & 0x22) + r3;
+                }
+                {
+                    u8 r3 = *(r13++);
+                    u32 r9 = (r7 >> 4) & 0x30;
+                    u32 r8 = (r6 >> 3) & 0x60;
+                    r14[3] = ((r8 + (r8 >> 3)) & 0x44) + ((r9 + (r9 >> 3)) & 0x22) + r3;
+                }
+                {
+                    u8 r3 = *(r13++);
+                    u32 r9 = (r7 >> 2) & 0x30;
+                    u32 r8 = (r6 >> 1) & 0x60;
+                    r14[0x20] = ((r8 + (r8 >> 3)) & 0x44) + ((r9 + (r9 >> 3)) & 0x22) + r3;
+                }
+                {
+                    u8 r3 = *(r13++);
+                    u32 r9 = (r7 >> 1) & 0x30;
+                    u32 r8 = (r6 << 1) & 0x60;
+                    r14[0x21] = ((r8 + (r8 >> 3)) & 0x44) + ((r9 + (r9 >> 3)) & 0x22) + r3;
+                }
+                {
+                    u8 r3 = *(r13++);
+                    u32 r9 = (r7 << 2) & 0x30;
+                    u32 r8 = (r6 << 3) & 0x60;
+                    r14[0x22] = ((r8 + (r8 >> 3)) & 0x44) + ((r9 + (r9 >> 3)) & 0x22) + r3;
+                }
+                {
+                    u8 r3 = *(r13++);
+                    u32 r9 = (r7 << 4) & 0x30;
+                    u32 r8 = (r6 << 5) & 0x60;
+                    r14[0x23] = ((r8 + (r8 >> 3)) & 0x44) + ((r9 + (r9 >> 3)) & 0x22) + r3;
+                }
+                r14 += 4;
+            }
+        }
+
+        r14 += 0x20;
+    }
+    
+
 }
 
 void resetVdp2StringsSub1Sub1()
@@ -1100,5 +1186,10 @@ void setupVDP2StringRendering(s32 x, s32 y, s32 width, s32 height)
     vdp2StringContext.Y = y;
     vdp2StringContext.Width = width;
     vdp2StringContext.Height = height;
+}
+
+void VDP2DrawString(const char*)
+{
+    assert(0);
 }
 
