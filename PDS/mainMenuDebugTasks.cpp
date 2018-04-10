@@ -303,12 +303,12 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
     }
     else
     {
-        if (PortData2.field_8 & 0x60)
+        if (graphicEngineStatus.field_4514[0].current.field_8 & 0x60)
         {
             pWorkArea->m_isSelectingSubfield = 1;
         }
 
-        if (PortData2.field_C & 0x20) // bottom
+        if (graphicEngineStatus.field_4514[0].current.field_C & 0x20) // bottom
         {
             clearVdp2StringFieldDebugList();
             r14->subFieldIndexMenuSelection = 0;
@@ -323,7 +323,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
         }
 
-        if (PortData2.field_C & 0x10) // up
+        if (graphicEngineStatus.field_4514[0].current.field_C & 0x10) // up
         {
             clearVdp2StringFieldDebugList();
             r14->subFieldIndexMenuSelection = 0;
@@ -339,12 +339,12 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
         }
     }
 
-    if (PortData2.field_C & 0x8000)
+    if (graphicEngineStatus.field_4514[0].current.field_C & 0x8000)
     {
         assert(0);
     }
 
-    if (PortData2.field_C & 0x800)
+    if (graphicEngineStatus.field_4514[0].current.field_C & 0x800)
     {
         assert(0);
     }
@@ -483,7 +483,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
 
     vdp2PrintStatus.palette = 0xC000;
 
-    u8 inputValue = PortData2.field_8 & 0xF;
+    u8 inputValue = graphicEngineStatus.field_4514[0].current.field_8 & 0xF;
     if (inputValue == 0)
     {
         return;
@@ -2231,9 +2231,8 @@ void fieldDebugTaskInit(p_workArea pTypelessWorkArea)
     pWorkArea->field_8 = createFieldTask(pTypelessWorkArea, 0);
     
     createLoadingTask(pWorkArea->field_8);
+    createMenuTask(pWorkArea->field_8);
     createSiblingTaskWithArg(pWorkArea->field_8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->field_8);
-
-    assert(0);
 }
 
 void genericTaskRestartGameWhenFinished(p_workArea pTypelessWorkArea)
@@ -2811,9 +2810,215 @@ void setupVdp2ForMenu()
     }
 }
 
+struct s_mainMenuWorkArea : public s_workArea
+{
+    s8 field_3[5];
+};
+
+void mainMenuTaskInitSub1()
+{
+    initVdp2ForDragonMenuSub1(0, 160, 0);
+    initVdp2ForDragonMenuSub1(1, 0, 0x100);
+    initVdp2ForDragonMenuSub1(3, 0, 0x100);
+    initVdp2ForDragonMenuSub2();
+    unpackGraphicsToVDP2(COMMON_DAT + 0xF7F4, getVdp2Vram(0x71400));
+    setupVDP2StringRendering(0, 34, 44, 28);
+    clearVdp2TextArea();
+}
+
+void mainMenuTaskInitSub3(u32 vdp2Offset, u32 r5, u32 r6, u32 r7)
+{
+    u32 r11 = 0xFFF;
+    r7 <<= 8;
+    for (int i = 0; i < r6; i++)
+    {
+        u32 r14 = vdp2Offset;
+        u32 r10 = r5;
+
+        for (int j = 0; j < r10; j++)
+        {
+            u16 r1 = getVdp2VramU16(r14);
+            u16 r2 = r1;
+            r2 &= 0xFFF;
+            r1 ^= r1;
+            if (r1)
+            {
+                r2 |= r7;
+                setVdp2VramU16(r14, r2);
+            }
+            r14 += 2;
+        }
+
+        vdp2Offset += 0x40;
+    }
+}
+
+struct sMainMenuTaskInitData2
+{
+    s_graphicEngineStatus_40BC* field_0;
+    u16* field_4;
+};
+
+struct mainMenuTaskInitSub2TaskWorkArea : public s_workArea
+{
+    u32 spriteIndex;
+    s_graphicEngineStatus_40BC* field_4;
+    u16* spriteData;
+    u32 field_C;
+};
+
+void mainMenuTaskInitSub2TaskInit(p_workArea typelessWorkArea, void* arg)
+{
+    mainMenuTaskInitSub2TaskWorkArea* pWorkArea = static_cast<mainMenuTaskInitSub2TaskWorkArea*>(typelessWorkArea);
+    sMainMenuTaskInitData2* typedArg = static_cast<sMainMenuTaskInitData2*>(arg);
+
+    pWorkArea->field_4 = typedArg->field_0;
+    pWorkArea->spriteData = typedArg->field_4;
+}
+
+struct s_menuSprite
+{
+    s16 SRCA;
+    s16 SIZE;
+    s16 X;
+    s16 Y;
+};
+
+s_menuSprite spriteData1[] =
+{
+    {0x2118, 0x520, 0, 0},
+    {0x20D8, 0x420, 4, 0},
+};
+
+
+void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
+{
+    u32 vdp1WriteEA = graphicEngineStatus.field_14[0].field_0;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0, normal sprite
+    setVdp1VramU16(vdp1WriteEA + 0x04, 0x80); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, r7); // CMDCOLR
+    setVdp1VramU16(vdp1WriteEA + 0x08, r4->SRCA); // CMDSRCA
+    setVdp1VramU16(vdp1WriteEA + 0x0A, r4->SIZE); // CMDSIZE
+    setVdp1VramU16(vdp1WriteEA + 0x0C, r4->X + r5 - 0xB0); // CMDXA
+    setVdp1VramU16(vdp1WriteEA + 0x0E, r4->Y + r6 - 0x70); // CMDYA
+
+    *(u16*)(graphicEngineStatus.field_14[0].field_20 + 4) = 0;
+    *(u16*)(graphicEngineStatus.field_14[0].field_20 + 6) = vdp1WriteEA >> 3;
+    graphicEngineStatus.field_14[0].field_20 += 8;
+
+    graphicEngineStatus.field_14[0].field_1C += 1;
+    graphicEngineStatus.field_14[0].field_0 = vdp1WriteEA + 0x20;
+    graphicEngineStatus.field_14[0].field_C += 1;
+}
+
+void mainMenuTaskInitSub2TaskDraw(p_workArea typelessWorkArea)
+{
+    mainMenuTaskInitSub2TaskWorkArea* pWorkArea = static_cast<mainMenuTaskInitSub2TaskWorkArea*>(typelessWorkArea);
+
+    u32 spriteColor;
+    if (pWorkArea->field_C)
+    {
+        spriteColor = 0x650;
+    }
+    else
+    {
+        spriteColor = 0x630;
+    }
+
+    s16 r5 = pWorkArea->spriteData[pWorkArea->spriteIndex * 2 + 0] - pWorkArea->field_4->scrollX;
+    s16 r6 = pWorkArea->spriteData[pWorkArea->spriteIndex * 2 + 1] - pWorkArea->field_4->scrollY;
+
+    drawMenuSprite(&spriteData1[pWorkArea->field_C], r5, r6, spriteColor);
+}
+
+s_taskDefinitionWithArg mainMenuTaskInitSub2TaskDef = { mainMenuTaskInitSub2TaskInit, NULL, mainMenuTaskInitSub2TaskDraw, NULL, "mainMenuTaskInitSub2Task" };
+
+mainMenuTaskInitSub2TaskWorkArea* mainMenuTaskInitSub2(p_workArea typelessWorkArea, sMainMenuTaskInitData2* r5, u32 r6)
+{
+    p_workArea pNewTask = createSubTaskWithArg(typelessWorkArea, &mainMenuTaskInitSub2TaskDef, new mainMenuTaskInitSub2TaskWorkArea, r5);
+    mainMenuTaskInitSub2TaskWorkArea* pTypedNewTask = static_cast<mainMenuTaskInitSub2TaskWorkArea*>(pNewTask);
+    pTypedNewTask->field_C = r6;
+    return pTypedNewTask;
+}
+
+u16 mainMenuTaskInitData2_[]{
+    0x89, 0x11C,
+    0xB0, 0x134,
+    0x89, 0x14C,
+    0xB0, 0x164,
+    0x89, 0x17C,
+    0x0
+};
+
+sMainMenuTaskInitData2 mainMenuTaskInitData2 = {
+    &graphicEngineStatus.layersConfig[1],
+    mainMenuTaskInitData2_
+};
+
 void mainMenuTaskInit(p_workArea typelessWorkArea)
 {
-    assert(0);
+    s_mainMenuWorkArea* pWorkArea = static_cast<s_mainMenuWorkArea*>(typelessWorkArea);
+
+    pWorkArea->field_3[0] = 1;
+
+    if (mainGameState.getBit(4, 2))
+    {
+        pWorkArea->field_3[1] = 1;
+    }
+    else
+    {
+        pWorkArea->field_3[1] = -1;
+    }
+
+    if (mainGameState.gameStats.XP)
+    {
+        pWorkArea->field_3[2] = 1;
+    }
+    else
+    {
+        pWorkArea->field_3[2] = -1;
+    }
+    pWorkArea->field_3[3] = 1;
+    pWorkArea->field_3[4] = 1;
+
+    mainMenuTaskInitSub1();
+
+    u32 mainMenuTaskInitData1[5] = {
+        0x71450,
+        0x714D6,
+        0x71510,
+        0x71596,
+        0x715D0,
+    };
+
+    s32 r14 = -1;
+    for (int i = 0; i < 5; i++)
+    {
+        switch (pWorkArea->field_3[i])
+        {
+        case 0:
+            assert(0);
+        case 1:
+            if (r14 < 0)
+            {
+                r14 = 0;
+                mainMenuTaskInitSub3(mainMenuTaskInitData1[i], 3, 3, 0x620);
+            }
+            else
+            {
+                mainMenuTaskInitSub3(mainMenuTaskInitData1[i], 3, 3, 0x660);
+            }
+            break;
+        case -1:
+            mainMenuTaskInitSub2(pWorkArea, &mainMenuTaskInitData2, 0)->spriteIndex = 0;
+            break;
+        default:
+            assert(0);
+        }
+    }
+
+    //assert(0);
 }
 
 void mainMenuTaskDraw(p_workArea typelessWorkArea)
@@ -2830,7 +3035,7 @@ s_taskDefinition mainMenuTaskDefinition = { mainMenuTaskInit, NULL, mainMenuTask
 
 p_workArea createMainMenuTask(p_workArea workArea)
 {
-    return createSubTask(workArea, &mainMenuTaskDefinition, new s_dummyWorkArea);
+    return createSubTask(workArea, &mainMenuTaskDefinition, new s_mainMenuWorkArea);
 }
 
 p_workArea createInventoryMenuTask(p_workArea workArea)
@@ -2940,23 +3145,23 @@ void scrollMenu()
 {
     for (int i = 0; i < 4; i++)
     {
-        if (graphicEngineStatus.field_40BC[4].field_8)
+        if (graphicEngineStatus.layersConfig[4].field_8)
         {
             assert(0);
         }
     }
 
     pauseEngine[4] = 0;
-    setupVDP2CoordinatesIncrement2(graphicEngineStatus.field_40BC[0].field_0 << 16, graphicEngineStatus.field_40BC[0].field_2 << 16);
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.layersConfig[0].scrollX << 16, graphicEngineStatus.layersConfig[0].scrollY << 16);
 
     pauseEngine[4] = 1;
-    setupVDP2CoordinatesIncrement2(graphicEngineStatus.field_40BC[1].field_0 << 16, graphicEngineStatus.field_40BC[1].field_2 << 16);
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.layersConfig[1].scrollX << 16, graphicEngineStatus.layersConfig[1].scrollY << 16);
 
     pauseEngine[4] = 2;
-    setupVDP2CoordinatesIncrement2(graphicEngineStatus.field_40BC[2].field_0, graphicEngineStatus.field_40BC[2].field_2);
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.layersConfig[2].scrollX, graphicEngineStatus.layersConfig[2].scrollY);
 
     pauseEngine[4] = 3;
-    setupVDP2CoordinatesIncrement2(graphicEngineStatus.field_40BC[3].field_0, graphicEngineStatus.field_40BC[3].field_2);
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.layersConfig[3].scrollX, graphicEngineStatus.layersConfig[3].scrollY);
 
     pauseEngine[4] = 4;
 }
@@ -2976,13 +3181,19 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
     {
     case 0:
         graphicEngineStatus.field_40AC.field_8 = 0;
-        //if (graphicEngineStatus.field_4514.field_8 & 8)
+        if (graphicEngineStatus.field_4514[0].current.field_8 & 8)
         {
-            // flag menu to be entered
-            graphicEngineStatus.field_40AC.field_0 = 3;
+            yLog("Hack: forcing menu entry to 1");
+            graphicEngineStatus.field_40AC.field_1 = 1;
             if (graphicEngineStatus.field_40AC.field_1)
             {
+                graphicEngineStatus.field_40AC.field_0 = 1;
                 playSoundEffect(0);
+            }
+            else
+            {
+                if (graphicEngineStatus.field_40AC.field_0 == 0)
+                    return;
             }
         }
 
@@ -3019,11 +3230,11 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
             {
                 scrollMenu();
             }
-            if (graphicEngineStatus.field_4514.field_8 & 8)
+            if (graphicEngineStatus.field_4514[0].current.field_8 & 8)
             {
                 assert(0);
             }
-            if (graphicEngineStatus.field_4514.field_8 & 2)
+            if (graphicEngineStatus.field_4514[0].current.field_8 & 2)
             {
                 assert(0);
             }

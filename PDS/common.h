@@ -104,7 +104,7 @@ struct s_gameStats
     u16 field_18; // 0x18
     s16 dragonCursorX; //1A
     s16 dragonCursorY; //1C
-
+    u32 XP; //20
     u32 frameCounter; //3C
 
     u32 field_70; //70
@@ -365,7 +365,7 @@ extern s_vdp1AllocatorNode* vdp1AllocatorHead;
 struct s_graphicEngineStatus_40AC
 {
     u8 field_0; // what menu to open
-    u8 field_1;
+    u8 field_1; // is menu allowed?
     u8 field_2;
     u8 field_3;
     u8 field_4;
@@ -378,12 +378,37 @@ struct s_graphicEngineStatus_40AC
     p_workArea field_C;
 };
 
+struct s_graphicEngineStatus_4514_sub
+{
+    u16 field_0;
+    u16 field_2;
+    u16 field_4;
+    u16 field_6; // direction
+    u16 field_8; // button mask
+    u16 field_A;
+    u16 field_C; // 0x10: up
+                 // 0x20: down
+                 // 0x40: left
+                 // 0x80: right
+    u16 field_E;
+    u16 field_10;
+    u16 field_12;
+    u16 field_14;
+};
+
+struct s_graphicEngineStatus_4514_sub2
+{
+    u8 field_0;
+    u32 field_4;
+    u32 field_C;
+}; // size should be 40
+
 struct s_graphicEngineStatus_4514
 {
-    u16 field_6;
-    u16 field_8; // gamepad input bitmask
-    u16 field_E;
-    u16 field_72;
+    s_graphicEngineStatus_4514_sub current; //0
+    s_graphicEngineStatus_4514_sub pending; //16
+    s_graphicEngineStatus_4514_sub2 field_2C;//2C
+    // size should be 6C
 };
 
 struct s_graphicEngineStatus_405C
@@ -428,11 +453,11 @@ struct s_graphicEngineStatus_40E4
 
 struct s_graphicEngineStatus_40BC
 {
-    u16 field_0;
-    u16 field_2;
+    u16 scrollX;
+    u16 scrollY;
 
     u16 field_8;
-};
+}; // size A?
 
 struct s_graphicEngineStatus_14_2024
 {
@@ -449,12 +474,6 @@ struct s_graphicEngineStatus_14_2024
     // size should be 2024
 };
 
-struct s_graphicEngineStatus_14
-{
-    s_graphicEngineStatus_14_2024 field_0;
-    s_graphicEngineStatus_14_2024 field_2024;
-};
-
 struct s_graphicEngineStatus
 {
     u16 field_0;
@@ -466,7 +485,7 @@ struct s_graphicEngineStatus
     u32 field_8; // vdp1 write EA for user clipping parameters
     u32 field_C; // vdp1 write EA of background sprite
 
-    s_graphicEngineStatus_14 field_14;
+    s_graphicEngineStatus_14_2024 field_14[2];
     s_graphicEngineStatus_405C field_405C;
 
     u32 field_406C;
@@ -478,8 +497,8 @@ struct s_graphicEngineStatus
     
     s_graphicEngineStatus_40E4* field_40E4;
     s_graphicEngineStatus_40AC field_40AC;
-    s_graphicEngineStatus_40BC field_40BC[4]; // not sure about size, at least 4
-    s_graphicEngineStatus_4514 field_4514;
+    s_graphicEngineStatus_40BC layersConfig[4];
+    s_graphicEngineStatus_4514 field_4514[2]; // one per input port
 };
 
 extern s_graphicEngineStatus graphicEngineStatus;

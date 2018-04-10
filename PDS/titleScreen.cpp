@@ -123,7 +123,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
         randomNumber(); // to increment seed
 
         // start or A?
-        if (PortData2.field_8 & 0xE)
+        if (graphicEngineStatus.field_4514[0].current.field_8 & 0xE)
         {
             playSoundEffect(0);
 
@@ -137,7 +137,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
             return;
         }
 
-        if (PortData2.field_C & 0x40)
+        if (graphicEngineStatus.field_4514[0].current.field_C & 0x40)
         {
             int newSelection = pWorkArea->m_currentSelection;
             do 
@@ -158,7 +158,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
             }
         }
 
-        if (PortData2.field_C & 0x80)
+        if (graphicEngineStatus.field_4514[0].current.field_C & 0x80)
         {
             int newSelection = pWorkArea->m_currentSelection;
             do
@@ -340,7 +340,7 @@ void titleScreenDraw(p_workArea pTypelessWorkArea)
             assert(false);
         }
 
-        if (PortData2.field_8 & 8) // if start was pressed
+        if (graphicEngineStatus.field_4514[0].current.field_8 & 8) // if start was pressed
         {
             playSoundEffect(8);
             pWorkArea->m_status = 7;
@@ -412,7 +412,7 @@ void warningTaskDraw(p_workArea pTypelessWorkArea)
             return;
         pWorkArea->m_status++;
     case 2: // fade out init?
-        if (!(PortData2.field_8 & 8))
+        if (!(graphicEngineStatus.field_4514[0].current.field_8 & 8))
             return;
         fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0, 30);
         pWorkArea->m_status++;

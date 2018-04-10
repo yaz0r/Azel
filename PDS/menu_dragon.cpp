@@ -82,15 +82,15 @@ void initVdp2ForDragonMenuSub1(u32 r4, u32 r5, u32 r6)
         r7 = 0x10;
     }
 
-    graphicEngineStatus.field_40BC[r4].field_0 = r5;
-    graphicEngineStatus.field_40BC[r4].field_2 = r7 + r6;
+    graphicEngineStatus.layersConfig[r4].scrollX = r5;
+    graphicEngineStatus.layersConfig[r4].scrollY = r7 + r6;
 }
 
 void initVdp2ForDragonMenuSub2()
 {
     for (int i = 0; i < 4; i++)
     {
-        graphicEngineStatus.field_40BC[i].field_8 = 0;
+        graphicEngineStatus.layersConfig[i].field_8 = 0;
     }
 }
 
@@ -364,7 +364,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->field_0++;
         break;
     case 3:
-        if (graphicEngineStatus.field_4514.field_8 & 7)
+        if (graphicEngineStatus.field_4514[0].current.field_8 & 7)
         {
             assert(0);
         }

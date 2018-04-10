@@ -667,53 +667,53 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         setupLight(0, 0, 0x10000, 0x161918);
     }
 
-    if (graphicEngineStatus.field_4514.field_6 & 0x800)
+    if (graphicEngineStatus.field_4514[0].current.field_6 & 0x800)
     {
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    if (graphicEngineStatus.field_4514.field_E & 0x800)
+    if (graphicEngineStatus.field_4514[0].current.field_E & 0x800)
     {
         pWorkArea->modelRotation[1] -= 0x5B05B0;
     }
 
-    if (graphicEngineStatus.field_4514.field_6 & 0x8000)
+    if (graphicEngineStatus.field_4514[0].current.field_6 & 0x8000)
     {
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    if (graphicEngineStatus.field_4514.field_E & 0x8000)
+    if (graphicEngineStatus.field_4514[0].current.field_E & 0x8000)
     {
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    if (graphicEngineStatus.field_4514.field_72 & 0x8000)
+    if (graphicEngineStatus.field_4514[1].current.field_6 & 0x8000)
     {
         assert(0);
     }
     else
     {
-        if (graphicEngineStatus.field_4514.field_72 & 0x10)
+        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x10)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514.field_72 & 0x20)
+        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x20)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514.field_72 & 0x40)
+        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x40)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514.field_72 & 0x80)
+        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x80)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514.field_72 & 0x4000)
+        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x4000)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514.field_72 & 0x4)
+        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x4)
         {
             assert(0);
         }

@@ -72,16 +72,6 @@ struct sSaturnPtr
 extern u8 COMMON_DAT[0x98000];
 extern sSaturnMemoryFile gCommonFile;
 
-struct sPortData2
-{
-    u16 field_8; // 8: start
-    u16 field_C; // 0x10: up
-                 // 0x20: down
-                 // 0x40: left
-                 // 0x80: right
-};
-extern sPortData2 PortData2;
-
 struct sFileInfoSub
 {
     sFileInfoSub* pNext; // 0

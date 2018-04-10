@@ -63,30 +63,30 @@ void azelSdl2_StartFrame()
             closeApp = true;
     }
 
-    PortData2.field_8 = 0;
-    PortData2.field_C = 0;
+    graphicEngineStatus.field_4514[0].pending.field_8 = 0;
+    graphicEngineStatus.field_4514[0].pending.field_C = 0;
 
     if (event.type == SDL_KEYUP)
     {
         if (event.key.keysym.scancode == SDL_SCANCODE_RETURN)
         {
-            PortData2.field_8 |= 8;
+            graphicEngineStatus.field_4514[0].pending.field_8 |= 8;
         }
         if (event.key.keysym.scancode == SDL_SCANCODE_UP)
         {
-            PortData2.field_C |= 0x10;
+            graphicEngineStatus.field_4514[0].pending.field_C |= 0x10;
         }
         if (event.key.keysym.scancode == SDL_SCANCODE_DOWN)
         {
-            PortData2.field_C |= 0x20;
+            graphicEngineStatus.field_4514[0].pending.field_C |= 0x20;
         }
         if (event.key.keysym.scancode == SDL_SCANCODE_LEFT)
         {
-            PortData2.field_C |= 0x40;
+            graphicEngineStatus.field_4514[0].pending.field_C |= 0x40;
         }
         if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT)
         {
-            PortData2.field_C |= 0x80;
+            graphicEngineStatus.field_4514[0].pending.field_C |= 0x80;
         }
     }
 

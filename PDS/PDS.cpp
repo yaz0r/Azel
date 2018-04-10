@@ -11,7 +11,6 @@ bool debugEnabled = false; // watchdog bit 1
 int enableDebugTask;
 
 u8 pauseEngine[8];
-sPortData2 PortData2;
 
 u32 azelCdNumber = 0;
 
@@ -265,29 +264,29 @@ void initVDP1()
 
     setVdp1VramU16(graphicEngineStatus.field_8, graphicEngineStatus.field_6);
 
-    graphicEngineStatus.field_14.field_0.field_4 = vdp1WriteEA;
-    graphicEngineStatus.field_14.field_0.field_8 = graphicEngineStatus.field_8;
-    graphicEngineStatus.field_14.field_2024.field_4 = 0x25C07FE0;
-    graphicEngineStatus.field_14.field_2024.field_8 = 0x25C0FFE0;
+    graphicEngineStatus.field_14[0].field_4 = vdp1WriteEA;
+    graphicEngineStatus.field_14[0].field_8 = graphicEngineStatus.field_8;
+    graphicEngineStatus.field_14[1].field_4 = 0x25C07FE0;
+    graphicEngineStatus.field_14[1].field_8 = 0x25C0FFE0;
 
-    graphicEngineStatus.field_14.field_0.field_0 = vdp1WriteEA;
-    graphicEngineStatus.field_14.field_0.field_C = 0;
-    graphicEngineStatus.field_14.field_2024.field_0 = 0x25C07FE0;
-    graphicEngineStatus.field_14.field_2024.field_C = 0;
+    graphicEngineStatus.field_14[0].field_0 = vdp1WriteEA;
+    graphicEngineStatus.field_14[0].field_C = 0;
+    graphicEngineStatus.field_14[1].field_0 = 0x25C07FE0;
+    graphicEngineStatus.field_14[1].field_C = 0;
 
-    graphicEngineStatus.field_14.field_0.field_14 = 0x25C7C000;
-    graphicEngineStatus.field_14.field_0.field_10 = 0x25C7C000;
-    graphicEngineStatus.field_14.field_0.field_18 = 0x25C7E000;
+    graphicEngineStatus.field_14[0].field_14 = 0x25C7C000;
+    graphicEngineStatus.field_14[0].field_10 = 0x25C7C000;
+    graphicEngineStatus.field_14[0].field_18 = 0x25C7E000;
 
-    graphicEngineStatus.field_14.field_2024.field_14 = 0x25C7DFF8;
-    graphicEngineStatus.field_14.field_2024.field_10 = 0x25C7DFF8;
-    graphicEngineStatus.field_14.field_2024.field_18 = 0x25C7FFF8;
+    graphicEngineStatus.field_14[1].field_14 = 0x25C7DFF8;
+    graphicEngineStatus.field_14[1].field_10 = 0x25C7DFF8;
+    graphicEngineStatus.field_14[1].field_18 = 0x25C7FFF8;
 
-    graphicEngineStatus.field_14.field_0.field_20 = graphicEngineStatus.field_14.field_0.buffer;
-    graphicEngineStatus.field_14.field_0.field_1C = 0;
+    graphicEngineStatus.field_14[0].field_20 = graphicEngineStatus.field_14[0].buffer;
+    graphicEngineStatus.field_14[0].field_1C = 0;
 
-    graphicEngineStatus.field_14.field_2024.field_20 = graphicEngineStatus.field_14.field_2024.buffer;
-    graphicEngineStatus.field_14.field_2024.field_1C = 0;
+    graphicEngineStatus.field_14[1].field_20 = graphicEngineStatus.field_14[1].buffer;
+    graphicEngineStatus.field_14[1].field_1C = 0;
 
     //addSlaveCommand(graphicEngineStatus, 0x40AC, 0, copyMatrix_0);
 
@@ -586,12 +585,56 @@ void azelInit()
     // stuff
 }
 
+void updateInputsSub1(s_graphicEngineStatus_4514_sub2* r4)
+{
+    if (r4->field_4)
+    {
+        assert(0);
+    }
+}
+
+void copyKeyboardData()
+{
+    unimplemented("copyKeyboardData");
+}
+
+void updateInputs()
+{
+    for (int i = 0; i < 2; i++)
+    {
+        graphicEngineStatus.field_4514[i].current = graphicEngineStatus.field_4514[i].pending;
+        graphicEngineStatus.field_4514[i].pending.field_8 = 0;
+        graphicEngineStatus.field_4514[i].pending.field_A = 0;
+        graphicEngineStatus.field_4514[i].pending.field_C = 0;
+        graphicEngineStatus.field_4514[i].pending.field_E = 0;
+        graphicEngineStatus.field_4514[i].pending.field_10 = 0;
+        graphicEngineStatus.field_4514[i].pending.field_12 = 0;
+        graphicEngineStatus.field_4514[i].pending.field_14 = 0;
+
+        updateInputsSub1(&graphicEngineStatus.field_4514[i].field_2C);
+    }
+
+    copyKeyboardData();
+}
+
+void readInputsFromSMPC()
+{
+    // not real implementation
+    //graphicEngineStatus.field_4514
+}
+
 int main(int argc, char* argv[])
 {
     azelSdl2_Init();
 
     azelInit();
     resetEngine();
+
+    //...
+    readInputsFromSMPC();
+    updateInputs();
+    readInputsFromSMPC();
+    updateInputs();
 
     do 
     {
@@ -601,7 +644,7 @@ int main(int argc, char* argv[])
 
         //copySMPCOutputStatus();
 
-        //updateInputs();
+        updateInputs();
 
         //updateInputDebug();
 
@@ -609,7 +652,7 @@ int main(int argc, char* argv[])
 
         //waitForSh2Completion();
 
-        //mergeDebugStats();
+        //flushVdp1();
 
         //updateSound();
 

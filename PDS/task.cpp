@@ -289,7 +289,7 @@ void dummyTaskInit(s_workArea* pWorkArea)
     printf("Unimplmenmented Init task for %s\n", pWorkArea->getTask()->m_taskName);
 }
 
-void dummyTaskInitWithArg(s_workArea* pWorkArea, u32 arg)
+void dummyTaskInitWithArg(s_workArea* pWorkArea, void* arg)
 {
     printf("Unimplmenmented Init task for %s\n", pWorkArea->getTask()->m_taskName);
 }
