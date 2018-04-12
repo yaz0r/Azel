@@ -13,6 +13,7 @@
 SDL_Window *gWindow;
 SDL_GLContext gGlcontext;
 
+GLuint gVdp1Texture = 0;
 GLuint gNBG0Texture = 0;
 GLuint gNBG1Texture = 0;
 GLuint gNBG2Texture = 0;
@@ -45,6 +46,7 @@ void azelSdl2_Init()
     // Setup ImGui binding
     ImGui_ImplSdlGL3_Init(gWindow);
 
+    glGenTextures(1, &gVdp1Texture);
     glGenTextures(1, &gNBG0Texture);
     glGenTextures(1, &gNBG1Texture);
     glGenTextures(1, &gNBG2Texture);
@@ -461,6 +463,133 @@ void renderBG3(u32 width, u32 height)
     delete[] textureOutput;
 }
 
+u32* vdp1TextureOutput;
+u32 vdp1TextureWidth;
+u32 vdp1TextureHeight;
+
+s16 localCoordiantesX;
+s16 localCoordiantesY;
+
+void SetLocalCoordinates(u32 vdp1EA)
+{
+    u16 CMDXA = getVdp1VramU16(vdp1EA + 0xC);
+    u16 CMDYA = getVdp1VramU16(vdp1EA + 0xE);
+
+    localCoordiantesX = CMDXA;
+    localCoordiantesY = CMDYA;
+}
+
+void NormalSpriteDraw(u32 vdp1EA)
+{
+    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
+    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
+    u16 CMDSRCA = getVdp1VramU16(vdp1EA + 8);
+    u16 CMDSIZE = getVdp1VramU16(vdp1EA + 0xA);
+    s16 CMDXA = getVdp1VramU16(vdp1EA + 0xC);
+    s16 CMDYA = getVdp1VramU16(vdp1EA + 0xE);
+    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+
+    if (CMDSRCA)
+    {
+        u32 characterAddress = ((u32)CMDSRCA) << 3;
+        u32 colorBank = ((u32)CMDCOLR) << 3;
+        s32 X = CMDXA + localCoordiantesX;
+        s32 Y = CMDYA + localCoordiantesY;
+        s32 Width = ((CMDSIZE >> 8) & 0x3F) * 8;
+        s32 Height = CMDSIZE & 0xFF;
+
+        int counter = 0;
+
+        for (int currentY = Y; currentY < Y + Height; currentY++)
+        {
+            for (int currentX = X; currentX < X + Width; currentX++)
+            {
+                if ((currentX >= 0) && (currentX < vdp1TextureWidth) && (currentY >= 0) && (currentY < vdp1TextureHeight))
+                {
+                    u8 character = getVdp1VramU8(0x25C00000 + characterAddress);
+
+                    if (counter & 1)
+                    {
+                        characterAddress++;
+                    }
+                    else
+                    {
+                        character >>= 4;
+                    }
+                    character &= 0xF;
+
+                    u16 color = getVdp1VramU16(0x25C00000 + colorBank + 2*character);
+                    color = character << 4;
+                    u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
+
+                    vdp1TextureOutput[currentY * vdp1TextureWidth + currentX] = finalColor;
+
+                    counter++;
+                }
+            }
+        }
+    }
+}
+
+void renderVdp1(u32 width, u32 height)
+{
+    vdp1TextureWidth = width;
+    vdp1TextureHeight = height;
+    vdp1TextureOutput = new u32[vdp1TextureWidth * vdp1TextureHeight];
+    memset(vdp1TextureOutput, 0x80, vdp1TextureWidth * vdp1TextureHeight * 4);
+
+    u32 vdp1EA = 0x25C00000;
+
+    while (1)
+    {
+        u16 CMDCTRL = getVdp1VramU16(vdp1EA);
+        u16 CMDLINK = getVdp1VramU16(vdp1EA+2);
+
+        u16 END = CMDCTRL >> 15;
+        u16 JP = (CMDCTRL >> 12) & 7;
+        u16 ZP = (CMDCTRL >> 8) & 0xF;
+        u16 DIR = (CMDCTRL >> 4) & 3;
+        u16 COMM = CMDCTRL & 0xF;
+
+        if (END)
+        {
+            break;
+        }
+
+        switch (COMM)
+        {
+        case 0:
+            NormalSpriteDraw(vdp1EA);
+            break;
+        case 0xA:
+            SetLocalCoordinates(vdp1EA);
+            break;
+        default:
+            break;
+        }
+
+        switch (JP)
+        {
+        case 0:
+            vdp1EA += 0x20;
+            break;
+        case 1:
+            vdp1EA = 0x25C00000 + (CMDLINK << 3);
+            break;
+        default:
+            assert(0);
+        }
+        
+    }
+
+    glBindTexture(GL_TEXTURE_2D, gVdp1Texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, vdp1TextureWidth, vdp1TextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, vdp1TextureOutput);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    delete[] vdp1TextureOutput;
+}
+
 bool azelSdl2_EndFrame()
 {
     u32 outputResolutionWidth = 0;
@@ -493,6 +622,7 @@ bool azelSdl2_EndFrame()
     u32 vdp2ResolutionWidth = outputResolutionWidth;
     u32 vdp2ResolutionHeight = outputResolutionHeight;
 
+    renderVdp1(outputResolutionWidth, outputResolutionHeight);
 
     renderBG0(vdp2ResolutionWidth, vdp2ResolutionHeight);
     renderBG1(vdp2ResolutionWidth, vdp2ResolutionHeight);
@@ -505,6 +635,8 @@ bool azelSdl2_EndFrame()
         ImGui::Image((ImTextureID)gNBG1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
         ImGui::Image((ImTextureID)gNBG2Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight)); ImGui::SameLine();
         ImGui::Image((ImTextureID)gNBG3Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
+
+        ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
     }
     ImGui::End();
 

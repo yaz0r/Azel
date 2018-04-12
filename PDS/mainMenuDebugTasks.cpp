@@ -1,7 +1,5 @@
 #include "PDS.h"
 
-u8 MENU_CGB[0x2000];
-
 p_workArea createLoadingTask(p_workArea parentTask)
 {
     unimplemented("createLoadingTask");
@@ -2373,7 +2371,7 @@ void menuGraphicsTaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
 
     addToMemoryLayout(MENU_SCB, 0x14000);
     loadFile("MENU.SCB", MENU_SCB, 0);
-    loadFile("MENU.CGB", MENU_CGB, 0);
+    loadFile("MENU.CGB", getVdp1Pointer(0x25C10000), 0);
     graphicEngineStatus.field_40AC.field_A = loadFnt("MENU.FNT");
 }
 
@@ -2801,7 +2799,7 @@ void setupVdp2ForMenu()
     vdp2Controls.m_pendingVdp2Regs->CCCTL &= 0xFEFF;
 
     loadFile("MENU.SCB", MENU_SCB, 0);
-    loadFile("MENU.CGB", MENU_CGB, 0);
+    loadFile("MENU.CGB", getVdp1Pointer(0x25C10000), 0);
 
     unpackGraphicsToVDP2(menuTilesLayout, getVdp2Vram(0x71800));
 
@@ -2893,9 +2891,9 @@ s_menuSprite spriteData1[] =
 
 void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
 {
-    u32 vdp1WriteEA = graphicEngineStatus.field_14[0].field_0;
+    u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].field_0;
 
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0, normal sprite
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0, normal sprite + JUMP
     setVdp1VramU16(vdp1WriteEA + 0x04, 0x80); // CMDPMOD
     setVdp1VramU16(vdp1WriteEA + 0x06, r7); // CMDCOLR
     setVdp1VramU16(vdp1WriteEA + 0x08, r4->SRCA); // CMDSRCA
@@ -2903,13 +2901,13 @@ void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
     setVdp1VramU16(vdp1WriteEA + 0x0C, r4->X + r5 - 0xB0); // CMDXA
     setVdp1VramU16(vdp1WriteEA + 0x0E, r4->Y + r6 - 0x70); // CMDYA
 
-    *(u16*)(graphicEngineStatus.field_14[0].field_20 + 4) = 0;
-    *(u16*)(graphicEngineStatus.field_14[0].field_20 + 6) = vdp1WriteEA >> 3;
-    graphicEngineStatus.field_14[0].field_20 += 8;
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->bucketTypes = 0;
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
 
-    graphicEngineStatus.field_14[0].field_1C += 1;
-    graphicEngineStatus.field_14[0].field_0 = vdp1WriteEA + 0x20;
-    graphicEngineStatus.field_14[0].field_C += 1;
+    graphicEngineStatus.vdp1Context[0].field_1C += 1;
+    graphicEngineStatus.vdp1Context[0].field_0 = vdp1WriteEA + 0x20;
+    graphicEngineStatus.vdp1Context[0].field_C += 1;
 }
 
 void mainMenuTaskInitSub2TaskDraw(p_workArea typelessWorkArea)

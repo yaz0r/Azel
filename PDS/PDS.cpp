@@ -264,29 +264,29 @@ void initVDP1()
 
     setVdp1VramU16(graphicEngineStatus.field_8, graphicEngineStatus.field_6);
 
-    graphicEngineStatus.field_14[0].field_4 = vdp1WriteEA;
-    graphicEngineStatus.field_14[0].field_8 = graphicEngineStatus.field_8;
-    graphicEngineStatus.field_14[1].field_4 = 0x25C07FE0;
-    graphicEngineStatus.field_14[1].field_8 = 0x25C0FFE0;
+    graphicEngineStatus.vdp1Context[0].field_4 = vdp1WriteEA;
+    graphicEngineStatus.vdp1Context[0].field_8 = graphicEngineStatus.field_8;
+    graphicEngineStatus.vdp1Context[1].field_4 = 0x25C07FE0;
+    graphicEngineStatus.vdp1Context[1].field_8 = 0x25C0FFE0;
 
-    graphicEngineStatus.field_14[0].field_0 = vdp1WriteEA;
-    graphicEngineStatus.field_14[0].field_C = 0;
-    graphicEngineStatus.field_14[1].field_0 = 0x25C07FE0;
-    graphicEngineStatus.field_14[1].field_C = 0;
+    graphicEngineStatus.vdp1Context[0].field_0 = vdp1WriteEA;
+    graphicEngineStatus.vdp1Context[0].field_C = 0;
+    graphicEngineStatus.vdp1Context[1].field_0 = 0x25C07FE0;
+    graphicEngineStatus.vdp1Context[1].field_C = 0;
 
-    graphicEngineStatus.field_14[0].field_14 = 0x25C7C000;
-    graphicEngineStatus.field_14[0].field_10 = 0x25C7C000;
-    graphicEngineStatus.field_14[0].field_18 = 0x25C7E000;
+    graphicEngineStatus.vdp1Context[0].field_14 = 0x25C7C000;
+    graphicEngineStatus.vdp1Context[0].field_10 = 0x25C7C000;
+    graphicEngineStatus.vdp1Context[0].field_18 = 0x25C7E000;
 
-    graphicEngineStatus.field_14[1].field_14 = 0x25C7DFF8;
-    graphicEngineStatus.field_14[1].field_10 = 0x25C7DFF8;
-    graphicEngineStatus.field_14[1].field_18 = 0x25C7FFF8;
+    graphicEngineStatus.vdp1Context[1].field_14 = 0x25C7DFF8;
+    graphicEngineStatus.vdp1Context[1].field_10 = 0x25C7DFF8;
+    graphicEngineStatus.vdp1Context[1].field_18 = 0x25C7FFF8;
 
-    graphicEngineStatus.field_14[0].field_20 = graphicEngineStatus.field_14[0].buffer;
-    graphicEngineStatus.field_14[0].field_1C = 0;
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet = graphicEngineStatus.vdp1Context[0].vdp1Packets;
+    graphicEngineStatus.vdp1Context[0].field_1C = 0;
 
-    graphicEngineStatus.field_14[1].field_20 = graphicEngineStatus.field_14[1].buffer;
-    graphicEngineStatus.field_14[1].field_1C = 0;
+    graphicEngineStatus.vdp1Context[1].pCurrentVdp1Packet = graphicEngineStatus.vdp1Context[1].vdp1Packets;
+    graphicEngineStatus.vdp1Context[1].field_1C = 0;
 
     //addSlaveCommand(graphicEngineStatus, 0x40AC, 0, copyMatrix_0);
 
@@ -623,6 +623,152 @@ void readInputsFromSMPC()
     //graphicEngineStatus.field_4514
 }
 
+void invalidateCacheOnRange(void* ptr, u32 size)
+{
+}
+
+struct listEntry
+{
+    s_vdp1Packet* field_0;
+    s_vdp1Packet* field_4;
+};
+
+void initVdp1FlushList(listEntry* list)
+{
+    for (int i = 0; i < 0x20; i++)
+    {
+        list[i].field_4 = (s_vdp1Packet*)&list[i];
+    }
+}
+
+void flushVdp1Sub2(s_vdp1Packet* buffer0, u32 count0, s_vdp1Packet* buffer1, u32 count1, listEntry* list)
+{
+    for (int i = 0; i < count0; i++)
+    {
+        s_vdp1Packet* r4 = &buffer0[i];
+        listEntry* r1 = &list[r4->bucketTypes & 0x1F];
+        r1->field_4->pNext = r4;
+        r1->field_4 = r4;
+    }
+    for (int i = 0; i < count1; i++)
+    {
+        s_vdp1Packet* r4 = &buffer1[i];
+        listEntry* r1 = &list[r4->bucketTypes & 0x1F];
+        r1->field_4->pNext = r4;
+        r1->field_4 = r4;
+    }
+}
+
+s_vdp1Packet* flushVdp1Sub3(listEntry* list)
+{
+    s_vdp1Packet* r7 = 0;
+    listEntry* r6 = 0;
+
+    listEntry* current = list + 0x20;
+    while (current != list)
+    {
+        current--;
+        if (current->field_4 != (s_vdp1Packet*)current)
+        {
+            r7 = current->field_0;
+            r6 = current;
+            break;
+        }
+    }
+
+    while (current != list)
+    {
+        current--;
+        if (current->field_4 != (s_vdp1Packet*)current)
+        {
+            r6->field_4 = current->field_0;
+            r6 = current;
+        }
+    }
+
+    r6->field_4 = 0;
+    return r7;
+}
+
+void flushVdp1Sub4(s_vdp1Packet* r4, u32 r5, listEntry* list)
+{
+    for(int i=0; i<r5; i++)
+    {
+        listEntry* r7 = &list[(r4->bucketTypes >> 3)&0x1F];
+        r7->field_4->pNext = r4;
+        r7->field_4 = r4;
+        r4 = r4->pNext;
+    }
+}
+
+void flushVdp1Sub5(s_vdp1Packet* r4, u32 r5, listEntry* list)
+{
+    for (int i = 0; i < r5; i++)
+    {
+        listEntry* r7 = &list[(r4->bucketTypes >> 10)&0x1F];
+        r7->field_4->pNext = r4;
+        r7->field_4 = r4;
+        r4 = r4->pNext;
+    }
+}
+
+void chainVdp1Packets(s_vdp1Packet* r4)
+{
+    setVdp1VramU16(graphicEngineStatus.field_8, r4->vdp1EA); // link clip command to first vdp1 packet
+
+    while (r4->pNext)
+    {
+        setVdp1VramU16(0x25C00000 + (r4->vdp1EA << 3) + 2, r4->pNext->vdp1EA); // set the link address
+        r4 = r4->pNext;
+    }
+
+    setVdp1VramU16(0x25C00000 + (r4->vdp1EA << 3) + 2, graphicEngineStatus.field_6);
+}
+
+u32 numSpriteProcessed;
+u32 mumSpriteProcessByMaster;
+u32 mumSpriteProcessBySlave;
+
+void flushVdp1()
+{
+    invalidateCacheOnRange(&graphicEngineStatus.vdp1Context[1], sizeof(s_graphicEngineStatus_14_2024));
+    u32 count = graphicEngineStatus.vdp1Context[0].field_1C + graphicEngineStatus.vdp1Context[1].field_1C;
+    if (count)
+    {
+        listEntry flushList[0x20];
+        initVdp1FlushList(flushList);
+        flushVdp1Sub2(graphicEngineStatus.vdp1Context[0].vdp1Packets, graphicEngineStatus.vdp1Context[0].field_1C, graphicEngineStatus.vdp1Context[1].vdp1Packets, graphicEngineStatus.vdp1Context[1].field_1C, flushList);
+        s_vdp1Packet* r15 = flushVdp1Sub3(flushList);
+
+        initVdp1FlushList(flushList);
+        flushVdp1Sub4(r15, count, flushList);
+        r15 = flushVdp1Sub3(flushList);
+
+        initVdp1FlushList(flushList);
+        flushVdp1Sub5(r15, count, flushList);
+        chainVdp1Packets(flushVdp1Sub3(flushList));
+    }
+    else
+    {
+        setVdp1VramU16(graphicEngineStatus.field_8, graphicEngineStatus.field_6);
+    }
+    
+    numSpriteProcessed = graphicEngineStatus.vdp1Context[0].field_C + graphicEngineStatus.vdp1Context[1].field_C;
+    mumSpriteProcessByMaster = graphicEngineStatus.vdp1Context[0].field_1C;
+    mumSpriteProcessBySlave = graphicEngineStatus.vdp1Context[1].field_1C;
+
+    graphicEngineStatus.vdp1Context[0].field_C = 0;
+    graphicEngineStatus.vdp1Context[1].field_C = 0;
+
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet = graphicEngineStatus.vdp1Context[0].vdp1Packets;
+    graphicEngineStatus.vdp1Context[0].field_1C = 0;
+
+    graphicEngineStatus.vdp1Context[1].pCurrentVdp1Packet = graphicEngineStatus.vdp1Context[1].vdp1Packets;
+    graphicEngineStatus.vdp1Context[1].field_1C = 0;
+
+    //addSlaveCommand(graphicEngineStatus, 0x40AC, 0, invalidateCacheOnRange);
+}
+
 int main(int argc, char* argv[])
 {
     azelSdl2_Init();
@@ -652,7 +798,7 @@ int main(int argc, char* argv[])
 
         //waitForSh2Completion();
 
-        //flushVdp1();
+        flushVdp1();
 
         //updateSound();
 

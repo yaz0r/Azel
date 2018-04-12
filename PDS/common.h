@@ -459,18 +459,25 @@ struct s_graphicEngineStatus_40BC
     u16 field_8;
 }; // size A?
 
+struct s_vdp1Packet
+{
+    s_vdp1Packet* pNext;
+    u16 bucketTypes; // 4
+    u16 vdp1EA; //6
+};
+
 struct s_graphicEngineStatus_14_2024
 {
-    u32 field_0;
-    u32 field_4;
-    u32 field_8;
-    u32 field_C;
-    u32 field_10;
-    u32 field_14;
-    u32 field_18;
-    u32 field_1C;
-    u8* field_20;
-    u8 buffer[0x2000];
+    u32 field_0; //0
+    u32 field_4; //4
+    u32 field_8; //8
+    u32 field_C; //C
+    u32 field_10; //10
+    u32 field_14; //14
+    u32 field_18; //18
+    u32 field_1C; //1C
+    s_vdp1Packet* pCurrentVdp1Packet; //20
+    s_vdp1Packet vdp1Packets[1024]; // 24
     // size should be 2024
 };
 
@@ -485,7 +492,7 @@ struct s_graphicEngineStatus
     u32 field_8; // vdp1 write EA for user clipping parameters
     u32 field_C; // vdp1 write EA of background sprite
 
-    s_graphicEngineStatus_14_2024 field_14[2];
+    s_graphicEngineStatus_14_2024 vdp1Context[2];
     s_graphicEngineStatus_405C field_405C;
 
     u32 field_406C;

@@ -1171,16 +1171,15 @@ p_workArea overlayStart(p_workArea workArea, u32 arg)
     //0605404C
     loadFileFromFileList(1);
 
-    assert(0);
-    /*
+
     graphicEngineStatus.field_406C = 0x3000;
-    graphicEngineStatus.field_408C = resetDivideUnit(0x10000, 0x3000);
+    graphicEngineStatus.field_408C = FP_Div(0x10000, 0x3000);
 
     graphicEngineStatus.field_4070 = 0x200000;
-    graphicEngineStatus.field_4094 = resetDivideUnit(0x8000, 0x200000);
+    graphicEngineStatus.field_4094 = FP_Div(0x8000, 0x200000);
 
     graphicEngineStatus.field_4090 = graphicEngineStatus.field_4094 << 8;
-    */
+
     getFieldTaskPtr()->pSubFieldData->field_334->field_50E = 1;
     getFieldTaskPtr()->pSubFieldData->ptrToE->pScripts = FLD_A3_Scripts;
 

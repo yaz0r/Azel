@@ -20,6 +20,18 @@ u16 getVdp1VramU16(u32 EA)
     return *(u16*)(VDP1Vram + offset);
 }
 
+u8 getVdp1VramU8(u32 EA)
+{
+    u32 offset = EA - 0x25C00000;
+    return *(u8*)(VDP1Vram + offset);
+}
+
+u8* getVdp1Pointer(u32 EA)
+{
+    u32 offset = EA - 0x25C00000;
+    return VDP1Vram + offset;
+}
+
 u16 VDP1_PTMR = 0;
 u16 VDP1_EWDR = 0;
 u16 VDP1_EWLR = 0;
