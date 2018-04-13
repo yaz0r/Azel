@@ -2360,9 +2360,9 @@ void menuGraphicsTaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
 
     pWordArea->field_4 = parentTask;
     graphicEngineStatus.field_40AC.field_C = pWordArea;
-    graphicEngineStatus.field_40AC.field_1 = 0;
+    graphicEngineStatus.field_40AC.isMenuAllowed = 0;
     graphicEngineStatus.field_40AC.field_3 = 0;
-    graphicEngineStatus.field_40AC.field_0 = 0;
+    graphicEngineStatus.field_40AC.menuId = 0;
     graphicEngineStatus.field_40AC.field_2 = 0;
     graphicEngineStatus.field_40AC.field_4 = 0;
     graphicEngineStatus.field_40AC.field_5 = 0;
@@ -2372,7 +2372,7 @@ void menuGraphicsTaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
     addToMemoryLayout(MENU_SCB, 0x14000);
     loadFile("MENU.SCB", MENU_SCB, 0);
     loadFile("MENU.CGB", getVdp1Pointer(0x25C10000), 0);
-    graphicEngineStatus.field_40AC.field_A = loadFnt("MENU.FNT");
+    graphicEngineStatus.field_40AC.fontIndex = loadFnt("MENU.FNT");
 }
 
 void menuGraphicsTaskDrawSub1()
@@ -2810,6 +2810,8 @@ void setupVdp2ForMenu()
 
 struct s_mainMenuWorkArea : public s_workArea
 {
+    s8 field_1;
+    s8 field_2;
     s8 field_3[5];
 };
 
@@ -2954,13 +2956,26 @@ sMainMenuTaskInitData2 mainMenuTaskInitData2 = {
     mainMenuTaskInitData2_
 };
 
+s_taskDefinitionWithArg mainMenuTaskSubTask1Def = { dummyTaskInitWithArg, NULL, dummyTaskDraw, NULL, "mainMenuTaskSubTask1Def" };
+s_taskDefinitionWithArg laserRangTaskDefinition = { dummyTaskInitWithArg, NULL, dummyTaskDraw, NULL, "mainMenuTaskSubTask1Def" };
+
+void mainMenuTaskInitSub4Sub(p_workArea typelessWorkArea)
+{
+    unimplemented("mainMenuTaskInitSub4Sub");
+}
+
+void mainMenuTaskInitSub4(p_workArea typelessWorkArea)
+{
+    createSubTaskFromFunction(typelessWorkArea, mainMenuTaskInitSub4Sub, new s_dummyWorkArea, "mainMenuTaskInitSub4Sub");
+}
+
 void mainMenuTaskInit(p_workArea typelessWorkArea)
 {
     s_mainMenuWorkArea* pWorkArea = static_cast<s_mainMenuWorkArea*>(typelessWorkArea);
 
-    pWorkArea->field_3[0] = 1;
+    pWorkArea->field_3[0] = 1; // item is always enabled
 
-    if (mainGameState.getBit(4, 2))
+    if (mainGameState.getBit(4, 2)) // dragon menu
     {
         pWorkArea->field_3[1] = 1;
     }
@@ -2969,7 +2984,7 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
         pWorkArea->field_3[1] = -1;
     }
 
-    if (mainGameState.gameStats.XP)
+    if (mainGameState.gameStats.XP) // defeated monters menu
     {
         pWorkArea->field_3[2] = 1;
     }
@@ -2977,8 +2992,8 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
     {
         pWorkArea->field_3[2] = -1;
     }
-    pWorkArea->field_3[3] = 1;
-    pWorkArea->field_3[4] = 1;
+    pWorkArea->field_3[3] = 1; // map
+    pWorkArea->field_3[4] = 1; // setup
 
     mainMenuTaskInitSub1();
 
@@ -3009,14 +3024,31 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
             }
             break;
         case -1:
-            mainMenuTaskInitSub2(pWorkArea, &mainMenuTaskInitData2, 0)->spriteIndex = 0;
+            mainMenuTaskInitSub2(pWorkArea, &mainMenuTaskInitData2, 0)->spriteIndex = i;
             break;
         default:
             assert(0);
         }
     }
 
-    //assert(0);
+    pWorkArea->field_2 = r14;
+
+    if (r14 < 0)
+    {
+        assert(0);
+    }
+
+    createSubTaskWithArg(pWorkArea, &mainMenuTaskSubTask1Def, new s_dummyWorkArea, &graphicEngineStatus.layersConfig[0]);
+    createSubTaskWithArg(pWorkArea, &laserRangTaskDefinition, new s_dummyWorkArea, &graphicEngineStatus.layersConfig[1]);
+
+    mainMenuTaskInitSub4(pWorkArea);
+
+    pWorkArea->field_1 = vblankData.field_14;
+
+    vblankData.field_14 = 1;
+
+    fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
+    fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
 }
 
 void mainMenuTaskDraw(p_workArea typelessWorkArea)
@@ -3182,22 +3214,22 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
         if (graphicEngineStatus.field_4514[0].current.field_8 & 8)
         {
             yLog("Hack: forcing menu entry to 1");
-            graphicEngineStatus.field_40AC.field_1 = 1;
-            if (graphicEngineStatus.field_40AC.field_1)
+            graphicEngineStatus.field_40AC.isMenuAllowed = 1;
+            if (graphicEngineStatus.field_40AC.isMenuAllowed)
             {
-                graphicEngineStatus.field_40AC.field_0 = 1;
+                graphicEngineStatus.field_40AC.menuId = 1;
                 playSoundEffect(0);
             }
             else
             {
-                if (graphicEngineStatus.field_40AC.field_0 == 0)
+                if (graphicEngineStatus.field_40AC.menuId == 0)
                     return;
             }
         }
 
         // enter menu
         // this isn't exactly correct
-        if (graphicEngineStatus.field_40AC.field_0)
+        if (graphicEngineStatus.field_40AC.menuId)
         {
             graphicEngineStatus.field_40AC.field_8 = 1;
             graphicEngineStatus.field_40AC.field_9 = 1;
@@ -3217,7 +3249,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
             graphicEngineStatus.field_40AC.field_2 = 0;
             setupVdp2ForMenu();
 
-            pWordArea->field_8 = menuTaskMenuArray[graphicEngineStatus.field_40AC.field_0](pWordArea);
+            pWordArea->field_8 = menuTaskMenuArray[graphicEngineStatus.field_40AC.menuId](pWordArea);
             pWordArea->state++;
         }
         break;
@@ -3241,7 +3273,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
         {
             menuGraphicsTaskDrawSub2();
 
-            graphicEngineStatus.field_40AC.field_0 = 0;
+            graphicEngineStatus.field_40AC.menuId = 0;
             pWordArea->field_C = pauseEngine[0];
 
             pWordArea->field_4->getTask()->clearPaused();
@@ -3335,11 +3367,11 @@ void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
     assert(0);
 }
 
-u32 vblankData[8] = { 0,0,0,0,0,0,0,0 };
+s_vblankData vblankData;
 
 void exitMenuTaskSub1TaskUpdate(s_workArea* pTypelessWorkArea)
 {
-    mainGameState.gameStats.frameCounter += vblankData[3];
+    mainGameState.gameStats.frameCounter += vblankData.field_C;
 }
 
 void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
@@ -3381,7 +3413,7 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
         // 06027474
         graphicEngineStatus.field_4 = 1;
         pauseEngine[2] = 0;
-        graphicEngineStatus.field_40AC.field_1 = 0;
+        graphicEngineStatus.field_40AC.isMenuAllowed = 0;
         var_60525F4.field_0 = -1;
         pWorkArea->state++;
         break;

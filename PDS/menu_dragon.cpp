@@ -62,7 +62,7 @@ void dragonMenuTaskInit(p_workArea pTypelessWorkArea)
     s_dragonMenuWorkArea* pWorkArea = static_cast<s_dragonMenuWorkArea*>(pTypelessWorkArea);
 
     graphicEngineStatus.field_40AC.field_9 = 3;
-    pWorkArea->field_4 = vblankData[5];
+    pWorkArea->field_4 = vblankData.field_14;
 
     createSubTask(pWorkArea, &dragonMenuSubTask1Definition, new s_dragonMenuSubTask1WorkArea);
 }
@@ -173,7 +173,7 @@ void initVdp2ForDragonMenu(u32 r4)
 
 void drawDragonMenuStatsTaskInit(p_workArea)
 {
-    menuGraphicsTaskDrawSub2Sub1(graphicEngineStatus.field_40AC.field_A);
+    menuGraphicsTaskDrawSub2Sub1(graphicEngineStatus.field_40AC.fontIndex);
 }
 
 struct s_stringStatusQuery
@@ -336,7 +336,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
     switch (pWorkArea->field_0)
     {
     case 0:
-        if (graphicEngineStatus.field_40AC.field_0 == 1)
+        if (graphicEngineStatus.field_40AC.menuId == 1)
         {
             // also init cursor
             assert(0);
@@ -348,7 +348,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
         }
         break;
     case 2:
-        vblankData[5] = 2;
+        vblankData.field_14 = 2;
         
         pWorkArea->field_C = createDragonMenuMorhTask(pWorkArea);
 
@@ -356,7 +356,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->field_14 = createSubTask(pWorkArea, &dragonMenuStatsTask2Definition, new s_dummyWorkArea);
         pWorkArea->field_1C = createSubTask(pWorkArea, &dragonMenuMorphCursorTaskDefinition, new s_dummyWorkArea);
 
-        if (graphicEngineStatus.field_40AC.field_0 != 1)
+        if (graphicEngineStatus.field_40AC.menuId != 1)
         {
             fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
             fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);

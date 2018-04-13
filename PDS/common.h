@@ -364,8 +364,8 @@ extern s_vdp1AllocatorNode* vdp1AllocatorHead;
 
 struct s_graphicEngineStatus_40AC
 {
-    u8 field_0; // what menu to open
-    u8 field_1; // is menu allowed?
+    u8 menuId; // 0 what menu to open
+    u8 isMenuAllowed; // 1 is menu allowed?
     u8 field_2;
     u8 field_3;
     u8 field_4;
@@ -374,7 +374,7 @@ struct s_graphicEngineStatus_40AC
     u8 field_7;
     u8 field_8;
     u8 field_9;
-    u16 field_A;
+    u16 fontIndex; // A
     p_workArea field_C;
 };
 

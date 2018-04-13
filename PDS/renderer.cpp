@@ -311,31 +311,33 @@ void renderBG0(u32 width, u32 height)
     u32* textureOutput = new u32[textureWidth * textureHeight];
     memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
-    s_layerData planeData;
+    if(vdp2Controls.m_pendingVdp2Regs->BGON & 0x1)
+    {
+        s_layerData planeData;
+        planeData.CHSZ = vdp2Controls.m_pendingVdp2Regs->CHCTLA & 1;
+        planeData.CHCN = (vdp2Controls.m_pendingVdp2Regs->CHCTLA >> 4) & 7;
+        planeData.PNB = (vdp2Controls.m_pendingVdp2Regs->PNCN0 >> 15) & 0x1;
+        planeData.CNSM = (vdp2Controls.m_pendingVdp2Regs->PNCN0 >> 14) & 0x1;
+        planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA) & 0x7;
+        planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ) & 3;
+        planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN0) & 0x1F;
+        planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXDN0 >> 16;
+        planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYDN0 >> 16;
 
-    planeData.CHSZ = vdp2Controls.m_pendingVdp2Regs->CHCTLA & 1;
-    planeData.CHCN = (vdp2Controls.m_pendingVdp2Regs->CHCTLA >> 4) & 7;
-    planeData.PNB = (vdp2Controls.m_pendingVdp2Regs->PNCN0 >> 15) & 0x1;
-    planeData.CNSM = (vdp2Controls.m_pendingVdp2Regs->PNCN0 >> 14) & 0x1;
-    planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA) & 0x7;
-    planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ) & 3;
-    planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN0) & 0x1F;
-    planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXDN0 >> 16;
-    planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYDN0 >> 16;
+        u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
+        u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
 
-    u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
-    u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
+        u32 pageSize = pageDimension * pageDimension * patternSize;
 
-    u32 pageSize = pageDimension * pageDimension * patternSize;
+        u32 offset = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 7) << 6;
 
-    u32 offset = (vdp2Controls.m_pendingVdp2Regs->MPOFN & 7) << 6;
+        planeData.planeOffsets[0] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPABN0 & 0x3F)) * pageSize;
+        planeData.planeOffsets[1] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPABN0 >> 8) & 0x3F)) * pageSize;
+        planeData.planeOffsets[2] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPCDN0 & 0x3F)) * pageSize;
+        planeData.planeOffsets[3] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPCDN0 >> 8) & 0x3F)) * pageSize;
 
-    planeData.planeOffsets[0] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPABN0 & 0x3F)) * pageSize;
-    planeData.planeOffsets[1] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPABN0>>8) & 0x3F)) * pageSize;
-    planeData.planeOffsets[2] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPCDN0 & 0x3F)) * pageSize;
-    planeData.planeOffsets[3] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPCDN0 >> 8) & 0x3F)) * pageSize;
-
-    renderLayer(planeData, textureWidth, textureHeight, textureOutput);
+        renderLayer(planeData, textureWidth, textureHeight, textureOutput);
+    }
 
     glBindTexture(GL_TEXTURE_2D, gNBG0Texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
@@ -354,29 +356,32 @@ void renderBG1(u32 width, u32 height)
     u32* textureOutput = new u32[textureWidth * textureHeight];
     memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
-    s_layerData planeData;
+    if (vdp2Controls.m_pendingVdp2Regs->BGON & 0x2)
+    {
+        s_layerData planeData;
 
-    planeData.CHSZ = (vdp2Controls.m_pendingVdp2Regs->CHCTLA >> 8) & 0x1;
-    planeData.CHCN = (vdp2Controls.m_pendingVdp2Regs->CHCTLA >> 12) & 3;
-    planeData.PNB = (vdp2Controls.m_pendingVdp2Regs->PNCN1 >> 15) & 0x1;
-    planeData.CNSM = (vdp2Controls.m_pendingVdp2Regs->PNCN1 >> 14) & 0x1;
-    planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA >> 4) & 0x7;
-    planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ >> 2) & 3;
-    planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN1) & 0x1F;
-    planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXDN1 >> 16;
-    planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYDN1 >> 16;
+        planeData.CHSZ = (vdp2Controls.m_pendingVdp2Regs->CHCTLA >> 8) & 0x1;
+        planeData.CHCN = (vdp2Controls.m_pendingVdp2Regs->CHCTLA >> 12) & 3;
+        planeData.PNB = (vdp2Controls.m_pendingVdp2Regs->PNCN1 >> 15) & 0x1;
+        planeData.CNSM = (vdp2Controls.m_pendingVdp2Regs->PNCN1 >> 14) & 0x1;
+        planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA >> 4) & 0x7;
+        planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ >> 2) & 3;
+        planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN1) & 0x1F;
+        planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXDN1 >> 16;
+        planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYDN1 >> 16;
 
-    u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
-    u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
+        u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
+        u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
 
-    u32 pageSize = pageDimension * pageDimension * patternSize;
+        u32 pageSize = pageDimension * pageDimension * patternSize;
 
-    planeData.planeOffsets[0] = (vdp2Controls.m_pendingVdp2Regs->MPABN1 & 0x3F) * pageSize;
-    planeData.planeOffsets[1] = ((vdp2Controls.m_pendingVdp2Regs->MPABN1 >> 8) & 0x3F) * pageSize;
-    planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN1 & 0x3F) * pageSize;
-    planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN1 >> 8) & 0x3F) * pageSize;
+        planeData.planeOffsets[0] = (vdp2Controls.m_pendingVdp2Regs->MPABN1 & 0x3F) * pageSize;
+        planeData.planeOffsets[1] = ((vdp2Controls.m_pendingVdp2Regs->MPABN1 >> 8) & 0x3F) * pageSize;
+        planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN1 & 0x3F) * pageSize;
+        planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN1 >> 8) & 0x3F) * pageSize;
 
-    renderLayer(planeData, textureWidth, textureHeight, textureOutput);
+        renderLayer(planeData, textureWidth, textureHeight, textureOutput);
+    }
 
     glBindTexture(GL_TEXTURE_2D, gNBG1Texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
@@ -431,29 +436,32 @@ void renderBG3(u32 width, u32 height)
     u32* textureOutput = new u32[textureWidth * textureHeight];
     memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
-    s_layerData planeData;
+    if (vdp2Controls.m_pendingVdp2Regs->BGON & 0x8)
+    {
+        s_layerData planeData;
 
-    planeData.CHSZ = (vdp2Controls.m_pendingVdp2Regs->CHCTLB >> 4) & 0x1;
-    planeData.CHCN = (vdp2Controls.m_pendingVdp2Regs->CHCTLB >> 5) & 0x1;
-    planeData.PNB = (vdp2Controls.m_pendingVdp2Regs->PNCN3 >> 15) & 0x1;
-    planeData.CNSM = (vdp2Controls.m_pendingVdp2Regs->PNCN3 >> 14) & 0x1;
-    planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA >> 12) & 0x7;
-    planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ >> 6) & 3;
-    planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN3) & 0x1F;
-    planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXN3;
-    planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYN3;
+        planeData.CHSZ = (vdp2Controls.m_pendingVdp2Regs->CHCTLB >> 4) & 0x1;
+        planeData.CHCN = (vdp2Controls.m_pendingVdp2Regs->CHCTLB >> 5) & 0x1;
+        planeData.PNB = (vdp2Controls.m_pendingVdp2Regs->PNCN3 >> 15) & 0x1;
+        planeData.CNSM = (vdp2Controls.m_pendingVdp2Regs->PNCN3 >> 14) & 0x1;
+        planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA >> 12) & 0x7;
+        planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ >> 6) & 3;
+        planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN3) & 0x1F;
+        planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXN3;
+        planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYN3;
 
-    u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
-    u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
+        u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
+        u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
 
-    u32 pageSize = pageDimension * pageDimension * patternSize;
+        u32 pageSize = pageDimension * pageDimension * patternSize;
 
-    planeData.planeOffsets[0] = (vdp2Controls.m_pendingVdp2Regs->MPABN3 & 0x3F) * pageSize;
-    planeData.planeOffsets[1] = ((vdp2Controls.m_pendingVdp2Regs->MPABN3 >> 8) & 0x3F) * pageSize;
-    planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN3 & 0x3F) * pageSize;
-    planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN3 >> 8) & 0x3F) * pageSize;
+        planeData.planeOffsets[0] = (vdp2Controls.m_pendingVdp2Regs->MPABN3 & 0x3F) * pageSize;
+        planeData.planeOffsets[1] = ((vdp2Controls.m_pendingVdp2Regs->MPABN3 >> 8) & 0x3F) * pageSize;
+        planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN3 & 0x3F) * pageSize;
+        planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN3 >> 8) & 0x3F) * pageSize;
 
-    renderLayer(planeData, textureWidth, textureHeight, textureOutput);
+        renderLayer(planeData, textureWidth, textureHeight, textureOutput);
+    }
 
     glBindTexture(GL_TEXTURE_2D, gNBG3Texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
