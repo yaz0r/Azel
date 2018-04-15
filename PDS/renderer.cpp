@@ -74,20 +74,36 @@ void azelSdl2_StartFrame()
         {
             graphicEngineStatus.field_4514[0].pending.field_8 |= 8;
         }
+        if (event.key.keysym.scancode == SDL_SCANCODE_Z)
+        {
+            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x4;
+        }
+        if (event.key.keysym.scancode == SDL_SCANCODE_X)
+        {
+            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x2;
+        }
+        if (event.key.keysym.scancode == SDL_SCANCODE_C)
+        {
+            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x1;
+        }
         if (event.key.keysym.scancode == SDL_SCANCODE_UP)
         {
+            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x10;
             graphicEngineStatus.field_4514[0].pending.field_C |= 0x10;
         }
         if (event.key.keysym.scancode == SDL_SCANCODE_DOWN)
         {
+            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x20;
             graphicEngineStatus.field_4514[0].pending.field_C |= 0x20;
         }
         if (event.key.keysym.scancode == SDL_SCANCODE_LEFT)
         {
+            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x40;
             graphicEngineStatus.field_4514[0].pending.field_C |= 0x40;
         }
         if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT)
         {
+            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x80;
             graphicEngineStatus.field_4514[0].pending.field_C |= 0x80;
         }
     }
@@ -156,6 +172,11 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
         {
             s32 outputX = rawOutputX + layerData.scrollX;
             s32 outputY = rawOutputY + layerData.scrollY;
+
+            if (outputX < 0)
+                continue;
+            if (outputY < 0)
+                continue;
 
             u32 planeX = outputX / planeDotWidth;
             u32 planeY = outputY / planeDotHeight;

@@ -454,9 +454,10 @@ struct s_graphicEngineStatus_40E4
 
 struct s_graphicEngineStatus_40BC
 {
-    u16 scrollX; //0
-    u16 scrollY; //2
-
+    s16 scrollX; //0
+    s16 scrollY; //2
+    s16 scrollIncX; // 4
+    s16 scrollIncY; // 6
     u16 field_8;
 }; // size A?
 

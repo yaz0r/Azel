@@ -66,8 +66,8 @@ struct s_VDP2Regs
     u16 MPMNRB;
     u16 MPOPRB;
 
-    u32 SCXN0;
-    u32 SCYN0;
+    s32 SCXN0;
+    s32 SCYN0;
     u16 ZMXIN0;
     u16 ZMXDN0;
     u16 ZMYIN0;

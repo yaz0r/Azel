@@ -1,5 +1,7 @@
 #include "PDS.h"
 
+extern p_workArea(*statusMenuSubMenus[])(p_workArea);
+
 p_workArea createLoadingTask(p_workArea parentTask)
 {
     unimplemented("createLoadingTask");
@@ -2815,7 +2817,7 @@ struct s_statusMenuTaskWorkArea : public s_workArea
 
 struct s_MenuCursorWorkArea : public s_workArea
 {
-    s32 field_0;
+    s32 selectedMenu;
     s_graphicEngineStatus_40BC* field_4;
     u16* field_8;
     s32 field_C;
@@ -2825,9 +2827,9 @@ struct s_mainMenuWorkArea : public s_workArea
 {
     u8 field_0; //0
     s8 field_1; //1
-    s8 field_2; //2
+    s8 selectedMenu; //2
     s8 field_3[5]; //3
-
+    p_workArea field_8; // 8
     s_statusMenuTaskWorkArea* field_C; // C
     s_MenuCursorWorkArea* field_10; // 10
 };
@@ -2985,12 +2987,36 @@ void menuDragonCrestTaskInit(s_workArea* pTypelessWorkArea, void* arg)
     pWorkArea->field_4 = static_cast<s_graphicEngineStatus_40BC*>(arg);
 }
 
+s_menuSprite menuDragonCrestSprites [] =
+{
+    {0x2168, 0x317, 0x178, 0xD},
+    {0x56, 0x218C, 0x418, 0x188},
+    {0x19, 0x57, 0x21BC, 0x419},
+    {0x196, 0x27, 0x58, 0x21F0},
+    {0x50D, 0x1A5, 0x20, 0x59},
+    {0x2214, 0x51A, 0x1BE, 0x20},
+    {0x5A, 0x2258, 0x611, 0x1BF},
+    {0x30, 0x5B, 0x228C, 0x416},
+    {0x1A5, 0x2A, 0x5C, 0x22B8},
+    {0x313, 0x19C, 0x3C, 0x5D},
+    {0x22D8, 0x30F, 0x1B0, 0x40},
+    {0x5E, 0x22F0, 0x416, 0x1C3},
+    {0x40, 0x5F, 0x231C, 0x611},
+    {0x1A1, 0x4E, 0x60, 0x2350},
+    {0x40E, 0x18E, 0x55, 0x61},
+};
+
 void menuDragonCrestTaskDraw(s_workArea* pTypelessWorkArea)
 {
     s_menuDragonCrestTaskWorkArea* pWorkArea = static_cast<s_menuDragonCrestTaskWorkArea*>(pTypelessWorkArea);
     if (graphicEngineStatus.field_40AC.field_5)
     {
-        assert(0);
+        for (int i = 0; i < 10; i++)
+        {
+            unimplemented("Missing filter login in menuDragonCrestTaskDraw");
+
+            drawMenuSprite(&menuDragonCrestSprites[i], -pWorkArea->field_4->scrollX, -pWorkArea->field_4->scrollY, 0x610);
+        }
     }
 }
 
@@ -3091,11 +3117,11 @@ void menuCursorTaskDraw(p_workArea typelessWorkArea)
 {
     s_MenuCursorWorkArea* pWorkArea = static_cast<s_MenuCursorWorkArea*>(typelessWorkArea);
 
-    if (pWorkArea->field_0 < 0)
+    if (pWorkArea->selectedMenu < 0)
         return;
 
-    s32 X = pWorkArea->field_8[pWorkArea->field_0 + 0] - pWorkArea->field_4->scrollX;
-    s32 Y = pWorkArea->field_8[pWorkArea->field_0 + 1] - pWorkArea->field_4->scrollY;
+    s32 X = pWorkArea->field_8[pWorkArea->selectedMenu*2 + 0] - pWorkArea->field_4->scrollX;
+    s32 Y = pWorkArea->field_8[pWorkArea->selectedMenu*2 + 1] - pWorkArea->field_4->scrollY;
 
     if (pWorkArea->field_C > 20)
     {
@@ -3111,6 +3137,14 @@ s_MenuCursorWorkArea* createMenuCursorTask(p_workArea pWorkArea, sMainMenuTaskIn
 {
     return static_cast<s_MenuCursorWorkArea*>(createSubTaskWithArg(pWorkArea, &menuCursorTaskDefinition, new s_MenuCursorWorkArea, r5));
 }
+
+u32 mainMenuTaskInitData1[5] = {
+    0x71450,
+    0x714D6,
+    0x71510,
+    0x71596,
+    0x715D0,
+};
 
 void mainMenuTaskInit(p_workArea typelessWorkArea)
 {
@@ -3140,14 +3174,6 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
 
     mainMenuTaskInitSub1();
 
-    u32 mainMenuTaskInitData1[5] = {
-        0x71450,
-        0x714D6,
-        0x71510,
-        0x71596,
-        0x715D0,
-    };
-
     s32 r14 = -1;
     for (int i = 0; i < 5; i++)
     {
@@ -3174,12 +3200,12 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
         }
     }
 
-    pWorkArea->field_2 = r14;
+    pWorkArea->selectedMenu = r14;
 
     if (r14 >= 0)
     {
         pWorkArea->field_10 = createMenuCursorTask(pWorkArea, &mainMenuTaskInitData2);
-        pWorkArea->field_10->field_0 = r14;
+        pWorkArea->field_10->selectedMenu = r14;
     }
 
     createSubTaskWithArg(pWorkArea, &menuDragonCrestTaskDef, new s_menuDragonCrestTaskWorkArea, &graphicEngineStatus.layersConfig[0]);
@@ -3276,26 +3302,85 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
     {
     case 0:
         pWorkArea->field_C = static_cast<s_statusMenuTaskWorkArea*>(createSubTask(pWorkArea, &statusMenuTaskDefinition, new s_statusMenuTaskWorkArea));
-        pWorkArea->field_C->selectedMenu = pWorkArea->field_2;
-        pWorkArea->field_10->field_0 = pWorkArea->field_2;
+        pWorkArea->field_C->selectedMenu = pWorkArea->selectedMenu;
+        pWorkArea->field_10->selectedMenu = pWorkArea->selectedMenu;
         pWorkArea->field_0++;
     case 1:
-        if (graphicEngineStatus.field_4514->current.field_8 & 1)
+        if (graphicEngineStatus.field_4514->current.field_8 & 1) // B
         {
             assert(0);
             return;
         }
-        if (pWorkArea->field_2 < 0)
+        if (pWorkArea->selectedMenu < 0)
         {
             return;
         }
-        if (graphicEngineStatus.field_4514->current.field_8 & 6)
+        if (graphicEngineStatus.field_4514->current.field_8 & 6) // A or C
         {
-            assert(0);
+            if (pWorkArea->field_3[pWorkArea->selectedMenu] == 0)
+            {
+                playSoundEffect(5);
+                return;
+            }
+            playSoundEffect(0);
+            if (pWorkArea->field_C)
+            {
+                pWorkArea->field_C->getTask()->markFinished();
+            }
+
+            pWorkArea->field_8 = statusMenuSubMenus[pWorkArea->selectedMenu](pWorkArea);
+            pWorkArea->field_0++;
+            return;
         }
-        if (graphicEngineStatus.field_4514->current.field_8 & 0x30)
+        if (graphicEngineStatus.field_4514->current.field_8 & 0x30) // UP or DOWN
         {
-            assert(0);
+            playSoundEffect(10);
+            
+            s32 selectedMenu = pWorkArea->selectedMenu;
+
+            if (pWorkArea->field_3[selectedMenu] == 1)
+            {
+                mainMenuTaskInitSub3(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x660);
+            }
+
+            if (graphicEngineStatus.field_4514->current.field_8 & 0x10) // UP
+            {
+                do
+                {
+                    if (--selectedMenu < 0)
+                    {
+                        selectedMenu = 4;
+                    }
+                } while (pWorkArea->field_3[selectedMenu] == -1);
+            }
+            else
+            {
+                do 
+                {
+                    if (++selectedMenu > 4)
+                    {
+                        selectedMenu = 0;
+                    }
+                } while (pWorkArea->field_3[selectedMenu] == -1);
+            }
+
+            if (pWorkArea->field_3[selectedMenu] == 1)
+            {
+                mainMenuTaskInitSub3(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x620);
+            }
+
+            pWorkArea->selectedMenu = selectedMenu;
+            pWorkArea->field_C->selectedMenu = pWorkArea->selectedMenu;
+            pWorkArea->field_10->selectedMenu = pWorkArea->selectedMenu;
+        }
+        break;
+    case 2:
+        if (pWorkArea->field_8)
+        {
+            if (pWorkArea->field_8->getTask()->isFinished())
+            {
+                pWorkArea->field_0 = 0;
+            }
         }
         break;
     default:
@@ -3318,6 +3403,8 @@ p_workArea createMainMenuTask(p_workArea workArea)
 
 p_workArea createInventoryMenuTask(p_workArea workArea)
 {
+    unimplemented("createInventoryMenuTask");
+    return createMainDragonMenuTask(workArea);
     assert(0);
     return NULL;
 }
@@ -3357,6 +3444,15 @@ p_workArea createMenuBKTask(p_workArea workArea)
     assert(0);
     return NULL;
 }
+
+p_workArea(*statusMenuSubMenus[])(p_workArea) =
+{
+    createInventoryMenuTask,
+    createMainDragonMenuTask,
+    createEnemyListMenuTask,
+    createMapTask,
+    createSystemMenuTask,
+};
 
 p_workArea(*menuTaskMenuArray[])(p_workArea) = 
 {
@@ -3418,9 +3514,11 @@ void scrollMenu()
 {
     for (int i = 0; i < 4; i++)
     {
-        if (graphicEngineStatus.layersConfig[4].field_8)
+        if (graphicEngineStatus.layersConfig[i].field_8)
         {
-            assert(0);
+            graphicEngineStatus.layersConfig[i].scrollX += graphicEngineStatus.layersConfig[i].scrollIncX;
+            graphicEngineStatus.layersConfig[i].scrollY += graphicEngineStatus.layersConfig[i].scrollIncY;
+            graphicEngineStatus.layersConfig[i].field_8--;
         }
     }
 
@@ -3456,7 +3554,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
         graphicEngineStatus.field_40AC.field_8 = 0;
         if (graphicEngineStatus.field_4514[0].current.field_8 & 8)
         {
-            yLog("Hack: forcing menu entry to 1");
+            unimplemented("Hack: forcing menu enabled 1");
             graphicEngineStatus.field_40AC.isMenuAllowed = 1;
             if (graphicEngineStatus.field_40AC.isMenuAllowed)
             {

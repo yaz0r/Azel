@@ -50,7 +50,7 @@ struct s_dragonMenuWorkArea : public s_workArea
 {
     u32 field_0;
     u32 field_4;
-
+    u32 field_8; // 8
     p_workArea field_C;
     p_workArea field_10;
     p_workArea field_14;
@@ -329,6 +329,13 @@ s_taskDefinition dragonMenuStatsTaskDefinition = { drawDragonMenuStatsTaskInit, 
 s_taskDefinition dragonMenuStatsTask2Definition = { NULL, NULL, dummyTaskDraw, NULL, "dragonMenuStatsTask2" };
 s_taskDefinition dragonMenuMorphCursorTaskDefinition = { dummyTaskInit, NULL, dummyTaskDraw, NULL, "dragonMenuMorphCursorTask" };
 
+void startVdp2LayerScroll(s32 layerId, s32 x, s32 y, s32 numSteps)
+{
+    graphicEngineStatus.layersConfig[layerId].scrollIncX = x;
+    graphicEngineStatus.layersConfig[layerId].scrollIncY = y;
+    graphicEngineStatus.layersConfig[layerId].field_8 = numSteps;
+}
+
 void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
 {
     s_dragonMenuWorkArea* pWorkArea = static_cast<s_dragonMenuWorkArea*>(pTypelessWorkArea);
@@ -338,8 +345,12 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
     case 0:
         if (graphicEngineStatus.field_40AC.menuId == 1)
         {
-            // also init cursor
-            assert(0);
+            initVdp2ForDragonMenu(0);
+            pWorkArea->field_8 = 16;
+            startVdp2LayerScroll(0, -10, 0, 16);
+            startVdp2LayerScroll(1, 0, -16, 16);
+            pWorkArea->field_0 = 1;
+            return;
         }
         else
         {
@@ -347,6 +358,16 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
             pWorkArea->field_0 = 2;
         }
         break;
+    case 1:
+        if (pWorkArea->field_8 < 3)
+        {
+            graphicEngineStatus.field_40AC.field_5 = 1;
+        }
+        if (--pWorkArea->field_8)
+        {
+            return;
+        }
+        pWorkArea->field_0++;
     case 2:
         vblankData.field_14 = 2;
         
