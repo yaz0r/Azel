@@ -2387,7 +2387,7 @@ void menuGraphicsTaskDrawSub1()
 
     u32 backScreenTableOffset = vdp2Controls.m_pendingVdp2Regs->BKTA & 0x7FFFF;
     graphicEngineStatus.field_40E4->field_400 = getVdp2VramU16(backScreenTableOffset);
-    graphicEngineStatus.field_40E4->field_402 = pVdp2StringControl->index;
+    graphicEngineStatus.field_40E4->field_402 = pVdp2StringControl->f0_index;
 }
 
 sLayerConfig menuNBG01Setup[] =
@@ -2808,11 +2808,28 @@ void setupVdp2ForMenu()
     }
 }
 
+struct s_statusMenuTaskWorkArea : public s_workArea
+{
+    u32 selectedMenu; //0
+};
+
+struct s_MenuCursorWorkArea : public s_workArea
+{
+    s32 field_0;
+    s_graphicEngineStatus_40BC* field_4;
+    u16* field_8;
+    s32 field_C;
+};
+
 struct s_mainMenuWorkArea : public s_workArea
 {
-    s8 field_1;
-    s8 field_2;
-    s8 field_3[5];
+    u8 field_0; //0
+    s8 field_1; //1
+    s8 field_2; //2
+    s8 field_3[5]; //3
+
+    s_statusMenuTaskWorkArea* field_C; // C
+    s_MenuCursorWorkArea* field_10; // 10
 };
 
 void mainMenuTaskInitSub1()
@@ -2893,7 +2910,7 @@ s_menuSprite spriteData1[] =
 
 void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
 {
-    u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].field_0;
+    u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA;
 
     setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0, normal sprite + JUMP
     setVdp1VramU16(vdp1WriteEA + 0x04, 0x80); // CMDPMOD
@@ -2908,7 +2925,7 @@ void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
     graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
 
     graphicEngineStatus.vdp1Context[0].field_1C += 1;
-    graphicEngineStatus.vdp1Context[0].field_0 = vdp1WriteEA + 0x20;
+    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA + 0x20;
     graphicEngineStatus.vdp1Context[0].field_C += 1;
 }
 
@@ -2956,17 +2973,143 @@ sMainMenuTaskInitData2 mainMenuTaskInitData2 = {
     mainMenuTaskInitData2_
 };
 
-s_taskDefinitionWithArg mainMenuTaskSubTask1Def = { dummyTaskInitWithArg, NULL, dummyTaskDraw, NULL, "mainMenuTaskSubTask1Def" };
-s_taskDefinitionWithArg laserRangTaskDefinition = { dummyTaskInitWithArg, NULL, dummyTaskDraw, NULL, "mainMenuTaskSubTask1Def" };
+struct s_menuDragonCrestTaskWorkArea : public s_workArea
+{
+    u32 field_0;
+    s_graphicEngineStatus_40BC* field_4;
+};
+
+void menuDragonCrestTaskInit(s_workArea* pTypelessWorkArea, void* arg)
+{
+    s_menuDragonCrestTaskWorkArea* pWorkArea = static_cast<s_menuDragonCrestTaskWorkArea*>(pTypelessWorkArea);
+    pWorkArea->field_4 = static_cast<s_graphicEngineStatus_40BC*>(arg);
+}
+
+void menuDragonCrestTaskDraw(s_workArea* pTypelessWorkArea)
+{
+    s_menuDragonCrestTaskWorkArea* pWorkArea = static_cast<s_menuDragonCrestTaskWorkArea*>(pTypelessWorkArea);
+    if (graphicEngineStatus.field_40AC.field_5)
+    {
+        assert(0);
+    }
+}
+
+struct s_laserRankTaskWorkArea : public s_workArea
+{
+    u32 field_0;
+    s_graphicEngineStatus_40BC* field_4;
+};
+
+void laserRangTaskInit(s_workArea* pTypelessWorkArea, void* arg)
+{
+    s_laserRankTaskWorkArea* pWorkArea = static_cast<s_laserRankTaskWorkArea*>(pTypelessWorkArea);
+    pWorkArea->field_4 = static_cast<s_graphicEngineStatus_40BC*>(arg);
+}
+
+s_menuSprite laserRankSpriteDefinition[6] = {
+    { 0x2378, 0x20B, 0x80, 0x19C },
+    { 0x2384, 0x213, 0x8A, 0x1A3 },
+    { 0x2398, 0x20B, 0x80, 0x1B2 },
+    { 0x23A4, 0x20A, 0x70, 0x1B3 },
+    { 0x23B0, 0x213, 0x6C, 0x1A3 },
+    { 0x23C4, 0x20A, 0x70, 0x19C },
+};
+
+void laserRangTaskDraw(s_workArea* pTypelessWorkArea)
+{
+    s_laserRankTaskWorkArea* pWorkArea = static_cast<s_laserRankTaskWorkArea*>(pTypelessWorkArea);
+    if (pWorkArea->field_0 < 0)
+        return;
+    if (mainGameState.gameStats.dragonLevel > 7)
+        return;
+
+    u8 r14 = mainGameState.gameStats.dragonLevel;
+    if (r14 > 6)
+        r14 = 6;
+
+    for (int i = 0; i < r14; i++)
+    {
+        drawMenuSprite(&laserRankSpriteDefinition[i], -pWorkArea->field_4->scrollX, -pWorkArea->field_4->scrollY, 0x760);
+    }
+}
+
+s_taskDefinitionWithArg menuDragonCrestTaskDef = { menuDragonCrestTaskInit, NULL, menuDragonCrestTaskDraw, NULL, "menuDragonCrestTaskDef" };
+s_taskDefinitionWithArg laserRangTaskDefinition = { laserRangTaskInit, NULL, laserRangTaskDraw, NULL, "laserRangTaskDefinition" };
+
+struct s_mainMenuTaskInitSub4SubWorkArea : public s_workArea
+{
+    u32 _0;
+    s32 _4;
+};
 
 void mainMenuTaskInitSub4Sub(p_workArea typelessWorkArea)
 {
-    unimplemented("mainMenuTaskInitSub4Sub");
+    s_mainMenuTaskInitSub4SubWorkArea* pWorkArea = static_cast<s_mainMenuTaskInitSub4SubWorkArea*>(typelessWorkArea);
+
+    if (--pWorkArea->_4 > 0)
+    {
+        return;
+    }
+
+    pWorkArea->_4 = 4;
+
+    if (++pWorkArea->_0 >= 14)
+    {
+        pWorkArea->_0 = 0;
+    }
+
+    asyncDmaCopy(COMMON_DAT + 0xDB9C + pWorkArea->_0 * 14, getVdp2Cram(0xE00 + 0xC4), 14, 0);
 }
 
 void mainMenuTaskInitSub4(p_workArea typelessWorkArea)
 {
-    createSubTaskFromFunction(typelessWorkArea, mainMenuTaskInitSub4Sub, new s_dummyWorkArea, "mainMenuTaskInitSub4Sub");
+    createSubTaskFromFunction(typelessWorkArea, mainMenuTaskInitSub4Sub, new s_mainMenuTaskInitSub4SubWorkArea, "mainMenuTaskInitSub4Sub");
+}
+
+void menuCursorTaskInit(p_workArea typelessWorkArea, void* r5)
+{
+    s_MenuCursorWorkArea* pWorkArea = static_cast<s_MenuCursorWorkArea*>(typelessWorkArea);
+    sMainMenuTaskInitData2* pMenuData = static_cast<sMainMenuTaskInitData2*>(r5);
+
+    pWorkArea->field_4 = pMenuData->field_0;
+    pWorkArea->field_8 = pMenuData->field_4;
+}
+
+void menuCursorTaskUpdate(p_workArea typelessWorkArea)
+{
+    s_MenuCursorWorkArea* pWorkArea = static_cast<s_MenuCursorWorkArea*>(typelessWorkArea);
+    if (--pWorkArea->field_C < 0)
+    {
+        pWorkArea->field_C = 40;
+    }
+}
+
+s_menuSprite cursorSpriteDef0 = { 0x2080, 0x520, 0, 0};
+s_menuSprite cursorSpriteDef1 = { 0x2030, 0x520, 0, 0 };
+
+void menuCursorTaskDraw(p_workArea typelessWorkArea)
+{
+    s_MenuCursorWorkArea* pWorkArea = static_cast<s_MenuCursorWorkArea*>(typelessWorkArea);
+
+    if (pWorkArea->field_0 < 0)
+        return;
+
+    s32 X = pWorkArea->field_8[pWorkArea->field_0 + 0] - pWorkArea->field_4->scrollX;
+    s32 Y = pWorkArea->field_8[pWorkArea->field_0 + 1] - pWorkArea->field_4->scrollY;
+
+    if (pWorkArea->field_C > 20)
+    {
+        drawMenuSprite(&cursorSpriteDef0, X, Y, 0x760);
+    }
+
+    drawMenuSprite(&cursorSpriteDef1, X, Y, 0x760);
+}
+
+s_taskDefinitionWithArg menuCursorTaskDefinition = { menuCursorTaskInit , menuCursorTaskUpdate, menuCursorTaskDraw, NULL, "menuCursorTask" };
+
+s_MenuCursorWorkArea* createMenuCursorTask(p_workArea pWorkArea, sMainMenuTaskInitData2* r5)
+{
+    return static_cast<s_MenuCursorWorkArea*>(createSubTaskWithArg(pWorkArea, &menuCursorTaskDefinition, new s_MenuCursorWorkArea, r5));
 }
 
 void mainMenuTaskInit(p_workArea typelessWorkArea)
@@ -2984,7 +3127,7 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
         pWorkArea->field_3[1] = -1;
     }
 
-    if (mainGameState.gameStats.XP) // defeated monters menu
+    if (mainGameState.gameStats.XP) // defeated monsters menu
     {
         pWorkArea->field_3[2] = 1;
     }
@@ -3033,13 +3176,14 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
 
     pWorkArea->field_2 = r14;
 
-    if (r14 < 0)
+    if (r14 >= 0)
     {
-        assert(0);
+        pWorkArea->field_10 = createMenuCursorTask(pWorkArea, &mainMenuTaskInitData2);
+        pWorkArea->field_10->field_0 = r14;
     }
 
-    createSubTaskWithArg(pWorkArea, &mainMenuTaskSubTask1Def, new s_dummyWorkArea, &graphicEngineStatus.layersConfig[0]);
-    createSubTaskWithArg(pWorkArea, &laserRangTaskDefinition, new s_dummyWorkArea, &graphicEngineStatus.layersConfig[1]);
+    createSubTaskWithArg(pWorkArea, &menuDragonCrestTaskDef, new s_menuDragonCrestTaskWorkArea, &graphicEngineStatus.layersConfig[0]);
+    createSubTaskWithArg(pWorkArea, &laserRangTaskDefinition, new s_laserRankTaskWorkArea, &graphicEngineStatus.layersConfig[1]);
 
     mainMenuTaskInitSub4(pWorkArea);
 
@@ -3051,9 +3195,113 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
     fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
 }
 
+void statusMenuTaskInit(p_workArea pWorkArea)
+{
+    setupVDP2StringRendering(0, 34, 44, 28);
+}
+
+const char* statusMenuOptionsDragonType[] = {
+    "Show Item List                  ",
+    "Select Dragon Type              ",
+    "Display Data on Defeated Enemies",
+    "Display Map                     ",
+    "Change Settings                 ",
+};
+
+const char* statusMenuOptionsAbilities[] = {
+    "Show Item List                  ",
+    "See Ability                     ",
+    "Display Data on Defeated Enemies",
+    "Display Map                     ",
+    "Change Settings                 ",
+};
+
+void statusMenuTaskDraw(p_workArea typelessWorkArea)
+{
+    s_statusMenuTaskWorkArea* pWorkArea = static_cast<s_statusMenuTaskWorkArea*>(typelessWorkArea);
+    
+    vdp2StringContext.field_0 = 0;
+    setActiveFont(graphicEngineStatus.field_40AC.fontIndex);
+    vdp2PrintStatus.palette = 0xC000;
+
+    const char** menuText = statusMenuOptionsDragonType;
+
+    if ((mainGameState.gameStats.dragonLevel == DR_LEVEL_0_BASIC_WING) || (mainGameState.gameStats.dragonLevel == DR_LEVEL_6_LIGHT_WING) || (mainGameState.gameStats.dragonLevel >= DR_LEVEL_7_SOLO_WING))
+    {
+        menuText = statusMenuOptionsAbilities;
+    }
+
+    if (pWorkArea->selectedMenu >= 0)
+    {
+        vdp2StringContext.cursorX = vdp2StringContext.X + 3;
+        vdp2StringContext.cursorY = vdp2StringContext.Y + 0x17;
+
+        drawInventoryString(menuText[pWorkArea->selectedMenu]);
+    }
+
+    vdp2DebugPrintSetPosition(3, 39);
+    vdp2PrintfLargeFont("HP  %4d/%4d", mainGameState.gameStats.currentHP, mainGameState.gameStats.maxHP);
+
+    vdp2DebugPrintSetPosition(3, 41);
+    vdp2PrintfLargeFont("BP  %4d/%4d", mainGameState.gameStats.currentBP, mainGameState.gameStats.maxBP);
+
+    vdp2DebugPrintSetPosition(3, 49);
+    vdp2PrintfLargeFont("DYNE %8d", mainGameState.gameStats.dyne);
+
+    if (mainGameState.gameStats.dragonLevel < DR_LEVEL_8_FLOATER)
+    {
+        unimplemented("draw level curve");
+    }
+    else
+    {
+        vdp2StringContext.cursorX = vdp2StringContext.X + 3;
+        vdp2StringContext.cursorY = vdp2StringContext.Y + 2;
+
+        drawInventoryString("  Floater ");
+    }
+}
+
+void statusMenuTaskDelete(p_workArea pWorkArea)
+{
+    unimplemented("statusMenuTaskDelete");
+}
+
+s_taskDefinition statusMenuTaskDefinition = { statusMenuTaskInit, NULL, statusMenuTaskDraw, statusMenuTaskDelete, "statusMenuTask" };
+
 void mainMenuTaskDraw(p_workArea typelessWorkArea)
 {
-    unimplemented("mainMenuTaskDraw");
+    s_mainMenuWorkArea* pWorkArea = static_cast<s_mainMenuWorkArea*>(typelessWorkArea);
+
+    switch (pWorkArea->field_0)
+    {
+    case 0:
+        pWorkArea->field_C = static_cast<s_statusMenuTaskWorkArea*>(createSubTask(pWorkArea, &statusMenuTaskDefinition, new s_statusMenuTaskWorkArea));
+        pWorkArea->field_C->selectedMenu = pWorkArea->field_2;
+        pWorkArea->field_10->field_0 = pWorkArea->field_2;
+        pWorkArea->field_0++;
+    case 1:
+        if (graphicEngineStatus.field_4514->current.field_8 & 1)
+        {
+            assert(0);
+            return;
+        }
+        if (pWorkArea->field_2 < 0)
+        {
+            return;
+        }
+        if (graphicEngineStatus.field_4514->current.field_8 & 6)
+        {
+            assert(0);
+        }
+        if (graphicEngineStatus.field_4514->current.field_8 & 0x30)
+        {
+            assert(0);
+        }
+        break;
+    default:
+        assert(0);
+        break;
+    }
 }
 
 void mainMenuTaskDelete(p_workArea typelessWorkArea)
@@ -3124,18 +3372,13 @@ p_workArea(*menuTaskMenuArray[])(p_workArea) =
     createMenuBKTask,
 };
 
-void menuGraphicsTaskDrawSub2Sub1(u16 r4)
-{
-    unimplemented("menuGraphicsTaskDrawSub2Sub1");
-}
-
 void menuGraphicsTaskDrawSub2()
 {
     if (graphicEngineStatus.field_40E4)
     {
         memcpy_dma(&graphicEngineStatus.field_40E4->field_0, &graphicEngineStatus.field_405C, sizeof(s_graphicEngineStatus_405C));
 
-        menuGraphicsTaskDrawSub2Sub1(graphicEngineStatus.field_40E4->field_402);
+        setActiveFont(graphicEngineStatus.field_40E4->field_402);
     }
 }
 
@@ -3143,17 +3386,17 @@ void setupVDP2CoordinatesIncrement2(s32 scrollX, s32 scrollY)
 {
     if (pauseEngine[4] == 0)
     {
-        vdp2Controls.m_registers->SCXDN0 = scrollX;
-        vdp2Controls.m_pendingVdp2Regs->SCXDN0 = scrollX;
-        vdp2Controls.m_registers->SCYDN0 = scrollY;
-        vdp2Controls.m_pendingVdp2Regs->SCYDN0 = scrollY;
+        vdp2Controls.m_registers->SCXN0 = scrollX;
+        vdp2Controls.m_pendingVdp2Regs->SCXN0 = scrollX;
+        vdp2Controls.m_registers->SCYN0 = scrollY;
+        vdp2Controls.m_pendingVdp2Regs->SCYN0 = scrollY;
     }
     else if (pauseEngine[4] == 1)
     {
-        vdp2Controls.m_registers->SCXDN1 = scrollX;
-        vdp2Controls.m_pendingVdp2Regs->SCXDN1 = scrollX;
-        vdp2Controls.m_registers->SCYDN1 = scrollY;
-        vdp2Controls.m_pendingVdp2Regs->SCYDN1 = scrollY;
+        vdp2Controls.m_registers->SCXN1 = scrollX;
+        vdp2Controls.m_pendingVdp2Regs->SCXN1 = scrollX;
+        vdp2Controls.m_registers->SCYN1 = scrollY;
+        vdp2Controls.m_pendingVdp2Regs->SCYN1 = scrollY;
     }
     else if (pauseEngine[4] == 2)
     {

@@ -184,7 +184,7 @@ void initVDP1()
     VDP1_EWRR = 0x58E0;
 
     graphicEngineStatus.field_3 = 1;
-    graphicEngineStatus.field_2 = 0;
+    graphicEngineStatus.doubleBufferState = 0;
     graphicEngineStatus.field_4 = 0;
     graphicEngineStatus.field_5 = 0;
 
@@ -264,14 +264,14 @@ void initVDP1()
 
     setVdp1VramU16(graphicEngineStatus.field_8, graphicEngineStatus.field_6);
 
-    graphicEngineStatus.vdp1Context[0].field_4 = vdp1WriteEA;
-    graphicEngineStatus.vdp1Context[0].field_8 = graphicEngineStatus.field_8;
-    graphicEngineStatus.vdp1Context[1].field_4 = 0x25C07FE0;
-    graphicEngineStatus.vdp1Context[1].field_8 = 0x25C0FFE0;
+    graphicEngineStatus.vdp1Context[0].field_4[0] = vdp1WriteEA;
+    graphicEngineStatus.vdp1Context[0].field_4[1] = graphicEngineStatus.field_8;
+    graphicEngineStatus.vdp1Context[1].field_4[0] = 0x25C07FE0;
+    graphicEngineStatus.vdp1Context[1].field_4[1] = 0x25C0FFE0;
 
-    graphicEngineStatus.vdp1Context[0].field_0 = vdp1WriteEA;
+    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA;
     graphicEngineStatus.vdp1Context[0].field_C = 0;
-    graphicEngineStatus.vdp1Context[1].field_0 = 0x25C07FE0;
+    graphicEngineStatus.vdp1Context[1].currentVdp1WriteEA = 0x25C07FE0;
     graphicEngineStatus.vdp1Context[1].field_C = 0;
 
     graphicEngineStatus.vdp1Context[0].field_14 = 0x25C7C000;
@@ -731,7 +731,7 @@ u32 mumSpriteProcessBySlave;
 
 void flushVdp1()
 {
-    invalidateCacheOnRange(&graphicEngineStatus.vdp1Context[1], sizeof(s_graphicEngineStatus_14_2024));
+    invalidateCacheOnRange(&graphicEngineStatus.vdp1Context[1], sizeof(s_vdp1Context));
     u32 count = graphicEngineStatus.vdp1Context[0].field_1C + graphicEngineStatus.vdp1Context[1].field_1C;
     if (count)
     {
@@ -769,6 +769,14 @@ void flushVdp1()
     //addSlaveCommand(graphicEngineStatus, 0x40AC, 0, invalidateCacheOnRange);
 }
 
+void interruptVDP1Update()
+{
+    // TODO: massively incomplete
+    int r6 = graphicEngineStatus.doubleBufferState;
+    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = graphicEngineStatus.vdp1Context[0].field_4[r6];
+    graphicEngineStatus.vdp1Context[1].currentVdp1WriteEA = graphicEngineStatus.vdp1Context[1].field_4[r6];
+}
+
 int main(int argc, char* argv[])
 {
     azelSdl2_Init();
@@ -803,6 +811,12 @@ int main(int argc, char* argv[])
         //updateSound();
 
         //lastUpdateFunction();
+
+        // interrupt stuff
+        {
+            interruptVDP1Update();
+        }
+
     } while (azelSdl2_EndFrame());
     return 0;
 }
@@ -840,8 +854,8 @@ void yLog(...)
 
 }
 
-void unimplemented(const char* name)
+/*void unimplemented(const char* name)
 {
     printf("Unimplemented: %s\n", name);
-}
+}*/
 

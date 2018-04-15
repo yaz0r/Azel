@@ -105,6 +105,7 @@ struct s_gameStats
     s16 dragonCursorX; //1A
     s16 dragonCursorY; //1C
     u32 XP; //20
+    u32 dyne; // 38
     u32 frameCounter; //3C
 
     u32 field_70; //70
@@ -453,8 +454,8 @@ struct s_graphicEngineStatus_40E4
 
 struct s_graphicEngineStatus_40BC
 {
-    u16 scrollX;
-    u16 scrollY;
+    u16 scrollX; //0
+    u16 scrollY; //2
 
     u16 field_8;
 }; // size A?
@@ -466,11 +467,10 @@ struct s_vdp1Packet
     u16 vdp1EA; //6
 };
 
-struct s_graphicEngineStatus_14_2024
+struct s_vdp1Context
 {
-    u32 field_0; //0
-    u32 field_4; //4
-    u32 field_8; //8
+    u32 currentVdp1WriteEA; //0
+    u32 field_4[2]; //4
     u32 field_C; //C
     u32 field_10; //10
     u32 field_14; //14
@@ -484,7 +484,7 @@ struct s_graphicEngineStatus_14_2024
 struct s_graphicEngineStatus
 {
     u16 field_0;
-    u8 field_2;
+    u8 doubleBufferState;
     u8 field_3;
     u8 field_4;
     u8 field_5;
@@ -492,7 +492,7 @@ struct s_graphicEngineStatus
     u32 field_8; // vdp1 write EA for user clipping parameters
     u32 field_C; // vdp1 write EA of background sprite
 
-    s_graphicEngineStatus_14_2024 vdp1Context[2];
+    s_vdp1Context vdp1Context[2]; // 14
     s_graphicEngineStatus_405C field_405C;
 
     u32 field_406C;

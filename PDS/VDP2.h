@@ -66,19 +66,15 @@ struct s_VDP2Regs
     u16 MPMNRB;
     u16 MPOPRB;
 
-    u16 SCXIN0;
-    u16 SCXDN0;
-    u16 SCYIN0;
-    u16 SCYDN0;
+    u32 SCXN0;
+    u32 SCYN0;
     u16 ZMXIN0;
     u16 ZMXDN0;
     u16 ZMYIN0;
     u16 ZMYDN0;
 
-    u16 SCXIN1;
-    u16 SCXDN1;
-    u16 SCYIN1;
-    u16 SCYDN1;
+    u32 SCXN1;
+    u32 SCYN1;
     u16 ZMXIN1;
     u16 ZMXDN1;
     u16 ZMYIN1;
@@ -214,15 +210,15 @@ extern sVdp2StringContext vdp2StringContext;
 
 struct sVdp2StringControl
 {
-    u32 index;
+    u32 f0_index;
     u32 field_4;
     u16* field_8;
     u16* field_C;
     const char* field_10;
     u8 field_14;
     u8 field_15;
-    sVdp2StringControl* pPrevious;
-    sVdp2StringControl* pNext;
+    sVdp2StringControl* pPrevious; // 18?
+    sVdp2StringControl* pNext; // 1C?
 };
 
 extern u32 characterMap1[0x80];
@@ -231,6 +227,8 @@ extern u16 characterMap2[0x1000];
 extern u32 vdp2TextMemoryOffset;
 
 extern sVdp2StringControl* pVdp2StringControl;
+
+s32 setActiveFont(u16 r4);
 
 void unpackGraphicsToVDP2(u8* compressedData, u8* destination);
 

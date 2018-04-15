@@ -321,8 +321,8 @@ void renderBG0(u32 width, u32 height)
         planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA) & 0x7;
         planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ) & 3;
         planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN0) & 0x1F;
-        planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXDN0 >> 16;
-        planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYDN0 >> 16;
+        planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXN0 >> 16;
+        planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYN0 >> 16;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -367,18 +367,20 @@ void renderBG1(u32 width, u32 height)
         planeData.CAOS = (vdp2Controls.m_pendingVdp2Regs->CRAOFA >> 4) & 0x7;
         planeData.PLSZ = (vdp2Controls.m_pendingVdp2Regs->PLSZ >> 2) & 3;
         planeData.SCN = (vdp2Controls.m_pendingVdp2Regs->PNCN1) & 0x1F;
-        planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXDN1 >> 16;
-        planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYDN1 >> 16;
+        planeData.scrollX = vdp2Controls.m_pendingVdp2Regs->SCXN1 >> 16;
+        planeData.scrollY = vdp2Controls.m_pendingVdp2Regs->SCYN1 >> 16;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
 
         u32 pageSize = pageDimension * pageDimension * patternSize;
 
-        planeData.planeOffsets[0] = (vdp2Controls.m_pendingVdp2Regs->MPABN1 & 0x3F) * pageSize;
-        planeData.planeOffsets[1] = ((vdp2Controls.m_pendingVdp2Regs->MPABN1 >> 8) & 0x3F) * pageSize;
-        planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN1 & 0x3F) * pageSize;
-        planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN1 >> 8) & 0x3F) * pageSize;
+        u32 offset = ((vdp2Controls.m_pendingVdp2Regs->MPOFN >> 4) & 7) << 6;
+
+        planeData.planeOffsets[0] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPABN1 & 0x3F)) * pageSize;
+        planeData.planeOffsets[1] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPABN1 >> 8) & 0x3F)) * pageSize;
+        planeData.planeOffsets[2] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPCDN1 & 0x3F)) * pageSize;
+        planeData.planeOffsets[3] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPCDN1 >> 8) & 0x3F)) * pageSize;
 
         renderLayer(planeData, textureWidth, textureHeight, textureOutput);
     }
@@ -455,10 +457,12 @@ void renderBG3(u32 width, u32 height)
 
         u32 pageSize = pageDimension * pageDimension * patternSize;
 
-        planeData.planeOffsets[0] = (vdp2Controls.m_pendingVdp2Regs->MPABN3 & 0x3F) * pageSize;
-        planeData.planeOffsets[1] = ((vdp2Controls.m_pendingVdp2Regs->MPABN3 >> 8) & 0x3F) * pageSize;
-        planeData.planeOffsets[2] = (vdp2Controls.m_pendingVdp2Regs->MPCDN3 & 0x3F) * pageSize;
-        planeData.planeOffsets[3] = ((vdp2Controls.m_pendingVdp2Regs->MPCDN3 >> 8) & 0x3F) * pageSize;
+        u32 offset = ((vdp2Controls.m_pendingVdp2Regs->MPOFN >> 12) & 7) << 6;
+
+        planeData.planeOffsets[0] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPABN3 & 0x3F)) * pageSize;
+        planeData.planeOffsets[1] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPABN3 >> 8) & 0x3F)) * pageSize;
+        planeData.planeOffsets[2] = (offset + (vdp2Controls.m_pendingVdp2Regs->MPCDN3 & 0x3F)) * pageSize;
+        planeData.planeOffsets[3] = (offset + ((vdp2Controls.m_pendingVdp2Regs->MPCDN3 >> 8) & 0x3F)) * pageSize;
 
         renderLayer(planeData, textureWidth, textureHeight, textureOutput);
     }
@@ -526,11 +530,14 @@ void NormalSpriteDraw(u32 vdp1EA)
                     }
                     character &= 0xF;
 
-                    u16 color = getVdp1VramU16(0x25C00000 + colorBank + 2*character);
-                    color = character << 4;
-                    u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
+                    if(character)
+                    {
+                        u16 color = getVdp1VramU16(0x25C00000 + colorBank + 2 * character);
+                        color = character << 4;
+                        u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
 
-                    vdp1TextureOutput[currentY * vdp1TextureWidth + currentX] = finalColor;
+                        vdp1TextureOutput[currentY * vdp1TextureWidth + currentX] = finalColor;
+                    }
 
                     counter++;
                 }

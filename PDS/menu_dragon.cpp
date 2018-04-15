@@ -173,7 +173,7 @@ void initVdp2ForDragonMenu(u32 r4)
 
 void drawDragonMenuStatsTaskInit(p_workArea)
 {
-    menuGraphicsTaskDrawSub2Sub1(graphicEngineStatus.field_40AC.fontIndex);
+    setActiveFont(graphicEngineStatus.field_40AC.fontIndex);
 }
 
 struct s_stringStatusQuery

@@ -611,7 +611,7 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
         patternNameDataSize = vdp2Controls.m_pendingVdp2Regs->PNCN0 & 0x8000;
         break;
     case 1:
-        characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLA & 100;
+        characterSize = vdp2Controls.m_pendingVdp2Regs->CHCTLA & 0x100;
         patternNameDataSize = vdp2Controls.m_pendingVdp2Regs->PNCN1 & 0x8000;
         break;
     case 2:
@@ -906,11 +906,45 @@ void vdp2PrintfLargeFont(const char* format, ...)
 sVdp2StringControl vdp2StringControlBuffer;
 sVdp2StringControl* pVdp2StringControl = NULL;
 
+void clearVdp2TextMemoryRect(s32 r4, s32 r5, s32 r6, s32 r7)
+{
+    unimplemented("clearVdp2TextMemoryRect");
+}
+
+s32 setActiveFont(u16 r4)
+{
+    sVdp2StringControl* r14 = &vdp2StringControlBuffer;
+    u16 fontIndex = pVdp2StringControl->f0_index;
+    if (fontIndex != r4)
+    {
+        do 
+        {
+            if (r14->f0_index == r4)
+            {
+                resetCharacterMaps();
+
+                clearVdp2TextMemoryRect(0, 0, 44, 32);
+
+                pVdp2StringControl = r14;
+                break;
+            }
+
+            r14 = r14->pNext;
+        } while (r14);
+    }
+
+    if (r14)
+    {
+        return fontIndex;
+    }
+    return -1;
+}
+
 void initVdp2StringControl()
 {
     pVdp2StringControl = &vdp2StringControlBuffer;
 
-    pVdp2StringControl->index = 0;
+    pVdp2StringControl->f0_index = 0;
     pVdp2StringControl->field_4 = 0;
     pVdp2StringControl->field_8 = 0;
     pVdp2StringControl->field_C = 0;
@@ -1099,7 +1133,7 @@ s32 resetVdp2StringsSub1(u16* pData)
     sVdp2StringControl* pNew = static_cast<sVdp2StringControl*>(allocateHeap(sizeof(sVdp2StringControl)));
     assert(pNew);
 
-    pNew->index = pOld->index + 1;
+    pNew->f0_index = pOld->f0_index + 1;
     pNew->field_4 = pData[0];
     pNew->field_8 = pData;
     pNew->field_C = 0;
@@ -1132,7 +1166,7 @@ s32 resetVdp2StringsSub1(u16* pData)
         resetVdp2StringsSub1Sub1();
     }
 
-    return pVdp2StringControl->index;
+    return pVdp2StringControl->f0_index;
 }
 
 void resetVdp2Strings()

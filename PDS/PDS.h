@@ -110,7 +110,9 @@ s16 READ_BE_S16(const void* ptr);
 
 u32 getFileSize(const char* fileName);
 
-void unimplemented(const char* name);
+#define unimplemented(name) { static bool printed = false; if(!printed) {printed = true; printf("Unimplemented: %s\n", name);}}
+
+//void unimplemented(const char* name);
 
 void initVDP1Projection(fixedPoint r4, u32 mode);
 
