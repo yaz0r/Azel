@@ -112,7 +112,7 @@ struct s_gameStats
 
     char playerName[17];
     char dragonName[17];
-    u8 dragonArchetype;//B6
+    e_dragonArchetype dragonArchetype;//B6
 
     u16 maxHP; // B8
     u16 maxBP; // BA;

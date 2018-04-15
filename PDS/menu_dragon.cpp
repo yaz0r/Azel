@@ -272,6 +272,15 @@ void drawInventoryString(const char* string)
     moveVdp2TextCursor(&vars);
 }
 
+const char* dragonArchetypesNames[DR_ARCHETYPE_MAX] =
+{
+    "   NORMAL   ",
+    "  DEFENSE ",
+    "  ATTACK  ",
+    "  AGILITY ",
+    " SPIRITUAL"
+};
+
 void drawDragonMenuStatsTaskDraw(p_workArea)
 {
     setupVDP2StringRendering(30, 36, 14, 14);
@@ -286,8 +295,15 @@ void drawDragonMenuStatsTaskDraw(p_workArea)
     case DR_LEVEL_0_BASIC_WING:
         drawInventoryString(" BASE TYPE");
         break;
+    case DR_LEVEL_6_LIGHT_WING:
+        drawInventoryString(" ULTIMATE ");
+        break;
+    case DR_LEVEL_8_FLOATER:
+        drawInventoryString("  Floater ");
+        break;
     default:
-        assert(0);
+        drawInventoryString(dragonArchetypesNames[mainGameState.gameStats.dragonArchetype]);
+        break;
     }
 
     vdp2StringContext.cursorX = vdp2StringContext.X;
