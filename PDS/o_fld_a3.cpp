@@ -864,7 +864,7 @@ void dragonFieldTaskInitSub4(s_dragonTaskWorkArea* pTypedWorkArea)
     getFieldTaskPtr()->fStatus |= 0x10000;
 
     //pTypedWorkArea->field_1D4
-    assert(0);
+    unimplemented("dragonFieldTaskInitSub4");
 }
 
 void dragonFieldTaskInitSub5(s_dragonTaskWorkArea* pTypedWorkArea)
@@ -941,7 +941,8 @@ void dragonFieldTaskUpdate(s_workArea* pWorkArea)
 
     dragonFieldTaskUpdateSub1(pTypedWorkArea);
 
-    assert(0);
+    unimplemented("dragonFieldTaskUpdate");
+    //assert(0);
 }
 
 s_taskDefinitionWithArg dragonFieldTaskDefinition = { dragonFieldTaskInit, dragonFieldTaskUpdate, dummyTaskDraw, dummyTaskDelete, "dragonFieldTask" };
@@ -1101,7 +1102,7 @@ void fieldDebugMenuUpdate1()
 }
 void fieldDebugMenuUpdate2()
 {
-    //unimplemented("fieldUpdateFunction2");
+    unimplemented("fieldDebugMenuUpdate2");
 }
 
 bool initField(p_workArea workArea, const s_MCB_CGB* fieldFileList, u32 arg)
@@ -1186,7 +1187,9 @@ p_workArea overlayStart(p_workArea workArea, u32 arg)
     switch (getFieldTaskPtr()->currentFieldIndex)
     {
     case 1:
-        assert(0);
+        unimplemented("Hacked the field table!");
+        subfieldTable1[0](workArea);
+        break;
     case 2:
         assert(0);
     default:

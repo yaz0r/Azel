@@ -203,6 +203,8 @@ void updateFieldTaskNoBattleOverride(p_workArea pTypelessWorkArea)
     {
     case 0:
         break;
+    case 4:
+        return;
     default:
         assert(0);
         break;
@@ -3728,7 +3730,7 @@ void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
     gGameStatus.m8_nextGameStatus = 0;
 
     unimplemented("Hack: skip game status to first field");
-    gGameStatus.m8_nextGameStatus = 2;
+    gGameStatus.m8_nextGameStatus = 0x50;
 
     if (menuID == 3)
     {
@@ -3832,11 +3834,31 @@ void exitMenuTaskSub1TaskDrawSub2()
     unimplemented("exitMenuTaskSub1TaskDrawSub2");
 }
 
-p_workArea(*overlayDispatchTable[])(p_workArea) = {
+p_workArea loadField(p_workArea r4, s32 r5)
+{
+    if (gGameStatus.m4_gameStatus == 105)
+    {
+        assert(0);
+    }
+
+    if ((gGameStatus.m4_gameStatus != 22) && (gGameStatus.m4_gameStatus != 37))
+    {
+        mainGameState.setPackedBits(135, 6, gGameStatus.m4_gameStatus - 0x50);
+    }
+
+    if (gGameStatus.field_3 == 1)
+    {
+        assert(0);
+    }
+
+    return fieldTaskUpdateSub0(r5, 0, 0, -1);
+}
+
+p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     NULL,
     NULL,
     NULL,
-    NULL,
+    loadField,
     NULL,
     NULL,
     NULL,
@@ -3879,7 +3901,13 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
         else
         {
             //602745C
-            assert(0);
+            if (pWorkArea->field_8)
+            {
+                if (!pWorkArea->field_8->getTask()->isFinished())
+                {
+                    return;
+                }
+            }
         }
 
         // 06027474
@@ -3916,6 +3944,7 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
         {
         case 1:
         case 2:
+        case 80:
             if ((gGameStatus.field_2 == 0) && (gGameStatus.m6_previousGameStatus != 0x4F))
             {
                 initFileLayoutTable();
@@ -3950,7 +3979,7 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
             gGameStatus.field_3 = 0;
         }
 
-        pWorkArea->field_8 = overlayDispatchTable[gGameStatus.m0_gameMode](pWorkArea);
+        pWorkArea->field_8 = overlayDispatchTable[gGameStatus.m0_gameMode](pWorkArea, gGameStatus.field_1);
         pWorkArea->state = 0;
 
         break;
