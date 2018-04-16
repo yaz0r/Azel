@@ -92,10 +92,10 @@ enum e_dragonAnim : unsigned char {
 
 struct s_gameStats
 {
-    u8 level; // 0
-    e_dragonLevel dragonLevel; // 1
-    u8 rider1; // 2
-    u8 rider2; // 3
+    u8 m0_level; // 0
+    e_dragonLevel m1_dragonLevel; // 1
+    u8 m2_rider1; // 2
+    u8 m3_rider2; // 3
 
     u16 currentHP; // 0x10
     u16 classMaxHP; // 0x12

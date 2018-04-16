@@ -124,7 +124,7 @@ extern s_VDP2Regs VDP2Regs_;
 struct sVdp2Controls
 {
     u32 m_0;
-    s_VDP2Regs* m_pendingVdp2Regs;
+    s_VDP2Regs* m_pendingVdp2Regs; // 4
     u32 m_8;
     u32 m_C;
     u32 m_10;

@@ -54,6 +54,7 @@ struct s_dragonMenuWorkArea : public s_workArea
     p_workArea field_C;
     p_workArea field_10;
     p_workArea field_14;
+    p_workArea field_18;
     p_workArea field_1C;
 };
 
@@ -290,7 +291,7 @@ void drawDragonMenuStatsTaskDraw(p_workArea)
     vdp2StringContext.cursorX = vdp2StringContext.X;
     vdp2StringContext.cursorY = vdp2StringContext.Y;
 
-    switch (mainGameState.gameStats.dragonLevel)
+    switch (mainGameState.gameStats.m1_dragonLevel)
     {
     case DR_LEVEL_0_BASIC_WING:
         drawInventoryString(" BASE TYPE");
@@ -330,7 +331,7 @@ void drawDragonMenuStatsTaskDraw(p_workArea)
     vdp2DebugPrintSetPosition(37, 48);
     vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonAgl);
 
-    if (mainGameState.gameStats.dragonLevel < 8)
+    if (mainGameState.gameStats.m1_dragonLevel < 8)
     {
         if (mainGameState.getBit(0x1B, 5))
         {
@@ -403,7 +404,50 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
     case 3:
         if (graphicEngineStatus.field_4514[0].current.field_8 & 7)
         {
-            assert(0);
+            playSoundEffect(0);
+            pWorkArea->field_14->getTask()->m_pLateUpdate = NULL;
+            if (pWorkArea->field_10)
+            {
+                pWorkArea->field_10->getTask()->markFinished();
+            }
+            if (pWorkArea->field_18)
+            {
+                pWorkArea->field_18->getTask()->markFinished();
+            }
+
+            vblankData.field_14 = pWorkArea->field_4;
+            if (graphicEngineStatus.field_40AC.menuId != 1)
+            {
+                fadePalette(&menuUnk0.m_field0, 0, 0, 1);
+                fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+                pWorkArea->field_0 = 6;
+            }
+            else
+            {
+                pWorkArea->field_8 = 16;
+                startVdp2LayerScroll(0, 10, 0, 16);
+                startVdp2LayerScroll(1, 0, 16, 16);
+                pWorkArea->field_0 = 4;
+            }
+        }
+        break;
+    case 4:
+        if (pWorkArea->field_C)
+        {
+            pWorkArea->field_C->getTask()->markFinished();
+        }
+        graphicEngineStatus.field_40AC.field_5 = 0;
+        pWorkArea->field_0++;
+    case 5:
+        if (--pWorkArea->field_8)
+        {
+            break;
+        }
+        pWorkArea->field_0++;
+    case 6:
+        if (pWorkArea)
+        {
+            pWorkArea->getTask()->markFinished();
         }
         break;
     default:

@@ -117,6 +117,7 @@ u32 getFileSize(const char* fileName);
 void initVDP1Projection(fixedPoint r4, u32 mode);
 
 fixedPoint sqrt_F(fixedPoint r4);
+void initFileLayoutTable();
 
 #include "o_title.h"
 #include "o_menuEn.h"

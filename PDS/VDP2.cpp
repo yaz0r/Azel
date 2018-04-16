@@ -956,17 +956,17 @@ void initVdp2StringControl()
 }
 
 struct {
-    u32 field_0;
-    u32 field_4; // 4
-    u32 field_8; // 8
+    u32 m0;
+    u32 m4; // 4
+    u32 m8; // 8
     u32 field_C; // C
 }vdp2StringContext2;
 
 void resetVdp2StringContext2()
 {
-    vdp2StringContext2.field_0 = 0;
-    vdp2StringContext2.field_4 = 0;
-    vdp2StringContext2.field_8 = 0;
+    vdp2StringContext2.m0 = 0;
+    vdp2StringContext2.m4 = 0;
+    vdp2StringContext2.m8 = 0;
     vdp2StringContext2.field_C = 0;
 }
 

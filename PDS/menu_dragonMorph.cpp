@@ -325,9 +325,9 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     pWorkArea->field_28 = gDragonState->dragon3dModel.pCurrentAnimation;
     pWorkArea->field_2C = gDragonState->dragon3dModel.field_16;
 
-    pWorkArea->field_0 = loadDragonModel(pWorkArea, mainGameState.gameStats.dragonLevel);
+    pWorkArea->field_0 = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
-    pWorkArea->field_4 = &dragonData3[mainGameState.gameStats.dragonLevel];
+    pWorkArea->field_4 = &dragonData3[mainGameState.gameStats.m1_dragonLevel];
     pWorkArea->modelTranslation[1] = 0x4000;
     pWorkArea->modelTranslation[2] = 0xA000;
     pWorkArea->modelRotation[0] = fixedPoint(0xE38E38);

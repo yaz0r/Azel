@@ -59,7 +59,7 @@ void computeDragonSprAndAglFromCursor()
 {
     u32 r6 = mainGameState.gameStats.field_18 + 1;
 
-    switch (mainGameState.gameStats.dragonLevel)
+    switch (mainGameState.gameStats.m1_dragonLevel)
     {
     case DR_LEVEL_0_BASIC_WING:
     case DR_LEVEL_6_LIGHT_WING:
@@ -77,15 +77,15 @@ void updateDragonStatsFromLevel()
 {
     s_gameStats& gameStats = mainGameState.gameStats;
 
-    if (gameStats.dragonLevel < DR_LEVEL_8_FLOATER)
+    if (gameStats.m1_dragonLevel < DR_LEVEL_8_FLOATER)
     {
-        gameStats.maxHP = gameStats.classMaxHP + dragonPerLevelMaxHPBP[gameStats.dragonLevel].maxHP;
-        gameStats.maxBP = gameStats.classMaxBP + dragonPerLevelMaxHPBP[gameStats.dragonLevel].maxBP;
+        gameStats.maxHP = gameStats.classMaxHP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxHP;
+        gameStats.maxBP = gameStats.classMaxBP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxBP;
     }
     else
     {
-        gameStats.maxHP = dragonPerLevelMaxHPBP[gameStats.dragonLevel].maxHP;
-        gameStats.maxBP = dragonPerLevelMaxHPBP[gameStats.dragonLevel].maxBP;
+        gameStats.maxHP = dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxHP;
+        gameStats.maxBP = dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxBP;
     }
 
     if (gameStats.currentHP > gameStats.maxHP)
@@ -1660,9 +1660,9 @@ void loadDragonSub1(s_loadDragonWorkArea* pLoadDragonWorkArea)
 
 void loadDragon(s_workArea* pWorkArea)
 {
-    const sDragonData3* pDragonData3 = &dragonData3[mainGameState.gameStats.dragonLevel];
+    const sDragonData3* pDragonData3 = &dragonData3[mainGameState.gameStats.m1_dragonLevel];
 
-    loadDragonFiles(pWorkArea, mainGameState.gameStats.dragonLevel);
+    loadDragonFiles(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
     updateDragonStatsFromLevel();
 
@@ -1670,7 +1670,7 @@ void loadDragon(s_workArea* pWorkArea)
     gDragonState->cursorY = mainGameState.gameStats.dragonCursorY;
     gDragonState->dragonArchetype = mainGameState.gameStats.dragonArchetype;
 
-    s_loadDragonWorkArea* pLoadDragonWorkArea = loadDragonModel(pWorkArea, mainGameState.gameStats.dragonLevel);
+    s_loadDragonWorkArea* pLoadDragonWorkArea = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
     morphDragon(pLoadDragonWorkArea, &gDragonState->dragon3dModel, pLoadDragonWorkArea->MCBOffsetInDram, pDragonData3, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
 
@@ -1815,12 +1815,12 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
 
 void loadCurrentRider(s_workArea* pWorkArea)
 {
-    loadRider(pWorkArea, mainGameState.gameStats.rider1);
+    loadRider(pWorkArea, mainGameState.gameStats.m2_rider1);
 }
 
 void loadCurrentRider2(s_workArea* pWorkArea)
 {
-    loadRider2(pWorkArea, mainGameState.gameStats.rider2);
+    loadRider2(pWorkArea, mainGameState.gameStats.m3_rider2);
 }
 
 void updateDragonIfCursorChanged(u32 level)
@@ -2092,27 +2092,27 @@ void setupPlayer(u32 fieldIndex)
             DR_LEVEL_5_ARM_WING,
         };
 
-        mainGameState.gameStats.dragonLevel = perFieldDragonLevel[fieldIndex];
+        mainGameState.gameStats.m1_dragonLevel = perFieldDragonLevel[fieldIndex];
     }
 
-    if (mainGameState.gameStats.dragonLevel == 8)
+    if (mainGameState.gameStats.m1_dragonLevel == 8)
     {
         assert(0);
     }
 
     //setup riders
-    mainGameState.gameStats.rider1 = 1; // edge is rider
+    mainGameState.gameStats.m2_rider1 = 1; // edge is rider
 
     switch (fieldIndex)
     {
     case 3:
-        mainGameState.gameStats.rider2 = 2;
+        mainGameState.gameStats.m3_rider2 = 2;
         break;
     case 18: // tower
-        mainGameState.gameStats.rider2 = 5;
+        mainGameState.gameStats.m3_rider2 = 5;
         break;
     default:
-        mainGameState.gameStats.rider2 = 0;
+        mainGameState.gameStats.m3_rider2 = 0;
         break;
     }
 
@@ -2129,9 +2129,9 @@ void setupPlayer(u32 fieldIndex)
         fieldTaskPtr->updateDragonAndRiderOnInit = 2;
         break;
     case 1:
-        updateDragonIfCursorChanged(mainGameState.gameStats.dragonLevel);
-        loadRiderIfChanged(mainGameState.gameStats.rider1);
-        loadRider2IfChanged(mainGameState.gameStats.rider2);
+        updateDragonIfCursorChanged(mainGameState.gameStats.m1_dragonLevel);
+        loadRiderIfChanged(mainGameState.gameStats.m2_rider1);
+        loadRider2IfChanged(mainGameState.gameStats.m3_rider2);
         break;
     case 2:
         break;
@@ -2307,22 +2307,22 @@ p_workArea createMovieDebugTask(p_workArea)
 struct s_exitMenuTaskSub1Task : public s_workArea
 {
     u32 state; // 0
-    u32 field_8;
+    p_workArea field_8;
     u32 field_C;
 };
 
 struct {
-    s8 field_0;
+    s8 m0_gameMode;
     s8 field_1;
     s8 field_2;
     s8 field_3;
-    u16 field_4;
-    u16 field_6;
-    u16 field_8;
-} var_60525F4;
+    u16 m4_gameStatus;
+    u16 m6_previousGameStatus;
+    u16 m8_nextGameStatus;
+} gGameStatus;
 
 struct {
-    u8 field_8;
+    u8 m8;
     u8 field_9;
     u8 field_A;
     u8 field_B;
@@ -2330,10 +2330,10 @@ struct {
 
 void exitMenuTaskSub1TaskInitSub2(u32 r4)
 {
-    if (var_60525F4.field_8 == 0)
+    if (gGameStatus.m8_nextGameStatus == 0)
     {
-        var_60525F4.field_8 = r4;
-        var_60525F4.field_2 = 0;
+        gGameStatus.m8_nextGameStatus = r4;
+        gGameStatus.field_2 = 0;
     }
 }
 
@@ -3046,10 +3046,10 @@ void laserRangTaskDraw(s_workArea* pTypelessWorkArea)
     s_laserRankTaskWorkArea* pWorkArea = static_cast<s_laserRankTaskWorkArea*>(pTypelessWorkArea);
     if (pWorkArea->field_0 < 0)
         return;
-    if (mainGameState.gameStats.dragonLevel > 7)
+    if (mainGameState.gameStats.m1_dragonLevel > 7)
         return;
 
-    u8 r14 = mainGameState.gameStats.dragonLevel;
+    u8 r14 = mainGameState.gameStats.m1_dragonLevel;
     if (r14 > 6)
         r14 = 6;
 
@@ -3252,7 +3252,7 @@ void statusMenuTaskDraw(p_workArea typelessWorkArea)
 
     const char** menuText = statusMenuOptionsDragonType;
 
-    if ((mainGameState.gameStats.dragonLevel == DR_LEVEL_0_BASIC_WING) || (mainGameState.gameStats.dragonLevel == DR_LEVEL_6_LIGHT_WING) || (mainGameState.gameStats.dragonLevel >= DR_LEVEL_7_SOLO_WING))
+    if ((mainGameState.gameStats.m1_dragonLevel == DR_LEVEL_0_BASIC_WING) || (mainGameState.gameStats.m1_dragonLevel == DR_LEVEL_6_LIGHT_WING) || (mainGameState.gameStats.m1_dragonLevel >= DR_LEVEL_7_SOLO_WING))
     {
         menuText = statusMenuOptionsAbilities;
     }
@@ -3274,7 +3274,7 @@ void statusMenuTaskDraw(p_workArea typelessWorkArea)
     vdp2DebugPrintSetPosition(3, 49);
     vdp2PrintfLargeFont("DYNE %8d", mainGameState.gameStats.dyne);
 
-    if (mainGameState.gameStats.dragonLevel < DR_LEVEL_8_FLOATER)
+    if (mainGameState.gameStats.m1_dragonLevel < DR_LEVEL_8_FLOATER)
     {
         unimplemented("draw level curve");
     }
@@ -3308,7 +3308,13 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
     case 1:
         if (graphicEngineStatus.field_4514->current.field_8 & 1) // B
         {
-            assert(0);
+            playSoundEffect(1);
+            fadePalette(&menuUnk0.m_field0, 0, 0, 1);
+            fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+            if (pWorkArea)
+            {
+                pWorkArea->getTask()->markFinished();
+            }
             return;
         }
         if (pWorkArea->selectedMenu < 0)
@@ -3537,6 +3543,24 @@ void scrollMenu()
     pauseEngine[4] = 4;
 }
 
+void menuGraphicsTaskDrawSub3()
+{
+    if (graphicEngineStatus.field_40E4)
+    {
+        memcpy_dma(&graphicEngineStatus.field_40E4->field_50, &vdp2Controls, sizeof(sVdp2Controls));
+        memcpy_dma(&graphicEngineStatus.field_40E4->field_2B0, &menuUnk0, sizeof(sMenuUnk0));
+        asyncDmaCopy(&graphicEngineStatus.field_40E4->field_300, vdp2Palette, 512, 0);
+
+        u32 backScreenTableOffset = vdp2Controls.m_pendingVdp2Regs->BKTA & 0x7FFFF;
+        setVdp2VramU16(backScreenTableOffset, graphicEngineStatus.field_40E4->field_400);
+
+        u32 r3 = vdp2Controls.m_pendingVdp2Regs->BKTA & 0xFFF80000;
+        u32 r2 = vdp2Controls.m_pendingVdp2Regs->BKTA & 0x7FFFF;
+        vdp2Controls.m_pendingVdp2Regs->BKTA = r3 | ((r2 << 1) >> 1);
+        freeHeap(graphicEngineStatus.field_40E4);
+    }
+}
+
 void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
 {
     s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
@@ -3601,14 +3625,26 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
             {
                 scrollMenu();
             }
-            if (graphicEngineStatus.field_4514[0].current.field_8 & 8)
+            if (graphicEngineStatus.field_4514[0].current.field_8 & 8) // start
             {
-                assert(0);
+                if (graphicEngineStatus.field_40AC.menuId == 7)
+                {
+                    return;
+                }
+                if (graphicEngineStatus.field_40AC.field_3)
+                {
+                    playSoundEffect(5);
+                    return;
+                }
             }
-            if (graphicEngineStatus.field_4514[0].current.field_8 & 2)
+            if (graphicEngineStatus.field_40AC.field_2 == 0)
             {
-                assert(0);
+                return;
             }
+            playSoundEffect(4);
+            fadePalette(&menuUnk0.m_field0, 0, 0, 1);
+            fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+            pWordArea->state++;
         }
         else
         {
@@ -3621,6 +3657,41 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
 
             pWordArea->field_D = graphicEngineStatus.field_40AC.field_9;
             pWordArea->state = 5;
+        }
+        break;
+    case 3:
+        if (pWordArea->field_8)
+        {
+            pWordArea->field_8->getTask()->markFinished();
+        }
+        pWordArea->state++;
+        break;
+    case 4:
+        menuGraphicsTaskDrawSub2();
+
+        graphicEngineStatus.field_40AC.menuId = 0;
+        pWordArea->field_C = pauseEngine[0];
+
+        pWordArea->field_4->getTask()->clearPaused();
+
+        pWordArea->field_D = graphicEngineStatus.field_40AC.field_9;
+        pWordArea->state = 5;
+        break;
+    case 5:
+        if (--pWordArea->field_D == 0)
+        {
+            if (pWordArea->field_C)
+            {
+                pauseEngine[0] = 1;
+            }
+            else
+            {
+                pauseEngine[0] = 0;
+            }
+            menuGraphicsTaskDrawSub3();
+
+            graphicEngineStatus.field_40AC.field_8 = 2;
+            pWordArea->state = 0;
         }
         break;
     default:
@@ -3649,26 +3720,29 @@ void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
     pWorkArea->field_8 = 0;
     pWorkArea->field_C = 0;
 
-    var_60525F4.field_0 = -1;
-    var_60525F4.field_1 = -1;
-    var_60525F4.field_3 = 0;
-    var_60525F4.field_4 = 0;
-    var_60525F4.field_6 = 0;
-    var_60525F4.field_8 = 0;
+    gGameStatus.m0_gameMode = -1;
+    gGameStatus.field_1 = -1;
+    gGameStatus.field_3 = 0;
+    gGameStatus.m4_gameStatus = 0;
+    gGameStatus.m6_previousGameStatus = 0;
+    gGameStatus.m8_nextGameStatus = 0;
+
+    unimplemented("Hack: skip game status to first field");
+    gGameStatus.m8_nextGameStatus = 2;
 
     if (menuID == 3)
     {
-        mainGameState.gameStats.dragonLevel = DR_LEVEL_1_VALIANT_WING;
+        mainGameState.gameStats.m1_dragonLevel = DR_LEVEL_1_VALIANT_WING;
     }
     else
     {
-        mainGameState.gameStats.dragonLevel = DR_LEVEL_0_BASIC_WING;
+        mainGameState.gameStats.m1_dragonLevel = DR_LEVEL_0_BASIC_WING;
     }
 
-    mainGameState.gameStats.rider1 = 1;
-    mainGameState.gameStats.rider2 = 0;
+    mainGameState.gameStats.m2_rider1 = 1;
+    mainGameState.gameStats.m3_rider2 = 0;
 
-    var_60525E8.field_8 = 0;
+    var_60525E8.m8 = 0;
     var_60525E8.field_9 = 0;
     var_60525E8.field_A = 0;
     var_60525E8.field_B = 0;
@@ -3715,6 +3789,63 @@ void exitMenuTaskSub1TaskUpdate(s_workArea* pTypelessWorkArea)
     mainGameState.gameStats.frameCounter += vblankData.field_C;
 }
 
+s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
+{
+    p_workArea var_8 = pWorkArea;
+    s32 var_C = index;
+    s_gameStats* var_10 = &mainGameState.gameStats;
+    s32 var_14 = mainGameState.gameStats.m1_dragonLevel;
+    s32 var_18 = mainGameState.gameStats.m2_rider1;
+    s32 r15 = mainGameState.gameStats.m3_rider2;
+
+    switch (index)
+    {
+    case 0:
+        break;
+    default:
+        assert(0);
+    }
+
+    // has dragon level changed?
+    if (mainGameState.gameStats.m1_dragonLevel != var_14)
+    {
+        assert(0);
+    }
+
+    // has rider1 changed
+    if (mainGameState.gameStats.m2_rider1 != var_18)
+    {
+        assert(0);
+    }
+
+    // has rider2 changed
+    if (mainGameState.gameStats.m3_rider2 != r15)
+    {
+        assert(0);
+    }
+
+    return 0;
+}
+
+void exitMenuTaskSub1TaskDrawSub2()
+{
+    unimplemented("exitMenuTaskSub1TaskDrawSub2");
+}
+
+p_workArea(*overlayDispatchTable[])(p_workArea) = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+};
+
 void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
 {
     s_exitMenuTaskSub1Task* pWorkArea = static_cast<s_exitMenuTaskSub1Task*>(pTypelessWorkArea);
@@ -3729,9 +3860,9 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
 
         // 602739A
 
-        if (var_60525F4.field_8)
+        if (gGameStatus.m8_nextGameStatus)
         {
-            if (var_60525F4.field_2 == 0)
+            if (gGameStatus.field_2 == 0)
             {
                 if (pWorkArea->field_8)
                 {
@@ -3755,10 +3886,73 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
         graphicEngineStatus.field_4 = 1;
         pauseEngine[2] = 0;
         graphicEngineStatus.field_40AC.isMenuAllowed = 0;
-        var_60525F4.field_0 = -1;
+        gGameStatus.m0_gameMode = -1;
         pWorkArea->state++;
         break;
     case 1:
+        if (gGameStatus.m8_nextGameStatus == 0)
+        {
+            assert(0);
+        }
+        if (*(COMMON_DAT + 0x12EAC + gGameStatus.m4_gameStatus * 2) == 4)
+        {
+            assert(0);
+        }
+        else
+        {
+            if (gGameStatus.field_2 == 0)
+            {
+                if (exitMenuTaskSub1TaskDrawSub1(pWorkArea, gGameStatus.m4_gameStatus) < 0)
+                {
+                    if (pWorkArea)
+                    {
+                        pWorkArea->getTask()->markFinished();
+                    }
+                    return;
+                }
+            }
+        }
+        switch (gGameStatus.m8_nextGameStatus)
+        {
+        case 1:
+        case 2:
+            if ((gGameStatus.field_2 == 0) && (gGameStatus.m6_previousGameStatus != 0x4F))
+            {
+                initFileLayoutTable();
+            }
+        case 8:
+        case 25:
+            exitMenuTaskSub1TaskDrawSub2();
+        case 12:
+        case 22:
+        case 37:
+            fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0, 30);
+            fadePalette(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), 0, 30);
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        gGameStatus.m6_previousGameStatus = gGameStatus.m4_gameStatus;
+        gGameStatus.m4_gameStatus = gGameStatus.m8_nextGameStatus;
+        gGameStatus.m8_nextGameStatus = 0;
+
+        gGameStatus.m0_gameMode = *(COMMON_DAT + 0x12EAC + gGameStatus.m4_gameStatus * 2);
+        gGameStatus.field_1 = *(COMMON_DAT + 0x12EAC + gGameStatus.m4_gameStatus * 2 + 1);
+
+        if (gGameStatus.m6_previousGameStatus == 74)
+        {
+            gGameStatus.field_3 = 1;
+        }
+        else
+        {
+            gGameStatus.field_3 = 0;
+        }
+
+        pWorkArea->field_8 = overlayDispatchTable[gGameStatus.m0_gameMode](pWorkArea);
+        pWorkArea->state = 0;
+
         break;
     default:
         assert(0);
