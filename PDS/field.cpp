@@ -58,23 +58,23 @@ void allocateVramList(s_workArea* pWorkArea, u8* pBuffer, u32 bufferSize)
 
 void initFieldMemoryArea(u8* buffer, u32 bufferSize)
 {
-    fieldTaskPtr->pSubFieldData->memoryArea_bottom = buffer;
-    fieldTaskPtr->pSubFieldData->memoryArea_edge = buffer;
-    fieldTaskPtr->pSubFieldData->memoryArea_top = buffer + bufferSize;
+    fieldTaskPtr->m8_pSubFieldData->memoryArea_bottom = buffer;
+    fieldTaskPtr->m8_pSubFieldData->memoryArea_edge = buffer;
+    fieldTaskPtr->m8_pSubFieldData->memoryArea_top = buffer + bufferSize;
 }
 
 void initFieldVdp1Area(u8* buffer, u32 bufferSize)
 {
-    fieldTaskPtr->pSubFieldData->characterArea_bottom = buffer;
-    fieldTaskPtr->pSubFieldData->characterArea_edge = buffer;
-    fieldTaskPtr->pSubFieldData->characterArea_top = buffer + bufferSize;
+    fieldTaskPtr->m8_pSubFieldData->characterArea_bottom = buffer;
+    fieldTaskPtr->m8_pSubFieldData->characterArea_edge = buffer;
+    fieldTaskPtr->m8_pSubFieldData->characterArea_top = buffer + bufferSize;
 }
 
 void loadCommonFieldResources()
 {
     initDramAllocator(fieldTaskPtr, playerDataMemoryBuffer, sizeof(playerDataMemoryBuffer), NULL);
 
-    allocateVramList(fieldTaskPtr->overlayTaskData, fieldVdp1Buffer, sizeof(fieldVdp1Buffer));
+    allocateVramList(fieldTaskPtr->m4_overlayTaskData, fieldVdp1Buffer, sizeof(fieldVdp1Buffer));
 
     initFieldMemoryArea(fieldMainBuffer, sizeof(fieldMainBuffer));
     initFieldVdp1Area(vdp1FieldArea, sizeof(vdp1FieldArea));
@@ -107,8 +107,8 @@ u32 getFileSizeFromFileId(const char* fileName)
 
 void checkFilesExists(const s_MCB_CGB* fileList)
 {
-    u32* MCBSizes = fieldTaskPtr->pSubFieldData->MCBFilesSizes;
-    u32* CGBSizes = fieldTaskPtr->pSubFieldData->CGBFilesSizes;
+    u32* MCBSizes = fieldTaskPtr->m8_pSubFieldData->MCBFilesSizes;
+    u32* CGBSizes = fieldTaskPtr->m8_pSubFieldData->CGBFilesSizes;
 
     while (fileList->MCB || fileList->CGB)
     {
@@ -124,17 +124,17 @@ void checkFilesExists(const s_MCB_CGB* fileList)
 
 void setupFileList(const s_MCB_CGB* fileList)
 {
-    fieldTaskPtr->pSubFieldData->fileList = fileList;
+    fieldTaskPtr->m8_pSubFieldData->fileList = fileList;
 
     checkFilesExists(fileList);
 
-    fieldTaskPtr->pSubFieldData->memoryArea[0] = fieldTaskPtr->pSubFieldData->memoryArea_bottom;
-    fieldTaskPtr->pSubFieldData->memoryArea[1] = fieldTaskPtr->pSubFieldData->memoryArea[0] + fieldTaskPtr->pSubFieldData->MCBFilesSizes[0]; // TODO: should be aligned
-    fieldTaskPtr->pSubFieldData->memoryArea[2] = fieldTaskPtr->pSubFieldData->memoryArea[1] + fieldTaskPtr->pSubFieldData->MCBFilesSizes[1]; // TODO: should be aligned
+    fieldTaskPtr->m8_pSubFieldData->memoryArea[0] = fieldTaskPtr->m8_pSubFieldData->memoryArea_bottom;
+    fieldTaskPtr->m8_pSubFieldData->memoryArea[1] = fieldTaskPtr->m8_pSubFieldData->memoryArea[0] + fieldTaskPtr->m8_pSubFieldData->MCBFilesSizes[0]; // TODO: should be aligned
+    fieldTaskPtr->m8_pSubFieldData->memoryArea[2] = fieldTaskPtr->m8_pSubFieldData->memoryArea[1] + fieldTaskPtr->m8_pSubFieldData->MCBFilesSizes[1]; // TODO: should be aligned
 
-    fieldTaskPtr->pSubFieldData->characterArea[0] = fieldTaskPtr->pSubFieldData->characterArea_bottom;
-    fieldTaskPtr->pSubFieldData->characterArea[1] = fieldTaskPtr->pSubFieldData->characterArea[0] + fieldTaskPtr->pSubFieldData->CGBFilesSizes[0]; // TODO: should be aligned
-    fieldTaskPtr->pSubFieldData->characterArea[2] = fieldTaskPtr->pSubFieldData->characterArea[1] + fieldTaskPtr->pSubFieldData->CGBFilesSizes[1]; // TODO: should be aligned
+    fieldTaskPtr->m8_pSubFieldData->characterArea[0] = fieldTaskPtr->m8_pSubFieldData->characterArea_bottom;
+    fieldTaskPtr->m8_pSubFieldData->characterArea[1] = fieldTaskPtr->m8_pSubFieldData->characterArea[0] + fieldTaskPtr->m8_pSubFieldData->CGBFilesSizes[0]; // TODO: should be aligned
+    fieldTaskPtr->m8_pSubFieldData->characterArea[2] = fieldTaskPtr->m8_pSubFieldData->characterArea[1] + fieldTaskPtr->m8_pSubFieldData->CGBFilesSizes[1]; // TODO: should be aligned
 
     u32 currentFileIndex = 2;
     const s_MCB_CGB* currentFileList = fileList + currentFileIndex;
@@ -144,41 +144,41 @@ void setupFileList(const s_MCB_CGB* fileList)
 
     while (currentFileList->MCB)
     {
-        largestMCB = std::max(fieldTaskPtr->pSubFieldData->MCBFilesSizes[currentFileIndex], largestMCB);
-        largestCGB = std::max(fieldTaskPtr->pSubFieldData->CGBFilesSizes[currentFileIndex], largestCGB);
+        largestMCB = std::max(fieldTaskPtr->m8_pSubFieldData->MCBFilesSizes[currentFileIndex], largestMCB);
+        largestCGB = std::max(fieldTaskPtr->m8_pSubFieldData->CGBFilesSizes[currentFileIndex], largestCGB);
 
         currentFileList++;
         currentFileIndex++;
     }
 
-    fieldTaskPtr->pSubFieldData->memoryArea_edge = fieldTaskPtr->pSubFieldData->memoryArea[2] + largestMCB; // TODO: should be aligned
-    fieldTaskPtr->pSubFieldData->characterArea_edge = fieldTaskPtr->pSubFieldData->characterArea[2] + largestCGB; // TODO: should be aligned
+    fieldTaskPtr->m8_pSubFieldData->memoryArea_edge = fieldTaskPtr->m8_pSubFieldData->memoryArea[2] + largestMCB; // TODO: should be aligned
+    fieldTaskPtr->m8_pSubFieldData->characterArea_edge = fieldTaskPtr->m8_pSubFieldData->characterArea[2] + largestCGB; // TODO: should be aligned
 }
 
 s32 getFieldMemoryAreaRemain()
 {
-    return fieldTaskPtr->pSubFieldData->memoryArea_top - fieldTaskPtr->pSubFieldData->memoryArea_edge;
+    return fieldTaskPtr->m8_pSubFieldData->memoryArea_top - fieldTaskPtr->m8_pSubFieldData->memoryArea_edge;
 }
 
 s32 getFieldCharacterAreaRemain()
 {
-    return fieldTaskPtr->pSubFieldData->characterArea_top - fieldTaskPtr->pSubFieldData->characterArea_edge;
+    return fieldTaskPtr->m8_pSubFieldData->characterArea_top - fieldTaskPtr->m8_pSubFieldData->characterArea_edge;
 }
 
 void loadFileFromFileList(u32 index)
 {
-    const s_MCB_CGB* pFileData = &fieldTaskPtr->pSubFieldData->fileList[index];
+    const s_MCB_CGB* pFileData = &fieldTaskPtr->m8_pSubFieldData->fileList[index];
 
     int slot = std::min(2, (int)index);
 
     if (pFileData->MCB)
     {
-        loadFile(pFileData->MCB, fieldTaskPtr->pSubFieldData->memoryArea[slot], fieldTaskPtr->pSubFieldData->characterArea[slot]);
+        loadFile(pFileData->MCB, fieldTaskPtr->m8_pSubFieldData->memoryArea[slot], fieldTaskPtr->m8_pSubFieldData->characterArea[slot]);
     }
 
     if (pFileData->CGB)
     {
-        loadFile(pFileData->CGB, fieldTaskPtr->pSubFieldData->characterArea[slot], NULL);
+        loadFile(pFileData->CGB, fieldTaskPtr->m8_pSubFieldData->characterArea[slot], NULL);
     }
 }
 
@@ -189,6 +189,6 @@ void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex)
         areaIndex = 2;
     }
 
-    pOutput->mainMemory = fieldTaskPtr->pSubFieldData->memoryArea[areaIndex];
-    pOutput->characterArea = fieldTaskPtr->pSubFieldData->characterArea[areaIndex];
+    pOutput->mainMemory = fieldTaskPtr->m8_pSubFieldData->memoryArea[areaIndex];
+    pOutput->characterArea = fieldTaskPtr->m8_pSubFieldData->characterArea[areaIndex];
 }

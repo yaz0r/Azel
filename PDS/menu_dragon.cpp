@@ -68,7 +68,7 @@ void dragonMenuTaskInit(p_workArea pTypelessWorkArea)
     createSubTask(pWorkArea, &dragonMenuSubTask1Definition, new s_dragonMenuSubTask1WorkArea);
 }
 
-void initVdp2ForDragonMenuSub1(u32 r4, u32 r5, u32 r6)
+void setVdp2LayerScroll(u32 r4, u32 r5, u32 r6)
 {
     assert(r4 < 4);
 
@@ -87,11 +87,11 @@ void initVdp2ForDragonMenuSub1(u32 r4, u32 r5, u32 r6)
     graphicEngineStatus.layersConfig[r4].scrollY = r7 + r6;
 }
 
-void initVdp2ForDragonMenuSub2()
+void resetVdp2LayersAutoScroll()
 {
     for (int i = 0; i < 4; i++)
     {
-        graphicEngineStatus.layersConfig[i].field_8 = 0;
+        graphicEngineStatus.layersConfig[i].m8_scrollFrameCount = 0;
     }
 }
 
@@ -158,11 +158,11 @@ void initVdp2ForDragonMenu(u32 r4)
 {
     if (r4)
     {
-        initVdp2ForDragonMenuSub1(0, 0, 0);
-        initVdp2ForDragonMenuSub1(1, 0, 0);
-        initVdp2ForDragonMenuSub1(3, 0, 0x100);
+        setVdp2LayerScroll(0, 0, 0);
+        setVdp2LayerScroll(1, 0, 0);
+        setVdp2LayerScroll(3, 0, 0x100);
         
-        initVdp2ForDragonMenuSub2();
+        resetVdp2LayersAutoScroll();
 
         setupVDP2StringRendering(0, 34, 44, 28);
 
@@ -350,7 +350,7 @@ void startVdp2LayerScroll(s32 layerId, s32 x, s32 y, s32 numSteps)
 {
     graphicEngineStatus.layersConfig[layerId].scrollIncX = x;
     graphicEngineStatus.layersConfig[layerId].scrollIncY = y;
-    graphicEngineStatus.layersConfig[layerId].field_8 = numSteps;
+    graphicEngineStatus.layersConfig[layerId].m8_scrollFrameCount = numSteps;
 }
 
 void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
@@ -360,7 +360,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
     switch (pWorkArea->field_0)
     {
     case 0:
-        if (graphicEngineStatus.field_40AC.menuId == 1)
+        if (graphicEngineStatus.field_40AC.m0_menuId == 1)
         {
             initVdp2ForDragonMenu(0);
             pWorkArea->field_8 = 16;
@@ -394,7 +394,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->field_14 = createSubTask(pWorkArea, &dragonMenuStatsTask2Definition, new s_dummyWorkArea);
         pWorkArea->field_1C = createSubTask(pWorkArea, &dragonMenuMorphCursorTaskDefinition, new s_dummyWorkArea);
 
-        if (graphicEngineStatus.field_40AC.menuId != 1)
+        if (graphicEngineStatus.field_40AC.m0_menuId != 1)
         {
             fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
             fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
@@ -416,7 +416,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
             }
 
             vblankData.field_14 = pWorkArea->field_4;
-            if (graphicEngineStatus.field_40AC.menuId != 1)
+            if (graphicEngineStatus.field_40AC.m0_menuId != 1)
             {
                 fadePalette(&menuUnk0.m_field0, 0, 0, 1);
                 fadePalette(&menuUnk0.m_field24, 0, 0, 1);

@@ -24,6 +24,8 @@ struct sFieldCameraStatus
     s32 angle_y; // 0xC
     s32 field_10; // 0x10
     s32 field_14; // 0x14
+
+    s32 m30;
 };
 
 extern sMatrix4x3* pCurrentMatrix;

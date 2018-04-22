@@ -14,6 +14,22 @@ u32 dragonFieldTaskInitSub3Sub2(s_3dModel* r4);
 
 p_workArea createMenuTask(p_workArea parentTask);
 
+extern u32 fieldTaskVar2;
+
+struct s_loadRiderWorkArea : public s_workArea
+{
+    u8* m_riderModel; //0
+    u32 m4; //4
+    s_workArea* m_ParentWorkArea; //8
+    u32 m_riderType; //C
+    u32 m_modelIndex; // 10
+    u32 m_14; //14
+    s_3dModel m18_3dModel;//18
+};
+
+extern s_loadRiderWorkArea* pRiderState;
+extern s_loadRiderWorkArea* pRider2State;
+
 struct s_loadDragonWorkArea : public s_workArea
 {
     u8* dramAllocation; //0

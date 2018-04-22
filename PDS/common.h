@@ -338,19 +338,19 @@ struct s3DModelAnimData
 
 struct s_dragonState : public s_workArea
 {
-    u8* pDragonModelRawData; //0
-    u32 dragonType;//C
-    s16 cursorX;//10
-    s16 cursorY;//12
-    u32 modelIndex;//14
-    u32 shadowModelIndex;//18
-    u32 dragonArchetype; //1C
-    const u16* dragonAnimOffsets; //20
-    u32 dragonAnimCount; //24
-    s_3dModel dragon3dModel; //28
+    u8* m0_pDragonModelRawData; //0
+    u32 mC_dragonType;//C
+    s16 m10_cursorX;//10
+    s16 m12_cursorY;//12
+    u32 m14_modelIndex;//14
+    u32 m18_shadowModelIndex;//18
+    u32 m1C_dragonArchetype; //1C
+    const u16* m20_dragonAnimOffsets; //20
+    u32 m24_dragonAnimCount; //24
+    s_3dModel m28_dragon3dModel; //28
 
-    s3DModelAnimData animData; // 78
-    u32 field_88;//88
+    s3DModelAnimData m78_animData; // 78
+    u32 m88;//88
 };
 extern s_dragonState* gDragonState;
 
@@ -365,8 +365,8 @@ extern s_vdp1AllocatorNode* vdp1AllocatorHead;
 
 struct s_graphicEngineStatus_40AC
 {
-    u8 menuId; // 0 what menu to open
-    u8 isMenuAllowed; // 1 is menu allowed?
+    u8 m0_menuId; // 0 what menu to open
+    u8 m1_isMenuAllowed; // 1 is menu allowed?
     u8 field_2;
     u8 field_3;
     u8 field_4;
@@ -458,7 +458,7 @@ struct s_graphicEngineStatus_40BC
     s16 scrollY; //2
     s16 scrollIncX; // 4
     s16 scrollIncY; // 6
-    u16 field_8;
+    u16 m8_scrollFrameCount;
 }; // size A?
 
 struct s_vdp1Packet

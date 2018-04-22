@@ -6,7 +6,7 @@ struct s_fieldOverlaySubTaskWorkArea : public s_workArea
     sMatrix4x3 field_3B4;
     sFieldCameraStatus field_3E4[1]; // size isn't known yet
     u8 field_50C;
-    u8 field_50D; // 50D
+    u8 m50D; // 50D
     u8 field_50E; // 50E
 };
 
@@ -105,23 +105,17 @@ struct s_dragonTaskWorkArea_48
 
 struct s_dragonTaskWorkArea : s_workArea
 {
-    s_memoryAreaOutput field_0;
+    s_memoryAreaOutput m0;
 
-    s32 posX; // 8
-    s32 posY; // C
-    s32 posZ; // 10
+    sVec3_FP m8_pos; // 8
+    sVec3_FP m14_oldPos; // 14
+    sVec3_FP m20_angle; // 20-24-28
 
-    s32 oldPosX; // 14
-    s32 oldPosY; // 18
-    s32 oldPosZ; // 1C
+    s_dragonTaskWorkArea_48 m48;
 
-    s32 angleX; // 20
-    s32 angleY; // 24
-    s32 angleZ; // 28
+    sMatrix4x3 m88_matrix; // 88
 
-    s_dragonTaskWorkArea_48 field_48;
-
-    sMatrix4x3 matrix; // 88
+    u32 mB8;
 
     u32 field_C0;
     u32 field_C4;
@@ -134,7 +128,8 @@ struct s_dragonTaskWorkArea : s_workArea
     void(*field_F0)(s_dragonTaskWorkArea*); //F0
 
     u32 field_F8; // F8 Flags
-    u32 field_FC[2]; // FC
+    u32 field_FC; // FC
+    u32 m100;
 
     u32 field_130;
     u32 field_134;
@@ -148,13 +143,16 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 field_150;
     u32 field_154;
 
+    u32 m160[3];
+
     u32 field_178[4];
 
     u32 field_1B8;
     u32 field_1BC;
 
     u32 field_1CC;
-
+    u32 field_1D0;
+    u32 field_1D4;
     s_dragonTaskWorkArea_1F0 field_1F0;
 
     u32 field_208;
@@ -173,8 +171,10 @@ struct s_dragonTaskWorkArea : s_workArea
 
     u8 field_23A;
     u8 field_23B;
+    u8 field_23C;
 
     u8 field_249;
+    u8 m25D;
 };
 
 struct s_grid1
@@ -243,6 +243,15 @@ struct s_fieldCameraTask1WorkArea : public s_workArea
     //size: 1304
 };
 
+struct s_LCSTask : public s_workArea
+{
+    s_memoryAreaOutput m0;
+    u32 m8;
+    u32 m814;
+    void* m9C0;
+    // size 0x9DC
+};
+
 struct s_FieldSubTaskWorkArea : public s_workArea
 {
     u8* memoryArea[3]; // 0
@@ -256,8 +265,9 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     const s_MCB_CGB* fileList; // 30
     u32 MCBFilesSizes[32]; // 34
     u32 CGBFilesSizes[32]; // 1B4
-    s_fieldOverlaySubTaskWorkArea* field_334;
-    s_dragonTaskWorkArea* pDragonTask; // 338
+    s_fieldOverlaySubTaskWorkArea* m334;
+    s_dragonTaskWorkArea* m338_pDragonTask; // 338
+    s_LCSTask* m340_pLCS;
     s_fieldCameraTask1WorkArea* pFieldCameraTask1; // 348
     s_fieldScriptWorkArea* ptrToE; // 34C
     u16 field_354; // 354
@@ -275,16 +285,16 @@ struct s_FieldSubTaskWorkArea : public s_workArea
 
 struct s_fieldTaskWorkArea : public s_workArea
 {
-    s_workArea* field_0; // 0
-    s_workArea* overlayTaskData;//4
-    s_FieldSubTaskWorkArea* pSubFieldData; // 0x8
-    u32 fStatus; // 0x28
-    s16 currentFieldIndex; // 0x2C
-    s16 currentSubFieldIndex; // 0x2E;
+    s_workArea* m0; // 0
+    s_workArea* m4_overlayTaskData;//4
+    s_FieldSubTaskWorkArea* m8_pSubFieldData; // 0x8
+    u32 m28_status; // 0x28
+    s16 m2C_currentFieldIndex; // 0x2C
+    s16 m2E_currentSubFieldIndex; // 0x2E;
     s16 field_30; // 0x30
-    s16 field_32; // 0x32
+    s16 m32; // 0x32
     u8 field_35; // 0x35
-    u16 fieldIndexMenuSelection; // 0x36
+    s16 fieldIndexMenuSelection; // 0x36
     s16 subFieldIndexMenuSelection; // 0x38
     s16 field_3A; // 0x3A
     u8 fieldTaskState; // 0x3C

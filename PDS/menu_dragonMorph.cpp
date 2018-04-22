@@ -322,8 +322,8 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     dragonMenuDragonInitSub1(&pWorkArea->field_34);
 
     pWorkArea->field_30 = getVdp2VramU16(0x25002);
-    pWorkArea->field_28 = gDragonState->dragon3dModel.pCurrentAnimation;
-    pWorkArea->field_2C = gDragonState->dragon3dModel.field_16;
+    pWorkArea->field_28 = gDragonState->m28_dragon3dModel.pCurrentAnimation;
+    pWorkArea->field_2C = gDragonState->m28_dragon3dModel.field_16;
 
     pWorkArea->field_0 = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
@@ -334,9 +334,9 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     pWorkArea->modelRotation[1] = fixedPoint(0x638E38E);
     pWorkArea->modelRotation[2] = fixedPoint(0xF555555);
 
-    playAnimation(&gDragonState->dragon3dModel, gDragonState->pDragonModelRawData + READ_BE_U32(gDragonState->pDragonModelRawData + gDragonState->dragonAnimOffsets[0]), 0); // Todo: is the [0] correct?
+    playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelRawData + READ_BE_U32(gDragonState->m0_pDragonModelRawData + gDragonState->m20_dragonAnimOffsets[0]), 0); // Todo: is the [0] correct?
 
-    dragonMenuDragonInitSub3(&gDragonState->animData);
+    dragonMenuDragonInitSub3(&gDragonState->m78_animData);
 
     graphicEngineStatus.field_405C.localCoordinatesX = 0x78;
     graphicEngineStatus.field_405C.localCoordinatesY = 0x70;
@@ -648,9 +648,9 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
 {
     s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
 
-    gDragonState->cursorX = mainGameState.gameStats.dragonCursorX;
-    gDragonState->cursorY = mainGameState.gameStats.dragonCursorY;
-    gDragonState->dragonArchetype = mainGameState.gameStats.dragonArchetype;
+    gDragonState->m10_cursorX = mainGameState.gameStats.dragonCursorX;
+    gDragonState->m12_cursorY = mainGameState.gameStats.dragonCursorY;
+    gDragonState->m1C_dragonArchetype = mainGameState.gameStats.dragonArchetype;
 
     fixedPoint r0 = sqrt_F(FP_Pow2(performDivision(0x880, mainGameState.gameStats.dragonCursorX << 16)) + FP_Pow2(performDivision(0x880, mainGameState.gameStats.dragonCursorY << 16)));
 
@@ -742,18 +742,18 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
     if (pWorkArea->field_8 == 0)
     {
         int r3;
-        if (gDragonState->dragon3dModel.pCurrentAnimation == NULL)
+        if (gDragonState->m28_dragon3dModel.pCurrentAnimation == NULL)
         {
             r3 = 0;
         }
         else
         {
-            r3 = READ_BE_S16(gDragonState->dragon3dModel.pCurrentAnimation + 4);
+            r3 = READ_BE_S16(gDragonState->m28_dragon3dModel.pCurrentAnimation + 4);
         }
         r3--;
-        if (gDragonState->dragon3dModel.field_16 >= r3)
+        if (gDragonState->m28_dragon3dModel.field_16 >= r3)
         {
-            s_animLoop* pAnimLoop = dragonAnimLoop[gDragonState->dragonType][gDragonState->dragonArchetype];
+            s_animLoop* pAnimLoop = dragonAnimLoop[gDragonState->mC_dragonType][gDragonState->m1C_dragonArchetype];
 
             if (pWorkArea->field_C + 1 < pAnimLoop->m_count)
             {
@@ -765,14 +765,14 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
             }
 
             u16 animIndex = pAnimLoop->m_values[pWorkArea->field_C];
-            u32 animOffset = gDragonState->dragonAnimOffsets[animIndex];
-            playAnimation(&gDragonState->dragon3dModel, gDragonState->pDragonModelRawData + READ_BE_U32(gDragonState->pDragonModelRawData + animOffset), 0);
+            u32 animOffset = gDragonState->m20_dragonAnimOffsets[animIndex];
+            playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelRawData + READ_BE_U32(gDragonState->m0_pDragonModelRawData + animOffset), 0);
         }
     }
 
-    dragonFieldTaskInitSub3Sub2(&gDragonState->dragon3dModel);
-    updateAnimationMatrices(&gDragonState->animData, &gDragonState->dragon3dModel);
-    morphDragon(pWorkArea->field_0, &gDragonState->dragon3dModel, pWorkArea->field_0->MCBOffsetInDram, pWorkArea->field_4, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
+    dragonFieldTaskInitSub3Sub2(&gDragonState->m28_dragon3dModel);
+    updateAnimationMatrices(&gDragonState->m78_animData, &gDragonState->m28_dragon3dModel);
+    morphDragon(pWorkArea->field_0, &gDragonState->m28_dragon3dModel, pWorkArea->field_0->MCBOffsetInDram, pWorkArea->field_4, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
 }
 
 void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u32 shadowModelIndex, sVec3_FP* translation, sVec3_FP* rotation, fixedPoint shadowHeight)
@@ -818,7 +818,7 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
 void dragonMenuDragonDraw(p_workArea pTypelessWorkArea)
 {
     s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
-    submitModelAndShadowModelToRendering(&gDragonState->dragon3dModel, gDragonState->modelIndex, gDragonState->shadowModelIndex, &pWorkArea->modelTranslation, &pWorkArea->modelRotation, 0);
+    submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pWorkArea->modelTranslation, &pWorkArea->modelRotation, 0);
 }
 
 void dragonMenuDragonDelete(p_workArea pTypelessWorkArea)
