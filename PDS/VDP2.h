@@ -241,6 +241,7 @@ u16 getVdp2CramU16(u32 offset);
 
 u8* getVdp2Vram(u32 offset);
 void setVdp2VramU16(u32 offset, u16 value);
+void setVdp2VramU32(u32 offset, u32 value);
 u8* getVdp2Cram(u32 offset);
 
 int loadFile(const char* fileName, u8* destination, u8* characterAreaPointer);

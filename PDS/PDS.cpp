@@ -6,6 +6,7 @@
 #pragma comment(lib, "Version.lib")
 #endif
 
+bool hasEncounterData;
 bool debugEnabled = false; // watchdog bit 1
 
 int enableDebugTask;

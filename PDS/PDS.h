@@ -119,6 +119,8 @@ void initVDP1Projection(fixedPoint r4, u32 mode);
 fixedPoint sqrt_F(fixedPoint r4);
 void initFileLayoutTable();
 
+extern bool hasEncounterData;
+
 #include "o_title.h"
 #include "o_menuEn.h"
 #include "o_fld_a3.h"

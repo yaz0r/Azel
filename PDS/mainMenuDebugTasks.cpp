@@ -2004,13 +2004,20 @@ void fieldSubTaskDelete(s_workArea* pWorkArea)
 
 s_taskDefinition fieldSubTaskDefinition = { fieldSubTaskInit, fieldSubTaskUpdate, fieldSubTaskDraw, fieldSubTaskDelete, "field sub task" };
 
+s_taskDefinitionWithArg encounterTaskDefinition = { dummyTaskInitWithArg, dummyTaskUpdate, dummyTaskDraw, dummyTaskDelete, "encounter task" };
+
+void createEncounterTask(s_workArea* pWorkArea)
+{
+    createSiblingTaskWithArg(pWorkArea, &encounterTaskDefinition, new s_dummyWorkArea, pWorkArea);
+}
+
 void fieldStartOverlayTaskInit(s_workArea* pWorkArea)
 {
     const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->m2C_currentFieldIndex];
 
     fieldTaskPtr->m4_overlayTaskData = pWorkArea;
 
-    yLog("Missing createEncouterTask");
+    createEncounterTask(pWorkArea);
 
     if(pFieldDefinition->m_fnt)
     {

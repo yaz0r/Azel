@@ -20,6 +20,10 @@ sVdp2Controls vdp2Controls;
 
 u8* getVdp2Vram(u32 offset)
 {
+    if (offset >= 0x25E00000)
+    {
+        return getVdp2Vram(offset - 0x25E00000);
+    }
     return vdp2Ram + offset;
 }
 
@@ -45,6 +49,14 @@ void setVdp2VramU16(u32 offset, u16 value)
 {
     *(u8*)getVdp2Vram(offset) = (value >> 8) & 0xFF;
     *(u8*)getVdp2Vram(offset+1) = value & 0xFF;
+}
+
+void setVdp2VramU32(u32 offset, u32 value)
+{
+    *(u8*)getVdp2Vram(offset) = (value >> 24) & 0xFF;
+    *(u8*)getVdp2Vram(offset + 1) = (value >> 16) & 0xFF;
+    *(u8*)getVdp2Vram(offset + 2) = (value >> 8) & 0xFF;
+    *(u8*)getVdp2Vram(offset + 3) = value & 0xFF;
 }
 
 u16 getVdp2CramU16(u32 offset)
