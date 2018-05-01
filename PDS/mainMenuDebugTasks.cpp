@@ -953,12 +953,12 @@ void modelDrawFunction1(s_3dModel* pDragonStateData1)
 
     if (pDragonStateData1->field_8 & 1)
     {
-        u8* r4 = pDragonStateData1->pModelFile + READ_BE_U32(pDragonStateData1->pModelFile + pDragonStateData1->modelIndexOffset);
+        u8* r4 = pDragonStateData1->pModelFile + READ_BE_U32(pDragonStateData1->pModelFile + pDragonStateData1->mC_modelIndexOffset);
         submitModelToRendering(pDragonStateData1->pModelFile, r4, var_8, var_4, var_0);
     }
     else
     {
-        u8* r4 = pDragonStateData1->pModelFile + READ_BE_U32(pDragonStateData1->pModelFile + pDragonStateData1->modelIndexOffset);
+        u8* r4 = pDragonStateData1->pModelFile + READ_BE_U32(pDragonStateData1->pModelFile + pDragonStateData1->mC_modelIndexOffset);
         modeDrawFunction1Sub2(pDragonStateData1->pModelFile, r4, var_8, var_4, var_0);
     }
 }
@@ -1320,7 +1320,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32
 {
     pDragonStateData1->pOwnerTask = pWorkArea;
     pDragonStateData1->pModelFile = pDragonModel;
-    pDragonStateData1->modelIndexOffset = modelIndexOffset;
+    pDragonStateData1->mC_modelIndexOffset = modelIndexOffset;
     pDragonStateData1->pDefaultPose = pDefaultPose;
     pDragonStateData1->field_38 = unkArg2;
     pDragonStateData1->field_14 = 0;
@@ -1336,7 +1336,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32
     {
         pDragonStateData1->field_A = unkArg0;
         pDragonStateData1->numBones = 0;
-        countNumBonesInModel(pDragonStateData1, pDragonModel + READ_BE_U32(pDragonModel + pDragonStateData1->modelIndexOffset), pDragonModel);
+        countNumBonesInModel(pDragonStateData1, pDragonModel + READ_BE_U32(pDragonModel + pDragonStateData1->mC_modelIndexOffset), pDragonModel);
     }
 
     pDragonStateData1->poseData = static_cast<sPoseData*>(allocateHeapForTask(pWorkArea, pDragonStateData1->numBones * sizeof(sPoseData)));

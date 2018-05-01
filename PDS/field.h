@@ -4,7 +4,7 @@ struct s_fieldOverlaySubTaskWorkArea : public s_workArea
 {
     sMatrix4x3 field_384;
     sMatrix4x3 field_3B4;
-    sFieldCameraStatus field_3E4[1]; // size isn't known yet
+    sFieldCameraStatus field_3E4[2];
     u8 field_50C;
     u8 m50D; // 50D
     u8 field_50E; // 50E
@@ -95,7 +95,7 @@ struct s_dragonTaskWorkArea_1F0
 
 struct s_dragonTaskWorkArea_48
 {
-    sMatrix4x3 matrix; //0
+    sMatrix4x3 m0_matrix; //0
 
     u32 field_30; //30
     u32 field_34; //34
@@ -173,7 +173,8 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 field_23B;
     u8 field_23C;
     u8 m244;
-    u8 field_249;
+    u8 m248;
+    u8 m249;
     u8 m25D;
 };
 

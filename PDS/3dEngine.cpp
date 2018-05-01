@@ -121,12 +121,12 @@ void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6
 
     sVec3_FP translation;
 
-    r4->m0_position[0] = r5->field_0;
-    translation[0] = -r5->field_0;
-    r4->m0_position[1] = r5->field_4;
-    translation[1] = -r5->field_4;
-    r4->m0_position[2] = r5->field_8;
-    translation[2] = -r5->field_8;
+    r4->m0_position[0] = r5->m0_position[0];
+    translation[0] = -r5->m0_position[0];
+    r4->m0_position[1] = r5->m0_position[1];
+    translation[1] = -r5->m0_position[1];
+    r4->m0_position[2] = r5->m0_position[2];
+    translation[2] = -r5->m0_position[2];
 
     resetMatrixStack();
 
@@ -308,6 +308,11 @@ void rotateCurrentMatrixY(s32 rotY)
     rotateMatrixY(rotY, pCurrentMatrix);
 }
 
+void rotateCurrentMatrixShiftedY(s32 rotY)
+{
+    rotateMatrixY(rotY >> 16, pCurrentMatrix);
+}
+
 void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix)
 {
     u32 angle = rotZ & 0xFFF;
@@ -454,6 +459,11 @@ void multiplyCurrentMatrix(sMatrix4x3* arg4)
     multiplyMatrix(arg4, pCurrentMatrix);
 }
 
+void multiplyCurrentMatrixSaveStack(sMatrix4x3* arg4)
+{
+    multiplyCurrentMatrix(arg4);
+}
+
 void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
 {
     rotateMatrixY((*rotationVec)[1].getInteger(), pMatrix);
@@ -467,4 +477,20 @@ void rotateMatrixZYX(sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
     rotateMatrixY((*rotationVec)[1].getInteger(), pMatrix);
     rotateMatrixX((*rotationVec)[0].getInteger(), pMatrix);
 }
+
+void scaleCurrentMatrixRow0(s32 r4)
+{
+    unimplemented("scaleCurrentMatrixRow0");
+}
+
+void scaleCurrentMatrixRow1(s32 r4)
+{
+    unimplemented("scaleCurrentMatrixRow1");
+}
+
+void scaleCurrentMatrixRow2(s32 r4)
+{
+    unimplemented("scaleCurrentMatrixRow2");
+}
+
 

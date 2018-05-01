@@ -18,14 +18,13 @@ extern s_cameraProperties2 cameraProperties2;
 
 struct sFieldCameraStatus
 {
-    s32 field_0;
-    s32 field_4;
-    s32 field_8;
-    s32 angle_y; // 0xC
-    s32 field_10; // 0x10
-    s32 field_14; // 0x14
+    sVec3_FP m0_position;
+    sVec3_FP mC_rotation;
 
     s32 m30;
+
+    s8 m8C;
+    //size 94
 };
 
 extern sMatrix4x3* pCurrentMatrix;
@@ -46,6 +45,7 @@ void rotateMatrixX(s32 rotX, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixX(s32 rotX);
 void rotateMatrixY(s32 rotY, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixY(s32 rotY);
+void rotateCurrentMatrixShiftedY(s32 rotY);
 void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixZ(s32 rotZ);
 void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix);
@@ -53,4 +53,9 @@ void translateCurrentMatrix(sVec3_FP* translation);
 void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
 void rotateMatrixZYX(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
 void multiplyCurrentMatrix(sMatrix4x3* arg4);
+void multiplyCurrentMatrixSaveStack(sMatrix4x3* arg4);
+
+void scaleCurrentMatrixRow0(s32 r4);
+void scaleCurrentMatrixRow1(s32 r4);
+void scaleCurrentMatrixRow2(s32 r4);
 

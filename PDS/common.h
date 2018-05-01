@@ -277,7 +277,7 @@ struct s_3dModel
 
     u16 field_8; //8
     u16 field_A; //A
-    u16 modelIndexOffset; //C
+    u16 mC_modelIndexOffset; //C
 
     u16 currentAnimationFrame; //10
     u16 numBones; //12

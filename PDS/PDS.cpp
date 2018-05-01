@@ -843,6 +843,12 @@ u16 READ_BE_U16(const void* ptr)
     return data;
 }
 
+void WRITE_BE_U16(const void* ptr, u16 data)
+{
+    data = ((data >> 8) & 0xFF) | ((data & 0xFF) << 8);
+    *(u16*)(ptr) = data;
+}
+
 s16 READ_BE_S16(const void* ptr)
 {
     u16 data = *(u16*)(ptr);

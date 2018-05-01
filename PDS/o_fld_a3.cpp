@@ -645,14 +645,14 @@ void fieldOverlaySubTaskInitSub5(u32 r4)
     unimplemented("fieldOverlaySubTaskInitSub5");
 }
 
-void fieldOverlaySubTaskInitSub6(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
+void updateCameraFromDragonSub2(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
 {
     assert(pTypedWorkArea->field_50C == 0);
     sFieldCameraStatus* r13 = &pTypedWorkArea->field_3E4[pTypedWorkArea->field_50C];
     s16 r15[3];
-    r15[0] = r13->angle_y >> 16;
-    r15[1] = r13->field_10 >> 16;
-    r15[2] = r13->field_14 >> 16;
+    r15[0] = r13->mC_rotation[0] >> 16;
+    r15[1] = r13->mC_rotation[1] >> 16;
+    r15[2] = r13->mC_rotation[2] >> 16;
 
     updateEngineCamera(&cameraProperties2, r13, r15);
 
@@ -676,7 +676,7 @@ void fieldOverlaySubTaskInit(s_workArea* pWorkArea)
 
     fieldOverlaySubTaskInitSub5(1);
 
-    fieldOverlaySubTaskInitSub6(pTypedWorkArea);
+    updateCameraFromDragonSub2(pTypedWorkArea);
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50D = 1;
 }
@@ -717,7 +717,7 @@ void dragonFieldTaskInitSub2Sub3(s_dragonTaskWorkArea* pWorkArea)
 
 void dragonFieldTaskInitSub2Sub4(s_dragonTaskWorkArea_48* field_48)
 {
-    initMatrixToIdentity(&field_48->matrix);
+    initMatrixToIdentity(&field_48->m0_matrix);
 
     field_48->field_30 = 0;
     field_48->field_34 = 0;
@@ -837,7 +837,7 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 
     sFieldCameraStatus* pFieldCameraStatus = getFieldCameraStatus();
 
-    pFieldCameraStatus->angle_y = pWorkArea->m20_angle[1];
+    pFieldCameraStatus->mC_rotation[0] = pWorkArea->m20_angle[1];
 
     pWorkArea->field_14C = 0x2AAAAAA;
     pWorkArea->field_148 = -0x2AAAAAA;
@@ -897,9 +897,9 @@ void dragonFieldTaskInitSub4(s_dragonTaskWorkArea* pTypedWorkArea)
         dragonFieldTaskInitSub4Sub4();
     }
 
-    dragonFieldTaskInitSub4Sub5(&pTypedWorkArea->m48.matrix, &pTypedWorkArea->m20_angle);
+    dragonFieldTaskInitSub4Sub5(&pTypedWorkArea->m48.m0_matrix, &pTypedWorkArea->m20_angle);
 
-    copyMatrix(&pTypedWorkArea->m48.matrix, &pTypedWorkArea->m88_matrix);
+    copyMatrix(&pTypedWorkArea->m48.m0_matrix, &pTypedWorkArea->m88_matrix);
 
     pTypedWorkArea->m8_pos[0] += pTypedWorkArea->m160[0];
     pTypedWorkArea->m8_pos[1] += pTypedWorkArea->m160[1];
@@ -956,7 +956,7 @@ void dragonFieldTaskUpdateSub1Sub1()
     if (pDragonTask->field_F8 & 0x400)
         return;
 
-    if (!pDragonTask->field_249)
+    if (!pDragonTask->m249)
         return;
 
     assert(0);
@@ -1161,9 +1161,65 @@ void dragonFieldTaskUpdate(s_workArea* pWorkArea)
     dragonFieldTaskUpdateSub6(pTypedWorkArea);
 }
 
+s8 updateCameraFromDragonSub1(s32 index)
+{
+    return getFieldTaskPtr()->m8_pSubFieldData->m334->field_3E4[index].m8C;
+}
+
+void updateCameraFromDragon()
+{
+    s_fieldOverlaySubTaskWorkArea* r12 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+
+    for (int i = 0; i < 2; i++)
+    {
+        if (updateCameraFromDragonSub1(i))
+        {
+            assert(0);
+        }
+    }
+
+    updateCameraFromDragonSub2(r12);
+}
+
+void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
+{
+    updateCameraFromDragon();
+
+    // if we need to draw the dragon shadow (and dragon Y >= 0)
+    if (!pTypedWorkArea->m249 && pTypedWorkArea->m248 && (pTypedWorkArea->m8_pos[1] >= 0))
+    {
+        assert(0);
+    }
+
+    if (pTypedWorkArea->m249)
+    {
+        assert(0);
+    }
+    else
+    {
+        WRITE_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30) | 1);
+    }
+
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pTypedWorkArea->m8_pos);
+    rotateCurrentMatrixShiftedY(0x8000000);
+    multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
+    scaleCurrentMatrixRow0(pTypedWorkArea->field_150);
+    scaleCurrentMatrixRow1(pTypedWorkArea->field_150);
+    scaleCurrentMatrixRow2(pTypedWorkArea->field_150);
+
+    gDragonState->m28_dragon3dModel.mC_modelIndexOffset = gDragonState->m14_modelIndex;
+    gDragonState->m28_dragon3dModel.drawFunction(&gDragonState->m28_dragon3dModel);
+    popMatrix();
+
+    unimplemented("dragonFieldTaskDrawSub1");
+}
+
 void dragonFieldTaskDraw(s_workArea* pWorkArea)
 {
     s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
+
+    dragonFieldTaskDrawSub1(pTypedWorkArea);
 
     unimplemented("dragonFieldTaskDraw");
 }

@@ -103,6 +103,8 @@ extern int enableDebugTask;
 extern u8 pauseEngine[8];
 extern u32 azelCdNumber;
 
+void WRITE_BE_U16(const void* ptr, u16 value);
+
 u32 READ_BE_U32(const void* ptr);
 s32 READ_BE_S32(const void* ptr);
 u16 READ_BE_U16(const void* ptr);

@@ -798,7 +798,7 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
 
         pushCurrentMatrix();
         multiplyCurrentMatrix(&modelMatrix);
-        p3dModel->modelIndexOffset = shadowModelIndex;
+        p3dModel->mC_modelIndexOffset = shadowModelIndex;
         p3dModel->drawFunction(p3dModel);
         popMatrix();
 
@@ -810,7 +810,7 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
 
     pushCurrentMatrix();
     multiplyCurrentMatrix(&modelMatrix);
-    p3dModel->modelIndexOffset = modelIndex;
+    p3dModel->mC_modelIndexOffset = modelIndex;
     p3dModel->drawFunction(p3dModel);
     popMatrix();
 }
