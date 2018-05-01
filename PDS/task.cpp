@@ -21,9 +21,9 @@ void processTasks(s_task** ppTask)
                     }
                 }
 
-                if (pTask->m_pLateUpdate)
+                if (pTask->m_pDraw)
                 {
-                    pTask->m_pLateUpdate(pTask->getWorkArea());
+                    pTask->m_pDraw(pTask->getWorkArea());
                 }
             }
         }
@@ -122,7 +122,7 @@ p_workArea createSubTask(p_workArea parentWorkArea, s_taskDefinition* pDefinitio
     pTask->m_pNextTask = NULL;
     pTask->m_pSubTask = NULL;
     pTask->m_pUpdate = pDefinition->m_pUpdate;
-    pTask->m_pLateUpdate = pDefinition->m_pLateUpdate;
+    pTask->m_pDraw = pDefinition->m_pLateUpdate;
     pTask->m_pDelete = pDefinition->m_pDelete;
     pTask->m_flags = 0;
 
@@ -160,7 +160,7 @@ p_workArea createSubTaskWithArg(p_workArea parentWorkArea, s_taskDefinitionWithA
     pTask->m_pNextTask = NULL;
     pTask->m_pSubTask = NULL;
     pTask->m_pUpdate = pDefinition->m_pUpdate;
-    pTask->m_pLateUpdate = pDefinition->m_pLateUpdate;
+    pTask->m_pDraw = pDefinition->m_pLateUpdate;
     pTask->m_pDelete = pDefinition->m_pDelete;
     pTask->m_flags = 0;
 
@@ -198,7 +198,7 @@ p_workArea createSiblingTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg
     pTask->m_pNextTask = NULL;
     pTask->m_pSubTask = NULL;
     pTask->m_pUpdate = pDefinition->m_pUpdate;
-    pTask->m_pLateUpdate = pDefinition->m_pLateUpdate;
+    pTask->m_pDraw = pDefinition->m_pLateUpdate;
     pTask->m_pDelete = pDefinition->m_pDelete;
     pTask->m_flags = 0;
 
@@ -237,7 +237,7 @@ p_workArea createSubTaskFromFunction(p_workArea parentWorkArea, void(*pFunction)
     pTask->m_pNextTask = NULL;
     pTask->m_pSubTask = NULL;
     pTask->m_pUpdate = pFunction;
-    pTask->m_pLateUpdate = NULL;
+    pTask->m_pDraw = NULL;
     pTask->m_pDelete = NULL;
     pTask->m_flags = 0;
 
@@ -261,7 +261,7 @@ s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea newWorkArea)
     pTask->m_pNextTask = NULL;
     pTask->m_pSubTask = NULL;
     pTask->m_pUpdate = pDefinition->m_pUpdate;
-    pTask->m_pLateUpdate = pDefinition->m_pLateUpdate;
+    pTask->m_pDraw = pDefinition->m_pLateUpdate;
     pTask->m_pDelete = pDefinition->m_pDelete;
     pTask->m_flags = 0;
 

@@ -2862,10 +2862,10 @@ struct s_mainMenuWorkArea : public s_workArea
     u8 field_0; //0
     s8 field_1; //1
     s8 selectedMenu; //2
-    s8 field_3[5]; //3
+    s8 m3_menuButtonStates[5]; //3
     p_workArea field_8; // 8
     s_statusMenuTaskWorkArea* field_C; // C
-    s_MenuCursorWorkArea* field_10; // 10
+    s_MenuCursorWorkArea* m10_cursorTask; // 10
 };
 
 void initVdp2ForStatusMenu()
@@ -3184,34 +3184,34 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
 {
     s_mainMenuWorkArea* pWorkArea = static_cast<s_mainMenuWorkArea*>(typelessWorkArea);
 
-    pWorkArea->field_3[0] = 1; // item is always enabled
+    pWorkArea->m3_menuButtonStates[0] = 1; // item is always enabled
 
     if (mainGameState.getBit(4, 2)) // dragon menu
     {
-        pWorkArea->field_3[1] = 1;
+        pWorkArea->m3_menuButtonStates[1] = 1;
     }
     else
     {
-        pWorkArea->field_3[1] = -1;
+        pWorkArea->m3_menuButtonStates[1] = -1;
     }
 
     if (mainGameState.gameStats.XP) // defeated monsters menu
     {
-        pWorkArea->field_3[2] = 1;
+        pWorkArea->m3_menuButtonStates[2] = 1;
     }
     else
     {
-        pWorkArea->field_3[2] = -1;
+        pWorkArea->m3_menuButtonStates[2] = -1;
     }
-    pWorkArea->field_3[3] = 1; // map
-    pWorkArea->field_3[4] = 1; // setup
+    pWorkArea->m3_menuButtonStates[3] = 1; // map
+    pWorkArea->m3_menuButtonStates[4] = 1; // setup
 
     initVdp2ForStatusMenu();
 
     s32 r14 = -1;
     for (int i = 0; i < 5; i++)
     {
-        switch (pWorkArea->field_3[i])
+        switch (pWorkArea->m3_menuButtonStates[i])
         {
         case 0:
             assert(0);
@@ -3238,8 +3238,8 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
 
     if (r14 >= 0)
     {
-        pWorkArea->field_10 = createMenuCursorTask(pWorkArea, &mainMenuTaskInitData2);
-        pWorkArea->field_10->selectedMenu = r14;
+        pWorkArea->m10_cursorTask = createMenuCursorTask(pWorkArea, &mainMenuTaskInitData2);
+        pWorkArea->m10_cursorTask->selectedMenu = r14;
     }
 
     createSubTaskWithArg(pWorkArea, &menuDragonCrestTaskDef, new s_menuDragonCrestTaskWorkArea, &graphicEngineStatus.layersConfig[0]);
@@ -3337,7 +3337,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
     case 0:
         pWorkArea->field_C = static_cast<s_statusMenuTaskWorkArea*>(createSubTask(pWorkArea, &statusMenuTaskDefinition, new s_statusMenuTaskWorkArea));
         pWorkArea->field_C->selectedMenu = pWorkArea->selectedMenu;
-        pWorkArea->field_10->selectedMenu = pWorkArea->selectedMenu;
+        pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
         pWorkArea->field_0++;
     case 1:
         if (graphicEngineStatus.field_4514->current.field_8 & 1) // B
@@ -3357,7 +3357,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
         }
         if (graphicEngineStatus.field_4514->current.field_8 & 6) // A or C
         {
-            if (pWorkArea->field_3[pWorkArea->selectedMenu] == 0)
+            if (pWorkArea->m3_menuButtonStates[pWorkArea->selectedMenu] == 0)
             {
                 playSoundEffect(5);
                 return;
@@ -3378,7 +3378,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
             
             s32 selectedMenu = pWorkArea->selectedMenu;
 
-            if (pWorkArea->field_3[selectedMenu] == 1)
+            if (pWorkArea->m3_menuButtonStates[selectedMenu] == 1)
             {
                 mainMenuTaskInitSub3(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x660);
             }
@@ -3391,7 +3391,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
                     {
                         selectedMenu = 4;
                     }
-                } while (pWorkArea->field_3[selectedMenu] == -1);
+                } while (pWorkArea->m3_menuButtonStates[selectedMenu] == -1);
             }
             else
             {
@@ -3401,17 +3401,17 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
                     {
                         selectedMenu = 0;
                     }
-                } while (pWorkArea->field_3[selectedMenu] == -1);
+                } while (pWorkArea->m3_menuButtonStates[selectedMenu] == -1);
             }
 
-            if (pWorkArea->field_3[selectedMenu] == 1)
+            if (pWorkArea->m3_menuButtonStates[selectedMenu] == 1)
             {
                 mainMenuTaskInitSub3(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x620);
             }
 
             pWorkArea->selectedMenu = selectedMenu;
             pWorkArea->field_C->selectedMenu = pWorkArea->selectedMenu;
-            pWorkArea->field_10->selectedMenu = pWorkArea->selectedMenu;
+            pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
         }
         break;
     case 2:

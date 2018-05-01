@@ -48,7 +48,7 @@ struct s_task
 {
     s_task* m_pNextTask;
     s_task* m_pSubTask;
-    void(*m_pLateUpdate)(p_workArea);
+    void(*m_pDraw)(p_workArea);
     void(*m_pDelete)(p_workArea);
     void(*m_pUpdate)(p_workArea);
     u32 m_flags;

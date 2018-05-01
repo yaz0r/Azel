@@ -172,7 +172,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 field_23A;
     u8 field_23B;
     u8 field_23C;
-
+    u8 m244;
     u8 field_249;
     u8 m25D;
 };
@@ -194,18 +194,18 @@ struct s_grid3
 
 struct s_DataTable3
 {
-    s_grid1** environmentGrid;
-    s_grid2** field_4;
-    s_grid3** field_8;
-    u32 field_C;
-    s32 gridSize[2]; // 10
-    u32 field_18;
-    u32 field_1C;
-    u32 field_20;
+    s_grid1** m0_environmentGrid;
+    s_grid2** m4;
+    s_grid3** m8;
+    u32 mC;
+    s32 m10_gridSize[2]; // 10
+    u32 m18;
+    u32 m1C;
+    u32 m20;
     //u32 field_24[];
 };
 
-struct s_gridTaskWorkArea : public s_workArea
+struct s_visdibilityCellTask : public s_workArea
 {
     s_memoryAreaOutput memoryLayout; // 0
     s_grid1* pEnvironmentCell; // 8
@@ -220,28 +220,28 @@ struct sCameraVisibility
     u8 field_1;
 };
 
-struct s_fieldCameraTask1WorkArea : public s_workArea
+struct s_visibilityGridWorkArea : public s_workArea
 {
-    sVec3_FP field_0; // 0
+    sVec3_FP m0_position; // 0
     s32 field_C;
     s32 field_10;
     s32 field_14;
-    s32 cameraGridLocation[2]; // 18 Grid location
+    s32 m18_cameraGridLocation[2]; // 18 Grid location
     u32 field_20;
     s32 field_24;
     u32 field_28;
     u8* field_2C;
     s_DataTable3* field_30; // 30
-    sCameraVisibility** cameraVisibilityTable; // field_34
+    sCameraVisibility** m34_cameraVisibilityTable; // field_34
     p_workArea field_38; // 38
-    s_gridTaskWorkArea** cellRenderingTasks; // 3C (an array of tasks)
+    s_visdibilityCellTask** m3C_cellRenderingTasks; // 3C (an array of tasks)
     u32* m44;
     u32 m68[1]; // not sure what that is yet, an array of LCS stuff?
     u32 m128C_vdp2VramOffset2;
     u32 m1290_vdp2VramOffset;
-    u16 renderMode; // 12F2
+    u16 m12F2_renderMode; // 12F2
     u8 updateVisibleCells;
-    u8(*field_12F8)(s_fieldCameraTask1WorkArea* pFieldCameraTask1); // 12F8
+    u8(*m12F8_convertCameraPositionToGrid)(s_visibilityGridWorkArea* pFieldCameraTask1); // 12F8
     void(*field_12FC); // 12F8
     u8 field_1300;
     //size: 1304
@@ -284,7 +284,7 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     s_dragonTaskWorkArea* m338_pDragonTask; // 338
     s_LCSTask* m340_pLCS;
     s_randomBattleWorkArea* m344_randomBattleTask;
-    s_fieldCameraTask1WorkArea* m348_pFieldCameraTask1; // 348
+    s_visibilityGridWorkArea* m348_pFieldCameraTask1; // 348
     s_fieldScriptWorkArea* ptrToE; // 34C
     u16 field_354; // 354
     u16 fieldSubTaskStatus; // 358

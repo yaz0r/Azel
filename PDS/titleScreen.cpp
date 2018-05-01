@@ -489,7 +489,7 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
     if (cartdrigePresent == 1)
     {
         s_task* pTask = pWorkArea->getTask();
-        pTask->m_pLateUpdate = warningTaskDraw;
+        pTask->m_pDraw = warningTaskDraw;
     }
 
     loadWarningFile(cartdrigePresent - 1);

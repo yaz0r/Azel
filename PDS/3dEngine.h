@@ -6,11 +6,11 @@ void pushProjectionStack();
 
 struct s_cameraProperties2
 {
-    sVec3_FP field_0; //0
+    sVec3_FP m0_position; //0
     s16 m_rotation[3];
     sVec3_FP field_14; //14
     s16 field_20[3]; // 20
-    sMatrix4x3 field_28[2]; // 28
+    sMatrix4x3 m28[2]; // 28
 
     sMatrix4x3 field_88; // 88
 };
@@ -29,11 +29,10 @@ struct sFieldCameraStatus
 };
 
 extern sMatrix4x3* pCurrentMatrix;
-extern sMatrix4x3 unkMatrix;
 
 void addObjectToDrawList(u8* pObjectData, u32 offset);
 
-void fieldOverlaySubTaskInitSub6Sub1(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6);
+void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6);
 
 void multiplyMatrix(sMatrix4x3* matrixA, sMatrix4x3* matrixB);
 

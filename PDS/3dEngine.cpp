@@ -2,7 +2,6 @@
 
 sMatrix4x3 matrixStack[16];
 sMatrix4x3* pCurrentMatrix = NULL;
-sMatrix4x3 unkMatrix;
 
 s_cameraProperties2 cameraProperties2;
 
@@ -114,7 +113,7 @@ void initMatrixToIdentity(sMatrix4x3* matrix)
     matrix->matrix[11] = 0;
 }
 
-void fieldOverlaySubTaskInitSub6Sub1(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6)
+void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6)
 {
     r4->m_rotation[0] = r6[0];
     r4->m_rotation[1] = r6[1];
@@ -122,11 +121,11 @@ void fieldOverlaySubTaskInitSub6Sub1(s_cameraProperties2* r4, sFieldCameraStatus
 
     sVec3_FP translation;
 
-    r4->field_0[0] = r5->field_0;
+    r4->m0_position[0] = r5->field_0;
     translation[0] = -r5->field_0;
-    r4->field_0[1] = r5->field_4;
+    r4->m0_position[1] = r5->field_4;
     translation[1] = -r5->field_4;
-    r4->field_0[2] = r5->field_8;
+    r4->m0_position[2] = r5->field_8;
     translation[2] = -r5->field_8;
 
     resetMatrixStack();
@@ -137,16 +136,16 @@ void fieldOverlaySubTaskInitSub6Sub1(s_cameraProperties2* r4, sFieldCameraStatus
     rotateCurrentMatrixY(-r4->m_rotation[1]);
     translateCurrentMatrix(&translation);
     rotateMatrixY(0x800, &r4->field_88);
-    copyMatrix(&r4->field_28[0], &r4->field_28[1]);
-    initMatrixToIdentity(&r4->field_28[0]);
-    translateMatrix(&r4->field_0, &r4->field_28[0]);
-    rotateMatrixY(r4->m_rotation[1], &r4->field_28[0]);
-    rotateMatrixX(r4->m_rotation[0], &r4->field_28[0]);
-    rotateMatrixZ(r4->m_rotation[2], &r4->field_28[0]);
+    copyMatrix(&r4->m28[0], &r4->m28[1]);
+    initMatrixToIdentity(&r4->m28[0]);
+    translateMatrix(&r4->m0_position, &r4->m28[0]);
+    rotateMatrixY(r4->m_rotation[1], &r4->m28[0]);
+    rotateMatrixX(r4->m_rotation[0], &r4->m28[0]);
+    rotateMatrixZ(r4->m_rotation[2], &r4->m28[0]);
 
-    r4->field_28[0].matrix[2] = -r4->field_28[0].matrix[2];
-    r4->field_28[0].matrix[6] = -r4->field_28[0].matrix[6];
-    r4->field_28[0].matrix[10] = -r4->field_28[0].matrix[10];
+    r4->m28[0].matrix[2] = -r4->m28[0].matrix[2];
+    r4->m28[0].matrix[6] = -r4->m28[0].matrix[6];
+    r4->m28[0].matrix[10] = -r4->m28[0].matrix[10];
 }
 
 void copyMatrix(sMatrix4x3* pSrc, sMatrix4x3* pDst)

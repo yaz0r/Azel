@@ -243,7 +243,7 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
     r4->field_20[1] = r4->m_rotation[1];
     r4->field_20[2] = r4->m_rotation[2];
 
-    r4->field_14 = r4->field_0;
+    r4->field_14 = r4->m0_position;
 
     generateCameraMatrixSub1(var_18, var_4);
 
@@ -258,13 +258,13 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
 
     r4->m_rotation[2] = atan2(-var_24[0], var_24[1]);
 
-    r4->field_0[0] = r13[0];
+    r4->m0_position[0] = r13[0];
     var_24[0] = -r13[0];
     
-    r4->field_0[1] = r13[1];
+    r4->m0_position[1] = r13[1];
     var_24[1] = -r13[1];
 
-    r4->field_0[2] = r13[2];
+    r4->m0_position[2] = r13[2];
     var_24[2] = -r13[2];
 
     resetMatrixStack();
@@ -280,39 +280,39 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
 
     rotateMatrixY(0x800, &r4->field_88);
 
-    copyMatrix(&r4->field_28[0], &r4->field_28[1]);
+    copyMatrix(&r4->m28[0], &r4->m28[1]);
 
-    initMatrixToIdentity(&r4->field_28[0]);
-    translateMatrix(&r4->field_0, &r4->field_28[0]);
-    rotateMatrixY(r4->m_rotation[1], &r4->field_28[0]);
-    rotateMatrixX(r4->m_rotation[0], &r4->field_28[0]);
-    rotateMatrixZ(r4->m_rotation[2], &r4->field_28[0]);
+    initMatrixToIdentity(&r4->m28[0]);
+    translateMatrix(&r4->m0_position, &r4->m28[0]);
+    rotateMatrixY(r4->m_rotation[1], &r4->m28[0]);
+    rotateMatrixX(r4->m_rotation[0], &r4->m28[0]);
+    rotateMatrixZ(r4->m_rotation[2], &r4->m28[0]);
 
-    r4->field_28[0].matrix[2] = -r4->field_28[0].matrix[2];
-    r4->field_28[0].matrix[6] = -r4->field_28[0].matrix[6];
-    r4->field_28[0].matrix[10] = -r4->field_28[0].matrix[10];
+    r4->m28[0].matrix[2] = -r4->m28[0].matrix[2];
+    r4->m28[0].matrix[6] = -r4->m28[0].matrix[6];
+    r4->m28[0].matrix[10] = -r4->m28[0].matrix[10];
 }
 
 void resetCameraProperties2(s_cameraProperties2* r4)
 {
-    r4->field_0[2] = 0;
-    r4->field_0[1] = 0;
-    r4->field_0[0] = 0;
+    r4->m0_position[2] = 0;
+    r4->m0_position[1] = 0;
+    r4->m0_position[0] = 0;
 
     r4->m_rotation[2] = 0;
     r4->m_rotation[1] = 0;
     r4->m_rotation[0] = 0;
 
-    r4->field_14[0] = r4->field_0[0];
-    r4->field_14[1] = r4->field_0[1];
-    r4->field_14[2] = r4->field_0[2];
+    r4->field_14[0] = r4->m0_position[0];
+    r4->field_14[1] = r4->m0_position[1];
+    r4->field_14[2] = r4->m0_position[2];
 
     r4->field_20[0] = r4->m_rotation[0];
     r4->field_20[1] = r4->m_rotation[1];
     r4->field_20[2] = r4->m_rotation[2];
 
-    initMatrixToIdentity(&r4->field_28[0]);
-    initMatrixToIdentity(&r4->field_28[1]);
+    initMatrixToIdentity(&r4->m28[0]);
+    initMatrixToIdentity(&r4->m28[1]);
 }
 
 void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
