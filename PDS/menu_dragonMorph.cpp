@@ -322,7 +322,7 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     dragonMenuDragonInitSub1(&pWorkArea->field_34);
 
     pWorkArea->field_30 = getVdp2VramU16(0x25002);
-    pWorkArea->field_28 = gDragonState->m28_dragon3dModel.pCurrentAnimation;
+    pWorkArea->field_28 = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation;
     pWorkArea->field_2C = gDragonState->m28_dragon3dModel.field_16;
 
     pWorkArea->field_0 = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
@@ -742,13 +742,13 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
     if (pWorkArea->field_8 == 0)
     {
         int r3;
-        if (gDragonState->m28_dragon3dModel.pCurrentAnimation == NULL)
+        if (gDragonState->m28_dragon3dModel.m30_pCurrentAnimation == NULL)
         {
             r3 = 0;
         }
         else
         {
-            r3 = READ_BE_S16(gDragonState->m28_dragon3dModel.pCurrentAnimation + 4);
+            r3 = READ_BE_S16(gDragonState->m28_dragon3dModel.m30_pCurrentAnimation + 4);
         }
         r3--;
         if (gDragonState->m28_dragon3dModel.field_16 >= r3)
@@ -799,7 +799,7 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
         pushCurrentMatrix();
         multiplyCurrentMatrix(&modelMatrix);
         p3dModel->mC_modelIndexOffset = shadowModelIndex;
-        p3dModel->drawFunction(p3dModel);
+        p3dModel->m18_drawFunction(p3dModel);
         popMatrix();
 
         modelMatrix.matrix[4] = old4;
@@ -811,7 +811,7 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
     pushCurrentMatrix();
     multiplyCurrentMatrix(&modelMatrix);
     p3dModel->mC_modelIndexOffset = modelIndex;
-    p3dModel->drawFunction(p3dModel);
+    p3dModel->m18_drawFunction(p3dModel);
     popMatrix();
 }
 

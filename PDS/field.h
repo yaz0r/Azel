@@ -240,6 +240,13 @@ struct s_visibilityGridWorkArea : public s_workArea
     u32 m68[1]; // not sure what that is yet, an array of LCS stuff?
     u32 m128C_vdp2VramOffset2;
     u32 m1290_vdp2VramOffset;
+    sVec3_FP m12AC;
+    sVec3_FP m12B8;
+    sVec3_FP m12C4;
+    sVec3_FP m12D0;
+    s32 m12DC;
+    u16 m12E0[3];
+    u16 m12F0;
     u16 m12F2_renderMode; // 12F2
     u8 updateVisibleCells;
     u8(*m12F8_convertCameraPositionToGrid)(s_visibilityGridWorkArea* pFieldCameraTask1); // 12F8

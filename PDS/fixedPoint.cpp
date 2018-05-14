@@ -21,6 +21,27 @@ fixedPoint FP_Div(s32 divident, fixedPoint divisor)
     return fixedPoint::fromS32((((s64)divident) << 16) / divisor.asS32());
 }
 
+s32 gDivident;
+fixedPoint gDivisor;
+
+void asyncDivStart(s32 r4, fixedPoint r5)
+{
+    /*
+    VCRDIV = 0xFFFFFF00;
+    DVSR = r5;
+    DVDNTH = (divident >> 16) & 0xFFFF;
+    DVDNTL = divident << 16;
+    */
+
+    gDivident = r4;
+    gDivisor = r5;
+}
+
+fixedPoint asyncDivEnd()
+{
+    return fixedPoint::fromS32((((s64)gDivident) << 16) / gDivisor.asS32());
+}
+
 fixedPoint performDivision(fixedPoint r0, fixedPoint r1)
 {
     return r1 / r0;

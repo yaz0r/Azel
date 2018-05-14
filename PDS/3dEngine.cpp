@@ -245,6 +245,11 @@ void rotateMatrixX(s32 rotX, sMatrix4x3* pMatrix)
     }
 }
 
+void rotateMatrixShiftedX(fixedPoint rotX, sMatrix4x3* pMatrix)
+{
+    rotateMatrixX(rotX.getInteger(), pMatrix);
+}
+
 void rotateCurrentMatrixX(s32 rotX)
 {
     rotateMatrixX(rotX, pCurrentMatrix);
@@ -303,14 +308,19 @@ void rotateMatrixY(s32 rotY, sMatrix4x3* pMatrix)
     }
 }
 
+void rotateMatrixShiftedY(fixedPoint rotY, sMatrix4x3* pMatrix)
+{
+    rotateMatrixY(rotY.getInteger(), pMatrix);
+}
+
 void rotateCurrentMatrixY(s32 rotY)
 {
     rotateMatrixY(rotY, pCurrentMatrix);
 }
 
-void rotateCurrentMatrixShiftedY(s32 rotY)
+void rotateCurrentMatrixShiftedY(fixedPoint rotY)
 {
-    rotateMatrixY(rotY >> 16, pCurrentMatrix);
+    rotateMatrixY(rotY.getInteger(), pCurrentMatrix);
 }
 
 void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix)

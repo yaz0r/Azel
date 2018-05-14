@@ -688,9 +688,53 @@ void createFieldOverlaySubTask(s_workArea* pWorkArea)
     createSubTask(pWorkArea, &fieldOverlaySubTaskDefinition, new s_fieldOverlaySubTaskWorkArea);
 }
 
-s_taskDefinition dragonFieldSubTaskDefinition = { dummyTaskInit, dummyTaskUpdate, NULL, NULL, "dragonFieldSubTask" };
+void dragonRidersTaskInit(s_workArea* pWorkArea)
+{
+    {
+        u8* pData = NULL;
+        if (u32 offset = READ_BE_U32(pRiderState->m0_riderModel + 0x30))
+        {
+            pData = pRiderState->m0_riderModel + offset;
+        }
+        riderInit(&pRiderState->m18_3dModel, pData);
+        dragonFieldTaskInitSub3Sub2(&pRiderState->m18_3dModel);
+    }
 
-s_taskDefinition dragonFieldSubTask2Definition = { dummyTaskInit, dummyTaskUpdate, dummyTaskDraw, NULL, "dragonFieldSubTask2"};
+    {
+        u8* pData = NULL;
+        if (u32 offset = READ_BE_U32(pRider2State->m0_riderModel + 0x30))
+        {
+            pData = pRider2State->m0_riderModel + offset;
+        }
+        riderInit(&pRider2State->m18_3dModel, pData);
+        dragonFieldTaskInitSub3Sub2(&pRider2State->m18_3dModel);
+    }
+}
+
+void dragonRidersTaskUpdate(s_workArea* pWorkArea)
+{
+    unimplemented("dragonRidersTaskUpdate");
+}
+
+s_taskDefinition dragonRidersTaskDefinition = { dragonRidersTaskInit, dragonRidersTaskUpdate, NULL, NULL, "dragonRidersTask" };
+
+void dragonFieldSubTask2Init(s_workArea* pWorkArea)
+{
+    unimplemented("dragonFieldSubTask2Init");
+}
+
+void dragonFieldSubTask2Update(s_workArea* pWorkArea)
+{
+    unimplemented("dragonFieldSubTask2Update");
+}
+
+void dragonFieldSubTask2Draw(s_workArea* pWorkArea)
+{
+    unimplemented("dragonFieldSubTask2Draw");
+}
+
+
+s_taskDefinition dragonFieldSubTask2Definition = { dragonFieldSubTask2Init, dragonFieldSubTask2Update, dragonFieldSubTask2Draw, NULL, "dragonFieldSubTask2"};
 
 void initDragonFieldSubTask2(s_workArea* pWorkArea)
 {
@@ -934,7 +978,7 @@ void dragonFieldTaskInit(s_workArea* pWorkArea, void* argument)
     dragonFieldTaskInitSub3(pTypedWorkArea, gDragonState, 5);
     pTypedWorkArea->field_F0 = dragonFieldTaskInitSub4;
 
-    createSubTask(pWorkArea, &dragonFieldSubTaskDefinition, new s_dummyWorkArea);
+    createSubTask(pWorkArea, &dragonRidersTaskDefinition, new s_dummyWorkArea);
 
     if (gDragonState->mC_dragonType == DR_LEVEL_6_LIGHT_WING)
     {
@@ -1209,7 +1253,7 @@ void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
     scaleCurrentMatrixRow2(pTypedWorkArea->field_150);
 
     gDragonState->m28_dragon3dModel.mC_modelIndexOffset = gDragonState->m14_modelIndex;
-    gDragonState->m28_dragon3dModel.drawFunction(&gDragonState->m28_dragon3dModel);
+    gDragonState->m28_dragon3dModel.m18_drawFunction(&gDragonState->m28_dragon3dModel);
     popMatrix();
 
     unimplemented("dragonFieldTaskDrawSub1");
@@ -1340,7 +1384,74 @@ void fieldCameraTask1Init(s_workArea* pWorkArea)
     pTypedWorkArea->field_1300 = 3;
 }
 
-s_taskDefinition fieldCameraTask1Definition = { fieldCameraTask1Init, dummyTaskUpdate, dummyTaskDraw, NULL, "fieldCameraTask1" };
+void fieldCameraTask1Update(s_workArea* pWorkArea)
+{
+    s_visibilityGridWorkArea* pTypedWorkArea = static_cast<s_visibilityGridWorkArea*>(pWorkArea);
+
+    pTypedWorkArea->m0_position = cameraProperties2.m0_position;
+    pTypedWorkArea->m12F8_convertCameraPositionToGrid(pTypedWorkArea);
+}
+
+sMatrix4x3* fieldCameraTask1DrawSub1()
+{
+    return &getFieldTaskPtr()->m8_pSubFieldData->m334->field_384;
+}
+
+void fieldCameraTask1Draw(s_workArea* pWorkArea)
+{
+    s_visibilityGridWorkArea* pTypedWorkArea = static_cast<s_visibilityGridWorkArea*>(pWorkArea);
+
+    sMatrix4x3* r13 = fieldCameraTask1DrawSub1();
+
+    asyncDivStart(graphicEngineStatus.field_4070, fixedPoint(0xC422));
+
+    sMatrix4x3 var90;
+    copyMatrix(r13, &var90);
+    rotateMatrixShiftedY(fixedPoint(0x238E38F), &var90);
+
+    sMatrix4x3 var60;
+    copyMatrix(r13, &var60);
+    rotateMatrixShiftedY(fixedPoint(-0x238E38F), &var60);
+
+    sMatrix4x3 var30;
+    copyMatrix(r13, &var30);
+    rotateMatrixShiftedX(fixedPoint(-0x238E38F), &var30);
+
+    sMatrix4x3 var00;
+    copyMatrix(r13, &var30);
+    rotateMatrixShiftedX(fixedPoint(0x238E38F), &var30);
+
+    pTypedWorkArea->m12AC[0] = var90.matrix[0 * 4 + 3]; // 8
+    pTypedWorkArea->m12AC[1] = var90.matrix[1 * 4 + 3]; // 18
+    pTypedWorkArea->m12AC[2] = var90.matrix[2 * 4 + 3]; // 28
+
+    pTypedWorkArea->m12B8[0] = var60.matrix[0 * 4 + 3]; // 8
+    pTypedWorkArea->m12B8[1] = var60.matrix[1 * 4 + 3]; // 18
+    pTypedWorkArea->m12B8[2] = var60.matrix[2 * 4 + 3]; // 28
+
+    pTypedWorkArea->m12C4[0] = var30.matrix[0 * 4 + 3]; // 8
+    pTypedWorkArea->m12C4[1] = var30.matrix[1 * 4 + 3]; // 18
+    pTypedWorkArea->m12C4[2] = var30.matrix[2 * 4 + 3]; // 28
+
+    pTypedWorkArea->m12D0[0] = var00.matrix[0 * 4 + 3]; // 8
+    pTypedWorkArea->m12D0[1] = var00.matrix[1 * 4 + 3]; // 18
+    pTypedWorkArea->m12D0[2] = var00.matrix[2 * 4 + 3]; // 28
+
+    pTypedWorkArea->m12DC = asyncDivEnd();
+
+    if (getFieldTaskPtr()->m8_pSubFieldData->fieldDebuggerWho & 1)
+    {
+        assert(0);
+    }
+
+    pTypedWorkArea->m12E0[0] = 0;
+    pTypedWorkArea->m12E0[1] = 0;
+    pTypedWorkArea->m12E0[2] = 0;
+
+    pTypedWorkArea->m12F0 = 0;
+}
+
+s_taskDefinition fieldCameraTask1Definition = { fieldCameraTask1Init, fieldCameraTask1Update, fieldCameraTask1Draw, NULL, "fieldCameraTask1" };
 
 void LCSTaskInit(p_workArea pWorkArea)
 {

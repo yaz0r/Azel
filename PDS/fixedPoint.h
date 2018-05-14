@@ -73,3 +73,6 @@ s32 atan2_FP(s32 y, s32 x);
 s32 atan2(s32 y, s32 x);
 fixedPoint FP_Pow2(fixedPoint r4);
 
+void asyncDivStart(s32 r4, fixedPoint r5);
+fixedPoint asyncDivEnd();
+

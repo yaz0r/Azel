@@ -276,7 +276,7 @@ struct s_3dModel
     u8* pModelFile; //4
 
     u16 field_8; //8
-    u16 field_A; //A
+    u16 mA; //A
     u16 mC_modelIndexOffset; //C
 
     u16 currentAnimationFrame; //10
@@ -284,14 +284,14 @@ struct s_3dModel
     u16 field_14; //14
     u16 field_16; //16
 
-    void(*drawFunction)(s_3dModel*); // 18
-    void (*addToDisplayListFunction)(u8*, u32); // 1C
-    void(*positionUpdateFunction)(s_3dModel*); // 20
-    void(*rotationUpdateFunction)(s_3dModel*); // 24
-    void(*scaleUpdateFunction)(s_3dModel*); // 28
+    void(*m18_drawFunction)(s_3dModel*); // 18
+    void (*m1C_addToDisplayListFunction)(u8*, u32); // 1C
+    void(*m20_positionUpdateFunction)(s_3dModel*); // 20
+    void(*m24_rotationUpdateFunction)(s_3dModel*); // 24
+    void(*m28_scaleUpdateFunction)(s_3dModel*); // 28
     sPoseData* poseData; //2C
 
-    u8* pCurrentAnimation; //30
+    u8* m30_pCurrentAnimation; //30
 
     u8* pDefaultPose; //34
     u32 field_38; //38
@@ -498,7 +498,7 @@ struct s_graphicEngineStatus
 
     u32 field_406C;
 
-    u16 field_4070;
+    s32 field_4070;
     s32 field_408C;
     u32 field_4090;
     s32 field_4094;

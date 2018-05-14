@@ -18,7 +18,7 @@ extern u32 fieldTaskVar2;
 
 struct s_loadRiderWorkArea : public s_workArea
 {
-    u8* m_riderModel; //0
+    u8* m0_riderModel; //0
     u32 m4; //4
     s_workArea* m_ParentWorkArea; //8
     u32 m_riderType; //C
@@ -54,3 +54,7 @@ struct s_vblankData {
 extern s_vblankData vblankData;
 
 extern u8 gDragonModel[0x16500];
+
+void initModelDrawFunction(s_3dModel* pDragonStateData1);
+u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, u8* pModelData1);
+s32 riderInit(s_3dModel* r4, u8* r5);

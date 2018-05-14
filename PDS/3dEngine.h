@@ -42,10 +42,12 @@ void pushCurrentMatrix();
 void popMatrix();
 
 void rotateMatrixX(s32 rotX, sMatrix4x3* pMatrix);
+void rotateMatrixShiftedX(fixedPoint rotX, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixX(s32 rotX);
 void rotateMatrixY(s32 rotY, sMatrix4x3* pMatrix);
+void rotateMatrixShiftedY(fixedPoint rotY, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixY(s32 rotY);
-void rotateCurrentMatrixShiftedY(s32 rotY);
+void rotateCurrentMatrixShiftedY(fixedPoint rotY);
 void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixZ(s32 rotZ);
 void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix);
