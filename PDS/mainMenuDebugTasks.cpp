@@ -2,12 +2,124 @@
 
 extern p_workArea(*statusMenuSubMenus[])(p_workArea);
 
-p_workArea createLoadingTask(p_workArea parentTask)
+struct sLoadingTaskWorkArea : public s_workArea
 {
-    unimplemented("createLoadingTask");
-    //createSiblingTaskWithArg(parentTask, &loadingTask, new s_dummyWorkArea, parentTask);
+    s16 m0_status;
+    s16 m2;
+    s16 m4;
+    s16 m6;
+    s16 m8;
+    s16 mA;
+    s8 mC;
+    s32 m10;
+};
 
-    return NULL;
+sLoadingTaskWorkArea* gLoadingTaskWorkArea = NULL;
+
+s16 loadingTaskVar0 = 0x1D;
+
+void loadingTaskInit(s_workArea* pTypelessWorkArea, void* r5)
+{
+    sLoadingTaskWorkArea* pWorkArea = static_cast<sLoadingTaskWorkArea*>(pTypelessWorkArea);
+    s8 arg = (s8)r5;
+
+    gLoadingTaskWorkArea = pWorkArea;
+
+    pWorkArea->m0_status = 0;
+    pWorkArea->m2 = -1;
+    pWorkArea->m4 = -1;
+    pWorkArea->m6 = 0;
+    pWorkArea->m8 = 0;
+    pWorkArea->mA = 0;
+    pWorkArea->mC = arg;
+
+    if (arg)
+    {
+        s32 r6 = 0x3E8;
+        s32 r4 = r6;
+        do
+        {
+            if (r4 >= r6)
+            {
+                mainGameState.clearBit(0xC3E + r4);
+            }
+            else
+            {
+                mainGameState.clearBit(r4);
+            }
+
+            /*
+            s32 r3;
+            if (r4 >= r6)
+            {
+                r3 = 0xC3E + r4;
+            }
+            else
+            {
+                r3 = r4;
+            }
+
+            r3 = r3 / 8;
+            s32 r0;
+            if (r4 >= r6)
+            {
+                r0 = 0xC3E + r4;
+            }
+            else
+            {
+                r0 = r4;
+            }
+
+            r0 &= 7;
+
+            u8 r1 = reverseBitMasks[r0];
+
+            mainGameState.bitField[r3] &= r1;*/
+        } while (--r4);
+    }
+    else
+    {
+        assert(0);
+    }
+}
+
+void loadingTaskUpdateSub0(sLoadingTaskWorkArea* pWorkArea)
+{
+    if (pWorkArea->mC)
+        return;
+
+    assert(0);
+}
+
+void loadingTaskUpdate(p_workArea pTypelessWorkArea)
+{
+    sLoadingTaskWorkArea* pWorkArea = static_cast<sLoadingTaskWorkArea*>(pTypelessWorkArea);
+
+    switch (pWorkArea->m0_status)
+    {
+    case 0:
+        loadingTaskUpdateSub0(pWorkArea);
+        pWorkArea->m0_status++;
+        break;
+    case 1:
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void loadingTaskDelete(p_workArea pTypelessWorkArea)
+{
+    sLoadingTaskWorkArea* pWorkArea = static_cast<sLoadingTaskWorkArea*>(pTypelessWorkArea);
+
+    unimplemented("loadingTaskDelete");
+}
+
+s_taskDefinitionWithArg loadingTaskDefinition = { loadingTaskInit, loadingTaskUpdate, NULL, loadingTaskDelete, "loadingTask" };
+
+p_workArea createLoadingTask(p_workArea parentTask, s8 arg)
+{
+    return createSiblingTaskWithArg(parentTask, &loadingTaskDefinition, new sLoadingTaskWorkArea, (void*)arg);
 }
 
 struct s_flagEditTaskWorkArea : public s_workArea
@@ -2320,7 +2432,7 @@ void fieldDebugTaskInit(p_workArea pTypelessWorkArea)
     initNewGameState();
     pWorkArea->field_8 = createFieldTask(pTypelessWorkArea, 0);
     
-    createLoadingTask(pWorkArea->field_8);
+    createLoadingTask(pWorkArea->field_8, 1);
     createMenuTask(pWorkArea->field_8);
     createSiblingTaskWithArg(pWorkArea->field_8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->field_8);
 }
@@ -3841,7 +3953,7 @@ void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
 
     createMenuTask(pWorkArea);
     createFieldTask(pWorkArea, 1);
-    createLoadingTask(pWorkArea);
+    createLoadingTask(pWorkArea, 1);
     resetTempAllocators();
     initDramAllocator(pWorkArea, array_250000, 0x28000, 0);
 
@@ -3917,9 +4029,9 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
     return 0;
 }
 
-void exitMenuTaskSub1TaskDrawSub2()
+void stopAllSounds()
 {
-    unimplemented("exitMenuTaskSub1TaskDrawSub2");
+    unimplemented("stopAllSounds");
 }
 
 p_workArea loadField(p_workArea r4, s32 r5)
@@ -4039,7 +4151,7 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
             }
         case 8:
         case 25:
-            exitMenuTaskSub1TaskDrawSub2();
+            stopAllSounds();
         case 12:
         case 22:
         case 37:

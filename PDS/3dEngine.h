@@ -20,10 +20,23 @@ struct sFieldCameraStatus
 {
     sVec3_FP m0_position;
     sVec3_FP mC_rotation;
-
+    s32 m18;
+    s32 m24;
+    s32 m28;
+    s32 m2C;
     s32 m30;
-
+    s32 m34;
+    s32 m40;
+    void(*m74)();
+    void(*m78)(int);
+    s32 m80;
+    s32 m84;
+    s32 m88;
+    s8 m89;
+    s8 m8A;
     s8 m8C;
+
+
     //size 94
 };
 

@@ -38,6 +38,9 @@ const char FLD_A3_Script_0_String0[] = "(Imperial piece of crap.)";
 const char FLD_A3_Script_1_String0[] = "Damn!";
 const char FLD_A3_Script_1_String1[] = "A wind net to keep monsters away.";
 
+s8 updateCameraFromDragonSub1(s32 index);
+sFieldCameraStatus* getFieldCameraStatus();
+
 void playRiderAnimFans()
 {
     assert(0);
@@ -455,12 +458,59 @@ void setupField(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea), sCamer
     setupFieldSub1(r4, r5, r6);
 }
 
+void subfieldA3_0Sub0()
+{
+    unimplemented("subfieldA3_0Sub0");
+}
+
+void setupDragonPositionSub0(sVec3_FP* r4, sVec3_FP* r5)
+{
+    if (r4)
+    {
+        assert(0);
+    }
+}
+
+void setupDragonPosition(sVec3_FP* r4, sVec3_FP* r5)
+{
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    sFieldCameraStatus* r15 = getFieldCameraStatus();
+
+    if (r4)
+    {
+        pDragonTask->m8_pos[0] = (*r4)[0];
+        pDragonTask->m8_pos[1] = (*r4)[1];
+        pDragonTask->m8_pos[2] = (*r4)[2];
+    }
+
+    if (r5)
+    {
+        pDragonTask->m20_angle[0] = (*r5)[0];
+        pDragonTask->m20_angle[1] = (*r5)[1];
+        pDragonTask->m20_angle[2] = (*r5)[2];
+
+        setupDragonPositionSub0(pDragonTask->mBC, r5);
+    }
+}
+
+sVec3_FP subfieldA3_0_DragonDefaultPosition = {
+    0x28A000, 0x32000, 0x1294000
+};
+
+sVec3_FP subfieldA3_0_DragonDefaultRotatiton = {
+    0x0, 0x4000000, 0x0
+};
+
 void subfieldA3_0(p_workArea workArea)
 {
     playPCM(workArea, 100);
     playPCM(workArea, 101);
 
     setupField(&fieldA3_0_dataTable3, fieldA3_0_dataTable2, fieldA3_0_startTasks, fieldA3_0_dataTable1);
+
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_0Sub0;
+
+    setupDragonPosition(&subfieldA3_0_DragonDefaultPosition, &subfieldA3_0_DragonDefaultRotatiton);
 
     unimplemented("subfieldA3_0");
 }
@@ -625,30 +675,107 @@ void fieldOverlaySubTaskInitSub2(void)
     unimplemented("fieldOverlaySubTaskInitSub2");
 }
 
-void fieldOverlaySubTaskInitSub1(u32 r4, void(*r5)(), u32 r6)
+void fieldOverlaySubTaskInitSub1Sub0(sFieldCameraStatus* r4)
 {
-    unimplemented("fieldOverlaySubTaskInitSub1");
+    r4->m74 = 0;
+    r4->m78 = 0;
+    r4->m0_position[0] = 0;
+    r4->m0_position[1] = 0;
+    r4->m0_position[2] = 0;
+    r4->mC_rotation[0] = 0;
+    r4->mC_rotation[1] = 0;
+    r4->mC_rotation[2] = 0;
+    r4->m18 = 0;
+    r4->m24 = 0xF000;
+    r4->m28 = 0;
+    r4->m2C = 0;
+    r4->m30 = 0;
+    r4->m34 = 0;
+    r4->m40 = 0xF000;
+    r4->m80 = 0;
+    r4->m84 = 0;
+    r4->m88 = 0;
+
+    r4->m89 = 0;
+    r4->m8A = 0;
 }
 
-void fieldOverlaySubTaskInitSub3(u32 r4)
+void fieldOverlaySubTaskInitSub1(u32 r4, void(*r5)(), void(*r6)(int))
 {
-    unimplemented("fieldOverlaySubTaskInitSub3");
+    sFieldCameraStatus* pFieldCameraStatus = &getFieldTaskPtr()->m8_pSubFieldData->m334->field_3E4[r4];
+    fieldOverlaySubTaskInitSub1Sub0(pFieldCameraStatus);
+
+    pFieldCameraStatus->m74 = r5;
+    pFieldCameraStatus->m78 = r6;
+    pFieldCameraStatus->m8C = 1;
 }
 
-void fieldOverlaySubTaskInitSub4(void* r4, u32 r5)
+u32 fieldOverlaySubTaskInitSub3(u32 r4)
 {
-    unimplemented("fieldOverlaySubTaskInitSub4");
+    if (updateCameraFromDragonSub1(r4))
+    {
+        s_fieldOverlaySubTaskWorkArea* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+        p334->m50C = r4;
+        p334->field_3E4[r4].m80 = 0;
+        return 1;
+    }
+
+    return 0;
+}
+
+void fieldOverlaySubTaskInitSub4Sub0Sub0(s32* r4, s32* r5)
+{
+    for (int i = 0; i < 7; i++)
+    {
+        r5[i] = r4[i];
+    }
+}
+
+void fieldOverlaySubTaskInitSub4Sub0(s_fieldOverlaySubTaskWorkAreaSub10* r4, s_fieldOverlaySubTaskWorkAreaSub10* r5)
+{
+    r5->m0 = r4->m0;
+    r5->m4 = r4->m4;
+    r5->m8 = r4->m8;
+
+    r5->mC = r4->mC;
+    r5->m10 = r4->m10;
+    r5->m14 = r4->m14;
+
+    fieldOverlaySubTaskInitSub4Sub0Sub0(r4->m18, r5->m18);
+    fieldOverlaySubTaskInitSub4Sub0Sub0(r4->m34, r5->m34);
+
+    r5->m50 = r4->m50;
+    r5->m54 = r4->m54;
+}
+
+void fieldOverlaySubTaskInitSub4(s_fieldOverlaySubTaskWorkAreaSub10* r4, u32 r5)
+{
+    s_fieldOverlaySubTaskWorkArea* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+
+    p334->mC = 8;
+    p334->m2DC = 4;
+
+    s_fieldOverlaySubTaskWorkAreaSub10* r13 = r4;
+    s_fieldOverlaySubTaskWorkAreaSub10* r14 = p334->m10;
+
+    for (int i = 0; i < r5; i++)
+    {
+        fieldOverlaySubTaskInitSub4Sub0(&r4[i], &p334->m10[i]);
+    }
 }
 
 void fieldOverlaySubTaskInitSub5(u32 r4)
 {
-    unimplemented("fieldOverlaySubTaskInitSub5");
+    s_fieldOverlaySubTaskWorkArea* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    p334->field_3E4[r4].m74 = 0;
+    p334->field_3E4[r4].m78 = 0;
+    p334->field_3E4[r4].m8C = 0;
 }
 
 void updateCameraFromDragonSub2(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
 {
-    assert(pTypedWorkArea->field_50C == 0);
-    sFieldCameraStatus* r13 = &pTypedWorkArea->field_3E4[pTypedWorkArea->field_50C];
+    assert(pTypedWorkArea->m50C == 0);
+    sFieldCameraStatus* r13 = &pTypedWorkArea->field_3E4[pTypedWorkArea->m50C];
     s16 r15[3];
     r15[0] = r13->mC_rotation[0] >> 16;
     r15[1] = r13->mC_rotation[1] >> 16;
@@ -660,7 +787,14 @@ void updateCameraFromDragonSub2(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
     copyMatrix(&cameraProperties2.m28[0], &pTypedWorkArea->field_3B4);
 }
 
-void *unk_6092EF0 = NULL;
+s_fieldOverlaySubTaskWorkAreaSub10 unk_6092EF0 = {
+    0,0,0,
+    0,0,0,
+    { -0xE38E38, 0, 0, 0, 0, 0, 0xA000 },
+    { -0xE38E38, 0, 0, 0, 0, 0, 0xA000 },
+    0,
+    0x80000,
+};
 
 void fieldOverlaySubTaskInit(s_workArea* pWorkArea)
 {
@@ -670,7 +804,7 @@ void fieldOverlaySubTaskInit(s_workArea* pWorkArea)
 
     fieldOverlaySubTaskInitSub1(0, &fieldOverlaySubTaskInitSub2, 0);
     fieldOverlaySubTaskInitSub3(0);
-    fieldOverlaySubTaskInitSub4(unk_6092EF0, 1);
+    fieldOverlaySubTaskInitSub4(&unk_6092EF0, 1);
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->field_50E = 1;
 
@@ -803,7 +937,7 @@ void dragonFieldTaskInitSub2Sub5(u32 arg)
 
 sFieldCameraStatus* getFieldCameraStatus()
 {
-    return &getFieldTaskPtr()->m8_pSubFieldData->m334->field_3E4[getFieldTaskPtr()->m8_pSubFieldData->m334->field_50C];
+    return &getFieldTaskPtr()->m8_pSubFieldData->m334->field_3E4[getFieldTaskPtr()->m8_pSubFieldData->m334->m50C];
 }
 
 void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
@@ -1218,7 +1352,14 @@ void updateCameraFromDragon()
     {
         if (updateCameraFromDragonSub1(i))
         {
-            assert(0);
+            if (getFieldTaskPtr()->m8_pSubFieldData->debugMenuStatus1[i] == 0)
+            {
+                sFieldCameraStatus* pFieldCameraStatus = &getFieldTaskPtr()->m8_pSubFieldData->m334->field_3E4[i];
+                if (pFieldCameraStatus->m78)
+                {
+                    pFieldCameraStatus->m78(i);
+                }
+            }
         }
     }
 
@@ -1567,13 +1708,13 @@ void createRandomBattleTask(s_workArea* pWorkArea)
 void fieldDebugMenuUpdate1()
 {
     s_FieldSubTaskWorkArea* pSubFieldData = getFieldTaskPtr()->m8_pSubFieldData;
-    if ((pSubFieldData->debugMenuStatus1_a == 0) && (pSubFieldData->field_369 == 0))
+    if ((pSubFieldData->debugMenuStatus1[0] == 0) && (pSubFieldData->field_369 == 0))
     {
         if (pSubFieldData->debugMenuStatus3 == 0)
         {
             if (readKeyboardToggle(0x84))
             {
-                pSubFieldData->debugMenuStatus1_b++;
+                pSubFieldData->debugMenuStatus1[1]++;
                 pSubFieldData->debugMenuStatus2_a = 0;
                 clearVdp2TextMemory();
             }
@@ -1581,13 +1722,13 @@ void fieldDebugMenuUpdate1()
             {
                 if (readKeyboardToggle(0xF6))
                 {
-                    pSubFieldData->debugMenuStatus1_b = 0;
+                    pSubFieldData->debugMenuStatus1[1] = 0;
                     clearVdp2TextMemory();
                 }
             }
         }
         
-        switch (pSubFieldData->debugMenuStatus1_b)
+        switch (pSubFieldData->debugMenuStatus1[1])
         {
         case 0:
             break;
@@ -1596,7 +1737,7 @@ void fieldDebugMenuUpdate1()
             break;
         }
 
-        if (pSubFieldData->debugMenuStatus1_b)
+        if (pSubFieldData->debugMenuStatus1[1])
         {
             getFieldTaskPtr()->m28_status |= 8;
         }

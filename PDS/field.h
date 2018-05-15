@@ -1,11 +1,29 @@
 #pragma once
 
+struct s_fieldOverlaySubTaskWorkAreaSub10
+{
+    s32 m0;
+    s32 m4;
+    s32 m8;
+    s32 mC;
+    s32 m10;
+    s32 m14;
+    s32 m18[7];
+    s32 m34[7];
+    s32 m50;
+    s32 m54;
+    // size: 0x58
+};
+
 struct s_fieldOverlaySubTaskWorkArea : public s_workArea
 {
+    s32 mC;
+    s_fieldOverlaySubTaskWorkAreaSub10 m10[8]; // unknown size
+    s32 m2DC;
     sMatrix4x3 field_384;
     sMatrix4x3 field_3B4;
     sFieldCameraStatus field_3E4[2];
-    u8 field_50C;
+    u8 m50C;
     u8 m50D; // 50D
     u8 field_50E; // 50E
 };
@@ -116,6 +134,7 @@ struct s_dragonTaskWorkArea : s_workArea
     sMatrix4x3 m88_matrix; // 88
 
     u32 mB8;
+    sVec3_FP* mBC;
 
     u32 field_C0;
     u32 field_C4;
@@ -126,7 +145,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 field_D4[3];
 
     void(*field_F0)(s_dragonTaskWorkArea*); //F0
-
+    void(*mF4)();
     u32 field_F8; // F8 Flags
     u32 field_FC; // FC
     u32 m100;
@@ -301,8 +320,7 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     u8 field_369; // 369
     u16 fieldDebuggerWho; // 370
     void(*pUpdateFunction1)(); // 374
-    u8 debugMenuStatus1_a; // 37C
-    u8 debugMenuStatus1_b; // 37D
+    u8 debugMenuStatus1[2]; // 37C
     u8 debugMenuStatus2_a; // 37E
     u8 debugMenuStatus3; //380
 };
