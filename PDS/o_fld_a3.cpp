@@ -731,15 +731,10 @@ void fieldOverlaySubTaskInitSub4Sub0Sub0(s32* r4, s32* r5)
     }
 }
 
-void fieldOverlaySubTaskInitSub4Sub0(s_fieldOverlaySubTaskWorkAreaSub10* r4, s_fieldOverlaySubTaskWorkAreaSub10* r5)
+void copyFieldCameraConfig(s_fieldCameraConfig* r4, s_fieldCameraConfig* r5)
 {
-    r5->m0 = r4->m0;
-    r5->m4 = r4->m4;
-    r5->m8 = r4->m8;
-
-    r5->mC = r4->mC;
-    r5->m10 = r4->m10;
-    r5->m14 = r4->m14;
+    r5->m0_min = r4->m0_min;
+    r5->mC_max = r4->mC_max;
 
     fieldOverlaySubTaskInitSub4Sub0Sub0(r4->m18, r5->m18);
     fieldOverlaySubTaskInitSub4Sub0Sub0(r4->m34, r5->m34);
@@ -748,19 +743,19 @@ void fieldOverlaySubTaskInitSub4Sub0(s_fieldOverlaySubTaskWorkAreaSub10* r4, s_f
     r5->m54 = r4->m54;
 }
 
-void fieldOverlaySubTaskInitSub4(s_fieldOverlaySubTaskWorkAreaSub10* r4, u32 r5)
+void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5)
 {
     s_fieldOverlaySubTaskWorkArea* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
 
     p334->mC = 8;
     p334->m2DC = 4;
 
-    s_fieldOverlaySubTaskWorkAreaSub10* r13 = r4;
-    s_fieldOverlaySubTaskWorkAreaSub10* r14 = p334->m10;
+    s_fieldCameraConfig* r13 = r4;
+    s_fieldCameraConfig* r14 = p334->m10;
 
     for (int i = 0; i < r5; i++)
     {
-        fieldOverlaySubTaskInitSub4Sub0(&r4[i], &p334->m10[i]);
+        copyFieldCameraConfig(&r4[i], &p334->m10[i]);
     }
 }
 
@@ -787,7 +782,7 @@ void updateCameraFromDragonSub2(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
     copyMatrix(&cameraProperties2.m28[0], &pTypedWorkArea->field_3B4);
 }
 
-s_fieldOverlaySubTaskWorkAreaSub10 unk_6092EF0 = {
+s_fieldCameraConfig unk_6092EF0 = {
     0,0,0,
     0,0,0,
     { -0xE38E38, 0, 0, 0, 0, 0, 0xA000 },
@@ -804,7 +799,7 @@ void fieldOverlaySubTaskInit(s_workArea* pWorkArea)
 
     fieldOverlaySubTaskInitSub1(0, &fieldOverlaySubTaskInitSub2, 0);
     fieldOverlaySubTaskInitSub3(0);
-    fieldOverlaySubTaskInitSub4(&unk_6092EF0, 1);
+    setupFieldCameraConfigs(&unk_6092EF0, 1);
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->field_50E = 1;
 
@@ -1272,8 +1267,129 @@ void playDragonSoundEffect(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonState* 
     unimplemented("playDragonSoundEffect");
 }
 
+void selectCamera(s_fieldOverlaySubTaskWorkArea* r4, s_dragonTaskWorkArea* r5)
+{
+    s32 r6 = r4->mC;
+
+    while (--r6)
+    {
+        s_fieldCameraConfig* r7 = &r4->m10[r6];
+        if (r6) // don't 2d check on first camera so it's always taken
+        {
+            if (r5->m8_pos[0] <= r7->m0_min[0])
+                continue;
+            if (r5->m8_pos[2] <= r7->m0_min[2])
+                continue;
+            if (r5->m8_pos[0] >= r7->mC_max[0])
+                continue;
+            if (r5->m8_pos[2] >= r7->mC_max[2])
+                continue;
+        }
+
+        if ((r4->m0_nextCamera != r6) && (r4->m4_currentCamera == r6))
+        {
+            r4->m8_numFramesOnCurrentCamera++;
+        }
+        else
+        {
+            r4->m4_currentCamera = r6;
+            r4->m8_numFramesOnCurrentCamera = 0;
+        }
+
+        if(r4->m8_numFramesOnCurrentCamera >= 30 )
+        {
+            r4->m0_nextCamera = r6;
+            r4->m8_numFramesOnCurrentCamera = 0;
+        }
+
+        return;
+    }
+}
+
+void dragonFieldTaskUpdateSub5Sub1(s_fieldOverlaySubTaskWorkArea* r4, s_dragonTaskWorkArea* r5)
+{
+    if (r4->m2E0)
+    {
+        assert(0);
+    }
+
+    s32 r13 = r4->m2DC;
+    s32 var8[3];
+
+    for(s32 r13 = r4->m2DC; r13--; r13 >= 0)
+    {
+        if (r13)
+        {
+            s_fieldOverlaySubTaskWorkArea2E4* r12 = &r4->m2E4[r13];
+            s32 r6 = r5->m8_pos[0] - r12->m0[0];
+            if (r6 >= 0)
+            {
+                var8[0] = r6;
+            }
+            else
+            {
+                var8[0] = r12->m0[0] - r5->m8_pos[0];
+            }
+
+            if (var8[0] >= r12->m14)
+                continue;
+
+            if (r5->m8_pos[2] - r12->m0[2] < 0)
+            {
+                var8[2] = r5->m8_pos[2] - r12->m0[2];
+            }
+            else
+            {
+                var8[2] = r12->m0[2] - r5->m8_pos[2];
+            }
+
+            if (var8[2] >= r12->m14)
+                continue;
+
+            if (MTH_Mul(var8[0], var8[0]) + MTH_Mul(var8[2], var8[2]) >= r12->m18_maxDistanceSquare)
+                continue;
+        }
+
+        //6061554
+        if ((r4->m2D0 != r13) && (r4->m2D4 == r13))
+        {
+            r4->m2D8++;
+        }
+        else
+        {
+            r4->m2D4 = r13;
+            r4->m2D8 = 0;
+        }
+
+        if (r4->m2D8 >= 30)
+        {
+            r4->m2D0 = r13;
+            r4->m2D8 = 0;
+        }
+
+        return;
+    }
+}
+
 void dragonFieldTaskUpdateSub5()
 {
+    s_fieldOverlaySubTaskWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    s_dragonTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+
+    if (r14)
+    {
+        selectCamera(r13, r14);
+        dragonFieldTaskUpdateSub5Sub1(r13, r14);
+    }
+
+    for (int i = 0; i < 2; i++)
+    {
+        if (updateCameraFromDragonSub1(i))
+        {
+            assert(0);
+        }
+    }
+
     unimplemented("dragonFieldTaskUpdateSub5");
 }
 

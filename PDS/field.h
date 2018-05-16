@@ -1,13 +1,9 @@
 #pragma once
 
-struct s_fieldOverlaySubTaskWorkAreaSub10
+struct s_fieldCameraConfig
 {
-    s32 m0;
-    s32 m4;
-    s32 m8;
-    s32 mC;
-    s32 m10;
-    s32 m14;
+    sVec3_FP m0_min;
+    sVec3_FP mC_max;
     s32 m18[7];
     s32 m34[7];
     s32 m50;
@@ -15,11 +11,27 @@ struct s_fieldOverlaySubTaskWorkAreaSub10
     // size: 0x58
 };
 
+struct s_fieldOverlaySubTaskWorkArea2E4
+{
+    sVec3_FP m0;
+    s32 m14;
+    s32 m18_maxDistanceSquare;
+    // size 0x20?
+};
+
 struct s_fieldOverlaySubTaskWorkArea : public s_workArea
 {
+    s32 m0_nextCamera;
+    s32 m4_currentCamera;
+    s32 m8_numFramesOnCurrentCamera;
     s32 mC;
-    s_fieldOverlaySubTaskWorkAreaSub10 m10[8]; // unknown size
+    s_fieldCameraConfig m10[8]; // unknown size
+    s32 m2D0;
+    s32 m2D4;
+    s32 m2D8;
     s32 m2DC;
+    s32 m2E0;
+    s_fieldOverlaySubTaskWorkArea2E4 m2E4[5];
     sMatrix4x3 field_384;
     sMatrix4x3 field_3B4;
     sFieldCameraStatus field_3E4[2];
