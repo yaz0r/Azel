@@ -44,6 +44,7 @@ struct sVec3_FP
     }
 };
 
+fixedPoint dot3_FP(sVec3_FP* r4, sVec3_FP* r5);
 sVec3_FP readSaturnVec3(sSaturnPtr& ptr);
 
 struct sMatrix4x3
@@ -272,38 +273,38 @@ struct sPoseData
 
 struct s_3dModel
 {
-    s_workArea* pOwnerTask; //0
-    u8* pModelFile; //4
+    s_workArea* m0_pOwnerTask; //0
+    u8* m4_pModelFile; //4
 
-    u16 field_8; //8
+    u16 m8; //8
     u16 mA; //A
     u16 mC_modelIndexOffset; //C
 
-    u16 currentAnimationFrame; //10
-    u16 numBones; //12
-    u16 field_14; //14
-    u16 field_16; //16
+    u16 m10_currentAnimationFrame; //10
+    u16 m12_numBones; //12
+    u16 m14; //14
+    u16 m16; //16
 
-    void(*m18_drawFunction)(s_3dModel*); // 18
+    void (*m18_drawFunction)(s_3dModel*); // 18
     void (*m1C_addToDisplayListFunction)(u8*, u32); // 1C
-    void(*m20_positionUpdateFunction)(s_3dModel*); // 20
-    void(*m24_rotationUpdateFunction)(s_3dModel*); // 24
-    void(*m28_scaleUpdateFunction)(s_3dModel*); // 28
-    sPoseData* poseData; //2C
+    void (*m20_positionUpdateFunction)(s_3dModel*); // 20
+    void (*m24_rotationUpdateFunction)(s_3dModel*); // 24
+    void (*m28_scaleUpdateFunction)(s_3dModel*); // 28
+    sPoseData* m2C_poseData; //2C
 
     u8* m30_pCurrentAnimation; //30
 
-    u8* pDefaultPose; //34
-    u32 field_38; //38
+    u8* m34_pDefaultPose; //34
+    u32 m38; //38
 
-    sMatrix4x3* boneMatrices; //3C
+    sMatrix4x3* m3C_boneMatrices; //3C
 
-    const s_RiderDefinitionSub* field_40; //40
-    sVec3_FP** field_44; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
-    u32 field_48; //48
+    const s_RiderDefinitionSub* m40; //40
+    sVec3_FP** m44; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
+    u32 m48; //48
 
-    u16 field_4C; //4C
-    u16 field_4E; //4E
+    u16 m4C; //4C
+    u16 m4E; //4E
 };
 
 struct sDragonAnimDataSubRanges

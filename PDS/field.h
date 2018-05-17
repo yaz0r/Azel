@@ -133,6 +133,16 @@ struct s_dragonTaskWorkArea_48
     u8 field_3C;
 };
 
+struct s_cameraScript
+{
+    sVec3_FP m0_position;
+    sVec3_FP mC_rotation;
+    fixedPoint m18;
+    fixedPoint m1C;
+    s32 m20;
+    sVec3_FP m24_pos2;
+};
+
 struct s_dragonTaskWorkArea : s_workArea
 {
     s_memoryAreaOutput m0;
@@ -144,7 +154,6 @@ struct s_dragonTaskWorkArea : s_workArea
     s_dragonTaskWorkArea_48 m48;
 
     sMatrix4x3 m88_matrix; // 88
-
     u32 mB8;
     sVec3_FP* mBC;
 
@@ -158,23 +167,23 @@ struct s_dragonTaskWorkArea : s_workArea
 
     void(*field_F0)(s_dragonTaskWorkArea*); //F0
     void(*mF4)();
-    u32 field_F8; // F8 Flags
+    u32 mF8; // F8 Flags
     u32 field_FC; // FC
     u32 m100;
-
+    u32 m104_cameraScriptStatus;
     u32 field_130;
     u32 field_134;
     u32 field_138;
     u32 field_13C;
-    u32 field_140;
+    u32 m140;
     u32 field_144;
     u32 field_148;
     u32 field_14C;
 
     u32 field_150;
-    u32 field_154;
+    s32 m154;
 
-    u32 m160[3];
+    fixedPoint m160[3];
 
     u32 field_178[4];
 
@@ -182,8 +191,9 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 field_1BC;
 
     u32 field_1CC;
-    u32 field_1D0;
+    s_cameraScript* m1D0_cameraScript;
     u32 field_1D4;
+    s32 m1E8_cameraScriptDelay;
     s_dragonTaskWorkArea_1F0 field_1F0;
 
     u32 field_208;
@@ -206,6 +216,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 m244;
     u8 m248;
     u8 m249;
+    u8 m24A_runningCameraScript; // has camera script
     u8 m25D;
 };
 
@@ -329,7 +340,8 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     u16 fieldSubTaskStatus; // 358
     void (*pUpdateFunction2)(); // 35C
     void(*pUpdateFunction3)(); // 35C
-    u8 field_369; // 369
+    u8 m369; // 369
+    u8 m36C;
     u16 fieldDebuggerWho; // 370
     void(*pUpdateFunction1)(); // 374
     u8 debugMenuStatus1[2]; // 37C

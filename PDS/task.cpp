@@ -3,6 +3,32 @@
 s_task* taskListHead;
 int numActiveTask;
 
+void PrintDebugTask(s_task* pTask)
+{
+    if(ImGui::TreeNode(pTask->m_taskName))
+    {
+        if (pTask->m_pSubTask)
+        {
+            PrintDebugTask(pTask->m_pSubTask);
+        }
+        ImGui::TreePop();
+    }
+    if (pTask->m_pNextTask)
+    {
+        PrintDebugTask(pTask->m_pNextTask);
+    }
+}
+
+void DebugTasks()
+{
+    ImGui::Begin("Tasks");
+    if (taskListHead)
+    {
+        PrintDebugTask(taskListHead);
+    }
+    ImGui::End();
+}
+
 void processTasks(s_task** ppTask)
 {
     s_task* pTask = *ppTask;
@@ -11,20 +37,28 @@ void processTasks(s_task** ppTask)
     {
         if (!(pTask->isFinished()))
         {
-            if (!(pTask->isPaused()))
+            if (pTask->isPaused())
             {
-                if (pTask->m_pUpdate)
-                {
-                    if (!pauseEngine[0])
-                    {
-                        pTask->m_pUpdate(pTask->getWorkArea());
-                    }
-                }
+                pTask = *ppTask;
 
-                if (pTask->m_pDraw)
+                if (pTask == NULL)
+                    return;
+
+                ppTask = &pTask->m_pNextTask;
+                pTask = *ppTask;
+                continue;
+            }
+            if (pTask->m_pUpdate)
+            {
+                if (!pauseEngine[0])
                 {
-                    pTask->m_pDraw(pTask->getWorkArea());
+                    pTask->m_pUpdate(pTask->getWorkArea());
                 }
+            }
+
+            if (pTask->m_pDraw)
+            {
+                pTask->m_pDraw(pTask->getWorkArea());
             }
         }
         if (pTask->isFinished())

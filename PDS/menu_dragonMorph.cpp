@@ -55,9 +55,9 @@ void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
 
 u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 r5)
 {
-    if ((r5 > 0) && (pDragonStateData1->field_38 == 0))
+    if ((r5 > 0) && (pDragonStateData1->m38 == 0))
     {
-        if (pDragonStateData1->field_48)
+        if (pDragonStateData1->m48)
         {
             assert(0);
         }
@@ -66,14 +66,14 @@ u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 r5)
             assert(0);
         }
 
-        pDragonStateData1->field_4C = 0;
-        pDragonStateData1->field_4E = r5;
+        pDragonStateData1->m4C = 0;
+        pDragonStateData1->m4E = r5;
         return 1;
     }
     else
     {
-        pDragonStateData1->field_4C = 0;
-        pDragonStateData1->field_4E = 0;
+        pDragonStateData1->m4C = 0;
+        pDragonStateData1->m4E = 0;
         return 0;
     }
 }
@@ -323,7 +323,7 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
 
     pWorkArea->field_30 = getVdp2VramU16(0x25002);
     pWorkArea->field_28 = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation;
-    pWorkArea->field_2C = gDragonState->m28_dragon3dModel.field_16;
+    pWorkArea->field_2C = gDragonState->m28_dragon3dModel.m16;
 
     pWorkArea->field_0 = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
@@ -392,17 +392,17 @@ void setupLight(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7)
 
 void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
 {
-    u32 r9 = r5->numBones;
+    u32 r9 = r5->m12_numBones;
     if (r9)
     {
         sMatrix4x3* r14 = r4->boneMatrices;
-        if (r5->field_48)
+        if (r5->m48)
         {
             assert(0);
         }
         else
         {
-            sPoseData* r13 = r5->poseData;
+            sPoseData* r13 = r5->m2C_poseData;
 
             do 
             {
@@ -751,7 +751,7 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
             r3 = READ_BE_S16(gDragonState->m28_dragon3dModel.m30_pCurrentAnimation + 4);
         }
         r3--;
-        if (gDragonState->m28_dragon3dModel.field_16 >= r3)
+        if (gDragonState->m28_dragon3dModel.m16 >= r3)
         {
             s_animLoop* pAnimLoop = dragonAnimLoop[gDragonState->mC_dragonType][gDragonState->m1C_dragonArchetype];
 

@@ -27,15 +27,19 @@ struct sFieldCameraStatus
     s32 m30;
     s32 m34;
     s32 m40;
-    void(*m74)();
-    void(*m78)(int);
+    void(*m74)(sFieldCameraStatus* r4);
+    void(*m78)(sFieldCameraStatus* r4);
+    s32 m7C;
     s32 m80;
     s32 m84;
     s32 m88;
     s8 m89;
     s8 m8A;
     s8 m8C;
-
+    s8 m8D;
+    s8 m8E;
+    s8 m8F;
+    s8 m90;
 
     //size 94
 };

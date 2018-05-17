@@ -117,3 +117,5 @@ struct s_dummyWorkArea : s_workArea
 
 };
 
+void DebugTasks();
+
