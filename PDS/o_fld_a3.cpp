@@ -2,6 +2,8 @@
 
 namespace FLD_A3_OVERLAY {
 
+sSaturnMemoryFile* gFLD_A3 = NULL;
+
 const s_MCB_CGB fieldFileList[] =
 {
     {"FLDCMN.MCB", "FLDCMN.CGB"},
@@ -199,11 +201,11 @@ s_taskDefinition fieldGridTaskDefinition = { NULL, dummyTaskUpdate, dummyTaskDra
 
 void setupGridCell(s_visibilityGridWorkArea* r4, s_visdibilityCellTask* r5, int index)
 {
-    getMemoryArea(&r5->memoryLayout, r4->field_30->mC);
+    getMemoryArea(&r5->m0_memoryLayout, r4->field_30->mC);
     r5->index = index;
     if (r4->field_30->m0_environmentGrid)
     {
-        r5->pEnvironmentCell = r4->field_30->m0_environmentGrid[index];
+        r5->m8_pEnvironmentCell = r4->field_30->m0_environmentGrid[index];
     }
     if (r4->field_30->m4)
     {
@@ -230,9 +232,40 @@ void gridCellDraw_normal(p_workArea workArea)
 {
     s_visdibilityCellTask* pTypedWorkAread = static_cast<s_visdibilityCellTask*>(workArea);
 
-    if (pTypedWorkAread->pEnvironmentCell)
+    s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+
+    s32 r15 = graphicEngineStatus.field_4070;
+
+    if (pTypedWorkAread->m8_pEnvironmentCell)
     {
-        assert(0);
+        s_grid1* r14 = pTypedWorkAread->m8_pEnvironmentCell;
+        while (r14)
+        {
+            r13->m12E0[0]++;
+
+            s16 r2 = readSaturnS16(r14->m0);
+            u32 r1 = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.mainMemory + r2);
+            r13->m12F0 += READ_BE_U32(pTypedWorkAread->m0_memoryLayout.mainMemory + r1 + 4);
+
+            if (r13->field_12FC(&r14->m4, r15))
+            {
+                r13->m12E0[1]++;
+
+                if (readSaturnS16(r14->m0 + 8))
+                {
+                    unimplemented("stuff in gridCellDraw_normal");
+                }
+
+                pushCurrentMatrix();
+                translateCurrentMatrix(&r14->m4);
+                rotateCurrentMatrixZ(r14->m14);
+                rotateCurrentMatrixY(r14->m12);
+                rotateCurrentMatrixY(r14->m10);
+                assert(0);
+            }
+
+            r14++;
+        }
     }
 
     if (pTypedWorkAread->pCell2)
@@ -509,6 +542,77 @@ s_cameraScript cameraScript0 =
     0xC8000, // m30
 };
 
+s_grid1* readEnvironmentGridCell(sSaturnPtr gridCellEA)
+{
+    assert(gridCellEA.m_offset);
+
+    s_grid1* pCell = new s_grid1;
+    pCell->m0 = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
+    pCell->m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
+    pCell->m10 = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
+    pCell->m12 = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
+    pCell->m14 = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
+    pCell->m18 = readSaturnS32(gridCellEA); gridCellEA = gridCellEA + 4;
+
+    return pCell;
+}
+
+s_grid1** readEnvironmentGrid(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
+{
+    if (gridEA.m_offset == 0)
+        return NULL;
+
+    s_grid1** pGrid = new s_grid1*[gridWidth*gridHeight];
+
+    for (int i = 0; i < gridWidth * gridHeight; i++)
+    {
+        pGrid[i] = NULL;
+
+        sSaturnPtr cellEA = readSaturnEA(gridEA); gridEA = gridEA + 4;
+        if (cellEA.m_offset)
+        {
+            pGrid[i] = readEnvironmentGridCell(cellEA);
+        }
+    }
+
+    return pGrid;
+}
+
+s_grid2** readGrid2(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
+{
+    //assert(gridEA.m_offset == 0);
+
+    return NULL;
+}
+
+s_grid3** readGrid3(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
+{
+    assert(gridEA.m_offset == 0);
+    return NULL;
+}
+
+s_DataTable3* readDataTable3(sSaturnPtr EA)
+{
+    sSaturnPtr grid1 = readSaturnEA(EA); EA = EA + 4;
+    sSaturnPtr grid2 = readSaturnEA(EA); EA = EA + 4;
+    sSaturnPtr grid3 = readSaturnEA(EA); EA = EA + 4;
+
+    s_DataTable3* pNewData3 = new s_DataTable3;
+
+    pNewData3->mC = readSaturnU32(EA); EA = EA + 4;
+    pNewData3->m10_gridSize[0] = readSaturnS32(EA); EA = EA + 4;
+    pNewData3->m10_gridSize[1] = readSaturnS32(EA); EA = EA + 4;
+    pNewData3->m18 = readSaturnU32(EA); EA = EA + 4;
+    pNewData3->m1C = readSaturnU32(EA); EA = EA + 4;
+    pNewData3->m20 = readSaturnU32(EA); EA = EA + 4;
+
+    pNewData3->m0_environmentGrid = readEnvironmentGrid(grid1, pNewData3->m10_gridSize[0], pNewData3->m10_gridSize[1]);
+    pNewData3->m4 = readGrid2(grid2, pNewData3->m10_gridSize[0], pNewData3->m10_gridSize[1]);
+    pNewData3->m8 = readGrid3(grid3, pNewData3->m10_gridSize[0], pNewData3->m10_gridSize[1]);
+
+    return pNewData3;
+}
+
 void subfieldA3_0(p_workArea workArea)
 {
     s16 r13 = getFieldTaskPtr()->field_30;
@@ -516,7 +620,7 @@ void subfieldA3_0(p_workArea workArea)
     playPCM(workArea, 100);
     playPCM(workArea, 101);
 
-    setupField(&fieldA3_0_dataTable3, fieldA3_0_dataTable2, fieldA3_0_startTasks, fieldA3_0_dataTable1);
+    setupField(readDataTable3({ 0x6085AA4, gFLD_A3 }), fieldA3_0_dataTable2, fieldA3_0_startTasks, fieldA3_0_dataTable1);
 
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_0Sub0;
 
@@ -1977,9 +2081,10 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
     return bDirty;
 }
 
-void fieldCameraTask1InitSub2()
+s32 fieldCameraTask1InitSub2(sVec3_FP* r4, s32 r5)
 {
-    assert(0);
+    unimplemented("fieldCameraTask1InitSub2");
+    return 1;
 }
 
 u8* fieldCameraTask1InitData1 = (u8*)1;
@@ -2304,6 +2409,29 @@ void overlayStart_Sub1()
 
 p_workArea overlayStart(p_workArea workArea, u32 arg)
 {
+    // Custom loader thing
+
+    if (gFLD_A3 == NULL)
+    {
+        FILE* fHandle = fopen("FLD_A3.PRG", "rb");
+        assert(fHandle);
+
+        fseek(fHandle, 0, SEEK_END);
+        u32 fileSize = ftell(fHandle);
+
+        fseek(fHandle, 0, SEEK_SET);
+        u8* fileData = new u8[fileSize];
+        fread(fileData, fileSize, 1, fHandle);
+        fclose(fHandle);
+
+        gFLD_A3 = new sSaturnMemoryFile();
+        gFLD_A3->m_name = "FLD_A3.PRG";
+        gFLD_A3->m_data = fileData;
+        gFLD_A3->m_dataSize = fileSize;
+        gFLD_A3->m_base = 0x6054000;
+    }
+
+    ////
     if (!initField(workArea, fieldFileList, arg))
     {
         return NULL;

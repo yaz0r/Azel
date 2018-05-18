@@ -223,6 +223,12 @@ struct s_dragonTaskWorkArea : s_workArea
 
 struct s_grid1
 {
+    sSaturnPtr m0;
+    sVec3_FP m4;
+    s16 m10;
+    s16 m12;
+    s16 m14;
+    s16 m18;
     // size 18
 };
 
@@ -251,8 +257,8 @@ struct s_DataTable3
 
 struct s_visdibilityCellTask : public s_workArea
 {
-    s_memoryAreaOutput memoryLayout; // 0
-    s_grid1* pEnvironmentCell; // 8
+    s_memoryAreaOutput m0_memoryLayout; // 0
+    s_grid1* m8_pEnvironmentCell; // 8
     s_grid2* pCell2; // 0xC
     s_grid3* pCell3; // 0x10
     u32 index; // 14
@@ -293,7 +299,7 @@ struct s_visibilityGridWorkArea : public s_workArea
     u16 m12F2_renderMode; // 12F2
     u8 updateVisibleCells;
     u8(*m12F8_convertCameraPositionToGrid)(s_visibilityGridWorkArea* pFieldCameraTask1); // 12F8
-    void(*field_12FC); // 12F8
+    s32(*field_12FC)(sVec3_FP* r4, s32 r5); // 12F8
     u8 field_1300;
     //size: 1304
 };

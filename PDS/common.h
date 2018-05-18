@@ -45,7 +45,12 @@ struct sVec3_FP
 };
 
 fixedPoint dot3_FP(sVec3_FP* r4, sVec3_FP* r5);
+
+s16 readSaturnS16(sSaturnPtr& ptr);
+s32 readSaturnS32(sSaturnPtr& ptr);
+u32 readSaturnU32(sSaturnPtr& ptr);
 sVec3_FP readSaturnVec3(sSaturnPtr& ptr);
+sSaturnPtr readSaturnEA(sSaturnPtr& ptr);
 
 struct sMatrix4x3
 {

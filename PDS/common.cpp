@@ -701,13 +701,45 @@ fixedPoint getSin(u32 value)
     return fixedPoint(CosSinTable[value]);
 }
 
+s16 readSaturnS16(sSaturnPtr& ptr)
+{
+    sSaturnMemoryFile* pFile = ptr.m_file;
+    u32 offsetInFile = ptr.m_offset - pFile->m_base;
+    assert(offsetInFile + 2 <= pFile->m_dataSize);
+
+    return READ_BE_S16(pFile->m_data + offsetInFile);
+}
+
 s32 readSaturnS32(sSaturnPtr& ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
     u32 offsetInFile = ptr.m_offset - pFile->m_base;
     assert(offsetInFile + 4 <= pFile->m_dataSize);
 
+    return READ_BE_S32(pFile->m_data + offsetInFile);
+}
+
+u32 readSaturnU32(sSaturnPtr& ptr)
+{
+    sSaturnMemoryFile* pFile = ptr.m_file;
+    u32 offsetInFile = ptr.m_offset - pFile->m_base;
+    assert(offsetInFile + 4 <= pFile->m_dataSize);
+
     return READ_BE_U32(pFile->m_data + offsetInFile);
+}
+
+sSaturnPtr readSaturnEA(sSaturnPtr& ptr)
+{
+    sSaturnMemoryFile* pFile = ptr.m_file;
+    u32 offsetInFile = ptr.m_offset - pFile->m_base;
+    assert(offsetInFile + 4 <= pFile->m_dataSize);
+
+    u32 EA = READ_BE_U32(pFile->m_data + offsetInFile);
+
+    sSaturnPtr newPtr = ptr;
+    newPtr.m_offset = EA;
+
+    return newPtr;
 }
 
 sVec3_FP readSaturnVec3(sSaturnPtr& ptr)
