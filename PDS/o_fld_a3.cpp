@@ -506,7 +506,7 @@ s_cameraScript cameraScript0 =
     0xED0, // m1C
     0x36, // m20
     {0x2F9000, 0x39000, -0x280000}, // m24_pos2;
-    //???? 0xC8000
+    0xC8000, // m30
 };
 
 void subfieldA3_0(p_workArea workArea)
@@ -1085,9 +1085,71 @@ void dragonFieldTaskInitSub4Sub3(u8 r4)
     unimplemented("dragonFieldTaskInitSub4Sub3");
 }
 
+s32 dragonFieldTaskInitSub4Sub4Sub1Sub0(s_dragonTaskWorkArea* r4)
+{
+    if (r4->m8_pos[0] <= r4->field_130 + 0x20000)
+        return 0;
+    if (r4->m8_pos[0] > r4->field_13C - 0x20000)
+        return 0;
+    if (r4->m8_pos[2] <= r4->field_138 + 0x20000)
+        return 0;
+    if (r4->m8_pos[2] > r4->field_144 - 0x20000)
+        return 0;
+
+    return 1;
+}
+
+void dragonFieldTaskInitSub4Sub4Sub1Sub1(s_dragonTaskWorkArea* r4)
+{
+    assert(0);
+}
+
+void dragonFieldTaskInitSub4Sub4Sub1(s_dragonTaskWorkArea* r4)
+{
+    r4->m24A_runningCameraScript = 0;
+
+    switch (r4->m104_cameraScriptStatus)
+    {
+    case 0:
+        r4->m154 = 0;
+        getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 &= 0xFFFFFFFE;
+        r4->mF8 |= 0x400;
+        r4->m104_cameraScriptStatus++;
+    case 1:
+        if (!dragonFieldTaskInitSub4Sub4Sub1Sub0(r4))
+        {
+            r4->field_F0 = dragonFieldTaskInitSub4Sub4Sub1Sub1;
+            r4->m104_cameraScriptStatus = 0;
+            dragonFieldTaskInitSub4Sub4Sub1Sub1(r4);
+            return;
+        }
+    default:
+        assert(0);
+    }
+
+    assert(0);
+}
+
+void dragonFieldTaskInitSub4Sub4Sub2()
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8 &= 0xFFFEFFFF;
+}
+
 void dragonFieldTaskInitSub4Sub4()
 {
-    unimplemented("dragonFieldTaskInitSub4Sub4");
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    if (gDragonState->mC_dragonType == DR_LEVEL_8_FLOATER)
+    {
+        assert(0);
+    }
+    else
+    {
+        pDragonTask->field_F0 = dragonFieldTaskInitSub4Sub4Sub1;
+    }
+
+    pDragonTask->m104_cameraScriptStatus = 0;
+
+    dragonFieldTaskInitSub4Sub4Sub2();
 }
 
 void dragonFieldTaskInitSub4Sub5(sMatrix4x3* r4, sVec3_FP* r5)
@@ -1225,7 +1287,18 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
         {
             return;
         }
-        assert(0);
+        getFieldCameraStatus()->m88 = 30;
+        r4->m1E8_cameraScriptDelay = 30;
+        updateCameraScriptSub1(getFieldTaskPtr()->m8_pSubFieldData->m334->field_50E);
+        r4->m104_cameraScriptStatus++;
+        break;
+    case 2:
+        if (--r4->m1E8_cameraScriptDelay)
+        {
+            return;
+        }
+        r4->m1D0_cameraScript = NULL;
+        dragonFieldTaskInitSub4Sub4();
         break;
     default:
         assert(0);
@@ -1407,7 +1480,7 @@ void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonSt
                 assert(0);
             }
 
-            if (r5->m28_dragon3dModel.m16 == 0)
+            if (r5->m28_dragon3dModel.m16)
             {
                 return;
             }
@@ -1562,6 +1635,15 @@ void dragonFieldTaskUpdateSub5Sub1(s_fieldOverlaySubTaskWorkArea* r4, s_dragonTa
     }
 }
 
+s32 dragonFieldTaskUpdateSub5Sub3Sub0(sVec3_FP* r4, sVec3_FP* r5)
+{
+    s32 r0 = ((s64)((*r5)[0] - (*r4)[0]) * ((*r5)[0] - (*r4)[0])) >> 16;
+    s32 r2 = ((s64)((*r5)[1] - (*r4)[1]) * ((*r5)[1] - (*r4)[1])) >> 16;
+    s32 r4_ = ((s64)((*r5)[2] - (*r4)[2]) * ((*r5)[2] - (*r4)[2])) >> 16;
+    
+    return sqrt_F(r0 + r2 + r4_);
+}
+
 void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -1576,8 +1658,24 @@ void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4)
     default:
         if (pDragonTask->m1D0_cameraScript)
         {
-            //pDragonTask->m8_pos
-            assert(0);
+            sVec3_FP r15_8 = pDragonTask->m8_pos - pDragonTask->m1D0_cameraScript->m24_pos2;
+            u32 r15[2];
+
+            generateCameraMatrixSub1(r15_8, r15);
+
+            r4->mC_rotation[0] = r15[0];
+            r4->mC_rotation[1] = r15[1];
+
+            r4->m24 = dragonFieldTaskUpdateSub5Sub3Sub0(&pDragonTask->m1D0_cameraScript->m24_pos2, &pDragonTask->m8_pos);
+
+            if (r4->m24 < pDragonTask->m1D0_cameraScript->m30)
+            {
+                r4->m0_position = pDragonTask->m1D0_cameraScript->m24_pos2;
+            }
+            else
+            {
+                assert(0);
+            }
         }
         else
         {
@@ -1671,13 +1769,15 @@ void dragonFieldTaskUpdate(s_workArea* pWorkArea)
         }
         else
         {
-            dragonFieldTaskInitSub3Sub2(&gDragonState->m28_dragon3dModel);
-            dragonFieldTaskInitSub3Sub2(&pRiderState->m18_3dModel);
-            if (mainGameState.gameStats.m3_rider2)
-            {
-                dragonFieldTaskInitSub3Sub2(&pRider2State->m18_3dModel);
-            }
+            assert(0); // is this a thing?
         }
+    }
+
+    dragonFieldTaskInitSub3Sub2(&gDragonState->m28_dragon3dModel);
+    dragonFieldTaskInitSub3Sub2(&pRiderState->m18_3dModel);
+    if (mainGameState.gameStats.m3_rider2)
+    {
+        dragonFieldTaskInitSub3Sub2(&pRider2State->m18_3dModel);
     }
 
     dragonFieldAnimationUpdate(pTypedWorkArea, gDragonState);

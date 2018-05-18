@@ -202,7 +202,7 @@ void generateCameraMatrixSub1(sVec3_FP& r4, u32(&r5)[2])
         }
         else
         {
-            r5[2] = atan2_FP(-r4[1], -r0);
+            r5[0] = -atan2_FP(-r4[1], r0);
         }
 
         r5[1] = atan2_FP(-r4[0], -r4[2]);

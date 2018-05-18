@@ -141,6 +141,7 @@ struct s_cameraScript
     fixedPoint m1C;
     s32 m20;
     sVec3_FP m24_pos2;
+    s32 m30;
 };
 
 struct s_dragonTaskWorkArea : s_workArea

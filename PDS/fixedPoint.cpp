@@ -115,6 +115,7 @@ s32 atan2(s32 y, s32 x)
 }
 
 // this is atan2
+// see https://www.dsprelated.com/showarticle/1052.php
 s32 atan2_FP(s32 y, s32 x)
 {
     if (x)
@@ -128,28 +129,35 @@ s32 atan2_FP(s32 y, s32 x)
             }
             else if (y >= 0)
             {
-                return (atanTable[z] + 0x800) << 16;
+                return (atanTable[z] << 16) + 0x8000000;
             }
             else
             {
-                assert(0);
-                return (atanTable[z] - 0x800) << 16;
+                return (atanTable[z] << 16) - 0x8000000;
             }
         }
         else
         {
-            assert(0);
+            s32 z = x / y;
+            if (y > 0)
+            {
+                return (-atanTable[z] << 16) + 0x4000000;
+            }
+            else
+            {
+                return (-atanTable[z] << 16) - 0x4000000;
+            }
         }
     }
     if (y)
     {
         if (y >= 0)
         {
-            return 0x400 << 16; //90
+            return 0x4000000; //90
         }
         else
         {
-            return 0xC00 << 16; //270
+            return 0xC000000; //270
         }
     }
 
