@@ -503,4 +503,11 @@ void scaleCurrentMatrixRow2(s32 r4)
     unimplemented("scaleCurrentMatrixRow2");
 }
 
+fixedPoint vecDistance(const sVec3_FP& r4, const sVec3_FP& r5)
+{
+    s32 x = ((s64)(r5[0] - r4[0]) * (r5[0] - r4[0])) >> 16;
+    s32 y = ((s64)(r5[1] - r4[1]) * (r5[1] - r4[1])) >> 16;
+    s32 z = ((s64)(r5[2] - r4[2]) * (r5[2] - r4[2])) >> 16;
 
+    return sqrt_F(x + y + z);
+}

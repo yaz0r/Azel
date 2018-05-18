@@ -21,7 +21,7 @@ struct sFieldCameraStatus
     sVec3_FP m0_position;
     sVec3_FP mC_rotation;
     s32 m18;
-    s32 m24;
+    s32 m24_distanceToDestination;
     s32 m28;
     s32 m2C;
     s32 m30;
@@ -77,4 +77,6 @@ void multiplyCurrentMatrixSaveStack(sMatrix4x3* arg4);
 void scaleCurrentMatrixRow0(s32 r4);
 void scaleCurrentMatrixRow1(s32 r4);
 void scaleCurrentMatrixRow2(s32 r4);
+
+fixedPoint vecDistance(const sVec3_FP& r4, const sVec3_FP& r5);
 

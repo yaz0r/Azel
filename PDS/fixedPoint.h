@@ -63,6 +63,7 @@ public:
     }
 };
 
+fixedPoint MTH_Mul_5_6(fixedPoint a, fixedPoint b, fixedPoint c);
 fixedPoint MTH_Mul(fixedPoint a, fixedPoint b);
 s64 MUL_FP(fixedPoint& A, fixedPoint& B);
 

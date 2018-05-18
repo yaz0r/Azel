@@ -734,7 +734,7 @@ void fieldOverlaySubTaskInitSub1Sub0(sFieldCameraStatus* r4)
     r4->mC_rotation[1] = 0;
     r4->mC_rotation[2] = 0;
     r4->m18 = 0;
-    r4->m24 = 0xF000;
+    r4->m24_distanceToDestination = 0xF000;
     r4->m28 = 0;
     r4->m2C = 0;
     r4->m30 = 0;
@@ -1241,7 +1241,14 @@ void updateCameraScriptSub0Sub2(s_dragonTaskWorkArea* r4)
     r2 >>= 1;
     if (r4->m154 > r2)
     {
-        assert(0);
+        if (r4->field_23A == 0)
+            return;
+        if (r4->field_23A == 2)
+            return;
+
+        r4->field_238 = 4;
+        r4->field_237 = 4;
+        r4->m244 = 0;
     }
     else
     {
@@ -1453,7 +1460,9 @@ void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonSt
         switch (pTypedWorkArea->field_23C & 3)
         {
         case 1:
-            assert(0);
+            dragonFieldPlayAnimation(pTypedWorkArea, r5, pTypedWorkArea->m244);
+            pTypedWorkArea->field_23C &= ~1;
+            break;
         case 2:
             assert(0);
         default:
@@ -1472,9 +1481,17 @@ void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonSt
         {
             if (pTypedWorkArea->field_238 & 4)
             {
-                assert(0);
+                if (dragonFieldAnimationUpdateSub1(pTypedWorkArea) <= 0)
+                {
+                    pTypedWorkArea->field_238 &= 0xFFFFFFFB;
+                    if (pTypedWorkArea->m154 > 0xDDD)
+                    {
+                        dragonFieldPlayAnimation(pTypedWorkArea, r5, getDragonFieldAnimation(pTypedWorkArea));
+                        return;
+                    }
+                }
             }
-
+            else
             if (dragonFieldAnimationUpdateSub1(pTypedWorkArea) > 0)
             {
                 assert(0);
@@ -1635,15 +1652,6 @@ void dragonFieldTaskUpdateSub5Sub1(s_fieldOverlaySubTaskWorkArea* r4, s_dragonTa
     }
 }
 
-s32 dragonFieldTaskUpdateSub5Sub3Sub0(sVec3_FP* r4, sVec3_FP* r5)
-{
-    s32 r0 = ((s64)((*r5)[0] - (*r4)[0]) * ((*r5)[0] - (*r4)[0])) >> 16;
-    s32 r2 = ((s64)((*r5)[1] - (*r4)[1]) * ((*r5)[1] - (*r4)[1])) >> 16;
-    s32 r4_ = ((s64)((*r5)[2] - (*r4)[2]) * ((*r5)[2] - (*r4)[2])) >> 16;
-    
-    return sqrt_F(r0 + r2 + r4_);
-}
-
 void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -1666,15 +1674,23 @@ void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4)
             r4->mC_rotation[0] = r15[0];
             r4->mC_rotation[1] = r15[1];
 
-            r4->m24 = dragonFieldTaskUpdateSub5Sub3Sub0(&pDragonTask->m1D0_cameraScript->m24_pos2, &pDragonTask->m8_pos);
+            r4->m24_distanceToDestination = vecDistance(pDragonTask->m1D0_cameraScript->m24_pos2, pDragonTask->m8_pos);
 
-            if (r4->m24 < pDragonTask->m1D0_cameraScript->m30)
+            if (r4->m24_distanceToDestination < pDragonTask->m1D0_cameraScript->m30_thresholdDistance)
             {
                 r4->m0_position = pDragonTask->m1D0_cameraScript->m24_pos2;
             }
             else
             {
-                assert(0);
+                r4->m24_distanceToDestination = pDragonTask->m1D0_cameraScript->m30_thresholdDistance;
+
+                fixedPoint var20 = -MTH_Mul_5_6(pDragonTask->m1D0_cameraScript->m30_thresholdDistance, getCos(r4->mC_rotation[0].getInteger() & 0xFFF), getSin(r4->mC_rotation[1].getInteger() & 0xFFF));
+                fixedPoint var1C = MTH_Mul(r4->m24_distanceToDestination, getSin(r4->mC_rotation[0].getInteger() & 0xFFF));
+                fixedPoint var18 = -MTH_Mul_5_6(pDragonTask->m1D0_cameraScript->m30_thresholdDistance, getCos(r4->mC_rotation[0].getInteger() & 0xFFF), getCos(r4->mC_rotation[1].getInteger() & 0xFFF));
+
+                r4->m0_position[0] = pDragonTask->m8_pos[0] - var20;
+                r4->m0_position[1] = pDragonTask->m8_pos[1] - var1C;
+                r4->m0_position[2] = pDragonTask->m8_pos[2] - var18;
             }
         }
         else
@@ -1766,10 +1782,6 @@ void dragonFieldTaskUpdate(s_workArea* pWorkArea)
         if (gDragonState->mC_dragonType == DR_LEVEL_8_FLOATER)
         {
             assert(0);
-        }
-        else
-        {
-            assert(0); // is this a thing?
         }
     }
 

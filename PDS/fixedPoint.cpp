@@ -62,6 +62,11 @@ s64 MUL_FP(fixedPoint& A, fixedPoint& B)
     return (s64)A.asS32() * (s64)B.asS32();
 }
 
+fixedPoint MTH_Mul_5_6(fixedPoint a, fixedPoint b, fixedPoint c)
+{
+    return MTH_Mul(a, MTH_Mul(b, c));
+}
+
 fixedPoint MTH_Mul(fixedPoint a, fixedPoint b)
 {
     return fixedPoint(((s64)a.asS32() * (s64)b.asS32()) >> 16);

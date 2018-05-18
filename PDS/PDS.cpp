@@ -85,7 +85,7 @@ fixedPoint sqrt_F(fixedPoint r4fp)
                 r1 >>= 2;
             } while (--i);
 
-            return fixedPoint::fromS32(r0 >> 16);
+            return fixedPoint::fromS32(r0 << 16);
         }
 
         r1 >>= 2;
