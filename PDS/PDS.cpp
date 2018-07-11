@@ -68,24 +68,22 @@ fixedPoint sqrt_F(fixedPoint r4fp)
             r4 -= r1;
 
             s32 r0 = r1;
-            r1 >>= 2;
 
             do
             {
+                r1 >>= 2;
                 s32 r2 = r0 + r1;
 
                 r0 >>= 1;
 
-                if (r4 > r2)
+                if (r4 >= r2)
                 {
                     r4 -= r2;
                     r0 += r1;
                 }
-
-                r1 >>= 2;
             } while (--i);
 
-            return fixedPoint::fromS32(r0 << 16);
+            return fixedPoint::fromS32(r0 << 8);
         }
 
         r1 >>= 2;
@@ -107,21 +105,20 @@ s32 sqrt_I(s32 r4)
             r4 -= r1;
 
             s32 r0 = r1;
-            r1 >>= 2;
-
+           
             do 
             {
+                r1 >>= 2;
                 s32 r2 = r0 + r1;
 
                 r0 >>= 1;
 
-                if (r4 > r2)
+                if (r4 >= r2)
                 {
                     r4 -= r2;
                     r0 += r1;
                 }
 
-                r1 >>= 2;
             } while (--i);
 
             return r0;

@@ -158,13 +158,16 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 mB8;
     sVec3_FP* mBC;
 
-    u32 field_C0;
-    u32 field_C4;
+    fixedPoint field_C0;
+    fixedPoint field_C4;
     u8 field_C8[3];
     u8 field_CB[3];
     u8 field_CE[3];
     u8 field_D1[3];
     u8 field_D4[3];
+
+    u8 m_EB;
+    u8 m_EC;
 
     void(*field_F0)(s_dragonTaskWorkArea*); //F0
     void(*mF4)();
@@ -225,15 +228,15 @@ struct s_grid1
 {
     sSaturnPtr m0;
     sVec3_FP m4;
-    s16 m10;
-    s16 m12;
-    s16 m14;
-    s16 m18;
+    s16 m10[3];
+    s16 m16;
     // size 18
 };
 
 struct s_grid2
 {
+    sSaturnPtr m0;
+    sVec3_FP m4;
     // size 10
 };
 
@@ -270,6 +273,13 @@ struct sCameraVisibility
     u8 field_1;
 };
 
+struct s_visibilityGridWorkArea_68
+{
+    u8* m0;
+    sMatrix4x3 m4;
+    u32 m34;
+};
+
 struct s_visibilityGridWorkArea : public s_workArea
 {
     sVec3_FP m0_position; // 0
@@ -280,13 +290,13 @@ struct s_visibilityGridWorkArea : public s_workArea
     u32 field_20;
     s32 field_24;
     u32 field_28;
-    u8* field_2C;
+    fixedPoint* m2C_depthRangeTable;
     s_DataTable3* field_30; // 30
     sCameraVisibility** m34_cameraVisibilityTable; // field_34
     p_workArea field_38; // 38
     s_visdibilityCellTask** m3C_cellRenderingTasks; // 3C (an array of tasks)
-    u32* m44;
-    u32 m68[1]; // not sure what that is yet, an array of LCS stuff?
+    s_visibilityGridWorkArea_68* m44;
+    s_visibilityGridWorkArea_68 m68[24]; // size highly unsure.
     u32 m128C_vdp2VramOffset2;
     u32 m1290_vdp2VramOffset;
     sVec3_FP m12AC;
@@ -294,7 +304,9 @@ struct s_visibilityGridWorkArea : public s_workArea
     sVec3_FP m12C4;
     sVec3_FP m12D0;
     s32 m12DC;
-    u16 m12E0[3];
+    u16 m12E0;
+    u16 m12E2;
+    u16 m12E4;
     u16 m12F0;
     u16 m12F2_renderMode; // 12F2
     u8 updateVisibleCells;

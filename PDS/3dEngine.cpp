@@ -130,8 +130,8 @@ void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6
 
     resetMatrixStack();
 
-    rotateCurrentMatrixZ(-r4->m_rotation[0]);
-    rotateCurrentMatrixX(-r4->m_rotation[2]);
+    rotateCurrentMatrixZ(-r4->m_rotation[2]);
+    rotateCurrentMatrixX(-r4->m_rotation[0]);
     copyMatrix(pCurrentMatrix, &r4->field_88);
     rotateCurrentMatrixY(-r4->m_rotation[1]);
     translateCurrentMatrix(&translation);
@@ -486,6 +486,13 @@ void rotateMatrixZYX(sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
     rotateMatrixZ((*rotationVec)[2].getInteger(), pMatrix);
     rotateMatrixY((*rotationVec)[1].getInteger(), pMatrix);
     rotateMatrixX((*rotationVec)[0].getInteger(), pMatrix);
+}
+
+void rotateMatrixZYX_s16(s16* rotationVec, sMatrix4x3* pMatrix)
+{
+    rotateMatrixZ(rotationVec[2], pMatrix);
+    rotateMatrixY(rotationVec[1], pMatrix);
+    rotateMatrixX(rotationVec[0], pMatrix);
 }
 
 void scaleCurrentMatrixRow0(s32 r4)

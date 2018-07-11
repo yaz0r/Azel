@@ -24,9 +24,9 @@ fixedPoint FP_Div(s32 divident, fixedPoint divisor)
 fixedPoint dot3_FP(sVec3_FP* r4, sVec3_FP* r5)
 {
     s64 acc = 0;
-    acc += (*r4)[0] * (*r5)[0];
-    acc += (*r4)[1] * (*r5)[1];
-    acc += (*r4)[2] * (*r5)[2];
+    acc += (*r4)[0] * (s64)(*r5)[0];
+    acc += (*r4)[1] * (s64)(*r5)[1];
+    acc += (*r4)[2] * (s64)(*r5)[2];
 
     return (s32)(acc >> 16);
 }
@@ -84,19 +84,19 @@ s32 atan2(s32 y, s32 x)
     {
         if (abs(x) > abs(y))
         {
-            s32 z = y / x;
+            s32 z = ((float)abs(y) / (float)abs(x)) * 2048;
             if (x > 0)
             {
-                return atanTable[z];
+                return atanTable[z & 0x7FF];
             }
             else if (y >= 0)
             {
-                return (atanTable[z] + 0x800);
+                return (atanTable[z & 0x7FF] + 0x800);
             }
             else
             {
                 assert(0);
-                return (atanTable[z] - 0x800);
+                return (atanTable[z & 0x7FF] - 0x800);
             }
         }
         else
@@ -127,30 +127,30 @@ s32 atan2_FP(s32 y, s32 x)
     {
         if (abs(x) > abs(y))
         {
-            s32 z = y / x;
+            s32 z = ((float)abs(y) / (float)abs(x)) * 2048;
             if (x > 0)
             {
-                return atanTable[z] << 16;
+                return atanTable[z & 0x7FF] << 16;
             }
             else if (y >= 0)
             {
-                return (atanTable[z] << 16) + 0x8000000;
+                return (atanTable[z & 0x7FF] << 16) + 0x8000000;
             }
             else
             {
-                return (atanTable[z] << 16) - 0x8000000;
+                return (atanTable[z & 0x7FF] << 16) - 0x8000000;
             }
         }
         else
         {
-            s32 z = x / y;
+            s32 z = ((float)abs(x) / (float)abs(y)) * 2048;
             if (y > 0)
             {
-                return (-atanTable[z] << 16) + 0x4000000;
+                return (-atanTable[z & 0x7FF] << 16) + 0x4000000;
             }
             else
             {
-                return (-atanTable[z] << 16) - 0x4000000;
+                return (-atanTable[z & 0x7FF] << 16) - 0x4000000;
             }
         }
     }

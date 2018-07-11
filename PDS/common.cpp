@@ -710,6 +710,15 @@ s16 readSaturnS16(sSaturnPtr& ptr)
     return READ_BE_S16(pFile->m_data + offsetInFile);
 }
 
+u16 readSaturnU16(sSaturnPtr& ptr)
+{
+    sSaturnMemoryFile* pFile = ptr.m_file;
+    u32 offsetInFile = ptr.m_offset - pFile->m_base;
+    assert(offsetInFile + 2 <= pFile->m_dataSize);
+
+    return READ_BE_U16(pFile->m_data + offsetInFile);
+}
+
 s32 readSaturnS32(sSaturnPtr& ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;

@@ -228,6 +228,89 @@ void gridCellDraw_collision(p_workArea)
     assert(0);
 }
 
+u32 gridCellDraw_GetDepthRange(fixedPoint r4)
+{
+    s_visibilityGridWorkArea* r5 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+    u32 rangeIndex = 0;
+
+    while (r4 > r5->m2C_depthRangeTable[rangeIndex])
+    {
+        rangeIndex++;
+    }
+
+    return rangeIndex;
+}
+
+void allocateLCSEntry(s_visibilityGridWorkArea* r4, u8* r5, u32 r6)
+{
+    r4->m12E4++;
+
+    if (r4->m12E4 >= 24)
+    {
+        return;
+    }
+
+    r4->m44[0].m0 = r5;
+    r4->m44[1].m34 = r6;
+    r4->m44++;
+}
+
+u8 gridCellDraw_normalSub0(u8* r4, sVec3_FP& r5)
+{
+    s_visibilityGridWorkArea* var_1C = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+    sVec3_FP DragonPos = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
+
+    sVec3_FP dist;
+
+    {
+        fixedPoint XDist = r5[0] - DragonPos[0];
+        if (XDist >= 0)
+        {
+            dist[0] = XDist;
+        }
+        else
+        {
+            dist[0] = DragonPos[0] - r5[0];
+        }
+    }
+
+    {
+        fixedPoint YDist = r5[1] - DragonPos[1];
+        if (YDist >= 0)
+        {
+            dist[1] = YDist;
+        }
+        else
+        {
+            dist[1] = DragonPos[1] - r5[1];
+        }
+    }
+
+    {
+        fixedPoint ZDist = r5[2] - DragonPos[2];
+        if (ZDist >= 0)
+        {
+            dist[2] = ZDist;
+        }
+        else
+        {
+            dist[2] = DragonPos[1] - r5[2];
+        }
+    }
+
+    s32 distanceThreshold = READ_BE_U32(r4) + +0x8000;
+    if (dist[0] > distanceThreshold)
+        return 0;
+    if (dist[1] > distanceThreshold)
+        return 0;
+    if (dist[2] > distanceThreshold)
+        return 0;
+
+    allocateLCSEntry(var_1C, r4, 0x10000);
+
+    return 1;
+}
+
 void gridCellDraw_normal(p_workArea workArea)
 {
     s_visdibilityCellTask* pTypedWorkAread = static_cast<s_visdibilityCellTask*>(workArea);
@@ -239,9 +322,9 @@ void gridCellDraw_normal(p_workArea workArea)
     if (pTypedWorkAread->m8_pEnvironmentCell)
     {
         s_grid1* r14 = pTypedWorkAread->m8_pEnvironmentCell;
-        while (r14)
+        while (r14->m0.m_offset)
         {
-            r13->m12E0[0]++;
+            r13->m12E0++;
 
             s16 r2 = readSaturnS16(r14->m0);
             u32 r1 = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.mainMemory + r2);
@@ -249,19 +332,40 @@ void gridCellDraw_normal(p_workArea workArea)
 
             if (r13->field_12FC(&r14->m4, r15))
             {
-                r13->m12E0[1]++;
+                u32 var_54 = 0;
+                r13->m12E2++;
 
                 if (readSaturnS16(r14->m0 + 8))
                 {
-                    unimplemented("stuff in gridCellDraw_normal");
+                    u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.mainMemory + readSaturnS16(r14->m0 + 8));
+                    unimplemented("Disabled LCS generation because of crash");
+                    //var_54 = gridCellDraw_normalSub0(pTypedWorkAread->m0_memoryLayout.mainMemory + offset, r14->m4);
                 }
 
                 pushCurrentMatrix();
                 translateCurrentMatrix(&r14->m4);
-                rotateCurrentMatrixZ(r14->m14);
-                rotateCurrentMatrixY(r14->m12);
-                rotateCurrentMatrixY(r14->m10);
-                assert(0);
+                rotateCurrentMatrixZ(r14->m10[2]);
+                rotateCurrentMatrixY(r14->m10[1]);
+                rotateCurrentMatrixX(r14->m10[0]);
+
+                u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
+
+                if (readSaturnS16(r14->m0 + depthRangeIndex * 2))
+                {
+                    u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.mainMemory + readSaturnS16(r14->m0 + depthRangeIndex * 2));
+                    addObjectToDrawList(pTypedWorkAread->m0_memoryLayout.mainMemory, offset);
+                }
+
+                if (var_54)
+                {
+                    sMatrix4x3 var_C;
+                    initMatrixToIdentity(&var_C);
+                    translateMatrix(&r14->m4, &var_C);
+                    rotateMatrixZYX_s16(r14->m10, &var_C);
+                    copyMatrix(&var_C, &r13->m44[-1].m4); // Gross. This was incremented in gridCellDraw_normalSub0
+                }
+
+                popMatrix();
             }
 
             r14++;
@@ -270,7 +374,7 @@ void gridCellDraw_normal(p_workArea workArea)
 
     if (pTypedWorkAread->pCell2)
     {
-        assert(0);
+        //assert(0);
     }
 
     if (pTypedWorkAread->pCell3)
@@ -546,15 +650,30 @@ s_grid1* readEnvironmentGridCell(sSaturnPtr gridCellEA)
 {
     assert(gridCellEA.m_offset);
 
-    s_grid1* pCell = new s_grid1;
-    pCell->m0 = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
-    pCell->m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
-    pCell->m10 = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
-    pCell->m12 = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
-    pCell->m14 = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
-    pCell->m18 = readSaturnS32(gridCellEA); gridCellEA = gridCellEA + 4;
+    // counter number of entries in cell
+    u32 numEntries = 0;
+    while (readSaturnU32(gridCellEA))
+    {
+        gridCellEA = gridCellEA + 0x18;
+        numEntries++;
+    }
+    gridCellEA = gridCellEA + (-0x18 * numEntries);
 
-    return pCell;
+    s_grid1* pCellArray = new s_grid1[numEntries + 1];
+    s_grid1* pCell = pCellArray;
+    for(int i=0; i<numEntries; i++)
+    {
+        pCell->m0 = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
+        pCell->m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
+        pCell->m10[0] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
+        pCell->m10[1] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
+        pCell->m10[2] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
+        pCell->m16 = readSaturnS32(gridCellEA); gridCellEA = gridCellEA + 2;
+        pCell++;
+    }
+    memset(pCell, 0, sizeof(s_grid1));
+
+    return pCellArray;
 }
 
 s_grid1** readEnvironmentGrid(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
@@ -563,6 +682,7 @@ s_grid1** readEnvironmentGrid(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
         return NULL;
 
     s_grid1** pGrid = new s_grid1*[gridWidth*gridHeight];
+    memset(pGrid, 0, sizeof(s_grid1*) * gridWidth*gridHeight);
 
     for (int i = 0; i < gridWidth * gridHeight; i++)
     {
@@ -578,11 +698,52 @@ s_grid1** readEnvironmentGrid(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
     return pGrid;
 }
 
+s_grid2* readGrid2Cell(sSaturnPtr gridCellEA)
+{
+    assert(gridCellEA.m_offset);
+
+    // counter number of entries in cell
+    u32 numEntries = 0;
+    while (readSaturnU32(gridCellEA))
+    {
+        gridCellEA = gridCellEA + 0x10;
+        numEntries++;
+    }
+    gridCellEA = gridCellEA + (-0x10 * numEntries);
+
+    s_grid2* pCellArray = new s_grid2[numEntries + 1];
+    s_grid2* pCell = pCellArray;
+    for (int i = 0; i < numEntries; i++)
+    {
+        pCell->m0 = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
+        pCell->m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
+        pCell++;
+    }
+    memset(pCell, 0, sizeof(s_grid1));
+
+    return pCellArray;
+}
+
 s_grid2** readGrid2(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
 {
-    //assert(gridEA.m_offset == 0);
+    if (gridEA.m_offset == 0)
+        return NULL;
 
-    return NULL;
+    s_grid2** pGrid = new s_grid2*[gridWidth*gridHeight];
+    memset(pGrid, 0, sizeof(s_grid2*) * gridWidth*gridHeight);
+
+    for (int i = 0; i < gridWidth * gridHeight; i++)
+    {
+        pGrid[i] = NULL;
+
+        sSaturnPtr cellEA = readSaturnEA(gridEA); gridEA = gridEA + 4;
+        if (cellEA.m_offset)
+        {
+            pGrid[i] = readGrid2Cell(cellEA);
+        }
+    }
+
+    return pGrid;
 }
 
 s_grid3** readGrid3(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
@@ -1205,7 +1366,7 @@ s32 dragonFieldTaskInitSub4Sub4Sub1Sub0(s_dragonTaskWorkArea* r4)
 
 void dragonFieldTaskInitSub4Sub4Sub1Sub1(s_dragonTaskWorkArea* r4)
 {
-    assert(0);
+    unimplemented("dragonFieldTaskInitSub4Sub4Sub1Sub1");
 }
 
 void dragonFieldTaskInitSub4Sub4Sub1(s_dragonTaskWorkArea* r4)
@@ -1950,7 +2111,27 @@ void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
 {
     updateCameraFromDragon();
 
+    if ((pTypedWorkArea->m_EC & 1) == 0)
+    {
+        if (pTypedWorkArea->m_EB)
+        {
+            assert(false);
+        }
+        else
+        {
+            sVec3_FP varC;
+            varC[0] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->field_C0.getInteger() & 0xFFF), getSin(pTypedWorkArea->field_C4.getInteger() & 0xFFF));
+            varC[1] = MTH_Mul(fixedPoint(0x10000), getSin(pTypedWorkArea->field_C0.getInteger() & 0xFFF));
+            varC[2] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->field_C0.getInteger() & 0xFFF), getSin(pTypedWorkArea->field_C4.getInteger() & 0xFFF));
+
+            sVec3_FP var0;
+            //transformVecByCurrentMatrix(&varC, &var0);
+        }
+
+    }
+
     unimplemented("dragonFieldTaskDrawSub1");
+
 }
 
 void dragonFieldTaskDraw(s_workArea* pWorkArea)
@@ -2060,7 +2241,7 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
         }
     }
 
-    s32 Z = performDivision(pFieldCameraTask1->field_24, pFieldCameraTask1->m0_position[2]);
+    s32 Z = performDivision(pFieldCameraTask1->field_24, -pFieldCameraTask1->m0_position[2]);
     if (pFieldCameraTask1->m0_position[2] < 0)
     {
         Z--;
@@ -2087,7 +2268,13 @@ s32 fieldCameraTask1InitSub2(sVec3_FP* r4, s32 r5)
     return 1;
 }
 
-u8* fieldCameraTask1InitData1 = (u8*)1;
+fixedPoint fieldCameraTask1InitData1_depthRangeTable[] =
+{
+    fixedPoint(0x80000),
+    fixedPoint(0x100000),
+    fixedPoint(0x200000),
+    fixedPoint(0x7FFFFFFF),
+};
 
 void fieldCameraTask1Init(s_workArea* pWorkArea)
 {
@@ -2102,7 +2289,7 @@ void fieldCameraTask1Init(s_workArea* pWorkArea)
     pTypedWorkArea->m18_cameraGridLocation[1] = -1;
     pTypedWorkArea->field_30 = 0;
     pTypedWorkArea->m34_cameraVisibilityTable = 0;
-    pTypedWorkArea->field_2C = fieldCameraTask1InitData1;
+    pTypedWorkArea->m2C_depthRangeTable = fieldCameraTask1InitData1_depthRangeTable;
     pTypedWorkArea->field_1300 = 3;
 }
 
@@ -2166,9 +2353,9 @@ void fieldCameraTask1Draw(s_workArea* pWorkArea)
         assert(0);
     }
 
-    pTypedWorkArea->m12E0[0] = 0;
-    pTypedWorkArea->m12E0[1] = 0;
-    pTypedWorkArea->m12E0[2] = 0;
+    pTypedWorkArea->m12E0 = 0;
+    pTypedWorkArea->m12E2 = 0;
+    pTypedWorkArea->m12E4 = 0;
 
     pTypedWorkArea->m12F0 = 0;
 }
@@ -2185,7 +2372,7 @@ void LCSTaskInit(p_workArea pWorkArea)
     setVdp2VramU32(r4->m128C_vdp2VramOffset2, 0xFFFFFFFF);
 
     r4->m44 = r4->m68;
-    r4->m68[0] = 0;
+    r4->m68[0].m0 = 0;
 }
 
 void LCSTaskDrawSub1(s_LCSTask* r4)

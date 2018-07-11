@@ -71,6 +71,7 @@ void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix);
 void translateCurrentMatrix(sVec3_FP* translation);
 void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
 void rotateMatrixZYX(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
+void rotateMatrixZYX_s16(s16* rotationVec, sMatrix4x3* pMatrix);
 void multiplyCurrentMatrix(sMatrix4x3* arg4);
 void multiplyCurrentMatrixSaveStack(sMatrix4x3* arg4);
 
