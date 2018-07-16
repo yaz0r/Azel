@@ -1685,10 +1685,10 @@ void copyAnimMatrix(const sDragonAnimDataSubRanges* source, sDragonAnimDataSubRa
 
 void initRuntimeAnimDataSub1(const sDragonAnimDataSub* animDataSub, s_runtimeAnimData* subData)
 {
-    subData->m_vec_0.zero();
+    subData->m0_root.zero();
     subData->m_vec_C.zero();
     subData->m_vec_18.zero();
-    subData->m_vec_24.zero();
+    subData->m24_rootDelta.zero();
 
     copyAnimMatrix(animDataSub->m_data, &subData->m_factors);
 

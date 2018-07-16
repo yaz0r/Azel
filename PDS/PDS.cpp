@@ -590,9 +590,9 @@ void setupDefaultInputConfig(u16* inputDefaultConfig)
 {
     for (int i = 0; i < 16; i++)
     {
-        graphicEngineStatus.m4514.m45EC[0][i] = inputDefaultConfig[i];
-        graphicEngineStatus.m4514.m45EC[1][i] = inputDefaultConfig[i];
-        graphicEngineStatus.m4514.m45EC[2][i] = inputDefaultConfig[i];
+        graphicEngineStatus.m4514.mD8[0][i] = inputDefaultConfig[i];
+        graphicEngineStatus.m4514.mD8[1][i] = inputDefaultConfig[i];
+        graphicEngineStatus.m4514.mD8[2][i] = inputDefaultConfig[i];
     }
 }
 
@@ -600,9 +600,9 @@ void initSMPC()
 {
     //getSPMCStatus();
 
-    graphicEngineStatus.m4514.m464C[0] = 1;
-    graphicEngineStatus.m4514.m464C[1] = 1;
-    graphicEngineStatus.m4514.m464C[2] = 1;
+    graphicEngineStatus.m4514.m138[0] = 1;
+    graphicEngineStatus.m4514.m138[1] = 1;
+    graphicEngineStatus.m4514.m138[2] = 1;
 
     setupDefaultInputConfig(defaultInputConfig);
 }

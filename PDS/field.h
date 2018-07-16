@@ -93,11 +93,14 @@ struct s_scriptData4
 
 struct s_fieldScriptWorkArea : public s_workArea
 {
-    void* pScripts; //0
-
+    void* m0_pScripts; //0
+    u32 m4;
     void* field_8;
     void* field_2C; // dunno what that is yet
 
+    u32 m30;
+    u32 m34;
+    u32 m38;
     u32 m3C;
 
     u32 field_6C;
@@ -175,7 +178,7 @@ struct s_dragonTaskWorkArea : s_workArea
 
     void(*field_F0)(s_dragonTaskWorkArea*); //F0
     void(*mF4)();
-    u32 mF8; // F8 Flags
+    u32 mF8_Flags; // F8 Flags
     u32 field_FC; // FC
     u32 m100;
     u32 m104_dragonScriptStatus;
@@ -189,13 +192,16 @@ struct s_dragonTaskWorkArea : s_workArea
     fixedPoint m14C_pitchMax;
 
     u32 field_150;
-    s32 m154;
+    fixedPoint m154;
 
     s32 m15C;
 
     sVec3_FP m160_deltaTranslation;
 
     fixedPoint field_178[4];
+
+    sVec3_FP m1A0;
+    sVec3_FP m1AC;
 
     u32 field_1B8;
     u32 field_1BC;
@@ -235,6 +241,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 m250;
     u32 m254;
     u32 m258;
+    u8 m25B;
     u8 m25C;
     s8 m25D;
 };

@@ -5,18 +5,18 @@
 class fixedPoint
 {
 private:
-    s32 value;
     //u16 m_integer;
     //u16 m_fractional;
 
 public:
+    s32 m_value;
 
-    fixedPoint() : value(0)
+    fixedPoint() : m_value(0)
     {
 
     }
 
-    fixedPoint(s32 newValue) : value(newValue)
+    fixedPoint(s32 newValue) : m_value(newValue)
     {
 
     }
@@ -24,42 +24,42 @@ public:
     fixedPoint operator - () const
     {
         fixedPoint newFixedPoint;
-        newFixedPoint.value = -value;
+        newFixedPoint.m_value = -m_value;
         return newFixedPoint;
     }
 
     fixedPoint operator += (const fixedPoint& otherValue)
     {
-        value += otherValue.value;
+        m_value += otherValue.m_value;
         return *this;
     }
 
     fixedPoint operator -= (const fixedPoint& otherValue)
     {
-        value -= otherValue.value;
+        m_value -= otherValue.m_value;
         return *this;
     }
 
     s32 asS32()
     {
-        return value;
+        return m_value;
     }
 
     s32 getInteger()
     {
-        return value >> 16;
+        return m_value >> 16;
     }
 
     static fixedPoint fromS32(s32 input)
     {
         fixedPoint value;
-        value.value = input;
+        value.m_value = input;
         return value;
     }
 
     operator s32() const
     {
-        return value;
+        return m_value;
     }
 };
 

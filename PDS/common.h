@@ -323,10 +323,10 @@ struct sDragonAnimDataSubRanges
 
 struct s_runtimeAnimData
 {
-    sVec3_FP m_vec_0; // 0
+    sVec3_FP m0_root; // 0
     sVec3_FP m_vec_C; // C
     sVec3_FP m_vec_18; // 18
-    sVec3_FP m_vec_24; // 24
+    sVec3_FP m24_rootDelta; // 24
 
     sDragonAnimDataSubRanges m_factors; // 30 //6-8 min 9-11 max
     const struct sDragonAnimDataSub* dataSource; // 60
@@ -424,8 +424,8 @@ struct s_graphicEngineStatus_4514_sub
 struct s_graphicEngineStatus_4514
 {
     s_graphicEngineStatus_4514_sub m0[2]; // one per input port
-    u16 m45EC[3][16]; // this is probably supposed to be in the same field that starts at 4514
-    u8 m464C[3];// this is probably supposed to be in the same field that starts at 4514
+    u16 mD8[3][16];
+    u8 m138[3];
 };
 
 struct s_graphicEngineStatus_405C

@@ -983,7 +983,7 @@ s_taskDefinition fieldScriptTaskDefinition = { fieldScriptTaskInit, fieldScriptT
 
 void createFieldScriptTask(s_workArea* pWorkArea)
 {
-    createSubTask(pWorkArea, &fieldScriptTaskDefinition, new s_dummyWorkArea);
+    createSubTask(pWorkArea, &fieldScriptTaskDefinition, new s_fieldScriptWorkArea);
 }
 
 void fieldOverlaySubTaskInitSub2(sFieldCameraStatus*)
@@ -1372,7 +1372,7 @@ void startScriptLeaveArea()
     unimplemented("startScriptLeaveArea");
 }
 
-fixedPoint dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(fixedPoint r4, fixedPoint r5)
+fixedPoint dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(fixedPoint r4, fixedPoint r5, fixedPoint r6, fixedPoint r7, s32 stack0)
 {
     unimplemented("dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1");
 
@@ -1399,7 +1399,7 @@ void computeDragonDeltaTranslation(s_dragonTaskWorkArea* r14)
 
 void dragonFieldTaskInitSub4Sub4Sub2()
 {
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8 &= 0xFFFEFFFF;
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags &= 0xFFFEFFFF;
 }
 
 void updateDragonMovementFromControllerType0Sub1(s_dragonTaskWorkArea* r14)
@@ -1497,20 +1497,26 @@ u32 updateDragonMovementFromControllerType1Sub1(s_dragonTaskWorkArea* r14)
     return 1;
 }
 
-void updateDragonMovementFromControllerType1Sub2Sub1(s3DModelAnimData* r4, fixedPoint r5)
-{
-    r4->m8_runtimeAnimData->m_vec_24[0] += r5;
-}
-
 void updateDragonMovementFromControllerType1Sub2(s_dragonTaskWorkArea* r14, s_dragonState* r12)
 {
-    if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.m45EC[1][5])
+    if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][5]) // down
     {
         updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, r14->field_178[3]);
     }
-    else if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.m45EC[1][4])
+    else if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][4]) // up
     {
         updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, -r14->field_178[3]);
+    }
+
+    if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][7]) // right
+    {
+        updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, r14->field_178[3]);
+        updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, -r14->field_178[3]);
+    }
+    else if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][6]) // left
+    {
+        updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, -r14->field_178[3]);
+        updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, r14->field_178[3]);
     }
 }
 
@@ -1531,6 +1537,239 @@ void updateDragonMovementFromControllerType1(s_dragonTaskWorkArea* r14)
     updateDragonMovementFromControllerType0(r14);
 }
 
+u32 isDragonControlledByScripts()
+{
+    s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x10000)
+    {
+        return 1;
+    }
+
+    if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 & 0xC8)
+    {
+        return 1;
+    }
+
+    if (r14->m4)
+    {
+        return 1;
+    }
+
+    if (r14->m30)
+    {
+        return 1;
+    }
+
+    if (r14->m34)
+    {
+        return 1;
+    }
+
+    if (r14->m38)
+    {
+        return 1;
+    }
+
+    if (r14->m3C)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+u32 isDragonPlayerControlAllowed()
+{
+    s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+
+    if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8)
+    {
+        return 0;
+    }
+
+    if (r14->m4)
+    {
+        return 0;
+    }
+
+    if (r14->m30)
+    {
+        return 0;
+    }
+
+    if (r14->m34)
+    {
+        return 0;
+    }
+
+    if (r14->m38)
+    {
+        return 0;
+    }
+
+    if (r14->m3C)
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
+void clearDragonPlayerInputs()
+{
+    unimplemented("integrateDragonMovementSub2");
+}
+
+u32 integrateDragonMovementSub4Sub3()
+{
+    u32 T = !mainGameState.getBit(0x2A, 6);
+    return T ^ 1;
+}
+
+u32 integrateDragonMovementSub4Sub2()
+{
+    u32 T = !mainGameState.getBit(0x2A, 7);
+    return T ^ 1;
+}
+
+void integrateDragonMovementSub4Sub1(s_dragonTaskWorkArea* r4)
+{
+    if (r4->m25C & 1)
+    {
+        r4->m25C = 0;
+        r4->m25B = 0;
+        r4->m20_angle[2] = 0;
+    }
+}
+
+void integrateDragonMovementSub4(s_dragonTaskWorkArea* r14)
+{
+    if (r14->m25C & 0x1)
+    {
+        assert(0);
+    }
+
+    if ((r14->m25C & 0x2) == 0)
+    {
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][11])
+        {
+            if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][0])
+            {
+                r14->field_235 = -1;
+            }
+            else
+            {
+                //0607E910
+                assert(0);
+            }
+        }
+    }
+
+    r14->m25C |= 2;
+
+    if (integrateDragonMovementSub4Sub2())
+    {
+        assert(0);
+    }
+
+    u8 r5;
+    if (r14->m25C & 4)
+    {
+        r5 = 4;
+    }
+    else
+    {
+        r5 = 3;
+    }
+
+    if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][0])
+    {
+        //0607E960
+        assert(0);
+    }
+    else
+    {
+        integrateDragonMovementSub4Sub1(r14);
+    }
+
+    if (integrateDragonMovementSub4Sub3())
+    {
+        //0607E9AE
+        assert(0);
+    }
+}
+
+void integrateDragonMovement(s_dragonTaskWorkArea* r14)
+{
+    getFieldTaskPtr()->m28_status &= 0xFFFEFFFF;
+
+    dragonFieldTaskInitSub4Sub5(&r14->m48, &r14->m20_angle);
+    copyMatrix(&r14->m48.m0_matrix, &r14->m88_matrix);
+
+    if (isDragonControlledByScripts())
+    {
+        clearDragonPlayerInputs();
+    }
+
+    if (isDragonPlayerControlAllowed())
+    {
+        if ((r14->mF8_Flags & 0x10000) == 0)
+        {
+            integrateDragonMovementSub4(r14);
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+
+    // 607FF02
+    r14->m154 += r14->m15C;
+
+    // speed up?
+    if (keyboardIsKeyDown(0xA9))
+    {
+        r14->m154.m_value *= 4;
+    }
+
+    fixedPoint r2 = r14->m154;
+    if (r14->m154 >= 0)
+    {
+        if (r14->m154 < 0x7000)
+        {
+            r2 = r14->m154;
+        }
+        else
+        {
+            r2 = 0x7000;
+        }
+    }
+    else
+    {
+        if (r14->m154 >= -0x7000)
+        {
+            r2 = r14->m154;
+        }
+        else
+        {
+            r2 = -0x7000;
+        }
+    }
+    r14->m154 = r2;
+
+    r14->m1AC[0] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m1AC[0], 0, 0x2000, 0x444444, 0x10);
+    r14->m1AC[1] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m1AC[1], 0, 0x2000, 0x444444, 0x10);
+    r14->m1AC[2] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m1AC[2], 0, 0x2000, 0x444444, 0x10);
+    
+    r14->m1AC += r14->m1A0;
+
+    r14->m20_angle += r14->m1AC;
+
+
+    // ~0607FFEC 
+    unimplemented("integrateDragonMovement");
+}
+
 void updateDragonMovement(s_dragonTaskWorkArea* r4)
 {
     r4->m24A_runningCameraScript = 0;
@@ -1540,7 +1779,7 @@ void updateDragonMovement(s_dragonTaskWorkArea* r4)
     case 0:
         r4->m154 = 0;
         getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 &= 0xFFFFFFFE;
-        r4->mF8 |= 0x400;
+        r4->mF8_Flags |= 0x400;
         r4->m104_dragonScriptStatus++;
     case 1:
         if (!isDragonInValidArea(r4))
@@ -1568,6 +1807,8 @@ void updateDragonMovement(s_dragonTaskWorkArea* r4)
     default:
         assert(0);
     }
+
+    integrateDragonMovement(r4);
 }
 
 void dragonFieldTaskInitSub4Sub4()
@@ -1648,7 +1889,7 @@ void dragonLeaveArea(s_dragonTaskWorkArea* r14)
     r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, (tempRotX << 4) - tempRotX) - r14->m20_angle[0];
 
     // update pitch
-    r14->m20_angle[1] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m20_angle[1], var_8[1]);
+    r14->m20_angle[1] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m20_angle[1], var_8[0], 0x2000, 0x444444, 0x10);
 
     // update roll
     s32 tempRotZ = r14->m3C[2] - r14->m20_angle[2];
@@ -1898,8 +2139,8 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
     case 0:
         updateCameraScriptSub0(r4->mB8);
         updateCameraScriptSub1(0);
-        r4->mF8 &= 0xFFFFFBFF;
-        r4->mF8 |= 0x20000;
+        r4->mF8_Flags &= 0xFFFFFBFF;
+        r4->mF8_Flags |= 0x20000;
         r4->m1E8_cameraScriptDelay = r5->m20;
         r4->m20_angle = r5->mC_rotation;
         r4->m8_pos = r5->m0_position;
@@ -2011,7 +2252,7 @@ void dragonFieldTaskUpdateSub1Sub1()
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
 
-    if (pDragonTask->mF8 & 0x400)
+    if (pDragonTask->mF8_Flags & 0x400)
         return;
 
     if (!pDragonTask->m249)
@@ -2044,7 +2285,7 @@ void dragonFieldTaskUpdateSub2(u32 r4)
 
 s32 dragonFieldAnimationUpdateSub1(s_dragonTaskWorkArea* pTypedWorkArea)
 {
-    if (pTypedWorkArea->mF8 & 0x20000)
+    if (pTypedWorkArea->mF8_Flags & 0x20000)
     {
         s32 r0 = pTypedWorkArea->m154;
         s32 r1 = pTypedWorkArea->field_21C[0] + pTypedWorkArea->field_21C[1];
@@ -3012,7 +3253,7 @@ p_workArea overlayStart(p_workArea workArea, u32 arg)
     graphicEngineStatus.field_4090 = graphicEngineStatus.field_4094 << 8;
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->field_50E = 1;
-    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->pScripts = FLD_A3_Scripts;
+    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = FLD_A3_Scripts;
 
     switch (getFieldTaskPtr()->m2C_currentFieldIndex)
     {

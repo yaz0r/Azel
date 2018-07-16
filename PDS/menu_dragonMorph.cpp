@@ -94,11 +94,26 @@ void dragonMenuDragonInitSub3(s3DModelAnimData* pDragonStateData2)
 {
     for (int i = 0; i < pDragonStateData2->countAnims; i++)
     {
-        pDragonStateData2->m8_runtimeAnimData[i].m_vec_0.zero();
+        pDragonStateData2->m8_runtimeAnimData[i].m0_root.zero();
         pDragonStateData2->m8_runtimeAnimData[i].m_vec_C.zero();
         pDragonStateData2->m8_runtimeAnimData[i].m_vec_18.zero();
-        pDragonStateData2->m8_runtimeAnimData[i].m_vec_24.zero();
+        pDragonStateData2->m8_runtimeAnimData[i].m24_rootDelta.zero();
     }
+}
+
+void updateDragonMovementFromControllerType1Sub2Sub1(s3DModelAnimData* r4, fixedPoint r5)
+{
+    r4->m8_runtimeAnimData->m24_rootDelta[0] += r5;
+}
+
+void updateDragonMovementFromControllerType1Sub2Sub2(s3DModelAnimData* r4, fixedPoint r5)
+{
+    r4->m8_runtimeAnimData->m24_rootDelta[1] += r5;
+}
+
+void updateDragonMovementFromControllerType1Sub2Sub3(s3DModelAnimData* r4, fixedPoint r5)
+{
+    r4->m8_runtimeAnimData->m24_rootDelta[2] += r5;
 }
 
 void setupVdp1LocalCoordinatesAndClipping()
@@ -418,14 +433,14 @@ void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
 
 void updateAnimationMatricesSub2Sub1(s_runtimeAnimData* r4, sVec3_FP& r5, sVec3_FP& r6)
 {
-    r4->m_vec_0.m_value[0] = MTH_Mul(r4->m_factors.m_vec0[0], r6.m_value[0] - r5.m_value[0]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[0], r4->m_vec_C.m_value[0]);
-    r4->m_vec_0.m_value[1] = MTH_Mul(r4->m_factors.m_vec0[1], r6.m_value[1] - r5.m_value[1]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[1], r4->m_vec_C.m_value[1]);
-    r4->m_vec_0.m_value[2] = MTH_Mul(r4->m_factors.m_vec0[2], r6.m_value[2] - r5.m_value[2]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[2], r4->m_vec_C.m_value[2]);
+    r4->m0_root.m_value[0] = MTH_Mul(r4->m_factors.m_vec0[0], r6.m_value[0] - r5.m_value[0]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[0], r4->m_vec_C.m_value[0]);
+    r4->m0_root.m_value[1] = MTH_Mul(r4->m_factors.m_vec0[1], r6.m_value[1] - r5.m_value[1]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[1], r4->m_vec_C.m_value[1]);
+    r4->m0_root.m_value[2] = MTH_Mul(r4->m_factors.m_vec0[2], r6.m_value[2] - r5.m_value[2]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[2], r4->m_vec_C.m_value[2]);
 }
 
 void updateAnimationMatricesSub2Sub2(s_runtimeAnimData* r4)
 {
-    r4->m_vec_C += r4->m_vec_0;
+    r4->m_vec_C += r4->m0_root;
 }
 
 void updateAnimationMatricesSub2Sub3(s_runtimeAnimData* r4)
@@ -510,14 +525,14 @@ void updateAnimationMatricesSub2(s3DModelAnimData* r4)
 
     updateAnimationMatricesSub2Sub1(r14, r14->m_vec_18, updateAnimationMatricesSub2Vec);
 
-    r14->m_vec_0 += r14->m_vec_24;
+    r14->m0_root += r14->m24_rootDelta;
 
     updateAnimationMatricesSub2Sub2(r14);
     updateAnimationMatricesSub2Sub3(r14);
 
-    r14->m_vec_24[0] = 0;
-    r14->m_vec_24[1] = 0;
-    r14->m_vec_24[2] = 0;
+    r14->m24_rootDelta[0] = 0;
+    r14->m24_rootDelta[1] = 0;
+    r14->m24_rootDelta[2] = 0;
 }
 
 void updateAnimationMatricesSub3(s3DModelAnimData* r4)

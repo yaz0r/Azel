@@ -192,3 +192,5 @@ void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex)
     pOutput->mainMemory = fieldTaskPtr->m8_pSubFieldData->memoryArea[areaIndex];
     pOutput->characterArea = fieldTaskPtr->m8_pSubFieldData->characterArea[areaIndex];
 }
+
+
