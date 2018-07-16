@@ -65,46 +65,48 @@ void azelSdl2_StartFrame()
             closeApp = true;
     }
 
-    graphicEngineStatus.field_4514[0].pending.field_8 = 0;
-    graphicEngineStatus.field_4514[0].pending.field_C = 0;
+    graphicEngineStatus.m4514.m0[0].m16_pending.field_8 = 0;
+    graphicEngineStatus.m4514.m0[0].m16_pending.field_C = 0;
 
-    if (event.type == SDL_KEYUP)
+    const Uint8* keyState = SDL_GetKeyboardState(NULL);
+
+    //if (event.type == SDL_KEYDOWN)
     {
-        if (event.key.keysym.scancode == SDL_SCANCODE_RETURN)
+        if (keyState[SDL_SCANCODE_RETURN])
         {
-            graphicEngineStatus.field_4514[0].pending.field_8 |= 8;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 8;
         }
-        if (event.key.keysym.scancode == SDL_SCANCODE_Z)
+        if (keyState[SDL_SCANCODE_Z])
         {
-            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x4;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x4;
         }
-        if (event.key.keysym.scancode == SDL_SCANCODE_X)
+        if (keyState[SDL_SCANCODE_X])
         {
-            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x2;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x2;
         }
-        if (event.key.keysym.scancode == SDL_SCANCODE_C)
+        if (keyState[SDL_SCANCODE_C])
         {
-            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x1;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x1;
         }
-        if (event.key.keysym.scancode == SDL_SCANCODE_UP)
+        if (keyState[SDL_SCANCODE_UP])
         {
-            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x10;
-            graphicEngineStatus.field_4514[0].pending.field_C |= 0x10;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x10;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x10;
         }
-        if (event.key.keysym.scancode == SDL_SCANCODE_DOWN)
+        if (ImGui::GetIO().KeysDown[SDL_SCANCODE_DOWN])
         {
-            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x20;
-            graphicEngineStatus.field_4514[0].pending.field_C |= 0x20;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x20;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x20;
         }
-        if (event.key.keysym.scancode == SDL_SCANCODE_LEFT)
+        if (keyState[SDL_SCANCODE_LEFT])
         {
-            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x40;
-            graphicEngineStatus.field_4514[0].pending.field_C |= 0x40;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x40;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x40;
         }
-        if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT)
+        if (keyState[SDL_SCANCODE_RIGHT])
         {
-            graphicEngineStatus.field_4514[0].pending.field_8 |= 0x80;
-            graphicEngineStatus.field_4514[0].pending.field_C |= 0x80;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x80;
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x80;
         }
     }
 

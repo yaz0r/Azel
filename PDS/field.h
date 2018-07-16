@@ -98,6 +98,8 @@ struct s_fieldScriptWorkArea : public s_workArea
     void* field_8;
     void* field_2C; // dunno what that is yet
 
+    u32 m3C;
+
     u32 field_6C;
     u32 field_70;
 
@@ -151,6 +153,8 @@ struct s_dragonTaskWorkArea : s_workArea
     sVec3_FP m8_pos; // 8
     sVec3_FP m14_oldPos; // 14
     sVec3_FP m20_angle; // 20-24-28
+    fixedPoint m30;
+    sVec3_FP m3C;
 
     s_dragonTaskWorkArea_48 m48;
 
@@ -174,25 +178,29 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 mF8; // F8 Flags
     u32 field_FC; // FC
     u32 m100;
-    u32 m104_cameraScriptStatus;
-    u32 field_130;
-    u32 field_134;
-    u32 field_138;
-    u32 field_13C;
-    u32 m140;
-    u32 field_144;
-    u32 field_148;
-    u32 field_14C;
+    u32 m104_dragonScriptStatus;
+    fixedPoint m130_minX;
+    fixedPoint m134_minY;
+    fixedPoint m138_minZ;
+    fixedPoint m13C_maxX;
+    fixedPoint m140_maxY;
+    fixedPoint m144_maxZ;
+    fixedPoint m148_pitchMin;
+    fixedPoint m14C_pitchMax;
 
     u32 field_150;
     s32 m154;
 
-    fixedPoint m160[3];
+    s32 m15C;
 
-    u32 field_178[4];
+    sVec3_FP m160_deltaTranslation;
+
+    fixedPoint field_178[4];
 
     u32 field_1B8;
     u32 field_1BC;
+
+    u32 m_1C4;
 
     u32 field_1CC;
     s_cameraScript* m1D0_cameraScript;
@@ -218,10 +226,17 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 field_23B;
     u8 field_23C;
     u8 m244;
+    u8 m245;
+    u8 m246;
+    u8 m247;
     u8 m248;
     u8 m249;
     u8 m24A_runningCameraScript; // has camera script
-    u8 m25D;
+    u32 m250;
+    u32 m254;
+    u32 m258;
+    u8 m25C;
+    s8 m25D;
 };
 
 struct s_grid1
@@ -283,9 +298,7 @@ struct s_visibilityGridWorkArea_68
 struct s_visibilityGridWorkArea : public s_workArea
 {
     sVec3_FP m0_position; // 0
-    s32 field_C;
-    s32 field_10;
-    s32 field_14;
+    sVec3_FP mC;
     s32 m18_cameraGridLocation[2]; // 18 Grid location
     u32 field_20;
     s32 field_24;
@@ -354,7 +367,7 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     s_LCSTask* m340_pLCS;
     s_randomBattleWorkArea* m344_randomBattleTask;
     s_visibilityGridWorkArea* m348_pFieldCameraTask1; // 348
-    s_fieldScriptWorkArea* ptrToE; // 34C
+    s_fieldScriptWorkArea* m34C_ptrToE; // 34C
     u16 field_354; // 354
     u16 fieldSubTaskStatus; // 358
     void (*pUpdateFunction2)(); // 35C

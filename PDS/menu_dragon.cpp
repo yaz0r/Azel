@@ -402,7 +402,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->field_0++;
         break;
     case 3:
-        if (graphicEngineStatus.field_4514[0].current.field_8 & 7)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 7)
         {
             playSoundEffect(0);
             pWorkArea->field_14->getTask()->m_pDraw = NULL;

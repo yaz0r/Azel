@@ -334,9 +334,9 @@ struct s_runtimeAnimData
 
 struct s3DModelAnimData
 {
-    const struct sDragonAnimData* animData; // 0
+    const struct sDragonAnimData* m0_animData; // 0
     sMatrix4x3* boneMatrices; // 4;
-    s_runtimeAnimData* runtimeAnimData; // 8 one per countAnims
+    s_runtimeAnimData* m8_runtimeAnimData; // 8 one per countAnims
     u8 countAnims; // C
     u8 count0; // D
     u8 count1; // E
@@ -386,9 +386,9 @@ struct s_graphicEngineStatus_40AC
     p_workArea field_C;
 };
 
-struct s_graphicEngineStatus_4514_sub
+struct s_graphicEngineStatus_4514_inputStatus
 {
-    u16 field_0;
+    u8 m0;
     u16 field_2;
     u16 field_4;
     u16 field_6; // direction
@@ -411,12 +411,21 @@ struct s_graphicEngineStatus_4514_sub2
     u32 field_C;
 }; // size should be 40
 
+    
+
+struct s_graphicEngineStatus_4514_sub
+{
+    s_graphicEngineStatus_4514_inputStatus m0_current; //0
+    s_graphicEngineStatus_4514_inputStatus m16_pending; //16
+    s_graphicEngineStatus_4514_sub2 m2C;//2C
+    // size should be 6C
+};
+
 struct s_graphicEngineStatus_4514
 {
-    s_graphicEngineStatus_4514_sub current; //0
-    s_graphicEngineStatus_4514_sub pending; //16
-    s_graphicEngineStatus_4514_sub2 field_2C;//2C
-    // size should be 6C
+    s_graphicEngineStatus_4514_sub m0[2]; // one per input port
+    u16 m45EC[3][16]; // this is probably supposed to be in the same field that starts at 4514
+    u8 m464C[3];// this is probably supposed to be in the same field that starts at 4514
 };
 
 struct s_graphicEngineStatus_405C
@@ -513,7 +522,7 @@ struct s_graphicEngineStatus
     s_graphicEngineStatus_40E4* field_40E4;
     s_graphicEngineStatus_40AC field_40AC;
     s_graphicEngineStatus_40BC layersConfig[4];
-    s_graphicEngineStatus_4514 field_4514[2]; // one per input port
+    s_graphicEngineStatus_4514 m4514;
 };
 
 extern s_graphicEngineStatus graphicEngineStatus;

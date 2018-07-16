@@ -419,7 +419,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
     if (pWorkArea->m8_isSelectingSubfield)
     {
 
-        if (graphicEngineStatus.field_4514[0].current.field_8 & 0x40)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0x40)
         {
             if (pWorkArea->m4_selectedSubField == 0)
             {
@@ -427,7 +427,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             }
         }
 
-        if (graphicEngineStatus.field_4514[0].current.field_C & 0x20) // down
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x20) // down
         {
             if (++r14->subFieldIndexMenuSelection >= fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields)
             {
@@ -435,7 +435,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             }
         }
 
-        if (graphicEngineStatus.field_4514[0].current.field_C & 0x10) // up
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x10) // up
         {
             if (--r14->subFieldIndexMenuSelection < 0)
             {
@@ -443,24 +443,24 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             }
         }
 
-        if (graphicEngineStatus.field_4514[0].current.field_C & 0x80) // page down
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x80) // page down
         {
             unimplemented("Page down");
         }
 
-        if (graphicEngineStatus.field_4514[0].current.field_C & 0x40) // page up
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x40) // page up
         {
             unimplemented("Page up");
         }
     }
     else
     {
-        if (graphicEngineStatus.field_4514[0].current.field_8 & 0x80)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0x80)
         {
             pWorkArea->m8_isSelectingSubfield = 1;
         }
 
-        if (graphicEngineStatus.field_4514[0].current.field_C & 0x20) // down
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x20) // down
         {
             clearVdp2StringFieldDebugList();
             r14->subFieldIndexMenuSelection = 0;
@@ -475,7 +475,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
         }
 
-        if (graphicEngineStatus.field_4514[0].current.field_C & 0x10) // up
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x10) // up
         {
             clearVdp2StringFieldDebugList();
             r14->subFieldIndexMenuSelection = 0;
@@ -491,12 +491,12 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
         }
     }
 
-    if (graphicEngineStatus.field_4514[0].current.field_C & 0x8000)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x8000)
     {
         assert(0);
     }
 
-    if (graphicEngineStatus.field_4514[0].current.field_C & 0x800)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x800)
     {
         assert(0);
     }
@@ -635,7 +635,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
 
     vdp2PrintStatus.palette = 0xC000;
 
-    u8 inputValue = graphicEngineStatus.field_4514[0].current.field_8 & 0xF;
+    u8 inputValue = graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0xF;
     if (inputValue == 0)
     {
         return;
@@ -1739,15 +1739,15 @@ void initRuntimeAnimData(const sDragonAnimData* dragonAnims, s_runtimeAnimData* 
 
 void init3DModelAnims(s_dragonState* pDragonState, s_3dModel* pDragonStateData1, s3DModelAnimData* p3DModelAnimData, const sDragonAnimData* dragonAnims)
 {
-    p3DModelAnimData->animData = dragonAnims;
+    p3DModelAnimData->m0_animData = dragonAnims;
 
     p3DModelAnimData->countAnims = countNumAnimData(p3DModelAnimData, dragonAnims);
 
     p3DModelAnimData->boneMatrices = pDragonStateData1->m3C_boneMatrices;
 
-    p3DModelAnimData->runtimeAnimData = static_cast<s_runtimeAnimData*>(allocateHeapForTask(pDragonState, p3DModelAnimData->countAnims * sizeof(s_runtimeAnimData)));
+    p3DModelAnimData->m8_runtimeAnimData = static_cast<s_runtimeAnimData*>(allocateHeapForTask(pDragonState, p3DModelAnimData->countAnims * sizeof(s_runtimeAnimData)));
 
-    initRuntimeAnimData(dragonAnims, p3DModelAnimData->runtimeAnimData);
+    initRuntimeAnimData(dragonAnims, p3DModelAnimData->m8_runtimeAnimData);
 }
 
 const sDragonAnimData* getDragonDataByIndex(e_dragonLevel dragonLevel)
@@ -3519,7 +3519,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
         pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
         pWorkArea->field_0++;
     case 1:
-        if (graphicEngineStatus.field_4514->current.field_8 & 1) // B
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 1) // B
         {
             playSoundEffect(1);
             fadePalette(&menuUnk0.m_field0, 0, 0, 1);
@@ -3534,7 +3534,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
         {
             return;
         }
-        if (graphicEngineStatus.field_4514->current.field_8 & 6) // A or C
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 6) // A or C
         {
             if (pWorkArea->m3_menuButtonStates[pWorkArea->selectedMenu] == 0)
             {
@@ -3551,7 +3551,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
             pWorkArea->field_0++;
             return;
         }
-        if (graphicEngineStatus.field_4514->current.field_8 & 0x30) // UP or DOWN
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0x30) // UP or DOWN
         {
             playSoundEffect(10);
             
@@ -3562,7 +3562,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
                 mainMenuTaskInitSub3(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x660);
             }
 
-            if (graphicEngineStatus.field_4514->current.field_8 & 0x10) // UP
+            if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0x10) // UP
             {
                 do
                 {
@@ -3789,7 +3789,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
     {
     case 0:
         graphicEngineStatus.field_40AC.field_8 = 0;
-        if (graphicEngineStatus.field_4514[0].current.field_8 & 8)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 8)
         {
             unimplemented("Hack: forcing menu enabled 1");
             graphicEngineStatus.field_40AC.m1_isMenuAllowed = 1;
@@ -3838,7 +3838,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
             {
                 scrollMenu();
             }
-            if (graphicEngineStatus.field_4514[0].current.field_8 & 8) // start
+            if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 8) // start
             {
                 if (graphicEngineStatus.field_40AC.m0_menuId == 7)
                 {

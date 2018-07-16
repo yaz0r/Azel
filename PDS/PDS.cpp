@@ -567,6 +567,46 @@ void initFileInfoStruct()
     initFileLayoutTable();
 }
 
+u16 defaultInputConfig[16] = {
+    1,
+    2,
+    4,
+    8,
+    0x10,
+    0x20,
+    0x40,
+    0x80,
+    0x100,
+    0,
+    0,
+    0x800,
+    0x1000,
+    0x2000,
+    0x4000,
+    0x8000
+};
+
+void setupDefaultInputConfig(u16* inputDefaultConfig)
+{
+    for (int i = 0; i < 16; i++)
+    {
+        graphicEngineStatus.m4514.m45EC[0][i] = inputDefaultConfig[i];
+        graphicEngineStatus.m4514.m45EC[1][i] = inputDefaultConfig[i];
+        graphicEngineStatus.m4514.m45EC[2][i] = inputDefaultConfig[i];
+    }
+}
+
+void initSMPC()
+{
+    //getSPMCStatus();
+
+    graphicEngineStatus.m4514.m464C[0] = 1;
+    graphicEngineStatus.m4514.m464C[1] = 1;
+    graphicEngineStatus.m4514.m464C[2] = 1;
+
+    setupDefaultInputConfig(defaultInputConfig);
+}
+
 void azelInit()
 {
     // stuff
@@ -576,6 +616,8 @@ void azelInit()
     // stuff
 
     loadFile("COMMON.DAT", COMMON_DAT, 0);
+
+    initSMPC();
 
     // stuff
     initInitialTaskStatsAndDebug();
@@ -600,16 +642,16 @@ void updateInputs()
 {
     for (int i = 0; i < 2; i++)
     {
-        graphicEngineStatus.field_4514[i].current = graphicEngineStatus.field_4514[i].pending;
-        graphicEngineStatus.field_4514[i].pending.field_8 = 0;
-        graphicEngineStatus.field_4514[i].pending.field_A = 0;
-        graphicEngineStatus.field_4514[i].pending.field_C = 0;
-        graphicEngineStatus.field_4514[i].pending.field_E = 0;
-        graphicEngineStatus.field_4514[i].pending.field_10 = 0;
-        graphicEngineStatus.field_4514[i].pending.field_12 = 0;
-        graphicEngineStatus.field_4514[i].pending.field_14 = 0;
+        graphicEngineStatus.m4514.m0[i].m0_current = graphicEngineStatus.m4514.m0[i].m16_pending;
+        graphicEngineStatus.m4514.m0[i].m16_pending.field_8 = 0;
+        graphicEngineStatus.m4514.m0[i].m16_pending.field_A = 0;
+        graphicEngineStatus.m4514.m0[i].m16_pending.field_C = 0;
+        graphicEngineStatus.m4514.m0[i].m16_pending.field_E = 0;
+        graphicEngineStatus.m4514.m0[i].m16_pending.field_10 = 0;
+        graphicEngineStatus.m4514.m0[i].m16_pending.field_12 = 0;
+        graphicEngineStatus.m4514.m0[i].m16_pending.field_14 = 0;
 
-        updateInputsSub1(&graphicEngineStatus.field_4514[i].field_2C);
+        updateInputsSub1(&graphicEngineStatus.m4514.m0[i].m2C);
     }
 
     copyKeyboardData();

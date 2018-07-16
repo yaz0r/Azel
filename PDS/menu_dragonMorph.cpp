@@ -94,10 +94,10 @@ void dragonMenuDragonInitSub3(s3DModelAnimData* pDragonStateData2)
 {
     for (int i = 0; i < pDragonStateData2->countAnims; i++)
     {
-        pDragonStateData2->runtimeAnimData[i].m_vec_0.zero();
-        pDragonStateData2->runtimeAnimData[i].m_vec_C.zero();
-        pDragonStateData2->runtimeAnimData[i].m_vec_18.zero();
-        pDragonStateData2->runtimeAnimData[i].m_vec_24.zero();
+        pDragonStateData2->m8_runtimeAnimData[i].m_vec_0.zero();
+        pDragonStateData2->m8_runtimeAnimData[i].m_vec_C.zero();
+        pDragonStateData2->m8_runtimeAnimData[i].m_vec_18.zero();
+        pDragonStateData2->m8_runtimeAnimData[i].m_vec_24.zero();
     }
 }
 
@@ -506,7 +506,7 @@ sVec3_FP updateAnimationMatricesSub2Vec = { 0,0,0 };
 
 void updateAnimationMatricesSub2(s3DModelAnimData* r4)
 {
-    s_runtimeAnimData* r14 = r4->runtimeAnimData;
+    s_runtimeAnimData* r14 = r4->m8_runtimeAnimData;
 
     updateAnimationMatricesSub2Sub1(r14, r14->m_vec_18, updateAnimationMatricesSub2Vec);
 
@@ -667,53 +667,53 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         setupLight(0, 0, 0x10000, 0x161918);
     }
 
-    if (graphicEngineStatus.field_4514[0].current.field_6 & 0x800)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & 0x800)
     {
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    if (graphicEngineStatus.field_4514[0].current.field_E & 0x800)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.field_E & 0x800)
     {
         pWorkArea->modelRotation[1] -= 0x5B05B0;
     }
 
-    if (graphicEngineStatus.field_4514[0].current.field_6 & 0x8000)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & 0x8000)
     {
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    if (graphicEngineStatus.field_4514[0].current.field_E & 0x8000)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.field_E & 0x8000)
     {
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    if (graphicEngineStatus.field_4514[1].current.field_6 & 0x8000)
+    if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x8000)
     {
         assert(0);
     }
     else
     {
-        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x10)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x10)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x20)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x20)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x40)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x40)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x80)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x80)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x4000)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x4000)
         {
             assert(0);
         }
-        if (graphicEngineStatus.field_4514[1].current.field_6 & 0x4)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x4)
         {
             assert(0);
         }
