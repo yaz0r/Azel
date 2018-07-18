@@ -1196,13 +1196,13 @@ namespace FLD_A3_OVERLAY {
         field_48->field_3C = 1;
     }
 
-    void dragonFieldTaskInitSub2Sub5(u32 arg)
+    void initDragonSpeed(u32 arg)
     {
         if ((arg >= 0) && (arg <= 2))
         {
             s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
 
-            pDragonTask->field_235 = arg;
+            pDragonTask->m235_dragonSpeedIndex = arg;
 
             pDragonTask->m154_dragonSpeed = pDragonTask->m21C_DragonSpeedValues[arg];
 
@@ -1272,13 +1272,13 @@ namespace FLD_A3_OVERLAY {
         pWorkArea->m21C_DragonSpeedValues[3] = 0x3B42;
         pWorkArea->m21C_DragonSpeedValues[4] = 0x58E3;
 
-        dragonFieldTaskInitSub2Sub5(0);
+        initDragonSpeed(0);
 
         pWorkArea->field_230 = 0x1999;
 
         //060738C0
 
-        pWorkArea->m154_dragonSpeed = pWorkArea->m21C_DragonSpeedValues[pWorkArea->field_235];
+        pWorkArea->m154_dragonSpeed = pWorkArea->m21C_DragonSpeedValues[pWorkArea->m235_dragonSpeedIndex];
 
         pWorkArea->field_238 = 0;
         pWorkArea->field_237 = 0;
@@ -1600,7 +1600,7 @@ namespace FLD_A3_OVERLAY {
             {
                 if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][0])
                 {
-                    r14->field_235 = -1;
+                    r14->m235_dragonSpeedIndex = -1;
                 }
                 else
                 {
@@ -1822,7 +1822,7 @@ namespace FLD_A3_OVERLAY {
         {
         case 0:
             startScriptLeaveArea();
-            dragonFieldTaskInitSub2Sub5(0);
+            initDragonSpeed(0);
             r14->m_1C4 = 45;
             r14->m104_dragonScriptStatus++;
         case 1:
@@ -2269,13 +2269,13 @@ namespace FLD_A3_OVERLAY {
         setLCSField83E(getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS, r4);
     }
 
-    s32 dragonFieldAnimationUpdateSub1(s_dragonTaskWorkArea* pTypedWorkArea)
+    s32 getDragonSpeedIndex(s_dragonTaskWorkArea* pTypedWorkArea)
     {
         if (pTypedWorkArea->mF8_Flags & 0x20000)
         {
-            s32 r0 = pTypedWorkArea->m154_dragonSpeed;
             s32 r1 = pTypedWorkArea->m21C_DragonSpeedValues[0] + pTypedWorkArea->m21C_DragonSpeedValues[1];
 
+            //Average speeds
             if (0 > r1)
                 r1++;
             r1 >>= 1;
@@ -2288,7 +2288,7 @@ namespace FLD_A3_OVERLAY {
         }
         else
         {
-            return pTypedWorkArea->field_235;
+            return pTypedWorkArea->m235_dragonSpeedIndex;
         }
     }
 
@@ -2327,7 +2327,7 @@ namespace FLD_A3_OVERLAY {
         updateAndInterpolateAnimation(&r13->m28_dragon3dModel);
 
         r14->m23A_dragonAnimation = r12;
-        r14->field_238--;
+        r14->field_237 = r14->field_238;
     }
 
     s8 dragonFieldAnimation[] = {
@@ -2337,12 +2337,12 @@ namespace FLD_A3_OVERLAY {
 
     s32 getDragonFieldAnimation(s_dragonTaskWorkArea* pTypedWorkArea)
     {
-        return dragonFieldAnimation[(pTypedWorkArea->field_238 >> 2) * 8];
+        return dragonFieldAnimation[(pTypedWorkArea->field_238 >> 2) * 8 + pTypedWorkArea->field_238];
     }
 
     void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonState* r5)
     {
-        u8 var = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->field_235;
+        u8 var = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m235_dragonSpeedIndex;
 
         if (pTypedWorkArea->field_23C & 4)
         {
@@ -2370,26 +2370,29 @@ namespace FLD_A3_OVERLAY {
             {
                 if (pTypedWorkArea->field_238 & 4)
                 {
-                    if (dragonFieldAnimationUpdateSub1(pTypedWorkArea) <= 0)
+                    if (getDragonSpeedIndex(pTypedWorkArea) <= 0)
                     {
                         pTypedWorkArea->field_238 &= 0xFFFFFFFB;
                         if (pTypedWorkArea->m154_dragonSpeed > 0xDDD)
                         {
+                            //060734B6
                             dragonFieldPlayAnimation(pTypedWorkArea, r5, getDragonFieldAnimation(pTypedWorkArea));
                             return;
                         }
                     }
                 }
-                else if (dragonFieldAnimationUpdateSub1(pTypedWorkArea) > 0)
+                //6073508
+                else if (getDragonSpeedIndex(pTypedWorkArea) > 0)
                 {
-                    pTypedWorkArea->field_238 &= 0xFFFFFFFB;
-                    if (pTypedWorkArea->m154_dragonSpeed > 0xDDD)
+                    pTypedWorkArea->field_238 |= 4;
+                    if (pTypedWorkArea->m154_dragonSpeed < 0x555)
                     {
                         dragonFieldPlayAnimation(pTypedWorkArea, r5, getDragonFieldAnimation(pTypedWorkArea));
                         return;
                     }
                 }
 
+                //6073524
                 if (r5->m28_dragon3dModel.m16)
                 {
                     return;
@@ -2419,9 +2422,14 @@ namespace FLD_A3_OVERLAY {
                     s32 r6 = getDragonFieldAnimation(pTypedWorkArea);
                     if (r6 == 0)
                     {
-                        assert(0);
+                        //assert(0);
+                        unimplemented("unimplemented logic in dragonFieldAnimationUpdate!!!!");
+                        dragonFieldPlayAnimation(pTypedWorkArea, r5, r6);
                     }
-                    dragonFieldPlayAnimation(pTypedWorkArea, r5, r6);
+                    if(r6 > 0)
+                    {
+                        dragonFieldPlayAnimation(pTypedWorkArea, r5, r6);
+                    }
                     return;
                 }
                 else

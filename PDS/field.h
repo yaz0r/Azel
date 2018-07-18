@@ -227,7 +227,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 field_22C;
     u32 field_230;
     u8 field_234;
-    u8 field_235;
+    s8 m235_dragonSpeedIndex;
 
     u8 field_237;
     u8 field_238;

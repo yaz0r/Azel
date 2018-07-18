@@ -55,6 +55,8 @@ void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
 
 u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 interpolationLength)
 {
+    unimplemented("dragonMenuDragonInitSub2Sub1 hacked to remove interpolation of animations!");
+    interpolationLength = 0;
     if ((interpolationLength > 0) && (pDragonStateData1->m38 == 0))
     {
         if (pDragonStateData1->m48_poseDataInterpolation)
