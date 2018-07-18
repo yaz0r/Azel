@@ -177,7 +177,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 m_EC;
 
     void(*field_F0)(s_dragonTaskWorkArea*); //F0
-    void(*mF4)();
+    void(*mF4)(s_dragonTaskWorkArea*);
     u32 mF8_Flags; // F8 Flags
     u32 field_FC; // FC
     u32 m100;
@@ -192,13 +192,17 @@ struct s_dragonTaskWorkArea : s_workArea
     fixedPoint m14C_pitchMax;
 
     u32 field_150;
-    fixedPoint m154;
+    fixedPoint m154_dragonSpeed;
 
-    s32 m15C;
+    s32 m15C_dragonSpeedIncrement;
 
     sVec3_FP m160_deltaTranslation;
 
     fixedPoint field_178[4];
+
+    sVec3_FP m188;
+
+    sVec3_FP m194;
 
     sVec3_FP m1A0;
     sVec3_FP m1AC;
@@ -218,7 +222,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 field_20C;
     u32 field_210;
     u32 field_214;
-    s32 field_21C[5];
+    fixedPoint m21C_DragonSpeedValues[5];
     u32 field_228;
     u32 field_22C;
     u32 field_230;
@@ -228,7 +232,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 field_237;
     u8 field_238;
 
-    u8 field_23A;
+    u8 m23A_dragonAnimation;
     u8 field_23B;
     u8 field_23C;
     u8 m244;

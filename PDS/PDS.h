@@ -127,3 +127,23 @@ extern bool hasEncounterData;
 #include "o_menuEn.h"
 #include "o_fld_a3.h"
 
+// Script macro stuff
+
+#define WRITE_SCRIPT_U16(value) value & 0xFF, (value >> 8) & 0xFF
+#define WRITE_SCRIPT_U32(value) value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF
+#if 0
+#define WRITE_SCRIPT_POINTER(stringPtr) (u64)stringPtr & 0xFF, ((u64)stringPtr >> 8) & 0xFF, ((u64)stringPtr >> 16) & 0xFF, ((u64)stringPtr >> 24) & 0xFF, ((u64)stringPtr >> 32) & 0xFF, ((u64)stringPtr >> 40) & 0xFF, ((u64)stringPtr >> 48) & 0xFF, ((u64)stringPtr >> 56) & 0xFF
+#else 
+#define WRITE_SCRIPT_POINTER(stringPtr) WRITE_SCRIPT_U32(0)
+#endif
+
+#define op_END() 0x1
+#define op_CALL_NATIVE_0(funcPtr) 0xE, 0x0, WRITE_SCRIPT_POINTER(funcPtr)
+#define op_CALL_NATIVE_1(funcPtr, arg0) 0xE, 0x1, WRITE_SCRIPT_POINTER(funcPtr), WRITE_SCRIPT_U32(arg0)
+#define op_START_CUTSCENE() 0x18
+#define op_WAIT(delay) 0x02, WRITE_SCRIPT_U16(delay)
+#define op_DISPLAY_DIALOG_STRING(stringPtr) 0x15, WRITE_SCRIPT_POINTER(stringPtr)
+#define op_CLEAR_DIALOG_STRING() 0x16
+#define op_ADD_CINEMATIC_BARS() 0x19
+#define op_END_CUTSCENE() 0x1A
+#define op_PLAY_PCM(stringPtr) 0x22, WRITE_SCRIPT_POINTER(stringPtr)

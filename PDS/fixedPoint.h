@@ -57,6 +57,18 @@ public:
         return value;
     }
 
+    fixedPoint normalized()
+    {
+        if (m_value & 0x8000000)
+        {
+            return m_value | 0xF0000000;
+        }
+        else
+        {
+            return m_value & 0x0FFFFFFF;
+        }
+    }
+
     operator s32() const
     {
         return m_value;

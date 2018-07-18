@@ -275,6 +275,18 @@ struct sPoseData
     sVec3_FP halfTranslation; // 24
     sVec3_FP halfRotation; // 30
     sAnimTrackStatus field_48[9];
+    //size B4
+};
+
+struct sPoseDataInterpolation
+{
+    sVec3_FP m0_translation; // 0
+    sVec3_FP mC_rotation; // C
+    sVec3_FP m18_scale; // 18
+    sVec3_FP m24_halfTranslation; // 24
+    sVec3_FP m30_halfRotation; // 30
+    sVec3_FP m3C_halfScale;
+    //size 0x48
 };
 
 struct s_3dModel
@@ -307,10 +319,10 @@ struct s_3dModel
 
     const s_RiderDefinitionSub* m40; //40
     sVec3_FP** m44; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
-    u32 m48; //48
+    sPoseDataInterpolation* m48_poseDataInterpolation; //48
 
-    u16 m4C; //4C
-    u16 m4E; //4E
+    u16 m4C_interpolationStep; //4C
+    u16 m4E_interpolationLength; //4E
 };
 
 struct sDragonAnimDataSubRanges

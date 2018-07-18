@@ -840,6 +840,12 @@ int main(int argc, char* argv[])
 
         updateInputs();
 
+        if (ImGui::Begin("InputState"))
+        {
+            ImGui::Text("State: %X", graphicEngineStatus.m4514.m0[0].m0_current.field_8);
+        }
+        ImGui::End();
+
         //updateInputDebug();
 
         runTasks();

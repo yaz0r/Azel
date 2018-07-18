@@ -88,7 +88,7 @@ void azelSdl2_StartFrame()
         {
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x1;
         }
-        if (keyState[SDL_SCANCODE_UP])
+        if (ImGui::GetIO().KeysDown[SDL_SCANCODE_UP])
         {
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x10;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x10;
@@ -98,12 +98,12 @@ void azelSdl2_StartFrame()
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x20;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x20;
         }
-        if (keyState[SDL_SCANCODE_LEFT])
+        if (ImGui::GetIO().KeysDown[SDL_SCANCODE_LEFT])
         {
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x40;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x40;
         }
-        if (keyState[SDL_SCANCODE_RIGHT])
+        if (ImGui::GetIO().KeysDown[SDL_SCANCODE_RIGHT])
         {
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x80;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x80;

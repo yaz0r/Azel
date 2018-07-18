@@ -1394,7 +1394,7 @@ u32 dragonFieldTaskInitSub3Sub1(s_3dModel* pDragonStateData1, u8* r5)
     assert(0);
 }
 
-u32 dragonFieldTaskInitSub3Sub2Sub1(s_3dModel* p3DModel)
+u32 stepAnimation(s_3dModel* p3DModel)
 {
     if ((p3DModel->mA & 0x38) == 0)
     {
@@ -1413,7 +1413,7 @@ u32 dragonFieldTaskInitSub3Sub2Sub1(s_3dModel* p3DModel)
 
     if (READ_BE_U16(p3DModel->m30_pCurrentAnimation) & 0x20)
     {
-        p3DModel->m28_scaleUpdateFunction, (p3DModel);
+        p3DModel->m28_scaleUpdateFunction(p3DModel);
     }
 
     p3DModel->m16 = p3DModel->m10_currentAnimationFrame;
@@ -1428,18 +1428,28 @@ u32 dragonFieldTaskInitSub3Sub2Sub1(s_3dModel* p3DModel)
     return p3DModel->m16;
 }
 
-void dragonFieldTaskInitSub3Sub2Sub2(s_3dModel* pDragonStateData1)
+void interpolateAnimation(s_3dModel* pDragonStateData1)
 {
-    if (pDragonStateData1->m48)
+    if (pDragonStateData1->m48_poseDataInterpolation)
     {
-        assert(0);
+        pDragonStateData1->m4C_interpolationStep++;
+        if (pDragonStateData1->m4E_interpolationLength < pDragonStateData1->m4C_interpolationStep)
+        {
+            //TODO: freeVdp1Block(pDragonStateData1->m0_pOwnerTask, pDragonStateData1->m48)
+            pDragonStateData1->m48_poseDataInterpolation = 0;
+            initModelDrawFunction(pDragonStateData1);
+        }
+        else
+        {
+            unimplemented("dragonFieldTaskInitSub3Sub2Sub2");
+        }
     }
 }
 
-u32 dragonFieldTaskInitSub3Sub2(s_3dModel* pDragonStateData1)
+u32 updateAndInterpolateAnimation(s_3dModel* pDragonStateData1)
 {
-    u32 r0 = dragonFieldTaskInitSub3Sub2Sub1(pDragonStateData1);
-    dragonFieldTaskInitSub3Sub2Sub2(pDragonStateData1);
+    u32 r0 = stepAnimation(pDragonStateData1);
+    interpolateAnimation(pDragonStateData1);
 
     return r0;
 }
