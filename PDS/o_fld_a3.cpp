@@ -1630,7 +1630,14 @@ namespace FLD_A3_OVERLAY {
         if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][0])
         {
             //0607E960
-            assert(0);
+            if (++r14->field_234 > 4)
+            {
+                if (++r14->m235_dragonSpeedIndex >= r5)
+                {
+                    r14->m235_dragonSpeedIndex = r5;
+                }
+                r14->field_234 = 0;
+            }
         }
         else
         {
@@ -1669,9 +1676,39 @@ namespace FLD_A3_OVERLAY {
             {
                 integrateDragonMovementSub4(r14);
             }
+
+            if (r14->m235_dragonSpeedIndex < 0)
+            {
+                //0607FE38
+                r14->m15C_dragonSpeedIncrement = MTH_Mul( -r14->m154_dragonSpeed - 0x1284, r14->field_230);
+            }
+            else
+            {
+                //607FE50
+                fixedPoint r3;
+                if (r14->m25C & 1)
+                {
+                    r3 = r14->m158;
+                }
+                else
+                {
+                    r3 = r14->m21C_DragonSpeedValues[r14->m235_dragonSpeedIndex];
+                }
+
+                fixedPoint r12 = r14->m154_dragonSpeed - r3;
+                if (r12 < 0)
+                {
+                    r14->m15C_dragonSpeedIncrement = MTH_Mul(-r12, r14->field_230);
+                }
+                else
+                {
+                    r14->m15C_dragonSpeedIncrement = -MTH_Mul(r12, r14->field_230);
+                }
+            }
         }
         else
         {
+            //607FE98
             assert(0);
         }
 
@@ -1729,8 +1766,9 @@ namespace FLD_A3_OVERLAY {
 
         if (r14->m154_dragonSpeed < 0)
         {
-            assert(0);
             //06080066
+            r14->m160_deltaTranslation[0] += r14->m194[0] - MTH_Mul(r14->m88_matrix.matrix[2], r14->m154_dragonSpeed);
+            r14->m160_deltaTranslation[1] += r14->m194[1];
         }
         else
         {
@@ -1746,8 +1784,86 @@ namespace FLD_A3_OVERLAY {
             r14->mF4(r14);
         }
 
-        //6080104
-        unimplemented("integrateDragonMovement");
+        //6080140
+        r14->m8_pos += r14->m160_deltaTranslation;
+
+        if ((r14->m134_minY == 0) && (r14->m140_maxY == 0))
+        {
+            return;
+        }
+
+        if (r14->m8_pos[1] < r14->m134_minY)
+            r14->m8_pos[1] = r14->m134_minY;
+
+        if (r14->m8_pos[1] > r14->m140_maxY)
+            r14->m8_pos[1] = r14->m140_maxY;
+
+        //608018E
+        r14->m160_deltaTranslation = r14->m8_pos - r14->m14_oldPos;
+
+        // Adjust pitch min/max when close to the min/maxY
+        {
+            fixedPoint r2;
+            fixedPoint r6 = -(r14->m140_maxY - r14->m8_pos[1]) * 0x111;
+            if (r6 >= -0x3555555)
+            {
+                r2 = r6;
+            }
+            else
+
+            {
+
+                r2 = -0x3555555;
+
+            }
+
+            fixedPoint r3;
+            if (r2 >= 0)
+            {
+                r3 = 0;
+            }
+            else if (r6 >= -0x3555555)
+            {
+                r3 = r6;
+            }
+            else
+            {
+                r3 = -0x3555555;
+            }
+            r14->m148_pitchMin = r3;
+        }
+
+        // same for min
+        {
+            fixedPoint r2;
+            fixedPoint r5 = (r14->m8_pos[1] - r14->m134_minY) * 0x111;
+            if (r5 < 0x3555555)
+            {
+                r2 = r5;
+            }
+            else
+
+            {
+
+                r2 = 0x3555555;
+
+            }
+
+            fixedPoint r3;
+            if (r2 < 0)
+            {
+                r3 = 0;
+            }
+            else if (r5 < 0x3555555)
+            {
+                r3 = r5;
+            }
+            else
+            {
+                r3 = 0x3555555;
+            }
+            r14->m14C_pitchMax = r3;
+        }
     }
 
     void updateDragonMovement(s_dragonTaskWorkArea* r4)
@@ -1933,6 +2049,7 @@ namespace FLD_A3_OVERLAY {
 
         r14->m8_pos += r14->m160_deltaTranslation;
 
+        // this is all copied from dragonLeaveArea but looks like it's exactly the same
         if ((r14->m134_minY == 0) && (r14->m140_maxY == 0))
             return;
 

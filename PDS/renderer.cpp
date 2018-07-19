@@ -65,6 +65,7 @@ void azelSdl2_StartFrame()
             closeApp = true;
     }
 
+    graphicEngineStatus.m4514.m0[0].m16_pending.field_6 = 0;
     graphicEngineStatus.m4514.m0[0].m16_pending.field_8 = 0;
     graphicEngineStatus.m4514.m0[0].m16_pending.field_C = 0;
 
@@ -74,37 +75,45 @@ void azelSdl2_StartFrame()
     {
         if (keyState[SDL_SCANCODE_RETURN])
         {
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 8;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 8;
         }
         if (keyState[SDL_SCANCODE_Z])
         {
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x4;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x4;
         }
         if (keyState[SDL_SCANCODE_X])
         {
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x2;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x2;
         }
         if (keyState[SDL_SCANCODE_C])
         {
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x1;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x1;
         }
         if (ImGui::GetIO().KeysDown[SDL_SCANCODE_UP])
         {
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x10;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x10;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x10;
         }
         if (ImGui::GetIO().KeysDown[SDL_SCANCODE_DOWN])
         {
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x20;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x20;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x20;
         }
         if (ImGui::GetIO().KeysDown[SDL_SCANCODE_LEFT])
         {
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x40;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x40;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x40;
         }
         if (ImGui::GetIO().KeysDown[SDL_SCANCODE_RIGHT])
         {
+            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x80;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x80;
             graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x80;
         }

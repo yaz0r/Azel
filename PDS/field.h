@@ -193,7 +193,7 @@ struct s_dragonTaskWorkArea : s_workArea
 
     u32 field_150;
     fixedPoint m154_dragonSpeed;
-
+    fixedPoint m158;
     s32 m15C_dragonSpeedIncrement;
 
     sVec3_FP m160_deltaTranslation;
@@ -225,7 +225,7 @@ struct s_dragonTaskWorkArea : s_workArea
     fixedPoint m21C_DragonSpeedValues[5];
     u32 field_228;
     u32 field_22C;
-    u32 field_230;
+    fixedPoint field_230;
     u8 field_234;
     s8 m235_dragonSpeedIndex;
 
