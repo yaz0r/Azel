@@ -967,9 +967,303 @@ namespace FLD_A3_OVERLAY {
         createSubTask(pWorkArea, &fieldScriptTaskDefinition, new s_fieldScriptWorkArea);
     }
 
-    void fieldOverlaySubTaskInitSub2(sFieldCameraStatus*)
+    void fieldOverlaySubTaskInitSub2Sub1Sub1(sFieldCameraStatus* r11, s_dragonTaskWorkArea* stack_4)
     {
-        unimplemented("fieldOverlaySubTaskInitSub2");
+        s_fieldOverlaySubTaskWorkArea* pCameraData = getFieldTaskPtr()->m8_pSubFieldData->m334;
+        s_fieldCameraConfig* r14 = &pCameraData->m10[pCameraData->m0_nextCamera];
+
+        fixedPoint r14FP = FP_Div(stack_4->m8_pos[1] - r14->m50, r14->m54 - r14->m50);
+
+        if (r14FP < 0)
+        {
+            r14FP = 0;
+        }
+        else if(r14FP > 0x10000)
+        {
+            r14FP = 0x10000;
+        }
+
+        fixedPoint r4 = r14->m34[0] - r14->m18[0];
+        r4 = r4.normalized();
+        r11->m28 = r14->m18[0] + MTH_Mul(r4, r14FP);
+
+        r4 = r14->m34[3] - r14->m18[3];
+        r4 = r4.normalized();
+        r11->m34 = r14->m18[3] + MTH_Mul(r4, r14FP);
+
+        r4 = r14->m34[6] - r14->m18[6];
+        r4 = r4.normalized();
+        r11->m40 = r14->m18[6] + MTH_Mul(r4, r14FP);
+    }
+
+    fixedPoint integrateDragonMovementSub5(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14)
+    {
+        fixedPoint r13 = r12 - r11;
+        fixedPoint r4 = MTH_Mul(stack0, r13);
+
+        if (r13 < 0)
+        {
+            fixedPoint r5 = -r14;
+            fixedPoint r6 = -r10;
+            fixedPoint r3;
+            if (r4 < r5)
+            {
+                r3 = r4;
+            }
+            else
+            {
+                r3 = r5;
+            }
+
+            if (r6 >= r3)
+            {
+                r4 = r6;
+            }
+            else if(r4 >= r5)
+            {
+                r4 = r5;
+            }
+
+            r13 -= r4;
+
+            if (r13 > 0)
+            {
+                return r12;
+            }
+            else
+            {
+                return r11 + r4;
+            }
+        }
+        else
+        {
+            //60606F4
+            fixedPoint r2;
+            if (r4 >= r14)
+            {
+                r2 = r4;
+            }
+            else
+            {
+                r2 = r14;
+            }
+
+            if (r10 < r2)
+            {
+                r4 = r10;
+            }
+            else if (r4 < r14)
+            {
+                r4 = r14;
+            }
+
+            r13 -= r4;
+            if (r13 > 0)
+            {
+                return r12;
+            }
+            else
+            {
+                return r11 + r4;
+            }
+        }
+    }
+
+    fixedPoint dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(fixedPoint r10, fixedPoint r12, fixedPoint stack0, fixedPoint r11, s32 r13)
+    {
+        fixedPoint r14 = r12 - r10;
+        r14 = r14.normalized();
+        fixedPoint r4 = MTH_Mul(stack0, r14);
+
+        if (r14 < 0)
+        {
+            fixedPoint r5 = -r13;
+            fixedPoint r6 = -r11;
+            fixedPoint r3;
+            if (r4 < r5)
+            {
+                r3 = r4;
+            }
+            else
+            {
+                r3 = r5;
+            }
+
+            if (r6 >= r3)
+            {
+                r4 = r6;
+            }
+            else if (r4 >= r5)
+            {
+                r4 = r5;
+            }
+
+            r5 = r14 - r4;
+            r3 = r5.normalized();
+
+            if (r13 > 0)
+            {
+                return r12;
+            }
+            else
+            {
+                return r10 + r4;
+            }
+        }
+        else
+        {
+            //60607A0
+            fixedPoint r5;
+            if (r4 >= r13)
+            {
+                r5 = r4;
+            }
+            else
+            {
+                r5 = r13;
+            }
+
+            if (r11 < r5)
+            {
+                r5 = r11;
+            }
+            else if (r4 < r13)
+            {
+                r5 = r4;
+            }
+            else
+            {
+                r5 = r13;
+            }
+
+            r4 = r14 - r5;
+            fixedPoint r3 = r5.normalized();
+
+            if (r3 > 0)
+            {
+                return r12;
+            }
+            else
+            {
+                return r10 + r5;
+            }
+        }
+    }
+
+    void fieldOverlaySubTaskInitSub2Sub1Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkArea* r9)
+    {
+        r14->m5C[0] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m5C[0], 0, 0x2000, 0x444444, 0);
+        r14->m5C[1] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m5C[1], 0, 0x2000, 0x444444, 0);
+        r14->m5C[2] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m5C[2], 0, 0x2000, 0x444444, 0);
+
+        r14->m5C += r14->m68;
+        r14->mC_rotation += r14->m5C;
+
+        r14->m68.zero();
+
+        r14->mC_rotation[0] = r14->mC_rotation[0].normalized();
+        r14->m18 = r14->m18.normalized();
+
+        fixedPoint r11 = r14->mC_rotation[0] + r14->m18;
+
+        if (r11 < -0x31C71C7)
+        {
+            r14->mC_rotation[0] = -r14->m18 - 0x31C71C7;
+            r11 = -0x31C71C7;
+        }
+        else if(r11 > 0x31C71C7)
+        {
+            r14->mC_rotation[0] = -r14->m18 + 0x31C71C7;
+            r11 = 0x31C71C7;
+        }
+
+        sVec3_FP var10;
+        var10[0] = -MTH_Mul_5_6(r14->m24_distanceToDestination, getCos(r11.getInteger() & 0xFFF), getSin(r14->mC_rotation[1].getInteger() & 0xFFF));
+        var10[1] = MTH_Mul(r14->m24_distanceToDestination, getSin(r11.getInteger() & 0xFFF));
+        var10[2] = -MTH_Mul_5_6(r14->m24_distanceToDestination, getCos(r11.getInteger() & 0xFFF), getCos(r14->mC_rotation[1].getInteger() & 0xFFF));
+
+        r14->m0_position = r9->m8_pos - var10;
+
+        r14->m44[0] = integrateDragonMovementSub5(r14->m44[0], 0, 0x2000, 0xAAA, 0);
+        r14->m44[1] = integrateDragonMovementSub5(r14->m44[1], 0, 0x2000, 0xAAA, 0);
+        r14->m44[2] = integrateDragonMovementSub5(r14->m44[2], 0, 0x2000, 0xAAA, 0);
+
+        r14->m44 += r14->m50;
+
+        r14->m0_position += r14->m44;
+        r14->m50.zero();
+
+        unimplemented("fieldOverlaySubTaskInitSub2Sub1Sub2");
+    }
+
+    void fieldOverlaySubTaskInitSub2Sub1(sFieldCameraStatus* r14, s_dragonTaskWorkArea* r12)
+    {
+        u32 stack_0[2];
+        sVec3_FP stack_8;
+
+        stack_8[0] = -r12->m88_matrix.matrix[2];
+        stack_8[1] = -r12->m88_matrix.matrix[6];
+        stack_8[2] = -r12->m88_matrix.matrix[10];
+
+        generateCameraMatrixSub1(stack_8, stack_0);
+
+        fieldOverlaySubTaskInitSub2Sub1Sub1(r14, r12);
+
+        if (r14->m7C & 1)
+        {
+            r14->mC_rotation[0] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->mC_rotation[0], r14->m28 - r12->m20_angle[0], 0x2000, 0x111111, 0);
+        }
+        else
+        {
+            r14->mC_rotation[0] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->mC_rotation[0], r14->m28, 0x2000, 0x111111, 0);
+        }
+
+        // TODO: recheck, this is sketchy (the m34[2])
+        if (getFieldTaskPtr()->m8_pSubFieldData->m334->m10[0].m34[2])
+        {
+            r14->m7C &= 0xFFFFFFFD;
+        }
+        else
+        {
+            r14->m7C |= 2;
+        }
+
+        if (r14->m7C & 2)
+        {
+            r14->mC_rotation[1] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->mC_rotation[1], stack_0[1] , 0x2000, 0x222222, 0);
+        }
+
+        if ((r14->m7C & 4) == 0)
+        {
+            r14->m30 = 0;
+        }
+
+        r14->mC_rotation[2] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->mC_rotation[2], r14->m30, 0x2000, 0x222222, 0);
+
+        r14->m24_distanceToDestination = integrateDragonMovementSub5(r14->m24_distanceToDestination, r14->m40, 0x2000, 0xAAA, 0);
+
+        fieldOverlaySubTaskInitSub2Sub1Sub2(r14, r12);
+    }
+
+    void fieldOverlaySubTaskInitSub2(sFieldCameraStatus* r14)
+    {
+        s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        if (pDragonTask == NULL)
+            return;
+
+        switch (r14->m8D)
+        {
+        case 1:
+            r14->m8F = 1;
+            r14->m90 = 1;
+            r14->m7C = 2;
+            r14->m8D = 2;
+        case 2:
+            fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
+            return;
+        default:
+            assert(0);
+        }
     }
 
     void fieldOverlaySubTaskInitSub1Sub0(sFieldCameraStatus* r4)
@@ -1046,9 +1340,6 @@ namespace FLD_A3_OVERLAY {
 
         p334->mC = 8;
         p334->m2DC = 4;
-
-        s_fieldCameraConfig* r13 = r4;
-        s_fieldCameraConfig* r14 = p334->m10;
 
         for (int i = 0; i < r5; i++)
         {
@@ -1353,13 +1644,6 @@ namespace FLD_A3_OVERLAY {
         unimplemented("startScriptLeaveArea");
     }
 
-    fixedPoint dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(fixedPoint r4, fixedPoint r5, fixedPoint r6, fixedPoint r7, s32 stack0)
-    {
-        unimplemented("dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1");
-
-        return r4;
-    }
-
     void dragonFieldTaskInitSub4Sub5(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13)
     {
         r14->field_30 = r13->m_value[0];
@@ -1649,13 +1933,6 @@ namespace FLD_A3_OVERLAY {
             //0607E9AE
             assert(0);
         }
-    }
-
-    fixedPoint integrateDragonMovementSub5(fixedPoint r4, fixedPoint r5, fixedPoint r6, fixedPoint r7, s32 stack0)
-    {
-        unimplemented("integrateDragonMovementSub5");
-
-        return r4;
     }
 
     void integrateDragonMovement(s_dragonTaskWorkArea* r14)
@@ -2875,10 +3152,12 @@ namespace FLD_A3_OVERLAY {
                 sVec3_FP varC;
                 varC[0] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->field_C0.getInteger() & 0xFFF), getSin(pTypedWorkArea->field_C4.getInteger() & 0xFFF));
                 varC[1] = MTH_Mul(fixedPoint(0x10000), getSin(pTypedWorkArea->field_C0.getInteger() & 0xFFF));
-                varC[2] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->field_C0.getInteger() & 0xFFF), getSin(pTypedWorkArea->field_C4.getInteger() & 0xFFF));
+                varC[2] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->field_C0.getInteger() & 0xFFF), getCos(pTypedWorkArea->field_C4.getInteger() & 0xFFF));
 
                 sVec3_FP var0;
                 //transformVecByCurrentMatrix(&varC, &var0);
+//                assert(0);
+                unimplemented("dragonFieldTaskDrawSub1");
             }
 
         }

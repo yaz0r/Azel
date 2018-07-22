@@ -6,8 +6,8 @@ struct s_fieldCameraConfig
     sVec3_FP mC_max;
     s32 m18[7];
     s32 m34[7];
-    s32 m50;
-    s32 m54;
+    fixedPoint m50;
+    fixedPoint m54;
     // size: 0x58
 };
 
