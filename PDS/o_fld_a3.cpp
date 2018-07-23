@@ -156,7 +156,7 @@ namespace FLD_A3_OVERLAY {
     */
     };
     u8 fieldA3_0_dataTable2[] = { 1 };
-
+    
     sCameraVisibility fieldA3_0_dataTable1_0[] =
     {
         { -1, 0 },
@@ -173,6 +173,28 @@ namespace FLD_A3_OVERLAY {
         fieldA3_0_dataTable1_0,
         fieldA3_0_dataTable1_1
     };
+    
+    std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3)
+    {
+        std::vector<std::vector<sCameraVisibility>>* pVisibility = new std::vector<std::vector<sCameraVisibility>>;
+        pVisibility->resize(pDataTable3->m10_gridSize[0] * pDataTable3->m10_gridSize[1]);
+
+        for (int i = 0; i < pDataTable3->m10_gridSize[0] * pDataTable3->m10_gridSize[1]; i++)
+        {
+            sSaturnPtr visibilityEA = readSaturnEA(EA); EA = EA + 4;
+            assert(visibilityEA.m_offset);
+
+            sCameraVisibility visibility;
+            do 
+            {
+                visibility.field_0 = readSaturnS8(visibilityEA); visibilityEA = visibilityEA + 1;
+                visibility.field_1 = readSaturnS8(visibilityEA); visibilityEA = visibilityEA + 1;
+                (*pVisibility)[i].push_back(visibility);
+            } while (visibility.field_0 != -1);
+        }
+
+        return pVisibility;
+    }
 
     void fieldA3_0_startTasks(p_workArea workArea)
     {
@@ -392,13 +414,14 @@ namespace FLD_A3_OVERLAY {
         return pNewTask;
     }
 
-    void enableCellsBasedOnVisibilityList(s_visibilityGridWorkArea* r14, sCameraVisibility* r5)
+    void enableCellsBasedOnVisibilityList(s_visibilityGridWorkArea* r14, std::vector<sCameraVisibility>& r5)
     {
-        // TODO: Original was different, but I think it was buggy
-        while (r5->field_0 >= 0)
+        for (int i = 0; i < r5.size(); i++)
         {
-            r14->m3C_cellRenderingTasks[(r14->field_30->m10_gridSize[0] * r5->field_1) + r5->field_0]->getTask()->clearPaused();
-            r5++;
+            if (r5[i].field_0 >= 0)
+            {
+                r14->m3C_cellRenderingTasks[(r14->field_30->m10_gridSize[0] * r5[i].field_1) + r5[i].field_0]->getTask()->clearPaused();
+            }
         }
     }
 
@@ -427,10 +450,10 @@ namespace FLD_A3_OVERLAY {
             (r14->m18_cameraGridLocation[0] >= 0) &&
             (r14->m18_cameraGridLocation[0] < r14->field_30->m10_gridSize[0]) &&
             (r14->m18_cameraGridLocation[1] >= 0) &&
-            (r14->m18_cameraGridLocation[1] < r14->field_30->m10_gridSize[1]) &&
-            (r14->m34_cameraVisibilityTable[r14->m18_cameraGridLocation[0] + r14->m18_cameraGridLocation[1] * r14->field_30->m10_gridSize[0]]))
+            (r14->m18_cameraGridLocation[1] < r14->field_30->m10_gridSize[1]) //&&
+            /*(r14->m34_cameraVisibilityTable[r14->m18_cameraGridLocation[0] + r14->m18_cameraGridLocation[1] * r14->field_30->m10_gridSize[0]])*/)
         {
-            return enableCellsBasedOnVisibilityList(r14, r14->m34_cameraVisibilityTable[r14->m18_cameraGridLocation[0] + r14->m18_cameraGridLocation[1] * r14->field_30->m10_gridSize[0]]);
+            return enableCellsBasedOnVisibilityList(r14, (*r14->m34_cameraVisibilityTable)[r14->m18_cameraGridLocation[0] + r14->m18_cameraGridLocation[1] * r14->field_30->m10_gridSize[0]]);
         }
 
         for (int i = 0; i < 9; i++)
@@ -572,7 +595,7 @@ namespace FLD_A3_OVERLAY {
         }
     }
 
-    void setupField(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea), sCameraVisibility** r7)
+    void setupField(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r7)
     {
         getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1->m34_cameraVisibilityTable = r7;
 
@@ -764,8 +787,10 @@ namespace FLD_A3_OVERLAY {
 
         playPCM(workArea, 100);
         playPCM(workArea, 101);
-
-        setupField(readDataTable3({ 0x6085AA4, gFLD_A3 }), fieldA3_0_dataTable2, fieldA3_0_startTasks, fieldA3_0_dataTable1);
+        
+        s_DataTable3* pDataTable3 = readDataTable3({ 0x6085AA4, gFLD_A3 });
+        std::vector<std::vector<sCameraVisibility>>* pVisibility = readCameraVisbility({ 0x608F410, gFLD_A3 }, pDataTable3);
+        setupField(pDataTable3, fieldA3_0_dataTable2, fieldA3_0_startTasks, pVisibility);
 
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_0Sub0;
 
@@ -1720,9 +1745,31 @@ namespace FLD_A3_OVERLAY {
         r14->m25C &= 0xFFFFFFFE;
     }
 
-    u32 updateDragonMovementFromControllerType1Sub1(s_dragonTaskWorkArea* r14)
+    u32 updateDragonMovementFromControllerType1Sub1(s_dragonTaskWorkArea* r4)
     {
-        unimplemented("updateDragonMovementFromControllerType1Sub1");
+        s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+
+        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x10000)
+            return 0;
+
+        if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8)
+            return 0;
+
+        if (r14->m4)
+            return 0;
+
+        if (r14->m30)
+            return 0;
+
+        if (r14->m34)
+            return 0;
+
+        if (r14->m38)
+            return 0;
+
+        if (r14->m3C)
+            return 0;
+
         return 1;
     }
 
@@ -1749,10 +1796,139 @@ namespace FLD_A3_OVERLAY {
         }
     }
 
+    void updateDragonMovementFromControllerType1Sub3Sub1(s_dragonTaskWorkArea* r14)
+    {
+        unimplemented("updateDragonMovementFromControllerType1Sub3Sub1");
+    }
+
     void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
     {
-        unimplemented("updateDragonMovementFromControllerType1Sub3");
-        updateDragonMovementFromControllerType0(r14);
+        updateDragonMovementFromControllerType1Sub3Sub1(r14);
+
+        fixedPoint r2;
+        if (r14->m154_dragonSpeed >= 0)
+        {
+            r2 = r14->m154_dragonSpeed;
+        }
+        else
+        {
+            r2 = -r14->m154_dragonSpeed;
+        }
+
+        if (r2 >= 256)
+        {
+            //0607EC06
+            if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][5]) // Go down
+            {
+                //0607EC12
+                r14->m20_angle[0] += r14->field_178[0];
+                r14->field_238 |= 2;
+                r14->field_1F0.m_8 = r14->field_178[0];
+                r14->field_FC |= 2;
+            }
+            else if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][4]) // Go up
+            {
+                //0607EC44
+                r14->m20_angle[0] -= r14->field_178[0];
+                r14->field_238 |= 1;
+                r14->field_1F0.m_8 = -r14->field_178[0];
+                r14->field_FC |= 1;
+            }
+            //607EC6C
+            fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
+            r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+        }
+        else
+        {
+            //0607ECA4
+            if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][5]) // Go down
+            {
+                //607ECB0
+                r14->m160_deltaTranslation[1] -= 0x800;
+                r14->field_238 |= 2;
+                r14->field_1F0.m_8 = -r14->field_178[0];
+                r14->field_FC |= 2;
+            }
+            else if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][4]) // Go up
+            {
+                //607ED00
+                r14->m160_deltaTranslation[1] += 0x800;
+                r14->field_238 |= 1;
+                r14->field_1F0.m_8 = -r14->field_178[0];
+                r14->field_FC |= 1;
+            }
+            //607ED32
+            fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
+            r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+        }
+
+        //0607ED68
+        if (r14->m20_angle[0].normalized() > r14->m14C_pitchMax)
+        {
+            r14->m20_angle[0] = r14->m14C_pitchMax;
+        }
+        if (r14->m20_angle[0].normalized() < r14->m148_pitchMin)
+        {
+            r14->m20_angle[0] = r14->m148_pitchMin;
+        }
+
+        if (r14->m25D == 2)
+        {
+            //0607EDB0
+            r14->m20_angle[2] += r14->m254;
+        }
+        else
+        {
+            fixedPoint r1 = r14->m3C[2] - r14->m20_angle[2];
+            r14->m20_angle[2] += r14->m3C[2] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[2];
+
+            if (r14->m25D == 1)
+            {
+                assert(0);
+                //updateDragonMovementFromControllerType1Sub3Sub1(r14);
+            }
+            else
+            {
+                if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][7]) // right
+                {
+                    //0607EE34
+                    if ((r14->mF8_Flags & 0x8000) == 0)
+                    {
+                        r14->m20_angle[1] -= r14->field_178[0];
+                    }
+
+                    r14->field_1F0.m_C = -r14->field_178[0];
+                    if (r14->m30 - r14->m20_angle[1] >= r14->field_178[0])
+                    {
+                        r14->m20_angle[2] += performDivision(4, r14->field_178[0] * 3);
+                    }
+
+                    r14->field_FC |= 8;
+                    r14->m25E = 0;
+                }
+                else if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][6])
+                {
+                    //0607EE8C
+                    if ((r14->mF8_Flags & 0x8000) == 0)
+                    {
+                        r14->m20_angle[1] += r14->field_178[0];
+                    }
+
+                    r14->field_1F0.m_C = r14->field_178[0];
+                    if (r14->m20_angle[1] - r14->m30 >= r14->field_178[0])
+                    {
+                        r14->m20_angle[2] -= performDivision(4, r14->field_178[0] * 3);
+                    }
+
+                    r14->field_FC |= 4;
+                    r14->m25E = 1;
+                }
+            }
+        }
+
+        r14->m247 = 0;
+        r14->m246 = 0;
+        r14->m245 = 0;
     }
 
     void updateDragonMovementFromControllerType1(s_dragonTaskWorkArea* r14)
@@ -2087,11 +2263,8 @@ namespace FLD_A3_OVERLAY {
                 r2 = r6;
             }
             else
-
             {
-
                 r2 = -0x3555555;
-
             }
 
             fixedPoint r3;
@@ -2119,11 +2292,8 @@ namespace FLD_A3_OVERLAY {
                 r2 = r5;
             }
             else
-
             {
-
                 r2 = 0x3555555;
-
             }
 
             fixedPoint r3;

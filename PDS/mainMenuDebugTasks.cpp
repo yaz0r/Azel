@@ -1361,7 +1361,6 @@ u32 dragonFieldTaskInitSub3Sub1(s_3dModel* pDragonStateData1, u8* r5)
         {
             if (READ_BE_U16(pDragonStateData1->m30_pCurrentAnimation) != READ_BE_U16(r5))
             {
-                assert(0); // untested
                 pDragonStateData1->mA &= 0xFFC7;
                 pDragonStateData1->mA |= READ_BE_U16(r5);
                 initModelDrawFunction(pDragonStateData1);

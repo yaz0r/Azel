@@ -248,6 +248,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u8 m25B;
     u8 m25C;
     s8 m25D;
+    s8 m25E;
 };
 
 struct s_grid1
@@ -316,7 +317,7 @@ struct s_visibilityGridWorkArea : public s_workArea
     u32 field_28;
     fixedPoint* m2C_depthRangeTable;
     s_DataTable3* field_30; // 30
-    sCameraVisibility** m34_cameraVisibilityTable; // field_34
+    std::vector<std::vector<sCameraVisibility>>* m34_cameraVisibilityTable; // field_34
     p_workArea field_38; // 38
     s_visdibilityCellTask** m3C_cellRenderingTasks; // 3C (an array of tasks)
     s_visibilityGridWorkArea_68* m44;

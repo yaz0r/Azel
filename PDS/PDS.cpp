@@ -901,6 +901,12 @@ s16 READ_BE_S16(const void* ptr)
     return *(s16*)&data;
 }
 
+s8 READ_BE_S8(const void* ptr)
+{
+    s8 data = *(s8*)(ptr);
+    return data;
+}
+
 void yLog(...)
 {
 
