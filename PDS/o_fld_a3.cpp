@@ -1021,7 +1021,7 @@ namespace FLD_A3_OVERLAY {
         r11->m40 = r14->m18[6] + MTH_Mul(r4, r14FP);
     }
 
-    fixedPoint integrateDragonMovementSub5(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14)
+    fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14)
     {
         fixedPoint r13 = r12 - r11;
         fixedPoint r4 = MTH_Mul(stack0, r13);
@@ -1094,9 +1094,9 @@ namespace FLD_A3_OVERLAY {
         }
     }
 
-    fixedPoint dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(fixedPoint r10, fixedPoint r12, fixedPoint stack0, fixedPoint r11, s32 r13)
+    fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targetValue, fixedPoint stack0, fixedPoint r11, s32 r13)
     {
-        fixedPoint r14 = r12 - r10;
+        fixedPoint r14 = r12_targetValue - r10_currentValue;
         r14 = r14.normalized();
         fixedPoint r4 = MTH_Mul(stack0, r14);
 
@@ -1126,13 +1126,13 @@ namespace FLD_A3_OVERLAY {
             r5 = r14 - r4;
             r3 = r5.normalized();
 
-            if (r13 > 0)
+            if (r3 > 0)
             {
-                return r12;
+                return r12_targetValue;
             }
             else
             {
-                return r10 + r4;
+                return r10_currentValue + r4;
             }
         }
         else
@@ -1152,7 +1152,7 @@ namespace FLD_A3_OVERLAY {
             {
                 r5 = r11;
             }
-            else if (r4 < r13)
+            else if (r4 >= r13)
             {
                 r5 = r4;
             }
@@ -1162,24 +1162,24 @@ namespace FLD_A3_OVERLAY {
             }
 
             r4 = r14 - r5;
-            fixedPoint r3 = r5.normalized();
+            fixedPoint r3 = r4.normalized();
 
-            if (r3 > 0)
+            if (r3 >= 0)
             {
-                return r12;
+                return r10_currentValue + r5;
             }
             else
             {
-                return r10 + r5;
+                return r12_targetValue;
             }
         }
     }
 
     void fieldOverlaySubTaskInitSub2Sub1Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkArea* r9)
     {
-        r14->m5C[0] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m5C[0], 0, 0x2000, 0x444444, 0);
-        r14->m5C[1] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m5C[1], 0, 0x2000, 0x444444, 0);
-        r14->m5C[2] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m5C[2], 0, 0x2000, 0x444444, 0);
+        r14->m5C[0] = interpolateRotation(r14->m5C[0], 0, 0x2000, 0x444444, 0);
+        r14->m5C[1] = interpolateRotation(r14->m5C[1], 0, 0x2000, 0x444444, 0);
+        r14->m5C[2] = interpolateRotation(r14->m5C[2], 0, 0x2000, 0x444444, 0);
 
         r14->m5C += r14->m68;
         r14->mC_rotation += r14->m5C;
@@ -1209,9 +1209,9 @@ namespace FLD_A3_OVERLAY {
 
         r14->m0_position = r9->m8_pos - var10;
 
-        r14->m44[0] = integrateDragonMovementSub5(r14->m44[0], 0, 0x2000, 0xAAA, 0);
-        r14->m44[1] = integrateDragonMovementSub5(r14->m44[1], 0, 0x2000, 0xAAA, 0);
-        r14->m44[2] = integrateDragonMovementSub5(r14->m44[2], 0, 0x2000, 0xAAA, 0);
+        r14->m44[0] = interpolateDistance(r14->m44[0], 0, 0x2000, 0xAAA, 0);
+        r14->m44[1] = interpolateDistance(r14->m44[1], 0, 0x2000, 0xAAA, 0);
+        r14->m44[2] = interpolateDistance(r14->m44[2], 0, 0x2000, 0xAAA, 0);
 
         r14->m44 += r14->m50;
 
@@ -1223,7 +1223,7 @@ namespace FLD_A3_OVERLAY {
 
     void fieldOverlaySubTaskInitSub2Sub1(sFieldCameraStatus* r14, s_dragonTaskWorkArea* r12)
     {
-        u32 stack_0[2];
+        fixedPoint stack_0[2];
         sVec3_FP stack_8;
 
         stack_8[0] = -r12->m88_matrix.matrix[2];
@@ -1236,11 +1236,11 @@ namespace FLD_A3_OVERLAY {
 
         if (r14->m7C & 1)
         {
-            r14->mC_rotation[0] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->mC_rotation[0], r14->m28 - r12->m20_angle[0], 0x2000, 0x111111, 0);
+            r14->mC_rotation[0] = interpolateRotation(r14->mC_rotation[0], r14->m28 - r12->m20_angle[0], 0x2000, 0x111111, 0);
         }
         else
         {
-            r14->mC_rotation[0] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->mC_rotation[0], r14->m28, 0x2000, 0x111111, 0);
+            r14->mC_rotation[0] = interpolateRotation(r14->mC_rotation[0], r14->m28, 0x2000, 0x111111, 0);
         }
 
         // TODO: recheck, this is sketchy (the m34[2])
@@ -1255,7 +1255,7 @@ namespace FLD_A3_OVERLAY {
 
         if (r14->m7C & 2)
         {
-            r14->mC_rotation[1] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->mC_rotation[1], stack_0[1] , 0x2000, 0x222222, 0);
+            r14->mC_rotation[1] = interpolateRotation(r14->mC_rotation[1], stack_0[1] , 0x2000, 0x222222, 0);
         }
 
         if ((r14->m7C & 4) == 0)
@@ -1263,9 +1263,9 @@ namespace FLD_A3_OVERLAY {
             r14->m30 = 0;
         }
 
-        r14->mC_rotation[2] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->mC_rotation[2], r14->m30, 0x2000, 0x222222, 0);
+        r14->mC_rotation[2] = interpolateRotation(r14->mC_rotation[2], r14->m30, 0x2000, 0x222222, 0);
 
-        r14->m24_distanceToDestination = integrateDragonMovementSub5(r14->m24_distanceToDestination, r14->m40, 0x2000, 0xAAA, 0);
+        r14->m24_distanceToDestination = interpolateDistance(r14->m24_distanceToDestination, r14->m40, 0x2000, 0xAAA, 0);
 
         fieldOverlaySubTaskInitSub2Sub1Sub2(r14, r12);
     }
@@ -1906,7 +1906,7 @@ namespace FLD_A3_OVERLAY {
                     r14->field_FC |= 8;
                     r14->m25E = 0;
                 }
-                else if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][6])
+                else if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][6]) // left
                 {
                     //0607EE8C
                     if ((r14->mF8_Flags & 0x8000) == 0)
@@ -2039,11 +2039,11 @@ namespace FLD_A3_OVERLAY {
 
     void integrateDragonMovementSub4Sub1(s_dragonTaskWorkArea* r4)
     {
-        if (r4->m25C & 1)
+        if ((r4->m25C & 1) == 0)
         {
+            r4->m235_dragonSpeedIndex = 0;
+            r4->field_234 = 0;
             r4->m25C = 0;
-            r4->m25B = 0;
-            r4->m20_angle[2] = 0;
         }
     }
 
@@ -2087,7 +2087,7 @@ namespace FLD_A3_OVERLAY {
             r5 = 3;
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][0])
+        if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][0]) // go forward
         {
             //0607E960
             if (++r14->field_234 > 4)
@@ -2200,9 +2200,9 @@ namespace FLD_A3_OVERLAY {
         }
         r14->m154_dragonSpeed = r2;
 
-        r14->m1AC[0] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m1AC[0], 0, 0x2000, 0x444444, 0x10);
-        r14->m1AC[1] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m1AC[1], 0, 0x2000, 0x444444, 0x10);
-        r14->m1AC[2] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m1AC[2], 0, 0x2000, 0x444444, 0x10);
+        r14->m1AC[0] = interpolateRotation(r14->m1AC[0], 0, 0x2000, 0x444444, 0x10);
+        r14->m1AC[1] = interpolateRotation(r14->m1AC[1], 0, 0x2000, 0x444444, 0x10);
+        r14->m1AC[2] = interpolateRotation(r14->m1AC[2], 0, 0x2000, 0x444444, 0x10);
 
         r14->m1AC += r14->m1A0;
 
@@ -2211,9 +2211,9 @@ namespace FLD_A3_OVERLAY {
         r14->m1A0.zero();
 
         // ~0607FFEC 
-        r14->m194[0] = integrateDragonMovementSub5(r14->m194[0], 0, 0x2000, 0xAAA, 0x10);
-        r14->m194[1] = integrateDragonMovementSub5(r14->m194[1], 0, 0x2000, 0xAAA, 0x10);
-        r14->m194[2] = integrateDragonMovementSub5(r14->m194[2], 0, 0x2000, 0xAAA, 0x10);
+        r14->m194[0] = interpolateDistance(r14->m194[0], 0, 0x2000, 0xAAA, 0x10);
+        r14->m194[1] = interpolateDistance(r14->m194[1], 0, 0x2000, 0xAAA, 0x10);
+        r14->m194[2] = interpolateDistance(r14->m194[2], 0, 0x2000, 0xAAA, 0x10);
 
         r14->m194 += r14->m188;
 
@@ -2415,7 +2415,7 @@ namespace FLD_A3_OVERLAY {
         var_8[1] = 0;
         var_8[2] = r12->mC[2] - r14->m8_pos[2];
 
-        u32 var_0[2];
+        fixedPoint var_0[2];
         generateCameraMatrixSub1(var_8, var_0);
 
         // update yaw
@@ -2432,7 +2432,7 @@ namespace FLD_A3_OVERLAY {
         r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, (tempRotX << 4) - tempRotX) - r14->m20_angle[0];
 
         // update pitch
-        r14->m20_angle[1] = dragonFieldTaskInitSub4Sub4Sub1Sub1Sub1(r14->m20_angle[1], var_8[0], 0x2000, 0x444444, 0x10);
+        r14->m20_angle[1] = interpolateRotation(r14->m20_angle[1], var_8[0], 0x2000, 0x444444, 0x10);
 
         // update roll
         s32 tempRotZ = r14->m3C[2] - r14->m20_angle[2];
@@ -3132,7 +3132,7 @@ namespace FLD_A3_OVERLAY {
             if (pDragonTask->m1D0_cameraScript)
             {
                 sVec3_FP r15_8 = pDragonTask->m8_pos - pDragonTask->m1D0_cameraScript->m24_pos2;
-                u32 r15[2];
+                fixedPoint r15[2];
 
                 generateCameraMatrixSub1(r15_8, r15);
 
@@ -3444,7 +3444,7 @@ namespace FLD_A3_OVERLAY {
         }
 
         s32 Z = performDivision(pFieldCameraTask1->field_24, -pFieldCameraTask1->m0_position[2]);
-        if (pFieldCameraTask1->m0_position[2] < 0)
+        if (pFieldCameraTask1->m0_position[2] >= 0)
         {
             Z--;
         }
@@ -3460,6 +3460,12 @@ namespace FLD_A3_OVERLAY {
             pFieldCameraTask1->m18_cameraGridLocation[1] = Z;
             bDirty = 1;
         }
+
+        if (ImGui::Begin("Camera"))
+        {
+            ImGui::Text("cell: X: %d, Y:%d", pFieldCameraTask1->m18_cameraGridLocation[0], pFieldCameraTask1->m18_cameraGridLocation[1]);
+        }
+        ImGui::End();
 
         return bDirty;
     }
