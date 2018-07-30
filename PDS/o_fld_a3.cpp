@@ -3336,6 +3336,39 @@ namespace FLD_A3_OVERLAY {
 
     }
 
+    struct s_dragonHotspotPerDragonType
+    {
+        u32 m0;
+        u32 m4;
+    };
+
+    s_dragonHotspotPerDragonType dragonHotspotPerDragonType[DR_LEVEL_MAX][5] = {
+        { {0, 0},{0,1},{17,1}, {9, 0}, {12,0} },
+        { {15, 0},{15,1}, {20, 1}, {9, 0}, {26, 0} },
+        { {12, 0},{12,1}, {16, 0}, {23, 0}, {26, 0} },
+        { {1, 0}, {1,1}, {4,1}, {12,0}, {15,0} },
+        { {1, 0}, {1,1}, {5,1}, {12,0}, {31,0} },
+        { {10, 0}, {10,1}, {13,0}, {25,0}, {28,0}},
+        { {1,0}, {1,1}, {2,1}, {23,0}, {25,0} },
+        { {1,0}, {0,0}, {3,1}, {7,0}, {22,0} },
+        { {0,3}, {0,4}, {0,0}, {0,1}, {0,0} },
+    };
+
+    void getDragonHotSpot(s_dragonState* r4, u32 r5, sVec3_FP* r6)
+    {
+        s_dragonHotspotPerDragonType* pHotSpotData = &dragonHotspotPerDragonType[r4->mC_dragonType][r5];
+        if (pHotSpotData->m0 < 0) // don't think that can ever happen
+            return;
+
+        sVec3_FP* pVec = &r4->m28_dragon3dModel.m44[pHotSpotData->m0][pHotSpotData->m4];
+        transformAndAddVec(*pVec, *r6, cameraProperties2.m28[0]);
+    }
+
+    void dragonFieldTaskDrawSub3(s_dragonTaskWorkArea* pTypedWorkArea)
+    {
+        unimplemented("dragonFieldTaskDrawSub3");
+    }
+
     void dragonFieldTaskDraw(s_workArea* pWorkArea)
     {
         s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
@@ -3369,7 +3402,47 @@ namespace FLD_A3_OVERLAY {
         gDragonState->m28_dragon3dModel.m18_drawFunction(&gDragonState->m28_dragon3dModel);
         popMatrix();
 
-        unimplemented("dragonFieldTaskDraw");
+        //06074438
+        getDragonHotSpot(gDragonState, 2, &pTypedWorkArea->m10C_hotSpot2);
+        getDragonHotSpot(gDragonState, 3, &pTypedWorkArea->m118_hotSpot3);
+        getDragonHotSpot(gDragonState, 4, &pTypedWorkArea->m124_hotSpot4);
+
+        if (pTypedWorkArea->m249 == 0)
+        {
+            if (mainGameState.gameStats.m2_rider1)
+            {
+                sVec3_FP rider1_hotSpot;
+                getDragonHotSpot(gDragonState, 0, &rider1_hotSpot);
+
+                pushCurrentMatrix();
+                translateCurrentMatrix(&rider1_hotSpot);
+                rotateCurrentMatrixShiftedY(0x8000000);
+                multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
+                pRiderState->m18_3dModel.m18_drawFunction(&pRiderState->m18_3dModel);
+                popMatrix();
+
+                if (pRiderState->m18_3dModel.m44[5])
+                {
+                    //060744AA
+                    transformAndAddVec(*pRiderState->m18_3dModel.m44[5], rider1_hotSpot, cameraProperties2.m28[0]);
+                    pushCurrentMatrix();
+                    translateCurrentMatrix(&rider1_hotSpot);
+                    rotateCurrentMatrixShiftedY(0x8000000);
+                    multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
+                    u32 offset = READ_BE_U32(pRiderState->m0_riderModel + pRiderState->m_14);
+                    addObjectToDrawList(pRiderState->m0_riderModel, offset);
+                    popMatrix();
+                }
+            }
+            //60744E4
+            if (mainGameState.gameStats.m3_rider2)
+            {
+                assert(0);
+            }
+        }
+
+        //06074520
+        dragonFieldTaskDrawSub3(pTypedWorkArea);
     }
 
     s_taskDefinitionWithArg dragonFieldTaskDefinition = { dragonFieldTaskInit, dragonFieldTaskUpdate, dragonFieldTaskDraw, dummyTaskDelete, "dragonFieldTask" };

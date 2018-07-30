@@ -905,30 +905,100 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
     
 }
 
-void transformAndAddVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6)
+void modeDrawFunction10Sub1(u8* pModelDataRoot, u8* pModelData, sPoseData** r14)
 {
-    s64 mac = 0;
-    mac += (s64)r6.matrix[0] * (s64)r4[0].asS32();
-    mac += (s64)r6.matrix[1] * (s64)r4[1].asS32();
-    mac += (s64)r6.matrix[2] * (s64)r4[2].asS32();
-    r5[0] += mac >> 16;
+    do 
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&(*r14)->m_translation);
+        rotateCurrentMatrixZYX(&(*r14)->m_rotation);
 
-    mac = 0;
-    mac += (s64)r6.matrix[4] * (s64)r4[0].asS32();
-    mac += (s64)r6.matrix[5] * (s64)r4[1].asS32();
-    mac += (s64)r6.matrix[6] * (s64)r4[2].asS32();
-    r5[1] += mac >> 16;
+        if (u32 offset = READ_BE_U32(pModelData))
+        {
+            addObjectToDrawList(pModelDataRoot, offset);
+        }
 
-    mac = 0;
-    mac += (s64)r6.matrix[8] * (s64)r4[0].asS32();
-    mac += (s64)r6.matrix[9] * (s64)r4[1].asS32();
-    mac += (s64)r6.matrix[10] * (s64)r4[2].asS32();
-    r5[2] += mac >> 16;
+        if (u32 offset = READ_BE_U32(pModelData + 4))
+        {
+            (*r14)++;
+            modeDrawFunction10Sub1(pModelDataRoot, pModelDataRoot + offset, r14);
+        }
+
+
+        popMatrix();
+
+        // End of model
+        if (READ_BE_U32(pModelData + 8) == 0)
+        {
+            return;
+        }
+
+        (*r14)++;
+        pModelData = pModelDataRoot + READ_BE_U32(pModelData + 8);
+
+    } while (1);
 }
 
-void transformAndAddVecByCurrentMatrix(sVec3_FP* r4, sVec3_FP* r5)
+void modeDrawFunction6Sub2(u8* pModelDataRoot, u8* pModelData, sPoseData*& pPoseData, const s_RiderDefinitionSub*& r6, sVec3_FP**& r7)
 {
-    transformAndAddVec(*r4, *r5, *pCurrentMatrix);
+    unimplemented("modeDrawFunction6Sub2");
+}
+
+void modeDrawFunction6Sub1(u8* pModelDataRoot, u8* pModelData, sPoseData*& pPoseData, const s_RiderDefinitionSub*& r6, sVec3_FP**& r7)
+{
+    do
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pPoseData->m_translation);
+        rotateCurrentMatrixZYX(&pPoseData->m_rotation);
+
+        if (u32 offset = READ_BE_U32(pModelData))
+        {
+            addObjectToDrawList(pModelDataRoot, offset);
+        }
+
+        if (r6->m_count == 0)
+        {
+            assert((*r7) == NULL);
+        }
+
+        for (u32 i = 0; i < r6->m_count; i++)
+        {
+            sSaturnPtr r4 = r6->m_ptr + (i * 20) + 4;
+            sVec3_FP input = readSaturnVec3(r4);
+            sVec3_FP* output = (*r7) + i;
+            transformAndAddVecByCurrentMatrix(&input, output);
+        }
+
+        if (u32 offset = READ_BE_U32(pModelData + 4))
+        {
+            // next matrix
+            pPoseData++;
+            // next bone stuff
+            r6++;
+            // next ???
+            r7++;
+
+            modeDrawFunction6Sub1(pModelDataRoot, pModelDataRoot + offset, pPoseData, r6, r7);
+        }
+
+        popMatrix();
+
+        // End of model
+        if (READ_BE_U32(pModelData + 8) == 0)
+        {
+            return;
+        }
+
+        // next matrix
+        pPoseData++;
+        // next bone stuff
+        r6++;
+        // next ???
+        r7++;
+
+        pModelData = pModelDataRoot + READ_BE_U32(pModelData + 8);
+    } while (1);
 }
 
 void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, sMatrix4x3*& modelMatrix, const s_RiderDefinitionSub*& r6, sVec3_FP**& r7)
@@ -1084,7 +1154,10 @@ void modelMode0_scale(s_3dModel*)
 
 void (*modelMode4_scale)(s_3dModel*) = unimplementedUpdate;
 
-void(*modelDrawFunction0)(s_3dModel*) = unimplementedDraw;
+void modelDrawFunction0(s_3dModel* pModel)
+{
+    unimplementedDraw(pModel);
+}
 void modelDrawFunction1(s_3dModel* pDragonStateData1)
 {
     sVec3_FP** var_0 = pDragonStateData1->m44;
@@ -1102,14 +1175,47 @@ void modelDrawFunction1(s_3dModel* pDragonStateData1)
         modeDrawFunction1Sub2(pDragonStateData1->m4_pModelFile, r4, var_8, var_4, var_0);
     }
 }
-void (*modelDrawFunction2)(s_3dModel*) = unimplementedDraw;
-void (*modelDrawFunction3)(s_3dModel*) = unimplementedDraw;
+void modelDrawFunction2(s_3dModel* pModel)
+{
+    unimplementedDraw(pModel);
+}
+void modelDrawFunction3(s_3dModel* pModel)
+{
+    unimplementedDraw(pModel);
+}
+void modelDrawFunction5(s_3dModel* pModel)
+{
+    unimplementedDraw(pModel);
+}
+void modelDrawFunction6(s_3dModel* pModel)
+{
+    sVec3_FP** var_0 = pModel->m44;
+    sPoseData* pPoseData = pModel->m2C_poseData;
+    const s_RiderDefinitionSub* var_4 = pModel->m40;
+    u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
 
-void (*modelDrawFunction5)(s_3dModel*) = unimplementedDraw;
-void (*modelDrawFunction6)(s_3dModel*) = unimplementedDraw;
-
-void (*modelDrawFunction9)(s_3dModel*) = unimplementedDraw;
-void (*modelDrawFunction10)(s_3dModel*) = unimplementedDraw;
+    if (pModel->m8 & 1)
+    {
+        modeDrawFunction6Sub1(pModel->m4_pModelFile, r4, pPoseData, var_4, var_0);
+    }
+    else
+    {
+        modeDrawFunction6Sub2(pModel->m4_pModelFile, r4, pPoseData, var_4, var_0);
+    }
+}
+void modelDrawFunction9(s_3dModel* pModel)
+{
+    unimplementedDraw(pModel);
+}
+void modelDrawFunction10(s_3dModel* pModel)
+{
+    if (pModel->m8 & 1)
+    {
+        u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+        sPoseData* pPoseData = pModel->m2C_poseData;
+        modeDrawFunction10Sub1(pModel->m4_pModelFile, r4, &pPoseData);
+    }
+}
 
 void copyPosePosition(s_3dModel* pDragonStateData1)
 {
@@ -1911,7 +2017,7 @@ const s_RiderDefinitionSub gEdgeExtraData[] =
     { NULL, 0 },
     { NULL, 0 },
     { NULL, 0 },
-    { { -1, &gCommonFile }, 1 },
+    { { 0x2020E8, &gCommonFile }, 1 },
 };
 
 const s_RiderDefinition gRiderTable[] = {
@@ -1946,7 +2052,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
     pLoadRiderWorkArea->m_riderType = riderType;
     pLoadRiderWorkArea->m_modelIndex = r13->m_flags;
 
-    pRider2State = pLoadRiderWorkArea;
+    pRiderState = pLoadRiderWorkArea;
 
     if (riderType < 6)
     {
@@ -1993,7 +2099,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
     pLoadRiderWorkArea->m_riderType = riderType;
     pLoadRiderWorkArea->m_modelIndex = r13->m_flags;
 
-    pRiderState = pLoadRiderWorkArea;
+    pRider2State = pLoadRiderWorkArea;
 
     if (riderType < 6)
     {

@@ -76,6 +76,7 @@ void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix);
 void translateCurrentMatrix(sVec3_FP* translation);
 void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
 void rotateMatrixZYX(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
+void rotateCurrentMatrixZYX(sVec3_FP* rotationVec);
 void rotateMatrixZYX_s16(s16* rotationVec, sMatrix4x3* pMatrix);
 void multiplyCurrentMatrix(sMatrix4x3* arg4);
 void multiplyCurrentMatrixSaveStack(sMatrix4x3* arg4);
@@ -85,4 +86,7 @@ void scaleCurrentMatrixRow1(s32 r4);
 void scaleCurrentMatrixRow2(s32 r4);
 
 fixedPoint vecDistance(const sVec3_FP& r4, const sVec3_FP& r5);
+
+void transformAndAddVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6);
+void transformAndAddVecByCurrentMatrix(sVec3_FP* r4, sVec3_FP* r5);
 

@@ -493,6 +493,11 @@ void rotateMatrixZYX(sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
     rotateMatrixX((*rotationVec)[0].getInteger(), pMatrix);
 }
 
+void rotateCurrentMatrixZYX(sVec3_FP* rotationVec)
+{
+    rotateMatrixZYX(rotationVec, pCurrentMatrix);
+}
+
 void rotateMatrixZYX_s16(s16* rotationVec, sMatrix4x3* pMatrix)
 {
     rotateMatrixZ(rotationVec[2], pMatrix);
@@ -523,3 +528,30 @@ fixedPoint vecDistance(const sVec3_FP& r4, const sVec3_FP& r5)
 
     return sqrt_F(x + y + z);
 }
+
+void transformAndAddVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6)
+{
+    s64 mac = 0;
+    mac += (s64)r6.matrix[0] * (s64)r4[0].asS32();
+    mac += (s64)r6.matrix[1] * (s64)r4[1].asS32();
+    mac += (s64)r6.matrix[2] * (s64)r4[2].asS32();
+    r5[0] = mac >> 16;
+
+    mac = 0;
+    mac += (s64)r6.matrix[4] * (s64)r4[0].asS32();
+    mac += (s64)r6.matrix[5] * (s64)r4[1].asS32();
+    mac += (s64)r6.matrix[6] * (s64)r4[2].asS32();
+    r5[1] = mac >> 16;
+
+    mac = 0;
+    mac += (s64)r6.matrix[8] * (s64)r4[0].asS32();
+    mac += (s64)r6.matrix[9] * (s64)r4[1].asS32();
+    mac += (s64)r6.matrix[10] * (s64)r4[2].asS32();
+    r5[2] = mac >> 16;
+}
+
+void transformAndAddVecByCurrentMatrix(sVec3_FP* r4, sVec3_FP* r5)
+{
+    transformAndAddVec(*r4, *r5, *pCurrentMatrix);
+}
+

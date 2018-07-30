@@ -182,6 +182,9 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 field_FC; // FC
     u32 m100;
     u32 m104_dragonScriptStatus;
+    sVec3_FP m10C_hotSpot2;
+    sVec3_FP m118_hotSpot3;
+    sVec3_FP m124_hotSpot4;
     fixedPoint m130_minX;
     fixedPoint m134_minY;
     fixedPoint m138_minZ;
