@@ -4,7 +4,6 @@ s_fieldTaskWorkArea* fieldTaskPtr = NULL;
 
 u8 fieldVdp1Buffer[0x4000];
 u8 fieldMainBuffer[0x68000];
-u8 vdp1FieldArea[0x5F800];
 
 struct s_vramListIntermediary : s_vdp1AllocatorNode
 {
@@ -77,7 +76,7 @@ void loadCommonFieldResources()
     allocateVramList(fieldTaskPtr->m4_overlayTaskData, fieldVdp1Buffer, sizeof(fieldVdp1Buffer));
 
     initFieldMemoryArea(fieldMainBuffer, sizeof(fieldMainBuffer));
-    initFieldVdp1Area(vdp1FieldArea, sizeof(vdp1FieldArea));
+    initFieldVdp1Area(getVdp1Pointer(0x25C1C800), 0x5F800);
 }
 
 bool findMandatoryFileOnDisc(const char* fileName)
@@ -189,8 +188,8 @@ void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex)
         areaIndex = 2;
     }
 
-    pOutput->mainMemory = fieldTaskPtr->m8_pSubFieldData->memoryArea[areaIndex];
-    pOutput->characterArea = fieldTaskPtr->m8_pSubFieldData->characterArea[areaIndex];
+    pOutput->m0_mainMemory = fieldTaskPtr->m8_pSubFieldData->memoryArea[areaIndex];
+    pOutput->m4_characterArea = fieldTaskPtr->m8_pSubFieldData->characterArea[areaIndex];
 }
 
 

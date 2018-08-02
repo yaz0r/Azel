@@ -336,8 +336,8 @@ namespace FLD_A3_OVERLAY {
                 r13->m12E0++;
 
                 s16 r2 = readSaturnS16(r14->m0);
-                u32 r1 = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.mainMemory + r2);
-                r13->m12F0 += READ_BE_U32(pTypedWorkAread->m0_memoryLayout.mainMemory + r1 + 4);
+                u32 r1 = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r2);
+                r13->m12F0 += READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r1 + 4);
 
                 if (r13->field_12FC(&r14->m4, r15))
                 {
@@ -346,7 +346,7 @@ namespace FLD_A3_OVERLAY {
 
                     if (readSaturnS16(r14->m0 + 8))
                     {
-                        u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.mainMemory + readSaturnS16(r14->m0 + 8));
+                        u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0 + 8));
                         unimplemented("Disabled LCS generation because of crash");
                         //var_54 = gridCellDraw_normalSub0(pTypedWorkAread->m0_memoryLayout.mainMemory + offset, r14->m4);
                     }
@@ -361,8 +361,8 @@ namespace FLD_A3_OVERLAY {
 
                     if (readSaturnS16(r14->m0 + depthRangeIndex * 2))
                     {
-                        u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.mainMemory + readSaturnS16(r14->m0 + depthRangeIndex * 2));
-                        addObjectToDrawList(pTypedWorkAread->m0_memoryLayout.mainMemory, offset);
+                        u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0 + depthRangeIndex * 2));
+                        addObjectToDrawList(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
                     }
 
                     if (var_54)
@@ -781,6 +781,42 @@ namespace FLD_A3_OVERLAY {
         return pNewData3;
     }
 
+    void fieldPaletteTaskInit(p_workArea pWorkArea)
+    {
+        s_fieldPaletteTaskWorkArea* r14 = static_cast<s_fieldPaletteTaskWorkArea*>(pWorkArea);
+
+        getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = r14;
+
+        reinitVdp2();
+
+        unimplemented("call in fieldPaletteTaskInit");
+        
+        r14->m78 = (s_fieldPaletteTaskWorkSub*)allocateHeapForTask(r14, sizeof(s_fieldPaletteTaskWorkSub));
+        r14->m78->m0 = 1;
+        r14->m78->m4 = 0;
+        r14->m78->m8 = -0xF78000;
+        r14->m78->mC= -0x1194000;
+        r14->m78->m10 = -0xEC4000;
+        r14->m78->m14 = -0x1054000;
+
+        asyncDmaCopy({ 0x060900A4, gFLD_A3 }, getVdp2Cram(0), 0x80, 0);
+        asyncDmaCopy({ 0x06090124, gFLD_A3 }, getVdp2Cram(0x80), 0x80, 0);
+        asyncDmaCopy({ 0x0608FC84, gFLD_A3 }, getVdp2Cram(0xE0), 0x20, 0);
+        asyncDmaCopy({ 0x06090184, gFLD_A3 }, getVdp2Cram(0x600), 0x20, 0);
+        asyncDmaCopy({ 0x060901A4, gFLD_A3 }, getVdp2Cram(0x620), 0x20, 0);
+        asyncDmaCopy({ 0x0608FA84, gFLD_A3 }, getVdp2Cram(0x400), 0x200, 0);
+        asyncDmaCopy({ 0x060901C4, gFLD_A3 }, getVdp2Cram(0x800), 0x200, 0);
+        asyncDmaCopy({ 0x0608FCA4, gFLD_A3 }, getVdp2Cram(0xA00), 0x200, 0);
+        asyncDmaCopy({ 0x0608FEA4, gFLD_A3 }, getVdp2Cram(0xC00), 0x200, 0);
+    }
+
+    s_taskDefinition fieldPaletteTaskDefinition = { fieldPaletteTaskInit, NULL, dummyTaskDraw, NULL, "fieldPaletteTask" };
+
+    void createFieldPaletteTask(p_workArea parent)
+    {
+        createSubTask(parent, &fieldPaletteTaskDefinition, new s_fieldPaletteTaskWorkArea);
+    }
+
     void subfieldA3_0(p_workArea workArea)
     {
         s16 r13 = getFieldTaskPtr()->field_30;
@@ -835,6 +871,8 @@ namespace FLD_A3_OVERLAY {
         }
         //060543E0
         unimplemented("subfieldA3_0");
+
+        createFieldPaletteTask(workArea);
     }
     void subfieldA3_1(p_workArea workArea) { unimplemented("subfieldA3_1"); }
     void subfieldA3_2(p_workArea workArea) { unimplemented("subfieldA3_2"); }
@@ -1460,27 +1498,108 @@ namespace FLD_A3_OVERLAY {
 
     s_taskDefinition dragonRidersTaskDefinition = { dragonRidersTaskInit, dragonRidersTaskUpdate, NULL, NULL, "dragonRidersTask" };
 
+    void dragonFieldSubTask2InitSub1(s32 r4)
+    {
+        s_PaletteTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask;
+        r14->m64 = r4;
+        r14->m68 = MTH_Mul(r4, r4);
+    }
+
     void dragonFieldSubTask2Init(s_workArea* pWorkArea)
     {
-        unimplemented("dragonFieldSubTask2Init");
+        s_PaletteTaskWorkArea* pTypedWorkArea = static_cast<s_PaletteTaskWorkArea*>(pWorkArea);
+        
+        getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask = pTypedWorkArea;
+
+        getMemoryArea(&pTypedWorkArea->m0, 0);
+        u32 r2 = pTypedWorkArea->m0.m4_characterArea - getVdp1Pointer(0x25C00000);
+        pTypedWorkArea->m3C = getVdp1Pointer(0x25C00000) + ((0x1748 + (r2 >> 3)) << 3);
+        pTypedWorkArea->m8 = 0x50;
+        pTypedWorkArea->mC = pTypedWorkArea->m8 + 0x30;
+        pTypedWorkArea->mE = -pTypedWorkArea->mA + 0x60;
+        pTypedWorkArea->m30 = 0x18;
+        pTypedWorkArea->m34 = 0x18;
+        pTypedWorkArea->m10 = 6;
+        pTypedWorkArea->m12 = -14;
+        pTypedWorkArea->m28 = -0x1D;
+        pTypedWorkArea->m2A = -0x21;
+
+        pTypedWorkArea->m50 = 0x1C;
+        pTypedWorkArea->m54 = 0x18;
+        pTypedWorkArea->m5C = 0x40000;
+        pTypedWorkArea->m60 = 0x40000;
+
+        dragonFieldSubTask2InitSub1(0x200000);
     }
+
+    u8 fieldPalettes[1][0x20] =
+    {
+        {
+            0xA0,
+            0xC4,
+            0x9C,
+            0x00,
+            0xA8,
+            0x00,
+            0xB8,
+            0x00,
+            0xC8,
+            0x00,
+            0xCC,
+            0x00,
+            0xD4,
+            0x00,
+            0xDC,
+            0x00,
+            0xE4,
+            0x00,
+            0xF0,
+            0x00,
+            0xFC,
+            0x00,
+            0xFC,
+            0x20,
+            0xFC,
+            0x61,
+            0xFC,
+            0xA2,
+            0xFC,
+            0xE3,
+            0xFD,
+            0x04,
+        },
+    };
+
+    s8 paletteIndexTable[4] = {
+        0,1,2,2
+    };
 
     void dragonFieldSubTask2Update(s_workArea* pWorkArea)
     {
+        s_PaletteTaskWorkArea* pTypedWorkArea = static_cast<s_PaletteTaskWorkArea*>(pWorkArea);
         unimplemented("dragonFieldSubTask2Update");
+
+        //if (graphicEngineStatus.field_40AC.field_8 == 2)
+        {
+            s8 paletteIndex = paletteIndexTable[pTypedWorkArea->m4C];
+
+            asyncDmaCopy(fieldPalettes[paletteIndex], pTypedWorkArea->m3C, 0x20, 0);
+        }
+
+        
     }
 
     void dragonFieldSubTask2Draw(s_workArea* pWorkArea)
     {
+        s_PaletteTaskWorkArea* pTypedWorkArea = static_cast<s_PaletteTaskWorkArea*>(pWorkArea);
         unimplemented("dragonFieldSubTask2Draw");
     }
-
 
     s_taskDefinition dragonFieldSubTask2Definition = { dragonFieldSubTask2Init, dragonFieldSubTask2Update, dragonFieldSubTask2Draw, NULL, "dragonFieldSubTask2" };
 
     void initDragonFieldSubTask2(s_workArea* pWorkArea)
     {
-        createSubTask(pWorkArea, &dragonFieldSubTask2Definition, new s_dummyWorkArea);
+        createSubTask(pWorkArea, &dragonFieldSubTask2Definition, new s_PaletteTaskWorkArea);
     }
 
     void dragonFieldTaskInitSub2Sub2(fixedPoint* field_178)

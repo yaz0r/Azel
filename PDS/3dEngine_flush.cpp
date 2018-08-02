@@ -3,6 +3,8 @@
 #include <gl/gl3w.h>
 #include <gl/GL.h>
 
+#include "3dEngine_textureCache.h"
+
 void transposeMatrix(float* pMatrix)
 {
     float temp[4 * 4];
@@ -131,9 +133,9 @@ const GLchar azel_ps[] =
 "   //distanceValue = clamp(distanceValue, 0, 1); \n"
 "	vec4 fallout = texture2D(s_falloff, vec2(distanceValue,0)); \n"
 "	vec4 txcol = texture2D(s_texture, v_texcoord);		\n"
-"   /*if(txcol.a <= 0) discard;*/\n"
+"   if(txcol.a <= 0) discard;\n"
 "   fragColor = (clamp(txcol, 0, 1) * s_textureInfluence) + v_color;									\n"
-"   fragColor = vec4(1,1,1,1);"
+"   fragColor = txcol; \n"
 "   fragColor.w = 1;								\n"
 "}														\n"
 ;
@@ -156,28 +158,6 @@ GLuint vshader = 0;
 GLuint fshader = 0;
 bool fillPolys = true;
 bool enableTextures = true;
-
-struct s_vertice
-{
-    float m_coordianges[3];
-    float m_originalVertices[4];
-    float m_color[4];
-};
-struct s_quad
-{
-    char isInitialized;
-    s_vertice m_vertices[4];
-    u16 CMDCTRL;
-    u16 CMDPMOD;
-    u16 CMDCOLR;
-    u16 CMDSRCA;
-    u16 CMDSIZE;
-
-    u32 gouraudPointer;
-
-    // world space
-    float m_modelMatrix[4 * 4];
-};
 
 void GetDistanceFalloff(float* falloutColor, s_objectToRender* pObject, int vertexId)
 {
@@ -259,12 +239,6 @@ void ComputeColorFromNormal(u8* &pointsEA, bool withColor, s32* lightVectorModel
         perVertexColor[i] /= 31.f;
         perVertexColor[i] -= 0.5f;
     }
-}
-
-GLuint getTextureForQuad(s_quad& quad)
-{
-    extern GLuint       g_FontTexture;
-    return g_FontTexture;
 }
 
 bool enableVertexColor = true;
@@ -389,6 +363,7 @@ void drawObject_SingleDrawCall(s_objectToRender* pObject, float* projectionMatri
 
                         {
                             s_quad tempQuad;
+                            tempQuad.model = pObject->m_pObject;
                             tempQuad.CMDCTRL = CMDCTRL;
                             tempQuad.CMDPMOD = CMDPMOD;
                             tempQuad.CMDCOLR = CMDCOLR;
@@ -814,7 +789,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
 
                         u16 CMDCTRL = READ_BE_U16(pointsEA); pointsEA += 2; // CMDCTRL (but modified)
                         u16 CMDPMOD = READ_BE_U16(pointsEA); pointsEA += 2; // CMDPMOD
-                        u16 CMDCOLR = READ_BE_U16(pointsEA); pointsEA += 2; // CMDCOLR		
+                        u16 CMDCOLR = READ_BE_U16(pointsEA); pointsEA += 2; // CMDCOLR
                         u16 CMDSRCA = READ_BE_U16(pointsEA); pointsEA += 2; // CMDSRCA
                         u16 CMDSIZE = READ_BE_U16(pointsEA); pointsEA += 2; // CMDSIZEd
 
@@ -845,6 +820,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                         else
                         {
                             s_quad tempQuad;
+                            tempQuad.model = pObject->m_pObject;
                             tempQuad.CMDCTRL = CMDCTRL;
                             tempQuad.CMDPMOD = CMDPMOD;
                             tempQuad.CMDCOLR = CMDCOLR;
@@ -933,18 +909,22 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
 
                                 uv[0][0] = 0;
                                 uv[0][1] = 0;
+                                color[0] = 1;
                                 //color[0] = MappedMemoryReadWord(quads[i].gouraudPointer + 0 * 2);
 
                                 uv[1][0] = 1;
                                 uv[1][1] = 0;
+                                color[1] = 1;
                                 //color[1] = MappedMemoryReadWord(quads[i].gouraudPointer + 1 * 2);
 
                                 uv[2][0] = 1;
                                 uv[2][1] = 1;
+                                color[2] = 1;
                                 //color[2] = MappedMemoryReadWord(quads[i].gouraudPointer + 2 * 2);
 
                                 uv[3][0] = 0;
                                 uv[3][1] = 1;
+                                color[3] = 1;
                                 //color[3] = MappedMemoryReadWord(quads[i].gouraudPointer + 3 * 2);
 
                                 //glColor3f(1, 1, 1);
@@ -1089,7 +1069,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                                     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                                     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
                                     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                                    //glDrawArrays(GL_TRIANGLES, 0, 6);
+                                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
                                     checkGL();
                                     glDisableVertexAttribArray(vertexp);
                                     checkGL();

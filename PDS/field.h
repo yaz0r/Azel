@@ -114,8 +114,8 @@ struct s_fieldScriptWorkArea : public s_workArea
 
 struct s_memoryAreaOutput
 {
-    u8* mainMemory;
-    u8* characterArea;
+    u8* m0_mainMemory;
+    u8* m4_characterArea;
 };
 
 struct s_dragonTaskWorkArea_1F0
@@ -364,6 +364,44 @@ struct s_randomBattleWorkArea : public s_workArea
     // size 8
 };
 
+struct s_PaletteTaskWorkArea : public s_workArea
+{
+    s_memoryAreaOutput m0;
+    s16 m8;
+    s16 mA;
+    s16 mC;
+    s16 mE;
+    s16 m10;
+    s16 m12;
+    s16 m28;
+    s16 m2A;
+    s32 m30;
+    s32 m34;
+    u8* m3C;
+    s8 m4C;
+    s32 m50;
+    s32 m54;
+    s32 m5C;
+    s32 m60;
+    s32 m64;
+    fixedPoint m68;
+};
+
+struct s_fieldPaletteTaskWorkSub
+{
+    s32 m0;
+    s32 m4;
+    s32 m8;
+    s32 mC;
+    s32 m10;
+    s32 m14;
+};
+
+struct s_fieldPaletteTaskWorkArea : public s_workArea
+{
+    s_fieldPaletteTaskWorkSub* m78;
+};
+
 struct s_FieldSubTaskWorkArea : public s_workArea
 {
     u8* memoryArea[3]; // 0
@@ -379,10 +417,12 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     u32 CGBFilesSizes[32]; // 1B4
     s_fieldOverlaySubTaskWorkArea* m334;
     s_dragonTaskWorkArea* m338_pDragonTask; // 338
+    s_PaletteTaskWorkArea* m33C_pPaletteTask;
     s_LCSTask* m340_pLCS;
     s_randomBattleWorkArea* m344_randomBattleTask;
     s_visibilityGridWorkArea* m348_pFieldCameraTask1; // 348
     s_fieldScriptWorkArea* m34C_ptrToE; // 34C
+    s_fieldPaletteTaskWorkArea* m350_fieldPaletteTask;
     u16 field_354; // 354
     u16 fieldSubTaskStatus; // 358
     void (*pUpdateFunction2)(); // 35C

@@ -47,6 +47,7 @@ struct sVec3_FP
 fixedPoint dot3_FP(sVec3_FP* r4, sVec3_FP* r5);
 
 s8 readSaturnS8(sSaturnPtr& ptr);
+u8 readSaturnU8(sSaturnPtr& ptr);
 s16 readSaturnS16(sSaturnPtr& ptr);
 u16 readSaturnU16(sSaturnPtr& ptr);
 s32 readSaturnS32(sSaturnPtr& ptr);
@@ -549,3 +550,5 @@ fixedPoint getSin(u32 value);
 
 extern u16 atanTable[2049];
 extern u16 resetVdp2StringsData[4106];
+
+void registerModelAndCharacter(u8* model, u8* character);

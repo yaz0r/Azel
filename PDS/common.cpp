@@ -701,6 +701,15 @@ fixedPoint getSin(u32 value)
     return fixedPoint(CosSinTable[value]);
 }
 
+u8 readSaturnU8(sSaturnPtr& ptr)
+{
+    sSaturnMemoryFile* pFile = ptr.m_file;
+    u32 offsetInFile = ptr.m_offset - pFile->m_base;
+    assert(offsetInFile + 1 <= pFile->m_dataSize);
+
+    return READ_BE_U8(pFile->m_data + offsetInFile);
+}
+
 s8 readSaturnS8(sSaturnPtr& ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;

@@ -99,6 +99,7 @@ struct s_VDP2Regs
     //
 
     u16 CRAOFA;
+    u16 CRAOFB; // unset?
 
     u16 CCCTL;
 
@@ -247,6 +248,7 @@ u8* getVdp2Cram(u32 offset);
 int loadFile(const char* fileName, u8* destination, u8* characterAreaPointer);
 void addToMemoryLayout(u8* pointer, u32 unk0);
 void asyncDmaCopy(void* source, void* target, u32 size, u32 unk);
+void asyncDmaCopy(sSaturnPtr EA, void* target, u32 size, u32 unk);
 
 void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD);
 s32 resetVdp2StringsSub1(u16* pData);

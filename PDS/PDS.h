@@ -109,6 +109,7 @@ u32 READ_BE_U32(const void* ptr);
 s32 READ_BE_S32(const void* ptr);
 u16 READ_BE_U16(const void* ptr);
 s16 READ_BE_S16(const void* ptr);
+u8 READ_BE_U8(const void* ptr);
 s8 READ_BE_S8(const void* ptr);
 
 u32 getFileSize(const char* fileName);

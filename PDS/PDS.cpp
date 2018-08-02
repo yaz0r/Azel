@@ -464,8 +464,18 @@ bool addFileToMemoryLayout(const char* fileName, u8* destination, u32 fileSize, 
     return false;
 }
 
+void patchFilePointers(u8* destination, u8* characterArea)
+{
+
+}
+
 int loadFile(const char* fileName, u8* destination, u8* characterArea)
 {
+    if (strstr(fileName, ".MCB"))
+    {
+        registerModelAndCharacter(destination, characterArea);
+    }
+
     sFileInfoSub* pFileHandle = openFileHandle(fileName);
 
     if (pFileHandle == NULL)
@@ -489,7 +499,7 @@ int loadFile(const char* fileName, u8* destination, u8* characterArea)
 
     if (characterArea)
     {
-        //patchFilePointers(destination, patchPointerType);
+        patchFilePointers(destination, characterArea);
     }
 
     fclose(pFileHandle->fHandle);
@@ -899,6 +909,12 @@ s16 READ_BE_S16(const void* ptr)
     u16 data = *(u16*)(ptr);
     data = ((data >> 8) & 0xFF) | ((data & 0xFF) << 8);
     return *(s16*)&data;
+}
+
+u8 READ_BE_U8(const void* ptr)
+{
+    u8 data = *(u8*)(ptr);
+    return data;
 }
 
 s8 READ_BE_S8(const void* ptr)

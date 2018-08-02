@@ -771,6 +771,14 @@ void asyncDmaCopy(void* source, void* target, u32 size, u32 unk)
     memcpy(target, source, size);
 }
 
+void asyncDmaCopy(sSaturnPtr EA, void* target, u32 size, u32 unk)
+{
+    for (int i = 0; i < size; i++)
+    {
+        *((u8*)target+i) = readSaturnU8(EA + i);
+    }
+}
+
 void copyFontToVdp2()
 {
     asyncDmaCopy(defaultFontPalettes, vdp2FontPalettes, 0x200, 0);
