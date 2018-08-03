@@ -49,9 +49,6 @@
     <ClCompile Include="imgui\examples\libs\gl3w\GL\gl3w.c">
       <Filter>Source Files\imgui\gl3w</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.cpp">
-      <Filter>Source Files\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="heap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -93,6 +90,12 @@
     </ClCompile>
     <ClCompile Include="3dEngine_textureCache.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\examples\imgui_impl_opengl3.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\examples\imgui_impl_sdl.cpp">
+      <Filter>Source Files\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +173,12 @@
     </ClInclude>
     <ClInclude Include="3dEngine_textureCache.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\examples\imgui_impl_opengl3.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\examples\imgui_impl_sdl.h">
+      <Filter>Source Files\imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

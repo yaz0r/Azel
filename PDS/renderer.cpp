@@ -4,7 +4,8 @@
 
 #define IMGUI_API
 
-#include "imgui_impl_sdl_gl3.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "Opengl32.lib")
@@ -44,7 +45,9 @@ void azelSdl2_Init()
     gl3wInit();
 
     // Setup ImGui binding
-    ImGui_ImplSdlGL3_Init(gWindow);
+    ImGui::CreateContext();
+    ImGui_ImplOpenGL3_Init();
+    ImGui_ImplSDL2_InitForOpenGL(gWindow, gGlcontext);
 
     glGenTextures(1, &gVdp1Texture);
     glGenTextures(1, &gNBG0Texture);
@@ -60,7 +63,7 @@ void azelSdl2_StartFrame()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        ImGui_ImplSdlGL3_ProcessEvent(&event);
+        ImGui_ImplSDL2_ProcessEvent(&event);
         if (event.type == SDL_QUIT)
             closeApp = true;
     }
@@ -119,7 +122,9 @@ void azelSdl2_StartFrame()
         }
     }
 
-    ImGui_ImplSdlGL3_NewFrame(gWindow);
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame(gWindow);
+    ImGui::NewFrame();
 }
 
 ImVec4 clear_color = ImColor(114, 144, 154);
@@ -700,6 +705,7 @@ bool azelSdl2_EndFrame()
     flushObjectsToDrawList();
 
     ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(gWindow);
 
     return !closeApp;

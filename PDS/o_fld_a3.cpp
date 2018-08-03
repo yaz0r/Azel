@@ -484,6 +484,26 @@ namespace FLD_A3_OVERLAY {
 
     void updateCellGridIfDirty(s_visibilityGridWorkArea* pFieldCameraTask1)
     {
+#ifdef PDS_TOOL
+        static bool bEnableAllGrid = false;
+        if (ImGui::Begin("Grid"))
+        {
+            if (ImGui::Checkbox("Enable all grid", &bEnableAllGrid))
+            {
+                pFieldCameraTask1->updateVisibleCells = true;
+            }
+        }
+        ImGui::End();
+
+        if (bEnableAllGrid)
+        {
+            for (int i = 0; i < pFieldCameraTask1->field_30->m10_gridSize[0] * pFieldCameraTask1->field_30->m10_gridSize[1]; i++)
+            {
+                pFieldCameraTask1->m3C_cellRenderingTasks[i]->getTask()->clearPaused();
+            }
+            pFieldCameraTask1->updateVisibleCells = false;
+        }
+#endif
         if (pFieldCameraTask1->updateVisibleCells)
         {
             pauseAllCells(pFieldCameraTask1);

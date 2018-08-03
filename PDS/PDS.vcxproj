@@ -103,7 +103,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\SDL2\include;$(ProjectDir)\imgui;$(ProjectDir)\imgui\examples\sdl_opengl3_example;$(ProjectDir)\imgui\examples\libs\gl3w;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\SDL2\include;$(ProjectDir)\imgui;$(ProjectDir)\imgui\examples;$(ProjectDir)\imgui\examples\libs\gl3w;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,14 +131,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\SDL2\include;$(ProjectDir)\imgui;$(ProjectDir)\imgui\examples\sdl_opengl3_example;$(ProjectDir)\imgui\examples\libs\gl3w;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\SDL2\include;$(ProjectDir)\imgui;$(ProjectDir)\imgui\examples;$(ProjectDir)\imgui\examples\libs\gl3w;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,8 +156,9 @@
     <ClCompile Include="field.cpp" />
     <ClCompile Include="fixedPoint.cpp" />
     <ClCompile Include="heap.cpp" />
+    <ClCompile Include="imgui\examples\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="imgui\examples\imgui_impl_sdl.cpp" />
     <ClCompile Include="imgui\examples\libs\gl3w\GL\gl3w.c" />
-    <ClCompile Include="imgui\examples\sdl_opengl3_example\imgui_impl_sdl_gl3.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="mainMenuDebugTasks.cpp" />
@@ -184,6 +184,8 @@
     <ClInclude Include="field.h" />
     <ClInclude Include="fixedPoint.h" />
     <ClInclude Include="heap.h" />
+    <ClInclude Include="imgui\examples\imgui_impl_opengl3.h" />
+    <ClInclude Include="imgui\examples\imgui_impl_sdl.h" />
     <ClInclude Include="imgui\examples\libs\gl3w\GL\gl3w.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />

@@ -1,5 +1,7 @@
 #pragma once
 
+#define PDS_TOOL
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #ifndef HEADLESS_TOOL
