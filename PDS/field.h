@@ -93,15 +93,20 @@ struct s_scriptData4
 
 struct s_fieldScriptWorkArea : public s_workArea
 {
-    void* m0_pScripts; //0
-    u32 m4;
+    const void** m0_pScripts; //0
+    const void* m4_currentScript;
     void* field_8;
-    void* field_2C; // dunno what that is yet
+    s32 m2C; // dunno what that is yet
 
     u32 m30;
     u32 m34;
     u32 m38;
     u32 m3C;
+
+    s32 m50;
+    s32 m58;
+
+    s32 m60;
 
     u32 field_6C;
     u32 field_70;
@@ -292,7 +297,7 @@ struct s_visdibilityCellTask : public s_workArea
 {
     s_memoryAreaOutput m0_memoryLayout; // 0
     s_grid1* m8_pEnvironmentCell; // 8
-    s_grid2* pCell2; // 0xC
+    s_grid2* mC_pCell2_billboards; // 0xC
     s_grid3* pCell3; // 0x10
     u32 index; // 14
 }; // size is 0x18

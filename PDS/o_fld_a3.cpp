@@ -216,7 +216,7 @@ namespace FLD_A3_OVERLAY {
         }
         if (r4->field_30->m4)
         {
-            r5->pCell2 = r4->field_30->m4[index];
+            r5->mC_pCell2_billboards = r4->field_30->m4[index];
         }
         if (r4->field_30->m8)
         {
@@ -381,9 +381,40 @@ namespace FLD_A3_OVERLAY {
             }
         }
 
-        if (pTypedWorkAread->pCell2)
+        if (pTypedWorkAread->mC_pCell2_billboards)
         {
-            //assert(0);
+            s_grid2* r14 = pTypedWorkAread->mC_pCell2_billboards;
+            while (r14->m0.m_offset)
+            {
+                r13->m12E0++;
+
+                s16 r2 = readSaturnS16(r14->m0);
+                u32 r1 = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r2);
+                r13->m12F0 += READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r1 + 4);
+
+                if (r13->field_12FC(&r14->m4, r15))
+                {
+                    r13->m12E2++;
+
+                    pushCurrentMatrix();
+                    translateCurrentMatrix(&r14->m4);
+
+                    u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
+                    if (depthRangeIndex <= r13->field_1300)
+                    {
+                        u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0));
+                        addBillBoardtToDrawList(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
+
+                        if (readSaturnS16(r14->m0 + 2))
+                        {
+                            unimplemented("Billboard with LCS");
+                        }
+                    }
+                    popMatrix();
+                }
+
+                r14++;
+            }
         }
 
         if (pTypedWorkAread->pCell3)
@@ -657,9 +688,34 @@ namespace FLD_A3_OVERLAY {
         }
     }
 
-    void startFieldScript(s32 r4, s32 r5)
+    s32 queueNewFieldScript(const void* r4, s32 r5)
     {
-        unimplemented("startFieldScript");
+        s_fieldScriptWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+        if (r13->m4_currentScript)
+            return 0;
+
+        if (r5 >=0)
+        {
+            assert(0);
+        }
+
+        r13->m60 = 0;
+        r13->m4_currentScript = r4;
+        r13->m2C = r5;
+        r13->m58 = 0;
+        r13->m50 = 0;
+
+        return 1;
+    }
+
+    s32 startFieldScript(s32 r4, s32 r5)
+    {
+        s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+        if (r14)
+        {
+            return queueNewFieldScript(r14->m0_pScripts[r4], r5);
+        }
+        return 0;
     }
 
     s_cameraScript cameraScript0 =
@@ -837,6 +893,12 @@ namespace FLD_A3_OVERLAY {
         createSubTask(parent, &fieldPaletteTaskDefinition, new s_fieldPaletteTaskWorkArea);
     }
 
+    void adjustVerticalLimits(fixedPoint r4, fixedPoint r5)
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m134_minY = r4;
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m140_maxY = r5;
+    }
+
     void subfieldA3_0(p_workArea workArea)
     {
         s16 r13 = getFieldTaskPtr()->field_30;
@@ -893,6 +955,10 @@ namespace FLD_A3_OVERLAY {
         unimplemented("subfieldA3_0");
 
         createFieldPaletteTask(workArea);
+
+        //TODO: more stuff here
+
+        adjustVerticalLimits(-0x54000, 0x76000);
     }
     void subfieldA3_1(p_workArea workArea) { unimplemented("subfieldA3_1"); }
     void subfieldA3_2(p_workArea workArea) { unimplemented("subfieldA3_2"); }
@@ -1020,7 +1086,7 @@ namespace FLD_A3_OVERLAY {
 
         }
 
-        pFieldScriptWorkArea->field_8 = &pFieldScriptWorkArea->field_2C;
+        pFieldScriptWorkArea->field_8 = &pFieldScriptWorkArea->m2C;
 
         pFieldScriptWorkArea->field_88 = pFieldTaskWorkArea->field_40;
         pFieldScriptWorkArea->field_8C = pFieldTaskWorkArea->field_44;
@@ -1039,6 +1105,8 @@ namespace FLD_A3_OVERLAY {
     void fieldScriptTaskUpdate(s_workArea* pWorkArea)
     {
         fieldScriptTaskUpdateSub1();
+
+
 
         unimplemented("fieldScriptTaskUpdate");
     }
@@ -1894,7 +1962,7 @@ namespace FLD_A3_OVERLAY {
         if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8)
             return 0;
 
-        if (r14->m4)
+        if (r14->m4_currentScript)
             return 0;
 
         if (r14->m30)
@@ -2094,7 +2162,7 @@ namespace FLD_A3_OVERLAY {
             return 1;
         }
 
-        if (r14->m4)
+        if (r14->m4_currentScript)
         {
             return 1;
         }
@@ -2131,7 +2199,7 @@ namespace FLD_A3_OVERLAY {
             return 0;
         }
 
-        if (r14->m4)
+        if (r14->m4_currentScript)
         {
             return 0;
         }
@@ -2301,7 +2369,14 @@ namespace FLD_A3_OVERLAY {
         else
         {
             //607FE98
-            assert(0);
+            if (r14->m154_dragonSpeed >= 0)
+            {
+                r14->m15C_dragonSpeedIncrement = MTH_Mul(r14->m154_dragonSpeed, r14->field_230);
+            }
+            else
+            {
+                r14->m15C_dragonSpeedIncrement = -MTH_Mul(r14->m154_dragonSpeed, r14->field_230);
+            }
         }
 
         // 607FF02
@@ -2596,30 +2671,12 @@ namespace FLD_A3_OVERLAY {
 
         //607FB2A
         // clamp angle.x to valid range
-        fixedPoint r2;
-        if (r14->m20_angle[0] & 0x8000000)
-        {
-            r2 = 0xF0000000 | r14->m20_angle[0];
-        }
-        else
-        {
-            r2 = 0x0FFFFFFF & r14->m20_angle[0];
-        }
-        if (r2 > r14->m14C_pitchMax)
+        if (r14->m20_angle[0].normalized() > r14->m14C_pitchMax)
         {
             r14->m20_angle[0] = r14->m14C_pitchMax;
         }
 
-        fixedPoint r3;
-        if (r14->m20_angle[0] & 0x8000000)
-        {
-            r3 = 0xF0000000 | r14->m20_angle[0];
-        }
-        else
-        {
-            r3 = 0x0FFFFFFF & r14->m20_angle[0];
-        }
-        if (r3 < r14->m148_pitchMin)
+        if (r14->m20_angle[0].normalized() < r14->m148_pitchMin)
         {
             r14->m20_angle[0] = r14->m148_pitchMin;
         }
@@ -2656,11 +2713,8 @@ namespace FLD_A3_OVERLAY {
                 r2 = r6;
             }
             else
-
             {
-
                 r2 = -0x3555555;
-
             }
 
             fixedPoint r3;
@@ -2688,11 +2742,8 @@ namespace FLD_A3_OVERLAY {
                 r2 = r5;
             }
             else
-
             {
-
                 r2 = 0x3555555;
-
             }
 
             fixedPoint r3;

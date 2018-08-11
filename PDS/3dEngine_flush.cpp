@@ -39,6 +39,20 @@ void addObjectToDrawList(u8* pObjectData, u32 offset)
     objectRenderList.push_back(newObject);
 }
 
+void addBillBoardtToDrawList(u8* pObjectData, u32 offset)
+{
+    cameraProperties2.field_88.matrix[3] = pCurrentMatrix->matrix[3];
+    cameraProperties2.field_88.matrix[3] = pCurrentMatrix->matrix[7];
+    cameraProperties2.field_88.matrix[3] = pCurrentMatrix->matrix[11];
+
+    s_objectToRender newObject;
+    newObject.m_pObject = pObjectData;
+    newObject.m_offset = offset;
+    newObject.m_modelMatrix = *pCurrentMatrix;
+
+    objectRenderList.push_back(newObject);
+}
+
 void checkGL()
 {
     volatile GLenum error = glGetError();
