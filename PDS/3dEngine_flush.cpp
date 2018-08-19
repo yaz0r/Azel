@@ -25,6 +25,7 @@ struct s_objectToRender
     u32 m_offset;
     sMatrix4x3 m_modelMatrix;
     s16 m_lightColor[3];
+    float m_2dOffset[2];
 };
 
 std::vector<s_objectToRender> objectRenderList;
@@ -35,6 +36,8 @@ void addObjectToDrawList(u8* pObjectData, u32 offset)
     newObject.m_pObject = pObjectData;
     newObject.m_offset = offset;
     newObject.m_modelMatrix = *pCurrentMatrix;
+    newObject.m_2dOffset[0] = (graphicEngineStatus.field_405C.localCoordinatesX - (352.f / 2.f)) / 352.f;
+    newObject.m_2dOffset[1] = (graphicEngineStatus.field_405C.localCoordinatesY - (224.f / 2.f)) / 224.f;
 
     objectRenderList.push_back(newObject);
 }
@@ -117,6 +120,7 @@ const GLchar azel_vs[] =
 "#version 330 \n"
 "uniform mat4 u_mvpMatrix;    \n"
 "uniform mat4 u_modelMatrix;    \n"
+"uniform vec2 u_2dOffset;   \n"
 "in vec3 a_position;   \n"
 "in vec2 a_texcoord;   \n"
 "in vec4 a_color;   \n"
@@ -125,6 +129,7 @@ const GLchar azel_vs[] =
 "void main()                  \n"
 "{                            \n"
 "   gl_Position = u_mvpMatrix * u_modelMatrix * vec4(a_position, 1); \n"
+"   gl_Position.xy += u_2dOffset; \n"
 "   v_texcoord = a_texcoord; \n"
 "	v_color = a_color; \n"
 "} "
@@ -590,6 +595,14 @@ void drawObject_SingleDrawCall(s_objectToRender* pObject, float* projectionMatri
             glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, objectMatrix);
         }
         checkGL();
+
+        GLuint offsetId = glGetUniformLocation(shaderProgram, (const GLchar *)"u_2dOffset");
+        checkGL();
+        if (modelMatrixId != -1)
+        {
+            glUniform2fv(offsetId, 1, pObject->m_2dOffset);
+        }
+        checkGL();
     }
 
     {
@@ -727,6 +740,14 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
         if (modelMatrixId != -1)
         {
             glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, objectMatrix);
+        }
+        checkGL();
+
+        GLuint offsetId = glGetUniformLocation(shaderProgram, (const GLchar *)"u_2dOffset");
+        checkGL();
+        if (modelMatrixId != -1)
+        {
+            glUniform2fv(offsetId, 1, pObject->m_2dOffset);
         }
         checkGL();
     }

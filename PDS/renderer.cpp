@@ -1009,6 +1009,13 @@ bool azelSdl2_EndFrame()
     }
     ImGui::End();
 
+    if (ImGui::BeginMainMenuBar())
+    {
+        ImGui::Text(" %.2f FPS (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+
+        ImGui::EndMainMenuBar();
+    }
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(gWindow);

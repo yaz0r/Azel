@@ -376,8 +376,8 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
 
     dragonMenuDragonInitSub3(&gDragonState->m78_animData);
 
-    graphicEngineStatus.field_405C.localCoordinatesX = 0x78;
-    graphicEngineStatus.field_405C.localCoordinatesY = 0x70;
+    graphicEngineStatus.field_405C.localCoordinatesX = 120;
+    graphicEngineStatus.field_405C.localCoordinatesY = 112;
 
     setupVdp1LocalCoordinatesAndClipping();
 
