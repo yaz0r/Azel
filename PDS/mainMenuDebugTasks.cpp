@@ -419,7 +419,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
     if (pWorkArea->m8_isSelectingSubfield)
     {
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0x40)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x40)
         {
             if (pWorkArea->m4_selectedSubField == 0)
             {
@@ -455,7 +455,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
     }
     else
     {
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0x80)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x80)
         {
             pWorkArea->m8_isSelectingSubfield = 1;
         }
@@ -635,7 +635,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
 
     vdp2PrintStatus.palette = 0xC000;
 
-    u8 inputValue = graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0xF;
+    u8 inputValue = graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xF;
     if (inputValue == 0)
     {
         return;
@@ -3639,7 +3639,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
         pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
         pWorkArea->field_0++;
     case 1:
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 1) // B
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 1) // B
         {
             playSoundEffect(1);
             fadePalette(&menuUnk0.m_field0, 0, 0, 1);
@@ -3654,7 +3654,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
         {
             return;
         }
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 6) // A or C
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 6) // A or C
         {
             if (pWorkArea->m3_menuButtonStates[pWorkArea->selectedMenu] == 0)
             {
@@ -3671,7 +3671,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
             pWorkArea->field_0++;
             return;
         }
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0x30) // UP or DOWN
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x30) // UP or DOWN
         {
             playSoundEffect(10);
             
@@ -3682,7 +3682,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
                 mainMenuTaskInitSub3(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x660);
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0x10) // UP
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x10) // UP
             {
                 do
                 {
@@ -3877,7 +3877,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
     {
     case 0:
         graphicEngineStatus.field_40AC.field_8 = 0;
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 8)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8)
         {
             unimplemented("Hack: forcing menu enabled 1");
             graphicEngineStatus.field_40AC.m1_isMenuAllowed = 1;
@@ -3926,7 +3926,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
             {
                 scrollMenu();
             }
-            if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 8) // start
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8) // start
             {
                 if (graphicEngineStatus.field_40AC.m0_menuId == 7)
                 {

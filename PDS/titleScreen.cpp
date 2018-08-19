@@ -123,7 +123,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
         randomNumber(); // to increment seed
 
         // start or A?
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 0xE)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xE)
         {
             playSoundEffect(0);
 
@@ -340,7 +340,7 @@ void titleScreenDraw(p_workArea pTypelessWorkArea)
             assert(false);
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 8) // if start was pressed
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8) // if start was pressed
         {
             playSoundEffect(8);
             pWorkArea->m_status = 7;
@@ -412,7 +412,7 @@ void warningTaskDraw(p_workArea pTypelessWorkArea)
             return;
         pWorkArea->m_status++;
     case 2: // fade out init?
-        if (!(graphicEngineStatus.m4514.m0[0].m0_current.field_8 & 8))
+        if (!(graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8))
             return;
         fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0, 30);
         pWorkArea->m_status++;

@@ -188,57 +188,57 @@ void azelSdl2_StartFrame()
             closeApp = true;
     }
 
-    graphicEngineStatus.m4514.m0[0].m16_pending.field_6 = 0;
-    graphicEngineStatus.m4514.m0[0].m16_pending.field_8 = 0;
+    graphicEngineStatus.m4514.m0[0].m16_pending.m6_buttonDown = 0;
+    graphicEngineStatus.m4514.m0[0].m16_pending.m8_newButtonDown = 0;
     graphicEngineStatus.m4514.m0[0].m16_pending.field_C = 0;
 
     const Uint8* keyState = SDL_GetKeyboardState(NULL);
 
-    //if (event.type == SDL_KEYDOWN)
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++)
     {
-        if (keyState[SDL_SCANCODE_RETURN])
+        if(keyState[i])
         {
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 8;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 8;
-        }
-        if (keyState[SDL_SCANCODE_Z])
-        {
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x4;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x4;
-        }
-        if (keyState[SDL_SCANCODE_X])
-        {
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x2;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x2;
-        }
-        if (keyState[SDL_SCANCODE_C])
-        {
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x1;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x1;
-        }
-        if (ImGui::GetIO().KeysDown[SDL_SCANCODE_UP])
-        {
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x10;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x10;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x10;
-        }
-        if (ImGui::GetIO().KeysDown[SDL_SCANCODE_DOWN])
-        {
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x20;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x20;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x20;
-        }
-        if (ImGui::GetIO().KeysDown[SDL_SCANCODE_LEFT])
-        {
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x40;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x40;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x40;
-        }
-        if (ImGui::GetIO().KeysDown[SDL_SCANCODE_RIGHT])
-        {
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_6 |= 0x80;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_8 |= 0x80;
-            graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= 0x80;
+            u16 buttonMask = 0;
+            switch (i)
+            {
+            case SDL_SCANCODE_RETURN:
+                buttonMask = 8;
+                break;
+            case SDL_SCANCODE_Z:
+                buttonMask = 4;
+                break;
+            case SDL_SCANCODE_X:
+                buttonMask = 2;
+                break;
+            case SDL_SCANCODE_C:
+                buttonMask = 1;
+                break;
+            case SDL_SCANCODE_UP:
+                buttonMask = 0x10;
+                break;
+            case SDL_SCANCODE_DOWN:
+                buttonMask = 0x20;
+                break;
+            case SDL_SCANCODE_LEFT:
+                buttonMask = 0x40;
+                break;
+            case SDL_SCANCODE_RIGHT:
+                buttonMask = 0x80;
+                break;
+            default:
+                break;
+            }
+
+            if (buttonMask)
+            {
+                graphicEngineStatus.m4514.m0[0].m16_pending.m6_buttonDown |= buttonMask;
+
+                if ((graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & buttonMask) == 0)
+                {
+                    graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= buttonMask;
+                    graphicEngineStatus.m4514.m0[0].m16_pending.m8_newButtonDown |= buttonMask;
+                }
+            }
         }
     }
 
@@ -1005,7 +1005,9 @@ bool azelSdl2_EndFrame()
 
     ImGui::Begin("Final Composition");
     {
-        ImGui::Image((ImTextureID)gCompositedTexture, ImGui::GetWindowSize(), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+        ImVec2 textureSize = ImGui::GetWindowSize();
+        textureSize.y = textureSize.x * (224.f / 352.f);
+        ImGui::Image((ImTextureID)gCompositedTexture, textureSize, ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
     }
     ImGui::End();
 

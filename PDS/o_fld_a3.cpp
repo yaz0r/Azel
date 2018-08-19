@@ -1236,13 +1236,13 @@
         {
             //06069A92
             graphicEngineStatus.field_40AC.m1_isMenuAllowed = 1;
-            if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][13])
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][13])
             {
                 playSoundEffect(0);
                 graphicEngineStatus.field_40AC.m0_menuId = 5;
                 return;
             }
-            if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][12])
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][12])
             {
                 //06069AF0
                 assert(0);
@@ -2122,21 +2122,21 @@
 
     void updateDragonMovementFromControllerType1Sub2(s_dragonTaskWorkArea* r14, s_dragonState* r12)
     {
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][5]) // down
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][5]) // down
         {
             updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, r14->field_178[3]);
         }
-        else if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][4]) // up
+        else if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][4]) // up
         {
             updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, -r14->field_178[3]);
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][7]) // right
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][7]) // right
         {
             updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, r14->field_178[3]);
             updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, -r14->field_178[3]);
         }
-        else if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][6]) // left
+        else if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][6]) // left
         {
             updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, -r14->field_178[3]);
             updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, r14->field_178[3]);
@@ -2165,7 +2165,7 @@
         if (r2 >= 256)
         {
             //0607EC06
-            if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][5]) // Go down
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][5]) // Go down
             {
                 //0607EC12
                 r14->m20_angle[0] += r14->field_178[0];
@@ -2173,7 +2173,7 @@
                 r14->field_1F0.m_8 = r14->field_178[0];
                 r14->field_FC |= 2;
             }
-            else if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][4]) // Go up
+            else if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][4]) // Go up
             {
                 //0607EC44
                 r14->m20_angle[0] -= r14->field_178[0];
@@ -2188,7 +2188,7 @@
         else
         {
             //0607ECA4
-            if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][5]) // Go down
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][5]) // Go down
             {
                 //607ECB0
                 r14->m160_deltaTranslation[1] -= 0x800;
@@ -2196,7 +2196,7 @@
                 r14->field_1F0.m_8 = -r14->field_178[0];
                 r14->field_FC |= 2;
             }
-            else if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][4]) // Go up
+            else if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][4]) // Go up
             {
                 //607ED00
                 r14->m160_deltaTranslation[1] += 0x800;
@@ -2236,7 +2236,7 @@
             }
             else
             {
-                if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][7]) // right
+                if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][7]) // right
                 {
                     //0607EE34
                     if ((r14->mF8_Flags & 0x8000) == 0)
@@ -2253,7 +2253,7 @@
                     r14->field_FC |= 8;
                     r14->m25E = 0;
                 }
-                else if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][6]) // left
+                else if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][6]) // left
                 {
                     //0607EE8C
                     if ((r14->mF8_Flags & 0x8000) == 0)
@@ -2403,9 +2403,9 @@
 
         if ((r14->m25C & 0x2) == 0)
         {
-            if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][11])
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][11])
             {
-                if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][0])
+                if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][0])
                 {
                     r14->m235_dragonSpeedIndex = -1;
                 }
@@ -2434,7 +2434,7 @@
             r5 = 3;
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & graphicEngineStatus.m4514.mD8[1][0]) // go forward
+        if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][0]) // go forward
         {
             //0607E960
             if (++r14->field_234 > 4)

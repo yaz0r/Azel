@@ -653,7 +653,7 @@ void updateInputs()
     for (int i = 0; i < 2; i++)
     {
         graphicEngineStatus.m4514.m0[i].m0_current = graphicEngineStatus.m4514.m0[i].m16_pending;
-        graphicEngineStatus.m4514.m0[i].m16_pending.field_8 = 0;
+        graphicEngineStatus.m4514.m0[i].m16_pending.m8_newButtonDown = 0;
         graphicEngineStatus.m4514.m0[i].m16_pending.field_A = 0;
         graphicEngineStatus.m4514.m0[i].m16_pending.field_C = 0;
         graphicEngineStatus.m4514.m0[i].m16_pending.field_E = 0;
@@ -852,7 +852,7 @@ int main(int argc, char* argv[])
 
         if (ImGui::Begin("InputState"))
         {
-            ImGui::Text("State: %X", graphicEngineStatus.m4514.m0[0].m0_current.field_8);
+            ImGui::Text("State: %X", graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown);
         }
         ImGui::End();
 

@@ -405,8 +405,8 @@ struct s_graphicEngineStatus_4514_inputStatus
     u8 m0;
     u16 field_2;
     u16 field_4;
-    u16 field_6; // direction
-    u16 field_8; // button mask
+    u16 m6_buttonDown; // direction
+    u16 m8_newButtonDown; // button mask
     u16 field_A;
     u16 field_C; // 0x10: up
                  // 0x20: down

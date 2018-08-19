@@ -714,7 +714,7 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         setupLight(0, 0, 0x10000, 0x161918);
     }
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & 0x800)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & 0x800)
     {
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
@@ -724,7 +724,7 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->modelRotation[1] -= 0x5B05B0;
     }
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.field_6 & 0x8000)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & 0x8000)
     {
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
@@ -734,33 +734,33 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x8000)
+    if (graphicEngineStatus.m4514.m0[1].m0_current.m6_buttonDown & 0x8000)
     {
         assert(0);
     }
     else
     {
-        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x10)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.m6_buttonDown & 0x10)
         {
             assert(0);
         }
-        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x20)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.m6_buttonDown & 0x20)
         {
             assert(0);
         }
-        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x40)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.m6_buttonDown & 0x40)
         {
             assert(0);
         }
-        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x80)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.m6_buttonDown & 0x80)
         {
             assert(0);
         }
-        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x4000)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.m6_buttonDown & 0x4000)
         {
             assert(0);
         }
-        if (graphicEngineStatus.m4514.m0[1].m0_current.field_6 & 0x4)
+        if (graphicEngineStatus.m4514.m0[1].m0_current.m6_buttonDown & 0x4)
         {
             assert(0);
         }
