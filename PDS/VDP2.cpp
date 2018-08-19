@@ -336,10 +336,8 @@ void resetVdp2RegsCopy(s_VDP2Regs* pRegisters)
     pRegisters->CYCA1 = 0xFFFF;
     pRegisters->CYCB0 = 0xFFFF;
     pRegisters->CYCB1 = 0xFFFF;
-    pRegisters->ZMXIN0 = 1;
-    pRegisters->ZMYIN0 = 1;
-    pRegisters->ZMXIN1 = 1;
-    pRegisters->ZMYIN1 = 1;
+    pRegisters->ZMXN0 = 0x10000;
+    pRegisters->ZMXN1 = 0x10000;
     pRegisters->SPCTL = 0x20;
 }
 
@@ -373,12 +371,12 @@ void setupVdp2TextLayerColor()
     menuUnk0.m_48 = 0xC210;
 
     vdp2Controls.m_registers[0].N1COEN = 0x7F;
-    vdp2Controls.m_registers[1].N1COEN = 0x7F;
+    vdp2Controls.m_pendingVdp2Regs->N1COEN = 0x7F;
 
     if (menuUnk0.m_4D >= menuUnk0.m_4C) //?
     {
         vdp2Controls.m_registers[0].N1COSL = 0;
-        vdp2Controls.m_registers[1].N1COSL = 0;
+        vdp2Controls.m_pendingVdp2Regs->N1COSL = 0;
     }
 
     menuUnk0.m_field0.m_field20 = 1;
@@ -407,12 +405,12 @@ void setupVdp2TextLayerColor()
     vdp2Controls.m_registers[0].COBG = 0;
     vdp2Controls.m_registers[0].COBB = 0;
 
-    vdp2Controls.m_registers[1].COAR = 0;
-    vdp2Controls.m_registers[1].COAG = 0;
-    vdp2Controls.m_registers[1].COAB = 0;
-    vdp2Controls.m_registers[1].COBR = 0;
-    vdp2Controls.m_registers[1].COBG = 0;
-    vdp2Controls.m_registers[1].COBB = 0;
+    vdp2Controls.m_pendingVdp2Regs->COAR = 0;
+    vdp2Controls.m_pendingVdp2Regs->COAG = 0;
+    vdp2Controls.m_pendingVdp2Regs->COAB = 0;
+    vdp2Controls.m_pendingVdp2Regs->COBR = 0;
+    vdp2Controls.m_pendingVdp2Regs->COBG = 0;
+    vdp2Controls.m_pendingVdp2Regs->COBB = 0;
 }
 
 sLayerConfig textLayerVdp2Setup[] = {
@@ -835,14 +833,60 @@ void reinitVdp2()
     setFontDefaultColors();
 }
 
-u8 incrementVar;
 void updateVDP2CoordinatesIncrement(u32 unk0, u32 unk1)
 {
-
+    switch (pauseEngine[4])
+    {
+    case 0:
+        vdp2Controls.m_registers[0].ZMXN0 = unk0;
+        vdp2Controls.m_pendingVdp2Regs->ZMXN0 = unk0;
+        vdp2Controls.m_registers[0].ZMYN0 = unk1;
+        vdp2Controls.m_pendingVdp2Regs->ZMYN0 = unk1;
+        break;
+    case 1:
+        vdp2Controls.m_registers[0].ZMXN1 = unk0;
+        vdp2Controls.m_pendingVdp2Regs->ZMXN1 = unk0;
+        vdp2Controls.m_registers[0].ZMYN1 = unk1;
+        vdp2Controls.m_pendingVdp2Regs->ZMYN1 = unk1;
+        break;
+    default:
+        assert(0);
+        break;
+    }
 }
-void updateVDP2CoordinatesIncrement2(u32 unk0, u32 unk1)
-{
 
+void setupVDP2CoordinatesIncrement2(u32 unk0, u32 unk1)
+{
+    switch (pauseEngine[4])
+    {
+    case 0:
+        vdp2Controls.m_registers[0].SCXN0 = unk0;
+        vdp2Controls.m_pendingVdp2Regs->SCXN0 = unk0;
+        vdp2Controls.m_registers[0].SCYN0 = unk1;
+        vdp2Controls.m_pendingVdp2Regs->SCYN0 = unk1;
+        break;
+    case 1:
+        vdp2Controls.m_registers[0].SCXN1 = unk0;
+        vdp2Controls.m_pendingVdp2Regs->SCXN1 = unk0;
+        vdp2Controls.m_registers[0].SCYN1 = unk1;
+        vdp2Controls.m_pendingVdp2Regs->SCYN1 = unk1;
+        break;
+    case 2:
+        vdp2Controls.m_registers[0].SCXN2 = unk0;
+        vdp2Controls.m_pendingVdp2Regs->SCXN2 = unk0;
+        vdp2Controls.m_registers[0].SCYN2 = unk1;
+        vdp2Controls.m_pendingVdp2Regs->SCYN2 = unk1;
+        break;
+    case 3:
+        vdp2Controls.m_registers[0].SCXN3 = unk0;
+        vdp2Controls.m_pendingVdp2Regs->SCXN3 = unk0;
+        vdp2Controls.m_registers[0].SCYN3 = unk1;
+        vdp2Controls.m_pendingVdp2Regs->SCYN3 = unk1;
+        break;
+    default:
+        assert(0);
+        break;
+    }
 }
 
 int drawLineLargeFont(const char* text)

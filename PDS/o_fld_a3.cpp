@@ -710,6 +710,7 @@
 
     s32 startFieldScript(s32 r4, s32 r5)
     {
+        return 0;
         s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
         if (r14)
         {

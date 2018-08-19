@@ -465,9 +465,9 @@ void loadWarningFile(u32 index)
 
     if (VDP2Regs_.TVSTAT & 1)
     {
-        incrementVar = 0;
-        updateVDP2CoordinatesIncrement2(0x0, 0x100000);
-        incrementVar = 4;
+        pauseEngine[4] = 0;
+        setupVDP2CoordinatesIncrement2(0x0, 0x100000);
+        pauseEngine[4] = 4;
     }
 }
 

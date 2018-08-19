@@ -470,6 +470,12 @@ void renderBG0(u32 width, u32 height)
     u32 textureWidth = width;
     u32 textureHeight = height;
 
+    if ((vdp2Controls.m_pendingVdp2Regs[0].TVMD & 0xC0) == 0xC0)
+    {
+        textureWidth *= 2;
+        textureHeight *= 2;
+    }
+
     u32* textureOutput = new u32[textureWidth * textureHeight];
 
     if(vdp2Controls.m_pendingVdp2Regs->BGON & 0x1)
@@ -804,12 +810,13 @@ bool azelSdl2_EndFrame()
 
     if(ImGui::Begin(""))
     {
-        ImGui::Image((ImTextureID)gNBG0Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight)); ImGui::SameLine();
-        ImGui::Image((ImTextureID)gNBG1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
-        ImGui::Image((ImTextureID)gNBG2Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight)); ImGui::SameLine();
-        ImGui::Image((ImTextureID)gNBG3Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
+        ImGui::Image((ImTextureID)gNBG0Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+        ImGui::Image((ImTextureID)gNBG1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image((ImTextureID)gNBG2Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+        ImGui::Image((ImTextureID)gNBG3Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
 
-        ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
+        ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image((ImTextureID)gVdp1PolyTexture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
     }
     ImGui::End();
 
@@ -838,7 +845,6 @@ bool azelSdl2_EndFrame()
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, internalResolution[0], internalResolution[1], 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
         glBindRenderbuffer(GL_RENDERBUFFER, gVdp1PolyDepth);
@@ -871,9 +877,8 @@ bool azelSdl2_EndFrame()
         glBindTexture(GL_TEXTURE_2D, gCompositedTexture);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, internalResolution[0], internalResolution[1], 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gCompositedTexture, 0);
 
@@ -997,12 +1002,6 @@ bool azelSdl2_EndFrame()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
-
-    ImGui::Begin("VDP1 Poly");
-    {
-        ImGui::Image((ImTextureID)gVdp1PolyTexture, ImGui::GetWindowSize(), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
-    }
-    ImGui::End();
 
     ImGui::Begin("Final Composition");
     {

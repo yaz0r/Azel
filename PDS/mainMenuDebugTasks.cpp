@@ -3812,38 +3812,6 @@ void menuGraphicsTaskDrawSub2()
     }
 }
 
-void setupVDP2CoordinatesIncrement2(s32 scrollX, s32 scrollY)
-{
-    if (pauseEngine[4] == 0)
-    {
-        vdp2Controls.m_registers->SCXN0 = scrollX;
-        vdp2Controls.m_pendingVdp2Regs->SCXN0 = scrollX;
-        vdp2Controls.m_registers->SCYN0 = scrollY;
-        vdp2Controls.m_pendingVdp2Regs->SCYN0 = scrollY;
-    }
-    else if (pauseEngine[4] == 1)
-    {
-        vdp2Controls.m_registers->SCXN1 = scrollX;
-        vdp2Controls.m_pendingVdp2Regs->SCXN1 = scrollX;
-        vdp2Controls.m_registers->SCYN1 = scrollY;
-        vdp2Controls.m_pendingVdp2Regs->SCYN1 = scrollY;
-    }
-    else if (pauseEngine[4] == 2)
-    {
-        vdp2Controls.m_registers->SCXN2 = scrollX;
-        vdp2Controls.m_pendingVdp2Regs->SCXN2 = scrollX;
-        vdp2Controls.m_registers->SCYN2 = scrollY;
-        vdp2Controls.m_pendingVdp2Regs->SCYN2 = scrollY;
-    }
-    else if (pauseEngine[4] == 3)
-    {
-        vdp2Controls.m_registers->SCXN3 = scrollX;
-        vdp2Controls.m_pendingVdp2Regs->SCXN3 = scrollX;
-        vdp2Controls.m_registers->SCYN3 = scrollY;
-        vdp2Controls.m_pendingVdp2Regs->SCYN3 = scrollY;
-    }
-}
-
 void scrollMenu()
 {
     for (int i = 0; i < 4; i++)

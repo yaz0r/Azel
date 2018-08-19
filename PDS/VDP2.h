@@ -68,17 +68,13 @@ struct s_VDP2Regs
 
     s32 SCXN0;
     s32 SCYN0;
-    u16 ZMXIN0;
-    u16 ZMXDN0;
-    u16 ZMYIN0;
-    u16 ZMYDN0;
+    u32 ZMXN0;
+    u32 ZMYN0;
 
     u32 SCXN1;
     u32 SCYN1;
-    u16 ZMXIN1;
-    u16 ZMXDN1;
-    u16 ZMYIN1;
-    u16 ZMYDN1;
+    u32 ZMXN1;
+    u32 ZMYN1;
 
     u16 SCXN2;
     u16 SCYN2;
@@ -161,9 +157,8 @@ struct sLayerConfig
 
 extern u8* vdp2Palette;
 
-extern u8 incrementVar;
 void updateVDP2CoordinatesIncrement(u32, u32);
-void updateVDP2CoordinatesIncrement2(u32, u32);
+void setupVDP2CoordinatesIncrement2(u32, u32);
 
 void initVDP2();
 void reinitVdp2();
