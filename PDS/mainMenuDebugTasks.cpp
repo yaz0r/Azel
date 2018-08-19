@@ -3615,9 +3615,14 @@ void statusMenuTaskDraw(p_workArea typelessWorkArea)
     }
 }
 
+void clearVdp2Menu()
+{
+    memset(getVdp2Vram(0x7000), 0, 0x100 * 0x10);
+}
+
 void statusMenuTaskDelete(p_workArea pWorkArea)
 {
-    unimplemented("statusMenuTaskDelete");
+    clearVdp2Menu();
 }
 
 s_taskDefinition statusMenuTaskDefinition = { statusMenuTaskInit, NULL, statusMenuTaskDraw, statusMenuTaskDelete, "statusMenuTask" };

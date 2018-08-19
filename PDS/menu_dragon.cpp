@@ -342,7 +342,13 @@ void drawDragonMenuStatsTaskDraw(p_workArea)
 
 }
 
-s_taskDefinition dragonMenuStatsTaskDefinition = { drawDragonMenuStatsTaskInit, NULL, drawDragonMenuStatsTaskDraw, dummyTaskDelete, "dragonMenuStatsTask" };
+void drawDragonMenuStatsTaskDelete(p_workArea)
+{
+    setupVDP2StringRendering(0, 34, 44, 28);
+    clearVdp2TextArea();
+}
+
+s_taskDefinition dragonMenuStatsTaskDefinition = { drawDragonMenuStatsTaskInit, NULL, drawDragonMenuStatsTaskDraw, drawDragonMenuStatsTaskDelete, "dragonMenuStatsTask" };
 s_taskDefinition dragonMenuStatsTask2Definition = { NULL, NULL, dummyTaskDraw, NULL, "dragonMenuStatsTask2" };
 s_taskDefinition dragonMenuMorphCursorTaskDefinition = { dummyTaskInit, NULL, dummyTaskDraw, NULL, "dragonMenuMorphCursorTask" };
 

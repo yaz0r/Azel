@@ -395,7 +395,7 @@ struct s_warningWorkArea : public s_workArea
 
 u32 checkCartdrigeMemory()
 {
-    return 0;
+    return 1;
 }
 
 void warningTaskDraw(p_workArea pTypelessWorkArea)
