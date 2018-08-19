@@ -1,6 +1,6 @@
 #include "PDS.h"
 
-namespace FLD_A3_OVERLAY {
+//namespace FLD_A3_OVERLAY {
 
     sSaturnMemoryFile* gFLD_A3 = NULL;
 
@@ -688,10 +688,10 @@ namespace FLD_A3_OVERLAY {
         }
     }
 
-    s32 queueNewFieldScript(const void* r4, s32 r5)
+    s32 queueNewFieldScript(sSaturnPtr r4, s32 r5)
     {
         s_fieldScriptWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-        if (r13->m4_currentScript)
+        if (r13->m4_currentScript.m_offset)
             return 0;
 
         if (r5 >=0)
@@ -1102,16 +1102,155 @@ namespace FLD_A3_OVERLAY {
         unimplemented("fieldScriptTaskUpdateSub1");
     }
 
-    void fieldScriptTaskUpdate(s_workArea* pWorkArea)
+    s32 fieldScriptTaskUpdateSub4()
+    {
+        s_fieldScriptWorkArea* pFieldScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+        if (pFieldScript->m4_currentScript.m_offset && pFieldScript->m30 && pFieldScript->m34 && pFieldScript->m38 && pFieldScript->m3C && pFieldScript->m40)
+            return 0;
+
+        return 1;
+
+    }
+
+    s32 fieldScriptTaskUpdateSub5()
+    {
+        return getFieldTaskPtr()->m8_pSubFieldData->m334->m2E4[4].m18_maxDistanceSquare == 0;
+    }
+
+    void fieldScriptTaskUpdateSub6()
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask->m5A = 1;
+    }
+
+    void fieldScriptTaskUpdateSub7()
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask->m5A = 0;
+    }
+
+    void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub3()
+    {
+        unimplemented("s_fieldScriptWorkArea::fieldScriptTaskUpdateSub3");
+    }
+
+    void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub2()
+    {
+        unimplemented("s_fieldScriptWorkArea::fieldScriptTaskUpdateSub2");
+    }
+
+    sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
+    {
+        sSaturnPtr pScript = m4_currentScript;
+        u8 opCode = readSaturnU8(pScript); pScript = pScript +1;
+        
+        switch (opCode)
+        {
+        case 27: // display string bottom of screen
+            if (m38)
+            {
+                //6068E76
+                assert(0);
+            }
+            else
+            {
+                //6068EC0
+                sSaturnPtr r10 = pScript - 1; //stay on that opcode
+
+                // Align
+                pScript = pScript + 1;
+                pScript.m_offset &= ~1; 
+
+                s16 duration = readSaturnS16(pScript);
+                pScript = pScript + 5;
+                pScript.m_offset &= ~3;
+
+                sSaturnPtr stringPtr = readSaturnEA(pScript);
+
+                createDisplayStringBorromScreenTask(this, &m38, duration, stringPtr);
+
+                return r10;
+            }
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        return m4_currentScript;
+    }
+
+    void s_fieldScriptWorkArea::Update()
     {
         fieldScriptTaskUpdateSub1();
 
+        if (m80)
+        {
+            assert(0);
+        }
 
+        if (readKeyboardToggle(0x87))
+        {
+            assert(0);
+        }
 
-        unimplemented("fieldScriptTaskUpdate");
+        s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
+        if ((pLCS->m83F == 0) && (m40 == 0) && (m4_currentScript.m_offset))
+        {
+            fieldScriptTaskUpdateSub2();
+
+            if ((m50 == 0) || (m58 != 0))
+            {
+                m4_currentScript = runFieldScript();
+
+                if (m4_currentScript.m_offset == NULL)
+                {
+                    fieldScriptTaskUpdateSub3();
+                }
+            }
+            else
+            {
+                m50--;
+            }
+        }
+
+        if(!fieldScriptTaskUpdateSub4() || fieldScriptTaskUpdateSub5() || !getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F || getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000)
+        {
+            //06069A18
+            fieldScriptTaskUpdateSub6();
+            getFieldTaskPtr()->m28_status |= 0x40;
+        }
+        else
+        {
+            //06069A2C
+            fieldScriptTaskUpdateSub7();
+            getFieldTaskPtr()->m28_status &= ~0x40;
+        }
+
+        if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 ||
+            m64 || m30 || m34 || m38 || m3C || m40 ||
+            getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000)
+        {
+            graphicEngineStatus.field_40AC.m1_isMenuAllowed = 0;
+        }
+        else
+        {
+            //06069A92
+            graphicEngineStatus.field_40AC.m1_isMenuAllowed = 1;
+            if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][13])
+            {
+                playSoundEffect(0);
+                graphicEngineStatus.field_40AC.m0_menuId = 5;
+                return;
+            }
+            if (graphicEngineStatus.m4514.m0[0].m0_current.field_8 & graphicEngineStatus.m4514.mD8[1][12])
+            {
+                //06069AF0
+                assert(0);
+            }
+            return;
+        }
     }
 
-    s_taskDefinition fieldScriptTaskDefinition = { fieldScriptTaskInit, fieldScriptTaskUpdate, NULL, NULL, "fieldScriptTask" };
+    s_taskDefinition fieldScriptTaskDefinition = { fieldScriptTaskInit, s_fieldScriptWorkArea::StaticUpdate, NULL, NULL, "fieldScriptTask" };
 
     void createFieldScriptTask(s_workArea* pWorkArea)
     {
@@ -1962,7 +2101,7 @@ namespace FLD_A3_OVERLAY {
         if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8)
             return 0;
 
-        if (r14->m4_currentScript)
+        if (r14->m4_currentScript.m_offset)
             return 0;
 
         if (r14->m30)
@@ -2162,7 +2301,7 @@ namespace FLD_A3_OVERLAY {
             return 1;
         }
 
-        if (r14->m4_currentScript)
+        if (r14->m4_currentScript.m_offset)
         {
             return 1;
         }
@@ -2199,7 +2338,7 @@ namespace FLD_A3_OVERLAY {
             return 0;
         }
 
-        if (r14->m4_currentScript)
+        if (r14->m4_currentScript.m_offset)
         {
             return 0;
         }
@@ -4065,7 +4204,26 @@ namespace FLD_A3_OVERLAY {
         unimplemented("overlayStart_Sub1");
     }
 
-    p_workArea overlayStart(p_workArea workArea, u32 arg)
+    sSaturnPtr* ReadScripts(sSaturnPtr EA)
+    {
+        int numScripts = 0;
+        while (readSaturnEA(EA).m_offset)
+        {
+            numScripts++;
+            EA = EA + 4;
+        }
+
+        EA = EA + (-numScripts * 4);
+        sSaturnPtr* outputArray = new sSaturnPtr[numScripts];
+        for (int i = 0; i < numScripts; i++)
+        {
+            outputArray[i] = readSaturnEA(EA);
+            EA = EA + 4;
+        }
+        return outputArray;
+    }
+
+    p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     {
         // Custom loader thing
 
@@ -4123,7 +4281,7 @@ namespace FLD_A3_OVERLAY {
         graphicEngineStatus.field_4090 = graphicEngineStatus.field_4094 << 8;
 
         getFieldTaskPtr()->m8_pSubFieldData->m334->field_50E = 1;
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = FLD_A3_Scripts;
+        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts({ 0x60924FC, gFLD_A3 });
 
         switch (getFieldTaskPtr()->m2C_currentFieldIndex)
         {
@@ -4143,4 +4301,4 @@ namespace FLD_A3_OVERLAY {
         return NULL;
     }
 
-};
+//};

@@ -93,23 +93,44 @@ struct s_scriptData4
 
 struct s_fieldScriptWorkArea : public s_workArea
 {
-    const void** m0_pScripts; //0
-    const void* m4_currentScript;
+    void Update();
+
+    static void StaticUpdate(p_workArea pWorkArea)
+    {
+        s_fieldScriptWorkArea* pThis = ConvertType(pWorkArea);
+        pThis->Update();
+    }
+
+    static s_fieldScriptWorkArea* ConvertType(p_workArea pWorkArea)
+    {
+        return static_cast<s_fieldScriptWorkArea*>(pWorkArea);
+    }
+
+    void fieldScriptTaskUpdateSub2();
+    void fieldScriptTaskUpdateSub3();
+    sSaturnPtr runFieldScript();
+
+    sSaturnPtr* m0_pScripts; //0
+    sSaturnPtr m4_currentScript;
     void* field_8;
     s32 m2C; // dunno what that is yet
 
     u32 m30;
     u32 m34;
-    u32 m38;
+    s32 m38;
     u32 m3C;
+    s32 m40;
 
     s32 m50;
     s32 m58;
 
     s32 m60;
+    s32 m64;
 
     u32 field_6C;
     u32 field_70;
+
+    s32 m80;
 
     s_scriptData1* field_88;
     s_scriptData2* field_8C;
@@ -356,6 +377,7 @@ struct s_LCSTask : public s_workArea
     u32 mC;
     u32 m10;
     u32 m814;
+    s8 m83F;
     void* m9C0;
     u32 m9C4;
     u32 m9C8;
@@ -386,6 +408,7 @@ struct s_PaletteTaskWorkArea : public s_workArea
     s8 m4C;
     s32 m50;
     s32 m54;
+    s8 m5A;
     s32 m5C;
     s32 m60;
     s32 m64;

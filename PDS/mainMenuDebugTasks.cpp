@@ -2211,7 +2211,7 @@ void fieldSubTaskInit(s_workArea* pWorkArea)
     menuUnk0.m_48 = 0xC210;
     menuUnk0.m_4A = 0xC210;
 
-    FLD_A3_OVERLAY::overlayStart(pWorkArea, 0);
+    overlayStart_FLD_A3(pWorkArea, 0);
 
     fieldTaskPtr->fieldTaskState = 4;
 

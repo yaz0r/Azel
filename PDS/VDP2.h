@@ -253,4 +253,6 @@ void asyncDmaCopy(sSaturnPtr EA, void* target, u32 size, u32 unk);
 void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD);
 s32 resetVdp2StringsSub1(u16* pData);
 
+void createDisplayStringBorromScreenTask(p_workArea pTask, s32* r5, s16 duration, sSaturnPtr pString);
+
 void VDP2DrawString(const char*);

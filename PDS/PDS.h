@@ -47,6 +47,12 @@ struct sSaturnPtr
         newPtr.m_offset += i;
         return newPtr;
     }
+    sSaturnPtr operator - (unsigned int i) const
+    {
+        sSaturnPtr newPtr = *this;
+        newPtr.m_offset -= i;
+        return newPtr;
+    }
 };
 
 #include "fixedPoint.h"

@@ -1248,3 +1248,8 @@ void VDP2DrawString(const char*)
     assert(0);
 }
 
+void createDisplayStringBorromScreenTask(p_workArea pTask, s32* r5, s16 duration, sSaturnPtr pString)
+{
+    //createSubTask(pTask, )
+}
+

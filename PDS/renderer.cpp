@@ -14,11 +14,56 @@
 SDL_Window *gWindow;
 SDL_GLContext gGlcontext;
 
+GLuint gVdp1PolyFB = 0;
+GLuint gVdp1PolyTexture = 0;
+GLuint gVdp1PolyDepth = 0;
+
+GLuint gCompositedFB = 0;
+GLuint gCompositedTexture = 0;
+
 GLuint gVdp1Texture = 0;
 GLuint gNBG0Texture = 0;
 GLuint gNBG1Texture = 0;
 GLuint gNBG2Texture = 0;
 GLuint gNBG3Texture = 0;
+
+const GLchar blit_vs[] =
+"#version 330 \n"
+"in vec3 a_position;   \n"
+"in vec2 a_texcoord;   \n"
+"out  highp vec2 v_texcoord;     \n"
+"void main()                  \n"
+"{                            \n"
+"   gl_Position = vec4(a_position, 1); \n"
+"   v_texcoord = (a_position.xy+vec2(1,1))/2.0;; \n"
+"} "
+;
+
+const GLchar blit_ps[] =
+"#version 330 \n"
+"precision highp float;									\n"
+"in highp vec2 v_texcoord;								\n"
+"uniform sampler2D s_texture;							\n"
+"out vec4 fragColor;									\n"
+"void main()											\n"
+"{														\n"
+"	vec4 txcol = texture2D(s_texture, v_texcoord);		\n"
+"   if(txcol.a <= 0) discard;\n"
+"   fragColor = txcol; \n"
+"   fragColor.w = 1;								\n"
+"}														\n"
+;
+
+enum eLayers {
+    SPRITE_POLY,
+    SPRITE_SOFTWARE,
+    NBG0,
+    NBG1,
+    //NBG2,
+    NBG3,
+
+    MAX
+};
 
 void azelSdl2_Init()
 {
@@ -49,11 +94,86 @@ void azelSdl2_Init()
     ImGui_ImplOpenGL3_Init();
     ImGui_ImplSDL2_InitForOpenGL(gWindow, gGlcontext);
 
+    // setup vdp1 Poly
+    glGenFramebuffers(1, &gVdp1PolyFB);
+    glGenTextures(1, &gVdp1PolyTexture);
+    glGenRenderbuffers(1, &gVdp1PolyDepth);
+
+    // Composited output
+    glGenFramebuffers(1, &gCompositedFB);
+    glGenTextures(1, &gCompositedTexture);
+
     glGenTextures(1, &gVdp1Texture);
     glGenTextures(1, &gNBG0Texture);
     glGenTextures(1, &gNBG1Texture);
     glGenTextures(1, &gNBG2Texture);
     glGenTextures(1, &gNBG3Texture);
+}
+
+GLuint getTextureForLayer(eLayers layerIndex)
+{
+    switch (layerIndex)
+    {
+    case SPRITE_POLY:
+        return gVdp1PolyTexture;
+    case SPRITE_SOFTWARE:
+        return gVdp1Texture;
+    case NBG0:
+        return gNBG0Texture;
+    case NBG1:
+        return gNBG1Texture;
+    //case NBG2:
+    //    return gNBG2Texture;
+    case NBG3:
+        return gNBG3Texture;
+    default:
+        assert(0);
+        break;
+    }
+}
+
+bool isBackgroundEnabled(eLayers layerIndex)
+{
+    switch (layerIndex)
+    {
+    case SPRITE_POLY:
+        return true;
+    case SPRITE_SOFTWARE:
+        return true;
+    case NBG0:
+        return vdp2Controls.m_pendingVdp2Regs->BGON & 1;
+    case NBG1:
+        return vdp2Controls.m_pendingVdp2Regs->BGON & 2;
+    //case NBG2:
+    //    return vdp2Controls.m_pendingVdp2Regs->BGON & 4;
+    case NBG3:
+        return vdp2Controls.m_pendingVdp2Regs->BGON & 8;
+    default:
+        assert(0);
+        break;
+    }
+}
+
+int getPriorityForLayer(eLayers layerIndex)
+{
+    switch (layerIndex)
+    {
+    case SPRITE_POLY:
+        return 7;
+    case SPRITE_SOFTWARE:
+        return 7;
+    case NBG0:
+        return vdp2Controls.m_pendingVdp2Regs->PRINA & 7;
+    case NBG1:
+        return (vdp2Controls.m_pendingVdp2Regs->PRINA >> 8) & 7;
+//    case NBG2:
+ //       return vdp2Controls.m_pendingVdp2Regs->PRINB & 7;
+    case NBG3:
+        return (vdp2Controls.m_pendingVdp2Regs->PRINB >> 8) & 7;
+    default:
+        assert(0);
+        break;
+    }
 }
 
 bool closeApp = false;
@@ -157,6 +277,11 @@ struct s_layerData
 
 void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u32* textureOutput)
 {
+    for (int i = 0; i < textureWidth * textureHeight; i++)
+    {
+        textureOutput[i] = 0x00FF0000;
+    }
+
     u32 cellDotDimension = 8;
     u32 characterPatternDotDimension = cellDotDimension * ((layerData.CHSZ == 0) ? 1 : 2);
     u32 pageDotDimension = 8 * 64; /* A page is always 64x64 cells, so 512 * 512 dots*/ /*characterPatternDimension * ((planeData.CHSZ == 0) ? 64 : 32);*/
@@ -334,7 +459,7 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
                 u16 color = getVdp2CramU16(paletteOffset);
                 u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
 
-                textureOutput[rawOutputY * textureWidth + rawOutputX] = finalColor;
+                textureOutput[(textureHeight - 1 - rawOutputY) * textureWidth + rawOutputX] = finalColor;
             }
         }
     }
@@ -346,7 +471,6 @@ void renderBG0(u32 width, u32 height)
     u32 textureHeight = height;
 
     u32* textureOutput = new u32[textureWidth * textureHeight];
-    memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
     if(vdp2Controls.m_pendingVdp2Regs->BGON & 0x1)
     {
@@ -391,7 +515,6 @@ void renderBG1(u32 width, u32 height)
     u32 textureHeight = height;
 
     u32* textureOutput = new u32[textureWidth * textureHeight];
-    memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
     if (vdp2Controls.m_pendingVdp2Regs->BGON & 0x2)
     {
@@ -437,7 +560,6 @@ void renderBG2()
     u32 textureHeight = 1024;
 
     u32* textureOutput = new u32[textureWidth * textureHeight];
-    memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
     s_planeData planeData;
 
@@ -473,7 +595,6 @@ void renderBG3(u32 width, u32 height)
     u32 textureHeight = height;
 
     u32* textureOutput = new u32[textureWidth * textureHeight];
-    memset(textureOutput, 0x80, textureWidth * textureHeight * 4);
 
     if (vdp2Controls.m_pendingVdp2Regs->BGON & 0x8)
     {
@@ -573,7 +694,7 @@ void NormalSpriteDraw(u32 vdp1EA)
                         u16 color = getVdp2CramU16(paletteOffset);
                         u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
 
-                        vdp1TextureOutput[currentY * vdp1TextureWidth + currentX] = finalColor;
+                        vdp1TextureOutput[(vdp1TextureHeight - 1 - currentY) * vdp1TextureWidth + currentX] = finalColor;
                     }
 
                     counter++;
@@ -588,7 +709,7 @@ void renderVdp1(u32 width, u32 height)
     vdp1TextureWidth = width;
     vdp1TextureHeight = height;
     vdp1TextureOutput = new u32[vdp1TextureWidth * vdp1TextureHeight];
-    memset(vdp1TextureOutput, 0x80, vdp1TextureWidth * vdp1TextureHeight * 4);
+    memset(vdp1TextureOutput, 0x00, vdp1TextureWidth * vdp1TextureHeight * 4);
 
     u32 vdp1EA = 0x25C00000;
 
@@ -702,7 +823,192 @@ bool azelSdl2_EndFrame()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_GREATER);
 
-    flushObjectsToDrawList();
+    static int internalResolution[2] = { 1024, 720 };
+
+    ImGui::Begin("Config");
+    {
+        ImGui::InputInt2("Internal Resolution", internalResolution);
+    }
+    ImGui::End();
+
+    // render VDP1 frame buffer
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, gVdp1PolyFB);
+        glBindTexture(GL_TEXTURE_2D, gVdp1PolyTexture);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, internalResolution[0], internalResolution[1], 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        glBindRenderbuffer(GL_RENDERBUFFER, gVdp1PolyDepth);
+
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, internalResolution[0], internalResolution[1]);
+
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, gVdp1PolyDepth);
+
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gVdp1PolyTexture, 0);
+
+        GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+
+        glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+        glViewport(0, 0, internalResolution[0], internalResolution[1]);
+
+        glClearColor(0, 0, 0, 0);
+        glClearDepth(0.f);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        flushObjectsToDrawList();
+    }
+    
+    //Compose
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, gCompositedFB);
+        glBindTexture(GL_TEXTURE_2D, gCompositedTexture);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, internalResolution[0], internalResolution[1], 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gCompositedTexture, 0);
+
+        GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+        glViewport(0, 0, internalResolution[0], internalResolution[1]);
+
+        glClearColor(0, 0, 0, 0);
+        glClearDepth(0.f);
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        for (int priorityIndex = 0; priorityIndex <= 7; priorityIndex++)
+        {
+            for (eLayers layerIndex = SPRITE_POLY; layerIndex < eLayers::MAX; layerIndex = (eLayers)(layerIndex + 1))
+            {
+                if (isBackgroundEnabled(layerIndex) && (getPriorityForLayer(layerIndex) == priorityIndex))
+                {
+                    static GLuint quad_VertexArrayID;
+                    static GLuint shaderProgram = 0;
+                    static GLuint vshader = 0;
+                    static GLuint fshader = 0;
+                    static GLuint quad_vertexbuffer = 0;
+                    static GLuint texID;
+
+                    static bool initialized = false;
+                    if (!initialized)
+                    {
+                        static const GLfloat g_quad_vertex_buffer_data[] = {
+                            -1.0f, -1.0f, 0.0f,
+                            1.0f, -1.0f, 0.0f,
+                            -1.0f,  1.0f, 0.0f,
+                            -1.0f,  1.0f, 0.0f,
+                            1.0f, -1.0f, 0.0f,
+                            1.0f,  1.0f, 0.0f,
+                        };
+
+                        glGenVertexArrays(1, &quad_VertexArrayID);
+                        glBindVertexArray(quad_VertexArrayID);
+                        glGenBuffers(1, &quad_vertexbuffer);
+
+                        vshader = glCreateShader(GL_VERTEX_SHADER);
+                        {
+                            volatile int compiled = 0;
+                            const GLchar * pYglprg_normal_v[] = { blit_vs, NULL };
+                            glShaderSource(vshader, 1, pYglprg_normal_v, NULL);
+                            glCompileShader(vshader);
+                            glGetShaderiv(vshader, GL_COMPILE_STATUS, (int*)&compiled);
+                            if (compiled == GL_FALSE)
+                            {
+                                GLint maxLength = 0;
+                                glGetShaderiv(vshader, GL_INFO_LOG_LENGTH, &maxLength);
+
+                                // The maxLength includes the NULL character
+                                std::vector<GLchar> errorLog(maxLength);
+                                glGetShaderInfoLog(vshader, maxLength, &maxLength, &errorLog[0]);
+                            }
+                            while (!compiled);
+                        }
+
+                        fshader = glCreateShader(GL_FRAGMENT_SHADER);
+                        {
+                            volatile int compiled = 0;
+                            const GLchar * pYglprg_normal_f[] = { blit_ps, NULL };
+                            glShaderSource(fshader, 1, pYglprg_normal_f, NULL);
+                            glCompileShader(fshader);
+                            glGetShaderiv(fshader, GL_COMPILE_STATUS, (int*)&compiled);
+                            assert(compiled == 1);
+                            while (!compiled);
+                        }
+
+                        shaderProgram = glCreateProgram();
+                        {
+                            volatile int linked = 0;
+                            glAttachShader(shaderProgram, vshader);
+                            glAttachShader(shaderProgram, fshader);
+                            glLinkProgram(shaderProgram);
+                            glGetProgramiv(shaderProgram, GL_LINK_STATUS, (int*)&linked);
+                            assert(linked == 1);
+                            while (!linked);
+                        }
+
+                        glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+                        glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+                        texID = glGetUniformLocation(shaderProgram, "s_texture");
+                        assert(texID >= 0);
+
+                        initialized = true;
+                    }
+
+                    glUseProgram(shaderProgram);
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, getTextureForLayer(layerIndex));
+                    // Set our "renderedTexture" sampler to user Texture Unit 0
+                    glUniform1i(texID, 0);
+
+                    glEnableVertexAttribArray(0);
+                    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+                    glVertexAttribPointer(
+                        0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                        3,                  // size
+                        GL_FLOAT,           // type
+                        GL_FALSE,           // normalized?
+                        0,                  // stride
+                        (void*)0            // array buffer offset
+                    );
+
+                    // Draw the triangle !
+                    glDrawArrays(GL_TRIANGLES, 0, 6); // From index 0 to 3 -> 1 triangle
+
+                    glDisableVertexAttribArray(0);
+                }
+            }
+            
+        }
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+
+    ImGui::Begin("VDP1 Poly");
+    {
+        ImGui::Image((ImTextureID)gVdp1PolyTexture, ImGui::GetWindowSize(), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+    }
+    ImGui::End();
+
+    ImGui::Begin("Final Composition");
+    {
+        ImGui::Image((ImTextureID)gCompositedTexture, ImGui::GetWindowSize(), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+    }
+    ImGui::End();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
