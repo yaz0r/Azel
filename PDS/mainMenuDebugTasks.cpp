@@ -427,7 +427,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             }
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x20) // down
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
         {
             if (++r14->subFieldIndexMenuSelection >= fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields)
             {
@@ -435,7 +435,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             }
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x10) // up
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
         {
             if (--r14->subFieldIndexMenuSelection < 0)
             {
@@ -443,12 +443,12 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             }
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x80) // page down
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x80) // page down
         {
             unimplemented("Page down");
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x40) // page up
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x40) // page up
         {
             unimplemented("Page up");
         }
@@ -460,7 +460,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             pWorkArea->m8_isSelectingSubfield = 1;
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x20) // down
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
         {
             clearVdp2StringFieldDebugList();
             r14->subFieldIndexMenuSelection = 0;
@@ -475,7 +475,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
             } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x10) // up
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
         {
             clearVdp2StringFieldDebugList();
             r14->subFieldIndexMenuSelection = 0;
@@ -491,12 +491,12 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
         }
     }
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x8000)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x8000)
     {
         assert(0);
     }
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x800)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x800)
     {
         assert(0);
     }

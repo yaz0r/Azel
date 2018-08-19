@@ -190,7 +190,7 @@ void azelSdl2_StartFrame()
 
     graphicEngineStatus.m4514.m0[0].m16_pending.m6_buttonDown = 0;
     graphicEngineStatus.m4514.m0[0].m16_pending.m8_newButtonDown = 0;
-    graphicEngineStatus.m4514.m0[0].m16_pending.field_C = 0;
+    graphicEngineStatus.m4514.m0[0].m16_pending.mC_newButtonDown2 = 0;
 
     const Uint8* keyState = SDL_GetKeyboardState(NULL);
 
@@ -235,8 +235,8 @@ void azelSdl2_StartFrame()
 
                 if ((graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & buttonMask) == 0)
                 {
-                    graphicEngineStatus.m4514.m0[0].m16_pending.field_C |= buttonMask;
                     graphicEngineStatus.m4514.m0[0].m16_pending.m8_newButtonDown |= buttonMask;
+                    graphicEngineStatus.m4514.m0[0].m16_pending.mC_newButtonDown2 |= buttonMask;
                 }
             }
         }
@@ -1020,7 +1020,25 @@ bool azelSdl2_EndFrame()
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(gWindow);
+
+    glFlush();
+
+    {
+        static Uint64 last_time = SDL_GetPerformanceCounter();
+        Uint64 now = SDL_GetPerformanceCounter();
+
+        float freq = SDL_GetPerformanceFrequency();
+        float secs = (now - last_time) / freq;
+        float timeToWait = ((1.f/30.f) - secs) * 1000;
+        if (timeToWait > 0)
+        {
+            SDL_Delay(timeToWait);
+        }
+
+        SDL_GL_SwapWindow(gWindow);
+
+        last_time = SDL_GetPerformanceCounter();
+    }
 
     return !closeApp;
 }

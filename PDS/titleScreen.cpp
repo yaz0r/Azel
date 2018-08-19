@@ -137,7 +137,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
             return;
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x40)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x40)
         {
             int newSelection = pWorkArea->m_currentSelection;
             do 
@@ -158,7 +158,7 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
             }
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.field_C & 0x80)
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x80)
         {
             int newSelection = pWorkArea->m_currentSelection;
             do

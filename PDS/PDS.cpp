@@ -655,7 +655,7 @@ void updateInputs()
         graphicEngineStatus.m4514.m0[i].m0_current = graphicEngineStatus.m4514.m0[i].m16_pending;
         graphicEngineStatus.m4514.m0[i].m16_pending.m8_newButtonDown = 0;
         graphicEngineStatus.m4514.m0[i].m16_pending.field_A = 0;
-        graphicEngineStatus.m4514.m0[i].m16_pending.field_C = 0;
+        graphicEngineStatus.m4514.m0[i].m16_pending.mC_newButtonDown2 = 0;
         graphicEngineStatus.m4514.m0[i].m16_pending.field_E = 0;
         graphicEngineStatus.m4514.m0[i].m16_pending.field_10 = 0;
         graphicEngineStatus.m4514.m0[i].m16_pending.field_12 = 0;
