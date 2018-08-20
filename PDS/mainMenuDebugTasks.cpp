@@ -386,16 +386,16 @@ void fieldDebugListTaskInit(p_workArea pTypelessWorkArea)
 
     reinitVdp2();
     
-    vdp2Controls.m_pendingVdp2Regs->CYCA0 = 0x3FFF7FFF;
+    vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x3FFF7FFF;
     vdp2Controls.m_isDirty = true;
 
-    vdp2Controls.m_pendingVdp2Regs->PRINB = (vdp2Controls.m_pendingVdp2Regs->PRINB & 0xF8FF) | 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->PRINB = (vdp2Controls.m4_pendingVdp2Regs->PRINB & 0xF8FF) | 0x700;
     vdp2Controls.m_isDirty = true;
 
     if (menuUnk0.m_4D >= menuUnk0.m_4C)
     {
-        vdp2Controls.m_registers[0].N1COSL = 0x10;
-        vdp2Controls.m_registers[1].N1COSL = 0x10;
+        vdp2Controls.m20_registers[0].N1COSL = 0x10;
+        vdp2Controls.m20_registers[1].N1COSL = 0x10;
     }
     
     fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
@@ -648,8 +648,8 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
 
     if (menuUnk0.m_4D >= menuUnk0.m_4C)
     {
-        vdp2Controls.m_registers[0].N1COSL = 0x10;
-        vdp2Controls.m_registers[1].N1COSL = 0x10;
+        vdp2Controls.m20_registers[0].N1COSL = 0x10;
+        vdp2Controls.m20_registers[1].N1COSL = 0x10;
     }
 
     fadePalette(&menuUnk0.m_field0, 0, 0, 1);
@@ -2249,8 +2249,8 @@ void fieldSubTaskUpdate(s_workArea* pWorkArea)
 
                 if (menuUnk0.m_4D >= menuUnk0.m_4C)
                 {
-                    vdp2Controls.m_registers[0].N1COSL = 0x10;
-                    vdp2Controls.m_registers[1].N1COSL = 0x10;
+                    vdp2Controls.m20_registers[0].N1COSL = 0x10;
+                    vdp2Controls.m20_registers[1].N1COSL = 0x10;
                 }
 
                 fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
@@ -2715,7 +2715,7 @@ void menuGraphicsTaskDrawSub1()
     memcpy_dma(&menuUnk0, &graphicEngineStatus.field_40E4->field_2B0, sizeof(sMenuUnk0));
     asyncDmaCopy(vdp2Palette, &graphicEngineStatus.field_40E4->field_300, 512, 0);
 
-    u32 backScreenTableOffset = vdp2Controls.m_pendingVdp2Regs->BKTA & 0x7FFFF;
+    u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
     graphicEngineStatus.field_40E4->field_400 = getVdp2VramU16(backScreenTableOffset);
     graphicEngineStatus.field_40E4->field_402 = pVdp2StringControl->f0_index;
 }
@@ -3098,9 +3098,9 @@ void setupVdp2ForMenu()
 {
     reinitVdp2();
 
-    vdp2Controls.m_pendingVdp2Regs->CYCA0 = 0x3FFF7FFF;
+    vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x3FFF7FFF;
     vdp2Controls.m_isDirty = 1;
-    vdp2Controls.m_pendingVdp2Regs->CYCB1 = 0x12F456F;
+    vdp2Controls.m4_pendingVdp2Regs->CYCB1 = 0x12F456F;
     vdp2Controls.m_isDirty = 1;
 
     setupNBG0(menuNBG01Setup);
@@ -3111,22 +3111,22 @@ void setupVdp2ForMenu()
     initLayerMap(1, 0x71000, 0x71000, 0x71000, 0x71000);
     initLayerMap(2, 0x70800, 0x70000, 0x70000, 0x70800);
 
-    vdp2Controls.m_pendingVdp2Regs->PRINA = 0x304;
-    vdp2Controls.m_pendingVdp2Regs->PRINB = 0x700;
-    vdp2Controls.m_pendingVdp2Regs->PRIR = 0x0;
+    vdp2Controls.m4_pendingVdp2Regs->PRINA = 0x304;
+    vdp2Controls.m4_pendingVdp2Regs->PRINB = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->PRIR = 0x0;
 
-    vdp2Controls.m_pendingVdp2Regs->PRISA = 0x606;
-    vdp2Controls.m_pendingVdp2Regs->PRISB = 0x606;
-    vdp2Controls.m_pendingVdp2Regs->PRISC = 0x606;
-    vdp2Controls.m_pendingVdp2Regs->PRISD = 0x606;
+    vdp2Controls.m4_pendingVdp2Regs->PRISA = 0x606;
+    vdp2Controls.m4_pendingVdp2Regs->PRISB = 0x606;
+    vdp2Controls.m4_pendingVdp2Regs->PRISC = 0x606;
+    vdp2Controls.m4_pendingVdp2Regs->PRISD = 0x606;
 
     vdp2Controls.m_isDirty = 1;
 
     setVdp2VramU16(0x7FFFE, 0x9402);
 
-    vdp2Controls.m_pendingVdp2Regs->BKTA = (vdp2Controls.m_pendingVdp2Regs->BKTA & 0xFFF80000) | 0x3FFFF;
+    vdp2Controls.m4_pendingVdp2Regs->BKTA = (vdp2Controls.m4_pendingVdp2Regs->BKTA & 0xFFF80000) | 0x3FFFF;
 
-    vdp2Controls.m_pendingVdp2Regs->CCCTL &= 0xFEFF;
+    vdp2Controls.m4_pendingVdp2Regs->CCCTL &= 0xFEFF;
 
     loadFile("MENU.SCB", MENU_SCB, 0);
     loadFile("MENU.CGB", getVdp1Pointer(0x25C10000), 0);
@@ -3852,12 +3852,12 @@ void menuGraphicsTaskDrawSub3()
         memcpy_dma(&graphicEngineStatus.field_40E4->field_2B0, &menuUnk0, sizeof(sMenuUnk0));
         asyncDmaCopy(&graphicEngineStatus.field_40E4->field_300, vdp2Palette, 512, 0);
 
-        u32 backScreenTableOffset = vdp2Controls.m_pendingVdp2Regs->BKTA & 0x7FFFF;
+        u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
         setVdp2VramU16(backScreenTableOffset, graphicEngineStatus.field_40E4->field_400);
 
-        u32 r3 = vdp2Controls.m_pendingVdp2Regs->BKTA & 0xFFF80000;
-        u32 r2 = vdp2Controls.m_pendingVdp2Regs->BKTA & 0x7FFFF;
-        vdp2Controls.m_pendingVdp2Regs->BKTA = r3 | ((r2 << 1) >> 1);
+        u32 r3 = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0xFFF80000;
+        u32 r2 = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
+        vdp2Controls.m4_pendingVdp2Regs->BKTA = r3 | ((r2 << 1) >> 1);
         freeHeap(graphicEngineStatus.field_40E4);
     }
 }

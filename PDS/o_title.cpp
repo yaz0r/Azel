@@ -102,7 +102,7 @@ void loadTitleScreenGraphics()
 
     vdp2Controls.m_0 = (vdp2Controls.m_0 & 0xFFF8) | 3;
     vdp2Controls.m_isDirty = 1;
-    vdp2Controls.m_pendingVdp2Regs->TVMD = (vdp2Controls.m_pendingVdp2Regs->TVMD & 0xFF3F) | 0xC0; // LSMD0 & 1 to 1 (double density interlace)
+    vdp2Controls.m4_pendingVdp2Regs->TVMD = (vdp2Controls.m4_pendingVdp2Regs->TVMD & 0xFF3F) | 0xC0; // LSMD0 & 1 to 1 (double density interlace)
     vdp2Controls.m_isDirty = 1; // because why not?
 
     loadFile("TITLEE.SCB", getVdp2Vram(0x20000), 0);
@@ -113,17 +113,17 @@ void loadTitleScreenGraphics()
 
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 0x200, 0);
 
-    vdp2Controls.m_pendingVdp2Regs->CYCA0 = 0x15FFFFF;
-    vdp2Controls.m_pendingVdp2Regs->CYCA1 = 0x44FFFFF;
-    vdp2Controls.m_pendingVdp2Regs->CYCB0 = 0x44FFFFF;
-    vdp2Controls.m_pendingVdp2Regs->CYCB1 = 0x44FFFFF;
+    vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x15FFFFF;
+    vdp2Controls.m4_pendingVdp2Regs->CYCA1 = 0x44FFFFF;
+    vdp2Controls.m4_pendingVdp2Regs->CYCB0 = 0x44FFFFF;
+    vdp2Controls.m4_pendingVdp2Regs->CYCB1 = 0x44FFFFF;
 
     setupNBG0(titleNBG0Setup);
     initLayerMap(0, (0x10000), (0x10800), (0x10000), (0x10800));
 
-    vdp2Controls.m_pendingVdp2Regs->PRINA = 0x706; // Layer0 = 6, Layer1 = 7
-    vdp2Controls.m_pendingVdp2Regs->PRINB = 0;
-    vdp2Controls.m_pendingVdp2Regs->PRIR = 0;
+    vdp2Controls.m4_pendingVdp2Regs->PRINA = 0x706; // Layer0 = 6, Layer1 = 7
+    vdp2Controls.m4_pendingVdp2Regs->PRINB = 0;
+    vdp2Controls.m4_pendingVdp2Regs->PRIR = 0;
     vdp2Controls.m_isDirty = 1; // because why not?
 
     if (VDP2Regs_.TVSTAT & 1)
@@ -169,8 +169,8 @@ void titleOverlay_Update(s_workArea* pTypelessWorkArea)
     case 3:
         if (menuUnk0.m_4D >= menuUnk0.m_4C)
         {
-            vdp2Controls.m_registers[0].N1COSL = 0;
-            vdp2Controls.m_registers[1].N1COSL = 0;
+            vdp2Controls.m20_registers[0].N1COSL = 0;
+            vdp2Controls.m20_registers[1].N1COSL = 0;
         }
 
         fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);

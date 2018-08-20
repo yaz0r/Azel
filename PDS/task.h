@@ -18,6 +18,26 @@ struct s_workArea
 
         return ptr;
     }
+
+    virtual void Init()
+    {
+        unimplemented("Init");
+    }
+
+    virtual void Update()
+    {
+        unimplemented("Update");
+    }
+
+    virtual void Draw()
+    {
+        unimplemented("Draw");
+    }
+
+    virtual void Delete()
+    {
+        unimplemented("Delete");
+    }
 };
 
 struct s_taskDefinition

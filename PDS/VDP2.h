@@ -106,7 +106,7 @@ struct s_VDP2Regs
     u16 PRINA;
     u16 PRINB;
     u16 PRIR;
-
+    u16 CCRNB;
     u16 N1COEN;
     u16 N1COSL;
     u16 COAR;
@@ -121,7 +121,7 @@ extern s_VDP2Regs VDP2Regs_;
 struct sVdp2Controls
 {
     u32 m_0;
-    s_VDP2Regs* m_pendingVdp2Regs; // 4
+    s_VDP2Regs* m4_pendingVdp2Regs; // 4
     u32 m_8;
     u32 m_C;
     u32 m_10;
@@ -130,7 +130,7 @@ struct sVdp2Controls
     u32 m_1C;
 
     // 0x20
-    s_VDP2Regs m_registers[2];
+    s_VDP2Regs m20_registers[2];
 };
 extern sVdp2Controls vdp2Controls;
 
@@ -248,6 +248,28 @@ void asyncDmaCopy(sSaturnPtr EA, void* target, u32 size, u32 unk);
 void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD);
 s32 resetVdp2StringsSub1(u16* pData);
 
-void createDisplayStringBorromScreenTask(p_workArea pTask, s32* r5, s16 duration, sSaturnPtr pString);
+struct s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, struct s_vdp2StringTask** r5, s16 duration, sSaturnPtr pString);
+
+struct s_stringStatusQuery
+{
+    s32 cursorX;
+    s32 cursorY;
+    s32 windowWidth;
+    s32 windowHeight;
+    s32 windowX1;
+    s32 windowY1;
+    s32 windowX2;
+    s32 windowY2;
+    const char* string;
+    u32 vdp2MemoryOffset;
+    u32 field_28;
+    u32 field_2C;
+};
+
+void addStringToVdp2(const char* string, s_stringStatusQuery* vars);
+void moveVdp2TextCursor(s_stringStatusQuery* vars);
+void printVdp2String(s_stringStatusQuery* vars);
 
 void VDP2DrawString(const char*);
+s32 computeStringLength(sSaturnPtr pString, s32 r5);
+void drawBlueBox(s32 x, s32 y, s32 width, s32 height);

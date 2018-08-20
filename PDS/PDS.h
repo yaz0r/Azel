@@ -28,6 +28,8 @@ typedef int64_t s64;
 
 void yLog(...);
 
+#define unimplemented(name) { static bool printed = false; if(!printed) {printed = true; printf("Unimplemented: %s\n", name);}}
+
 struct sSaturnMemoryFile
 {
     char* m_name;
@@ -52,6 +54,14 @@ struct sSaturnPtr
         sSaturnPtr newPtr = *this;
         newPtr.m_offset -= i;
         return newPtr;
+    }
+
+    static sSaturnPtr& getNull()
+    {
+        static sSaturnPtr temp;
+        temp.m_offset = 0;
+        temp.m_file = NULL;
+        return temp;
     }
 };
 
@@ -121,8 +131,6 @@ u8 READ_BE_U8(const void* ptr);
 s8 READ_BE_S8(const void* ptr);
 
 u32 getFileSize(const char* fileName);
-
-#define unimplemented(name) { static bool printed = false; if(!printed) {printed = true; printf("Unimplemented: %s\n", name);}}
 
 //void unimplemented(const char* name);
 

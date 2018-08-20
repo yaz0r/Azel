@@ -91,9 +91,161 @@ struct s_scriptData4
     u16 field_2;
 };
 
+struct s_vdp2StringTask : public s_workArea
+{
+    static s_taskDefinition* getTaskDefinition()
+    {
+        static s_taskDefinition taskDefinition = { NULL, s_vdp2StringTask::StaticUpdate, NULL, s_vdp2StringTask::StaticDelete, "vdp2StringTask" };
+        return &taskDefinition;
+    }
+    static void StaticUpdate(p_workArea pWorkArea)
+    {
+        s_vdp2StringTask* pThis = ConvertType(pWorkArea);
+        pThis->Update();
+    }
+    static void StaticDelete(p_workArea pWorkArea)
+    {
+        s_vdp2StringTask* pThis = ConvertType(pWorkArea);
+        pThis->Delete();
+    }
+    static s_vdp2StringTask* ConvertType(p_workArea pWorkArea)
+    {
+        return static_cast<s_vdp2StringTask*>(pWorkArea);
+    }
+
+    void Update() override;
+    void Delete() override;
+
+    void UpdateSub1();
+
+    // variables
+    u8 m0_status;
+    s8 m2_durationMode;
+    s16 mA_duration;
+    s_vdp2StringTask** m10;
+    s16 m14_x;
+    s16 m16_y;
+    s16 m1A_width;
+    s16 m1C_height;
+    sSaturnPtr m24_string;
+    // size 2C
+};
+
+struct s_cinematicBarTask : public s_workArea
+{
+    static s_taskDefinition* getTaskDefinition()
+    {
+        static s_taskDefinition taskDefinition = { s_cinematicBarTask::StaticInit, s_cinematicBarTask::StaticUpdate, s_cinematicBarTask::StaticDraw, NULL, "cinematicBarTask" };
+        return &taskDefinition;
+    }
+    static void StaticInit(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Init();
+    }
+    static void StaticUpdate(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Update();
+    }
+    static void StaticDraw(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Draw();
+    }
+    static s_cinematicBarTask* ConvertType(p_workArea pWorkArea)
+    {
+        return static_cast<s_cinematicBarTask*>(pWorkArea);
+    }
+
+    void Init() override
+    {
+        m8 = 0;
+        mB = 0;
+        m9 = 0;
+        mC = 0;
+        mA = 0;
+        mD = 0;
+    }
+    void Update() override;
+    void Draw() override;
+
+    void interpolateCinematicBar();
+    void interpolateCinematicBarSub1();
+
+    u8 m0_status;
+    s8 m1;
+    s8 m2;
+    s8 m3;
+    s8 m4;
+    s8 m8;
+    s8 m9;
+    s8 mA;
+    s8 mB;
+    s8 mC;
+    s8 mD;
+    s8 m11;
+    //size 0x13
+};
+
+struct s_multiChoiceTask2 : public s_workArea
+{
+    static s_taskDefinition* getTaskDefinition()
+    {
+        static s_taskDefinition taskDefinition = { NULL, s_multiChoiceTask2::StaticUpdate, s_multiChoiceTask2::StaticDraw, s_multiChoiceTask2::StaticDelete, "s_multiChoiceTask2" };
+        return &taskDefinition;
+    }
+    static void StaticUpdate(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Update();
+    }
+    static void StaticDraw(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Draw();
+    }
+    static void StaticDelete(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Delete();
+    }
+    static s_multiChoiceTask2* ConvertType(p_workArea pWorkArea)
+    {
+        return static_cast<s_multiChoiceTask2*>(pWorkArea);
+    }
+
+    void Update() override;
+    void Draw() override;
+    void Delete() override
+    {
+        assert(0);
+    }
+
+    void drawMultiChoice();
+
+    u8 m0_Status;
+    s8 m1;
+    s8 m2;
+    s8 m3;
+    s8 m4;
+    s8 m5;
+    s8 m6;
+    s8 m7;
+    s8 m8;
+    s16 m14_x;
+    s16 m16_y;
+    s16 m1A_width;
+    s16 m1C_height;
+    s_multiChoiceTask2** m10;
+    sSaturnPtr m24;
+    //size 0x2C
+};
+
+struct s_multiChoice
+{
+    s16* m0_choiceTable;
+    s32 m4_currentChoice;
+    s32 m8_numChoices;
+};
+
 struct s_fieldScriptWorkArea : public s_workArea
 {
-    void Update();
+    void Update() override;
 
     static void StaticUpdate(p_workArea pWorkArea)
     {
@@ -109,19 +261,24 @@ struct s_fieldScriptWorkArea : public s_workArea
     void fieldScriptTaskUpdateSub2();
     void fieldScriptTaskUpdateSub3();
     sSaturnPtr runFieldScript();
+    sSaturnPtr callNative(sSaturnPtr);
+    s_cinematicBarTask* s_fieldScriptWorkArea::startCinmaticBarTask();
 
     sSaturnPtr* m0_pScripts; //0
     sSaturnPtr m4_currentScript;
-    void* field_8;
+    sSaturnPtr* m8_stackPointer;
+    sSaturnPtr mC_stack[8];
     s32 m2C; // dunno what that is yet
 
-    u32 m30;
+    s_cinematicBarTask* m30;
     u32 m34;
-    s32 m38;
-    u32 m3C;
+    s_vdp2StringTask* m38;
+    s_multiChoiceTask2* m3C;
     s32 m40;
-
+    s_multiChoice* m44_multiChoiceData;
+    s32 m4C;
     s32 m50;
+    s32 m54_currentResult;
     s32 m58;
 
     s32 m60;
@@ -243,7 +400,7 @@ struct s_dragonTaskWorkArea : s_workArea
 
     u32 field_1CC;
     s_cameraScript* m1D0_cameraScript;
-    u32 field_1D4;
+    u32 m1D4;
     s32 m1E8_cameraScriptDelay;
     s_dragonTaskWorkArea_1F0 field_1F0;
 
@@ -464,11 +621,18 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     u8 debugMenuStatus3; //380
 };
 
+struct s_fieldTaskWorkArea_C : public s_workArea
+{
+    p_workArea m168;
+    // size 16C?
+};
+
 struct s_fieldTaskWorkArea : public s_workArea
 {
     s_workArea* m0; // 0
     s_workArea* m4_overlayTaskData;//4
     s_FieldSubTaskWorkArea* m8_pSubFieldData; // 0x8
+    s_fieldTaskWorkArea_C* mC; // background task buffer?
     u32 m28_status; // 0x28
     s16 m2C_currentFieldIndex; // 0x2C
     s16 m2E_currentSubFieldIndex; // 0x2E;

@@ -46,6 +46,7 @@ struct sVec3_FP
 
 fixedPoint dot3_FP(sVec3_FP* r4, sVec3_FP* r5);
 
+u8* getSaturnPtr(sSaturnPtr& ptr);
 s8 readSaturnS8(sSaturnPtr& ptr);
 u8 readSaturnU8(sSaturnPtr& ptr);
 s16 readSaturnS16(sSaturnPtr& ptr);

@@ -452,15 +452,15 @@ void loadWarningFile(u32 index)
 
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 32, 0);
 
-    vdp2Controls.m_pendingVdp2Regs->CYCA0 = 0x3FF47FF;
+    vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x3FF47FF;
 
     setupNBG0(warningBG0Setup);
 
     initLayerMap(0, 0x1C800 + index * 0x800, 0, 0, 0);
 
-    vdp2Controls.m_pendingVdp2Regs->PRINA = 6;
-    vdp2Controls.m_pendingVdp2Regs->PRINB = 0x700;
-    vdp2Controls.m_pendingVdp2Regs->PRIR = 0;
+    vdp2Controls.m4_pendingVdp2Regs->PRINA = 6;
+    vdp2Controls.m4_pendingVdp2Regs->PRINB = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->PRIR = 0;
     vdp2Controls.m_isDirty = 1;
 
     if (VDP2Regs_.TVSTAT & 1)
@@ -496,8 +496,8 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
 
     if (menuUnk0.m_4D >= menuUnk0.m_4C)
     {
-        vdp2Controls.m_registers[0].N1COSL = 0;
-        vdp2Controls.m_registers[1].N1COSL = 0;
+        vdp2Controls.m20_registers[0].N1COSL = 0;
+        vdp2Controls.m20_registers[1].N1COSL = 0;
     }
 
     fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);

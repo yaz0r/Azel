@@ -196,9 +196,44 @@
         return pVisibility;
     }
 
+    p_workArea create_fieldA3_0_task0(p_workArea workArea)
+    {
+        s_fieldTaskWorkArea_C* newWorkArea = static_cast<s_fieldTaskWorkArea_C*>(createSubTaskFromFunction(workArea, NULL, new s_fieldTaskWorkArea_C, "fieldTaskWorkArea_C"));
+        getFieldTaskPtr()->mC = newWorkArea;
+        return newWorkArea;
+    }
+
+    p_workArea create_fieldA3_0_task1(p_workArea workArea, s32 r5, s32 r6)
+    {
+        unimplemented("create_fieldA3_0_task1");
+        return workArea;
+    }
+
+    void fieldA3_0_tutorialTask_update(p_workArea workArea)
+    {
+        if (startFieldScript(21, -1))
+        {
+            workArea->getTask()->markDeleting();
+        }
+    }
+
+    void create_fieldA3_0_tutorialTask(p_workArea workArea)
+    {
+        if ((getFieldTaskPtr()->m2C_currentFieldIndex != 2) || mainGameState.getBit(0xA2, 2))
+        {
+            createSubTaskFromFunction(workArea, fieldA3_0_tutorialTask_update, new s_dummyWorkArea, "fieldA3_0_tutorialTask_update");
+        }
+    }
+
     void fieldA3_0_startTasks(p_workArea workArea)
     {
+        create_fieldA3_0_task0(workArea);
+
+        getFieldTaskPtr()->mC->m168 = create_fieldA3_0_task1(workArea, 2, 0x20);
+
         unimplemented("fieldA3_0_startTasks");
+
+        create_fieldA3_0_tutorialTask(workArea);
     }
 
     void fieldGridTask_Update(p_workArea)
@@ -564,7 +599,7 @@
             assert(0);
         }
 
-        pFieldCameraTask1->field_38 = createSubTaskFromFunction(pFieldCameraTask1, NULL, new s_dummyWorkArea, "Unnamed");
+        pFieldCameraTask1->field_38 = createSubTaskFromFunction(pFieldCameraTask1, NULL, new s_dummyWorkArea, "BackgroundTasks");
 
         if (r4)
         {
@@ -710,7 +745,6 @@
 
     s32 startFieldScript(s32 r4, s32 r5)
     {
-        return 0;
         s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
         if (r14)
         {
@@ -1087,7 +1121,7 @@
 
         }
 
-        pFieldScriptWorkArea->field_8 = &pFieldScriptWorkArea->m2C;
+        pFieldScriptWorkArea->m8_stackPointer = &pFieldScriptWorkArea->mC_stack[8];
 
         pFieldScriptWorkArea->field_88 = pFieldTaskWorkArea->field_40;
         pFieldScriptWorkArea->field_8C = pFieldTaskWorkArea->field_44;
@@ -1138,42 +1172,465 @@
         unimplemented("s_fieldScriptWorkArea::fieldScriptTaskUpdateSub2");
     }
 
-    sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
+    void endScript()
     {
-        sSaturnPtr pScript = m4_currentScript;
-        u8 opCode = readSaturnU8(pScript); pScript = pScript +1;
-        
-        switch (opCode)
+        s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+        if (pScript->m4C)
         {
-        case 27: // display string bottom of screen
-            if (m38)
+            pScript->getTask()->markDeleting();
+        }
+    }
+
+    s32 FLD_A3_Script_21_Sub0()
+    {
+        s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+
+        if ((pDragonTask->m1D0_cameraScript == NULL) && (pDragonTask->m1D4 == 0))
+        {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    s32 executeNative(sSaturnPtr ptr)
+    {
+        assert(ptr.m_file == gFLD_A3);
+
+        switch (ptr.m_offset)
+        {
+        case 0x06074F9A:
+            return FLD_A3_Script_21_Sub0();
+        default:
+            assert(0);
+            break;
+        }
+        return 0;
+    }
+
+    u32 interpolateCinematicBarData[512];
+
+    void s_cinematicBarTask::interpolateCinematicBarSub1()
+    {
+        for (int i = 0; i < 0xE0; i++)
+        {
+            if ((i < m3) || (i >= 0xE0 - m4))
             {
-                //6068E76
-                assert(0);
+                interpolateCinematicBarData[i] = 0x1010000;
             }
             else
             {
-                //6068EC0
-                sSaturnPtr r10 = pScript - 1; //stay on that opcode
-
-                // Align
-                pScript = pScript + 1;
-                pScript.m_offset &= ~1; 
-
-                s16 duration = readSaturnS16(pScript);
-                pScript = pScript + 5;
-                pScript.m_offset &= ~3;
-
-                sSaturnPtr stringPtr = readSaturnEA(pScript);
-
-                createDisplayStringBorromScreenTask(this, &m38, duration, stringPtr);
-
-                return r10;
+                interpolateCinematicBarData[i] = i << 16;
             }
+        }
+    }
+
+    void s_cinematicBarTask::interpolateCinematicBar()
+    {
+        fixedPoint r5 = performDivision(fixedPoint(m2), fixedPoint(m1 * 16));
+        if (fixedPoint(m3) != r5)
+        {
+            m3 = r5;
+            m11 = 1;
+        }
+
+        r5 = performDivision(fixedPoint(m2), fixedPoint(m1 * 32));
+        if (fixedPoint(m4) != r5)
+        {
+            m4 = r5;
+            m11 = 1;
+        }
+
+        if (m11)
+        {
+            interpolateCinematicBarSub1();
+        }
+    }
+
+    void s_cinematicBarTask::Update()
+    {
+        switch (m0_status)
+        {
+        case 2:
+            if (m2 == ++m1)
+            {
+                m0_status = 1;
+            }
+            interpolateCinematicBar();
+            break;
+        case 1:
+            return;
+        default:
+            assert(0);
+            break;
+        }
+    }
+
+    void s_cinematicBarTask::Draw()
+    {
+        unimplemented("s_cinematicBarTask::Draw");
+    }
+
+    s_cinematicBarTask* s_fieldScriptWorkArea::startCinmaticBarTask()
+    {
+        return static_cast<s_cinematicBarTask*>(createSubTask(this, s_cinematicBarTask::getTaskDefinition(), new s_cinematicBarTask));
+    }
+
+    sSaturnPtr s_fieldScriptWorkArea::callNative(sSaturnPtr r5)
+    {
+        u8 numArguments = readSaturnU8(r5);
+        r5 = r5 + 1;
+        sSaturnPtr r14 = r5 + 3;
+        r14.m_offset &= ~3;
+
+        switch (numArguments)
+        {
+        case 0:
+            m54_currentResult = executeNative(readSaturnEA(r14));
             break;
         default:
             assert(0);
             break;
+        }
+
+        return r14 + (numArguments + 1) * 4;
+    }
+
+    void setupCinematicBars(s_cinematicBarTask* pCinematicBar, s32 r5)
+    {
+        pCinematicBar->m1 = 0;
+        pCinematicBar->m2 = r5;
+        pCinematicBar->m0_status = 2;
+    }
+
+    void createMultiChoiceSub1()
+    {
+        s_multiChoice* r4 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData;
+        if (r4)
+        {
+            for (int i = 0; i < r4->m8_numChoices; i++)
+            {
+                r4->m0_choiceTable[i] = 0;
+            }
+        }
+    }
+
+    void createMultiChoice(s32 r4, s32 r5)
+    {
+        s_multiChoice* r14 = (s_multiChoice*)allocateHeapForTask(getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE, sizeof(s_multiChoice));
+        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData = r14;
+
+        r14->m8_numChoices = r4;
+        r14->m0_choiceTable = (s16*)allocateHeapForTask(getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE, r4 * 2);
+
+        if (r5 >= 0)
+        {
+            //06079234
+            assert(0);
+        }
+        else
+        {
+            r14->m4_currentChoice = 0;
+            createMultiChoiceSub1();
+        }
+
+        vdp2Controls.m20_registers[0].SFCODE = vdp2Controls.m20_registers[1].SFCODE = VDP2Regs_.SFCODE = 0xC000;
+        vdp2Controls.m20_registers[0].CCRNB = vdp2Controls.m20_registers[1].CCRNB = VDP2Regs_.CCRNB = (vdp2Controls.m4_pendingVdp2Regs->CCRNB & 0xFFE0) | 0x10;
+    }
+
+    void createMultiChoiceDefault(s32 r4)
+    {
+        createMultiChoice(r4, -1);
+    }
+
+    void s_multiChoiceTask2::drawMultiChoice()
+    {
+        drawBlueBox(m14_x, m16_y, m1A_width, m1C_height);
+        unimplemented("s_multiChoiceTask2::drawMultiChoice");
+    }
+
+    void s_multiChoiceTask2::Update()
+    {
+        switch (m0_Status)
+        {
+        case 0:
+            m0_Status++;
+        case 1:
+            drawMultiChoice();
+            playSoundEffect(3);
+            m0_Status++;
+            return;
+        case 2:
+            if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0x10) // up
+            {
+                assert(0);
+            }
+            else if(graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0x20) // down
+            {
+                assert(0);
+            }
+
+            if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 6)
+            {
+                assert(0);
+            }
+            else if(graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 1)
+            {
+                assert(0);
+            }
+            return;
+        default:
+            assert(0);
+            break;
+        }
+    }
+
+    void s_multiChoiceTask2::Draw()
+    {
+        unimplemented("s_multiChoiceTask2::Draw");
+    }
+
+    s_multiChoiceTask2* updateMultiChoice(p_workArea parentTask, s_multiChoiceTask2** r5, s32* r6_currentChoice, s32 r7_minusCurrentChoice, sSaturnPtr scriptPtr, s16* choiceTable, s32 moreCurrentChoice)
+    {
+        s_multiChoiceTask2* r14 = static_cast<s_multiChoiceTask2*>(createSubTask(parentTask, s_multiChoiceTask2::getTaskDefinition(), new s_multiChoiceTask2));
+
+        r14->m0_Status = 0;
+        r14->m5 = moreCurrentChoice;
+
+        if (r7_minusCurrentChoice >= 0)
+        {
+            r14->m1 = r7_minusCurrentChoice;
+            r14->m2 = 1;
+        }
+        else
+        {
+            r14->m1 = -r7_minusCurrentChoice;
+            r14->m2 = 0;
+        }
+
+        r14->m24 = scriptPtr;
+        r14->m3 = 0;
+        r14->m4 = 0;
+        r14->m6 = r14->m1;
+        r14->m5 = moreCurrentChoice;
+        r14->m7 = 0;
+        r14->m8 = 0;
+        r14->m14_x = 2;
+        r14->m16_y = 4;
+
+        s32 r12 = 0;
+        for (int i = 0; i < r14->m1; i++)
+        {
+            s32 stringLength = computeStringLength(scriptPtr + i * 4, 38);
+            if (stringLength > r12)
+            {
+                r12 = stringLength;
+            }
+        }
+
+        r14->m1A_width = ((r12 + 1) & ~1) + 6;
+        r14->m1C_height = (r14->m1 * 2) + 2;
+        r14->m10 = r5;
+
+        if (r5)
+        {
+            *r5 = r14;
+        }
+
+        return r14;
+    }
+
+    sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
+    {
+        sSaturnPtr pScript = m4_currentScript;
+        while(1)
+        {
+            u8 opCode = readSaturnU8(pScript); pScript = pScript + 1;
+
+            switch (opCode)
+            {
+            case 1: // END
+                if (m8_stackPointer == &mC_stack[8])
+                {
+                    endScript();
+                    return sSaturnPtr::getNull();
+                }
+                else
+                {
+                    assert(0);
+                }
+                break;
+            case 2: // wait
+                pScript = pScript + 1;
+                pScript.m_offset &= ~1;
+                m50 = readSaturnS16(pScript);
+                if (m50)
+                {
+                    m50--;
+                    pScript = pScript + 2;
+                    return pScript;
+                }
+                else
+                {
+                    continue;
+                }
+                break;
+            case 4: // if not
+                pScript = pScript + 1;
+                pScript.m_offset &= ~1;
+
+                if (m54_currentResult == readSaturnS16(pScript))
+                {
+                    m54_currentResult = 0;
+                }
+                else
+                {
+                    m54_currentResult = -1;
+                }
+                pScript = pScript + 2;
+                break;
+            case 21: // display string at bottom of screen
+                {
+                    pScript = pScript + 3;
+                    pScript.m_offset &= ~3;
+
+                    sSaturnPtr string = readSaturnEA(pScript);
+                    pScript = pScript + 4;
+
+                    setupVDP2StringRendering(3, 25, 38, 2);
+                    vdp2StringContext.field_0 = 0;
+                    VDP2DrawString((char*)getSaturnPtr(string));
+                    continue;
+                }
+            case 24: // cinematic
+                if(m30)
+                {
+                    if (m30->m0_status == 1)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        pScript = pScript - 1;
+                        return pScript;
+                    }
+                }
+                else
+                {
+                    m30 = startCinmaticBarTask();
+                    setupCinematicBars(m30, 4);
+                    pScript = pScript - 1;
+                    return pScript;
+                }
+            case 27: // display string bottom of screen
+                if (m38)
+                {
+                    //6068E76
+                    if ((m38->m0_status == 4) || m58)
+                    {
+                        pScript = pScript + 1;
+                        pScript.m_offset &= ~1;
+
+                        pScript = pScript + 5;
+                        pScript.m_offset &= ~3;
+
+                        pScript = pScript + 4;
+                        return pScript;
+                    }
+
+                    pScript = pScript - 1;
+                    return pScript;
+                }
+                else
+                {
+                    //6068EC0
+                    sSaturnPtr r10 = pScript - 1; //stay on that opcode
+
+                    // Align
+                    pScript = pScript + 1;
+                    pScript.m_offset &= ~1;
+
+                    s16 duration = readSaturnS16(pScript);
+                    pScript = pScript + 5;
+                    pScript.m_offset &= ~3;
+
+                    sSaturnPtr stringPtr = readSaturnEA(pScript);
+
+                    createDisplayStringBorromScreenTask(this, &m38, duration, stringPtr);
+
+                    return r10;
+                }
+                break;
+            case 33: // multi choice
+                if (m3C)
+                {
+                    //0606907A
+                    if (m3C->m0_Status == 4)
+                    {
+                        s8 r4 = readSaturnS8(pScript);
+                        pScript = pScript + 1;
+                        if (r4)
+                        {
+                            pScript = pScript + 3;
+                            pScript.m_offset &= ~3;
+                            pScript = pScript + r4 * 4;
+                        }
+                        return pScript;
+                    }
+                    else
+                    {
+                        pScript = pScript - 1;
+                        return pScript;
+                    }
+                }
+                else
+                {
+                    sSaturnPtr var4 = pScript - 1;
+                    s8 numChoices = readSaturnS8(pScript);
+                    pScript = pScript + 1;
+                    if (numChoices == 0)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        pScript = pScript + 3;
+                        pScript.m_offset &= ~3;
+
+                        if (m44_multiChoiceData == NULL)
+                        {
+                            createMultiChoiceDefault(numChoices);
+                        }
+                        updateMultiChoice(this, &m3C, &m44_multiChoiceData->m4_currentChoice, -m44_multiChoiceData->m4_currentChoice, pScript, m44_multiChoiceData->m0_choiceTable, m44_multiChoiceData->m4_currentChoice);
+
+                        return var4;
+                    }
+                }
+            case 38: // call native
+            {
+                sSaturnPtr r15 = pScript - 1; //stay on that opcode
+                pScript = callNative(pScript);
+                if (m54_currentResult)
+                {
+                    continue;
+                }
+                else
+                {
+                    return r15;
+                }
+            }
+            case 39: // call script
+            {
+                sSaturnPtr r3 = pScript + 3;
+                r3.m_offset &= ~3;
+                *(--m8_stackPointer) = pScript + 4; // store the return address
+                pScript = readSaturnEA(r3);
+                continue;
+            }
+            default:
+                assert(0);
+                break;
+            }
         }
 
         return m4_currentScript;
@@ -3062,7 +3519,7 @@
     {
         getFieldTaskPtr()->m28_status |= 0x10000;
 
-        if (pTypedWorkArea->field_1D4)
+        if (pTypedWorkArea->m1D4)
         {
             assert(0);
         }
