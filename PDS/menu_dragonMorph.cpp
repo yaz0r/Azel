@@ -2,36 +2,36 @@
 
 struct s_lightSetup
 {
-    fixedPoint field_0;
-    fixedPoint field_4;
-    fixedPoint field_8;
-    fixedPoint field_C;
-    u32 field_10;
-    u32 field_14;
-    u32 field_18;
+    fixedPoint m0;
+    fixedPoint m4;
+    fixedPoint m8;
+    fixedPoint mC;
+    u32 m10;
+    u32 m14;
+    u32 m18;
 };
 
 s_lightSetup lightSetup;
 
 struct s_dragonMenuDragonWorkAreaSub1
 {
-    s_graphicEngineStatus_405C field_120;
-    u32 field_170[3];
+    s_graphicEngineStatus_405C m120;
+    u32 m170[3];
     s_lightSetup lightSetup; // 17C
 };
 
 struct s_dragonMenuDragonWorkArea : public s_workArea
 {
-    s_loadDragonWorkArea* field_0; //0
-    const sDragonData3* field_4; //4
-    u16 field_8; //8
-    u32 field_C; //C
+    s_loadDragonWorkArea* m0; //0
+    const sDragonData3* m4; //4
+    u16 m8; //8
+    u32 mC; //C
     sVec3_FP modelTranslation; //10
     sVec3_FP modelRotation; //1C
-    u8* field_28; //28
-    u32 field_2C; //2C
-    u16 field_30; //30
-    s_dragonMenuDragonWorkAreaSub1 field_34; //34
+    u8* m28; //28
+    u32 m2C; //2C
+    u16 m30; //30
+    s_dragonMenuDragonWorkAreaSub1 m34; //34
 };
 
 const sVec3_FP defaultCameraVectors[3] = {
@@ -42,11 +42,11 @@ const sVec3_FP defaultCameraVectors[3] = {
 
 void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
 {
-    memcpy_dma(&graphicEngineStatus.field_405C, &r4->field_120, sizeof(s_graphicEngineStatus_405C));
+    memcpy_dma(&graphicEngineStatus.m405C, &r4->m120, sizeof(s_graphicEngineStatus_405C));
 
-    r4->field_170[0] = getVdp1VramU16(graphicEngineStatus.field_405C.setLocalCoordinatesEA + 0xC);
-    r4->field_170[1] = getVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0xC);
-    r4->field_170[2] = getVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0x14);
+    r4->m170[0] = getVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xC);
+    r4->m170[1] = getVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xC);
+    r4->m170[2] = getVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x14);
 
     memcpy_dma(&lightSetup, &r4->lightSetup, sizeof(s_lightSetup));
 
@@ -141,43 +141,43 @@ void updateDragonMovementFromControllerType1Sub2Sub3(s3DModelAnimData* r4, fixed
 
 void setupVdp1LocalCoordinatesAndClipping()
 {
-    setVdp1VramU16(graphicEngineStatus.field_405C.setLocalCoordinatesEA + 0xC, graphicEngineStatus.field_405C.localCoordinatesX);
-    setVdp1VramU16(graphicEngineStatus.field_405C.setLocalCoordinatesEA + 0xE, graphicEngineStatus.field_405C.localCoordinatesY);
+    setVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xC, graphicEngineStatus.m405C.localCoordinatesX);
+    setVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xE, graphicEngineStatus.m405C.localCoordinatesY);
 
-    if (graphicEngineStatus.field_405C.VDP1_X1 > 0)
+    if (graphicEngineStatus.m405C.VDP1_X1 > 0)
     {
-        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0xC, graphicEngineStatus.field_405C.VDP1_X1);
+        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xC, graphicEngineStatus.m405C.VDP1_X1);
     }
     else
     {
-        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0xC, 0);
+        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xC, 0);
     }
 
-    if (graphicEngineStatus.field_405C.VDP1_Y1 > 0)
+    if (graphicEngineStatus.m405C.VDP1_Y1 > 0)
     {
-        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0xE, graphicEngineStatus.field_405C.VDP1_Y1);
+        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xE, graphicEngineStatus.m405C.VDP1_Y1);
     }
     else
     {
-        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0xE, 0);
+        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xE, 0);
     }
 
-    if (graphicEngineStatus.field_405C.VDP1_X2 < 0x160)
+    if (graphicEngineStatus.m405C.VDP1_X2 < 0x160)
     {
-        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0x14, graphicEngineStatus.field_405C.VDP1_X2);
+        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x14, graphicEngineStatus.m405C.VDP1_X2);
     }
     else
     {
-        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0x14, 0x160);
+        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x14, 0x160);
     }
 
-    if (graphicEngineStatus.field_405C.VDP1_Y2 < 0xE0)
+    if (graphicEngineStatus.m405C.VDP1_Y2 < 0xE0)
     {
-        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0x16, graphicEngineStatus.field_405C.VDP1_Y2);
+        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x16, graphicEngineStatus.m405C.VDP1_Y2);
     }
     else
     {
-        setVdp1VramU16(graphicEngineStatus.field_405C.setClippingCoordinatesEA + 0x16, 0xE0);
+        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x16, 0xE0);
     }
 }
 
@@ -214,9 +214,9 @@ void generateMasterLightFalloffMap(u32 r4, u32 r5, u32 r6)
 
 void generateLightFalloffMap(u32 r4, u32 r5, u32 r6)
 {
-    lightSetup.field_10 = r4;
-    lightSetup.field_14 = r5;
-    lightSetup.field_18 = r6;
+    lightSetup.m10 = r4;
+    lightSetup.m14 = r5;
+    lightSetup.m18 = r6;
 
     generateMasterLightFalloffMap(r4, r5, r6);
 
@@ -277,11 +277,11 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
     sVec3_FP var_18 = r6 - r13;
     sVec3_FP var_C = r7 - r13;
 
-    r4->field_20[0] = r4->m_rotation[0];
-    r4->field_20[1] = r4->m_rotation[1];
-    r4->field_20[2] = r4->m_rotation[2];
+    r4->m20[0] = r4->m_rotation[0];
+    r4->m20[1] = r4->m_rotation[1];
+    r4->m20[2] = r4->m_rotation[2];
 
-    r4->field_14 = r4->m0_position;
+    r4->m14 = r4->m0_position;
 
     generateCameraMatrixSub1(var_18, var_4);
 
@@ -310,13 +310,13 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
     rotateCurrentMatrixZ(-r4->m_rotation[2]);
     rotateCurrentMatrixX(-r4->m_rotation[0]);
 
-    copyMatrix(pCurrentMatrix, &r4->field_88);
+    copyMatrix(pCurrentMatrix, &r4->m88);
 
     rotateCurrentMatrixY(-r4->m_rotation[1]);
 
     translateCurrentMatrix(&var_24);
 
-    rotateMatrixY(0x800, &r4->field_88);
+    rotateMatrixY(0x800, &r4->m88);
 
     copyMatrix(&r4->m28[0], &r4->m28[1]);
 
@@ -341,13 +341,13 @@ void resetCameraProperties2(s_cameraProperties2* r4)
     r4->m_rotation[1] = 0;
     r4->m_rotation[0] = 0;
 
-    r4->field_14[0] = r4->m0_position[0];
-    r4->field_14[1] = r4->m0_position[1];
-    r4->field_14[2] = r4->m0_position[2];
+    r4->m14[0] = r4->m0_position[0];
+    r4->m14[1] = r4->m0_position[1];
+    r4->m14[2] = r4->m0_position[2];
 
-    r4->field_20[0] = r4->m_rotation[0];
-    r4->field_20[1] = r4->m_rotation[1];
-    r4->field_20[2] = r4->m_rotation[2];
+    r4->m20[0] = r4->m_rotation[0];
+    r4->m20[1] = r4->m_rotation[1];
+    r4->m20[2] = r4->m_rotation[2];
 
     initMatrixToIdentity(&r4->m28[0]);
     initMatrixToIdentity(&r4->m28[1]);
@@ -357,15 +357,15 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
 {
     s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
 
-    dragonMenuDragonInitSub1(&pWorkArea->field_34);
+    dragonMenuDragonInitSub1(&pWorkArea->m34);
 
-    pWorkArea->field_30 = getVdp2VramU16(0x25002);
-    pWorkArea->field_28 = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation;
-    pWorkArea->field_2C = gDragonState->m28_dragon3dModel.m16;
+    pWorkArea->m30 = getVdp2VramU16(0x25002);
+    pWorkArea->m28 = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation;
+    pWorkArea->m2C = gDragonState->m28_dragon3dModel.m16;
 
-    pWorkArea->field_0 = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
+    pWorkArea->m0 = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
-    pWorkArea->field_4 = &dragonData3[mainGameState.gameStats.m1_dragonLevel];
+    pWorkArea->m4 = &dragonData3[mainGameState.gameStats.m1_dragonLevel];
     pWorkArea->modelTranslation[1] = 0x4000;
     pWorkArea->modelTranslation[2] = 0xA000;
     pWorkArea->modelRotation[0] = fixedPoint(0xE38E38);
@@ -376,18 +376,18 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
 
     dragonMenuDragonInitSub3(&gDragonState->m78_animData);
 
-    graphicEngineStatus.field_405C.localCoordinatesX = 120;
-    graphicEngineStatus.field_405C.localCoordinatesY = 112;
+    graphicEngineStatus.m405C.localCoordinatesX = 120;
+    graphicEngineStatus.m405C.localCoordinatesY = 112;
 
     setupVdp1LocalCoordinatesAndClipping();
 
-    graphicEngineStatus.field_406C = 0x2000;
-    graphicEngineStatus.field_408C = FP_Div(0x10000, 0x2000);
+    graphicEngineStatus.m406C = 0x2000;
+    graphicEngineStatus.m408C = FP_Div(0x10000, 0x2000);
 
-    graphicEngineStatus.field_4070 = 0x100000;
-    graphicEngineStatus.field_4094 = FP_Div(0x8000, 0x100000);
+    graphicEngineStatus.m4070 = 0x100000;
+    graphicEngineStatus.m4094 = FP_Div(0x8000, 0x100000);
 
-    graphicEngineStatus.field_4090 = graphicEngineStatus.field_4094 << 8;
+    graphicEngineStatus.m4090 = graphicEngineStatus.m4094 << 8;
 
     generateLightFalloffMap(0x30102, 0, 0);
 
@@ -418,10 +418,10 @@ void setLightVector_M(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7)
 
 void setupLight(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7)
 {
-    lightSetup.field_0 = r4;
-    lightSetup.field_4 = r5;
-    lightSetup.field_8 = r6;
-    lightSetup.field_C = r7;
+    lightSetup.m0 = r4;
+    lightSetup.m4 = r5;
+    lightSetup.m8 = r6;
+    lightSetup.mC = r7;
 
     setLightVector_M(-r4 >> 4, -r5 >> 4, -r6 >> 4, r7);
 
@@ -719,7 +719,7 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.field_E & 0x800)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.mE & 0x800)
     {
         pWorkArea->modelRotation[1] -= 0x5B05B0;
     }
@@ -729,7 +729,7 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.field_E & 0x8000)
+    if (graphicEngineStatus.m4514.m0[0].m0_current.mE & 0x8000)
     {
         pWorkArea->modelRotation[1] += 0x16C16C;
     }
@@ -786,7 +786,7 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         assert(0);
     }
 
-    if (pWorkArea->field_8 == 0)
+    if (pWorkArea->m8 == 0)
     {
         int r3;
         if (gDragonState->m28_dragon3dModel.m30_pCurrentAnimation == NULL)
@@ -802,16 +802,16 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
         {
             s_animLoop* pAnimLoop = dragonAnimLoop[gDragonState->mC_dragonType][gDragonState->m1C_dragonArchetype];
 
-            if (pWorkArea->field_C + 1 < pAnimLoop->m_count)
+            if (pWorkArea->mC + 1 < pAnimLoop->m_count)
             {
-                pWorkArea->field_C++;
+                pWorkArea->mC++;
             }
             else
             {
-                pWorkArea->field_C = 0;
+                pWorkArea->mC = 0;
             }
 
-            u16 animIndex = pAnimLoop->m_values[pWorkArea->field_C];
+            u16 animIndex = pAnimLoop->m_values[pWorkArea->mC];
             u32 animOffset = gDragonState->m20_dragonAnimOffsets[animIndex];
             playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelRawData + READ_BE_U32(gDragonState->m0_pDragonModelRawData + animOffset), 0);
         }
@@ -819,7 +819,7 @@ void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
 
     updateAndInterpolateAnimation(&gDragonState->m28_dragon3dModel);
     updateAnimationMatrices(&gDragonState->m78_animData, &gDragonState->m28_dragon3dModel);
-    morphDragon(pWorkArea->field_0, &gDragonState->m28_dragon3dModel, pWorkArea->field_0->MCBOffsetInDram, pWorkArea->field_4, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
+    morphDragon(pWorkArea->m0, &gDragonState->m28_dragon3dModel, pWorkArea->m0->MCBOffsetInDram, pWorkArea->m4, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
 }
 
 void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u32 shadowModelIndex, sVec3_FP* translation, sVec3_FP* rotation, fixedPoint shadowHeight)

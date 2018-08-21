@@ -48,22 +48,22 @@ s_taskDefinition dragonMenuSubTask1Definition = { dragonMenuSubTask1Init, NULL, 
 
 struct s_dragonMenuWorkArea : public s_workArea
 {
-    u32 field_0;
-    u32 field_4;
-    u32 field_8; // 8
-    p_workArea field_C;
-    p_workArea field_10;
-    p_workArea field_14;
-    p_workArea field_18;
-    p_workArea field_1C;
+    u32 m0;
+    u32 m4;
+    u32 m8; // 8
+    p_workArea mC;
+    p_workArea m10;
+    p_workArea m14;
+    p_workArea m18;
+    p_workArea m1C;
 };
 
 void dragonMenuTaskInit(p_workArea pTypelessWorkArea)
 {
     s_dragonMenuWorkArea* pWorkArea = static_cast<s_dragonMenuWorkArea*>(pTypelessWorkArea);
 
-    graphicEngineStatus.field_40AC.field_9 = 3;
-    pWorkArea->field_4 = vblankData.field_14;
+    graphicEngineStatus.m40AC.m9 = 3;
+    pWorkArea->m4 = vblankData.m14;
 
     createSubTask(pWorkArea, &dragonMenuSubTask1Definition, new s_dragonMenuSubTask1WorkArea);
 }
@@ -145,9 +145,9 @@ u32 clearVdp2TextAreaSub1(u16 r4, s32 x, s32 y)
 
 void clearVdp2TextArea()
 {
-    for (int x = vdp2StringContext.X; x < vdp2StringContext.X + vdp2StringContext.Width; x++)
+    for (int x = vdp2StringContext.mC_X; x < vdp2StringContext.mC_X + vdp2StringContext.m14_Width; x++)
     {
-        for (int y = vdp2StringContext.Y; y < vdp2StringContext.Y + vdp2StringContext.Height; y++)
+        for (int y = vdp2StringContext.m10_Y; y < vdp2StringContext.m10_Y + vdp2StringContext.m18_Height; y++)
         {
             clearVdp2TextAreaSub1(0, x, y);
         }
@@ -174,7 +174,7 @@ void initVdp2ForDragonMenu(u32 r4)
 
 void drawDragonMenuStatsTaskInit(p_workArea)
 {
-    setActiveFont(graphicEngineStatus.field_40AC.fontIndex);
+    setActiveFont(graphicEngineStatus.m40AC.fontIndex);
 }
 
 void drawInventoryString(const char* string)
@@ -199,9 +199,9 @@ void drawDragonMenuStatsTaskDraw(p_workArea)
     setupVDP2StringRendering(30, 36, 14, 14);
     vdp2PrintStatus.palette = 0xC000;
     
-    vdp2StringContext.field_0 = 0;
-    vdp2StringContext.cursorX = vdp2StringContext.X;
-    vdp2StringContext.cursorY = vdp2StringContext.Y;
+    vdp2StringContext.m0 = 0;
+    vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
+    vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y;
 
     switch (mainGameState.gameStats.m1_dragonLevel)
     {
@@ -219,26 +219,26 @@ void drawDragonMenuStatsTaskDraw(p_workArea)
         break;
     }
 
-    vdp2StringContext.cursorX = vdp2StringContext.X;
-    vdp2StringContext.cursorY = vdp2StringContext.Y + 3;
+    vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
+    vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 3;
     drawInventoryString("ATT PWR");
     vdp2DebugPrintSetPosition(37, 39);
     vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonAtt);
 
-    vdp2StringContext.cursorX = vdp2StringContext.X;
-    vdp2StringContext.cursorY = vdp2StringContext.Y + 6;
+    vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
+    vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 6;
     drawInventoryString("DEF PWR");
     vdp2DebugPrintSetPosition(37, 42);
     vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonDef);
 
-    vdp2StringContext.cursorX = vdp2StringContext.X;
-    vdp2StringContext.cursorY = vdp2StringContext.Y + 9;
+    vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
+    vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 9;
     drawInventoryString("SPR PWR");
     vdp2DebugPrintSetPosition(37, 45);
     vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonSpr);
 
-    vdp2StringContext.cursorX = vdp2StringContext.X;
-    vdp2StringContext.cursorY = vdp2StringContext.Y + 12;
+    vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
+    vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 12;
     drawInventoryString("AGL PWR");
     vdp2DebugPrintSetPosition(37, 48);
     vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonAgl);
@@ -275,93 +275,93 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
 {
     s_dragonMenuWorkArea* pWorkArea = static_cast<s_dragonMenuWorkArea*>(pTypelessWorkArea);
 
-    switch (pWorkArea->field_0)
+    switch (pWorkArea->m0)
     {
     case 0:
-        if (graphicEngineStatus.field_40AC.m0_menuId == 1)
+        if (graphicEngineStatus.m40AC.m0_menuId == 1)
         {
             initVdp2ForDragonMenu(0);
-            pWorkArea->field_8 = 16;
+            pWorkArea->m8 = 16;
             startVdp2LayerScroll(0, -10, 0, 16);
             startVdp2LayerScroll(1, 0, -16, 16);
-            pWorkArea->field_0 = 1;
+            pWorkArea->m0 = 1;
             return;
         }
         else
         {
             initVdp2ForDragonMenu(1);
-            pWorkArea->field_0 = 2;
+            pWorkArea->m0 = 2;
         }
         break;
     case 1:
-        if (pWorkArea->field_8 < 3)
+        if (pWorkArea->m8 < 3)
         {
-            graphicEngineStatus.field_40AC.field_5 = 1;
+            graphicEngineStatus.m40AC.m5 = 1;
         }
-        if (--pWorkArea->field_8)
+        if (--pWorkArea->m8)
         {
             return;
         }
-        pWorkArea->field_0++;
+        pWorkArea->m0++;
     case 2:
-        vblankData.field_14 = 2;
+        vblankData.m14 = 2;
         
-        pWorkArea->field_C = createDragonMenuMorhTask(pWorkArea);
+        pWorkArea->mC = createDragonMenuMorhTask(pWorkArea);
 
-        pWorkArea->field_10 = createSubTask(pWorkArea, &dragonMenuStatsTaskDefinition, new s_workArea);
-        pWorkArea->field_14 = createSubTask(pWorkArea, &dragonMenuStatsTask2Definition, new s_dummyWorkArea);
-        pWorkArea->field_1C = createSubTask(pWorkArea, &dragonMenuMorphCursorTaskDefinition, new s_dummyWorkArea);
+        pWorkArea->m10 = createSubTask(pWorkArea, &dragonMenuStatsTaskDefinition, new s_workArea);
+        pWorkArea->m14 = createSubTask(pWorkArea, &dragonMenuStatsTask2Definition, new s_dummyWorkArea);
+        pWorkArea->m1C = createSubTask(pWorkArea, &dragonMenuMorphCursorTaskDefinition, new s_dummyWorkArea);
 
-        if (graphicEngineStatus.field_40AC.m0_menuId != 1)
+        if (graphicEngineStatus.m40AC.m0_menuId != 1)
         {
             fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
             fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
         }
-        pWorkArea->field_0++;
+        pWorkArea->m0++;
         break;
     case 3:
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 7)
         {
             playSoundEffect(0);
-            pWorkArea->field_14->getTask()->m_pDraw = NULL;
-            if (pWorkArea->field_10)
+            pWorkArea->m14->getTask()->m_pDraw = NULL;
+            if (pWorkArea->m10)
             {
-                pWorkArea->field_10->getTask()->markFinished();
+                pWorkArea->m10->getTask()->markFinished();
             }
-            if (pWorkArea->field_18)
+            if (pWorkArea->m18)
             {
-                pWorkArea->field_18->getTask()->markFinished();
+                pWorkArea->m18->getTask()->markFinished();
             }
 
-            vblankData.field_14 = pWorkArea->field_4;
-            if (graphicEngineStatus.field_40AC.m0_menuId != 1)
+            vblankData.m14 = pWorkArea->m4;
+            if (graphicEngineStatus.m40AC.m0_menuId != 1)
             {
                 fadePalette(&menuUnk0.m_field0, 0, 0, 1);
                 fadePalette(&menuUnk0.m_field24, 0, 0, 1);
-                pWorkArea->field_0 = 6;
+                pWorkArea->m0 = 6;
             }
             else
             {
-                pWorkArea->field_8 = 16;
+                pWorkArea->m8 = 16;
                 startVdp2LayerScroll(0, 10, 0, 16);
                 startVdp2LayerScroll(1, 0, 16, 16);
-                pWorkArea->field_0 = 4;
+                pWorkArea->m0 = 4;
             }
         }
         break;
     case 4:
-        if (pWorkArea->field_C)
+        if (pWorkArea->mC)
         {
-            pWorkArea->field_C->getTask()->markFinished();
+            pWorkArea->mC->getTask()->markFinished();
         }
-        graphicEngineStatus.field_40AC.field_5 = 0;
-        pWorkArea->field_0++;
+        graphicEngineStatus.m40AC.m5 = 0;
+        pWorkArea->m0++;
     case 5:
-        if (--pWorkArea->field_8)
+        if (--pWorkArea->m8)
         {
             break;
         }
-        pWorkArea->field_0++;
+        pWorkArea->m0++;
     case 6:
         if (pWorkArea)
         {

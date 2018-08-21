@@ -7,10 +7,10 @@ s_cameraProperties2 cameraProperties2;
 
 struct sCameraProperties
 {
-    s16 field_8; //8
-    s16 field_A; //A
-    s16 field_C; //C
-    s16 field_E; //E
+    s16 m8; //8
+    s16 mA; //A
+    s16 mC; //C
+    s16 mE; //E
 
     s16 x0; // 3C
     s16 y0; // 3E
@@ -41,10 +41,10 @@ void resetCamera(u32 x0, u32 y0, u32 x1, u32 y1, u32 centerX, u32 centerY)
     cameraProperties.centerX = centerX;
     cameraProperties.centerY = centerY;
 
-    cameraProperties.field_C = x0 - centerX;
-    cameraProperties.field_E = x1 - centerX;
-    cameraProperties.field_8 = y1 - centerY;
-    cameraProperties.field_A = y0 - centerY;
+    cameraProperties.mC = x0 - centerX;
+    cameraProperties.mE = x1 - centerX;
+    cameraProperties.m8 = y1 - centerY;
+    cameraProperties.mA = y0 - centerY;
 }
 
 u16 loc_601FA9E;
@@ -132,10 +132,10 @@ void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6
 
     rotateCurrentMatrixZ(-r4->m_rotation[2]);
     rotateCurrentMatrixX(-r4->m_rotation[0]);
-    copyMatrix(pCurrentMatrix, &r4->field_88);
+    copyMatrix(pCurrentMatrix, &r4->m88);
     rotateCurrentMatrixY(-r4->m_rotation[1]);
     translateCurrentMatrix(&translation);
-    rotateMatrixY(0x800, &r4->field_88);
+    rotateMatrixY(0x800, &r4->m88);
     copyMatrix(&r4->m28[0], &r4->m28[1]);
     initMatrixToIdentity(&r4->m28[0]);
     translateMatrix(&r4->m0_position, &r4->m28[0]);

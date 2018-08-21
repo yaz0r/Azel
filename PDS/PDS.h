@@ -104,10 +104,10 @@ struct sFileInfoSub
 
 struct sFileInfo
 {
-    u8 field_0; //0
-    u8 field_3; //3
+    u8 m0; //0
+    u8 m3; //3
     u8 displayMemoryLayout; //5
-    u16 field_8; //8
+    u16 m8; //8
 
     sFileInfoSub* allocatedHead; //2C
     sFileInfoSub* freeHead; //30

@@ -32,63 +32,63 @@ struct s_fieldOverlaySubTaskWorkArea : public s_workArea
     s32 m2DC;
     s32 m2E0;
     s_fieldOverlaySubTaskWorkArea2E4 m2E4[5];
-    sMatrix4x3 field_384;
-    sMatrix4x3 field_3B4;
-    sFieldCameraStatus field_3E4[2];
+    sMatrix4x3 m384;
+    sMatrix4x3 m3B4;
+    sFieldCameraStatus m3E4[2];
     u8 m50C;
     u8 m50D; // 50D
-    u8 field_50E; // 50E
+    u8 m50E; // 50E
 };
 
 struct s_scriptData1
 {
-    u32 field_0;
-    u32 field_4;
-    u32 field_8;
-    u32 field_C;
-    u32 field_10;
-    u32 field_14;
-    u32 field_18;
-    u32 field_1C;
-    u32 field_20;
-    u32 field_24;
-    u32 field_28;
-    u32 field_2C;
-    u32 field_30;
-    u32 field_34;
-    u32 field_38;
+    u32 m0;
+    u32 m4;
+    u32 m8;
+    u32 mC;
+    u32 m10;
+    u32 m14;
+    u32 m18;
+    u32 m1C;
+    u32 m20;
+    u32 m24;
+    u32 m28;
+    u32 m2C;
+    u32 m30;
+    u32 m34;
+    u32 m38;
 };
 
 struct s_scriptData2
 {
-    u32 field_0;
-    u32 field_4;
-    u32 field_8;
-    u32 field_C;
-    u32 field_10;
-    u32 field_14;
-    u32 field_18;
-    u32 field_1C;
-    u32 field_20;
+    u32 m0;
+    u32 m4;
+    u32 m8;
+    u32 mC;
+    u32 m10;
+    u32 m14;
+    u32 m18;
+    u32 m1C;
+    u32 m20;
 };
 
 struct s_scriptData3
 {
-    u32 field_0;
-    u32 field_4;
-    u32 field_8;
-    u32 field_C;
-    u32 field_10;
-    u32 field_14;
-    u32 field_18;
-    u32 field_1C;
+    u32 m0;
+    u32 m4;
+    u32 m8;
+    u32 mC;
+    u32 m10;
+    u32 m14;
+    u32 m18;
+    u32 m1C;
 };
 
 struct s_scriptData4
 {
-    u8 field_0;
-    u8 field_1;
-    u16 field_2;
+    u8 m0;
+    u8 m1;
+    u16 m2;
 };
 
 struct s_vdp2StringTask : public s_workArea
@@ -220,19 +220,21 @@ struct s_multiChoiceTask2 : public s_workArea
 
     u8 m0_Status;
     s8 m1;
-    s8 m2;
+    s8 m2_defaultResult;
     s8 m3;
     s8 m4;
-    s8 m5;
-    s8 m6;
+    s8 m5_selectedEntry;
+    s8 m6_numEntries;
     s8 m7;
     s8 m8;
+    s32* mC_result;
+    s_multiChoiceTask2** m10;
     s16 m14_x;
     s16 m16_y;
     s16 m1A_width;
     s16 m1C_height;
-    s_multiChoiceTask2** m10;
-    sSaturnPtr m24;
+    sSaturnPtr m24_strings;
+    s16* m28_colors;
     //size 0x2C
 };
 
@@ -284,15 +286,15 @@ struct s_fieldScriptWorkArea : public s_workArea
     s32 m60;
     s32 m64;
 
-    u32 field_6C;
-    u32 field_70;
+    u32 m6C;
+    u32 m70;
 
     s32 m80;
 
-    s_scriptData1* field_88;
-    s_scriptData2* field_8C;
-    s_scriptData3* field_90;
-    s_scriptData4* field_94;
+    s_scriptData1* m88;
+    s_scriptData2* m8C;
+    s_scriptData3* m90;
+    s_scriptData4* m94;
 };
 
 struct s_memoryAreaOutput
@@ -315,10 +317,10 @@ struct s_dragonTaskWorkArea_48
 {
     sMatrix4x3 m0_matrix; //0
 
-    u32 field_30; //30
-    u32 field_34; //34
-    u32 field_38; //38
-    u8 field_3C;
+    u32 m30; //30
+    u32 m34; //34
+    u32 m38; //38
+    u8 m3C;
 };
 
 struct s_cameraScript
@@ -348,21 +350,21 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 mB8;
     sVec3_FP* mBC;
 
-    fixedPoint field_C0;
-    fixedPoint field_C4;
-    u8 field_C8[3];
-    u8 field_CB[3];
-    u8 field_CE[3];
-    u8 field_D1[3];
-    u8 field_D4[3];
+    fixedPoint mC0;
+    fixedPoint mC4;
+    u8 mC8[3];
+    u8 mCB[3];
+    u8 mCE[3];
+    u8 mD1[3];
+    u8 mD4[3];
 
     u8 m_EB;
     u8 m_EC;
 
-    void(*field_F0)(s_dragonTaskWorkArea*); //F0
+    void(*mF0)(s_dragonTaskWorkArea*); //F0
     void(*mF4)(s_dragonTaskWorkArea*);
     u32 mF8_Flags; // F8 Flags
-    u32 field_FC; // FC
+    u32 mFC; // FC
     u32 m100;
     u32 m104_dragonScriptStatus;
     sVec3_FP m10C_hotSpot2;
@@ -377,14 +379,14 @@ struct s_dragonTaskWorkArea : s_workArea
     fixedPoint m148_pitchMin;
     fixedPoint m14C_pitchMax;
 
-    u32 field_150;
+    u32 m150;
     fixedPoint m154_dragonSpeed;
     fixedPoint m158;
     s32 m15C_dragonSpeedIncrement;
 
     sVec3_FP m160_deltaTranslation;
 
-    fixedPoint field_178[4];
+    fixedPoint m178[4];
 
     sVec3_FP m188;
 
@@ -393,34 +395,34 @@ struct s_dragonTaskWorkArea : s_workArea
     sVec3_FP m1A0;
     sVec3_FP m1AC;
 
-    u32 field_1B8;
-    u32 field_1BC;
+    u32 m1B8;
+    u32 m1BC;
 
     u32 m_1C4;
 
-    u32 field_1CC;
+    u32 m1CC;
     s_cameraScript* m1D0_cameraScript;
     u32 m1D4;
     s32 m1E8_cameraScriptDelay;
-    s_dragonTaskWorkArea_1F0 field_1F0;
+    s_dragonTaskWorkArea_1F0 m1F0;
 
-    u32 field_208;
-    u32 field_20C;
-    u32 field_210;
-    u32 field_214;
+    u32 m208;
+    u32 m20C;
+    u32 m210;
+    u32 m214;
     fixedPoint m21C_DragonSpeedValues[5];
-    u32 field_228;
-    u32 field_22C;
-    fixedPoint field_230;
-    u8 field_234;
+    u32 m228;
+    u32 m22C;
+    fixedPoint m230;
+    u8 m234;
     s8 m235_dragonSpeedIndex;
 
-    u8 field_237;
-    u8 field_238;
+    u8 m237;
+    u8 m238;
 
     u8 m23A_dragonAnimation;
-    u8 field_23B;
-    u8 field_23C;
+    u8 m23B;
+    u8 m23C;
     u8 m244;
     u8 m245;
     u8 m246;
@@ -468,7 +470,7 @@ struct s_DataTable3
     u32 m18;
     u32 m1C;
     u32 m20;
-    //u32 field_24[];
+    //u32 m24[];
 };
 
 struct s_visdibilityCellTask : public s_workArea
@@ -482,8 +484,8 @@ struct s_visdibilityCellTask : public s_workArea
 
 struct sCameraVisibility
 {
-    s8 field_0;
-    u8 field_1;
+    s8 m0;
+    u8 m1;
 };
 
 struct s_visibilityGridWorkArea_68
@@ -498,13 +500,13 @@ struct s_visibilityGridWorkArea : public s_workArea
     sVec3_FP m0_position; // 0
     sVec3_FP mC;
     s32 m18_cameraGridLocation[2]; // 18 Grid location
-    u32 field_20;
-    s32 field_24;
-    u32 field_28;
+    u32 m20;
+    s32 m24;
+    u32 m28;
     fixedPoint* m2C_depthRangeTable;
-    s_DataTable3* field_30; // 30
-    std::vector<std::vector<sCameraVisibility>>* m34_cameraVisibilityTable; // field_34
-    p_workArea field_38; // 38
+    s_DataTable3* m30; // 30
+    std::vector<std::vector<sCameraVisibility>>* m34_cameraVisibilityTable; // m34
+    p_workArea m38; // 38
     s_visdibilityCellTask** m3C_cellRenderingTasks; // 3C (an array of tasks)
     s_visibilityGridWorkArea_68* m44;
     s_visibilityGridWorkArea_68 m68[24]; // size highly unsure.
@@ -522,8 +524,8 @@ struct s_visibilityGridWorkArea : public s_workArea
     u16 m12F2_renderMode; // 12F2
     u8 updateVisibleCells;
     u8(*m12F8_convertCameraPositionToGrid)(s_visibilityGridWorkArea* pFieldCameraTask1); // 12F8
-    s32(*field_12FC)(sVec3_FP* r4, s32 r5); // 12F8
-    u8 field_1300;
+    s32(*m12FC)(sVec3_FP* r4, s32 r5); // 12F8
+    u8 m1300;
     //size: 1304
 };
 
@@ -608,7 +610,7 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     s_visibilityGridWorkArea* m348_pFieldCameraTask1; // 348
     s_fieldScriptWorkArea* m34C_ptrToE; // 34C
     s_fieldPaletteTaskWorkArea* m350_fieldPaletteTask;
-    u16 field_354; // 354
+    u16 m354; // 354
     u16 fieldSubTaskStatus; // 358
     void (*pUpdateFunction2)(); // 35C
     void(*pUpdateFunction3)(); // 35C
@@ -636,19 +638,19 @@ struct s_fieldTaskWorkArea : public s_workArea
     u32 m28_status; // 0x28
     s16 m2C_currentFieldIndex; // 0x2C
     s16 m2E_currentSubFieldIndex; // 0x2E;
-    s16 field_30; // 0x30
+    s16 m30; // 0x30
     s16 m32; // 0x32
-    u8 field_35; // 0x35
+    u8 m35; // 0x35
     s16 fieldIndexMenuSelection; // 0x36
     s16 subFieldIndexMenuSelection; // 0x38
-    s16 field_3A; // 0x3A
-    u8 fieldTaskState; // 0x3C
-    s8 field_3D; // 0x3D
+    s16 m3A; // 0x3A
+    u8 m3C_fieldTaskState; // 0x3C
+    s8 m3D; // 0x3D
     u8 updateDragonAndRiderOnInit; // 0x3E
-    s_scriptData1* field_40; // 0x40
-    s_scriptData2* field_44; // 0x44
-    s_scriptData3* field_48; // 0x48
-    s_scriptData4* field_4C; // 0x4C
+    s_scriptData1* m40; // 0x40
+    s_scriptData2* m44; // 0x44
+    s_scriptData3* m48; // 0x48
+    s_scriptData4* m4C; // 0x4C
                                    // size: 0x50
 };
 

@@ -13,7 +13,9 @@ u32 dragonFieldTaskInitSub3Sub1(s_3dModel* r4, u8* r5);
 u32 updateAndInterpolateAnimation(s_3dModel* r4);
 
 p_workArea createMenuTask(p_workArea parentTask);
+void stopAllSounds();
 
+extern p_workArea fieldTaskVar0;
 extern u32 fieldTaskVar2;
 
 struct s_loadRiderWorkArea : public s_workArea
@@ -42,14 +44,14 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
 void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u32 unk0, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY);
 
 struct s_vblankData {
-    u32 field_0;
-    u32 field_4;
-    u32 field_8;
-    u32 field_C;
-    u32 field_10;
-    u32 field_14;
-    u32 field_18;
-    u32 field_1C;
+    u32 m0;
+    u32 m4;
+    u32 m8;
+    u32 mC;
+    u32 m10;
+    u32 m14;
+    u32 m18;
+    u32 m1C;
 };
 extern s_vblankData vblankData;
 

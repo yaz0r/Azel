@@ -125,14 +125,14 @@ p_workArea createLoadingTask(p_workArea parentTask, s8 arg)
 struct s_flagEditTaskWorkArea : public s_workArea
 {
     u32 state;
-    p_workArea field_4; //4
+    p_workArea m4; //4
 };
 
 void flagEditTaskInit(s_workArea* pTypelessWorkArea, void* argument)
 {
     s_flagEditTaskWorkArea* pWorkArea = static_cast<s_flagEditTaskWorkArea*>(pTypelessWorkArea);
 
-    pWorkArea->field_4 = static_cast<p_workArea>(argument);
+    pWorkArea->m4 = static_cast<p_workArea>(argument);
 }
 
 void flagEditTaskUpdate(s_workArea* pTypelessWorkArea)
@@ -151,9 +151,9 @@ void flagEditTaskUpdate(s_workArea* pTypelessWorkArea)
         assert(0);
     }
 
-    if (pWorkArea->field_4)
+    if (pWorkArea->m4)
     {
-        if (pWorkArea->field_4->getTask()->isFinished())
+        if (pWorkArea->m4->getTask()->isFinished())
         {
             pWorkArea->getTask()->markFinished();
         }
@@ -169,7 +169,7 @@ u32 getPanzerZweiPlayTime(u32 slot)
 
 void computeDragonSprAndAglFromCursor()
 {
-    u32 r6 = mainGameState.gameStats.field_18 + 1;
+    u32 r6 = mainGameState.gameStats.m18 + 1;
 
     switch (mainGameState.gameStats.m1_dragonLevel)
     {
@@ -275,7 +275,7 @@ void initNewGameState()
     mainGameState.setBit(0x2B * 8 + 2);
     mainGameState.setBit(0x2D * 8 + 5);
 
-    mainGameState.gameStats.field_18 = 400;
+    mainGameState.gameStats.m18 = 400;
 
     updateDragonStatsFromLevel();
 
@@ -311,7 +311,7 @@ void updateFieldTaskNoBattleOverride(p_workArea pTypelessWorkArea)
 {
     s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
 
-    switch (pWorkArea->fieldTaskState)
+    switch (pWorkArea->m3C_fieldTaskState)
     {
     case 0:
         break;
@@ -335,8 +335,8 @@ void fieldTaskInit(p_workArea pTypelessWorkArea, void* battleArgumentVoid)
     fieldInputTaskWorkArea = NULL;
     fieldTaskVar2 = 0;
 
-    pWorkArea->field_35 = battleArgument;
-    pWorkArea->field_3D = -1;
+    pWorkArea->m35 = battleArgument;
+    pWorkArea->m3D = -1;
 
     if (battleArgument)
     {
@@ -371,7 +371,7 @@ void fieldDebugListTaskInit(p_workArea pTypelessWorkArea)
 
     pFieldTask->fieldIndexMenuSelection = pFieldTask->m2C_currentFieldIndex;
     pFieldTask->subFieldIndexMenuSelection = pFieldTask->m2E_currentSubFieldIndex;
-    pFieldTask->field_3A = pFieldTask->field_30;
+    pFieldTask->m3A = pFieldTask->m30;
     pFieldTask->m2E_currentSubFieldIndex = -1;
 
     if (pFieldTask->fieldIndexMenuSelection < 0)
@@ -404,7 +404,7 @@ void fieldDebugListTaskInit(p_workArea pTypelessWorkArea)
 
 void setOpenMenu7()
 {
-    graphicEngineStatus.field_40AC.m0_menuId = 7;
+    graphicEngineStatus.m40AC.m0_menuId = 7;
 }
 
 void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
@@ -599,11 +599,11 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
 
     vdp2PrintStatus.palette = 0x9000;
     vdp2DebugPrintSetPosition(0x1D, 3);
-    vdp2PrintfSmallFont("%d   ", r14->field_3A);
+    vdp2PrintfSmallFont("%d   ", r14->m3A);
 
     vdp2PrintStatus.palette = 0x7000;
     vdp2DebugPrintSetPosition(3, 0x18);
-    vdp2PrintfLargeFont("GO:%2d  ", r14->field_3D);
+    vdp2PrintfLargeFont("GO:%2d  ", r14->m3D);
 
     vdp2DebugPrintSetPosition(3, -2);
     if (var_24 < 21)
@@ -655,7 +655,7 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
     fadePalette(&menuUnk0.m_field0, 0, 0, 1);
     fadePalette(&menuUnk0.m_field24, 0, 0, 1);
 
-    r14->fieldTaskState++;
+    r14->m3C_fieldTaskState++;
 }
 
 s_taskDefinition fieldDebugListTaskDefinition = { fieldDebugListTaskInit, fieldDebugListTaskUpdate, NULL, NULL, "field debug list" };
@@ -863,9 +863,9 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
             return;
         }
 
-        pPoseData->halfTranslation[0] = stepAnimationTrack(pPoseData->field_48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
-        pPoseData->halfTranslation[1] = stepAnimationTrack(pPoseData->field_48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
-        pPoseData->halfTranslation[2] = stepAnimationTrack(pPoseData->field_48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
+        pPoseData->halfTranslation[0] = stepAnimationTrack(pPoseData->m48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
+        pPoseData->halfTranslation[1] = stepAnimationTrack(pPoseData->m48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
+        pPoseData->halfTranslation[2] = stepAnimationTrack(pPoseData->m48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
     }
     else
     //0602265A
@@ -879,9 +879,9 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
         pPoseData->m_translation[1] = READ_BE_U32(r4 + 4);
         pPoseData->m_translation[2] = READ_BE_U32(r4 + 8);
 
-        stepAnimationTrack(pPoseData->field_48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0));
-        stepAnimationTrack(pPoseData->field_48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2));
-        stepAnimationTrack(pPoseData->field_48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4));
+        stepAnimationTrack(pPoseData->m48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0));
+        stepAnimationTrack(pPoseData->m48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2));
+        stepAnimationTrack(pPoseData->m48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4));
     }
 
     //60226BA
@@ -898,9 +898,9 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
     r3--;
     if (r3 >= pDragonStateData1->m10_currentAnimationFrame)
     {
-        pPoseData->halfTranslation[0] = stepAnimationTrack(pPoseData->field_48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
-        pPoseData->halfTranslation[1] = stepAnimationTrack(pPoseData->field_48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
-        pPoseData->halfTranslation[2] = stepAnimationTrack(pPoseData->field_48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
+        pPoseData->halfTranslation[0] = stepAnimationTrack(pPoseData->m48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
+        pPoseData->halfTranslation[1] = stepAnimationTrack(pPoseData->m48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
+        pPoseData->halfTranslation[2] = stepAnimationTrack(pPoseData->m48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
     }
     
 }
@@ -1089,9 +1089,9 @@ void modelMode4_rotation(s_3dModel* p3dModel)
             u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
             for (int i = 0; i < p3dModel->m12_numBones; i++)
             {
-                pPoseData[i].halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].field_48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
-                pPoseData[i].halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].field_48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
-                pPoseData[i].halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].field_48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
+                pPoseData[i].halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
+                pPoseData[i].halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
+                pPoseData[i].halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
                 r13 += 0x38;
             }
         }
@@ -1101,13 +1101,13 @@ void modelMode4_rotation(s_3dModel* p3dModel)
         u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
         for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
-            assert(pPoseData[i].field_48[3].currentStep == 0);
-            assert(pPoseData[i].field_48[4].currentStep == 0);
-            assert(pPoseData[i].field_48[5].currentStep == 0);
+            assert(pPoseData[i].m48[3].currentStep == 0);
+            assert(pPoseData[i].m48[4].currentStep == 0);
+            assert(pPoseData[i].m48[5].currentStep == 0);
 
-            pPoseData[i].m_rotation.m_value[0] = stepAnimationTrack(pPoseData[i].field_48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 12;
-            pPoseData[i].m_rotation.m_value[1] = stepAnimationTrack(pPoseData[i].field_48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 12;
-            pPoseData[i].m_rotation.m_value[2] = stepAnimationTrack(pPoseData[i].field_48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 12;
+            pPoseData[i].m_rotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 12;
+            pPoseData[i].m_rotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 12;
+            pPoseData[i].m_rotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 12;
             r13 += 0x38;
         }
 
@@ -1116,9 +1116,9 @@ void modelMode4_rotation(s_3dModel* p3dModel)
             u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
             for (int i = 0; i < p3dModel->m12_numBones; i++)
             {
-                pPoseData[i].halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].field_48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
-                pPoseData[i].halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].field_48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
-                pPoseData[i].halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].field_48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
+                pPoseData[i].halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
+                pPoseData[i].halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
+                pPoseData[i].halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
                 r13 += 0x38;
             }
         }
@@ -1317,9 +1317,9 @@ u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, u8* pModelData)
         {
             for (u32 j = 0; j < 9; j++)
             {
-                p3dModel->m2C_poseData[i].field_48[j].currentStep = 0;
-                p3dModel->m2C_poseData[i].field_48[j].delay = 0;
-                p3dModel->m2C_poseData[i].field_48[j].value = 0;
+                p3dModel->m2C_poseData[i].m48[j].currentStep = 0;
+                p3dModel->m2C_poseData[i].m48[j].delay = 0;
+                p3dModel->m2C_poseData[i].m48[j].value = 0;
             }
         }
         break;
@@ -1486,9 +1486,9 @@ u32 dragonFieldTaskInitSub3Sub1(s_3dModel* pDragonStateData1, u8* r5)
             {
                 for (int j = 0; j < 9; j++)
                 {
-                    pDragonStateData1->m2C_poseData[i].field_48[j].currentStep = 0;
-                    pDragonStateData1->m2C_poseData[i].field_48[j].delay = 0;
-                    pDragonStateData1->m2C_poseData[i].field_48[j].value = 0;
+                    pDragonStateData1->m2C_poseData[i].m48[j].currentStep = 0;
+                    pDragonStateData1->m2C_poseData[i].m48[j].delay = 0;
+                    pDragonStateData1->m2C_poseData[i].m48[j].value = 0;
                 }
             }
 
@@ -1884,17 +1884,17 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
     pDragonState->m0_pDragonModelRawData = gDragonModel;
     pDragonState->mC_dragonType = dragonLevel;
-    pDragonState->m14_modelIndex = pDragonData3->m_field_8[0].m_field_0[0];
-    pDragonState->m18_shadowModelIndex = pDragonData3->m_field_8[0].m_field_0[1];
+    pDragonState->m14_modelIndex = pDragonData3->m_m8[0].m_m0[0];
+    pDragonState->m18_shadowModelIndex = pDragonData3->m_m8[0].m_m0[1];
     pDragonState->m20_dragonAnimOffsets = pDragonAnimOffsets->m_data;
     pDragonState->m24_dragonAnimCount = pDragonAnimOffsets->m_count;
     pDragonState->m88 = 1;
 
     u8* pDragonModel = pDragonState->m0_pDragonModelRawData;
     u8* pDefaultAnimationData = pDragonModel + READ_BE_U32(pDragonModel + pDragonState->m20_dragonAnimOffsets[0]);
-    u8* defaultPose = pDragonModel + READ_BE_U32(pDragonModel + pDragonData3->m_field_8[0].m_field_0[2]);
+    u8* defaultPose = pDragonModel + READ_BE_U32(pDragonModel + pDragonData3->m_m8[0].m_m0[2]);
 
-    init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonModel, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_field_8[0].m_field_8);
+    init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonModel, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m_m8);
 
     init3DModelAnims(pDragonState, &pDragonState->m28_dragon3dModel, &pDragonState->m78_animData, getDragonDataByIndex(dragonLevel));
 
@@ -1932,13 +1932,13 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
 
 void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u32 unk0, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY)
 {
-    if (pDragonData3->m_field_0 == 0)
+    if (pDragonData3->m_m0 == 0)
     {
         return;
     }
 
-    const sDragonData3Sub* r13 = &pDragonData3->m_field_8[1];
-    const sDragonData3Sub* r11 = &pDragonData3->m_field_8[5];
+    const sDragonData3Sub* r13 = &pDragonData3->m_m8[1];
+    const sDragonData3Sub* r11 = &pDragonData3->m_m8[5];
 
     assert(false);
 }
@@ -2177,8 +2177,8 @@ u16 loadFnt(const char* filename)
     s32 index = resetVdp2StringsSub1((u16*)fileBuffer);
     assert(index != -1);
 
-    pVdp2StringControl->field_10 = filename;
-    pVdp2StringControl->field_15 |= 1;
+    pVdp2StringControl->m10 = filename;
+    pVdp2StringControl->m15 |= 1;
     return index;
 }
 
@@ -2213,9 +2213,9 @@ void fieldSubTaskInit(s_workArea* pWorkArea)
 
     overlayStart_FLD_A3(pWorkArea, 0);
 
-    fieldTaskPtr->fieldTaskState = 4;
+    fieldTaskPtr->m3C_fieldTaskState = 4;
 
-    if (fieldTaskPtr->field_35)
+    if (fieldTaskPtr->m35)
     {
         fieldTaskPtr->m28_status = 0;
     }
@@ -2261,8 +2261,8 @@ void fieldSubTaskUpdate(s_workArea* pWorkArea)
         }
     default:
     case 1:
-        mainGameState.gameStats.field_70++;
-        pFieldSubTaskWorkArea->field_354++;
+        mainGameState.gameStats.m70++;
+        pFieldSubTaskWorkArea->m354++;
 
         if (readKeyboardToggle())
         {
@@ -2366,11 +2366,11 @@ void fieldSub0TaskDelete(s_workArea* pWorkArea)
 
 s_taskDefinition fieldSub0TaskDefinition = { fieldSub0TaskInit, NULL, NULL, fieldSub0TaskDelete, "field sub0 task" };
 
-p_workArea fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMenuSelection, u32 field_3A, u32 currentSubFieldIndex)
+p_workArea fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMenuSelection, u32 m3A, u32 currentSubFieldIndex)
 {
     fieldTaskPtr->m2C_currentFieldIndex = fieldIndexMenuSelection;
     fieldTaskPtr->m2E_currentSubFieldIndex = subFieldIndexMenuSelection;
-    fieldTaskPtr->field_30 = field_3A;
+    fieldTaskPtr->m30 = m3A;
     fieldTaskPtr->m32 = currentSubFieldIndex;
 
     if (fieldTaskVar0 == NULL)
@@ -2477,13 +2477,13 @@ void fieldTaskUpdate(p_workArea pTypelessWorkArea)
 {
     s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
 
-    switch (pWorkArea->fieldTaskState)
+    switch (pWorkArea->m3C_fieldTaskState)
     {
     case 0:
         pauseEngine[2] = 0;
         fieldTaskVar3 = 0;
         fieldInputTaskWorkArea = createFieldInputTask(pWorkArea);
-        pWorkArea->fieldTaskState++;
+        pWorkArea->m3C_fieldTaskState++;
         break;
     case 1: //do nothing
         break;
@@ -2492,9 +2492,9 @@ void fieldTaskUpdate(p_workArea pTypelessWorkArea)
         vdp2DebugPrintSetPosition(3, 24);
         vdp2PrintStatus.palette = 0xD000;
         drawLineLargeFont("LOADING...");
-        pWorkArea->fieldTaskState++;
+        pWorkArea->m3C_fieldTaskState++;
     case 3:
-        fieldTaskUpdateSub0(pWorkArea->fieldIndexMenuSelection, pWorkArea->subFieldIndexMenuSelection, pWorkArea->field_3A, pWorkArea->m2E_currentSubFieldIndex);
+        fieldTaskUpdateSub0(pWorkArea->fieldIndexMenuSelection, pWorkArea->subFieldIndexMenuSelection, pWorkArea->m3A, pWorkArea->m2E_currentSubFieldIndex);
 
         if (pWorkArea->m8_pSubFieldData)
         {
@@ -2506,24 +2506,24 @@ void fieldTaskUpdate(p_workArea pTypelessWorkArea)
 
             pauseEngine[2] = 1;
         }
-        pWorkArea->fieldTaskState = 1;
+        pWorkArea->m3C_fieldTaskState = 1;
         break;
     case 4:
         break;
     case 5:
         pauseEngine[2] = 0;
-        pWorkArea->fieldTaskState++;
+        pWorkArea->m3C_fieldTaskState++;
         break;
     case 6:
         if (pWorkArea->m8_pSubFieldData == NULL)
         {
-            pWorkArea->fieldTaskState = 3;
+            pWorkArea->m3C_fieldTaskState = 3;
         }
         break;
     case 7:
         if (fieldTaskVar0 == 0)
         {
-            pWorkArea->fieldTaskState = 0;
+            pWorkArea->m3C_fieldTaskState = 0;
         }
         break;
     default:
@@ -2545,7 +2545,7 @@ p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg)
 
 struct s_fieldDebugTaskWorkArea : public s_workArea
 {
-    p_workArea field_8; // 8
+    p_workArea m8; // 8
     // size: 0xC
 };
 
@@ -2556,18 +2556,18 @@ void fieldDebugTaskInit(p_workArea pTypelessWorkArea)
     pauseEngine[2] = 0;
 
     initNewGameState();
-    pWorkArea->field_8 = createFieldTask(pTypelessWorkArea, 0);
+    pWorkArea->m8 = createFieldTask(pTypelessWorkArea, 0);
     
-    createLoadingTask(pWorkArea->field_8, 1);
-    createMenuTask(pWorkArea->field_8);
-    createSiblingTaskWithArg(pWorkArea->field_8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->field_8);
+    createLoadingTask(pWorkArea->m8, 1);
+    createMenuTask(pWorkArea->m8);
+    createSiblingTaskWithArg(pWorkArea->m8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->m8);
 }
 
 void genericTaskRestartGameWhenFinished(p_workArea pTypelessWorkArea)
 {
     s_fieldDebugTaskWorkArea* pWorkArea = static_cast<s_fieldDebugTaskWorkArea*>(pTypelessWorkArea);
 
-    if ((pWorkArea->field_8 == NULL) || pWorkArea->field_8->getTask()->isFinished())
+    if ((pWorkArea->m8 == NULL) || pWorkArea->m8->getTask()->isFinished())
     {
         initialTaskStatus.m_pendingTask = startSegaLogoModule;
     }
@@ -2591,17 +2591,17 @@ void townDebugTaskInit(p_workArea pTypelessWorkArea)
 
     assert(0);
     /*
-    pWorkArea->field_8 = createLocationTask(pWorkArea, 0);
+    pWorkArea->m8 = createLocationTask(pWorkArea, 0);
 
     resetTempAllocators();
-    initDramAllocator(pWorkArea->field_8, playerDataMemoryBuffer, 0x28000, NULL);
+    initDramAllocator(pWorkArea->m8, playerDataMemoryBuffer, 0x28000, NULL);
 
-    loadDragon(pWorkArea->field_8);
-    loadCurrentRider(pWorkArea->field_8);
-    loadCurrentRider2(pWorkArea->field_8);
+    loadDragon(pWorkArea->m8);
+    loadCurrentRider(pWorkArea->m8);
+    loadCurrentRider2(pWorkArea->m8);
     freeRamResource();
     createMenuTask();
-    createSiblingTaskWithArg(pWorkArea->field_8, flagEditTask, 0x10, pWorkArea->field_8);
+    createSiblingTaskWithArg(pWorkArea->m8, flagEditTask, 0x10, pWorkArea->m8);
     */
 }
 
@@ -2635,15 +2635,15 @@ p_workArea createMovieDebugTask(p_workArea)
 struct s_exitMenuTaskSub1Task : public s_workArea
 {
     u32 state; // 0
-    p_workArea field_8;
-    u32 field_C;
+    p_workArea m8;
+    u32 mC;
 };
 
 struct {
     s8 m0_gameMode;
-    s8 field_1;
-    s8 field_2;
-    s8 field_3;
+    s8 m1;
+    s8 m2;
+    s8 m3;
     u16 m4_gameStatus;
     u16 m6_previousGameStatus;
     u16 m8_nextGameStatus;
@@ -2651,9 +2651,9 @@ struct {
 
 struct {
     u8 m8;
-    u8 field_9;
-    u8 field_A;
-    u8 field_B;
+    u8 m9;
+    u8 mA;
+    u8 mB;
 } var_60525E8;
 
 void exitMenuTaskSub1TaskInitSub2(u32 r4)
@@ -2661,7 +2661,7 @@ void exitMenuTaskSub1TaskInitSub2(u32 r4)
     if (gGameStatus.m8_nextGameStatus == 0)
     {
         gGameStatus.m8_nextGameStatus = r4;
-        gGameStatus.field_2 = 0;
+        gGameStatus.m2 = 0;
     }
 }
 
@@ -2677,10 +2677,10 @@ u8 array_250000[0x20000];
 struct s_menuGraphicsTask : public s_workArea
 {
     u32 state; // 0
-    p_workArea field_4;
-    p_workArea field_8;
-    u8 field_C;
-    u8 field_D;
+    p_workArea m4;
+    p_workArea m8;
+    u8 mC;
+    u8 mD;
 };
 
 void menuGraphicsTaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
@@ -2688,36 +2688,36 @@ void menuGraphicsTaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
     s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
     p_workArea parentTask = (p_workArea)voidArgument;
 
-    pWordArea->field_4 = parentTask;
-    graphicEngineStatus.field_40AC.field_C = pWordArea;
-    graphicEngineStatus.field_40AC.m1_isMenuAllowed = 0;
-    graphicEngineStatus.field_40AC.field_3 = 0;
-    graphicEngineStatus.field_40AC.m0_menuId = 0;
-    graphicEngineStatus.field_40AC.field_2 = 0;
-    graphicEngineStatus.field_40AC.field_4 = 0;
-    graphicEngineStatus.field_40AC.field_5 = 0;
-    graphicEngineStatus.field_40AC.field_6 = 0;
-    graphicEngineStatus.field_40AC.field_7 = 0;
+    pWordArea->m4 = parentTask;
+    graphicEngineStatus.m40AC.mC = pWordArea;
+    graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
+    graphicEngineStatus.m40AC.m3 = 0;
+    graphicEngineStatus.m40AC.m0_menuId = 0;
+    graphicEngineStatus.m40AC.m2 = 0;
+    graphicEngineStatus.m40AC.m4 = 0;
+    graphicEngineStatus.m40AC.m5 = 0;
+    graphicEngineStatus.m40AC.m6 = 0;
+    graphicEngineStatus.m40AC.m7 = 0;
 
     addToMemoryLayout(MENU_SCB, 0x14000);
     loadFile("MENU.SCB", MENU_SCB, 0);
     loadFile("MENU.CGB", getVdp1Pointer(0x25C10000), 0);
-    graphicEngineStatus.field_40AC.fontIndex = loadFnt("MENU.FNT");
+    graphicEngineStatus.m40AC.fontIndex = loadFnt("MENU.FNT");
 }
 
 void menuGraphicsTaskDrawSub1()
 {
-    graphicEngineStatus.field_40E4 = (s_graphicEngineStatus_40E4*)allocateHeap(sizeof(s_graphicEngineStatus_40E4));
-    assert(graphicEngineStatus.field_40E4);
+    graphicEngineStatus.m40E4 = (s_graphicEngineStatus_40E4*)allocateHeap(sizeof(s_graphicEngineStatus_40E4));
+    assert(graphicEngineStatus.m40E4);
 
-    memcpy_dma(&graphicEngineStatus.field_405C, &graphicEngineStatus.field_40E4->field_0, sizeof(s_graphicEngineStatus_405C));
-    memcpy_dma(&vdp2Controls, &graphicEngineStatus.field_40E4->field_50, sizeof(sVdp2Controls));
-    memcpy_dma(&menuUnk0, &graphicEngineStatus.field_40E4->field_2B0, sizeof(sMenuUnk0));
-    asyncDmaCopy(vdp2Palette, &graphicEngineStatus.field_40E4->field_300, 512, 0);
+    memcpy_dma(&graphicEngineStatus.m405C, &graphicEngineStatus.m40E4->m0, sizeof(s_graphicEngineStatus_405C));
+    memcpy_dma(&vdp2Controls, &graphicEngineStatus.m40E4->m50, sizeof(sVdp2Controls));
+    memcpy_dma(&menuUnk0, &graphicEngineStatus.m40E4->m2B0, sizeof(sMenuUnk0));
+    asyncDmaCopy(vdp2Palette, &graphicEngineStatus.m40E4->m300, 512, 0);
 
     u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
-    graphicEngineStatus.field_40E4->field_400 = getVdp2VramU16(backScreenTableOffset);
-    graphicEngineStatus.field_40E4->field_402 = pVdp2StringControl->f0_index;
+    graphicEngineStatus.m40E4->m400 = getVdp2VramU16(backScreenTableOffset);
+    graphicEngineStatus.m40E4->m402 = pVdp2StringControl->f0_index;
 }
 
 sLayerConfig menuNBG01Setup[] =
@@ -3146,19 +3146,19 @@ struct s_statusMenuTaskWorkArea : public s_workArea
 struct s_MenuCursorWorkArea : public s_workArea
 {
     s32 selectedMenu;
-    s_graphicEngineStatus_40BC* field_4;
-    u16* field_8;
-    s32 field_C;
+    s_graphicEngineStatus_40BC* m4;
+    u16* m8;
+    s32 mC;
 };
 
 struct s_mainMenuWorkArea : public s_workArea
 {
-    u8 field_0; //0
-    s8 field_1; //1
+    u8 m0; //0
+    s8 m1; //1
     s8 selectedMenu; //2
     s8 m3_menuButtonStates[5]; //3
-    p_workArea field_8; // 8
-    s_statusMenuTaskWorkArea* field_C; // C
+    p_workArea m8; // 8
+    s_statusMenuTaskWorkArea* mC; // C
     s_MenuCursorWorkArea* m10_cursorTask; // 10
 };
 
@@ -3202,16 +3202,16 @@ void mainMenuTaskInitSub3(u32 vdp2Offset, u32 r5, u32 r6, u32 r7)
 
 struct sMainMenuTaskInitData2
 {
-    s_graphicEngineStatus_40BC* field_0;
-    u16* field_4;
+    s_graphicEngineStatus_40BC* m0;
+    u16* m4;
 };
 
 struct mainMenuTaskInitSub2TaskWorkArea : public s_workArea
 {
     u32 spriteIndex;
-    s_graphicEngineStatus_40BC* field_4;
+    s_graphicEngineStatus_40BC* m4;
     u16* spriteData;
-    u32 field_C;
+    u32 mC;
 };
 
 void mainMenuTaskInitSub2TaskInit(p_workArea typelessWorkArea, void* arg)
@@ -3219,8 +3219,8 @@ void mainMenuTaskInitSub2TaskInit(p_workArea typelessWorkArea, void* arg)
     mainMenuTaskInitSub2TaskWorkArea* pWorkArea = static_cast<mainMenuTaskInitSub2TaskWorkArea*>(typelessWorkArea);
     sMainMenuTaskInitData2* typedArg = static_cast<sMainMenuTaskInitData2*>(arg);
 
-    pWorkArea->field_4 = typedArg->field_0;
-    pWorkArea->spriteData = typedArg->field_4;
+    pWorkArea->m4 = typedArg->m0;
+    pWorkArea->spriteData = typedArg->m4;
 }
 
 struct s_menuSprite
@@ -3254,9 +3254,9 @@ void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
     graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->vdp1EA = vdp1WriteEA >> 3;
     graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
 
-    graphicEngineStatus.vdp1Context[0].field_1C += 1;
+    graphicEngineStatus.vdp1Context[0].m1C += 1;
     graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA + 0x20;
-    graphicEngineStatus.vdp1Context[0].field_C += 1;
+    graphicEngineStatus.vdp1Context[0].mC += 1;
 }
 
 void mainMenuTaskInitSub2TaskDraw(p_workArea typelessWorkArea)
@@ -3264,7 +3264,7 @@ void mainMenuTaskInitSub2TaskDraw(p_workArea typelessWorkArea)
     mainMenuTaskInitSub2TaskWorkArea* pWorkArea = static_cast<mainMenuTaskInitSub2TaskWorkArea*>(typelessWorkArea);
 
     u32 spriteColor;
-    if (pWorkArea->field_C)
+    if (pWorkArea->mC)
     {
         spriteColor = 0x650;
     }
@@ -3273,10 +3273,10 @@ void mainMenuTaskInitSub2TaskDraw(p_workArea typelessWorkArea)
         spriteColor = 0x630;
     }
 
-    s16 r5 = pWorkArea->spriteData[pWorkArea->spriteIndex * 2 + 0] - pWorkArea->field_4->scrollX;
-    s16 r6 = pWorkArea->spriteData[pWorkArea->spriteIndex * 2 + 1] - pWorkArea->field_4->scrollY;
+    s16 r5 = pWorkArea->spriteData[pWorkArea->spriteIndex * 2 + 0] - pWorkArea->m4->scrollX;
+    s16 r6 = pWorkArea->spriteData[pWorkArea->spriteIndex * 2 + 1] - pWorkArea->m4->scrollY;
 
-    drawMenuSprite(&spriteData1[pWorkArea->field_C], r5, r6, spriteColor);
+    drawMenuSprite(&spriteData1[pWorkArea->mC], r5, r6, spriteColor);
 }
 
 s_taskDefinitionWithArg mainMenuTaskInitSub2TaskDef = { mainMenuTaskInitSub2TaskInit, NULL, mainMenuTaskInitSub2TaskDraw, NULL, "mainMenuTaskInitSub2Task" };
@@ -3285,7 +3285,7 @@ mainMenuTaskInitSub2TaskWorkArea* mainMenuTaskInitSub2(p_workArea typelessWorkAr
 {
     p_workArea pNewTask = createSubTaskWithArg(typelessWorkArea, &mainMenuTaskInitSub2TaskDef, new mainMenuTaskInitSub2TaskWorkArea, r5);
     mainMenuTaskInitSub2TaskWorkArea* pTypedNewTask = static_cast<mainMenuTaskInitSub2TaskWorkArea*>(pNewTask);
-    pTypedNewTask->field_C = r6;
+    pTypedNewTask->mC = r6;
     return pTypedNewTask;
 }
 
@@ -3305,14 +3305,14 @@ sMainMenuTaskInitData2 mainMenuTaskInitData2 = {
 
 struct s_menuDragonCrestTaskWorkArea : public s_workArea
 {
-    u32 field_0;
-    s_graphicEngineStatus_40BC* field_4;
+    u32 m0;
+    s_graphicEngineStatus_40BC* m4;
 };
 
 void menuDragonCrestTaskInit(s_workArea* pTypelessWorkArea, void* arg)
 {
     s_menuDragonCrestTaskWorkArea* pWorkArea = static_cast<s_menuDragonCrestTaskWorkArea*>(pTypelessWorkArea);
-    pWorkArea->field_4 = static_cast<s_graphicEngineStatus_40BC*>(arg);
+    pWorkArea->m4 = static_cast<s_graphicEngineStatus_40BC*>(arg);
 }
 
 s_menuSprite menuDragonCrestSprites [] =
@@ -3337,27 +3337,27 @@ s_menuSprite menuDragonCrestSprites [] =
 void menuDragonCrestTaskDraw(s_workArea* pTypelessWorkArea)
 {
     s_menuDragonCrestTaskWorkArea* pWorkArea = static_cast<s_menuDragonCrestTaskWorkArea*>(pTypelessWorkArea);
-    if (graphicEngineStatus.field_40AC.field_5)
+    if (graphicEngineStatus.m40AC.m5)
     {
         for (int i = 0; i < 10; i++)
         {
             unimplemented("Missing filter login in menuDragonCrestTaskDraw");
 
-            drawMenuSprite(&menuDragonCrestSprites[i], -pWorkArea->field_4->scrollX, -pWorkArea->field_4->scrollY, 0x610);
+            drawMenuSprite(&menuDragonCrestSprites[i], -pWorkArea->m4->scrollX, -pWorkArea->m4->scrollY, 0x610);
         }
     }
 }
 
 struct s_laserRankTaskWorkArea : public s_workArea
 {
-    u32 field_0;
-    s_graphicEngineStatus_40BC* field_4;
+    u32 m0;
+    s_graphicEngineStatus_40BC* m4;
 };
 
 void laserRangTaskInit(s_workArea* pTypelessWorkArea, void* arg)
 {
     s_laserRankTaskWorkArea* pWorkArea = static_cast<s_laserRankTaskWorkArea*>(pTypelessWorkArea);
-    pWorkArea->field_4 = static_cast<s_graphicEngineStatus_40BC*>(arg);
+    pWorkArea->m4 = static_cast<s_graphicEngineStatus_40BC*>(arg);
 }
 
 s_menuSprite laserRankSpriteDefinition[6] = {
@@ -3372,7 +3372,7 @@ s_menuSprite laserRankSpriteDefinition[6] = {
 void laserRangTaskDraw(s_workArea* pTypelessWorkArea)
 {
     s_laserRankTaskWorkArea* pWorkArea = static_cast<s_laserRankTaskWorkArea*>(pTypelessWorkArea);
-    if (pWorkArea->field_0 < 0)
+    if (pWorkArea->m0 < 0)
         return;
     if (mainGameState.gameStats.m1_dragonLevel > 7)
         return;
@@ -3383,7 +3383,7 @@ void laserRangTaskDraw(s_workArea* pTypelessWorkArea)
 
     for (int i = 0; i < r14; i++)
     {
-        drawMenuSprite(&laserRankSpriteDefinition[i], -pWorkArea->field_4->scrollX, -pWorkArea->field_4->scrollY, 0x760);
+        drawMenuSprite(&laserRankSpriteDefinition[i], -pWorkArea->m4->scrollX, -pWorkArea->m4->scrollY, 0x760);
     }
 }
 
@@ -3425,16 +3425,16 @@ void menuCursorTaskInit(p_workArea typelessWorkArea, void* r5)
     s_MenuCursorWorkArea* pWorkArea = static_cast<s_MenuCursorWorkArea*>(typelessWorkArea);
     sMainMenuTaskInitData2* pMenuData = static_cast<sMainMenuTaskInitData2*>(r5);
 
-    pWorkArea->field_4 = pMenuData->field_0;
-    pWorkArea->field_8 = pMenuData->field_4;
+    pWorkArea->m4 = pMenuData->m0;
+    pWorkArea->m8 = pMenuData->m4;
 }
 
 void menuCursorTaskUpdate(p_workArea typelessWorkArea)
 {
     s_MenuCursorWorkArea* pWorkArea = static_cast<s_MenuCursorWorkArea*>(typelessWorkArea);
-    if (--pWorkArea->field_C < 0)
+    if (--pWorkArea->mC < 0)
     {
-        pWorkArea->field_C = 40;
+        pWorkArea->mC = 40;
     }
 }
 
@@ -3448,10 +3448,10 @@ void menuCursorTaskDraw(p_workArea typelessWorkArea)
     if (pWorkArea->selectedMenu < 0)
         return;
 
-    s32 X = pWorkArea->field_8[pWorkArea->selectedMenu*2 + 0] - pWorkArea->field_4->scrollX;
-    s32 Y = pWorkArea->field_8[pWorkArea->selectedMenu*2 + 1] - pWorkArea->field_4->scrollY;
+    s32 X = pWorkArea->m8[pWorkArea->selectedMenu*2 + 0] - pWorkArea->m4->scrollX;
+    s32 Y = pWorkArea->m8[pWorkArea->selectedMenu*2 + 1] - pWorkArea->m4->scrollY;
 
-    if (pWorkArea->field_C > 20)
+    if (pWorkArea->mC > 20)
     {
         drawMenuSprite(&cursorSpriteDef0, X, Y, 0x760);
     }
@@ -3541,9 +3541,9 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
 
     mainMenuTaskInitSub4(pWorkArea);
 
-    pWorkArea->field_1 = vblankData.field_14;
+    pWorkArea->m1 = vblankData.m14;
 
-    vblankData.field_14 = 1;
+    vblankData.m14 = 1;
 
     fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
     fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
@@ -3574,8 +3574,8 @@ void statusMenuTaskDraw(p_workArea typelessWorkArea)
 {
     s_statusMenuTaskWorkArea* pWorkArea = static_cast<s_statusMenuTaskWorkArea*>(typelessWorkArea);
     
-    vdp2StringContext.field_0 = 0;
-    setActiveFont(graphicEngineStatus.field_40AC.fontIndex);
+    vdp2StringContext.m0 = 0;
+    setActiveFont(graphicEngineStatus.m40AC.fontIndex);
     vdp2PrintStatus.palette = 0xC000;
 
     const char** menuText = statusMenuOptionsDragonType;
@@ -3587,8 +3587,8 @@ void statusMenuTaskDraw(p_workArea typelessWorkArea)
 
     if (pWorkArea->selectedMenu >= 0)
     {
-        vdp2StringContext.cursorX = vdp2StringContext.X + 3;
-        vdp2StringContext.cursorY = vdp2StringContext.Y + 0x17;
+        vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + 3;
+        vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 0x17;
 
         drawInventoryString(menuText[pWorkArea->selectedMenu]);
     }
@@ -3608,8 +3608,8 @@ void statusMenuTaskDraw(p_workArea typelessWorkArea)
     }
     else
     {
-        vdp2StringContext.cursorX = vdp2StringContext.X + 3;
-        vdp2StringContext.cursorY = vdp2StringContext.Y + 2;
+        vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + 3;
+        vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 2;
 
         drawInventoryString("  Floater ");
     }
@@ -3631,13 +3631,13 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
 {
     s_mainMenuWorkArea* pWorkArea = static_cast<s_mainMenuWorkArea*>(typelessWorkArea);
 
-    switch (pWorkArea->field_0)
+    switch (pWorkArea->m0)
     {
     case 0:
-        pWorkArea->field_C = static_cast<s_statusMenuTaskWorkArea*>(createSubTask(pWorkArea, &statusMenuTaskDefinition, new s_statusMenuTaskWorkArea));
-        pWorkArea->field_C->selectedMenu = pWorkArea->selectedMenu;
+        pWorkArea->mC = static_cast<s_statusMenuTaskWorkArea*>(createSubTask(pWorkArea, &statusMenuTaskDefinition, new s_statusMenuTaskWorkArea));
+        pWorkArea->mC->selectedMenu = pWorkArea->selectedMenu;
         pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
-        pWorkArea->field_0++;
+        pWorkArea->m0++;
     case 1:
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 1) // B
         {
@@ -3662,13 +3662,13 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
                 return;
             }
             playSoundEffect(0);
-            if (pWorkArea->field_C)
+            if (pWorkArea->mC)
             {
-                pWorkArea->field_C->getTask()->markFinished();
+                pWorkArea->mC->getTask()->markFinished();
             }
 
-            pWorkArea->field_8 = statusMenuSubMenus[pWorkArea->selectedMenu](pWorkArea);
-            pWorkArea->field_0++;
+            pWorkArea->m8 = statusMenuSubMenus[pWorkArea->selectedMenu](pWorkArea);
+            pWorkArea->m0++;
             return;
         }
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x30) // UP or DOWN
@@ -3709,16 +3709,16 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
             }
 
             pWorkArea->selectedMenu = selectedMenu;
-            pWorkArea->field_C->selectedMenu = pWorkArea->selectedMenu;
+            pWorkArea->mC->selectedMenu = pWorkArea->selectedMenu;
             pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
         }
         break;
     case 2:
-        if (pWorkArea->field_8)
+        if (pWorkArea->m8)
         {
-            if (pWorkArea->field_8->getTask()->isFinished())
+            if (pWorkArea->m8->getTask()->isFinished())
             {
-                pWorkArea->field_0 = 0;
+                pWorkArea->m0 = 0;
             }
         }
         break;
@@ -3809,11 +3809,11 @@ p_workArea(*menuTaskMenuArray[])(p_workArea) =
 
 void menuGraphicsTaskDrawSub2()
 {
-    if (graphicEngineStatus.field_40E4)
+    if (graphicEngineStatus.m40E4)
     {
-        memcpy_dma(&graphicEngineStatus.field_40E4->field_0, &graphicEngineStatus.field_405C, sizeof(s_graphicEngineStatus_405C));
+        memcpy_dma(&graphicEngineStatus.m40E4->m0, &graphicEngineStatus.m405C, sizeof(s_graphicEngineStatus_405C));
 
-        setActiveFont(graphicEngineStatus.field_40E4->field_402);
+        setActiveFont(graphicEngineStatus.m40E4->m402);
     }
 }
 
@@ -3846,19 +3846,19 @@ void scrollMenu()
 
 void menuGraphicsTaskDrawSub3()
 {
-    if (graphicEngineStatus.field_40E4)
+    if (graphicEngineStatus.m40E4)
     {
-        memcpy_dma(&graphicEngineStatus.field_40E4->field_50, &vdp2Controls, sizeof(sVdp2Controls));
-        memcpy_dma(&graphicEngineStatus.field_40E4->field_2B0, &menuUnk0, sizeof(sMenuUnk0));
-        asyncDmaCopy(&graphicEngineStatus.field_40E4->field_300, vdp2Palette, 512, 0);
+        memcpy_dma(&graphicEngineStatus.m40E4->m50, &vdp2Controls, sizeof(sVdp2Controls));
+        memcpy_dma(&graphicEngineStatus.m40E4->m2B0, &menuUnk0, sizeof(sMenuUnk0));
+        asyncDmaCopy(&graphicEngineStatus.m40E4->m300, vdp2Palette, 512, 0);
 
         u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
-        setVdp2VramU16(backScreenTableOffset, graphicEngineStatus.field_40E4->field_400);
+        setVdp2VramU16(backScreenTableOffset, graphicEngineStatus.m40E4->m400);
 
         u32 r3 = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0xFFF80000;
         u32 r2 = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
         vdp2Controls.m4_pendingVdp2Regs->BKTA = r3 | ((r2 << 1) >> 1);
-        freeHeap(graphicEngineStatus.field_40E4);
+        freeHeap(graphicEngineStatus.m40E4);
     }
 }
 
@@ -3867,7 +3867,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
     s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
     
     // not exactly that in the original code, but same idea
-    if ((pWordArea->field_4 == NULL) || pWordArea->field_4->getTask()->isFinished())
+    if ((pWordArea->m4 == NULL) || pWordArea->m4->getTask()->isFinished())
     {
         pWordArea->getTask()->markFinished();
         return;
@@ -3876,32 +3876,32 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
     switch (pWordArea->state)
     {
     case 0:
-        graphicEngineStatus.field_40AC.field_8 = 0;
+        graphicEngineStatus.m40AC.m8 = 0;
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8)
         {
             unimplemented("Hack: forcing menu enabled 1");
-            graphicEngineStatus.field_40AC.m1_isMenuAllowed = 1;
-            if (graphicEngineStatus.field_40AC.m1_isMenuAllowed)
+            graphicEngineStatus.m40AC.m1_isMenuAllowed = 1;
+            if (graphicEngineStatus.m40AC.m1_isMenuAllowed)
             {
-                graphicEngineStatus.field_40AC.m0_menuId = 1;
+                graphicEngineStatus.m40AC.m0_menuId = 1;
                 playSoundEffect(0);
             }
             else
             {
-                if (graphicEngineStatus.field_40AC.m0_menuId == 0)
+                if (graphicEngineStatus.m40AC.m0_menuId == 0)
                     return;
             }
         }
 
         // enter menu
         // this isn't exactly correct
-        if (graphicEngineStatus.field_40AC.m0_menuId)
+        if (graphicEngineStatus.m40AC.m0_menuId)
         {
-            graphicEngineStatus.field_40AC.field_8 = 1;
-            graphicEngineStatus.field_40AC.field_9 = 1;
+            graphicEngineStatus.m40AC.m8 = 1;
+            graphicEngineStatus.m40AC.m9 = 1;
 
             // pause the gameplay system
-            pWordArea->field_4->getTask()->markPaused();
+            pWordArea->m4->getTask()->markPaused();
 
             menuGraphicsTaskDrawSub1();
             fadePalette(&menuUnk0.m_field0, 0, 0, 1);
@@ -3912,33 +3912,33 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
     case 1:
         if (fileInfoStruct.allocatedHead == NULL) // wait for loading to finish
         {
-            graphicEngineStatus.field_40AC.field_2 = 0;
+            graphicEngineStatus.m40AC.m2 = 0;
             setupVdp2ForMenu();
 
-            pWordArea->field_8 = menuTaskMenuArray[graphicEngineStatus.field_40AC.m0_menuId](pWordArea);
+            pWordArea->m8 = menuTaskMenuArray[graphicEngineStatus.m40AC.m0_menuId](pWordArea);
             pWordArea->state++;
         }
         break;
     case 2:
-        if (pWordArea->field_8 && !pWordArea->field_8->getTask()->isFinished())
+        if (pWordArea->m8 && !pWordArea->m8->getTask()->isFinished())
         {
-            if (!graphicEngineStatus.field_40AC.field_4)
+            if (!graphicEngineStatus.m40AC.m4)
             {
                 scrollMenu();
             }
             if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8) // start
             {
-                if (graphicEngineStatus.field_40AC.m0_menuId == 7)
+                if (graphicEngineStatus.m40AC.m0_menuId == 7)
                 {
                     return;
                 }
-                if (graphicEngineStatus.field_40AC.field_3)
+                if (graphicEngineStatus.m40AC.m3)
                 {
                     playSoundEffect(5);
                     return;
                 }
             }
-            if (graphicEngineStatus.field_40AC.field_2 == 0)
+            if (graphicEngineStatus.m40AC.m2 == 0)
             {
                 return;
             }
@@ -3951,37 +3951,37 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
         {
             menuGraphicsTaskDrawSub2();
 
-            graphicEngineStatus.field_40AC.m0_menuId = 0;
-            pWordArea->field_C = pauseEngine[0];
+            graphicEngineStatus.m40AC.m0_menuId = 0;
+            pWordArea->mC = pauseEngine[0];
 
-            pWordArea->field_4->getTask()->clearPaused();
+            pWordArea->m4->getTask()->clearPaused();
 
-            pWordArea->field_D = graphicEngineStatus.field_40AC.field_9;
+            pWordArea->mD = graphicEngineStatus.m40AC.m9;
             pWordArea->state = 5;
         }
         break;
     case 3:
-        if (pWordArea->field_8)
+        if (pWordArea->m8)
         {
-            pWordArea->field_8->getTask()->markFinished();
+            pWordArea->m8->getTask()->markFinished();
         }
         pWordArea->state++;
         break;
     case 4:
         menuGraphicsTaskDrawSub2();
 
-        graphicEngineStatus.field_40AC.m0_menuId = 0;
-        pWordArea->field_C = pauseEngine[0];
+        graphicEngineStatus.m40AC.m0_menuId = 0;
+        pWordArea->mC = pauseEngine[0];
 
-        pWordArea->field_4->getTask()->clearPaused();
+        pWordArea->m4->getTask()->clearPaused();
 
-        pWordArea->field_D = graphicEngineStatus.field_40AC.field_9;
+        pWordArea->mD = graphicEngineStatus.m40AC.m9;
         pWordArea->state = 5;
         break;
     case 5:
-        if (--pWordArea->field_D == 0)
+        if (--pWordArea->mD == 0)
         {
-            if (pWordArea->field_C)
+            if (pWordArea->mC)
             {
                 pauseEngine[0] = 1;
             }
@@ -3991,7 +3991,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
             }
             menuGraphicsTaskDrawSub3();
 
-            graphicEngineStatus.field_40AC.field_8 = 2;
+            graphicEngineStatus.m40AC.m8 = 2;
             pWordArea->state = 0;
         }
         break;
@@ -4018,12 +4018,12 @@ void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
     s_exitMenuTaskSub1Task* pWorkArea = static_cast<s_exitMenuTaskSub1Task*>(pTypelessWorkArea);
     u32 menuID = (u32)voidArgument;
 
-    pWorkArea->field_8 = 0;
-    pWorkArea->field_C = 0;
+    pWorkArea->m8 = 0;
+    pWorkArea->mC = 0;
 
     gGameStatus.m0_gameMode = -1;
-    gGameStatus.field_1 = -1;
-    gGameStatus.field_3 = 0;
+    gGameStatus.m1 = -1;
+    gGameStatus.m3 = 0;
     gGameStatus.m4_gameStatus = 0;
     gGameStatus.m6_previousGameStatus = 0;
     gGameStatus.m8_nextGameStatus = 0;
@@ -4044,9 +4044,9 @@ void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
     mainGameState.gameStats.m3_rider2 = 0;
 
     var_60525E8.m8 = 0;
-    var_60525E8.field_9 = 0;
-    var_60525E8.field_A = 0;
-    var_60525E8.field_B = 0;
+    var_60525E8.m9 = 0;
+    var_60525E8.mA = 0;
+    var_60525E8.mB = 0;
 
     exitMenuTaskSub1TaskInitSub1();
 
@@ -4087,7 +4087,7 @@ s_vblankData vblankData;
 
 void exitMenuTaskSub1TaskUpdate(s_workArea* pTypelessWorkArea)
 {
-    mainGameState.gameStats.frameCounter += vblankData.field_C;
+    mainGameState.gameStats.frameCounter += vblankData.mC;
 }
 
 s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
@@ -4145,7 +4145,7 @@ p_workArea loadField(p_workArea r4, s32 r5)
         mainGameState.setPackedBits(135, 6, gGameStatus.m4_gameStatus - 0x50);
     }
 
-    if (gGameStatus.field_3 == 1)
+    if (gGameStatus.m3 == 1)
     {
         assert(0);
     }
@@ -4183,9 +4183,9 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
 
         if (gGameStatus.m8_nextGameStatus)
         {
-            if (gGameStatus.field_2 == 0)
+            if (gGameStatus.m2 == 0)
             {
-                if (pWorkArea->field_8)
+                if (pWorkArea->m8)
                 {
                     //60273AA
                     assert(0);
@@ -4200,9 +4200,9 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
         else
         {
             //602745C
-            if (pWorkArea->field_8)
+            if (pWorkArea->m8)
             {
-                if (!pWorkArea->field_8->getTask()->isFinished())
+                if (!pWorkArea->m8->getTask()->isFinished())
                 {
                     return;
                 }
@@ -4210,9 +4210,9 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
         }
 
         // 06027474
-        graphicEngineStatus.field_4 = 1;
+        graphicEngineStatus.m4 = 1;
         pauseEngine[2] = 0;
-        graphicEngineStatus.field_40AC.m1_isMenuAllowed = 0;
+        graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
         gGameStatus.m0_gameMode = -1;
         pWorkArea->state++;
         break;
@@ -4227,7 +4227,7 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
         }
         else
         {
-            if (gGameStatus.field_2 == 0)
+            if (gGameStatus.m2 == 0)
             {
                 if (exitMenuTaskSub1TaskDrawSub1(pWorkArea, gGameStatus.m4_gameStatus) < 0)
                 {
@@ -4244,7 +4244,7 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
         case 1:
         case 2:
         case 80:
-            if ((gGameStatus.field_2 == 0) && (gGameStatus.m6_previousGameStatus != 0x4F))
+            if ((gGameStatus.m2 == 0) && (gGameStatus.m6_previousGameStatus != 0x4F))
             {
                 initFileLayoutTable();
             }
@@ -4267,18 +4267,18 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
         gGameStatus.m8_nextGameStatus = 0;
 
         gGameStatus.m0_gameMode = *(COMMON_DAT + 0x12EAC + gGameStatus.m4_gameStatus * 2);
-        gGameStatus.field_1 = *(COMMON_DAT + 0x12EAC + gGameStatus.m4_gameStatus * 2 + 1);
+        gGameStatus.m1 = *(COMMON_DAT + 0x12EAC + gGameStatus.m4_gameStatus * 2 + 1);
 
         if (gGameStatus.m6_previousGameStatus == 74)
         {
-            gGameStatus.field_3 = 1;
+            gGameStatus.m3 = 1;
         }
         else
         {
-            gGameStatus.field_3 = 0;
+            gGameStatus.m3 = 0;
         }
 
-        pWorkArea->field_8 = overlayDispatchTable[gGameStatus.m0_gameMode](pWorkArea, gGameStatus.field_1);
+        pWorkArea->m8 = overlayDispatchTable[gGameStatus.m0_gameMode](pWorkArea, gGameStatus.m1);
         pWorkArea->state = 0;
 
         break;
@@ -4301,9 +4301,9 @@ void initExitMenuTask(p_workArea pTypelessWorkArea, void* argument)
 
     pauseEngine[2] = 0;
 
-    pWorkArea->field_8 = initExitMenuTaskSub1(pWorkArea, menuID);
+    pWorkArea->m8 = initExitMenuTaskSub1(pWorkArea, menuID);
 
-    createSiblingTaskWithArg(pWorkArea->field_8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->field_8);
+    createSiblingTaskWithArg(pWorkArea->m8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->m8);
 
     fadePalette(&menuUnk0.m_field0, 0x8000, 0x8000, 1);
     fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);

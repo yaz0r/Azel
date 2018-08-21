@@ -184,22 +184,22 @@ void vdp2PrintfLargeFont(const char* format, ...);
 extern u8* MENU_SCB;
 
 struct sVdp2StringContext {
-    u32 field_0;
-    s32 cursorX; // 4
-    s32 cursorY; // 8
-    s32 X; // C
-    s32 Y; // 10
-    s32 Width; // 14
-    s32 Height; // 18
-    u32 field_1C; // 1C
-    u32 field_20; // 20
-    u32 field_24; // 24
-    u32 field_28; // 28
-    u32 field_2C; // 2C
-    u32 field_30; // 30
-    u32 field_34; // 34
-    u32 field_38; // 38
-    u32 field_3C; // 3C
+    u32 m0;
+    s32 m4_cursorX; // 4
+    s32 m8_cursorY; // 8
+    s32 mC_X; // C
+    s32 m10_Y; // 10
+    s32 m14_Width; // 14
+    s32 m18_Height; // 18
+    u32 m1C; // 1C
+    u32 m20; // 20
+    u32 m24; // 24
+    u32 m28; // 28
+    u32 m2C; // 2C
+    u32 m30; // 30
+    u32 m34; // 34
+    u32 m38; // 38
+    u32 m3C; // 3C
 };
 
 extern sVdp2StringContext vdp2StringContext;
@@ -207,12 +207,12 @@ extern sVdp2StringContext vdp2StringContext;
 struct sVdp2StringControl
 {
     u32 f0_index;
-    u32 field_4;
-    u16* field_8;
-    u16* field_C;
-    const char* field_10;
-    u8 field_14;
-    u8 field_15;
+    u32 m4;
+    u16* m8;
+    u16* mC;
+    const char* m10;
+    u8 m14;
+    u8 m15;
     sVdp2StringControl* pPrevious; // 18?
     sVdp2StringControl* pNext; // 1C?
 };
@@ -262,8 +262,8 @@ struct s_stringStatusQuery
     s32 windowY2;
     const char* string;
     u32 vdp2MemoryOffset;
-    u32 field_28;
-    u32 field_2C;
+    u32 m28;
+    u32 m2C;
 };
 
 void addStringToVdp2(const char* string, s_stringStatusQuery* vars);

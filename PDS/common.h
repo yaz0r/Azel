@@ -111,14 +111,14 @@ struct s_gameStats
     u16 classMaxHP; // 0x12
     u16 currentBP; // 0x14
     u16 classMaxBP; // 0x16
-    u16 field_18; // 0x18
+    u16 m18; // 0x18
     s16 dragonCursorX; //1A
     s16 dragonCursorY; //1C
     u32 XP; //20
     u32 dyne; // 38
     u32 frameCounter; //3C
 
-    u32 field_70; //70
+    u32 m70; //70
 
     char playerName[17];
     char dragonName[17];
@@ -165,6 +165,11 @@ public:
     void setBit(u32 bitIndex)
     {
         bitField[bitIndex / 8] |= 0x80 >> (bitIndex % 8);
+    }
+
+    void setBit(u32 byteIndex, u32 bitIndex)
+    {
+        bitField[byteIndex] |= 0x80 >> bitIndex;
     }
 
     void clearBit(u32 bitIndex)
@@ -242,15 +247,15 @@ struct s_RiderDefinition
 
 struct sDragonData3Sub
 {
-    u16 m_field_0[4];
-    s_RiderDefinitionSub* m_field_8;
+    u16 m_m0[4];
+    s_RiderDefinitionSub* m_m8;
 };
 
 struct sDragonData3
 {
-    u32 m_field_0;
-    u32 m_field_4;
-    sDragonData3Sub m_field_8[7];
+    u32 m_m0;
+    u32 m_m4;
+    sDragonData3Sub m_m8[7];
 };
 
 extern const sDragonData3 dragonData3[DR_LEVEL_MAX];
@@ -277,7 +282,7 @@ struct sPoseData
     sVec3_FP m_scale; // 18
     sVec3_FP halfTranslation; // 24
     sVec3_FP halfRotation; // 30
-    sAnimTrackStatus field_48[9];
+    sAnimTrackStatus m48[9];
     //size B4
 };
 
@@ -389,41 +394,41 @@ struct s_graphicEngineStatus_40AC
 {
     u8 m0_menuId; // 0 what menu to open
     u8 m1_isMenuAllowed; // 1 is menu allowed?
-    u8 field_2;
-    u8 field_3;
-    u8 field_4;
-    u8 field_5;
-    u8 field_6;
-    u8 field_7;
-    u8 field_8;
-    u8 field_9;
+    u8 m2;
+    u8 m3;
+    u8 m4;
+    u8 m5;
+    u8 m6;
+    u8 m7;
+    u8 m8;
+    u8 m9;
     u16 fontIndex; // A
-    p_workArea field_C;
+    p_workArea mC;
 };
 
 struct s_graphicEngineStatus_4514_inputStatus
 {
     u8 m0;
-    u16 field_2;
-    u16 field_4;
+    u16 m2;
+    u16 m4;
     u16 m6_buttonDown; // direction
     u16 m8_newButtonDown; // button mask
-    u16 field_A;
+    u16 mA;
     u16 mC_newButtonDown2; // 0x10: up
                  // 0x20: down
                  // 0x40: left
                  // 0x80: right
-    u16 field_E;
-    u16 field_10;
-    u16 field_12;
-    u16 field_14;
+    u16 mE;
+    u16 m10;
+    u16 m12;
+    u16 m14;
 };
 
 struct s_graphicEngineStatus_4514_sub2
 {
-    u8 field_0;
-    u32 field_4;
-    u32 field_C;
+    u8 m0;
+    u32 m4;
+    u32 mC;
 }; // size should be 40
 
     
@@ -445,21 +450,21 @@ struct s_graphicEngineStatus_4514
 
 struct s_graphicEngineStatus_405C
 {
-    u16 field_0;
-    u16 field_2;
-    u16 field_4;
-    u16 field_6;
-    u16 field_8;
-    u16 field_A;
-    u16 field_C;
-    u16 field_E;
+    u16 m0;
+    u16 m2;
+    u16 m4;
+    u16 m6;
+    u16 m8;
+    u16 mA;
+    u16 mC;
+    u16 mE;
 
-    fixedPoint field_18;
-    fixedPoint field_1C;
-    fixedPoint field_20;
-    fixedPoint field_24;
-    fixedPoint field_28;
-    fixedPoint field_2C;
+    fixedPoint m18;
+    fixedPoint m1C;
+    fixedPoint m20;
+    fixedPoint m24;
+    fixedPoint m28;
+    fixedPoint m2C;
 
     u16 VDP1_X1; // 3C
     u16 VDP1_Y1; // 3E
@@ -475,12 +480,12 @@ struct s_graphicEngineStatus_405C
 
 struct s_graphicEngineStatus_40E4
 {
-    s_graphicEngineStatus_405C field_0;
-    sVdp2Controls field_50;
-    sMenuUnk0 field_2B0;
-    u8 field_300[512];
-    u16 field_400;
-    u16 field_402;
+    s_graphicEngineStatus_405C m0;
+    sVdp2Controls m50;
+    sMenuUnk0 m2B0;
+    u8 m300[512];
+    u16 m400;
+    u16 m402;
 };
 
 struct s_graphicEngineStatus_40BC
@@ -502,12 +507,12 @@ struct s_vdp1Packet
 struct s_vdp1Context
 {
     u32 currentVdp1WriteEA; //0
-    u32 field_4[2]; //4
-    u32 field_C; //C
-    u32 field_10; //10
-    u32 field_14; //14
-    u32 field_18; //18
-    u32 field_1C; //1C
+    u32 m4[2]; //4
+    u32 mC; //C
+    u32 m10; //10
+    u32 m14; //14
+    u32 m18; //18
+    u32 m1C; //1C
     s_vdp1Packet* pCurrentVdp1Packet; //20
     s_vdp1Packet vdp1Packets[1024]; // 24
     // size should be 2024
@@ -515,27 +520,27 @@ struct s_vdp1Context
 
 struct s_graphicEngineStatus
 {
-    u16 field_0;
+    u16 m0;
     u8 doubleBufferState;
-    u8 field_3;
-    u8 field_4;
-    u8 field_5;
-    u16 field_6; // vdp1 write offset
-    u32 field_8; // vdp1 write EA for user clipping parameters
-    u32 field_C; // vdp1 write EA of background sprite
+    u8 m3;
+    u8 m4;
+    u8 m5;
+    u16 m6; // vdp1 write offset
+    u32 m8; // vdp1 write EA for user clipping parameters
+    u32 mC; // vdp1 write EA of background sprite
 
     s_vdp1Context vdp1Context[2]; // 14
-    s_graphicEngineStatus_405C field_405C;
+    s_graphicEngineStatus_405C m405C;
 
-    u32 field_406C;
+    u32 m406C;
 
-    s32 field_4070;
-    s32 field_408C;
-    u32 field_4090;
-    s32 field_4094;
+    s32 m4070;
+    s32 m408C;
+    u32 m4090;
+    s32 m4094;
     
-    s_graphicEngineStatus_40E4* field_40E4;
-    s_graphicEngineStatus_40AC field_40AC;
+    s_graphicEngineStatus_40E4* m40E4;
+    s_graphicEngineStatus_40AC m40AC;
     s_graphicEngineStatus_40BC layersConfig[4];
     s_graphicEngineStatus_4514 m4514;
 };

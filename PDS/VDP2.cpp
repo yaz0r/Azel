@@ -1009,12 +1009,12 @@ void initVdp2StringControl()
     pVdp2StringControl = &vdp2StringControlBuffer;
 
     pVdp2StringControl->f0_index = 0;
-    pVdp2StringControl->field_4 = 0;
-    pVdp2StringControl->field_8 = 0;
-    pVdp2StringControl->field_C = 0;
-    pVdp2StringControl->field_10 = 0;
-    pVdp2StringControl->field_14 = 0;
-    pVdp2StringControl->field_15 = 0;
+    pVdp2StringControl->m4 = 0;
+    pVdp2StringControl->m8 = 0;
+    pVdp2StringControl->mC = 0;
+    pVdp2StringControl->m10 = 0;
+    pVdp2StringControl->m14 = 0;
+    pVdp2StringControl->m15 = 0;
     pVdp2StringControl->pPrevious = 0;
     pVdp2StringControl->pNext = 0;
 }
@@ -1023,7 +1023,7 @@ struct {
     u32 m0;
     u32 m4; // 4
     u32 m8; // 8
-    u32 field_C; // C
+    u32 mC; // C
 }vdp2StringContext2;
 
 void resetVdp2StringContext2()
@@ -1031,27 +1031,27 @@ void resetVdp2StringContext2()
     vdp2StringContext2.m0 = 0;
     vdp2StringContext2.m4 = 0;
     vdp2StringContext2.m8 = 0;
-    vdp2StringContext2.field_C = 0;
+    vdp2StringContext2.mC = 0;
 }
 
 void resetVdp2StringContext()
 {
-    vdp2StringContext.field_0 = 0;
-    vdp2StringContext.cursorX = 0;
-    vdp2StringContext.cursorY = 0;
-    vdp2StringContext.X = 0;
-    vdp2StringContext.Y = 0;
-    vdp2StringContext.Width = 44;
-    vdp2StringContext.Height = 30;
-    vdp2StringContext.field_1C = 0;
-    vdp2StringContext.field_20 = 0;
-    vdp2StringContext.field_24 = 0;
-    vdp2StringContext.field_28 = 0;
-    vdp2StringContext.field_2C = 0;
-    vdp2StringContext.field_30 = 0;
-    vdp2StringContext.field_34 = 0;
-    vdp2StringContext.field_38 = 0;
-    vdp2StringContext.field_3C = 0x8421;
+    vdp2StringContext.m0 = 0;
+    vdp2StringContext.m4_cursorX = 0;
+    vdp2StringContext.m8_cursorY = 0;
+    vdp2StringContext.mC_X = 0;
+    vdp2StringContext.m10_Y = 0;
+    vdp2StringContext.m14_Width = 44;
+    vdp2StringContext.m18_Height = 30;
+    vdp2StringContext.m1C = 0;
+    vdp2StringContext.m20 = 0;
+    vdp2StringContext.m24 = 0;
+    vdp2StringContext.m28 = 0;
+    vdp2StringContext.m2C = 0;
+    vdp2StringContext.m30 = 0;
+    vdp2StringContext.m34 = 0;
+    vdp2StringContext.m38 = 0;
+    vdp2StringContext.m3C = 0x8421;
 }
 
 sVdp2StringControl* getEndOfvdp2StringControlBufferList()
@@ -1072,9 +1072,9 @@ void loadCharacterToVdp2(s16 index, s16 offset)
     u8* vdp2FontBase = getVdp2Vram(0x8000);
 
     s16 r5 = offset - 0x8000;
-    u16* r6 = pVdp2StringControl->field_C;
+    u16* r6 = pVdp2StringControl->mC;
 
-    if (pVdp2StringControl->field_14 == 4)
+    if (pVdp2StringControl->m14 == 4)
     {
         assert(0);
     }
@@ -1199,23 +1199,23 @@ s32 resetVdp2StringsSub1(u16* pData)
     assert(pNew);
 
     pNew->f0_index = pOld->f0_index + 1;
-    pNew->field_4 = pData[0];
-    pNew->field_8 = pData;
-    pNew->field_C = 0;
-    pNew->field_10 = 0;
+    pNew->m4 = pData[0];
+    pNew->m8 = pData;
+    pNew->mC = 0;
+    pNew->m10 = 0;
     pNew->pPrevious = pOld;
     pNew->pNext = NULL;
-    pNew->field_14 = pData[1];
+    pNew->m14 = pData[1];
 
     bool r12 = false;
 
-    switch (pNew->field_14)
+    switch (pNew->m14)
     {
     case 4:
-        pNew->field_C = pData + 0x10 / 2;
+        pNew->mC = pData + 0x10 / 2;
         break;
     case 5:
-        pNew->field_C = pData + 0x10 / 2;
+        pNew->mC = pData + 0x10 / 2;
         var_60525E4 = pNew;
         r12 = true;
         break;
@@ -1279,12 +1279,12 @@ void setupVDP2StringRendering(s32 x, s32 y, s32 width, s32 height)
         height = 63 - y;
     }
 
-    vdp2StringContext.cursorX = x;
-    vdp2StringContext.cursorY = y;
-    vdp2StringContext.X = x;
-    vdp2StringContext.Y = y;
-    vdp2StringContext.Width = width;
-    vdp2StringContext.Height = height;
+    vdp2StringContext.m4_cursorX = x;
+    vdp2StringContext.m8_cursorY = y;
+    vdp2StringContext.mC_X = x;
+    vdp2StringContext.m10_Y = y;
+    vdp2StringContext.m14_Width = width;
+    vdp2StringContext.m18_Height = height;
 }
 
 void VDP2DrawString(const char* string)
@@ -1292,7 +1292,7 @@ void VDP2DrawString(const char* string)
     s_stringStatusQuery query;
     addStringToVdp2(string, &query);
     
-    query.field_2C |= 1;
+    query.m2C |= 1;
 
     printVdp2String(&query);
 
@@ -1301,24 +1301,24 @@ void VDP2DrawString(const char* string)
 
 void addStringToVdp2(const char* string, s_stringStatusQuery* vars)
 {
-    vars->cursorX = vdp2StringContext.cursorX;
-    vars->cursorY = vdp2StringContext.cursorY;
-    vars->windowX1 = vdp2StringContext.X;
-    vars->windowY1 = vdp2StringContext.Y;
-    vars->windowWidth = vdp2StringContext.Width;
-    vars->windowHeight = vdp2StringContext.Height;
-    vars->windowX2 = vdp2StringContext.X + vdp2StringContext.Width;
-    vars->windowY2 = vdp2StringContext.Y + vdp2StringContext.Height;
+    vars->cursorX = vdp2StringContext.m4_cursorX;
+    vars->cursorY = vdp2StringContext.m8_cursorY;
+    vars->windowX1 = vdp2StringContext.mC_X;
+    vars->windowY1 = vdp2StringContext.m10_Y;
+    vars->windowWidth = vdp2StringContext.m14_Width;
+    vars->windowHeight = vdp2StringContext.m18_Height;
+    vars->windowX2 = vdp2StringContext.mC_X + vdp2StringContext.m14_Width;
+    vars->windowY2 = vdp2StringContext.m10_Y + vdp2StringContext.m18_Height;
     vars->string = string;
-    vars->vdp2MemoryOffset = vdp2TextMemoryOffset + ((vdp2StringContext.cursorY << 6) + vdp2StringContext.cursorX) * 2;
-    vars->field_28 = vdp2StringContext.field_0;
-    vars->field_2C = vdp2StringContext.field_38;
+    vars->vdp2MemoryOffset = vdp2TextMemoryOffset + ((vdp2StringContext.m8_cursorY << 6) + vdp2StringContext.m4_cursorX) * 2;
+    vars->m28 = vdp2StringContext.m0;
+    vars->m2C = vdp2StringContext.m38;
 }
 
 void moveVdp2TextCursor(s_stringStatusQuery* vars)
 {
-    vdp2StringContext.cursorX = vars->cursorX;
-    vdp2StringContext.cursorY = vars->cursorY;
+    vdp2StringContext.m4_cursorX = vars->cursorX;
+    vdp2StringContext.m8_cursorY = vars->cursorY;
 }
 
 u32 printVdp2StringTable[10] = {
@@ -1332,7 +1332,7 @@ void printVdp2StringNewLine(s_stringStatusQuery* vars)
 
 void printVdp2String(s_stringStatusQuery* vars)
 {
-    u32 r11 = (printVdp2StringTable[vars->field_28] << 12) + 0x63;
+    u32 r11 = (printVdp2StringTable[vars->m28] << 12) + 0x63;
 
     vars->vdp2MemoryOffset = vdp2TextMemoryOffset + (((vars->cursorY << 6) + vars->cursorX)) * 2;
 
@@ -1405,7 +1405,7 @@ void s_vdp2StringTask::UpdateSub1()
 
     setupVDP2StringRendering(m14_x + 4, m16_y + 1, m1A_width - 8, m1C_height - 2);
 
-    vdp2StringContext.field_0 = 0;
+    vdp2StringContext.m0 = 0;
     VDP2DrawString((char*)getSaturnPtr(m24_string));
 }
 
