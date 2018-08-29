@@ -10,6 +10,7 @@ struct s_fieldCameraConfig
     fixedPoint m54;
     // size: 0x58
 };
+s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA);
 
 struct s_fieldOverlaySubTaskWorkArea2E4
 {
@@ -74,14 +75,14 @@ struct s_scriptData2
 
 struct s_scriptData3
 {
-    u32 m0;
-    u32 m4;
-    u32 m8;
-    u32 mC;
-    u32 m10;
-    u32 m14;
-    u32 m18;
-    u32 m1C;
+    s32 m0;
+    s32 m4;
+    s32 m8;
+    s32 mC;
+    s32 m10;
+    s32 m14;
+    s32 m18;
+    s32 m1C;
 };
 
 struct s_scriptData4
@@ -155,7 +156,7 @@ struct s_cinematicBarTask : public s_workArea
         return static_cast<s_cinematicBarTask*>(pWorkArea);
     }
 
-    void Init() override
+    void Init(void* pArgument = NULL) override
     {
         m8 = 0;
         mB = 0;
@@ -169,6 +170,7 @@ struct s_cinematicBarTask : public s_workArea
 
     void interpolateCinematicBar();
     void interpolateCinematicBarSub1();
+    void cinematicBarTaskSub0(s32 r5);
 
     u8 m0_status;
     s8 m1;
@@ -272,14 +274,14 @@ struct s_fieldScriptWorkArea : public s_workArea
     sSaturnPtr mC_stack[8];
     s32 m2C; // dunno what that is yet
 
-    s_cinematicBarTask* m30;
+    s_cinematicBarTask* m30_cinematicBarTask;
     u32 m34;
-    s_vdp2StringTask* m38;
-    s_multiChoiceTask2* m3C;
+    s_vdp2StringTask* m38_dialogStringTask;
+    s_multiChoiceTask2* m3C_multichoiceTask;
     s32 m40;
     s_multiChoice* m44_multiChoiceData;
-    s32 m4C;
-    s32 m50;
+    s32 m4C_PCMPlaying;
+    s32 m50_scriptDelay;
     s32 m54_currentResult;
     s32 m58;
 
@@ -288,8 +290,10 @@ struct s_fieldScriptWorkArea : public s_workArea
 
     u32 m6C;
     u32 m70;
-
-    s32 m80;
+    s32 m78;
+    s32 m7C;
+    s_cutsceneTask* m80;
+    sVec3_FP* m84;
 
     s_scriptData1* m88;
     s_scriptData2* m8C;
@@ -334,6 +338,41 @@ struct s_cameraScript
     s32 m30_thresholdDistance;
 };
 
+struct s_cutsceneTask : public s_workArea
+{
+    static s_taskDefinitionWithArg* getTaskDefinition()
+    {
+        static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask::StaticInit, s_cutsceneTask::StaticUpdate, NULL, NULL, "s_cutsceneTask" };
+        return &taskDefinition;
+    }
+    static s_cutsceneTask* ConvertType(p_workArea pWorkArea)
+    {
+        return static_cast<s_cutsceneTask*>(pWorkArea);
+    }
+    static void StaticInit(p_workArea pWorkArea, void* argument)
+    {
+        ConvertType(pWorkArea)->Init(argument);
+    }
+    static void StaticUpdate(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Update();
+    }
+
+    void Init(void* argument) override;
+    void Update() override;
+
+    void cutsceneTaskInitSub2(void* r5, s32 r6,  sVec3_FP* r7, u32 arg0);
+
+    u32 m0;
+};
+
+struct s_cutsceneData
+{
+    s_scriptData3* m0;
+    void* m4;
+    u8 m8;
+};
+
 struct s_dragonTaskWorkArea : s_workArea
 {
     s_memoryAreaOutput m0;
@@ -367,6 +406,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 mFC; // FC
     u32 m100;
     u32 m104_dragonScriptStatus;
+    s32 m108;
     sVec3_FP m10C_hotSpot2;
     sVec3_FP m118_hotSpot3;
     sVec3_FP m124_hotSpot4;
@@ -402,8 +442,11 @@ struct s_dragonTaskWorkArea : s_workArea
 
     u32 m1CC;
     s_cameraScript* m1D0_cameraScript;
-    u32 m1D4;
+    s_cutsceneData* m1D4_cutsceneData;
+    s_cutsceneTask* m1D8_cutscene;
+    s_scriptData3* m1E4;
     s32 m1E8_cameraScriptDelay;
+    u32 m1EC;
     s_dragonTaskWorkArea_1F0 m1F0;
 
     u32 m208;
@@ -467,8 +510,7 @@ struct s_DataTable3
     s_grid3** m8;
     u32 mC;
     s32 m10_gridSize[2]; // 10
-    u32 m18;
-    u32 m1C;
+    s32 m18_cellDimensions[2];
     u32 m20;
     //u32 m24[];
 };
@@ -500,8 +542,7 @@ struct s_visibilityGridWorkArea : public s_workArea
     sVec3_FP m0_position; // 0
     sVec3_FP mC;
     s32 m18_cameraGridLocation[2]; // 18 Grid location
-    u32 m20;
-    s32 m24;
+    s32 m20_cellDimensions[2];
     u32 m28;
     fixedPoint* m2C_depthRangeTable;
     s_DataTable3* m30; // 30
@@ -625,6 +666,7 @@ struct s_FieldSubTaskWorkArea : public s_workArea
 
 struct s_fieldTaskWorkArea_C : public s_workArea
 {
+    u8 m130;
     p_workArea m168;
     // size 16C?
 };
@@ -667,3 +709,5 @@ void loadFileFromFileList(u32 index);
 void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex);
 
 s_fieldTaskWorkArea* getFieldTaskPtr();
+
+void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5);

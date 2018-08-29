@@ -19,7 +19,7 @@ struct s_workArea
         return ptr;
     }
 
-    virtual void Init()
+    virtual void Init(void* pArgument = NULL)
     {
         unimplemented("Init");
     }
@@ -109,6 +109,7 @@ struct s_task
     {
         return (m_flags & TASK_FLAGS_DELETING) ? true : false;
     }
+private:
     void markDeleting()
     {
         m_flags |= TASK_FLAGS_DELETING;
