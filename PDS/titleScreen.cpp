@@ -510,49 +510,59 @@ p_workArea startWarningTask(s_workArea* workArea)
     return createSubTask(workArea, &warningTaskDefinition, new s_warningWorkArea);
 }
 
-// loadWarningTask
-
 struct s_loadWarningWorkArea : public s_workArea
 {
+    static s_taskDefinition* getTaskDefinition()
+    {
+        static s_taskDefinition taskDefinition = { s_loadWarningWorkArea::StaticInit, NULL, s_loadWarningWorkArea::StaticDraw, NULL, "loadWarning" };
+        return &taskDefinition;
+    }
+
+    static void StaticInit(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Init(NULL);
+    }
+    static void StaticDraw(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Draw();
+    }
+    static s_loadWarningWorkArea* ConvertType(p_workArea pWorkArea)
+    {
+        return static_cast<s_loadWarningWorkArea*>(pWorkArea);
+    }
+
+    void Init(void*) override
+    {
+        m_warningTask = startWarningTask(this);
+    }
+    void Draw() override
+    {
+        if (m_warningTask)
+        {
+            if (!(m_warningTask->getTask()->m_flags & 1))
+            {
+                return;
+            }
+        }
+
+        /*
+        if (azelCdNumber == 0)
+        {
+        initialTaskStatus.m_pendingTask = startTitleScreenVideo;
+        }
+        else*/
+        {
+            initialTaskStatus.m_pendingTask = createTitleScreenTask;
+        }
+    }
+
     u32 m_0;
     u32 m_4;
     p_workArea m_warningTask;
 };
 
-void loadWarningTaskInit(p_workArea pTypelessWorkArea)
-{
-    s_loadWarningWorkArea* pWorkArea = static_cast<s_loadWarningWorkArea*>(pTypelessWorkArea);
-
-    pWorkArea->m_warningTask = startWarningTask(pWorkArea);
-}
-
-void loadWarningTaskDraw(s_workArea* pTypelessWorkArea)
-{
-    s_loadWarningWorkArea* pWorkArea = static_cast<s_loadWarningWorkArea*>(pTypelessWorkArea);
-
-    if (pWorkArea->m_warningTask)
-    {
-        if(!(pWorkArea->m_warningTask->getTask()->m_flags & 1))
-        {
-            return;
-        }
-    }
-
-    /*
-    if (azelCdNumber == 0)
-    {
-        initialTaskStatus.m_pendingTask = startTitleScreenVideo;
-    }
-    else*/
-    {
-        initialTaskStatus.m_pendingTask = createTitleScreenTask;
-    }
-}
-
-s_taskDefinition loadWarningTaskDefinition = { loadWarningTaskInit, NULL, loadWarningTaskDraw, NULL, "loadWarning" };
-
 p_workArea startLoadWarningTask(s_workArea* workArea)
 {
-    return createSubTask(workArea, &loadWarningTaskDefinition, new s_loadWarningWorkArea);
+    return createSubTask<s_loadWarningWorkArea>(workArea);
 }
 

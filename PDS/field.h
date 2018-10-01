@@ -15,6 +15,8 @@ s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA);
 struct s_fieldOverlaySubTaskWorkArea2E4
 {
     sVec3_FP m0;
+    u32* mC;
+    u32* m10;
     s32 m14;
     s32 m18_maxDistanceSquare;
     // size 0x20?
@@ -75,21 +77,19 @@ struct s_scriptData2
 
 struct s_scriptData3
 {
-    s32 m0;
-    s32 m4;
-    s32 m8;
-    s32 mC;
+    fixedPoint m0_duration;
+    sVec3_FP m4_pos;
     s32 m10;
     s32 m14;
     s32 m18;
     s32 m1C;
 };
 
-struct s_scriptData4
+struct s_animDataFrame
 {
-    u8 m0;
-    u8 m1;
-    u16 m2;
+    s8 m0;
+    s8 m1;
+    s16 m2;
 };
 
 struct s_vdp2StringTask : public s_workArea
@@ -247,6 +247,84 @@ struct s_multiChoice
     s32 m8_numChoices;
 };
 
+struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
+{
+    static s_taskDefinition* getTaskDefinition()
+    {
+        static s_taskDefinition taskDefinition = { NULL, s_riderAnimTask::StaticUpdate, NULL, s_riderAnimTask::StaticDelete, "s_riderAnimTaskTask" };
+        return &taskDefinition;
+    }
+    void Update() override;
+    void Delete() override
+    {
+        unimplemented("s_riderAnimTask::Delete");
+    }
+
+    s32 m0_status;
+    s32 m4_riderIndex;
+    s32 m8_delay;
+    s32 mC;
+    s_animDataFrame* m10; // no sure
+    s_loadRiderWorkArea* m14_riderState;
+    s_loadRiderWorkArea* m18;
+    const s32* m1C;
+};
+
+struct s_cutsceneTask : public s_workAreaTemplate<s_cutsceneTask>
+{
+    static s_taskDefinitionWithArg* getTaskDefinition()
+    {
+        static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask::StaticInit, s_cutsceneTask::StaticUpdate, NULL, NULL, "s_cutsceneTask" };
+        return &taskDefinition;
+    }
+
+    void Init(void* argument) override;
+    void Update() override;
+
+    void cutsceneTaskInitSub2(void* r5, s32 r6, sVec3_FP* r7, u32 arg0);
+
+    u32 m0;
+    u32 m4;
+    u32 m18_frameCount;
+};
+
+struct s_cutsceneTask2 : public s_workArea
+{
+    static s_taskDefinitionWithArg* getTaskDefinition()
+    {
+        static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask2::StaticInit, s_cutsceneTask2::StaticUpdate, s_cutsceneTask2::StaticDraw, NULL, "s_cutsceneTask" };
+        return &taskDefinition;
+    }
+    static s_cutsceneTask2* ConvertType(p_workArea pWorkArea)
+    {
+        return static_cast<s_cutsceneTask2*>(pWorkArea);
+    }
+    static void StaticInit(p_workArea pWorkArea, void* argument)
+    {
+        ConvertType(pWorkArea)->Init(argument);
+    }
+    static void StaticUpdate(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Update();
+    }
+    static void StaticDraw(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Draw();
+    }
+
+    void Init(void* argument = NULL) override;
+    void Update() override;
+
+    u32 m0;
+    sVec3_FP* m24;
+};
+
+struct s_fieldScriptWorkArea78
+{
+    u32 m3C;// unk
+    u32 m48;// unk
+};
+
 struct s_fieldScriptWorkArea : public s_workArea
 {
     void Update() override;
@@ -280,6 +358,7 @@ struct s_fieldScriptWorkArea : public s_workArea
     s_multiChoiceTask2* m3C_multichoiceTask;
     s32 m40;
     s_multiChoice* m44_multiChoiceData;
+    s_cutsceneTask* m48_cutsceneTask;
     s32 m4C_PCMPlaying;
     s32 m50_scriptDelay;
     s32 m54_currentResult;
@@ -290,7 +369,7 @@ struct s_fieldScriptWorkArea : public s_workArea
 
     u32 m6C;
     u32 m70;
-    s32 m78;
+    s_fieldScriptWorkArea78* m78;
     s32 m7C;
     s_cutsceneTask* m80;
     sVec3_FP* m84;
@@ -298,7 +377,7 @@ struct s_fieldScriptWorkArea : public s_workArea
     s_scriptData1* m88;
     s_scriptData2* m8C;
     s_scriptData3* m90;
-    s_scriptData4* m94;
+    s_animDataFrame* m94;
 };
 
 struct s_memoryAreaOutput
@@ -336,34 +415,6 @@ struct s_cameraScript
     s32 m20;
     sVec3_FP m24_pos2;
     s32 m30_thresholdDistance;
-};
-
-struct s_cutsceneTask : public s_workArea
-{
-    static s_taskDefinitionWithArg* getTaskDefinition()
-    {
-        static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask::StaticInit, s_cutsceneTask::StaticUpdate, NULL, NULL, "s_cutsceneTask" };
-        return &taskDefinition;
-    }
-    static s_cutsceneTask* ConvertType(p_workArea pWorkArea)
-    {
-        return static_cast<s_cutsceneTask*>(pWorkArea);
-    }
-    static void StaticInit(p_workArea pWorkArea, void* argument)
-    {
-        ConvertType(pWorkArea)->Init(argument);
-    }
-    static void StaticUpdate(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Update();
-    }
-
-    void Init(void* argument) override;
-    void Update() override;
-
-    void cutsceneTaskInitSub2(void* r5, s32 r6,  sVec3_FP* r7, u32 arg0);
-
-    u32 m0;
 };
 
 struct s_cutsceneData
@@ -444,9 +495,12 @@ struct s_dragonTaskWorkArea : s_workArea
     s_cameraScript* m1D0_cameraScript;
     s_cutsceneData* m1D4_cutsceneData;
     s_cutsceneTask* m1D8_cutscene;
+    s_riderAnimTask* m1DC_ridersAnimation[2];
     s_scriptData3* m1E4;
-    s32 m1E8_cameraScriptDelay;
+    s16 m1E8_cameraScriptDelay;
+    s16 m1EA;
     u32 m1EC;
+    s16 m1EE;
     s_dragonTaskWorkArea_1F0 m1F0;
 
     u32 m208;
@@ -657,7 +711,7 @@ struct s_FieldSubTaskWorkArea : public s_workArea
     void(*pUpdateFunction3)(); // 35C
     u8 m369; // 369
     u8 m36C;
-    u16 fieldDebuggerWho; // 370
+    u32 m370_fieldDebuggerWho; // 370
     void(*pUpdateFunction1)(); // 374
     u8 debugMenuStatus1[2]; // 37C
     u8 debugMenuStatus2_a; // 37E
@@ -692,7 +746,7 @@ struct s_fieldTaskWorkArea : public s_workArea
     s_scriptData1* m40; // 0x40
     s_scriptData2* m44; // 0x44
     s_scriptData3* m48; // 0x48
-    s_scriptData4* m4C; // 0x4C
+    s_animDataFrame* m4C; // 0x4C
                                    // size: 0x50
 };
 
@@ -711,3 +765,6 @@ void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex);
 s_fieldTaskWorkArea* getFieldTaskPtr();
 
 void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5);
+void dragonFieldTaskInitSub4Sub5(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
+void dragonFieldTaskInitSub4Sub6(s_dragonTaskWorkArea* r4);
+

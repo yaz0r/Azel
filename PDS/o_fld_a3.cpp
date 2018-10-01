@@ -990,7 +990,12 @@
         asyncDmaCopy({ 0x0608FEA4, gFLD_A3 }, getVdp2Cram(0xC00), 0x200, 0);
     }
 
-    s_taskDefinition fieldPaletteTaskDefinition = { fieldPaletteTaskInit, NULL, dummyTaskDraw, NULL, "fieldPaletteTask" };
+    void fieldPaletteTaskDraw(p_workArea pWorkArea)
+    {
+        unimplemented("fieldPaletteTaskDraw");
+    }
+
+    s_taskDefinition fieldPaletteTaskDefinition = { fieldPaletteTaskInit, NULL, fieldPaletteTaskDraw, NULL, "fieldPaletteTask" };
 
     void createFieldPaletteTask(p_workArea parent)
     {
@@ -1009,22 +1014,67 @@
             return 0;
 
         u32 r6 = 0;
-        while (r4->m0)
+        while (r4->m0_duration)
         {
-            r6 += r4->m0;
+            r6 += r4->m0_duration;
             *r5 = *r4;
 
             r4++;
             r5++;
         }
 
-        r5->m0 = r4->m0;
+        r5->m0_duration = r4->m0_duration;
         return r6;
     }
 
-    void updateCutscene(s_dragonTaskWorkArea*)
+    void updateCutscene(s_dragonTaskWorkArea* r14)
     {
-        unimplemented("updateCutscene");
+        r14->m24A_runningCameraScript = 4;
+        s_scriptData3* r13 = r14->m1E4;
+        if (r13 == NULL)
+        {
+            r14->m104_dragonScriptStatus = 3;
+        }
+
+        getFieldTaskPtr()->m28_status |= 0x10000;
+        getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 |= 1;
+
+        switch (r14->m104_dragonScriptStatus)
+        {
+        case 0:
+            r14->mF8_Flags &= ~0x400;
+            r14->mF8_Flags |= 0x20000;
+            r14->m1E8_cameraScriptDelay = r13->m0_duration;
+            r14->m1EA = r13->m10;
+            r14->m160_deltaTranslation[0] = performDivision(r14->m1E4->m0_duration, r13->m4_pos[0] - r14->m8_pos[0]);
+            r14->m160_deltaTranslation[1] = performDivision(r14->m1E4->m0_duration, r13->m4_pos[1] - r14->m8_pos[1]);
+            r14->m160_deltaTranslation[2] = performDivision(r14->m1E4->m0_duration, r13->m4_pos[2] - r14->m8_pos[2]);
+            //06080882
+            unimplemented("case 0 in updateCutscene");
+            break;
+        case 1:
+            unimplemented("case 0 in updateCutscene");
+            break;
+        case 3:
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        dragonFieldTaskInitSub4Sub5(&r14->m48, &r14->m20_angle);
+        copyMatrix(&r14->m48.m0_matrix, &r14->m88_matrix);
+
+        if (--r14->m1EE < 0)
+        {
+            r14->m1EE = 0;
+        }
+        dragonFieldTaskInitSub4Sub6(r14);
+    }
+
+    void updateDragonDefault(s_dragonTaskWorkArea*)
+    {
+        unimplemented("updateDragonDefault");
     }
 
     void cutsceneTaskInitSub1(s_scriptData3* r15)
@@ -1035,6 +1085,71 @@
 
         r4->mF0 = updateCutscene;
         r4->mF8_Flags &= ~0x400;
+    }
+
+    void subfieldA3_1Sub0Sub0()
+    {
+        s_dragonTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        r14->m154_dragonSpeed = 0;
+        initDragonSpeed(0);
+
+        if (r14->m1D0_cameraScript)
+        {
+            r14->mF0 = dragonFieldTaskInitSub4;
+        }
+        else if (r14->m1D4_cutsceneData)
+        {
+            r14->mF0 = updateCutscene;
+        }
+        else
+        {
+            r14->mF0 = updateDragonDefault;
+        }
+
+        r14->m104_dragonScriptStatus = 0;
+
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags |= 0x10000;
+    }
+
+    void dragonFieldTaskUpdateSub5Sub2(s_fieldOverlaySubTaskWorkArea* r4, sFieldCameraStatus* r5)
+    {
+        unimplemented("dragonFieldTaskUpdateSub5Sub2");
+    }
+
+    void cutsceneTaskInitSub2Sub0(u32* r4, u32* r5)
+    {
+        s_fieldOverlaySubTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+        r14->m2E4[4].mC = r4;
+        r14->m2E4[4].m10 = r5;
+        r14->m2E4[4].m14 = 0;
+        r14->m2E4[4].m18_maxDistanceSquare = 1;
+
+        subfieldA3_1Sub0Sub0();
+
+        fieldOverlaySubTaskInitSub1(1, NULL, NULL);
+        fieldOverlaySubTaskInitSub3(1);
+
+        dragonFieldTaskUpdateSub5Sub2(r14, getFieldCameraStatus());
+    }
+
+    void cutsceneTaskInitSub2Sub1(void* r4, s_scriptData1* r5)
+    {
+        unimplemented("cutsceneTaskInitSub2Sub1");
+    }
+
+    void cutsceneTaskInitSub2Sub2(s_cutsceneTask* r4)
+    {
+        unimplemented("cutsceneTaskInitSub2Sub2");
+    }
+
+    void s_cutsceneTask2::Init(void* argument)
+    {
+        unimplemented("s_cutsceneTask2::Init");
+    }
+
+    void s_cutsceneTask2::Update()
+    {
+        unimplemented("s_cutsceneTask2::Update");
     }
 
     void s_cutsceneTask::cutsceneTaskInitSub2(void* r11, s32 r6, sVec3_FP* r7, u32 arg0)
@@ -1048,7 +1163,7 @@
         if (r14->m78)
         {
             cutsceneTaskInitSub2Sub0(&r14->m78->m3C, &r14->m78->m48);
-            r14->m48 = this;
+            r14->m48_cutsceneTask = this;
         }
 
         if (r11 == NULL)
@@ -1056,11 +1171,21 @@
 
         cutsceneTaskInitSub2Sub1(r11, getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m88);
 
-        if (r14->m48)
+        if (r14->m48_cutsceneTask)
         {
-            cutsceneTaskInitSub2Sub2(r14->m48);
+            cutsceneTaskInitSub2Sub2(r14->m48_cutsceneTask);
         }
 
+        s_cutsceneTask2* pNewTask = createSiblingTaskWithArg<s_cutsceneTask2>(this, r11);
+        assert(pNewTask);
+
+        pNewTask->m0 = arg0;
+        if (arg0 & 1)
+        {
+            pNewTask->m24 = r7;
+        }
+
+        pNewTask->Update();
     }
 
     void s_cutsceneTask::Init(void* argument)
@@ -1102,7 +1227,22 @@
 
     void s_cutsceneTask::Update()
     {
-        unimplemented("s_cutsceneTask::Update");
+        s_dragonTaskWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        if (r13->m1D4_cutsceneData == NULL)
+        {
+            assert(0);
+        }
+        if (r13->m1E4 == NULL)
+        {
+            assert(0);
+        }
+
+        m18_frameCount++;
+
+        if (m4)
+        {
+            assert(0);
+        }
     }
     
     void startCutscene(s_cutsceneData* r4)
@@ -1127,16 +1267,14 @@
                 numEntries++;
                 table0 = table0 + 0x20;
             }
+            table0 -= 0x20 * numEntries;
             numEntries++;
-            table0 = table0 - 0x20 * numEntries;
 
             pData->m0 = new s_scriptData3[numEntries];
             for (int i = 0; i < numEntries; i++)
             {
-                pData->m0[i].m0 = readSaturnS32(table0); table0 = table0 + 4;
-                pData->m0[i].m4 = readSaturnS32(table0); table0 = table0 + 4;
-                pData->m0[i].m8 = readSaturnS32(table0); table0 = table0 + 4;
-                pData->m0[i].mC = readSaturnS32(table0); table0 = table0 + 4;
+                pData->m0[i].m0_duration = readSaturnS32(table0); table0 = table0 + 4;
+                pData->m0[i].m4_pos = readSaturnVec3(table0); table0 = table0 + 4*3;
                 pData->m0[i].m10 = readSaturnS32(table0); table0 = table0 + 4;
                 pData->m0[i].m14 = readSaturnS32(table0); table0 = table0 + 4;
                 pData->m0[i].m18 = readSaturnS32(table0); table0 = table0 + 4;
@@ -1355,10 +1493,10 @@
     {
         for (int i = 0; i < 0x11; i++)
         {
-            pData3[i].m0 = 0;
-            pData3[i].m4 = 0;
-            pData3[i].m8 = 0;
-            pData3[i].mC = 0;
+            pData3[i].m0_duration = 0;
+            pData3[i].m4_pos[0] = 0;
+            pData3[i].m4_pos[1] = 0;
+            pData3[i].m4_pos[2] = 0;
             pData3[i].m10 = 0;
             pData3[i].m14 = 0;
             pData3[i].m18 = 0;
@@ -1366,7 +1504,7 @@
         }
     }
 
-    void initScriptTable4(s_scriptData4* pData4)
+    void initScriptTable4(s_animDataFrame* pData4)
     {
         for (int i = 0; i < 0x11; i++)
         {
@@ -1404,7 +1542,7 @@
 
         if (pFieldTaskWorkArea->m4C == NULL)
         {
-            pFieldTaskWorkArea->m4C = (s_scriptData4*)allocateHeapForTask(pWorkArea, 0x11 * sizeof(s_scriptData4));
+            pFieldTaskWorkArea->m4C = (s_animDataFrame*)allocateHeapForTask(pWorkArea, 0x11 * sizeof(s_animDataFrame));
             initScriptTable4(pFieldTaskWorkArea->m4C);
 
         }
@@ -1519,20 +1657,223 @@
         return result;
     }
 
-    struct s_animDataFrame
-    {
-
-    };
-
     s_animDataFrame* readRiderAnimData(sSaturnPtr ptr)
     {
-        return NULL;
+        int numFrames = 0;
+        while (readSaturnS8(ptr) != -1)
+        {
+            numFrames++;
+            ptr += 4;
+        }
+        ptr -= 4 * numFrames;
+        numFrames++;
+
+        s_animDataFrame* pAnimDataFrame = new s_animDataFrame[numFrames];
+
+        for (int i = 0; i < numFrames; i++)
+        {
+            pAnimDataFrame[i].m0 = readSaturnS8(ptr); ptr += 1;
+            pAnimDataFrame[i].m1 = readSaturnS8(ptr); ptr += 1;
+            pAnimDataFrame[i].m2 = readSaturnS16(ptr); ptr += 2;
+        }
+
+        return pAnimDataFrame;
     }
 
-    s32 playRiderAnim(s32 r4, s_animDataFrame* r5)
+    void copyAnimation(s_animDataFrame* source, s_animDataFrame* destination)
     {
-        unimplemented("playRiderAnim");
-        return 0;
+        while (source->m0 != -1)
+        {
+            destination->m0 = source->m0;
+            destination->m1 = source->m1;
+            destination->m2 = source->m2;
+
+            source++;
+            destination++;
+        }
+
+        destination->m0 = source->m0;
+    }
+
+    const s32 RiderAnimations[] =
+    {
+        0x30,
+        0x34,
+        0x38,
+        0x3C,
+        0x40,
+        0x44,
+        0x48,
+        0x4C,
+        0x50,
+        0x54,
+        0x58,
+        0x5C,
+        0x60,
+        0x64,
+        0x68,
+        0x6C,
+        0x70,
+        0x74,
+        0x78,
+        0x7C,
+        0x80,
+        0x84,
+        0x88,
+        0x8C,
+        0x90,
+    };
+
+    const s32 rider1Table[] =
+    {
+        0x108,
+        0xE8,
+        0xEC,
+        0xF0,
+        0x108,
+        0x108,
+        0x108,
+        0x108,
+        0x108,
+        0x108,
+        0x108,
+        0x108,
+        0x108,
+        0x108,
+        0x108,
+        0x108,
+        0xF4,
+        0x108,
+        0xF8,
+        0xFC,
+        0x108,
+    };
+
+    const s32 rider2Table[] =
+    {
+        0x12C,
+        0x130,
+        0x14C,
+        0x134,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x14C,
+        0x138,
+        0x13C,
+        0x140,
+    };
+
+    void s_riderAnimTask::Update()
+    {
+        switch (m0_status)
+        {
+        case 0:
+            switch (m10->m0)
+            {
+            case -1:
+                getTask()->markFinished();
+                return;
+            case 0:
+                playAnimationGeneric(&m14_riderState->m18_3dModel, m18->m0_riderModel + READ_BE_U32(m18->m0_riderModel + m1C[m10->m1]), m10->m2);
+                break;
+            case 1:
+                playAnimationGeneric(&m14_riderState->m18_3dModel, m18->m0_riderModel + READ_BE_U32(m18->m0_riderModel + m1C[m10->m1+0x10]), 15);
+                break;
+            default:
+                assert(0);
+                break;
+            }
+            updateAndInterpolateAnimation(&m14_riderState->m18_3dModel);
+            m0_status++;
+        case 1:
+            switch (m10->m0)
+            {
+            case 0:
+                if (--m8_delay)
+                    return;
+                m0_status = 0;
+                m10++;
+                return;
+            case 1:
+                if (m14_riderState->m2E < mC)
+                {
+                    if (--m8_delay <= 0)
+                    {
+                        m10++;
+                    }
+                }
+                mC = m14_riderState->m2E;
+                return;
+            }
+        default:
+            assert(false);
+            break;
+        }
+    }
+
+    s32 playRiderAnim(s32 riderIndex, s_animDataFrame* r5)
+    {
+        s_riderAnimTask* r14 = createSubTask<s_riderAnimTask>(getFieldTaskPtr()->m8_pSubFieldData);
+
+        copyAnimation(r5, getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m94);
+
+        s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        pDragonTask->m1DC_ridersAnimation[riderIndex] = r14;
+
+        r14->m4_riderIndex = riderIndex;
+        r14->m10 = r5;
+        if (riderIndex)
+        {
+            r14->m14_riderState = pRider2State;
+        }
+        else
+        {
+            r14->m14_riderState = pRiderState;
+        }
+
+        s32 r0;
+
+        if (riderIndex)
+        {
+            r0 = mainGameState.gameStats.m3_rider2;
+            if (r0 == 7)
+            {
+                r14->m1C = rider2Table;
+                r14->m18 = pRider2State;
+            }
+            else
+            {
+                r14->m1C = RiderAnimations;
+                r14->m18 = pRiderState;
+            }
+        }
+        else
+        {
+            r0 = mainGameState.gameStats.m2_rider1;
+            if (r0 == 6)
+            {
+                r14->m1C = rider1Table;
+                r14->m18 = pRiderState;
+            }
+            else
+            {
+                r14->m1C = RiderAnimations;
+                r14->m18 = pRiderState;
+            }
+        }
+
+        return r0;
     }
 
     s32 executeNative(sSaturnPtr ptr)
@@ -2106,7 +2447,10 @@
 
         if (m80)
         {
-            assert(0);
+            if (m80->getTask()->isFinished())
+            {
+                m80 = NULL;
+            }
         }
 
         if (readKeyboardToggle(0x87))
@@ -4954,7 +5298,7 @@
 
         pTypedWorkArea->m12DC = asyncDivEnd();
 
-        if (getFieldTaskPtr()->m8_pSubFieldData->fieldDebuggerWho & 1)
+        if (getFieldTaskPtr()->m8_pSubFieldData->m370_fieldDebuggerWho & 1)
         {
             assert(0);
         }

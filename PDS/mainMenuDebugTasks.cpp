@@ -1287,7 +1287,26 @@ s32 riderInit(s_3dModel* r4, u8* r5)
         return createDragonStateSubData1Sub1(r4, r5);
     }
 
-    assert(0);
+    if (READ_BE_U16(r4->m30_pCurrentAnimation) != READ_BE_U16(r5))
+    {
+        //060215EC
+        assert(0);
+    }
+
+    //06021620
+    r4->m30_pCurrentAnimation = r5;
+    r4->m10_currentAnimationFrame = 0;
+
+    switch (READ_BE_U16(r5) & 7)
+    {
+    case 1:
+    case 4:
+    case 5:
+        assert(0);
+    default:
+        return 1;
+        break;
+    }
 }
 
 u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, u8* pModelData)
@@ -2199,7 +2218,7 @@ void fieldSubTaskInit(s_workArea* pWorkArea)
     s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = static_cast<s_FieldSubTaskWorkArea*>(pWorkArea);
 
     fieldTaskPtr->m8_pSubFieldData = pFieldSubTaskWorkArea;
-    fieldTaskPtr->m8_pSubFieldData->fieldDebuggerWho = 0;
+    fieldTaskPtr->m8_pSubFieldData->m370_fieldDebuggerWho = 0;
 
     setFieldSubTaskVar0(1);
 
@@ -4319,5 +4338,35 @@ p_workArea createNewGameTask(p_workArea pWorkArea)
 p_workArea createContinueTask(p_workArea pWorkArea)
 {
     return createSubTaskWithArg(pWorkArea, &exitMenuTask, new s_fieldDebugTaskWorkArea, (void*)1);
+}
+
+void playAnimationGenericSub0(s_3dModel* pModel)
+{
+    unimplementedDraw(pModel);
+}
+
+void playAnimationGenericSub1(s_3dModel* pModel)
+{
+    unimplementedDraw(pModel);
+}
+
+void playAnimationGeneric(s_3dModel* r4, u8* r5, s32 r6)
+{
+    if (!dragonMenuDragonInitSub2Sub1(r4, r6) || (r4->mA & 0x200))
+    {
+        riderInit(r4, r5);
+        return;
+    }
+
+    riderInit(r4, r5);
+
+    if (r4->m40)
+    {
+        r4->m18_drawFunction = playAnimationGenericSub0;
+    }
+    else
+    {
+        r4->m18_drawFunction = playAnimationGenericSub1;
+    }
 }
 

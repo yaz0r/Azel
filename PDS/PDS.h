@@ -49,11 +49,21 @@ struct sSaturnPtr
         newPtr.m_offset += i;
         return newPtr;
     }
+    sSaturnPtr& operator += (unsigned int i)
+    {
+        this->m_offset += i;
+        return *this;
+    }
     sSaturnPtr operator - (unsigned int i) const
     {
         sSaturnPtr newPtr = *this;
         newPtr.m_offset -= i;
         return newPtr;
+    }
+    sSaturnPtr& operator -= (unsigned int i)
+    {
+        this->m_offset -= i;
+        return *this;
     }
 
     static sSaturnPtr& getNull()

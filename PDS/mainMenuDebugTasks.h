@@ -27,6 +27,7 @@ struct s_loadRiderWorkArea : public s_workArea
     u32 m_modelIndex; // 10
     u32 m_14; //14
     s_3dModel m18_3dModel;//18
+    s32 m2E;
 };
 
 extern s_loadRiderWorkArea* pRiderState;
@@ -60,3 +61,4 @@ extern u8 gDragonModel[0x16500];
 void initModelDrawFunction(s_3dModel* pDragonStateData1);
 u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, u8* pModelData1);
 s32 riderInit(s_3dModel* r4, u8* r5);
+void playAnimationGeneric(s_3dModel* r4, u8* r5, s32 r6);

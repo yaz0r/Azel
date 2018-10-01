@@ -40,6 +40,35 @@ struct s_workArea
     }
 };
 
+
+typedef s_workArea* p_workArea;
+
+template<typename T>
+struct s_workAreaTemplate : public s_workArea
+{
+    static T* ConvertType(p_workArea pWorkArea)
+    {
+        return static_cast<T*>(pWorkArea);
+    }
+    static void StaticInit(p_workArea pWorkArea, void* arg)
+    {
+        ConvertType(pWorkArea)->Init(arg);
+    }
+    static void StaticUpdate(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Update();
+    }
+    static void StaticDraw(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Draw();
+    }
+    static void StaticDelete(p_workArea pWorkArea)
+    {
+        ConvertType(pWorkArea)->Delete();
+    }
+
+};
+
 struct s_taskDefinition
 {
     void(*m_pInit)(s_workArea*);
@@ -57,8 +86,6 @@ struct s_taskDefinitionWithArg
     void(*m_pDelete)(s_workArea*);
     const char* m_taskName;
 };
-
-typedef s_workArea* p_workArea;
 
 #define TASK_FLAGS_FINISHED 1
 #define TASK_FLAGS_PAUSED 2
@@ -118,6 +145,18 @@ private:
 
 void resetTasks();
 void runTasks();
+
+template<typename T>
+T* createSubTask(p_workArea parentTask)
+{
+    return static_cast<T*>(createSubTask(parentTask, T::getTaskDefinition(), new T));
+}
+
+template<typename T>
+T* createSiblingTaskWithArg(p_workArea parentTask, void* arg)
+{
+    return static_cast<T*>(createSiblingTaskWithArg(parentTask, T::getTaskDefinition(), new T, arg));
+}
 
 p_workArea createSubTask(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
 p_workArea createSubTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument);

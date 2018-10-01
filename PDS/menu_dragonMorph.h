@@ -7,3 +7,4 @@ void updateDragonMovementFromControllerType1Sub2Sub1(s3DModelAnimData* r4, fixed
 void updateDragonMovementFromControllerType1Sub2Sub2(s3DModelAnimData* r4, fixedPoint r5);
 void updateDragonMovementFromControllerType1Sub2Sub3(s3DModelAnimData* r4, fixedPoint r5);
 void playAnimation(s_3dModel* pDragonStateData1, u8* r5, u32 r6);
+u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 interpolationLength);
