@@ -1030,7 +1030,7 @@
     void updateCutscene(s_dragonTaskWorkArea* r14)
     {
         r14->m24A_runningCameraScript = 4;
-        s_scriptData3* r13 = r14->m1E4;
+        s_scriptData3* r13 = r14->m1E4_cutsceneKeyFrame;
         if (r13 == NULL)
         {
             r14->m104_dragonScriptStatus = 3;
@@ -1045,15 +1045,55 @@
             r14->mF8_Flags &= ~0x400;
             r14->mF8_Flags |= 0x20000;
             r14->m1E8_cameraScriptDelay = r13->m0_duration;
-            r14->m1EA = r13->m10;
-            r14->m160_deltaTranslation[0] = performDivision(r14->m1E4->m0_duration, r13->m4_pos[0] - r14->m8_pos[0]);
-            r14->m160_deltaTranslation[1] = performDivision(r14->m1E4->m0_duration, r13->m4_pos[1] - r14->m8_pos[1]);
-            r14->m160_deltaTranslation[2] = performDivision(r14->m1E4->m0_duration, r13->m4_pos[2] - r14->m8_pos[2]);
-            //06080882
-            unimplemented("case 0 in updateCutscene");
-            break;
+            r14->m1EA = r13->m10_rotationDuration;
+            r14->m160_deltaTranslation[0] = performDivision(r13->m0_duration, r13->m4_pos[0] - r14->m8_pos[0]);
+            r14->m160_deltaTranslation[1] = performDivision(r13->m0_duration, r13->m4_pos[1] - r14->m8_pos[1]);
+            r14->m160_deltaTranslation[2] = performDivision(r13->m0_duration, r13->m4_pos[2] - r14->m8_pos[2]);
+
+            if (r13->m10_rotationDuration)
+            {
+                r14->m16C_deltaRotation[0] = performDivision(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[0] - r14->m20_angle[0]).normalized());
+                r14->m16C_deltaRotation[1] = performDivision(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[1] - r14->m20_angle[1]).normalized());
+                r14->m16C_deltaRotation[2] = performDivision(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[2] - r14->m20_angle[2]).normalized());
+            }
+            else
+            {
+                r14->m16C_deltaRotation[0] = 0;
+                r14->m16C_deltaRotation[1] = 0;
+                r14->m16C_deltaRotation[2] = 0;
+            }
+
+            dragonFieldTaskInitSub4Sub6(r14);
+            if (r14->mF8_Flags & 0x40000)
+            {
+                updateCameraScriptSub0Sub2(r14);
+                updateCameraScriptSub0(r14->mB8);
+                r14->mF8_Flags &= ~0x40000;
+            }
+            r14->m104_dragonScriptStatus++;
         case 1:
-            unimplemented("case 0 in updateCutscene");
+
+            r14->m20_angle += r14->m16C_deltaRotation;
+            r14->m8_pos += r14->m160_deltaTranslation;
+
+            if (--r14->m1EA <= 0)
+            {
+                r14->m104_dragonScriptStatus++;
+            }
+
+            if (--r14->m1E8_cameraScriptDelay <= 0)
+            {
+                r14->m104_dragonScriptStatus = 3;
+                r14->m1E4_cutsceneKeyFrame = NULL;
+            }
+            break;
+        case 2:
+            r14->m8_pos += r14->m160_deltaTranslation;
+            if (--r14->m1E8_cameraScriptDelay <= 0)
+            {
+                r14->m104_dragonScriptStatus = 3;
+                r14->m1E4_cutsceneKeyFrame = NULL;
+            }
             break;
         case 3:
             break;
@@ -1080,7 +1120,7 @@
     void cutsceneTaskInitSub1(s_scriptData3* r15)
     {
         s_dragonTaskWorkArea* r4 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-        r4->m1E4 = r15;
+        r4->m1E4_cutsceneKeyFrame = r15;
         r4->m104_dragonScriptStatus = 0;
 
         r4->mF0 = updateCutscene;
@@ -1225,16 +1265,34 @@
         }
     }
 
+    void cutsceneTaskUpdateSub0()
+    {
+        s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        pDragonTask->m1E4_cutsceneKeyFrame = 0;
+    }
+
     void s_cutsceneTask::Update()
     {
         s_dragonTaskWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
         if (r13->m1D4_cutsceneData == NULL)
         {
-            assert(0);
+            cutsceneTaskUpdateSub0();
+            dragonFieldTaskInitSub4Sub4();
+            getTask()->markFinished();
+            r13->m1D8_cutscene = 0;
+            return;
         }
-        if (r13->m1E4 == NULL)
+        if (r13->m1E4_cutsceneKeyFrame == NULL)
         {
-            assert(0);
+            s_scriptData3* pData = &r13->m1D4_cutsceneData->m0[++m0];
+            if (pData->m0_duration)
+            {
+                cutsceneTaskInitSub1(pData);
+            }
+            else
+            {
+                r13->m1D4_cutsceneData = NULL;
+            }
         }
 
         m18_frameCount++;
@@ -1248,7 +1306,6 @@
     void startCutscene(s_cutsceneData* r4)
     {
         createSubTaskWithArg(getFieldTaskPtr()->m8_pSubFieldData, s_cutsceneTask::getTaskDefinition(), new s_cutsceneTask, r4);
-        unimplemented("subfieldA3_1Sub1");
     }
 
     s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
@@ -1275,10 +1332,8 @@
             {
                 pData->m0[i].m0_duration = readSaturnS32(table0); table0 = table0 + 4;
                 pData->m0[i].m4_pos = readSaturnVec3(table0); table0 = table0 + 4*3;
-                pData->m0[i].m10 = readSaturnS32(table0); table0 = table0 + 4;
-                pData->m0[i].m14 = readSaturnS32(table0); table0 = table0 + 4;
-                pData->m0[i].m18 = readSaturnS32(table0); table0 = table0 + 4;
-                pData->m0[i].m1C = readSaturnS32(table0); table0 = table0 + 4;
+                pData->m0[i].m10_rotationDuration = readSaturnS32(table0); table0 = table0 + 4;
+                pData->m0[i].m14_rot = readSaturnVec3(table0); table0 = table0 + 4 * 3;
             }
         }
 
@@ -1497,10 +1552,10 @@
             pData3[i].m4_pos[0] = 0;
             pData3[i].m4_pos[1] = 0;
             pData3[i].m4_pos[2] = 0;
-            pData3[i].m10 = 0;
-            pData3[i].m14 = 0;
-            pData3[i].m18 = 0;
-            pData3[i].m1C = 0;
+            pData3[i].m10_rotationDuration = 0;
+            pData3[i].m14_rot[0] = 0;
+            pData3[i].m14_rot[1] = 0;
+            pData3[i].m14_rot[2] = 0;
         }
     }
 
@@ -3708,7 +3763,23 @@
 
     void clearDragonPlayerInputs()
     {
-        unimplemented("integrateDragonMovementSub2");
+        s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+
+        pDragonTask->m188[0] = 0;
+        pDragonTask->m188[1] = 0;
+        pDragonTask->m188[2] = 0;
+
+        pDragonTask->m194[0] = 0;
+        pDragonTask->m194[1] = 0;
+        pDragonTask->m194[2] = 0;
+
+        pDragonTask->m1A0[0] = 0;
+        pDragonTask->m1A0[1] = 0;
+        pDragonTask->m1A0[2] = 0;
+
+        pDragonTask->m1AC[0] = 0;
+        pDragonTask->m1AC[1] = 0;
+        pDragonTask->m1AC[2] = 0;
     }
 
     u32 integrateDragonMovementSub4Sub3()

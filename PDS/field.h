@@ -79,10 +79,8 @@ struct s_scriptData3
 {
     fixedPoint m0_duration;
     sVec3_FP m4_pos;
-    s32 m10;
-    s32 m14;
-    s32 m18;
-    s32 m1C;
+    fixedPoint m10_rotationDuration;
+    sVec3_FP m14_rot;
 };
 
 struct s_animDataFrame
@@ -476,7 +474,7 @@ struct s_dragonTaskWorkArea : s_workArea
     s32 m15C_dragonSpeedIncrement;
 
     sVec3_FP m160_deltaTranslation;
-
+    sVec3_FP m16C_deltaRotation;
     fixedPoint m178[4];
 
     sVec3_FP m188;
@@ -496,7 +494,7 @@ struct s_dragonTaskWorkArea : s_workArea
     s_cutsceneData* m1D4_cutsceneData;
     s_cutsceneTask* m1D8_cutscene;
     s_riderAnimTask* m1DC_ridersAnimation[2];
-    s_scriptData3* m1E4;
+    s_scriptData3* m1E4_cutsceneKeyFrame;
     s16 m1E8_cameraScriptDelay;
     s16 m1EA;
     u32 m1EC;
@@ -767,4 +765,6 @@ s_fieldTaskWorkArea* getFieldTaskPtr();
 void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5);
 void dragonFieldTaskInitSub4Sub5(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
 void dragonFieldTaskInitSub4Sub6(s_dragonTaskWorkArea* r4);
-
+void updateCameraScriptSub0Sub2(s_dragonTaskWorkArea* r4);
+void updateCameraScriptSub0(u32 r4);
+void dragonFieldTaskInitSub4Sub4();
