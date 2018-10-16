@@ -366,7 +366,7 @@ struct s3DModelAnimData
 struct s_dragonState : public s_workArea
 {
     u8* m0_pDragonModelRawData; //0
-    u32 mC_dragonType;//C
+    u32 mC_dragonType;//C F can contain some other info
     s16 m10_cursorX;//10
     s16 m12_cursorY;//12
     u32 m14_modelIndex;//14

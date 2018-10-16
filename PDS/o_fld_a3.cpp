@@ -4644,6 +4644,24 @@
         return dragonFieldAnimation[(pTypedWorkArea->m238 >> 2) * 8 + pTypedWorkArea->m238];
     }
 
+    std::vector<s8> getFieldDragonAnimTable(int type, int subtype)
+    {
+        sSaturnPtr EA = readSaturnEA(sSaturnPtr{ 0x06094134 + (u32)((type * 5) + subtype) * 4, gFLD_A3 });
+
+        std::vector<s8> result;
+
+        int numEntries = 0;
+        while (readSaturnS8(EA) != -1)
+        {
+            result.push_back(readSaturnS8(EA));
+            EA += 1;
+            numEntries++;
+        }
+        result.push_back(-1);
+
+        return result;
+    }
+
     void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonState* r5)
     {
         u8 var = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m235_dragonSpeedIndex;
@@ -4726,9 +4744,21 @@
                     s32 r6 = getDragonFieldAnimation(pTypedWorkArea);
                     if (r6 == 0)
                     {
-                        //assert(0);
-                        unimplemented("unimplemented logic in dragonFieldAnimationUpdate!!!!");
-                        dragonFieldPlayAnimation(pTypedWorkArea, r5, r6);
+                        printf("recheck the logic here, it might be accessing it as a byte\n");
+                        std::vector<s8> r3= getFieldDragonAnimTable(r5->mC_dragonType, r5->m1C_dragonArchetype);
+
+                        pTypedWorkArea->m239++;
+                        r6 = r3[pTypedWorkArea->m239];
+
+                        if (r6 < 0)
+                        {
+                            pTypedWorkArea->m239 = 0;
+                            dragonFieldPlayAnimation(pTypedWorkArea, r5, r3[pTypedWorkArea->m239]);
+                        }
+                        else
+                        {
+                            dragonFieldPlayAnimation(pTypedWorkArea, r5, r6);
+                        }
                     }
                     if(r6 > 0)
                     {

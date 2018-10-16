@@ -514,6 +514,7 @@ struct s_dragonTaskWorkArea : s_workArea
 
     u8 m237;
     u8 m238;
+    u8 m239;
 
     u8 m23A_dragonAnimation;
     u8 m23B;
