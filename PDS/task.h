@@ -21,22 +21,22 @@ struct s_workArea
 
     virtual void Init(void* pArgument = NULL)
     {
-        unimplemented("Init");
+        PDS_unimplemented("Init");
     }
 
     virtual void Update()
     {
-        unimplemented("Update");
+        PDS_unimplemented("Update");
     }
 
     virtual void Draw()
     {
-        unimplemented("Draw");
+        PDS_unimplemented("Draw");
     }
 
     virtual void Delete()
     {
-        unimplemented("Delete");
+        PDS_unimplemented("Delete");
     }
 };
 

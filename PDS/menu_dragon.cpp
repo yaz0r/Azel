@@ -7,17 +7,17 @@ struct s_dragonMenuSubTask1WorkArea : public s_workArea
 
 void dragonMenuSubTask1Init(p_workArea pTypelessWorkArea)
 {
-    unimplemented("dragonMenuSubTask1Init");
+    PDS_unimplemented("dragonMenuSubTask1Init");
 }
 
 void dragonMenuSubTaskAdjustSoundFromCursor()
 {
-    unimplemented("dragonMenuSubTaskAdjustSoundFromCursor");
+    PDS_unimplemented("dragonMenuSubTaskAdjustSoundFromCursor");
 }
 
 void dragonMenuSubTask1DrawSub1()
 {
-    unimplemented("dragonMenuSubTask1DrawSub1");
+    PDS_unimplemented("dragonMenuSubTask1DrawSub1");
 }
 
 void dragonMenuSubTask1Draw(p_workArea pTypelessWorkArea)
@@ -41,7 +41,7 @@ void dragonMenuSubTask1Draw(p_workArea pTypelessWorkArea)
 
 void dragonMenuSubTask1Delete(p_workArea pTypelessWorkArea)
 {
-    unimplemented("dragonMenuSubTask1Delete");
+    PDS_unimplemented("dragonMenuSubTask1Delete");
 }
 
 s_taskDefinition dragonMenuSubTask1Definition = { dragonMenuSubTask1Init, NULL, dragonMenuSubTask1Draw, dragonMenuSubTask1Delete, "dragonMenuSubTask1" };
@@ -376,7 +376,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
 
 void dragonMenuTaskDelete(p_workArea pTypelessWorkArea)
 {
-    unimplemented("dragonMenuTaskDelete");
+    PDS_unimplemented("dragonMenuTaskDelete");
 }
 
 s_taskDefinition dragonMenuTaskDefinition = { dragonMenuTaskInit, dragonMenuTaskUpdate, NULL, dragonMenuTaskDelete, "dragon Menu" };

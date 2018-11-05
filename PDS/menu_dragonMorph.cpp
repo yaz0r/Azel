@@ -55,7 +55,7 @@ void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
 
 u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 interpolationLength)
 {
-    unimplemented("dragonMenuDragonInitSub2Sub1 hacked to remove interpolation of animations!");
+    PDS_unimplemented("dragonMenuDragonInitSub2Sub1 hacked to remove interpolation of animations!");
     interpolationLength = 0;
     if ((interpolationLength > 0) && (pDragonStateData1->m38 == 0))
     {
@@ -384,7 +384,7 @@ void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
     graphicEngineStatus.m406C = 0x2000;
     graphicEngineStatus.m408C = FP_Div(0x10000, 0x2000);
 
-    graphicEngineStatus.m4070 = 0x100000;
+    graphicEngineStatus.m4070_farClipDistance = 0x100000;
     graphicEngineStatus.m4094 = FP_Div(0x8000, 0x100000);
 
     graphicEngineStatus.m4090 = graphicEngineStatus.m4094 << 8;
@@ -569,7 +569,7 @@ void updateAnimationMatricesSub2(s3DModelAnimData* r4)
 
 void updateAnimationMatricesSub3(s3DModelAnimData* r4)
 {
-    unimplemented("updateAnimationMatricesSub3");
+    PDS_unimplemented("updateAnimationMatricesSub3");
 }
 
 void updateAnimationMatrices(s3DModelAnimData* r4, s_3dModel* r5)
@@ -870,7 +870,7 @@ void dragonMenuDragonDraw(p_workArea pTypelessWorkArea)
 
 void dragonMenuDragonDelete(p_workArea pTypelessWorkArea)
 {
-    unimplemented("dragonMenuDragonDelete");
+    PDS_unimplemented("dragonMenuDragonDelete");
 }
 
 s_taskDefinition dragonMenuDragonTaskDefinition = { dragonMenuDragonInit, dragonMenuDragonUpdate, dragonMenuDragonDraw, dragonMenuDragonDelete, "dragonMenuDragon" };

@@ -189,7 +189,7 @@ void rotateMatrixX(s32 rotX, sMatrix4x3* pMatrix)
         stack[3] = -sin;
 
         fixedPoint* r4 = stack;
-        fixedPoint* r5 = pMatrix->matrix;
+        fixedPoint* r5 = pMatrix->matrix._Unchecked_begin();
 
         s64 mac = 0;
         r5++;
@@ -272,7 +272,7 @@ void rotateMatrixY(s32 rotY, sMatrix4x3* pMatrix)
         s64 mac = 0;
         s64 r1 = 0;
         fixedPoint* r4 = stack;
-        fixedPoint* r5 = pMatrix->matrix;
+        fixedPoint* r5 = pMatrix->matrix._Unchecked_begin();
 
         for (int i = 0; i < 3; i++)
         {
@@ -340,7 +340,7 @@ void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix)
         s64 mac = 0;
         s64 r1 = 0;
         fixedPoint* r4 = stack;
-        fixedPoint* r5 = pMatrix->matrix;
+        fixedPoint* r5 = pMatrix->matrix._Unchecked_begin();
 
         for (int i = 0; i < 3; i++)
         {
@@ -385,16 +385,13 @@ void rotateCurrentMatrixZ(s32 rotZ)
 
 void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix)
 {
-    fixedPoint* r5 = pMatrix->matrix;
-
     for(int i=0; i<3; i++)
     {
         s64 mac = 0;
-        mac += MUL_FP(translation->m_value[0], r5[0]);
-        mac += MUL_FP(translation->m_value[1], r5[1]);
-        mac += MUL_FP(translation->m_value[2], r5[2]);
-        r5[3] += mac >> 16;
-        r5 += 4;
+        mac += MUL_FP(translation->m_value[0], pMatrix->matrix[i * 4 + 0]);
+        mac += MUL_FP(translation->m_value[1], pMatrix->matrix[i * 4 + 1]);
+        mac += MUL_FP(translation->m_value[2], pMatrix->matrix[i * 4 + 2]);
+        pMatrix->matrix[i * 4 + 3] += mac >> 16;
     }
 }
 
@@ -507,17 +504,17 @@ void rotateMatrixZYX_s16(s16* rotationVec, sMatrix4x3* pMatrix)
 
 void scaleCurrentMatrixRow0(s32 r4)
 {
-    unimplemented("scaleCurrentMatrixRow0");
+    PDS_unimplemented("scaleCurrentMatrixRow0");
 }
 
 void scaleCurrentMatrixRow1(s32 r4)
 {
-    unimplemented("scaleCurrentMatrixRow1");
+    PDS_unimplemented("scaleCurrentMatrixRow1");
 }
 
 void scaleCurrentMatrixRow2(s32 r4)
 {
-    unimplemented("scaleCurrentMatrixRow2");
+    PDS_unimplemented("scaleCurrentMatrixRow2");
 }
 
 fixedPoint vecDistance(const sVec3_FP& r4, const sVec3_FP& r5)

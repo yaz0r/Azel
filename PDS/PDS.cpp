@@ -198,7 +198,7 @@ void initVDP1()
     graphicEngineStatus.m406C = 0x999;
     graphicEngineStatus.m408C = FP_Div(0x10000, 0x999);
 
-    graphicEngineStatus.m4070 = 0x200000;
+    graphicEngineStatus.m4070_farClipDistance = 0x200000;
     graphicEngineStatus.m4094 = FP_Div(0x8000, 0x200000);
 
     graphicEngineStatus.m4090 = graphicEngineStatus.m4094 << 8;
@@ -645,7 +645,7 @@ void updateInputsSub1(s_graphicEngineStatus_4514_sub2* r4)
 
 void copyKeyboardData()
 {
-    unimplemented("copyKeyboardData");
+    PDS_unimplemented("copyKeyboardData");
 }
 
 void updateInputs()

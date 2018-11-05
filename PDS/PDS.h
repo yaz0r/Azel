@@ -28,7 +28,8 @@ typedef int64_t s64;
 
 void yLog(...);
 
-#define unimplemented(name) { static bool printed = false; if(!printed) {printed = true; printf("Unimplemented: %s\n", name);}}
+#define PDS_unimplemented(name) { static bool printed = false; if(!printed) {printed = true; printf("Unimplemented: %s\n", name);}}
+#define PDS_warning(name) { static bool printed = false; if(!printed) {printed = true; printf("Warning: %s\n", name);}}
 
 struct sSaturnMemoryFile
 {

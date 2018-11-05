@@ -112,7 +112,7 @@ void loadingTaskDelete(p_workArea pTypelessWorkArea)
 {
     sLoadingTaskWorkArea* pWorkArea = static_cast<sLoadingTaskWorkArea*>(pTypelessWorkArea);
 
-    unimplemented("loadingTaskDelete");
+    PDS_unimplemented("loadingTaskDelete");
 }
 
 s_taskDefinitionWithArg loadingTaskDefinition = { loadingTaskInit, loadingTaskUpdate, NULL, loadingTaskDelete, "loadingTask" };
@@ -445,12 +445,12 @@ void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
 
         if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x80) // page down
         {
-            unimplemented("Page down");
+            PDS_unimplemented("Page down");
         }
 
         if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x40) // page up
         {
-            unimplemented("Page up");
+            PDS_unimplemented("Page up");
         }
     }
     else
@@ -941,7 +941,7 @@ void modeDrawFunction10Sub1(u8* pModelDataRoot, u8* pModelData, sPoseData** r14)
 
 void modeDrawFunction6Sub2(u8* pModelDataRoot, u8* pModelData, sPoseData*& pPoseData, const s_RiderDefinitionSub*& r6, sVec3_FP**& r7)
 {
-    unimplemented("modeDrawFunction6Sub2");
+    PDS_unimplemented("modeDrawFunction6Sub2");
 }
 
 void modeDrawFunction6Sub1(u8* pModelDataRoot, u8* pModelData, sPoseData*& pPoseData, const s_RiderDefinitionSub*& r6, sVec3_FP**& r7)
@@ -1127,7 +1127,7 @@ void modelMode4_rotation(s_3dModel* p3dModel)
 
 void modelMode0_position(s_3dModel*)
 {
-    unimplemented("modelMode0_position");
+    PDS_unimplemented("modelMode0_position");
 }
 
 void modelMode0_rotation(s_3dModel* p3dModel)
@@ -1148,7 +1148,7 @@ void modelMode0_rotation(s_3dModel* p3dModel)
 
 void modelMode0_scale(s_3dModel*)
 {
-    unimplemented("modelMode0_scale");
+    PDS_unimplemented("modelMode0_scale");
 }
 
 
@@ -1565,7 +1565,7 @@ void interpolateAnimation(s_3dModel* pDragonStateData1)
         }
         else
         {
-            unimplemented("dragonFieldTaskInitSub3Sub2Sub2");
+            PDS_unimplemented("dragonFieldTaskInitSub3Sub2Sub2");
         }
     }
 }
@@ -2320,7 +2320,7 @@ s_taskDefinitionWithArg encounterTaskDefinition = { dummyTaskInitWithArg, dummyT
 
 void createEncounterTask(s_workArea* pWorkArea)
 {
-    unimplemented("createEncounterTask");
+    PDS_unimplemented("createEncounterTask");
     //createSiblingTaskWithArg(pWorkArea, &encounterTaskDefinition, new s_dummyWorkArea, pWorkArea);
 }
 
@@ -3360,7 +3360,7 @@ void menuDragonCrestTaskDraw(s_workArea* pTypelessWorkArea)
     {
         for (int i = 0; i < 10; i++)
         {
-            unimplemented("Missing filter login in menuDragonCrestTaskDraw");
+            PDS_unimplemented("Missing filter login in menuDragonCrestTaskDraw");
 
             drawMenuSprite(&menuDragonCrestSprites[i], -pWorkArea->m4->scrollX, -pWorkArea->m4->scrollY, 0x610);
         }
@@ -3623,7 +3623,7 @@ void statusMenuTaskDraw(p_workArea typelessWorkArea)
 
     if (mainGameState.gameStats.m1_dragonLevel < DR_LEVEL_8_FLOATER)
     {
-        unimplemented("draw level curve");
+        PDS_unimplemented("draw level curve");
     }
     else
     {
@@ -3749,7 +3749,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
 
 void mainMenuTaskDelete(p_workArea typelessWorkArea)
 {
-    unimplemented("mainMenuTaskDelete");
+    PDS_unimplemented("mainMenuTaskDelete");
 }
 
 s_taskDefinition mainMenuTaskDefinition = { mainMenuTaskInit, NULL, mainMenuTaskDraw, mainMenuTaskDelete, "main menu task" };
@@ -3761,7 +3761,7 @@ p_workArea createMainMenuTask(p_workArea workArea)
 
 p_workArea createInventoryMenuTask(p_workArea workArea)
 {
-    unimplemented("createInventoryMenuTask");
+    PDS_unimplemented("createInventoryMenuTask");
     return createMainDragonMenuTask(workArea);
     assert(0);
     return NULL;
@@ -3898,7 +3898,7 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
         graphicEngineStatus.m40AC.m8 = 0;
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8)
         {
-            unimplemented("Hack: forcing menu enabled 1");
+            PDS_unimplemented("Hack: forcing menu enabled 1");
             graphicEngineStatus.m40AC.m1_isMenuAllowed = 1;
             if (graphicEngineStatus.m40AC.m1_isMenuAllowed)
             {
@@ -4047,7 +4047,7 @@ void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
     gGameStatus.m6_previousGameStatus = 0;
     gGameStatus.m8_nextGameStatus = 0;
 
-    unimplemented("Hack: skip game status to first field");
+    PDS_unimplemented("Hack: skip game status to first field");
     gGameStatus.m8_nextGameStatus = 0x50;
 
     if (menuID == 3)
@@ -4149,7 +4149,7 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
 
 void stopAllSounds()
 {
-    unimplemented("stopAllSounds");
+    PDS_unimplemented("stopAllSounds");
 }
 
 p_workArea loadField(p_workArea r4, s32 r5)

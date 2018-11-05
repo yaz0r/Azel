@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 extern const u8 bitMasks[];
 extern const u8 reverseBitMasks[];
 
@@ -42,6 +44,13 @@ struct sVec3_FP
 
         return *this;
     }
+
+    sVec3_FP operator + (const sVec3_FP otherVec) const
+    {
+        sVec3_FP newValue = *this;
+        newValue += otherVec;
+        return newValue;
+    }
 };
 
 fixedPoint dot3_FP(sVec3_FP* r4, sVec3_FP* r5);
@@ -58,7 +67,7 @@ sSaturnPtr readSaturnEA(sSaturnPtr& ptr);
 
 struct sMatrix4x3
 {
-    fixedPoint matrix[4 * 3];
+    std::array<fixedPoint, 4*3> matrix;
 };
 
 enum e_dragonLevel : unsigned char {
@@ -534,7 +543,7 @@ struct s_graphicEngineStatus
 
     u32 m406C;
 
-    s32 m4070;
+    s32 m4070_farClipDistance;
     s32 m408C;
     u32 m4090;
     s32 m4094;

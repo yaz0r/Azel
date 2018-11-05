@@ -21,6 +21,8 @@ struct sFieldCameraStatus
     sVec3_FP m0_position;
     sVec3_FP mC_rotation;
     fixedPoint m18;
+    fixedPoint m1C;
+    fixedPoint m20;
     s32 m24_distanceToDestination;
     fixedPoint m28;
     s32 m2C;

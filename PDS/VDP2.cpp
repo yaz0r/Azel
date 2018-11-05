@@ -972,7 +972,7 @@ sVdp2StringControl* pVdp2StringControl = NULL;
 
 void clearVdp2TextMemoryRect(s32 r4, s32 r5, s32 r6, s32 r7)
 {
-    unimplemented("clearVdp2TextMemoryRect");
+    PDS_unimplemented("clearVdp2TextMemoryRect");
 }
 
 s32 setActiveFont(u16 r4)
@@ -1186,7 +1186,7 @@ void resetVdp2StringsSub1Sub1()
     do 
     {
         r14--;
-        unimplemented("loadCharacterToVdp2 because crash in release");
+        PDS_unimplemented("loadCharacterToVdp2 because crash in release");
 //        loadCharacterToVdp2(r14, r14 + 0x8000);
     } while (r14);
 }
@@ -1327,7 +1327,7 @@ u32 printVdp2StringTable[10] = {
 
 void printVdp2StringNewLine(s_stringStatusQuery* vars)
 {
-    unimplemented("printVdp2StringNewLine");
+    PDS_unimplemented("printVdp2StringNewLine");
 }
 
 void printVdp2String(s_stringStatusQuery* vars)
@@ -1396,7 +1396,7 @@ s32 computeStringLength(sSaturnPtr pString, s32 r5)
 
 void drawBlueBox(s32 x, s32 y, s32 width, s32 hight)
 {
-    unimplemented("drawBlueBox");
+    PDS_unimplemented("drawBlueBox");
 }
 
 void s_vdp2StringTask::UpdateSub1()
@@ -1452,9 +1452,19 @@ void s_vdp2StringTask::Update()
     }
 }
 
+void vdp2StringTaskDeleteSub0()
+{
+    PDS_unimplemented("vdp2StringTaskDeleteSub0");
+}
+
 void s_vdp2StringTask::Delete()
 {
-    unimplemented("s_vdp2StringTask::Delete");
+    vdp2StringTaskDeleteSub0();
+
+    if (m10)
+    {
+        *m10 = NULL;
+    }
 }
 
 s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, s_vdp2StringTask** r5, s16 duration, sSaturnPtr pString)

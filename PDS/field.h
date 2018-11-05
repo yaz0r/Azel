@@ -15,8 +15,8 @@ s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA);
 struct s_fieldOverlaySubTaskWorkArea2E4
 {
     sVec3_FP m0;
-    u32* mC;
-    u32* m10;
+    sVec3_FP* mC_pPosition;
+    sVec3_FP* m10_pPosition2;
     s32 m14;
     s32 m18_maxDistanceSquare;
     // size 0x20?
@@ -28,16 +28,16 @@ struct s_fieldOverlaySubTaskWorkArea : public s_workArea
     s32 m4_currentCamera;
     s32 m8_numFramesOnCurrentCamera;
     s32 mC;
-    s_fieldCameraConfig m10[8]; // unknown size
+    std::array<s_fieldCameraConfig,8> m10; // unknown size
     s32 m2D0;
     s32 m2D4;
     s32 m2D8;
     s32 m2DC;
     s32 m2E0;
-    s_fieldOverlaySubTaskWorkArea2E4 m2E4[5];
+    std::array<s_fieldOverlaySubTaskWorkArea2E4,5> m2E4;
     sMatrix4x3 m384;
     sMatrix4x3 m3B4;
-    sFieldCameraStatus m3E4[2];
+    std::array<sFieldCameraStatus,2> m3E4;
     u8 m50C;
     u8 m50D; // 50D
     u8 m50E; // 50E
@@ -45,21 +45,14 @@ struct s_fieldOverlaySubTaskWorkArea : public s_workArea
 
 struct s_scriptData1
 {
-    u32 m0;
-    u32 m4;
-    u32 m8;
-    u32 mC;
-    u32 m10;
-    u32 m14;
-    u32 m18;
-    u32 m1C;
-    u32 m20;
-    u32 m24;
-    u32 m28;
-    u32 m2C;
-    u32 m30;
-    u32 m34;
-    u32 m38;
+    s32 m0;
+    sVec3_FP m4;
+    sVec3_FP m10;
+    sVec3_FP m1C;
+    sVec3_FP m28;
+    fixedPoint m34;
+    fixedPoint m38;
+    //size: 3C
 };
 
 struct s_scriptData2
@@ -255,7 +248,7 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
     void Update() override;
     void Delete() override
     {
-        unimplemented("s_riderAnimTask::Delete");
+        PDS_unimplemented("s_riderAnimTask::Delete");
     }
 
     s32 m0_status;
@@ -279,48 +272,51 @@ struct s_cutsceneTask : public s_workAreaTemplate<s_cutsceneTask>
     void Init(void* argument) override;
     void Update() override;
 
-    void cutsceneTaskInitSub2(void* r5, s32 r6, sVec3_FP* r7, u32 arg0);
+    void cutsceneTaskInitSub2(std::vector<s_scriptData1>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
 
     u32 m0;
     u32 m4;
     u32 m18_frameCount;
+
+    //size = 0x1C
 };
 
-struct s_cutsceneTask2 : public s_workArea
+struct s_cutsceneTask2 : public s_workAreaTemplate<s_cutsceneTask>
 {
     static s_taskDefinitionWithArg* getTaskDefinition()
     {
-        static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask2::StaticInit, s_cutsceneTask2::StaticUpdate, s_cutsceneTask2::StaticDraw, NULL, "s_cutsceneTask" };
+        static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask2::StaticInit, s_cutsceneTask2::StaticUpdate, s_cutsceneTask2::StaticDraw, NULL, "s_cutsceneTask2" };
         return &taskDefinition;
     }
-    static s_cutsceneTask2* ConvertType(p_workArea pWorkArea)
-    {
-        return static_cast<s_cutsceneTask2*>(pWorkArea);
-    }
-    static void StaticInit(p_workArea pWorkArea, void* argument)
-    {
-        ConvertType(pWorkArea)->Init(argument);
-    }
-    static void StaticUpdate(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Update();
-    }
-    static void StaticDraw(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Draw();
-    }
 
-    void Init(void* argument = NULL) override;
+    void Init(void* argument) override;
     void Update() override;
 
     u32 m0;
+    std::vector<s_scriptData1>* m4;
+    sVec3_FP m8;
+    sVec3_FP m14;
+    s32 m20;
     sVec3_FP* m24;
+    sVec3_FP m28;
+    fixedPoint m34;
+    s32 m38;
+    s_scriptData1* m3C;
+    s32 m40;
+    sVec3_FP m44;
+    sVec3_FP m50;
+    fixedPoint m5C;
+    s32 m60;
+    //size = 0x64
+
+    s32 UpdateSub0();
+    void UpdateSub1();
 };
 
 struct s_fieldScriptWorkArea78
 {
-    u32 m3C;// unk
-    u32 m48;// unk
+    sVec3_FP m3C;// unk
+    sVec3_FP m48;// unk
 };
 
 struct s_fieldScriptWorkArea : public s_workArea
@@ -348,7 +344,7 @@ struct s_fieldScriptWorkArea : public s_workArea
     sSaturnPtr m4_currentScript;
     sSaturnPtr* m8_stackPointer;
     sSaturnPtr mC_stack[8];
-    s32 m2C; // dunno what that is yet
+    s32 m2C_bitToSet; // dunno what that is yet
 
     s_cinematicBarTask* m30_cinematicBarTask;
     u32 m34;
@@ -356,13 +352,13 @@ struct s_fieldScriptWorkArea : public s_workArea
     s_multiChoiceTask2* m3C_multichoiceTask;
     s32 m40;
     s_multiChoice* m44_multiChoiceData;
-    s_cutsceneTask* m48_cutsceneTask;
+    s_workArea* m48_cutsceneTask; // s_cutsceneTask or s_cutsceneTask2
     s32 m4C_PCMPlaying;
     s32 m50_scriptDelay;
     s32 m54_currentResult;
     s32 m58;
-
-    s32 m60;
+    s32 m5C;
+    s32 m60_canSkipScript;
     s32 m64;
 
     u32 m6C;
@@ -372,10 +368,10 @@ struct s_fieldScriptWorkArea : public s_workArea
     s_cutsceneTask* m80;
     sVec3_FP* m84;
 
-    s_scriptData1* m88;
-    s_scriptData2* m8C;
-    s_scriptData3* m90;
-    s_animDataFrame* m94;
+    std::vector<s_scriptData1>* m88;
+    std::vector<s_scriptData2>* m8C;
+    std::vector<s_scriptData3>* m90;
+    std::vector<s_animDataFrame>* m94;
 };
 
 struct s_memoryAreaOutput
@@ -417,8 +413,8 @@ struct s_cameraScript
 
 struct s_cutsceneData
 {
-    s_scriptData3* m0;
-    void* m4;
+    std::vector<s_scriptData3> m0;
+    std::vector<s_scriptData1> m4;
     u8 m8;
 };
 
@@ -618,9 +614,14 @@ struct s_visibilityGridWorkArea : public s_workArea
     u16 m12F2_renderMode; // 12F2
     u8 updateVisibleCells;
     u8(*m12F8_convertCameraPositionToGrid)(s_visibilityGridWorkArea* pFieldCameraTask1); // 12F8
-    s32(*m12FC)(sVec3_FP* r4, s32 r5); // 12F8
+    s32(*m12FC_isObjectClipped)(sVec3_FP* r4, s32 r5); // 12F8
     u8 m1300;
     //size: 1304
+};
+
+struct s_LCSTask_828
+{
+    s_LCSTask_828* m4_next;
 };
 
 struct s_LCSTask : public s_workArea
@@ -630,11 +631,14 @@ struct s_LCSTask : public s_workArea
     u32 mC;
     u32 m10;
     u32 m814;
+    s_LCSTask_828* m828;
+    s8 m83C;
     s8 m83F;
     void* m9C0;
     u32 m9C4;
     u32 m9C8;
     u32 m9CC;
+    s8 m9DA;
     // size 0x9DC
 };
 
@@ -742,10 +746,10 @@ struct s_fieldTaskWorkArea : public s_workArea
     u8 m3C_fieldTaskState; // 0x3C
     s8 m3D; // 0x3D
     u8 updateDragonAndRiderOnInit; // 0x3E
-    s_scriptData1* m40; // 0x40
-    s_scriptData2* m44; // 0x44
-    s_scriptData3* m48; // 0x48
-    s_animDataFrame* m4C; // 0x4C
+    std::vector<s_scriptData1> m40; // 0x40
+    std::vector<s_scriptData2> m44; // 0x44
+    std::vector<s_scriptData3> m48; // 0x48
+    std::vector<s_animDataFrame> m4C; // 0x4C
                                    // size: 0x50
 };
 
