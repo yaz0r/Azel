@@ -55,11 +55,9 @@ void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
 
 u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 interpolationLength)
 {
-    PDS_unimplemented("dragonMenuDragonInitSub2Sub1 hacked to remove interpolation of animations!");
-    interpolationLength = 0;
     if ((interpolationLength > 0) && (pDragonStateData1->m38 == 0))
     {
-        if (pDragonStateData1->m48_poseDataInterpolation)
+        if (pDragonStateData1->m48_poseDataInterpolation.size())
         {
             for (int i = 0; i < pDragonStateData1->m12_numBones; i++)
             {
@@ -70,8 +68,8 @@ u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 interpolation
         }
         else
         {
-            pDragonStateData1->m48_poseDataInterpolation = (sPoseDataInterpolation*)allocateHeapForTask(pDragonStateData1->m0_pOwnerTask, pDragonStateData1->m12_numBones * sizeof(sPoseDataInterpolation));
-            if (pDragonStateData1->m48_poseDataInterpolation == NULL)
+            pDragonStateData1->m48_poseDataInterpolation.resize(pDragonStateData1->m12_numBones);
+            if (pDragonStateData1->m48_poseDataInterpolation.size() == 0)
             {
                 pDragonStateData1->m4C_interpolationStep = 0;
                 pDragonStateData1->m4E_interpolationLength = 0;
@@ -434,9 +432,9 @@ void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
     if (r9)
     {
         sMatrix4x3* r14 = r4->boneMatrices;
-        if (r5->m48_poseDataInterpolation)
+        if (r5->m48_poseDataInterpolation.size())
         {
-            sPoseDataInterpolation* r13 = r5->m48_poseDataInterpolation;
+            sPoseDataInterpolation* r13 = r5->m48_poseDataInterpolation._Unchecked_begin();
 
             do
             {

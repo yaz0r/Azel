@@ -2080,16 +2080,18 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         switch (m0_status)
         {
         case 0:
-            switch (m10->m0)
+            switch (m10_animSequence->m0)
             {
             case -1:
                 getTask()->markFinished();
                 return;
             case 0:
-                playAnimationGeneric(&m14_riderState->m18_3dModel, m18->m0_riderModel + READ_BE_U32(m18->m0_riderModel + m1C[m10->m1]), m10->m2);
+                m8_delay = m10_animSequence->m2;
+                playAnimationGeneric(&m14_riderState->m18_3dModel, m18->m0_riderModel + READ_BE_U32(m18->m0_riderModel + m1C[m10_animSequence->m1]), m10_animSequence->m2);
                 break;
             case 1:
-                playAnimationGeneric(&m14_riderState->m18_3dModel, m18->m0_riderModel + READ_BE_U32(m18->m0_riderModel + m1C[m10->m1+0x10]), 15);
+                m8_delay = m10_animSequence->m2;
+                playAnimationGeneric(&m14_riderState->m18_3dModel, m18->m0_riderModel + READ_BE_U32(m18->m0_riderModel + m1C[m10_animSequence->m1+0x10]), 15);
                 break;
             default:
                 assert(0);
@@ -2098,23 +2100,23 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
             updateAndInterpolateAnimation(&m14_riderState->m18_3dModel);
             m0_status++;
         case 1:
-            switch (m10->m0)
+            switch (m10_animSequence->m0)
             {
             case 0:
-                if (--m8_delay)
+                if ((--m8_delay) > 0)
                     return;
                 m0_status = 0;
-                m10++;
+                m10_animSequence++;
                 return;
             case 1:
-                if (m14_riderState->m2E < mC)
+                if (m14_riderState->m18_3dModel.m16 < mC)
                 {
-                    if (--m8_delay <= 0)
+                    if ((--m8_delay) <= 0)
                     {
-                        m10++;
+                        m10_animSequence++;
                     }
                 }
-                mC = m14_riderState->m2E;
+                mC = m14_riderState->m18_3dModel.m16;
                 return;
             }
         default:
@@ -2133,7 +2135,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         pDragonTask->m1DC_ridersAnimation[riderIndex] = r14;
 
         r14->m4_riderIndex = riderIndex;
-        r14->m10 = r5;
+        r14->m10_animSequence = r5;
         if (riderIndex)
         {
             r14->m14_riderState = pRider2State;
@@ -5435,6 +5437,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
                 pRiderState->m18_3dModel.m18_drawFunction(&pRiderState->m18_3dModel);
                 popMatrix();
 
+                // draw rider's gun
                 if (pRiderState->m18_3dModel.m44[5])
                 {
                     //060744AA

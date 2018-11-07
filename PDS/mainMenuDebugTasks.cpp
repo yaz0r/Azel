@@ -1290,7 +1290,10 @@ s32 riderInit(s_3dModel* r4, u8* r5)
     if (READ_BE_U16(r4->m30_pCurrentAnimation) != READ_BE_U16(r5))
     {
         //060215EC
-        assert(0);
+        r4->mA &= ~0x0038;
+        r4->mA |= READ_BE_U16(r5);
+        initModelDrawFunction(r4);
+        return createDragonStateSubData1Sub1(r4, r5);
     }
 
     //06021620
@@ -1554,13 +1557,13 @@ u32 stepAnimation(s_3dModel* p3DModel)
 
 void interpolateAnimation(s_3dModel* pDragonStateData1)
 {
-    if (pDragonStateData1->m48_poseDataInterpolation)
+    if (pDragonStateData1->m48_poseDataInterpolation.size())
     {
         pDragonStateData1->m4C_interpolationStep++;
         if (pDragonStateData1->m4E_interpolationLength < pDragonStateData1->m4C_interpolationStep)
         {
             //TODO: freeVdp1Block(pDragonStateData1->m0_pOwnerTask, pDragonStateData1->m48)
-            pDragonStateData1->m48_poseDataInterpolation = 0;
+            pDragonStateData1->m48_poseDataInterpolation.resize(0);
             initModelDrawFunction(pDragonStateData1);
         }
         else
@@ -4340,9 +4343,77 @@ p_workArea createContinueTask(p_workArea pWorkArea)
     return createSubTaskWithArg(pWorkArea, &exitMenuTask, new s_fieldDebugTaskWorkArea, (void*)1);
 }
 
+void playAnimationGenericSub0Sub0(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14, const s_RiderDefinitionSub*& r6, sVec3_FP**& r7)
+{
+    do
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&r14->m0_translation);
+        rotateCurrentMatrixZYX(&r14->mC_rotation);
+        scaleCurrentMatrixRow0(r14->m18_scale[0]);
+        scaleCurrentMatrixRow1(r14->m18_scale[1]);
+        scaleCurrentMatrixRow2(r14->m18_scale[2]);
+
+        if (u32 offset = READ_BE_U32(pModelData))
+        {
+            addObjectToDrawList(pModelDataRoot, offset);
+        }
+
+        for (u32 i = 0; i < r6->m_count; i++)
+        {
+            sSaturnPtr r4 = r6->m_ptr + (i * 20) + 4;
+            sVec3_FP input = readSaturnVec3(r4);
+            sVec3_FP* output = (*r7) + i;
+            transformAndAddVecByCurrentMatrix(&input, output);
+        }
+
+        if (u32 offset = READ_BE_U32(pModelData + 4))
+        {
+            // next matrix
+            r14++;
+            // next bone stuff
+            r6++;
+            // next ???
+            r7++;
+
+            playAnimationGenericSub0Sub0(pModelDataRoot, pModelDataRoot + offset, r14, r6, r7);
+        }
+
+        popMatrix();
+
+        // End of model
+        if (READ_BE_U32(pModelData + 8) == 0)
+        {
+            return;
+        }
+
+        // next matrix
+        r14++;
+        // next bone stuff
+        r6++;
+        // next ???
+        r7++;
+        pModelData = pModelDataRoot + READ_BE_U32(pModelData + 8);
+
+    } while (1);
+}
+
 void playAnimationGenericSub0(s_3dModel* pModel)
 {
-    unimplementedDraw(pModel);
+    u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+
+    if (pModel->m8 & 1)
+    {
+        std::vector<sPoseDataInterpolation>::iterator r5 = pModel->m48_poseDataInterpolation.begin();
+        const s_RiderDefinitionSub* r6 = pModel->m40;
+        sVec3_FP** r7 = pModel->m44;
+        playAnimationGenericSub0Sub0(pModel->m4_pModelFile, r4, r5, r6, r7);
+    }
+    else
+    {
+        assert(0);
+        //playAnimationGenericSub0Sub1(pModel->m4_pModelFile, r4, pModel->m48_poseDataInterpolation, pModel->m40, pModel->m44);
+    }
 }
 
 void playAnimationGenericSub1(s_3dModel* pModel)

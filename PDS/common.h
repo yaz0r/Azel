@@ -336,7 +336,7 @@ struct s_3dModel
 
     const s_RiderDefinitionSub* m40; //40
     sVec3_FP** m44; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
-    sPoseDataInterpolation* m48_poseDataInterpolation; //48
+    std::vector<sPoseDataInterpolation> m48_poseDataInterpolation; //48
 
     u16 m4C_interpolationStep; //4C
     u16 m4E_interpolationLength; //4E

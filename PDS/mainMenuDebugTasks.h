@@ -27,7 +27,6 @@ struct s_loadRiderWorkArea : public s_workArea
     u32 m_modelIndex; // 10
     u32 m_14; //14
     s_3dModel m18_3dModel;//18
-    s32 m2E;
 };
 
 extern s_loadRiderWorkArea* pRiderState;
