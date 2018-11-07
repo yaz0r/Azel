@@ -838,14 +838,14 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
 
     if (pDragonStateData1->m10_currentAnimationFrame & 1)
     {
-        pPoseData->m_translation += pPoseData->halfTranslation;
+        pPoseData->m0_translation += pPoseData->m24_halfTranslation;
         return;
     }
 
     //06022638
     if (pDragonStateData1->m10_currentAnimationFrame)
     {
-        pPoseData->m_translation += pPoseData->halfTranslation;
+        pPoseData->m0_translation += pPoseData->m24_halfTranslation;
 
         s16 r3;
         if (READ_BE_U32(pDragonStateData1->m30_pCurrentAnimation))
@@ -863,9 +863,9 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
             return;
         }
 
-        pPoseData->halfTranslation[0] = stepAnimationTrack(pPoseData->m48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
-        pPoseData->halfTranslation[1] = stepAnimationTrack(pPoseData->m48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
-        pPoseData->halfTranslation[2] = stepAnimationTrack(pPoseData->m48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
+        pPoseData->m24_halfTranslation[0] = stepAnimationTrack(pPoseData->m48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
+        pPoseData->m24_halfTranslation[1] = stepAnimationTrack(pPoseData->m48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
+        pPoseData->m24_halfTranslation[2] = stepAnimationTrack(pPoseData->m48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
     }
     else
     //0602265A
@@ -875,9 +875,9 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
     }
     else
     {
-        pPoseData->m_translation[0] = READ_BE_U32(r4);
-        pPoseData->m_translation[1] = READ_BE_U32(r4 + 4);
-        pPoseData->m_translation[2] = READ_BE_U32(r4 + 8);
+        pPoseData->m0_translation[0] = READ_BE_U32(r4);
+        pPoseData->m0_translation[1] = READ_BE_U32(r4 + 4);
+        pPoseData->m0_translation[2] = READ_BE_U32(r4 + 8);
 
         stepAnimationTrack(pPoseData->m48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0));
         stepAnimationTrack(pPoseData->m48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2));
@@ -898,9 +898,9 @@ void modelMode4_position0(s_3dModel* pDragonStateData1)
     r3--;
     if (r3 >= pDragonStateData1->m10_currentAnimationFrame)
     {
-        pPoseData->halfTranslation[0] = stepAnimationTrack(pPoseData->m48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
-        pPoseData->halfTranslation[1] = stepAnimationTrack(pPoseData->m48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
-        pPoseData->halfTranslation[2] = stepAnimationTrack(pPoseData->m48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
+        pPoseData->m24_halfTranslation[0] = stepAnimationTrack(pPoseData->m48[0], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) / 2;
+        pPoseData->m24_halfTranslation[1] = stepAnimationTrack(pPoseData->m48[1], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) / 2;
+        pPoseData->m24_halfTranslation[2] = stepAnimationTrack(pPoseData->m48[2], pDragonStateData1->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) / 2;
     }
     
 }
@@ -910,8 +910,8 @@ void modeDrawFunction10Sub1(u8* pModelDataRoot, u8* pModelData, sPoseData** r14)
     do 
     {
         pushCurrentMatrix();
-        translateCurrentMatrix(&(*r14)->m_translation);
-        rotateCurrentMatrixZYX(&(*r14)->m_rotation);
+        translateCurrentMatrix(&(*r14)->m0_translation);
+        rotateCurrentMatrixZYX(&(*r14)->mC_rotation);
 
         if (u32 offset = READ_BE_U32(pModelData))
         {
@@ -949,8 +949,8 @@ void modeDrawFunction6Sub1(u8* pModelDataRoot, u8* pModelData, sPoseData*& pPose
     do
     {
         pushCurrentMatrix();
-        translateCurrentMatrix(&pPoseData->m_translation);
-        rotateCurrentMatrixZYX(&pPoseData->m_rotation);
+        translateCurrentMatrix(&pPoseData->m0_translation);
+        rotateCurrentMatrixZYX(&pPoseData->mC_rotation);
 
         if (u32 offset = READ_BE_U32(pModelData))
         {
@@ -1066,7 +1066,7 @@ void addAnimationFrame(sPoseData* pPoseData, s_3dModel* p3dModel)
 {
     for (int i = 0; i < p3dModel->m12_numBones; i++)
     {
-        pPoseData[i].m_rotation += pPoseData[i].halfRotation;
+        pPoseData[i].mC_rotation += pPoseData[i].m30_halfRotation;
     }
 }
 
@@ -1089,9 +1089,9 @@ void modelMode4_rotation(s_3dModel* p3dModel)
             u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
             for (int i = 0; i < p3dModel->m12_numBones; i++)
             {
-                pPoseData[i].halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
-                pPoseData[i].halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
-                pPoseData[i].halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
+                pPoseData[i].m30_halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
+                pPoseData[i].m30_halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
+                pPoseData[i].m30_halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
                 r13 += 0x38;
             }
         }
@@ -1105,9 +1105,9 @@ void modelMode4_rotation(s_3dModel* p3dModel)
             assert(pPoseData[i].m48[4].currentStep == 0);
             assert(pPoseData[i].m48[5].currentStep == 0);
 
-            pPoseData[i].m_rotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 12;
-            pPoseData[i].m_rotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 12;
-            pPoseData[i].m_rotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 12;
+            pPoseData[i].mC_rotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 12;
+            pPoseData[i].mC_rotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 12;
+            pPoseData[i].mC_rotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 12;
             r13 += 0x38;
         }
 
@@ -1116,9 +1116,9 @@ void modelMode4_rotation(s_3dModel* p3dModel)
             u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
             for (int i = 0; i < p3dModel->m12_numBones; i++)
             {
-                pPoseData[i].halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
-                pPoseData[i].halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
-                pPoseData[i].halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
+                pPoseData[i].m30_halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
+                pPoseData[i].m30_halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
+                pPoseData[i].m30_halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
                 r13 += 0x38;
             }
         }
@@ -1138,9 +1138,9 @@ void modelMode0_rotation(s_3dModel* p3dModel)
 
     for (int i = 0; i < p3dModel->m12_numBones; i++)
     {
-        pPoseData[i].m_rotation.m_value[0] = READ_BE_S16(p3dModel->m10_currentAnimationFrame * 2 + p3dModel->m30_pCurrentAnimation + READ_BE_U32(r6 + 0x20)) << 16;
-        pPoseData[i].m_rotation.m_value[1] = READ_BE_S16(p3dModel->m10_currentAnimationFrame * 2 + p3dModel->m30_pCurrentAnimation + READ_BE_U32(r6 + 0x24)) << 16;
-        pPoseData[i].m_rotation.m_value[2] = READ_BE_S16(p3dModel->m10_currentAnimationFrame * 2 + p3dModel->m30_pCurrentAnimation + READ_BE_U32(r6 + 0x28)) << 16;
+        pPoseData[i].mC_rotation.m_value[0] = READ_BE_S16(p3dModel->m10_currentAnimationFrame * 2 + p3dModel->m30_pCurrentAnimation + READ_BE_U32(r6 + 0x20)) << 16;
+        pPoseData[i].mC_rotation.m_value[1] = READ_BE_S16(p3dModel->m10_currentAnimationFrame * 2 + p3dModel->m30_pCurrentAnimation + READ_BE_U32(r6 + 0x24)) << 16;
+        pPoseData[i].mC_rotation.m_value[2] = READ_BE_S16(p3dModel->m10_currentAnimationFrame * 2 + p3dModel->m30_pCurrentAnimation + READ_BE_U32(r6 + 0x28)) << 16;
 
         r6 += 0x38;
     }
@@ -1223,9 +1223,9 @@ void copyPosePosition(s_3dModel* pDragonStateData1)
 
     for (u32 i = 0; i < pDragonStateData1->m12_numBones; i++)
     {
-        pDragonStateData1->m2C_poseData[i].m_translation[0] = READ_BE_U32(r5 + 0);
-        pDragonStateData1->m2C_poseData[i].m_translation[1] = READ_BE_U32(r5 + 4);
-        pDragonStateData1->m2C_poseData[i].m_translation[2] = READ_BE_U32(r5 + 8);
+        pDragonStateData1->m2C_poseData[i].m0_translation[0] = READ_BE_U32(r5 + 0);
+        pDragonStateData1->m2C_poseData[i].m0_translation[1] = READ_BE_U32(r5 + 4);
+        pDragonStateData1->m2C_poseData[i].m0_translation[2] = READ_BE_U32(r5 + 8);
         r5 += 0x24;
     }
 }
@@ -1236,9 +1236,9 @@ void copyPoseRotation(s_3dModel* pDragonStateData1)
 
     for (u32 i = 0; i < pDragonStateData1->m12_numBones; i++)
     {
-        pDragonStateData1->m2C_poseData[i].m_rotation[0] = READ_BE_U32(r5 + 0xC);
-        pDragonStateData1->m2C_poseData[i].m_rotation[1] = READ_BE_U32(r5 + 0x10);
-        pDragonStateData1->m2C_poseData[i].m_rotation[2] = READ_BE_U32(r5 + 0x14);
+        pDragonStateData1->m2C_poseData[i].mC_rotation[0] = READ_BE_U32(r5 + 0xC);
+        pDragonStateData1->m2C_poseData[i].mC_rotation[1] = READ_BE_U32(r5 + 0x10);
+        pDragonStateData1->m2C_poseData[i].mC_rotation[2] = READ_BE_U32(r5 + 0x14);
         r5 += 0x24;
     }
 }
@@ -1249,9 +1249,9 @@ void resetPoseScale(s_3dModel* pDragonStateData1)
 
     for (u32 i = 0; i < pDragonStateData1->m12_numBones; i++)
     {
-        pOutputPose->m_scale[0] = 0x10000;
-        pOutputPose->m_scale[1] = 0x10000;
-        pOutputPose->m_scale[2] = 0x10000;
+        pOutputPose->m18_scale[0] = 0x10000;
+        pOutputPose->m18_scale[1] = 0x10000;
+        pOutputPose->m18_scale[2] = 0x10000;
 
         pOutputPose++;
     }
@@ -1386,9 +1386,9 @@ u32 dragonFieldTaskInitSub3Sub1Sub1(s_3dModel* pDragonStateData1, u8* pModelData
 
     if ((flags & 8) || (pDragonStateData1->mA & 0x100))
     {
-        pDragonStateData1->m2C_poseData->m_translation[0] = READ_BE_U32(pDragonStateData1->m34_pDefaultPose + 0);
-        pDragonStateData1->m2C_poseData->m_translation[1] = READ_BE_U32(pDragonStateData1->m34_pDefaultPose + 4);
-        pDragonStateData1->m2C_poseData->m_translation[2] = READ_BE_U32(pDragonStateData1->m34_pDefaultPose + 8);
+        pDragonStateData1->m2C_poseData->m0_translation[0] = READ_BE_U32(pDragonStateData1->m34_pDefaultPose + 0);
+        pDragonStateData1->m2C_poseData->m0_translation[1] = READ_BE_U32(pDragonStateData1->m34_pDefaultPose + 4);
+        pDragonStateData1->m2C_poseData->m0_translation[2] = READ_BE_U32(pDragonStateData1->m34_pDefaultPose + 8);
     }
 
     if (flags & 0x10)
@@ -1568,7 +1568,27 @@ void interpolateAnimation(s_3dModel* pDragonStateData1)
         }
         else
         {
-            PDS_unimplemented("dragonFieldTaskInitSub3Sub2Sub2");
+            s32 r9 = pDragonStateData1->m12_numBones;
+            sPoseData* r12 = pDragonStateData1->m2C_poseData;
+            std::vector<sPoseDataInterpolation>::iterator r14 = pDragonStateData1->m48_poseDataInterpolation.begin();
+            fixedPoint r11 = FP_Div(pDragonStateData1->m4C_interpolationStep, pDragonStateData1->m4E_interpolationLength);
+            do {
+                r14->m0_translation[0] = MTH_Mul(r12->m0_translation[0] - r14->m24_halfTranslation[0], r11) + r14->m24_halfTranslation[0];
+                r14->m0_translation[1] = MTH_Mul(r12->m0_translation[1] - r14->m24_halfTranslation[1], r11) + r14->m24_halfTranslation[1];
+                r14->m0_translation[2] = MTH_Mul(r12->m0_translation[2] - r14->m24_halfTranslation[2], r11) + r14->m24_halfTranslation[2];
+
+                r14->mC_rotation[0] = MTH_Mul(fixedPoint(r12->mC_rotation[0] - r14->m30_halfRotation[0]).normalized(), r11) + r14->m30_halfRotation[0];
+                r14->mC_rotation[1] = MTH_Mul(fixedPoint(r12->mC_rotation[1] - r14->m30_halfRotation[1]).normalized(), r11) + r14->m30_halfRotation[1];
+                r14->mC_rotation[2] = MTH_Mul(fixedPoint(r12->mC_rotation[2] - r14->m30_halfRotation[2]).normalized(), r11) + r14->m30_halfRotation[2];
+
+                r14->m18_scale[0] = MTH_Mul(r12->m18_scale[0] - r14->m3C_halfScale[0], r11) + r14->m3C_halfScale[0];
+                r14->m18_scale[1] = MTH_Mul(r12->m18_scale[1] - r14->m3C_halfScale[1], r11) + r14->m3C_halfScale[1];
+                r14->m18_scale[2] = MTH_Mul(r12->m18_scale[2] - r14->m3C_halfScale[2], r11) + r14->m3C_halfScale[2];
+
+                r12++;
+                r14++;
+
+            } while (--r9);
         }
     }
 }

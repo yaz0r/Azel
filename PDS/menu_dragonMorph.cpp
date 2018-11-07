@@ -61,9 +61,9 @@ u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 interpolation
         {
             for (int i = 0; i < pDragonStateData1->m12_numBones; i++)
             {
-                pDragonStateData1->m48_poseDataInterpolation[i].m24_halfTranslation = pDragonStateData1->m2C_poseData[i].m_translation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m30_halfRotation = pDragonStateData1->m2C_poseData[i].m_rotation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m3C_halfScale = pDragonStateData1->m2C_poseData[i].m_scale;
+                pDragonStateData1->m48_poseDataInterpolation[i].m24_halfTranslation = pDragonStateData1->m2C_poseData[i].m0_translation;
+                pDragonStateData1->m48_poseDataInterpolation[i].m30_halfRotation = pDragonStateData1->m2C_poseData[i].mC_rotation;
+                pDragonStateData1->m48_poseDataInterpolation[i].m3C_halfScale = pDragonStateData1->m2C_poseData[i].m18_scale;
             }
         }
         else
@@ -78,12 +78,12 @@ u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 interpolation
 
             for (int i = 0; i < pDragonStateData1->m12_numBones; i++)
             {
-                pDragonStateData1->m48_poseDataInterpolation[i].m24_halfTranslation = pDragonStateData1->m2C_poseData[i].m_translation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m0_translation = pDragonStateData1->m2C_poseData[i].m_translation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m30_halfRotation = pDragonStateData1->m2C_poseData[i].m_rotation;
-                pDragonStateData1->m48_poseDataInterpolation[i].mC_rotation = pDragonStateData1->m2C_poseData[i].m_rotation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m3C_halfScale = pDragonStateData1->m2C_poseData[i].m_scale;
-                pDragonStateData1->m48_poseDataInterpolation[i].m18_scale = pDragonStateData1->m2C_poseData[i].m_scale;
+                pDragonStateData1->m48_poseDataInterpolation[i].m24_halfTranslation = pDragonStateData1->m2C_poseData[i].m0_translation;
+                pDragonStateData1->m48_poseDataInterpolation[i].m0_translation = pDragonStateData1->m2C_poseData[i].m0_translation;
+                pDragonStateData1->m48_poseDataInterpolation[i].m30_halfRotation = pDragonStateData1->m2C_poseData[i].mC_rotation;
+                pDragonStateData1->m48_poseDataInterpolation[i].mC_rotation = pDragonStateData1->m2C_poseData[i].mC_rotation;
+                pDragonStateData1->m48_poseDataInterpolation[i].m3C_halfScale = pDragonStateData1->m2C_poseData[i].m18_scale;
+                pDragonStateData1->m48_poseDataInterpolation[i].m18_scale = pDragonStateData1->m2C_poseData[i].m18_scale;
             }
         }
 
@@ -452,8 +452,8 @@ void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
             do 
             {
                 initMatrixToIdentity(r14);
-                translateMatrix(&r13->m_translation, r14);
-                rotateMatrixZYX(&r13->m_rotation, r14);
+                translateMatrix(&r13->m0_translation, r14);
+                rotateMatrixZYX(&r13->mC_rotation, r14);
                 r13++;
                 r14++;
             } while (--r9);

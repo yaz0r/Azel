@@ -286,11 +286,11 @@ struct sAnimTrackStatus
 
 struct sPoseData
 {
-    sVec3_FP m_translation; // 0
-    sVec3_FP m_rotation; // C
-    sVec3_FP m_scale; // 18
-    sVec3_FP halfTranslation; // 24
-    sVec3_FP halfRotation; // 30
+    sVec3_FP m0_translation; // 0
+    sVec3_FP mC_rotation; // C
+    sVec3_FP m18_scale; // 18
+    sVec3_FP m24_halfTranslation; // 24
+    sVec3_FP m30_halfRotation; // 30
     sAnimTrackStatus m48[9];
     //size B4
 };
