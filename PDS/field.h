@@ -246,10 +246,7 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
         return &taskDefinition;
     }
     void Update() override;
-    void Delete() override
-    {
-        PDS_unimplemented("s_riderAnimTask::Delete");
-    }
+    void Delete() override;
 
     s32 m0_status;
     s32 m4_riderIndex;
@@ -586,6 +583,15 @@ struct s_visibilityGridWorkArea_68
     u32 m34;
 };
 
+struct s_visibilityGridWorkArea_1294
+{
+    s32 m4;
+    s32 m8;
+    s32 mC;
+    s32 m10;
+    s32 m14;
+};
+
 struct s_visibilityGridWorkArea : public s_workArea
 {
     sVec3_FP m0_position; // 0
@@ -598,10 +604,11 @@ struct s_visibilityGridWorkArea : public s_workArea
     std::vector<std::vector<sCameraVisibility>>* m34_cameraVisibilityTable; // m34
     p_workArea m38; // 38
     s_visdibilityCellTask** m3C_cellRenderingTasks; // 3C (an array of tasks)
-    s_visibilityGridWorkArea_68* m44;
-    s_visibilityGridWorkArea_68 m68[24]; // size highly unsure.
+    std::array<s_visibilityGridWorkArea_68, 24>::iterator m44;
+    std::array<s_visibilityGridWorkArea_68, 24> m68; // size highly unsure.
     u32 m128C_vdp2VramOffset2;
     u32 m1290_vdp2VramOffset;
+    s_visibilityGridWorkArea_1294 m1294;
     sVec3_FP m12AC;
     sVec3_FP m12B8;
     sVec3_FP m12C4;

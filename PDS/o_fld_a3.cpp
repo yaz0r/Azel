@@ -427,8 +427,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
                     if (readSaturnS16(r14->m0 + 8))
                     {
                         u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0 + 8));
-                        PDS_unimplemented("Disabled LCS generation because of crash");
-                        //var_54 = gridCellDraw_normalSub0(pTypedWorkAread->m0_memoryLayout.mainMemory + offset, r14->m4);
+                        var_54 = gridCellDraw_normalSub0(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + offset, r14->m4);
                     }
 
                     pushCurrentMatrix();
@@ -2074,6 +2073,11 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         0x13C,
         0x140,
     };
+
+    void s_riderAnimTask::Delete()
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1DC_ridersAnimation[m4_riderIndex] = NULL;
+    }
 
     void s_riderAnimTask::Update()
     {
@@ -5380,9 +5384,32 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         transformAndAddVec(*pVec, *r6, cameraProperties2.m28[0]);
     }
 
+    void dragonFieldTaskDrawSub3Sub0()
+    {
+        s_visibilityGridWorkArea* r4 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+        s_visibilityGridWorkArea_1294* r5 = &r4->m1294;
+        if (r5->m14 < r5->m10)
+        {
+            r5->m14 = r5->m10;
+        }
+
+        r5->m10 = 0;
+        r5->mC = 0;
+        r5->m8 = 0;
+        r5->m4 = 0;
+
+        r4->m44 = r4->m68.begin();
+    }
+
     void dragonFieldTaskDrawSub3(s_dragonTaskWorkArea* pTypedWorkArea)
     {
-        PDS_unimplemented("dragonFieldTaskDrawSub3");
+        if (((pTypedWorkArea->m_EC & 1) == 0) && (pTypedWorkArea->m_EB))
+        {
+            assert(0);
+            PDS_unimplemented("dragonFieldTaskDrawSub3");
+        }
+
+        dragonFieldTaskDrawSub3Sub0();
     }
 
     void dragonFieldTaskDraw(s_workArea* pWorkArea)
@@ -5730,7 +5757,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         r4->m128C_vdp2VramOffset2 = 0x25E68800;
         setVdp2VramU32(r4->m128C_vdp2VramOffset2, 0xFFFFFFFF);
 
-        r4->m44 = r4->m68;
+        r4->m44 = r4->m68.begin();
         r4->m68[0].m0 = 0;
     }
 
