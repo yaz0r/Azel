@@ -311,7 +311,7 @@ struct s_3dModel
     s_workArea* m0_pOwnerTask; //0
     u8* m4_pModelFile; //4
 
-    u16 m8; //8
+    u16 m8; //8 2 = m3C_boneMatrices is allocated
     u16 mA; //A
     u16 mC_modelIndexOffset; //C
 
@@ -325,17 +325,17 @@ struct s_3dModel
     void (*m20_positionUpdateFunction)(s_3dModel*); // 20
     void (*m24_rotationUpdateFunction)(s_3dModel*); // 24
     void (*m28_scaleUpdateFunction)(s_3dModel*); // 28
-    sPoseData* m2C_poseData; //2C
+    std::vector<sPoseData> m2C_poseData; //2C
 
     u8* m30_pCurrentAnimation; //30
 
     u8* m34_pDefaultPose; //34
     u32 m38; //38
 
-    sMatrix4x3* m3C_boneMatrices; //3C
+    std::vector<sMatrix4x3> m3C_boneMatrices; //3C
 
     const s_RiderDefinitionSub* m40; //40
-    sVec3_FP** m44; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
+    std::vector<std::vector<sVec3_FP>> m44; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
     std::vector<sPoseDataInterpolation> m48_poseDataInterpolation; //48
 
     u16 m4C_interpolationStep; //4C
@@ -364,7 +364,7 @@ struct s_runtimeAnimData
 struct s3DModelAnimData
 {
     const struct sDragonAnimData* m0_animData; // 0
-    sMatrix4x3* boneMatrices; // 4;
+    std::vector<sMatrix4x3>* m4_boneMatrices; // 4;
     s_runtimeAnimData* m8_runtimeAnimData; // 8 one per countAnims
     u8 countAnims; // C
     u8 count0; // D

@@ -2142,7 +2142,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         }
         else
         {
-            r14->m14_riderState = pRiderState;
+            r14->m14_riderState = pRider1State;
         }
 
         s32 r0;
@@ -2158,7 +2158,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
             else
             {
                 r14->m1C = RiderAnimations;
-                r14->m18 = pRiderState;
+                r14->m18 = pRider1State;
             }
         }
         else
@@ -2167,12 +2167,12 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
             if (r0 == 6)
             {
                 r14->m1C = rider1Table;
-                r14->m18 = pRiderState;
+                r14->m18 = pRider1State;
             }
             else
             {
                 r14->m1C = RiderAnimations;
-                r14->m18 = pRiderState;
+                r14->m18 = pRider1State;
             }
         }
 
@@ -3339,12 +3339,12 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
     {
         {
             u8* pData = NULL;
-            if (u32 offset = READ_BE_U32(pRiderState->m0_riderModel + 0x30))
+            if (u32 offset = READ_BE_U32(pRider1State->m0_riderModel + 0x30))
             {
-                pData = pRiderState->m0_riderModel + offset;
+                pData = pRider1State->m0_riderModel + offset;
             }
-            riderInit(&pRiderState->m18_3dModel, pData);
-            updateAndInterpolateAnimation(&pRiderState->m18_3dModel);
+            riderInit(&pRider1State->m18_3dModel, pData);
+            updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
         }
 
         {
@@ -5267,7 +5267,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         }
 
         updateAndInterpolateAnimation(&gDragonState->m28_dragon3dModel);
-        updateAndInterpolateAnimation(&pRiderState->m18_3dModel);
+        updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
         if (mainGameState.gameStats.m3_rider2)
         {
             updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
@@ -5434,20 +5434,20 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
                 translateCurrentMatrix(&rider1_hotSpot);
                 rotateCurrentMatrixShiftedY(0x8000000);
                 multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
-                pRiderState->m18_3dModel.m18_drawFunction(&pRiderState->m18_3dModel);
+                pRider1State->m18_3dModel.m18_drawFunction(&pRider1State->m18_3dModel);
                 popMatrix();
 
                 // draw rider's gun
-                if (pRiderState->m18_3dModel.m44[5])
+                if (pRider1State->m18_3dModel.m44[5].size())
                 {
                     //060744AA
-                    transformAndAddVec(*pRiderState->m18_3dModel.m44[5], rider1_hotSpot, cameraProperties2.m28[0]);
+                    transformAndAddVec(pRider1State->m18_3dModel.m44[5][0], rider1_hotSpot, cameraProperties2.m28[0]);
                     pushCurrentMatrix();
                     translateCurrentMatrix(&rider1_hotSpot);
                     rotateCurrentMatrixShiftedY(0x8000000);
                     multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
-                    u32 offset = READ_BE_U32(pRiderState->m0_riderModel + pRiderState->m_14);
-                    addObjectToDrawList(pRiderState->m0_riderModel, offset);
+                    u32 offset = READ_BE_U32(pRider1State->m0_riderModel + pRider1State->m_14);
+                    addObjectToDrawList(pRider1State->m0_riderModel, offset);
                     popMatrix();
                 }
             }

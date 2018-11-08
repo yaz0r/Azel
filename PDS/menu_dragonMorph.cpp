@@ -431,29 +431,29 @@ void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
     u32 r9 = r5->m12_numBones;
     if (r9)
     {
-        sMatrix4x3* r14 = r4->boneMatrices;
+        std::vector<sMatrix4x3>::iterator r14 = r4->m4_boneMatrices->begin();
         if (r5->m48_poseDataInterpolation.size())
         {
-            sPoseDataInterpolation* r13 = r5->m48_poseDataInterpolation._Unchecked_begin();
+            std::vector<sPoseDataInterpolation>::iterator r13 = r5->m48_poseDataInterpolation.begin();
 
             do
             {
-                initMatrixToIdentity(r14);
-                translateMatrix(&r13->m0_translation, r14);
-                rotateMatrixZYX(&r13->mC_rotation, r14);
+                initMatrixToIdentity(&(*r14));
+                translateMatrix(&r13->m0_translation, &(*r14));
+                rotateMatrixZYX(&r13->mC_rotation, &(*r14));
                 r13++;
                 r14++;
             } while (--r9);
         }
         else
         {
-            sPoseData* r13 = r5->m2C_poseData;
+            std::vector<sPoseData>::iterator r13 = r5->m2C_poseData.begin();
 
             do 
             {
-                initMatrixToIdentity(r14);
-                translateMatrix(&r13->m0_translation, r14);
-                rotateMatrixZYX(&r13->mC_rotation, r14);
+                initMatrixToIdentity(&(*r14));
+                translateMatrix(&r13->m0_translation, &(*r14));
+                rotateMatrixZYX(&r13->mC_rotation, &(*r14));
                 r13++;
                 r14++;
             } while (--r9);

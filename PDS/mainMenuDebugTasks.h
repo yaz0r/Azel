@@ -29,7 +29,7 @@ struct s_loadRiderWorkArea : public s_workArea
     s_3dModel m18_3dModel;//18
 };
 
-extern s_loadRiderWorkArea* pRiderState;
+extern s_loadRiderWorkArea* pRider1State;
 extern s_loadRiderWorkArea* pRider2State;
 
 struct s_loadDragonWorkArea : public s_workArea
