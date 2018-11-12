@@ -67,6 +67,7 @@ void popMatrix();
 
 void rotateMatrixX(s32 rotX, sMatrix4x3* pMatrix);
 void rotateMatrixShiftedX(fixedPoint rotX, sMatrix4x3* pMatrix);
+void rotateCurrentMatrixShiftedX(fixedPoint rotX);
 void rotateCurrentMatrixX(s32 rotX);
 void rotateMatrixY(s32 rotY, sMatrix4x3* pMatrix);
 void rotateMatrixShiftedY(fixedPoint rotY, sMatrix4x3* pMatrix);

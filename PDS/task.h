@@ -93,12 +93,12 @@ struct s_taskDefinitionWithArg
 
 struct s_task
 {
-    s_task* m_pNextTask;
-    s_task* m_pSubTask;
-    void(*m_pDraw)(p_workArea);
-    void(*m_pDelete)(p_workArea);
-    void(*m_pUpdate)(p_workArea);
-    u32 m_flags;
+    s_task* m0_pNextTask;
+    s_task* m4_pSubTask;
+    void(*m8_pUpdate)(p_workArea);
+    void(*mC_pDraw)(p_workArea);
+    void(*m10_pDelete)(p_workArea);
+    u32 m14_flags;
     const char* m_taskName;
 
     s_workArea* m_workArea;
@@ -114,32 +114,32 @@ struct s_task
 
     bool isFinished()
     {
-        return (m_flags & TASK_FLAGS_FINISHED) ? true : false;
+        return (m14_flags & TASK_FLAGS_FINISHED) ? true : false;
     }
     void markFinished()
     {
-        m_flags |= TASK_FLAGS_FINISHED;
+        m14_flags |= TASK_FLAGS_FINISHED;
     }
     bool isPaused()
     {
-        return (m_flags & TASK_FLAGS_PAUSED) ? true : false;
+        return (m14_flags & TASK_FLAGS_PAUSED) ? true : false;
     }
     void clearPaused()
     {
-        m_flags &= ~TASK_FLAGS_PAUSED;
+        m14_flags &= ~TASK_FLAGS_PAUSED;
     }
     void markPaused()
     {
-        m_flags |= TASK_FLAGS_PAUSED;
+        m14_flags |= TASK_FLAGS_PAUSED;
     }
     bool isDeleting()
     {
-        return (m_flags & TASK_FLAGS_DELETING) ? true : false;
+        return (m14_flags & TASK_FLAGS_DELETING) ? true : false;
     }
 private:
     void markDeleting()
     {
-        m_flags |= TASK_FLAGS_DELETING;
+        m14_flags |= TASK_FLAGS_DELETING;
     }
 };
 

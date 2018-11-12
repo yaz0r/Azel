@@ -561,6 +561,25 @@ struct s_DataTable3
     //u32 m24[];
 };
 
+struct s_DataTable2Sub0
+{
+    sSaturnPtr m0_function;
+    sVec3_FP m4;
+    std::array<s16,2> m12_rotation;
+    s32 m18;
+    // size is 0x20
+};
+
+struct s_DataTable2
+{
+    std::vector<std::vector<s_DataTable2Sub0>> m0;
+    s32 m4;
+    struct {
+        s32 m0;
+        s32 m4;
+    }m8;
+};
+
 struct s_visdibilityCellTask : public s_workArea
 {
     s_memoryAreaOutput m0_memoryLayout; // 0
@@ -730,6 +749,9 @@ struct s_FieldSubTaskWorkArea : public s_workArea
 
 struct s_fieldTaskWorkArea_C : public s_workArea
 {
+    fixedPoint m0;
+    s32 m8;
+    std::array<u32, 56> m50; //not sure of size
     u8 m130;
     p_workArea m168;
     // size 16C?

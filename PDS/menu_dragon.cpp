@@ -323,7 +323,7 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 7)
         {
             playSoundEffect(0);
-            pWorkArea->m14->getTask()->m_pDraw = NULL;
+            pWorkArea->m14->getTask()->mC_pDraw = NULL;
             if (pWorkArea->m10)
             {
                 pWorkArea->m10->getTask()->markFinished();

@@ -44,7 +44,7 @@ void initialTask_Update(s_workArea* pTypelessWorkArea)
             if (pWorkArea->m_4)
             {
                 s_task* pTask = pWorkArea->m_4->getTask();
-                pTask->m_flags |= 1;
+                pTask->m14_flags |= 1;
             }
 
             initialTaskStatus.m_previousTask = initialTaskStatus.m_currentTask;

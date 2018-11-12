@@ -33,156 +33,6 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
     s8 updateCameraFromDragonSub1(s32 index);
     sFieldCameraStatus* getFieldCameraStatus();
 
-    void playRiderAnimFans()
-    {
-        assert(0);
-    }
-
-    const u8 FLD_A3_Script_0[] =
-    {
-        op_START_CUTSCENE(),
-        op_WAIT(10),
-        op_WAIT(0),
-        op_DISPLAY_DIALOG_STRING(FLD_A3_Script_0_String0), //"(Imperial piece of crap.)"
-        op_WAIT(45),
-        op_CLEAR_DIALOG_STRING(),
-        op_END_CUTSCENE(),
-        op_END()
-    };
-
-    const u8 FLD_A3_Script_1[] =
-    {
-        op_CALL_NATIVE_0(playRiderAnimFans),
-        op_ADD_CINEMATIC_BARS(),
-        op_CALL_NATIVE_0(sub_606AD04),
-        op_WAIT(100),
-        op_PLAY_PCM(0, EV03_1_PCM),
-        op_WAIT(0),
-        op_DISPLAY_DIALOG_STRING(FLD_A3_Script_1_String0), //"Damn!"
-        op_WAIT(50),
-        op_CLEAR_DIALOG_STRING(),
-        op_WAIT(5),
-        op_DISPLAY_DIALOG_STRING(FLD_A3_Script_1_String1), //"A wind net to keep monsters away."
-        op_WAIT(80),
-        op_CLEAR_DIALOG_STRING(),
-        op_WAIT(0),
-        op_CALL_NATIVE_1(sub_6067E68, 10),
-        op_WAIT(10),
-        op_CALL_NATIVE_0(sub_606ACEC),
-        op_CALL_NATIVE_0(sub_6057E1C),
-        op_END_CUTSCENE(),
-        op_CALL_NATIVE_1(sub_6067EC0, 10),
-        op_END()
-    };
-    const void* FLD_A3_Scripts[]
-    {
-        FLD_A3_Script_0,
-        FLD_A3_Script_1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-        (void*)1,
-    };
-
-    s_grid1* fieldA3_0_dataTable3_grid1[4 * 12] =
-    {
-        0, (s_grid1*)1, 0, 0,
-        0, (s_grid1*)1, 0, 0,
-        0, (s_grid1*)1, 0, 0,
-        0, (s_grid1*)1, 0, 0,
-        0, (s_grid1*)1, 0, 0,
-        0, (s_grid1*)1, (s_grid1*)1, 0,
-        0, (s_grid1*)1, (s_grid1*)1, 0,
-        0, (s_grid1*)1, 0, 0,
-        0, (s_grid1*)1, 0, (s_grid1*)1,
-        (s_grid1*)1, (s_grid1*)1, (s_grid1*)1, (s_grid1*)1,
-        (s_grid1*)1, (s_grid1*)1, 0, 0,
-        (s_grid1*)1, 0, 0, 0,
-    };
-
-    s_grid2* fieldA3_0_dataTable3_grid2[4 * 12] =
-    {
-        0, (s_grid2*)1, 0, 0,
-        0, (s_grid2*)1, 0, 0,
-        0, (s_grid2*)1, 0, 0,
-        0, (s_grid2*)1, 0, 0,
-        0, 0, 0, 0,
-        0, (s_grid2*)1, 0, 0,
-        0, (s_grid2*)1, (s_grid2*)1, 0,
-        0, (s_grid2*)1, 0, 0,
-        0, (s_grid2*)1, 0, 0,
-        0, (s_grid2*)1, 0, 0,
-        (s_grid2*)1, 0, 0, 0,
-        (s_grid2*)1, 0, 0, 0,
-    };
-
-    s_DataTable3 fieldA3_0_dataTable3 =
-    {
-        fieldA3_0_dataTable3_grid1,
-        fieldA3_0_dataTable3_grid2,
-        NULL,
-        2,
-    { 4, 12 }, // grid size
-    0x100000,
-    0x100000,
-    0,
-    /*
-    {
-    0x1002AC,
-    0x1402B0,
-    0x1802B4,
-    0x2402C0,
-    0x5402F0,
-    0x640300,
-    0x4402E0,
-    0x1C02B8,
-    0x740310,
-    0x840320,
-    }
-    */
-    };
-    u8 fieldA3_0_dataTable2[] = { 1 };
-    u8 fieldA3_1_dataTable2[] = { 1 };
-    
-    sCameraVisibility fieldA3_0_dataTable1_0[] =
-    {
-        { -1, 0 },
-    };
-
-    sCameraVisibility fieldA3_0_dataTable1_1[] =
-    {
-        { 1, 1 },
-    { 1, 0 },
-    { -1, 0 },
-    };
-
-    sCameraVisibility* fieldA3_0_dataTable1[] = {
-        fieldA3_0_dataTable1_0,
-        fieldA3_0_dataTable1_1
-    };
-    
     std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3)
     {
         std::vector<std::vector<sCameraVisibility>>* pVisibility = new std::vector<std::vector<sCameraVisibility>>;
@@ -518,7 +368,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         {
             setupGridCell(r4, pNewTask, cellIndex);
 
-            pNewTask->getTask()->m_pDraw = gridCellDrawFunctions[r4->m12F2_renderMode];
+            pNewTask->getTask()->mC_pDraw = gridCellDrawFunctions[r4->m12F2_renderMode];
         }
 
         return pNewTask;
@@ -699,7 +549,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
 
             //060710C4
             enableCellsAroundCamera(pFieldCameraTask1);
-            pFieldCameraTask1->getTask()->m_pUpdate = updateCellGridFromCameraPosition;
+            pFieldCameraTask1->getTask()->m8_pUpdate = updateCellGridFromCameraPosition;
         }
         else
         {
@@ -713,7 +563,252 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         }
     }
 
-    void setupFieldSub1(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea))
+    struct s_A3_Obj2_60
+    {
+        struct s_A3_Obj2* m0;
+        void* m4;
+        sVec3_FP* m8;
+        s32 mC;
+        s16 m10;
+        s16 m12;
+        s16 m14;
+        s8 m16;
+        s8 m17;
+        s8 m18;
+        s8 m19;
+        s8 m1A;
+        s8 m1B;
+        s32 m1C;
+        s32 m20;
+    };
+
+    struct s_A3_Obj2 : public s_workAreaTemplate<s_A3_Obj2>
+    {
+        s_memoryAreaOutput m0;
+        s_DataTable2Sub0* m8;
+        u32* mC;
+        sVec3_FP m10;
+        sVec3_FP m1C;
+        s32 m28;
+        s32 m2C;
+        s32 m30;
+        s32 m34;
+        s32 m38;
+        s32 m3C;
+        s32 m40;
+        s32 m44;
+        s32 m48;
+        s32 m4C;
+        fixedPoint m50;
+        fixedPoint m54;
+        sSaturnPtr m58;
+        std::vector<fixedPoint> m5C;
+        s_A3_Obj2_60 m60;
+    };
+
+    void A3_Obj2_Update(p_workArea)
+    {
+        PDS_unimplemented("A3_Obj2_Update");
+    }
+
+    void A3_Obj2_Draw(p_workArea pWorkArea)
+    {
+        s_A3_Obj2* r14 = static_cast<s_A3_Obj2*>(pWorkArea);
+
+        std::vector<fixedPoint>::iterator r12 = r14->m5C.begin();
+        sSaturnPtr r10 = r14->m58;
+
+        sMatrix4x3 var0;
+        sMatrix4x3 var30;
+        sVec3_FP var60 = r14->m10;
+        initMatrixToIdentity(&var0);
+        s_DataTable2Sub0* r13 = r14->m8;
+        rotateMatrixZ(r13->m12_rotation[1], &var0);
+        rotateMatrixY(r13->m12_rotation[0], &var0);
+
+        s32 r11 = r14->m28;
+        if (r11 <= 0)
+        {
+            return;
+        }
+
+        do
+        {
+            copyMatrix(&var0, &var30);
+            rotateMatrixShiftedX(*r12, &var30);
+
+            sVec3_FP var6C;
+            transformAndAddVec(r14->m1C, var6C, var30);
+            var60 += var6C;
+
+            pushCurrentMatrix();
+            translateCurrentMatrix(&var60);
+            rotateCurrentMatrixZ(r13->m12_rotation[1]);
+            rotateCurrentMatrixY(r13->m12_rotation[0]);
+            rotateCurrentMatrixShiftedX(*r12);
+
+            u32 offset = READ_BE_U32(r14->m0.m0_mainMemory + readSaturnS16(r10));
+            addObjectToDrawList(r14->m0.m0_mainMemory, offset);
+
+            popMatrix();
+
+            r12++;
+            r10 += 2;
+        } while (--r11);
+    }
+
+    void create_A3_Obj2_Sub0(s_A3_Obj2_60* r4, s_A3_Obj2* r5, void* r6, sVec3_FP* r7, s32 arg0, s16 arg6, s16 argA, s16 argE, s32 arg10, s32 arg14)
+    {
+        r4->m0 = r5;
+        r4->m4 = r6;
+        r4->m8 = r7;
+        r4->mC = arg0;
+        r4->m12 = argA;
+        r4->m14 = argE;
+        if (r4->m14 >= 0)
+        {
+            r4->m16 = arg10;
+        }
+        else
+        {
+            r4->m16 = 0;
+        }
+        r4->m10 = arg6;
+        r4->m17 = arg14;
+        r4->m18 = 0;
+        r4->m19 = 0;
+        r4->m1A = 0;
+        r4->m1B = 0;
+        r4->m1C = 0;
+        r4->m20 = 0;
+    }
+
+    void create_A3_Obj2_Sub1()
+    {
+        assert(0);
+    }
+
+    void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32 r7)
+    {
+        s_A3_Obj2* pNewObj = new s_A3_Obj2;
+        createSubTaskFromFunction(r4, NULL, pNewObj, "A3_Obj2");
+
+        getMemoryArea(&pNewObj->m0, r6);
+
+        pNewObj->m8 = &r5;
+        pNewObj->m10 = r5.m4;
+        pNewObj->m1C[2] = 0;
+        pNewObj->m1C[0] = 0;
+
+        sSaturnPtr r11;
+
+        switch (r7)
+        {
+        case 0:
+            r11 = sSaturnPtr({ 0x6092984, gFLD_A3 }) + 0x1C * r5.m18;
+            pNewObj->mC = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x609290E, gFLD_A3 }) + r5.m18)];
+            pNewObj->m28 = 8;
+            pNewObj->m1C[1] = 0x6000;
+            pNewObj->m58 = sSaturnPtr({ 0x609293A, gFLD_A3 });
+            break;
+        case 1:
+            r11 = sSaturnPtr({ 0x6092A48, gFLD_A3 }) + 0x1C * r5.m18;
+            pNewObj->mC = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x6092915, gFLD_A3 }) + r5.m18)];
+            pNewObj->m28 = 4;
+            pNewObj->m1C[1] = 0x6000;
+            pNewObj->m58 = sSaturnPtr({ 0x609294A, gFLD_A3 });
+            break;
+        case 2:
+            r11 = sSaturnPtr({ 0x6092B28, gFLD_A3 }) + 0x1C * r5.m18;
+            pNewObj->mC = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x609291D, gFLD_A3 }) + r5.m18)];
+            pNewObj->m28 = 4;
+            pNewObj->m1C[1] = 0x3000;
+            pNewObj->m58 = sSaturnPtr({ 0x6092952, gFLD_A3 });
+            break;
+        case 3:
+            r11 = sSaturnPtr({ 0x6092BEC, gFLD_A3 }) + 0x1C * r5.m18;
+            pNewObj->mC = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x6092924, gFLD_A3 }) + r5.m18)];
+            pNewObj->m28 = 4;
+            pNewObj->m1C[1] = 0x3000;
+            pNewObj->m58 = sSaturnPtr({ 0x609295A, gFLD_A3 });
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        pNewObj->m2C = readSaturnS32(r11);
+        pNewObj->m34 = readSaturnS32(r11 + 4);
+        pNewObj->m40 = pNewObj->m3C = pNewObj->m38 = MTH_Mul(readSaturnS32(r11 + 8), getFieldTaskPtr()->mC->m0);
+        pNewObj->m44 = readSaturnS32(r11 + 0xC);
+        pNewObj->m4C = readSaturnS32(r11 + 0x10);
+
+        if (getFieldTaskPtr()->mC->m0 >= 0)
+        {
+            pNewObj->m50 = MTH_Mul(readSaturnS32(r11 + 0x14), getFieldTaskPtr()->mC->m0);
+        }
+        else
+        {
+            pNewObj->m50 = MTH_Mul(readSaturnS32(r11 + 0x14), -getFieldTaskPtr()->mC->m0);
+        }
+
+        if (getFieldTaskPtr()->mC->m0 >= 0)
+        {
+            pNewObj->m54 = MTH_Mul(readSaturnS32(r11 + 0x18), getFieldTaskPtr()->mC->m0);
+        }
+        else
+        {
+            pNewObj->m54 = MTH_Mul(readSaturnS32(r11 + 0x18), -getFieldTaskPtr()->mC->m0);
+        }
+
+        pNewObj->m30 = randomNumber();
+        pNewObj->m48 = randomNumber();
+
+        pNewObj->m5C.resize(pNewObj->m28);
+
+        pNewObj->getTask()->m8_pUpdate = A3_Obj2_Update;
+        pNewObj->getTask()->mC_pDraw = A3_Obj2_Draw;
+
+        create_A3_Obj2_Sub0(&pNewObj->m60, pNewObj, create_A3_Obj2_Sub1, &pNewObj->m10, 0, 0, 0, -1, 0, 0);
+
+        getFieldTaskPtr()->mC->m8 = 0;
+    }
+
+    void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+    {
+        switch (r5.m0_function.m_offset)
+        {
+        case 0x6060228:
+        case 0x605a7a8:
+        case 0x605a94c:
+            break;
+
+        case 0x605ffca:
+            create_A3_Obj2(r4, r5, r6, 0);
+            break;
+        case 0x605ffce:
+            create_A3_Obj2(r4, r5, r6, 1);
+            break;
+        case 0x605ffd2:
+            create_A3_Obj2(r4, r5, r6, 2);
+            break;
+
+        default:
+            PDS_unimplemented("dispatchFunction");
+            break;
+            //assert(0);
+        }
+    }
+
+    void setupFieldSub1Sub0(s_visdibilityCellTask* r4, std::vector<s_DataTable2Sub0>& r5, s32 r6)
+    {
+        for(int i=0; i<r5.size(); i++)
+        {
+            dispatchFunction(r4, r5[i], r6);
+        }
+    }
+
+    void setupFieldSub1(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea))
     {
         s_visibilityGridWorkArea* pFieldCameraTask1 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
@@ -721,11 +816,27 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
 
         if (r5)
         {
-            PDS_unimplemented("setupFieldSub1");
+            s_visdibilityCellTask** r12 = pFieldCameraTask1->m3C_cellRenderingTasks;
+            if (r12)
+            {
+                s32 r11 = r5->m8.m0 * r5->m8.m4;
+                std::vector<std::vector<s_DataTable2Sub0>>::iterator r14 = r5->m0.begin();
+
+                do 
+                {
+                    if (r14->size())
+                    {
+                        setupFieldSub1Sub0(*r12, *r14, r5->m4);
+                    }
+
+                    r14++;
+                    r12++;
+                } while (--r11);
+            }
         }
     }
 
-    void setupField(s_DataTable3* r4, u8* r5, void(*r6)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r7)
+    void setupField(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r7)
     {
         getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1->m34_cameraVisibilityTable = r7;
 
@@ -997,6 +1108,41 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         pNewData3->m8 = readGrid3(grid3, pNewData3->m10_gridSize[0], pNewData3->m10_gridSize[1]);
 
         return pNewData3;
+    }
+
+    s_DataTable2* readDataTable2(sSaturnPtr EA)
+    {
+        s_DataTable2* pNewData2 = new s_DataTable2;
+
+        sSaturnPtr gridEA = readSaturnEA(EA); EA = EA + 4;
+
+        pNewData2->m4 = readSaturnU32(EA); EA = EA + 4;
+        pNewData2->m8.m0 = readSaturnU32(EA); EA = EA + 4;
+        pNewData2->m8.m4 = readSaturnU32(EA); EA = EA + 4;
+
+        int gridSize = pNewData2->m8.m0 * pNewData2->m8.m4;
+        pNewData2->m0.resize(gridSize);
+
+        for (int i = 0; i < gridSize; i++)
+        {
+            sSaturnPtr cellEA = readSaturnEA(gridEA + i * 4);
+            if (cellEA.m_offset)
+            {
+                while (readSaturnEA(cellEA).m_offset)
+                {
+                    s_DataTable2Sub0 newEntry;
+                    newEntry.m0_function = readSaturnEA(cellEA);
+                    newEntry.m4 = readSaturnVec3(cellEA + 4);
+                    newEntry.m18 = readSaturnS32(cellEA + 0x18);
+
+                    pNewData2->m0[i].push_back(newEntry);
+
+                    cellEA += 0x20;
+                }
+            }
+        }
+
+        return pNewData2;
     }
 
     void fieldPaletteTaskInit(p_workArea pWorkArea)
@@ -1550,7 +1696,8 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         
         s_DataTable3* pDataTable3 = readDataTable3({ 0x6085AA4, gFLD_A3 });
         std::vector<std::vector<sCameraVisibility>>* pVisibility = readCameraVisbility({ 0x608F410, gFLD_A3 }, pDataTable3);
-        setupField(pDataTable3, fieldA3_0_dataTable2, fieldA3_0_startTasks, pVisibility);
+        s_DataTable2* pDataTable2 = readDataTable2({ 0x6083D3C, gFLD_A3 });
+        setupField(pDataTable3, pDataTable2, fieldA3_0_startTasks, pVisibility);
 
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_0Sub0;
 
@@ -1615,7 +1762,8 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         
         s_DataTable3* pDataTable3 = readDataTable3({ 0x608838C, gFLD_A3 });
         std::vector<std::vector<sCameraVisibility>>* pVisibility = readCameraVisbility({ 0x608F628, gFLD_A3 }, pDataTable3);
-        setupField(pDataTable3, fieldA3_1_dataTable2, fieldA3_1_startTasks, pVisibility);
+        s_DataTable2* pDataTable2 = readDataTable2({ 0x60866D0, gFLD_A3 });
+        setupField(pDataTable3, pDataTable2, fieldA3_1_startTasks, pVisibility);
 
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_1Sub0;
 

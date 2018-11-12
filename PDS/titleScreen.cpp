@@ -421,7 +421,7 @@ void warningTaskDraw(p_workArea pTypelessWorkArea)
             return;
         if (pTypelessWorkArea)
         {
-            pTypelessWorkArea->getTask()->m_flags |= 1; // finish task
+            pTypelessWorkArea->getTask()->m14_flags |= 1; // finish task
         }
         break;
     default:
@@ -481,7 +481,7 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
         if (pWorkArea)
         {
             s_task* pTask = pWorkArea->getTask();
-            pTask->m_flags |= 1;
+            pTask->m14_flags |= 1;
         }
         return;
     }
@@ -489,7 +489,7 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
     if (cartdrigePresent == 1)
     {
         s_task* pTask = pWorkArea->getTask();
-        pTask->m_pDraw = warningTaskDraw;
+        pTask->mC_pDraw = warningTaskDraw;
     }
 
     loadWarningFile(cartdrigePresent - 1);
@@ -539,7 +539,7 @@ struct s_loadWarningWorkArea : public s_workArea
     {
         if (m_warningTask)
         {
-            if (!(m_warningTask->getTask()->m_flags & 1))
+            if (!(m_warningTask->getTask()->m14_flags & 1))
             {
                 return;
             }

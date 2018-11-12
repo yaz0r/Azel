@@ -197,6 +197,11 @@ void rotateMatrixShiftedX(fixedPoint rotX, sMatrix4x3* pMatrix)
     rotateMatrixX(rotX.getInteger(), pMatrix);
 }
 
+void rotateCurrentMatrixShiftedX(fixedPoint rotX)
+{
+    rotateMatrixShiftedX(rotX, pCurrentMatrix);
+}
+
 void rotateCurrentMatrixX(s32 rotX)
 {
     rotateMatrixX(rotX, pCurrentMatrix);

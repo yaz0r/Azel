@@ -7,15 +7,15 @@ void PrintDebugTask(s_task* pTask)
 {
     if(ImGui::TreeNode(pTask->m_taskName))
     {
-        if (pTask->m_pSubTask)
+        if (pTask->m4_pSubTask)
         {
-            PrintDebugTask(pTask->m_pSubTask);
+            PrintDebugTask(pTask->m4_pSubTask);
         }
         ImGui::TreePop();
     }
-    if (pTask->m_pNextTask)
+    if (pTask->m0_pNextTask)
     {
-        PrintDebugTask(pTask->m_pNextTask);
+        PrintDebugTask(pTask->m0_pNextTask);
     }
 }
 
@@ -44,47 +44,47 @@ void processTasks(s_task** ppTask)
                 if (pTask == NULL)
                     return;
 
-                ppTask = &pTask->m_pNextTask;
+                ppTask = &pTask->m0_pNextTask;
                 pTask = *ppTask;
                 continue;
             }
-            if (pTask->m_pUpdate)
+            if (pTask->m8_pUpdate)
             {
                 if (!pauseEngine[0])
                 {
-                    pTask->m_pUpdate(pTask->getWorkArea());
+                    pTask->m8_pUpdate(pTask->getWorkArea());
                 }
             }
 
-            if (pTask->m_pDraw)
+            if (pTask->mC_pDraw)
             {
-                pTask->m_pDraw(pTask->getWorkArea());
+                pTask->mC_pDraw(pTask->getWorkArea());
             }
         }
         if (pTask->isFinished())
         {
-            pTask->m_flags ^= TASK_FLAGS_DELETING;
+            pTask->m14_flags ^= TASK_FLAGS_DELETING;
             if (pTask->isDeleting())
             {
-                s_task* r4 = pTask->m_pSubTask;
+                s_task* r4 = pTask->m4_pSubTask;
                 while (r4)
                 {
                     r4->markFinished();
-                    r4 = r4->m_pNextTask;
+                    r4 = r4->m0_pNextTask;
                 }
             }
 
-            if (pTask->m_pSubTask)
+            if (pTask->m4_pSubTask)
             {
-                processTasks(&pTask->m_pSubTask);
+                processTasks(&pTask->m4_pSubTask);
             }
 
             // finished but not deleting yet
             if (pTask->isDeleting())
             {
-                if (pTask->m_pDelete)
+                if (pTask->m10_pDelete)
                 {
-                    pTask->m_pDelete(pTask->getWorkArea());
+                    pTask->m10_pDelete(pTask->getWorkArea());
                 }
                 numActiveTask--;
             }
@@ -99,16 +99,16 @@ void processTasks(s_task** ppTask)
                     r4 = pNextTask;
                 }
 
-                *ppTask = pTask->m_pNextTask;
+                *ppTask = pTask->m0_pNextTask;
                 freeHeap(pTask);
 //                pTask = *ppTask;
             }
         }
         else
         {
-            if (pTask->m_pSubTask)
+            if (pTask->m4_pSubTask)
             {
-                processTasks(&pTask->m_pSubTask);
+                processTasks(&pTask->m4_pSubTask);
             }
         }
 
@@ -117,7 +117,7 @@ void processTasks(s_task** ppTask)
         if (pTask == NULL)
             return;
         
-        ppTask = &pTask->m_pNextTask;
+        ppTask = &pTask->m0_pNextTask;
         pTask = *ppTask;
     }while (pTask);
 }
@@ -145,20 +145,20 @@ p_workArea createSubTask(p_workArea parentWorkArea, s_taskDefinition* pDefinitio
 
     s_task* pParentTask = parentWorkArea->getTask();
 
-    s_task** taskDestination = &pParentTask->m_pSubTask;
+    s_task** taskDestination = &pParentTask->m4_pSubTask;
     while (*taskDestination)
     {
-        taskDestination = &(*taskDestination)->m_pNextTask;
+        taskDestination = &(*taskDestination)->m0_pNextTask;
     }
 
     (*taskDestination) = pTask;
 
-    pTask->m_pNextTask = NULL;
-    pTask->m_pSubTask = NULL;
-    pTask->m_pUpdate = pDefinition->m_pUpdate;
-    pTask->m_pDraw = pDefinition->m_pLateUpdate;
-    pTask->m_pDelete = pDefinition->m_pDelete;
-    pTask->m_flags = 0;
+    pTask->m0_pNextTask = NULL;
+    pTask->m4_pSubTask = NULL;
+    pTask->m8_pUpdate = pDefinition->m_pUpdate;
+    pTask->mC_pDraw = pDefinition->m_pLateUpdate;
+    pTask->m10_pDelete = pDefinition->m_pDelete;
+    pTask->m14_flags = 0;
 
     assert(pDefinition->m_taskName);
     pTask->m_taskName = pDefinition->m_taskName;
@@ -183,20 +183,20 @@ p_workArea createSubTaskWithArg(p_workArea parentWorkArea, s_taskDefinitionWithA
 
     s_task* pParentTask = parentWorkArea->getTask();
 
-    s_task** taskDestination = &pParentTask->m_pSubTask;
+    s_task** taskDestination = &pParentTask->m4_pSubTask;
     while (*taskDestination)
     {
-        taskDestination = &(*taskDestination)->m_pNextTask;
+        taskDestination = &(*taskDestination)->m0_pNextTask;
     }
 
     (*taskDestination) = pTask;
 
-    pTask->m_pNextTask = NULL;
-    pTask->m_pSubTask = NULL;
-    pTask->m_pUpdate = pDefinition->m_pUpdate;
-    pTask->m_pDraw = pDefinition->m_pLateUpdate;
-    pTask->m_pDelete = pDefinition->m_pDelete;
-    pTask->m_flags = 0;
+    pTask->m0_pNextTask = NULL;
+    pTask->m4_pSubTask = NULL;
+    pTask->m8_pUpdate = pDefinition->m_pUpdate;
+    pTask->mC_pDraw = pDefinition->m_pLateUpdate;
+    pTask->m10_pDelete = pDefinition->m_pDelete;
+    pTask->m14_flags = 0;
 
     assert(pDefinition->m_taskName);
     pTask->m_taskName = pDefinition->m_taskName;
@@ -221,20 +221,20 @@ p_workArea createSiblingTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg
 
     s_task* pSibling = workArea->getTask();
 
-    s_task** taskDestination = &pSibling->m_pNextTask;
+    s_task** taskDestination = &pSibling->m0_pNextTask;
     while (*taskDestination)
     {
-        taskDestination = &(*taskDestination)->m_pNextTask;
+        taskDestination = &(*taskDestination)->m0_pNextTask;
     }
 
     (*taskDestination) = pTask;
 
-    pTask->m_pNextTask = NULL;
-    pTask->m_pSubTask = NULL;
-    pTask->m_pUpdate = pDefinition->m_pUpdate;
-    pTask->m_pDraw = pDefinition->m_pLateUpdate;
-    pTask->m_pDelete = pDefinition->m_pDelete;
-    pTask->m_flags = 0;
+    pTask->m0_pNextTask = NULL;
+    pTask->m4_pSubTask = NULL;
+    pTask->m8_pUpdate = pDefinition->m_pUpdate;
+    pTask->mC_pDraw = pDefinition->m_pLateUpdate;
+    pTask->m10_pDelete = pDefinition->m_pDelete;
+    pTask->m14_flags = 0;
 
     assert(pDefinition->m_taskName);
     pTask->m_taskName = pDefinition->m_taskName;
@@ -260,20 +260,20 @@ p_workArea createSubTaskFromFunction(p_workArea parentWorkArea, void(*pFunction)
 
     s_task* pParentTask = parentWorkArea->getTask();
 
-    s_task** taskDestination = &pParentTask->m_pSubTask;
+    s_task** taskDestination = &pParentTask->m4_pSubTask;
     while (*taskDestination)
     {
-        taskDestination = &(*taskDestination)->m_pNextTask;
+        taskDestination = &(*taskDestination)->m0_pNextTask;
     }
 
     (*taskDestination) = pTask;
 
-    pTask->m_pNextTask = NULL;
-    pTask->m_pSubTask = NULL;
-    pTask->m_pUpdate = pFunction;
-    pTask->m_pDraw = NULL;
-    pTask->m_pDelete = NULL;
-    pTask->m_flags = 0;
+    pTask->m0_pNextTask = NULL;
+    pTask->m4_pSubTask = NULL;
+    pTask->m8_pUpdate = pFunction;
+    pTask->mC_pDraw = NULL;
+    pTask->m10_pDelete = NULL;
+    pTask->m14_flags = 0;
 
     pTask->m_taskName = name;
 
@@ -292,12 +292,12 @@ s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea newWorkArea)
     numActiveTask++;
     taskListHead = pTask;
 
-    pTask->m_pNextTask = NULL;
-    pTask->m_pSubTask = NULL;
-    pTask->m_pUpdate = pDefinition->m_pUpdate;
-    pTask->m_pDraw = pDefinition->m_pLateUpdate;
-    pTask->m_pDelete = pDefinition->m_pDelete;
-    pTask->m_flags = 0;
+    pTask->m0_pNextTask = NULL;
+    pTask->m4_pSubTask = NULL;
+    pTask->m8_pUpdate = pDefinition->m_pUpdate;
+    pTask->mC_pDraw = pDefinition->m_pLateUpdate;
+    pTask->m10_pDelete = pDefinition->m_pDelete;
+    pTask->m14_flags = 0;
 
     assert(pDefinition->m_taskName);
     pTask->m_taskName = pDefinition->m_taskName;

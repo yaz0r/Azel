@@ -341,7 +341,7 @@ void fieldTaskInit(p_workArea pTypelessWorkArea, void* battleArgumentVoid)
     if (battleArgument)
     {
         pWorkArea->m28_status = 0;
-        pWorkArea->getTask()->m_pUpdate = updateFieldTaskNoBattleOverride;
+        pWorkArea->getTask()->m8_pUpdate = updateFieldTaskNoBattleOverride;
     }
     else
     {
