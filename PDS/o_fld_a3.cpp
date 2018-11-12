@@ -1012,6 +1012,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
     {
         switch (r5.m0_function.m_offset)
         {
+        // ropes
         case 0x6060194:
             getFieldTaskPtr()->mC->mC[r5.m18] = create_A3_Obj0(r4, r5, r6, 0);
             break;
@@ -1021,10 +1022,8 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         case 0x6060228:
             getFieldTaskPtr()->mC->mC[r5.m18 + 11] = create_A3_Obj0(r4, r5, r6, 2);
             break;
-        case 0x605a7a8:
-        case 0x605a94c:
-            break;
 
+        // flags
         case 0x605ffca:
             create_A3_Obj2(r4, r5, r6, 0);
             break;
@@ -1033,6 +1032,9 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
             break;
         case 0x605ffd2:
             create_A3_Obj2(r4, r5, r6, 2);
+            break;
+        case 0x605FFD6:
+            create_A3_Obj2(r4, r5, r6, 3);
             break;
 
         default:
