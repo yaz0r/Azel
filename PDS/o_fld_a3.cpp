@@ -919,7 +919,6 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
             pNewObj->m54 = MTH_Mul(readSaturnS32(r11 + 0x18), -getFieldTaskPtr()->mC->m0);
         }
 
-        DEBUG_setRandomSeed(0xC22EE7AB);
         pNewObj->m30 = randomNumber();
         pNewObj->m48 = randomNumber();
 
@@ -933,11 +932,95 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         getFieldTaskPtr()->mC->m8 = 0;
     }
 
+
+    struct s_A3_Obj0 : public s_workAreaTemplate<s_A3_Obj0>
+    {
+        static s_taskDefinition* getTaskDefinition()
+        {
+            static s_taskDefinition taskDefinition = { NULL, NULL, s_A3_Obj0::StaticDraw, NULL, "s_A3_Obj0" };
+            return &taskDefinition;
+        }
+        void Draw() override
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(&m14_position);
+            rotateCurrentMatrixY(m3A_rotation);
+
+            addObjectToDrawList(m0.m0_mainMemory, READ_BE_U32(m0.m0_mainMemory + m38_modelOffset));
+
+            popMatrix();
+        }
+
+        s_memoryAreaOutput m0;
+        s_DataTable2Sub0* m8;
+        u32* mC;
+        sVec3_FP m14_position;
+        s32 m24;
+        sVec3_FP m28;
+        s32 m2C;
+        u16 m38_modelOffset;
+        s16 m3A_rotation;
+    };
+
+    p_workArea create_A3_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32 r7)
+    {
+        s_A3_Obj0* pNewTask = createSubTask<s_A3_Obj0>(r4);
+        getMemoryArea(&pNewTask->m0, r6);
+        pNewTask->m8 = &r5;
+
+        switch (r7)
+        {
+        case 0:
+            pNewTask->m24 = 0x71C71C;
+            pNewTask->m2C = 0x147;
+            pNewTask->mC = &getFieldTaskPtr()->mC->m50[r5.m18 + 0];
+            pNewTask->m38_modelOffset = 0x22C;
+            break;
+        case 1:
+            pNewTask->m24 = 0x6C16C1;
+            pNewTask->m2C = 0xF5;
+            pNewTask->mC = &getFieldTaskPtr()->mC->m50[r5.m18 + 5];
+            pNewTask->m38_modelOffset = 0x228;
+            break;
+        case 2:
+            pNewTask->m24 = 0x666666;
+            pNewTask->m2C = 0xA3;
+            pNewTask->mC = &getFieldTaskPtr()->mC->m50[r5.m18 + 11];
+            pNewTask->m38_modelOffset = 0x224;
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        pNewTask->m14_position = r5.m4_position;
+        *pNewTask->mC = 0;
+        pNewTask->m28.zero();
+        if (r5.m10)
+        {
+            pNewTask->m3A_rotation = 0x800 - r5.m12_rotation[0];
+        }
+        else
+        {
+            pNewTask->m3A_rotation = r5.m12_rotation[0];
+        }
+
+        return pNewTask;
+    }
+
     void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     {
         switch (r5.m0_function.m_offset)
         {
+        case 0x6060194:
+            getFieldTaskPtr()->mC->mC[r5.m18] = create_A3_Obj0(r4, r5, r6, 0);
+            break;
+        case 0x60601C8:
+            getFieldTaskPtr()->mC->mC[r5.m18 + 5] = create_A3_Obj0(r4, r5, r6, 1);
+            break;
         case 0x6060228:
+            getFieldTaskPtr()->mC->mC[r5.m18 + 11] = create_A3_Obj0(r4, r5, r6, 2);
+            break;
         case 0x605a7a8:
         case 0x605a94c:
             break;
@@ -1292,6 +1375,9 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
                     s_DataTable2Sub0 newEntry;
                     newEntry.m0_function = readSaturnEA(cellEA);
                     newEntry.m4_position = readSaturnVec3(cellEA + 4);
+                    newEntry.m10 = readSaturnS16(cellEA + 0x10);
+                    newEntry.m12_rotation[0] = readSaturnS16(cellEA + 0x12);
+                    newEntry.m12_rotation[1] = readSaturnS16(cellEA + 0x14);
                     newEntry.m18 = readSaturnS32(cellEA + 0x18);
 
                     pNewData2->m0[i].push_back(newEntry);

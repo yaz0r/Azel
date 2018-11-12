@@ -565,6 +565,7 @@ struct s_DataTable2Sub0
 {
     sSaturnPtr m0_function;
     sVec3_FP m4_position;
+    s16 m10;
     std::array<s16,2> m12_rotation;
     s32 m18;
     // size is 0x20
@@ -777,6 +778,7 @@ struct s_fieldTaskWorkArea_C : public s_workArea
 {
     fixedPoint m0;
     s32 m8;
+    std::array<p_workArea, 20> mC; // size probably incorrect
     std::array<u32, 56> m50; //not sure of size
     u8 m130;
     p_workArea m168;
