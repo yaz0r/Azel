@@ -35,6 +35,7 @@ void playMusic(u8 unk0, u8 unk1);
 void playPCM(p_workArea, u32);
 bool soundFunc1();
 
+void DEBUG_setRandomSeed(u32);
 void initRandomSeed(u32 init);
 u32 randomNumber();
 

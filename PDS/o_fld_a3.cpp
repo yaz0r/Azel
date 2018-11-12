@@ -122,6 +122,11 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         }
     }
 
+    void fieldA3_1_startTasks_sub0()
+    {
+        getFieldTaskPtr()->mC->m0 = fixedPoint(0x10000);
+    }
+
     void fieldA3_1_startTasks(p_workArea workArea)
     {
         create_fieldA3_0_task0(workArea);
@@ -129,6 +134,8 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         PDS_unimplemented("fieldA3_1_startTasks");
 
         create_fieldA3_1_fieldIntroTask(workArea);
+
+        fieldA3_1_startTasks_sub0();
     }
 
     void fieldGridTask_Update(p_workArea)
@@ -563,33 +570,14 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         }
     }
 
-    struct s_A3_Obj2_60
-    {
-        struct s_A3_Obj2* m0;
-        void* m4;
-        sVec3_FP* m8;
-        s32 mC;
-        s16 m10;
-        s16 m12;
-        s16 m14;
-        s8 m16;
-        s8 m17;
-        s8 m18;
-        s8 m19;
-        s8 m1A;
-        s8 m1B;
-        s32 m1C;
-        s32 m20;
-    };
-
     struct s_A3_Obj2 : public s_workAreaTemplate<s_A3_Obj2>
     {
         s_memoryAreaOutput m0;
         s_DataTable2Sub0* m8;
-        u32* mC;
-        sVec3_FP m10;
-        sVec3_FP m1C;
-        s32 m28;
+        u32* mC_verticalOffset;
+        sVec3_FP m10_position;
+        sVec3_FP m1C_nodeLength;
+        s32 m28_numNodes;
         s32 m2C;
         s32 m30;
         s32 m34;
@@ -602,31 +590,201 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         fixedPoint m50;
         fixedPoint m54;
         sSaturnPtr m58;
-        std::vector<fixedPoint> m5C;
+        std::vector<fixedPoint> m5C_perNodeRotation;
         s_A3_Obj2_60 m60;
     };
 
-    void A3_Obj2_Update(p_workArea)
+    void A3_Obj2_UpdateSub0(s_A3_Obj2_60* r14)
     {
-        PDS_unimplemented("A3_Obj2_Update");
+        sVec3_FP var0;
+        sVec3_FP varC;
+
+        s_LCSTask* r13 = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
+
+        r14->m19 &= ~0x30;
+        r14->m1C = 0;
+        r14->m18 &= ~4;
+        if (r14->m18 & 1)
+        {
+            return;
+        }
+        if (r14->mC)
+        {
+            //606CF1C
+            if (r14->m10 & 0x100)
+            {
+                //0606CF24
+                varC = *r14->m8;
+            }
+            else
+            {
+                //606CF46
+                transformAndAddVecByCurrentMatrix(r14->m8, &varC);
+            }
+
+            //606CF50
+            if (r14->m10 & 0x200)
+            {
+                var0 = *r14->mC;
+            }
+            else
+            {
+                //606CF74
+                transformVecByCurrentMatrix(*r14->mC, var0);
+            }
+
+            //606CF7C
+            if (dot3_FP(&varC, &var0) < 0)
+            {
+                r14->m18 |= 4;
+            }
+        }
+        //606CF96
+        assert(r13);
+
+        r13->m10++;
+
+        if (r13->mC < 0x100)
+        {
+            r13->m14[r13->mC].m0 = r14;
+            r13->m14[r13->mC].m4 = 0;
+            r13->mC++;
+        }
+    }
+
+    void getDragonDeltaMovement(sVec3_FP* r4)
+    {
+        *r4 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m160_deltaTranslation;
+    }
+
+    void A3_Obj2_Update(p_workArea pWorkArea)
+    {
+        s_A3_Obj2* r14 = static_cast<s_A3_Obj2*>(pWorkArea);
+
+        s32 r10 = r14->m30;
+        std::vector<fixedPoint>::iterator var8 = r14->m5C_perNodeRotation.begin();
+        sSaturnPtr var4 = sSaturnPtr({ 0x6092964, gFLD_A3 });
+
+        if (getFieldTaskPtr()->mC->m8)
+        {
+            r14->m60.m18 = 0;
+        }
+        else
+        {
+            r14->m60.m18 |= 1;
+        }
+
+        A3_Obj2_UpdateSub0(&r14->m60);
+
+        r14->m10_position[1] = *r14->mC_verticalOffset + r14->m8->m4_position[1];
+
+        fixedPoint r11 = MTH_Mul(r14->m38, getFieldTaskPtr()->mC->m0);
+        if ( r11 == r14->m40)
+        {
+            // if dragon is moving fast enough and close enough to the flag
+            if ((getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m235_dragonSpeedIndex >= 3) && (vecDistance(r14->m10_position, getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos) < fixedPoint(0xC8000)))
+            {
+                sVec3_FP dragonDeltaMovement;
+                getDragonDeltaMovement(&dragonDeltaMovement);
+
+                // is the dragon over or under the flag?
+                if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos[1] < r14->m10_position[1])
+                {
+                    r14->m40 = MTH_Mul(0x38E38E3, getFieldTaskPtr()->mC->m0);
+                }
+                else
+                {
+                    r14->m40 = MTH_Mul(0xE38E38, getFieldTaskPtr()->mC->m0);
+                }
+                
+                if (dragonDeltaMovement[2] > 0)
+                {
+                    r14->m40 = -r14->m40;
+                }
+            }
+            else
+            {
+                //605FC2E
+                if (r14->mC_verticalOffset[0])
+                {
+                    r14->m40 = 0;
+                }
+            }
+        }
+
+        //605FC3A
+        if (r14->m3C > r14->m40)
+        {
+            //605FC60
+            r14->m3C -= r14->m44;
+            if (r14->m3C < r14->m40)
+            {
+                r14->m3C = r14->m40;
+            }
+        }
+        else if(r14->m3C < r14->m40)
+        {
+            //605FC60
+            r14->m3C += r14->m44;
+            if (r14->m3C > r14->m40)
+            {
+                r14->m3C = r14->m40;
+            }
+        }
+        else
+        {
+            //605FCA8
+            if (r14->m40 != r11)
+            {
+                r14->m40 = r11;
+            }
+        }
+
+        //605FCB4
+        r14->m30 -= r14->m34;
+        r14->m48 += r14->m4C;
+
+        fixedPoint var0 = MTH_Mul(r14->m50, getSin((s16(r14->m48 >> 16)) & 0xFFF)) + r14->m3C + fixedPoint(0x8000000);
+
+        s32 r12 = r14->m28_numNodes;
+        if (r12 == 0)
+        {
+            return;
+        }
+
+        fixedPoint r9_previousRotation = 0;
+
+        do
+        {
+            s32 r6 = readSaturnS32(var4);
+            var4 += 4;
+
+            fixedPoint r13 = MTH_Mul_5_6(getSin((s16(r10 >> 16)) & 0xFFF), r14->m54, r6);
+
+            r10 += r14->m2C;
+
+            *(var8++) = atan2_FP(r13 - r9_previousRotation, r14->m1C_nodeLength[1]) + var0;
+
+            r9_previousRotation = r13;
+        } while (--r12);
     }
 
     void A3_Obj2_Draw(p_workArea pWorkArea)
     {
         s_A3_Obj2* r14 = static_cast<s_A3_Obj2*>(pWorkArea);
 
-        std::vector<fixedPoint>::iterator r12 = r14->m5C.begin();
+        std::vector<fixedPoint>::iterator r12 = r14->m5C_perNodeRotation.begin();
         sSaturnPtr r10 = r14->m58;
 
-        sMatrix4x3 var0;
-        sMatrix4x3 var30;
-        sVec3_FP var60 = r14->m10;
-        initMatrixToIdentity(&var0);
+        sMatrix4x3 var0_baseMatrix;
+        sMatrix4x3 var30_nodeMatrix;
+        sVec3_FP var60_currentNodePosition = r14->m10_position;
+        initMatrixToIdentity(&var0_baseMatrix);
         s_DataTable2Sub0* r13 = r14->m8;
-        rotateMatrixZ(r13->m12_rotation[1], &var0);
-        rotateMatrixY(r13->m12_rotation[0], &var0);
+        rotateMatrixZ(r13->m12_rotation[1], &var0_baseMatrix);
+        rotateMatrixY(r13->m12_rotation[0], &var0_baseMatrix);
 
-        s32 r11 = r14->m28;
+        s32 r11 = r14->m28_numNodes;
         if (r11 <= 0)
         {
             return;
@@ -634,15 +792,15 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
 
         do
         {
-            copyMatrix(&var0, &var30);
-            rotateMatrixShiftedX(*r12, &var30);
+            copyMatrix(&var0_baseMatrix, &var30_nodeMatrix);
+            rotateMatrixShiftedX(*r12, &var30_nodeMatrix);
 
-            sVec3_FP var6C;
-            transformAndAddVec(r14->m1C, var6C, var30);
-            var60 += var6C;
+            sVec3_FP var6C_nodeIncrement;
+            transformAndAddVec(r14->m1C_nodeLength, var6C_nodeIncrement, var30_nodeMatrix);
+            var60_currentNodePosition += var6C_nodeIncrement;
 
             pushCurrentMatrix();
-            translateCurrentMatrix(&var60);
+            translateCurrentMatrix(&var60_currentNodePosition);
             rotateCurrentMatrixZ(r13->m12_rotation[1]);
             rotateCurrentMatrixY(r13->m12_rotation[0]);
             rotateCurrentMatrixShiftedX(*r12);
@@ -657,7 +815,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         } while (--r11);
     }
 
-    void create_A3_Obj2_Sub0(s_A3_Obj2_60* r4, s_A3_Obj2* r5, void* r6, sVec3_FP* r7, s32 arg0, s16 arg6, s16 argA, s16 argE, s32 arg10, s32 arg14)
+    void create_A3_Obj2_Sub0(s_A3_Obj2_60* r4, s_A3_Obj2* r5, void* r6, sVec3_FP* r7, sVec3_FP* arg0, s16 arg6, s16 argA, s16 argE, s32 arg10, s32 arg14)
     {
         r4->m0 = r5;
         r4->m4 = r6;
@@ -696,9 +854,9 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         getMemoryArea(&pNewObj->m0, r6);
 
         pNewObj->m8 = &r5;
-        pNewObj->m10 = r5.m4;
-        pNewObj->m1C[2] = 0;
-        pNewObj->m1C[0] = 0;
+        pNewObj->m10_position = r5.m4_position;
+        pNewObj->m1C_nodeLength[2] = 0;
+        pNewObj->m1C_nodeLength[0] = 0;
 
         sSaturnPtr r11;
 
@@ -706,30 +864,30 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         {
         case 0:
             r11 = sSaturnPtr({ 0x6092984, gFLD_A3 }) + 0x1C * r5.m18;
-            pNewObj->mC = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x609290E, gFLD_A3 }) + r5.m18)];
-            pNewObj->m28 = 8;
-            pNewObj->m1C[1] = 0x6000;
+            pNewObj->mC_verticalOffset = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x609290E, gFLD_A3 }) + r5.m18)];
+            pNewObj->m28_numNodes = 8;
+            pNewObj->m1C_nodeLength[1] = 0x6000;
             pNewObj->m58 = sSaturnPtr({ 0x609293A, gFLD_A3 });
             break;
         case 1:
             r11 = sSaturnPtr({ 0x6092A48, gFLD_A3 }) + 0x1C * r5.m18;
-            pNewObj->mC = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x6092915, gFLD_A3 }) + r5.m18)];
-            pNewObj->m28 = 4;
-            pNewObj->m1C[1] = 0x6000;
+            pNewObj->mC_verticalOffset = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x6092915, gFLD_A3 }) + r5.m18)];
+            pNewObj->m28_numNodes = 4;
+            pNewObj->m1C_nodeLength[1] = 0x6000;
             pNewObj->m58 = sSaturnPtr({ 0x609294A, gFLD_A3 });
             break;
         case 2:
             r11 = sSaturnPtr({ 0x6092B28, gFLD_A3 }) + 0x1C * r5.m18;
-            pNewObj->mC = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x609291D, gFLD_A3 }) + r5.m18)];
-            pNewObj->m28 = 4;
-            pNewObj->m1C[1] = 0x3000;
+            pNewObj->mC_verticalOffset = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x609291D, gFLD_A3 }) + r5.m18)];
+            pNewObj->m28_numNodes = 4;
+            pNewObj->m1C_nodeLength[1] = 0x3000;
             pNewObj->m58 = sSaturnPtr({ 0x6092952, gFLD_A3 });
             break;
         case 3:
             r11 = sSaturnPtr({ 0x6092BEC, gFLD_A3 }) + 0x1C * r5.m18;
-            pNewObj->mC = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x6092924, gFLD_A3 }) + r5.m18)];
-            pNewObj->m28 = 4;
-            pNewObj->m1C[1] = 0x3000;
+            pNewObj->mC_verticalOffset = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x6092924, gFLD_A3 }) + r5.m18)];
+            pNewObj->m28_numNodes = 4;
+            pNewObj->m1C_nodeLength[1] = 0x3000;
             pNewObj->m58 = sSaturnPtr({ 0x609295A, gFLD_A3 });
             break;
         default:
@@ -761,15 +919,16 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
             pNewObj->m54 = MTH_Mul(readSaturnS32(r11 + 0x18), -getFieldTaskPtr()->mC->m0);
         }
 
+        DEBUG_setRandomSeed(0xC22EE7AB);
         pNewObj->m30 = randomNumber();
         pNewObj->m48 = randomNumber();
 
-        pNewObj->m5C.resize(pNewObj->m28);
+        pNewObj->m5C_perNodeRotation.resize(pNewObj->m28_numNodes);
 
         pNewObj->getTask()->m8_pUpdate = A3_Obj2_Update;
         pNewObj->getTask()->mC_pDraw = A3_Obj2_Draw;
 
-        create_A3_Obj2_Sub0(&pNewObj->m60, pNewObj, create_A3_Obj2_Sub1, &pNewObj->m10, 0, 0, 0, -1, 0, 0);
+        create_A3_Obj2_Sub0(&pNewObj->m60, pNewObj, create_A3_Obj2_Sub1, &pNewObj->m10_position, 0, 0, 0, -1, 0, 0);
 
         getFieldTaskPtr()->mC->m8 = 0;
     }
@@ -1132,7 +1291,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
                 {
                     s_DataTable2Sub0 newEntry;
                     newEntry.m0_function = readSaturnEA(cellEA);
-                    newEntry.m4 = readSaturnVec3(cellEA + 4);
+                    newEntry.m4_position = readSaturnVec3(cellEA + 4);
                     newEntry.m18 = readSaturnS32(cellEA + 0x18);
 
                     pNewData2->m0[i].push_back(newEntry);

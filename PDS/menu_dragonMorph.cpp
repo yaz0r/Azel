@@ -266,6 +266,11 @@ void transformVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6)
     r5[2] = mac >> 16;
 }
 
+void transformVecByCurrentMatrix(sVec3_FP& r4, sVec3_FP& r5)
+{
+    transformVec(r4, r5, *pCurrentMatrix);
+}
+
 void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sVec3_FP& r6, const sVec3_FP& r7)
 {
     fixedPoint var_4[2];

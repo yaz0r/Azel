@@ -564,7 +564,7 @@ struct s_DataTable3
 struct s_DataTable2Sub0
 {
     sSaturnPtr m0_function;
-    sVec3_FP m4;
+    sVec3_FP m4_position;
     std::array<s16,2> m12_rotation;
     s32 m18;
     // size is 0x20
@@ -650,12 +650,38 @@ struct s_LCSTask_828
     s_LCSTask_828* m4_next;
 };
 
+struct s_A3_Obj2_60
+{
+    struct s_A3_Obj2* m0;
+    void* m4;
+    sVec3_FP* m8;
+    sVec3_FP* mC;
+    s16 m10;
+    s16 m12;
+    s16 m14;
+    s8 m16;
+    s8 m17;
+    s8 m18;
+    s8 m19;
+    s8 m1A;
+    s8 m1B;
+    s32 m1C;
+    s32 m20;
+};
+
+struct s_LCSTask_14
+{
+    s_A3_Obj2_60* m0;
+    s32 m4;
+};
+
 struct s_LCSTask : public s_workArea
 {
     s_memoryAreaOutput m0;
     u32 m8;
     u32 mC;
     u32 m10;
+    std::array<s_LCSTask_14, 0x100> m14;
     u32 m814;
     s_LCSTask_828* m828;
     s8 m83C;

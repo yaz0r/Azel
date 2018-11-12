@@ -93,4 +93,5 @@ fixedPoint vecDistance(const sVec3_FP& r4, const sVec3_FP& r5);
 
 void transformAndAddVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6);
 void transformAndAddVecByCurrentMatrix(sVec3_FP* r4, sVec3_FP* r5);
+void transformVecByCurrentMatrix(sVec3_FP& r4, sVec3_FP& r5);
 

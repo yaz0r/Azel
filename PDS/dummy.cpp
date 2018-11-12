@@ -16,6 +16,11 @@ bool soundFunc1() { PDS_unimplemented("soundFunc1"); return 0; }
 void playPCM(p_workArea, u32) { PDS_unimplemented("playPCM"); }
 
 u32 RNG_seed = 0;
+void DEBUG_setRandomSeed(u32 seed)
+{
+    RNG_seed = seed;
+}
+
 void initRandomSeed(u32 init)
 {
     RNG_seed = init;
@@ -28,8 +33,11 @@ u32 randomNumber()
     u32 r1 = (u16)r0;
     if (r1 == 0)
     {
-        r1 = 0x29;
         r0 = 0x2A6D365B;
+    }
+    else
+    {
+        r1 = 0x29;
     }
 
     r1 *= r0;
