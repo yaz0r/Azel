@@ -1,31 +1,42 @@
 project(PDS)
 
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.9)
 
-add_subdirectory(PDS/SDL2)
+set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+add_subdirectory( PDS/SDL2 )
 
-include_directories("PDS" "PDS/imgui" "PDS/SDL2/include" "PDS/imgui/examples/libs/gl3w" "PDS/imgui/examples/sdl_opengl3_example/")
+include_directories("PDS" "PDS/imgui" "PDS/SDL2/include" "PDS/imgui/examples" "PDS/imgui/examples/libs/gl3w")
 
 set(SOURCES
  ${SOURCES}
- PDS/PDS.cpp
- PDS/VDP2.cpp
+
+ PDS/3dEngine.cpp
+ PDS/3dEngine_flush.cpp
+ PDS/3dEngine_textureCache.cpp
  PDS/common.cpp
+ PDS/common_generated.cpp
  PDS/dummy.cpp
+ PDS/field.cpp
+ PDS/fixedPoint.cpp
  PDS/heap.cpp
  PDS/mainMenuDebugTasks.cpp
- PDS/o_title.cpp
+ PDS/menu_dragon.cpp
+ PDS/menu_dragonMorph.cpp
  PDS/o_fld_a3.cpp
+ PDS/o_menuEn.cpp
+ PDS/o_title.cpp
+ PDS/PDS.cpp
  PDS/renderer.cpp
  PDS/rootTask.cpp
  PDS/task.cpp
  PDS/titleScreen.cpp
- PDS/3dEngine.cpp
- PDS/field.cpp
-
+ PDS/VDP1.cpp
+ PDS/VDP2.cpp
+ 
  PDS/imgui/imgui.cpp
  PDS/imgui/imgui_draw.cpp
- PDS/imgui/examples/sdl_opengl3_example/imgui_impl_sdl_gl3.cpp
+ PDS/imgui/examples/imgui_impl_opengl3.cpp
+ PDS/imgui/examples/imgui_impl_sdl.cpp
  PDS/imgui/examples/libs/gl3w/GL/gl3w.c
 )
 
@@ -48,4 +59,7 @@ IF(APPLE)
 ENDIF (APPLE)
 
 TARGET_LINK_LIBRARIES(Azel ${EXTRA_LIBS})
-TARGET_LINK_LIBRARIES(Azel SDL2-static)
+TARGET_LINK_LIBRARIES(Azel SDL2main SDL2-static)
+
+set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT Azel)
+set_target_properties(Azel PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/data")
