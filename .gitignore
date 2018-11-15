@@ -1,0 +1,17 @@
+/PDS/SDL2/VisualC/SDL/x64/Debug/SDL2.tlog/*.tlog
+/PDS/SDL2/VisualC/SDL/x64/Debug/*.obj
+*.obj
+*.pdb
+*.tlog
+*.log
+*.user
+*.res
+*.enc
+/PDS/x64/Debug/*.idb
+*.cache
+.vs
+/build
+/CMakeFiles
+*.idb
+*.VC.db
+/x64
