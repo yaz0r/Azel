@@ -7,6 +7,7 @@ fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targe
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
 void updateCameraScriptSub1(u32 r4);
 void fieldOverlaySubTaskInitSub5(u32 r4);
+s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
 //namespace FLD_A3_OVERLAY {
 
@@ -1008,6 +1009,60 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         return pNewTask;
     }
 
+    s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* r4)
+    {
+        return checkPositionVisibility(r4, graphicEngineStatus.m4070_farClipDistance);
+    }
+
+    struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj0>
+    {
+        static s_taskDefinition* getTaskDefinition()
+        {
+            static s_taskDefinition taskDefinition = { NULL, s_A3_Obj4::StaticUpdate, s_A3_Obj4::StaticDraw, NULL, "s_A3_Obj4" };
+            return &taskDefinition;
+        }
+
+        void Update() override
+        {
+            mC += 0xB60B6;
+            fixedPoint var1C = getFieldTaskPtr()->mC->mA4[m8->m18] = MTH_Mul(fixedPoint(0x71C71C), getSin((mC >> 16) & 0xFFF)) - fixedPoint(0x71C71C);
+
+            sVec3_FP& r12 = getFieldTaskPtr()->mC->mC0[m8->m18];
+            r12[0] = m8->m4_position[0] - MTH_Mul(fixedPoint(0xE333), getSin((var1C >> 16) & 0xFFF));
+            r12[1] = m8->m4_position[1] + MTH_Mul(fixedPoint(0xE333), getSin((var1C >> 16) & 0xFFF));
+
+            if (checkPositionVisibilityAgainstFarPlane(&r12))
+            {
+                m10 = 1;
+            }
+        }
+
+        void Draw() override
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(&m8->m4_position);
+            rotateCurrentMatrixShiftedZ(getFieldTaskPtr()->mC->mA4[m8->m18]);
+
+            addObjectToDrawList(m0.m0_mainMemory, READ_BE_U32(m0.m0_mainMemory + 0x29C));
+
+            popMatrix();
+        }
+
+        s_memoryAreaOutput m0;
+        s_DataTable2Sub0* m8;
+        u32 mC;
+        s32 m10;
+    };
+
+    void create_A3_Obj4(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+    {
+        s_A3_Obj4* pNewTask = createSubTask<s_A3_Obj4>(r4);
+        getMemoryArea(&pNewTask->m0, r6);
+        pNewTask->m8 = &r5;
+        getFieldTaskPtr()->mC->mC0[r5.m18] = r5.m4_position;
+        pNewTask->mC = randomNumber();
+    }
+
     void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     {
         switch (r5.m0_function.m_offset)
@@ -1023,7 +1078,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
             getFieldTaskPtr()->mC->mC[r5.m18 + 11] = create_A3_Obj0(r4, r5, r6, 2);
             break;
 
-        // flags
+        // dangling flags
         case 0x605ffca:
             create_A3_Obj2(r4, r5, r6, 0);
             break;
@@ -1035,6 +1090,11 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
             break;
         case 0x605FFD6:
             create_A3_Obj2(r4, r5, r6, 3);
+            break;
+
+        // flag pole
+        case 0x605A94C:
+            create_A3_Obj4(r4, r5, r6);
             break;
 
         default:
@@ -5982,7 +6042,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         return bDirty;
     }
 
-    s32 fieldCameraTask1InitSub2(sVec3_FP* r4, s32 r5)
+    s32 checkPositionVisibility(sVec3_FP* r4, s32 r5)
     {
         s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
         sVec3_FP var18 = cameraProperties2.m0_position;
@@ -6063,7 +6123,7 @@ void fieldOverlaySubTaskInitSub5(u32 r4);
         getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1 = pTypedWorkArea;
 
         pTypedWorkArea->m12F8_convertCameraPositionToGrid = convertCameraPositionTo2dGrid;
-        pTypedWorkArea->m12FC_isObjectClipped = fieldCameraTask1InitSub2;
+        pTypedWorkArea->m12FC_isObjectClipped = checkPositionVisibility;
         pTypedWorkArea->m12F2_renderMode = 2;
 
         pTypedWorkArea->m18_cameraGridLocation[0] = -1;

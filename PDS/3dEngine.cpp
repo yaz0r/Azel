@@ -268,6 +268,11 @@ void rotateCurrentMatrixZ(s32 rotZ)
     rotateMatrixZ(rotZ, pCurrentMatrix);
 }
 
+void rotateCurrentMatrixShiftedZ(fixedPoint rotZ)
+{
+    rotateMatrixShiftedZ(rotZ, pCurrentMatrix);
+}
+
 void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix)
 {
     for(int i=0; i<3; i++)

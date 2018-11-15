@@ -780,6 +780,8 @@ struct s_fieldTaskWorkArea_C : public s_workArea
     s32 m8;
     std::array<p_workArea, 20> mC; // size probably incorrect
     std::array<u32, 56> m50; //not sure of size
+    std::array<fixedPoint, 7> mA4;
+    std::array<sVec3_FP, 18> mC0; // not sure of size
     u8 m130;
     p_workArea m168;
     // size 16C?

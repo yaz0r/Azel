@@ -76,6 +76,7 @@ void rotateCurrentMatrixShiftedY(fixedPoint rotY);
 void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix);
 void rotateMatrixShiftedZ(fixedPoint rotZ, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixZ(s32 rotZ);
+void rotateCurrentMatrixShiftedZ(fixedPoint rotZ);
 void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix);
 void translateCurrentMatrix(sVec3_FP* translation);
 void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
