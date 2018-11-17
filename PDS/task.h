@@ -59,7 +59,7 @@ struct s_workAreaTemplate : public s_workArea
     }
     static void StaticInit(p_workArea pWorkArea, void* arg)
     {
-        ConvertType(pWorkArea)->Init(arg);
+        T* pTask = ConvertType(pWorkArea);
     }
     static void StaticUpdate(p_workArea pWorkArea)
     {
@@ -87,13 +87,15 @@ struct s_workAreaTemplate : public s_workArea
     }
 
     typedef void (T::*FunctionType)();
+    typedef void (T::*InitFunctionType)(void*);
+    //InitFunctionType m_InitMethod;
     FunctionType m_UpdateMethod;
     FunctionType m_DrawMethod;
     FunctionType m_DeleteMethod;
 
     typedef struct
     {
-        void(*m_pInit)(s_workArea*, void*);
+        InitFunctionType m_pInit;
         FunctionType m_pUpdate;
         FunctionType m_pDraw;
         FunctionType m_pDelete;
@@ -183,6 +185,10 @@ T* createSubTask(p_workArea parentTask)
 {
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, T::getTaskDefinition(), new T, NULL));
     T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    if (pTypeTaskDefinition->m_pInit)
+    {
+        std::invoke(pTypeTaskDefinition->m_pInit, pNewTask, nullptr);
+    }
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
@@ -194,6 +200,10 @@ T* createSubTaskWithArg(p_workArea parentTask, void* arg)
 {
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, T::getTaskDefinition(), new T, arg));
     T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    if (pTypeTaskDefinition->m_pInit)
+    {
+        std::invoke(pTypeTaskDefinition->m_pInit, pNewTask, arg);
+    }
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
@@ -205,6 +215,10 @@ T* createSiblingTaskWithArg(p_workArea parentTask, void* arg)
 {
     T* pNewTask = static_cast<T*>(createSiblingTaskWithArg(parentTask, T::getTaskDefinition(), new T, arg));
     T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    if (pTypeTaskDefinition->m_pInit)
+    {
+        std::invoke(pTypeTaskDefinition->m_pInit, pNewTask, arg);
+    }
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;

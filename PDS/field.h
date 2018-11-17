@@ -272,7 +272,7 @@ struct s_cutsceneTask : public s_workAreaTemplate<s_cutsceneTask>
     }
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { s_cutsceneTask::StaticInit, &s_cutsceneTask::Update, NULL, NULL, "s_cutsceneTask" };
+        static TypedTaskDefinition taskDefinition = { &s_cutsceneTask::Init, &s_cutsceneTask::Update, NULL, NULL, "s_cutsceneTask" };
         return &taskDefinition;
     }
     void Init(void* argument) override;
@@ -296,7 +296,7 @@ struct s_cutsceneTask2 : public s_workAreaTemplate<s_cutsceneTask2>
     }
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { s_cutsceneTask2::StaticInit, &s_cutsceneTask2::Update, &s_cutsceneTask2::Draw, NULL, "s_cutsceneTask2" };
+        static TypedTaskDefinition taskDefinition = { &s_cutsceneTask2::Init, &s_cutsceneTask2::Update, &s_cutsceneTask2::Draw, NULL, "s_cutsceneTask2" };
         return &taskDefinition;
     }
     void Init(void* argument) override;

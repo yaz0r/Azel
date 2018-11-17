@@ -520,7 +520,7 @@ struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
 
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { s_loadWarningWorkArea::StaticInit, NULL, &s_loadWarningWorkArea::Draw, NULL, "loadWarning" };
+        static TypedTaskDefinition taskDefinition = { &s_loadWarningWorkArea::Init, NULL, &s_loadWarningWorkArea::Draw, NULL, "loadWarning" };
         return &taskDefinition;
     }
 
