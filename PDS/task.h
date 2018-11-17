@@ -46,6 +46,13 @@ typedef s_workArea* p_workArea;
 template<typename T>
 struct s_workAreaTemplate : public s_workArea
 {
+    s_workAreaTemplate()
+    {
+        m_UpdateMethod = NULL;
+        m_DrawMethod = NULL;
+        m_DeleteMethod = NULL;
+    }
+
     static T* ConvertType(p_workArea pWorkArea)
     {
         return static_cast<T*>(pWorkArea);
@@ -56,17 +63,42 @@ struct s_workAreaTemplate : public s_workArea
     }
     static void StaticUpdate(p_workArea pWorkArea)
     {
-        ConvertType(pWorkArea)->Update();
+        T* pTask = ConvertType(pWorkArea);
+        if(pTask->m_UpdateMethod)
+        {
+            std::invoke(pTask->m_UpdateMethod, pTask);
+        }
     }
     static void StaticDraw(p_workArea pWorkArea)
     {
-        ConvertType(pWorkArea)->Draw();
+        T* pTask = ConvertType(pWorkArea);
+        if (pTask->m_DrawMethod)
+        {
+            std::invoke(pTask->m_DrawMethod, pTask);
+        }
     }
     static void StaticDelete(p_workArea pWorkArea)
     {
-        ConvertType(pWorkArea)->Delete();
+        T* pTask = ConvertType(pWorkArea);
+        if (pTask->m_DeleteMethod)
+        {
+            std::invoke(pTask->m_DeleteMethod, pTask);
+        }
     }
 
+    typedef void (T::*FunctionType)();
+    FunctionType m_UpdateMethod;
+    FunctionType m_DrawMethod;
+    FunctionType m_DeleteMethod;
+
+    typedef struct
+    {
+        void(*m_pInit)(s_workArea*, void*);
+        FunctionType m_pUpdate;
+        FunctionType m_pDraw;
+        FunctionType m_pDelete;
+        const char* m_taskName;
+    }TypedTaskDefinition;
 };
 
 struct s_taskDefinition
@@ -149,13 +181,34 @@ void runTasks();
 template<typename T>
 T* createSubTask(p_workArea parentTask)
 {
-    return static_cast<T*>(createSubTask(parentTask, T::getTaskDefinition(), new T));
+    T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, T::getTaskDefinition(), new T, NULL));
+    T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
+    pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
+    pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
+    return pNewTask;
+}
+
+template<typename T>
+T* createSubTaskWithArg(p_workArea parentTask, void* arg)
+{
+    T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, T::getTaskDefinition(), new T, arg));
+    T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
+    pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
+    pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
+    return pNewTask;
 }
 
 template<typename T>
 T* createSiblingTaskWithArg(p_workArea parentTask, void* arg)
 {
-    return static_cast<T*>(createSiblingTaskWithArg(parentTask, T::getTaskDefinition(), new T, arg));
+    T* pNewTask = static_cast<T*>(createSiblingTaskWithArg(parentTask, T::getTaskDefinition(), new T, arg));
+    T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
+    pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
+    pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
+    return pNewTask;
 }
 
 p_workArea createSubTask(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea);

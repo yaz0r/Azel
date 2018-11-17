@@ -240,9 +240,14 @@ struct s_multiChoice
 
 struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
 {
-    static s_taskDefinition* getTaskDefinition()
+    static s_taskDefinitionWithArg* getTaskDefinition()
     {
-        static s_taskDefinition taskDefinition = { NULL, s_riderAnimTask::StaticUpdate, NULL, s_riderAnimTask::StaticDelete, "s_riderAnimTaskTask" };
+        static s_taskDefinitionWithArg taskDefinition = { NULL, s_riderAnimTask::StaticUpdate, NULL, s_riderAnimTask::StaticDelete, "s_riderAnimTaskTask" };
+        return &taskDefinition;
+    }
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { NULL, &s_riderAnimTask::Update, NULL, &s_riderAnimTask::Delete, "s_riderAnimTaskTask" };
         return &taskDefinition;
     }
     void Update() override;
@@ -265,7 +270,11 @@ struct s_cutsceneTask : public s_workAreaTemplate<s_cutsceneTask>
         static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask::StaticInit, s_cutsceneTask::StaticUpdate, NULL, NULL, "s_cutsceneTask" };
         return &taskDefinition;
     }
-
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { s_cutsceneTask::StaticInit, &s_cutsceneTask::Update, NULL, NULL, "s_cutsceneTask" };
+        return &taskDefinition;
+    }
     void Init(void* argument) override;
     void Update() override;
 
@@ -278,14 +287,18 @@ struct s_cutsceneTask : public s_workAreaTemplate<s_cutsceneTask>
     //size = 0x1C
 };
 
-struct s_cutsceneTask2 : public s_workAreaTemplate<s_cutsceneTask>
+struct s_cutsceneTask2 : public s_workAreaTemplate<s_cutsceneTask2>
 {
     static s_taskDefinitionWithArg* getTaskDefinition()
     {
         static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask2::StaticInit, s_cutsceneTask2::StaticUpdate, s_cutsceneTask2::StaticDraw, NULL, "s_cutsceneTask2" };
         return &taskDefinition;
     }
-
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { s_cutsceneTask2::StaticInit, &s_cutsceneTask2::Update, &s_cutsceneTask2::Draw, NULL, "s_cutsceneTask2" };
+        return &taskDefinition;
+    }
     void Init(void* argument) override;
     void Update() override;
 

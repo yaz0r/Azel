@@ -510,22 +510,25 @@ p_workArea startWarningTask(s_workArea* workArea)
     return createSubTask(workArea, &warningTaskDefinition, new s_warningWorkArea);
 }
 
-struct s_loadWarningWorkArea : public s_workArea
+struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
 {
-    static s_taskDefinition* getTaskDefinition()
+    static s_taskDefinitionWithArg* getTaskDefinition()
     {
-        static s_taskDefinition taskDefinition = { s_loadWarningWorkArea::StaticInit, NULL, s_loadWarningWorkArea::StaticDraw, NULL, "loadWarning" };
+        static s_taskDefinitionWithArg taskDefinition = { s_loadWarningWorkArea::StaticInit, NULL, s_loadWarningWorkArea::StaticDraw, NULL, "loadWarning" };
         return &taskDefinition;
     }
 
-    static void StaticInit(p_workArea pWorkArea)
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { s_loadWarningWorkArea::StaticInit, NULL, &s_loadWarningWorkArea::Draw, NULL, "loadWarning" };
+        return &taskDefinition;
+    }
+
+    static void StaticInit(p_workArea pWorkArea, void*)
     {
         ConvertType(pWorkArea)->Init(NULL);
     }
-    static void StaticDraw(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Draw();
-    }
+
     static s_loadWarningWorkArea* ConvertType(p_workArea pWorkArea)
     {
         return static_cast<s_loadWarningWorkArea*>(pWorkArea);

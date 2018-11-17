@@ -936,9 +936,14 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
     struct s_A3_Obj0 : public s_workAreaTemplate<s_A3_Obj0>
     {
-        static s_taskDefinition* getTaskDefinition()
+        static s_taskDefinitionWithArg* getTaskDefinition()
         {
-            static s_taskDefinition taskDefinition = { NULL, NULL, s_A3_Obj0::StaticDraw, NULL, "s_A3_Obj0" };
+            static s_taskDefinitionWithArg taskDefinition = { NULL, NULL, s_A3_Obj0::StaticDraw, NULL, "s_A3_Obj0" };
+            return &taskDefinition;
+        }
+        static TypedTaskDefinition* getTypedTaskDefinition()
+        {
+            static TypedTaskDefinition taskDefinition = { NULL, NULL, &s_A3_Obj0::Draw, NULL, "s_A3_Obj0" };
             return &taskDefinition;
         }
         void Draw() override
@@ -1014,11 +1019,17 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         return checkPositionVisibility(r4, graphicEngineStatus.m4070_farClipDistance);
     }
 
-    struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj0>
+    struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
     {
-        static s_taskDefinition* getTaskDefinition()
+        static s_taskDefinitionWithArg* getTaskDefinition()
         {
-            static s_taskDefinition taskDefinition = { NULL, s_A3_Obj4::StaticUpdate, s_A3_Obj4::StaticDraw, NULL, "s_A3_Obj4" };
+            static s_taskDefinitionWithArg taskDefinition = { NULL, s_A3_Obj4::StaticUpdate, s_A3_Obj4::StaticDraw, NULL, "s_A3_Obj4" };
+            return &taskDefinition;
+        }
+
+        static TypedTaskDefinition* getTypedTaskDefinition()
+        {
+            static TypedTaskDefinition taskDefinition = { NULL, &s_A3_Obj4::Update, &s_A3_Obj4::Draw, NULL, "s_A3_Obj4" };
             return &taskDefinition;
         }
 
@@ -1935,7 +1946,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
     
     void startCutscene(s_cutsceneData* r4)
     {
-        createSubTaskWithArg(getFieldTaskPtr()->m8_pSubFieldData, s_cutsceneTask::getTaskDefinition(), new s_cutsceneTask, r4);
+        createSubTaskWithArg<s_cutsceneTask>(getFieldTaskPtr()->m8_pSubFieldData, r4);
     }
 
     s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
