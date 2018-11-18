@@ -123,31 +123,15 @@ struct s_vdp2StringTask : public s_workArea
     // size 2C
 };
 
-struct s_cinematicBarTask : public s_workArea
+struct s_cinematicBarTask : public s_workAreaTemplate<s_cinematicBarTask>
 {
-    static s_taskDefinition* getTaskDefinition()
+    static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static s_taskDefinition taskDefinition = { s_cinematicBarTask::StaticInit, s_cinematicBarTask::StaticUpdate, s_cinematicBarTask::StaticDraw, NULL, "cinematicBarTask" };
+        static TypedTaskDefinition taskDefinition = { &s_cinematicBarTask::Init, &s_cinematicBarTask::Update, &s_cinematicBarTask::Draw, NULL, "s_cinematicBarTask" };
         return &taskDefinition;
     }
-    static void StaticInit(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Init();
-    }
-    static void StaticUpdate(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Update();
-    }
-    static void StaticDraw(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Draw();
-    }
-    static s_cinematicBarTask* ConvertType(p_workArea pWorkArea)
-    {
-        return static_cast<s_cinematicBarTask*>(pWorkArea);
-    }
 
-    void Init(void* pArgument = NULL) override
+    void Init(void*) override
     {
         m8 = 0;
         mB = 0;
@@ -178,28 +162,12 @@ struct s_cinematicBarTask : public s_workArea
     //size 0x13
 };
 
-struct s_multiChoiceTask2 : public s_workArea
+struct s_multiChoiceTask2 : public s_workAreaTemplate< s_multiChoiceTask2>
 {
-    static s_taskDefinition* getTaskDefinition()
+    static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static s_taskDefinition taskDefinition = { NULL, s_multiChoiceTask2::StaticUpdate, s_multiChoiceTask2::StaticDraw, s_multiChoiceTask2::StaticDelete, "s_multiChoiceTask2" };
+        static TypedTaskDefinition taskDefinition = { NULL, &s_multiChoiceTask2::Update, &s_multiChoiceTask2::Draw, &s_multiChoiceTask2::Delete, "s_multiChoiceTask2" };
         return &taskDefinition;
-    }
-    static void StaticUpdate(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Update();
-    }
-    static void StaticDraw(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Draw();
-    }
-    static void StaticDelete(p_workArea pWorkArea)
-    {
-        ConvertType(pWorkArea)->Delete();
-    }
-    static s_multiChoiceTask2* ConvertType(p_workArea pWorkArea)
-    {
-        return static_cast<s_multiChoiceTask2*>(pWorkArea);
     }
 
     void Update() override;
@@ -240,11 +208,6 @@ struct s_multiChoice
 
 struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
 {
-    static s_taskDefinitionWithArg* getTaskDefinition()
-    {
-        static s_taskDefinitionWithArg taskDefinition = { NULL, s_riderAnimTask::StaticUpdate, NULL, s_riderAnimTask::StaticDelete, "s_riderAnimTaskTask" };
-        return &taskDefinition;
-    }
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
         static TypedTaskDefinition taskDefinition = { NULL, &s_riderAnimTask::Update, NULL, &s_riderAnimTask::Delete, "s_riderAnimTaskTask" };
@@ -265,11 +228,6 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
 
 struct s_cutsceneTask : public s_workAreaTemplate<s_cutsceneTask>
 {
-    static s_taskDefinitionWithArg* getTaskDefinition()
-    {
-        static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask::StaticInit, s_cutsceneTask::StaticUpdate, NULL, NULL, "s_cutsceneTask" };
-        return &taskDefinition;
-    }
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
         static TypedTaskDefinition taskDefinition = { &s_cutsceneTask::Init, &s_cutsceneTask::Update, NULL, NULL, "s_cutsceneTask" };
@@ -289,11 +247,6 @@ struct s_cutsceneTask : public s_workAreaTemplate<s_cutsceneTask>
 
 struct s_cutsceneTask2 : public s_workAreaTemplate<s_cutsceneTask2>
 {
-    static s_taskDefinitionWithArg* getTaskDefinition()
-    {
-        static s_taskDefinitionWithArg taskDefinition = { s_cutsceneTask2::StaticInit, s_cutsceneTask2::StaticUpdate, s_cutsceneTask2::StaticDraw, NULL, "s_cutsceneTask2" };
-        return &taskDefinition;
-    }
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
         static TypedTaskDefinition taskDefinition = { &s_cutsceneTask2::Init, &s_cutsceneTask2::Update, &s_cutsceneTask2::Draw, NULL, "s_cutsceneTask2" };
@@ -329,20 +282,15 @@ struct s_fieldScriptWorkArea78
     sVec3_FP m48;// unk
 };
 
-struct s_fieldScriptWorkArea : public s_workArea
+struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
 {
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_fieldScriptWorkArea::Init, &s_fieldScriptWorkArea::Update, NULL, NULL, "s_fieldScriptWorkArea" };
+        return &taskDefinition;
+    }
+    void Init(void*) override;
     void Update() override;
-
-    static void StaticUpdate(p_workArea pWorkArea)
-    {
-        s_fieldScriptWorkArea* pThis = ConvertType(pWorkArea);
-        pThis->Update();
-    }
-
-    static s_fieldScriptWorkArea* ConvertType(p_workArea pWorkArea)
-    {
-        return static_cast<s_fieldScriptWorkArea*>(pWorkArea);
-    }
 
     void fieldScriptTaskUpdateSub2();
     void fieldScriptTaskUpdateSub3();
@@ -632,7 +580,7 @@ struct s_visibilityGridWorkArea : public s_workArea
     s32 m18_cameraGridLocation[2]; // 18 Grid location
     s32 m20_cellDimensions[2];
     u32 m28;
-    fixedPoint* m2C_depthRangeTable;
+    std::vector<fixedPoint>* m2C_depthRangeTable;
     s_DataTable3* m30; // 30
     std::vector<std::vector<sCameraVisibility>>* m34_cameraVisibilityTable; // m34
     p_workArea m38; // 38
@@ -748,13 +696,33 @@ struct s_fieldPaletteTaskWorkSub
     s32 m14;
 };
 
-struct s_fieldPaletteTaskWorkArea : public s_workArea
+struct s_fieldPaletteTaskWorkArea : public s_workAreaTemplate<s_fieldPaletteTaskWorkArea>
 {
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_fieldPaletteTaskWorkArea::Init, nullptr, &s_fieldPaletteTaskWorkArea::Draw, nullptr, "s_FieldSubTaskWorkArea" };
+        return &taskDefinition;
+    }
+
+    void Init(void*) override;
+    void Draw() override;
+
     s_fieldPaletteTaskWorkSub* m78;
 };
 
-struct s_FieldSubTaskWorkArea : public s_workArea
+struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea>
 {
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_FieldSubTaskWorkArea::Init, &s_FieldSubTaskWorkArea::Update, &s_FieldSubTaskWorkArea::Draw, &s_FieldSubTaskWorkArea::Delete, "s_FieldSubTaskWorkArea" };
+        return &taskDefinition;
+    }
+
+    void Init(void*);
+    void Update();
+    void Draw();
+    void Delete();
+
     u8* memoryArea[3]; // 0
     u8* characterArea[3]; // C
     u8* memoryArea_edge; // 18
@@ -826,6 +794,58 @@ struct s_fieldTaskWorkArea : public s_workArea
 };
 
 extern s_fieldTaskWorkArea* fieldTaskPtr;
+
+struct s_fieldStartOverlayTask : public s_workAreaTemplate<s_fieldStartOverlayTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_fieldStartOverlayTask::Init, nullptr, nullptr, &s_fieldStartOverlayTask::Delete, "s_fieldStartOverlayTask" };
+        return &taskDefinition;
+    }
+
+    void Init(void*);
+    void Delete();
+};
+
+struct s_fieldSub1Task : public s_workAreaTemplate<s_fieldSub1Task>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_fieldSub1Task::Init, nullptr, nullptr, &s_fieldSub1Task::Delete, "s_fieldSub1Task" };
+        return &taskDefinition;
+    }
+
+    void Init(void*)
+    {
+        fieldTaskPtr->m0 = this;
+        createSubTask<s_fieldStartOverlayTask>(this);
+    }
+
+    void Delete()
+    {
+        fieldTaskPtr->m0 = NULL;
+    }
+};
+
+struct s_fieldSub0Task : public s_workAreaTemplate<s_fieldSub0Task>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_fieldSub0Task::Init, nullptr, nullptr, &s_fieldSub0Task::Delete, "s_fieldSub0Task" };
+        return &taskDefinition;
+    }
+
+    void Init(void*)
+    {
+        fieldTaskVar0 = this;
+        createSubTask< s_fieldSub1Task>(this);
+    }
+
+    void Delete()
+    {
+        fieldTaskVar0 = nullptr;
+    }
+};
 
 void loadCommonFieldResources();
 void setupFileList(const s_MCB_CGB* fileList);

@@ -18,8 +18,19 @@ void stopAllSounds();
 extern p_workArea fieldTaskVar0;
 extern u32 fieldTaskVar2;
 
-struct s_loadRiderWorkArea : public s_workArea
+struct s_loadRiderWorkArea : public s_workAreaTemplate<s_loadRiderWorkArea>
 {
+    static s_taskDefinitionWithArg* getTaskDefinition()
+    {
+        static s_taskDefinitionWithArg taskDefinition = { NULL, NULL, NULL, NULL, "s_loadRiderWorkArea" };
+        return &taskDefinition;
+    }
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL, "s_loadRiderWorkArea" };
+        return &taskDefinition;
+    }
+
     u8* m0_riderModel; //0
     u32 m4; //4
     s_workArea* m_ParentWorkArea; //8
@@ -32,8 +43,19 @@ struct s_loadRiderWorkArea : public s_workArea
 extern s_loadRiderWorkArea* pRider1State;
 extern s_loadRiderWorkArea* pRider2State;
 
-struct s_loadDragonWorkArea : public s_workArea
+struct s_loadDragonWorkArea : public s_workAreaTemplate<s_loadDragonWorkArea>
 {
+    static s_taskDefinitionWithArg* getTaskDefinition()
+    {
+        static s_taskDefinitionWithArg taskDefinition = { NULL, NULL, NULL, NULL, "s_loadDragonWorkArea" };
+        return &taskDefinition;
+    }
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL, "s_loadDragonWorkArea" };
+        return &taskDefinition;
+    }
+
     u8* dramAllocation; //0
     u8* vramAllocation;//4
     u16 MCBOffsetInDram;//8

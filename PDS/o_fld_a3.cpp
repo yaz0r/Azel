@@ -96,16 +96,14 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         create_fieldA3_0_tutorialTask(workArea);
     }
 
-    struct sFieldA3_1_fieldIntroTask : public s_workArea
+    struct sFieldA3_1_fieldIntroTask : public s_workAreaTemplate<sFieldA3_1_fieldIntroTask>
     {
-        static void StaticUpdate(p_workArea pWorkArea)
+        static TypedTaskDefinition* getTypedTaskDefinition()
         {
-            ConvertType(pWorkArea)->Update();
+            static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL, "sFieldA3_1_fieldIntroTask" };
+            return &taskDefinition;
         }
-        static sFieldA3_1_fieldIntroTask* ConvertType(p_workArea pWorkArea)
-        {
-            return static_cast<sFieldA3_1_fieldIntroTask*>(pWorkArea);
-        }
+
         void Update() override
         {
             if (startFieldScript(14, 1453))
@@ -119,7 +117,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
     {
         if (!mainGameState.getBit(0xB5, 5))
         {
-            createSubTaskFromFunction(workArea, sFieldA3_1_fieldIntroTask::StaticUpdate, new sFieldA3_1_fieldIntroTask, "fieldA3_1_fieldIntroTask_Update");
+            createSubTaskFromFunction<sFieldA3_1_fieldIntroTask>(workArea, &sFieldA3_1_fieldIntroTask::Update);
         }
     }
 
@@ -180,7 +178,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         s_visibilityGridWorkArea* r5 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
         u32 rangeIndex = 0;
 
-        while (r4 > r5->m2C_depthRangeTable[rangeIndex])
+        while (r4 > (*r5->m2C_depthRangeTable)[rangeIndex])
         {
             rangeIndex++;
         }
@@ -936,11 +934,6 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
     struct s_A3_Obj0 : public s_workAreaTemplate<s_A3_Obj0>
     {
-        static s_taskDefinitionWithArg* getTaskDefinition()
-        {
-            static s_taskDefinitionWithArg taskDefinition = { NULL, NULL, s_A3_Obj0::StaticDraw, NULL, "s_A3_Obj0" };
-            return &taskDefinition;
-        }
         static TypedTaskDefinition* getTypedTaskDefinition()
         {
             static TypedTaskDefinition taskDefinition = { NULL, NULL, &s_A3_Obj0::Draw, NULL, "s_A3_Obj0" };
@@ -1021,12 +1014,6 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
     struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
     {
-        static s_taskDefinitionWithArg* getTaskDefinition()
-        {
-            static s_taskDefinitionWithArg taskDefinition = { NULL, s_A3_Obj4::StaticUpdate, s_A3_Obj4::StaticDraw, NULL, "s_A3_Obj4" };
-            return &taskDefinition;
-        }
-
         static TypedTaskDefinition* getTypedTaskDefinition()
         {
             static TypedTaskDefinition taskDefinition = { NULL, &s_A3_Obj4::Update, &s_A3_Obj4::Draw, NULL, "s_A3_Obj4" };
@@ -1463,9 +1450,9 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         return pNewData2;
     }
 
-    void fieldPaletteTaskInit(p_workArea pWorkArea)
+    void s_fieldPaletteTaskWorkArea::Init(void*)
     {
-        s_fieldPaletteTaskWorkArea* r14 = static_cast<s_fieldPaletteTaskWorkArea*>(pWorkArea);
+        s_fieldPaletteTaskWorkArea* r14 = this;
 
         getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = r14;
 
@@ -1492,16 +1479,14 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         asyncDmaCopy({ 0x0608FEA4, gFLD_A3 }, getVdp2Cram(0xC00), 0x200, 0);
     }
 
-    void fieldPaletteTaskDraw(p_workArea pWorkArea)
+    void s_fieldPaletteTaskWorkArea::Draw()
     {
         PDS_unimplemented("fieldPaletteTaskDraw");
     }
 
-    s_taskDefinition fieldPaletteTaskDefinition = { fieldPaletteTaskInit, NULL, fieldPaletteTaskDraw, NULL, "fieldPaletteTask" };
-
     void createFieldPaletteTask(p_workArea parent)
     {
-        createSubTask(parent, &fieldPaletteTaskDefinition, new s_fieldPaletteTaskWorkArea);
+        createSubTask<s_fieldPaletteTaskWorkArea>(parent);
     }
 
     void adjustVerticalLimits(fixedPoint r4, fixedPoint r5)
@@ -2228,9 +2213,9 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         }
     }
 
-    void fieldScriptTaskInit(s_workArea* pWorkArea)
+    void s_fieldScriptWorkArea::Init(void*)
     {
-        s_fieldScriptWorkArea* pFieldScriptWorkArea = static_cast<s_fieldScriptWorkArea*>(pWorkArea);
+        s_fieldScriptWorkArea* pFieldScriptWorkArea = this;
 
         s_fieldTaskWorkArea* pFieldTaskWorkArea = getFieldTaskPtr();
 
@@ -2747,7 +2732,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
     s_cinematicBarTask* s_fieldScriptWorkArea::startCinmaticBarTask()
     {
-        return static_cast<s_cinematicBarTask*>(createSubTask(this, s_cinematicBarTask::getTaskDefinition(), new s_cinematicBarTask));
+        return createSubTask<s_cinematicBarTask>(this);
     }
 
     sSaturnPtr s_fieldScriptWorkArea::callNative(sSaturnPtr r5)
@@ -2904,7 +2889,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
     s_multiChoiceTask2* updateMultiChoice(p_workArea parentTask, s_multiChoiceTask2** r5, s32* r6_currentChoice, s32 r7_minusCurrentChoice, sSaturnPtr scriptPtr, s16* choiceTable, s32 moreCurrentChoice)
     {
-        s_multiChoiceTask2* r14 = static_cast<s_multiChoiceTask2*>(createSubTask(parentTask, s_multiChoiceTask2::getTaskDefinition(), new s_multiChoiceTask2));
+        s_multiChoiceTask2* r14 = createSubTask<s_multiChoiceTask2>(parentTask);
 
         r14->m0_Status = 0;
         r14->m5_selectedEntry = moreCurrentChoice;
@@ -3289,11 +3274,9 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         }
     }
 
-    s_taskDefinition fieldScriptTaskDefinition = { fieldScriptTaskInit, s_fieldScriptWorkArea::StaticUpdate, NULL, NULL, "fieldScriptTask" };
-
     void createFieldScriptTask(s_workArea* pWorkArea)
     {
-        createSubTask(pWorkArea, &fieldScriptTaskDefinition, new s_fieldScriptWorkArea);
+        createSubTask<s_fieldScriptWorkArea>(pWorkArea);
     }
 
     void fieldOverlaySubTaskInitSub2Sub1Sub1(sFieldCameraStatus* r11, s_dragonTaskWorkArea* stack_4)
@@ -6120,7 +6103,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         return 1;
     }
 
-    fixedPoint fieldCameraTask1InitData1_depthRangeTable[] =
+    std::vector<fixedPoint> fieldCameraTask1InitData1_depthRangeTable =
     {
         fixedPoint(0x80000),
         fixedPoint(0x100000),
@@ -6141,7 +6124,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         pTypedWorkArea->m18_cameraGridLocation[1] = -1;
         pTypedWorkArea->m30 = 0;
         pTypedWorkArea->m34_cameraVisibilityTable = 0;
-        pTypedWorkArea->m2C_depthRangeTable = fieldCameraTask1InitData1_depthRangeTable;
+        pTypedWorkArea->m2C_depthRangeTable = &fieldCameraTask1InitData1_depthRangeTable;
         pTypedWorkArea->m1300 = 3;
     }
 

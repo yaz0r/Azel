@@ -2,36 +2,44 @@
 
 namespace MENU_EN_OVERLAY {
 
-struct s_menuEnWorkArea : public s_workArea
+struct s_menuEnWorkArea : public s_workAreaTemplate<s_menuEnWorkArea>
 {
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_menuEnWorkArea::Init, &s_menuEnWorkArea::Update, &s_menuEnWorkArea::Draw, &s_menuEnWorkArea::Delete, "s_menuEnWorkArea" };
+        return &taskDefinition;
+    }
+
+    void Init(void*) override;
+    void Update() override;
+    void Draw() override;
+    void Delete() override;
 };
 
-void MenuEnTaskInit(s_workArea*)
+void s_menuEnWorkArea::Init(void*)
 {
     assert(0);
 }
 
-void MenuEnTaskUpdate(s_workArea*)
+void s_menuEnWorkArea::Update()
 {
     assert(0);
 }
 
 
-void MenuEnTaskDraw(s_workArea*)
+void s_menuEnWorkArea::Draw()
 {
     assert(0);
 }
 
-void MenuEnTaskDelete(s_workArea*)
+void s_menuEnWorkArea::Delete()
 {
     assert(0);
 }
-
-s_taskDefinition MenuEnTaskDefinition = { MenuEnTaskInit, MenuEnTaskUpdate, MenuEnTaskDraw, MenuEnTaskDelete, "MenuEnTask" };
 
 p_workArea overlayStart(p_workArea workArea)
 {
-    return createSubTask(workArea, &MenuEnTaskDefinition, new s_menuEnWorkArea);
+    return createSubTask< s_menuEnWorkArea>(workArea);
 }
 
 };

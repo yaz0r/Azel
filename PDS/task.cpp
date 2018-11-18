@@ -284,7 +284,7 @@ p_workArea createSubTaskFromFunction(p_workArea parentWorkArea, void(*pFunction)
 
 }
 
-s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea newWorkArea)
+s_workArea* createRootTask(s_taskDefinitionWithArg* pDefinition, p_workArea newWorkArea)
 {
     s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
     assert(pTask);
@@ -307,10 +307,10 @@ s_task* createRootTask(s_taskDefinition* pDefinition, p_workArea newWorkArea)
 
     if (pDefinition->m_pInit)
     {
-        pDefinition->m_pInit(newWorkArea);
+        pDefinition->m_pInit(newWorkArea, NULL);
     }
 
-    return pTask;
+    return newWorkArea;
 }
 
 s_task* getTaskFromWorkArea(p_workArea pWorkArea)

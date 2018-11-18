@@ -372,8 +372,14 @@ struct s3DModelAnimData
     u8 count2; // F
 };
 
-struct s_dragonState : public s_workArea
+struct s_dragonState : public s_workAreaTemplate<s_dragonState>
 {
+    static s_taskDefinitionWithArg* getTaskDefinition()
+    {
+        static s_taskDefinitionWithArg taskDefinition = { NULL, NULL, NULL, NULL, "s_dragonState" };
+        return &taskDefinition;
+    }
+
     u8* m0_pDragonModelRawData; //0
     u32 mC_dragonType;//C F can contain some other info
     s16 m10_cursorX;//10

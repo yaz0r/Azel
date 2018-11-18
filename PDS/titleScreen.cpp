@@ -8,18 +8,6 @@ struct s_titleMenuEntry
     p_workArea(*m_createTask)(p_workArea);
 };
 
-struct s_titleMenuWorkArea : public s_workArea
-{
-    u16 m_status; //0
-    u16 m_status2; //2
-    u16 m_currentSelection; // 4
-    u16 m_numMenuEntry; // 6
-    s_titleMenuEntry* m_menu; // 8
-    u16 m_vertialLocation; // C
-    s16 m_blinkDelay; // E
-    
-};
-
 s_titleMenuEntry mainMenu[] = {
     {1, -6, " NEW GAME ", NULL /*createNewGameTask*/},
     {1, -5, " CONTINUE ", NULL /*createContinueTask*/},
@@ -37,33 +25,40 @@ s_titleMenuEntry mainMenuDebug[] = {
     {1, -2, "  MOVIE   ", createMovieDebugTask },
 };
 
-
-void titleMenuTaskInit(p_workArea pTypelessWorkArea)
-{
-    s_titleMenuWorkArea* pWorkArea = static_cast<s_titleMenuWorkArea*>(pTypelessWorkArea);
-
-    // if we are not coming from the title screen (is this possible?)
-    if (initialTaskStatus.m_previousTask != createTitleScreenTask)
-    {
-        assert(0);
-    }
-
-    isInMenu2 = 1;
-}
-
 bool hasSaveGame()
 {
+    PDS_unimplemented("hasSaveGame");
     return false;
 }
 
-void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
+struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
 {
-    s_titleMenuWorkArea* pWorkArea = static_cast<s_titleMenuWorkArea*>(pTypelessWorkArea);
-
-    switch (pWorkArea->m_status)
+    static TypedTaskDefinition* getTypedTaskDefinition()
     {
-    case 0:
-        //if (keyboardIsKeyDown(0xF6))
+        static TypedTaskDefinition taskDefinition = { &s_titleMenuWorkArea::Init, NULL, &s_titleMenuWorkArea::Draw, NULL, "titleMenu" };
+        return &taskDefinition;
+    }
+
+    void Init(void*) override
+    {
+        // if we are not coming from the title screen (is this possible?)
+        if (initialTaskStatus.m_previousTask != createTitleScreenTask)
+        {
+            assert(0);
+        }
+
+        isInMenu2 = 1;
+    }
+
+    void Draw() override
+    {
+        s_titleMenuWorkArea* pWorkArea = this;
+
+        switch (pWorkArea->m_status)
+        {
+        case 0:
+            PDS_warning("Setting up menu as debug");
+            //if (keyboardIsKeyDown(0xF6))
         {
             pWorkArea->m_menu = mainMenuDebug;
             pWorkArea->m_numMenuEntry = 7;
@@ -119,104 +114,112 @@ void titleMenuTaskDraw(p_workArea pTypelessWorkArea)
 
         initRandomSeed(0);
         pWorkArea->m_status++;
-    case 1:
-        randomNumber(); // to increment seed
-
-        // start or A?
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xE)
-        {
-            playSoundEffect(0);
-
-            clearVdp2TextMemory();
-            initialTaskStatus.m_pendingTask = pWorkArea->m_menu[pWorkArea->m_currentSelection].m_createTask;
-
-            titleScreenDrawSub3(2);
-
-            // fade out to black
-            fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
-            return;
-        }
-
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x40)
-        {
-            int newSelection = pWorkArea->m_currentSelection;
-            do 
-            {
-                newSelection--;
-                if (newSelection < 0)
-                {
-                    newSelection = pWorkArea->m_numMenuEntry - 1;
-                }
-            } while (!pWorkArea->m_menu[newSelection].m_isEnabled);
-
-            if (newSelection != pWorkArea->m_currentSelection)
-            {
-                playSoundEffect(10);
-                pWorkArea->m_currentSelection = newSelection;
-                pWorkArea->m_status2 = 1;
-                pWorkArea->m_blinkDelay = 15;
-            }
-        }
-
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x80)
-        {
-            int newSelection = pWorkArea->m_currentSelection;
-            do
-            {
-                newSelection++;
-                if (newSelection > pWorkArea->m_numMenuEntry-1)
-                {
-                    newSelection = 0;
-                }
-            } while (!pWorkArea->m_menu[newSelection].m_isEnabled);
-
-            if (newSelection != pWorkArea->m_currentSelection)
-            {
-                playSoundEffect(10);
-                pWorkArea->m_currentSelection = newSelection;
-                pWorkArea->m_status2 = 1;
-                pWorkArea->m_blinkDelay = 15;
-            }
-        }
-
-        switch (pWorkArea->m_status2)
-        {
-        case 0:
-            if ((--pWorkArea->m_blinkDelay) >= 0)
-            {
-                return;
-            }
-            pWorkArea->m_blinkDelay = 6;
-
-            pWorkArea->m_status2++;
         case 1:
-            vdp2PrintStatus.palette = 0xC000;
-            vdp2DebugPrintSetPosition(0x11, pWorkArea->m_vertialLocation + 0x17);
-            drawLineLargeFont(pWorkArea->m_menu[pWorkArea->m_currentSelection].m_text);
+            randomNumber(); // to increment seed
 
-            pWorkArea->m_status2++;
-        case 2:
-            if ((--pWorkArea->m_blinkDelay) >= 0)
+            // start or A?
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xE)
             {
+                playSoundEffect(0);
+
+                clearVdp2TextMemory();
+                initialTaskStatus.m_pendingTask = pWorkArea->m_menu[pWorkArea->m_currentSelection].m_createTask;
+
+                titleScreenDrawSub3(2);
+
+                // fade out to black
+                fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
                 return;
             }
-            vdp2DebugPrintSetPosition(0x11, pWorkArea->m_vertialLocation + 0x17);
-            clearVdp2TextLargeFont();
 
-            pWorkArea->m_blinkDelay = 3;
-            pWorkArea->m_status2 = 0;
+            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x40)
+            {
+                int newSelection = pWorkArea->m_currentSelection;
+                do
+                {
+                    newSelection--;
+                    if (newSelection < 0)
+                    {
+                        newSelection = pWorkArea->m_numMenuEntry - 1;
+                    }
+                } while (!pWorkArea->m_menu[newSelection].m_isEnabled);
+
+                if (newSelection != pWorkArea->m_currentSelection)
+                {
+                    playSoundEffect(10);
+                    pWorkArea->m_currentSelection = newSelection;
+                    pWorkArea->m_status2 = 1;
+                    pWorkArea->m_blinkDelay = 15;
+                }
+            }
+
+            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x80)
+            {
+                int newSelection = pWorkArea->m_currentSelection;
+                do
+                {
+                    newSelection++;
+                    if (newSelection > pWorkArea->m_numMenuEntry - 1)
+                    {
+                        newSelection = 0;
+                    }
+                } while (!pWorkArea->m_menu[newSelection].m_isEnabled);
+
+                if (newSelection != pWorkArea->m_currentSelection)
+                {
+                    playSoundEffect(10);
+                    pWorkArea->m_currentSelection = newSelection;
+                    pWorkArea->m_status2 = 1;
+                    pWorkArea->m_blinkDelay = 15;
+                }
+            }
+
+            switch (pWorkArea->m_status2)
+            {
+            case 0:
+                if ((--pWorkArea->m_blinkDelay) >= 0)
+                {
+                    return;
+                }
+                pWorkArea->m_blinkDelay = 6;
+
+                pWorkArea->m_status2++;
+            case 1:
+                vdp2PrintStatus.palette = 0xC000;
+                vdp2DebugPrintSetPosition(0x11, pWorkArea->m_vertialLocation + 0x17);
+                drawLineLargeFont(pWorkArea->m_menu[pWorkArea->m_currentSelection].m_text);
+
+                pWorkArea->m_status2++;
+            case 2:
+                if ((--pWorkArea->m_blinkDelay) >= 0)
+                {
+                    return;
+                }
+                vdp2DebugPrintSetPosition(0x11, pWorkArea->m_vertialLocation + 0x17);
+                clearVdp2TextLargeFont();
+
+                pWorkArea->m_blinkDelay = 3;
+                pWorkArea->m_status2 = 0;
+                break;
+            }
+
+            break;
+
+        default:
+            assert(0);
             break;
         }
-
-        break;
-
-    default:
-        assert(0);
-        break;
     }
-}
 
-s_taskDefinition titleMenuTaskDefinition = { titleMenuTaskInit, NULL, titleMenuTaskDraw, NULL, "titleMenu" };
+    u16 m_status; //0
+    u16 m_status2; //2
+    u16 m_currentSelection; // 4
+    u16 m_numMenuEntry; // 6
+    s_titleMenuEntry* m_menu; // 8
+    u16 m_vertialLocation; // C
+    s16 m_blinkDelay; // E
+    
+};
 
 p_workArea startSegaLogoModule(p_workArea workArea)
 {
@@ -226,7 +229,7 @@ p_workArea startSegaLogoModule(p_workArea workArea)
 
 p_workArea createTitleMenuTask(p_workArea workArea)
 {
-    return createSubTask(workArea, &titleMenuTaskDefinition, new s_titleMenuWorkArea);
+    return createSubTask<s_titleMenuWorkArea>(workArea);
 }
 
 struct s_pressStartButtonTaskWorkArea : public s_workArea
@@ -288,16 +291,25 @@ void pressStartButtonTaskDelete(s_workArea* pTypelessWorkArea)
 
 s_taskDefinition pressStartButtonTask = { NULL, NULL, pressStartButtonTaskDraw, pressStartButtonTaskDelete, "pressStartButtonTask"};
 
-struct s_titleScreenWorkArea : public s_workArea
+struct s_titleScreenWorkArea : public s_workAreaTemplate<s_titleScreenWorkArea>
 {
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_titleScreenWorkArea::Init, NULL, &s_titleScreenWorkArea::Draw, NULL, "s_titleScreenWorkArea" };
+        return &taskDefinition;
+    }
+
+    void Init(void*) override;
+    void Draw() override;
+
     u32 m_status;
     u32 m_delay;
     p_workArea m_overlayTask;
 };
 
-void titleScreenDraw(p_workArea pTypelessWorkArea)
+void s_titleScreenWorkArea::Draw()
 {
-    s_titleScreenWorkArea* pWorkArea = static_cast<s_titleScreenWorkArea*>(pTypelessWorkArea);
+    s_titleScreenWorkArea* pWorkArea = this;
 
     switch (pWorkArea->m_status)
     {
@@ -371,24 +383,29 @@ void titleScreenDraw(p_workArea pTypelessWorkArea)
     }
 }
 
-void titleScreenInit(p_workArea pTypelessWorkArea)
+void s_titleScreenWorkArea::Init(void*)
 {
-    s_titleScreenWorkArea* pWorkArea = static_cast<s_titleScreenWorkArea*>(pTypelessWorkArea);
-
-    pWorkArea->m_overlayTask = TITLE_OVERLAY::overlayStart(pWorkArea);
+    m_overlayTask = TITLE_OVERLAY::overlayStart(this);
 }
-
-s_taskDefinition titleScreenTaskDefinition = { titleScreenInit, NULL, titleScreenDraw, NULL, "titleScreen" };
 
 p_workArea createTitleScreenTask(p_workArea workArea)
 {
-    return createSubTask(workArea, &titleScreenTaskDefinition, new s_titleScreenWorkArea);
+    return createSubTask<s_titleScreenWorkArea>(workArea);
 }
 
 // WarningTask
 
-struct s_warningWorkArea : public s_workArea
+struct s_warningWorkArea : public s_workAreaTemplate< s_warningWorkArea>
 {
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_warningWorkArea::Init, NULL, NULL, NULL, "sFieldA3_1_fieldIntroTask" };
+        return &taskDefinition;
+    }
+
+    void Init(void*) override;
+    void Draw() override; // not by default, only setup if necessary
+
     u32 m_status;
     u32 m_delay;
 };
@@ -398,9 +415,9 @@ u32 checkCartdrigeMemory()
     return 1;
 }
 
-void warningTaskDraw(p_workArea pTypelessWorkArea)
+void s_warningWorkArea::Draw()
 {
-    s_warningWorkArea* pWorkArea = static_cast<s_warningWorkArea*>(pTypelessWorkArea);
+    s_warningWorkArea* pWorkArea = this;
 
     switch (pWorkArea->m_status)
     {
@@ -419,10 +436,7 @@ void warningTaskDraw(p_workArea pTypelessWorkArea)
     case 3: // wait fade out
         if (!menuUnk0.m_field0.m_field20)
             return;
-        if (pTypelessWorkArea)
-        {
-            pTypelessWorkArea->getTask()->m14_flags |= 1; // finish task
-        }
+        getTask()->m14_flags |= 1; // finish task
         break;
     default:
         assert(0);
@@ -471,9 +485,9 @@ void loadWarningFile(u32 index)
     }
 }
 
-void warningTaskInit(p_workArea pTypelessWorkArea)
+void s_warningWorkArea::Init(void*)
 {
-    s_warningWorkArea* pWorkArea = static_cast<s_warningWorkArea*>(pTypelessWorkArea);
+    s_warningWorkArea* pWorkArea = this;
 
     u32 cartdrigePresent = checkCartdrigeMemory();
     if (cartdrigePresent == 0)
@@ -489,7 +503,8 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
     if (cartdrigePresent == 1)
     {
         s_task* pTask = pWorkArea->getTask();
-        pTask->mC_pDraw = warningTaskDraw;
+        pTask->mC_pDraw = &s_warningWorkArea::StaticDraw;
+        m_DrawMethod = &s_warningWorkArea::Draw;
     }
 
     loadWarningFile(cartdrigePresent - 1);
@@ -503,35 +518,17 @@ void warningTaskInit(p_workArea pTypelessWorkArea)
     fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
 }
 
-s_taskDefinition warningTaskDefinition = { warningTaskInit, NULL, NULL, NULL, "warning" };
-
 p_workArea startWarningTask(s_workArea* workArea)
 {
-    return createSubTask(workArea, &warningTaskDefinition, new s_warningWorkArea);
+    return createSubTask<s_warningWorkArea>(workArea);
 }
 
 struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
 {
-    static s_taskDefinitionWithArg* getTaskDefinition()
-    {
-        static s_taskDefinitionWithArg taskDefinition = { s_loadWarningWorkArea::StaticInit, NULL, s_loadWarningWorkArea::StaticDraw, NULL, "loadWarning" };
-        return &taskDefinition;
-    }
-
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
         static TypedTaskDefinition taskDefinition = { &s_loadWarningWorkArea::Init, NULL, &s_loadWarningWorkArea::Draw, NULL, "loadWarning" };
         return &taskDefinition;
-    }
-
-    static void StaticInit(p_workArea pWorkArea, void*)
-    {
-        ConvertType(pWorkArea)->Init(NULL);
-    }
-
-    static s_loadWarningWorkArea* ConvertType(p_workArea pWorkArea)
-    {
-        return static_cast<s_loadWarningWorkArea*>(pWorkArea);
     }
 
     void Init(void*) override
@@ -548,6 +545,7 @@ struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
             }
         }
 
+        PDS_warning("Skipping over cd 0 intro");
         /*
         if (azelCdNumber == 0)
         {

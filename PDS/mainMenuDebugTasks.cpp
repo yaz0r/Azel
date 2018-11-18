@@ -2,8 +2,111 @@
 
 extern p_workArea(*statusMenuSubMenus[])(p_workArea);
 
-struct sLoadingTaskWorkArea : public s_workArea
+struct sLoadingTaskWorkArea* gLoadingTaskWorkArea = NULL;
+
+s16 loadingTaskVar0 = 0x1D;
+
+struct sLoadingTaskWorkArea : public s_workAreaTemplate<sLoadingTaskWorkArea>
 {
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sLoadingTaskWorkArea::Init, &sLoadingTaskWorkArea::Update, NULL, &sLoadingTaskWorkArea::Delete, "sLoadingTaskWorkArea" };
+        return &taskDefinition;
+    }
+
+    void Init(void* r5) override
+    {
+        sLoadingTaskWorkArea* pWorkArea = this;
+        s8 arg = (s8)r5;
+
+        gLoadingTaskWorkArea = pWorkArea;
+
+        pWorkArea->m0_status = 0;
+        pWorkArea->m2 = -1;
+        pWorkArea->m4 = -1;
+        pWorkArea->m6 = 0;
+        pWorkArea->m8 = 0;
+        pWorkArea->mA = 0;
+        pWorkArea->mC = arg;
+
+        if (arg)
+        {
+            s32 r6 = 0x3E8;
+            s32 r4 = r6;
+            do
+            {
+                if (r4 >= r6)
+                {
+                    mainGameState.clearBit(0xC3E + r4);
+                }
+                else
+                {
+                    mainGameState.clearBit(r4);
+                }
+
+                /*
+                s32 r3;
+                if (r4 >= r6)
+                {
+                    r3 = 0xC3E + r4;
+                }
+                else
+                {
+                    r3 = r4;
+                }
+
+                r3 = r3 / 8;
+                s32 r0;
+                if (r4 >= r6)
+                {
+                    r0 = 0xC3E + r4;
+                }
+                else
+                {
+                    r0 = r4;
+                }
+
+                r0 &= 7;
+
+                u8 r1 = reverseBitMasks[r0];
+
+                mainGameState.bitField[r3] &= r1;*/
+            } while (--r4);
+        }
+        else
+        {
+            assert(0);
+        }
+    }
+
+    void loadingTaskUpdateSub0()
+    {
+        if (mC)
+            return;
+
+        assert(0);
+    }
+
+    void Update() override
+    {
+        switch (m0_status)
+        {
+        case 0:
+            loadingTaskUpdateSub0();
+            m0_status++;
+            break;
+        case 1:
+            break;
+        default:
+            assert(0);
+        }
+    }
+
+    void Delete()
+    {
+        PDS_unimplemented("sLoadingTaskWorkArea::Delete");
+    }
+
     s16 m0_status;
     s16 m2;
     s16 m4;
@@ -14,112 +117,9 @@ struct sLoadingTaskWorkArea : public s_workArea
     s32 m10;
 };
 
-sLoadingTaskWorkArea* gLoadingTaskWorkArea = NULL;
-
-s16 loadingTaskVar0 = 0x1D;
-
-void loadingTaskInit(s_workArea* pTypelessWorkArea, void* r5)
-{
-    sLoadingTaskWorkArea* pWorkArea = static_cast<sLoadingTaskWorkArea*>(pTypelessWorkArea);
-    s8 arg = (s8)r5;
-
-    gLoadingTaskWorkArea = pWorkArea;
-
-    pWorkArea->m0_status = 0;
-    pWorkArea->m2 = -1;
-    pWorkArea->m4 = -1;
-    pWorkArea->m6 = 0;
-    pWorkArea->m8 = 0;
-    pWorkArea->mA = 0;
-    pWorkArea->mC = arg;
-
-    if (arg)
-    {
-        s32 r6 = 0x3E8;
-        s32 r4 = r6;
-        do
-        {
-            if (r4 >= r6)
-            {
-                mainGameState.clearBit(0xC3E + r4);
-            }
-            else
-            {
-                mainGameState.clearBit(r4);
-            }
-
-            /*
-            s32 r3;
-            if (r4 >= r6)
-            {
-                r3 = 0xC3E + r4;
-            }
-            else
-            {
-                r3 = r4;
-            }
-
-            r3 = r3 / 8;
-            s32 r0;
-            if (r4 >= r6)
-            {
-                r0 = 0xC3E + r4;
-            }
-            else
-            {
-                r0 = r4;
-            }
-
-            r0 &= 7;
-
-            u8 r1 = reverseBitMasks[r0];
-
-            mainGameState.bitField[r3] &= r1;*/
-        } while (--r4);
-    }
-    else
-    {
-        assert(0);
-    }
-}
-
-void loadingTaskUpdateSub0(sLoadingTaskWorkArea* pWorkArea)
-{
-    if (pWorkArea->mC)
-        return;
-
-    assert(0);
-}
-
-void loadingTaskUpdate(p_workArea pTypelessWorkArea)
-{
-    sLoadingTaskWorkArea* pWorkArea = static_cast<sLoadingTaskWorkArea*>(pTypelessWorkArea);
-
-    switch (pWorkArea->m0_status)
-    {
-    case 0:
-        loadingTaskUpdateSub0(pWorkArea);
-        pWorkArea->m0_status++;
-        break;
-    case 1:
-        break;
-    default:
-        assert(0);
-    }
-}
-
-void loadingTaskDelete(p_workArea pTypelessWorkArea)
-{
-    sLoadingTaskWorkArea* pWorkArea = static_cast<sLoadingTaskWorkArea*>(pTypelessWorkArea);
-
-    PDS_unimplemented("loadingTaskDelete");
-}
-
-s_taskDefinitionWithArg loadingTaskDefinition = { loadingTaskInit, loadingTaskUpdate, NULL, loadingTaskDelete, "loadingTask" };
-
 p_workArea createLoadingTask(p_workArea parentTask, s8 arg)
 {
-    return createSiblingTaskWithArg(parentTask, &loadingTaskDefinition, new sLoadingTaskWorkArea, (void*)arg);
+    return createSiblingTaskWithArg<sLoadingTaskWorkArea>(parentTask, (void*)arg);
 }
 
 struct s_flagEditTaskWorkArea : public s_workArea
@@ -349,13 +349,6 @@ void fieldTaskInit(p_workArea pTypelessWorkArea, void* battleArgumentVoid)
     }
 }
 
-struct s_fieldDebugListWorkArea : public s_workArea
-{
-    u32 m0_ticks; //0
-    u32 m4_selectedSubField; // 4
-    u32 m8_isSelectingSubfield; // 8
-};
-
 u32 performModulo(u32 r0, u32 r1)
 {
     assert(r0);
@@ -363,306 +356,317 @@ u32 performModulo(u32 r0, u32 r1)
     return r1 % r0;
 }
 
-void fieldDebugListTaskInit(p_workArea pTypelessWorkArea)
-{
-    s_fieldDebugListWorkArea* pWorkArea = static_cast<s_fieldDebugListWorkArea*>(pTypelessWorkArea);
-
-    s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
-
-    pFieldTask->fieldIndexMenuSelection = pFieldTask->m2C_currentFieldIndex;
-    pFieldTask->subFieldIndexMenuSelection = pFieldTask->m2E_currentSubFieldIndex;
-    pFieldTask->m3A = pFieldTask->m30;
-    pFieldTask->m2E_currentSubFieldIndex = -1;
-
-    if (pFieldTask->fieldIndexMenuSelection < 0)
-    {
-        pFieldTask->fieldIndexMenuSelection = 0;
-    }
-
-    while (!fieldEnabledTable[pFieldTask->fieldIndexMenuSelection])
-    {
-        pFieldTask->fieldIndexMenuSelection++;
-    }
-
-    reinitVdp2();
-    
-    vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x3FFF7FFF;
-    vdp2Controls.m_isDirty = true;
-
-    vdp2Controls.m4_pendingVdp2Regs->PRINB = (vdp2Controls.m4_pendingVdp2Regs->PRINB & 0xF8FF) | 0x700;
-    vdp2Controls.m_isDirty = true;
-
-    if (menuUnk0.m_4D >= menuUnk0.m_4C)
-    {
-        vdp2Controls.m20_registers[0].N1COSL = 0x10;
-        vdp2Controls.m20_registers[1].N1COSL = 0x10;
-    }
-    
-    fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
-    fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
-}
-
 void setOpenMenu7()
 {
     graphicEngineStatus.m40AC.m0_menuId = 7;
 }
 
-void fieldDebugListTaskUpdate(p_workArea pTypelessWorkArea)
+struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWorkArea>
 {
-    s_fieldDebugListWorkArea* pWorkArea = static_cast<s_fieldDebugListWorkArea*>(pTypelessWorkArea);
-
-    pWorkArea->m0_ticks++;
-    s_fieldTaskWorkArea*r14 = getFieldTaskPtr();
-
-    u32 var_24 = performModulo(30, pWorkArea->m0_ticks);
-
-    if (pWorkArea->m8_isSelectingSubfield)
+    static TypedTaskDefinition* getTypedTaskDefinition()
     {
+        static TypedTaskDefinition taskDefinition = { &s_fieldDebugListWorkArea::Init, &s_fieldDebugListWorkArea::Update, NULL, NULL, "field debug list" };
+        return &taskDefinition;
+    }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x40)
+    void Init(void*) override
+    {
+        s_fieldDebugListWorkArea* pWorkArea = this;
+
+        s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
+
+        pFieldTask->fieldIndexMenuSelection = pFieldTask->m2C_currentFieldIndex;
+        pFieldTask->subFieldIndexMenuSelection = pFieldTask->m2E_currentSubFieldIndex;
+        pFieldTask->m3A = pFieldTask->m30;
+        pFieldTask->m2E_currentSubFieldIndex = -1;
+
+        if (pFieldTask->fieldIndexMenuSelection < 0)
         {
-            if (pWorkArea->m4_selectedSubField == 0)
-            {
-                pWorkArea->m8_isSelectingSubfield = 0;
-            }
+            pFieldTask->fieldIndexMenuSelection = 0;
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
+        while (!fieldEnabledTable[pFieldTask->fieldIndexMenuSelection])
         {
-            if (++r14->subFieldIndexMenuSelection >= fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields)
+            pFieldTask->fieldIndexMenuSelection++;
+        }
+
+        reinitVdp2();
+
+        vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x3FFF7FFF;
+        vdp2Controls.m_isDirty = true;
+
+        vdp2Controls.m4_pendingVdp2Regs->PRINB = (vdp2Controls.m4_pendingVdp2Regs->PRINB & 0xF8FF) | 0x700;
+        vdp2Controls.m_isDirty = true;
+
+        if (menuUnk0.m_4D >= menuUnk0.m_4C)
+        {
+            vdp2Controls.m20_registers[0].N1COSL = 0x10;
+            vdp2Controls.m20_registers[1].N1COSL = 0x10;
+        }
+
+        fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
+        fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
+    }
+
+    void Update() override
+    {
+        s_fieldDebugListWorkArea* pWorkArea = this;
+
+        pWorkArea->m0_ticks++;
+        s_fieldTaskWorkArea*r14 = getFieldTaskPtr();
+
+        u32 var_24 = performModulo(30, pWorkArea->m0_ticks);
+
+        if (pWorkArea->m8_isSelectingSubfield)
+        {
+
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x40)
             {
+                if (pWorkArea->m4_selectedSubField == 0)
+                {
+                    pWorkArea->m8_isSelectingSubfield = 0;
+                }
+            }
+
+            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
+            {
+                if (++r14->subFieldIndexMenuSelection >= fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields)
+                {
+                    r14->subFieldIndexMenuSelection = 0;
+                }
+            }
+
+            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
+            {
+                if (--r14->subFieldIndexMenuSelection < 0)
+                {
+                    r14->subFieldIndexMenuSelection = fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields - 1;
+                }
+            }
+
+            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x80) // page down
+            {
+                PDS_unimplemented("Page down");
+            }
+
+            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x40) // page up
+            {
+                PDS_unimplemented("Page up");
+            }
+        }
+        else
+        {
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x80)
+            {
+                pWorkArea->m8_isSelectingSubfield = 1;
+            }
+
+            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
+            {
+                clearVdp2StringFieldDebugList();
                 r14->subFieldIndexMenuSelection = 0;
-            }
-        }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
-        {
-            if (--r14->subFieldIndexMenuSelection < 0)
-            {
-                r14->subFieldIndexMenuSelection = fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields - 1;
-            }
-        }
-
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x80) // page down
-        {
-            PDS_unimplemented("Page down");
-        }
-
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x40) // page up
-        {
-            PDS_unimplemented("Page up");
-        }
-    }
-    else
-    {
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x80)
-        {
-            pWorkArea->m8_isSelectingSubfield = 1;
-        }
-
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
-        {
-            clearVdp2StringFieldDebugList();
-            r14->subFieldIndexMenuSelection = 0;
-
-            do
-            {
-                r14->fieldIndexMenuSelection++;
-                if (r14->fieldIndexMenuSelection >= 23)
+                do
                 {
-                    r14->fieldIndexMenuSelection = 0;
-                }
-            } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
-        }
-
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
-        {
-            clearVdp2StringFieldDebugList();
-            r14->subFieldIndexMenuSelection = 0;
-
-            do
-            {
-                r14->fieldIndexMenuSelection--;
-                if (r14->fieldIndexMenuSelection < 0)
-                {
-                    r14->fieldIndexMenuSelection = 22;
-                }
-            } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
-        }
-    }
-
-    if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x8000)
-    {
-        assert(0);
-    }
-
-    if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x800)
-    {
-        assert(0);
-    }
-
-    u32 r8 = 3;
-    for (u32 r12 = 0; r12 < 23; r12++)
-    {
-        vdp2DebugPrintSetPosition(0xA, r8);
-        if (r14->fieldIndexMenuSelection == r12) // is this the selected field?
-        {
-            vdp2PrintStatus.palette = 0x8000;
-        }
-        else
-        {
-            u16 selectedColor[] = { 0xD, 0xD };
-            assert(pWorkArea->m8_isSelectingSubfield >= 0);
-            assert(pWorkArea->m8_isSelectingSubfield <= 1);
-            vdp2PrintStatus.palette = selectedColor[pWorkArea->m8_isSelectingSubfield] << 12;
-        }
-
-        if (fieldEnabledTable[r12])
-        {
-            drawLineSmallFont(fieldDefinitions[r12].m_name);
-
-            // if selecting field
-            if (pWorkArea->m8_isSelectingSubfield == 0)
-            {
-                if (r14->fieldIndexMenuSelection == r12)
-                {
-                    vdp2PrintStatus.palette = 0xD000;
-                    vdp2DebugPrintSetPosition(0xA, r8);
-                    drawLineSmallFont("\x7F");
-                }
+                    r14->fieldIndexMenuSelection++;
+                    if (r14->fieldIndexMenuSelection >= 23)
+                    {
+                        r14->fieldIndexMenuSelection = 0;
+                    }
+                } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
             }
 
-            r8++;
-        }
-    }
-
-    u32 var_2C = 0;
-
-    u32 numSubFields = fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields;
-    const char** subFields = fieldDefinitions[r14->fieldIndexMenuSelection].m_subFields;
-
-    s16 r2 = r14->subFieldIndexMenuSelection;
-    if (r2 < 0)
-    {
-        r2 += 0xF;
-    }
-
-    pWorkArea->m4_selectedSubField = (r2 >> 4) << 4;
-
-    clearVdp2StringFieldDebugList();
-
-    u32 r12 = pWorkArea->m4_selectedSubField;
-
-    while(true)
-    {
-        u32 r4 = pWorkArea->m4_selectedSubField + 16;
-        u32 maxNumFields;
-        if (numSubFields < r4)
-        {
-            maxNumFields = numSubFields;
-        }
-        else
-        {
-            maxNumFields = r4;
-        }
-
-        if (r12 < maxNumFields)
-        {
-            vdp2DebugPrintSetPosition(0x12, var_2C + 3);
-            var_2C++;
-
-            if (r12 == r14->subFieldIndexMenuSelection)
+            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
             {
-                vdp2PrintStatus.palette = 0x9000;
+                clearVdp2StringFieldDebugList();
+                r14->subFieldIndexMenuSelection = 0;
+
+                do
+                {
+                    r14->fieldIndexMenuSelection--;
+                    if (r14->fieldIndexMenuSelection < 0)
+                    {
+                        r14->fieldIndexMenuSelection = 22;
+                    }
+                } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
             }
-            else
+        }
+
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x8000)
+        {
+            assert(0);
+        }
+
+        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x800)
+        {
+            assert(0);
+        }
+
+        u32 r8 = 3;
+        for (u32 r12 = 0; r12 < 23; r12++)
+        {
+            vdp2DebugPrintSetPosition(0xA, r8);
+            if (r14->fieldIndexMenuSelection == r12) // is this the selected field?
             {
                 vdp2PrintStatus.palette = 0x8000;
             }
+            else
+            {
+                u16 selectedColor[] = { 0xD, 0xD };
+                assert(pWorkArea->m8_isSelectingSubfield >= 0);
+                assert(pWorkArea->m8_isSelectingSubfield <= 1);
+                vdp2PrintStatus.palette = selectedColor[pWorkArea->m8_isSelectingSubfield] << 12;
+            }
 
-            drawLineSmallFont(subFields[r12]);
+            if (fieldEnabledTable[r12])
+            {
+                drawLineSmallFont(fieldDefinitions[r12].m_name);
+
+                // if selecting field
+                if (pWorkArea->m8_isSelectingSubfield == 0)
+                {
+                    if (r14->fieldIndexMenuSelection == r12)
+                    {
+                        vdp2PrintStatus.palette = 0xD000;
+                        vdp2DebugPrintSetPosition(0xA, r8);
+                        drawLineSmallFont("\x7F");
+                    }
+                }
+
+                r8++;
+            }
+        }
+
+        u32 var_2C = 0;
+
+        u32 numSubFields = fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields;
+        const char** subFields = fieldDefinitions[r14->fieldIndexMenuSelection].m_subFields;
+
+        s16 r2 = r14->subFieldIndexMenuSelection;
+        if (r2 < 0)
+        {
+            r2 += 0xF;
+        }
+
+        pWorkArea->m4_selectedSubField = (r2 >> 4) << 4;
+
+        clearVdp2StringFieldDebugList();
+
+        u32 r12 = pWorkArea->m4_selectedSubField;
+
+        while (true)
+        {
+            u32 r4 = pWorkArea->m4_selectedSubField + 16;
+            u32 maxNumFields;
+            if (numSubFields < r4)
+            {
+                maxNumFields = numSubFields;
+            }
+            else
+            {
+                maxNumFields = r4;
+            }
+
+            if (r12 < maxNumFields)
+            {
+                vdp2DebugPrintSetPosition(0x12, var_2C + 3);
+                var_2C++;
+
+                if (r12 == r14->subFieldIndexMenuSelection)
+                {
+                    vdp2PrintStatus.palette = 0x9000;
+                }
+                else
+                {
+                    vdp2PrintStatus.palette = 0x8000;
+                }
+
+                drawLineSmallFont(subFields[r12]);
+            }
+            else
+            {
+                break;
+            }
+
+            r12++;
+        }
+
+        if (pWorkArea->m8_isSelectingSubfield)
+        {
+            vdp2PrintStatus.palette = 0x9000;
+            vdp2DebugPrintSetPosition(0x12, r14->subFieldIndexMenuSelection - pWorkArea->m4_selectedSubField + 3);
+            drawLineSmallFont("\x7F");
+        }
+
+        vdp2PrintStatus.palette = 0x9000;
+        vdp2DebugPrintSetPosition(0x1D, 3);
+        vdp2PrintfSmallFont("%d   ", r14->m3A);
+
+        vdp2PrintStatus.palette = 0x7000;
+        vdp2DebugPrintSetPosition(3, 0x18);
+        vdp2PrintfLargeFont("GO:%2d  ", r14->m3D);
+
+        vdp2DebugPrintSetPosition(3, -2);
+        if (var_24 < 21)
+        {
+            const char* buildType[] = {
+                "      ",
+                "(N)   ",
+                "(I)   ",
+                "(NI)  ",
+                "(T)   ",
+                "(NT)  ",
+                "(IT)  ",
+                "(NIT) ",
+                "(H)   ",
+                "(HN)  ",
+                "(HI)  ",
+                "(HNI) ",
+                "(HT)  ",
+                "(HNT) ",
+                "(HIT) ",
+                "(HNIT)",
+            };
+            vdp2PrintfSmallFont("%s %s", "Ver. 11/14 ", buildType[0]);
         }
         else
         {
-            break;
+            clearVdp2TextSmallFont();
         }
 
-        r12++;
+        vdp2PrintStatus.palette = 0xC000;
+
+        u8 inputValue = graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xF;
+        if (inputValue == 0)
+        {
+            return;
+        }
+
+        if (inputValue & 3)
+        {
+            setOpenMenu7();
+        }
+
+        if (menuUnk0.m_4D >= menuUnk0.m_4C)
+        {
+            vdp2Controls.m20_registers[0].N1COSL = 0x10;
+            vdp2Controls.m20_registers[1].N1COSL = 0x10;
+        }
+
+        fadePalette(&menuUnk0.m_field0, 0, 0, 1);
+        fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+
+        r14->m3C_fieldTaskState++;
     }
 
-    if (pWorkArea->m8_isSelectingSubfield)
-    {
-        vdp2PrintStatus.palette = 0x9000;
-        vdp2DebugPrintSetPosition(0x12, r14->subFieldIndexMenuSelection - pWorkArea->m4_selectedSubField + 3);
-        drawLineSmallFont("\x7F");
-    }
-
-    vdp2PrintStatus.palette = 0x9000;
-    vdp2DebugPrintSetPosition(0x1D, 3);
-    vdp2PrintfSmallFont("%d   ", r14->m3A);
-
-    vdp2PrintStatus.palette = 0x7000;
-    vdp2DebugPrintSetPosition(3, 0x18);
-    vdp2PrintfLargeFont("GO:%2d  ", r14->m3D);
-
-    vdp2DebugPrintSetPosition(3, -2);
-    if (var_24 < 21)
-    {
-        const char* buildType[] = {
-            "      ",
-            "(N)   ",
-            "(I)   ",
-            "(NI)  ",
-            "(T)   ",
-            "(NT)  ",
-            "(IT)  ",
-            "(NIT) ",
-            "(H)   ",
-            "(HN)  ",
-            "(HI)  ",
-            "(HNI) ",
-            "(HT)  ",
-            "(HNT) ",
-            "(HIT) ",
-            "(HNIT)",
-        };
-        vdp2PrintfSmallFont("%s %s", "Ver. 11/14 ", buildType[0]);
-    }
-    else
-    {
-        clearVdp2TextSmallFont();
-    }
-
-    vdp2PrintStatus.palette = 0xC000;
-
-    u8 inputValue = graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xF;
-    if (inputValue == 0)
-    {
-        return;
-    }
-
-    if (inputValue & 3)
-    {
-        setOpenMenu7();
-    }
-
-    if (menuUnk0.m_4D >= menuUnk0.m_4C)
-    {
-        vdp2Controls.m20_registers[0].N1COSL = 0x10;
-        vdp2Controls.m20_registers[1].N1COSL = 0x10;
-    }
-
-    fadePalette(&menuUnk0.m_field0, 0, 0, 1);
-    fadePalette(&menuUnk0.m_field24, 0, 0, 1);
-
-    r14->m3C_fieldTaskState++;
-}
-
-s_taskDefinition fieldDebugListTaskDefinition = { fieldDebugListTaskInit, fieldDebugListTaskUpdate, NULL, NULL, "field debug list" };
+    u32 m0_ticks; //0
+    u32 m4_selectedSubField; // 4
+    u32 m8_isSelectingSubfield; // 8
+};
 
 p_workArea createFieldInputTask(p_workArea pTypelessWorkArea)
 {
-    return createSubTask(pTypelessWorkArea, &fieldDebugListTaskDefinition, new s_fieldDebugListWorkArea);
+    return createSubTask<s_fieldDebugListWorkArea>(pTypelessWorkArea);
 }
 
 struct s_dramAllocationNode
@@ -1920,7 +1924,7 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     const sDragonData3* pDragonData3 = &dragonData3[dragonLevel];
     const s_dragonData2* pDragonAnimOffsets = &dragonAnimOffsets[dragonLevel];
 
-    s_dragonState* pDragonState = static_cast<s_dragonState*>(createSubTaskFromFunction(pWorkArea, NULL, new s_dragonState, "dragonState"));
+    s_dragonState* pDragonState = createSubTaskFromFunction<s_dragonState>(pWorkArea, nullptr);
 
     pDragonState->m0_pDragonModelRawData = gDragonModel;
     pDragonState->mC_dragonType = dragonLevel;
@@ -1953,7 +1957,7 @@ void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
 s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 {
-    s_loadDragonWorkArea* pLoadDragonWorkArea = static_cast<s_loadDragonWorkArea*>(createSubTaskFromFunction(pWorkArea, NULL, new s_loadDragonWorkArea, "loadDragonModel"));
+    s_loadDragonWorkArea* pLoadDragonWorkArea = createSubTaskFromFunction<s_loadDragonWorkArea>(pWorkArea, nullptr);
 
     pLoadDragonWorkArea->dramAllocation = dramAllocate(0x1F600, 0);
     pLoadDragonWorkArea->vramAllocation = NULL;
@@ -2085,7 +2089,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
 
     u8* pModelData1 = NULL;
 
-    s_loadRiderWorkArea* pLoadRiderWorkArea = static_cast<s_loadRiderWorkArea*>(createSubTaskFromFunction(pWorkArea, NULL, new s_loadRiderWorkArea, "LoadRider"));
+    s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
 
     pLoadRiderWorkArea->m4 = 0;
     pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
@@ -2132,7 +2136,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
 
     u8* pModelData1 = NULL;
 
-    s_loadRiderWorkArea* pLoadRiderWorkArea = static_cast<s_loadRiderWorkArea*>(createSubTaskFromFunction(pWorkArea, NULL, new s_loadRiderWorkArea, "LoadRider2"));
+    s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
 
     pLoadRiderWorkArea->m4 = 0;
     pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
@@ -2234,9 +2238,9 @@ void setFieldSubTaskVar0(u32 value)
     fieldSubTaskVar0 = value;
 }
 
-void fieldSubTaskInit(s_workArea* pWorkArea)
+void s_FieldSubTaskWorkArea::Init(void*)
 {
-    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = static_cast<s_FieldSubTaskWorkArea*>(pWorkArea);
+    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = this;
 
     fieldTaskPtr->m8_pSubFieldData = pFieldSubTaskWorkArea;
     fieldTaskPtr->m8_pSubFieldData->m370_fieldDebuggerWho = 0;
@@ -2251,7 +2255,7 @@ void fieldSubTaskInit(s_workArea* pWorkArea)
     menuUnk0.m_48 = 0xC210;
     menuUnk0.m_4A = 0xC210;
 
-    overlayStart_FLD_A3(pWorkArea, 0);
+    overlayStart_FLD_A3(this, 0);
 
     fieldTaskPtr->m3C_fieldTaskState = 4;
 
@@ -2272,9 +2276,9 @@ bool readKeyboardToggle()
     return false;
 }
 
-void fieldSubTaskUpdate(s_workArea* pWorkArea)
+void s_FieldSubTaskWorkArea::Update()
 {
-    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = static_cast<s_FieldSubTaskWorkArea*>(pWorkArea);
+    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = this;
 
     mainGameState.setPackedBits(0, 2, 0);
 
@@ -2312,9 +2316,9 @@ void fieldSubTaskUpdate(s_workArea* pWorkArea)
     }
 }
 
-void fieldSubTaskDraw(s_workArea* pWorkArea)
+void s_FieldSubTaskWorkArea::Draw()
 {
-    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = static_cast<s_FieldSubTaskWorkArea*>(pWorkArea);
+    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = this;
 
     if (pFieldSubTaskWorkArea->pUpdateFunction1)
     {
@@ -2328,14 +2332,12 @@ void fieldSubTaskDraw(s_workArea* pWorkArea)
 
 }
 
-void fieldSubTaskDelete(s_workArea* pWorkArea)
+void s_FieldSubTaskWorkArea::Delete()
 {
-    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = static_cast<s_FieldSubTaskWorkArea*>(pWorkArea);
+    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = this;
 
     assert(0);
 }
-
-s_taskDefinition fieldSubTaskDefinition = { fieldSubTaskInit, fieldSubTaskUpdate, fieldSubTaskDraw, fieldSubTaskDelete, "field sub task" };
 
 s_taskDefinitionWithArg encounterTaskDefinition = { dummyTaskInitWithArg, dummyTaskUpdate, dummyTaskDraw, dummyTaskDelete, "encounter task" };
 
@@ -2345,13 +2347,13 @@ void createEncounterTask(s_workArea* pWorkArea)
     //createSiblingTaskWithArg(pWorkArea, &encounterTaskDefinition, new s_dummyWorkArea, pWorkArea);
 }
 
-void fieldStartOverlayTaskInit(s_workArea* pWorkArea)
+void s_fieldStartOverlayTask::Init(void*)
 {
     const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->m2C_currentFieldIndex];
 
-    fieldTaskPtr->m4_overlayTaskData = pWorkArea;
+    fieldTaskPtr->m4_overlayTaskData = this;
 
-    createEncounterTask(pWorkArea);
+    createEncounterTask(this);
 
     if(pFieldDefinition->m_fnt)
     {
@@ -2362,11 +2364,11 @@ void fieldStartOverlayTaskInit(s_workArea* pWorkArea)
     {
         //loadFile(pFieldDefinition->m_prg, NULL, 0);
 
-        createSubTask(pWorkArea, &fieldSubTaskDefinition, new s_FieldSubTaskWorkArea);
+        createSubTask<s_FieldSubTaskWorkArea>(this);
     }
 }
 
-void fieldStartOverlayTaskDelete(s_workArea* pWorkArea)
+void s_fieldStartOverlayTask::Delete()
 {
     const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->m2C_currentFieldIndex];
 
@@ -2378,34 +2380,6 @@ void fieldStartOverlayTaskDelete(s_workArea* pWorkArea)
     fieldTaskPtr->m4_overlayTaskData = NULL;
 }
 
-s_taskDefinition fieldStartOverlayTask = { fieldStartOverlayTaskInit, NULL, NULL, fieldStartOverlayTaskDelete, "field start overlay task" };
-
-void fieldSub1TaskInit(s_workArea* pWorkArea)
-{
-    fieldTaskPtr->m0 = pWorkArea;
-    createSubTask(pWorkArea, &fieldStartOverlayTask, new s_workArea);
-}
-
-void fieldSub1TaskDelete(s_workArea* pWorkArea)
-{
-    fieldTaskPtr->m0 = NULL;
-}
-
-s_taskDefinition fieldSub1TaskDefinition = { fieldSub1TaskInit, NULL, NULL, fieldSub1TaskDelete, "field sub1 task" };
-
-void fieldSub0TaskInit(s_workArea* pWorkArea)
-{
-    fieldTaskVar0 = pWorkArea;
-    createSubTask(pWorkArea, &fieldSub1TaskDefinition, new s_workArea);
-}
-
-void fieldSub0TaskDelete(s_workArea* pWorkArea)
-{
-    fieldTaskVar0 = NULL;
-}
-
-s_taskDefinition fieldSub0TaskDefinition = { fieldSub0TaskInit, NULL, NULL, fieldSub0TaskDelete, "field sub0 task" };
-
 p_workArea fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMenuSelection, u32 m3A, u32 currentSubFieldIndex)
 {
     fieldTaskPtr->m2C_currentFieldIndex = fieldIndexMenuSelection;
@@ -2415,17 +2389,17 @@ p_workArea fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMen
 
     if (fieldTaskVar0 == NULL)
     {
-        createSubTask(fieldTaskPtr, &fieldSub0TaskDefinition, new s_workArea);
+        createSubTask<s_fieldSub0Task>(fieldTaskPtr);
     }
     else
     {
         if (fieldTaskPtr->m0 == NULL)
         {
-            createSubTask(fieldTaskPtr, &fieldSub1TaskDefinition, new s_workArea);
+            createSubTask<s_fieldSub1Task>(fieldTaskPtr);
         }
         else
         {
-            createSubTask(fieldTaskPtr->m4_overlayTaskData, &fieldSubTaskDefinition, new s_FieldSubTaskWorkArea);
+            createSubTask<s_FieldSubTaskWorkArea>(fieldTaskPtr->m4_overlayTaskData);
         }
     }
 
@@ -3178,8 +3152,17 @@ void setupVdp2ForMenu()
     }
 }
 
-struct s_statusMenuTaskWorkArea : public s_workArea
+struct s_statusMenuTaskWorkArea : public s_workAreaTemplate<s_statusMenuTaskWorkArea>
 {
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_statusMenuTaskWorkArea::Init, NULL, &s_statusMenuTaskWorkArea::Draw, &s_statusMenuTaskWorkArea::Delete, "s_statusMenuTaskWorkArea" };
+        return &taskDefinition;
+    }
+
+    void Init(void*) override;
+    void Draw() override;
+    void Delete() override;
     u32 selectedMenu; //0
 };
 
@@ -3589,7 +3572,7 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
     fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
 }
 
-void statusMenuTaskInit(p_workArea pWorkArea)
+void s_statusMenuTaskWorkArea::Init(void*)
 {
     setupVDP2StringRendering(0, 34, 44, 28);
 }
@@ -3610,10 +3593,10 @@ const char* statusMenuOptionsAbilities[] = {
     "Change Settings                 ",
 };
 
-void statusMenuTaskDraw(p_workArea typelessWorkArea)
+void s_statusMenuTaskWorkArea::Draw()
 {
-    s_statusMenuTaskWorkArea* pWorkArea = static_cast<s_statusMenuTaskWorkArea*>(typelessWorkArea);
-    
+    s_statusMenuTaskWorkArea* pWorkArea = this;
+
     vdp2StringContext.m0 = 0;
     setActiveFont(graphicEngineStatus.m40AC.fontIndex);
     vdp2PrintStatus.palette = 0xC000;
@@ -3660,12 +3643,10 @@ void clearVdp2Menu()
     memset(getVdp2Vram(0x7000), 0, 0x100 * 0x10);
 }
 
-void statusMenuTaskDelete(p_workArea pWorkArea)
+void s_statusMenuTaskWorkArea::Delete()
 {
     clearVdp2Menu();
 }
-
-s_taskDefinition statusMenuTaskDefinition = { statusMenuTaskInit, NULL, statusMenuTaskDraw, statusMenuTaskDelete, "statusMenuTask" };
 
 void mainMenuTaskDraw(p_workArea typelessWorkArea)
 {
@@ -3674,7 +3655,7 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
     switch (pWorkArea->m0)
     {
     case 0:
-        pWorkArea->mC = static_cast<s_statusMenuTaskWorkArea*>(createSubTask(pWorkArea, &statusMenuTaskDefinition, new s_statusMenuTaskWorkArea));
+        pWorkArea->mC = createSubTask< s_statusMenuTaskWorkArea>(pWorkArea);
         pWorkArea->mC->selectedMenu = pWorkArea->selectedMenu;
         pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
         pWorkArea->m0++;

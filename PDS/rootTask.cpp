@@ -1,16 +1,25 @@
 #include "PDS.h"
 
-struct s_initialTaskWorkArea : public s_workArea
+struct s_initialTaskWorkArea : public s_workAreaTemplate<s_initialTaskWorkArea>
 {
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_initialTaskWorkArea::Init, NULL, &s_initialTaskWorkArea::Draw, NULL, "sFieldA3_1_fieldIntroTask" };
+        return &taskDefinition;
+    }
+
+    void Init(void*) override;
+    void Draw() override;
+
     u32 m_state;
     p_workArea m_4;
 };
 
 s_initialTaskStatus initialTaskStatus;
 
-void initialTask_Init(p_workArea pTypelessWorkArea)
+void s_initialTaskWorkArea::Init(void*)
 {
-    s_initialTaskWorkArea* pWorkArea = static_cast<s_initialTaskWorkArea*>(pTypelessWorkArea);
+    s_initialTaskWorkArea* pWorkArea = this;
     pWorkArea->m_state = 0;
     pWorkArea->m_4 = 0;
 
@@ -24,11 +33,12 @@ void initialTask_Init(p_workArea pTypelessWorkArea)
         initialTaskStatus.m_pendingTask = createTitleScreenTask;
     }
 
+    PDS_unimplemented("resetNamesForNewGame");
     //resetNamesForNewGame();
 }
-void initialTask_Update(s_workArea* pTypelessWorkArea)
+void s_initialTaskWorkArea::Draw()
 {
-    s_initialTaskWorkArea* pWorkArea = static_cast<s_initialTaskWorkArea*>(pTypelessWorkArea);
+    s_initialTaskWorkArea* pWorkArea = this;
 
     switch (pWorkArea->m_state)
     {
@@ -62,9 +72,7 @@ void initialTask_Update(s_workArea* pTypelessWorkArea)
     }
 }
 
-s_taskDefinition initialTask = { initialTask_Init , NULL, initialTask_Update , NULL, "inital task" };
-
 void startInitialTask()
 {
-    createRootTask(&initialTask, new s_initialTaskWorkArea);
+    createRootTask<s_initialTaskWorkArea>();
 }
