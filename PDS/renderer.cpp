@@ -1,10 +1,15 @@
 #include "PDS.h"
 
-#if 1
+#ifdef __IPHONEOS__
 #include <OpenGLES/ES3/gl.h>
 #include <OpenGLES/ES3/glext.h>
 #else
 #include <gl/gl3w.h>
+#ifdef __MACOS__
+#include <Opengl/gl.h>
+#else
+#include <gl/gl.h>
+#endif
 #endif
 
 #define IMGUI_API
@@ -879,11 +884,7 @@ bool azelSdl2_EndFrame()
     glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 
-#ifdef __IPHONEOS__
     glClearDepthf(0.f);
-#else
-    glClearDepth(0.f);
-#endif
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
@@ -938,15 +939,18 @@ bool azelSdl2_EndFrame()
         glViewport(0, 0, internalResolution[0], internalResolution[1]);
 
         glClearColor(0, 0, 0, 0);
-#ifdef __IPHONEOS__
         glClearDepthf(0.f);
-#else
-        glClearDepth(0.f);
-#endif
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glFrontFace(GL_CW);
+        glCullFace(GL_BACK);
+        glEnable(GL_CULL_FACE);
+        checkGL();
+
         flushObjectsToDrawList();
+
+        glDisable(GL_CULL_FACE);
     }
     
     //Compose
@@ -958,11 +962,7 @@ bool azelSdl2_EndFrame()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-#ifdef __IPHONEOS__
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gCompositedTexture, 0);
-#else
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gCompositedTexture, 0);
-#endif
 
         GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
         glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
@@ -972,11 +972,7 @@ bool azelSdl2_EndFrame()
         glViewport(0, 0, internalResolution[0], internalResolution[1]);
 
         glClearColor(0, 0, 0, 0);
-#ifdef __IPHONEOS__
         glClearDepthf(0.f);
-#else
-        glClearDepth(0.f);
-#endif
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -1069,6 +1065,7 @@ bool azelSdl2_EndFrame()
                         initialized = true;
                     }
 
+                    
                     glUseProgram(shaderProgram);
                     glActiveTexture(GL_TEXTURE0);
                     glBindTexture(GL_TEXTURE_2D, getTextureForLayer(layerIndex));

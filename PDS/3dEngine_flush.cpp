@@ -10,6 +10,7 @@
 #else
 #include <gl/gl.h>
 #endif
+#endif
 
 #include "3dEngine_textureCache.h"
 

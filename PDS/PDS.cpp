@@ -831,8 +831,6 @@ void checkGL();
 
 int main(int argc, char* argv[])
 {
-    checkGL();
-    
     azelSdl2_Init();
 
     checkGL();
