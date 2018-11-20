@@ -296,7 +296,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
     void fieldScriptTaskUpdateSub3();
     sSaturnPtr runFieldScript();
     sSaturnPtr callNative(sSaturnPtr);
-    s_cinematicBarTask* s_fieldScriptWorkArea::startCinmaticBarTask();
+    s_cinematicBarTask* startCinmaticBarTask();
 
     sSaturnPtr* m0_pScripts; //0
     sSaturnPtr m4_currentScript;

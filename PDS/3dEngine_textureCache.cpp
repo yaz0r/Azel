@@ -1,5 +1,15 @@
 #include "PDS.h"
-#include "GL/gl3w.h"
+
+#ifdef __IPHONEOS__
+#include <OpenGLES/ES3/gl.h>
+#include <OpenGLES/ES3/glext.h>
+#else
+#include <gl/gl3w.h>
+#ifdef __MACOS__
+#include <Opengl/gl.h>
+#else
+#include <gl/gl.h>
+#endif
 
 #include "3dEngine_textureCache.h"
 

@@ -17,7 +17,7 @@ struct sLoadingTaskWorkArea : public s_workAreaTemplate<sLoadingTaskWorkArea>
     void Init(void* r5) override
     {
         sLoadingTaskWorkArea* pWorkArea = this;
-        s8 arg = (s8)r5;
+        s8 arg = (s8)(intptr_t)r5;
 
         gLoadingTaskWorkArea = pWorkArea;
 
@@ -328,7 +328,7 @@ void updateFieldTaskNoBattleOverride(p_workArea pTypelessWorkArea)
 void fieldTaskInit(p_workArea pTypelessWorkArea, void* battleArgumentVoid)
 {
     s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
-    u32 battleArgument = (u32)battleArgumentVoid;
+    u32 battleArgument = (u32)(intptr_t)battleArgumentVoid;
 
     fieldTaskPtr = pWorkArea;
     fieldTaskVar0 = NULL;
@@ -4037,7 +4037,7 @@ p_workArea createMenuTask(p_workArea parentTask)
 void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
 {
     s_exitMenuTaskSub1Task* pWorkArea = static_cast<s_exitMenuTaskSub1Task*>(pTypelessWorkArea);
-    u32 menuID = (u32)voidArgument;
+    u32 menuID = (u32)(intptr_t)voidArgument;
 
     pWorkArea->m8 = 0;
     pWorkArea->mC = 0;
@@ -4318,7 +4318,7 @@ p_workArea initExitMenuTaskSub1(p_workArea pTypelessWorkArea, u32 menuID)
 void initExitMenuTask(p_workArea pTypelessWorkArea, void* argument)
 {
     s_fieldDebugTaskWorkArea* pWorkArea = static_cast<s_fieldDebugTaskWorkArea*>(pTypelessWorkArea);
-    u32 menuID = (u32)argument;
+    u32 menuID = (u32)(intptr_t)argument;
 
     pauseEngine[2] = 0;
 

@@ -701,7 +701,7 @@ fixedPoint getSin(u32 value)
     return fixedPoint(CosSinTable[value]);
 }
 
-u8 readSaturnU8(sSaturnPtr& ptr)
+u8 readSaturnU8(sSaturnPtr ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
     u32 offsetInFile = ptr.m_offset - pFile->m_base;
@@ -710,7 +710,7 @@ u8 readSaturnU8(sSaturnPtr& ptr)
     return READ_BE_U8(pFile->m_data + offsetInFile);
 }
 
-u8* getSaturnPtr(sSaturnPtr& ptr)
+u8* getSaturnPtr(sSaturnPtr ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
     u32 offsetInFile = ptr.m_offset - pFile->m_base;
@@ -719,7 +719,7 @@ u8* getSaturnPtr(sSaturnPtr& ptr)
     return pFile->m_data + offsetInFile;
 }
 
-s8 readSaturnS8(sSaturnPtr& ptr)
+s8 readSaturnS8(sSaturnPtr ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
     u32 offsetInFile = ptr.m_offset - pFile->m_base;
@@ -728,7 +728,7 @@ s8 readSaturnS8(sSaturnPtr& ptr)
     return READ_BE_S8(pFile->m_data + offsetInFile);
 }
 
-s16 readSaturnS16(sSaturnPtr& ptr)
+s16 readSaturnS16(sSaturnPtr ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
     u32 offsetInFile = ptr.m_offset - pFile->m_base;
@@ -737,7 +737,7 @@ s16 readSaturnS16(sSaturnPtr& ptr)
     return READ_BE_S16(pFile->m_data + offsetInFile);
 }
 
-u16 readSaturnU16(sSaturnPtr& ptr)
+u16 readSaturnU16(sSaturnPtr ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
     u32 offsetInFile = ptr.m_offset - pFile->m_base;
@@ -746,7 +746,7 @@ u16 readSaturnU16(sSaturnPtr& ptr)
     return READ_BE_U16(pFile->m_data + offsetInFile);
 }
 
-s32 readSaturnS32(sSaturnPtr& ptr)
+s32 readSaturnS32(sSaturnPtr ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
     u32 offsetInFile = ptr.m_offset - pFile->m_base;
@@ -755,7 +755,7 @@ s32 readSaturnS32(sSaturnPtr& ptr)
     return READ_BE_S32(pFile->m_data + offsetInFile);
 }
 
-u32 readSaturnU32(sSaturnPtr& ptr)
+u32 readSaturnU32(sSaturnPtr ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
     u32 offsetInFile = ptr.m_offset - pFile->m_base;
@@ -764,7 +764,7 @@ u32 readSaturnU32(sSaturnPtr& ptr)
     return READ_BE_U32(pFile->m_data + offsetInFile);
 }
 
-sSaturnPtr readSaturnEA(sSaturnPtr& ptr)
+sSaturnPtr readSaturnEA(sSaturnPtr ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
     u32 offsetInFile = ptr.m_offset - pFile->m_base;
@@ -778,7 +778,7 @@ sSaturnPtr readSaturnEA(sSaturnPtr& ptr)
     return newPtr;
 }
 
-sVec3_FP readSaturnVec3(sSaturnPtr& ptr)
+sVec3_FP readSaturnVec3(sSaturnPtr ptr)
 {
     sVec3_FP newVec;
 

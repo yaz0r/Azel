@@ -1,6 +1,11 @@
 #include "PDS.h"
 
-#include "GL/gl3w.h"
+#if 1
+#include <OpenGLES/ES3/gl.h>
+#include <OpenGLES/ES3/glext.h>
+#else
+#include <gl/gl3w.h>
+#endif
 
 #define IMGUI_API
 
@@ -10,6 +15,10 @@
 #ifdef _WIN32
 #pragma comment(lib, "Opengl32.lib")
 #endif
+
+#include <sdl_syswm.h>
+
+void checkGL();
 
 SDL_Window *gWindow;
 SDL_GLContext gGlcontext;
@@ -27,6 +36,35 @@ GLuint gNBG1Texture = 0;
 GLuint gNBG2Texture = 0;
 GLuint gNBG3Texture = 0;
 
+
+#ifdef __IPHONEOS__
+const GLchar blit_vs[] =
+"#version 300 es\n"
+"in vec3 a_position;   \n"
+"in vec2 a_texcoord;   \n"
+"out  highp vec2 v_texcoord;     \n"
+"void main()                  \n"
+"{                            \n"
+"   gl_Position = vec4(a_position, 1); \n"
+"   v_texcoord = (a_position.xy+vec2(1,1))/2.0;; \n"
+"} "
+;
+
+const GLchar blit_ps[] =
+"#version 300 es\n"
+"precision highp float;									\n"
+"in highp vec2 v_texcoord;								\n"
+"uniform sampler2D s_texture;							\n"
+"out vec4 fragColor;									\n"
+"void main()											\n"
+"{														\n"
+"	vec4 txcol = texture(s_texture, v_texcoord);		\n"
+"   if(txcol.a <= 0.f) discard;\n"
+"   fragColor = txcol; \n"
+"   fragColor.w = 1.f;								\n"
+"}														\n"
+;
+#else
 const GLchar blit_vs[] =
 "#version 330 \n"
 "in vec3 a_position;   \n"
@@ -53,7 +91,7 @@ const GLchar blit_ps[] =
 "   fragColor.w = 1;								\n"
 "}														\n"
 ;
-
+#endif
 enum eLayers {
     SPRITE_POLY,
     SPRITE_SOFTWARE,
@@ -78,16 +116,22 @@ void azelSdl2_Init()
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+#ifdef __IPHONEOS__
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#else
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-    gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+#endif
+    gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     assert(gWindow);
 
     gGlcontext = SDL_GL_CreateContext(gWindow);
     assert(gGlcontext);
 
+#ifndef __IPHONEOS__
     gl3wInit();
+#endif
 
     // Setup ImGui binding
     ImGui::CreateContext();
@@ -180,6 +224,7 @@ bool closeApp = false;
 
 void azelSdl2_StartFrame()
 {
+    checkGL();
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -242,9 +287,16 @@ void azelSdl2_StartFrame()
         }
     }
 
+    checkGL();
+    
     ImGui_ImplOpenGL3_NewFrame();
+    
+    checkGL();
+    
     ImGui_ImplSDL2_NewFrame(gWindow);
     ImGui::NewFrame();
+    
+    checkGL();
 }
 
 ImVec4 clear_color = ImColor(114, 144, 154);
@@ -822,14 +874,23 @@ bool azelSdl2_EndFrame()
 
     DebugTasks();
 
+    checkGL();
+    
     glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+
+#ifdef __IPHONEOS__
+    glClearDepthf(0.f);
+#else
     glClearDepth(0.f);
+#endif
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_GREATER);
 
+    checkGL();
+    
     static int internalResolution[2] = { 1024, 720 };
 
     ImGui::Begin("Config");
@@ -840,6 +901,7 @@ bool azelSdl2_EndFrame()
 
     // render VDP1 frame buffer
     {
+        checkGL();
         glBindFramebuffer(GL_FRAMEBUFFER, gVdp1PolyFB);
         glBindTexture(GL_TEXTURE_2D, gVdp1PolyTexture);
 
@@ -847,24 +909,40 @@ bool azelSdl2_EndFrame()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
+        checkGL();
+        
         glBindRenderbuffer(GL_RENDERBUFFER, gVdp1PolyDepth);
 
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, internalResolution[0], internalResolution[1]);
+        checkGL();
+        
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, internalResolution[0], internalResolution[1]);
 
+        checkGL();
+        
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, gVdp1PolyDepth);
 
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gVdp1PolyTexture, 0);
+        checkGL();
+        
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gVdp1PolyTexture, 0);
 
+        checkGL();
+        
         GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
 
         glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
 
+        checkGL();
+        
         assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
         glViewport(0, 0, internalResolution[0], internalResolution[1]);
 
         glClearColor(0, 0, 0, 0);
+#ifdef __IPHONEOS__
+        glClearDepthf(0.f);
+#else
         glClearDepth(0.f);
+#endif
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -880,7 +958,11 @@ bool azelSdl2_EndFrame()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+#ifdef __IPHONEOS__
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gCompositedTexture, 0);
+#else
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gCompositedTexture, 0);
+#endif
 
         GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
         glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
@@ -890,7 +972,11 @@ bool azelSdl2_EndFrame()
         glViewport(0, 0, internalResolution[0], internalResolution[1]);
 
         glClearColor(0, 0, 0, 0);
+#ifdef __IPHONEOS__
+        glClearDepthf(0.f);
+#else
         glClearDepth(0.f);
+#endif
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -949,7 +1035,17 @@ bool azelSdl2_EndFrame()
                             glShaderSource(fshader, 1, pYglprg_normal_f, NULL);
                             glCompileShader(fshader);
                             glGetShaderiv(fshader, GL_COMPILE_STATUS, (int*)&compiled);
-                            assert(compiled == 1);
+                            if (compiled == GL_FALSE)
+                            {
+                                GLint maxLength = 0;
+                                glGetShaderiv(fshader, GL_INFO_LOG_LENGTH, &maxLength);
+                                
+                                // The maxLength includes the NULL character
+                                std::vector<GLchar> errorLog(maxLength);
+                                glGetShaderInfoLog(fshader, maxLength, &maxLength, &errorLog[0]);
+                                PDS_unimplemented(errorLog.data());
+                                assert(compiled);
+                            }
                             while (!compiled);
                         }
 
@@ -1000,7 +1096,16 @@ bool azelSdl2_EndFrame()
         }
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#ifdef __IPHONEOS__
+    SDL_SysWMinfo wmi;
+    SDL_VERSION(&wmi.version);
+    SDL_GetWindowWMInfo(gWindow, &wmi);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, wmi.info.uikit.framebuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, wmi.info.uikit.colorbuffer);
+#else
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
     glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 
     ImGui::Begin("Final Composition");
@@ -1018,11 +1123,20 @@ bool azelSdl2_EndFrame()
         ImGui::EndMainMenuBar();
     }
 
+    checkGL();
+    
     ImGui::Render();
+    
+    checkGL();
+    
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+    checkGL();
+    
     glFlush();
 
+    checkGL();
+    
     {
         static Uint64 last_time = SDL_GetPerformanceCounter();
         Uint64 now = SDL_GetPerformanceCounter();
@@ -1039,6 +1153,8 @@ bool azelSdl2_EndFrame()
 
         last_time = SDL_GetPerformanceCounter();
     }
+    
+    checkGL();
 
     return !closeApp;
 }

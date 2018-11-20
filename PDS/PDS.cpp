@@ -827,10 +827,16 @@ void interruptVDP1Update()
     graphicEngineStatus.vdp1Context[1].currentVdp1WriteEA = graphicEngineStatus.vdp1Context[1].m4[r6];
 }
 
+void checkGL();
+
 int main(int argc, char* argv[])
 {
+    checkGL();
+    
     azelSdl2_Init();
 
+    checkGL();
+    
     azelInit();
     resetEngine();
 
@@ -842,6 +848,7 @@ int main(int argc, char* argv[])
 
     do 
     {
+        checkGL();
         azelSdl2_StartFrame();
 
         //updateDebug();
@@ -872,6 +879,7 @@ int main(int argc, char* argv[])
         {
             interruptVDP1Update();
         }
+        checkGL();
 
     } while (azelSdl2_EndFrame());
     return 0;

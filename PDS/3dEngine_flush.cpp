@@ -1,7 +1,15 @@
 #include "PDS.h"
 
+#ifdef __IPHONEOS__
+#include <OpenGLES/ES3/gl.h>
+#include <OpenGLES/ES3/glext.h>
+#else
 #include <gl/gl3w.h>
-#include <gl/GL.h>
+#ifdef __MACOS__
+#include <Opengl/gl.h>
+#else
+#include <gl/gl.h>
+#endif
 
 #include "3dEngine_textureCache.h"
 
@@ -59,8 +67,10 @@ void addBillBoardtToDrawList(u8* pObjectData, u32 offset)
 void checkGL()
 {
     volatile GLenum error = glGetError();
-
-    while (error != GL_NO_ERROR);
+    
+    assert(error == GL_NO_ERROR);
+    
+    //while (error != GL_NO_ERROR);
 }
 
 GLuint compileShader(const char* VS, const char* PS)
@@ -116,6 +126,50 @@ GLuint compileShader(const char* VS, const char* PS)
 
 #define GL_SHADER_VERSION "#version 300 es\n"
 
+#ifdef __IPHONEOS__
+const GLchar azel_vs[] =
+"#version 300 es\n"
+"uniform mat4 u_mvpMatrix;    \n"
+"uniform mat4 u_modelMatrix;    \n"
+"uniform vec2 u_2dOffset;   \n"
+"in vec3 a_position;   \n"
+"in vec2 a_texcoord;   \n"
+"in vec4 a_color;   \n"
+"out  highp vec2 v_texcoord;     \n"
+"out  highp vec4 v_color;     \n"
+"void main()                  \n"
+"{                            \n"
+"   gl_Position = u_mvpMatrix * u_modelMatrix * vec4(a_position, 1); \n"
+"   gl_Position.xy += u_2dOffset; \n"
+"   v_texcoord = a_texcoord; \n"
+"	v_color = a_color; \n"
+"} "
+;
+
+const GLchar azel_ps_es[] =
+"#version 300 es\n"
+"precision highp float;									\n"
+"in highp vec2 v_texcoord;								\n"
+"in highp vec4 v_color;								\n"
+"uniform sampler2D s_texture;							\n"
+"uniform sampler2D s_falloff;							\n"
+"uniform float s_textureInfluence;						\n"
+"uniform float s_ambientInfluence;						\n"
+"out vec4 fragColor;									\n"
+"void main()											\n"
+"{														\n"
+"   float distanceValue = mix(0.f, 10.f, 1.f-gl_FragCoord.z); \n"
+"   //distanceValue = clamp(distanceValue, 0, 1); \n"
+"	vec4 fallout = texture(s_falloff, vec2(distanceValue,0)); \n"
+"	vec4 txcol = texture(s_texture, v_texcoord);		\n"
+"   if(txcol.a <= 0.f) discard;\n"
+"   fragColor = (clamp(txcol, 0.f, 1.f) * s_textureInfluence) + v_color;									\n"
+"   fragColor = txcol; \n"
+"   fragColor.w = 1.f;								\n"
+"}														\n"
+;
+
+#else
 const GLchar azel_vs[] =
 "#version 330 \n"
 "uniform mat4 u_mvpMatrix;    \n"
@@ -158,7 +212,7 @@ const GLchar azel_ps[] =
 "   fragColor.w = 1;								\n"
 "}														\n"
 ;
-
+#endif
 void multiplyMatrices(float* in1, float* in2, float* out)
 {
     float temp[4 * 4];
@@ -670,9 +724,9 @@ void drawObject_SingleDrawCall(s_objectToRender* pObject, float* projectionMatri
         }
 
         checkGL();
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(GL_TRIANGLES, SingleDrawcallIndexArray.size(), GL_UNSIGNED_INT, &SingleDrawcallIndexArray[0]);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         //glDrawArrays(GL_TRIANGLES, 0, 6);
         checkGL();
         glDisableVertexAttribArray(vertexp);
@@ -1101,9 +1155,9 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
 
                                     char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
                                     checkGL();
-                                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
-                                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                                    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                                    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
+                                    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                                     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
                                     checkGL();
                                     glDisableVertexAttribArray(vertexp);
@@ -1221,7 +1275,17 @@ void flushObjectsToDrawList()
             glShaderSource(fshader, 1, pYglprg_normal_f, NULL);
             glCompileShader(fshader);
             glGetShaderiv(fshader, GL_COMPILE_STATUS, (int*)&compiled);
-            assert(compiled == 1);
+            if (compiled == GL_FALSE)
+            {
+                GLint maxLength = 0;
+                glGetShaderiv(fshader, GL_INFO_LOG_LENGTH, &maxLength);
+                
+                // The maxLength includes the NULL character
+                std::vector<GLchar> errorLog(maxLength);
+                glGetShaderInfoLog(fshader, maxLength, &maxLength, &errorLog[0]);
+                PDS_unimplemented(errorLog.data());
+                assert(false);
+            }
             while (!compiled);
         }
 

@@ -118,7 +118,9 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
             randomNumber(); // to increment seed
 
             // start or A?
+#ifndef __IPHONEOS__
             if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xE)
+#endif
             {
                 playSoundEffect(0);
 
@@ -352,7 +354,9 @@ void s_titleScreenWorkArea::Draw()
             assert(false);
         }
 
+#ifndef __IPHONEOS__
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8) // if start was pressed
+#endif
         {
             playSoundEffect(8);
             pWorkArea->m_status = 7;
@@ -412,7 +416,7 @@ struct s_warningWorkArea : public s_workAreaTemplate< s_warningWorkArea>
 
 u32 checkCartdrigeMemory()
 {
-    return 1;
+    return 0;
 }
 
 void s_warningWorkArea::Draw()

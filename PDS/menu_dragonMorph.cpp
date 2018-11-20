@@ -585,7 +585,7 @@ void updateAnimationMatrices(s3DModelAnimData* r4, s_3dModel* r5)
 struct s_animLoop
 {
     u16 m_count;
-    u16 m_values[];
+    std::vector<u16> m_values;
 };
 
 s_animLoop dragonAnimLoop_0 = {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 #include "heap.h"
 struct s_workArea
 {
@@ -82,7 +83,7 @@ struct s_workAreaTemplate : public s_workArea
     }
     static void StaticInit(p_workArea pWorkArea, void* arg)
     {
-        T* pTask = ConvertType(pWorkArea);
+        //T* pTask = ConvertType(pWorkArea);
     }
     static void StaticUpdate(p_workArea pWorkArea)
     {
@@ -189,7 +190,7 @@ template<typename T>
 T* createSubTask(p_workArea parentTask)
 {
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, T::getTaskDefinition(), new T, NULL));
-    T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    auto pTypeTaskDefinition = T::getTypedTaskDefinition();
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
@@ -204,7 +205,7 @@ template<typename T>
 T* createSubTaskWithArg(p_workArea parentTask, void* arg)
 {
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, T::getTaskDefinition(), new T, arg));
-    T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    auto pTypeTaskDefinition = T::getTypedTaskDefinition();
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
@@ -219,7 +220,7 @@ template<typename T>
 T* createSiblingTaskWithArg(p_workArea parentTask, void* arg)
 {
     T* pNewTask = static_cast<T*>(createSiblingTaskWithArg(parentTask, T::getTaskDefinition(), new T, arg));
-    T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    auto pTypeTaskDefinition = T::getTypedTaskDefinition();
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
@@ -248,7 +249,7 @@ template<typename T>
 T* createRootTask()
 {
     T* pNewTask = static_cast<T*>(createRootTask(T::getTaskDefinition(), new T));
-    T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition();
+    auto pTypeTaskDefinition = T::getTypedTaskDefinition();
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;

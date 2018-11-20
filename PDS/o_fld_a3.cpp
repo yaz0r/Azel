@@ -926,7 +926,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         pNewObj->getTask()->m8_pUpdate = A3_Obj2_Update;
         pNewObj->getTask()->mC_pDraw = A3_Obj2_Draw;
 
-        create_A3_Obj2_Sub0(&pNewObj->m60, pNewObj, create_A3_Obj2_Sub1, &pNewObj->m10_position, 0, 0, 0, -1, 0, 0);
+        create_A3_Obj2_Sub0(&pNewObj->m60, pNewObj, (void*)&create_A3_Obj2_Sub1, &pNewObj->m10_position, 0, 0, 0, -1, 0, 0);
 
         getFieldTaskPtr()->mC->m8 = 0;
     }
@@ -5213,7 +5213,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
     void dragonFieldTaskInit(s_workArea* pWorkArea, void* argument)
     {
         s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
-        u32 arg = (u32)argument;
+        u32 arg = (u32)(intptr_t)argument;
 
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask = pTypedWorkArea;
 
