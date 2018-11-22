@@ -180,11 +180,17 @@ void clearVdp2TextSmallFont()
 
 void unpackGraphicsToVDP2(u8* compressedData, u8* destination)
 {
+    u8* pCurrentDestination = destination;
     u8 r6 = *(compressedData++);
     u8 r7 = 9;
 
     do
     {
+        if (pCurrentDestination >= destination + 0x1C78)
+        {
+            destination = destination;
+        }
+
         if ((--r7) == 0)
         {
             r6 = *(compressedData++);
@@ -196,7 +202,7 @@ void unpackGraphicsToVDP2(u8* compressedData, u8* destination)
 
         if (bit)
         {
-            *(destination++) = *(compressedData++);
+            *(pCurrentDestination++) = *(compressedData++);
         }
         else
         {
@@ -221,24 +227,28 @@ void unpackGraphicsToVDP2(u8* compressedData, u8* destination)
                     composite >>= 3;
                     r0 &= 7;
 
+                    composite |= 0xFFFFE000;
+
                     if (r0)
                     {
                         r0 += 2;
-                        u8* source = destination + composite;
+
+                        u8* source = pCurrentDestination + composite;
 
                         for (int i = 0; i < (int)r0; i++)
                         {
-                            *(destination++) = *(source++);
+                            *(pCurrentDestination++) = *(source++);
                         }
                     }
                     else
                     {
                         u8 r0 = *(compressedData++);
-                        u8* source = destination + composite;
+
+                        u8* source = pCurrentDestination + composite;
 
                         for (int i = 0; i < (int)r0 + 1; i++)
                         {
-                            *(destination++) = *(source++);
+                            *(pCurrentDestination++) = *(source++);
                         }
                     }
                 }
@@ -278,11 +288,11 @@ void unpackGraphicsToVDP2(u8* compressedData, u8* destination)
                 r2 |= 0xFF00;
 
                 r0 += 2;
-                u8* source = destination + r2;
+                u8* source = pCurrentDestination + r2;
 
                 for (int i = 0; i < (int)r0; i++)
                 {
-                    *(destination++) = *(source++);
+                    *(pCurrentDestination++) = *(source++);
                 }
             }
         }
@@ -302,6 +312,13 @@ void loadFont()
     addToMemoryLayout(fontFile, 1);
 
     unpackGraphicsToVDP2(fontFile, VDP2_VRamStart);
+
+    if(0)
+    {
+        FILE* fOut = fopen("outputFont.bin", "wb+");
+        fwrite(VDP2_VRamStart, 1, 0x5E80, fOut);
+        fclose(fOut);
+    }
 
     delete[] fontFile;
 }
