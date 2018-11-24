@@ -26,6 +26,9 @@ set(SOURCES
  PDS/o_menuEn.cpp
  PDS/o_title.cpp
  PDS/PDS.cpp
+ PDS/PDS.h
+ PDS/PDS_Logger.cpp
+ PDS/PDS_Logger.h
  PDS/renderer.cpp
  PDS/rootTask.cpp
  PDS/task.cpp
