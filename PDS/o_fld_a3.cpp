@@ -8,6 +8,12 @@ fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0
 void updateCameraScriptSub1(u32 r4);
 void fieldOverlaySubTaskInitSub5(u32 r4);
 s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
+void create_A3_Obj2_Sub0(s_A3_Obj2_60* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 arg6, s16 argA, s16 argE, s32 arg10, s32 arg14);
+void A3_Obj2_UpdateSub0(s_A3_Obj2_60* r14);
+
+#ifdef PDS_TOOL
+bool bMakeEverythingVisible = false;
+#endif
 
 //namespace FLD_A3_OVERLAY {
 
@@ -126,20 +132,101 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         getFieldTaskPtr()->mC->m0 = fixedPoint(0x10000);
     }
 
+    void fieldA3_1_startTasks_sub1Task_InitSub0()
+    {
+        getFieldTaskPtr()->mC->m9C[0] = 1;
+    }
+
+    void fieldA3_1_startTasks_sub1Task_InitSub1()
+    {
+        getFieldTaskPtr()->mC->m9C[0] = 1;
+    }
+
+    void fieldA3_1_startTasks_sub1Task_InitSub2()
+    {
+        getFieldTaskPtr()->mC->m9C[0] = 1;
+    }
+
+    void(*fieldA3_1_startTasks_sub1Task_InitFunctionTable[])() = {
+        fieldA3_1_startTasks_sub1Task_InitSub0,
+        fieldA3_1_startTasks_sub1Task_InitSub1,
+        fieldA3_1_startTasks_sub1Task_InitSub2
+    };
+
+    // Access to Conana’s Nest
+    struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_startTasks_sub1Task>
+    {
+        static TypedTaskDefinition* getTypedTaskDefinition()
+        {
+            static TypedTaskDefinition taskDefinition = { &sfieldA3_1_startTasks_sub1Task::Init, &sfieldA3_1_startTasks_sub1Task::Update, NULL, NULL, "afieldA3_1_startTasks_sub1Task" };
+            return &taskDefinition;
+        }
+
+        void Init(void* ) override
+        {
+            static const sVec3_FP fieldA3_1_startTasks_sub1Task_InitPositionTable[3] = {
+                {0x348000, -0x10000, -0x1EE000},
+                {0x2EA000, -0x30180, -0x15B53F4},
+                {0x428000, -0x10000, -0x1A96000}
+            };
+            for (int i = 2; i >= 0; i--)
+            {
+                create_A3_Obj2_Sub0(&m0[i], this, fieldA3_1_startTasks_sub1Task_InitFunctionTable[i], &fieldA3_1_startTasks_sub1Task_InitPositionTable[i], NULL, 3, 0, -1, 0, 0);
+                getFieldTaskPtr()->mC->m9C[i] = 0;
+            }
+
+            m0[0].m18 |= 1;
+        }
+
+        void Update() override
+        {
+            const sVec3_FP& r4_dragonPos = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
+
+            static const sVec2_FP zoneMin = { 0x280000 , -0x1720000 };
+            static const sVec2_FP zoneMax = { 0x3E0000 , -0x1400000 };
+
+            if (mainGameState.getBit(0x91, 4) && (r4_dragonPos[0] >= zoneMin[0]) && (r4_dragonPos[0] < zoneMax[0]) && (r4_dragonPos[2] >= zoneMin[1]) && (r4_dragonPos[2] < zoneMax[1]))
+            {
+                m0[1].m18 = 0;
+            }
+            else
+            {
+                m0[1].m18 |= 1;
+            }
+
+            for (int i = 2; i >= 0; i--)
+            {
+                A3_Obj2_UpdateSub0(&m0[i]);
+            }
+        }
+
+        std::array<s_A3_Obj2_60, 3> m0; // stride is 0x34
+        // size 9C
+    };
+
+    void fieldA3_1_startTasks_sub1(p_workArea workArea)
+    {
+        createSubTask<sfieldA3_1_startTasks_sub1Task>(workArea);
+    }
+
     void fieldA3_1_startTasks(p_workArea workArea)
     {
         create_fieldA3_0_task0(workArea);
 
-        PDS_unimplemented("fieldA3_1_startTasks");
+        fieldA3_1_startTasks_sub1(workArea);
+
+//        create_fieldA3_0_task3(workArea);
 
         create_fieldA3_1_fieldIntroTask(workArea);
+
+        PDS_unimplemented("fieldA3_1_startTasks");
 
         fieldA3_1_startTasks_sub0();
     }
 
     void fieldGridTask_Update(p_workArea)
     {
-
+        // intentionally empty
     }
 
     void setupGridCell(s_visibilityGridWorkArea* r4, s_visdibilityCellTask* r5, int index)
@@ -451,17 +538,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
     void updateCellGridIfDirty(s_visibilityGridWorkArea* pFieldCameraTask1)
     {
 #ifdef PDS_TOOL
-        static bool bEnableAllGrid = false;
-        if (ImGui::Begin("Grid"))
-        {
-            if (ImGui::Checkbox("Enable all grid", &bEnableAllGrid))
-            {
-                pFieldCameraTask1->updateVisibleCells = true;
-            }
-        }
-        ImGui::End();
-
-        if (bEnableAllGrid)
+        if (bMakeEverythingVisible)
         {
             for (int i = 0; i < pFieldCameraTask1->m30->m10_gridSize[0] * pFieldCameraTask1->m30->m10_gridSize[1]; i++)
             {
@@ -591,6 +668,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         sSaturnPtr m58;
         std::vector<fixedPoint> m5C_perNodeRotation;
         s_A3_Obj2_60 m60;
+        // size 0x94
     };
 
     void A3_Obj2_UpdateSub0(s_A3_Obj2_60* r14)
@@ -610,19 +688,19 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         if (r14->mC)
         {
             //606CF1C
-            if (r14->m10 & 0x100)
+            if (r14->m10_flags & s_A3_Obj2_60::e_moveWithParent)
             {
                 //0606CF24
-                varC = *r14->m8;
+                varC = *r14->m8_parentWorldCoordinates;
             }
             else
             {
                 //606CF46
-                transformAndAddVecByCurrentMatrix(r14->m8, &varC);
+                transformAndAddVecByCurrentMatrix(r14->m8_parentWorldCoordinates, &varC);
             }
 
             //606CF50
-            if (r14->m10 & 0x200)
+            if (r14->m10_flags & s_A3_Obj2_60::e_200)
             {
                 var0 = *r14->mC;
             }
@@ -814,11 +892,11 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         } while (--r11);
     }
 
-    void create_A3_Obj2_Sub0(s_A3_Obj2_60* r4, s_A3_Obj2* r5, void* r6, sVec3_FP* r7, sVec3_FP* arg0, s16 arg6, s16 argA, s16 argE, s32 arg10, s32 arg14)
+    void create_A3_Obj2_Sub0(s_A3_Obj2_60* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14)
     {
         r4->m0 = r5;
         r4->m4 = r6;
-        r4->m8 = r7;
+        r4->m8_parentWorldCoordinates = r7;
         r4->mC = arg0;
         r4->m12 = argA;
         r4->m14 = argE;
@@ -830,7 +908,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         {
             r4->m16 = 0;
         }
-        r4->m10 = arg6;
+        r4->m10_flags = flags;
         r4->m17 = arg14;
         r4->m18 = 0;
         r4->m19 = 0;
@@ -1052,6 +1130,23 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         s32 m10;
     };
 
+    struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
+    {
+        static TypedTaskDefinition* getTypedTaskDefinition()
+        {
+            static TypedTaskDefinition taskDefinition = { NULL, &s_A3_Obj3::Update, &s_A3_Obj3::Draw, NULL, "s_A3_Obj3" };
+            return &taskDefinition;
+        }
+
+        s_memoryAreaOutput m0;
+        s_DataTable2Sub0* m8;
+        s32 mC;
+        s32 m10;
+        sVec3_FP m14;
+        sVec3_FP m20;
+        sVec3_FP m2C;
+    };
+
     void create_A3_Obj4(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     {
         s_A3_Obj4* pNewTask = createSubTask<s_A3_Obj4>(r4);
@@ -1059,6 +1154,25 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         pNewTask->m8 = &r5;
         getFieldTaskPtr()->mC->mC0[r5.m18] = r5.m4_position;
         pNewTask->mC = randomNumber();
+    }
+
+    void create_A3_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+    {
+        s_A3_Obj3* pNewTask = createSubTask<s_A3_Obj3>(r4);
+        getMemoryArea(&pNewTask->m0, r6);
+        pNewTask->m8 = &r5;
+        getFieldTaskPtr()->mC->mC0[r5.m18] = r5.m4_position;
+        pNewTask->mC = 0x6000;
+        pNewTask->m10 = 0;
+        pNewTask->m14[0] = 0;
+        pNewTask->m14[1] = 0x2000000;
+        pNewTask->m20[0] = 0xC16C16;
+        pNewTask->m20[1] = 0xB60B6;
+        pNewTask->m2C[0] = 0x2D82D8;
+        pNewTask->m2C[1] = 0xAAAAAA;
+        pNewTask->m2C[2] = 0x2400;
+        pNewTask->m14[2] = randomNumber();
+        pNewTask->m20[2] = randomNumber();
     }
 
     void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
@@ -1093,6 +1207,10 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         // flag pole
         case 0x605A94C:
             create_A3_Obj4(r4, r5, r6);
+            break;
+            // flag pole
+        case 0x605A7A8:
+            create_A3_Obj3(r4, r5, r6);
             break;
 
         default:
@@ -2058,6 +2176,16 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         setupFieldCameraConfigs(readCameraConfig({ 0x6081F9C, gFLD_A3 }), 1);
     }
 
+    void nullBattle()
+    {
+        // intentionally empty
+    }
+
+    void subfieldA3_1_Sub0()
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask->m58 = 1;
+    }
+
     void subfieldA3_1(p_workArea workArea)
     {
         playPCM(workArea, 100);
@@ -2106,7 +2234,9 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
         adjustVerticalLimits(-0x58000, 0x76000);
 
-        //TODO: more stuff here
+        subfieldA3_1_Sub0();
+
+        getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
 
         startFieldScript(18, -1);
 
@@ -5636,7 +5766,23 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
     void dragonFieldTaskUpdateSub5Sub4(sFieldCameraStatus* r4)
     {
-        assert(0);
+        s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        if (pDragonTask == nullptr)
+            return;
+
+        switch (r4->m8D)
+        {
+        case 0:
+            r4->m8F = 8;
+            r4->m90 = 8;
+            r4->m7C = 0;
+            r4->m8D = 2;
+        case 1:
+            fieldOverlaySubTaskInitSub2Sub1Sub2(r4, pDragonTask);
+            return;
+        default:
+            assert(0);
+        }
     }
 
     void dragonFieldTaskUpdateSub5Sub5(s_fieldOverlaySubTaskWorkArea* r4)
@@ -6038,6 +6184,12 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
     s32 checkPositionVisibility(sVec3_FP* r4, s32 r5)
     {
+#ifdef PDS_TOOL
+        if (bMakeEverythingVisible)
+        {
+            return 0;
+        }
+#endif
         s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
         sVec3_FP var18 = cameraProperties2.m0_position;
 
@@ -6217,17 +6369,206 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
     void LCSTaskDrawSub1Sub1(s_LCSTask* r4)
     {
-        PDS_unimplemented("LCSTaskDrawSub1Sub1");
+        if (r4->m8 == 0)
+        {
+            r4->m9DA = 0;
+        }
+
+        if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][2])
+        {
+            r4->m9D0++;
+        }
+        else
+        {
+            r4->m9D0 = 0;
+        }
+
+        switch (r4->m9DA)
+        {
+        case 0:
+            if (r4->m9D0 == 0)
+                return;
+            r4->m9DA = 2;
+            break;
+        case 1:
+            if (r4->m9D0 >= 24)
+            {
+                r4->m9DA = 3;
+                return;
+            }
+            if (!(graphicEngineStatus.m4514.m0->m0_current.mA  & graphicEngineStatus.m4514.mD8[1][2]))
+                return;
+            r4->m9DA = 2;
+            break;
+        case 2:
+            if (r4->m83D)
+                return;
+            if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 6)
+            {
+                r4->m9DA = 4;
+            }
+            break;
+        case 3:
+            if (graphicEngineStatus.m4514.m0->m0_current.mA  & graphicEngineStatus.m4514.mD8[1][2])
+            {
+                r4->m9DA = 4;
+            }
+            break;
+        case 4:
+            break;
+        default:
+            assert(0);
+            break;
+        }
+    }
+
+    void LCSTaskDrawSub1Sub2Sub4(s_LCSTask* r4)
+    {
+        s_LCSTask_828* r13 = r4->m828;
+
+        while (r13)
+        {
+            assert(0);
+            r13 = r13->m4_next;
+        }
+    }
+
+    void LCSTaskDrawSub1Sub2Sub0Sub1(s_LCSTask* r4)
+    {
+        s_LCSTask_828* r13 = r4->m828;
+
+        while (r13)
+        {
+            assert(0);
+            r13 = r13->m4_next;
+        }
+    }
+
+    void LCSTaskDrawSub1Sub2Sub0Sub2(s_LCSTask* r4)
+    {
+        if (--r4->m83D > 0)
+            return;
+
+        assert(0);
+    }
+
+    void LCSTaskDrawSub1Sub5(s_LCSTask* r4)
+    {
+        if (r4->m820 == 0)
+            return;
+        assert(0);
+    }
+
+    void LCSTaskDrawSub1Sub2Sub0(s_LCSTask* r4)
+    {
+        if (!(r4->m8 & 8))
+            return;
+
+        LCSTaskDrawSub1Sub2Sub4(r4);
+        LCSTaskDrawSub1Sub2Sub0Sub1(r4);
+        LCSTaskDrawSub1Sub2Sub0Sub2(r4);
+
+        // TODO: recheck that test
+        if (r4->m828)
+            return;
+
+        r4->m8 = (r4->m8 & ~8) | 0x80;
+
+        LCSTaskDrawSub1Sub5(r4);
+    }
+
+    void LCSTaskDrawSub1Sub2Sub1(s_LCSTask* r4)
+    {
+        s32 r11 = 1;
+        while (r11 < r4->mC)
+        {
+            assert(0);
+        }
+    }
+
+    void LCSTaskDrawSub1Sub2Sub2Sub2(s_LCSTask* r4)
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1F0.m_8 = 0;
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1F0.m_C = 0;
+
+        switch (graphicEngineStatus.m4514.m0->m0_current.m0)
+        {
+        default:
+            assert(0);
+            break;
+        }
+    }
+
+    s32 LCSTaskDrawSub1Sub2Sub2(s_LCSTask* r4)
+    {
+        //getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        if (r4->m8 & 4)
+        {
+            assert(0);
+        }
+
+        //0606DF48
+        LCSTaskDrawSub1Sub2Sub2Sub2(r4);
+
+        if (--r4->m83C <= 0)
+        {
+            assert(0);
+        }
+
+        return 1;
+    }
+
+    void LCSTaskDrawSub1Sub2Sub3Sub0(s_LCSTask* r4)
+    {
+        if (r4->m828)
+            assert(0);
+    }
+
+    void LCSTaskDrawSub1Sub2Sub3(s_LCSTask* r4)
+    {
+        s_LCSTask_828* r13 = r4->m828;
+
+        while (r13)
+        {
+            assert(0);
+            r13 = r13->m4_next;
+        }
+
+        LCSTaskDrawSub1Sub2Sub3Sub0(r4);
     }
 
     void LCSTaskDrawSub1Sub2(s_LCSTask* r4)
     {
+        LCSTaskDrawSub1Sub2Sub0(r4);
+        if (!(r4->m8 & 2))
+            return;
+
+        LCSTaskDrawSub1Sub2Sub1(r4);
+        if (!LCSTaskDrawSub1Sub2Sub2(r4))
+        {
+            r4->m8 |= 0x20;
+        }
+
+        LCSTaskDrawSub1Sub2Sub3(r4);
+
+        if (r4->m9DA != 4)
+        {
+            return;
+        }
+
         PDS_unimplemented("LCSTaskDrawSub1Sub2");
     }
 
     void LCSTaskDrawSub1Sub3()
     {
-        assert(0);
+        updateCameraScriptSub1(8);
+    }
+
+    s8 LCSTaskDrawSub1Sub6()
+    {
+        s8 r0 = !mainGameState.getBit(0x2B, 0);
+        r0 ^= 1;
+        return r0;
     }
 
     void LCSTaskDrawSub1(s_LCSTask* r4)
@@ -6266,14 +6607,33 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
             if ((r4->m83C == 0) && (r4->m9DA))
             {
                 //0606E612
-                assert(0);
+                r4->m8 |= 6;
+                r4->m9DA = 2;
+                if (LCSTaskDrawSub1Sub6())
+                {
+                    if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m25D != 2)
+                    {
+                        r4->m8 |= 0x200;
+                    }
+                }
             }
         }
 
         //0606E644
         if (r4->m8 & 2)
         {
-            assert(0);
+            if (!(r4->m8 & 4) && (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 1))
+            {
+                r4->m8 |= 0x20;
+            }
+            if (r4->m8 & 0x20)
+            {
+                fieldScriptTaskUpdateSub2Sub1Sub1(r4);
+                LCSTaskDrawSub1Sub5(r4);
+                r4->m8 &= ~0x22;
+                r4->m8 |= 0x80;
+                r4->m9DA = 0;
+            }
         }
         else
         {
@@ -6291,12 +6651,107 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
         //606E6BC
         if (r4->m8 & 0x80)
         {
-            assert(0);
+            // TODO: reevaluate
+            bool test0 = r4->m83F || getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m38_dialogStringTask;
+            bool test1 = fieldScriptTaskUpdateSub4();
+            bool test2 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask != nullptr;
+            if ((test0 && test2) || (!test0 && test1 && test2) || (!test1))
+            {
+                r4->m8 = (r4->m8 & ~0x80) | 0x100;
+            }
         }
 
+        //606E708
         if (r4->m8 & 0x100)
         {
             assert(0);
+        }
+    }
+
+    void LCSTaskDrawSub4(const sVec3_FP* r4, sVec2_S16* r5, sVec3_FP* r6)
+    {
+        transformAndAddVecByCurrentMatrix(r4, r6);
+
+        s16 var0;
+        s16 var4;
+        getVdp1ProjectionParams(&var0, &var4);
+
+        (*r5)[0] = setDividend(var0, (*r6)[0], (*r6)[2]);
+        (*r5)[1] = setDividend(var4, (*r6)[1], (*r6)[2]);
+    }
+
+    void LCSTaskDrawSub3(sVec3_FP* r4, sVec2_S16* r5)
+    {
+        s16 var0;
+        s16 var4;
+        getVdp1ProjectionParams(&var0, &var4);
+
+        (*r5)[0] = setDividend(var0, (*r4)[0], (*r4)[2]);
+        (*r5)[1] = setDividend(var4, (*r4)[1], (*r4)[2]);
+    }
+
+    void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6)
+    {
+        sSaturnPtr dataR6 = sSaturnPtr({ 0x6093B28, gFLD_A3 }) + 0x1C * r6;
+
+        s32 r0 = r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000);
+        r0 >>= 3;
+
+        s32 var8 = ((r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + readSaturnS16(dataR6 + 6);
+        s32 var0 = ((r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + readSaturnS16(dataR6 + 0xA);
+        s32 var4 = readSaturnS32(dataR6 + 0xC) >> 12;
+        s32 varC = readSaturnS32(dataR6 + 0x10) >> 12;
+
+        s32 r4 = readSaturnS32(dataR6 + 0x14) >> 12;
+        s32 r2 = readSaturnS32(dataR6 + 0x18) >> 12;
+
+        s16 var10[4];
+        var10[0] = r4 + (*r5)[0];
+        var10[1] = r2 + (*r5)[1];
+        var10[2] = r4 + (*r5)[0] + var4;
+        var10[3] = r2 + (*r5)[1] - varC;
+
+        u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA;
+
+        setVdp1VramU16(vdp1WriteEA + 0x00, readSaturnS16(dataR6 + 2)); // command 0
+        setVdp1VramU16(vdp1WriteEA + 0x04, readSaturnS16(dataR6 + 4)); // CMDPMOD
+        setVdp1VramU16(vdp1WriteEA + 0x06, var0); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, var8); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x0A, readSaturnS16(dataR6 + 8)); // CMDSIZE
+        setVdp1VramU16(vdp1WriteEA + 0x0C, var10[0]); // CMDXA
+        setVdp1VramU16(vdp1WriteEA + 0x0E, -var10[1]); // CMDYA
+        setVdp1VramU16(vdp1WriteEA + 0x014, var10[2]); // CMDXC
+        setVdp1VramU16(vdp1WriteEA + 0x016, -var10[3]); // CMDYX
+
+        graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->bucketTypes = 0;
+        graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
+
+        graphicEngineStatus.vdp1Context[0].m1C += 1;
+        graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.vdp1Context[0].mC += 1;
+    }
+
+    void LCSTaskDrawSub5(s_LCSTask* r4)
+    {
+        if (r4->m8 & 2)
+        {
+            if (!r4->m828 || (r4->m818 && ((r4->m818->m10 & 3) == 2)))
+            {
+                DrawLCSTarget(r4, &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m200_LCSCursorScreenSpaceCoordinates, 0);
+            }
+            else
+            {
+                DrawLCSTarget(r4, &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m200_LCSCursorScreenSpaceCoordinates, 1);
+            }
+        }
+
+        //606E894
+        s_LCSTask_828* r13 = r4->m828;
+        while (r13)
+        {
+            assert(0);
+            r13 = r13->m4_next;
         }
     }
 
@@ -6317,7 +6772,21 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 
         for (int r12 = 0; r12 < r4->mC; r12++)
         {
-            assert(0);
+            s_A3_Obj2_60* r14 = r4->m14[r12].m0;
+            if (r14->m10_flags & s_A3_Obj2_60::e_moveWithParent)
+            {
+                r14->m24_worldspaceCoordinates = *r14->m8_parentWorldCoordinates;
+                LCSTaskDrawSub3(&r14->m24_worldspaceCoordinates, &r14->m30_screenspaceCoordinates);
+            }
+            else
+            {
+                LCSTaskDrawSub4(r14->m8_parentWorldCoordinates, &r14->m30_screenspaceCoordinates, &r14->m24_worldspaceCoordinates);
+            }
+        }
+
+        if (!(r4->m8 & 0x40))
+        {
+            LCSTaskDrawSub5(r4);
         }
 
         if (enableDebugTask)

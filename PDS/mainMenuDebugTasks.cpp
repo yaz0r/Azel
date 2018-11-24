@@ -1989,12 +1989,12 @@ void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonSt
 
 void dramFree(u8* ptr)
 {
-    yLog("dramFree not implemented");
+    PDS_unimplemented("dramFree not implemented");
 }
 
 void vdp1Free(u8* ptr)
 {
-    yLog("vdp1Free not implemented");
+    PDS_unimplemented("vdp1Free not implemented");
 }
 
 void loadDragonSub1Sub1(s_loadDragonWorkArea* pLoadDragonWorkArea)
@@ -2204,7 +2204,7 @@ void loadRider2IfChanged(u32 rider)
 
 void freeRamResource()
 {
-    yLog("Unimplemented freeRamResource");
+    PDS_unimplemented("Unimplemented freeRamResource");
 }
 
 u16 loadFnt(const char* filename)
@@ -2228,7 +2228,7 @@ u16 loadFnt(const char* filename)
 
 void unloadFnt(const char*)
 {
-    yLog("Unimplemented unloadFnt");
+    PDS_unimplemented("Unimplemented unloadFnt");
 }
 
 u8 fieldSubTaskVar0;

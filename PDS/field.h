@@ -454,7 +454,7 @@ struct s_dragonTaskWorkArea : s_workArea
     u32 m1EC;
     s16 m1EE;
     s_dragonTaskWorkArea_1F0 m1F0;
-
+    sVec2_S16 m200_LCSCursorScreenSpaceCoordinates;
     u32 m208;
     u32 m20C;
     u32 m210;
@@ -614,11 +614,16 @@ struct s_LCSTask_828
 
 struct s_A3_Obj2_60
 {
-    struct s_A3_Obj2* m0;
+    enum flags
+    {
+        e_moveWithParent = 0x100,
+        e_200 = 0x200,
+    };
+    s_workArea* m0;
     void* m4;
-    sVec3_FP* m8;
-    sVec3_FP* mC;
-    s16 m10;
+    const sVec3_FP* m8_parentWorldCoordinates;
+    const sVec3_FP* mC;
+    s16 m10_flags;
     s16 m12;
     s16 m14;
     s8 m16;
@@ -629,12 +634,20 @@ struct s_A3_Obj2_60
     s8 m1B;
     s32 m1C;
     s32 m20;
+    sVec3_FP m24_worldspaceCoordinates;
+    sVec2_S16 m30_screenspaceCoordinates;
+    // size 34
 };
 
 struct s_LCSTask_14
 {
     s_A3_Obj2_60* m0;
     s32 m4;
+};
+
+struct s_LCSTask_818
+{
+    s16 m10;
 };
 
 struct s_LCSTask : public s_workArea
@@ -645,19 +658,25 @@ struct s_LCSTask : public s_workArea
     u32 m10;
     std::array<s_LCSTask_14, 0x100> m14;
     u32 m814;
+    s_LCSTask_818* m818;
+    s32 m820;
+    s32 m824;
     s_LCSTask_828* m828;
     s8 m83C;
+    s8 m83D;
     s8 m83F;
     void* m9C0;
     u32 m9C4;
     u32 m9C8;
     u32 m9CC;
+    s32 m9D0;
     s8 m9DA;
     // size 0x9DC
 };
 
 struct s_randomBattleWorkArea : public s_workArea
 {
+    void(*m0)();
     u8 m4;
     // size 8
 };
@@ -679,6 +698,7 @@ struct s_PaletteTaskWorkArea : public s_workArea
     s8 m4C;
     s32 m50;
     s32 m54;
+    s32 m58;
     s8 m5A;
     s32 m5C;
     s32 m60;
@@ -761,6 +781,7 @@ struct s_fieldTaskWorkArea_C : public s_workArea
     s32 m8;
     std::array<p_workArea, 20> mC; // size probably incorrect
     std::array<u32, 56> m50; //not sure of size
+    std::array<s8, 3> m9C;
     std::array<fixedPoint, 7> mA4;
     std::array<sVec3_FP, 18> mC0; // not sure of size
     u8 m130;

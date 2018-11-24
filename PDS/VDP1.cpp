@@ -20,6 +20,12 @@ u16 getVdp1VramU16(u32 EA)
     return *(u16*)(VDP1Vram + offset);
 }
 
+s16 getVdp1VramS16(u32 EA)
+{
+    u32 offset = EA - 0x25C00000;
+    return *(s16*)(VDP1Vram + offset);
+}
+
 u8 getVdp1VramU8(u32 EA)
 {
     u32 offset = EA - 0x25C00000;

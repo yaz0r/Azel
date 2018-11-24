@@ -24,7 +24,7 @@ void s_initialTaskWorkArea::Init(void*)
     pWorkArea->m_4 = 0;
 
     initialTaskStatus.m_currentTask = 0;
-    if (initialTaskStatus.m_showWarningTask)
+    if (initialTaskStatus.mC_showWarningTask)
     {
         initialTaskStatus.m_pendingTask = startLoadWarningTask;
     }

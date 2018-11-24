@@ -429,7 +429,7 @@ void drawObject_SingleDrawCall(s_objectToRender* pObject, float* projectionMatri
 
                         u16 CMDCTRL = READ_BE_U16(pointsEA); pointsEA += 2; // CMDCTRL (but modified)
                         u16 CMDPMOD = READ_BE_U16(pointsEA); pointsEA += 2; // CMDPMOD
-                        u16 CMDCOLR = READ_BE_U16(pointsEA); pointsEA += 2; // CMDCOLR		
+                        u16 CMDCOLR = READ_BE_U16(pointsEA); pointsEA += 2; // CMDCOLR
                         u16 CMDSRCA = READ_BE_U16(pointsEA); pointsEA += 2; // CMDSRCA
                         u16 CMDSIZE = READ_BE_U16(pointsEA); pointsEA += 2; // CMDSIZEd
 

@@ -173,6 +173,12 @@ void initVDP1Projection(fixedPoint r4, u32 mode)
     graphicEngineStatus.m405C.m20 = FP_Div(sqrt_I(MTH_Product2d(array, array)), array[1]);
 }
 
+void getVdp1ProjectionParams(s16* r4, s16* r5)
+{
+    *r4 = graphicEngineStatus.m405C.m18;
+    *r5 = graphicEngineStatus.m405C.m1C;
+}
+
 void initVDP1()
 {
     graphicEngineStatus.m0 = 0;
@@ -319,12 +325,70 @@ void resetEngine()
     startInitialTask();
 }
 
+void getInputConfig(s32 type, std::array<s32, 8>& outputConfig)
+{
+    static const std::array<std::array<s8, 8>, 3> configs=
+    {
+        {
+            {0, 1, 0, 8, 4, 8, 6, 7}, // walk
+            {0, 1, 0, 8, 4, 5, 6, 7}, // flight
+            {0, 1, 2, 8, 8, 8, 8, 8}, // fight
+        }
+    };
+    for (int i = 0; i < 8; i++)
+    {
+        outputConfig[i] = configs[type][i];
+    }
+}
+
+void writeInputConfig(s32 type, const std::array<s32, 8>& config, s32 r6)
+{
+    static const std::array<s8, 9> buttonOrder = {2, 0, 1, 14, 13,12 ,11, 15, -1};
+    for (int i = 0; i < 8; i++)
+    {
+        graphicEngineStatus.m4514.mD8[type][buttonOrder[i]] = 0;
+    }
+
+    static const std::array<u16, 8> bitMasks = { 4, 1, 2, 0x4000, 0x2000, 0x1000, 0x800, 0x8000 };
+    for (int i = 0; i < 8; i++)
+    {
+        s8 r13 = buttonOrder[config[i]];
+        if (r13 >= 0)
+        {
+            graphicEngineStatus.m4514.mD8[type][r13] |= bitMasks[i];
+        }
+    }
+
+    if (r6)
+    {
+        graphicEngineStatus.m4514.m138[type] = 1;
+        graphicEngineStatus.m4514.mD8[type][4] = 0x20;
+        graphicEngineStatus.m4514.mD8[type][5] = 0x10;
+    }
+    else
+    {
+        graphicEngineStatus.m4514.m138[type] = 0;
+        graphicEngineStatus.m4514.mD8[type][4] = 0x10;
+        graphicEngineStatus.m4514.mD8[type][5] = 0x20;
+    }
+}
+
+void iniitInitialTaskStatsAndDebugSub()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        std::array<s32, 8> config;
+        getInputConfig(i, config);
+        writeInputConfig(i, config, 0);
+    }
+}
+
 void initInitialTaskStatsAndDebug()
 {
-    initialTaskStatus.m_showWarningTask = 1;
+    initialTaskStatus.mC_showWarningTask = 1;
     enableDebugTask = 0;
 
-    //iniitInitialTaskStatsAndDebugSub();
+    iniitInitialTaskStatsAndDebugSub();
 }
 
 sFileInfo fileInfoStruct;
@@ -516,7 +580,7 @@ int loadFile(const char* fileName, u8* destination, u8* characterArea)
 
 void initFileSystemSub1()
 {
-    yLog("Unimplemented initFileSystemSub1");
+    PDS_unimplemented("Unimplemented initFileSystemSub1");
 }
 
 void initFileSystemSub2()
@@ -857,7 +921,8 @@ int main(int argc, char* argv[])
 
         if (ImGui::Begin("InputState"))
         {
-            ImGui::Text("State: %X", graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown);
+            ImGui::Text("m6_buttonDown: %X", graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown);
+            ImGui::Text("m8_newButtonDown: %X", graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown);
         }
         ImGui::End();
 
@@ -929,13 +994,4 @@ s8 READ_BE_S8(const void* ptr)
     return data;
 }
 
-void yLog(...)
-{
-
-}
-
-/*void unimplemented(const char* name)
-{
-    printf("Unimplemented: %s\n", name);
-}*/
 

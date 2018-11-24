@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <functional>
 #include "heap.h"
 struct s_workArea
 {
@@ -90,7 +89,7 @@ struct s_workAreaTemplate : public s_workArea
         T* pTask = ConvertType(pWorkArea);
         if(pTask->m_UpdateMethod)
         {
-            std::invoke(pTask->m_UpdateMethod, pTask);
+            ((pTask)->*(pTask->m_UpdateMethod))();
         }
     }
     static void StaticDraw(p_workArea pWorkArea)
@@ -98,7 +97,7 @@ struct s_workAreaTemplate : public s_workArea
         T* pTask = ConvertType(pWorkArea);
         if (pTask->m_DrawMethod)
         {
-            std::invoke(pTask->m_DrawMethod, pTask);
+            ((pTask)->*(pTask->m_DrawMethod))();
         }
     }
     static void StaticDelete(p_workArea pWorkArea)
@@ -106,7 +105,7 @@ struct s_workAreaTemplate : public s_workArea
         T* pTask = ConvertType(pWorkArea);
         if (pTask->m_DeleteMethod)
         {
-            std::invoke(pTask->m_DeleteMethod, pTask);
+            ((pTask)->*(pTask->m_DeleteMethod))();
         }
     }
 
@@ -196,7 +195,7 @@ T* createSubTask(p_workArea parentTask)
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
     if (pTypeTaskDefinition->m_pInit)
     {
-        std::invoke(pTypeTaskDefinition->m_pInit, pNewTask, nullptr);
+        ((pNewTask)->*(pTypeTaskDefinition->m_pInit))(nullptr);
     }
     return pNewTask;
 }
@@ -211,7 +210,7 @@ T* createSubTaskWithArg(p_workArea parentTask, void* arg)
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
     if (pTypeTaskDefinition->m_pInit)
     {
-        std::invoke(pTypeTaskDefinition->m_pInit, pNewTask, arg);
+        ((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
     }
     return pNewTask;
 }
@@ -226,7 +225,7 @@ T* createSiblingTaskWithArg(p_workArea parentTask, void* arg)
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
     if (pTypeTaskDefinition->m_pInit)
     {
-        std::invoke(pTypeTaskDefinition->m_pInit, pNewTask, arg);
+        ((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
     }
     return pNewTask;
 }
@@ -255,7 +254,7 @@ T* createRootTask()
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
     if (pTypeTaskDefinition->m_pInit)
     {
-        std::invoke(pTypeTaskDefinition->m_pInit, pNewTask, nullptr);
+        ((pNewTask)->*(pTypeTaskDefinition->m_pInit))(nullptr);
     }
     return pNewTask;
 }

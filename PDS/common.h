@@ -5,6 +5,8 @@
 extern const u8 bitMasks[];
 extern const u8 reverseBitMasks[];
 
+typedef s16 sVec2_S16[2];
+
 struct sVec3_FP
 {
     fixedPoint m_value[3];
@@ -50,6 +52,21 @@ struct sVec3_FP
         sVec3_FP newValue = *this;
         newValue += otherVec;
         return newValue;
+    }
+};
+
+struct sVec2_FP
+{
+    fixedPoint m_value[2];
+
+    fixedPoint operator[](int i) const
+    {
+        return m_value[i];
+    }
+
+    fixedPoint& operator[](int i)
+    {
+        return m_value[i];
     }
 };
 

@@ -767,6 +767,75 @@ void NormalSpriteDraw(u32 vdp1EA)
     }
 }
 
+void ScaledSpriteDraw(u32 vdp1EA)
+{
+    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
+    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
+    u16 CMDSRCA = getVdp1VramU16(vdp1EA + 8);
+    u16 CMDSIZE = getVdp1VramU16(vdp1EA + 0xA);
+    s16 CMDXA = getVdp1VramS16(vdp1EA + 0xC);
+    s16 CMDYA = getVdp1VramS16(vdp1EA + 0xE);
+    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+
+    if (CMDSRCA)
+    {
+        u32 characterAddress = ((u32)CMDSRCA) << 3;
+        u32 colorBank = ((u32)CMDCOLR) << 1;
+        s32 X0 = CMDXA + localCoordiantesX;
+        s32 Y0 = CMDYA + localCoordiantesY;
+        s32 Width = ((CMDSIZE >> 8) & 0x3F) * 8;
+        s32 Height = CMDSIZE & 0xFF;
+
+        s32 X1;
+        s32 Y1;
+
+        switch ((getVdp1VramU16(vdp1EA + 0) >> 8) & 0xF)
+        {
+        case 0:
+            X1 = getVdp1VramS16(vdp1EA + 0x14) + localCoordiantesX + 1;
+            Y1 = getVdp1VramS16(vdp1EA + 0x16) + localCoordiantesY + 1;
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        int counter = 0;
+
+        for (int currentY = Y0; currentY < Y0 + Height; currentY++)
+        {
+            for (int currentX = X0; currentX < X0 + Width; currentX++)
+            {
+                if ((currentX >= 0) && (currentX < vdp1TextureWidth) && (currentY >= 0) && (currentY < vdp1TextureHeight))
+                {
+                    u8 character = getVdp1VramU8(0x25C00000 + characterAddress);
+
+                    if (counter & 1)
+                    {
+                        characterAddress++;
+                    }
+                    else
+                    {
+                        character >>= 4;
+                    }
+                    character &= 0xF;
+
+                    if (character)
+                    {
+                        u32 paletteOffset = colorBank + 2 * character;//((paletteNumber << 4) + dotColor) * 2 + layerData.CAOS * 0x200;
+                        u16 color = getVdp2CramU16(paletteOffset);
+                        u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
+
+                        vdp1TextureOutput[(vdp1TextureHeight - 1 - currentY) * vdp1TextureWidth + currentX] = finalColor;
+                    }
+
+                    counter++;
+                }
+            }
+        }
+    }
+}
+
 void renderVdp1(u32 width, u32 height)
 {
     vdp1TextureWidth = width;
@@ -796,6 +865,9 @@ void renderVdp1(u32 width, u32 height)
         {
         case 0:
             NormalSpriteDraw(vdp1EA);
+            break;
+        case 1:
+            ScaledSpriteDraw(vdp1EA);
             break;
         case 0xA:
             SetLocalCoordinates(vdp1EA);
@@ -1122,6 +1194,8 @@ bool azelSdl2_EndFrame()
 
     checkGL();
     
+    PDS_Logger.Draw("Logs");
+
     ImGui::Render();
     
     checkGL();

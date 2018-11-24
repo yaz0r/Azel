@@ -92,7 +92,7 @@ void scaleCurrentMatrixRow2(s32 r4);
 
 fixedPoint vecDistance(const sVec3_FP& r4, const sVec3_FP& r5);
 
-void transformAndAddVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6);
-void transformAndAddVecByCurrentMatrix(sVec3_FP* r4, sVec3_FP* r5);
-void transformVecByCurrentMatrix(sVec3_FP& r4, sVec3_FP& r5);
+void transformAndAddVec(const sVec3_FP& r4, sVec3_FP& r5, const sMatrix4x3& r6);
+void transformAndAddVecByCurrentMatrix(const sVec3_FP* r4, sVec3_FP* r5);
+void transformVecByCurrentMatrix(const sVec3_FP& r4, sVec3_FP& r5);
 

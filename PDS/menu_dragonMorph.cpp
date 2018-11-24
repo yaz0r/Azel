@@ -245,7 +245,7 @@ void generateCameraMatrixSub1(sVec3_FP& r4, fixedPoint(&r5)[2])
     }
 }
 
-void transformVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6)
+void transformVec(const sVec3_FP& r4, sVec3_FP& r5, const sMatrix4x3& r6)
 {
     s64 mac = 0;
     mac += (s64)r6.matrix[0] * (s64)r4[0].asS32();
@@ -266,7 +266,7 @@ void transformVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6)
     r5[2] = mac >> 16;
 }
 
-void transformVecByCurrentMatrix(sVec3_FP& r4, sVec3_FP& r5)
+void transformVecByCurrentMatrix(const sVec3_FP& r4, sVec3_FP& r5)
 {
     transformVec(r4, r5, *pCurrentMatrix);
 }

@@ -26,10 +26,7 @@ typedef int32_t s32;
 typedef uint64_t u64;
 typedef int64_t s64;
 
-void yLog(...);
-
-#define PDS_unimplemented(name) { static bool printed = false; if(!printed) {printed = true; printf("Unimplemented: %s\n", name);}}
-#define PDS_warning(name) { static bool printed = false; if(!printed) {printed = true; printf("Warning: %s\n", name);}}
+#include "PDS_Logger.h"
 
 struct sSaturnMemoryFile
 {
@@ -50,6 +47,14 @@ struct sSaturnPtr
         newPtr.m_offset += i;
         return newPtr;
     }
+
+    sSaturnPtr operator + (int i) const
+    {
+        sSaturnPtr newPtr = *this;
+        newPtr.m_offset += i;
+        return newPtr;
+    }
+
     sSaturnPtr& operator += (unsigned int i)
     {
         this->m_offset += i;
@@ -146,6 +151,9 @@ u32 getFileSize(const char* fileName);
 //void unimplemented(const char* name);
 
 void initVDP1Projection(fixedPoint r4, u32 mode);
+void getVdp1ProjectionParams(s16* r4, s16* r5);
+
+s32 setDividend(s32 r4, s32 r5, s32 divisor);
 
 fixedPoint sqrt_F(fixedPoint r4);
 void initFileLayoutTable();

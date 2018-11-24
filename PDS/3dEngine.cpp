@@ -416,7 +416,7 @@ fixedPoint vecDistance(const sVec3_FP& r4, const sVec3_FP& r5)
     return sqrt_F(x + y + z);
 }
 
-void transformAndAddVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6)
+void transformAndAddVec(const sVec3_FP& r4, sVec3_FP& r5, const sMatrix4x3& r6)
 {
     s64 mac = 0;
     mac += (s64)r6.matrix[0] * (s64)r4[0].asS32();
@@ -437,7 +437,7 @@ void transformAndAddVec(sVec3_FP& r4, sVec3_FP& r5, sMatrix4x3& r6)
     r5[2] = (mac >> 16) + +r6.matrix[11];
 }
 
-void transformAndAddVecByCurrentMatrix(sVec3_FP* r4, sVec3_FP* r5)
+void transformAndAddVecByCurrentMatrix(const sVec3_FP* r4, sVec3_FP* r5)
 {
     transformAndAddVec(*r4, *r5, *pCurrentMatrix);
 }
