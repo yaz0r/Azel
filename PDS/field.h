@@ -340,12 +340,12 @@ struct s_memoryAreaOutput
 
 struct s_dragonTaskWorkArea_1F0
 {
-    u32 m_0;
-    u32 m_4;
+    s32 m_0;
+    s32 m_4;
     u32 m_8;
-    u32 m_C;
-    u16 m_E;
-    u16 m_10;
+    s32 m_C;
+    s16 m_E;
+    s16 m_10;
 };
 
 struct s_dragonTaskWorkArea_48
@@ -455,8 +455,8 @@ struct s_dragonTaskWorkArea : s_workArea
     s16 m1EE;
     s_dragonTaskWorkArea_1F0 m1F0;
     sVec2_S16 m200_LCSCursorScreenSpaceCoordinates;
-    u32 m208;
-    u32 m20C;
+    fixedPoint m208;
+    fixedPoint m20C;
     u32 m210;
     u32 m214;
     fixedPoint m21C_DragonSpeedValues[5];
@@ -633,7 +633,7 @@ struct s_A3_Obj2_60
     s8 m1A;
     s8 m1B;
     s32 m1C;
-    s32 m20;
+    s_workArea* m20;
     sVec3_FP m24_worldspaceCoordinates;
     sVec2_S16 m30_screenspaceCoordinates;
     // size 34
@@ -657,13 +657,17 @@ struct s_LCSTask : public s_workArea
     u32 mC;
     u32 m10;
     std::array<s_LCSTask_14, 0x100> m14;
-    u32 m814;
+    fixedPoint m814_LCSTargetMaxHeight;
     s_LCSTask_818* m818;
+    s_A3_Obj2_60* m81C_currentLCSTarget;
     s32 m820;
     s32 m824;
     s_LCSTask_828* m828;
+    s32 m830;
+    s32 m834;
     s8 m83C;
     s8 m83D;
+    s8 m83E;
     s8 m83F;
     void* m9C0;
     u32 m9C4;

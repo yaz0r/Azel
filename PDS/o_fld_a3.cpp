@@ -6117,7 +6117,7 @@ bool bMakeEverythingVisible = false;
 
         getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS = pTypedWorkArea;
         getMemoryArea(&pTypedWorkArea->m0, 0);
-        pTypedWorkArea->m814 = 0x200000;
+        pTypedWorkArea->m814_LCSTargetMaxHeight = 0x200000;
         if (gDragonState->mC_dragonType == 8)
         {
             setLCSField83E(pTypedWorkArea, 1);
@@ -6400,9 +6400,10 @@ bool bMakeEverythingVisible = false;
                 return;
             r4->m9DA = 2;
             break;
-        case 2:
+        case 2: // LCS running
             if (r4->m83D)
                 return;
+            // cancel LCS?
             if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 6)
             {
                 r4->m9DA = 4;
@@ -6486,33 +6487,245 @@ bool bMakeEverythingVisible = false;
         }
     }
 
-    void LCSTaskDrawSub1Sub2Sub2Sub2(s_LCSTask* r4)
+    void LCSUpdateCursorFromInputSub0(s32 r4, sVec3_FP* r5)
+    {
+        sFieldCameraStatus* pCameraStatus = getFieldCameraStatus();
+
+        if (r4)
+        {
+            assert(0);
+        }
+        if (r5)
+        {
+            pCameraStatus->m68 += *r5;
+        }
+    }
+
+    void LCSUpdateCursorFromInput(s_dragonTaskWorkArea* r4)
+    {
+        if (graphicEngineStatus.m4514.m0->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][5]) // down
+        {
+            r4->m1F0.m_8 = fixedPoint(0x1C71C7);
+        }
+        else if (graphicEngineStatus.m4514.m0->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][4]) // up
+        {
+            r4->m1F0.m_8 = -fixedPoint(0x1C71C7);
+        }
+
+        if (graphicEngineStatus.m4514.m0->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][7])
+        {
+            r4->m1F0.m_C = -fixedPoint(0x1C71C7);
+        }
+        else if (graphicEngineStatus.m4514.m0->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][6])
+        {
+            r4->m1F0.m_C = fixedPoint(0x1C71C7);
+        }
+
+        sVec3_FP var0;
+        var0[0] = 0;
+        var0[1] = MTH_Mul(0x147A, r4->m1F0.m_C);
+        var0[0] = 0;
+
+        if (r4->mF8_Flags & 0x8000)
+        {
+            LCSUpdateCursorFromInputSub0(0, &var0);
+        }
+    }
+
+    void LCSTaskDrawSub1Sub2Sub2Sub2(s_dragonTaskWorkArea* r4)
     {
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1F0.m_8 = 0;
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1F0.m_C = 0;
 
         switch (graphicEngineStatus.m4514.m0->m0_current.m0)
         {
+        case 1:
+            LCSUpdateCursorFromInput(r4);
+            break;
         default:
             assert(0);
             break;
         }
+
+        //606DDF4
+        r4->m1F0.m_0 += ((s16)(MTH_Mul(r4->m208, r4->m1F0.m_8) >> 16));
+        r4->m1F0.m_4 += ((s16)(MTH_Mul(r4->m20C, r4->m1F0.m_C) >> 16));
+
+        if (r4->m1F0.m_0 < -0x10000)
+            r4->m1F0.m_0 = -0x10000;
+        if (r4->m1F0.m_0 > 0x10000)
+            r4->m1F0.m_0 = 0x10000;
+
+        if (r4->m1F0.m_4 < -0x10000)
+            r4->m1F0.m_4 = -0x10000;
+        if (r4->m1F0.m_4 > 0x10000)
+            r4->m1F0.m_4 = 0x10000;
+
+        r4->m200_LCSCursorScreenSpaceCoordinates[0] = (s16)((-MTH_Mul(176 * r4->m210, r4->m1F0.m_4)) >> 16);
+        r4->m200_LCSCursorScreenSpaceCoordinates[1] = (s16)((-MTH_Mul(112 * r4->m214, r4->m1F0.m_0)) >> 16);
     }
 
-    s32 LCSTaskDrawSub1Sub2Sub2(s_LCSTask* r4)
+    sVec2_S16 LCS_Var0 = { 0,0 };
+
+    s_A3_Obj2_60* FindClosestLCSTarget(s_LCSTask* r4)
     {
-        //getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-        if (r4->m8 & 4)
+        s_A3_Obj2_60* r6 = 0;
+        fixedPoint r13_bestScore = 0x7FFFFFFF;
+
+        if (r4->m8 & 0x200)
         {
             assert(0);
         }
 
+        s32 r5 = 0;
+        while (r5 < r4->mC)
+        {
+            s_A3_Obj2_60* pLCSTarget = r4->m14[r5].m0;
+
+            if (!(pLCSTarget->m18 & 6) && (pLCSTarget->m24_worldspaceCoordinates[1] > 0x3000) && (pLCSTarget->m24_worldspaceCoordinates[1] < r4->m814_LCSTargetMaxHeight))
+            {
+                s32 r1;
+                if (pLCSTarget->m30_screenspaceCoordinates[0] >= 0)
+                {
+                    r1 = pLCSTarget->m30_screenspaceCoordinates[0];
+                }
+                else
+                {
+                    r1 = -pLCSTarget->m30_screenspaceCoordinates[0];
+                }
+
+                if (r1 < 176)
+                {
+                    if (pLCSTarget->m30_screenspaceCoordinates[1] >= 0)
+                    {
+                        r1 = pLCSTarget->m30_screenspaceCoordinates[1];
+                    }
+                    else
+                    {
+                        r1 = -pLCSTarget->m30_screenspaceCoordinates[1];
+                    }
+
+                    if (r1 < 112)
+                    {
+                        fixedPoint distanceFromCursorSquare = (LCS_Var0[0] - pLCSTarget->m30_screenspaceCoordinates[0]) * (LCS_Var0[0] - pLCSTarget->m30_screenspaceCoordinates[0]) + (LCS_Var0[1] - pLCSTarget->m30_screenspaceCoordinates[1]) * (LCS_Var0[0] - pLCSTarget->m30_screenspaceCoordinates[0]);
+                        if (distanceFromCursorSquare < r13_bestScore)
+                        {
+                            r13_bestScore = distanceFromCursorSquare;
+                            r6 = pLCSTarget;
+                        }
+                    }
+                }
+            }
+
+            r5++;
+        }
+
+        return r6;
+    }
+
+    void LCSTaskDrawSub1Sub2Sub2Sub1Sub2SubSub0(s32 r4)
+    {
+        assert(0);
+    }
+
+    p_workArea createLCSShootTask(s_LCSTask* r4, s_A3_Obj2_60* r5)
+    {
+        assert(0);
+        return NULL;
+    }
+
+    void startScript_cantDestroy()
+    {
+        queueNewFieldScript(sSaturnPtr({ 0x06080F4B, gFLD_A3 }), 1716);
+    }
+
+    void LCSTaskDrawSub1Sub2Sub2Sub1Sub2Sub(s_LCSTask* r4, s_A3_Obj2_60* r5)
+    {
+        if (r5->m17)
+        {
+            if (r4->m820)
+            {
+                LCSTaskDrawSub1Sub2Sub2Sub1Sub2SubSub0(r4->m820);
+            }
+
+            r5->m20 = createLCSShootTask(r4, r5);
+            r5->m19 = (r5->m19 & 0xF0) | 5;
+            startScript_cantDestroy();
+        }
+
+        r4->m81C_currentLCSTarget = r5;
+        r4->m8 &= ~0x200;
+    }
+
+    void LCSTaskDrawSub1Sub2Sub2Sub1Sub2(s_LCSTask* r4, s_A3_Obj2_60* r5)
+    {
+        if (!(r5->m19 & 4))
+        {
+            LCSTaskDrawSub1Sub2Sub2Sub1Sub2Sub(r4, r5);
+        }
+    }
+
+    void LCSTaskDrawSub1Sub2Sub2Sub1(s_LCSTask* r4, s_A3_Obj2_60* r5)
+    {
+        if (r5 == nullptr)
+            return;
+
+        r4->m83C = 3;
+
+        switch (r5->m10_flags & 3)
+        {
+        case 0:
+        case 1:
+        case 3:
+            if (r4->m83E < r5->m17 + 1)
+            {
+                LCSTaskDrawSub1Sub2Sub2Sub1Sub2(r4, r5);
+                return;
+            }
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        //0606D468
+        assert(0);
+
+        
+        //if (!LCSTaskDrawSub1Sub2Sub2Sub1Sub0(r4, r4->m830, &r4->m830, &r4->m834))
+          //  return;
+
+        
+    }
+
+    s32 LCSTaskDrawSub1Sub2Sub2(s_LCSTask* r4)
+    {
+        s_dragonTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        if (r4->m8 & 4)
+        {
+            s_A3_Obj2_60* pLcsTarget = FindClosestLCSTarget(r4);
+            if (pLcsTarget)
+            {
+                r14->m1F0.m_0 = -FP_Div(performDivision(224, pLcsTarget->m30_screenspaceCoordinates[1] << 17), r14->m214);
+                r14->m1F0.m_4 = -FP_Div(performDivision(352, pLcsTarget->m30_screenspaceCoordinates[0] << 17), r14->m210);
+
+                LCSTaskDrawSub1Sub2Sub2Sub1(r4, pLcsTarget);
+            }
+            else
+            {
+                r14->m1F0.m_0 = 0;
+                r14->m1F0.m_4 = 0;
+            }
+        }
+
         //0606DF48
-        LCSTaskDrawSub1Sub2Sub2Sub2(r4);
+        LCSTaskDrawSub1Sub2Sub2Sub2(r14);
 
         if (--r4->m83C <= 0)
         {
-            assert(0);
+            r4->m83C = 0;
+
+            PDS_unimplemented("LCSTaskDrawSub1Sub2Sub2");
         }
 
         return 1;
@@ -6520,7 +6733,7 @@ bool bMakeEverythingVisible = false;
 
     void LCSTaskDrawSub1Sub2Sub3Sub0(s_LCSTask* r4)
     {
-        if (r4->m828)
+        if (r4->m820)
             assert(0);
     }
 
@@ -6535,6 +6748,16 @@ bool bMakeEverythingVisible = false;
         }
 
         LCSTaskDrawSub1Sub2Sub3Sub0(r4);
+    }
+
+    void LCSTaskDrawSub1Sub2Sub5(s_LCSTask* r4)
+    {
+        s_LCSTask_828* r5 = r4->m828;
+
+        while (r5)
+        {
+            assert(0);
+        }
     }
 
     void LCSTaskDrawSub1Sub2(s_LCSTask* r4)
@@ -6556,7 +6779,22 @@ bool bMakeEverythingVisible = false;
             return;
         }
 
-        PDS_unimplemented("LCSTaskDrawSub1Sub2");
+        if (r4->m8 & 4)
+        {
+            return;
+        }
+
+        r4->m8 = (r4->m8 & ~2) | 8;
+
+        r4->m83D = 0;
+
+        LCSTaskDrawSub1Sub2Sub4(r4);
+        LCSTaskDrawSub1Sub2Sub5(r4);
+
+        if (r4->m828)
+        {
+            assert(0);
+        }
     }
 
     void LCSTaskDrawSub1Sub3()

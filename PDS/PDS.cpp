@@ -908,6 +908,8 @@ int main(int argc, char* argv[])
     readInputsFromSMPC();
     updateInputs();
 
+    u32 frameCounter = 0;
+
     do 
     {
         checkGL();
@@ -943,7 +945,6 @@ int main(int argc, char* argv[])
             interruptVDP1Update();
         }
         checkGL();
-
     } while (azelSdl2_EndFrame());
     return 0;
 }

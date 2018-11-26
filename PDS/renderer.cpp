@@ -1215,6 +1215,7 @@ bool azelSdl2_EndFrame()
         float freq = SDL_GetPerformanceFrequency();
         float secs = (now - last_time) / freq;
         float timeToWait = ((1.f/30.f) - secs) * 1000;
+        timeToWait = 0;
         if (timeToWait > 0)
         {
             SDL_Delay(timeToWait);
