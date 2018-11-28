@@ -612,7 +612,7 @@ struct s_LCSTask_828
     s_LCSTask_828* m4_next;
 };
 
-struct s_A3_Obj2_60
+struct sLCSTarget
 {
     enum flags
     {
@@ -641,13 +641,8 @@ struct s_A3_Obj2_60
 
 struct s_LCSTask_14
 {
-    s_A3_Obj2_60* m0;
+    sLCSTarget* m0;
     s32 m4;
-};
-
-struct s_LCSTask_818
-{
-    s16 m10;
 };
 
 struct s_LCSTask : public s_workArea
@@ -658,13 +653,14 @@ struct s_LCSTask : public s_workArea
     u32 m10;
     std::array<s_LCSTask_14, 0x100> m14;
     fixedPoint m814_LCSTargetMaxHeight;
-    s_LCSTask_818* m818;
-    s_A3_Obj2_60* m81C_currentLCSTarget;
+    sLCSTarget* m818;
+    sLCSTarget* m81C_currentLCSTarget;
     s32 m820;
     s32 m824;
     s_LCSTask_828* m828;
     s32 m830;
     s32 m834;
+    s32 m838;
     s8 m83C;
     s8 m83D;
     s8 m83E;
@@ -674,7 +670,13 @@ struct s_LCSTask : public s_workArea
     u32 m9C8;
     u32 m9CC;
     s32 m9D0;
-    s8 m9DA;
+
+    enum : s8 {
+        LCSPhase_0_init = 0,
+        LCSPhase_2_targeting = 2,
+        LCSPhase_3 = 3,
+        LCSPhase_4_executing = 4,
+    } m9DA_LCSPhase;
     // size 0x9DC
 };
 

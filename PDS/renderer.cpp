@@ -157,6 +157,10 @@ void azelSdl2_Init()
     glGenTextures(1, &gNBG1Texture);
     glGenTextures(1, &gNBG2Texture);
     glGenTextures(1, &gNBG3Texture);
+
+#ifdef _DEBUG
+    SDL_GL_SetSwapInterval(0);
+#endif
 }
 
 GLuint getTextureForLayer(eLayers layerIndex)
@@ -780,7 +784,7 @@ void ScaledSpriteDraw(u32 vdp1EA)
     if (CMDSRCA)
     {
         u32 characterAddress = ((u32)CMDSRCA) << 3;
-        u32 colorBank = ((u32)CMDCOLR) << 1;
+        u32 colorBank = ((u32)CMDCOLR) * 8;
         s32 X0 = CMDXA + localCoordiantesX;
         s32 Y0 = CMDYA + localCoordiantesY;
         s32 Width = ((CMDSIZE >> 8) & 0x3F) * 8;
@@ -822,8 +826,10 @@ void ScaledSpriteDraw(u32 vdp1EA)
 
                     if (character)
                     {
-                        u32 paletteOffset = colorBank + 2 * character;//((paletteNumber << 4) + dotColor) * 2 + layerData.CAOS * 0x200;
-                        u16 color = getVdp2CramU16(paletteOffset);
+                        u32 paletteOffset = colorBank + 2 * character;
+                        u16 color = getVdp1VramU16(0x25C00000 + paletteOffset);
+                        color = READ_BE_U16(&color);
+                        assert(color & 0x8000);
                         u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
 
                         vdp1TextureOutput[(vdp1TextureHeight - 1 - currentY) * vdp1TextureWidth + currentX] = finalColor;
