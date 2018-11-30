@@ -19,6 +19,8 @@ set(SOURCES
  PDS/field.cpp
  PDS/fixedPoint.cpp
  PDS/heap.cpp
+ PDS/LCS.cpp
+ PDS/LCS.h
  PDS/mainMenuDebugTasks.cpp
  PDS/menu_dragon.cpp
  PDS/menu_dragonMorph.cpp
