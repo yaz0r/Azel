@@ -13,7 +13,7 @@ struct sLCSTarget
         e_200 = 0x200,
     };
     s_workArea* m0;
-    void* m4;
+    void* m4_callback;
     const sVec3_FP* m8_parentWorldCoordinates;
     const sVec3_FP* mC;
     s16 m10_flags;
@@ -73,8 +73,8 @@ struct s_LCSTask : public s_workArea
     // size 0x9DC
 };
 
-void create_A3_Obj2_Sub0(sLCSTarget* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14);
-void A3_Obj2_UpdateSub0(sLCSTarget* r14);
+void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14);
+void updateLCSTarget(sLCSTarget* r14);
 void LCSTaskDrawSub();
 void allocateLCSEntry(s_visibilityGridWorkArea* r4, u8* r5, u32 r6);
 void fieldScriptTaskUpdateSub2Sub1();

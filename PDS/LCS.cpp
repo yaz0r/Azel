@@ -2,10 +2,10 @@
 
 void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6);
 
-void create_A3_Obj2_Sub0(sLCSTarget* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14)
+void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14)
 {
     r4->m0 = r5;
-    r4->m4 = r6;
+    r4->m4_callback = r6;
     r4->m8_parentWorldCoordinates = r7;
     r4->mC = arg0;
     r4->m12 = argA;
@@ -28,7 +28,7 @@ void create_A3_Obj2_Sub0(sLCSTarget* r4, s_workArea* r5, void* r6, const sVec3_F
     r4->m20 = 0;
 }
 
-void A3_Obj2_UpdateSub0(sLCSTarget* r14)
+void updateLCSTarget(sLCSTarget* r14)
 {
     sVec3_FP var0;
     sVec3_FP varC;
