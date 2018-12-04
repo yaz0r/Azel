@@ -79,6 +79,7 @@ extern s_vblankData vblankData;
 
 extern u8 gDragonModel[0x16500];
 
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 modelIndexOffset, u8* pModelData1, u8* pDefaultPose, u32 unkArg2, const s_RiderDefinitionSub* unkArg3);
 void initModelDrawFunction(s_3dModel* pDragonStateData1);
 u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, u8* pModelData1);
 s32 riderInit(s_3dModel* r4, u8* r5);

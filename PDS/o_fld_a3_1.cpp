@@ -120,7 +120,8 @@ struct s_itemType0 : public s_workAreaTemplate<s_itemType0>
 
     void Update()
     {
-        assert(0);
+        PDS_unimplemented("s_itemType0::Update");
+        //assert(0);
     }
 
     p_workArea m0;
@@ -149,6 +150,7 @@ void(*LCSItemBox_CallbackTable[3])() = {
      &LCSItemBox_CallabckSavePoint,
 };
 
+
 s16 LCSItemBox_Table0[3] = {
     2,
     0,
@@ -159,6 +161,26 @@ s16 LCSItemBox_TableFlags[3] = {
     0,
     0,
     0x20
+};
+
+static s16 LCSItemBox_Table3[] = {
+    0x14,
+    0x1C,
+    0x24,
+    0x2C,
+    0x2C,
+    0x2C,
+    0x48
+};
+
+static s16 LCSItemBox_Table2[] = {
+    0x158,
+    0x160,
+    0x168,
+    0x170,
+    0x170,
+    0x170,
+    0x18C
 };
 
 struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
@@ -189,14 +211,146 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
         m8D = r13->m44;
 
         createLCSTarget(&m8_LCSTarget, this, LCSItemBox_CallbackTable[r13->m41_LCSType], &m60, NULL, LCSItemBox_TableFlags[r13->m41_LCSType] | LCSItemBox_Table0[r13->m41_LCSType] | 0x100, r13->m38, r13->m3C, r13->m40, r13->m42);
-        
+
         switch (r13->m41_LCSType)
         {
+        case 0:
+        {
+            u8* pModel = m0.m0_mainMemory;
+            u8* pModelData1 = pModel + READ_BE_U32(pModel + 0x1A0);
+            u8* pDefaultPose = pModel + READ_BE_U32(pModel + LCSItemBox_Table2[r13->m42]);
+
+            init3DModelRawData(this, &m98, 0, pModel, LCSItemBox_Table3[r13->m42], pModelData1, pDefaultPose, 0, 0);
+
+            if (m80 > 0)
+            {
+                s32 bitIndex;
+                if (m80 < 1000)
+                {
+                    bitIndex = m80;
+                }
+                else
+                {
+                    bitIndex = m80 - 566;
+                }
+
+                if (mainGameState.getBit(bitIndex))
+                {
+                    assert(0);
+                }
+            }
+            break;
+        }
+        case 1:
+        case 2:
+            break;
         default:
             assert(0);
             break;
         }
+
+        m_UpdateMethod = LCSItemBox_UpdateTable[r13->m41_LCSType];
+        m_DrawMethod = LCSItemBox_DrawTable[r13->m41_LCSType];
     }
+
+    void LCSItemBox_UpdateType0()
+    {
+        PDS_unimplemented("LCSItemBox_UpdateType0");
+        //assert(0);
+    }
+
+    void LCSItemBox_UpdateType1()
+    {
+        assert(0);
+    }
+
+    void LCSItemBox_UpdateType2()
+    {
+        assert(0);
+    }
+
+    const FunctionType LCSItemBox_UpdateTable[3] = {
+        &s_itemBoxType1::LCSItemBox_UpdateType0,
+        &s_itemBoxType1::LCSItemBox_UpdateType1,
+        &s_itemBoxType1::LCSItemBox_UpdateType2
+    };
+
+    // TODO: move to kernel
+    void LCSItemBox_DrawType0Sub0Sub0(u8* r4, u8** r5)
+    {
+        pushCurrentMatrix();
+        //translateCurrentMatrix
+        addObjectToDrawList(r4, )
+    }
+
+    // TODO: move to kernel
+    void LCSItemBox_DrawType0Sub0(u8* r4, s16 r5, s16 r6)
+    {
+        u8* varC = r4;
+        s16 var8 = r5;
+        u8* var15 = varC + READ_BE_U32(varC + r6);
+
+        LCSItemBox_DrawType0Sub0Sub0(varC + READ_BE_U32(varC + var8), &var15);
+    }
+
+    const s16 LCSItemBox_Table4[7] =
+    {
+        0x150,
+        0x15C,
+        0x164,
+        0x16C,
+        0x174,
+        0x17C,
+        0x184,
+    };
+
+    const s16 LCSItemBox_Table5[7] =
+    {
+        0xC,
+        0x18,
+        0x20,
+        0x28,
+        0x30,
+        0x38,
+        0x40,
+    };
+
+    void LCSItemBox_DrawType0()
+    {
+        s_visibilityGridWorkArea* pGridTask = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+
+        pushCurrentMatrix();
+        translateCurrentMatrix(&m3C);
+        rotateCurrentMatrixZYX(&m6C);
+        scaleCurrentMatrixRow0(m78);
+        scaleCurrentMatrixRow1(m78);
+        scaleCurrentMatrixRow2(m78);
+
+        u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
+
+        if (depthRangeIndex <= pGridTask->m1300)
+        {
+            LCSItemBox_DrawType0Sub0(m0.m0_mainMemory, LCSItemBox_Table5[m8C], LCSItemBox_Table4[m8C]);
+        }
+
+        popMatrix();
+    }
+
+    void LCSItemBox_DrawType1()
+    {
+        assert(0);
+    }
+
+    void LCSItemBox_DrawType2()
+    {
+        assert(0);
+    }
+
+    const FunctionType LCSItemBox_DrawTable[3] = {
+        &s_itemBoxType1::LCSItemBox_DrawType0,
+        &s_itemBoxType1::LCSItemBox_DrawType1,
+        &s_itemBoxType1::LCSItemBox_DrawType2
+    };
 
     s_memoryAreaOutput m0;
     sLCSTarget m8_LCSTarget;
@@ -204,6 +358,8 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
     sVec3_FP m48;
     sVec3_FP m54;
     sVec3_FP m60;
+    sVec3_FP m6C;
+    s32 m78;
     fixedPoint m7C;
     fixedPoint m80;
     s16 m84;
@@ -213,6 +369,7 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
     s8 m8B;
     s8 m8C;
     s8 m8D;
+    s_3dModel m98;
     //size: F0
 };
 
