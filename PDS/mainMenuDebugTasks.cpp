@@ -943,11 +943,6 @@ void modeDrawFunction10Sub1(u8* pModelDataRoot, u8* pModelData, std::vector<sPos
     } while (1);
 }
 
-void modeDrawFunction6Sub2(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseData>::iterator& pPoseData, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
-{
-    PDS_unimplemented("modeDrawFunction6Sub2");
-}
-
 void modeDrawFunction6Sub1(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseData>::iterator& pPoseData, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do
@@ -1063,11 +1058,6 @@ void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, std::vector<sMat
 
         pModelData = pModelDataRoot + READ_BE_U32(pModelData + 8);
     } while (1);
-}
-
-void modeDrawFunction1Sub2(u8* pModelDataRoot, u8* pModelData, std::vector<sMatrix4x3>::iterator& r5, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
-{
-    assert(0);
 }
 
 void addAnimationFrame(std::vector<sPoseData>& pPoseData, s_3dModel* p3dModel)

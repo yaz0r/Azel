@@ -183,6 +183,12 @@ static s16 LCSItemBox_Table2[] = {
     0x18C
 };
 
+static sVec3_FP LCSItemBox_Table6[] = {
+    {0, 0x20000, 0},
+    {0, 0x1C000, 0},
+    {0, 0, 0}
+};
+
 struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -253,20 +259,61 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
         m_DrawMethod = LCSItemBox_DrawTable[r13->m41_LCSType];
     }
 
+    s8 LCSItemBox_UpdateType0Sub1()
+    {
+        PDS_unimplemented("LCSItemBox_UpdateType0Sub1");
+        return 1;
+    }
+
+    void LCSItemBox_UpdateType0Sub0(s32 r5, s32 r6, fixedPoint r7)
+    {
+        PDS_unimplemented("LCSItemBox_UpdateType0Sub0");
+    }
+
     void LCSItemBox_UpdateType0()
     {
-        PDS_unimplemented("LCSItemBox_UpdateType0");
-        //assert(0);
+        if (LCSItemBox_UpdateType0Sub1())
+        {
+            m6C[1] += fixedPoint(0x444444);
+            m8_LCSTarget.m18 = 0;
+        }
+        else
+        {
+            m8_LCSTarget.m18 |= 2;
+        }
+
+        pushCurrentMatrix();
+        translateCurrentMatrix(&m3C);
+        rotateCurrentMatrixZYX(&m6C);
+        scaleCurrentMatrixRow0(m78);
+        scaleCurrentMatrixRow1(m78);
+        scaleCurrentMatrixRow2(m78);
+
+        transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[m8B], &m60);
+
+        LCSItemBox_UpdateType0Sub0(0x58, 0x19C, m7C);
+
+        popMatrix();
+
+
+        if (m8D)
+        {
+            m8_LCSTarget.m18 |= 1;
+        }
+
+        updateLCSTarget(&m8_LCSTarget);
     }
 
     void LCSItemBox_UpdateType1()
     {
-        assert(0);
+        PDS_unimplemented("LCSItemBox_UpdateType1");
+        //assert(0);
     }
 
     void LCSItemBox_UpdateType2()
     {
-        assert(0);
+        PDS_unimplemented("LCSItemBox_UpdateType2");
+        //assert(0);
     }
 
     const FunctionType LCSItemBox_UpdateTable[3] = {
@@ -274,24 +321,6 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
         &s_itemBoxType1::LCSItemBox_UpdateType1,
         &s_itemBoxType1::LCSItemBox_UpdateType2
     };
-
-    // TODO: move to kernel
-    void LCSItemBox_DrawType0Sub0Sub0(u8* r4, u8** r5)
-    {
-        pushCurrentMatrix();
-        //translateCurrentMatrix
-        addObjectToDrawList(r4, )
-    }
-
-    // TODO: move to kernel
-    void LCSItemBox_DrawType0Sub0(u8* r4, s16 r5, s16 r6)
-    {
-        u8* varC = r4;
-        s16 var8 = r5;
-        u8* var15 = varC + READ_BE_U32(varC + r6);
-
-        LCSItemBox_DrawType0Sub0Sub0(varC + READ_BE_U32(varC + var8), &var15);
-    }
 
     const s16 LCSItemBox_Table4[7] =
     {
@@ -338,12 +367,86 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
 
     void LCSItemBox_DrawType1()
     {
-        assert(0);
+        s_visibilityGridWorkArea* pGridTask = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+
+        pushCurrentMatrix();
+        translateCurrentMatrix(&m3C);
+        rotateCurrentMatrixZYX(&m6C);
+        scaleCurrentMatrixRow0(m78);
+        scaleCurrentMatrixRow1(m78);
+        scaleCurrentMatrixRow2(m78);
+
+        pushCurrentMatrix();
+
+        sVec3_FP translation;
+        translation[0] = READ_BE_S32(m0.m0_mainMemory + 0x148);
+        translation[1] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 4);
+        translation[2] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 8);
+
+        sVec3_FP rotation;
+        rotation[0] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 0xC);
+        rotation[1] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 0x10);
+        rotation[2] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 0x14);
+
+        translateCurrentMatrix(&translation);
+        rotateCurrentMatrixZYX(&rotation);
+
+        u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
+
+        if (depthRangeIndex <= pGridTask->m1300)
+        {
+            addObjectToDrawList(m0.m0_mainMemory, READ_BE_U32(m0.m0_mainMemory + 0x5C));
+
+            pushCurrentMatrix();
+
+            sVec3_FP translation2;
+            translation2[0] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 0x24);
+            translation2[1] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 0x24 + 4);
+            translation2[2] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 0x24 + 8);
+
+            sVec3_FP rotation2;
+            rotation2[0] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 0x24 + 0xC);
+            rotation2[1] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 0x24 + 0x10);
+            rotation2[2] = READ_BE_S32(m0.m0_mainMemory + 0x148 + 0x24 + 0x14);
+
+            translateCurrentMatrix(&translation2);
+            rotateCurrentMatrixShiftedZ(rotation2[2]);
+            rotateCurrentMatrixShiftedY(rotation2[1]);
+            rotateCurrentMatrixShiftedX(rotation2[0]);
+
+            addObjectToDrawList(m0.m0_mainMemory, READ_BE_U32(m0.m0_mainMemory + 0x60));
+
+            popMatrix();
+        }
+
+        popMatrix();
+        popMatrix();
     }
 
     void LCSItemBox_DrawType2()
     {
-        assert(0);
+        s_visibilityGridWorkArea* pGridTask = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+
+        pushCurrentMatrix();
+        translateCurrentMatrix(&m3C);
+        rotateCurrentMatrixZYX(&m6C);
+        scaleCurrentMatrixRow0(m78);
+        scaleCurrentMatrixRow1(m78);
+        scaleCurrentMatrixRow2(m78);
+
+        u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
+
+        if (depthRangeIndex <= pGridTask->m1300)
+        {
+            LCSItemBox_DrawType0Sub0(m0.m0_mainMemory, 8, 0x14C);
+            mEA_wasRendered = 1;
+        }
+        else
+        {
+            mEA_wasRendered = 0;
+        }
+
+        popMatrix();
     }
 
     const FunctionType LCSItemBox_DrawTable[3] = {
@@ -370,6 +473,7 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
     s8 m8C;
     s8 m8D;
     s_3dModel m98;
+    s16 mEA_wasRendered;
     //size: F0
 };
 

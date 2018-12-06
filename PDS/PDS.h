@@ -103,6 +103,8 @@ struct sSaturnPtr
 #include "menu_dragon.h"
 #include "menu_dragonMorph.h"
 
+#include "3dModels.h"
+
 extern u8 COMMON_DAT[0x98000];
 extern sSaturnMemoryFile gCommonFile;
 
