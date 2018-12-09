@@ -1,8 +1,9 @@
 #pragma once
 
-struct s_LCSTask_828
+struct s_LCSTask_14
 {
-    s_LCSTask_828* m4_next;
+    struct sLCSTarget* m0;
+    s_LCSTask_14* m4_next;
 };
 
 struct sLCSTarget
@@ -32,10 +33,20 @@ struct sLCSTarget
     // size 34
 };
 
-struct s_LCSTask_14
+struct s_LCSTask340Sub : public s_workArea
 {
-    sLCSTarget* m0;
-    s32 m4;
+    s8 m15C;
+};
+
+struct s_LCSTask340
+{
+    s32 m0_index;
+    s_LCSTask340* m4_next;
+    sLCSTarget* m8;
+    s_LCSTask340Sub* mC;
+    s_LCSTask340Sub* m10;
+    s32 m14;
+    // size 0x18
 };
 
 struct s_LCSTask : public s_workArea
@@ -46,23 +57,25 @@ struct s_LCSTask : public s_workArea
     u32 m10;
     std::array<s_LCSTask_14, 0x100> m14;
     fixedPoint m814_LCSTargetMaxHeight;
-    sLCSTarget* m818;
-    sLCSTarget* m81C_currentLCSTarget;
-    s32 m820;
+    sLCSTarget* m818_curr;
+    sLCSTarget* m81C_curs;
+    sLCSTarget* m820_Fewl;
     s32 m824;
-    s_LCSTask_828* m828;
-    s32 m830;
-    s32 m834;
-    s32 m838;
-    s8 m83C;
-    s8 m83D;
-    s8 m83E;
+    s_LCSTask340* m828;
+    s_LCSTask340* m82C;
+    s_LCSTask340* m830;
+    s_LCSTask340* m834;
+    s_LCSTask340* m838_Next;
+    s8 m83C_time0;
+    s8 m83D_time1;
+    s8 m83E_LaserNum;
     s8 m83F;
+    std::array<s_LCSTask340, 0x10> m840;
     void* m9C0;
     u32 m9C4;
-    u32 m9C8;
-    u32 m9CC;
-    s32 m9D0;
+    s_LCSTask_14* m9C8;
+    s_LCSTask_14* m9CC;
+    s32 m9D0_mode;
 
     enum : s8 {
         LCSPhase_0_init = 0,

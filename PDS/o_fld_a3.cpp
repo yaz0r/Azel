@@ -6318,3 +6318,18 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
 
     return NULL;
 }
+
+void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub(p_workArea)
+{
+
+}
+
+void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4)
+{
+    if (r4)
+    {
+        r4->getTask()->m8_pUpdate = fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub;
+        r4->getTask()->mC_pDraw = nullptr;
+        r4->m15C = 0;
+    }
+}

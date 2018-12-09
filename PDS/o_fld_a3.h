@@ -35,6 +35,7 @@ void subfieldA3_1_Sub0();
 void nullBattle();
 
 u32 gridCellDraw_GetDepthRange(fixedPoint r4);
+void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4);
 
 struct s_itemBoxDefinition
 {
