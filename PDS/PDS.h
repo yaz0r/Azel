@@ -99,6 +99,7 @@ struct sSaturnPtr
 #include "3dEngine_flush.h"
 #include "mainMenuDebugTasks.h"
 #include "field.h"
+#include "LCS.h"
 
 #include "menu_dragon.h"
 #include "menu_dragonMorph.h"

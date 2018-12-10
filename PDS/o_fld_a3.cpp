@@ -27,6 +27,31 @@ const s_MCB_CGB fieldFileList[] =
 { NULL, NULL }
 };
 
+std::vector<sLCSTaskDrawSub5Sub1_Data1> readLCSTaskDrawSub5Sub1_Data1(sSaturnPtr source)
+{
+    std::vector<sLCSTaskDrawSub5Sub1_Data1> deserializedArray(0x15);
+
+    for (int i = 0; i < deserializedArray.size(); i++)
+    {
+        sLCSTaskDrawSub5Sub1_Data1& entry = deserializedArray[i];
+
+        entry.m2 = readSaturnS16(source + 0x2);
+        entry.m4 = readSaturnS16(source + 0x4);
+        entry.m6 = readSaturnS16(source + 0x6);
+        entry.m8 = readSaturnS16(source + 0x8);
+        entry.mA = readSaturnS16(source + 0xA);
+        entry.mC = readSaturnS16(source + 0xC);
+        entry.m10 = readSaturnS32(source + 0x10);
+        entry.m14 = readSaturnS32(source + 0x14);
+        entry.m18 = readSaturnS32(source + 0x18);
+        source += 0x1C;
+    }
+
+    return deserializedArray;
+}
+
+std::vector<sLCSTaskDrawSub5Sub1_Data1> LCSTaskDrawSub5Sub1_Data1;
+
 void dragonLeaveArea(s_dragonTaskWorkArea* r14);
 s8 updateCameraFromDragonSub1(s32 index);
 sFieldCameraStatus* getFieldCameraStatus();
@@ -4376,7 +4401,7 @@ void integrateDragonMovementSub4(s_dragonTaskWorkArea* r14)
 
 void integrateDragonMovement(s_dragonTaskWorkArea* r14)
 {
-    getFieldTaskPtr()->m28_status &= 0xFFFEFFFF;
+    getFieldTaskPtr()->m28_status &= ~0x10000;
 
     dragonFieldTaskInitSub4Sub5(&r14->m48, &r14->m20_angle);
     copyMatrix(&r14->m48.m0_matrix, &r14->m88_matrix);
@@ -4427,7 +4452,7 @@ void integrateDragonMovement(s_dragonTaskWorkArea* r14)
         //607FE98
         if (r14->m154_dragonSpeed >= 0)
         {
-            r14->m15C_dragonSpeedIncrement = MTH_Mul(r14->m154_dragonSpeed, r14->m230);
+            r14->m15C_dragonSpeedIncrement = MTH_Mul(-r14->m154_dragonSpeed, r14->m230);
         }
         else
         {
@@ -5181,9 +5206,12 @@ void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonSt
     }
     else
     {
+        // when activating LCS
         if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 & 0x10)
         {
-            assert(0);
+            pTypedWorkArea->m238 |= 3;
+            dragonFieldPlayAnimation(pTypedWorkArea, r5, getDragonFieldAnimation(pTypedWorkArea));
+            return;
         }
         else
         {
@@ -5191,7 +5219,7 @@ void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonSt
             {
                 if (getDragonSpeedIndex(pTypedWorkArea) <= 0)
                 {
-                    pTypedWorkArea->m238 &= 0xFFFFFFFB;
+                    pTypedWorkArea->m238 &= ~4;
                     if (pTypedWorkArea->m154_dragonSpeed > 0xDDD)
                     {
                         //060734B6
@@ -6263,6 +6291,8 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
         gFLD_A3->m_data = fileData;
         gFLD_A3->m_dataSize = fileSize;
         gFLD_A3->m_base = 0x6054000;
+
+        LCSTaskDrawSub5Sub1_Data1 = readLCSTaskDrawSub5Sub1_Data1({ 0x06093B28, gFLD_A3 });
     }
 
     ////

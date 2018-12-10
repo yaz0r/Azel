@@ -1,5 +1,21 @@
 #pragma once
 
+struct sLCSTaskDrawSub5Sub1_Data1
+{
+    s16 m2;
+    s16 m4;
+    s16 m6;
+    s16 m8;
+    s16 mA;
+    s32 mC;
+    s32 m10;
+    s32 m14;
+    s32 m18;
+};
+
+extern std::vector<sLCSTaskDrawSub5Sub1_Data1> LCSTaskDrawSub5Sub1_Data1;
+
+
 struct s_LCSTask_14
 {
     struct sLCSTarget* m0;
@@ -56,15 +72,15 @@ struct s_LCSTask : public s_workArea
     u32 mC;
     u32 m10;
     std::array<s_LCSTask_14, 0x100> m14;
-    fixedPoint m814_LCSTargetMaxHeight;
+    fixedPoint m814_LCSTargetMaxDistance;
     sLCSTarget* m818_curr;
     sLCSTarget* m81C_curs;
     sLCSTarget* m820_Fewl;
     s32 m824;
-    s_LCSTask340* m828;
-    s_LCSTask340* m82C;
-    s_LCSTask340* m830;
-    s_LCSTask340* m834;
+    s_LCSTask340* m828_activeStart;
+    s_LCSTask340* m82C_activeEnd;
+    s_LCSTask340* m830_unactiveStart;
+    s_LCSTask340* m834_unactiveEnd;
     s_LCSTask340* m838_Next;
     s8 m83C_time0;
     s8 m83D_time1;
@@ -84,6 +100,50 @@ struct s_LCSTask : public s_workArea
         LCSPhase_4_executing = 4,
     } m9DA_LCSPhase;
     // size 0x9DC
+};
+
+struct sLCSSelectedSub : public s_workAreaTemplate<sLCSSelectedSub>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { nullptr, &sLCSSelectedSub::Update, &sLCSSelectedSub::Draw, nullptr, "sLCSSelectedSub" };
+        return &taskDefinition;
+    }
+
+    void Update() override;
+    void Draw() override;
+
+    s_memoryAreaOutput m0;
+    sVec2_S16* m8;
+    s32 mC_numFrames;
+    // size 0x10
+};
+
+struct sLCSSelected : public s_workAreaTemplate<sLCSSelected>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { nullptr, &sLCSSelected::Update, &sLCSSelected::Draw, nullptr, "sLCSSelected" };
+        return &taskDefinition;
+    }
+
+    void Update() override;
+    void UpdateSub0(sVec2_S16* r5);
+
+    void Draw() override;
+    void DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, sVec3_FP* r6);
+    void DrawSub1(s8 r5);
+
+    s_memoryAreaOutput m0;
+    sLCSTarget* m8;
+    sVec3_FP mC;
+    sVec3_FP m18;
+    sVec2_S16* m24;
+    s32 m28;
+    s8 m2C;
+    s8 m2D;
+    s8 m2E;
+    //size 0x30
 };
 
 void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14);

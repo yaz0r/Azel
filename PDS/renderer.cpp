@@ -875,6 +875,9 @@ void renderVdp1(u32 width, u32 height)
         case 1:
             ScaledSpriteDraw(vdp1EA);
             break;
+        case 5:
+            PDS_unimplemented("Poly draw");
+            break;
         case 0xA:
             SetLocalCoordinates(vdp1EA);
             break;

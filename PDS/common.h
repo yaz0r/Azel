@@ -6,7 +6,7 @@ extern const u8 bitMasks[];
 extern const u8 reverseBitMasks[];
 
 typedef s16 sVec2_S16[2];
-
+typedef s16 sVec3_S16[3];
 struct sVec3_FP
 {
     fixedPoint m_value[3];

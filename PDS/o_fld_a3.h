@@ -55,4 +55,5 @@ struct s_itemBoxDefinition
 };
 s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr);
 
+
 #include "o_fld_a3_1.h"

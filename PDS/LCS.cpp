@@ -1,7 +1,13 @@
 #include "PDS.h"
 
+p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5);
 void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6);
-s32 fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub1(sLCSTarget* r4);
+s32 isLCSTargetValid(sLCSTarget* r4);
+
+void LCSTaskDrawSub1Sub2Sub6(void*)
+{
+    PDS_unimplemented("LCSTaskDrawSub1Sub2Sub6");
+}
 
 void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14)
 {
@@ -109,7 +115,7 @@ void LCSTaskDrawSub4(const sVec3_FP* r4, sVec2_S16* r5, sVec3_FP* r6)
     (*r5)[1] = setDividend(var4, (*r6)[1], (*r6)[2]);
 }
 
-void LCSTaskDrawSub1Sub2Sub2Sub1Sub1(s_LCSTask* r4, s_LCSTask340* r5, s_LCSTask340** r6, s_LCSTask340** r7)
+void addToLCSList(s_LCSTask* r4, s_LCSTask340* r5, s_LCSTask340** r6, s_LCSTask340** r7)
 {
     if (*r7)
     {
@@ -125,7 +131,7 @@ void LCSTaskDrawSub1Sub2Sub2Sub1Sub1(s_LCSTask* r4, s_LCSTask340* r5, s_LCSTask3
     r5->m4_next = nullptr;
 }
 
-s_LCSTask340* LCSTaskDrawSub1Sub2Sub2Sub1Sub0(s_LCSTask*, s_LCSTask340* r5, s_LCSTask340** r6, s_LCSTask340** r7)
+s_LCSTask340* removeFromLCSList(s_LCSTask*, s_LCSTask340* r5, s_LCSTask340** r6, s_LCSTask340** r7)
 {
     s_LCSTask340* r14 = nullptr;
     s_LCSTask340* r4 = *r6;
@@ -242,11 +248,11 @@ void LCSTaskDrawSub1Sub2Sub2Sub1(s_LCSTask* r4, sLCSTarget* r5)
     }
 
     //0606D468
-    s_LCSTask340* r12 = LCSTaskDrawSub1Sub2Sub2Sub1Sub0(r4, r4->m830, &r4->m830, &r4->m834);
+    s_LCSTask340* r12 = removeFromLCSList(r4, r4->m830_unactiveStart, &r4->m830_unactiveStart, &r4->m834_unactiveEnd);
     if (r12 == nullptr)
         return;
 
-    LCSTaskDrawSub1Sub2Sub2Sub1Sub1(r4, r12, &r4->m828, &r4->m82C);
+    addToLCSList(r4, r12, &r4->m828_activeStart, &r4->m82C_activeEnd);
 
     r4->m824--;
 
@@ -265,22 +271,22 @@ void LCSTaskDrawSub1Sub2Sub2Sub1(s_LCSTask* r4, sLCSTarget* r5)
     r4->m81C_curs = r5;
 }
 
-void fieldScriptTaskUpdateSub2Sub1Sub1Sub1(s_LCSTask* r4, s_LCSTask340* r5)
+void removeLCSTarget(s_LCSTask* r4, s_LCSTask340* r5)
 {
     if (r4->m838_Next == r5)
     {
         r4->m838_Next = r5->m4_next;
     }
 
-    s_LCSTask340* r0 = LCSTaskDrawSub1Sub2Sub2Sub1Sub0(r4, r5, &r4->m828, &r4->m82C);
+    s_LCSTask340* r0 = removeFromLCSList(r4, r5, &r4->m828_activeStart, &r4->m82C_activeEnd);
     if (r0 == nullptr)
         return;
 
-    LCSTaskDrawSub1Sub2Sub2Sub1Sub1(r4, r5, &r4->m828, &r4->m82C);
+    addToLCSList(r4, r5, &r4->m830_unactiveStart, &r4->m834_unactiveEnd);
 
     r4->m824++;
 
-    if (fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub1(r5->m8))
+    if (isLCSTargetValid(r5->m8))
     {
         r5->m8->m1A--;
 
@@ -310,12 +316,11 @@ void fieldScriptTaskUpdateSub2Sub1Sub1Sub1(s_LCSTask* r4, s_LCSTask340* r5)
 
 void fieldScriptTaskUpdateSub2Sub1Sub1(s_LCSTask* r4)
 {
-    s_LCSTask340* r5 = r4->m828;
+    s_LCSTask340* r5 = r4->m828_activeStart;
     while (r5)
     {
         s_LCSTask340* next = r5->m4_next;
-        assert(0);
-        //fieldScriptTaskUpdateSub2Sub1Sub1Sub1(r5);
+        removeLCSTarget(r4, r5);
         r5 = next;
     }
 }
@@ -337,10 +342,10 @@ void LCSTaskDrawSub1Sub2Sub1(s_LCSTask* r4)
             LCSTaskDrawSub4(r14->m8_parentWorldCoordinates, &r14->m30_screenspaceCoordinates, &r14->m24_worldspaceCoordinates);
         }
 
-        if (r14->m24_worldspaceCoordinates[1] <= 0x3000)
+        if (r14->m24_worldspaceCoordinates[2] <= 0x3000)
             continue;
 
-        if (r14->m24_worldspaceCoordinates[1] >= r4->m814_LCSTargetMaxHeight)
+        if (r14->m24_worldspaceCoordinates[2] >= r4->m814_LCSTargetMaxDistance)
             continue;
 
         if (abs(r14->m30_screenspaceCoordinates[0]) >= 176)
@@ -381,7 +386,7 @@ sLCSTarget* FindClosestLCSTarget(s_LCSTask* r4)
     {
         sLCSTarget* pLCSTarget = r4->m14[r5].m0;
 
-        if (!(pLCSTarget->m18 & 6) && (pLCSTarget->m24_worldspaceCoordinates[1] > 0x3000) && (pLCSTarget->m24_worldspaceCoordinates[1] < r4->m814_LCSTargetMaxHeight))
+        if (!(pLCSTarget->m18 & 6) && (pLCSTarget->m24_worldspaceCoordinates[2] > 0x3000) && (pLCSTarget->m24_worldspaceCoordinates[2] < r4->m814_LCSTargetMaxDistance))
         {
             s32 r1;
             if (pLCSTarget->m30_screenspaceCoordinates[0] >= 0)
@@ -424,18 +429,28 @@ sLCSTarget* FindClosestLCSTarget(s_LCSTask* r4)
 
 void LCSTaskDrawSub1Sub2Sub4(s_LCSTask* r4)
 {
-    s_LCSTask340* r13 = r4->m828;
+    s_LCSTask340* r13 = r4->m828_activeStart;
 
     while (r13)
     {
-        assert(0);
+        sLCSTarget* r14 = r13->m8;
+        if (r14->m10_flags & sLCSTarget::e_moveWithParent)
+        {
+            r14->m24_worldspaceCoordinates = *r14->m8_parentWorldCoordinates;
+            LCSTaskDrawSub3(&r14->m24_worldspaceCoordinates, &r14->m30_screenspaceCoordinates);
+        }
+        else
+        {
+            LCSTaskDrawSub4(r14->m8_parentWorldCoordinates, &r14->m30_screenspaceCoordinates, &r14->m24_worldspaceCoordinates);
+        }
+
         r13 = r13->m4_next;
     }
 }
 
 void LCSTaskDrawSub1Sub2Sub3(s_LCSTask* r4)
 {
-    s_LCSTask340* r13 = r4->m828;
+    s_LCSTask340* r13 = r4->m828_activeStart;
 
     while (r13)
     {
@@ -447,8 +462,8 @@ void LCSTaskDrawSub1Sub2Sub3(s_LCSTask* r4)
             assert(0);
         }
 
-        if ((r14->m24_worldspaceCoordinates[1] > 0x3000) &&
-            (r14->m24_worldspaceCoordinates[1] < r4->m814_LCSTargetMaxHeight) &&
+        if ((r14->m24_worldspaceCoordinates[2] > 0x3000) &&
+            (r14->m24_worldspaceCoordinates[2] < r4->m814_LCSTargetMaxDistance) &&
             (std::abs(r14->m30_screenspaceCoordinates[0]) < 176) &&
             (std::abs(r14->m30_screenspaceCoordinates[1]) < 112) &&
             (r14->m10_flags))
@@ -457,7 +472,7 @@ void LCSTaskDrawSub1Sub2Sub3(s_LCSTask* r4)
         }
         else
         {
-            fieldScriptTaskUpdateSub2Sub1Sub1Sub1(r4, r13);
+            removeLCSTarget(r4, r13);
         }
 
         r13 = r10;
@@ -468,11 +483,12 @@ void LCSTaskDrawSub1Sub2Sub3(s_LCSTask* r4)
 
 void LCSTaskDrawSub1Sub2Sub5(s_LCSTask* r4)
 {
-    s_LCSTask340* r5 = r4->m828;
+    s_LCSTask340* r5 = r4->m828_activeStart;
 
     while (r5)
     {
-        assert(0);
+        r5->m8->m1B = r5->m8->m17;
+        r5 = r5->m4_next;
     }
 }
 
@@ -485,7 +501,7 @@ sLCSTarget* findNewClosestLCSTarget(s_LCSTask* r4, sVec2_S16* r5)
     for (s32 r7 = 0; r7 < r4->mC; r7++)
     {
         sLCSTarget* r6 = r4->m14[r7].m0;
-        if (!(r6->m18 & 6) && (r4->m818_curr != r6) && (r6->m1A <= r6->m17) && !(r6->m19 & 4) && (r6->m24_worldspaceCoordinates[1] > 0x3000) && (r6->m24_worldspaceCoordinates[1] < r4->m814_LCSTargetMaxHeight))
+        if (!(r6->m18 & 6) && (r4->m818_curr != r6) && (r6->m1A <= r6->m17) && !(r6->m19 & 4) && (r6->m24_worldspaceCoordinates[2] > 0x3000) && (r6->m24_worldspaceCoordinates[2] < r4->m814_LCSTargetMaxDistance))
         {
             if (abs(r6->m30_screenspaceCoordinates[0]) >= 176)
                 continue;
@@ -509,6 +525,34 @@ sLCSTarget* findNewClosestLCSTarget(s_LCSTask* r4, sVec2_S16* r5)
     return r12;
 }
 
+s32 LCSTaskDrawSub1Sub2Sub2Sub3Sub0(s_LCSTask* r4, sLCSTarget* r5, sVec2_S16* r6)
+{
+    if (r5->m18 & 6)
+        return 0;
+
+    if (r5->m24_worldspaceCoordinates[2] <= 0x3000)
+        return 0;
+
+    if (r5->m24_worldspaceCoordinates[2] >= r4->m814_LCSTargetMaxDistance)
+        return 0;
+
+    if (abs(r5->m30_screenspaceCoordinates[0]) >= 176)
+        return 0;
+
+    if (abs(r5->m30_screenspaceCoordinates[1]) >= 112)
+        return 0;
+
+    s32 r7 = (*r6)[0] - r5->m30_screenspaceCoordinates[0];
+    s32 r4b = (*r6)[1] - r5->m30_screenspaceCoordinates[1];
+
+    if ((r7 * r7 + r4b * r4b) >= 0x100)
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
 sLCSTarget* LCSTaskDrawSub1Sub2Sub2Sub3(s_LCSTask* r14)
 {
     r14->m83D_time1 = 0;
@@ -516,7 +560,38 @@ sLCSTarget* LCSTaskDrawSub1Sub2Sub2Sub3(s_LCSTask* r14)
     s32 r4;
     if (r14->m818_curr)
     {
-        assert(0);
+        if ((r14->m818_curr->m10_flags & 3) == 2)
+        {
+            if (r14->m8 & 0x200)
+            {
+                //0606DB6C
+                assert(0);
+            }
+            else
+            {
+                //0606DB9A
+                if (r14->m818_curr->m1A <= r14->m818_curr->m17)
+                {
+                    if ((r14->m818_curr->m19 & 4) == 0)
+                    {
+                        r14->m83D_time1 = 1;
+                        return r14->m818_curr;
+                    }
+                }
+
+                if (LCSTaskDrawSub1Sub2Sub2Sub3Sub0(r14, r14->m818_curr, &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m200_LCSCursorScreenSpaceCoordinates))
+                {
+                    return NULL;
+                }
+
+                r4 = 1;
+            }
+        }
+        else
+        {
+            //606DBE8
+            assert(0);
+        }
     }
     else
     {
@@ -657,7 +732,7 @@ s32 LCSTaskDrawSub1Sub2Sub2(s_LCSTask* r4)
 
 void LCSTaskDrawSub1Sub2Sub0Sub1(s_LCSTask* r4)
 {
-    s_LCSTask340* r13 = r4->m828;
+    s_LCSTask340* r13 = r4->m828_activeStart;
 
     while (r13)
     {
@@ -705,10 +780,10 @@ void setLCSField83E(s_LCSTask* pLCS, s32 value)
     }
     r5->m4_next = nullptr;
     pLCS->m824 = pLCS->m83E_LaserNum;
-    pLCS->m82C = nullptr;
-    pLCS->m828 = nullptr;
-    pLCS->m830 = &pLCS->m840[0];
-    pLCS->m834 = &pLCS->m840[pLCS->m83E_LaserNum - 1];
+    pLCS->m82C_activeEnd = nullptr;
+    pLCS->m828_activeStart = nullptr;
+    pLCS->m830_unactiveStart = &pLCS->m840[0];
+    pLCS->m834_unactiveEnd = &pLCS->m840[pLCS->m83E_LaserNum - 1];
     pLCS->m838_Next = 0;
     pLCS->m818_curr = nullptr;
     pLCS->m81C_curs = nullptr;
@@ -720,7 +795,7 @@ void fieldOverlaySubTask2Init(p_workArea pWorkArea)
 
     getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS = pTypedWorkArea;
     getMemoryArea(&pTypedWorkArea->m0, 0);
-    pTypedWorkArea->m814_LCSTargetMaxHeight = 0x200000;
+    pTypedWorkArea->m814_LCSTargetMaxDistance = 0x200000;
     if (gDragonState->mC_dragonType == 8)
     {
         setLCSField83E(pTypedWorkArea, 1);
@@ -743,7 +818,7 @@ void LCSTaskDrawSub1Sub2Sub0(s_LCSTask* r4)
     LCSTaskDrawSub1Sub2Sub0Sub2(r4);
 
     // TODO: recheck that test
-    if (r4->m828)
+    if (r4->m828_activeStart)
         return;
 
     r4->m8 = (r4->m8 & ~8) | 0x80;
@@ -809,12 +884,18 @@ void LCSTaskDrawSub1Sub1(s_LCSTask* r4)
 
 void LCSTaskDrawSub1Sub0(s_LCSTask* r4)
 {
-    s_LCSTask340* r13 = r4->m828;
+    s_LCSTask340* r13 = r4->m828_activeStart;
 
     while (r13)
     {
-        assert(0);
-        r13 = r13->m4_next;
+        s_LCSTask340* r12 = r13->m4_next;
+
+        if (isLCSTargetValid(r13->m8) == 0)
+        {
+            removeLCSTarget(r4, r13);
+        }
+
+        r13 = r12;
     }
 
     if (r4->m820_Fewl)
@@ -822,6 +903,16 @@ void LCSTaskDrawSub1Sub0(s_LCSTask* r4)
         assert(0);
     }
 }
+
+const std::array<s8, 4> LCS_AccessSoundTable2 = 
+{
+    0,0,1,2
+};
+
+const std::array<s32, 4> LCS_AccessSoundTable =
+{
+    20, 8, 20, 21
+};
 
 void LCSTaskDrawSub1Sub2(s_LCSTask* r4)
 {
@@ -854,9 +945,20 @@ void LCSTaskDrawSub1Sub2(s_LCSTask* r4)
     LCSTaskDrawSub1Sub2Sub4(r4);
     LCSTaskDrawSub1Sub2Sub5(r4);
 
-    if (r4->m828)
+    r4->m838_Next = r4->m828_activeStart;
+
+    if (r4->m828_activeStart)
     {
-        assert(0);
+        r4->m8 |= 0x10;
+
+        s8 r13 = LCS_AccessSoundTable2[r4->m838_Next->m8->m10_flags & 3];
+
+        playSoundEffect(LCS_AccessSoundTable[r13]);
+
+        if (r13 == 1)
+        {
+            LCSTaskDrawSub1Sub2Sub6(r4->m9C0);
+        }
     }
 }
 
@@ -968,7 +1070,7 @@ void LCSTaskDrawSub5(s_LCSTask* r4)
 {
     if (r4->m8 & 2)
     {
-        if (!r4->m828 || (r4->m818_curr && ((r4->m818_curr->m10_flags & 3) == 2)))
+        if (!r4->m828_activeStart || (r4->m818_curr && ((r4->m818_curr->m10_flags & 3) == 2)))
         {
             DrawLCSTarget(r4, &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m200_LCSCursorScreenSpaceCoordinates, 0);
         }
@@ -979,14 +1081,14 @@ void LCSTaskDrawSub5(s_LCSTask* r4)
     }
 
     //606E894
-    s_LCSTask340* r13 = r4->m828;
+    s_LCSTask340* r13 = r4->m828_activeStart;
     while (r13)
     {
         if (r13->m8->m20 == 0)
         {
             if ((r13->m8->m19 & 2) == 0)
             {
-                r13->m8->m20 = LCSTaskDrawSub5Sub1(r4);
+                r13->m8->m20 = createLCSSelectedTask(r4, r13->m8);
             }
         }
 
@@ -1047,7 +1149,7 @@ void fieldScriptTaskUpdateSub2Sub1()
     fieldScriptTaskUpdateSub2Sub1Sub1(getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS);
 }
 
-s32 fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub1(sLCSTarget* r4)
+s32 isLCSTargetValid(sLCSTarget* r4)
 {
     if (r4->m0 == nullptr)
         return 0;
@@ -1078,13 +1180,226 @@ void LCSTaskDrawSub()
     }
 }
 
+void sLCSSelectedSub::Update()
+{
+    if (--mC_numFrames == 0)
+    {
+        getTask()->markFinished();
+    }
+}
+
+const std::array<u16, 10> LCSSelectedSubTask_DrawData0 =
+{
+    0xE484,
+    0xE4E7,
+    0xE94A,
+    0xE9AD,
+    0xEE10,
+    0xEE73,
+    0xF2D6,
+    0xF739,
+    0xFB9C,
+    0xFFFF,
+};
+
+const std::array<fixedPoint, 10> LCSSelectedSubTask_DrawData1 =
+{
+    0x10000,
+    0xE666,
+    0xCCCC,
+    0xB333,
+    0x9999,
+    0x8000,
+    0x6666,
+    0x4CCC,
+    0x3333,
+    0x1999,
+};
+
+// TODO: move to kernel
+void LCSSelectedSubTask_DrawSub0(s16* r4)
+{
+    r4[0] = graphicEngineStatus.m405C.VDP1_X1;
+    r4[1] = graphicEngineStatus.m405C.VDP1_Y1;
+    r4[2] = graphicEngineStatus.m405C.VDP1_X2;
+    r4[3] = graphicEngineStatus.m405C.VDP1_Y2;
+}
+
+void sLCSSelectedSub::Draw()
+{
+    s32 var0 = LCSSelectedSubTask_DrawData0[mC_numFrames];
+
+    s16 varC[4];
+    LCSSelectedSubTask_DrawSub0(varC);
+
+    s32 r11 = LCSSelectedSubTask_DrawData1[mC_numFrames];
+
+    s16 var4[4];
+    var4[0] = MTH_Mul(-176, r11) - 176;
+    var4[1] = varC[1] + 112;
+    var4[2] = varC[2] - 176;
+    var4[3] = 112 - varC[3];
+
+    s16 var14[4];
+    var14[0] = MTH_Mul((*m8)[0] - var4[0], r11) + var4[0];
+    var14[1] = MTH_Mul((*m8)[1] - var4[1], r11) + var4[1];
+    var14[2] = MTH_Mul((*m8)[0] - var4[2], r11) + var4[2];
+    var14[3] = MTH_Mul((*m8)[1] - var4[3], r11) + var4[3];
+
+    u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1005); // command 0
+    setVdp1VramU16(vdp1WriteEA + 0x04, 0x4C0); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, var0); // CMDCOLR
+    setVdp1VramU16(vdp1WriteEA + 0x0C, var14[0]); // CMDXA
+    setVdp1VramU16(vdp1WriteEA + 0x0E, -var14[1]); // CMDYA
+    setVdp1VramU16(vdp1WriteEA + 0x010, var14[2]); // CMDXC
+    setVdp1VramU16(vdp1WriteEA + 0x012, -var14[1]); // CMDYX
+    setVdp1VramU16(vdp1WriteEA + 0x014, var14[2]);
+    setVdp1VramU16(vdp1WriteEA + 0x016, -var14[3]);
+    setVdp1VramU16(vdp1WriteEA + 0x018, var14[0]);
+    setVdp1VramU16(vdp1WriteEA + 0x01A, -var14[3]);
+
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->bucketTypes = 0;
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
+
+    graphicEngineStatus.vdp1Context[0].m1C += 1;
+    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.vdp1Context[0].mC += 1;
+}
+
+void sLCSSelected::UpdateSub0(sVec2_S16* r5)
+{
+    sLCSSelectedSub* r14 = createSubTask<sLCSSelectedSub>(this);
+
+    getMemoryArea(&r14->m0, 0);
+    r14->m8 = r5;
+    r14->mC_numFrames = 0xA;
+}
+
+void sLCSSelected::Update()
+{
+    switch (m2D)
+    {
+    case 0:
+        m18[1] += m18[0];
+        mC[1] += mC[0];
+        if (mC[1] >= mC[2])
+        {
+            mC[1] = mC[2];
+            m18[1] = m18[2];
+            m2D++;
+        }
+    case 1:
+        if (isLCSTargetValid(m8))
+        {
+            if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 & 2)
+            {
+                if (m8->m1A > m2E)
+                {
+                    UpdateSub0(&m8->m30_screenspaceCoordinates);
+                }
+            }
+
+            //606ED02
+            m2E = m8->m1A;
+            if (m8->m1A == 0)
+            {
+                m2D++;
+            }
+        }
+        else
+        {
+            m2D++;
+        }
+        break;
+    case 2:
+        m18[1] -= m18[0];
+        mC[1] -= mC[0];
+        if (mC[1] <= 0)
+        {
+            mC[1] = 0;
+            m18[1] = 0;
+            getTask()->markFinished();
+        }
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    m28++;
+}
+
+void sLCSSelected::DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, sVec3_FP* r6)
+{
+    s32 var0 = ((m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + r5->m6;
+    s32 var4 = ((m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + r5->mA;
+    s32 var10 = r5->mC >> 12;
+    s32 r14 = r5->m14 >> 12;
+    s32 varC = r5->m10 >> 12;
+    s32 var8 = r5->m18 >> 12;
+    s32 r7 = (*r6)[1] >> 12;
+
+    assert(varC >= 0); // because of the addc
+
+    s16 var14[4];
+    var14[0] = r14 + (*m24)[0];
+    var14[1] = var8 + (*m24)[1] - varC / 2;
+    var14[2] = r14 + (*m24)[0] + var10;
+    var14[3] = var8 + (*m24)[1] + varC / 2;
+
+    u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, r5->m2); // command 0
+    setVdp1VramU16(vdp1WriteEA + 0x04, r5->m4); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, var4); // CMDCOLR
+    setVdp1VramU16(vdp1WriteEA + 0x08, var0); // CMDSRCA
+    setVdp1VramU16(vdp1WriteEA + 0x0A, r5->m8); // CMDSIZE
+    setVdp1VramU16(vdp1WriteEA + 0x0C, var14[0]); // CMDXA
+    setVdp1VramU16(vdp1WriteEA + 0x0E, -var14[1]); // CMDYA
+    setVdp1VramU16(vdp1WriteEA + 0x014, var14[2]); // CMDXC
+    setVdp1VramU16(vdp1WriteEA + 0x016, -var14[3]); // CMDYX
+
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->bucketTypes = 0;
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
+
+    graphicEngineStatus.vdp1Context[0].m1C += 1;
+    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.vdp1Context[0].mC += 1;
+
+}
+
+void sLCSSelected::DrawSub1(s8 r5)
+{
+    PDS_unimplemented("sLCSSelected::DrawSub1");
+}
+
+void sLCSSelected::Draw()
+{
+    DrawSub0(&LCSTaskDrawSub5Sub1_Data1[m2C], &mC);
+    if (m28 & 4)
+    {
+        DrawSub0(&LCSTaskDrawSub5Sub1_Data1[m2C + 1], &m18);
+    }
+
+    if (m2C != 6)
+        return;
+    if (m2D != 1)
+        return;
+    if (m8->m1A <= 1)
+        return;
+
+    DrawSub1(m8->m1A);
+}
+
 void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6)
 {
     sSaturnPtr dataR6 = sSaturnPtr({ 0x6093B28, gFLD_A3 }) + 0x1C * r6;
 
-    s32 r0 = r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000);
-    r0 >>= 3;
-
+    s32 r0 = (r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3;
     s32 var8 = ((r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + readSaturnS16(dataR6 + 6);
     s32 var0 = ((r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + readSaturnS16(dataR6 + 0xA);
     s32 var4 = readSaturnS32(dataR6 + 0xC) >> 12;
@@ -1120,9 +1435,41 @@ void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6)
     graphicEngineStatus.vdp1Context[0].mC += 1;
 }
 
-p_workArea LCSTaskDrawSub5Sub1(s_LCSTask* r4)
+static const std::array<s8, 4> LCSTaskDrawSub5Sub1_Data0 = {
+    4,8,6,2
+};
+
+p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5)
 {
-    assert(0);
+    sLCSSelected* r14 = createSubTask<sLCSSelected>(r4);
+
+    getMemoryArea(&r14->m0, 0);
+
+    r14->m8 = r5;
+
+    s8 r13 = LCSTaskDrawSub5Sub1_Data0[r5->m10_flags & 3];
+
+    s32 r2 = LCSTaskDrawSub5Sub1_Data1[r13].m10;
+    if (0 > r2)
+    {
+        r2++;
+    }
+    r14->mC[2] = r2;
+    r14->mC[0] = performDivision(6, r14->mC[2]);
+
+    s32 r3 = LCSTaskDrawSub5Sub1_Data1[r13+1].m10;
+    if (0 > r3)
+    {
+        r3++;
+    }
+    r14->m18[2] = r3;
+    r14->m18[0] = performDivision(6, r14->m18[2]);
+
+    r14->m24 = &r5->m30_screenspaceCoordinates;
+    r14->m2C = r13;
+    r14->m2E = 0;
+
+    return r14;
 }
 
 void allocateLCSEntry(s_visibilityGridWorkArea* r4, u8* r5, u32 r6)

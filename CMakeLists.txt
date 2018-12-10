@@ -13,6 +13,10 @@ set(SOURCES
  PDS/3dEngine.cpp
  PDS/3dEngine_flush.cpp
  PDS/3dEngine_textureCache.cpp
+
+ PDS/3dModels.h
+ PDS/3dModels.cpp
+
  PDS/common.cpp
  PDS/common_generated.cpp
  PDS/dummy.cpp
@@ -24,7 +28,12 @@ set(SOURCES
  PDS/mainMenuDebugTasks.cpp
  PDS/menu_dragon.cpp
  PDS/menu_dragonMorph.cpp
+
  PDS/o_fld_a3.cpp
+ PDS/o_fld_a3.h
+ PDS/o_fld_a3_1.cpp
+ PDS/o_fld_a3_1.h
+ 
  PDS/o_menuEn.cpp
  PDS/o_title.cpp
  PDS/PDS.cpp

@@ -186,10 +186,9 @@ void resetTasks();
 void runTasks();
 
 template<typename T>
-T* createSubTask(p_workArea parentTask)
+T* createSubTask(p_workArea parentTask, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
 {
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, T::getTaskDefinition(), new T, NULL));
-    auto pTypeTaskDefinition = T::getTypedTaskDefinition();
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
