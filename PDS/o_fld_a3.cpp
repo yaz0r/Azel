@@ -714,7 +714,7 @@ void A3_Obj2_Draw(p_workArea pWorkArea)
     } while (--r11);
 }
 
-void create_A3_Obj2_Sub1()
+void create_A3_Obj2_Sub1(p_workArea, sLCSTarget*)
 {
     assert(0);
 }
@@ -800,7 +800,7 @@ void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32
     pNewObj->getTask()->m8_pUpdate = A3_Obj2_Update;
     pNewObj->getTask()->mC_pDraw = A3_Obj2_Draw;
 
-    createLCSTarget(&pNewObj->m60, pNewObj, (void*)&create_A3_Obj2_Sub1, &pNewObj->m10_position, 0, 0, 0, -1, 0, 0);
+    createLCSTarget(&pNewObj->m60, pNewObj, &create_A3_Obj2_Sub1, &pNewObj->m10_position, 0, 0, 0, -1, 0, 0);
 
     getFieldTaskPtr()->mC->m8 = 0;
 }
@@ -6349,9 +6349,135 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     return NULL;
 }
 
+void s_LCSTask340Sub::Init1(void* typelessArg)
+{
+    sLaserArgs* arg = (sLaserArgs*)typelessArg;
+
+    getMemoryArea(&m0, 0);
+    m8 = arg->m0;
+    mC = arg->m4;
+    m10 = arg->m8;
+
+    if (arg->m8 & 0x100)
+    {
+        m60 = *arg->m4;
+    }
+    else
+    {
+        transformAndAddVecByCurrentMatrix(arg->m4, &m60);
+    }
+
+    m14 = arg->mC;
+    m18 = arg->m10;
+    m1C = arg->m14;
+    m20 = arg->m18;
+    m27 = arg->m1F;
+
+    m28 = &s_LCSTask340Sub::Init1Sub0;
+    m2C = &s_LCSTask340Sub::Init1Sub1;
+    m30 = &s_LCSTask340Sub::Init1Sub2;
+
+    m158 = 0x12;
+    m6C[m154&0xF] = (*mC);
+    m6C[0] = (*mC);
+    m6C[1] = (*mC);
+
+    ((this)->*(m28))();
+
+    m154++;
+}
+
+static const std::array<fixedPoint, 16> s_LCSTask340Sub_Init1Sub0Data0 = {
+    0xE38E38,
+    0x5555555,
+    0x71C71C7,
+    0x2AAAAAA,
+    0x638E38E,
+    0x38E38E3,
+    0x1C71C71,
+    0x471C71C,
+};
+
+void s_LCSTask340Sub::Init1Sub0()
+{
+    m34 = 0x37000;
+    m38 = performDivision(m158, -0x37000);
+    m3C = s_LCSTask340Sub_Init1Sub0Data0[(randomNumber() >> 16) & 7];
+    m40 = 0;
+}
+
+void s_LCSTask340Sub::Update0()
+{
+    if ((m8 == nullptr) || (m8->getTask()->isFinished()))
+    {
+        m20->m14 |= 2;
+        return;
+    }
+
+    if (m158 < 0)
+    {
+        m20->m14 |= 1;
+        return;
+    }
+
+    if (m10 & 0x100)
+    {
+        m60 = *mC;
+    }
+    else
+    {
+        transformAndAddVecByCurrentMatrix(mC, &m60);
+    }
+
+    ((this)->*(m2C))();
+
+    m158--;
+}
+
+void s_LCSTask340Sub::Init1Sub1Sub0()
+{
+    if (m18 == nullptr)
+        return;
+
+    PDS_unimplemented("s_LCSTask340Sub::Init1Sub1Sub0");
+}
+
+void s_LCSTask340Sub::Init1Sub1()
+{
+    sMatrix4x3* var0 = cameraProperties2.m28;
+    m34 += m38;
+    m3C += m40;
+
+    sVec3_FP var1C;
+    var1C[0] = MTH_Mul(m34, getCos(m3C.getInteger() & 0xFFF)) + m60[0];
+    var1C[1] = MTH_Mul(m34, getSin(m3C.getInteger() & 0xFFF)) + m60[1];
+    var1C[1] = m60[2];
+
+    sVec3_FP var10;
+    transformAndAddVec(var1C, var10, *var0);
+
+    Init1Sub1Sub0();
+
+    sVec3_FP var4;
+    sVec3_FP& r5 = m6C[(m154 - 1) & 0xF];
+    var4[0] = r5[0] + performDivision(m158 + 1, var10[0] - r5[0]);
+    var4[1] = r5[1] + performDivision(m158 + 1, var10[1] - r5[1]);
+    var4[2] = r5[2] + performDivision(m158 + 1, var10[2] - r5[2]);
+
+    m6C[m154 & 0xF] = var4;
+    m154++;
+
+    m144 = var4 - r5;
+}
+
+void s_LCSTask340Sub::Init1Sub2()
+{
+    assert(0);
+}
+
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub(p_workArea)
 {
-
+    assert(0);
 }
 
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4)
@@ -6362,4 +6488,9 @@ void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4)
         r4->getTask()->mC_pDraw = nullptr;
         r4->m15C = 0;
     }
+}
+
+s_LCSTask340Sub* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, s8 r6)
+{
+    return createSiblingTaskWithArg<s_LCSTask340Sub>(r4, r5, &s_LCSTask340Sub::constructionTable[r6]);
 }

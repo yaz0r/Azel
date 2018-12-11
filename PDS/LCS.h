@@ -30,7 +30,7 @@ struct sLCSTarget
         e_200 = 0x200,
     };
     s_workArea* m0;
-    void* m4_callback;
+    void (*m4_callback)(p_workArea, sLCSTarget*);
     const sVec3_FP* m8_parentWorldCoordinates;
     const sVec3_FP* mC;
     s16 m10_flags;
@@ -49,9 +49,67 @@ struct sLCSTarget
     // size 34
 };
 
-struct s_LCSTask340Sub : public s_workArea
+struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
 {
+    static const std::array<TypedTaskDefinition, 4> constructionTable;
+
+    void Init0(void*)
+    {
+        assert(0);
+    }
+
+    void Init1(void*);
+    void Init1Sub0();
+    void Init1Sub1();
+    void Init1Sub1Sub0();
+    void Init1Sub2();
+
+    void Init2(void*)
+    {
+        assert(0);
+    }
+
+    void Init3(void*)
+    {
+        assert(0);
+    }
+
+    void Update0();
+
+    void Update3()
+    {
+        assert(0);
+    }
+
+    void Delete3()
+    {
+        assert(0);
+    }
+
+    s_memoryAreaOutput m0;
+    p_workArea m8;
+    const sVec3_FP* mC;
+    s32 m10;
+    s32 m14;
+    sVec3_FP* m18;
+    sLCSTarget* m1C;
+    struct s_LCSTask340* m20;
+    s8 m27;
+    void (s_LCSTask340Sub::*m28)();
+    void (s_LCSTask340Sub::*m2C)();
+    void (s_LCSTask340Sub::*m30)();
+    fixedPoint m34;
+    fixedPoint m38;
+    fixedPoint m3C;
+    s32 m40;
+    sVec3_FP m60;
+    std::array<sVec3_FP, 0x10> m6C;
+    sVec3_FP m144;
+    s32 m154;
+    s32 m158;
     s8 m15C;
+
+    //size 160
 };
 
 struct s_LCSTask340
@@ -146,7 +204,7 @@ struct sLCSSelected : public s_workAreaTemplate<sLCSSelected>
     //size 0x30
 };
 
-void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14);
+void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14);
 void updateLCSTarget(sLCSTarget* r14);
 void LCSTaskDrawSub();
 void allocateLCSEntry(s_visibilityGridWorkArea* r4, u8* r5, u32 r6);

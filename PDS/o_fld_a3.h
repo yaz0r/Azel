@@ -37,6 +37,20 @@ void nullBattle();
 u32 gridCellDraw_GetDepthRange(fixedPoint r4);
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4);
 
+struct sLaserArgs
+{
+    p_workArea m0;
+    const sVec3_FP* m4;
+    s32 m8;
+    s32 mC;
+    sVec3_FP* m10;
+    sLCSTarget* m14;
+    s_LCSTask340* m18;
+    s8 m1F;
+};
+
+s_LCSTask340Sub* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, s8 r6);
+
 struct s_itemBoxDefinition
 {
     sVec3_FP m0_pos;

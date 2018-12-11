@@ -4,12 +4,31 @@ p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5);
 void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6);
 s32 isLCSTargetValid(sLCSTarget* r4);
 
+
+const std::array<s8, 4> LCS_AccessSoundTable2 =
+{
+    0,0,1,2
+};
+
+const std::array<s32, 4> LCS_AccessSoundTable =
+{
+    20, 8, 20, 21
+};
+
+const std::array<s_LCSTask340Sub::TypedTaskDefinition, 4> s_LCSTask340Sub::constructionTable =
+{ {
+        { &s_LCSTask340Sub::Init0, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr, "s_LCSTask340Sub_0" }, // Access (blue sphere)
+        { &s_LCSTask340Sub::Init1, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr, "s_LCSTask340Sub_1" }, // Laser (destroy)
+        { &s_LCSTask340Sub::Init2, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr, "s_LCSTask340Sub_2" }, // Access (2 small lasers from wings)
+        { &s_LCSTask340Sub::Init3, &s_LCSTask340Sub::Update3, &s_LCSTask340Sub::Draw, &s_LCSTask340Sub::Delete3, "s_LCSTask340Sub_3" },
+}};
+
 void LCSTaskDrawSub1Sub2Sub6(void*)
 {
     PDS_unimplemented("LCSTaskDrawSub1Sub2Sub6");
 }
 
-void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void* r6, const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14)
+void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14)
 {
     r4->m0 = r5;
     r4->m4_callback = r6;
@@ -736,21 +755,75 @@ void LCSTaskDrawSub1Sub2Sub0Sub1(s_LCSTask* r4)
 
     while (r13)
     {
-        assert(0);
+        if (r13->m14 & 1)
+        {
+            sLCSTarget* r14 = r13->m8;
+            r14->m19 |= 2;
+            removeLCSTarget(r4, r13);
+            r14->m1B--;
+            if ((r14->m1B < 0) || ((r14->m10_flags & 3) != 2))
+            {
+                r14->m19 |= 0x20;
+            }
+
+            if (r14->m4_callback)
+            {
+                r14->m4_callback(r14->m0, r14);
+            }
+
+            //606E0A6
+            PDS_unimplemented("LCSTaskDrawSub1Sub2Sub0Sub1");
+        }
+        else
+        {
+            if (r13->m14 & 2)
+            {
+                removeLCSTarget(r4, r13);
+                r13->m14 &= ~2;
+            }
+        }
+        
         r13 = r13->m4_next;
     }
 }
 
-void LCSTaskDrawSub1Sub2Sub0Sub2(s_LCSTask* r4)
+void LCSTaskDrawSub1Sub2Sub0Sub2(s_LCSTask* r14)
 {
-    if (--r4->m83D_time1 > 0)
+    if (--r14->m83D_time1 > 0)
         return;
 
-    r4->m83D_time1 = 0;
+    r14->m83D_time1 = 0;
 
-    if (r4->m838_Next)
+    s_LCSTask340* r12 = r14->m838_Next;
+    if (r12)
     {
-        assert(0);
+        sLCSTarget* r13 = r12->m8;
+
+        sLaserArgs laserArgs;
+
+        laserArgs.m0 = r13->m0;
+        laserArgs.m4 = r13->m8_parentWorldCoordinates;
+        laserArgs.m8 = r13->m10_flags;
+        laserArgs.m10 = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m160_deltaTranslation;
+        laserArgs.m14 = r13;
+        laserArgs.m18 = r12;
+        laserArgs.m1F = 0;
+
+        if (LCS_AccessSoundTable2[r14->m838_Next->m8->m10_flags & 3] == 2)
+        {
+            //0606E184
+            assert(0);
+        }
+        else
+        {
+            sVec3_FP* varC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m10C_hotSpot2;
+            r14->m838_Next->mC = LCSTaskDrawSub1Sub2Sub0Sub2Sub0(r14, &laserArgs, LCS_AccessSoundTable2[r14->m838_Next->m8->m10_flags & 3]);
+        }
+
+        //0606E1DA
+        r14->m838_Next = r14->m838_Next->m4_next;
+        r14->m83D_time1 = 5;
+        r13->m19 = (r13->m19 & 0xF0) | 2;
     }
 }
 
@@ -903,16 +976,6 @@ void LCSTaskDrawSub1Sub0(s_LCSTask* r4)
         assert(0);
     }
 }
-
-const std::array<s8, 4> LCS_AccessSoundTable2 = 
-{
-    0,0,1,2
-};
-
-const std::array<s32, 4> LCS_AccessSoundTable =
-{
-    20, 8, 20, 21
-};
 
 void LCSTaskDrawSub1Sub2(s_LCSTask* r4)
 {

@@ -2,22 +2,22 @@
 
 // Above Excavation
 
-void fieldA3_1_startTasks_sub1Task_InitSub0()
+void fieldA3_1_startTasks_sub1Task_InitSub0(p_workArea, sLCSTarget*)
 {
     getFieldTaskPtr()->mC->m9C[0] = 1;
 }
 
-void fieldA3_1_startTasks_sub1Task_InitSub1()
+void fieldA3_1_startTasks_sub1Task_InitSub1(p_workArea, sLCSTarget*)
 {
     getFieldTaskPtr()->mC->m9C[1] = 1;
 }
 
-void fieldA3_1_startTasks_sub1Task_InitSub2()
+void fieldA3_1_startTasks_sub1Task_InitSub2(p_workArea, sLCSTarget*)
 {
     getFieldTaskPtr()->mC->m9C[2] = 1;
 }
 
-void(*fieldA3_1_startTasks_sub1Task_InitFunctionTable[])() = {
+void(*fieldA3_1_startTasks_sub1Task_InitFunctionTable[])(p_workArea, sLCSTarget*) = {
     fieldA3_1_startTasks_sub1Task_InitSub0,
     fieldA3_1_startTasks_sub1Task_InitSub1,
     fieldA3_1_startTasks_sub1Task_InitSub2
@@ -129,22 +129,41 @@ struct s_itemType0 : public s_workAreaTemplate<s_itemType0>
     //size: 8
 };
 
-void LCSItemBox_Callback0()
+void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*)
+{
+    s_itemBoxType1* pThis = (s_itemBoxType1*)r4;
+    if (pThis->m21 & 0x20)
+        return;
+
+    s32 bitIndex;
+    if (pThis->m80 < 1000)
+    {
+        bitIndex = pThis->m80;
+    }
+    else
+    {
+        bitIndex = pThis->m80 - 566;
+    }
+    mainGameState.setBit(bitIndex);
+
+    LCSItemBox_Callback0Sub0(r4);
+    playSoundEffect(0x17);
+
+    pThis->m_UpdateMethod = LCSItemBox_OpenedBoxUpdate;
+    pThis->m_DrawMethod = LCSItemBox_OpenedBoxDraw();
+}
+
+void LCSItemBox_Callback1(p_workArea, sLCSTarget*)
 {
     assert(0);
 }
 
-void LCSItemBox_Callback1()
+void LCSItemBox_CallabckSavePoint(p_workArea, sLCSTarget*)
 {
     assert(0);
 }
 
-void LCSItemBox_CallabckSavePoint()
-{
-    assert(0);
-}
-
-void(*LCSItemBox_CallbackTable[3])() = {
+void(*LCSItemBox_CallbackTable[3])(p_workArea, sLCSTarget*) = {
      &LCSItemBox_Callback0,
      &LCSItemBox_Callback1,
      &LCSItemBox_CallabckSavePoint,
@@ -457,6 +476,7 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
 
     s_memoryAreaOutput m0;
     sLCSTarget m8_LCSTarget;
+    s8 m21;
     sVec3_FP m3C;
     sVec3_FP m48;
     sVec3_FP m54;

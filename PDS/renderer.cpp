@@ -842,6 +842,72 @@ void ScaledSpriteDraw(u32 vdp1EA)
     }
 }
 
+void drawLine(s16 XA, s16 YA, s16 XB, s16 YB, u32 color)
+{
+    if (YA == YB)
+    {
+        if(XA <= XB)
+        {
+            for (int X = XA; X < XB; X++)
+            {
+                vdp1TextureOutput[(vdp1TextureHeight - 1 - YA) * vdp1TextureWidth + X] = color;
+            }
+        }
+        else
+        {
+            for (int X = XB; X < XA; X++)
+            {
+                vdp1TextureOutput[(vdp1TextureHeight - 1 - YA) * vdp1TextureWidth + X] = color;
+            }
+        }
+    }
+    else if (XA == XB)
+    {
+        if(YA <= YB)
+        {
+            for (int Y = YA; Y < YB; Y++)
+            {
+                vdp1TextureOutput[(vdp1TextureHeight - 1 - Y) * vdp1TextureWidth + XA] = color;
+            }
+        }
+        else
+        {
+            for (int Y = YB; Y < YA; Y++)
+            {
+                vdp1TextureOutput[(vdp1TextureHeight - 1 - Y) * vdp1TextureWidth + XA] = color;
+            }
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+
+}
+
+void PolyLineDraw(u32 vdp1EA)
+{
+    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
+    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
+    s16 CMDXA = getVdp1VramS16(vdp1EA + 0xC);
+    s16 CMDYA = getVdp1VramS16(vdp1EA + 0xE);
+    s16 CMDXB = getVdp1VramS16(vdp1EA + 0x10);
+    s16 CMDYB = getVdp1VramS16(vdp1EA + 0x12);
+    s16 CMDXC = getVdp1VramS16(vdp1EA + 0x14);
+    s16 CMDYC = getVdp1VramS16(vdp1EA + 0x16);
+    s16 CMDXD = getVdp1VramS16(vdp1EA + 0x18);
+    s16 CMDYD = getVdp1VramS16(vdp1EA + 0x1A);
+    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+
+    assert(CMDCOLR & 0x8000);
+    u32 finalColor = 0xFF000000 | (((CMDCOLR & 0x1F) << 3) | ((CMDCOLR & 0x03E0) << 6) | ((CMDCOLR & 0x7C00) << 9));
+
+    drawLine(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);
+    drawLine(CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, finalColor);
+    drawLine(CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, finalColor);
+    drawLine(CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, finalColor);
+}
+
 void renderVdp1(u32 width, u32 height)
 {
     vdp1TextureWidth = width;
@@ -876,7 +942,7 @@ void renderVdp1(u32 width, u32 height)
             ScaledSpriteDraw(vdp1EA);
             break;
         case 5:
-            PDS_unimplemented("Poly draw");
+            PolyLineDraw(vdp1EA);
             break;
         case 0xA:
             SetLocalCoordinates(vdp1EA);
