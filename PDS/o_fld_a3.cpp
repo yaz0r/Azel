@@ -1062,6 +1062,13 @@ void setupField(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workAre
     setupFieldSub1(r4, r5, r6);
 }
 
+void setupField3(s_DataTable3* r4, void(*r5)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r6)
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1->m34_cameraVisibilityTable = r6;
+
+    setupField2(r4, r5);
+}
+
 void subfieldA3_0Sub0(s_dragonTaskWorkArea* r4)
 {
     PDS_unimplemented("subfieldA3_0Sub0");
@@ -1163,16 +1170,41 @@ s32 startFieldScript(s32 r4, s32 r5)
     return 0;
 }
 
-s_cameraScript cameraScript0 =
+s_cameraScript* readCameraScript(sSaturnPtr EA)
 {
-    { 0x2F7000, 0x34000, -0x258000 }, //m0_position
-    { 0, 0, 0 }, // mC_rotation
-    0x34000, // m18
-    0xED0, // m1C
-    0x36, // m20
-    { 0x2F9000, 0x39000, -0x280000 }, // m24_pos2;
-    0xC8000, // m30
-};
+    static std::map<u32, s_cameraScript*> cache;
+
+    std::map<u32, s_cameraScript*>::iterator cacheEntry = cache.find(EA.m_offset);
+    if (cacheEntry != cache.end())
+    {
+        return cacheEntry->second;
+    }
+
+    s_cameraScript* pNewCameraScript = new s_cameraScript;
+
+    pNewCameraScript->m0_position[0] = readSaturnS32(EA + 0x00);
+    pNewCameraScript->m0_position[1] = readSaturnS32(EA + 0x04);
+    pNewCameraScript->m0_position[2] = readSaturnS32(EA + 0x08);
+
+    pNewCameraScript->mC_rotation[0] = readSaturnS32(EA + 0x0C);
+    pNewCameraScript->mC_rotation[1] = readSaturnS32(EA + 0x10);
+    pNewCameraScript->mC_rotation[2] = readSaturnS32(EA + 0x14);
+
+    pNewCameraScript->m18 = readSaturnS32(EA + 0x18);
+    pNewCameraScript->m1C = readSaturnS32(EA + 0x1C);
+    pNewCameraScript->m20 = readSaturnS32(EA + 0x20);
+
+    pNewCameraScript->m24_pos2[0] = readSaturnS32(EA + 0x24);
+    pNewCameraScript->m24_pos2[1] = readSaturnS32(EA + 0x28);
+    pNewCameraScript->m24_pos2[2] = readSaturnS32(EA + 0x2C);
+
+    pNewCameraScript->m30_thresholdDistance = readSaturnS32(EA + 0x30);
+
+    cache.insert_or_assign(EA.m_offset, pNewCameraScript);
+
+    return pNewCameraScript;
+}
+
 
 s_grid1* readEnvironmentGridCell(sSaturnPtr gridCellEA)
 {
@@ -1276,7 +1308,10 @@ s_grid2** readGrid2(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
 
 s_grid3** readGrid3(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
 {
-    assert(gridEA.m_offset == 0);
+    if (gridEA.m_offset != 0)
+    {
+        PDS_unimplemented("readGrid3");
+    }
     return NULL;
 }
 
@@ -1927,7 +1962,7 @@ void subfieldA3_0(p_workArea workArea)
             case 10:
                 assert(0);
             default:
-                getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = &cameraScript0;
+                getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6090E84, gFLD_A3 });
                 startFieldScript(17, -1);
                 break;
             }
@@ -1943,6 +1978,94 @@ void subfieldA3_0(p_workArea workArea)
     adjustVerticalLimits(-0x54000, 0x76000);
 }
 
+void fieldA3_2_startTasks(p_workArea workArea)
+{
+    create_fieldA3_0_task0(workArea);
+
+    getFieldTaskPtr()->mC->m168 = create_fieldA3_0_task1(workArea, 4, 0x60);
+
+    PDS_unimplemented("fieldA3_2_startTasks");
+}
+
+void subfieldA3_2Sub0(s_dragonTaskWorkArea*)
+{
+    PDS_unimplemented("subfieldA3_2Sub0");
+}
+
+void subfieldA3_2(p_workArea workArea)
+{
+    s16 r13 = getFieldTaskPtr()->m30;
+
+    playPCM(workArea, 100);
+    playPCM(workArea, 101);
+
+    s_DataTable3* pDataTable3 = readDataTable3({ 0x608BE04, gFLD_A3 });
+    std::vector<std::vector<sCameraVisibility>>* pVisibility = readCameraVisbility({ 0x608F8BC, gFLD_A3 }, pDataTable3);
+    s_DataTable2* pDataTable2 = readDataTable2({ 0x6088E8C, gFLD_A3 });
+    setupField(pDataTable3, pDataTable2, fieldA3_2_startTasks, pVisibility);
+
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_2Sub0;
+
+    switch (getFieldTaskPtr()->m32)
+    {
+    default:
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6091260, gFLD_A3 });
+        break;
+    }
+
+    startFieldScript(19, -1);
+
+    createFieldPaletteTask(workArea);
+
+    adjustVerticalLimits(-0x54000, 0x76000);
+
+    subfieldA3_1_Sub0();
+
+    //subfieldA3_1_Sub1();
+
+    PDS_unimplemented("subfieldA3_2");
+}
+
+void fieldA3_3_createItemBoxes(p_workArea workArea)
+{
+    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6092274, gFLD_A3 }));
+    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x60922BC, gFLD_A3 }));
+}
+
+void fieldA3_3_startTasks(p_workArea workArea)
+{
+    create_fieldA3_0_task0(workArea);
+
+    PDS_unimplemented("fieldA3_3_startTasks");
+
+    fieldA3_3_createItemBoxes(workArea);
+}
+
+void subfieldA3_3(p_workArea workArea)
+{
+    playPCM(workArea, 100);
+    playPCM(workArea, 101);
+
+    s_DataTable3* pDataTable3 = readDataTable3({ 0x608C054, gFLD_A3 });
+    std::vector<std::vector<sCameraVisibility>>* pVisibility = readCameraVisbility({ 0x608F9E8, gFLD_A3 }, pDataTable3);
+    setupField3(pDataTable3, fieldA3_3_startTasks, pVisibility);
+
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6091400, gFLD_A3 });
+
+    PDS_unimplemented("subfieldA3_3");
+
+    createFieldPaletteTask(workArea);
+
+    adjustVerticalLimits(-0x5C000, 0x76000);
+
+    subfieldA3_1_Sub0();
+
+    PDS_unimplemented("subfieldA3_3");
+
+    startFieldScript(20, -1);
+
+   
+}
 void nullBattle()
 {
     // intentionally empty
@@ -1953,8 +2076,8 @@ void subfieldA3_1_Sub0()
     getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask->m58 = 1;
 }
 
-void subfieldA3_2(p_workArea workArea) { PDS_unimplemented("subfieldA3_2"); assert(false); }
-void subfieldA3_3(p_workArea workArea) { PDS_unimplemented("subfieldA3_3"); assert(false); }
+void subfieldA3_2(p_workArea workArea);
+void subfieldA3_3(p_workArea workArea);
 void subfieldA3_4(p_workArea workArea) { PDS_unimplemented("subfieldA3_4"); assert(false); }
 void subfieldA3_5(p_workArea workArea) { PDS_unimplemented("subfieldA3_5"); assert(false); }
 void subfieldA3_6(p_workArea workArea) { PDS_unimplemented("subfieldA3_6"); assert(false); }
@@ -6475,17 +6598,12 @@ void s_LCSTask340Sub::Init1Sub2()
     assert(0);
 }
 
-void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub(p_workArea)
-{
-    assert(0);
-}
-
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4)
 {
     if (r4)
     {
-        r4->getTask()->m8_pUpdate = fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub;
-        r4->getTask()->mC_pDraw = nullptr;
+        r4->m_UpdateMethod = &s_LCSTask340Sub::fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub;
+        r4->m_DrawMethod = nullptr;
         r4->m15C = 0;
     }
 }

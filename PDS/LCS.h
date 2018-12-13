@@ -86,6 +86,11 @@ struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
         assert(0);
     }
 
+    void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub()
+    {
+        assert(0);
+    }
+
     s_memoryAreaOutput m0;
     p_workArea m8;
     const sVec3_FP* mC;

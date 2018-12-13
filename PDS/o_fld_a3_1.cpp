@@ -129,30 +129,6 @@ struct s_itemType0 : public s_workAreaTemplate<s_itemType0>
     //size: 8
 };
 
-void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*)
-{
-    s_itemBoxType1* pThis = (s_itemBoxType1*)r4;
-    if (pThis->m21 & 0x20)
-        return;
-
-    s32 bitIndex;
-    if (pThis->m80 < 1000)
-    {
-        bitIndex = pThis->m80;
-    }
-    else
-    {
-        bitIndex = pThis->m80 - 566;
-    }
-    mainGameState.setBit(bitIndex);
-
-    LCSItemBox_Callback0Sub0(r4);
-    playSoundEffect(0x17);
-
-    pThis->m_UpdateMethod = LCSItemBox_OpenedBoxUpdate;
-    pThis->m_DrawMethod = LCSItemBox_OpenedBoxDraw();
-}
-
 void LCSItemBox_Callback1(p_workArea, sLCSTarget*)
 {
     assert(0);
@@ -162,6 +138,10 @@ void LCSItemBox_CallabckSavePoint(p_workArea, sLCSTarget*)
 {
     assert(0);
 }
+
+void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*);
+void LCSItemBox_Callback1(p_workArea r4, sLCSTarget*);
+void LCSItemBox_CallbackSavePoint(p_workArea r4, sLCSTarget*);
 
 void(*LCSItemBox_CallbackTable[3])(p_workArea, sLCSTarget*) = {
      &LCSItemBox_Callback0,
@@ -474,6 +454,21 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
         &s_itemBoxType1::LCSItemBox_DrawType2
     };
 
+    void LCSItemBox_OpenedBoxUpdate()
+    {
+        assert(0);
+    }
+
+    void LCSItemBox_OpenedBoxDraw()
+    {
+        assert(0);
+    }
+
+    void LCSItemBox_Callback0Sub0()
+    {
+        PDS_unimplemented("LCSItemBox_Callback0Sub0");
+    }
+
     s_memoryAreaOutput m0;
     sLCSTarget m8_LCSTarget;
     s8 m21;
@@ -496,6 +491,30 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
     s16 mEA_wasRendered;
     //size: F0
 };
+
+void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*)
+{
+    s_itemBoxType1* pThis = (s_itemBoxType1*)r4;
+    if (pThis->m21 & 0x20)
+        return;
+
+    s32 bitIndex;
+    if (pThis->m80 < 1000)
+    {
+        bitIndex = pThis->m80;
+    }
+    else
+    {
+        bitIndex = pThis->m80 - 566;
+    }
+    mainGameState.setBit(bitIndex);
+
+    pThis->LCSItemBox_Callback0Sub0();
+    playSoundEffect(0x17);
+
+    pThis->m_UpdateMethod = &s_itemBoxType1::LCSItemBox_OpenedBoxUpdate;
+    pThis->m_DrawMethod = &s_itemBoxType1::LCSItemBox_OpenedBoxDraw;
+}
 
 p_workArea findParentGridCellTaskForItem(s_itemBoxDefinition* r14)
 {

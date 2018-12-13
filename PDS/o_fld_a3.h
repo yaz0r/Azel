@@ -68,6 +68,7 @@ struct s_itemBoxDefinition
     s8 m44;
 };
 s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr);
+p_workArea fieldA3_1_createItemBoxes_Sub1(s_itemBoxDefinition* r4);
 
 
 #include "o_fld_a3_1.h"
