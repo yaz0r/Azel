@@ -122,9 +122,11 @@ void azelSdl2_Init()
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 #ifdef __IPHONEOS__
+    const char* glsl_version = "#version 130";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #else
+    const char* glsl_version = "#version 130";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 #endif
@@ -140,7 +142,14 @@ void azelSdl2_Init()
 
     // Setup ImGui binding
     ImGui::CreateContext();
-    ImGui_ImplOpenGL3_Init();
+
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+
+    ImGui_ImplOpenGL3_Init(glsl_version);
     ImGui_ImplSDL2_InitForOpenGL(gWindow, gGlcontext);
 
     // setup vdp1 Poly
@@ -1012,7 +1021,7 @@ bool azelSdl2_EndFrame()
     //renderBG2(vdp2ResolutionWidth, vdp2ResolutionHeight);
     renderBG3(vdp2ResolutionWidth, vdp2ResolutionHeight);
 
-    if(ImGui::Begin(""))
+    if(ImGui::Begin("VDP"))
     {
         ImGui::Image((ImTextureID)gNBG0Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
         ImGui::Image((ImTextureID)gNBG1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
@@ -1277,6 +1286,14 @@ bool azelSdl2_EndFrame()
     
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+    // Update and Render additional Platform Windows
+    /*ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
+    */
     checkGL();
     
     glFlush();
