@@ -1,0 +1,6 @@
+[submodule "PDS/SDL2"]
+	path = PDS/SDL2
+	url = https://github.com/SDL-mirror/SDL
+[submodule "PDS/imgui"]
+	path = PDS/imgui
+	url = https://github.com/ocornut/imgui
