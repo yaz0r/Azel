@@ -3,6 +3,12 @@ project(PDS)
 cmake_minimum_required(VERSION 3.9)
 
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+set(VIDEO_OPENGLES OFF CACHE BOOL "" FORCE)
+set(VIDEO_DUMMY OFF CACHE BOOL "" FORCE)
+set(VIDEO_VULKAN OFF CACHE BOOL "" FORCE)
+set(RENDER_D3D OFF CACHE BOOL "" FORCE)
+set(DISKAUDIO OFF CACHE BOOL "" FORCE)
+set(DUMMYAUDIO OFF CACHE BOOL "" FORCE)
 add_subdirectory( PDS/SDL2 )
 
 include_directories("PDS" "PDS/imgui" "PDS/SDL2/include" "PDS/imgui/examples" "PDS/imgui/examples/libs/gl3w")
@@ -49,12 +55,13 @@ set(SOURCES
  
  PDS/imgui/imgui.cpp
  PDS/imgui/imgui_draw.cpp
+ PDS/imgui/imgui_widgets.cpp
  PDS/imgui/examples/imgui_impl_opengl3.cpp
  PDS/imgui/examples/imgui_impl_sdl.cpp
  PDS/imgui/examples/libs/gl3w/GL/gl3w.c
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x -D_HAS_EXCEPTIONS=0 /GR-")
 
 if( MSVC )
 	# Eliminate unreferenced functions and data
@@ -103,6 +110,16 @@ set( CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${REL_C_FLAGS}" )
 set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${REL_C_FLAGS}" )
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEB_C_FLAGS} -D_DEBUG" )
 
+STRING(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable C++ exceptions
+#STRING(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # Disable RTTI
+
+# Always generate debug info
+if(MSVC)
+    set( CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /debug" )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi /GR-")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+endif()
 
 add_executable (Azel ${SOURCES})
 
