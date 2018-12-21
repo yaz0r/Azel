@@ -778,6 +778,19 @@ sSaturnPtr readSaturnEA(sSaturnPtr ptr)
     return newPtr;
 }
 
+std::string readSaturnString(sSaturnPtr ptr)
+{
+    std::string newString;
+
+    while (s8 newChar = readSaturnS8(ptr))
+    {
+        ptr += 1;
+        newString += newChar;
+    }
+
+    return newString;
+}
+
 sVec3_FP readSaturnVec3(sSaturnPtr ptr)
 {
     sVec3_FP newVec;

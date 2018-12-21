@@ -1172,9 +1172,9 @@ s32 startFieldScript(s32 r4, s32 r5)
 
 s_cameraScript* readCameraScript(sSaturnPtr EA)
 {
-    static std::map<u32, s_cameraScript*> cache;
+    static std::unordered_map<u32, s_cameraScript*> cache;
 
-    std::map<u32, s_cameraScript*>::iterator cacheEntry = cache.find(EA.m_offset);
+    std::unordered_map<u32, s_cameraScript*>::iterator cacheEntry = cache.find(EA.m_offset);
     if (cacheEntry != cache.end())
     {
         return cacheEntry->second;
@@ -6510,6 +6510,77 @@ void s_LCSTask340Sub::Init1(void* typelessArg)
     m154++;
 }
 
+void s_LCSTask340Sub::Init3Sub3(s_LCSTask340Sub_m58* r4, s32 r5, sSaturnPtr r6)
+{
+    r4->m6 = 0;
+    r4->m7 = 0;
+    r4->m0 = r6;
+    r4->m4 = r5;
+}
+
+void s_LCSTask340Sub::Init3Sub0()
+{
+    PDS_unimplemented("s_LCSTask340Sub::Init3Sub0");
+}
+
+void s_LCSTask340Sub::Init3Sub1()
+{
+    PDS_unimplemented("s_LCSTask340Sub::Init3Sub1");
+}
+
+void s_LCSTask340Sub::Init3Sub2()
+{
+    PDS_unimplemented("s_LCSTask340Sub::Init3Sub2");
+}
+
+void s_LCSTask340Sub::Init3(void* typelessArg)
+{
+    sLaserArgs* arg = (sLaserArgs*)typelessArg;
+    getMemoryArea(&m0, 0);
+
+    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F++;
+
+    m8 = arg->m0;
+    if (randomNumber() & 1)
+    {
+        mC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m118_hotSpot3;
+    }
+    else
+    {
+        mC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m124_hotSpot4;
+    }
+    m10 = 0;
+    m14 = arg->mC;
+    m18 = 0;
+    m1C = arg->m14;
+    m20 = 0;
+    m24 = arg->m1C;
+    m26 = arg->m1E;
+    m27 = arg->m1F;
+
+    m28 = &s_LCSTask340Sub::Init3Sub0;
+    m2C = &s_LCSTask340Sub::Init3Sub1;
+    m30 = &s_LCSTask340Sub::Init3Sub2;
+    m158 = 0x1E;
+
+    if (arg->m8 & 0x100)
+    {
+        transformAndAddVec(*arg->mC, m6C[0], cameraProperties2.m28[0]);
+    }
+    else
+    {
+        m6C[0] = *arg->m4;
+    }
+
+    m6C[1] = m6C[0];
+    m6C[m154 & 0xF] = m6C[0];
+
+    ((this)->*(m28))();
+
+    m154++;
+    Init3Sub3(&m58, (m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3, { 0x06095330, gFLD_A3 });
+}
+
 static const std::array<fixedPoint, 16> s_LCSTask340Sub_Init1Sub0Data0 = {
     0xE38E38,
     0x5555555,
@@ -6555,6 +6626,20 @@ void s_LCSTask340Sub::Update0()
     ((this)->*(m2C))();
 
     m158--;
+}
+
+void s_LCSTask340Sub::Update3()
+{
+    if (m158 < 0)
+    {
+        getTask()->markFinished();
+    }
+    else
+    {
+        transformAndAddVecByCurrentMatrix(mC, &m60);
+        ((this)->*(m2C))();
+        m158--;
+    }
 }
 
 void s_LCSTask340Sub::Init1Sub1Sub0()

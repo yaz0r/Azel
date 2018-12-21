@@ -42,10 +42,12 @@ struct sLaserArgs
     p_workArea m0;
     const sVec3_FP* m4;
     s32 m8;
-    s32 mC;
+    const sVec3_FP* mC;
     sVec3_FP* m10;
     sLCSTarget* m14;
     s_LCSTask340* m18;
+    s16 m1C;
+    s8 m1E;
     s8 m1F;
 };
 

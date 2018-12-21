@@ -1068,7 +1068,48 @@ void addAnimationFrame(std::vector<sPoseData>& pPoseData, s_3dModel* p3dModel)
     }
 }
 
-void (*modelMode4_position1)(s_3dModel*) = unimplementedUpdate;
+void modelMode4_position1(s_3dModel* p3dModel)
+{
+    std::vector<sPoseData>& pPoseData = p3dModel->m2C_poseData;
+    if (p3dModel->m10_currentAnimationFrame & 1)
+    {
+        addAnimationFrame(pPoseData, p3dModel);
+        return;
+    }
+
+    if (p3dModel->m10_currentAnimationFrame)
+    {
+        addAnimationFrame(pPoseData, p3dModel);
+
+        if (READ_BE_U16(p3dModel->m30_pCurrentAnimation + 4) - 1 > p3dModel->m10_currentAnimationFrame)
+        {
+            u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
+            for (int i = 0; i < p3dModel->m12_numBones; i++)
+            {
+                pPoseData[i].m24_halfTranslation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0));
+                pPoseData[i].m24_halfTranslation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2));
+                pPoseData[i].m24_halfTranslation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4));
+                r13 += 0x38;
+            }
+        }
+    }
+    else
+    {
+        u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            assert(pPoseData[i].m48[0].currentStep == 0);
+            assert(pPoseData[i].m48[1].currentStep == 0);
+            assert(pPoseData[i].m48[2].currentStep == 0);
+
+            pPoseData[i].m24_halfTranslation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) >> 1;
+            pPoseData[i].m24_halfTranslation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) >> 1;
+            pPoseData[i].m24_halfTranslation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) >> 1;
+            r13 += 0x38;
+        }
+    }
+}
+
 void modelMode4_rotation(s_3dModel* p3dModel)
 {
     std::vector<sPoseData>& pPoseData = p3dModel->m2C_poseData;
@@ -1150,7 +1191,10 @@ void modelMode0_scale(s_3dModel*)
 }
 
 
-void (*modelMode4_scale)(s_3dModel*) = unimplementedUpdate;
+void modelMode4_scale(s_3dModel*)
+{
+    assert(0);
+}
 
 void modelDrawFunction0(s_3dModel* pModel)
 {

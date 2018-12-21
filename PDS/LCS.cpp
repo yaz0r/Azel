@@ -609,7 +609,14 @@ sLCSTarget* LCSTaskDrawSub1Sub2Sub2Sub3(s_LCSTask* r14)
         else
         {
             //606DBE8
-            assert(0);
+            if(LCSTaskDrawSub1Sub2Sub2Sub3Sub0(r14, r14->m818_curr, &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m200_LCSCursorScreenSpaceCoordinates))
+            {
+                r4 = 1;
+            }
+            else
+            {
+                return NULL;
+            }
         }
     }
     else
@@ -749,6 +756,87 @@ s32 LCSTaskDrawSub1Sub2Sub2(s_LCSTask* r4)
     return 1;
 }
 
+struct sObjectListEntry
+{
+    s8 m0;
+    s8 m1;
+    s8 m2;
+    s8 m3;
+    std::string m4_name;
+    std::string m8_description;
+};
+
+sObjectListEntry* getObjectListEntry(s32 entry)
+{
+    static std::unordered_map<s32, sObjectListEntry*> cache;
+
+    std::unordered_map<s32, sObjectListEntry*>::iterator cacheEntry = cache.find(entry);
+    if (cacheEntry != cache.end())
+    {
+        return cacheEntry->second;
+    }
+
+    sSaturnPtr EA = { 0x20C3F4, &gCommonFile };
+    EA += 3 * 4 * entry;
+
+    sObjectListEntry* pNewObjectEntry = new sObjectListEntry;
+
+    pNewObjectEntry->m0 = readSaturnS8(EA + 0);
+    pNewObjectEntry->m1 = readSaturnS8(EA + 1);
+    pNewObjectEntry->m2 = readSaturnS8(EA + 2);
+    pNewObjectEntry->m3 = readSaturnS8(EA + 3);
+    pNewObjectEntry->m4_name = readSaturnString(readSaturnEA(EA + 4));
+    pNewObjectEntry->m8_description = readSaturnString(readSaturnEA(EA + 8));
+
+    cache.insert_or_assign(entry, pNewObjectEntry);
+
+    return pNewObjectEntry;
+}
+
+static const std::array<s8, 10> LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0Data1 =
+{
+    2,1,0,2,1,0,2,1,0,3
+};
+
+s8 LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0(sLCSTarget* r4)
+{
+    if (r4->m14 < 0)
+        return r4->m14;
+
+    return LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0Data1[getObjectListEntry(r4->m14)->m1];
+}
+
+void LCSTaskDrawSub1Sub2Sub0Sub1Sub0(s_LCSTask* r4, sLCSTarget* r5, s32 r6)
+{
+    sLaserArgs var8;
+    var8.m0 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    var8.m4 = nullptr;
+    var8.m14 = r5;
+    var8.mC = r5->m8_parentWorldCoordinates;
+    var8.m8 = r5->m10_flags;
+    var8.m10 = nullptr;
+    var8.m18 = nullptr;
+
+    s16 var24 = r5->m14;
+    s8 var26 = r5->m16;
+
+    if (var24 >= 0)
+    {
+        var8.m1F = LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0(r5);
+    }
+    else
+    {
+        static const std::array<s8, 12> LCSTaskDrawSub1Sub2Sub0Sub1Sub0Data0 =
+        {
+            5,4,5,6,0,1,2,3,4,5,6,0
+        };
+        var8.m1F = LCSTaskDrawSub1Sub2Sub0Sub1Sub0Data0[r6 - 1];
+    }
+
+    LCSTaskDrawSub1Sub2Sub0Sub2Sub0(r4, &var8, 3);
+    playSoundEffect(0x15);
+}
+
 void LCSTaskDrawSub1Sub2Sub0Sub1(s_LCSTask* r4)
 {
     s_LCSTask340* r13 = r4->m828_activeStart;
@@ -772,10 +860,28 @@ void LCSTaskDrawSub1Sub2Sub0Sub1(s_LCSTask* r4)
             }
 
             //606E0A6
-            PDS_unimplemented("LCSTaskDrawSub1Sub2Sub0Sub1");
+            if (r14->m19 & 0x20)
+            {
+                if ((r14->m14 >= 0) && (r14->m16 > 0))
+                {
+                    LCSTaskDrawSub1Sub2Sub0Sub1Sub0(r4, r14, 0);
+                }
+                else
+                {
+                    s32 r6 = (r14->m10_flags >> 4) & 0xF;
+                    if (r6)
+                    {
+                        LCSTaskDrawSub1Sub2Sub0Sub1Sub0(r4, r14, r6);
+                    }
+                }
+            }
+
+            //606E0E0
+            r13->m14 &= ~1;
         }
         else
         {
+            //606E0EC
             if (r13->m14 & 2)
             {
                 removeLCSTarget(r4, r13);

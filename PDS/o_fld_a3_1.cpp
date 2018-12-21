@@ -456,12 +456,42 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
 
     void LCSItemBox_OpenedBoxUpdate()
     {
-        assert(0);
+        switch (mEA_wasRendered)
+        {
+        case 0:
+            m20 |= 1;
+            mE8 = 0x15;
+            mEA_wasRendered++;
+            // fall
+        case 1:
+            stepAnimation(&m98);
+            mEA_wasRendered++;
+            mE8--;
+            if (mE8 <= 0)
+            {
+                mEA_wasRendered = 3;
+            }
+            return;
+        case 2:
+            mEA_wasRendered--;
+            break;
+        case 3:
+            break;
+        default:
+            assert(0);
+        }
     }
 
     void LCSItemBox_OpenedBoxDraw()
     {
-        assert(0);
+        pushCurrentMatrix();
+        translateCurrentMatrix(&m3C);
+        rotateCurrentMatrixZYX(&m6C);
+        scaleCurrentMatrixRow0(m78);
+        scaleCurrentMatrixRow1(m78);
+        scaleCurrentMatrixRow2(m78);
+        m98.m18_drawFunction(&m98);
+        popMatrix();
     }
 
     void LCSItemBox_Callback0Sub0()
@@ -471,6 +501,7 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
 
     s_memoryAreaOutput m0;
     sLCSTarget m8_LCSTarget;
+    s8 m20;
     s8 m21;
     sVec3_FP m3C;
     sVec3_FP m48;
@@ -488,6 +519,7 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
     s8 m8C;
     s8 m8D;
     s_3dModel m98;
+    s16 mE8;
     s16 mEA_wasRendered;
     //size: F0
 };

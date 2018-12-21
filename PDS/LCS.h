@@ -51,6 +51,14 @@ struct sLCSTarget
 
 struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
 {
+    struct s_LCSTask340Sub_m58
+    {
+        sSaturnPtr m0;
+        s16 m4;
+        s8 m6;
+        s8 m7;
+    };
+
     static const std::array<TypedTaskDefinition, 4> constructionTable;
 
     void Init0(void*)
@@ -69,17 +77,15 @@ struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
         assert(0);
     }
 
-    void Init3(void*)
-    {
-        assert(0);
-    }
+    void Init3(void*);
+    void Init3Sub0();
+    void Init3Sub1();
+    void Init3Sub2();
+    void Init3Sub3(s_LCSTask340Sub_m58* r4, s32 s5, sSaturnPtr r6);
 
     void Update0();
 
-    void Update3()
-    {
-        assert(0);
-    }
+    void Update3();
 
     void Delete3()
     {
@@ -88,17 +94,27 @@ struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
 
     void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub()
     {
-        assert(0);
+        switch (m15C)
+        {
+        case 0:
+            m15C++;
+            break;
+        case 1:
+            getTask()->markFinished();
+            break;
+        }
     }
 
     s_memoryAreaOutput m0;
     p_workArea m8;
     const sVec3_FP* mC;
     s32 m10;
-    s32 m14;
+    const sVec3_FP* m14;
     sVec3_FP* m18;
     sLCSTarget* m1C;
     struct s_LCSTask340* m20;
+    s16 m24;
+    s16 m26;
     s8 m27;
     void (s_LCSTask340Sub::*m28)();
     void (s_LCSTask340Sub::*m2C)();
@@ -107,6 +123,7 @@ struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
     fixedPoint m38;
     fixedPoint m3C;
     s32 m40;
+    s_LCSTask340Sub_m58 m58;
     sVec3_FP m60;
     std::array<sVec3_FP, 0x10> m6C;
     sVec3_FP m144;
