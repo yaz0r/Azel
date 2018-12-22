@@ -151,8 +151,16 @@ struct s_LCSTask340
     // size 0x18
 };
 
-struct s_LCSTask : public s_workArea
+struct s_LCSTask : public s_workAreaTemplate<s_LCSTask>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_LCSTask::Init, NULL, NULL, NULL, "s_LCSTask" };
+        return &taskDefinition;
+    }
+
+    void Init(void*);
+
     s_memoryAreaOutput m0;
     u32 m8;
     u32 mC;

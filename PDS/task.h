@@ -109,6 +109,11 @@ struct s_workAreaTemplate : public s_workArea
         }
     }
 
+    void dummyTaskDelete()
+    {
+        assert(0);
+    }
+
     typedef void (T::*FunctionType)();
     typedef void (T::*InitFunctionType)(void*);
     //InitFunctionType m_InitMethod;
@@ -200,10 +205,9 @@ T* createSubTask(p_workArea parentTask, const typename T::TypedTaskDefinition* p
 }
 
 template<typename T>
-T* createSubTaskWithArg(p_workArea parentTask, void* arg)
+T* createSubTaskWithArg(p_workArea parentTask, void* arg, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
 {
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, T::getTaskDefinition(), new T, arg));
-    auto pTypeTaskDefinition = T::getTypedTaskDefinition();
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;

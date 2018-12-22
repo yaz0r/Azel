@@ -1,5 +1,7 @@
 #include "PDS.h"
 
+p_workArea initExitMenuTaskSub1(p_workArea pTypelessWorkArea, u32 menuID);
+
 extern p_workArea(*statusMenuSubMenus[])(p_workArea);
 
 struct sLoadingTaskWorkArea* gLoadingTaskWorkArea = NULL;
@@ -2591,77 +2593,98 @@ p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg)
     return createSubTaskWithArg(pTypelessWorkArea, &fieldTaskDefinition, new s_fieldTaskWorkArea, (void*)arg);
 }
 
-struct s_fieldDebugTaskWorkArea : public s_workArea
+struct s_fieldDebugTaskWorkArea : public s_workAreaTemplate<s_fieldDebugTaskWorkArea>
 {
+    static const TypedTaskDefinition* getTownDebugTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::townDebugTaskInit, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete, "townDebugTask" };
+        return &taskDefinition;
+    }
+
+    static const TypedTaskDefinition* getFieldDebugTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::fieldDebugTaskInit, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete, "fieldDebugTask" };
+        return &taskDefinition;
+    }
+
+    static const TypedTaskDefinition* getExitMenuTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::initExitMenuTask, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete, "fieldDebugTask" };
+        return &taskDefinition;
+    }
+
+    void initExitMenuTask(void* argument)
+    {
+        u32 menuID = (u32)(intptr_t)argument;
+
+        pauseEngine[2] = 0;
+
+        m8 = initExitMenuTaskSub1(this, menuID);
+
+        createSiblingTaskWithArg(m8, &flagEditTask, new s_flagEditTaskWorkArea, m8);
+
+        fadePalette(&menuUnk0.m_field0, 0x8000, 0x8000, 1);
+        fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);
+    }
+
+    void townDebugTaskInit(void*)
+    {
+        pauseEngine[2] = 0;
+
+        initNewGameState();
+
+        assert(0);
+        /*
+        pWorkArea->m8 = createLocationTask(pWorkArea, 0);
+
+        resetTempAllocators();
+        initDramAllocator(pWorkArea->m8, playerDataMemoryBuffer, 0x28000, NULL);
+
+        loadDragon(pWorkArea->m8);
+        loadCurrentRider(pWorkArea->m8);
+        loadCurrentRider2(pWorkArea->m8);
+        freeRamResource();
+        createMenuTask();
+        createSiblingTaskWithArg(pWorkArea->m8, flagEditTask, 0x10, pWorkArea->m8);
+        */
+    }
+
+    void fieldDebugTaskInit(void*)
+    {
+        pauseEngine[2] = 0;
+
+        initNewGameState();
+        m8 = createFieldTask(this, 0);
+
+        createLoadingTask(m8, 1);
+        createMenuTask(m8);
+        createSiblingTaskWithArg(m8, &flagEditTask, new s_flagEditTaskWorkArea, m8);
+    }
+
+    void genericTaskRestartGameWhenFinished()
+    {
+        if ((m8 == NULL) || m8->getTask()->isFinished())
+        {
+            initialTaskStatus.m_pendingTask = startSegaLogoModule;
+        }
+    }
+
+    void genericOptionMenuDelete()
+    {
+        assert(0);
+    }
+
     p_workArea m8; // 8
     // size: 0xC
 };
 
-void fieldDebugTaskInit(p_workArea pTypelessWorkArea)
-{
-    s_fieldDebugTaskWorkArea* pWorkArea = static_cast<s_fieldDebugTaskWorkArea*>(pTypelessWorkArea);
-
-    pauseEngine[2] = 0;
-
-    initNewGameState();
-    pWorkArea->m8 = createFieldTask(pTypelessWorkArea, 0);
-    
-    createLoadingTask(pWorkArea->m8, 1);
-    createMenuTask(pWorkArea->m8);
-    createSiblingTaskWithArg(pWorkArea->m8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->m8);
-}
-
-void genericTaskRestartGameWhenFinished(p_workArea pTypelessWorkArea)
-{
-    s_fieldDebugTaskWorkArea* pWorkArea = static_cast<s_fieldDebugTaskWorkArea*>(pTypelessWorkArea);
-
-    if ((pWorkArea->m8 == NULL) || pWorkArea->m8->getTask()->isFinished())
-    {
-        initialTaskStatus.m_pendingTask = startSegaLogoModule;
-    }
-}
-
-void genericOptionMenuDelete(p_workArea pTypelessWorkArea)
-{
-    assert(0);
-}
-
-s_taskDefinition fieldDebugModule = { fieldDebugTaskInit, NULL, genericTaskRestartGameWhenFinished, genericOptionMenuDelete, "fieldDebugTask" };
-
-
-void townDebugTaskInit(p_workArea pTypelessWorkArea)
-{
-    s_fieldDebugTaskWorkArea* pWorkArea = static_cast<s_fieldDebugTaskWorkArea*>(pTypelessWorkArea);
-
-    pauseEngine[2] = 0;
-
-    initNewGameState();
-
-    assert(0);
-    /*
-    pWorkArea->m8 = createLocationTask(pWorkArea, 0);
-
-    resetTempAllocators();
-    initDramAllocator(pWorkArea->m8, playerDataMemoryBuffer, 0x28000, NULL);
-
-    loadDragon(pWorkArea->m8);
-    loadCurrentRider(pWorkArea->m8);
-    loadCurrentRider2(pWorkArea->m8);
-    freeRamResource();
-    createMenuTask();
-    createSiblingTaskWithArg(pWorkArea->m8, flagEditTask, 0x10, pWorkArea->m8);
-    */
-}
-
-s_taskDefinition townDebugTask = { townDebugTaskInit, NULL, genericTaskRestartGameWhenFinished, genericOptionMenuDelete, "townDebugTask" };
-
 p_workArea createTownDebugTask(p_workArea pWorkArea)
 {
-    return createSubTask(pWorkArea, &townDebugTask, new s_fieldDebugTaskWorkArea);
+    return createSubTask<s_fieldDebugTaskWorkArea>(pWorkArea, s_fieldDebugTaskWorkArea::getTownDebugTaskDefinition());
 }
 p_workArea createFieldDebugTask(p_workArea pWorkArea)
 {
-    return createSubTask(pWorkArea, &fieldDebugModule, new s_fieldDebugTaskWorkArea);
+    return createSubTask<s_fieldDebugTaskWorkArea>(pWorkArea, s_fieldDebugTaskWorkArea::getFieldDebugTaskDefinition());
 }
 
 p_workArea createBattleDebugTask(p_workArea)
@@ -2680,8 +2703,18 @@ p_workArea createMovieDebugTask(p_workArea)
     return NULL;
 }
 
-struct s_exitMenuTaskSub1Task : public s_workArea
+struct s_exitMenuTaskSub1Task : public s_workAreaTemplate<s_exitMenuTaskSub1Task>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskUpdate, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw, NULL, "exitMenuTaskSub1Task" };
+        return &taskDefinition;
+    }
+
+    void exitMenuTaskSub1TaskInit(void* voidArgument);
+    void exitMenuTaskSub1TaskUpdate();
+    void exitMenuTaskSub1TaskDraw();
+
     u32 state; // 0
     p_workArea m8;
     u32 mC;
@@ -4068,9 +4101,9 @@ p_workArea createMenuTask(p_workArea parentTask)
     return createSiblingTaskWithArg(parentTask, &menuGraphicsTask, new s_menuGraphicsTask, parentTask);
 }
 
-void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
+void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(void* voidArgument)
 {
-    s_exitMenuTaskSub1Task* pWorkArea = static_cast<s_exitMenuTaskSub1Task*>(pTypelessWorkArea);
+    s_exitMenuTaskSub1Task* pWorkArea = this;
     u32 menuID = (u32)(intptr_t)voidArgument;
 
     pWorkArea->m8 = 0;
@@ -4140,7 +4173,7 @@ void exitMenuTaskSub1TaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
 
 s_vblankData vblankData;
 
-void exitMenuTaskSub1TaskUpdate(s_workArea* pTypelessWorkArea)
+void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskUpdate()
 {
     mainGameState.gameStats.frameCounter += vblankData.mC;
 }
@@ -4222,9 +4255,9 @@ p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     NULL,
 };
 
-void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
+void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw()
 {
-    s_exitMenuTaskSub1Task* pWorkArea = static_cast<s_exitMenuTaskSub1Task*>(pTypelessWorkArea);
+    s_exitMenuTaskSub1Task* pWorkArea = this;
 
     switch (pWorkArea->state)
     {
@@ -4342,38 +4375,19 @@ void exitMenuTaskSub1TaskDraw(s_workArea* pTypelessWorkArea)
     }
 }
 
-s_taskDefinitionWithArg exitMenuTaskSub1Task = { exitMenuTaskSub1TaskInit, exitMenuTaskSub1TaskUpdate, exitMenuTaskSub1TaskDraw, NULL, "exitMenuTaskSub1Task" };
-
 p_workArea initExitMenuTaskSub1(p_workArea pTypelessWorkArea, u32 menuID)
 {
-    return createSubTaskWithArg(pTypelessWorkArea, &exitMenuTaskSub1Task, new s_exitMenuTaskSub1Task, (void*)menuID);
+    return createSubTaskWithArg<s_exitMenuTaskSub1Task>(pTypelessWorkArea, (void*)menuID);
 }
-
-void initExitMenuTask(p_workArea pTypelessWorkArea, void* argument)
-{
-    s_fieldDebugTaskWorkArea* pWorkArea = static_cast<s_fieldDebugTaskWorkArea*>(pTypelessWorkArea);
-    u32 menuID = (u32)(intptr_t)argument;
-
-    pauseEngine[2] = 0;
-
-    pWorkArea->m8 = initExitMenuTaskSub1(pWorkArea, menuID);
-
-    createSiblingTaskWithArg(pWorkArea->m8, &flagEditTask, new s_flagEditTaskWorkArea, pWorkArea->m8);
-
-    fadePalette(&menuUnk0.m_field0, 0x8000, 0x8000, 1);
-    fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);
-}
-
-s_taskDefinitionWithArg exitMenuTask = { initExitMenuTask, NULL, genericTaskRestartGameWhenFinished, genericOptionMenuDelete, "exitMenuTask" };
 
 p_workArea createNewGameTask(p_workArea pWorkArea)
 {
-    return createSubTaskWithArg(pWorkArea, &exitMenuTask, new s_fieldDebugTaskWorkArea, (void*)0);
+    return createSubTaskWithArg<s_fieldDebugTaskWorkArea>(pWorkArea, (void*)0, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
 }
 
 p_workArea createContinueTask(p_workArea pWorkArea)
 {
-    return createSubTaskWithArg(pWorkArea, &exitMenuTask, new s_fieldDebugTaskWorkArea, (void*)1);
+    return createSubTaskWithArg<s_fieldDebugTaskWorkArea>(pWorkArea, (void*)1, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
 }
 
 void playAnimationGenericSub0Sub0(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)

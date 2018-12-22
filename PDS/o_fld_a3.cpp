@@ -5166,9 +5166,9 @@ bool shouldLoadPup()
     return false;
 }
 
-void dragonFieldTaskInit(s_workArea* pWorkArea, void* argument)
+void s_dragonTaskWorkArea::dragonFieldTaskInit(void* argument)
 {
-    s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
+    s_dragonTaskWorkArea* pTypedWorkArea = this;
     u32 arg = (u32)(intptr_t)argument;
 
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask = pTypedWorkArea;
@@ -5178,7 +5178,7 @@ void dragonFieldTaskInit(s_workArea* pWorkArea, void* argument)
     dragonFieldTaskInitSub3(pTypedWorkArea, gDragonState, 5);
     pTypedWorkArea->mF0 = dragonFieldTaskInitSub4;
 
-    createSubTask(pWorkArea, &dragonRidersTaskDefinition, new s_dummyWorkArea);
+    createSubTask(this, &dragonRidersTaskDefinition, new s_dummyWorkArea);
 
     if (gDragonState->mC_dragonType == DR_LEVEL_6_LIGHT_WING)
     {
@@ -5659,9 +5659,9 @@ void dragonFieldTaskUpdateSub6(s_dragonTaskWorkArea* pTypedWorkArea)
     PDS_unimplemented("dragonFieldTaskUpdateSub6");
 }
 
-void dragonFieldTaskUpdate(s_workArea* pWorkArea)
+void s_dragonTaskWorkArea::dragonFieldTaskUpdate()
 {
-    s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
+    s_dragonTaskWorkArea* pTypedWorkArea = this;
 
     dragonFieldTaskUpdateSub1(pTypedWorkArea);
 
@@ -5826,9 +5826,9 @@ void dragonFieldTaskDrawSub3(s_dragonTaskWorkArea* pTypedWorkArea)
     dragonFieldTaskDrawSub3Sub0();
 }
 
-void dragonFieldTaskDraw(s_workArea* pWorkArea)
+void s_dragonTaskWorkArea::dragonFieldTaskDraw()
 {
-    s_dragonTaskWorkArea* pTypedWorkArea = static_cast<s_dragonTaskWorkArea*>(pWorkArea);
+    s_dragonTaskWorkArea* pTypedWorkArea = this;
 
     dragonFieldTaskDrawSub1(pTypedWorkArea);
 
@@ -5903,8 +5903,6 @@ void dragonFieldTaskDraw(s_workArea* pWorkArea)
     dragonFieldTaskDrawSub3(pTypedWorkArea);
 }
 
-s_taskDefinitionWithArg dragonFieldTaskDefinition = { dragonFieldTaskInit, dragonFieldTaskUpdate, dragonFieldTaskDraw, dummyTaskDelete, "dragonFieldTask" };
-
 void initFieldDragon(s_workArea* pWorkArea, u32 param)
 {
     if (getFieldTaskPtr()->updateDragonAndRiderOnInit == 1)
@@ -5926,7 +5924,7 @@ void initFieldDragon(s_workArea* pWorkArea, u32 param)
     }
     else
     {
-        createSubTaskWithArg(pWorkArea, &dragonFieldTaskDefinition, new s_dragonTaskWorkArea, (void*)param);
+        createSubTaskWithArg<s_dragonTaskWorkArea>(pWorkArea, (void*)param);
     }
 }
 

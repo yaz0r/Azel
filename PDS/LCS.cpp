@@ -968,9 +968,9 @@ void setLCSField83E(s_LCSTask* pLCS, s32 value)
     pLCS->m81C_curs = nullptr;
 }
 
-void fieldOverlaySubTask2Init(p_workArea pWorkArea)
+void s_LCSTask::Init(void*)
 {
-    s_LCSTask* pTypedWorkArea = static_cast<s_LCSTask*>(pWorkArea);
+    s_LCSTask* pTypedWorkArea = this;
 
     getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS = pTypedWorkArea;
     getMemoryArea(&pTypedWorkArea->m0, 0);
@@ -1334,11 +1334,9 @@ void dragonFieldTaskUpdateSub2(u32 r4)
     setLCSField83E(getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS, r4);
 }
 
-s_taskDefinition fieldOverlaySubTask2Definition = { fieldOverlaySubTask2Init, NULL, NULL, NULL, "fieldOverlaySubTask2" };
-
 void createFieldOverlaySubTask2(s_workArea* pWorkArea)
 {
-    createSubTask(pWorkArea, &fieldOverlaySubTask2Definition, new s_LCSTask);
+    createSubTask<s_LCSTask>(pWorkArea);
 }
 
 void LCSTaskDrawSub()

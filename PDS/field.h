@@ -376,8 +376,19 @@ struct s_cutsceneData
     u8 m8;
 };
 
-struct s_dragonTaskWorkArea : s_workArea
+struct s_dragonTaskWorkArea : s_workAreaTemplate<s_dragonTaskWorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_dragonTaskWorkArea::dragonFieldTaskInit, &s_dragonTaskWorkArea::dragonFieldTaskUpdate, &s_dragonTaskWorkArea::dragonFieldTaskDraw, &s_dragonTaskWorkArea::dummyTaskDelete, "dragonFieldTask" };
+        return &taskDefinition;
+    }
+
+    void dragonFieldTaskInit(void*);
+    void dragonFieldTaskUpdate();
+    void dragonFieldTaskDraw();
+    void dragonFieldTaskDelete();
+
     s_memoryAreaOutput m0;
 
     sVec3_FP m8_pos; // 8
