@@ -2,10 +2,11 @@
 
 s_heapNode heapRoot;
 
-u8 heap[0x30000];
+u8* heap = nullptr;;
 
 void initHeap()
 {
+    heap = new u8[0x30000];
     s_heapNode* heapStart = (s_heapNode*)heap;
 
     memset(heap, 0xFF, 0x30000);

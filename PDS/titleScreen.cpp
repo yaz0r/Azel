@@ -39,7 +39,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
         return &taskDefinition;
     }
 
-    void Init(void*) override
+    void Init()
     {
         // if we are not coming from the title screen (is this possible?)
         if (initialTaskStatus.m_previousTask != createTitleScreenTask)
@@ -234,64 +234,68 @@ p_workArea createTitleMenuTask(p_workArea workArea)
     return createSubTask<s_titleMenuWorkArea>(workArea);
 }
 
-struct s_pressStartButtonTaskWorkArea : public s_workArea
+struct s_pressStartButtonTaskWorkArea : public s_workAreaTemplate<s_pressStartButtonTaskWorkArea>
 {
-    u32 m_status;
-    s32 m_timming;
-};
-
-void pressStartButtonTaskDraw(s_workArea* pTypelessWorkArea)
-{
-    s_pressStartButtonTaskWorkArea* pWorkArea = static_cast<s_pressStartButtonTaskWorkArea*>(pTypelessWorkArea);
-
-    switch (pWorkArea->m_status)
+    static TypedTaskDefinition* getTypedTaskDefinition()
     {
-    case 0:
-        if ((--pWorkArea->m_timming) >= 0)
-            return;
+        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, &s_pressStartButtonTaskWorkArea::pressStartButtonTaskDraw, &s_pressStartButtonTaskWorkArea::pressStartButtonTaskDelete, "pressStartButtonTask" };
+        return &taskDefinition;
+    }
 
-        vdp2PrintStatus.palette = 0xD000;
+    void pressStartButtonTaskDraw()
+    {
+        s_pressStartButtonTaskWorkArea* pWorkArea = this;
 
-        if (VDP2Regs_.TVSTAT & 1)
-            vdp2DebugPrintSetPosition(13, -2);
-        else
-            vdp2DebugPrintSetPosition(13, -5);
+        switch (pWorkArea->m_status)
+        {
+        case 0:
+            if ((--pWorkArea->m_timming) >= 0)
+                return;
 
-        drawLineLargeFont("PRESS START BUTTON");
+            vdp2PrintStatus.palette = 0xD000;
 
-        pWorkArea->m_timming = 15;
-        pWorkArea->m_status++;
-    case 1:
-        if ((--pWorkArea->m_timming) >= 0)
-            return;
+            if (VDP2Regs_.TVSTAT & 1)
+                vdp2DebugPrintSetPosition(13, -2);
+            else
+                vdp2DebugPrintSetPosition(13, -5);
 
+            drawLineLargeFont("PRESS START BUTTON");
+
+            pWorkArea->m_timming = 15;
+            pWorkArea->m_status++;
+        case 1:
+            if ((--pWorkArea->m_timming) >= 0)
+                return;
+
+            if (VDP2Regs_.TVSTAT & 1)
+                vdp2DebugPrintSetPosition(13, -2);
+            else
+                vdp2DebugPrintSetPosition(13, -5);
+
+            clearVdp2TextLargeFont();
+
+            pWorkArea->m_status = 0;
+            pWorkArea->m_timming = 6;
+            break;
+        default:
+            assert(0);
+            break;
+        }
+    }
+
+    void pressStartButtonTaskDelete()
+    {
         if (VDP2Regs_.TVSTAT & 1)
             vdp2DebugPrintSetPosition(13, -2);
         else
             vdp2DebugPrintSetPosition(13, -5);
 
         clearVdp2TextLargeFont();
-
-        pWorkArea->m_status = 0;
-        pWorkArea->m_timming = 6;
-        break;
-    default:
-        assert(0);
-        break;
     }
-}
 
-void pressStartButtonTaskDelete(s_workArea* pTypelessWorkArea)
-{
-    if (VDP2Regs_.TVSTAT & 1)
-        vdp2DebugPrintSetPosition(13, -2);
-    else
-        vdp2DebugPrintSetPosition(13, -5);
-
-    clearVdp2TextLargeFont();
-}
-
-s_taskDefinition pressStartButtonTask = { NULL, NULL, pressStartButtonTaskDraw, pressStartButtonTaskDelete, "pressStartButtonTask"};
+    u32 m_status;
+    s32 m_timming;
+};
 
 struct s_titleScreenWorkArea : public s_workAreaTemplate<s_titleScreenWorkArea>
 {
@@ -301,7 +305,7 @@ struct s_titleScreenWorkArea : public s_workAreaTemplate<s_titleScreenWorkArea>
         return &taskDefinition;
     }
 
-    void Init(void*) override;
+    void Init();
     void Draw() override;
 
     u32 m_status;
@@ -339,7 +343,7 @@ void s_titleScreenWorkArea::Draw()
         }
         pWorkArea->m_status++;
     case 4:
-        createSubTask(pWorkArea, &pressStartButtonTask, new s_pressStartButtonTaskWorkArea);
+        createSubTask<s_pressStartButtonTaskWorkArea>(pWorkArea);
 
         pWorkArea->m_delay = 44 * 60;
         if (VDP2Regs_.TVSTAT & 1)
@@ -387,7 +391,7 @@ void s_titleScreenWorkArea::Draw()
     }
 }
 
-void s_titleScreenWorkArea::Init(void*)
+void s_titleScreenWorkArea::Init()
 {
     m_overlayTask = TITLE_OVERLAY::overlayStart(this);
 }
@@ -407,7 +411,7 @@ struct s_warningWorkArea : public s_workAreaTemplate< s_warningWorkArea>
         return &taskDefinition;
     }
 
-    void Init(void*) override;
+    void Init();
     void Draw() override; // not by default, only setup if necessary
 
     u32 m_status;
@@ -489,7 +493,7 @@ void loadWarningFile(u32 index)
     }
 }
 
-void s_warningWorkArea::Init(void*)
+void s_warningWorkArea::Init()
 {
     s_warningWorkArea* pWorkArea = this;
 
@@ -535,7 +539,7 @@ struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
         return &taskDefinition;
     }
 
-    void Init(void*) override
+    void Init()
     {
         m_warningTask = startWarningTask(this);
     }

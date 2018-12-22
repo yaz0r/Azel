@@ -32,7 +32,7 @@ struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_sta
         return &taskDefinition;
     }
 
-    void Init(void*) override
+    void Init()
     {
         static const sVec3_FP fieldA3_1_startTasks_sub1Task_InitPositionTable[3] = {
             {0x348000, -0x10000, -0x1EE000},
@@ -188,7 +188,7 @@ static sVec3_FP LCSItemBox_Table6[] = {
     {0, 0, 0}
 };
 
-struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
+struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemBoxDefinition*>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
@@ -196,9 +196,9 @@ struct s_itemBoxType1 : public s_workAreaTemplate<s_itemBoxType1>
         return &taskDefinition;
     }
 
-    void Init(void* arg)
+    void Init(s_itemBoxDefinition* arg)
     {
-        s_itemBoxDefinition* r13 = (s_itemBoxDefinition*)arg;
+        s_itemBoxDefinition* r13 = arg;
         getMemoryArea(&m0, 0);
 
         m3C = r13->m0_pos;

@@ -8,7 +8,7 @@ struct sLoadingTaskWorkArea* gLoadingTaskWorkArea = NULL;
 
 s16 loadingTaskVar0 = 0x1D;
 
-struct sLoadingTaskWorkArea : public s_workAreaTemplate<sLoadingTaskWorkArea>
+struct sLoadingTaskWorkArea : public s_workAreaTemplateWithArg<sLoadingTaskWorkArea, s8>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
@@ -16,20 +16,17 @@ struct sLoadingTaskWorkArea : public s_workAreaTemplate<sLoadingTaskWorkArea>
         return &taskDefinition;
     }
 
-    void Init(void* r5) override
+    void Init(s8 arg)
     {
-        sLoadingTaskWorkArea* pWorkArea = this;
-        s8 arg = (s8)(intptr_t)r5;
+        gLoadingTaskWorkArea = this;
 
-        gLoadingTaskWorkArea = pWorkArea;
-
-        pWorkArea->m0_status = 0;
-        pWorkArea->m2 = -1;
-        pWorkArea->m4 = -1;
-        pWorkArea->m6 = 0;
-        pWorkArea->m8 = 0;
-        pWorkArea->mA = 0;
-        pWorkArea->mC = arg;
+        m0_status = 0;
+        m2 = -1;
+        m4 = -1;
+        m6 = 0;
+        m8 = 0;
+        mA = 0;
+        mC = arg;
 
         if (arg)
         {
@@ -121,7 +118,7 @@ struct sLoadingTaskWorkArea : public s_workAreaTemplate<sLoadingTaskWorkArea>
 
 p_workArea createLoadingTask(p_workArea parentTask, s8 arg)
 {
-    return createSiblingTaskWithArg<sLoadingTaskWorkArea>(parentTask, (void*)arg);
+    return createSiblingTaskWithArg<sLoadingTaskWorkArea, s8>(parentTask, arg);
 }
 
 struct s_flagEditTaskWorkArea : public s_workArea
@@ -371,7 +368,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
         return &taskDefinition;
     }
 
-    void Init(void*) override
+    void Init()
     {
         s_fieldDebugListWorkArea* pWorkArea = this;
 
@@ -2274,7 +2271,7 @@ void setFieldSubTaskVar0(u32 value)
     fieldSubTaskVar0 = value;
 }
 
-void s_FieldSubTaskWorkArea::Init(void*)
+void s_FieldSubTaskWorkArea::Init()
 {
     s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = this;
 
@@ -2383,7 +2380,7 @@ void createEncounterTask(s_workArea* pWorkArea)
     //createSiblingTaskWithArg(pWorkArea, &encounterTaskDefinition, new s_dummyWorkArea, pWorkArea);
 }
 
-void s_fieldStartOverlayTask::Init(void*)
+void s_fieldStartOverlayTask::Init()
 {
     const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->m2C_currentFieldIndex];
 
@@ -2593,7 +2590,7 @@ p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg)
     return createSubTaskWithArg(pTypelessWorkArea, &fieldTaskDefinition, new s_fieldTaskWorkArea, (void*)arg);
 }
 
-struct s_fieldDebugTaskWorkArea : public s_workAreaTemplate<s_fieldDebugTaskWorkArea>
+struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugTaskWorkArea, s32>
 {
     static const TypedTaskDefinition* getTownDebugTaskDefinition()
     {
@@ -2613,10 +2610,8 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplate<s_fieldDebugTaskWork
         return &taskDefinition;
     }
 
-    void initExitMenuTask(void* argument)
+    void initExitMenuTask(s32 menuID)
     {
-        u32 menuID = (u32)(intptr_t)argument;
-
         pauseEngine[2] = 0;
 
         m8 = initExitMenuTaskSub1(this, menuID);
@@ -2627,7 +2622,7 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplate<s_fieldDebugTaskWork
         fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);
     }
 
-    void townDebugTaskInit(void*)
+    void townDebugTaskInit(s32)
     {
         pauseEngine[2] = 0;
 
@@ -2649,7 +2644,7 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplate<s_fieldDebugTaskWork
         */
     }
 
-    void fieldDebugTaskInit(void*)
+    void fieldDebugTaskInit(s32)
     {
         pauseEngine[2] = 0;
 
@@ -2680,11 +2675,11 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplate<s_fieldDebugTaskWork
 
 p_workArea createTownDebugTask(p_workArea pWorkArea)
 {
-    return createSubTask<s_fieldDebugTaskWorkArea>(pWorkArea, s_fieldDebugTaskWorkArea::getTownDebugTaskDefinition());
+    return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 0, s_fieldDebugTaskWorkArea::getTownDebugTaskDefinition());
 }
 p_workArea createFieldDebugTask(p_workArea pWorkArea)
 {
-    return createSubTask<s_fieldDebugTaskWorkArea>(pWorkArea, s_fieldDebugTaskWorkArea::getFieldDebugTaskDefinition());
+    return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 0, s_fieldDebugTaskWorkArea::getFieldDebugTaskDefinition());
 }
 
 p_workArea createBattleDebugTask(p_workArea)
@@ -2703,7 +2698,7 @@ p_workArea createMovieDebugTask(p_workArea)
     return NULL;
 }
 
-struct s_exitMenuTaskSub1Task : public s_workAreaTemplate<s_exitMenuTaskSub1Task>
+struct s_exitMenuTaskSub1Task : public s_workAreaTemplateWithArg<s_exitMenuTaskSub1Task, s32>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
@@ -2711,7 +2706,7 @@ struct s_exitMenuTaskSub1Task : public s_workAreaTemplate<s_exitMenuTaskSub1Task
         return &taskDefinition;
     }
 
-    void exitMenuTaskSub1TaskInit(void* voidArgument);
+    void exitMenuTaskSub1TaskInit(s32);
     void exitMenuTaskSub1TaskUpdate();
     void exitMenuTaskSub1TaskDraw();
 
@@ -3227,7 +3222,7 @@ struct s_statusMenuTaskWorkArea : public s_workAreaTemplate<s_statusMenuTaskWork
         return &taskDefinition;
     }
 
-    void Init(void*) override;
+    void Init();
     void Draw() override;
     void Delete() override;
     u32 selectedMenu; //0
@@ -3639,7 +3634,7 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
     fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
 }
 
-void s_statusMenuTaskWorkArea::Init(void*)
+void s_statusMenuTaskWorkArea::Init()
 {
     setupVDP2StringRendering(0, 34, 44, 28);
 }
@@ -4101,10 +4096,9 @@ p_workArea createMenuTask(p_workArea parentTask)
     return createSiblingTaskWithArg(parentTask, &menuGraphicsTask, new s_menuGraphicsTask, parentTask);
 }
 
-void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(void* voidArgument)
+void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s32 menuID)
 {
     s_exitMenuTaskSub1Task* pWorkArea = this;
-    u32 menuID = (u32)(intptr_t)voidArgument;
 
     pWorkArea->m8 = 0;
     pWorkArea->mC = 0;
@@ -4377,17 +4371,17 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw()
 
 p_workArea initExitMenuTaskSub1(p_workArea pTypelessWorkArea, u32 menuID)
 {
-    return createSubTaskWithArg<s_exitMenuTaskSub1Task>(pTypelessWorkArea, (void*)menuID);
+    return createSubTaskWithArg<s_exitMenuTaskSub1Task, s32>(pTypelessWorkArea, menuID);
 }
 
 p_workArea createNewGameTask(p_workArea pWorkArea)
 {
-    return createSubTaskWithArg<s_fieldDebugTaskWorkArea>(pWorkArea, (void*)0, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
+    return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 0, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
 }
 
 p_workArea createContinueTask(p_workArea pWorkArea)
 {
-    return createSubTaskWithArg<s_fieldDebugTaskWorkArea>(pWorkArea, (void*)1, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
+    return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 1, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
 }
 
 void playAnimationGenericSub0Sub0(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)

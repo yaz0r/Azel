@@ -58,7 +58,8 @@ struct s_LCSTask340SubSub : public s_workAreaTemplate<s_LCSTask340SubSub>
     }
 };
 
-struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
+struct sLaserArgs;
+struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLaserArgs*>
 {
     struct s_LCSTask340Sub_m58
     {
@@ -70,23 +71,23 @@ struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
 
     static const std::array<TypedTaskDefinition, 4> constructionTable;
 
-    void Init0(void*)
+    void Init0(sLaserArgs*)
     {
         assert(0);
     }
 
-    void Init1(void*);
+    void Init1(sLaserArgs*);
     void Init1Sub0();
     void Init1Sub1();
     void Init1Sub1Sub0();
     void Init1Sub2();
 
-    void Init2(void*)
+    void Init2(sLaserArgs*)
     {
         assert(0);
     }
 
-    void Init3(void*);
+    void Init3(sLaserArgs*);
     void Init3Sub0();
     void Init3Sub1();
     void Init3Sub2();
@@ -159,7 +160,7 @@ struct s_LCSTask : public s_workAreaTemplate<s_LCSTask>
         return &taskDefinition;
     }
 
-    void Init(void*);
+    void Init();
 
     s_memoryAreaOutput m0;
     u32 m8;

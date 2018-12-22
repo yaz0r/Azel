@@ -1375,7 +1375,7 @@ s_DataTable2* readDataTable2(sSaturnPtr EA)
     return pNewData2;
 }
 
-void s_fieldPaletteTaskWorkArea::Init(void*)
+void s_fieldPaletteTaskWorkArea::Init()
 {
     s_fieldPaletteTaskWorkArea* r14 = this;
 
@@ -1605,10 +1605,10 @@ void cutsceneTaskInitSub2Sub2(s_workArea* r4)
     }
 }
 
-void s_cutsceneTask2::Init(void* argument)
+void s_cutsceneTask2::Init(std::vector<s_scriptData1>* argument)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = this;
-    m4 = (std::vector<s_scriptData1>*)argument;
+    m4 = argument;
 }
 
 s32 s_cutsceneTask2::UpdateSub0()
@@ -1779,9 +1779,8 @@ void s_cutsceneTask::cutsceneTaskInitSub2(std::vector<s_scriptData1>& r11, s32 r
     pNewTask->Update();
 }
 
-void s_cutsceneTask::Init(void* argument)
+void s_cutsceneTask::Init(s_cutsceneData* pCutsceneData)
 {
-    s_cutsceneData* pCutsceneData = static_cast<s_cutsceneData*>(argument);
     s_dragonTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     u32 r11 = (pCutsceneData->m8 & ~3) / 2;
 
@@ -2177,7 +2176,7 @@ void initScriptTable4(std::vector<s_animDataFrame>& pData4)
     }
 }
 
-void s_fieldScriptWorkArea::Init(void*)
+void s_fieldScriptWorkArea::Init()
 {
     s_fieldScriptWorkArea* pFieldScriptWorkArea = this;
 
@@ -5166,17 +5165,14 @@ bool shouldLoadPup()
     return false;
 }
 
-void s_dragonTaskWorkArea::dragonFieldTaskInit(void* argument)
+void s_dragonTaskWorkArea::dragonFieldTaskInit(s32 arg)
 {
-    s_dragonTaskWorkArea* pTypedWorkArea = this;
-    u32 arg = (u32)(intptr_t)argument;
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask = this;
 
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask = pTypedWorkArea;
-
-    getMemoryArea(&pTypedWorkArea->m0, 0);
-    dragonFieldTaskInitSub2(pTypedWorkArea);
-    dragonFieldTaskInitSub3(pTypedWorkArea, gDragonState, 5);
-    pTypedWorkArea->mF0 = dragonFieldTaskInitSub4;
+    getMemoryArea(&m0, 0);
+    dragonFieldTaskInitSub2(this);
+    dragonFieldTaskInitSub3(this, gDragonState, 5);
+    mF0 = dragonFieldTaskInitSub4;
 
     createSubTask(this, &dragonRidersTaskDefinition, new s_dummyWorkArea);
 
@@ -5185,7 +5181,7 @@ void s_dragonTaskWorkArea::dragonFieldTaskInit(void* argument)
         assert(0);
     }
 
-    dragonFieldTaskInitSub5(pTypedWorkArea);
+    dragonFieldTaskInitSub5(this);
 
     if (shouldLoadPup())
     {
@@ -5924,7 +5920,7 @@ void initFieldDragon(s_workArea* pWorkArea, u32 param)
     }
     else
     {
-        createSubTaskWithArg<s_dragonTaskWorkArea>(pWorkArea, (void*)param);
+        createSubTaskWithArg<s_dragonTaskWorkArea, s32>(pWorkArea, param);
     }
 }
 
@@ -6470,10 +6466,8 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     return NULL;
 }
 
-void s_LCSTask340Sub::Init1(void* typelessArg)
+void s_LCSTask340Sub::Init1(sLaserArgs* arg)
 {
-    sLaserArgs* arg = (sLaserArgs*)typelessArg;
-
     getMemoryArea(&m0, 0);
     m8 = arg->m0;
     mC = arg->m4;
@@ -6531,9 +6525,8 @@ void s_LCSTask340Sub::Init3Sub2()
     PDS_unimplemented("s_LCSTask340Sub::Init3Sub2");
 }
 
-void s_LCSTask340Sub::Init3(void* typelessArg)
+void s_LCSTask340Sub::Init3(sLaserArgs* arg)
 {
-    sLaserArgs* arg = (sLaserArgs*)typelessArg;
     getMemoryArea(&m0, 0);
 
     getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount++;

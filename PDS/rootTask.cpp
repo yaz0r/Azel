@@ -8,7 +8,7 @@ struct s_initialTaskWorkArea : public s_workAreaTemplate<s_initialTaskWorkArea>
         return &taskDefinition;
     }
 
-    void Init(void*) override;
+    void Init();
     void Draw() override;
 
     u32 m_state;
@@ -17,7 +17,7 @@ struct s_initialTaskWorkArea : public s_workAreaTemplate<s_initialTaskWorkArea>
 
 s_initialTaskStatus initialTaskStatus;
 
-void s_initialTaskWorkArea::Init(void*)
+void s_initialTaskWorkArea::Init()
 {
     s_initialTaskWorkArea* pWorkArea = this;
     pWorkArea->m_state = 0;

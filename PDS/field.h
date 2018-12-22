@@ -131,7 +131,7 @@ struct s_cinematicBarTask : public s_workAreaTemplate<s_cinematicBarTask>
         return &taskDefinition;
     }
 
-    void Init(void*) override
+    void Init()
     {
         m8 = 0;
         mB = 0;
@@ -226,14 +226,14 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
     const s32* m1C;
 };
 
-struct s_cutsceneTask : public s_workAreaTemplate<s_cutsceneTask>
+struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct s_cutsceneData*>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
         static TypedTaskDefinition taskDefinition = { &s_cutsceneTask::Init, &s_cutsceneTask::Update, NULL, NULL, "s_cutsceneTask" };
         return &taskDefinition;
     }
-    void Init(void* argument) override;
+    void Init(struct s_cutsceneData* argument);
     void Update() override;
 
     void cutsceneTaskInitSub2(std::vector<s_scriptData1>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
@@ -245,14 +245,14 @@ struct s_cutsceneTask : public s_workAreaTemplate<s_cutsceneTask>
     //size = 0x1C
 };
 
-struct s_cutsceneTask2 : public s_workAreaTemplate<s_cutsceneTask2>
+struct s_cutsceneTask2 : public s_workAreaTemplateWithArg<s_cutsceneTask2, std::vector<s_scriptData1>*>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
         static TypedTaskDefinition taskDefinition = { &s_cutsceneTask2::Init, &s_cutsceneTask2::Update, &s_cutsceneTask2::Draw, NULL, "s_cutsceneTask2" };
         return &taskDefinition;
     }
-    void Init(void* argument) override;
+    void Init(std::vector<s_scriptData1>* argument);
     void Update() override;
 
     u32 m0;
@@ -289,7 +289,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
         static TypedTaskDefinition taskDefinition = { &s_fieldScriptWorkArea::Init, &s_fieldScriptWorkArea::Update, NULL, NULL, "s_fieldScriptWorkArea" };
         return &taskDefinition;
     }
-    void Init(void*) override;
+    void Init();
     void Update() override;
 
     void fieldScriptTaskUpdateSub2();
@@ -376,7 +376,7 @@ struct s_cutsceneData
     u8 m8;
 };
 
-struct s_dragonTaskWorkArea : s_workAreaTemplate<s_dragonTaskWorkArea>
+struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s32>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
@@ -384,7 +384,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplate<s_dragonTaskWorkArea>
         return &taskDefinition;
     }
 
-    void dragonFieldTaskInit(void*);
+    void dragonFieldTaskInit(s32 arg);
     void dragonFieldTaskUpdate();
     void dragonFieldTaskDraw();
     void dragonFieldTaskDelete();
@@ -670,7 +670,7 @@ struct s_fieldPaletteTaskWorkArea : public s_workAreaTemplate<s_fieldPaletteTask
         return &taskDefinition;
     }
 
-    void Init(void*) override;
+    void Init();
     void Draw() override;
 
     s_fieldPaletteTaskWorkSub* m78;
@@ -684,7 +684,7 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
         return &taskDefinition;
     }
 
-    void Init(void*);
+    void Init();
     void Update();
     void Draw();
     void Delete();
@@ -770,7 +770,7 @@ struct s_fieldStartOverlayTask : public s_workAreaTemplate<s_fieldStartOverlayTa
         return &taskDefinition;
     }
 
-    void Init(void*);
+    void Init();
     void Delete();
 };
 
@@ -782,7 +782,7 @@ struct s_fieldSub1Task : public s_workAreaTemplate<s_fieldSub1Task>
         return &taskDefinition;
     }
 
-    void Init(void*)
+    void Init()
     {
         fieldTaskPtr->m0 = this;
         createSubTask<s_fieldStartOverlayTask>(this);
@@ -802,7 +802,7 @@ struct s_fieldSub0Task : public s_workAreaTemplate<s_fieldSub0Task>
         return &taskDefinition;
     }
 
-    void Init(void*)
+    void Init()
     {
         fieldTaskVar0 = this;
         createSubTask< s_fieldSub1Task>(this);

@@ -10,13 +10,13 @@ struct s_menuEnWorkArea : public s_workAreaTemplate<s_menuEnWorkArea>
         return &taskDefinition;
     }
 
-    void Init(void*) override;
+    void Init();
     void Update() override;
     void Draw() override;
     void Delete() override;
 };
 
-void s_menuEnWorkArea::Init(void*)
+void s_menuEnWorkArea::Init()
 {
     assert(0);
 }

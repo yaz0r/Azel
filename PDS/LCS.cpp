@@ -968,7 +968,7 @@ void setLCSField83E(s_LCSTask* pLCS, s32 value)
     pLCS->m81C_curs = nullptr;
 }
 
-void s_LCSTask::Init(void*)
+void s_LCSTask::Init()
 {
     s_LCSTask* pTypedWorkArea = this;
 
