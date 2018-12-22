@@ -3162,7 +3162,7 @@ void s_fieldScriptWorkArea::Update()
     }
 
     s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
-    if ((pLCS->m83F == 0) && (m40 == 0) && (m4_currentScript.m_offset))
+    if ((pLCS->m83F_activeLaserCount == 0) && (m40 == 0) && (m4_currentScript.m_offset))
     {
         fieldScriptTaskUpdateSub2();
 
@@ -3181,7 +3181,7 @@ void s_fieldScriptWorkArea::Update()
         }
     }
 
-    if (!fieldScriptTaskUpdateSub4() || fieldScriptTaskUpdateSub5() || !getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F || getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000)
+    if (!fieldScriptTaskUpdateSub4() || fieldScriptTaskUpdateSub5() || !getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount || getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000)
     {
         //06069A18
         fieldScriptTaskUpdateSub6();
@@ -6538,7 +6538,7 @@ void s_LCSTask340Sub::Init3(void* typelessArg)
     sLaserArgs* arg = (sLaserArgs*)typelessArg;
     getMemoryArea(&m0, 0);
 
-    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F++;
+    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount++;
 
     m8 = arg->m0;
     if (randomNumber() & 1)
@@ -6639,6 +6639,40 @@ void s_LCSTask340Sub::Update3()
         transformAndAddVecByCurrentMatrix(mC, &m60);
         ((this)->*(m2C))();
         m158--;
+    }
+}
+
+void s_LCSTask340Sub_Delete3Sub0(s32 r4)
+{
+    createSubTask<s_LCSTask340SubSub>(getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS);
+
+
+    PDS_unimplemented("s_LCSTask340Sub_Delete3Sub0");
+}
+
+void s_LCSTask340Sub::Delete3()
+{
+    s_LCSTask340Sub_Delete3Sub0(m27);
+    playSoundEffect(17);
+
+    if (m24 >= 0)
+    {
+        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m40)
+        {
+            //0607A1A0
+            assert(0);
+        }
+        else
+        {
+            //0607A1C2
+            assert(0);
+
+        }
+        assert(0);
+    }
+    else
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount--;
     }
 }
 

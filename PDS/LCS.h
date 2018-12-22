@@ -49,6 +49,15 @@ struct sLCSTarget
     // size 34
 };
 
+struct s_LCSTask340SubSub : public s_workAreaTemplate<s_LCSTask340SubSub>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { nullptr, &s_LCSTask340SubSub::Update, &s_LCSTask340SubSub::Draw, nullptr, "s_LCSTask340SubSub" };
+        return &taskDefinition;
+    }
+};
+
 struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
 {
     struct s_LCSTask340Sub_m58
@@ -87,10 +96,7 @@ struct s_LCSTask340Sub : public s_workAreaTemplate<s_LCSTask340Sub>
 
     void Update3();
 
-    void Delete3()
-    {
-        assert(0);
-    }
+    void Delete3();
 
     void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub()
     {
@@ -165,7 +171,7 @@ struct s_LCSTask : public s_workArea
     s8 m83C_time0;
     s8 m83D_time1;
     s8 m83E_LaserNum;
-    s8 m83F;
+    s8 m83F_activeLaserCount;
     std::array<s_LCSTask340, 0x10> m840;
     void* m9C0;
     u32 m9C4;
