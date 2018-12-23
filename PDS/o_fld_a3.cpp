@@ -118,7 +118,7 @@ void fieldA3_0_startTasks(p_workArea workArea)
     create_fieldA3_0_tutorialTask(workArea);
 }
 
-void fieldGridTask_Update(p_workArea)
+void s_visdibilityCellTask::fieldGridTask_Update()
 {
     // intentionally empty
 }
@@ -142,17 +142,15 @@ void setupGridCell(s_visibilityGridWorkArea* r4, s_visdibilityCellTask* r5, int 
 }
 
 
-void gridCellDraw_untextured(p_workArea)
+void s_visdibilityCellTask::gridCellDraw_untextured()
 {
     assert(0);
 }
 
-void gridCellDraw_collision(p_workArea)
+void s_visdibilityCellTask::gridCellDraw_collision()
 {
     assert(0);
 }
-
-s_taskDefinition fieldGridTaskDefinition = { NULL, fieldGridTask_Update, gridCellDraw_untextured, NULL, "fieldGridTask" };
 
 u32 gridCellDraw_GetDepthRange(fixedPoint r4)
 {
@@ -223,9 +221,9 @@ u8 gridCellDraw_normalSub0(u8* r4, sVec3_FP& r5)
     return 1;
 }
 
-void gridCellDraw_normal(p_workArea workArea)
+void s_visdibilityCellTask::gridCellDraw_normal()
 {
-    s_visdibilityCellTask* pTypedWorkAread = static_cast<s_visdibilityCellTask*>(workArea);
+    s_visdibilityCellTask* pTypedWorkAread = this;
 
     s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
@@ -325,23 +323,22 @@ void gridCellDraw_normal(p_workArea workArea)
     }
 }
 
-
-void(*gridCellDrawFunctions[3])(p_workArea) =
+constexpr s_visdibilityCellTask::FunctionType gridCellDrawFunctions[3] =
 {
-    gridCellDraw_untextured, // untextured
-    gridCellDraw_collision, // textures collision geo
-    gridCellDraw_normal, // normal textured
+    &s_visdibilityCellTask::gridCellDraw_untextured, // untextured
+    &s_visdibilityCellTask::gridCellDraw_collision, // textures collision geo
+    &s_visdibilityCellTask::gridCellDraw_normal, // normal textured
 };
 
 s_visdibilityCellTask* createGridCellTask(s_visibilityGridWorkArea* r4, p_workArea r5, int cellIndex)
 {
-    s_visdibilityCellTask* pNewTask = (s_visdibilityCellTask*)createSubTask(r5, &fieldGridTaskDefinition, new s_visdibilityCellTask);
+    s_visdibilityCellTask* pNewTask = createSubTask<s_visdibilityCellTask>(r5);
 
     if (pNewTask)
     {
         setupGridCell(r4, pNewTask, cellIndex);
 
-        pNewTask->getTask()->mC_pDraw = gridCellDrawFunctions[r4->m12F2_renderMode];
+        pNewTask->m_DrawMethod = gridCellDrawFunctions[r4->m12F2_renderMode];
     }
 
     return pNewTask;
@@ -808,9 +805,9 @@ void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32
 
 struct s_A3_Obj0 : public s_workAreaTemplate<s_A3_Obj0>
 {
-    static TypedTaskDefinition* getTypedTaskDefinition()
+    static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { NULL, NULL, &s_A3_Obj0::Draw, NULL, "s_A3_Obj0" };
+        static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_A3_Obj0::Draw, NULL, "s_A3_Obj0" };
         return &taskDefinition;
     }
     void Draw() override

@@ -20,8 +20,19 @@ struct s_dragonMenuDragonWorkAreaSub1
     s_lightSetup lightSetup; // 17C
 };
 
-struct s_dragonMenuDragonWorkArea : public s_workArea
+struct s_dragonMenuDragonWorkArea : public s_workAreaTemplate<s_dragonMenuDragonWorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuDragonWorkArea::dragonMenuDragonInit, &s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate, &s_dragonMenuDragonWorkArea::dragonMenuDragonDraw, &s_dragonMenuDragonWorkArea::dragonMenuDragonDelete, "dragonMenuDragon" };
+        return &taskDefinition;
+    }
+
+    void dragonMenuDragonInit();
+    void dragonMenuDragonUpdate();
+    void dragonMenuDragonDraw();
+    void dragonMenuDragonDelete ();
+
     s_loadDragonWorkArea* m0; //0
     const sDragonData3* m4; //4
     u16 m8; //8
@@ -356,9 +367,9 @@ void resetCameraProperties2(s_cameraProperties2* r4)
     initMatrixToIdentity(&r4->m28[1]);
 }
 
-void dragonMenuDragonInit(p_workArea pTypelessWorkArea)
+void s_dragonMenuDragonWorkArea::dragonMenuDragonInit()
 {
-    s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
+    s_dragonMenuDragonWorkArea* pWorkArea = this;
 
     dragonMenuDragonInitSub1(&pWorkArea->m34);
 
@@ -694,9 +705,9 @@ s_animLoop* dragonAnimLoop[DR_LEVEL_MAX][DR_ARCHETYPE_MAX] =
     },
 };
 
-void dragonMenuDragonUpdate(p_workArea pTypelessWorkArea)
+void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate()
 {
-    s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
+    s_dragonMenuDragonWorkArea* pWorkArea = this;
 
     gDragonState->m10_cursorX = mainGameState.gameStats.dragonCursorX;
     gDragonState->m12_cursorY = mainGameState.gameStats.dragonCursorY;
@@ -865,20 +876,17 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
     popMatrix();
 }
 
-void dragonMenuDragonDraw(p_workArea pTypelessWorkArea)
+void s_dragonMenuDragonWorkArea::dragonMenuDragonDraw()
 {
-    s_dragonMenuDragonWorkArea* pWorkArea = static_cast<s_dragonMenuDragonWorkArea*>(pTypelessWorkArea);
-    submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pWorkArea->modelTranslation, &pWorkArea->modelRotation, 0);
+    submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &modelTranslation, &modelRotation, 0);
 }
 
-void dragonMenuDragonDelete(p_workArea pTypelessWorkArea)
+void s_dragonMenuDragonWorkArea::dragonMenuDragonDelete()
 {
     PDS_unimplemented("dragonMenuDragonDelete");
 }
 
-s_taskDefinition dragonMenuDragonTaskDefinition = { dragonMenuDragonInit, dragonMenuDragonUpdate, dragonMenuDragonDraw, dragonMenuDragonDelete, "dragonMenuDragon" };
-
 p_workArea createDragonMenuMorhTask(p_workArea pWorkArea)
 {
-    return createSubTask(pWorkArea, &dragonMenuDragonTaskDefinition, new s_dragonMenuDragonWorkArea);
+    return createSubTask<s_dragonMenuDragonWorkArea>(pWorkArea);
 }

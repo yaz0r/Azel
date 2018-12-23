@@ -121,45 +121,45 @@ p_workArea createLoadingTask(p_workArea parentTask, s8 arg)
     return createSiblingTaskWithArg<sLoadingTaskWorkArea, s8>(parentTask, arg);
 }
 
-struct s_flagEditTaskWorkArea : public s_workArea
+struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskWorkArea, p_workArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_flagEditTaskWorkArea::Init, NULL, &s_flagEditTaskWorkArea::Update, NULL, "flagEditTask" };
+        return &taskDefinition;
+    }
+
+    void Init(p_workArea argument)
+    {
+        m4 = argument;
+    }
+
+    void Update()
+    {
+        switch (state)
+        {
+        case 0:
+            if (readKeyboardToggle(0x85))
+            {
+                assert(0);
+            }
+            break;
+        default:
+            assert(0);
+        }
+
+        if (m4)
+        {
+            if (m4->getTask()->isFinished())
+            {
+                getTask()->markFinished();
+            }
+        }
+    }
+
     u32 state;
     p_workArea m4; //4
 };
-
-void flagEditTaskInit(s_workArea* pTypelessWorkArea, void* argument)
-{
-    s_flagEditTaskWorkArea* pWorkArea = static_cast<s_flagEditTaskWorkArea*>(pTypelessWorkArea);
-
-    pWorkArea->m4 = static_cast<p_workArea>(argument);
-}
-
-void flagEditTaskUpdate(s_workArea* pTypelessWorkArea)
-{
-    s_flagEditTaskWorkArea* pWorkArea = static_cast<s_flagEditTaskWorkArea*>(pTypelessWorkArea);
-
-    switch (pWorkArea->state)
-    {
-    case 0:
-        if (readKeyboardToggle(0x85))
-        {
-            assert(0);
-        }
-        break;
-    default:
-        assert(0);
-    }
-
-    if (pWorkArea->m4)
-    {
-        if (pWorkArea->m4->getTask()->isFinished())
-        {
-            pWorkArea->getTask()->markFinished();
-        }
-    }
-}
-
-s_taskDefinitionWithArg flagEditTask = { flagEditTaskInit, NULL, flagEditTaskUpdate, NULL, "flagEditTask" };
 
 u32 getPanzerZweiPlayTime(u32 slot)
 {
@@ -324,27 +324,24 @@ void updateFieldTaskNoBattleOverride(p_workArea pTypelessWorkArea)
     return;
 }
 
-void fieldTaskInit(p_workArea pTypelessWorkArea, void* battleArgumentVoid)
+void s_fieldTaskWorkArea::fieldTaskInit(s32 battleArgument)
 {
-    s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
-    u32 battleArgument = (u32)(intptr_t)battleArgumentVoid;
-
-    fieldTaskPtr = pWorkArea;
+    fieldTaskPtr = this;
     fieldTaskVar0 = NULL;
     fieldInputTaskWorkArea = NULL;
     fieldTaskVar2 = 0;
 
-    pWorkArea->m35 = battleArgument;
-    pWorkArea->m3D = -1;
+    m35 = battleArgument;
+    m3D = -1;
 
     if (battleArgument)
     {
-        pWorkArea->m28_status = 0;
-        pWorkArea->getTask()->m8_pUpdate = updateFieldTaskNoBattleOverride;
+        m28_status = 0;
+        getTask()->m8_pUpdate = updateFieldTaskNoBattleOverride;
     }
     else
     {
-        pWorkArea->m28_status = 1;
+        m28_status = 1;
     }
 }
 
@@ -2520,9 +2517,9 @@ void setupPlayer(u32 fieldIndex)
     freeRamResource();
 }
 
-void fieldTaskUpdate(p_workArea pTypelessWorkArea)
+void s_fieldTaskWorkArea::fieldTaskUpdate()
 {
-    s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
+    s_fieldTaskWorkArea* pWorkArea = this;
 
     switch (pWorkArea->m3C_fieldTaskState)
     {
@@ -2578,16 +2575,14 @@ void fieldTaskUpdate(p_workArea pTypelessWorkArea)
         break;
     }
 }
-void fieldTaskDelete(p_workArea pTypelessWorkArea)
+void s_fieldTaskWorkArea::fieldTaskDelete()
 {
     assert(0);
 }
 
-s_taskDefinitionWithArg fieldTaskDefinition = { fieldTaskInit, fieldTaskUpdate, NULL, fieldTaskDelete, "field task" };
-
 p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg)
 {
-    return createSubTaskWithArg(pTypelessWorkArea, &fieldTaskDefinition, new s_fieldTaskWorkArea, (void*)arg);
+    return createSubTaskWithArg<s_fieldTaskWorkArea, s32>(pTypelessWorkArea, arg);
 }
 
 struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugTaskWorkArea, s32>
@@ -2616,7 +2611,7 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
 
         m8 = initExitMenuTaskSub1(this, menuID);
 
-        createSiblingTaskWithArg(m8, &flagEditTask, new s_flagEditTaskWorkArea, m8);
+        createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(m8, m8);
 
         fadePalette(&menuUnk0.m_field0, 0x8000, 0x8000, 1);
         fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);
@@ -2653,7 +2648,7 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
 
         createLoadingTask(m8, 1);
         createMenuTask(m8);
-        createSiblingTaskWithArg(m8, &flagEditTask, new s_flagEditTaskWorkArea, m8);
+        createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(m8, m8);
     }
 
     void genericTaskRestartGameWhenFinished()
@@ -2750,36 +2745,42 @@ void exitMenuTaskSub1TaskInitSub1()
 
 u8 array_250000[0x20000];
 
-struct s_menuGraphicsTask : public s_workArea
+struct s_menuGraphicsTask : public s_workAreaTemplateWithArg<s_menuGraphicsTask, p_workArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_menuGraphicsTask::Init, NULL, &s_menuGraphicsTask::Draw, &s_menuGraphicsTask::Delete, "menuGraphicsTask" };
+        return &taskDefinition;
+    }
+
+    void Init(p_workArea argument)
+    {
+        m4 = argument;
+        graphicEngineStatus.m40AC.mC = this;
+        graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
+        graphicEngineStatus.m40AC.m3 = 0;
+        graphicEngineStatus.m40AC.m0_menuId = 0;
+        graphicEngineStatus.m40AC.m2 = 0;
+        graphicEngineStatus.m40AC.m4 = 0;
+        graphicEngineStatus.m40AC.m5 = 0;
+        graphicEngineStatus.m40AC.m6 = 0;
+        graphicEngineStatus.m40AC.m7 = 0;
+
+        addToMemoryLayout(MENU_SCB, 0x14000);
+        loadFile("MENU.SCB", MENU_SCB, 0);
+        loadFile("MENU.CGB", getVdp1Pointer(0x25C10000), 0);
+        graphicEngineStatus.m40AC.fontIndex = loadFnt("MENU.FNT");
+    }
+
+    void Draw();
+    void Delete();
+
     u32 state; // 0
     p_workArea m4;
     p_workArea m8;
     u8 mC;
     u8 mD;
 };
-
-void menuGraphicsTaskInit(s_workArea* pTypelessWorkArea, void* voidArgument)
-{
-    s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
-    p_workArea parentTask = (p_workArea)voidArgument;
-
-    pWordArea->m4 = parentTask;
-    graphicEngineStatus.m40AC.mC = pWordArea;
-    graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
-    graphicEngineStatus.m40AC.m3 = 0;
-    graphicEngineStatus.m40AC.m0_menuId = 0;
-    graphicEngineStatus.m40AC.m2 = 0;
-    graphicEngineStatus.m40AC.m4 = 0;
-    graphicEngineStatus.m40AC.m5 = 0;
-    graphicEngineStatus.m40AC.m6 = 0;
-    graphicEngineStatus.m40AC.m7 = 0;
-
-    addToMemoryLayout(MENU_SCB, 0x14000);
-    loadFile("MENU.SCB", MENU_SCB, 0);
-    loadFile("MENU.CGB", getVdp1Pointer(0x25C10000), 0);
-    graphicEngineStatus.m40AC.fontIndex = loadFnt("MENU.FNT");
-}
 
 void menuGraphicsTaskDrawSub1()
 {
@@ -3228,16 +3229,42 @@ struct s_statusMenuTaskWorkArea : public s_workAreaTemplate<s_statusMenuTaskWork
     u32 selectedMenu; //0
 };
 
-struct s_MenuCursorWorkArea : public s_workArea
+struct sMainMenuTaskInitData2
 {
+    s_graphicEngineStatus_40BC* m0;
+    u16* m4;
+};
+
+struct s_MenuCursorWorkArea : public s_workAreaTemplateWithArg<s_MenuCursorWorkArea,sMainMenuTaskInitData2*>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_MenuCursorWorkArea::menuCursorTaskInit , &s_MenuCursorWorkArea::menuCursorTaskUpdate, &s_MenuCursorWorkArea::menuCursorTaskDraw, NULL, "menuCursorTask" };
+        return &taskDefinition;
+    }
+
+    void menuCursorTaskInit(sMainMenuTaskInitData2*);
+    void menuCursorTaskUpdate();
+    void menuCursorTaskDraw();
+
     s32 selectedMenu;
     s_graphicEngineStatus_40BC* m4;
     u16* m8;
     s32 mC;
 };
 
-struct s_mainMenuWorkArea : public s_workArea
+struct s_mainMenuWorkArea : public s_workAreaTemplate<s_mainMenuWorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_mainMenuWorkArea::Init, NULL, &s_mainMenuWorkArea::Draw, &s_mainMenuWorkArea::Delete, "main menu task" };
+        return &taskDefinition;
+    }
+
+    void Init();
+    void Draw();
+    void Delete();
+
     u8 m0; //0
     s8 m1; //1
     s8 selectedMenu; //2
@@ -3285,27 +3312,27 @@ void mainMenuTaskInitSub3(u32 vdp2Offset, u32 r5, u32 r6, u32 r7)
     }
 }
 
-struct sMainMenuTaskInitData2
+struct mainMenuTaskInitSub2TaskWorkArea : public s_workAreaTemplateWithArg<mainMenuTaskInitSub2TaskWorkArea, sMainMenuTaskInitData2*>
 {
-    s_graphicEngineStatus_40BC* m0;
-    u16* m4;
-};
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &mainMenuTaskInitSub2TaskWorkArea::Init, NULL, &mainMenuTaskInitSub2TaskWorkArea::Draw, NULL, "mainMenuTaskInitSub2Task" };
+        return &taskDefinition;
+    }
 
-struct mainMenuTaskInitSub2TaskWorkArea : public s_workArea
-{
+    void Init(sMainMenuTaskInitData2*);
+    void Draw();
+
     u32 spriteIndex;
     s_graphicEngineStatus_40BC* m4;
     u16* spriteData;
     u32 mC;
 };
 
-void mainMenuTaskInitSub2TaskInit(p_workArea typelessWorkArea, void* arg)
+void mainMenuTaskInitSub2TaskWorkArea::Init(sMainMenuTaskInitData2* typedArg)
 {
-    mainMenuTaskInitSub2TaskWorkArea* pWorkArea = static_cast<mainMenuTaskInitSub2TaskWorkArea*>(typelessWorkArea);
-    sMainMenuTaskInitData2* typedArg = static_cast<sMainMenuTaskInitData2*>(arg);
-
-    pWorkArea->m4 = typedArg->m0;
-    pWorkArea->spriteData = typedArg->m4;
+    m4 = typedArg->m0;
+    spriteData = typedArg->m4;
 }
 
 struct s_menuSprite
@@ -3344,9 +3371,9 @@ void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
     graphicEngineStatus.vdp1Context[0].mC += 1;
 }
 
-void mainMenuTaskInitSub2TaskDraw(p_workArea typelessWorkArea)
+void mainMenuTaskInitSub2TaskWorkArea::Draw()
 {
-    mainMenuTaskInitSub2TaskWorkArea* pWorkArea = static_cast<mainMenuTaskInitSub2TaskWorkArea*>(typelessWorkArea);
+    mainMenuTaskInitSub2TaskWorkArea* pWorkArea = this;
 
     u32 spriteColor;
     if (pWorkArea->mC)
@@ -3364,12 +3391,9 @@ void mainMenuTaskInitSub2TaskDraw(p_workArea typelessWorkArea)
     drawMenuSprite(&spriteData1[pWorkArea->mC], r5, r6, spriteColor);
 }
 
-s_taskDefinitionWithArg mainMenuTaskInitSub2TaskDef = { mainMenuTaskInitSub2TaskInit, NULL, mainMenuTaskInitSub2TaskDraw, NULL, "mainMenuTaskInitSub2Task" };
-
 mainMenuTaskInitSub2TaskWorkArea* mainMenuTaskInitSub2(p_workArea typelessWorkArea, sMainMenuTaskInitData2* r5, u32 r6)
 {
-    p_workArea pNewTask = createSubTaskWithArg(typelessWorkArea, &mainMenuTaskInitSub2TaskDef, new mainMenuTaskInitSub2TaskWorkArea, r5);
-    mainMenuTaskInitSub2TaskWorkArea* pTypedNewTask = static_cast<mainMenuTaskInitSub2TaskWorkArea*>(pNewTask);
+    mainMenuTaskInitSub2TaskWorkArea* pTypedNewTask = createSubTaskWithArg<mainMenuTaskInitSub2TaskWorkArea, sMainMenuTaskInitData2*>(typelessWorkArea, r5);
     pTypedNewTask->mC = r6;
     return pTypedNewTask;
 }
@@ -3388,17 +3412,24 @@ sMainMenuTaskInitData2 mainMenuTaskInitData2 = {
     mainMenuTaskInitData2_
 };
 
-struct s_menuDragonCrestTaskWorkArea : public s_workArea
+struct s_menuDragonCrestTaskWorkArea : public s_workAreaTemplateWithArg<s_menuDragonCrestTaskWorkArea,s_graphicEngineStatus_40BC*>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_menuDragonCrestTaskWorkArea::Init, NULL, &s_menuDragonCrestTaskWorkArea::Draw, NULL, "menuDragonCrestTaskDef" };
+        return &taskDefinition;
+    }
+
+    void Init(s_graphicEngineStatus_40BC* arg)
+    {
+        m4 = arg;
+    }
+
+    void Draw();
+
     u32 m0;
     s_graphicEngineStatus_40BC* m4;
 };
-
-void menuDragonCrestTaskInit(s_workArea* pTypelessWorkArea, void* arg)
-{
-    s_menuDragonCrestTaskWorkArea* pWorkArea = static_cast<s_menuDragonCrestTaskWorkArea*>(pTypelessWorkArea);
-    pWorkArea->m4 = static_cast<s_graphicEngineStatus_40BC*>(arg);
-}
 
 s_menuSprite menuDragonCrestSprites [] =
 {
@@ -3419,31 +3450,37 @@ s_menuSprite menuDragonCrestSprites [] =
     {0x40E, 0x18E, 0x55, 0x61},
 };
 
-void menuDragonCrestTaskDraw(s_workArea* pTypelessWorkArea)
+void s_menuDragonCrestTaskWorkArea::Draw()
 {
-    s_menuDragonCrestTaskWorkArea* pWorkArea = static_cast<s_menuDragonCrestTaskWorkArea*>(pTypelessWorkArea);
     if (graphicEngineStatus.m40AC.m5)
     {
         for (int i = 0; i < 10; i++)
         {
             PDS_unimplemented("Missing filter login in menuDragonCrestTaskDraw");
 
-            drawMenuSprite(&menuDragonCrestSprites[i], -pWorkArea->m4->scrollX, -pWorkArea->m4->scrollY, 0x610);
+            drawMenuSprite(&menuDragonCrestSprites[i], -m4->scrollX, -m4->scrollY, 0x610);
         }
     }
 }
 
-struct s_laserRankTaskWorkArea : public s_workArea
+struct s_laserRankTaskWorkArea : public s_workAreaTemplateWithArg<s_laserRankTaskWorkArea, s_graphicEngineStatus_40BC*>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_laserRankTaskWorkArea::Init, NULL, &s_laserRankTaskWorkArea::Draw, NULL, "laserRangTaskDefinition" };
+        return &taskDefinition;
+    }
+
+    void Init(s_graphicEngineStatus_40BC* arg)
+    {
+        m4 = arg;
+    }
+
+    void Draw();
+
     u32 m0;
     s_graphicEngineStatus_40BC* m4;
 };
-
-void laserRangTaskInit(s_workArea* pTypelessWorkArea, void* arg)
-{
-    s_laserRankTaskWorkArea* pWorkArea = static_cast<s_laserRankTaskWorkArea*>(pTypelessWorkArea);
-    pWorkArea->m4 = static_cast<s_graphicEngineStatus_40BC*>(arg);
-}
 
 s_menuSprite laserRankSpriteDefinition[6] = {
     { 0x2378, 0x20B, 0x80, 0x19C },
@@ -3454,10 +3491,9 @@ s_menuSprite laserRankSpriteDefinition[6] = {
     { 0x23C4, 0x20A, 0x70, 0x19C },
 };
 
-void laserRangTaskDraw(s_workArea* pTypelessWorkArea)
+void s_laserRankTaskWorkArea::Draw()
 {
-    s_laserRankTaskWorkArea* pWorkArea = static_cast<s_laserRankTaskWorkArea*>(pTypelessWorkArea);
-    if (pWorkArea->m0 < 0)
+    if (m0 < 0)
         return;
     if (mainGameState.gameStats.m1_dragonLevel > 7)
         return;
@@ -3468,12 +3504,9 @@ void laserRangTaskDraw(s_workArea* pTypelessWorkArea)
 
     for (int i = 0; i < r14; i++)
     {
-        drawMenuSprite(&laserRankSpriteDefinition[i], -pWorkArea->m4->scrollX, -pWorkArea->m4->scrollY, 0x760);
+        drawMenuSprite(&laserRankSpriteDefinition[i], -m4->scrollX, -m4->scrollY, 0x760);
     }
 }
-
-s_taskDefinitionWithArg menuDragonCrestTaskDef = { menuDragonCrestTaskInit, NULL, menuDragonCrestTaskDraw, NULL, "menuDragonCrestTaskDef" };
-s_taskDefinitionWithArg laserRangTaskDefinition = { laserRangTaskInit, NULL, laserRangTaskDraw, NULL, "laserRangTaskDefinition" };
 
 struct s_mainMenuTaskInitSub4SubWorkArea : public s_workArea
 {
@@ -3505,18 +3538,15 @@ void mainMenuTaskInitSub4(p_workArea typelessWorkArea)
     createSubTaskFromFunction(typelessWorkArea, mainMenuTaskInitSub4Sub, new s_mainMenuTaskInitSub4SubWorkArea, "mainMenuTaskInitSub4Sub");
 }
 
-void menuCursorTaskInit(p_workArea typelessWorkArea, void* r5)
+void s_MenuCursorWorkArea::menuCursorTaskInit(sMainMenuTaskInitData2* pMenuData)
 {
-    s_MenuCursorWorkArea* pWorkArea = static_cast<s_MenuCursorWorkArea*>(typelessWorkArea);
-    sMainMenuTaskInitData2* pMenuData = static_cast<sMainMenuTaskInitData2*>(r5);
-
-    pWorkArea->m4 = pMenuData->m0;
-    pWorkArea->m8 = pMenuData->m4;
+    m4 = pMenuData->m0;
+    m8 = pMenuData->m4;
 }
 
-void menuCursorTaskUpdate(p_workArea typelessWorkArea)
+void s_MenuCursorWorkArea::menuCursorTaskUpdate()
 {
-    s_MenuCursorWorkArea* pWorkArea = static_cast<s_MenuCursorWorkArea*>(typelessWorkArea);
+    s_MenuCursorWorkArea* pWorkArea = this;
     if (--pWorkArea->mC < 0)
     {
         pWorkArea->mC = 40;
@@ -3526,9 +3556,9 @@ void menuCursorTaskUpdate(p_workArea typelessWorkArea)
 s_menuSprite cursorSpriteDef0 = { 0x2080, 0x520, 0, 0};
 s_menuSprite cursorSpriteDef1 = { 0x2030, 0x520, 0, 0 };
 
-void menuCursorTaskDraw(p_workArea typelessWorkArea)
+void s_MenuCursorWorkArea::menuCursorTaskDraw()
 {
-    s_MenuCursorWorkArea* pWorkArea = static_cast<s_MenuCursorWorkArea*>(typelessWorkArea);
+    s_MenuCursorWorkArea* pWorkArea = this;
 
     if (pWorkArea->selectedMenu < 0)
         return;
@@ -3544,11 +3574,9 @@ void menuCursorTaskDraw(p_workArea typelessWorkArea)
     drawMenuSprite(&cursorSpriteDef1, X, Y, 0x760);
 }
 
-s_taskDefinitionWithArg menuCursorTaskDefinition = { menuCursorTaskInit , menuCursorTaskUpdate, menuCursorTaskDraw, NULL, "menuCursorTask" };
-
 s_MenuCursorWorkArea* createMenuCursorTask(p_workArea pWorkArea, sMainMenuTaskInitData2* r5)
 {
-    return static_cast<s_MenuCursorWorkArea*>(createSubTaskWithArg(pWorkArea, &menuCursorTaskDefinition, new s_MenuCursorWorkArea, r5));
+    return createSubTaskWithArg<s_MenuCursorWorkArea, sMainMenuTaskInitData2*>(pWorkArea, r5);
 }
 
 u32 mainMenuTaskInitData1[5] = {
@@ -3559,9 +3587,9 @@ u32 mainMenuTaskInitData1[5] = {
     0x715D0,
 };
 
-void mainMenuTaskInit(p_workArea typelessWorkArea)
+void s_mainMenuWorkArea::Init()
 {
-    s_mainMenuWorkArea* pWorkArea = static_cast<s_mainMenuWorkArea*>(typelessWorkArea);
+    s_mainMenuWorkArea* pWorkArea = this;
 
     pWorkArea->m3_menuButtonStates[0] = 1; // item is always enabled
 
@@ -3621,8 +3649,8 @@ void mainMenuTaskInit(p_workArea typelessWorkArea)
         pWorkArea->m10_cursorTask->selectedMenu = r14;
     }
 
-    createSubTaskWithArg(pWorkArea, &menuDragonCrestTaskDef, new s_menuDragonCrestTaskWorkArea, &graphicEngineStatus.layersConfig[0]);
-    createSubTaskWithArg(pWorkArea, &laserRangTaskDefinition, new s_laserRankTaskWorkArea, &graphicEngineStatus.layersConfig[1]);
+    createSubTaskWithArg<s_menuDragonCrestTaskWorkArea,s_graphicEngineStatus_40BC*>(pWorkArea, &graphicEngineStatus.layersConfig[0]);
+    createSubTaskWithArg<s_laserRankTaskWorkArea, s_graphicEngineStatus_40BC*>(pWorkArea, &graphicEngineStatus.layersConfig[1]);
 
     mainMenuTaskInitSub4(pWorkArea);
 
@@ -3710,9 +3738,9 @@ void s_statusMenuTaskWorkArea::Delete()
     clearVdp2Menu();
 }
 
-void mainMenuTaskDraw(p_workArea typelessWorkArea)
+void s_mainMenuWorkArea::Draw()
 {
-    s_mainMenuWorkArea* pWorkArea = static_cast<s_mainMenuWorkArea*>(typelessWorkArea);
+    s_mainMenuWorkArea* pWorkArea = this;
 
     switch (pWorkArea->m0)
     {
@@ -3811,16 +3839,14 @@ void mainMenuTaskDraw(p_workArea typelessWorkArea)
     }
 }
 
-void mainMenuTaskDelete(p_workArea typelessWorkArea)
+void s_mainMenuWorkArea::Delete()
 {
     PDS_unimplemented("mainMenuTaskDelete");
 }
 
-s_taskDefinition mainMenuTaskDefinition = { mainMenuTaskInit, NULL, mainMenuTaskDraw, mainMenuTaskDelete, "main menu task" };
-
 p_workArea createMainMenuTask(p_workArea workArea)
 {
-    return createSubTask(workArea, &mainMenuTaskDefinition, new s_mainMenuWorkArea);
+    return createSubTask<s_mainMenuWorkArea>(workArea);
 }
 
 p_workArea createInventoryMenuTask(p_workArea workArea)
@@ -3945,9 +3971,9 @@ void menuGraphicsTaskDrawSub3()
     }
 }
 
-void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
+void s_menuGraphicsTask::Draw()
 {
-    s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
+    s_menuGraphicsTask* pWordArea = this;
     
     // not exactly that in the original code, but same idea
     if ((pWordArea->m4 == NULL) || pWordArea->m4->getTask()->isFinished())
@@ -4083,17 +4109,14 @@ void menuGraphicsTaskDraw(s_workArea* pTypelessWorkArea)
     }
 }
 
-void menuGraphicsDelete(s_workArea* pTypelessWorkArea)
+void s_menuGraphicsTask::Delete()
 {
-    s_menuGraphicsTask* pWordArea = static_cast<s_menuGraphicsTask*>(pTypelessWorkArea);
     assert(0);
 }
 
-s_taskDefinitionWithArg menuGraphicsTask = { menuGraphicsTaskInit, NULL, menuGraphicsTaskDraw, menuGraphicsDelete, "menuGraphicsTask" };
-
 p_workArea createMenuTask(p_workArea parentTask)
 {
-    return createSiblingTaskWithArg(parentTask, &menuGraphicsTask, new s_menuGraphicsTask, parentTask);
+    return createSiblingTaskWithArg<s_menuGraphicsTask, p_workArea>(parentTask, parentTask);
 }
 
 void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s32 menuID)

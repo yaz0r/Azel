@@ -553,8 +553,19 @@ struct s_DataTable2
     }m8;
 };
 
-struct s_visdibilityCellTask : public s_workArea
+struct s_visdibilityCellTask : public s_workAreaTemplate<s_visdibilityCellTask>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { NULL, &s_visdibilityCellTask::fieldGridTask_Update, &s_visdibilityCellTask::gridCellDraw_untextured, NULL, "fieldGridTask" };
+        return &taskDefinition;
+    }
+
+    void fieldGridTask_Update();
+    void gridCellDraw_untextured();
+    void gridCellDraw_collision();
+    void gridCellDraw_normal();
+
     s_memoryAreaOutput m0_memoryLayout; // 0
     s_grid1* m8_pEnvironmentCell; // 8
     s_grid2* mC_pCell2_billboards; // 0xC
@@ -735,8 +746,18 @@ struct s_fieldTaskWorkArea_C : public s_workArea
     // size 16C?
 };
 
-struct s_fieldTaskWorkArea : public s_workArea
+struct s_fieldTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldTaskWorkArea, s32>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_fieldTaskWorkArea::fieldTaskInit, &s_fieldTaskWorkArea::fieldTaskUpdate, NULL, &s_fieldTaskWorkArea::fieldTaskDelete, "field task" };
+        return &taskDefinition;
+    }
+    
+    void fieldTaskInit(s32);
+    void fieldTaskUpdate();
+    void fieldTaskDelete();
+
     s_workArea* m0; // 0
     s_workArea* m4_overlayTaskData;//4
     s_FieldSubTaskWorkArea* m8_pSubFieldData; // 0x8

@@ -1,11 +1,21 @@
 #include "PDS.h"
 
-struct s_dragonMenuSubTask1WorkArea : public s_workArea
+struct s_dragonMenuSubTask1WorkArea : public s_workAreaTemplate<s_dragonMenuSubTask1WorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Init, NULL, &s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Draw, &s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Delete, "dragonMenuSubTask1" };
+        return &taskDefinition;
+    }
+
+    void dragonMenuSubTask1Init();
+    void dragonMenuSubTask1Draw();
+    void dragonMenuSubTask1Delete();
+
     u32 status; //0
 };
 
-void dragonMenuSubTask1Init(p_workArea pTypelessWorkArea)
+void s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Init()
 {
     PDS_unimplemented("dragonMenuSubTask1Init");
 }
@@ -20,9 +30,9 @@ void dragonMenuSubTask1DrawSub1()
     PDS_unimplemented("dragonMenuSubTask1DrawSub1");
 }
 
-void dragonMenuSubTask1Draw(p_workArea pTypelessWorkArea)
+void s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Draw()
 {
-    s_dragonMenuSubTask1WorkArea* pWorkArea = static_cast<s_dragonMenuSubTask1WorkArea*>(pTypelessWorkArea);
+    s_dragonMenuSubTask1WorkArea* pWorkArea = this;
 
     switch (pWorkArea->status)
     {
@@ -39,15 +49,23 @@ void dragonMenuSubTask1Draw(p_workArea pTypelessWorkArea)
     }
 }
 
-void dragonMenuSubTask1Delete(p_workArea pTypelessWorkArea)
+void s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Delete()
 {
     PDS_unimplemented("dragonMenuSubTask1Delete");
 }
 
-s_taskDefinition dragonMenuSubTask1Definition = { dragonMenuSubTask1Init, NULL, dragonMenuSubTask1Draw, dragonMenuSubTask1Delete, "dragonMenuSubTask1" };
-
-struct s_dragonMenuWorkArea : public s_workArea
+struct s_dragonMenuWorkArea : public s_workAreaTemplate<s_dragonMenuWorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuWorkArea::dragonMenuTaskInit, &s_dragonMenuWorkArea::dragonMenuTaskUpdate, NULL, &s_dragonMenuWorkArea::dragonMenuTaskDelete, "dragon Menu" };
+        return &taskDefinition;
+    }
+
+    void dragonMenuTaskInit();
+    void dragonMenuTaskUpdate();
+    void dragonMenuTaskDelete();
+
     u32 m0;
     u32 m4;
     u32 m8; // 8
@@ -58,14 +76,12 @@ struct s_dragonMenuWorkArea : public s_workArea
     p_workArea m1C;
 };
 
-void dragonMenuTaskInit(p_workArea pTypelessWorkArea)
+void s_dragonMenuWorkArea::dragonMenuTaskInit()
 {
-    s_dragonMenuWorkArea* pWorkArea = static_cast<s_dragonMenuWorkArea*>(pTypelessWorkArea);
-
     graphicEngineStatus.m40AC.m9 = 3;
-    pWorkArea->m4 = vblankData.m14;
+    m4 = vblankData.m14;
 
-    createSubTask(pWorkArea, &dragonMenuSubTask1Definition, new s_dragonMenuSubTask1WorkArea);
+    createSubTask<s_dragonMenuSubTask1WorkArea>(this);
 }
 
 void setVdp2LayerScroll(u32 r4, u32 r5, u32 r6)
@@ -172,7 +188,20 @@ void initVdp2ForDragonMenu(u32 r4)
     unpackGraphicsToVDP2(COMMON_DAT + 0xFE38, getVdp2Vram(0x71000));
 }
 
-void drawDragonMenuStatsTaskInit(p_workArea)
+struct s_drawDragonMenuStatsTask : public s_workAreaTemplate<s_drawDragonMenuStatsTask>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskInit, NULL, &s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw, &s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDelete, "dragonMenuStatsTask" };
+        return &taskDefinition;
+    }
+
+    void drawDragonMenuStatsTaskInit();
+    void drawDragonMenuStatsTaskDraw();
+    void drawDragonMenuStatsTaskDelete();
+};
+
+void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskInit()
 {
     setActiveFont(graphicEngineStatus.m40AC.fontIndex);
 }
@@ -194,7 +223,7 @@ const char* dragonArchetypesNames[DR_ARCHETYPE_MAX] =
     " SPIRITUAL"
 };
 
-void drawDragonMenuStatsTaskDraw(p_workArea)
+void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw()
 {
     setupVDP2StringRendering(30, 36, 14, 14);
     vdp2PrintStatus.palette = 0xC000;
@@ -254,15 +283,44 @@ void drawDragonMenuStatsTaskDraw(p_workArea)
 
 }
 
-void drawDragonMenuStatsTaskDelete(p_workArea)
+void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDelete()
 {
     setupVDP2StringRendering(0, 34, 44, 28);
     clearVdp2TextArea();
 }
 
-s_taskDefinition dragonMenuStatsTaskDefinition = { drawDragonMenuStatsTaskInit, NULL, drawDragonMenuStatsTaskDraw, drawDragonMenuStatsTaskDelete, "dragonMenuStatsTask" };
-s_taskDefinition dragonMenuStatsTask2Definition = { NULL, NULL, dummyTaskDraw, NULL, "dragonMenuStatsTask2" };
-s_taskDefinition dragonMenuMorphCursorTaskDefinition = { dummyTaskInit, NULL, dummyTaskDraw, NULL, "dragonMenuMorphCursorTask" };
+struct s_dragonMenuStatsTask2 : public s_workAreaTemplate<s_dragonMenuStatsTask2>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_dragonMenuStatsTask2::Draw, NULL, "dragonMenuStatsTask2" };
+        return &taskDefinition;
+    }
+
+    void Draw()
+    {
+        PDS_unimplemented("s_dragonMenuStatsTask2::Draw");
+    }
+};
+
+struct s_dragonMenuMorphCursorTask : public s_workAreaTemplate<s_dragonMenuMorphCursorTask>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuMorphCursorTask::Init, NULL, &s_dragonMenuMorphCursorTask::Draw, NULL, "dragonMenuMorphCursorTask" };
+        return &taskDefinition;
+    }
+
+    void Init()
+    {
+        PDS_unimplemented("s_dragonMenuMorphCursorTask::Init");
+    }
+
+    void Draw()
+    {
+        PDS_unimplemented("s_dragonMenuMorphCursorTask::Draw");
+    }
+};
 
 void startVdp2LayerScroll(s32 layerId, s32 x, s32 y, s32 numSteps)
 {
@@ -271,9 +329,9 @@ void startVdp2LayerScroll(s32 layerId, s32 x, s32 y, s32 numSteps)
     graphicEngineStatus.layersConfig[layerId].m8_scrollFrameCount = numSteps;
 }
 
-void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
+void s_dragonMenuWorkArea::dragonMenuTaskUpdate()
 {
-    s_dragonMenuWorkArea* pWorkArea = static_cast<s_dragonMenuWorkArea*>(pTypelessWorkArea);
+    s_dragonMenuWorkArea* pWorkArea = this;
 
     switch (pWorkArea->m0)
     {
@@ -308,9 +366,9 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
         
         pWorkArea->mC = createDragonMenuMorhTask(pWorkArea);
 
-        pWorkArea->m10 = createSubTask(pWorkArea, &dragonMenuStatsTaskDefinition, new s_workArea);
-        pWorkArea->m14 = createSubTask(pWorkArea, &dragonMenuStatsTask2Definition, new s_dummyWorkArea);
-        pWorkArea->m1C = createSubTask(pWorkArea, &dragonMenuMorphCursorTaskDefinition, new s_dummyWorkArea);
+        pWorkArea->m10 = createSubTask<s_drawDragonMenuStatsTask>(pWorkArea);
+        pWorkArea->m14 = createSubTask<s_dragonMenuStatsTask2>(pWorkArea);
+        pWorkArea->m1C = createSubTask<s_dragonMenuMorphCursorTask>(pWorkArea);
 
         if (graphicEngineStatus.m40AC.m0_menuId != 1)
         {
@@ -374,14 +432,12 @@ void dragonMenuTaskUpdate(p_workArea pTypelessWorkArea)
     }
 }
 
-void dragonMenuTaskDelete(p_workArea pTypelessWorkArea)
+void s_dragonMenuWorkArea::dragonMenuTaskDelete()
 {
     PDS_unimplemented("dragonMenuTaskDelete");
 }
 
-s_taskDefinition dragonMenuTaskDefinition = { dragonMenuTaskInit, dragonMenuTaskUpdate, NULL, dragonMenuTaskDelete, "dragon Menu" };
-
 p_workArea createMainDragonMenuTask(p_workArea workArea)
 {
-    return createSubTask(workArea, &dragonMenuTaskDefinition, new s_dragonMenuWorkArea);
+    return createSubTask<s_dragonMenuWorkArea>(workArea);
 }

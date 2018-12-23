@@ -4,7 +4,6 @@ p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5);
 void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6);
 s32 isLCSTargetValid(sLCSTarget* r4);
 
-
 const std::array<s8, 4> LCS_AccessSoundTable2 =
 {
     0,0,1,2

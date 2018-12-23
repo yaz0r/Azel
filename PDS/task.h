@@ -121,14 +121,26 @@ struct s_workAreaTemplateWithArg : public s_workArea
     FunctionType m_DrawMethod;
     FunctionType m_DeleteMethod;
 
-    typedef struct
+    struct TypedTaskDefinition
     {
         InitFunctionType m_pInit;
         FunctionType m_pUpdate;
         FunctionType m_pDraw;
         FunctionType m_pDelete;
         const char* m_taskName;
-    }TypedTaskDefinition;
+    };
+
+    static constexpr TypedTaskDefinition setupTypeDefinition(InitFunctionType fInit, FunctionType fUpdate, FunctionType fDraw, FunctionType fDelete, const char* name)
+    {
+        TypedTaskDefinition temp;
+        temp.m_pInit = fInit;
+        temp.m_pUpdate = fUpdate;
+        temp.m_pDraw = fDraw;
+        temp.m_pDelete = fDelete;
+        temp.m_taskName = name;
+
+        return temp;
+    }
 };
 
 template<typename T>
