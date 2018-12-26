@@ -18,7 +18,7 @@ struct s_workArea
 
         return ptr;
     }
-
+    /*
     virtual void Init(void* pArgument = NULL)
     {
         PDS_unimplemented("Init");
@@ -38,7 +38,15 @@ struct s_workArea
     {
         PDS_unimplemented("Delete");
     }
+    */
+
+    void UnimplementedImpl(const char* functionName)
+    {
+        PDS_Logger.AddLog("Unimplemented: %s\n", functionName);
+    }
 };
+
+#define TaskUnimplemented() { static bool printed = false; if(!printed) {printed = true; UnimplementedImpl(__FUNCTION__);}}
 
 struct s_taskDefinition
 {
@@ -57,6 +65,14 @@ struct s_taskDefinitionWithArg
     void(*m_pDelete)(s_workArea*);
     const char* m_taskName;
 };
+
+#define DECLARE_DEFAULT_TASK(pInit, pUpdate, pDraw, pDelete, name)\
+static const TypedTaskDefinition* getTypedTaskDefinition() \
+{\
+    static const TypedTaskDefinition taskDefinition = { pInit, pUpdate, pDraw, pDelete, ##name };\
+    return &taskDefinition;\
+}
+
 
 typedef s_workArea* p_workArea;
 
@@ -258,9 +274,9 @@ T* createSubTaskFromFunction(p_workArea parentTask, typename T::FunctionType Upd
     return pNewTask;
 }
 
-p_workArea createSubTask(p_workArea workArea, s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
-p_workArea createSubTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument);
-p_workArea createSiblingTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument);
+p_workArea createSubTask(p_workArea workArea, const s_taskDefinition* pDefinition, p_workArea pNewWorkArea);
+p_workArea createSubTaskWithArg(p_workArea workArea, const s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument);
+p_workArea createSiblingTaskWithArg(p_workArea workArea, const s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument);
 
 p_workArea createSubTaskFromFunction(p_workArea workArea, void(*pFunction)(p_workArea), p_workArea pNewWorkArea, const char* name);
 

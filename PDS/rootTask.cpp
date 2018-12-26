@@ -9,7 +9,7 @@ struct s_initialTaskWorkArea : public s_workAreaTemplate<s_initialTaskWorkArea>
     }
 
     void Init();
-    void Draw() override;
+    void Draw();
 
     u32 m_state;
     p_workArea m_4;

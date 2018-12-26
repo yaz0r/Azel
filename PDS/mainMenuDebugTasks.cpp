@@ -86,7 +86,7 @@ struct sLoadingTaskWorkArea : public s_workAreaTemplateWithArg<sLoadingTaskWorkA
         assert(0);
     }
 
-    void Update() override
+    void Update()
     {
         switch (m0_status)
         {
@@ -404,7 +404,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
         fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
     }
 
-    void Update() override
+    void Update()
     {
         s_fieldDebugListWorkArea* pWorkArea = this;
 
@@ -3224,8 +3224,8 @@ struct s_statusMenuTaskWorkArea : public s_workAreaTemplate<s_statusMenuTaskWork
     }
 
     void Init();
-    void Draw() override;
-    void Delete() override;
+    void Draw();
+    void Delete();
     u32 selectedMenu; //0
 };
 

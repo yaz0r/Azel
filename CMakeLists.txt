@@ -17,8 +17,11 @@ set(SOURCES
  ${SOURCES}
 
  PDS/3dEngine.cpp
+ PDS/3dEngine.h
  PDS/3dEngine_flush.cpp
+ PDS/3dEngine_flush.h
  PDS/3dEngine_textureCache.cpp
+ PDS/3dEngine_textureCache.h
 
  PDS/3dModels.h
  PDS/3dModels.cpp

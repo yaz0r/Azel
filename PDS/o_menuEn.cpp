@@ -11,9 +11,9 @@ struct s_menuEnWorkArea : public s_workAreaTemplate<s_menuEnWorkArea>
     }
 
     void Init();
-    void Update() override;
-    void Draw() override;
-    void Delete() override;
+    void Update();
+    void Draw();
+    void Delete();
 };
 
 void s_menuEnWorkArea::Init()

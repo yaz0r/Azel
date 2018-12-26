@@ -50,7 +50,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
         isInMenu2 = 1;
     }
 
-    void Draw() override
+    void Draw()
     {
         s_titleMenuWorkArea* pWorkArea = this;
 
@@ -306,7 +306,7 @@ struct s_titleScreenWorkArea : public s_workAreaTemplate<s_titleScreenWorkArea>
     }
 
     void Init();
-    void Draw() override;
+    void Draw();
 
     u32 m_status;
     u32 m_delay;
@@ -412,7 +412,7 @@ struct s_warningWorkArea : public s_workAreaTemplate< s_warningWorkArea>
     }
 
     void Init();
-    void Draw() override; // not by default, only setup if necessary
+    void Draw(); // not by default, only setup if necessary
 
     u32 m_status;
     u32 m_delay;
@@ -533,17 +533,13 @@ p_workArea startWarningTask(s_workArea* workArea)
 
 struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
 {
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &s_loadWarningWorkArea::Init, NULL, &s_loadWarningWorkArea::Draw, NULL, "loadWarning" };
-        return &taskDefinition;
-    }
+    DECLARE_DEFAULT_TASK(&s_loadWarningWorkArea::Init, nullptr, &s_loadWarningWorkArea::Draw, nullptr, "s_loadWarningWorkArea");
 
     void Init()
     {
         m_warningTask = startWarningTask(this);
     }
-    void Draw() override
+    void Draw()
     {
         if (m_warningTask)
         {

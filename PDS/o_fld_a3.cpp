@@ -810,7 +810,7 @@ struct s_A3_Obj0 : public s_workAreaTemplate<s_A3_Obj0>
         static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_A3_Obj0::Draw, NULL, "s_A3_Obj0" };
         return &taskDefinition;
     }
-    void Draw() override
+    void Draw()
     {
         pushCurrentMatrix();
         translateCurrentMatrix(&m14_position);
@@ -891,7 +891,7 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
         return &taskDefinition;
     }
 
-    void Update() override
+    void Update()
     {
         mC += 0xB60B6;
         fixedPoint var1C = getFieldTaskPtr()->mC->mA4[m8->m18] = MTH_Mul(fixedPoint(0x71C71C), getSin((mC >> 16) & 0xFFF)) - fixedPoint(0x71C71C);
@@ -906,7 +906,7 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
         }
     }
 
-    void Draw() override
+    void Draw()
     {
         pushCurrentMatrix();
         translateCurrentMatrix(&m8->m4_position);
@@ -925,10 +925,21 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
 
 struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
 {
-    static TypedTaskDefinition* getTypedTaskDefinition()
+    DECLARE_DEFAULT_TASK(
+        NULL,
+        &s_A3_Obj3::Update,
+        &s_A3_Obj3::Draw,
+        NULL,
+        "s_A3_Obj3" );
+
+    void Update()
     {
-        static TypedTaskDefinition taskDefinition = { NULL, &s_A3_Obj3::Update, &s_A3_Obj3::Draw, NULL, "s_A3_Obj3" };
-        return &taskDefinition;
+        TaskUnimplemented();
+    }
+
+    void Draw()
+    {
+        TaskUnimplemented();
     }
 
     s_memoryAreaOutput m0;
@@ -3989,28 +4000,28 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 
     pWorkArea->m238 = 0;
     pWorkArea->m237 = 0;
-    pWorkArea->mC0 = 0xC000000;
+    pWorkArea->mC0_lightRotationAroundDragon = 0xC000000;
     pWorkArea->mC4 = 0;
 
-    pWorkArea->mC8[0] = 0x10;
-    pWorkArea->mC8[1] = 0x10;
-    pWorkArea->mC8[2] = 0x10;
+    pWorkArea->mC8_normalLightColor.m0 = 0x10;
+    pWorkArea->mC8_normalLightColor.m1 = 0x10;
+    pWorkArea->mC8_normalLightColor.m2 = 0x10;
 
-    pWorkArea->mCB[0] = 0x8;
-    pWorkArea->mCB[1] = 0x8;
-    pWorkArea->mCB[2] = 0x8;
+    pWorkArea->mCB_falloffColor0.m0 = 0x8;
+    pWorkArea->mCB_falloffColor0.m1 = 0x8;
+    pWorkArea->mCB_falloffColor0.m2 = 0x8;
 
-    pWorkArea->mCE[0] = 0x14;
-    pWorkArea->mCE[1] = 0x14;
-    pWorkArea->mCE[2] = 0x14;
+    pWorkArea->mCE_falloffColor1.m0 = 0x14;
+    pWorkArea->mCE_falloffColor1.m1 = 0x14;
+    pWorkArea->mCE_falloffColor1.m2 = 0x14;
 
-    pWorkArea->mD1[0] = 0xC;
-    pWorkArea->mD1[1] = 0xC;
-    pWorkArea->mD1[2] = 0xC;
+    pWorkArea->mD1_falloffColor2.m0 = 0xC;
+    pWorkArea->mD1_falloffColor2.m1 = 0xC;
+    pWorkArea->mD1_falloffColor2.m2 = 0xC;
 
-    pWorkArea->mD4[0] = 0x10;
-    pWorkArea->mD4[1] = 0x10;
-    pWorkArea->mD4[2] = 0x10;
+    pWorkArea->mD4.m0 = 0x10;
+    pWorkArea->mD4.m1 = 0x10;
+    pWorkArea->mD4.m2 = 0x10;
 
     sFieldCameraStatus* pFieldCameraStatus = getFieldCameraStatus();
 
@@ -5162,7 +5173,7 @@ bool shouldLoadPup()
     return false;
 }
 
-void s_dragonTaskWorkArea::dragonFieldTaskInit(s32 arg)
+void s_dragonTaskWorkArea::Init(s32 arg)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask = this;
 
@@ -5652,7 +5663,7 @@ void dragonFieldTaskUpdateSub6(s_dragonTaskWorkArea* pTypedWorkArea)
     PDS_unimplemented("dragonFieldTaskUpdateSub6");
 }
 
-void s_dragonTaskWorkArea::dragonFieldTaskUpdate()
+void s_dragonTaskWorkArea::Update()
 {
     s_dragonTaskWorkArea* pTypedWorkArea = this;
 
@@ -5734,33 +5745,53 @@ void updateCameraFromDragon()
     updateCameraFromDragonSub2(r12);
 }
 
+void printMainDebugStats(s_dragonTaskWorkArea* pTypedWorkArea)
+{
+    if (enableDebugTask)
+    {
+        assert(0);
+    }
+}
+
 void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
 {
     updateCameraFromDragon();
 
     if ((pTypedWorkArea->m_EC & 1) == 0)
     {
-        if (pTypedWorkArea->m_EB)
+        s_RGB8* pColor;
+        sVec3_FP lightLocation;
+        if (pTypedWorkArea->m_EB_useSpecialColor)
         {
-            assert(false);
+            dragonFieldTaskDrawSub1Sub0();
+
+            sVec3_FP varC;
+            varC[0] = pTypedWorkArea->m8_pos[0];
+            varC[1] = pTypedWorkArea->m8_pos[1] + 0xA000;
+            varC[2] = pTypedWorkArea->m8_pos[2];
+            
+            transformVecByCurrentMatrix(varC, lightLocation);
+
+            dragonFieldTaskDrawSub1Sub1(lightLocation[0], lightLocation[1], lightLocation[2]);
+            pColor = &pTypedWorkArea->m_E8_specialColor;
         }
         else
         {
             sVec3_FP varC;
-            varC[0] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0.getInteger() & 0xFFF), getSin(pTypedWorkArea->mC4.getInteger() & 0xFFF));
-            varC[1] = MTH_Mul(fixedPoint(0x10000), getSin(pTypedWorkArea->mC0.getInteger() & 0xFFF));
-            varC[2] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0.getInteger() & 0xFFF), getCos(pTypedWorkArea->mC4.getInteger() & 0xFFF));
-
-            sVec3_FP var0;
-            //transformVecByCurrentMatrix(&varC, &var0);
-//                assert(0);
-            PDS_unimplemented("dragonFieldTaskDrawSub1");
+            varC[0] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger() & 0xFFF), getSin(pTypedWorkArea->mC4.getInteger() & 0xFFF));
+            varC[1] = MTH_Mul(fixedPoint(0x10000), getSin(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger() & 0xFFF));
+            varC[2] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger() & 0xFFF), getCos(pTypedWorkArea->mC4.getInteger() & 0xFFF));
+            transformVecByCurrentMatrix(varC, lightLocation);
+            pColor = &pTypedWorkArea->mC8_normalLightColor;
         }
-
+        //060740F6
+        setupLight(lightLocation[0], lightLocation[1], lightLocation[2], pColor->toU32());
+        generateLightFalloffMap(pTypedWorkArea->mCB_falloffColor0.toU32(), pTypedWorkArea->mCE_falloffColor1.toU32(), pTypedWorkArea->mD1_falloffColor2.toU32());
     }
 
-    PDS_unimplemented("dragonFieldTaskDrawSub1");
-
+    //0607416C
+    initVDP1Projection((pTypedWorkArea->m1CC + (pTypedWorkArea->m1CC > 0)) / 2, 0);
+    printMainDebugStats(pTypedWorkArea);
 }
 
 struct s_dragonHotspotPerDragonType
@@ -5810,7 +5841,7 @@ void dragonFieldTaskDrawSub3Sub0()
 
 void dragonFieldTaskDrawSub3(s_dragonTaskWorkArea* pTypedWorkArea)
 {
-    if (((pTypedWorkArea->m_EC & 1) == 0) && (pTypedWorkArea->m_EB))
+    if (((pTypedWorkArea->m_EC & 1) == 0) && (pTypedWorkArea->m_EB_useSpecialColor))
     {
         assert(0);
         PDS_unimplemented("dragonFieldTaskDrawSub3");
@@ -5819,7 +5850,7 @@ void dragonFieldTaskDrawSub3(s_dragonTaskWorkArea* pTypedWorkArea)
     dragonFieldTaskDrawSub3Sub0();
 }
 
-void s_dragonTaskWorkArea::dragonFieldTaskDraw()
+void s_dragonTaskWorkArea::Draw()
 {
     s_dragonTaskWorkArea* pTypedWorkArea = this;
 
@@ -6630,12 +6661,30 @@ void s_LCSTask340Sub::Update3()
     }
 }
 
+static const std::array<s_RGB8, 7> s_LCSTask340Sub_Delete3Sub0Data0 =
+{
+    {
+        {0x17, 0x14, 6},
+        {4, 0x14, 9},
+        {0x19, 0xA, 0xE},
+        {0xA, 0xE, 0x1A},
+        {0x5, 0x19, 0x14},
+        {0x1A, 0xF, 0x5},
+        {0x14, 0xE, 0x19},
+    }
+};
+
 void s_LCSTask340Sub_Delete3Sub0(s32 r4)
 {
-    createSubTask<s_LCSTask340SubSub>(getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS);
+    s_LCSTask340SubSub* r14 = createSubTask<s_LCSTask340SubSub>(getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS);
 
+    r14->m0 = 30;
+    r14->m4 = r4;
 
-    PDS_unimplemented("s_LCSTask340Sub_Delete3Sub0");
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    pDragonTask->m_EB_useSpecialColor = 1;
+
+    pDragonTask->m_E8_specialColor = s_LCSTask340Sub_Delete3Sub0Data0[r4];
 }
 
 void s_LCSTask340Sub::Delete3()

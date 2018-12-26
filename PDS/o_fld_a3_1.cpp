@@ -48,7 +48,7 @@ struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_sta
         m0[0].m18 |= 1;
     }
 
-    void Update() override
+    void Update()
     {
         const sVec3_FP& r4_dragonPos = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
 
@@ -88,7 +88,7 @@ struct sFieldA3_1_fieldIntroTask : public s_workAreaTemplate<sFieldA3_1_fieldInt
         return &taskDefinition;
     }
 
-    void Update() override
+    void Update()
     {
         if (startFieldScript(14, 1453))
         {

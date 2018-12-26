@@ -442,3 +442,13 @@ void transformAndAddVecByCurrentMatrix(const sVec3_FP* r4, sVec3_FP* r5)
     transformAndAddVec(*r4, *r5, *pCurrentMatrix);
 }
 
+void dragonFieldTaskDrawSub1Sub0()
+{
+    PDS_unimplemented("dragonFieldTaskDrawSub1Sub0");
+}
+
+void dragonFieldTaskDrawSub1Sub1(fixedPoint r4, fixedPoint r5, fixedPoint r6)
+{
+    PDS_unimplemented("dragonFieldTaskDrawSub1Sub1");
+}
+

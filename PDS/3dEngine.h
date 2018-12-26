@@ -4,6 +4,12 @@ void reset3dEngine();
 void resetProjectVector();
 void pushProjectionStack();
 
+void setupLight(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7);
+void generateLightFalloffMap(u32 r4, u32 r5, u32 r6);
+
+void dragonFieldTaskDrawSub1Sub0();
+void dragonFieldTaskDrawSub1Sub1(fixedPoint r4, fixedPoint r5, fixedPoint r6);
+
 struct s_cameraProperties2
 {
     sVec3_FP m0_position; //0

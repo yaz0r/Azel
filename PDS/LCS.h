@@ -53,9 +53,22 @@ struct s_LCSTask340SubSub : public s_workAreaTemplate<s_LCSTask340SubSub>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { nullptr, &s_LCSTask340SubSub::Update, &s_LCSTask340SubSub::Draw, nullptr, "s_LCSTask340SubSub" };
+        static const TypedTaskDefinition taskDefinition = { nullptr, &s_LCSTask340SubSub::Update, nullptr, &s_LCSTask340SubSub::Delete, "s_LCSTask340SubSub" };
         return &taskDefinition;
     }
+
+    void Update()
+    {
+        PDS_unimplemented("s_LCSTask340SubSub::Update");
+    }
+
+    void Delete()
+    {
+        PDS_unimplemented("s_LCSTask340SubSub::Delete");
+    }
+
+    s32 m0;
+    s32 m4;
 };
 
 struct sLaserArgs;
@@ -98,6 +111,11 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     void Update3();
 
     void Delete3();
+
+    void Draw()
+    {
+        PDS_unimplemented("s_LCSTask340Sub::Draw");
+    }
 
     void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub()
     {
@@ -205,8 +223,8 @@ struct sLCSSelectedSub : public s_workAreaTemplate<sLCSSelectedSub>
         return &taskDefinition;
     }
 
-    void Update() override;
-    void Draw() override;
+    void Update();
+    void Draw();
 
     s_memoryAreaOutput m0;
     sVec2_S16* m8;
@@ -222,10 +240,10 @@ struct sLCSSelected : public s_workAreaTemplate<sLCSSelected>
         return &taskDefinition;
     }
 
-    void Update() override;
+    void Update();
     void UpdateSub0(sVec2_S16* r5);
 
-    void Draw() override;
+    void Draw();
     void DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, sVec3_FP* r6);
     void DrawSub1(s8 r5);
 

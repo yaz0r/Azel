@@ -136,7 +136,7 @@ void resetTasks()
     numActiveTask = 0;
 }
 
-p_workArea createSubTask(p_workArea parentWorkArea, s_taskDefinition* pDefinition, p_workArea newWorkArea)
+p_workArea createSubTask(p_workArea parentWorkArea, const s_taskDefinition* pDefinition, p_workArea newWorkArea)
 {
     s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
     assert(pTask);
@@ -174,7 +174,7 @@ p_workArea createSubTask(p_workArea parentWorkArea, s_taskDefinition* pDefinitio
     return pTask->getWorkArea();
 }
 
-p_workArea createSubTaskWithArg(p_workArea parentWorkArea, s_taskDefinitionWithArg* pDefinition, p_workArea newWorkArea, void* argument)
+p_workArea createSubTaskWithArg(p_workArea parentWorkArea, const s_taskDefinitionWithArg* pDefinition, p_workArea newWorkArea, void* argument)
 {
     s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
     assert(pTask);
@@ -212,7 +212,7 @@ p_workArea createSubTaskWithArg(p_workArea parentWorkArea, s_taskDefinitionWithA
     return pTask->getWorkArea();
 }
 
-p_workArea createSiblingTaskWithArg(p_workArea workArea, s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument)
+p_workArea createSiblingTaskWithArg(p_workArea workArea, const s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument)
 {
     s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
     assert(pTask);

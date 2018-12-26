@@ -105,8 +105,8 @@ struct s_vdp2StringTask : public s_workArea
         return static_cast<s_vdp2StringTask*>(pWorkArea);
     }
 
-    void Update() override;
-    void Delete() override;
+    void Update();
+    void Delete();
 
     void UpdateSub1();
 
@@ -140,8 +140,8 @@ struct s_cinematicBarTask : public s_workAreaTemplate<s_cinematicBarTask>
         mA = 0;
         mD = 0;
     }
-    void Update() override;
-    void Draw() override;
+    void Update();
+    void Draw();
 
     void interpolateCinematicBar();
     void interpolateCinematicBarSub1();
@@ -170,9 +170,9 @@ struct s_multiChoiceTask2 : public s_workAreaTemplate< s_multiChoiceTask2>
         return &taskDefinition;
     }
 
-    void Update() override;
-    void Draw() override;
-    void Delete() override
+    void Update();
+    void Draw();
+    void Delete()
     {
         assert(0);
     }
@@ -213,8 +213,8 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
         static TypedTaskDefinition taskDefinition = { NULL, &s_riderAnimTask::Update, NULL, &s_riderAnimTask::Delete, "s_riderAnimTaskTask" };
         return &taskDefinition;
     }
-    void Update() override;
-    void Delete() override;
+    void Update();
+    void Delete();
 
     s32 m0_status;
     s32 m4_riderIndex;
@@ -234,7 +234,7 @@ struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct 
         return &taskDefinition;
     }
     void Init(struct s_cutsceneData* argument);
-    void Update() override;
+    void Update();
 
     void cutsceneTaskInitSub2(std::vector<s_scriptData1>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
 
@@ -253,7 +253,11 @@ struct s_cutsceneTask2 : public s_workAreaTemplateWithArg<s_cutsceneTask2, std::
         return &taskDefinition;
     }
     void Init(std::vector<s_scriptData1>* argument);
-    void Update() override;
+    void Update();
+    void Draw()
+    {
+        PDS_unimplemented("s_cutsceneTask2::Draw");
+    }
 
     u32 m0;
     std::vector<s_scriptData1>* m4;
@@ -290,7 +294,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
         return &taskDefinition;
     }
     void Init();
-    void Update() override;
+    void Update();
 
     void fieldScriptTaskUpdateSub2();
     void fieldScriptTaskUpdateSub3();
@@ -376,18 +380,29 @@ struct s_cutsceneData
     u8 m8;
 };
 
+struct s_RGB8
+{
+    u8 m0;
+    u8 m1;
+    u8 m2;
+
+    u32 toU32()
+    {
+        return ((m2 & 0xFF) << 16) | ((m1 & 0xFF) << 8) | (m0 & 0xFF);
+    }
+};
+
 struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s32>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_dragonTaskWorkArea::dragonFieldTaskInit, &s_dragonTaskWorkArea::dragonFieldTaskUpdate, &s_dragonTaskWorkArea::dragonFieldTaskDraw, &s_dragonTaskWorkArea::dummyTaskDelete, "dragonFieldTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_dragonTaskWorkArea::Init, &s_dragonTaskWorkArea::Update, &s_dragonTaskWorkArea::Draw, &s_dragonTaskWorkArea::dummyTaskDelete, "dragonFieldTask" };
         return &taskDefinition;
     }
 
-    void dragonFieldTaskInit(s32 arg);
-    void dragonFieldTaskUpdate();
-    void dragonFieldTaskDraw();
-    void dragonFieldTaskDelete();
+    void Init(s32 arg);
+    void Update();
+    void Draw();
 
     s_memoryAreaOutput m0;
 
@@ -403,15 +418,15 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     u32 mB8;
     sVec3_FP* mBC;
 
-    fixedPoint mC0;
+    fixedPoint mC0_lightRotationAroundDragon;
     fixedPoint mC4;
-    u8 mC8[3];
-    u8 mCB[3];
-    u8 mCE[3];
-    u8 mD1[3];
-    u8 mD4[3];
-
-    u8 m_EB;
+    s_RGB8 mC8_normalLightColor;
+    s_RGB8 mCB_falloffColor0;
+    s_RGB8 mCE_falloffColor1;
+    s_RGB8 mD1_falloffColor2;
+    s_RGB8 mD4;
+    s_RGB8 m_E8_specialColor;
+    u8 m_EB_useSpecialColor;
     u8 m_EC;
 
     void(*mF0)(s_dragonTaskWorkArea*); //F0
@@ -454,7 +469,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
 
     u32 m_1C4;
 
-    u32 m1CC;
+    fixedPoint m1CC;
     s_cameraScript* m1D0_cameraScript;
     s_cutsceneData* m1D4_cutsceneData;
     s_cutsceneTask* m1D8_cutscene;
@@ -682,7 +697,7 @@ struct s_fieldPaletteTaskWorkArea : public s_workAreaTemplate<s_fieldPaletteTask
     }
 
     void Init();
-    void Draw() override;
+    void Draw();
 
     s_fieldPaletteTaskWorkSub* m78;
 };
