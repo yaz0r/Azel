@@ -6,6 +6,7 @@
 
 #ifndef HEADLESS_TOOL
 #include <SDL.h>
+#include <SDL_syswm.h>
 #endif
 
 #include <imgui.h>
@@ -15,6 +16,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include <cmath>
 #include <unordered_map>
 #include <algorithm>
 

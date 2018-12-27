@@ -76,7 +76,7 @@ static const TypedTaskDefinition* getTypedTaskDefinition() \
 
 typedef s_workArea* p_workArea;
 
-template<typename T, typename argType>
+template<typename T, typename... argType>
 struct s_workAreaTemplateWithArg : public s_workArea
 {
     static s_taskDefinitionWithArg* getTaskDefinition()
@@ -131,7 +131,7 @@ struct s_workAreaTemplateWithArg : public s_workArea
     }
 
     typedef void (T::*FunctionType)();
-    typedef void (T::*InitFunctionType)(argType);
+    typedef void (T::*InitFunctionType)(argType ...);
     //InitFunctionType m_InitMethod;
     FunctionType m_UpdateMethod;
     FunctionType m_DrawMethod;
@@ -146,7 +146,7 @@ struct s_workAreaTemplateWithArg : public s_workArea
         const char* m_taskName;
     };
 
-    static constexpr TypedTaskDefinition setupTypeDefinition(InitFunctionType fInit, FunctionType fUpdate, FunctionType fDraw, FunctionType fDelete, const char* name)
+    static TypedTaskDefinition setupTypeDefinition(InitFunctionType fInit, FunctionType fUpdate, FunctionType fDraw, FunctionType fDelete, const char* name)
     {
         TypedTaskDefinition temp;
         temp.m_pInit = fInit;
@@ -160,7 +160,7 @@ struct s_workAreaTemplateWithArg : public s_workArea
 };
 
 template<typename T>
-struct s_workAreaTemplate : public s_workAreaTemplateWithArg<T, void>
+struct s_workAreaTemplate : public s_workAreaTemplateWithArg<T>
 {
 
 };

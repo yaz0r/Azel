@@ -925,12 +925,11 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
 
 struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
 {
-    DECLARE_DEFAULT_TASK(
-        NULL,
-        &s_A3_Obj3::Update,
-        &s_A3_Obj3::Draw,
-        NULL,
-        "s_A3_Obj3" );
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { NULL, &s_A3_Obj3::Update, &s_A3_Obj3::Draw, NULL, "s_A3_Obj3" };
+        return &taskDefinition;
+    }
 
     void Update()
     {

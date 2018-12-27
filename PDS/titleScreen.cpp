@@ -533,7 +533,11 @@ p_workArea startWarningTask(s_workArea* workArea)
 
 struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
 {
-    DECLARE_DEFAULT_TASK(&s_loadWarningWorkArea::Init, nullptr, &s_loadWarningWorkArea::Draw, nullptr, "s_loadWarningWorkArea");
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = {  &s_loadWarningWorkArea::Init, nullptr, &s_loadWarningWorkArea::Draw, nullptr, "s_loadWarningWorkArea"};
+        return &taskDefinition;
+    }
 
     void Init()
     {

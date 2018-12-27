@@ -4,11 +4,11 @@
 #include <OpenGLES/ES3/gl.h>
 #include <OpenGLES/ES3/glext.h>
 #else
-#include <gl/gl3w.h>
+#include <GL/gl3w.h>
 #ifdef __MACOS__
 #include <Opengl/gl.h>
 #else
-#include <gl/gl.h>
+#include <GL/gl.h>
 #endif
 #endif
 
@@ -20,8 +20,6 @@
 #ifdef _WIN32
 #pragma comment(lib, "Opengl32.lib")
 #endif
-
-#include <sdl_syswm.h>
 
 void checkGL();
 

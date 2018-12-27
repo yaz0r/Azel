@@ -13,6 +13,10 @@ add_subdirectory( PDS/SDL2 )
 
 include_directories("PDS" "PDS/imgui" "PDS/SDL2/include" "PDS/imgui/examples" "PDS/imgui/examples/libs/gl3w")
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(SOURCES
  ${SOURCES}
 
@@ -64,9 +68,9 @@ set(SOURCES
  PDS/imgui/examples/libs/gl3w/GL/gl3w.c
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x -D_HAS_EXCEPTIONS=0 /GR-")
 
 if( MSVC )
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x -D_HAS_EXCEPTIONS=0 /GR-")
 	# Eliminate unreferenced functions and data
 	# Perform identical COMDAT folding
 	set( REL_LINKER_FLAGS "/opt:ref /opt:icf /nodefaultlib:msvcrt" )
@@ -124,6 +128,7 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
 
+
 add_executable (Azel ${SOURCES})
 
 IF(APPLE)
@@ -143,6 +148,11 @@ ENDIF (APPLE)
 
 TARGET_LINK_LIBRARIES(Azel ${EXTRA_LIBS})
 TARGET_LINK_LIBRARIES(Azel SDL2main SDL2-static)
+
+if(UNIX)
+	TARGET_LINK_LIBRARIES(Azel -lGL)
+endif()
+
 
 set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT Azel)
 set_target_properties(Azel PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/data")
