@@ -5843,8 +5843,7 @@ void dragonFieldTaskDrawSub3(s_dragonTaskWorkArea* pTypedWorkArea)
 {
     if (((pTypedWorkArea->m_EC & 1) == 0) && (pTypedWorkArea->m_EB_useSpecialColor))
     {
-        assert(0);
-        PDS_unimplemented("dragonFieldTaskDrawSub3");
+        PDS_unimplemented("dragonFieldTaskDrawSub3 for setup light during dragon rendering");
     }
 
     dragonFieldTaskDrawSub3Sub0();
@@ -6516,16 +6515,16 @@ void s_LCSTask340Sub::Init1(sLaserArgs* arg)
     m20 = arg->m18;
     m27 = arg->m1F;
 
-    m28 = &s_LCSTask340Sub::Init1Sub0;
-    m2C = &s_LCSTask340Sub::Init1Sub1;
-    m30 = &s_LCSTask340Sub::Init1Sub2;
+    m28_laserInit = &s_LCSTask340Sub::Init1Sub0;
+    m2C_laserUpdate = &s_LCSTask340Sub::Init1Sub1;
+    m30_laserDraw = &s_LCSTask340Sub::Laser1Draw;
 
     m158 = 0x12;
     m6C[m154&0xF] = (*mC);
     m6C[0] = (*mC);
     m6C[1] = (*mC);
 
-    ((this)->*(m28))();
+    ((this)->*(m28_laserInit))();
 
     m154++;
 }
@@ -6538,19 +6537,68 @@ void s_LCSTask340Sub::Init3Sub3(s_LCSTask340Sub_m58* r4, s32 r5, sSaturnPtr r6)
     r4->m4 = r5;
 }
 
-void s_LCSTask340Sub::Init3Sub0()
+void s_LCSTask340Sub::Laser3Init()
 {
-    PDS_unimplemented("s_LCSTask340Sub::Init3Sub0");
+    TaskUnimplemented();
 }
 
-void s_LCSTask340Sub::Init3Sub1()
+void s_LCSTask340Sub::Laser3Update()
 {
-    PDS_unimplemented("s_LCSTask340Sub::Init3Sub1");
+    TaskUnimplemented();
 }
 
-void s_LCSTask340Sub::Init3Sub2()
+void s_LCSTask340Sub::Laser3Draw()
 {
-    PDS_unimplemented("s_LCSTask340Sub::Init3Sub2");
+    TaskUnimplemented();
+}
+
+void s_LCSTask340Sub::Init2(sLaserArgs* arg)
+{
+    getMemoryArea(&m0, 0);
+    m8 = arg->m0;
+    mC = arg->m4;
+    m10 = arg->m8;
+
+    if (arg->m8 & 0x100)
+    {
+        m60 = *arg->m4;
+    }
+    else
+    {
+        transformAndAddVecByCurrentMatrix(arg->m4, &m60);
+    }
+
+    m14 = arg->mC;
+    m18 = arg->m10;
+    m1C = arg->m14;
+    m20 = arg->m18;
+    m27 = arg->m1F;
+
+    m28_laserInit = &s_LCSTask340Sub::Laser2Init;
+    m2C_laserUpdate = &s_LCSTask340Sub::Laser2Update;
+    m30_laserDraw = &s_LCSTask340Sub::Laser2Draw;
+
+    m158 = 0x1E;
+
+    ((this)->*(m28_laserInit))();
+
+    m6C[0] = (*mC);
+    m6C[1] = (*mC);
+}
+
+void s_LCSTask340Sub::Laser2Init()
+{
+    // nothing on purpose
+}
+
+void s_LCSTask340Sub::Laser2Update()
+{
+    TaskUnimplemented();
+}
+
+void s_LCSTask340Sub::Laser2Draw()
+{
+    TaskUnimplemented();
 }
 
 void s_LCSTask340Sub::Init3(sLaserArgs* arg)
@@ -6577,9 +6625,9 @@ void s_LCSTask340Sub::Init3(sLaserArgs* arg)
     m26 = arg->m1E;
     m27 = arg->m1F;
 
-    m28 = &s_LCSTask340Sub::Init3Sub0;
-    m2C = &s_LCSTask340Sub::Init3Sub1;
-    m30 = &s_LCSTask340Sub::Init3Sub2;
+    m28_laserInit = &s_LCSTask340Sub::Laser3Init;
+    m2C_laserUpdate = &s_LCSTask340Sub::Laser3Update;
+    m30_laserDraw = &s_LCSTask340Sub::Laser3Draw;
     m158 = 0x1E;
 
     if (arg->m8 & 0x100)
@@ -6594,7 +6642,7 @@ void s_LCSTask340Sub::Init3(sLaserArgs* arg)
     m6C[1] = m6C[0];
     m6C[m154 & 0xF] = m6C[0];
 
-    ((this)->*(m28))();
+    ((this)->*(m28_laserInit))();
 
     m154++;
     Init3Sub3(&m58, (m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3, { 0x06095330, gFLD_A3 });
@@ -6642,7 +6690,7 @@ void s_LCSTask340Sub::Update0()
         transformAndAddVecByCurrentMatrix(mC, &m60);
     }
 
-    ((this)->*(m2C))();
+    ((this)->*(m2C_laserUpdate))();
 
     m158--;
 }
@@ -6656,7 +6704,7 @@ void s_LCSTask340Sub::Update3()
     else
     {
         transformAndAddVecByCurrentMatrix(mC, &m60);
-        ((this)->*(m2C))();
+        ((this)->*(m2C_laserUpdate))();
         m158--;
     }
 }
@@ -6749,9 +6797,9 @@ void s_LCSTask340Sub::Init1Sub1()
     m144 = var4 - r5;
 }
 
-void s_LCSTask340Sub::Init1Sub2()
+void s_LCSTask340Sub::Laser1Draw()
 {
-    assert(0);
+    void* r6 = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m9C0;
 }
 
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4)

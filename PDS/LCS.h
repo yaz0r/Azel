@@ -93,17 +93,18 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     void Init1Sub0();
     void Init1Sub1();
     void Init1Sub1Sub0();
-    void Init1Sub2();
+    void Laser1Draw();
 
-    void Init2(sLaserArgs*)
-    {
-        assert(0);
-    }
+    void Init2(sLaserArgs*);
+    void Laser2Init();
+    void Laser2Update();
+    void Laser2Draw();
 
     void Init3(sLaserArgs*);
-    void Init3Sub0();
-    void Init3Sub1();
-    void Init3Sub2();
+
+    void Laser3Init();
+    void Laser3Update();
+    void Laser3Draw();
     void Init3Sub3(s_LCSTask340Sub_m58* r4, s32 s5, sSaturnPtr r6);
 
     void Update0();
@@ -114,7 +115,7 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
 
     void Draw()
     {
-        PDS_unimplemented("s_LCSTask340Sub::Draw");
+        ((this)->*(m30_laserDraw))();
     }
 
     void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub()
@@ -141,9 +142,9 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     s16 m24;
     s16 m26;
     s8 m27;
-    void (s_LCSTask340Sub::*m28)();
-    void (s_LCSTask340Sub::*m2C)();
-    void (s_LCSTask340Sub::*m30)();
+    void (s_LCSTask340Sub::*m28_laserInit)();
+    void (s_LCSTask340Sub::*m2C_laserUpdate)();
+    void (s_LCSTask340Sub::*m30_laserDraw)();
     fixedPoint m34;
     fixedPoint m38;
     fixedPoint m3C;

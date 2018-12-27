@@ -917,11 +917,16 @@ void LCSTaskDrawSub1Sub2Sub0Sub2(s_LCSTask* r14)
         if (LCS_AccessSoundTable2[r14->m838_Next->m8->m10_flags & 3] == 2)
         {
             //0606E184
-            assert(0);
+            // Shoot lasers from both wings
+            laserArgs.mC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m118_hotSpot3;
+            r14->m838_Next->mC = LCSTaskDrawSub1Sub2Sub0Sub2Sub0(r14, &laserArgs, 2);
+            laserArgs.mC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m124_hotSpot4;
+            r14->m838_Next->m10 = LCSTaskDrawSub1Sub2Sub0Sub2Sub0(r14, &laserArgs, 2);
         }
         else
         {
-            sVec3_FP* varC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m10C_hotSpot2;
+            // Shoot single laser from head
+            laserArgs.mC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m10C_hotSpot2;
             r14->m838_Next->mC = LCSTaskDrawSub1Sub2Sub0Sub2Sub0(r14, &laserArgs, LCS_AccessSoundTable2[r14->m838_Next->m8->m10_flags & 3]);
         }
 
