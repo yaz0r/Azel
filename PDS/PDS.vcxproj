@@ -42,12 +42,12 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140_clang_c2</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140_clang_c2</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -150,6 +150,7 @@
     <ClCompile Include="3dEngine.cpp" />
     <ClCompile Include="3dEngine_flush.cpp" />
     <ClCompile Include="3dEngine_textureCache.cpp" />
+    <ClCompile Include="3dModels.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="common_generated.cpp" />
     <ClCompile Include="dummy.cpp" />
@@ -161,12 +162,16 @@
     <ClCompile Include="imgui\examples\libs\gl3w\GL\gl3w.c" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="LCS.cpp" />
     <ClCompile Include="mainMenuDebugTasks.cpp" />
     <ClCompile Include="menu_dragon.cpp" />
     <ClCompile Include="menu_dragonMorph.cpp" />
     <ClCompile Include="o_fld_a3.cpp" />
+    <ClCompile Include="o_fld_a3_1.cpp" />
     <ClCompile Include="o_menuEn.cpp" />
     <ClCompile Include="PDS.cpp" />
+    <ClCompile Include="PDS_Logger.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="rootTask.cpp" />
     <ClCompile Include="task.cpp" />
@@ -179,6 +184,7 @@
     <ClInclude Include="3dEngine.h" />
     <ClInclude Include="3dEngine_flush.h" />
     <ClInclude Include="3dEngine_textureCache.h" />
+    <ClInclude Include="3dModels.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="dummy.h" />
     <ClInclude Include="field.h" />
@@ -190,13 +196,16 @@
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="LCS.h" />
     <ClInclude Include="mainMenuDebugTasks.h" />
     <ClInclude Include="menu_dragon.h" />
     <ClInclude Include="menu_dragonMorph.h" />
     <ClInclude Include="o_fld_a3.h" />
+    <ClInclude Include="o_fld_a3_1.h" />
     <ClInclude Include="o_menuEn.h" />
     <ClInclude Include="o_title.h" />
     <ClInclude Include="PDS.h" />
+    <ClInclude Include="PDS_Logger.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="rootTask.h" />
     <ClInclude Include="task.h" />

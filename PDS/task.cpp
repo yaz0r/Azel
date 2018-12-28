@@ -91,6 +91,9 @@ void processTasks(s_task** ppTask)
             else
             {
                 s_heapNode* r4 = pTask->getHeapNode()->m_nextNode;
+#ifdef __EMSCRIPTEN__
+                r4 = nullptr;
+#endif
                 while (r4)
                 {
                     assert(0);

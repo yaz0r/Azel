@@ -81,7 +81,7 @@ struct s_workAreaTemplateWithArg : public s_workArea
 {
     static s_taskDefinitionWithArg* getTaskDefinition()
     {
-        static s_taskDefinitionWithArg taskDefinition = { T::StaticInit, T::StaticUpdate, T::StaticDraw, T::StaticDelete, typeid(T).name() };
+        static s_taskDefinitionWithArg taskDefinition = { T::StaticInit, T::StaticUpdate, T::StaticDraw, T::StaticDelete, "" };
         return &taskDefinition;
     }
 
@@ -105,6 +105,7 @@ struct s_workAreaTemplateWithArg : public s_workArea
         T* pTask = ConvertType(pWorkArea);
         if(pTask->m_UpdateMethod)
         {
+            //printf("calling update for task %s\n", pTask->m_pTask->m_taskName);
             ((pTask)->*(pTask->m_UpdateMethod))();
         }
     }
@@ -113,6 +114,7 @@ struct s_workAreaTemplateWithArg : public s_workArea
         T* pTask = ConvertType(pWorkArea);
         if (pTask->m_DrawMethod)
         {
+            //printf("calling draw for task %s\n", pTask->m_pTask->m_taskName);
             ((pTask)->*(pTask->m_DrawMethod))();
         }
     }
@@ -121,6 +123,7 @@ struct s_workAreaTemplateWithArg : public s_workArea
         T* pTask = ConvertType(pWorkArea);
         if (pTask->m_DeleteMethod)
         {
+            //printf("calling delete for task %s\n", pTask->m_pTask->m_taskName);
             ((pTask)->*(pTask->m_DeleteMethod))();
         }
     }

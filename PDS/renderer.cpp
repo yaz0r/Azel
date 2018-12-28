@@ -9,8 +9,6 @@
 #pragma comment(lib, "Opengl32.lib")
 #endif
 
-void checkGL();
-
 SDL_Window *gWindow;
 SDL_GLContext gGlcontext;
 
@@ -1044,6 +1042,7 @@ bool azelSdl2_EndFrame()
     ImGui::End();
 
     // render VDP1 frame buffer
+    if(1)
     {
         checkGL();
         glBindFramebuffer(GL_FRAMEBUFFER, gVdp1PolyFB);

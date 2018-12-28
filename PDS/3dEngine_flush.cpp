@@ -53,11 +53,15 @@ void addBillBoardtToDrawList(u8* pObjectData, u32 offset)
     objectRenderList.push_back(newObject);
 }
 
-void checkGL()
+void checkGLImpl(const char* file, unsigned int line)
 {
-    volatile GLenum error = glGetError();
+    GLenum error = glGetError();
     
-    assert(error == GL_NO_ERROR);
+    if (error != GL_NO_ERROR)
+    {
+        printf("GL error %d: file: %s line:%d\n", error, file, line);
+        assert(0);
+    }
     
     //while (error != GL_NO_ERROR);
 }
@@ -115,7 +119,7 @@ GLuint compileShader(const char* VS, const char* PS)
 
 #define GL_SHADER_VERSION "#version 300 es\n"
 
-#ifdef __IPHONEOS__
+#ifdef USE_GL_ES3
 const GLchar azel_vs[] =
 "#version 300 es\n"
 "uniform mat4 u_mvpMatrix;    \n"
@@ -135,13 +139,12 @@ const GLchar azel_vs[] =
 "} "
 ;
 
-const GLchar azel_ps_es[] =
+const GLchar azel_ps[] =
 "#version 300 es\n"
 "precision highp float;									\n"
 "in highp vec2 v_texcoord;								\n"
 "in highp vec4 v_color;								\n"
 "uniform sampler2D s_texture;							\n"
-"uniform sampler2D s_falloff;							\n"
 "uniform float s_textureInfluence;						\n"
 "uniform float s_ambientInfluence;						\n"
 "out vec4 fragColor;									\n"
@@ -149,7 +152,6 @@ const GLchar azel_ps_es[] =
 "{														\n"
 "   float distanceValue = mix(0.f, 10.f, 1.f-gl_FragCoord.z); \n"
 "   //distanceValue = clamp(distanceValue, 0, 1); \n"
-"	vec4 fallout = texture(s_falloff, vec2(distanceValue,0)); \n"
 "	vec4 txcol = texture(s_texture, v_texcoord);		\n"
 "   if(txcol.a <= 0.f) discard;\n"
 "   fragColor = (clamp(txcol, 0.f, 1.f) * s_textureInfluence) + v_color;									\n"
@@ -1142,12 +1144,24 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                                         glBindTexture(GL_TEXTURE_2D, colorRampTexture);
                                     }
 
-                                    char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
+                                    static GLuint indexBufferId = 0;
+                                    if (indexBufferId == 0)
+                                    {
+                                        char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
+                                        glGenBuffers(1, &indexBufferId);
+                                        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+                                        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
+                                    }
+                                    else
+                                    {
+                                        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+                                    }
+                                    
                                     checkGL();
                                     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                                     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
                                     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
+                                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)0);
                                     checkGL();
                                     glDisableVertexAttribArray(vertexp);
                                     checkGL();
@@ -1253,8 +1267,9 @@ void flushObjectsToDrawList()
                 // The maxLength includes the NULL character
                 std::vector<GLchar> errorLog(maxLength);
                 glGetShaderInfoLog(vshader, maxLength, &maxLength, &errorLog[0]);
+                PDS_unimplemented(errorLog.data());
+                assert(false);
             }
-            while (!compiled);
         }
 
         fshader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -1275,7 +1290,6 @@ void flushObjectsToDrawList()
                 PDS_unimplemented(errorLog.data());
                 assert(false);
             }
-            while (!compiled);
         }
 
         shaderProgram = glCreateProgram();
@@ -1286,7 +1300,6 @@ void flushObjectsToDrawList()
             glLinkProgram(shaderProgram);
             glGetProgramiv(shaderProgram, GL_LINK_STATUS, (int*)&linked);
             assert(linked == 1);
-            while (!linked);
         }
 
         bInit = true;

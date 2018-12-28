@@ -4,8 +4,9 @@
 
 #ifdef WIN32
 #define _CRT_SECURE_NO_WARNINGS
-#define NOMINMAX
 #endif
+
+#define NOMINMAX
 
 #ifndef HEADLESS_TOOL
 #include <SDL.h>
@@ -26,6 +27,10 @@
 #include <cmath>
 #include <unordered_map>
 #include <algorithm>
+
+void checkGLImpl(const char*, unsigned int line);
+//#define checkGL() checkGLImpl(__FILE__, __LINE__);
+#define checkGL()
 
 #if (defined(__APPLE__) && TARGET_OS_IOS) || (defined(__ANDROID__)) || (defined(__EMSCRIPTEN__))
 #define USE_GL_ES3

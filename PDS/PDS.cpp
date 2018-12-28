@@ -891,8 +891,6 @@ void interruptVDP1Update()
     graphicEngineStatus.vdp1Context[1].currentVdp1WriteEA = graphicEngineStatus.vdp1Context[1].m4[r6];
 }
 
-void checkGL();
-
 bool bContinue = true;
 void loopIteration()
 {
@@ -951,7 +949,7 @@ int main(int argc, char* argv[])
     u32 frameCounter = 0;
 
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(loopIteration, 60, 1);
+    emscripten_set_main_loop(loopIteration, 0, 1);
 #else
     do 
     {

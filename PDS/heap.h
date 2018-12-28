@@ -5,6 +5,12 @@ struct s_heapNode
     s_heapNode* m_nextNode; // or the linked list of dependent allocation (if it's an allocated task)
     u32 m_size;
 
+    s_heapNode()
+    {
+        m_nextNode = NULL;
+        m_size = 0;
+    }
+
     void* getUserData()
     {
         return this + 1;
