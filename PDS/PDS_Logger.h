@@ -11,6 +11,12 @@ struct sPDS_Logger
 
     void    AddLog(const char* fmt, ...)
     {
+	{
+		va_list args;
+		va_start (args, fmt);
+		vprintf (fmt, args);
+		va_end (args);
+	}
         int old_size = Buf.size();
         va_list args;
         va_start(args, fmt);

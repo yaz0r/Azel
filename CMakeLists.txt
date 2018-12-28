@@ -3,7 +3,7 @@ project(PDS)
 cmake_minimum_required(VERSION 3.9)
 
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
-set(VIDEO_OPENGLES OFF CACHE BOOL "" FORCE)
+#set(VIDEO_OPENGLES OFF CACHE BOOL "" FORCE)
 set(VIDEO_DUMMY OFF CACHE BOOL "" FORCE)
 set(VIDEO_VULKAN OFF CACHE BOOL "" FORCE)
 set(RENDER_D3D OFF CACHE BOOL "" FORCE)
@@ -65,7 +65,7 @@ set(SOURCES
  PDS/imgui/imgui_widgets.cpp
  PDS/imgui/examples/imgui_impl_opengl3.cpp
  PDS/imgui/examples/imgui_impl_sdl.cpp
- PDS/imgui/examples/libs/gl3w/GL/gl3w.c
+ #PDS/imgui/examples/libs/gl3w/GL/gl3w.c
 )
 
 
@@ -147,7 +147,15 @@ IF(APPLE)
 ENDIF (APPLE)
 
 TARGET_LINK_LIBRARIES(Azel ${EXTRA_LIBS})
-TARGET_LINK_LIBRARIES(Azel SDL2main SDL2-static)
+
+if(EMSCRIPTEN)
+	TARGET_LINK_LIBRARIES(Azel -lGLESv2)
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s TOTAL_MEMORY=1073741824 -s DEMANGLE_SUPPORT=1 -s USE_WEBGL2=1 -s USE_SDL=2 --preload-file ${CMAKE_SOURCE_DIR}/data@/")
+	set(CMAKE_EXECUTABLE_SUFFIX ".html")
+else()
+	TARGET_LINK_LIBRARIES(Azel SDL2main SDL2-static)
+endif()
 
 if(UNIX)
 	TARGET_LINK_LIBRARIES(Azel -lGL)

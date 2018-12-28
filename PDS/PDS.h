@@ -16,9 +16,37 @@
 #include <assert.h>
 #include <string.h>
 
+#include <string>
+#include <sstream>
+#include <iostream>
+
 #include <cmath>
 #include <unordered_map>
 #include <algorithm>
+
+#if (defined(__APPLE__) && TARGET_OS_IOS) || (defined(__ANDROID__)) || (defined(__EMSCRIPTEN__))
+#define USE_GL_ES3
+#endif
+
+#ifdef USE_GL_ES3
+#if defined(__APPLE__)
+#include <OpenGLES/ES3/gl.h>
+#include <OpenGLES/ES3/glext.h>
+#else
+#include <GLES3/gl3.h>
+#endif
+#else
+#include <GL/gl3w.h>
+#ifdef __MACOS__
+#include <Opengl/gl.h>
+#else
+#include <GL/gl.h>
+#endif
+#endif
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 typedef uint8_t u8;
 typedef int8_t s8;

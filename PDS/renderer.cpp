@@ -1,17 +1,5 @@
 #include "PDS.h"
 
-#ifdef __IPHONEOS__
-#include <OpenGLES/ES3/gl.h>
-#include <OpenGLES/ES3/glext.h>
-#else
-#include <GL/gl3w.h>
-#ifdef __MACOS__
-#include <Opengl/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-#endif
-
 #define IMGUI_API
 
 #include "imgui_impl_opengl3.h"
@@ -40,7 +28,7 @@ GLuint gNBG2Texture = 0;
 GLuint gNBG3Texture = 0;
 
 
-#ifdef __IPHONEOS__
+#ifdef USE_GL_ES3
 const GLchar blit_vs[] =
 "#version 300 es\n"
 "in vec3 a_position;   \n"
@@ -114,27 +102,27 @@ void azelSdl2_Init()
     }
 
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-#ifdef __IPHONEOS__
-    const char* glsl_version = "#version 130";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+ //   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+//    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+//    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+//    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+#ifdef USE_GL_ES3 
+    const char* glsl_version = "#version 300 es";
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #else
     const char* glsl_version = "#version 130";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 #endif
-    gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL);
     assert(gWindow);
 
     gGlcontext = SDL_GL_CreateContext(gWindow);
     assert(gGlcontext);
 
-#ifndef __IPHONEOS__
+#ifndef USE_GL_ES3
     gl3wInit();
 #endif
 

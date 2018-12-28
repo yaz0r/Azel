@@ -893,25 +893,9 @@ void interruptVDP1Update()
 
 void checkGL();
 
-int main(int argc, char* argv[])
+bool bContinue = true;
+void loopIteration()
 {
-    azelSdl2_Init();
-
-    checkGL();
-    
-    azelInit();
-    resetEngine();
-
-    //...
-    readInputsFromSMPC();
-    updateInputs();
-    readInputsFromSMPC();
-    updateInputs();
-
-    u32 frameCounter = 0;
-
-    do 
-    {
         checkGL();
         azelSdl2_StartFrame();
 
@@ -945,7 +929,35 @@ int main(int argc, char* argv[])
             interruptVDP1Update();
         }
         checkGL();
-    } while (azelSdl2_EndFrame());
+
+	bContinue = azelSdl2_EndFrame();
+}
+
+int main(int argc, char* argv[])
+{
+    azelSdl2_Init();
+
+    checkGL();
+    
+    azelInit();
+    resetEngine();
+
+    //...
+    readInputsFromSMPC();
+    updateInputs();
+    readInputsFromSMPC();
+    updateInputs();
+
+    u32 frameCounter = 0;
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loopIteration, 60, 1);
+#else
+    do 
+    {
+ 	loopIteration();
+    } while (bContinue);
+#endif
     return 0;
 }
 
