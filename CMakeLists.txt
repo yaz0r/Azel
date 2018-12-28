@@ -65,9 +65,14 @@ set(SOURCES
  PDS/imgui/imgui_widgets.cpp
  PDS/imgui/examples/imgui_impl_opengl3.cpp
  PDS/imgui/examples/imgui_impl_sdl.cpp
- #PDS/imgui/examples/libs/gl3w/GL/gl3w.c
 )
 
+if (MSVC)
+    set(SOURCES
+        ${SOURCES}
+        PDS/imgui/examples/libs/gl3w/GL/gl3w.c
+    )
+endif()
 
 if( MSVC )
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x -D_HAS_EXCEPTIONS=0 /GR-")

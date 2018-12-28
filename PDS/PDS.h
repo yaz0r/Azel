@@ -2,7 +2,10 @@
 
 #define PDS_TOOL
 
+#ifdef WIN32
 #define _CRT_SECURE_NO_WARNINGS
+#define NOMINMAX
+#endif
 
 #ifndef HEADLESS_TOOL
 #include <SDL.h>

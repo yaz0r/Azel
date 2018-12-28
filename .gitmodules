@@ -4,3 +4,6 @@
 [submodule "PDS/imgui"]
 	path = PDS/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "emsdk"]
+	path = emsdk
+	url = https://github.com/juj/emsdk
