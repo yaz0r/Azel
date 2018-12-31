@@ -35,8 +35,8 @@ struct sLCSTarget
     const sVec3_FP* mC;
     s16 m10_flags;
     s16 m12;
-    s16 m14;
-    s8 m16;
+    s16 m14_receivedItemId;
+    s8 m16_receivedItemQuantity;
     s8 m17;
     s8 m18;
     s8 m19;
@@ -94,6 +94,7 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     void Init1Sub1();
     void Init1Sub1Sub0();
     void Laser1Draw();
+    void Laser1DrawSub0(std::array<sVec3_FP, 8>& r5, s32 r6, sSaturnPtr r7, void* arg0);
 
     void Init2(sLaserArgs*);
     void Laser2Init();
@@ -139,8 +140,8 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     sVec3_FP* m18;
     sLCSTarget* m1C;
     struct s_LCSTask340* m20;
-    s16 m24;
-    s16 m26;
+    s16 m24_receivedItemId;
+    s8 m26_receivedItemQuantity;
     s8 m27;
     void (s_LCSTask340Sub::*m28_laserInit)();
     void (s_LCSTask340Sub::*m2C_laserUpdate)();
@@ -260,7 +261,19 @@ struct sLCSSelected : public s_workAreaTemplate<sLCSSelected>
     //size 0x30
 };
 
-void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14);
+struct sObjectListEntry
+{
+    s8 m0;
+    s8 m1;
+    s8 m2;
+    s8 m3;
+    std::string m4_name;
+    std::string m8_description;
+};
+
+sObjectListEntry* getObjectListEntry(s32 entry);
+
+void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 receivedItemId, s32 receivedItemQuantity, s32 arg14);
 void updateLCSTarget(sLCSTarget* r14);
 void LCSTaskDrawSub();
 void allocateLCSEntry(s_visibilityGridWorkArea* r4, u8* r5, u32 r6);

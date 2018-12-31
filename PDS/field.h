@@ -312,7 +312,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
     u32 m34;
     s_vdp2StringTask* m38_dialogStringTask;
     s_multiChoiceTask2* m3C_multichoiceTask;
-    s32 m40;
+    struct s_receivedItemTask* m40;
     s_multiChoice* m44_multiChoiceData;
     s_workArea* m48_cutsceneTask; // s_cutsceneTask or s_cutsceneTask2
     s32 m4C_PCMPlaying;

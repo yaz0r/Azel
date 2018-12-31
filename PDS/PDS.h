@@ -67,18 +67,10 @@ typedef int64_t s64;
 
 #include "PDS_Logger.h"
 
-struct sSaturnMemoryFile
-{
-    char* m_name;
-    u8* m_data;
-    u32 m_dataSize;
-    u32 m_base;
-};
-
 struct sSaturnPtr
 {
     u32 m_offset;
-    sSaturnMemoryFile* m_file;
+    struct sSaturnMemoryFile* m_file;
 
     sSaturnPtr operator + (unsigned int i) const
     {
@@ -92,6 +84,19 @@ struct sSaturnPtr
         sSaturnPtr newPtr = *this;
         newPtr.m_offset += i;
         return newPtr;
+    }
+
+    sSaturnPtr& operator ++ ()
+    {
+        m_offset++;
+        return *this;
+    }
+
+    sSaturnPtr operator ++ (int)
+    {
+        sSaturnPtr result(*this);
+        ++(*this);
+        return result;
     }
 
     sSaturnPtr& operator += (unsigned int i)
@@ -117,6 +122,22 @@ struct sSaturnPtr
         temp.m_offset = 0;
         temp.m_file = NULL;
         return temp;
+    }
+};
+
+struct sSaturnMemoryFile
+{
+    char* m_name;
+    u8* m_data;
+    u32 m_dataSize;
+    u32 m_base;
+
+    sSaturnPtr getSaturnPtr(u32 base)
+    {
+        sSaturnPtr newPtr;
+        newPtr.m_file = this;
+        newPtr.m_offset = base;
+        return newPtr;
     }
 };
 

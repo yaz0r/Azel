@@ -90,20 +90,16 @@ void processTasks(s_task** ppTask)
             }
             else
             {
-                s_heapNode* r4 = pTask->getHeapNode()->m_nextNode;
-#ifdef __EMSCRIPTEN__
-                r4 = nullptr;
-#endif
+                s_heapNode* r4 = pTask->getHeapNode();
                 while (r4)
                 {
-                    assert(0);
-                    s_heapNode* pNextTask = r4->m_nextNode;
-                    freeHeap(r4->getUserData());
-                    r4 = pNextTask;
+                    s_heapNode* pNextNode = r4->m_nextNode;
+                    freeHeapForTask(pTask->getWorkArea(), r4);
+                    r4 = pNextNode;
                 }
 
                 *ppTask = pTask->m0_pNextTask;
-                freeHeap(pTask);
+                delete pTask;
 //                pTask = *ppTask;
             }
         }
@@ -141,7 +137,7 @@ void resetTasks()
 
 p_workArea createSubTask(p_workArea parentWorkArea, const s_taskDefinition* pDefinition, p_workArea newWorkArea)
 {
-    s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
+    s_task* pTask = new s_task;
     assert(pTask);
 
     numActiveTask++;
@@ -179,7 +175,7 @@ p_workArea createSubTask(p_workArea parentWorkArea, const s_taskDefinition* pDef
 
 p_workArea createSubTaskWithArg(p_workArea parentWorkArea, const s_taskDefinitionWithArg* pDefinition, p_workArea newWorkArea, void* argument)
 {
-    s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
+    s_task* pTask = new s_task;
     assert(pTask);
 
     numActiveTask++;
@@ -217,7 +213,7 @@ p_workArea createSubTaskWithArg(p_workArea parentWorkArea, const s_taskDefinitio
 
 p_workArea createSiblingTaskWithArg(p_workArea workArea, const s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument)
 {
-    s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
+    s_task* pTask = new s_task;
     assert(pTask);
 
     numActiveTask++;
@@ -256,7 +252,7 @@ p_workArea createSiblingTaskWithArg(p_workArea workArea, const s_taskDefinitionW
 
 p_workArea createSubTaskFromFunction(p_workArea parentWorkArea, void(*pFunction)(p_workArea), p_workArea newWorkArea, const char* name)
 {
-    s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
+    s_task* pTask = new s_task;
     assert(pTask);
 
     numActiveTask++;
@@ -289,7 +285,7 @@ p_workArea createSubTaskFromFunction(p_workArea parentWorkArea, void(*pFunction)
 
 s_workArea* createRootTask(s_taskDefinitionWithArg* pDefinition, p_workArea newWorkArea)
 {
-    s_task* pTask = (s_task*)allocateHeap(sizeof(s_task));
+    s_task* pTask = new s_task;
     assert(pTask);
 
     numActiveTask++;

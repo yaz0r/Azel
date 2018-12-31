@@ -1,5 +1,8 @@
 #include "PDS.h"
 
+static const u32 HEAP_MAGIC = 0xCAFEC0DE;
+
+#ifdef USE_LEGACY_TASK_HEAP
 s_heapNode heapRoot;
 
 u8* heap = nullptr;;
@@ -129,3 +132,48 @@ void freeHeap(void* pUserData)
 
 
 }
+#else
+void initHeap()
+{
+}
+
+void* allocateHeap(u32 size)
+{
+    return new u8[size];
+}
+
+void* allocateHeapForTask(s_workArea* pWorkArea, u32 size)
+{
+    s_heapNode** pTaskHeapNode = &pWorkArea->getTask()->m_heapNode;
+    while (*pTaskHeapNode)
+    {
+        pTaskHeapNode = &(*pTaskHeapNode)->m_nextNode;
+    }
+    u32 allocatedSize = size + sizeof(s_heapNode);
+    u8* rawBuffer = new u8[allocatedSize];
+
+    memset(rawBuffer, 0, allocatedSize);
+
+    s_heapNode* newNode = (s_heapNode*)rawBuffer;
+    newNode->m_magic = HEAP_MAGIC;
+    newNode->m_nextNode = nullptr;
+    newNode->m_size = size;
+
+    *pTaskHeapNode = newNode;
+
+    return newNode->getUserData();
+}
+
+void freeHeap(void* pUserData)
+{
+    delete[](u8*)pUserData;
+}
+
+void freeHeapForTask(struct s_workArea* pWorkArea, void* pUserData)
+{
+    s_heapNode* pHeapNode = (s_heapNode*)((u8*)pUserData - sizeof(s_heapNode));
+    assert(pHeapNode->m_magic == HEAP_MAGIC);
+
+    delete[](u8*)pHeapNode;
+}
+#endif

@@ -1203,8 +1203,7 @@ void resetVdp2StringsSub1Sub1()
     do 
     {
         r14--;
-        PDS_unimplemented("loadCharacterToVdp2 because crash in release");
-//        loadCharacterToVdp2(r14, r14 + 0x8000);
+        loadCharacterToVdp2(r14, r14 + 0x8000);
     } while (r14);
 }
 

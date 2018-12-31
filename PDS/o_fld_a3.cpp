@@ -3687,8 +3687,8 @@ s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr)
     pItemBoxDefinition->m30 = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m34 = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m38 = readSaturnS32(ptr); ptr += 4;
-    pItemBoxDefinition->m3C = readSaturnS32(ptr); ptr += 4;
-    pItemBoxDefinition->m40 = readSaturnS8(ptr); ptr += 1;
+    pItemBoxDefinition->m3C_receivedItemId = readSaturnS32(ptr); ptr += 4;
+    pItemBoxDefinition->m40_receivedItemQuantity = readSaturnS8(ptr); ptr += 1;
     pItemBoxDefinition->m41_LCSType = readSaturnS8(ptr); ptr += 1;
     pItemBoxDefinition->m42 = readSaturnS8(ptr); ptr += 1;
     pItemBoxDefinition->m43 = readSaturnS8(ptr); ptr += 1;
@@ -6536,9 +6536,17 @@ void s_LCSTask340Sub::Init3Sub3(s_LCSTask340Sub_m58* r4, s32 r5, sSaturnPtr r6)
     r4->m4 = r5;
 }
 
+static const std::array<fixedPoint, 2> s_LCSTask340Sub_Init3Sub0Data0 = {
+    0x2000000,
+    0x6000000,
+};
+
 void s_LCSTask340Sub::Laser3Init()
 {
-    TaskUnimplemented();
+    m34 = 0x37000;
+    m38 = performDivision(m158, -0x37000);
+    m3C = s_LCSTask340Sub_Init3Sub0Data0[(randomNumber() >> 16) & 1];
+    m40 = 0;
 }
 
 void s_LCSTask340Sub::Laser3Update()
@@ -6620,8 +6628,8 @@ void s_LCSTask340Sub::Init3(sLaserArgs* arg)
     m18 = 0;
     m1C = arg->m14;
     m20 = 0;
-    m24 = arg->m1C;
-    m26 = arg->m1E;
+    m24_receivedItemId = arg->m1C_receivedItemId;
+    m26_receivedItemQuantity = arg->m1E_receivedItemQuantity;
     m27 = arg->m1F;
 
     m28_laserInit = &s_LCSTask340Sub::Laser3Init;
@@ -6734,13 +6742,100 @@ void s_LCSTask340Sub_Delete3Sub0(s32 r4)
     pDragonTask->m_E8_specialColor = s_LCSTask340Sub_Delete3Sub0Data0[r4];
 }
 
+// TODO: move to kernel
+s32 createReceiveItemTaskSub0(const char* inputString, s32 maxLength)
+{
+    s32 r6 = 0;
+    while (*inputString)
+    {
+        if ((*inputString != 0xDE) && (*inputString == 0xDF))
+        {
+            if (r6 >= maxLength)
+                return r6;
+            r6++;
+        }
+        inputString++;
+    }
+    return r6;
+}
+
+struct s_receivedItemTask : s_workAreaTemplate<s_receivedItemTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { nullptr, &s_receivedItemTask::Update, nullptr, &s_receivedItemTask::Delete, "s_receivedItemTask" };
+        return &taskDefinition;
+    }
+
+    void Update()
+    {
+        TaskUnimplemented();
+    }
+
+    void Delete()
+    {
+        TaskUnimplemented();
+    }
+
+    s_receivedItemTask* m10;
+    s16 m14_x;
+    s16 m16_y;
+    s16 m1A_x2;
+    s16 m1C_y2;
+    s16 m24_receivedItemId;
+    s16 m26_receivedItemQuanity;
+    s16 m28_itemNameLength;
+    // size 0x2C
+};
+
+// TODO: move to kernel
+s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedItemTask** r5, s32 r6, s32 r7_receivedItemId, s32 arg0_receivedItemQuanity)
+{
+    s_receivedItemTask* pNewTask = createSubTask<s_receivedItemTask>(r4_parentTask);
+
+    if (r6 > 0)
+    {
+
+    }
+    else
+    {
+        //601C38A
+        assert(0);
+    }
+
+    //601C39E
+    pNewTask->m24_receivedItemId = r7_receivedItemId;
+    pNewTask->m26_receivedItemQuanity = arg0_receivedItemQuanity;
+
+    pNewTask->m28_itemNameLength = createReceiveItemTaskSub0(getObjectListEntry(r7_receivedItemId)->m4_name.c_str(), 34);
+    s32 r4 = pNewTask->m28_itemNameLength + 2;
+    if (arg0_receivedItemQuanity <= 0)
+    {
+        //0601C3CA
+        assert(0);
+    }
+
+    pNewTask->m14_x = (((44 - r4) / 2) - 5) & ~1;
+    pNewTask->m16_y = 4;
+    pNewTask->m1A_x2 = r4 + 0xA;
+    pNewTask->m1C_y2 = 4;
+
+    if (r5)
+    {
+        pNewTask->m10 = *r5;
+        *r5 = pNewTask;
+    }
+    return pNewTask;
+}
+
 void s_LCSTask340Sub::Delete3()
 {
     s_LCSTask340Sub_Delete3Sub0(m27);
     playSoundEffect(17);
 
-    if (m24 >= 0)
+    if (m24_receivedItemId >= 0)
     {
+        s_fieldScriptWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
         if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m40)
         {
             //0607A1A0
@@ -6749,10 +6844,27 @@ void s_LCSTask340Sub::Delete3()
         else
         {
             //0607A1C2
-            assert(0);
+            getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount--;
+            createReceiveItemTask(r13, &r13->m40, 45, m24_receivedItemId, m26_receivedItemQuantity);
+            if (m24_receivedItemId < 77)
+            {
+                //0607A1F6
+                if (mainGameState.consumables[m24_receivedItemId] + m26_receivedItemQuantity > 99)
+                {
+                    mainGameState.consumables[m24_receivedItemId] = 99;
+                }
+                else
+                {
+                    mainGameState.consumables[m24_receivedItemId] += m26_receivedItemQuantity;
+                }
+            }
+            else
+            {
+                //607A2A8
+                assert(0);
+            }
 
         }
-        assert(0);
     }
     else
     {
@@ -6765,7 +6877,22 @@ void s_LCSTask340Sub::Init1Sub1Sub0()
     if (m18 == nullptr)
         return;
 
-    PDS_unimplemented("s_LCSTask340Sub::Init1Sub1Sub0");
+    s32 r6 = 0;
+    s32 r7 = 0;
+    s32 r5 = 0;
+    s32 r14 = 0x10;
+
+    do 
+    {
+        m6C[r5] += *m18;
+        m6C[r5+1] += *m18;
+        r6 += 2;
+    } while (r6 < r14);
+
+    if (m154 <= r14)
+    {
+        m6C[0] = *m14;
+    }
 }
 
 void s_LCSTask340Sub::Init1Sub1()
@@ -6796,9 +6923,247 @@ void s_LCSTask340Sub::Init1Sub1()
     m144 = var4 - r5;
 }
 
+void Laser1DrawSub0Sub0(std::array<sVec3_FP, 2>&r4, sSaturnPtr r5, sVec2_S16 r6, sVec2_S16 r7, fixedPoint maxDistance)
+{
+    const s_graphicEngineStatus_405C& r12 = graphicEngineStatus.m405C;
+    auto var_28 = r5;
+    auto var_24 = r6;
+
+    sVec3_FP& var_2C = r4[0];
+    sVec3_FP& var_30 = r4[1];
+
+    fixedPoint r10 = FP_Div(maxDistance - r4[0][2], maxDistance - r4[1][2]);
+    var_30[0] = var_2C[0] + MTH_Mul(r10, var_30[0] - var_2C[0]);
+    var_30[1] = var_2C[1] + MTH_Mul(r10, var_30[1] - var_2C[1]);
+    var_30[2] = maxDistance;
+
+    r6[0] = setDividend(r12.m18, r4[1][0], r4[1][2]);
+
+    PDS_unimplemented("Laser1DrawSub0Sub0");
+}
+
+s32 Laser1DrawSub0Sub1(std::array<sVec2_S16,2>& r4)
+{
+    s32 r5 = 0;
+    if (r4[0][0] - r4[1][0] >= 0)
+    {
+        r5 = 2;
+    }
+    if (r4[0][1] - r4[1][1] >= 0)
+    {
+        r5 |= 1;
+    }
+    return r5;
+}
+
+void Laser1DrawSub0Sub2(std::array<sVec2_S16, 2>& r4, sVec2_S16*r5, s32 r6, std::array<sVec3_FP, 8>& r7)
+{
+    switch (r6)
+    {
+    default:
+        assert(0);
+    }
+}
+
+void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, sSaturnPtr r7, void* arg0)
+{
+    const s_graphicEngineStatus_405C& r14 = graphicEngineStatus.m405C;
+
+    auto stack0 = r6;
+    std::array<s32, 8>::iterator stack4;
+    sVec2_S16 stack8;
+    sVec2_S16 stackC;
+    auto stack10 = r7;
+    auto stack14 = this;
+    auto stack1C = input_r5;
+    auto stack20 = stack0 - 2;
+    auto stack24 = stack0 - 1;
+    std::array<sVec3_FP, 8> stack28; // some unknown size;
+    sVec2_S16 stack58;
+    std::array<sVec2_S16, 2> stack5C;
+    sVec2_S16 stack64;
+    sVec2_S16 stack68; 
+    sVec2_S16 stack6C;
+    std::array<sVec3_FP, 2> stack70;
+    std::array<s32, 8> stack88; // some unknown size
+
+    transformAndAddVecByCurrentMatrix(&input_r5[0], &stack70[0]);
+
+    stack5C[0][0] = setDividend(r14.m18, stack70[0][0], stack70[0][2]);
+    stack5C[0][1] = setDividend(r14.m1C, stack70[0][1], stack70[0][2]);
+    stack68[0] = setDividend(r14.m18, readSaturnS32(r7), stack70[0][2]);
+    stack68[1] = setDividend(r14.m1C, readSaturnS32(r7), stack70[0][2]);
+
+    auto r4 = stack88.begin();
+    if (stack70[0][2] < 0x3000)
+    {
+        *r4 = 1;
+    }
+    else if(stack70[0][2] < graphicEngineStatus.m405C.m14)
+    {
+        *r4 = 0;
+    }
+    else
+    {
+        *r4 = 2;
+    }
+    //0607B424
+    sVec2_S16& r9 = stack5C[1];
+    sVec2_S16& r10 = stack6C;
+    s32 r11 = 0;
+    auto r8 = r4+1;
+    auto r5 = r4;
+    stack4 = r5;
+
+    while (r11 < stack24)
+    {
+        transformAndAddVecByCurrentMatrix(&stack1C[r11 + 1], &stack70[1]);
+        stack58[0] = r9[0] = setDividend(r14.m18, stack70[1][0], stack70[1][2]);
+        stack58[1] = r9[1] = setDividend(r14.m1C, stack70[1][1], stack70[1][2]);
+
+        auto stack18 = stack10 + r11 * 4;
+        auto stack0 = stack18 + 4;
+        stack64[0] = stack6C[0] = setDividend(r14.m18, readSaturnS32(stack0), stack70[1][2]);
+        stack64[1] = stack6C[1] = setDividend(r14.m1C, readSaturnS32(stack0), stack70[1][2]);
+
+        if (stack70[1][2] < 0x3000)
+        {
+            *r8 = 1;
+        }
+        else if (stack70[1][2] < r14.m14)
+        {
+            *r8 = 0;
+        }
+        else
+        {
+            *r8 = 2;
+        }
+
+        if ((stack4[0] != *r8) ||(stack4[0] == 0))
+        {
+            //607B512
+            if (stack4[0] == 1)
+            {
+                //0607B51A
+                Laser1DrawSub0Sub0(stack70, stack18, stackC, stack8, 0x3000);
+            }
+            else if (stack4[0] == 2)
+            {
+                Laser1DrawSub0Sub0(stack70, stack18, stackC, stack8, r14.m14);
+            }
+
+            //0607B54C
+            if (*r8 == 1)
+            {
+                Laser1DrawSub0Sub0(stack70, stack0, r9, r10, 0x3000);
+            }
+            else if (*r8 == 2)
+            {
+                Laser1DrawSub0Sub0(stack70, stack0, r9, r10, r14.m14);
+            }
+
+            //607B586
+            Laser1DrawSub0Sub2(stack5C, &stack58, Laser1DrawSub0Sub1(stack5C), stack28);
+
+            //0607B5A2
+            {
+                s32 r4 = 0;
+                s32 r7 = 0;
+                s32 r5 = 0;
+                s32 r6 = 0;
+
+                do 
+                {
+                    // this was unrolled 4 times in the original code
+                    //607B5AA
+                    if ((r14.mC > stack28[r4][0]) && (r14.m4 > stack28[r4][0]))
+                    {
+                        stack28[r4][0] = r14.m4;
+                    }
+                    //607B5F4
+                    if ((r14.mE < stack28[r4][0]) && (r14.m6 < stack28[r4][0]))
+                    {
+                        stack28[r4][0] = r14.m6;
+                    }
+                    //607B63E
+                    if ((r14.mA > stack28[r4][1]) && (r14.m2 > stack28[r4][1]))
+                    {
+                        stack28[r4][1] = r14.m2;
+                    }
+                    //607B688
+                    if ((r14.m8 < stack28[r4][1]) && (r14.m0 < stack28[r4][1]))
+                    {
+                        stack28[r4][1] = r14.m0;
+                    }
+                    r4++;
+                } while (r4 < 4);
+
+                //0607BA00
+                assert(0);
+                /*
+                if (stack20 != r11)
+                {
+                    Laser1DrawSub3(stack24, &stack38, stack10 + 0xC, r11, r9, r10, stackB4, stack70[2]);
+                }
+                else
+                {
+                    //607BA32
+                    Laser1DrawSub4(stack18, &stack2C, r11, stackB0, stack70[2]);
+                }
+                */
+            }
+        }
+
+        //607BA48
+        stack70[0] = stack70[1];
+        stackC = stack58;
+        stack8 = stack64;
+        stack4 = r8;
+        r11++;
+    } 
+}
+
 void s_LCSTask340Sub::Laser1Draw()
 {
     void* r6 = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m9C0;
+    s32 stack0 = 8;
+    std::array<sVec3_FP,8> r11;
+    std::array<sVec3_FP, 8>::iterator r4 = r11.begin();
+    s32 r13 = 0;
+    if (m154 <= 16)
+    {
+        //0607A8C6
+        auto r5 = r4;
+        sSaturnPtr r4 = gFLD_A3->getSaturnPtr(0x06094C38) + m154 * 8;
+        sSaturnPtr r7 = r4 + 8;
+
+        while (r4.m_offset < r7.m_offset)
+        {
+            s8 value = readSaturnS8(r4);
+            if (value < 0)
+            {
+                break;
+            }
+            *r5 = m6C[value];
+            r13++;
+            r5++;
+            r4++;
+        }
+        return Laser1DrawSub0(r11, r13, gFLD_A3->getSaturnPtr(0x06094D40) + (stack0 - r13) * 4, r6);
+    }
+    else
+    {
+        //0607A91C
+        sSaturnPtr r5 = gFLD_A3->getSaturnPtr(0x06094CC0) + ((m154 - 1) & 0xF) * 8;
+        while (r4 < r11.end())
+        {
+            s8 value = readSaturnS8(r5);
+            *r4 = m6C[value];
+            r4++;
+            r5++;
+        }
+        return Laser1DrawSub0(r11, 8, gFLD_A3->getSaturnPtr(0x06094D40), r6);
+    }
 }
 
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4)

@@ -27,21 +27,21 @@ void LCSTaskDrawSub1Sub2Sub6(void*)
     PDS_unimplemented("LCSTaskDrawSub1Sub2Sub6");
 }
 
-void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 argE, s32 arg10, s32 arg14)
+void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 receivedItemId, s32 receivedItemQuantity, s32 arg14)
 {
     r4->m0 = r5;
     r4->m4_callback = r6;
     r4->m8_parentWorldCoordinates = r7;
     r4->mC = arg0;
     r4->m12 = argA;
-    r4->m14 = argE;
-    if (r4->m14 >= 0)
+    r4->m14_receivedItemId = receivedItemId;
+    if (r4->m14_receivedItemId >= 0)
     {
-        r4->m16 = arg10;
+        r4->m16_receivedItemQuantity = receivedItemQuantity;
     }
     else
     {
-        r4->m16 = 0;
+        r4->m16_receivedItemQuantity = 0;
     }
     r4->m10_flags = flags;
     r4->m17 = arg14;
@@ -755,16 +755,6 @@ s32 LCSTaskDrawSub1Sub2Sub2(s_LCSTask* r4)
     return 1;
 }
 
-struct sObjectListEntry
-{
-    s8 m0;
-    s8 m1;
-    s8 m2;
-    s8 m3;
-    std::string m4_name;
-    std::string m8_description;
-};
-
 sObjectListEntry* getObjectListEntry(s32 entry)
 {
     static std::unordered_map<s32, sObjectListEntry*> cache;
@@ -799,10 +789,10 @@ static const std::array<s8, 10> LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0Data1 =
 
 s8 LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0(sLCSTarget* r4)
 {
-    if (r4->m14 < 0)
-        return r4->m14;
+    if (r4->m14_receivedItemId < 0)
+        return r4->m14_receivedItemId;
 
-    return LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0Data1[getObjectListEntry(r4->m14)->m1];
+    return LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0Data1[getObjectListEntry(r4->m14_receivedItemId)->m1];
 }
 
 void LCSTaskDrawSub1Sub2Sub0Sub1Sub0(s_LCSTask* r4, sLCSTarget* r5, s32 r6)
@@ -815,11 +805,10 @@ void LCSTaskDrawSub1Sub2Sub0Sub1Sub0(s_LCSTask* r4, sLCSTarget* r5, s32 r6)
     var8.m8 = r5->m10_flags;
     var8.m10 = nullptr;
     var8.m18 = nullptr;
+    var8.m1C_receivedItemId = r5->m14_receivedItemId;
+    var8.m1E_receivedItemQuantity = r5->m16_receivedItemQuantity;
 
-    s16 var24 = r5->m14;
-    s8 var26 = r5->m16;
-
-    if (var24 >= 0)
+    if (var8.m1C_receivedItemId >= 0)
     {
         var8.m1F = LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0(r5);
     }
@@ -861,7 +850,7 @@ void LCSTaskDrawSub1Sub2Sub0Sub1(s_LCSTask* r4)
             //606E0A6
             if (r14->m19 & 0x20)
             {
-                if ((r14->m14 >= 0) && (r14->m16 > 0))
+                if ((r14->m14_receivedItemId >= 0) && (r14->m16_receivedItemQuantity > 0))
                 {
                     LCSTaskDrawSub1Sub2Sub0Sub1Sub0(r4, r14, 0);
                 }

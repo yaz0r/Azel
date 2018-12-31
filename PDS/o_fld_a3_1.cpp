@@ -209,13 +209,13 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         m80 = r13->m34;
         m84 = r13->m38;
         m8B = r13->m41_LCSType;
-        m88 = r13->m3C;
-        m8A = r13->m40;
+        m88 = r13->m3C_receivedItemId;
+        m8A = r13->m40_receivedItemQuantity;
         m8C = r13->m42;
         m86 = r13->m43;
         m8D = r13->m44;
 
-        createLCSTarget(&m8_LCSTarget, this, LCSItemBox_CallbackTable[r13->m41_LCSType], &m60, NULL, LCSItemBox_TableFlags[r13->m41_LCSType] | LCSItemBox_Table0[r13->m41_LCSType] | 0x100, r13->m38, r13->m3C, r13->m40, r13->m42);
+        createLCSTarget(&m8_LCSTarget, this, LCSItemBox_CallbackTable[r13->m41_LCSType], &m60, NULL, LCSItemBox_TableFlags[r13->m41_LCSType] | LCSItemBox_Table0[r13->m41_LCSType] | 0x100, r13->m38, r13->m3C_receivedItemId, r13->m40_receivedItemQuantity, r13->m42);
 
         switch (r13->m41_LCSType)
         {

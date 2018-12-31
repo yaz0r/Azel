@@ -174,6 +174,19 @@ struct s_workAreaTemplate : public s_workAreaTemplateWithArg<T>
 
 struct s_task
 {
+    s_task() :
+        m0_pNextTask(nullptr),
+        m4_pSubTask(nullptr),
+        m8_pUpdate(nullptr),
+        mC_pDraw(nullptr),
+        m10_pDelete(nullptr),
+        m14_flags(0),
+        m_taskName(nullptr),
+        m_workArea(nullptr),
+        m_heapNode(nullptr)
+    {
+
+    }
     s_task* m0_pNextTask;
     s_task* m4_pSubTask;
     void(*m8_pUpdate)(p_workArea);
@@ -183,6 +196,7 @@ struct s_task
     const char* m_taskName;
 
     s_workArea* m_workArea;
+    s_heapNode* m_heapNode;
 
     p_workArea getWorkArea()
     {
@@ -190,7 +204,7 @@ struct s_task
     }
     s_heapNode* getHeapNode()
     {
-        return ((s_heapNode*)(this)) - 1;
+        return m_heapNode;
     }
 
     bool isFinished()
@@ -234,6 +248,7 @@ T* createSubTask(p_workArea parentTask, const typename T::TypedTaskDefinition* p
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
+    pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
     if (pTypeTaskDefinition->m_pInit)
     {
         ((pNewTask)->*(pTypeTaskDefinition->m_pInit))();
@@ -248,6 +263,7 @@ T* createSubTaskWithArg(p_workArea parentTask, argType arg, const typename T::Ty
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
+    pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
     if (pTypeTaskDefinition->m_pInit)
     {
         ((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
@@ -262,6 +278,7 @@ T* createSiblingTaskWithArg(p_workArea parentTask, argType arg, const typename T
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
+    pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
     if (pTypeTaskDefinition->m_pInit)
     {
         ((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
@@ -291,6 +308,7 @@ T* createRootTask()
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
+    pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
     if (pTypeTaskDefinition->m_pInit)
     {
         ((pNewTask)->*(pTypeTaskDefinition->m_pInit))();

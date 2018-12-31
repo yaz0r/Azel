@@ -5,11 +5,26 @@
 extern const u8 bitMasks[];
 extern const u8 reverseBitMasks[];
 
-typedef s16 sVec2_S16[2];
+struct sVec2_S16
+{
+    std::array<s16, 2> m_value;
+
+    s16 operator[](int i) const
+    {
+        return m_value[i];
+    }
+
+    s16& operator[](int i)
+    {
+        return m_value[i];
+    }
+};
+
 typedef s16 sVec3_S16[3];
+
 struct sVec3_FP
 {
-    fixedPoint m_value[3];
+    std::array<fixedPoint,3> m_value;
 
     void zero()
     {
@@ -173,6 +188,7 @@ private:
     std::vector<sBitfieldMapEntry> m_bitFieldMap;
 
 public:
+    std::array<s8, 77> consumables;
     s_gameStats gameStats;
 
     void reset()
@@ -491,6 +507,8 @@ struct s_graphicEngineStatus_405C
     u16 mA;
     u16 mC;
     u16 mE;
+
+    fixedPoint m14; // max distance for drawing laser?
 
     fixedPoint m18;
     fixedPoint m1C;
