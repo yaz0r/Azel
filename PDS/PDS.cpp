@@ -201,13 +201,13 @@ void initVDP1()
     graphicEngineStatus.m405C.localCoordinatesX = 176;
     graphicEngineStatus.m405C.localCoordinatesY = 112;
 
-    graphicEngineStatus.m406C = 0x999;
-    graphicEngineStatus.m408C = FP_Div(0x10000, 0x999);
+    graphicEngineStatus.m405C.m10 = 0x999;
+    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, 0x999);
 
-    graphicEngineStatus.m4070_farClipDistance = 0x200000;
-    graphicEngineStatus.m4094 = FP_Div(0x8000, 0x200000);
+    graphicEngineStatus.m405C.m14_farClipDistance = 0x200000;
+    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, 0x200000);
 
-    graphicEngineStatus.m4090 = graphicEngineStatus.m4094 << 8;
+    graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
 
     graphicEngineStatus.m405C.m0 = 242;
     graphicEngineStatus.m405C.m2 = -242;
@@ -268,29 +268,29 @@ void initVDP1()
 
     setVdp1VramU16(graphicEngineStatus.m8, graphicEngineStatus.m6);
 
-    graphicEngineStatus.vdp1Context[0].m4[0] = vdp1WriteEA;
-    graphicEngineStatus.vdp1Context[0].m4[1] = graphicEngineStatus.m8;
-    graphicEngineStatus.vdp1Context[1].m4[0] = 0x25C07FE0;
-    graphicEngineStatus.vdp1Context[1].m4[1] = 0x25C0FFE0;
+    graphicEngineStatus.m14_vdp1Context[0].m4[0] = vdp1WriteEA;
+    graphicEngineStatus.m14_vdp1Context[0].m4[1] = graphicEngineStatus.m8;
+    graphicEngineStatus.m14_vdp1Context[1].m4[0] = 0x25C07FE0;
+    graphicEngineStatus.m14_vdp1Context[1].m4[1] = 0x25C0FFE0;
 
-    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA;
-    graphicEngineStatus.vdp1Context[0].mC = 0;
-    graphicEngineStatus.vdp1Context[1].currentVdp1WriteEA = 0x25C07FE0;
-    graphicEngineStatus.vdp1Context[1].mC = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA;
+    graphicEngineStatus.m14_vdp1Context[0].mC = 0;
+    graphicEngineStatus.m14_vdp1Context[1].m0_currentVdp1WriteEA = 0x25C07FE0;
+    graphicEngineStatus.m14_vdp1Context[1].mC = 0;
 
-    graphicEngineStatus.vdp1Context[0].m14 = 0x25C7C000;
-    graphicEngineStatus.vdp1Context[0].m10 = 0x25C7C000;
-    graphicEngineStatus.vdp1Context[0].m18 = 0x25C7E000;
+    graphicEngineStatus.m14_vdp1Context[0].m14 = (std::array<sVec2_S16[4], 1024>*)(getVdp1Pointer(0x25C7C000));
+    graphicEngineStatus.m14_vdp1Context[0].m10 = graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+    graphicEngineStatus.m14_vdp1Context[0].m18 = graphicEngineStatus.m14_vdp1Context[0].m14->end();
 
-    graphicEngineStatus.vdp1Context[1].m14 = 0x25C7DFF8;
-    graphicEngineStatus.vdp1Context[1].m10 = 0x25C7DFF8;
-    graphicEngineStatus.vdp1Context[1].m18 = 0x25C7FFF8;
+    graphicEngineStatus.m14_vdp1Context[1].m14 = (std::array<sVec2_S16[4], 1024>*)(getVdp1Pointer(0x25C7E000));
+    graphicEngineStatus.m14_vdp1Context[1].m10 = graphicEngineStatus.m14_vdp1Context[1].m14->begin();
+    graphicEngineStatus.m14_vdp1Context[1].m18 = graphicEngineStatus.m14_vdp1Context[1].m14->end();
 
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet = graphicEngineStatus.vdp1Context[0].vdp1Packets;
-    graphicEngineStatus.vdp1Context[0].m1C = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet = graphicEngineStatus.m14_vdp1Context[0].m24_vdp1Packets;
+    graphicEngineStatus.m14_vdp1Context[0].m1C = 0;
 
-    graphicEngineStatus.vdp1Context[1].pCurrentVdp1Packet = graphicEngineStatus.vdp1Context[1].vdp1Packets;
-    graphicEngineStatus.vdp1Context[1].m1C = 0;
+    graphicEngineStatus.m14_vdp1Context[1].m20_pCurrentVdp1Packet = graphicEngineStatus.m14_vdp1Context[1].m24_vdp1Packets;
+    graphicEngineStatus.m14_vdp1Context[1].m1C = 0;
 
     //addSlaveCommand(graphicEngineStatus, 0x40AC, 0, copyMatrix_0);
 
@@ -760,15 +760,15 @@ void flushVdp1Sub2(s_vdp1Packet* buffer0, u32 count0, s_vdp1Packet* buffer1, u32
     for (int i = 0; i < count0; i++)
     {
         s_vdp1Packet* r4 = &buffer0[i];
-        listEntry* r1 = &list[r4->bucketTypes & 0x1F];
-        r1->m4->pNext = r4;
+        listEntry* r1 = &list[r4->m4_bucketTypes & 0x1F];
+        r1->m4->m0_pNext = r4;
         r1->m4 = r4;
     }
     for (int i = 0; i < count1; i++)
     {
         s_vdp1Packet* r4 = &buffer1[i];
-        listEntry* r1 = &list[r4->bucketTypes & 0x1F];
-        r1->m4->pNext = r4;
+        listEntry* r1 = &list[r4->m4_bucketTypes & 0x1F];
+        r1->m4->m0_pNext = r4;
         r1->m4 = r4;
     }
 }
@@ -808,10 +808,10 @@ void flushVdp1Sub4(s_vdp1Packet* r4, u32 r5, listEntry* list)
 {
     for(int i=0; i<r5; i++)
     {
-        listEntry* r7 = &list[(r4->bucketTypes >> 3)&0x1F];
-        r7->m4->pNext = r4;
+        listEntry* r7 = &list[(r4->m4_bucketTypes >> 3)&0x1F];
+        r7->m4->m0_pNext = r4;
         r7->m4 = r4;
-        r4 = r4->pNext;
+        r4 = r4->m0_pNext;
     }
 }
 
@@ -819,24 +819,24 @@ void flushVdp1Sub5(s_vdp1Packet* r4, u32 r5, listEntry* list)
 {
     for (int i = 0; i < r5; i++)
     {
-        listEntry* r7 = &list[(r4->bucketTypes >> 10)&0x1F];
-        r7->m4->pNext = r4;
+        listEntry* r7 = &list[(r4->m4_bucketTypes >> 10)&0x1F];
+        r7->m4->m0_pNext = r4;
         r7->m4 = r4;
-        r4 = r4->pNext;
+        r4 = r4->m0_pNext;
     }
 }
 
 void chainVdp1Packets(s_vdp1Packet* r4)
 {
-    setVdp1VramU16(graphicEngineStatus.m8, r4->vdp1EA); // link clip command to first vdp1 packet
+    setVdp1VramU16(graphicEngineStatus.m8, r4->m6_vdp1EA); // link clip command to first vdp1 packet
 
-    while (r4->pNext)
+    while (r4->m0_pNext)
     {
-        setVdp1VramU16(0x25C00000 + (r4->vdp1EA << 3) + 2, r4->pNext->vdp1EA); // set the link address
-        r4 = r4->pNext;
+        setVdp1VramU16(0x25C00000 + (r4->m6_vdp1EA << 3) + 2, r4->m0_pNext->m6_vdp1EA); // set the link address
+        r4 = r4->m0_pNext;
     }
 
-    setVdp1VramU16(0x25C00000 + (r4->vdp1EA << 3) + 2, graphicEngineStatus.m6);
+    setVdp1VramU16(0x25C00000 + (r4->m6_vdp1EA << 3) + 2, graphicEngineStatus.m6);
 }
 
 u32 numSpriteProcessed;
@@ -845,13 +845,13 @@ u32 mumSpriteProcessBySlave;
 
 void flushVdp1()
 {
-    invalidateCacheOnRange(&graphicEngineStatus.vdp1Context[1], sizeof(s_vdp1Context));
-    u32 count = graphicEngineStatus.vdp1Context[0].m1C + graphicEngineStatus.vdp1Context[1].m1C;
+    invalidateCacheOnRange(&graphicEngineStatus.m14_vdp1Context[1], sizeof(s_vdp1Context));
+    u32 count = graphicEngineStatus.m14_vdp1Context[0].m1C + graphicEngineStatus.m14_vdp1Context[1].m1C;
     if (count)
     {
         listEntry flushList[0x20];
         initVdp1FlushList(flushList);
-        flushVdp1Sub2(graphicEngineStatus.vdp1Context[0].vdp1Packets, graphicEngineStatus.vdp1Context[0].m1C, graphicEngineStatus.vdp1Context[1].vdp1Packets, graphicEngineStatus.vdp1Context[1].m1C, flushList);
+        flushVdp1Sub2(graphicEngineStatus.m14_vdp1Context[0].m24_vdp1Packets, graphicEngineStatus.m14_vdp1Context[0].m1C, graphicEngineStatus.m14_vdp1Context[1].m24_vdp1Packets, graphicEngineStatus.m14_vdp1Context[1].m1C, flushList);
         s_vdp1Packet* r15 = flushVdp1Sub3(flushList);
 
         initVdp1FlushList(flushList);
@@ -867,18 +867,18 @@ void flushVdp1()
         setVdp1VramU16(graphicEngineStatus.m8, graphicEngineStatus.m6);
     }
     
-    numSpriteProcessed = graphicEngineStatus.vdp1Context[0].mC + graphicEngineStatus.vdp1Context[1].mC;
-    mumSpriteProcessByMaster = graphicEngineStatus.vdp1Context[0].m1C;
-    mumSpriteProcessBySlave = graphicEngineStatus.vdp1Context[1].m1C;
+    numSpriteProcessed = graphicEngineStatus.m14_vdp1Context[0].mC + graphicEngineStatus.m14_vdp1Context[1].mC;
+    mumSpriteProcessByMaster = graphicEngineStatus.m14_vdp1Context[0].m1C;
+    mumSpriteProcessBySlave = graphicEngineStatus.m14_vdp1Context[1].m1C;
 
-    graphicEngineStatus.vdp1Context[0].mC = 0;
-    graphicEngineStatus.vdp1Context[1].mC = 0;
+    graphicEngineStatus.m14_vdp1Context[0].mC = 0;
+    graphicEngineStatus.m14_vdp1Context[1].mC = 0;
 
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet = graphicEngineStatus.vdp1Context[0].vdp1Packets;
-    graphicEngineStatus.vdp1Context[0].m1C = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet = graphicEngineStatus.m14_vdp1Context[0].m24_vdp1Packets;
+    graphicEngineStatus.m14_vdp1Context[0].m1C = 0;
 
-    graphicEngineStatus.vdp1Context[1].pCurrentVdp1Packet = graphicEngineStatus.vdp1Context[1].vdp1Packets;
-    graphicEngineStatus.vdp1Context[1].m1C = 0;
+    graphicEngineStatus.m14_vdp1Context[1].m20_pCurrentVdp1Packet = graphicEngineStatus.m14_vdp1Context[1].m24_vdp1Packets;
+    graphicEngineStatus.m14_vdp1Context[1].m1C = 0;
 
     //addSlaveCommand(graphicEngineStatus, 0x40AC, 0, invalidateCacheOnRange);
 }
@@ -887,8 +887,8 @@ void interruptVDP1Update()
 {
     // TODO: massively incomplete
     int r6 = graphicEngineStatus.doubleBufferState;
-    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = graphicEngineStatus.vdp1Context[0].m4[r6];
-    graphicEngineStatus.vdp1Context[1].currentVdp1WriteEA = graphicEngineStatus.vdp1Context[1].m4[r6];
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m4[r6];
+    graphicEngineStatus.m14_vdp1Context[1].m0_currentVdp1WriteEA = graphicEngineStatus.m14_vdp1Context[1].m4[r6];
 }
 
 bool bContinue = true;

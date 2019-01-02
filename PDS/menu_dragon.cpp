@@ -99,15 +99,15 @@ void setVdp2LayerScroll(u32 r4, u32 r5, u32 r6)
         r7 = 0x10;
     }
 
-    graphicEngineStatus.layersConfig[r4].scrollX = r5;
-    graphicEngineStatus.layersConfig[r4].scrollY = r7 + r6;
+    graphicEngineStatus.m40BC_layersConfig[r4].scrollX = r5;
+    graphicEngineStatus.m40BC_layersConfig[r4].scrollY = r7 + r6;
 }
 
 void resetVdp2LayersAutoScroll()
 {
     for (int i = 0; i < 4; i++)
     {
-        graphicEngineStatus.layersConfig[i].m8_scrollFrameCount = 0;
+        graphicEngineStatus.m40BC_layersConfig[i].m8_scrollFrameCount = 0;
     }
 }
 
@@ -324,9 +324,9 @@ struct s_dragonMenuMorphCursorTask : public s_workAreaTemplate<s_dragonMenuMorph
 
 void startVdp2LayerScroll(s32 layerId, s32 x, s32 y, s32 numSteps)
 {
-    graphicEngineStatus.layersConfig[layerId].scrollIncX = x;
-    graphicEngineStatus.layersConfig[layerId].scrollIncY = y;
-    graphicEngineStatus.layersConfig[layerId].m8_scrollFrameCount = numSteps;
+    graphicEngineStatus.m40BC_layersConfig[layerId].scrollIncX = x;
+    graphicEngineStatus.m40BC_layersConfig[layerId].scrollIncY = y;
+    graphicEngineStatus.m40BC_layersConfig[layerId].m8_scrollFrameCount = numSteps;
 }
 
 void s_dragonMenuWorkArea::dragonMenuTaskUpdate()

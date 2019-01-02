@@ -72,6 +72,7 @@ struct s_LCSTask340SubSub : public s_workAreaTemplate<s_LCSTask340SubSub>
 };
 
 struct sLaserArgs;
+struct s_LCSTask_gradientData;
 struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLaserArgs*>
 {
     struct s_LCSTask340Sub_m58
@@ -94,7 +95,7 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     void Init1Sub1();
     void Init1Sub1Sub0();
     void Laser1Draw();
-    void Laser1DrawSub0(std::array<sVec3_FP, 8>& r5, s32 r6, sSaturnPtr r7, void* arg0);
+    void Laser1DrawSub0(std::array<sVec3_FP, 8>& r5, s32 r6, sSaturnPtr r7, s_LCSTask_gradientData* arg0);
 
     void Init2(sLaserArgs*);
     void Laser2Init();
@@ -172,6 +173,12 @@ struct s_LCSTask340
     // size 0x18
 };
 
+struct s_LCSTask_gradientData
+{
+    std::array<sVec2_S16[2], 8> m0;
+    // size 0x40
+};
+
 struct s_LCSTask : public s_workAreaTemplate<s_LCSTask>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
@@ -202,7 +209,7 @@ struct s_LCSTask : public s_workAreaTemplate<s_LCSTask>
     s8 m83E_LaserNum;
     s8 m83F_activeLaserCount;
     std::array<s_LCSTask340, 0x10> m840;
-    void* m9C0;
+    s_LCSTask_gradientData* m9C0;
     u32 m9C4;
     s_LCSTask_14* m9C8;
     s_LCSTask_14* m9CC;

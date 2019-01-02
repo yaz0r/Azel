@@ -977,7 +977,7 @@ void s_LCSTask::Init()
         setLCSField83E(pTypedWorkArea, gDragonState->mC_dragonType + 1);
     }
 
-    pTypedWorkArea->m9C0 = allocateHeapForTask(pTypedWorkArea, 0x40);
+    pTypedWorkArea->m9C0 = static_cast<s_LCSTask_gradientData*>(allocateHeapForTask(pTypedWorkArea, sizeof(s_LCSTask_gradientData)));
 }
 
 void LCSTaskDrawSub1Sub2Sub0(s_LCSTask* r4)
@@ -1406,7 +1406,7 @@ void sLCSSelectedSub::Draw()
     var14[2] = MTH_Mul((*m8)[0] - var4[2], r11) + var4[2];
     var14[3] = MTH_Mul((*m8)[1] - var4[3], r11) + var4[3];
 
-    u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA;
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
     setVdp1VramU16(vdp1WriteEA + 0x00, 0x1005); // command 0
     setVdp1VramU16(vdp1WriteEA + 0x04, 0x4C0); // CMDPMOD
@@ -1420,13 +1420,13 @@ void sLCSSelectedSub::Draw()
     setVdp1VramU16(vdp1WriteEA + 0x018, var14[0]);
     setVdp1VramU16(vdp1WriteEA + 0x01A, -var14[3]);
 
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->bucketTypes = 0;
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->vdp1EA = vdp1WriteEA >> 3;
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
-    graphicEngineStatus.vdp1Context[0].m1C += 1;
-    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA + 0x20;
-    graphicEngineStatus.vdp1Context[0].mC += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
 void sLCSSelected::UpdateSub0(sVec2_S16* r5)
@@ -1510,7 +1510,7 @@ void sLCSSelected::DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, sVec3_FP* r6)
     var14[2] = r14 + (*m24)[0] + var10;
     var14[3] = var8 + (*m24)[1] + varC / 2;
 
-    u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA;
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
     setVdp1VramU16(vdp1WriteEA + 0x00, r5->m2); // command 0
     setVdp1VramU16(vdp1WriteEA + 0x04, r5->m4); // CMDPMOD
@@ -1522,13 +1522,13 @@ void sLCSSelected::DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, sVec3_FP* r6)
     setVdp1VramU16(vdp1WriteEA + 0x014, var14[2]); // CMDXC
     setVdp1VramU16(vdp1WriteEA + 0x016, -var14[3]); // CMDYX
 
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->bucketTypes = 0;
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->vdp1EA = vdp1WriteEA >> 3;
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
-    graphicEngineStatus.vdp1Context[0].m1C += 1;
-    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA + 0x20;
-    graphicEngineStatus.vdp1Context[0].mC += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
 }
 
@@ -1574,7 +1574,7 @@ void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6)
     var10[2] = r4 + (*r5)[0] + var4;
     var10[3] = r2 + (*r5)[1] - varC;
 
-    u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA;
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
     setVdp1VramU16(vdp1WriteEA + 0x00, readSaturnS16(dataR6 + 2)); // command 0
     setVdp1VramU16(vdp1WriteEA + 0x04, readSaturnS16(dataR6 + 4)); // CMDPMOD
@@ -1586,13 +1586,13 @@ void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6)
     setVdp1VramU16(vdp1WriteEA + 0x014, var10[2]); // CMDXC
     setVdp1VramU16(vdp1WriteEA + 0x016, -var10[3]); // CMDYX
 
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->bucketTypes = 0;
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->vdp1EA = vdp1WriteEA >> 3;
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
-    graphicEngineStatus.vdp1Context[0].m1C += 1;
-    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA + 0x20;
-    graphicEngineStatus.vdp1Context[0].mC += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
 static const std::array<s8, 4> LCSTaskDrawSub5Sub1_Data0 = {

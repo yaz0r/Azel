@@ -508,15 +508,17 @@ struct s_graphicEngineStatus_405C
     u16 mC;
     u16 mE;
 
-    fixedPoint m14; // max distance for drawing laser?
-
+    fixedPoint m10;
+    fixedPoint m14_farClipDistance; // max distance for drawing laser?
     fixedPoint m18;
     fixedPoint m1C;
     fixedPoint m20;
     fixedPoint m24;
     fixedPoint m28;
     fixedPoint m2C;
-
+    fixedPoint m30;
+    fixedPoint m34;
+    fixedPoint m38;
     u16 VDP1_X1; // 3C
     u16 VDP1_Y1; // 3E
     u16 VDP1_X2; // 40
@@ -550,22 +552,22 @@ struct s_graphicEngineStatus_40BC
 
 struct s_vdp1Packet
 {
-    s_vdp1Packet* pNext;
-    u16 bucketTypes; // 4
-    u16 vdp1EA; //6
+    s_vdp1Packet* m0_pNext;
+    u16 m4_bucketTypes; // 4
+    u16 m6_vdp1EA; //6
 };
 
 struct s_vdp1Context
 {
-    u32 currentVdp1WriteEA; //0
+    u32 m0_currentVdp1WriteEA; //0
     u32 m4[2]; //4
     u32 mC; //C
-    u32 m10; //10
-    u32 m14; //14
-    u32 m18; //18
+    std::array<sVec2_S16[4], 1024>::iterator m10; //10
+    std::array<sVec2_S16[4], 1024>* m14; //14
+    std::array<sVec2_S16[4], 1024>::iterator m18; //18
     u32 m1C; //1C
-    s_vdp1Packet* pCurrentVdp1Packet; //20
-    s_vdp1Packet vdp1Packets[1024]; // 24
+    s_vdp1Packet* m20_pCurrentVdp1Packet; //20
+    s_vdp1Packet m24_vdp1Packets[1024]; // 24
     // size should be 2024
 };
 
@@ -580,19 +582,11 @@ struct s_graphicEngineStatus
     u32 m8; // vdp1 write EA for user clipping parameters
     u32 mC; // vdp1 write EA of background sprite
 
-    s_vdp1Context vdp1Context[2]; // 14
+    s_vdp1Context m14_vdp1Context[2]; // 14
     s_graphicEngineStatus_405C m405C;
-
-    u32 m406C;
-
-    s32 m4070_farClipDistance;
-    s32 m408C;
-    u32 m4090;
-    s32 m4094;
-    
-    s_graphicEngineStatus_40E4* m40E4;
     s_graphicEngineStatus_40AC m40AC;
-    s_graphicEngineStatus_40BC layersConfig[4];
+    s_graphicEngineStatus_40BC m40BC_layersConfig[4];
+    s_graphicEngineStatus_40E4* m40E4;
     s_graphicEngineStatus_4514 m4514;
 };
 

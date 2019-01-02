@@ -227,7 +227,7 @@ void s_visdibilityCellTask::gridCellDraw_normal()
 
     s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
-    s32 r15 = graphicEngineStatus.m4070_farClipDistance;
+    s32 r15 = graphicEngineStatus.m405C.m14_farClipDistance;
 
     if (pTypedWorkAread->m8_pEnvironmentCell)
     {
@@ -513,8 +513,8 @@ void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
     }
     else
     {
-        pFieldCameraTask1->m20_cellDimensions[0] = graphicEngineStatus.m4070_farClipDistance;
-        pFieldCameraTask1->m20_cellDimensions[1] = graphicEngineStatus.m4070_farClipDistance;
+        pFieldCameraTask1->m20_cellDimensions[0] = graphicEngineStatus.m405C.m14_farClipDistance;
+        pFieldCameraTask1->m20_cellDimensions[1] = graphicEngineStatus.m405C.m14_farClipDistance;
     }
 
     if (r5)
@@ -880,7 +880,7 @@ p_workArea create_A3_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r
 
 s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* r4)
 {
-    return checkPositionVisibility(r4, graphicEngineStatus.m4070_farClipDistance);
+    return checkPositionVisibility(r4, graphicEngineStatus.m405C.m14_farClipDistance);
 }
 
 struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
@@ -1951,10 +1951,10 @@ void subfieldA3_0(p_workArea workArea)
                 setupDragonPosition(&position, &rotation);
             }
 
-            graphicEngineStatus.m4070_farClipDistance = 0x2AE000;
-            graphicEngineStatus.m4094 = FP_Div(0x8000, 0x2AE000);
+            graphicEngineStatus.m405C.m14_farClipDistance = 0x2AE000;
+            graphicEngineStatus.m405C.m38 = FP_Div(0x8000, 0x2AE000);
 
-            graphicEngineStatus.m4090 = graphicEngineStatus.m4094 << 8;
+            graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
         }
         else
         {
@@ -6112,7 +6112,7 @@ void fieldCameraTask1Draw(s_workArea* pWorkArea)
 
     sMatrix4x3* r13 = fieldCameraTask1DrawSub1();
 
-    asyncDivStart(graphicEngineStatus.m4070_farClipDistance, fixedPoint(0xC422));
+    asyncDivStart(graphicEngineStatus.m405C.m14_farClipDistance, fixedPoint(0xC422));
 
     sMatrix4x3 var90;
     copyMatrix(r13, &var90);
@@ -6463,13 +6463,13 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     loadFileFromFileList(1);
 
 
-    graphicEngineStatus.m406C = 0x3000;
-    graphicEngineStatus.m408C = FP_Div(0x10000, 0x3000);
+    graphicEngineStatus.m405C.m10 = 0x3000;
+    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, 0x3000);
 
-    graphicEngineStatus.m4070_farClipDistance = 0x200000;
-    graphicEngineStatus.m4094 = FP_Div(0x8000, 0x200000);
+    graphicEngineStatus.m405C.m14_farClipDistance = 0x200000;
+    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, 0x200000);
 
-    graphicEngineStatus.m4090 = graphicEngineStatus.m4094 << 8;
+    graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 1;
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts({ 0x60924FC, gFLD_A3 });
@@ -6923,7 +6923,7 @@ void s_LCSTask340Sub::Init1Sub1()
     m144 = var4 - r5;
 }
 
-void Laser1DrawSub0Sub0(std::array<sVec3_FP, 2>&r4, sSaturnPtr r5, sVec2_S16 r6, sVec2_S16 r7, fixedPoint maxDistance)
+void Laser1DrawSub0Sub0(std::array<sVec3_FP, 2>&r4, s32 r5, sVec2_S16& r6, sVec2_S16& r7, fixedPoint maxDistance)
 {
     const s_graphicEngineStatus_405C& r12 = graphicEngineStatus.m405C;
     auto var_28 = r5;
@@ -6938,8 +6938,19 @@ void Laser1DrawSub0Sub0(std::array<sVec3_FP, 2>&r4, sSaturnPtr r5, sVec2_S16 r6,
     var_30[2] = maxDistance;
 
     r6[0] = setDividend(r12.m18, r4[1][0], r4[1][2]);
+    r6[1] = setDividend(r12.m1C, r4[1][1], r4[1][2]);
 
-    PDS_unimplemented("Laser1DrawSub0Sub0");
+    r7[0] = setDividend(r12.m18, r5, maxDistance);
+    r7[1] = setDividend(r12.m1C, r5, maxDistance);
+
+    if (r7[0] >= 80)
+    {
+        r7[0] = 80;
+    }
+    if (r7[1] >= 80)
+    {
+        r7[1] = 80;
+    }
 }
 
 s32 Laser1DrawSub0Sub1(std::array<sVec2_S16,2>& r4)
@@ -6956,16 +6967,122 @@ s32 Laser1DrawSub0Sub1(std::array<sVec2_S16,2>& r4)
     return r5;
 }
 
-void Laser1DrawSub0Sub2(std::array<sVec2_S16, 2>& r4, sVec2_S16*r5, s32 r6, std::array<sVec3_FP, 8>& r7)
+void Laser1DrawSub0Sub2(std::array<sVec2_S16, 2>& r4, std::array<sVec2_S16, 2>&r5, s32 r6, std::array<sVec3_FP, 4>& r7)
 {
     switch (r6)
     {
+    case 0:
+        r7[0][0] = r4[0][0] + r5[0][0];
+        r7[0][1] = r4[0][1] - r5[0][1];
+        r7[1][0] = r4[0][0] - r5[0][0];
+        r7[1][1] = r4[0][1] + r5[0][1];
+        r7[2][0] = r4[1][0] - r5[1][0];
+        r7[2][1] = r4[1][1] + r5[1][1];
+        r7[3][0] = r4[1][0] + r5[1][0];
+        r7[3][1] = r4[1][1] - r5[1][1];
+        break;
+    case 1:
+        r7[0][0] = r4[0][0] - r5[0][0];
+        r7[0][1] = r4[0][1] - r5[0][1];
+        r7[1][0] = r4[0][0] + r5[0][0];
+        r7[1][1] = r4[0][1] + r5[0][1];
+        r7[2][0] = r4[1][0] + r5[1][0];
+        r7[2][1] = r4[1][1] + r5[1][1];
+        r7[3][0] = r4[1][0] - r5[1][0];
+        r7[3][1] = r4[1][1] - r5[1][1];
+        break;
+    case 2:
+        r7[0][0] = r4[0][0] + r5[0][0];
+        r7[0][1] = r4[0][1] + r5[0][1];
+        r7[1][0] = r4[0][0] - r5[0][0];
+        r7[1][1] = r4[0][1] - r5[0][1];
+        r7[2][0] = r4[1][0] - r5[1][0];
+        r7[2][1] = r4[1][1] - r5[1][1];
+        r7[3][0] = r4[1][0] + r5[1][0];
+        r7[3][1] = r4[1][1] + r5[1][1];
+        break;
+    case 3:
+        r7[0][0] = r4[0][0] - r5[0][0];
+        r7[0][1] = r4[0][1] - r5[0][1];
+        r7[1][0] = r4[0][0] + r5[0][0];
+        r7[1][1] = r4[0][1] - r5[0][1];
+        r7[2][0] = r4[1][0] + r5[1][0];
+        r7[2][1] = r4[1][1] - r5[1][1];
+        r7[3][0] = r4[1][0] - r5[1][0];
+        r7[3][1] = r4[1][1] + r5[1][1];
+        break;
     default:
         assert(0);
     }
 }
 
-void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, sSaturnPtr r7, void* arg0)
+struct sLaser1DrawSub4Data1
+{
+    s32 m0;
+    s32 m4;
+    s32 m8;
+};
+
+static const std::array< sLaser1DrawSub4Data1, 2> Laser1DrawSub4Data1 = {
+    {
+        {0x1734, 0x98, 0x610},
+        {0x1730, 0x88, 0x210}
+    }
+};
+
+static const std::array<s32, 16> Laser1DrawSub4Data0 = {
+    0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+};
+
+void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint r6, s32 r7, s_LCSTask_gradientData* arg0)
+{
+    auto& r11 = graphicEngineStatus;
+    auto& r13 = graphicEngineStatus.m14_vdp1Context[0];
+    r13.m10 ++;
+    r11.m14_vdp1Context[0].m10 ++;//?
+    auto r12 = r11.m14_vdp1Context[0].m10 - 1;
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+
+    u16 CMDCOLR = ((r4->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
+    u16 CMDSRCA = ((r4->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
+    u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // CMDCTRL distorted sprite
+    setVdp1VramU16(vdp1WriteEA + 0x04, 0x048C); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, CMDCOLR); // CMDCOLR
+    setVdp1VramU16(vdp1WriteEA + 0x08, CMDSRCA); // CMDSRCA
+    setVdp1VramU16(vdp1WriteEA + 0x0A, CMDSIZE); // CMDSIZE
+    setVdp1VramU16(vdp1WriteEA + 0x0C, r5[3][0].getInteger()); // CMDXA
+    setVdp1VramU16(vdp1WriteEA + 0x0E, -r5[3][1].getInteger()); // CMDYA
+    setVdp1VramU16(vdp1WriteEA + 0x18, r5[2][0].getInteger()); // CMDXD
+    setVdp1VramU16(vdp1WriteEA + 0x1A, -r5[2][1].getInteger()); // CMDYD
+    setVdp1VramU16(vdp1WriteEA + 0x14, r5[1][0].getInteger()); // CMDXC
+    setVdp1VramU16(vdp1WriteEA + 0x16, -r5[1][1].getInteger()); // CMDYC
+    setVdp1VramU16(vdp1WriteEA + 0x10, r5[0][0].getInteger()); // CMDXB
+    setVdp1VramU16(vdp1WriteEA + 0x12, -r5[0][1].getInteger()); // CMDYB
+
+    (*r12)[0][0] = arg0->m0[r7][0][0];
+    (*r12)[0][1] = arg0->m0[r7][0][1];
+    (*r12)[1][0] = arg0->m0[r7][1][0];
+    (*r12)[1][1] = arg0->m0[r7][1][1];
+
+    setVdp1VramU16(vdp1WriteEA + 0x1C, (INT_PTR)(&(*r12))>>3); //CMDGRDA
+
+    r13.m20_pCurrentVdp1Packet->m4_bucketTypes = 0;// fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
+    r13.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    r13.m20_pCurrentVdp1Packet++;
+
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+}
+
+void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint r6, s32 r7, sVec2_S16& arg0, sVec2_S16& arg4, s_LCSTask_gradientData* arg8, fixedPoint argC)
+{
+    PDS_unimplemented("Laser1DrawSub3");
+}
+
+void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, sSaturnPtr r7, s_LCSTask_gradientData* arg0)
 {
     const s_graphicEngineStatus_405C& r14 = graphicEngineStatus.m405C;
 
@@ -6978,12 +7095,11 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
     auto stack1C = input_r5;
     auto stack20 = stack0 - 2;
     auto stack24 = stack0 - 1;
-    std::array<sVec3_FP, 8> stack28; // some unknown size;
+    std::array<sVec3_FP, 4> stack28; // some unknown size;
     sVec2_S16 stack58;
     std::array<sVec2_S16, 2> stack5C;
     sVec2_S16 stack64;
-    sVec2_S16 stack68; 
-    sVec2_S16 stack6C;
+    std::array<sVec2_S16, 2> stack68;
     std::array<sVec3_FP, 2> stack70;
     std::array<s32, 8> stack88; // some unknown size
 
@@ -6991,15 +7107,15 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
 
     stack5C[0][0] = setDividend(r14.m18, stack70[0][0], stack70[0][2]);
     stack5C[0][1] = setDividend(r14.m1C, stack70[0][1], stack70[0][2]);
-    stack68[0] = setDividend(r14.m18, readSaturnS32(r7), stack70[0][2]);
-    stack68[1] = setDividend(r14.m1C, readSaturnS32(r7), stack70[0][2]);
+    stack68[0][0] = setDividend(r14.m18, readSaturnS32(r7), stack70[0][2]);
+    stack68[0][1] = setDividend(r14.m1C, readSaturnS32(r7), stack70[0][2]);
 
     auto r4 = stack88.begin();
     if (stack70[0][2] < 0x3000)
     {
         *r4 = 1;
     }
-    else if(stack70[0][2] < graphicEngineStatus.m405C.m14)
+    else if(stack70[0][2] < graphicEngineStatus.m405C.m14_farClipDistance)
     {
         *r4 = 0;
     }
@@ -7009,7 +7125,7 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
     }
     //0607B424
     sVec2_S16& r9 = stack5C[1];
-    sVec2_S16& r10 = stack6C;
+    sVec2_S16& r10 = stack68[1];
     s32 r11 = 0;
     auto r8 = r4+1;
     auto r5 = r4;
@@ -7023,14 +7139,14 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
 
         auto stack18 = stack10 + r11 * 4;
         auto stack0 = stack18 + 4;
-        stack64[0] = stack6C[0] = setDividend(r14.m18, readSaturnS32(stack0), stack70[1][2]);
-        stack64[1] = stack6C[1] = setDividend(r14.m1C, readSaturnS32(stack0), stack70[1][2]);
+        stack64[0] = stack68[1][0] = setDividend(r14.m18, readSaturnS32(stack0), stack70[1][2]);
+        stack64[1] = stack68[1][1] = setDividend(r14.m1C, readSaturnS32(stack0), stack70[1][2]);
 
         if (stack70[1][2] < 0x3000)
         {
             *r8 = 1;
         }
-        else if (stack70[1][2] < r14.m14)
+        else if (stack70[1][2] < r14.m14_farClipDistance)
         {
             *r8 = 0;
         }
@@ -7045,25 +7161,25 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
             if (stack4[0] == 1)
             {
                 //0607B51A
-                Laser1DrawSub0Sub0(stack70, stack18, stackC, stack8, 0x3000);
+                Laser1DrawSub0Sub0(stack70, readSaturnS32(stack18), stackC, stack8, 0x3000);
             }
             else if (stack4[0] == 2)
             {
-                Laser1DrawSub0Sub0(stack70, stack18, stackC, stack8, r14.m14);
+                Laser1DrawSub0Sub0(stack70, readSaturnS32(stack18), stackC, stack8, r14.m14_farClipDistance);
             }
 
             //0607B54C
             if (*r8 == 1)
             {
-                Laser1DrawSub0Sub0(stack70, stack0, r9, r10, 0x3000);
+                Laser1DrawSub0Sub0(stack70, readSaturnS32(stack0), r9, r10, 0x3000);
             }
             else if (*r8 == 2)
             {
-                Laser1DrawSub0Sub0(stack70, stack0, r9, r10, r14.m14);
+                Laser1DrawSub0Sub0(stack70, readSaturnS32(stack0), r9, r10, r14.m14_farClipDistance);
             }
 
             //607B586
-            Laser1DrawSub0Sub2(stack5C, &stack58, Laser1DrawSub0Sub1(stack5C), stack28);
+            Laser1DrawSub0Sub2(stack5C, stack68, Laser1DrawSub0Sub1(stack5C), stack28);
 
             //0607B5A2
             {
@@ -7099,18 +7215,15 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
                 } while (r4 < 4);
 
                 //0607BA00
-                assert(0);
-                /*
                 if (stack20 != r11)
                 {
-                    Laser1DrawSub3(stack24, &stack38, stack10 + 0xC, r11, r9, r10, stackB4, stack70[2]);
+                    Laser1DrawSub3(stack14, stack28, stack70[1][2], r11, r9, r10, arg0, stack70[0][2]);
                 }
                 else
                 {
                     //607BA32
-                    Laser1DrawSub4(stack18, &stack2C, r11, stackB0, stack70[2]);
+                    Laser1DrawSub4(stack14, stack28, stack70[1][2], r11, arg0);
                 }
-                */
             }
         }
 
@@ -7125,7 +7238,7 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
 
 void s_LCSTask340Sub::Laser1Draw()
 {
-    void* r6 = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m9C0;
+    s_LCSTask_gradientData* r6 = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m9C0;
     s32 stack0 = 8;
     std::array<sVec3_FP,8> r11;
     std::array<sVec3_FP, 8>::iterator r4 = r11.begin();

@@ -876,7 +876,42 @@ void drawLine(s16 XA, s16 YA, s16 XB, s16 YB, u32 color)
     {
         assert(0);
     }
+}
 
+void image_set(int x, int y, u32 color)
+{
+    vdp1TextureOutput[y * vdp1TextureHeight + x] = color;
+}
+
+void drawLine(int x0, int y0, int x1, int y1, u32 color) {
+    bool steep = false;
+    if (std::abs(x0 - x1) < std::abs(y0 - y1)) {
+        std::swap(x0, y0);
+        std::swap(x1, y1);
+        steep = true;
+    }
+    if (x0 > x1) {
+        std::swap(x0, x1);
+        std::swap(y0, y1);
+    }
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    float derror = std::abs(dy / float(dx));
+    float error = 0;
+    int y = y0;
+    for (int x = x0; x <= x1; x++) {
+        if (steep) {
+            image_set(y, x, color);
+        }
+        else {
+            image_set(x, y, color);
+        }
+        error += derror;
+        if (error > .5) {
+            y += (y1 > y0 ? 1 : -1);
+            error -= 1.;
+        }
+    }
 }
 
 void PolyLineDraw(u32 vdp1EA)
@@ -893,8 +928,15 @@ void PolyLineDraw(u32 vdp1EA)
     s16 CMDYD = getVdp1VramS16(vdp1EA + 0x1A);
     u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
 
-    assert(CMDCOLR & 0x8000);
-    u32 finalColor = 0xFF000000 | (((CMDCOLR & 0x1F) << 3) | ((CMDCOLR & 0x03E0) << 6) | ((CMDCOLR & 0x7C00) << 9));
+    u32 finalColor;
+    if (CMDCOLR & 0x8000)
+    {
+        finalColor = 0xFF000000 | (((CMDCOLR & 0x1F) << 3) | ((CMDCOLR & 0x03E0) << 6) | ((CMDCOLR & 0x7C00) << 9));
+    }
+    else
+    {
+        finalColor = 0xFF808080;
+    }
 
     drawLine(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);
     drawLine(CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, finalColor);
@@ -935,13 +977,27 @@ void renderVdp1(u32 width, u32 height)
         case 1:
             ScaledSpriteDraw(vdp1EA);
             break;
+        case 2:
+            // distorted sprite draw
+            PolyLineDraw(vdp1EA);
+            break;
+        case 4:
+            // draw polygon
+            break;
         case 5:
             PolyLineDraw(vdp1EA);
+            break;
+        case 8:
+            // user clipping coordinates
+            break;
+        case 9:
+            // system clipping coordinates
             break;
         case 0xA:
             SetLocalCoordinates(vdp1EA);
             break;
         default:
+            assert(0);
             break;
         }
 

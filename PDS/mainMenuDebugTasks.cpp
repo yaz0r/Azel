@@ -3352,7 +3352,7 @@ s_menuSprite spriteData1[] =
 
 void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
 {
-    u32 vdp1WriteEA = graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA;
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
     setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0, normal sprite + JUMP
     setVdp1VramU16(vdp1WriteEA + 0x04, 0x80); // CMDPMOD
@@ -3362,13 +3362,13 @@ void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
     setVdp1VramU16(vdp1WriteEA + 0x0C, r4->X + r5 - 0xB0); // CMDXA
     setVdp1VramU16(vdp1WriteEA + 0x0E, r4->Y + r6 - 0x70); // CMDYA
 
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->bucketTypes = 0;
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet->vdp1EA = vdp1WriteEA >> 3;
-    graphicEngineStatus.vdp1Context[0].pCurrentVdp1Packet++;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
-    graphicEngineStatus.vdp1Context[0].m1C += 1;
-    graphicEngineStatus.vdp1Context[0].currentVdp1WriteEA = vdp1WriteEA + 0x20;
-    graphicEngineStatus.vdp1Context[0].mC += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
 void mainMenuTaskInitSub2TaskWorkArea::Draw()
@@ -3408,7 +3408,7 @@ u16 mainMenuTaskInitData2_[]{
 };
 
 sMainMenuTaskInitData2 mainMenuTaskInitData2 = {
-    &graphicEngineStatus.layersConfig[1],
+    &graphicEngineStatus.m40BC_layersConfig[1],
     mainMenuTaskInitData2_
 };
 
@@ -3649,8 +3649,8 @@ void s_mainMenuWorkArea::Init()
         pWorkArea->m10_cursorTask->selectedMenu = r14;
     }
 
-    createSubTaskWithArg<s_menuDragonCrestTaskWorkArea,s_graphicEngineStatus_40BC*>(pWorkArea, &graphicEngineStatus.layersConfig[0]);
-    createSubTaskWithArg<s_laserRankTaskWorkArea, s_graphicEngineStatus_40BC*>(pWorkArea, &graphicEngineStatus.layersConfig[1]);
+    createSubTaskWithArg<s_menuDragonCrestTaskWorkArea,s_graphicEngineStatus_40BC*>(pWorkArea, &graphicEngineStatus.m40BC_layersConfig[0]);
+    createSubTaskWithArg<s_laserRankTaskWorkArea, s_graphicEngineStatus_40BC*>(pWorkArea, &graphicEngineStatus.m40BC_layersConfig[1]);
 
     mainMenuTaskInitSub4(pWorkArea);
 
@@ -3930,25 +3930,25 @@ void scrollMenu()
 {
     for (int i = 0; i < 4; i++)
     {
-        if (graphicEngineStatus.layersConfig[i].m8_scrollFrameCount)
+        if (graphicEngineStatus.m40BC_layersConfig[i].m8_scrollFrameCount)
         {
-            graphicEngineStatus.layersConfig[i].scrollX += graphicEngineStatus.layersConfig[i].scrollIncX;
-            graphicEngineStatus.layersConfig[i].scrollY += graphicEngineStatus.layersConfig[i].scrollIncY;
-            graphicEngineStatus.layersConfig[i].m8_scrollFrameCount--;
+            graphicEngineStatus.m40BC_layersConfig[i].scrollX += graphicEngineStatus.m40BC_layersConfig[i].scrollIncX;
+            graphicEngineStatus.m40BC_layersConfig[i].scrollY += graphicEngineStatus.m40BC_layersConfig[i].scrollIncY;
+            graphicEngineStatus.m40BC_layersConfig[i].m8_scrollFrameCount--;
         }
     }
 
     pauseEngine[4] = 0;
-    setupVDP2CoordinatesIncrement2(graphicEngineStatus.layersConfig[0].scrollX << 16, graphicEngineStatus.layersConfig[0].scrollY << 16);
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.m40BC_layersConfig[0].scrollX << 16, graphicEngineStatus.m40BC_layersConfig[0].scrollY << 16);
 
     pauseEngine[4] = 1;
-    setupVDP2CoordinatesIncrement2(graphicEngineStatus.layersConfig[1].scrollX << 16, graphicEngineStatus.layersConfig[1].scrollY << 16);
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.m40BC_layersConfig[1].scrollX << 16, graphicEngineStatus.m40BC_layersConfig[1].scrollY << 16);
 
     pauseEngine[4] = 2;
-    setupVDP2CoordinatesIncrement2(graphicEngineStatus.layersConfig[2].scrollX, graphicEngineStatus.layersConfig[2].scrollY);
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.m40BC_layersConfig[2].scrollX, graphicEngineStatus.m40BC_layersConfig[2].scrollY);
 
     pauseEngine[4] = 3;
-    setupVDP2CoordinatesIncrement2(graphicEngineStatus.layersConfig[3].scrollX, graphicEngineStatus.layersConfig[3].scrollY);
+    setupVDP2CoordinatesIncrement2(graphicEngineStatus.m40BC_layersConfig[3].scrollX, graphicEngineStatus.m40BC_layersConfig[3].scrollY);
 
     pauseEngine[4] = 4;
 }
