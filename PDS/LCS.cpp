@@ -961,10 +961,8 @@ void setLCSField83E(s_LCSTask* pLCS, s32 value)
     pLCS->m81C_curs = nullptr;
 }
 
-void s_LCSTask::Init()
+void s_LCSTask::Init(s_LCSTask* pTypedWorkArea)
 {
-    s_LCSTask* pTypedWorkArea = this;
-
     getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS = pTypedWorkArea;
     getMemoryArea(&pTypedWorkArea->m0, 0);
     pTypedWorkArea->m814_LCSTargetMaxDistance = 0x200000;
@@ -1340,11 +1338,11 @@ void LCSTaskDrawSub()
     }
 }
 
-void sLCSSelectedSub::Update()
+void sLCSSelectedSub::Update(sLCSSelectedSub* pThis)
 {
-    if (--mC_numFrames == 0)
+    if (--pThis->mC_numFrames == 0)
     {
-        getTask()->markFinished();
+        pThis->getTask()->markFinished();
     }
 }
 
@@ -1385,14 +1383,14 @@ void LCSSelectedSubTask_DrawSub0(s16* r4)
     r4[3] = graphicEngineStatus.m405C.VDP1_Y2;
 }
 
-void sLCSSelectedSub::Draw()
+void sLCSSelectedSub::Draw(sLCSSelectedSub* pThis)
 {
-    s32 var0 = LCSSelectedSubTask_DrawData0[mC_numFrames];
+    s32 var0 = LCSSelectedSubTask_DrawData0[pThis->mC_numFrames];
 
     s16 varC[4];
     LCSSelectedSubTask_DrawSub0(varC);
 
-    s32 r11 = LCSSelectedSubTask_DrawData1[mC_numFrames];
+    s32 r11 = LCSSelectedSubTask_DrawData1[pThis->mC_numFrames];
 
     s16 var4[4];
     var4[0] = MTH_Mul(-176, r11) - 176;
@@ -1401,10 +1399,10 @@ void sLCSSelectedSub::Draw()
     var4[3] = 112 - varC[3];
 
     s16 var14[4];
-    var14[0] = MTH_Mul((*m8)[0] - var4[0], r11) + var4[0];
-    var14[1] = MTH_Mul((*m8)[1] - var4[1], r11) + var4[1];
-    var14[2] = MTH_Mul((*m8)[0] - var4[2], r11) + var4[2];
-    var14[3] = MTH_Mul((*m8)[1] - var4[3], r11) + var4[3];
+    var14[0] = MTH_Mul((*pThis->m8)[0] - var4[0], r11) + var4[0];
+    var14[1] = MTH_Mul((*pThis->m8)[1] - var4[1], r11) + var4[1];
+    var14[2] = MTH_Mul((*pThis->m8)[0] - var4[2], r11) + var4[2];
+    var14[3] = MTH_Mul((*pThis->m8)[1] - var4[3], r11) + var4[3];
 
     u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
@@ -1438,50 +1436,50 @@ void sLCSSelected::UpdateSub0(sVec2_S16* r5)
     r14->mC_numFrames = 0xA;
 }
 
-void sLCSSelected::Update()
+void sLCSSelected::Update(sLCSSelected* pThis)
 {
-    switch (m2D)
+    switch (pThis->m2D)
     {
     case 0:
-        m18[1] += m18[0];
-        mC[1] += mC[0];
-        if (mC[1] >= mC[2])
+        pThis->m18[1] += pThis->m18[0];
+        pThis->mC[1] += pThis->mC[0];
+        if (pThis->mC[1] >= pThis->mC[2])
         {
-            mC[1] = mC[2];
-            m18[1] = m18[2];
-            m2D++;
+            pThis->mC[1] = pThis->mC[2];
+            pThis->m18[1] = pThis->m18[2];
+            pThis->m2D++;
         }
     case 1:
-        if (isLCSTargetValid(m8))
+        if (isLCSTargetValid(pThis->m8))
         {
             if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 & 2)
             {
-                if (m8->m1A > m2E)
+                if (pThis->m8->m1A > pThis->m2E)
                 {
-                    UpdateSub0(&m8->m30_screenspaceCoordinates);
+                    pThis->UpdateSub0(&pThis->m8->m30_screenspaceCoordinates);
                 }
             }
 
             //606ED02
-            m2E = m8->m1A;
-            if (m8->m1A == 0)
+            pThis->m2E = pThis->m8->m1A;
+            if (pThis->m8->m1A == 0)
             {
-                m2D++;
+                pThis->m2D++;
             }
         }
         else
         {
-            m2D++;
+            pThis->m2D++;
         }
         break;
     case 2:
-        m18[1] -= m18[0];
-        mC[1] -= mC[0];
-        if (mC[1] <= 0)
+        pThis->m18[1] -= pThis->m18[0];
+        pThis->mC[1] -= pThis->mC[0];
+        if (pThis->mC[1] <= 0)
         {
-            mC[1] = 0;
-            m18[1] = 0;
-            getTask()->markFinished();
+            pThis->mC[1] = 0;
+            pThis->m18[1] = 0;
+            pThis->getTask()->markFinished();
         }
         break;
     default:
@@ -1489,7 +1487,7 @@ void sLCSSelected::Update()
         break;
     }
 
-    m28++;
+    pThis->m28++;
 }
 
 void sLCSSelected::DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, sVec3_FP* r6)
@@ -1537,22 +1535,22 @@ void sLCSSelected::DrawSub1(s8 r5)
     PDS_unimplemented("sLCSSelected::DrawSub1");
 }
 
-void sLCSSelected::Draw()
+void sLCSSelected::Draw(sLCSSelected* pThis)
 {
-    DrawSub0(&LCSTaskDrawSub5Sub1_Data1[m2C], &mC);
-    if (m28 & 4)
+    pThis->DrawSub0(&LCSTaskDrawSub5Sub1_Data1[pThis->m2C], &pThis->mC);
+    if (pThis->m28 & 4)
     {
-        DrawSub0(&LCSTaskDrawSub5Sub1_Data1[m2C + 1], &m18);
+        pThis->DrawSub0(&LCSTaskDrawSub5Sub1_Data1[pThis->m2C + 1], &pThis->m18);
     }
 
-    if (m2C != 6)
+    if (pThis->m2C != 6)
         return;
-    if (m2D != 1)
+    if (pThis->m2D != 1)
         return;
-    if (m8->m1A <= 1)
+    if (pThis->m8->m1A <= 1)
         return;
 
-    DrawSub1(m8->m1A);
+    pThis->DrawSub1(pThis->m8->m1A);
 }
 
 void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6)

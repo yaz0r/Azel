@@ -131,17 +131,17 @@ struct s_cinematicBarTask : public s_workAreaTemplate<s_cinematicBarTask>
         return &taskDefinition;
     }
 
-    void Init()
+    static void Init(s_cinematicBarTask* pThis)
     {
-        m8 = 0;
-        mB = 0;
-        m9 = 0;
-        mC = 0;
-        mA = 0;
-        mD = 0;
+        pThis->m8 = 0;
+        pThis->mB = 0;
+        pThis->m9 = 0;
+        pThis->mC = 0;
+        pThis->mA = 0;
+        pThis->mD = 0;
     }
-    void Update();
-    void Draw();
+    static void Update(s_cinematicBarTask* pThis);
+    static void Draw(s_cinematicBarTask* pThis);
 
     void interpolateCinematicBar();
     void interpolateCinematicBarSub1();
@@ -170,9 +170,9 @@ struct s_multiChoiceTask2 : public s_workAreaTemplate< s_multiChoiceTask2>
         return &taskDefinition;
     }
 
-    void Update();
-    void Draw();
-    void Delete()
+    static void Update(s_multiChoiceTask2*);
+    static void Draw(s_multiChoiceTask2*);
+    static void Delete(s_multiChoiceTask2*)
     {
         assert(0);
     }
@@ -213,8 +213,8 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
         static TypedTaskDefinition taskDefinition = { NULL, &s_riderAnimTask::Update, NULL, &s_riderAnimTask::Delete, "s_riderAnimTaskTask" };
         return &taskDefinition;
     }
-    void Update();
-    void Delete();
+    static void Update(s_riderAnimTask*);
+    static void Delete(s_riderAnimTask*);
 
     s32 m0_status;
     s32 m4_riderIndex;
@@ -233,8 +233,8 @@ struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct 
         static TypedTaskDefinition taskDefinition = { &s_cutsceneTask::Init, &s_cutsceneTask::Update, NULL, NULL, "s_cutsceneTask" };
         return &taskDefinition;
     }
-    void Init(struct s_cutsceneData* argument);
-    void Update();
+    static void Init(s_cutsceneTask*, struct s_cutsceneData* argument);
+    static void Update(s_cutsceneTask*);
 
     void cutsceneTaskInitSub2(std::vector<s_scriptData1>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
 
@@ -252,9 +252,9 @@ struct s_cutsceneTask2 : public s_workAreaTemplateWithArg<s_cutsceneTask2, std::
         static TypedTaskDefinition taskDefinition = { &s_cutsceneTask2::Init, &s_cutsceneTask2::Update, &s_cutsceneTask2::Draw, NULL, "s_cutsceneTask2" };
         return &taskDefinition;
     }
-    void Init(std::vector<s_scriptData1>* argument);
-    void Update();
-    void Draw()
+    static void Init(s_cutsceneTask2*, std::vector<s_scriptData1>* argument);
+    static void Update(s_cutsceneTask2*);
+    static void Draw(s_cutsceneTask2*)
     {
         PDS_unimplemented("s_cutsceneTask2::Draw");
     }
@@ -293,8 +293,8 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
         static TypedTaskDefinition taskDefinition = { &s_fieldScriptWorkArea::Init, &s_fieldScriptWorkArea::Update, NULL, NULL, "s_fieldScriptWorkArea" };
         return &taskDefinition;
     }
-    void Init();
-    void Update();
+    static void Init(s_fieldScriptWorkArea*);
+    static void Update(s_fieldScriptWorkArea*);
 
     void fieldScriptTaskUpdateSub2();
     void fieldScriptTaskUpdateSub3();
@@ -396,13 +396,17 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_dragonTaskWorkArea::Init, &s_dragonTaskWorkArea::Update, &s_dragonTaskWorkArea::Draw, &s_dragonTaskWorkArea::dummyTaskDelete, "dragonFieldTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_dragonTaskWorkArea::Init, &s_dragonTaskWorkArea::Update, &s_dragonTaskWorkArea::Draw, &s_dragonTaskWorkArea::Delete, "dragonFieldTask" };
         return &taskDefinition;
     }
 
-    void Init(s32 arg);
-    void Update();
-    void Draw();
+    static void Init(s_dragonTaskWorkArea*, s32 arg);
+    static void Update(s_dragonTaskWorkArea*);
+    static void Draw(s_dragonTaskWorkArea*);
+    static void Delete(s_dragonTaskWorkArea*)
+    {
+        PDS_unimplemented("");
+    }
 
     s_memoryAreaOutput m0;
 
@@ -576,10 +580,10 @@ struct s_visdibilityCellTask : public s_workAreaTemplate<s_visdibilityCellTask>
         return &taskDefinition;
     }
 
-    void fieldGridTask_Update();
-    void gridCellDraw_untextured();
-    void gridCellDraw_collision();
-    void gridCellDraw_normal();
+    static void fieldGridTask_Update(s_visdibilityCellTask*);
+    static void gridCellDraw_untextured(s_visdibilityCellTask*);
+    static void gridCellDraw_collision(s_visdibilityCellTask*);
+    static void gridCellDraw_normal(s_visdibilityCellTask*);
 
     s_memoryAreaOutput m0_memoryLayout; // 0
     s_grid1* m8_pEnvironmentCell; // 8
@@ -696,8 +700,8 @@ struct s_fieldPaletteTaskWorkArea : public s_workAreaTemplate<s_fieldPaletteTask
         return &taskDefinition;
     }
 
-    void Init();
-    void Draw();
+    static void Init(s_fieldPaletteTaskWorkArea*);
+    static void Draw(s_fieldPaletteTaskWorkArea*);
 
     s_fieldPaletteTaskWorkSub* m78;
 };
@@ -710,10 +714,10 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
         return &taskDefinition;
     }
 
-    void Init();
-    void Update();
-    void Draw();
-    void Delete();
+    static void Init(s_FieldSubTaskWorkArea*);
+    static void Update(s_FieldSubTaskWorkArea*);
+    static void Draw(s_FieldSubTaskWorkArea*);
+    static void Delete(s_FieldSubTaskWorkArea*);
 
     u8* memoryArea[3]; // 0
     u8* characterArea[3]; // C
@@ -769,9 +773,9 @@ struct s_fieldTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldTaskWorkAre
         return &taskDefinition;
     }
     
-    void fieldTaskInit(s32);
-    void fieldTaskUpdate();
-    void fieldTaskDelete();
+    static void fieldTaskInit(s_fieldTaskWorkArea*, s32);
+    static void fieldTaskUpdate(s_fieldTaskWorkArea*);
+    static void fieldTaskDelete(s_fieldTaskWorkArea*);
 
     s_workArea* m0; // 0
     s_workArea* m4_overlayTaskData;//4
@@ -806,8 +810,8 @@ struct s_fieldStartOverlayTask : public s_workAreaTemplate<s_fieldStartOverlayTa
         return &taskDefinition;
     }
 
-    void Init();
-    void Delete();
+    static void Init(s_fieldStartOverlayTask*);
+    static void Delete(s_fieldStartOverlayTask*);
 };
 
 struct s_fieldSub1Task : public s_workAreaTemplate<s_fieldSub1Task>
@@ -818,13 +822,13 @@ struct s_fieldSub1Task : public s_workAreaTemplate<s_fieldSub1Task>
         return &taskDefinition;
     }
 
-    void Init()
+    static void Init(s_fieldSub1Task* pThis)
     {
-        fieldTaskPtr->m0 = this;
-        createSubTask<s_fieldStartOverlayTask>(this);
+        fieldTaskPtr->m0 = pThis;
+        createSubTask<s_fieldStartOverlayTask>(pThis);
     }
 
-    void Delete()
+    static void Delete(s_fieldSub1Task* pThis)
     {
         fieldTaskPtr->m0 = NULL;
     }
@@ -838,13 +842,13 @@ struct s_fieldSub0Task : public s_workAreaTemplate<s_fieldSub0Task>
         return &taskDefinition;
     }
 
-    void Init()
+    static void Init(s_fieldSub0Task* pThis)
     {
-        fieldTaskVar0 = this;
-        createSubTask< s_fieldSub1Task>(this);
+        fieldTaskVar0 = pThis;
+        createSubTask<s_fieldSub1Task>(pThis);
     }
 
-    void Delete()
+    static void Delete(s_fieldSub0Task*)
     {
         fieldTaskVar0 = nullptr;
     }

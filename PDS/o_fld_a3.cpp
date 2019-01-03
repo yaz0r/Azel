@@ -323,7 +323,7 @@ void s_visdibilityCellTask::gridCellDraw_normal()
     }
 }
 
-constexpr s_visdibilityCellTask::FunctionType gridCellDrawFunctions[3] =
+s_visdibilityCellTask::FunctionType gridCellDrawFunctions[3] =
 {
     &s_visdibilityCellTask::gridCellDraw_untextured, // untextured
     &s_visdibilityCellTask::gridCellDraw_collision, // textures collision geo

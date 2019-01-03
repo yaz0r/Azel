@@ -106,7 +106,8 @@ struct s_workAreaTemplateWithArg : public s_workArea
         if(pTask->m_UpdateMethod)
         {
             //printf("calling update for task %s\n", pTask->m_pTask->m_taskName);
-            ((pTask)->*(pTask->m_UpdateMethod))();
+            //((pTask)->*(pTask->m_UpdateMethod))();
+            pTask->m_UpdateMethod(pTask);
         }
     }
     static void StaticDraw(p_workArea pWorkArea)
@@ -115,7 +116,8 @@ struct s_workAreaTemplateWithArg : public s_workArea
         if (pTask->m_DrawMethod)
         {
             //printf("calling draw for task %s\n", pTask->m_pTask->m_taskName);
-            ((pTask)->*(pTask->m_DrawMethod))();
+            //((pTask)->*(pTask->m_DrawMethod))();
+            pTask->m_DrawMethod(pTask);
         }
     }
     static void StaticDelete(p_workArea pWorkArea)
@@ -124,7 +126,8 @@ struct s_workAreaTemplateWithArg : public s_workArea
         if (pTask->m_DeleteMethod)
         {
             //printf("calling delete for task %s\n", pTask->m_pTask->m_taskName);
-            ((pTask)->*(pTask->m_DeleteMethod))();
+            //((pTask)->*(pTask->m_DeleteMethod))();
+            pTask->m_DeleteMethod(pTask);
         }
     }
 
@@ -133,8 +136,8 @@ struct s_workAreaTemplateWithArg : public s_workArea
         assert(0);
     }
 
-    typedef void (T::*FunctionType)();
-    typedef void (T::*InitFunctionType)(argType ...);
+    typedef void (*FunctionType)(T*);
+    typedef void (*InitFunctionType)(T*, argType ...);
     //InitFunctionType m_InitMethod;
     FunctionType m_UpdateMethod;
     FunctionType m_DrawMethod;
@@ -251,7 +254,8 @@ T* createSubTask(p_workArea parentTask, const typename T::TypedTaskDefinition* p
     pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
     if (pTypeTaskDefinition->m_pInit)
     {
-        ((pNewTask)->*(pTypeTaskDefinition->m_pInit))();
+        pTypeTaskDefinition->m_pInit(pNewTask);
+        //((pNewTask)->*(pTypeTaskDefinition->m_pInit))();
     }
     return pNewTask;
 }
@@ -266,7 +270,8 @@ T* createSubTaskWithArg(p_workArea parentTask, argType arg, const typename T::Ty
     pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
     if (pTypeTaskDefinition->m_pInit)
     {
-        ((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
+        pTypeTaskDefinition->m_pInit(pNewTask, arg);
+        //((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
     }
     return pNewTask;
 }
@@ -281,7 +286,8 @@ T* createSiblingTaskWithArg(p_workArea parentTask, argType arg, const typename T
     pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
     if (pTypeTaskDefinition->m_pInit)
     {
-        ((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
+        pTypeTaskDefinition->m_pInit(pNewTask, arg);
+        //((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
     }
     return pNewTask;
 }
@@ -311,7 +317,8 @@ T* createRootTask()
     pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
     if (pTypeTaskDefinition->m_pInit)
     {
-        ((pNewTask)->*(pTypeTaskDefinition->m_pInit))();
+        pTypeTaskDefinition->m_pInit(pNewTask);
+        //((pNewTask)->*(pTypeTaskDefinition->m_pInit))();
     }
     return pNewTask;
 }

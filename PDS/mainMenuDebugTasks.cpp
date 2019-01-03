@@ -16,17 +16,17 @@ struct sLoadingTaskWorkArea : public s_workAreaTemplateWithArg<sLoadingTaskWorkA
         return &taskDefinition;
     }
 
-    void Init(s8 arg)
+    static void Init(sLoadingTaskWorkArea* pThis, s8 arg)
     {
-        gLoadingTaskWorkArea = this;
+        gLoadingTaskWorkArea = pThis;
 
-        m0_status = 0;
-        m2 = -1;
-        m4 = -1;
-        m6 = 0;
-        m8 = 0;
-        mA = 0;
-        mC = arg;
+        pThis->m0_status = 0;
+        pThis->m2 = -1;
+        pThis->m4 = -1;
+        pThis->m6 = 0;
+        pThis->m8 = 0;
+        pThis->mA = 0;
+        pThis->mC = arg;
 
         if (arg)
         {
@@ -86,13 +86,13 @@ struct sLoadingTaskWorkArea : public s_workAreaTemplateWithArg<sLoadingTaskWorkA
         assert(0);
     }
 
-    void Update()
+    static void Update(sLoadingTaskWorkArea* pThis)
     {
-        switch (m0_status)
+        switch (pThis->m0_status)
         {
         case 0:
-            loadingTaskUpdateSub0();
-            m0_status++;
+            pThis->loadingTaskUpdateSub0();
+            pThis->m0_status++;
             break;
         case 1:
             break;
@@ -101,7 +101,7 @@ struct sLoadingTaskWorkArea : public s_workAreaTemplateWithArg<sLoadingTaskWorkA
         }
     }
 
-    void Delete()
+    void static Delete(sLoadingTaskWorkArea*)
     {
         PDS_unimplemented("sLoadingTaskWorkArea::Delete");
     }
@@ -129,14 +129,14 @@ struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskW
         return &taskDefinition;
     }
 
-    void Init(p_workArea argument)
+    static void Init(s_flagEditTaskWorkArea* pThis, p_workArea argument)
     {
-        m4 = argument;
+        pThis->m4 = argument;
     }
 
-    void Update()
+    static void Update(s_flagEditTaskWorkArea* pThis)
     {
-        switch (state)
+        switch (pThis->state)
         {
         case 0:
             if (readKeyboardToggle(0x85))
@@ -148,11 +148,11 @@ struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskW
             assert(0);
         }
 
-        if (m4)
+        if (pThis->m4)
         {
-            if (m4->getTask()->isFinished())
+            if (pThis->m4->getTask()->isFinished())
             {
-                getTask()->markFinished();
+                pThis->getTask()->markFinished();
             }
         }
     }
@@ -324,24 +324,24 @@ void updateFieldTaskNoBattleOverride(p_workArea pTypelessWorkArea)
     return;
 }
 
-void s_fieldTaskWorkArea::fieldTaskInit(s32 battleArgument)
+void s_fieldTaskWorkArea::fieldTaskInit(s_fieldTaskWorkArea* pThis, s32 battleArgument)
 {
-    fieldTaskPtr = this;
+    fieldTaskPtr = pThis;
     fieldTaskVar0 = NULL;
     fieldInputTaskWorkArea = NULL;
     fieldTaskVar2 = 0;
 
-    m35 = battleArgument;
-    m3D = -1;
+    pThis->m35 = battleArgument;
+    pThis->m3D = -1;
 
     if (battleArgument)
     {
-        m28_status = 0;
-        getTask()->m8_pUpdate = updateFieldTaskNoBattleOverride;
+        pThis->m28_status = 0;
+        pThis->getTask()->m8_pUpdate = updateFieldTaskNoBattleOverride;
     }
     else
     {
-        m28_status = 1;
+        pThis->m28_status = 1;
     }
 }
 
