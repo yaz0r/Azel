@@ -3718,10 +3718,8 @@ s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA)
     return pCameraConfig;
 }
 
-void fieldOverlaySubTaskInit(s_workArea* pWorkArea)
+void s_fieldOverlaySubTaskWorkArea::fieldOverlaySubTaskInit(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
 {
-    s_fieldOverlaySubTaskWorkArea* pTypedWorkArea = static_cast<s_fieldOverlaySubTaskWorkArea*>(pWorkArea);
-
     getFieldTaskPtr()->m8_pSubFieldData->m334 = pTypedWorkArea;
 
     fieldOverlaySubTaskInitSub1(0, &fieldOverlaySubTaskInitSub2, 0);
@@ -3737,14 +3735,24 @@ void fieldOverlaySubTaskInit(s_workArea* pWorkArea)
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50D = 1;
 }
 
-s_taskDefinition fieldOverlaySubTaskDefinition = { fieldOverlaySubTaskInit, NULL, NULL, NULL, "fieldOverlaySubTask" };
-
 void createFieldOverlaySubTask(s_workArea* pWorkArea)
 {
-    createSubTask(pWorkArea, &fieldOverlaySubTaskDefinition, new s_fieldOverlaySubTaskWorkArea);
+    createSubTask<s_fieldOverlaySubTaskWorkArea>(pWorkArea);
 }
 
-void dragonRidersTaskInit(s_workArea* pWorkArea)
+struct s_DragonRiderTask : public s_workAreaTemplate<s_DragonRiderTask>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &dragonRidersTaskInit, &dragonRidersTaskUpdate, NULL, NULL, "dragonRidersTask" };
+        return &taskDefinition;
+    }
+    
+    static void dragonRidersTaskInit(s_DragonRiderTask* pWorkArea);
+    static void dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea);
+};
+
+void s_DragonRiderTask::dragonRidersTaskInit(s_DragonRiderTask* pWorkArea)
 {
     {
         u8* pData = NULL;
@@ -3767,12 +3775,10 @@ void dragonRidersTaskInit(s_workArea* pWorkArea)
     }
 }
 
-void dragonRidersTaskUpdate(s_workArea* pWorkArea)
+void s_DragonRiderTask::dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea)
 {
     PDS_unimplemented("dragonRidersTaskUpdate");
 }
-
-s_taskDefinition dragonRidersTaskDefinition = { dragonRidersTaskInit, dragonRidersTaskUpdate, NULL, NULL, "dragonRidersTask" };
 
 void dragonFieldSubTask2InitSub1(s32 r4)
 {
@@ -3781,10 +3787,8 @@ void dragonFieldSubTask2InitSub1(s32 r4)
     r14->m68 = MTH_Mul(r4, r4);
 }
 
-void dragonFieldSubTask2Init(s_workArea* pWorkArea)
+void s_PaletteTaskWorkArea::dragonFieldSubTask2Init(s_PaletteTaskWorkArea* pTypedWorkArea)
 {
-    s_PaletteTaskWorkArea* pTypedWorkArea = static_cast<s_PaletteTaskWorkArea*>(pWorkArea);
-
     getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask = pTypedWorkArea;
 
     getMemoryArea(&pTypedWorkArea->m0, 0);
@@ -3850,9 +3854,8 @@ s8 paletteIndexTable[4] = {
     0,1,2,2
 };
 
-void dragonFieldSubTask2Update(s_workArea* pWorkArea)
+void s_PaletteTaskWorkArea::dragonFieldSubTask2Update(s_PaletteTaskWorkArea* pTypedWorkArea)
 {
-    s_PaletteTaskWorkArea* pTypedWorkArea = static_cast<s_PaletteTaskWorkArea*>(pWorkArea);
     PDS_unimplemented("dragonFieldSubTask2Update");
 
     //if (graphicEngineStatus.m40AC.m8 == 2)
@@ -3865,17 +3868,14 @@ void dragonFieldSubTask2Update(s_workArea* pWorkArea)
 
 }
 
-void dragonFieldSubTask2Draw(s_workArea* pWorkArea)
+void s_PaletteTaskWorkArea::dragonFieldSubTask2Draw(s_PaletteTaskWorkArea* pTypedWorkArea)
 {
-    s_PaletteTaskWorkArea* pTypedWorkArea = static_cast<s_PaletteTaskWorkArea*>(pWorkArea);
     PDS_unimplemented("dragonFieldSubTask2Draw");
 }
 
-s_taskDefinition dragonFieldSubTask2Definition = { dragonFieldSubTask2Init, dragonFieldSubTask2Update, dragonFieldSubTask2Draw, NULL, "dragonFieldSubTask2" };
-
 void initDragonFieldSubTask2(s_workArea* pWorkArea)
 {
-    createSubTask(pWorkArea, &dragonFieldSubTask2Definition, new s_PaletteTaskWorkArea);
+    createSubTask<s_PaletteTaskWorkArea>(pWorkArea);
 }
 
 void dragonFieldTaskInitSub2Sub2(fixedPoint* m178)
@@ -5175,7 +5175,7 @@ void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
     dragonFieldTaskInitSub3(pThis, gDragonState, 5);
     pThis->mF0 = dragonFieldTaskInitSub4;
 
-    createSubTask(pThis, &dragonRidersTaskDefinition, new s_dummyWorkArea);
+    createSubTask<s_DragonRiderTask>(pThis);
 
     if (gDragonState->mC_dragonType == DR_LEVEL_6_LIGHT_WING)
     {
@@ -6066,9 +6066,8 @@ std::vector<fixedPoint> fieldCameraTask1InitData1_depthRangeTable =
     fixedPoint(0x7FFFFFFF),
 };
 
-void fieldCameraTask1Init(s_workArea* pWorkArea)
+void s_visibilityGridWorkArea::fieldCameraTask1Init(s_visibilityGridWorkArea* pTypedWorkArea)
 {
-    s_visibilityGridWorkArea* pTypedWorkArea = static_cast<s_visibilityGridWorkArea*>(pWorkArea);
     getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1 = pTypedWorkArea;
 
     pTypedWorkArea->m12F8_convertCameraPositionToGrid = convertCameraPositionTo2dGrid;
@@ -6083,10 +6082,8 @@ void fieldCameraTask1Init(s_workArea* pWorkArea)
     pTypedWorkArea->m1300 = 3;
 }
 
-void fieldCameraTask1Update(s_workArea* pWorkArea)
+void s_visibilityGridWorkArea::fieldCameraTask1Update(s_visibilityGridWorkArea* pTypedWorkArea)
 {
-    s_visibilityGridWorkArea* pTypedWorkArea = static_cast<s_visibilityGridWorkArea*>(pWorkArea);
-
     pTypedWorkArea->m0_position = cameraProperties2.m0_position;
     pTypedWorkArea->m12F8_convertCameraPositionToGrid(pTypedWorkArea);
 }
@@ -6096,10 +6093,8 @@ sMatrix4x3* fieldCameraTask1DrawSub1()
     return &getFieldTaskPtr()->m8_pSubFieldData->m334->m384;
 }
 
-void fieldCameraTask1Draw(s_workArea* pWorkArea)
+void s_visibilityGridWorkArea::fieldCameraTask1Draw(s_visibilityGridWorkArea* pTypedWorkArea)
 {
-    s_visibilityGridWorkArea* pTypedWorkArea = static_cast<s_visibilityGridWorkArea*>(pWorkArea);
-
     sMatrix4x3* r13 = fieldCameraTask1DrawSub1();
 
     asyncDivStart(graphicEngineStatus.m405C.m14_farClipDistance, fixedPoint(0xC422));
@@ -6150,9 +6145,19 @@ void fieldCameraTask1Draw(s_workArea* pWorkArea)
     pTypedWorkArea->m12F0 = 0;
 }
 
-s_taskDefinition fieldCameraTask1Definition = { fieldCameraTask1Init, fieldCameraTask1Update, fieldCameraTask1Draw, NULL, "fieldCameraTask1" };
+struct LCSTask : public s_workAreaTemplate<LCSTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { LCSTaskInit, NULL, LCSTaskDraw, NULL, "LCSTask" };
+        return &taskDefinition;
+    }
 
-void LCSTaskInit(p_workArea pWorkArea)
+    static void LCSTaskInit(LCSTask*);
+    static void LCSTaskDraw(LCSTask*);
+};
+
+void LCSTask::LCSTaskInit(LCSTask*)
 {
     s_visibilityGridWorkArea* r4 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
     r4->m1290_vdp2VramOffset = 0x25E68000;
@@ -6209,25 +6214,21 @@ void LCSTaskDrawSub1Sub4()
     updateCameraScriptSub1(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
 }
 
-void LCSTaskDraw(p_workArea pWorkArea)
+void LCSTask::LCSTaskDraw(LCSTask*)
 {
     LCSTaskDrawSub();
 }
 
-s_taskDefinition LCSTaskDefinition = { LCSTaskInit, NULL, LCSTaskDraw, NULL, "LCSTask" };
-
 p_workArea createFieldCameraTask(s_workArea* pWorkArea)
 {
-    p_workArea pCameraTask = createSubTask(pWorkArea, &fieldCameraTask1Definition, new s_visibilityGridWorkArea);
-    createSubTask(pWorkArea, &LCSTaskDefinition, new s_workArea);
+    p_workArea pCameraTask = createSubTask<s_visibilityGridWorkArea>(pWorkArea);
+    createSubTask<LCSTask>(pWorkArea);
 
     return pCameraTask;
 }
 
-void randomBattleTaskInit(p_workArea pTypelessWorkArea)
+void s_randomBattleWorkArea::randomBattleTaskInit(s_randomBattleWorkArea* pWorkArea)
 {
-    s_randomBattleWorkArea* pWorkArea = static_cast<s_randomBattleWorkArea*>(pTypelessWorkArea);
-
     getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask = pWorkArea;
 }
 
@@ -6241,10 +6242,8 @@ bool isBattleEnabled()
     return false;
 }
 
-void randomBattleTaskDraw(p_workArea pTypelessWorkArea)
+void s_randomBattleWorkArea::randomBattleTaskDraw(s_randomBattleWorkArea* pWorkArea)
 {
-    s_randomBattleWorkArea* pWorkArea = static_cast<s_randomBattleWorkArea*>(pTypelessWorkArea);
-
     if ((pWorkArea->m4 == 2) || isBattleEnabled() || (pWorkArea->m4 == 0) || ((getFieldTaskPtr()->m28_status & 0xFFFF) == 0))
     {
         hasEncounterData = 1;
@@ -6255,11 +6254,9 @@ void randomBattleTaskDraw(p_workArea pTypelessWorkArea)
     }
 }
 
-s_taskDefinition randomBattleTaskDefinition = { randomBattleTaskInit, NULL, randomBattleTaskDraw, NULL, "randomBattleTask" };
-
 void createRandomBattleTask(s_workArea* pWorkArea)
 {
-    createSubTask(pWorkArea, &randomBattleTaskDefinition, new s_randomBattleWorkArea);
+    createSubTask<s_randomBattleWorkArea>(pWorkArea);
 }
 
 void fieldDebugMenuUpdate1()

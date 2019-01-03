@@ -22,8 +22,16 @@ struct s_fieldOverlaySubTaskWorkArea2E4
     // size 0x20?
 };
 
-struct s_fieldOverlaySubTaskWorkArea : public s_workArea
+struct s_fieldOverlaySubTaskWorkArea : public s_workAreaTemplate<s_fieldOverlaySubTaskWorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &fieldOverlaySubTaskInit, NULL, NULL, NULL, "s_fieldOverlaySubTaskWorkArea" };
+        return &taskDefinition;
+    }
+
+    static void fieldOverlaySubTaskInit(s_fieldOverlaySubTaskWorkArea*);
+
     s32 m0_nextCamera;
     s32 m4_currentCamera;
     s32 m8_numFramesOnCurrentCamera;
@@ -83,30 +91,16 @@ struct s_animDataFrame
     s16 m2;
 };
 
-struct s_vdp2StringTask : public s_workArea
+struct s_vdp2StringTask : public s_workAreaTemplate<s_vdp2StringTask>
 {
-    static s_taskDefinition* getTaskDefinition()
+    static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static s_taskDefinition taskDefinition = { NULL, s_vdp2StringTask::StaticUpdate, NULL, s_vdp2StringTask::StaticDelete, "vdp2StringTask" };
+        static TypedTaskDefinition taskDefinition = { NULL, &s_vdp2StringTask::Update, NULL, &s_vdp2StringTask::Delete, "vdp2StringTask" };
         return &taskDefinition;
     }
-    static void StaticUpdate(p_workArea pWorkArea)
-    {
-        s_vdp2StringTask* pThis = ConvertType(pWorkArea);
-        pThis->Update();
-    }
-    static void StaticDelete(p_workArea pWorkArea)
-    {
-        s_vdp2StringTask* pThis = ConvertType(pWorkArea);
-        pThis->Delete();
-    }
-    static s_vdp2StringTask* ConvertType(p_workArea pWorkArea)
-    {
-        return static_cast<s_vdp2StringTask*>(pWorkArea);
-    }
 
-    void Update();
-    void Delete();
+    static void Update(s_vdp2StringTask*);
+    static void Delete(s_vdp2StringTask*);
 
     void UpdateSub1();
 
@@ -614,8 +608,18 @@ struct s_visibilityGridWorkArea_1294
     s32 m14;
 };
 
-struct s_visibilityGridWorkArea : public s_workArea
+struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { fieldCameraTask1Init, fieldCameraTask1Update, fieldCameraTask1Draw, NULL, "fieldCameraTask1" };
+        return &taskDefinition;
+    }
+
+    static void fieldCameraTask1Init(s_visibilityGridWorkArea*);
+    static void fieldCameraTask1Update(s_visibilityGridWorkArea*);
+    static void fieldCameraTask1Draw(s_visibilityGridWorkArea*);
+
     sVec3_FP m0_position; // 0
     sVec3_FP mC;
     s32 m18_cameraGridLocation[2]; // 18 Grid location
@@ -650,15 +654,34 @@ struct s_visibilityGridWorkArea : public s_workArea
 
 #include "LCS.h"
 
-struct s_randomBattleWorkArea : public s_workArea
+struct s_randomBattleWorkArea : public s_workAreaTemplate<s_randomBattleWorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { randomBattleTaskInit, NULL, randomBattleTaskDraw, NULL, "randomBattleTask" };
+        return &taskDefinition;
+    }
+
+    static void randomBattleTaskInit(s_randomBattleWorkArea*);
+    static void randomBattleTaskDraw(s_randomBattleWorkArea*);
+
     void(*m0)();
     u8 m4;
     // size 8
 };
 
-struct s_PaletteTaskWorkArea : public s_workArea
+struct s_PaletteTaskWorkArea : public s_workAreaTemplate<s_PaletteTaskWorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { dragonFieldSubTask2Init, dragonFieldSubTask2Update, dragonFieldSubTask2Draw, NULL, "dragonFieldSubTask2" };
+        return &taskDefinition;
+    }
+
+    static void dragonFieldSubTask2Init(s_PaletteTaskWorkArea*);
+    static void dragonFieldSubTask2Update(s_PaletteTaskWorkArea*);
+    static void dragonFieldSubTask2Draw(s_PaletteTaskWorkArea*);
+
     s_memoryAreaOutput m0;
     s16 m8;
     s16 mA;

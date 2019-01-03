@@ -1425,30 +1425,30 @@ void s_vdp2StringTask::UpdateSub1()
     VDP2DrawString((char*)getSaturnPtr(m24_string));
 }
 
-void s_vdp2StringTask::Update()
+void s_vdp2StringTask::Update(s_vdp2StringTask* pThis)
 {
-    switch (m0_status)
+    switch (pThis->m0_status)
     {
     case 0:
-        m0_status++;
+        pThis->m0_status++;
     case 1:
-        UpdateSub1();
-        m0_status++;
+        pThis->UpdateSub1();
+        pThis->m0_status++;
         return;
     case 2:
-        switch (m2_durationMode)
+        switch (pThis->m2_durationMode)
         {
         case 0:
-            if (--mA_duration <= 0)
+            if (--pThis->mA_duration <= 0)
             {
-                m0_status++;
+                pThis->m0_status++;
                 return;
             }
             else
             {
                 if ((graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0xF) || readKeyboardToggle(0x87))
                 {
-                    m0_status++;
+                    pThis->m0_status++;
                 }
                 return;
             }
@@ -1457,10 +1457,10 @@ void s_vdp2StringTask::Update()
             break;
         }
     case 3:
-        m0_status++;
+        pThis->m0_status++;
         return;
     case 4:
-        getTask()->markFinished();
+        pThis->getTask()->markFinished();
         return;
     default:
         assert(0);
@@ -1473,19 +1473,19 @@ void vdp2StringTaskDeleteSub0()
     PDS_unimplemented("vdp2StringTaskDeleteSub0");
 }
 
-void s_vdp2StringTask::Delete()
+void s_vdp2StringTask::Delete(s_vdp2StringTask* pThis)
 {
     vdp2StringTaskDeleteSub0();
 
-    if (m10)
+    if (pThis->m10)
     {
-        *m10 = NULL;
+        *pThis->m10 = NULL;
     }
 }
 
 s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, s_vdp2StringTask** r5, s16 duration, sSaturnPtr pString)
 {
-    s_vdp2StringTask* r14 = static_cast<s_vdp2StringTask*>(createSubTask(pTask, s_vdp2StringTask::getTaskDefinition(), new s_vdp2StringTask));
+    s_vdp2StringTask* r14 = createSubTask<s_vdp2StringTask>(pTask);
 
     r14->m0_status = 0;
     if (duration > 0)
