@@ -774,7 +774,7 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     u8 debugMenuStatus3; //380
 };
 
-struct s_fieldTaskWorkArea_C : public s_workArea
+struct s_fieldTaskWorkArea_C : public s_workAreaTemplate<s_fieldTaskWorkArea_C>
 {
     fixedPoint m0;
     s32 m8;
@@ -887,7 +887,10 @@ void loadFileFromFileList(u32 index);
 
 void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex);
 
-s_fieldTaskWorkArea* getFieldTaskPtr();
+static s_fieldTaskWorkArea* getFieldTaskPtr()
+{
+    return fieldTaskPtr;
+}
 
 void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5);
 void dragonFieldTaskInitSub4Sub5(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);

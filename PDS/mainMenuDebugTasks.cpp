@@ -301,15 +301,8 @@ p_workArea fieldInputTaskWorkArea;
 u32 fieldTaskVar2;
 u8 fieldTaskVar3;
 
-s_fieldTaskWorkArea* getFieldTaskPtr()
+void updateFieldTaskNoBattleOverride(s_fieldTaskWorkArea* pWorkArea)
 {
-    return fieldTaskPtr;
-}
-
-void updateFieldTaskNoBattleOverride(p_workArea pTypelessWorkArea)
-{
-    s_fieldTaskWorkArea* pWorkArea = static_cast<s_fieldTaskWorkArea*>(pTypelessWorkArea);
-
     switch (pWorkArea->m3C_fieldTaskState)
     {
     case 0:
@@ -337,7 +330,7 @@ void s_fieldTaskWorkArea::fieldTaskInit(s_fieldTaskWorkArea* pThis, s32 battleAr
     if (battleArgument)
     {
         pThis->m28_status = 0;
-        pThis->getTask()->m8_pUpdate = updateFieldTaskNoBattleOverride;
+        pThis->m_UpdateMethod = updateFieldTaskNoBattleOverride;
     }
     else
     {
@@ -3492,16 +3485,14 @@ void s_laserRankTaskWorkArea::Draw(s_laserRankTaskWorkArea* pThis)
     }
 }
 
-struct s_mainMenuTaskInitSub4SubWorkArea : public s_workArea
+struct s_mainMenuTaskInitSub4SubWorkArea : public s_workAreaTemplate<s_mainMenuTaskInitSub4SubWorkArea>
 {
     u32 _0;
     s32 _4;
 };
 
-void mainMenuTaskInitSub4Sub(p_workArea typelessWorkArea)
+void mainMenuTaskInitSub4Sub(s_mainMenuTaskInitSub4SubWorkArea* pWorkArea)
 {
-    s_mainMenuTaskInitSub4SubWorkArea* pWorkArea = static_cast<s_mainMenuTaskInitSub4SubWorkArea*>(typelessWorkArea);
-
     if (--pWorkArea->_4 > 0)
     {
         return;
@@ -3519,7 +3510,7 @@ void mainMenuTaskInitSub4Sub(p_workArea typelessWorkArea)
 
 void mainMenuTaskInitSub4(p_workArea typelessWorkArea)
 {
-    createSubTaskFromFunction(typelessWorkArea, mainMenuTaskInitSub4Sub, new s_mainMenuTaskInitSub4SubWorkArea, "mainMenuTaskInitSub4Sub");
+    createSubTaskFromFunction<s_mainMenuTaskInitSub4SubWorkArea>(typelessWorkArea, mainMenuTaskInitSub4Sub);
 }
 
 void s_MenuCursorWorkArea::menuCursorTaskInit(s_MenuCursorWorkArea* pThis, sMainMenuTaskInitData2* pMenuData)

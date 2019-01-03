@@ -80,7 +80,7 @@ std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, 
 
 p_workArea create_fieldA3_0_task0(p_workArea workArea)
 {
-    s_fieldTaskWorkArea_C* newWorkArea = static_cast<s_fieldTaskWorkArea_C*>(createSubTaskFromFunction(workArea, NULL, new s_fieldTaskWorkArea_C, "fieldTaskWorkArea_C"));
+    s_fieldTaskWorkArea_C* newWorkArea = createSubTaskFromFunction<s_fieldTaskWorkArea_C>(workArea, NULL);
     getFieldTaskPtr()->mC = newWorkArea;
     return newWorkArea;
 }
@@ -91,7 +91,12 @@ p_workArea create_fieldA3_0_task1(p_workArea workArea, s32 r5, s32 r6)
     return workArea;
 }
 
-void fieldA3_0_tutorialTask_update(p_workArea workArea)
+struct s_fieldA3_0_tutorialTask : public s_workAreaTemplate<s_fieldA3_0_tutorialTask>
+{
+
+};
+
+void fieldA3_0_tutorialTask_update(s_fieldA3_0_tutorialTask* workArea)
 {
     if (startFieldScript(21, -1))
     {
@@ -103,7 +108,7 @@ void create_fieldA3_0_tutorialTask(p_workArea workArea)
 {
     if ((getFieldTaskPtr()->m2C_currentFieldIndex != 2) || mainGameState.getBit(0xA2, 2))
     {
-        createSubTaskFromFunction(workArea, fieldA3_0_tutorialTask_update, new s_dummyWorkArea, "fieldA3_0_tutorialTask_update");
+        createSubTaskFromFunction<s_fieldA3_0_tutorialTask>(workArea, fieldA3_0_tutorialTask_update);
     }
 }
 
@@ -429,10 +434,8 @@ void updateCellGridIfDirty(s_visibilityGridWorkArea* pFieldCameraTask1)
     }
 }
 
-void updateCellGridFromCameraPosition(p_workArea workArea)
+void updateCellGridFromCameraPosition(s_visibilityGridWorkArea* pFieldCameraTask1)
 {
-    s_visibilityGridWorkArea* pFieldCameraTask1 = static_cast<s_visibilityGridWorkArea*>(workArea);
-
     pFieldCameraTask1->m0_position[0] = cameraProperties2.m0_position[0];
     pFieldCameraTask1->m0_position[1] = cameraProperties2.m0_position[1];
     pFieldCameraTask1->m0_position[2] = cameraProperties2.m0_position[2];
@@ -442,6 +445,10 @@ void updateCellGridFromCameraPosition(p_workArea workArea)
     updateCellGridIfDirty(pFieldCameraTask1);
 }
 
+struct s_s_visibilityGridWorkArea_38 : public s_workAreaTemplate<s_s_visibilityGridWorkArea_38>
+{
+
+};
 
 void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
 {
@@ -451,7 +458,7 @@ void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
         assert(0);
     }
 
-    pFieldCameraTask1->m38 = createSubTaskFromFunction(pFieldCameraTask1, NULL, new s_dummyWorkArea, "BackgroundTasks");
+    pFieldCameraTask1->m38 = createSubTaskFromFunction<s_s_visibilityGridWorkArea_38>(pFieldCameraTask1, NULL);
 
     if (r4)
     {
@@ -507,7 +514,7 @@ void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
 
         //060710C4
         enableCellsAroundCamera(pFieldCameraTask1);
-        pFieldCameraTask1->getTask()->m8_pUpdate = updateCellGridFromCameraPosition;
+        pFieldCameraTask1->m_UpdateMethod = &updateCellGridFromCameraPosition;
     }
     else
     {
@@ -551,10 +558,8 @@ void getDragonDeltaMovement(sVec3_FP* r4)
     *r4 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m160_deltaTranslation;
 }
 
-void A3_Obj2_Update(p_workArea pWorkArea)
+void A3_Obj2_Update(s_A3_Obj2* r14)
 {
-    s_A3_Obj2* r14 = static_cast<s_A3_Obj2*>(pWorkArea);
-
     s32 r10 = r14->m30;
     std::vector<fixedPoint>::iterator var8 = r14->m5C_perNodeRotation.begin();
     sSaturnPtr var4 = sSaturnPtr({ 0x6092964, gFLD_A3 });
@@ -663,10 +668,8 @@ void A3_Obj2_Update(p_workArea pWorkArea)
     } while (--r12);
 }
 
-void A3_Obj2_Draw(p_workArea pWorkArea)
+void A3_Obj2_Draw(s_A3_Obj2* r14)
 {
-    s_A3_Obj2* r14 = static_cast<s_A3_Obj2*>(pWorkArea);
-
     std::vector<fixedPoint>::iterator r12 = r14->m5C_perNodeRotation.begin();
     sSaturnPtr r10 = r14->m58;
 
@@ -792,8 +795,8 @@ void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32
 
     pNewObj->m5C_perNodeRotation.resize(pNewObj->m28_numNodes);
 
-    pNewObj->getTask()->m8_pUpdate = A3_Obj2_Update;
-    pNewObj->getTask()->mC_pDraw = A3_Obj2_Draw;
+    pNewObj->m_UpdateMethod = &A3_Obj2_Update;
+    pNewObj->m_DrawMethod = &A3_Obj2_Draw;
 
     createLCSTarget(&pNewObj->m60, pNewObj, &create_A3_Obj2_Sub1, &pNewObj->m10_position, 0, 0, 0, -1, 0, 0);
 

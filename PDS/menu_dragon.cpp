@@ -52,6 +52,20 @@ void s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Delete(s_dragonMenuSubTask1
     PDS_unimplemented("dragonMenuSubTask1Delete");
 }
 
+struct s_dragonMenuStatsTask2 : public s_workAreaTemplate<s_dragonMenuStatsTask2>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_dragonMenuStatsTask2::Draw, NULL, "dragonMenuStatsTask2" };
+        return &taskDefinition;
+    }
+
+    static void Draw(s_dragonMenuStatsTask2*)
+    {
+        PDS_unimplemented("s_dragonMenuStatsTask2::Draw");
+    }
+};
+
 struct s_dragonMenuWorkArea : public s_workAreaTemplate<s_dragonMenuWorkArea>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
@@ -69,7 +83,7 @@ struct s_dragonMenuWorkArea : public s_workAreaTemplate<s_dragonMenuWorkArea>
     u32 m8; // 8
     p_workArea mC;
     p_workArea m10;
-    p_workArea m14;
+    s_dragonMenuStatsTask2* m14;
     p_workArea m18;
     p_workArea m1C;
 };
@@ -287,20 +301,6 @@ void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDelete(s_drawDragonMenuSt
     clearVdp2TextArea();
 }
 
-struct s_dragonMenuStatsTask2 : public s_workAreaTemplate<s_dragonMenuStatsTask2>
-{
-    static const TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_dragonMenuStatsTask2::Draw, NULL, "dragonMenuStatsTask2" };
-        return &taskDefinition;
-    }
-
-    static void Draw(s_dragonMenuStatsTask2*)
-    {
-        PDS_unimplemented("s_dragonMenuStatsTask2::Draw");
-    }
-};
-
 struct s_dragonMenuMorphCursorTask : public s_workAreaTemplate<s_dragonMenuMorphCursorTask>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
@@ -377,7 +377,7 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 7)
         {
             playSoundEffect(0);
-            pWorkArea->m14->getTask()->mC_pDraw = NULL;
+            pWorkArea->m14->m_DrawMethod = NULL;
             if (pWorkArea->m10)
             {
                 pWorkArea->m10->getTask()->markFinished();

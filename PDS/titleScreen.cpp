@@ -500,8 +500,6 @@ void s_warningWorkArea::Init(s_warningWorkArea* pWorkArea)
 
     if (cartdrigePresent == 1)
     {
-        s_task* pTask = pWorkArea->getTask();
-        pTask->mC_pDraw = &s_warningWorkArea::StaticDraw;
         pWorkArea->m_DrawMethod = &s_warningWorkArea::Draw;
     }
 
