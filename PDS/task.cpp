@@ -48,18 +48,12 @@ void processTasks(s_task** ppTask)
                 pTask = *ppTask;
                 continue;
             }
-            if (pTask->m8_pUpdate)
+            if (!pauseEngine[0])
             {
-                if (!pauseEngine[0])
-                {
-                    pTask->m8_pUpdate(pTask->getWorkArea());
-                }
+                pTask->getWorkArea()->Update();
             }
 
-            if (pTask->mC_pDraw)
-            {
-                pTask->mC_pDraw(pTask->getWorkArea());
-            }
+            pTask->getWorkArea()->Draw();
         }
         if (pTask->isFinished())
         {
@@ -82,10 +76,8 @@ void processTasks(s_task** ppTask)
             // finished but not deleting yet
             if (pTask->isDeleting())
             {
-                if (pTask->m10_pDelete)
-                {
-                    pTask->m10_pDelete(pTask->getWorkArea());
-                }
+                pTask->getWorkArea()->Delete();
+
                 numActiveTask--;
             }
             else
@@ -135,7 +127,7 @@ void resetTasks()
     numActiveTask = 0;
 }
 
-p_workArea createSubTask(p_workArea parentWorkArea, const s_taskDefinition* pDefinition, p_workArea newWorkArea)
+p_workArea createSubTask(p_workArea parentWorkArea, p_workArea newWorkArea)
 {
     s_task* pTask = new s_task;
     assert(pTask);
@@ -154,26 +146,15 @@ p_workArea createSubTask(p_workArea parentWorkArea, const s_taskDefinition* pDef
 
     pTask->m0_pNextTask = NULL;
     pTask->m4_pSubTask = NULL;
-    pTask->m8_pUpdate = pDefinition->m_pUpdate;
-    pTask->mC_pDraw = pDefinition->m_pLateUpdate;
-    pTask->m10_pDelete = pDefinition->m_pDelete;
     pTask->m14_flags = 0;
-
-    assert(pDefinition->m_taskName);
-    pTask->m_taskName = pDefinition->m_taskName;
 
     newWorkArea->m_pTask = pTask;
     pTask->m_workArea = newWorkArea;
 
-    if (pDefinition->m_pInit)
-    {
-        pDefinition->m_pInit(newWorkArea);
-    }
-
     return pTask->getWorkArea();
 }
 
-p_workArea createSubTaskWithArg(p_workArea parentWorkArea, const s_taskDefinitionWithArg* pDefinition, p_workArea newWorkArea, void* argument)
+p_workArea createSubTaskWithArg(p_workArea parentWorkArea, p_workArea newWorkArea)
 {
     s_task* pTask = new s_task;
     assert(pTask);
@@ -192,26 +173,15 @@ p_workArea createSubTaskWithArg(p_workArea parentWorkArea, const s_taskDefinitio
 
     pTask->m0_pNextTask = NULL;
     pTask->m4_pSubTask = NULL;
-    pTask->m8_pUpdate = pDefinition->m_pUpdate;
-    pTask->mC_pDraw = pDefinition->m_pLateUpdate;
-    pTask->m10_pDelete = pDefinition->m_pDelete;
     pTask->m14_flags = 0;
-
-    assert(pDefinition->m_taskName);
-    pTask->m_taskName = pDefinition->m_taskName;
 
     newWorkArea->m_pTask = pTask;
     pTask->m_workArea = newWorkArea;
 
-    if (pDefinition->m_pInit)
-    {
-        pDefinition->m_pInit(newWorkArea, argument);
-    }
-
     return pTask->getWorkArea();
 }
 
-p_workArea createSiblingTaskWithArg(p_workArea workArea, const s_taskDefinitionWithArg* pDefinition, p_workArea pNewWorkArea, void* argument)
+p_workArea createSiblingTaskWithArg(p_workArea workArea, p_workArea pNewWorkArea)
 {
     s_task* pTask = new s_task;
     assert(pTask);
@@ -230,21 +200,10 @@ p_workArea createSiblingTaskWithArg(p_workArea workArea, const s_taskDefinitionW
 
     pTask->m0_pNextTask = NULL;
     pTask->m4_pSubTask = NULL;
-    pTask->m8_pUpdate = pDefinition->m_pUpdate;
-    pTask->mC_pDraw = pDefinition->m_pLateUpdate;
-    pTask->m10_pDelete = pDefinition->m_pDelete;
     pTask->m14_flags = 0;
-
-    assert(pDefinition->m_taskName);
-    pTask->m_taskName = pDefinition->m_taskName;
 
     pNewWorkArea->m_pTask = pTask;
     pTask->m_workArea = pNewWorkArea;
-
-    if (pDefinition->m_pInit)
-    {
-        pDefinition->m_pInit(pNewWorkArea, argument);
-    }
 
     return pTask->getWorkArea();
 
@@ -269,9 +228,6 @@ p_workArea createSubTaskFromFunction(p_workArea parentWorkArea, void(*pFunction)
 
     pTask->m0_pNextTask = NULL;
     pTask->m4_pSubTask = NULL;
-    pTask->m8_pUpdate = pFunction;
-    pTask->mC_pDraw = NULL;
-    pTask->m10_pDelete = NULL;
     pTask->m14_flags = 0;
 
     pTask->m_taskName = name;
@@ -283,7 +239,7 @@ p_workArea createSubTaskFromFunction(p_workArea parentWorkArea, void(*pFunction)
 
 }
 
-s_workArea* createRootTask(s_taskDefinitionWithArg* pDefinition, p_workArea newWorkArea)
+s_workArea* createRootTask(p_workArea newWorkArea)
 {
     s_task* pTask = new s_task;
     assert(pTask);
@@ -293,21 +249,10 @@ s_workArea* createRootTask(s_taskDefinitionWithArg* pDefinition, p_workArea newW
 
     pTask->m0_pNextTask = NULL;
     pTask->m4_pSubTask = NULL;
-    pTask->m8_pUpdate = pDefinition->m_pUpdate;
-    pTask->mC_pDraw = pDefinition->m_pLateUpdate;
-    pTask->m10_pDelete = pDefinition->m_pDelete;
     pTask->m14_flags = 0;
-
-    assert(pDefinition->m_taskName);
-    pTask->m_taskName = pDefinition->m_taskName;
 
     newWorkArea->m_pTask = pTask;
     pTask->m_workArea = newWorkArea;
-
-    if (pDefinition->m_pInit)
-    {
-        pDefinition->m_pInit(newWorkArea, NULL);
-    }
 
     return newWorkArea;
 }

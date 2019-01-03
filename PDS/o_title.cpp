@@ -2,8 +2,16 @@
 
 namespace TITLE_OVERLAY {
 
-struct s_titleOverlayWorkArea : public s_workArea
+struct s_titleOverlayWorkArea : public s_workAreaTemplate<s_titleOverlayWorkArea>
 {
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static constexpr TypedTaskDefinition taskDefinition = { NULL, NULL, &titleOverlay_Update, NULL, "titleOVL" };
+        return &taskDefinition;
+    }
+
+    static void titleOverlay_Update(s_titleOverlayWorkArea*);
+
     u32 m_status;
     u32 m_4;
 };
@@ -141,10 +149,8 @@ void loadTitleScreenGraphics()
     pauseEngine[4] = 2;
 }
 
-void titleOverlay_Update(s_workArea* pTypelessWorkArea)
+void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkArea)
 {
-    s_titleOverlayWorkArea* pWorkArea = static_cast<s_titleOverlayWorkArea*>(pTypelessWorkArea);
-
     switch (pWorkArea->m_status)
     {
     case 0:
@@ -184,11 +190,9 @@ void titleOverlay_Update(s_workArea* pTypelessWorkArea)
     //unk_6000014 = SYS_EXECDMP;
 }
 
-s_taskDefinition titleOVLTask = { NULL, NULL, titleOverlay_Update, NULL, "titleOVL" };
-
 p_workArea overlayStart(s_workArea* workArea)
 {
-    return createSubTask(workArea, &titleOVLTask, new s_titleOverlayWorkArea);
+    return createSubTask<s_titleOverlayWorkArea>(workArea);
 }
 };
 

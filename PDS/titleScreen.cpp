@@ -39,7 +39,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
         return &taskDefinition;
     }
 
-    void Init()
+    static void Init(s_titleMenuWorkArea* pThis)
     {
         // if we are not coming from the title screen (is this possible?)
         if (initialTaskStatus.m_previousTask != createTitleScreenTask)
@@ -50,10 +50,8 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
         isInMenu2 = 1;
     }
 
-    void Draw()
+    static void Draw(s_titleMenuWorkArea* pWorkArea)
     {
-        s_titleMenuWorkArea* pWorkArea = this;
-
         switch (pWorkArea->m_status)
         {
         case 0:
@@ -242,10 +240,8 @@ struct s_pressStartButtonTaskWorkArea : public s_workAreaTemplate<s_pressStartBu
         return &taskDefinition;
     }
 
-    void pressStartButtonTaskDraw()
+    static void pressStartButtonTaskDraw(s_pressStartButtonTaskWorkArea* pWorkArea)
     {
-        s_pressStartButtonTaskWorkArea* pWorkArea = this;
-
         switch (pWorkArea->m_status)
         {
         case 0:
@@ -283,7 +279,7 @@ struct s_pressStartButtonTaskWorkArea : public s_workAreaTemplate<s_pressStartBu
         }
     }
 
-    void pressStartButtonTaskDelete()
+    static void pressStartButtonTaskDelete(s_pressStartButtonTaskWorkArea* pWorkArea)
     {
         if (VDP2Regs_.TVSTAT & 1)
             vdp2DebugPrintSetPosition(13, -2);
@@ -305,18 +301,16 @@ struct s_titleScreenWorkArea : public s_workAreaTemplate<s_titleScreenWorkArea>
         return &taskDefinition;
     }
 
-    void Init();
-    void Draw();
+    static void Init(s_titleScreenWorkArea*);
+    static void Draw(s_titleScreenWorkArea*);
 
     u32 m_status;
     u32 m_delay;
     p_workArea m_overlayTask;
 };
 
-void s_titleScreenWorkArea::Draw()
+void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
 {
-    s_titleScreenWorkArea* pWorkArea = this;
-
     switch (pWorkArea->m_status)
     {
     case 0:
@@ -391,9 +385,9 @@ void s_titleScreenWorkArea::Draw()
     }
 }
 
-void s_titleScreenWorkArea::Init()
+void s_titleScreenWorkArea::Init(s_titleScreenWorkArea* pThis)
 {
-    m_overlayTask = TITLE_OVERLAY::overlayStart(this);
+    pThis->m_overlayTask = TITLE_OVERLAY::overlayStart(pThis);
 }
 
 p_workArea createTitleScreenTask(p_workArea workArea)
@@ -411,8 +405,8 @@ struct s_warningWorkArea : public s_workAreaTemplate< s_warningWorkArea>
         return &taskDefinition;
     }
 
-    void Init();
-    void Draw(); // not by default, only setup if necessary
+    static void Init(s_warningWorkArea*);
+    static void Draw(s_warningWorkArea*); // not by default, only setup if necessary
 
     u32 m_status;
     u32 m_delay;
@@ -423,10 +417,8 @@ u32 checkCartdrigeMemory()
     return 0;
 }
 
-void s_warningWorkArea::Draw()
+void s_warningWorkArea::Draw(s_warningWorkArea* pWorkArea)
 {
-    s_warningWorkArea* pWorkArea = this;
-
     switch (pWorkArea->m_status)
     {
     case 0: // init delay
@@ -444,7 +436,7 @@ void s_warningWorkArea::Draw()
     case 3: // wait fade out
         if (!menuUnk0.m_field0.m_field20)
             return;
-        getTask()->m14_flags |= 1; // finish task
+        pWorkArea->getTask()->markFinished();
         break;
     default:
         assert(0);
@@ -493,10 +485,8 @@ void loadWarningFile(u32 index)
     }
 }
 
-void s_warningWorkArea::Init()
+void s_warningWorkArea::Init(s_warningWorkArea* pWorkArea)
 {
-    s_warningWorkArea* pWorkArea = this;
-
     u32 cartdrigePresent = checkCartdrigeMemory();
     if (cartdrigePresent == 0)
     {
@@ -510,9 +500,7 @@ void s_warningWorkArea::Init()
 
     if (cartdrigePresent == 1)
     {
-        s_task* pTask = pWorkArea->getTask();
-        pTask->mC_pDraw = &s_warningWorkArea::StaticDraw;
-        m_DrawMethod = &s_warningWorkArea::Draw;
+        pWorkArea->m_DrawMethod = &s_warningWorkArea::Draw;
     }
 
     loadWarningFile(cartdrigePresent - 1);
@@ -539,15 +527,15 @@ struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
         return &taskDefinition;
     }
 
-    void Init()
+    static void Init(s_loadWarningWorkArea* pThis)
     {
-        m_warningTask = startWarningTask(this);
+        pThis->m_warningTask = startWarningTask(pThis);
     }
-    void Draw()
+    static void Draw(s_loadWarningWorkArea* pThis)
     {
-        if (m_warningTask)
+        if (pThis->m_warningTask)
         {
-            if (!(m_warningTask->getTask()->m14_flags & 1))
+            if (!(pThis->m_warningTask->getTask()->m14_flags & 1))
             {
                 return;
             }

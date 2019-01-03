@@ -10,29 +10,29 @@ struct s_menuEnWorkArea : public s_workAreaTemplate<s_menuEnWorkArea>
         return &taskDefinition;
     }
 
-    void Init();
-    void Update();
-    void Draw();
-    void Delete();
+    static void Init(s_menuEnWorkArea*);
+    static void Update(s_menuEnWorkArea*);
+    static void Draw(s_menuEnWorkArea*);
+    static void Delete(s_menuEnWorkArea*);
 };
 
-void s_menuEnWorkArea::Init()
+void s_menuEnWorkArea::Init(s_menuEnWorkArea*)
 {
     assert(0);
 }
 
-void s_menuEnWorkArea::Update()
+void s_menuEnWorkArea::Update(s_menuEnWorkArea*)
 {
     assert(0);
 }
 
 
-void s_menuEnWorkArea::Draw()
+void s_menuEnWorkArea::Draw(s_menuEnWorkArea*)
 {
     assert(0);
 }
 
-void s_menuEnWorkArea::Delete()
+void s_menuEnWorkArea::Delete(s_menuEnWorkArea*)
 {
     assert(0);
 }
