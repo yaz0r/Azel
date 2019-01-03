@@ -40,7 +40,7 @@ struct s_workArea
     }
     */
 
-    void UnimplementedImpl(const char* functionName)
+    static void UnimplementedImpl(const char* functionName)
     {
         PDS_Logger.AddLog("Unimplemented: %s\n", functionName);
     }

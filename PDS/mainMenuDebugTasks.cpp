@@ -365,10 +365,8 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
         return &taskDefinition;
     }
 
-    void Init()
+    static void Init(s_fieldDebugListWorkArea* pWorkArea)
     {
-        s_fieldDebugListWorkArea* pWorkArea = this;
-
         s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
 
         pFieldTask->fieldIndexMenuSelection = pFieldTask->m2C_currentFieldIndex;
@@ -404,10 +402,8 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
         fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
     }
 
-    void Update()
+    static void Update(s_fieldDebugListWorkArea* pWorkArea)
     {
-        s_fieldDebugListWorkArea* pWorkArea = this;
-
         pWorkArea->m0_ticks++;
         s_fieldTaskWorkArea*r14 = getFieldTaskPtr();
 
@@ -2268,10 +2264,8 @@ void setFieldSubTaskVar0(u32 value)
     fieldSubTaskVar0 = value;
 }
 
-void s_FieldSubTaskWorkArea::Init()
+void s_FieldSubTaskWorkArea::Init(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 {
-    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = this;
-
     fieldTaskPtr->m8_pSubFieldData = pFieldSubTaskWorkArea;
     fieldTaskPtr->m8_pSubFieldData->m370_fieldDebuggerWho = 0;
 
@@ -2285,7 +2279,7 @@ void s_FieldSubTaskWorkArea::Init()
     menuUnk0.m_48 = 0xC210;
     menuUnk0.m_4A = 0xC210;
 
-    overlayStart_FLD_A3(this, 0);
+    overlayStart_FLD_A3(pFieldSubTaskWorkArea, 0);
 
     fieldTaskPtr->m3C_fieldTaskState = 4;
 
@@ -2306,10 +2300,8 @@ bool readKeyboardToggle()
     return false;
 }
 
-void s_FieldSubTaskWorkArea::Update()
+void s_FieldSubTaskWorkArea::Update(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 {
-    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = this;
-
     mainGameState.setPackedBits(0, 2, 0);
 
     switch (pFieldSubTaskWorkArea->fieldSubTaskStatus)
@@ -2346,10 +2338,8 @@ void s_FieldSubTaskWorkArea::Update()
     }
 }
 
-void s_FieldSubTaskWorkArea::Draw()
+void s_FieldSubTaskWorkArea::Draw(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 {
-    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = this;
-
     if (pFieldSubTaskWorkArea->pUpdateFunction1)
     {
         pFieldSubTaskWorkArea->pUpdateFunction1();
@@ -2362,10 +2352,8 @@ void s_FieldSubTaskWorkArea::Draw()
 
 }
 
-void s_FieldSubTaskWorkArea::Delete()
+void s_FieldSubTaskWorkArea::Delete(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 {
-    s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea = this;
-
     assert(0);
 }
 
@@ -2377,13 +2365,13 @@ void createEncounterTask(s_workArea* pWorkArea)
     //createSiblingTaskWithArg(pWorkArea, &encounterTaskDefinition, new s_dummyWorkArea, pWorkArea);
 }
 
-void s_fieldStartOverlayTask::Init()
+void s_fieldStartOverlayTask::Init(s_fieldStartOverlayTask* pThis)
 {
     const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->m2C_currentFieldIndex];
 
-    fieldTaskPtr->m4_overlayTaskData = this;
+    fieldTaskPtr->m4_overlayTaskData = pThis;
 
-    createEncounterTask(this);
+    createEncounterTask(pThis);
 
     if(pFieldDefinition->m_fnt)
     {
@@ -2394,11 +2382,11 @@ void s_fieldStartOverlayTask::Init()
     {
         //loadFile(pFieldDefinition->m_prg, NULL, 0);
 
-        createSubTask<s_FieldSubTaskWorkArea>(this);
+        createSubTask<s_FieldSubTaskWorkArea>(pThis);
     }
 }
 
-void s_fieldStartOverlayTask::Delete()
+void s_fieldStartOverlayTask::Delete(s_fieldStartOverlayTask* pThis)
 {
     const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->m2C_currentFieldIndex];
 
@@ -2517,10 +2505,8 @@ void setupPlayer(u32 fieldIndex)
     freeRamResource();
 }
 
-void s_fieldTaskWorkArea::fieldTaskUpdate()
+void s_fieldTaskWorkArea::fieldTaskUpdate(s_fieldTaskWorkArea* pWorkArea)
 {
-    s_fieldTaskWorkArea* pWorkArea = this;
-
     switch (pWorkArea->m3C_fieldTaskState)
     {
     case 0:
@@ -2575,7 +2561,7 @@ void s_fieldTaskWorkArea::fieldTaskUpdate()
         break;
     }
 }
-void s_fieldTaskWorkArea::fieldTaskDelete()
+void s_fieldTaskWorkArea::fieldTaskDelete(s_fieldTaskWorkArea*)
 {
     assert(0);
 }
@@ -2605,19 +2591,19 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
         return &taskDefinition;
     }
 
-    void initExitMenuTask(s32 menuID)
+    static void initExitMenuTask(s_fieldDebugTaskWorkArea* pThis, s32 menuID)
     {
         pauseEngine[2] = 0;
 
-        m8 = initExitMenuTaskSub1(this, menuID);
+        pThis->m8 = initExitMenuTaskSub1(pThis, menuID);
 
-        createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(m8, m8);
+        createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(pThis->m8, pThis->m8);
 
         fadePalette(&menuUnk0.m_field0, 0x8000, 0x8000, 1);
         fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);
     }
 
-    void townDebugTaskInit(s32)
+    static void townDebugTaskInit(s_fieldDebugTaskWorkArea*, s32)
     {
         pauseEngine[2] = 0;
 
@@ -2639,27 +2625,27 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
         */
     }
 
-    void fieldDebugTaskInit(s32)
+    static void fieldDebugTaskInit(s_fieldDebugTaskWorkArea* pThis, s32)
     {
         pauseEngine[2] = 0;
 
         initNewGameState();
-        m8 = createFieldTask(this, 0);
+        pThis->m8 = createFieldTask(pThis, 0);
 
-        createLoadingTask(m8, 1);
-        createMenuTask(m8);
-        createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(m8, m8);
+        createLoadingTask(pThis->m8, 1);
+        createMenuTask(pThis->m8);
+        createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(pThis->m8, pThis->m8);
     }
 
-    void genericTaskRestartGameWhenFinished()
+    static void genericTaskRestartGameWhenFinished(s_fieldDebugTaskWorkArea* pThis)
     {
-        if ((m8 == NULL) || m8->getTask()->isFinished())
+        if ((pThis->m8 == NULL) || pThis->m8->getTask()->isFinished())
         {
             initialTaskStatus.m_pendingTask = startSegaLogoModule;
         }
     }
 
-    void genericOptionMenuDelete()
+    static void genericOptionMenuDelete(s_fieldDebugTaskWorkArea* pThis)
     {
         assert(0);
     }
@@ -2701,9 +2687,9 @@ struct s_exitMenuTaskSub1Task : public s_workAreaTemplateWithArg<s_exitMenuTaskS
         return &taskDefinition;
     }
 
-    void exitMenuTaskSub1TaskInit(s32);
-    void exitMenuTaskSub1TaskUpdate();
-    void exitMenuTaskSub1TaskDraw();
+    static void exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task*, s32);
+    static void exitMenuTaskSub1TaskUpdate(s_exitMenuTaskSub1Task*);
+    static void exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task*);
 
     u32 state; // 0
     p_workArea m8;
@@ -2753,10 +2739,10 @@ struct s_menuGraphicsTask : public s_workAreaTemplateWithArg<s_menuGraphicsTask,
         return &taskDefinition;
     }
 
-    void Init(p_workArea argument)
+    static void Init(s_menuGraphicsTask* pThis, p_workArea argument)
     {
-        m4 = argument;
-        graphicEngineStatus.m40AC.mC = this;
+        pThis->m4 = argument;
+        graphicEngineStatus.m40AC.mC = pThis;
         graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
         graphicEngineStatus.m40AC.m3 = 0;
         graphicEngineStatus.m40AC.m0_menuId = 0;
@@ -2772,8 +2758,8 @@ struct s_menuGraphicsTask : public s_workAreaTemplateWithArg<s_menuGraphicsTask,
         graphicEngineStatus.m40AC.fontIndex = loadFnt("MENU.FNT");
     }
 
-    void Draw();
-    void Delete();
+    static void Draw(s_menuGraphicsTask*);
+    static void Delete(s_menuGraphicsTask*);
 
     u32 state; // 0
     p_workArea m4;
@@ -3223,9 +3209,9 @@ struct s_statusMenuTaskWorkArea : public s_workAreaTemplate<s_statusMenuTaskWork
         return &taskDefinition;
     }
 
-    void Init();
-    void Draw();
-    void Delete();
+    static void Init(s_statusMenuTaskWorkArea*);
+    static void Draw(s_statusMenuTaskWorkArea*);
+    static void Delete(s_statusMenuTaskWorkArea*);
     u32 selectedMenu; //0
 };
 
@@ -3243,9 +3229,9 @@ struct s_MenuCursorWorkArea : public s_workAreaTemplateWithArg<s_MenuCursorWorkA
         return &taskDefinition;
     }
 
-    void menuCursorTaskInit(sMainMenuTaskInitData2*);
-    void menuCursorTaskUpdate();
-    void menuCursorTaskDraw();
+    static void menuCursorTaskInit(s_MenuCursorWorkArea*, sMainMenuTaskInitData2*);
+    static void menuCursorTaskUpdate(s_MenuCursorWorkArea*);
+    static void menuCursorTaskDraw(s_MenuCursorWorkArea*);
 
     s32 selectedMenu;
     s_graphicEngineStatus_40BC* m4;
@@ -3261,9 +3247,9 @@ struct s_mainMenuWorkArea : public s_workAreaTemplate<s_mainMenuWorkArea>
         return &taskDefinition;
     }
 
-    void Init();
-    void Draw();
-    void Delete();
+    static void Init(s_mainMenuWorkArea*);
+    static void Draw(s_mainMenuWorkArea*);
+    static void Delete(s_mainMenuWorkArea*);
 
     u8 m0; //0
     s8 m1; //1
@@ -3320,8 +3306,8 @@ struct mainMenuTaskInitSub2TaskWorkArea : public s_workAreaTemplateWithArg<mainM
         return &taskDefinition;
     }
 
-    void Init(sMainMenuTaskInitData2*);
-    void Draw();
+    static void Init(mainMenuTaskInitSub2TaskWorkArea*, sMainMenuTaskInitData2*);
+    static void Draw(mainMenuTaskInitSub2TaskWorkArea*);
 
     u32 spriteIndex;
     s_graphicEngineStatus_40BC* m4;
@@ -3329,10 +3315,10 @@ struct mainMenuTaskInitSub2TaskWorkArea : public s_workAreaTemplateWithArg<mainM
     u32 mC;
 };
 
-void mainMenuTaskInitSub2TaskWorkArea::Init(sMainMenuTaskInitData2* typedArg)
+void mainMenuTaskInitSub2TaskWorkArea::Init(mainMenuTaskInitSub2TaskWorkArea* pThis, sMainMenuTaskInitData2* typedArg)
 {
-    m4 = typedArg->m0;
-    spriteData = typedArg->m4;
+    pThis->m4 = typedArg->m0;
+    pThis->spriteData = typedArg->m4;
 }
 
 struct s_menuSprite
@@ -3371,10 +3357,8 @@ void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
-void mainMenuTaskInitSub2TaskWorkArea::Draw()
+void mainMenuTaskInitSub2TaskWorkArea::Draw(mainMenuTaskInitSub2TaskWorkArea* pWorkArea)
 {
-    mainMenuTaskInitSub2TaskWorkArea* pWorkArea = this;
-
     u32 spriteColor;
     if (pWorkArea->mC)
     {
@@ -3420,12 +3404,12 @@ struct s_menuDragonCrestTaskWorkArea : public s_workAreaTemplateWithArg<s_menuDr
         return &taskDefinition;
     }
 
-    void Init(s_graphicEngineStatus_40BC* arg)
+    static void Init(s_menuDragonCrestTaskWorkArea* pThis, s_graphicEngineStatus_40BC* arg)
     {
-        m4 = arg;
+        pThis->m4 = arg;
     }
 
-    void Draw();
+    static void Draw(s_menuDragonCrestTaskWorkArea*);
 
     u32 m0;
     s_graphicEngineStatus_40BC* m4;
@@ -3450,7 +3434,7 @@ s_menuSprite menuDragonCrestSprites [] =
     {0x40E, 0x18E, 0x55, 0x61},
 };
 
-void s_menuDragonCrestTaskWorkArea::Draw()
+void s_menuDragonCrestTaskWorkArea::Draw(s_menuDragonCrestTaskWorkArea* pThis)
 {
     if (graphicEngineStatus.m40AC.m5)
     {
@@ -3458,7 +3442,7 @@ void s_menuDragonCrestTaskWorkArea::Draw()
         {
             PDS_unimplemented("Missing filter login in menuDragonCrestTaskDraw");
 
-            drawMenuSprite(&menuDragonCrestSprites[i], -m4->scrollX, -m4->scrollY, 0x610);
+            drawMenuSprite(&menuDragonCrestSprites[i], -pThis->m4->scrollX, -pThis->m4->scrollY, 0x610);
         }
     }
 }
@@ -3471,12 +3455,12 @@ struct s_laserRankTaskWorkArea : public s_workAreaTemplateWithArg<s_laserRankTas
         return &taskDefinition;
     }
 
-    void Init(s_graphicEngineStatus_40BC* arg)
+    static void Init(s_laserRankTaskWorkArea* pThis, s_graphicEngineStatus_40BC* arg)
     {
-        m4 = arg;
+        pThis->m4 = arg;
     }
 
-    void Draw();
+    static void Draw(s_laserRankTaskWorkArea*);
 
     u32 m0;
     s_graphicEngineStatus_40BC* m4;
@@ -3491,9 +3475,9 @@ s_menuSprite laserRankSpriteDefinition[6] = {
     { 0x23C4, 0x20A, 0x70, 0x19C },
 };
 
-void s_laserRankTaskWorkArea::Draw()
+void s_laserRankTaskWorkArea::Draw(s_laserRankTaskWorkArea* pThis)
 {
-    if (m0 < 0)
+    if (pThis->m0 < 0)
         return;
     if (mainGameState.gameStats.m1_dragonLevel > 7)
         return;
@@ -3504,7 +3488,7 @@ void s_laserRankTaskWorkArea::Draw()
 
     for (int i = 0; i < r14; i++)
     {
-        drawMenuSprite(&laserRankSpriteDefinition[i], -m4->scrollX, -m4->scrollY, 0x760);
+        drawMenuSprite(&laserRankSpriteDefinition[i], -pThis->m4->scrollX, -pThis->m4->scrollY, 0x760);
     }
 }
 
@@ -3538,15 +3522,14 @@ void mainMenuTaskInitSub4(p_workArea typelessWorkArea)
     createSubTaskFromFunction(typelessWorkArea, mainMenuTaskInitSub4Sub, new s_mainMenuTaskInitSub4SubWorkArea, "mainMenuTaskInitSub4Sub");
 }
 
-void s_MenuCursorWorkArea::menuCursorTaskInit(sMainMenuTaskInitData2* pMenuData)
+void s_MenuCursorWorkArea::menuCursorTaskInit(s_MenuCursorWorkArea* pThis, sMainMenuTaskInitData2* pMenuData)
 {
-    m4 = pMenuData->m0;
-    m8 = pMenuData->m4;
+    pThis->m4 = pMenuData->m0;
+    pThis->m8 = pMenuData->m4;
 }
 
-void s_MenuCursorWorkArea::menuCursorTaskUpdate()
+void s_MenuCursorWorkArea::menuCursorTaskUpdate(s_MenuCursorWorkArea* pWorkArea)
 {
-    s_MenuCursorWorkArea* pWorkArea = this;
     if (--pWorkArea->mC < 0)
     {
         pWorkArea->mC = 40;
@@ -3556,10 +3539,8 @@ void s_MenuCursorWorkArea::menuCursorTaskUpdate()
 s_menuSprite cursorSpriteDef0 = { 0x2080, 0x520, 0, 0};
 s_menuSprite cursorSpriteDef1 = { 0x2030, 0x520, 0, 0 };
 
-void s_MenuCursorWorkArea::menuCursorTaskDraw()
+void s_MenuCursorWorkArea::menuCursorTaskDraw(s_MenuCursorWorkArea* pWorkArea)
 {
-    s_MenuCursorWorkArea* pWorkArea = this;
-
     if (pWorkArea->selectedMenu < 0)
         return;
 
@@ -3587,10 +3568,8 @@ u32 mainMenuTaskInitData1[5] = {
     0x715D0,
 };
 
-void s_mainMenuWorkArea::Init()
+void s_mainMenuWorkArea::Init(s_mainMenuWorkArea* pWorkArea)
 {
-    s_mainMenuWorkArea* pWorkArea = this;
-
     pWorkArea->m3_menuButtonStates[0] = 1; // item is always enabled
 
     if (mainGameState.getBit(4, 2)) // dragon menu
@@ -3662,7 +3641,7 @@ void s_mainMenuWorkArea::Init()
     fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
 }
 
-void s_statusMenuTaskWorkArea::Init()
+void s_statusMenuTaskWorkArea::Init(s_statusMenuTaskWorkArea*)
 {
     setupVDP2StringRendering(0, 34, 44, 28);
 }
@@ -3683,10 +3662,8 @@ const char* statusMenuOptionsAbilities[] = {
     "Change Settings                 ",
 };
 
-void s_statusMenuTaskWorkArea::Draw()
+void s_statusMenuTaskWorkArea::Draw(s_statusMenuTaskWorkArea* pWorkArea)
 {
-    s_statusMenuTaskWorkArea* pWorkArea = this;
-
     vdp2StringContext.m0 = 0;
     setActiveFont(graphicEngineStatus.m40AC.fontIndex);
     vdp2PrintStatus.palette = 0xC000;
@@ -3733,15 +3710,13 @@ void clearVdp2Menu()
     memset(getVdp2Vram(0x7000), 0, 0x100 * 0x10);
 }
 
-void s_statusMenuTaskWorkArea::Delete()
+void s_statusMenuTaskWorkArea::Delete(s_statusMenuTaskWorkArea*)
 {
     clearVdp2Menu();
 }
 
-void s_mainMenuWorkArea::Draw()
+void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
 {
-    s_mainMenuWorkArea* pWorkArea = this;
-
     switch (pWorkArea->m0)
     {
     case 0:
@@ -3839,7 +3814,7 @@ void s_mainMenuWorkArea::Draw()
     }
 }
 
-void s_mainMenuWorkArea::Delete()
+void s_mainMenuWorkArea::Delete(s_mainMenuWorkArea*)
 {
     PDS_unimplemented("mainMenuTaskDelete");
 }
@@ -3971,18 +3946,16 @@ void menuGraphicsTaskDrawSub3()
     }
 }
 
-void s_menuGraphicsTask::Draw()
+void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
 {
-    s_menuGraphicsTask* pWordArea = this;
-    
     // not exactly that in the original code, but same idea
-    if ((pWordArea->m4 == NULL) || pWordArea->m4->getTask()->isFinished())
+    if ((pWorkArea->m4 == NULL) || pWorkArea->m4->getTask()->isFinished())
     {
-        pWordArea->getTask()->markFinished();
+        pWorkArea->getTask()->markFinished();
         return;
     }
 
-    switch (pWordArea->state)
+    switch (pWorkArea->state)
     {
     case 0:
         graphicEngineStatus.m40AC.m8 = 0;
@@ -4010,12 +3983,12 @@ void s_menuGraphicsTask::Draw()
             graphicEngineStatus.m40AC.m9 = 1;
 
             // pause the gameplay system
-            pWordArea->m4->getTask()->markPaused();
+            pWorkArea->m4->getTask()->markPaused();
 
             menuGraphicsTaskDrawSub1();
             fadePalette(&menuUnk0.m_field0, 0, 0, 1);
             fadePalette(&menuUnk0.m_field24, 0, 0, 1);
-            pWordArea->state++;
+            pWorkArea->state++;
         }
         break;
     case 1:
@@ -4024,12 +3997,12 @@ void s_menuGraphicsTask::Draw()
             graphicEngineStatus.m40AC.m2 = 0;
             setupVdp2ForMenu();
 
-            pWordArea->m8 = menuTaskMenuArray[graphicEngineStatus.m40AC.m0_menuId](pWordArea);
-            pWordArea->state++;
+            pWorkArea->m8 = menuTaskMenuArray[graphicEngineStatus.m40AC.m0_menuId](pWorkArea);
+            pWorkArea->state++;
         }
         break;
     case 2:
-        if (pWordArea->m8 && !pWordArea->m8->getTask()->isFinished())
+        if (pWorkArea->m8 && !pWorkArea->m8->getTask()->isFinished())
         {
             if (!graphicEngineStatus.m40AC.m4)
             {
@@ -4054,43 +4027,43 @@ void s_menuGraphicsTask::Draw()
             playSoundEffect(4);
             fadePalette(&menuUnk0.m_field0, 0, 0, 1);
             fadePalette(&menuUnk0.m_field24, 0, 0, 1);
-            pWordArea->state++;
+            pWorkArea->state++;
         }
         else
         {
             menuGraphicsTaskDrawSub2();
 
             graphicEngineStatus.m40AC.m0_menuId = 0;
-            pWordArea->mC = pauseEngine[0];
+            pWorkArea->mC = pauseEngine[0];
 
-            pWordArea->m4->getTask()->clearPaused();
+            pWorkArea->m4->getTask()->clearPaused();
 
-            pWordArea->mD = graphicEngineStatus.m40AC.m9;
-            pWordArea->state = 5;
+            pWorkArea->mD = graphicEngineStatus.m40AC.m9;
+            pWorkArea->state = 5;
         }
         break;
     case 3:
-        if (pWordArea->m8)
+        if (pWorkArea->m8)
         {
-            pWordArea->m8->getTask()->markFinished();
+            pWorkArea->m8->getTask()->markFinished();
         }
-        pWordArea->state++;
+        pWorkArea->state++;
         break;
     case 4:
         menuGraphicsTaskDrawSub2();
 
         graphicEngineStatus.m40AC.m0_menuId = 0;
-        pWordArea->mC = pauseEngine[0];
+        pWorkArea->mC = pauseEngine[0];
 
-        pWordArea->m4->getTask()->clearPaused();
+        pWorkArea->m4->getTask()->clearPaused();
 
-        pWordArea->mD = graphicEngineStatus.m40AC.m9;
-        pWordArea->state = 5;
+        pWorkArea->mD = graphicEngineStatus.m40AC.m9;
+        pWorkArea->state = 5;
         break;
     case 5:
-        if (--pWordArea->mD == 0)
+        if (--pWorkArea->mD == 0)
         {
-            if (pWordArea->mC)
+            if (pWorkArea->mC)
             {
                 pauseEngine[0] = 1;
             }
@@ -4101,7 +4074,7 @@ void s_menuGraphicsTask::Draw()
             menuGraphicsTaskDrawSub3();
 
             graphicEngineStatus.m40AC.m8 = 2;
-            pWordArea->state = 0;
+            pWorkArea->state = 0;
         }
         break;
     default:
@@ -4109,7 +4082,7 @@ void s_menuGraphicsTask::Draw()
     }
 }
 
-void s_menuGraphicsTask::Delete()
+void s_menuGraphicsTask::Delete(s_menuGraphicsTask*)
 {
     assert(0);
 }
@@ -4119,10 +4092,8 @@ p_workArea createMenuTask(p_workArea parentTask)
     return createSiblingTaskWithArg<s_menuGraphicsTask, p_workArea>(parentTask, parentTask);
 }
 
-void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s32 menuID)
+void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task* pWorkArea, s32 menuID)
 {
-    s_exitMenuTaskSub1Task* pWorkArea = this;
-
     pWorkArea->m8 = 0;
     pWorkArea->mC = 0;
 
@@ -4190,7 +4161,7 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s32 menuID)
 
 s_vblankData vblankData;
 
-void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskUpdate()
+void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskUpdate(s_exitMenuTaskSub1Task*)
 {
     mainGameState.gameStats.frameCounter += vblankData.mC;
 }
@@ -4272,10 +4243,8 @@ p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     NULL,
 };
 
-void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw()
+void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pWorkArea)
 {
-    s_exitMenuTaskSub1Task* pWorkArea = this;
-
     switch (pWorkArea->state)
     {
     case 0:

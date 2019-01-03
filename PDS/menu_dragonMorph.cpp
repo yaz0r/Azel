@@ -28,10 +28,10 @@ struct s_dragonMenuDragonWorkArea : public s_workAreaTemplate<s_dragonMenuDragon
         return &taskDefinition;
     }
 
-    void dragonMenuDragonInit();
-    void dragonMenuDragonUpdate();
-    void dragonMenuDragonDraw();
-    void dragonMenuDragonDelete ();
+    static void dragonMenuDragonInit(s_dragonMenuDragonWorkArea*);
+    static void dragonMenuDragonUpdate(s_dragonMenuDragonWorkArea*);
+    static void dragonMenuDragonDraw(s_dragonMenuDragonWorkArea*);
+    static void dragonMenuDragonDelete(s_dragonMenuDragonWorkArea*);
 
     s_loadDragonWorkArea* m0; //0
     const sDragonData3* m4; //4
@@ -367,10 +367,8 @@ void resetCameraProperties2(s_cameraProperties2* r4)
     initMatrixToIdentity(&r4->m28[1]);
 }
 
-void s_dragonMenuDragonWorkArea::dragonMenuDragonInit()
+void s_dragonMenuDragonWorkArea::dragonMenuDragonInit(s_dragonMenuDragonWorkArea* pWorkArea)
 {
-    s_dragonMenuDragonWorkArea* pWorkArea = this;
-
     dragonMenuDragonInitSub1(&pWorkArea->m34);
 
     pWorkArea->m30 = getVdp2VramU16(0x25002);
@@ -705,10 +703,8 @@ s_animLoop* dragonAnimLoop[DR_LEVEL_MAX][DR_ARCHETYPE_MAX] =
     },
 };
 
-void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate()
+void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkArea* pWorkArea)
 {
-    s_dragonMenuDragonWorkArea* pWorkArea = this;
-
     gDragonState->m10_cursorX = mainGameState.gameStats.dragonCursorX;
     gDragonState->m12_cursorY = mainGameState.gameStats.dragonCursorY;
     gDragonState->m1C_dragonArchetype = mainGameState.gameStats.dragonArchetype;
@@ -876,12 +872,12 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
     popMatrix();
 }
 
-void s_dragonMenuDragonWorkArea::dragonMenuDragonDraw()
+void s_dragonMenuDragonWorkArea::dragonMenuDragonDraw(s_dragonMenuDragonWorkArea* pWorkArea)
 {
-    submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &modelTranslation, &modelRotation, 0);
+    submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pWorkArea->modelTranslation, &pWorkArea->modelRotation, 0);
 }
 
-void s_dragonMenuDragonWorkArea::dragonMenuDragonDelete()
+void s_dragonMenuDragonWorkArea::dragonMenuDragonDelete(s_dragonMenuDragonWorkArea* pWorkArea)
 {
     PDS_unimplemented("dragonMenuDragonDelete");
 }

@@ -91,22 +91,22 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     }
 
     static void Init1(s_LCSTask340Sub*, sLaserArgs*);
-    void Init1Sub0();
-    void Init1Sub1();
+    static void Init1Sub0(s_LCSTask340Sub*);
+    static void Init1Sub1(s_LCSTask340Sub*);
     void Init1Sub1Sub0();
-    void Laser1Draw();
+    static void Laser1Draw(s_LCSTask340Sub*);
     void Laser1DrawSub0(std::array<sVec3_FP, 8>& r5, s32 r6, sSaturnPtr r7, s_LCSTask_gradientData* arg0);
 
     static void Init2(s_LCSTask340Sub*, sLaserArgs*);
-    void Laser2Init();
-    void Laser2Update();
-    void Laser2Draw();
+    static void Laser2Init(s_LCSTask340Sub*);
+    static void Laser2Update(s_LCSTask340Sub*);
+    static void Laser2Draw(s_LCSTask340Sub*);
 
     static void Init3(s_LCSTask340Sub*, sLaserArgs*);
 
-    void Laser3Init();
-    void Laser3Update();
-    void Laser3Draw();
+    static void Laser3Init(s_LCSTask340Sub*);
+    static void Laser3Update(s_LCSTask340Sub*);
+    static void Laser3Draw(s_LCSTask340Sub*);
     void Init3Sub3(s_LCSTask340Sub_m58* r4, s32 s5, sSaturnPtr r6);
 
     static void Update0(s_LCSTask340Sub*);
@@ -120,15 +120,15 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
         pThis->m30_laserDraw(pThis);
     }
 
-    void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub()
+    static void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub(s_LCSTask340Sub* pThis)
     {
-        switch (m15C)
+        switch (pThis->m15C)
         {
         case 0:
-            m15C++;
+            pThis->m15C++;
             break;
         case 1:
-            getTask()->markFinished();
+            pThis->getTask()->markFinished();
             break;
         }
     }

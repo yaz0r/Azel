@@ -118,7 +118,7 @@ void fieldA3_0_startTasks(p_workArea workArea)
     create_fieldA3_0_tutorialTask(workArea);
 }
 
-void s_visdibilityCellTask::fieldGridTask_Update()
+void s_visdibilityCellTask::fieldGridTask_Update(s_visdibilityCellTask*)
 {
     // intentionally empty
 }
@@ -142,12 +142,12 @@ void setupGridCell(s_visibilityGridWorkArea* r4, s_visdibilityCellTask* r5, int 
 }
 
 
-void s_visdibilityCellTask::gridCellDraw_untextured()
+void s_visdibilityCellTask::gridCellDraw_untextured(s_visdibilityCellTask*)
 {
     assert(0);
 }
 
-void s_visdibilityCellTask::gridCellDraw_collision()
+void s_visdibilityCellTask::gridCellDraw_collision(s_visdibilityCellTask*)
 {
     assert(0);
 }
@@ -221,10 +221,8 @@ u8 gridCellDraw_normalSub0(u8* r4, sVec3_FP& r5)
     return 1;
 }
 
-void s_visdibilityCellTask::gridCellDraw_normal()
+void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWorkAread)
 {
-    s_visdibilityCellTask* pTypedWorkAread = this;
-
     s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
     s32 r15 = graphicEngineStatus.m405C.m14_farClipDistance;
@@ -810,13 +808,13 @@ struct s_A3_Obj0 : public s_workAreaTemplate<s_A3_Obj0>
         static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_A3_Obj0::Draw, NULL, "s_A3_Obj0" };
         return &taskDefinition;
     }
-    void Draw()
+    static void Draw(s_A3_Obj0* pThis)
     {
         pushCurrentMatrix();
-        translateCurrentMatrix(&m14_position);
-        rotateCurrentMatrixY(m3A_rotation);
+        translateCurrentMatrix(&pThis->m14_position);
+        rotateCurrentMatrixY(pThis->m3A_rotation);
 
-        addObjectToDrawList(m0.m0_mainMemory, READ_BE_U32(m0.m0_mainMemory + m38_modelOffset));
+        addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + pThis->m38_modelOffset));
 
         popMatrix();
     }
@@ -891,28 +889,28 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
         return &taskDefinition;
     }
 
-    void Update()
+    static void Update(s_A3_Obj4* pThis)
     {
-        mC += 0xB60B6;
-        fixedPoint var1C = getFieldTaskPtr()->mC->mA4[m8->m18] = MTH_Mul(fixedPoint(0x71C71C), getSin((mC >> 16) & 0xFFF)) - fixedPoint(0x71C71C);
+        pThis->mC += 0xB60B6;
+        fixedPoint var1C = getFieldTaskPtr()->mC->mA4[pThis->m8->m18] = MTH_Mul(fixedPoint(0x71C71C), getSin((pThis->mC >> 16) & 0xFFF)) - fixedPoint(0x71C71C);
 
-        sVec3_FP& r12 = getFieldTaskPtr()->mC->mC0[m8->m18];
-        r12[0] = m8->m4_position[0] - MTH_Mul(fixedPoint(0xE333), getSin((var1C >> 16) & 0xFFF));
-        r12[1] = m8->m4_position[1] + MTH_Mul(fixedPoint(0xE333), getSin((var1C >> 16) & 0xFFF));
+        sVec3_FP& r12 = getFieldTaskPtr()->mC->mC0[pThis->m8->m18];
+        r12[0] = pThis->m8->m4_position[0] - MTH_Mul(fixedPoint(0xE333), getSin((var1C >> 16) & 0xFFF));
+        r12[1] = pThis->m8->m4_position[1] + MTH_Mul(fixedPoint(0xE333), getSin((var1C >> 16) & 0xFFF));
 
         if (checkPositionVisibilityAgainstFarPlane(&r12))
         {
-            m10 = 1;
+            pThis->m10 = 1;
         }
     }
 
-    void Draw()
+    static void Draw(s_A3_Obj4* pThis)
     {
         pushCurrentMatrix();
-        translateCurrentMatrix(&m8->m4_position);
-        rotateCurrentMatrixShiftedZ(getFieldTaskPtr()->mC->mA4[m8->m18]);
+        translateCurrentMatrix(&pThis->m8->m4_position);
+        rotateCurrentMatrixShiftedZ(getFieldTaskPtr()->mC->mA4[pThis->m8->m18]);
 
-        addObjectToDrawList(m0.m0_mainMemory, READ_BE_U32(m0.m0_mainMemory + 0x29C));
+        addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x29C));
 
         popMatrix();
     }
@@ -931,12 +929,12 @@ struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
         return &taskDefinition;
     }
 
-    void Update()
+    static void Update(s_A3_Obj3*)
     {
         TaskUnimplemented();
     }
 
-    void Draw()
+    static void Draw(s_A3_Obj3*)
     {
         TaskUnimplemented();
     }
@@ -1382,23 +1380,21 @@ s_DataTable2* readDataTable2(sSaturnPtr EA)
     return pNewData2;
 }
 
-void s_fieldPaletteTaskWorkArea::Init()
+void s_fieldPaletteTaskWorkArea::Init(s_fieldPaletteTaskWorkArea* pThis)
 {
-    s_fieldPaletteTaskWorkArea* r14 = this;
-
-    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = r14;
+    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
 
     reinitVdp2();
 
     PDS_unimplemented("call in fieldPaletteTaskInit");
 
-    r14->m78 = (s_fieldPaletteTaskWorkSub*)allocateHeapForTask(r14, sizeof(s_fieldPaletteTaskWorkSub));
-    r14->m78->m0 = 1;
-    r14->m78->m4 = 0;
-    r14->m78->m8 = -0xF78000;
-    r14->m78->mC = -0x1194000;
-    r14->m78->m10 = -0xEC4000;
-    r14->m78->m14 = -0x1054000;
+    pThis->m78 = (s_fieldPaletteTaskWorkSub*)allocateHeapForTask(pThis, sizeof(s_fieldPaletteTaskWorkSub));
+    pThis->m78->m0 = 1;
+    pThis->m78->m4 = 0;
+    pThis->m78->m8 = -0xF78000;
+    pThis->m78->mC = -0x1194000;
+    pThis->m78->m10 = -0xEC4000;
+    pThis->m78->m14 = -0x1054000;
 
     asyncDmaCopy({ 0x060900A4, gFLD_A3 }, getVdp2Cram(0), 0x80, 0);
     asyncDmaCopy({ 0x06090124, gFLD_A3 }, getVdp2Cram(0x80), 0x80, 0);
@@ -1411,7 +1407,7 @@ void s_fieldPaletteTaskWorkArea::Init()
     asyncDmaCopy({ 0x0608FEA4, gFLD_A3 }, getVdp2Cram(0xC00), 0x200, 0);
 }
 
-void s_fieldPaletteTaskWorkArea::Draw()
+void s_fieldPaletteTaskWorkArea::Draw(s_fieldPaletteTaskWorkArea*)
 {
     PDS_unimplemented("fieldPaletteTaskDraw");
 }
@@ -1612,10 +1608,10 @@ void cutsceneTaskInitSub2Sub2(s_workArea* r4)
     }
 }
 
-void s_cutsceneTask2::Init(std::vector<s_scriptData1>* argument)
+void s_cutsceneTask2::Init(s_cutsceneTask2* pThis, std::vector<s_scriptData1>* argument)
 {
-    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = this;
-    m4 = argument;
+    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = pThis;
+    pThis->m4 = argument;
 }
 
 s32 s_cutsceneTask2::UpdateSub0()
@@ -1700,51 +1696,51 @@ void s_cutsceneTask2::UpdateSub1()
     }
 }
 
-void s_cutsceneTask2::Update()
+void s_cutsceneTask2::Update(s_cutsceneTask2* pThis)
 {
-    switch (m34)
+    switch (pThis->m34)
     {
     case 0:
-        m34 = UpdateSub0();
-        cutsceneTaskInitSub2Sub0(&m8, &m14);
-        getFieldCameraStatus()->mC_rotation[2] = m20;
+        pThis->m34 = pThis->UpdateSub0();
+        cutsceneTaskInitSub2Sub0(&pThis->m8, &pThis->m14);
+        getFieldCameraStatus()->mC_rotation[2] = pThis->m20;
         return;
     case 1:
-        m8 += m44;
-        m28 += m50;
-        m20 += m5C;
+        pThis->m8 += pThis->m44;
+        pThis->m28 += pThis->m50;
+        pThis->m20 += pThis->m5C;
 
-        getFieldCameraStatus()->mC_rotation[1] = m20;
-        m60++;
+        getFieldCameraStatus()->mC_rotation[1] = pThis->m20;
+        pThis->m60++;
 
-        if (m24)
+        if (pThis->m24)
         {
             //0606A12C
             assert(0);
         }
         else
         {
-            m14 = m28;
+            pThis->m14 = pThis->m28;
         }
 
-        if (--m40)
+        if (--pThis->m40)
         {
             return;
         }
 
-        if (++m38 < 0x10)
+        if (++pThis->m38 < 0x10)
         {
-            m34 = UpdateSub0();
+            pThis->m34 = pThis->UpdateSub0();
         }
         else
         {
-            m34 = -1;
+            pThis->m34 = -1;
         }
         break;
     default:
         if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C)
             return;
-        UpdateSub1();
+        pThis->UpdateSub1();
         break;
     }
 }
@@ -1783,10 +1779,10 @@ void s_cutsceneTask::cutsceneTaskInitSub2(std::vector<s_scriptData1>& r11, s32 r
         pNewTask->m24 = r7;
     }
 
-    pNewTask->Update();
+    pNewTask->Update(pNewTask);
 }
 
-void s_cutsceneTask::Init(s_cutsceneData* pCutsceneData)
+void s_cutsceneTask::Init(s_cutsceneTask* pThis, s_cutsceneData* pCutsceneData)
 {
     s_dragonTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     u32 r11 = (pCutsceneData->m8 & ~3) / 2;
@@ -1799,7 +1795,7 @@ void s_cutsceneTask::Init(s_cutsceneData* pCutsceneData)
     r14->mF8_Flags &= ~0x400;
     r14->mF8_Flags |= 0x40000;
 
-    r14->m1D8_cutscene = this;
+    r14->m1D8_cutscene = pThis;
 
     r14->m1D4_cutsceneData = pCutsceneData;
 
@@ -1807,14 +1803,14 @@ void s_cutsceneTask::Init(s_cutsceneData* pCutsceneData)
 
     r14->m1EC += 2;
 
-    cutsceneTaskInitSub1(&pCutsceneData->m0[m0]);
+    cutsceneTaskInitSub1(&pCutsceneData->m0[pThis->m0]);
 
     r14->mF0(r14);
 
     switch (pCutsceneData->m8 & 3)
     {
     case 1:
-        cutsceneTaskInitSub2(pCutsceneData->m4, 0, &r14->m8_pos, r11);
+        pThis->cutsceneTaskInitSub2(pCutsceneData->m4, 0, &r14->m8_pos, r11);
         break;
     default:
         assert(0);
@@ -1828,20 +1824,20 @@ void cutsceneTaskUpdateSub0()
     pDragonTask->m1E4_cutsceneKeyFrame = 0;
 }
 
-void s_cutsceneTask::Update()
+void s_cutsceneTask::Update(s_cutsceneTask* pThis)
 {
     s_dragonTaskWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     if (r13->m1D4_cutsceneData == NULL)
     {
         cutsceneTaskUpdateSub0();
         dragonFieldTaskInitSub4Sub4();
-        getTask()->markFinished();
+        pThis->getTask()->markFinished();
         r13->m1D8_cutscene = 0;
         return;
     }
     if (r13->m1E4_cutsceneKeyFrame == NULL)
     {
-        s_scriptData3* pData = &r13->m1D4_cutsceneData->m0[++m0];
+        s_scriptData3* pData = &r13->m1D4_cutsceneData->m0[++pThis->m0];
         if (pData->m0_duration)
         {
             cutsceneTaskInitSub1(pData);
@@ -1852,9 +1848,9 @@ void s_cutsceneTask::Update()
         }
     }
 
-    m18_frameCount++;
+    pThis->m18_frameCount++;
 
-    if (m4)
+    if (pThis->m4)
     {
         assert(0);
     }
@@ -2183,10 +2179,8 @@ void initScriptTable4(std::vector<s_animDataFrame>& pData4)
     }
 }
 
-void s_fieldScriptWorkArea::Init()
+void s_fieldScriptWorkArea::Init(s_fieldScriptWorkArea* pFieldScriptWorkArea)
 {
-    s_fieldScriptWorkArea* pFieldScriptWorkArea = this;
-
     s_fieldTaskWorkArea* pFieldTaskWorkArea = getFieldTaskPtr();
 
     pFieldTaskWorkArea->m8_pSubFieldData->m34C_ptrToE = pFieldScriptWorkArea;
@@ -2476,53 +2470,53 @@ const s32 rider2Table[] =
     0x140,
 };
 
-void s_riderAnimTask::Delete()
+void s_riderAnimTask::Delete(s_riderAnimTask* pThis)
 {
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1DC_ridersAnimation[m4_riderIndex] = NULL;
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1DC_ridersAnimation[pThis->m4_riderIndex] = NULL;
 }
 
-void s_riderAnimTask::Update()
+void s_riderAnimTask::Update(s_riderAnimTask* pThis)
 {
-    switch (m0_status)
+    switch (pThis->m0_status)
     {
     case 0:
-        switch (m10_animSequence->m0)
+        switch (pThis->m10_animSequence->m0)
         {
         case -1:
-            getTask()->markFinished();
+            pThis->getTask()->markFinished();
             return;
         case 0:
-            m8_delay = m10_animSequence->m2;
-            playAnimationGeneric(&m14_riderState->m18_3dModel, m18->m0_riderModel + READ_BE_U32(m18->m0_riderModel + m1C[m10_animSequence->m1]), m10_animSequence->m2);
+            pThis->m8_delay = pThis->m10_animSequence->m2;
+            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderModel + READ_BE_U32(pThis->m18->m0_riderModel + pThis->m1C[pThis->m10_animSequence->m1]), pThis->m10_animSequence->m2);
             break;
         case 1:
-            m8_delay = m10_animSequence->m2;
-            playAnimationGeneric(&m14_riderState->m18_3dModel, m18->m0_riderModel + READ_BE_U32(m18->m0_riderModel + m1C[m10_animSequence->m1 + 0x10]), 15);
+            pThis->m8_delay = pThis->m10_animSequence->m2;
+            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderModel + READ_BE_U32(pThis->m18->m0_riderModel + pThis->m1C[pThis->m10_animSequence->m1 + 0x10]), 15);
             break;
         default:
             assert(0);
             break;
         }
-        updateAndInterpolateAnimation(&m14_riderState->m18_3dModel);
-        m0_status++;
+        updateAndInterpolateAnimation(&pThis->m14_riderState->m18_3dModel);
+        pThis->m0_status++;
     case 1:
-        switch (m10_animSequence->m0)
+        switch (pThis->m10_animSequence->m0)
         {
         case 0:
-            if ((--m8_delay) > 0)
+            if ((--pThis->m8_delay) > 0)
                 return;
-            m0_status = 0;
-            m10_animSequence++;
+            pThis->m0_status = 0;
+            pThis->m10_animSequence++;
             return;
         case 1:
-            if (m14_riderState->m18_3dModel.m16 < mC)
+            if (pThis->m14_riderState->m18_3dModel.m16 < pThis->mC)
             {
-                if ((--m8_delay) <= 0)
+                if ((--pThis->m8_delay) <= 0)
                 {
-                    m10_animSequence++;
+                    pThis->m10_animSequence++;
                 }
             }
-            mC = m14_riderState->m18_3dModel.m16;
+            pThis->mC = pThis->m14_riderState->m18_3dModel.m16;
             return;
         }
     default:
@@ -2650,25 +2644,25 @@ void s_cinematicBarTask::interpolateCinematicBar()
     }
 }
 
-void s_cinematicBarTask::Update()
+void s_cinematicBarTask::Update(s_cinematicBarTask* pThis)
 {
-    switch (m0_status)
+    switch (pThis->m0_status)
     {
     case 2:
-        if (m2 == ++m1)
+        if (pThis->m2 == ++pThis->m1)
         {
-            m0_status = 1;
+            pThis->m0_status = 1;
         }
-        interpolateCinematicBar();
+        pThis->interpolateCinematicBar();
         break;
     case 1:
         return;
     case 3:
-        if (--m1 == 0)
+        if (--pThis->m1 == 0)
         {
-            m0_status = 0;
+            pThis->m0_status = 0;
         }
-        interpolateCinematicBar();
+        pThis->interpolateCinematicBar();
         break;
     default:
         assert(0);
@@ -2676,7 +2670,7 @@ void s_cinematicBarTask::Update()
     }
 }
 
-void s_cinematicBarTask::Draw()
+void s_cinematicBarTask::Draw(s_cinematicBarTask*)
 {
     PDS_unimplemented("s_cinematicBarTask::Draw");
 }
@@ -2773,59 +2767,59 @@ void s_multiChoiceTask2::drawMultiChoice()
     }
 }
 
-void s_multiChoiceTask2::Update()
+void s_multiChoiceTask2::Update(s_multiChoiceTask2* pThis)
 {
-    switch (m0_Status)
+    switch (pThis->m0_Status)
     {
     case 0:
-        m0_Status++;
+        pThis->m0_Status++;
     case 1:
-        drawMultiChoice();
+        pThis->drawMultiChoice();
         playSoundEffect(3);
-        m0_Status++;
+        pThis->m0_Status++;
         return;
     case 2:
         if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0x10) // up
         {
-            m5_selectedEntry--;
-            if (m5_selectedEntry < 0)
+            pThis->m5_selectedEntry--;
+            if (pThis->m5_selectedEntry < 0)
             {
-                m5_selectedEntry += m6_numEntries;
+                pThis->m5_selectedEntry += pThis->m6_numEntries;
             }
             playSoundEffect(2);
         }
         else if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0x20) // down
         {
-            m5_selectedEntry++;
-            if (m5_selectedEntry >= m6_numEntries)
+            pThis->m5_selectedEntry++;
+            if (pThis->m5_selectedEntry >= pThis->m6_numEntries)
             {
-                m5_selectedEntry -= m6_numEntries;
+                pThis->m5_selectedEntry -= pThis->m6_numEntries;
             }
             playSoundEffect(2);
         }
 
         if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 6) // select
         {
-            *mC_result = m5_selectedEntry;
+            *pThis->mC_result = pThis->m5_selectedEntry;
             playSoundEffect(0);
-            m0_Status++;
+            pThis->m0_Status++;
         }
         else if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 1) // cancel
         {
-            if (m2_defaultResult)
+            if (pThis->m2_defaultResult)
             {
-                *mC_result = m2_defaultResult - 1;
+                *pThis->mC_result = pThis->m2_defaultResult - 1;
                 playSoundEffect(1);
-                m0_Status++;
+                pThis->m0_Status++;
             }
         }
         return;
     case 3:
-        mC_result = NULL;
-        m0_Status++;
+        pThis->mC_result = NULL;
+        pThis->m0_Status++;
         return;
     case 4:
-        getTask()->markFinished();
+        pThis->getTask()->markFinished();
         return;
     default:
         assert(0);
@@ -2833,7 +2827,7 @@ void s_multiChoiceTask2::Update()
     }
 }
 
-void s_multiChoiceTask2::Draw()
+void s_multiChoiceTask2::Draw(s_multiChoiceTask2*)
 {
     PDS_unimplemented("s_multiChoiceTask2::Draw");
 }
@@ -3150,15 +3144,15 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
     return m4_currentScript;
 }
 
-void s_fieldScriptWorkArea::Update()
+void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
 {
     fieldScriptTaskUpdateSub1();
 
-    if (m80)
+    if (pThis->m80)
     {
-        if (m80->getTask()->isFinished())
+        if (pThis->m80->getTask()->isFinished())
         {
-            m80 = NULL;
+            pThis->m80 = NULL;
         }
     }
 
@@ -3168,22 +3162,22 @@ void s_fieldScriptWorkArea::Update()
     }
 
     s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
-    if ((pLCS->m83F_activeLaserCount == 0) && (m40 == 0) && (m4_currentScript.m_offset))
+    if ((pLCS->m83F_activeLaserCount == 0) && (pThis->m40 == 0) && (pThis->m4_currentScript.m_offset))
     {
-        fieldScriptTaskUpdateSub2();
+        pThis->fieldScriptTaskUpdateSub2();
 
-        if ((m50_scriptDelay == 0) || (m58 != 0))
+        if ((pThis->m50_scriptDelay == 0) || (pThis->m58 != 0))
         {
-            m4_currentScript = runFieldScript();
+            pThis->m4_currentScript = pThis->runFieldScript();
 
-            if (m4_currentScript.m_offset == NULL)
+            if (pThis->m4_currentScript.m_offset == NULL)
             {
-                fieldScriptTaskUpdateSub3();
+                pThis->fieldScriptTaskUpdateSub3();
             }
         }
         else
         {
-            m50_scriptDelay--;
+            pThis->m50_scriptDelay--;
         }
     }
 
@@ -3201,7 +3195,7 @@ void s_fieldScriptWorkArea::Update()
     }
 
     if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 ||
-        m64 || m30_cinematicBarTask || m34 || m38_dialogStringTask || m3C_multichoiceTask || m40 ||
+        pThis->m64 || pThis->m30_cinematicBarTask || pThis->m34 || pThis->m38_dialogStringTask || pThis->m3C_multichoiceTask || pThis->m40 ||
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000)
     {
         graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
@@ -5172,23 +5166,23 @@ bool shouldLoadPup()
     return false;
 }
 
-void s_dragonTaskWorkArea::Init(s32 arg)
+void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
 {
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask = this;
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask = pThis;
 
-    getMemoryArea(&m0, 0);
-    dragonFieldTaskInitSub2(this);
-    dragonFieldTaskInitSub3(this, gDragonState, 5);
-    mF0 = dragonFieldTaskInitSub4;
+    getMemoryArea(&pThis->m0, 0);
+    dragonFieldTaskInitSub2(pThis);
+    dragonFieldTaskInitSub3(pThis, gDragonState, 5);
+    pThis->mF0 = dragonFieldTaskInitSub4;
 
-    createSubTask(this, &dragonRidersTaskDefinition, new s_dummyWorkArea);
+    createSubTask(pThis, &dragonRidersTaskDefinition, new s_dummyWorkArea);
 
     if (gDragonState->mC_dragonType == DR_LEVEL_6_LIGHT_WING)
     {
         assert(0);
     }
 
-    dragonFieldTaskInitSub5(this);
+    dragonFieldTaskInitSub5(pThis);
 
     if (shouldLoadPup())
     {
@@ -5662,10 +5656,8 @@ void dragonFieldTaskUpdateSub6(s_dragonTaskWorkArea* pTypedWorkArea)
     PDS_unimplemented("dragonFieldTaskUpdateSub6");
 }
 
-void s_dragonTaskWorkArea::Update()
+void s_dragonTaskWorkArea::Update(s_dragonTaskWorkArea* pTypedWorkArea)
 {
-    s_dragonTaskWorkArea* pTypedWorkArea = this;
-
     dragonFieldTaskUpdateSub1(pTypedWorkArea);
 
     fieldTaskVar2 = gDragonState->mC_dragonType;
@@ -5848,10 +5840,8 @@ void dragonFieldTaskDrawSub3(s_dragonTaskWorkArea* pTypedWorkArea)
     dragonFieldTaskDrawSub3Sub0();
 }
 
-void s_dragonTaskWorkArea::Draw()
+void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
 {
-    s_dragonTaskWorkArea* pTypedWorkArea = this;
-
     dragonFieldTaskDrawSub1(pTypedWorkArea);
 
     // if we need to draw the dragon shadow (and dragon Y >= 0)
@@ -6492,40 +6482,40 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     return NULL;
 }
 
-void s_LCSTask340Sub::Init1(sLaserArgs* arg)
+void s_LCSTask340Sub::Init1(s_LCSTask340Sub* pThis, sLaserArgs* arg)
 {
-    getMemoryArea(&m0, 0);
-    m8 = arg->m0;
-    mC = arg->m4;
-    m10 = arg->m8;
+    getMemoryArea(&pThis->m0, 0);
+    pThis->m8 = arg->m0;
+    pThis->mC = arg->m4;
+    pThis->m10 = arg->m8;
 
     if (arg->m8 & 0x100)
     {
-        m60 = *arg->m4;
+        pThis->m60 = *arg->m4;
     }
     else
     {
-        transformAndAddVecByCurrentMatrix(arg->m4, &m60);
+        transformAndAddVecByCurrentMatrix(arg->m4, &pThis->m60);
     }
 
-    m14 = arg->mC;
-    m18 = arg->m10;
-    m1C = arg->m14;
-    m20 = arg->m18;
-    m27 = arg->m1F;
+    pThis->m14 = arg->mC;
+    pThis->m18 = arg->m10;
+    pThis->m1C = arg->m14;
+    pThis->m20 = arg->m18;
+    pThis->m27 = arg->m1F;
 
-    m28_laserInit = &s_LCSTask340Sub::Init1Sub0;
-    m2C_laserUpdate = &s_LCSTask340Sub::Init1Sub1;
-    m30_laserDraw = &s_LCSTask340Sub::Laser1Draw;
+    pThis->m28_laserInit = &s_LCSTask340Sub::Init1Sub0;
+    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Init1Sub1;
+    pThis->m30_laserDraw = &s_LCSTask340Sub::Laser1Draw;
 
-    m158 = 0x12;
-    m6C[m154&0xF] = (*mC);
-    m6C[0] = (*mC);
-    m6C[1] = (*mC);
+    pThis->m158 = 0x12;
+    pThis->m6C[pThis->m154&0xF] = (*pThis->mC);
+    pThis->m6C[0] = (*pThis->mC);
+    pThis->m6C[1] = (*pThis->mC);
 
-    ((this)->*(m28_laserInit))();
+    pThis->m28_laserInit(pThis);
 
-    m154++;
+    pThis->m154++;
 }
 
 void s_LCSTask340Sub::Init3Sub3(s_LCSTask340Sub_m58* r4, s32 r5, sSaturnPtr r6)
@@ -6541,118 +6531,118 @@ static const std::array<fixedPoint, 2> s_LCSTask340Sub_Init3Sub0Data0 = {
     0x6000000,
 };
 
-void s_LCSTask340Sub::Laser3Init()
+void s_LCSTask340Sub::Laser3Init(s_LCSTask340Sub* pThis)
 {
-    m34 = 0x37000;
-    m38 = performDivision(m158, -0x37000);
-    m3C = s_LCSTask340Sub_Init3Sub0Data0[(randomNumber() >> 16) & 1];
-    m40 = 0;
+    pThis->m34 = 0x37000;
+    pThis->m38 = performDivision(pThis->m158, -0x37000);
+    pThis->m3C = s_LCSTask340Sub_Init3Sub0Data0[(randomNumber() >> 16) & 1];
+    pThis->m40 = 0;
 }
 
-void s_LCSTask340Sub::Laser3Update()
+void s_LCSTask340Sub::Laser3Update(s_LCSTask340Sub* pThis)
 {
     TaskUnimplemented();
 }
 
-void s_LCSTask340Sub::Laser3Draw()
+void s_LCSTask340Sub::Laser3Draw(s_LCSTask340Sub* pThis)
 {
     TaskUnimplemented();
 }
 
-void s_LCSTask340Sub::Init2(sLaserArgs* arg)
+void s_LCSTask340Sub::Init2(s_LCSTask340Sub* pThis, sLaserArgs* arg)
 {
-    getMemoryArea(&m0, 0);
-    m8 = arg->m0;
-    mC = arg->m4;
-    m10 = arg->m8;
+    getMemoryArea(&pThis->m0, 0);
+    pThis->m8 = arg->m0;
+    pThis->mC = arg->m4;
+    pThis->m10 = arg->m8;
 
     if (arg->m8 & 0x100)
     {
-        m60 = *arg->m4;
+        pThis->m60 = *arg->m4;
     }
     else
     {
-        transformAndAddVecByCurrentMatrix(arg->m4, &m60);
+        transformAndAddVecByCurrentMatrix(arg->m4, &pThis->m60);
     }
 
-    m14 = arg->mC;
-    m18 = arg->m10;
-    m1C = arg->m14;
-    m20 = arg->m18;
-    m27 = arg->m1F;
+    pThis->m14 = arg->mC;
+    pThis->m18 = arg->m10;
+    pThis->m1C = arg->m14;
+    pThis->m20 = arg->m18;
+    pThis->m27 = arg->m1F;
 
-    m28_laserInit = &s_LCSTask340Sub::Laser2Init;
-    m2C_laserUpdate = &s_LCSTask340Sub::Laser2Update;
-    m30_laserDraw = &s_LCSTask340Sub::Laser2Draw;
+    pThis->m28_laserInit = &s_LCSTask340Sub::Laser2Init;
+    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Laser2Update;
+    pThis->m30_laserDraw = &s_LCSTask340Sub::Laser2Draw;
 
-    m158 = 0x1E;
+    pThis->m158 = 0x1E;
 
-    ((this)->*(m28_laserInit))();
+    pThis->m28_laserInit(pThis);
 
-    m6C[0] = (*mC);
-    m6C[1] = (*mC);
+    pThis->m6C[0] = (*pThis->mC);
+    pThis->m6C[1] = (*pThis->mC);
 }
 
-void s_LCSTask340Sub::Laser2Init()
+void s_LCSTask340Sub::Laser2Init(s_LCSTask340Sub*)
 {
     // nothing on purpose
 }
 
-void s_LCSTask340Sub::Laser2Update()
+void s_LCSTask340Sub::Laser2Update(s_LCSTask340Sub*)
 {
     TaskUnimplemented();
 }
 
-void s_LCSTask340Sub::Laser2Draw()
+void s_LCSTask340Sub::Laser2Draw(s_LCSTask340Sub*)
 {
     TaskUnimplemented();
 }
 
-void s_LCSTask340Sub::Init3(sLaserArgs* arg)
+void s_LCSTask340Sub::Init3(s_LCSTask340Sub* pThis, sLaserArgs* arg)
 {
-    getMemoryArea(&m0, 0);
+    getMemoryArea(&pThis->m0, 0);
 
     getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount++;
 
-    m8 = arg->m0;
+    pThis->m8 = arg->m0;
     if (randomNumber() & 1)
     {
-        mC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m118_hotSpot3;
+        pThis->mC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m118_hotSpot3;
     }
     else
     {
-        mC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m124_hotSpot4;
+        pThis->mC = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m124_hotSpot4;
     }
-    m10 = 0;
-    m14 = arg->mC;
-    m18 = 0;
-    m1C = arg->m14;
-    m20 = 0;
-    m24_receivedItemId = arg->m1C_receivedItemId;
-    m26_receivedItemQuantity = arg->m1E_receivedItemQuantity;
-    m27 = arg->m1F;
+    pThis->m10 = 0;
+    pThis->m14 = arg->mC;
+    pThis->m18 = 0;
+    pThis->m1C = arg->m14;
+    pThis->m20 = 0;
+    pThis->m24_receivedItemId = arg->m1C_receivedItemId;
+    pThis->m26_receivedItemQuantity = arg->m1E_receivedItemQuantity;
+    pThis->m27 = arg->m1F;
 
-    m28_laserInit = &s_LCSTask340Sub::Laser3Init;
-    m2C_laserUpdate = &s_LCSTask340Sub::Laser3Update;
-    m30_laserDraw = &s_LCSTask340Sub::Laser3Draw;
-    m158 = 0x1E;
+    pThis->m28_laserInit = &s_LCSTask340Sub::Laser3Init;
+    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Laser3Update;
+    pThis->m30_laserDraw = &s_LCSTask340Sub::Laser3Draw;
+    pThis->m158 = 0x1E;
 
     if (arg->m8 & 0x100)
     {
-        transformAndAddVec(*arg->mC, m6C[0], cameraProperties2.m28[0]);
+        transformAndAddVec(*arg->mC, pThis->m6C[0], cameraProperties2.m28[0]);
     }
     else
     {
-        m6C[0] = *arg->m4;
+        pThis->m6C[0] = *arg->m4;
     }
 
-    m6C[1] = m6C[0];
-    m6C[m154 & 0xF] = m6C[0];
+    pThis->m6C[1] = pThis->m6C[0];
+    pThis->m6C[pThis->m154 & 0xF] = pThis->m6C[0];
 
-    ((this)->*(m28_laserInit))();
+    pThis->m28_laserInit(pThis);
 
-    m154++;
-    Init3Sub3(&m58, (m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3, { 0x06095330, gFLD_A3 });
+    pThis->m154++;
+    pThis->Init3Sub3(&pThis->m58, (pThis->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3, { 0x06095330, gFLD_A3 });
 }
 
 static const std::array<fixedPoint, 16> s_LCSTask340Sub_Init1Sub0Data0 = {
@@ -6666,53 +6656,53 @@ static const std::array<fixedPoint, 16> s_LCSTask340Sub_Init1Sub0Data0 = {
     0x471C71C,
 };
 
-void s_LCSTask340Sub::Init1Sub0()
+void s_LCSTask340Sub::Init1Sub0(s_LCSTask340Sub* pThis)
 {
-    m34 = 0x37000;
-    m38 = performDivision(m158, -0x37000);
-    m3C = s_LCSTask340Sub_Init1Sub0Data0[(randomNumber() >> 16) & 7];
-    m40 = 0;
+    pThis->m34 = 0x37000;
+    pThis->m38 = performDivision(pThis->m158, -0x37000);
+    pThis->m3C = s_LCSTask340Sub_Init1Sub0Data0[(randomNumber() >> 16) & 7];
+    pThis->m40 = 0;
 }
 
-void s_LCSTask340Sub::Update0()
+void s_LCSTask340Sub::Update0(s_LCSTask340Sub* pThis)
 {
-    if ((m8 == nullptr) || (m8->getTask()->isFinished()))
+    if ((pThis->m8 == nullptr) || (pThis->m8->getTask()->isFinished()))
     {
-        m20->m14 |= 2;
+        pThis->m20->m14 |= 2;
         return;
     }
 
-    if (m158 < 0)
+    if (pThis->m158 < 0)
     {
-        m20->m14 |= 1;
+        pThis->m20->m14 |= 1;
         return;
     }
 
-    if (m10 & 0x100)
+    if (pThis->m10 & 0x100)
     {
-        m60 = *mC;
+        pThis->m60 = *pThis->mC;
     }
     else
     {
-        transformAndAddVecByCurrentMatrix(mC, &m60);
+        transformAndAddVecByCurrentMatrix(pThis->mC, &pThis->m60);
     }
 
-    ((this)->*(m2C_laserUpdate))();
+    pThis->m2C_laserUpdate(pThis);
 
-    m158--;
+    pThis->m158--;
 }
 
-void s_LCSTask340Sub::Update3()
+void s_LCSTask340Sub::Update3(s_LCSTask340Sub* pThis)
 {
-    if (m158 < 0)
+    if (pThis->m158 < 0)
     {
-        getTask()->markFinished();
+        pThis->getTask()->markFinished();
     }
     else
     {
-        transformAndAddVecByCurrentMatrix(mC, &m60);
-        ((this)->*(m2C_laserUpdate))();
-        m158--;
+        transformAndAddVecByCurrentMatrix(pThis->mC, &pThis->m60);
+        pThis->m2C_laserUpdate(pThis);
+        pThis->m158--;
     }
 }
 
@@ -6767,12 +6757,12 @@ struct s_receivedItemTask : s_workAreaTemplate<s_receivedItemTask>
         return &taskDefinition;
     }
 
-    void Update()
+    static void Update(s_receivedItemTask*)
     {
         TaskUnimplemented();
     }
 
-    void Delete()
+    static void Delete(s_receivedItemTask*)
     {
         TaskUnimplemented();
     }
@@ -6828,12 +6818,12 @@ s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedIt
     return pNewTask;
 }
 
-void s_LCSTask340Sub::Delete3()
+void s_LCSTask340Sub::Delete3(s_LCSTask340Sub* pThis)
 {
-    s_LCSTask340Sub_Delete3Sub0(m27);
+    s_LCSTask340Sub_Delete3Sub0(pThis->m27);
     playSoundEffect(17);
 
-    if (m24_receivedItemId >= 0)
+    if (pThis->m24_receivedItemId >= 0)
     {
         s_fieldScriptWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
         if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m40)
@@ -6845,17 +6835,17 @@ void s_LCSTask340Sub::Delete3()
         {
             //0607A1C2
             getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount--;
-            createReceiveItemTask(r13, &r13->m40, 45, m24_receivedItemId, m26_receivedItemQuantity);
-            if (m24_receivedItemId < 77)
+            createReceiveItemTask(r13, &r13->m40, 45, pThis->m24_receivedItemId, pThis->m26_receivedItemQuantity);
+            if (pThis->m24_receivedItemId < 77)
             {
                 //0607A1F6
-                if (mainGameState.consumables[m24_receivedItemId] + m26_receivedItemQuantity > 99)
+                if (mainGameState.consumables[pThis->m24_receivedItemId] + pThis->m26_receivedItemQuantity > 99)
                 {
-                    mainGameState.consumables[m24_receivedItemId] = 99;
+                    mainGameState.consumables[pThis->m24_receivedItemId] = 99;
                 }
                 else
                 {
-                    mainGameState.consumables[m24_receivedItemId] += m26_receivedItemQuantity;
+                    mainGameState.consumables[pThis->m24_receivedItemId] += pThis->m26_receivedItemQuantity;
                 }
             }
             else
@@ -6895,32 +6885,32 @@ void s_LCSTask340Sub::Init1Sub1Sub0()
     }
 }
 
-void s_LCSTask340Sub::Init1Sub1()
+void s_LCSTask340Sub::Init1Sub1(s_LCSTask340Sub* pThis)
 {
     sMatrix4x3* var0 = cameraProperties2.m28;
-    m34 += m38;
-    m3C += m40;
+    pThis->m34 += pThis->m38;
+    pThis->m3C += pThis->m40;
 
     sVec3_FP var1C;
-    var1C[0] = MTH_Mul(m34, getCos(m3C.getInteger() & 0xFFF)) + m60[0];
-    var1C[1] = MTH_Mul(m34, getSin(m3C.getInteger() & 0xFFF)) + m60[1];
-    var1C[1] = m60[2];
+    var1C[0] = MTH_Mul(pThis->m34, getCos(pThis->m3C.getInteger() & 0xFFF)) + pThis->m60[0];
+    var1C[1] = MTH_Mul(pThis->m34, getSin(pThis->m3C.getInteger() & 0xFFF)) + pThis->m60[1];
+    var1C[1] = pThis->m60[2];
 
     sVec3_FP var10;
     transformAndAddVec(var1C, var10, *var0);
 
-    Init1Sub1Sub0();
+    pThis->Init1Sub1Sub0();
 
     sVec3_FP var4;
-    sVec3_FP& r5 = m6C[(m154 - 1) & 0xF];
-    var4[0] = r5[0] + performDivision(m158 + 1, var10[0] - r5[0]);
-    var4[1] = r5[1] + performDivision(m158 + 1, var10[1] - r5[1]);
-    var4[2] = r5[2] + performDivision(m158 + 1, var10[2] - r5[2]);
+    sVec3_FP& r5 = pThis->m6C[(pThis->m154 - 1) & 0xF];
+    var4[0] = r5[0] + performDivision(pThis->m158 + 1, var10[0] - r5[0]);
+    var4[1] = r5[1] + performDivision(pThis->m158 + 1, var10[1] - r5[1]);
+    var4[2] = r5[2] + performDivision(pThis->m158 + 1, var10[2] - r5[2]);
 
-    m6C[m154 & 0xF] = var4;
-    m154++;
+    pThis->m6C[pThis->m154 & 0xF] = var4;
+    pThis->m154++;
 
-    m144 = var4 - r5;
+    pThis->m144 = var4 - r5;
 }
 
 void Laser1DrawSub0Sub0(std::array<sVec3_FP, 2>&r4, s32 r5, sVec2_S16& r6, sVec2_S16& r7, fixedPoint maxDistance)
@@ -7236,18 +7226,18 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
     } 
 }
 
-void s_LCSTask340Sub::Laser1Draw()
+void s_LCSTask340Sub::Laser1Draw(s_LCSTask340Sub* pThis)
 {
     s_LCSTask_gradientData* r6 = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m9C0;
     s32 stack0 = 8;
     std::array<sVec3_FP,8> r11;
     std::array<sVec3_FP, 8>::iterator r4 = r11.begin();
     s32 r13 = 0;
-    if (m154 <= 16)
+    if (pThis->m154 <= 16)
     {
         //0607A8C6
         auto r5 = r4;
-        sSaturnPtr r4 = gFLD_A3->getSaturnPtr(0x06094C38) + m154 * 8;
+        sSaturnPtr r4 = gFLD_A3->getSaturnPtr(0x06094C38) + pThis->m154 * 8;
         sSaturnPtr r7 = r4 + 8;
 
         while (r4.m_offset < r7.m_offset)
@@ -7257,25 +7247,25 @@ void s_LCSTask340Sub::Laser1Draw()
             {
                 break;
             }
-            *r5 = m6C[value];
+            *r5 = pThis->m6C[value];
             r13++;
             r5++;
             r4++;
         }
-        return Laser1DrawSub0(r11, r13, gFLD_A3->getSaturnPtr(0x06094D40) + (stack0 - r13) * 4, r6);
+        return pThis->Laser1DrawSub0(r11, r13, gFLD_A3->getSaturnPtr(0x06094D40) + (stack0 - r13) * 4, r6);
     }
     else
     {
         //0607A91C
-        sSaturnPtr r5 = gFLD_A3->getSaturnPtr(0x06094CC0) + ((m154 - 1) & 0xF) * 8;
+        sSaturnPtr r5 = gFLD_A3->getSaturnPtr(0x06094CC0) + ((pThis->m154 - 1) & 0xF) * 8;
         while (r4 < r11.end())
         {
             s8 value = readSaturnS8(r5);
-            *r4 = m6C[value];
+            *r4 = pThis->m6C[value];
             r4++;
             r5++;
         }
-        return Laser1DrawSub0(r11, 8, gFLD_A3->getSaturnPtr(0x06094D40), r6);
+        return pThis->Laser1DrawSub0(r11, 8, gFLD_A3->getSaturnPtr(0x06094D40), r6);
     }
 }
 

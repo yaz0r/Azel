@@ -8,8 +8,8 @@ struct s_initialTaskWorkArea : public s_workAreaTemplate<s_initialTaskWorkArea>
         return &taskDefinition;
     }
 
-    void Init();
-    void Draw();
+    static void Init(s_initialTaskWorkArea*);
+    static void Draw(s_initialTaskWorkArea*);
 
     u32 m_state;
     p_workArea m_4;
@@ -17,9 +17,8 @@ struct s_initialTaskWorkArea : public s_workAreaTemplate<s_initialTaskWorkArea>
 
 s_initialTaskStatus initialTaskStatus;
 
-void s_initialTaskWorkArea::Init()
+void s_initialTaskWorkArea::Init(s_initialTaskWorkArea* pWorkArea)
 {
-    s_initialTaskWorkArea* pWorkArea = this;
     pWorkArea->m_state = 0;
     pWorkArea->m_4 = 0;
 
@@ -36,10 +35,8 @@ void s_initialTaskWorkArea::Init()
     PDS_unimplemented("resetNamesForNewGame");
     //resetNamesForNewGame();
 }
-void s_initialTaskWorkArea::Draw()
+void s_initialTaskWorkArea::Draw(s_initialTaskWorkArea* pWorkArea)
 {
-    s_initialTaskWorkArea* pWorkArea = this;
-
     switch (pWorkArea->m_state)
     {
     case 0: // init state
