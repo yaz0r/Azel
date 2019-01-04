@@ -139,21 +139,21 @@ void initVDP1Projection(fixedPoint r4, u32 mode)
 
     s32 VDP1_Width = graphicEngineStatus.m405C.VDP1_X2 - graphicEngineStatus.m405C.VDP1_X1;
 
-    fixedPoint r0 = setDividend(VDP1_Width / 2, sin, cos);
+    fixedPoint r0 = setDividend(VDP1_Width / 2, cos, sin);
 
     switch (mode)
     {
     case 0:
-        graphicEngineStatus.m405C.m18 = FP_Mul(r0, fixedPoint(0x11999));
-        graphicEngineStatus.m405C.m1C = FP_Mul(r0, fixedPoint(0xEEEE));
+        graphicEngineStatus.m405C.m18 = FP_Mul(r0, fixedPoint(0x11999)); // 1.0999908447265625
+        graphicEngineStatus.m405C.m1C = FP_Mul(r0, fixedPoint(0xEEEE)); // 0.93331909179687500
         break;
     case 1:
-        graphicEngineStatus.m405C.m18 = FP_Mul(r0, fixedPoint(0xD333));
-        graphicEngineStatus.m405C.m1C = FP_Mul(r0, fixedPoint(0xEEEE));
+        graphicEngineStatus.m405C.m18 = FP_Mul(r0, fixedPoint(0xD333)); //0.82499694824218750
+        graphicEngineStatus.m405C.m1C = FP_Mul(r0, fixedPoint(0xEEEE)); //0.93331909179687500
         break;
     case 2:
-        graphicEngineStatus.m405C.m18 = FP_Mul(r0, fixedPoint(0xD333));
-        graphicEngineStatus.m405C.m1C = FP_Mul(r0, fixedPoint(0xB333));
+        graphicEngineStatus.m405C.m18 = FP_Mul(r0, fixedPoint(0xD333)); //0.82499694824218750
+        graphicEngineStatus.m405C.m1C = FP_Mul(r0, fixedPoint(0xB333)); //0.69999694824218750
         break;
     default:
         assert(0);
@@ -215,7 +215,7 @@ void initVDP1()
     graphicEngineStatus.m405C.m6 = 326;
     graphicEngineStatus.m405C.m8 = 0x70;
     graphicEngineStatus.m405C.mA = -112;
-    graphicEngineStatus.m405C.mC = -64;
+    graphicEngineStatus.m405C.mC = -176;
     graphicEngineStatus.m405C.mE = 176;
 
     initVDP1Projection(0x1C71C71, 0);

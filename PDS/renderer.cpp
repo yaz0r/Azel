@@ -25,6 +25,11 @@ GLuint gNBG1Texture = 0;
 GLuint gNBG2Texture = 0;
 GLuint gNBG3Texture = 0;
 
+#ifdef PDS_TOOL
+int frameLimit = -1;
+#else
+const int frameLimit = 30;
+#endif
 
 #ifdef USE_GL_ES3
 const GLchar blit_vs[] =
@@ -836,7 +841,7 @@ void ScaledSpriteDraw(u32 vdp1EA)
     }
 }
 
-void drawLine(s16 XA, s16 YA, s16 XB, s16 YB, u32 color)
+void drawLine_old(s16 XA, s16 YA, s16 XB, s16 YB, u32 color)
 {
     if (YA == YB)
     {
@@ -880,7 +885,10 @@ void drawLine(s16 XA, s16 YA, s16 XB, s16 YB, u32 color)
 
 void image_set(int x, int y, u32 color)
 {
-    vdp1TextureOutput[y * vdp1TextureHeight + x] = color;
+    if (x >= 0 && y >= 0 && x < vdp1TextureWidth && y < vdp1TextureHeight)
+    {
+        vdp1TextureOutput[(vdp1TextureHeight - y - 1) * vdp1TextureWidth + x] = color;
+    }
 }
 
 void drawLine(int x0, int y0, int x1, int y1, u32 color) {
@@ -935,7 +943,7 @@ void PolyLineDraw(u32 vdp1EA)
     }
     else
     {
-        finalColor = 0xFF808080;
+        finalColor = 0xFFFF0000;
     }
 
     drawLine(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);
@@ -1315,6 +1323,15 @@ bool azelSdl2_EndFrame()
     {
         ImGui::Text(" %.2f FPS (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
 
+        if (ImGui::BeginMenu("Framerate"))
+        {
+            bool unlimited = true;
+            if (ImGui::MenuItem("Unlimited", NULL, frameLimit == -1)) frameLimit = -1;
+            if (ImGui::MenuItem("30", NULL, frameLimit == 30)) frameLimit = 30;
+            if (ImGui::MenuItem("5", NULL, frameLimit == 5)) frameLimit = 5;
+            ImGui::EndMenu();
+        }
+
         ImGui::EndMainMenuBar();
     }
 
@@ -1349,8 +1366,8 @@ bool azelSdl2_EndFrame()
 
         float freq = SDL_GetPerformanceFrequency();
         float secs = (now - last_time) / freq;
-        float timeToWait = ((1.f/30.f) - secs) * 1000;
-        timeToWait = 0;
+        float timeToWait = ((1.f/frameLimit) - secs) * 1000;
+        //timeToWait = 0;
         if (timeToWait > 0)
         {
             SDL_Delay(timeToWait);
