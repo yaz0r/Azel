@@ -7056,7 +7056,7 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     (*r12)[1][0] = arg0->m0[r7][1][0];
     (*r12)[1][1] = arg0->m0[r7][1][1];
 
-    setVdp1VramU16(vdp1WriteEA + 0x1C, (INT_PTR)(&(*r12))>>3); //CMDGRDA
+    setVdp1VramU16(vdp1WriteEA + 0x1C, (size_t)(&(*r12))>>3); //CMDGRDA
 
     r13.m20_pCurrentVdp1Packet->m4_bucketTypes = 0;// fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
     r13.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
