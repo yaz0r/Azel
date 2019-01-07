@@ -192,4 +192,17 @@ void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex)
     pOutput->m4_characterArea = fieldTaskPtr->m8_pSubFieldData->characterArea[areaIndex];
 }
 
+struct s_exitCutsceneTask : public s_workAreaTemplate<s_exitCutsceneTask>
+{
+    static void Update(s_exitCutsceneTask* pThis)
+    {
+        assert(0);
+    }
 
+    // size 0x18
+};
+
+void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 param, s32 exitIndex, s32 arg0)
+{
+    createSubTaskFromFunction<s_exitCutsceneTask>(parent, &s_exitCutsceneTask::Update);
+}

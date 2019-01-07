@@ -72,5 +72,7 @@ struct s_itemBoxDefinition
 s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr);
 p_workArea fieldA3_1_createItemBoxes_Sub1(s_itemBoxDefinition* r4);
 
+s_cameraScript* readCameraScript(sSaturnPtr EA);
+void dispatchTutorialMultiChoiceSub2();
 
 #include "o_fld_a3_1.h"

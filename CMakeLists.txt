@@ -34,15 +34,18 @@ set(SOURCES
  PDS/kernel/receiveItemTask.cpp
 
  PDS/common.cpp
+ PDS/common.h
  PDS/common_generated.cpp
  PDS/dummy.cpp
  PDS/field.cpp
+ PDS/field.h
  PDS/fixedPoint.cpp
  PDS/heap.cpp
  PDS/heap.h
  PDS/LCS.cpp
  PDS/LCS.h
  PDS/mainMenuDebugTasks.cpp
+ PDS/mainMenuDebugTasks.h
  PDS/menu_dragon.cpp
  PDS/menu_dragonMorph.cpp
 
@@ -63,7 +66,9 @@ set(SOURCES
  PDS/task.h
  PDS/titleScreen.cpp
  PDS/VDP1.cpp
+ PDS/VDP1.h
  PDS/VDP2.cpp
+ PDS/VDP2.h
  
  PDS/imgui/imgui.cpp
  PDS/imgui/imgui_draw.cpp

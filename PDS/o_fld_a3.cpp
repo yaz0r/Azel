@@ -8,7 +8,7 @@ fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0
 void updateCameraScriptSub1(u32 r4);
 void fieldOverlaySubTaskInitSub5(u32 r4);
 s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
-
+void dragonFieldTaskInitSub4Sub3(u8 r4);
 
 #ifdef PDS_TOOL
 bool bMakeEverythingVisible = false;
@@ -1675,6 +1675,17 @@ void UpdateSub1Sub0()
     updateCameraScriptSub1(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
 }
 
+void UpdateSub1Sub1()
+{
+    s_fieldOverlaySubTaskWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    r13->m2E4[4].m14 = 0;
+    r13->m2E4[4].m18_maxDistanceSquare = 0;
+    dragonFieldTaskInitSub4Sub4();
+    fieldOverlaySubTaskInitSub5(1);
+
+    dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
+}
+
 void s_cutsceneTask2::UpdateSub1()
 {
     getTask()->markFinished();
@@ -1694,7 +1705,7 @@ void s_cutsceneTask2::UpdateSub1()
         }
         else
         {
-            assert(0);
+            UpdateSub1Sub1();
         }
     }
 }
@@ -4041,11 +4052,6 @@ void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDr
     pWorkArea->m23A_dragonAnimation = param2;
     pWorkArea->m237 = pWorkArea->m238;
     pWorkArea->m23B = 1;
-}
-
-void dragonFieldTaskInitSub4Sub3(u8 r4)
-{
-    PDS_unimplemented("dragonFieldTaskInitSub4Sub3");
 }
 
 s32 isDragonInValidArea(s_dragonTaskWorkArea* r4)
@@ -6627,9 +6633,37 @@ void s_LCSTask340Sub::Laser2Init(s_LCSTask340Sub*)
     // nothing on purpose
 }
 
-void s_LCSTask340Sub::Laser2Update(s_LCSTask340Sub*)
+void s_LCSTask340Sub::Laser2Update(s_LCSTask340Sub* pThis)
 {
-    TaskUnimplemented();
+    sVec3_FP var0;
+    transformAndAddVec(pThis->m60, var0, cameraProperties2.m28[0]);
+
+    switch (pThis->m15C)
+    {
+    case 0:
+        pThis->m6C[0] = *pThis->m14;
+
+        pThis->m6C[1][0] += performDivision(((pThis->m158 - pThis->m154) / 2) + 1, var0[0] - pThis->m6C[1][0]);
+        pThis->m6C[1][1] += performDivision(((pThis->m158 - pThis->m154) / 2) + 1, var0[1] - pThis->m6C[1][1]);
+        pThis->m6C[1][2] += performDivision(((pThis->m158 - pThis->m154) / 2) + 1, var0[2] - pThis->m6C[1][2]);
+
+        if (pThis->m158 == pThis->m154)
+        {
+            pThis->m6C[1] = var0;
+            pThis->m15C++;
+        }
+        break;
+    case 1:
+        pThis->m6C[0][0] += performDivision(pThis->m158 + 1, var0[0] - pThis->m6C[0][0]);
+        pThis->m6C[0][1] += performDivision(pThis->m158 + 1, var0[1] - pThis->m6C[0][1]);
+        pThis->m6C[0][2] += performDivision(pThis->m158 + 1, var0[2] - pThis->m6C[0][2]);
+
+        pThis->m6C[1] = var0;
+    default:
+        break;
+    }
+
+    pThis->m154++;
 }
 
 void s_LCSTask340Sub::Laser2Draw(s_LCSTask340Sub*)
@@ -7385,3 +7419,11 @@ s_LCSTask340Sub* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, 
 {
     return createSiblingTaskWithArg<s_LCSTask340Sub>(r4, r5, &s_LCSTask340Sub::constructionTable[r6]);
 }
+
+void dragonFieldTaskInitSub4Sub3(u8 r4)
+{
+    updateCameraScriptSub1Sub(0, updateCameraScriptSub1Table1[r4], updateCameraScriptSub1Table2[r4]);
+
+    getFieldCameraStatus()->m8D = 0;
+}
+

@@ -2347,7 +2347,7 @@ void s_FieldSubTaskWorkArea::Draw(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 
 void s_FieldSubTaskWorkArea::Delete(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 {
-    assert(0);
+    TaskUnimplemented();
 }
 
 s_taskDefinitionWithArg encounterTaskDefinition = { dummyTaskInitWithArg, dummyTaskUpdate, dummyTaskDraw, dummyTaskDelete, "encounter task" };
@@ -2706,7 +2706,7 @@ struct {
     u8 mB;
 } var_60525E8;
 
-void exitMenuTaskSub1TaskInitSub2(u32 r4)
+void setNextGameStatus(u32 r4)
 {
     if (gGameStatus.m8_nextGameStatus == 0)
     {
@@ -3818,7 +3818,6 @@ p_workArea createMainMenuTask(p_workArea workArea)
 p_workArea createInventoryMenuTask(p_workArea workArea)
 {
     PDS_unimplemented("createInventoryMenuTask");
-    return createMainDragonMenuTask(workArea);
     assert(0);
     return NULL;
 }
@@ -4136,13 +4135,13 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task* pW
     switch (menuID)
     {
     case 0:
-        return exitMenuTaskSub1TaskInitSub2(1);
+        return setNextGameStatus(1);
     case 1:
-        return exitMenuTaskSub1TaskInitSub2(0x4A);
+        return setNextGameStatus(0x4A);
     case 2:
-        return exitMenuTaskSub1TaskInitSub2(0x71);
+        return setNextGameStatus(0x71);
     case 3:
-        return exitMenuTaskSub1TaskInitSub2(0x72);
+        return setNextGameStatus(0x72);
     default:
         assert(0);
     }
@@ -4169,6 +4168,9 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
     switch (index)
     {
     case 0:
+        break;
+    case 80:
+        setNextGameStatus(0x4F);
         break;
     default:
         assert(0);
@@ -4253,7 +4255,10 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
                 if (pWorkArea->m8)
                 {
                     //60273AA
-                    assert(0);
+                    if (!pWorkArea->m8->getTask()->isFinished())
+                    {
+                        pWorkArea->m8->getTask()->markFinished();
+                    }
                 }
             }
             else
@@ -4308,6 +4313,7 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
         {
         case 1:
         case 2:
+        case 6:
         case 80:
             if ((gGameStatus.m2 == 0) && (gGameStatus.m6_previousGameStatus != 0x4F))
             {
@@ -4331,8 +4337,11 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
         gGameStatus.m4_gameStatus = gGameStatus.m8_nextGameStatus;
         gGameStatus.m8_nextGameStatus = 0;
 
-        gGameStatus.m0_gameMode = *(COMMON_DAT + 0x12EAC + gGameStatus.m4_gameStatus * 2);
-        gGameStatus.m1 = *(COMMON_DAT + 0x12EAC + gGameStatus.m4_gameStatus * 2 + 1);
+        {
+            sSaturnPtr gameStatusEntry = { 0x212EAC + gGameStatus.m4_gameStatus * 2, &gCommonFile };
+            gGameStatus.m0_gameMode = readSaturnS8(gameStatusEntry);
+            gGameStatus.m1 = readSaturnS8(gameStatusEntry + 1);
+        }
 
         if (gGameStatus.m6_previousGameStatus == 74)
         {

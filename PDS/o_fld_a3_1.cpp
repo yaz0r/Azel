@@ -105,6 +105,99 @@ void create_fieldA3_1_fieldIntroTask(p_workArea workArea)
     }
 }
 
+static std::array<s16,3> A3_1_exitsVars =
+{
+    1261,1261,1260
+};
+
+static std::array<s8, 3> A3_1_exitsLocations =
+{
+    7, 8, 9
+};
+
+static std::array<sSaturnPtr, 3> A3_1_exitsCutscenes =
+{
+    {
+        {0, gFLD_A3},
+        {0x6091190, gFLD_A3},
+        {0x60911C4, gFLD_A3},
+    }
+};
+
+s32 fieldA3_1_checkExitsTaskUpdate2Sub0()
+{
+    if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask == nullptr)
+    {
+        return true;
+    }
+    return false;
+}
+
+// TODO: move to kernel
+void fieldA3_1_checkExitsTaskUpdate2Sub1(s32 r4)
+{
+    if (getFieldTaskPtr()->m35 && r4)
+    {
+        setNextGameStatus(r4);
+    }
+    else
+    {
+        dispatchTutorialMultiChoiceSub2();
+        getFieldTaskPtr()->m3D = r4;
+    }
+}
+
+struct sfieldA3_1_checkExitsTask : public s_workAreaTemplate<sfieldA3_1_checkExitsTask>
+{
+    static void Update2(sfieldA3_1_checkExitsTask* pThis)
+    {
+        if (fieldA3_1_checkExitsTaskUpdate2Sub0())
+        {
+            if (mainGameState.getBit(0xA, 6))
+            {
+                dispatchTutorialMultiChoiceSub2();
+            }
+            else
+            {
+                fieldA3_1_checkExitsTaskUpdate2Sub1(6);
+            }
+        }
+    }
+    static void Update(sfieldA3_1_checkExitsTask* pThis)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (getFieldTaskPtr()->mC->m9C[i])
+            {
+                if (A3_1_exitsVars[i] >= 1000)
+                {
+                    mainGameState.setBit(A3_1_exitsVars[i] - 566);
+                }
+                else
+                {
+                    mainGameState.setBit(A3_1_exitsVars[i]);
+                }
+
+                if (i == 2)
+                {
+                    startCutscene(loadCutsceneData({ 0x6091CC4, gFLD_A3 }));
+                    pThis->m_UpdateMethod = &sfieldA3_1_checkExitsTask::Update2;
+                }
+                else
+                {
+                    startExitFieldCutscene(pThis, readCameraScript(A3_1_exitsCutscenes[i]), A3_1_exitsLocations[i], i, 0x8000);
+                    pThis->m_UpdateMethod = nullptr;
+                }
+            }
+        }
+    }
+};
+
+void create_fieldA3_1_checkExitsTask(p_workArea workArea)
+{
+    createSubTaskFromFunction<sfieldA3_1_checkExitsTask>(workArea, &sfieldA3_1_checkExitsTask::Update);
+}
+
 void fieldA3_1_startTasks_sub0()
 {
     getFieldTaskPtr()->mC->m0 = fixedPoint(0x10000);
@@ -710,6 +803,7 @@ void fieldA3_1_startTasks(p_workArea workArea)
     //        create_fieldA3_0_task3(workArea);
 
     create_fieldA3_1_fieldIntroTask(workArea);
+    create_fieldA3_1_checkExitsTask(workArea);
 
     PDS_unimplemented("fieldA3_1_startTasks");
 
