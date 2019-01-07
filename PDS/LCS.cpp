@@ -782,6 +782,16 @@ sObjectListEntry* getObjectListEntry(s32 entry)
     return pNewObjectEntry;
 }
 
+s32 getObjectIcon(s32 objectID)
+{
+    sObjectListEntry* pObject = getObjectListEntry(objectID);
+
+    static const std::array<s32, 10> objectTypeLookupTable =
+    { 0,1,2,3,4,5,6,7,8,9 };
+
+    return objectTypeLookupTable[pObject->m1];
+}
+
 static const std::array<s8, 10> LCSTaskDrawSub1Sub2Sub0Sub1Sub0Sub0Data1 =
 {
     2,1,0,2,1,0,2,1,0,3

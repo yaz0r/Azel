@@ -85,14 +85,14 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
 
     static const std::array<TypedTaskDefinition, 4> constructionTable;
 
-    static void Init0(s_LCSTask340Sub*, sLaserArgs*)
-    {
-        assert(0);
-    }
+    static void Init0(s_LCSTask340Sub*, sLaserArgs*);
+    static void Laser0Init(s_LCSTask340Sub*);
+    static void Laser0Update(s_LCSTask340Sub*);
+    static void Laser0Draw(s_LCSTask340Sub*);
 
     static void Init1(s_LCSTask340Sub*, sLaserArgs*);
-    static void Init1Sub0(s_LCSTask340Sub*);
-    static void Init1Sub1(s_LCSTask340Sub*);
+    static void Laser1Init(s_LCSTask340Sub*);
+    static void Laser1Update(s_LCSTask340Sub*);
     void Init1Sub1Sub0();
     static void Laser1Draw(s_LCSTask340Sub*);
     void Laser1DrawSub0(std::array<sVec3_FP, 8>& r5, s32 r6, sSaturnPtr r7, s_LCSTask_gradientData* arg0);
@@ -279,6 +279,7 @@ struct sObjectListEntry
 };
 
 sObjectListEntry* getObjectListEntry(s32 entry);
+s32 getObjectIcon(s32 objectID);
 
 void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 receivedItemId, s32 receivedItemQuantity, s32 arg14);
 void updateLCSTarget(sLCSTarget* r14);

@@ -218,12 +218,19 @@ void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskInit(s_drawDragonMenuStat
     setActiveFont(graphicEngineStatus.m40AC.fontIndex);
 }
 
-void drawInventoryString(const char* string)
+void drawObjectName(const char* string)
 {
     s_stringStatusQuery vars;
     addStringToVdp2(string, &vars);
     printVdp2String(&vars);
     moveVdp2TextCursor(&vars);
+}
+
+void printVdp2Number(s32 number)
+{
+    char buffer[256];
+    sprintf(buffer, "%d", number);
+    drawObjectName(buffer);
 }
 
 const char* dragonArchetypesNames[DR_ARCHETYPE_MAX] =
@@ -238,7 +245,7 @@ const char* dragonArchetypesNames[DR_ARCHETYPE_MAX] =
 void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw(s_drawDragonMenuStatsTask*)
 {
     setupVDP2StringRendering(30, 36, 14, 14);
-    vdp2PrintStatus.palette = 0xC000;
+    vdp2PrintStatus.m10_palette = 0xC000;
     
     vdp2StringContext.m0 = 0;
     vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
@@ -247,40 +254,40 @@ void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw(s_drawDragonMenuStat
     switch (mainGameState.gameStats.m1_dragonLevel)
     {
     case DR_LEVEL_0_BASIC_WING:
-        drawInventoryString(" BASE TYPE");
+        drawObjectName(" BASE TYPE");
         break;
     case DR_LEVEL_6_LIGHT_WING:
-        drawInventoryString(" ULTIMATE ");
+        drawObjectName(" ULTIMATE ");
         break;
     case DR_LEVEL_8_FLOATER:
-        drawInventoryString("  Floater ");
+        drawObjectName("  Floater ");
         break;
     default:
-        drawInventoryString(dragonArchetypesNames[mainGameState.gameStats.dragonArchetype]);
+        drawObjectName(dragonArchetypesNames[mainGameState.gameStats.dragonArchetype]);
         break;
     }
 
     vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
     vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 3;
-    drawInventoryString("ATT PWR");
+    drawObjectName("ATT PWR");
     vdp2DebugPrintSetPosition(37, 39);
     vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonAtt);
 
     vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
     vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 6;
-    drawInventoryString("DEF PWR");
+    drawObjectName("DEF PWR");
     vdp2DebugPrintSetPosition(37, 42);
     vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonDef);
 
     vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
     vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 9;
-    drawInventoryString("SPR PWR");
+    drawObjectName("SPR PWR");
     vdp2DebugPrintSetPosition(37, 45);
     vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonSpr);
 
     vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
     vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 12;
-    drawInventoryString("AGL PWR");
+    drawObjectName("AGL PWR");
     vdp2DebugPrintSetPosition(37, 48);
     vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonAgl);
 

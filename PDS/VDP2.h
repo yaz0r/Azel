@@ -2,12 +2,12 @@
 
 struct s_Vdp2PrintStatus
 {
-    s32 X; //0
-    s32 Y; //4
-    s32 oldX; //8
-    s32 oldY; //C
-    u16 palette; //10
-    u16 oldPalette; //14
+    s32 m0_X; //0
+    s32 m4_Y; //4
+    s32 m8_oldX; //8
+    s32 mC_oldY; //C
+    u16 m10_palette; //10
+    u16 m14_oldPalette; //14
 };
 extern s_Vdp2PrintStatus vdp2PrintStatus;
 
@@ -272,4 +272,7 @@ void printVdp2String(s_stringStatusQuery* vars);
 
 void VDP2DrawString(const char*);
 s32 computeStringLength(sSaturnPtr pString, s32 r5);
+
 void drawBlueBox(s32 x, s32 y, s32 width, s32 height);
+void clearBlueBox(s32 x, s32 y, s32 width, s32 height);
+void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId);

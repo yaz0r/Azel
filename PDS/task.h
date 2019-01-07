@@ -22,12 +22,12 @@ struct s_workArea
     virtual void Update() = 0;
     virtual void Draw() = 0;
     virtual void Delete() = 0;
-
-    static void UnimplementedImpl(const char* functionName)
-    {
-        PDS_Logger.AddLog("Unimplemented: %s\n", functionName);
-    }
 };
+
+static void UnimplementedImpl(const char* functionName)
+{
+    PDS_Logger.AddLog("Unimplemented: %s\n", functionName);
+}
 
 #define TaskUnimplemented() { static bool printed = false; if(!printed) {printed = true; UnimplementedImpl(__FUNCTION__);}}
 

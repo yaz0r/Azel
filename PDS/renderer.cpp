@@ -943,7 +943,7 @@ void PolyLineDraw(u32 vdp1EA)
     }
     else
     {
-        finalColor = 0xFFFF0000;
+        finalColor = 0xFF0000FF;
     }
 
     drawLine(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);

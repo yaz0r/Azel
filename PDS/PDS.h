@@ -161,6 +161,8 @@ struct sSaturnMemoryFile
 #include "field.h"
 #include "LCS.h"
 
+#include "kernel/receiveItemTask.h"
+
 #include "menu_dragon.h"
 #include "menu_dragonMorph.h"
 
@@ -201,6 +203,8 @@ extern u8 pauseEngine[8];
 extern u32 azelCdNumber;
 
 void WRITE_BE_U16(const void* ptr, u16 value);
+
+sVec3_FP READ_BE_Vec3(const void* ptr);
 
 u32 READ_BE_U32(const void* ptr);
 s32 READ_BE_S32(const void* ptr);

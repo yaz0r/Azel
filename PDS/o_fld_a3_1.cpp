@@ -129,11 +129,6 @@ struct s_itemType0 : public s_workAreaTemplate<s_itemType0>
     //size: 8
 };
 
-void LCSItemBox_Callback1(p_workArea, sLCSTarget*)
-{
-    assert(0);
-}
-
 void LCSItemBox_CallabckSavePoint(p_workArea, sLCSTarget*)
 {
     assert(0);
@@ -188,6 +183,12 @@ static sVec3_FP LCSItemBox_Table6[] = {
     {0, 0, 0}
 };
 
+p_workArea createSavePointParticles()
+{
+    TaskUnimplemented();
+    return nullptr;
+}
+
 struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemBoxDefinition*>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -205,7 +206,8 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         pThis->m48 = r13->mC;
         pThis->m54 = r13->m18;
         pThis->m60 = r13->m24;
-        pThis->m7C = FP_Div(0x10000, r13->m30);
+        pThis->m78_scale = r13->m30_scale;
+        pThis->m7C = FP_Div(0x10000, r13->m30_scale);
         pThis->m80 = r13->m34;
         pThis->m84 = r13->m38;
         pThis->m8B = r13->m41_LCSType;
@@ -247,7 +249,17 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
             break;
         }
         case 1:
+            if (mainGameState.getBit(pThis->m88 + 243))
+            {
+                pThis->m94 = 0;
+                pThis->mEA_wasRendered = 2;
+            }
+            else
+            {
+                pThis->m94 = -0x444444;
+            }
         case 2:
+            pThis->mEC_savePointParticlesTask = createSavePointParticles();
             break;
         default:
             assert(0);
@@ -284,9 +296,9 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m3C);
         rotateCurrentMatrixZYX(&pThis->m6C);
-        scaleCurrentMatrixRow0(pThis->m78);
-        scaleCurrentMatrixRow1(pThis->m78);
-        scaleCurrentMatrixRow2(pThis->m78);
+        scaleCurrentMatrixRow0(pThis->m78_scale);
+        scaleCurrentMatrixRow1(pThis->m78_scale);
+        scaleCurrentMatrixRow2(pThis->m78_scale);
 
         transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B], &pThis->m60);
 
@@ -305,14 +317,109 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
     static void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
     {
-        PDS_unimplemented("LCSItemBox_UpdateType1");
-        //assert(0);
+        switch (pThis->mEA_wasRendered)
+        {
+        case 0:
+            if (pThis->LCSItemBox_UpdateType0Sub1())
+            {
+                pThis->m90 = (pThis->m94 + pThis->m90) & 0xFFFFFFF;
+                pThis->m20 = 0;
+            }
+            else
+            {
+                pThis->m20 |= 2;
+            }
+            break;
+        case 1:
+            if (((pThis->m90 + pThis->m94) & 0xFFFFFFF) > pThis->m90)
+            {
+                pThis->m90 = 0;
+                pThis->mEA_wasRendered++;
+            }
+            else
+            {
+                pThis->m90 = ((pThis->m90 + pThis->m94) & 0xFFFFFFF);
+            }
+        case 2:
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pThis->m3C);
+            rotateCurrentMatrixZYX(&pThis->m6C);
+            scaleCurrentMatrixRow0(pThis->m78_scale);
+            scaleCurrentMatrixRow1(pThis->m78_scale);
+            scaleCurrentMatrixRow2(pThis->m78_scale);
+
+            transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B], &pThis->m60);
+
+            {
+                pushCurrentMatrix();
+                translateCurrentMatrix(&READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190));
+                rotateCurrentMatrixZYX(&READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0xC));
+
+                PDS_unimplemented("call to gridCellDraw_normalSub2 in LCSItemBox_UpdateType1");
+                //gridCellDraw_normalSub2
+
+                {
+                    pushCurrentMatrix();
+                    translateCurrentMatrix(&READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0x24));
+                    rotateCurrentMatrixShiftedZ(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0x14));
+                    rotateCurrentMatrixShiftedY(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0x10) + pThis->m90);
+                    rotateCurrentMatrixShiftedX(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0xC));
+
+                    PDS_unimplemented("call to gridCellDraw_normalSub2 in LCSItemBox_UpdateType1");
+                    //gridCellDraw_normalSub2
+
+                    popMatrix();
+                }
+                popMatrix();
+            }
+            popMatrix();
+        }
+
+        if ((pThis->m88 == 0) || mainGameState.getBit(pThis->m88 + 243))
+        {
+            pThis->m20 |= 1;
+        }
+
+        updateLCSTarget(&pThis->m8_LCSTarget);
     }
 
     static void LCSItemBox_UpdateType2(s_itemBoxType1* pThis)
     {
-        PDS_unimplemented("LCSItemBox_UpdateType2");
-        //assert(0);
+        if (pThis->LCSItemBox_UpdateType0Sub1())
+        {
+            pThis->m20 = 0;
+        }
+        else
+        {
+            pThis->m20 |= 2;
+        }
+
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pThis->m3C);
+            rotateCurrentMatrixZYX(&pThis->m6C);
+            scaleCurrentMatrixRow0(pThis->m78_scale);
+            scaleCurrentMatrixRow1(pThis->m78_scale);
+            scaleCurrentMatrixRow2(pThis->m78_scale);
+
+            transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B], &pThis->m60);
+            pThis->LCSItemBox_UpdateType0Sub0(0x54, 0x198, 0x7C);
+            popMatrix();
+        }
+        
+        if (pThis->m8D)
+        {
+            pThis->m20 |= 1;
+        }
+
+        updateLCSTarget(&pThis->m8_LCSTarget);
     }
 
     static constexpr FunctionType LCSItemBox_UpdateTable[3] = {
@@ -350,9 +457,9 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m3C);
         rotateCurrentMatrixZYX(&pThis->m6C);
-        scaleCurrentMatrixRow0(pThis->m78);
-        scaleCurrentMatrixRow1(pThis->m78);
-        scaleCurrentMatrixRow2(pThis->m78);
+        scaleCurrentMatrixRow0(pThis->m78_scale);
+        scaleCurrentMatrixRow1(pThis->m78_scale);
+        scaleCurrentMatrixRow2(pThis->m78_scale);
 
         u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
 
@@ -371,21 +478,14 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m3C);
         rotateCurrentMatrixZYX(&pThis->m6C);
-        scaleCurrentMatrixRow0(pThis->m78);
-        scaleCurrentMatrixRow1(pThis->m78);
-        scaleCurrentMatrixRow2(pThis->m78);
+        scaleCurrentMatrixRow0(pThis->m78_scale);
+        scaleCurrentMatrixRow1(pThis->m78_scale);
+        scaleCurrentMatrixRow2(pThis->m78_scale);
 
         pushCurrentMatrix();
 
-        sVec3_FP translation;
-        translation[0] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148);
-        translation[1] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 4);
-        translation[2] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 8);
-
-        sVec3_FP rotation;
-        rotation[0] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 0xC);
-        rotation[1] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 0x10);
-        rotation[2] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 0x14);
+        sVec3_FP translation = READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x148);
+        sVec3_FP rotation = READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x148 + 0xC);
 
         translateCurrentMatrix(&translation);
         rotateCurrentMatrixZYX(&rotation);
@@ -398,19 +498,12 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
             pushCurrentMatrix();
 
-            sVec3_FP translation2;
-            translation2[0] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 0x24);
-            translation2[1] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 0x24 + 4);
-            translation2[2] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 0x24 + 8);
-
-            sVec3_FP rotation2;
-            rotation2[0] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 0x24 + 0xC);
-            rotation2[1] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 0x24 + 0x10);
-            rotation2[2] = READ_BE_S32(pThis->m0.m0_mainMemory + 0x148 + 0x24 + 0x14);
+            sVec3_FP translation2 = READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x148 + 0x24);
+            sVec3_FP rotation2 = READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x148 + 0x24 + 0xC);
 
             translateCurrentMatrix(&translation2);
             rotateCurrentMatrixShiftedZ(rotation2[2]);
-            rotateCurrentMatrixShiftedY(rotation2[1]);
+            rotateCurrentMatrixShiftedY(rotation2[1] + pThis->m90);
             rotateCurrentMatrixShiftedX(rotation2[0]);
 
             addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x60));
@@ -429,9 +522,9 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m3C);
         rotateCurrentMatrixZYX(&pThis->m6C);
-        scaleCurrentMatrixRow0(pThis->m78);
-        scaleCurrentMatrixRow1(pThis->m78);
-        scaleCurrentMatrixRow2(pThis->m78);
+        scaleCurrentMatrixRow0(pThis->m78_scale);
+        scaleCurrentMatrixRow1(pThis->m78_scale);
+        scaleCurrentMatrixRow2(pThis->m78_scale);
 
         u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
 
@@ -487,9 +580,9 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m3C);
         rotateCurrentMatrixZYX(&pThis->m6C);
-        scaleCurrentMatrixRow0(pThis->m78);
-        scaleCurrentMatrixRow1(pThis->m78);
-        scaleCurrentMatrixRow2(pThis->m78);
+        scaleCurrentMatrixRow0(pThis->m78_scale);
+        scaleCurrentMatrixRow1(pThis->m78_scale);
+        scaleCurrentMatrixRow2(pThis->m78_scale);
         pThis->m98.m18_drawFunction(&pThis->m98);
         popMatrix();
     }
@@ -508,7 +601,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
     sVec3_FP m54;
     sVec3_FP m60;
     sVec3_FP m6C;
-    s32 m78;
+    fixedPoint m78_scale;
     fixedPoint m7C;
     fixedPoint m80;
     s16 m84;
@@ -518,11 +611,20 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
     s8 m8B;
     s8 m8C;
     s8 m8D;
+    s32 m90;
+    s32 m94;
     s_3dModel m98;
     s16 mE8;
     s16 mEA_wasRendered;
+    p_workArea mEC_savePointParticlesTask;
     //size: F0
 };
+
+void LCSItemBox_Callback1(p_workArea r4, sLCSTarget*)
+{
+    s_itemBoxType1* pThis = (s_itemBoxType1*)r4;
+    pThis->mEA_wasRendered++;
+}
 
 void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*)
 {

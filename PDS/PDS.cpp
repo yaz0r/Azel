@@ -966,6 +966,16 @@ u32 READ_BE_U32(const void* ptr)
     return data;
 }
 
+sVec3_FP READ_BE_Vec3(const void* ptr)
+{
+    sVec3_FP newVec;
+    newVec[0] = READ_BE_S32(((u8*)ptr) + 0);
+    newVec[1] = READ_BE_S32(((u8*)ptr) + 4);
+    newVec[2] = READ_BE_S32(((u8*)ptr) + 8);
+
+    return newVec;
+}
+
 s32 READ_BE_S32(const void* ptr)
 {
     u32 data = *(u32*)(ptr);

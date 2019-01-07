@@ -30,6 +30,9 @@ set(SOURCES
  PDS/3dModels.h
  PDS/3dModels.cpp
 
+ PDS/kernel/receiveItemTask.h
+ PDS/kernel/receiveItemTask.cpp
+
  PDS/common.cpp
  PDS/common_generated.cpp
  PDS/dummy.cpp

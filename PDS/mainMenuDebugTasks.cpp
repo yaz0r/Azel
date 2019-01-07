@@ -493,14 +493,14 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
             vdp2DebugPrintSetPosition(0xA, r8);
             if (r14->fieldIndexMenuSelection == r12) // is this the selected field?
             {
-                vdp2PrintStatus.palette = 0x8000;
+                vdp2PrintStatus.m10_palette = 0x8000;
             }
             else
             {
                 u16 selectedColor[] = { 0xD, 0xD };
                 assert(pWorkArea->m8_isSelectingSubfield >= 0);
                 assert(pWorkArea->m8_isSelectingSubfield <= 1);
-                vdp2PrintStatus.palette = selectedColor[pWorkArea->m8_isSelectingSubfield] << 12;
+                vdp2PrintStatus.m10_palette = selectedColor[pWorkArea->m8_isSelectingSubfield] << 12;
             }
 
             if (fieldEnabledTable[r12])
@@ -512,7 +512,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
                 {
                     if (r14->fieldIndexMenuSelection == r12)
                     {
-                        vdp2PrintStatus.palette = 0xD000;
+                        vdp2PrintStatus.m10_palette = 0xD000;
                         vdp2DebugPrintSetPosition(0xA, r8);
                         drawLineSmallFont("\x7F");
                     }
@@ -559,11 +559,11 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 
                 if (r12 == r14->subFieldIndexMenuSelection)
                 {
-                    vdp2PrintStatus.palette = 0x9000;
+                    vdp2PrintStatus.m10_palette = 0x9000;
                 }
                 else
                 {
-                    vdp2PrintStatus.palette = 0x8000;
+                    vdp2PrintStatus.m10_palette = 0x8000;
                 }
 
                 drawLineSmallFont(subFields[r12]);
@@ -578,16 +578,16 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 
         if (pWorkArea->m8_isSelectingSubfield)
         {
-            vdp2PrintStatus.palette = 0x9000;
+            vdp2PrintStatus.m10_palette = 0x9000;
             vdp2DebugPrintSetPosition(0x12, r14->subFieldIndexMenuSelection - pWorkArea->m4_selectedSubField + 3);
             drawLineSmallFont("\x7F");
         }
 
-        vdp2PrintStatus.palette = 0x9000;
+        vdp2PrintStatus.m10_palette = 0x9000;
         vdp2DebugPrintSetPosition(0x1D, 3);
         vdp2PrintfSmallFont("%d   ", r14->m3A);
 
-        vdp2PrintStatus.palette = 0x7000;
+        vdp2PrintStatus.m10_palette = 0x7000;
         vdp2DebugPrintSetPosition(3, 0x18);
         vdp2PrintfLargeFont("GO:%2d  ", r14->m3D);
 
@@ -619,7 +619,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
             clearVdp2TextSmallFont();
         }
 
-        vdp2PrintStatus.palette = 0xC000;
+        vdp2PrintStatus.m10_palette = 0xC000;
 
         u8 inputValue = graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xF;
         if (inputValue == 0)
@@ -2513,7 +2513,7 @@ void s_fieldTaskWorkArea::fieldTaskUpdate(s_fieldTaskWorkArea* pWorkArea)
     case 2: //start field
         setupPlayer(pWorkArea->fieldIndexMenuSelection);
         vdp2DebugPrintSetPosition(3, 24);
-        vdp2PrintStatus.palette = 0xD000;
+        vdp2PrintStatus.m10_palette = 0xD000;
         drawLineLargeFont("LOADING...");
         pWorkArea->m3C_fieldTaskState++;
     case 3:
@@ -3657,7 +3657,7 @@ void s_statusMenuTaskWorkArea::Draw(s_statusMenuTaskWorkArea* pWorkArea)
 {
     vdp2StringContext.m0 = 0;
     setActiveFont(graphicEngineStatus.m40AC.fontIndex);
-    vdp2PrintStatus.palette = 0xC000;
+    vdp2PrintStatus.m10_palette = 0xC000;
 
     const char** menuText = statusMenuOptionsDragonType;
 
@@ -3671,7 +3671,7 @@ void s_statusMenuTaskWorkArea::Draw(s_statusMenuTaskWorkArea* pWorkArea)
         vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + 3;
         vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 0x17;
 
-        drawInventoryString(menuText[pWorkArea->selectedMenu]);
+        drawObjectName(menuText[pWorkArea->selectedMenu]);
     }
 
     vdp2DebugPrintSetPosition(3, 39);
@@ -3692,7 +3692,7 @@ void s_statusMenuTaskWorkArea::Draw(s_statusMenuTaskWorkArea* pWorkArea)
         vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + 3;
         vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 2;
 
-        drawInventoryString("  Floater ");
+        drawObjectName("  Floater ");
     }
 }
 

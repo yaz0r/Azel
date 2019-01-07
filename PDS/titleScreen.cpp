@@ -17,12 +17,12 @@ s_titleMenuEntry mainMenu[] = {
 
 s_titleMenuEntry mainMenuDebug[] = {
     {1, -8, " NEW GAME ", createNewGameTask },
-    {1, -7, " CONTINUE ", createContinueTask },
-    {1, -6, "   TOWN   ", createTownDebugTask },
+ //   {1, -7, " CONTINUE ", createContinueTask },
+//    {1, -6, "   TOWN   ", createTownDebugTask },
     {1, -5, "  FIELD   ", createFieldDebugTask },
-    {1, -4, "  BATTLE  ", createBattleDebugTask },
-    {1, -3, "  SOUND   ", createSoundDebugTask },
-    {1, -2, "  MOVIE   ", createMovieDebugTask },
+//    {1, -4, "  BATTLE  ", createBattleDebugTask },
+//    {1, -3, "  SOUND   ", createSoundDebugTask },
+//    {1, -2, "  MOVIE   ", createMovieDebugTask },
 };
 
 bool hasSaveGame()
@@ -59,7 +59,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
             //if (keyboardIsKeyDown(0xF6))
         {
             pWorkArea->m_menu = mainMenuDebug;
-            pWorkArea->m_numMenuEntry = 7;
+            pWorkArea->m_numMenuEntry = sizeof(mainMenuDebug) / sizeof(mainMenuDebug[0]);
         }
         /*else
         {
@@ -96,7 +96,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
 
                     if (numActiveEntries > 1)
                     {
-                        vdp2PrintStatus.palette = palette;
+                        vdp2PrintStatus.m10_palette = palette;
 
                         vdp2DebugPrintSetPosition(0xF, pWorkArea->m_vertialLocation + 0x17);
                         drawLineLargeFont("\x40"); // previous
@@ -185,7 +185,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
 
                 pWorkArea->m_status2++;
             case 1:
-                vdp2PrintStatus.palette = 0xC000;
+                vdp2PrintStatus.m10_palette = 0xC000;
                 vdp2DebugPrintSetPosition(0x11, pWorkArea->m_vertialLocation + 0x17);
                 drawLineLargeFont(pWorkArea->m_menu[pWorkArea->m_currentSelection].m_text);
 
@@ -248,7 +248,7 @@ struct s_pressStartButtonTaskWorkArea : public s_workAreaTemplate<s_pressStartBu
             if ((--pWorkArea->m_timming) >= 0)
                 return;
 
-            vdp2PrintStatus.palette = 0xD000;
+            vdp2PrintStatus.m10_palette = 0xD000;
 
             if (VDP2Regs_.TVSTAT & 1)
                 vdp2DebugPrintSetPosition(13, -2);

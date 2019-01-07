@@ -392,19 +392,40 @@ void rotateMatrixZYX_s16(s16* rotationVec, sMatrix4x3* pMatrix)
     rotateMatrixX(rotationVec[0], pMatrix);
 }
 
+void scaleMatrixRow0(fixedPoint r4, sMatrix4x3* pMatrix)
+{
+    pMatrix->matrix[0] = MUL_FP(pMatrix->matrix[0], r4) >> 16;
+    pMatrix->matrix[4] = MUL_FP(pMatrix->matrix[4], r4) >> 16;
+    pMatrix->matrix[8] = MUL_FP(pMatrix->matrix[8], r4) >> 16;
+}
+
+void scaleMatrixRow1(fixedPoint r4, sMatrix4x3* pMatrix)
+{
+    pMatrix->matrix[0 + 1] = MUL_FP(pMatrix->matrix[0 + 1], r4) >> 16;
+    pMatrix->matrix[4 + 1] = MUL_FP(pMatrix->matrix[4 + 1], r4) >> 16;
+    pMatrix->matrix[8 + 1] = MUL_FP(pMatrix->matrix[8 + 1], r4) >> 16;
+}
+
+void scaleMatrixRow2(fixedPoint r4, sMatrix4x3* pMatrix)
+{
+    pMatrix->matrix[0+2] = MUL_FP(pMatrix->matrix[0+2], r4) >> 16;
+    pMatrix->matrix[4+2] = MUL_FP(pMatrix->matrix[4+2], r4) >> 16;
+    pMatrix->matrix[8+2] = MUL_FP(pMatrix->matrix[8+2], r4) >> 16;
+}
+
 void scaleCurrentMatrixRow0(s32 r4)
 {
-    PDS_unimplemented("scaleCurrentMatrixRow0");
+    scaleMatrixRow0(r4, pCurrentMatrix);
 }
 
 void scaleCurrentMatrixRow1(s32 r4)
 {
-    PDS_unimplemented("scaleCurrentMatrixRow1");
+    scaleMatrixRow1(r4, pCurrentMatrix);
 }
 
 void scaleCurrentMatrixRow2(s32 r4)
 {
-    PDS_unimplemented("scaleCurrentMatrixRow2");
+    scaleMatrixRow2(r4, pCurrentMatrix);
 }
 
 fixedPoint vecDistance(const sVec3_FP& r4, const sVec3_FP& r5)

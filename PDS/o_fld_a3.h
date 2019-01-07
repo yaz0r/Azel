@@ -59,7 +59,7 @@ struct s_itemBoxDefinition
     sVec3_FP mC;
     sVec3_FP m18;
     sVec3_FP m24;
-    fixedPoint m30;
+    fixedPoint m30_scale;
     fixedPoint m34;
     s32 m38;
     s32 m3C_receivedItemId;

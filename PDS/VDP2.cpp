@@ -74,19 +74,19 @@ void vdp2DebugPrintSetPosition(s32 x, s32 y)
     if (y < 0)
         y += 28;
 
-    vdp2PrintStatus.X = x;
-    vdp2PrintStatus.Y = y;
+    vdp2PrintStatus.m0_X = x;
+    vdp2PrintStatus.m4_Y = y;
 }
 
 int drawStringLargeFont(const char* text)
 {
     int r12 = 0;
-    s32 r3 = vdp2PrintStatus.X;
-    s32 r6 = vdp2PrintStatus.Y;
+    s32 r3 = vdp2PrintStatus.m0_X;
+    s32 r6 = vdp2PrintStatus.m4_Y;
 
     u32 pOutput = vdp2TextMemoryOffset + 2*(r3 + r6 * 64);
 
-    s32 r0 = vdp2PrintStatus.palette;
+    s32 r0 = vdp2PrintStatus.m10_palette;
 
     u16 r8 = 0xDE;
     u16 r9 = r8 - 0x3D; // ?
@@ -128,12 +128,12 @@ int drawStringLargeFont(const char* text)
 
 int drawStringSmallFont(const char* text)
 {
-    s32 r3 = vdp2PrintStatus.X;
-    s32 r6 = vdp2PrintStatus.Y;
+    s32 r3 = vdp2PrintStatus.m0_X;
+    s32 r6 = vdp2PrintStatus.m4_Y;
 
     u32 pOutput = vdp2TextMemoryOffset + 2 * (r3 + r6 * 64);
 
-    s32 r0 = vdp2PrintStatus.palette;
+    s32 r0 = vdp2PrintStatus.m10_palette;
     s32 r1 = r0 + 3;
 
     int count = 0;
@@ -157,7 +157,7 @@ int drawStringSmallFont(const char* text)
 
 void clearVdp2TextLargeFont()
 {
-    u32 pOutputOffset = vdp2TextMemoryOffset + (vdp2PrintStatus.X + vdp2PrintStatus.Y * 64) * 2;
+    u32 pOutputOffset = vdp2TextMemoryOffset + (vdp2PrintStatus.m0_X + vdp2PrintStatus.m4_Y * 64) * 2;
 
     while (getVdp2VramU16(pOutputOffset))
     {
@@ -169,7 +169,7 @@ void clearVdp2TextLargeFont()
 
 void clearVdp2TextSmallFont()
 {
-    u32 pOutputOffset = vdp2TextMemoryOffset + (vdp2PrintStatus.X + vdp2PrintStatus.Y * 64) * 2;
+    u32 pOutputOffset = vdp2TextMemoryOffset + (vdp2PrintStatus.m0_X + vdp2PrintStatus.m4_Y * 64) * 2;
 
     while (getVdp2VramU16(pOutputOffset))
     {
@@ -755,10 +755,10 @@ void initVdp2TextLayer()
 
     vdp2DebugPrintSetPosition(0, 0);
 
-    vdp2PrintStatus.oldX = vdp2PrintStatus.X;
-    vdp2PrintStatus.oldY = vdp2PrintStatus.Y;
-    vdp2PrintStatus.palette = 0xC000;
-    vdp2PrintStatus.oldPalette = 0xC000;
+    vdp2PrintStatus.m8_oldX = vdp2PrintStatus.m0_X;
+    vdp2PrintStatus.mC_oldY = vdp2PrintStatus.m4_Y;
+    vdp2PrintStatus.m10_palette = 0xC000;
+    vdp2PrintStatus.m14_oldPalette = 0xC000;
 }
 
 // 16 palettes of 16 u16
@@ -910,11 +910,11 @@ int drawLineLargeFont(const char* text)
 {
     int result = drawStringLargeFont(text);
 
-    vdp2PrintStatus.X = 0;
-    vdp2PrintStatus.Y += 2;
-    if (vdp2PrintStatus.Y > 0x3F)
+    vdp2PrintStatus.m0_X = 0;
+    vdp2PrintStatus.m4_Y += 2;
+    if (vdp2PrintStatus.m4_Y > 0x3F)
     {
-        vdp2PrintStatus.Y = 0;
+        vdp2PrintStatus.m4_Y = 0;
     }
 
     return result;
@@ -924,12 +924,12 @@ int  drawLineSmallFont(const char* string)
 {
     int result = drawStringSmallFont(string);
 
-    vdp2PrintStatus.X = 0;
-    vdp2PrintStatus.Y++;
+    vdp2PrintStatus.m0_X = 0;
+    vdp2PrintStatus.m4_Y++;
 
-    if (vdp2PrintStatus.Y > 0x3F)
+    if (vdp2PrintStatus.m4_Y > 0x3F)
     {
-        vdp2PrintStatus.Y = 0;
+        vdp2PrintStatus.m4_Y = 0;
     }
 
     return result;
@@ -1410,9 +1410,42 @@ s32 computeStringLength(sSaturnPtr pString, s32 r5)
     };
 }
 
+void clearBlueBox(s32 x, s32 y, s32 width, s32 height)
+{
+    x /= 2;
+    width /= 2;
+    height += y + 1;
+    height /= 2;
+    height -= y / 2;
+    y /= 2;
+
+    u32 r2 = 0x5800 + ((y * 0x20) + x) * 2;
+
+    for (int r7 = 0; r7 < height; r7++)
+    {
+        u32 r4 = r2;
+        for (int j = 0; j < width; j++)
+        {
+            setVdp2VramU16(r4, 0);
+            r4 += 2;
+        }
+        r2 += 0x40;
+    }
+}
+
 void drawBlueBox(s32 x, s32 y, s32 width, s32 hight)
 {
     PDS_unimplemented("drawBlueBox");
+}
+
+void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId)
+{
+    s32 offset = vdp2TextMemoryOffset + ((r6_y * 0x40) + r5_x) * 2;
+    s32 glyph = r7_iconId * 4 + 0x220;
+    setVdp2VramU16(offset, glyph);
+    setVdp2VramU16(offset + 2, glyph + 1);
+    setVdp2VramU16(offset + 0x80, glyph + 2);
+    setVdp2VramU16(offset + 0x82, glyph + 3);
 }
 
 void s_vdp2StringTask::UpdateSub1()
@@ -1468,14 +1501,16 @@ void s_vdp2StringTask::Update(s_vdp2StringTask* pThis)
     }
 }
 
-void vdp2StringTaskDeleteSub0()
+void vdp2StringTaskDeleteSub0(s_vdp2StringTask* pThis)
 {
-    PDS_unimplemented("vdp2StringTaskDeleteSub0");
+    setupVDP2StringRendering(pThis->m14_x + 4, pThis->m16_y + 1, pThis->m1A_width - 8, pThis->m1C_height - 2);
+    clearVdp2TextArea();
+    clearBlueBox(pThis->m14_x, pThis->m16_y, pThis->m1A_width, pThis->m1C_height);
 }
 
 void s_vdp2StringTask::Delete(s_vdp2StringTask* pThis)
 {
-    vdp2StringTaskDeleteSub0();
+    vdp2StringTaskDeleteSub0(pThis);
 
     if (pThis->m10)
     {

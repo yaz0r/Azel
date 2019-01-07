@@ -2766,7 +2766,7 @@ void s_multiChoiceTask2::drawMultiChoice()
         }
 
         vdp2StringContext.m0 = m28_colors[i];
-        drawInventoryString((char*)getSaturnPtr(readSaturnEA(m24_strings + i * 4)));
+        drawObjectName((char*)getSaturnPtr(readSaturnEA(m24_strings + i * 4)));
     }
 }
 
@@ -3681,7 +3681,7 @@ s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr)
     pItemBoxDefinition->mC = readSaturnVec3(ptr); ptr += 4 * 3;
     pItemBoxDefinition->m18 = readSaturnVec3(ptr); ptr += 4 * 3;
     pItemBoxDefinition->m24 = readSaturnVec3(ptr); ptr += 4 * 3;
-    pItemBoxDefinition->m30 = readSaturnS32(ptr); ptr += 4;
+    pItemBoxDefinition->m30_scale = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m34 = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m38 = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m3C_receivedItemId = readSaturnS32(ptr); ptr += 4;
@@ -6482,6 +6482,45 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     return NULL;
 }
 
+void s_LCSTask340Sub::Init0(s_LCSTask340Sub* pThis, sLaserArgs* arg)
+{
+    getMemoryArea(&pThis->m0, 0);
+    pThis->m8 = arg->m0;
+    pThis->mC = arg->m4;
+    pThis->m10 = arg->m8;
+
+    if (arg->m8 & 0x100)
+    {
+        pThis->m60 = *arg->m4;
+    }
+    else
+    {
+        transformAndAddVecByCurrentMatrix(arg->m4, &pThis->m60);
+    }
+
+    pThis->m14 = arg->mC;
+    pThis->m18 = arg->m10;
+    pThis->m1C = arg->m14;
+    pThis->m20 = arg->m18;
+    pThis->m27 = arg->m1F;
+
+    pThis->m28_laserInit = &s_LCSTask340Sub::Laser0Init;
+    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Laser0Update;
+    pThis->m30_laserDraw = &s_LCSTask340Sub::Laser0Draw;
+
+    pThis->m158 = 0x12;
+    pThis->m6C[pThis->m154 & 0xF] = (*pThis->mC);
+    pThis->m6C[0] = (*pThis->mC);
+    pThis->m6C[1] = (*pThis->mC);
+    pThis->m6C[2] = (*pThis->mC);
+
+    pThis->m28_laserInit(pThis);
+
+    pThis->m154++;
+
+    pThis->Init3Sub3(&pThis->m58, (pThis->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3, { 0x0609518C, gFLD_A3 });
+}
+
 void s_LCSTask340Sub::Init1(s_LCSTask340Sub* pThis, sLaserArgs* arg)
 {
     getMemoryArea(&pThis->m0, 0);
@@ -6504,8 +6543,8 @@ void s_LCSTask340Sub::Init1(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m20 = arg->m18;
     pThis->m27 = arg->m1F;
 
-    pThis->m28_laserInit = &s_LCSTask340Sub::Init1Sub0;
-    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Init1Sub1;
+    pThis->m28_laserInit = &s_LCSTask340Sub::Laser1Init;
+    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Laser1Update;
     pThis->m30_laserDraw = &s_LCSTask340Sub::Laser1Draw;
 
     pThis->m158 = 0x12;
@@ -6656,7 +6695,29 @@ static const std::array<fixedPoint, 16> s_LCSTask340Sub_Init1Sub0Data0 = {
     0x471C71C,
 };
 
-void s_LCSTask340Sub::Init1Sub0(s_LCSTask340Sub* pThis)
+void s_LCSTask340Sub::Laser0Init(s_LCSTask340Sub* pThis)
+{
+    Laser1Init(pThis);
+}
+
+void s_LCSTask340Sub::Laser0Draw(s_LCSTask340Sub* pThis)
+{
+    TaskUnimplemented();
+}
+
+void s_LCSTask340Sub_Laser0Update(s_LCSTask340Sub* pThis)
+{
+    TaskUnimplemented();
+}
+
+void s_LCSTask340Sub::Laser0Update(s_LCSTask340Sub* pThis)
+{
+    Laser1Update(pThis);
+
+    s_LCSTask340Sub_Laser0Update(pThis);
+}
+
+void s_LCSTask340Sub::Laser1Init(s_LCSTask340Sub* pThis)
 {
     pThis->m34 = 0x37000;
     pThis->m38 = performDivision(pThis->m158, -0x37000);
@@ -6732,92 +6793,6 @@ void s_LCSTask340Sub_Delete3Sub0(s32 r4)
     pDragonTask->m_E8_specialColor = s_LCSTask340Sub_Delete3Sub0Data0[r4];
 }
 
-// TODO: move to kernel
-s32 createReceiveItemTaskSub0(const char* inputString, s32 maxLength)
-{
-    s32 r6 = 0;
-    while (*inputString)
-    {
-        if ((*inputString != 0xDE) && (*inputString == 0xDF))
-        {
-            if (r6 >= maxLength)
-                return r6;
-            r6++;
-        }
-        inputString++;
-    }
-    return r6;
-}
-
-struct s_receivedItemTask : s_workAreaTemplate<s_receivedItemTask>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { nullptr, &s_receivedItemTask::Update, nullptr, &s_receivedItemTask::Delete, "s_receivedItemTask" };
-        return &taskDefinition;
-    }
-
-    static void Update(s_receivedItemTask*)
-    {
-        TaskUnimplemented();
-    }
-
-    static void Delete(s_receivedItemTask*)
-    {
-        TaskUnimplemented();
-    }
-
-    s_receivedItemTask* m10;
-    s16 m14_x;
-    s16 m16_y;
-    s16 m1A_x2;
-    s16 m1C_y2;
-    s16 m24_receivedItemId;
-    s16 m26_receivedItemQuanity;
-    s16 m28_itemNameLength;
-    // size 0x2C
-};
-
-// TODO: move to kernel
-s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedItemTask** r5, s32 r6, s32 r7_receivedItemId, s32 arg0_receivedItemQuanity)
-{
-    s_receivedItemTask* pNewTask = createSubTask<s_receivedItemTask>(r4_parentTask);
-
-    if (r6 > 0)
-    {
-
-    }
-    else
-    {
-        //601C38A
-        assert(0);
-    }
-
-    //601C39E
-    pNewTask->m24_receivedItemId = r7_receivedItemId;
-    pNewTask->m26_receivedItemQuanity = arg0_receivedItemQuanity;
-
-    pNewTask->m28_itemNameLength = createReceiveItemTaskSub0(getObjectListEntry(r7_receivedItemId)->m4_name.c_str(), 34);
-    s32 r4 = pNewTask->m28_itemNameLength + 2;
-    if (arg0_receivedItemQuanity <= 0)
-    {
-        //0601C3CA
-        assert(0);
-    }
-
-    pNewTask->m14_x = (((44 - r4) / 2) - 5) & ~1;
-    pNewTask->m16_y = 4;
-    pNewTask->m1A_x2 = r4 + 0xA;
-    pNewTask->m1C_y2 = 4;
-
-    if (r5)
-    {
-        pNewTask->m10 = *r5;
-        *r5 = pNewTask;
-    }
-    return pNewTask;
-}
-
 void s_LCSTask340Sub::Delete3(s_LCSTask340Sub* pThis)
 {
     s_LCSTask340Sub_Delete3Sub0(pThis->m27);
@@ -6851,7 +6826,18 @@ void s_LCSTask340Sub::Delete3(s_LCSTask340Sub* pThis)
             else
             {
                 //607A2A8
-                assert(0);
+                if (pThis->m26_receivedItemQuantity == 1)
+                {
+                    mainGameState.setBit(243 + pThis->m24_receivedItemId);
+                }
+                else if (pThis->m26_receivedItemQuantity == -1)
+                {
+                    mainGameState.clearBit(243 + pThis->m24_receivedItemId);
+                }
+                else
+                {
+                    assert(0);
+                }
             }
 
         }
@@ -6885,7 +6871,7 @@ void s_LCSTask340Sub::Init1Sub1Sub0()
     }
 }
 
-void s_LCSTask340Sub::Init1Sub1(s_LCSTask340Sub* pThis)
+void s_LCSTask340Sub::Laser1Update(s_LCSTask340Sub* pThis)
 {
     sMatrix4x3* var0 = cameraProperties2.m28;
     pThis->m34 += pThis->m38;
