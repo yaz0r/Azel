@@ -4337,11 +4337,8 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
         gGameStatus.m4_gameStatus = gGameStatus.m8_nextGameStatus;
         gGameStatus.m8_nextGameStatus = 0;
 
-        {
-            sSaturnPtr gameStatusEntry = { 0x212EAC + gGameStatus.m4_gameStatus * 2, &gCommonFile };
-            gGameStatus.m0_gameMode = readSaturnS8(gameStatusEntry);
-            gGameStatus.m1 = readSaturnS8(gameStatusEntry + 1);
-        }
+        gGameStatus.m0_gameMode = readSaturnS8(gCommonFile.getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2));
+        gGameStatus.m1 = readSaturnS8(gCommonFile.getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2) + 1);
 
         if (gGameStatus.m6_previousGameStatus == 74)
         {
