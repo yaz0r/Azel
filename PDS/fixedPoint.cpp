@@ -57,7 +57,7 @@ fixedPoint performDivision(fixedPoint r0, fixedPoint r1)
     return r1 / r0;
 }
 
-s64 MUL_FP(fixedPoint& A, fixedPoint& B)
+s64 MUL_FP(const fixedPoint& A, const fixedPoint& B)
 {
     return (s64)A.asS32() * (s64)B.asS32();
 }

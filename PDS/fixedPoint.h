@@ -40,12 +40,12 @@ public:
         return *this;
     }
 
-    s32 asS32()
+    s32 asS32() const
     {
         return m_value;
     }
 
-    s32 getInteger()
+    s32 getInteger() const
     {
         return m_value >> 16;
     }
@@ -77,7 +77,7 @@ public:
 
 fixedPoint MTH_Mul_5_6(fixedPoint a, fixedPoint b, fixedPoint c);
 fixedPoint MTH_Mul(fixedPoint a, fixedPoint b);
-s64 MUL_FP(fixedPoint& A, fixedPoint& B);
+s64 MUL_FP(const fixedPoint& A, const fixedPoint& B);
 
 s32 FP_GetIntegerPortion(fixedPoint& FP);
 fixedPoint FP_Div(s32 divident, fixedPoint divisor);
