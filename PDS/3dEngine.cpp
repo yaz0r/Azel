@@ -17,7 +17,7 @@ struct sCameraProperties
     s16 x1; // 40
     s16 y1; // 42
     s16 centerX; // 44
-    s16 centerY; // 46
+    s16 centerY; // 465
 } cameraProperties;
 
 void resetCamera(u32 x0, u32 y0, u32 x1, u32 y1, u32 centerX, u32 centerY)
