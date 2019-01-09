@@ -107,7 +107,7 @@ s32 createReceiveItemTaskSub0(const char* inputString, s32 maxLength)
     s32 r6 = 0;
     while (*inputString)
     {
-        if ((*inputString != 0xDE) && (*inputString != 0xDF))
+        if ((*inputString != '\xDE') && (*inputString != '\xDF'))
         {
             if (r6 >= maxLength)
                 return r6;

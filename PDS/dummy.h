@@ -39,5 +39,5 @@ void DEBUG_setRandomSeed(u32);
 void initRandomSeed(u32 init);
 u32 randomNumber();
 
-bool readKeyboardToggle(u8 keyIndex);
+bool readKeyboardToggle(u16 keyIndex);
 

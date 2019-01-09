@@ -217,6 +217,7 @@ struct s_LCSTask : public s_workAreaTemplate<s_LCSTask>
 
     enum : s8 {
         LCSPhase_0_init = 0,
+        LCSPhase_1 = 1,
         LCSPhase_2_targeting = 2,
         LCSPhase_3 = 3,
         LCSPhase_4_executing = 4,

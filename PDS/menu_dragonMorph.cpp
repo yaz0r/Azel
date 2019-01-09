@@ -829,7 +829,7 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkAr
 
     updateAndInterpolateAnimation(&gDragonState->m28_dragon3dModel);
     updateAnimationMatrices(&gDragonState->m78_animData, &gDragonState->m28_dragon3dModel);
-    morphDragon(pWorkArea->m0, &gDragonState->m28_dragon3dModel, pWorkArea->m0->MCBOffsetInDram, pWorkArea->m4, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
+    morphDragon(pWorkArea->m0, &gDragonState->m28_dragon3dModel, pWorkArea->m0->m8_MCBInDram, pWorkArea->m4, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
 }
 
 void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u32 shadowModelIndex, sVec3_FP* translation, sVec3_FP* rotation, fixedPoint shadowHeight)

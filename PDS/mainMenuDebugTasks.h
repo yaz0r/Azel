@@ -56,14 +56,13 @@ struct s_loadDragonWorkArea : public s_workAreaTemplate<s_loadDragonWorkArea>
         return &taskDefinition;
     }
 
-    u8* dramAllocation; //0
-    u8* vramAllocation;//4
-    u16 MCBOffsetInDram;//8
-    u16 CGBOffsetInDram;//A
+    u8* m8_dramAllocation; //0
+    u8* m4_vramAllocation;//4
+    u8* m8_MCBInDram;//8
 };
 
 s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel);
-void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u32 unk0, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY);
+void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u8* pMCB, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY);
 
 struct s_vblankData {
     u32 m0;

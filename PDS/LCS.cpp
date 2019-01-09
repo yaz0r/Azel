@@ -1024,12 +1024,12 @@ void LCSTaskDrawSub1Sub1(s_LCSTask* r4)
 
     switch (r4->m9DA_LCSPhase)
     {
-    case 0:
+    case s_LCSTask::LCSPhase_0_init:
         if (r4->m9D0_mode == 0)
             return;
         r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_2_targeting;
         break;
-    case 1:
+    case s_LCSTask::LCSPhase_1:
         if (r4->m9D0_mode >= 24)
         {
             r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_3;
@@ -1039,7 +1039,7 @@ void LCSTaskDrawSub1Sub1(s_LCSTask* r4)
             return;
         r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_2_targeting;
         break;
-    case 2: // LCS targeting
+    case s_LCSTask::LCSPhase_2_targeting: // LCS targeting
         if (r4->m83D_time1)
             return;
         // cancel LCS?
@@ -1048,13 +1048,13 @@ void LCSTaskDrawSub1Sub1(s_LCSTask* r4)
             r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_4_executing;
         }
         break;
-    case 3:
+    case s_LCSTask::LCSPhase_3:
         if (graphicEngineStatus.m4514.m0->m0_current.mA  & graphicEngineStatus.m4514.mD8[1][2])
         {
             r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_4_executing;
         }
         break;
-    case 4:
+    case s_LCSTask::LCSPhase_4_executing:
         break;
     default:
         assert(0);

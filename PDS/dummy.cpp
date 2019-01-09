@@ -53,5 +53,5 @@ u32 randomNumber()
     return r0;
 
 }
-bool readKeyboardToggle(u8 keyIndex) { return false; }
+bool readKeyboardToggle(u16 keyIndex) { return false; }
 

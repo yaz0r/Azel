@@ -22,6 +22,10 @@ struct sPDS_Logger
         va_start(args, fmt);
         Buf.appendfv(fmt, args);
         va_end(args);
+
+        if (*(Buf.end() - 1) != '\n')
+            Buf.appendf("\n");
+
         for (int new_size = Buf.size(); old_size < new_size; old_size++)
             if (Buf[old_size] == '\n')
                 LineOffsets.push_back(old_size);
@@ -70,5 +74,6 @@ struct sPDS_Logger
 
 extern sPDS_Logger PDS_Logger;
 
+#define PDS_Log(string, ...) {PDS_Logger.AddLog(string, __VA_ARGS__);}
 #define PDS_unimplemented(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger.AddLog("Unimplemented: %s\n", name);}}
 #define PDS_warning(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger.AddLog("Warning: %s\n", name);}}

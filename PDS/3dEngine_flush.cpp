@@ -1187,7 +1187,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                                 }
                                 else
                                 {
-                                    /*
+#if 0
                                     glBegin(GL_QUADS);
                                     for (int j = 0; j < 4; j++)
                                     {
@@ -1234,6 +1234,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                                     }
                                     glEnd();
                                     */
+#endif
                                 }
                             }
                         }

@@ -1979,22 +1979,21 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
 {
     s_loadDragonWorkArea* pLoadDragonWorkArea = createSubTaskFromFunction<s_loadDragonWorkArea>(pWorkArea, nullptr);
 
-    pLoadDragonWorkArea->dramAllocation = dramAllocate(0x1F600, 0);
-    pLoadDragonWorkArea->vramAllocation = NULL;
-    pLoadDragonWorkArea->MCBOffsetInDram = 0x18E00;
-    pLoadDragonWorkArea->CGBOffsetInDram = 0;
+    pLoadDragonWorkArea->m8_dramAllocation = dramAllocate(0x1F600, 0);
+    pLoadDragonWorkArea->m4_vramAllocation = NULL;
+    pLoadDragonWorkArea->m8_MCBInDram = pLoadDragonWorkArea->m8_dramAllocation + 0x18E00;
 
     if (dragonFilenameTable[dragonLevel].m_M.MCB)
     {
         assert(0);
-        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->dramAllocation, pLoadDragonWorkArea->dramAllocation + pLoadDragonWorkArea->MCBOffsetInDram);
-        loadFile(dragonFilenameTable[dragonLevel].m_M.CGB, pLoadDragonWorkArea->dramAllocation + pLoadDragonWorkArea->MCBOffsetInDram, 0);
+        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->m8_dramAllocation, pLoadDragonWorkArea->m8_MCBInDram);
+        loadFile(dragonFilenameTable[dragonLevel].m_M.CGB, pLoadDragonWorkArea->m8_MCBInDram, 0);
 
     }
     return pLoadDragonWorkArea;
 }
 
-void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u32 unk0, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY)
+void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u8* pMCB, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY)
 {
     if (pDragonData3->m_m0 == 0)
     {
@@ -2032,16 +2031,16 @@ void loadDragonSub1Sub1(s_loadDragonWorkArea* pLoadDragonWorkArea)
         CGBOffsetInDram->MCBOffsetInDram = -1;
     }
     */
-    if (pLoadDragonWorkArea->dramAllocation)
+    if (pLoadDragonWorkArea->m8_dramAllocation)
     {
-        dramFree(pLoadDragonWorkArea->dramAllocation);
-        pLoadDragonWorkArea->dramAllocation = NULL;
+        dramFree(pLoadDragonWorkArea->m8_dramAllocation);
+        pLoadDragonWorkArea->m8_dramAllocation = NULL;
     }
 
-    if (pLoadDragonWorkArea->vramAllocation)
+    if (pLoadDragonWorkArea->m4_vramAllocation)
     {
-        vdp1Free(pLoadDragonWorkArea->vramAllocation);
-        pLoadDragonWorkArea->vramAllocation = NULL;
+        vdp1Free(pLoadDragonWorkArea->m4_vramAllocation);
+        pLoadDragonWorkArea->m4_vramAllocation = NULL;
     }
 }
 
@@ -2069,7 +2068,7 @@ void loadDragon(s_workArea* pWorkArea)
 
     s_loadDragonWorkArea* pLoadDragonWorkArea = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
-    morphDragon(pLoadDragonWorkArea, &gDragonState->m28_dragon3dModel, pLoadDragonWorkArea->MCBOffsetInDram, pDragonData3, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
+    morphDragon(pLoadDragonWorkArea, &gDragonState->m28_dragon3dModel, pLoadDragonWorkArea->m8_MCBInDram, pDragonData3, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
 
     loadDragonSub1(pLoadDragonWorkArea);
 }
@@ -2732,6 +2731,7 @@ struct {
 
 void setNextGameStatus(u32 r4)
 {
+    PDS_Log("Requesting new game state: %d", r4);
     if (gGameStatus.m8_nextGameStatus == 0)
     {
         gGameStatus.m8_nextGameStatus = r4;

@@ -5702,15 +5702,7 @@ void s_dragonTaskWorkArea::Update(s_dragonTaskWorkArea* pTypedWorkArea)
 
     if (pTypedWorkArea->m25D != 2)
     {
-        // TODO: recheck
-        s32 r3 = -pTypedWorkArea->m20_angle[2];
-
-        if (0 > r3)
-        {
-            r3++;
-        }
-        r3 >> 1;
-        getFieldCameraStatus()->m30 = r3;
+        getFieldCameraStatus()->m30 = -pTypedWorkArea->m20_angle[2] / 2;
     }
 
     dragonFieldTaskUpdateSub5();
