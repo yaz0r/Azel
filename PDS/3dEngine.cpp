@@ -17,7 +17,7 @@ struct sCameraProperties
     s16 x1; // 40
     s16 y1; // 42
     s16 centerX; // 44
-    s16 centerY; // 46
+    s16 centerY; // 465
 } cameraProperties;
 
 void resetCamera(u32 x0, u32 y0, u32 x1, u32 y1, u32 centerX, u32 centerY)
@@ -273,7 +273,7 @@ void rotateCurrentMatrixShiftedZ(fixedPoint rotZ)
     rotateMatrixShiftedZ(rotZ, pCurrentMatrix);
 }
 
-void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix)
+void translateMatrix(const sVec3_FP* translation, sMatrix4x3* pMatrix)
 {
     for(int i=0; i<3; i++)
     {
@@ -285,9 +285,14 @@ void translateMatrix(sVec3_FP* translation, sMatrix4x3* pMatrix)
     }
 }
 
-void translateCurrentMatrix(sVec3_FP* translation)
+void translateCurrentMatrix(const sVec3_FP* translation)
 {
     translateMatrix(translation, pCurrentMatrix);
+}
+
+void translateCurrentMatrix(const sVec3_FP& translation)
+{
+    translateMatrix(&translation, pCurrentMatrix);
 }
 
 void pushCurrentMatrix()
@@ -373,16 +378,21 @@ void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
     rotateMatrixZ((*rotationVec)[2].getInteger(), pMatrix);
 }
 
-void rotateMatrixZYX(sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
+void rotateMatrixZYX(const sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
 {
     rotateMatrixZ((*rotationVec)[2].getInteger(), pMatrix);
     rotateMatrixY((*rotationVec)[1].getInteger(), pMatrix);
     rotateMatrixX((*rotationVec)[0].getInteger(), pMatrix);
 }
 
-void rotateCurrentMatrixZYX(sVec3_FP* rotationVec)
+void rotateCurrentMatrixZYX(const sVec3_FP* rotationVec)
 {
     rotateMatrixZYX(rotationVec, pCurrentMatrix);
+}
+
+void rotateCurrentMatrixZYX(const sVec3_FP& rotationVec)
+{
+    rotateMatrixZYX(&rotationVec, pCurrentMatrix);
 }
 
 void rotateMatrixZYX_s16(s16* rotationVec, sMatrix4x3* pMatrix)

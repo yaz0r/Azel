@@ -452,15 +452,15 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
             {
                 pushCurrentMatrix();
-                translateCurrentMatrix(&READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190));
-                rotateCurrentMatrixZYX(&READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0xC));
+                translateCurrentMatrix(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190));
+                rotateCurrentMatrixZYX(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0xC));
 
                 PDS_unimplemented("call to gridCellDraw_normalSub2 in LCSItemBox_UpdateType1");
                 //gridCellDraw_normalSub2
 
                 {
                     pushCurrentMatrix();
-                    translateCurrentMatrix(&READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0x24));
+                    translateCurrentMatrix(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0x24));
                     rotateCurrentMatrixShiftedZ(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0x14));
                     rotateCurrentMatrixShiftedY(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0x10) + pThis->m90);
                     rotateCurrentMatrixShiftedX(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0xC));
