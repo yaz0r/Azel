@@ -7,6 +7,7 @@ extern p_workArea(*statusMenuSubMenus[])(p_workArea);
 struct sLoadingTaskWorkArea* gLoadingTaskWorkArea = NULL;
 
 s16 loadingTaskVar0 = 0x1D;
+p_workArea(*gFieldOverlayFunction)(p_workArea workArea, u32 arg);
 
 struct sLoadingTaskWorkArea : public s_workAreaTemplateWithArg<sLoadingTaskWorkArea, s8>
 {
@@ -2272,7 +2273,14 @@ void s_FieldSubTaskWorkArea::Init(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
     menuUnk0.m_48 = 0xC210;
     menuUnk0.m_4A = 0xC210;
 
-    overlayStart_FLD_A3(pFieldSubTaskWorkArea, 0);
+    if (gFieldOverlayFunction)
+        gFieldOverlayFunction(pFieldSubTaskWorkArea, 0);
+    else
+    {
+        PDS_unimplemented("Trying to call unimplemented overlay!");
+        pFieldSubTaskWorkArea->getTask()->markFinished();
+        fieldA3_1_checkExitsTaskUpdate2Sub1(0);
+    }
 
     fieldTaskPtr->m3C_fieldTaskState = 4;
 
@@ -2347,7 +2355,14 @@ void s_FieldSubTaskWorkArea::Draw(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 
 void s_FieldSubTaskWorkArea::Delete(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 {
-    TaskUnimplemented();
+    if ((fieldTaskPtr->m2C_currentFieldIndex == 8) || (fieldTaskPtr->m2C_currentFieldIndex == 0xC))
+    {
+        freeRamResource();
+        assert(0);
+        //vdp1FreeLastAllocation()
+    }
+
+    fieldTaskPtr->m8_pSubFieldData = nullptr;
 }
 
 s_taskDefinitionWithArg encounterTaskDefinition = { dummyTaskInitWithArg, dummyTaskUpdate, dummyTaskDraw, dummyTaskDelete, "encounter task" };
@@ -2373,6 +2388,15 @@ void s_fieldStartOverlayTask::Init(s_fieldStartOverlayTask* pThis)
 
     if(pFieldDefinition->m_prg)
     {
+        gFieldOverlayFunction = nullptr;
+        if (!strcmp(pFieldDefinition->m_prg, "FLD_A3.PRG"))
+        {
+            gFieldOverlayFunction = overlayStart_FLD_A3;
+        }
+        else
+        {
+            PDS_unimplemented("Trying to load unimplemented overlay!");
+        }
         //loadFile(pFieldDefinition->m_prg, NULL, 0);
 
         createSubTask<s_FieldSubTaskWorkArea>(pThis);
@@ -4094,8 +4118,8 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task* pW
     gGameStatus.m6_previousGameStatus = 0;
     gGameStatus.m8_nextGameStatus = 0;
 
-    PDS_unimplemented("Hack: skip game status to first field");
-    gGameStatus.m8_nextGameStatus = 0x50;
+    //PDS_unimplemented("Hack: skip game status to first field");
+    //gGameStatus.m8_nextGameStatus = 0x50;
 
     if (menuID == 3)
     {
@@ -4169,8 +4193,36 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
     {
     case 0:
         break;
+    case 1:
+        mainGameState.setBit(4, 0);
+        setNextGameStatus(2);
+        break;
+    case 2:
+        setNextGameStatus(3);
+        break;
+    case 3:
+        mainGameState.setBit(4, 1);
+        setNextGameStatus(4);
+        break;
+    case 4:
+        setNextGameStatus(5);
+        break;
+    case 5:
+        mainGameState.setBit(4, 3);
+        setNextGameStatus(80);
+        break;
+    case 6:
+        mainGameState.setBit(4, 3);
+        mainGameState.setBit(10, 6);
+        setNextGameStatus(81);
+        break;
     case 80:
-        setNextGameStatus(0x4F);
+    case 81:
+    case 82:
+    case 83:
+        setNextGameStatus(79);
+        break;
+    case 79:
         break;
     default:
         assert(0);
@@ -4287,7 +4339,7 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
         pWorkArea->state++;
         break;
     case 1:
-        if (gGameStatus.m8_nextGameStatus == 0)
+        if ((gGameStatus.m8_nextGameStatus == 0) && pWorkArea->mC)
         {
             assert(0);
         }
@@ -4309,12 +4361,19 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
                 }
             }
         }
+        //06027574
         switch (gGameStatus.m8_nextGameStatus)
         {
         case 1:
         case 2:
+        case 3:
+        case 4:
+        case 5:
         case 6:
+        case 7:
+        case 79:
         case 80:
+        case 81:
             if ((gGameStatus.m2 == 0) && (gGameStatus.m6_previousGameStatus != 0x4F))
             {
                 initFileLayoutTable();
@@ -4352,7 +4411,14 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
             gGameStatus.m3 = 0;
         }
 
-        pWorkArea->m8 = overlayDispatchTable[gGameStatus.m0_gameMode](pWorkArea, gGameStatus.m1);
+        if (overlayDispatchTable[gGameStatus.m0_gameMode])
+        {
+            pWorkArea->m8 = overlayDispatchTable[gGameStatus.m0_gameMode](pWorkArea, gGameStatus.m1);
+        }
+        else
+        {
+            PDS_unimplemented("Unimplemented entry in overlayDispatchTable[gGameStatus.m0_gameMode]. Skipping!");
+        }
         pWorkArea->state = 0;
 
         break;

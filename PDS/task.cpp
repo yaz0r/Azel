@@ -83,12 +83,15 @@ void processTasks(s_task** ppTask)
             else
             {
                 s_heapNode* r4 = pTask->getHeapNode();
+                PDS_unimplemented("Disabled freeing task heaps");
+                /*
                 while (r4)
                 {
                     s_heapNode* pNextNode = r4->m_nextNode;
                     freeHeapForTask(pTask->getWorkArea(), r4);
                     r4 = pNextNode;
                 }
+                */
 
                 *ppTask = pTask->m0_pNextTask;
                 delete pTask;
