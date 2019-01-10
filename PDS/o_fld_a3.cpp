@@ -7073,7 +7073,7 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
 
     setVdp1VramU16(vdp1WriteEA + 0x1C, (size_t)(&(*r12))>>3); //CMDGRDA
 
-    r13.m20_pCurrentVdp1Packet->m4_bucketTypes = 0; // TODO: fix bucket: fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
+    r13.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
     r13.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
     r13.m20_pCurrentVdp1Packet++;
 
@@ -7116,7 +7116,7 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
 
         setVdp1VramU16(vdp1WriteEA + 0x1C, (size_t)(&(*r9)) >> 3); //CMDGRDA
 
-        r14.m20_pCurrentVdp1Packet->m4_bucketTypes = 0; // TODO: fix bucket: fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
+        r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
         r14.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
         r14.m20_pCurrentVdp1Packet++;
 
@@ -7156,7 +7156,7 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
 
     setVdp1VramU16(vdp1WriteEA + 0x1C, (size_t)(&(*r9)) >> 3); //CMDGRDA
 
-    r14.m20_pCurrentVdp1Packet->m4_bucketTypes = 0; // TODO: fix bucket: fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
+    r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
     r14.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
     r14.m20_pCurrentVdp1Packet++;
 

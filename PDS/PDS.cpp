@@ -743,33 +743,16 @@ void invalidateCacheOnRange(void* ptr, u32 size)
 
 struct listEntry
 {
-    s_vdp1Packet* m0;
-    s_vdp1Packet* m4;
+    s_vdp1Packet* m0_startOfList;
+    s_vdp1Packet** m4_endOfList;
 };
 
 void initVdp1FlushList(listEntry* list)
 {
     for (int i = 0; i < 0x20; i++)
     {
-        list[i].m4 = (s_vdp1Packet*)&list[i];
-    }
-}
-
-void flushVdp1Sub2(s_vdp1Packet* buffer0, u32 count0, s_vdp1Packet* buffer1, u32 count1, listEntry* list)
-{
-    for (int i = 0; i < count0; i++)
-    {
-        s_vdp1Packet* r4 = &buffer0[i];
-        listEntry* r1 = &list[r4->m4_bucketTypes & 0x1F];
-        r1->m4->m0_pNext = r4;
-        r1->m4 = r4;
-    }
-    for (int i = 0; i < count1; i++)
-    {
-        s_vdp1Packet* r4 = &buffer1[i];
-        listEntry* r1 = &list[r4->m4_bucketTypes & 0x1F];
-        r1->m4->m0_pNext = r4;
-        r1->m4 = r4;
+        list[i].m0_startOfList = nullptr;
+        list[i].m4_endOfList = &list[i].m0_startOfList;
     }
 }
 
@@ -782,9 +765,9 @@ s_vdp1Packet* flushVdp1Sub3(listEntry* list)
     while (current != list)
     {
         current--;
-        if (current->m4 != (s_vdp1Packet*)current)
+        if (current->m4_endOfList != &current->m0_startOfList)
         {
-            r7 = current->m0;
+            r7 = current->m0_startOfList;
             r6 = current;
             break;
         }
@@ -793,24 +776,42 @@ s_vdp1Packet* flushVdp1Sub3(listEntry* list)
     while (current != list)
     {
         current--;
-        if (current->m4 != (s_vdp1Packet*)current)
+        if (current->m4_endOfList != &current->m0_startOfList)
         {
-            r6->m4 = current->m0;
+            *r6->m4_endOfList = current->m0_startOfList;
             r6 = current;
         }
     }
 
-    r6->m4 = 0;
+    *r6->m4_endOfList = 0;
     return r7;
+}
+
+void flushVdp1Sub2(s_vdp1Packet* buffer0, u32 count0, s_vdp1Packet* buffer1, u32 count1, listEntry* list)
+{
+    for (int i = 0; i < count0; i++)
+    {
+        s_vdp1Packet* r4 = &buffer0[i];
+        listEntry* r1 = &list[r4->m4_bucketTypes & 0x1F];
+        (*r1->m4_endOfList) = r4;
+        r1->m4_endOfList = &r4->m0_pNext;
+    }
+    for (int i = 0; i < count1; i++)
+    {
+        s_vdp1Packet* r4 = &buffer1[i];
+        listEntry* r1 = &list[r4->m4_bucketTypes & 0x1F];
+        (*r1->m4_endOfList)->m0_pNext = r4;
+        r1->m4_endOfList = &r4;
+    }
 }
 
 void flushVdp1Sub4(s_vdp1Packet* r4, u32 r5, listEntry* list)
 {
     for(int i=0; i<r5; i++)
     {
-        listEntry* r7 = &list[(r4->m4_bucketTypes >> 3)&0x1F];
-        r7->m4->m0_pNext = r4;
-        r7->m4 = r4;
+        listEntry* r7 = &list[(r4->m4_bucketTypes >> 5)&0x1F];
+        (*r7->m4_endOfList) = r4;
+        r7->m4_endOfList = &r4->m0_pNext;
         r4 = r4->m0_pNext;
     }
 }
@@ -820,8 +821,8 @@ void flushVdp1Sub5(s_vdp1Packet* r4, u32 r5, listEntry* list)
     for (int i = 0; i < r5; i++)
     {
         listEntry* r7 = &list[(r4->m4_bucketTypes >> 10)&0x1F];
-        r7->m4->m0_pNext = r4;
-        r7->m4 = r4;
+        (*r7->m4_endOfList) = r4;
+        r7->m4_endOfList = &r4->m0_pNext;
         r4 = r4->m0_pNext;
     }
 }
