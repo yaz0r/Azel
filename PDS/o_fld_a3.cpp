@@ -719,8 +719,7 @@ void create_A3_Obj2_Sub1(p_workArea, sLCSTarget*)
 
 void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32 r7)
 {
-    s_A3_Obj2* pNewObj = new s_A3_Obj2;
-    createSubTaskFromFunction(r4, NULL, pNewObj, "A3_Obj2");
+    s_A3_Obj2* pNewObj = createSubTaskFromFunction<s_A3_Obj2>(r4, NULL);
 
     getMemoryArea(&pNewObj->m0, r6);
 
@@ -808,7 +807,7 @@ struct s_A3_Obj0 : public s_workAreaTemplate<s_A3_Obj0>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_A3_Obj0::Draw, NULL, "s_A3_Obj0" };
+        static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_A3_Obj0::Draw, NULL };
         return &taskDefinition;
     }
     static void Draw(s_A3_Obj0* pThis)
@@ -888,7 +887,7 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { NULL, &s_A3_Obj4::Update, &s_A3_Obj4::Draw, NULL, "s_A3_Obj4" };
+        static TypedTaskDefinition taskDefinition = { NULL, &s_A3_Obj4::Update, &s_A3_Obj4::Draw, NULL };
         return &taskDefinition;
     }
 
@@ -928,7 +927,7 @@ struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { NULL, &s_A3_Obj3::Update, &s_A3_Obj3::Draw, NULL, "s_A3_Obj3" };
+        static const TypedTaskDefinition taskDefinition = { NULL, &s_A3_Obj3::Update, &s_A3_Obj3::Draw, NULL };
         return &taskDefinition;
     }
 
@@ -2243,7 +2242,7 @@ void fieldScriptTaskUpdateSub1()
 s32 fieldScriptTaskUpdateSub4()
 {
     s_fieldScriptWorkArea* pFieldScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-    if (!pFieldScript->m4_currentScript.m_offset && !pFieldScript->m30_cinematicBarTask && !pFieldScript->m34 && !pFieldScript->m38_dialogStringTask && !pFieldScript->m3C_multichoiceTask && !pFieldScript->m40)
+    if (!pFieldScript->m4_currentScript.m_offset && !pFieldScript->m30_cinematicBarTask && !pFieldScript->m34 && !pFieldScript->m38_dialogStringTask && !pFieldScript->m3C_multichoiceTask && !pFieldScript->m40_receivedItemTask)
         return 0;
 
     return 1;
@@ -3176,7 +3175,7 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
     }
 
     s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
-    if ((pLCS->m83F_activeLaserCount == 0) && (pThis->m40 == 0) && (pThis->m4_currentScript.m_offset))
+    if ((pLCS->m83F_activeLaserCount == 0) && (pThis->m40_receivedItemTask == 0) && (pThis->m4_currentScript.m_offset))
     {
         pThis->fieldScriptTaskUpdateSub2();
 
@@ -3209,7 +3208,7 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
     }
 
     if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 ||
-        pThis->m64 || pThis->m30_cinematicBarTask || pThis->m34 || pThis->m38_dialogStringTask || pThis->m3C_multichoiceTask || pThis->m40 ||
+        pThis->m64 || pThis->m30_cinematicBarTask || pThis->m34 || pThis->m38_dialogStringTask || pThis->m3C_multichoiceTask || pThis->m40_receivedItemTask ||
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000)
     {
         graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
@@ -3758,7 +3757,7 @@ struct s_DragonRiderTask : public s_workAreaTemplate<s_DragonRiderTask>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &dragonRidersTaskInit, &dragonRidersTaskUpdate, NULL, NULL, "dragonRidersTask" };
+        static const TypedTaskDefinition taskDefinition = { &dragonRidersTaskInit, &dragonRidersTaskUpdate, NULL, NULL };
         return &taskDefinition;
     }
     
@@ -5486,7 +5485,7 @@ void dragonFieldTaskUpdateSub5Sub1(s_fieldOverlaySubTaskWorkArea* r4, s_dragonTa
     s32 r13 = r4->m2DC;
     s32 var8[3];
 
-    for (s32 r13 = r4->m2DC; r13--; r13 >= 0)
+    for (s32 r13 = r4->m2DC; r13 >= 0; r13--)
     {
         if (r13)
         {
@@ -6150,7 +6149,7 @@ struct LCSTask : public s_workAreaTemplate<LCSTask>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { LCSTaskInit, NULL, LCSTaskDraw, NULL, "LCSTask" };
+        static TypedTaskDefinition taskDefinition = { LCSTaskInit, NULL, LCSTaskDraw, NULL };
         return &taskDefinition;
     }
 
@@ -6827,7 +6826,7 @@ void s_LCSTask340Sub::Delete3(s_LCSTask340Sub* pThis)
     if (pThis->m24_receivedItemId >= 0)
     {
         s_fieldScriptWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m40)
+        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m40_receivedItemTask)
         {
             //0607A1A0
             assert(0);
@@ -6836,7 +6835,7 @@ void s_LCSTask340Sub::Delete3(s_LCSTask340Sub* pThis)
         {
             //0607A1C2
             getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount--;
-            createReceiveItemTask(r13, &r13->m40, 45, pThis->m24_receivedItemId, pThis->m26_receivedItemQuantity);
+            createReceiveItemTask(r13, &r13->m40_receivedItemTask, 45, pThis->m24_receivedItemId, pThis->m26_receivedItemQuantity);
             if (pThis->m24_receivedItemId < 77)
             {
                 //0607A1F6

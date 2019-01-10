@@ -408,9 +408,9 @@ struct s3DModelAnimData
 
 struct s_dragonState : public s_workAreaTemplate<s_dragonState>
 {
-    static s_taskDefinitionWithArg* getTaskDefinition()
+    static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static s_taskDefinitionWithArg taskDefinition = { NULL, NULL, NULL, NULL, "s_dragonState" };
+        static const TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL};
         return &taskDefinition;
     }
 

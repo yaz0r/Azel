@@ -20,14 +20,9 @@ extern u32 fieldTaskVar2;
 
 struct s_loadRiderWorkArea : public s_workAreaTemplate<s_loadRiderWorkArea>
 {
-    static s_taskDefinitionWithArg* getTaskDefinition()
-    {
-        static s_taskDefinitionWithArg taskDefinition = { NULL, NULL, NULL, NULL, "s_loadRiderWorkArea" };
-        return &taskDefinition;
-    }
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL, "s_loadRiderWorkArea" };
+        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL};
         return &taskDefinition;
     }
 
@@ -45,14 +40,9 @@ extern s_loadRiderWorkArea* pRider2State;
 
 struct s_loadDragonWorkArea : public s_workAreaTemplate<s_loadDragonWorkArea>
 {
-    static s_taskDefinitionWithArg* getTaskDefinition()
-    {
-        static s_taskDefinitionWithArg taskDefinition = { NULL, NULL, NULL, NULL, "s_loadDragonWorkArea" };
-        return &taskDefinition;
-    }
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL, "s_loadDragonWorkArea" };
+        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL};
         return &taskDefinition;
     }
 

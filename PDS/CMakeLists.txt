@@ -6,58 +6,20 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+file(GLOB SRC_ROOT
+    "*.cpp"
+    "*.h"
+)
+
+file(GLOB_RECURSE SRC_KERNEL
+    "kernel/*.cpp"
+    "kernel/*.h"
+)
+
 set(SOURCES
  ${SOURCES}
-
-3dEngine.cpp
-3dEngine.h
-3dEngine_flush.cpp
-3dEngine_flush.h
-3dEngine_textureCache.cpp
-3dEngine_textureCache.h
-
-3dModels.h
-3dModels.cpp
-
-kernel/receiveItemTask.h
-kernel/receiveItemTask.cpp
-
-common.cpp
-common.h
-common_generated.cpp
-dummy.cpp
-field.cpp
-field.h
-fixedPoint.cpp
-heap.cpp
-heap.h
-LCS.cpp
-LCS.h
-mainMenuDebugTasks.cpp
-mainMenuDebugTasks.h
-menu_dragon.cpp
-menu_dragonMorph.cpp
-
-o_fld_a3.cpp
-o_fld_a3.h
-o_fld_a3_1.cpp
-o_fld_a3_1.h
-
-o_menuEn.cpp
-o_title.cpp
-PDS.cpp
-PDS.h
-PDS_Logger.cpp
-PDS_Logger.h
-renderer.cpp
-rootTask.cpp
-task.cpp
-task.h
-titleScreen.cpp
-VDP1.cpp
-VDP1.h
-VDP2.cpp
-VDP2.h
+ ${SRC_KERNEL}
+ ${SRC_ROOT}
 
 ${THIRD_PARTY}/imgui/imgui.cpp
 ${THIRD_PARTY}/imgui/imgui_draw.cpp
@@ -65,6 +27,9 @@ ${THIRD_PARTY}/imgui/imgui_widgets.cpp
 ${THIRD_PARTY}/imgui/examples/imgui_impl_opengl3.cpp
 ${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
 )
+
+source_group("src" FILES ${SRC_ROOT})
+source_group("src\\kernel" FILES ${SRC_KERNEL})
 
 if (MSVC)
     set(SOURCES

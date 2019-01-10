@@ -16,10 +16,10 @@ const std::array<s32, 4> LCS_AccessSoundTable =
 
 const std::array<s_LCSTask340Sub::TypedTaskDefinition, 4> s_LCSTask340Sub::constructionTable =
 { {
-        { &s_LCSTask340Sub::Init0, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr, "s_LCSTask340Sub_0" }, // Access (blue sphere)
-        { &s_LCSTask340Sub::Init1, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr, "s_LCSTask340Sub_1" }, // Laser (destroy)
-        { &s_LCSTask340Sub::Init2, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr, "s_LCSTask340Sub_2" }, // Access (2 small lasers from wings)
-        { &s_LCSTask340Sub::Init3, &s_LCSTask340Sub::Update3, &s_LCSTask340Sub::Draw, &s_LCSTask340Sub::Delete3, "s_LCSTask340Sub_3" },
+        { &s_LCSTask340Sub::Init0, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr}, // Access (blue sphere)
+        { &s_LCSTask340Sub::Init1, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr}, // Laser (destroy)
+        { &s_LCSTask340Sub::Init2, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr}, // Access (2 small lasers from wings)
+        { &s_LCSTask340Sub::Init3, &s_LCSTask340Sub::Update3, &s_LCSTask340Sub::Draw, &s_LCSTask340Sub::Delete3},
 }};
 
 void LCSTaskDrawSub1Sub2Sub6(void*)

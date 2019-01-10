@@ -4,7 +4,7 @@ struct s_dragonMenuSubTask1WorkArea : public s_workAreaTemplate<s_dragonMenuSubT
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Init, NULL, &s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Draw, &s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Delete, "dragonMenuSubTask1" };
+        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Init, NULL, &s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Draw, &s_dragonMenuSubTask1WorkArea::dragonMenuSubTask1Delete };
         return &taskDefinition;
     }
 
@@ -56,7 +56,7 @@ struct s_dragonMenuStatsTask2 : public s_workAreaTemplate<s_dragonMenuStatsTask2
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_dragonMenuStatsTask2::Draw, NULL, "dragonMenuStatsTask2" };
+        static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_dragonMenuStatsTask2::Draw, NULL };
         return &taskDefinition;
     }
 
@@ -70,7 +70,7 @@ struct s_dragonMenuWorkArea : public s_workAreaTemplate<s_dragonMenuWorkArea>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuWorkArea::dragonMenuTaskInit, &s_dragonMenuWorkArea::dragonMenuTaskUpdate, NULL, &s_dragonMenuWorkArea::dragonMenuTaskDelete, "dragon Menu" };
+        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuWorkArea::dragonMenuTaskInit, &s_dragonMenuWorkArea::dragonMenuTaskUpdate, NULL, &s_dragonMenuWorkArea::dragonMenuTaskDelete };
         return &taskDefinition;
     }
 
@@ -204,7 +204,7 @@ struct s_drawDragonMenuStatsTask : public s_workAreaTemplate<s_drawDragonMenuSta
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskInit, NULL, &s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw, &s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDelete, "dragonMenuStatsTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskInit, NULL, &s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw, &s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDelete};
         return &taskDefinition;
     }
 
@@ -312,7 +312,7 @@ struct s_dragonMenuMorphCursorTask : public s_workAreaTemplate<s_dragonMenuMorph
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuMorphCursorTask::Init, NULL, &s_dragonMenuMorphCursorTask::Draw, NULL, "dragonMenuMorphCursorTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuMorphCursorTask::Init, NULL, &s_dragonMenuMorphCursorTask::Draw, NULL};
         return &taskDefinition;
     }
 

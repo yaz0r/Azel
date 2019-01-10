@@ -28,7 +28,7 @@ struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_sta
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &sfieldA3_1_startTasks_sub1Task::Init, &sfieldA3_1_startTasks_sub1Task::Update, NULL, NULL, "afieldA3_1_startTasks_sub1Task" };
+        static TypedTaskDefinition taskDefinition = { &sfieldA3_1_startTasks_sub1Task::Init, &sfieldA3_1_startTasks_sub1Task::Update, NULL, NULL};
         return &taskDefinition;
     }
 
@@ -84,7 +84,7 @@ struct sFieldA3_1_fieldIntroTask : public s_workAreaTemplate<sFieldA3_1_fieldInt
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL, "sFieldA3_1_fieldIntroTask" };
+        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL};
         return &taskDefinition;
     }
 
@@ -207,7 +207,7 @@ struct s_itemType0 : public s_workAreaTemplate<s_itemType0>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL, "s_itemType0" };
+        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL };
         return &taskDefinition;
     }
 
@@ -286,7 +286,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &s_itemBoxType1::Init, NULL, NULL, NULL, "s_itemBoxType1" };
+        static TypedTaskDefinition taskDefinition = { &s_itemBoxType1::Init, NULL, NULL, NULL };
         return &taskDefinition;
     }
 
@@ -434,9 +434,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
                 pThis->m90 = ((pThis->m90 + pThis->m94) & 0xFFFFFFF);
             }
         case 2:
-            break;
         default:
-            assert(0);
             break;
         }
 

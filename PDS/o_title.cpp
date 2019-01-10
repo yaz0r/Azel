@@ -6,7 +6,7 @@ struct s_titleOverlayWorkArea : public s_workAreaTemplate<s_titleOverlayWorkArea
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static constexpr TypedTaskDefinition taskDefinition = { NULL, NULL, &titleOverlay_Update, NULL, "titleOVL" };
+        static constexpr TypedTaskDefinition taskDefinition = { NULL, NULL, &titleOverlay_Update, NULL };
         return &taskDefinition;
     }
 

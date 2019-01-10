@@ -35,7 +35,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &s_titleMenuWorkArea::Init, NULL, &s_titleMenuWorkArea::Draw, NULL, "titleMenu" };
+        static TypedTaskDefinition taskDefinition = { &s_titleMenuWorkArea::Init, NULL, &s_titleMenuWorkArea::Draw, NULL };
         return &taskDefinition;
     }
 
@@ -236,7 +236,7 @@ struct s_pressStartButtonTaskWorkArea : public s_workAreaTemplate<s_pressStartBu
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, &s_pressStartButtonTaskWorkArea::pressStartButtonTaskDraw, &s_pressStartButtonTaskWorkArea::pressStartButtonTaskDelete, "pressStartButtonTask" };
+        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, &s_pressStartButtonTaskWorkArea::pressStartButtonTaskDraw, &s_pressStartButtonTaskWorkArea::pressStartButtonTaskDelete };
         return &taskDefinition;
     }
 
@@ -297,7 +297,7 @@ struct s_titleScreenWorkArea : public s_workAreaTemplate<s_titleScreenWorkArea>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &s_titleScreenWorkArea::Init, NULL, &s_titleScreenWorkArea::Draw, NULL, "s_titleScreenWorkArea" };
+        static TypedTaskDefinition taskDefinition = { &s_titleScreenWorkArea::Init, NULL, &s_titleScreenWorkArea::Draw, NULL };
         return &taskDefinition;
     }
 
@@ -401,7 +401,7 @@ struct s_warningWorkArea : public s_workAreaTemplate< s_warningWorkArea>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &s_warningWorkArea::Init, NULL, NULL, NULL, "sFieldA3_1_fieldIntroTask" };
+        static TypedTaskDefinition taskDefinition = { &s_warningWorkArea::Init, NULL, NULL, NULL };
         return &taskDefinition;
     }
 
@@ -523,7 +523,7 @@ struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = {  &s_loadWarningWorkArea::Init, nullptr, &s_loadWarningWorkArea::Draw, nullptr, "s_loadWarningWorkArea"};
+        static TypedTaskDefinition taskDefinition = {  &s_loadWarningWorkArea::Init, nullptr, &s_loadWarningWorkArea::Draw, nullptr};
         return &taskDefinition;
     }
 

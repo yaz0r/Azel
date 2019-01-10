@@ -5,6 +5,7 @@ int numActiveTask;
 
 void PrintDebugTask(s_task* pTask)
 {
+    ImGui::PushID(0);
     if(ImGui::TreeNode(pTask->m_taskName))
     {
         if (pTask->m4_pSubTask)
@@ -17,6 +18,7 @@ void PrintDebugTask(s_task* pTask)
     {
         PrintDebugTask(pTask->m0_pNextTask);
     }
+    ImGui::PopID();
 }
 
 void DebugTasks()
@@ -207,36 +209,6 @@ p_workArea createSiblingTaskWithArg(p_workArea workArea, p_workArea pNewWorkArea
 
     pNewWorkArea->m_pTask = pTask;
     pTask->m_workArea = pNewWorkArea;
-
-    return pTask->getWorkArea();
-
-}
-
-p_workArea createSubTaskFromFunction(p_workArea parentWorkArea, void(*pFunction)(p_workArea), p_workArea newWorkArea, const char* name)
-{
-    s_task* pTask = new s_task;
-    assert(pTask);
-
-    numActiveTask++;
-
-    s_task* pParentTask = parentWorkArea->getTask();
-
-    s_task** taskDestination = &pParentTask->m4_pSubTask;
-    while (*taskDestination)
-    {
-        taskDestination = &(*taskDestination)->m0_pNextTask;
-    }
-
-    (*taskDestination) = pTask;
-
-    pTask->m0_pNextTask = NULL;
-    pTask->m4_pSubTask = NULL;
-    pTask->m14_flags = 0;
-
-    pTask->m_taskName = name;
-
-    newWorkArea->m_pTask = pTask;
-    pTask->m_workArea = newWorkArea;
 
     return pTask->getWorkArea();
 

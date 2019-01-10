@@ -31,37 +31,16 @@ static void UnimplementedImpl(const char* functionName)
 
 #define TaskUnimplemented() { static bool printed = false; if(!printed) {printed = true; UnimplementedImpl(__FUNCTION__);}}
 
-struct s_taskDefinition
-{
-    void(*m_pInit)(s_workArea*);
-    void(*m_pUpdate)(s_workArea*);
-    void(*m_pLateUpdate)(s_workArea*);
-    void(*m_pDelete)(s_workArea*);
-    const char* m_taskName;
-};
-
-struct s_taskDefinitionWithArg
-{
-    void(*m_pInit)(s_workArea*, void* argument);
-    void(*m_pUpdate)(s_workArea*);
-    void(*m_pLateUpdate)(s_workArea*);
-    void(*m_pDelete)(s_workArea*);
-    const char* m_taskName;
-};
-
-#define DECLARE_DEFAULT_TASK(pInit, pUpdate, pDraw, pDelete, name)\
-static const TypedTaskDefinition* getTypedTaskDefinition() \
-{\
-    static const TypedTaskDefinition taskDefinition = { pInit, pUpdate, pDraw, pDelete, ##name };\
-    return &taskDefinition;\
-}
-
-
 typedef s_workArea* p_workArea;
 
 template<typename T, typename... argType>
 struct s_workAreaTemplateWithArg : public s_workArea
 {
+    static constexpr const char* getTaskName()
+    {
+        return typeid(T).name();
+    }
+
     s_workAreaTemplateWithArg()
     {
         m_UpdateMethod = NULL;
@@ -89,7 +68,7 @@ struct s_workAreaTemplateWithArg : public s_workArea
 
     typedef void (*FunctionType)(T*);
     typedef void (*InitFunctionType)(T*, argType ...);
-    //InitFunctionType m_InitMethod;
+
     FunctionType m_UpdateMethod;
     FunctionType m_DrawMethod;
     FunctionType m_DeleteMethod;
@@ -100,7 +79,6 @@ struct s_workAreaTemplateWithArg : public s_workArea
         FunctionType m_pUpdate;
         FunctionType m_pDraw;
         FunctionType m_pDelete;
-        const char* m_taskName;
     };
 };
 
@@ -183,7 +161,7 @@ T* createSubTask(p_workArea parentTask, const typename T::TypedTaskDefinition* p
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
-    pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
+    pNewTask->getTask()->m_taskName = T::getTaskName();
     if (pTypeTaskDefinition->m_pInit)
     {
         pTypeTaskDefinition->m_pInit(pNewTask);
@@ -199,7 +177,7 @@ T* createSubTaskWithArg(p_workArea parentTask, argType arg, const typename T::Ty
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
-    pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
+    pNewTask->getTask()->m_taskName = T::getTaskName();
     if (pTypeTaskDefinition->m_pInit)
     {
         pTypeTaskDefinition->m_pInit(pNewTask, arg);
@@ -215,7 +193,7 @@ T* createSiblingTaskWithArg(p_workArea parentTask, argType arg, const typename T
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
-    pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
+    pNewTask->getTask()->m_taskName = T::getTaskName();
     if (pTypeTaskDefinition->m_pInit)
     {
         pTypeTaskDefinition->m_pInit(pNewTask, arg);
@@ -229,14 +207,13 @@ T* createSubTaskFromFunction(p_workArea parentTask, typename T::FunctionType Upd
 {
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, new T));
     pNewTask->m_UpdateMethod = UpdateFunction;
+    pNewTask->getTask()->m_taskName = T::getTaskName();
     return pNewTask;
 }
 
 p_workArea createSubTask(p_workArea workArea, p_workArea pNewWorkArea);
 p_workArea createSubTaskWithArg(p_workArea workArea, p_workArea pNewWorkArea);
 p_workArea createSiblingTaskWithArg(p_workArea workArea, p_workArea pNewWorkArea);
-
-p_workArea createSubTaskFromFunction(p_workArea workArea, void(*pFunction)(p_workArea), p_workArea pNewWorkArea, const char* name);
 
 template<typename T>
 T* createRootTask()
@@ -246,7 +223,7 @@ T* createRootTask()
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
-    pNewTask->getTask()->m_taskName = pTypeTaskDefinition->m_taskName;
+    pNewTask->getTask()->m_taskName = T::getTaskName();
     if (pTypeTaskDefinition->m_pInit)
     {
         pTypeTaskDefinition->m_pInit(pNewTask);

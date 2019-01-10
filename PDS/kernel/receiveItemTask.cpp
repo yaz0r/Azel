@@ -97,9 +97,8 @@ void s_receivedItemTask::Delete(s_receivedItemTask* pThis)
 
     if (pThis->m10)
     {
-        pThis->m10->m0 = 0;
+        *pThis->m10 = nullptr;
     }
-    TaskUnimplemented();
 }
 
 s32 createReceiveItemTaskSub0(const char* inputString, s32 maxLength)
@@ -153,7 +152,7 @@ s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedIt
 
     if (r5)
     {
-        pNewTask->m10 = *r5;
+        pNewTask->m10 = r5;
         *r5 = pNewTask;
     }
     return pNewTask;

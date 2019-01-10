@@ -6,7 +6,7 @@ struct s_menuEnWorkArea : public s_workAreaTemplate<s_menuEnWorkArea>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &s_menuEnWorkArea::Init, &s_menuEnWorkArea::Update, &s_menuEnWorkArea::Draw, &s_menuEnWorkArea::Delete, "s_menuEnWorkArea" };
+        static TypedTaskDefinition taskDefinition = { &s_menuEnWorkArea::Init, &s_menuEnWorkArea::Update, &s_menuEnWorkArea::Draw, &s_menuEnWorkArea::Delete };
         return &taskDefinition;
     }
 

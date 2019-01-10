@@ -127,7 +127,7 @@ struct sSaturnPtr
 
 struct sSaturnMemoryFile
 {
-    char* m_name;
+    std::string m_name;
     u8* m_data;
     u32 m_dataSize;
     u32 m_base;

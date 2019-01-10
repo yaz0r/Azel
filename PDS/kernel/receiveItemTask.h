@@ -4,7 +4,7 @@ struct s_receivedItemTask : s_workAreaTemplate<s_receivedItemTask>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { nullptr, &s_receivedItemTask::Update, nullptr, &s_receivedItemTask::Delete, "s_receivedItemTask" };
+        static TypedTaskDefinition taskDefinition = { nullptr, &s_receivedItemTask::Update, nullptr, &s_receivedItemTask::Delete};
         return &taskDefinition;
     }
 
@@ -14,7 +14,7 @@ struct s_receivedItemTask : s_workAreaTemplate<s_receivedItemTask>
     s8 m0;
     s8 m2;
     s16 mA;
-    s_receivedItemTask* m10;
+    s_receivedItemTask** m10;
     s16 m14_x;
     s16 m16_y;
     s16 m1A_width;

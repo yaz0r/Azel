@@ -4,7 +4,7 @@ struct s_initialTaskWorkArea : public s_workAreaTemplate<s_initialTaskWorkArea>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &s_initialTaskWorkArea::Init, NULL, &s_initialTaskWorkArea::Draw, NULL, "sFieldA3_1_fieldIntroTask" };
+        static TypedTaskDefinition taskDefinition = { &s_initialTaskWorkArea::Init, NULL, &s_initialTaskWorkArea::Draw, NULL };
         return &taskDefinition;
     }
 

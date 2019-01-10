@@ -13,7 +13,7 @@ struct sLoadingTaskWorkArea : public s_workAreaTemplateWithArg<sLoadingTaskWorkA
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &sLoadingTaskWorkArea::Init, &sLoadingTaskWorkArea::Update, NULL, &sLoadingTaskWorkArea::Delete, "sLoadingTaskWorkArea" };
+        static TypedTaskDefinition taskDefinition = { &sLoadingTaskWorkArea::Init, &sLoadingTaskWorkArea::Update, NULL, &sLoadingTaskWorkArea::Delete};
         return &taskDefinition;
     }
 
@@ -126,7 +126,7 @@ struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskW
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_flagEditTaskWorkArea::Init, NULL, &s_flagEditTaskWorkArea::Update, NULL, "flagEditTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_flagEditTaskWorkArea::Init, NULL, &s_flagEditTaskWorkArea::Update, NULL};
         return &taskDefinition;
     }
 
@@ -355,7 +355,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &s_fieldDebugListWorkArea::Init, &s_fieldDebugListWorkArea::Update, NULL, NULL, "field debug list" };
+        static TypedTaskDefinition taskDefinition = { &s_fieldDebugListWorkArea::Init, &s_fieldDebugListWorkArea::Update, NULL, NULL};
         return &taskDefinition;
     }
 
@@ -2364,12 +2364,9 @@ void s_FieldSubTaskWorkArea::Delete(s_FieldSubTaskWorkArea* pFieldSubTaskWorkAre
     fieldTaskPtr->m8_pSubFieldData = nullptr;
 }
 
-s_taskDefinitionWithArg encounterTaskDefinition = { dummyTaskInitWithArg, dummyTaskUpdate, dummyTaskDraw, dummyTaskDelete, "encounter task" };
-
 void createEncounterTask(s_workArea* pWorkArea)
 {
     PDS_unimplemented("createEncounterTask");
-    //createSiblingTaskWithArg(pWorkArea, &encounterTaskDefinition, new s_dummyWorkArea, pWorkArea);
 }
 
 void s_fieldStartOverlayTask::Init(s_fieldStartOverlayTask* pThis)
@@ -2591,19 +2588,19 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
 {
     static const TypedTaskDefinition* getTownDebugTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::townDebugTaskInit, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete, "townDebugTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::townDebugTaskInit, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete};
         return &taskDefinition;
     }
 
     static const TypedTaskDefinition* getFieldDebugTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::fieldDebugTaskInit, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete, "fieldDebugTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::fieldDebugTaskInit, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete};
         return &taskDefinition;
     }
 
     static const TypedTaskDefinition* getExitMenuTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::initExitMenuTask, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete, "fieldDebugTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::initExitMenuTask, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete};
         return &taskDefinition;
     }
 
@@ -2699,7 +2696,7 @@ struct s_exitMenuTaskSub1Task : public s_workAreaTemplateWithArg<s_exitMenuTaskS
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskUpdate, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw, NULL, "exitMenuTaskSub1Task" };
+        static const TypedTaskDefinition taskDefinition = { &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskUpdate, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw, NULL};
         return &taskDefinition;
     }
 
@@ -2752,7 +2749,7 @@ struct s_menuGraphicsTask : public s_workAreaTemplateWithArg<s_menuGraphicsTask,
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_menuGraphicsTask::Init, NULL, &s_menuGraphicsTask::Draw, &s_menuGraphicsTask::Delete, "menuGraphicsTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_menuGraphicsTask::Init, NULL, &s_menuGraphicsTask::Draw, &s_menuGraphicsTask::Delete};
         return &taskDefinition;
     }
 
@@ -3222,7 +3219,7 @@ struct s_statusMenuTaskWorkArea : public s_workAreaTemplate<s_statusMenuTaskWork
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &s_statusMenuTaskWorkArea::Init, NULL, &s_statusMenuTaskWorkArea::Draw, &s_statusMenuTaskWorkArea::Delete, "s_statusMenuTaskWorkArea" };
+        static TypedTaskDefinition taskDefinition = { &s_statusMenuTaskWorkArea::Init, NULL, &s_statusMenuTaskWorkArea::Draw, &s_statusMenuTaskWorkArea::Delete};
         return &taskDefinition;
     }
 
@@ -3242,7 +3239,7 @@ struct s_MenuCursorWorkArea : public s_workAreaTemplateWithArg<s_MenuCursorWorkA
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &s_MenuCursorWorkArea::menuCursorTaskInit , &s_MenuCursorWorkArea::menuCursorTaskUpdate, &s_MenuCursorWorkArea::menuCursorTaskDraw, NULL, "menuCursorTask" };
+        static TypedTaskDefinition taskDefinition = { &s_MenuCursorWorkArea::menuCursorTaskInit , &s_MenuCursorWorkArea::menuCursorTaskUpdate, &s_MenuCursorWorkArea::menuCursorTaskDraw, NULL};
         return &taskDefinition;
     }
 
@@ -3260,7 +3257,7 @@ struct s_mainMenuWorkArea : public s_workAreaTemplate<s_mainMenuWorkArea>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_mainMenuWorkArea::Init, NULL, &s_mainMenuWorkArea::Draw, &s_mainMenuWorkArea::Delete, "main menu task" };
+        static const TypedTaskDefinition taskDefinition = { &s_mainMenuWorkArea::Init, NULL, &s_mainMenuWorkArea::Draw, &s_mainMenuWorkArea::Delete};
         return &taskDefinition;
     }
 
@@ -3319,7 +3316,7 @@ struct mainMenuTaskInitSub2TaskWorkArea : public s_workAreaTemplateWithArg<mainM
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &mainMenuTaskInitSub2TaskWorkArea::Init, NULL, &mainMenuTaskInitSub2TaskWorkArea::Draw, NULL, "mainMenuTaskInitSub2Task" };
+        static const TypedTaskDefinition taskDefinition = { &mainMenuTaskInitSub2TaskWorkArea::Init, NULL, &mainMenuTaskInitSub2TaskWorkArea::Draw, NULL};
         return &taskDefinition;
     }
 
@@ -3417,7 +3414,7 @@ struct s_menuDragonCrestTaskWorkArea : public s_workAreaTemplateWithArg<s_menuDr
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_menuDragonCrestTaskWorkArea::Init, NULL, &s_menuDragonCrestTaskWorkArea::Draw, NULL, "menuDragonCrestTaskDef" };
+        static const TypedTaskDefinition taskDefinition = { &s_menuDragonCrestTaskWorkArea::Init, NULL, &s_menuDragonCrestTaskWorkArea::Draw, NULL};
         return &taskDefinition;
     }
 
@@ -3468,7 +3465,7 @@ struct s_laserRankTaskWorkArea : public s_workAreaTemplateWithArg<s_laserRankTas
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_laserRankTaskWorkArea::Init, NULL, &s_laserRankTaskWorkArea::Draw, NULL, "laserRangTaskDefinition" };
+        static const TypedTaskDefinition taskDefinition = { &s_laserRankTaskWorkArea::Init, NULL, &s_laserRankTaskWorkArea::Draw, NULL };
         return &taskDefinition;
     }
 

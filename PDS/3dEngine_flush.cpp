@@ -314,7 +314,7 @@ struct s_vertexData
     float color[4];
 };
 
-s_vertexData gVertexArray[1024 * 1024];
+std::vector<s_vertexData> gVertexArray;
 
 float textureInfluence = 0;
 GLuint colorRampTexture = 0;
@@ -1248,6 +1248,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
 
 void flushObjectsToDrawList()
 {
+    gVertexArray.resize(1024 * 1024);
     checkGL();
 
     static bool bInit = false;

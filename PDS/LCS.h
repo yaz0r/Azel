@@ -53,7 +53,7 @@ struct s_LCSTask340SubSub : public s_workAreaTemplate<s_LCSTask340SubSub>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { nullptr, &s_LCSTask340SubSub::Update, nullptr, &s_LCSTask340SubSub::Delete, "s_LCSTask340SubSub" };
+        static const TypedTaskDefinition taskDefinition = { nullptr, &s_LCSTask340SubSub::Update, nullptr, &s_LCSTask340SubSub::Delete};
         return &taskDefinition;
     }
 
@@ -183,7 +183,7 @@ struct s_LCSTask : public s_workAreaTemplate<s_LCSTask>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_LCSTask::Init, NULL, NULL, NULL, "s_LCSTask" };
+        static const TypedTaskDefinition taskDefinition = { &s_LCSTask::Init, NULL, NULL, NULL};
         return &taskDefinition;
     }
 
@@ -229,7 +229,7 @@ struct sLCSSelectedSub : public s_workAreaTemplate<sLCSSelectedSub>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { nullptr, &sLCSSelectedSub::Update, &sLCSSelectedSub::Draw, nullptr, "sLCSSelectedSub" };
+        static const TypedTaskDefinition taskDefinition = { nullptr, &sLCSSelectedSub::Update, &sLCSSelectedSub::Draw, nullptr};
         return &taskDefinition;
     }
 
@@ -246,7 +246,7 @@ struct sLCSSelected : public s_workAreaTemplate<sLCSSelected>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { nullptr, &sLCSSelected::Update, &sLCSSelected::Draw, nullptr, "sLCSSelected" };
+        static const TypedTaskDefinition taskDefinition = { nullptr, &sLCSSelected::Update, &sLCSSelected::Draw, nullptr};
         return &taskDefinition;
     }
 

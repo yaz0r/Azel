@@ -24,7 +24,7 @@ struct s_dragonMenuDragonWorkArea : public s_workAreaTemplate<s_dragonMenuDragon
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuDragonWorkArea::dragonMenuDragonInit, &s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate, &s_dragonMenuDragonWorkArea::dragonMenuDragonDraw, &s_dragonMenuDragonWorkArea::dragonMenuDragonDelete, "dragonMenuDragon" };
+        static const TypedTaskDefinition taskDefinition = { &s_dragonMenuDragonWorkArea::dragonMenuDragonInit, &s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate, &s_dragonMenuDragonWorkArea::dragonMenuDragonDraw, &s_dragonMenuDragonWorkArea::dragonMenuDragonDelete };
         return &taskDefinition;
     }
 
