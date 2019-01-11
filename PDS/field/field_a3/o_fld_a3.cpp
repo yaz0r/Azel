@@ -78,51 +78,6 @@ std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, 
     return pVisibility;
 }
 
-p_workArea create_fieldA3_0_task0(p_workArea workArea)
-{
-    s_fieldTaskWorkArea_C* newWorkArea = createSubTaskFromFunction<s_fieldTaskWorkArea_C>(workArea, NULL);
-    getFieldTaskPtr()->mC = newWorkArea;
-    return newWorkArea;
-}
-
-p_workArea create_fieldA3_0_task1(p_workArea workArea, s32 r5, s32 r6)
-{
-    PDS_unimplemented("create_fieldA3_0_task1");
-    return workArea;
-}
-
-struct s_fieldA3_0_tutorialTask : public s_workAreaTemplate<s_fieldA3_0_tutorialTask>
-{
-
-};
-
-void fieldA3_0_tutorialTask_update(s_fieldA3_0_tutorialTask* workArea)
-{
-    if (startFieldScript(21, -1))
-    {
-        workArea->getTask()->markFinished();
-    }
-}
-
-void create_fieldA3_0_tutorialTask(p_workArea workArea)
-{
-    if ((getFieldTaskPtr()->m2C_currentFieldIndex != 2) || mainGameState.getBit(0xA2, 2))
-    {
-        createSubTaskFromFunction<s_fieldA3_0_tutorialTask>(workArea, fieldA3_0_tutorialTask_update);
-    }
-}
-
-void fieldA3_0_startTasks(p_workArea workArea)
-{
-    create_fieldA3_0_task0(workArea);
-
-    getFieldTaskPtr()->mC->m168 = create_fieldA3_0_task1(workArea, 2, 0x20);
-
-    PDS_unimplemented("fieldA3_0_startTasks");
-
-    create_fieldA3_0_tutorialTask(workArea);
-}
-
 void s_visdibilityCellTask::fieldGridTask_Update(s_visdibilityCellTask*)
 {
     // intentionally empty
@@ -306,7 +261,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                 if (depthRangeIndex <= r13->m1300)
                 {
                     u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0));
-                    addBillBoardtToDrawList(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
+                    addBillBoardToDrawList(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
 
                     if (readSaturnS16(r14->m0 + 2))
                     {
@@ -1074,11 +1029,6 @@ void setupField3(s_DataTable3* r4, void(*r5)(p_workArea workArea), std::vector<s
     getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1->m34_cameraVisibilityTable = r6;
 
     setupField2(r4, r5);
-}
-
-void subfieldA3_0Sub0(s_dragonTaskWorkArea* r4)
-{
-    PDS_unimplemented("subfieldA3_0Sub0");
 }
 
 void subfieldA3_1Sub0Sub0()
@@ -1930,157 +1880,6 @@ s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
     return pData;
 }
 
-void subfieldA3_0(p_workArea workArea)
-{
-    s16 r13 = getFieldTaskPtr()->m30;
-
-    playPCM(workArea, 100);
-    playPCM(workArea, 101);
-
-    s_DataTable3* pDataTable3 = readDataTable3({ 0x6085AA4, gFLD_A3 });
-    std::vector<std::vector<sCameraVisibility>>* pVisibility = readCameraVisbility({ 0x608F410, gFLD_A3 }, pDataTable3);
-    s_DataTable2* pDataTable2 = readDataTable2({ 0x6083D3C, gFLD_A3 });
-    setupField(pDataTable3, pDataTable2, fieldA3_0_startTasks, pVisibility);
-
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_0Sub0;
-
-    {
-        sVec3_FP position = { 0x28A000, 0x32000, 0x1294000 };
-        sVec3_FP rotation = { 0x0, 0x4000000, 0x0 };
-        setupDragonPosition(&position, &rotation);
-    }
-
-    if (r13 != -1)
-    {
-        if (getFieldTaskPtr()->m2C_currentFieldIndex == 21)
-        {
-            {
-                sVec3_FP position = { 0x2EF000, 0x3C000, -0x2D1000 };
-                sVec3_FP rotation = { 0x0, 0x16C16C, 0x0 };
-                setupDragonPosition(&position, &rotation);
-            }
-
-            graphicEngineStatus.m405C.m14_farClipDistance = 0x2AE000;
-            graphicEngineStatus.m405C.m38 = FP_Div(0x8000, 0x2AE000);
-
-            graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
-        }
-        else
-        {
-            //060542E4
-            switch (getFieldTaskPtr()->m32)
-            {
-            case 4:
-            case 5:
-            case 6:
-            case 8:
-            case 10:
-                assert(0);
-            default:
-                getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6090E84, gFLD_A3 });
-                startFieldScript(17, -1);
-                break;
-            }
-        }
-    }
-    //060543E0
-    PDS_unimplemented("subfieldA3_0");
-
-    createFieldPaletteTask(workArea);
-
-    //TODO: more stuff here
-
-    adjustVerticalLimits(-0x54000, 0x76000);
-}
-
-void fieldA3_2_startTasks(p_workArea workArea)
-{
-    create_fieldA3_0_task0(workArea);
-
-    getFieldTaskPtr()->mC->m168 = create_fieldA3_0_task1(workArea, 4, 0x60);
-
-    PDS_unimplemented("fieldA3_2_startTasks");
-}
-
-void subfieldA3_2Sub0(s_dragonTaskWorkArea*)
-{
-    PDS_unimplemented("subfieldA3_2Sub0");
-}
-
-void subfieldA3_2(p_workArea workArea)
-{
-    s16 r13 = getFieldTaskPtr()->m30;
-
-    playPCM(workArea, 100);
-    playPCM(workArea, 101);
-
-    s_DataTable3* pDataTable3 = readDataTable3({ 0x608BE04, gFLD_A3 });
-    std::vector<std::vector<sCameraVisibility>>* pVisibility = readCameraVisbility({ 0x608F8BC, gFLD_A3 }, pDataTable3);
-    s_DataTable2* pDataTable2 = readDataTable2({ 0x6088E8C, gFLD_A3 });
-    setupField(pDataTable3, pDataTable2, fieldA3_2_startTasks, pVisibility);
-
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_2Sub0;
-
-    switch (getFieldTaskPtr()->m32)
-    {
-    default:
-        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6091260, gFLD_A3 });
-        break;
-    }
-
-    startFieldScript(19, -1);
-
-    createFieldPaletteTask(workArea);
-
-    adjustVerticalLimits(-0x54000, 0x76000);
-
-    subfieldA3_1_Sub0();
-
-    //subfieldA3_1_Sub1();
-
-    PDS_unimplemented("subfieldA3_2");
-}
-
-void fieldA3_3_createItemBoxes(p_workArea workArea)
-{
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6092274, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x60922BC, gFLD_A3 }));
-}
-
-void fieldA3_3_startTasks(p_workArea workArea)
-{
-    create_fieldA3_0_task0(workArea);
-
-    PDS_unimplemented("fieldA3_3_startTasks");
-
-    fieldA3_3_createItemBoxes(workArea);
-}
-
-void subfieldA3_3(p_workArea workArea)
-{
-    playPCM(workArea, 100);
-    playPCM(workArea, 101);
-
-    s_DataTable3* pDataTable3 = readDataTable3({ 0x608C054, gFLD_A3 });
-    std::vector<std::vector<sCameraVisibility>>* pVisibility = readCameraVisbility({ 0x608F9E8, gFLD_A3 }, pDataTable3);
-    setupField3(pDataTable3, fieldA3_3_startTasks, pVisibility);
-
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6091400, gFLD_A3 });
-
-    PDS_unimplemented("subfieldA3_3");
-
-    createFieldPaletteTask(workArea);
-
-    adjustVerticalLimits(-0x5C000, 0x76000);
-
-    subfieldA3_1_Sub0();
-
-    PDS_unimplemented("subfieldA3_3");
-
-    startFieldScript(20, -1);
-
-   
-}
 void nullBattle()
 {
     // intentionally empty
@@ -2091,8 +1890,6 @@ void subfieldA3_1_Sub0()
     getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask->m58 = 1;
 }
 
-void subfieldA3_2(p_workArea workArea);
-void subfieldA3_3(p_workArea workArea);
 void subfieldA3_4(p_workArea workArea) { PDS_unimplemented("subfieldA3_4"); assert(false); }
 void subfieldA3_5(p_workArea workArea) { PDS_unimplemented("subfieldA3_5"); assert(false); }
 void subfieldA3_6(p_workArea workArea) { PDS_unimplemented("subfieldA3_6"); assert(false); }

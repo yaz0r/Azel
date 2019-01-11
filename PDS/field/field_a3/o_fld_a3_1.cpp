@@ -792,6 +792,210 @@ void fieldA3_1_createItemBoxes(p_workArea workArea)
     fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x609210C, gFLD_A3 }));
 }
 
+void fieldA3_1_task4_init(s_fieldA3_1_task4* pThis)
+{
+    sSaturnPtr r6 = gFLD_A3->getSaturnPtr(0x06081E04);
+
+    if (mainGameState.getBit(0xA2, 3))
+    {
+        pThis->m0 = readSaturnS32(r6);
+        pThis->m4 = readSaturnS32(r6 + 4);
+    }
+    else
+    {
+        r6 += 0x18;
+        pThis->m0 = readSaturnS32(r6);
+        pThis->m4 = readSaturnS32(r6 + 4);
+    }
+
+    pThis->m8 = readSaturnS32(r6 + 8);
+}
+
+void fieldA3_1_task4_update(s_fieldA3_1_task4* pThis)
+{
+    return; // but why?
+}
+
+static const s_fieldA3_1_task4::TypedTaskDefinition fieldA3_1_task4_definition = {
+    fieldA3_1_task4_init,
+    fieldA3_1_task4_update,
+    nullptr,
+    nullptr
+};
+
+void create_fieldA3_1_task4(p_workArea workArea)
+{
+    createSubTask<s_fieldA3_1_task4>(workArea, &fieldA3_1_task4_definition);
+}
+
+// This is the LCS target used to activate the birds to access Conana's nest
+struct fieldA3_1_startTasks_subTask : public s_workAreaTemplateWithArg<fieldA3_1_startTasks_subTask, sSaturnPtr>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &fieldA3_1_startTasks_subTask::Init, &fieldA3_1_startTasks_subTask::Update, &fieldA3_1_startTasks_subTask::Draw, NULL };
+        return &taskDefinition;
+    }
+
+    static void Init(fieldA3_1_startTasks_subTask* pThis, sSaturnPtr arg)
+    {
+        getMemoryArea(&pThis->m0_memoryArea, 3);
+
+        u8* p3dModelRawData = pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory);
+        init3DModelRawData(pThis, &pThis->m9C_3dModel, 0, p3dModelRawData, 4, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x324), pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x2A0), 0, nullptr);
+        stepAnimation(&pThis->m9C_3dModel);
+
+        pThis->m8_translation = readSaturnVec3(arg);
+        pThis->m54 = 0x67B4;
+
+        TaskUnimplemented();
+    }
+
+    static void Update(fieldA3_1_startTasks_subTask* pThis)
+    {
+        TaskUnimplemented();
+    }
+
+    static void Draw(fieldA3_1_startTasks_subTask* pThis)
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pThis->m8_translation);
+        rotateCurrentMatrixZYX(&pThis->m14_rotation);
+        addBillBoardToDrawList(pThis->m0_memoryArea.m0_mainMemory, READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0xA0)); // draw a bird
+        popMatrix();
+    }
+
+    s_memoryAreaOutput m0_memoryArea;
+    sVec3_FP m8_translation;
+    sVec3_FP m14_rotation;
+    s32 m54;
+    s_3dModel m9C_3dModel;
+    // size F0
+};
+
+struct fieldA3_1_startTasks_subTask2 : public s_workAreaTemplateWithArg<fieldA3_1_startTasks_subTask2, sSaturnPtr>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &fieldA3_1_startTasks_subTask2::Init, &fieldA3_1_startTasks_subTask2::Update, &fieldA3_1_startTasks_subTask2::Draw, NULL };
+        return &taskDefinition;
+    }
+
+    static void Init(fieldA3_1_startTasks_subTask2* pThis, sSaturnPtr arg)
+    {
+        getMemoryArea(&pThis->m0_memoryArea, 3);
+
+        u8* p3dModelRawData = pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory);
+        init3DModelRawData(pThis, &pThis->m78_3dModel, 0, p3dModelRawData, 4, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x324), pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x2A0), 0, nullptr);
+        stepAnimation(&pThis->m78_3dModel);
+
+        pThis->m8_translation = readSaturnVec3(arg);
+        TaskUnimplemented();
+    }
+
+    static void Update(fieldA3_1_startTasks_subTask2* pThis)
+    {
+        TaskUnimplemented();
+    }
+
+    static void Draw(fieldA3_1_startTasks_subTask2* pThis)
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pThis->m8_translation);
+        rotateCurrentMatrixZYX(&pThis->m14_rotation);
+        addBillBoardToDrawList(pThis->m0_memoryArea.m0_mainMemory, READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x9C));
+        popMatrix();
+    }
+
+    s_memoryAreaOutput m0_memoryArea;
+    sVec3_FP m8_translation;
+    sVec3_FP m14_rotation;
+    s_3dModel m78_3dModel;
+    // size CC
+};
+
+struct fieldA3_1_startTasks_subTask3 : public s_workAreaTemplateWithArg<fieldA3_1_startTasks_subTask3, sSaturnPtr>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &fieldA3_1_startTasks_subTask3::Init, &fieldA3_1_startTasks_subTask3::Update, &fieldA3_1_startTasks_subTask3::Draw, NULL };
+        return &taskDefinition;
+    }
+
+    static void Init(fieldA3_1_startTasks_subTask3* pThis, sSaturnPtr arg)
+    {
+        getMemoryArea(&pThis->m0_memoryArea, 3);
+
+        u8* p3dModelRawData = pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory);
+        init3DModelRawData(pThis, &pThis->m3C_3dModel, 0, p3dModelRawData, 4, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x324), pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x2A0), 0, nullptr);
+        stepAnimation(&pThis->m3C_3dModel);
+
+        pThis->m8_translation = readSaturnVec3(arg);
+        pThis->m2C = readSaturnVec3(arg + 0xC);
+        pThis->m20_rotation = readSaturnVec3(arg + 0xC * 2);
+    }
+
+    static void Update(fieldA3_1_startTasks_subTask3* pThis)
+    {
+        TaskUnimplemented();
+    }
+
+    static void Draw(fieldA3_1_startTasks_subTask3* pThis)
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pThis->m8_translation);
+        rotateCurrentMatrixZYX(&pThis->m20_rotation);
+        addBillBoardToDrawList(pThis->m0_memoryArea.m0_mainMemory, READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0xA0)); // draw a bird
+        popMatrix();
+    }
+
+    s_memoryAreaOutput m0_memoryArea;
+    sVec3_FP m8_translation;
+    sVec3_FP m20_rotation;
+    sVec3_FP m2C;
+    s_3dModel m3C_3dModel;
+    // size 8C
+};
+
+struct sfieldA3_1_startTasks_sub3_func_task : public s_workAreaTemplate<sfieldA3_1_startTasks_sub3_func_task>
+{
+    fieldA3_1_startTasks_subTask* m0;
+    // size 4
+};
+
+void fieldA3_1_startTasks_sub3_func(sfieldA3_1_startTasks_sub3_func_task* pThis)
+{
+    /*
+    getFieldTaskPtr()->mC->mC0[7][0] = pThis->m0;
+    getFieldTaskPtr()->mC->mC0[7][1] = pThis->m0;
+    getFieldTaskPtr()->mC->mC0[7][2] = pThis->m0;
+
+    getFieldTaskPtr()->mC->mC0[7][0] = pThis->m0;
+    getFieldTaskPtr()->mC->mC0[7][1] = pThis->m0;
+    getFieldTaskPtr()->mC->mC0[7][2] = pThis->m0;
+    */
+    TaskUnimplemented();
+}
+
+void fieldA3_1_startTasks_sub3(p_workArea workArea)
+{
+    sfieldA3_1_startTasks_sub3_func_task* r14 = createSubTaskFromFunction<sfieldA3_1_startTasks_sub3_func_task>(workArea, &fieldA3_1_startTasks_sub3_func);
+
+    r14->m0 = createSubTaskWithArg<fieldA3_1_startTasks_subTask>(r14, gFLD_A3->getSaturnPtr(0x6090778));
+
+    for (int i = 0; i < 7; i++)
+    {
+        createSubTaskWithArg<fieldA3_1_startTasks_subTask2>(r14, gFLD_A3->getSaturnPtr(0x60906D0 + i * 0xC));
+    }
+
+    for (int i = 0; i < 14; i++)
+    {
+        createSubTaskWithArg<fieldA3_1_startTasks_subTask3>(r14, gFLD_A3->getSaturnPtr(0x6090B74 + i * 0xC));
+    }
+
+    getFieldTaskPtr()->mC->m130_conanaNestCutsceneTrigger = 0; 
+}
+
 void fieldA3_1_startTasks(p_workArea workArea)
 {
     create_fieldA3_0_task0(workArea);
@@ -803,7 +1007,9 @@ void fieldA3_1_startTasks(p_workArea workArea)
     create_fieldA3_1_fieldIntroTask(workArea);
     create_fieldA3_1_checkExitsTask(workArea);
 
-    PDS_unimplemented("fieldA3_1_startTasks");
+    create_fieldA3_1_task4(workArea);
+
+    fieldA3_1_startTasks_sub3(workArea);
 
     fieldA3_1_createItemBoxes(workArea);
 
@@ -820,13 +1026,13 @@ void subfieldA3_1Sub0(s_dragonTaskWorkArea* r4)
     switch (r4->m108)
     {
     case 0:
-        if (getFieldTaskPtr()->mC->m130 != 1)
+        if (getFieldTaskPtr()->mC->m130_conanaNestCutsceneTrigger != 1)
             return;
         subfieldA3_1Sub0Sub0();
         r4->m108++;
     case 1:
         subfieldA3_1Sub0Sub1();
-        if (getFieldTaskPtr()->mC->m130 != 2)
+        if (getFieldTaskPtr()->mC->m130_conanaNestCutsceneTrigger != 2)
             return;
         subfieldA3_1Sub0Sub2(4, 0x8000);
         r4->m108++;

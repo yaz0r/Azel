@@ -229,7 +229,7 @@ extern bool hasEncounterData;
 
 #include "o_title.h"
 #include "o_menuEn.h"
-#include "o_fld_a3.h"
+#include "field/field_a3/o_fld_a3.h"
 
 // Script macro stuff
 

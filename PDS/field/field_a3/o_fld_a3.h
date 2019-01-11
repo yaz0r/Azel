@@ -36,6 +36,7 @@ void nullBattle();
 
 u32 gridCellDraw_GetDepthRange(fixedPoint r4);
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4);
+void setupField3(s_DataTable3* r4, void(*r5)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r6);
 
 struct sLaserArgs
 {
@@ -75,4 +76,15 @@ p_workArea fieldA3_1_createItemBoxes_Sub1(s_itemBoxDefinition* r4);
 s_cameraScript* readCameraScript(sSaturnPtr EA);
 void dispatchTutorialMultiChoiceSub2();
 
+struct s_fieldA3_1_task4 : public s_workAreaTemplate<s_fieldA3_1_task4>
+{
+    fixedPoint m0;
+    fixedPoint m4;
+    fixedPoint m8;
+    // size C
+};
+
+#include "o_fld_a3_0.h"
 #include "o_fld_a3_1.h"
+#include "o_fld_a3_2.h"
+#include "o_fld_a3_3.h"

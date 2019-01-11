@@ -16,10 +16,16 @@ file(GLOB_RECURSE SRC_KERNEL
     "kernel/*.h"
 )
 
+file(GLOB_RECURSE SRC_FIELD_A3
+    "field/field_a3/*.cpp"
+    "field/field_a3/*.h"
+)
+
 set(SOURCES
  ${SOURCES}
  ${SRC_KERNEL}
  ${SRC_ROOT}
+ ${SRC_FIELD_A3}
 
 ${THIRD_PARTY}/imgui/imgui.cpp
 ${THIRD_PARTY}/imgui/imgui_draw.cpp
@@ -30,6 +36,7 @@ ${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
 
 source_group("src" FILES ${SRC_ROOT})
 source_group("src\\kernel" FILES ${SRC_KERNEL})
+source_group("src\\field\\field_a3" FILES ${SRC_FIELD_A3})
 
 if (MSVC)
     set(SOURCES

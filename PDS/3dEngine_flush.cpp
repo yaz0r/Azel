@@ -23,6 +23,7 @@ struct s_objectToRender
     sMatrix4x3 m_modelMatrix;
     s16 m_lightColor[3];
     float m_2dOffset[2];
+    bool m_isBillboard;
 };
 
 std::vector<s_objectToRender> objectRenderList;
@@ -35,20 +36,24 @@ void addObjectToDrawList(u8* pObjectData, u32 offset)
     newObject.m_modelMatrix = *pCurrentMatrix;
     newObject.m_2dOffset[0] = (graphicEngineStatus.m405C.localCoordinatesX - (352.f / 2.f)) / 352.f;
     newObject.m_2dOffset[1] = (graphicEngineStatus.m405C.localCoordinatesY - (224.f / 2.f)) / 224.f;
+    newObject.m_isBillboard = 0;
 
     objectRenderList.push_back(newObject);
 }
 
-void addBillBoardtToDrawList(u8* pObjectData, u32 offset)
+void addBillBoardToDrawList(u8* pObjectData, u32 offset)
 {
     cameraProperties2.m88.matrix[3] = pCurrentMatrix->matrix[3];
-    cameraProperties2.m88.matrix[3] = pCurrentMatrix->matrix[7];
-    cameraProperties2.m88.matrix[3] = pCurrentMatrix->matrix[11];
+    cameraProperties2.m88.matrix[7] = pCurrentMatrix->matrix[7];
+    cameraProperties2.m88.matrix[11] = pCurrentMatrix->matrix[11];
 
     s_objectToRender newObject;
     newObject.m_pObject = pObjectData;
     newObject.m_offset = offset;
     newObject.m_modelMatrix = *pCurrentMatrix;
+    newObject.m_2dOffset[0] = (graphicEngineStatus.m405C.localCoordinatesX - (352.f / 2.f)) / 352.f;
+    newObject.m_2dOffset[1] = (graphicEngineStatus.m405C.localCoordinatesY - (224.f / 2.f)) / 224.f;
+    newObject.m_isBillboard = 1;
 
     objectRenderList.push_back(newObject);
 }
@@ -769,6 +774,15 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
 
     float objectProjMatrix[4 * 4];
     multiplyMatrices(objectMatrix, projectionMatrix, objectProjMatrix);
+
+    if (pObject->m_isBillboard)
+    {
+        glDisable(GL_CULL_FACE);
+    }
+    else
+    {
+        glEnable(GL_CULL_FACE);
+    }
 
     {
         checkGL();
