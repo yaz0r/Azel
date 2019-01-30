@@ -7,6 +7,6 @@
 [submodule "emsdk"]
 	path = ThirdParty/emsdk
 	url = https://github.com/juj/emsdk
-[submodule "soloud"]
+[submodule "ThirdParty/soloud/soloud"]
 	path = ThirdParty/soloud/soloud
 	url = https://github.com/jarikomppa/soloud
