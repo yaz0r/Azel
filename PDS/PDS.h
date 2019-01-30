@@ -13,6 +13,7 @@
 #include <SDL_syswm.h>
 #endif
 
+#include <soloud.h>
 #include <imgui.h>
 
 #include <stdlib.h>

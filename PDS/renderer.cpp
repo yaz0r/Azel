@@ -9,6 +9,8 @@
 #pragma comment(lib, "Opengl32.lib")
 #endif
 
+SoLoud::Soloud soloud; // Engine core
+
 SDL_Window *gWindow;
 SDL_GLContext gGlcontext;
 
@@ -99,6 +101,8 @@ enum eLayers {
 
 void azelSdl2_Init()
 {
+    soloud.init();
+
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         assert(false);

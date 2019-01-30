@@ -11,6 +11,7 @@ set(RENDER_D3D OFF CACHE BOOL "" FORCE)
 set(DISKAUDIO OFF CACHE BOOL "" FORCE)
 set(DUMMYAUDIO OFF CACHE BOOL "" FORCE)
 add_subdirectory( ${THIRD_PARTY}/SDL2 )
+add_subdirectory( ${THIRD_PARTY}/soloud )
 
 add_subdirectory( PDS_Tool )
 add_subdirectory( PDS )
