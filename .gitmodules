@@ -1,9 +1,12 @@
-[submodule "PDS/SDL2"]
+[submodule "SDL2"]
 	path = ThirdParty/SDL2
 	url = https://github.com/SDL-mirror/SDL
-[submodule "PDS/imgui"]
+[submodule "imgui"]
 	path = ThirdParty/imgui
 	url = https://github.com/ocornut/imgui
 [submodule "emsdk"]
 	path = ThirdParty/emsdk
 	url = https://github.com/juj/emsdk
+[submodule "soloud"]
+	path = ThirdParty/soloud/soloud
+	url = https://github.com/jarikomppa/soloud
