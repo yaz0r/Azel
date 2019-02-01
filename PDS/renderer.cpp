@@ -103,7 +103,10 @@ enum eLayers {
 
 void azelSdl2_Init()
 {
-    gSoloud.init();
+    if (gSoloud.init() != 0)
+    {
+        PDS_Logger.AddLog("SoLoud init failed");
+    }
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
