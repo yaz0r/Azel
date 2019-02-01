@@ -14,6 +14,9 @@
 #endif
 
 #include <soloud.h>
+#include <soloud_wav.h>
+extern SoLoud::Soloud gSoloud;
+
 #include <imgui.h>
 
 #include <stdlib.h>

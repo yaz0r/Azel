@@ -10,7 +10,24 @@ void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenu
 u32 titleScreenDrawSub1(sMenuUnk0* arrayData) { PDS_unimplemented("titleScreenDrawSub1"); return 0; }
 void fadePalette(sMenuUnk0Sub* arrayData, u32 from, u32 to, u32 steps) { PDS_unimplemented("fadePalette"); }
 void titleScreenDrawSub3(u32) { PDS_unimplemented("titleScreenDrawSub3"); }
-void playMusic(u8 musicNumber, u8 unk1) { PDS_unimplemented("playMusic"); }
+
+void playMusic(u8 musicNumber, u8 unk1)
+{
+    static SoLoud::Wav gWave;
+
+    switch (musicNumber)
+    {
+    case 1:
+        gWave.load("1.OGG");
+        gSoloud.play(gWave);
+        break;
+    case 75:
+        gWave.load("75.OGG");
+        gSoloud.play(gWave);
+        break;
+    }
+    PDS_unimplemented("playMusic");
+}
 bool soundFunc1() { PDS_unimplemented("soundFunc1"); return 0; }
 
 void playPCM(p_workArea, u32) { PDS_unimplemented("playPCM"); }

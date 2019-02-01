@@ -4248,7 +4248,7 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
 
 void stopAllSounds()
 {
-    PDS_unimplemented("stopAllSounds");
+    gSoloud.stopAll();
 }
 
 p_workArea loadField(p_workArea r4, s32 r5)

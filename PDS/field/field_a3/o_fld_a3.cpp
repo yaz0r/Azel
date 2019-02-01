@@ -2697,9 +2697,29 @@ s32 fieldPlayPCM(sSaturnPtr pPcmNameEA)
 {
     char* pPcmName = (char*)getSaturnPtr(pPcmNameEA);
 
-    printf("trying to play PCM %s\n", pPcmName);
+    FILE* fHandle = fopen(pPcmName, "rb");
+    if (fHandle)
+    {
+        fseek(fHandle, 0, SEEK_END);
+        int size = ftell(fHandle) / 2;
+        fseek(fHandle, 0, SEEK_SET);
+        s16* buffer = new s16[size];
+        fread(buffer, 2, size, fHandle);
 
-    PDS_unimplemented("fieldPlayPCM");
+        for (int i = 0; i < size; i++)
+        {
+            buffer[i] = READ_BE_S16(buffer + i);
+        }
+
+        SoLoud::Wav* newWav = new SoLoud::Wav();
+        newWav->loadRawWave16(buffer, size, 22050, 1);
+
+        gSoloud.play(*newWav);
+    }
+    else
+    {
+        printf("Failed to play PCM %s\n", pPcmName);
+    }
 
     return 0;
 }

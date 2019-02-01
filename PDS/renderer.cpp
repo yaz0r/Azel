@@ -1,5 +1,7 @@
 #include "PDS.h"
 
+#include <soloud.h>
+
 #define IMGUI_API
 
 #include "imgui_impl_opengl3.h"
@@ -9,7 +11,7 @@
 #pragma comment(lib, "Opengl32.lib")
 #endif
 
-SoLoud::Soloud soloud; // Engine core
+SoLoud::Soloud gSoloud; // Engine core
 
 SDL_Window *gWindow;
 SDL_GLContext gGlcontext;
@@ -101,7 +103,7 @@ enum eLayers {
 
 void azelSdl2_Init()
 {
-    soloud.init();
+    gSoloud.init();
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
