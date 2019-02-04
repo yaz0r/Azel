@@ -3612,12 +3612,12 @@ void s_DragonRiderTask::dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea)
 
 void dragonFieldSubTask2InitSub1(s32 r4)
 {
-    s_PaletteTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask;
+    s_FieldRadar* r14 = getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask;
     r14->m64 = r4;
     r14->m68 = MTH_Mul(r4, r4);
 }
 
-void s_PaletteTaskWorkArea::dragonFieldSubTask2Init(s_PaletteTaskWorkArea* pTypedWorkArea)
+void s_FieldRadar::dragonFieldSubTask2Init(s_FieldRadar* pTypedWorkArea)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask = pTypedWorkArea;
 
@@ -3684,7 +3684,7 @@ s8 paletteIndexTable[4] = {
     0,1,2,2
 };
 
-void s_PaletteTaskWorkArea::dragonFieldSubTask2Update(s_PaletteTaskWorkArea* pTypedWorkArea)
+void s_FieldRadar::dragonFieldSubTask2Update(s_FieldRadar* pTypedWorkArea)
 {
     PDS_unimplemented("dragonFieldSubTask2Update");
 
@@ -3698,14 +3698,14 @@ void s_PaletteTaskWorkArea::dragonFieldSubTask2Update(s_PaletteTaskWorkArea* pTy
 
 }
 
-void s_PaletteTaskWorkArea::dragonFieldSubTask2Draw(s_PaletteTaskWorkArea* pTypedWorkArea)
+void s_FieldRadar::dragonFieldSubTask2Draw(s_FieldRadar* pTypedWorkArea)
 {
     PDS_unimplemented("dragonFieldSubTask2Draw");
 }
 
 void initDragonFieldSubTask2(s_workArea* pWorkArea)
 {
-    createSubTask<s_PaletteTaskWorkArea>(pWorkArea);
+    createSubTask<s_FieldRadar>(pWorkArea);
 }
 
 void dragonFieldTaskInitSub2Sub2(fixedPoint* m178)

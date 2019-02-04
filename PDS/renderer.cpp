@@ -11,6 +11,8 @@
 #pragma comment(lib, "Opengl32.lib")
 #endif
 
+static float gVolume = 0.f;
+
 SoLoud::Soloud gSoloud; // Engine core
 
 SDL_Window *gWindow;
@@ -103,11 +105,6 @@ enum eLayers {
 
 void azelSdl2_Init()
 {
-    if (gSoloud.init() != 0)
-    {
-        PDS_Logger.AddLog("SoLoud init failed");
-    }
-
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         assert(false);
@@ -115,8 +112,8 @@ void azelSdl2_Init()
 
 #ifdef USE_GL_ES3 
     const char* glsl_version = "#version 300 es";
-//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-//    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #else
     const char* glsl_version = "#version 130";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -144,10 +141,14 @@ void azelSdl2_Init()
 
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+#ifndef __EMSCRIPTEN__
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#endif
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+
+    printf("glsl_version: %s\n", glsl_version);
 
     ImGui_ImplOpenGL3_Init(glsl_version);
     ImGui_ImplSDL2_InitForOpenGL(gWindow, gGlcontext);
@@ -240,6 +241,18 @@ int getPriorityForLayer(eLayers layerIndex)
 
 bool closeApp = false;
 
+struct UIState
+{
+    int mousex;
+    int mousey;
+    int mousedown;
+    int scroll;
+
+    char textinput[32];
+};
+
+static UIState gUIState;
+
 void azelSdl2_StartFrame()
 {
     checkGL();
@@ -247,9 +260,54 @@ void azelSdl2_StartFrame()
     while (SDL_PollEvent(&event))
     {
         ImGui_ImplSDL2_ProcessEvent(&event);
+        switch (event.type)
+        {
+        case SDL_MOUSEMOTION:
+            // update mouse position
+            gUIState.mousex = event.motion.x;
+            gUIState.mousey = event.motion.y;
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            // update button down state if left-clicking
+            if (event.button.button == 1)
+            {
+                gUIState.mousedown = 1;
+            }
+            if (event.button.button == 4)
+            {
+                gUIState.scroll = +1;
+            }
+            if (event.button.button == 5)
+            {
+                gUIState.scroll = -1;
+            }
+            break;
+        case SDL_MOUSEBUTTONUP:
+            // update button down state if left-clicking
+            if (event.button.button == 1)
+            {
+                gUIState.mousedown = 0;
+            }
+            break;
+        case SDL_MOUSEWHEEL:
+            if (event.wheel.y > 0)
+            {
+                gUIState.scroll += 1;
+            }
+            else if (event.wheel.y < 0)
+            {
+                gUIState.scroll -= 1;
+            }
+            break;
+        default:
+            break;
+        }
+
         if (event.type == SDL_QUIT)
             closeApp = true;
     }
+
+    gSoloud.setGlobalVolume(gVolume);
 
     graphicEngineStatus.m4514.m0[0].m16_pending.m6_buttonDown = 0;
     graphicEngineStatus.m4514.m0[0].m16_pending.m8_newButtonDown = 0;
@@ -314,6 +372,13 @@ void azelSdl2_StartFrame()
     ImGui_ImplSDL2_NewFrame(gWindow);
     ImGui::NewFrame();
     
+#ifdef __EMSCRIPTEN__
+    auto& io = ImGui::GetIO();
+    io.MousePos = ImVec2((float)gUIState.mousex, (float)gUIState.mousey);
+    io.MouseDown[0] = gUIState.mousedown != 0;
+    io.MouseDown[1] = 0;
+#endif
+
     checkGL();
 }
 
@@ -1341,6 +1406,16 @@ bool azelSdl2_EndFrame()
             if (ImGui::MenuItem("5", NULL, frameLimit == 5)) frameLimit = 5;
             ImGui::EndMenu();
         }
+
+#ifdef __EMSCRIPTEN__
+        ImGui::Text("MouseX:%f", ImGui::GetIO().MousePos.x);
+        ImGui::Text("MouseY:%f", ImGui::GetIO().MousePos.y);
+        ImGui::Text("Mouse[0]: %d", ImGui::GetIO().MouseDown[0]);
+        ImGui::Text("Mouse[1]: %d", ImGui::GetIO().MouseDown[1]);
+#endif
+        ImGui::PushItemWidth(100);
+        ImGui::SliderFloat("Volume", &gVolume, 0, 1);
+        ImGui::PopItemWidth();
 
         ImGui::EndMainMenuBar();
     }

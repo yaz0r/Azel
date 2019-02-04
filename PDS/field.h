@@ -376,9 +376,9 @@ struct s_cutsceneData
 
 struct s_RGB8
 {
-    u8 m0;
-    u8 m1;
-    u8 m2;
+    s8 m0;
+    s8 m1;
+    s8 m2;
 
     u32 toU32()
     {
@@ -670,7 +670,7 @@ struct s_randomBattleWorkArea : public s_workAreaTemplate<s_randomBattleWorkArea
     // size 8
 };
 
-struct s_PaletteTaskWorkArea : public s_workAreaTemplate<s_PaletteTaskWorkArea>
+struct s_FieldRadar : public s_workAreaTemplate<s_FieldRadar>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
@@ -678,9 +678,9 @@ struct s_PaletteTaskWorkArea : public s_workAreaTemplate<s_PaletteTaskWorkArea>
         return &taskDefinition;
     }
 
-    static void dragonFieldSubTask2Init(s_PaletteTaskWorkArea*);
-    static void dragonFieldSubTask2Update(s_PaletteTaskWorkArea*);
-    static void dragonFieldSubTask2Draw(s_PaletteTaskWorkArea*);
+    static void dragonFieldSubTask2Init(s_FieldRadar*);
+    static void dragonFieldSubTask2Update(s_FieldRadar*);
+    static void dragonFieldSubTask2Draw(s_FieldRadar*);
 
     s_memoryAreaOutput m0;
     s16 m8;
@@ -755,7 +755,7 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     u32 CGBFilesSizes[32]; // 1B4
     s_fieldOverlaySubTaskWorkArea* m334;
     s_dragonTaskWorkArea* m338_pDragonTask; // 338
-    s_PaletteTaskWorkArea* m33C_pPaletteTask;
+    s_FieldRadar* m33C_pPaletteTask;
     s_LCSTask* m340_pLCS;
     s_randomBattleWorkArea* m344_randomBattleTask;
     s_visibilityGridWorkArea* m348_pFieldCameraTask1; // 348
@@ -781,6 +781,7 @@ struct s_fieldTaskWorkArea_C : public s_workAreaTemplate<s_fieldTaskWorkArea_C>
     std::array<p_workArea, 20> mC; // size probably incorrect
     std::array<u32, 56> m50; //not sure of size
     std::array<s8, 3> m9C;
+    s8 mA3_conanaNestExit;
     std::array<fixedPoint, 7> mA4;
     std::array<sVec3_FP, 18> mC0; // not sure of size
     u8 m130_conanaNestCutsceneTrigger;
@@ -900,3 +901,5 @@ void updateCameraScriptSub0(u32 r4);
 void dragonFieldTaskInitSub4Sub4();
 
 void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 param, s32 exitIndex, s32 arg0);
+void initFieldDragonLight();
+

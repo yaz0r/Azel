@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-include_directories("." "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/soloud/soloud/include" "${THIRD_PARTY}/imgui/examples/libs/gl3w")
+include_directories("." "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/imgui/examples/libs/gl3w" "${THIRD_PARTY}/soloud/soloud/include")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -126,8 +126,8 @@ TARGET_LINK_LIBRARIES(Azel ${EXTRA_LIBS})
 
 if(EMSCRIPTEN)
 	TARGET_LINK_LIBRARIES(Azel -lGLESv2)
-	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -g3")
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s TOTAL_MEMORY=1073741824 -s EXTRA_EXPORTED_RUNTIME_METHODS=['Pointer_stringify'] -s USE_WEBGL2=1 -O3 -g3 --preload-file ${CMAKE_SOURCE_DIR}/data@/")
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -g0")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s TOTAL_MEMORY=1073741824 -s EXTRA_EXPORTED_RUNTIME_METHODS=['Pointer_stringify'] -s USE_WEBGL2=1 -O3 -g0 --preload-file ${CMAKE_SOURCE_DIR}/data@/")
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
 

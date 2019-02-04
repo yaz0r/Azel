@@ -37,6 +37,8 @@ void subfieldA3_2(p_workArea workArea)
 
     startFieldScript(19, -1);
 
+    initFieldDragonLight();
+
     createFieldPaletteTask(workArea);
 
     adjustVerticalLimits(-0x54000, 0x76000);

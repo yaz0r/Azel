@@ -206,3 +206,25 @@ void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 para
 {
     createSubTaskFromFunction<s_exitCutsceneTask>(parent, &s_exitCutsceneTask::Update);
 }
+
+void initFieldDragonLight()
+{
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    pDragonTask->mC8_normalLightColor.m0 = 0x10;
+    pDragonTask->mC8_normalLightColor.m1 = 0x10;
+    pDragonTask->mC8_normalLightColor.m2 = 0x10;
+
+    pDragonTask->mCB_falloffColor0.m0 = 9;
+    pDragonTask->mCB_falloffColor0.m1 = 9;
+    pDragonTask->mCB_falloffColor0.m2 = 9;
+
+    pDragonTask->mCE_falloffColor1.m0 = -5;
+    pDragonTask->mCE_falloffColor1.m1 = -5;
+    pDragonTask->mCE_falloffColor1.m2 = -5;
+
+    pDragonTask->mD1_falloffColor2.m0 = 0x19;
+    pDragonTask->mD1_falloffColor2.m1 = 0x19;
+    pDragonTask->mD1_falloffColor2.m2 = 0x19;
+
+    pDragonTask->mC0_lightRotationAroundDragon = 0xC000000;
+}

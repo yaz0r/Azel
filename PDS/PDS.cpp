@@ -895,8 +895,27 @@ void interruptVDP1Update()
 bool bContinue = true;
 void loopIteration()
 {
+    static bool gameRunning = false;
+
+    azelSdl2_StartFrame();
+    if (!gameRunning)
+    {
+        if (ImGui::GetIO().MouseClicked[0])
+        {
+            gameRunning = true;
+        }
+    }
+    else
+    {
+        static bool audioInitialized = false;
+        if (!audioInitialized)
+        {
+            gSoloud.init();
+            audioInitialized = true;
+        }
+
         checkGL();
-        azelSdl2_StartFrame();
+        
 
         //updateDebug();
 
@@ -928,6 +947,7 @@ void loopIteration()
             interruptVDP1Update();
         }
         checkGL();
+    }
 
 	bContinue = azelSdl2_EndFrame();
 }

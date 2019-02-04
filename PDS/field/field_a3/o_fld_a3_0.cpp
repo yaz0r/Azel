@@ -104,7 +104,7 @@ void subfieldA3_0(p_workArea workArea)
         }
     }
     //060543E0
-    PDS_unimplemented("subfieldA3_0");
+    initFieldDragonLight();
 
     createFieldPaletteTask(workArea);
 
