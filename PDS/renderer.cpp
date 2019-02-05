@@ -11,7 +11,11 @@
 #pragma comment(lib, "Opengl32.lib")
 #endif
 
+#ifdef __EMSCRIPTEN__
+static float gVolume = 1.f;
+#else
 static float gVolume = 0.f;
+#endif
 
 SoLoud::Soloud gSoloud; // Engine core
 
@@ -31,10 +35,10 @@ GLuint gNBG1Texture = 0;
 GLuint gNBG2Texture = 0;
 GLuint gNBG3Texture = 0;
 
-#ifdef PDS_TOOL
+#if defined(PDS_TOOL) && !defined(__EMSCRIPTEN__)
 int frameLimit = -1;
 #else
-const int frameLimit = 30;
+int frameLimit = 30;
 #endif
 
 #ifdef USE_GL_ES3
@@ -143,8 +147,8 @@ void azelSdl2_Init()
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 #ifndef __EMSCRIPTEN__
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #endif
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
@@ -372,13 +376,6 @@ void azelSdl2_StartFrame()
     ImGui_ImplSDL2_NewFrame(gWindow);
     ImGui::NewFrame();
     
-#ifdef __EMSCRIPTEN__
-    auto& io = ImGui::GetIO();
-    io.MousePos = ImVec2((float)gUIState.mousex, (float)gUIState.mousey);
-    io.MouseDown[0] = gUIState.mousedown != 0;
-    io.MouseDown[1] = 0;
-#endif
-
     checkGL();
 }
 
@@ -1407,12 +1404,6 @@ bool azelSdl2_EndFrame()
             ImGui::EndMenu();
         }
 
-#ifdef __EMSCRIPTEN__
-        ImGui::Text("MouseX:%f", ImGui::GetIO().MousePos.x);
-        ImGui::Text("MouseY:%f", ImGui::GetIO().MousePos.y);
-        ImGui::Text("Mouse[0]: %d", ImGui::GetIO().MouseDown[0]);
-        ImGui::Text("Mouse[1]: %d", ImGui::GetIO().MouseDown[1]);
-#endif
         ImGui::PushItemWidth(100);
         ImGui::SliderFloat("Volume", &gVolume, 0, 1);
         ImGui::PopItemWidth();
