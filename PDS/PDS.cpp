@@ -949,7 +949,7 @@ void loopIteration()
         checkGL();
     }
 
-	bContinue = azelSdl2_EndFrame();
+    bContinue = azelSdl2_EndFrame();
 }
 
 int main(int argc, char* argv[])

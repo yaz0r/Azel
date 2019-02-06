@@ -402,6 +402,11 @@ void rotateMatrixZYX_s16(s16* rotationVec, sMatrix4x3* pMatrix)
     rotateMatrixX(rotationVec[0], pMatrix);
 }
 
+void rotateCurrentMatrixZYX_s16(s16* rotationVec)
+{
+    rotateMatrixZYX_s16(rotationVec, pCurrentMatrix);
+}
+
 void scaleMatrixRow0(fixedPoint r4, sMatrix4x3* pMatrix)
 {
     pMatrix->matrix[0] = MUL_FP(pMatrix->matrix[0], r4) >> 16;

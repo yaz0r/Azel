@@ -4186,40 +4186,44 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
     s32 var_18 = mainGameState.gameStats.m2_rider1;
     s32 r15 = mainGameState.gameStats.m3_rider2;
 
+    // 7: captain scene FMV
+
     switch (index)
     {
     case 0:
         break;
-    case 1:
+    case 1: // intro video
         mainGameState.setBit(4, 0);
         setNextGameStatus(2);
         break;
-    case 2:
+    case 2: // name entry
         setNextGameStatus(3);
         break;
-    case 3:
+    case 3: // resurrection video
         mainGameState.setBit(4, 1);
         setNextGameStatus(4);
         break;
-    case 4:
+    case 4: // ruins
         setNextGameStatus(5);
         break;
-    case 5:
+    case 5: // elevator video
         mainGameState.setBit(4, 3);
         setNextGameStatus(80);
         break;
-    case 6:
+    case 6: // initiate captain scene
         mainGameState.setBit(4, 3);
         mainGameState.setBit(10, 6);
-        setNextGameStatus(81);
+        PDS_unimplemented("HACK: skipping to Excavation site #3");
+        //setNextGameStatus(81);
+        setNextGameStatus(83);
         break;
-    case 80:
-    case 81:
+    case 80: // above excavation
+    case 81: // captain scene intro (gameplay)
     case 82:
-    case 83:
+    case 83: // excavation site #3 (tutorial)
         setNextGameStatus(79);
         break;
-    case 79:
+    case 79: // no automatic state increase?
         break;
     default:
         assert(0);
@@ -4371,6 +4375,7 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
         case 79:
         case 80:
         case 81:
+        case 83:
             if ((gGameStatus.m2 == 0) && (gGameStatus.m6_previousGameStatus != 0x4F))
             {
                 initFileLayoutTable();

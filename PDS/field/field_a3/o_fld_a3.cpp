@@ -508,6 +508,23 @@ struct s_A3_Obj2 : public s_workAreaTemplate<s_A3_Obj2>
     // size 0x94
 };
 
+struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
+{
+    s_memoryAreaOutput m0;
+    s_DataTable2Sub0* m8;
+    sVec3_FP mC_position;
+    s32 m18;
+    s32 m1C;
+    s32 m20;
+    s32 m24;
+    s32 m28;
+    s32 m2C;
+    std::array<s16, 3> m30_rotation;
+    s8 m3A;
+    sLCSTarget m3C;
+    // size 0x70
+};
+
 void getDragonDeltaMovement(sVec3_FP* r4)
 {
     *r4 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m160_deltaTranslation;
@@ -672,6 +689,77 @@ void create_A3_Obj2_Sub1(p_workArea, sLCSTarget*)
     assert(0);
 }
 
+s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* r4)
+{
+    return checkPositionVisibility(r4, graphicEngineStatus.m405C.m14_farClipDistance);
+}
+
+void A3_3_Obj0_Draw(s_A3_3_Obj0* pThis)
+{
+    if (!checkPositionVisibilityAgainstFarPlane(&pThis->mC_position))
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pThis->mC_position);
+        rotateCurrentMatrixZYX_s16(&pThis->m30_rotation[0]);
+        addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
+        PDS_unimplemented("gridCellDraw_normalSub2");
+        //callGridCellDraw_normalSub2(pThis->m0.m0_mainMemory, 0x2C8);
+        popMatrix();
+    }
+}
+
+void A3_0_Obj0_Callback(p_workArea, sLCSTarget*)
+{
+    assert(0);
+}
+
+void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+{
+    s8 r12 = readSaturnS8(sSaturnPtr({ 0x60925E8, gFLD_A3 }) + r5.m18);
+
+    s_A3_3_Obj0* pNewObj = createSubTaskFromFunction<s_A3_3_Obj0>(r4, NULL);
+    getMemoryArea(&pNewObj->m0, r6);
+    pNewObj->m8 = &r5;
+
+    s32 variable = readSaturnS32(sSaturnPtr({ 0x60925AC, gFLD_A3 }) + 4 * r5.m18);
+    if (mainGameState.getBit566(variable))
+    {
+        pNewObj->getTask()->markFinished();
+        return;
+    }
+
+    pNewObj->m_DrawMethod = &A3_3_Obj0_Draw;
+    pNewObj->mC_position = r5.m4_position;
+    pNewObj->m30_rotation[0] = r5.m10;
+    pNewObj->m30_rotation[1] = r5.m12_rotation[0];
+    pNewObj->m30_rotation[2] = r5.m12_rotation[1];
+    pNewObj->m18 = 0;
+    pNewObj->m1C = 0;
+    pNewObj->m20 = 0;
+    pNewObj->m24 = 0;
+    pNewObj->m28 = 0;
+    pNewObj->m2C = 0;
+    pNewObj->m3A = 0;
+
+    s32 param = readSaturnS32(sSaturnPtr({ 0x6092570, gFLD_A3 }) + 4 * r5.m18);
+    if (param == -1)
+    {
+        createLCSTarget(&pNewObj->m3C, pNewObj, &A3_0_Obj0_Callback, &pNewObj->mC_position, 0, 0, 0, -1, 0, 0);
+    }
+    else
+    {
+        createLCSTarget(&pNewObj->m3C, pNewObj, &A3_0_Obj0_Callback, &pNewObj->mC_position, 0, 0, 0, param, 0, 0);
+    }
+
+    //0605E162
+    switch (r12)
+    {
+    default:
+        //assert(0);
+        break;
+    }
+}
+
 void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32 r7)
 {
     s_A3_Obj2* pNewObj = createSubTaskFromFunction<s_A3_Obj2>(r4, NULL);
@@ -833,11 +921,6 @@ p_workArea create_A3_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r
     return pNewTask;
 }
 
-s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* r4)
-{
-    return checkPositionVisibility(r4, graphicEngineStatus.m405C.m14_farClipDistance);
-}
-
 struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -937,6 +1020,16 @@ void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 {
     switch (r5.m0_function.m_offset)
     {
+        // A0
+    case 0x0605e012:
+        create_A3_0_Obj0(r4, r5, r6);
+        break;
+    case 0x06055724:
+    case 0x0605580e:
+    case 0x0605e608:
+    case 0x060567e4:
+        break;
+
         // ropes
     case 0x6060194:
         getFieldTaskPtr()->mC->mC[r5.m18] = create_A3_Obj0(r4, r5, r6, 0);

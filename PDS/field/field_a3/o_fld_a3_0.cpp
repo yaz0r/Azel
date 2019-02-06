@@ -39,6 +39,18 @@ void create_fieldA3_0_tutorialTask(p_workArea workArea)
     }
 }
 
+void fieldA3_0_createItemBoxes(p_workArea workArea)
+{
+    fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x6091DF4, gFLD_A3 }));
+    fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x6091E3C, gFLD_A3 }));
+    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6091E84, gFLD_A3 }));
+    fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x6091ECC, gFLD_A3 }));
+    fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x6091F14, gFLD_A3 }));
+    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6091F5C, gFLD_A3 }));
+    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6091FA4, gFLD_A3 }));
+    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6091FEC, gFLD_A3 }));
+}
+
 void fieldA3_0_startTasks(p_workArea workArea)
 {
     create_fieldA3_0_task0(workArea);
@@ -47,7 +59,14 @@ void fieldA3_0_startTasks(p_workArea workArea)
 
     PDS_unimplemented("fieldA3_0_startTasks");
 
+    fieldA3_0_createItemBoxes(workArea);
+
     create_fieldA3_0_tutorialTask(workArea);
+}
+
+void setupFieldCameraConfig_A3_0()
+{
+    setupFieldCameraConfigs(readCameraConfig({ 0x6081F44, gFLD_A3 }), 1);
 }
 
 void subfieldA3_0(p_workArea workArea)
@@ -108,7 +127,14 @@ void subfieldA3_0(p_workArea workArea)
 
     createFieldPaletteTask(workArea);
 
-    //TODO: more stuff here
+    setupFieldCameraConfig_A3_0();
 
-    adjustVerticalLimits(-0x54000, 0x76000);
+    adjustVerticalLimits(-0x5A000, 0x76000);
+
+    subfieldA3_1_Sub0();
+
+    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
+
+    TaskUnimplemented();
+    //subfieldA3_1_Sub1();
 }

@@ -91,6 +91,7 @@ void rotateMatrixZYX(const sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixZYX(const sVec3_FP* rotationVec);
 void rotateCurrentMatrixZYX(const sVec3_FP& rotationVec);
 void rotateMatrixZYX_s16(s16* rotationVec, sMatrix4x3* pMatrix);
+void rotateCurrentMatrixZYX_s16(s16* rotationVec);
 void multiplyCurrentMatrix(sMatrix4x3* arg4);
 void multiplyCurrentMatrixSaveStack(sMatrix4x3* arg4);
 

@@ -233,6 +233,18 @@ public:
             return true;
         return false;
     }
+
+    bool getBit566(u32 bitIndex)
+    {
+        if (bitIndex < 1000)
+        {
+            return getBit(bitIndex);
+        }
+        else
+        {
+            return getBit(bitIndex - 566);
+        }
+    }
 };
 
 extern s_mainGameState mainGameState;
