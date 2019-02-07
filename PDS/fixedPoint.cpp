@@ -21,7 +21,7 @@ fixedPoint FP_Div(s32 divident, fixedPoint divisor)
     return fixedPoint::fromS32((((s64)divident) << 16) / divisor.asS32());
 }
 
-fixedPoint dot3_FP(sVec3_FP* r4, sVec3_FP* r5)
+fixedPoint dot3_FP(const sVec3_FP* r4, const sVec3_FP* r5)
 {
     s64 acc = 0;
     acc += (*r4)[0] * (s64)(*r5)[0];
@@ -29,6 +29,11 @@ fixedPoint dot3_FP(sVec3_FP* r4, sVec3_FP* r5)
     acc += (*r4)[2] * (s64)(*r5)[2];
 
     return (s32)(acc >> 16);
+}
+
+fixedPoint MTH_Product3d_FP(const sVec3_FP& r4, const sVec3_FP& r5)
+{
+    return dot3_FP(&r4, &r5);
 }
 
 s32 gDivident;

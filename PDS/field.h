@@ -550,8 +550,7 @@ struct s_DataTable2Sub0
 {
     sSaturnPtr m0_function;
     sVec3_FP m4_position;
-    s16 m10;
-    std::array<s16,2> m12_rotation;
+    std::array<s16, 3> m10_rotation;
     s32 m18;
     // size is 0x20
 };

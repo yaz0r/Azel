@@ -513,13 +513,11 @@ struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
     s_memoryAreaOutput m0;
     s_DataTable2Sub0* m8;
     sVec3_FP mC_position;
-    s32 m18;
-    s32 m1C;
-    s32 m20;
-    s32 m24;
-    s32 m28;
-    s32 m2C;
+    sVec3_FP m18;
+    sVec3_FP m24;
     std::array<s16, 3> m30_rotation;
+    s16 m36;
+    s16 m38;
     s8 m3A;
     sLCSTarget m3C;
     // size 0x70
@@ -650,8 +648,8 @@ void A3_Obj2_Draw(s_A3_Obj2* r14)
     sVec3_FP var60_currentNodePosition = r14->m10_position;
     initMatrixToIdentity(&var0_baseMatrix);
     s_DataTable2Sub0* r13 = r14->m8;
-    rotateMatrixZ(r13->m12_rotation[1], &var0_baseMatrix);
-    rotateMatrixY(r13->m12_rotation[0], &var0_baseMatrix);
+    rotateMatrixZ(r13->m10_rotation[2], &var0_baseMatrix);
+    rotateMatrixY(r13->m10_rotation[1], &var0_baseMatrix);
 
     s32 r11 = r14->m28_numNodes;
     if (r11 <= 0)
@@ -670,8 +668,8 @@ void A3_Obj2_Draw(s_A3_Obj2* r14)
 
         pushCurrentMatrix();
         translateCurrentMatrix(&var60_currentNodePosition);
-        rotateCurrentMatrixZ(r13->m12_rotation[1]);
-        rotateCurrentMatrixY(r13->m12_rotation[0]);
+        rotateCurrentMatrixZ(r13->m10_rotation[2]);
+        rotateCurrentMatrixY(r13->m10_rotation[1]);
         rotateCurrentMatrixShiftedX(*r12);
 
         u32 offset = READ_BE_U32(r14->m0.m0_mainMemory + readSaturnS16(r10));
@@ -708,6 +706,84 @@ void A3_3_Obj0_Draw(s_A3_3_Obj0* pThis)
     }
 }
 
+void getFieldDragonPosition(sVec3_FP* r4)
+{
+    *r4 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
+}
+
+void A3_3_Obj0_Update1Sub0(sVec3_FP* r4, sVec3_FP* r5)
+{
+    sVec3_FP var8_dragonPosition;
+    getFieldDragonPosition(&var8_dragonPosition);
+    var8_dragonPosition -= *r5;
+
+    fixedPoint r12 = FP_Div(var8_dragonPosition[1], sqrt_F(MTH_Product3d_FP(var8_dragonPosition, var8_dragonPosition)));
+    if (r12 < 0)
+    {
+        r12 = MTH_Mul_5_6(sqrt_F(var8_dragonPosition[1].getAbs()), r12, r12);
+
+        fixedPoint var0[2];
+        generateCameraMatrixSub1(var8_dragonPosition, var0);
+
+        (*r4)[0] = (*r5)[0] + MTH_Mul(r12, getSin(var0[1].getInteger() & 0xFFF));
+        (*r4)[1] = (*r5)[1] + MTH_Mul(r12, -getSin(var0[0].getInteger() & 0xFFF));
+        (*r4)[2] = (*r5)[2] + MTH_Mul(r12, getCos(var0[1].getInteger() & 0xFFF));
+    }
+    else
+    {
+        *r4 = *r5;
+    }
+
+}
+
+void A3_3_Obj0_Update1(s_A3_3_Obj0* pThis)
+{
+    updateLCSTarget(&pThis->m3C);
+    switch (pThis->m3A)
+    {
+    case 0:
+        A3_3_Obj0_Update1Sub0(&pThis->mC_position, &pThis->m8->m4_position);
+        break;
+    default:
+        assert(0);
+        break;
+    }
+}
+
+void A3_3_Obj0_Update2(s_A3_3_Obj0* pThis)
+{
+    A3_3_Obj0_Update1(pThis);
+    if (pThis->m3A > 1)
+    {
+        pThis->m38--;
+        if (pThis->m38 <= 0)
+        {
+            playSoundEffect(0x17);
+            pThis->m18[0] = -pThis->m18[0];
+            pThis->m18[2] = -pThis->m18[2];
+
+            pThis->m_UpdateMethod = A3_3_Obj0_Update1;
+        }
+    }
+}
+
+void A3_3_Obj0_Update0(s_A3_3_Obj0* pThis)
+{
+    updateLCSTarget(&pThis->m3C);
+    switch (pThis->m3A)
+    {
+    case 0: // standing still
+        break;
+    case 1: // falling
+        pThis->m18 += pThis->m24;
+        assert(0);
+        break;
+    default:
+        assert(0);
+        break;
+    }
+}
+
 void A3_0_Obj0_Callback(p_workArea, sLCSTarget*)
 {
     assert(0);
@@ -730,15 +806,11 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 
     pNewObj->m_DrawMethod = &A3_3_Obj0_Draw;
     pNewObj->mC_position = r5.m4_position;
-    pNewObj->m30_rotation[0] = r5.m10;
-    pNewObj->m30_rotation[1] = r5.m12_rotation[0];
-    pNewObj->m30_rotation[2] = r5.m12_rotation[1];
-    pNewObj->m18 = 0;
-    pNewObj->m1C = 0;
-    pNewObj->m20 = 0;
-    pNewObj->m24 = 0;
-    pNewObj->m28 = 0;
-    pNewObj->m2C = 0;
+    pNewObj->m30_rotation[0] = r5.m10_rotation[0];
+    pNewObj->m30_rotation[1] = r5.m10_rotation[1];
+    pNewObj->m30_rotation[2] = r5.m10_rotation[2];
+    pNewObj->m18.zero();
+    pNewObj->m24.zero();
     pNewObj->m3A = 0;
 
     s32 param = readSaturnS32(sSaturnPtr({ 0x6092570, gFLD_A3 }) + 4 * r5.m18);
@@ -754,8 +826,36 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     //0605E162
     switch (r12)
     {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+        pNewObj->m_UpdateMethod = &A3_3_Obj0_Update0;
+        pNewObj->m24[0] = readSaturnS32(sSaturnPtr({ 0x609262C, gFLD_A3 }) + 8 * r12 + 0);
+        pNewObj->m24[1] = readSaturnS32(sSaturnPtr({ 0x609262C, gFLD_A3 }) + 8 * r12 + 4);
+        pNewObj->m36 = readSaturnS16(sSaturnPtr({ 0x609264C, gFLD_A3 }) + 2 * r12);
+        break;
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        pNewObj->m_UpdateMethod = &A3_3_Obj0_Update1;
+        pNewObj->m18[0] = readSaturnS32(sSaturnPtr({ 0x60925FC, gFLD_A3 }) + 8 * r12 + 0);
+        pNewObj->m18[1] = readSaturnS32(sSaturnPtr({ 0x60925FC, gFLD_A3 }) + 8 * r12 + 0);
+        break;
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+        pNewObj->m_UpdateMethod = &A3_3_Obj0_Update2;
+        pNewObj->m18[0] = readSaturnS32(sSaturnPtr({ 0x6092654, gFLD_A3 }) + 8 * r12 + 0);
+        pNewObj->m18[1] = readSaturnS32(sSaturnPtr({ 0x6092654, gFLD_A3 }) + 8 * r12 + 0);
+        pNewObj->m36 = pNewObj->m38 = readSaturnS16(sSaturnPtr({ 0x6092674, gFLD_A3 }) + 2 * r12);
+        break;
     default:
-        //assert(0);
+        assert(0);
         break;
     }
 }
@@ -909,13 +1009,13 @@ p_workArea create_A3_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r
     pNewTask->m14_position = r5.m4_position;
     *pNewTask->mC = 0;
     pNewTask->m28.zero();
-    if (r5.m10)
+    if (r5.m10_rotation[0])
     {
-        pNewTask->m3A_rotation = 0x800 - r5.m12_rotation[0];
+        pNewTask->m3A_rotation = 0x800 - r5.m10_rotation[1];
     }
     else
     {
-        pNewTask->m3A_rotation = r5.m12_rotation[0];
+        pNewTask->m3A_rotation = r5.m10_rotation[1];
     }
 
     return pNewTask;
@@ -1016,6 +1116,296 @@ void create_A3_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     pNewTask->m20[2] = randomNumber();
 }
 
+// crane upper part
+struct s_A3_0_Obj1 : public s_workAreaTemplate<s_A3_0_Obj1>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { NULL, &s_A3_0_Obj1::Update, &s_A3_0_Obj1::Draw, NULL };
+        return &taskDefinition;
+    }
+
+    static void Update(s_A3_0_Obj1* pThis)
+    {
+        pThis->m1E_isVisible = !checkPositionVisibilityAgainstFarPlane(&pThis->mC_position);
+        if (pThis->m1E_isVisible)
+        {
+            pThis->m1A = (getSin(pThis->m1C & 0xFFF) >> 7) + pThis->m18;
+            pThis->m1C += 0xF;
+        }
+    }
+
+    static void Update2(s_A3_0_Obj1* pThis) // used for cranes that don't rotate
+    {
+        pThis->m1E_isVisible = !checkPositionVisibilityAgainstFarPlane(&pThis->mC_position);
+    }
+
+    static void Draw(s_A3_0_Obj1* pThis)
+    {
+        if (pThis->m1E_isVisible)
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pThis->mC_position);
+            rotateCurrentMatrixY(pThis->m1A);
+            addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2CC));
+            popMatrix();
+        }
+    }
+
+    s_memoryAreaOutput m0;
+    sVec3_FP mC_position;
+    s16 m18;
+    s16 m1A;
+    s16 m1C;
+    s8 m1E_isVisible;
+    // size 0x20
+};
+
+void create_A3_0_Obj1(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+{
+    s_A3_0_Obj1* pNewTask = createSubTask<s_A3_0_Obj1>(r4);
+    getMemoryArea(&pNewTask->m0, r6);
+
+    if (r5.m10_rotation[0])
+    {
+        pNewTask->m1A = 0x800 - r5.m10_rotation[1];
+    }
+    else
+    {
+        pNewTask->m1A = r5.m10_rotation[1];
+    }
+
+    pNewTask->m18 = pNewTask->m1A;
+    pNewTask->mC_position = r5.m4_position;
+    pNewTask->m1C = 0;
+
+    if ((r5.m18 == 2) || (r5.m18 == 3) || (r5.m18 == 5))
+    {
+        pNewTask->m_UpdateMethod = &s_A3_0_Obj1::Update2;
+    }
+}
+
+// crane lower part
+struct s_A3_0_Obj2 : public s_workAreaTemplate<s_A3_0_Obj2>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { NULL, NULL, &s_A3_0_Obj2::Draw, NULL };
+        return &taskDefinition;
+    }
+
+    static void Draw(s_A3_0_Obj2* pThis)
+    {
+        if (!checkPositionVisibilityAgainstFarPlane(&pThis->mC_position))
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pThis->mC_position);
+            rotateCurrentMatrixY(pThis->m18);
+            addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2D0));
+            popMatrix();
+        }
+    }
+
+    s_memoryAreaOutput m0;
+    sVec3_FP mC_position;
+    s16 m18;
+    // size 0x1C
+};
+
+void create_A3_0_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+{
+    s_A3_0_Obj2* pNewTask = createSubTask<s_A3_0_Obj2>(r4);
+    getMemoryArea(&pNewTask->m0, r6);
+
+    if (r5.m10_rotation[0])
+    {
+        pNewTask->m18 = 0x800 - r5.m10_rotation[1];
+    }
+    else
+    {
+        pNewTask->m18 = r5.m10_rotation[1];
+    }
+
+    pNewTask->mC_position = r5.m4_position;
+}
+
+void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, s32 r6)
+{
+    TaskUnimplemented();
+}
+
+// moving carts
+struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
+{
+    static void Draw(s_A3_0_Obj3* pThis)
+    {
+        if (pThis->m6E_visible)
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pThis->m10_position);
+            rotateCurrentMatrixZYX_s16(&pThis->m2C_rotation[0]);
+            addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
+            popMatrix();
+        }
+    }
+
+    static void Update1Sub0(s_A3_0_Obj3* pThis)
+    {
+        pThis->m6E_visible = !checkPositionVisibilityAgainstFarPlane(&pThis->m10_position);
+        switch (pThis->m6C)
+        {
+        case 0: // init
+            pThis->m28_visibilityDelay = 120;
+            pThis->m6D_currentWaypoint = 0;
+            pThis->m10_position[0] = readSaturnS32(pThis->mC + 0);
+            pThis->m10_position[2] = readSaturnS32(pThis->mC + 4);
+            pThis->m6C++;
+            //fall
+        case 1: // invisible
+            if (pThis->m28_visibilityDelay > 0)
+            {
+                pThis->m6E_visible = 0;
+                pThis->m28_visibilityDelay--;
+                break;
+            }
+            pThis->m6C++;
+            break;
+        case 2: // new waypoint
+            pThis->m6D_currentWaypoint++;
+            if (readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8) == 0)
+            {
+                pThis->m6C = 0;
+                break;
+            }
+            else
+            {
+                sSaturnPtr var0 = pThis->mC + pThis->m6D_currentWaypoint * 8;
+                pThis->m32_targetAngle = atan2(readSaturnS32(var0 + 0) - pThis->m10_position[0], readSaturnS32(var0 + 4) - pThis->m10_position[2]);
+                pThis->m1C = getSin(pThis->m32_targetAngle & 0xFFF) >> 5;
+                pThis->m24 = getCos(pThis->m32_targetAngle & 0xFFF) >> 5;
+                pThis->m32_targetAngle = 0x800 - pThis->m32_targetAngle;
+                if (pThis->m6D_currentWaypoint <= 1)
+                {
+                    //0605E38C
+                    if (readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8 + 8) == 0)
+                    {
+                        createSmokePufTask(pThis, &pThis->m10_position, pThis->m1C);
+                    }
+                    if (pThis->m32_targetAngle < pThis->m2C_rotation[1])
+                    {
+                        pThis->m34_deltaAngle = 5;
+                    }
+                    else
+                    {
+                        pThis->m34_deltaAngle = -5;
+                    }
+                }
+                else
+                {
+                    //605E3C4
+                    createSmokePufTask(pThis, &pThis->m10_position, pThis->m1C);
+                    pThis->m2C_rotation[1] = pThis->m32_targetAngle;
+                    pThis->m34_deltaAngle = 0;
+                }
+                //605E3DE
+                pThis->m6C++;
+                break;
+            }
+        case 3: // move to next point
+            pThis->m2C_rotation[1] += pThis->m34_deltaAngle;
+            if (std::abs(pThis->m2C_rotation[1] - pThis->m32_targetAngle) < 5)
+            {
+                pThis->m34_deltaAngle = 0;
+            }
+            pThis->m10_position[0] += pThis->m1C;
+            pThis->m10_position[2] += pThis->m24;
+            //Are we there yet?
+            if (   ((pThis->m1C >= 0) && (pThis->m10_position[0] < readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8)))
+                || ((pThis->m1C < 0) && (pThis->m10_position[0] >= readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8))))
+                break;
+            if (   ((pThis->m24 >= 0) && (pThis->m10_position[0] < readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8 + 4)))
+                || ((pThis->m24 < 0) && (pThis->m10_position[2] >= readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8 + 4))))
+                break;
+            pThis->m6C = 2;
+            break;
+        default:
+            assert(0);
+        }
+
+        TaskUnimplemented();
+    }
+
+    static void Update1Sub1(s_A3_0_Obj3* pThis, s_DataTable2Sub0* r5)
+    {
+    }
+
+    static void Update1(s_A3_0_Obj3* pThis)
+    {
+        Update1Sub0(pThis);
+        if (pThis->m36 == 0x2A)
+        {
+            Update1Sub1(pThis, pThis->m8);
+        }
+        else if(pThis->m36 == 0x54)
+        {
+            Update1Sub1(pThis, pThis->m8);
+            pThis->m_UpdateMethod = &s_A3_0_Obj3::Update1Sub0;
+        }
+        pThis->m36++;
+    }
+
+    s_memoryAreaOutput m0;
+    s_DataTable2Sub0* m8;
+    sSaturnPtr mC;
+    sVec3_FP m10_position;
+    s32 m1C;
+    s32 m20;
+    s32 m24;
+    s32 m28_visibilityDelay;
+    std::array<s16, 3> m2C_rotation;
+    s16 m32_targetAngle;
+    s16 m34_deltaAngle;
+    s16 m36;
+    s8 m6C;
+    s8 m6D_currentWaypoint;
+    s8 m6E_visible;
+    // size 0x70
+};
+
+void create_A3_0_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+{
+    s_A3_0_Obj3* pNewTask = createSubTaskFromFunction<s_A3_0_Obj3>(r4, NULL);
+    getMemoryArea(&pNewTask->m0, r6);
+
+    pNewTask->m8 = &r5;
+    pNewTask->m_DrawMethod = &s_A3_0_Obj3::Draw;
+    pNewTask->m10_position = r5.m4_position;
+    pNewTask->m2C_rotation[0] = r5.m10_rotation[0];
+    pNewTask->m2C_rotation[1] = r5.m10_rotation[1];
+    pNewTask->m2C_rotation[2] = r5.m10_rotation[2];
+    pNewTask->m1C = 0;
+    pNewTask->m20 = 0;
+
+    s8 r12 = readSaturnS8(sSaturnPtr({ 0x60925F7, gFLD_A3 }) + r5.m18);
+    switch (r12)
+    {
+    case 1:
+    case 2:
+        pNewTask->m_UpdateMethod = &s_A3_0_Obj3::Update1;
+        pNewTask->mC = readSaturnEA(sSaturnPtr({ 0x609270C, gFLD_A3 }) + (r12 - 1) * 4);
+        break;
+    case 3:
+        //assert(0);
+        TaskUnimplemented();
+        break;
+    default:
+        break;
+    }
+
+    pNewTask->m6C = 0;
+}
+
+
 void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 {
     switch (r5.m0_function.m_offset)
@@ -1025,8 +1415,14 @@ void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         create_A3_0_Obj0(r4, r5, r6);
         break;
     case 0x06055724:
+        create_A3_0_Obj1(r4, r5, r6); // crane upper part
+        break;
     case 0x0605580e:
+        create_A3_0_Obj2(r4, r5, r6); // crane lower part
+        break;
     case 0x0605e608:
+        create_A3_0_Obj3(r4, r5, r6); // moving carts
+        break;
     case 0x060567e4:
         break;
 
@@ -1410,9 +1806,9 @@ s_DataTable2* readDataTable2(sSaturnPtr EA)
                 s_DataTable2Sub0 newEntry;
                 newEntry.m0_function = readSaturnEA(cellEA);
                 newEntry.m4_position = readSaturnVec3(cellEA + 4);
-                newEntry.m10 = readSaturnS16(cellEA + 0x10);
-                newEntry.m12_rotation[0] = readSaturnS16(cellEA + 0x12);
-                newEntry.m12_rotation[1] = readSaturnS16(cellEA + 0x14);
+                newEntry.m10_rotation[0] = readSaturnS16(cellEA + 0x10);
+                newEntry.m10_rotation[1] = readSaturnS16(cellEA + 0x12);
+                newEntry.m10_rotation[2] = readSaturnS16(cellEA + 0x14);
                 newEntry.m18 = readSaturnS32(cellEA + 0x18);
 
                 pNewData2->m0[i].push_back(newEntry);

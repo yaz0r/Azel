@@ -69,6 +69,14 @@ public:
         }
     }
 
+    fixedPoint getAbs()
+    {
+        if (m_value >= 0)
+            return m_value;
+        else
+            return -m_value;
+    }
+
     operator s32() const
     {
         return m_value;
