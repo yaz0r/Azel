@@ -1284,14 +1284,14 @@ struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
                 pThis->m1C = getSin(pThis->m32_targetAngle & 0xFFF) >> 5;
                 pThis->m24 = getCos(pThis->m32_targetAngle & 0xFFF) >> 5;
                 pThis->m32_targetAngle = 0x800 - pThis->m32_targetAngle;
-                if (pThis->m6D_currentWaypoint <= 1)
+                if (pThis->m6D_currentWaypoint > 1)
                 {
                     //0605E38C
                     if (readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8 + 8) == 0)
                     {
                         createSmokePufTask(pThis, &pThis->m10_position, pThis->m1C);
                     }
-                    if (pThis->m32_targetAngle < pThis->m2C_rotation[1])
+                    if (pThis->m32_targetAngle >= pThis->m2C_rotation[1])
                     {
                         pThis->m34_deltaAngle = 5;
                     }
