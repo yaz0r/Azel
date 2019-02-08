@@ -1234,6 +1234,16 @@ void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, s32 r6)
     TaskUnimplemented();
 }
 
+static void A3_0_Obj3Update2Sub0(sVec3_FP* pThis, fixedPoint r5)
+{
+    TaskUnimplemented();
+}
+
+static void A3_0_Obj3Update1Sub2(sVec3_FP* pThis)
+{
+    TaskUnimplemented();
+}
+
 // moving carts
 struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
 {
@@ -1332,11 +1342,16 @@ struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
             assert(0);
         }
 
-        TaskUnimplemented();
+        A3_0_Obj3Update2Sub0(&pThis->m10_position, pThis->m8->m4_position[1]);
+        if (pThis->m6E_visible)
+        {
+            A3_0_Obj3Update1Sub2(&pThis->m10_position);
+        }
     }
 
     static void Update1Sub1(s_A3_0_Obj3* pThis, s_DataTable2Sub0* r5)
     {
+        TaskUnimplemented();
     }
 
     static void Update1(s_A3_0_Obj3* pThis)
@@ -1354,6 +1369,22 @@ struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
         pThis->m36++;
     }
 
+    static void Update2(s_A3_0_Obj3* pThis)
+    {
+        updateLCSTarget(&pThis->m38_LCSTarget);
+        switch (pThis->m6C)
+        {
+        case 0:
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        A3_0_Obj3Update2Sub0(&pThis->m10_position, pThis->m8->m4_position[1]);
+        pThis->m6E_visible = !checkPositionVisibilityAgainstFarPlane(&pThis->m10_position);
+    }
+
     s_memoryAreaOutput m0;
     s_DataTable2Sub0* m8;
     sSaturnPtr mC;
@@ -1366,11 +1397,21 @@ struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
     s16 m32_targetAngle;
     s16 m34_deltaAngle;
     s16 m36;
+    sLCSTarget m38_LCSTarget;
     s8 m6C;
     s8 m6D_currentWaypoint;
     s8 m6E_visible;
     // size 0x70
 };
+
+void A3_0_Obj3_LCSCallback(p_workArea task, sLCSTarget*)
+{
+    s_A3_0_Obj3* pThis = (s_A3_0_Obj3*)task;
+
+    mainGameState.setBit(0x93, 4);
+    pThis->m38_LCSTarget.m18 |= 1;
+    pThis->m6C = 1;
+}
 
 void create_A3_0_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 {
@@ -1395,8 +1436,18 @@ void create_A3_0_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         pNewTask->mC = readSaturnEA(sSaturnPtr({ 0x609270C, gFLD_A3 }) + (r12 - 1) * 4);
         break;
     case 3:
-        //assert(0);
-        TaskUnimplemented();
+        if (mainGameState.getBit(0x93, 4))
+        {
+            pNewTask->getTask()->markFinished();
+        }
+        else
+        {
+            pNewTask->m_UpdateMethod = &s_A3_0_Obj3::Update2;
+            pNewTask->m1C = readSaturnS32(sSaturnPtr({ 0x6092714, gFLD_A3 }) + (r12 - 3) * 8);
+            pNewTask->m24 = readSaturnS32(sSaturnPtr({ 0x6092714, gFLD_A3 }) + (r12 - 3) * 8 + 4);
+            pNewTask->mC = sSaturnPtr({ 0x609271C, gFLD_A3 }) + (r12 - 3) * 4;
+            createLCSTarget(&pNewTask->m38_LCSTarget, pNewTask, &A3_0_Obj3_LCSCallback, &pNewTask->m10_position, 0, 0, 0, -1, 0, 0);
+        }
         break;
     default:
         break;
