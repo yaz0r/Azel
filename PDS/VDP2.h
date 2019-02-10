@@ -252,16 +252,16 @@ struct s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, s
 
 struct s_stringStatusQuery
 {
-    s32 cursorX;
-    s32 cursorY;
-    s32 windowWidth;
-    s32 windowHeight;
-    s32 windowX1;
-    s32 windowY1;
-    s32 windowX2;
-    s32 windowY2;
-    const char* string;
-    u32 vdp2MemoryOffset;
+    s32 m0_cursorX;
+    s32 m4_cursorY;
+    s32 m8_windowWidth;
+    s32 mC_windowHeight;
+    s32 m10_windowX1;
+    s32 m14_windowY1;
+    s32 m18_windowX2;
+    s32 m1C_windowY2;
+    const char* m20_string;
+    u32 m24_vdp2MemoryOffset;
     u32 m28;
     u32 m2C;
 };

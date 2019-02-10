@@ -3,6 +3,7 @@
 #include "a3_crane_lower.h"
 #include "a3_static_mine_cart.h"
 #include "a3_dynamic_mine_cart.h"
+#include "a3_fan.h"
 
 void updateDragonDefault(s_dragonTaskWorkArea*);
 void updateCutscene(s_dragonTaskWorkArea* r14);
@@ -965,7 +966,7 @@ void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         create_A3_0_Obj3(r4, r5, r6); // moving mine carts
         break;
     case 0x060567e4:
-//        create_A3_0_Obj4(r4, r5, r6);
+        create_A3_0_Obj4(r4, r5, r6);
         break;
 
         // ropes
@@ -6020,7 +6021,7 @@ void LCSTask::LCSTaskInit(LCSTask*)
 
 p_workArea createLCSShootTask(s_LCSTask* r4, sLCSTarget* r5)
 {
-    assert(0);
+    TaskUnimplemented();
     return NULL;
 }
 

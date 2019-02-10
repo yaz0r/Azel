@@ -52,11 +52,7 @@ u32 randomNumber()
     {
         r0 = 0x2A6D365B;
     }
-    else
-    {
-        r1 = 0x29;
-    }
-
+    r1 = 0x29;
     r1 *= r0;
     r0 >>= 16;
     u32 r2 = (u16)r1;

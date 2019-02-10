@@ -1317,24 +1317,24 @@ void VDP2DrawString(const char* string)
 
 void addStringToVdp2(const char* string, s_stringStatusQuery* vars)
 {
-    vars->cursorX = vdp2StringContext.m4_cursorX;
-    vars->cursorY = vdp2StringContext.m8_cursorY;
-    vars->windowX1 = vdp2StringContext.mC_X;
-    vars->windowY1 = vdp2StringContext.m10_Y;
-    vars->windowWidth = vdp2StringContext.m14_Width;
-    vars->windowHeight = vdp2StringContext.m18_Height;
-    vars->windowX2 = vdp2StringContext.mC_X + vdp2StringContext.m14_Width;
-    vars->windowY2 = vdp2StringContext.m10_Y + vdp2StringContext.m18_Height;
-    vars->string = string;
-    vars->vdp2MemoryOffset = vdp2TextMemoryOffset + ((vdp2StringContext.m8_cursorY << 6) + vdp2StringContext.m4_cursorX) * 2;
+    vars->m0_cursorX = vdp2StringContext.m4_cursorX;
+    vars->m4_cursorY = vdp2StringContext.m8_cursorY;
+    vars->m10_windowX1 = vdp2StringContext.mC_X;
+    vars->m14_windowY1 = vdp2StringContext.m10_Y;
+    vars->m8_windowWidth = vdp2StringContext.m14_Width;
+    vars->mC_windowHeight = vdp2StringContext.m18_Height;
+    vars->m18_windowX2 = vdp2StringContext.mC_X + vdp2StringContext.m14_Width;
+    vars->m1C_windowY2 = vdp2StringContext.m10_Y + vdp2StringContext.m18_Height;
+    vars->m20_string = string;
+    vars->m24_vdp2MemoryOffset = vdp2TextMemoryOffset + ((vdp2StringContext.m8_cursorY << 6) + vdp2StringContext.m4_cursorX) * 2;
     vars->m28 = vdp2StringContext.m0;
     vars->m2C = vdp2StringContext.m38;
 }
 
 void moveVdp2TextCursor(s_stringStatusQuery* vars)
 {
-    vdp2StringContext.m4_cursorX = vars->cursorX;
-    vdp2StringContext.m8_cursorY = vars->cursorY;
+    vdp2StringContext.m4_cursorX = vars->m0_cursorX;
+    vdp2StringContext.m8_cursorY = vars->m4_cursorY;
 }
 
 u32 printVdp2StringTable[10] = {
@@ -1346,45 +1346,64 @@ void printVdp2StringNewLine(s_stringStatusQuery* vars)
     PDS_unimplemented("printVdp2StringNewLine");
 }
 
+void printVdp2StringSub2(s32 r4)
+{
+    TaskUnimplemented();
+}
+
 void printVdp2String(s_stringStatusQuery* vars)
 {
     u32 r11 = (printVdp2StringTable[vars->m28] << 12) + 0x63;
 
-    vars->vdp2MemoryOffset = vdp2TextMemoryOffset + (((vars->cursorY << 6) + vars->cursorX)) * 2;
+    vars->m24_vdp2MemoryOffset = vdp2TextMemoryOffset + (((vars->m4_cursorY << 6) + vars->m0_cursorX)) * 2;
 
-    while (u8 r4 = *(vars->string++))
+    while (u8 r4 = *(vars->m20_string++))
     {
         switch (r4)
         {
         case 0xA:
+            printVdp2StringNewLine(vars);
+            break;
         case '%':
-            assert(0);
+        {
+            s32 r4 = *(vars->m20_string++);
+            r4 &= 0xFF;
+            switch (r4)
+            {
+            case 0x61:
+                printVdp2StringSub2(*(vars->m20_string++) - 0x30);
+                break;
+            default:
+                assert(0);
+                break;
+            }
+        }
         default:
-            setVdp2VramU16(vars->vdp2MemoryOffset, r11 + (r4 - 0x20) * 2);
-            setVdp2VramU16(vars->vdp2MemoryOffset + 0x80, r11 + (r4 - 0x20) * 2 + 1);
-            vars->vdp2MemoryOffset += 2;
-            vars->cursorX++;
+            setVdp2VramU16(vars->m24_vdp2MemoryOffset, r11 + (r4 - 0x20) * 2);
+            setVdp2VramU16(vars->m24_vdp2MemoryOffset + 0x80, r11 + (r4 - 0x20) * 2 + 1);
+            vars->m24_vdp2MemoryOffset += 2;
+            vars->m0_cursorX++;
             break;
         }
 
-        if (vars->windowWidth)
+        if (vars->m8_windowWidth)
         {
-            if (vars->windowX2 - vars->cursorX < 1)
+            if (vars->m18_windowX2 - vars->m0_cursorX < 1)
             {
                 printVdp2StringNewLine(vars);
             }
         }
 
-        if (vars->windowHeight)
+        if (vars->mC_windowHeight)
         {
-            if (vars->windowY2 - vars->cursorY < 1)
+            if (vars->m1C_windowY2 - vars->m4_cursorY < 1)
             {
                 break;
             }
         }
     }
 
-    vars->string--;
+    vars->m20_string--;
 }
 
 s32 computeStringLength(sSaturnPtr pString, s32 r5)

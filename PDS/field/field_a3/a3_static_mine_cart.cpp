@@ -138,7 +138,7 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     }
     else
     {
-        createLCSTarget(&pNewObj->m3C, pNewObj, &A3_0_Obj0_Callback, &pNewObj->mC_position, 0, 0, 0, param, 0, 0);
+        createLCSTarget(&pNewObj->m3C, pNewObj, &A3_0_Obj0_Callback, &pNewObj->mC_position, 0, 0, 0, param, 1, 0);
     }
 
     //0605E162
