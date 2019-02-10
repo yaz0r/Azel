@@ -33,10 +33,12 @@ void createFieldPaletteTask(p_workArea parent);
 void adjustVerticalLimits(fixedPoint r4, fixedPoint r5);
 void subfieldA3_1_Sub0();
 void nullBattle();
-
+void getFieldDragonPosition(sVec3_FP* r4);
 u32 gridCellDraw_GetDepthRange(fixedPoint r4);
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4);
 void setupField3(s_DataTable3* r4, void(*r5)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r6);
+s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* r4);
+void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, s32 r6);
 
 struct s_itemType0* fieldA3_1_createItemBoxes_Sub0(p_workArea workArea, struct s_itemBoxDefinition* r5);
 

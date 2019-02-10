@@ -784,6 +784,11 @@ struct s_fieldTaskWorkArea_C : public s_workAreaTemplate<s_fieldTaskWorkArea_C>
     std::array<fixedPoint, 7> mA4;
     std::array<sVec3_FP, 18> mC0; // not sure of size
     u8 m130_conanaNestCutsceneTrigger;
+
+    // A3_0 mine carts
+    s32 m154;
+    sVec3_FP m158;
+
     p_workArea m168;
     // size 16C?
 };
