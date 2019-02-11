@@ -74,6 +74,7 @@ struct s_scriptData2
     u32 m18;
     u32 m1C;
     u32 m20;
+    //size: 24
 };
 
 struct s_scriptData3
@@ -231,6 +232,7 @@ struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct 
     static void Update(s_cutsceneTask*);
 
     void cutsceneTaskInitSub2(std::vector<s_scriptData1>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
+    void cutsceneTaskInitSub3(std::vector<s_scriptData2>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
 
     u32 m0;
     u32 m4;
@@ -274,6 +276,23 @@ struct s_cutsceneTask2 : public s_workAreaTemplateWithArg<s_cutsceneTask2, std::
     void UpdateSub1();
 };
 
+struct s_cutsceneTask3 : public s_workAreaTemplate<s_cutsceneTask3>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_cutsceneTask3::Init, &s_cutsceneTask3::Update, &s_cutsceneTask3::Draw, NULL };
+        return &taskDefinition;
+    }
+    static void Init(s_cutsceneTask3*);
+    static void Update(s_cutsceneTask3*);
+    static void Draw(s_cutsceneTask3*);
+
+    s32 m0;
+    std::vector<s_scriptData2>* m4;
+    sVec3_FP* m14;
+    //size = 0x50
+};
+
 struct s_fieldScriptWorkArea78
 {
     sVec3_FP m3C;// unk
@@ -308,7 +327,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
     s_multiChoiceTask2* m3C_multichoiceTask;
     struct s_receivedItemTask* m40_receivedItemTask;
     s_multiChoice* m44_multiChoiceData;
-    s_workArea* m48_cutsceneTask; // s_cutsceneTask or s_cutsceneTask2
+    s_workArea* m48_cutsceneTask; // s_cutsceneTask or s_cutsceneTask2 or s_cutsceneTask3
     s32 m4C_PCMPlaying;
     s32 m50_scriptDelay;
     s32 m54_currentResult;
@@ -371,6 +390,7 @@ struct s_cutsceneData
 {
     std::vector<s_scriptData3> m0;
     std::vector<s_scriptData1> m4;
+    std::vector<s_scriptData2> m4bis;
     u8 m8;
 };
 
@@ -906,4 +926,7 @@ void dragonFieldTaskInitSub4Sub4();
 
 void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 param, s32 exitIndex, s32 arg0);
 void initFieldDragonLight();
+
+void gridCellDraw_normalSub2(u8* r4, s32 r5, s32 r6);
+void callGridCellDraw_normalSub2(u8* r4, s32 r5);
 

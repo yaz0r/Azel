@@ -48,8 +48,7 @@ void A3_3_Obj0_Draw(s_A3_3_Obj0* pThis)
         translateCurrentMatrix(&pThis->mC_position);
         rotateCurrentMatrixZYX_s16(&pThis->m30_rotation[0]);
         addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
-        PDS_unimplemented("gridCellDraw_normalSub2");
-        //callGridCellDraw_normalSub2(pThis->m0.m0_mainMemory, 0x2C8);
+        callGridCellDraw_normalSub2(pThis->m0.m0_mainMemory, 0x2C8);
         popMatrix();
     }
 }

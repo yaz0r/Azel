@@ -4,6 +4,7 @@ u32 isInMenu2;
 
 sMenuUnk0 menuUnk0;
 
+void soundFunc(int) { PDS_unimplemented("soundFunc"); }
 void playSoundEffect(int) { PDS_unimplemented("playSoundEffect"); }
 bool keyboardIsKeyDown(u8 keycode) { PDS_unimplemented("keyboardIsKeyDown");  return false; }
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2) { PDS_unimplemented("titleMenuToggleTutorials"); }

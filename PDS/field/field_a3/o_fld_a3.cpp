@@ -186,6 +186,11 @@ u8 gridCellDraw_normalSub0(u8* r4, sVec3_FP& r5)
     return 1;
 }
 
+void getCameraProperties2Matrix(sMatrix4x3* pOutput)
+{
+    *pOutput = cameraProperties2.m88;
+}
+
 void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWorkAread)
 {
     s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
@@ -270,7 +275,8 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
 
                     if (readSaturnS16(r14->m0 + 2))
                     {
-                        PDS_unimplemented("Billboard with LCS");
+                        getCameraProperties2Matrix(pCurrentMatrix);
+                        gridCellDraw_normalSub2(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, readSaturnS16(r14->m0 + 2), 0x10000);
                     }
                 }
                 popMatrix();
@@ -1740,6 +1746,21 @@ void s_cutsceneTask2::Update(s_cutsceneTask2* pThis)
     }
 }
 
+void s_cutsceneTask3::Init(s_cutsceneTask3* pThis)
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = pThis;
+}
+
+void s_cutsceneTask3::Update(s_cutsceneTask3*)
+{
+    TaskUnimplemented();
+}
+
+void s_cutsceneTask3::Draw(s_cutsceneTask3*)
+{
+    TaskUnimplemented();
+}
+
 void s_cutsceneTask::cutsceneTaskInitSub2(std::vector<s_scriptData1>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
 {
     s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
@@ -1758,7 +1779,7 @@ void s_cutsceneTask::cutsceneTaskInitSub2(std::vector<s_scriptData1>& r11, s32 r
     if (r11.size() == 0)
         return;
 
-    cutsceneTaskInitSub2Sub1(r11, *getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m88);
+    cutsceneTaskInitSub2Sub1(r11, *r14->m88);
 
     if (r14->m48_cutsceneTask)
     {
@@ -1766,13 +1787,53 @@ void s_cutsceneTask::cutsceneTaskInitSub2(std::vector<s_scriptData1>& r11, s32 r
     }
 
     s_cutsceneTask2* pNewTask = createSiblingTaskWithArg<s_cutsceneTask2>(this, &r11);
-    assert(pNewTask);
 
     pNewTask->m0 = arg0;
     if (arg0 & 1)
     {
         pNewTask->m24 = r7;
     }
+
+    pNewTask->Update(pNewTask);
+}
+
+void cutsceneTaskInitSub3Sub0(std::vector<s_scriptData2>& r4, std::vector<s_scriptData2>& r5)
+{
+    r5 = r4;
+}
+
+void s_cutsceneTask::cutsceneTaskInitSub3(std::vector<s_scriptData2>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
+{
+    s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    r14->m80 = this;
+    r14->m7C = r6;
+    r14->m84 = r7;
+
+    if (r14->m78)
+    {
+        cutsceneTaskInitSub2Sub0(&r14->m78->m3C, r7);
+        r14->m48_cutsceneTask = this;
+        return;
+    }
+
+    if (r11.size() == 0)
+        return;
+
+    cutsceneTaskInitSub3Sub0(r11, *r14->m8C);
+
+    if (r7 == NULL)
+        return;
+
+    if (r14->m48_cutsceneTask)
+    {
+        cutsceneTaskInitSub2Sub2(r14->m48_cutsceneTask);
+    }
+
+    s_cutsceneTask3* pNewTask = createSiblingTask<s_cutsceneTask3>(this);
+
+    pNewTask->m4 = &r11;
+    pNewTask->m14 = r7;
+    pNewTask->m0 = arg0;
 
     pNewTask->Update(pNewTask);
 }
@@ -1805,7 +1866,16 @@ void s_cutsceneTask::Init(s_cutsceneTask* pThis, s_cutsceneData* pCutsceneData)
     switch (pCutsceneData->m8 & 3)
     {
     case 1:
+        assert(pCutsceneData->m4.size());
         pThis->cutsceneTaskInitSub2(pCutsceneData->m4, 0, &r14->m8_pos, r11);
+        break;
+    case 2:
+        assert(pCutsceneData->m4.size());
+        pThis->cutsceneTaskInitSub2(pCutsceneData->m4, 0, &r14->m8_pos, 1 | r11);
+        break;
+    case 3:
+        assert(pCutsceneData->m4bis.size());
+        pThis->cutsceneTaskInitSub3(pCutsceneData->m4bis, 0, &r14->m8_pos, 1 | r11);
         break;
     default:
         assert(0);
@@ -1856,7 +1926,7 @@ void startCutscene(s_cutsceneData* r4)
     createSubTaskWithArg<s_cutsceneTask>(getFieldTaskPtr()->m8_pSubFieldData, r4);
 }
 
-s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
+s_cutsceneData* loadCutsceneData(sSaturnPtr EA, u32 stride)
 {
     s_cutsceneData* pData = new s_cutsceneData;
 
@@ -1886,6 +1956,7 @@ s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
     }
 
     // read table 1
+    if(stride == 0x3C)
     {
         int numEntries = 0;
         while (readSaturnU32(table1))
@@ -1907,6 +1978,35 @@ s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
             pData->m4[i].m34 = readSaturnS32(table0); table0 = table0 + 4;
             pData->m4[i].m38 = readSaturnS32(table0); table0 = table0 + 4;
         }
+    }
+    else if (stride == 0x24)
+    {
+        int numEntries = 0;
+        while (readSaturnU32(table1))
+        {
+            numEntries++;
+            table1 = table1 + 0x24;
+        }
+        table1 -= 0x24 * numEntries;
+        numEntries++;
+
+        pData->m4bis.resize(numEntries);
+        for (int i = 0; i < numEntries; i++)
+        {
+            pData->m4bis[i].m0 = readSaturnS32(table0); table0 = table0 + 4;
+            pData->m4bis[i].m4 = readSaturnS32(table0); table0 = table0 + 4;
+            pData->m4bis[i].m8 = readSaturnS32(table0); table0 = table0 + 4;
+            pData->m4bis[i].mC = readSaturnS32(table0); table0 = table0 + 4;
+            pData->m4bis[i].m10 = readSaturnS32(table0); table0 = table0 + 4;
+            pData->m4bis[i].m14 = readSaturnS32(table0); table0 = table0 + 4;
+            pData->m4bis[i].m18 = readSaturnS32(table0); table0 = table0 + 4;
+            pData->m4bis[i].m1C = readSaturnS32(table0); table0 = table0 + 4;
+            pData->m4bis[i].m20 = readSaturnS32(table0); table0 = table0 + 4;
+        }
+    }
+    else
+    {
+        assert(0);
     }
 
     return pData;
@@ -2433,6 +2533,11 @@ s32 executeNative(sSaturnPtr ptr)
         return FLD_A3_Script_21_Sub0();
     case 0x060558A0:
         return playRiderAnim(0, readRiderAnimData({ 0x60832F8, gFLD_A3 }));
+    case 0x060558a8:
+        return playRiderAnim(0, readRiderAnimData({ 0x6083318, gFLD_A3 }));
+    case 0x0606ad04:
+        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 1;
+        return 0; // result ignored?
     default:
         assert(0);
         break;
@@ -2766,7 +2871,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
         switch (opCode)
         {
         case 0: // Ignore, happens sometimes
-            continue;
+            break;
         case 1: // END
             if (m8_stackPointer == &mC_stack[8])
             {
@@ -2788,10 +2893,6 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
                 pScript = pScript + 2;
                 return pScript;
             }
-            else
-            {
-                continue;
-            }
             break;
         case 4: // if not
             pScript = pScript + 1;
@@ -2809,7 +2910,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
             break;
         case 14:
             pScript = callNative(pScript);
-            continue;
+            break;
         case 21: // display string at bottom of screen
         {
             pScript = pScript + 3;
@@ -2821,12 +2922,12 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
             setupVDP2StringRendering(3, 25, 38, 2);
             vdp2StringContext.m0 = 0;
             VDP2DrawString((char*)getSaturnPtr(string));
-            continue;
+            break;
         }
         case 22: // clear string
             setupVDP2StringRendering(3, 0x19, 0x26, 2);
             clearVdp2TextArea();
-            continue;
+            break;
         case 24: // cinematic
             if (m30_cinematicBarTask)
             {
@@ -2847,6 +2948,14 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
                 pScript = pScript - 1;
                 return pScript;
             }
+            break;
+        case 25:
+            if (m30_cinematicBarTask == NULL)
+            {
+                m30_cinematicBarTask = startCinmaticBarTask();
+                setupCinematicBars(m30_cinematicBarTask, 1);
+            }
+            break;
         case 26: // clean cinematic bars
             if (m30_cinematicBarTask)
             {
@@ -2871,10 +2980,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
                     }
                 }
             }
-            else
-            {
-                continue;
-            }
+            break;
         case 27: // display string bottom of screen
             if (m38_dialogStringTask)
             {

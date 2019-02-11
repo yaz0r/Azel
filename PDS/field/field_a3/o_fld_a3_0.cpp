@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "a3_0_task4.h"
 
 void subfieldA3_0Sub0(s_dragonTaskWorkArea* r4)
 {
@@ -20,7 +21,7 @@ p_workArea create_fieldA3_0_task1(p_workArea workArea, s32 r5, s32 r6)
 
 struct s_fieldA3_0_tutorialTask : public s_workAreaTemplate<s_fieldA3_0_tutorialTask>
 {
-
+    // size 0x2C
 };
 
 void fieldA3_0_tutorialTask_update(s_fieldA3_0_tutorialTask* workArea)
@@ -59,6 +60,7 @@ void fieldA3_0_startTasks(p_workArea workArea)
 
     PDS_unimplemented("fieldA3_0_startTasks");
 
+    create_fieldA3_0_task4(workArea);
     fieldA3_0_createItemBoxes(workArea);
 
     create_fieldA3_0_tutorialTask(workArea);

@@ -24,6 +24,7 @@ struct sMenuUnk0
 
 extern sMenuUnk0 menuUnk0;
 
+void soundFunc(int);
 void playSoundEffect(int);
 bool keyboardIsKeyDown(u8 keycode);
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2);

@@ -180,7 +180,7 @@ struct sfieldA3_1_checkExitsTask : public s_workAreaTemplate<sfieldA3_1_checkExi
 
                 if (i == 2)
                 {
-                    startCutscene(loadCutsceneData({ 0x6091CC4, gFLD_A3 }));
+                    startCutscene(loadCutsceneData({ 0x6091CC4, gFLD_A3 }, 0x3C));
                     pThis->m_UpdateMethod = &sfieldA3_1_checkExitsTask::Update2;
                 }
                 else
@@ -453,8 +453,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
                 translateCurrentMatrix(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190));
                 rotateCurrentMatrixZYX(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0xC));
 
-                PDS_unimplemented("call to gridCellDraw_normalSub2 in LCSItemBox_UpdateType1");
-                //gridCellDraw_normalSub2
+                gridCellDraw_normalSub2(pThis->m0.m0_mainMemory, 0x138, pThis->m7C);
 
                 {
                     pushCurrentMatrix();
@@ -463,8 +462,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
                     rotateCurrentMatrixShiftedY(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0x10) + pThis->m90);
                     rotateCurrentMatrixShiftedX(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0xC));
 
-                    PDS_unimplemented("call to gridCellDraw_normalSub2 in LCSItemBox_UpdateType1");
-                    //gridCellDraw_normalSub2
+                    gridCellDraw_normalSub2(pThis->m0.m0_mainMemory, 0x13C, pThis->m7C);
 
                     popMatrix();
                 }
@@ -1079,11 +1077,11 @@ void subfieldA3_1(p_workArea workArea)
         default:
             if (mainGameState.getBit(0xA, 6))
             {
-                startCutscene(loadCutsceneData({ 0x6091688, gFLD_A3 }));
+                startCutscene(loadCutsceneData({ 0x6091688, gFLD_A3 }, 0x3C));
             }
             else
             {
-                startCutscene(loadCutsceneData({ 0x60915A4, gFLD_A3 }));
+                startCutscene(loadCutsceneData({ 0x60915A4, gFLD_A3 }, 0x3C));
             }
             break;
         }
