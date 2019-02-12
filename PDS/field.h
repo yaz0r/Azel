@@ -276,23 +276,6 @@ struct s_cutsceneTask2 : public s_workAreaTemplateWithArg<s_cutsceneTask2, std::
     void UpdateSub1();
 };
 
-struct s_cutsceneTask3 : public s_workAreaTemplate<s_cutsceneTask3>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &s_cutsceneTask3::Init, &s_cutsceneTask3::Update, &s_cutsceneTask3::Draw, NULL };
-        return &taskDefinition;
-    }
-    static void Init(s_cutsceneTask3*);
-    static void Update(s_cutsceneTask3*);
-    static void Draw(s_cutsceneTask3*);
-
-    s32 m0;
-    std::vector<s_scriptData2>* m4;
-    sVec3_FP* m14;
-    //size = 0x50
-};
-
 struct s_fieldScriptWorkArea78
 {
     sVec3_FP m3C;// unk

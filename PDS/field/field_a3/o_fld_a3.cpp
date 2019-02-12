@@ -1669,7 +1669,7 @@ void UpdateSub1Sub1()
     r13->m2E4[4].m18_maxDistanceSquare = 0;
     dragonFieldTaskInitSub4Sub4();
     fieldOverlaySubTaskInitSub5(1);
-
+    fieldOverlaySubTaskInitSub3(0);
     dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
 }
 
@@ -1746,14 +1746,142 @@ void s_cutsceneTask2::Update(s_cutsceneTask2* pThis)
     }
 }
 
+struct s_cutsceneTask3 : public s_workAreaTemplate<s_cutsceneTask3>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_cutsceneTask3::Init, &s_cutsceneTask3::Update, &s_cutsceneTask3::Draw, NULL };
+        return &taskDefinition;
+    }
+    static void Init(s_cutsceneTask3*);
+    s32 UpdateSub0();
+    void UpdateSub1();
+    static void Update(s_cutsceneTask3*);
+    static void Draw(s_cutsceneTask3*);
+
+    s32 m0;
+    std::vector<s_scriptData2>* m4;
+    sVec3_FP m8;
+    sVec3_FP* m14;
+    sVec3_FP* m18;
+    sVec3_FP m1C;
+    s32 m28;
+    s32 m2C;
+    s32 m30;
+    s_scriptData2* m34;
+    s32 m38;
+    sVec3_FP m3C;
+    fixedPoint m48;
+    s32 m4C;
+    //size = 0x50
+};
+
+// TODO: this is shared between s_cutsceneTask2 and 3
+void s_cutsceneTask3::UpdateSub1()
+{
+    getTask()->markFinished();
+
+    if (getFieldTaskPtr()->m8_pSubFieldData)
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = NULL;
+        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 0;
+        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m78)
+        {
+            return;
+        }
+
+        if (m0 & 2)
+        {
+            UpdateSub1Sub0();
+        }
+        else
+        {
+            UpdateSub1Sub1();
+        }
+    }
+}
+
 void s_cutsceneTask3::Init(s_cutsceneTask3* pThis)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = pThis;
 }
 
-void s_cutsceneTask3::Update(s_cutsceneTask3*)
+s32 s_cutsceneTask3::UpdateSub0()
 {
-    TaskUnimplemented();
+    m34 = &(*m4)[m30];
+    m38 = m34->m0;
+    if (m38 == 0)
+    {
+        return -1;
+    }
+
+    m3C[0] = fixedPoint(m34->m14 - m34->m4).normalized();
+    m3C[1] = fixedPoint(m34->m18 - m34->m8).normalized();
+    m3C[2] = fixedPoint(m34->m1C - m34->mC).normalized();
+    m48 = m34->m20 - m34->m10;
+
+    m3C[0] = performDivision(m38, m3C[0]);
+    m3C[1] = performDivision(m38, m3C[1]);
+    m3C[2] = performDivision(m38, m3C[2]);
+    m48 = performDivision(m38, m48);
+
+    m1C[0] = m34->m4;
+    m1C[1] = m34->m8;
+    m1C[2] = m34->mC;
+    m28 = m34->m10;
+
+    m8[0] = (*m14)[0] + MTH_Mul_5_6(m28, getCos(m1C[0].getInteger() & 0xFFF), getSin(m1C[1].getInteger() & 0xFFF));
+    m8[1] = (*m14)[1] - MTH_Mul(m28, getSin(m1C[0].getInteger() & 0xFFF));
+    m8[2] = (*m14)[2] + MTH_Mul_5_6(m28, getCos(m1C[0].getInteger() & 0xFFF), getCos(m1C[1].getInteger() & 0xFFF));
+
+    return 1;
+}
+
+void s_cutsceneTask3::Update(s_cutsceneTask3* pThis)
+{
+    switch (pThis->m2C)
+    {
+    case 0:
+        pThis->m2C = pThis->UpdateSub0();
+        if (pThis->m18)
+        {
+            cutsceneTaskInitSub2Sub0(&pThis->m8, pThis->m18);
+        }
+        else
+        {
+            cutsceneTaskInitSub2Sub0(&pThis->m8, pThis->m14);
+        }
+        getFieldCameraStatus()->mC_rotation[2] = pThis->m1C[2];
+        return;
+    case 1:
+        pThis->m1C += pThis->m3C;
+        getFieldCameraStatus()->mC_rotation[2] = pThis->m1C[2];
+        pThis->m8[0] = (* pThis->m14)[0] + MTH_Mul_5_6(pThis->m28, getCos(pThis->m1C[0].getInteger() & 0xFFF), getSin(pThis->m1C[1].getInteger() & 0xFFF));
+        pThis->m8[1] = (* pThis->m14)[1] - MTH_Mul(pThis->m28, getSin(pThis->m1C[0].getInteger() & 0xFFF));
+        pThis->m8[2] = (* pThis->m14)[2] + MTH_Mul_5_6(pThis->m28, getCos(pThis->m1C[0].getInteger() & 0xFFF), getCos(pThis->m1C[1].getInteger() & 0xFFF));
+        pThis->m4C++;
+        // end of key frame?
+        if (--pThis->m38 != 0)
+        {
+            return;
+        }
+        // change key frame
+        if (++pThis->m30 >= 0x10)
+        {
+            pThis->m2C = -1;
+        }
+        else
+        {
+            pThis->m2C = pThis->UpdateSub0();
+        }
+        break;
+    default:
+        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C)
+        {
+            pThis->UpdateSub1();
+        }
+        break;
+    }
 }
 
 void s_cutsceneTask3::Draw(s_cutsceneTask3*)
@@ -2538,6 +2666,56 @@ s32 executeNative(sSaturnPtr ptr)
     case 0x0606ad04:
         getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 1;
         return 0; // result ignored?
+    case 0x0606acec:
+        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 0;
+        return 0; // result ignored?
+    case 0x06057e1c:
+        setupDragonPosition(&readSaturnVec3({ 0x608FA20, gFLD_A3 }), &readSaturnVec3({ 0x608FA2C, gFLD_A3 }));
+        return 0; // result ignored?
+    default:
+        assert(0);
+        break;
+    }
+    return 0;
+}
+
+void scriptFunction_6067E68_fadeOut(s32 arg0)
+{
+    if (menuUnk0.m_4D >= menuUnk0.m_4C)
+    {
+        vdp2Controls.m20_registers[0].N1COSL = 0x10;
+        vdp2Controls.m20_registers[1].N1COSL = 0x10;
+    }
+
+    fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, arg0*2);
+    fadePalette(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), 0x8000, arg0 * 2);
+}
+
+void scriptFunction_6067ec0_fadeIn(s32 arg0)
+{
+    if (menuUnk0.m_4D >= menuUnk0.m_4C)
+    {
+        vdp2Controls.m20_registers[0].N1COSL = 0x10;
+        vdp2Controls.m20_registers[1].N1COSL = 0x10;
+    }
+
+    fadePalette(&menuUnk0.m_field0, 0x8000, menuUnk0.m_48, arg0 * 2);
+    fadePalette(&menuUnk0.m_field24, 0x8000, menuUnk0.m_48, arg0 * 2);
+
+}
+
+s32 executeNative(sSaturnPtr ptr, s32 arg0)
+{
+    assert(ptr.m_file == gFLD_A3);
+
+    switch (ptr.m_offset)
+    {
+    case 0x06067e68:
+        scriptFunction_6067E68_fadeOut(arg0);
+        break;
+    case 0x06067ec0:
+        scriptFunction_6067ec0_fadeIn(arg0);
+        break;
     default:
         assert(0);
         break;
@@ -2638,6 +2816,9 @@ sSaturnPtr s_fieldScriptWorkArea::callNative(sSaturnPtr r5)
     {
     case 0:
         m54_currentResult = executeNative(readSaturnEA(r14));
+        break;
+    case 1:
+        m54_currentResult = executeNative(readSaturnEA(r14), readSaturnS32(r14 + 4));
         break;
     default:
         assert(0);

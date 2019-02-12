@@ -48,6 +48,30 @@ void fieldA3_0_task4_updateSub0(s_dragonTaskWorkArea* pDragon)
                 return;
             pDragon->m108++;
             break;
+        case 3:
+            if ((var8_dragonPosition[0] < 0x3A2000) || (var8_dragonPosition[2] > -0x122A000))
+                return;
+            if (!startFieldScript(9, 0x5A6))
+                return;
+            pDragon->m108++;
+            break;
+        case 4:
+            if (var8_dragonPosition[2] <= -0x122A000)
+                return;
+            pDragon->m108++;
+            break;
+        case 5:
+            if ((var8_dragonPosition[0] < 0x3A2000) || (var8_dragonPosition[2] > -0x122A000))
+                return;
+            if (!startFieldScript(10, -1))
+                return;
+            pDragon->m108++;
+            break;
+        case 6:
+            if (var8_dragonPosition[2] <= -0x122A000)
+                return;
+            pDragon->m108--;
+            break;
         default:
             assert(0);
             break;
