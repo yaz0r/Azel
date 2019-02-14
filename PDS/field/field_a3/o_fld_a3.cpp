@@ -1879,7 +1879,7 @@ void s_cutsceneTask3::Update(s_cutsceneTask3* pThis)
         }
         break;
     default:
-        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C)
+        if (!getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C)
         {
             pThis->UpdateSub1();
         }
