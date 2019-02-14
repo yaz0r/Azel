@@ -1108,18 +1108,6 @@ void modelMode4_rotation(s_3dModel* p3dModel)
     if (p3dModel->m10_currentAnimationFrame)
     {
         addAnimationFrame(pPoseData, p3dModel);
-
-        if (READ_BE_U16(p3dModel->m30_pCurrentAnimation + 4) - 1 > p3dModel->m10_currentAnimationFrame)
-        {
-            u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
-            for (int i = 0; i < p3dModel->m12_numBones; i++)
-            {
-                pPoseData[i].m30_halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
-                pPoseData[i].m30_halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
-                pPoseData[i].m30_halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
-                r13 += 0x38;
-            }
-        }
     }
     else
     {
@@ -1135,17 +1123,17 @@ void modelMode4_rotation(s_3dModel* p3dModel)
             pPoseData[i].mC_rotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 12;
             r13 += 0x38;
         }
+    }
 
-        if (READ_BE_U16(p3dModel->m30_pCurrentAnimation + 4) - 1 > p3dModel->m10_currentAnimationFrame)
+    if (READ_BE_U16(p3dModel->m30_pCurrentAnimation + 4) - 1 > p3dModel->m10_currentAnimationFrame)
+    {
+        u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
-            u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
-            for (int i = 0; i < p3dModel->m12_numBones; i++)
-            {
-                pPoseData[i].m30_halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
-                pPoseData[i].m30_halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
-                pPoseData[i].m30_halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
-                r13 += 0x38;
-            }
+            pPoseData[i].m30_halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x20), READ_BE_U16(r13 + 6)) << 11;
+            pPoseData[i].m30_halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x24), READ_BE_U16(r13 + 8)) << 11;
+            pPoseData[i].m30_halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x28), READ_BE_U16(r13 + 10)) << 11;
+            r13 += 0x38;
         }
     }
 }
