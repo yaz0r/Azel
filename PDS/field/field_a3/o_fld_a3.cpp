@@ -1099,7 +1099,7 @@ void subfieldA3_1Sub0Sub2(s32 r4, s32 r5)
 }
 
 
-void setupDragonPositionSub0(sVec3_FP* r4, sVec3_FP* r5)
+void setupDragonPositionSub0(const sVec3_FP* r4, const sVec3_FP* r5)
 {
     if (r4)
     {
@@ -1107,7 +1107,7 @@ void setupDragonPositionSub0(sVec3_FP* r4, sVec3_FP* r5)
     }
 }
 
-void setupDragonPosition(sVec3_FP* r4, sVec3_FP* r5)
+void setupDragonPosition(const sVec3_FP* r4, const sVec3_FP* r5)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     sFieldCameraStatus* r15 = getFieldCameraStatus();
@@ -1128,6 +1128,9 @@ void setupDragonPosition(sVec3_FP* r4, sVec3_FP* r5)
         setupDragonPositionSub0(pDragonTask->mBC, r5);
     }
 }
+
+void setupDragonPosition(const sVec3_FP& r4, const sVec3_FP& r5) {setupDragonPosition(&r4, &r5);}
+
 
 s32 queueNewFieldScript(sSaturnPtr r4, s32 r5)
 {
@@ -2670,7 +2673,7 @@ s32 executeNative(sSaturnPtr ptr)
         getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 0;
         return 0; // result ignored?
     case 0x06057e1c:
-        setupDragonPosition(&readSaturnVec3({ 0x608FA20, gFLD_A3 }), &readSaturnVec3({ 0x608FA2C, gFLD_A3 }));
+        setupDragonPosition(readSaturnVec3({ 0x608FA20, gFLD_A3 }), readSaturnVec3({ 0x608FA2C, gFLD_A3 }));
         return 0; // result ignored?
     default:
         assert(0);

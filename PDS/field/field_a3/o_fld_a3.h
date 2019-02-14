@@ -22,7 +22,7 @@ s_DataTable3* readDataTable3(sSaturnPtr EA);
 std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3);
 s_DataTable2* readDataTable2(sSaturnPtr EA);
 void setupField(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r7);
-void setupDragonPosition(sVec3_FP* r4, sVec3_FP* r5);
+void setupDragonPosition(const sVec3_FP* r4, const sVec3_FP* r5);
 
 p_workArea create_fieldA3_0_task0(p_workArea workArea); // shared subfield 0 and 1
 void subfieldA3_1Sub0Sub0();

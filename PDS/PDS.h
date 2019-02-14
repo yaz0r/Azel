@@ -15,6 +15,7 @@
 
 #include <soloud.h>
 #include <soloud_wav.h>
+#include <soloud_wavstream.h>
 extern SoLoud::Soloud gSoloud;
 
 #include <imgui.h>

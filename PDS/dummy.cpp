@@ -14,7 +14,7 @@ void titleScreenDrawSub3(u32) { PDS_unimplemented("titleScreenDrawSub3"); }
 
 void playMusic(u8 musicNumber, u8 unk1)
 {
-    static SoLoud::Wav gWave;
+    static SoLoud::WavStream gWave;
 
     switch (musicNumber)
     {
