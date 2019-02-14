@@ -3827,9 +3827,9 @@ s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr)
     s_itemBoxDefinition* pItemBoxDefinition = new s_itemBoxDefinition;
 
     pItemBoxDefinition->m0_pos = readSaturnVec3(ptr); ptr += 4 * 3;
-    pItemBoxDefinition->mC = readSaturnVec3(ptr); ptr += 4 * 3;
-    pItemBoxDefinition->m18 = readSaturnVec3(ptr); ptr += 4 * 3;
-    pItemBoxDefinition->m24 = readSaturnVec3(ptr); ptr += 4 * 3;
+    pItemBoxDefinition->mC_boundingMin = readSaturnVec3(ptr); ptr += 4 * 3;
+    pItemBoxDefinition->m18_boundingMax = readSaturnVec3(ptr); ptr += 4 * 3;
+    pItemBoxDefinition->m24_rotation = readSaturnVec3(ptr); ptr += 4 * 3;
     pItemBoxDefinition->m30_scale = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m34 = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m38 = readSaturnS32(ptr); ptr += 4;

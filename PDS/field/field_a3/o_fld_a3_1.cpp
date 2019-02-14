@@ -295,17 +295,17 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         s_itemBoxDefinition* r13 = arg;
         getMemoryArea(&pThis->m0, 0);
 
-        pThis->m3C = r13->m0_pos;
-        pThis->m48 = r13->mC;
-        pThis->m54 = r13->m18;
-        pThis->m60 = r13->m24;
+        pThis->m3C_pos = r13->m0_pos;
+        pThis->m48_boundingMin = r13->mC_boundingMin;
+        pThis->m54_boundingMax = r13->m18_boundingMax;
+        pThis->m6C_rotation = r13->m24_rotation;
         pThis->m78_scale = r13->m30_scale;
         pThis->m7C = FP_Div(0x10000, r13->m30_scale);
         pThis->m80 = r13->m34;
         pThis->m84 = r13->m38;
-        pThis->m8B = r13->m41_LCSType;
-        pThis->m88 = r13->m3C_receivedItemId;
-        pThis->m8A = r13->m40_receivedItemQuantity;
+        pThis->m8B_LCSType = r13->m41_LCSType;
+        pThis->m88_receivedItemId = r13->m3C_receivedItemId;
+        pThis->m8A_receivedItemQuantity = r13->m40_receivedItemQuantity;
         pThis->m8C = r13->m42;
         pThis->m86 = r13->m43;
         pThis->m8D = r13->m44;
@@ -342,7 +342,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
             break;
         }
         case 1:
-            if (mainGameState.getBit(pThis->m88 + 243))
+            if (mainGameState.getBit(pThis->m88_receivedItemId + 243))
             {
                 pThis->m94 = 0;
                 pThis->mEA_wasRendered = 2;
@@ -363,9 +363,20 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         pThis->m_DrawMethod = LCSItemBox_DrawTable[r13->m41_LCSType];
     }
 
-    s8 LCSItemBox_UpdateType0Sub1()
+    s8 LCSItemBox_shouldSpin()
     {
-        PDS_unimplemented("LCSItemBox_UpdateType0Sub1");
+        if (cameraProperties2.m0_position[0] < m54_boundingMax[0])
+            return false;
+
+        if (cameraProperties2.m0_position[0] > m48_boundingMin[0])
+            return false;
+
+        if (cameraProperties2.m0_position[2] < m54_boundingMax[2])
+            return false;
+
+        if (cameraProperties2.m0_position[2] > m48_boundingMin[2])
+            return false;
+
         return 1;
     }
 
@@ -376,9 +387,9 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
     static void LCSItemBox_UpdateType0(s_itemBoxType1* pThis)
     {
-        if (pThis->LCSItemBox_UpdateType0Sub1())
+        if (pThis->LCSItemBox_shouldSpin())
         {
-            pThis->m6C[1] += fixedPoint(0x444444);
+            pThis->m6C_rotation[1] += fixedPoint(0x444444);
             pThis->m8_LCSTarget.m18 = 0;
         }
         else
@@ -387,13 +398,13 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         }
 
         pushCurrentMatrix();
-        translateCurrentMatrix(&pThis->m3C);
-        rotateCurrentMatrixZYX(&pThis->m6C);
+        translateCurrentMatrix(&pThis->m3C_pos);
+        rotateCurrentMatrixZYX(&pThis->m6C_rotation);
         scaleCurrentMatrixRow0(pThis->m78_scale);
         scaleCurrentMatrixRow1(pThis->m78_scale);
         scaleCurrentMatrixRow2(pThis->m78_scale);
 
-        transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B], &pThis->m60);
+        transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60);
 
         pThis->LCSItemBox_UpdateType0Sub0(0x58, 0x19C, pThis->m7C);
 
@@ -413,7 +424,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         switch (pThis->mEA_wasRendered)
         {
         case 0:
-            if (pThis->LCSItemBox_UpdateType0Sub1())
+            if (pThis->LCSItemBox_shouldSpin())
             {
                 pThis->m90 = (pThis->m94 + pThis->m90) & 0xFFFFFFF;
                 pThis->m20 = 0;
@@ -440,13 +451,13 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
         {
             pushCurrentMatrix();
-            translateCurrentMatrix(&pThis->m3C);
-            rotateCurrentMatrixZYX(&pThis->m6C);
+            translateCurrentMatrix(&pThis->m3C_pos);
+            rotateCurrentMatrixZYX(&pThis->m6C_rotation);
             scaleCurrentMatrixRow0(pThis->m78_scale);
             scaleCurrentMatrixRow1(pThis->m78_scale);
             scaleCurrentMatrixRow2(pThis->m78_scale);
 
-            transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B], &pThis->m60);
+            transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60);
 
             {
                 pushCurrentMatrix();
@@ -471,7 +482,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
             popMatrix();
         }
 
-        if ((pThis->m88 == 0) || mainGameState.getBit(pThis->m88 + 243))
+        if ((pThis->m88_receivedItemId == 0) || mainGameState.getBit(pThis->m88_receivedItemId + 243))
         {
             pThis->m20 |= 1;
         }
@@ -481,7 +492,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
     static void LCSItemBox_UpdateType2(s_itemBoxType1* pThis)
     {
-        if (pThis->LCSItemBox_UpdateType0Sub1())
+        if (pThis->LCSItemBox_shouldSpin())
         {
             pThis->m20 = 0;
         }
@@ -492,13 +503,13 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
         {
             pushCurrentMatrix();
-            translateCurrentMatrix(&pThis->m3C);
-            rotateCurrentMatrixZYX(&pThis->m6C);
+            translateCurrentMatrix(&pThis->m3C_pos);
+            rotateCurrentMatrixZYX(&pThis->m6C_rotation);
             scaleCurrentMatrixRow0(pThis->m78_scale);
             scaleCurrentMatrixRow1(pThis->m78_scale);
             scaleCurrentMatrixRow2(pThis->m78_scale);
 
-            transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B], &pThis->m60);
+            transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60);
             pThis->LCSItemBox_UpdateType0Sub0(0x54, 0x198, 0x7C);
             popMatrix();
         }
@@ -544,8 +555,8 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         s_visibilityGridWorkArea* pGridTask = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
         pushCurrentMatrix();
-        translateCurrentMatrix(&pThis->m3C);
-        rotateCurrentMatrixZYX(&pThis->m6C);
+        translateCurrentMatrix(&pThis->m3C_pos);
+        rotateCurrentMatrixZYX(&pThis->m6C_rotation);
         scaleCurrentMatrixRow0(pThis->m78_scale);
         scaleCurrentMatrixRow1(pThis->m78_scale);
         scaleCurrentMatrixRow2(pThis->m78_scale);
@@ -565,8 +576,8 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         s_visibilityGridWorkArea* pGridTask = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
         pushCurrentMatrix();
-        translateCurrentMatrix(&pThis->m3C);
-        rotateCurrentMatrixZYX(&pThis->m6C);
+        translateCurrentMatrix(&pThis->m3C_pos);
+        rotateCurrentMatrixZYX(&pThis->m6C_rotation);
         scaleCurrentMatrixRow0(pThis->m78_scale);
         scaleCurrentMatrixRow1(pThis->m78_scale);
         scaleCurrentMatrixRow2(pThis->m78_scale);
@@ -609,8 +620,8 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         s_visibilityGridWorkArea* pGridTask = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
         pushCurrentMatrix();
-        translateCurrentMatrix(&pThis->m3C);
-        rotateCurrentMatrixZYX(&pThis->m6C);
+        translateCurrentMatrix(&pThis->m3C_pos);
+        rotateCurrentMatrixZYX(&pThis->m6C_rotation);
         scaleCurrentMatrixRow0(pThis->m78_scale);
         scaleCurrentMatrixRow1(pThis->m78_scale);
         scaleCurrentMatrixRow2(pThis->m78_scale);
@@ -667,8 +678,8 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
     static void LCSItemBox_OpenedBoxDraw(s_itemBoxType1* pThis)
     {
         pushCurrentMatrix();
-        translateCurrentMatrix(&pThis->m3C);
-        rotateCurrentMatrixZYX(&pThis->m6C);
+        translateCurrentMatrix(&pThis->m3C_pos);
+        rotateCurrentMatrixZYX(&pThis->m6C_rotation);
         scaleCurrentMatrixRow0(pThis->m78_scale);
         scaleCurrentMatrixRow1(pThis->m78_scale);
         scaleCurrentMatrixRow2(pThis->m78_scale);
@@ -685,19 +696,19 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
     sLCSTarget m8_LCSTarget;
     s8 m20;
     s8 m21;
-    sVec3_FP m3C;
-    sVec3_FP m48;
-    sVec3_FP m54;
+    sVec3_FP m3C_pos;
+    sVec3_FP m48_boundingMin;
+    sVec3_FP m54_boundingMax;
     sVec3_FP m60;
-    sVec3_FP m6C;
+    sVec3_FP m6C_rotation;
     fixedPoint m78_scale;
     fixedPoint m7C;
     fixedPoint m80;
     s16 m84;
     s16 m86;
-    s16 m88;
-    s8 m8A;
-    s8 m8B;
+    s16 m88_receivedItemId;
+    s8 m8A_receivedItemQuantity;
+    s8 m8B_LCSType;
     s8 m8C;
     s8 m8D;
     s32 m90;

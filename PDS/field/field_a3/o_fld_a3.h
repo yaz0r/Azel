@@ -61,9 +61,9 @@ s_LCSTask340Sub* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, 
 struct s_itemBoxDefinition
 {
     sVec3_FP m0_pos;
-    sVec3_FP mC;
-    sVec3_FP m18;
-    sVec3_FP m24;
+    sVec3_FP mC_boundingMin;
+    sVec3_FP m18_boundingMax;
+    sVec3_FP m24_rotation;
     fixedPoint m30_scale;
     fixedPoint m34;
     s32 m38;
