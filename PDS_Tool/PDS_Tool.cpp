@@ -5,14 +5,23 @@
 
 #pragma comment(lib, "Opengl32.lib")
 
+#include "PDS.h"
+
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
 #include <vector>
 
-#define HEADLESS_TOOL
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl.h"
 
-#include "PDS.h"
+#ifdef _WIN32
+#pragma comment(lib, "Opengl32.lib")
+#endif
+
+SDL_Window *gWindow;
+SDL_GLContext gGlcontext;
 
 std::vector<uint8_t> common_bin;
 
@@ -169,6 +178,133 @@ void processCommonBin()
 int main(int argc, char* argv[])
 {
     processCommonBin();
+
+    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    {
+        assert(false);
+    }
+
+#ifdef USE_GL_ES3 
+    const char* glsl_version = "#version 300 es";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#else
+    const char* glsl_version = "#version 130";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+#endif
+    gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    assert(gWindow);
+
+    gGlcontext = SDL_GL_CreateContext(gWindow);
+    assert(gGlcontext);
+
+#ifndef USE_GL_ES3
+    gl3wInit();
+#endif
+
+    // Setup ImGui binding
+    ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+#ifndef __EMSCRIPTEN__
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+#endif
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+
+    printf("glsl_version: %s\n", glsl_version);
+
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplSDL2_InitForOpenGL(gWindow, gGlcontext);
+
+    do
+    {
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+            switch (event.type)
+            {
+            default:
+                break;
+            }
+        }
+
+        checkGL();
+        ImGui_ImplOpenGL3_NewFrame();
+        checkGL();
+        ImGui_ImplSDL2_NewFrame(gWindow);
+        ImGui::NewFrame();
+        checkGL();
+
+        if (ImGui::BeginMainMenuBar())
+        {
+            ImGui::Text(" %.2f FPS (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+
+            ImGui::EndMainMenuBar();
+        }
+
+
+
+
+        // End
+        checkGL();
+
+        //PDS_Logger.Draw("Logs");
+
+        ImGui::Render();
+
+        checkGL();
+
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Update and Render additional Platform Windows
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            SDL_GL_MakeCurrent(gWindow, gGlcontext);
+        }
+
+        checkGL();
+
+        glFlush();
+
+        checkGL();
+       
+        int frameLimit = 60;
+        {
+            static Uint64 last_time = SDL_GetPerformanceCounter();
+            Uint64 now = SDL_GetPerformanceCounter();
+
+            float freq = SDL_GetPerformanceFrequency();
+            float secs = (now - last_time) / freq;
+            float timeToWait = ((1.f / frameLimit) - secs) * 1000;
+            //timeToWait = 0;
+            if (timeToWait > 0)
+            {
+                //SDL_Delay(timeToWait);
+            }
+
+            SDL_GL_SwapWindow(gWindow);
+
+            last_time = SDL_GetPerformanceCounter();
+        }
+
+        checkGL();
+    }while (1);
+
     return 0;
 }
 

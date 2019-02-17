@@ -8,10 +8,8 @@
 
 #define NOMINMAX
 
-#ifndef HEADLESS_TOOL
 #include <SDL.h>
 #include <SDL_syswm.h>
-#endif
 
 #include <soloud.h>
 #include <soloud_wav.h>

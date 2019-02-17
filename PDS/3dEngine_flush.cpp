@@ -1351,26 +1351,28 @@ void flushObjectsToDrawList()
 
     transposeMatrix(fEarlyProjectionMatrix);
 
-    ImGui::Begin("Objects");
-    for(int i=0; i<objectRenderList.size(); i++)
+    if(ImGui::Begin("Objects"))
     {
-        char buffer[256];
-        sprintf(buffer, "Object %i", i);
-        ImGui::PushID(buffer);
+        for (int i = 0; i < objectRenderList.size(); i++)
         {
-            for (int j = 0; j < 3; j++)
+            char buffer[256];
+                sprintf(buffer, "Object %i", i);
+                ImGui::PushID(buffer);
             {
-                float vertex[4];
-                vertex[0] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 0] / (float)0x10000;
-                vertex[1] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 1] / (float)0x10000;
-                vertex[2] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 2] / (float)0x10000;
-                vertex[3] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 3] / (float)0x10000;
+                for (int j = 0; j < 3; j++)
+                {
+                    float vertex[4];
+                    vertex[0] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 0] / (float)0x10000;
+                    vertex[1] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 1] / (float)0x10000;
+                    vertex[2] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 2] / (float)0x10000;
+                    vertex[3] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 3] / (float)0x10000;
 
-                sprintf(buffer, "M%d", j);
-                ImGui::InputFloat4(buffer, vertex);
+                    sprintf(buffer, "M%d", j);
+                    ImGui::InputFloat4(buffer, vertex);
+                }
             }
+            ImGui::PopID();
         }
-        ImGui::PopID();
     }
     ImGui::End();
 
