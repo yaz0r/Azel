@@ -169,14 +169,7 @@ struct sfieldA3_1_checkExitsTask : public s_workAreaTemplate<sfieldA3_1_checkExi
         {
             if (getFieldTaskPtr()->mC->m9C[i])
             {
-                if (A3_1_exitsVars[i] >= 1000)
-                {
-                    mainGameState.setBit(A3_1_exitsVars[i] - 566);
-                }
-                else
-                {
-                    mainGameState.setBit(A3_1_exitsVars[i]);
-                }
+                mainGameState.setBit566(A3_1_exitsVars[i]);
 
                 if (i == 2)
                 {
@@ -324,17 +317,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
             if (pThis->m80 > 0)
             {
-                s32 bitIndex;
-                if (pThis->m80 < 1000)
-                {
-                    bitIndex = pThis->m80;
-                }
-                else
-                {
-                    bitIndex = pThis->m80 - 566;
-                }
-
-                if (mainGameState.getBit(bitIndex))
+                if (mainGameState.getBit566(pThis->m80))
                 {
                     assert(0);
                 }
@@ -732,16 +715,7 @@ void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*)
     if (pThis->m21 & 0x20)
         return;
 
-    s32 bitIndex;
-    if (pThis->m80 < 1000)
-    {
-        bitIndex = pThis->m80;
-    }
-    else
-    {
-        bitIndex = pThis->m80 - 566;
-    }
-    mainGameState.setBit(bitIndex);
+    mainGameState.setBit566(pThis->m80);
 
     pThis->LCSItemBox_Callback0Sub0();
     playSoundEffect(0x17);

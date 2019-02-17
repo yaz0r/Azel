@@ -255,6 +255,18 @@ public:
             return getBit(bitIndex - 566);
         }
     }
+
+    void setBit566(u32 bitIndex)
+    {
+        if (bitIndex < 1000)
+        {
+            return setBit(bitIndex);
+        }
+        else
+        {
+            return setBit(bitIndex - 566);
+        }
+    }
 };
 
 extern s_mainGameState mainGameState;

@@ -2331,15 +2331,7 @@ void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub3()
 
     if (m2C_bitToSet >= 0)
     {
-        if (m2C_bitToSet < 1000)
-        {
-            mainGameState.setBit(m2C_bitToSet);
-        }
-        else
-        {
-            mainGameState.setBit(m2C_bitToSet - 566);
-        }
-
+        mainGameState.setBit566(m2C_bitToSet);
         m2C_bitToSet = -1;
     }
 

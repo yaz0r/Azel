@@ -54,15 +54,7 @@ struct sfieldA3_3_checkExitsTask : public s_workAreaTemplate<sfieldA3_3_checkExi
     {
         if (getFieldTaskPtr()->mC->mA3_conanaNestExit)
         {
-            int exitVar = 1274;
-            if (exitVar >= 1000)
-            {
-                mainGameState.setBit(exitVar - 566);
-            }
-            else
-            {
-                mainGameState.setBit(exitVar);
-            }
+            mainGameState.setBit566(1274);
 
             startExitFieldCutscene(pThis, readCameraScript({ 0x60913CC, gFLD_A3 }), 9, 0, 0x8000);
             pThis->m_UpdateMethod = nullptr;
