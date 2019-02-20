@@ -6,11 +6,17 @@
 #pragma comment(lib, "Opengl32.lib")
 
 #include "PDS.h"
+#include "overlay.h"
 
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
+#include <string>
 #include <vector>
+#include <fstream>
+
+#include "json.hpp"
+using json = nlohmann::json;
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -175,10 +181,86 @@ void processCommonBin()
     fclose(fOutput);
 }
 
-int main(int argc, char* argv[])
-{
-    processCommonBin();
+std::vector<sOverlay*> gOverlays;
+std::vector<sOverlay*> gGlobalOverlays;
 
+sOverlay* loadOverlay(std::string & filename, u32 baseAddress, u32 endAddress)
+{
+    FILE* fHandle = fopen(filename.c_str(), "rb");
+    if (fHandle)
+    {
+        sOverlay* pNewOverlay = new sOverlay;
+        pNewOverlay->m_name = filename;
+        pNewOverlay->m_base = baseAddress;
+        pNewOverlay->m_dataSize = endAddress - baseAddress;
+        pNewOverlay->m_data = new u8[pNewOverlay->m_dataSize];
+        memset(pNewOverlay->m_data, 0, pNewOverlay->m_dataSize);
+
+        fseek(fHandle, 0, SEEK_END);
+        int fileSize = ftell(fHandle);
+        assert(fileSize <= pNewOverlay->m_dataSize);
+        fseek(fHandle, 0, SEEK_SET);
+        fread(pNewOverlay->m_data, 1, fileSize, fHandle);
+        fclose(fHandle);
+
+        gOverlays.push_back(pNewOverlay);
+        return pNewOverlay;
+    }
+    return NULL;
+}
+void loadGlobalOverlay(std::string & filename, u32 baseAddress, u32 endAddress)
+{
+    sOverlay* pOverlay = loadOverlay(filename, baseAddress, endAddress);
+    if (pOverlay)
+    {
+        gGlobalOverlays.push_back(pOverlay);
+    }
+}
+
+void loadOverlays()
+{
+    loadGlobalOverlay(std::string("COMMON.DAT"), 0x200000, 0x250000);
+    loadGlobalOverlay(std::string("1ST_READ.PRG"), 0x6006000, 0x6054000);
+    loadOverlay(std::string("FLD_A3.PRG"), 0x6054000, 0x60D0000);
+}
+
+void processOverlay(sOverlay* pOverlay)
+{
+    if (ImGui::Begin(pOverlay->m_name.c_str(), NULL, ImGuiWindowFlags_MenuBar))
+    {
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("Tools"))
+            {
+                if (ImGui::MenuItem("Import JSON"))
+                {
+                    //pOverlay->ImportJSON();
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+        
+        if (ImGui::BeginTabBar("Menu"))
+        {
+            if (ImGui::BeginTabItem("ASM"))
+            {
+                pOverlay->DrawAsm();
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Hex"))
+            {
+                pOverlay->mem_edit.DrawContents(pOverlay->m_data, pOverlay->m_dataSize, pOverlay->m_base);
+                ImGui::EndTabItem();
+            }
+        }
+        ImGui::EndTabBar();
+    }
+    ImGui::End();
+}
+
+void PDSToolInit()
+{
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         assert(false);
@@ -200,7 +282,7 @@ int main(int argc, char* argv[])
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 #endif
-    gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    gWindow = SDL_CreateWindow("PDSTool", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     assert(gWindow);
 
     gGlcontext = SDL_GL_CreateContext(gWindow);
@@ -226,26 +308,101 @@ int main(int argc, char* argv[])
 
     ImGui_ImplOpenGL3_Init(glsl_version);
     ImGui_ImplSDL2_InitForOpenGL(gWindow, gGlcontext);
+}
+
+void PDSToolLoopStart()
+{
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        ImGui_ImplSDL2_ProcessEvent(&event);
+        switch (event.type)
+        {
+        default:
+            break;
+        }
+    }
+
+    checkGL();
+    ImGui_ImplOpenGL3_NewFrame();
+    checkGL();
+    ImGui_ImplSDL2_NewFrame(gWindow);
+    ImGui::NewFrame();
+    checkGL();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void PDSToolLoopEnd()
+{
+    // End
+    checkGL();
+
+    //PDS_Logger.Draw("Logs");
+
+    ImGui::Render();
+
+    checkGL();
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // Update and Render additional Platform Windows
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        SDL_GL_MakeCurrent(gWindow, gGlcontext);
+    }
+
+    checkGL();
+
+    glFlush();
+
+    checkGL();
+
+    int frameLimit = 60;
+    {
+        static Uint64 last_time = SDL_GetPerformanceCounter();
+        Uint64 now = SDL_GetPerformanceCounter();
+
+        float freq = SDL_GetPerformanceFrequency();
+        float secs = (now - last_time) / freq;
+        float timeToWait = ((1.f / frameLimit) - secs) * 1000;
+        //timeToWait = 0;
+        if (timeToWait > 0)
+        {
+            //SDL_Delay(timeToWait);
+        }
+
+        SDL_GL_SwapWindow(gWindow);
+
+        last_time = SDL_GetPerformanceCounter();
+    }
+
+    checkGL();
+}
+
+int main(int argc, char* argv[])
+{
+    PDSToolInit();
+
+    loadOverlays();
+    {
+        std::ifstream input("output.json");
+        json mainJson;
+        input >> mainJson;
+        for (int i = 0; i < gOverlays.size(); i++)
+        {
+            gOverlays[i]->ImportJSON(mainJson);
+        }
+    }
+
+    processCommonBin();
 
     do
     {
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            ImGui_ImplSDL2_ProcessEvent(&event);
-            switch (event.type)
-            {
-            default:
-                break;
-            }
-        }
-
-        checkGL();
-        ImGui_ImplOpenGL3_NewFrame();
-        checkGL();
-        ImGui_ImplSDL2_NewFrame(gWindow);
-        ImGui::NewFrame();
-        checkGL();
+        PDSToolLoopStart();
 
         if (ImGui::BeginMainMenuBar())
         {
@@ -254,55 +411,12 @@ int main(int argc, char* argv[])
             ImGui::EndMainMenuBar();
         }
 
-
-
-
-        // End
-        checkGL();
-
-        //PDS_Logger.Draw("Logs");
-
-        ImGui::Render();
-
-        checkGL();
-
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        // Update and Render additional Platform Windows
-        ImGuiIO& io = ImGui::GetIO();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        for (int i=0; i<gOverlays.size(); i++)
         {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            SDL_GL_MakeCurrent(gWindow, gGlcontext);
+            processOverlay(gOverlays[i]);
         }
 
-        checkGL();
-
-        glFlush();
-
-        checkGL();
-       
-        int frameLimit = 60;
-        {
-            static Uint64 last_time = SDL_GetPerformanceCounter();
-            Uint64 now = SDL_GetPerformanceCounter();
-
-            float freq = SDL_GetPerformanceFrequency();
-            float secs = (now - last_time) / freq;
-            float timeToWait = ((1.f / frameLimit) - secs) * 1000;
-            //timeToWait = 0;
-            if (timeToWait > 0)
-            {
-                //SDL_Delay(timeToWait);
-            }
-
-            SDL_GL_SwapWindow(gWindow);
-
-            last_time = SDL_GetPerformanceCounter();
-        }
-
-        checkGL();
+        PDSToolLoopEnd();
     }while (1);
 
     return 0;

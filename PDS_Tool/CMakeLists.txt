@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-include_directories("." "${CMAKE_SOURCE_DIR}/PDS" "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/imgui/examples/libs/gl3w" "${THIRD_PARTY}/soloud/soloud/include")
+include_directories("." "${CMAKE_SOURCE_DIR}/AzelLib" "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/imgui/examples/libs/gl3w" "${THIRD_PARTY}/soloud/soloud/include")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,6 +10,11 @@ set(SOURCES
  ${SOURCES}
 
 PDS_Tool.cpp
+overlay.cpp
+overlay.h
+sh2dasm.cpp
+sh2dasm.h
+imgui_memory_editor.h
 
 ${THIRD_PARTY}/imgui/imgui.cpp
 ${THIRD_PARTY}/imgui/imgui_draw.cpp
@@ -51,7 +56,7 @@ if(EMSCRIPTEN)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s TOTAL_MEMORY=1073741824 -s -s USE_WEBGL2=1 -s USE_SDL=2 --llvm-lto 3 -O3 -g0 --preload-file ${CMAKE_SOURCE_DIR}/data@/")
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 else()
-	TARGET_LINK_LIBRARIES(PDS_Tool SDL2main SDL2-static)
+	TARGET_LINK_LIBRARIES(PDS_Tool SDL2main SDL2-static soloud AzelLib)
 endif()
 
 if(UNIX)

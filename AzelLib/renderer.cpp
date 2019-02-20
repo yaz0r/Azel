@@ -19,8 +19,8 @@ static float gVolume = 0.f;
 
 SoLoud::Soloud gSoloud; // Engine core
 
-SDL_Window *gWindow;
-SDL_GLContext gGlcontext;
+extern SDL_Window *gWindow;
+extern SDL_GLContext gGlcontext;
 
 GLuint gVdp1PolyFB = 0;
 GLuint gVdp1PolyTexture = 0;

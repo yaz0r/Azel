@@ -952,34 +952,6 @@ void loopIteration()
     bContinue = azelSdl2_EndFrame();
 }
 
-int main(int argc, char* argv[])
-{
-    azelSdl2_Init();
-
-    checkGL();
-    
-    azelInit();
-    resetEngine();
-
-    //...
-    readInputsFromSMPC();
-    updateInputs();
-    readInputsFromSMPC();
-    updateInputs();
-
-    u32 frameCounter = 0;
-
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(loopIteration, 0, 1);
-#else
-    do 
-    {
- 	loopIteration();
-    } while (bContinue);
-#endif
-    return 0;
-}
-
 u32 READ_BE_U32(const void* ptr)
 {
     u32 data = *(u32*)(ptr);
