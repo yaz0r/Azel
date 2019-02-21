@@ -68,39 +68,6 @@ void sOverlay::DrawAsm()
             properties = &m_mainMap[m_base + addr];
         }
 
-        if(operandes.size() > 1)
-        {
-            if (strchr(operandes[1].c_str(), ',') == NULL)
-            {
-                if (strstr(operandes[1].c_str(), "@($") == operandes[1].c_str())
-                {
-                    int symAddress = 0;
-                    if (sscanf(operandes[1].c_str(), "@($%X)", &symAddress))
-                    {
-                        assert(symAddress >= m_base);
-                        assert(symAddress < m_base + m_dataSize);
-
-                        u32 value = READ_BE_U32(m_data + symAddress - m_base);
-                        char buffer[1024];
-                        sprintf(buffer, "#$%08X", value);
-                        operandes[1] = std::string(buffer);
-                    }
-                }
-
-                if (strstr(operandes[1].c_str(), "$"))
-                {
-                    int symAddress = 0;
-                    if (sscanf(operandes[1].c_str(), "$%X", &symAddress))
-                    {
-                        if (m_stringMap.count(symAddress))
-                        {
-                            operandes[1] = m_stringMap[symAddress];
-                        }
-                    }
-                }
-            }
-        }
-
         // print mnemonic
         ImGui::SameLine();
         ImGui::Text("%s", operandes[0].c_str());
@@ -110,12 +77,69 @@ void sOverlay::DrawAsm()
 
             for (int i = 1; i < operandes.size(); i++)
             {
-                ImGui::Text("%s", operandes[i].c_str());
+                if (i == 1)
+                {
+                    if (strchr(operandes[1].c_str(), ',') == NULL)
+                    {
+                        if (strstr(operandes[1].c_str(), "@($") == operandes[1].c_str())
+                        {
+                            int symAddress = 0;
+                            if (sscanf(operandes[1].c_str(), "@($%X)", &symAddress))
+                            {
+                                assert(symAddress >= m_base);
+                                assert(symAddress < m_base + m_dataSize);
+
+                                u32 value = READ_BE_U32(m_data + symAddress - m_base);
+                                char buffer[1024];
+                                sprintf(buffer, "#$%08X", value);
+                                operandes[1] = std::string(buffer);
+                            }
+                        }
+
+                        if (properties && properties->m_operandIsOffset)
+                        {
+                            if (const char* startOfOffset = strstr(operandes[1].c_str(), "$"))
+                            {
+                                int symAddress = 0;
+                                if (sscanf(startOfOffset, "$%X", &symAddress))
+                                {
+                                    if (m_stringMap.count(symAddress))
+                                    {
+                                        operandes[1].erase(startOfOffset - operandes[1].c_str());
+                                        operandes[1] += m_stringMap[symAddress];
+                                        ImGui::TextColored(ImVec4(0, 0, 1, 1), operandes[i].c_str());
+                                    }
+                                    else
+                                    {
+                                        ImGui::TextColored(ImVec4(1, 1, 0, 1), operandes[i].c_str());
+                                    }
+
+                                }
+                            }
+                            else
+                            {
+                                ImGui::Text("%s", operandes[i].c_str());
+                            }
+                        }
+                        else
+                        {
+                            ImGui::Text("%s", operandes[i].c_str());
+                        }
+                    }
+                    else
+                    {
+                        ImGui::Text("%s", operandes[i].c_str());
+                    }
+                }
+                else
+                {
+                    ImGui::Text("%s", operandes[i].c_str());
+                }
+                
                 if (i != operandes.size() - 1)
                     ImGui::SameLine();
             }
         }
-        
     }
 
     clipper.End();
