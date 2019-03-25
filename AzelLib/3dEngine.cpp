@@ -115,9 +115,9 @@ void initMatrixToIdentity(sMatrix4x3* matrix)
 
 void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6)
 {
-    r4->m_rotation[0] = r6[0];
-    r4->m_rotation[1] = r6[1];
-    r4->m_rotation[2] = r6[2];
+    r4->mC_rotation[0] = r6[0];
+    r4->mC_rotation[1] = r6[1];
+    r4->mC_rotation[2] = r6[2];
 
     sVec3_FP translation;
 
@@ -130,18 +130,18 @@ void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6
 
     resetMatrixStack();
 
-    rotateCurrentMatrixZ(-r4->m_rotation[2]);
-    rotateCurrentMatrixX(-r4->m_rotation[0]);
+    rotateCurrentMatrixZ(-r4->mC_rotation[2]);
+    rotateCurrentMatrixX(-r4->mC_rotation[0]);
     copyMatrix(pCurrentMatrix, &r4->m88);
-    rotateCurrentMatrixY(-r4->m_rotation[1]);
+    rotateCurrentMatrixY(-r4->mC_rotation[1]);
     translateCurrentMatrix(&translation);
     rotateMatrixY(0x800, &r4->m88);
     copyMatrix(&r4->m28[0], &r4->m28[1]);
     initMatrixToIdentity(&r4->m28[0]);
     translateMatrix(&r4->m0_position, &r4->m28[0]);
-    rotateMatrixY(r4->m_rotation[1], &r4->m28[0]);
-    rotateMatrixX(r4->m_rotation[0], &r4->m28[0]);
-    rotateMatrixZ(r4->m_rotation[2], &r4->m28[0]);
+    rotateMatrixY(r4->mC_rotation[1], &r4->m28[0]);
+    rotateMatrixX(r4->mC_rotation[0], &r4->m28[0]);
+    rotateMatrixZ(r4->mC_rotation[2], &r4->m28[0]);
 
     r4->m28[0].matrix[2] = -r4->m28[0].matrix[2];
     r4->m28[0].matrix[6] = -r4->m28[0].matrix[6];

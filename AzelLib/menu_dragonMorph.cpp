@@ -291,24 +291,24 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
     sVec3_FP var_18 = r6 - r13;
     sVec3_FP var_C = r7 - r13;
 
-    r4->m20[0] = r4->m_rotation[0];
-    r4->m20[1] = r4->m_rotation[1];
-    r4->m20[2] = r4->m_rotation[2];
+    r4->m20[0] = r4->mC_rotation[0];
+    r4->m20[1] = r4->mC_rotation[1];
+    r4->m20[2] = r4->mC_rotation[2];
 
     r4->m14 = r4->m0_position;
 
     generateCameraMatrixSub1(var_18, var_4);
 
-    r4->m_rotation[0] = var_4[0] >> 16;
-    r4->m_rotation[1] = var_4[1] >> 16;
+    r4->mC_rotation[0] = var_4[0] >> 16;
+    r4->mC_rotation[1] = var_4[1] >> 16;
 
     initMatrixToIdentity(&var_30);
-    rotateMatrixX(-r4->m_rotation[0], &var_30);
-    rotateMatrixY(-r4->m_rotation[1], &var_30);
+    rotateMatrixX(-r4->mC_rotation[0], &var_30);
+    rotateMatrixY(-r4->mC_rotation[1], &var_30);
 
     transformVec(var_C, var_24, var_30);
 
-    r4->m_rotation[2] = atan2(-var_24[0], var_24[1]);
+    r4->mC_rotation[2] = atan2(-var_24[0], var_24[1]);
 
     r4->m0_position[0] = r13[0];
     var_24[0] = -r13[0];
@@ -321,12 +321,12 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
 
     resetMatrixStack();
 
-    rotateCurrentMatrixZ(-r4->m_rotation[2]);
-    rotateCurrentMatrixX(-r4->m_rotation[0]);
+    rotateCurrentMatrixZ(-r4->mC_rotation[2]);
+    rotateCurrentMatrixX(-r4->mC_rotation[0]);
 
     copyMatrix(pCurrentMatrix, &r4->m88);
 
-    rotateCurrentMatrixY(-r4->m_rotation[1]);
+    rotateCurrentMatrixY(-r4->mC_rotation[1]);
 
     translateCurrentMatrix(&var_24);
 
@@ -336,9 +336,9 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
 
     initMatrixToIdentity(&r4->m28[0]);
     translateMatrix(&r4->m0_position, &r4->m28[0]);
-    rotateMatrixY(r4->m_rotation[1], &r4->m28[0]);
-    rotateMatrixX(r4->m_rotation[0], &r4->m28[0]);
-    rotateMatrixZ(r4->m_rotation[2], &r4->m28[0]);
+    rotateMatrixY(r4->mC_rotation[1], &r4->m28[0]);
+    rotateMatrixX(r4->mC_rotation[0], &r4->m28[0]);
+    rotateMatrixZ(r4->mC_rotation[2], &r4->m28[0]);
 
     r4->m28[0].matrix[2] = -r4->m28[0].matrix[2];
     r4->m28[0].matrix[6] = -r4->m28[0].matrix[6];
@@ -351,17 +351,17 @@ void resetCameraProperties2(s_cameraProperties2* r4)
     r4->m0_position[1] = 0;
     r4->m0_position[0] = 0;
 
-    r4->m_rotation[2] = 0;
-    r4->m_rotation[1] = 0;
-    r4->m_rotation[0] = 0;
+    r4->mC_rotation[2] = 0;
+    r4->mC_rotation[1] = 0;
+    r4->mC_rotation[0] = 0;
 
     r4->m14[0] = r4->m0_position[0];
     r4->m14[1] = r4->m0_position[1];
     r4->m14[2] = r4->m0_position[2];
 
-    r4->m20[0] = r4->m_rotation[0];
-    r4->m20[1] = r4->m_rotation[1];
-    r4->m20[2] = r4->m_rotation[2];
+    r4->m20[0] = r4->mC_rotation[0];
+    r4->m20[1] = r4->mC_rotation[1];
+    r4->m20[2] = r4->mC_rotation[2];
 
     initMatrixToIdentity(&r4->m28[0]);
     initMatrixToIdentity(&r4->m28[1]);

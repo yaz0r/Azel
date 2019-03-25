@@ -20,6 +20,21 @@ struct sVec2_S16
     }
 };
 
+struct sVec2_S32
+{
+    std::array<s32, 2> m_value;
+
+    s32 operator[](int i) const
+    {
+        return m_value[i];
+    }
+
+    s32& operator[](int i)
+    {
+        return m_value[i];
+    }
+};
+
 typedef s16 sVec3_S16[3];
 
 struct sVec3_FP

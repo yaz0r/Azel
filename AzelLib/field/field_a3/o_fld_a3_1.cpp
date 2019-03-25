@@ -1,5 +1,5 @@
 #include "PDS.h"
-
+#include "a3_background_layer.h"
 // Above Excavation
 
 void fieldA3_1_startTasks_sub1Task_InitSub0(p_workArea, sLCSTarget*)
@@ -985,7 +985,7 @@ void fieldA3_1_startTasks(p_workArea workArea)
 
     fieldA3_1_startTasks_sub1(workArea);
 
-    //        create_fieldA3_0_task3(workArea);
+    create_fieldA3_backgroundLayer(workArea);
 
     create_fieldA3_1_fieldIntroTask(workArea);
     create_fieldA3_1_checkExitsTask(workArea);

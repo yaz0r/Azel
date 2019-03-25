@@ -13,7 +13,7 @@ void dragonFieldTaskDrawSub1Sub1(fixedPoint r4, fixedPoint r5, fixedPoint r6);
 struct s_cameraProperties2
 {
     sVec3_FP m0_position; //0
-    s16 m_rotation[3];
+    s16 mC_rotation[3];
     sVec3_FP m14; //14
     s16 m20[3]; // 20
     sMatrix4x3 m28[2]; // 28
