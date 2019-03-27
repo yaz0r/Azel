@@ -17,6 +17,8 @@ static float gVolume = 1.f;
 static float gVolume = 0.f;
 #endif
 
+bool useVDP1GL = true;
+
 SoLoud::Soloud gSoloud; // Engine core
 
 extern SDL_Window *gWindow;
@@ -1058,13 +1060,75 @@ void PolyLineDraw(u32 vdp1EA)
     drawLine(CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, finalColor);
 }
 
-void renderVdp1(u32 width, u32 height)
+void renderVdp1ToGL(u32 width, u32 height)
 {
-    vdp1TextureWidth = width;
-    vdp1TextureHeight = height;
-    vdp1TextureOutput = new u32[vdp1TextureWidth * vdp1TextureHeight];
-    memset(vdp1TextureOutput, 0x00, vdp1TextureWidth * vdp1TextureHeight * 4);
+    u32 vdp1EA = 0x25C00000;
 
+    while (1)
+    {
+        u16 CMDCTRL = getVdp1VramU16(vdp1EA);
+        u16 CMDLINK = getVdp1VramU16(vdp1EA + 2);
+
+        u16 END = CMDCTRL >> 15;
+        u16 JP = (CMDCTRL >> 12) & 7;
+        u16 ZP = (CMDCTRL >> 8) & 0xF;
+        u16 DIR = (CMDCTRL >> 4) & 3;
+        u16 COMM = CMDCTRL & 0xF;
+
+        if (END)
+        {
+            break;
+        }
+
+        switch (COMM)
+        {
+        case 0:
+            NormalSpriteDrawGL(vdp1EA);
+            break;
+        case 1:
+            ScaledSpriteDrawGL(vdp1EA);
+            break;
+        case 2:
+            // distorted sprite draw
+            PolyLineDrawGL(vdp1EA);
+            break;
+        case 4:
+            // draw polygon
+            break;
+        case 5:
+            PolyLineDrawGL(vdp1EA);
+            break;
+        case 8:
+            // user clipping coordinates
+            break;
+        case 9:
+            // system clipping coordinates
+            break;
+        case 0xA:
+            SetLocalCoordinates(vdp1EA);
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        switch (JP)
+        {
+        case 0:
+            vdp1EA += 0x20;
+            break;
+        case 1:
+            vdp1EA = 0x25C00000 + (CMDLINK << 3);
+            break;
+        default:
+            assert(0);
+        }
+
+    }
+}
+
+void renderVdp1()
+{
     u32 vdp1EA = 0x25C00000;
 
     while (1)
@@ -1128,13 +1192,6 @@ void renderVdp1(u32 width, u32 height)
         }
         
     }
-
-    glBindTexture(GL_TEXTURE_2D, gVdp1Texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, vdp1TextureWidth, vdp1TextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, vdp1TextureOutput);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    delete[] vdp1TextureOutput;
 }
 
 bool azelSdl2_EndFrame()
@@ -1169,7 +1226,27 @@ bool azelSdl2_EndFrame()
     u32 vdp2ResolutionWidth = outputResolutionWidth;
     u32 vdp2ResolutionHeight = outputResolutionHeight;
 
-    renderVdp1(outputResolutionWidth, outputResolutionHeight);
+    {
+        vdp1TextureWidth = outputResolutionWidth;
+        vdp1TextureHeight = outputResolutionHeight;
+        vdp1TextureOutput = new u32[vdp1TextureWidth * vdp1TextureHeight];
+        memset(vdp1TextureOutput, 0x00, vdp1TextureWidth * vdp1TextureHeight * 4);
+    }
+
+    if (!useVDP1GL)
+    {
+        renderVdp1();
+    }
+    
+    {
+        glBindTexture(GL_TEXTURE_2D, gVdp1Texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, vdp1TextureWidth, vdp1TextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, vdp1TextureOutput);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        delete[] vdp1TextureOutput;
+        vdp1TextureOutput = NULL;
+    }
 
     renderBG0(vdp2ResolutionWidth, vdp2ResolutionHeight);
     renderBG1(vdp2ResolutionWidth, vdp2ResolutionHeight);
@@ -1253,6 +1330,11 @@ bool azelSdl2_EndFrame()
         glClearDepthf(0.f);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (useVDP1GL)
+        {
+            renderVdp1ToGL(internalResolution[0], internalResolution[1]);
+        }
 
         glFrontFace(GL_CW);
         glCullFace(GL_BACK);
