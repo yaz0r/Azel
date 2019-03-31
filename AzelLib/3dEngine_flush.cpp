@@ -1325,7 +1325,7 @@ void flushObjectsToDrawList()
     float zFar = 1000.f;
 
     s32 const1 = 229;
-    s32 const2 = -195;
+    s32 const2 = 195;
 
     float fEarlyProjectionMatrix[4 * 4];
 
@@ -1335,7 +1335,7 @@ void flushObjectsToDrawList()
     fEarlyProjectionMatrix[3] = 0;
 
     fEarlyProjectionMatrix[4] = 0;
-    fEarlyProjectionMatrix[5] = -const2 / (224.f / 2.f);
+    fEarlyProjectionMatrix[5] = const2 / (224.f / 2.f);
     fEarlyProjectionMatrix[6] = 0;
     fEarlyProjectionMatrix[7] = 0;
 
@@ -1350,6 +1350,18 @@ void flushObjectsToDrawList()
     fEarlyProjectionMatrix[15] = 0;
 
     transposeMatrix(fEarlyProjectionMatrix);
+
+    {
+        glm::mat4 testProj = glm::perspectiveFov(glm::radians(50.f), 352.f, 224.f, zNear, zFar);
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                fEarlyProjectionMatrix[i * 4 + j] = testProj[i][j];
+            }
+        }
+    }
+    
 
     if(ImGui::Begin("Objects"))
     {
@@ -1457,6 +1469,47 @@ void tranformVec4ByfMatrix(float* inOutVec, const float* matrix)
 extern s16 localCoordiantesX;
 extern s16 localCoordiantesY;
 
+GLuint Get2dUIShader()
+{
+    static const GLchar UI_vs[] =
+        "#version 330 \n"
+        "in vec3 a_position;   \n"
+        "in vec2 a_texcoord;   \n"
+        "out  highp vec2 v_texcoord;     \n"
+        "void main()                  \n"
+        "{                            \n"
+        "   gl_Position = vec4(a_position, 1); \n"
+        "   gl_Position.x = (a_position.x / (352.f/2.f)) - 1.f;"
+        "   gl_Position.y = 1.f - (a_position.y / (224.f/2.f));"
+        "   v_texcoord = a_texcoord; \n"
+        "} "
+        ;
+
+    const GLchar UI_ps[] =
+        "#version 330 \n"
+        "precision highp float;									\n"
+        "in highp vec2 v_texcoord;								\n"
+        "uniform sampler2D s_texture;							\n"
+        "out vec4 fragColor;									\n"
+        "void main()											\n"
+        "{														\n"
+        "	vec4 txcol = texture2D(s_texture, v_texcoord);		\n"
+        "   if(txcol.a <= 0) discard;\n"
+        "   fragColor = txcol; \n"
+        "   fragColor.w = 1;								\n"
+        "}														\n"
+        ;
+
+    static GLuint UIShaderIndex = 0;
+    if (UIShaderIndex == 0)
+    {
+        UIShaderIndex = compileShader(UI_vs, UI_ps);
+        assert(UIShaderIndex);
+    }
+
+    return UIShaderIndex;
+}
+
 void NormalSpriteDrawGL(u32 vdp1EA)
 {
     u16 CMDCTRL = getVdp1VramU16(vdp1EA + 0);
@@ -1478,99 +1531,11 @@ void NormalSpriteDrawGL(u32 vdp1EA)
         s32 Width = ((CMDSIZE >> 8) & 0x3F) * 8;
         s32 Height = CMDSIZE & 0xFF;
 
-        glUseProgram(shaderProgram);
+        glUseProgram(Get2dUIShader());
         checkGL();
 
         float zNear = 0.1f;
         float zFar = 1000.f;
-
-        s32 const1 = 229;
-        s32 const2 = -195;
-        float projectionMatrixInverse[16];
-        {
-            float projectionMatrix[4 * 4];
-            
-            float objectMatrix[4 * 4];
-
-            {
-                projectionMatrix[0] = const1 / (352.f / 2.f);
-                projectionMatrix[1] = 0;
-                projectionMatrix[2] = 0;
-                projectionMatrix[3] = 0;
-
-                projectionMatrix[4] = 0;
-                projectionMatrix[5] = -const2 / (224.f / 2.f);
-                projectionMatrix[6] = 0;
-                projectionMatrix[7] = 0;
-
-                projectionMatrix[8] = 0;
-                projectionMatrix[9] = 0;
-                projectionMatrix[10] = (-zNear - zFar) / (zFar - zNear);
-                projectionMatrix[11] = 2.f * zFar * zNear / (zFar - zNear);
-
-                projectionMatrix[12] = 0;
-                projectionMatrix[13] = 0;
-                projectionMatrix[14] = 1.f;
-                projectionMatrix[15] = 0;
-
-                transposeMatrix(projectionMatrix);
-
-                inverseMatrix4x4(projectionMatrix, projectionMatrixInverse);
-            }
-
-            {
-                objectMatrix[0] = 1;
-                objectMatrix[1] = 0;
-                objectMatrix[2] = 0;
-                objectMatrix[3] = 0;
-
-                objectMatrix[4] = 0;
-                objectMatrix[5] = 1;
-                objectMatrix[6] = 0;
-                objectMatrix[7] = 0;
-
-                objectMatrix[8] = 0;
-                objectMatrix[9] = 0;
-                objectMatrix[10] = 1;
-                objectMatrix[11] = 0;
-
-                objectMatrix[12] = 0;
-                objectMatrix[13] = 0;
-                objectMatrix[14] = 0;
-                objectMatrix[15] = 1;
-            }
-
-            {
-                checkGL();
-                GLuint modelProjection = glGetUniformLocation(shaderProgram, (const GLchar *)"u_mvpMatrix");
-                checkGL();
-                if (modelProjection != -1)
-                {
-                    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, projectionMatrix);
-                }
-                checkGL();
-
-                GLuint modelMatrixId = glGetUniformLocation(shaderProgram, (const GLchar *)"u_modelMatrix");
-                checkGL();
-                if (modelMatrixId != -1)
-                {
-                    glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, objectMatrix);
-                }
-                checkGL();
-
-                GLuint offsetId = glGetUniformLocation(shaderProgram, (const GLchar *)"u_2dOffset");
-                checkGL();
-                if (modelMatrixId != -1)
-                {
-                    float m_2dOffset[2];
-                    m_2dOffset[0] = 0;
-                    m_2dOffset[1] = 0;
-
-                    glUniform2fv(offsetId, 1, m_2dOffset);
-                }
-                checkGL();
-            }
-        }
 
         s_quad tempQuad;
         tempQuad.model = NULL;
@@ -1582,42 +1547,23 @@ void NormalSpriteDrawGL(u32 vdp1EA)
 
         GLuint textureId = getTextureForQuad(tempQuad);
 
+        float quadDepth = 0.9;
+
         tempQuad.m_vertices[0].m_originalVertices[0] = X;
         tempQuad.m_vertices[0].m_originalVertices[1] = Y;
-        tempQuad.m_vertices[0].m_originalVertices[2] = 0.1;
+        tempQuad.m_vertices[0].m_originalVertices[2] = quadDepth;
 
-        tempQuad.m_vertices[1].m_originalVertices[0] = X + Width;
+        tempQuad.m_vertices[1].m_originalVertices[0] = (X + Width);
         tempQuad.m_vertices[1].m_originalVertices[1] = Y;
-        tempQuad.m_vertices[1].m_originalVertices[2] = 0.1;
+        tempQuad.m_vertices[1].m_originalVertices[2] = quadDepth;
 
-        tempQuad.m_vertices[2].m_originalVertices[0] = X + Width;
-        tempQuad.m_vertices[2].m_originalVertices[1] = Y + Height;
-        tempQuad.m_vertices[2].m_originalVertices[2] = 0.1;
+        tempQuad.m_vertices[2].m_originalVertices[0] = (X + Width);
+        tempQuad.m_vertices[2].m_originalVertices[1] = (Y + Height);
+        tempQuad.m_vertices[2].m_originalVertices[2] = quadDepth;
 
         tempQuad.m_vertices[3].m_originalVertices[0] = X;
-        tempQuad.m_vertices[3].m_originalVertices[1] = Y + Height;
-        tempQuad.m_vertices[3].m_originalVertices[2] = 0.1;
-
-        // project those from screen to 3d
-        for(int i=0; i<4; i++)
-        {
-            float X = tempQuad.m_vertices[i].m_originalVertices[0];
-            float Y = tempQuad.m_vertices[i].m_originalVertices[1];
-            float d = tempQuad.m_vertices[i].m_originalVertices[2];
-
-            // X is in the 0 / 352 range. put it back in the -1 / 1 range
-            X = ((X / 352.f) * 2) - 1.f;
-
-            // Y is in the 0 / 224 range. put it back in the -1 / 1 range
-            Y = ((Y / 224) * 2) - 1.f;
-
-            float inVector[4] = { X, Y, 1, 1 };
-            tranformVec4ByfMatrix(inVector, projectionMatrixInverse);
-
-            tempQuad.m_vertices[i].m_originalVertices[0] = inVector[0] * d * zFar;
-            tempQuad.m_vertices[i].m_originalVertices[1] = inVector[1] * d * zFar;
-            tempQuad.m_vertices[i].m_originalVertices[2] = inVector[2] * d * zFar;
-        }
+        tempQuad.m_vertices[3].m_originalVertices[1] = (Y + Height);
+        tempQuad.m_vertices[3].m_originalVertices[2] = quadDepth;
 
         if (textureId > 0)
         {
@@ -1727,10 +1673,7 @@ void NormalSpriteDrawGL(u32 vdp1EA)
 
                 GLuint vertexp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_position");
                 GLuint texcoordp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_texcoord");
-                GLuint colorp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_color");
                 GLuint texture = glGetUniformLocation(shaderProgram, (const GLchar*)"s_texture");
-                GLuint falloff = glGetUniformLocation(shaderProgram, (const GLchar*)"s_falloff");
-                GLuint textureInfluenceHandle = glGetUniformLocation(shaderProgram, (const GLchar*)"s_textureInfluence");
 
                 checkGL();
 
@@ -1761,12 +1704,6 @@ void NormalSpriteDrawGL(u32 vdp1EA)
                     glEnableVertexAttribArray(texcoordp);
                 }
                 checkGL();
-                if (colorp != -1)
-                {
-                    glVertexAttribPointer(colorp, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->color);
-                    glEnableVertexAttribArray(colorp);
-                }
-                checkGL();
                 if (texture != -1)
                 {
                     glUniform1i(texture, 0);
@@ -1774,17 +1711,6 @@ void NormalSpriteDrawGL(u32 vdp1EA)
                     glBindTexture(GL_TEXTURE_2D, textureId);
                 }
                 checkGL();
-                if (textureInfluenceHandle != -1)
-                {
-                    glUniform1f(textureInfluenceHandle, textureInfluence);
-                }
-                checkGL();
-                if (falloff != -1)
-                {
-                    glUniform1i(falloff, 1);
-                    glActiveTexture(GL_TEXTURE1);
-                    glBindTexture(GL_TEXTURE_2D, colorRampTexture);
-                }
 
                 static GLuint indexBufferId = 0;
                 if (indexBufferId == 0)
@@ -1817,13 +1743,6 @@ void NormalSpriteDrawGL(u32 vdp1EA)
                 {
                     glUniform1i(texture, 0);
                     glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, 0);
-                }
-
-                if (falloff != -1)
-                {
-                    glUniform1i(falloff, 0);
-                    glActiveTexture(GL_TEXTURE1);
                     glBindTexture(GL_TEXTURE_2D, 0);
                 }
             }

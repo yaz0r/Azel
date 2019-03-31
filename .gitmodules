@@ -10,3 +10,6 @@
 [submodule "ThirdParty/soloud/soloud"]
 	path = ThirdParty/soloud/soloud
 	url = https://github.com/jarikomppa/soloud
+[submodule "ThirdParty/glm"]
+	path = ThirdParty/glm
+	url = https://github.com/g-truc/glm

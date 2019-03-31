@@ -606,6 +606,26 @@ struct s_vdp1Packet
     u16 m6_vdp1EA; //6
 };
 
+struct s_vdp1Command
+{
+    u16 CMDCTRL;
+    u16 CMDLINK;
+    u16 CMDPMOD;
+    u16 CMDCOLR;
+    u16 CMDSRCA;
+    u16 CMDSIZE;
+    u16 CMDXA;
+    u16 CMDYA;
+    u16 CMDXB;
+    u16 CMDYA;
+    u16 CMDXC;
+    u16 CMDYC;
+    u16 CMDXD;
+    u16 CMDYD;
+    u16 CMDGRA;
+    u16 _DUMMY;
+};
+
 struct s_vdp1Context
 {
     u32 m0_currentVdp1WriteEA; //0

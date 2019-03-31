@@ -165,6 +165,75 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
         }
         break;
     }
+    case 4:
+    {
+        // 8 bpp(256 color) Bank mode
+        u32 colorLut = quad.CMDCOLR * 2;
+        u32 colorOffset = (VDP2Regs_.CRAOFB & 0x70) << 4;
+        assert(colorOffset == 0);
+        for (int currentY = 0; currentY < textureHeight; currentY++)
+        {
+            for (int currentX = 0; currentX < textureWidth; currentX++)
+            {
+                u8 character = getVdp1VramU8(0x25C00000 + textureAddress + currentX + currentY * textureWidth);
+
+                if (character)
+                {
+                    u32 paletteOffset = colorLut + 2 * character;//((paletteNumber << 4) + dotColor) * 2 + layerData.CAOS * 0x200;
+                    u16 color = getVdp2CramU16(paletteOffset);
+                    u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
+
+                    *texture++ = finalColor;
+                }
+                else
+                {
+                    *texture++ = 0;
+                }
+            }
+        }
+        break;
+    }
+    case 0:
+    {
+        // 4 bpp Bank mode
+        u32 colorLut = quad.CMDCOLR * 2;
+        u32 colorOffset = (VDP2Regs_.CRAOFB & 0x70) << 4;
+        assert(colorOffset == 0);
+
+        for (int currentY = 0; currentY < textureHeight; currentY++)
+        {
+            for (int currentX = 0; currentX < textureWidth; currentX++)
+            {
+                u8 character = getVdp1VramU8(0x25C00000 + textureAddress + (currentX + currentY * textureWidth) / 2);
+
+                if (currentX & 1)
+                {
+                    character &= 0xF;
+                }
+                else
+                {
+                    character = (character >> 4) & 0xF;
+                }
+
+                if (character)
+                {
+                    u32 paletteOffset = colorLut + 2 * character;//((paletteNumber << 4) + dotColor) * 2 + layerData.CAOS * 0x200;
+                    u16 color = getVdp2CramU16(paletteOffset);
+                    u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
+
+                    *texture++ = finalColor;
+                }
+                else
+                {
+                    *texture++ = 0;
+                }
+            }
+        }
+        break;
+    }
+    default:
+        //assert(0);
+        break;
     }
     return (u32*)textureOutput;
 }

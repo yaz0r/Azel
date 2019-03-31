@@ -1272,11 +1272,11 @@ bool azelSdl2_EndFrame()
     glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 
-    glClearDepthf(0.f);
+    glClearDepthf(1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_GREATER);
+    glDepthFunc(GL_LESS);
 
     checkGL();
     
@@ -1327,7 +1327,7 @@ bool azelSdl2_EndFrame()
         glViewport(0, 0, internalResolution[0], internalResolution[1]);
 
         glClearColor(0, 0, 0, 0);
-        glClearDepthf(0.f);
+        glClearDepthf(1.f);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
