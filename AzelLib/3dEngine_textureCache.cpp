@@ -34,6 +34,10 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
     {
         characterData = characterSearch->second;
     }
+    else
+    {
+        characterData = getVdp1Pointer(0x25C00000);
+    }
 
     u32 textureAddress = ((unsigned int)quad.CMDSRCA) << 3;
     textureWidth = (quad.CMDSIZE & 0x3F00) >> 5;
@@ -78,7 +82,6 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
             {
                 for (int k = 0; k < 2; k++)
                 {
-                    //dot = getVdp1VramU8(0x25C00000 + (charAddr & 0x7FFFF));
                     dot = *(characterData + charAddr);
 
                     if (k == 0)

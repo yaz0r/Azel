@@ -892,6 +892,8 @@ void interruptVDP1Update()
     graphicEngineStatus.m14_vdp1Context[1].m0_currentVdp1WriteEA = graphicEngineStatus.m14_vdp1Context[1].m4[r6];
 }
 
+u32 frameIndex = 0;
+
 bool bContinue = true;
 void loopIteration()
 {
@@ -950,6 +952,8 @@ void loopIteration()
     }
 
     bContinue = azelSdl2_EndFrame();
+
+    frameIndex++;
 }
 
 u32 READ_BE_U32(const void* ptr)
@@ -1007,5 +1011,4 @@ s8 READ_BE_S8(const void* ptr)
     s8 data = *(s8*)(ptr);
     return data;
 }
-
 

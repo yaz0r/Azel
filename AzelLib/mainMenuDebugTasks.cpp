@@ -3337,6 +3337,42 @@ s_menuSprite spriteData1[] =
     {0x20D8, 0x420, 4, 0},
 };
 
+extern u32 frameIndex;
+
+s_vd1ExtendedCommand* getExtendedCommand(u32 vd1PacketStart)
+{
+    s_vdp1Context* pContext = &graphicEngineStatus.m14_vdp1Context[0];
+    assert(((vd1PacketStart - 0x25C00000) % 0x20) == 0);
+    u32 packetIndex = (vd1PacketStart - 0x25C00000) / 0x20;
+    assert(packetIndex < pContext->m_vd1pExtendedCommand.size());
+
+    return &pContext->m_vd1pExtendedCommand[packetIndex];
+}
+
+s_vd1ExtendedCommand* createVdp1ExtendedCommand(u32 vd1PacketStart)
+{
+    s_vd1ExtendedCommand* pPacket = getExtendedCommand(vd1PacketStart);
+    if (pPacket->frameIndex)
+    {
+        assert(pPacket->frameIndex != frameIndex);
+    }
+
+    memset(pPacket, 0, sizeof(s_vd1ExtendedCommand));
+
+    pPacket->frameIndex = frameIndex;
+
+    return pPacket;
+}
+
+s_vd1ExtendedCommand* fetchVdp1ExtendedCommand(u32 vd1PacketStart)
+{
+    s_vd1ExtendedCommand* pPacket = getExtendedCommand(vd1PacketStart);
+
+    if (pPacket->frameIndex != frameIndex)
+        return NULL;
+
+    return pPacket;
+}
 
 void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
 {

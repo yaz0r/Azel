@@ -45,7 +45,7 @@ std::vector<sLCSTaskDrawSub5Sub1_Data1> readLCSTaskDrawSub5Sub1_Data1(sSaturnPtr
         entry.m6 = readSaturnS16(source + 0x6);
         entry.m8 = readSaturnS16(source + 0x8);
         entry.mA = readSaturnS16(source + 0xA);
-        entry.mC = readSaturnS16(source + 0xC);
+        entry.mC = readSaturnS32(source + 0xC);
         entry.m10 = readSaturnS32(source + 0x10);
         entry.m14 = readSaturnS32(source + 0x14);
         entry.m18 = readSaturnS32(source + 0x18);

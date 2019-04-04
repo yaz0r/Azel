@@ -259,7 +259,7 @@ struct sLCSSelected : public s_workAreaTemplate<sLCSSelected>
 
     s_memoryAreaOutput m0;
     sLCSTarget* m8;
-    sVec3_FP mC;
+    sVec3_FP mC; // interpolator: 0: step 1: current value 2: target value
     sVec3_FP m18;
     sVec2_S16* m24;
     s32 m28;

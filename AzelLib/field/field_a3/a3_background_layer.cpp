@@ -13,6 +13,9 @@ void drawBackgroundSprite(const sVec2_S32& r4_position, fixedPoint r5_distance, 
     setVdp1VramU16(vdp1WriteEA + 0x0C, r4_position[0]); // CMDXA
     setVdp1VramU16(vdp1WriteEA + 0x0E, -r4_position[1]); // CMDYA
 
+    s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
+    pExtendedCommand->depth = (float)r5_distance.asS32() / (float)graphicEngineStatus.m405C.m14_farClipDistance.asS32();
+
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r5_distance * graphicEngineStatus.m405C.m38).getInteger();
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
@@ -57,7 +60,7 @@ struct s_A3_BackgroundLayer : public s_workAreaTemplate<s_A3_BackgroundLayer>
         s16 var0 = cameraProperties2.mC_rotation[0] + r2;
         s32 var4 = var0 & 0xFFF;
         pThis->mC = pThis->m10 - MTH_Mul(graphicEngineStatus.m405C.m1C ,FP_Div(getSin(var4), getCos(var4)));
-        pThis->m8 = -80 + performModulo(80, MTH_Mul(graphicEngineStatus.m405C.m18, MTH_Mul(cameraProperties2.mC_rotation[2], 0x3243F) << 5));
+        pThis->m8 = -80 + performModulo(80, MTH_Mul(graphicEngineStatus.m405C.m18, MTH_Mul(cameraProperties2.mC_rotation[1], 0x3243F) << 5));
     }
 
     static void Draw(s_A3_BackgroundLayer* pThis)

@@ -617,7 +617,7 @@ struct s_vdp1Command
     u16 CMDXA;
     u16 CMDYA;
     u16 CMDXB;
-    u16 CMDYA;
+    u16 CMDYB;
     u16 CMDXC;
     u16 CMDYC;
     u16 CMDXD;
@@ -625,6 +625,15 @@ struct s_vdp1Command
     u16 CMDGRA;
     u16 _DUMMY;
 };
+
+struct s_vd1ExtendedCommand
+{
+    u32 frameIndex;
+    float depth;
+};
+
+s_vd1ExtendedCommand* createVdp1ExtendedCommand(u32 vd1PacketStart);
+s_vd1ExtendedCommand* fetchVdp1ExtendedCommand(u32 vd1PacketStart);
 
 struct s_vdp1Context
 {
@@ -638,6 +647,8 @@ struct s_vdp1Context
     s_vdp1Packet* m20_pCurrentVdp1Packet; //20
     s_vdp1Packet m24_vdp1Packets[1024]; // 24
     // size should be 2024
+
+    std::array<s_vd1ExtendedCommand, 1024> m_vd1pExtendedCommand;
 };
 
 struct s_graphicEngineStatus

@@ -1476,11 +1476,13 @@ GLuint Get2dUIShader()
         "in vec3 a_position;   \n"
         "in vec2 a_texcoord;   \n"
         "out  highp vec2 v_texcoord;     \n"
+        "out  highp float v_depth;    \n"
         "void main()                  \n"
         "{                            \n"
         "   gl_Position = vec4(a_position, 1); \n"
         "   gl_Position.x = (a_position.x / (352.f/2.f)) - 1.f;"
         "   gl_Position.y = 1.f - (a_position.y / (224.f/2.f));"
+        "   v_depth = a_position.z;"
         "   v_texcoord = a_texcoord; \n"
         "} "
         ;
@@ -1489,14 +1491,17 @@ GLuint Get2dUIShader()
         "#version 330 \n"
         "precision highp float;									\n"
         "in highp vec2 v_texcoord;								\n"
+        "in  highp float v_depth;\n"
         "uniform sampler2D s_texture;							\n"
         "out vec4 fragColor;									\n"
+        "out highp float gl_FragDepth ; \n"
         "void main()											\n"
         "{														\n"
         "	vec4 txcol = texture2D(s_texture, v_texcoord);		\n"
         "   if(txcol.a <= 0) discard;\n"
         "   fragColor = txcol; \n"
         "   fragColor.w = 1;								\n"
+        "   gl_FragDepth = v_depth;\n"
         "}														\n"
         ;
 
@@ -1548,6 +1553,12 @@ void NormalSpriteDrawGL(u32 vdp1EA)
         GLuint textureId = getTextureForQuad(tempQuad);
 
         float quadDepth = 0.9;
+
+        s_vd1ExtendedCommand* pExtendedCommand = fetchVdp1ExtendedCommand(vdp1EA);
+        if (pExtendedCommand)
+        {
+            quadDepth = pExtendedCommand->depth;
+        }
 
         tempQuad.m_vertices[0].m_originalVertices[0] = X;
         tempQuad.m_vertices[0].m_originalVertices[1] = Y;
@@ -1659,11 +1670,6 @@ void NormalSpriteDrawGL(u32 vdp1EA)
                         gVertexArray[j].color[3] = 1;
                     }
 
-                    {
-                        tempQuad.m_vertices[j].m_originalVertices[3] = 1;
-                        //glVertex4fv(tempQuad.m_vertices[j].m_originalVertices);
-                    }
-
                     gVertexArray[j].positions[0] = tempQuad.m_vertices[j].m_originalVertices[0];
                     gVertexArray[j].positions[1] = tempQuad.m_vertices[j].m_originalVertices[1];
                     gVertexArray[j].positions[2] = tempQuad.m_vertices[j].m_originalVertices[2];
@@ -1755,7 +1761,260 @@ void NormalSpriteDrawGL(u32 vdp1EA)
 
 void ScaledSpriteDrawGL(u32 vdp1EA)
 {
+    u16 CMDCTRL = getVdp1VramU16(vdp1EA + 0);
+    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
+    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
+    u16 CMDSRCA = getVdp1VramU16(vdp1EA + 8);
+    u16 CMDSIZE = getVdp1VramU16(vdp1EA + 0xA);
+    s16 CMDXA = getVdp1VramU16(vdp1EA + 0xC);
+    s16 CMDYA = getVdp1VramU16(vdp1EA + 0xE);
+    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
 
+    if (CMDSRCA)
+    {
+        int colorMode = (CMDPMOD >> 3) & 0x7;
+        u32 characterAddress = ((u32)CMDSRCA) << 3;
+        u32 colorBank = ((u32)CMDCOLR) << 1;
+        s32 X0 = CMDXA + localCoordiantesX;
+        s32 Y0 = CMDYA + localCoordiantesY;
+        s32 Width = ((CMDSIZE >> 8) & 0x3F) * 8;
+        s32 Height = CMDSIZE & 0xFF;
+
+        s32 X1;
+        s32 Y1;
+
+        switch ((getVdp1VramU16(vdp1EA + 0) >> 8) & 0xF)
+        {
+        case 0:
+            X1 = getVdp1VramS16(vdp1EA + 0x14) + localCoordiantesX + 1;
+            Y1 = getVdp1VramS16(vdp1EA + 0x16) + localCoordiantesY + 1;
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        glUseProgram(Get2dUIShader());
+        checkGL();
+
+        float zNear = 0.1f;
+        float zFar = 1000.f;
+
+        s_quad tempQuad;
+        tempQuad.model = NULL;
+        tempQuad.CMDCTRL = CMDCTRL;
+        tempQuad.CMDPMOD = CMDPMOD;
+        tempQuad.CMDCOLR = CMDCOLR;
+        tempQuad.CMDSRCA = CMDSRCA;
+        tempQuad.CMDSIZE = CMDSIZE;
+
+        GLuint textureId = getTextureForQuad(tempQuad);
+
+        float quadDepth = 0.9;
+
+        s_vd1ExtendedCommand* pExtendedCommand = fetchVdp1ExtendedCommand(vdp1EA);
+        if (pExtendedCommand)
+        {
+            quadDepth = pExtendedCommand->depth;
+        }
+
+        tempQuad.m_vertices[0].m_originalVertices[0] = X0;
+        tempQuad.m_vertices[0].m_originalVertices[1] = Y0;
+        tempQuad.m_vertices[0].m_originalVertices[2] = quadDepth;
+
+        tempQuad.m_vertices[1].m_originalVertices[0] = X1;
+        tempQuad.m_vertices[1].m_originalVertices[1] = Y0;
+        tempQuad.m_vertices[1].m_originalVertices[2] = quadDepth;
+
+        tempQuad.m_vertices[2].m_originalVertices[0] = X1;
+        tempQuad.m_vertices[2].m_originalVertices[1] = Y1;
+        tempQuad.m_vertices[2].m_originalVertices[2] = quadDepth;
+
+        tempQuad.m_vertices[3].m_originalVertices[0] = X0;
+        tempQuad.m_vertices[3].m_originalVertices[1] = Y1;
+        tempQuad.m_vertices[3].m_originalVertices[2] = quadDepth;
+
+        if (textureId > 0)
+        {
+            checkGL();
+            //glEnable(GL_ALPHA_TEST);
+            //glAlphaFunc(GL_GREATER, 0.1);
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            checkGL();
+
+            int flip = (tempQuad.CMDCTRL & 0x30) >> 4;
+
+            float uv[4][2];
+            u16 color[4];
+
+            uv[0][0] = 0;
+            uv[0][1] = 0;
+            color[0] = 1;
+            //color[0] = MappedMemoryReadWord(quads[i].gouraudPointer + 0 * 2);
+
+            uv[1][0] = 1;
+            uv[1][1] = 0;
+            color[1] = 1;
+            //color[1] = MappedMemoryReadWord(quads[i].gouraudPointer + 1 * 2);
+
+            uv[2][0] = 1;
+            uv[2][1] = 1;
+            color[2] = 1;
+            //color[2] = MappedMemoryReadWord(quads[i].gouraudPointer + 2 * 2);
+
+            uv[3][0] = 0;
+            uv[3][1] = 1;
+            color[3] = 1;
+            //color[3] = MappedMemoryReadWord(quads[i].gouraudPointer + 3 * 2);
+
+            //glColor3f(1, 1, 1);
+            checkGL();
+            //                                 if (enableTextures)
+            //                                 {
+            //                                     glEnable(GL_TEXTURE_2D);
+            //                                 }
+            //                                 else
+            //                                 {
+            //                                     glDisable(GL_TEXTURE_2D);
+            //                                 }
+            checkGL();
+            {
+                char vertexOrder[4] = { 0, 1, 2, 3 };
+
+                switch (flip & 3)
+                {
+                case 1:
+                    vertexOrder[0] = 1;
+                    vertexOrder[1] = 0;
+                    vertexOrder[2] = 3;
+                    vertexOrder[3] = 2;
+                    break;
+                case 2:
+                    vertexOrder[0] = 3;
+                    vertexOrder[1] = 2;
+                    vertexOrder[2] = 1;
+                    vertexOrder[3] = 0;
+                    break;
+                case 3:
+                    vertexOrder[0] = 2;
+                    vertexOrder[1] = 3;
+                    vertexOrder[2] = 0;
+                    vertexOrder[3] = 1;
+                    break;
+                }
+
+                for (int j = 0; j < 4; j++)
+                {
+                    gVertexArray[j].textures[0] = uv[vertexOrder[j]][0];
+                    gVertexArray[j].textures[1] = uv[vertexOrder[j]][1];
+
+                    if (enableVertexColor)
+                    {
+                        //glColor4f(perVertexColor[j][2], perVertexColor[j][1], perVertexColor[j][0], 1);
+
+                        gVertexArray[j].color[0] = 1;
+                        gVertexArray[j].color[1] = 1;
+                        gVertexArray[j].color[2] = 1;
+                        gVertexArray[j].color[3] = 1;
+
+                    }
+                    else
+                    {
+                        //glColor4f(1, 1, 1, 1);
+
+                        gVertexArray[j].color[0] = 1;
+                        gVertexArray[j].color[1] = 1;
+                        gVertexArray[j].color[2] = 1;
+                        gVertexArray[j].color[3] = 1;
+                    }
+
+                    gVertexArray[j].positions[0] = tempQuad.m_vertices[j].m_originalVertices[0];
+                    gVertexArray[j].positions[1] = tempQuad.m_vertices[j].m_originalVertices[1];
+                    gVertexArray[j].positions[2] = tempQuad.m_vertices[j].m_originalVertices[2];
+                }
+
+                checkGL();
+
+                GLuint vertexp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_position");
+                GLuint texcoordp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_texcoord");
+                GLuint texture = glGetUniformLocation(shaderProgram, (const GLchar*)"s_texture");
+
+                checkGL();
+
+                static GLuint vao = 0;
+                if (vao == 0)
+                {
+                    glGenVertexArrays(1, &vao);
+                }
+                glBindVertexArray(vao);
+
+                static GLuint vbo = 0;
+                if (vbo == 0)
+                {
+                    glGenBuffers(1, &vbo);
+                }
+                checkGL();
+                glBindBuffer(GL_ARRAY_BUFFER, vbo);
+                checkGL();
+                glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 4, &gVertexArray[0], GL_STATIC_DRAW);
+                checkGL();
+                glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->positions);
+                checkGL();
+                glEnableVertexAttribArray(vertexp);
+                checkGL();
+                if (texcoordp != -1)
+                {
+                    glVertexAttribPointer(texcoordp, 2, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->textures);
+                    glEnableVertexAttribArray(texcoordp);
+                }
+                checkGL();
+                if (texture != -1)
+                {
+                    glUniform1i(texture, 0);
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, textureId);
+                }
+                checkGL();
+
+                static GLuint indexBufferId = 0;
+                if (indexBufferId == 0)
+                {
+                    char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
+                    glGenBuffers(1, &indexBufferId);
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
+                }
+                else
+                {
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+                }
+
+                checkGL();
+                //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
+                //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)0);
+                checkGL();
+                glDisableVertexAttribArray(vertexp);
+                checkGL();
+                if (texcoordp != -1)
+                    glDisableVertexAttribArray(texcoordp);
+                checkGL();
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                checkGL();
+
+                if (texture != -1)
+                {
+                    glUniform1i(texture, 0);
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                }
+            }
+        }
+    }
+
+    checkGL();
+    glUseProgram(0);
 }
 
 void PolyLineDrawGL(u32 vdp1EA)

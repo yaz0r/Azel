@@ -1514,9 +1514,9 @@ void sLCSSelected::DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, sVec3_FP* r6)
 
     s16 var14[4];
     var14[0] = r14 + (*m24)[0];
-    var14[1] = var8 + (*m24)[1] - varC / 2;
+    var14[1] = r7 + (var8 + (*m24)[1] - varC / 2);
     var14[2] = r14 + (*m24)[0] + var10;
-    var14[3] = var8 + (*m24)[1] + varC / 2;
+    var14[3] = r7 - (var8 + (*m24)[1] + varC / 2);
 
     u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
