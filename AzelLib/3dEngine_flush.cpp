@@ -1515,6 +1515,50 @@ GLuint Get2dUIShader()
     return UIShaderIndex;
 }
 
+GLuint GetLineShader()
+{
+    static const GLchar UI_vs[] =
+        "#version 330 \n"
+        "in vec3 a_position;   \n"
+        "in vec3 a_color;   \n"
+        "out  highp vec3 v_color;     \n"
+        "out  highp float v_depth;    \n"
+        "void main()                  \n"
+        "{                            \n"
+        "   gl_Position = vec4(a_position, 1); \n"
+        "   gl_Position.x = (a_position.x / (352.f/2.f)) - 1.f;"
+        "   gl_Position.y = 1.f - (a_position.y / (224.f/2.f));"
+        "   v_depth = a_position.z;"
+        "   v_color = a_color; \n"
+        "} "
+        ;
+
+    const GLchar UI_ps[] =
+        "#version 330 \n"
+        "precision highp float;									\n"
+        "in highp vec3 v_color;								\n"
+        "in  highp float v_depth;\n"
+        "uniform sampler2D s_texture;							\n"
+        "out vec4 fragColor;									\n"
+        "out highp float gl_FragDepth ; \n"
+        "void main()											\n"
+        "{														\n"
+        "   fragColor.xyz = v_color; \n"
+        "   fragColor.w = 1;								\n"
+        "   gl_FragDepth = v_depth;\n"
+        "}														\n"
+        ;
+
+    static GLuint UIShaderIndex = 0;
+    if (UIShaderIndex == 0)
+    {
+        UIShaderIndex = compileShader(UI_vs, UI_ps);
+        assert(UIShaderIndex);
+    }
+
+    return UIShaderIndex;
+}
+
 void NormalSpriteDrawGL(u32 vdp1EA)
 {
     u16 CMDCTRL = getVdp1VramU16(vdp1EA + 0);
@@ -2017,7 +2061,116 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
     glUseProgram(0);
 }
 
+void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)
+{
+    gVertexArray[0].positions[0] = X1;
+    gVertexArray[0].positions[1] = Y1;
+    gVertexArray[0].positions[2] = 0.f;
+
+    gVertexArray[1].positions[0] = X2;
+    gVertexArray[1].positions[1] = Y2;
+    gVertexArray[1].positions[2] = 0.f;
+
+    gVertexArray[0].color[0] = gVertexArray[1].color[0] = (finalColor & 0xFF) / 256.f;
+    gVertexArray[0].color[1] = gVertexArray[1].color[1] = ((finalColor >> 8) & 0xFF) / 256.f;
+    gVertexArray[0].color[2] = gVertexArray[1].color[2] = ((finalColor >> 16) & 0xFF) / 256.f;
+    gVertexArray[0].color[3] = gVertexArray[1].color[3] = ((finalColor >> 24) & 0xFF) / 256.f;
+
+    GLuint currentShader = GetLineShader();
+    glUseProgram(currentShader);
+    checkGL();
+
+    checkGL();
+
+    GLuint vertexp = glGetAttribLocation(currentShader, (const GLchar *)"a_position");
+    GLuint colorp = glGetAttribLocation(currentShader, (const GLchar *)"a_color");
+
+    checkGL();
+
+    static GLuint vao = 0;
+    if (vao == 0)
+    {
+        glGenVertexArrays(1, &vao);
+    }
+    glBindVertexArray(vao);
+
+    static GLuint vbo = 0;
+    if (vbo == 0)
+    {
+        glGenBuffers(1, &vbo);
+    }
+    checkGL();
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    checkGL();
+    glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 2, &gVertexArray[0], GL_STATIC_DRAW);
+    checkGL();
+    glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->positions);
+    checkGL();
+    glEnableVertexAttribArray(vertexp);
+    checkGL();
+    if (colorp != -1)
+    {
+        glVertexAttribPointer(colorp, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->color);
+        glEnableVertexAttribArray(colorp);
+    }
+    checkGL();
+    static GLuint indexBufferId = 0;
+    if (indexBufferId == 0)
+    {
+        char triVertexOrder[2] = { 0, 1 };
+        glGenBuffers(1, &indexBufferId);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
+    }
+    else
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+    }
+
+    checkGL();
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glDrawElements(GL_LINES, 2, GL_UNSIGNED_BYTE, (void*)0);
+    checkGL();
+    glDisableVertexAttribArray(vertexp);
+    checkGL();
+    if (colorp != -1)
+        glDisableVertexAttribArray(colorp);
+    checkGL();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    checkGL();
+
+    checkGL();
+    glUseProgram(0);
+}
+
 void PolyLineDrawGL(u32 vdp1EA)
 {
+    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
+    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
+    s16 CMDXA = getVdp1VramS16(vdp1EA + 0xC);
+    s16 CMDYA = getVdp1VramS16(vdp1EA + 0xE);
+    s16 CMDXB = getVdp1VramS16(vdp1EA + 0x10);
+    s16 CMDYB = getVdp1VramS16(vdp1EA + 0x12);
+    s16 CMDXC = getVdp1VramS16(vdp1EA + 0x14);
+    s16 CMDYC = getVdp1VramS16(vdp1EA + 0x16);
+    s16 CMDXD = getVdp1VramS16(vdp1EA + 0x18);
+    s16 CMDYD = getVdp1VramS16(vdp1EA + 0x1A);
+    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
 
+    u32 finalColor;
+    if (CMDCOLR & 0x8000)
+    {
+        finalColor = 0xFF000000 | (((CMDCOLR & 0x1F) << 3) | ((CMDCOLR & 0x03E0) << 6) | ((CMDCOLR & 0x7C00) << 9));
+    }
+    else
+    {
+        finalColor = 0xFF0000FF;
+    }
+
+    drawLineGL(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);
+    drawLineGL(CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, finalColor);
+    drawLineGL(CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, finalColor);
+    drawLineGL(CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, finalColor);
 }

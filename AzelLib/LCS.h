@@ -4,13 +4,13 @@ struct sLCSTaskDrawSub5Sub1_Data1
 {
     s16 m2;
     s16 m4;
-    s16 m6;
+    s16 m6_CMDSRCA;
     s16 m8;
-    s16 mA;
-    s32 mC;
-    s32 m10;
-    s32 m14;
-    s32 m18;
+    s16 mA_CMDCOLR;
+    s32 mC_spriteWidth;
+    s32 m10_spriteHeight;
+    s32 m14_offsetX;
+    s32 m18_offsetY;
 };
 
 extern std::vector<sLCSTaskDrawSub5Sub1_Data1> LCSTaskDrawSub5Sub1_Data1;
@@ -254,14 +254,14 @@ struct sLCSSelected : public s_workAreaTemplate<sLCSSelected>
     void UpdateSub0(sVec2_S16* r5);
 
     static void Draw(sLCSSelected*);
-    void DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, sVec3_FP* r6);
+    void DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, const sInterpolator_FP& r6);
     void DrawSub1(s8 r5);
 
     s_memoryAreaOutput m0;
     sLCSTarget* m8;
-    sVec3_FP mC; // interpolator: 0: step 1: current value 2: target value
-    sVec3_FP m18;
-    sVec2_S16* m24;
+    sInterpolator_FP mC_verticalInterpolator;
+    sInterpolator_FP m18_secondarySpriteInterpolator;
+    sVec2_S16* m24_screenLocation;
     s32 m28;
     s8 m2C;
     s8 m2D;

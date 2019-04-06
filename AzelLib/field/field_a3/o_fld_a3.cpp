@@ -42,13 +42,13 @@ std::vector<sLCSTaskDrawSub5Sub1_Data1> readLCSTaskDrawSub5Sub1_Data1(sSaturnPtr
 
         entry.m2 = readSaturnS16(source + 0x2);
         entry.m4 = readSaturnS16(source + 0x4);
-        entry.m6 = readSaturnS16(source + 0x6);
+        entry.m6_CMDSRCA = readSaturnS16(source + 0x6);
         entry.m8 = readSaturnS16(source + 0x8);
-        entry.mA = readSaturnS16(source + 0xA);
-        entry.mC = readSaturnS32(source + 0xC);
-        entry.m10 = readSaturnS32(source + 0x10);
-        entry.m14 = readSaturnS32(source + 0x14);
-        entry.m18 = readSaturnS32(source + 0x18);
+        entry.mA_CMDCOLR = readSaturnS16(source + 0xA);
+        entry.mC_spriteWidth = readSaturnS32(source + 0xC);
+        entry.m10_spriteHeight = readSaturnS32(source + 0x10);
+        entry.m14_offsetX = readSaturnS32(source + 0x14);
+        entry.m18_offsetY = readSaturnS32(source + 0x18);
         source += 0x1C;
     }
 

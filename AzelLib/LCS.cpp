@@ -1451,12 +1451,13 @@ void sLCSSelected::Update(sLCSSelected* pThis)
     switch (pThis->m2D)
     {
     case 0:
-        pThis->m18[1] += pThis->m18[0];
-        pThis->mC[1] += pThis->mC[0];
-        if (pThis->mC[1] >= pThis->mC[2])
+        pThis->m18_secondarySpriteInterpolator.m4_currentValue += pThis->m18_secondarySpriteInterpolator.m0_step;
+        pThis->mC_verticalInterpolator.m4_currentValue += pThis->mC_verticalInterpolator.m0_step;
+
+        if (pThis->mC_verticalInterpolator.m4_currentValue >= pThis->mC_verticalInterpolator.m8_targetValue)
         {
-            pThis->mC[1] = pThis->mC[2];
-            pThis->m18[1] = pThis->m18[2];
+            pThis->mC_verticalInterpolator.m4_currentValue = pThis->mC_verticalInterpolator.m8_targetValue;
+            pThis->m18_secondarySpriteInterpolator.m4_currentValue = pThis->m18_secondarySpriteInterpolator.m8_targetValue;
             pThis->m2D++;
         }
     case 1:
@@ -1483,12 +1484,12 @@ void sLCSSelected::Update(sLCSSelected* pThis)
         }
         break;
     case 2:
-        pThis->m18[1] -= pThis->m18[0];
-        pThis->mC[1] -= pThis->mC[0];
-        if (pThis->mC[1] <= 0)
+        pThis->m18_secondarySpriteInterpolator.m4_currentValue -= pThis->m18_secondarySpriteInterpolator.m0_step;
+        pThis->mC_verticalInterpolator.m4_currentValue -= pThis->mC_verticalInterpolator.m0_step;
+        if (pThis->mC_verticalInterpolator.m4_currentValue <= 0)
         {
-            pThis->mC[1] = 0;
-            pThis->m18[1] = 0;
+            pThis->mC_verticalInterpolator.m4_currentValue = 0;
+            pThis->m18_secondarySpriteInterpolator.m4_currentValue = 0;
             pThis->getTask()->markFinished();
         }
         break;
@@ -1500,30 +1501,30 @@ void sLCSSelected::Update(sLCSSelected* pThis)
     pThis->m28++;
 }
 
-void sLCSSelected::DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, sVec3_FP* r6)
+void sLCSSelected::DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, const sInterpolator_FP& r6_interpolator)
 {
-    s32 var0 = ((m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + r5->m6;
-    s32 var4 = ((m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + r5->mA;
-    s32 var10 = r5->mC >> 12;
-    s32 r14 = r5->m14 >> 12;
-    s32 varC = r5->m10 >> 12;
-    s32 var8 = r5->m18 >> 12;
-    s32 r7 = (*r6)[1] >> 12;
+    s32 CMDSRCA = ((m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + r5->m6_CMDSRCA;
+    s32 CMDCOLR = ((m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + r5->mA_CMDCOLR;
+    s32 width = r5->mC_spriteWidth >> 12;
+    s32 offsetX = r5->m14_offsetX >> 12;
+    s32 height = r5->m10_spriteHeight >> 12;
+    s32 offsetY = r5->m18_offsetY >> 12;
+    s32 interpolatedY = r6_interpolator.m4_currentValue >> 12;
 
-    assert(varC >= 0); // because of the addc
+    assert(height >= 0); // because of the addc
 
     s16 var14[4];
-    var14[0] = r14 + (*m24)[0];
-    var14[1] = r7 + (var8 + (*m24)[1] - varC / 2);
-    var14[2] = r14 + (*m24)[0] + var10;
-    var14[3] = r7 - (var8 + (*m24)[1] + varC / 2);
+    var14[0] = offsetX + (*m24_screenLocation)[0];
+    var14[1] = (offsetY + (*m24_screenLocation)[1] - height / 2) + interpolatedY;
+    var14[2] = offsetX + (*m24_screenLocation)[0] + width;
+    var14[3] = (offsetY + (*m24_screenLocation)[1] - height / 2) - interpolatedY;
 
     u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
     setVdp1VramU16(vdp1WriteEA + 0x00, r5->m2); // command 0
     setVdp1VramU16(vdp1WriteEA + 0x04, r5->m4); // CMDPMOD
-    setVdp1VramU16(vdp1WriteEA + 0x06, var4); // CMDCOLR
-    setVdp1VramU16(vdp1WriteEA + 0x08, var0); // CMDSRCA
+    setVdp1VramU16(vdp1WriteEA + 0x06, CMDCOLR); // CMDCOLR
+    setVdp1VramU16(vdp1WriteEA + 0x08, CMDSRCA); // CMDSRCA
     setVdp1VramU16(vdp1WriteEA + 0x0A, r5->m8); // CMDSIZE
     setVdp1VramU16(vdp1WriteEA + 0x0C, var14[0]); // CMDXA
     setVdp1VramU16(vdp1WriteEA + 0x0E, -var14[1]); // CMDYA
@@ -1547,10 +1548,10 @@ void sLCSSelected::DrawSub1(s8 r5)
 
 void sLCSSelected::Draw(sLCSSelected* pThis)
 {
-    pThis->DrawSub0(&LCSTaskDrawSub5Sub1_Data1[pThis->m2C], &pThis->mC);
+    pThis->DrawSub0(&LCSTaskDrawSub5Sub1_Data1[pThis->m2C], pThis->mC_verticalInterpolator);
     if (pThis->m28 & 4)
     {
-        pThis->DrawSub0(&LCSTaskDrawSub5Sub1_Data1[pThis->m2C + 1], &pThis->m18);
+        pThis->DrawSub0(&LCSTaskDrawSub5Sub1_Data1[pThis->m2C + 1], pThis->m18_secondarySpriteInterpolator);
     }
 
     if (pThis->m2C != 6)
@@ -1617,23 +1618,15 @@ p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5)
 
     s8 r13 = LCSTaskDrawSub5Sub1_Data0[r5->m10_flags & 3];
 
-    s32 r2 = LCSTaskDrawSub5Sub1_Data1[r13].m10;
-    if (0 > r2)
-    {
-        r2++;
-    }
-    r14->mC[2] = r2;
-    r14->mC[0] = performDivision(6, r14->mC[2]);
+    s32 r2 = LCSTaskDrawSub5Sub1_Data1[r13].m10_spriteHeight;
+    r14->mC_verticalInterpolator.m8_targetValue = r2 / 2;
+    r14->mC_verticalInterpolator.m0_step = performDivision(6, r14->mC_verticalInterpolator.m8_targetValue);
 
-    s32 r3 = LCSTaskDrawSub5Sub1_Data1[r13+1].m10;
-    if (0 > r3)
-    {
-        r3++;
-    }
-    r14->m18[2] = r3;
-    r14->m18[0] = performDivision(6, r14->m18[2]);
+    s32 r3 = LCSTaskDrawSub5Sub1_Data1[r13+1].m10_spriteHeight;
+    r14->m18_secondarySpriteInterpolator.m8_targetValue = r3 / 2;
+    r14->m18_secondarySpriteInterpolator.m0_step = performDivision(6, r14->m18_secondarySpriteInterpolator.m8_targetValue);
 
-    r14->m24 = &r5->m30_screenspaceCoordinates;
+    r14->m24_screenLocation = &r5->m30_screenspaceCoordinates;
     r14->m2C = r13;
     r14->m2E = 0;
 

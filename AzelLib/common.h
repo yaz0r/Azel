@@ -109,6 +109,13 @@ struct sVec2_FP
     }
 };
 
+struct sInterpolator_FP
+{
+    fixedPoint m0_step;
+    fixedPoint m4_currentValue;
+    fixedPoint m8_targetValue;
+};
+
 fixedPoint dot3_FP(const sVec3_FP* r4, const sVec3_FP* r5);
 fixedPoint MTH_Product3d_FP(const sVec3_FP& r4, const sVec3_FP& r5);
 
