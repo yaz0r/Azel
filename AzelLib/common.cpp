@@ -73,12 +73,12 @@ const char* m_A3Fields[] = {
     "  A3_1",
     "  A3_2",
     "  A3_3",
-/*    "  A3_4",
+    "  A3_4",
     "  A3_5",
     "  A3_6",
     "  A3_7",
     "  A3_8",
-    "  A3_9",
+/*    "  A3_9",
     "  A3_A",
     "  A3_B",
     "  A3_C",*/
@@ -790,6 +790,11 @@ std::string readSaturnString(sSaturnPtr ptr)
     }
 
     return newString;
+}
+
+fixedPoint readSaturnFP(sSaturnPtr ptr)
+{
+    return readSaturnS32(ptr);
 }
 
 sVec3_FP readSaturnVec3(sSaturnPtr ptr)

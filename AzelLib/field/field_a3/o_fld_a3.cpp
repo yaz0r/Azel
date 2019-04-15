@@ -13,7 +13,6 @@ fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0
 void updateCameraScriptSub1(u32 r4);
 void fieldOverlaySubTaskInitSub5(u32 r4);
 s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
-void dragonFieldTaskInitSub4Sub3(u8 r4);
 
 #ifdef PDS_TOOL
 bool bMakeEverythingVisible = false;
@@ -59,7 +58,6 @@ std::vector<sLCSTaskDrawSub5Sub1_Data1> LCSTaskDrawSub5Sub1_Data1;
 
 void dragonLeaveArea(s_dragonTaskWorkArea* r14);
 s8 updateCameraFromDragonSub1(s32 index);
-sFieldCameraStatus* getFieldCameraStatus();
 
 std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3)
 {
@@ -532,11 +530,11 @@ void A3_Obj2_Update(s_A3_Obj2* r14)
 
     if (getFieldTaskPtr()->mC->m8)
     {
-        r14->m60.m18 = 0;
+        r14->m60.m18_diableFlags = 0;
     }
     else
     {
-        r14->m60.m18 |= 1;
+        r14->m60.m18_diableFlags |= 1;
     }
 
     updateLCSTarget(&r14->m60);
@@ -1095,7 +1093,8 @@ void subfieldA3_1Sub0Sub0()
 
 void subfieldA3_1Sub0Sub2(s32 r4, s32 r5)
 {
-    PDS_unimplemented("subfieldA3_1Sub0Sub2");
+    exitCutsceneTaskUpdateSub0Sub0();
+    exitCutsceneTaskUpdateSub0Sub1(getFieldTaskPtr()->m2C_currentFieldIndex, r4, 0, r5);
 }
 
 
@@ -1190,7 +1189,7 @@ s_cameraScript* readCameraScript(sSaturnPtr EA)
 
     pNewCameraScript->m18 = readSaturnS32(EA + 0x18);
     pNewCameraScript->m1C = readSaturnS32(EA + 0x1C);
-    pNewCameraScript->m20 = readSaturnS32(EA + 0x20);
+    pNewCameraScript->m20_length = readSaturnS32(EA + 0x20);
 
     pNewCameraScript->m24_pos2[0] = readSaturnS32(EA + 0x24);
     pNewCameraScript->m24_pos2[1] = readSaturnS32(EA + 0x28);
@@ -1988,7 +1987,7 @@ void s_cutsceneTask::Init(s_cutsceneTask* pThis, s_cutsceneData* pCutsceneData)
 
     r14->m1EC = cutsceneTaskInitSub0(pCutsceneData->m0, *getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m90);
 
-    r14->m1EC += 2;
+    r14->m1EE = r14->m1EC;
 
     cutsceneTaskInitSub1(&pCutsceneData->m0[pThis->m0]);
 
@@ -2020,6 +2019,12 @@ void cutsceneTaskUpdateSub0()
     pDragonTask->m1E4_cutsceneKeyFrame = 0;
 }
 
+void cutsceneTaskUpdateSub1(s32 fieldIndex, s32 fieldParam, s32 fieldExitIndex, s32 r7)
+{
+    exitCutsceneTaskUpdateSub0Sub0();
+    exitCutsceneTaskUpdateSub0Sub1(fieldIndex, fieldParam, fieldExitIndex, r7);
+}
+
 void s_cutsceneTask::Update(s_cutsceneTask* pThis)
 {
     s_dragonTaskWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -2046,9 +2051,13 @@ void s_cutsceneTask::Update(s_cutsceneTask* pThis)
 
     pThis->m18_frameCount++;
 
-    if (pThis->m4)
+    if (pThis->m4_changeField)
     {
-        assert(0);
+        if (r13->m1EE <= 20)
+        {
+            cutsceneTaskUpdateSub1(pThis->m8_fieldIndex, pThis->mC_fieldParam, pThis->m10_fieldExitIndex, pThis->m14);
+            pThis->m4_changeField = 0;
+        }
     }
 }
 
@@ -2057,7 +2066,7 @@ void startCutscene(s_cutsceneData* r4)
     createSubTaskWithArg<s_cutsceneTask>(getFieldTaskPtr()->m8_pSubFieldData, r4);
 }
 
-s_cutsceneData* loadCutsceneData(sSaturnPtr EA, u32 stride)
+s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
 {
     s_cutsceneData* pData = new s_cutsceneData;
 
@@ -2087,7 +2096,10 @@ s_cutsceneData* loadCutsceneData(sSaturnPtr EA, u32 stride)
     }
 
     // read table 1
-    if(stride == 0x3C)
+    switch (pData->m8 & 3)
+    {
+    case 1:
+    case 2:
     {
         int numEntries = 0;
         while (readSaturnU32(table1))
@@ -2109,8 +2121,9 @@ s_cutsceneData* loadCutsceneData(sSaturnPtr EA, u32 stride)
             pData->m4[i].m34 = readSaturnS32(table0); table0 = table0 + 4;
             pData->m4[i].m38 = readSaturnS32(table0); table0 = table0 + 4;
         }
+        break;
     }
-    else if (stride == 0x24)
+    case 3:
     {
         int numEntries = 0;
         while (readSaturnU32(table1))
@@ -2134,9 +2147,9 @@ s_cutsceneData* loadCutsceneData(sSaturnPtr EA, u32 stride)
             pData->m4bis[i].m1C = readSaturnS32(table0); table0 = table0 + 4;
             pData->m4bis[i].m20 = readSaturnS32(table0); table0 = table0 + 4;
         }
+        break;
     }
-    else
-    {
+    default:
         assert(0);
     }
 
@@ -2153,11 +2166,8 @@ void subfieldA3_1_Sub0()
     getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask->m58 = 1;
 }
 
-void subfieldA3_4(p_workArea workArea) { PDS_unimplemented("subfieldA3_4"); assert(false); }
-void subfieldA3_5(p_workArea workArea) { PDS_unimplemented("subfieldA3_5"); assert(false); }
 void subfieldA3_6(p_workArea workArea) { PDS_unimplemented("subfieldA3_6"); assert(false); }
 void subfieldA3_7(p_workArea workArea) { PDS_unimplemented("subfieldA3_7"); assert(false); }
-void subfieldA3_8(p_workArea workArea) { PDS_unimplemented("subfieldA3_8"); assert(false); }
 void subfieldA3_9(p_workArea workArea) { PDS_unimplemented("subfieldA3_9"); assert(false); }
 void subfieldA3_A(p_workArea workArea) { PDS_unimplemented("subfieldA3_A"); assert(false); }
 void subfieldA3_B(p_workArea workArea) { PDS_unimplemented("subfieldA3_B"); assert(false); }
@@ -5225,7 +5235,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
         updateCameraScriptSub1(0);
         r4->mF8_Flags &= 0xFFFFFBFF;
         r4->mF8_Flags |= 0x20000;
-        r4->m1E8_cameraScriptDelay = r5->m20;
+        r4->m1E8_cameraScriptDelay = r5->m20_length;
         r4->m20_angle = r5->mC_rotation;
         r4->m8_pos = r5->m0_position;
 
@@ -5427,7 +5437,7 @@ s32 getDragonFieldAnimation(s_dragonTaskWorkArea* pTypedWorkArea)
 
 std::vector<s8> getFieldDragonAnimTable(int type, int subtype)
 {
-    sSaturnPtr EA = readSaturnEA(sSaturnPtr{ 0x06094134 + (u32)((type * 5) + subtype) * 4, gFLD_A3 });
+    sSaturnPtr EA = readSaturnEA(sSaturnPtr{ 0x06094134 + ((type * 5) + subtype) * 4, gFLD_A3 });
 
     std::vector<s8> result;
 
@@ -6828,7 +6838,7 @@ void s_LCSTask340Sub::Init3(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     }
     else
     {
-        pThis->m6C[0] = *arg->m4;
+        pThis->m6C[0] = *arg->mC;
     }
 
     pThis->m6C[1] = pThis->m6C[0];

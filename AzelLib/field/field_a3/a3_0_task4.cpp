@@ -40,7 +40,7 @@ void fieldA3_0_task4_updateSub0(s_dragonTaskWorkArea* pDragon)
                 return;
             if (!startFieldScript(1, 0x59E))
                 return;
-            startCutscene(loadCutsceneData({ 0x60831C0, gFLD_A3 }, 0x24));
+            startCutscene(loadCutsceneData({ 0x60831C0, gFLD_A3 }));
             pDragon->m108++;
             break;
         case 2:

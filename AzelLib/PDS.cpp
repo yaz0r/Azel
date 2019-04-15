@@ -897,7 +897,11 @@ u32 frameIndex = 0;
 bool bContinue = true;
 void loopIteration()
 {
+#ifdef __EMSCRIPTEN__
     static bool gameRunning = false;
+#else
+    static bool gameRunning = true;
+#endif
 
     azelSdl2_StartFrame();
     if (!gameRunning)

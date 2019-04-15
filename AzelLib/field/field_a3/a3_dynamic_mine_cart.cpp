@@ -14,7 +14,7 @@ static void A3_0_Obj3Update2Sub0(sVec3_FP& r4, fixedPoint r5)
     r4[1] += MTH_Mul_5_6(sqrt_F(var0[1].getAbs()) / 4, r12, r12);
 }
 
-static void A3_0_Obj3Update1Sub2(sVec3_FP& r12)
+void A3_0_Obj3Update1Sub2(sVec3_FP& r12)
 {
     sVec3_FP& r13 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
 
@@ -221,7 +221,7 @@ void A3_0_Obj3_LCSCallback(p_workArea task, sLCSTarget*)
     s_A3_0_Obj3* pThis = (s_A3_0_Obj3*)task;
 
     mainGameState.setBit(0x93, 4);
-    pThis->m38_LCSTarget.m18 |= 1;
+    pThis->m38_LCSTarget.m18_diableFlags |= 1;
     pThis->m6C = 1;
 }
 

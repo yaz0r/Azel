@@ -14,7 +14,11 @@
 #ifdef __EMSCRIPTEN__
 static float gVolume = 1.f;
 #else
+#ifdef SHIPPING_BUILD
+static float gVolume = 1.f;
+#else
 static float gVolume = 0.f;
+#endif
 #endif
 
 bool useVDP1GL = true;
@@ -37,10 +41,14 @@ GLuint gNBG1Texture = 0;
 GLuint gNBG2Texture = 0;
 GLuint gNBG3Texture = 0;
 
+#ifdef SHIPPING_BUILD
+int frameLimit = 30;
+#else
 #if defined(PDS_TOOL) && !defined(__EMSCRIPTEN__)
 int frameLimit = -1;
 #else
 int frameLimit = 30;
+#endif
 #endif
 
 #ifdef USE_GL_ES3

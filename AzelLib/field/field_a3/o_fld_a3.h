@@ -5,6 +5,9 @@ extern sSaturnMemoryFile* gFLD_A3;
 p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg);
 s32 startFieldScript(s32 r4, s32 r5);
 
+sFieldCameraStatus* getFieldCameraStatus();
+void dragonFieldTaskInitSub4Sub3(u8 r4);
+
 void initDragonSpeed(u32 arg);
 void dragonFieldTaskInitSub4(s_dragonTaskWorkArea* pTypedWorkArea);
 void fieldOverlaySubTaskInitSub1(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*));
@@ -22,12 +25,13 @@ s_DataTable3* readDataTable3(sSaturnPtr EA);
 std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3);
 s_DataTable2* readDataTable2(sSaturnPtr EA);
 void setupField(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r7);
+void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea));
 void setupDragonPosition(const sVec3_FP* r4, const sVec3_FP* r5);
 
 p_workArea create_fieldA3_0_task0(p_workArea workArea); // shared subfield 0 and 1
 void subfieldA3_1Sub0Sub0();
 void subfieldA3_1Sub0Sub2(s32 r4, s32 r5);
-s_cutsceneData* loadCutsceneData(sSaturnPtr EA, u32 stride);
+s_cutsceneData* loadCutsceneData(sSaturnPtr EA);
 void startCutscene(s_cutsceneData* r4);
 void createFieldPaletteTask(p_workArea parent);
 void adjustVerticalLimits(fixedPoint r4, fixedPoint r5);
@@ -92,3 +96,6 @@ struct s_fieldA3_1_task4 : public s_workAreaTemplate<s_fieldA3_1_task4>
 #include "o_fld_a3_1.h"
 #include "o_fld_a3_2.h"
 #include "o_fld_a3_3.h"
+#include "o_fld_a3_4.h"
+#include "o_fld_a3_5.h"
+#include "o_fld_a3_8.h"

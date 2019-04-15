@@ -126,6 +126,7 @@ s16 readSaturnS16(sSaturnPtr ptr);
 u16 readSaturnU16(sSaturnPtr ptr);
 s32 readSaturnS32(sSaturnPtr ptr);
 u32 readSaturnU32(sSaturnPtr ptr);
+fixedPoint readSaturnFP(sSaturnPtr ptr);
 sVec3_FP readSaturnVec3(sSaturnPtr ptr);
 sSaturnPtr readSaturnEA(sSaturnPtr ptr);
 std::string readSaturnString(sSaturnPtr ptr);

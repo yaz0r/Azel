@@ -192,19 +192,245 @@ void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex)
     pOutput->m4_characterArea = fieldTaskPtr->m8_pSubFieldData->characterArea[areaIndex];
 }
 
+void DragonUpdateCutscene(s_dragonTaskWorkArea* r4)
+{
+    r4->m24A_runningCameraScript = 3;
+    getFieldTaskPtr()->m28_status |= 0x10000;
+    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 |= 1;
+    switch (r4->m104_dragonScriptStatus)
+    {
+    case 0:
+        updateCameraScriptSub0(r4->mB8);
+        r4->mF8_Flags &= ~0x400;
+        r4->mF8_Flags |= 0x20000;
+        dragonFieldTaskInitSub4Sub6(r4);
+        updateCameraScriptSub0Sub2(r4);
+        r4->m104_dragonScriptStatus++;
+        //fall through
+    case 1:
+        dragonFieldTaskInitSub4Sub5(&r4->m48, &r4->m20_angle);
+        copyMatrix(&r4->m48.m0_matrix, &r4->m88_matrix);
+        r4->m8_pos += r4->m160_deltaTranslation;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    dragonFieldTaskInitSub4Sub6(r4);
+}
+
+void exitCutsceneTaskUpdateSub0Sub0()
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m64 = 1;
+}
+
+//kernel
+void exitCutsceneTaskUpdateSub0Sub1Sub0Sub0(s32 fieldIndex)
+{
+    if (fieldTaskPtr->m2C_currentFieldIndex == fieldIndex)
+        return;
+
+    switch (fieldIndex)
+    {
+    case 3:
+        mainGameState.setPackedBits(135, 6, 86);
+        break;
+    case 6:
+        mainGameState.setPackedBits(135, 6, 99);
+        break;
+    case 17:
+        mainGameState.setPackedBits(135, 6, 109);
+        break;
+    default:
+        break;
+    }
+}
+
+//kernel
+void exitCutsceneTaskUpdateSub0Sub1Sub0Sub1(s32 fieldIndex, s32 r5, s32 r6)
+{
+    if (fieldTaskPtr->m2C_currentFieldIndex != fieldIndex)
+    {
+        fieldTaskPtr->m2E_currentSubFieldIndex = -1;
+        if (fieldTaskPtr->m0)
+        {
+            fieldTaskPtr->m0->getTask()->markFinished();
+        }
+    }
+    else
+    {
+        if (fieldTaskPtr->m8_pSubFieldData)
+        {
+            fieldTaskPtr->m8_pSubFieldData->getTask()->markFinished();
+        }
+    }
+
+    fieldTaskPtr->m36_fieldIndexMenuSelection = fieldIndex;
+    fieldTaskPtr->m38_subFieldIndexMenuSelection = r5;
+    fieldTaskPtr->m3A = r6;
+    fieldTaskPtr->m3C_fieldTaskState = 5;
+}
+
+// kernel
+struct exitCutsceneTaskUpdateSub0Sub1Sub0 : public s_workAreaTemplate<exitCutsceneTaskUpdateSub0Sub1Sub0>
+{
+    static void update(exitCutsceneTaskUpdateSub0Sub1Sub0* pThis)
+    {
+        switch (pThis->m14_status)
+        {
+        case 0:
+            fieldTaskPtr->m28_status |= 0x100;
+            if (menuUnk0.m_4D >= menuUnk0.m_4C)
+            {
+                vdp2Controls.m20_registers[0].N1COSL = 0x10;
+                vdp2Controls.m20_registers[1].N1COSL = 0x10;
+            }
+
+            fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), pThis->m0, pThis->m10);
+            fadePalette(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), pThis->m0, pThis->m10);
+            pThis->m14_status++;
+            //fall through
+        case 1:
+            if (!menuUnk0.m_field0.m_field20)
+                return;
+            exitCutsceneTaskUpdateSub0Sub1Sub0Sub0(pThis->m4_fieldIndex);
+            exitCutsceneTaskUpdateSub0Sub1Sub0Sub1(pThis->m4_fieldIndex, pThis->m8, pThis->mC_exitNumber);
+            pThis->m14_status++;
+            break;
+        case 2:
+            if (fieldTaskPtr->m8_pSubFieldData)
+            {
+                pThis->m14_status++;
+            }
+            break;
+        case 3:
+            fieldTaskPtr->m28_status &= ~0x100;
+            if (pThis)
+            {
+                pThis->getTask()->markFinished();
+            }
+            break;
+        default:
+            assert(0);
+            break;
+        }
+    }
+
+    s32 m0;
+    s32 m4_fieldIndex;
+    s32 m8;
+    s32 mC_exitNumber;
+    s32 m10;
+    s32 m14_status;
+    //size 18
+};
+
+// kernel
+void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s32 r7)
+{
+    if (param < 0)
+    {
+        dispatchTutorialMultiChoiceSub2();
+    }
+    else
+    {
+        exitCutsceneTaskUpdateSub0Sub1Sub0* pNewTask = createSubTaskFromFunction<exitCutsceneTaskUpdateSub0Sub1Sub0>(fieldTaskPtr, &exitCutsceneTaskUpdateSub0Sub1Sub0::update);
+        pNewTask->m0 = r7;
+        pNewTask->m4_fieldIndex = fieldIndex;
+        pNewTask->m8 = param;
+        pNewTask->mC_exitNumber = exitNumber;
+        pNewTask->m10 = 20;
+    }
+}
+
+void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6)
+{
+    exitCutsceneTaskUpdateSub0Sub0();
+    exitCutsceneTaskUpdateSub0Sub1(getFieldTaskPtr()->m2C_currentFieldIndex, param, exitNumber, r6);
+}
+
 struct s_exitCutsceneTask : public s_workAreaTemplate<s_exitCutsceneTask>
 {
     static void Update(s_exitCutsceneTask* pThis)
     {
-        assert(0);
+        s_dragonTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+
+        switch (pThis->m16_state)
+        {
+        case 0:
+            getFieldCameraStatus()->m0_position = pThis->m0_pScript->m0_position;
+            dragonFieldTaskInitSub4Sub3(0);
+            pThis->m10_length = pThis->m0_pScript->m20_length;
+            r14->m8_pos[1] = pThis->m0_pScript->m18;
+            r14->m20_angle = pThis->m0_pScript->mC_rotation;
+
+            r14->m160_deltaTranslation[0] = MTH_Mul(-pThis->m0_pScript->m1C, getSin(r14->m20_angle[1].getInteger() & 0xFFF));
+            r14->m160_deltaTranslation[1] = performDivision(pThis->m10_length, pThis->m0_pScript->m0_position[1] - r14->m8_pos[1]);
+            r14->m160_deltaTranslation[2] = MTH_Mul(-pThis->m0_pScript->m1C, getCos(r14->m20_angle[1].getInteger() & 0xFFF));
+
+            r14->m8_pos[0] = pThis->m0_pScript->m0_position[0] - ((pThis->m10_length + 5) * r14->m160_deltaTranslation[0]);
+            r14->m8_pos[1] = pThis->m0_pScript->m0_position[1] - ((pThis->m10_length + 5) * r14->m160_deltaTranslation[1]);
+            r14->m8_pos[2] = pThis->m0_pScript->m0_position[2] - ((pThis->m10_length + 5) * r14->m160_deltaTranslation[2]);
+
+            r14->mF4 = DragonUpdateCutscene;
+            r14->m108 = 0;
+            r14->mF4(r14);
+
+            pThis->m16_state++;
+            break;
+        case 1:
+            if (--pThis->m10_length <= 0)
+            {
+                exitCutsceneTaskUpdateSub0(pThis->m8_param, pThis->mC_exitNumber, pThis->m14);
+                pThis->m16_state++;
+            }
+        case 2:
+            break;
+        default:
+            assert(0);
+            break;
+        }
     }
 
     // size 0x18
+    s_cameraScript* m0_pScript;
+    s32 m8_param;
+    s32 mC_exitNumber;
+    s32 m10_length;
+    s32 m14;
+    s8 m16_state;
 };
 
 void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 param, s32 exitIndex, s32 arg0)
 {
-    createSubTaskFromFunction<s_exitCutsceneTask>(parent, &s_exitCutsceneTask::Update);
+    s_exitCutsceneTask* pNewTask = createSubTaskFromFunction<s_exitCutsceneTask>(parent, &s_exitCutsceneTask::Update);
+
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+
+    pNewTask->m0_pScript = pScript;
+    pNewTask->m8_param = param;
+    pNewTask->mC_exitNumber = exitIndex;
+    pNewTask->m14 = arg0;
+
+    
+    pDragonTask->m1D0_cameraScript = pScript;
+    pDragonTask->mF8_Flags &= ~0x400;
+}
+
+void startExitFieldCutscene2Sub0(p_workArea parent, s_cutsceneData* pScript, s32 fieldIndex, s32 param, s32 exitIndex, s32 arg0)
+{
+    s_cutsceneTask* pCutsceneTask = createSubTaskWithArg<s_cutsceneTask>(getFieldTaskPtr()->m8_pSubFieldData, pScript);
+    pCutsceneTask->m4_changeField = 1;
+    pCutsceneTask->m8_fieldIndex = fieldIndex;
+    pCutsceneTask->mC_fieldParam = param;
+    pCutsceneTask->m10_fieldExitIndex = exitIndex;
+    pCutsceneTask->m14 = arg0;
+}
+
+void startExitFieldCutscene2(p_workArea parent, s_cutsceneData* pScript, s32 param, s32 exitIndex, s32 arg0)
+{
+    startExitFieldCutscene2Sub0(parent, pScript, getFieldTaskPtr()->m2C_currentFieldIndex, param, exitIndex, arg0);
 }
 
 void initFieldDragonLight()

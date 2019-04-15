@@ -27,12 +27,12 @@ void LCSTaskDrawSub1Sub2Sub6(void*)
     PDS_unimplemented("LCSTaskDrawSub1Sub2Sub6");
 }
 
-void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 receivedItemId, s32 receivedItemQuantity, s32 arg14)
+void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* optionalRotation, s16 flags, s16 argA, s16 receivedItemId, s32 receivedItemQuantity, s32 arg14)
 {
     r4->m0 = r5;
     r4->m4_callback = r6;
-    r4->m8_parentWorldCoordinates = r7;
-    r4->mC = arg0;
+    r4->m8_LCSWorldCoordinates = r7;
+    r4->mC_optionalRotation = optionalRotation;
     r4->m12 = argA;
     r4->m14_receivedItemId = receivedItemId;
     if (r4->m14_receivedItemId >= 0)
@@ -45,7 +45,7 @@ void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCS
     }
     r4->m10_flags = flags;
     r4->m17 = arg14;
-    r4->m18 = 0;
+    r4->m18_diableFlags = 0;
     r4->m19 = 0;
     r4->m1A = 0;
     r4->m1B = 0;
@@ -55,47 +55,47 @@ void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCS
 
 void updateLCSTarget(sLCSTarget* r14)
 {
-    sVec3_FP var0;
-    sVec3_FP varC;
+    sVec3_FP var0_rotation;
+    sVec3_FP varC_location;
 
     s_LCSTask* r13 = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
 
     r14->m19 &= ~0x30;
     r14->m1C = 0;
-    r14->m18 &= ~4;
-    if (r14->m18 & 1)
+    r14->m18_diableFlags &= ~4;
+    if (r14->m18_diableFlags & 1)
     {
         return;
     }
-    if (r14->mC)
+    if (r14->mC_optionalRotation)
     {
         //606CF1C
-        if (r14->m10_flags & sLCSTarget::e_moveWithParent)
+        if (r14->m10_flags & sLCSTarget::e_locationIsWorld)
         {
             //0606CF24
-            varC = *r14->m8_parentWorldCoordinates;
+            varC_location = *r14->m8_LCSWorldCoordinates;
         }
         else
         {
             //606CF46
-            transformAndAddVecByCurrentMatrix(r14->m8_parentWorldCoordinates, &varC);
+            transformAndAddVecByCurrentMatrix(r14->m8_LCSWorldCoordinates, &varC_location);
         }
 
         //606CF50
-        if (r14->m10_flags & sLCSTarget::e_200)
+        if (r14->m10_flags & sLCSTarget::e_rotationIsInWorld)
         {
-            var0 = *r14->mC;
+            var0_rotation = *r14->mC_optionalRotation;
         }
         else
         {
             //606CF74
-            transformVecByCurrentMatrix(*r14->mC, var0);
+            transformVecByCurrentMatrix(*r14->mC_optionalRotation, var0_rotation);
         }
 
         //606CF7C
-        if (dot3_FP(&varC, &var0) < 0)
+        if (dot3_FP(&varC_location, &var0_rotation) >= 0)
         {
-            r14->m18 |= 4;
+            r14->m18_diableFlags |= 4;
         }
     }
     //606CF96
@@ -350,14 +350,14 @@ void LCSTaskDrawSub1Sub2Sub1(s_LCSTask* r4)
         s_LCSTask_14* r12 = &r4->m14[r11];
         sLCSTarget* r14 = r12->m0;
         
-        if (r14->m10_flags & sLCSTarget::e_moveWithParent)
+        if (r14->m10_flags & sLCSTarget::e_locationIsWorld)
         {
-            r14->m24_worldspaceCoordinates = *r14->m8_parentWorldCoordinates;
+            r14->m24_worldspaceCoordinates = *r14->m8_LCSWorldCoordinates;
             LCSTaskDrawSub3(&r14->m24_worldspaceCoordinates, &r14->m30_screenspaceCoordinates);
         }
         else
         {
-            LCSTaskDrawSub4(r14->m8_parentWorldCoordinates, &r14->m30_screenspaceCoordinates, &r14->m24_worldspaceCoordinates);
+            LCSTaskDrawSub4(r14->m8_LCSWorldCoordinates, &r14->m30_screenspaceCoordinates, &r14->m24_worldspaceCoordinates);
         }
 
         if (r14->m24_worldspaceCoordinates[2] <= 0x3000)
@@ -404,7 +404,7 @@ sLCSTarget* FindClosestLCSTarget(s_LCSTask* r4)
     {
         sLCSTarget* pLCSTarget = r4->m14[r5].m0;
 
-        if (!(pLCSTarget->m18 & 6) && (pLCSTarget->m24_worldspaceCoordinates[2] > 0x3000) && (pLCSTarget->m24_worldspaceCoordinates[2] < r4->m814_LCSTargetMaxDistance))
+        if (!(pLCSTarget->m18_diableFlags & 6) && (pLCSTarget->m24_worldspaceCoordinates[2] > 0x3000) && (pLCSTarget->m24_worldspaceCoordinates[2] < r4->m814_LCSTargetMaxDistance))
         {
             s32 r1;
             if (pLCSTarget->m30_screenspaceCoordinates[0] >= 0)
@@ -452,14 +452,14 @@ void LCSTaskDrawSub1Sub2Sub4(s_LCSTask* r4)
     while (r13)
     {
         sLCSTarget* r14 = r13->m8;
-        if (r14->m10_flags & sLCSTarget::e_moveWithParent)
+        if (r14->m10_flags & sLCSTarget::e_locationIsWorld)
         {
-            r14->m24_worldspaceCoordinates = *r14->m8_parentWorldCoordinates;
+            r14->m24_worldspaceCoordinates = *r14->m8_LCSWorldCoordinates;
             LCSTaskDrawSub3(&r14->m24_worldspaceCoordinates, &r14->m30_screenspaceCoordinates);
         }
         else
         {
-            LCSTaskDrawSub4(r14->m8_parentWorldCoordinates, &r14->m30_screenspaceCoordinates, &r14->m24_worldspaceCoordinates);
+            LCSTaskDrawSub4(r14->m8_LCSWorldCoordinates, &r14->m30_screenspaceCoordinates, &r14->m24_worldspaceCoordinates);
         }
 
         r13 = r13->m4_next;
@@ -482,9 +482,9 @@ void LCSTaskDrawSub1Sub2Sub3(s_LCSTask* r4)
 
         if ((r14->m24_worldspaceCoordinates[2] > 0x3000) &&
             (r14->m24_worldspaceCoordinates[2] < r4->m814_LCSTargetMaxDistance) &&
-            (std::abs(r14->m30_screenspaceCoordinates[0]) < 176) &&
-            (std::abs(r14->m30_screenspaceCoordinates[1]) < 112) &&
-            (r14->m10_flags))
+            (abs(r14->m30_screenspaceCoordinates[0]) < 176) &&
+            (abs(r14->m30_screenspaceCoordinates[1]) < 112) &&
+            (r14->m18_diableFlags == 0))
         {
 
         }
@@ -519,7 +519,7 @@ sLCSTarget* findNewClosestLCSTarget(s_LCSTask* r4, sVec2_S16* r5)
     for (s32 r7 = 0; r7 < r4->mC; r7++)
     {
         sLCSTarget* r6 = r4->m14[r7].m0;
-        if (!(r6->m18 & 6) && (r4->m818_curr != r6) && (r6->m1A <= r6->m17) && !(r6->m19 & 4) && (r6->m24_worldspaceCoordinates[2] > 0x3000) && (r6->m24_worldspaceCoordinates[2] < r4->m814_LCSTargetMaxDistance))
+        if (!(r6->m18_diableFlags & 6) && (r4->m818_curr != r6) && (r6->m1A <= r6->m17) && !(r6->m19 & 4) && (r6->m24_worldspaceCoordinates[2] > 0x3000) && (r6->m24_worldspaceCoordinates[2] < r4->m814_LCSTargetMaxDistance))
         {
             if (abs(r6->m30_screenspaceCoordinates[0]) >= 176)
                 continue;
@@ -545,7 +545,7 @@ sLCSTarget* findNewClosestLCSTarget(s_LCSTask* r4, sVec2_S16* r5)
 
 s32 LCSTaskDrawSub1Sub2Sub2Sub3Sub0(s_LCSTask* r4, sLCSTarget* r5, sVec2_S16* r6)
 {
-    if (r5->m18 & 6)
+    if (r5->m18_diableFlags & 6)
         return 0;
 
     if (r5->m24_worldspaceCoordinates[2] <= 0x3000)
@@ -811,7 +811,7 @@ void LCSTaskDrawSub1Sub2Sub0Sub1Sub0(s_LCSTask* r4, sLCSTarget* r5, s32 r6)
     var8.m0 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     var8.m4 = nullptr;
     var8.m14 = r5;
-    var8.mC = r5->m8_parentWorldCoordinates;
+    var8.mC = r5->m8_LCSWorldCoordinates;
     var8.m8 = r5->m10_flags;
     var8.m10 = nullptr;
     var8.m18 = nullptr;
@@ -906,7 +906,7 @@ void LCSTaskDrawSub1Sub2Sub0Sub2(s_LCSTask* r14)
         sLaserArgs laserArgs;
 
         laserArgs.m0 = r13->m0;
-        laserArgs.m4 = r13->m8_parentWorldCoordinates;
+        laserArgs.m4 = r13->m8_LCSWorldCoordinates;
         laserArgs.m8 = r13->m10_flags;
         laserArgs.m10 = &getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m160_deltaTranslation;
         laserArgs.m14 = r13;
@@ -1284,14 +1284,14 @@ void LCSTaskDrawSubSub(s_LCSTask* r4)
     for (int r12 = 0; r12 < r4->mC; r12++)
     {
         sLCSTarget* r14 = r4->m14[r12].m0;
-        if (r14->m10_flags & sLCSTarget::e_moveWithParent)
+        if (r14->m10_flags & sLCSTarget::e_locationIsWorld)
         {
-            r14->m24_worldspaceCoordinates = *r14->m8_parentWorldCoordinates;
+            r14->m24_worldspaceCoordinates = *r14->m8_LCSWorldCoordinates;
             LCSTaskDrawSub3(&r14->m24_worldspaceCoordinates, &r14->m30_screenspaceCoordinates);
         }
         else
         {
-            LCSTaskDrawSub4(r14->m8_parentWorldCoordinates, &r14->m30_screenspaceCoordinates, &r14->m24_worldspaceCoordinates);
+            LCSTaskDrawSub4(r14->m8_LCSWorldCoordinates, &r14->m30_screenspaceCoordinates, &r14->m24_worldspaceCoordinates);
         }
     }
 

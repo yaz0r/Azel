@@ -235,7 +235,11 @@ struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct 
     void cutsceneTaskInitSub3(std::vector<s_scriptData2>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
 
     u32 m0;
-    u32 m4;
+    u32 m4_changeField;
+    s32 m8_fieldIndex;
+    s32 mC_fieldParam;
+    s32 m10_fieldExitIndex;
+    s16 m14;
     u32 m18_frameCount;
 
     //size = 0x1C
@@ -364,7 +368,7 @@ struct s_cameraScript
     sVec3_FP mC_rotation;
     fixedPoint m18;
     fixedPoint m1C;
-    s32 m20;
+    s32 m20_length;
     sVec3_FP m24_pos2;
     s32 m30_thresholdDistance;
 };
@@ -782,7 +786,8 @@ struct s_fieldTaskWorkArea_C : public s_workAreaTemplate<s_fieldTaskWorkArea_C>
     s32 m8;
     std::array<p_workArea, 20> mC; // size probably incorrect
     std::array<u32, 56> m50; //not sure of size
-    std::array<s8, 3> m9C;
+    std::array<s8, 8> m94_A3_0_exits;
+    std::array<s8, 3> m9C_A3_1_exits;
     s8 mA3_conanaNestExit;
     std::array<fixedPoint, 7> mA4;
     std::array<sVec3_FP, 18> mC0; // not sure of size
@@ -818,8 +823,8 @@ struct s_fieldTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldTaskWorkAre
     s16 m30; // 0x30
     s16 m32; // 0x32
     u8 m35; // 0x35
-    s16 fieldIndexMenuSelection; // 0x36
-    s16 subFieldIndexMenuSelection; // 0x38
+    s16 m36_fieldIndexMenuSelection; // 0x36
+    s16 m38_subFieldIndexMenuSelection; // 0x38
     s16 m3A; // 0x3A
     u8 m3C_fieldTaskState; // 0x3C
     s8 m3D; // 0x3D
@@ -908,8 +913,12 @@ void updateCameraScriptSub0(u32 r4);
 void dragonFieldTaskInitSub4Sub4();
 
 void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 param, s32 exitIndex, s32 arg0);
+void startExitFieldCutscene2(p_workArea parent, s_cutsceneData* pScript, s32 param, s32 exitIndex, s32 arg0);
 void initFieldDragonLight();
 
 void gridCellDraw_normalSub2(u8* r4, s32 r5, s32 r6);
 void callGridCellDraw_normalSub2(u8* r4, s32 r5);
+void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6);
+void exitCutsceneTaskUpdateSub0Sub0();
+void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s32 r7);
 

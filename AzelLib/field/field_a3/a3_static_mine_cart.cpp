@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "a3_static_mine_cart.h"
+#include "a3_dynamic_mine_cart.h"
 
 struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
 {
@@ -53,6 +54,23 @@ void A3_3_Obj0_Draw(s_A3_3_Obj0* pThis)
     }
 }
 
+void A3_3_Obj0_Draw2(s_A3_3_Obj0* pThis)
+{
+    if (!checkPositionVisibilityAgainstFarPlane(&pThis->mC_position))
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pThis->mC_position);
+        rotateCurrentMatrixZYX_s16(&pThis->m30_rotation[0]);
+        addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
+        popMatrix();
+    }
+}
+
+void A3_3_Obj0_Update1Sub1(s_A3_3_Obj0* pThis, sVec3_FP* pVec)
+{
+    TaskUnimplemented();
+}
+
 void A3_3_Obj0_Update1(s_A3_3_Obj0* pThis)
 {
     updateLCSTarget(&pThis->m3C);
@@ -60,6 +78,24 @@ void A3_3_Obj0_Update1(s_A3_3_Obj0* pThis)
     {
     case 0:
         A3_3_Obj0_Update1Sub0(&pThis->mC_position, &pThis->m8->m4_position);
+        break;
+    case 1:
+        playSoundEffect(0x17);
+        A3_3_Obj0_Update1Sub1(pThis, &pThis->mC_position);
+        pThis->m24[1] = -327;
+        pThis->m18[1] = 0x1800;
+        pThis->m3A++;
+        //fall through
+    case 2:
+        pThis->m18 += pThis->m24;
+        pThis->mC_position += pThis->m18;
+        pThis->m30_rotation[1] += 5;
+        pThis->m30_rotation[2] -= 28;
+        if (pThis->mC_position[1] <= -0x640000)
+        {
+            pThis->m_UpdateMethod = NULL;
+            pThis->m_DrawMethod = NULL;
+        }
         break;
     default:
         assert(0);
@@ -92,8 +128,37 @@ void A3_3_Obj0_Update0(s_A3_3_Obj0* pThis)
     case 0: // standing still
         break;
     case 1: // falling
-        pThis->m18 += pThis->m24;
-        assert(0);
+        pThis->m18.m_value[0] += pThis->m24.m_value[0];
+        pThis->m18.m_value[2] += pThis->m24.m_value[2];
+
+        pThis->mC_position.m_value[0] += pThis->m18.m_value[0];
+        pThis->mC_position.m_value[2] += pThis->m18.m_value[2];
+
+        if (pThis->m38 >= pThis->m36)
+        {
+            playSoundEffect(0x17);
+            pThis->m18[0] = -pThis->m18[0];
+            pThis->m18[2] = pThis->m18[2] / 2;
+
+            pThis->m24.m_value[1] = -327;
+            pThis->m18[1] = 0x1800;
+
+            pThis->m38 = 0;
+            pThis->m3A++;
+            pThis->m_UpdateMethod = A3_3_Obj0_Update1;
+        }
+        else
+        {
+            //605DF88
+            if (pThis->m38 == 0)
+            {
+                A3_3_Obj0_Update1Sub1(pThis, &pThis->mC_position);
+            }
+
+            A3_0_Obj3Update1Sub2(pThis->mC_position);
+
+            pThis->m38++;
+        }
         break;
     default:
         assert(0);
@@ -101,9 +166,37 @@ void A3_3_Obj0_Update0(s_A3_3_Obj0* pThis)
     }
 }
 
-void A3_0_Obj0_Callback(p_workArea, sLCSTarget*)
+void A3_0_Obj0_Callback(p_workArea r4, sLCSTarget* r5)
 {
-    assert(0);
+    s_A3_3_Obj0* pThis = static_cast<s_A3_3_Obj0*>(r4);
+
+    pThis->m_DrawMethod = A3_3_Obj0_Draw2;
+    pThis->m3C.m18_diableFlags |= 1;
+
+    static const std::array<int, 15> cartFlags =
+    {
+        1731,
+        1732,
+        1733,
+        1734,
+        1735,
+        1736,
+        1737,
+        1738,
+        1739,
+        1740,
+        1741,
+        1742,
+        1743,
+        1744,
+        1745,
+    };
+
+    mainGameState.setBit566(cartFlags[pThis->m8->m18]);
+
+    startFieldScript(0, 1437);
+
+    pThis->m3A = 1;
 }
 
 void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)

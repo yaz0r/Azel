@@ -4,17 +4,17 @@
 
 void fieldA3_1_startTasks_sub1Task_InitSub0(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9C[0] = 1;
+    getFieldTaskPtr()->mC->m9C_A3_1_exits[0] = 1;
 }
 
 void fieldA3_1_startTasks_sub1Task_InitSub1(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9C[1] = 1;
+    getFieldTaskPtr()->mC->m9C_A3_1_exits[1] = 1;
 }
 
 void fieldA3_1_startTasks_sub1Task_InitSub2(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9C[2] = 1;
+    getFieldTaskPtr()->mC->m9C_A3_1_exits[2] = 1;
 }
 
 void(*fieldA3_1_startTasks_sub1Task_InitFunctionTable[])(p_workArea, sLCSTarget*) = {
@@ -42,10 +42,10 @@ struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_sta
         for (int i = 2; i >= 0; i--)
         {
             createLCSTarget(&pThis->m0[i], pThis, fieldA3_1_startTasks_sub1Task_InitFunctionTable[i], &fieldA3_1_startTasks_sub1Task_InitPositionTable[i], NULL, 3, 0, -1, 0, 0);
-            getFieldTaskPtr()->mC->m9C[i] = 0;
+            getFieldTaskPtr()->mC->m9C_A3_1_exits[i] = 0;
         }
 
-        pThis->m0[0].m18 |= 1;
+        pThis->m0[0].m18_diableFlags |= 1;
     }
 
     static void Update(sfieldA3_1_startTasks_sub1Task* pThis)
@@ -58,11 +58,11 @@ struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_sta
         // Conana’s Nest check
         if (mainGameState.getBit(0x91, 4) && (r4_dragonPos[0] >= zoneMin[0]) && (r4_dragonPos[0] < zoneMax[0]) && (r4_dragonPos[2] >= zoneMin[1]) && (r4_dragonPos[2] < zoneMax[1]))
         {
-            pThis->m0[1].m18 = 0;
+            pThis->m0[1].m18_diableFlags = 0;
         }
         else
         {
-            pThis->m0[1].m18 |= 1;
+            pThis->m0[1].m18_diableFlags |= 1;
         }
 
         for (int i = 2; i >= 0; i--)
@@ -105,17 +105,17 @@ void create_fieldA3_1_fieldIntroTask(p_workArea workArea)
     }
 }
 
-static std::array<s16,3> A3_1_exitsVars =
+static const std::array<s16,3> A3_1_exitsVars =
 {
     1261,1261,1260
 };
 
-static std::array<s8, 3> A3_1_exitsLocations =
+static const std::array<s8, 3> A3_1_exitsLocations =
 {
     7, 8, 9
 };
 
-static std::array<sSaturnPtr, 3> A3_1_exitsCutscenes =
+static const std::array<sSaturnPtr, 3> A3_1_exitsCutscenes =
 {
     {
         {0, gFLD_A3},
@@ -167,13 +167,13 @@ struct sfieldA3_1_checkExitsTask : public s_workAreaTemplate<sfieldA3_1_checkExi
     {
         for (int i = 0; i < 3; i++)
         {
-            if (getFieldTaskPtr()->mC->m9C[i])
+            if (getFieldTaskPtr()->mC->m9C_A3_1_exits[i])
             {
                 mainGameState.setBit566(A3_1_exitsVars[i]);
 
                 if (i == 2)
                 {
-                    startCutscene(loadCutsceneData({ 0x6091CC4, gFLD_A3 }, 0x3C));
+                    startCutscene(loadCutsceneData({ 0x6091CC4, gFLD_A3 }));
                     pThis->m_UpdateMethod = &sfieldA3_1_checkExitsTask::Update2;
                 }
                 else
@@ -275,6 +275,20 @@ p_workArea createSavePointParticles()
     return nullptr;
 }
 
+void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
+{
+    if (r4->mA & 0x38)
+    {
+        s16 type = READ_BE_S16(r4->m30_pCurrentAnimation) & 7;
+        switch (type)
+        {
+        default:
+            assert(0);
+            break;
+        }
+    }
+}
+
 struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemBoxDefinition*>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -319,7 +333,10 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
             {
                 if (mainGameState.getBit566(pThis->m80))
                 {
-                    assert(0);
+                    pThis->m_DrawMethod = LCSItemBox_OpenedBoxDraw;
+                    pThis->mEA_wasRendered = 3;
+
+                    itemBoxType1InitSub0(&pThis->m98, 20);
                 }
             }
             break;
@@ -373,11 +390,11 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         if (pThis->LCSItemBox_shouldSpin())
         {
             pThis->m6C_rotation[1] += fixedPoint(0x444444);
-            pThis->m8_LCSTarget.m18 = 0;
+            pThis->m8_LCSTarget.m18_diableFlags = 0;
         }
         else
         {
-            pThis->m8_LCSTarget.m18 |= 2;
+            pThis->m8_LCSTarget.m18_diableFlags |= 2;
         }
 
         pushCurrentMatrix();
@@ -396,7 +413,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
         if (pThis->m8D)
         {
-            pThis->m8_LCSTarget.m18 |= 1;
+            pThis->m8_LCSTarget.m18_diableFlags |= 1;
         }
 
         updateLCSTarget(&pThis->m8_LCSTarget);
@@ -1062,11 +1079,11 @@ void subfieldA3_1(p_workArea workArea)
         default:
             if (mainGameState.getBit(0xA, 6))
             {
-                startCutscene(loadCutsceneData({ 0x6091688, gFLD_A3 }, 0x3C));
+                startCutscene(loadCutsceneData({ 0x6091688, gFLD_A3 }));
             }
             else
             {
-                startCutscene(loadCutsceneData({ 0x60915A4, gFLD_A3 }, 0x3C));
+                startCutscene(loadCutsceneData({ 0x60915A4, gFLD_A3 }));
             }
             break;
         }

@@ -8,6 +8,7 @@ struct sLoadingTaskWorkArea* gLoadingTaskWorkArea = NULL;
 
 s16 loadingTaskVar0 = 0x1D;
 p_workArea(*gFieldOverlayFunction)(p_workArea workArea, u32 arg);
+p_workArea fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMenuSelection, u32 m3A, u32 currentSubFieldIndex);
 
 struct sLoadingTaskWorkArea : public s_workAreaTemplateWithArg<sLoadingTaskWorkArea, s8>
 {
@@ -308,8 +309,20 @@ void updateFieldTaskNoBattleOverride(s_fieldTaskWorkArea* pWorkArea)
     {
     case 0:
         break;
+    case 3:
+        fieldTaskUpdateSub0(pWorkArea->m36_fieldIndexMenuSelection, pWorkArea->m38_subFieldIndexMenuSelection, pWorkArea->m3A, pWorkArea->m2E_currentSubFieldIndex);
+        break;
     case 4:
         return;
+    case 5:
+        pWorkArea->m3C_fieldTaskState++;
+        break;
+    case 6:
+        if (pWorkArea->m8_pSubFieldData)
+        {
+            pWorkArea->m3C_fieldTaskState = 3;
+        }
+        break;
     default:
         assert(0);
         break;
@@ -363,19 +376,19 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
     {
         s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
 
-        pFieldTask->fieldIndexMenuSelection = pFieldTask->m2C_currentFieldIndex;
-        pFieldTask->subFieldIndexMenuSelection = pFieldTask->m2E_currentSubFieldIndex;
+        pFieldTask->m36_fieldIndexMenuSelection = pFieldTask->m2C_currentFieldIndex;
+        pFieldTask->m38_subFieldIndexMenuSelection = pFieldTask->m2E_currentSubFieldIndex;
         pFieldTask->m3A = pFieldTask->m30;
         pFieldTask->m2E_currentSubFieldIndex = -1;
 
-        if (pFieldTask->fieldIndexMenuSelection < 0)
+        if (pFieldTask->m36_fieldIndexMenuSelection < 0)
         {
-            pFieldTask->fieldIndexMenuSelection = 0;
+            pFieldTask->m36_fieldIndexMenuSelection = 0;
         }
 
-        while (!fieldEnabledTable[pFieldTask->fieldIndexMenuSelection])
+        while (!fieldEnabledTable[pFieldTask->m36_fieldIndexMenuSelection])
         {
-            pFieldTask->fieldIndexMenuSelection++;
+            pFieldTask->m36_fieldIndexMenuSelection++;
         }
 
         reinitVdp2();
@@ -416,17 +429,17 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 
             if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
             {
-                if (++r14->subFieldIndexMenuSelection >= fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields)
+                if (++r14->m38_subFieldIndexMenuSelection >= fieldDefinitions[r14->m36_fieldIndexMenuSelection].m_numSubFields)
                 {
-                    r14->subFieldIndexMenuSelection = 0;
+                    r14->m38_subFieldIndexMenuSelection = 0;
                 }
             }
 
             if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
             {
-                if (--r14->subFieldIndexMenuSelection < 0)
+                if (--r14->m38_subFieldIndexMenuSelection < 0)
                 {
-                    r14->subFieldIndexMenuSelection = fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields - 1;
+                    r14->m38_subFieldIndexMenuSelection = fieldDefinitions[r14->m36_fieldIndexMenuSelection].m_numSubFields - 1;
                 }
             }
 
@@ -450,31 +463,31 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
             if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
             {
                 clearVdp2StringFieldDebugList();
-                r14->subFieldIndexMenuSelection = 0;
+                r14->m38_subFieldIndexMenuSelection = 0;
 
                 do
                 {
-                    r14->fieldIndexMenuSelection++;
-                    if (r14->fieldIndexMenuSelection >= 23)
+                    r14->m36_fieldIndexMenuSelection++;
+                    if (r14->m36_fieldIndexMenuSelection >= 23)
                     {
-                        r14->fieldIndexMenuSelection = 0;
+                        r14->m36_fieldIndexMenuSelection = 0;
                     }
-                } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
+                } while (!fieldEnabledTable[r14->m36_fieldIndexMenuSelection]);
             }
 
             if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
             {
                 clearVdp2StringFieldDebugList();
-                r14->subFieldIndexMenuSelection = 0;
+                r14->m38_subFieldIndexMenuSelection = 0;
 
                 do
                 {
-                    r14->fieldIndexMenuSelection--;
-                    if (r14->fieldIndexMenuSelection < 0)
+                    r14->m36_fieldIndexMenuSelection--;
+                    if (r14->m36_fieldIndexMenuSelection < 0)
                     {
-                        r14->fieldIndexMenuSelection = 22;
+                        r14->m36_fieldIndexMenuSelection = 22;
                     }
-                } while (!fieldEnabledTable[r14->fieldIndexMenuSelection]);
+                } while (!fieldEnabledTable[r14->m36_fieldIndexMenuSelection]);
             }
         }
 
@@ -492,7 +505,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
         for (u32 r12 = 0; r12 < 23; r12++)
         {
             vdp2DebugPrintSetPosition(0xA, r8);
-            if (r14->fieldIndexMenuSelection == r12) // is this the selected field?
+            if (r14->m36_fieldIndexMenuSelection == r12) // is this the selected field?
             {
                 vdp2PrintStatus.m10_palette = 0x8000;
             }
@@ -511,7 +524,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
                 // if selecting field
                 if (pWorkArea->m8_isSelectingSubfield == 0)
                 {
-                    if (r14->fieldIndexMenuSelection == r12)
+                    if (r14->m36_fieldIndexMenuSelection == r12)
                     {
                         vdp2PrintStatus.m10_palette = 0xD000;
                         vdp2DebugPrintSetPosition(0xA, r8);
@@ -525,10 +538,10 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 
         u32 var_2C = 0;
 
-        u32 numSubFields = fieldDefinitions[r14->fieldIndexMenuSelection].m_numSubFields;
-        const char** subFields = fieldDefinitions[r14->fieldIndexMenuSelection].m_subFields;
+        u32 numSubFields = fieldDefinitions[r14->m36_fieldIndexMenuSelection].m_numSubFields;
+        const char** subFields = fieldDefinitions[r14->m36_fieldIndexMenuSelection].m_subFields;
 
-        s16 r2 = r14->subFieldIndexMenuSelection;
+        s16 r2 = r14->m38_subFieldIndexMenuSelection;
         if (r2 < 0)
         {
             r2 += 0xF;
@@ -558,7 +571,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
                 vdp2DebugPrintSetPosition(0x12, var_2C + 3);
                 var_2C++;
 
-                if (r12 == r14->subFieldIndexMenuSelection)
+                if (r12 == r14->m38_subFieldIndexMenuSelection)
                 {
                     vdp2PrintStatus.m10_palette = 0x9000;
                 }
@@ -580,7 +593,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
         if (pWorkArea->m8_isSelectingSubfield)
         {
             vdp2PrintStatus.m10_palette = 0x9000;
-            vdp2DebugPrintSetPosition(0x12, r14->subFieldIndexMenuSelection - pWorkArea->m4_selectedSubField + 3);
+            vdp2DebugPrintSetPosition(0x12, r14->m38_subFieldIndexMenuSelection - pWorkArea->m4_selectedSubField + 3);
             drawLineSmallFont("\x7F");
         }
 
@@ -2519,13 +2532,13 @@ void s_fieldTaskWorkArea::fieldTaskUpdate(s_fieldTaskWorkArea* pWorkArea)
     case 1: //do nothing
         break;
     case 2: //start field
-        setupPlayer(pWorkArea->fieldIndexMenuSelection);
+        setupPlayer(pWorkArea->m36_fieldIndexMenuSelection);
         vdp2DebugPrintSetPosition(3, 24);
         vdp2PrintStatus.m10_palette = 0xD000;
         drawLineLargeFont("LOADING...");
         pWorkArea->m3C_fieldTaskState++;
     case 3:
-        fieldTaskUpdateSub0(pWorkArea->fieldIndexMenuSelection, pWorkArea->subFieldIndexMenuSelection, pWorkArea->m3A, pWorkArea->m2E_currentSubFieldIndex);
+        fieldTaskUpdateSub0(pWorkArea->m36_fieldIndexMenuSelection, pWorkArea->m38_subFieldIndexMenuSelection, pWorkArea->m3A, pWorkArea->m2E_currentSubFieldIndex);
 
         if (pWorkArea->m8_pSubFieldData)
         {

@@ -26,19 +26,19 @@ struct sLCSTarget
 {
     enum flags
     {
-        e_moveWithParent = 0x100,
-        e_200 = 0x200,
+        e_locationIsWorld = 0x100,
+        e_rotationIsInWorld = 0x200,
     };
     s_workArea* m0;
     void (*m4_callback)(p_workArea, sLCSTarget*);
-    const sVec3_FP* m8_parentWorldCoordinates;
-    const sVec3_FP* mC;
+    const sVec3_FP* m8_LCSWorldCoordinates;
+    const sVec3_FP* mC_optionalRotation;
     s16 m10_flags;
     s16 m12;
     s16 m14_receivedItemId;
     s8 m16_receivedItemQuantity;
     s8 m17;
-    s8 m18;
+    s8 m18_diableFlags; // 1: disabled, 4: not visible/facing away?
     s8 m19;
     s8 m1A;
     s8 m1B;

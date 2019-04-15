@@ -2,6 +2,8 @@
 
 #define PDS_TOOL
 
+//#define SHIPPING_BUILD
+
 #ifdef WIN32
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -76,7 +78,7 @@ typedef int64_t s64;
 
 struct sSaturnPtr
 {
-    u32 m_offset;
+    s32 m_offset;
     struct sSaturnMemoryFile* m_file;
 
     sSaturnPtr operator + (unsigned int i) const
