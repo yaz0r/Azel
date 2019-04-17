@@ -682,7 +682,7 @@ void LCSUpdateCursorFromInput(s_dragonTaskWorkArea* r4)
     sVec3_FP var0;
     var0[0] = 0;
     var0[1] = MTH_Mul(0x147A, r4->m1F0.m_C);
-    var0[0] = 0;
+    var0[2] = 0;
 
     if (r4->mF8_Flags & 0x8000)
     {

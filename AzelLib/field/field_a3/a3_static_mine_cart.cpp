@@ -10,8 +10,8 @@ struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
     sVec3_FP m18;
     sVec3_FP m24;
     std::array<s16, 3> m30_rotation;
-    s16 m36;
-    s16 m38;
+    s16 m36_delay;
+    s16 m38_currentDelay;
     s8 m3A;
     sLCSTarget m3C;
     // size 0x70
@@ -108,8 +108,8 @@ void A3_3_Obj0_Update2(s_A3_3_Obj0* pThis)
     A3_3_Obj0_Update1(pThis);
     if (pThis->m3A > 1)
     {
-        pThis->m38--;
-        if (pThis->m38 <= 0)
+        pThis->m38_currentDelay--;
+        if (pThis->m38_currentDelay <= 0)
         {
             playSoundEffect(0x17);
             pThis->m18[0] = -pThis->m18[0];
@@ -134,7 +134,7 @@ void A3_3_Obj0_Update0(s_A3_3_Obj0* pThis)
         pThis->mC_position.m_value[0] += pThis->m18.m_value[0];
         pThis->mC_position.m_value[2] += pThis->m18.m_value[2];
 
-        if (pThis->m38 >= pThis->m36)
+        if (pThis->m38_currentDelay >= pThis->m36_delay)
         {
             playSoundEffect(0x17);
             pThis->m18[0] = -pThis->m18[0];
@@ -143,21 +143,21 @@ void A3_3_Obj0_Update0(s_A3_3_Obj0* pThis)
             pThis->m24.m_value[1] = -327;
             pThis->m18[1] = 0x1800;
 
-            pThis->m38 = 0;
+            pThis->m38_currentDelay = 0;
             pThis->m3A++;
             pThis->m_UpdateMethod = A3_3_Obj0_Update1;
         }
         else
         {
             //605DF88
-            if (pThis->m38 == 0)
+            if (pThis->m38_currentDelay == 0)
             {
                 A3_3_Obj0_Update1Sub1(pThis, &pThis->mC_position);
             }
 
             A3_0_Obj3Update1Sub2(pThis->mC_position);
 
-            pThis->m38++;
+            pThis->m38_currentDelay++;
         }
         break;
     default:
@@ -243,7 +243,7 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         pNewObj->m_UpdateMethod = &A3_3_Obj0_Update0;
         pNewObj->m24[0] = readSaturnS32(sSaturnPtr({ 0x609262C, gFLD_A3 }) + 8 * r12 + 0);
         pNewObj->m24[1] = readSaturnS32(sSaturnPtr({ 0x609262C, gFLD_A3 }) + 8 * r12 + 4);
-        pNewObj->m36 = readSaturnS16(sSaturnPtr({ 0x609264C, gFLD_A3 }) + 2 * r12);
+        pNewObj->m36_delay = readSaturnS16(sSaturnPtr({ 0x609264C, gFLD_A3 }) + 2 * r12);
         break;
     case 4:
     case 5:
@@ -251,6 +251,7 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     case 7:
     case 8:
     case 9:
+        r12 -= 4;
         pNewObj->m_UpdateMethod = &A3_3_Obj0_Update1;
         pNewObj->m18[0] = readSaturnS32(sSaturnPtr({ 0x60925FC, gFLD_A3 }) + 8 * r12 + 0);
         pNewObj->m18[1] = readSaturnS32(sSaturnPtr({ 0x60925FC, gFLD_A3 }) + 8 * r12 + 0);
@@ -259,10 +260,11 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     case 11:
     case 12:
     case 13:
+        r12 -= 10;
         pNewObj->m_UpdateMethod = &A3_3_Obj0_Update2;
         pNewObj->m18[0] = readSaturnS32(sSaturnPtr({ 0x6092654, gFLD_A3 }) + 8 * r12 + 0);
         pNewObj->m18[1] = readSaturnS32(sSaturnPtr({ 0x6092654, gFLD_A3 }) + 8 * r12 + 0);
-        pNewObj->m36 = pNewObj->m38 = readSaturnS16(sSaturnPtr({ 0x6092674, gFLD_A3 }) + 2 * r12);
+        pNewObj->m36_delay = pNewObj->m38_currentDelay = readSaturnS16(sSaturnPtr({ 0x6092674, gFLD_A3 }) + 2 * r12);
         break;
     default:
         assert(0);
