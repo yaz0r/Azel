@@ -78,10 +78,10 @@ const char* m_A3Fields[] = {
     "  A3_6",
     "  A3_7",
     "  A3_8",
-/*    "  A3_9",
+    "  A3_9",
     "  A3_A",
     "  A3_B",
-    "  A3_C",*/
+    "  A3_C",
 };
 
 const char* m_A5Fields[] = {

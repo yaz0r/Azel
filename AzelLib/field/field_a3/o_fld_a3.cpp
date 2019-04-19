@@ -2202,7 +2202,6 @@ void subfieldA3_1_Sub0()
 void subfieldA3_6(p_workArea workArea) { PDS_unimplemented("subfieldA3_6"); assert(false); }
 void subfieldA3_7(p_workArea workArea) { PDS_unimplemented("subfieldA3_7"); assert(false); }
 void subfieldA3_9(p_workArea workArea) { PDS_unimplemented("subfieldA3_9"); assert(false); }
-void subfieldA3_A(p_workArea workArea) { PDS_unimplemented("subfieldA3_A"); assert(false); }
 void subfieldA3_B(p_workArea workArea) { PDS_unimplemented("subfieldA3_B"); assert(false); }
 void subfieldA3_C(p_workArea workArea) { PDS_unimplemented("subfieldA3_C"); assert(false); }
 
