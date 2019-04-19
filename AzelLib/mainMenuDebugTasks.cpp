@@ -1234,7 +1234,13 @@ void modelDrawFunction6(s_3dModel* pModel)
 }
 void modelDrawFunction9(s_3dModel* pModel)
 {
-    unimplementedDraw(pModel);
+    if (pModel->m8 & 1)
+    {
+        u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+        std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
+        TaskUnimplemented(); // TODO: should be vertex colored variant!
+        modeDrawFunction10Sub1(pModel->m4_pModelFile, r4, pPoseData); 
+    }
 }
 void modelDrawFunction10(s_3dModel* pModel)
 {
@@ -1674,7 +1680,7 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     return true;
 }
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 modelIndexOffset, u8* pModelData1, u8* pDefaultPose, u32 unkArg2, const s_RiderDefinitionSub* unkArg3)
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, u8* pDragonModel, u16 modelIndexOffset, u8* pModelData1, u8* pDefaultPose, u8* unkArg2, const s_RiderDefinitionSub* unkArg3)
 {
     pDragonStateData1->m0_pOwnerTask = pWorkArea;
     pDragonStateData1->m4_pModelFile = pDragonModel;

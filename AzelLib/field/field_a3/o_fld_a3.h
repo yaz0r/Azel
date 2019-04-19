@@ -4,6 +4,7 @@ extern sSaturnMemoryFile* gFLD_A3;
 
 p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg);
 s32 startFieldScript(s32 r4, s32 r5);
+s32 startFieldScriptSkippable(s32 r4, s32 r5);
 
 sFieldCameraStatus* getFieldCameraStatus();
 void dragonFieldTaskInitSub4Sub3(u8 r4);
@@ -32,6 +33,7 @@ p_workArea create_fieldA3_0_task0(p_workArea workArea); // shared subfield 0 and
 void subfieldA3_1Sub0Sub0();
 void subfieldA3_1Sub0Sub2(s32 r4, s32 r5);
 s_cutsceneData* loadCutsceneData(sSaturnPtr EA);
+void loadScriptData1(std::vector<s_scriptData1>& output, sSaturnPtr& EA);
 void startCutscene(s_cutsceneData* r4);
 void createFieldPaletteTask(p_workArea parent);
 void adjustVerticalLimits(fixedPoint r4, fixedPoint r5);

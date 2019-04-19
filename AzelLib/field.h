@@ -221,6 +221,9 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
     const s32* m1C;
 };
 
+void cutsceneTaskInitSub2(p_workArea r4, std::vector<s_scriptData1>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
+void cutsceneTaskInitSub3(p_workArea r4, std::vector<s_scriptData2>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
+
 struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct s_cutsceneData*>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -230,9 +233,6 @@ struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct 
     }
     static void Init(s_cutsceneTask*, struct s_cutsceneData* argument);
     static void Update(s_cutsceneTask*);
-
-    void cutsceneTaskInitSub2(std::vector<s_scriptData1>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
-    void cutsceneTaskInitSub3(std::vector<s_scriptData2>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
 
     u32 m0;
     u32 m4_changeField;
@@ -327,7 +327,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
     u32 m70;
     s_fieldScriptWorkArea78* m78;
     s32 m7C;
-    s_cutsceneTask* m80;
+    p_workArea m80;
     sVec3_FP* m84;
 
     std::vector<s_scriptData1>* m88;
@@ -420,7 +420,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     s_dragonTaskWorkArea_48 m48;
 
     sMatrix4x3 m88_matrix; // 88
-    u32 mB8;
+    p_workArea mB8;
     sVec3_FP* mBC;
 
     fixedPoint mC0_lightRotationAroundDragon;
@@ -909,7 +909,7 @@ void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5);
 void dragonFieldTaskInitSub4Sub5(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
 void dragonFieldTaskInitSub4Sub6(s_dragonTaskWorkArea* r4);
 void updateCameraScriptSub0Sub2(s_dragonTaskWorkArea* r4);
-void updateCameraScriptSub0(u32 r4);
+void updateCameraScriptSub0(p_workArea r4);
 void dragonFieldTaskInitSub4Sub4();
 
 void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 param, s32 exitIndex, s32 arg0);

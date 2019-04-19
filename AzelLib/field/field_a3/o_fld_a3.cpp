@@ -1137,15 +1137,9 @@ s32 queueNewFieldScript(sSaturnPtr r4, s32 r5)
     if (r13->m4_currentScript.m_offset)
         return 0;
 
-    if (r5 >= 0)
+    if ((r5 >= 0) && mainGameState.getBit566(r5))
     {
-        if (r5 > 1000)
-        {
-            r5 -= 566;
-        }
-
-        if (mainGameState.getBit(r5))
-            return 0;
+        return 0;
     }
 
     r13->m60_canSkipScript = 0;
@@ -1157,12 +1151,45 @@ s32 queueNewFieldScript(sSaturnPtr r4, s32 r5)
     return 1;
 }
 
+s32 queueNewFieldScriptSkippable(sSaturnPtr r4, s32 r5)
+{
+    s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+
+    if (r14->m4_currentScript.m_offset)
+        return 0;
+
+    if ((r5 >= 0) && mainGameState.getBit566(r5))
+    {
+        r14->m60_canSkipScript = 1;
+    }
+    else
+    {
+        r14->m60_canSkipScript = 0;
+    }
+
+    r14->m4_currentScript = r4;
+    r14->m2C_bitToSet = r5;
+    r14->m58 = 0;
+    r14->m50_scriptDelay = 0;
+    return 1;
+}
+
 s32 startFieldScript(s32 r4, s32 r5)
 {
     s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
     if (r14)
     {
         return queueNewFieldScript(r14->m0_pScripts[r4], r5);
+    }
+    return 0;
+}
+
+s32 startFieldScriptSkippable(s32 r4, s32 r5)
+{
+    s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    if (r14)
+    {
+        return queueNewFieldScriptSkippable(r14->m0_pScripts[r4], r5);
     }
     return 0;
 }
@@ -1891,18 +1918,18 @@ void s_cutsceneTask3::Draw(s_cutsceneTask3*)
     TaskUnimplemented();
 }
 
-void s_cutsceneTask::cutsceneTaskInitSub2(std::vector<s_scriptData1>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
+void cutsceneTaskInitSub2(p_workArea r4, std::vector<s_scriptData1>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
 {
     s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
 
-    r14->m80 = this;
+    r14->m80 = r4;
     r14->m7C = r6;
     r14->m84 = r7;
 
     if (r14->m78)
     {
         cutsceneTaskInitSub2Sub0(&r14->m78->m3C, &r14->m78->m48);
-        r14->m48_cutsceneTask = this;
+        r14->m48_cutsceneTask = r4;
         return;
     }
 
@@ -1916,7 +1943,7 @@ void s_cutsceneTask::cutsceneTaskInitSub2(std::vector<s_scriptData1>& r11, s32 r
         cutsceneTaskInitSub2Sub2(r14->m48_cutsceneTask);
     }
 
-    s_cutsceneTask2* pNewTask = createSiblingTaskWithArg<s_cutsceneTask2>(this, &r11);
+    s_cutsceneTask2* pNewTask = createSiblingTaskWithArg<s_cutsceneTask2>(r4, &r11);
 
     pNewTask->m0 = arg0;
     if (arg0 & 1)
@@ -1932,17 +1959,17 @@ void cutsceneTaskInitSub3Sub0(std::vector<s_scriptData2>& r4, std::vector<s_scri
     r5 = r4;
 }
 
-void s_cutsceneTask::cutsceneTaskInitSub3(std::vector<s_scriptData2>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
+void cutsceneTaskInitSub3(p_workArea r4, std::vector<s_scriptData2>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
 {
     s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-    r14->m80 = this;
+    r14->m80 = r4;
     r14->m7C = r6;
     r14->m84 = r7;
 
     if (r14->m78)
     {
         cutsceneTaskInitSub2Sub0(&r14->m78->m3C, r7);
-        r14->m48_cutsceneTask = this;
+        r14->m48_cutsceneTask = r4;
         return;
     }
 
@@ -1959,7 +1986,7 @@ void s_cutsceneTask::cutsceneTaskInitSub3(std::vector<s_scriptData2>& r11, s32 r
         cutsceneTaskInitSub2Sub2(r14->m48_cutsceneTask);
     }
 
-    s_cutsceneTask3* pNewTask = createSiblingTask<s_cutsceneTask3>(this);
+    s_cutsceneTask3* pNewTask = createSiblingTask<s_cutsceneTask3>(r4);
 
     pNewTask->m4 = &r11;
     pNewTask->m14 = r7;
@@ -1997,15 +2024,15 @@ void s_cutsceneTask::Init(s_cutsceneTask* pThis, s_cutsceneData* pCutsceneData)
     {
     case 1:
         assert(pCutsceneData->m4.size());
-        pThis->cutsceneTaskInitSub2(pCutsceneData->m4, 0, &r14->m8_pos, r11);
+        cutsceneTaskInitSub2(pThis, pCutsceneData->m4, 0, &r14->m8_pos, r11);
         break;
     case 2:
         assert(pCutsceneData->m4.size());
-        pThis->cutsceneTaskInitSub2(pCutsceneData->m4, 0, &r14->m8_pos, 1 | r11);
+        cutsceneTaskInitSub2(pThis, pCutsceneData->m4, 0, &r14->m8_pos, 1 | r11);
         break;
     case 3:
         assert(pCutsceneData->m4bis.size());
-        pThis->cutsceneTaskInitSub3(pCutsceneData->m4bis, 0, &r14->m8_pos, 1 | r11);
+        cutsceneTaskInitSub3(pThis, pCutsceneData->m4bis, 0, &r14->m8_pos, 1 | r11);
         break;
     default:
         assert(0);
@@ -2066,6 +2093,31 @@ void startCutscene(s_cutsceneData* r4)
     createSubTaskWithArg<s_cutsceneTask>(getFieldTaskPtr()->m8_pSubFieldData, r4);
 }
 
+void loadScriptData1(std::vector<s_scriptData1>& output, sSaturnPtr& EA)
+{
+    int numEntries = 0;
+    while (readSaturnU32(EA))
+    {
+        numEntries++;
+        EA = EA + 0x3C;
+    }
+    EA -= 0x3C * numEntries;
+    numEntries++;
+
+    output.resize(numEntries);
+    for (int i = 0; i < numEntries; i++)
+    {
+        output[i].m0 = readSaturnS32(EA); EA = EA + 4;
+        output[i].m4 = readSaturnVec3(EA); EA = EA + 4 * 3;
+        output[i].m10 = readSaturnVec3(EA); EA = EA + 4 * 3;
+        output[i].m1C = readSaturnVec3(EA); EA = EA + 4 * 3;
+        output[i].m28 = readSaturnVec3(EA); EA = EA + 4 * 3;
+        output[i].m34 = readSaturnS32(EA); EA = EA + 4;
+        output[i].m38 = readSaturnS32(EA); EA = EA + 4;
+    }
+
+}
+
 s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
 {
     s_cutsceneData* pData = new s_cutsceneData;
@@ -2101,26 +2153,7 @@ s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
     case 1:
     case 2:
     {
-        int numEntries = 0;
-        while (readSaturnU32(table1))
-        {
-            numEntries++;
-            table1 = table1 + 0x3C;
-        }
-        table1 -= 0x3C * numEntries;
-        numEntries++;
-
-        pData->m4.resize(numEntries);
-        for (int i = 0; i < numEntries; i++)
-        {
-            pData->m4[i].m0 = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4[i].m4 = readSaturnVec3(table0); table0 = table0 + 4 * 3;
-            pData->m4[i].m10 = readSaturnVec3(table0); table0 = table0 + 4 * 3;
-            pData->m4[i].m1C = readSaturnVec3(table0); table0 = table0 + 4 * 3;
-            pData->m4[i].m28 = readSaturnVec3(table0); table0 = table0 + 4 * 3;
-            pData->m4[i].m34 = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4[i].m38 = readSaturnS32(table0); table0 = table0 + 4;
-        }
+        loadScriptData1(pData->m4, table1);
         break;
     }
     case 3:
@@ -2137,15 +2170,15 @@ s_cutsceneData* loadCutsceneData(sSaturnPtr EA)
         pData->m4bis.resize(numEntries);
         for (int i = 0; i < numEntries; i++)
         {
-            pData->m4bis[i].m0 = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4bis[i].m4 = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4bis[i].m8 = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4bis[i].mC = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4bis[i].m10 = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4bis[i].m14 = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4bis[i].m18 = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4bis[i].m1C = readSaturnS32(table0); table0 = table0 + 4;
-            pData->m4bis[i].m20 = readSaturnS32(table0); table0 = table0 + 4;
+            pData->m4bis[i].m0 = readSaturnS32(table1); table1 = table1 + 4;
+            pData->m4bis[i].m4 = readSaturnS32(table1); table1 = table1 + 4;
+            pData->m4bis[i].m8 = readSaturnS32(table1); table1 = table1 + 4;
+            pData->m4bis[i].mC = readSaturnS32(table1); table1 = table1 + 4;
+            pData->m4bis[i].m10 = readSaturnS32(table1); table1 = table1 + 4;
+            pData->m4bis[i].m14 = readSaturnS32(table1); table1 = table1 + 4;
+            pData->m4bis[i].m18 = readSaturnS32(table1); table1 = table1 + 4;
+            pData->m4bis[i].m1C = readSaturnS32(table1); table1 = table1 + 4;
+            pData->m4bis[i].m20 = readSaturnS32(table1); table1 = table1 + 4;
         }
         break;
     }
@@ -2676,6 +2709,20 @@ s32 executeNative(sSaturnPtr ptr)
         return 0; // result ignored?
     case 0x06057e1c:
         setupDragonPosition(readSaturnVec3({ 0x608FA20, gFLD_A3 }), readSaturnVec3({ 0x608FA2C, gFLD_A3 }));
+        return 0; // result ignored?
+    case 0x6074C78:
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m249 = 0;
+        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mB8)
+        {
+            assert(0);
+        }
+        return 0; // result ignored?
+    case 0x06074C36:
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m249 = 1;
+        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mB8)
+        {
+            assert(0);
+        }
         return 0; // result ignored?
     default:
         assert(0);
@@ -5129,7 +5176,7 @@ void dragonFieldTaskInitSub4Sub6(s_dragonTaskWorkArea* r4)
     r4->m154_dragonSpeed = sqrt_F(r0) >> 8;
 }
 
-void updateCameraScriptSub0(u32 r4)
+void updateCameraScriptSub0(p_workArea r4)
 {
     if (r4)
     {
@@ -5993,7 +6040,7 @@ void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
 
     if (pTypedWorkArea->m249)
     {
-        assert(0);
+        WRITE_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30) & ~1);
     }
     else
     {

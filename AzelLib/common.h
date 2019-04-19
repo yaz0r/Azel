@@ -253,16 +253,21 @@ public:
         bitField[bitIndex / 8] &= ~(0x80 >> (bitIndex % 8));
     }
 
+    void clearBit(u32 byteIndex, u32 bitIndex)
+    {
+        bitField[byteIndex] &= ~(0x80 >> bitIndex);
+    }
+
     bool getBit(u32 bitIndex)
     {
-        if (bitField[bitIndex / 8] &= 0x80 >> (bitIndex % 8))
+        if (bitField[bitIndex / 8] & (0x80 >> (bitIndex % 8)))
             return true;
         return false;
     }
 
     bool getBit(u32 byteIndex, u32 bitIndex)
     {
-        if (bitField[byteIndex] &= 0x80 >> (bitIndex))
+        if (bitField[byteIndex] & (0x80 >> (bitIndex)))
             return true;
         return false;
     }
@@ -421,7 +426,7 @@ struct s_3dModel
     u8* m30_pCurrentAnimation; //30
 
     u8* m34_pDefaultPose; //34
-    u32 m38; //38
+    u8* m38; //38
 
     std::vector<sMatrix4x3> m3C_boneMatrices; //3C
 
@@ -431,6 +436,8 @@ struct s_3dModel
 
     u16 m4C_interpolationStep; //4C
     u16 m4E_interpolationLength; //4E
+
+    //size 0x4C
 };
 
 struct sDragonAnimDataSubRanges

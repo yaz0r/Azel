@@ -6,6 +6,7 @@ sMenuUnk0 menuUnk0;
 
 void soundFunc(int) { PDS_unimplemented("soundFunc"); }
 void playSoundEffect(int) { PDS_unimplemented("playSoundEffect"); }
+bool isSoundPlaying(int) { PDS_unimplemented("isSoundPlaying"); return false; }
 bool keyboardIsKeyDown(u8 keycode) { PDS_unimplemented("keyboardIsKeyDown");  return false; }
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2) { PDS_unimplemented("titleMenuToggleTutorials"); }
 u32 titleScreenDrawSub1(sMenuUnk0* arrayData) { PDS_unimplemented("titleScreenDrawSub1"); return 0; }
