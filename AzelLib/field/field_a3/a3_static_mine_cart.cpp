@@ -242,7 +242,7 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     case 3:
         pNewObj->m_UpdateMethod = &A3_3_Obj0_Update0;
         pNewObj->m24[0] = readSaturnS32(sSaturnPtr({ 0x609262C, gFLD_A3 }) + 8 * r12 + 0);
-        pNewObj->m24[1] = readSaturnS32(sSaturnPtr({ 0x609262C, gFLD_A3 }) + 8 * r12 + 4);
+        pNewObj->m24[2] = readSaturnS32(sSaturnPtr({ 0x609262C, gFLD_A3 }) + 8 * r12 + 4);
         pNewObj->m36_delay = readSaturnS16(sSaturnPtr({ 0x609264C, gFLD_A3 }) + 2 * r12);
         break;
     case 4:
@@ -254,7 +254,7 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         r12 -= 4;
         pNewObj->m_UpdateMethod = &A3_3_Obj0_Update1;
         pNewObj->m18[0] = readSaturnS32(sSaturnPtr({ 0x60925FC, gFLD_A3 }) + 8 * r12 + 0);
-        pNewObj->m18[1] = readSaturnS32(sSaturnPtr({ 0x60925FC, gFLD_A3 }) + 8 * r12 + 0);
+        pNewObj->m18[2] = readSaturnS32(sSaturnPtr({ 0x60925FC, gFLD_A3 }) + 8 * r12 + 4);
         break;
     case 10:
     case 11:
@@ -263,7 +263,7 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         r12 -= 10;
         pNewObj->m_UpdateMethod = &A3_3_Obj0_Update2;
         pNewObj->m18[0] = readSaturnS32(sSaturnPtr({ 0x6092654, gFLD_A3 }) + 8 * r12 + 0);
-        pNewObj->m18[1] = readSaturnS32(sSaturnPtr({ 0x6092654, gFLD_A3 }) + 8 * r12 + 0);
+        pNewObj->m18[2] = readSaturnS32(sSaturnPtr({ 0x6092654, gFLD_A3 }) + 8 * r12 + 4);
         pNewObj->m36_delay = pNewObj->m38_currentDelay = readSaturnS16(sSaturnPtr({ 0x6092674, gFLD_A3 }) + 2 * r12);
         break;
     default:

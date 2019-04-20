@@ -318,7 +318,7 @@ void updateFieldTaskNoBattleOverride(s_fieldTaskWorkArea* pWorkArea)
         pWorkArea->m3C_fieldTaskState++;
         break;
     case 6:
-        if (pWorkArea->m8_pSubFieldData)
+        if (pWorkArea->m8_pSubFieldData == nullptr)
         {
             pWorkArea->m3C_fieldTaskState = 3;
         }
