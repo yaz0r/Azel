@@ -115,7 +115,7 @@ struct s_A3_0_Obj4 : public s_workAreaTemplate<s_A3_0_Obj4>
                 addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x268));
                 addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x26C));
                 addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x270));
-                callGridCellDraw_normalSub2(pThis->m0.m0_mainMemory, 0x2B0);
+                callGridCellDraw_normalSub2(pThis, 0x2B0);
             }
             popMatrix();
         }

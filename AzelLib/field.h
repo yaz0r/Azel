@@ -524,7 +524,7 @@ struct s_grid1
 {
     sSaturnPtr m0;
     sVec3_FP m4;
-    s16 m10[3];
+    sVec3_S16 m10;
     s16 m16;
     // size 18
 };
@@ -557,8 +557,9 @@ struct s_DataTable2Sub0
 {
     sSaturnPtr m0_function;
     sVec3_FP m4_position;
-    std::array<s16, 3> m10_rotation;
+    sVec3_S16 m10_rotation;
     s32 m18;
+    sSaturnPtr m1C;
     // size is 0x20
 };
 
@@ -780,7 +781,7 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     u8 debugMenuStatus3; //380
 };
 
-struct s_fieldTaskWorkArea_C : public s_workAreaTemplate<s_fieldTaskWorkArea_C>
+struct s_fieldSpecificData_A3 : public s_workAreaTemplate<s_fieldSpecificData_A3>
 {
     fixedPoint m0;
     s32 m8;
@@ -788,6 +789,7 @@ struct s_fieldTaskWorkArea_C : public s_workAreaTemplate<s_fieldTaskWorkArea_C>
     std::array<u32, 56> m50; //not sure of size
     std::array<s8, 8> m94_A3_0_exits;
     std::array<s8, 3> m9C_A3_1_exits;
+    std::array<s8, 4> m9F_A3_2_exits;
     s8 mA3_conanaNestExit;
     std::array<fixedPoint, 7> mA4;
     std::array<sVec3_FP, 18> mC0; // not sure of size
@@ -797,6 +799,7 @@ struct s_fieldTaskWorkArea_C : public s_workAreaTemplate<s_fieldTaskWorkArea_C>
     s32 m154;
     sVec3_FP m158;
 
+    struct fieldA3_2_crashedImpertialShip* m164_A3_2_crashedImperialShipTask;
     p_workArea m168;
     // size 16C?
 };
@@ -816,7 +819,7 @@ struct s_fieldTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldTaskWorkAre
     s_workArea* m0; // 0
     s_workArea* m4_overlayTaskData;//4
     s_FieldSubTaskWorkArea* m8_pSubFieldData; // 0x8
-    s_fieldTaskWorkArea_C* mC; // background task buffer?
+    struct s_fieldSpecificData_A3* mC; // background task buffer?
     u32 m28_status; // 0x28
     s16 m2C_currentFieldIndex; // 0x2C
     s16 m2E_currentSubFieldIndex; // 0x2E;
@@ -916,8 +919,8 @@ void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 para
 void startExitFieldCutscene2(p_workArea parent, s_cutsceneData* pScript, s32 param, s32 exitIndex, s32 arg0);
 void initFieldDragonLight();
 
-void gridCellDraw_normalSub2(u8* r4, s32 r5, s32 r6);
-void callGridCellDraw_normalSub2(u8* r4, s32 r5);
+void gridCellDraw_normalSub2(p_workArea r4, s32 r5, s32 r6);
+void callGridCellDraw_normalSub2(p_workArea r4, s32 r5);
 void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6);
 void exitCutsceneTaskUpdateSub0Sub0();
 void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s32 r7);

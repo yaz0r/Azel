@@ -199,7 +199,7 @@ struct sFileInfo
     u8 displayMemoryLayout; //5
     u16 m8; //8
 
-    sFileInfoSub* allocatedHead; //2C
+    sFileInfoSub* m2C_allocatedHead; //2C
     sFileInfoSub* freeHead; //30
     sFileInfoSub linkedList[15]; //34
 };

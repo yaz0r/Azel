@@ -395,7 +395,7 @@ sFileInfo fileInfoStruct;
 
 sFileInfoSub* getFileHandle(const char* fileName)
 {
-    sFileInfoSub* r3 = fileInfoStruct.allocatedHead;
+    sFileInfoSub* r3 = fileInfoStruct.m2C_allocatedHead;
 
     while (r3)
     {
@@ -416,7 +416,7 @@ sFileInfoSub* allocateFileInfoStruct()
     if (pFree == NULL)
         return NULL;
 
-    sFileInfoSub** r4 = &fileInfoStruct.allocatedHead;
+    sFileInfoSub** r4 = &fileInfoStruct.m2C_allocatedHead;
 
     while (*r4)
     {
@@ -432,7 +432,7 @@ sFileInfoSub* allocateFileInfoStruct()
 
 void freeFileInfoStruct(sFileInfoSub* pInfo)
 {
-    sFileInfoSub** r5 = &fileInfoStruct.allocatedHead;
+    sFileInfoSub** r5 = &fileInfoStruct.m2C_allocatedHead;
 
     while (*r5 != pInfo)
     {
@@ -596,7 +596,7 @@ void initFileSystemSub2()
     }
 
     *r5 = NULL;
-    fileInfoStruct.allocatedHead = NULL;
+    fileInfoStruct.m2C_allocatedHead = NULL;
 }
 
 void addToMemoryLayout(u8* pointer, u32 size)

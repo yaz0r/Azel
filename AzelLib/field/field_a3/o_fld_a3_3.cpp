@@ -69,7 +69,7 @@ void fieldA3_3_createCheckExitTask(p_workArea workArea)
 
 void fieldA3_3_startTasks(p_workArea workArea)
 {
-    create_fieldA3_0_task0(workArea);
+    fieldA3_0_createTask0(workArea);
     fieldA3_3_createExitTask(workArea);
     fieldA3_3_createBirdsTask(workArea);
     fieldA3_3_createCheckExitTask(workArea);

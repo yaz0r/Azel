@@ -38,7 +38,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
         {
             pushCurrentMatrix();
             translateCurrentMatrix(&pThis->m10_position);
-            rotateCurrentMatrixZYX_s16(&pThis->m2C_rotation[0]);
+            rotateCurrentMatrixZYX_s16(pThis->m2C_rotation);
             LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemory, 0x10, 0x2E4);
             popMatrix();
         }
@@ -50,7 +50,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
         {
             pushCurrentMatrix();
             translateCurrentMatrix(&pThis->m10_position);
-            rotateCurrentMatrixZYX_s16(&pThis->m2C_rotation[0]);
+            rotateCurrentMatrixZYX_s16(pThis->m2C_rotation);
             addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
             popMatrix();
         }
@@ -205,7 +205,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
     s32 m20;
     s32 m24;
     s32 m28_visibilityDelay;
-    std::array<s16, 3> m2C_rotation;
+    sVec3_S16 m2C_rotation;
     s16 m32_targetAngle;
     s16 m34_deltaAngle;
     s16 m36;

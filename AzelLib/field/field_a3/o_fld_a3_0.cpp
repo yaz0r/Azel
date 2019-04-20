@@ -6,14 +6,14 @@ void subfieldA3_0Sub0(s_dragonTaskWorkArea* r4)
     PDS_unimplemented("subfieldA3_0Sub0");
 }
 
-p_workArea create_fieldA3_0_task0(p_workArea workArea)
+p_workArea fieldA3_0_createTask0(p_workArea workArea)
 {
-    s_fieldTaskWorkArea_C* newWorkArea = createSubTaskFromFunction<s_fieldTaskWorkArea_C>(workArea, NULL);
+    s_fieldSpecificData_A3* newWorkArea = createSubTaskFromFunction<s_fieldSpecificData_A3>(workArea, NULL);
     getFieldTaskPtr()->mC = newWorkArea;
     return newWorkArea;
 }
 
-p_workArea create_fieldA3_0_task1(p_workArea workArea, s32 r5, s32 r6)
+p_workArea fieldA3_0_createTask1(p_workArea workArea, s32 r5, s32 r6)
 {
     PDS_unimplemented("create_fieldA3_0_task1");
     return workArea;
@@ -221,9 +221,9 @@ void create_fieldA3_0_exitTask(p_workArea workArea)
 
 void fieldA3_0_startTasks(p_workArea workArea)
 {
-    create_fieldA3_0_task0(workArea);
+    fieldA3_0_createTask0(workArea);
 
-    getFieldTaskPtr()->mC->m168 = create_fieldA3_0_task1(workArea, 2, 0x20);
+    getFieldTaskPtr()->mC->m168 = fieldA3_0_createTask1(workArea, 2, 0x20);
 
     create_fieldA3_0_exitTask(workArea);
 
@@ -303,12 +303,23 @@ void subfieldA3_0(p_workArea workArea)
                     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6090FBC, gFLD_A3 });
                 }
                 break;
+            case 6:
+                if (getFieldTaskPtr()->m30)
+                {
+                    startCutscene(loadCutsceneData({ 0x6091934, gFLD_A3 }));
+                }
+                else
+                {
+                    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x609108C, gFLD_A3 });
+                }
+                break;
             case 8:
                 getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x609115C, gFLD_A3 });
                 break;
-            case 6:
             case 10:
-                assert(0);
+                getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6091128, gFLD_A3 });
+                startFieldScript(17, -1);
+                break;
             default:
                 getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6090E84, gFLD_A3 });
                 startFieldScript(17, -1);

@@ -464,7 +464,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
                 translateCurrentMatrix(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190));
                 rotateCurrentMatrixZYX(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0xC));
 
-                gridCellDraw_normalSub2(pThis->m0.m0_mainMemory, 0x138, pThis->m7C);
+                gridCellDraw_normalSub2(pThis, 0x138, pThis->m7C);
 
                 {
                     pushCurrentMatrix();
@@ -473,7 +473,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
                     rotateCurrentMatrixShiftedY(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0x10) + pThis->m90);
                     rotateCurrentMatrixShiftedX(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0xC));
 
-                    gridCellDraw_normalSub2(pThis->m0.m0_mainMemory, 0x13C, pThis->m7C);
+                    gridCellDraw_normalSub2(pThis, 0x13C, pThis->m7C);
 
                     popMatrix();
                 }
@@ -998,7 +998,7 @@ void fieldA3_1_startTasks_sub3(p_workArea workArea)
 
 void fieldA3_1_startTasks(p_workArea workArea)
 {
-    create_fieldA3_0_task0(workArea);
+    fieldA3_0_createTask0(workArea);
 
     fieldA3_1_startTasks_sub1(workArea);
 

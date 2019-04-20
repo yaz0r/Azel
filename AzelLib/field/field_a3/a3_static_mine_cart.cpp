@@ -9,7 +9,7 @@ struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
     sVec3_FP mC_position;
     sVec3_FP m18;
     sVec3_FP m24;
-    std::array<s16, 3> m30_rotation;
+    sVec3_S16 m30_rotation;
     s16 m36_delay;
     s16 m38_currentDelay;
     s8 m3A;
@@ -47,9 +47,9 @@ void A3_3_Obj0_Draw(s_A3_3_Obj0* pThis)
     {
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->mC_position);
-        rotateCurrentMatrixZYX_s16(&pThis->m30_rotation[0]);
+        rotateCurrentMatrixZYX_s16(pThis->m30_rotation);
         addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
-        callGridCellDraw_normalSub2(pThis->m0.m0_mainMemory, 0x2C8);
+        callGridCellDraw_normalSub2(pThis, 0x2C8);
         popMatrix();
     }
 }
@@ -60,7 +60,7 @@ void A3_3_Obj0_Draw2(s_A3_3_Obj0* pThis)
     {
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->mC_position);
-        rotateCurrentMatrixZYX_s16(&pThis->m30_rotation[0]);
+        rotateCurrentMatrixZYX_s16(pThis->m30_rotation);
         addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
         popMatrix();
     }

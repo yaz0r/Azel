@@ -455,12 +455,12 @@ void initFieldDragonLight()
     pDragonTask->mC0_lightRotationAroundDragon = 0xC000000;
 }
 
-void gridCellDraw_normalSub2(u8* r4, s32 r5, s32 r6)
+void gridCellDraw_normalSub2(p_workArea r4, s32 r5, s32 r6)
 {
     TaskUnimplemented();
 }
 
-void callGridCellDraw_normalSub2(u8* r4, s32 r5)
+void callGridCellDraw_normalSub2(p_workArea r4, s32 r5)
 {
     gridCellDraw_normalSub2(r4, r5, 0x10000);
 }

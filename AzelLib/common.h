@@ -35,10 +35,20 @@ struct sVec2_S32
     }
 };
 
-typedef s16 sVec3_S16[3];
+typedef std::array<s16,3> sVec3_S16;
 
 struct sVec3_FP
 {
+    sVec3_FP()
+    {
+    }
+
+    sVec3_FP(fixedPoint x, fixedPoint y, fixedPoint z)
+    {
+        m_value[0] = x;
+        m_value[1] = y;
+        m_value[2] = z;
+    }
     std::array<fixedPoint,3> m_value;
 
     void zero()

@@ -14,7 +14,13 @@ void fieldA3_0_task4_updateSub0(s_dragonTaskWorkArea* pDragon)
         }
 
         //6057FE8
-        assert(0);
+        if (var8_dragonPosition[0] < 0x3A2000)
+            return;
+
+        if (var8_dragonPosition[2] > -0x122A000)
+            return;
+
+        startFieldScript(11, 1448);
     }
     else
     {

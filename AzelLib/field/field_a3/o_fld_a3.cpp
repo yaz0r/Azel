@@ -4,6 +4,7 @@
 #include "a3_static_mine_cart.h"
 #include "a3_dynamic_mine_cart.h"
 #include "a3_fan.h"
+#include "a3_2_crashedImperialShip.h"
 
 void updateDragonDefault(s_dragonTaskWorkArea*);
 void updateCutscene(s_dragonTaskWorkArea* r14);
@@ -18,7 +19,7 @@ s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
 bool bMakeEverythingVisible = false;
 #endif
 
-sSaturnMemoryFile* gFLD_A3 = NULL;
+FLD_A3_data* gFLD_A3 = NULL;
 
 const s_MCB_CGB fieldFileList[] =
 {
@@ -274,7 +275,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                     if (readSaturnS16(r14->m0 + 2))
                     {
                         getCameraProperties2Matrix(pCurrentMatrix);
-                        gridCellDraw_normalSub2(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, readSaturnS16(r14->m0 + 2), 0x10000);
+                        gridCellDraw_normalSub2(pTypedWorkAread, readSaturnS16(r14->m0 + 2), 0x10000);
                     }
                 }
                 popMatrix();
@@ -1010,6 +1011,23 @@ void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     case 0x0606053e:
         //create_A3_Obj1(r4, r5, r6); ?
         break;
+
+    case 0x06059674: // A2
+        create_A3_2_crashedImperialShip2(r4, r5, r6);
+        break;
+    case 0x06059A2C: // A2 imperial ship
+        create_A3_2_crashedImperialShip(r4, r5, r6);
+        break;
+    case 0x0605C274: // A2
+        break;
+    case 0x0605c27a: // A2
+        break;
+    case 0x0605c280: // A2
+        break;
+    case 0x0605bfea: // A2
+        break;
+    case 0x0605c0ae: // A2
+        break;
     default:
         PDS_unimplemented("dispatchFunction");
         break;
@@ -1388,6 +1406,7 @@ s_DataTable2* readDataTable2(sSaturnPtr EA)
                 newEntry.m10_rotation[1] = readSaturnS16(cellEA + 0x12);
                 newEntry.m10_rotation[2] = readSaturnS16(cellEA + 0x14);
                 newEntry.m18 = readSaturnS32(cellEA + 0x18);
+                newEntry.m1C = readSaturnEA(cellEA + 0x1C);
 
                 pNewData2->m0[i].push_back(newEntry);
 
@@ -2721,6 +2740,24 @@ s32 executeNative(sSaturnPtr ptr)
         if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mB8)
         {
             assert(0);
+        }
+        return 0; // result ignored?
+    case 0x0605985c: // used in A2 destroyed ship cutscene
+        return fieldA3_2_crashedImpertialShip_customScriptCall();
+    case 0x606ACB0:
+        if (getFieldTaskPtr()->m8_pSubFieldData)
+        {
+            s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+            if (r14->m48_cutsceneTask)
+            {
+                if (r14->m5C == 0)
+                {
+                    PDS_unimplemented("!!!!!!!!!!!!!!!!!! Casting cutscenes!");
+                    //TODO: this is widely incorrect!
+                    s_cutsceneTask2* r4 = static_cast<s_cutsceneTask2*>(r14->m48_cutsceneTask);
+                    r4->UpdateSub1();
+                }
+            }
         }
         return 0; // result ignored?
     default:
@@ -6603,11 +6640,13 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
         fread(fileData, fileSize, 1, fHandle);
         fclose(fHandle);
 
-        gFLD_A3 = new sSaturnMemoryFile();
+        gFLD_A3 = new FLD_A3_data();
         gFLD_A3->m_name = "FLD_A3.PRG";
         gFLD_A3->m_data = fileData;
         gFLD_A3->m_dataSize = fileSize;
         gFLD_A3->m_base = 0x6054000;
+
+        gFLD_A3->init();
 
         LCSTaskDrawSub5Sub1_Data1 = readLCSTaskDrawSub5Sub1_Data1({ 0x06093B28, gFLD_A3 });
     }
@@ -7603,5 +7642,10 @@ void dragonFieldTaskInitSub4Sub3(u8 r4)
     updateCameraScriptSub1Sub(0, updateCameraScriptSub1Table1[r4], updateCameraScriptSub1Table2[r4]);
 
     getFieldCameraStatus()->m8D = 0;
+}
+
+void FLD_A3_data::init()
+{
+    loadScriptData1(m6083244, getSaturnPtr(0x6083244));
 }
 
