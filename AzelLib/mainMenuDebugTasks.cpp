@@ -1097,11 +1097,10 @@ void modelMode4_position1(s_3dModel* p3dModel)
         u8* r13 = p3dModel->m30_pCurrentAnimation + READ_BE_U32(p3dModel->m30_pCurrentAnimation + 8);
         for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
-            /*
-            assert(pPoseData[i].m48[0].currentStep == 0);
+            /*assert(pPoseData[i].m48[0].currentStep == 0);
             assert(pPoseData[i].m48[1].currentStep == 0);
-            assert(pPoseData[i].m48[2].currentStep == 0);
-            */
+            assert(pPoseData[i].m48[2].currentStep == 0);*/
+
             pPoseData[i].m24_halfTranslation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x14), READ_BE_U16(r13 + 0)) >> 1;
             pPoseData[i].m24_halfTranslation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x18), READ_BE_U16(r13 + 2)) >> 1;
             pPoseData[i].m24_halfTranslation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r13 + 0x1C), READ_BE_U16(r13 + 4)) >> 1;
