@@ -101,7 +101,7 @@ void setupGridCell(s_visibilityGridWorkArea* r4, s_visdibilityCellTask* r5, int 
     }
     if (r4->m30->m8)
     {
-        r5->pCell3 = r4->m30->m8[index];
+        r5->m10_pCell3 = r4->m30->m8[index];
     }
 }
 
@@ -172,7 +172,7 @@ u8 gridCellDraw_normalSub0(u8* r4, sVec3_FP& r5)
         }
     }
 
-    s32 distanceThreshold = READ_BE_U32(r4) + +0x8000;
+    s32 distanceThreshold = READ_BE_U32(r4) + 0x8000;
     if (dist[0] > distanceThreshold)
         return 0;
     if (dist[1] > distanceThreshold)
@@ -199,11 +199,11 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
     if (pTypedWorkAread->m8_pEnvironmentCell)
     {
         s_grid1* r14 = pTypedWorkAread->m8_pEnvironmentCell;
-        while (r14->m0.m_offset)
+        while (r14->m0_offsetTable.m_offset)
         {
             r13->m12E0++;
 
-            s16 r2 = readSaturnS16(r14->m0);
+            s16 r2 = readSaturnS16(r14->m0_offsetTable);
             u32 r1 = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r2);
             r13->m12F0 += READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r1 + 4);
 
@@ -212,9 +212,9 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                 u32 var_54 = 0;
                 r13->m12E2++;
 
-                if (readSaturnS16(r14->m0 + 8))
+                if (readSaturnS16(r14->m0_offsetTable + 8))
                 {
-                    u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0 + 8));
+                    u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0_offsetTable + 8));
                     var_54 = gridCellDraw_normalSub0(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + offset, r14->m4);
                 }
 
@@ -226,9 +226,9 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
 
                 u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
 
-                if (readSaturnS16(r14->m0 + depthRangeIndex * 2))
+                if (readSaturnS16(r14->m0_offsetTable + depthRangeIndex * 2))
                 {
-                    u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0 + depthRangeIndex * 2));
+                    u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0_offsetTable + depthRangeIndex * 2));
                     addObjectToDrawList(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
                 }
 
@@ -285,7 +285,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
         }
     }
 
-    if (pTypedWorkAread->pCell3)
+    if (pTypedWorkAread->m10_pCell3)
     {
         assert(0);
     }
@@ -1265,7 +1265,7 @@ s_grid1* readEnvironmentGridCell(sSaturnPtr gridCellEA)
     s_grid1* pCell = pCellArray;
     for (int i = 0; i < numEntries; i++)
     {
-        pCell->m0 = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
+        pCell->m0_offsetTable = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
         pCell->m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
         pCell->m10[0] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
         pCell->m10[1] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
@@ -2729,14 +2729,14 @@ s32 executeNative(sSaturnPtr ptr)
         setupDragonPosition(readSaturnVec3({ 0x608FA20, gFLD_A3 }), readSaturnVec3({ 0x608FA2C, gFLD_A3 }));
         return 0; // result ignored?
     case 0x6074C78:
-        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m249 = 0;
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m249_noCollisionAndHideDragon = 0;
         if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mB8)
         {
             assert(0);
         }
         return 0; // result ignored?
     case 0x06074C36:
-        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m249 = 1;
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m249_noCollisionAndHideDragon = 1;
         if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mB8)
         {
             assert(0);
@@ -5422,17 +5422,98 @@ void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
     }
 }
 
+void collisionSub0Sub0(s32 r4, s32 r5, s_visibilityGridWorkArea_688* r6)
+{
+    TaskUnimplemented();
+}
+
+s32 collisionSub0Sub1()
+{
+    TaskUnimplemented();
+    return 0;
+}
+
+s32 collisionSub0(u8* collisionMesh, sVec3_FP& r5, sVec3_FP& r6, u32 r7, s_visibilityGridWorkArea_5A8* arg0)
+{
+    s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+
+    collisionSub0Sub0(READ_BE_U32(collisionMesh + 4), READ_BE_U32(collisionMesh + 8), r13->m688);
+
+    u8* r14 = collisionMesh + 0xC;
+
+    s32 r11 = 0;
+
+    while (READ_BE_U16(r14) || READ_BE_U16(r14 + 2) || READ_BE_U16(r14 + 4) || READ_BE_U16(r14 + 6))
+    {
+        if (collisionSub0Sub1())
+        {
+            r11 = 1;
+            r13->m1294.m10++;
+        }
+        r14 += 0x1C;
+    }
+
+    return r11;
+}
+
 void dragonFieldTaskUpdateSub1Sub1()
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    s_visibilityGridWorkArea* r12_pVisibilityGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
-    if (pDragonTask->mF8_Flags & 0x400)
+    // collisions enabled?
+    if (!(pDragonTask->mF8_Flags & 0x400))
         return;
 
-    if (!pDragonTask->m249)
+    if (pDragonTask->m249_noCollisionAndHideDragon)
         return;
 
-    assert(0);
+    sVec3_FP var60;
+    var60.zero();
+    fixedPoint var0 = 0x8000;
+    sVec2_FP var6C;
+    var6C[0] = 0x8000;
+    var6C[1] = MTH_Mul(0x8000, 0x8000);
+
+    sVec2_FP var58 = var6C;
+    sVec3_FP var40 = var60;
+
+    sVec3_FP var4C_deltaPosition = pDragonTask->m14_oldPos - pDragonTask->m8_pos;
+
+    r12_pVisibilityGrid->m48 = r12_pVisibilityGrid->m5A8;
+    r12_pVisibilityGrid->m40 = 0;
+
+    // find all potential collision and increment m40 for each
+    pushCurrentMatrix();
+    for (int i = r12_pVisibilityGrid->m12E4_numCollisionGeometries - 1; i >= 0; i--)
+    {
+        //6070B40
+        s_visibilityGridWorkArea_68* r13 = &r12_pVisibilityGrid->m68[i];
+        copyToCurrentMatrix(&r13->m4);
+
+        pCurrentMatrix->matrix[3] -= pDragonTask->m8_pos[0];
+        pCurrentMatrix->matrix[7] -= pDragonTask->m8_pos[1];
+        pCurrentMatrix->matrix[11] -= pDragonTask->m8_pos[2];
+
+        if (collisionSub0(r13->m0, var60, var40, r13->m34, r12_pVisibilityGrid->m48))
+        {
+            r12_pVisibilityGrid->m48++;
+        }
+    }
+    popMatrix();
+
+    if (r12_pVisibilityGrid->m40)
+    {
+        //6070BB2
+        assert(0);
+    }
+
+    pDragonTask->mF8_Flags &= ~0x300;
+
+    if (gDragonState->mC_dragonType == DR_LEVEL_8_FLOATER)
+    {
+        pDragonTask->m3C[0] = 0;
+    }
 }
 
 void dragonFieldTaskUpdateSub1(s_dragonTaskWorkArea* pTypedWorkArea)
@@ -6069,12 +6150,12 @@ void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
     dragonFieldTaskDrawSub1(pTypedWorkArea);
 
     // if we need to draw the dragon shadow (and dragon Y >= 0)
-    if (!pTypedWorkArea->m249 && pTypedWorkArea->m248 && (pTypedWorkArea->m8_pos[1] >= 0))
+    if (!pTypedWorkArea->m249_noCollisionAndHideDragon && pTypedWorkArea->m248 && (pTypedWorkArea->m8_pos[1] >= 0))
     {
         assert(0);
     }
 
-    if (pTypedWorkArea->m249)
+    if (pTypedWorkArea->m249_noCollisionAndHideDragon)
     {
         WRITE_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30) & ~1);
     }
@@ -6100,7 +6181,7 @@ void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
     getDragonHotSpot(gDragonState, 3, &pTypedWorkArea->m118_hotSpot3);
     getDragonHotSpot(gDragonState, 4, &pTypedWorkArea->m124_hotSpot4);
 
-    if (pTypedWorkArea->m249 == 0)
+    if (pTypedWorkArea->m249_noCollisionAndHideDragon == 0)
     {
         if (mainGameState.gameStats.m2_rider1)
         {
@@ -6364,7 +6445,7 @@ void s_visibilityGridWorkArea::fieldCameraTask1Draw(s_visibilityGridWorkArea* pT
 
     pTypedWorkArea->m12E0 = 0;
     pTypedWorkArea->m12E2 = 0;
-    pTypedWorkArea->m12E4 = 0;
+    pTypedWorkArea->m12E4_numCollisionGeometries = 0;
 
     pTypedWorkArea->m12F0 = 0;
 }

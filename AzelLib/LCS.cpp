@@ -1635,10 +1635,11 @@ p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5)
 
 void allocateLCSEntry(s_visibilityGridWorkArea* r4, u8* r5, u32 r6)
 {
-    r4->m12E4++;
+    r4->m12E4_numCollisionGeometries++;
 
-    if (r4->m12E4 >= 24)
+    if (r4->m12E4_numCollisionGeometries >= 24)
     {
+        assert(0);
         return;
     }
 

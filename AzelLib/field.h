@@ -436,7 +436,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
 
     void(*mF0)(s_dragonTaskWorkArea*); //F0
     void(*mF4)(s_dragonTaskWorkArea*);
-    u32 mF8_Flags; // F8 Flags
+    u32 mF8_Flags; // F8 Flags 0x400 : collisions enabled
     u32 mFC; // FC
     u32 m100;
     u32 m104_dragonScriptStatus;
@@ -509,7 +509,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     u8 m246;
     u8 m247;
     u8 m248;
-    u8 m249;
+    u8 m249_noCollisionAndHideDragon;
     u8 m24A_runningCameraScript; // has camera script
     u32 m250;
     u32 m254;
@@ -522,7 +522,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
 
 struct s_grid1
 {
-    sSaturnPtr m0;
+    sSaturnPtr m0_offsetTable; // table of 5 u16, first 4 are LOD model offset (usually the same), last is collision mesh
     sVec3_FP m4;
     sVec3_S16 m10;
     s16 m16;
@@ -589,7 +589,7 @@ struct s_visdibilityCellTask : public s_workAreaTemplate<s_visdibilityCellTask>
     s_memoryAreaOutput m0_memoryLayout; // 0
     s_grid1* m8_pEnvironmentCell; // 8
     s_grid2* mC_pCell2_billboards; // 0xC
-    s_grid3* pCell3; // 0x10
+    s_grid3* m10_pCell3; // 0x10
     u32 index; // 14
 }; // size is 0x18
 
@@ -615,6 +615,16 @@ struct s_visibilityGridWorkArea_1294
     s32 m14;
 };
 
+struct s_visibilityGridWorkArea_688
+{
+    // size 0xC
+};
+
+struct s_visibilityGridWorkArea_5A8
+{
+    // size 0x1C
+};
+
 struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWorkArea>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
@@ -637,8 +647,12 @@ struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWork
     std::vector<std::vector<sCameraVisibility>>* m34_cameraVisibilityTable; // m34
     p_workArea m38; // 38
     s_visdibilityCellTask** m3C_cellRenderingTasks; // 3C (an array of tasks)
+    s32 m40;
+    s_visibilityGridWorkArea_5A8* m48;
     std::array<s_visibilityGridWorkArea_68, 24>::iterator m44;
-    std::array<s_visibilityGridWorkArea_68, 24> m68; // size highly unsure.
+    std::array<s_visibilityGridWorkArea_68, 24> m68;
+    s_visibilityGridWorkArea_5A8 m5A8[8];
+    s_visibilityGridWorkArea_688 m688[1]; // no size yet
     u32 m128C_vdp2VramOffset2;
     u32 m1290_vdp2VramOffset;
     s_visibilityGridWorkArea_1294 m1294;
@@ -649,7 +663,7 @@ struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWork
     s32 m12DC;
     u16 m12E0;
     u16 m12E2;
-    u16 m12E4;
+    u16 m12E4_numCollisionGeometries;
     u16 m12F0;
     u16 m12F2_renderMode; // 12F2
     u8 updateVisibleCells;

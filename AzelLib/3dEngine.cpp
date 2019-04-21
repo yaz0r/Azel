@@ -154,6 +154,11 @@ void copyMatrix(sMatrix4x3* pSrc, sMatrix4x3* pDst)
         pDst->matrix[i] = pSrc->matrix[i];
 }
 
+void copyToCurrentMatrix(sMatrix4x3* pSrc)
+{
+    copyMatrix(pSrc, pCurrentMatrix);
+}
+
 void resetMatrixStack()
 {
     pCurrentMatrix = &matrixStack[0];

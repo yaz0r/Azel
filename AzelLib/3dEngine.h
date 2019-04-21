@@ -66,6 +66,7 @@ void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6
 void multiplyMatrix(sMatrix4x3* matrixA, sMatrix4x3* matrixB);
 
 void copyMatrix(sMatrix4x3* pSrc, sMatrix4x3* pDst);
+void copyToCurrentMatrix(sMatrix4x3* pSrc);
 void initMatrixToIdentity(sMatrix4x3* matrix);
 void resetMatrixStack();
 void pushCurrentMatrix();
