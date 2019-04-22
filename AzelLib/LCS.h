@@ -285,7 +285,7 @@ s32 getObjectIcon(s32 objectID);
 void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 receivedItemId, s32 receivedItemQuantity, s32 arg14);
 void updateLCSTarget(sLCSTarget* r14);
 void LCSTaskDrawSub();
-void allocateLCSEntry(s_visibilityGridWorkArea* r4, u8* r5, u32 r6);
+void allocateLCSEntry(s_visibilityGridWorkArea* r4, sProcessed3dModel* r5, fixedPoint r6);
 void fieldScriptTaskUpdateSub2Sub1();
 void dragonFieldTaskUpdateSub2(u32 r4);
 void createFieldOverlaySubTask2(s_workArea* pWorkArea);

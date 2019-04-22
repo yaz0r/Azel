@@ -1633,7 +1633,7 @@ p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5)
     return r14;
 }
 
-void allocateLCSEntry(s_visibilityGridWorkArea* r4, u8* r5, u32 r6)
+void allocateLCSEntry(s_visibilityGridWorkArea* r4, sProcessed3dModel* r5, fixedPoint r6)
 {
     r4->m12E4_numCollisionGeometries++;
 
@@ -1643,7 +1643,7 @@ void allocateLCSEntry(s_visibilityGridWorkArea* r4, u8* r5, u32 r6)
         return;
     }
 
-    r4->m44[0].m0 = r5;
+    r4->m44[0].m0_model = r5;
     r4->m44[1].m34 = r6;
     r4->m44++;
 }

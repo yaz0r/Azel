@@ -95,9 +95,9 @@ void setupGridCell(s_visibilityGridWorkArea* r4, s_visdibilityCellTask* r5, int 
     {
         r5->m8_pEnvironmentCell = r4->m30->m0_environmentGrid[index];
     }
-    if (r4->m30->m4)
+    if (r4->m30->m4.size())
     {
-        r5->mC_pCell2_billboards = r4->m30->m4[index];
+        r5->mC_pCell2_billboards = &r4->m30->m4[index];
     }
     if (r4->m30->m8)
     {
@@ -129,7 +129,7 @@ u32 gridCellDraw_GetDepthRange(fixedPoint r4)
     return rangeIndex;
 }
 
-u8 gridCellDraw_normalSub0(u8* r4, sVec3_FP& r5)
+u8 gridCellDraw_normalSub0(sProcessed3dModel* r4, sVec3_FP& r5)
 {
     s_visibilityGridWorkArea* var_1C = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
     sVec3_FP DragonPos = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
@@ -212,10 +212,14 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                 u32 var_54 = 0;
                 r13->m12E2++;
 
-                if (readSaturnS16(r14->m0_offsetTable + 8))
+                if (readSaturnU16(r14->m0_offsetTable + 8))
                 {
-                    u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0_offsetTable + 8));
-                    var_54 = gridCellDraw_normalSub0(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + offset, r14->m4);
+                    if (r14->m0b_models[4] == nullptr)
+                    {
+                        u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0_offsetTable + 8));
+                        r14->m0b_models[4] = new sProcessed3dModel(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
+                    }
+                    var_54 = gridCellDraw_normalSub0(r14->m0b_models[4], r14->m4);
                 }
 
                 pushCurrentMatrix();
@@ -226,10 +230,14 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
 
                 u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
 
-                if (readSaturnS16(r14->m0_offsetTable + depthRangeIndex * 2))
+                if (readSaturnU16(r14->m0_offsetTable + depthRangeIndex * 2))
                 {
-                    u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0_offsetTable + depthRangeIndex * 2));
-                    addObjectToDrawList(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
+                    if (r14->m0b_models[depthRangeIndex] == nullptr)
+                    {
+                        u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0_offsetTable + depthRangeIndex * 2));
+                        r14->m0b_models[depthRangeIndex] = new sProcessed3dModel(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
+                    }
+                    addObjectToDrawList(r14->m0b_models[depthRangeIndex]);
                 }
 
                 if (var_54)
@@ -238,7 +246,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                     initMatrixToIdentity(&var_C);
                     translateMatrix(&r14->m4, &var_C);
                     rotateMatrixZYX_s16(r14->m10, &var_C);
-                    copyMatrix(&var_C, &r13->m44[-1].m4); // Gross. This was incremented in gridCellDraw_normalSub0
+                    copyMatrix(&var_C, &r13->m44[-1].m4_matrix); // Gross. This was incremented in gridCellDraw_normalSub0
                 }
 
                 popMatrix();
@@ -250,8 +258,8 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
 
     if (pTypedWorkAread->mC_pCell2_billboards)
     {
-        s_grid2* r14 = pTypedWorkAread->mC_pCell2_billboards;
-        while (r14->m0.m_offset)
+        std::vector<s_grid2>::iterator r14 = pTypedWorkAread->mC_pCell2_billboards->begin();
+        while (r14 != pTypedWorkAread->mC_pCell2_billboards->end())
         {
             r13->m12E0++;
 
@@ -1271,6 +1279,7 @@ s_grid1* readEnvironmentGridCell(sSaturnPtr gridCellEA)
         pCell->m10[1] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
         pCell->m10[2] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
         pCell->m16 = readSaturnS32(gridCellEA); gridCellEA = gridCellEA + 2;
+
         pCell++;
     }
     memset(pCell, 0, sizeof(s_grid1));
@@ -1300,7 +1309,7 @@ s_grid1** readEnvironmentGrid(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
     return pGrid;
 }
 
-s_grid2* readGrid2Cell(sSaturnPtr gridCellEA)
+std::vector<s_grid2> readGrid2Cell(sSaturnPtr gridCellEA)
 {
     assert(gridCellEA.m_offset);
 
@@ -1313,32 +1322,28 @@ s_grid2* readGrid2Cell(sSaturnPtr gridCellEA)
     }
     gridCellEA = gridCellEA + (-0x10 * numEntries);
 
-    s_grid2* pCellArray = new s_grid2[numEntries + 1];
-    s_grid2* pCell = pCellArray;
+    std::vector<s_grid2> pCellArray;
+    pCellArray.resize(numEntries);
+
     for (int i = 0; i < numEntries; i++)
     {
-        pCell->m0 = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
-        pCell->m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
-        pCell++;
+        pCellArray[i].m0 = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
+        pCellArray[i].m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
     }
-    memset(pCell, 0, sizeof(s_grid1));
 
     return pCellArray;
 }
 
-s_grid2** readGrid2(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
+std::vector<std::vector<s_grid2>> readGrid2(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
 {
+    std::vector<std::vector<s_grid2>> pGrid;
     if (gridEA.m_offset == 0)
-        return NULL;
+        return pGrid;
 
-    s_grid2** pGrid = new s_grid2*[gridWidth*gridHeight];
-    memset(pGrid, 0, sizeof(s_grid2*) * gridWidth*gridHeight);
-
+    pGrid.resize(gridWidth*gridHeight);
     for (int i = 0; i < gridWidth * gridHeight; i++)
     {
-        pGrid[i] = NULL;
-
-        sSaturnPtr cellEA = readSaturnEA(gridEA); gridEA = gridEA + 4;
+        sSaturnPtr cellEA = readSaturnEA(gridEA); gridEA += 4;
         if (cellEA.m_offset)
         {
             pGrid[i] = readGrid2Cell(cellEA);
@@ -5422,35 +5427,211 @@ void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
     }
 }
 
-void collisionSub0Sub0(s32 r4, s32 r5, s_visibilityGridWorkArea_688* r6)
+void transformCollisionVertices(s32 r4, std::vector<sVec3_S16>& r5, std::array<sVec3_FP, 100>& r6)
 {
-    TaskUnimplemented();
+    for (int i = 0; i < r4; i++)
+    {
+        sVec3_FP convertedVector;
+        convertedVector[0] = ((s32)r5[i][0]) << 4;
+        convertedVector[1] = ((s32)r5[i][1]) << 4;
+        convertedVector[2] = ((s32)r5[i][2]) << 4;
+
+        transformAndAddVecByCurrentMatrix(&convertedVector, &r6[i]);
+    }
 }
 
-s32 collisionSub0Sub1()
+struct sCollisionTempStruct
 {
-    TaskUnimplemented();
+    sVec3_FP m0;
+    sVec2_FP mC;
+};
+
+s32 testQuadsForCollisionsSub4(fixedPoint r4, fixedPoint r5)
+{
+    if (r4 < 0)
+        return 0;
+    if (r5 < 0)
+        return 0;
+
+    if (r4 + r5 - 0x10000 <= 0)
+        return 1;
     return 0;
 }
 
-s32 collisionSub0(u8* collisionMesh, sVec3_FP& r5, sVec3_FP& r6, u32 r7, s_visibilityGridWorkArea_5A8* arg0)
+s32 testQuadsForCollisionsSub1(fixedPoint r4, fixedPoint r5)
+{
+    if (r4 - r5 < 0)
+        return 0;
+
+    if ((r5 * 2) + r4 - 0x10000 <= 0)
+        return 1;
+
+    return 0;
+}
+
+s32 testQuadsForCollisionsSub2(fixedPoint r4, fixedPoint r5)
+{
+    if ((r5 * 2) + r4 - 0x10000 < 0)
+        return 0;
+    if ((r4 * 2) + r5 - 0x10000 < 0)
+        return 0;
+    return 1;
+}
+
+s32 testQuadsForCollisionsSub3(fixedPoint r4, fixedPoint r5)
+{
+    if (r4 - r5 > 0)
+        return 0;
+
+    if ((r4 * 2) + r5 - 0x10000 <= 0)
+        return 1;
+
+    return 0;
+}
+
+void testQuadsForCollisionsSub0(const sVec3_FP& vertice0, const sVec3_FP& vertice1, const sVec3_FP& vertice2, const sVec3_FP& transformedNormal, fixedPoint* result0, fixedPoint* result1, fixedPoint* result2)
+{
+    TaskUnimplemented();
+}
+
+s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::array<sVec3_FP, 100>& r5, sCollisionTempStruct& r6, sVec3_FP& r7, fixedPoint arg0, s_visibilityGridWorkArea_5A8* arg1)
+{
+    s_visibilityGridWorkArea* r8 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+
+    sVec3_FP var14_quadNormal;
+    var14_quadNormal[0] = r9_currentQuad.m14_extraData[0].m0_normals[0];
+    var14_quadNormal[1] = r9_currentQuad.m14_extraData[0].m0_normals[1];
+    var14_quadNormal[2] = r9_currentQuad.m14_extraData[0].m0_normals[2];
+
+    sVec3_FP var5C_transformedNormal;
+    transformAndAddVecByCurrentMatrix(&var14_quadNormal, &var5C_transformedNormal);
+
+    var5C_transformedNormal[0] = MTH_Mul(arg0, var5C_transformedNormal[0]);
+    var5C_transformedNormal[1] = MTH_Mul(arg0, var5C_transformedNormal[1]);
+    var5C_transformedNormal[2] = MTH_Mul(arg0, var5C_transformedNormal[2]);
+
+    sVec3_FP var50_transformedVertice = r5[r9_currentQuad.m0_indices[0]] - r7;
+
+    fixedPoint r4_dotResult = dot3_FP(&var50_transformedVertice, &var5C_transformedNormal);
+    r4_dotResult.m_value <<= 4;
+
+    if (r4_dotResult.m_value > 0)
+        return 0;
+
+    r8->m1294.m0_processedQuadsForCollision++;
+
+    // why are we computing this again? this seems wasteful :-(
+    var50_transformedVertice = r5[r9_currentQuad.m0_indices[0]] - r7;
+    fixedPoint var10 = dot3_FP(&var50_transformedVertice, &var5C_transformedNormal);
+    var10.m_value <<= 4;
+
+    if (var10.getAbs() > r6.mC[0])
+        return 0;
+
+    r8->m1294.m4_processedQuadsForCollision2++;
+    r8->m1294.m8_processedQuadsForCollision3++;
+
+    fixedPoint var0 = var10;
+    var0.m_value <<= 4;
+
+    sVec3_FP var44;
+    var44[0] = r6.m0[0] + MTH_Mul(var0, var5C_transformedNormal[0]);
+    var44[1] = r6.m0[1] + MTH_Mul(var0, var5C_transformedNormal[1]);
+    var44[2] = r6.m0[2] + MTH_Mul(var0, var5C_transformedNormal[2]);
+
+    sVec3_FP var38 = var44;
+
+    if (var10 > 0)
+    {
+        r6.m0 = var44;
+        r7 = var44;
+        var10 = 0;
+    }
+
+    //6063C7A
+    std::array<std::array<s32, 3>,2> var20;
+    var20[0][0] = r9_currentQuad.m0_indices[0];
+    var20[0][1] = r9_currentQuad.m0_indices[1];
+    var20[0][2] = r9_currentQuad.m0_indices[2];
+
+    s32 var8_numTrianglesToProcess;
+    if (r9_currentQuad.m0_indices[2] == r9_currentQuad.m0_indices[3])
+    {
+        // it's a triangle!
+        var8_numTrianglesToProcess = 1;
+    }
+    else
+    {
+        // it's a quad!
+        var8_numTrianglesToProcess = 2;
+
+        var20[1][0] = r9_currentQuad.m0_indices[0];
+        var20[1][1] = r9_currentQuad.m0_indices[2];
+        var20[1][2] = r9_currentQuad.m0_indices[3];
+    }
+
+    // start of the triangle loop
+    // 06063CBA
+    do 
+    {
+        sVec3_FP& vertice0 = r5[var20[var8_numTrianglesToProcess - 1][0]];
+        sVec3_FP& vertice1 = r5[var20[var8_numTrianglesToProcess - 1][1]];
+        sVec3_FP& vertice2 = r5[var20[var8_numTrianglesToProcess - 1][2]];
+
+        fixedPoint result[3];
+        testQuadsForCollisionsSub0(vertice0, vertice1, vertice2, var5C_transformedNormal, &result[0], &result[1], &result[2]);
+
+        s32 r9 = 0;
+        if (testQuadsForCollisionsSub4(result[1], result[0]))
+        {
+            r9 = 1;
+        }
+        else
+        {
+            if (testQuadsForCollisionsSub1(result[1], result[0]))
+            {
+                //06063D24
+                assert(0);
+            }
+            else if (testQuadsForCollisionsSub2(result[1], result[0]))
+            {
+                //06063D5E
+                assert(0);
+            }
+            else if (testQuadsForCollisionsSub2(result[1], result[0]))
+            {
+                //06063DA0
+                assert(0);
+            }
+        }
+
+        //6063DD4
+        if (r9)
+        {
+            assert(0);
+        }
+
+    } while (--var8_numTrianglesToProcess);
+
+    return 0;
+}
+
+s32 collisionSub0(sProcessed3dModel* collisionMesh, sCollisionTempStruct& r5, sVec3_FP& r6, fixedPoint r7, s_visibilityGridWorkArea_5A8* arg0)
 {
     s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
-    collisionSub0Sub0(READ_BE_U32(collisionMesh + 4), READ_BE_U32(collisionMesh + 8), r13->m688);
-
-    u8* r14 = collisionMesh + 0xC;
+    transformCollisionVertices(collisionMesh->m4_numVertices, collisionMesh->m8_vertices, r13->m688_transformedCollisionVertices);
 
     s32 r11 = 0;
 
-    while (READ_BE_U16(r14) || READ_BE_U16(r14 + 2) || READ_BE_U16(r14 + 4) || READ_BE_U16(r14 + 6))
+    for (int i = 0; i < collisionMesh->mC_Quads.size(); i++)
     {
-        if (collisionSub0Sub1())
+        if (testQuadForCollisions(collisionMesh->mC_Quads[i], r13->m688_transformedCollisionVertices, r5, r6, r7, arg0))
         {
             r11 = 1;
             r13->m1294.m10++;
         }
-        r14 += 0x1C;
+
     }
 
     return r11;
@@ -5468,15 +5649,16 @@ void dragonFieldTaskUpdateSub1Sub1()
     if (pDragonTask->m249_noCollisionAndHideDragon)
         return;
 
-    sVec3_FP var60;
-    var60.zero();
+    std::array<fixedPoint, 5>;
+    sCollisionTempStruct var60;
+    var60.m0.zero();
     fixedPoint var0 = 0x8000;
-    sVec2_FP var6C;
-    var6C[0] = 0x8000;
-    var6C[1] = MTH_Mul(0x8000, 0x8000);
 
-    sVec2_FP var58 = var6C;
-    sVec3_FP var40 = var60;
+    var60.mC[0] = 0x8000;
+    var60.mC[1] = MTH_Mul(0x8000, 0x8000);
+
+    sVec2_FP var58 = var60.mC;
+    sVec3_FP var40 = var60.m0;
 
     sVec3_FP var4C_deltaPosition = pDragonTask->m14_oldPos - pDragonTask->m8_pos;
 
@@ -5489,13 +5671,13 @@ void dragonFieldTaskUpdateSub1Sub1()
     {
         //6070B40
         s_visibilityGridWorkArea_68* r13 = &r12_pVisibilityGrid->m68[i];
-        copyToCurrentMatrix(&r13->m4);
+        copyToCurrentMatrix(&r13->m4_matrix);
 
         pCurrentMatrix->matrix[3] -= pDragonTask->m8_pos[0];
         pCurrentMatrix->matrix[7] -= pDragonTask->m8_pos[1];
         pCurrentMatrix->matrix[11] -= pDragonTask->m8_pos[2];
 
-        if (collisionSub0(r13->m0, var60, var40, r13->m34, r12_pVisibilityGrid->m48))
+        if (collisionSub0(r13->m0_model, var60, var40, r13->m34, r12_pVisibilityGrid->m48))
         {
             r12_pVisibilityGrid->m48++;
         }
@@ -6129,8 +6311,8 @@ void dragonFieldTaskDrawSub3Sub0()
 
     r5->m10 = 0;
     r5->mC = 0;
-    r5->m8 = 0;
-    r5->m4 = 0;
+    r5->m8_processedQuadsForCollision3 = 0;
+    r5->m4_processedQuadsForCollision2 = 0;
 
     r4->m44 = r4->m68.begin();
 }
@@ -6472,7 +6654,7 @@ void LCSTask::LCSTaskInit(LCSTask*)
     setVdp2VramU32(r4->m128C_vdp2VramOffset2, 0xFFFFFFFF);
 
     r4->m44 = r4->m68.begin();
-    r4->m68[0].m0 = 0;
+    r4->m68[0].m0_model = 0;
 }
 
 p_workArea createLCSShootTask(s_LCSTask* r4, sLCSTarget* r5)
@@ -6761,7 +6943,7 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     graphicEngineStatus.m405C.m30 = FP_Div(0x10000, 0x3000);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0x200000;
-    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, 0x200000);
+    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
 
     graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
 

@@ -522,7 +522,13 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
 
 struct s_grid1
 {
+    s_grid1()
+    {
+        m0b_models.fill(nullptr);
+    }
+
     sSaturnPtr m0_offsetTable; // table of 5 u16, first 4 are LOD model offset (usually the same), last is collision mesh
+    std::array<struct sProcessed3dModel*, 5> m0b_models;
     sVec3_FP m4;
     sVec3_S16 m10;
     s16 m16;
@@ -544,7 +550,7 @@ struct s_grid3
 struct s_DataTable3
 {
     s_grid1** m0_environmentGrid;
-    s_grid2** m4;
+    std::vector<std::vector<s_grid2>> m4;
     s_grid3** m8;
     u32 mC;
     s32 m10_gridSize[2]; // 10
@@ -588,7 +594,7 @@ struct s_visdibilityCellTask : public s_workAreaTemplate<s_visdibilityCellTask>
 
     s_memoryAreaOutput m0_memoryLayout; // 0
     s_grid1* m8_pEnvironmentCell; // 8
-    s_grid2* mC_pCell2_billboards; // 0xC
+    std::vector<s_grid2>* mC_pCell2_billboards; // 0xC
     s_grid3* m10_pCell3; // 0x10
     u32 index; // 14
 }; // size is 0x18
@@ -601,15 +607,16 @@ struct sCameraVisibility
 
 struct s_visibilityGridWorkArea_68
 {
-    u8* m0;
-    sMatrix4x3 m4;
-    u32 m34;
+    struct sProcessed3dModel* m0_model;
+    sMatrix4x3 m4_matrix;
+    fixedPoint m34;
 };
 
 struct s_visibilityGridWorkArea_1294
 {
-    s32 m4;
-    s32 m8;
+    s32 m0_processedQuadsForCollision;
+    s32 m4_processedQuadsForCollision2;
+    s32 m8_processedQuadsForCollision3;
     s32 mC;
     s32 m10;
     s32 m14;
@@ -652,7 +659,7 @@ struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWork
     std::array<s_visibilityGridWorkArea_68, 24>::iterator m44;
     std::array<s_visibilityGridWorkArea_68, 24> m68;
     s_visibilityGridWorkArea_5A8 m5A8[8];
-    s_visibilityGridWorkArea_688 m688[1]; // no size yet
+    std::array<sVec3_FP, 100> m688_transformedCollisionVertices; // unknown size
     u32 m128C_vdp2VramOffset2;
     u32 m1290_vdp2VramOffset;
     s_visibilityGridWorkArea_1294 m1294;

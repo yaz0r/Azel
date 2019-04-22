@@ -58,6 +58,7 @@ struct sFieldCameraStatus
 
 extern sMatrix4x3* pCurrentMatrix;
 
+void addObjectToDrawList(struct sProcessed3dModel* pObjectData);
 void addObjectToDrawList(u8* pObjectData, u32 offset);
 void addBillBoardToDrawList(u8* pObjectData, u32 offset);
 

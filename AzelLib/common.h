@@ -35,7 +35,8 @@ struct sVec2_S32
     }
 };
 
-typedef std::array<s16,3> sVec3_S16;
+typedef std::array<s16, 3> sVec3_S16;
+typedef std::array<u16, 3> sVec3_U16;
 
 struct sVec3_FP
 {
