@@ -7,8 +7,6 @@ s32 FP_GetIntegerPortion(fixedPoint& FP)
 
 fixedPoint FP_Div(s32 divident, fixedPoint divisor)
 {
-    if (divident == 0)
-        return fixedPoint::fromS32(0);
     /*
     VCRDIV = 0xFFFFFF00;
     DVSR = divisor;
@@ -17,6 +15,9 @@ fixedPoint FP_Div(s32 divident, fixedPoint divisor)
     u32 result = DVDNTUL;
     VCRDIV = 0;
     */
+
+    if (divisor == 0)
+        return 0x7FFFFFFF;
 
     return fixedPoint::fromS32((((s64)divident) << 16) / divisor.asS32());
 }
@@ -54,6 +55,10 @@ void asyncDivStart(s32 r4, fixedPoint r5)
 
 fixedPoint asyncDivEnd()
 {
+    if (gDivisor.asS32() == 0)
+    {
+        return 0x7FFFFFFF;
+    }
     return fixedPoint::fromS32((((s64)gDivident) << 16) / gDivisor.asS32());
 }
 
