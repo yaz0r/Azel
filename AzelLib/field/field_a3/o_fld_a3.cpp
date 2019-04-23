@@ -11,7 +11,6 @@
 void updateDragonDefault(s_dragonTaskWorkArea*);
 void updateCutscene(s_dragonTaskWorkArea* r14);
 sMatrix4x3* fieldCameraTask1DrawSub1();
-fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targetValue, fixedPoint stack0, fixedPoint r11, s32 r13);
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
 void updateCameraScriptSub1(u32 r4);
 void fieldOverlaySubTaskInitSub5(u32 r4);

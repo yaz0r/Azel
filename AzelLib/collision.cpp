@@ -390,7 +390,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         }
         else
         {
-            r14_pDragonTask->mF8_Flags &= 0x200;
+            r14_pDragonTask->mF8_Flags &= ~0x100;
         }
 
         s_visibilityGridWorkArea_5A8* r13 = &r12_pVisibilityGrid->m5A8[0];
@@ -443,10 +443,28 @@ void dragonFieldTaskUpdateSub1Sub1()
             r14_pDragonTask->m154_dragonSpeed = sqrt_F(dot3_FP(&var1C, &var1C)).asS32() >> 8;
         }
 
-
         //06070D98
-        TaskUnimplemented();
-        //assert(0);
+        fixedPoint var28[2];
+        if (gDragonState->mC_dragonType != DR_LEVEL_8_FLOATER)
+        {
+            generateCameraMatrixSub1(r14_pDragonTask->m160_deltaTranslation, var28);
+            var28[0] = -var28[0];
+
+            if (r14_pDragonTask->m154_dragonSpeed < 0x2AA)
+            {
+                var28[0] = 0;
+                var28[1] = r14_pDragonTask->m20_angle[1];
+            }
+        }
+        else
+        {
+            assert(0);
+        }
+        //06070E80
+        r14_pDragonTask->m20_angle[0] = interpolateRotation(r14_pDragonTask->m20_angle[0], var28[0], 0x8000, 0x444444, 0);
+        r14_pDragonTask->m20_angle[1] = interpolateRotation(r14_pDragonTask->m20_angle[1], var28[0], 0x2000, 0x444444, 0);
+        dragonFieldTaskInitSub4Sub5(&r14_pDragonTask->m48, &r14_pDragonTask->m20_angle);
+        return;
     }
 
     r14_pDragonTask->mF8_Flags &= ~0x300;

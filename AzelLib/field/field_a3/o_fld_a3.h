@@ -16,6 +16,8 @@ s32 startFieldScriptSkippable(s32 r4, s32 r5);
 sFieldCameraStatus* getFieldCameraStatus();
 void dragonFieldTaskInitSub4Sub3(u8 r4);
 
+fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targetValue, fixedPoint stack0, fixedPoint r11, s32 r13);
+
 void initDragonSpeed(u32 arg);
 void dragonFieldTaskInitSub4(s_dragonTaskWorkArea* pTypedWorkArea);
 void fieldOverlaySubTaskInitSub1(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*));

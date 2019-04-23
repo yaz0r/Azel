@@ -63,6 +63,10 @@ fixedPoint sqrt_F(fixedPoint r4fp)
     for (int i = 16; i >= 0;)
     {
         i--;
+        if (i == 0)
+        {
+            return fixedPoint::fromS32(0);
+        }
         if (r1 < r4)
         {
             r4 -= r1;
