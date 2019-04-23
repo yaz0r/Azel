@@ -1644,6 +1644,6 @@ void allocateLCSEntry(s_visibilityGridWorkArea* r4, sProcessed3dModel* r5, fixed
     }
 
     r4->m44[0].m0_model = r5;
-    r4->m44[1].m34 = r6;
+    r4->m44[0].m34 = r6;
     r4->m44++;
 }

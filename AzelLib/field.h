@@ -629,6 +629,9 @@ struct s_visibilityGridWorkArea_688
 
 struct s_visibilityGridWorkArea_5A8
 {
+    sVec3_FP m0_position;
+    sVec3_FP mC_normal;
+    fixedPoint m18_penetrationDistance;
     // size 0x1C
 };
 
@@ -657,6 +660,7 @@ struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWork
     s32 m40;
     s_visibilityGridWorkArea_5A8* m48;
     std::array<s_visibilityGridWorkArea_68, 24>::iterator m44;
+    s_visibilityGridWorkArea_5A8 m4C;
     std::array<s_visibilityGridWorkArea_68, 24> m68;
     s_visibilityGridWorkArea_5A8 m5A8[8];
     std::array<sVec3_FP, 100> m688_transformedCollisionVertices; // unknown size
