@@ -1,6 +1,6 @@
 #include "PDS.h"
 
-void transformCollisionVertices(s32 r4, std::vector<sVec3_S16>& r5, std::array<sVec3_FP, 100>& r6)
+void transformCollisionVertices(s32 r4, std::vector<sVec3_S16>& r5, std::array<sVec3_FP, 256>& r6)
 {
     for (int i = 0; i < r4; i++)
     {
@@ -15,8 +15,9 @@ void transformCollisionVertices(s32 r4, std::vector<sVec3_S16>& r5, std::array<s
 
 struct sCollisionTempStruct
 {
-    sVec3_FP m0;
-    sVec2_FP mC;
+    sVec3_FP m0_translationToResolve;
+    fixedPoint mC_penetration;
+    fixedPoint m10;
 };
 
 s32 testQuadsForCollisionsSub4(fixedPoint r4, fixedPoint r5)
@@ -146,7 +147,7 @@ s32 testQuadsForCollisionsSub5(const sVec3_FP& r14_vertice0, const sVec3_FP& r11
 {
     getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1->m1294.mC++;
 
-    sVec3_FP var10 = r13_r6.m0 - r14_vertice0;
+    sVec3_FP var10 = r13_r6.m0_translationToResolve - r14_vertice0;
     sVec3_FP var4 = r11_vertice1 - r14_vertice0;
 
     fixedPoint r5;
@@ -160,20 +161,20 @@ s32 testQuadsForCollisionsSub5(const sVec3_FP& r14_vertice0, const sVec3_FP& r11
         r5 = dot3_FP(&var4, &var4);
         if (r14 > r5)
         {
-            r5 = distanceSquareBetween2Points(r13_r6.m0, r11_vertice1);
+            r5 = distanceSquareBetween2Points(r13_r6.m0_translationToResolve, r11_vertice1);
         }
     }
 
     if (r5 < 0)
         return 0;
 
-    if (r5 > r13_r6.mC[1])
+    if (r5 > r13_r6.m10)
         return 0;
 
     return 1;
 }
 
-s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::array<sVec3_FP, 100>& r5, sCollisionTempStruct& r6, sVec3_FP& r7, fixedPoint arg0, s_visibilityGridWorkArea_5A8* arg1)
+s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::array<sVec3_FP, 256>& r12, sCollisionTempStruct& r14, sVec3_FP& r11_pointToProject, fixedPoint arg0, std::array<s_visibilityGridWorkArea_5A8, 8>::iterator arg1)
 {
     s_visibilityGridWorkArea* r8 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
@@ -182,17 +183,16 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
     var14_quadNormal[1] = r9_currentQuad.m14_extraData[0].m0_normals[1];
     var14_quadNormal[2] = r9_currentQuad.m14_extraData[0].m0_normals[2];
 
-    sVec3_FP var5C_transformedNormal;
-    transformVecByCurrentMatrix(var14_quadNormal, var5C_transformedNormal);
+    sVec3_FP var5C_transformedQuadNormal;
+    transformVecByCurrentMatrix(var14_quadNormal, var5C_transformedQuadNormal);
 
-    var5C_transformedNormal[0] = MTH_Mul(arg0, var5C_transformedNormal[0]);
-    var5C_transformedNormal[1] = MTH_Mul(arg0, var5C_transformedNormal[1]);
-    var5C_transformedNormal[2] = MTH_Mul(arg0, var5C_transformedNormal[2]);
+    var5C_transformedQuadNormal[0] = MTH_Mul(arg0, var5C_transformedQuadNormal[0]);
+    var5C_transformedQuadNormal[1] = MTH_Mul(arg0, var5C_transformedQuadNormal[1]);
+    var5C_transformedQuadNormal[2] = MTH_Mul(arg0, var5C_transformedQuadNormal[2]);
 
-    sVec3_FP var50_transformedVertice = r5[r9_currentQuad.m0_indices[0]] - r7;
-
-    fixedPoint r4_dotResult = dot3_FP(&var50_transformedVertice, &var5C_transformedNormal);
-    r4_dotResult.m_value <<= 4;
+    // project r11_pointToProject on the plane
+    sVec3_FP var50_transformedVertice = r12[r9_currentQuad.m0_indices[0]] - r11_pointToProject;
+    fixedPoint r4_dotResult = dot3_FP(&var50_transformedVertice, &var5C_transformedQuadNormal) * 16;
 
     if (r4_dotResult.m_value > 0)
         return 0;
@@ -200,31 +200,32 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
     r8->m1294.m0_processedQuadsForCollision++;
 
     // why are we computing this again? this seems wasteful :-(
-    var50_transformedVertice = r5[r9_currentQuad.m0_indices[0]] - r7;
-    fixedPoint var10 = dot3_FP(&var50_transformedVertice, &var5C_transformedNormal);
-    var10.m_value <<= 4;
+    var50_transformedVertice = r12[r9_currentQuad.m0_indices[0]] - r11_pointToProject;
+    fixedPoint var10_penetration = dot3_FP(&var50_transformedVertice, &var5C_transformedQuadNormal) * 16;
 
-    if (var10.getAbs() > r6.mC[0])
+    // 06063BD4
+    // is it better than what we already have?
+    if (var10_penetration.getAbs() > r14.mC_penetration)
         return 0;
 
     r8->m1294.m4_processedQuadsForCollision2++;
     r8->m1294.m8_processedQuadsForCollision3++;
 
-    fixedPoint var0 = var10;
-    var0.m_value <<= 4;
+    //?
+    fixedPoint var0 = var10_penetration * 16;
 
     sVec3_FP var44;
-    var44[0] = r6.m0[0] + MTH_Mul(var0, var5C_transformedNormal[0]);
-    var44[1] = r6.m0[1] + MTH_Mul(var0, var5C_transformedNormal[1]);
-    var44[2] = r6.m0[2] + MTH_Mul(var0, var5C_transformedNormal[2]);
+    var44[0] = r14.m0_translationToResolve[0] + MTH_Mul(var0, var5C_transformedQuadNormal[0]);
+    var44[1] = r14.m0_translationToResolve[1] + MTH_Mul(var0, var5C_transformedQuadNormal[1]);
+    var44[2] = r14.m0_translationToResolve[2] + MTH_Mul(var0, var5C_transformedQuadNormal[2]);
 
     sVec3_FP var38 = var44;
 
-    if (var10 > 0)
+    if (var10_penetration > 0)
     {
-        r6.m0 = var44;
-        r7 = var44;
-        var10 = 0;
+        r14.m0_translationToResolve = var44;
+        r11_pointToProject = var44;
+        var10_penetration = 0;
     }
 
     //6063C7A
@@ -253,12 +254,12 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
     // 06063CBA
     do 
     {
-        sVec3_FP& vertice0 = r5[var20[var8_numTrianglesToProcess - 1][0]];
-        sVec3_FP& vertice1 = r5[var20[var8_numTrianglesToProcess - 1][1]];
-        sVec3_FP& vertice2 = r5[var20[var8_numTrianglesToProcess - 1][2]];
+        sVec3_FP& vertice0 = r12[var20[var8_numTrianglesToProcess - 1][0]];
+        sVec3_FP& vertice1 = r12[var20[var8_numTrianglesToProcess - 1][1]];
+        sVec3_FP& vertice2 = r12[var20[var8_numTrianglesToProcess - 1][2]];
 
         std::array<s32, 2> result;
-        testQuadsForCollisionsSub0(vertice0, vertice1, vertice2, var5C_transformedNormal, result[0], result[1], var44);
+        testQuadsForCollisionsSub0(vertice0, vertice1, vertice2, var5C_transformedQuadNormal, result[0], result[1], var44);
 
         s32 r9 = 0;
         if (testQuadsForCollisionsSub4(result[1], result[0]))
@@ -270,17 +271,17 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
             if (testQuadsForCollisionsSub1(result[1], result[0]))
             {
                 //06063D24
-                r9 = testQuadsForCollisionsSub5(r5[var20[var8_numTrianglesToProcess - 1][0]], r5[var20[var8_numTrianglesToProcess - 1][1]], r6);
+                r9 = testQuadsForCollisionsSub5(r12[var20[var8_numTrianglesToProcess - 1][0]], r12[var20[var8_numTrianglesToProcess - 1][1]], r14);
             }
             else if (testQuadsForCollisionsSub2(result[1], result[0]))
             {
                 //06063D5E
-                r9 = testQuadsForCollisionsSub5(r5[var20[var8_numTrianglesToProcess - 1][1]], r5[var20[var8_numTrianglesToProcess - 1][2]], r6);
+                r9 = testQuadsForCollisionsSub5(r12[var20[var8_numTrianglesToProcess - 1][1]], r12[var20[var8_numTrianglesToProcess - 1][2]], r14);
             }
             else if (testQuadsForCollisionsSub2(result[1], result[0]))
             {
                 //06063DA0
-                r9 = testQuadsForCollisionsSub5(r5[var20[var8_numTrianglesToProcess - 1][2]], r5[var20[var8_numTrianglesToProcess - 1][0]], r6);
+                r9 = testQuadsForCollisionsSub5(r12[var20[var8_numTrianglesToProcess - 1][2]], r12[var20[var8_numTrianglesToProcess - 1][0]], r14);
             }
         }
 
@@ -290,20 +291,20 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
             arg1->m0_position = var38;
             arg1->m0_position += getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
 
-            arg1->mC_normal = var5C_transformedNormal;
+            arg1->mC_normal = var5C_transformedQuadNormal;
 
-            var14_quadNormal = var44 - r6.m0;
+            var14_quadNormal = var44 - r14.m0_translationToResolve;
 
-            arg1->m18_penetrationDistance = r6.mC[1] - dot3_FP(&var14_quadNormal, &var14_quadNormal);
+            arg1->m18_penetrationDistance = r14.m10 - dot3_FP(&var14_quadNormal, &var14_quadNormal);
 
-            if (var10 > 0)
+            if (var10_penetration > 0)
                 return 1;
 
-            r6.m0[0] = var38[0] + MTH_Mul(var5C_transformedNormal[0] << 4, r6.mC[0]);
-            r6.m0[1] = var38[1] + MTH_Mul(var5C_transformedNormal[1] << 4, r6.mC[0]);
-            r6.m0[2] = var38[2] + MTH_Mul(var5C_transformedNormal[2] << 4, r6.mC[0]);
+            r14.m0_translationToResolve[0] = var38[0] + MTH_Mul(var5C_transformedQuadNormal[0] * 16, r14.mC_penetration);
+            r14.m0_translationToResolve[1] = var38[1] + MTH_Mul(var5C_transformedQuadNormal[1] * 16, r14.mC_penetration);
+            r14.m0_translationToResolve[2] = var38[2] + MTH_Mul(var5C_transformedQuadNormal[2] * 16, r14.mC_penetration);
 
-            r7 = r6.m0;
+            r11_pointToProject = r14.m0_translationToResolve;
             return 1;
         }
 
@@ -312,9 +313,39 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
     return 0;
 }
 
-s32 collisionSub0(sProcessed3dModel* collisionMesh, sCollisionTempStruct& r5, sVec3_FP& r6, fixedPoint r7, s_visibilityGridWorkArea_5A8* arg0)
+s32 collisionSub0(sProcessed3dModel* collisionMesh, sCollisionTempStruct& r5, sVec3_FP& r6, fixedPoint r7, std::array<s_visibilityGridWorkArea_5A8, 8>::iterator arg0)
 {
     s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+
+    // TEST CODE!
+    if(0)
+    {
+        sProcessed3dModel::sQuad testQuad;
+        testQuad.m0_indices[0] = 7;
+        testQuad.m0_indices[1] = 0xF;
+        testQuad.m0_indices[2] = 0x10;
+        testQuad.m0_indices[3] = 8;
+
+        sVec3_FP temp;
+        temp.zero();
+        r13->m688_transformedCollisionVertices.fill(temp);
+
+        r13->m688_transformedCollisionVertices[7][0] = 0xFFFFA474;
+        r13->m688_transformedCollisionVertices[7][1] = 0x030828;
+        r13->m688_transformedCollisionVertices[7][2] = 0xFFFFC290;
+        r13->m688_transformedCollisionVertices[8][0] = 0xFFFF1DD3;
+        r13->m688_transformedCollisionVertices[8][1] = 0x038828;
+        r13->m688_transformedCollisionVertices[8][2] = 0xFFFFD732;
+        r13->m688_transformedCollisionVertices[0xF][0] = 0xFFFF99CF;
+        r13->m688_transformedCollisionVertices[0xF][1] = 0xFFFF6028;
+        r13->m688_transformedCollisionVertices[0xF][2] = 0xFFFFD506;
+        r13->m688_transformedCollisionVertices[0x10][0] = 0xFFFF00C8;
+        r13->m688_transformedCollisionVertices[0x10][1] = 0xFFFF6028;
+        r13->m688_transformedCollisionVertices[0x10][2] = 0xFFFFDF0B;
+
+        testQuadForCollisions(testQuad, r13->m688_transformedCollisionVertices, r5, r6, r7, arg0);
+    }
+    //
 
     transformCollisionVertices(collisionMesh->m4_numVertices, collisionMesh->m8_vertices, r13->m688_transformedCollisionVertices);
 
@@ -345,21 +376,22 @@ void dragonFieldTaskUpdateSub1Sub1()
     if (r14_pDragonTask->m249_noCollisionAndHideDragon)
         return;
 
-    std::array<fixedPoint, 5>;
     sCollisionTempStruct var60;
-    var60.m0.zero();
+    var60.m0_translationToResolve.zero();
     fixedPoint var0 = 0x8000;
 
-    var60.mC[0] = 0x8000;
-    var60.mC[1] = MTH_Mul(0x8000, 0x8000);
+    var60.mC_penetration = 0x8000;
+    var60.m10 = MTH_Mul(0x8000, 0x8000);
 
-    sVec2_FP var58 = var60.mC;
-    sVec3_FP var40 = var60.m0;
+    sVec2_FP var58;
+    var58[0] = var60.mC_penetration;
+    var58[1] = var60.m10;
+    sVec3_FP var40 = var60.m0_translationToResolve;
 
     sVec3_FP var4C_deltaPosition = r14_pDragonTask->m14_oldPos - r14_pDragonTask->m8_pos;
 
-    r12_pVisibilityGrid->m48 = r12_pVisibilityGrid->m5A8;
-    r12_pVisibilityGrid->m40 = 0;
+    r12_pVisibilityGrid->m48 = r12_pVisibilityGrid->m5A8.begin();
+    r12_pVisibilityGrid->m40_activeCollisionEntriesCount = 0;
 
     // find all potential collision and increment m40 for each
     pushCurrentMatrix();
@@ -369,6 +401,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         s_visibilityGridWorkArea_68* r13 = &r12_pVisibilityGrid->m68[i];
         copyToCurrentMatrix(&r13->m4_matrix);
 
+        // put the object matrix in the dragon local space
         pCurrentMatrix->matrix[3] -= r14_pDragonTask->m8_pos[0];
         pCurrentMatrix->matrix[7] -= r14_pDragonTask->m8_pos[1];
         pCurrentMatrix->matrix[11] -= r14_pDragonTask->m8_pos[2];
@@ -376,13 +409,21 @@ void dragonFieldTaskUpdateSub1Sub1()
         if (collisionSub0(r13->m0_model, var60, var40, r13->m34, r12_pVisibilityGrid->m48))
         {
             r12_pVisibilityGrid->m48++;
-            r12_pVisibilityGrid->m40++;
+            r12_pVisibilityGrid->m40_activeCollisionEntriesCount++;
         }
     }
     popMatrix();
 
-    if (r12_pVisibilityGrid->m40)
+    if (r12_pVisibilityGrid->m40_activeCollisionEntriesCount)
     {
+        if(1)
+        {
+            for (int r4 = 0; r4 < r12_pVisibilityGrid->m40_activeCollisionEntriesCount; r4++)
+            {
+                drawArrow(r12_pVisibilityGrid->m5A8[r4].m0_position + r14_pDragonTask->m8_pos, r12_pVisibilityGrid->m5A8[r4].mC_normal, r12_pVisibilityGrid->m5A8[r4].m18_penetrationDistance);
+            }
+        }
+
         //6070BB2
         if (!(r14_pDragonTask->mF8_Flags & 0x200))
         {
@@ -394,7 +435,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         }
 
         s_visibilityGridWorkArea_5A8* r13 = &r12_pVisibilityGrid->m5A8[0];
-        for (int r4 = 1; r4 < r12_pVisibilityGrid->m40; r4++)
+        for (int r4 = 1; r4 < r12_pVisibilityGrid->m40_activeCollisionEntriesCount; r4++)
         {
             if (r12_pVisibilityGrid->m5A8[r4].m18_penetrationDistance > r13->m18_penetrationDistance)
             {
@@ -420,7 +461,7 @@ void dragonFieldTaskUpdateSub1Sub1()
             var4_speedIndex = 0;
         }
 
-        r14_pDragonTask->m8_pos += var60.m0;
+        r14_pDragonTask->m8_pos += var60.m0_translationToResolve;
         r14_pDragonTask->m160_deltaTranslation = r14_pDragonTask->m14_oldPos - r14_pDragonTask->m8_pos;
 
         sVec3_FP var10;

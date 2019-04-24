@@ -2118,8 +2118,10 @@ void startCutscene(s_cutsceneData* r4)
     createSubTaskWithArg<s_cutsceneTask>(getFieldTaskPtr()->m8_pSubFieldData, r4);
 }
 
-void loadScriptData1(std::vector<s_scriptData1>& output, sSaturnPtr& EA)
+void loadScriptData1(std::vector<s_scriptData1>& output, const sSaturnPtr& constEA)
 {
+    sSaturnPtr EA = constEA;
+
     int numEntries = 0;
     while (readSaturnU32(EA))
     {

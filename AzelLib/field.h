@@ -657,13 +657,13 @@ struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWork
     std::vector<std::vector<sCameraVisibility>>* m34_cameraVisibilityTable; // m34
     p_workArea m38; // 38
     s_visdibilityCellTask** m3C_cellRenderingTasks; // 3C (an array of tasks)
-    s32 m40;
-    s_visibilityGridWorkArea_5A8* m48;
+    s32 m40_activeCollisionEntriesCount;
+    std::array<s_visibilityGridWorkArea_5A8, 8>::iterator m48;
     std::array<s_visibilityGridWorkArea_68, 24>::iterator m44;
     s_visibilityGridWorkArea_5A8 m4C;
     std::array<s_visibilityGridWorkArea_68, 24> m68;
-    s_visibilityGridWorkArea_5A8 m5A8[8];
-    std::array<sVec3_FP, 100> m688_transformedCollisionVertices; // unknown size
+    std::array<s_visibilityGridWorkArea_5A8, 8> m5A8;
+    std::array<sVec3_FP, 256> m688_transformedCollisionVertices; // size is a guess
     u32 m128C_vdp2VramOffset2;
     u32 m1290_vdp2VramOffset;
     s_visibilityGridWorkArea_1294 m1294;

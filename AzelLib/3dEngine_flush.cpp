@@ -3,6 +3,30 @@
 #include "3dEngine_textureCache.h"
 #include <unordered_map>
 
+void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2);
+
+struct sDebugLines
+{
+    sVec3_FP position1;
+    sVec3_FP position2;
+};
+
+std::vector<sDebugLines> debugLines;
+
+void drawArrow(const sVec3_FP& position, const sVec3_FP& normal, const fixedPoint& magnitude)
+{
+    sVec3_FP position2;
+    position2[0] = MTH_Mul(normal[0], magnitude) + position[0];
+    position2[1] = MTH_Mul(normal[0], magnitude) + position[1];
+    position2[2] = MTH_Mul(normal[0], magnitude) + position[2];
+
+    sDebugLines newDebugLine;
+    newDebugLine.position1 = position;
+    newDebugLine.position2 = position2;
+
+    debugLines.push_back(newDebugLine);
+}
+
 void transposeMatrix(float* pMatrix)
 {
     float temp[4 * 4];
@@ -824,6 +848,53 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
     }
 }
 
+float* getWorldProjectionMatrix()
+{
+    static float fEarlyProjectionMatrix[4 * 4];
+
+    float zNear = 0.1f;
+    float zFar = 1000.f;
+    /*
+    s32 const1 = 229;
+    s32 const2 = 195;
+
+    float fEarlyProjectionMatrix[4 * 4];
+
+    fEarlyProjectionMatrix[0] = const1 / (352.f / 2.f);
+    fEarlyProjectionMatrix[1] = 0;
+    fEarlyProjectionMatrix[2] = 0;
+    fEarlyProjectionMatrix[3] = 0;
+
+    fEarlyProjectionMatrix[4] = 0;
+    fEarlyProjectionMatrix[5] = const2 / (224.f / 2.f);
+    fEarlyProjectionMatrix[6] = 0;
+    fEarlyProjectionMatrix[7] = 0;
+
+    fEarlyProjectionMatrix[8] = 0;
+    fEarlyProjectionMatrix[9] = 0;
+    fEarlyProjectionMatrix[10] = (-zNear - zFar) / (zFar - zNear);
+    fEarlyProjectionMatrix[11] = 2.f * zFar * zNear / (zFar - zNear);
+
+    fEarlyProjectionMatrix[12] = 0;
+    fEarlyProjectionMatrix[13] = 0;
+    fEarlyProjectionMatrix[14] = 1.f;
+    fEarlyProjectionMatrix[15] = 0;
+
+    transposeMatrix(fEarlyProjectionMatrix);
+    */
+
+    glm::mat4 testProj = glm::perspectiveFov(glm::radians(50.f), 352.f, 224.f, zNear, zFar);
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            fEarlyProjectionMatrix[i * 4 + j] = testProj[i][j];
+        }
+    }
+
+    return fEarlyProjectionMatrix;
+}
+
 void flushObjectsToDrawList()
 {
     gVertexArray.resize(1024 * 1024);
@@ -885,48 +956,6 @@ void flushObjectsToDrawList()
         bInit = true;
     }
 
-    float zNear = 0.1f;
-    float zFar = 1000.f;
-
-    s32 const1 = 229;
-    s32 const2 = 195;
-
-    float fEarlyProjectionMatrix[4 * 4];
-
-    fEarlyProjectionMatrix[0] = const1 / (352.f / 2.f);
-    fEarlyProjectionMatrix[1] = 0;
-    fEarlyProjectionMatrix[2] = 0;
-    fEarlyProjectionMatrix[3] = 0;
-
-    fEarlyProjectionMatrix[4] = 0;
-    fEarlyProjectionMatrix[5] = const2 / (224.f / 2.f);
-    fEarlyProjectionMatrix[6] = 0;
-    fEarlyProjectionMatrix[7] = 0;
-
-    fEarlyProjectionMatrix[8] = 0;
-    fEarlyProjectionMatrix[9] = 0;
-    fEarlyProjectionMatrix[10] = (-zNear - zFar) / (zFar - zNear);
-    fEarlyProjectionMatrix[11] = 2.f * zFar * zNear / (zFar - zNear);
-
-    fEarlyProjectionMatrix[12] = 0;
-    fEarlyProjectionMatrix[13] = 0;
-    fEarlyProjectionMatrix[14] = 1.f;
-    fEarlyProjectionMatrix[15] = 0;
-
-    transposeMatrix(fEarlyProjectionMatrix);
-
-    {
-        glm::mat4 testProj = glm::perspectiveFov(glm::radians(50.f), 352.f, 224.f, zNear, zFar);
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                fEarlyProjectionMatrix[i * 4 + j] = testProj[i][j];
-            }
-        }
-    }
-    
-
     if(ImGui::Begin("Objects"))
     {
         for (int i = 0; i < objectRenderList.size(); i++)
@@ -961,13 +990,19 @@ void flushObjectsToDrawList()
     {
         SingleDrawcallVertexArray.clear();
         SingleDrawcallIndexArray.clear();
-        drawObject(&objectRenderList[i], fEarlyProjectionMatrix);
+        drawObject(&objectRenderList[i], getWorldProjectionMatrix());
     }
 
     checkGL();
     glUseProgram(0);
 
     objectRenderList.clear();
+
+    for(int i=0; i<debugLines.size(); i++)
+    {
+        drawLineGL(debugLines[i].position1, debugLines[i].position2);
+    }
+    debugLines.clear();
 }
 
 float invf(int i, int j, const float* m) {
@@ -1064,6 +1099,48 @@ GLuint Get2dUIShader()
         "	vec4 txcol = texture2D(s_texture, v_texcoord);		\n"
         "   if(txcol.a <= 0) discard;\n"
         "   fragColor = txcol; \n"
+        "   fragColor.w = 1;								\n"
+        "   gl_FragDepth = v_depth;\n"
+        "}														\n"
+        ;
+
+    static GLuint UIShaderIndex = 0;
+    if (UIShaderIndex == 0)
+    {
+        UIShaderIndex = compileShader(UI_vs, UI_ps);
+        assert(UIShaderIndex);
+    }
+
+    return UIShaderIndex;
+}
+
+GLuint GetWorldSpaceLineShader()
+{
+    static const GLchar UI_vs[] =
+        "#version 330 \n"
+        "uniform mat4 u_mvpMatrix;    \n"
+        "in vec3 a_position;   \n"
+        "in vec3 a_color;   \n"
+        "out  highp vec3 v_color;     \n"
+        "out  highp float v_depth;    \n"
+        "void main()                  \n"
+        "{                            \n"
+        "   gl_Position = u_mvpMatrix  * vec4(a_position, 1); \n"
+        "   v_color = a_color; \n"
+        "} "
+        ;
+
+    const GLchar UI_ps[] =
+        "#version 330 \n"
+        "precision highp float;									\n"
+        "in highp vec3 v_color;								\n"
+        "in  highp float v_depth;\n"
+        "uniform sampler2D s_texture;							\n"
+        "out vec4 fragColor;									\n"
+        "out highp float gl_FragDepth ; \n"
+        "void main()											\n"
+        "{														\n"
+        "   fragColor.xyz = v_color; \n"
         "   fragColor.w = 1;								\n"
         "   gl_FragDepth = v_depth;\n"
         "}														\n"
@@ -1620,6 +1697,93 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
             }
         }
     }
+
+    checkGL();
+    glUseProgram(0);
+}
+
+void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2)
+{
+    gVertexArray[0].positions[0] = vertice1[0];
+    gVertexArray[0].positions[1] = vertice1[1];
+    gVertexArray[0].positions[2] = vertice1[2];
+
+    gVertexArray[1].positions[0] = vertice2[0];
+    gVertexArray[1].positions[1] = vertice1[1];
+    gVertexArray[1].positions[2] = vertice1[2];
+
+    gVertexArray[0].color[0] = gVertexArray[1].color[0] = 1;
+    gVertexArray[0].color[1] = gVertexArray[1].color[1] = 0;
+    gVertexArray[0].color[2] = gVertexArray[1].color[2] = 0;
+    gVertexArray[0].color[3] = gVertexArray[1].color[3] = 1;
+
+    GLuint currentShader = GetWorldSpaceLineShader();
+    glUseProgram(currentShader);
+    checkGL();
+
+    GLuint modelProjection = glGetUniformLocation(shaderProgram, (const GLchar *)"u_mvpMatrix");
+    assert(modelProjection != -1);
+    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, getWorldProjectionMatrix());
+
+    GLuint vertexp = glGetAttribLocation(currentShader, (const GLchar *)"a_position");
+    GLuint colorp = glGetAttribLocation(currentShader, (const GLchar *)"a_color");
+
+    checkGL();
+
+    static GLuint vao = 0;
+    if (vao == 0)
+    {
+        glGenVertexArrays(1, &vao);
+    }
+    glBindVertexArray(vao);
+
+    static GLuint vbo = 0;
+    if (vbo == 0)
+    {
+        glGenBuffers(1, &vbo);
+    }
+    checkGL();
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    checkGL();
+    glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 2, &gVertexArray[0], GL_STATIC_DRAW);
+    checkGL();
+    glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->positions);
+    checkGL();
+    glEnableVertexAttribArray(vertexp);
+    checkGL();
+    if (colorp != -1)
+    {
+        glVertexAttribPointer(colorp, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->color);
+        glEnableVertexAttribArray(colorp);
+    }
+    checkGL();
+    static GLuint indexBufferId = 0;
+    if (indexBufferId == 0)
+    {
+        char triVertexOrder[2] = { 0, 1 };
+        glGenBuffers(1, &indexBufferId);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
+    }
+    else
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+    }
+
+    glDepthFunc(GL_ALWAYS);
+    checkGL();
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glDrawElements(GL_LINES, 2, GL_UNSIGNED_BYTE, (void*)0);
+    checkGL();
+    glDisableVertexAttribArray(vertexp);
+    checkGL();
+    if (colorp != -1)
+        glDisableVertexAttribArray(colorp);
+    checkGL();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    checkGL();
 
     checkGL();
     glUseProgram(0);

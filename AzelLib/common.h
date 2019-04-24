@@ -424,7 +424,7 @@ struct s_3dModel
 
     u16 m10_currentAnimationFrame; //10
     u16 m12_numBones; //12
-    u16 m14; //14
+    s16 m14; //14
     u16 m16; //16
 
     void (*m18_drawFunction)(s_3dModel*); // 18

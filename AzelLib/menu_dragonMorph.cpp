@@ -236,7 +236,14 @@ void generateCameraMatrixSub1(sVec3_FP& r4, fixedPoint(&r5)[2])
 {
     if ((r4[0] == 0) && (r4[2] == 0))
     {
-        assert(0);
+        if (r4[1] >= 0)
+        {
+            r5[0] = 0x4000000;
+        }
+        else
+        {
+            r5[1] = -0x4000000;
+        }
     }
     else
     {

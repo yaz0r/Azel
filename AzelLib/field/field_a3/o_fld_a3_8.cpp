@@ -36,7 +36,7 @@ s32 func3dModelSub0(s_3dModel* r4)
         return 0;
 
     r4->m14++;
-    if (r4->m14 >= READ_BE_U16(r4->m38))
+    if (r4->m14 >= READ_BE_S16(r4->m38))
     {
         r4->m14 = 0;
     }
@@ -86,7 +86,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             func3dModelSub0(&pThis->m18_3dModel);
             if (pThis->m18_3dModel.m38)
             {
-                if (pThis->m18_3dModel.m14 == READ_BE_U16(pThis->m18_3dModel.m38) - 1)
+                if (pThis->m18_3dModel.m14 == READ_BE_S16(pThis->m18_3dModel.m38) - 1)
                 {
                     pThis->m9C_status++;
                 }
@@ -104,7 +104,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x304));
             if (pThis->m18_3dModel.m38)
             {
-                pThis->m18_3dModel.m14 = READ_BE_U16(pThis->m18_3dModel.m38) - 1;
+                pThis->m18_3dModel.m14 = READ_BE_S16(pThis->m18_3dModel.m38) - 1;
             }
             else
             {
@@ -128,7 +128,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             func3dModelSub0(&pThis->m18_3dModel);
             if (pThis->m18_3dModel.m38)
             {
-                if (pThis->m18_3dModel.m14 == READ_BE_U16(pThis->m18_3dModel.m38) - 1)
+                if (pThis->m18_3dModel.m14 == READ_BE_S16(pThis->m18_3dModel.m38) - 1)
                 {
                     pThis->m9C_status = 0;
                 }
@@ -299,7 +299,9 @@ void subfieldA3_8(p_workArea workArea)
     s_DataTable3* pDataTable3 = readDataTable3({ 0x608EE38, gFLD_A3 });
     setupField2(pDataTable3, fieldA3_8_startTasks);
 
-    setupDragonPosition(&readSaturnVec3({ 0x6081B6C, gFLD_A3 }), &readSaturnVec3({ 0x6081BD8, gFLD_A3 }));
+    sVec3_FP position = readSaturnVec3({ 0x6081B6C, gFLD_A3 });
+    sVec3_FP rotation = readSaturnVec3({ 0x6081BD8, gFLD_A3 });
+    setupDragonPosition(&position, &rotation);
 
     subfieldA3_4_sub0();
 

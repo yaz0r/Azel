@@ -105,11 +105,15 @@ void subfieldA3_A(p_workArea workArea)
 
     if (getFieldTaskPtr()->m32 == 0)
     {
-        setupDragonPosition(&readSaturnVec3({ 0x6081B90, gFLD_A3 }), &readSaturnVec3({ 0x6081C20, gFLD_A3 }));
+        sVec3_FP position = readSaturnVec3({ 0x6081B90, gFLD_A3 });
+        sVec3_FP rotation = readSaturnVec3({ 0x6081C20, gFLD_A3 });
+        setupDragonPosition(&position, &rotation);
     }
     else
     {
-        setupDragonPosition(&readSaturnVec3({ 0x6081B9C, gFLD_A3 }), &readSaturnVec3({ 0x6081C08, gFLD_A3 }));
+        sVec3_FP position = readSaturnVec3({ 0x6081B9C, gFLD_A3 });
+        sVec3_FP rotation = readSaturnVec3({ 0x6081C08, gFLD_A3 });
+        setupDragonPosition(&position, &rotation);
     }
 
     subfieldA3_4_sub0();
