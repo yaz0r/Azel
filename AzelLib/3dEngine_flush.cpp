@@ -13,7 +13,17 @@ struct sDebugLines
 
 std::vector<sDebugLines> debugLines;
 
-void drawArrow(const sVec3_FP& position, const sVec3_FP& normal, const fixedPoint& magnitude)
+void drawDebugLine(const sVec3_FP& position1, const sVec3_FP& position2)
+{
+    sDebugLines newDebugLine;
+    newDebugLine.position1 = position1;
+    newDebugLine.position2 = position2;
+
+    debugLines.push_back(newDebugLine);
+
+}
+
+void drawDebugArrow(const sVec3_FP& position, const sVec3_FP& normal, const fixedPoint& magnitude)
 {
     sVec3_FP position2;
     position2[0] = MTH_Mul(normal[0], magnitude) + position[0];
@@ -110,13 +120,13 @@ void addObjectToDrawList(u8* pObjectData, u32 offset)
 
 void addBillBoardToDrawList(sProcessed3dModel* pObjectData)
 {
-    cameraProperties2.m88.matrix[3] = pCurrentMatrix->matrix[3];
-    cameraProperties2.m88.matrix[7] = pCurrentMatrix->matrix[7];
-    cameraProperties2.m88.matrix[11] = pCurrentMatrix->matrix[11];
+    cameraProperties2.m88_billboardViewMatrix.matrix[3] = pCurrentMatrix->matrix[3];
+    cameraProperties2.m88_billboardViewMatrix.matrix[7] = pCurrentMatrix->matrix[7];
+    cameraProperties2.m88_billboardViewMatrix.matrix[11] = pCurrentMatrix->matrix[11];
 
     s_objectToRender newObject;
     newObject.m_pObject = pObjectData;
-    newObject.m_modelMatrix = cameraProperties2.m88;
+    newObject.m_modelMatrix = cameraProperties2.m88_billboardViewMatrix;
     newObject.m_2dOffset[0] = (graphicEngineStatus.m405C.localCoordinatesX - (352.f / 2.f)) / 352.f;
     newObject.m_2dOffset[1] = (graphicEngineStatus.m405C.localCoordinatesY - (224.f / 2.f)) / 224.f;
     newObject.m_isBillboard = 1;
@@ -848,7 +858,24 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
     }
 }
 
-float* getWorldProjectionMatrix()
+extern sMatrix4x3 matrixStack[16];
+
+float* getViewMatrix()
+{
+    static float fViewMatrix[4 * 4];
+
+    memset(fViewMatrix, 0, sizeof(fViewMatrix));
+    for (u32 i = 0; i < 4 * 3; i++)
+    {
+        fViewMatrix[i] = matrixStack[0].matrix[i] / (float)0x10000;
+    }
+    fViewMatrix[15] = 1.f;
+    transposeMatrix(fViewMatrix);
+
+    return fViewMatrix;
+}
+
+float* getProjectionMatrix()
 {
     static float fEarlyProjectionMatrix[4 * 4];
 
@@ -990,7 +1017,7 @@ void flushObjectsToDrawList()
     {
         SingleDrawcallVertexArray.clear();
         SingleDrawcallIndexArray.clear();
-        drawObject(&objectRenderList[i], getWorldProjectionMatrix());
+        drawObject(&objectRenderList[i], getProjectionMatrix());
     }
 
     checkGL();
@@ -1118,14 +1145,15 @@ GLuint GetWorldSpaceLineShader()
 {
     static const GLchar UI_vs[] =
         "#version 330 \n"
-        "uniform mat4 u_mvpMatrix;    \n"
+        "uniform mat4 u_projectionMatrix;    \n"
+        "uniform mat4 u_viewMatrix;    \n"
         "in vec3 a_position;   \n"
         "in vec3 a_color;   \n"
         "out  highp vec3 v_color;     \n"
         "out  highp float v_depth;    \n"
         "void main()                  \n"
         "{                            \n"
-        "   gl_Position = u_mvpMatrix  * vec4(a_position, 1); \n"
+        "   gl_Position = u_projectionMatrix * u_viewMatrix * vec4(a_position, 1); \n"
         "   v_color = a_color; \n"
         "} "
         ;
@@ -1704,13 +1732,13 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
 
 void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2)
 {
-    gVertexArray[0].positions[0] = vertice1[0];
-    gVertexArray[0].positions[1] = vertice1[1];
-    gVertexArray[0].positions[2] = vertice1[2];
+    gVertexArray[0].positions[0] = vertice1[0].toFloat();
+    gVertexArray[0].positions[1] = vertice1[1].toFloat();
+    gVertexArray[0].positions[2] = vertice1[2].toFloat();
 
-    gVertexArray[1].positions[0] = vertice2[0];
-    gVertexArray[1].positions[1] = vertice1[1];
-    gVertexArray[1].positions[2] = vertice1[2];
+    gVertexArray[1].positions[0] = vertice2[0].toFloat();
+    gVertexArray[1].positions[1] = vertice2[1].toFloat();
+    gVertexArray[1].positions[2] = vertice2[2].toFloat();
 
     gVertexArray[0].color[0] = gVertexArray[1].color[0] = 1;
     gVertexArray[0].color[1] = gVertexArray[1].color[1] = 0;
@@ -1720,10 +1748,6 @@ void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2)
     GLuint currentShader = GetWorldSpaceLineShader();
     glUseProgram(currentShader);
     checkGL();
-
-    GLuint modelProjection = glGetUniformLocation(shaderProgram, (const GLchar *)"u_mvpMatrix");
-    assert(modelProjection != -1);
-    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, getWorldProjectionMatrix());
 
     GLuint vertexp = glGetAttribLocation(currentShader, (const GLchar *)"a_position");
     GLuint colorp = glGetAttribLocation(currentShader, (const GLchar *)"a_color");
@@ -1770,11 +1794,20 @@ void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
     }
 
-    glDepthFunc(GL_ALWAYS);
+    glDisable(GL_DEPTH_TEST);
     checkGL();
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    GLuint modelProjection = glGetUniformLocation(currentShader, (const GLchar *)"u_projectionMatrix");
+    assert(modelProjection != -1);
+    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, getProjectionMatrix());
+
+    GLuint viewMatrix = glGetUniformLocation(currentShader, (const GLchar *)"u_viewMatrix");
+    assert(viewMatrix != -1);
+    glUniformMatrix4fv(viewMatrix, 1, GL_FALSE, getViewMatrix());
+
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_BYTE, (void*)0);
     checkGL();
     glDisableVertexAttribArray(vertexp);
@@ -1787,6 +1820,7 @@ void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2)
 
     checkGL();
     glUseProgram(0);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)

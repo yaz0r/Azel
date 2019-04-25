@@ -91,7 +91,7 @@ void s_visdibilityCellTask::fieldGridTask_Update(s_visdibilityCellTask*)
 void setupGridCell(s_visibilityGridWorkArea* r4, s_visdibilityCellTask* r5, int index)
 {
     getMemoryArea(&r5->m0_memoryLayout, r4->m30->mC);
-    r5->index = index;
+    r5->m14_index = index;
     if (r4->m30->m0_environmentGrid)
     {
         r5->m8_pEnvironmentCell = r4->m30->m0_environmentGrid[index];
@@ -169,7 +169,7 @@ u8 gridCellDraw_normalSub0(sProcessed3dModel* r4, sVec3_FP& r5)
         }
         else
         {
-            dist[2] = DragonPos[1] - r5[2];
+            dist[2] = DragonPos[2] - r5[2];
         }
     }
 
@@ -188,7 +188,7 @@ u8 gridCellDraw_normalSub0(sProcessed3dModel* r4, sVec3_FP& r5)
 
 void getCameraProperties2Matrix(sMatrix4x3* pOutput)
 {
-    *pOutput = cameraProperties2.m88;
+    *pOutput = cameraProperties2.m88_billboardViewMatrix;
 }
 
 void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWorkAread)
@@ -1274,6 +1274,7 @@ s_grid1* readEnvironmentGridCell(sSaturnPtr gridCellEA)
     s_grid1* pCell = pCellArray;
     for (int i = 0; i < numEntries; i++)
     {
+        pCell->EA = gridCellEA;
         pCell->m0_offsetTable = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
         pCell->m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
         pCell->m10[0] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;

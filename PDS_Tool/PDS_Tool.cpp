@@ -184,7 +184,7 @@ void processCommonBin()
 std::vector<sOverlay*> gOverlays;
 std::vector<sOverlay*> gGlobalOverlays;
 
-sOverlay* loadOverlay(std::string & filename, u32 baseAddress, u32 endAddress)
+sOverlay* loadOverlay(const std::string& filename, u32 baseAddress, u32 endAddress)
 {
     FILE* fHandle = fopen(filename.c_str(), "rb");
     if (fHandle)
@@ -208,7 +208,7 @@ sOverlay* loadOverlay(std::string & filename, u32 baseAddress, u32 endAddress)
     }
     return NULL;
 }
-void loadGlobalOverlay(std::string & filename, u32 baseAddress, u32 endAddress)
+void loadGlobalOverlay(const std::string& filename, u32 baseAddress, u32 endAddress)
 {
     sOverlay* pOverlay = loadOverlay(filename, baseAddress, endAddress);
     if (pOverlay)

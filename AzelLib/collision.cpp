@@ -317,36 +317,6 @@ s32 collisionSub0(sProcessed3dModel* collisionMesh, sCollisionTempStruct& r5, sV
 {
     s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
-    // TEST CODE!
-    if(0)
-    {
-        sProcessed3dModel::sQuad testQuad;
-        testQuad.m0_indices[0] = 7;
-        testQuad.m0_indices[1] = 0xF;
-        testQuad.m0_indices[2] = 0x10;
-        testQuad.m0_indices[3] = 8;
-
-        sVec3_FP temp;
-        temp.zero();
-        r13->m688_transformedCollisionVertices.fill(temp);
-
-        r13->m688_transformedCollisionVertices[7][0] = 0xFFFFA474;
-        r13->m688_transformedCollisionVertices[7][1] = 0x030828;
-        r13->m688_transformedCollisionVertices[7][2] = 0xFFFFC290;
-        r13->m688_transformedCollisionVertices[8][0] = 0xFFFF1DD3;
-        r13->m688_transformedCollisionVertices[8][1] = 0x038828;
-        r13->m688_transformedCollisionVertices[8][2] = 0xFFFFD732;
-        r13->m688_transformedCollisionVertices[0xF][0] = 0xFFFF99CF;
-        r13->m688_transformedCollisionVertices[0xF][1] = 0xFFFF6028;
-        r13->m688_transformedCollisionVertices[0xF][2] = 0xFFFFD506;
-        r13->m688_transformedCollisionVertices[0x10][0] = 0xFFFF00C8;
-        r13->m688_transformedCollisionVertices[0x10][1] = 0xFFFF6028;
-        r13->m688_transformedCollisionVertices[0x10][2] = 0xFFFFDF0B;
-
-        testQuadForCollisions(testQuad, r13->m688_transformedCollisionVertices, r5, r6, r7, arg0);
-    }
-    //
-
     transformCollisionVertices(collisionMesh->m4_numVertices, collisionMesh->m8_vertices, r13->m688_transformedCollisionVertices);
 
     s32 r11 = 0;
@@ -368,6 +338,8 @@ void dragonFieldTaskUpdateSub1Sub1()
 {
     s_dragonTaskWorkArea* r14_pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     s_visibilityGridWorkArea* r12_pVisibilityGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+
+    drawDebugLine(r14_pDragonTask->m8_pos, sVec3_FP(0, 0, 0));
 
     // collisions enabled?
     if (!(r14_pDragonTask->mF8_Flags & 0x400))
@@ -392,6 +364,13 @@ void dragonFieldTaskUpdateSub1Sub1()
 
     r12_pVisibilityGrid->m48 = r12_pVisibilityGrid->m5A8.begin();
     r12_pVisibilityGrid->m40_activeCollisionEntriesCount = 0;
+
+    if(0)
+    {
+        r14_pDragonTask->m8_pos[0] = 0x3974CB;
+        r14_pDragonTask->m8_pos[1] = 0x9FD8;
+        r14_pDragonTask->m8_pos[2] = 0xFFCBB013;
+    }
 
     // find all potential collision and increment m40 for each
     pushCurrentMatrix();
@@ -420,7 +399,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         {
             for (int r4 = 0; r4 < r12_pVisibilityGrid->m40_activeCollisionEntriesCount; r4++)
             {
-                drawArrow(r12_pVisibilityGrid->m5A8[r4].m0_position + r14_pDragonTask->m8_pos, r12_pVisibilityGrid->m5A8[r4].mC_normal, r12_pVisibilityGrid->m5A8[r4].m18_penetrationDistance);
+                drawDebugArrow(r12_pVisibilityGrid->m5A8[r4].m0_position + r14_pDragonTask->m8_pos, r12_pVisibilityGrid->m5A8[r4].mC_normal, r12_pVisibilityGrid->m5A8[r4].m18_penetrationDistance);
             }
         }
 
@@ -462,7 +441,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         }
 
         r14_pDragonTask->m8_pos += var60.m0_translationToResolve;
-        r14_pDragonTask->m160_deltaTranslation = r14_pDragonTask->m14_oldPos - r14_pDragonTask->m8_pos;
+        r14_pDragonTask->m160_deltaTranslation = r14_pDragonTask->m8_pos - r14_pDragonTask->m14_oldPos;
 
         sVec3_FP var10;
         var10[0] = -r14_pDragonTask->m88_matrix.matrix[2];
@@ -503,7 +482,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         }
         //06070E80
         r14_pDragonTask->m20_angle[0] = interpolateRotation(r14_pDragonTask->m20_angle[0], var28[0], 0x8000, 0x444444, 0);
-        r14_pDragonTask->m20_angle[1] = interpolateRotation(r14_pDragonTask->m20_angle[1], var28[0], 0x2000, 0x444444, 0);
+        r14_pDragonTask->m20_angle[1] = interpolateRotation(r14_pDragonTask->m20_angle[1], var28[1], 0x2000, 0x444444, 0);
         dragonFieldTaskInitSub4Sub5(&r14_pDragonTask->m48, &r14_pDragonTask->m20_angle);
         return;
     }

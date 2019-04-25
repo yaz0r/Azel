@@ -81,6 +81,11 @@ public:
     {
         return m_value;
     }
+
+    float toFloat() const
+    {
+        return (float)m_value / (float)(1 << 16);
+    }
 };
 
 fixedPoint MTH_Mul_5_6(fixedPoint a, fixedPoint b, fixedPoint c);

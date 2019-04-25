@@ -526,7 +526,7 @@ struct s_grid1
     {
         m0b_models.fill(nullptr);
     }
-
+    sSaturnPtr EA;
     sSaturnPtr m0_offsetTable; // table of 5 u16, first 4 are LOD model offset (usually the same), last is collision mesh
     std::array<struct sProcessed3dModel*, 5> m0b_models;
     sVec3_FP m4;
@@ -596,7 +596,7 @@ struct s_visdibilityCellTask : public s_workAreaTemplate<s_visdibilityCellTask>
     s_grid1* m8_pEnvironmentCell; // 8
     std::vector<s_grid2>* mC_pCell2_billboards; // 0xC
     s_grid3* m10_pCell3; // 0x10
-    u32 index; // 14
+    u32 m14_index; // 14
 }; // size is 0x18
 
 struct sCameraVisibility

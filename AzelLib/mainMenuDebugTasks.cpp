@@ -4250,7 +4250,7 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
         setNextGameStatus(5);
         break;
     case 5: // elevator video
-        mainGameState.setBit(4, 3);
+        mainGameState.setBit(4, 2);
         setNextGameStatus(80);
         break;
     case 6: // initiate captain scene

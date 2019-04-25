@@ -298,11 +298,11 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
     sVec3_FP var_18 = r6 - r13;
     sVec3_FP var_C = r7 - r13;
 
-    r4->m20[0] = r4->mC_rotation[0];
-    r4->m20[1] = r4->mC_rotation[1];
-    r4->m20[2] = r4->mC_rotation[2];
+    r4->m20_previousRotation[0] = r4->mC_rotation[0];
+    r4->m20_previousRotation[1] = r4->mC_rotation[1];
+    r4->m20_previousRotation[2] = r4->mC_rotation[2];
 
-    r4->m14 = r4->m0_position;
+    r4->m14_previousPosition = r4->m0_position;
 
     generateCameraMatrixSub1(var_18, var_4);
 
@@ -331,13 +331,13 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
     rotateCurrentMatrixZ(-r4->mC_rotation[2]);
     rotateCurrentMatrixX(-r4->mC_rotation[0]);
 
-    copyMatrix(pCurrentMatrix, &r4->m88);
+    copyMatrix(pCurrentMatrix, &r4->m88_billboardViewMatrix);
 
     rotateCurrentMatrixY(-r4->mC_rotation[1]);
 
     translateCurrentMatrix(&var_24);
 
-    rotateMatrixY(0x800, &r4->m88);
+    rotateMatrixY(0x800, &r4->m88_billboardViewMatrix);
 
     copyMatrix(&r4->m28[0], &r4->m28[1]);
 
@@ -362,13 +362,13 @@ void resetCameraProperties2(s_cameraProperties2* r4)
     r4->mC_rotation[1] = 0;
     r4->mC_rotation[0] = 0;
 
-    r4->m14[0] = r4->m0_position[0];
-    r4->m14[1] = r4->m0_position[1];
-    r4->m14[2] = r4->m0_position[2];
+    r4->m14_previousPosition[0] = r4->m0_position[0];
+    r4->m14_previousPosition[1] = r4->m0_position[1];
+    r4->m14_previousPosition[2] = r4->m0_position[2];
 
-    r4->m20[0] = r4->mC_rotation[0];
-    r4->m20[1] = r4->mC_rotation[1];
-    r4->m20[2] = r4->mC_rotation[2];
+    r4->m20_previousRotation[0] = r4->mC_rotation[0];
+    r4->m20_previousRotation[1] = r4->mC_rotation[1];
+    r4->m20_previousRotation[2] = r4->mC_rotation[2];
 
     initMatrixToIdentity(&r4->m28[0]);
     initMatrixToIdentity(&r4->m28[1]);

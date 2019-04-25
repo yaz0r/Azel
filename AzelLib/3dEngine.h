@@ -14,11 +14,11 @@ struct s_cameraProperties2
 {
     sVec3_FP m0_position; //0
     s16 mC_rotation[3];
-    sVec3_FP m14; //14
-    s16 m20[3]; // 20
+    sVec3_FP m14_previousPosition; //14
+    s16 m20_previousRotation[3]; // 20
     sMatrix4x3 m28[2]; // 28
 
-    sMatrix4x3 m88; // 88
+    sMatrix4x3 m88_billboardViewMatrix; // 88
 };
 extern s_cameraProperties2 cameraProperties2;
 
