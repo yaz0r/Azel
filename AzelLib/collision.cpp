@@ -24,20 +24,22 @@ s32 testQuadsForCollisionsSub4(fixedPoint r4, fixedPoint r5)
 {
     if (r4 < 0)
         return 0;
+
     if (r5 < 0)
         return 0;
 
-    if (r4 + r5 - 0x10000 <= 0)
+    if (r4 + r5 <= 0x10000)
         return 1;
+
     return 0;
 }
 
 s32 testQuadsForCollisionsSub1(fixedPoint r4, fixedPoint r5)
 {
-    if (r4 - r5 < 0)
+    if (r4 < r5)
         return 0;
 
-    if ((r5 * 2) + r4 - 0x10000 <= 0)
+    if ((r5 * 2) + r4 <= 0x10000)
         return 1;
 
     return 0;
@@ -45,25 +47,27 @@ s32 testQuadsForCollisionsSub1(fixedPoint r4, fixedPoint r5)
 
 s32 testQuadsForCollisionsSub2(fixedPoint r4, fixedPoint r5)
 {
-    if ((r5 * 2) + r4 - 0x10000 < 0)
+    if ((r5 * 2) + r4 < 0x10000)
         return 0;
-    if ((r4 * 2) + r5 - 0x10000 < 0)
+
+    if ((r4 * 2) + r5 < 0x10000)
         return 0;
+
     return 1;
 }
 
 s32 testQuadsForCollisionsSub3(fixedPoint r4, fixedPoint r5)
 {
-    if (r4 - r5 > 0)
+    if (r4 > r5)
         return 0;
 
-    if ((r4 * 2) + r5 - 0x10000 <= 0)
+    if ((r4 * 2) + r5 <= 0x10000)
         return 1;
 
     return 0;
 }
 
-void testQuadsForCollisionsSub0(const sVec3_FP& vertice0, const sVec3_FP& vertice1, const sVec3_FP& vertice2, const sVec3_FP& transformedNormal, s32& r11_result0, s32& r10_result1, sVec3_FP& r14_arg2)
+void testQuadsForCollisionsSub0(const sVec3_FP& vertice0, const sVec3_FP& vertice1, const sVec3_FP& vertice2, const sVec3_FP& transformedNormal, s32& r11_result0, s32& r10_result1, const sVec3_FP& r14_arg2)
 {
     sVec3_FP var10 = r14_arg2 - vertice0;
     sVec3_FP var28 = vertice1 - vertice0;
@@ -74,7 +78,7 @@ void testQuadsForCollisionsSub0(const sVec3_FP& vertice0, const sVec3_FP& vertic
     var4[1] = transformedNormal[1].getAbs();
     var4[2] = transformedNormal[2].getAbs();
 
-    s32 r4_largestComponentIndex;
+    s32 r4_largestComponentIndex = -1;
     if (var4[1] > var4[0])
     {
         if (var4[2] > var4[1])
@@ -211,20 +215,17 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
     r8->m1294.m4_processedQuadsForCollision2++;
     r8->m1294.m8_processedQuadsForCollision3++;
 
-    //?
-    fixedPoint var0 = var10_penetration * 16;
+    sVec3_FP var44_previousResolvedPosition;
+    var44_previousResolvedPosition[0] = r14.m0_translationToResolve[0] + MTH_Mul(var10_penetration, var5C_transformedQuadNormal[0]) * 16;
+    var44_previousResolvedPosition[1] = r14.m0_translationToResolve[1] + MTH_Mul(var10_penetration, var5C_transformedQuadNormal[1]) * 16;
+    var44_previousResolvedPosition[2] = r14.m0_translationToResolve[2] + MTH_Mul(var10_penetration, var5C_transformedQuadNormal[2]) * 16;
 
-    sVec3_FP var44;
-    var44[0] = r14.m0_translationToResolve[0] + MTH_Mul(var0, var5C_transformedQuadNormal[0]);
-    var44[1] = r14.m0_translationToResolve[1] + MTH_Mul(var0, var5C_transformedQuadNormal[1]);
-    var44[2] = r14.m0_translationToResolve[2] + MTH_Mul(var0, var5C_transformedQuadNormal[2]);
-
-    sVec3_FP var38 = var44;
+    sVec3_FP var38_previousResolvedPositionBackup = var44_previousResolvedPosition;
 
     if (var10_penetration > 0)
     {
-        r14.m0_translationToResolve = var44;
-        r11_pointToProject = var44;
+        r14.m0_translationToResolve = var44_previousResolvedPosition;
+        r11_pointToProject = var44_previousResolvedPosition;
         var10_penetration = 0;
     }
 
@@ -259,50 +260,50 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
         sVec3_FP& vertice2 = r12[var20[var8_numTrianglesToProcess - 1][2]];
 
         std::array<s32, 2> result;
-        testQuadsForCollisionsSub0(vertice0, vertice1, vertice2, var5C_transformedQuadNormal, result[0], result[1], var44);
+        testQuadsForCollisionsSub0(vertice0, vertice1, vertice2, var5C_transformedQuadNormal, result[0], result[1], var44_previousResolvedPosition);
 
         s32 r9 = 0;
         if (testQuadsForCollisionsSub4(result[1], result[0]))
         {
-            r9 = 1;
+c            r9 = 1;
         }
         else
         {
             if (testQuadsForCollisionsSub1(result[1], result[0]))
             {
                 //06063D24
-                r9 = testQuadsForCollisionsSub5(r12[var20[var8_numTrianglesToProcess - 1][0]], r12[var20[var8_numTrianglesToProcess - 1][1]], r14);
+                r9 = testQuadsForCollisionsSub5(vertice0, vertice1, r14);
             }
             else if (testQuadsForCollisionsSub2(result[1], result[0]))
             {
                 //06063D5E
-                r9 = testQuadsForCollisionsSub5(r12[var20[var8_numTrianglesToProcess - 1][1]], r12[var20[var8_numTrianglesToProcess - 1][2]], r14);
+                r9 = testQuadsForCollisionsSub5(vertice1, vertice2, r14);
             }
-            else if (testQuadsForCollisionsSub2(result[1], result[0]))
+            else if (testQuadsForCollisionsSub3(result[1], result[0]))
             {
                 //06063DA0
-                r9 = testQuadsForCollisionsSub5(r12[var20[var8_numTrianglesToProcess - 1][2]], r12[var20[var8_numTrianglesToProcess - 1][0]], r14);
+                r9 = testQuadsForCollisionsSub5(vertice2, vertice0, r14);
             }
         }
 
         //6063DD4
         if (r9)
         {
-            arg1->m0_position = var38;
+            arg1->m0_position = var38_previousResolvedPositionBackup;
             arg1->m0_position += getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
 
             arg1->mC_normal = var5C_transformedQuadNormal;
 
-            var14_quadNormal = var44 - r14.m0_translationToResolve;
+            var14_quadNormal = var44_previousResolvedPosition - r14.m0_translationToResolve;
 
             arg1->m18_penetrationDistance = r14.m10 - dot3_FP(&var14_quadNormal, &var14_quadNormal);
 
             if (var10_penetration > 0)
                 return 1;
 
-            r14.m0_translationToResolve[0] = var38[0] + MTH_Mul(var5C_transformedQuadNormal[0] * 16, r14.mC_penetration);
-            r14.m0_translationToResolve[1] = var38[1] + MTH_Mul(var5C_transformedQuadNormal[1] * 16, r14.mC_penetration);
-            r14.m0_translationToResolve[2] = var38[2] + MTH_Mul(var5C_transformedQuadNormal[2] * 16, r14.mC_penetration);
+            r14.m0_translationToResolve[0] = var38_previousResolvedPositionBackup[0] + MTH_Mul(r14.mC_penetration, var5C_transformedQuadNormal[0]) * 16;
+            r14.m0_translationToResolve[1] = var38_previousResolvedPositionBackup[1] + MTH_Mul(r14.mC_penetration, var5C_transformedQuadNormal[1]) * 16;
+            r14.m0_translationToResolve[2] = var38_previousResolvedPositionBackup[2] + MTH_Mul(r14.mC_penetration, var5C_transformedQuadNormal[2]) * 16;
 
             r11_pointToProject = r14.m0_translationToResolve;
             return 1;
