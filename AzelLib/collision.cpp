@@ -1,14 +1,12 @@
 #include "PDS.h"
 
+static bool bDrawCollisions = false;
+
 void transformCollisionVertices(s32 r4, std::vector<sVec3_S16>& r5, std::array<sVec3_FP, 256>& r6)
 {
     for (int i = 0; i < r4; i++)
     {
-        sVec3_FP convertedVector;
-        convertedVector[0] = ((s32)r5[i][0]) << 4;
-        convertedVector[1] = ((s32)r5[i][1]) << 4;
-        convertedVector[2] = ((s32)r5[i][2]) << 4;
-
+        sVec3_FP convertedVector = r5[i].toSVec3_FP();
         transformAndAddVecByCurrentMatrix(&convertedVector, &r6[i]);
     }
 }
@@ -265,7 +263,7 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
         s32 r9 = 0;
         if (testQuadsForCollisionsSub4(result[1], result[0]))
         {
-c            r9 = 1;
+            r9 = 1;
         }
         else
         {
@@ -324,10 +322,35 @@ s32 collisionSub0(sProcessed3dModel* collisionMesh, sCollisionTempStruct& r5, sV
 
     for (int i = 0; i < collisionMesh->mC_Quads.size(); i++)
     {
+        bool bCollisionHappened = false;
         if (testQuadForCollisions(collisionMesh->mC_Quads[i], r13->m688_transformedCollisionVertices, r5, r6, r7, arg0))
         {
             r11 = 1;
             r13->m1294.m10++;
+            bCollisionHappened = true;
+        }
+        
+        if(bDrawCollisions)
+        {
+            const sVec3_FP& position = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
+            const sVec3_FP vector0 = position + r13->m688_transformedCollisionVertices[collisionMesh->mC_Quads[i].m0_indices[0]];
+            const sVec3_FP vector1 = position + r13->m688_transformedCollisionVertices[collisionMesh->mC_Quads[i].m0_indices[1]];
+            const sVec3_FP vector2 = position + r13->m688_transformedCollisionVertices[collisionMesh->mC_Quads[i].m0_indices[2]];
+            const sVec3_FP vector3 = position + r13->m688_transformedCollisionVertices[collisionMesh->mC_Quads[i].m0_indices[3]];
+
+            if (bCollisionHappened)
+            {
+                sFColor quadColor = { 1,0,0,1 };
+                drawDebugFilledQuad(vector0, vector1, vector2, vector3, quadColor);
+            }
+            else
+            {
+                sFColor quadColor = { 0,1,0,1 };
+                drawDebugLine(vector0, vector1, quadColor);
+                drawDebugLine(vector1, vector2, quadColor);
+                drawDebugLine(vector2, vector3, quadColor);
+                drawDebugLine(vector3, vector0, quadColor);
+            }
         }
 
     }
@@ -337,6 +360,12 @@ s32 collisionSub0(sProcessed3dModel* collisionMesh, sCollisionTempStruct& r5, sV
 
 void dragonFieldTaskUpdateSub1Sub1()
 {
+    if (ImGui::Begin("Collisions"))
+    {
+        ImGui::Checkbox("Draw Collisions", &bDrawCollisions);
+    }
+    ImGui::End();
+
     s_dragonTaskWorkArea* r14_pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     s_visibilityGridWorkArea* r12_pVisibilityGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
@@ -396,14 +425,6 @@ void dragonFieldTaskUpdateSub1Sub1()
 
     if (r12_pVisibilityGrid->m40_activeCollisionEntriesCount)
     {
-        if(1)
-        {
-            for (int r4 = 0; r4 < r12_pVisibilityGrid->m40_activeCollisionEntriesCount; r4++)
-            {
-                drawDebugArrow(r12_pVisibilityGrid->m5A8[r4].m0_position + r14_pDragonTask->m8_pos, r12_pVisibilityGrid->m5A8[r4].mC_normal, r12_pVisibilityGrid->m5A8[r4].m18_penetrationDistance);
-            }
-        }
-
         //6070BB2
         if (!(r14_pDragonTask->mF8_Flags & 0x200))
         {

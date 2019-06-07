@@ -35,7 +35,6 @@ struct sVec2_S32
     }
 };
 
-typedef std::array<s16, 3> sVec3_S16;
 typedef std::array<u16, 3> sVec3_U16;
 
 struct sVec3_FP
@@ -102,6 +101,31 @@ struct sVec3_FP
         sVec3_FP newValue = *this;
         newValue += otherVec;
         return newValue;
+    }
+};
+
+struct sVec3_S16
+{
+    std::array<s16, 3> m_value;
+
+    s16 operator[](int i) const
+    {
+        return m_value[i];
+    }
+
+    s16& operator[](int i)
+    {
+        return m_value[i];
+    }
+
+    sVec3_FP toSVec3_FP() const
+    {
+        sVec3_FP convertedVector;
+        convertedVector[0] = ((s32)m_value[0]) << 4;
+        convertedVector[1] = ((s32)m_value[1]) << 4;
+        convertedVector[2] = ((s32)m_value[2]) << 4;
+
+        return convertedVector;
     }
 };
 

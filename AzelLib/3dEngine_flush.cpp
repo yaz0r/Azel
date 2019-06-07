@@ -3,21 +3,44 @@
 #include "3dEngine_textureCache.h"
 #include <unordered_map>
 
-void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2);
+void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color = { 1,0,0,1 });
 
 struct sDebugLines
 {
     sVec3_FP position1;
     sVec3_FP position2;
+    sFColor m_color;
 };
 
 std::vector<sDebugLines> debugLines;
 
-void drawDebugLine(const sVec3_FP& position1, const sVec3_FP& position2)
+struct sDebugQuad
+{
+    std::array<sVec3_FP, 4> m_vertices;
+    sFColor m_color;
+};
+
+std::vector<sDebugQuad> debugQuads;
+void drawQuadGL(const sDebugQuad& quad);
+
+void drawDebugFilledQuad(const sVec3_FP& position0, const sVec3_FP& position1, const sVec3_FP& position2, const sVec3_FP& position3, const sFColor& color)
+{
+    sDebugQuad newDebugQuad;
+    newDebugQuad.m_vertices[0] = position0;
+    newDebugQuad.m_vertices[1] = position1;
+    newDebugQuad.m_vertices[2] = position2;
+    newDebugQuad.m_vertices[3] = position3;
+    newDebugQuad.m_color = color;
+
+    debugQuads.push_back(newDebugQuad);
+}
+
+void drawDebugLine(const sVec3_FP& position1, const sVec3_FP& position2, const sFColor& color)
 {
     sDebugLines newDebugLine;
     newDebugLine.position1 = position1;
     newDebugLine.position2 = position2;
+    newDebugLine.m_color = color;
 
     debugLines.push_back(newDebugLine);
 
@@ -33,6 +56,7 @@ void drawDebugArrow(const sVec3_FP& position, const sVec3_FP& normal, const fixe
     sDebugLines newDebugLine;
     newDebugLine.position1 = position;
     newDebugLine.position2 = position2;
+    newDebugLine.m_color = { 1,0,0,1 };
 
     debugLines.push_back(newDebugLine);
 }
@@ -1025,9 +1049,15 @@ void flushObjectsToDrawList()
 
     objectRenderList.clear();
 
+    for (int i = 0; i < debugQuads.size(); i++)
+    {
+        drawQuadGL(debugQuads[i]);
+    }
+    debugQuads.clear();
+
     for(int i=0; i<debugLines.size(); i++)
     {
-        drawLineGL(debugLines[i].position1, debugLines[i].position2);
+        drawLineGL(debugLines[i].position1, debugLines[i].position2, debugLines[i].m_color);
     }
     debugLines.clear();
 }
@@ -1730,7 +1760,99 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
     glUseProgram(0);
 }
 
-void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2)
+void drawQuadGL(const sDebugQuad& quad)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        gVertexArray[i].positions[0] = quad.m_vertices[i][0].toFloat();
+        gVertexArray[i].positions[1] = quad.m_vertices[i][1].toFloat();
+        gVertexArray[i].positions[2] = quad.m_vertices[i][2].toFloat();
+
+        gVertexArray[i].color[0] = quad.m_color.R;
+        gVertexArray[i].color[1] = quad.m_color.G;
+        gVertexArray[i].color[2] = quad.m_color.B;
+        gVertexArray[i].color[3] = quad.m_color.A;
+    }
+
+    GLuint currentShader = GetWorldSpaceLineShader();
+    glUseProgram(currentShader);
+    checkGL();
+
+    GLuint vertexp = glGetAttribLocation(currentShader, (const GLchar*)"a_position");
+    GLuint colorp = glGetAttribLocation(currentShader, (const GLchar*)"a_color");
+
+    checkGL();
+
+    static GLuint vao = 0;
+    if (vao == 0)
+    {
+        glGenVertexArrays(1, &vao);
+    }
+    glBindVertexArray(vao);
+
+    static GLuint vbo = 0;
+    if (vbo == 0)
+    {
+        glGenBuffers(1, &vbo);
+    }
+    checkGL();
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    checkGL();
+    glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 4, &gVertexArray[0], GL_STATIC_DRAW);
+    checkGL();
+    glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*) & ((s_vertexData*)NULL)->positions);
+    checkGL();
+    glEnableVertexAttribArray(vertexp);
+    checkGL();
+    if (colorp != -1)
+    {
+        glVertexAttribPointer(colorp, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*) & ((s_vertexData*)NULL)->color);
+        glEnableVertexAttribArray(colorp);
+    }
+    checkGL();
+    static GLuint indexBufferId = 0;
+    if (indexBufferId == 0)
+    {
+        char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
+        glGenBuffers(1, &indexBufferId);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
+    }
+    else
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+    }
+
+    glDisable(GL_DEPTH_TEST);
+    checkGL();
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    GLuint modelProjection = glGetUniformLocation(currentShader, (const GLchar*)"u_projectionMatrix");
+    assert(modelProjection != -1);
+    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, getProjectionMatrix());
+
+    GLuint viewMatrix = glGetUniformLocation(currentShader, (const GLchar*)"u_viewMatrix");
+    assert(viewMatrix != -1);
+    glUniformMatrix4fv(viewMatrix, 1, GL_FALSE, getViewMatrix());
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)0);
+    checkGL();
+    glDisableVertexAttribArray(vertexp);
+    checkGL();
+    if (colorp != -1)
+        glDisableVertexAttribArray(colorp);
+    checkGL();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    checkGL();
+
+    checkGL();
+    glUseProgram(0);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color)
 {
     gVertexArray[0].positions[0] = vertice1[0].toFloat();
     gVertexArray[0].positions[1] = vertice1[1].toFloat();
@@ -1740,10 +1862,10 @@ void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2)
     gVertexArray[1].positions[1] = vertice2[1].toFloat();
     gVertexArray[1].positions[2] = vertice2[2].toFloat();
 
-    gVertexArray[0].color[0] = gVertexArray[1].color[0] = 1;
-    gVertexArray[0].color[1] = gVertexArray[1].color[1] = 0;
-    gVertexArray[0].color[2] = gVertexArray[1].color[2] = 0;
-    gVertexArray[0].color[3] = gVertexArray[1].color[3] = 1;
+    gVertexArray[0].color[0] = gVertexArray[1].color[0] = color.R;
+    gVertexArray[0].color[1] = gVertexArray[1].color[1] = color.G;
+    gVertexArray[0].color[2] = gVertexArray[1].color[2] = color.B;
+    gVertexArray[0].color[3] = gVertexArray[1].color[3] = color.A;
 
     GLuint currentShader = GetWorldSpaceLineShader();
     glUseProgram(currentShader);
