@@ -16,6 +16,16 @@ file(GLOB_RECURSE SRC_KERNEL
     "kernel/*.h"
 )
 
+file(GLOB SRC_TOWN
+    "town/*.cpp"
+    "town/*.h"
+)
+
+file(GLOB_RECURSE SRC_TOWN_RUIN
+    "town/ruin/*.cpp"
+    "town/ruin/*.h"
+)
+
 file(GLOB_RECURSE SRC_FIELD_A3
     "field/field_a3/*.cpp"
     "field/field_a3/*.h"
@@ -25,6 +35,8 @@ set(SOURCES
  ${SOURCES}
  ${SRC_KERNEL}
  ${SRC_ROOT}
+ ${SRC_TOWN}
+ ${SRC_TOWN_RUIN}
  ${SRC_FIELD_A3}
 
 ${THIRD_PARTY}/imgui/imgui.cpp
@@ -36,6 +48,8 @@ ${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
 
 source_group("src" FILES ${SRC_ROOT})
 source_group("src\\kernel" FILES ${SRC_KERNEL})
+source_group("src\\town" FILES ${SRC_TOWN})
+source_group("src\\town\\ruin" FILES ${SRC_TOWN_RUIN})
 source_group("src\\field\\field_a3" FILES ${SRC_FIELD_A3})
 
 if (MSVC)

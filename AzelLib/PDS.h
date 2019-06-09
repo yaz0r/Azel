@@ -386,3 +386,5 @@ struct sProcessed3dModel
     std::vector<sVec3_S16> m8_vertices;
     std::vector<sQuad> mC_Quads;
 };
+
+extern p_workArea(*gFieldOverlayFunction)(p_workArea workArea, u32 arg);

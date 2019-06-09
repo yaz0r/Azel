@@ -34,11 +34,46 @@ void fieldA3_C_createTask0(p_workArea workArea)
     createSubTaskFromFunction<fieldA3_C_task0>(workArea, &fieldA3_C_task0::Update);
 }
 
+struct fieldA3_C_task1 : public s_workAreaTemplate<fieldA3_C_task1>
+{
+    static void NullUpdate(fieldA3_C_task1* pThis)
+    {
+        return;
+    }
+
+    static void Update(fieldA3_C_task1* pThis)
+    {
+        if (!mainGameState.getBit(0x11, 7))
+        {
+            pThis->m0 = 0x2A3333;
+            pThis->m4 = 0;
+            pThis->m8 = -0x2E9999;
+
+            pThis->m_UpdateMethod = NullUpdate;
+        }
+    }
+
+    s32 m0;
+    s32 m4;
+    s32 m8;
+    //size C
+};
+
+void fieldA3_C_createTask1(p_workArea workArea)
+{
+    createSubTaskFromFunction<fieldA3_C_task1>(workArea, &fieldA3_C_task1::Update);
+}
+
+void fieldA3_C_createItemBox(p_workArea workArea)
+{
+    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x60924B4, gFLD_A3 }));
+}
+
 void fieldA3_C_startTasks(p_workArea workArea)
 {
     fieldA3_C_createTask0(workArea);
-//    fieldA3_C_createTask1(workArea);
-//    fieldA3_C_createTask2(workArea);
+    fieldA3_C_createTask1(workArea);
+    fieldA3_C_createItemBox(workArea);
 }
 
 void subfieldA3_C(p_workArea workArea)

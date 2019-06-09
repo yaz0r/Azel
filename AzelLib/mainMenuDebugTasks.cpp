@@ -1,4 +1,6 @@
 #include "PDS.h"
+#include "town/town.h"
+#include "town/townDebugSelect.h"
 
 p_workArea initExitMenuTaskSub1(p_workArea pTypelessWorkArea, u32 menuID);
 
@@ -2623,11 +2625,12 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
         fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);
     }
 
-    static void townDebugTaskInit(s_fieldDebugTaskWorkArea*, s32)
+    static void townDebugTaskInit(s_fieldDebugTaskWorkArea* r4, s32)
     {
         pauseEngine[2] = 0;
 
         initNewGameState();
+        createLocationTask(r4, 0);
 
         assert(0);
         /*
@@ -4320,7 +4323,7 @@ p_workArea loadField(p_workArea r4, s32 r5)
 
 p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     NULL,
-    NULL,
+    NULL,//loadTown,
     NULL,
     loadField,
     NULL,
