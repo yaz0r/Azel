@@ -17,7 +17,16 @@ fixedPoint FP_Div(s32 divident, fixedPoint divisor)
     */
 
     if (divisor == 0)
-        return 0x7FFFFFFF;
+    {
+        if (divident >= 0)
+        {
+            return 0x7FFFFFFF;
+        }
+        else
+        {
+            return 0x80000000;
+        }
+    }
 
     return fixedPoint::fromS32((((s64)divident) << 16) / divisor.asS32());
 }
@@ -57,7 +66,14 @@ fixedPoint asyncDivEnd()
 {
     if (gDivisor.asS32() == 0)
     {
-        return 0x7FFFFFFF;
+        if (gDivident >= 0)
+        {
+            return 0x7FFFFFFF;
+        }
+        else
+        {
+            return 0x80000000;
+        }
     }
     return fixedPoint::fromS32((((s64)gDivident) << 16) / gDivisor.asS32());
 }

@@ -14,7 +14,7 @@ void transformCollisionVertices(s32 r4, std::vector<sVec3_S16>& r5, std::array<s
 struct sCollisionTempStruct
 {
     sVec3_FP m0_translationToResolve;
-    fixedPoint mC_penetration;
+    fixedPoint mC_collisionRadius;
     fixedPoint m10;
 };
 
@@ -137,10 +137,10 @@ fixedPoint distanceSquareBetween2Points(const sVec3_FP& r4_vertice0, const sVec3
     s32 r0 = (((s64)r1 * (s64)r1) >> 16);
 
     s32 r3 = r5_vertice1[1] - r4_vertice0[1];
-    s32 r2 = (((s64)r1 * (s64)r1) >> 16);
+    s32 r2 = (((s64)r3 * (s64)r3) >> 16);
 
     s32 r5 = r5_vertice1[2] - r4_vertice0[2];
-    s32 r4 = (((s64)r1 * (s64)r1) >> 16);
+    s32 r4 = (((s64)r5 * (s64)r5) >> 16);
 
     return r0 + r2 + r4;
 }
@@ -164,6 +164,11 @@ s32 testQuadsForCollisionsSub5(const sVec3_FP& r14_vertice0, const sVec3_FP& r11
         if (r14 > r5)
         {
             r5 = distanceSquareBetween2Points(r13_r6.m0_translationToResolve, r11_vertice1);
+        }
+        else
+        {
+            asyncDivStart(r14, r5);
+            r5 = dot3_FP(&var10, &var10) - MTH_Mul(asyncDivEnd(), r14);
         }
     }
 
@@ -206,8 +211,8 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
     fixedPoint var10_penetration = dot3_FP(&var50_transformedVertice, &var5C_transformedQuadNormal) * 16;
 
     // 06063BD4
-    // is it better than what we already have?
-    if (var10_penetration.getAbs() > r14.mC_penetration)
+    // are we colliding with the collision sphere?
+    if (var10_penetration.getAbs() > r14.mC_collisionRadius)
         return 0;
 
     r8->m1294.m4_processedQuadsForCollision2++;
@@ -299,9 +304,9 @@ s32 testQuadForCollisions(const sProcessed3dModel::sQuad& r9_currentQuad, std::a
             if (var10_penetration > 0)
                 return 1;
 
-            r14.m0_translationToResolve[0] = var38_previousResolvedPositionBackup[0] + MTH_Mul(r14.mC_penetration, var5C_transformedQuadNormal[0]) * 16;
-            r14.m0_translationToResolve[1] = var38_previousResolvedPositionBackup[1] + MTH_Mul(r14.mC_penetration, var5C_transformedQuadNormal[1]) * 16;
-            r14.m0_translationToResolve[2] = var38_previousResolvedPositionBackup[2] + MTH_Mul(r14.mC_penetration, var5C_transformedQuadNormal[2]) * 16;
+            r14.m0_translationToResolve[0] = var38_previousResolvedPositionBackup[0] + MTH_Mul(r14.mC_collisionRadius, var5C_transformedQuadNormal[0]) * 16;
+            r14.m0_translationToResolve[1] = var38_previousResolvedPositionBackup[1] + MTH_Mul(r14.mC_collisionRadius, var5C_transformedQuadNormal[1]) * 16;
+            r14.m0_translationToResolve[2] = var38_previousResolvedPositionBackup[2] + MTH_Mul(r14.mC_collisionRadius, var5C_transformedQuadNormal[2]) * 16;
 
             r11_pointToProject = r14.m0_translationToResolve;
             return 1;
@@ -369,8 +374,6 @@ void dragonFieldTaskUpdateSub1Sub1()
     s_dragonTaskWorkArea* r14_pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     s_visibilityGridWorkArea* r12_pVisibilityGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
 
-    drawDebugLine(r14_pDragonTask->m8_pos, sVec3_FP(0, 0, 0));
-
     // collisions enabled?
     if (!(r14_pDragonTask->mF8_Flags & 0x400))
         return;
@@ -382,11 +385,11 @@ void dragonFieldTaskUpdateSub1Sub1()
     var60.m0_translationToResolve.zero();
     fixedPoint var0 = 0x8000;
 
-    var60.mC_penetration = 0x8000;
+    var60.mC_collisionRadius = 0x8000;
     var60.m10 = MTH_Mul(0x8000, 0x8000);
 
     sVec2_FP var58;
-    var58[0] = var60.mC_penetration;
+    var58[0] = var60.mC_collisionRadius;
     var58[1] = var60.m10;
     sVec3_FP var40 = var60.m0_translationToResolve;
 
@@ -397,9 +400,9 @@ void dragonFieldTaskUpdateSub1Sub1()
 
     if(0)
     {
-        r14_pDragonTask->m8_pos[0] = 0x3974CB;
-        r14_pDragonTask->m8_pos[1] = 0x9FD8;
-        r14_pDragonTask->m8_pos[2] = 0xFFCBB013;
+        r14_pDragonTask->m8_pos[0] = 0x00601dd5;
+        r14_pDragonTask->m8_pos[1] = 0x00051154;
+        r14_pDragonTask->m8_pos[2] = 0xfeffc6ac;
     }
 
     // find all potential collision and increment m40 for each
