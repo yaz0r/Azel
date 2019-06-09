@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "a3_background_layer.h"
 
 void fieldA3_2_exit0(p_workArea, sLCSTarget*)
 {
@@ -82,11 +83,6 @@ void fieldA3_2_createExitLCSTask(p_workArea workArea)
     createSubTask<fieldA3_2_exitLCSTask>(workArea);
 }
 
-void fieldA3_2_createBackgroundLayerTask(p_workArea workArea)
-{
-    TaskUnimplemented();
-}
-
 void fieldA3_2_createTask4(p_workArea workArea)
 {
     TaskUnimplemented();
@@ -149,7 +145,7 @@ void fieldA3_2_startTasks(p_workArea workArea)
     getFieldTaskPtr()->mC->m168 = fieldA3_0_createTask1(workArea, 4, 0x60);
 
     fieldA3_2_createExitLCSTask(workArea);
-    fieldA3_2_createBackgroundLayerTask(workArea);
+    create_fieldA3_backgroundLayer2(workArea);
     fieldA3_2_createTask4(workArea);
     fieldA3_2_createCheckExitTask(workArea);
 

@@ -78,6 +78,35 @@ struct s_A3_BackgroundLayer : public s_workAreaTemplate<s_A3_BackgroundLayer>
         }
     }
 
+    static void Draw2(s_A3_BackgroundLayer* pThis)
+    {
+        s32 r12 = graphicEngineStatus.m405C.VDP1_X2 / 2;
+        sVec2_S32 var8_current;
+        var8_current[0] = pThis->m8 - r12;
+        var8_current[1] = pThis->mC + 55;
+
+        while (var8_current[0] < r12)
+        {
+            drawBackgroundSprite(var8_current, graphicEngineStatus.m405C.m14_farClipDistance - 1, pThis->m18, 0xA37, 0x200, 0xA0);
+
+            var8_current[0] += 80;
+        }
+
+        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos[2] < -0x1068000)
+        {
+            sVec2_S32 var4_current;
+            var4_current[0] = pThis->m8 - r12;
+            var4_current[1] = pThis->mC + pThis->m14;
+
+            while (var4_current[0] < r12)
+            {
+                drawBackgroundSprite(var4_current, graphicEngineStatus.m405C.m14_farClipDistance - 1, pThis->m1A, 0xA28, 0x2070, 0x80);
+
+                var4_current[0] += 80;
+            }
+        }
+    }
+
     s_memoryAreaOutput m0;
     s32 m8;
     s32 mC;
@@ -91,4 +120,10 @@ struct s_A3_BackgroundLayer : public s_workAreaTemplate<s_A3_BackgroundLayer>
 void create_fieldA3_backgroundLayer(p_workArea workArea)
 {
     createSubTask<s_A3_BackgroundLayer>(workArea);
+}
+
+void create_fieldA3_backgroundLayer2(p_workArea workArea)
+{
+    static const s_A3_BackgroundLayer::TypedTaskDefinition taskDefinition = { &s_A3_BackgroundLayer::Init, &s_A3_BackgroundLayer::Update, &s_A3_BackgroundLayer::Draw2, NULL };
+    createSubTask<s_A3_BackgroundLayer>(workArea, &taskDefinition);
 }
