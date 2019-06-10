@@ -150,6 +150,8 @@ struct sSaturnMemoryFile
     }
 };
 
+bool findFileOnDisc(std::string& filename);
+
 #include "fixedPoint.h"
 
 #include "dummy.h"

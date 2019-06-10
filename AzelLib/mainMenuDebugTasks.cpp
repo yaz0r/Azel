@@ -686,6 +686,15 @@ struct s_dramAllocator
     u32 var_14;
 }; // size 18
 
+struct s_fileEntry
+{
+    s32 m0_fileID;
+    s32 m4_fileSize;
+    s32 m8;
+    s32 mC;
+    // size 0x10
+};
+
 s_dramAllocator* dramAllocatorHead = NULL;
 s_dramAllocator* dramAllocatorEnd = NULL;
 
@@ -712,7 +721,12 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
 
     if (assetList)
     {
-        assert(0);
+        const char** tempList = assetList;
+        while (*tempList)
+        {
+            r14 += sizeof(s_fileEntry);
+            tempList++;
+        }
     }
 
     s_dramAllocator* pDramAllocator = (s_dramAllocator*)allocateHeapForTask(pWorkArea, r14);
@@ -728,7 +742,27 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
 
     if (assetList)
     {
-        assert(0);
+        s_fileEntry* r14 = (s_fileEntry*)(pDramAllocator + 1);
+
+        while (*assetList)
+        {
+            if (*assetList == (const char*)-1)
+            {
+                r14->m0_fileID = -1;
+                r14->m4_fileSize = 0;
+            }
+            else
+            {
+                r14->m0_fileID = findMandatoryFileOnDisc(*assetList);
+                r14->m4_fileSize = getFileSizeFromFileId(*assetList);
+            }
+
+            r14->m8 = 0;
+            r14->mC = 0;
+
+            r14++;
+            assetList++;
+        }
     }
 
     s_dramAllocationNode* pNode = (s_dramAllocationNode*)dest;
@@ -2625,15 +2659,12 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
         fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);
     }
 
-    static void townDebugTaskInit(s_fieldDebugTaskWorkArea* r4, s32)
+    static void townDebugTaskInit(s_fieldDebugTaskWorkArea* pWorkArea, s32)
     {
         pauseEngine[2] = 0;
 
         initNewGameState();
-        createLocationTask(r4, 0);
 
-        assert(0);
-        /*
         pWorkArea->m8 = createLocationTask(pWorkArea, 0);
 
         resetTempAllocators();
@@ -2643,9 +2674,8 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
         loadCurrentRider(pWorkArea->m8);
         loadCurrentRider2(pWorkArea->m8);
         freeRamResource();
-        createMenuTask();
-        createSiblingTaskWithArg(pWorkArea->m8, flagEditTask, 0x10, pWorkArea->m8);
-        */
+        createMenuTask(pWorkArea->m8);
+        createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(pWorkArea->m8, pWorkArea->m8);
     }
 
     static void fieldDebugTaskInit(s_fieldDebugTaskWorkArea* pThis, s32)

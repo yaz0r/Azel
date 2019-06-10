@@ -76,3 +76,4 @@ void playAnimationGeneric(s_3dModel* r4, u8* r5, s32 r6);
 void setNextGameStatus(u32 r4);
 u32 performModulo(u32 r0, u32 r1);
 void resetTempAllocators();
+u16 loadFnt(const char* filename);

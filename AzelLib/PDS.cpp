@@ -25,6 +25,17 @@ extern sSaturnMemoryFile gCommonFile =
     0x00200000,
 };
 
+bool findFileOnDisc(std::string& filename)
+{
+    FILE* fHandle = fopen(filename.c_str(), "rb");
+    if (fHandle)
+    {
+        fclose(fHandle);
+        return true;
+    }
+
+    return false;
+}
 
 void initPauseSatus()
 {
@@ -206,10 +217,10 @@ void initVDP1()
     graphicEngineStatus.m405C.localCoordinatesY = 112;
 
     graphicEngineStatus.m405C.m10 = 0x999;
-    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, 0x999);
+    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0x200000;
-    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, 0x200000);
+    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
 
     graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
 

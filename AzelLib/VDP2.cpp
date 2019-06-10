@@ -126,6 +126,18 @@ int drawStringLargeFont(const char* text)
     return 0;
 }
 
+void vdp2DebugPrintNewLine(const std::string& text)
+{
+    drawLineSmallFont(text.c_str());
+    vdp2PrintStatus.m0_X = 0;
+    vdp2PrintStatus.m4_Y++;
+
+    if (vdp2PrintStatus.m4_Y > 63)
+    {
+        vdp2PrintStatus.m4_Y = 0;
+    }
+}
+
 int drawStringSmallFont(const char* text)
 {
     s32 r3 = vdp2PrintStatus.m0_X;

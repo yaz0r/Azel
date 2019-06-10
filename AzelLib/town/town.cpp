@@ -2,6 +2,8 @@
 #include "town.h"
 #include "town/ruin/twn_ruin.h"
 
+u8 townBuffer[0xB0000];
+
 townDebugTask2Function* townDebugTask2 = nullptr;
 
 void townDebugTask2Function::Update(townDebugTask2Function* pThis)
@@ -12,12 +14,6 @@ void townDebugTask2Function::Update(townDebugTask2Function* pThis)
     }
 }
 
-struct sNpcData
-{
-    s8 m5C;
-    s8 m5D;
-};
-
 sNpcData npcData0;
 
 void loadTownPrgSub0()
@@ -25,9 +21,12 @@ void loadTownPrgSub0()
     TaskUnimplemented();
 }
 
-void setupDragonForTown(s_dragonState* r4)
+void setupDragonForTown(u8* r4)
 {
-    TaskUnimplemented();
+    if (READ_BE_U32(r4 + 0x48))
+    {
+        TaskUnimplemented();
+    }
 }
 
 void loadTownPrg(s8 r4, s8 r5)
@@ -53,7 +52,7 @@ void loadTownPrg(s8 r4, s8 r5)
     reset3dEngine();
     resetTempAllocators();
     loadTownPrgSub0();
-    setupDragonForTown(gDragonState);
+    setupDragonForTown(gDragonState->m0_pDragonModelRawData);
     gFieldOverlayFunction(townDebugTask2, r5);
 }
 
@@ -66,4 +65,51 @@ p_workArea loadTown(p_workArea r4, s32 r5)
     return townDebugTask2;
 }
 
+void startScriptTask(p_workArea r4)
+{
+    TaskUnimplemented();
+}
+
+void mainLogicInitSub0(sMainLogic_74* r4, s32 r5)
+{
+    r4->m2C = r5;
+    r4->m0 = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5));
+    r4->m1 = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5 + 1));
+    r4->m2 = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5 + 2));
+}
+void mainLogicInitSub1(sMainLogic_74* r4, sSaturnPtr r5, sSaturnPtr r6)
+{
+    r4->m20[0] = (readSaturnS32(r5) - readSaturnS32(r6)) / 2;
+    r4->m20[1] = (readSaturnS32(r5 + 4) - readSaturnS32(r6 + 4)) / 2;
+    r4->m20[2] = (readSaturnS32(r5 + 8) - readSaturnS32(r6 + 8)) / 2;
+
+    if (readSaturnS32(r6) > readSaturnS32(r5))
+    {
+        r4->m14[0] = r4->m20[0] - readSaturnS32(r5);
+    }
+    else
+    {
+        r4->m14[0] = r4->m20[0] - readSaturnS32(r6);
+    }
+
+    if (readSaturnS32(r6 + 4) > readSaturnS32(r5 + 4))
+    {
+        r4->m14[1] = r4->m20[1] - readSaturnS32(r5 + 4);
+    }
+    else
+    {
+        r4->m14[1] = r4->m20[1] - readSaturnS32(r6 + 4);
+    }
+
+    if (readSaturnS32(r6 + 8) > readSaturnS32(r5 + 8))
+    {
+        r4->m14[2] = r4->m20[2] - readSaturnS32(r5 + 8);
+    }
+    else
+    {
+        r4->m14[2] = r4->m20[2] - readSaturnS32(r6 + 8);
+    }
+
+    r4->m4 = sqrt_F(MTH_Product3d_FP(r4->m14, r4->m14));
+}
 

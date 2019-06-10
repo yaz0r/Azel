@@ -174,6 +174,7 @@ void clearVdp2StringFieldDebugList();
 void clearVdp2TextSmallFont();
 void clearVdp2TextLargeFont();
 void clearVdp2TextMemory();
+void vdp2DebugPrintNewLine(const std::string&);
 int drawStringLargeFont(const char* text);
 int drawStringSmallFont(const char* text);
 int drawLineLargeFont(const char* text);
