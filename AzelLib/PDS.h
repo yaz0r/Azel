@@ -41,24 +41,32 @@ void checkGLImpl(const char*, unsigned int line);
 //#define checkGL() checkGLImpl(__FILE__, __LINE__);
 #define checkGL()
 
-#if (defined(__APPLE__) && TARGET_OS_IOS) || (defined(__ANDROID__)) || (defined(__EMSCRIPTEN__))
-#define USE_GL_ES3
+#if (defined(__ANDROID__)) || (defined(__EMSCRIPTEN__))
+    #define USE_GL_ES3
+#else
+    #if (defined(__APPLE__) && TARGET_OS_IOS)
+        #define USE_GL_ES3
+    #elif (defined(__APPLE__) && TARGET_OS_WATCH)
+        #define USE_NULL_RENDERER
+    #else
+        #define USE_GL
+    #endif
 #endif
 
 #ifdef USE_GL_ES3
-#if defined(__APPLE__)
-#include <OpenGLES/ES3/gl.h>
-#include <OpenGLES/ES3/glext.h>
-#else
-#include <GLES3/gl3.h>
-#endif
-#else
-#include <GL/gl3w.h>
-#ifdef __MACOS__
-#include <Opengl/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+    #if defined(__APPLE__)
+        #include <OpenGLES/ES3/gl.h>
+        #include <OpenGLES/ES3/glext.h>
+    #else
+        #include <GLES3/gl3.h>
+    #endif
+#elif defined(USE_GL)
+    #include <GL/gl3w.h>
+    #ifdef __MACOS__
+        #include <Opengl/gl.h>
+    #else
+        #include <GL/gl.h>
+    #endif
 #endif
 
 #ifdef __EMSCRIPTEN__
@@ -150,7 +158,7 @@ struct sSaturnMemoryFile
     }
 };
 
-bool findFileOnDisc(std::string& filename);
+bool findFileOnDisc(const std::string& filename);
 
 #include "fixedPoint.h"
 

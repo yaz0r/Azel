@@ -4,6 +4,8 @@
 
 #include <unordered_map>
 
+#if !defined(USE_NULL_RENDERER)
+
 struct s_cachedTexture
 {
     u16 CMDCTRL;
@@ -416,3 +418,5 @@ GLuint getTextureForQuad(s_quad& quad)
 
     return textureHandle;
 }
+
+#endif

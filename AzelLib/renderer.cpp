@@ -78,7 +78,7 @@ const GLchar blit_ps[] =
 "   fragColor.w = 1.f;								\n"
 "}														\n"
 ;
-#else
+#elif defined(USE_GL)
 const GLchar blit_vs[] =
 "#version 330 \n"
 "in vec3 a_position;   \n"
@@ -119,6 +119,7 @@ enum eLayers {
 
 void azelSdl2_Init()
 {
+#ifndef USE_NULL_RENDERER
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         assert(false);
@@ -146,7 +147,7 @@ void azelSdl2_Init()
     gGlcontext = SDL_GL_CreateContext(gWindow);
     assert(gGlcontext);
 
-#ifndef USE_GL_ES3
+#ifdef USE_GL
     gl3wInit();
 #endif
 
@@ -167,6 +168,7 @@ void azelSdl2_Init()
     ImGui_ImplOpenGL3_Init(glsl_version);
     ImGui_ImplSDL2_InitForOpenGL(gWindow, gGlcontext);
 
+#ifndef USE_NULL_RENDERER
     // setup vdp1 Poly
     glGenFramebuffers(1, &gVdp1PolyFB);
     glGenTextures(1, &gVdp1PolyTexture);
@@ -181,9 +183,12 @@ void azelSdl2_Init()
     glGenTextures(1, &gNBG1Texture);
     glGenTextures(1, &gNBG2Texture);
     glGenTextures(1, &gNBG3Texture);
-
+#endif
+    
 #ifdef _DEBUG
     SDL_GL_SetSwapInterval(0);
+#endif
+    
 #endif
 }
 
@@ -269,6 +274,7 @@ static UIState gUIState;
 
 void azelSdl2_StartFrame()
 {
+#ifndef USE_NULL_RENDERER
     checkGL();
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -320,6 +326,7 @@ void azelSdl2_StartFrame()
         if (event.type == SDL_QUIT)
             closeApp = true;
     }
+#endif
 
     gSoloud.setGlobalVolume(gVolume);
 
@@ -327,6 +334,7 @@ void azelSdl2_StartFrame()
     graphicEngineStatus.m4514.m0[0].m16_pending.m8_newButtonDown = 0;
     graphicEngineStatus.m4514.m0[0].m16_pending.mC_newButtonDown2 = 0;
 
+#ifndef USE_NULL_RENDERER
     const Uint8* keyState = SDL_GetKeyboardState(NULL);
 
     for (int i = 0; i < SDL_NUM_SCANCODES; i++)
@@ -387,6 +395,7 @@ void azelSdl2_StartFrame()
     ImGui::NewFrame();
     
     checkGL();
+#endif
 }
 
 ImVec4 clear_color = ImColor(114, 144, 154);
@@ -648,11 +657,13 @@ void renderBG0(u32 width, u32 height)
         renderLayer(planeData, textureWidth, textureHeight, textureOutput);
     }
 
+#ifndef USE_NULL_RENDERER
     glBindTexture(GL_TEXTURE_2D, gNBG0Texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
+#endif
+    
     delete[] textureOutput;
 
 }
@@ -693,11 +704,13 @@ void renderBG1(u32 width, u32 height)
         renderLayer(planeData, textureWidth, textureHeight, textureOutput);
     }
 
+#ifndef USE_NULL_RENDERER
     glBindTexture(GL_TEXTURE_2D, gNBG1Texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
+#endif
+    
     delete[] textureOutput;
 }
 
@@ -773,11 +786,13 @@ void renderBG3(u32 width, u32 height)
         renderLayer(planeData, textureWidth, textureHeight, textureOutput);
     }
 
+#ifndef USE_NULL_RENDERER
     glBindTexture(GL_TEXTURE_2D, gNBG3Texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
+#endif
+    
     delete[] textureOutput;
 }
 
@@ -1247,11 +1262,12 @@ bool azelSdl2_EndFrame()
     }
     
     {
+#ifndef USE_NULL_RENDERER
         glBindTexture(GL_TEXTURE_2D, gVdp1Texture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, vdp1TextureWidth, vdp1TextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, vdp1TextureOutput);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
+#endif
         delete[] vdp1TextureOutput;
         vdp1TextureOutput = NULL;
     }
@@ -1277,6 +1293,7 @@ bool azelSdl2_EndFrame()
 
     checkGL();
     
+#ifndef USE_NULL_RENDERER
     glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 
@@ -1285,7 +1302,8 @@ bool azelSdl2_EndFrame()
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-
+#endif
+    
     checkGL();
     
     static int internalResolution[2] = { 1024, 720 };
@@ -1299,6 +1317,7 @@ bool azelSdl2_EndFrame()
     // render VDP1 frame buffer
     if(1)
     {
+#ifndef USE_NULL_RENDERER
         checkGL();
         glBindFramebuffer(GL_FRAMEBUFFER, gVdp1PolyFB);
         glBindTexture(GL_TEXTURE_2D, gVdp1PolyTexture);
@@ -1348,13 +1367,16 @@ bool azelSdl2_EndFrame()
         glCullFace(GL_BACK);
         glEnable(GL_CULL_FACE);
         checkGL();
-
+#endif
         flushObjectsToDrawList();
 
+#ifndef USE_NULL_RENDERER
         glDisable(GL_CULL_FACE);
+#endif
     }
     
     //Compose
+#ifndef USE_NULL_RENDERER
     {
         glBindFramebuffer(GL_FRAMEBUFFER, gCompositedFB);
         glBindTexture(GL_TEXTURE_2D, gCompositedTexture);
@@ -1493,7 +1515,9 @@ bool azelSdl2_EndFrame()
             
         }
     }
+#endif
 
+#ifndef USE_NULL_RENDERER
 #ifdef __IPHONEOS__
     SDL_SysWMinfo wmi;
     SDL_VERSION(&wmi.version);
@@ -1505,7 +1529,7 @@ bool azelSdl2_EndFrame()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #endif
     glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
-
+#endif
     ImGui::Begin("Final Composition");
     {
         ImVec2 textureSize = ImGui::GetWindowSize();
@@ -1542,6 +1566,7 @@ bool azelSdl2_EndFrame()
     
     checkGL();
     
+#ifndef USE_NULL_RENDERER
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Update and Render additional Platform Windows
@@ -1556,9 +1581,7 @@ bool azelSdl2_EndFrame()
     checkGL();
     
     glFlush();
-
     checkGL();
-    
     {
         static Uint64 last_time = SDL_GetPerformanceCounter();
         Uint64 now = SDL_GetPerformanceCounter();
@@ -1578,7 +1601,7 @@ bool azelSdl2_EndFrame()
     }
     
     checkGL();
-
+#endif
     return !closeApp;
 }
 

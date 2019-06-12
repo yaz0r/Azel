@@ -108,6 +108,9 @@ endif()
 add_executable (PDS ${SOURCES})
 
 IF(APPLE)
+IF(${CMAKE_SYSTEM_NAME} STREQUAL iOS)
+   SET(EXTRA_LIBS -framework cocoa)
+ELSE()
    INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
    FIND_LIBRARY(COCOA_LIBRARY Cocoa)
    FIND_LIBRARY(GLUT_LIBRARY GLUT )
@@ -120,6 +123,7 @@ IF(APPLE)
                      OpenAL_LIBRARY
                      AVFoundation_LIBRARY )
    SET(EXTRA_LIBS ${SDL2_LIBRARY} ${COCOA_LIBRARY} ${GLUT_LIBRARY} ${OpenGL_LIBRARY} ${OpenAL_LIBRARY} ${AVFoundation_LIBRARY} )
+endif ()
 ENDIF (APPLE)
 
 TARGET_LINK_LIBRARIES(PDS ${EXTRA_LIBS})

@@ -25,7 +25,7 @@ extern sSaturnMemoryFile gCommonFile =
     0x00200000,
 };
 
-bool findFileOnDisc(std::string& filename)
+bool findFileOnDisc(const std::string& filename)
 {
     FILE* fHandle = fopen(filename.c_str(), "rb");
     if (fHandle)

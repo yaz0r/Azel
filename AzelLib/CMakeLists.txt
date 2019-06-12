@@ -42,9 +42,17 @@ set(SOURCES
 ${THIRD_PARTY}/imgui/imgui.cpp
 ${THIRD_PARTY}/imgui/imgui_draw.cpp
 ${THIRD_PARTY}/imgui/imgui_widgets.cpp
-${THIRD_PARTY}/imgui/examples/imgui_impl_opengl3.cpp
-${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
 )
+
+IF(${CMAKE_SYSTEM_NAME} STREQUAL watchOS)
+ELSE()
+set(SOURCES
+ ${SOURCES}
+ ${THIRD_PARTY}/imgui/examples/imgui_impl_opengl3.cpp
+ ${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
+)
+ENDIF()
+
 
 source_group("src" FILES ${SRC_ROOT})
 source_group("src\\kernel" FILES ${SRC_KERNEL})

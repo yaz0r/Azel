@@ -3,6 +3,8 @@
 #include "3dEngine_textureCache.h"
 #include <unordered_map>
 
+#if !defined(USE_NULL_RENDERER)
+
 void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color = { 1,0,0,1 });
 
 struct sDebugLines
@@ -2058,3 +2060,5 @@ void PolyLineDrawGL(u32 vdp1EA)
     drawLineGL(CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, finalColor);
     drawLineGL(CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, finalColor);
 }
+#endif
+    
