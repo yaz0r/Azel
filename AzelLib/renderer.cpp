@@ -117,6 +117,23 @@ enum eLayers {
     MAX
 };
 
+void bindBackBuffer()
+{
+#ifndef USE_NULL_RENDERER
+#ifdef __IPHONEOS__
+    SDL_SysWMinfo wmi;
+    SDL_VERSION(&wmi.version);
+    SDL_GetWindowWMInfo(gWindow, &wmi);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, wmi.info.uikit.framebuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, wmi.info.uikit.colorbuffer);
+#else
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
+    glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+#endif
+}
+
 void azelSdl2_Init()
 {
 #ifndef USE_NULL_RENDERER
@@ -1217,6 +1234,115 @@ void renderVdp1()
     }
 }
 
+void renderTexturedQuad(GLuint sourceTexture)
+{
+    static GLuint quad_VertexArrayID;
+    static GLuint shaderProgram = 0;
+    static GLuint vshader = 0;
+    static GLuint fshader = 0;
+    static GLuint quad_vertexbuffer = 0;
+    static GLuint texID;
+
+    static bool initialized = false;
+    if (!initialized)
+    {
+        static const GLfloat g_quad_vertex_buffer_data[] = {
+            -1.0f, -1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            -1.0f,  1.0f, 0.0f,
+            -1.0f,  1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            1.0f,  1.0f, 0.0f,
+        };
+
+        glGenVertexArrays(1, &quad_VertexArrayID);
+        glBindVertexArray(quad_VertexArrayID);
+        glGenBuffers(1, &quad_vertexbuffer);
+
+        vshader = glCreateShader(GL_VERTEX_SHADER);
+        {
+            volatile int compiled = 0;
+            const GLchar* pYglprg_normal_v[] = { blit_vs, NULL };
+            glShaderSource(vshader, 1, pYglprg_normal_v, NULL);
+            glCompileShader(vshader);
+            glGetShaderiv(vshader, GL_COMPILE_STATUS, (int*)& compiled);
+            if (compiled == GL_FALSE)
+            {
+                GLint maxLength = 0;
+                glGetShaderiv(vshader, GL_INFO_LOG_LENGTH, &maxLength);
+
+                // The maxLength includes the NULL character
+                std::vector<GLchar> errorLog(maxLength);
+                glGetShaderInfoLog(vshader, maxLength, &maxLength, &errorLog[0]);
+            }
+            while (!compiled);
+        }
+
+        fshader = glCreateShader(GL_FRAGMENT_SHADER);
+        {
+            volatile int compiled = 0;
+            const GLchar* pYglprg_normal_f[] = { blit_ps, NULL };
+            glShaderSource(fshader, 1, pYglprg_normal_f, NULL);
+            glCompileShader(fshader);
+            glGetShaderiv(fshader, GL_COMPILE_STATUS, (int*)& compiled);
+            if (compiled == GL_FALSE)
+            {
+                GLint maxLength = 0;
+                glGetShaderiv(fshader, GL_INFO_LOG_LENGTH, &maxLength);
+
+                // The maxLength includes the NULL character
+                std::vector<GLchar> errorLog(maxLength);
+                glGetShaderInfoLog(fshader, maxLength, &maxLength, &errorLog[0]);
+                PDS_unimplemented(errorLog.data());
+                assert(compiled);
+            }
+            while (!compiled);
+        }
+
+        shaderProgram = glCreateProgram();
+        {
+            volatile int linked = 0;
+            glAttachShader(shaderProgram, vshader);
+            glAttachShader(shaderProgram, fshader);
+            glLinkProgram(shaderProgram);
+            glGetProgramiv(shaderProgram, GL_LINK_STATUS, (int*)& linked);
+            assert(linked == 1);
+            while (!linked);
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+        texID = glGetUniformLocation(shaderProgram, "s_texture");
+        assert(texID >= 0);
+
+        initialized = true;
+    }
+
+
+    glUseProgram(shaderProgram);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sourceTexture);
+    // Set our "renderedTexture" sampler to user Texture Unit 0
+    glUniform1i(texID, 0);
+
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+    glVertexAttribPointer(
+        0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+        3,                  // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,                  // stride
+        (void*)0            // array buffer offset
+    );
+
+    // Draw the triangle !
+    glDrawArrays(GL_TRIANGLES, 0, 6); // From index 0 to 3 -> 1 triangle
+
+    glDisableVertexAttribArray(0);
+}
+
 bool azelSdl2_EndFrame()
 {
     u32 outputResolutionWidth = 0;
@@ -1307,6 +1433,8 @@ bool azelSdl2_EndFrame()
     checkGL();
     
     static int internalResolution[2] = { 1024, 720 };
+
+    SDL_GetWindowSize(gWindow, &internalResolution[0], &internalResolution[1]);
 
     ImGui::Begin("Config");
     {
@@ -1405,111 +1533,7 @@ bool azelSdl2_EndFrame()
             {
                 if (isBackgroundEnabled(layerIndex) && (getPriorityForLayer(layerIndex) == priorityIndex))
                 {
-                    static GLuint quad_VertexArrayID;
-                    static GLuint shaderProgram = 0;
-                    static GLuint vshader = 0;
-                    static GLuint fshader = 0;
-                    static GLuint quad_vertexbuffer = 0;
-                    static GLuint texID;
-
-                    static bool initialized = false;
-                    if (!initialized)
-                    {
-                        static const GLfloat g_quad_vertex_buffer_data[] = {
-                            -1.0f, -1.0f, 0.0f,
-                            1.0f, -1.0f, 0.0f,
-                            -1.0f,  1.0f, 0.0f,
-                            -1.0f,  1.0f, 0.0f,
-                            1.0f, -1.0f, 0.0f,
-                            1.0f,  1.0f, 0.0f,
-                        };
-
-                        glGenVertexArrays(1, &quad_VertexArrayID);
-                        glBindVertexArray(quad_VertexArrayID);
-                        glGenBuffers(1, &quad_vertexbuffer);
-
-                        vshader = glCreateShader(GL_VERTEX_SHADER);
-                        {
-                            volatile int compiled = 0;
-                            const GLchar * pYglprg_normal_v[] = { blit_vs, NULL };
-                            glShaderSource(vshader, 1, pYglprg_normal_v, NULL);
-                            glCompileShader(vshader);
-                            glGetShaderiv(vshader, GL_COMPILE_STATUS, (int*)&compiled);
-                            if (compiled == GL_FALSE)
-                            {
-                                GLint maxLength = 0;
-                                glGetShaderiv(vshader, GL_INFO_LOG_LENGTH, &maxLength);
-
-                                // The maxLength includes the NULL character
-                                std::vector<GLchar> errorLog(maxLength);
-                                glGetShaderInfoLog(vshader, maxLength, &maxLength, &errorLog[0]);
-                            }
-                            while (!compiled);
-                        }
-
-                        fshader = glCreateShader(GL_FRAGMENT_SHADER);
-                        {
-                            volatile int compiled = 0;
-                            const GLchar * pYglprg_normal_f[] = { blit_ps, NULL };
-                            glShaderSource(fshader, 1, pYglprg_normal_f, NULL);
-                            glCompileShader(fshader);
-                            glGetShaderiv(fshader, GL_COMPILE_STATUS, (int*)&compiled);
-                            if (compiled == GL_FALSE)
-                            {
-                                GLint maxLength = 0;
-                                glGetShaderiv(fshader, GL_INFO_LOG_LENGTH, &maxLength);
-                                
-                                // The maxLength includes the NULL character
-                                std::vector<GLchar> errorLog(maxLength);
-                                glGetShaderInfoLog(fshader, maxLength, &maxLength, &errorLog[0]);
-                                PDS_unimplemented(errorLog.data());
-                                assert(compiled);
-                            }
-                            while (!compiled);
-                        }
-
-                        shaderProgram = glCreateProgram();
-                        {
-                            volatile int linked = 0;
-                            glAttachShader(shaderProgram, vshader);
-                            glAttachShader(shaderProgram, fshader);
-                            glLinkProgram(shaderProgram);
-                            glGetProgramiv(shaderProgram, GL_LINK_STATUS, (int*)&linked);
-                            assert(linked == 1);
-                            while (!linked);
-                        }
-
-                        glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-                        glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-
-                        texID = glGetUniformLocation(shaderProgram, "s_texture");
-                        assert(texID >= 0);
-
-                        initialized = true;
-                    }
-
-                    
-                    glUseProgram(shaderProgram);
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, getTextureForLayer(layerIndex));
-                    // Set our "renderedTexture" sampler to user Texture Unit 0
-                    glUniform1i(texID, 0);
-
-                    glEnableVertexAttribArray(0);
-                    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-                    glVertexAttribPointer(
-                        0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                        3,                  // size
-                        GL_FLOAT,           // type
-                        GL_FALSE,           // normalized?
-                        0,                  // stride
-                        (void*)0            // array buffer offset
-                    );
-
-                    // Draw the triangle !
-                    glDrawArrays(GL_TRIANGLES, 0, 6); // From index 0 to 3 -> 1 triangle
-
-                    glDisableVertexAttribArray(0);
+                    renderTexturedQuad(getTextureForLayer(layerIndex));
                 }
             }
             
@@ -1517,19 +1541,8 @@ bool azelSdl2_EndFrame()
     }
 #endif
 
-#ifndef USE_NULL_RENDERER
-#ifdef __IPHONEOS__
-    SDL_SysWMinfo wmi;
-    SDL_VERSION(&wmi.version);
-    SDL_GetWindowWMInfo(gWindow, &wmi);
-    
-    glBindFramebuffer(GL_FRAMEBUFFER, wmi.info.uikit.framebuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, wmi.info.uikit.colorbuffer);
-#else
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-#endif
-    glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
-#endif
+    bindBackBuffer();
+
     ImGui::Begin("Final Composition");
     {
         ImVec2 textureSize = ImGui::GetWindowSize();
@@ -1566,9 +1579,23 @@ bool azelSdl2_EndFrame()
     
     checkGL();
     
-#ifndef USE_NULL_RENDERER
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    static bool bImguiEnabled = false;
 
+#ifndef USE_NULL_RENDERER
+    if (ImGui::GetIO().KeysDown[SDL_SCANCODE_GRAVE] && (ImGui::GetIO().KeysDownDuration[SDL_SCANCODE_GRAVE] == 0.f))
+    {
+        bImguiEnabled = !bImguiEnabled;
+    }
+    if (bImguiEnabled)
+    {
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+    else
+    {
+        renderTexturedQuad(gCompositedTexture);
+    }
+    
+    checkGL();
     // Update and Render additional Platform Windows
     ImGuiIO& io = ImGui::GetIO();
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -1577,9 +1604,7 @@ bool azelSdl2_EndFrame()
         ImGui::RenderPlatformWindowsDefault();
         SDL_GL_MakeCurrent(gWindow, gGlcontext);
     }
-    
-    checkGL();
-    
+
     glFlush();
     checkGL();
     {
