@@ -44,7 +44,7 @@ void checkGLImpl(const char*, unsigned int line);
 #if (defined(__ANDROID__)) || (defined(__EMSCRIPTEN__))
     #define USE_GL_ES3
 #else
-    #if (defined(__APPLE__) && TARGET_OS_IOS)
+    #if (defined(__APPLE__) && (TARGET_OS_IOS || TARGET_OS_TV))
         #define USE_GL_ES3
     #elif (defined(__APPLE__) && TARGET_OS_WATCH)
         #define USE_NULL_RENDERER

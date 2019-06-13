@@ -11,7 +11,7 @@
 #pragma comment(lib, "Opengl32.lib")
 #endif
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__) || defined(TARGET_OS_IOS) || defined(TARGET_OS_TV)
 static float gVolume = 1.f;
 #else
 #ifdef SHIPPING_BUILD
@@ -44,7 +44,7 @@ GLuint gNBG3Texture = 0;
 #ifdef SHIPPING_BUILD
 int frameLimit = 30;
 #else
-#if defined(PDS_TOOL) && !defined(__EMSCRIPTEN__)
+#if defined(PDS_TOOL) && !(defined(__EMSCRIPTEN__) || defined(TARGET_OS_IOS) || defined(TARGET_OS_TV))
 int frameLimit = -1;
 #else
 int frameLimit = 30;
@@ -130,7 +130,9 @@ void bindBackBuffer()
 #else
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #endif
-    glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+    int internalResolution[2] = { 1024, 720 };
+    SDL_GL_GetDrawableSize(gWindow, &internalResolution[0], &internalResolution[1]);
+    glViewport(0, 0, internalResolution[0], internalResolution[1]);
 #endif
 }
 
@@ -173,7 +175,7 @@ void azelSdl2_Init()
 
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(TARGET_OS_IOS) && !defined(TARGET_OS_TV)
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 #endif
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -1419,8 +1421,12 @@ bool azelSdl2_EndFrame()
 
     checkGL();
     
+    static int internalResolution[2] = { 1024, 720 };
+    
+    SDL_GL_GetDrawableSize(gWindow, &internalResolution[0], &internalResolution[1]);
+    
 #ifndef USE_NULL_RENDERER
-    glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+    glViewport(0, 0, internalResolution[0], internalResolution[1]);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 
     glClearDepthf(1.f);
@@ -1431,10 +1437,6 @@ bool azelSdl2_EndFrame()
 #endif
     
     checkGL();
-    
-    static int internalResolution[2] = { 1024, 720 };
-
-    SDL_GetWindowSize(gWindow, &internalResolution[0], &internalResolution[1]);
 
     ImGui::Begin("Config");
     {

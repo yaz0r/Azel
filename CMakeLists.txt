@@ -14,7 +14,7 @@ set(FORCEFEEDBACK OFF CACHE BOOL "" FORCE)
 
 add_subdirectory( AzelLib )
 
-IF(${CMAKE_SYSTEM_NAME} STREQUAL iOS)
+IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
 	add_subdirectory( ${THIRD_PARTY}/soloud )
 	add_subdirectory( PDS )
 ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL watchOS)
