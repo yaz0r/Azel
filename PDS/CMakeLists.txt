@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+file(GLOB PDS_DATA
+    "${CMAKE_SOURCE_DIR}/data/*"
+)
+
 file(GLOB SRC_ROOT
     "*.cpp"
     "*.h"
@@ -109,7 +113,21 @@ add_executable (PDS ${SOURCES})
 
 IF(APPLE)
 IF(${CMAKE_SYSTEM_NAME} STREQUAL iOS)
-   SET(EXTRA_LIBS -framework cocoa)
+set ( FRAMEWORKS
+        Foundation
+        AudioToolbox
+        CoreGraphics
+        QuartzCore
+        UIKit
+        OpenGLES
+        MobileCoreServices
+        AVFoundation
+        CoreMotion
+        GameController
+      )
+foreach(FW ${FRAMEWORKS})
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework ${FW}")
+  endforeach()
 ELSE()
    INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
    FIND_LIBRARY(COCOA_LIBRARY Cocoa)
@@ -135,13 +153,31 @@ if(EMSCRIPTEN)
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
 
+IF(${CMAKE_SYSTEM_NAME} STREQUAL iOS)
+TARGET_LINK_LIBRARIES(PDS soloud AzelLib)
+TARGET_LINK_LIBRARIES(PDS ${THIRD_PARTY}/SDL2/Xcode-iOS/SDL/build/Release-iphonesimulator/libSDL2.a)
+ELSE()
 TARGET_LINK_LIBRARIES(PDS SDL2main SDL2-static soloud AzelLib)
-
 if(UNIX)
-	TARGET_LINK_LIBRARIES(PDS -lGL)
+        TARGET_LINK_LIBRARIES(PDS -lGL)
 endif()
-
+ENDIF()
 
 set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT PDS)
 set_target_properties(PDS PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/data")
 set_target_properties(PDS PROPERTIES WIN32_EXECUTABLE FALSE)
+
+
+IF(${CMAKE_SYSTEM_NAME} STREQUAL iOS)
+add_custom_command(TARGET PDS PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory 
+              ${CMAKE_SOURCE_DIR}/data $<TARGET_FILE_DIR:PDS>
+)
+
+set_target_properties(PDS PROPERTIES
+	MACOSX_BUNDLE_BUNDLE_NAME "Azel"
+      	MACOSX_BUNDLE TRUE
+	MACOSX_BUNDLE_GUI_IDENTIFIER "net.yaz0r.azel"
+)
+ENDIF()
+
