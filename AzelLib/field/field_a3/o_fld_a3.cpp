@@ -2777,26 +2777,26 @@ s32 executeNative(sSaturnPtr ptr)
 
 void scriptFunction_6067E68_fadeOut(s32 arg0)
 {
-    if (menuUnk0.m_4D >= menuUnk0.m_4C)
+    if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
     {
         vdp2Controls.m20_registers[0].N1COSL = 0x10;
         vdp2Controls.m20_registers[1].N1COSL = 0x10;
     }
 
-    fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, arg0*2);
-    fadePalette(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), 0x8000, arg0 * 2);
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, arg0*2);
+    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0 * 2);
 }
 
 void scriptFunction_6067ec0_fadeIn(s32 arg0)
 {
-    if (menuUnk0.m_4D >= menuUnk0.m_4C)
+    if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
     {
         vdp2Controls.m20_registers[0].N1COSL = 0x10;
         vdp2Controls.m20_registers[1].N1COSL = 0x10;
     }
 
-    fadePalette(&menuUnk0.m_field0, 0x8000, menuUnk0.m_48, arg0 * 2);
-    fadePalette(&menuUnk0.m_field24, 0x8000, menuUnk0.m_48, arg0 * 2);
+    fadePalette(&g_fadeControls.m0_fade0, 0x8000, g_fadeControls.m_48, arg0 * 2);
+    fadePalette(&g_fadeControls.m24_fade1, 0x8000, g_fadeControls.m_48, arg0 * 2);
 
 }
 

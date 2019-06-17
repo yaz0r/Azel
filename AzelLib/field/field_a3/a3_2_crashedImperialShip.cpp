@@ -82,7 +82,7 @@ struct fieldA3_2_crashedImpertialShip : public s_workAreaTemplate<fieldA3_2_cras
     s_memoryAreaOutput m0_memoryArea;
     s_DataTable2Sub0* m8;
     sVec3_FP mC_position;
-    sVec3_S16 m24_rotation;
+    sVec3_S16_12_4 m24_rotation;
     sVec3_FP m2C_LCSTargetLocation;
     s8 m3C_status;
     s8 m3D_visible;
@@ -152,7 +152,7 @@ struct fieldA3_2_crashedImpertialShip2 : public s_workAreaTemplate<fieldA3_2_cra
     s_memoryAreaOutput m0_memoryArea;
     s_DataTable2Sub0* m8;
     sVec3_FP mC_position;
-    sVec3_S16 m24_rotation;
+    sVec3_S16_12_4 m24_rotation;
     s8 m30_status;
     s8 m31_visible;
     s_3dModel m34_3dModel;

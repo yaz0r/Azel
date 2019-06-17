@@ -173,13 +173,13 @@ void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkAr
         pWorkArea->m_status++;
         break;
     case 3:
-        if (menuUnk0.m_4D >= menuUnk0.m_4C)
+        if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
         {
             vdp2Controls.m20_registers[0].N1COSL = 0;
             vdp2Controls.m20_registers[1].N1COSL = 0;
         }
 
-        fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
+        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
 
 
         break;

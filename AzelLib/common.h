@@ -104,7 +104,7 @@ struct sVec3_FP
     }
 };
 
-struct sVec3_S16
+struct sVec3_S16_12_4
 {
     std::array<s16, 3> m_value;
 
@@ -129,6 +129,31 @@ struct sVec3_S16
     }
 };
 
+struct sVec3_S16
+{
+    std::array<s16, 3> m_value;
+
+    s16 operator[](int i) const
+    {
+        return m_value[i];
+    }
+
+    s16& operator[](int i)
+    {
+        return m_value[i];
+    }
+
+    sVec3_FP toSVec3_FP() const
+    {
+        sVec3_FP convertedVector;
+        convertedVector[0] = ((s32)m_value[0]) << 16;
+        convertedVector[1] = ((s32)m_value[1]) << 16;
+        convertedVector[2] = ((s32)m_value[2]) << 16;
+
+        return convertedVector;
+    }
+};
+
 struct sVec2_FP
 {
     fixedPoint m_value[2];
@@ -143,6 +168,8 @@ struct sVec2_FP
         return m_value[i];
     }
 };
+
+#include "kernel/fade.h"
 
 struct sInterpolator_FP
 {
@@ -634,7 +661,7 @@ struct s_graphicEngineStatus_40E4
 {
     s_graphicEngineStatus_405C m0;
     sVdp2Controls m50;
-    sMenuUnk0 m2B0;
+    sFadeControls m2B0;
     u8 m300[512];
     u16 m400;
     u16 m402;

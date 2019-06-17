@@ -530,7 +530,7 @@ struct s_grid1
     sSaturnPtr m0_offsetTable; // table of 5 u16, first 4 are LOD model offset (usually the same), last is collision mesh
     std::array<struct sProcessed3dModel*, 5> m0b_models;
     sVec3_FP m4;
-    sVec3_S16 m10;
+    sVec3_S16_12_4 m10;
     s16 m16;
     // size 18
 };
@@ -563,7 +563,7 @@ struct s_DataTable2Sub0
 {
     sSaturnPtr m0_function;
     sVec3_FP m4_position;
-    sVec3_S16 m10_rotation;
+    sVec3_S16_12_4 m10_rotation;
     s32 m18;
     sSaturnPtr m1C;
     // size is 0x20

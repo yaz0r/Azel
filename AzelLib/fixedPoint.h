@@ -100,5 +100,6 @@ s32 atan2(s32 y, s32 x);
 fixedPoint FP_Pow2(fixedPoint r4);
 
 void asyncDivStart(s32 r4, fixedPoint r5);
+void asyncDivStart_integer(s32 r4, s32 r5);
 fixedPoint asyncDivEnd();
 

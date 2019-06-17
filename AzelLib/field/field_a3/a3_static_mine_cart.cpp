@@ -9,7 +9,7 @@ struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
     sVec3_FP mC_position;
     sVec3_FP m18;
     sVec3_FP m24;
-    sVec3_S16 m30_rotation;
+    sVec3_S16_12_4 m30_rotation;
     s16 m36_delay;
     s16 m38_currentDelay;
     s8 m3A;

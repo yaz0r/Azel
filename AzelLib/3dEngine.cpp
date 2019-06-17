@@ -401,14 +401,14 @@ void rotateCurrentMatrixZYX(const sVec3_FP& rotationVec)
     rotateMatrixZYX(&rotationVec, pCurrentMatrix);
 }
 
-void rotateMatrixZYX_s16(const sVec3_S16& rotationVec, sMatrix4x3* pMatrix)
+void rotateMatrixZYX_s16(const sVec3_S16_12_4& rotationVec, sMatrix4x3* pMatrix)
 {
     rotateMatrixZ(rotationVec[2], pMatrix);
     rotateMatrixY(rotationVec[1], pMatrix);
     rotateMatrixX(rotationVec[0], pMatrix);
 }
 
-void rotateCurrentMatrixZYX_s16(const sVec3_S16& rotationVec)
+void rotateCurrentMatrixZYX_s16(const sVec3_S16_12_4& rotationVec)
 {
     rotateMatrixZYX_s16(rotationVec, pCurrentMatrix);
 }

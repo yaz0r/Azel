@@ -333,7 +333,7 @@ void resetEngine()
 
     //...
 
-    fadePalette(&menuUnk0.m_field0, 0, 0, 1);
+    fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
 
     // Stuff
 
@@ -966,6 +966,7 @@ void loopIteration()
         // interrupt stuff
         {
             interruptVDP1Update();
+            updateFadeInterrupt();
         }
         checkGL();
     }

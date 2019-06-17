@@ -36,12 +36,12 @@ void startRuinBackgroundTask(p_workArea pThis)
 
 void registerNpcs(sSaturnPtr r4_objectTable, sSaturnPtr r5_script, s32 r6)
 {
-    npcData0.m0 = 0;
+    npcData0.m0_numExtraScriptsIterations = 0;
     npcData0.m5E = -1;
     npcData0.m60 = r4_objectTable;
     npcData0.mFC = 0;
     npcData0.m100 = 0;
-    npcData0.m11C = &npcData0.m120.m40;
+    npcData0.m11C_currentStackPointer = npcData0.m120_stack.end();
     npcData0.m164 = 0;
     npcData0.m168 = 0;
     npcData0.m16C = 0;
@@ -224,4 +224,21 @@ p_workArea overlayStart_TWN_RUIN(p_workArea pUntypedThis, u32 arg)
     twnVar1 = &twnVar2;
 
     return pThis;
+}
+
+s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr, s32 arg0)
+{
+    assert(ptr.m_file == gTWN_RUIN);
+
+    switch (ptr.m_offset)
+    {
+    case 0x605C83C:
+        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, arg0);
+        fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0);
+        graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
+        return 0;
+    default:
+        assert(0);
+    }
+    return 0;
 }

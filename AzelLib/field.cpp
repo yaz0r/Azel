@@ -281,18 +281,18 @@ struct exitCutsceneTaskUpdateSub0Sub1Sub0 : public s_workAreaTemplate<exitCutsce
         {
         case 0:
             fieldTaskPtr->m28_status |= 0x100;
-            if (menuUnk0.m_4D >= menuUnk0.m_4C)
+            if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
             {
                 vdp2Controls.m20_registers[0].N1COSL = 0x10;
                 vdp2Controls.m20_registers[1].N1COSL = 0x10;
             }
 
-            fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), pThis->m0, pThis->m10);
-            fadePalette(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), pThis->m0, pThis->m10);
+            fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), pThis->m0, pThis->m10);
+            fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), pThis->m0, pThis->m10);
             pThis->m14_status++;
             //fall through
         case 1:
-            if (!menuUnk0.m_field0.m_field20)
+            if (!g_fadeControls.m0_fade0.m20_stopped)
                 return;
             exitCutsceneTaskUpdateSub0Sub1Sub0Sub0(pThis->m4_fieldIndex);
             exitCutsceneTaskUpdateSub0Sub1Sub0Sub1(pThis->m4_fieldIndex, pThis->m8, pThis->mC_exitNumber);

@@ -401,14 +401,14 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
         vdp2Controls.m4_pendingVdp2Regs->PRINB = (vdp2Controls.m4_pendingVdp2Regs->PRINB & 0xF8FF) | 0x700;
         vdp2Controls.m_isDirty = true;
 
-        if (menuUnk0.m_4D >= menuUnk0.m_4C)
+        if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
         {
             vdp2Controls.m20_registers[0].N1COSL = 0x10;
             vdp2Controls.m20_registers[1].N1COSL = 0x10;
         }
 
-        fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
-        fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
+        fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
+        fadePalette(&g_fadeControls.m24_fade1, 0xC210, 0xC210, 1);
     }
 
     static void Update(s_fieldDebugListWorkArea* pWorkArea)
@@ -648,14 +648,14 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
             setOpenMenu7();
         }
 
-        if (menuUnk0.m_4D >= menuUnk0.m_4C)
+        if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
         {
             vdp2Controls.m20_registers[0].N1COSL = 0x10;
             vdp2Controls.m20_registers[1].N1COSL = 0x10;
         }
 
-        fadePalette(&menuUnk0.m_field0, 0, 0, 1);
-        fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+        fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
+        fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
 
         r14->m3C_fieldTaskState++;
     }
@@ -686,22 +686,14 @@ struct s_dramAllocator
     u32 var_14;
 }; // size 18
 
-struct s_fileEntry
-{
-    s32 m0_fileID;
-    s32 m4_fileSize;
-    s32 m8;
-    s32 mC;
-    // size 0x10
-};
 
 s_dramAllocator* dramAllocatorHead = NULL;
-s_dramAllocator* dramAllocatorEnd = NULL;
+std::vector<s_fileEntry> dramAllocatorEnd;
 
 void resetTempAllocators()
 {
     dramAllocatorHead = NULL;
-    dramAllocatorEnd = NULL;
+    dramAllocatorEnd.clear();
     vdp1AllocatorHead = NULL;
 }
 
@@ -717,50 +709,38 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
 {
     loadRamResource(pWorkArea);
 
-    u32 r14 = sizeof(s_dramAllocator);
-
-    if (assetList)
-    {
-        const char** tempList = assetList;
-        while (*tempList)
-        {
-            r14 += sizeof(s_fileEntry);
-            tempList++;
-        }
-    }
-
-    s_dramAllocator* pDramAllocator = (s_dramAllocator*)allocateHeapForTask(pWorkArea, r14);
+    s_dramAllocator* pDramAllocator = (s_dramAllocator*)allocateHeapForTask(pWorkArea, sizeof(s_dramAllocator));
     
     pDramAllocator->allocationStart = dest;
     pDramAllocator->allocationEnd = dest + size;
     pDramAllocator->m_nextNode = dramAllocatorHead;
     dramAllocatorHead = pDramAllocator;
 
-    dramAllocatorEnd = pDramAllocator + 1;
-
+    dramAllocatorEnd.clear();
     u32 pNext = 0;
 
     if (assetList)
     {
-        s_fileEntry* r14 = (s_fileEntry*)(pDramAllocator + 1);
-
         while (*assetList)
         {
+            s_fileEntry newFileEntry;
             if (*assetList == (const char*)-1)
             {
-                r14->m0_fileID = -1;
-                r14->m4_fileSize = 0;
+                newFileEntry.m0_fileID = -1;
+                newFileEntry.m4_fileSize = 0;
             }
             else
             {
-                r14->m0_fileID = findMandatoryFileOnDisc(*assetList);
-                r14->m4_fileSize = getFileSizeFromFileId(*assetList);
+                newFileEntry.mFileName = *assetList;
+                newFileEntry.m0_fileID = findMandatoryFileOnDisc(*assetList);
+                newFileEntry.m4_fileSize = getFileSizeFromFileId(*assetList);
             }
 
-            r14->m8 = 0;
-            r14->mC = 0;
+            newFileEntry.m8_refcount = 0;
+            newFileEntry.mC_buffer = 0;
 
-            r14++;
+            dramAllocatorEnd.push_back(newFileEntry);
+
             assetList++;
         }
     }
@@ -776,13 +756,26 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
     addToMemoryLayout(dest, 8);
 }
 
-u8* dramAllocate(u32 size, u32 unk)
+sVdp1Allocation* vdp1Allocate(u32 size)
 {
     if (size == 0)
-        return NULL;
+        return nullptr;
+
+    //TODO: this isn't really implemented
+    sVdp1Allocation* pNewAllocation = new sVdp1Allocation;
+
+    pNewAllocation->m4_baseInVdp1Memory = new u8[size];
+
+    return pNewAllocation;
+}
+
+u8* dramAllocate(u32 size)
+{
+    if (size == 0)
+        return nullptr;
 
     // TODO: does the alignment stuff still works in 64bits?
-    u32 paddedSize = (size + sizeof(s_dramAllocationNode) + 0xF) & 0xFFFFFFF0;
+    u32 paddedSize = (size + sizeof(s_dramAllocationNode) + 0xF) & ~0xF;
 
     s_dramAllocationNode** r5 = &dramAllocatorHead->buffer;
 
@@ -2022,7 +2015,7 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
 {
     s_loadDragonWorkArea* pLoadDragonWorkArea = createSubTaskFromFunction<s_loadDragonWorkArea>(pWorkArea, nullptr);
 
-    pLoadDragonWorkArea->m8_dramAllocation = dramAllocate(0x1F600, 0);
+    pLoadDragonWorkArea->m8_dramAllocation = dramAllocate(0x1F600);
     pLoadDragonWorkArea->m4_vramAllocation = NULL;
     pLoadDragonWorkArea->m8_MCBInDram = pLoadDragonWorkArea->m8_dramAllocation + 0x18E00;
 
@@ -2312,8 +2305,8 @@ void s_FieldSubTaskWorkArea::Init(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
         resetTempAllocators();
     }
 
-    menuUnk0.m_48 = 0xC210;
-    menuUnk0.m_4A = 0xC210;
+    g_fadeControls.m_48 = 0xC210;
+    g_fadeControls.m_4A = 0xC210;
 
     if (gFieldOverlayFunction)
         gFieldOverlayFunction(pFieldSubTaskWorkArea, 0);
@@ -2354,16 +2347,16 @@ void s_FieldSubTaskWorkArea::Update(s_FieldSubTaskWorkArea* pFieldSubTaskWorkAre
         {
             if (!soundFunc1())
             {
-                menuUnk0.m_4D = 6;
+                g_fadeControls.m_4D = 6;
 
-                if (menuUnk0.m_4D >= menuUnk0.m_4C)
+                if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
                 {
                     vdp2Controls.m20_registers[0].N1COSL = 0x10;
                     vdp2Controls.m20_registers[1].N1COSL = 0x10;
                 }
 
-                fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
-                fadePalette(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_4A, 30);
+                fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
+                fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), g_fadeControls.m_4A, 30);
 
                 pFieldSubTaskWorkArea->fieldSubTaskStatus++;
             }
@@ -2655,8 +2648,8 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
 
         createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(pThis->m8, pThis->m8);
 
-        fadePalette(&menuUnk0.m_field0, 0x8000, 0x8000, 1);
-        fadePalette(&menuUnk0.m_field24, 0x8000, 0x8000, 1);
+        fadePalette(&g_fadeControls.m0_fade0, 0x8000, 0x8000, 1);
+        fadePalette(&g_fadeControls.m24_fade1, 0x8000, 0x8000, 1);
     }
 
     static void townDebugTaskInit(s_fieldDebugTaskWorkArea* pWorkArea, s32)
@@ -2829,7 +2822,7 @@ void menuGraphicsTaskDrawSub1()
 
     memcpy_dma(&graphicEngineStatus.m405C, &graphicEngineStatus.m40E4->m0, sizeof(s_graphicEngineStatus_405C));
     memcpy_dma(&vdp2Controls, &graphicEngineStatus.m40E4->m50, sizeof(sVdp2Controls));
-    memcpy_dma(&menuUnk0, &graphicEngineStatus.m40E4->m2B0, sizeof(sMenuUnk0));
+    memcpy_dma(&g_fadeControls, &graphicEngineStatus.m40E4->m2B0, sizeof(sFadeControls));
     asyncDmaCopy(vdp2Palette, &graphicEngineStatus.m40E4->m300, 512, 0);
 
     u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
@@ -3725,8 +3718,8 @@ void s_mainMenuWorkArea::Init(s_mainMenuWorkArea* pWorkArea)
 
     vblankData.m14 = 1;
 
-    fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
-    fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
+    fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
+    fadePalette(&g_fadeControls.m24_fade1, 0xC210, 0xC210, 1);
 }
 
 void s_statusMenuTaskWorkArea::Init(s_statusMenuTaskWorkArea*)
@@ -3816,8 +3809,8 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 1) // B
         {
             playSoundEffect(1);
-            fadePalette(&menuUnk0.m_field0, 0, 0, 1);
-            fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+            fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
+            fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
             if (pWorkArea)
             {
                 pWorkArea->getTask()->markFinished();
@@ -4020,7 +4013,7 @@ void menuGraphicsTaskDrawSub3()
     if (graphicEngineStatus.m40E4)
     {
         memcpy_dma(&graphicEngineStatus.m40E4->m50, &vdp2Controls, sizeof(sVdp2Controls));
-        memcpy_dma(&graphicEngineStatus.m40E4->m2B0, &menuUnk0, sizeof(sMenuUnk0));
+        memcpy_dma(&graphicEngineStatus.m40E4->m2B0, &g_fadeControls, sizeof(sFadeControls));
         asyncDmaCopy(&graphicEngineStatus.m40E4->m300, vdp2Palette, 512, 0);
 
         u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
@@ -4073,8 +4066,8 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
             pWorkArea->m4->getTask()->markPaused();
 
             menuGraphicsTaskDrawSub1();
-            fadePalette(&menuUnk0.m_field0, 0, 0, 1);
-            fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+            fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
+            fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
             pWorkArea->state++;
         }
         break;
@@ -4112,8 +4105,8 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
                 return;
             }
             playSoundEffect(4);
-            fadePalette(&menuUnk0.m_field0, 0, 0, 1);
-            fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+            fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
+            fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
             pWorkArea->state++;
         }
         else
@@ -4462,8 +4455,8 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
         case 12:
         case 22:
         case 37:
-            fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0, 30);
-            fadePalette(&menuUnk0.m_field24, titleScreenDrawSub1(&menuUnk0), 0, 30);
+            fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0, 30);
+            fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0, 30);
             break;
         default:
             assert(0);

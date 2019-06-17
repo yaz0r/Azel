@@ -77,3 +77,23 @@ void setNextGameStatus(u32 r4);
 u32 performModulo(u32 r0, u32 r1);
 void resetTempAllocators();
 u16 loadFnt(const char* filename);
+
+struct s_fileEntry
+{
+    std::string mFileName;
+    s32 m0_fileID; // was the file index in the CD, but useless here
+    s32 m4_fileSize;
+    s32 m8_refcount;
+    struct npcFileDeleter* mC_buffer;
+    // size 0x10
+};
+
+extern std::vector<s_fileEntry> dramAllocatorEnd;
+
+u8* dramAllocate(u32 size);
+
+struct sVdp1Allocation
+{
+    u8* m4_baseInVdp1Memory;
+};
+sVdp1Allocation* vdp1Allocate(u32 size);

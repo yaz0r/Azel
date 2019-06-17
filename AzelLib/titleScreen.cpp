@@ -128,7 +128,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
                 titleScreenDrawSub3(2);
 
                 // fade out to black
-                fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
+                fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, 30);
                 return;
             }
 
@@ -364,7 +364,7 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
         if (--pWorkArea->m_delay)
             return;
 
-        fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0x8000, 30);
+        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, 30);
         titleScreenDrawSub3(3);
 
         pWorkArea->m_status++;
@@ -431,10 +431,10 @@ void s_warningWorkArea::Draw(s_warningWorkArea* pWorkArea)
     case 2: // fade out init?
         if (!(graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8))
             return;
-        fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), 0, 30);
+        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0, 30);
         pWorkArea->m_status++;
     case 3: // wait fade out
-        if (!menuUnk0.m_field0.m_field20)
+        if (!g_fadeControls.m0_fade0.m20_stopped)
             return;
         pWorkArea->getTask()->markFinished();
         break;
@@ -505,13 +505,13 @@ void s_warningWorkArea::Init(s_warningWorkArea* pWorkArea)
 
     loadWarningFile(cartdrigePresent - 1);
 
-    if (menuUnk0.m_4D >= menuUnk0.m_4C)
+    if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
     {
         vdp2Controls.m20_registers[0].N1COSL = 0;
         vdp2Controls.m20_registers[1].N1COSL = 0;
     }
 
-    fadePalette(&menuUnk0.m_field0, titleScreenDrawSub1(&menuUnk0), menuUnk0.m_48, 30);
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
 }
 
 p_workArea startWarningTask(s_workArea* workArea)

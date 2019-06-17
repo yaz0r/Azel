@@ -375,8 +375,8 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
 
         if (graphicEngineStatus.m40AC.m0_menuId != 1)
         {
-            fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
-            fadePalette(&menuUnk0.m_field24, 0xC210, 0xC210, 1);
+            fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
+            fadePalette(&g_fadeControls.m24_fade1, 0xC210, 0xC210, 1);
         }
         pWorkArea->m0++;
         break;
@@ -397,8 +397,8 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
             vblankData.m14 = pWorkArea->m4;
             if (graphicEngineStatus.m40AC.m0_menuId != 1)
             {
-                fadePalette(&menuUnk0.m_field0, 0, 0, 1);
-                fadePalette(&menuUnk0.m_field24, 0, 0, 1);
+                fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
+                fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
                 pWorkArea->m0 = 6;
             }
             else

@@ -2,7 +2,7 @@
 
 static bool bDrawCollisions = false;
 
-void transformCollisionVertices(s32 r4, std::vector<sVec3_S16>& r5, std::array<sVec3_FP, 256>& r6)
+void transformCollisionVertices(s32 r4, std::vector<sVec3_S16_12_4>& r5, std::array<sVec3_FP, 256>& r6)
 {
     for (int i = 0; i < r4; i++)
     {

@@ -205,7 +205,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
     s32 m20;
     s32 m24;
     s32 m28_visibilityDelay;
-    sVec3_S16 m2C_rotation;
+    sVec3_S16_12_4 m2C_rotation;
     s16 m32_targetAngle;
     s16 m34_deltaAngle;
     s16 m36;

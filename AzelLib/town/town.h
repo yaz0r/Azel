@@ -1,28 +1,28 @@
 #pragma once
 
-struct sNpcData_120
-{
-    s32 m40; // actual size is unknown
-};
-
 struct sNpcData
 {
-    s32 m0;
+    s32 m0_numExtraScriptsIterations;
     s8 m5C;
     s8 m5D;
     s8 m5E;
     sSaturnPtr m60;
+    sSaturnPtr m64_scriptList;
+    s32 m68_nulLCSTargets;
+    sSaturnPtr m6C_LCSTargets;
     std::array<u8*, 8> m70_npcPointerArray;
     s32 mF0;
     s32 mF4;
+    s32 mF8;
     s32 mFC;
     s32 m100;
     sSaturnPtr m104_scriptPtr;
     s32 m108;
     s32 m10C;
     s32 m116;
-    s32* m11C;
-    sNpcData_120 m120;
+    s32 m118_currentResult;
+    std::array<sSaturnPtr, 0x10>::iterator m11C_currentStackPointer;
+    std::array<sSaturnPtr, 0x10> m120_stack;
     s32 m164;
     s32 m168;
     s32 m16C;
@@ -58,3 +58,5 @@ struct sMainLogic_74
 
 void mainLogicInitSub0(sMainLogic_74*, s32);
 void mainLogicInitSub1(sMainLogic_74*, sSaturnPtr, sSaturnPtr);
+
+s32 initNPC(s32 arg);

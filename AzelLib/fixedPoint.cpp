@@ -46,8 +46,8 @@ fixedPoint MTH_Product3d_FP(const sVec3_FP& r4, const sVec3_FP& r5)
     return dot3_FP(&r4, &r5);
 }
 
-s32 gDivident;
-fixedPoint gDivisor;
+s64 gDivident;
+s64 gDivisor;
 
 void asyncDivStart(s32 r4, fixedPoint r5)
 {
@@ -58,13 +58,19 @@ void asyncDivStart(s32 r4, fixedPoint r5)
     DVDNTL = divident << 16;
     */
 
+    gDivident = (((s64)r4) << 16);
+    gDivisor = r5;
+}
+
+void asyncDivStart_integer(s32 r4, s32 r5)
+{
     gDivident = r4;
     gDivisor = r5;
 }
 
 fixedPoint asyncDivEnd()
 {
-    if (gDivisor.asS32() == 0)
+    if (gDivisor == 0)
     {
         if (gDivident >= 0)
         {
@@ -75,7 +81,7 @@ fixedPoint asyncDivEnd()
             return 0x80000000;
         }
     }
-    return fixedPoint::fromS32((((s64)gDivident) << 16) / gDivisor.asS32());
+    return fixedPoint::fromS32(gDivident / gDivisor);
 }
 
 fixedPoint performDivision(fixedPoint r0, fixedPoint r1)

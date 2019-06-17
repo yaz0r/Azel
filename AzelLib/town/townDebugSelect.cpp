@@ -12,13 +12,13 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
 
     static void Init(townDebugSelect* pThis)
     {
-        if (menuUnk0.m_4D >= menuUnk0.m_4C)
+        if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
         {
             vdp2Controls.m20_registers[0].N1COSL = 0;
             vdp2Controls.m20_registers[1].N1COSL = 0;
         }
 
-        fadePalette(&menuUnk0.m_field0, 0xC210, 0xC210, 1);
+        fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
 
         stopAllSounds();
 

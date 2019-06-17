@@ -109,12 +109,12 @@ struct s_VDP2Regs
     u16 CCRNB;
     u16 N1COEN;
     u16 N1COSL;
-    u16 COAR;
-    u16 COAG;
-    u16 COAB;
-    u16 COBR;
-    u16 COBG;
-    u16 COBB;
+    s16 COAR;
+    s16 COAG;
+    s16 COAB;
+    s16 COBR;
+    s16 COBG;
+    s16 COBB;
 };
 extern s_VDP2Regs VDP2Regs_;
 

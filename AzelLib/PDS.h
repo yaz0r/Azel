@@ -275,7 +275,7 @@ struct sProcessed3dModel
 {
     struct sQuadExtra
     {
-        sVec3_S16 m0_normals;
+        sVec3_S16_12_4 m0_normals;
         sVec3_U16 m6_colors;
     };
 
@@ -306,7 +306,7 @@ struct sProcessed3dModel
         {
             u8* startOfVertice = base + verticesOffset + (3 * 2 * i);
 
-            sVec3_S16 vertice;
+            sVec3_S16_12_4 vertice;
             vertice[0] = READ_BE_S16(startOfVertice + 0);
             vertice[1] = READ_BE_S16(startOfVertice + 2);
             vertice[2] = READ_BE_S16(startOfVertice + 4);
@@ -393,7 +393,7 @@ struct sProcessed3dModel
 
     u32 m0;
     u32 m4_numVertices;
-    std::vector<sVec3_S16> m8_vertices;
+    std::vector<sVec3_S16_12_4> m8_vertices;
     std::vector<sQuad> mC_Quads;
 };
 

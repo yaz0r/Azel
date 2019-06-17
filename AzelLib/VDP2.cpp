@@ -394,30 +394,30 @@ void resetVdp2RegsCopies()
 
 void setupVdp2TextLayerColor()
 {
-    menuUnk0.m_4C = 0;
-    menuUnk0.m_4D = 5;
-    menuUnk0.m_4A = 0xC210;
-    menuUnk0.m_48 = 0xC210;
+    g_fadeControls.m_4C = 0;
+    g_fadeControls.m_4D = 5;
+    g_fadeControls.m_4A = 0xC210;
+    g_fadeControls.m_48 = 0xC210;
 
     vdp2Controls.m20_registers[0].N1COEN = 0x7F;
     vdp2Controls.m4_pendingVdp2Regs->N1COEN = 0x7F;
 
-    if (menuUnk0.m_4D >= menuUnk0.m_4C) //?
+    if (g_fadeControls.m_4D >= g_fadeControls.m_4C) //?
     {
         vdp2Controls.m20_registers[0].N1COSL = 0;
         vdp2Controls.m4_pendingVdp2Regs->N1COSL = 0;
     }
 
-    menuUnk0.m_field0.m_field20 = 1;
-    menuUnk0.m_field24.m_field20 = 1;
+    g_fadeControls.m0_fade0.m20_stopped = 1;
+    g_fadeControls.m24_fade1.m20_stopped = 1;
 
-    menuUnk0.m_field0.m_field0[0] = 0;
-    menuUnk0.m_field0.m_field0[1] = 0;
-    menuUnk0.m_field0.m_field0[2] = 0;
+    g_fadeControls.m0_fade0.m0_color[0] = 0;
+    g_fadeControls.m0_fade0.m0_color[1] = 0;
+    g_fadeControls.m0_fade0.m0_color[2] = 0;
 
-    menuUnk0.m_field24.m_field0[0] = 0;
-    menuUnk0.m_field24.m_field0[1] = 0;
-    menuUnk0.m_field24.m_field0[2] = 0;
+    g_fadeControls.m24_fade1.m0_color[0] = 0;
+    g_fadeControls.m24_fade1.m0_color[1] = 0;
+    g_fadeControls.m24_fade1.m0_color[2] = 0;
 
     VDP2Regs_.COAR = 0;
     VDP2Regs_.COAG = 0;
