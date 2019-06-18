@@ -171,7 +171,7 @@ T* createSubTask(p_workArea parentTask, const typename T::TypedTaskDefinition* p
 }
 
 template<typename T>
-T* createSubTaskZeroWorkArea(p_workArea parentTask, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
+T* createSubTaskWithCopy(p_workArea parentTask, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
 {
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, new T));
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
@@ -204,6 +204,22 @@ T* createSubTaskWithArg(p_workArea parentTask, argType arg, const typename T::Ty
 
 template<typename T, typename argType>
 T* createSiblingTaskWithArg(p_workArea parentTask, argType arg, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
+{
+    T* pNewTask = static_cast<T*>(createSiblingTaskWithArg(parentTask, new T));
+    pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
+    pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
+    pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
+    pNewTask->getTask()->m_taskName = T::getTaskName();
+    if (pTypeTaskDefinition->m_pInit)
+    {
+        pTypeTaskDefinition->m_pInit(pNewTask, arg);
+        //((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
+    }
+    return pNewTask;
+}
+
+template<typename T, typename argType>
+T* createSiblingTaskWithArgWithCopy(p_workArea parentTask, argType arg, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
 {
     T* pNewTask = static_cast<T*>(createSiblingTaskWithArg(parentTask, new T));
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;

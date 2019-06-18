@@ -63,13 +63,85 @@ void initResTable()
     }
 }
 
+s32 setSomethingInNpc0(s32 arg0, s32 arg1)
+{
+    fixedPoint value;
+    switch (arg1)
+    {
+    case 0:
+        value = 0x7D0000;
+        break;
+    case 1:
+        value = 0x5000;
+        break;
+    case 2:
+        value = 0x2000;
+        break;
+    case 3:
+        value = -1;
+        break;
+    default:
+        assert(0);
+    }
+
+    if (arg0 != 1)
+    {
+        npcData0.m54_activationNear = value;
+    }
+    else
+    {
+        npcData0.m58_activationFar = value;
+    }
+
+    return 0;
+}
+
+sNPC* NPC_Minus1 = nullptr;
+
+sNPC* getNpcDataByIndex(s32 r4)
+{
+    if (r4 == -1)
+    {
+        return NPC_Minus1;
+    }
+    
+    return npcData0.m70_npcPointerArray[r4];
+}
+
+s32 setNpcLocation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
+{
+    sNPC* pNPC = getNpcDataByIndex(r4_npcIndex);
+    if (pNPC)
+    {
+        pNPC->mE8.m0_position[0] = r5_X;
+        pNPC->mE8.m0_position[1] = r6_Y;
+        pNPC->mE8.m0_position[2] = r7_Z;
+    }
+}
+
+s32 setNpcOrientation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
+{
+    sNPC* pNPC = getNpcDataByIndex(r4_npcIndex);
+    if (pNPC)
+    {
+        pNPC->mE8.mC_rotation[0] = r5_X;
+        pNPC->mE8.mC_rotation[1] = r6_Y;
+        pNPC->mE8.mC_rotation[2] = r7_Z;
+    }
+}
+
+
 typedef s32(*scriptFunction_zero_arg)();
 typedef s32(*scriptFunction_one_arg)(s32 arg0);
+typedef s32(*scriptFunction_two_arg)(s32 arg0, s32 arg1);
+typedef s32(*scriptFunction_four_arg)(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 
 struct sKernelScriptFunctions
 {
     std::map<u32, scriptFunction_zero_arg> m_zeroArg;
     std::map<u32, scriptFunction_one_arg> m_oneArg;
+    std::map<u32, scriptFunction_two_arg> m_twoArg;
+    std::map<u32, scriptFunction_four_arg> m_fourArg;
 };
 
 sKernelScriptFunctions gKernelScriptFunctions =
@@ -79,6 +151,15 @@ sKernelScriptFunctions gKernelScriptFunctions =
     // one arg
     {
         {0x600CCB4, &initNPC}
+    },
+    // two arg
+    {
+        {0x600CC78, &setSomethingInNpc0}
+    },
+    // four arg
+    {
+        {0x605AEE0, &setNpcLocation}
+        {0x605AF0E,& setNpcOrientation}
     },
 };
 
@@ -100,6 +181,17 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         else
         {
             r4_pThis->m118_currentResult = TWN_RUIN_ExecuteNative(readSaturnEA(r14), readSaturnS32(r14 + 4));
+        }
+        break;
+    case 2:
+        if (gKernelScriptFunctions.m_twoArg.count(readSaturnEA(r14).m_offset))
+        {
+            scriptFunction_two_arg pFunction = gKernelScriptFunctions.m_twoArg.find(readSaturnEA(r14).m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8));
+        }
+        else
+        {
+            assert(0);
         }
         break;
     default:

@@ -1,8 +1,21 @@
 #pragma once
 
+struct sNPCE8
+{
+    sVec3_FP m0_position;
+    sVec3_FP mC_rotation;
+};
+
+struct sNPC
+{
+    sNPCE8 mE8;
+};
+
 struct sNpcData
 {
     s32 m0_numExtraScriptsIterations;
+    fixedPoint m54_activationNear;
+    fixedPoint m58_activationFar;
     s8 m5C;
     s8 m5D;
     s8 m5E;
@@ -10,7 +23,7 @@ struct sNpcData
     sSaturnPtr m64_scriptList;
     s32 m68_nulLCSTargets;
     sSaturnPtr m6C_LCSTargets;
-    std::array<u8*, 8> m70_npcPointerArray;
+    std::array<sNPC*, 8> m70_npcPointerArray;
     s32 mF0;
     s32 mF4;
     s32 mF8;

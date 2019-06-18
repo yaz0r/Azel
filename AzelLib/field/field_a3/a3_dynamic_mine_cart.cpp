@@ -150,7 +150,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
     static void Update1Sub1(s_A3_0_Obj3* pThis, s_DataTable2Sub0* r5)
     {
         static const s_A3_0_Obj3::TypedTaskDefinition definition = { NULL, &s_A3_0_Obj3::Update1Sub0, &s_A3_0_Obj3::Draw2, NULL };
-        s_A3_0_Obj3* pNewTask = createSubTaskZeroWorkArea<s_A3_0_Obj3>(pThis, &definition);
+        s_A3_0_Obj3* pNewTask = createSubTaskWithCopy<s_A3_0_Obj3>(pThis, &definition);
         memcpy(&pNewTask->m0, &pThis->m0, sizeof(s_memoryAreaOutput));
 
         pNewTask->m8 = r5;

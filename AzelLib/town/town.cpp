@@ -7,6 +7,27 @@ u8 townBuffer[0xB0000];
 
 townDebugTask2Function* townDebugTask2 = nullptr;
 
+struct npcFileDeleter : public s_workAreaTemplate<npcFileDeleter>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, nullptr, &npcFileDeleter::Delete };
+        return &taskDefinition;
+    }
+
+    static void Delete(npcFileDeleter* pThis)
+    {
+        TaskUnimplemented();
+    }
+
+    u8* m0_dramAllocation;
+    sVdp1Allocation* m4_vd1Allocation;
+    s16 m8;
+    s16 mA;
+    s32 mC;
+    //size 0x10
+};
+
 void townDebugTask2Function::Update(townDebugTask2Function* pThis)
 {
     if (readKeyboardToggle(0x87))
@@ -40,12 +61,44 @@ struct sInitNPCSub0Var0
     npcFileDeleter* m34;
     sSaturnPtr m38_EnvironmentSetup;
     s32* m3C;
-    std::array<std::array<s32, 8>, 8> m40;
-    std::vector<u8*> m140;
+    std::array<std::array<p_workArea, 8>, 8> m40;
+    std::vector<sSaturnPtr> m140;
     sInitNPCSub0Var0Sub144* m144;
     std::array<sInitNPCSub0Var0Sub144, 0x40> m148;
 
 }initNPCSub0Var0;
+
+struct sEnvironmentTask : public s_workAreaTemplateWithArg<sEnvironmentTask, sSaturnPtr>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sEnvironmentTask::Init, nullptr, &sEnvironmentTask::Draw, nullptr };
+        return &taskDefinition;
+    }
+
+    static void Init(sEnvironmentTask* pThis, sSaturnPtr arg)
+    {
+
+    }
+
+    static void Draw(sEnvironmentTask* pThis)
+    {
+
+    }
+
+    //size 0x18
+};
+
+void createEnvironmentTask2Sub0(s32 r4_currentX, s32 r5_currentY)
+{
+    s32 index = initNPCSub0Var0.m0_sizeX * r5_currentY + r4_currentX;
+    sSaturnPtr r14 = initNPCSub0Var0.m140[index];
+
+    while (r14.m_offset)
+    {
+        assert(0);
+    }
+}
 
 void createEnvironmentTask2(s32 r4, sInitNPCSub0Var0* r14)
 {
@@ -65,7 +118,11 @@ void createEnvironmentTask2(s32 r4, sInitNPCSub0Var0* r14)
         if (r14->m10_currentX + r12 >= r14->m0_sizeX)
             continue;
 
-        assert(0);
+        sSaturnPtr cellData = readSaturnEA(r14->m38_EnvironmentSetup + 4 * (r14->m0_sizeX * r14->m14_currentY + r14->m10_currentX + r12));
+        p_workArea newCellTask = createSiblingTaskWithArgWithCopy<sEnvironmentTask>(r14->m34, cellData);
+        r14->m40[(r14->mC + r4) & 7][(r14->m8 + r12) & 7] = newCellTask;
+
+        createEnvironmentTask2Sub0(r14->m10_currentX + r12, r4 + r14->m14_currentY);
     }
 
     assert(0);
@@ -84,7 +141,7 @@ void initNPCSub0Sub0(s32 r3, sInitNPCSub0Var0* r14)
 
     do 
     {
-        if (r14->m40[var24][((r14->m8 + r13) & 7)])
+        if (r14->m40[var24][(r14->m8 + r13) & 7])
         {
             assert(0);
         }
@@ -156,27 +213,6 @@ p_workArea loadTown(p_workArea r4, s32 r5)
 
     return townDebugTask2;
 }
-
-struct npcFileDeleter : public s_workAreaTemplate<npcFileDeleter>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, nullptr, &npcFileDeleter::Delete };
-        return &taskDefinition;
-    }
-
-    static void Delete(npcFileDeleter* pThis)
-    {
-        TaskUnimplemented();
-    }
-
-    u8* m0_dramAllocation;
-    sVdp1Allocation* m4_vd1Allocation;
-    s16 m8;
-    s16 mA;
-    s32 mC;
-    //size 0x10
-};
 
 npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32 ramFileSize, const std::string& vramFileName, s32 vramFileSize, s32 arg)
 {
@@ -287,7 +323,7 @@ void initNPCSub0Sub2Sub0()
     initNPCSub0Var0.m140.resize(size);
     for (int i = 0; i < size; i++)
     {
-        initNPCSub0Var0.m140[i] = nullptr;
+        initNPCSub0Var0.m140[i] = sSaturnPtr::getNull();
     }
 
     initNPCSub0Var0.m144 = &initNPCSub0Var0.m144[0];
