@@ -122,10 +122,15 @@ set ( FRAMEWORKS
         OpenGLES
         MobileCoreServices
         AVFoundation
-        CoreMotion
         GameController
 	Metal
       )
+IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
+set ( FRAMEWORKS
+	${FRAMEWORKS}
+	CoreMotion
+    )
+ENDIF()
 foreach(FW ${FRAMEWORKS})
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework ${FW}")
   endforeach()

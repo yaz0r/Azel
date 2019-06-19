@@ -26,8 +26,6 @@ int main(int argc, char* argv[])
     readInputsFromSMPC();
     updateInputs();
 
-    u32 frameCounter = 0;
-
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loopIteration, 0, 1);
 #else
