@@ -17,7 +17,7 @@ ${SOLOUD_SOURCES}
 )
 
 add_library(soloud STATIC ${SOLOUD_SOURCES})
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g4")
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 IF(${CMAKE_SYSTEM_NAME} STREQUAL watchOS)
 target_compile_definitions(soloud PRIVATE WITH_NULL=1)

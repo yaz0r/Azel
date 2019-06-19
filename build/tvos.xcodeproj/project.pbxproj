@@ -398,6 +398,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "Launch Image";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 83K9KCTHZY;
 				HEADER_SEARCH_PATHS = (
 					../AzelLib,
 					../ThirdParty/SDL2/include,
@@ -410,7 +411,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				OTHER_LDFLAGS = "../ThirdParty/SDL2/Xcode-iOS/SDL/build/Release-appletvsimulator/libSDL2.a";
+				OTHER_LDFLAGS = "../ThirdParty/SDL2/Xcode-iOS/SDL/build/libSDL2_appletv.a";
 				PRODUCT_BUNDLE_IDENTIFIER = net.yaz0r.azel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = 3;
@@ -423,6 +424,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "Launch Image";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 83K9KCTHZY;
 				HEADER_SEARCH_PATHS = (
 					../AzelLib,
 					../ThirdParty/SDL2/include,
@@ -435,7 +437,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				OTHER_LDFLAGS = "../ThirdParty/SDL2/Xcode-iOS/SDL/build/Release-appletvsimulator/libSDL2.a";
+				OTHER_LDFLAGS = "../ThirdParty/SDL2/Xcode-iOS/SDL/build/libSDL2_appletv.a";
 				PRODUCT_BUNDLE_IDENTIFIER = net.yaz0r.azel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = 3;

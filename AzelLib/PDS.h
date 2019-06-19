@@ -46,6 +46,7 @@ void checkGLImpl(const char*, unsigned int line);
 #else
     #if (defined(__APPLE__) && (TARGET_OS_IOS || TARGET_OS_TV))
         #define USE_GL_ES3
+        #define GLES_SILENCE_DEPRECATION
     #elif (defined(__APPLE__) && TARGET_OS_WATCH)
         #define USE_NULL_RENDERER
     #else
