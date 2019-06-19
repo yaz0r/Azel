@@ -2761,7 +2761,8 @@ struct {
 
 void setNextGameStatus(u32 r4)
 {
-    PDS_Log("Requesting new game state: %d", r4);
+    PDS_Log("Requesting new game state: %d\n", r4);
+    assert(gGameStatus.m8_nextGameStatus == 0);
     if (gGameStatus.m8_nextGameStatus == 0)
     {
         gGameStatus.m8_nextGameStatus = r4;

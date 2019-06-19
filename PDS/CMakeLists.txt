@@ -124,6 +124,7 @@ set ( FRAMEWORKS
         AVFoundation
         CoreMotion
         GameController
+	Metal
       )
 foreach(FW ${FRAMEWORKS})
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework ${FW}")
@@ -155,11 +156,7 @@ endif()
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
  TARGET_LINK_LIBRARIES(PDS soloud AzelLib)
- IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
-  TARGET_LINK_LIBRARIES(PDS ${THIRD_PARTY}/SDL2/Xcode-iOS/SDL/build/Release-iphonesimulator/libSDL2.a)
- ELSE()
-  TARGET_LINK_LIBRARIES(PDS ${THIRD_PARTY}/SDL2/Xcode-iOS/SDL/build/Release-appletvsimulator/libSDL2.a)
- ENDIF()
+ TARGET_LINK_LIBRARIES(PDS ${THIRD_PARTY}/SDL2/Xcode-iOS/SDL/build/Release\\\${EFFECTIVE_PLATFORM_NAME}/libSDL2.a)
 ELSE()
  TARGET_LINK_LIBRARIES(PDS SDL2main SDL2-static soloud AzelLib)
  if(UNIX)
@@ -179,6 +176,7 @@ add_custom_command(TARGET PDS PRE_BUILD
 )
 
 set_target_properties(PDS PROPERTIES
+	MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/build/ios.plist"
 	MACOSX_BUNDLE_BUNDLE_NAME "Azel"
 	MACOSX_FRAMEWORK_BUNDLE_VERSION 1.0
 	MACOSX_FRAMEWORK_SHORT_VERSION_STRING 1.0 

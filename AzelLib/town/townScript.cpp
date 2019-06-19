@@ -150,16 +150,16 @@ sKernelScriptFunctions gKernelScriptFunctions =
     {},
     // one arg
     {
-        {0x600CCB4, &initNPC}
+        {0x600CCB4, &initNPC},
     },
     // two arg
     {
-        {0x600CC78, &setSomethingInNpc0}
+        {0x600CC78, &setSomethingInNpc0},
     },
     // four arg
     {
-        {0x605AEE0, &setNpcLocation}
-        {0x605AF0E,& setNpcOrientation}
+        {0x605AEE0, &setNpcLocation},
+        {0x605AF0E,& setNpcOrientation},
     },
 };
 

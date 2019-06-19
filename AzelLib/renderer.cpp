@@ -178,7 +178,7 @@ void azelSdl2_Init()
 #if !defined(__EMSCRIPTEN__) && !defined(TARGET_OS_IOS) && !defined(TARGET_OS_TV)
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 #endif
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
@@ -1236,6 +1236,7 @@ void renderVdp1()
     }
 }
 
+#ifndef USE_NULL_RENDERER
 void renderTexturedQuad(GLuint sourceTexture)
 {
     static GLuint quad_VertexArrayID;
@@ -1344,6 +1345,7 @@ void renderTexturedQuad(GLuint sourceTexture)
 
     glDisableVertexAttribArray(0);
 }
+#endif
 
 bool azelSdl2_EndFrame()
 {
@@ -1423,9 +1425,13 @@ bool azelSdl2_EndFrame()
     
     static int internalResolution[2] = { 1024, 720 };
     
-    SDL_GL_GetDrawableSize(gWindow, &internalResolution[0], &internalResolution[1]);
-    
 #ifndef USE_NULL_RENDERER
+    SDL_GL_GetDrawableSize(gWindow, &internalResolution[0], &internalResolution[1]);
+#if (defined(__APPLE__) && TARGET_OS_SIMULATOR)
+    internalResolution[0] /= 8;
+    internalResolution[1] /= 8;
+#endif
+    
     glViewport(0, 0, internalResolution[0], internalResolution[1]);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 
@@ -1600,12 +1606,14 @@ bool azelSdl2_EndFrame()
     checkGL();
     // Update and Render additional Platform Windows
     ImGuiIO& io = ImGui::GetIO();
+#if 0
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
         SDL_GL_MakeCurrent(gWindow, gGlcontext);
     }
+#endif
 
     glFlush();
     checkGL();
