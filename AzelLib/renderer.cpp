@@ -117,14 +117,28 @@ enum eLayers {
     MAX
 };
 
-void bindBackBuffer()
+class backend
+{
+public:
+    virtual void bindBackBuffer() = 0;
+};
+
+class SDL_ES3_backend : public backend
+{
+public:
+    virtual void bindBackBuffer() override;
+};
+
+backend* gBackend = nullptr;
+
+void SDL_ES3_backend::bindBackBuffer()
 {
 #ifndef USE_NULL_RENDERER
 #ifdef __IPHONEOS__
     SDL_SysWMinfo wmi;
     SDL_VERSION(&wmi.version);
     SDL_GetWindowWMInfo(gWindow, &wmi);
-
+    
     glBindFramebuffer(GL_FRAMEBUFFER, wmi.info.uikit.framebuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, wmi.info.uikit.colorbuffer);
 #else
@@ -136,8 +150,11 @@ void bindBackBuffer()
 #endif
 }
 
+
 void azelSdl2_Init()
 {
+    gBackend = new SDL_ES3_backend();
+    
 #ifndef USE_NULL_RENDERER
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -160,7 +177,17 @@ void azelSdl2_Init()
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 #endif
-    gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    
+    u32 flags = 0;
+    flags |= SDL_WINDOW_OPENGL;
+    flags |= SDL_WINDOW_RESIZABLE;
+    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+    
+#ifdef __IPHONEOS__
+    flags |= SDL_WINDOW_FULLSCREEN;
+#endif
+    
+    gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, flags);
     assert(gWindow);
 
     gGlcontext = SDL_GL_CreateContext(gWindow);
@@ -1549,7 +1576,7 @@ bool azelSdl2_EndFrame()
     }
 #endif
 
-    bindBackBuffer();
+    gBackend->bindBackBuffer();
 
     ImGui::Begin("Final Composition");
     {
