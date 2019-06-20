@@ -1606,7 +1606,7 @@ bool azelSdl2_EndFrame()
     checkGL();
     // Update and Render additional Platform Windows
     ImGuiIO& io = ImGui::GetIO();
-#if 0
+#if 1
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         ImGui::UpdatePlatformWindows();

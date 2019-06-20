@@ -30,7 +30,7 @@ void A3_0_Obj3Update1Sub2(sVec3_FP& r12)
 }
 
 // moving carts
-struct s_A3_0_Obj3 : public s_workAreaTemplate<s_A3_0_Obj3>
+struct s_A3_0_Obj3 : public s_workAreaTemplateWithCopy<s_A3_0_Obj3>
 {
     static void Draw(s_A3_0_Obj3* pThis)
     {

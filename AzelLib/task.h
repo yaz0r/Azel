@@ -87,6 +87,66 @@ struct s_workAreaTemplate : public s_workAreaTemplateWithArg<T>
 {
 };
 
+struct s_workAreaCopy : public s_workArea
+{
+    u8* m0_dramAllocation;
+    struct sVdp1Allocation* m4_vd1Allocation;
+};
+
+template<typename T, typename... argType>
+struct s_workAreaTemplateWithArgWithCopy : public s_workAreaCopy
+{
+    static constexpr const char* getTaskName()
+    {
+        return typeid(T).name();
+    }
+
+    s_workAreaTemplateWithArgWithCopy()
+    {
+        m_UpdateMethod = NULL;
+        m_DrawMethod = NULL;
+        m_DeleteMethod = NULL;
+    }
+
+    virtual void Update()
+    {
+        if (m_UpdateMethod)
+            m_UpdateMethod(static_cast<T*>(this));
+    }
+
+    virtual void Draw()
+    {
+        if (m_DrawMethod)
+            m_DrawMethod(static_cast<T*>(this));
+    }
+
+    virtual void Delete()
+    {
+        if (m_DeleteMethod)
+            m_DeleteMethod(static_cast<T*>(this));
+    }
+
+    typedef void (*FunctionType)(T*);
+    typedef void (*InitFunctionType)(T*, argType ...);
+
+    FunctionType m_UpdateMethod;
+    FunctionType m_DrawMethod;
+    FunctionType m_DeleteMethod;
+
+    struct TypedTaskDefinition
+    {
+        InitFunctionType m_pInit;
+        FunctionType m_pUpdate;
+        FunctionType m_pDraw;
+        FunctionType m_pDelete;
+    };
+};
+
+template<typename T>
+struct s_workAreaTemplateWithCopy : public s_workAreaTemplateWithArgWithCopy<T>
+{
+};
+
 #define TASK_FLAGS_FINISHED 1
 #define TASK_FLAGS_PAUSED 2
 #define TASK_FLAGS_DELETING 4
@@ -171,13 +231,18 @@ T* createSubTask(p_workArea parentTask, const typename T::TypedTaskDefinition* p
 }
 
 template<typename T>
-T* createSubTaskWithCopy(p_workArea parentTask, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
+T* createSubTaskWithCopy(s_workAreaCopy* parentTask, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
 {
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, new T));
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
     pNewTask->getTask()->m_taskName = T::getTaskName();
+
+    //copy
+    pNewTask->m0_dramAllocation = parentTask->m0_dramAllocation;
+    pNewTask->m4_vd1Allocation = parentTask->m4_vd1Allocation;
+
     if (pTypeTaskDefinition->m_pInit)
     {
         pTypeTaskDefinition->m_pInit(pNewTask);
@@ -219,13 +284,18 @@ T* createSiblingTaskWithArg(p_workArea parentTask, argType arg, const typename T
 }
 
 template<typename T, typename argType>
-T* createSiblingTaskWithArgWithCopy(p_workArea parentTask, argType arg, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
+T* createSiblingTaskWithArgWithCopy(s_workAreaCopy* parentTask, argType arg, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
 {
     T* pNewTask = static_cast<T*>(createSiblingTaskWithArg(parentTask, new T));
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
     pNewTask->getTask()->m_taskName = T::getTaskName();
+
+    //copy
+    pNewTask->m0_dramAllocation = parentTask->m0_dramAllocation;
+    pNewTask->m4_vd1Allocation = parentTask->m4_vd1Allocation;
+
     if (pTypeTaskDefinition->m_pInit)
     {
         pTypeTaskDefinition->m_pInit(pNewTask, arg);

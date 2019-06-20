@@ -695,7 +695,7 @@ void LCSTaskDrawSub1Sub2Sub2Sub2(s_dragonTaskWorkArea* r4)
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1F0.m_8 = 0;
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1F0.m_C = 0;
 
-    switch (graphicEngineStatus.m4514.m0->m0_current.m0)
+    switch (graphicEngineStatus.m4514.m0->m0_current.m0_inputType)
     {
     case 1:
         LCSUpdateCursorFromInput(r4);

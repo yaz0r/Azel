@@ -96,13 +96,11 @@ s32 setSomethingInNpc0(s32 arg0, s32 arg1)
     return 0;
 }
 
-sNPC* NPC_Minus1 = nullptr;
-
 sNPC* getNpcDataByIndex(s32 r4)
 {
     if (r4 == -1)
     {
-        return NPC_Minus1;
+        return npcData0.m10C;
     }
     
     return npcData0.m70_npcPointerArray[r4];
@@ -117,6 +115,8 @@ s32 setNpcLocation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
         pNPC->mE8.m0_position[1] = r6_Y;
         pNPC->mE8.m0_position[2] = r7_Z;
     }
+
+    return 0;
 }
 
 s32 setNpcOrientation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
@@ -128,6 +128,8 @@ s32 setNpcOrientation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
         pNPC->mE8.mC_rotation[1] = r6_Y;
         pNPC->mE8.mC_rotation[2] = r7_Z;
     }
+
+    return 0;
 }
 
 
@@ -159,7 +161,7 @@ sKernelScriptFunctions gKernelScriptFunctions =
     // four arg
     {
         {0x605AEE0, &setNpcLocation},
-        {0x605AF0E,& setNpcOrientation},
+        {0x605AF0E, &setNpcOrientation},
     },
 };
 
@@ -172,6 +174,17 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
 
     switch (numArguments)
     {
+    case 0:
+        if (gKernelScriptFunctions.m_zeroArg.count(readSaturnEA(r14).m_offset))
+        {
+            scriptFunction_zero_arg pFunction = gKernelScriptFunctions.m_zeroArg.find(readSaturnEA(r14).m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction();
+        }
+        else
+        {
+            r4_pThis->m118_currentResult = TWN_RUIN_ExecuteNative(readSaturnEA(r14));
+        }
+        break;
     case 1:
         if (gKernelScriptFunctions.m_oneArg.count(readSaturnEA(r14).m_offset))
         {
@@ -191,6 +204,17 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
+            r4_pThis->m118_currentResult = TWN_RUIN_ExecuteNative(readSaturnEA(r14), readSaturnS32(r14 + 4), readSaturnS32(r14 + 8));
+        }
+        break;
+    case 4:
+        if (gKernelScriptFunctions.m_fourArg.count(readSaturnEA(r14).m_offset))
+        {
+            scriptFunction_four_arg pFunction = gKernelScriptFunctions.m_fourArg.find(readSaturnEA(r14).m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12), readSaturnS32(r14 + 16));
+        }
+        else
+        {
             assert(0);
         }
         break;
@@ -200,6 +224,15 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
     }
 
     return r14 + (numArguments + 1) * 4;
+}
+
+sSaturnPtr getAlignOn2(const sSaturnPtr& inPtr)
+{
+    sSaturnPtr output = inPtr;
+    output.m_offset += 1;
+    output.m_offset &= ~1;
+
+    return output;
 }
 
 sSaturnPtr getAlignOn4(const sSaturnPtr& inPtr)
@@ -222,6 +255,44 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
 
         switch (r0_opcode)
         {
+        case 1: //end
+            if (r13_pThis->m11C_currentStackPointer == r13_pThis->m120_stack.end())
+            {
+                r14.m_offset = 0;
+                return r14;
+            }
+            else
+            {
+                r14 = *r13_pThis->m11C_currentStackPointer;
+                r13_pThis->m11C_currentStackPointer++;
+            }
+            break;
+        case 2: //wait
+        {
+            sSaturnPtr r4 = r14 + 1;
+            r4.m_offset &= ~1;
+            u16 delay = readSaturnU16(r4);
+            r4 += 2;
+
+            if (r13_pThis->mF0)
+            {
+                assert(0);
+            }
+
+            r13_pThis->m100 = delay;
+            return r4;
+        }
+        case 5: //if
+            if (r13_pThis->m118_currentResult)
+            {
+                r14 += 4;
+                r14 = getAlignOn4(r14);
+            }
+            else
+            {
+                r14 = readSaturnEA(getAlignOn4(r14));
+            }
+            break;
         case 6: //callScript
             *(--r13_pThis->m11C_currentStackPointer) = getAlignOn4(r14) + 4;
             r14 = readSaturnEA(getAlignOn4(r14));
@@ -251,6 +322,25 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             }
             break;
         }
+        case 36: // display string
+            if (r13_pThis->m16C_displayStringTask)
+            {
+                r13_pThis->m16C_displayStringTask->getTask()->markFinished();
+                return r14 - 1;
+            }
+            else
+            {
+                r14 = getAlignOn2(r14);
+                s16 duration = readSaturnS16(r14);
+                r14 += 2;
+                r14 = getAlignOn4(r14);
+
+                sSaturnPtr stringPtr = readSaturnEA(r14);
+                r14 += 4;
+
+                createDisplayStringBorromScreenTask(currentResTask, &r13_pThis->m16C_displayStringTask, duration, stringPtr);
+            }
+            break;
         default:
             assert(0);
         }

@@ -21,3 +21,4 @@ struct sScriptTask : public s_workAreaTemplate<sScriptTask>
 extern sScriptTask* currentResTask;
 
 void startScriptTask(p_workArea r4);
+sNPC* getNpcDataByIndex(s32 r4);

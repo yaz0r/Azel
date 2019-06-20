@@ -7,27 +7,6 @@ u8 townBuffer[0xB0000];
 
 townDebugTask2Function* townDebugTask2 = nullptr;
 
-struct npcFileDeleter : public s_workAreaTemplate<npcFileDeleter>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, nullptr, &npcFileDeleter::Delete };
-        return &taskDefinition;
-    }
-
-    static void Delete(npcFileDeleter* pThis)
-    {
-        TaskUnimplemented();
-    }
-
-    u8* m0_dramAllocation;
-    sVdp1Allocation* m4_vd1Allocation;
-    s16 m8;
-    s16 mA;
-    s32 mC;
-    //size 0x10
-};
-
 void townDebugTask2Function::Update(townDebugTask2Function* pThis)
 {
     if (readKeyboardToggle(0x87))
@@ -68,7 +47,7 @@ struct sInitNPCSub0Var0
 
 }initNPCSub0Var0;
 
-struct sEnvironmentTask : public s_workAreaTemplateWithArg<sEnvironmentTask, sSaturnPtr>
+struct sEnvironmentTask : public s_workAreaTemplateWithArgWithCopy<sEnvironmentTask, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {

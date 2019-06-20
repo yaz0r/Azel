@@ -68,7 +68,7 @@ void s_receivedItemTask::Update(s_receivedItemTask* pThis)
                 pThis->m0++;
                 break;
             }
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m2 & 0xF)
+            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xF)
             {
                 if (readKeyboardToggle(0x87))
                 {
