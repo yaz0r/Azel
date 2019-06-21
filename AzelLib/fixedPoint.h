@@ -40,6 +40,12 @@ public:
         return *this;
     }
 
+    fixedPoint operator *= (const fixedPoint& otherValue)
+    {
+        m_value *= otherValue.m_value;
+        return *this;
+    }
+
     s32 asS32() const
     {
         return m_value;

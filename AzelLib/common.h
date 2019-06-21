@@ -96,6 +96,15 @@ struct sVec3_FP
         return *this;
     }
 
+    sVec3_FP& operator*=(const sVec3_FP otherVec)
+    {
+        m_value[0] *= otherVec[0];
+        m_value[1] *= otherVec[1];
+        m_value[2] *= otherVec[2];
+
+        return *this;
+    }
+
     sVec3_FP operator + (const sVec3_FP otherVec) const
     {
         sVec3_FP newValue = *this;

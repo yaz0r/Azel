@@ -862,6 +862,27 @@ s32 stepAnimationTrack(sAnimTrackStatus&r4, u8* r5, u16 maxStep)
     return r4.value;
 }
 
+void modelMode1_position0(s_3dModel* pDragonStateData1)
+{
+    TaskUnimplemented();
+}
+
+void modelMode1_position1(s_3dModel* pDragonStateData1)
+{
+    TaskUnimplemented();
+}
+
+void modelMode1_rotation(s_3dModel* pDragonStateData1)
+{
+    TaskUnimplemented();
+}
+
+void modelMode1_scale(s_3dModel* pDragonStateData1)
+{
+    TaskUnimplemented();
+}
+
+
 void modelMode4_position0(s_3dModel* pDragonStateData1)
 {
     std::vector<sPoseData>::iterator pPoseData = pDragonStateData1->m2C_poseData.begin();
@@ -1385,6 +1406,29 @@ u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, u8* pModelData)
         p3dModel->m24_rotationUpdateFunction = modelMode0_rotation;
         p3dModel->m28_scaleUpdateFunction = modelMode0_scale;
         return 1;
+    case 1:
+        if (p3dModel->mA & 0x100)
+        {
+            p3dModel->m20_positionUpdateFunction = modelMode1_position0;
+        }
+        else
+        {
+            p3dModel->m20_positionUpdateFunction = modelMode1_position1;
+        }
+        p3dModel->m24_rotationUpdateFunction = modelMode1_rotation;
+        p3dModel->m28_scaleUpdateFunction = modelMode1_scale;
+
+        // TODO: recheck this
+        for (u32 i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            for (u32 j = 0; j < 9; j++)
+            {
+                p3dModel->m2C_poseData[i].m48[j].currentStep = 0;
+                p3dModel->m2C_poseData[i].m48[j].delay = 0;
+                p3dModel->m2C_poseData[i].m48[j].value = 0;
+            }
+        }
+        break;
     case 4:
         if (p3dModel->mA & 0x100)
         {

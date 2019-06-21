@@ -102,6 +102,8 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
     u8* r12 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
     r12 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
 
+    return applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r12 + 4), r14);
+
     pushCurrentMatrix();
     {
         translateCurrentMatrix(&r14->m0_translation);
@@ -156,7 +158,13 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
             applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r12 + 8), r14);
         }
     }
+}
 
+
+void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
+{
+    TaskUnimplemented();
+    applyEdgeAnimation(pModel, r5);
 }
 
 void EdgeUpdateSub0(sMainLogic_74*)
@@ -209,7 +217,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         pThis->mC = 0;
         pThis->m10_InitPtr = arg;
         pThis->m1C = readSaturnS32(arg + 0x28);
-        pThis->m30 = readSaturnS32(arg + 0x2C);
+        pThis->m30 = readSaturnEA(arg + 0x2C);
         pThis->mE8.m0_position = readSaturnVec3(arg + 0x8);
         pThis->mE8.mC_rotation = readSaturnVec3(arg + 0x14);
 
@@ -220,17 +228,17 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
             pThis->m14E = 1;
         }
 
-        pThis->mB4_pPosition = &pThis->mE8.m0_position;
-        pThis->mB8_pRotation = &pThis->mE8.mC_rotation;
-        pThis->mBC_pOwner = pThis;
-        pThis->mC0 = readSaturnS32(arg + 0x38);
+        pThis->m84.m30_pPosition = &pThis->mE8.m0_position;
+        pThis->m84.m34_pRotation = &pThis->mE8.mC_rotation;
+        pThis->m84.m38_pOwner = pThis;
+        pThis->m84.m3C = readSaturnS32(arg + 0x38);
         if (u16 offset = readSaturnU16(arg + 0x36))
         {
-            pThis->mC4 = pThis->m0_dramAllocation + offset;
+            pThis->m84.m40 = pThis->m0_dramAllocation + offset;
         }
         else
         {
-            pThis->mC4 = nullptr;
+            pThis->m84.m40 = nullptr;
         }
 
         mainLogicInitSub0(&pThis->m84, readSaturnU8(arg + 0x34));
@@ -253,7 +261,9 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
 
     static void Update(sEdgeTask* pThis)
     {
-        pThis->m13C_oldPosition = pThis->mE8.m0_position;
+        sNPCE8* r12 = &pThis->mE8;
+
+        pThis->mE8.m54_oldPosition = pThis->mE8.m0_position;
 
         if (pThis->mC)
         {
@@ -264,8 +274,69 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
             pThis->m14_updateFunction(pThis);
         }
 
+        //605A01E
         switch (pThis->mE)
         {
+        case 0:
+            if (pThis->m17A)
+            {
+                //605A07C
+                assert(0);
+            }
+            break;
+        case 1:
+        {
+            sVec3_FP var0 = r12->m0_position - r12->m54_oldPosition;
+            var0 *= var0;
+            s32 r4 = sqrt_I(var0[0] + var0[1] + var0[2]) * 0x1E1;
+            pThis->m28 += r4;
+
+            s32 r12 = pThis->m28;
+            if (r4)
+            {
+                //0x605A1D0
+                if (pThis->m2C != 1)
+                {
+                    pThis->m2C = 1;
+                    sSaturnPtr var0 = pThis->m30 + 4;
+                    u8* buffer;
+                    if (readSaturnU16(var0))
+                    {
+                        buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                    }
+                    else
+                    {
+                        buffer = pThis->m0_dramAllocation;
+                    }
+
+                    playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
+                }
+                r12 >>= 16;
+            }
+            else
+            {
+                //0x605A206
+                if (pThis->m2C)
+                {
+                    //0x605A20C
+                    assert(0);
+                }
+
+                r12 = 1;
+            }
+
+            if (r12)
+            {
+                do 
+                {
+                    stepAnimation(&pThis->m34_3dModel);
+                } while (--r12);
+            }
+
+            interpolateAnimation(&pThis->m34_3dModel);
+
+            break;
+        }
         default:
             assert(0);
             break;
@@ -289,11 +360,11 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
 
         if (pThis->m34_3dModel.m48_poseDataInterpolation.size())
         {
-            assert(0);
+            applyEdgeAnimation2(&pThis->m34_3dModel, &pThis->m20);
         }
         else
         {
-            applyEdgeAnimation(&pThis->m34_3dModel, pThis->m20);
+            applyEdgeAnimation(&pThis->m34_3dModel, &pThis->m20);
         }
 
         popMatrix();
@@ -304,7 +375,6 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         TaskUnimplemented();
     }
 
-    sVec3_FP m13C_oldPosition;
     s16 m14C;
     s8 m14E;
     s32 m150;
@@ -326,6 +396,11 @@ s32* twnEdgeVar0;
 struct sMainLogic* twnMainLogicTask;
 
 s32 twnVar3 = 0xB0009;
+
+void mainLogicInitSub2()
+{
+    initVDP1Projection(0x1C71C71, 0);
+}
 
 struct sMainLogic : public s_workAreaTemplate<sMainLogic>
 {
@@ -362,6 +437,8 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
         mainLogicInitSub1(&pThis->m74, gTWN_RUIN->getSaturnPtr(0x605EEE4), gTWN_RUIN->getSaturnPtr(0x605EEF0));
 
         npcData0.mFC &= ~0x10;
+
+        mainLogicInitSub2();
     }
 
     static void Update(sMainLogic* pThis)
@@ -599,7 +676,77 @@ void updateEdgeControls(sEdgeTask* r4)
 
 void updateEdgePositionSub1(sEdgeTask* r4)
 {
-    assert(0);
+    if (!(r4->m14C & 0x40))
+    {
+        TaskUnimplemented();
+    }
+    else
+    {
+        r4->mE8.m24_stepRotation[1] = 0;
+    }
+
+    //605BDAE
+    if (r4->m14C & 0x80)
+    {
+        r4->mE8.m30_stepTranslation[0] = 0;
+        r4->mE8.m30_stepTranslation[2] = 0;
+    }
+    else
+    {
+        TaskUnimplemented();
+    }
+
+    //605BE7E
+    r4->m14C &= 1;
+    if (r4->m14C)
+    {
+        assert(0);
+    }
+}
+
+void updateEdgePositionSub2(sNPCE8* r4)
+{
+    r4->mC_rotation[1] += r4->m24_stepRotation[1];
+}
+
+void updateEdgePositionSub3(sEdgeTask* r4)
+{
+    if (currentResTask->m8)
+    {
+        //605BEEA
+        assert(0);
+    }
+    else
+    {
+        //0605C018
+        if (npcData0.mFC & 0x10)
+        {
+            //605C026
+            assert(0);
+        }
+    }
+
+    //605C174
+    fixedPoint r13 = r4->mE8.m24_stepRotation[1];
+    if (r13 > 0x1C71C71)
+    {
+        r13 = 0x1C71C71;
+    }
+    if (r13 < -0x1C71C71)
+    {
+        r13 = -0x1C71C71;
+    }
+
+    if (r13)
+    {
+        r4->m20[1] += MTH_Mul(r13 - r4->m20[1], 0xB333);
+    }
+    else
+    {
+        r4->m20[1] += MTH_Mul(r13 - r4->m20[1], 0x8000);
+    }
+
+    r4->m20[0] = MTH_Mul(r4->m20[0], 0xB333);
 }
 
 void updateEdgePosition(sNPC* r4)
@@ -610,5 +757,55 @@ void updateEdgePosition(sNPC* r4)
 
     updateEdgeControls(r12);
     updateEdgePositionSub1(r12);
-    assert(0);
+
+    *r4->m84.m30_pPosition += r4->mDC;
+    if (r4->m84.m44 & 4)
+    {
+        assert(0);
+    }
+    else
+    {
+        //605B954
+        if ((r13->m30_stepTranslation[1] < -0x199) || (r13->m30_stepTranslation[1] > 0))
+        {
+            TaskUnimplemented();
+        }
+    }
+    //605B9AA
+    // gravity?
+    r13->m30_stepTranslation[1] += -0x56;
+    if (r13->m30_stepTranslation[1] < -0x800)
+    {
+        r13->m30_stepTranslation[1] = -0x800;
+    }
+
+    updateEdgePositionSub2(r13);
+
+    sMatrix4x3 var10;
+    initMatrixToIdentity(&var10);
+    rotateMatrixShiftedY(r13->mC_rotation[1], &var10);
+    rotateMatrixShiftedX(r13->mC_rotation[0], &var10);
+
+    if (r14->m44 & 4)
+    {
+        //0605B9F0
+        assert(0);
+    }
+
+    //0605BB48
+    if (r14->m44 & 4)
+    {
+        //605BB50
+        assert(0);
+    }
+
+    //605BBD6
+    transformVec(r13->m30_stepTranslation, r13->m18, var10);
+
+    PDS_Logger.AddLog("Disable Edge position update!");
+    //r13->m0_position += r13->m18;
+
+    updateEdgePositionSub3(r12);
+
+    r12->m14C = 0;
 }
