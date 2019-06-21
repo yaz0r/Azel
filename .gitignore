@@ -1,5 +1,8 @@
 .vs
-/build
+/build/ios
+/build/tvos
+/build/watchos
+/build/osx
 
 *.user
 xcuserdata
