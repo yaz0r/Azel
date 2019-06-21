@@ -99,7 +99,7 @@ const GLchar blit_ps[] =
 "out vec4 fragColor;									\n"
 "void main()											\n"
 "{														\n"
-"	vec4 txcol = texture2D(s_texture, v_texcoord);		\n"
+"	vec4 txcol = texture(s_texture, v_texcoord);		\n"
 "   if(txcol.a <= 0) discard;\n"
 "   fragColor = txcol; \n"
 "   fragColor.w = 1;								\n"

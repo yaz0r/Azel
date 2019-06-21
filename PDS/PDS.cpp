@@ -1,5 +1,10 @@
 #include "PDS.h"
 
+#include <unistd.h> // for chdir
+#include <libgen.h> // for dirname
+#include <mach-o/dyld.h> // for _NSGetExecutablePath
+#include <limits.h> // for PATH_MAX?
+
 SDL_Window *gWindow;
 SDL_GLContext gGlcontext;
 
@@ -13,6 +18,16 @@ extern bool bContinue;
 
 int main(int argc, char* argv[])
 {
+    char path[PATH_MAX];
+    uint32_t pathLen = sizeof(path);
+    int err = _NSGetExecutablePath(path, &pathLen);
+    assert(!err);
+    
+    // Switch to the directory of the actual binary
+    chdir(dirname(path));
+    // and then go up three directories to get to the folder of the .app bundle
+    chdir("../Resources");
+    
     azelSdl2_Init();
 
     checkGL();

@@ -63,7 +63,7 @@ void checkGLImpl(const char*, unsigned int line);
     #endif
 #elif defined(USE_GL)
     #include <GL/gl3w.h>
-    #ifdef __MACOS__
+    #if (defined(__APPLE__) && (TARGET_OS_OSX)) || defined(__MACOS__)
         #include <Opengl/gl.h>
     #else
         #include <GL/gl.h>
