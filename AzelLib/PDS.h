@@ -243,6 +243,7 @@ void getVdp1ProjectionParams(s16* r4, s16* r5);
 s32 setDividend(s32 r4, s32 r5, s32 divisor);
 
 fixedPoint sqrt_F(fixedPoint r4);
+s32 sqrt_I(s32 r4);
 void initFileLayoutTable();
 
 extern bool hasEncounterData;

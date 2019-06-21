@@ -4,6 +4,10 @@ struct sNPCE8
 {
     sVec3_FP m0_position;
     sVec3_FP mC_rotation;
+    sVec3_FP m18;
+    sVec3_FP m24_stepRotation;
+    sVec3_FP m30_stepTranslation;
+    sVec3_FP m54_oldPosition;
 };
 
 struct sMainLogic_74
@@ -16,6 +20,12 @@ struct sMainLogic_74
     sVec3_FP m14;
     sVec3_FP m20;
     s32 m2C;
+    sVec3_FP* m30_pPosition;
+    sVec3_FP* m34_pRotation;
+    p_workArea m38_pOwner;
+    s32 m3C;
+    u8* m40;
+    s32 m44;
 };
 
 struct sNPC
@@ -28,16 +38,14 @@ struct sNPC
     void (*m14_updateFunction)(sNPC*);
     sSaturnPtr m18;
     s32 m1C;
-    sVec2_FP* m20;
-    s32 m30;
+    sVec2_FP m20;
+    fixedPoint m28;
+    fixedPoint m2C;
+    sSaturnPtr m30;
     s_3dModel m34_3dModel;
     sMainLogic_74 m84;
+    sVec3_FP mDC;
     sNPCE8 mE8;
-    sVec3_FP* mB4_pPosition;
-    sVec3_FP* mB8_pRotation;
-    p_workArea mBC_pOwner;
-    s32 mC0;
-    u8* mC4;
 };
 
 struct sNpcData
