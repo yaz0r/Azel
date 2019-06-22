@@ -95,7 +95,7 @@ struct s_A3_0_task4 : public s_workAreaTemplate<s_A3_0_task4>
         }
         else
         {
-            TaskUnimplemented();
+            FunctionUnimplemented();
         }
 
         //6058552

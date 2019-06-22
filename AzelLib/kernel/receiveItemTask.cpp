@@ -46,7 +46,7 @@ static void s_receivedItemTask_DisplayReceivedObject(s_receivedItemTask* pThis)
 
 static void s_receivedItemTask_DeleteSub0(s_receivedItemTask* pThis)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void s_receivedItemTask::Update(s_receivedItemTask* pThis)

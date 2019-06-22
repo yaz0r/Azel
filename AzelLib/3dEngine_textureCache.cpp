@@ -70,7 +70,7 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
         // 4 bpp LUT mode
         u16 temp;
         u32 colorLut = quad.CMDCOLR * 8;
-        u32 colorOffset = (VDP2Regs_.CRAOFB & 0x70) << 4;
+        u32 colorOffset = (VDP2Regs_.mE6_CRAOFB & 0x70) << 4;
         u16 i;
         int charAddr = textureAddress;
 
@@ -174,7 +174,7 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
     {
         // 8 bpp(256 color) Bank mode
         u32 colorLut = quad.CMDCOLR * 2;
-        u32 colorOffset = (VDP2Regs_.CRAOFB & 0x70) << 4;
+        u32 colorOffset = (VDP2Regs_.mE6_CRAOFB & 0x70) << 4;
         assert(colorOffset == 0);
         for (int currentY = 0; currentY < textureHeight; currentY++)
         {
@@ -202,7 +202,7 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
     {
         // 4 bpp Bank mode
         u32 colorLut = quad.CMDCOLR * 2;
-        u32 colorOffset = (VDP2Regs_.CRAOFB & 0x70) << 4;
+        u32 colorOffset = (VDP2Regs_.mE6_CRAOFB & 0x70) << 4;
         assert(colorOffset == 0);
 
         for (int currentY = 0; currentY < textureHeight; currentY++)

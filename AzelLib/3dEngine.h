@@ -85,6 +85,7 @@ void rotateMatrixZ(s32 rotZ, sMatrix4x3* pMatrix);
 void rotateMatrixShiftedZ(fixedPoint rotZ, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixZ(s32 rotZ);
 void rotateCurrentMatrixShiftedZ(fixedPoint rotZ);
+void translateMatrix(const sVec3_FP& translation, sMatrix4x3* pMatrix);
 void translateMatrix(const sVec3_FP* translation, sMatrix4x3* pMatrix);
 void translateCurrentMatrix(const sVec3_FP* translation);
 void translateCurrentMatrix(const sVec3_FP& translation);

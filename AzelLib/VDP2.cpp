@@ -355,33 +355,33 @@ void clearVdp2CRam(u32 offset, u32 size)
 
 void resetVdp2RegsCopy(s_VDP2Regs* pRegisters)
 {
-    u16 tvStat = VDP2Regs_.TVSTAT;
-    u16 tvMode = VDP2Regs_.TVMD;
+    u16 tvStat = VDP2Regs_.m4_TVSTAT;
+    u16 tvMode = VDP2Regs_.m0_TVMD;
 
     memset(pRegisters, 0, sizeof(s_VDP2Regs));
 
-    pRegisters->TVMD = ((tvStat & 1) << 5) | (0x8000 & tvMode) | 1;
-    pRegisters->CYCA0 = 0xFFFF;
-    pRegisters->CYCA1 = 0xFFFF;
-    pRegisters->CYCB0 = 0xFFFF;
-    pRegisters->CYCB1 = 0xFFFF;
-    pRegisters->ZMXN0 = 0x10000;
-    pRegisters->ZMXN1 = 0x10000;
-    pRegisters->SPCTL = 0x20;
+    pRegisters->m0_TVMD = ((tvStat & 1) << 5) | (0x8000 & tvMode) | 1;
+    pRegisters->m10_CYCA0 = 0xFFFF;
+    pRegisters->m14_CYCA1 = 0xFFFF;
+    pRegisters->m18_CYCB0 = 0xFFFF;
+    pRegisters->m1C_CYCB1 = 0xFFFF;
+    pRegisters->m78_ZMXN0 = 0x10000;
+    pRegisters->m88_ZMXN1 = 0x10000;
+    pRegisters->mE0_SPCTL = 0x20;
 }
 
 void updateVDP2Regs()
 {
-    VDP2Regs_.TVMD = vdp2Controls.m4_pendingVdp2Regs->TVMD;
-    VDP2Regs_.EXTEN = vdp2Controls.m4_pendingVdp2Regs->EXTEN;
+    VDP2Regs_.m0_TVMD = vdp2Controls.m4_pendingVdp2Regs->m0_TVMD;
+    VDP2Regs_.m2_EXTEN = vdp2Controls.m4_pendingVdp2Regs->m2_EXTEN;
     // skip TVSTAT
-    VDP2Regs_.VRSIZE = vdp2Controls.m4_pendingVdp2Regs->VRSIZE;
+    VDP2Regs_.m6_VRSIZE = vdp2Controls.m4_pendingVdp2Regs->m6_VRSIZE;
     // skip HCNT
     // skip VCNT
     // skip padding
-    VDP2Regs_.RAMCTL = vdp2Controls.m4_pendingVdp2Regs->RAMCTL;
+    VDP2Regs_.mE_RAMCTL = vdp2Controls.m4_pendingVdp2Regs->mE_RAMCTL;
 
-    memcpy(&VDP2Regs_.CYCA0, &vdp2Controls.m4_pendingVdp2Regs->CYCA0, sizeof(s_VDP2Regs) - (intptr_t)(&((s_VDP2Regs*)NULL)->CYCA0));
+    memcpy(&VDP2Regs_.m10_CYCA0, &vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0, sizeof(s_VDP2Regs) - (intptr_t)(&((s_VDP2Regs*)NULL)->m10_CYCA0));
 }
 
 void resetVdp2RegsCopies()
@@ -399,13 +399,13 @@ void setupVdp2TextLayerColor()
     g_fadeControls.m_4A = 0xC210;
     g_fadeControls.m_48 = 0xC210;
 
-    vdp2Controls.m20_registers[0].N1COEN = 0x7F;
-    vdp2Controls.m4_pendingVdp2Regs->N1COEN = 0x7F;
+    vdp2Controls.m20_registers[0].m110_CLOFEN = 0x7F;
+    vdp2Controls.m4_pendingVdp2Regs->m110_CLOFEN = 0x7F;
 
     if (g_fadeControls.m_4D >= g_fadeControls.m_4C) //?
     {
-        vdp2Controls.m20_registers[0].N1COSL = 0;
-        vdp2Controls.m4_pendingVdp2Regs->N1COSL = 0;
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+        vdp2Controls.m4_pendingVdp2Regs->m112_CLOFSL = 0;
     }
 
     g_fadeControls.m0_fade0.m20_stopped = 1;
@@ -419,37 +419,37 @@ void setupVdp2TextLayerColor()
     g_fadeControls.m24_fade1.m0_color[1] = 0;
     g_fadeControls.m24_fade1.m0_color[2] = 0;
 
-    VDP2Regs_.COAR = 0;
-    VDP2Regs_.COAG = 0;
-    VDP2Regs_.COAB = 0;
+    VDP2Regs_.m114_COAR = 0;
+    VDP2Regs_.m116_COAG = 0;
+    VDP2Regs_.m118_COAB = 0;
 
-    VDP2Regs_.COBR = 0;
-    VDP2Regs_.COBG = 0;
-    VDP2Regs_.COBB = 0;
+    VDP2Regs_.m11A_COBR = 0;
+    VDP2Regs_.m11C_COBG = 0;
+    VDP2Regs_.m11E_COBB = 0;
 
-    vdp2Controls.m20_registers[0].COAR = 0;
-    vdp2Controls.m20_registers[0].COAG = 0;
-    vdp2Controls.m20_registers[0].COAB = 0;
-    vdp2Controls.m20_registers[0].COBR = 0;
-    vdp2Controls.m20_registers[0].COBG = 0;
-    vdp2Controls.m20_registers[0].COBB = 0;
+    vdp2Controls.m20_registers[0].m114_COAR = 0;
+    vdp2Controls.m20_registers[0].m116_COAG = 0;
+    vdp2Controls.m20_registers[0].m118_COAB = 0;
+    vdp2Controls.m20_registers[0].m11A_COBR = 0;
+    vdp2Controls.m20_registers[0].m11C_COBG = 0;
+    vdp2Controls.m20_registers[0].m11E_COBB = 0;
 
-    vdp2Controls.m4_pendingVdp2Regs->COAR = 0;
-    vdp2Controls.m4_pendingVdp2Regs->COAG = 0;
-    vdp2Controls.m4_pendingVdp2Regs->COAB = 0;
-    vdp2Controls.m4_pendingVdp2Regs->COBR = 0;
-    vdp2Controls.m4_pendingVdp2Regs->COBG = 0;
-    vdp2Controls.m4_pendingVdp2Regs->COBB = 0;
+    vdp2Controls.m4_pendingVdp2Regs->m114_COAR = 0;
+    vdp2Controls.m4_pendingVdp2Regs->m116_COAG = 0;
+    vdp2Controls.m4_pendingVdp2Regs->m118_COAB = 0;
+    vdp2Controls.m4_pendingVdp2Regs->m11A_COBR = 0;
+    vdp2Controls.m4_pendingVdp2Regs->m11C_COBG = 0;
+    vdp2Controls.m4_pendingVdp2Regs->m11E_COBB = 0;
 }
 
 sLayerConfig textLayerVdp2Setup[] = {
-    CHCN, 0,
-    CHSZ, 0,
-    PNB, 1,
-    CNSM, 1,
-    PLSZ, 0,
-    CAOS, 7,
-    END
+    m2_CHCN, 0,
+    m5_CHSZ, 0,
+    m6_PNB, 1,
+    m7_CNSM, 1,
+    m12_PLSZ, 0,
+    m40_CAOS, 7,
+    m0_END
 };
 
 void setupNBG0(sLayerConfig* setup)
@@ -462,26 +462,26 @@ void setupNBG0(sLayerConfig* setup)
 
         switch (command)
         {
-        case CHCN:
-            vdp2Controls.m4_pendingVdp2Regs->CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->CHCTLA & 0xFF8F) | (arg << 4);
+        case m2_CHCN:
+            vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 0xFF8F) | (arg << 4);
             break;
-        case CHSZ:
-            vdp2Controls.m4_pendingVdp2Regs->CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->CHCTLA & 0xFFFE) | (arg << 0);
+        case m5_CHSZ:
+            vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 0xFFFE) | (arg << 0);
             break;
-        case PNB:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN0 = (vdp2Controls.m4_pendingVdp2Regs->PNCN0 & 0x7FFF) | (arg << 15);
+        case m6_PNB:
+            vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 & 0x7FFF) | (arg << 15);
             break;
-        case CNSM:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN0 = (vdp2Controls.m4_pendingVdp2Regs->PNCN0 & 0xBFFF) | (arg << 14);
+        case m7_CNSM:
+            vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 & 0xBFFF) | (arg << 14);
             break;
-        case SCN:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN0 = (vdp2Controls.m4_pendingVdp2Regs->PNCN0 & 0xFFE0) | (arg << 0);
+        case m11_SCN:
+            vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 & 0xFFE0) | (arg << 0);
             break;
-        case PLSZ:
-            vdp2Controls.m4_pendingVdp2Regs->PLSZ = (vdp2Controls.m4_pendingVdp2Regs->PLSZ & 0xFFFC) | (arg << 0);
+        case m12_PLSZ:
+            vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ & 0xFFFC) | (arg << 0);
             break;
-        case CAOS:
-            vdp2Controls.m4_pendingVdp2Regs->CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->CRAOFA & 0xFFF8) | (arg << 0);
+        case m40_CAOS:
+            vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA & 0xFFF8) | (arg << 0);
             break;
         default:
             assert(false);
@@ -490,7 +490,7 @@ void setupNBG0(sLayerConfig* setup)
     };
 
     // force BG layer 0 on
-    vdp2Controls.m4_pendingVdp2Regs->BGON = (vdp2Controls.m4_pendingVdp2Regs->BGON & 0xFFFE) | 0x1;
+    vdp2Controls.m4_pendingVdp2Regs->m20_BGON = (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0xFFFE) | 0x1;
 
     vdp2Controls.m_isDirty = true;
 }
@@ -505,26 +505,40 @@ void setupNBG1(sLayerConfig* setup)
 
         switch (command)
         {
-        case CHCN:
-            vdp2Controls.m4_pendingVdp2Regs->CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->CHCTLA & 0x8FFF) | (arg << 12);
+        case m2_CHCN:
+            vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 0x8FFF) | (arg << 12);
             break;
-        case CHSZ:
-            vdp2Controls.m4_pendingVdp2Regs->CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->CHCTLA & 0xFEFF) | (arg << 8);
+        case m5_CHSZ:
+            vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 0xFEFF) | (arg << 8);
             break;
-        case PNB:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->PNCN1 & 0x7FFF) | (arg << 15);
+        case m6_PNB:
+            vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 & 0x7FFF) | (arg << 15);
             break;
-        case CNSM:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->PNCN1 & 0xBFFF) | (arg << 14);
+        case m7_CNSM:
+            vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 & 0xBFFF) | (arg << 14);
             break;
-        case SCN:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->PNCN1 & 0xFFE0) | (arg << 0);
+        case m9:
             break;
-        case PLSZ:
-            vdp2Controls.m4_pendingVdp2Regs->PLSZ = (vdp2Controls.m4_pendingVdp2Regs->PLSZ & 0xFFF3) | (arg << 2);
+        case m11_SCN:
+            vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 & 0xFFE0) | (arg << 0);
             break;
-        case CAOS:
-            vdp2Controls.m4_pendingVdp2Regs->CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->CRAOFA & 0xFF8F) | (arg << 4);
+        case m12_PLSZ:
+            vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ & 0xFFF3) | (arg << 2);
+            break;
+        case m21:
+            break;
+        case m40_CAOS:
+            vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA & 0xFF8F) | (arg << 4);
+            break;
+        case m41:
+            break;
+        case m44_CCEN:
+            // vdp2Controls.m4_pendingVdp2Regs->CCEN
+            break;
+        case m46_SCCM:
+           // vdp2Controls.m4_pendingVdp2Regs->SFCCMD
+            break;
+        case m45:
             break;
         default:
             assert(false);
@@ -533,7 +547,7 @@ void setupNBG1(sLayerConfig* setup)
     };
 
     // force BG layer 1 on
-    vdp2Controls.m4_pendingVdp2Regs->BGON = (vdp2Controls.m4_pendingVdp2Regs->BGON & 0xFFFD) | 0x2;
+    vdp2Controls.m4_pendingVdp2Regs->m20_BGON = (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0xFFFD) | 0x2;
 
     vdp2Controls.m_isDirty = true;
 }
@@ -548,35 +562,35 @@ void setupNBG2(sLayerConfig* setup)
 
         switch (command)
         {
-        case CHCN:
-            vdp2Controls.m4_pendingVdp2Regs->CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->CHCTLB & 0xFFFD) | (arg << 1);
+        case m2_CHCN:
+            vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0xFFFD) | (arg << 1);
             break;
-        case CHSZ:
-            vdp2Controls.m4_pendingVdp2Regs->CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->CHCTLB & 0xFFFE) | (arg << 0);
+        case m5_CHSZ:
+            vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0xFFFE) | (arg << 0);
             break;
-        case PNB:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN2 = (vdp2Controls.m4_pendingVdp2Regs->PNCN2 & 0x7FFF) | (arg << 15);
+        case m6_PNB:
+            vdp2Controls.m4_pendingVdp2Regs->m34_PNCN2 = (vdp2Controls.m4_pendingVdp2Regs->m34_PNCN2 & 0x7FFF) | (arg << 15);
             break;
-        case CNSM:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN2 = (vdp2Controls.m4_pendingVdp2Regs->PNCN2 & 0xBFFF) | (arg << 14);
+        case m7_CNSM:
+            vdp2Controls.m4_pendingVdp2Regs->m34_PNCN2 = (vdp2Controls.m4_pendingVdp2Regs->m34_PNCN2 & 0xBFFF) | (arg << 14);
             break;
-        case SCN:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN2 = (vdp2Controls.m4_pendingVdp2Regs->PNCN2 & 0xFFE0) | (arg << 0);
+        case m11_SCN:
+            vdp2Controls.m4_pendingVdp2Regs->m34_PNCN2 = (vdp2Controls.m4_pendingVdp2Regs->m34_PNCN2 & 0xFFE0) | (arg << 0);
             break;
-        case PLSZ:
-            vdp2Controls.m4_pendingVdp2Regs->PLSZ = (vdp2Controls.m4_pendingVdp2Regs->PLSZ & 0xFFCF) | (arg << 4);
+        case m12_PLSZ:
+            vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ & 0xFFCF) | (arg << 4);
             break;
-        case W0E:
-            vdp2Controls.m4_pendingVdp2Regs->WCTLB = (vdp2Controls.m4_pendingVdp2Regs->WCTLB & 0xFFFD) | (arg << 1);
+        case m34_W0E:
+            vdp2Controls.m4_pendingVdp2Regs->mD2_WCTLB = (vdp2Controls.m4_pendingVdp2Regs->mD2_WCTLB & 0xFFFD) | (arg << 1);
             break;
-        case W0A:
-            vdp2Controls.m4_pendingVdp2Regs->WCTLB = (vdp2Controls.m4_pendingVdp2Regs->WCTLB & 0xFFFE) | (arg << 0);
+        case m37_W0A:
+            vdp2Controls.m4_pendingVdp2Regs->mD2_WCTLB = (vdp2Controls.m4_pendingVdp2Regs->mD2_WCTLB & 0xFFFE) | (arg << 0);
             break;
-        case CAOS:
-            vdp2Controls.m4_pendingVdp2Regs->CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->CRAOFA & 0xF8FF) | (arg << 8);
+        case m40_CAOS:
+            vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA & 0xF8FF) | (arg << 8);
             break;
-        case CCEN:
-            vdp2Controls.m4_pendingVdp2Regs->CCCTL = (vdp2Controls.m4_pendingVdp2Regs->CCCTL & 0xFFCF) | (arg << 2);
+        case m44_CCEN:
+            vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = (vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFFCF) | (arg << 2);
             break;
         default:
             assert(false);
@@ -585,7 +599,7 @@ void setupNBG2(sLayerConfig* setup)
     };
 
     // force BG layer 2 on
-    vdp2Controls.m4_pendingVdp2Regs->BGON = (vdp2Controls.m4_pendingVdp2Regs->BGON & 0xFFCF) | 0x4;
+    vdp2Controls.m4_pendingVdp2Regs->m20_BGON = (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0xFFCF) | 0x4;
 
     vdp2Controls.m_isDirty = true;
 }
@@ -600,23 +614,23 @@ void setupNBG3(sLayerConfig* setup)
 
         switch (command)
         {
-        case CHCN:
-            vdp2Controls.m4_pendingVdp2Regs->CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->CHCTLB & 0xFFDF) | (arg << 5);
+        case m2_CHCN:
+            vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0xFFDF) | (arg << 5);
             break;
-        case CHSZ:
-            vdp2Controls.m4_pendingVdp2Regs->CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->CHCTLB & 0xFFEF) | (arg << 4);
+        case m5_CHSZ:
+            vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0xFFEF) | (arg << 4);
             break;
-        case PNB:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN3 = (vdp2Controls.m4_pendingVdp2Regs->PNCN3 & 0x7FFF) | (arg << 15);
+        case m6_PNB:
+            vdp2Controls.m4_pendingVdp2Regs->m36_PNCN3 = (vdp2Controls.m4_pendingVdp2Regs->m36_PNCN3 & 0x7FFF) | (arg << 15);
             break;
-        case CNSM:
-            vdp2Controls.m4_pendingVdp2Regs->PNCN3 = (vdp2Controls.m4_pendingVdp2Regs->PNCN3 & 0xBFFF) | (arg << 14);
+        case m7_CNSM:
+            vdp2Controls.m4_pendingVdp2Regs->m36_PNCN3 = (vdp2Controls.m4_pendingVdp2Regs->m36_PNCN3 & 0xBFFF) | (arg << 14);
             break;
-        case PLSZ:
-            vdp2Controls.m4_pendingVdp2Regs->PLSZ = (vdp2Controls.m4_pendingVdp2Regs->PLSZ & 0xFF3F) | (arg << 6);
+        case m12_PLSZ:
+            vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ & 0xFF3F) | (arg << 6);
             break;
-        case CAOS:
-            vdp2Controls.m4_pendingVdp2Regs->CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->CRAOFA & 0x8FFF) | (arg << 12);
+        case m40_CAOS:
+            vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA & 0x8FFF) | (arg << 12);
             break;
         default:
             assert(false);
@@ -628,7 +642,7 @@ void setupNBG3(sLayerConfig* setup)
     };
 
     // force BG layer 3 on
-    vdp2Controls.m4_pendingVdp2Regs->BGON = (vdp2Controls.m4_pendingVdp2Regs->BGON & 0xFFF7) | 0x8;
+    vdp2Controls.m4_pendingVdp2Regs->m20_BGON = (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0xFFF7) | 0x8;
 
     vdp2Controls.m_isDirty = true;
 }
@@ -646,20 +660,20 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
     switch (layer)
     {
     case 0:
-        characterSize = vdp2Controls.m4_pendingVdp2Regs->CHCTLA & 1;
-        patternNameDataSize = vdp2Controls.m4_pendingVdp2Regs->PNCN0 & 0x8000;
+        characterSize = vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 1;
+        patternNameDataSize = vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 & 0x8000;
         break;
     case 1:
-        characterSize = vdp2Controls.m4_pendingVdp2Regs->CHCTLA & 0x100;
-        patternNameDataSize = vdp2Controls.m4_pendingVdp2Regs->PNCN1 & 0x8000;
+        characterSize = vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 0x100;
+        patternNameDataSize = vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 & 0x8000;
         break;
     case 2:
-        characterSize = vdp2Controls.m4_pendingVdp2Regs->CHCTLB & 0x1;
-        patternNameDataSize = vdp2Controls.m4_pendingVdp2Regs->PNCN2 & 0x8000;
+        characterSize = vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0x1;
+        patternNameDataSize = vdp2Controls.m4_pendingVdp2Regs->m34_PNCN2 & 0x8000;
         break;
     case 3:
-        characterSize = vdp2Controls.m4_pendingVdp2Regs->CHCTLB & 0x10;
-        patternNameDataSize = vdp2Controls.m4_pendingVdp2Regs->PNCN3 & 0x8000;
+        characterSize = vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0x10;
+        patternNameDataSize = vdp2Controls.m4_pendingVdp2Regs->m36_PNCN3 & 0x8000;
         break;
     default:
         assert(0);
@@ -706,24 +720,24 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
     switch (layer)
     {
     case 0:
-        vdp2Controls.m4_pendingVdp2Regs->MPOFN = (vdp2Controls.m4_pendingVdp2Regs->MPOFN & 0xFFF0) | (mapOffset);
-        vdp2Controls.m4_pendingVdp2Regs->MPABN0 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
-        vdp2Controls.m4_pendingVdp2Regs->MPCDN0 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 0xFFF0) | (mapOffset);
+        vdp2Controls.m4_pendingVdp2Regs->m40_MPABN0 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
         break;
     case 1:
-        vdp2Controls.m4_pendingVdp2Regs->MPOFN = (vdp2Controls.m4_pendingVdp2Regs->MPOFN & 0xFF0F) | (mapOffset << 4);
-        vdp2Controls.m4_pendingVdp2Regs->MPABN1 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
-        vdp2Controls.m4_pendingVdp2Regs->MPCDN1 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 0xFF0F) | (mapOffset << 4);
+        vdp2Controls.m4_pendingVdp2Regs->m44_MPABN1 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
         break;
     case 2:
-        vdp2Controls.m4_pendingVdp2Regs->MPOFN = (vdp2Controls.m4_pendingVdp2Regs->MPOFN & 0xF0FF) | (mapOffset << 8);
-        vdp2Controls.m4_pendingVdp2Regs->MPABN2 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
-        vdp2Controls.m4_pendingVdp2Regs->MPCDN2 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 0xF0FF) | (mapOffset << 8);
+        vdp2Controls.m4_pendingVdp2Regs->m48_MPABN2 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m4A_MPCDN2 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
         break;
     case 3:
-        vdp2Controls.m4_pendingVdp2Regs->MPOFN = (vdp2Controls.m4_pendingVdp2Regs->MPOFN & 0x0FFF) | (mapOffset << 12);
-        vdp2Controls.m4_pendingVdp2Regs->MPABN3 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
-        vdp2Controls.m4_pendingVdp2Regs->MPCDN3 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 0x0FFF) | (mapOffset << 12);
+        vdp2Controls.m4_pendingVdp2Regs->m4C_MPABN3 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m4E_MPCDN3 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
         break;
     default:
         assert(0);
@@ -753,7 +767,7 @@ void resetCharacterMaps()
 
 void clearVdp2TextMemory()
 {
-    memset(getVdp2Vram(vdp2TextMemoryOffset), 0, 0x10 * 0x1000);
+    memset(getVdp2Vram(vdp2TextMemoryOffset), 0, 0x10 * 0x100);
     resetCharacterMaps();
 }
 
@@ -867,16 +881,16 @@ void updateVDP2CoordinatesIncrement(u32 unk0, u32 unk1)
     switch (pauseEngine[4])
     {
     case 0:
-        vdp2Controls.m20_registers[0].ZMXN0 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->ZMXN0 = unk0;
-        vdp2Controls.m20_registers[0].ZMYN0 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->ZMYN0 = unk1;
+        vdp2Controls.m20_registers[0].m78_ZMXN0 = unk0;
+        vdp2Controls.m4_pendingVdp2Regs->m78_ZMXN0 = unk0;
+        vdp2Controls.m20_registers[0].m7C_ZMYN0 = unk1;
+        vdp2Controls.m4_pendingVdp2Regs->m7C_ZMYN0 = unk1;
         break;
     case 1:
-        vdp2Controls.m20_registers[0].ZMXN1 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->ZMXN1 = unk0;
-        vdp2Controls.m20_registers[0].ZMYN1 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->ZMYN1 = unk1;
+        vdp2Controls.m20_registers[0].m88_ZMXN1 = unk0;
+        vdp2Controls.m4_pendingVdp2Regs->m88_ZMXN1 = unk0;
+        vdp2Controls.m20_registers[0].m8C_ZMYN1 = unk1;
+        vdp2Controls.m4_pendingVdp2Regs->m8C_ZMYN1 = unk1;
         break;
     default:
         assert(0);
@@ -889,28 +903,28 @@ void setupVDP2CoordinatesIncrement2(u32 unk0, u32 unk1)
     switch (pauseEngine[4])
     {
     case 0:
-        vdp2Controls.m20_registers[0].SCXN0 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->SCXN0 = unk0;
-        vdp2Controls.m20_registers[0].SCYN0 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->SCYN0 = unk1;
+        vdp2Controls.m20_registers[0].m70_SCXN0 = unk0;
+        vdp2Controls.m4_pendingVdp2Regs->m70_SCXN0 = unk0;
+        vdp2Controls.m20_registers[0].m74_SCYN0 = unk1;
+        vdp2Controls.m4_pendingVdp2Regs->m74_SCYN0 = unk1;
         break;
     case 1:
-        vdp2Controls.m20_registers[0].SCXN1 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->SCXN1 = unk0;
-        vdp2Controls.m20_registers[0].SCYN1 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->SCYN1 = unk1;
+        vdp2Controls.m20_registers[0].m80_SCXN1 = unk0;
+        vdp2Controls.m4_pendingVdp2Regs->m80_SCXN1 = unk0;
+        vdp2Controls.m20_registers[0].m84_SCYN1 = unk1;
+        vdp2Controls.m4_pendingVdp2Regs->m84_SCYN1 = unk1;
         break;
     case 2:
-        vdp2Controls.m20_registers[0].SCXN2 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->SCXN2 = unk0;
-        vdp2Controls.m20_registers[0].SCYN2 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->SCYN2 = unk1;
+        vdp2Controls.m20_registers[0].m90_SCXN2 = unk0;
+        vdp2Controls.m4_pendingVdp2Regs->m90_SCXN2 = unk0;
+        vdp2Controls.m20_registers[0].m92_SCYN2 = unk1;
+        vdp2Controls.m4_pendingVdp2Regs->m92_SCYN2 = unk1;
         break;
     case 3:
-        vdp2Controls.m20_registers[0].SCXN3 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->SCXN3 = unk0;
-        vdp2Controls.m20_registers[0].SCYN3 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->SCYN3 = unk1;
+        vdp2Controls.m20_registers[0].m94_SCXN3 = unk0;
+        vdp2Controls.m4_pendingVdp2Regs->m94_SCXN3 = unk0;
+        vdp2Controls.m20_registers[0].m96_SCYN3 = unk1;
+        vdp2Controls.m4_pendingVdp2Regs->m96_SCYN3 = unk1;
         break;
     default:
         assert(0);
@@ -1360,7 +1374,7 @@ void printVdp2StringNewLine(s_stringStatusQuery* vars)
 
 void printVdp2StringSub2(s32 r4)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void printVdp2String(s_stringStatusQuery* vars)

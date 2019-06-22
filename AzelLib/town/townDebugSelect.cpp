@@ -14,8 +14,8 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
     {
         if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
         {
-            vdp2Controls.m20_registers[0].N1COSL = 0;
-            vdp2Controls.m20_registers[1].N1COSL = 0;
+            vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+            vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
         }
 
         fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
@@ -126,7 +126,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
 
     void DrawSubTowns()
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     void CountNumberOfSubTown()

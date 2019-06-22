@@ -109,7 +109,7 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
 
     static void Delete(npcFileDeleter* pThis)
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     //copy 0/4

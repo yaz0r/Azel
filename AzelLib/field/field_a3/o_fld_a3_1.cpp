@@ -217,7 +217,7 @@ struct s_itemType0 : public s_workAreaTemplate<s_itemType0>
 
 void LCSItemBox_CallbackSavePoint(p_workArea, sLCSTarget*)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*);
@@ -271,7 +271,7 @@ static sVec3_FP LCSItemBox_Table6[] = {
 
 p_workArea createSavePointParticles()
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
     return nullptr;
 }
 
@@ -849,12 +849,12 @@ struct fieldA3_1_startTasks_subTask : public s_workAreaTemplateWithArg<fieldA3_1
         pThis->m8_translation = readSaturnVec3(arg);
         pThis->m54 = 0x67B4;
 
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     static void Update(fieldA3_1_startTasks_subTask* pThis)
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     static void Draw(fieldA3_1_startTasks_subTask* pThis)
@@ -891,12 +891,12 @@ struct fieldA3_1_startTasks_subTask2 : public s_workAreaTemplateWithArg<fieldA3_
         stepAnimation(&pThis->m78_3dModel);
 
         pThis->m8_translation = readSaturnVec3(arg);
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     static void Update(fieldA3_1_startTasks_subTask2* pThis)
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     static void Draw(fieldA3_1_startTasks_subTask2* pThis)
@@ -938,7 +938,7 @@ struct fieldA3_1_startTasks_subTask3 : public s_workAreaTemplateWithArg<fieldA3_
 
     static void Update(fieldA3_1_startTasks_subTask3* pThis)
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     static void Draw(fieldA3_1_startTasks_subTask3* pThis)
@@ -975,7 +975,7 @@ void fieldA3_1_startTasks_sub3_func(sfieldA3_1_startTasks_sub3_func_task* pThis)
     getFieldTaskPtr()->mC->mC0[7][1] = pThis->m0;
     getFieldTaskPtr()->mC->mC0[7][2] = pThis->m0;
     */
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void fieldA3_1_startTasks_sub3(p_workArea workArea)

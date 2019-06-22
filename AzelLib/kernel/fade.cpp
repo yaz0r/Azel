@@ -65,19 +65,19 @@ void updateFadeInterrupt()
         {
             fadeControl.m0_color += fadeControl.mC_colorStep;
 
-            vdp2Controls.m20_registers[0].COAR = fadeControl.m0_color[0].getInteger();
-            vdp2Controls.m20_registers[0].COAG = fadeControl.m0_color[1].getInteger();
-            vdp2Controls.m20_registers[0].COAB = fadeControl.m0_color[2].getInteger();
+            vdp2Controls.m20_registers[0].m114_COAR = fadeControl.m0_color[0].getInteger();
+            vdp2Controls.m20_registers[0].m116_COAG = fadeControl.m0_color[1].getInteger();
+            vdp2Controls.m20_registers[0].m118_COAB = fadeControl.m0_color[2].getInteger();
         }
         else
         {
-            vdp2Controls.m20_registers[0].COAR = fadeControl.m18_targetColor[0];
-            vdp2Controls.m20_registers[0].COAG = fadeControl.m18_targetColor[1];
-            vdp2Controls.m20_registers[0].COAB = fadeControl.m18_targetColor[2];
+            vdp2Controls.m20_registers[0].m114_COAR = fadeControl.m18_targetColor[0];
+            vdp2Controls.m20_registers[0].m116_COAG = fadeControl.m18_targetColor[1];
+            vdp2Controls.m20_registers[0].m118_COAB = fadeControl.m18_targetColor[2];
 
-            vdp2Controls.m20_registers[1].COAR = fadeControl.m18_targetColor[0];
-            vdp2Controls.m20_registers[1].COAG = fadeControl.m18_targetColor[1];
-            vdp2Controls.m20_registers[1].COAB = fadeControl.m18_targetColor[2];
+            vdp2Controls.m20_registers[1].m114_COAR = fadeControl.m18_targetColor[0];
+            vdp2Controls.m20_registers[1].m116_COAG = fadeControl.m18_targetColor[1];
+            vdp2Controls.m20_registers[1].m118_COAB = fadeControl.m18_targetColor[2];
 
             fadeControl.m0_color = fadeControl.m18_targetColor.toSVec3_FP();
             fadeControl.m20_stopped = 1;
@@ -91,19 +91,19 @@ void updateFadeInterrupt()
         {
             fadeControl.m0_color += fadeControl.mC_colorStep;
 
-            vdp2Controls.m20_registers[0].COBR = fadeControl.m0_color[0].getInteger();
-            vdp2Controls.m20_registers[0].COBG = fadeControl.m0_color[1].getInteger();
-            vdp2Controls.m20_registers[0].COBB = fadeControl.m0_color[2].getInteger();
+            vdp2Controls.m20_registers[0].m11A_COBR = fadeControl.m0_color[0].getInteger();
+            vdp2Controls.m20_registers[0].m11C_COBG = fadeControl.m0_color[1].getInteger();
+            vdp2Controls.m20_registers[0].m11E_COBB = fadeControl.m0_color[2].getInteger();
         }
         else
         {
-            vdp2Controls.m20_registers[0].COBR = fadeControl.m18_targetColor[0];
-            vdp2Controls.m20_registers[0].COBG = fadeControl.m18_targetColor[1];
-            vdp2Controls.m20_registers[0].COBB = fadeControl.m18_targetColor[2];
+            vdp2Controls.m20_registers[0].m11A_COBR = fadeControl.m18_targetColor[0];
+            vdp2Controls.m20_registers[0].m11C_COBG = fadeControl.m18_targetColor[1];
+            vdp2Controls.m20_registers[0].m11E_COBB = fadeControl.m18_targetColor[2];
 
-            vdp2Controls.m20_registers[1].COBR = fadeControl.m18_targetColor[0];
-            vdp2Controls.m20_registers[1].COBG = fadeControl.m18_targetColor[1];
-            vdp2Controls.m20_registers[1].COBB = fadeControl.m18_targetColor[2];
+            vdp2Controls.m20_registers[1].m11A_COBR = fadeControl.m18_targetColor[0];
+            vdp2Controls.m20_registers[1].m11C_COBG = fadeControl.m18_targetColor[1];
+            vdp2Controls.m20_registers[1].m11E_COBB = fadeControl.m18_targetColor[2];
 
             fadeControl.m0_color = fadeControl.m18_targetColor.toSVec3_FP();
             fadeControl.m20_stopped = 1;

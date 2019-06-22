@@ -340,6 +340,6 @@ void subfieldA3_0(p_workArea workArea)
 
     getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
 
-    TaskUnimplemented();
+    FunctionUnimplemented();
     //subfieldA3_1_Sub1();
 }

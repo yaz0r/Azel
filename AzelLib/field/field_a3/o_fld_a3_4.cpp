@@ -3,12 +3,12 @@
 
 void subfieldA3_4_sub0()
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void subfieldA3_4_sub1(p_workArea workArea)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void setupFieldCameraConfig_A3_4()

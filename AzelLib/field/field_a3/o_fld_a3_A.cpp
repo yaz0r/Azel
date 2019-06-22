@@ -4,7 +4,7 @@
 
 void fieldA3_A_task0Sub0()
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 struct fieldA3_A_task0 : public s_workAreaTemplate<fieldA3_A_task0>

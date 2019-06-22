@@ -13,108 +13,108 @@ extern s_Vdp2PrintStatus vdp2PrintStatus;
 
 struct s_VDP2Regs
 {
-    u16 TVMD;
-    u16 EXTEN; 
-    u16 TVSTAT;
-    u16 VRSIZE;
-    u16 HCNT;
-    u16 VCNT;
-    u16 m_dummy_C;
-    u16 RAMCTL;
-    u32 CYCA0;
-    u32 CYCA1;
-    u32 CYCB0;
-    u32 CYCB1;
-    u16 BGON;
-    u16 MZCTL;
-    u16 SFSEL;
-    u16 SFCODE;
-    u16 CHCTLA;
-    u16 CHCTLB;
-    u16 BMPNA;
-    u16 BMPNB;
-    u16 PNCN0;
-    u16 PNCN1;
-    u16 PNCN2;
-    u16 PNCN3;
-    u16 PNCR;
-    u16 PLSZ;
-    u16 MPOFN;
-    u16 MPOFR;
-    u16 MPABN0;
-    u16 MPCDN0;
-    u16 MPABN1;
-    u16 MPCDN1;
-    u16 MPABN2;
-    u16 MPCDN2;
-    u16 MPABN3;
-    u16 MPCDN3;
-    u16 MPABRA;
-    u16 MPCDRA;
-    u16 MPEFRA;
-    u16 MPGHRA;
-    u16 MPIJRA;
-    u16 MPKLRA;
-    u16 MPMNRA;
-    u16 MPOPRA;
-    u16 MPABRB;
-    u16 MPCDRB;
-    u16 MPEFRB;
-    u16 MPGHRB;
-    u16 MPIJRB;
-    u16 MPKLRB;
-    u16 MPMNRB;
-    u16 MPOPRB;
+    u16 m0_TVMD;
+    u16 m2_EXTEN; 
+    u16 m4_TVSTAT;
+    u16 m6_VRSIZE;
+    u16 m8_HCNT;
+    u16 mA_VCNT;
+    u16 mC_RESERVE;
+    u16 mE_RAMCTL;
+    u32 m10_CYCA0;
+    u32 m14_CYCA1;
+    u32 m18_CYCB0;
+    u32 m1C_CYCB1;
+    u16 m20_BGON;
+    u16 m22_MZCTL;
+    u16 m24_SFSEL;
+    u16 m26_SFCODE;
+    u16 m28_CHCTLA;
+    u16 m2A_CHCTLB;
+    u16 m2C_BMPNA;
+    u16 m2E_BMPNB;
+    u16 m30_PNCN0;
+    u16 m32_PNCN1;
+    u16 m34_PNCN2;
+    u16 m36_PNCN3;
+    u16 m38_PNCR;
+    u16 m3A_PLSZ;
+    u16 m3C_MPOFN;
+    u16 m3E_MPOFR;
+    u16 m40_MPABN0;
+    u16 m42_MPCDN0;
+    u16 m44_MPABN1;
+    u16 m46_MPCDN1;
+    u16 m48_MPABN2;
+    u16 m4A_MPCDN2;
+    u16 m4C_MPABN3;
+    u16 m4E_MPCDN3;
+    u16 m50_MPABRA;
+    u16 m52_MPCDRA;
+    u16 m54_MPEFRA;
+    u16 m56_MPGHRA;
+    u16 m58_MPIJRA;
+    u16 m5A_MPKLRA;
+    u16 m5C_MPMNRA;
+    u16 m5E_MPOPRA;
+    u16 m60_MPABRB;
+    u16 m62_MPCDRB;
+    u16 m64_MPEFRB;
+    u16 m66_MPGHRB;
+    u16 m68_MPIJRB;
+    u16 m6A_MPKLRB;
+    u16 m6C_MPMNRB;
+    u16 m6E_MPOPRB;
 
-    s32 SCXN0;
-    s32 SCYN0;
-    u32 ZMXN0;
-    u32 ZMYN0;
+    s32 m70_SCXN0;
+    s32 m74_SCYN0;
+    u32 m78_ZMXN0;
+    u32 m7C_ZMYN0;
 
-    u32 SCXN1;
-    u32 SCYN1;
-    u32 ZMXN1;
-    u32 ZMYN1;
+    u32 m80_SCXN1;
+    u32 m84_SCYN1;
+    u32 m88_ZMXN1;
+    u32 m8C_ZMYN1;
 
-    u16 SCXN2;
-    u16 SCYN2;
-    u16 SCXN3;
-    u16 SCYN3;
-    u16 ZMCTL;
+    u16 m90_SCXN2;
+    u16 m92_SCYN2;
+    u16 m94_SCXN3;
+    u16 m96_SCYN3;
+    u16 m98_ZMCTL;
 
-    u16 SCRCTL;
+    u16 m9A_SCRCTL;
 
-    u32 BKTA;
-
-    //
-    u16 WCTLA;
-    u16 WCTLB;
+    u32 mAC_BKTA;
 
     //
-    u16 SPCTL;
+    u16 mD0_WCTLA;
+    u16 mD2_WCTLB;
+
+    //
+    u16 mE0_SPCTL;
     //
 
-    u16 CRAOFA;
-    u16 CRAOFB; // unset?
+    u16 mE4_CRAOFA;
+    u16 mE6_CRAOFB; // unset?
 
-    u16 CCCTL;
+    u16 mEC_CCCTL;
 
-    u16 PRISA;
-    u16 PRISB;
-    u16 PRISC;
-    u16 PRISD;
-    u16 PRINA;
-    u16 PRINB;
-    u16 PRIR;
-    u16 CCRNB;
-    u16 N1COEN;
-    u16 N1COSL;
-    s16 COAR;
-    s16 COAG;
-    s16 COAB;
-    s16 COBR;
-    s16 COBG;
-    s16 COBB;
+    u16 mF0_PRISA;
+    u16 mF2_PRISB;
+    u16 mF4_PRISC;
+    u16 mF6_PRISD;
+    u16 mF8_PRINA;
+    u16 mFA_PRINB;
+    u16 mFC_PRIR;
+    u16 m10A_CCRNB;
+    u16 m110_CLOFEN;
+    u16 m112_CLOFSL;
+    s16 m114_COAR;
+    s16 m116_COAG;
+    s16 m118_COAB;
+    s16 m11A_COBR;
+    s16 m11C_COBG;
+    s16 m11E_COBB;
 };
 extern s_VDP2Regs VDP2Regs_;
 
@@ -136,17 +136,22 @@ extern sVdp2Controls vdp2Controls;
 
 enum eVdp2LayerConfig
 {
-    END = 0,
-    CHCN = 2,
-    CHSZ = 5,
-    PNB = 6,
-    CNSM = 7,
-    SCN = 11,
-    PLSZ = 12,
-    CAOS = 40,
-    W0E = 34,
-    W0A = 37,
-    CCEN = 44,
+    m0_END = 0,
+    m2_CHCN = 2,
+    m5_CHSZ = 5,
+    m6_PNB = 6,
+    m7_CNSM = 7,
+    m9 = 9,
+    m11_SCN = 11,
+    m12_PLSZ = 12,
+    m21 = 21,
+    m34_W0E = 34,
+    m37_W0A = 37,
+    m40_CAOS = 40,
+    m41 = 41,
+    m44_CCEN = 44,
+    m45 = 45,
+    m46_SCCM = 46,
 };
 
 struct sLayerConfig

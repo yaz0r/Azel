@@ -291,6 +291,11 @@ void translateMatrix(const sVec3_FP* translation, sMatrix4x3* pMatrix)
     }
 }
 
+void translateMatrix(const sVec3_FP& translation, sMatrix4x3* pMatrix)
+{
+    translateMatrix(&translation, pMatrix);
+}
+
 void translateCurrentMatrix(const sVec3_FP* translation)
 {
     translateMatrix(translation, pCurrentMatrix);

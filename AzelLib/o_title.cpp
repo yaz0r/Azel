@@ -86,22 +86,22 @@ u8 titleScreenPalette[512] =
 
 sLayerConfig titleNBG0Setup[] =
 {
-    CHCN,  1, //256 colors
-    CHSZ,  1, //pattern is 1x1
-    PNB,  1, // 1 word
-    CNSM,  1,
-    END, // Character Number Supplementary mode 1 (12bits)
+    m2_CHCN,  1, //256 colors
+    m5_CHSZ,  1, //pattern is 1x1
+    m6_PNB,  1, // 1 word
+    m7_CNSM,  1,
+    m0_END, // Character Number Supplementary mode 1 (12bits)
 };
 
 sLayerConfig titleNBG1Setup[] =
 {
-    CHCN,  0, // 16 colors
-    CHSZ,  0, // pattern is 1x1
-    PNB,  1, // 1 word
-    CNSM,  1, // Character Number Supplementary mode 1 (12bits)
-    PLSZ, 0, // plane is 1H x 1V
-    CAOS, 7, // palette offset is 7 * 0x200 = 0xE00 (where the palette for the text is stored)
-    END,
+    m2_CHCN,  0, // 16 colors
+    m5_CHSZ,  0, // pattern is 1x1
+    m6_PNB,  1, // 1 word
+    m7_CNSM,  1, // Character Number Supplementary mode 1 (12bits)
+    m12_PLSZ, 0, // plane is 1H x 1V
+    m40_CAOS, 7, // palette offset is 7 * 0x200 = 0xE00 (where the palette for the text is stored)
+    m0_END,
 };
 
 void loadTitleScreenGraphics()
@@ -110,7 +110,7 @@ void loadTitleScreenGraphics()
 
     vdp2Controls.m_0 = (vdp2Controls.m_0 & 0xFFF8) | 3;
     vdp2Controls.m_isDirty = 1;
-    vdp2Controls.m4_pendingVdp2Regs->TVMD = (vdp2Controls.m4_pendingVdp2Regs->TVMD & 0xFF3F) | 0xC0; // LSMD0 & 1 to 1 (double density interlace)
+    vdp2Controls.m4_pendingVdp2Regs->m0_TVMD = (vdp2Controls.m4_pendingVdp2Regs->m0_TVMD & 0xFF3F) | 0xC0; // LSMD0 & 1 to 1 (double density interlace)
     vdp2Controls.m_isDirty = 1; // because why not?
 
     loadFile("TITLEE.SCB", getVdp2Vram(0x20000), 0);
@@ -121,20 +121,20 @@ void loadTitleScreenGraphics()
 
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 0x200, 0);
 
-    vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x15FFFFF;
-    vdp2Controls.m4_pendingVdp2Regs->CYCA1 = 0x44FFFFF;
-    vdp2Controls.m4_pendingVdp2Regs->CYCB0 = 0x44FFFFF;
-    vdp2Controls.m4_pendingVdp2Regs->CYCB1 = 0x44FFFFF;
+    vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x15FFFFF;
+    vdp2Controls.m4_pendingVdp2Regs->m14_CYCA1 = 0x44FFFFF;
+    vdp2Controls.m4_pendingVdp2Regs->m18_CYCB0 = 0x44FFFFF;
+    vdp2Controls.m4_pendingVdp2Regs->m1C_CYCB1 = 0x44FFFFF;
 
     setupNBG0(titleNBG0Setup);
     initLayerMap(0, (0x10000), (0x10800), (0x10000), (0x10800));
 
-    vdp2Controls.m4_pendingVdp2Regs->PRINA = 0x706; // Layer0 = 6, Layer1 = 7
-    vdp2Controls.m4_pendingVdp2Regs->PRINB = 0;
-    vdp2Controls.m4_pendingVdp2Regs->PRIR = 0;
+    vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA = 0x706; // Layer0 = 6, Layer1 = 7
+    vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB = 0;
+    vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0;
     vdp2Controls.m_isDirty = 1; // because why not?
 
-    if (VDP2Regs_.TVSTAT & 1)
+    if (VDP2Regs_.m4_TVSTAT & 1)
     {
         pauseEngine[4] = 0;
         updateVDP2CoordinatesIncrement(0x10000, 0xE000);
@@ -175,8 +175,8 @@ void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkAr
     case 3:
         if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
         {
-            vdp2Controls.m20_registers[0].N1COSL = 0;
-            vdp2Controls.m20_registers[1].N1COSL = 0;
+            vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+            vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
         }
 
         fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);

@@ -70,7 +70,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
         }*/
         pWorkArea->m_vertialLocation = 0;
 
-        if (VDP2Regs_.TVSTAT & 1)
+        if (VDP2Regs_.m4_TVSTAT & 1)
         {
             assert(0);
         }
@@ -250,7 +250,7 @@ struct s_pressStartButtonTaskWorkArea : public s_workAreaTemplate<s_pressStartBu
 
             vdp2PrintStatus.m10_palette = 0xD000;
 
-            if (VDP2Regs_.TVSTAT & 1)
+            if (VDP2Regs_.m4_TVSTAT & 1)
                 vdp2DebugPrintSetPosition(13, -2);
             else
                 vdp2DebugPrintSetPosition(13, -5);
@@ -263,7 +263,7 @@ struct s_pressStartButtonTaskWorkArea : public s_workAreaTemplate<s_pressStartBu
             if ((--pWorkArea->m_timming) >= 0)
                 return;
 
-            if (VDP2Regs_.TVSTAT & 1)
+            if (VDP2Regs_.m4_TVSTAT & 1)
                 vdp2DebugPrintSetPosition(13, -2);
             else
                 vdp2DebugPrintSetPosition(13, -5);
@@ -281,7 +281,7 @@ struct s_pressStartButtonTaskWorkArea : public s_workAreaTemplate<s_pressStartBu
 
     static void pressStartButtonTaskDelete(s_pressStartButtonTaskWorkArea* pWorkArea)
     {
-        if (VDP2Regs_.TVSTAT & 1)
+        if (VDP2Regs_.m4_TVSTAT & 1)
             vdp2DebugPrintSetPosition(13, -2);
         else
             vdp2DebugPrintSetPosition(13, -5);
@@ -340,7 +340,7 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
         createSubTask<s_pressStartButtonTaskWorkArea>(pWorkArea);
 
         pWorkArea->m_delay = 44 * 60;
-        if (VDP2Regs_.TVSTAT & 1)
+        if (VDP2Regs_.m4_TVSTAT & 1)
         {
             assert(false);
         }
@@ -450,11 +450,11 @@ u8 titleScreenPalette[32] = {
 
 sLayerConfig warningBG0Setup[] =
 {
-    CHCN,  0, // 16 colors
-    CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
-    PNB,  1, // pattern data size is 1 word
-    CNSM,  1, // character number is 12 bit, no flip
-    END,
+    m2_CHCN,  0, // 16 colors
+    m5_CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
+    m6_PNB,  1, // pattern data size is 1 word
+    m7_CNSM,  1, // character number is 12 bit, no flip
+    m0_END,
 };
 
 void loadWarningFile(u32 index)
@@ -466,18 +466,18 @@ void loadWarningFile(u32 index)
 
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 32, 0);
 
-    vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x3FF47FF;
+    vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x3FF47FF;
 
     setupNBG0(warningBG0Setup);
 
     initLayerMap(0, 0x1C800 + index * 0x800, 0, 0, 0);
 
-    vdp2Controls.m4_pendingVdp2Regs->PRINA = 6;
-    vdp2Controls.m4_pendingVdp2Regs->PRINB = 0x700;
-    vdp2Controls.m4_pendingVdp2Regs->PRIR = 0;
+    vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA = 6;
+    vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0;
     vdp2Controls.m_isDirty = 1;
 
-    if (VDP2Regs_.TVSTAT & 1)
+    if (VDP2Regs_.m4_TVSTAT & 1)
     {
         pauseEngine[4] = 0;
         setupVDP2CoordinatesIncrement2(0x0, 0x100000);
@@ -507,8 +507,8 @@ void s_warningWorkArea::Init(s_warningWorkArea* pWorkArea)
 
     if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
     {
-        vdp2Controls.m20_registers[0].N1COSL = 0;
-        vdp2Controls.m20_registers[1].N1COSL = 0;
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
     }
 
     fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);

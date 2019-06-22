@@ -23,7 +23,7 @@ struct sInitNPCSub0Var0Sub144
     //size 0xC
 };
 
-struct sInitNPCSub0Var0
+struct sTownGrid
 {
     s32 m0_sizeX;
     s32 m4_sizeY;
@@ -31,9 +31,9 @@ struct sInitNPCSub0Var0
     s32 mC;
     s32 m10_currentX;
     s32 m14_currentY;
-    void(*m18_createCell)(s32, sInitNPCSub0Var0*);
+    void(*m18_createCell)(s32, sTownGrid*);
     void(*m1C)();
-    void(*m20_deleteCell)(s32, sInitNPCSub0Var0*);
+    void(*m20_deleteCell)(s32, sTownGrid*);
     void(*m24)();
     sVec3_FP m28;
     npcFileDeleter* m34;
@@ -44,13 +44,27 @@ struct sInitNPCSub0Var0
     sInitNPCSub0Var0Sub144* m144;
     std::array<sInitNPCSub0Var0Sub144, 0x40> m148;
 
-}initNPCSub0Var0;
+}gTownGrid;
 
 //TODO:kernel
 s32 MTH_Mul32(fixedPoint a, fixedPoint b)
 {
     fixedPoint temp(((s64)a.asS32() * (s64)b.asS32()) >> 16);
     return temp.getInteger();
+}
+
+fixedPoint generateObjectMatrix(sSaturnPtr r4, sSaturnPtr r5)
+{
+    pushCurrentMatrix();
+    translateMatrix(readSaturnVec3(r4), pCurrentMatrix);
+
+    sVec3_S16_12_4 rotation;
+    rotation[0] = readSaturnS16(r5);
+    rotation[1] = readSaturnS16(r5+2);
+    rotation[2] = readSaturnS16(r5+4);
+    rotateMatrixZYX_s16(rotation, pCurrentMatrix);
+
+    return pCurrentMatrix->matrix[11];
 }
 
 struct sEnvironmentTask : public s_workAreaTemplateWithArgWithCopy<sEnvironmentTask, sSaturnPtr>
@@ -63,21 +77,70 @@ struct sEnvironmentTask : public s_workAreaTemplateWithArgWithCopy<sEnvironmentT
 
     static void Init(sEnvironmentTask* pThis, sSaturnPtr arg)
     {
+        if ((readSaturnS32(arg + 0xC) == 0) && (readSaturnS32(arg + 0x10) == 0) && (readSaturnS32(arg + 0x14) == 0))
+        {
+            pThis->m_UpdateMethod = nullptr;
+        }
 
+        pThis->m8 = arg;
+        pThis->mC_position = readSaturnVec3(arg);
     }
 
     static void Draw(sEnvironmentTask* pThis)
     {
+        pushCurrentMatrix();
+        {
+            translateCurrentMatrix(pThis->mC_position);
+            fixedPoint var0 = pCurrentMatrix->matrix[11];
+            if (var0 < gTownGrid.m28[1] - graphicEngineStatus.m405C.m10)
+            {
+                fixedPoint varMinusOne = MTH_Mul(var0, graphicEngineStatus.m405C.m2C);
+                fixedPoint r4 = varMinusOne + MTH_Mul(gTownGrid.m28[1], gTownGrid.m28[0]);
+                if ((pCurrentMatrix->matrix[3] >= -r4) && (pCurrentMatrix->matrix[3] <= r4))
+                {
+                    sSaturnPtr r14 = readSaturnEA(pThis->m8 + 0xC);
+                    if (r14.m_offset)
+                    {
+                        while (readSaturnS32(r14))
+                        {
+                            s32 r5 = generateObjectMatrix(r14 + 4, r14 + 0x10);
+                            int r4 = 0;
+                            while (r5 > gTownGrid.m3C[r4])
+                            {
+                                r4++;
+                            }
 
+                            u16 offset = readSaturnU16(readSaturnEA(r14) + r4 * 2);
+                            if (offset)
+                            {
+                                addObjectToDrawList(pThis->m0_dramAllocation, READ_BE_U32(pThis->m0_dramAllocation + offset));
+                            }
+
+                            popMatrix();
+                            r14 += 0x18;
+                        }
+                    }
+
+                    r14 = readSaturnEA(pThis->m8 + 0x10);
+                    if (r14.m_offset)
+                    {
+                        FunctionUnimplemented("Town cell billboards");
+                    }
+                }
+            }
+        }
+        popMatrix();
     }
 
     //size 0x18
+    sSaturnPtr m8;
+    sVec3_FP mC_position;
 };
 
 void createEnvironmentTask2Sub0(s32 r4_currentX, s32 r5_currentY)
 {
-    s32 index = initNPCSub0Var0.m0_sizeX * r5_currentY + r4_currentX;
-    sSaturnPtr r14 = initNPCSub0Var0.m140[index];
+    s32 index = gTownGrid.m0_sizeX * r5_currentY + r4_currentX;
+    sSaturnPtr r14 = gTownGrid.m140[index];
 
     while (r14.m_offset)
     {
@@ -85,7 +148,7 @@ void createEnvironmentTask2Sub0(s32 r4_currentX, s32 r5_currentY)
     }
 }
 
-void createEnvironmentTask2(s32 r4, sInitNPCSub0Var0* r14)
+void createEnvironmentTask2(s32 r4, sTownGrid* r14)
 {
     if (r4 + r14->m14_currentY < 0)
     {
@@ -116,7 +179,7 @@ void createEnvironmentTask()
     assert(0);
 }
 
-void initNPCSub0Sub0(s32 r3, sInitNPCSub0Var0* r14)
+void initNPCSub0Sub0(s32 r3, sTownGrid* r14)
 {
     s32 r13 = -2;
 
@@ -140,24 +203,24 @@ s32 initNPCSub0Var1 = 0x7FFFFFFF;
 
 void loadTownPrgSub0()
 {
-    initNPCSub0Var0.m0_sizeX = 0;
-    initNPCSub0Var0.m4_sizeY = 0;
-    initNPCSub0Var0.m140.clear();
-    initNPCSub0Var0.m34 = 0;
-    initNPCSub0Var0.m18_createCell = createEnvironmentTask2;
-    initNPCSub0Var0.m1C = createEnvironmentTask;
-    initNPCSub0Var0.m20_deleteCell = initNPCSub0Sub0;
-    initNPCSub0Var0.m24 = initNPCSub0Sub1;
-    initNPCSub0Var0.m40[0].fill(0);
-    initNPCSub0Var0.m40[1].fill(0);
-    initNPCSub0Var0.m3C = &initNPCSub0Var1;
+    gTownGrid.m0_sizeX = 0;
+    gTownGrid.m4_sizeY = 0;
+    gTownGrid.m140.clear();
+    gTownGrid.m34 = 0;
+    gTownGrid.m18_createCell = createEnvironmentTask2;
+    gTownGrid.m1C = createEnvironmentTask;
+    gTownGrid.m20_deleteCell = initNPCSub0Sub0;
+    gTownGrid.m24 = initNPCSub0Sub1;
+    gTownGrid.m40[0].fill(0);
+    gTownGrid.m40[1].fill(0);
+    gTownGrid.m3C = &initNPCSub0Var1;
 }
 
 void setupDragonForTown(u8* r4)
 {
     if (READ_BE_U32(r4 + 0x48))
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 }
 
@@ -254,7 +317,7 @@ void freeVdp1Block(npcFileDeleter*, s32)
     assert(0);
 }
 
-void deleteAllTownCells(sInitNPCSub0Var0* r13)
+void deleteAllTownCells(sTownGrid* r13)
 {
     s32 r14 = -2;
 
@@ -266,7 +329,7 @@ void deleteAllTownCells(sInitNPCSub0Var0* r13)
     
 }
 
-void createTownCellsForCoordinates(s32 r4, s32 r5, sInitNPCSub0Var0* r6)
+void createTownCellsForCoordinates(s32 r4, s32 r5, sTownGrid* r6)
 {
     r6->mC = 0;
     r6->m8 = 0;
@@ -281,64 +344,64 @@ void createTownCellsForCoordinates(s32 r4, s32 r5, sInitNPCSub0Var0* r6)
 
 void initNPCSub1()
 {
-    deleteAllTownCells(&initNPCSub0Var0);
+    deleteAllTownCells(&gTownGrid);
 
-    if (initNPCSub0Var0.m140.size())
+    if (gTownGrid.m140.size())
     {
         assert(0);
         //freeVdp1Block(initNPCSub0Var0.m34, initNPCSub0Var0.m140);
-        initNPCSub0Var0.m140.clear();
+        gTownGrid.m140.clear();
     }
 }
 
 void initNPCSub0Sub2Sub0()
 {
-    s32 r4 = initNPCSub0Var0.m0_sizeX;
+    s32 r4 = gTownGrid.m0_sizeX;
     if (r4 <= 0)
         r4 = 1;
 
-    s32 r5 = initNPCSub0Var0.m4_sizeY;
+    s32 r5 = gTownGrid.m4_sizeY;
     if (r5 <= 0)
         r5 = 1;
 
     s32 size = r4 * r5;
 
-    initNPCSub0Var0.m140.resize(size);
+    gTownGrid.m140.resize(size);
     for (int i = 0; i < size; i++)
     {
-        initNPCSub0Var0.m140[i] = sSaturnPtr::getNull();
+        gTownGrid.m140[i] = sSaturnPtr::getNull();
     }
 
-    initNPCSub0Var0.m144 = &initNPCSub0Var0.m144[0];
+    gTownGrid.m144 = &gTownGrid.m144[0];
     for (int i = 0; i < 0x40 - 1; i++)
     {
-        initNPCSub0Var0.m148[i].m0_next = &initNPCSub0Var0.m148[i + 1];
+        gTownGrid.m148[i].m0_next = &gTownGrid.m148[i + 1];
     }
-    initNPCSub0Var0.m148[0x3F].m0_next = nullptr;
+    gTownGrid.m148[0x3F].m0_next = nullptr;
 }
 
 void initNPCSub0Sub2(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6_sizeX, u8 r7_sizeY, fixedPoint stackArg0)
 {
     initNPCSub1();
 
-    initNPCSub0Var0.m0_sizeX = r6_sizeX;
-    initNPCSub0Var0.m4_sizeY = r7_sizeY;
-    initNPCSub0Var0.m34 = buffer;
-    initNPCSub0Var0.m28[0] = stackArg0;
-    initNPCSub0Var0.m28[1] = MTH_Mul(0x10A3D, stackArg0);
-    initNPCSub0Var0.m28[2] = FP_Div(0x10000, stackArg0);
-    initNPCSub0Var0.m38_EnvironmentSetup = pEnvironemntSetupEA;
+    gTownGrid.m0_sizeX = r6_sizeX;
+    gTownGrid.m4_sizeY = r7_sizeY;
+    gTownGrid.m34 = buffer;
+    gTownGrid.m28[0] = stackArg0;
+    gTownGrid.m28[1] = MTH_Mul(0x10A3D, stackArg0);
+    gTownGrid.m28[2] = FP_Div(0x10000, stackArg0);
+    gTownGrid.m38_EnvironmentSetup = pEnvironemntSetupEA;
 
     initNPCSub0Sub2Sub0();
-    createTownCellsForCoordinates(-3, -3, &initNPCSub0Var0);
+    createTownCellsForCoordinates(-3, -3, &gTownGrid);
 }
 
 void initNPCSub0(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6, u8 r7, fixedPoint stackArg0)
 {
-    initNPCSub0Var0.m18_createCell = createEnvironmentTask2;
-    initNPCSub0Var0.m1C = createEnvironmentTask;
-    initNPCSub0Var0.m20_deleteCell = initNPCSub0Sub0;
-    initNPCSub0Var0.m24 = initNPCSub0Sub1;
+    gTownGrid.m18_createCell = createEnvironmentTask2;
+    gTownGrid.m1C = createEnvironmentTask;
+    gTownGrid.m20_deleteCell = initNPCSub0Sub0;
+    gTownGrid.m24 = initNPCSub0Sub1;
 
     initNPCSub0Sub2(buffer, pEnvironemntSetupEA, r6, r7, stackArg0);
 }
@@ -364,7 +427,7 @@ s32 initNPC(s32 arg)
 
     initNPCSub0(dramAllocatorEnd[readSaturnS8(r13)].mC_buffer, readSaturnEA(r12_environmentSetup + 8), readSaturnU8(r12_environmentSetup), readSaturnU8(r12_environmentSetup + 1), readSaturnFP(r12_environmentSetup + 4));
 
-    TaskUnimplemented();
+    FunctionUnimplemented();
     return 0;
 }
 
@@ -411,12 +474,12 @@ void mainLogicInitSub1(sMainLogic_74* r4, sSaturnPtr r5, sSaturnPtr r6)
     r4->m4 = sqrt_F(MTH_Product3d_FP(r4->m14, r4->m14));
 }
 
-void mainLogicUpdateSub0Sub0(sInitNPCSub0Var0* r4)
+void mainLogicUpdateSub0Sub0(sTownGrid* r4)
 {
     assert(0);
 }
 
-void mainLogicUpdateSub0Sub1(s32 r4, sInitNPCSub0Var0* r5)
+void mainLogicUpdateSub0Sub1(s32 r4, sTownGrid* r5)
 {
     assert(0);
 }
@@ -424,17 +487,17 @@ void mainLogicUpdateSub0Sub1(s32 r4, sInitNPCSub0Var0* r5)
 //TODO:kernel
 void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y)
 {
-    s32 r12 = MTH_Mul32(r4_x, initNPCSub0Var0.m28[2]);
-    s32 r11 = MTH_Mul32(r5_y, initNPCSub0Var0.m28[2]);
+    s32 r12 = MTH_Mul32(r4_x, gTownGrid.m28[2]);
+    s32 r11 = MTH_Mul32(r5_y, gTownGrid.m28[2]);
 
     // not exactly the original code, but should be the same thing
-    s32 cellDistanceX = r12 - initNPCSub0Var0.m10_currentX;
+    s32 cellDistanceX = r12 - gTownGrid.m10_currentX;
     if (cellDistanceX < 0)
     {
         cellDistanceX = -cellDistanceX;
     }
 
-    s32 cellDistanceY = r11 - initNPCSub0Var0.m14_currentY;
+    s32 cellDistanceY = r11 - gTownGrid.m14_currentY;
     if (cellDistanceY < 0)
     {
         cellDistanceY = -cellDistanceY;
@@ -442,19 +505,19 @@ void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y)
 
     if ((cellDistanceX > 1) || (cellDistanceY > 1))
     {
-        deleteAllTownCells(&initNPCSub0Var0);
-        createTownCellsForCoordinates(r12, r11, &initNPCSub0Var0);
+        deleteAllTownCells(&gTownGrid);
+        createTownCellsForCoordinates(r12, r11, &gTownGrid);
     }
     else
     {
         if (cellDistanceX)
         {
-            mainLogicUpdateSub0Sub0(&initNPCSub0Var0);
+            mainLogicUpdateSub0Sub0(&gTownGrid);
         }
 
         if (cellDistanceY)
         {
-            mainLogicUpdateSub0Sub1(r12, &initNPCSub0Var0);
+            mainLogicUpdateSub0Sub1(r12, &gTownGrid);
         }
     }
 }

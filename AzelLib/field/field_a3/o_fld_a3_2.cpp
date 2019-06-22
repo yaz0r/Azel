@@ -85,7 +85,7 @@ void fieldA3_2_createExitLCSTask(p_workArea workArea)
 
 void fieldA3_2_createTask4(p_workArea workArea)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 const std::array<s16, 4> A3_2_exitsVars =

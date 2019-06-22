@@ -45,7 +45,7 @@ void fieldA3_3_createExitTask(p_workArea workArea)
 
 void fieldA3_3_createBirdsTask(p_workArea workArea)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 struct sfieldA3_3_checkExitsTask : public s_workAreaTemplate<sfieldA3_3_checkExitsTask>

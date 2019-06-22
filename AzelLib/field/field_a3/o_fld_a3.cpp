@@ -912,12 +912,12 @@ struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
 
     static void Update(s_A3_Obj3*)
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     static void Draw(s_A3_Obj3*)
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     s_memoryAreaOutput m0;
@@ -959,7 +959,7 @@ void create_A3_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 
 void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, s32 r6)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
@@ -1425,13 +1425,57 @@ s_DataTable2* readDataTable2(sSaturnPtr EA)
     return pNewData2;
 }
 
+void fieldPaletteTaskInitSub0Sub0()
+{
+    vdp2Controls.m4_pendingVdp2Regs->m26_SFCODE = 0;
+    vdp2Controls.m4_pendingVdp2Regs->m14_CYCA1 = 1;
+}
+
+void fieldPaletteTaskInitSub0Sub1()
+{
+    FunctionUnimplemented();
+}
+
+void fieldPaletteTaskInitSub0Sub2()
+{
+    FunctionUnimplemented();
+}
+
+void fieldPaletteTaskInitSub0()
+{
+    fieldPaletteTaskInitSub0Sub0();
+
+    sLayerConfig setup[] =
+    {
+        m2_CHCN,  0, // 16 colors
+        m5_CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
+        m6_PNB,  1, // pattern data size is 1 word
+        m12_PLSZ, 0, // plane is 1H x 1V
+        m46_SCCM, 2,
+        m44_CCEN, 1,
+        m41, 1,
+        m40_CAOS, 7,
+        m9, 1,
+        m45, 16,
+        m21, 1,
+        m0_END,
+    };
+
+    setupNBG1(setup);
+
+    initLayerMap(1, 0x5800, 0x5800, 0x5800, 0x5800);
+
+    fieldPaletteTaskInitSub0Sub1();
+    fieldPaletteTaskInitSub0Sub2();
+}
+
 void s_fieldPaletteTaskWorkArea::Init(s_fieldPaletteTaskWorkArea* pThis)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
 
     reinitVdp2();
 
-    PDS_unimplemented("call in fieldPaletteTaskInit");
+    fieldPaletteTaskInitSub0();
 
     pThis->m78 = (s_fieldPaletteTaskWorkSub*)allocateHeapForTask(pThis, sizeof(s_fieldPaletteTaskWorkSub));
     pThis->m78->m0 = 1;
@@ -1941,7 +1985,7 @@ void s_cutsceneTask3::Update(s_cutsceneTask3* pThis)
 
 void s_cutsceneTask3::Draw(s_cutsceneTask3*)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void cutsceneTaskInitSub2(p_workArea r4, std::vector<s_scriptData1>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
@@ -2779,8 +2823,8 @@ void scriptFunction_6067E68_fadeOut(s32 arg0)
 {
     if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
     {
-        vdp2Controls.m20_registers[0].N1COSL = 0x10;
-        vdp2Controls.m20_registers[1].N1COSL = 0x10;
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
     }
 
     fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, arg0*2);
@@ -2791,8 +2835,8 @@ void scriptFunction_6067ec0_fadeIn(s32 arg0)
 {
     if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
     {
-        vdp2Controls.m20_registers[0].N1COSL = 0x10;
-        vdp2Controls.m20_registers[1].N1COSL = 0x10;
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
     }
 
     fadePalette(&g_fadeControls.m0_fade0, 0x8000, g_fadeControls.m_48, arg0 * 2);
@@ -2962,8 +3006,8 @@ void createMultiChoice(s32 r4, s32 r5)
         createMultiChoiceSub1();
     }
 
-    vdp2Controls.m20_registers[0].SFCODE = vdp2Controls.m20_registers[1].SFCODE = VDP2Regs_.SFCODE = 0xC000;
-    vdp2Controls.m20_registers[0].CCRNB = vdp2Controls.m20_registers[1].CCRNB = VDP2Regs_.CCRNB = (vdp2Controls.m4_pendingVdp2Regs->CCRNB & 0xFFE0) | 0x10;
+    vdp2Controls.m20_registers[0].m26_SFCODE = vdp2Controls.m20_registers[1].m26_SFCODE = VDP2Regs_.m26_SFCODE = 0xC000;
+    vdp2Controls.m20_registers[0].m10A_CCRNB = vdp2Controls.m20_registers[1].m10A_CCRNB = VDP2Regs_.m10A_CCRNB = (vdp2Controls.m4_pendingVdp2Regs->m10A_CCRNB & 0xFFE0) | 0x10;
 }
 
 void createMultiChoiceDefault(s32 r4)
@@ -6391,7 +6435,7 @@ void LCSTask::LCSTaskInit(LCSTask*)
 
 p_workArea createLCSShootTask(s_LCSTask* r4, sLCSTarget* r5)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
     return NULL;
 }
 
@@ -6797,12 +6841,12 @@ void s_LCSTask340Sub::Laser3Init(s_LCSTask340Sub* pThis)
 
 void s_LCSTask340Sub::Laser3Update(s_LCSTask340Sub* pThis)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void s_LCSTask340Sub::Laser3Draw(s_LCSTask340Sub* pThis)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void s_LCSTask340Sub::Init2(s_LCSTask340Sub* pThis, sLaserArgs* arg)
@@ -6879,7 +6923,7 @@ void s_LCSTask340Sub::Laser2Update(s_LCSTask340Sub* pThis)
 
 void s_LCSTask340Sub::Laser2Draw(s_LCSTask340Sub*)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void s_LCSTask340Sub::Init3(s_LCSTask340Sub* pThis, sLaserArgs* arg)
@@ -6947,12 +6991,12 @@ void s_LCSTask340Sub::Laser0Init(s_LCSTask340Sub* pThis)
 
 void s_LCSTask340Sub::Laser0Draw(s_LCSTask340Sub* pThis)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void s_LCSTask340Sub_Laser0Update(s_LCSTask340Sub* pThis)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void s_LCSTask340Sub::Laser0Update(s_LCSTask340Sub* pThis)

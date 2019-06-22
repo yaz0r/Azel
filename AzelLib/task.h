@@ -29,7 +29,7 @@ static void UnimplementedImpl(const char* functionName)
     PDS_Logger.AddLog("Unimplemented: %s\n", functionName);
 }
 
-#define TaskUnimplemented() { static bool printed = false; if(!printed) {printed = true; UnimplementedImpl(__FUNCTION__);}}
+#define FunctionUnimplemented() { static bool printed = false; if(!printed) {printed = true; UnimplementedImpl(__FUNCTION__);}}
 
 typedef s_workArea* p_workArea;
 

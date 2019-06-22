@@ -102,7 +102,7 @@ void setVdp2LayerScroll(u32 r4, u32 r5, u32 r6)
 
     u32 r7;
 
-    if (VDP2Regs_.TVSTAT & 1)
+    if (VDP2Regs_.m4_TVSTAT & 1)
     {
         r7 = 0;
     }

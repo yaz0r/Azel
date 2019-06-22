@@ -267,7 +267,7 @@ void initNewGameState()
     mainGameState.reset();
     mainGameState.setPackedBits(2, 3, 0);
 
-    if (VDP2Regs_.TVSTAT & 1)
+    if (VDP2Regs_.m4_TVSTAT & 1)
     {
         mainGameState.setBit(5);
     }
@@ -397,16 +397,16 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 
         reinitVdp2();
 
-        vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x3FFF7FFF;
+        vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x3FFF7FFF;
         vdp2Controls.m_isDirty = true;
 
-        vdp2Controls.m4_pendingVdp2Regs->PRINB = (vdp2Controls.m4_pendingVdp2Regs->PRINB & 0xF8FF) | 0x700;
+        vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB = (vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB & 0xF8FF) | 0x700;
         vdp2Controls.m_isDirty = true;
 
         if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
         {
-            vdp2Controls.m20_registers[0].N1COSL = 0x10;
-            vdp2Controls.m20_registers[1].N1COSL = 0x10;
+            vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
+            vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
         }
 
         fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
@@ -652,8 +652,8 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 
         if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
         {
-            vdp2Controls.m20_registers[0].N1COSL = 0x10;
-            vdp2Controls.m20_registers[1].N1COSL = 0x10;
+            vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
+            vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
         }
 
         fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
@@ -866,22 +866,22 @@ s32 stepAnimationTrack(sAnimTrackStatus&r4, u8* r5, u16 maxStep)
 
 void modelMode1_position0(s_3dModel* pDragonStateData1)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void modelMode1_position1(s_3dModel* pDragonStateData1)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void modelMode1_rotation(s_3dModel* pDragonStateData1)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void modelMode1_scale(s_3dModel* pDragonStateData1)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 
@@ -1290,7 +1290,7 @@ void modelDrawFunction9(s_3dModel* pModel)
     {
         u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
         std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
-        TaskUnimplemented(); // TODO: should be vertex colored variant!
+        FunctionUnimplemented(); // TODO: should be vertex colored variant!
         modeDrawFunction10Sub1(pModel->m4_pModelFile, r4, pPoseData); 
     }
 }
@@ -2397,8 +2397,8 @@ void s_FieldSubTaskWorkArea::Update(s_FieldSubTaskWorkArea* pFieldSubTaskWorkAre
 
                 if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
                 {
-                    vdp2Controls.m20_registers[0].N1COSL = 0x10;
-                    vdp2Controls.m20_registers[1].N1COSL = 0x10;
+                    vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
+                    vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
                 }
 
                 fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
@@ -2859,36 +2859,36 @@ void menuGraphicsTaskDrawSub1()
     memcpy_dma(&g_fadeControls, &graphicEngineStatus.m40E4->m2B0, sizeof(sFadeControls));
     asyncDmaCopy(vdp2Palette, &graphicEngineStatus.m40E4->m300, 512, 0);
 
-    u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
+    u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0x7FFFF;
     graphicEngineStatus.m40E4->m400 = getVdp2VramU16(backScreenTableOffset);
     graphicEngineStatus.m40E4->m402 = pVdp2StringControl->f0_index;
 }
 
 sLayerConfig menuNBG01Setup[] =
 {
-    CHCN,  0, // 16 colors
-    CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
-    PNB,  1, // pattern data size is 1 word
-    CNSM,  0, // character number is 10 bit, flip
-    SCN, 12,
-    PLSZ, 0, // plane is 1H x 1V
-    CAOS, 6, // palette offset is 6 * 0x200 = 0xC00
-    END,
+    m2_CHCN,  0, // 16 colors
+    m5_CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
+    m6_PNB,  1, // pattern data size is 1 word
+    m7_CNSM,  0, // character number is 10 bit, flip
+    m11_SCN, 12,
+    m12_PLSZ, 0, // plane is 1H x 1V
+    m40_CAOS, 6, // palette offset is 6 * 0x200 = 0xC00
+    m0_END,
 };
 
 sLayerConfig menuNBG2Setup[] =
 {
-    CHCN,  0, // 16 colors
-    CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
-    PNB,  1, // pattern data size is 1 word
-    CNSM,  0, // character number is 10 bit, flip
-    SCN, 12,
-    PLSZ, 0, // plane is 1H x 1V
-    CAOS, 6, // palette offset is 6 * 0x200 = 0xC00
-    W0E, 1,
-    W0A, 1,
-    CCEN, 1,
-    END,
+    m2_CHCN,  0, // 16 colors
+    m5_CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
+    m6_PNB,  1, // pattern data size is 1 word
+    m7_CNSM,  0, // character number is 10 bit, flip
+    m11_SCN, 12,
+    m12_PLSZ, 0, // plane is 1H x 1V
+    m40_CAOS, 6, // palette offset is 6 * 0x200 = 0xC00
+    m34_W0E, 1,
+    m37_W0A, 1,
+    m44_CCEN, 1,
+    m0_END,
 };
 
 u8 menuTilesLayout[] = {
@@ -3242,9 +3242,9 @@ void setupVdp2ForMenu()
 {
     reinitVdp2();
 
-    vdp2Controls.m4_pendingVdp2Regs->CYCA0 = 0x3FFF7FFF;
+    vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x3FFF7FFF;
     vdp2Controls.m_isDirty = 1;
-    vdp2Controls.m4_pendingVdp2Regs->CYCB1 = 0x12F456F;
+    vdp2Controls.m4_pendingVdp2Regs->m1C_CYCB1 = 0x12F456F;
     vdp2Controls.m_isDirty = 1;
 
     setupNBG0(menuNBG01Setup);
@@ -3255,22 +3255,22 @@ void setupVdp2ForMenu()
     initLayerMap(1, 0x71000, 0x71000, 0x71000, 0x71000);
     initLayerMap(2, 0x70800, 0x70000, 0x70000, 0x70800);
 
-    vdp2Controls.m4_pendingVdp2Regs->PRINA = 0x304;
-    vdp2Controls.m4_pendingVdp2Regs->PRINB = 0x700;
-    vdp2Controls.m4_pendingVdp2Regs->PRIR = 0x0;
+    vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA = 0x304;
+    vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0x0;
 
-    vdp2Controls.m4_pendingVdp2Regs->PRISA = 0x606;
-    vdp2Controls.m4_pendingVdp2Regs->PRISB = 0x606;
-    vdp2Controls.m4_pendingVdp2Regs->PRISC = 0x606;
-    vdp2Controls.m4_pendingVdp2Regs->PRISD = 0x606;
+    vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA = 0x606;
+    vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB = 0x606;
+    vdp2Controls.m4_pendingVdp2Regs->mF4_PRISC = 0x606;
+    vdp2Controls.m4_pendingVdp2Regs->mF6_PRISD = 0x606;
 
     vdp2Controls.m_isDirty = 1;
 
     setVdp2VramU16(0x7FFFE, 0x9402);
 
-    vdp2Controls.m4_pendingVdp2Regs->BKTA = (vdp2Controls.m4_pendingVdp2Regs->BKTA & 0xFFF80000) | 0x3FFFF;
+    vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x3FFFF;
 
-    vdp2Controls.m4_pendingVdp2Regs->CCCTL &= 0xFEFF;
+    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL &= 0xFEFF;
 
     loadFile("MENU.SCB", MENU_SCB, 0);
     loadFile("MENU.CGB", getVdp1Pointer(0x25C10000), 0);
@@ -4050,12 +4050,12 @@ void menuGraphicsTaskDrawSub3()
         memcpy_dma(&graphicEngineStatus.m40E4->m2B0, &g_fadeControls, sizeof(sFadeControls));
         asyncDmaCopy(&graphicEngineStatus.m40E4->m300, vdp2Palette, 512, 0);
 
-        u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
+        u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0x7FFFF;
         setVdp2VramU16(backScreenTableOffset, graphicEngineStatus.m40E4->m400);
 
-        u32 r3 = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0xFFF80000;
-        u32 r2 = vdp2Controls.m4_pendingVdp2Regs->BKTA & 0x7FFFF;
-        vdp2Controls.m4_pendingVdp2Regs->BKTA = r3 | ((r2 << 1) >> 1);
+        u32 r3 = vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000;
+        u32 r2 = vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0x7FFFF;
+        vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = r3 | ((r2 << 1) >> 1);
         freeHeap(graphicEngineStatus.m40E4);
     }
 }

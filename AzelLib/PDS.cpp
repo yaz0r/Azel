@@ -308,7 +308,7 @@ void initVDP1()
 
     //addSlaveCommand(graphicEngineStatus, 0x40AC, 0, copyMatrix_0);
 
-    if (VDP2Regs_.TVSTAT & 1)
+    if (VDP2Regs_.m4_TVSTAT & 1)
     {
         assert(0); // clear some lines in the vdp1 framebuffer in pal
     }

@@ -426,7 +426,7 @@ void sScriptTask::Update(sScriptTask* pThis)
 
 void sScriptTask::Draw(sScriptTask* pThis)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void startScriptTask(p_workArea r4)

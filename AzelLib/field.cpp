@@ -283,8 +283,8 @@ struct exitCutsceneTaskUpdateSub0Sub1Sub0 : public s_workAreaTemplate<exitCutsce
             fieldTaskPtr->m28_status |= 0x100;
             if (g_fadeControls.m_4D >= g_fadeControls.m_4C)
             {
-                vdp2Controls.m20_registers[0].N1COSL = 0x10;
-                vdp2Controls.m20_registers[1].N1COSL = 0x10;
+                vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
+                vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
             }
 
             fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), pThis->m0, pThis->m10);
@@ -457,7 +457,7 @@ void initFieldDragonLight()
 
 void gridCellDraw_normalSub2(p_workArea r4, s32 r5, s32 r6)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void callGridCellDraw_normalSub2(p_workArea r4, s32 r5)

@@ -29,12 +29,39 @@ const char* listOfFilesToLoad[] = {
 
 void townOverlayDelete(townDebugTask2Function* pThis)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
+
+struct sRuinBackgroundTask : public s_workAreaTemplate<sRuinBackgroundTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sRuinBackgroundTask::Init, &sRuinBackgroundTask::Update, &sRuinBackgroundTask::Draw, nullptr };
+        return &taskDefinition;
+    }
+
+    static void Init(sRuinBackgroundTask* pThis)
+    {
+        reinitVdp2();
+        FunctionUnimplemented();
+    }
+
+    static void Update(sRuinBackgroundTask* pThis)
+    {
+        FunctionUnimplemented();
+    }
+
+    static void Draw(sRuinBackgroundTask* pThis)
+    {
+        FunctionUnimplemented();
+    }
+
+    // size 0x9C
+};
 
 void startRuinBackgroundTask(p_workArea pThis)
 {
-    TaskUnimplemented();
+    createSubTask<sRuinBackgroundTask>(pThis);
 }
 
 void registerNpcs(sSaturnPtr r4_objectTable, sSaturnPtr r5_script, s32 r6)
@@ -163,13 +190,13 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 
 void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
     applyEdgeAnimation(pModel, r5);
 }
 
 void EdgeUpdateSub0(sMainLogic_74*)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPtr>, sNPC
@@ -372,7 +399,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
 
     static void Delete(sEdgeTask* pThis)
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     s16 m14C;
@@ -402,7 +429,7 @@ void mainLogicDummy(struct sMainLogic*)
 
 void mainLogicUpdateSub3()
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
 }
 
 void mainLogicInitSub2()
@@ -586,6 +613,15 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
 
         pThis->m10(pThis);
 
+        // Hack
+        {
+            if (pThis->m14_EdgeTask)
+            {
+                pThis->m38 = pThis->m14_EdgeTask->mE8.m0_position - sVec3_FP(0,0,0x5000);
+                pThis->m44 = pThis->m14_EdgeTask->mE8.m0_position;
+            }
+        }
+
         pThis->m50 = pThis->m38;
         pThis->m50[1] += 0x10000;
         pThis->m4_flags = 0;
@@ -724,13 +760,13 @@ s32 TwnFadeOut(s32 arg0)
 
 s32 TwnFadeIn(s32 arg0)
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
     return 0;
 }
 
 s32 hasLoadingCompleted()
 {
-    TaskUnimplemented();
+    FunctionUnimplemented();
     return 1;
 }
 
@@ -844,7 +880,7 @@ void updateEdgePositionSub1(sEdgeTask* r4)
 {
     if (!(r4->m14C & 0x40))
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
     else
     {
@@ -859,7 +895,7 @@ void updateEdgePositionSub1(sEdgeTask* r4)
     }
     else
     {
-        TaskUnimplemented();
+        FunctionUnimplemented();
     }
 
     //605BE7E
@@ -934,7 +970,7 @@ void updateEdgePosition(sNPC* r4)
         //605B954
         if ((r13->m30_stepTranslation[1] < -0x199) || (r13->m30_stepTranslation[1] > 0))
         {
-            TaskUnimplemented();
+            FunctionUnimplemented();
         }
     }
     //605B9AA
