@@ -76,4 +76,4 @@ extern sPDS_Logger PDS_Logger;
 
 #define PDS_Log(string, ...) {PDS_Logger.AddLog(string, __VA_ARGS__);}
 #define PDS_unimplemented(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger.AddLog("Unimplemented: %s\n", name);}}
-#define PDS_warning(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger.AddLog("Warning: %s\n", name);}}
+#define PDS_warningOnce(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger.AddLog("Warning: %s\n", name);}}

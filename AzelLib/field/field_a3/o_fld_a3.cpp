@@ -2426,7 +2426,7 @@ void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub2()
         assert(0);
     }
 
-    if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 6)
+    if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 6)
     {
         if (m60_canSkipScript)
         {
@@ -3003,7 +3003,7 @@ void s_multiChoiceTask2::Update(s_multiChoiceTask2* pThis)
         pThis->m0_Status++;
         return;
     case 2:
-        if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0x10) // up
+        if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x10) // up
         {
             pThis->m5_selectedEntry--;
             if (pThis->m5_selectedEntry < 0)
@@ -3012,7 +3012,7 @@ void s_multiChoiceTask2::Update(s_multiChoiceTask2* pThis)
             }
             playSoundEffect(2);
         }
-        else if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0x20) // down
+        else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x20) // down
         {
             pThis->m5_selectedEntry++;
             if (pThis->m5_selectedEntry >= pThis->m6_numEntries)
@@ -3022,13 +3022,13 @@ void s_multiChoiceTask2::Update(s_multiChoiceTask2* pThis)
             playSoundEffect(2);
         }
 
-        if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 6) // select
+        if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 6) // select
         {
             *pThis->mC_result = pThis->m5_selectedEntry;
             playSoundEffect(0);
             pThis->m0_Status++;
         }
-        else if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 1) // cancel
+        else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 1) // cancel
         {
             if (pThis->m2_defaultResult)
             {
@@ -3449,13 +3449,13 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
     {
         //06069A92
         graphicEngineStatus.m40AC.m1_isMenuAllowed = 1;
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][13])
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][13])
         {
             playSoundEffect(0);
             graphicEngineStatus.m40AC.m0_menuId = 5;
             return;
         }
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][12])
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][12])
         {
             //06069AF0
             assert(0);
@@ -4410,21 +4410,21 @@ u32 updateDragonMovementFromControllerType1Sub1(s_dragonTaskWorkArea* r4)
 
 void updateDragonMovementFromControllerType1Sub2(s_dragonTaskWorkArea* r14, s_dragonState* r12)
 {
-    if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][5]) // down
+    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // down
     {
         updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, r14->m178[3]);
     }
-    else if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][4]) // up
+    else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // up
     {
         updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, -r14->m178[3]);
     }
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][7]) // right
+    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7]) // right
     {
         updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, r14->m178[3]);
         updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, -r14->m178[3]);
     }
-    else if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][6]) // left
+    else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6]) // left
     {
         updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, -r14->m178[3]);
         updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, r14->m178[3]);
@@ -4453,7 +4453,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
     if (r2 >= 256)
     {
         //0607EC06
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][5]) // Go down
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // Go down
         {
             //0607EC12
             r14->m20_angle[0] += r14->m178[0];
@@ -4461,7 +4461,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
             r14->m1F0.m_8 = r14->m178[0];
             r14->mFC |= 2;
         }
-        else if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][4]) // Go up
+        else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // Go up
         {
             //0607EC44
             r14->m20_angle[0] -= r14->m178[0];
@@ -4476,7 +4476,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
     else
     {
         //0607ECA4
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][5]) // Go down
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // Go down
         {
             //607ECB0
             r14->m160_deltaTranslation[1] -= 0x800;
@@ -4484,7 +4484,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
             r14->m1F0.m_8 = -r14->m178[0];
             r14->mFC |= 2;
         }
-        else if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][4]) // Go up
+        else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // Go up
         {
             //607ED00
             r14->m160_deltaTranslation[1] += 0x800;
@@ -4524,7 +4524,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
         }
         else
         {
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][7]) // right
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7]) // right
             {
                 //0607EE34
                 if ((r14->mF8_Flags & 0x8000) == 0)
@@ -4541,7 +4541,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
                 r14->mFC |= 8;
                 r14->m25E = 0;
             }
-            else if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][6]) // left
+            else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6]) // left
             {
                 //0607EE8C
                 if ((r14->mF8_Flags & 0x8000) == 0)
@@ -4707,9 +4707,9 @@ void integrateDragonMovementSub4(s_dragonTaskWorkArea* r14)
 
     if ((r14->m25C & 0x2) == 0)
     {
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][11])
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][11])
         {
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][0])
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0])
             {
                 r14->m235_dragonSpeedIndex = -1;
             }
@@ -4738,7 +4738,7 @@ void integrateDragonMovementSub4(s_dragonTaskWorkArea* r14)
         r5 = 3;
     }
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][0]) // go forward
+    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0]) // go forward
     {
         //0607E960
         if (++r14->m234 > 4)
@@ -5000,8 +5000,8 @@ void updateDragonMovement(s_dragonTaskWorkArea* r4)
     r4->m238 &= ~3;
 
     PDS_unimplemented("Hacking input to type 1");
-    graphicEngineStatus.m4514.m0[0].m0_current.m0_inputType = 1;
-    switch (graphicEngineStatus.m4514.m0[0].m0_current.m0_inputType)
+    graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType = 1;
+    switch (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType)
     {
     case 1:
         updateDragonMovementFromControllerType1(r4);
@@ -5616,7 +5616,7 @@ void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonSt
                 s32 r6 = getDragonFieldAnimation(pTypedWorkArea);
                 if (r6 == 0)
                 {
-                    PDS_warning("recheck the logic here, it might be accessing mC_dragonType as a byte (read byte at F)\n");
+                    PDS_warningOnce("recheck the logic here, it might be accessing mC_dragonType as a byte (read byte at F)\n");
                     std::vector<s8> r3 = getFieldDragonAnimTable(r5->mC_dragonType, r5->m1C_dragonArchetype);
 
                     pTypedWorkArea->m239++;

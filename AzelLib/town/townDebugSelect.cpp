@@ -30,7 +30,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
     static void Update(townDebugSelect* pThis)
     {
         pauseEngine[2] = 0;
-        if ((graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0xE) && (pThis->m10[pThis->m0_currentSelectedTown]))
+        if ((graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0xE) && (pThis->m10[pThis->m0_currentSelectedTown]))
         {
             loadTownPrg(pThis->m0_currentSelectedTown, pThis->m4);
             pThis->getTask()->markFinished();
@@ -41,7 +41,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
         {
         case 0:
             // up
-            if (graphicEngineStatus.m4514.m0->m0_current.mC_newButtonDown2 & 0x10)
+            if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.mC_newButtonDown2 & 0x10)
             {
                 if (--pThis->m0_currentSelectedTown < 0)
                 {
@@ -50,7 +50,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
                 pThis->CountNumberOfSubTown();
             }
             // down
-            else if (graphicEngineStatus.m4514.m0->m0_current.mC_newButtonDown2 & 0x20)
+            else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.mC_newButtonDown2 & 0x20)
             {
                 if (++pThis->m0_currentSelectedTown > 16)
                 {
@@ -66,7 +66,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
         }
 
         // switch to subTown selection
-        if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0xC0)
+        if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0xC0)
         {
             if (readSaturnEA(gCommonFile.getSaturnPtr(0x2165DC + pThis->m0_currentSelectedTown * 16)).m_offset)
             {

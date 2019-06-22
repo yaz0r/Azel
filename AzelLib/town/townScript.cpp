@@ -353,7 +353,7 @@ void scriptUpdateRunScript()
 
     if (npcData0.m104_scriptPtr.m_offset)
     {
-        if ((graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & (graphicEngineStatus.m4514.mD8[0][1] | graphicEngineStatus.m4514.mD8[0][2]))
+        if ((graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & (graphicEngineStatus.m4514.mD8_buttonConfig[0][1] | graphicEngineStatus.m4514.mD8_buttonConfig[0][2]))
             && (npcData0.mF4 == 0))
         {
             npcData0.m100 = 0;

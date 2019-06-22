@@ -661,20 +661,20 @@ sLCSTarget* LCSTaskDrawSub1Sub2Sub2Sub3(s_LCSTask* r14)
 
 void LCSUpdateCursorFromInput(s_dragonTaskWorkArea* r4)
 {
-    if (graphicEngineStatus.m4514.m0->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][5]) // down
+    if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // down
     {
         r4->m1F0.m_8 = fixedPoint(0x1C71C7);
     }
-    else if (graphicEngineStatus.m4514.m0->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][4]) // up
+    else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // up
     {
         r4->m1F0.m_8 = -fixedPoint(0x1C71C7);
     }
 
-    if (graphicEngineStatus.m4514.m0->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][7])
+    if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7])
     {
         r4->m1F0.m_C = -fixedPoint(0x1C71C7);
     }
-    else if (graphicEngineStatus.m4514.m0->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[1][6])
+    else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6])
     {
         r4->m1F0.m_C = fixedPoint(0x1C71C7);
     }
@@ -695,7 +695,7 @@ void LCSTaskDrawSub1Sub2Sub2Sub2(s_dragonTaskWorkArea* r4)
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1F0.m_8 = 0;
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1F0.m_C = 0;
 
-    switch (graphicEngineStatus.m4514.m0->m0_current.m0_inputType)
+    switch (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m0_inputType)
     {
     case 1:
         LCSUpdateCursorFromInput(r4);
@@ -1013,7 +1013,7 @@ void LCSTaskDrawSub1Sub1(s_LCSTask* r4)
         r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_0_init;
     }
 
-    if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[1][2])
+    if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][2])
     {
         r4->m9D0_mode++;
     }
@@ -1035,7 +1035,7 @@ void LCSTaskDrawSub1Sub1(s_LCSTask* r4)
             r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_3;
             return;
         }
-        if (!(graphicEngineStatus.m4514.m0->m0_current.mA  & graphicEngineStatus.m4514.mD8[1][2]))
+        if (!(graphicEngineStatus.m4514.m0_inputDevices->m0_current.mA  & graphicEngineStatus.m4514.mD8_buttonConfig[1][2]))
             return;
         r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_2_targeting;
         break;
@@ -1043,13 +1043,13 @@ void LCSTaskDrawSub1Sub1(s_LCSTask* r4)
         if (r4->m83D_time1)
             return;
         // cancel LCS?
-        if (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 6)
+        if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 6)
         {
             r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_4_executing;
         }
         break;
     case s_LCSTask::LCSPhase_3:
-        if (graphicEngineStatus.m4514.m0->m0_current.mA  & graphicEngineStatus.m4514.mD8[1][2])
+        if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.mA  & graphicEngineStatus.m4514.mD8_buttonConfig[1][2])
         {
             r4->m9DA_LCSPhase = s_LCSTask::LCSPhase_4_executing;
         }
@@ -1183,7 +1183,7 @@ void LCSTaskDrawSub1(s_LCSTask* r4)
     //0606E644
     if (r4->m8 & 2)
     {
-        if (!(r4->m8 & 4) && (graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 1))
+        if (!(r4->m8 & 4) && (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 1))
         {
             r4->m8 |= 0x20;
         }

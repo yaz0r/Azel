@@ -111,6 +111,15 @@ struct sVec3_FP
         newValue += otherVec;
         return newValue;
     }
+
+    sVec3_FP operator >> (const int amount) const
+    {
+        sVec3_FP newValue = *this;
+        newValue[0].m_value >>= amount;
+        newValue[1].m_value >>= amount;
+        newValue[2].m_value >>= amount;
+        return newValue;
+    }
 };
 
 struct sVec3_S16_12_4
@@ -627,8 +636,8 @@ struct s_graphicEngineStatus_4514_sub
 
 struct s_graphicEngineStatus_4514
 {
-    s_graphicEngineStatus_4514_sub m0[2]; // one per input port
-    u16 mD8[3][16];
+    s_graphicEngineStatus_4514_sub m0_inputDevices[2]; // one per input port
+    u16 mD8_buttonConfig[3][16]; //0: on feet, 1: dragon
     u8 m138[3];
 };
 

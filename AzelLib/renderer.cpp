@@ -210,7 +210,7 @@ void azelSdl2_Init()
 #if !defined(__EMSCRIPTEN__) && !defined(TARGET_OS_IOS) && !defined(TARGET_OS_TV)
 //    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 #endif
-    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
@@ -381,9 +381,9 @@ void azelSdl2_StartFrame()
 
     gSoloud.setGlobalVolume(gVolume);
 
-    graphicEngineStatus.m4514.m0[0].m16_pending.m6_buttonDown = 0;
-    graphicEngineStatus.m4514.m0[0].m16_pending.m8_newButtonDown = 0;
-    graphicEngineStatus.m4514.m0[0].m16_pending.mC_newButtonDown2 = 0;
+    graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown = 0;
+    graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m8_newButtonDown = 0;
+    graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.mC_newButtonDown2 = 0;
 
 #ifndef USE_NULL_RENDERER
     const Uint8* keyState = SDL_GetKeyboardState(NULL);
@@ -425,12 +425,12 @@ void azelSdl2_StartFrame()
 
             if (buttonMask)
             {
-                graphicEngineStatus.m4514.m0[0].m16_pending.m6_buttonDown |= buttonMask;
+                graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown |= buttonMask;
 
-                if ((graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & buttonMask) == 0)
+                if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & buttonMask) == 0)
                 {
-                    graphicEngineStatus.m4514.m0[0].m16_pending.m8_newButtonDown |= buttonMask;
-                    graphicEngineStatus.m4514.m0[0].m16_pending.mC_newButtonDown2 |= buttonMask;
+                    graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m8_newButtonDown |= buttonMask;
+                    graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.mC_newButtonDown2 |= buttonMask;
                 }
             }
         }

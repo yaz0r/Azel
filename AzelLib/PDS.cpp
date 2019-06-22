@@ -360,7 +360,7 @@ void writeInputConfig(s32 type, const std::array<s32, 8>& config, s32 r6)
     static const std::array<s8, 9> buttonOrder = {2, 0, 1, 14, 13,12 ,11, 15, -1};
     for (int i = 0; i < 8; i++)
     {
-        graphicEngineStatus.m4514.mD8[type][buttonOrder[i]] = 0;
+        graphicEngineStatus.m4514.mD8_buttonConfig[type][buttonOrder[i]] = 0;
     }
 
     static const std::array<u16, 8> bitMasks = { 4, 1, 2, 0x4000, 0x2000, 0x1000, 0x800, 0x8000 };
@@ -369,21 +369,21 @@ void writeInputConfig(s32 type, const std::array<s32, 8>& config, s32 r6)
         s8 r13 = buttonOrder[config[i]];
         if (r13 >= 0)
         {
-            graphicEngineStatus.m4514.mD8[type][r13] |= bitMasks[i];
+            graphicEngineStatus.m4514.mD8_buttonConfig[type][r13] |= bitMasks[i];
         }
     }
 
     if (r6)
     {
         graphicEngineStatus.m4514.m138[type] = 1;
-        graphicEngineStatus.m4514.mD8[type][4] = 0x20;
-        graphicEngineStatus.m4514.mD8[type][5] = 0x10;
+        graphicEngineStatus.m4514.mD8_buttonConfig[type][4] = 0x20;
+        graphicEngineStatus.m4514.mD8_buttonConfig[type][5] = 0x10;
     }
     else
     {
         graphicEngineStatus.m4514.m138[type] = 0;
-        graphicEngineStatus.m4514.mD8[type][4] = 0x10;
-        graphicEngineStatus.m4514.mD8[type][5] = 0x20;
+        graphicEngineStatus.m4514.mD8_buttonConfig[type][4] = 0x10;
+        graphicEngineStatus.m4514.mD8_buttonConfig[type][5] = 0x20;
     }
 }
 
@@ -678,9 +678,9 @@ void setupDefaultInputConfig(u16* inputDefaultConfig)
 {
     for (int i = 0; i < 16; i++)
     {
-        graphicEngineStatus.m4514.mD8[0][i] = inputDefaultConfig[i];
-        graphicEngineStatus.m4514.mD8[1][i] = inputDefaultConfig[i];
-        graphicEngineStatus.m4514.mD8[2][i] = inputDefaultConfig[i];
+        graphicEngineStatus.m4514.mD8_buttonConfig[0][i] = inputDefaultConfig[i];
+        graphicEngineStatus.m4514.mD8_buttonConfig[1][i] = inputDefaultConfig[i];
+        graphicEngineStatus.m4514.mD8_buttonConfig[2][i] = inputDefaultConfig[i];
     }
 }
 
@@ -738,16 +738,16 @@ void updateInputs()
 {
     for (int i = 0; i < 2; i++)
     {
-        graphicEngineStatus.m4514.m0[i].m0_current = graphicEngineStatus.m4514.m0[i].m16_pending;
-        graphicEngineStatus.m4514.m0[i].m16_pending.m8_newButtonDown = 0;
-        graphicEngineStatus.m4514.m0[i].m16_pending.mA = 0;
-        graphicEngineStatus.m4514.m0[i].m16_pending.mC_newButtonDown2 = 0;
-        graphicEngineStatus.m4514.m0[i].m16_pending.mE = 0;
-        graphicEngineStatus.m4514.m0[i].m16_pending.m10 = 0;
-        graphicEngineStatus.m4514.m0[i].m16_pending.m12 = 0;
-        graphicEngineStatus.m4514.m0[i].m16_pending.m14 = 0;
+        graphicEngineStatus.m4514.m0_inputDevices[i].m0_current = graphicEngineStatus.m4514.m0_inputDevices[i].m16_pending;
+        graphicEngineStatus.m4514.m0_inputDevices[i].m16_pending.m8_newButtonDown = 0;
+        graphicEngineStatus.m4514.m0_inputDevices[i].m16_pending.mA = 0;
+        graphicEngineStatus.m4514.m0_inputDevices[i].m16_pending.mC_newButtonDown2 = 0;
+        graphicEngineStatus.m4514.m0_inputDevices[i].m16_pending.mE = 0;
+        graphicEngineStatus.m4514.m0_inputDevices[i].m16_pending.m10 = 0;
+        graphicEngineStatus.m4514.m0_inputDevices[i].m16_pending.m12 = 0;
+        graphicEngineStatus.m4514.m0_inputDevices[i].m16_pending.m14 = 0;
 
-        updateInputsSub1(&graphicEngineStatus.m4514.m0[i].m2C);
+        updateInputsSub1(&graphicEngineStatus.m4514.m0_inputDevices[i].m2C);
     }
 
     copyKeyboardData();
@@ -953,8 +953,8 @@ void loopIteration()
 
         if (ImGui::Begin("InputState"))
         {
-            ImGui::Text("m6_buttonDown: %X", graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown);
-            ImGui::Text("m8_newButtonDown: %X", graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown);
+            ImGui::Text("m6_buttonDown: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown);
+            ImGui::Text("m8_newButtonDown: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown);
         }
         ImGui::End();
 

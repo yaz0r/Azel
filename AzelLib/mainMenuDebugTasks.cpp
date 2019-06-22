@@ -423,7 +423,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
         if (pWorkArea->m8_isSelectingSubfield)
         {
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x40)
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x40)
             {
                 if (pWorkArea->m4_selectedSubField == 0)
                 {
@@ -431,7 +431,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
                 }
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20) // down
             {
                 if (++r14->m38_subFieldIndexMenuSelection >= fieldDefinitions[r14->m36_fieldIndexMenuSelection].m_numSubFields)
                 {
@@ -439,7 +439,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
                 }
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10) // up
             {
                 if (--r14->m38_subFieldIndexMenuSelection < 0)
                 {
@@ -447,24 +447,24 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
                 }
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x80) // page down
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x80) // page down
             {
                 PDS_unimplemented("Page down");
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x40) // page up
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x40) // page up
             {
                 PDS_unimplemented("Page up");
             }
         }
         else
         {
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x80)
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x80)
             {
                 pWorkArea->m8_isSelectingSubfield = 1;
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x20) // down
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20) // down
             {
                 clearVdp2StringFieldDebugList();
                 r14->m38_subFieldIndexMenuSelection = 0;
@@ -479,7 +479,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
                 } while (!fieldEnabledTable[r14->m36_fieldIndexMenuSelection]);
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x10) // up
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10) // up
             {
                 clearVdp2StringFieldDebugList();
                 r14->m38_subFieldIndexMenuSelection = 0;
@@ -495,12 +495,12 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
             }
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x8000)
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x8000)
         {
             assert(0);
         }
 
-        if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x800)
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x800)
         {
             assert(0);
         }
@@ -639,7 +639,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 
         vdp2PrintStatus.m10_palette = 0xC000;
 
-        u8 inputValue = graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xF;
+        u8 inputValue = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xF;
         if (inputValue == 0)
         {
             return;
@@ -3840,7 +3840,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
         pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
         pWorkArea->m0++;
     case 1:
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 1) // B
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1) // B
         {
             playSoundEffect(1);
             fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
@@ -3855,7 +3855,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
         {
             return;
         }
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 6) // A or C
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6) // A or C
         {
             if (pWorkArea->m3_menuButtonStates[pWorkArea->selectedMenu] == 0)
             {
@@ -3872,7 +3872,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
             pWorkArea->m0++;
             return;
         }
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x30) // UP or DOWN
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x30) // UP or DOWN
         {
             playSoundEffect(10);
             
@@ -3883,7 +3883,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
                 mainMenuTaskInitSub3(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x660);
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0x10) // UP
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x10) // UP
             {
                 do
                 {
@@ -4073,7 +4073,7 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
     {
     case 0:
         graphicEngineStatus.m40AC.m8 = 0;
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8)
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8)
         {
             if (graphicEngineStatus.m40AC.m1_isMenuAllowed)
             {
@@ -4120,7 +4120,7 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
             {
                 scrollMenu();
             }
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8) // start
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) // start
             {
                 if (graphicEngineStatus.m40AC.m0_menuId == 7)
                 {

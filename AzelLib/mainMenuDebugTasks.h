@@ -94,6 +94,7 @@ u8* dramAllocate(u32 size);
 
 struct sVdp1Allocation
 {
+    u8* m0;
     u8* m4_baseInVdp1Memory;
 };
 sVdp1Allocation* vdp1Allocate(u32 size);

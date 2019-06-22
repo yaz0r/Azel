@@ -395,11 +395,34 @@ s32* twnEdgeVar0;
 
 struct sMainLogic* twnMainLogicTask;
 
-s32 twnVar3 = 0xB0009;
+void mainLogicDummy(struct sMainLogic*)
+{
+
+}
+
+void mainLogicUpdateSub3()
+{
+    TaskUnimplemented();
+}
 
 void mainLogicInitSub2()
 {
     initVDP1Projection(0x1C71C71, 0);
+}
+
+void drawLcs()
+{
+    if (npcData0.mFC & 0x10)
+    {
+        assert(0);
+    }
+    else
+    {
+        if (enableDebugTask)
+        {
+            assert(0);
+        }
+    }
 }
 
 struct sMainLogic : public s_workAreaTemplate<sMainLogic>
@@ -423,7 +446,7 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
             pThis->m1 = 0;
         }
         pThis->m0 = 0;
-        pThis->m10 = &twnVar3;
+        pThis->m10 = &mainLogicDummy;
 
         resetMatrixStack();
 
@@ -441,20 +464,162 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
         mainLogicInitSub2();
     }
 
+    // read inputs
+    static void mainLogicUpdateSub1(sMainLogic* pThis)
+    {
+        if (!(npcData0.mFC & 8))
+        {
+            if (npcData0.mFC & 0x10)
+            {
+                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1)
+                {
+                    pThis->m4_flags |= 0x4000000;
+                }
+            }
+            else
+            {
+                //605578C
+                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][2])
+                {
+                    pThis->m4_flags |= 0x8000000;
+                }
+            }
+        }
+
+        //0x60557A0
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][13])
+        {
+            pThis->m4_flags |= 0x20000000;
+        }
+
+        s32 r6 = 0;
+        s32 r7 = 0;
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2)
+        {
+            //60557BA
+            assert(0);
+        }
+        else
+        {
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][4])
+            {
+                r6 = 0;
+                r7 = 0x10000;
+            }
+            else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][5])
+            {
+                r6 = 0;
+                r7 = -0x10000;
+            }
+
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][6])
+            {
+                r6 = 0x10000;
+                r7 = 0;
+            }
+            else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][7])
+            {
+                r6 = -0x10000;
+                r7 = -0;
+            }
+        }
+
+        //6055820
+        pThis->m8_inputX = r6;
+        pThis->mC_inputY = r7;
+    }
+
+    static void mainLogicUpdateSub2(sMainLogic* pThis)
+    {
+        if (pThis->m4_flags & 0x4000000)
+        {
+            assert(0);
+        }
+        else if (pThis->m4_flags & 0x8000000)
+        {
+            assert(0);
+        }
+
+        //60558AE
+        if (pThis->m4_flags & 0x10000000)
+        {
+            assert(0);
+        }
+
+        if (pThis->m4_flags & 0x40000000)
+        {
+            pThis->m0 ^= 1;
+        }
+    }
+
+    static void mainLogicUpdateSub4(sMainLogic* pThis)
+    {
+        if (pThis->m14_EdgeTask)
+        {
+            sNPCE8* r5 = &pThis->m14_EdgeTask->mE8;
+            if (pThis->m118)
+            {
+                assert(0);
+            }
+        }
+    }
+
     static void Update(sMainLogic* pThis)
     {
-        TaskUnimplemented();
+        if (pThis->m14_EdgeTask)
+        {
+            sEdgeTask* r13 = pThis->m14_EdgeTask;
+            mainLogicUpdateSub0(r13->mE8.m0_position[0], r13->mE8.m0_position[2]);
+            pThis->m18_mainRamEdgeData = r13->m0_dramAllocation;
+            pThis->m1C_vdp1EdgeData = r13->m4_vd1Allocation->m0 + 0x1800;
+            pThis->m20_MCBEdgeData = r13->m8_MCBInDram;
+        }
+
+        mainLogicUpdateSub1(pThis);
+
+        mainLogicUpdateSub2(pThis);
+
+        if (!(npcData0.mFC & 1))
+        {
+            mainLogicUpdateSub3();
+        }
+
+        pThis->m10(pThis);
+
+        pThis->m50 = pThis->m38;
+        pThis->m50[1] += 0x10000;
+        pThis->m4_flags = 0;
+
+        mainLogicUpdateSub4(pThis);
     }
 
     static void Draw(sMainLogic* pThis)
     {
-        TaskUnimplemented();
+        sVec3_FP var18 = pThis->m38 + ((pThis->m44 - pThis->m38) >> 4);
+
+        generateCameraMatrix(&cameraProperties2, pThis->m38, var18, pThis->m50);
+
+        drawLcs();
+
+        if (enableDebugTask)
+        {
+            assert(0);
+        }
     }
 
     s8 m0;
     s8 m1;
-    s32* m10;
-    sEdgeTask* m14;
+    s32 m4_flags;
+    s32 m8_inputX;
+    s32 mC_inputY;
+    void (*m10)(sMainLogic*);
+    sEdgeTask* m14_EdgeTask;
+    u8* m18_mainRamEdgeData;
+    u8* m1C_vdp1EdgeData;
+    u8* m20_MCBEdgeData;
+    sVec3_FP m44;
+    sVec3_FP m38;
+    sVec3_FP m50;
     s32 m68;
     sMainLogic_74 m74;
     s32* mA4;
@@ -463,6 +628,7 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     s32 mB0;
     s32 mB4;
     s32 m100;
+    s32 m118;
     // size 0x320
 };
 
@@ -539,7 +705,7 @@ p_workArea overlayStart_TWN_RUIN(p_workArea pUntypedThis, u32 arg)
 
     startMainLogic(pThis);
 
-    twnMainLogicTask->m14 = pEdgeTask;
+    twnMainLogicTask->m14_EdgeTask = pEdgeTask;
 
     startCameraTask(pThis);
 
@@ -632,28 +798,28 @@ void updateEdgeControls(sEdgeTask* r4)
     }
     else
     {
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m0_inputType == 2)
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2)
         {
             //0605BC5E
-            r5 = 512 * graphicEngineStatus.m4514.m0[0].m0_current.m2_analogX;
-            r6 = 512 * graphicEngineStatus.m4514.m0[0].m0_current.m3_analogY;
+            r5 = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
+            r6 = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
         }
         else
         {
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & 0x10)
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x10)
             {
                 r6 = 0x10000;
             }
-            else if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & 0x20)
+            else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x20)
             {
                 r6 = -0x10000;
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & 0x40)
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x40)
             {
                 r5 = 0x10000;
             }
-            else if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & 0x80)
+            else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x80)
             {
                 r5 = -0x10000;
             }
@@ -663,12 +829,12 @@ void updateEdgeControls(sEdgeTask* r4)
     r4->m150 = r5;
     r4->m154 = r6;
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8[0][0])
+    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][0])
     {
         r4->m14C |= 2;
     }
 
-    if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8[0][1])
+    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][1])
     {
         r4->m14C |= 1;
     }
@@ -802,7 +968,7 @@ void updateEdgePosition(sNPC* r4)
     //605BBD6
     transformVec(r13->m30_stepTranslation, r13->m18, var10);
 
-    PDS_Logger.AddLog("Disable Edge position update!");
+    PDS_warningOnce("Disable Edge position update!");
     //r13->m0_position += r13->m18;
 
     updateEdgePositionSub3(r12);

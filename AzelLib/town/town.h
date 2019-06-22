@@ -30,6 +30,7 @@ struct sMainLogic_74
 
 struct sNPC
 {
+    u8* m8_MCBInDram;
     s8 mC;
     s8 mD;
     s8 mE;
@@ -121,3 +122,4 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
 npcFileDeleter* allocateNPC(struct sScriptTask* r4, s32 r5);
 
 s32 initNPC(s32 arg);
+void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y);

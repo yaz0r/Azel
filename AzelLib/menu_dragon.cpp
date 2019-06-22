@@ -381,7 +381,7 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
         pWorkArea->m0++;
         break;
     case 3:
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 7)
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 7)
         {
             playSoundEffect(0);
             pWorkArea->m14->m_DrawMethod = NULL;

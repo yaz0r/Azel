@@ -1510,7 +1510,7 @@ void s_vdp2StringTask::Update(s_vdp2StringTask* pThis)
             }
             else
             {
-                if ((graphicEngineStatus.m4514.m0->m0_current.m8_newButtonDown & 0xF) || readKeyboardToggle(0x87))
+                if ((graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0xF) || readKeyboardToggle(0x87))
                 {
                     pThis->m0_status++;
                 }

@@ -55,7 +55,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
         switch (pWorkArea->m_status)
         {
         case 0:
-            PDS_warning("Setting up menu as debug");
+            PDS_warningOnce("Setting up menu as debug");
             //if (keyboardIsKeyDown(0xF6))
         {
             pWorkArea->m_menu = mainMenuDebug;
@@ -117,7 +117,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
 
             // start or A?
 #ifndef __IPHONEOS__
-            if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 0xE)
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xE)
 #endif
             {
                 playSoundEffect(0);
@@ -132,7 +132,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
                 return;
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x40)
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x40)
             {
                 int newSelection = pWorkArea->m_currentSelection;
                 do
@@ -153,7 +153,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
                 }
             }
 
-            if (graphicEngineStatus.m4514.m0[0].m0_current.mC_newButtonDown2 & 0x80)
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x80)
             {
                 int newSelection = pWorkArea->m_currentSelection;
                 do
@@ -353,7 +353,7 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
         }
 
 #ifndef __IPHONEOS__
-        if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8) // if start was pressed
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) // if start was pressed
 #endif
         {
             playSoundEffect(8);
@@ -429,7 +429,7 @@ void s_warningWorkArea::Draw(s_warningWorkArea* pWorkArea)
             return;
         pWorkArea->m_status++;
     case 2: // fade out init?
-        if (!(graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8))
+        if (!(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8))
             return;
         fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0, 30);
         pWorkArea->m_status++;
@@ -541,7 +541,7 @@ struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
             }
         }
 
-        PDS_warning("Skipping over cd 0 intro");
+        PDS_warningOnce("Skipping over cd 0 intro");
         /*
         if (azelCdNumber == 0)
         {

@@ -35,8 +35,7 @@ struct sInitNPCSub0Var0
     void(*m1C)();
     void(*m20_deleteCell)(s32, sInitNPCSub0Var0*);
     void(*m24)();
-    fixedPoint m28;
-    fixedPoint m2C;
+    sVec3_FP m28;
     npcFileDeleter* m34;
     sSaturnPtr m38_EnvironmentSetup;
     s32* m3C;
@@ -46,6 +45,13 @@ struct sInitNPCSub0Var0
     std::array<sInitNPCSub0Var0Sub144, 0x40> m148;
 
 }initNPCSub0Var0;
+
+//TODO:kernel
+s32 MTH_Mul32(fixedPoint a, fixedPoint b)
+{
+    fixedPoint temp(((s64)a.asS32() * (s64)b.asS32()) >> 16);
+    return temp.getInteger();
+}
 
 struct sEnvironmentTask : public s_workAreaTemplateWithArgWithCopy<sEnvironmentTask, sSaturnPtr>
 {
@@ -103,8 +109,6 @@ void createEnvironmentTask2(s32 r4, sInitNPCSub0Var0* r14)
 
         createEnvironmentTask2Sub0(r14->m10_currentX + r12, r4 + r14->m14_currentY);
     }
-
-    assert(0);
 }
 
 void createEnvironmentTask()
@@ -250,7 +254,7 @@ void freeVdp1Block(npcFileDeleter*, s32)
     assert(0);
 }
 
-void initNPCSub1Sub0(sInitNPCSub0Var0* r13)
+void deleteAllTownCells(sInitNPCSub0Var0* r13)
 {
     s32 r14 = -2;
 
@@ -262,7 +266,7 @@ void initNPCSub1Sub0(sInitNPCSub0Var0* r13)
     
 }
 
-void initNPCSub0Sub2Sub1(s32 r4, s32 r5, sInitNPCSub0Var0* r6)
+void createTownCellsForCoordinates(s32 r4, s32 r5, sInitNPCSub0Var0* r6)
 {
     r6->mC = 0;
     r6->m8 = 0;
@@ -277,7 +281,7 @@ void initNPCSub0Sub2Sub1(s32 r4, s32 r5, sInitNPCSub0Var0* r6)
 
 void initNPCSub1()
 {
-    initNPCSub1Sub0(&initNPCSub0Var0);
+    deleteAllTownCells(&initNPCSub0Var0);
 
     if (initNPCSub0Var0.m140.size())
     {
@@ -320,13 +324,13 @@ void initNPCSub0Sub2(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 
     initNPCSub0Var0.m0_sizeX = r6_sizeX;
     initNPCSub0Var0.m4_sizeY = r7_sizeY;
     initNPCSub0Var0.m34 = buffer;
-    initNPCSub0Var0.m28 = stackArg0;
-    initNPCSub0Var0.m2C = MTH_Mul(0x10A3D, stackArg0);
-    initNPCSub0Var0.m2C = FP_Div(0x10000, stackArg0);
+    initNPCSub0Var0.m28[0] = stackArg0;
+    initNPCSub0Var0.m28[1] = MTH_Mul(0x10A3D, stackArg0);
+    initNPCSub0Var0.m28[2] = FP_Div(0x10000, stackArg0);
     initNPCSub0Var0.m38_EnvironmentSetup = pEnvironemntSetupEA;
 
     initNPCSub0Sub2Sub0();
-    initNPCSub0Sub2Sub1(-3, -3, &initNPCSub0Var0);
+    createTownCellsForCoordinates(-3, -3, &initNPCSub0Var0);
 }
 
 void initNPCSub0(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6, u8 r7, fixedPoint stackArg0)
@@ -407,3 +411,50 @@ void mainLogicInitSub1(sMainLogic_74* r4, sSaturnPtr r5, sSaturnPtr r6)
     r4->m4 = sqrt_F(MTH_Product3d_FP(r4->m14, r4->m14));
 }
 
+void mainLogicUpdateSub0Sub0(sInitNPCSub0Var0* r4)
+{
+    assert(0);
+}
+
+void mainLogicUpdateSub0Sub1(s32 r4, sInitNPCSub0Var0* r5)
+{
+    assert(0);
+}
+
+//TODO:kernel
+void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y)
+{
+    s32 r12 = MTH_Mul32(r4_x, initNPCSub0Var0.m28[2]);
+    s32 r11 = MTH_Mul32(r5_y, initNPCSub0Var0.m28[2]);
+
+    // not exactly the original code, but should be the same thing
+    s32 cellDistanceX = r12 - initNPCSub0Var0.m10_currentX;
+    if (cellDistanceX < 0)
+    {
+        cellDistanceX = -cellDistanceX;
+    }
+
+    s32 cellDistanceY = r11 - initNPCSub0Var0.m14_currentY;
+    if (cellDistanceY < 0)
+    {
+        cellDistanceY = -cellDistanceY;
+    }
+
+    if ((cellDistanceX > 1) || (cellDistanceY > 1))
+    {
+        deleteAllTownCells(&initNPCSub0Var0);
+        createTownCellsForCoordinates(r12, r11, &initNPCSub0Var0);
+    }
+    else
+    {
+        if (cellDistanceX)
+        {
+            mainLogicUpdateSub0Sub0(&initNPCSub0Var0);
+        }
+
+        if (cellDistanceY)
+        {
+            mainLogicUpdateSub0Sub1(r12, &initNPCSub0Var0);
+        }
+    }
+}
