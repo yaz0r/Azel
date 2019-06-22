@@ -2,6 +2,8 @@
 #include "town/town.h"
 #include "town/townDebugSelect.h"
 
+s_exitMenuTaskSub1Task* gExitMenuTaskSub1Task = nullptr;
+
 p_workArea initExitMenuTaskSub1(p_workArea pTypelessWorkArea, u32 menuID);
 
 extern p_workArea(*statusMenuSubMenus[])(p_workArea);
@@ -2769,23 +2771,6 @@ p_workArea createMovieDebugTask(p_workArea)
     return NULL;
 }
 
-struct s_exitMenuTaskSub1Task : public s_workAreaTemplateWithArg<s_exitMenuTaskSub1Task, s32>
-{
-    static const TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static const TypedTaskDefinition taskDefinition = { &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskUpdate, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw, NULL};
-        return &taskDefinition;
-    }
-
-    static void exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task*, s32);
-    static void exitMenuTaskSub1TaskUpdate(s_exitMenuTaskSub1Task*);
-    static void exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task*);
-
-    u32 state; // 0
-    p_workArea m8;
-    u32 mC;
-};
-
 struct {
     s8 m0_gameMode;
     s8 m1;
@@ -2811,6 +2796,10 @@ void setNextGameStatus(u32 r4)
     {
         gGameStatus.m8_nextGameStatus = r4;
         gGameStatus.m2 = 0;
+    }
+    else
+    {
+        PDS_Log("[ERROR] Requesting new game state failed to change to: %d!\n", r4);
     }
 }
 
@@ -4086,8 +4075,6 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
         graphicEngineStatus.m40AC.m8 = 0;
         if (graphicEngineStatus.m4514.m0[0].m0_current.m8_newButtonDown & 8)
         {
-            PDS_unimplemented("Hack: forcing menu enabled 1");
-            graphicEngineStatus.m40AC.m1_isMenuAllowed = 1;
             if (graphicEngineStatus.m40AC.m1_isMenuAllowed)
             {
                 graphicEngineStatus.m40AC.m0_menuId = 1;
@@ -4219,6 +4206,9 @@ p_workArea createMenuTask(p_workArea parentTask)
 
 void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task* pWorkArea, s32 menuID)
 {
+    //HACK: keep track of this as we need to clear the sub task pointer when the overlay returns
+    gExitMenuTaskSub1Task = pWorkArea;
+    
     pWorkArea->m8 = 0;
     pWorkArea->mC = 0;
 
@@ -4228,9 +4218,6 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task* pW
     gGameStatus.m4_gameStatus = 0;
     gGameStatus.m6_previousGameStatus = 0;
     gGameStatus.m8_nextGameStatus = 0;
-
-    //PDS_unimplemented("Hack: skip game status to first field");
-    //gGameStatus.m8_nextGameStatus = 0x50;
 
     if (menuID == 3)
     {
@@ -4300,6 +4287,8 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
     s32 var_18 = mainGameState.gameStats.m2_rider1;
     s32 r15 = mainGameState.gameStats.m3_rider2;
 
+    PDS_Log("Evaluate new game status for %d\n", index);
+    
     // 7: captain scene FMV
 
     switch (index)
@@ -4512,6 +4501,8 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
         gGameStatus.m4_gameStatus = gGameStatus.m8_nextGameStatus;
         gGameStatus.m8_nextGameStatus = 0;
 
+        PDS_Log("Switching to Game Satus %d\n", gGameStatus.m4_gameStatus);
+        
         gGameStatus.m0_gameMode = readSaturnS8(gCommonFile.getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2));
         gGameStatus.m1 = readSaturnS8(gCommonFile.getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2) + 1);
 
@@ -4526,11 +4517,12 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
 
         if (overlayDispatchTable[gGameStatus.m0_gameMode])
         {
+            PDS_Log("Calling into overlay type %d", gGameStatus.m0_gameMode);
             pWorkArea->m8 = overlayDispatchTable[gGameStatus.m0_gameMode](pWorkArea, gGameStatus.m1);
         }
         else
         {
-            PDS_unimplemented("Unimplemented entry in overlayDispatchTable[gGameStatus.m0_gameMode]. Skipping!");
+            PDS_Log("Unimplemented entry in overlayDispatchTable[%d]. Skipping!\n", gGameStatus.m0_gameMode);
         }
         pWorkArea->state = 0;
 

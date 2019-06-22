@@ -912,9 +912,13 @@ struct s_fieldSub0Task : public s_workAreaTemplate<s_fieldSub0Task>
         createSubTask<s_fieldSub1Task>(pThis);
     }
 
-    static void Delete(s_fieldSub0Task*)
+    static void Delete(s_fieldSub0Task* pThis)
     {
         fieldTaskVar0 = nullptr;
+        
+        //FIX:
+        assert(gExitMenuTaskSub1Task->m8 == pThis);
+        gExitMenuTaskSub1Task->m8 = nullptr;
     }
 };
 

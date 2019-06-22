@@ -5988,9 +5988,9 @@ void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
         else
         {
             sVec3_FP varC;
-            varC[0] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger() & 0xFFF), getSin(pTypedWorkArea->mC4.getInteger() & 0xFFF));
-            varC[1] = MTH_Mul(fixedPoint(0x10000), getSin(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger() & 0xFFF));
-            varC[2] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger() & 0xFFF), getCos(pTypedWorkArea->mC4.getInteger() & 0xFFF));
+            varC[0] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger()), getSin(pTypedWorkArea->mC4.getInteger()));
+            varC[1] = MTH_Mul(fixedPoint(0x10000), getSin(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger()));
+            varC[2] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger()), getCos(pTypedWorkArea->mC4.getInteger()));
             transformVecByCurrentMatrix(varC, lightLocation);
             pColor = &pTypedWorkArea->mC8_normalLightColor;
         }
@@ -6640,7 +6640,6 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
         gFLD_A3->m_data = fileData;
         gFLD_A3->m_dataSize = fileSize;
         gFLD_A3->m_base = 0x6054000;
-
         gFLD_A3->init();
 
         LCSTaskDrawSub5Sub1_Data1 = readLCSTaskDrawSub5Sub1_Data1({ 0x06093B28, gFLD_A3 });

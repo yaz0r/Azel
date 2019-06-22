@@ -59,6 +59,7 @@ void processTasks(s_task** ppTask)
         }
         if (pTask->isFinished())
         {
+            PDS_Log("Task %s is finished\n", pTask->m_taskName);
             pTask->m14_flags ^= TASK_FLAGS_DELETING;
             if (pTask->isDeleting())
             {
@@ -78,6 +79,7 @@ void processTasks(s_task** ppTask)
             // finished but not deleting yet
             if (pTask->isDeleting())
             {
+                PDS_Log("Task %s is getting deleted\n", pTask->m_taskName);
                 pTask->getWorkArea()->Delete();
 
                 numActiveTask--;

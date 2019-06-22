@@ -765,7 +765,7 @@ sObjectListEntry* getObjectListEntry(s32 entry)
         return cacheEntry->second;
     }
 
-    sSaturnPtr EA = { 0x20C3F4, &gCommonFile };
+    sSaturnPtr EA = gCommonFile.getSaturnPtr(0x20C3F4);
     EA += 3 * 4 * entry;
 
     sObjectListEntry* pNewObjectEntry = new sObjectListEntry;

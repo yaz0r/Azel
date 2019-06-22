@@ -694,11 +694,13 @@ extern s32 CosSinTable[4096];
 
 fixedPoint getCos(u32 value)
 {
+    value &= 0xFFF;
     return fixedPoint(CosSinTable[value + 1024]);
 }
 
 fixedPoint getSin(u32 value)
 {
+    value &= 0xFFF;
     return fixedPoint(CosSinTable[value]);
 }
 

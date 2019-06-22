@@ -97,3 +97,22 @@ struct sVdp1Allocation
     u8* m4_baseInVdp1Memory;
 };
 sVdp1Allocation* vdp1Allocate(u32 size);
+
+struct s_exitMenuTaskSub1Task : public s_workAreaTemplateWithArg<s_exitMenuTaskSub1Task, s32>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskUpdate, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw, NULL};
+        return &taskDefinition;
+    }
+    
+    static void exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task*, s32);
+    static void exitMenuTaskSub1TaskUpdate(s_exitMenuTaskSub1Task*);
+    static void exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task*);
+    
+    u32 state; // 0
+    p_workArea m8;
+    u32 mC;
+};
+
+extern s_exitMenuTaskSub1Task* gExitMenuTaskSub1Task;

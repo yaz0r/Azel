@@ -227,6 +227,7 @@ T* createSubTask(p_workArea parentTask, const typename T::TypedTaskDefinition* p
         pTypeTaskDefinition->m_pInit(pNewTask);
         //((pNewTask)->*(pTypeTaskDefinition->m_pInit))();
     }
+    PDS_Log("Created task %s\n", T::getTaskName());
     return pNewTask;
 }
 
@@ -248,6 +249,7 @@ T* createSubTaskWithCopy(s_workAreaCopy* parentTask, const typename T::TypedTask
         pTypeTaskDefinition->m_pInit(pNewTask);
         //((pNewTask)->*(pTypeTaskDefinition->m_pInit))();
     }
+    PDS_Log("Created task %s\n", T::getTaskName());
     return pNewTask;
 }
 
@@ -264,6 +266,7 @@ T* createSubTaskWithArg(p_workArea parentTask, argType arg, const typename T::Ty
         pTypeTaskDefinition->m_pInit(pNewTask, arg);
         //((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
     }
+    PDS_Log("Created task %s\n", T::getTaskName());
     return pNewTask;
 }
 
@@ -280,6 +283,7 @@ T* createSiblingTaskWithArg(p_workArea parentTask, argType arg, const typename T
         pTypeTaskDefinition->m_pInit(pNewTask, arg);
         //((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
     }
+    PDS_Log("Created task %s\n", T::getTaskName());
     return pNewTask;
 }
 
@@ -301,6 +305,7 @@ T* createSiblingTaskWithArgWithCopy(s_workAreaCopy* parentTask, argType arg, con
         pTypeTaskDefinition->m_pInit(pNewTask, arg);
         //((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
     }
+    PDS_Log("Created task %s\n", T::getTaskName());
     return pNewTask;
 }
 
@@ -317,6 +322,7 @@ T* createSiblingTask(p_workArea parentTask, const typename T::TypedTaskDefinitio
         pTypeTaskDefinition->m_pInit(pNewTask);
         //((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
     }
+    PDS_Log("Created task %s\n", T::getTaskName());
     return pNewTask;
 }
 
@@ -326,6 +332,7 @@ T* createSubTaskFromFunction(p_workArea parentTask, typename T::FunctionType Upd
     T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, new T));
     pNewTask->m_UpdateMethod = UpdateFunction;
     pNewTask->getTask()->m_taskName = T::getTaskName();
+    PDS_Log("Created task (from function) %s\n", T::getTaskName());
     return pNewTask;
 }
 

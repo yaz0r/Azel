@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(__APPLE__)
+#include "TargetConditionals.h"
+#endif
+
 #define PDS_TOOL
 
 //#define SHIPPING_BUILD
@@ -189,7 +193,15 @@ bool findFileOnDisc(const std::string& filename);
 #include "3dModels.h"
 
 extern u8 COMMON_DAT[0x98000];
-extern sSaturnMemoryFile gCommonFile;
+
+class sCommonOverlay_data : public sSaturnMemoryFile
+{
+public:
+    void init();
+    
+};
+
+extern sCommonOverlay_data gCommonFile;
 
 struct sFileInfoSub
 {

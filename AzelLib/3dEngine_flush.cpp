@@ -269,23 +269,23 @@ const GLchar azel_vs[] =
 
 const GLchar azel_ps[] =
 "#version 300 es\n"
-"precision highp float;									\n"
-"in highp vec2 v_texcoord;								\n"
-"in highp vec4 v_color;								\n""uniform float s_ambientInfluence;                        \n"
+"precision highp float;                                    \n"
+"in highp vec2 v_texcoord;                                \n"
+"in highp vec4 v_color;                                \n"
+"uniform sampler2D s_texture;                            \n"
+"uniform float s_textureInfluence;                        \n"
+"uniform float s_ambientInfluence;                        \n"
 "out vec4 fragColor;                                    \n"
 "void main()                                            \n"
 "{                                                        \n"
 "   float distanceValue = mix(0.f, 10.f, 1.f-gl_FragCoord.z); \n"
 "   //distanceValue = clamp(distanceValue, 0, 1); \n"
 "    vec4 txcol = texture(s_texture, v_texcoord);        \n"
-
-"uniform sampler2D s_texture;							\n"
-"uniform float s_textureInfluence;						\n"
 "   if(txcol.a <= 0.f) discard;\n"
-"   fragColor = (clamp(txcol, 0.f, 1.f) * s_textureInfluence) + v_color;									\n"
+"   fragColor = (clamp(txcol, 0.f, 1.f) * s_textureInfluence) + v_color;                                    \n"
 "   fragColor = txcol; \n"
-"   fragColor.w = 1.f;								\n"
-"}														\n"
+"   fragColor.w = 1.f;                                \n"
+"}                                                        \n"
 ;
 
 #else
@@ -1185,7 +1185,6 @@ GLuint Get2dUIShader()
         "in  highp float v_depth;\n"
         "uniform sampler2D s_texture;							\n"
         "out vec4 fragColor;									\n"
-        "out highp float gl_FragDepth ; \n"
         "void main()											\n"
         "{														\n"
         "	vec4 txcol = texture(s_texture, v_texcoord);		\n"
@@ -1230,7 +1229,6 @@ GLuint GetWorldSpaceLineShader()
         "in  highp float v_depth;\n"
         "uniform sampler2D s_texture;							\n"
         "out vec4 fragColor;									\n"
-        "out highp float gl_FragDepth ; \n"
         "void main()											\n"
         "{														\n"
         "   fragColor.xyz = v_color; \n"

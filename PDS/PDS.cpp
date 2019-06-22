@@ -1,9 +1,11 @@
 #include "PDS.h"
 
+#if (defined(__APPLE__) && (TARGET_OS_OSX))
 #include <unistd.h> // for chdir
 #include <libgen.h> // for dirname
 #include <mach-o/dyld.h> // for _NSGetExecutablePath
 #include <limits.h> // for PATH_MAX?
+#endif
 
 SDL_Window *gWindow;
 SDL_GLContext gGlcontext;
@@ -18,6 +20,7 @@ extern bool bContinue;
 
 int main(int argc, char* argv[])
 {
+#if (defined(__APPLE__) && (TARGET_OS_OSX))
     char path[PATH_MAX];
     uint32_t pathLen = sizeof(path);
     int err = _NSGetExecutablePath(path, &pathLen);
@@ -27,6 +30,7 @@ int main(int argc, char* argv[])
     chdir(dirname(path));
     // and then go up three directories to get to the folder of the .app bundle
     chdir("../Resources");
+#endif
     
     azelSdl2_Init();
 

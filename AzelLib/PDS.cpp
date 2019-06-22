@@ -17,13 +17,12 @@ u32 azelCdNumber = 0;
 
 u8 COMMON_DAT[0x98000];
 
-extern sSaturnMemoryFile gCommonFile =
+sCommonOverlay_data gCommonFile;
+
+void sCommonOverlay_data::init()
 {
-    "common.dat",
-    COMMON_DAT,
-    0x98000,
-    0x00200000,
-};
+    
+}
 
 bool findFileOnDisc(const std::string& filename)
 {
@@ -706,6 +705,14 @@ void azelInit()
 
     loadFile("COMMON.DAT", COMMON_DAT, 0);
 
+    {
+        gCommonFile.m_name = "COMMON.DAT";
+        gCommonFile.m_data = COMMON_DAT;
+        gCommonFile.m_dataSize = 0x98000;
+        gCommonFile.m_base = 0x00200000;
+        gCommonFile.init();
+    }
+    
     initSMPC();
 
     // stuff
