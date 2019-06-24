@@ -489,7 +489,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         }
 
         //06070D98
-        fixedPoint var28[2];
+        sVec2_FP var28;
         if (gDragonState->mC_dragonType != DR_LEVEL_8_FLOATER)
         {
             generateCameraMatrixSub1(r14_pDragonTask->m160_deltaTranslation, var28);

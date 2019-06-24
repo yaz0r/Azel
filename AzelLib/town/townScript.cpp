@@ -5,12 +5,7 @@
 
 #include <map>
 
-struct sResData
-{
-    s32 m0;
-    s32 m4;
-    std::array<s32, 4>m8;
-}resData;
+sResData resData;
 
 s32 resValue0 = 0;
 sScriptTask* currentResTask = nullptr;
@@ -41,16 +36,16 @@ void scriptUpdateSub0()
 {
     for (int i = 0; i < 4; i++)
     {
-        if (resData.m8[i])
+        if (resData.m8_headOfLinkedList[i])
         {
-            assert(0);
+            FunctionUnimplemented();
         }
     }
 }
 
 void initResTable()
 {
-    resData.m8.fill(0);
+    resData.m8_headOfLinkedList.fill(0);
     resData.m4 = 0;
 
     if (resValue0 < 0)

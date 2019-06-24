@@ -17,8 +17,22 @@ struct sScriptTask : public s_workAreaTemplate<sScriptTask>
     s32 m18;
     //size 0x20
 };
-
 extern sScriptTask* currentResTask;
+
+struct sResData1C
+{
+    sResData1C* m0_pNext;
+    sMainLogic_74* m4;
+};
+
+struct sResData
+{
+    s32 m0;
+    s32 m4;
+    std::array<sResData1C*, 4>m8_headOfLinkedList;
+    std::array<sResData1C, 0x3F>m1C;
+};
+extern sResData resData;
 
 void startScriptTask(p_workArea r4);
 sNPC* getNpcDataByIndex(s32 r4);

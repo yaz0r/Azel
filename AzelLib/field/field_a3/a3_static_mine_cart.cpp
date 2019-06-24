@@ -28,7 +28,7 @@ void A3_3_Obj0_Update1Sub0(sVec3_FP* r4, sVec3_FP* r5)
     {
         r12 = MTH_Mul_5_6(sqrt_F(var8_dragonPosition[1].getAbs()), r12, r12);
 
-        fixedPoint var0[2];
+        sVec2_FP var0;
         generateCameraMatrixSub1(var8_dragonPosition, var0);
 
         (*r4)[0] = (*r5)[0] + MTH_Mul(r12, getSin(var0[1].getInteger() & 0xFFF));

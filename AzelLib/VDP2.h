@@ -96,8 +96,10 @@ struct s_VDP2Regs
 
     u16 mE4_CRAOFA;
     u16 mE6_CRAOFB; // unset?
+    s16 mE8_LNCLEN;
 
     u16 mEC_CCCTL;
+    u16 mEE_SFCCMD;
 
     u16 mF0_PRISA;
     u16 mF2_PRISB;
@@ -141,7 +143,7 @@ enum eVdp2LayerConfig
     m5_CHSZ = 5,
     m6_PNB = 6,
     m7_CNSM = 7,
-    m9 = 9,
+    m9_SCC = 9,
     m11_SCN = 11,
     m12_PLSZ = 12,
     m21 = 21,

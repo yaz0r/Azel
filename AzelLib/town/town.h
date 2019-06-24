@@ -16,7 +16,7 @@ struct sMainLogic_74
     s8 m1;
     s8 m2;
     fixedPoint m4;
-    s32 m8;
+    sVec3_FP m8_position;
     sVec3_FP m14;
     sVec3_FP m20;
     s32 m2C;
@@ -26,6 +26,7 @@ struct sMainLogic_74
     s32 m3C;
     u8* m40;
     s32 m44;
+    sVec3_FP m58;
 };
 
 struct sNPC
@@ -45,7 +46,6 @@ struct sNPC
     sSaturnPtr m30;
     s_3dModel m34_3dModel;
     sMainLogic_74 m84;
-    sVec3_FP mDC;
     sNPCE8 mE8;
 };
 
@@ -74,6 +74,7 @@ struct sNpcData
     s32 m118_currentResult;
     std::array<sSaturnPtr, 0x10>::iterator m11C_currentStackPointer;
     std::array<sSaturnPtr, 0x10> m120_stack;
+    sVec3_FP* m160_pEdgePosition;
     s32 m164;
     s32 m168;
     s_vdp2StringTask* m16C_displayStringTask;

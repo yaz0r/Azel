@@ -68,6 +68,11 @@ struct sVec3_FP
         return m_value[i];
     }
 
+    bool operator==(const sVec3_FP otherVec) const
+    {
+        return m_value == otherVec.m_value;
+    }
+
     sVec3_FP operator-(sVec3_FP otherVec) const
     {
         sVec3_FP result;
@@ -109,6 +114,15 @@ struct sVec3_FP
     {
         sVec3_FP newValue = *this;
         newValue += otherVec;
+        return newValue;
+    }
+
+    sVec3_FP operator * (const s32 value) const
+    {
+        sVec3_FP newValue = *this;
+        newValue[0] *= value;
+        newValue[1] *= value;
+        newValue[2] *= value;
         return newValue;
     }
 

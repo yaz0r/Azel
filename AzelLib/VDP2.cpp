@@ -515,9 +515,10 @@ void setupNBG1(sLayerConfig* setup)
             vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 & 0x7FFF) | (arg << 15);
             break;
         case m7_CNSM:
-            vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 & 0xBFFF) | (arg << 14);
+            vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 & ~0x4000) | (arg << 14);
             break;
-        case m9:
+        case m9_SCC:
+            vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 & ~0x100) | (arg << 8);
             break;
         case m11_SCN:
             vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 & 0xFFE0) | (arg << 0);
@@ -526,19 +527,22 @@ void setupNBG1(sLayerConfig* setup)
             vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ & 0xFFF3) | (arg << 2);
             break;
         case m21:
+            vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL = (vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL & ~0x100) | (arg << 8);
             break;
         case m40_CAOS:
             vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA & 0xFF8F) | (arg << 4);
             break;
         case m41:
+            vdp2Controls.m4_pendingVdp2Regs->mE8_LNCLEN = (vdp2Controls.m4_pendingVdp2Regs->mE8_LNCLEN & ~0x2) | (arg << 1);
             break;
         case m44_CCEN:
-            // vdp2Controls.m4_pendingVdp2Regs->CCEN
+            vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = (vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & ~0x2) | (arg << 1);
             break;
         case m46_SCCM:
-           // vdp2Controls.m4_pendingVdp2Regs->SFCCMD
+            vdp2Controls.m4_pendingVdp2Regs->mEE_SFCCMD = (vdp2Controls.m4_pendingVdp2Regs->mEE_SFCCMD & ~0xC) | (arg << 2);
             break;
         case m45:
+            vdp2Controls.m4_pendingVdp2Regs->m110_CLOFEN = (vdp2Controls.m4_pendingVdp2Regs->m110_CLOFEN & ~0x2) | (arg << 1);
             break;
         default:
             assert(false);

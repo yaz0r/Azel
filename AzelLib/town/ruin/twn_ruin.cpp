@@ -194,9 +194,23 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
     applyEdgeAnimation(pModel, r5);
 }
 
-void EdgeUpdateSub0(sMainLogic_74*)
+void EdgeUpdateSub0(sMainLogic_74* r14)
 {
-    FunctionUnimplemented();
+    if (resData.m4 >= 0x3F)
+        return;
+
+    sResData1C& r5 = resData.m1C[resData.m4++];
+    r5.m0_pNext = resData.m8_headOfLinkedList[r14->m2C];
+    r5.m4 = r14;
+
+    resData.m8_headOfLinkedList[r14->m2C] = &r5;
+
+    sMatrix4x3 var4;
+    initMatrixToIdentity(&var4);
+    rotateMatrixYXZ(r14->m34_pRotation, &var4);
+    transformVec(r14->m20, r14->m8_position, var4);
+
+    r14->m8_position += *r14->m30_pPosition;
 }
 
 struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPtr>, sNPC
@@ -418,8 +432,6 @@ sEdgeTask* startEdgeTask(sSaturnPtr r4)
     return createSiblingTaskWithArgWithCopy<sEdgeTask>(allocateNPC(currentResTask, readSaturnS32(r4)), r4);
 }
 
-s32* twnEdgeVar0;
-
 struct sMainLogic* twnMainLogicTask;
 
 void mainLogicDummy(struct sMainLogic*)
@@ -427,10 +439,7 @@ void mainLogicDummy(struct sMainLogic*)
 
 }
 
-void mainLogicUpdateSub3()
-{
-    FunctionUnimplemented();
-}
+void mainLogicUpdateSub3();
 
 void mainLogicInitSub2()
 {
@@ -450,6 +459,32 @@ void drawLcs()
             assert(0);
         }
     }
+}
+
+void Imgui_FP(const char* label, fixedPoint* pFP)
+{
+    float fValue = pFP->toFloat();
+    if (ImGui::InputFloat(label, &fValue, 0.01, 0.1))
+    {
+        pFP->m_value = fValue * 0x10000;
+    }
+}
+
+void Imgui_Vec3FP(sVec3_FP* pVector)
+{
+    ImGui::PushItemWidth(100);
+    Imgui_FP("x", &pVector->m_value[0]); ImGui::SameLine();
+    Imgui_FP("y", &pVector->m_value[1]); ImGui::SameLine();
+    Imgui_FP("z", &pVector->m_value[2]);
+    ImGui::PopItemWidth();
+}
+
+void Imgui_Vec3FP(const char* name, sVec3_FP* pVector)
+{
+    ImGui::Text(name); ImGui::SameLine();
+    ImGui::PushID(name);
+    Imgui_Vec3FP(pVector);
+    ImGui::PopID();
 }
 
 struct sMainLogic : public s_workAreaTemplate<sMainLogic>
@@ -477,11 +512,11 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
 
         resetMatrixStack();
 
-        pThis->mA4 = &pThis->m100;
-        pThis->mA8 = &pThis->m68;
-        pThis->mAC = &pThis->m0;
-        pThis->mB0 = 0;
-        pThis->mB4 = 0;
+        pThis->m74.m30_pPosition = &pThis->m5C_position;
+        pThis->m74.m34_pRotation = &pThis->m68_rotation;
+        pThis->m74.m38_pOwner = pThis;
+        pThis->m74.m3C = 0;
+        pThis->m74.m40 = nullptr;
 
         mainLogicInitSub0(&pThis->m74, 0);
         mainLogicInitSub1(&pThis->m74, gTWN_RUIN->getSaturnPtr(0x605EEE4), gTWN_RUIN->getSaturnPtr(0x605EEF0));
@@ -597,9 +632,8 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
         {
             sEdgeTask* r13 = pThis->m14_EdgeTask;
             mainLogicUpdateSub0(r13->mE8.m0_position[0], r13->mE8.m0_position[2]);
-            pThis->m18_mainRamEdgeData = r13->m0_dramAllocation;
-            pThis->m1C_vdp1EdgeData = r13->m4_vd1Allocation->m0 + 0x1800;
-            pThis->m20_MCBEdgeData = r13->m8_MCBInDram;
+            pThis->m18_position = r13->mE8.m0_position;
+            pThis->m18_position[1] += 0x1800;
         }
 
         mainLogicUpdateSub1(pThis);
@@ -615,15 +649,24 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
 
         // Hack
         {
-            if (pThis->m14_EdgeTask)
+            static bool forceCameraPosition = false;
+            ImGui::Begin("Town");
             {
-                pThis->m38 = pThis->m14_EdgeTask->mE8.m0_position - sVec3_FP(0,0,0x5000);
-                pThis->m44 = pThis->m14_EdgeTask->mE8.m0_position;
+                ImGui::Checkbox("Force camera position", &forceCameraPosition);
+                Imgui_Vec3FP("Camera position", &pThis->m38_cameraPosition);
+                Imgui_Vec3FP("Camera target", &pThis->m44_cameraTarget);
+            }
+            ImGui::End();
+
+            if (forceCameraPosition && pThis->m14_EdgeTask)
+            {
+                pThis->m38_cameraPosition = pThis->m14_EdgeTask->mE8.m0_position - sVec3_FP(0,0,0x5000);
+                pThis->m44_cameraTarget = pThis->m14_EdgeTask->mE8.m0_position;
             }
         }
 
-        pThis->m50 = pThis->m38;
-        pThis->m50[1] += 0x10000;
+        pThis->m50_upVector = pThis->m38_cameraPosition;
+        pThis->m50_upVector[1] += 0x10000;
         pThis->m4_flags = 0;
 
         mainLogicUpdateSub4(pThis);
@@ -631,9 +674,9 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
 
     static void Draw(sMainLogic* pThis)
     {
-        sVec3_FP var18 = pThis->m38 + ((pThis->m44 - pThis->m38) >> 4);
+        sVec3_FP var18 = pThis->m38_cameraPosition + ((pThis->m44_cameraTarget - pThis->m38_cameraPosition) * 16);
 
-        generateCameraMatrix(&cameraProperties2, pThis->m38, var18, pThis->m50);
+        generateCameraMatrix(&cameraProperties2, pThis->m38_cameraPosition, var18, pThis->m50_upVector);
 
         drawLcs();
 
@@ -645,28 +688,280 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
 
     s8 m0;
     s8 m1;
+    s8 m2_cameraFollowMode;
     s32 m4_flags;
     s32 m8_inputX;
     s32 mC_inputY;
     void (*m10)(sMainLogic*);
     sEdgeTask* m14_EdgeTask;
-    u8* m18_mainRamEdgeData;
-    u8* m1C_vdp1EdgeData;
-    u8* m20_MCBEdgeData;
-    sVec3_FP m44;
-    sVec3_FP m38;
-    sVec3_FP m50;
-    s32 m68;
+    sVec3_FP m18_position;
+    fixedPoint m24_distance;
+    fixedPoint m30;
+    sVec3_FP m38_cameraPosition;
+    sVec3_FP m44_cameraTarget;
+    sVec3_FP m50_upVector;
+    sVec3_FP m5C_position;
+    sVec3_FP m68_rotation;
     sMainLogic_74 m74;
-    s32* mA4;
-    s32* mA8;
-    s8* mAC;
-    s32 mB0;
-    s32 mB4;
-    s32 m100;
     s32 m118;
     // size 0x320
 };
+
+const std::array<sVec2_FP, 2> cameraParams = {
+    {
+        {0x2CCC, 0xAAAAAA},
+        {0x2CCC, -0x555555},
+    }
+};
+
+fixedPoint transformByMatrixRow0(const sVec3_FP& r4)
+{
+    s64 mac = 0;
+    mac += (s64)pCurrentMatrix->matrix[0] * (s64)r4[0].asS32();
+    mac += (s64)pCurrentMatrix->matrix[1] * (s64)r4[1].asS32();
+    mac += (s64)pCurrentMatrix->matrix[2] * (s64)r4[2].asS32();
+    return (mac >> 16) + pCurrentMatrix->matrix[3];
+}
+
+fixedPoint transformByMatrixRow1(const sVec3_FP& r4)
+{
+    s64 mac = 0;
+    mac += (s64)pCurrentMatrix->matrix[4] * (s64)r4[0].asS32();
+    mac += (s64)pCurrentMatrix->matrix[5] * (s64)r4[1].asS32();
+    mac += (s64)pCurrentMatrix->matrix[6] * (s64)r4[2].asS32();
+    return (mac >> 16) + pCurrentMatrix->matrix[7];
+}
+
+fixedPoint transformByMatrixRow2(const sVec3_FP& r4)
+{
+    s64 mac = 0;
+    mac += (s64)pCurrentMatrix->matrix[8] * (s64)r4[0].asS32();
+    mac += (s64)pCurrentMatrix->matrix[9] * (s64)r4[1].asS32();
+    mac += (s64)pCurrentMatrix->matrix[10] * (s64)r4[2].asS32();
+    return (mac >> 16) + pCurrentMatrix->matrix[11];
+}
+
+fixedPoint MulVec2(const sVec2_FP& r4, const sVec2_FP& r5)
+{
+    s64 mac = 0;
+    mac += (s64)r4.m_value[0] * (s64)r5.m_value[0];
+    mac += (s64)r4.m_value[1] * (s64)r5.m_value[1];
+    
+    return fixedPoint(mac >> 16);
+}
+
+void updateCameraTarget(sMainLogic* r4, const sVec3_FP& r14)
+{
+    // project the point to screen
+
+    sVec3_FP var8;
+    var8[0] = transformByMatrixRow0(r14);
+    var8[1] = transformByMatrixRow1(r14);
+    var8[2] = transformByMatrixRow2(r14);
+
+    sVec2_FP var0;
+    var0[0] = FP_Div(var8[0], var8[2]);
+    var0[1] = FP_Div(var8[1], var8[2]);
+
+    if (var0[0] < 0)
+    {
+        var0[0] = -var0[0];
+    }
+
+    if (var0[1] < 0)
+    {
+        var0[1] = -var0[1];
+    }
+
+    // If the projected target point is already at the center of the screen
+    if ((MTH_Mul(graphicEngineStatus.m405C.m18, var0[0]) == 0) && (MTH_Mul(graphicEngineStatus.m405C.m18, var0[1]) == 0))
+    {
+        r4->m44_cameraTarget = r14;
+        return;
+    }
+
+    // If not, interpolate
+    if (var0[0] > 0x800000)
+        var0[0] = 0x800000;
+
+    if (var0[1] > 0x800000)
+        var0[1] = 0x800000;
+
+    fixedPoint r13 = MulVec2(var0, var0) / 2;
+
+    if (r13 > 0xB333)
+        r13 = 0xB333;
+
+    if (r13 < 0xCCC)
+        r13 = 0xCCC;
+
+    r13 = 0x10000 - r13;
+
+    r4->m44_cameraTarget[0] = r14[0] + MTH_Mul(r4->m44_cameraTarget[0] - r14[0], r13);
+    r4->m44_cameraTarget[1] = r14[1] + MTH_Mul(r4->m44_cameraTarget[1] - r14[1], r13);
+    r4->m44_cameraTarget[2] = r14[2] + MTH_Mul(r4->m44_cameraTarget[2] - r14[2], r13);
+}
+
+void mainLogicUpdateSub5(sMainLogic* r4)
+{
+    sMatrix4x3 varC;
+
+    const sNPCE8& r13 = r4->m14_EdgeTask->mE8;
+
+    initMatrixToIdentity(&varC);
+    rotateMatrixShiftedY(r13.m24_stepRotation[1] + r13.mC_rotation[1], &varC);
+    rotateMatrixShiftedX(r13.m24_stepRotation[0] + r13.mC_rotation[0], &varC);
+    scaleMatrixRow2(-r4->m24_distance / 2, &varC);
+
+    sVec3_FP var0;
+    var0[0] = varC.matrix[2] + r4->m18_position[0];
+    var0[1] = varC.matrix[6] + r4->m18_position[1];
+    var0[2] = varC.matrix[10] + r4->m18_position[2];
+
+    updateCameraTarget(r4, var0);
+}
+
+void cameraFollowMode0Bis(sMainLogic* r14)
+{
+    sEdgeTask* r4_edge = r14->m14_EdgeTask;
+    sNPCE8* r13_npcData = &r4_edge->mE8;
+
+    if (r4_edge->mC & 4)
+    {
+        assert(0);
+    }
+
+    const sVec2_FP& cameraParam = cameraParams[r14->m1];
+    if ((MTH_Mul(0x151EB, cameraParam[0]) < r14->m24_distance) && !(r14->m4_flags &0x10000))
+    {
+        if (!(r4_edge->mC & 4))
+        {
+            //06055EBE
+            (*r14->m74.m30_pPosition)[0] += r14->m74.m58[0];
+        }
+
+        (*r14->m74.m30_pPosition)[1] += r14->m74.m58[1];
+        (*r14->m74.m30_pPosition)[2] += r14->m74.m58[2];
+    }
+
+    //6055EE4
+    sVec3_FP var4 = r14->m18_position - r14->m5C_position;
+    r14->m24_distance = sqrt_F(MTH_Product3d_FP(var4, var4));
+
+    generateCameraMatrixSub1(var4, r14->m68_rotation);
+
+    s32 r4 = atan2_FP(0x174, r14->m24_distance);
+    if (r4 > 0x1555555)
+    {
+        r4 = 1555555;
+    }
+
+    fixedPoint r5 = cameraParam[1] - r14->m68_rotation[0];
+    fixedPoint r6 = r5.normalized();
+
+    r5 = -r4;
+    if (r6 > r4)
+    {
+        r6 = r4;
+    }
+
+    if (r6 < r5)
+    {
+        r6 = r5;
+    }
+
+    r14->m68_rotation[0] += r6;
+
+    fixedPoint r3 = r14->m68_rotation[0];
+    if (r3 > 0x13E93E9)
+    {
+        r14->m68_rotation[0] = 0x13E93E9;
+    }
+    if (r3 < -0x13E93E9)
+    {
+        r14->m68_rotation[0] = -0x13E93E9;
+    }
+
+    r6 = r13_npcData->mC_rotation[1] + r14->m30 - r14->m68_rotation[1];
+    r6 = r6.normalized();
+
+    if(((r6 < 0x71C71C7) && (r6 > -0x71C71C7)) || (r13_npcData->m54_oldPosition == r13_npcData->m0_position))
+    {
+        // 6055FFA
+        if (r6 > r4)
+            r6 = r4;
+        if (r6 < r5)
+            r6 = r5;
+
+        r14->m68_rotation[1] += r6;
+    }
+
+    // 605600E
+    r4 = MTH_Mul(cameraParam[0] - r14->m24_distance, 0x3333);
+    if (r4 > 0x599)
+        r4 = 0x599;
+    if (r4 < -0x599)
+        r4 = -0x599;
+
+    r14->m24_distance += r4;
+
+    fixedPoint r13;
+    if (r14->m24_distance >= cameraParam[0])
+    {
+        r13 = 0xCCCC;
+    }
+    else
+    {
+        r13 = setDividend(r14->m24_distance - 0x1000, 0xCCCC, cameraParam[0] - 0x1000);
+        if (r13 < 0)
+            r13 = 0;
+    }
+
+    //6056078
+    sMatrix4x3 var10;
+    initMatrixToIdentity(&var10);
+    rotateMatrixShiftedY(r14->m68_rotation[1], &var10);
+    rotateMatrixShiftedX(r14->m68_rotation[0], &var10);
+    scaleMatrixRow2(r14->m24_distance, &var10);
+
+    r14->m5C_position[0] = var10.matrix[2] + r14->m18_position[0];
+    r14->m5C_position[1] = var10.matrix[6] + r14->m18_position[1];
+    r14->m5C_position[2] = var10.matrix[10] + r14->m18_position[2];
+
+    r14->m38_cameraPosition[0] = r14->m5C_position[0] + MTH_Mul(r14->m38_cameraPosition[0] - r14->m5C_position[0], r13);
+    r14->m38_cameraPosition[1] = r14->m5C_position[1] + MTH_Mul(r14->m38_cameraPosition[1] - r14->m5C_position[1], r13);
+    r14->m38_cameraPosition[2] = r14->m5C_position[2] + MTH_Mul(r14->m38_cameraPosition[2] - r14->m5C_position[2], r13);
+
+    EdgeUpdateSub0(&r14->m74);
+    mainLogicUpdateSub5(r14);
+}
+
+void mainLogicUpdateSub3()
+{
+    if (twnMainLogicTask->m14_EdgeTask == nullptr)
+        return;
+
+    s32 r5 = npcData0.mFC & 0x10;
+
+    switch (twnMainLogicTask->m2_cameraFollowMode)
+    {
+    case 0:
+        if (r5)
+        {
+            assert(0);
+        }
+        else
+        {
+            twnMainLogicTask->m10 = &cameraFollowMode0Bis;
+        }
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    FunctionUnimplemented();
+}
 
 
 p_workArea startMainLogic(p_workArea pParent)
@@ -737,7 +1032,7 @@ p_workArea overlayStart_TWN_RUIN(p_workArea pUntypedThis, u32 arg)
 
     sEdgeTask* pEdgeTask = startEdgeTask(gTWN_RUIN->getSaturnPtr(0x605E990));
 
-    twnEdgeVar0 = &pEdgeTask->m84.m8;
+    npcData0.m160_pEdgePosition = &pEdgeTask->m84.m8_position;
 
     startMainLogic(pThis);
 
@@ -960,7 +1255,7 @@ void updateEdgePosition(sNPC* r4)
     updateEdgeControls(r12);
     updateEdgePositionSub1(r12);
 
-    *r4->m84.m30_pPosition += r4->mDC;
+    *r4->m84.m30_pPosition += r4->m84.m58;
     if (r4->m84.m44 & 4)
     {
         assert(0);

@@ -1455,7 +1455,7 @@ void fieldPaletteTaskInitSub0()
         m44_CCEN, 1,
         m41, 1,
         m40_CAOS, 7,
-        m9, 1,
+        m9_SCC, 1,
         m45, 16,
         m21, 1,
         m0_END,
@@ -1653,7 +1653,7 @@ void dragonFieldTaskUpdateSub5Sub2(s_fieldOverlaySubTaskWorkArea* r4, sFieldCame
     sVec3_FP var18;
     var18 = *r4->m2E4[4].m10_pPosition2 - *r4->m2E4[4].mC_pPosition;
 
-    fixedPoint dummy[2];
+    sVec2_FP dummy;
     generateCameraMatrixSub1(var18, dummy);
 
     r5->mC_rotation[0] = r5->m5C[0] + dummy[0];
@@ -3742,14 +3742,14 @@ void fieldOverlaySubTaskInitSub2Sub1Sub2(sFieldCameraStatus* r14, s_dragonTaskWo
 
 void fieldOverlaySubTaskInitSub2Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkArea* r12)
 {
-    fixedPoint stack_0[2];
+    sVec2_FP var0;
     sVec3_FP stack_8;
 
     stack_8[0] = -r12->m88_matrix.matrix[2];
     stack_8[1] = -r12->m88_matrix.matrix[6];
     stack_8[2] = -r12->m88_matrix.matrix[10];
 
-    generateCameraMatrixSub1(stack_8, stack_0);
+    generateCameraMatrixSub1(stack_8, var0);
 
     fieldOverlaySubTaskInitSub2Sub1Sub1(r14, r12);
 
@@ -3764,7 +3764,7 @@ void fieldOverlaySubTaskInitSub2Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkAr
 
     if (r14->m7C & 2)
     {
-        r14->mC_rotation[1] = stack_0[1];
+        r14->mC_rotation[1] = var0[1];
     }
 
     if (r14->m7C & 4)
@@ -3781,14 +3781,14 @@ void fieldOverlaySubTaskInitSub2Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkAr
 
 void fieldOverlaySubTaskInitSub2Sub1(sFieldCameraStatus* r14, s_dragonTaskWorkArea* r12)
 {
-    fixedPoint stack_0[2];
+    sVec2_FP var0;
     sVec3_FP stack_8;
 
     stack_8[0] = -r12->m88_matrix.matrix[2];
     stack_8[1] = -r12->m88_matrix.matrix[6];
     stack_8[2] = -r12->m88_matrix.matrix[10];
 
-    generateCameraMatrixSub1(stack_8, stack_0);
+    generateCameraMatrixSub1(stack_8, var0);
 
     fieldOverlaySubTaskInitSub2Sub1Sub1(r14, r12);
 
@@ -3813,7 +3813,7 @@ void fieldOverlaySubTaskInitSub2Sub1(sFieldCameraStatus* r14, s_dragonTaskWorkAr
 
     if (r14->m7C & 2)
     {
-        r14->mC_rotation[1] = interpolateRotation(r14->mC_rotation[1], stack_0[1], 0x2000, 0x222222, 0);
+        r14->mC_rotation[1] = interpolateRotation(r14->mC_rotation[1], var0[1], 0x2000, 0x222222, 0);
     }
 
     if ((r14->m7C & 4) == 0)
@@ -5118,8 +5118,8 @@ void dragonLeaveArea(s_dragonTaskWorkArea* r14)
     var_8[1] = 0;
     var_8[2] = r12->mC[2] - r14->m8_pos[2];
 
-    fixedPoint var_0[2];
-    generateCameraMatrixSub1(var_8, var_0);
+    sVec2_FP var0;
+    generateCameraMatrixSub1(var_8, var0);
 
     // update yaw
     s32 tempRotX = r14->m3C[0] - r14->m20_angle[0];
@@ -5818,8 +5818,8 @@ void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4)
         if (pDragonTask->m1D0_cameraScript)
         {
             sVec3_FP r15_8 = pDragonTask->m8_pos - pDragonTask->m1D0_cameraScript->m24_pos2;
-            fixedPoint r15[2];
 
+            sVec2_FP r15;
             generateCameraMatrixSub1(r15_8, r15);
 
             r4->mC_rotation[0] = r15[0];
