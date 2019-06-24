@@ -124,7 +124,7 @@ struct sEnvironmentTask : public s_workAreaTemplateWithArgWithCopy<sEnvironmentT
                     r14 = readSaturnEA(pThis->m8 + 0x10);
                     if (r14.m_offset)
                     {
-                        FunctionUnimplemented("Town cell billboards");
+                        FunctionUnimplemented();
                     }
                 }
             }
