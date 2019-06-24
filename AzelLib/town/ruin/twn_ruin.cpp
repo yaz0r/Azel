@@ -335,9 +335,9 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
             if (r4)
             {
                 //0x605A1D0
-                if (pThis->m2C != 1)
+                if (pThis->m2C_currentAnimation != 1)
                 {
-                    pThis->m2C = 1;
+                    pThis->m2C_currentAnimation = 1;
                     sSaturnPtr var0 = pThis->m30 + 4;
                     u8* buffer;
                     if (readSaturnU16(var0))
@@ -356,10 +356,23 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
             else
             {
                 //0x605A206
-                if (pThis->m2C)
+                if (pThis->m2C_currentAnimation)
                 {
                     //0x605A20C
-                    assert(0);
+                    pThis->m2C_currentAnimation = 0;
+                    sSaturnPtr var0 = pThis->m30;
+                    u8* buffer;
+                    if (readSaturnU16(var0))
+                    {
+                        buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                    }
+                    else
+                    {
+                        buffer = pThis->m0_dramAllocation;
+                    }
+
+                    playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
+
                 }
 
                 r12 = 1;
@@ -393,9 +406,10 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         rotateCurrentMatrixShiftedX(pThis->mE8.mC_rotation[0]);
         rotateCurrentMatrixShiftedY(0x8000000);
 
+        // draw the shadow
         if (pThis->mF & 0x80)
         {
-            assert(0);
+            addObjectToDrawList(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation, READ_BE_U32(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation + readSaturnU16(pThis->m30 + 2)));
         }
 
         if (pThis->m34_3dModel.m48_poseDataInterpolation.size())
@@ -958,8 +972,6 @@ void mainLogicUpdateSub3()
         assert(0);
         break;
     }
-
-    FunctionUnimplemented();
 }
 
 
@@ -1264,7 +1276,23 @@ void updateEdgePosition(sNPC* r4)
         //605B954
         if ((r13->m30_stepTranslation[1] < -0x199) || (r13->m30_stepTranslation[1] > 0))
         {
-            FunctionUnimplemented();
+            // enable shadow
+            r12->mF |= 0x80;
+            if (r12->m2C_currentAnimation != 4)
+            {
+                r12->m2C_currentAnimation = 4;
+                u8* buffer;
+                if (readSaturnU16(r12->m30 + 0x10) == 0)
+                {
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                }
+                else
+                {
+                    buffer = r12->m0_dramAllocation;
+                }
+
+                playAnimationGeneric(&r12->m34_3dModel, buffer + READ_BE_U32(buffer + readSaturnU16(r12->m30 + 0x10 + 2)), 5);
+            }
         }
     }
     //605B9AA

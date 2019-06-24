@@ -35,14 +35,14 @@ struct sNPC
     s8 mC;
     s8 mD;
     s8 mE;
-    s8 mF;
+    s8 mF; // 0x80 = enable shadow
     sSaturnPtr m10_InitPtr;
     void (*m14_updateFunction)(sNPC*);
     sSaturnPtr m18;
     s32 m1C;
     sVec2_FP m20;
     fixedPoint m28;
-    fixedPoint m2C;
+    fixedPoint m2C_currentAnimation;
     sSaturnPtr m30;
     s_3dModel m34_3dModel;
     sMainLogic_74 m84;
