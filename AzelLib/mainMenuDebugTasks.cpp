@@ -4380,7 +4380,7 @@ p_workArea loadField(p_workArea r4, s32 r5)
 
 p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     NULL,
-    NULL,//loadTown,
+    loadTown,
     NULL,
     loadField,
     NULL,

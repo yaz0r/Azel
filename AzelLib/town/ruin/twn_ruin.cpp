@@ -125,24 +125,22 @@ void applyAnimation(u8* base, u32 offset, std::vector<sPoseData>::iterator& pose
 
 void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 {
-    std::vector<sPoseData>::iterator r14 = pModel->m2C_poseData.begin();
+    std::vector<sPoseData>::iterator r14_pose = pModel->m2C_poseData.begin();
     u8* r12 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
     r12 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
 
-    return applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r12 + 4), r14);
-
     pushCurrentMatrix();
     {
-        translateCurrentMatrix(&r14->m0_translation);
-        rotateCurrentMatrixZYX(&r14->mC_rotation);
+        translateCurrentMatrix(&r14_pose->m0_translation);
+        rotateCurrentMatrixZYX(&r14_pose->mC_rotation);
 
         pushCurrentMatrix();
         {
-            r14++;
-            translateCurrentMatrix(&r14->m0_translation);
-            rotateCurrentMatrixShiftedZ(r14->mC_rotation[2]);
-            rotateCurrentMatrixShiftedY(r14->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0x4CCC));
-            rotateCurrentMatrixShiftedX(r14->mC_rotation[0]);
+            r14_pose++;
+            translateCurrentMatrix(&r14_pose->m0_translation);
+            rotateCurrentMatrixShiftedZ(r14_pose->mC_rotation[2]);
+            rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0x4CCC));
+            rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
             if (READ_BE_U32(r12))
             {
@@ -152,11 +150,11 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
             u8* r13 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
             pushCurrentMatrix();
             {
-                r14++;
-                translateCurrentMatrix(&r14->m0_translation);
-                rotateCurrentMatrixShiftedZ(r14->mC_rotation[2]);
-                rotateCurrentMatrixShiftedY(r14->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0xB333));
-                rotateCurrentMatrixShiftedX(r14->mC_rotation[0]);
+                r14_pose++;
+                translateCurrentMatrix(&r14_pose->m0_translation);
+                rotateCurrentMatrixShiftedZ(r14_pose->mC_rotation[2]);
+                rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0xB333));
+                rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
                 if (READ_BE_U32(r13))
                 {
@@ -165,26 +163,27 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 
                 if (READ_BE_U32(r13 + 4))
                 {
-                    r14++;
-                    applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r13 + 4), r14);
+                    r14_pose++;
+                    applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r13 + 4), r14_pose);
                 }
             }
             popMatrix();
 
             if (READ_BE_U32(r13 + 8))
             {
-                r14++;
-                applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r13 + 8), r14);
+                r14_pose++;
+                applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r13 + 8), r14_pose);
             }
         }
         popMatrix();
 
         if (READ_BE_U32(r12 + 8))
         {
-            r14++;
-            applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r12 + 8), r14);
+            r14_pose++;
+            applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r12 + 8), r14_pose);
         }
     }
+    popMatrix();
 }
 
 
