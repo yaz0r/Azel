@@ -34,5 +34,6 @@ struct sResData
 };
 extern sResData resData;
 
+s32 setSomethingInNpc0(s32 arg0, s32 arg1);
 void startScriptTask(p_workArea r4);
 sNPC* getNpcDataByIndex(s32 r4);

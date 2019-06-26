@@ -412,3 +412,4 @@ struct sProcessed3dModel
 };
 
 extern p_workArea(*gFieldOverlayFunction)(p_workArea workArea, u32 arg);
+fixedPoint distanceSquareBetween2Points(const sVec3_FP& r4_vertice0, const sVec3_FP& r5_vertice1);

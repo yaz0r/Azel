@@ -3,6 +3,8 @@
 #include "townScript.h"
 #include "town/ruin/twn_ruin.h"
 
+p_workArea townVar0 = nullptr;
+
 u8 townBuffer[0xB0000];
 
 townDebugTask2Function* townDebugTask2 = nullptr;
@@ -406,6 +408,11 @@ void initNPCSub0(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6, 
     initNPCSub0Sub2(buffer, pEnvironemntSetupEA, r6, r7, stackArg0);
 }
 
+struct sNullTask : public s_workAreaTemplate<sNullTask>
+{
+    //size: 0x0
+};
+
 s32 initNPC(s32 arg)
 {
     sSaturnPtr r13 = npcData0.m60 + arg * 12;
@@ -427,8 +434,35 @@ s32 initNPC(s32 arg)
 
     initNPCSub0(dramAllocatorEnd[readSaturnS8(r13)].mC_buffer, readSaturnEA(r12_environmentSetup + 8), readSaturnU8(r12_environmentSetup), readSaturnU8(r12_environmentSetup + 1), readSaturnFP(r12_environmentSetup + 4));
 
-    FunctionUnimplemented();
+    if (townVar0)
+    {
+        townVar0->getTask()->markFinished();
+    }
+
+    townVar0 = createSubTaskFromFunction<sNullTask>(currentResTask, nullptr);
+
+    npcData0.mF0 = 0;
+
+    if (npcData0.mF0) // TODO: what, how can it not be 0?
+    {
+        npcData0.mFC |= 0x10;
+    }
+    else
+    {
+        npcData0.mFC &= ~0x10;
+    }
+
+    setSomethingInNpc0(0, 1);
+    setSomethingInNpc0(1, 2);
     return 0;
+}
+
+s32 initNPCFromStruct(s32)
+{
+    if (gTownGrid.m144 == nullptr)
+        return 0;
+
+    assert(0);
 }
 
 void mainLogicInitSub0(sMainLogic_74* r4, s32 r5)

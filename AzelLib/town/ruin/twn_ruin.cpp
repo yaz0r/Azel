@@ -17,8 +17,6 @@ TWN_RUIN_data* gTWN_RUIN = NULL;
 
 u8 townVDP1Buffer[0x63800];
 
-s32 townVar0;
-
 const char* listOfFilesToLoad[] = {
     "COMMON3.MCB",
     "COMMON3.CGB",
@@ -82,7 +80,7 @@ void registerNpcs(sSaturnPtr r4_objectTable, sSaturnPtr r5_script, s32 r6)
         npcData0.m70_npcPointerArray[i] = nullptr;
     }
 
-    townVar0 = 0;
+    townVar0 = nullptr;
 
     npcData0.mFC |= 0xF;
 
@@ -212,6 +210,16 @@ void EdgeUpdateSub0(sMainLogic_74* r14)
     r14->m8_position += *r14->m30_pPosition;
 }
 
+void stepNPCForward(sNPCE8* pThis)
+{
+    sMatrix4x3 varC;
+    initMatrixToIdentity(&varC);
+    rotateMatrixShiftedY(pThis->mC_rotation[1], &varC);
+    rotateMatrixShiftedX(pThis->mC_rotation[0], &varC);
+    transformVec(pThis->m30_stepTranslation, pThis->m18_stepTranslationInWorld, varC);
+    pThis->m0_position += pThis->m18_stepTranslationInWorld;
+}
+
 struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPtr>, sNPC
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -299,6 +307,72 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         }
     }
 
+    static void updateEdgeSub1(sEdgeTask* pThis)
+    {
+        if (pThis->mE)
+        {
+            pThis->mC &= ~2;
+        }
+    }
+
+    static void updateEdgeSub2(sEdgeTask* pThis)
+    {
+        sNPCE8* r13 = &pThis->mE8;
+        if (pThis->mF & 0x2)
+        {
+            //605ACC6
+            fixedPoint r4 = MTH_Mul(0x2D82D8, pThis->m1C);
+            fixedPoint r6 = -r4;
+
+            if (pThis->mF & 0x4)
+            {
+                assert(0);
+            }
+            else
+            {
+                assert(0);
+            }
+        }
+        else
+        {
+            //0605AE18
+            if (pThis->mF & 1)
+            {
+                fixedPoint r8 = FP_Pow2(r13->m30_stepTranslation[2]);
+                if (distanceSquareBetween2Points(r13->m3C_targetPosition, r13->m0_position) <= r8)
+                {
+                    // reached destination
+                    r13->m0_position = r13->m3C_targetPosition;
+                    pThis->mF &= 1;
+                }
+                else
+                {
+                    fixedPoint r4_angleDifferenceToTarget = atan2_FP(r13->m0_position[0] - r13->m3C_targetPosition[0], r13->m0_position[2] - r13->m3C_targetPosition[2]) - r13->mC_rotation[1];
+                    r4_angleDifferenceToTarget = r4_angleDifferenceToTarget.normalized();
+
+                    if (r4_angleDifferenceToTarget >= 0)
+                    {
+                        if (r4_angleDifferenceToTarget > 0x2D82D8)
+                            r4_angleDifferenceToTarget = 0x2D82D8;
+                    }
+                    else
+                    {
+                        if (r4_angleDifferenceToTarget < -0x2D82D8)
+                            r4_angleDifferenceToTarget = -0x2D82D8;
+                    }
+
+                    r13->mC_rotation[1] += r4_angleDifferenceToTarget;
+                    stepNPCForward(&pThis->mE8);
+                }
+            }
+            else
+            {
+                //605AECC
+                pThis->mF &= ~4;
+            }
+        }
+    }
+
     static void Update(sEdgeTask* pThis)
     {
         sNPCE8* r12 = &pThis->mE8;
@@ -307,7 +381,23 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
 
         if (pThis->mC)
         {
-            assert(0);
+            //auto walk
+            if (!(pThis->mF & 2) && !(pThis->mF & 8))
+            {
+                pThis->m20[1] = MTH_Mul(pThis->m20[1], 0xB333);
+            }
+
+            if (pThis->mC & 2)
+            {
+                //0x0605A000
+                updateEdgeSub1(pThis);
+            }
+
+            if (pThis->mC & 4)
+            {
+                //0x0605A00A
+                updateEdgeSub2(pThis);
+            }
         }
         else
         {
@@ -429,10 +519,10 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         FunctionUnimplemented();
     }
 
-    s16 m14C;
+    s16 m14C_inputFlags;
     s8 m14E;
-    s32 m150;
-    s32 m154;
+    s32 m150_inputX;
+    s32 m154_inputY;
     s8 m178;
     s8 m179;
     s8 m17A;
@@ -709,6 +799,7 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     sEdgeTask* m14_EdgeTask;
     sVec3_FP m18_position;
     fixedPoint m24_distance;
+    fixedPoint m2C;
     fixedPoint m30;
     sVec3_FP m38_cameraPosition;
     sVec3_FP m44_cameraTarget;
@@ -841,9 +932,26 @@ void cameraFollowMode0Bis(sMainLogic* r14)
 
     if (r4_edge->mC & 4)
     {
-        assert(0);
+        r14->m2C = 0;
+        r14->m30 = 0;
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][11])
+        {
+            r14->m30 = 0x4000000;
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][15])
+            {
+                r14->m30 = 0x8000000;
+            }
+        }
+        else
+        {
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][15])
+            {
+                r14->m30 = 0xC000000;
+            }
+        }
     }
 
+    //6055E90
     const sVec2_FP& cameraParam = cameraParams[r14->m1];
     if ((MTH_Mul(0x151EB, cameraParam[0]) < r14->m24_distance) && !(r14->m4_flags &0x10000))
     {
@@ -954,12 +1062,12 @@ void mainLogicUpdateSub3()
     if (twnMainLogicTask->m14_EdgeTask == nullptr)
         return;
 
-    s32 r5 = npcData0.mFC & 0x10;
+    s32 r5_inLcsMode = npcData0.mFC & 0x10;
 
     switch (twnMainLogicTask->m2_cameraFollowMode)
     {
     case 0:
-        if (r5)
+        if (r5_inLcsMode)
         {
             assert(0);
         }
@@ -1076,6 +1184,72 @@ s32 hasLoadingCompleted()
     return 1;
 }
 
+void scriptFunction_6057058_sub0Sub0()
+{
+    sNPCE8* r13 = &twnMainLogicTask->m14_EdgeTask->mE8;
+    twnMainLogicTask->m18_position = r13->m0_position;
+
+    sMatrix4x3 var0;
+    initMatrixToIdentity(&var0);
+    translateMatrix(twnMainLogicTask->m18_position, &var0);
+    rotateMatrixShiftedY(r13->mC_rotation[1], &var0);
+    rotateMatrixShiftedX(r13->mC_rotation[0], &var0);
+
+    twnMainLogicTask->m5C_position[0] = var0.matrix[3] + MTH_Mul(var0.matrix[2], 0x199);
+    twnMainLogicTask->m5C_position[1] = var0.matrix[7] + MTH_Mul(var0.matrix[6], 0x199);
+    twnMainLogicTask->m5C_position[2] = var0.matrix[11] + MTH_Mul(var0.matrix[10], 0x199);
+
+    twnMainLogicTask->m38_cameraPosition = twnMainLogicTask->m5C_position;
+    twnMainLogicTask->m50_upVector = twnMainLogicTask->m5C_position;
+    twnMainLogicTask->m50_upVector[1] += 0x10000;
+
+    twnMainLogicTask->m44_cameraTarget[0] = var0.matrix[3] + MTH_Mul(var0.matrix[2], -0x1000);
+    twnMainLogicTask->m44_cameraTarget[1] = var0.matrix[7] + MTH_Mul(var0.matrix[6], -0x1000);
+    twnMainLogicTask->m44_cameraTarget[2] = var0.matrix[11] + MTH_Mul(var0.matrix[10], -0x1000);
+}
+
+void scriptFunction_6057058_sub0()
+{
+    twnMainLogicTask->m_DrawMethod = sMainLogic::Draw;
+    scriptFunction_6057058_sub0Sub0();
+    twnMainLogicTask->m2_cameraFollowMode = 0;
+    mainLogicUpdateSub3();
+}
+
+void setupNPCWalkInZDirection(s32 r4_npcIndex, s32 r5_zDirection, s32 r6_distance)
+{
+    sNPC* r13 = getNpcDataByIndex(r4_npcIndex);
+    sNPCE8* r14 = &r13->mE8;
+    r14->m30_stepTranslation[0] = 0;
+    r14->m30_stepTranslation[1] = 0;
+    r14->m30_stepTranslation[2] = -r5_zDirection;
+
+    sMatrix4x3 var10;
+    initMatrixToIdentity(&var10);
+    rotateMatrixShiftedY(r14->mC_rotation[1], &var10);
+    rotateMatrixShiftedX(r14->mC_rotation[0], &var10);
+    sVec3_FP var4;
+    transformVec(r14->m30_stepTranslation, var4, var10);
+
+    r14->m3C_targetPosition[0] = r14->m0_position[0] + var4[0] * r6_distance;
+    r14->m3C_targetPosition[1] = r14->m0_position[1] + var4[1] * r6_distance;
+    r14->m3C_targetPosition[2] = r14->m0_position[2] + var4[2] * r6_distance;
+
+    r14->m48_targetRotation = r14->mC_rotation;
+
+    r13->mF &= ~0x6;
+    r13->mF |= 1;
+    r13->mC |= 4;
+}
+
+s32 scriptFunction_6057058()
+{
+    scriptFunction_6057058_sub0();
+    setupNPCWalkInZDirection(0, 227, 36);
+
+    return 0;
+}
+
 s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr)
 {
     assert(ptr.m_file == gTWN_RUIN);
@@ -1085,7 +1259,7 @@ s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr)
     case 0x6057570: //hasLoadingCompleted
         return hasLoadingCompleted();
     case 0x6057058:
-        PDS_Logger.AddLog("Unimplemented TWN_RUIN native function: 0x%08X\n", ptr.m_offset);
+        return scriptFunction_6057058();
         break;
     default:
         assert(0);
@@ -1103,9 +1277,6 @@ s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr, s32 arg0)
         return TwnFadeOut(arg0);
     case 0x0605c7c4:
         return TwnFadeIn(arg0);
-    case 0x6014DF2:
-        PDS_Logger.AddLog("Unimplemented TWN_RUIN native function: 0x%08X\n", ptr.m_offset);
-        break;
     default:
         assert(0);
     }
@@ -1136,7 +1307,7 @@ void updateEdgeControls(sEdgeTask* r4)
     s32 r6 = 0;
     if (npcData0.mFC & 2)
     {
-        r4->m14C |= 0xC0;
+        r4->m14C_inputFlags |= 0xC0;
     }
     else
     {
@@ -1168,23 +1339,23 @@ void updateEdgeControls(sEdgeTask* r4)
         }
     }
 
-    r4->m150 = r5;
-    r4->m154 = r6;
+    r4->m150_inputX = r5;
+    r4->m154_inputY = r6;
 
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][0])
     {
-        r4->m14C |= 2;
+        r4->m14C_inputFlags |= 2;
     }
 
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][1])
     {
-        r4->m14C |= 1;
+        r4->m14C_inputFlags |= 1;
     }
 }
 
 void updateEdgePositionSub1(sEdgeTask* r4)
 {
-    if (!(r4->m14C & 0x40))
+    if (!(r4->m14C_inputFlags & 0x40))
     {
         FunctionUnimplemented();
     }
@@ -1194,7 +1365,7 @@ void updateEdgePositionSub1(sEdgeTask* r4)
     }
 
     //605BDAE
-    if (r4->m14C & 0x80)
+    if (r4->m14C_inputFlags & 0x80)
     {
         r4->mE8.m30_stepTranslation[0] = 0;
         r4->mE8.m30_stepTranslation[2] = 0;
@@ -1205,8 +1376,8 @@ void updateEdgePositionSub1(sEdgeTask* r4)
     }
 
     //605BE7E
-    r4->m14C &= 1;
-    if (r4->m14C)
+    r4->m14C_inputFlags &= 1;
+    if (r4->m14C_inputFlags)
     {
         assert(0);
     }
@@ -1297,7 +1468,8 @@ void updateEdgePosition(sNPC* r4)
     }
     //605B9AA
     // gravity?
-    r13->m30_stepTranslation[1] += -0x56;
+    PDS_warningOnce("Disabled gravity on edge");
+    //r13->m30_stepTranslation[1] += -0x56;
     if (r13->m30_stepTranslation[1] < -0x800)
     {
         r13->m30_stepTranslation[1] = -0x800;
@@ -1324,12 +1496,11 @@ void updateEdgePosition(sNPC* r4)
     }
 
     //605BBD6
-    transformVec(r13->m30_stepTranslation, r13->m18, var10);
+    transformVec(r13->m30_stepTranslation, r13->m18_stepTranslationInWorld, var10);
 
-    PDS_warningOnce("Disable Edge position update!");
-    //r13->m0_position += r13->m18;
+    r13->m0_position += r13->m18_stepTranslationInWorld;
 
     updateEdgePositionSub3(r12);
 
-    r12->m14C = 0;
+    r12->m14C_inputFlags = 0;
 }

@@ -4,9 +4,11 @@ struct sNPCE8
 {
     sVec3_FP m0_position;
     sVec3_FP mC_rotation;
-    sVec3_FP m18;
+    sVec3_FP m18_stepTranslationInWorld;
     sVec3_FP m24_stepRotation;
     sVec3_FP m30_stepTranslation;
+    sVec3_FP m3C_targetPosition;
+    sVec3_FP m48_targetRotation;
     sVec3_FP m54_oldPosition;
 };
 
@@ -122,5 +124,8 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
 
 npcFileDeleter* allocateNPC(struct sScriptTask* r4, s32 r5);
 
+extern p_workArea townVar0;
+
 s32 initNPC(s32 arg);
+s32 initNPCFromStruct(s32);
 void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y);

@@ -148,6 +148,7 @@ sKernelScriptFunctions gKernelScriptFunctions =
     // one arg
     {
         {0x600CCB4, &initNPC},
+        {0x6014DF2, &initNPCFromStruct}
     },
     // two arg
     {
