@@ -1613,7 +1613,27 @@ bool azelSdl2_EndFrame()
 
     checkGL();
     
-    PDS_Logger.Draw("Logs");
+    for (int i = 0; i < eLogCategories::log_max; i++)
+    {
+        switch (i)
+        {
+        case eLogCategories::log_default:
+            PDS_Logger[eLogCategories::log_default].Draw("Default log");
+            break;
+        case eLogCategories::log_task:
+            PDS_Logger[eLogCategories::log_task].Draw("Task log");
+            break;
+        case eLogCategories::log_unimlemented:
+            PDS_Logger[eLogCategories::log_unimlemented].Draw("Unimplemented log");
+            break;
+        case eLogCategories::log_warning:
+            PDS_Logger[eLogCategories::log_warning].Draw("Warning log");
+            break;
+        default:
+            assert(0);
+            break;
+        }
+    }
 
     ImGui::Render();
     

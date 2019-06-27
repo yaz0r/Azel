@@ -121,6 +121,33 @@ void applyAnimation(u8* base, u32 offset, std::vector<sPoseData>::iterator& pose
 
 }
 
+void applyAnimation2(u8* base, u32 offset, std::vector<sPoseDataInterpolation>::iterator pose)
+{
+    u8* r13 = base + offset;
+
+    pushCurrentMatrix();
+    {
+        translateCurrentMatrix(&pose->m0_translation);
+        rotateCurrentMatrixZYX(&pose->mC_rotation);
+        if (READ_BE_U32(r13))
+        {
+            addObjectToDrawList(base, READ_BE_U32(r13));
+        }
+        if (READ_BE_U32(r13 + 4))
+        {
+            pose++;
+            applyAnimation2(base, READ_BE_U32(r13 + 4), pose);
+        }
+    }
+    popMatrix();
+    if (READ_BE_U32(r13 + 8))
+    {
+        pose++;
+        applyAnimation2(base, READ_BE_U32(r13 + 8), pose);
+    }
+
+}
+
 void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 {
     std::vector<sPoseData>::iterator r14_pose = pModel->m2C_poseData.begin();
@@ -187,27 +214,85 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 
 void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
 {
-    FunctionUnimplemented();
-    applyEdgeAnimation(pModel, r5);
+    std::vector<sPoseDataInterpolation>::iterator r14_pose = pModel->m48_poseDataInterpolation.begin();
+    u8* r12 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+    r12 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+
+    pushCurrentMatrix();
+    {
+        translateCurrentMatrix(&r14_pose->m0_translation);
+        rotateCurrentMatrixZYX(&r14_pose->mC_rotation);
+
+        pushCurrentMatrix();
+        {
+            r14_pose++;
+            translateCurrentMatrix(&r14_pose->m0_translation);
+            rotateCurrentMatrixShiftedZ(r14_pose->mC_rotation[2]);
+            rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0x4CCC));
+            rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
+
+            if (READ_BE_U32(r12))
+            {
+                addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r12));
+            }
+
+            u8* r13 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+            pushCurrentMatrix();
+            {
+                r14_pose++;
+                translateCurrentMatrix(&r14_pose->m0_translation);
+                rotateCurrentMatrixShiftedZ(r14_pose->mC_rotation[2]);
+                rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0xB333));
+                rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
+
+                if (READ_BE_U32(r13))
+                {
+                    addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r13));
+                }
+
+                if (READ_BE_U32(r13 + 4))
+                {
+                    r14_pose++;
+                    applyAnimation2(pModel->m4_pModelFile, READ_BE_U32(r13 + 4), r14_pose);
+                }
+            }
+            popMatrix();
+
+            if (READ_BE_U32(r13 + 8))
+            {
+                r14_pose++;
+                applyAnimation2(pModel->m4_pModelFile, READ_BE_U32(r13 + 8), r14_pose);
+            }
+        }
+        popMatrix();
+
+        if (READ_BE_U32(r12 + 8))
+        {
+            r14_pose++;
+            applyAnimation2(pModel->m4_pModelFile, READ_BE_U32(r12 + 8), r14_pose);
+        }
+    }
+    popMatrix();
+
 }
 
-void EdgeUpdateSub0(sMainLogic_74* r14)
+void EdgeUpdateSub0(sMainLogic_74* r14_pose)
 {
     if (resData.m4 >= 0x3F)
         return;
 
     sResData1C& r5 = resData.m1C[resData.m4++];
-    r5.m0_pNext = resData.m8_headOfLinkedList[r14->m2C];
-    r5.m4 = r14;
+    r5.m0_pNext = resData.m8_headOfLinkedList[r14_pose->m2C];
+    r5.m4 = r14_pose;
 
-    resData.m8_headOfLinkedList[r14->m2C] = &r5;
+    resData.m8_headOfLinkedList[r14_pose->m2C] = &r5;
 
     sMatrix4x3 var4;
     initMatrixToIdentity(&var4);
-    rotateMatrixYXZ(r14->m34_pRotation, &var4);
-    transformVec(r14->m20, r14->m8_position, var4);
+    rotateMatrixYXZ(r14_pose->m34_pRotation, &var4);
+    transformVec(r14_pose->m20, r14_pose->m8_position, var4);
 
-    r14->m8_position += *r14->m30_pPosition;
+    r14_pose->m8_position += *r14_pose->m30_pPosition;
 }
 
 void stepNPCForward(sNPCE8* pThis)
@@ -265,7 +350,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         pThis->mC = 0;
         pThis->m10_InitPtr = arg;
         pThis->m1C = readSaturnS32(arg + 0x28);
-        pThis->m30 = readSaturnEA(arg + 0x2C);
+        pThis->m30_animationTable = readSaturnEA(arg + 0x2C);
         pThis->mE8.m0_position = readSaturnVec3(arg + 0x8);
         pThis->mE8.mC_rotation = readSaturnVec3(arg + 0x14);
 
@@ -343,7 +428,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
                 {
                     // reached destination
                     r13->m0_position = r13->m3C_targetPosition;
-                    pThis->mF &= 1;
+                    pThis->mF &= ~1;
                 }
                 else
                 {
@@ -368,7 +453,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
             else
             {
                 //605AECC
-                pThis->mF &= ~4;
+                pThis->mC &= ~4;
             }
         }
     }
@@ -419,16 +504,15 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
             sVec3_FP var0 = r12->m0_position - r12->m54_oldPosition;
             var0 *= var0;
             s32 r4 = sqrt_I(var0[0] + var0[1] + var0[2]) * 0x1E1;
-            pThis->m28 += r4;
-
-            s32 r12 = pThis->m28;
+            s32 r12 = pThis->m28 + r4;
+            pThis->m28 = r12 & 0xFFFF;
             if (r4)
             {
                 //0x605A1D0
                 if (pThis->m2C_currentAnimation != 1)
                 {
                     pThis->m2C_currentAnimation = 1;
-                    sSaturnPtr var0 = pThis->m30 + 4;
+                    sSaturnPtr var0 = pThis->m30_animationTable + 4; // walk animation
                     u8* buffer;
                     if (readSaturnU16(var0))
                     {
@@ -450,7 +534,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
                 {
                     //0x605A20C
                     pThis->m2C_currentAnimation = 0;
-                    sSaturnPtr var0 = pThis->m30;
+                    sSaturnPtr var0 = pThis->m30_animationTable; // stand animation
                     u8* buffer;
                     if (readSaturnU16(var0))
                     {
@@ -499,7 +583,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         // draw the shadow
         if (pThis->mF & 0x80)
         {
-            addObjectToDrawList(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation, READ_BE_U32(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation + readSaturnU16(pThis->m30 + 2)));
+            addObjectToDrawList(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation, READ_BE_U32(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation + readSaturnU16(pThis->m30_animationTable + 2)));
         }
 
         if (pThis->m34_3dModel.m48_poseDataInterpolation.size())
@@ -854,14 +938,14 @@ fixedPoint MulVec2(const sVec2_FP& r4, const sVec2_FP& r5)
     return fixedPoint(mac >> 16);
 }
 
-void updateCameraTarget(sMainLogic* r4, const sVec3_FP& r14)
+void updateCameraTarget(sMainLogic* r4, const sVec3_FP& r14_pose)
 {
     // project the point to screen
 
     sVec3_FP var8;
-    var8[0] = transformByMatrixRow0(r14);
-    var8[1] = transformByMatrixRow1(r14);
-    var8[2] = transformByMatrixRow2(r14);
+    var8[0] = transformByMatrixRow0(r14_pose);
+    var8[1] = transformByMatrixRow1(r14_pose);
+    var8[2] = transformByMatrixRow2(r14_pose);
 
     sVec2_FP var0;
     var0[0] = FP_Div(var8[0], var8[2]);
@@ -880,7 +964,7 @@ void updateCameraTarget(sMainLogic* r4, const sVec3_FP& r14)
     // If the projected target point is already at the center of the screen
     if ((MTH_Mul(graphicEngineStatus.m405C.m18, var0[0]) == 0) && (MTH_Mul(graphicEngineStatus.m405C.m18, var0[1]) == 0))
     {
-        r4->m44_cameraTarget = r14;
+        r4->m44_cameraTarget = r14_pose;
         return;
     }
 
@@ -901,9 +985,9 @@ void updateCameraTarget(sMainLogic* r4, const sVec3_FP& r14)
 
     r13 = 0x10000 - r13;
 
-    r4->m44_cameraTarget[0] = r14[0] + MTH_Mul(r4->m44_cameraTarget[0] - r14[0], r13);
-    r4->m44_cameraTarget[1] = r14[1] + MTH_Mul(r4->m44_cameraTarget[1] - r14[1], r13);
-    r4->m44_cameraTarget[2] = r14[2] + MTH_Mul(r4->m44_cameraTarget[2] - r14[2], r13);
+    r4->m44_cameraTarget[0] = r14_pose[0] + MTH_Mul(r4->m44_cameraTarget[0] - r14_pose[0], r13);
+    r4->m44_cameraTarget[1] = r14_pose[1] + MTH_Mul(r4->m44_cameraTarget[1] - r14_pose[1], r13);
+    r4->m44_cameraTarget[2] = r14_pose[2] + MTH_Mul(r4->m44_cameraTarget[2] - r14_pose[2], r13);
 }
 
 void mainLogicUpdateSub5(sMainLogic* r4)
@@ -925,59 +1009,59 @@ void mainLogicUpdateSub5(sMainLogic* r4)
     updateCameraTarget(r4, var0);
 }
 
-void cameraFollowMode0Bis(sMainLogic* r14)
+void cameraFollowMode0Bis(sMainLogic* r14_pose)
 {
-    sEdgeTask* r4_edge = r14->m14_EdgeTask;
+    sEdgeTask* r4_edge = r14_pose->m14_EdgeTask;
     sNPCE8* r13_npcData = &r4_edge->mE8;
 
     if (r4_edge->mC & 4)
     {
-        r14->m2C = 0;
-        r14->m30 = 0;
+        r14_pose->m2C = 0;
+        r14_pose->m30 = 0;
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][11])
         {
-            r14->m30 = 0x4000000;
+            r14_pose->m30 = 0x4000000;
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][15])
             {
-                r14->m30 = 0x8000000;
+                r14_pose->m30 = 0x8000000;
             }
         }
         else
         {
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][15])
             {
-                r14->m30 = 0xC000000;
+                r14_pose->m30 = 0xC000000;
             }
         }
     }
 
     //6055E90
-    const sVec2_FP& cameraParam = cameraParams[r14->m1];
-    if ((MTH_Mul(0x151EB, cameraParam[0]) < r14->m24_distance) && !(r14->m4_flags &0x10000))
+    const sVec2_FP& cameraParam = cameraParams[r14_pose->m1];
+    if ((MTH_Mul(0x151EB, cameraParam[0]) < r14_pose->m24_distance) && !(r14_pose->m4_flags &0x10000))
     {
         if (!(r4_edge->mC & 4))
         {
             //06055EBE
-            (*r14->m74.m30_pPosition)[0] += r14->m74.m58[0];
+            (*r14_pose->m74.m30_pPosition)[0] += r14_pose->m74.m58[0];
         }
 
-        (*r14->m74.m30_pPosition)[1] += r14->m74.m58[1];
-        (*r14->m74.m30_pPosition)[2] += r14->m74.m58[2];
+        (*r14_pose->m74.m30_pPosition)[1] += r14_pose->m74.m58[1];
+        (*r14_pose->m74.m30_pPosition)[2] += r14_pose->m74.m58[2];
     }
 
     //6055EE4
-    sVec3_FP var4 = r14->m18_position - r14->m5C_position;
-    r14->m24_distance = sqrt_F(MTH_Product3d_FP(var4, var4));
+    sVec3_FP var4 = r14_pose->m18_position - r14_pose->m5C_position;
+    r14_pose->m24_distance = sqrt_F(MTH_Product3d_FP(var4, var4));
 
-    generateCameraMatrixSub1(var4, r14->m68_rotation);
+    generateCameraMatrixSub1(var4, r14_pose->m68_rotation);
 
-    s32 r4 = atan2_FP(0x174, r14->m24_distance);
+    s32 r4 = atan2_FP(0x174, r14_pose->m24_distance);
     if (r4 > 0x1555555)
     {
         r4 = 1555555;
     }
 
-    fixedPoint r5 = cameraParam[1] - r14->m68_rotation[0];
+    fixedPoint r5 = cameraParam[1] - r14_pose->m68_rotation[0];
     fixedPoint r6 = r5.normalized();
 
     r5 = -r4;
@@ -991,19 +1075,19 @@ void cameraFollowMode0Bis(sMainLogic* r14)
         r6 = r5;
     }
 
-    r14->m68_rotation[0] += r6;
+    r14_pose->m68_rotation[0] += r6;
 
-    fixedPoint r3 = r14->m68_rotation[0];
+    fixedPoint r3 = r14_pose->m68_rotation[0];
     if (r3 > 0x13E93E9)
     {
-        r14->m68_rotation[0] = 0x13E93E9;
+        r14_pose->m68_rotation[0] = 0x13E93E9;
     }
     if (r3 < -0x13E93E9)
     {
-        r14->m68_rotation[0] = -0x13E93E9;
+        r14_pose->m68_rotation[0] = -0x13E93E9;
     }
 
-    r6 = r13_npcData->mC_rotation[1] + r14->m30 - r14->m68_rotation[1];
+    r6 = r13_npcData->mC_rotation[1] + r14_pose->m30 - r14_pose->m68_rotation[1];
     r6 = r6.normalized();
 
     if(((r6 < 0x71C71C7) && (r6 > -0x71C71C7)) || (r13_npcData->m54_oldPosition == r13_npcData->m0_position))
@@ -1014,26 +1098,26 @@ void cameraFollowMode0Bis(sMainLogic* r14)
         if (r6 < r5)
             r6 = r5;
 
-        r14->m68_rotation[1] += r6;
+        r14_pose->m68_rotation[1] += r6;
     }
 
     // 605600E
-    r4 = MTH_Mul(cameraParam[0] - r14->m24_distance, 0x3333);
+    r4 = MTH_Mul(cameraParam[0] - r14_pose->m24_distance, 0x3333);
     if (r4 > 0x599)
         r4 = 0x599;
     if (r4 < -0x599)
         r4 = -0x599;
 
-    r14->m24_distance += r4;
+    r14_pose->m24_distance += r4;
 
     fixedPoint r13;
-    if (r14->m24_distance >= cameraParam[0])
+    if (r14_pose->m24_distance >= cameraParam[0])
     {
         r13 = 0xCCCC;
     }
     else
     {
-        r13 = setDividend(r14->m24_distance - 0x1000, 0xCCCC, cameraParam[0] - 0x1000);
+        r13 = setDividend(r14_pose->m24_distance - 0x1000, 0xCCCC, cameraParam[0] - 0x1000);
         if (r13 < 0)
             r13 = 0;
     }
@@ -1041,20 +1125,20 @@ void cameraFollowMode0Bis(sMainLogic* r14)
     //6056078
     sMatrix4x3 var10;
     initMatrixToIdentity(&var10);
-    rotateMatrixShiftedY(r14->m68_rotation[1], &var10);
-    rotateMatrixShiftedX(r14->m68_rotation[0], &var10);
-    scaleMatrixRow2(r14->m24_distance, &var10);
+    rotateMatrixShiftedY(r14_pose->m68_rotation[1], &var10);
+    rotateMatrixShiftedX(r14_pose->m68_rotation[0], &var10);
+    scaleMatrixRow2(r14_pose->m24_distance, &var10);
 
-    r14->m5C_position[0] = var10.matrix[2] + r14->m18_position[0];
-    r14->m5C_position[1] = var10.matrix[6] + r14->m18_position[1];
-    r14->m5C_position[2] = var10.matrix[10] + r14->m18_position[2];
+    r14_pose->m5C_position[0] = var10.matrix[2] + r14_pose->m18_position[0];
+    r14_pose->m5C_position[1] = var10.matrix[6] + r14_pose->m18_position[1];
+    r14_pose->m5C_position[2] = var10.matrix[10] + r14_pose->m18_position[2];
 
-    r14->m38_cameraPosition[0] = r14->m5C_position[0] + MTH_Mul(r14->m38_cameraPosition[0] - r14->m5C_position[0], r13);
-    r14->m38_cameraPosition[1] = r14->m5C_position[1] + MTH_Mul(r14->m38_cameraPosition[1] - r14->m5C_position[1], r13);
-    r14->m38_cameraPosition[2] = r14->m5C_position[2] + MTH_Mul(r14->m38_cameraPosition[2] - r14->m5C_position[2], r13);
+    r14_pose->m38_cameraPosition[0] = r14_pose->m5C_position[0] + MTH_Mul(r14_pose->m38_cameraPosition[0] - r14_pose->m5C_position[0], r13);
+    r14_pose->m38_cameraPosition[1] = r14_pose->m5C_position[1] + MTH_Mul(r14_pose->m38_cameraPosition[1] - r14_pose->m5C_position[1], r13);
+    r14_pose->m38_cameraPosition[2] = r14_pose->m5C_position[2] + MTH_Mul(r14_pose->m38_cameraPosition[2] - r14_pose->m5C_position[2], r13);
 
-    EdgeUpdateSub0(&r14->m74);
-    mainLogicUpdateSub5(r14);
+    EdgeUpdateSub0(&r14_pose->m74);
+    mainLogicUpdateSub5(r14_pose);
 }
 
 void mainLogicUpdateSub3()
@@ -1293,7 +1377,7 @@ s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr, s32 arg0, s32 arg1)
         getNpcDataByIndex(arg0)->mE = arg1;
         return 0;
     case 0x605C55C:
-        PDS_Logger.AddLog("Unimplemented TWN_RUIN native function: 0x%08X\n", ptr.m_offset);
+        PDS_Logger[eLogCategories::log_unimlemented].AddLog("Unimplemented TWN_RUIN native function: 0x%08X\n", ptr.m_offset);
         break;
     default:
         assert(0);
@@ -1357,7 +1441,22 @@ void updateEdgePositionSub1(sEdgeTask* r4)
 {
     if (!(r4->m14C_inputFlags & 0x40))
     {
-        FunctionUnimplemented();
+        switch (twnMainLogicTask->m0)
+        {
+        case 0:
+            if (r4->m14C_inputFlags & 2)
+            {
+                r4->mE8.m24_stepRotation[1] = MTH_Mul(0x555555, r4->m150_inputX);
+            }
+            else
+            {
+                r4->mE8.m24_stepRotation[1] = MTH_Mul(0x38E38E, r4->m150_inputX);
+            }
+            break;
+        default:
+            assert(0);
+            break;
+        }
     }
     else
     {
@@ -1372,7 +1471,27 @@ void updateEdgePositionSub1(sEdgeTask* r4)
     }
     else
     {
-        FunctionUnimplemented();
+        s32 r10;
+        if (r4->m14C_inputFlags & 0x2)
+        {
+            r10 = -0x212;
+        }
+        else
+        {
+            r10 = -0x109;
+        }
+
+        //0605BDCA
+        switch (twnMainLogicTask->m0)
+        {
+        case 0:
+            r4->mE8.m30_stepTranslation[2] = MTH_Mul(r4->m154_inputY, r10);
+            r4->mE8.m30_stepTranslation[0] = 0;
+            break;
+        default:
+            assert(0);
+            break;
+        }
     }
 
     //605BE7E
@@ -1453,7 +1572,7 @@ void updateEdgePosition(sNPC* r4)
             {
                 r12->m2C_currentAnimation = 4;
                 u8* buffer;
-                if (readSaturnU16(r12->m30 + 0x10) == 0)
+                if (readSaturnU16(r12->m30_animationTable + 0x10) == 0)
                 {
                     buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
                 }
@@ -1462,7 +1581,7 @@ void updateEdgePosition(sNPC* r4)
                     buffer = r12->m0_dramAllocation;
                 }
 
-                playAnimationGeneric(&r12->m34_3dModel, buffer + READ_BE_U32(buffer + readSaturnU16(r12->m30 + 0x10 + 2)), 5);
+                playAnimationGeneric(&r12->m34_3dModel, buffer + READ_BE_U32(buffer + readSaturnU16(r12->m30_animationTable + 0x10 + 2)), 5);
             }
         }
     }

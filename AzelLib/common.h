@@ -502,7 +502,7 @@ struct s_3dModel
     u8* m4_pModelFile; //4
 
     u16 m8; //8 2 = m3C_boneMatrices is allocated
-    u16 mA; //A
+    u16 mA_animationFlags; //A
     u16 mC_modelIndexOffset; //C
 
     u16 m10_currentAnimationFrame; //10

@@ -278,7 +278,7 @@ p_workArea createSavePointParticles()
 //init box in already opened state
 void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
 {
-    if (r4->mA & 0x38)
+    if (r4->mA_animationFlags & 0x38)
     {
         s16 type = READ_BE_S16(r4->m30_pCurrentAnimation) & 7;
         switch (type)

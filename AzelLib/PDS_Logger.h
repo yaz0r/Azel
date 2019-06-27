@@ -72,8 +72,18 @@ struct sPDS_Logger
     }
 };
 
-extern sPDS_Logger PDS_Logger;
+enum eLogCategories
+{
+    log_default = 0,
+    log_task,
+    log_unimlemented,
+    log_warning,
 
-#define PDS_Log(string, ...) {PDS_Logger.AddLog(string, __VA_ARGS__);}
-#define PDS_unimplemented(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger.AddLog("Unimplemented: %s\n", name);}}
-#define PDS_warningOnce(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger.AddLog("Warning: %s\n", name);}}
+    log_max
+};
+extern sPDS_Logger PDS_Logger[eLogCategories::log_max];
+
+#define PDS_Log(string, ...) {PDS_Logger[log_default].AddLog(string, __VA_ARGS__);}
+#define PDS_CategorizedLog(logCategory, string, ...) {PDS_Logger[logCategory].AddLog(string, __VA_ARGS__);}
+#define PDS_unimplemented(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger[log_unimlemented].AddLog("Unimplemented: %s\n", name);}}
+#define PDS_warningOnce(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger[log_warning].AddLog("Warning: %s\n", name);}}

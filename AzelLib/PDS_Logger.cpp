@@ -1,3 +1,3 @@
 #include "PDS.h"
 
-sPDS_Logger PDS_Logger;
+sPDS_Logger PDS_Logger[eLogCategories::log_max];

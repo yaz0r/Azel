@@ -112,7 +112,7 @@ u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 interpolation
 
 void playAnimation(s_3dModel* pDragonStateData1, u8* r5, u32 r6)
 {
-    if (dragonMenuDragonInitSub2Sub1(pDragonStateData1, r6) && ((pDragonStateData1->mA & 0x200) == 0))
+    if (dragonMenuDragonInitSub2Sub1(pDragonStateData1, r6) && ((pDragonStateData1->mA_animationFlags & 0x200) == 0))
     {
         assert(0);
     }
