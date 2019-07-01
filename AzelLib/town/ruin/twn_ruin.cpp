@@ -394,7 +394,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
 
     static void updateEdgeSub1(sEdgeTask* pThis)
     {
-        if (pThis->mE_controlState)
+        if (pThis->mE_controlState == 0)
         {
             pThis->mC &= ~2;
         }
@@ -1559,14 +1559,30 @@ void updateEdgePosition(sNPC* r4)
     *r4->m84.m30_pPosition += r4->m84.m58_collisionSolveTranslation;
     if (r4->m84.m44 & 4)
     {
-        assert(0);
+        if (r14->m4C[1] < 0xB504)
+        {
+            r12->mF |= 0x80;
+        }
+        else
+        {
+            r12->mF &= ~0x80;
+            if (r13->m30_stepTranslation[1] < 0)
+            {
+                r13->m30_stepTranslation[1] = 0;
+            }
+        }
+
+        //605B948
+        if (r12->mE_controlState != 4)
+        {
+            r12->mE_controlState = 4;
+        }
     }
     else
     {
         //605B954
         if ((r13->m30_stepTranslation[1] < -0x199) || (r13->m30_stepTranslation[1] > 0))
         {
-            // enable shadow
             r12->mF |= 0x80;
             if (r12->m2C_currentAnimation != 4)
             {
@@ -1581,14 +1597,22 @@ void updateEdgePosition(sNPC* r4)
                     buffer = r12->m0_dramAllocation;
                 }
 
+                // play falling animation
                 playAnimationGeneric(&r12->m34_3dModel, buffer + READ_BE_U32(buffer + readSaturnU16(r12->m30_animationTable + 0x10 + 2)), 5);
             }
         }
     }
     //605B9AA
-    // gravity?
-    PDS_warningOnce("Disabled gravity on edge");
-    //r13->m30_stepTranslation[1] += -0x56;
+    static bool gGravity = true;
+    ImGui::Begin("Town");
+    ImGui::Checkbox("Gravity", &gGravity);
+    ImGui::End();
+
+    if (gGravity)
+    {
+        r13->m30_stepTranslation[1] += -0x56;
+    }
+
     if (r13->m30_stepTranslation[1] < -0x800)
     {
         r13->m30_stepTranslation[1] = -0x800;

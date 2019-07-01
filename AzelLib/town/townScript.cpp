@@ -208,9 +208,28 @@ void scriptUpdateSub0Sub2Sub4(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
     }
 }
 
-void scriptUpdateSub0Sub2Sub5(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sVec3_FP* r7)
+void scriptUpdateSub0Sub2Sub5(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    assert(0);
+    fixedPoint r5 = FP_Div(r12, (*r14)[1]) + r13->m14[1];
+
+    sScriptUpdateSub0Sub0Var0* r4;
+    if (r12 < 0)
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[2];
+        r13->m44 |= 0x4;
+    }
+    else
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[8];
+        r13->m44 |= 0x400;
+    }
+
+    if (r4->mC_distance < r5)
+    {
+        r4->m0_position = *r14;
+        r4->mC_distance = r5;
+        r4->m10_y = r12 + (*r6)[1];
+    }
 }
 
 void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
@@ -225,10 +244,13 @@ void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
     var10[1] = MTH_Mul(var4[1], r4->m14[1]);
     var10[2] = MTH_Mul(var4[2], r4->m14[2]);
 
-    fixedPoint distance0 = var10[0] + var10[1] + var10[2];
-    fixedPoint distance1 = MTH_Mul(var4[0], pCurrentMatrix->matrix[2]) + MTH_Mul(var4[1], pCurrentMatrix->matrix[6]) + MTH_Mul(var4[2], pCurrentMatrix->matrix[10]);
-
-    fixedPoint r14 = r5 + distance1 - distance0;
+    fixedPoint r14 = r5;
+    r14 += MTH_Mul(var4[0], pCurrentMatrix->matrix[3]);
+    r14 += MTH_Mul(var4[1], pCurrentMatrix->matrix[7]);
+    r14 += MTH_Mul(var4[2], pCurrentMatrix->matrix[11]);
+    r14 -= var10[0];
+    r14 -= var10[1];
+    r14 -= var10[2];
 
     switch (r4->m0)
     {
@@ -444,8 +466,11 @@ void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
     {
     case 0:
         break;
+    case 4:
+        var14[1] = r13[2].mC_distance;
+        break;
     case 8:
-        var14[1] = r10.mC_distance;
+        var14[1] = r13[3].mC_distance;
         break;
     default:
         assert(0);
@@ -467,7 +492,7 @@ void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
     //06008604
     if (r12->m44 & 4)
     {
-        assert(0);
+        r12->m4C = r13[2].m0_position;
     }
 
     //6008622

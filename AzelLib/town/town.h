@@ -29,6 +29,7 @@ struct sMainLogic_74
     u8* m40;
     s32 m44;
     sMainLogic_74* m48;
+    sVec3_FP m4C;
     sVec3_FP m58_collisionSolveTranslation;
 };
 
