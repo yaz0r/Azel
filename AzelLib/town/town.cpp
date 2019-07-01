@@ -19,34 +19,7 @@ void townDebugTask2Function::Update(townDebugTask2Function* pThis)
 
 sNpcData npcData0;
 
-struct sInitNPCSub0Var0Sub144
-{
-    sInitNPCSub0Var0Sub144* m0_next;
-    //size 0xC
-};
-
-struct sTownGrid
-{
-    s32 m0_sizeX;
-    s32 m4_sizeY;
-    s32 m8;
-    s32 mC;
-    s32 m10_currentX;
-    s32 m14_currentY;
-    void(*m18_createCell)(s32, sTownGrid*);
-    void(*m1C)();
-    void(*m20_deleteCell)(s32, sTownGrid*);
-    void(*m24)();
-    sVec3_FP m28;
-    npcFileDeleter* m34;
-    sSaturnPtr m38_EnvironmentSetup;
-    s32* m3C;
-    std::array<std::array<p_workArea, 8>, 8> m40;
-    std::vector<sSaturnPtr> m140;
-    sInitNPCSub0Var0Sub144* m144;
-    std::array<sInitNPCSub0Var0Sub144, 0x40> m148;
-
-}gTownGrid;
+sTownGrid gTownGrid;
 
 //TODO:kernel
 s32 MTH_Mul32(fixedPoint a, fixedPoint b)
@@ -68,76 +41,6 @@ fixedPoint generateObjectMatrix(sSaturnPtr r4, sSaturnPtr r5)
 
     return pCurrentMatrix->matrix[11];
 }
-
-struct sEnvironmentTask : public s_workAreaTemplateWithArgWithCopy<sEnvironmentTask, sSaturnPtr>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &sEnvironmentTask::Init, nullptr, &sEnvironmentTask::Draw, nullptr };
-        return &taskDefinition;
-    }
-
-    static void Init(sEnvironmentTask* pThis, sSaturnPtr arg)
-    {
-        if ((readSaturnS32(arg + 0xC) == 0) && (readSaturnS32(arg + 0x10) == 0) && (readSaturnS32(arg + 0x14) == 0))
-        {
-            pThis->m_UpdateMethod = nullptr;
-        }
-
-        pThis->m8 = arg;
-        pThis->mC_position = readSaturnVec3(arg);
-    }
-
-    static void Draw(sEnvironmentTask* pThis)
-    {
-        pushCurrentMatrix();
-        {
-            translateCurrentMatrix(pThis->mC_position);
-            fixedPoint var0 = pCurrentMatrix->matrix[11];
-            if (var0 < gTownGrid.m28[1] - graphicEngineStatus.m405C.m10)
-            {
-                fixedPoint varMinusOne = MTH_Mul(var0, graphicEngineStatus.m405C.m2C);
-                fixedPoint r4 = varMinusOne + MTH_Mul(gTownGrid.m28[1], gTownGrid.m28[0]);
-                if ((pCurrentMatrix->matrix[3] >= -r4) && (pCurrentMatrix->matrix[3] <= r4))
-                {
-                    sSaturnPtr r14 = readSaturnEA(pThis->m8 + 0xC);
-                    if (r14.m_offset)
-                    {
-                        while (readSaturnS32(r14))
-                        {
-                            s32 r5 = generateObjectMatrix(r14 + 4, r14 + 0x10);
-                            int r4 = 0;
-                            while (r5 > gTownGrid.m3C[r4])
-                            {
-                                r4++;
-                            }
-
-                            u16 offset = readSaturnU16(readSaturnEA(r14) + r4 * 2);
-                            if (offset)
-                            {
-                                addObjectToDrawList(pThis->m0_dramAllocation, READ_BE_U32(pThis->m0_dramAllocation + offset));
-                            }
-
-                            popMatrix();
-                            r14 += 0x18;
-                        }
-                    }
-
-                    r14 = readSaturnEA(pThis->m8 + 0x10);
-                    if (r14.m_offset)
-                    {
-                        FunctionUnimplemented();
-                    }
-                }
-            }
-        }
-        popMatrix();
-    }
-
-    //size 0x18
-    sSaturnPtr m8;
-    sVec3_FP mC_position;
-};
 
 void createEnvironmentTask2Sub0(s32 r4_currentX, s32 r5_currentY)
 {
@@ -169,8 +72,8 @@ void createEnvironmentTask2(s32 r4, sTownGrid* r14)
             continue;
 
         sSaturnPtr cellData = readSaturnEA(r14->m38_EnvironmentSetup + 4 * (r14->m0_sizeX * r14->m14_currentY + r14->m10_currentX + r12));
-        p_workArea newCellTask = createSiblingTaskWithArgWithCopy<sEnvironmentTask>(r14->m34, cellData);
-        r14->m40[(r14->mC + r4) & 7][(r14->m8 + r12) & 7] = newCellTask;
+        sEnvironmentTask* newCellTask = createSiblingTaskWithArgWithCopy<sEnvironmentTask>(r14->m34, cellData);
+        r14->m40_cellTasks[(r14->mC + r4) & 7][(r14->m8 + r12) & 7] = newCellTask;
 
         createEnvironmentTask2Sub0(r14->m10_currentX + r12, r4 + r14->m14_currentY);
     }
@@ -189,7 +92,7 @@ void initNPCSub0Sub0(s32 r3, sTownGrid* r14)
 
     do 
     {
-        if (r14->m40[var24][(r14->m8 + r13) & 7])
+        if (r14->m40_cellTasks[var24][(r14->m8 + r13) & 7])
         {
             assert(0);
         }
@@ -213,8 +116,8 @@ void loadTownPrgSub0()
     gTownGrid.m1C = createEnvironmentTask;
     gTownGrid.m20_deleteCell = initNPCSub0Sub0;
     gTownGrid.m24 = initNPCSub0Sub1;
-    gTownGrid.m40[0].fill(0);
-    gTownGrid.m40[1].fill(0);
+    gTownGrid.m40_cellTasks[0].fill(0);
+    gTownGrid.m40_cellTasks[1].fill(0);
     gTownGrid.m3C = &initNPCSub0Var1;
 }
 
@@ -382,16 +285,16 @@ void initNPCSub0Sub2Sub0()
     gTownGrid.m148[0x3F].m0_next = nullptr;
 }
 
-void initNPCSub0Sub2(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6_sizeX, u8 r7_sizeY, fixedPoint stackArg0)
+void initNPCSub0Sub2(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6_sizeX, u8 r7_sizeY, fixedPoint cellSize)
 {
     initNPCSub1();
 
     gTownGrid.m0_sizeX = r6_sizeX;
     gTownGrid.m4_sizeY = r7_sizeY;
     gTownGrid.m34 = buffer;
-    gTownGrid.m28[0] = stackArg0;
-    gTownGrid.m28[1] = MTH_Mul(0x10A3D, stackArg0);
-    gTownGrid.m28[2] = FP_Div(0x10000, stackArg0);
+    gTownGrid.m28_cellSize = cellSize;
+    gTownGrid.m2C = MTH_Mul(0x10A3D, cellSize);
+    gTownGrid.m30_worldToCellIndex = FP_Div(0x10000, cellSize);
     gTownGrid.m38_EnvironmentSetup = pEnvironemntSetupEA;
 
     initNPCSub0Sub2Sub0();
@@ -470,13 +373,13 @@ void mainLogicInitSub0(sMainLogic_74* r4, s32 r5)
     r4->m2C = r5;
     r4->m0 = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5));
     r4->m1 = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5 + 1));
-    r4->m2 = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5 + 2));
+    r4->m2_collisionLayersBitField = readSaturnS16(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5 + 2));
 }
 void mainLogicInitSub1(sMainLogic_74* r4, sSaturnPtr r5, sSaturnPtr r6)
 {
-    r4->m20[0] = (readSaturnS32(r5) - readSaturnS32(r6)) / 2;
-    r4->m20[1] = (readSaturnS32(r5 + 4) - readSaturnS32(r6 + 4)) / 2;
-    r4->m20[2] = (readSaturnS32(r5 + 8) - readSaturnS32(r6 + 8)) / 2;
+    r4->m20[0] = (readSaturnS32(r5) + readSaturnS32(r6)) / 2;
+    r4->m20[1] = (readSaturnS32(r5 + 4) + readSaturnS32(r6 + 4)) / 2;
+    r4->m20[2] = (readSaturnS32(r5 + 8) + readSaturnS32(r6 + 8)) / 2;
 
     if (readSaturnS32(r6) > readSaturnS32(r5))
     {
@@ -521,8 +424,8 @@ void mainLogicUpdateSub0Sub1(s32 r4, sTownGrid* r5)
 //TODO:kernel
 void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y)
 {
-    s32 r12 = MTH_Mul32(r4_x, gTownGrid.m28[2]);
-    s32 r11 = MTH_Mul32(r5_y, gTownGrid.m28[2]);
+    s32 r12 = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex);
+    s32 r11 = MTH_Mul32(r5_y, gTownGrid.m30_worldToCellIndex);
 
     // not exactly the original code, but should be the same thing
     s32 cellDistanceX = r12 - gTownGrid.m10_currentX;
@@ -554,4 +457,61 @@ void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y)
             mainLogicUpdateSub0Sub1(r12, &gTownGrid);
         }
     }
+}
+
+void sEnvironmentTask::Init(sEnvironmentTask* pThis, sSaturnPtr arg)
+{
+    if ((readSaturnS32(arg + 0xC) == 0) && (readSaturnS32(arg + 0x10) == 0) && (readSaturnS32(arg + 0x14) == 0))
+    {
+        pThis->m_UpdateMethod = nullptr;
+    }
+
+    pThis->m8 = arg;
+    pThis->mC_position = readSaturnVec3(arg);
+}
+
+void sEnvironmentTask::Draw(sEnvironmentTask* pThis)
+{
+    pushCurrentMatrix();
+    {
+        translateCurrentMatrix(pThis->mC_position);
+        fixedPoint var0 = pCurrentMatrix->matrix[11];
+        if (var0 < gTownGrid.m2C - graphicEngineStatus.m405C.m10)
+        {
+            fixedPoint varMinusOne = MTH_Mul(var0, graphicEngineStatus.m405C.m2C_widthRatio);
+            fixedPoint r4 = varMinusOne + MTH_Mul(gTownGrid.m2C, gTownGrid.m28_cellSize);
+            if ((pCurrentMatrix->matrix[3] >= -r4) && (pCurrentMatrix->matrix[3] <= r4))
+            {
+                sSaturnPtr r14 = readSaturnEA(pThis->m8 + 0xC);
+                if (r14.m_offset)
+                {
+                    while (readSaturnS32(r14))
+                    {
+                        s32 r5 = generateObjectMatrix(r14 + 4, r14 + 0x10);
+                        int r4 = 0;
+                        while (r5 > gTownGrid.m3C[r4])
+                        {
+                            r4++;
+                        }
+
+                        u16 offset = readSaturnU16(readSaturnEA(r14) + r4 * 2);
+                        if (offset)
+                        {
+                            addObjectToDrawList(pThis->m0_dramAllocation, READ_BE_U32(pThis->m0_dramAllocation + offset));
+                        }
+
+                        popMatrix();
+                        r14 += 0x18;
+                    }
+                }
+
+                r14 = readSaturnEA(pThis->m8 + 0x10);
+                if (r14.m_offset)
+                {
+                    FunctionUnimplemented();
+                }
+            }
+        }
+    }
+    popMatrix();
 }

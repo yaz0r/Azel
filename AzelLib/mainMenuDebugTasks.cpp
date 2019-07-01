@@ -1415,48 +1415,48 @@ void resetPoseScale(s_3dModel* pDragonStateData1)
     }
 }
 
-s32 riderInit(s_3dModel* r4, u8* r5)
+s32 riderInit(s_3dModel* r4_pModel, u8* r5)
 {
     if (r5 == NULL)
     {
-        if (r4->mA_animationFlags & 8)
+        if (r4_pModel->mA_animationFlags & 8)
         {
-            copyPosePosition(r4);
+            copyPosePosition(r4_pModel);
         }
-        if (r4->mA_animationFlags & 0x10)
+        if (r4_pModel->mA_animationFlags & 0x10)
         {
-            copyPoseRotation(r4);
+            copyPoseRotation(r4_pModel);
         }
-        if (r4->mA_animationFlags & 0x20)
+        if (r4_pModel->mA_animationFlags & 0x20)
         {
-            resetPoseScale(r4);
+            resetPoseScale(r4_pModel);
         }
 
-        r4->mA_animationFlags &= 0xFFC7;
-        r4->m30_pCurrentAnimation = NULL;
+        r4_pModel->mA_animationFlags &= ~0x38;
+        r4_pModel->m30_pCurrentAnimation = NULL;
 
         return 1;
     }
 
-    if (r4->m30_pCurrentAnimation == NULL)
+    if (r4_pModel->m30_pCurrentAnimation == NULL)
     {
-        r4->mA_animationFlags |= READ_BE_U16(r5);
-        initModelDrawFunction(r4);
-        return createDragonStateSubData1Sub1(r4, r5);
+        r4_pModel->mA_animationFlags |= READ_BE_U16(r5);
+        initModelDrawFunction(r4_pModel);
+        return createDragonStateSubData1Sub1(r4_pModel, r5);
     }
 
-    if (READ_BE_U16(r4->m30_pCurrentAnimation) != READ_BE_U16(r5))
+    if (READ_BE_U16(r4_pModel->m30_pCurrentAnimation) != READ_BE_U16(r5))
     {
         //060215EC
-        r4->mA_animationFlags &= ~0x0038;
-        r4->mA_animationFlags |= READ_BE_U16(r5);
-        initModelDrawFunction(r4);
-        return createDragonStateSubData1Sub1(r4, r5);
+        r4_pModel->mA_animationFlags &= ~0x0038;
+        r4_pModel->mA_animationFlags |= READ_BE_U16(r5);
+        initModelDrawFunction(r4_pModel);
+        return createDragonStateSubData1Sub1(r4_pModel, r5);
     }
 
     //06021620
-    r4->m30_pCurrentAnimation = r5;
-    r4->m10_currentAnimationFrame = 0;
+    r4_pModel->m30_pCurrentAnimation = r5;
+    r4_pModel->m10_currentAnimationFrame = 0;
 
     switch (READ_BE_U16(r5) & 7)
     {
@@ -1692,7 +1692,7 @@ u32 dragonFieldTaskInitSub3Sub1(s_3dModel* pDragonStateData1, u8* r5)
         {
             if (READ_BE_U16(pDragonStateData1->m30_pCurrentAnimation) != READ_BE_U16(r5))
             {
-                pDragonStateData1->mA_animationFlags &= 0xFFC7;
+                pDragonStateData1->mA_animationFlags &= ~0x38;
                 pDragonStateData1->mA_animationFlags |= READ_BE_U16(r5);
                 initModelDrawFunction(pDragonStateData1);
                 return dragonFieldTaskInitSub3Sub1Sub1(pDragonStateData1, r5);
@@ -4764,7 +4764,7 @@ void playAnimationGenericSub1(s_3dModel* pModel)
 
 void playAnimationGeneric(s_3dModel* r4, u8* r5, s32 r6)
 {
-    if (dragonMenuDragonInitSub2Sub1(r4, r6) && !(r4->mA_animationFlags & 0x200))
+    if (setupPoseInterpolation(r4, r6) && !(r4->mA_animationFlags & 0x200))
     {
         riderInit(r4, r5);
 

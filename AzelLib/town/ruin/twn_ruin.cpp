@@ -394,7 +394,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
 
     static void updateEdgeSub1(sEdgeTask* pThis)
     {
-        if (pThis->mE)
+        if (pThis->mE_controlState)
         {
             pThis->mC &= ~2;
         }
@@ -490,7 +490,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         }
 
         //605A01E
-        switch (pThis->mE)
+        switch (pThis->mE_controlState)
         {
         case 0:
             if (pThis->m17A)
@@ -1042,11 +1042,11 @@ void cameraFollowMode0Bis(sMainLogic* r14_pose)
         if (!(r4_edge->mC & 4))
         {
             //06055EBE
-            (*r14_pose->m74.m30_pPosition)[0] += r14_pose->m74.m58[0];
+            (*r14_pose->m74.m30_pPosition)[0] += r14_pose->m74.m58_collisionSolveTranslation[0];
         }
 
-        (*r14_pose->m74.m30_pPosition)[1] += r14_pose->m74.m58[1];
-        (*r14_pose->m74.m30_pPosition)[2] += r14_pose->m74.m58[2];
+        (*r14_pose->m74.m30_pPosition)[1] += r14_pose->m74.m58_collisionSolveTranslation[1];
+        (*r14_pose->m74.m30_pPosition)[2] += r14_pose->m74.m58_collisionSolveTranslation[2];
     }
 
     //6055EE4
@@ -1374,7 +1374,7 @@ s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr, s32 arg0, s32 arg1)
     switch (ptr.m_offset)
     {
     case 0x605B320:
-        getNpcDataByIndex(arg0)->mE = arg1;
+        getNpcDataByIndex(arg0)->mE_controlState = arg1;
         return 0;
     case 0x605C55C:
         PDS_Logger[eLogCategories::log_unimlemented].AddLog("Unimplemented TWN_RUIN native function: 0x%08X\n", ptr.m_offset);
@@ -1556,7 +1556,7 @@ void updateEdgePosition(sNPC* r4)
     updateEdgeControls(r12);
     updateEdgePositionSub1(r12);
 
-    *r4->m84.m30_pPosition += r4->m84.m58;
+    *r4->m84.m30_pPosition += r4->m84.m58_collisionSolveTranslation;
     if (r4->m84.m44 & 4)
     {
         assert(0);

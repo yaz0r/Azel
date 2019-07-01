@@ -16,7 +16,7 @@ struct sMainLogic_74
 {
     s8 m0;
     s8 m1;
-    s8 m2;
+    s16 m2_collisionLayersBitField;
     fixedPoint m4;
     sVec3_FP m8_position;
     sVec3_FP m14;
@@ -28,7 +28,8 @@ struct sMainLogic_74
     s32 m3C;
     u8* m40;
     s32 m44;
-    sVec3_FP m58;
+    sMainLogic_74* m48;
+    sVec3_FP m58_collisionSolveTranslation;
 };
 
 struct sNPC
@@ -36,7 +37,7 @@ struct sNPC
     u8* m8_MCBInDram;
     s8 mC;
     s8 mD;
-    s8 mE;
+    s8 mE_controlState;
     s8 mF; // 0x80 = enable shadow
     sSaturnPtr m10_InitPtr;
     void (*m14_updateFunction)(sNPC*);
@@ -51,9 +52,19 @@ struct sNPC
     sNPCE8 mE8;
 };
 
+struct sNpcData4
+{
+    s32 m0;
+    s32 m4;
+    p_workArea m8;
+    sVec3_S16 mC;
+    //size 0x14
+};
+
 struct sNpcData
 {
     s32 m0_numExtraScriptsIterations;
+    std::array<sNpcData4, 4> m4;
     fixedPoint m54_activationNear;
     fixedPoint m58_activationFar;
     s8 m5C;
@@ -129,3 +140,56 @@ extern p_workArea townVar0;
 s32 initNPC(s32 arg);
 s32 initNPCFromStruct(s32);
 void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y);
+
+struct sInitNPCSub0Var0Sub144
+{
+    sInitNPCSub0Var0Sub144* m0_next;
+    //size 0xC
+};
+
+struct sEnvironmentTask : public s_workAreaTemplateWithArgWithCopy<sEnvironmentTask, sSaturnPtr>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sEnvironmentTask::Init, nullptr, &sEnvironmentTask::Draw, nullptr };
+        return &taskDefinition;
+    }
+
+    static void Init(sEnvironmentTask* pThis, sSaturnPtr arg);
+    static void Draw(sEnvironmentTask* pThis);
+
+    //size 0x18
+    sSaturnPtr m8;
+    sVec3_FP mC_position;
+};
+
+
+struct sTownGrid
+{
+    s32 m0_sizeX;
+    s32 m4_sizeY;
+    s32 m8;
+    s32 mC;
+    s32 m10_currentX;
+    s32 m14_currentY;
+    void(*m18_createCell)(s32, sTownGrid*);
+    void(*m1C)();
+    void(*m20_deleteCell)(s32, sTownGrid*);
+    void(*m24)();
+    fixedPoint m28_cellSize;
+    fixedPoint m2C;
+    fixedPoint m30_worldToCellIndex;
+    npcFileDeleter* m34;
+    sSaturnPtr m38_EnvironmentSetup;
+    s32* m3C;
+    std::array<std::array<sEnvironmentTask*, 8>, 8> m40_cellTasks;
+    std::vector<sSaturnPtr> m140;
+    sInitNPCSub0Var0Sub144* m144;
+    std::array<sInitNPCSub0Var0Sub144, 0x40> m148;
+
+};
+
+extern sTownGrid gTownGrid;
+
+// todo: kernel
+s32 MTH_Mul32(fixedPoint a, fixedPoint b);

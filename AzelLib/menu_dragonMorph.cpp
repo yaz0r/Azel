@@ -64,55 +64,55 @@ void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
     pushProjectionStack();
 }
 
-u32 dragonMenuDragonInitSub2Sub1(s_3dModel* pDragonStateData1, u32 interpolationLength)
+u32 setupPoseInterpolation(s_3dModel* pModel, u32 interpolationLength)
 {
-    if ((interpolationLength > 0) && (pDragonStateData1->m38 == 0))
+    if ((interpolationLength > 0) && (pModel->m38 == 0))
     {
-        if (pDragonStateData1->m48_poseDataInterpolation.size())
+        if (pModel->m48_poseDataInterpolation.size())
         {
-            for (int i = 0; i < pDragonStateData1->m12_numBones; i++)
+            for (int i = 0; i < pModel->m12_numBones; i++)
             {
-                pDragonStateData1->m48_poseDataInterpolation[i].m24_halfTranslation = pDragonStateData1->m2C_poseData[i].m0_translation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m30_halfRotation = pDragonStateData1->m2C_poseData[i].mC_rotation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m3C_halfScale = pDragonStateData1->m2C_poseData[i].m18_scale;
+                pModel->m48_poseDataInterpolation[i].m24_halfTranslation = pModel->m2C_poseData[i].m0_translation;
+                pModel->m48_poseDataInterpolation[i].m30_halfRotation = pModel->m2C_poseData[i].mC_rotation;
+                pModel->m48_poseDataInterpolation[i].m3C_halfScale = pModel->m2C_poseData[i].m18_scale;
             }
         }
         else
         {
-            pDragonStateData1->m48_poseDataInterpolation.resize(pDragonStateData1->m12_numBones);
-            if (pDragonStateData1->m48_poseDataInterpolation.size() == 0)
+            pModel->m48_poseDataInterpolation.resize(pModel->m12_numBones);
+            if (pModel->m48_poseDataInterpolation.size() == 0)
             {
-                pDragonStateData1->m4C_interpolationStep = 0;
-                pDragonStateData1->m4E_interpolationLength = 0;
+                pModel->m4C_interpolationStep = 0;
+                pModel->m4E_interpolationLength = 0;
                 return 0;
             }
 
-            for (int i = 0; i < pDragonStateData1->m12_numBones; i++)
+            for (int i = 0; i < pModel->m12_numBones; i++)
             {
-                pDragonStateData1->m48_poseDataInterpolation[i].m24_halfTranslation = pDragonStateData1->m2C_poseData[i].m0_translation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m0_translation = pDragonStateData1->m2C_poseData[i].m0_translation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m30_halfRotation = pDragonStateData1->m2C_poseData[i].mC_rotation;
-                pDragonStateData1->m48_poseDataInterpolation[i].mC_rotation = pDragonStateData1->m2C_poseData[i].mC_rotation;
-                pDragonStateData1->m48_poseDataInterpolation[i].m3C_halfScale = pDragonStateData1->m2C_poseData[i].m18_scale;
-                pDragonStateData1->m48_poseDataInterpolation[i].m18_scale = pDragonStateData1->m2C_poseData[i].m18_scale;
+                pModel->m48_poseDataInterpolation[i].m24_halfTranslation = pModel->m2C_poseData[i].m0_translation;
+                pModel->m48_poseDataInterpolation[i].m0_translation = pModel->m2C_poseData[i].m0_translation;
+                pModel->m48_poseDataInterpolation[i].m30_halfRotation = pModel->m2C_poseData[i].mC_rotation;
+                pModel->m48_poseDataInterpolation[i].mC_rotation = pModel->m2C_poseData[i].mC_rotation;
+                pModel->m48_poseDataInterpolation[i].m3C_halfScale = pModel->m2C_poseData[i].m18_scale;
+                pModel->m48_poseDataInterpolation[i].m18_scale = pModel->m2C_poseData[i].m18_scale;
             }
         }
 
-        pDragonStateData1->m4C_interpolationStep = 0;
-        pDragonStateData1->m4E_interpolationLength = interpolationLength;
+        pModel->m4C_interpolationStep = 0;
+        pModel->m4E_interpolationLength = interpolationLength;
         return 1;
     }
     else
     {
-        pDragonStateData1->m4C_interpolationStep = 0;
-        pDragonStateData1->m4E_interpolationLength = 0;
+        pModel->m4C_interpolationStep = 0;
+        pModel->m4E_interpolationLength = 0;
         return 0;
     }
 }
 
 void playAnimation(s_3dModel* pDragonStateData1, u8* r5, u32 r6)
 {
-    if (dragonMenuDragonInitSub2Sub1(pDragonStateData1, r6) && ((pDragonStateData1->mA_animationFlags & 0x200) == 0))
+    if (setupPoseInterpolation(pDragonStateData1, r6) && ((pDragonStateData1->mA_animationFlags & 0x200) == 0))
     {
         assert(0);
     }

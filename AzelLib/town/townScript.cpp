@@ -32,13 +32,555 @@ void copyCameraPropertiesToRes()
     resCameraProperties.m30 = graphicEngineStatus.m405C.m1C;
 }
 
+struct sScriptUpdateSub0Sub0Var0
+{
+    sVec3_FP m0_position;
+    s32 mC_distance;
+    fixedPoint m10_y;
+    //size 0x14
+};
+
+std::array< sScriptUpdateSub0Sub0Var0, 12> scriptUpdateSub0Sub0Var0;
+
+struct sScriptUpdateSub0Sub0Var1
+{
+    s32 m0;
+    s32 m4;
+    s32 m8;
+    s32 mC;
+    //size 0x10?
+}scriptUpdateSub0Sub0Var1;
+
+
+void scriptUpdateSub0Sub0(sMainLogic_74* r4)
+{
+    const sVec3_FP& r12 = *r4->m34_pRotation;
+
+    switch (r4->m0)
+    {
+    case 0:
+    case 1:
+        for (int i = 0; i < 12; i++)
+        {
+            scriptUpdateSub0Sub0Var0[i].mC_distance = 0;
+        }
+        scriptUpdateSub0Sub0Var1.m0 = 0;
+        scriptUpdateSub0Sub0Var1.m4 = 0;
+        scriptUpdateSub0Sub0Var1.m8 = 0;
+        scriptUpdateSub0Sub0Var1.mC = 0;
+    case 2:
+        r4->m48 = 0;
+    case 3:
+        r4->m44 = 0;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    pushCurrentMatrix();
+
+    initMatrixToIdentity(pCurrentMatrix);
+    pCurrentMatrix->matrix[3] = r4->m14[0];
+    pCurrentMatrix->matrix[7] = r4->m14[1];
+    pCurrentMatrix->matrix[11] = r4->m14[2];
+
+    rotateCurrentMatrixShiftedZ(-r12[2]);
+    rotateCurrentMatrixShiftedX(-r12[0]);
+    rotateCurrentMatrixShiftedY(-r12[1]);
+
+    sVec3_FP var0;
+    var0[0] = -r4->m8_position[0] - resValue0;
+    var0[1] = -r4->m8_position[1];
+    var0[2] = -r4->m8_position[2] - resValue0;
+
+    translateCurrentMatrix(var0);
+}
+
+void copyToNpcDataTable0(s32 r4, s32 r5, p_workArea r6, sVec3_S16* r7)
+{
+    if (r4 == 0)
+        return;
+
+    if (npcData0.m0_numExtraScriptsIterations >= 4)
+        return;
+
+    std::array<sNpcData4, 4>::iterator r14 = npcData0.m4.begin();
+    if (npcData0.m0_numExtraScriptsIterations)
+    {
+        for(s32 r13 = npcData0.m0_numExtraScriptsIterations; r13 >= 0; r14++, r13--)
+        {
+            if (r14->m0 != r4)
+            {
+                if (r14->m4 == r5)
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    r14->m0 = r4;
+    r14->m4 = r5;
+    r14->m8 = r6;
+    if (r7)
+    {
+        r14->mC = *r7;
+    }
+
+    npcData0.m0_numExtraScriptsIterations++;
+}
+
+s32 scriptUpdateSub0Sub1(sMainLogic_74* r4, sMainLogic_74* r5)
+{
+    if (r5->m40)
+    {
+        assert(0);
+    }
+    else
+    {
+        assert(0);
+    }
+
+    return 0;
+}
+
+void scriptUpdateSub0Sub2Sub0(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sVec3_FP* r7)
+{
+    assert(0);
+}
+
+void scriptUpdateSub0Sub2Sub1(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+{
+    fixedPoint r5 = FP_Div(r12, (*r14)[2]) + r13->m14[2];
+
+    sScriptUpdateSub0Sub0Var0* r4;
+    if (r12 < 0)
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[4];
+        r13->m44 |= 0x2;
+    }
+    else
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[10];
+        r13->m44 |= 0x200;
+    }
+
+    if (r4->mC_distance < r5)
+    {
+        r4->m0_position = *r14;
+        r4->mC_distance = r5;
+        r4->m10_y = r12 + (*r6)[2];
+    }
+}
+
+void scriptUpdateSub0Sub2Sub2(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sVec3_FP* r7)
+{
+    assert(0);
+}
+
+void scriptUpdateSub0Sub2Sub3(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sVec3_FP* r7)
+{
+    assert(0);
+}
+
+void scriptUpdateSub0Sub2Sub4(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+{
+    fixedPoint r5 = FP_Div(r12, (*r14)[1]) - r13->m14[1];
+
+    sScriptUpdateSub0Sub0Var0* r4;
+    if(r12 < 0)
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[4];
+        r13->m44 |= 0x8;
+    }
+    else
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[9];
+        r13->m44 |= 0x800;
+    }
+
+    if (r4->mC_distance > r5)
+    {
+        r4->m0_position = *r14;
+        r4->mC_distance = r5;
+        r4->m10_y = r12 - (*r6)[1];
+    }
+}
+
+void scriptUpdateSub0Sub2Sub5(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sVec3_FP* r7)
+{
+    assert(0);
+}
+
+void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
+{
+    sVec3_FP var4;
+    var4[0] = pCurrentMatrix->matrix[1];
+    var4[1] = pCurrentMatrix->matrix[5];
+    var4[2] = pCurrentMatrix->matrix[9];
+
+    sVec3_FP var10;
+    var10[0] = MTH_Mul(var4[0], r4->m14[0]);
+    var10[1] = MTH_Mul(var4[1], r4->m14[1]);
+    var10[2] = MTH_Mul(var4[2], r4->m14[2]);
+
+    fixedPoint distance0 = var10[0] + var10[1] + var10[2];
+    fixedPoint distance1 = MTH_Mul(var4[0], pCurrentMatrix->matrix[2]) + MTH_Mul(var4[1], pCurrentMatrix->matrix[6]) + MTH_Mul(var4[2], pCurrentMatrix->matrix[10]);
+
+    fixedPoint r14 = r5 + distance1 - distance0;
+
+    switch (r4->m0)
+    {
+    case 0:
+        // 6009474
+        if (FP_Pow2(r14) < FP_Pow2(var10[2]))
+        {
+            if (r14 > var10[2])
+            {
+                scriptUpdateSub0Sub2Sub0(r4, r14, &var10, &var4);
+            }
+            else
+            {
+                scriptUpdateSub0Sub2Sub1(r4, r14, &var10, &var4);
+            }
+        }
+        //60094AA
+        if (FP_Pow2(r14) < FP_Pow2(var10[0]))
+        {
+            if (r14 > var10[0])
+            {
+                scriptUpdateSub0Sub2Sub2(r4, r14, &var10, &var4);
+            }
+            else
+            {
+                scriptUpdateSub0Sub2Sub3(r4, r14, &var10, &var4);
+            }
+        }
+        //60094E0
+        if (FP_Pow2(r14) < FP_Pow2(var10[1]))
+        {
+            if (r14 > var10[1])
+            {
+                scriptUpdateSub0Sub2Sub4(r4, r14, &var10, &var4);
+            }
+            else
+            {
+                scriptUpdateSub0Sub2Sub5(r4, r14, &var10, &var4);
+            }
+        }
+        break;
+    default:
+        assert(0);
+    }
+}
+
+s32 scriptUpdateSub0Sub3Sub1(fixedPoint r4_x, fixedPoint r5_z)
+{
+    s32 r8 = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex * 2) & 1;
+    s32 r0 = MTH_Mul32(r5_z, gTownGrid.m30_worldToCellIndex * 4) & 2;
+
+    return r8 + r0;
+}
+
+sEnvironmentTask* scriptUpdateSub0Sub3Sub0(fixedPoint r4_x, fixedPoint r5_z)
+{
+    s32 r13_cellX = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex);
+    s32 r5_cellY = MTH_Mul32(r5_z, gTownGrid.m30_worldToCellIndex);
+
+    if (r13_cellX < 0)
+        return nullptr;
+
+    if (r13_cellX >= gTownGrid.m0_sizeX)
+        return nullptr;
+
+    if (r5_cellY < 0)
+        return nullptr;
+
+    if (r5_cellY >= gTownGrid.m4_sizeY)
+        return nullptr;
+
+    r13_cellX -= gTownGrid.m10_currentX;
+    r5_cellY -= gTownGrid.m14_currentY;
+
+    if (r13_cellX < -3)
+        return nullptr;
+
+    if (r13_cellX > 3)
+        return nullptr;
+
+    if (r5_cellY < -3)
+        return nullptr;
+
+    if (r5_cellY > 3)
+        return nullptr;
+
+    return gTownGrid.m40_cellTasks[(gTownGrid.mC + r5_cellY) & 7][(gTownGrid.m8 + r13_cellX) & 7];
+}
+
+void processTownMeshCollision(sMainLogic_74* r4, u8* r5)
+{
+    FunctionUnimplemented();
+}
+
+void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sEnvironmentTask* r13)
+{
+    if (r13 == nullptr)
+        return;
+
+    if (r13->m8.m_offset == 0)
+        return;
+
+    if (readSaturnU32(r13->m8 + 0x14) == 0)
+        return;
+
+    pushCurrentMatrix();
+    {
+        sVec3_FP var0_positionInCell;
+        var0_positionInCell = r12->m8_position - r13->mC_position;
+
+        sSaturnPtr r14 = readSaturnEA(r13->m8 + 0x14);
+        while (readSaturnU32(r14))
+        {
+            u8* r11 = r13->m0_dramAllocation + READ_BE_U32(r13->m0_dramAllocation + readSaturnU32(r14));
+            sVec3_FP meshPositionInCell = readSaturnVec3(r14 + 4);
+            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(READ_BE_S32(r11) + r12->m4))
+            {
+                pushCurrentMatrix();
+                translateCurrentMatrix(meshPositionInCell);
+                processTownMeshCollision(r12, r11);
+                popMatrix();
+            }
+
+            r14 += 0x10;
+        }
+    }
+    popMatrix();
+}
+
+void handleCollisionWithTownEnv(sMainLogic_74* r4)
+{
+    s32 type = scriptUpdateSub0Sub3Sub1(r4->m8_position[0], r4->m8_position[2]);
+    switch (type)
+    {
+    case 0:
+        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0] - gTownGrid.m28_cellSize, r4->m8_position[2]));
+        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0], r4->m8_position[2] - gTownGrid.m28_cellSize));
+        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0] - gTownGrid.m28_cellSize, r4->m8_position[2] - gTownGrid.m28_cellSize));
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0], r4->m8_position[2]));
+}
+
+void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
+{
+    std::array< sScriptUpdateSub0Sub0Var0, 12>& r13 = scriptUpdateSub0Sub0Var0;
+
+    r12->m44 &= ~(r12->m44 << 8);
+
+    if ((r12->m44 & 0x400) && (r12->m44 & 0x8))
+    {
+        //06007C86
+        assert(0);
+    }
+    else if ((r12->m44 & 0x800) && (r12->m44 & 0x4))
+    {
+        //06007CBA
+        assert(0);
+    }
+    else if ((r12->m44 & 0x200) && !(r12->m44 & 0x1))
+    {
+        //06007D24
+        r12->m44 |= 2;
+        r13[4] = r13[10];
+    }
+    else if ((r12->m44 & 0x100) && !(r12->m44 & 0x2))
+    {
+        //06007D5E
+        assert(0);
+    }
+    else if ((r12->m44 & 0x2000) && !(r12->m44 & 0x10))
+    {
+        //06007D98
+        assert(0);
+    }
+    else if ((r12->m44 & 0x1000) && !(r12->m44 & 0x20))
+    {
+        //06007DD6
+        assert(0);
+    }
+
+    //6007DF8
+    sVec3_FP var14;
+    var14.zero();
+
+    const sScriptUpdateSub0Sub0Var0& var0 = scriptUpdateSub0Sub0Var0[4];
+    const sScriptUpdateSub0Sub0Var0& var4 = scriptUpdateSub0Sub0Var0[5];
+    const sScriptUpdateSub0Sub0Var0& r8 = scriptUpdateSub0Sub0Var0[1];
+
+    switch (r12->m44 & 0x33)
+    {
+    case 0:
+        break;
+    case 2:
+    {
+        fixedPoint r10 = FP_Div(var0.m10_y, sqrt_F(FP_Pow2(-var0.m0_position[1]) + 0x10000));
+        var14[0] = MTH_Mul(var0.m0_position[0], r10);
+        var14[2] = MTH_Mul(var0.m0_position[2], r10);
+        break;
+    }
+    default:
+        assert(0);
+        break;
+    }
+
+    //6008446
+    const sScriptUpdateSub0Sub0Var0& r10 = r13[3];
+    switch (r12->m44 & 0xC)
+    {
+    case 0:
+        break;
+    case 8:
+        var14[1] = r10.mC_distance;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    //0600854A
+    if ((scriptUpdateSub0Sub0Var1.m0 != 0) || (scriptUpdateSub0Sub0Var1.m4 != 0))
+    {
+        assert(0);
+    }
+
+    //060085A4
+    if ((scriptUpdateSub0Sub0Var1.m8 != 0) || (scriptUpdateSub0Sub0Var1.mC != 0))
+    {
+        assert(0);
+    }
+
+    //06008604
+    if (r12->m44 & 4)
+    {
+        assert(0);
+    }
+
+    //6008622
+    if (var14[0] > r12->m14[0] / 2)
+    {
+        var14[0] = r12->m14[0] / 2;
+    }
+
+    if (var14[0] < -r12->m14[0] / 2)
+    {
+        var14[0] = -r12->m14[0] / 2;
+    }
+
+    if (var14[1] > r12->m14[1] / 2)
+    {
+        var14[1] = r12->m14[1] / 2;
+    }
+
+    if (var14[1] < -r12->m14[1] / 2)
+    {
+        var14[1] = -r12->m14[1] / 2;
+    }
+
+    if (var14[2] > r12->m14[2] / 2)
+    {
+        var14[2] = r12->m14[2] / 2;
+    }
+
+    if (var14[2] < -r12->m14[2] / 2)
+    {
+        var14[2] = -r12->m14[2] / 2;
+    }
+
+    //6008668
+    sMatrix4x3 var20;
+    initMatrixToIdentity(&var20);
+    rotateMatrixYXZ(r12->m34_pRotation, &var20);
+    transformVec(var14, r12->m58_collisionSolveTranslation, var20);
+}
+
+void scriptUpdateSub0Sub4(sMainLogic_74* r4)
+{
+    popMatrix();
+
+    switch (r4->m0)
+    {
+    case 0:
+    case 1:
+        scriptUpdateSub0Sub4Sub0(r4);
+        break;
+    case 2:
+    case 3:
+        break;
+    default:
+        assert(0);
+        break;
+    }
+}
+
 void scriptUpdateSub0()
 {
-    for (int i = 0; i < 4; i++)
+    for (int r8 = 4-1; r8 > 0; r8--)
     {
-        if (resData.m8_headOfLinkedList[i])
+        sResData1C* r11 = resData.m8_headOfLinkedList[r8];
+        while (r11)
         {
-            FunctionUnimplemented();
+            sMainLogic_74* r14 = r11->m4;
+            r11 = r11->m0_pNext;
+
+            if (r14->m2_collisionLayersBitField)
+            {
+                scriptUpdateSub0Sub0(r14);
+                s32 r9 = r8 + 1;
+                do 
+                {
+                    if (r14->m2_collisionLayersBitField & (1 << r9))
+                    {
+                        sResData1C* r12 = resData.m8_headOfLinkedList[r9];
+                        while (r12)
+                        {
+                            sMainLogic_74* r13 = r12->m4;
+                            r12 = r12->m0_pNext;
+                            if (scriptUpdateSub0Sub1(r14, r13))
+                            {
+                                if ((r14->m0 == 0) && r13->m3C)
+                                {
+                                    //06007B16
+                                    copyToNpcDataTable0(r13->m3C, 1, r13->m38_pOwner, 0);
+                                }
+
+                                r14->m48 = r13;
+                                r13->m48 = r14;
+                                if (r14->m0 >= 2)
+                                {
+                                    goto endOfLoop;
+                                }
+                            }
+                        }
+                    }
+                } while (++r9 < 5);
+                //06007B3C
+                
+                if (r14->m2_collisionLayersBitField & 0x10)
+                {
+                    scriptUpdateSub0Sub2(r14, resData.m0);
+                }
+
+                handleCollisionWithTownEnv(r14);
+
+            endOfLoop:
+                //06007B4E
+                scriptUpdateSub0Sub4(r14);
+            }
         }
     }
 }
