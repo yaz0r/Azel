@@ -504,8 +504,8 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
             sVec3_FP var0 = r12->m0_position - r12->m54_oldPosition;
             var0 *= var0;
             s32 r4 = sqrt_I(var0[0] + var0[1] + var0[2]) * 0x1E1;
-            s32 r12 = pThis->m28 + r4;
-            pThis->m28 = r12 & 0xFFFF;
+            s32 r12 = pThis->m28_animationLeftOver + r4;
+            pThis->m28_animationLeftOver = r12 & 0xFFFF;
             if (r4)
             {
                 //0x605A1D0
@@ -564,12 +564,159 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
 
             break;
         }
+        case 4:
+            updateEdgeSub3(pThis);
+            break;
         default:
             assert(0);
             break;
         }
 
         EdgeUpdateSub0(&pThis->m84);
+    }
+
+    static void updateEdgeSub3Sub0(sEdgeTask* pThis)
+    {
+        if ((pThis->m14E-- == 0) || (pThis->m2C_currentAnimation < 5) || (pThis->m2C_currentAnimation > 8))
+        {
+            sSaturnPtr r13 = gTWN_RUIN->getSaturnPtr(0x60604B0);
+            s16 r12;
+            if ((readSaturnS16(r13 + 4) != pThis->m2C_currentAnimation) || (npcData0.mFC & 0x11))
+            {
+                //0605C1FE
+                r12 = readSaturnS16(r13 + 4);
+                pThis->m14E = readSaturnS16(r13 + 2) + performModulo2(readSaturnU16(r13 + 2), randomNumber() & 0x7FFFFFFF);
+            }
+            else
+            {
+                //0605C24C
+                u32 r4 = performModulo2(readSaturnU16(r13 + 6), randomNumber() & 0x7FFFFFFF);
+                sSaturnPtr r4Bis;
+                if (r4 <= readSaturnU8(r13 + 8))
+                {
+                    r4Bis = r13 + 8;
+                }
+                else if (r4 <= readSaturnU8(r13 + 0xC))
+                {
+                    r4Bis = r13 + 0xC;
+                }
+                else
+                {
+                    r4Bis = r13 + 0x10;
+                }
+
+                //605C27E
+                r12 = readSaturnS16(r4Bis + 2);
+                pThis->m14E = readSaturnU8(r4Bis + 1);
+            }
+
+            //0605C286
+            if (pThis->m2C_currentAnimation != r12)
+            {
+                s32 r6 = 0xA;
+                if (pThis->m2C_currentAnimation < 5)
+                {
+                    r6 = 5;
+                }
+
+                pThis->m2C_currentAnimation = r12;
+                sSaturnPtr var0 = pThis->m30_animationTable + pThis->m2C_currentAnimation * 4;
+                u8* buffer;
+                if (readSaturnU16(var0))
+                {
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                }
+                else
+                {
+                    buffer = pThis->m0_dramAllocation;
+                }
+
+                playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), r6);
+            }
+        }
+
+        //605C2C6
+        updateAndInterpolateAnimation(&pThis->m34_3dModel);
+    }
+
+    static void updateEdgeSub3(sEdgeTask* pThis)
+    {
+        sNPCE8* r13 = &pThis->mE8;
+        fixedPoint var8 = r13->m0_position[0] - r13->m54_oldPosition[0];
+        fixedPoint var0 = r13->m0_position[1] - r13->m54_oldPosition[1];
+        fixedPoint var4 = r13->m0_position[2] - r13->m54_oldPosition[2];
+
+        s32 r4 = sqrt_I(var8 * var8 + var0 * var0 + var4 * var4) * 0x1E1;
+        u32 animCounter = (pThis->m28_animationLeftOver + r4);
+        pThis->m28_animationLeftOver = animCounter & 0xFFFF;
+
+        if (r4 > 0x666)
+        {
+            //605C33C
+            switch (pThis->m2C_currentAnimation)
+            {
+            case 1:
+                if (r4 > 0x30000)
+                {
+                    //0605C3AE
+                    assert(0);
+                }
+                break;
+            default:
+            //0x605C3DA
+            {
+                pThis->m2C_currentAnimation = 1;
+                sSaturnPtr var0 = pThis->m30_animationTable + 4;
+                u8* buffer;
+                if (readSaturnU16(var0))
+                {
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                }
+                else
+                {
+                    buffer = pThis->m0_dramAllocation;
+                }
+
+                playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
+                break;
+            }
+            }
+
+            //0605C402
+            animCounter >>= 16;
+            if (animCounter)
+            {
+                if (pThis->m2C_currentAnimation == 1)
+                {
+                    do 
+                    {
+                        s32 frameIndex = stepAnimation(&pThis->m34_3dModel);
+                        if ( (frameIndex == 8) || (frameIndex == 0x1B))
+                        {
+                            playSoundEffect(0x22);
+                        }
+                    } while (--animCounter);
+                }
+                else
+                {
+                    do
+                    {
+                        s32 frameIndex = stepAnimation(&pThis->m34_3dModel);
+                        if ((frameIndex == 0xB) || (frameIndex == 0x2B))
+                        {
+                            playSoundEffect(0x23);
+                        }
+                    } while (--animCounter);
+                }
+            }
+            interpolateAnimation(&pThis->m34_3dModel);
+            pThis->m14E = 0;
+        }
+        else
+        {
+            //605C45E
+            updateEdgeSub3Sub0(pThis);
+        }
     }
 
     static void Draw(sEdgeTask* pThis)
@@ -604,7 +751,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
     }
 
     s16 m14C_inputFlags;
-    s8 m14E;
+    s16 m14E;
     s32 m150_inputX;
     s32 m154_inputY;
     s8 m178;
@@ -1628,11 +1775,30 @@ void updateEdgePosition(sNPC* r4)
     if (r14->m44 & 4)
     {
         //0605B9F0
-        assert(0);
+        if ((r14->m4C[0] != 0) || (r14->m4C[2] != 0))
+        {
+            if ((r14->m4C[0] == 0) && (r14->m4C[1] == 0))
+            {
+                var10.matrix[2] = var10.matrix[1];
+                var10.matrix[6] = var10.matrix[5];
+                var10.matrix[10] = var10.matrix[9];
+            }
+            else if ((r14->m4C[1] == 0) && (r14->m4C[2] == 0))
+            {
+                var10.matrix[0] = var10.matrix[1];
+                var10.matrix[4] = var10.matrix[5];
+                var10.matrix[8] = var10.matrix[9];
+            }
+            else
+            {
+                //605BA64
+                assert(0);
+            }
+        }
     }
 
     //0605BB48
-    if (r14->m44 & 4)
+    if ((r14->m44 & 4) && (r14->m4C[1] < 0xB504))
     {
         //605BB50
         assert(0);

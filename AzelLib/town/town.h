@@ -45,7 +45,7 @@ struct sNPC
     sSaturnPtr m18;
     s32 m1C;
     sVec2_FP m20;
-    fixedPoint m28;
+    fixedPoint m28_animationLeftOver;
     fixedPoint m2C_currentAnimation;
     sSaturnPtr m30_animationTable;
     s_3dModel m34_3dModel;
