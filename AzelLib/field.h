@@ -339,7 +339,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
 struct s_memoryAreaOutput
 {
     u8* m0_mainMemory;
-    u8* m4_characterArea;
+    u32 m4_characterArea;
 };
 
 struct s_dragonTaskWorkArea_1F0
@@ -725,7 +725,7 @@ struct s_FieldRadar : public s_workAreaTemplate<s_FieldRadar>
     s16 m2A;
     s32 m30;
     s32 m34;
-    u8* m3C;
+    u32 m3C;
     s8 m4C;
     s32 m50;
     s32 m54;
@@ -775,13 +775,13 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     static void Delete(s_FieldSubTaskWorkArea*);
 
     u8* memoryArea[3]; // 0
-    u8* characterArea[3]; // C
+    u32 characterArea[3]; // C
     u8* memoryArea_edge; // 18
-    u8* characterArea_edge; // 1C
+    u32 characterArea_edge; // 1C
     u8* memoryArea_bottom; // 20
     u8* memoryArea_top; // 24
-    u8* characterArea_bottom; // 28
-    u8* characterArea_top; // 2C
+    u32 characterArea_bottom; // 28
+    u32 characterArea_top; // 2C
     const s_MCB_CGB* fileList; // 30
     u32 MCBFilesSizes[32]; // 34
     u32 CGBFilesSizes[32]; // 1B4
@@ -953,8 +953,6 @@ void callGridCellDraw_normalSub2(p_workArea r4, s32 r5);
 void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6);
 void exitCutsceneTaskUpdateSub0Sub0();
 void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s32 r7);
-
-void allocateVramList(s_workArea* pWorkArea, u8* pBuffer, u32 bufferSize);
 
 bool findMandatoryFileOnDisc(const char* fileName);
 u32 getFileSizeFromFileId(const char* fileName);

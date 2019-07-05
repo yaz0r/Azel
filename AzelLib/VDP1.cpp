@@ -35,6 +35,7 @@ u8 getVdp1VramU8(u32 EA)
 u8* getVdp1Pointer(u32 EA)
 {
     u32 offset = EA - 0x25C00000;
+    assert(offset < 0x7FFFF);
     return VDP1Vram + offset;
 }
 

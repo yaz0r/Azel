@@ -212,7 +212,7 @@ struct sFileInfoSub
     u32 m_fileSize; //10 ?
                     //u32 m_14;//14 ?
     u16 m_18;//18 ? word
-    u8* m_patchPointerType; //1A ? word
+    u32 m1A_vdp1Data; //1A ? word
 };
 
 struct sFileInfo

@@ -20,10 +20,12 @@ std::unordered_map<u64, s_cachedTexture> textureCache;
 
 #define SAT2YAB1(alpha,temp)      (alpha << 24 | (temp & 0x1F) << 3 | (temp & 0x3E0) << 6 | (temp & 0x7C00) << 9)
 
-std::unordered_map<u8*, u8*> modelCharacterMap;
+std::unordered_map<u8*, u32> modelCharacterMap;
 
-void registerModelAndCharacter(u8* model, u8* character)
+void registerModelAndCharacter(u8* model, u32 character)
 {
+    assert(character >= 0x25C00000);
+    assert(character <= 0x25C7FFFF);
     modelCharacterMap[model] = character;
 }
 
@@ -34,7 +36,7 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
     auto characterSearch = modelCharacterMap.find(quad.model);
     if (characterSearch != modelCharacterMap.end())
     {
-        characterData = characterSearch->second;
+        characterData = getVdp1Pointer(characterSearch->second);
     }
     else
     {

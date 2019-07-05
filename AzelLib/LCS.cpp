@@ -1503,8 +1503,8 @@ void sLCSSelected::Update(sLCSSelected* pThis)
 
 void sLCSSelected::DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, const sInterpolator_FP& r6_interpolator)
 {
-    s32 CMDSRCA = ((m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + r5->m6_CMDSRCA;
-    s32 CMDCOLR = ((m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + r5->mA_CMDCOLR;
+    s32 CMDSRCA = ((m0.m4_characterArea - (0x25C00000)) >> 3) + r5->m6_CMDSRCA;
+    s32 CMDCOLR = ((m0.m4_characterArea - (0x25C00000)) >> 3) + r5->mA_CMDCOLR;
     s32 width = r5->mC_spriteWidth >> 12;
     s32 offsetX = r5->m14_offsetX >> 12;
     s32 height = r5->m10_spriteHeight >> 12;
@@ -1568,9 +1568,9 @@ void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6)
 {
     sSaturnPtr dataR6 = sSaturnPtr({ 0x6093B28, gFLD_A3 }) + 0x1C * r6;
 
-    s32 r0 = (r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3;
-    s32 var8 = ((r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + readSaturnS16(dataR6 + 6);
-    s32 var0 = ((r14->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + readSaturnS16(dataR6 + 0xA);
+    s32 r0 = (r14->m0.m4_characterArea - (0x25C00000)) >> 3;
+    s32 var8 = ((r14->m0.m4_characterArea - (0x25C00000)) >> 3) + readSaturnS16(dataR6 + 6);
+    s32 var0 = ((r14->m0.m4_characterArea - (0x25C00000)) >> 3) + readSaturnS16(dataR6 + 0xA);
     s32 var4 = readSaturnS32(dataR6 + 0xC) >> 12;
     s32 varC = readSaturnS32(dataR6 + 0x10) >> 12;
 

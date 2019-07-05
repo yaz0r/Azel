@@ -6,6 +6,7 @@
 #include "a3_fan.h"
 #include "a3_2_crashedImperialShip.h"
 
+#include "kernel/animation.h"
 #include "collision.h"
 
 void updateDragonDefault(s_dragonTaskWorkArea*);
@@ -4081,8 +4082,8 @@ void s_FieldRadar::dragonFieldSubTask2Init(s_FieldRadar* pTypedWorkArea)
     getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask = pTypedWorkArea;
 
     getMemoryArea(&pTypedWorkArea->m0, 0);
-    u32 r2 = pTypedWorkArea->m0.m4_characterArea - getVdp1Pointer(0x25C00000);
-    pTypedWorkArea->m3C = getVdp1Pointer(0x25C00000) + ((0x1748 + (r2 >> 3)) << 3);
+    u32 r2 = pTypedWorkArea->m0.m4_characterArea - (0x25C00000);
+    pTypedWorkArea->m3C = (0x25C00000) + ((0x1748 + (r2 >> 3)) << 3);
     pTypedWorkArea->m8 = 0x50;
     pTypedWorkArea->mC = pTypedWorkArea->m8 + 0x30;
     pTypedWorkArea->mE = -pTypedWorkArea->mA + 0x60;
@@ -4151,7 +4152,7 @@ void s_FieldRadar::dragonFieldSubTask2Update(s_FieldRadar* pTypedWorkArea)
     {
         s8 paletteIndex = paletteIndexTable[pTypedWorkArea->m4C];
 
-        asyncDmaCopy(fieldPalettes[paletteIndex], pTypedWorkArea->m3C, 0x20, 0);
+        asyncDmaCopy(fieldPalettes[paletteIndex], getVdp1Pointer(pTypedWorkArea->m3C), 0x20, 0);
     }
 
 
@@ -4321,7 +4322,7 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 
 void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDragonState, int param2)
 {
-    dragonFieldTaskInitSub3Sub1(&pDragonState->m28_dragon3dModel, pDragonState->m0_pDragonModelRawData + READ_BE_U32(pDragonState->m0_pDragonModelRawData + pDragonState->m20_dragonAnimOffsets[param2]));
+    setupModelAnimation(&pDragonState->m28_dragon3dModel, pDragonState->m0_pDragonModelRawData + READ_BE_U32(pDragonState->m0_pDragonModelRawData + pDragonState->m20_dragonAnimOffsets[param2]));
     updateAndInterpolateAnimation(&pDragonState->m28_dragon3dModel);
 
     pWorkArea->m23A_dragonAnimation = param2;
@@ -5532,7 +5533,7 @@ void dragonFieldPlayAnimation(s_dragonTaskWorkArea* r14, s_dragonState* r13, u8 
 
     if (r5 == r4)
     {
-        dragonFieldTaskInitSub3Sub1(&r13->m28_dragon3dModel, r13->m0_pDragonModelRawData + READ_BE_U32(r13->m0_pDragonModelRawData + r13->m20_dragonAnimOffsets[r12]));
+        setupModelAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelRawData + READ_BE_U32(r13->m0_pDragonModelRawData + r13->m20_dragonAnimOffsets[r12]));
         r14->m23B = 1;
     }
     else
@@ -6779,7 +6780,7 @@ void s_LCSTask340Sub::Init0(s_LCSTask340Sub* pThis, sLaserArgs* arg)
 
     pThis->m154++;
 
-    pThis->Init3Sub3(&pThis->m58, (pThis->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3, { 0x0609518C, gFLD_A3 });
+    pThis->Init3Sub3(&pThis->m58, (pThis->m0.m4_characterArea - (0x25C00000)) >> 3, { 0x0609518C, gFLD_A3 });
 }
 
 void s_LCSTask340Sub::Init1(s_LCSTask340Sub* pThis, sLaserArgs* arg)
@@ -6970,7 +6971,7 @@ void s_LCSTask340Sub::Init3(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m28_laserInit(pThis);
 
     pThis->m154++;
-    pThis->Init3Sub3(&pThis->m58, (pThis->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3, { 0x06095330, gFLD_A3 });
+    pThis->Init3Sub3(&pThis->m58, (pThis->m0.m4_characterArea - (0x25C00000)) >> 3, { 0x06095330, gFLD_A3 });
 }
 
 static const std::array<fixedPoint, 16> s_LCSTask340Sub_Init1Sub0Data0 = {
@@ -7312,8 +7313,8 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     auto r12 = r11.m14_vdp1Context[0].m10 - 1;
     u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
-    u16 CMDCOLR = ((r4->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
-    u16 CMDSRCA = ((r4->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
+    u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
+    u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
     u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
 
     setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // CMDCTRL distorted sprite
@@ -7355,8 +7356,8 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
         graphicEngineStatus.m14_vdp1Context[0].m10++;
         auto r9 = graphicEngineStatus.m14_vdp1Context[0].m10 - 1;
 
-        u16 CMDCOLR = ((r4->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + Laser1DrawSub3Data0.m0;
-        u16 CMDSRCA = ((r4->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + Laser1DrawSub3Data0.m4;
+        u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub3Data0.m0;
+        u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub3Data0.m4;
         u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
 
         setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // CMDCTRL distorted sprite
@@ -7395,8 +7396,8 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     graphicEngineStatus.m14_vdp1Context[0].m10++;
     auto r9 = graphicEngineStatus.m14_vdp1Context[0].m10 - 1;
 
-    u16 CMDCOLR = ((r4->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
-    u16 CMDSRCA = ((r4->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
+    u16 CMDCOLR = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
+    u16 CMDSRCA = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
     u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
 
     setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // CMDCTRL distorted sprite

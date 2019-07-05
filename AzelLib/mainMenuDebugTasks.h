@@ -9,7 +9,6 @@ p_workArea createMovieDebugTask(p_workArea);
 p_workArea createNewGameTask(p_workArea pWorkArea);
 p_workArea createContinueTask(p_workArea pWorkArea);
 
-u32 dragonFieldTaskInitSub3Sub1(s_3dModel* r4, u8* r5);
 u32 updateAndInterpolateAnimation(s_3dModel* r4);
 
 p_workArea createMenuTask(p_workArea parentTask);
@@ -92,13 +91,6 @@ struct s_fileEntry
 extern std::vector<s_fileEntry> dramAllocatorEnd;
 
 u8* dramAllocate(u32 size);
-
-struct sVdp1Allocation
-{
-    u8* m0;
-    u8* m4_baseInVdp1Memory;
-};
-sVdp1Allocation* vdp1Allocate(u32 size);
 
 struct s_exitMenuTaskSub1Task : public s_workAreaTemplateWithArg<s_exitMenuTaskSub1Task, s32>
 {

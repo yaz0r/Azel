@@ -496,7 +496,7 @@ struct sMemoryLayoutNode // size is 0x10
 {
     sMemoryLayoutNode* pNext; //0
     char m_fileName[32]; //4
-    u8* m_6;//6
+    s16 m6_vdp1;//6
     u8* m_destination;//8
     u32 m_size;//C
 };
@@ -517,7 +517,7 @@ void displayMemoryLayout()
 }
 
 
-bool addFileToMemoryLayout(const char* fileName, u8* destination, u32 fileSize, u8* characterArea)
+bool addFileToMemoryLayout(const char* fileName, u8* destination, u32 fileSize, u32 characterArea)
 {
     sMemoryLayoutNode** r13 = &memoryLayout.pAllocatedHead;
 
@@ -533,7 +533,7 @@ bool addFileToMemoryLayout(const char* fileName, u8* destination, u32 fileSize, 
         pNode->pNext = NULL;
 
         strcpy(pNode->m_fileName, fileName);
-        pNode->m_6 = characterArea;
+        pNode->m6_vdp1 = characterArea;
         pNode->m_destination = destination;
         pNode->m_size = fileSize;
     }
@@ -542,16 +542,16 @@ bool addFileToMemoryLayout(const char* fileName, u8* destination, u32 fileSize, 
     return false;
 }
 
-void patchFilePointers(u8* destination, u8* characterArea)
+void patchFilePointers(u8* destination, u32 characterArea)
 {
 
 }
 
-int loadFile(const char* fileName, u8* destination, u8* characterArea)
+int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 {
     if (strstr(fileName, ".MCB"))
     {
-        registerModelAndCharacter(destination, characterArea);
+        registerModelAndCharacter(destination, 0x25C00000 + (vdp1Pointer << 3));
     }
 
     sFileInfoSub* pFileHandle = openFileHandle(fileName);
@@ -561,7 +561,7 @@ int loadFile(const char* fileName, u8* destination, u8* characterArea)
         return -1;
     }
 
-    if (addFileToMemoryLayout(fileName, destination, pFileHandle->m_fileSize, characterArea))
+    if (addFileToMemoryLayout(fileName, destination, pFileHandle->m_fileSize, vdp1Pointer))
     {
         assert(0);
     }
@@ -571,13 +571,13 @@ int loadFile(const char* fileName, u8* destination, u8* characterArea)
     fileInfoStruct.m0 = 1;
 
     pFileHandle->m_18 = 0;
-    pFileHandle->m_patchPointerType = characterArea;
+    pFileHandle->m1A_vdp1Data = vdp1Pointer;
 
     fread(destination, pFileHandle->m_fileSize, 1, pFileHandle->fHandle);
 
-    if (characterArea)
+    if (vdp1Pointer)
     {
-        patchFilePointers(destination, characterArea);
+        patchFilePointers(destination, vdp1Pointer);
     }
 
     fclose(pFileHandle->fHandle);

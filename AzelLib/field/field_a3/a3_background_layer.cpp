@@ -37,8 +37,8 @@ struct s_A3_BackgroundLayer : public s_workAreaTemplate<s_A3_BackgroundLayer>
     static void Init(s_A3_BackgroundLayer* pThis)
     {
         getMemoryArea(&pThis->m0, 1);
-        pThis->m18 = (pThis->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3;
-        pThis->m1A = 0x228 + ((pThis->m0.m4_characterArea - getVdp1Pointer(0x25C00000)) >> 3);
+        pThis->m18 = (pThis->m0.m4_characterArea - (0x25C00000)) >> 3;
+        pThis->m1A = 0x228 + ((pThis->m0.m4_characterArea - (0x25C00000)) >> 3);
         pThis->m10 = -4;
         pThis->m14 = 5;
     }

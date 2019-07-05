@@ -10,16 +10,7 @@ sResData resData;
 s32 resValue0 = 0;
 sScriptTask* currentResTask = nullptr;
 
-struct sResCameraProperties
-{
-    s32 m8;
-    s32 mC;
-    s32 m10;
-    fixedPoint m18;
-    fixedPoint m24;
-    fixedPoint m2C;
-    fixedPoint m30;
-}resCameraProperties;
+sResCameraProperties resCameraProperties;
 
 void copyCameraPropertiesToRes()
 {
@@ -967,6 +958,16 @@ void sScriptTask::Init(sScriptTask* pThis)
     copyCameraPropertiesToRes();
 }
 
+void scriptUpdateSub1()
+{
+    FunctionUnimplemented();
+}
+
+void scriptUpdateSub2()
+{
+    FunctionUnimplemented();
+}
+
 void sScriptTask::Update(sScriptTask* pThis)
 {
     if (pThis->m18)
@@ -976,9 +977,52 @@ void sScriptTask::Update(sScriptTask* pThis)
 
     pThis->m8 = 0;
     pThis->m4 = 0;
-    if (npcData0.mFC & 0x10)
+    if (!(npcData0.mFC & 0x10))
     {
-        assert(0);
+        pThis->m8 = 0;
+        pThis->m4 = 0;
+    }
+    else if(!(npcData0.mFC & 1))
+    {
+        if (pThis->m8 == 2)
+        {
+            assert(0);
+        }
+
+        //60305A8
+        scriptUpdateSub1();
+        scriptUpdateSub2();
+
+        switch (resCameraProperties.m10)
+        {
+        case 1:
+        case 2:
+            pThis->m8 = resCameraProperties.m10;
+            pThis->mC = resCameraProperties.m14;
+            break;
+        default:
+            break;
+        }
+
+        //06030618
+        sNpcData* r13 = &npcData0;
+        switch (pThis->m8)
+        {
+        case 0:
+            r13 = nullptr;
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        //06030670
+        if (r13)
+        {
+            assert(0);
+        }
+
+        pThis->m4 = r13;
     }
 
     // 060306B4

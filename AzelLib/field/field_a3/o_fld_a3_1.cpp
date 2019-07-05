@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "kernel/animation.h"
 #include "a3_background_layer.h"
 // Above Excavation
 

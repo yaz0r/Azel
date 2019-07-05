@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "o_fld_a3_0.h"
 #include "o_fld_a3_4.h"
+#include "kernel/animation.h"
 
 struct fieldA3_8_exitTask : public s_workAreaTemplate<fieldA3_8_exitTask>
 {

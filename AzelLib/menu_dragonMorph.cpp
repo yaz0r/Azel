@@ -64,63 +64,6 @@ void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
     pushProjectionStack();
 }
 
-u32 setupPoseInterpolation(s_3dModel* pModel, u32 interpolationLength)
-{
-    if ((interpolationLength > 0) && (pModel->m38 == 0))
-    {
-        if (pModel->m48_poseDataInterpolation.size())
-        {
-            for (int i = 0; i < pModel->m12_numBones; i++)
-            {
-                pModel->m48_poseDataInterpolation[i].m24_halfTranslation = pModel->m2C_poseData[i].m0_translation;
-                pModel->m48_poseDataInterpolation[i].m30_halfRotation = pModel->m2C_poseData[i].mC_rotation;
-                pModel->m48_poseDataInterpolation[i].m3C_halfScale = pModel->m2C_poseData[i].m18_scale;
-            }
-        }
-        else
-        {
-            pModel->m48_poseDataInterpolation.resize(pModel->m12_numBones);
-            if (pModel->m48_poseDataInterpolation.size() == 0)
-            {
-                pModel->m4C_interpolationStep = 0;
-                pModel->m4E_interpolationLength = 0;
-                return 0;
-            }
-
-            for (int i = 0; i < pModel->m12_numBones; i++)
-            {
-                pModel->m48_poseDataInterpolation[i].m24_halfTranslation = pModel->m2C_poseData[i].m0_translation;
-                pModel->m48_poseDataInterpolation[i].m0_translation = pModel->m2C_poseData[i].m0_translation;
-                pModel->m48_poseDataInterpolation[i].m30_halfRotation = pModel->m2C_poseData[i].mC_rotation;
-                pModel->m48_poseDataInterpolation[i].mC_rotation = pModel->m2C_poseData[i].mC_rotation;
-                pModel->m48_poseDataInterpolation[i].m3C_halfScale = pModel->m2C_poseData[i].m18_scale;
-                pModel->m48_poseDataInterpolation[i].m18_scale = pModel->m2C_poseData[i].m18_scale;
-            }
-        }
-
-        pModel->m4C_interpolationStep = 0;
-        pModel->m4E_interpolationLength = interpolationLength;
-        return 1;
-    }
-    else
-    {
-        pModel->m4C_interpolationStep = 0;
-        pModel->m4E_interpolationLength = 0;
-        return 0;
-    }
-}
-
-void playAnimation(s_3dModel* pDragonStateData1, u8* r5, u32 r6)
-{
-    if (setupPoseInterpolation(pDragonStateData1, r6) && ((pDragonStateData1->mA_animationFlags & 0x200) == 0))
-    {
-        assert(0);
-    }
-    else
-    {
-        dragonFieldTaskInitSub3Sub1(pDragonStateData1, r5);
-    }
-}
 
 void dragonMenuDragonInitSub3(s3DModelAnimData* pDragonStateData2)
 {

@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "kernel/animation.h"
 #include "a3_2_crashedImperialShip.h"
 
 void fieldA3_2_createCrashedImpertialShipExplosions(p_workArea)

@@ -90,7 +90,7 @@ struct s_workAreaTemplate : public s_workAreaTemplateWithArg<T>
 struct s_workAreaCopy : public s_workArea
 {
     u8* m0_dramAllocation;
-    struct sVdp1Allocation* m4_vd1Allocation;
+    struct s_vdp1AllocationNode* m4_vd1Allocation;
 };
 
 template<typename T, typename... argType>

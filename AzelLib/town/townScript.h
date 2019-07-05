@@ -12,8 +12,9 @@ struct sScriptTask : public s_workAreaTemplate<sScriptTask>
     static void Update(sScriptTask* pThis);
     static void Draw(sScriptTask* pThis);
 
-    s32 m4;
+    sNpcData* m4;
     s32 m8;
+    s32 mC;
     s32 m18;
     //size 0x20
 };
@@ -33,6 +34,23 @@ struct sResData
     std::array<sResData1C, 0x3F>m1C;
 };
 extern sResData resData;
+
+struct sResCameraProperties
+{
+    fixedPoint m0;
+    fixedPoint m4;
+    s32 m8;
+    s32 mC;
+    s32 m10;
+    s32 m14;
+    fixedPoint m18;
+    fixedPoint m20;
+    fixedPoint m24;
+    fixedPoint m28;
+    fixedPoint m2C;
+    fixedPoint m30;
+};
+extern sResCameraProperties resCameraProperties;
 
 s32 setSomethingInNpc0(s32 arg0, s32 arg1);
 void startScriptTask(p_workArea r4);

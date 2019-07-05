@@ -2,6 +2,7 @@
 #include "town.h"
 #include "townScript.h"
 #include "town/ruin/twn_ruin.h"
+#include "kernel/vdp1Allocator.h"
 
 p_workArea townVar0 = nullptr;
 
@@ -169,7 +170,7 @@ npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32
 {
     npcFileDeleter* r13 = createSubTask<npcFileDeleter>(r4);
 
-    sVdp1Allocation* r14_vdp1Memory = nullptr;
+    s_vdp1AllocationNode* r14_vdp1Memory = nullptr;
     if (vramFileSize)
     {
         r14_vdp1Memory = vdp1Allocate(vramFileSize);
@@ -183,16 +184,16 @@ npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32
 
     if (r14_vdp1Memory)
     {
-        loadFile(ramFileName.c_str(), r12_dramMemory, r14_vdp1Memory->m4_baseInVdp1Memory);
+        loadFile(ramFileName.c_str(), r12_dramMemory, r14_vdp1Memory->m4_vdp1Memory);
     }
     else
     {
-        loadFile(ramFileName.c_str(), r12_dramMemory, (u8*)1);
+        loadFile(ramFileName.c_str(), r12_dramMemory, 1);
     }
 
     if (r14_vdp1Memory)
     {
-        loadFile(vramFileName.c_str(), r14_vdp1Memory->m4_baseInVdp1Memory, nullptr);
+        loadFile(vramFileName.c_str(), getVdp1Pointer((r14_vdp1Memory->m4_vdp1Memory << 3) + 0x25C00000), 0);
     }
 
     r13->m0_dramAllocation = r12_dramMemory;

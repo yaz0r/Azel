@@ -199,6 +199,14 @@ struct sVec2_FP
     {
         return m_value[i];
     }
+
+    sVec2_FP& operator-=(const sVec2_FP otherVec)
+    {
+        m_value[0] -= otherVec[0];
+        m_value[1] -= otherVec[1];
+
+        return *this;
+    }
 };
 
 #include "kernel/fade.h"
@@ -590,13 +598,6 @@ extern s_dragonState* gDragonState;
 
 extern u8 playerDataMemoryBuffer[0x28000];
 
-struct s_vdp1AllocatorNode
-{
-    s_vdp1AllocatorNode* m_nextAllocator;
-    s_vdp1AllocatorNode* m_nextNode;
-};
-extern s_vdp1AllocatorNode* vdp1AllocatorHead;
-
 struct s_graphicEngineStatus_40AC
 {
     u8 m0_menuId; // 0 what menu to open
@@ -791,5 +792,5 @@ fixedPoint getSin(u32 value);
 extern u16 atanTable[2049];
 extern u16 resetVdp2StringsData[4106];
 
-void registerModelAndCharacter(u8* model, u8* character);
+void registerModelAndCharacter(u8* model, u32 character);
 
