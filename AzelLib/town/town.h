@@ -1,5 +1,20 @@
 #pragma once
 
+struct sTownObject
+{
+    // 0-4 are copy
+    struct sCellObjectListNode* m8;
+};
+
+struct sTownOverlay : public sSaturnMemoryFile
+{
+    virtual void init() = 0;
+    virtual sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(struct npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) = 0;
+    virtual sTownObject* createObjectTaskFromEA_subTaskWithEAArg(struct npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) = 0;
+};
+
+extern sTownOverlay* gCurrentTownOverlay;
+
 struct sNPCE8
 {
     sVec3_FP m0_position;
@@ -26,7 +41,7 @@ struct sMainLogic_74
     sVec3_FP* m34_pRotation;
     p_workArea m38_pOwner;
     s32 m3C;
-    u8* m40;
+    u32 m40;
     s32 m44;
     sMainLogic_74* m48;
     sVec3_FP m4C;
@@ -62,6 +77,12 @@ struct sNpcData4
     //size 0x14
 };
 
+struct NPCProxy
+{
+    p_workArea workArea;
+    sNPC* pNPC;
+};
+
 struct sNpcData
 {
     s32 m0_numExtraScriptsIterations;
@@ -75,7 +96,7 @@ struct sNpcData
     sSaturnPtr m64_scriptList;
     s32 m68_nulLCSTargets;
     sSaturnPtr m6C_LCSTargets;
-    std::array<sNPC*, 8> m70_npcPointerArray;
+    std::array<NPCProxy, 32> m70_npcPointerArray;
     s32 mF0;
     s32 mF4;
     s32 mF8;
@@ -127,6 +148,25 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
         FunctionUnimplemented();
     }
 
+    ////////////////////////////
+    static TypedTaskDefinition* getTypedTaskDefinition_townObject()
+    {
+        static TypedTaskDefinition taskDefinition = { nullptr, &npcFileDeleter::Update_TownObject, nullptr, &npcFileDeleter::Delete_TownObject };
+        return &taskDefinition;
+    }
+
+    static void Update_TownObject(npcFileDeleter* pThis)
+    {
+        FunctionUnimplemented();
+    }
+
+    static void Delete_TownObject(npcFileDeleter* pThis)
+    {
+        FunctionUnimplemented();
+    }
+    //////////////////////////////
+
+
     //copy 0/4
     s16 m8;
     s16 mA;
@@ -139,12 +179,14 @@ npcFileDeleter* allocateNPC(struct sScriptTask* r4, s32 r5);
 extern p_workArea townVar0;
 
 s32 initNPC(s32 arg);
-s32 initNPCFromStruct(s32);
+s32 initNPCFromStruct(sSaturnPtr);
 void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y);
 
-struct sInitNPCSub0Var0Sub144
+struct sCellObjectListNode
 {
-    sInitNPCSub0Var0Sub144* m0_next;
+    sCellObjectListNode* m0_next;
+    sSaturnPtr m4;
+    sTownObject* m8;
     //size 0xC
 };
 
@@ -184,13 +226,15 @@ struct sTownGrid
     sSaturnPtr m38_EnvironmentSetup;
     s32* m3C;
     std::array<std::array<sEnvironmentTask*, 8>, 8> m40_cellTasks;
-    std::vector<sSaturnPtr> m140;
-    sInitNPCSub0Var0Sub144* m144;
-    std::array<sInitNPCSub0Var0Sub144, 0x40> m148;
+    std::vector<sCellObjectListNode*> m140_perCellObjectList;
+    sCellObjectListNode* m144_nextFreeObjectListNode;
+    std::array<sCellObjectListNode, 0x40> m148_objectListNodes;
 
 };
 
 extern sTownGrid gTownGrid;
+
+s32 isDataLoaded(s32 fileIndex);
 
 // todo: kernel
 s32 MTH_Mul32(fixedPoint a, fixedPoint b);

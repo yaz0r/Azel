@@ -5,13 +5,35 @@
 #include "kernel/animation.h"
 #include "kernel/vdp1Allocator.h"
 
+#include "twn_ruin_lock.h"
+
 void updateEdgePosition(sNPC* r4);
 
-struct TWN_RUIN_data : public sSaturnMemoryFile
+struct TWN_RUIN_data : public sTownOverlay
 {
-    void init()
+    void init() override
     {
+        gCurrentTownOverlay = this;
+    }
 
+    sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override
+    {
+        assert(definitionEA.m_file == this);
+        assert(arg.m_file == this);
+
+        switch (definitionEA.m_offset)
+        {
+        case 0x605EA20:
+            return createSiblingTaskWithArgWithCopy<sLockTask>(parent, arg);
+        default:
+            break;
+        }
+        return nullptr;
+    }
+
+    sTownObject* createObjectTaskFromEA_subTaskWithEAArg(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override
+    {
+        return nullptr;
     }
 };
 
@@ -77,7 +99,8 @@ void registerNpcs(sSaturnPtr r4_objectTable, sSaturnPtr r5_script, s32 r6)
 
     for (int i = 0; i < npcData0.m70_npcPointerArray.size(); i++)
     {
-        npcData0.m70_npcPointerArray[i] = nullptr;
+        npcData0.m70_npcPointerArray[i].workArea = nullptr;
+        npcData0.m70_npcPointerArray[i].pNPC = nullptr;
     }
 
     townVar0 = nullptr;
@@ -346,7 +369,8 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
 
     static void initEdgeNPC(sEdgeTask* pThis, sSaturnPtr arg)
     {
-        npcData0.m70_npcPointerArray[readSaturnU8(arg + 0x20)] = pThis;
+        npcData0.m70_npcPointerArray[readSaturnU8(arg + 0x20)].workArea = pThis;
+        npcData0.m70_npcPointerArray[readSaturnU8(arg + 0x20)].pNPC = pThis;
         pThis->mC = 0;
         pThis->m10_InitPtr = arg;
         pThis->m1C = readSaturnS32(arg + 0x28);
@@ -367,11 +391,11 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         pThis->m84.m3C = readSaturnS32(arg + 0x38);
         if (u16 offset = readSaturnU16(arg + 0x36))
         {
-            pThis->m84.m40 = pThis->m0_dramAllocation + offset;
+            pThis->m84.m40 = READ_BE_U32(pThis->m0_dramAllocation + offset);
         }
         else
         {
-            pThis->m84.m40 = nullptr;
+            pThis->m84.m40 = 0;
         }
 
         mainLogicInitSub0(&pThis->m84, readSaturnU8(arg + 0x34));
@@ -796,24 +820,23 @@ void drawLcsSprite(const sVec2_S16& r4, s32 r5_index)
 
     sVec2_S16 var14;
     var14[0] = var10[0] + var8;
-    var14[1] = varC - var10[1];
+    var14[1] = var10[1] - varC;
 
     //////////
     u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
     setVdp1VramU16(vdp1WriteEA + 0x00, readSaturnU16(r5_spriteData + 2)); // command
     setVdp1VramU16(vdp1WriteEA + 0x04, readSaturnU16(r5_spriteData + 4)); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, var0); // CMDCOLR
     setVdp1VramU16(vdp1WriteEA + 0x08, var4 ); // CMDSRCA
     setVdp1VramU16(vdp1WriteEA + 0x0A, readSaturnU16(r5_spriteData + 8)); // CMDSIZE
-    //setVdp1VramU16(vdp1WriteEA + 0x06, arg0); // CMDCOLR
     setVdp1VramU16(vdp1WriteEA + 0x0C, var10[0]); // CMDXA
     setVdp1VramU16(vdp1WriteEA + 0x0E, -var10[1]); // CMDYA
     setVdp1VramU16(vdp1WriteEA + 0x14, var14[0]);
     setVdp1VramU16(vdp1WriteEA + 0x16, -var14[1]);
 
-    //s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
-    //pExtendedCommand->depth = 0;
-    //pExtendedCommand->depth = (float)r5_distance.asS32() / (float)graphicEngineStatus.m405C.m14_farClipDistance.asS32();
+    s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
+    pExtendedCommand->depth = 0;
 
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
@@ -829,8 +852,8 @@ void drawLcs()
     if ((npcData0.mFC & 0x10) && !(npcData0.mFC & 0x8))
     {
         sVec2_S16 var0;
-        var0[0] = resCameraProperties.m0.getInteger();
-        var0[1] = resCameraProperties.m4.getInteger();
+        var0[0] = resCameraProperties.m0_LCS_X.getInteger();
+        var0[1] = resCameraProperties.m4_LCS_Y.getInteger();
 
         drawLcsSprite(var0, 0);
 
@@ -904,7 +927,7 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
         pThis->m74.m34_pRotation = &pThis->m68_rotation;
         pThis->m74.m38_pOwner = pThis;
         pThis->m74.m3C = 0;
-        pThis->m74.m40 = nullptr;
+        pThis->m74.m40 = 0;
 
         mainLogicInitSub0(&pThis->m74, 0);
         mainLogicInitSub1(&pThis->m74, gTWN_RUIN->getSaturnPtr(0x605EEE4), gTWN_RUIN->getSaturnPtr(0x605EEF0));
@@ -992,8 +1015,8 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
             // enter LCS
             npcData0.mFC |= 0x12;
             graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
-            resCameraProperties.m4 = 0;
-            resCameraProperties.m0 = 0;
+            resCameraProperties.m4_LCS_Y = 0;
+            resCameraProperties.m0_LCS_X = 0;
             pThis->m3 = 0;
             pThis->m30 = pThis->m68_rotation[1];
         }
@@ -1219,12 +1242,30 @@ void mainLogicUpdateSub5(sMainLogic* r4)
     updateCameraTarget(r4, var0);
 }
 
-void cameraFollowMode0_LCSSub0(sMainLogic* r14_pose)
+void moveTownLCSCursor(sMainLogic* r4)
 {
-    FunctionUnimplemented();
+    resCameraProperties.m0_LCS_X += MTH_Mul(0x50000, -r4->m8_inputX);
+    if (resCameraProperties.m0_LCS_X > 0x7428F5)
+    {
+        resCameraProperties.m0_LCS_X = 0x7428F5;
+    }
+    if (resCameraProperties.m0_LCS_X < -0x7428F5)
+    {
+        resCameraProperties.m0_LCS_X = -0x7428F5;
+    }
+
+    resCameraProperties.m4_LCS_Y += MTH_Mul(0x50000, r4->mC_inputY);
+    if (resCameraProperties.m4_LCS_Y > 0x49EB85)
+    {
+        resCameraProperties.m4_LCS_Y = 0x49EB85;
+    }
+    if (resCameraProperties.m4_LCS_Y < -0x49EB85)
+    {
+        resCameraProperties.m4_LCS_Y = -0x49EB85;
+    }
 }
 
-void cameraFollowMode0_LCSSub1(sMainLogic* r14_pose)
+void cameraFollowMode0_LCSSub1(sMainLogic* r4)
 {
     FunctionUnimplemented();
 }
@@ -1260,7 +1301,7 @@ void cameraFollowMode0_LCS(sMainLogic* r14_pose)
     }
     //60561E6
     r14_pose->m68_rotation[1] += MTH_Mul(fixedPoint(r14_pose->m30 - r14_pose->m68_rotation[1]).normalized(), 0x1999);
-    cameraFollowMode0_LCSSub0(r14_pose);
+    moveTownLCSCursor(r14_pose);
     r14_pose->m24_distance = vecDistance(r14_pose->m18_position, r14_pose->m5C_position);
     fixedPoint r4 = MTH_Mul(cameraParams[r14_pose->m1_cameraParamsIndex][0] - r14_pose->m24_distance, 0x1999);
     if (r4 > 0x599)
@@ -1842,8 +1883,8 @@ void updateEdgePositionSub3(sEdgeTask* r4)
         updateEdgePositionSub3Sub0(0x1800);
         sVec3_FP var14;
 
-        var14[0] = pCurrentMatrix->matrix[3] - setDividend(resCameraProperties.m0, resCameraProperties.m28, resCameraProperties.m2C);
-        var14[1] = pCurrentMatrix->matrix[7] - setDividend(resCameraProperties.m4, resCameraProperties.m28, resCameraProperties.m30);
+        var14[0] = pCurrentMatrix->matrix[3] - setDividend(resCameraProperties.m0_LCS_X, resCameraProperties.m28, resCameraProperties.m2C);
+        var14[1] = pCurrentMatrix->matrix[7] - setDividend(resCameraProperties.m4_LCS_Y, resCameraProperties.m28, resCameraProperties.m30);
         var14[2] = pCurrentMatrix->matrix[11] - resCameraProperties.m28;
 
         sVec2_FP varC;
@@ -1880,7 +1921,7 @@ void updateEdgePositionSub3(sEdgeTask* r4)
         {
             varC[1] = 0x38E38E3;
         }
-            
+
         r4->m20[0] += MTH_Mul(varC[0] - r4->m20[0], 0xB333);
         r4->m20[1] += MTH_Mul(varC[1] - r4->m20[1], 0xB333);
     }

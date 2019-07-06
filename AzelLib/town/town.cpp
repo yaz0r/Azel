@@ -4,6 +4,8 @@
 #include "town/ruin/twn_ruin.h"
 #include "kernel/vdp1Allocator.h"
 
+sTownOverlay* gCurrentTownOverlay = nullptr;
+
 p_workArea townVar0 = nullptr;
 
 u8 townBuffer[0xB0000];
@@ -43,14 +45,83 @@ fixedPoint generateObjectMatrix(sSaturnPtr r4, sSaturnPtr r5)
     return pCurrentMatrix->matrix[11];
 }
 
+void loadTownFile(std::string& filename, u8* destination, u16 relocation)
+{
+    // TODO: what is the difference?
+    loadFile(filename.c_str(), destination, relocation);
+}
+
+npcFileDeleter* createEnvironmentTask2Sub0Sub0(p_workArea r4_parent, s32 r5)
+{
+    s_fileEntry& r14 = dramAllocatorEnd[r5];
+    if (r14.m8_refcount++)
+    {
+        return r14.mC_buffer;
+    }
+
+    // first use
+    npcFileDeleter* r12 = createSubTask<npcFileDeleter>(r4_parent, npcFileDeleter::getTypedTaskDefinition_townObject());
+
+    s_fileEntry& r10_vdp1File = dramAllocatorEnd[r5 + 1];
+    s_vdp1AllocationNode* r13_vdp1Allocation = nullptr;
+    if (r10_vdp1File.m4_fileSize)
+    {
+        r13_vdp1Allocation = vdp1Allocate(r10_vdp1File.m4_fileSize);
+    }
+
+    u8* r11_dramAllocation = nullptr;
+    if (r14.m4_fileSize)
+    {
+        r11_dramAllocation = dramAllocate(r14.m4_fileSize);
+    }
+
+    if (r13_vdp1Allocation)
+    {
+        loadTownFile(r14.mFileName, r11_dramAllocation, r13_vdp1Allocation->m4_vdp1Memory);
+    }
+    else
+    {
+        loadTownFile(r14.mFileName, r11_dramAllocation, 1);
+    }
+
+    if (r13_vdp1Allocation)
+    {
+        loadTownFile(r10_vdp1File.mFileName, getVdp1Pointer(0x25C00000 + (r13_vdp1Allocation->m4_vdp1Memory << 3)), 0);
+    }
+
+    r14.mC_buffer = r12;
+    r12->m0_dramAllocation = r11_dramAllocation;
+    r12->m4_vd1Allocation = r13_vdp1Allocation;
+    r12->m8 = r14.m0_fileID >> 16;
+    r12->mA = r10_vdp1File.m0_fileID >> 16;
+    r12->mC = r5;
+}
+
 void createEnvironmentTask2Sub0(s32 r4_currentX, s32 r5_currentY)
 {
     s32 index = gTownGrid.m0_sizeX * r5_currentY + r4_currentX;
-    sSaturnPtr r14 = gTownGrid.m140[index];
+    sCellObjectListNode* r14 = gTownGrid.m140_perCellObjectList[index];
 
-    while (r14.m_offset)
+    while (r14)
     {
-        assert(0);
+        if (r14->m8 == nullptr)
+        {
+            s32 r3 = readSaturnS32(r14->m4);
+            sSaturnPtr r12 = readSaturnEA(r14->m4 + 4);
+            sTownObject* r0 = nullptr;
+            if (r3 > 0)
+            {
+                r0 = gCurrentTownOverlay->createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(createEnvironmentTask2Sub0Sub0(gTownGrid.m34, r3), r12, readSaturnU32(r12 + 0x10), r14->m4);
+            }
+            else
+            {
+                r0 = gCurrentTownOverlay->createObjectTaskFromEA_subTaskWithEAArg(gTownGrid.m34, r12, readSaturnU32(r12 + 0x10), r14->m4);
+            }
+
+            r14->m8 = r0;
+            r0->m8 = r14;
+        }
+        r14 = r14->m0_next;
     }
 }
 
@@ -111,7 +182,7 @@ void loadTownPrgSub0()
 {
     gTownGrid.m0_sizeX = 0;
     gTownGrid.m4_sizeY = 0;
-    gTownGrid.m140.clear();
+    gTownGrid.m140_perCellObjectList.clear();
     gTownGrid.m34 = 0;
     gTownGrid.m18_createCell = createEnvironmentTask2;
     gTownGrid.m1C = createEnvironmentTask;
@@ -252,11 +323,11 @@ void initNPCSub1()
 {
     deleteAllTownCells(&gTownGrid);
 
-    if (gTownGrid.m140.size())
+    if (gTownGrid.m140_perCellObjectList.size())
     {
         assert(0);
         //freeVdp1Block(initNPCSub0Var0.m34, initNPCSub0Var0.m140);
-        gTownGrid.m140.clear();
+        gTownGrid.m140_perCellObjectList.clear();
     }
 }
 
@@ -272,18 +343,18 @@ void initNPCSub0Sub2Sub0()
 
     s32 size = r4 * r5;
 
-    gTownGrid.m140.resize(size);
+    gTownGrid.m140_perCellObjectList.resize(size);
     for (int i = 0; i < size; i++)
     {
-        gTownGrid.m140[i] = sSaturnPtr::getNull();
+        gTownGrid.m140_perCellObjectList[i] = nullptr;
     }
 
-    gTownGrid.m144 = &gTownGrid.m144[0];
+    gTownGrid.m144_nextFreeObjectListNode = &gTownGrid.m148_objectListNodes[0];
     for (int i = 0; i < 0x40 - 1; i++)
     {
-        gTownGrid.m148[i].m0_next = &gTownGrid.m148[i + 1];
+        gTownGrid.m148_objectListNodes[i].m0_next = &gTownGrid.m148_objectListNodes[i + 1];
     }
-    gTownGrid.m148[0x3F].m0_next = nullptr;
+    gTownGrid.m148_objectListNodes[0x3F].m0_next = nullptr;
 }
 
 void initNPCSub0Sub2(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6_sizeX, u8 r7_sizeY, fixedPoint cellSize)
@@ -361,12 +432,40 @@ s32 initNPC(s32 arg)
     return 0;
 }
 
-s32 initNPCFromStruct(s32)
+s32 initNPCFromStruct(sSaturnPtr r4)
 {
-    if (gTownGrid.m144 == nullptr)
+    if (gTownGrid.m144_nextFreeObjectListNode == nullptr)
         return 0;
 
-    assert(0);
+    sCellObjectListNode* r13 = gTownGrid.m144_nextFreeObjectListNode;
+    gTownGrid.m144_nextFreeObjectListNode = r13->m0_next;
+
+    r13->m4 = r4;
+    r13->m8 = 0;
+
+    s32 r12_cellX = MTH_Mul32(readSaturnFP(r4 + 8), gTownGrid.m30_worldToCellIndex);
+    s32 r4_cellY = MTH_Mul32(readSaturnFP(r4 + 0x10), gTownGrid.m30_worldToCellIndex);
+
+    if (r12_cellX < 0)
+    {
+        r12_cellX = 0;
+    }
+    if (r12_cellX >= gTownGrid.m0_sizeX)
+    {
+        r12_cellX = gTownGrid.m0_sizeX - 1;
+    }
+
+    if (r4_cellY < 0)
+    {
+        r4_cellY = 0;
+    }
+    if (r4_cellY >= gTownGrid.m4_sizeY)
+    {
+        r4_cellY = gTownGrid.m4_sizeY - 1;
+    }
+
+    r13->m0_next = gTownGrid.m140_perCellObjectList[r4_cellY * gTownGrid.m0_sizeX + r12_cellX];
+    gTownGrid.m140_perCellObjectList[r4_cellY * gTownGrid.m0_sizeX + r12_cellX] = r13;
 }
 
 void mainLogicInitSub0(sMainLogic_74* r4, s32 r5)
@@ -515,4 +614,17 @@ void sEnvironmentTask::Draw(sEnvironmentTask* pThis)
         }
     }
     popMatrix();
+}
+
+s32 isDataLoaded(s32 fileIndex)
+{
+    npcFileDeleter* r4 = dramAllocatorEnd[fileIndex].mC_buffer;
+    if (r4 == nullptr)
+        return 1;
+    if (r4->m8 >= 0)
+        return 0;
+    if (r4->mA >= 0)
+        return 0;
+
+    return 1;
 }

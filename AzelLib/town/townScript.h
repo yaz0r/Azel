@@ -37,8 +37,8 @@ extern sResData resData;
 
 struct sResCameraProperties
 {
-    fixedPoint m0;
-    fixedPoint m4;
+    fixedPoint m0_LCS_X;
+    fixedPoint m4_LCS_Y;
     s32 m8;
     s32 mC;
     s32 m10;

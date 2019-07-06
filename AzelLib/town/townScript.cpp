@@ -381,6 +381,11 @@ void handleCollisionWithTownEnv(sMainLogic_74* r4)
         scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0], r4->m8_position[2] - gTownGrid.m28_cellSize));
         scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0] - gTownGrid.m28_cellSize, r4->m8_position[2] - gTownGrid.m28_cellSize));
         break;
+    case 1:
+        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0] + gTownGrid.m28_cellSize, r4->m8_position[2]));
+        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0], r4->m8_position[2] - gTownGrid.m28_cellSize));
+        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0] + gTownGrid.m28_cellSize, r4->m8_position[2] - gTownGrid.m28_cellSize));
+        break;
     default:
         assert(0);
         break;
@@ -562,6 +567,8 @@ void scriptUpdateSub0()
                     if (r14->m2_collisionLayersBitField & (1 << r9))
                     {
                         sResData1C* r12 = resData.m8_headOfLinkedList[r9];
+                        PDS_unimplemented("Disable collision");
+                        r12 = nullptr;
                         while (r12)
                         {
                             sMainLogic_74* r13 = r12->m4;
@@ -656,7 +663,7 @@ sNPC* getNpcDataByIndex(s32 r4)
         return npcData0.m10C;
     }
     
-    return npcData0.m70_npcPointerArray[r4];
+    return npcData0.m70_npcPointerArray[r4].pNPC;
 }
 
 s32 setNpcLocation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
@@ -688,6 +695,7 @@ s32 setNpcOrientation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
 
 typedef s32(*scriptFunction_zero_arg)();
 typedef s32(*scriptFunction_one_arg)(s32 arg0);
+typedef s32(*scriptFunction_one_arg_ptr)(sSaturnPtr arg0);
 typedef s32(*scriptFunction_two_arg)(s32 arg0, s32 arg1);
 typedef s32(*scriptFunction_four_arg)(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 
@@ -695,6 +703,7 @@ struct sKernelScriptFunctions
 {
     std::map<u32, scriptFunction_zero_arg> m_zeroArg;
     std::map<u32, scriptFunction_one_arg> m_oneArg;
+    std::map<u32, scriptFunction_one_arg_ptr> m_oneArgPtr;
     std::map<u32, scriptFunction_two_arg> m_twoArg;
     std::map<u32, scriptFunction_four_arg> m_fourArg;
 };
@@ -706,6 +715,9 @@ sKernelScriptFunctions gKernelScriptFunctions =
     // one arg
     {
         {0x600CCB4, &initNPC},
+    },
+    // one arg ptr
+    {
         {0x6014DF2, &initNPCFromStruct}
     },
     // two arg
@@ -744,6 +756,11 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         {
             scriptFunction_one_arg pFunction = gKernelScriptFunctions.m_oneArg.find(readSaturnEA(r14).m_offset)->second;
             r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4));
+        }
+        else if (gKernelScriptFunctions.m_oneArgPtr.count(readSaturnEA(r14).m_offset))
+        {
+            scriptFunction_one_arg_ptr pFunction = gKernelScriptFunctions.m_oneArgPtr.find(readSaturnEA(r14).m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction(readSaturnEA(r14 + 4));
         }
         else
         {
