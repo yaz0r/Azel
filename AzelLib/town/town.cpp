@@ -97,7 +97,7 @@ npcFileDeleter* createEnvironmentTask2Sub0Sub0(p_workArea r4_parent, s32 r5)
     r12->mC = r5;
 }
 
-void createEnvironmentTask2Sub0(s32 r4_currentX, s32 r5_currentY)
+void createCellObjects(s32 r4_currentX, s32 r5_currentY)
 {
     s32 index = gTownGrid.m0_sizeX * r5_currentY + r4_currentX;
     sCellObjectListNode* r14 = gTownGrid.m140_perCellObjectList[index];
@@ -118,6 +118,7 @@ void createEnvironmentTask2Sub0(s32 r4_currentX, s32 r5_currentY)
                 r0 = gCurrentTownOverlay->createObjectTaskFromEA_subTaskWithEAArg(gTownGrid.m34, r12, readSaturnU32(r12 + 0x10), r14->m4);
             }
 
+            assert(r0);
             r14->m8 = r0;
             r0->m8 = r14;
         }
@@ -147,7 +148,7 @@ void createEnvironmentTask2(s32 r4, sTownGrid* r14)
         sEnvironmentTask* newCellTask = createSiblingTaskWithArgWithCopy<sEnvironmentTask>(r14->m34, cellData);
         r14->m40_cellTasks[(r14->mC + r4) & 7][(r14->m8 + r12) & 7] = newCellTask;
 
-        createEnvironmentTask2Sub0(r14->m10_currentX + r12, r4 + r14->m14_currentY);
+        createCellObjects(r14->m10_currentX + r12, r4 + r14->m14_currentY);
     }
 }
 
@@ -390,7 +391,7 @@ struct sNullTask : public s_workAreaTemplate<sNullTask>
 
 s32 initNPC(s32 arg)
 {
-    sSaturnPtr r13 = npcData0.m60 + arg * 12;
+    sSaturnPtr r13 = npcData0.m60_townSetup + arg * 12;
     if (npcData0.m5E < 0)
     {
         allocateNPC(currentResTask, readSaturnS8(r13));
@@ -508,7 +509,7 @@ void mainLogicInitSub1(sMainLogic_74* r4, sSaturnPtr r5, sSaturnPtr r6)
         r4->m14[2] = r4->m20[2] - readSaturnS32(r6 + 8);
     }
 
-    r4->m4 = sqrt_F(MTH_Product3d_FP(r4->m14, r4->m14));
+    r4->m4_activationRadius = sqrt_F(MTH_Product3d_FP(r4->m14, r4->m14));
 }
 
 void mainLogicUpdateSub0Sub0(sTownGrid* r4)

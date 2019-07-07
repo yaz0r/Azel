@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "town/town.h"
+#include "twn_ruin.h"
 #include "twn_ruin_lock.h"
 
 void sLockTask::Init(sLockTask* pThis, sSaturnPtr r5)
@@ -20,7 +21,7 @@ void sLockTask::Update(sLockTask* pThis)
     pThis->m10.m34_pRotation = &pThis->m80_rotation;
     pThis->m10.m38_pOwner = pThis;
 
-    pThis->m10.m3C = readSaturnU32(readSaturnEA(pThis->mC + 0x24) + 4);
+    pThis->m10.m3C_scriptEA = readSaturnEA(readSaturnEA(pThis->mC + 0x24) + 4);
 
     if (s16 r4 = readSaturnU16(readSaturnEA(pThis->mC + 0x24) + 2))
     {
@@ -39,7 +40,15 @@ void sLockTask::Update(sLockTask* pThis)
 
 void sLockTask::UpdateAlternate(sLockTask* pThis)
 {
-    FunctionUnimplemented();
+    switch (pThis->m8C_status)
+    {
+    case 0:
+        break;
+    default:
+        assert(0);
+        break;
+    }
+    EdgeUpdateSub0(&pThis->m10);
 }
 
 void sLockTask::Draw(sLockTask* pThis)

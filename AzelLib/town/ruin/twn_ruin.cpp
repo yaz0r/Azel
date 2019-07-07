@@ -26,6 +26,7 @@ struct TWN_RUIN_data : public sTownOverlay
         case 0x605EA20:
             return createSiblingTaskWithArgWithCopy<sLockTask>(parent, arg);
         default:
+            assert(0);
             break;
         }
         return nullptr;
@@ -84,11 +85,11 @@ void startRuinBackgroundTask(p_workArea pThis)
     createSubTask<sRuinBackgroundTask>(pThis);
 }
 
-void registerNpcs(sSaturnPtr r4_objectTable, sSaturnPtr r5_script, s32 r6)
+void registerNpcs(sSaturnPtr r4_townSetup, sSaturnPtr r5_script, s32 r6)
 {
     npcData0.m0_numExtraScriptsIterations = 0;
     npcData0.m5E = -1;
-    npcData0.m60 = r4_objectTable;
+    npcData0.m60_townSetup = r4_townSetup;
     npcData0.mFC = 0;
     npcData0.m100 = 0;
     npcData0.m11C_currentStackPointer = npcData0.m120_stack.end();
@@ -388,7 +389,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
         pThis->m84.m30_pPosition = &pThis->mE8.m0_position;
         pThis->m84.m34_pRotation = &pThis->mE8.mC_rotation;
         pThis->m84.m38_pOwner = pThis;
-        pThis->m84.m3C = readSaturnS32(arg + 0x38);
+        pThis->m84.m3C_scriptEA = readSaturnEA(arg + 0x38);
         if (u16 offset = readSaturnU16(arg + 0x36))
         {
             pThis->m84.m40 = READ_BE_U32(pThis->m0_dramAllocation + offset);
@@ -926,7 +927,7 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
         pThis->m74.m30_pPosition = &pThis->m5C_position;
         pThis->m74.m34_pRotation = &pThis->m68_rotation;
         pThis->m74.m38_pOwner = pThis;
-        pThis->m74.m3C = 0;
+        pThis->m74.m3C_scriptEA = sSaturnPtr::getNull();
         pThis->m74.m40 = 0;
 
         mainLogicInitSub0(&pThis->m74, 0);

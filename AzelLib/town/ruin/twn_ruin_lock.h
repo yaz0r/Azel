@@ -20,6 +20,7 @@ struct sLockTask : public s_workAreaTemplateWithArgWithCopy<sLockTask, sSaturnPt
     sMainLogic_74 m10;
     sVec3_FP m74_translation;
     sVec3_FP m80_rotation;
+    s16 m8C_status;
     s16 m8E;
     //size 0x90
 };

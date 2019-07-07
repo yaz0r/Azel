@@ -88,9 +88,9 @@ void scriptUpdateSub0Sub0(sMainLogic_74* r4)
     translateCurrentMatrix(var0);
 }
 
-void copyToNpcDataTable0(s32 r4, s32 r5, p_workArea r6, sVec3_S16* r7)
+void copyToNpcDataTable0(sSaturnPtr r4, s32 r5, p_workArea r6, sVec3_S16* r7)
 {
-    if (r4 == 0)
+    if (r4.m_offset == 0)
         return;
 
     if (npcData0.m0_numExtraScriptsIterations >= 4)
@@ -101,7 +101,8 @@ void copyToNpcDataTable0(s32 r4, s32 r5, p_workArea r6, sVec3_S16* r7)
     {
         for(s32 r13 = npcData0.m0_numExtraScriptsIterations; r13 >= 0; r14++, r13--)
         {
-            if (r14->m0 != r4)
+            assert(r14->m0.m_file == r4.m_file);
+            if (r14->m0.m_offset != r4.m_offset)
             {
                 if (r14->m4 == r5)
                 {
@@ -122,14 +123,18 @@ void copyToNpcDataTable0(s32 r4, s32 r5, p_workArea r6, sVec3_S16* r7)
     npcData0.m0_numExtraScriptsIterations++;
 }
 
-s32 scriptUpdateSub0Sub1(sMainLogic_74* r4, sMainLogic_74* r5)
+s32 scriptUpdateSub0Sub1(sMainLogic_74* r13, sMainLogic_74* r14)
 {
-    if (r5->m40)
+    if (r14->m40)
     {
         assert(0);
     }
     else
     {
+        if (distanceSquareBetween2Points(r13->m8_position, r14->m8_position) >= FP_Pow2(r13->m4_activationRadius + r13->m4_activationRadius))
+            return 0;
+
+        //0600874E
         assert(0);
     }
 
@@ -357,7 +362,7 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sEnvironmentTask* r13)
         {
             u8* r11 = r13->m0_dramAllocation + READ_BE_U32(r13->m0_dramAllocation + readSaturnU32(r14));
             sVec3_FP meshPositionInCell = readSaturnVec3(r14 + 4);
-            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(READ_BE_S32(r11) + r12->m4))
+            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(READ_BE_S32(r11) + r12->m4_activationRadius))
             {
                 pushCurrentMatrix();
                 translateCurrentMatrix(meshPositionInCell);
@@ -567,18 +572,16 @@ void scriptUpdateSub0()
                     if (r14->m2_collisionLayersBitField & (1 << r9))
                     {
                         sResData1C* r12 = resData.m8_headOfLinkedList[r9];
-                        PDS_unimplemented("Disable collision");
-                        r12 = nullptr;
                         while (r12)
                         {
                             sMainLogic_74* r13 = r12->m4;
                             r12 = r12->m0_pNext;
                             if (scriptUpdateSub0Sub1(r14, r13))
                             {
-                                if ((r14->m0 == 0) && r13->m3C)
+                                if ((r14->m0 == 0) && r13->m3C_scriptEA.m_offset)
                                 {
                                     //06007B16
-                                    copyToNpcDataTable0(r13->m3C, 1, r13->m38_pOwner, 0);
+                                    copyToNpcDataTable0(r13->m3C_scriptEA, 1, r13->m38_pOwner, 0);
                                 }
 
                                 r14->m48 = r13;

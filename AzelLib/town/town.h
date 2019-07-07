@@ -32,7 +32,7 @@ struct sMainLogic_74
     s8 m0;
     s8 m1;
     s16 m2_collisionLayersBitField;
-    fixedPoint m4;
+    fixedPoint m4_activationRadius;
     sVec3_FP m8_position;
     sVec3_FP m14;
     sVec3_FP m20;
@@ -40,7 +40,7 @@ struct sMainLogic_74
     sVec3_FP* m30_pPosition;
     sVec3_FP* m34_pRotation;
     p_workArea m38_pOwner;
-    s32 m3C;
+    sSaturnPtr m3C_scriptEA;
     u32 m40;
     s32 m44;
     sMainLogic_74* m48;
@@ -70,7 +70,7 @@ struct sNPC
 
 struct sNpcData4
 {
-    s32 m0;
+    sSaturnPtr m0;
     s32 m4;
     p_workArea m8;
     sVec3_S16 mC;
@@ -92,7 +92,7 @@ struct sNpcData
     s8 m5C;
     s8 m5D;
     s8 m5E;
-    sSaturnPtr m60;
+    sSaturnPtr m60_townSetup;
     sSaturnPtr m64_scriptList;
     s32 m68_nulLCSTargets;
     sSaturnPtr m6C_LCSTargets;
@@ -151,7 +151,7 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
     ////////////////////////////
     static TypedTaskDefinition* getTypedTaskDefinition_townObject()
     {
-        static TypedTaskDefinition taskDefinition = { nullptr, &npcFileDeleter::Update_TownObject, nullptr, &npcFileDeleter::Delete_TownObject };
+        static TypedTaskDefinition taskDefinition = { nullptr, &npcFileDeleter::Update_TownObject, nullptr, &npcFileDeleter::Delete };
         return &taskDefinition;
     }
 
@@ -160,10 +160,6 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
         FunctionUnimplemented();
     }
 
-    static void Delete_TownObject(npcFileDeleter* pThis)
-    {
-        FunctionUnimplemented();
-    }
     //////////////////////////////
 
 
