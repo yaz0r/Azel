@@ -156,7 +156,7 @@ void azelSdl2_Init()
     gBackend = new SDL_ES3_backend();
     
 #ifndef USE_NULL_RENDERER
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) != 0)
     {
         assert(false);
     }
@@ -323,6 +323,22 @@ struct UIState
 
 static UIState gUIState;
 
+s8 convertAxis(s16 inputValue)
+{
+    s16 converted = -inputValue / 256;
+
+    if (abs(converted) < 32)
+        converted = 0;
+
+    if (converted > 127)
+        return 127;
+
+    if (converted < -128)
+        return -128;
+
+    return (s8)converted;
+}
+
 void azelSdl2_StartFrame()
 {
 #ifndef USE_NULL_RENDERER
@@ -386,51 +402,100 @@ void azelSdl2_StartFrame()
     graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.mC_newButtonDown2 = 0;
 
 #ifndef USE_NULL_RENDERER
-    const Uint8* keyState = SDL_GetKeyboardState(NULL);
 
-    for (int i = 0; i < SDL_NUM_SCANCODES; i++)
+    static SDL_GameController* controller = nullptr;
+    if(controller == nullptr)
     {
-        if(keyState[i])
-        {
-            u16 buttonMask = 0;
-            switch (i)
-            {
-            case SDL_SCANCODE_RETURN:
-                buttonMask = 8;
-                break;
-            case SDL_SCANCODE_Z:
-                buttonMask = 4;
-                break;
-            case SDL_SCANCODE_X:
-                buttonMask = 2;
-                break;
-            case SDL_SCANCODE_C:
-                buttonMask = 1;
-                break;
-            case SDL_SCANCODE_UP:
-                buttonMask = 0x10;
-                break;
-            case SDL_SCANCODE_DOWN:
-                buttonMask = 0x20;
-                break;
-            case SDL_SCANCODE_LEFT:
-                buttonMask = 0x40;
-                break;
-            case SDL_SCANCODE_RIGHT:
-                buttonMask = 0x80;
-                break;
-            default:
-                break;
+        for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+            if (SDL_IsGameController(i)) {
+                controller = SDL_GameControllerOpen(i);
+                if (controller) {
+                    break;
+                }
+                else {
+                    fprintf(stderr, "Could not open gamecontroller %i: %s\n", i, SDL_GetError());
+                }
             }
+        }
+    }
 
-            if (buttonMask)
+    if (controller)
+    {
+        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m0_inputType = 2;
+
+        u16 buttonMask = 0;
+        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A) << 0;
+        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B) << 1;
+        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y) << 2;
+        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_START) << 3;
+        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_UP) << 4;
+        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN) << 5;
+        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT) << 6;
+        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) << 7;
+
+        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown |= buttonMask;
+
+        if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & buttonMask) == 0)
+        {
+            graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m8_newButtonDown |= buttonMask;
+            graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.mC_newButtonDown2 |= buttonMask;
+        }
+
+        // analog
+        // need to remap range [-32768 to 32767] to [0 - 255]
+        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m2_analogX = convertAxis(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX));
+        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m3_analogY = convertAxis(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY));
+    }
+    else
+    {
+        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m0_inputType = 1;
+
+        const Uint8* keyState = SDL_GetKeyboardState(NULL);
+
+        for (int i = 0; i < SDL_NUM_SCANCODES; i++)
+        {
+            if (keyState[i])
             {
-                graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown |= buttonMask;
-
-                if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & buttonMask) == 0)
+                u16 buttonMask = 0;
+                switch (i)
                 {
-                    graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m8_newButtonDown |= buttonMask;
-                    graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.mC_newButtonDown2 |= buttonMask;
+                case SDL_SCANCODE_RETURN:
+                    buttonMask = 8;
+                    break;
+                case SDL_SCANCODE_Z:
+                    buttonMask = 4;
+                    break;
+                case SDL_SCANCODE_X:
+                    buttonMask = 2;
+                    break;
+                case SDL_SCANCODE_C:
+                    buttonMask = 1;
+                    break;
+                case SDL_SCANCODE_UP:
+                    buttonMask = 0x10;
+                    break;
+                case SDL_SCANCODE_DOWN:
+                    buttonMask = 0x20;
+                    break;
+                case SDL_SCANCODE_LEFT:
+                    buttonMask = 0x40;
+                    break;
+                case SDL_SCANCODE_RIGHT:
+                    buttonMask = 0x80;
+                    break;
+                default:
+                    break;
+                }
+
+                if (buttonMask)
+                {
+                    graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown |= buttonMask;
+
+                    if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & buttonMask) == 0)
+                    {
+                        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m8_newButtonDown |= buttonMask;
+                        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.mC_newButtonDown2 |= buttonMask;
+                    }
                 }
             }
         }

@@ -114,6 +114,10 @@ s32 sqrt_I(s32 r4)
     for (int i = 16; i >= 0;)
     {
         i--;
+        if (i == 0)
+        {
+            return 0;
+        }
         if (r1 < r4)
         {
             r4 -= r1;
@@ -953,6 +957,8 @@ void loopIteration()
 
         if (ImGui::Begin("InputState"))
         {
+            ImGui::Text("Analog X: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX);
+            ImGui::Text("Analog Y: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY);
             ImGui::Text("m6_buttonDown: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown);
             ImGui::Text("m8_newButtonDown: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown);
         }

@@ -5044,8 +5044,6 @@ void updateDragonMovement(s_dragonTaskWorkArea* r4)
 
     r4->m238 &= ~3;
 
-    PDS_unimplemented("Hacking input to type 1");
-    graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType = 1;
     switch (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType)
     {
     case 1:

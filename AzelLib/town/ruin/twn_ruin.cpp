@@ -971,7 +971,15 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2)
         {
             //60557BA
-            assert(0);
+            r6 = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * 512;
+            if (graphicEngineStatus.m4514.m138[0]) // inverse axis
+            {
+                r7 = -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY * 512;
+            }
+            else
+            {
+                r7 = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY * 512;
+            }
         }
         else
         {
