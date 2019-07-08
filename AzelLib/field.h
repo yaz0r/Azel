@@ -505,8 +505,8 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     u8 m23B;
     u8 m23C;
     u8 m244;
-    u8 m245;
-    u8 m246;
+    s8 m245_previousAnalogX;
+    s8 m246_previousAnalogY;
     u8 m247;
     u8 m248;
     u8 m249_noCollisionAndHideDragon;

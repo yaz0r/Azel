@@ -619,6 +619,7 @@ struct s_graphicEngineStatus_4514_inputStatus
     u8 m0_inputType; // 2 = analog stick
     s8 m2_analogX;
     s8 m3_analogY;
+    s8 m4;
     u16 m6_buttonDown; // direction
     u16 m8_newButtonDown; // button mask
     u16 mA;

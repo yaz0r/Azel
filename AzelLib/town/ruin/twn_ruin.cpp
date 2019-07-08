@@ -684,7 +684,21 @@ struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPt
                 if (r4 > 0x30000)
                 {
                     //0605C3AE
-                    assert(0);
+                    pThis->m2C_currentAnimation = 2; // run animation
+                    sSaturnPtr var0 = pThis->m30_animationTable + 8;
+                    u8* buffer;
+                    if (readSaturnU16(var0))
+                    {
+                        buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                    }
+                    else
+                    {
+                        buffer = pThis->m0_dramAllocation;
+                    }
+
+                    playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
+                    break;
+
                 }
                 break;
             default:

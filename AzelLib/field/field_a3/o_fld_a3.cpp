@@ -4419,10 +4419,10 @@ void updateDragonMovementFromControllerType0(s_dragonTaskWorkArea* r14)
     }
 
     r14->m247 = 0;
-    r14->m246 = 0;
-    r14->m245 = 0;
+    r14->m246_previousAnalogY = 0;
+    r14->m245_previousAnalogX = 0;
 
-    r14->m25C &= 0xFFFFFFFE;
+    r14->m25C &= ~1;
 }
 
 u32 updateDragonMovementFromControllerType1Sub1(s_dragonTaskWorkArea* r4)
@@ -4476,6 +4476,207 @@ void updateDragonMovementFromControllerType1Sub2(s_dragonTaskWorkArea* r14, s_dr
     }
 }
 
+void updateDragonMovementFromControllerType2Sub2(s_dragonTaskWorkArea* r11, s_dragonState* r12)
+{
+    s32 r4_y;
+    if (graphicEngineStatus.m4514.m138[1])
+    {
+        r4_y = -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+    }
+    else
+    {
+        r4_y = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+    }
+
+    s32 var0 = r11->m246_previousAnalogY - r4_y;
+    if (var0 > 0x40)
+    {
+        updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * var0));
+    }
+    else if (var0 < -0x40)
+    {
+        updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * var0));
+    }
+
+    //607F1E8
+    s32 r4_x = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
+    s32 r10 = r11->m245_previousAnalogX - r4_x;
+    if (r10 > 0x40)
+    {
+        updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, performDivision(0x80, -(r11->m178[3].asS32() * r10)));
+        updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * r10));
+    }
+    else if (r10 < -0x40)
+    {
+        updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, performDivision(0x80, -(r11->m178[3].asS32() * r10)));
+        updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * r10));
+    }
+}
+
+void updateDragonMovementFromAnalogControllerSub0(s_dragonTaskWorkArea* r4)
+{
+    if (r4->m258-- > 0)
+    {
+        return;
+    }
+
+    r4->m25D = 0;
+    r4->m258 = 0;
+
+    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][15])
+    {
+        //0607E7F8
+        assert(0);
+    }
+}
+
+void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
+{
+    s32 r9_y;
+    if (graphicEngineStatus.m4514.m138[1])
+    {
+        r9_y = -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+    }
+    else
+    {
+        r9_y = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+    }
+    r9_y = -r9_y;
+
+    // TODO: understand the code that tests angle and 0x80000000
+    updateDragonMovementFromAnalogControllerSub0(r14);
+
+    fixedPoint r3;
+    if (r14->m154_dragonSpeed >= 0)
+    {
+        r3 = r14->m154_dragonSpeed;
+    }
+    else
+    {
+        r3 = -r14->m154_dragonSpeed;
+    }
+
+    //607F2F8
+    if (r3 >= 0x100)
+    {
+        if (r9_y > 0)
+        {
+            // down
+            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178[0].asS32());
+            r14->m20_angle[0] += r14->m1F0.m_8;
+            r14->m238 |= 2;
+            r14->mFC |= 2;
+        }
+        else if(r9_y < 0)
+        {
+            // up
+            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178[0].asS32());
+            r14->m20_angle[0] += r14->m1F0.m_8;
+            r14->m238 |= 1;
+            r14->mFC |= 1;
+        }
+        else
+        {
+            //607F360
+            fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
+            r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+        }
+    }
+    else
+    {
+        //607F3B4
+        fixedPoint r4 = performDivision(0x7F, -(r9_y << 11));
+        if (r9_y > 0)
+        {
+            r14->m160_deltaTranslation[1] += r4;
+            r14->m238 |= 2;
+            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178[0].asS32());
+            r14->mFC |= 2;
+        }
+        else if (r9_y < 0)
+        {
+            r14->m160_deltaTranslation[1] += r4;
+            r14->m238 |= 1;
+            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178[0].asS32());
+            r14->mFC |= 1;
+        }
+
+        //607F428
+        fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
+        r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+    }
+
+    //607F45A
+    if (r14->m20_angle[0].normalized() > r14->m14C_pitchMax)
+    {
+        r14->m20_angle[0] = r14->m14C_pitchMax;
+    }
+    if (r14->m20_angle[0].normalized() < r14->m148_pitchMin)
+    {
+        r14->m20_angle[0] = r14->m148_pitchMin;
+    }
+
+    //607F49A
+    r14->m1F0.m_C = performDivision(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178[0].asS32());
+
+    if (r14->m25D == 1)
+    {
+        assert(0);
+        //updateDragonMovementFromControllerType1Sub3Sub2(r14);
+    }
+    else
+    {
+        if ((r14->mF8_Flags & 0x8000) == 0)
+        {
+            r14->m20_angle[1] += r14->m1F0.m_C;
+        }
+    }
+
+    //0607F4F0
+    if (r14->m25D == 2)
+    {
+        r14->m20_angle[2] += r14->m254;
+    }
+    else
+    {
+        r14->m20_angle[2] += r14->m3C[2] - performDivision(0x10, fixedPoint(r14->m3C[2] - r14->m20_angle[2]).normalized() * 15) - r14->m20_angle[2];
+        if (r9_y > 0)
+        {
+            //0607F540
+            fixedPoint r2 = r14->m20_angle[1] - r14->m30;
+            if (r2 >= performDivision(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178[0].asS32()))
+            {
+                r14->m20_angle[2] -= performDivision(4, r14->m178[0] * 3);
+                r14->mFC |= 4;
+                r14->m25E = 1;
+            }
+        }
+        else if(r9_y < 0)
+        {
+            //607F57E
+            fixedPoint r2 = r14->m20_angle[1] - r14->m30;
+            if (r2 >= performDivision(0x7F, -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178[0].asS32()))
+            {
+                r14->mFC |= 8;
+                r14->m25E = 0;
+            }
+        }
+    }
+
+    //607F5BA
+    r14->m245_previousAnalogX = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
+    if (graphicEngineStatus.m4514.m138[1])
+    {
+        r14->m246_previousAnalogY = -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+    }
+    else
+    {
+        r14->m246_previousAnalogY = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+    }
+
+    r14->m247 = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4;
+}
+
 void updateDragonMovementFromControllerType1Sub3Sub1(s_dragonTaskWorkArea* r14)
 {
     PDS_unimplemented("updateDragonMovementFromControllerType1Sub3Sub1");
@@ -4495,7 +4696,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
         r2 = -r14->m154_dragonSpeed;
     }
 
-    if (r2 >= 256)
+    if (r2 >= 0x100)
     {
         //0607EC06
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // Go down
@@ -4514,9 +4715,12 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
             r14->m1F0.m_8 = -r14->m178[0];
             r14->mFC |= 1;
         }
-        //607EC6C
-        fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+        else
+        {
+            //607EC6C
+            fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
+            r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+        }
     }
     else
     {
@@ -4537,6 +4741,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
             r14->m1F0.m_8 = -r14->m178[0];
             r14->mFC |= 1;
         }
+
         //607ED32
         fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
         r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
@@ -4607,8 +4812,8 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
     }
 
     r14->m247 = 0;
-    r14->m246 = 0;
-    r14->m245 = 0;
+    r14->m246_previousAnalogY = 0;
+    r14->m245_previousAnalogX = 0;
 }
 
 void updateDragonMovementFromControllerType1(s_dragonTaskWorkArea* r14)
@@ -4617,9 +4822,24 @@ void updateDragonMovementFromControllerType1(s_dragonTaskWorkArea* r14)
     {
         updateDragonMovementFromControllerType1Sub2(r14, gDragonState);
         updateDragonMovementFromControllerType1Sub3(r14);
-        return;
     }
-    updateDragonMovementFromControllerType0(r14);
+    else
+    {
+        updateDragonMovementFromControllerType0(r14);
+    }
+}
+
+void updateDragonMovementFromAnalogController(s_dragonTaskWorkArea* r14)
+{
+    if (updateDragonMovementFromControllerType1Sub1(r14))
+    {
+        updateDragonMovementFromControllerType2Sub2(r14, gDragonState);
+        updateDragonMovementFromControllerType2Sub3(r14);
+    }
+    else
+    {
+        updateDragonMovementFromControllerType0(r14);
+    }
 }
 
 u32 isDragonControlledByScripts()
@@ -5048,6 +5268,9 @@ void updateDragonMovement(s_dragonTaskWorkArea* r4)
     {
     case 1:
         updateDragonMovementFromControllerType1(r4);
+        break;
+    case 2:
+        updateDragonMovementFromAnalogController(r4);
         break;
     default:
         assert(0);
