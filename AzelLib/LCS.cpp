@@ -659,6 +659,40 @@ sLCSTarget* LCSTaskDrawSub1Sub2Sub2Sub3(s_LCSTask* r14)
     }
 }
 
+void LCSUpdateCursorFromAnalogInput(s_dragonTaskWorkArea* r4)
+{
+    s8 r4_y;
+    if (graphicEngineStatus.m4514.m138[1])
+    {
+        r4_y = -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+    }
+    else
+    {
+        r4_y = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+    }
+
+    if ((r4_y >= 0x30) || (r4_y < -0x30))
+    {
+        r4->m1F0.m_8 = performDivision(0x7F, -(r4_y * 0x1C71C7));
+    }
+
+    s32 r4_x = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
+    if ((r4_x >= 0x30) || (r4_x < -0x30))
+    {
+        r4->m1F0.m_C = performDivision(0x7F, r4_x * 0x1C71C7);
+    }
+
+    sVec3_FP var0;
+    var0[0] = 0;
+    var0[1] = MTH_Mul(0x147A, r4->m1F0.m_C);
+    var0[2] = 0;
+
+    if (r4->mF8_Flags & 0x8000)
+    {
+        LCSUpdateCursorFromInputSub0(0, &var0);
+    }
+}
+
 void LCSUpdateCursorFromInput(s_dragonTaskWorkArea* r4)
 {
     if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // down
@@ -699,6 +733,9 @@ void LCSTaskDrawSub1Sub2Sub2Sub2(s_dragonTaskWorkArea* r4)
     {
     case 1:
         LCSUpdateCursorFromInput(r4);
+        break;
+    case 2:
+        LCSUpdateCursorFromAnalogInput(r4);
         break;
     default:
         assert(0);
