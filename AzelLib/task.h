@@ -26,7 +26,9 @@ struct s_workArea
 
 static void UnimplementedImpl(const char* functionName)
 {
+#ifndef SHIPPING_BUILD
     PDS_Logger[eLogCategories::log_unimlemented].AddLog("Unimplemented: %s\n", functionName);
+#endif // !SHIPPING_BUILD
 }
 
 #define FunctionUnimplemented() { static bool printed = false; if(!printed) {printed = true; UnimplementedImpl(__FUNCTION__);}}

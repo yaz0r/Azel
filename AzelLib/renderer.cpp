@@ -1677,7 +1677,7 @@ bool azelSdl2_EndFrame()
     }
 
     checkGL();
-    
+#ifndef SHIPPING_BUILD
     for (int i = 0; i < eLogCategories::log_max; i++)
     {
         switch (i)
@@ -1699,7 +1699,7 @@ bool azelSdl2_EndFrame()
             break;
         }
     }
-
+#endif
     ImGui::Render();
     
     checkGL();
@@ -1709,7 +1709,9 @@ bool azelSdl2_EndFrame()
 #ifndef USE_NULL_RENDERER
     if (ImGui::GetIO().KeysDown[SDL_SCANCODE_GRAVE] && (ImGui::GetIO().KeysDownDuration[SDL_SCANCODE_GRAVE] == 0.f))
     {
+#ifndef SHIPPING_BUILD
         bImguiEnabled = !bImguiEnabled;
+#endif
     }
     if (bImguiEnabled)
     {

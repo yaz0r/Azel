@@ -1,5 +1,6 @@
 #pragma once
 
+#ifndef SHIPPING_BUILD
 struct sPDS_Logger
 {
     ImGuiTextBuffer     Buf;
@@ -82,8 +83,16 @@ enum eLogCategories
     log_max
 };
 extern sPDS_Logger PDS_Logger[eLogCategories::log_max];
+#endif
 
+#ifdef SHIPPING_BUILD
+#define PDS_Log(string, ...)
+#define PDS_CategorizedLog(logCategory, string, ...)
+#define PDS_unimplemented(name)
+#define PDS_warningOnce(name)
+#else
 #define PDS_Log(string, ...) {PDS_Logger[log_default].AddLog(string, __VA_ARGS__);}
 #define PDS_CategorizedLog(logCategory, string, ...) {PDS_Logger[logCategory].AddLog(string, __VA_ARGS__);}
 #define PDS_unimplemented(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger[log_unimlemented].AddLog("Unimplemented: %s\n", name);}}
 #define PDS_warningOnce(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger[log_warning].AddLog("Warning: %s\n", name);}}
+#endif

@@ -6,7 +6,9 @@
 
 #define PDS_TOOL
 
-//#define SHIPPING_BUILD
+#ifndef _DEBUG
+#define SHIPPING_BUILD
+#endif
 
 #ifdef WIN32
 #define _CRT_SECURE_NO_WARNINGS
@@ -136,6 +138,13 @@ struct sSaturnPtr
     {
         this->m_offset -= i;
         return *this;
+    }
+
+    bool isNull()
+    {
+        if (m_offset == 0)
+            return true;
+        return false;
     }
 
     static sSaturnPtr& getNull()
@@ -413,3 +422,7 @@ struct sProcessed3dModel
 
 extern p_workArea(*gFieldOverlayFunction)(p_workArea workArea, u32 arg);
 fixedPoint distanceSquareBetween2Points(const sVec3_FP& r4_vertice0, const sVec3_FP& r5_vertice1);
+
+void RendererSetFov(float fovInDegree);
+s32 MTH_Product2d(s32(&r4)[2], s32(&r5)[2]);
+fixedPoint MulVec2(const sVec2_FP& r4, const sVec2_FP& r5);

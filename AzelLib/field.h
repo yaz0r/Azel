@@ -474,7 +474,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
 
     u32 m_1C4;
 
-    fixedPoint m1CC;
+    fixedPoint m1CC_fieldOfView;
     s_cameraScript* m1D0_cameraScript;
     s_cutsceneData* m1D4_cutsceneData;
     s_cutsceneTask* m1D8_cutscene;
@@ -917,8 +917,11 @@ struct s_fieldSub0Task : public s_workAreaTemplate<s_fieldSub0Task>
         fieldTaskVar0 = nullptr;
         
         //FIX:
-        assert(gExitMenuTaskSub1Task->m8 == pThis);
-        gExitMenuTaskSub1Task->m8 = nullptr;
+        if(gExitMenuTaskSub1Task)
+        {
+            assert(gExitMenuTaskSub1Task->m8 == pThis);
+            gExitMenuTaskSub1Task->m8 = nullptr;
+        }
     }
 };
 

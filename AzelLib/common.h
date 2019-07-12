@@ -209,6 +209,12 @@ struct sVec2_FP
     }
 };
 
+void Imgui_FP(const char* label, fixedPoint* pFP);
+void Imgui_FP_Angle(const char* name, fixedPoint* pFP);
+void Imgui_Vec3FP(sVec3_FP* pVector);
+void Imgui_Vec3FP(const char* name, sVec3_FP* pVector);
+
+
 #include "kernel/fade.h"
 
 struct sInterpolator_FP
@@ -670,8 +676,8 @@ struct s_graphicEngineStatus_405C
 
     fixedPoint m10;
     fixedPoint m14_farClipDistance; // max distance for drawing laser?
-    fixedPoint m18;
-    fixedPoint m1C;
+    fixedPoint m18_widthScale;
+    fixedPoint m1C_heightScale;
     fixedPoint m20_heightRatio2;
     fixedPoint m24_heightRatio;
     fixedPoint m28_widthRatio2;

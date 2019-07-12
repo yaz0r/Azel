@@ -14,13 +14,13 @@ sResCameraProperties resCameraProperties;
 
 void copyCameraPropertiesToRes()
 {
-    resCameraProperties.m8 = 2;
-    resCameraProperties.mC = 2;
+    resCameraProperties.m8_LCSWidth = 2;
+    resCameraProperties.mC_LCSHeight = 2;
     resCameraProperties.m10 = 0;
     resCameraProperties.m18 = graphicEngineStatus.m405C.m30;
     resCameraProperties.m24 = graphicEngineStatus.m405C.m10;
-    resCameraProperties.m2C = graphicEngineStatus.m405C.m18;
-    resCameraProperties.m30 = graphicEngineStatus.m405C.m1C;
+    resCameraProperties.m2C = graphicEngineStatus.m405C.m18_widthScale;
+    resCameraProperties.m30 = graphicEngineStatus.m405C.m1C_heightScale;
 }
 
 struct sScriptUpdateSub0Sub0Var0
@@ -131,7 +131,7 @@ s32 scriptUpdateSub0Sub1(sMainLogic_74* r13, sMainLogic_74* r14)
     }
     else
     {
-        if (distanceSquareBetween2Points(r13->m8_position, r14->m8_position) >= FP_Pow2(r13->m4_activationRadius + r13->m4_activationRadius))
+        if (distanceSquareBetween2Points(r13->m8_position, r14->m8_position) >= FP_Pow2(r13->m4_collisionRadius + r13->m4_collisionRadius))
             return 0;
 
         //0600874E
@@ -362,7 +362,7 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sEnvironmentTask* r13)
         {
             u8* r11 = r13->m0_dramAllocation + READ_BE_U32(r13->m0_dramAllocation + readSaturnU32(r14));
             sVec3_FP meshPositionInCell = readSaturnVec3(r14 + 4);
-            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(READ_BE_S32(r11) + r12->m4_activationRadius))
+            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(READ_BE_S32(r11) + r12->m4_collisionRadius))
             {
                 pushCurrentMatrix();
                 translateCurrentMatrix(meshPositionInCell);
@@ -980,11 +980,238 @@ void sScriptTask::Init(sScriptTask* pThis)
 
 void scriptUpdateSub1()
 {
+    resCameraProperties.m10 = 0;
+    resCameraProperties.m28_LCSDepth = graphicEngineStatus.m405C.m14_farClipDistance;
+    resCameraProperties.m1C_LCSHeightMin = -(resCameraProperties.m4_LCS_Y.getInteger() - resCameraProperties.mC_LCSHeight); // todo: there might be a bug here, used to be clipped to 16 bit
+    resCameraProperties.m1E_LCSHeightMax = -(resCameraProperties.m4_LCS_Y.getInteger() + resCameraProperties.mC_LCSHeight);
+    resCameraProperties.m20_LCSWidthMin = resCameraProperties.m0_LCS_X.getInteger() - resCameraProperties.m8_LCSWidth;
+    resCameraProperties.m22_LCSWidthMax = resCameraProperties.m0_LCS_X.getInteger() + resCameraProperties.m8_LCSWidth;
+
+    s32 var0[2];
+    var0[0] = resCameraProperties.m20_LCSWidthMin;
+    var0[1] = resCameraProperties.m2C;
+    fixedPoint r12 = FP_Div(0x10000, resCameraProperties.m2C);
+    resCameraProperties.m34 = MTH_Mul(resCameraProperties.m20_LCSWidthMin, r12);
+    resCameraProperties.m38 = MTH_Mul(sqrt_I(MTH_Product2d(var0, var0)), r12);
+
+    var0[0] = resCameraProperties.m22_LCSWidthMax;
+    resCameraProperties.m3C = MTH_Mul(resCameraProperties.m22_LCSWidthMax, r12);
+    resCameraProperties.m40 = MTH_Mul(sqrt_I(MTH_Product2d(var0, var0)), r12);
+
+    // same for height
+    var0[0] = -resCameraProperties.m1C_LCSHeightMin;
+    var0[1] = resCameraProperties.m30;
+    r12 = FP_Div(0x10000, resCameraProperties.m30);
+    resCameraProperties.m44 = MTH_Mul(resCameraProperties.m1C_LCSHeightMin, r12);
+    resCameraProperties.m48 = MTH_Mul(sqrt_I(MTH_Product2d(var0, var0)), r12);
+
+    var0[0] = -resCameraProperties.m1E_LCSHeightMax;
+    resCameraProperties.m4C = MTH_Mul(resCameraProperties.m1E_LCSHeightMax, r12);
+    resCameraProperties.m50 = MTH_Mul(sqrt_I(MTH_Product2d(var0, var0)), r12);
+
+    resCameraProperties.m54 = MTH_Mul(resCameraProperties.m38, gTownGrid.m2C);
+    resCameraProperties.m58 = MTH_Mul(resCameraProperties.m40, gTownGrid.m2C);
+}
+
+const std::array<s8[2],25> townGridSearchPattern = {
+    {{ 0,    0},
+    { 1,    0},
+    { 0,    1},
+    {-1,    0},
+    { 0,   -1},
+    { 1,    1},
+    {-1,    1},
+    {-1,   -1},
+    { 1,   -1},
+    { 2,    0},
+    { 0,    2},
+    {-2,    0},
+    { 0,   -2},
+    { 2,    1},
+    {-1,    2},
+    {-2,   -1},
+    { 1,   -2},
+    { 2,   -1},
+    { 1,    2},
+    {-2,    1},
+    {-1,   -2},
+    { 2,    2},
+    {-2,    2},
+    {-2,   -2},
+    { 2,  -2}}
+};
+
+void scriptUpdateSub2Sub0(sResCameraProperties* r4, s32 r5)
+{
+    sVec3_FP var14;
+    var14[0] = pCurrentMatrix->matrix[1];
+    var14[1] = pCurrentMatrix->matrix[5];
+    var14[2] = pCurrentMatrix->matrix[9];
+
+    sVec2_FP var0;
+    var0[0] = performDivision(r4->m2C, r4->m0_LCS_X);
+    var0[1] = performDivision(r4->m30, r4->m4_LCS_Y);
+
+    fixedPoint r12 = var14[2] + MulVec2(sVec2_FP({ var14[0], var14[1] }), var0);
+    if (r12 >= 0)
+    {
+        return;
+    }
+
+    sVec3_FP var8;
+    var8[0] = pCurrentMatrix->matrix[3] + MTH_Mul(r5, pCurrentMatrix->matrix[1]);
+    var8[1] = pCurrentMatrix->matrix[7] + MTH_Mul(r5, pCurrentMatrix->matrix[5]);
+    var8[2] = pCurrentMatrix->matrix[11] + MTH_Mul(r5, pCurrentMatrix->matrix[9]);
+
+    fixedPoint r4_fp = FP_Div(MTH_Product3d_FP(var14, var8), r12);
+    if (r4->m28_LCSDepth > r4_fp)
+    {
+        r4->m10 = 0;
+        r4->m14 = 0;
+        r4->m28_LCSDepth = r4_fp;
+    }
+}
+
+struct sTransformedVertice
+{
+    // size 0x20
+};
+
+void computeFinalProjectionMatrix(u8* r4, const sMatrix4x3& r5, sResCameraProperties* r6, s16 (&outputMatrix)[9], s32& r8, s32& r9, s32& r10, s16*& r11, s32& r12, s32& r13)
+{
+    //r6 is off by 0x14 compared to asm
+    outputMatrix[0] = (r5.matrix[0] * (r6->m2C * 16)) >> 16;
+    outputMatrix[1] = (r5.matrix[1] * (r6->m2C * 16)) >> 16;
+    outputMatrix[2] = (r5.matrix[2] * (r6->m2C * 16)) >> 16;
+
+    r8 = (r5.matrix[3] * r6->m2C);
+
+    outputMatrix[3] = (r5.matrix[4] * (r6->m30 * 16)) >> 16;
+    outputMatrix[4] = (r5.matrix[5] * (r6->m30 * 16)) >> 16;
+    outputMatrix[5] = (r5.matrix[6] * (r6->m30 * 16)) >> 16;
+
+    r9 = (r5.matrix[7] * -r6->m30);
+
+    outputMatrix[6] = r5.matrix[8] >> 16;
+    outputMatrix[7] = r5.matrix[9] >> 16;
+    outputMatrix[8] = r5.matrix[10] >> 16;
+
+    r10 = r5.matrix[11] << 8;
+
+    r11 = &outputMatrix[6];
+    r13 = READ_BE_S32(r4 + 4);
+    r12 = READ_BE_S32(r4 + 8);
+
+    // note: this also init DIV register
+}
+
+void transformVerticesCliped(u8* r4, const sMatrix4x3& r5, sResCameraProperties* r6, std::array<sTransformedVertice, 256> & r7_transformedVertices)
+{
+    s16 projectionMatrix[9];
+    s32 r8;
+    s32 r9;
+    s32 r10;
+    s16* r11;
+    s32 r12;
+    s32 r13;
+    computeFinalProjectionMatrix(r4, r5, r6, projectionMatrix, r8, r9, r10, r11, r12, r13);
+    // r14 is now 0xFFFFFF00 hardware
+
+
+    assert(0);
+}
+
+s32 testMeshForCollision(u8* r4, const sMatrix4x3& r5, sResCameraProperties* r6)
+{
+    std::array<sTransformedVertice, 256> transformedVertices;
+    transformVerticesCliped(r4, r5, r6, transformedVertices);
+
     FunctionUnimplemented();
+    return -1;
+}
+
+s32 scriptUpdateSub2Sub1Sub0(sResCameraProperties* r14, u8* r11)
+{
+    // check depth
+    if (pCurrentMatrix->matrix[11] < r14->m24 - READ_BE_S32(r11))
+        return -1;
+
+    if (pCurrentMatrix->matrix[11] > r14->m28_LCSDepth + READ_BE_S32(r11))
+        return -1;
+
+    // check X
+    if (pCurrentMatrix->matrix[3] < MTH_Mul(pCurrentMatrix->matrix[11], r14->m34) - MTH_Mul(READ_BE_S32(r11), r14->m38))
+        return -1;
+
+    if (pCurrentMatrix->matrix[3] > MTH_Mul(pCurrentMatrix->matrix[11], r14->m3C) + MTH_Mul(READ_BE_S32(r11), r14->m40))
+        return -1;
+
+    //0601412C
+    //check Y
+    if (pCurrentMatrix->matrix[7] < MTH_Mul(pCurrentMatrix->matrix[11], r14->m44) - MTH_Mul(READ_BE_S32(r11), r14->m48))
+        return -1;
+
+    if (pCurrentMatrix->matrix[7] > MTH_Mul(pCurrentMatrix->matrix[11], r14->m4C) + MTH_Mul(READ_BE_S32(r11), r14->m50))
+        return -1;
+
+    return testMeshForCollision(r11, *pCurrentMatrix, r14); //we should be passing r14->m14, but that seems to be a handrolled hack to alias r14->m14 to s_graphicEngineStatus_405C
+}
+
+void scriptUpdateSub2Sub1(sResCameraProperties* r14, sEnvironmentTask* r12)
+{
+    if (r12 == nullptr)
+        return;
+
+    if (r12->m8.isNull())
+        return;
+
+    if (readSaturnS32(r12->m8 + 0x14) == 0)
+        return;
+
+    pushCurrentMatrix();
+    translateCurrentMatrix(r12->mC_position);
+    if (
+        (pCurrentMatrix->matrix[11] >= r14->m24 - gTownGrid.m2C) && (pCurrentMatrix->matrix[11] <= r14->m2C + gTownGrid.m2C) &&
+        (pCurrentMatrix->matrix[3] >= MTH_Mul(pCurrentMatrix->matrix[11], r14->m34) - r14->m54) && (pCurrentMatrix->matrix[3] <= MTH_Mul(pCurrentMatrix->matrix[11], r14->m3C) + r14->m58)
+        )
+    {
+        sSaturnPtr r13 = readSaturnEA(r12->m8 + 0x14);
+        while (readSaturnS32(r13))
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(readSaturnVec3(r13 + 4));
+            s32 r0 = scriptUpdateSub2Sub1Sub0(r14, r12->m0_dramAllocation + READ_BE_U32(readSaturnU32(r13) + r12->m0_dramAllocation));
+            if (r0 != -1)
+            {
+                assert(0);
+                if (r0)
+                {
+                    r14->m10 = pCurrentMatrix->matrix[3];
+                    r14->m14 = r0;
+                }
+                else
+                {
+                    r14->m10 = 0;
+                }
+            }
+            popMatrix();
+            r13 += 0x10;
+        }
+    }
+    //60140B8
+    popMatrix();
 }
 
 void scriptUpdateSub2()
 {
+    scriptUpdateSub2Sub0(&resCameraProperties, resData.m0);
+
+    for (int i = 0; i < townGridSearchPattern.size(); i++)
+    {
+        scriptUpdateSub2Sub1(&resCameraProperties, gTownGrid.m40_cellTasks[(gTownGrid.mC + townGridSearchPattern[i][1]) & 7][(gTownGrid.m8 + townGridSearchPattern[i][0]) & 7]);
+    }
+
+    assert(0);
     FunctionUnimplemented();
 }
 

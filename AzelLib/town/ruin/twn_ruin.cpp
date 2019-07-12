@@ -887,32 +887,6 @@ void drawLcs()
     }
 }
 
-void Imgui_FP(const char* label, fixedPoint* pFP)
-{
-    float fValue = pFP->toFloat();
-    if (ImGui::InputFloat(label, &fValue, 0.01, 0.1))
-    {
-        pFP->m_value = fValue * 0x10000;
-    }
-}
-
-void Imgui_Vec3FP(sVec3_FP* pVector)
-{
-    ImGui::PushItemWidth(100);
-    Imgui_FP("x", &pVector->m_value[0]); ImGui::SameLine();
-    Imgui_FP("y", &pVector->m_value[1]); ImGui::SameLine();
-    Imgui_FP("z", &pVector->m_value[2]);
-    ImGui::PopItemWidth();
-}
-
-void Imgui_Vec3FP(const char* name, sVec3_FP* pVector)
-{
-    ImGui::Text(name); ImGui::SameLine();
-    ImGui::PushID(name);
-    Imgui_Vec3FP(pVector);
-    ImGui::PopID();
-}
-
 struct sMainLogic : public s_workAreaTemplate<sMainLogic>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -1218,7 +1192,7 @@ void updateCameraTarget(sMainLogic* r4, const sVec3_FP& r14_pose)
     }
 
     // If the projected target point is already at the center of the screen
-    if ((MTH_Mul(graphicEngineStatus.m405C.m18, var0[0]) == 0) && (MTH_Mul(graphicEngineStatus.m405C.m18, var0[1]) == 0))
+    if ((MTH_Mul(graphicEngineStatus.m405C.m18_widthScale, var0[0]) == 0) && (MTH_Mul(graphicEngineStatus.m405C.m1C_heightScale, var0[1]) == 0))
     {
         r4->m44_cameraTarget = r14_pose;
         return;
@@ -1288,9 +1262,44 @@ void moveTownLCSCursor(sMainLogic* r4)
     }
 }
 
+// TODO kernel
+sSaturnPtr cameraFollowMode0_LCSSub1Sub0(s32 r4)
+{
+    if (r4 >= npcData0.m68_nulLCSTargets)
+    {
+        assert(0);
+        return sSaturnPtr::getNull();
+    }
+    else
+    {
+        return npcData0.m6C_LCSTargets + r4 * 12;
+    }
+}
+
 void cameraFollowMode0_LCSSub1(sMainLogic* r4)
 {
-    FunctionUnimplemented();
+    sVec3_FP* r13 = &r4->m18_position;
+    if ((npcData0.mFC & 1) && (currentResTask->m8))
+    {
+        assert(0);
+        /*
+        if (currentResTask->m8 == 1)
+        {
+            r13 = cameraFollowMode0_LCSSub1Sub0(currentResTask->mC);
+        }
+        else
+        {
+            r13 = currentResTask->mC_AsOffset + 8;
+        }
+        */
+        //6055C48
+        assert(0);
+    }
+
+    //6055CCA
+    r4->m44_cameraTarget[0] = MTH_Mul(r4->m44_cameraTarget[0] - (*r13)[0], 0xF333) + (*r13)[0];
+    r4->m44_cameraTarget[1] = MTH_Mul(r4->m44_cameraTarget[1] - (*r13)[1], 0xF333) + (*r13)[1];
+    r4->m44_cameraTarget[2] = MTH_Mul(r4->m44_cameraTarget[2] - (*r13)[2], 0xF333) + (*r13)[2];
 }
 
 void cameraFollowMode0_LCS(sMainLogic* r14_pose)
@@ -1720,7 +1729,9 @@ s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr, s32 arg0, s32 arg1)
         getNpcDataByIndex(arg0)->mE_controlState = arg1;
         return 0;
     case 0x605C55C:
+#ifndef SHIPPING_BUILD
         PDS_Logger[eLogCategories::log_unimlemented].AddLog("Unimplemented TWN_RUIN native function: 0x%08X\n", ptr.m_offset);
+#endif
         break;
     default:
         assert(0);
@@ -1906,16 +1917,16 @@ void updateEdgePositionSub3(sEdgeTask* r4)
         updateEdgePositionSub3Sub0(0x1800);
         sVec3_FP var14;
 
-        var14[0] = pCurrentMatrix->matrix[3] - setDividend(resCameraProperties.m0_LCS_X, resCameraProperties.m28, resCameraProperties.m2C);
-        var14[1] = pCurrentMatrix->matrix[7] - setDividend(resCameraProperties.m4_LCS_Y, resCameraProperties.m28, resCameraProperties.m30);
-        var14[2] = pCurrentMatrix->matrix[11] - resCameraProperties.m28;
+        var14[0] = pCurrentMatrix->matrix[3] - setDividend(resCameraProperties.m0_LCS_X, resCameraProperties.m28_LCSDepth, resCameraProperties.m2C);
+        var14[1] = pCurrentMatrix->matrix[7] - setDividend(resCameraProperties.m4_LCS_Y, resCameraProperties.m28_LCSDepth, resCameraProperties.m30);
+        var14[2] = pCurrentMatrix->matrix[11] - resCameraProperties.m28_LCSDepth;
 
         sVec2_FP varC;
         updateEdgePositionSub3Sub1(var14, &varC);
 
-        var14[0] = resCameraProperties.m20;
+        var14[0] = resCameraProperties.m20_LCSWidthMin;
         var14[1] = resCameraProperties.m24;
-        var14[2] = resCameraProperties.m28;
+        var14[2] = resCameraProperties.m28_LCSDepth;
         sVec2_FP var4;
         updateEdgePositionSub3Sub1(var14, &var4);
 

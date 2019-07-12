@@ -4264,7 +4264,7 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 
     dragonFieldTaskInitSub2Sub4(&pWorkArea->m48);
 
-    pWorkArea->m1CC = 0x38E38E3; // field of view
+    pWorkArea->m1CC_fieldOfView = 0x38E38E3; // field of view
     pWorkArea->m234 = 0;
 
     pWorkArea->m21C_DragonSpeedValues[0] = 0;
@@ -6265,8 +6265,14 @@ void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
         generateLightFalloffMap(pTypedWorkArea->mCB_falloffColor0.toU32(), pTypedWorkArea->mCE_falloffColor1.toU32(), pTypedWorkArea->mD1_falloffColor2.toU32());
     }
 
+    if (ImGui::Begin("Field"))
+    {
+        Imgui_FP_Angle("Field of view", &pTypedWorkArea->m1CC_fieldOfView);
+    }
+    ImGui::End();
+
     //0607416C
-    initVDP1Projection((pTypedWorkArea->m1CC + (pTypedWorkArea->m1CC < 0)) / 2, 0);
+    initVDP1Projection(pTypedWorkArea->m1CC_fieldOfView / 2, 0);
     printMainDebugStats(pTypedWorkArea);
 }
 
@@ -7424,11 +7430,11 @@ void Laser1DrawSub0Sub0(std::array<sVec3_FP, 2>&r4, s32 r5, sVec2_S16& r6, sVec2
     var_30[1] = var_2C[1] + MTH_Mul(r10, var_30[1] - var_2C[1]);
     var_30[2] = maxDistance;
 
-    r6[0] = setDividend(r12.m18, r4[1][0], r4[1][2]);
-    r6[1] = setDividend(r12.m1C, r4[1][1], r4[1][2]);
+    r6[0] = setDividend(r12.m18_widthScale, r4[1][0], r4[1][2]);
+    r6[1] = setDividend(r12.m1C_heightScale, r4[1][1], r4[1][2]);
 
-    r7[0] = setDividend(r12.m18, r5, maxDistance);
-    r7[1] = setDividend(r12.m1C, r5, maxDistance);
+    r7[0] = setDividend(r12.m18_widthScale, r5, maxDistance);
+    r7[1] = setDividend(r12.m1C_heightScale, r5, maxDistance);
 
     if (r7[0] >= 80)
     {
@@ -7708,10 +7714,10 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
 
     transformAndAddVecByCurrentMatrix(&input_r5[0], &stack70[0]);
 
-    stack5C[0][0] = setDividend(r14.m18, stack70[0][0], stack70[0][2]);
-    stack5C[0][1] = setDividend(r14.m1C, stack70[0][1], stack70[0][2]);
-    stack68[0][0] = setDividend(r14.m18, readSaturnS32(r7), stack70[0][2]);
-    stack68[0][1] = setDividend(r14.m1C, readSaturnS32(r7), stack70[0][2]);
+    stack5C[0][0] = setDividend(r14.m18_widthScale, stack70[0][0], stack70[0][2]);
+    stack5C[0][1] = setDividend(r14.m1C_heightScale, stack70[0][1], stack70[0][2]);
+    stack68[0][0] = setDividend(r14.m18_widthScale, readSaturnS32(r7), stack70[0][2]);
+    stack68[0][1] = setDividend(r14.m1C_heightScale, readSaturnS32(r7), stack70[0][2]);
 
     auto r4 = stack88.begin();
     if (stack70[0][2] < 0x3000)
@@ -7737,13 +7743,13 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
     while (r11 < stack24)
     {
         transformAndAddVecByCurrentMatrix(&stack1C[r11 + 1], &stack70[1]);
-        stack58[0] = r9[0] = setDividend(r14.m18, stack70[1][0], stack70[1][2]);
-        stack58[1] = r9[1] = setDividend(r14.m1C, stack70[1][1], stack70[1][2]);
+        stack58[0] = r9[0] = setDividend(r14.m18_widthScale, stack70[1][0], stack70[1][2]);
+        stack58[1] = r9[1] = setDividend(r14.m1C_heightScale, stack70[1][1], stack70[1][2]);
 
         auto stack18 = stack10 + r11 * 4;
         auto stack0 = stack18 + 4;
-        stack64[0] = stack68[1][0] = setDividend(r14.m18, readSaturnS32(stack0), stack70[1][2]);
-        stack64[1] = stack68[1][1] = setDividend(r14.m1C, readSaturnS32(stack0), stack70[1][2]);
+        stack64[0] = stack68[1][0] = setDividend(r14.m18_widthScale, readSaturnS32(stack0), stack70[1][2]);
+        stack64[1] = stack68[1][1] = setDividend(r14.m1C_heightScale, readSaturnS32(stack0), stack70[1][2]);
 
         if (stack70[1][2] < 0x3000)
         {

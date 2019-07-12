@@ -150,6 +150,11 @@ s32 sqrt_I(s32 r4)
 
 void initVDP1Projection(fixedPoint r4, u32 mode)
 {
+    {
+        float fValueInRad = r4.toFloat() * ((glm::pi<float>() / 2.f) / 1024.f);
+        float fValueInDegree = glm::degrees<float>(fValueInRad);
+        RendererSetFov(fValueInDegree);
+    }
     u32 angle = r4.getInteger();
 
     fixedPoint sin = getSin(angle);
@@ -162,16 +167,16 @@ void initVDP1Projection(fixedPoint r4, u32 mode)
     switch (mode)
     {
     case 0:
-        graphicEngineStatus.m405C.m18 = FP_Mul(r0, fixedPoint(0x11999)); // 1.0999908447265625 = 352 / 320
-        graphicEngineStatus.m405C.m1C = FP_Mul(r0, fixedPoint(0xEEEE)); // 0.93331909179687500 = 224 / 240
+        graphicEngineStatus.m405C.m18_widthScale = FP_Mul(r0, fixedPoint(0x11999)); // 1.0999908447265625 = 352 / 320
+        graphicEngineStatus.m405C.m1C_heightScale = FP_Mul(r0, fixedPoint(0xEEEE)); // 0.93331909179687500 = 224 / 240
         break;
     case 1:
-        graphicEngineStatus.m405C.m18 = FP_Mul(r0, fixedPoint(0xD333)); //0.82499694824218750 = 264 / 320
-        graphicEngineStatus.m405C.m1C = FP_Mul(r0, fixedPoint(0xEEEE)); //0.93331909179687500 = 224 / 240
+        graphicEngineStatus.m405C.m18_widthScale = FP_Mul(r0, fixedPoint(0xD333)); //0.82499694824218750 = 264 / 320
+        graphicEngineStatus.m405C.m1C_heightScale = FP_Mul(r0, fixedPoint(0xEEEE)); //0.93331909179687500 = 224 / 240
         break;
     case 2:
-        graphicEngineStatus.m405C.m18 = FP_Mul(r0, fixedPoint(0xD333)); //0.82499694824218750 = 264 / 320
-        graphicEngineStatus.m405C.m1C = FP_Mul(r0, fixedPoint(0xB333)); //0.69999694824218750 = 168 / 240
+        graphicEngineStatus.m405C.m18_widthScale = FP_Mul(r0, fixedPoint(0xD333)); //0.82499694824218750 = 264 / 320
+        graphicEngineStatus.m405C.m1C_heightScale = FP_Mul(r0, fixedPoint(0xB333)); //0.69999694824218750 = 168 / 240
         break;
     default:
         assert(0);
@@ -181,20 +186,20 @@ void initVDP1Projection(fixedPoint r4, u32 mode)
     s32 array[2];
 
     array[0] = 352 / 2;
-    array[1] = graphicEngineStatus.m405C.m18;
+    array[1] = graphicEngineStatus.m405C.m18_widthScale;
     graphicEngineStatus.m405C.m2C_widthRatio = FP_Div(array[0], array[1]);
     graphicEngineStatus.m405C.m28_widthRatio2 = FP_Div(sqrt_I(MTH_Product2d(array, array)), array[1]);
 
     array[0] = 224 / 2;
-    array[1] = graphicEngineStatus.m405C.m1C;
+    array[1] = graphicEngineStatus.m405C.m1C_heightScale;
     graphicEngineStatus.m405C.m24_heightRatio = FP_Div(array[0], array[1]);
     graphicEngineStatus.m405C.m20_heightRatio2 = FP_Div(sqrt_I(MTH_Product2d(array, array)), array[1]);
 }
 
 void getVdp1ProjectionParams(s16* r4, s16* r5)
 {
-    *r4 = graphicEngineStatus.m405C.m18;
-    *r5 = graphicEngineStatus.m405C.m1C;
+    *r4 = graphicEngineStatus.m405C.m18_widthScale;
+    *r5 = graphicEngineStatus.m405C.m1C_heightScale;
 }
 
 void initVDP1()

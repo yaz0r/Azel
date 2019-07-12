@@ -297,3 +297,43 @@ s32 atan2_FP(s32 y, s32 x)
     }
 }
 
+void Imgui_FP(const char* label, fixedPoint* pFP)
+{
+    float fValue = pFP->toFloat();
+    if (ImGui::InputFloat(label, &fValue, 0.01, 0.1))
+    {
+        pFP->m_value = fValue * 0x10000;
+    }
+}
+
+void Imgui_FP_Angle(const char* label, fixedPoint* pFP)
+{
+    // 1 = sin(1024)
+    // 1024 = pi/2
+    // conversion is (pi/2)/1024
+    float fValueInRad = pFP->toFloat() * ((glm::pi<float>() / 2.f) / 1024.f);
+    float fValueInDegree = glm::degrees<float>(fValueInRad);
+    if (ImGui::InputFloat(label, &fValueInDegree, 0.01, 0.1))
+    {
+        fValueInRad = glm::radians<float>(fValueInDegree);
+
+        pFP->m_value = (fValueInRad / ((glm::pi<float>() / 2.f) / 1024.f)) * 0x10000;
+    }
+}
+
+void Imgui_Vec3FP(sVec3_FP* pVector)
+{
+    ImGui::PushItemWidth(100);
+    Imgui_FP("x", &pVector->m_value[0]); ImGui::SameLine();
+    Imgui_FP("y", &pVector->m_value[1]); ImGui::SameLine();
+    Imgui_FP("z", &pVector->m_value[2]);
+    ImGui::PopItemWidth();
+}
+
+void Imgui_Vec3FP(const char* name, sVec3_FP* pVector)
+{
+    ImGui::Text(name); ImGui::SameLine();
+    ImGui::PushID(name);
+    Imgui_Vec3FP(pVector);
+    ImGui::PopID();
+}

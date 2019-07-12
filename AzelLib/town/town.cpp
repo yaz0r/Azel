@@ -509,7 +509,7 @@ void mainLogicInitSub1(sMainLogic_74* r4, sSaturnPtr r5, sSaturnPtr r6)
         r4->m14[2] = r4->m20[2] - readSaturnS32(r6 + 8);
     }
 
-    r4->m4_activationRadius = sqrt_F(MTH_Product3d_FP(r4->m14, r4->m14));
+    r4->m4_collisionRadius = sqrt_F(MTH_Product3d_FP(r4->m14, r4->m14));
 }
 
 void mainLogicUpdateSub0Sub0(sTownGrid* r4)
