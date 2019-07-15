@@ -68,11 +68,47 @@ struct sNPC
     sNPCE8 mE8;
 };
 
-struct sNpcData4
+struct sNPCOrTask
 {
-    sSaturnPtr m0;
+    void reset()
+    {
+        asTask = nullptr;
+        asNPC = nullptr;
+    }
+
+    sNPC* getNPC()
+    {
+        assert(asNPC);
+        return asNPC;
+    }
+
+    p_workArea getAsTask()
+    {
+        assert(asTask);
+        return asTask;
+    }
+
+    void setNPC(sNPC* pNPC)
+    {
+        reset();
+        asNPC = pNPC;
+    }
+
+    void setTask(p_workArea pTask)
+    {
+        reset();
+        asTask = pTask;
+    }
+private:
+    p_workArea asTask;
+    sNPC* asNPC;
+};
+
+struct sRunningScriptContext
+{
+    sSaturnPtr m0_scriptPtr;
     s32 m4;
-    p_workArea m8;
+    sNPCOrTask m8_owner;
     sVec3_S16 mC;
     //size 0x14
 };
@@ -85,8 +121,8 @@ struct NPCProxy
 
 struct sNpcData
 {
-    s32 m0_numExtraScriptsIterations;
-    std::array<sNpcData4, 4> m4;
+    s32 m0_numBackgroundScripts;
+    std::array<sRunningScriptContext, 4> m4_backgroundScripts;
     fixedPoint m54_activationNear;
     fixedPoint m58_activationFar;
     s8 m5C;
@@ -102,9 +138,7 @@ struct sNpcData
     s32 mF8;
     s32 mFC;
     s32 m100;
-    sSaturnPtr m104_scriptPtr;
-    s32 m108;
-    sNPC* m10C;
+    sRunningScriptContext m104_currentScript;
     s32 m116;
     s32 m118_currentResult;
     std::array<sSaturnPtr, 0x10>::iterator m11C_currentStackPointer;

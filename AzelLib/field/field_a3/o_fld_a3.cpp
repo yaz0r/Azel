@@ -174,7 +174,7 @@ u8 gridCellDraw_normalSub0(sProcessed3dModel* r4, sVec3_FP& r5)
         }
     }
 
-    s32 distanceThreshold = r4->m0 + 0x8000;
+    s32 distanceThreshold = r4->m0_radius + 0x8000;
     if (dist[0] > distanceThreshold)
         return 0;
     if (dist[1] > distanceThreshold)

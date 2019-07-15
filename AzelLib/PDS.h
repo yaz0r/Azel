@@ -140,6 +140,22 @@ struct sSaturnPtr
         return *this;
     }
 
+    bool operator ==(const sSaturnPtr& b) const
+    {
+        if (b.m_file != m_file)
+            return false;
+        if (b.m_offset != m_offset)
+            return false;
+        return true;
+    }
+
+    bool operator !=(const sSaturnPtr& b) const
+    {
+        if ((b.m_file != m_file) || (b.m_offset != m_offset))
+            return true;
+        return false;
+    }
+
     bool isNull()
     {
         if (m_offset == 0)
@@ -320,7 +336,7 @@ struct sProcessed3dModel
 
         u8* pRawModel = base + offset;
 
-        m0 = READ_BE_U32(pRawModel + 0);
+        m0_radius = READ_BE_S32(pRawModel + 0);
         m4_numVertices = READ_BE_U32(pRawModel + 4);
         u32 verticesOffset = READ_BE_U32(pRawModel + 8);
         m8_vertices.reserve(m4_numVertices);
@@ -412,9 +428,19 @@ struct sProcessed3dModel
         return newData;
     }
 
+    // build from raw data
+    sProcessed3dModel(fixedPoint& radius, const std::vector<sVec3_S16_12_4>& vertices, const std::vector<sQuad>& quads)
+    {
+        _base = nullptr;
+        m0_radius = radius;
+        m4_numVertices = (u32)vertices.size();
+        m8_vertices = vertices;
+        mC_Quads = quads;
+    }
+
     u8* _base;
 
-    u32 m0;
+    fixedPoint m0_radius;
     u32 m4_numVertices;
     std::vector<sVec3_S16_12_4> m8_vertices;
     std::vector<sQuad> mC_Quads;

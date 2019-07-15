@@ -87,7 +87,7 @@ void startRuinBackgroundTask(p_workArea pThis)
 
 void registerNpcs(sSaturnPtr r4_townSetup, sSaturnPtr r5_script, s32 r6)
 {
-    npcData0.m0_numExtraScriptsIterations = 0;
+    npcData0.m0_numBackgroundScripts = 0;
     npcData0.m5E = -1;
     npcData0.m60_townSetup = r4_townSetup;
     npcData0.mFC = 0;
@@ -108,9 +108,9 @@ void registerNpcs(sSaturnPtr r4_townSetup, sSaturnPtr r5_script, s32 r6)
 
     npcData0.mFC |= 0xF;
 
-    npcData0.m104_scriptPtr = r5_script;
-    npcData0.m108 = 0;
-    npcData0.m10C = 0;
+    npcData0.m104_currentScript.m0_scriptPtr = r5_script;
+    npcData0.m104_currentScript.m4 = 0;
+    npcData0.m104_currentScript.m8_owner.reset();
 
     npcData0.m116 = r6;
 
@@ -862,6 +862,26 @@ void drawLcsSprite(const sVec2_S16& r4, s32 r5_index)
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
+bool canCurrentResActivate()
+{
+    switch (currentResTask->m8_activationType)
+    {
+    case 1:
+        if (currentResTask->m10_distanceToLCS > npcData0.m54_activationNear)
+            return false;
+        else
+            return true;
+    case 2:
+        if (currentResTask->m10_distanceToLCS > npcData0.m58_activationFar)
+            return false;
+        else
+            return true;
+    default:
+        return false;
+        break;
+    }
+}
+
 void drawLcs()
 {
     if ((npcData0.mFC & 0x10) && !(npcData0.mFC & 0x8))
@@ -872,10 +892,17 @@ void drawLcs()
 
         drawLcsSprite(var0, 0);
 
-        if (currentResTask->m8)
+        if (currentResTask->m8_activationType)
         {
             //6056C6C
-            assert(0);
+            if (canCurrentResActivate())
+            {
+                drawLcsSprite(currentResTask->m14_LCS, 1);
+            }
+            else
+            {
+                drawLcsSprite(currentResTask->m14_LCS, 2);
+            }
         }
     }
     else
@@ -1279,7 +1306,7 @@ sSaturnPtr cameraFollowMode0_LCSSub1Sub0(s32 r4)
 void cameraFollowMode0_LCSSub1(sMainLogic* r4)
 {
     sVec3_FP* r13 = &r4->m18_position;
-    if ((npcData0.mFC & 1) && (currentResTask->m8))
+    if ((npcData0.mFC & 1) && (currentResTask->m8_activationType))
     {
         assert(0);
         /*
@@ -1902,11 +1929,12 @@ void updateEdgePositionSub3(sEdgeTask* r4)
 {
     sNPCE8* r13_npcE8 = &r4->mE8;
 
-    if (currentResTask->m8)
+    if ((currentResTask->m8_activationType) && (npcData0.mFC & 1))
     {
         //605BEEA
         assert(0);
     }
+    //605C018
     else if ((npcData0.mFC & 0x10) && !(npcData0.mFC & 0x8))
     {
         //0605C030

@@ -12,11 +12,15 @@ struct sScriptTask : public s_workAreaTemplate<sScriptTask>
     static void Update(sScriptTask* pThis);
     static void Draw(sScriptTask* pThis);
 
-    sNpcData* m4;
-    s32 m8;
-    s32 mC;
+    sSaturnPtr m4;
+    s32 m8_activationType;
+    sMainLogic_74* mC;
     sSaturnPtr mC_AsOffset;
+    fixedPoint m10_distanceToLCS;
+    sVec2_S16 m14_LCS;
     s32 m18;
+    s16 m1C_LCS_X;
+    s16 m1E_LCS_Y;
     //size 0x20
 };
 extern sScriptTask* currentResTask;
@@ -42,9 +46,9 @@ struct sResCameraProperties
     fixedPoint m4_LCS_Y;
     s32 m8_LCSWidth;
     fixedPoint mC_LCSHeight;
-    s32 m10;
+    s32 m10; // define the type of m14. 2 = it's a pointer to sMainLogic_74
     // part bellow should technically mirror s_graphicEngineStatus_405C for projection during the LCS test in Town module
-    s32 m14;
+    sMainLogic_74* m14;
     fixedPoint m18;
     s16 m1C_LCSHeightMin;
     s16 m1E_LCSHeightMax;
@@ -54,14 +58,14 @@ struct sResCameraProperties
     fixedPoint m28_LCSDepth;
     fixedPoint m2C;
     fixedPoint m30;
-    fixedPoint m34;
-    fixedPoint m38;
-    fixedPoint m3C;
-    fixedPoint m40;
-    fixedPoint m44;
-    fixedPoint m48;
-    fixedPoint m4C;
-    fixedPoint m50;
+    fixedPoint m34_boundMinX;
+    fixedPoint m38_radiusScaleMinX;
+    fixedPoint m3C_boundMaxX;
+    fixedPoint m40_radiusScaleMaxX;
+    fixedPoint m44_boundMinY;
+    fixedPoint m48_radiusScaleMinY;
+    fixedPoint m4C_boundMaxY;
+    fixedPoint m50_radiusScaleMaxY;
     fixedPoint m54;
     fixedPoint m58;
 };
