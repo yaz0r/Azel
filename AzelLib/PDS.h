@@ -429,7 +429,7 @@ struct sProcessed3dModel
     }
 
     // build from raw data
-    sProcessed3dModel(fixedPoint& radius, const std::vector<sVec3_S16_12_4>& vertices, const std::vector<sQuad>& quads)
+    sProcessed3dModel(const fixedPoint& radius, const std::vector<sVec3_S16_12_4>& vertices, const std::vector<sQuad>& quads)
     {
         _base = nullptr;
         m0_radius = radius;
