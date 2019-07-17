@@ -6942,8 +6942,8 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     loadFileFromFileList(1);
 
 
-    graphicEngineStatus.m405C.m10 = 0x3000;
-    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10);
+    graphicEngineStatus.m405C.m10_nearClipDistance = 0x3000;
+    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0x200000;
     graphicEngineStatus.m405C.m38 = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);

@@ -452,3 +452,4 @@ fixedPoint distanceSquareBetween2Points(const sVec3_FP& r4_vertice0, const sVec3
 void RendererSetFov(float fovInDegree);
 s32 MTH_Product2d(s32(&r4)[2], s32(&r5)[2]);
 fixedPoint MulVec2(const sVec2_FP& r4, const sVec2_FP& r5);
+void adjustMatrixTranslation(fixedPoint r4);

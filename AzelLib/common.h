@@ -674,7 +674,7 @@ struct s_graphicEngineStatus_405C
     s16 mC;
     s16 mE;
 
-    fixedPoint m10;
+    fixedPoint m10_nearClipDistance;
     fixedPoint m14_farClipDistance; // max distance for drawing laser?
     fixedPoint m18_widthScale;
     fixedPoint m1C_heightScale;

@@ -352,7 +352,7 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonInit(s_dragonMenuDragonWorkArea
 
     setupVdp1LocalCoordinatesAndClipping();
 
-    graphicEngineStatus.m405C.m10 = 0x2000;
+    graphicEngineStatus.m405C.m10_nearClipDistance = 0x2000;
     graphicEngineStatus.m405C.m30 = FP_Div(0x10000, 0x2000);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0x100000;

@@ -577,7 +577,7 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
     {
         translateCurrentMatrix(pThis->mC_position);
         fixedPoint var0 = pCurrentMatrix->matrix[11];
-        if (var0 < gTownGrid.m2C - graphicEngineStatus.m405C.m10)
+        if (var0 < gTownGrid.m2C - graphicEngineStatus.m405C.m10_nearClipDistance)
         {
             fixedPoint varMinusOne = MTH_Mul(var0, graphicEngineStatus.m405C.m2C_widthRatio);
             fixedPoint r4 = varMinusOne + MTH_Mul(gTownGrid.m2C, gTownGrid.m28_cellSize);

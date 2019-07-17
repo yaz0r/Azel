@@ -861,7 +861,19 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
         case 7: //callNative
             r14 = callNativeWithArguments(r13_pThis, r14);
             break;
-        case 9:
+        case 8: //equal
+            r14 = getAlignOn2(r14);
+            if (readSaturnS16(r14) == r13_pThis->m118_currentResult)
+            {
+                r13_pThis->m118_currentResult = 1;
+            }
+            else
+            {
+                r13_pThis->m118_currentResult = 0;
+            }
+            r14 += 2;
+            break;
+        case 9: //not equal
             r14 = getAlignOn2(r14);
             if (readSaturnS16(r14) != r13_pThis->m118_currentResult)
             {
@@ -1026,21 +1038,21 @@ sVec3_FP getEnvLCSTargetPosition(s32 index)
 
 void sScriptTask::Update(sScriptTask* pThis)
 {
-    if (pThis->m18)
+    if (pThis->m18_LCSFocusLineScale)
     {
-        pThis->m18--;
+        pThis->m18_LCSFocusLineScale--;
     }
 
-    pThis->m8_activationType = 0;
+    pThis->m8_currentLCSType = 0;
     pThis->m4 = sSaturnPtr::getNull();
     if (!(npcData0.mFC & 0x10))
     {
-        pThis->m8_activationType = 0;
+        pThis->m8_currentLCSType = 0;
         pThis->m4 = sSaturnPtr::getNull();
     }
     else if(!(npcData0.mFC & 1))
     {
-        if (pThis->m8_activationType == 2)
+        if (pThis->m8_currentLCSType == 2)
         {
             assert(0);
         }
@@ -1052,11 +1064,11 @@ void sScriptTask::Update(sScriptTask* pThis)
         switch (LCSCollisionData.m10_activeLCSType)
         {
         case 1:
-            pThis->m8_activationType = LCSCollisionData.m10_activeLCSType;
+            pThis->m8_currentLCSType = LCSCollisionData.m10_activeLCSType;
             pThis->mC_AsIndex = LCSCollisionData.m14_activeLCSEnvironmentIndex;
             break;
         case 2:
-            pThis->m8_activationType = LCSCollisionData.m10_activeLCSType;
+            pThis->m8_currentLCSType = LCSCollisionData.m10_activeLCSType;
             pThis->mC = LCSCollisionData.m14_activeLCS;
             break;
         default:
@@ -1068,7 +1080,7 @@ void sScriptTask::Update(sScriptTask* pThis)
         //06030618
         sSaturnPtr r13 = sSaturnPtr::getNull();
         p_workArea r11 = nullptr;
-        switch (pThis->m8_activationType)
+        switch (pThis->m8_currentLCSType)
         {
         case 0: // nothing
             r13 = sSaturnPtr::getNull();
@@ -1096,7 +1108,7 @@ void sScriptTask::Update(sScriptTask* pThis)
             addBackgroundScript(r13, 2, r11, nullptr);
             if (pThis->m4 != r13)
             {
-                pThis->m18 = 8;
+                pThis->m18_LCSFocusLineScale = 8;
                 pThis->m1C_LCS_X = LCSCollisionData.m0_LCS_X.getInteger();
                 pThis->m1E_LCS_Y = LCSCollisionData.m4_LCS_Y.getInteger();
                 playSoundEffect(0x24);
@@ -1112,9 +1124,93 @@ void sScriptTask::Update(sScriptTask* pThis)
     scriptUpdateRunScript();
 }
 
+void updateTownLCSTargetPosition(sScriptTask* pThis)
+{
+    if (pThis->m8_currentLCSType == 0)
+        return;
+
+    pushCurrentMatrix();
+    switch (pThis->m8_currentLCSType)
+    {
+    case 1:
+        translateCurrentMatrix(getEnvLCSTargetPosition(pThis->mC_AsIndex));
+        break;
+    case 2:
+        translateCurrentMatrix(pThis->mC->m8_position);
+        if (pThis->mC->m2C == 3)
+        {
+            adjustMatrixTranslation(pThis->mC->m14[1] / 2);
+        }
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    if ((pCurrentMatrix->matrix[11] >= graphicEngineStatus.m405C.m14_farClipDistance) || (pCurrentMatrix->matrix[11] < graphicEngineStatus.m405C.m10_nearClipDistance))
+    {
+        pThis->m8_currentLCSType = 0;
+    }
+    else
+    {
+        sVec2_S16 LCSScreenCoordinates;
+        LCSScreenCoordinates[0] = setDividend(graphicEngineStatus.m405C.m18_widthScale, pCurrentMatrix->matrix[3], pCurrentMatrix->matrix[11]);
+        LCSScreenCoordinates[1] = setDividend(graphicEngineStatus.m405C.m1C_heightScale, pCurrentMatrix->matrix[7], pCurrentMatrix->matrix[11]);
+
+        if (
+            (LCSScreenCoordinates[0] < graphicEngineStatus.m405C.mC - 0x10) || (LCSScreenCoordinates[0] > graphicEngineStatus.m405C.mE + 0x10) ||
+            (LCSScreenCoordinates[1] < graphicEngineStatus.m405C.mA - 0x10) || (LCSScreenCoordinates[1] > graphicEngineStatus.m405C.m8 + 0x10))
+        {
+            pThis->m8_currentLCSType = 0;
+        }
+        else
+        {
+            pThis->m14_LCS = LCSScreenCoordinates;
+        }
+    }
+
+    popMatrix();
+}
+
+void drawLineRectangle(u8 r4, s16* position, u32 color)
+{
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1005); // command 0
+    setVdp1VramU16(vdp1WriteEA + 0x04, 0x400 | r4); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, color); // CMDCOLR
+    setVdp1VramU16(vdp1WriteEA + 0x0C, position[0]); // CMDXA
+    setVdp1VramU16(vdp1WriteEA + 0x0E, -position[1]); // CMDYA
+    setVdp1VramU16(vdp1WriteEA + 0x010, position[2]); // CMDXC
+    setVdp1VramU16(vdp1WriteEA + 0x012, -position[3]); // CMDYX
+    setVdp1VramU16(vdp1WriteEA + 0x014, position[4]);
+    setVdp1VramU16(vdp1WriteEA + 0x016, -position[5]);
+    setVdp1VramU16(vdp1WriteEA + 0x018, position[6]);
+    setVdp1VramU16(vdp1WriteEA + 0x01A, -position[7]);
+
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+}
+
 void sScriptTask::Draw(sScriptTask* pThis)
 {
-    FunctionUnimplemented();
+    if (pThis->m18_LCSFocusLineScale)
+    {
+        s16 var8[8];
+        var8[0] = var8[6] = pThis->m1C_LCS_X + performDivision(8, (-pThis->m1C_LCS_X - 176) * pThis->m18_LCSFocusLineScale); // X1
+        var8[1] = var8[3] = pThis->m1E_LCS_Y + performDivision(8, (-pThis->m1E_LCS_Y - 112) * pThis->m18_LCSFocusLineScale); // Y1
+        var8[2] = var8[4] = pThis->m1C_LCS_X + performDivision(8, (-pThis->m1C_LCS_X + 176) * pThis->m18_LCSFocusLineScale); // X2
+        var8[5] = var8[7] = pThis->m1E_LCS_Y + performDivision(8, (-pThis->m1E_LCS_Y + 112) * pThis->m18_LCSFocusLineScale); // Y2
+
+        drawLineRectangle(0xC0, var8, (((pThis->m18_LCSFocusLineScale * 3) + 7) << 10) | ((pThis->m18_LCSFocusLineScale + 2) << 5) | (pThis->m18_LCSFocusLineScale + 2) | 0x8000);
+    }
+    
+    updateTownLCSTargetPosition(pThis);
 }
 
 void startScriptTask(p_workArea r4)

@@ -865,7 +865,7 @@ void drawLcsSprite(const sVec2_S16& r4, s32 r5_index)
 
 bool canCurrentResActivate()
 {
-    switch (currentResTask->m8_activationType)
+    switch (currentResTask->m8_currentLCSType)
     {
     case 1:
         if (currentResTask->m10_distanceToLCS > npcData0.m54_activationNear)
@@ -893,7 +893,7 @@ void drawLcs()
 
         drawLcsSprite(var0, 0);
 
-        if (currentResTask->m8_activationType)
+        if (currentResTask->m8_currentLCSType)
         {
             //6056C6C
             if (canCurrentResActivate())
@@ -1307,7 +1307,7 @@ sSaturnPtr cameraFollowMode0_LCSSub1Sub0(s32 r4)
 void cameraFollowMode0_LCSSub1(sMainLogic* r4)
 {
     sVec3_FP* r13 = &r4->m18_position;
-    if ((npcData0.mFC & 1) && (currentResTask->m8_activationType))
+    if ((npcData0.mFC & 1) && (currentResTask->m8_currentLCSType))
     {
         assert(0);
         /*
@@ -1595,8 +1595,8 @@ p_workArea overlayStart_TWN_RUIN(p_workArea pUntypedThis, u32 arg)
 
     loadFnt("EVTRUIN.FNT");
 
-    graphicEngineStatus.m405C.m10 = 0x800;
-    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10);
+    graphicEngineStatus.m405C.m10_nearClipDistance = 0x800;
+    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0xF000;
     graphicEngineStatus.m405C.m38 = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
@@ -1890,14 +1890,6 @@ void updateEdgePositionSub2(sNPCE8* r4)
 }
 
 // TODO: kernel
-void updateEdgePositionSub3Sub0(fixedPoint r4)
-{
-    pCurrentMatrix->matrix[3] += (((s64)pCurrentMatrix->matrix[1] * (s64)r4) >> 32);
-    pCurrentMatrix->matrix[7] += (((s64)pCurrentMatrix->matrix[5] * (s64)r4) >> 32);
-    pCurrentMatrix->matrix[11] += (((s64)pCurrentMatrix->matrix[9] * (s64)r4) >> 32);
-}
-
-// TODO: kernel
 void updateEdgePositionSub3Sub1(const sVec3_FP& r4, sVec2_FP* r5)
 {
     if ((r4[0] == 0) && (r4[2] == 0))
@@ -1930,7 +1922,7 @@ void updateEdgePositionSub3(sEdgeTask* r4)
 {
     sNPCE8* r13_npcE8 = &r4->mE8;
 
-    if ((currentResTask->m8_activationType) && (npcData0.mFC & 1))
+    if ((currentResTask->m8_currentLCSType) && (npcData0.mFC & 1))
     {
         //605BEEA
         assert(0);
@@ -1943,7 +1935,7 @@ void updateEdgePositionSub3(sEdgeTask* r4)
         translateCurrentMatrix(r13_npcE8->m0_position);
         rotateCurrentMatrixShiftedY(r13_npcE8->mC_rotation[1]);
         rotateCurrentMatrixShiftedX(r13_npcE8->mC_rotation[0]);
-        updateEdgePositionSub3Sub0(0x1800);
+        adjustMatrixTranslation(0x1800);
         sVec3_FP var14;
 
         var14[0] = pCurrentMatrix->matrix[3] - setDividend(LCSCollisionData.m0_LCS_X, LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m2C_projectionWidthScale);

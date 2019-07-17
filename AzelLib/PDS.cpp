@@ -224,8 +224,8 @@ void initVDP1()
     graphicEngineStatus.m405C.localCoordinatesX = 176;
     graphicEngineStatus.m405C.localCoordinatesY = 112;
 
-    graphicEngineStatus.m405C.m10 = 0x999;
-    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10);
+    graphicEngineStatus.m405C.m10_nearClipDistance = 0x999;
+    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0x200000;
     graphicEngineStatus.m405C.m38 = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
@@ -1051,3 +1051,9 @@ s8 READ_BE_S8(const void* ptr)
     return data;
 }
 
+void adjustMatrixTranslation(fixedPoint r4)
+{
+    pCurrentMatrix->matrix[3] += (((s64)pCurrentMatrix->matrix[1] * (s64)r4) >> 32);
+    pCurrentMatrix->matrix[7] += (((s64)pCurrentMatrix->matrix[5] * (s64)r4) >> 32);
+    pCurrentMatrix->matrix[11] += (((s64)pCurrentMatrix->matrix[9] * (s64)r4) >> 32);
+}
