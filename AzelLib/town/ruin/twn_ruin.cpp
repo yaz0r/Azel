@@ -2,6 +2,7 @@
 #include "twn_ruin.h"
 #include "town/town.h"
 #include "town/townScript.h"
+#include "town/townLCS.h"
 #include "kernel/animation.h"
 #include "kernel/vdp1Allocator.h"
 
@@ -887,8 +888,8 @@ void drawLcs()
     if ((npcData0.mFC & 0x10) && !(npcData0.mFC & 0x8))
     {
         sVec2_S16 var0;
-        var0[0] = resCameraProperties.m0_LCS_X.getInteger();
-        var0[1] = resCameraProperties.m4_LCS_Y.getInteger();
+        var0[0] = LCSCollisionData.m0_LCS_X.getInteger();
+        var0[1] = LCSCollisionData.m4_LCS_Y.getInteger();
 
         drawLcsSprite(var0, 0);
 
@@ -1039,8 +1040,8 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
             // enter LCS
             npcData0.mFC |= 0x12;
             graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
-            resCameraProperties.m4_LCS_Y = 0;
-            resCameraProperties.m0_LCS_X = 0;
+            LCSCollisionData.m4_LCS_Y = 0;
+            LCSCollisionData.m0_LCS_X = 0;
             pThis->m3 = 0;
             pThis->m30 = pThis->m68_rotation[1];
         }
@@ -1268,31 +1269,31 @@ void mainLogicUpdateSub5(sMainLogic* r4)
 
 void moveTownLCSCursor(sMainLogic* r4)
 {
-    resCameraProperties.m0_LCS_X += MTH_Mul(0x50000, -r4->m8_inputX);
-    if (resCameraProperties.m0_LCS_X > 0x7428F5)
+    LCSCollisionData.m0_LCS_X += MTH_Mul(0x50000, -r4->m8_inputX);
+    if (LCSCollisionData.m0_LCS_X > 0x7428F5)
     {
-        resCameraProperties.m0_LCS_X = 0x7428F5;
+        LCSCollisionData.m0_LCS_X = 0x7428F5;
     }
-    if (resCameraProperties.m0_LCS_X < -0x7428F5)
+    if (LCSCollisionData.m0_LCS_X < -0x7428F5)
     {
-        resCameraProperties.m0_LCS_X = -0x7428F5;
+        LCSCollisionData.m0_LCS_X = -0x7428F5;
     }
 
-    resCameraProperties.m4_LCS_Y += MTH_Mul(0x50000, r4->mC_inputY);
-    if (resCameraProperties.m4_LCS_Y > 0x49EB85)
+    LCSCollisionData.m4_LCS_Y += MTH_Mul(0x50000, r4->mC_inputY);
+    if (LCSCollisionData.m4_LCS_Y > 0x49EB85)
     {
-        resCameraProperties.m4_LCS_Y = 0x49EB85;
+        LCSCollisionData.m4_LCS_Y = 0x49EB85;
     }
-    if (resCameraProperties.m4_LCS_Y < -0x49EB85)
+    if (LCSCollisionData.m4_LCS_Y < -0x49EB85)
     {
-        resCameraProperties.m4_LCS_Y = -0x49EB85;
+        LCSCollisionData.m4_LCS_Y = -0x49EB85;
     }
 }
 
 // TODO kernel
 sSaturnPtr cameraFollowMode0_LCSSub1Sub0(s32 r4)
 {
-    if (r4 >= npcData0.m68_nulLCSTargets)
+    if (r4 >= npcData0.m68_numEnvLCSTargets)
     {
         assert(0);
         return sSaturnPtr::getNull();
@@ -1945,16 +1946,16 @@ void updateEdgePositionSub3(sEdgeTask* r4)
         updateEdgePositionSub3Sub0(0x1800);
         sVec3_FP var14;
 
-        var14[0] = pCurrentMatrix->matrix[3] - setDividend(resCameraProperties.m0_LCS_X, resCameraProperties.m28_LCSDepth, resCameraProperties.m2C);
-        var14[1] = pCurrentMatrix->matrix[7] - setDividend(resCameraProperties.m4_LCS_Y, resCameraProperties.m28_LCSDepth, resCameraProperties.m30);
-        var14[2] = pCurrentMatrix->matrix[11] - resCameraProperties.m28_LCSDepth;
+        var14[0] = pCurrentMatrix->matrix[3] - setDividend(LCSCollisionData.m0_LCS_X, LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m2C_projectionWidthScale);
+        var14[1] = pCurrentMatrix->matrix[7] - setDividend(LCSCollisionData.m4_LCS_Y, LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m30_projectionHeightScale);
+        var14[2] = pCurrentMatrix->matrix[11] - LCSCollisionData.m28_LCSDepthMax;
 
         sVec2_FP varC;
         updateEdgePositionSub3Sub1(var14, &varC);
 
-        var14[0] = resCameraProperties.m20_LCSWidthMin;
-        var14[1] = resCameraProperties.m24;
-        var14[2] = resCameraProperties.m28_LCSDepth;
+        var14[0] = LCSCollisionData.m20_LCSWidthMin;
+        var14[1] = LCSCollisionData.m24_LCSDepthMin;
+        var14[2] = LCSCollisionData.m28_LCSDepthMax;
         sVec2_FP var4;
         updateEdgePositionSub3Sub1(var14, &var4);
 

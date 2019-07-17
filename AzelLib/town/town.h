@@ -130,7 +130,7 @@ struct sNpcData
     s8 m5E;
     sSaturnPtr m60_townSetup;
     sSaturnPtr m64_scriptList;
-    s32 m68_nulLCSTargets;
+    s32 m68_numEnvLCSTargets;
     sSaturnPtr m6C_LCSTargets;
     std::array<NPCProxy, 32> m70_npcPointerArray;
     s32 mF0;
@@ -220,16 +220,16 @@ struct sCellObjectListNode
     //size 0xC
 };
 
-struct sEnvironmentTask : public s_workAreaTemplateWithArgWithCopy<sEnvironmentTask, sSaturnPtr>
+struct sTownCellTask : public s_workAreaTemplateWithArgWithCopy<sTownCellTask, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &sEnvironmentTask::Init, nullptr, &sEnvironmentTask::Draw, nullptr };
+        static TypedTaskDefinition taskDefinition = { &sTownCellTask::Init, nullptr, &sTownCellTask::Draw, nullptr };
         return &taskDefinition;
     }
 
-    static void Init(sEnvironmentTask* pThis, sSaturnPtr arg);
-    static void Draw(sEnvironmentTask* pThis);
+    static void Init(sTownCellTask* pThis, sSaturnPtr arg);
+    static void Draw(sTownCellTask* pThis);
 
     //size 0x18
     sSaturnPtr m8;
@@ -255,7 +255,7 @@ struct sTownGrid
     npcFileDeleter* m34;
     sSaturnPtr m38_EnvironmentSetup;
     s32* m3C;
-    std::array<std::array<sEnvironmentTask*, 8>, 8> m40_cellTasks;
+    std::array<std::array<sTownCellTask*, 8>, 8> m40_cellTasks;
     std::vector<sCellObjectListNode*> m140_perCellObjectList;
     sCellObjectListNode* m144_nextFreeObjectListNode;
     std::array<sCellObjectListNode, 0x40> m148_objectListNodes;

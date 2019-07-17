@@ -145,7 +145,7 @@ void createEnvironmentTask2(s32 r4, sTownGrid* r14)
             continue;
 
         sSaturnPtr cellData = readSaturnEA(r14->m38_EnvironmentSetup + 4 * (r14->m0_sizeX * r14->m14_currentY + r14->m10_currentX + r12));
-        sEnvironmentTask* newCellTask = createSiblingTaskWithArgWithCopy<sEnvironmentTask>(r14->m34, cellData);
+        sTownCellTask* newCellTask = createSiblingTaskWithArgWithCopy<sTownCellTask>(r14->m34, cellData);
         r14->m40_cellTasks[(r14->mC + r4) & 7][(r14->m8 + r12) & 7] = newCellTask;
 
         createCellObjects(r14->m10_currentX + r12, r4 + r14->m14_currentY);
@@ -405,7 +405,7 @@ s32 initNPC(s32 arg)
     npcData0.m64_scriptList = readSaturnEA(r13 + 8);
 
     sSaturnPtr r12_environmentSetup = readSaturnEA(r13 + 4);
-    npcData0.m68_nulLCSTargets = readSaturnS32(r12_environmentSetup + 0xC);
+    npcData0.m68_numEnvLCSTargets = readSaturnS32(r12_environmentSetup + 0xC);
     npcData0.m6C_LCSTargets = readSaturnEA(r12_environmentSetup + 0x10);
 
     initNPCSub0(dramAllocatorEnd[readSaturnS8(r13)].mC_buffer, readSaturnEA(r12_environmentSetup + 8), readSaturnU8(r12_environmentSetup), readSaturnU8(r12_environmentSetup + 1), readSaturnFP(r12_environmentSetup + 4));
@@ -560,7 +560,7 @@ void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y)
     }
 }
 
-void sEnvironmentTask::Init(sEnvironmentTask* pThis, sSaturnPtr arg)
+void sTownCellTask::Init(sTownCellTask* pThis, sSaturnPtr arg)
 {
     if ((readSaturnS32(arg + 0xC) == 0) && (readSaturnS32(arg + 0x10) == 0) && (readSaturnS32(arg + 0x14) == 0))
     {
@@ -571,7 +571,7 @@ void sEnvironmentTask::Init(sEnvironmentTask* pThis, sSaturnPtr arg)
     pThis->mC_position = readSaturnVec3(arg);
 }
 
-void sEnvironmentTask::Draw(sEnvironmentTask* pThis)
+void sTownCellTask::Draw(sTownCellTask* pThis)
 {
     pushCurrentMatrix();
     {
