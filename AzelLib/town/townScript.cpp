@@ -60,9 +60,9 @@ void scriptUpdateSub0Sub0(sMainLogic_74* r4)
     pushCurrentMatrix();
 
     initMatrixToIdentity(pCurrentMatrix);
-    pCurrentMatrix->matrix[3] = r4->m14[0];
-    pCurrentMatrix->matrix[7] = r4->m14[1];
-    pCurrentMatrix->matrix[11] = r4->m14[2];
+    pCurrentMatrix->matrix[3] = r4->m14_collisionClip[0];
+    pCurrentMatrix->matrix[7] = r4->m14_collisionClip[1];
+    pCurrentMatrix->matrix[11] = r4->m14_collisionClip[2];
 
     rotateCurrentMatrixShiftedZ(-r12[2]);
     rotateCurrentMatrixShiftedX(-r12[0]);
@@ -135,7 +135,7 @@ void scriptUpdateSub0Sub2Sub0(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sV
 
 void scriptUpdateSub0Sub2Sub1(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    fixedPoint r5 = FP_Div(r12, (*r14)[2]) + r13->m14[2];
+    fixedPoint r5 = FP_Div(r12, (*r14)[2]) + r13->m14_collisionClip[2];
 
     sScriptUpdateSub0Sub0Var0* r4;
     if (r12 < 0)
@@ -169,7 +169,7 @@ void scriptUpdateSub0Sub2Sub3(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sV
 
 void scriptUpdateSub0Sub2Sub4(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    fixedPoint r5 = FP_Div(r12, (*r14)[1]) - r13->m14[1];
+    fixedPoint r5 = FP_Div(r12, (*r14)[1]) - r13->m14_collisionClip[1];
 
     sScriptUpdateSub0Sub0Var0* r4;
     if(r12 < 0)
@@ -193,7 +193,7 @@ void scriptUpdateSub0Sub2Sub4(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
 
 void scriptUpdateSub0Sub2Sub5(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    fixedPoint r5 = FP_Div(r12, (*r14)[1]) + r13->m14[1];
+    fixedPoint r5 = FP_Div(r12, (*r14)[1]) + r13->m14_collisionClip[1];
 
     sScriptUpdateSub0Sub0Var0* r4;
     if (r12 < 0)
@@ -223,9 +223,9 @@ void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
     var4[2] = pCurrentMatrix->matrix[9];
 
     sVec3_FP var10;
-    var10[0] = MTH_Mul(var4[0], r4->m14[0]);
-    var10[1] = MTH_Mul(var4[1], r4->m14[1]);
-    var10[2] = MTH_Mul(var4[2], r4->m14[2]);
+    var10[0] = MTH_Mul(var4[0], r4->m14_collisionClip[0]);
+    var10[1] = MTH_Mul(var4[1], r4->m14_collisionClip[1]);
+    var10[2] = MTH_Mul(var4[2], r4->m14_collisionClip[2]);
 
     fixedPoint r14 = r5;
     r14 += MTH_Mul(var4[0], pCurrentMatrix->matrix[3]);
@@ -323,9 +323,215 @@ sTownCellTask* scriptUpdateSub0Sub3Sub0(fixedPoint r4_x, fixedPoint r5_z)
     return gTownGrid.m40_cellTasks[(gTownGrid.mC + r5_cellY) & 7][(gTownGrid.m8 + r13_cellX) & 7];
 }
 
-void processTownMeshCollision(sMainLogic_74* r4, u8* r5)
+void convertVerticeTo16(std::array<fixedPoint, 4 * 3>::iterator& r1, std::array<sVec3_S16, 3>::iterator& r2)
 {
-    FunctionUnimplemented();
+    r2->m_value[0] = r1[0] >> 4;
+    r2->m_value[1] = r1[1] >> 4;
+    r2->m_value[2] = r1[2] >> 4;
+
+    r2++;
+    r1 += 3;
+}
+
+struct sProcessedVertice
+{
+    sVec3_FP vertice;
+    u32 clipFlag;
+};
+
+s32 transformTownMeshVertices(const std::vector<sVec3_S16_12_4>& r4_vertices, std::array<sProcessedVertice, 255>& r5_outputConverted, s32 r6_numVertices, const sVec3_FP& r7_clip)
+{
+    std::array<fixedPoint, 4 * 3>::iterator r1 = pCurrentMatrix->matrix.begin();
+    std::array<sVec3_S16, 3> rotationMatrix;
+    std::array<sVec3_S16, 3>::iterator r2 = rotationMatrix.begin();
+
+    convertVerticeTo16(r1, r2);
+    s32 r12_X = *r1++;
+    convertVerticeTo16(r1, r2);
+    s32 r13_Y = *r1++;
+    convertVerticeTo16(r1, r2);
+    s32 r14_Z = *r1++;
+
+    r12_X <<= 8;
+    r13_Y <<= 8;
+    r14_Z <<= 8;
+
+    s32 r9_clipX = r7_clip[0] * 2;
+    s32 r10_clipY = r7_clip[1] * 2;
+    s32 r11_clipZ = r7_clip[2] * 2;
+
+    std::vector<sVec3_S16_12_4>::const_iterator r4 = r4_vertices.begin();
+    std::array<sProcessedVertice, 255>::iterator r5 = r5_outputConverted.begin();
+
+    s32 r7 = 0x3F;
+
+    do 
+    {
+        s32 r1 = 0;
+        r2 = rotationMatrix.begin();
+
+        // X
+        s64 mac = r12_X;
+        mac += (s64)r4->m_value[0] * (s64)r2->m_value[0];
+        mac += (s64)r4->m_value[1] * (s64)r2->m_value[1];
+        mac += (s64)r4->m_value[2] * (s64)r2->m_value[2];
+        r2++;
+        r1 >>= 1;
+        if (0 >= mac)
+        {
+            mac >>= 8;
+            mac |= 0xFF000000;
+            r1 |= 0x80000000;
+        }
+        else
+        {
+            mac >>= 8;
+        }
+        r5->vertice[0] = mac;
+        r1 >>= 1;
+        if (mac >= r9_clipX)
+        {
+            r1 |= 0x80000000;
+        }
+
+        // Y
+        mac = r13_Y;
+        mac += (s64)r4->m_value[0] * (s64)r2->m_value[0];
+        mac += (s64)r4->m_value[1] * (s64)r2->m_value[1];
+        mac += (s64)r4->m_value[2] * (s64)r2->m_value[2];
+        r2++;
+        r1 >>= 1;
+        if (0 >= mac)
+        {
+            mac >>= 8;
+            mac |= 0xFF000000;
+            r1 |= 0x80000000;
+        }
+        else
+        {
+            mac >>= 8;
+        }
+        r5->vertice[1] = mac;
+        r1 >>= 1;
+        if (mac >= r10_clipY)
+        {
+            r1 |= 0x80000000;
+        }
+
+        // Z
+        mac = r13_Y;
+        mac += (s64)r4->m_value[0] * (s64)r2->m_value[0];
+        mac += (s64)r4->m_value[1] * (s64)r2->m_value[1];
+        mac += (s64)r4->m_value[2] * (s64)r2->m_value[2];
+        r2++;
+        r1 >>= 1;
+        if (0 >= mac)
+        {
+            mac >>= 8;
+            mac |= 0xFF000000;
+            r1 |= 0x80000000;
+        }
+        else
+        {
+            mac >>= 8;
+        }
+        r5->vertice[2] = mac;
+        r1 >>= 1;
+        if (mac >= r11_clipZ)
+        {
+            r1 |= 0x80000000;
+        }
+
+        r5->clipFlag = r1;
+
+        r7 &= r1;
+        r5++;
+    } while (--r6_numVertices);
+
+    return r7;
+}
+
+void transformNormalByCurrentMatrix(const sVec3_S16_12_4& normal, sVec3_FP output)
+{
+    sVec3_FP temp;
+    temp[0] = normal[0] << 4;
+    temp[1] = normal[1] << 4;
+    temp[2] = normal[2] << 4;
+
+    transformVecByCurrentMatrix(temp, output);
+}
+
+void testTownMeshQuadForCollision(sMainLogic_74* r4, const sProcessed3dModel::sQuad& r5_quad, const std::array<sProcessedVertice, 255>& r6_vertices)
+{
+    const sProcessedVertice& r13_vertice0 = r6_vertices[r5_quad.m0_indices[0]];
+    const sProcessedVertice& r10_vertice1 = r6_vertices[r5_quad.m0_indices[1]];
+    const sProcessedVertice& r9_vertice2 = r6_vertices[r5_quad.m0_indices[2]];
+    const sProcessedVertice& r11_vertice3 = r6_vertices[r5_quad.m0_indices[3]];
+
+    // are all vertices clipped in one common axis?
+    if (r13_vertice0.clipFlag & r10_vertice1.clipFlag & r9_vertice2.clipFlag & r11_vertice3.clipFlag)
+        return;
+
+    sVec3_FP varC;
+    transformNormalByCurrentMatrix(r5_quad.m14_extraData[0].m0_normals, varC);
+
+    sVec3_FP var18;
+    var18[0] = MTH_Mul(varC[0], r4->m14_collisionClip[0]);
+    var18[1] = MTH_Mul(varC[1], r4->m14_collisionClip[1]);
+    var18[2] = MTH_Mul(varC[2], r4->m14_collisionClip[2]);
+
+    fixedPoint var0 = MTH_Product3d_FP(varC, r13_vertice0.vertice) - var18[0] - var18[1] - var18[2];
+
+    if (FP_Pow2(var18[2]) > FP_Pow2(var0))
+    {
+        //6008D50
+        assert(0);
+    }
+    
+    //6008F32
+    if (FP_Pow2(var18[0]) > FP_Pow2(var0))
+    {
+        //6008F4E
+        assert(0);
+    }
+
+    //6009122
+    if (FP_Pow2(var18[1]) > FP_Pow2(var0))
+    {
+        //600913E
+        assert(0);
+    }
+}
+
+void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
+{
+    std::array<sProcessedVertice, 255> transformedVertices;
+    if (transformTownMeshVertices(r5->m8_vertices, transformedVertices, r5->m4_numVertices, r4->m14_collisionClip))
+    {
+        // because all vertices were clipped on one axis
+        return;
+    }
+
+    std::vector<sProcessed3dModel::sQuad>::const_iterator quadIterator = r5->mC_Quads.begin();
+    if (r4->m2C == 0)
+    {
+        while (quadIterator != r5->mC_Quads.end())
+        {
+            if ((quadIterator->m10_CMDSRCA & 0xF00) == 0)
+            {
+                testTownMeshQuadForCollision(r4, *quadIterator, transformedVertices);
+            }
+            quadIterator++;
+        }
+    }
+    else
+    {
+        while (quadIterator != r5->mC_Quads.end())
+        {
+            testTownMeshQuadForCollision(r4, *quadIterator, transformedVertices);
+            quadIterator++;
+        }
+    }
 }
 
 void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
@@ -347,13 +553,13 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
         sSaturnPtr r14 = readSaturnEA(r13->m8 + 0x14);
         while (readSaturnU32(r14))
         {
-            u8* r11 = r13->m0_dramAllocation + READ_BE_U32(r13->m0_dramAllocation + readSaturnU32(r14));
+            sProcessed3dModel mesh(r13->m0_dramAllocation, READ_BE_U32(r13->m0_dramAllocation + readSaturnU32(r14)));
             sVec3_FP meshPositionInCell = readSaturnVec3(r14 + 4);
-            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(READ_BE_S32(r11) + r12->m4_collisionRadius))
+            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(mesh.m0_radius + r12->m4_collisionRadius))
             {
                 pushCurrentMatrix();
                 translateCurrentMatrix(meshPositionInCell);
-                processTownMeshCollision(r12, r11);
+                processTownMeshCollision(r12, &mesh);
                 popMatrix();
             }
 
@@ -484,34 +690,34 @@ void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
     }
 
     //6008622
-    if (var14[0] > r12->m14[0] / 2)
+    if (var14[0] > r12->m14_collisionClip[0] / 2)
     {
-        var14[0] = r12->m14[0] / 2;
+        var14[0] = r12->m14_collisionClip[0] / 2;
     }
 
-    if (var14[0] < -r12->m14[0] / 2)
+    if (var14[0] < -r12->m14_collisionClip[0] / 2)
     {
-        var14[0] = -r12->m14[0] / 2;
+        var14[0] = -r12->m14_collisionClip[0] / 2;
     }
 
-    if (var14[1] > r12->m14[1] / 2)
+    if (var14[1] > r12->m14_collisionClip[1] / 2)
     {
-        var14[1] = r12->m14[1] / 2;
+        var14[1] = r12->m14_collisionClip[1] / 2;
     }
 
-    if (var14[1] < -r12->m14[1] / 2)
+    if (var14[1] < -r12->m14_collisionClip[1] / 2)
     {
-        var14[1] = -r12->m14[1] / 2;
+        var14[1] = -r12->m14_collisionClip[1] / 2;
     }
 
-    if (var14[2] > r12->m14[2] / 2)
+    if (var14[2] > r12->m14_collisionClip[2] / 2)
     {
-        var14[2] = r12->m14[2] / 2;
+        var14[2] = r12->m14_collisionClip[2] / 2;
     }
 
-    if (var14[2] < -r12->m14[2] / 2)
+    if (var14[2] < -r12->m14_collisionClip[2] / 2)
     {
-        var14[2] = -r12->m14[2] / 2;
+        var14[2] = -r12->m14_collisionClip[2] / 2;
     }
 
     //6008668
@@ -1139,7 +1345,7 @@ void updateTownLCSTargetPosition(sScriptTask* pThis)
         translateCurrentMatrix(pThis->mC->m8_position);
         if (pThis->mC->m2C == 3)
         {
-            adjustMatrixTranslation(pThis->mC->m14[1] / 2);
+            adjustMatrixTranslation(pThis->mC->m14_collisionClip[1] / 2);
         }
         break;
     default:

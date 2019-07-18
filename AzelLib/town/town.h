@@ -34,7 +34,7 @@ struct sMainLogic_74
     s16 m2_collisionLayersBitField;
     fixedPoint m4_collisionRadius;
     sVec3_FP m8_position;
-    sVec3_FP m14;
+    sVec3_FP m14_collisionClip;
     sVec3_FP m20;
     s32 m2C;
     sVec3_FP* m30_pPosition;

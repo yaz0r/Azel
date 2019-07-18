@@ -702,14 +702,14 @@ void findLCSCollision()
             {
                 var4.m0_radius = r14->m4_collisionRadius;
 
-                s16 r4 = r14->m14[0] >> 4;
+                s16 r4 = r14->m14_collisionClip[0] >> 4;
                 r10[0] = r4;
                 r9[0] = r4;
 
                 var0[0] = -r4;
                 r8[0] = -r4;
 
-                r4 = r14->m14[1] >> 4;
+                r4 = r14->m14_collisionClip[1] >> 4;
                 r8[1] = r4;
                 r10[1] = r4;
 

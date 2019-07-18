@@ -484,32 +484,32 @@ void mainLogicInitSub1(sMainLogic_74* r4, sSaturnPtr r5, sSaturnPtr r6)
 
     if (readSaturnS32(r6) > readSaturnS32(r5))
     {
-        r4->m14[0] = r4->m20[0] - readSaturnS32(r5);
+        r4->m14_collisionClip[0] = r4->m20[0] - readSaturnS32(r5);
     }
     else
     {
-        r4->m14[0] = r4->m20[0] - readSaturnS32(r6);
+        r4->m14_collisionClip[0] = r4->m20[0] - readSaturnS32(r6);
     }
 
     if (readSaturnS32(r6 + 4) > readSaturnS32(r5 + 4))
     {
-        r4->m14[1] = r4->m20[1] - readSaturnS32(r5 + 4);
+        r4->m14_collisionClip[1] = r4->m20[1] - readSaturnS32(r5 + 4);
     }
     else
     {
-        r4->m14[1] = r4->m20[1] - readSaturnS32(r6 + 4);
+        r4->m14_collisionClip[1] = r4->m20[1] - readSaturnS32(r6 + 4);
     }
 
     if (readSaturnS32(r6 + 8) > readSaturnS32(r5 + 8))
     {
-        r4->m14[2] = r4->m20[2] - readSaturnS32(r5 + 8);
+        r4->m14_collisionClip[2] = r4->m20[2] - readSaturnS32(r5 + 8);
     }
     else
     {
-        r4->m14[2] = r4->m20[2] - readSaturnS32(r6 + 8);
+        r4->m14_collisionClip[2] = r4->m20[2] - readSaturnS32(r6 + 8);
     }
 
-    r4->m4_collisionRadius = sqrt_F(MTH_Product3d_FP(r4->m14, r4->m14));
+    r4->m4_collisionRadius = sqrt_F(MTH_Product3d_FP(r4->m14_collisionClip, r4->m14_collisionClip));
 }
 
 void mainLogicUpdateSub0Sub0(sTownGrid* r4)
