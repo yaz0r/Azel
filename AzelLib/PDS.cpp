@@ -6,6 +6,8 @@
 #pragma comment(lib, "Version.lib")
 #endif
 
+bool compareTrace = true;
+
 bool hasEncounterData;
 bool debugEnabled = false; // watchdog bit 1
 
@@ -985,6 +987,7 @@ void loopIteration()
         {
             interruptVDP1Update();
             updateFadeInterrupt();
+            updateFadeInterrupt(); // because game is running at 30 and interrupt happens at 60
         }
         checkGL();
     }

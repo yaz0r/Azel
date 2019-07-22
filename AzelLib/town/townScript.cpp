@@ -238,6 +238,7 @@ void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
     switch (r4->m0)
     {
     case 0:
+    case 1:
         // 6009474
         if (FP_Pow2(r14) < FP_Pow2(var10[2]))
         {
@@ -290,6 +291,11 @@ s32 scriptUpdateSub0Sub3Sub1(fixedPoint r4_x, fixedPoint r5_z)
 
 sTownCellTask* scriptUpdateSub0Sub3Sub0(fixedPoint r4_x, fixedPoint r5_z)
 {
+    if (compareTrace)
+    {
+        addTraceLog("scriptUpdateSub0Sub3Sub0 testing cell: 0x%04X 0x%04X\n", r4_x.asS32(), r5_z.asS32());
+    }
+
     s32 r13_cellX = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex);
     s32 r5_cellY = MTH_Mul32(r5_z, gTownGrid.m30_worldToCellIndex);
 
@@ -319,6 +325,11 @@ sTownCellTask* scriptUpdateSub0Sub3Sub0(fixedPoint r4_x, fixedPoint r5_z)
 
     if (r5_cellY > 3)
         return nullptr;
+
+    if (compareTrace)
+    {
+        addTraceLog("scriptUpdateSub0Sub3Sub0 found cell. GridSize: %d %d\n", gTownGrid.m0_sizeX, gTownGrid.m4_sizeY);
+    }
 
     return gTownGrid.m40_cellTasks[(gTownGrid.mC + r5_cellY) & 7][(gTownGrid.m8 + r13_cellX) & 7];
 }
@@ -505,6 +516,15 @@ void testTownMeshQuadForCollision(sMainLogic_74* r4, const sProcessed3dModel::sQ
 
 void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
 {
+    if (compareTrace)
+    {
+        addTraceLog("processTownMeshCollision: current matrix: ");
+        for (int i = 0; i < 4 * 3; i++)
+        {
+            addTraceLog("0x%08X ", pCurrentMatrix->matrix[i]);
+        }
+        addTraceLog("\n");
+    }
     std::array<sProcessedVertice, 255> transformedVertices;
     if (transformTownMeshVertices(r5->m8_vertices, transformedVertices, r5->m4_numVertices, r4->m14_collisionClip))
     {
@@ -547,6 +567,8 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
 
     pushCurrentMatrix();
     {
+        translateCurrentMatrix(r13->mC_position);
+
         sVec3_FP var0_positionInCell;
         var0_positionInCell = r12->m8_position - r13->mC_position;
 
@@ -748,7 +770,7 @@ void scriptUpdateSub0Sub4(sMainLogic_74* r4)
 
 void scriptUpdateSub0()
 {
-    for (int r8 = 4-1; r8 > 0; r8--)
+    for (int r8 = 4-1; r8 >= 0; r8--)
     {
         sResData1C* r11 = resData.m8_headOfLinkedList[r8];
         while (r11)
@@ -804,8 +826,36 @@ void scriptUpdateSub0()
     }
 }
 
+void addTraceLog(const char* fmt, ...)
+{
+    static FILE* fHandle = nullptr;
+    if (fHandle == nullptr)
+    {
+        fHandle = fopen("azelLog.txt", "r");
+        assert(fHandle);
+    }
+
+    char buffer[1024];
+
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(buffer, fmt, args);
+    va_end(args);
+
+    char buffer2[1024];
+    fread(buffer2, 1, strlen(buffer), fHandle);
+    buffer2[strlen(buffer)] = 0;
+
+    printf(buffer);
+    assert(strcmp(buffer2, buffer) == 0);
+}
+
 void initResTable()
 {
+    if (compareTrace)
+    {
+        addTraceLog("InitResTable: resValue0=%d\n", resValue0);
+    }
     resData.m8_headOfLinkedList.fill(0);
     resData.m4 = 0;
 
@@ -1019,6 +1069,11 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
     do
     {
         u8 r0_opcode = readSaturnU8(r14++);
+
+        if (compareTrace)
+        {
+            addTraceLog("runScript_interceptOpcode 0x%02X\n", r0_opcode);
+        }
 
         switch (r0_opcode)
         {

@@ -1,5 +1,7 @@
 #include "PDS.h"
 
+extern std::array<sMatrix4x3, 16> matrixStack;
+
 #include "3dEngine_textureCache.h"
 #include <unordered_map>
 
@@ -883,8 +885,6 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
         } while (0);
     }
 }
-
-extern sMatrix4x3 matrixStack[16];
 
 float* getViewMatrix()
 {

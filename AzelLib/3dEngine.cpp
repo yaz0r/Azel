@@ -1,6 +1,7 @@
 #include "PDS.h"
 
-sMatrix4x3 matrixStack[16];
+std::array<sMatrix4x3,16> matrixStack;
+std::array<sMatrix4x3, 16>::iterator matrixStackIter = matrixStack.begin();
 sMatrix4x3* pCurrentMatrix = NULL;
 
 s_cameraProperties2 cameraProperties2;
@@ -162,7 +163,8 @@ void copyToCurrentMatrix(sMatrix4x3* pSrc)
 
 void resetMatrixStack()
 {
-    pCurrentMatrix = &matrixStack[0];
+    matrixStackIter = matrixStack.begin();
+    pCurrentMatrix = &(*matrixStackIter);
 
     pCurrentMatrix->matrix[0] = 0x10000;
     pCurrentMatrix->matrix[1] = 0;
@@ -308,14 +310,16 @@ void translateCurrentMatrix(const sVec3_FP& translation)
 
 void pushCurrentMatrix()
 {
-    sMatrix4x3* pNextMatrix = pCurrentMatrix+1;
+    matrixStackIter++;
+    sMatrix4x3* pNextMatrix = &(*matrixStackIter);
     copyMatrix(pCurrentMatrix, pNextMatrix);
     pCurrentMatrix = pNextMatrix;
 }
 
 void popMatrix()
 {
-    pCurrentMatrix--;
+    matrixStackIter--;
+    pCurrentMatrix = &(*matrixStackIter);;
 }
 
 void multiplyMatrix(sMatrix4x3* matrixA, sMatrix4x3* matrixB)
