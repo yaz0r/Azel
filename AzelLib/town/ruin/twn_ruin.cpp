@@ -1394,7 +1394,7 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
     sEdgeTask* r4_edge = r14_townTask->m14_EdgeTask;
     sNPCE8* r13_npcData = &r4_edge->mE8;
 
-    if (r4_edge->mC & 4)
+    if ((r4_edge->mC & 4) == 0)
     {
         r14_townTask->m2C = 0;
         r14_townTask->m30 = 0;
@@ -1435,10 +1435,10 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
 
     generateCameraMatrixSub1(var4, r14_townTask->m68_cameraRotation);
 
-    s32 r4 = atan2_FP(0x174, r14_townTask->m24_distance);
+    s32 r4 = atan2_FP(0x147, r14_townTask->m24_distance);
     if (r4 > 0x1555555)
     {
-        r4 = 1555555;
+        r4 = 0x1555555;
     }
 
     fixedPoint r5 = cameraParam[1] - r14_townTask->m68_cameraRotation[0];
@@ -1519,6 +1519,11 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
 
     EdgeUpdateSub0(&r14_townTask->m74_townCamera);
     mainLogicUpdateSub5(r14_townTask);
+
+    if (compareTrace)
+    {
+        addTraceLog("cameraFollowMode0Bis set camera position: 0x%04X 0x%04X 0x%04X\n", r14_townTask->m38_interpolatedCameraPosition[0].asS32(), r14_townTask->m38_interpolatedCameraPosition[1].asS32(), r14_townTask->m38_interpolatedCameraPosition[2].asS32());
+    }
 }
 
 void mainLogicUpdateSub3()
@@ -1552,9 +1557,36 @@ p_workArea startMainLogic(p_workArea pParent)
     return createSubTask<sMainLogic>(pParent);
 }
 
-p_workArea startCameraTask(p_workArea)
+struct sCameraTask : public s_workAreaTemplate<sCameraTask>
 {
-    return NULL;
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sCameraTask::Init, &sCameraTask::Update, nullptr, nullptr };
+        return &taskDefinition;
+    }
+
+    static void Init(sCameraTask* pThis)
+    {
+        FunctionUnimplemented();
+    }
+    static void Update(sCameraTask* pThis)
+    {
+        FunctionUnimplemented();
+    }
+
+    u8 m0;
+    u8 m1;
+    u32 m8;
+    u32 m30;
+    //size 0x64
+};
+
+sCameraTask* cameraTaskPtr = nullptr;
+
+p_workArea startCameraTask(p_workArea pParent)
+{
+    cameraTaskPtr = createSubTask<sCameraTask>(pParent);
+    return cameraTaskPtr;
 }
 
 s32* twnVar1;
@@ -1630,15 +1662,37 @@ p_workArea overlayStart_TWN_RUIN(p_workArea pUntypedThis, u32 arg)
 
 s32 TwnFadeOut(s32 arg0)
 {
+    cameraTaskPtr->m1 = 0;
     fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, arg0);
     fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0);
     graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
     return 0;
 }
 
-s32 TwnFadeIn(s32 arg0)
+u16 TwnFadeInComputeColor(u32 r4, u32 r5)
 {
     FunctionUnimplemented();
+    return 0;
+}
+
+s32 TwnFadeIn(s32 arg0)
+{
+    u16 fadeColor;
+    switch (cameraTaskPtr->m0)
+    {
+    case 0:
+        fadeColor = TwnFadeInComputeColor(cameraTaskPtr->m8, cameraTaskPtr->m30);
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0xC210, arg0);
+    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0);
+
+    cameraTaskPtr->m1 = 1;
+
     return 0;
 }
 
@@ -1651,7 +1705,7 @@ s32 hasLoadingCompleted()
 void scriptFunction_6057058_sub0Sub0()
 {
     sNPCE8* r13 = &twnMainLogicTask->m14_EdgeTask->mE8;
-    twnMainLogicTask->m18_position = r13->m0_position;
+    twnMainLogicTask->m18_position = r13->m0_position + sVec3_FP(0, 0x1800, 0);
 
     sMatrix4x3 var0;
     initMatrixToIdentity(&var0);

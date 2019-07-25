@@ -1101,7 +1101,7 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
                 assert(0);
             }
 
-            r13_pThis->m100 = delay;
+            r13_pThis->m100 = delay-1;
             return r4;
         }
         case 5: //if
