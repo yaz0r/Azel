@@ -387,22 +387,22 @@ s32 transformTownMeshVertices(const std::vector<sVec3_S16_12_4>& r4_vertices, st
         mac += (s64)r4->m_value[1] * (s64)r2->m_value[1];
         mac += (s64)r4->m_value[2] * (s64)r2->m_value[2];
         r2++;
-        r1 >>= 1;
+        r1 <<= 1;
         if (0 >= mac)
         {
             mac >>= 8;
             mac |= 0xFF000000;
-            r1 |= 0x80000000;
+            r1 |= 1;
         }
         else
         {
             mac >>= 8;
         }
         r5->vertice[0] = mac;
-        r1 >>= 1;
+        r1 <<= 1;
         if (mac >= r9_clipX)
         {
-            r1 |= 0x80000000;
+            r1 |= 1;
         }
 
         // Y
@@ -411,58 +411,59 @@ s32 transformTownMeshVertices(const std::vector<sVec3_S16_12_4>& r4_vertices, st
         mac += (s64)r4->m_value[1] * (s64)r2->m_value[1];
         mac += (s64)r4->m_value[2] * (s64)r2->m_value[2];
         r2++;
-        r1 >>= 1;
+        r1 <<= 1;
         if (0 >= mac)
         {
             mac >>= 8;
             mac |= 0xFF000000;
-            r1 |= 0x80000000;
+            r1 |= 1;
         }
         else
         {
             mac >>= 8;
         }
         r5->vertice[1] = mac;
-        r1 >>= 1;
+        r1 <<= 1;
         if (mac >= r10_clipY)
         {
-            r1 |= 0x80000000;
+            r1 |= 1;
         }
 
         // Z
-        mac = r13_Y;
+        mac = r14_Z;
         mac += (s64)r4->m_value[0] * (s64)r2->m_value[0];
         mac += (s64)r4->m_value[1] * (s64)r2->m_value[1];
         mac += (s64)r4->m_value[2] * (s64)r2->m_value[2];
         r2++;
-        r1 >>= 1;
+        r1 <<= 1;
         if (0 >= mac)
         {
             mac >>= 8;
             mac |= 0xFF000000;
-            r1 |= 0x80000000;
+            r1 |= 1;
         }
         else
         {
             mac >>= 8;
         }
         r5->vertice[2] = mac;
-        r1 >>= 1;
+        r1 <<= 1;
         if (mac >= r11_clipZ)
         {
-            r1 |= 0x80000000;
+            r1 |= 1;
         }
 
         r5->clipFlag = r1;
 
         r7 &= r1;
         r5++;
+        r4++;
     } while (--r6_numVertices);
 
     return r7;
 }
 
-void transformNormalByCurrentMatrix(const sVec3_S16_12_4& normal, sVec3_FP output)
+void transformNormalByCurrentMatrix(const sVec3_S16_12_4& normal, sVec3_FP& output)
 {
     sVec3_FP temp;
     temp[0] = normal[0] << 4;
@@ -526,7 +527,19 @@ void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
         addTraceLog("\n");
     }
     std::array<sProcessedVertice, 255> transformedVertices;
-    if (transformTownMeshVertices(r5->m8_vertices, transformedVertices, r5->m4_numVertices, r4->m14_collisionClip))
+    u32 clipFlag = transformTownMeshVertices(r5->m8_vertices, transformedVertices, r5->m4_numVertices, r4->m14_collisionClip);
+
+    if (compareTrace)
+    {
+        addTraceLog("processTownMeshCollision: vertices: ");
+        for (int i = 0; i < r5->m4_numVertices; i++)
+        {
+            addTraceLog("0x%08X 0x%08X 0x%08X 0x%08X, ", transformedVertices[i].vertice[0].asS32(), transformedVertices[i].vertice[1].asS32(), transformedVertices[i].vertice[2].asS32(), transformedVertices[i].clipFlag);
+        }
+        addTraceLog("\n");
+    }
+
+    if(clipFlag)
     {
         // because all vertices were clipped on one axis
         return;
