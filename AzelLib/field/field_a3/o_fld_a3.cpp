@@ -618,7 +618,7 @@ void A3_Obj2_Update(s_A3_Obj2* r14)
     r14->m30 -= r14->m34;
     r14->m48 += r14->m4C;
 
-    fixedPoint var0 = MTH_Mul(r14->m50, getSin((s16(r14->m48 >> 16)) & 0xFFF)) + r14->m3C + fixedPoint(0x8000000);
+    fixedPoint var0 = MTH_Mul(r14->m50, getSin(r14->m48 >> 16)) + r14->m3C + fixedPoint(0x8000000);
 
     s32 r12 = r14->m28_numNodes;
     if (r12 == 0)
@@ -1281,7 +1281,7 @@ s_grid1* readEnvironmentGridCell(sSaturnPtr gridCellEA)
         pCell->m10[0] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
         pCell->m10[1] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
         pCell->m10[2] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
-        pCell->m16 = readSaturnS32(gridCellEA); gridCellEA = gridCellEA + 2;
+        pCell->m16 = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
 
         pCell++;
     }
@@ -5478,9 +5478,9 @@ void dragonFieldTaskInitSub4Sub6(s_dragonTaskWorkArea* r4)
 {
     sVec3_FP var;
 
-    var[0] = r4->m160_deltaTranslation[0] << 8;
-    var[1] = r4->m160_deltaTranslation[1] << 8;
-    var[2] = r4->m160_deltaTranslation[2] << 8;
+    var[0] = r4->m160_deltaTranslation[0] * 0x100;
+    var[1] = r4->m160_deltaTranslation[1] * 0x100;
+    var[2] = r4->m160_deltaTranslation[2] * 0x100;
 
     s32 r0 = dot3_FP(&var, &var);
     r4->m154_dragonSpeed = sqrt_F(r0) >> 8;

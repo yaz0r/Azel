@@ -16,12 +16,12 @@ void playMusic(u8 musicNumber, u8 unk1)
     switch (musicNumber)
     {
     case 1:
-        gWave.load("1.OGG");
-        gSoloud.play(gWave);
+        //gWave.load("1.OGG");
+        //gSoloud.play(gWave);
         break;
     case 75:
-        gWave.load("75.OGG");
-        gSoloud.play(gWave);
+        //gWave.load("75.OGG");
+        //gSoloud.play(gWave);
         break;
     }
     PDS_unimplemented("playMusic");

@@ -2,6 +2,62 @@
 
 //typedef s32 fixedPoint;
 
+class fp16
+{
+public:
+    s16 m_value;
+    
+    fp16() : m_value(0)
+    {
+        
+    }
+    
+    fp16(s16 newValue) : m_value(newValue)
+    {
+        
+    }
+    
+    fp16 operator - () const
+    {
+        fp16 newFixedPoint;
+        newFixedPoint.m_value = -m_value;
+        return newFixedPoint;
+    }
+
+    fp16 operator += (const fp16& otherValue)
+    {
+        m_value += otherValue.m_value;
+        return *this;
+    }
+
+    fp16 operator -= (const fp16& otherValue)
+    {
+        m_value -= otherValue.m_value;
+        return *this;
+    }
+
+    fp16 operator *= (const fp16& otherValue)
+    {
+        m_value *= otherValue.m_value;
+        return *this;
+    }
+    
+    s32 toFP32() const
+    {
+        return ((s32)m_value) * 0x10000;
+    }
+    
+    operator s16() const
+    {
+        return m_value;
+    }
+    
+    operator s16()
+    {
+        return m_value;
+    }
+};
+
 class fixedPoint
 {
 private:
@@ -91,6 +147,11 @@ public:
     float toFloat() const
     {
         return (float)m_value / (float)(1 << 16);
+    }
+    
+    void setFromInteger(s16 inputInteger)
+    {
+        m_value = ((s32)inputInteger) * 0x10000;
     }
 };
 

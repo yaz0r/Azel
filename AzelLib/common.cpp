@@ -688,7 +688,7 @@ void memcpy_dma(void* src, void* dst, u32 size)
     memcpy(dst, src, size);
 }
 
-extern s32 CosSinTable[4096];
+extern s32 CosSinTable[5120];
 
 fixedPoint getCos(u32 value)
 {

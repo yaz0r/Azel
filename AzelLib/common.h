@@ -163,14 +163,14 @@ struct sVec3_S16_12_4
 
 struct sVec3_S16
 {
-    std::array<s16, 3> m_value;
+    std::array<fp16, 3> m_value;
 
-    s16 operator[](int i) const
+    fp16 operator[](int i) const
     {
         return m_value[i];
     }
 
-    s16& operator[](int i)
+    fp16& operator[](int i)
     {
         return m_value[i];
     }
@@ -178,9 +178,9 @@ struct sVec3_S16
     sVec3_FP toSVec3_FP() const
     {
         sVec3_FP convertedVector;
-        convertedVector[0] = ((s32)m_value[0]) << 16;
-        convertedVector[1] = ((s32)m_value[1]) << 16;
-        convertedVector[2] = ((s32)m_value[2]) << 16;
+        convertedVector[0] = ((s32)m_value[0].m_value) * 0x10000;
+        convertedVector[1] = ((s32)m_value[1].m_value) * 0x10000;
+        convertedVector[2] = ((s32)m_value[2].m_value) * 0x10000;
 
         return convertedVector;
     }

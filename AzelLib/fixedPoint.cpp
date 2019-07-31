@@ -28,7 +28,7 @@ fixedPoint FP_Div(s32 divident, fixedPoint divisor)
         }
     }
 
-    return fixedPoint::fromS32((((s64)divident) << 16) / divisor.asS32());
+    return fixedPoint::fromS32((((s64)divident) * 0x10000) / divisor.asS32());
 }
 
 fixedPoint dot3_FP(const sVec3_FP* r4, const sVec3_FP* r5)

@@ -5,10 +5,13 @@ sFadeControls g_fadeControls;
 
 u32 convertColorToU32(const sVec3_FP& inColor)
 {
-    u32 color = (((s32)((inColor[2].m_value >> 4) << 16)) + 0x10) << 10;
-    color |= (((s32)((inColor[1].m_value >> 4) << 16)) + 0x10) << 5;
-    color |= (((s32)((inColor[0].m_value >> 4) << 16)) + 0x10) << 0;
-
+    PDS_unimplemented("convertColorToU32");
+    u32 color = 0;
+    /*
+    u32 color = (((s32)(((u32)inColor[2].m_value >> 4) << 16)) + 0x10) << 10;
+    color |= (((s32)(((u32)inColor[1].m_value >> 4) << 16)) + 0x10) << 5;
+    color |= (((s32)(((u32)inColor[0].m_value >> 4) << 16)) + 0x10) << 0;
+*/
     return color | 0x8000;
 }
 
@@ -17,13 +20,11 @@ s16 unpackColor(s16 inColor)
     s32 r4 = (inColor & 0x1F) - 0x10;
     if (r4 > 0)
     {
-        s32 r3 = r4;
-        r4 <<= 4;
-        r4 += r3;
+        r4 *= 9;
     }
     else
     {
-        r4 <<= 4;
+        r4 *= 8;
     }
 
     return r4;
@@ -36,19 +37,19 @@ s32 fadePalette(sFadeControlsChannel* pFadeChannel, u32 from, u32 to, u32 steps)
 
     g_fadeControls.m_4C = g_fadeControls.m_4D;
 
-    pFadeChannel->m0_color[0] = unpackColor(from) << 16;
+    pFadeChannel->m0_color[0].setFromInteger(unpackColor(from));
     pFadeChannel->m18_targetColor[0] = unpackColor(to);
-    asyncDivStart_integer(pFadeChannel->m0_color[0] - (((s32)pFadeChannel->m18_targetColor[0]) << 16), steps);
+    asyncDivStart_integer(pFadeChannel->m0_color[0] - pFadeChannel->m18_targetColor[0].toFP32(), steps);
     pFadeChannel->mC_colorStep[0] = asyncDivEnd();
 
-    pFadeChannel->m0_color[1] = unpackColor(from >> 5) << 16;
+    pFadeChannel->m0_color[1].setFromInteger(unpackColor(from >> 5));
     pFadeChannel->m18_targetColor[1] = unpackColor(to >> 5);
-    asyncDivStart_integer(pFadeChannel->m0_color[1] - (((s32)pFadeChannel->m18_targetColor[1]) << 16), steps);
+    asyncDivStart_integer(pFadeChannel->m0_color[1] - pFadeChannel->m18_targetColor[1].toFP32(), steps);
     pFadeChannel->mC_colorStep[1] = asyncDivEnd();
 
-    pFadeChannel->m0_color[2] = unpackColor(from >> 10) << 16;
+    pFadeChannel->m0_color[2].setFromInteger(unpackColor(from >> 10));
     pFadeChannel->m18_targetColor[2] = unpackColor(to >> 10);
-    asyncDivStart_integer(pFadeChannel->m0_color[2] - (((s32)pFadeChannel->m18_targetColor[2]) << 16), steps);
+    asyncDivStart_integer(pFadeChannel->m0_color[2] - pFadeChannel->m18_targetColor[2].toFP32(), steps);
     pFadeChannel->mC_colorStep[2] = asyncDivEnd();
 
     pFadeChannel->m1E_counter = steps;
