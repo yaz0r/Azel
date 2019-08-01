@@ -548,7 +548,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                             tempQuad.CMDPMOD = currentQuad.mC_CMDPMOD;
                             tempQuad.CMDCOLR = currentQuad.mE_CMDCOLR;
                             tempQuad.CMDSRCA = currentQuad.m10_CMDSRCA;
-                            tempQuad.CMDSIZE = currentQuad.m12_CMDSIZE;
+                            tempQuad.CMDSIZE = currentQuad.m12_onCollisionScriptIndex;
 
                             for (int i = 0; i < 4; i++)
                             {

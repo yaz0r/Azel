@@ -326,7 +326,7 @@ struct sProcessed3dModel
         u16 mC_CMDPMOD;
         u16 mE_CMDCOLR;
         u16 m10_CMDSRCA;
-        u16 m12_CMDSIZE;
+        u16 m12_onCollisionScriptIndex;
         std::vector<sQuadExtra> m14_extraData;
     };
 
@@ -374,7 +374,7 @@ struct sProcessed3dModel
             newQuad.mC_CMDPMOD = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDPMOD
             newQuad.mE_CMDCOLR = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDCOLR
             newQuad.m10_CMDSRCA = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDSRCA
-            newQuad.m12_CMDSIZE = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDSIZEd
+            newQuad.m12_onCollisionScriptIndex = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDSIZEd
 
             u8 lightingMode = (newQuad.m8_lightingControl >> 8) & 3;
 

@@ -472,7 +472,7 @@ s32 initNPCFromStruct(sSaturnPtr r4)
 void mainLogicInitSub0(sMainLogic_74* r4, s32 r5)
 {
     r4->m2C = r5;
-    r4->m0 = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5));
+    r4->m0_collisionType = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5));
     r4->m1 = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5 + 1));
     r4->m2_collisionLayersBitField = readSaturnS16(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5 + 2));
 }

@@ -9,6 +9,7 @@
 sResData resData;
 
 s32 resValue0 = 0;
+s32 resValue1 = 0;
 sScriptTask* currentResTask = nullptr;
 
 struct sScriptUpdateSub0Sub0Var0
@@ -35,7 +36,7 @@ void scriptUpdateSub0Sub0(sMainLogic_74* r4)
 {
     const sVec3_FP& r12 = *r4->m34_pRotation;
 
-    switch (r4->m0)
+    switch (r4->m0_collisionType)
     {
     case 0:
     case 1:
@@ -76,7 +77,7 @@ void scriptUpdateSub0Sub0(sMainLogic_74* r4)
     translateCurrentMatrix(var0);
 }
 
-void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, sVec3_S16* r7)
+void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_12_4* r7)
 {
     if (r4.m_offset == 0)
         return;
@@ -235,7 +236,7 @@ void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
     r14 -= var10[1];
     r14 -= var10[2];
 
-    switch (r4->m0)
+    switch (r4->m0_collisionType)
     {
     case 0:
     case 1:
@@ -473,7 +474,15 @@ void transformNormalByCurrentMatrix(const sVec3_S16_12_4& normal, sVec3_FP& outp
     transformVecByCurrentMatrix(temp, output);
 }
 
-void testTownMeshQuadForCollision(sMainLogic_74* r4, const sProcessed3dModel::sQuad& r5_quad, const std::array<sProcessedVertice, 255>& r6_vertices)
+s32 testTownMeshQuadForCollisionSub1(const fixedPoint& r4, const fixedPoint& r5, const fixedPoint& r6, const fixedPoint& r7)
+{
+    s64 mac = (s64)r4.asS32() * (s64)r5.asS32();
+    mac -= (s64)r6.asS32() * (s64)r7.asS32();
+
+    return mac >> 32;
+}
+
+void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::sQuad& r5_quad, const std::array<sProcessedVertice, 255>& r6_vertices)
 {
     const sProcessedVertice& r13_vertice0 = r6_vertices[r5_quad.m0_indices[0]];
     const sProcessedVertice& r10_vertice1 = r6_vertices[r5_quad.m0_indices[1]];
@@ -488,9 +497,9 @@ void testTownMeshQuadForCollision(sMainLogic_74* r4, const sProcessed3dModel::sQ
     transformNormalByCurrentMatrix(r5_quad.m14_extraData[0].m0_normals, varC);
 
     sVec3_FP var18;
-    var18[0] = MTH_Mul(varC[0], r4->m14_collisionClip[0]);
-    var18[1] = MTH_Mul(varC[1], r4->m14_collisionClip[1]);
-    var18[2] = MTH_Mul(varC[2], r4->m14_collisionClip[2]);
+    var18[0] = MTH_Mul(varC[0], r14->m14_collisionClip[0]);
+    var18[1] = MTH_Mul(varC[1], r14->m14_collisionClip[1]);
+    var18[2] = MTH_Mul(varC[2], r14->m14_collisionClip[2]);
 
     fixedPoint var0 = MTH_Product3d_FP(varC, r13_vertice0.vertice) - var18[0] - var18[1] - var18[2];
 
@@ -511,7 +520,61 @@ void testTownMeshQuadForCollision(sMainLogic_74* r4, const sProcessed3dModel::sQ
     if (FP_Pow2(var18[1]) > FP_Pow2(var0))
     {
         //600913E
-        assert(0);
+        if (var0 > var18[1])
+        {
+            //6009146
+            assert(0);
+        }
+        else
+        {
+            //600922E
+
+            if ((testTownMeshQuadForCollisionSub1(
+                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
+                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
+                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
+                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0]) <= 0) &&
+                //06009250
+                (testTownMeshQuadForCollisionSub1(
+                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
+                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
+                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
+                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0]) <= 0) &&
+                //0600926E
+                (testTownMeshQuadForCollisionSub1(
+                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
+                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
+                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
+                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0]) <= 0) &&
+                //0600928C
+                (testTownMeshQuadForCollisionSub1(
+                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
+                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
+                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
+                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0]) <= 0))
+            {
+                //060092AA
+                switch (r14->m0_collisionType)
+                {
+                case 0:
+                    resValue1 = 1;
+                    if (r5_quad.m12_onCollisionScriptIndex)
+                    {
+                        //060092C4
+                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                    }
+                case 1:
+                    if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
+                    {
+                        scriptUpdateSub0Sub2Sub5(r14, var0, &var18, &varC);
+                    }
+                    break;
+                default:
+                    r14->m44 |= 4;
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -766,7 +829,7 @@ void scriptUpdateSub0Sub4(sMainLogic_74* r4)
 {
     popMatrix();
 
-    switch (r4->m0)
+    switch (r4->m0_collisionType)
     {
     case 0:
     case 1:
@@ -806,7 +869,7 @@ void scriptUpdateSub0()
                             r12 = r12->m0_pNext;
                             if (scriptUpdateSub0Sub1(r14, r13))
                             {
-                                if ((r14->m0 == 0) && r13->m3C_scriptEA.m_offset)
+                                if ((r14->m0_collisionType == 0) && r13->m3C_scriptEA.m_offset)
                                 {
                                     //06007B16
                                     addBackgroundScript(r13->m3C_scriptEA, 1, r13->m38_pOwner, 0);
@@ -814,7 +877,7 @@ void scriptUpdateSub0()
 
                                 r14->m48 = r13;
                                 r13->m48 = r14;
-                                if (r14->m0 >= 2)
+                                if (r14->m0_collisionType >= 2)
                                 {
                                     goto endOfLoop;
                                 }

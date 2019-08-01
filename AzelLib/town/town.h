@@ -29,7 +29,7 @@ struct sNPCE8
 
 struct sMainLogic_74
 {
-    s8 m0;
+    s8 m0_collisionType;
     s8 m1;
     s16 m2_collisionLayersBitField;
     fixedPoint m4_collisionRadius;
@@ -109,7 +109,7 @@ struct sRunningScriptContext
     sSaturnPtr m0_scriptPtr;
     s32 m4;
     sNPCOrTask m8_owner;
-    sVec3_S16 mC;
+    sVec3_S16_12_4 mC;
     //size 0x14
 };
 

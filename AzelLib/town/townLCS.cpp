@@ -537,7 +537,7 @@ void testQuadsForCollisionSub0(const sProcessed3dModel::sQuad& r4, s32& r5_resul
     if (r1 < r6->m28_LCSDepthMax)
     {
         r6->m28_LCSDepthMax = r1;
-        r5_result = r4.m12_CMDSIZE;
+        r5_result = r4.m12_onCollisionScriptIndex;
     }
 }
 
