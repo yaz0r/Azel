@@ -129,11 +129,32 @@ s32 scriptUpdateSub0Sub1(sMainLogic_74* r13, sMainLogic_74* r14)
     return 0;
 }
 
-void scriptUpdateSub0Sub2Sub0(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sVec3_FP* r7)
+// Z-
+void scriptUpdateSub0Sub2Sub0(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    assert(0);
+    fixedPoint r5 = FP_Div(r12, (*r14)[2]) - r13->m14_collisionClip[2];
+
+    sScriptUpdateSub0Sub0Var0* r4;
+    if (r12 < 0)
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[5];
+        r13->m44 |= 0x1;
+    }
+    else
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[11];
+        r13->m44 |= 0x100;
+    }
+
+    if (r4->mC_distance < r5)
+    {
+        r4->m0_position = *r14;
+        r4->mC_distance = r5;
+        r4->m10_y = r12 - (*r6)[2];
+    }
 }
 
+// Z+
 void scriptUpdateSub0Sub2Sub1(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
     fixedPoint r5 = FP_Div(r12, (*r14)[2]) + r13->m14_collisionClip[2];
@@ -158,16 +179,56 @@ void scriptUpdateSub0Sub2Sub1(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
     }
 }
 
-void scriptUpdateSub0Sub2Sub2(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sVec3_FP* r7)
+void scriptUpdateSub0Sub2Sub2(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    assert(0);
+    fixedPoint r5 = FP_Div(r12, (*r14)[0]) - r13->m14_collisionClip[0];
+
+    sScriptUpdateSub0Sub0Var0* r4;
+    if (r12 < 0)
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[1];
+        r13->m44 |= 0x10;
+    }
+    else
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[7];
+        r13->m44 |= 0x1000;
+    }
+
+    if (r4->mC_distance > r5)
+    {
+        r4->m0_position = *r14;
+        r4->mC_distance = r5;
+        r4->m10_y = r12 - (*r6)[0];
+    }
 }
 
-void scriptUpdateSub0Sub2Sub3(sMainLogic_74* r4, fixedPoint r5, sVec3_FP* r6, sVec3_FP* r7)
+// CollisionX+
+void scriptUpdateSub0Sub2Sub3(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    assert(0);
+    fixedPoint r5 = FP_Div(r12, (*r14)[0]) + r13->m14_collisionClip[0];
+
+    sScriptUpdateSub0Sub0Var0* r4;
+    if (r12 < 0)
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[0];
+        r13->m44 |= 0x20;
+    }
+    else
+    {
+        r4 = &scriptUpdateSub0Sub0Var0[6];
+        r13->m44 |= 0x2000;
+    }
+
+    if (r4->mC_distance > r5)
+    {
+        r4->m0_position = *r14;
+        r4->mC_distance = r5;
+        r4->m10_y = r12 + (*r6)[0];
+    }
 }
 
+// CollisionY-
 void scriptUpdateSub0Sub2Sub4(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
     fixedPoint r5 = FP_Div(r12, (*r14)[1]) - r13->m14_collisionClip[1];
@@ -506,14 +567,208 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
     if (FP_Pow2(var18[2]) > FP_Pow2(var0))
     {
         //6008D50
-        assert(0);
+        if (var0 > var18[2])
+        {
+            //06008D58
+            if ((testTownMeshQuadForCollisionSub1(
+                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
+                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
+                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
+                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1]) >= 0) &&
+                //6008D7E
+                (testTownMeshQuadForCollisionSub1(
+                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
+                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
+                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
+                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1]) >= 0) &&
+                //6008DA0
+                (testTownMeshQuadForCollisionSub1(
+                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
+                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
+                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
+                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1]) >= 0) &&
+                //6008DC2
+                (testTownMeshQuadForCollisionSub1(
+                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
+                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
+                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
+                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1]) >= 0))
+            {
+                //6008DE4
+                switch (r14->m0_collisionType)
+                {
+                case 0:
+                    resValue1 = 1;
+                    if (r5_quad.m12_onCollisionScriptIndex)
+                    {
+                        //060092C4
+                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                    }
+                case 1:
+                    if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
+                    {
+                        scriptUpdateSub0Sub2Sub0(r14, var0, &var18, &varC);
+                    }
+                    break;
+                default:
+                    r14->m44 |= 0x1;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            //06008E40
+            if ((testTownMeshQuadForCollisionSub1(
+                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
+                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
+                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
+                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1]) <= 0) &&
+                //06008E62
+                (testTownMeshQuadForCollisionSub1(
+                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
+                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
+                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
+                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1]) <= 0) &&
+                //06008E80
+                (testTownMeshQuadForCollisionSub1(
+                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
+                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
+                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
+                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1]) <= 0) &&
+                //06008E9E
+                (testTownMeshQuadForCollisionSub1(
+                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
+                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
+                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
+                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1]) <= 0))
+            {
+                //06008EBC
+                switch (r14->m0_collisionType)
+                {
+                case 0:
+                    resValue1 = 1;
+                    if (r5_quad.m12_onCollisionScriptIndex)
+                    {
+                        //060092C4
+                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                    }
+                case 1:
+                    if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
+                    {
+                        scriptUpdateSub0Sub2Sub1(r14, var0, &var18, &varC);
+                    }
+                    break;
+                default:
+                    r14->m44 |= 0x2;
+                    break;
+                }
+            }
+        }
     }
     
     //6008F32
     if (FP_Pow2(var18[0]) > FP_Pow2(var0))
     {
         //6008F4E
-        assert(0);
+        if (var0 > var18[0])
+        {
+            //6008F56
+            if ((testTownMeshQuadForCollisionSub1(
+                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
+                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
+                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
+                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2]) >= 0) &&
+                //6008F7C
+                (testTownMeshQuadForCollisionSub1(
+                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
+                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
+                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
+                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2]) >= 0) &&
+                //6008F9E
+                (testTownMeshQuadForCollisionSub1(
+                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
+                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
+                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
+                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2]) >= 0) &&
+                //6008FC0
+                (testTownMeshQuadForCollisionSub1(
+                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
+                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
+                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
+                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2]) >= 0))
+            {
+                //6008FE2
+                switch (r14->m0_collisionType)
+                {
+                case 0:
+                    resValue1 = 1;
+                    if (r5_quad.m12_onCollisionScriptIndex)
+                    {
+                        //060092C4
+                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                    }
+                case 1:
+                    if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
+                    {
+                        scriptUpdateSub0Sub2Sub2(r14, var0, &var18, &varC);
+                    }
+                    break;
+                default:
+                    r14->m44 |= 0x10;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            //600903E
+            if ((testTownMeshQuadForCollisionSub1(
+                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
+                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
+                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
+                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2]) <= 0) &&
+                //6009060
+                (testTownMeshQuadForCollisionSub1(
+                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
+                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
+                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
+                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2]) <= 0) &&
+                //0600907E
+                (testTownMeshQuadForCollisionSub1(
+                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
+                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
+                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
+                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2]) <= 0) &&
+                //0600909C
+                (testTownMeshQuadForCollisionSub1(
+                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
+                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
+                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
+                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2]) <= 0))
+            {
+                //060090BA
+                switch (r14->m0_collisionType)
+                {
+                case 0:
+                    resValue1 = 1;
+                    if (r5_quad.m12_onCollisionScriptIndex)
+                    {
+                        //060092C4
+                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                    }
+                case 1:
+                    if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
+                    {
+                        scriptUpdateSub0Sub2Sub3(r14, var0, &var18, &varC);
+                    }
+                    break;
+                default:
+                    r14->m44 |= 0x20;
+                    break;
+                }
+            }
+        }
     }
 
     //6009122
@@ -523,12 +778,55 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
         if (var0 > var18[1])
         {
             //6009146
-            assert(0);
+            if ((testTownMeshQuadForCollisionSub1(
+                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
+                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
+                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
+                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0]) >= 0) &&
+                //600916C
+                (testTownMeshQuadForCollisionSub1(
+                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
+                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
+                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
+                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0]) >= 0) &&
+                //600918E
+                (testTownMeshQuadForCollisionSub1(
+                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
+                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
+                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
+                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0]) >= 0) &&
+                //60091B0
+                (testTownMeshQuadForCollisionSub1(
+                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
+                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
+                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
+                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0]) >= 0))
+            {
+                //60091D2
+                switch (r14->m0_collisionType)
+                {
+                case 0:
+                    resValue1 = 1;
+                    if (r5_quad.m12_onCollisionScriptIndex)
+                    {
+                        //060092C4
+                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                    }
+                case 1:
+                    if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
+                    {
+                        scriptUpdateSub0Sub2Sub4(r14, var0, &var18, &varC);
+                    }
+                    break;
+                default:
+                    r14->m44 |= 8;
+                    break;
+                }
+            }
         }
         else
         {
             //600922E
-
             if ((testTownMeshQuadForCollisionSub1(
                     r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
                     r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
@@ -715,38 +1013,216 @@ void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
     else if ((r12->m44 & 0x100) && !(r12->m44 & 0x2))
     {
         //06007D5E
-        assert(0);
+        r12->m44 |= 1;
+        r13[5] = r13[11];
     }
     else if ((r12->m44 & 0x2000) && !(r12->m44 & 0x10))
     {
         //06007D98
-        assert(0);
+        r12->m44 |= 0x20;
+        r13[0] = r13[6];
     }
     else if ((r12->m44 & 0x1000) && !(r12->m44 & 0x20))
     {
         //06007DD6
-        assert(0);
+        r12->m44 |= 0x10;
+        r13[0] = r13[7];
     }
 
     //6007DF8
     sVec3_FP var14;
     var14.zero();
 
-    const sScriptUpdateSub0Sub0Var0& var0 = scriptUpdateSub0Sub0Var0[4];
-    const sScriptUpdateSub0Sub0Var0& var4 = scriptUpdateSub0Sub0Var0[5];
-    const sScriptUpdateSub0Sub0Var0& r8 = scriptUpdateSub0Sub0Var0[1];
+    sVec3_FP var8;
+    sVec3_FP& r9 = var8;
 
+    //const sScriptUpdateSub0Sub0Var0& r10 = scriptUpdateSub0Sub0Var0[0];
+    //const sScriptUpdateSub0Sub0Var0& r8 = scriptUpdateSub0Sub0Var0[1];
+    //const sScriptUpdateSub0Sub0Var0& var0 = scriptUpdateSub0Sub0Var0[4];
+    //const sScriptUpdateSub0Sub0Var0& var4 = scriptUpdateSub0Sub0Var0[5];
+
+    //06007E1A
     switch (r12->m44 & 0x33)
     {
     case 0:
         break;
-    case 2:
+    case 1: //
     {
-        fixedPoint r10 = FP_Div(var0.m10_y, sqrt_F(FP_Pow2(-var0.m0_position[1]) + 0x10000));
-        var14[0] = MTH_Mul(var0.m0_position[0], r10);
-        var14[2] = MTH_Mul(var0.m0_position[2], r10);
+        //6007F24
+        fixedPoint r10 = FP_Div(scriptUpdateSub0Sub0Var0[5].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[5].m0_position[1])));
+        var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[0], r10);
+        var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[2], r10);
         break;
     }
+    case 2: // Y-
+    {
+        //6007EFA
+        fixedPoint r10 = FP_Div(scriptUpdateSub0Sub0Var0[4].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[4].m0_position[1])));
+        var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[0], r10);
+        var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[2], r10);
+        break;
+    }
+    case 0x10:
+    {
+        //6007ED4
+        fixedPoint r10 = FP_Div(scriptUpdateSub0Sub0Var0[1].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[1].m0_position[1])));
+        var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[1].m0_position[0], r10);
+        var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[1].m0_position[2], r10);
+        break;
+    }
+    case 0x20: // X+
+    {
+        //6007E94
+        fixedPoint r10 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
+        var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r10);
+        var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r10);
+        break;
+    }
+    case 0x11:
+        //600814C
+        if ((scriptUpdateSub0Sub0Var0[0].m0_position[2] <= 0) && (scriptUpdateSub0Sub0Var0[5].m0_position[0] <= 0))
+        {
+            //0600815A
+            fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
+            var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r8);
+            var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r8);
+
+            //06008182
+            {
+                fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[5].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[5].m0_position[1])));
+                r9[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[0], r8);
+                r9[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[2], r8);
+            }
+
+            if (var14[0] <= r9[0])
+            {
+                var14[0] = r9[0];
+            }
+
+            if (var14[2] > r9[2])
+            {
+                var14[2] = r9[2];
+            }
+        }
+        else
+        {
+            //600807A
+            var14[2] = scriptUpdateSub0Sub0Var0[4].mC_distance;
+            var14[0] = scriptUpdateSub0Sub0Var0[1].mC_distance - MTH_Mul(FP_Div(scriptUpdateSub0Sub0Var0[1].m0_position[2], scriptUpdateSub0Sub0Var0[1].m0_position[0]), var14[2]);
+        }
+        break;
+    case 0x12:
+        //6007FF8
+        if ((scriptUpdateSub0Sub0Var0[0].m0_position[2] >= 0) && (scriptUpdateSub0Sub0Var0[4].m0_position[0] <= 0))
+        {
+            //06008006
+            fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
+            var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r8);
+            var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r8);
+
+            //0600802E
+            {
+                fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[4].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[4].m0_position[1])));
+                r9[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[0], r8);
+                r9[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[2], r8);
+            }
+
+            if (var14[0] > r9[0])
+            {
+                var14[0] = r9[0];
+            }
+
+            if (var14[2] < r9[2])
+            {
+                var14[2] = r9[2];
+            }
+        }
+        else
+        {
+            //600807A
+            var14[2] = scriptUpdateSub0Sub0Var0[4].mC_distance;
+            var14[0] = scriptUpdateSub0Sub0Var0[1].mC_distance - MTH_Mul(FP_Div(scriptUpdateSub0Sub0Var0[1].m0_position[2], scriptUpdateSub0Sub0Var0[1].m0_position[0]), var14[2]);
+        }
+        break;
+    case 0x21:
+        //0600809C
+        if ((scriptUpdateSub0Sub0Var0[0].m0_position[2] >= 0) && (scriptUpdateSub0Sub0Var0[5].m0_position[0] <= 0))
+        {
+            //060080AA
+            fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
+            var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r8);
+            var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r8);
+
+            //060080D2
+            {
+                fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[5].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[5].m0_position[1])));
+                r9[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[0], r8);
+                r9[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[2], r8);
+            }
+
+            if (var14[0] < r9[0])
+            {
+                var14[0] = r9[0];
+            }
+
+            if (var14[2] > r9[2])
+            {
+                var14[2] = r9[2];
+            }
+        }
+        else
+        {
+            //600811E
+            assert(0);
+        }
+        break;
+    case 0x22:
+        //6007F56
+        if ((scriptUpdateSub0Sub0Var0[0].m0_position[2] >= 0) && (scriptUpdateSub0Sub0Var0[4].m0_position[0] >= 0))
+        {
+            //06007F64
+            fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
+            var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r8);
+            var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r8);
+
+            //6007F8A
+            {
+                fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[4].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[4].m0_position[1])));
+                r9[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[0], r8);
+                r9[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[2], r8);
+            }
+
+            if (var14[0] < r9[0])
+            {
+                var14[0] = r9[0];
+            }
+
+            if (var14[2] < r9[2])
+            {
+                var14[2] = r9[2];
+            }
+        }
+        else
+        {
+            //06007FD8
+            var14[2] = scriptUpdateSub0Sub0Var0[4].mC_distance;
+            var14[0] = scriptUpdateSub0Sub0Var0[0].mC_distance - MTH_Mul(FP_Div(scriptUpdateSub0Sub0Var0[0].m0_position[2], scriptUpdateSub0Sub0Var0[0].m0_position[0]), var14[2]);
+        }
+        break;
+    case 0x32:
+        //0600821E
+        var14[2] = FP_Div(
+            MTH_Mul_5_6(scriptUpdateSub0Sub0Var0[0].mC_distance - scriptUpdateSub0Sub0Var0[1].mC_distance, scriptUpdateSub0Sub0Var0[0].m0_position[0], scriptUpdateSub0Sub0Var0[1].m0_position[0]),
+            MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], scriptUpdateSub0Sub0Var0[1].m0_position[0]) - MTH_Mul(scriptUpdateSub0Sub0Var0[1].m0_position[2], scriptUpdateSub0Sub0Var0[0].m0_position[0]));
+
+        if (var14[2] < scriptUpdateSub0Sub0Var0[4].mC_distance)
+        {
+            var14[2] = scriptUpdateSub0Sub0Var0[4].mC_distance;
+        }
+
+        //600829A
+        var14[0] = scriptUpdateSub0Sub0Var0[0].mC_distance - MTH_Mul(FP_Div(scriptUpdateSub0Sub0Var0[0].m0_position[2], scriptUpdateSub0Sub0Var0[0].m0_position[0]), var14[2]);
+        break;
     default:
         assert(0);
         break;
