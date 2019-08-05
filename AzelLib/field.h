@@ -118,45 +118,6 @@ struct s_vdp2StringTask : public s_workAreaTemplate<s_vdp2StringTask>
     // size 2C
 };
 
-struct s_cinematicBarTask : public s_workAreaTemplate<s_cinematicBarTask>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &s_cinematicBarTask::Init, &s_cinematicBarTask::Update, &s_cinematicBarTask::Draw, NULL};
-        return &taskDefinition;
-    }
-
-    static void Init(s_cinematicBarTask* pThis)
-    {
-        pThis->m8 = 0;
-        pThis->mB = 0;
-        pThis->m9 = 0;
-        pThis->mC = 0;
-        pThis->mA = 0;
-        pThis->mD = 0;
-    }
-    static void Update(s_cinematicBarTask* pThis);
-    static void Draw(s_cinematicBarTask* pThis);
-
-    void interpolateCinematicBar();
-    void interpolateCinematicBarSub1();
-    void cinematicBarTaskSub0(s32 r5);
-
-    u8 m0_status;
-    s8 m1;
-    s8 m2;
-    s8 m3;
-    s8 m4;
-    s8 m8;
-    s8 m9;
-    s8 mA;
-    s8 mB;
-    s8 mC;
-    s8 mD;
-    s8 m11;
-    //size 0x13
-};
-
 struct s_multiChoiceTask2 : public s_workAreaTemplate< s_multiChoiceTask2>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -300,7 +261,6 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
     void fieldScriptTaskUpdateSub3();
     sSaturnPtr runFieldScript();
     sSaturnPtr callNative(sSaturnPtr);
-    s_cinematicBarTask* startCinmaticBarTask();
 
     sSaturnPtr* m0_pScripts; //0
     sSaturnPtr m4_currentScript;
@@ -308,7 +268,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
     sSaturnPtr mC_stack[8];
     s32 m2C_bitToSet; // dunno what that is yet
 
-    s_cinematicBarTask* m30_cinematicBarTask;
+    struct s_cinematicBarTask* m30_cinematicBarTask;
     u32 m34;
     s_vdp2StringTask* m38_dialogStringTask;
     s_multiChoiceTask2* m3C_multichoiceTask;

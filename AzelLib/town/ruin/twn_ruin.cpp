@@ -94,7 +94,7 @@ void registerNpcs(sSaturnPtr r4_townSetup, sSaturnPtr r5_script, s32 r6)
     npcData0.mFC = 0;
     npcData0.m100 = 0;
     npcData0.m11C_currentStackPointer = npcData0.m120_stack.end();
-    npcData0.m164 = 0;
+    npcData0.m164_cinematicBars = 0;
     npcData0.m168 = 0;
     npcData0.m16C_displayStringTask = 0;
     npcData0.m170 = 0;
@@ -1063,9 +1063,16 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
         if (pThis->m14_EdgeTask)
         {
             sNPCE8* r5 = &pThis->m14_EdgeTask->mE8;
-            if (pThis->m118)
+            if (pThis->m118_autoWalkDuration)
             {
-                assert(0);
+                if (--pThis->m118_autoWalkDuration == 0)
+                {
+                    pThis->m14_EdgeTask->m84.m0_collisionType = 0;
+                }
+
+                pThis->m11C_autoWalkStartPosition += pThis->m134_autoWalkPositionStep;
+                pThis->m14_EdgeTask->mE8.m0_position = pThis->m11C_autoWalkStartPosition;
+                pThis->m14_EdgeTask->mE8.mC_rotation = pThis->m128_autoWalkStartRotation;
             }
         }
     }
@@ -1149,7 +1156,10 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     sVec3_FP m5C_rawCameraPosition;
     sVec3_FP m68_cameraRotation;
     sMainLogic_74 m74_townCamera;
-    s32 m118;
+    s32 m118_autoWalkDuration;
+    sVec3_FP m11C_autoWalkStartPosition;
+    sVec3_FP m128_autoWalkStartRotation;
+    sVec3_FP m134_autoWalkPositionStep;
     // size 0x320
 };
 
@@ -1768,6 +1778,35 @@ s32 scriptFunction_6057058()
     return 0;
 }
 
+s32 scriptFunction_605762A()
+{
+    if (twnMainLogicTask->m14_EdgeTask == nullptr)
+    {
+        return 0;
+    }
+
+    if (twnMainLogicTask->m118_autoWalkDuration)
+    {
+        return 0;
+    }
+
+    sNPCE8& r5 =twnMainLogicTask->m14_EdgeTask->mE8;
+
+    twnMainLogicTask->m11C_autoWalkStartPosition = r5.m0_position;
+    twnMainLogicTask->m128_autoWalkStartRotation = r5.mC_rotation;
+
+    sVec3_FP var0 = npcData0.m104_currentScript.mC.toSVec3_FP();
+
+    twnMainLogicTask->m134_autoWalkPositionStep[0] = MTH_Mul(0x199, var0[0]);
+    twnMainLogicTask->m134_autoWalkPositionStep[1] = MTH_Mul(0x199, var0[1]);
+    twnMainLogicTask->m134_autoWalkPositionStep[2] = MTH_Mul(0x199, var0[2]);
+
+    twnMainLogicTask->m118_autoWalkDuration = 5;
+    twnMainLogicTask->m14_EdgeTask->m84.m0_collisionType = 1;
+
+    return 1;
+}
+
 s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr)
 {
     assert(ptr.m_file == gTWN_RUIN);
@@ -1778,7 +1817,8 @@ s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr)
         return hasLoadingCompleted();
     case 0x6057058:
         return scriptFunction_6057058();
-        break;
+    case 0x605762A:
+        return scriptFunction_605762A();
     default:
         assert(0);
     }

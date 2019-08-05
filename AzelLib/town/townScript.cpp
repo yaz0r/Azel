@@ -3,6 +3,7 @@
 #include "townScript.h"
 #include "townLCS.h"
 #include "town/ruin/twn_ruin.h"
+#include "kernel/cinematicBarsTask.h"
 
 #include <map>
 
@@ -88,7 +89,7 @@ void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_1
     std::array<sRunningScriptContext, 4>::iterator r14 = npcData0.m4_backgroundScripts.begin();
     if (npcData0.m0_numBackgroundScripts)
     {
-        for(s32 r13 = npcData0.m0_numBackgroundScripts; r13 >= 0; r14++, r13--)
+        for(s32 r13 = npcData0.m0_numBackgroundScripts; r13 > 0; r13--)
         {
             if (r14->m0_scriptPtr == r4)
             {
@@ -97,6 +98,7 @@ void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_1
                     return;
                 }
             }
+            r14++;
         }
     }
 
@@ -1656,6 +1658,9 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             r13_pThis->m100 = delay-1;
             return r4;
         }
+        case 3: //jump
+            r14 = readSaturnEA(getAlignOn4(r14));
+            break;
         case 5: //if
             if (r13_pThis->m118_currentResult)
             {
@@ -1698,6 +1703,57 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             }
             r14 += 2;
             break;
+        case 12: // less
+            r14 = getAlignOn2(r14);
+            if (readSaturnS16(r14) > r13_pThis->m118_currentResult)
+            {
+                r13_pThis->m118_currentResult = 1;
+            }
+            else
+            {
+                r13_pThis->m118_currentResult = 0;
+            }
+            r14 += 2;
+            break;
+        case 15:
+        {
+            r14 = getAlignOn2(r14);
+            s16 r4 = readSaturnS16(r14);
+            r14 += 2;
+            if (r4 < 1000)
+            {
+                r4 += 3334;
+            }
+
+            mainGameState.setBit(r4);
+            break;
+        }
+        case 17:
+        {
+            r14 = getAlignOn2(r14);
+            s16 r4 = readSaturnS16(r14);
+            r14 += 2;
+            if (r4 < 1000)
+            {
+                r4 += 3334;
+            }
+
+            r13_pThis->m118_currentResult = (mainGameState.getBit(r4) != 0);
+            break;
+        }
+        case 18: // read packed bits
+        {
+            s8 r6 = readSaturnS8(r14++);
+            r14 = getAlignOn2(r14);
+            s16 var0 = readSaturnS16(r14);
+            r14 += 2;
+            if (var0 < 1000)
+            {
+                var0 += 3334;
+            }
+            r13_pThis->m118_currentResult = mainGameState.readPackedBits(var0, r6);
+            break;
+        }
         case 21:
         {
             s8 arg = readSaturnS8(r14++);
@@ -1714,6 +1770,51 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
         }
         case 24: //setResult
             r13_pThis->m118_currentResult = varC->m4;
+            break;
+        case 25: // add cinematic bars
+            if (r13_pThis->m164_cinematicBars)
+            {
+                if (r13_pThis->m164_cinematicBars->m0_status != 1)
+                {
+                    return --r14;
+                }
+            }
+            else
+            {
+                r13_pThis->m164_cinematicBars = createCinematicBarTask(currentResTask);
+                setupCinematicBars(r13_pThis->m164_cinematicBars, 4);
+                return --r14;
+            }
+            break;
+        case 26: // remove cinematic bars
+            if (r13_pThis->m164_cinematicBars)
+            {
+                if (r13_pThis->m164_cinematicBars->m0_status == 1)
+                {
+                    r13_pThis->m164_cinematicBars->cinematicBarTaskSub0(4);
+                    return --r14;
+                }
+                else if(r13_pThis->m164_cinematicBars->m0_status)
+                {
+                    return --r14;
+                }
+                else
+                {
+                    r13_pThis->m164_cinematicBars->getTask()->markFinished();
+                    r13_pThis->m164_cinematicBars = nullptr;
+                }
+                return r14;
+            }
+        case 27: // draw string
+            r14 = getAlignOn4(r14);
+            setupVDP2StringRendering(3, 25, 38, 2);
+            VDP2DrawString(readSaturnString(readSaturnEA(r14)).c_str());
+            r14 += 4;
+            r13_pThis->mF8 = 1;
+            break;
+        case 29: // clear string
+            setupVDP2StringRendering(3, 25, 38, 2);
+            clearVdp2TextArea();
             break;
         case 32: // wait fade
         {
@@ -1750,7 +1851,7 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
 
 void scriptUpdateRunScript()
 {
-    s32 r8_numExtraScriptsIterations = npcData0.m0_numBackgroundScripts;
+    s32 r8_numBackgroundScripts = npcData0.m0_numBackgroundScripts;
 
     if (!npcData0.m104_currentScript.m0_scriptPtr.isNull())
     {
@@ -1784,7 +1885,7 @@ void scriptUpdateRunScript()
     else
     {
         // 0x600CF48
-        if (r8_numExtraScriptsIterations)
+        if (r8_numBackgroundScripts)
         {
             npcData0.mF4 = 0;
             npcData0.mF0 = 0;
@@ -1804,7 +1905,7 @@ void scriptUpdateRunScript()
                 }
 
                 r9++;
-            } while (--r8_numExtraScriptsIterations);
+            } while (--r8_numBackgroundScripts);
         }
     }
 }

@@ -144,7 +144,7 @@ struct sNpcData
     std::array<sSaturnPtr, 0x10>::iterator m11C_currentStackPointer;
     std::array<sSaturnPtr, 0x10> m120_stack;
     sVec3_FP* m160_pEdgePosition;
-    s32 m164;
+    s_cinematicBarTask* m164_cinematicBars;
     s32 m168;
     s_vdp2StringTask* m16C_displayStringTask;
     s32 m170;

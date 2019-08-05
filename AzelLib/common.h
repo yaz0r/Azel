@@ -346,6 +346,13 @@ public:
         setPackedBits(bitField, firstBitOffset, numBits, value);
     }
 
+    u32 readPackedBits(u32 firstBitOffset, u32 numBits)
+    {
+        u32 readPackedBits(u8 * bitField, u32 firstBitOffset, u32 numBits);
+        
+        return readPackedBits(bitField, firstBitOffset, numBits);
+    }
+
     void setBit(u32 bitIndex)
     {
         bitField[bitIndex / 8] |= 0x80 >> (bitIndex % 8);

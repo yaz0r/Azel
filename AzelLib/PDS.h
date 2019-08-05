@@ -123,6 +123,20 @@ struct sSaturnPtr
         return result;
     }
 
+    sSaturnPtr& operator -- ()
+    {
+        m_offset--;
+        return *this;
+    }
+
+    sSaturnPtr operator -- (int)
+    {
+        sSaturnPtr result(*this);
+        --(*this);
+        return result;
+    }
+
+
     sSaturnPtr& operator += (unsigned int i)
     {
         this->m_offset += i;
