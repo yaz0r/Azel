@@ -427,9 +427,9 @@ s32 transformTownMeshVertices(const std::vector<sVec3_S16_12_4>& r4_vertices, st
     convertVerticeTo16(r1, r2);
     s32 r14_Z = *r1++;
 
-    r12_X <<= 8;
-    r13_Y <<= 8;
-    r14_Z <<= 8;
+    r12_X *= 0x100;
+    r13_Y *= 0x100;
+    r14_Z *= 0x100;
 
     s32 r9_clipX = r7_clip[0] * 2;
     s32 r10_clipY = r7_clip[1] * 2;
@@ -529,12 +529,7 @@ s32 transformTownMeshVertices(const std::vector<sVec3_S16_12_4>& r4_vertices, st
 
 void transformNormalByCurrentMatrix(const sVec3_S16_12_4& normal, sVec3_FP& output)
 {
-    sVec3_FP temp;
-    temp[0] = normal[0] << 4;
-    temp[1] = normal[1] << 4;
-    temp[2] = normal[2] << 4;
-
-    transformVecByCurrentMatrix(temp, output);
+    transformVecByCurrentMatrix(normal.toSVec3_FP(), output);
 }
 
 s32 testTownMeshQuadForCollisionSub1(const fixedPoint& r4, const fixedPoint& r5, const fixedPoint& r6, const fixedPoint& r7)

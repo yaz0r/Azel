@@ -131,9 +131,9 @@ void modelMode1_rotation(s_3dModel* p3dModel)
     {
         for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
-            r7_pPoseData->mC_rotation[0] += stepAnimationTrack(r7_pPoseData->m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x20), READ_BE_S16(r9 + 0)) << 12;
-            r7_pPoseData->mC_rotation[1] += stepAnimationTrack(r7_pPoseData->m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x24), READ_BE_S16(r9 + 2)) << 12;
-            r7_pPoseData->mC_rotation[2] += stepAnimationTrack(r7_pPoseData->m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x28), READ_BE_S16(r9 + 4)) << 12;
+            r7_pPoseData->mC_rotation[0] += stepAnimationTrack(r7_pPoseData->m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x20), READ_BE_S16(r9 + 0)) * 0x1000;
+            r7_pPoseData->mC_rotation[1] += stepAnimationTrack(r7_pPoseData->m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x24), READ_BE_S16(r9 + 2)) * 0x1000;
+            r7_pPoseData->mC_rotation[2] += stepAnimationTrack(r7_pPoseData->m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x28), READ_BE_S16(r9 + 4)) * 0x1000;
 
             r7_pPoseData++;
             r8 += 0x38;
@@ -144,9 +144,9 @@ void modelMode1_rotation(s_3dModel* p3dModel)
     {
         for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
-            r7_pPoseData->mC_rotation[0] = stepAnimationTrack(r7_pPoseData->m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x20), READ_BE_S16(r9 + 0)) << 12;
-            r7_pPoseData->mC_rotation[1] = stepAnimationTrack(r7_pPoseData->m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x24), READ_BE_S16(r9 + 2)) << 12;
-            r7_pPoseData->mC_rotation[2] = stepAnimationTrack(r7_pPoseData->m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x28), READ_BE_S16(r9 + 4)) << 12;
+            r7_pPoseData->mC_rotation[0] = stepAnimationTrack(r7_pPoseData->m48[3], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x20), READ_BE_S16(r9 + 0)) * 0x1000;
+            r7_pPoseData->mC_rotation[1] = stepAnimationTrack(r7_pPoseData->m48[4], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x24), READ_BE_S16(r9 + 2)) * 0x1000;
+            r7_pPoseData->mC_rotation[2] = stepAnimationTrack(r7_pPoseData->m48[5], p3dModel->m30_pCurrentAnimation + READ_BE_U32(r8 + 0x28), READ_BE_S16(r9 + 4)) * 0x1000;
 
             r7_pPoseData++;
             r8 += 0x38;

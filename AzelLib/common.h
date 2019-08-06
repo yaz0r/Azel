@@ -153,9 +153,9 @@ struct sVec3_S16_12_4
     sVec3_FP toSVec3_FP() const
     {
         sVec3_FP convertedVector;
-        convertedVector[0] = ((s32)m_value[0]) << 4;
-        convertedVector[1] = ((s32)m_value[1]) << 4;
-        convertedVector[2] = ((s32)m_value[2]) << 4;
+        convertedVector[0] = ((s32)m_value[0]) * 0x10;
+        convertedVector[1] = ((s32)m_value[1]) * 0x10;
+        convertedVector[2] = ((s32)m_value[2]) * 0x10;
 
         return convertedVector;
     }
