@@ -3,7 +3,7 @@
 u32 isInMenu2;
 
 void soundFunc(int) { PDS_unimplemented("soundFunc"); }
-void playSoundEffect(int) { PDS_unimplemented("playSoundEffect"); }
+s32 playSoundEffect(s32) { PDS_unimplemented("playSoundEffect"); return 0; }
 bool isSoundPlaying(int) { PDS_unimplemented("isSoundPlaying"); return false; }
 bool keyboardIsKeyDown(u8 keycode) { PDS_unimplemented("keyboardIsKeyDown");  return false; }
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2) { PDS_unimplemented("titleMenuToggleTutorials"); }

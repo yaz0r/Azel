@@ -5,7 +5,7 @@
 extern u32 isInMenu2;
 
 void soundFunc(int);
-void playSoundEffect(int);
+s32 playSoundEffect(s32);
 bool isSoundPlaying(int);
 bool keyboardIsKeyDown(u8 keycode);
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2);
