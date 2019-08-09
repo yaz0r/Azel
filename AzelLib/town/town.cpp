@@ -2,6 +2,7 @@
 #include "town.h"
 #include "townScript.h"
 #include "town/ruin/twn_ruin.h"
+#include "town/exca/twn_exca.h"
 #include "kernel/vdp1Allocator.h"
 
 sTownOverlay* gCurrentTownOverlay = nullptr;
@@ -211,9 +212,14 @@ void loadTownPrg(s8 r4, s8 r5)
 
     std::string overlayFileName = readSaturnString(readSaturnEA(gCommonFile.getSaturnPtr(0x002165D8 + r4 * 4 * 4)));
 
+    TWN_RUIN_data::create();
     if (overlayFileName == "TWN_RUIN.PRG")
     {
         gFieldOverlayFunction = overlayStart_TWN_RUIN;
+    }
+    else if (overlayFileName == "TWN_EXCA.PRG")
+    {
+        gFieldOverlayFunction = overlayStart_TWN_EXCA;
     }
     else
     {

@@ -1,9 +1,26 @@
 #pragma once
 
+#include <map>
+
 struct sTownObject
 {
     // 0-4 are copy
     struct sCellObjectListNode* m8;
+};
+
+typedef s32(*scriptFunction_zero_arg)();
+typedef s32(*scriptFunction_one_arg)(s32 arg0);
+typedef s32(*scriptFunction_one_arg_ptr)(sSaturnPtr arg0);
+typedef s32(*scriptFunction_two_arg)(s32 arg0, s32 arg1);
+typedef s32(*scriptFunction_four_arg)(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+
+struct sKernelScriptFunctions
+{
+    std::map<u32, scriptFunction_zero_arg> m_zeroArg;
+    std::map<u32, scriptFunction_one_arg> m_oneArg;
+    std::map<u32, scriptFunction_one_arg_ptr> m_oneArgPtr;
+    std::map<u32, scriptFunction_two_arg> m_twoArg;
+    std::map<u32, scriptFunction_four_arg> m_fourArg;
 };
 
 struct sTownOverlay : public sSaturnMemoryFile
@@ -11,6 +28,8 @@ struct sTownOverlay : public sSaturnMemoryFile
     virtual void init() = 0;
     virtual sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(struct npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) = 0;
     virtual sTownObject* createObjectTaskFromEA_subTaskWithEAArg(struct npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) = 0;
+
+    sKernelScriptFunctions overlayScriptFunctions;
 };
 
 extern sTownOverlay* gCurrentTownOverlay;
@@ -268,3 +287,13 @@ s32 isDataLoaded(s32 fileIndex);
 
 // todo: kernel
 s32 MTH_Mul32(fixedPoint a, fixedPoint b);
+
+// todo: move out of twn_ruin
+void registerNpcs(sSaturnPtr r4_townSetup, sSaturnPtr r5_script, s32 r6);
+p_workArea startCameraTask(p_workArea pParent);
+extern s32* twnVar1;
+extern s32 twnVar2;
+void mainLogicUpdateSub3();
+void drawLcs();
+void updateEdgePosition(sNPC* r4);
+s32 TwnFadeOut(s32 arg0);

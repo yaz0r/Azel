@@ -1221,7 +1221,8 @@ void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
         var14[0] = scriptUpdateSub0Sub0Var0[0].mC_distance - MTH_Mul(FP_Div(scriptUpdateSub0Sub0Var0[0].m0_position[2], scriptUpdateSub0Sub0Var0[0].m0_position[0]), var14[2]);
         break;
     default:
-        assert(0);
+        //assert(0);
+        PDS_Log("Unhandled collision case 0x%X!", r12->m44 & 0x33)
         break;
     }
 
@@ -1487,22 +1488,6 @@ s32 setNpcOrientation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
     return 0;
 }
 
-
-typedef s32(*scriptFunction_zero_arg)();
-typedef s32(*scriptFunction_one_arg)(s32 arg0);
-typedef s32(*scriptFunction_one_arg_ptr)(sSaturnPtr arg0);
-typedef s32(*scriptFunction_two_arg)(s32 arg0, s32 arg1);
-typedef s32(*scriptFunction_four_arg)(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
-
-struct sKernelScriptFunctions
-{
-    std::map<u32, scriptFunction_zero_arg> m_zeroArg;
-    std::map<u32, scriptFunction_one_arg> m_oneArg;
-    std::map<u32, scriptFunction_one_arg_ptr> m_oneArgPtr;
-    std::map<u32, scriptFunction_two_arg> m_twoArg;
-    std::map<u32, scriptFunction_four_arg> m_fourArg;
-};
-
 sKernelScriptFunctions gKernelScriptFunctions =
 {
     // zero arg
@@ -1510,6 +1495,7 @@ sKernelScriptFunctions gKernelScriptFunctions =
     // one arg
     {
         {0x600CCB4, &initNPC},
+        {0x602c2ca, &playSoundEffect},
     },
     // one arg ptr
     {
@@ -1533,55 +1519,81 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
     sSaturnPtr r14 = r5 + 3;
     r14.m_offset &= ~3;
 
+    sSaturnPtr functionEA = readSaturnEA(r14);
+
     switch (numArguments)
     {
     case 0:
-        if (gKernelScriptFunctions.m_zeroArg.count(readSaturnEA(r14).m_offset))
+        if (gKernelScriptFunctions.m_zeroArg.count(functionEA.m_offset))
         {
-            scriptFunction_zero_arg pFunction = gKernelScriptFunctions.m_zeroArg.find(readSaturnEA(r14).m_offset)->second;
+            scriptFunction_zero_arg& pFunction = gKernelScriptFunctions.m_zeroArg.find(functionEA.m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction();
+        }
+        else if(gCurrentTownOverlay->overlayScriptFunctions.m_zeroArg.count(functionEA.m_offset))
+        {
+            assert(gCurrentTownOverlay == r14.m_file);
+            scriptFunction_zero_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_zeroArg.find(functionEA.m_offset)->second;
             r4_pThis->m118_currentResult = pFunction();
         }
         else
         {
-            r4_pThis->m118_currentResult = TWN_RUIN_ExecuteNative(readSaturnEA(r14));
+            return sSaturnPtr::getNull();
         }
         break;
     case 1:
-        if (gKernelScriptFunctions.m_oneArg.count(readSaturnEA(r14).m_offset))
+        if (gKernelScriptFunctions.m_oneArg.count(functionEA.m_offset))
         {
-            scriptFunction_one_arg pFunction = gKernelScriptFunctions.m_oneArg.find(readSaturnEA(r14).m_offset)->second;
+            scriptFunction_one_arg& pFunction = gKernelScriptFunctions.m_oneArg.find(functionEA.m_offset)->second;
             r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4));
         }
-        else if (gKernelScriptFunctions.m_oneArgPtr.count(readSaturnEA(r14).m_offset))
+        else if (gKernelScriptFunctions.m_oneArgPtr.count(functionEA.m_offset))
         {
-            scriptFunction_one_arg_ptr pFunction = gKernelScriptFunctions.m_oneArgPtr.find(readSaturnEA(r14).m_offset)->second;
+            scriptFunction_one_arg_ptr pFunction = gKernelScriptFunctions.m_oneArgPtr.find(functionEA.m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction(readSaturnEA(r14 + 4));
+        }
+        else if (gCurrentTownOverlay->overlayScriptFunctions.m_oneArg.count(functionEA.m_offset))
+        {
+            assert(gCurrentTownOverlay == r14.m_file);
+            scriptFunction_one_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_oneArg.find(readSaturnEA(r14).m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4));
+        }
+        else if (gCurrentTownOverlay->overlayScriptFunctions.m_oneArgPtr.count(functionEA.m_offset))
+        {
+            assert(gCurrentTownOverlay == r14.m_file);
+            scriptFunction_one_arg_ptr& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_oneArgPtr.find(functionEA.m_offset)->second;
             r4_pThis->m118_currentResult = pFunction(readSaturnEA(r14 + 4));
         }
         else
         {
-            r4_pThis->m118_currentResult = TWN_RUIN_ExecuteNative(readSaturnEA(r14), readSaturnS32(r14 + 4));
+            return sSaturnPtr::getNull();
         }
         break;
     case 2:
-        if (gKernelScriptFunctions.m_twoArg.count(readSaturnEA(r14).m_offset))
+        if (gKernelScriptFunctions.m_twoArg.count(functionEA.m_offset))
         {
-            scriptFunction_two_arg pFunction = gKernelScriptFunctions.m_twoArg.find(readSaturnEA(r14).m_offset)->second;
+            scriptFunction_two_arg pFunction = gKernelScriptFunctions.m_twoArg.find(functionEA.m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8));
+        }
+        else if (gCurrentTownOverlay->overlayScriptFunctions.m_twoArg.count(functionEA.m_offset))
+        {
+            assert(gCurrentTownOverlay == r14.m_file);
+            scriptFunction_two_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_twoArg.find(functionEA.m_offset)->second;
             r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8));
         }
         else
         {
-            r4_pThis->m118_currentResult = TWN_RUIN_ExecuteNative(readSaturnEA(r14), readSaturnS32(r14 + 4), readSaturnS32(r14 + 8));
+            return sSaturnPtr::getNull();
         }
         break;
     case 4:
-        if (gKernelScriptFunctions.m_fourArg.count(readSaturnEA(r14).m_offset))
+        if (gKernelScriptFunctions.m_fourArg.count(functionEA.m_offset))
         {
-            scriptFunction_four_arg pFunction = gKernelScriptFunctions.m_fourArg.find(readSaturnEA(r14).m_offset)->second;
+            scriptFunction_four_arg pFunction = gKernelScriptFunctions.m_fourArg.find(functionEA.m_offset)->second;
             r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12), readSaturnS32(r14 + 16));
         }
         else
         {
-            assert(0);
+            return sSaturnPtr::getNull();
         }
         break;
     default:
@@ -1673,6 +1685,10 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             break;
         case 7: //callNative
             r14 = callNativeWithArguments(r13_pThis, r14);
+
+            // hack: this isn't in the original assembly, but allow returning null for unhandled functions and just stopping the script
+            if (r14.isNull())
+                return r14;
             break;
         case 8: //equal
             r14 = getAlignOn2(r14);
