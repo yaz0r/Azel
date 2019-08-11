@@ -331,8 +331,8 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonInit(s_dragonMenuDragonWorkArea
     dragonMenuDragonInitSub1(&pWorkArea->m34);
 
     pWorkArea->m30 = getVdp2VramU16(0x25002);
-    pWorkArea->m28 = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation;
-    pWorkArea->m2C = gDragonState->m28_dragon3dModel.m16;
+    pWorkArea->m28 = gDragonState->m28_dragon3dModel.m30_pCurrentAnimationRaw;
+    pWorkArea->m2C = gDragonState->m28_dragon3dModel.m16_previousAnimationFrame;
 
     pWorkArea->m0 = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
@@ -758,16 +758,16 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkAr
     if (pWorkArea->m8 == 0)
     {
         int r3;
-        if (gDragonState->m28_dragon3dModel.m30_pCurrentAnimation == NULL)
+        if (gDragonState->m28_dragon3dModel.m30_pCurrentAnimationRaw == NULL)
         {
             r3 = 0;
         }
         else
         {
-            r3 = READ_BE_S16(gDragonState->m28_dragon3dModel.m30_pCurrentAnimation + 4);
+            r3 = READ_BE_S16(gDragonState->m28_dragon3dModel.m30_pCurrentAnimationRaw + 4);
         }
         r3--;
-        if (gDragonState->m28_dragon3dModel.m16 >= r3)
+        if (gDragonState->m28_dragon3dModel.m16_previousAnimationFrame >= r3)
         {
             s_animLoop* pAnimLoop = dragonAnimLoop[gDragonState->mC_dragonType][gDragonState->m1C_dragonArchetype];
 

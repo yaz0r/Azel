@@ -281,7 +281,7 @@ void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
 {
     if (r4->mA_animationFlags & 0x38)
     {
-        s16 type = READ_BE_S16(r4->m30_pCurrentAnimation) & 7;
+        s16 type = READ_BE_S16(r4->m30_pCurrentAnimationRaw) & 7;
         switch (type)
         {
         default:
@@ -329,7 +329,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
             u8* pModelData1 = pModel + READ_BE_U32(pModel + 0x1A0);
             u8* pDefaultPose = pModel + READ_BE_U32(pModel + LCSItemBox_Table2[r13->m42]);
 
-            init3DModelRawData(pThis, &pThis->m98, 0, pModel, LCSItemBox_Table3[r13->m42], pModelData1, pDefaultPose, 0, 0);
+            init3DModelRawData(pThis, &pThis->m98_3dModel, 0, pModel, LCSItemBox_Table3[r13->m42], pModelData1, pDefaultPose, 0, 0);
 
             if (pThis->m80 > 0)
             {
@@ -338,7 +338,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
                     pThis->m_DrawMethod = LCSItemBox_OpenedBoxDraw;
                     pThis->mEA_wasRendered = 3;
 
-                    itemBoxType1InitSub0(&pThis->m98, 20);
+                    itemBoxType1InitSub0(&pThis->m98_3dModel, 20);
                 }
             }
             break;
@@ -659,7 +659,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
             pThis->mEA_wasRendered++;
             // fall
         case 1:
-            stepAnimation(&pThis->m98);
+            stepAnimation(&pThis->m98_3dModel);
             pThis->mEA_wasRendered++;
             pThis->mE8--;
             if (pThis->mE8 <= 0)
@@ -685,7 +685,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         scaleCurrentMatrixRow0(pThis->m78_scale);
         scaleCurrentMatrixRow1(pThis->m78_scale);
         scaleCurrentMatrixRow2(pThis->m78_scale);
-        pThis->m98.m18_drawFunction(&pThis->m98);
+        pThis->m98_3dModel.m18_drawFunction(&pThis->m98_3dModel);
         popMatrix();
     }
 
@@ -715,7 +715,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
     s8 m8D;
     s32 m90;
     s32 m94;
-    s_3dModel m98;
+    s_3dModel m98_3dModel;
     s16 mE8;
     s16 mEA_wasRendered;
     p_workArea mEC_savePointParticlesTask;

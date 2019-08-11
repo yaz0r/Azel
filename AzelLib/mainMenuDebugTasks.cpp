@@ -1096,19 +1096,19 @@ s32 riderInit(s_3dModel* r4_pModel, u8* r5)
         }
 
         r4_pModel->mA_animationFlags &= ~0x38;
-        r4_pModel->m30_pCurrentAnimation = NULL;
+        r4_pModel->m30_pCurrentAnimationRaw = NULL;
 
         return 1;
     }
 
-    if (r4_pModel->m30_pCurrentAnimation == NULL)
+    if (r4_pModel->m30_pCurrentAnimationRaw == NULL)
     {
         r4_pModel->mA_animationFlags |= READ_BE_U16(r5);
         initModelDrawFunction(r4_pModel);
         return createDragonStateSubData1Sub1(r4_pModel, r5);
     }
 
-    if (READ_BE_U16(r4_pModel->m30_pCurrentAnimation) != READ_BE_U16(r5))
+    if (READ_BE_U16(r4_pModel->m30_pCurrentAnimationRaw) != READ_BE_U16(r5))
     {
         //060215EC
         r4_pModel->mA_animationFlags &= ~0x0038;
@@ -1118,7 +1118,8 @@ s32 riderInit(s_3dModel* r4_pModel, u8* r5)
     }
 
     //06021620
-    r4_pModel->m30_pCurrentAnimation = r5;
+    r4_pModel->m30_pCurrentAnimationRaw = r5;
+    r4_pModel->m30_pCurrentAnimation = new sAnimationData(r5, 0);
     r4_pModel->m10_currentAnimationFrame = 0;
 
     switch (READ_BE_U16(r5) & 7)
@@ -1128,9 +1129,12 @@ s32 riderInit(s_3dModel* r4_pModel, u8* r5)
     case 5:
         for (s32 r7 = 0; r7 < r4_pModel->m12_numBones; r7++)
         {
-            r4_pModel->m2C_poseData[r7].m48[0].currentStep = 0;
-            r4_pModel->m2C_poseData[r7].m48[0].delay = 0;
-            r4_pModel->m2C_poseData[r7].m48[0].value = 0;
+            for(int j=0; j<9; j++)
+            {
+                r4_pModel->m2C_poseData[r7].m48[j].currentStep = 0;
+                r4_pModel->m2C_poseData[r7].m48[j].delay = 0;
+                r4_pModel->m2C_poseData[r7].m48[j].value = 0;
+            }
         }
     default:
         break;
@@ -1262,7 +1266,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32
     pDragonStateData1->m34_pDefaultPose = pDefaultPose;
     pDragonStateData1->m38 = unkArg2;
     pDragonStateData1->m14 = 0;
-    pDragonStateData1->m16 = 0;
+    pDragonStateData1->m16_previousAnimationFrame = 0;
     pDragonStateData1->m8 = 1;
 
     if (pAnimationData)
@@ -1309,7 +1313,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32
     }
     else
     {
-        pDragonStateData1->m30_pCurrentAnimation = NULL;
+        pDragonStateData1->m30_pCurrentAnimationRaw = NULL;
         pDragonStateData1->m10_currentAnimationFrame = 0;
 
         copyPosePosition(pDragonStateData1);

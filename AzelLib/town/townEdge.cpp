@@ -40,7 +40,7 @@ void applyAnimation(u8* base, u32 offset, std::vector<sPoseData>::iterator& pose
 
 }
 
-void applyAnimation2(u8* base, u32 offset, std::vector<sPoseDataInterpolation>::iterator pose)
+void applyAnimation2(u8* base, u32 offset, std::vector<sPoseDataInterpolation>::iterator& pose)
 {
     u8* r13 = base + offset;
 
@@ -64,7 +64,6 @@ void applyAnimation2(u8* base, u32 offset, std::vector<sPoseDataInterpolation>::
         pose++;
         applyAnimation2(base, READ_BE_U32(r13 + 8), pose);
     }
-
 }
 
 void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
@@ -430,7 +429,7 @@ void sEdgeTask::Update(sEdgeTask* pThis)
             if (pThis->m2C_currentAnimation != 1)
             {
                 pThis->m2C_currentAnimation = 1;
-                sSaturnPtr var0 = pThis->m30_animationTable + 4; // walk animation
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation; // walk animation
                 u8* buffer;
                 if (readSaturnU16(var0))
                 {
@@ -452,7 +451,7 @@ void sEdgeTask::Update(sEdgeTask* pThis)
             {
                 //0x605A20C
                 pThis->m2C_currentAnimation = 0;
-                sSaturnPtr var0 = pThis->m30_animationTable; // stand animation
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation; // stand animation
                 u8* buffer;
                 if (readSaturnU16(var0))
                 {
@@ -560,12 +559,12 @@ void updateEdgeSub3Sub0(sEdgeTask* pThis)
 void updateEdgeSub3(sEdgeTask* pThis)
 {
     sNPCE8* r13 = &pThis->mE8;
-    fixedPoint var8 = r13->m0_position[0] - r13->m54_oldPosition[0];
-    fixedPoint var0 = r13->m0_position[1] - r13->m54_oldPosition[1];
-    fixedPoint var4 = r13->m0_position[2] - r13->m54_oldPosition[2];
 
-    s32 r4 = sqrt_I(var8 * var8 + var0 * var0 + var4 * var4) * 0x1E1;
-    u32 animCounter = (pThis->m28_animationLeftOver + r4);
+    sVec3_FP delta = r13->m0_position - r13->m54_oldPosition;
+    sVec3_FP deltaSquare = delta * delta;
+
+    s32 r4 = sqrt_I(deltaSquare[0] + deltaSquare[1] + deltaSquare[2]) * 0x1E1;
+    s32 animCounter = (pThis->m28_animationLeftOver + r4);
     pThis->m28_animationLeftOver = animCounter & 0xFFFF;
 
     if (r4 > 0x666)
@@ -573,12 +572,31 @@ void updateEdgeSub3(sEdgeTask* pThis)
         //605C33C
         switch (pThis->m2C_currentAnimation)
         {
+        case 2:
+            if (r4 < 0x28000)
+            {
+                //0605C34C
+                pThis->m2C_currentAnimation = 1; // run to walk
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation;
+                u8* buffer;
+                if (readSaturnU16(var0))
+                {
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                }
+                else
+                {
+                    buffer = pThis->m0_dramAllocation;
+                }
+
+                playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
+            }
+            break;
         case 1:
             if (r4 > 0x30000)
             {
                 //0605C3AE
                 pThis->m2C_currentAnimation = 2; // run animation
-                sSaturnPtr var0 = pThis->m30_animationTable + 8;
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation;
                 u8* buffer;
                 if (readSaturnU16(var0))
                 {
@@ -596,22 +614,22 @@ void updateEdgeSub3(sEdgeTask* pThis)
             break;
         default:
             //0x605C3DA
-        {
-            pThis->m2C_currentAnimation = 1;
-            sSaturnPtr var0 = pThis->m30_animationTable + 4;
-            u8* buffer;
-            if (readSaturnU16(var0))
             {
-                buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
-            }
-            else
-            {
-                buffer = pThis->m0_dramAllocation;
-            }
+                pThis->m2C_currentAnimation = 1; // walk animation
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation;
+                u8* buffer;
+                if (readSaturnU16(var0))
+                {
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                }
+                else
+                {
+                    buffer = pThis->m0_dramAllocation;
+                }
 
-            playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
-            break;
-        }
+                playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
+                break;
+            }
         }
 
         //0605C402

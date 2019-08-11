@@ -2689,14 +2689,14 @@ void s_riderAnimTask::Update(s_riderAnimTask* pThis)
             pThis->m10_animSequence++;
             return;
         case 1:
-            if (pThis->m14_riderState->m18_3dModel.m16 < pThis->mC)
+            if (pThis->m14_riderState->m18_3dModel.m16_previousAnimationFrame < pThis->mC)
             {
                 if ((--pThis->m8_delay) <= 0)
                 {
                     pThis->m10_animSequence++;
                 }
             }
-            pThis->mC = pThis->m14_riderState->m18_3dModel.m16;
+            pThis->mC = pThis->m14_riderState->m18_3dModel.m16_previousAnimationFrame;
             return;
         }
     default:
@@ -5765,7 +5765,7 @@ void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonSt
             }
 
             //6073524
-            if (r5->m28_dragon3dModel.m16)
+            if (r5->m28_dragon3dModel.m16_previousAnimationFrame)
             {
                 return;
             }
