@@ -33,8 +33,7 @@ struct sStaticPoseData
 
 struct sModelHierarchy
 {
-    //struct sProcessed3dModel* m0_3dModel;
-    u32 m0_3dModelOffset;
+    struct sProcessed3dModel* m0_3dModel;
     sModelHierarchy* m4_subNode;
     sModelHierarchy* m8_nextNode;
 

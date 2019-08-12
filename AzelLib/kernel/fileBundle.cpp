@@ -85,8 +85,7 @@ sStaticPoseData* s_fileBundle::getStaticPose(u32 offset, u32 numBones)
 sModelHierarchy* s_fileBundle::readNode(u8* pBase, u32 offset)
 {
     sModelHierarchy* pNewNode = new sModelHierarchy;
-    //pNewNode->m0_3dModel = nullptr;
-    pNewNode->m0_3dModelOffset = 0;
+    pNewNode->m0_3dModel = nullptr;
     pNewNode->m4_subNode = nullptr;
     pNewNode->m8_nextNode = nullptr;
 
@@ -97,8 +96,7 @@ sModelHierarchy* s_fileBundle::readNode(u8* pBase, u32 offset)
 
     if (modelOffset)
     {
-        //pNewNode->m0_3dModel = new sProcessed3dModel(pBase, modelOffset);
-        pNewNode->m0_3dModelOffset = modelOffset;
+        pNewNode->m0_3dModel = new sProcessed3dModel(pBase, modelOffset);
     }
 
     if (subNodeOffset)

@@ -1,11 +1,11 @@
 #include "PDS.h"
 
-void modeDrawFunction6Sub2(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseData>::iterator& pPoseData, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void modeDrawFunction6Sub2(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     PDS_unimplemented("modeDrawFunction6Sub2");
 }
 
-void modeDrawFunction1Sub2(u8* pModelDataRoot, u8* pModelData, std::vector<sMatrix4x3>::iterator& r5, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void modeDrawFunction1Sub2(sModelHierarchy* pModelData, std::vector<sMatrix4x3>::iterator& r5, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     assert(0);
 }

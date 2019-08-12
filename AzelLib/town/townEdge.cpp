@@ -14,64 +14,59 @@ sEdgeTask* startEdgeTask(sSaturnPtr r4)
     return createSiblingTaskWithArgWithCopy<sEdgeTask>(allocateNPC(currentResTask, readSaturnS32(r4)), r4);
 }
 
-void applyAnimation(u8* base, u32 offset, std::vector<sPoseData>::iterator& pose)
+void applyAnimation(sModelHierarchy* pNode, std::vector<sPoseData>::iterator& pose)
 {
-    u8* r13 = base + offset;
-
     pushCurrentMatrix();
     {
         translateCurrentMatrix(&pose->m0_translation);
         rotateCurrentMatrixZYX(&pose->mC_rotation);
-        if (READ_BE_U32(r13))
+        if (pNode->m0_3dModel)
         {
-            addObjectToDrawList(base, READ_BE_U32(r13));
+            addObjectToDrawList(pNode->m0_3dModel);
         }
-        if (READ_BE_U32(r13 + 4))
+        if (pNode->m4_subNode)
         {
             pose++;
-            applyAnimation(base, READ_BE_U32(r13 + 4), pose);
+            applyAnimation(pNode->m4_subNode, pose);
         }
     }
     popMatrix();
-    if (READ_BE_U32(r13 + 8))
+    if (pNode->m8_nextNode)
     {
         pose++;
-        applyAnimation(base, READ_BE_U32(r13 + 8), pose);
+        applyAnimation(pNode->m8_nextNode, pose);
     }
 
 }
 
-void applyAnimation2(u8* base, u32 offset, std::vector<sPoseDataInterpolation>::iterator& pose)
+void applyAnimation2(sModelHierarchy* pNode, std::vector<sPoseDataInterpolation>::iterator& pose)
 {
-    u8* r13 = base + offset;
-
     pushCurrentMatrix();
     {
         translateCurrentMatrix(&pose->m0_translation);
         rotateCurrentMatrixZYX(&pose->mC_rotation);
-        if (READ_BE_U32(r13))
+        if (pNode->m0_3dModel)
         {
-            addObjectToDrawList(base, READ_BE_U32(r13));
+            addObjectToDrawList(pNode->m0_3dModel);
         }
-        if (READ_BE_U32(r13 + 4))
+        if (pNode->m4_subNode)
         {
             pose++;
-            applyAnimation2(base, READ_BE_U32(r13 + 4), pose);
+            applyAnimation2(pNode->m4_subNode, pose);
         }
     }
     popMatrix();
-    if (READ_BE_U32(r13 + 8))
+    if (pNode->m8_nextNode)
     {
         pose++;
-        applyAnimation2(base, READ_BE_U32(r13 + 8), pose);
+        applyAnimation2(pNode->m8_nextNode, pose);
     }
 }
 
 void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 {
     std::vector<sPoseData>::iterator r14_pose = pModel->m2C_poseData.begin();
-    u8* r12 = pModel->m4_pModelFile->getRawFileAtOffset(pModel->mC_modelIndexOffset);
-    r12 = pModel->m4_pModelFile->getRawBuffer() + READ_BE_U32(r12 + 4);
+    sModelHierarchy* r12 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset)->m4_subNode;
 
     pushCurrentMatrix();
     {
@@ -86,12 +81,12 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
             rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0x4CCC));
             rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
-            if (READ_BE_U32(r12))
+            if (r12->m0_3dModel)
             {
-                addObjectToDrawList(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r12));
+                addObjectToDrawList(r12->m0_3dModel);
             }
 
-            u8* r13 = pModel->m4_pModelFile->getRawBuffer() + READ_BE_U32(r12 + 4);
+            sModelHierarchy* r13 = r12->m4_subNode;
             pushCurrentMatrix();
             {
                 r14_pose++;
@@ -100,31 +95,31 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
                 rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0xB333));
                 rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
-                if (READ_BE_U32(r13))
+                if (r13->m0_3dModel)
                 {
-                    addObjectToDrawList(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13));
+                    addObjectToDrawList(r13->m0_3dModel);
                 }
 
-                if (READ_BE_U32(r13 + 4))
+                if (r13->m4_subNode)
                 {
                     r14_pose++;
-                    applyAnimation(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13 + 4), r14_pose);
+                    applyAnimation(r13->m4_subNode, r14_pose);
                 }
             }
             popMatrix();
 
-            if (READ_BE_U32(r13 + 8))
+            if (r13->m8_nextNode)
             {
                 r14_pose++;
-                applyAnimation(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13 + 8), r14_pose);
+                applyAnimation(r13->m8_nextNode, r14_pose);
             }
         }
         popMatrix();
 
-        if (READ_BE_U32(r12 + 8))
+        if (r12->m8_nextNode)
         {
             r14_pose++;
-            applyAnimation(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r12 + 8), r14_pose);
+            applyAnimation(r12->m8_nextNode, r14_pose);
         }
     }
     popMatrix();
@@ -134,8 +129,7 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
 {
     std::vector<sPoseDataInterpolation>::iterator r14_pose = pModel->m48_poseDataInterpolation.begin();
-    u8* r12 = pModel->m4_pModelFile->getRawFileAtOffset(pModel->mC_modelIndexOffset);
-    r12 = pModel->m4_pModelFile->getRawBuffer() + READ_BE_U32(r12 + 4);
+    sModelHierarchy* r12 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset)->m4_subNode;
 
     pushCurrentMatrix();
     {
@@ -150,12 +144,12 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
             rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0x4CCC));
             rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
-            if (READ_BE_U32(r12))
+            if (r12->m0_3dModel)
             {
-                addObjectToDrawList(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r12));
+                addObjectToDrawList(r12->m0_3dModel);
             }
 
-            u8* r13 = pModel->m4_pModelFile->getRawBuffer() + READ_BE_U32(r12 + 4);
+            sModelHierarchy* r13 = r12->m4_subNode;
             pushCurrentMatrix();
             {
                 r14_pose++;
@@ -164,31 +158,31 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
                 rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0xB333));
                 rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
-                if (READ_BE_U32(r13))
+                if (r13->m0_3dModel)
                 {
-                    addObjectToDrawList(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13));
+                    addObjectToDrawList(r13->m0_3dModel);
                 }
 
-                if (READ_BE_U32(r13 + 4))
+                if (r13->m4_subNode)
                 {
                     r14_pose++;
-                    applyAnimation2(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13 + 4), r14_pose);
+                    applyAnimation2(r13->m4_subNode, r14_pose);
                 }
             }
             popMatrix();
 
-            if (READ_BE_U32(r13 + 8))
+            if (r13->m8_nextNode)
             {
                 r14_pose++;
-                applyAnimation2(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13 + 8), r14_pose);
+                applyAnimation2(r13->m8_nextNode, r14_pose);
             }
         }
         popMatrix();
 
-        if (READ_BE_U32(r12 + 8))
+        if (r12->m8_nextNode)
         {
             r14_pose++;
-            applyAnimation2(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r12 + 8), r14_pose);
+            applyAnimation2(r12->m8_nextNode, r14_pose);
         }
     }
     popMatrix();
