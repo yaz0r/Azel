@@ -196,9 +196,9 @@ void loadTownPrgSub0()
     gTownGrid.m3C = &initNPCSub0Var1;
 }
 
-void setupDragonForTown(u8* r4)
+void setupDragonForTown(s_fileBundle* pDragonBundle)
 {
-    if (READ_BE_U32(r4 + 0x48))
+    if (pDragonBundle->getRawFileAtOffset(0x48))
     {
         FunctionUnimplemented();
     }
@@ -232,7 +232,7 @@ void loadTownPrg(s8 r4, s8 r5)
     reset3dEngine();
     resetTempAllocators();
     loadTownPrgSub0();
-    setupDragonForTown(gDragonState->m0_pDragonModelRawData);
+    setupDragonForTown(gDragonState->m0_pDragonModelBundle);
     gFieldOverlayFunction(townDebugTask2, r5);
 }
 

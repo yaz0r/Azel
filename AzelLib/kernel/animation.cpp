@@ -15,7 +15,7 @@ sAnimationData::sAnimationData(u8* base, u32 offset)
 
     for(int boneId = 0; boneId < m2_numBones; boneId++)
     {
-        pData = m8_offsetToTrackHeader + base + 0x38 * boneId;
+        pData = m8_offsetToTrackHeader + base + offset + 0x38 * boneId;
         sTrackHeader perBoneData;
         for (int i = 0; i < 9; i++)
         {
@@ -29,7 +29,7 @@ sAnimationData::sAnimationData(u8* base, u32 offset)
 
         for (int i = 0; i < 9; i++)
         {
-            pData = perBoneData.m14_trackDataOffset[i] + base;
+            pData = perBoneData.m14_trackDataOffset[i] + base + offset;
             for (int j = 0; j < perBoneData.m0_tracksLength[i]; j++)
             {
                 perBoneData.m14_trackData[i].push_back(READ_BE_S16(pData)); pData += 2;
@@ -498,9 +498,9 @@ void modelMode4_scale(s_3dModel*)
     assert(0);
 }
 
-u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, u8* pModelData)
+u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, sAnimationData* pModelData)
 {
-    u16 flags = READ_BE_U16(pModelData);
+    u16 flags = pModelData->m0_flags;
 
     switch (flags & 7)
     {
@@ -583,13 +583,12 @@ u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, u8* pModelData)
     return 1;
 }
 
-u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, u8* pModelData1)
+u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, sAnimationData* pAnimation)
 {
-    pDragonStateData1->m30_pCurrentAnimationRaw = pModelData1;
-    pDragonStateData1->m30_pCurrentAnimation = new sAnimationData(pModelData1, 0);
+    pDragonStateData1->m30_pCurrentAnimation = pAnimation;
     pDragonStateData1->m10_currentAnimationFrame = 0;
 
-    u16 flags = READ_BE_U16(pModelData1);
+    u16 flags = READ_BE_U16(pAnimation);
 
     if ((flags & 8) || (pDragonStateData1->mA_animationFlags & 0x100))
     {
@@ -606,16 +605,15 @@ u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, u8* pModelData1)
         resetPoseScale(pDragonStateData1);
     }
 
-    return createDragonStateSubData1Sub1Sub1(pDragonStateData1, pModelData1);
+    return createDragonStateSubData1Sub1Sub1(pDragonStateData1, pAnimation);
 }
 
-u32 dragonFieldTaskInitSub3Sub1Sub1(s_3dModel* pModel, u8* pAnimation)
+u32 dragonFieldTaskInitSub3Sub1Sub1(s_3dModel* pModel, sAnimationData* pAnimation)
 {
-    pModel->m30_pCurrentAnimationRaw = pAnimation;
-    pModel->m30_pCurrentAnimation = new sAnimationData(pAnimation, 0);
+    pModel->m30_pCurrentAnimation = pAnimation;
     pModel->m10_currentAnimationFrame = 0;
 
-    u16 flags = READ_BE_U16(pAnimation);
+    u16 flags = pAnimation->m0_flags;
 
     if ((flags & 8) || (pModel->mA_animationFlags & 0x100))
     {
@@ -638,30 +636,29 @@ u32 dragonFieldTaskInitSub3Sub1Sub1(s_3dModel* pModel, u8* pAnimation)
 }
 
 
-u32 setupModelAnimation(s_3dModel* pModel, u8* r5)
+u32 setupModelAnimation(s_3dModel* pModel, sAnimationData* pAnimation)
 {
-    if (r5 == NULL)
+    if (pAnimation == NULL)
     {
         assert(0);
     }
     else
     {
-        if (pModel->m30_pCurrentAnimationRaw == NULL)
+        if (pModel->m30_pCurrentAnimation == NULL)
         {
             assert(0);
         }
         else
         {
-            if (pModel->m30_pCurrentAnimation->m0_flags != READ_BE_U16(r5))
+            if (pModel->m30_pCurrentAnimation->m0_flags != pAnimation->m0_flags)
             {
                 pModel->mA_animationFlags &= ~0x38;
-                pModel->mA_animationFlags |= READ_BE_U16(r5);
+                pModel->mA_animationFlags |= pAnimation->m0_flags;
                 initModelDrawFunction(pModel);
-                return dragonFieldTaskInitSub3Sub1Sub1(pModel, r5);
+                return dragonFieldTaskInitSub3Sub1Sub1(pModel, pAnimation);
             }
             // 6021728
-            pModel->m30_pCurrentAnimationRaw = r5;
-            pModel->m30_pCurrentAnimation = new sAnimationData(r5, 0);
+            pModel->m30_pCurrentAnimation = pAnimation;
             pModel->m10_currentAnimationFrame = 0;
 
             u16 r0 = pModel->m30_pCurrentAnimation->m0_flags & 7;
@@ -811,7 +808,7 @@ u32 setupPoseInterpolation(s_3dModel* pModel, u32 interpolationLength)
     }
 }
 
-void playAnimation(s_3dModel* pModel, u8* pAnimation, u32 r6)
+void playAnimation(s_3dModel* pModel, sAnimationData* pAnimation, u32 r6)
 {
     if (setupPoseInterpolation(pModel, r6) && ((pModel->mA_animationFlags & 0x200) == 0))
     {

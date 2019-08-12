@@ -545,7 +545,6 @@ struct s_3dModel
     void (*m28_scaleUpdateFunction)(s_3dModel*); // 28
     std::vector<sPoseData> m2C_poseData; //2C
 
-    u8* m30_pCurrentAnimationRaw; //30
     struct sAnimationData* m30_pCurrentAnimation;
 
     u8* m34_pDefaultPose; //34
@@ -601,7 +600,6 @@ struct s_dragonState : public s_workAreaTemplate<s_dragonState>
         return &taskDefinition;
     }
 
-    u8* m0_pDragonModelRawData; //0
     struct s_fileBundle* m0_pDragonModelBundle;
     u32 mC_dragonType;//C F can contain some other info
     s16 m10_cursorX;//10

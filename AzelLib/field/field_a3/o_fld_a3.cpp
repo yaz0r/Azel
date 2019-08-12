@@ -7,6 +7,7 @@
 #include "a3_2_crashedImperialShip.h"
 
 #include "kernel/animation.h"
+#include "kernel/fileBundle.h"
 #include "kernel/cinematicBarsTask.h"
 #include "collision.h"
 
@@ -2667,11 +2668,11 @@ void s_riderAnimTask::Update(s_riderAnimTask* pThis)
             return;
         case 0:
             pThis->m8_delay = pThis->m10_animSequence->m2;
-            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderModel + READ_BE_U32(pThis->m18->m0_riderModel + pThis->m1C[pThis->m10_animSequence->m1]), pThis->m10_animSequence->m2);
+            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderBundle->getAnimation(pThis->m1C[pThis->m10_animSequence->m1]), pThis->m10_animSequence->m2);
             break;
         case 1:
             pThis->m8_delay = pThis->m10_animSequence->m2;
-            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderModel + READ_BE_U32(pThis->m18->m0_riderModel + pThis->m1C[pThis->m10_animSequence->m1 + 0x10]), 15);
+            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderBundle->getAnimation(pThis->m1C[pThis->m10_animSequence->m1 + 0x10]), 15);
             break;
         default:
             assert(0);
@@ -3956,25 +3957,11 @@ struct s_DragonRiderTask : public s_workAreaTemplate<s_DragonRiderTask>
 
 void s_DragonRiderTask::dragonRidersTaskInit(s_DragonRiderTask* pWorkArea)
 {
-    {
-        u8* pData = NULL;
-        if (u32 offset = READ_BE_U32(pRider1State->m0_riderModel + 0x30))
-        {
-            pData = pRider1State->m0_riderModel + offset;
-        }
-        riderInit(&pRider1State->m18_3dModel, pData);
-        updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
-    }
+    riderInit(&pRider1State->m18_3dModel, pRider1State->m0_riderBundle->getAnimation(0x30));
+    updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
 
-    {
-        u8* pData = NULL;
-        if (u32 offset = READ_BE_U32(pRider2State->m0_riderModel + 0x30))
-        {
-            pData = pRider2State->m0_riderModel + offset;
-        }
-        riderInit(&pRider2State->m18_3dModel, pData);
-        updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
-    }
+    riderInit(&pRider2State->m18_3dModel, pRider2State->m0_riderBundle->getAnimation(0x30));
+    updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
 }
 
 void s_DragonRiderTask::dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea)
@@ -4234,7 +4221,7 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 
 void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDragonState, int param2)
 {
-    setupModelAnimation(&pDragonState->m28_dragon3dModel, pDragonState->m0_pDragonModelRawData + READ_BE_U32(pDragonState->m0_pDragonModelRawData + pDragonState->m20_dragonAnimOffsets[param2]));
+    setupModelAnimation(&pDragonState->m28_dragon3dModel, pDragonState->m0_pDragonModelBundle->getAnimation(pDragonState->m20_dragonAnimOffsets[param2]));
     updateAndInterpolateAnimation(&pDragonState->m28_dragon3dModel);
 
     pWorkArea->m23A_dragonAnimation = param2;
@@ -5666,12 +5653,12 @@ void dragonFieldPlayAnimation(s_dragonTaskWorkArea* r14, s_dragonState* r13, u8 
 
     if (r5 == r4)
     {
-        setupModelAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelRawData + READ_BE_U32(r13->m0_pDragonModelRawData + r13->m20_dragonAnimOffsets[r12]));
+        setupModelAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelBundle->getAnimation(r13->m20_dragonAnimOffsets[r12]));
         r14->m23B = 1;
     }
     else
     {
-        playAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelRawData + READ_BE_U32(r13->m0_pDragonModelRawData + r13->m20_dragonAnimOffsets[r12]), 10);
+        playAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelBundle->getAnimation(r13->m20_dragonAnimOffsets[r12]), 10);
         r14->m23B = 0;
     }
 
@@ -6255,11 +6242,11 @@ void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
 
     if (pTypedWorkArea->m249_noCollisionAndHideDragon)
     {
-        WRITE_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30) & ~1);
+        WRITE_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30) & ~1);
     }
     else
     {
-        WRITE_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30) | 1);
+        WRITE_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30) | 1);
     }
 
     pushCurrentMatrix();

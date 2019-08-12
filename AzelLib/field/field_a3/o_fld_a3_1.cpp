@@ -282,7 +282,7 @@ void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
 {
     if (r4->mA_animationFlags & 0x38)
     {
-        s16 type = READ_BE_S16(r4->m30_pCurrentAnimationRaw) & 7;
+        s16 type = r4->m30_pCurrentAnimation->m0_flags & 7;
         switch (type)
         {
         default:
@@ -327,7 +327,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         case 0:
         {
             s_fileBundle* pBundle = pThis->m0.m0_mainMemoryBundle;
-            u8* pAnimation = pBundle->getRawFileAtOffset(0x1A0);
+            sAnimationData* pAnimation = pBundle->getAnimation(0x1A0);
             u8* pDefaultPose = pBundle->getRawFileAtOffset(LCSItemBox_Table2[r13->m42]);
 
             init3DModelRawData(pThis, &pThis->m98_3dModel, 0, pBundle, LCSItemBox_Table3[r13->m42], pAnimation, pDefaultPose, 0, 0);
@@ -845,7 +845,7 @@ struct fieldA3_1_startTasks_subTask : public s_workAreaTemplateWithArg<fieldA3_1
         getMemoryArea(&pThis->m0_memoryArea, 3);
 
         s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
-        u8* pAnimation = pBundle->getRawFileAtOffset(0x324);
+        sAnimationData* pAnimation = pBundle->getAnimation(0x324);
         u8* pPose = pBundle->getRawFileAtOffset(0x2A0);
         init3DModelRawData(pThis, &pThis->m9C_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m9C_3dModel);
@@ -891,7 +891,7 @@ struct fieldA3_1_startTasks_subTask2 : public s_workAreaTemplateWithArg<fieldA3_
         getMemoryArea(&pThis->m0_memoryArea, 3);
 
         s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
-        u8* pAnimation = pBundle->getRawFileAtOffset(0x324);
+        sAnimationData* pAnimation = pBundle->getAnimation(0x324);
         u8* pPose = pBundle->getRawFileAtOffset(0x2A0);
         init3DModelRawData(pThis, &pThis->m78_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m78_3dModel);
@@ -934,7 +934,7 @@ struct fieldA3_1_startTasks_subTask3 : public s_workAreaTemplateWithArg<fieldA3_
         getMemoryArea(&pThis->m0_memoryArea, 3);
 
         s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
-        u8* pAnimation = pBundle->getRawFileAtOffset(0x324);
+        sAnimationData* pAnimation = pBundle->getAnimation(0x324);
         u8* pPose = pBundle->getRawFileAtOffset(0x2A0);
 
         init3DModelRawData(pThis, &pThis->m3C_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);

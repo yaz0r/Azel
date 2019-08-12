@@ -1079,9 +1079,9 @@ void modelDrawFunction10(s_3dModel* pModel)
     }
 }
 
-s32 riderInit(s_3dModel* r4_pModel, u8* r5)
+s32 riderInit(s_3dModel* r4_pModel, sAnimationData* pAnimation)
 {
-    if (r5 == NULL)
+    if (pAnimation == NULL)
     {
         if (r4_pModel->mA_animationFlags & 8)
         {
@@ -1097,33 +1097,32 @@ s32 riderInit(s_3dModel* r4_pModel, u8* r5)
         }
 
         r4_pModel->mA_animationFlags &= ~0x38;
-        r4_pModel->m30_pCurrentAnimationRaw = NULL;
+        r4_pModel->m30_pCurrentAnimation = NULL;
 
         return 1;
     }
 
-    if (r4_pModel->m30_pCurrentAnimationRaw == NULL)
+    if (r4_pModel->m30_pCurrentAnimation == NULL)
     {
-        r4_pModel->mA_animationFlags |= READ_BE_U16(r5);
+        r4_pModel->mA_animationFlags |= pAnimation->m0_flags;
         initModelDrawFunction(r4_pModel);
-        return createDragonStateSubData1Sub1(r4_pModel, r5);
+        return createDragonStateSubData1Sub1(r4_pModel, pAnimation);
     }
 
-    if (READ_BE_U16(r4_pModel->m30_pCurrentAnimationRaw) != READ_BE_U16(r5))
+    if (r4_pModel->m30_pCurrentAnimation->m0_flags != pAnimation->m0_flags)
     {
         //060215EC
         r4_pModel->mA_animationFlags &= ~0x0038;
-        r4_pModel->mA_animationFlags |= READ_BE_U16(r5);
+        r4_pModel->mA_animationFlags |= pAnimation->m0_flags;
         initModelDrawFunction(r4_pModel);
-        return createDragonStateSubData1Sub1(r4_pModel, r5);
+        return createDragonStateSubData1Sub1(r4_pModel, pAnimation);
     }
 
     //06021620
-    r4_pModel->m30_pCurrentAnimationRaw = r5;
-    r4_pModel->m30_pCurrentAnimation = new sAnimationData(r5, 0);
+    r4_pModel->m30_pCurrentAnimation = pAnimation;
     r4_pModel->m10_currentAnimationFrame = 0;
 
-    switch (READ_BE_U16(r5) & 7)
+    switch (pAnimation->m0_flags & 7)
     {
     case 1:
     case 4:
@@ -1259,7 +1258,7 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     return true;
 }
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, u8* pAnimationData, u8* pDefaultPose, u8* unkArg2, const s_RiderDefinitionSub* unkArg3)
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, sAnimationData* pAnimationData, u8* pDefaultPose, u8* unkArg2, const s_RiderDefinitionSub* unkArg3)
 {
     pDragonStateData1->m0_pOwnerTask = pWorkArea;
     pDragonStateData1->m4_pModelFile = pDragonBundle;
@@ -1272,8 +1271,8 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32
 
     if (pAnimationData)
     {
-        pDragonStateData1->mA_animationFlags = READ_BE_U16(pAnimationData) | animationFlags;
-        pDragonStateData1->m12_numBones = READ_BE_U16(pAnimationData + 2);
+        pDragonStateData1->mA_animationFlags = pAnimationData->m0_flags | animationFlags;
+        pDragonStateData1->m12_numBones = pAnimationData->m2_numBones;
     }
     else
     {
@@ -1314,7 +1313,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32
     }
     else
     {
-        pDragonStateData1->m30_pCurrentAnimationRaw = NULL;
+        pDragonStateData1->m30_pCurrentAnimation = NULL;
         pDragonStateData1->m10_currentAnimationFrame = 0;
 
         copyPosePosition(pDragonStateData1);
@@ -1532,7 +1531,6 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
     s_dragonState* pDragonState = createSubTaskFromFunction<s_dragonState>(pWorkArea, nullptr);
 
-    pDragonState->m0_pDragonModelRawData = gDragonModel;
     pDragonState->m0_pDragonModelBundle = new s_fileBundle(gDragonModel);
     pDragonState->mC_dragonType = dragonLevel;
     pDragonState->m14_modelIndex = pDragonData3->m_m8[0].m_m0[0];
@@ -1541,7 +1539,7 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     pDragonState->m24_dragonAnimCount = pDragonAnimOffsets->m_count;
     pDragonState->m88 = 1;
 
-    u8* pDefaultAnimationData = pDragonState->m0_pDragonModelBundle->getRawFileAtOffset(pDragonState->m20_dragonAnimOffsets[0]);
+    sAnimationData* pDefaultAnimationData = pDragonState->m0_pDragonModelBundle->getAnimation(pDragonState->m20_dragonAnimOffsets[0]);
     u8* defaultPose = pDragonState->m0_pDragonModelBundle->getRawFileAtOffset(pDragonData3->m_m8[0].m_m0[2]);
 
     init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonState->m0_pDragonModelBundle, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m_m8);
@@ -1690,7 +1688,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
 {
     const s_RiderDefinition* r13 = &gRiderTable[riderType];
 
-    u8* pAnimation = NULL;
+    sAnimationData* pAnimation = NULL;
 
     s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
 
@@ -1738,7 +1736,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
 {
     const s_RiderDefinition* r13 = &gRiderTable[riderType];
 
-    u8* pAnimation = NULL;
+    sAnimationData* pAnimation = NULL;
 
     s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
 
@@ -4176,7 +4174,7 @@ void playAnimationGenericSub1(s_3dModel* pModel)
     }
 }
 
-void playAnimationGeneric(s_3dModel* pModel, u8* pAnimation, s32 interpolationLength)
+void playAnimationGeneric(s_3dModel* pModel, sAnimationData* pAnimation, s32 interpolationLength)
 {
     if (setupPoseInterpolation(pModel, interpolationLength) && !(pModel->mA_animationFlags & 0x200))
     {

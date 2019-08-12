@@ -433,14 +433,14 @@ void sEdgeTask::Update(sEdgeTask* pThis)
                 sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation; // walk animation
 
                 u32 offset = readSaturnU16(var0 + 2);
-                u8* buffer;
+                sAnimationData* buffer;
                 if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = pThis->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
                 }
 
                 playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
@@ -457,14 +457,14 @@ void sEdgeTask::Update(sEdgeTask* pThis)
                 sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation; // stand animation
 
                 u32 offset = readSaturnU16(var0 + 2);
-                u8* buffer;
+                sAnimationData* buffer;
                 if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = pThis->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
                 }
 
                 playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
@@ -545,14 +545,14 @@ void updateEdgeSub3Sub0(sEdgeTask* pThis)
             sSaturnPtr var0 = pThis->m30_animationTable + pThis->m2C_currentAnimation * 4;
 
             u32 offset = readSaturnU16(var0 + 2);
-            u8* buffer;
+            sAnimationData* buffer;
             if (readSaturnU16(var0))
             {
-                buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawFileAtOffset(offset);
+                buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
             }
             else
             {
-                buffer = pThis->m0_dramAllocation->getRawFileAtOffset(offset);
+                buffer = pThis->m0_dramAllocation->getAnimation(offset);
             }
 
             playAnimationGeneric(&pThis->m34_3dModel, buffer, r6);
@@ -587,14 +587,14 @@ void updateEdgeSub3(sEdgeTask* pThis)
                 sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation;
 
                 u32 offset = readSaturnU16(var0 + 2);
-                u8* buffer;
+                sAnimationData* buffer;
                 if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = pThis->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
                 }
 
                 playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
@@ -608,14 +608,14 @@ void updateEdgeSub3(sEdgeTask* pThis)
                 sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation;
 
                 u32 offset = readSaturnU16(var0 + 2);
-                u8* buffer;
+                sAnimationData* buffer;
                 if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = pThis->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
                 }
 
                 playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
@@ -630,14 +630,14 @@ void updateEdgeSub3(sEdgeTask* pThis)
                 sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation;
 
                 u32 offset = readSaturnU16(var0 + 2);
-                u8* buffer;
+                sAnimationData* buffer;
                 if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = pThis->m0_dramAllocation->getRawFileAtOffset(offset);
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
                 }
 
                 playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
