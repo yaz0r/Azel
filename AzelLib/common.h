@@ -547,8 +547,8 @@ struct s_3dModel
 
     struct sAnimationData* m30_pCurrentAnimation;
 
-    u8* m34_pDefaultPose; //34
-    u8* m38; //38
+    struct sStaticPoseData* m34_pDefaultPose; //34
+    u8* m38_pColorAnim; //38
 
     std::vector<sMatrix4x3> m3C_boneMatrices; //3C
 

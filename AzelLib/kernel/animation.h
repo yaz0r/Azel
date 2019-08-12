@@ -17,6 +17,30 @@ struct sAnimationData
     std::vector<sTrackHeader> m8_trackHeader;
 };
 
+struct sStaticPoseData
+{
+    struct sBonePoseData
+    {
+        sVec3_FP m0_translation;
+        sVec3_FP mC_rotation;
+        sVec3_FP m18_scale;
+    };
+
+    sStaticPoseData(u8* base, u32 offset, u32 numBones);
+
+    std::vector<sBonePoseData> m0_bones;
+};
+
+struct sModelHierarchy
+{
+    //struct sProcessed3dModel* m0_3dModel;
+    u32 m0_3dModelOffset;
+    sModelHierarchy* m4_subNode;
+    sModelHierarchy* m8_nextNode;
+
+    u32 countNumberOfBones();
+};
+
 void copyPosePosition(s_3dModel* pModel);
 void copyPoseRotation(s_3dModel* pModel);
 void resetPoseScale(s_3dModel* pModel);

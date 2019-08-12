@@ -1149,7 +1149,7 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
     {
         if (pDragonStateData1->m40)
         {
-            if (pDragonStateData1->m38)
+            if (pDragonStateData1->m38_pColorAnim)
             {
                 pDragonStateData1->m18_drawFunction = modelDrawFunction0;
             }
@@ -1160,7 +1160,7 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
         }
         else
         {
-            if (pDragonStateData1->m38)
+            if (pDragonStateData1->m38_pColorAnim)
             {
                 pDragonStateData1->m18_drawFunction = modelDrawFunction2;
             }
@@ -1180,7 +1180,7 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
             }
             else
             {
-                if (pDragonStateData1->m38)
+                if (pDragonStateData1->m38_pColorAnim)
                 {
                     pDragonStateData1->m18_drawFunction = modelDrawFunction5;
                 }
@@ -1198,7 +1198,7 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
             }
             else
             {
-                if (pDragonStateData1->m38)
+                if (pDragonStateData1->m38_pColorAnim)
                 {
                     pDragonStateData1->m18_drawFunction = modelDrawFunction9;
                 }
@@ -1212,14 +1212,14 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
     }
 }
 
-void countNumBonesInModel(s_3dModel* pDragonStateData1, u8* pDragonModelData, u8* pStartOfData)
+void countNumBonesInModel(s_3dModel* p3dModel, u8* pDragonModelData, u8* pStartOfData)
 {
     do
     {
-        pDragonStateData1->m12_numBones++;
+        p3dModel->m12_numBones++;
         if (READ_BE_U32(pDragonModelData + 4))
         {
-            countNumBonesInModel(pDragonStateData1, pStartOfData + READ_BE_U32(pDragonModelData + 4), pStartOfData);
+            countNumBonesInModel(p3dModel, pStartOfData + READ_BE_U32(pDragonModelData + 4), pStartOfData);
         }
 
         if (READ_BE_U32(pDragonModelData + 8))
@@ -1258,72 +1258,77 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     return true;
 }
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, sAnimationData* pAnimationData, u8* pDefaultPose, u8* unkArg2, const s_RiderDefinitionSub* unkArg3)
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, sAnimationData* pAnimationData, sStaticPoseData* pDefaultPose, u8* colorAnim, const s_RiderDefinitionSub* unkArg3)
 {
-    pDragonStateData1->m0_pOwnerTask = pWorkArea;
-    pDragonStateData1->m4_pModelFile = pDragonBundle;
-    pDragonStateData1->mC_modelIndexOffset = modelIndexOffset;
-    pDragonStateData1->m34_pDefaultPose = pDefaultPose;
-    pDragonStateData1->m38 = unkArg2;
-    pDragonStateData1->m14 = 0;
-    pDragonStateData1->m16_previousAnimationFrame = 0;
-    pDragonStateData1->m8 = 1;
+    p3dModel->m0_pOwnerTask = pWorkArea;
+    p3dModel->m4_pModelFile = pDragonBundle;
+    p3dModel->mC_modelIndexOffset = modelIndexOffset;
+    p3dModel->m34_pDefaultPose = pDefaultPose;
+    p3dModel->m38_pColorAnim = colorAnim;
+    p3dModel->m14 = 0;
+    p3dModel->m16_previousAnimationFrame = 0;
+    p3dModel->m8 = 1;
 
     if (pAnimationData)
     {
-        pDragonStateData1->mA_animationFlags = pAnimationData->m0_flags | animationFlags;
-        pDragonStateData1->m12_numBones = pAnimationData->m2_numBones;
+        p3dModel->mA_animationFlags = pAnimationData->m0_flags | animationFlags;
+        p3dModel->m12_numBones = pAnimationData->m2_numBones;
     }
     else
     {
-        pDragonStateData1->mA_animationFlags = animationFlags;
-        pDragonStateData1->m12_numBones = 0;
-        countNumBonesInModel(pDragonStateData1, pDragonBundle->getRawFileAtOffset(pDragonStateData1->mC_modelIndexOffset), pDragonBundle->getRawBuffer());
+        p3dModel->mA_animationFlags = animationFlags;
+        p3dModel->m12_numBones = 0;
+        countNumBonesInModel(p3dModel, pDragonBundle->getRawFileAtOffset(p3dModel->mC_modelIndexOffset), pDragonBundle->getRawBuffer());
     }
 
-    pDragonStateData1->m2C_poseData.resize(pDragonStateData1->m12_numBones);
-
-    if (pDragonStateData1->mA_animationFlags & 0x200)
+    if (pDefaultPose)
     {
-        pDragonStateData1->m3C_boneMatrices.resize(pDragonStateData1->m12_numBones);
-        assert(pDragonStateData1->m3C_boneMatrices.size());
+        assert(p3dModel->m12_numBones == pDefaultPose->m0_bones.size());
+    }
 
-        pDragonStateData1->m8 |= 2;
+    p3dModel->m2C_poseData.resize(p3dModel->m12_numBones);
+
+    if (p3dModel->mA_animationFlags & 0x200)
+    {
+        p3dModel->m3C_boneMatrices.resize(p3dModel->m12_numBones);
+        assert(p3dModel->m3C_boneMatrices.size());
+
+        p3dModel->m8 |= 2;
     }
     else
     {
-        pDragonStateData1->m3C_boneMatrices.resize(0);
-        pDragonStateData1->m8 &= ~2;
+        p3dModel->m3C_boneMatrices.resize(0);
+        p3dModel->m8 &= ~2;
     }
 
     if (unkArg3)
     {
-        if (!createDragonStateSubData1Sub2(pDragonStateData1, unkArg3))
+        if (!createDragonStateSubData1Sub2(p3dModel, unkArg3))
             return false;
     }
     else
     {
-        pDragonStateData1->m40 = 0;
+        p3dModel->m40 = 0;
     }
 
     if (pAnimationData)
     {
-        if (createDragonStateSubData1Sub1(pDragonStateData1, pAnimationData) == 0)
+        if (createDragonStateSubData1Sub1(p3dModel, pAnimationData) == 0)
             return false;
     }
     else
     {
-        pDragonStateData1->m30_pCurrentAnimation = NULL;
-        pDragonStateData1->m10_currentAnimationFrame = 0;
+        p3dModel->m30_pCurrentAnimation = NULL;
+        p3dModel->m10_currentAnimationFrame = 0;
 
-        copyPosePosition(pDragonStateData1);
-        copyPoseRotation(pDragonStateData1);
-        resetPoseScale(pDragonStateData1);
+        copyPosePosition(p3dModel);
+        copyPoseRotation(p3dModel);
+        resetPoseScale(p3dModel);
     }
 
-    initModelDrawFunction(pDragonStateData1);
+    initModelDrawFunction(p3dModel);
 
-    pDragonStateData1->m1C_addToDisplayListFunction = addObjectToDrawList;
+    p3dModel->m1C_addToDisplayListFunction = addObjectToDrawList;
 
     return true;
 }
@@ -1540,7 +1545,7 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     pDragonState->m88 = 1;
 
     sAnimationData* pDefaultAnimationData = pDragonState->m0_pDragonModelBundle->getAnimation(pDragonState->m20_dragonAnimOffsets[0]);
-    u8* defaultPose = pDragonState->m0_pDragonModelBundle->getRawFileAtOffset(pDragonData3->m_m8[0].m_m0[2]);
+    sStaticPoseData* defaultPose = pDragonState->m0_pDragonModelBundle->getStaticPose(pDragonData3->m_m8[0].m_m0[2], pDefaultAnimationData->m2_numBones);
 
     init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonState->m0_pDragonModelBundle, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m_m8);
 
@@ -1725,7 +1730,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
     }
 
     s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
-    u8* pDefaultPose = pBundle->getRawFileAtOffset(r13->mA_offsetToDefaultPose);
+    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m_modelIndex)->countNumberOfBones());
 
     init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
 
@@ -1774,7 +1779,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
     }
 
     s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
-    u8* pDefaultPose = pBundle->getRawFileAtOffset(r13->mA_offsetToDefaultPose);
+    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m_modelIndex)->countNumberOfBones());
 
     init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
 

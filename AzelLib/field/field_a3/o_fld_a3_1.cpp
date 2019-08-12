@@ -328,7 +328,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         {
             s_fileBundle* pBundle = pThis->m0.m0_mainMemoryBundle;
             sAnimationData* pAnimation = pBundle->getAnimation(0x1A0);
-            u8* pDefaultPose = pBundle->getRawFileAtOffset(LCSItemBox_Table2[r13->m42]);
+            sStaticPoseData* pDefaultPose = pBundle->getStaticPose(LCSItemBox_Table2[r13->m42], pAnimation->m2_numBones);
 
             init3DModelRawData(pThis, &pThis->m98_3dModel, 0, pBundle, LCSItemBox_Table3[r13->m42], pAnimation, pDefaultPose, 0, 0);
 
@@ -846,7 +846,7 @@ struct fieldA3_1_startTasks_subTask : public s_workAreaTemplateWithArg<fieldA3_1
 
         s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
         sAnimationData* pAnimation = pBundle->getAnimation(0x324);
-        u8* pPose = pBundle->getRawFileAtOffset(0x2A0);
+        sStaticPoseData* pPose = pBundle->getStaticPose(0x2A0, pAnimation->m2_numBones);
         init3DModelRawData(pThis, &pThis->m9C_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m9C_3dModel);
 
@@ -892,7 +892,8 @@ struct fieldA3_1_startTasks_subTask2 : public s_workAreaTemplateWithArg<fieldA3_
 
         s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
         sAnimationData* pAnimation = pBundle->getAnimation(0x324);
-        u8* pPose = pBundle->getRawFileAtOffset(0x2A0);
+        sStaticPoseData* pPose = pBundle->getStaticPose(0x2A0, pAnimation->m2_numBones);
+
         init3DModelRawData(pThis, &pThis->m78_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m78_3dModel);
 
@@ -935,7 +936,7 @@ struct fieldA3_1_startTasks_subTask3 : public s_workAreaTemplateWithArg<fieldA3_
 
         s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
         sAnimationData* pAnimation = pBundle->getAnimation(0x324);
-        u8* pPose = pBundle->getRawFileAtOffset(0x2A0);
+        sStaticPoseData* pPose = pBundle->getStaticPose(0x2A0, pAnimation->m2_numBones);
 
         init3DModelRawData(pThis, &pThis->m3C_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m3C_3dModel);

@@ -117,7 +117,7 @@ void create_A3_2_crashedImperialShip(s_visdibilityCellTask* r4, s_DataTable2Sub0
 
     s_fileBundle* pBundle = pNewTask->m0_memoryArea.m0_mainMemoryBundle;
     sAnimationData* pAnimation = pBundle->getAnimation(0x580);
-    u8* pPose = pBundle->getRawFileAtOffset(readSaturnU16(r5.m1C_modelData + 2));
+    sStaticPoseData* pPose = pBundle->getStaticPose(readSaturnU16(r5.m1C_modelData + 2), pAnimation->m2_numBones);
 
     init3DModelRawData(pNewTask, &pNewTask->m40_3dModel, 0, pBundle, readSaturnS16(r5.m1C_modelData), pAnimation, pPose, nullptr, nullptr);
     stepAnimation(&pNewTask->m40_3dModel);
@@ -180,7 +180,7 @@ void create_A3_2_crashedImperialShip2(s_visdibilityCellTask* r4, s_DataTable2Sub
 
     s_fileBundle* pBundle = pNewTask->m0_memoryArea.m0_mainMemoryBundle;
     sAnimationData* pAnimation = pBundle->getAnimation(0x57C);
-    u8* pPose = pBundle->getRawFileAtOffset(readSaturnU16(r5.m1C_modelData + 2));
+    sStaticPoseData* pPose = pBundle->getStaticPose(readSaturnU16(r5.m1C_modelData + 2), pAnimation->m2_numBones);
 
     init3DModelRawData(pNewTask, &pNewTask->m34_3dModel, 0, pBundle, readSaturnS16(r5.m1C_modelData), pAnimation, pPose, nullptr, nullptr);
     stepAnimation(&pNewTask->m34_3dModel);

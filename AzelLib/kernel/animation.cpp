@@ -40,29 +40,60 @@ sAnimationData::sAnimationData(u8* base, u32 offset)
     }
 }
 
+u32 sModelHierarchy::countNumberOfBones()
+{
+    u32 count = 1;
+    if (m4_subNode)
+    {
+        count += m4_subNode->countNumberOfBones();
+    }
+    if (m8_nextNode)
+    {
+        count += m8_nextNode->countNumberOfBones();
+    }
+
+    return count;
+}
+
+sStaticPoseData::sStaticPoseData(u8* base, u32 offset, u32 numBones)
+{
+    base += offset;
+    for (int i = 0; i < numBones; i++)
+    {
+        sStaticPoseData::sBonePoseData newPoseData;
+        newPoseData.m0_translation[0] = READ_BE_S32(base); base += 4;
+        newPoseData.m0_translation[1] = READ_BE_S32(base); base += 4;
+        newPoseData.m0_translation[2] = READ_BE_S32(base); base += 4;
+
+        newPoseData.mC_rotation[0] = READ_BE_S32(base); base += 4;
+        newPoseData.mC_rotation[1] = READ_BE_S32(base); base += 4;
+        newPoseData.mC_rotation[2] = READ_BE_S32(base); base += 4;
+
+        newPoseData.m18_scale[0] = READ_BE_S32(base); base += 4;
+        newPoseData.m18_scale[1] = READ_BE_S32(base); base += 4;
+        newPoseData.m18_scale[2] = READ_BE_S32(base); base += 4;
+
+        m0_bones.push_back(newPoseData);
+    }
+}
+
 void copyPosePosition(s_3dModel* pModel)
 {
-    u8* r5 = pModel->m34_pDefaultPose;
+    sStaticPoseData* r5 = pModel->m34_pDefaultPose;
 
     for (u32 i = 0; i < pModel->m12_numBones; i++)
     {
-        pModel->m2C_poseData[i].m0_translation[0] = READ_BE_U32(r5 + 0);
-        pModel->m2C_poseData[i].m0_translation[1] = READ_BE_U32(r5 + 4);
-        pModel->m2C_poseData[i].m0_translation[2] = READ_BE_U32(r5 + 8);
-        r5 += 0x24;
+        pModel->m2C_poseData[i].m0_translation = r5->m0_bones[i].m0_translation;
     }
 }
 
 void copyPoseRotation(s_3dModel* pModel)
 {
-    u8* r5 = pModel->m34_pDefaultPose;
+    sStaticPoseData* r5 = pModel->m34_pDefaultPose;
 
     for (u32 i = 0; i < pModel->m12_numBones; i++)
     {
-        pModel->m2C_poseData[i].mC_rotation[0] = READ_BE_U32(r5 + 0xC);
-        pModel->m2C_poseData[i].mC_rotation[1] = READ_BE_U32(r5 + 0x10);
-        pModel->m2C_poseData[i].mC_rotation[2] = READ_BE_U32(r5 + 0x14);
-        r5 += 0x24;
+        pModel->m2C_poseData[i].mC_rotation = r5->m0_bones[i].mC_rotation;
     }
 }
 
@@ -165,9 +196,7 @@ void modelMode1_position0(s_3dModel* p3dModel)
         }
         else
         {
-            r13_pPoseData->m0_translation[0] = READ_BE_S32(p3dModel->m34_pDefaultPose + 0);
-            r13_pPoseData->m0_translation[1] = READ_BE_S32(p3dModel->m34_pDefaultPose + 4);
-            r13_pPoseData->m0_translation[2] = READ_BE_S32(p3dModel->m34_pDefaultPose + 8);
+            r13_pPoseData->m0_translation = p3dModel->m34_pDefaultPose->m0_bones[0].m0_translation;
 
             stepAnimationTrack(r13_pPoseData->m48[0], r14.m14_trackData[0], r14.m0_tracksLength[0]);
             stepAnimationTrack(r13_pPoseData->m48[1], r14.m14_trackData[1], r14.m0_tracksLength[1]);
@@ -232,7 +261,7 @@ void modelMode5_position0(s_3dModel* pDragonStateData1)
 {
     sPoseData& r14_pPoseData = pDragonStateData1->m2C_poseData[0];
     const sAnimationData::sTrackHeader& r13 = pDragonStateData1->m30_pCurrentAnimation->m8_trackHeader[0];
-    u8* r4 = pDragonStateData1->m34_pDefaultPose;
+    sStaticPoseData* r4 = pDragonStateData1->m34_pDefaultPose;
 
     if (pDragonStateData1->m10_currentAnimationFrame & 3)
     {
@@ -252,9 +281,7 @@ void modelMode5_position0(s_3dModel* pDragonStateData1)
         else
         {
             //6022794
-            r14_pPoseData.m0_translation[0] = READ_BE_S32(r4);
-            r14_pPoseData.m0_translation[1] = READ_BE_S32(r4 + 4);
-            r14_pPoseData.m0_translation[2] = READ_BE_S32(r4 + 8);
+            r14_pPoseData.m0_translation = r4->m0_bones[0].m0_translation;
 
             stepAnimationTrack(r14_pPoseData.m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]);
             stepAnimationTrack(r14_pPoseData.m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]);
@@ -331,7 +358,7 @@ void modelMode4_position0(s_3dModel* p3dModel)
 {
     sPoseData& rootPoseData = p3dModel->m2C_poseData[0];
     const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[0];
-    u8* r4 = p3dModel->m34_pDefaultPose;
+    sStaticPoseData* r4 = p3dModel->m34_pDefaultPose;
 
     if (p3dModel->m10_currentAnimationFrame & 1)
     {
@@ -353,9 +380,7 @@ void modelMode4_position0(s_3dModel* p3dModel)
         }
         else
         {
-            rootPoseData.m0_translation[0] = READ_BE_S32(r4);
-            rootPoseData.m0_translation[1] = READ_BE_S32(r4 + 4);
-            rootPoseData.m0_translation[2] = READ_BE_S32(r4 + 8);
+            rootPoseData.m0_translation = r4->m0_bones[0].m0_translation;
 
             stepAnimationTrack(rootPoseData.m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]);
             stepAnimationTrack(rootPoseData.m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]);
@@ -617,9 +642,7 @@ u32 dragonFieldTaskInitSub3Sub1Sub1(s_3dModel* pModel, sAnimationData* pAnimatio
 
     if ((flags & 8) || (pModel->mA_animationFlags & 0x100))
     {
-        pModel->m2C_poseData[0].m0_translation[0] = READ_BE_U32(pModel->m34_pDefaultPose + 0);
-        pModel->m2C_poseData[0].m0_translation[1] = READ_BE_U32(pModel->m34_pDefaultPose + 4);
-        pModel->m2C_poseData[0].m0_translation[2] = READ_BE_U32(pModel->m34_pDefaultPose + 8);
+        pModel->m2C_poseData[0].m0_translation = pModel->m34_pDefaultPose->m0_bones[0].m0_translation;
     }
 
     if (flags & 0x10)
@@ -764,7 +787,7 @@ u32 updateAndInterpolateAnimation(s_3dModel* pModel)
 
 u32 setupPoseInterpolation(s_3dModel* pModel, u32 interpolationLength)
 {
-    if ((interpolationLength > 0) && (pModel->m38 == 0))
+    if ((interpolationLength > 0) && (pModel->m38_pColorAnim == 0))
     {
         if (pModel->m48_poseDataInterpolation.size())
         {

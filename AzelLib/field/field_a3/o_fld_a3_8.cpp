@@ -34,11 +34,11 @@ void update3dModelDrawFunctionForVertexAnimation(s_3dModel* r4, u8* pData)
 // kernel
 s32 func3dModelSub0(s_3dModel* r4)
 {
-    if (r4->m38 == nullptr)
+    if (r4->m38_pColorAnim == nullptr)
         return 0;
 
     r4->m14++;
-    if (r4->m14 >= READ_BE_S16(r4->m38))
+    if (r4->m14 >= READ_BE_S16(r4->m38_pColorAnim))
     {
         r4->m14 = 0;
     }
@@ -86,9 +86,9 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             updateLCSTarget(&pThis->m68_LCSTarget);
             stepAnimation(&pThis->m18_3dModel);
             func3dModelSub0(&pThis->m18_3dModel);
-            if (pThis->m18_3dModel.m38)
+            if (pThis->m18_3dModel.m38_pColorAnim)
             {
-                if (pThis->m18_3dModel.m14 == READ_BE_S16(pThis->m18_3dModel.m38) - 1)
+                if (pThis->m18_3dModel.m14 == READ_BE_S16(pThis->m18_3dModel.m38_pColorAnim) - 1)
                 {
                     pThis->m9C_status++;
                 }
@@ -104,9 +104,9 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
         case 4: // finish shutdown
             soundFunc(104);
             update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x304));
-            if (pThis->m18_3dModel.m38)
+            if (pThis->m18_3dModel.m38_pColorAnim)
             {
-                pThis->m18_3dModel.m14 = READ_BE_S16(pThis->m18_3dModel.m38) - 1;
+                pThis->m18_3dModel.m14 = READ_BE_S16(pThis->m18_3dModel.m38_pColorAnim) - 1;
             }
             else
             {
@@ -128,9 +128,9 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             updateLCSTarget(&pThis->m68_LCSTarget);
             stepAnimation(&pThis->m18_3dModel);
             func3dModelSub0(&pThis->m18_3dModel);
-            if (pThis->m18_3dModel.m38)
+            if (pThis->m18_3dModel.m38_pColorAnim)
             {
-                if (pThis->m18_3dModel.m14 == READ_BE_S16(pThis->m18_3dModel.m38) - 1)
+                if (pThis->m18_3dModel.m14 == READ_BE_S16(pThis->m18_3dModel.m38_pColorAnim) - 1)
                 {
                     pThis->m9C_status = 0;
                 }
@@ -237,10 +237,10 @@ void fieldA3_8_create_generatorTask(p_workArea workArea)
     pNewTask->m14_rotation = -0x4000000;
 
     s_fileBundle* pBundle = pNewTask->m0_memoryArea.m0_mainMemoryBundle;
-    u8* pAnimation = pBundle->getRawFileAtOffset(0x2FC);
-    u8* pPose = pBundle->getRawFileAtOffset(0x300);
+    sStaticPoseData* pPose = pBundle->getStaticPose(0x2FC, pBundle->getModelHierarchy(40)->countNumberOfBones());
+    u8* colorAnim = pBundle->getRawFileAtOffset(0x300);
 
-    init3DModelRawData(pNewTask, &pNewTask->m18_3dModel, 0, pBundle, 40, NULL, pAnimation, pPose, nullptr);
+    init3DModelRawData(pNewTask, &pNewTask->m18_3dModel, 0, pBundle, 40, NULL, pPose, colorAnim, nullptr);
     stepAnimation(&pNewTask->m18_3dModel);
     func3dModelSub0(&pNewTask->m18_3dModel);
 

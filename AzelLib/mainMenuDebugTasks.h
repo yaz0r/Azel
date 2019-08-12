@@ -68,7 +68,7 @@ extern s_vblankData vblankData;
 
 extern u8 gDragonModel[0x16500];
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, s_fileBundle* pDragonBundle, u16 modelIndexOffset, struct sAnimationData* pAnimationData, u8* pDefaultPose, u8* unkArg2, const s_RiderDefinitionSub* unkArg3);
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, s_fileBundle* pDragonBundle, u16 modelIndexOffset, struct sAnimationData* pAnimationData, struct sStaticPoseData* pDefaultPose, u8* colorAnim, const s_RiderDefinitionSub* unkArg3);
 void initModelDrawFunction(s_3dModel* pDragonStateData1);
 u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, struct sAnimationData* pAnimation);
 s32 riderInit(s_3dModel* r4, struct sAnimationData* pAnimation);

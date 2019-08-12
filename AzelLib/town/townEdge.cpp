@@ -302,7 +302,11 @@ void sEdgeTask::Init(sEdgeTask* pThis, sSaturnPtr arg)
 {
     initEdgeNPC(pThis, arg);
 
-    init3DModelRawData(pThis, &pThis->m34_3dModel, 0x100, pThis->m0_dramAllocation, readSaturnU16(arg + 0x22), nullptr, pThis->m0_dramAllocation->getRawFileAtOffset(readSaturnU16(arg + 0x24)), nullptr, nullptr);
+    s_fileBundle* pBundle = pThis->m0_dramAllocation;
+    u32 modelIndex = readSaturnU16(arg + 0x22);
+    sStaticPoseData* pStaticPoseData = pBundle->getStaticPose(readSaturnU16(arg + 0x24), pBundle->getModelHierarchy(modelIndex)->countNumberOfBones());
+
+    init3DModelRawData(pThis, &pThis->m34_3dModel, 0x100, pBundle, modelIndex, nullptr, pStaticPoseData, nullptr, nullptr);
 
     if (readSaturnU8(arg + 0x21) & 0x40)
     {
