@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "town.h"
 #include "townLCS.h"
+#include "kernel/fileBundle.h"
 
 sResCameraProperties LCSCollisionData;
 
@@ -628,8 +629,8 @@ void findLCSCollisionInCell(sResCameraProperties* r14, sTownCellTask* r12)
         {
             pushCurrentMatrix();
             translateCurrentMatrix(readSaturnVec3(r13 + 4));
-            sProcessed3dModel model(r12->m0_dramAllocation, READ_BE_U32(r12->m0_dramAllocation + readSaturnU32(r13)));
-            s32 r0 = testMeshVisibility(r14, model);
+            sProcessed3dModel* model = r12->m0_dramAllocation->get3DModel(readSaturnU32(r13));
+            s32 r0 = testMeshVisibility(r14, *model);
             if (r0 != -1)
             {
                 if (r0)

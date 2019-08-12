@@ -391,17 +391,6 @@ void modelMode4_position1(s_3dModel* p3dModel)
         {
             pPoseData[i].m0_translation += pPoseData[i].m24_halfTranslation;
         }
-
-        if (p3dModel->m30_pCurrentAnimation->m4_numFrames - 1 > p3dModel->m10_currentAnimationFrame)
-        {
-            for (int i = 0; i < p3dModel->m12_numBones; i++)
-            {
-                const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
-                pPoseData[i].m24_halfTranslation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]);
-                pPoseData[i].m24_halfTranslation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]);
-                pPoseData[i].m24_halfTranslation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], r13.m14_trackData[2], r13.m0_tracksLength[2]);
-            }
-        }
     }
     else
     {
@@ -411,6 +400,17 @@ void modelMode4_position1(s_3dModel* p3dModel)
             assert(pPoseData[i].m48[1].currentStep == 0);
             assert(pPoseData[i].m48[2].currentStep == 0);
 
+            const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
+            pPoseData[i].m0_translation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]);
+            pPoseData[i].m0_translation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]);
+            pPoseData[i].m0_translation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], r13.m14_trackData[2], r13.m0_tracksLength[2]);
+        }
+    }
+
+    if (p3dModel->m30_pCurrentAnimation->m4_numFrames - 1 > p3dModel->m10_currentAnimationFrame)
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
             const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
             pPoseData[i].m24_halfTranslation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]) / 2;
             pPoseData[i].m24_halfTranslation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]) / 2;

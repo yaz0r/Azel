@@ -4,6 +4,7 @@
 #include "town/ruin/twn_ruin.h"
 #include "town/exca/twn_exca.h"
 #include "kernel/vdp1Allocator.h"
+#include "kernel/fileBundle.h"
 
 sTownOverlay* gCurrentTownOverlay = nullptr;
 
@@ -91,7 +92,7 @@ npcFileDeleter* createEnvironmentTask2Sub0Sub0(p_workArea r4_parent, s32 r5)
     }
 
     r14.mC_buffer = r12;
-    r12->m0_dramAllocation = r11_dramAllocation;
+    r12->m0_dramAllocation = new s_fileBundle(r11_dramAllocation);
     r12->m4_vd1Allocation = r13_vdp1Allocation;
     r12->m8 = r14.m0_fileID >> 16;
     r12->mA = r10_vdp1File.m0_fileID >> 16;
@@ -274,7 +275,7 @@ npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32
         loadFile(vramFileName.c_str(), getVdp1Pointer((r14_vdp1Memory->m4_vdp1Memory << 3) + 0x25C00000), 0);
     }
 
-    r13->m0_dramAllocation = r12_dramMemory;
+    r13->m0_dramAllocation = new s_fileBundle(r12_dramMemory);
     r13->m4_vd1Allocation = r14_vdp1Memory;
     r13->mA = -1;
     r13->m8 = -1;
@@ -604,7 +605,7 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
                         u16 offset = readSaturnU16(readSaturnEA(r14) + r4 * 2);
                         if (offset)
                         {
-                            addObjectToDrawList(pThis->m0_dramAllocation, READ_BE_U32(pThis->m0_dramAllocation + offset));
+                            addObjectToDrawList(pThis->m0_dramAllocation->getRawBuffer(), pThis->m0_dramAllocation->getRawFileOffset(offset));
                         }
 
                         popMatrix();

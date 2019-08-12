@@ -2,6 +2,7 @@
 #include "town/town.h"
 #include "twn_ruin.h"
 #include "twn_ruin_lock.h"
+#include "kernel/fileBundle.h"
 
 void sLockTask::Init(sLockTask* pThis, sSaturnPtr r5)
 {
@@ -25,7 +26,7 @@ void sLockTask::Update(sLockTask* pThis)
 
     if (s16 r4 = readSaturnU16(readSaturnEA(pThis->mC + 0x24) + 2))
     {
-        pThis->m10.m40 = READ_BE_U32(pThis->m0_dramAllocation + r4);
+        pThis->m10.m40 = pThis->m0_dramAllocation->getRawFileAtOffset(r4);
     }
     else
     {
@@ -56,7 +57,7 @@ void sLockTask::Draw(sLockTask* pThis)
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->m74_translation);
     rotateCurrentMatrixZYX(pThis->m80_rotation);
-    addObjectToDrawList(pThis->m0_dramAllocation, READ_BE_U32(pThis->m0_dramAllocation + readSaturnU16(pThis->mC + 0x20)));
+    addObjectToDrawList(pThis->m0_dramAllocation->getRawBuffer(), pThis->m0_dramAllocation->getRawFileOffset(readSaturnU16(pThis->mC + 0x20)));
     popMatrix();
 }
 

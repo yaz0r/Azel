@@ -91,7 +91,7 @@ struct s_workAreaTemplate : public s_workAreaTemplateWithArg<T>
 
 struct s_workAreaCopy : public s_workArea
 {
-    u8* m0_dramAllocation;
+    struct s_fileBundle* m0_dramAllocation;
     struct s_vdp1AllocationNode* m4_vd1Allocation;
 };
 

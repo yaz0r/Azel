@@ -4,6 +4,7 @@
 #include "townLCS.h"
 #include "town/ruin/twn_ruin.h"
 #include "kernel/cinematicBarsTask.h"
+#include "kernel/fileBundle.h"
 
 #include <map>
 
@@ -951,13 +952,13 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
         sSaturnPtr r14 = readSaturnEA(r13->m8 + 0x14);
         while (readSaturnU32(r14))
         {
-            sProcessed3dModel mesh(r13->m0_dramAllocation, READ_BE_U32(r13->m0_dramAllocation + readSaturnU32(r14)));
+            sProcessed3dModel* mesh = r13->m0_dramAllocation->get3DModel(readSaturnU32(r14));
             sVec3_FP meshPositionInCell = readSaturnVec3(r14 + 4);
-            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(mesh.m0_radius + r12->m4_collisionRadius))
+            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(mesh->m0_radius + r12->m4_collisionRadius))
             {
                 pushCurrentMatrix();
                 translateCurrentMatrix(meshPositionInCell);
-                processTownMeshCollision(r12, &mesh);
+                processTownMeshCollision(r12, mesh);
                 popMatrix();
             }
 

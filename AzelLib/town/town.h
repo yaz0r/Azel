@@ -60,7 +60,7 @@ struct sMainLogic_74
     sVec3_FP* m34_pRotation;
     p_workArea m38_pOwner;
     sSaturnPtr m3C_scriptEA;
-    u32 m40;
+    u8* m40;
     s32 m44;
     sMainLogic_74* m48;
     sVec3_FP m4C;
