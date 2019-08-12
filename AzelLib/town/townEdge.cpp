@@ -70,8 +70,8 @@ void applyAnimation2(u8* base, u32 offset, std::vector<sPoseDataInterpolation>::
 void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 {
     std::vector<sPoseData>::iterator r14_pose = pModel->m2C_poseData.begin();
-    u8* r12 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
-    r12 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+    u8* r12 = pModel->m4_pModelFile->getRawFileAtOffset(pModel->mC_modelIndexOffset);
+    r12 = pModel->m4_pModelFile->getRawBuffer() + READ_BE_U32(r12 + 4);
 
     pushCurrentMatrix();
     {
@@ -88,10 +88,10 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 
             if (READ_BE_U32(r12))
             {
-                addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r12));
+                addObjectToDrawList(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r12));
             }
 
-            u8* r13 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+            u8* r13 = pModel->m4_pModelFile->getRawBuffer() + READ_BE_U32(r12 + 4);
             pushCurrentMatrix();
             {
                 r14_pose++;
@@ -102,13 +102,13 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 
                 if (READ_BE_U32(r13))
                 {
-                    addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r13));
+                    addObjectToDrawList(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13));
                 }
 
                 if (READ_BE_U32(r13 + 4))
                 {
                     r14_pose++;
-                    applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r13 + 4), r14_pose);
+                    applyAnimation(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13 + 4), r14_pose);
                 }
             }
             popMatrix();
@@ -116,7 +116,7 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
             if (READ_BE_U32(r13 + 8))
             {
                 r14_pose++;
-                applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r13 + 8), r14_pose);
+                applyAnimation(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13 + 8), r14_pose);
             }
         }
         popMatrix();
@@ -124,7 +124,7 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
         if (READ_BE_U32(r12 + 8))
         {
             r14_pose++;
-            applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r12 + 8), r14_pose);
+            applyAnimation(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r12 + 8), r14_pose);
         }
     }
     popMatrix();
@@ -134,8 +134,8 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
 {
     std::vector<sPoseDataInterpolation>::iterator r14_pose = pModel->m48_poseDataInterpolation.begin();
-    u8* r12 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
-    r12 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+    u8* r12 = pModel->m4_pModelFile->getRawFileAtOffset(pModel->mC_modelIndexOffset);
+    r12 = pModel->m4_pModelFile->getRawBuffer() + READ_BE_U32(r12 + 4);
 
     pushCurrentMatrix();
     {
@@ -152,10 +152,10 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
 
             if (READ_BE_U32(r12))
             {
-                addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r12));
+                addObjectToDrawList(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r12));
             }
 
-            u8* r13 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+            u8* r13 = pModel->m4_pModelFile->getRawBuffer() + READ_BE_U32(r12 + 4);
             pushCurrentMatrix();
             {
                 r14_pose++;
@@ -166,13 +166,13 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
 
                 if (READ_BE_U32(r13))
                 {
-                    addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r13));
+                    addObjectToDrawList(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13));
                 }
 
                 if (READ_BE_U32(r13 + 4))
                 {
                     r14_pose++;
-                    applyAnimation2(pModel->m4_pModelFile, READ_BE_U32(r13 + 4), r14_pose);
+                    applyAnimation2(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13 + 4), r14_pose);
                 }
             }
             popMatrix();
@@ -180,7 +180,7 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
             if (READ_BE_U32(r13 + 8))
             {
                 r14_pose++;
-                applyAnimation2(pModel->m4_pModelFile, READ_BE_U32(r13 + 8), r14_pose);
+                applyAnimation2(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r13 + 8), r14_pose);
             }
         }
         popMatrix();
@@ -188,7 +188,7 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
         if (READ_BE_U32(r12 + 8))
         {
             r14_pose++;
-            applyAnimation2(pModel->m4_pModelFile, READ_BE_U32(r12 + 8), r14_pose);
+            applyAnimation2(pModel->m4_pModelFile->getRawBuffer(), READ_BE_U32(r12 + 8), r14_pose);
         }
     }
     popMatrix();
@@ -302,7 +302,7 @@ void sEdgeTask::Init(sEdgeTask* pThis, sSaturnPtr arg)
 {
     initEdgeNPC(pThis, arg);
 
-    init3DModelRawData(pThis, &pThis->m34_3dModel, 0x100, pThis->m0_dramAllocation->getRawBuffer(), readSaturnU16(arg + 0x22), nullptr, pThis->m0_dramAllocation->getRawFileAtOffset(readSaturnU16(arg + 0x24)), nullptr, nullptr);
+    init3DModelRawData(pThis, &pThis->m34_3dModel, 0x100, pThis->m0_dramAllocation, readSaturnU16(arg + 0x22), nullptr, pThis->m0_dramAllocation->getRawFileAtOffset(readSaturnU16(arg + 0x24)), nullptr, nullptr);
 
     if (readSaturnU8(arg + 0x21) & 0x40)
     {

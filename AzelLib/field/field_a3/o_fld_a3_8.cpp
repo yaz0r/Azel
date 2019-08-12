@@ -2,6 +2,7 @@
 #include "o_fld_a3_0.h"
 #include "o_fld_a3_4.h"
 #include "kernel/animation.h"
+#include "kernel/fileBundle.h"
 
 struct fieldA3_8_exitTask : public s_workAreaTemplate<fieldA3_8_exitTask>
 {
@@ -235,8 +236,11 @@ void fieldA3_8_create_generatorTask(p_workArea workArea)
     pNewTask->m8_position = readSaturnVec3(gFLD_A3->getSaturnPtr(0x608EEEC));
     pNewTask->m14_rotation = -0x4000000;
 
-    u8* p3dModelRawData = pNewTask->m0_memoryArea.m0_mainMemory;
-    init3DModelRawData(pNewTask, &pNewTask->m18_3dModel, 0, p3dModelRawData, 40, NULL, p3dModelRawData + READ_BE_U32(p3dModelRawData + 0x2FC), p3dModelRawData + READ_BE_U32(p3dModelRawData + 0x300), nullptr);
+    s_fileBundle* pBundle = pNewTask->m0_memoryArea.m0_mainMemoryBundle;
+    u8* pAnimation = pBundle->getRawFileAtOffset(0x2FC);
+    u8* pPose = pBundle->getRawFileAtOffset(0x300);
+
+    init3DModelRawData(pNewTask, &pNewTask->m18_3dModel, 0, pBundle, 40, NULL, pAnimation, pPose, nullptr);
     stepAnimation(&pNewTask->m18_3dModel);
     func3dModelSub0(&pNewTask->m18_3dModel);
 

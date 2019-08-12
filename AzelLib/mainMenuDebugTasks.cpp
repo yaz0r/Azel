@@ -3,6 +3,7 @@
 #include "town/townDebugSelect.h"
 #include "kernel/animation.h"
 #include "kernel/vdp1Allocator.h"
+#include "kernel/fileBundle.h"
 
 s_exitMenuTaskSub1Task* gExitMenuTaskSub1Task = nullptr;
 
@@ -1021,13 +1022,13 @@ void modelDrawFunction1(s_3dModel* pDragonStateData1)
 
     if (pDragonStateData1->m8 & 1)
     {
-        u8* r4 = pDragonStateData1->m4_pModelFile + READ_BE_U32(pDragonStateData1->m4_pModelFile + pDragonStateData1->mC_modelIndexOffset);
-        submitModelToRendering(pDragonStateData1->m4_pModelFile, r4, var_8, var_4, var_0);
+        u8* r4 = pDragonStateData1->m4_pModelFile->getRawFileAtOffset(pDragonStateData1->mC_modelIndexOffset);
+        submitModelToRendering(pDragonStateData1->m4_pModelFile->getRawBuffer(), r4, var_8, var_4, var_0);
     }
     else
     {
-        u8* r4 = pDragonStateData1->m4_pModelFile + READ_BE_U32(pDragonStateData1->m4_pModelFile + pDragonStateData1->mC_modelIndexOffset);
-        modeDrawFunction1Sub2(pDragonStateData1->m4_pModelFile, r4, var_8, var_4, var_0);
+        u8* r4 = pDragonStateData1->m4_pModelFile->getRawFileAtOffset(pDragonStateData1->mC_modelIndexOffset);
+        modeDrawFunction1Sub2(pDragonStateData1->m4_pModelFile->getRawBuffer(), r4, var_8, var_4, var_0);
     }
 }
 void modelDrawFunction2(s_3dModel* pModel)
@@ -1047,34 +1048,34 @@ void modelDrawFunction6(s_3dModel* pModel)
     std::vector<std::vector<sVec3_FP>>::iterator var_0 = pModel->m44.begin();
     std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
     const s_RiderDefinitionSub* var_4 = pModel->m40;
-    u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+    u8* r4 = pModel->m4_pModelFile->getRawFileAtOffset(pModel->mC_modelIndexOffset);
 
     if (pModel->m8 & 1)
     {
-        modeDrawFunction6Sub1(pModel->m4_pModelFile, r4, pPoseData, var_4, var_0);
+        modeDrawFunction6Sub1(pModel->m4_pModelFile->getRawBuffer(), r4, pPoseData, var_4, var_0);
     }
     else
     {
-        modeDrawFunction6Sub2(pModel->m4_pModelFile, r4, pPoseData, var_4, var_0);
+        modeDrawFunction6Sub2(pModel->m4_pModelFile->getRawBuffer(), r4, pPoseData, var_4, var_0);
     }
 }
 void modelDrawFunction9(s_3dModel* pModel)
 {
     if (pModel->m8 & 1)
     {
-        u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+        u8* r4 = pModel->m4_pModelFile->getRawFileAtOffset(pModel->mC_modelIndexOffset);
         std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
         FunctionUnimplemented(); // TODO: should be vertex colored variant!
-        modeDrawFunction10Sub1(pModel->m4_pModelFile, r4, pPoseData); 
+        modeDrawFunction10Sub1(pModel->m4_pModelFile->getRawBuffer(), r4, pPoseData);
     }
 }
 void modelDrawFunction10(s_3dModel* pModel)
 {
     if (pModel->m8 & 1)
     {
-        u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+        u8* r4 = pModel->m4_pModelFile->getRawFileAtOffset(pModel->mC_modelIndexOffset);
         std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
-        modeDrawFunction10Sub1(pModel->m4_pModelFile, r4, pPoseData);
+        modeDrawFunction10Sub1(pModel->m4_pModelFile->getRawBuffer(), r4, pPoseData);
     }
 }
 
@@ -1258,10 +1259,10 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     return true;
 }
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 animationFlags, u8* pDragonModel, u16 modelIndexOffset, u8* pAnimationData, u8* pDefaultPose, u8* unkArg2, const s_RiderDefinitionSub* unkArg3)
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, u8* pAnimationData, u8* pDefaultPose, u8* unkArg2, const s_RiderDefinitionSub* unkArg3)
 {
     pDragonStateData1->m0_pOwnerTask = pWorkArea;
-    pDragonStateData1->m4_pModelFile = pDragonModel;
+    pDragonStateData1->m4_pModelFile = pDragonBundle;
     pDragonStateData1->mC_modelIndexOffset = modelIndexOffset;
     pDragonStateData1->m34_pDefaultPose = pDefaultPose;
     pDragonStateData1->m38 = unkArg2;
@@ -1278,7 +1279,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32
     {
         pDragonStateData1->mA_animationFlags = animationFlags;
         pDragonStateData1->m12_numBones = 0;
-        countNumBonesInModel(pDragonStateData1, pDragonModel + READ_BE_U32(pDragonModel + pDragonStateData1->mC_modelIndexOffset), pDragonModel);
+        countNumBonesInModel(pDragonStateData1, pDragonBundle->getRawFileAtOffset(pDragonStateData1->mC_modelIndexOffset), pDragonBundle->getRawBuffer());
     }
 
     pDragonStateData1->m2C_poseData.resize(pDragonStateData1->m12_numBones);
@@ -1532,6 +1533,7 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     s_dragonState* pDragonState = createSubTaskFromFunction<s_dragonState>(pWorkArea, nullptr);
 
     pDragonState->m0_pDragonModelRawData = gDragonModel;
+    pDragonState->m0_pDragonModelBundle = new s_fileBundle(gDragonModel);
     pDragonState->mC_dragonType = dragonLevel;
     pDragonState->m14_modelIndex = pDragonData3->m_m8[0].m_m0[0];
     pDragonState->m18_shadowModelIndex = pDragonData3->m_m8[0].m_m0[1];
@@ -1539,11 +1541,10 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     pDragonState->m24_dragonAnimCount = pDragonAnimOffsets->m_count;
     pDragonState->m88 = 1;
 
-    u8* pDragonModel = pDragonState->m0_pDragonModelRawData;
-    u8* pDefaultAnimationData = pDragonModel + READ_BE_U32(pDragonModel + pDragonState->m20_dragonAnimOffsets[0]);
-    u8* defaultPose = pDragonModel + READ_BE_U32(pDragonModel + pDragonData3->m_m8[0].m_m0[2]);
+    u8* pDefaultAnimationData = pDragonState->m0_pDragonModelBundle->getRawFileAtOffset(pDragonState->m20_dragonAnimOffsets[0]);
+    u8* defaultPose = pDragonState->m0_pDragonModelBundle->getRawFileAtOffset(pDragonData3->m_m8[0].m_m0[2]);
 
-    init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonModel, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m_m8);
+    init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonState->m0_pDragonModelBundle, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m_m8);
 
     init3DModelAnims(pDragonState, &pDragonState->m28_dragon3dModel, &pDragonState->m78_animData, getDragonDataByIndex(dragonLevel));
 
@@ -1689,7 +1690,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
 {
     const s_RiderDefinition* r13 = &gRiderTable[riderType];
 
-    u8* pModelData1 = NULL;
+    u8* pAnimation = NULL;
 
     s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
 
@@ -1713,6 +1714,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
         }
 
         loadFile(r13->m_MCBName, riderModel, 0x2C00);
+        pLoadRiderWorkArea->m0_riderBundle = new s_fileBundle(riderModel);
 
         if (r13->m_CGBName)
         {
@@ -1724,10 +1726,10 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
         assert(0);
     }
 
-    u8* pModel = pLoadRiderWorkArea->m0_riderModel;
-    u8* pDefaultPose = pModel + READ_BE_U32(pModel + r13->m_flags2);
+    s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
+    u8* pDefaultPose = pBundle->getRawFileAtOffset(r13->mA_offsetToDefaultPose);
 
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pModel, pLoadRiderWorkArea->m_modelIndex, pModelData1, pDefaultPose, 0, r13->m_pExtraData);
+    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
 
     return pLoadRiderWorkArea;
 }
@@ -1736,7 +1738,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
 {
     const s_RiderDefinition* r13 = &gRiderTable[riderType];
 
-    u8* pModelData1 = NULL;
+    u8* pAnimation = NULL;
 
     s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
 
@@ -1750,6 +1752,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
     if (riderType < 6)
     {
         pLoadRiderWorkArea->m0_riderModel = rider2Model;
+
         if (riderType == 1)
         {
             pLoadRiderWorkArea->m_14 = 0x24;
@@ -1760,6 +1763,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
         }
 
         loadFile(r13->m_MCBName, rider2Model, 0x2E80);
+        pLoadRiderWorkArea->m0_riderBundle = new s_fileBundle(rider2Model);
 
         if (r13->m_CGBName)
         {
@@ -1771,10 +1775,10 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
         assert(0);
     }
 
-    u8* pModel = pLoadRiderWorkArea->m0_riderModel;
-    u8* pModelData2 = pModel + READ_BE_U32(pModel + r13->m_flags2);
+    s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
+    u8* pDefaultPose = pBundle->getRawFileAtOffset(r13->mA_offsetToDefaultPose);
 
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pModel, pLoadRiderWorkArea->m_modelIndex, pModelData1, pModelData2, 0, r13->m_pExtraData);
+    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
 
     return pLoadRiderWorkArea;
 }
@@ -1923,9 +1927,9 @@ void s_FieldSubTaskWorkArea::Update(s_FieldSubTaskWorkArea* pFieldSubTaskWorkAre
 
 void s_FieldSubTaskWorkArea::Draw(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 {
-    if (pFieldSubTaskWorkArea->pUpdateFunction1)
+    if (pFieldSubTaskWorkArea->m374_pUpdateFunction1)
     {
-        pFieldSubTaskWorkArea->pUpdateFunction1();
+        pFieldSubTaskWorkArea->m374_pUpdateFunction1();
     }
 
     if (pFieldSubTaskWorkArea->pUpdateFunction2)
@@ -4146,14 +4150,14 @@ void playAnimationGenericSub0Sub0(u8* pModelDataRoot, u8* pModelData, std::vecto
 
 void playAnimationGenericSub0(s_3dModel* pModel)
 {
-    u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+    u8* r4 = pModel->m4_pModelFile->getRawFileAtOffset(pModel->mC_modelIndexOffset);
 
     if (pModel->m8 & 1)
     {
         std::vector<sPoseDataInterpolation>::iterator r5 = pModel->m48_poseDataInterpolation.begin();
         const s_RiderDefinitionSub* r6 = pModel->m40;
         std::vector<std::vector<sVec3_FP>>::iterator r7 = pModel->m44.begin();
-        playAnimationGenericSub0Sub0(pModel->m4_pModelFile, r4, r5, r6, r7);
+        playAnimationGenericSub0Sub0(pModel->m4_pModelFile->getRawBuffer(), r4, r5, r6, r7);
     }
     else
     {
@@ -4166,9 +4170,9 @@ void playAnimationGenericSub1(s_3dModel* pModel)
 {
     if (pModel->m8 & 1)
     {
-        u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+        u8* r4 = pModel->m4_pModelFile->getRawFileAtOffset(pModel->mC_modelIndexOffset);
         std::vector<sPoseDataInterpolation>::iterator r5 = pModel->m48_poseDataInterpolation.begin();
-        playAnimationGenericSub1Sub0(pModel->m4_pModelFile, r4, r5);
+        playAnimationGenericSub1Sub0(pModel->m4_pModelFile->getRawBuffer(), r4, r5);
     }
 }
 

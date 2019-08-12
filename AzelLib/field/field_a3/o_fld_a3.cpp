@@ -1415,7 +1415,7 @@ s_DataTable2* readDataTable2(sSaturnPtr EA)
                 newEntry.m10_rotation[1] = readSaturnS16(cellEA + 0x12);
                 newEntry.m10_rotation[2] = readSaturnS16(cellEA + 0x14);
                 newEntry.m18 = readSaturnS32(cellEA + 0x18);
-                newEntry.m1C = readSaturnEA(cellEA + 0x1C);
+                newEntry.m1C_modelData = readSaturnEA(cellEA + 0x1C);
 
                 pNewData2->m0[i].push_back(newEntry);
 
@@ -6119,7 +6119,7 @@ void updateCameraFromDragon()
     {
         if (updateCameraFromDragonSub1(i))
         {
-            if (getFieldTaskPtr()->m8_pSubFieldData->debugMenuStatus1[i] == 0)
+            if (getFieldTaskPtr()->m8_pSubFieldData->m37C_debugMenuStatus1[i] == 0)
             {
                 sFieldCameraStatus* pFieldCameraStatus = &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4[i];
                 if (pFieldCameraStatus->m78)
@@ -6665,27 +6665,27 @@ void createRandomBattleTask(s_workArea* pWorkArea)
 void fieldDebugMenuUpdate1()
 {
     s_FieldSubTaskWorkArea* pSubFieldData = getFieldTaskPtr()->m8_pSubFieldData;
-    if ((pSubFieldData->debugMenuStatus1[0] == 0) && (pSubFieldData->m369 == 0))
+    if ((pSubFieldData->m37C_debugMenuStatus1[0] == 0) && (pSubFieldData->m369 == 0))
     {
-        if (pSubFieldData->debugMenuStatus3 == 0)
+        if (pSubFieldData->m380_debugMenuStatus3 == 0)
         {
             if (readKeyboardToggle(0x84))
             {
-                pSubFieldData->debugMenuStatus1[1]++;
-                pSubFieldData->debugMenuStatus2_a = 0;
+                pSubFieldData->m37C_debugMenuStatus1[1]++;
+                pSubFieldData->m37E_debugMenuStatus2_a = 0;
                 clearVdp2TextMemory();
             }
             else
             {
                 if (readKeyboardToggle(0xF6))
                 {
-                    pSubFieldData->debugMenuStatus1[1] = 0;
+                    pSubFieldData->m37C_debugMenuStatus1[1] = 0;
                     clearVdp2TextMemory();
                 }
             }
         }
 
-        switch (pSubFieldData->debugMenuStatus1[1])
+        switch (pSubFieldData->m37C_debugMenuStatus1[1])
         {
         case 0:
             break;
@@ -6694,7 +6694,7 @@ void fieldDebugMenuUpdate1()
             break;
         }
 
-        if (pSubFieldData->debugMenuStatus1[1])
+        if (pSubFieldData->m37C_debugMenuStatus1[1])
         {
             getFieldTaskPtr()->m28_status |= 8;
         }
@@ -6771,7 +6771,7 @@ bool initField(p_workArea workArea, const s_MCB_CGB* fieldFileList, u32 arg)
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50D = 1;
 
     getFieldTaskPtr()->m8_pSubFieldData->pUpdateFunction2 = fieldDebugMenuUpdate2;
-    getFieldTaskPtr()->m8_pSubFieldData->pUpdateFunction1 = fieldDebugMenuUpdate1;
+    getFieldTaskPtr()->m8_pSubFieldData->m374_pUpdateFunction1 = fieldDebugMenuUpdate1;
 
     pauseEngine[2] = 1;
 

@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "kernel/animation.h"
+#include "kernel/fileBundle.h"
 #include "a3_2_crashedImperialShip.h"
 
 void fieldA3_2_createCrashedImpertialShipExplosions(p_workArea)
@@ -114,7 +115,11 @@ void create_A3_2_crashedImperialShip(s_visdibilityCellTask* r4, s_DataTable2Sub0
     pNewTask->m24_rotation = r5.m10_rotation;
     pNewTask->m2C_LCSTargetLocation = pNewTask->mC_position + sVec3_FP(0, -0x3C000, 0xA000);
 
-    init3DModelRawData(pNewTask, &pNewTask->m40_3dModel, 0, pNewTask->m0_memoryArea.m0_mainMemory, readSaturnS16(r5.m1C), pNewTask->m0_memoryArea.m0_mainMemory + READ_BE_U32(pNewTask->m0_memoryArea.m0_mainMemory + 0x580), pNewTask->m0_memoryArea.m0_mainMemory + READ_BE_U32(pNewTask->m0_memoryArea.m0_mainMemory + readSaturnU16(r5.m1C + 2)), nullptr, nullptr);
+    s_fileBundle* pBundle = pNewTask->m0_memoryArea.m0_mainMemoryBundle;
+    u8* pAnimation = pBundle->getRawFileAtOffset(0x580);
+    u8* pPose = pBundle->getRawFileAtOffset(readSaturnU16(r5.m1C_modelData + 2));
+
+    init3DModelRawData(pNewTask, &pNewTask->m40_3dModel, 0, pBundle, readSaturnS16(r5.m1C_modelData), pAnimation, pPose, nullptr, nullptr);
     stepAnimation(&pNewTask->m40_3dModel);
 
     createLCSTarget(&pNewTask->m90_LCSTarget, pNewTask, &fieldA3_2_crashedImpertialShip_LCSCallback, &pNewTask->m2C_LCSTargetLocation, nullptr, 0, 0, 140, 1, 0);
@@ -173,7 +178,11 @@ void create_A3_2_crashedImperialShip2(s_visdibilityCellTask* r4, s_DataTable2Sub
     pNewTask->mC_position = r5.m4_position;
     pNewTask->m24_rotation = r5.m10_rotation;
 
-    init3DModelRawData(pNewTask, &pNewTask->m34_3dModel, 0, pNewTask->m0_memoryArea.m0_mainMemory, readSaturnS16(r5.m1C), pNewTask->m0_memoryArea.m0_mainMemory + READ_BE_U32(pNewTask->m0_memoryArea.m0_mainMemory + 0x57C), pNewTask->m0_memoryArea.m0_mainMemory + READ_BE_U32(pNewTask->m0_memoryArea.m0_mainMemory + readSaturnU16(r5.m1C + 2)), nullptr, nullptr);
+    s_fileBundle* pBundle = pNewTask->m0_memoryArea.m0_mainMemoryBundle;
+    u8* pAnimation = pBundle->getRawFileAtOffset(0x57C);
+    u8* pPose = pBundle->getRawFileAtOffset(readSaturnU16(r5.m1C_modelData + 2));
+
+    init3DModelRawData(pNewTask, &pNewTask->m34_3dModel, 0, pBundle, readSaturnS16(r5.m1C_modelData), pAnimation, pPose, nullptr, nullptr);
     stepAnimation(&pNewTask->m34_3dModel);
 
     pNewTask->m30_status = 0;

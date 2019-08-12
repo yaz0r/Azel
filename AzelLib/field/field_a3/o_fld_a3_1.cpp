@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "kernel/animation.h"
+#include "kernel/fileBundle.h"
 #include "a3_background_layer.h"
 // Above Excavation
 
@@ -325,11 +326,11 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         {
         case 0:
         {
-            u8* pModel = pThis->m0.m0_mainMemory;
-            u8* pModelData1 = pModel + READ_BE_U32(pModel + 0x1A0);
-            u8* pDefaultPose = pModel + READ_BE_U32(pModel + LCSItemBox_Table2[r13->m42]);
+            s_fileBundle* pBundle = pThis->m0.m0_mainMemoryBundle;
+            u8* pAnimation = pBundle->getRawFileAtOffset(0x1A0);
+            u8* pDefaultPose = pBundle->getRawFileAtOffset(LCSItemBox_Table2[r13->m42]);
 
-            init3DModelRawData(pThis, &pThis->m98_3dModel, 0, pModel, LCSItemBox_Table3[r13->m42], pModelData1, pDefaultPose, 0, 0);
+            init3DModelRawData(pThis, &pThis->m98_3dModel, 0, pBundle, LCSItemBox_Table3[r13->m42], pAnimation, pDefaultPose, 0, 0);
 
             if (pThis->m80 > 0)
             {
@@ -843,8 +844,10 @@ struct fieldA3_1_startTasks_subTask : public s_workAreaTemplateWithArg<fieldA3_1
     {
         getMemoryArea(&pThis->m0_memoryArea, 3);
 
-        u8* p3dModelRawData = pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory);
-        init3DModelRawData(pThis, &pThis->m9C_3dModel, 0, p3dModelRawData, 4, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x324), pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x2A0), 0, nullptr);
+        s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+        u8* pAnimation = pBundle->getRawFileAtOffset(0x324);
+        u8* pPose = pBundle->getRawFileAtOffset(0x2A0);
+        init3DModelRawData(pThis, &pThis->m9C_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m9C_3dModel);
 
         pThis->m8_translation = readSaturnVec3(arg);
@@ -887,8 +890,10 @@ struct fieldA3_1_startTasks_subTask2 : public s_workAreaTemplateWithArg<fieldA3_
     {
         getMemoryArea(&pThis->m0_memoryArea, 3);
 
-        u8* p3dModelRawData = pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory);
-        init3DModelRawData(pThis, &pThis->m78_3dModel, 0, p3dModelRawData, 4, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x324), pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x2A0), 0, nullptr);
+        s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+        u8* pAnimation = pBundle->getRawFileAtOffset(0x324);
+        u8* pPose = pBundle->getRawFileAtOffset(0x2A0);
+        init3DModelRawData(pThis, &pThis->m78_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m78_3dModel);
 
         pThis->m8_translation = readSaturnVec3(arg);
@@ -928,8 +933,11 @@ struct fieldA3_1_startTasks_subTask3 : public s_workAreaTemplateWithArg<fieldA3_
     {
         getMemoryArea(&pThis->m0_memoryArea, 3);
 
-        u8* p3dModelRawData = pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory);
-        init3DModelRawData(pThis, &pThis->m3C_3dModel, 0, p3dModelRawData, 4, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x324), pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x2A0), 0, nullptr);
+        s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+        u8* pAnimation = pBundle->getRawFileAtOffset(0x324);
+        u8* pPose = pBundle->getRawFileAtOffset(0x2A0);
+
+        init3DModelRawData(pThis, &pThis->m3C_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m3C_3dModel);
 
         pThis->m8_translation = readSaturnVec3(arg);

@@ -468,7 +468,7 @@ struct s_RiderDefinition
     const char* m_MCBName; //0
     const char* m_CGBName; //4
     u16 m_flags; //8
-    u16 m_flags2; //A
+    u16 mA_offsetToDefaultPose; //A
     const s_RiderDefinitionSub* m_pExtraData; //C
 };
 
@@ -527,7 +527,7 @@ struct sPoseDataInterpolation
 struct s_3dModel
 {
     s_workArea* m0_pOwnerTask; //0
-    u8* m4_pModelFile; //4
+    struct s_fileBundle* m4_pModelFile; //4
 
     u16 m8; //8 2 = m3C_boneMatrices is allocated
     u16 mA_animationFlags; //A 0x100: only root has translation
@@ -602,6 +602,7 @@ struct s_dragonState : public s_workAreaTemplate<s_dragonState>
     }
 
     u8* m0_pDragonModelRawData; //0
+    struct s_fileBundle* m0_pDragonModelBundle;
     u32 mC_dragonType;//C F can contain some other info
     s16 m10_cursorX;//10
     s16 m12_cursorY;//12
