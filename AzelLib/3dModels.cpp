@@ -1,4 +1,6 @@
 #include "PDS.h"
+#include "kernel/animation.h"
+#include "kernel/fileBundle.h"
 
 void modeDrawFunction6Sub2(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
@@ -10,56 +12,40 @@ void modeDrawFunction1Sub2(sModelHierarchy* pModelData, std::vector<sMatrix4x3>:
     assert(0);
 }
 
-void LCSItemBox_DrawType0Sub0Sub0(u8* pModelDataRoot, u8* r4, u8** r5)
+void LCSItemBox_DrawType0Sub0Sub0(sModelHierarchy* pHierarchy, std::vector<sStaticPoseData::sBonePoseData>::const_iterator& r5)
 {
     do
     {
         pushCurrentMatrix();
 
-        ItemBoxModelData temp;
-        temp.m0_position[0] = READ_BE_S32(*r5 + 0);
-        temp.m0_position[1] = READ_BE_S32(*r5 + 4);
-        temp.m0_position[2] = READ_BE_S32(*r5 + 8);
+        translateCurrentMatrix(&r5->m0_translation);
+        rotateCurrentMatrixZYX(&r5->mC_rotation);
 
-        temp.mC_rotation[0] = READ_BE_S32(*r5 + 0xC);
-        temp.mC_rotation[1] = READ_BE_S32(*r5 + 0x10);
-        temp.mC_rotation[2] = READ_BE_S32(*r5 + 0x14);
-
-        temp.m18_scale[0] = READ_BE_S32(*r5 + 0x18);
-        temp.m18_scale[1] = READ_BE_S32(*r5 + 0x1C);
-        temp.m18_scale[2] = READ_BE_S32(*r5 + 0x20);
-
-        translateCurrentMatrix(&temp.m0_position);
-        rotateCurrentMatrixZYX(&temp.mC_rotation);
-
-        if (u32 meshOffset = READ_BE_U32(r4))
+        if (pHierarchy->m0_3dModel)
         {
-            addObjectToDrawList(pModelDataRoot, meshOffset);
+            addObjectToDrawList(pHierarchy->m0_3dModel);
         }
-        if (u32 subMeshOffset = READ_BE_U32(r4 + 4))
+        if (pHierarchy->m4_subNode)
         {
-            *r5 += 0x24;
-            LCSItemBox_DrawType0Sub0Sub0(pModelDataRoot, pModelDataRoot + subMeshOffset, r5);
+            r5++;
+            LCSItemBox_DrawType0Sub0Sub0(pHierarchy, r5);
         }
 
         popMatrix();
 
-        u32 nextMeshOffset = READ_BE_U32(r4 + 8);
-
-        if (nextMeshOffset == 0)
+        if (pHierarchy->m8_nextNode == nullptr)
             break;
 
-        *r5 += 0x24;
-        r4 = pModelDataRoot + nextMeshOffset;
+        r5++;
+        pHierarchy = pHierarchy->m8_nextNode;
 
     } while (1);
 }
 
-void LCSItemBox_DrawType0Sub0(u8* r4, s16 r5, s16 r6)
+void LCSItemBox_DrawType0Sub0(s_fileBundle* r4, s16 r5, s16 r6)
 {
-    u8* varC = r4;
-    s16 var8 = r5;
-    u8* var15 = varC + READ_BE_U32(varC + r6);
+    sModelHierarchy* pHierarchy = r4->getModelHierarchy(r5);
+    sStaticPoseData* pStaticPose = r4->getStaticPose(r6, pHierarchy->countNumberOfBones());
 
-    LCSItemBox_DrawType0Sub0Sub0(r4, varC + READ_BE_U32(varC + var8), &var15);
+    LCSItemBox_DrawType0Sub0Sub0(pHierarchy, pStaticPose->m0_bones.begin());
 }

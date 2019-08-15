@@ -689,9 +689,9 @@ void sEdgeTask::Draw(sEdgeTask* pThis)
     rotateCurrentMatrixShiftedY(0x8000000);
 
     // draw the shadow
-    if (pThis->mF & 0x80)
+    if ((pThis->mF & 0x80) == 0)
     {
-        addObjectToDrawList(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawBuffer(), dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawFileOffset(readSaturnU16(pThis->m30_animationTable + 2)));
+        addObjectToDrawList(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->get3DModel(readSaturnU16(pThis->m30_animationTable + 2)));
     }
 
     if (pThis->m34_3dModel.m48_poseDataInterpolation.size())

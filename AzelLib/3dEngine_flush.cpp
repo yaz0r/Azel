@@ -125,27 +125,6 @@ struct KeyHasher
 
 static std::unordered_map<sKey, sProcessed3dModel*, KeyHasher> modelMap;
 
-void addObjectToDrawList(u8* pObjectData, u32 offset)
-{
-    sKey thisKey;
-    thisKey.pObjectData = pObjectData;
-    thisKey.offset = offset;
-
-    sProcessed3dModel* pModel = NULL;
-    auto search = modelMap.find(thisKey);
-    if (search != modelMap.end())
-    {
-        pModel = search->second;
-    }
-    else
-    {
-        pModel = new sProcessed3dModel(pObjectData, offset);
-        modelMap[thisKey] = pModel;
-    }
-
-    addObjectToDrawList(pModel);
-}
-
 void addBillBoardToDrawList(sProcessed3dModel* pObjectData)
 {
     cameraProperties2.m88_billboardViewMatrix.matrix[3] = pCurrentMatrix->matrix[3];

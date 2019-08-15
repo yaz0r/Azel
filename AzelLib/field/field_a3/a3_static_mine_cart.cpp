@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "a3_static_mine_cart.h"
 #include "a3_dynamic_mine_cart.h"
+#include "kernel/fileBundle.h"
 
 struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
 {
@@ -48,7 +49,7 @@ void A3_3_Obj0_Draw(s_A3_3_Obj0* pThis)
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->mC_position);
         rotateCurrentMatrixZYX_s16(pThis->m30_rotation);
-        addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
+        addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x2C4));
         callGridCellDraw_normalSub2(pThis, 0x2C8);
         popMatrix();
     }
@@ -61,7 +62,7 @@ void A3_3_Obj0_Draw2(s_A3_3_Obj0* pThis)
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->mC_position);
         rotateCurrentMatrixZYX_s16(pThis->m30_rotation);
-        addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
+        addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x2C4));
         popMatrix();
     }
 }

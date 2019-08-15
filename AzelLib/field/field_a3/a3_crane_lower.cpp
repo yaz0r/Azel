@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "a3_crane_lower.h"
+#include "kernel/fileBundle.h"
 
 // crane lower part
 struct s_A3_0_Obj2 : public s_workAreaTemplate<s_A3_0_Obj2>
@@ -17,7 +18,7 @@ struct s_A3_0_Obj2 : public s_workAreaTemplate<s_A3_0_Obj2>
             pushCurrentMatrix();
             translateCurrentMatrix(&pThis->mC_position);
             rotateCurrentMatrixY(pThis->m18);
-            addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2D0));
+            addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x2D0));
             popMatrix();
         }
     }

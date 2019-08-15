@@ -605,7 +605,7 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
                         u16 offset = readSaturnU16(readSaturnEA(r14) + r4 * 2);
                         if (offset)
                         {
-                            addObjectToDrawList(pThis->m0_dramAllocation->getRawBuffer(), pThis->m0_dramAllocation->getRawFileOffset(offset));
+                            addObjectToDrawList(pThis->m0_dramAllocation->get3DModel(offset));
                         }
 
                         popMatrix();

@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "a3_fan.h"
+#include "kernel/fileBundle.h"
 
 struct s_A3_0_Obj4 : public s_workAreaTemplate<s_A3_0_Obj4>
 {
@@ -94,27 +95,27 @@ struct s_A3_0_Obj4 : public s_workAreaTemplate<s_A3_0_Obj4>
             {
                 translateCurrentMatrix(pThis->m8->m4_position);
                 rotateCurrentMatrixY(pThis->m58);
-                addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x254));
+                addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x254));
 
                 pushCurrentMatrix();
                 {
                     rotateCurrentMatrixShiftedZ(pThis->m10_blade2);
-                    addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x258));
+                    addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x258));
                 }
                 popMatrix();
 
                 pushCurrentMatrix();
                 {
                     rotateCurrentMatrixShiftedZ(pThis->mC_blade1);
-                    addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x25C));
+                    addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x25C));
                 }
                 popMatrix();
 
-                addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x260));
-                addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x264));
-                addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x268));
-                addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x26C));
-                addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x270));
+                addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x260));
+                addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x264));
+                addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x268));
+                addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x26C));
+                addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x270));
                 callGridCellDraw_normalSub2(pThis, 0x2B0);
             }
             popMatrix();

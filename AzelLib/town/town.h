@@ -73,7 +73,7 @@ struct sNPC
     s8 mC;
     s8 mD;
     s8 mE_controlState;
-    s8 mF; // 0x80 = enable shadow
+    s8 mF; // 0x80 = disable shadow
     sSaturnPtr m10_InitPtr;
     void (*m14_updateFunction)(sNPC*);
     sSaturnPtr m18;

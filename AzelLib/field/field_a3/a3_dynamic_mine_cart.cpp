@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "a3_dynamic_mine_cart.h"
+#include "kernel/fileBundle.h"
 
 // This is confusing. This adjust the vertical position of the cart based on the dragon proximity.
 // Visually, this just move the cart slightly up when colliding with the dragon. But is pretty much invisible most of the time since the dragon can't get close enough to the cart.
@@ -39,7 +40,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplateWithCopy<s_A3_0_Obj3>
             pushCurrentMatrix();
             translateCurrentMatrix(&pThis->m10_position);
             rotateCurrentMatrixZYX_s16(pThis->m2C_rotation);
-            LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemory, 0x10, 0x2E4);
+            LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemoryBundle, 0x10, 0x2E4);
             popMatrix();
         }
     }
@@ -51,7 +52,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplateWithCopy<s_A3_0_Obj3>
             pushCurrentMatrix();
             translateCurrentMatrix(&pThis->m10_position);
             rotateCurrentMatrixZYX_s16(pThis->m2C_rotation);
-            addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x2C4));
+            addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x2C4));
             popMatrix();
         }
     }

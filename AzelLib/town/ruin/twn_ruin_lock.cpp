@@ -57,7 +57,7 @@ void sLockTask::Draw(sLockTask* pThis)
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->m74_translation);
     rotateCurrentMatrixZYX(pThis->m80_rotation);
-    addObjectToDrawList(pThis->m0_dramAllocation->getRawBuffer(), pThis->m0_dramAllocation->getRawFileOffset(readSaturnU16(pThis->mC + 0x20)));
+    addObjectToDrawList(pThis->m0_dramAllocation->get3DModel(readSaturnU16(pThis->mC + 0x20)));
     popMatrix();
 }
 

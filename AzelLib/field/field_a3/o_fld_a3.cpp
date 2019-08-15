@@ -679,8 +679,7 @@ void A3_Obj2_Draw(s_A3_Obj2* r14)
         rotateCurrentMatrixY(r13->m10_rotation[1]);
         rotateCurrentMatrixShiftedX(*r12);
 
-        u32 offset = READ_BE_U32(r14->m0.m0_mainMemory + readSaturnS16(r10));
-        addObjectToDrawList(r14->m0.m0_mainMemory, offset);
+        addObjectToDrawList(r14->m0.m0_mainMemoryBundle->get3DModel(readSaturnS16(r10)));
 
         popMatrix();
 
@@ -803,7 +802,7 @@ struct s_A3_Obj0 : public s_workAreaTemplate<s_A3_Obj0>
         translateCurrentMatrix(&pThis->m14_position);
         rotateCurrentMatrixY(pThis->m3A_rotation);
 
-        addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + pThis->m38_modelOffset));
+        addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(pThis->m38_modelOffset));
 
         popMatrix();
     }
@@ -894,7 +893,7 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
         translateCurrentMatrix(&pThis->m8->m4_position);
         rotateCurrentMatrixShiftedZ(getFieldTaskPtr()->mC->mA4[pThis->m8->m18]);
 
-        addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x29C));
+        addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x29C));
 
         popMatrix();
     }
@@ -6289,8 +6288,7 @@ void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
                 translateCurrentMatrix(&rider1_hotSpot);
                 rotateCurrentMatrixShiftedY(0x8000000);
                 multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
-                u32 offset = READ_BE_U32(pRider1State->m0_riderModel + pRider1State->m_14);
-                addObjectToDrawList(pRider1State->m0_riderModel, offset);
+                addObjectToDrawList(pRider1State->m0_riderBundle->get3DModel(pRider1State->m_14));
                 popMatrix();
             }
         }
