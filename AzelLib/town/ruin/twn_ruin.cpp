@@ -364,7 +364,7 @@ void cameraFollowMode0_LCSSub1(sMainLogic* r4)
     sVec3_FP* r13 = &r4->m18_position;
     if ((npcData0.mFC & 1) && (currentResTask->m8_currentLCSType))
     {
-        assert(0);
+        //assert(0);
         /*
         if (currentResTask->m8 == 1)
         {
@@ -376,7 +376,8 @@ void cameraFollowMode0_LCSSub1(sMainLogic* r4)
         }
         */
         //6055C48
-        assert(0);
+        //assert(0);
+        FunctionUnimplemented();
     }
 
     //6055CCA
@@ -723,6 +724,11 @@ s32 TwnFadeIn(s32 arg0)
     return 0;
 }
 
+s32 isObjectCloseEnoughToActivate()
+{
+    return !canCurrentResActivate();
+}
+
 s32 hasLoadingCompleted()
 {
     FunctionUnimplemented();
@@ -961,6 +967,7 @@ void updateEdgePositionSub3Sub1(const sVec3_FP& r4, sVec2_FP* r5)
         }
     }
 
+    //6036342
     fixedPoint r0 = sqrt_F(FP_Pow2(r4[0]) + FP_Pow2(r4[2]));
 
     if (r4[1] >= 0)
@@ -975,14 +982,15 @@ void updateEdgePositionSub3Sub1(const sVec3_FP& r4, sVec2_FP* r5)
     (*r5)[1] = atan2_FP(r4[0], r4[2]);
 }
 
-void updateEdgePositionSub3(sEdgeTask* r4)
+void updateEdgeLookAt(sEdgeTask* r4)
 {
     sNPCE8* r13_npcE8 = &r4->mE8;
 
     if ((currentResTask->m8_currentLCSType) && (npcData0.mFC & 1))
     {
         //605BEEA
-        assert(0);
+        //assert(0);
+        FunctionUnimplemented();
     }
     //605C018
     else if ((npcData0.mFC & 0x10) && !(npcData0.mFC & 0x8))
@@ -1034,8 +1042,8 @@ void updateEdgePositionSub3(sEdgeTask* r4)
             varC[1] = 0x38E38E3;
         }
 
-        r4->m20[0] += MTH_Mul(varC[0] - r4->m20[0], 0xB333);
-        r4->m20[1] += MTH_Mul(varC[1] - r4->m20[1], 0xB333);
+        r4->m20_lookAtAngle[0] += MTH_Mul(varC[0] - r4->m20_lookAtAngle[0], 0xB333);
+        r4->m20_lookAtAngle[1] += MTH_Mul(varC[1] - r4->m20_lookAtAngle[1], 0xB333);
     }
     else
     {
@@ -1052,14 +1060,14 @@ void updateEdgePositionSub3(sEdgeTask* r4)
 
         if (r13)
         {
-            r4->m20[1] += MTH_Mul(r13 - r4->m20[1], 0xB333);
+            r4->m20_lookAtAngle[1] += MTH_Mul(r13 - r4->m20_lookAtAngle[1], 0xB333);
         }
         else
         {
-            r4->m20[1] += MTH_Mul(r13 - r4->m20[1], 0x8000);
+            r4->m20_lookAtAngle[1] += MTH_Mul(r13 - r4->m20_lookAtAngle[1], 0x8000);
         }
 
-        r4->m20[0] = MTH_Mul(r4->m20[0], 0xB333);
+        r4->m20_lookAtAngle[0] = MTH_Mul(r4->m20_lookAtAngle[0], 0xB333);
     }
 }
 
@@ -1181,14 +1189,29 @@ void updateEdgePosition(sNPC* r4)
 
     r13->m0_position += r13->m18_stepTranslationInWorld;
 
-    updateEdgePositionSub3(r12);
+    updateEdgeLookAt(r12);
 
     r12->m14C_inputFlags = 0;
 }
 
-s32 scriptFunction_6057058(s32 arg0, s32 arg1)
+s32 scriptFunction_605B320(s32 arg0, s32 arg1)
 {
     getNpcDataByIndex(arg0)->mE_controlState = arg1;
+    return 0;
+}
+
+s32 scriptFunction_6054334_disableLock(s32 arg0, s32 arg1)
+{
+    p_workArea pTask = getNpcDataByIndexAsTask(arg0);
+    if (pTask)
+    {
+        sLockTask* pLockTask = pTask->castTo<sLockTask>();
+        pLockTask->m8C_status = arg1;
+        if (arg1 == 1)
+        {
+            playSoundEffect(101);
+        }
+    }
     return 0;
 }
 
@@ -1224,9 +1247,11 @@ void TWN_RUIN_data::init()
     overlayScriptFunctions.m_zeroArg[0x6057570] = &hasLoadingCompleted;
     overlayScriptFunctions.m_zeroArg[0x6057058] = &scriptFunction_6057058;
     overlayScriptFunctions.m_zeroArg[0x605762A] = &scriptFunction_605762A;
+    overlayScriptFunctions.m_zeroArg[0x605800E] = &isObjectCloseEnoughToActivate;
 
     overlayScriptFunctions.m_oneArg[0x605C83C] = &TwnFadeOut;
     overlayScriptFunctions.m_oneArg[0x605c7c4] = &TwnFadeIn;
 
-    overlayScriptFunctions.m_twoArg[0x605B320] = &scriptFunction_6057058;
+    overlayScriptFunctions.m_twoArg[0x605B320] = &scriptFunction_605B320;
+    overlayScriptFunctions.m_twoArg[0x6054334] = &scriptFunction_6054334_disableLock;
 }

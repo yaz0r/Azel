@@ -78,7 +78,7 @@ struct sNPC
     void (*m14_updateFunction)(sNPC*);
     sSaturnPtr m18;
     s32 m1C;
-    sVec2_FP m20;
+    sVec2_FP m20_lookAtAngle;
     fixedPoint m28_animationLeftOver;
     fixedPoint m2C_currentAnimation;
     sSaturnPtr m30_animationTable;
@@ -155,7 +155,7 @@ struct sNpcData
     s32 mF0;
     s32 mF4;
     s32 mF8;
-    s32 mFC;
+    s32 mFC; // 0x10: LCS Active
     s32 m100;
     sRunningScriptContext m104_currentScript;
     s32 m116;
@@ -165,7 +165,10 @@ struct sNpcData
     sVec3_FP* m160_pEdgePosition;
     s_cinematicBarTask* m164_cinematicBars;
     s32 m168;
-    s_vdp2StringTask* m16C_displayStringTask;
+    union {
+        s_vdp2StringTask* m16C_displayStringTask;
+        s_receivedItemTask* m16C_receivedItemTask;
+    };
     s32 m170;
 };
 

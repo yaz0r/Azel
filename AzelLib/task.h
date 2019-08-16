@@ -22,6 +22,12 @@ struct s_workArea
     virtual void Update() = 0;
     virtual void Draw() = 0;
     virtual void Delete() = 0;
+
+    template <typename T>
+    T* castTo()
+    {
+        return static_cast<T*>(this);
+    }
 };
 
 static void UnimplementedImpl(const char* functionName)

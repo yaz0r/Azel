@@ -126,7 +126,7 @@ s32 scriptUpdateSub0Sub1(sMainLogic_74* r13, sMainLogic_74* r14)
             return 0;
 
         //0600874E
-        assert(0);
+        FunctionUnimplemented();
     }
 
     return 0;
@@ -1468,6 +1468,18 @@ sNPC* getNpcDataByIndex(s32 r4)
     return npcData0.m70_npcPointerArray[r4].pNPC;
 }
 
+p_workArea getNpcDataByIndexAsTask(s32 r4)
+{
+    if (r4 == -1)
+    {
+        return npcData0.m104_currentScript.m8_owner.getAsTask();
+    }
+
+    assert(0);
+    return NULL;
+    //return npcData0.m70_npcPointerArray[r4].pNPC;
+}
+
 s32 setNpcLocation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
 {
     sNPC* pNPC = getNpcDataByIndex(r4_npcIndex);
@@ -1647,8 +1659,7 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
         case 1: //end
             if (r13_pThis->m11C_currentStackPointer == r13_pThis->m120_stack.end())
             {
-                r14.m_offset = 0;
-                return r14;
+                return sSaturnPtr::getNull();
             }
             else
             {
@@ -1841,6 +1852,9 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             }
             break;
         }
+        case 33:
+            playSoundEffect(readSaturnS8(r14++));
+            break;
         case 36: // display string
             if (r13_pThis->m16C_displayStringTask)
             {
@@ -1858,6 +1872,74 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
                 r14 += 4;
 
                 createDisplayStringBorromScreenTask(currentResTask, &r13_pThis->m16C_displayStringTask, duration, stringPtr);
+            }
+            break;
+        case 41: // get inventory count
+            {
+                r14 = getAlignOn2(r14);
+                s16 itemIndex = readSaturnS16(r14);
+                r14 += 2;
+                if (itemIndex < 77)
+                {
+                    r13_pThis->m118_currentResult = mainGameState.consumables[itemIndex];
+                }
+                else
+                {
+                    r13_pThis->m118_currentResult = mainGameState.getBit(243 + itemIndex);
+                }
+            }
+            break;
+        case 43: // add to inventory
+            {
+                s8 count = readSaturnS8(r14);
+                r14++;
+                r14 = getAlignOn2(r14);
+                s16 itemIndex = readSaturnS16(r14);
+                r14 += 2;
+                if (itemIndex < 77)
+                {
+                    mainGameState.consumables[itemIndex] += count;
+                }
+                else
+                {
+                    mainGameState.setBit(243 + itemIndex);
+                }
+
+                // clamp
+                if (itemIndex < 77)
+                {
+                    if (mainGameState.consumables[itemIndex] > 99)
+                    {
+                        mainGameState.consumables[itemIndex] = 99;
+                    }
+                }
+            }
+            break;
+        case 48:
+            if (r13_pThis->m16C_receivedItemTask)
+            {
+                if (r13_pThis->m16C_receivedItemTask->m0 != 4)
+                {
+                    return r14 - 1;
+                }
+
+                r13_pThis->mF0 = 0;
+                r14 = getAlignOn2(r14);
+                r14 += 6;
+                return r14;
+            }
+            else
+            {
+                sSaturnPtr r11 = r14 - 1;
+                r14 = getAlignOn2(r14);
+                s16 r6 = readSaturnS16(r14);
+                r14 += 2;
+                s16 itemIndex = readSaturnS16(r14);
+                r14 += 2;
+                s16 itemCount = readSaturnS16(r14);
+                r14 += 2;
+                createReceiveItemTask(currentResTask, &r13_pThis->m16C_receivedItemTask, r6, itemIndex, itemCount);
+                return r11;
             }
             break;
         default:
@@ -1919,10 +2001,13 @@ void scriptUpdateRunScript()
                     npcData0.mFC |= 0xF;
                     graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
                     npcData0.m0_numBackgroundScripts = 0;
+                    return;
                 }
 
                 r9++;
             } while (--r8_numBackgroundScripts);
+
+            npcData0.m0_numBackgroundScripts = 0;
         }
     }
 }
@@ -1974,8 +2059,6 @@ void sScriptTask::Update(sScriptTask* pThis)
         pThis->m18_LCSFocusLineScale--;
     }
 
-    pThis->m8_currentLCSType = 0;
-    pThis->m4 = sSaturnPtr::getNull();
     if (!(npcData0.mFC & 0x10))
     {
         pThis->m8_currentLCSType = 0;
@@ -1985,7 +2068,10 @@ void sScriptTask::Update(sScriptTask* pThis)
     {
         if (pThis->m8_currentLCSType == 2)
         {
-            assert(0);
+            if (pThis->mC->m38_pOwner->getTask()->isFinished())
+            {
+                pThis->m8_currentLCSType = 0;
+            }
         }
 
         //60305A8
@@ -2043,6 +2129,12 @@ void sScriptTask::Update(sScriptTask* pThis)
                 pThis->m1C_LCS_X = LCSCollisionData.m0_LCS_X.getInteger();
                 pThis->m1E_LCS_Y = LCSCollisionData.m4_LCS_Y.getInteger();
                 playSoundEffect(0x24);
+            }
+
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6)
+            {
+                // Activate LCS
+                addBackgroundScript(r13, 3, r11, nullptr);
             }
         }
 

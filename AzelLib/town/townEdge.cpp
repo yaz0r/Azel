@@ -385,7 +385,7 @@ void sEdgeTask::Update(sEdgeTask* pThis)
         //auto walk
         if (!(pThis->mF & 2) && !(pThis->mF & 8))
         {
-            pThis->m20[1] = MTH_Mul(pThis->m20[1], 0xB333);
+            pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
         }
 
         if (pThis->mC & 2)
@@ -696,11 +696,11 @@ void sEdgeTask::Draw(sEdgeTask* pThis)
 
     if (pThis->m34_3dModel.m48_poseDataInterpolation.size())
     {
-        applyEdgeAnimation2(&pThis->m34_3dModel, &pThis->m20);
+        applyEdgeAnimation2(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
     }
     else
     {
-        applyEdgeAnimation(&pThis->m34_3dModel, &pThis->m20);
+        applyEdgeAnimation(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
     }
 
     popMatrix();
