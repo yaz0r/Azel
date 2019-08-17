@@ -46,16 +46,21 @@ struct sNPCE8
     sVec3_FP m54_oldPosition;
 };
 
-struct sMainLogic_74
+struct sCollisionSetup
 {
     s8 m0_collisionType;
     s8 m1;
     s16 m2_collisionLayersBitField;
+};
+
+struct sMainLogic_74
+{
+    sCollisionSetup m0_collisionSetup;
     fixedPoint m4_collisionRadius;
     sVec3_FP m8_position;
     sVec3_FP m14_collisionClip;
     sVec3_FP m20;
-    s32 m2C;
+    s32 m2C_collisionSetupIndex;
     sVec3_FP* m30_pPosition;
     sVec3_FP* m34_pRotation;
     p_workArea m38_pOwner;
@@ -189,7 +194,7 @@ void loadTownPrg(s8 r4, s8 r5);
 void startScriptTask(p_workArea r4);
 
 void mainLogicInitSub0(sMainLogic_74*, s32);
-void mainLogicInitSub1(sMainLogic_74*, sSaturnPtr, sSaturnPtr);
+void mainLogicInitSub1(sMainLogic_74*, const sVec3_FP&, const sVec3_FP&);
 
 struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
 {
@@ -274,7 +279,7 @@ struct sTownGrid
     fixedPoint m28_cellSize;
     fixedPoint m2C;
     fixedPoint m30_worldToCellIndex;
-    npcFileDeleter* m34;
+    npcFileDeleter* m34_dataBuffer;
     sSaturnPtr m38_EnvironmentSetup;
     s32* m3C;
     std::array<std::array<sTownCellTask*, 8>, 8> m40_cellTasks;

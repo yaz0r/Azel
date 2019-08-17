@@ -825,7 +825,7 @@ s32 scriptFunction_605762A()
     twnMainLogicTask->m134_autoWalkPositionStep[2] = MTH_Mul(0x199, var0[2]);
 
     twnMainLogicTask->m118_autoWalkDuration = 5;
-    twnMainLogicTask->m14_EdgeTask->m84.m0_collisionType = 1;
+    twnMainLogicTask->m14_EdgeTask->m84.m0_collisionSetup.m0_collisionType = 1;
 
     return 1;
 }
@@ -1003,16 +1003,16 @@ void updateEdgeLookAt(sEdgeTask* r4)
         adjustMatrixTranslation(0x1800);
         sVec3_FP var14;
 
-        var14[0] = pCurrentMatrix->matrix[3] - setDividend(LCSCollisionData.m0_LCS_X, LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m2C_projectionWidthScale);
-        var14[1] = pCurrentMatrix->matrix[7] - setDividend(LCSCollisionData.m4_LCS_Y, LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m30_projectionHeightScale);
+        var14[0] = pCurrentMatrix->matrix[3] - setDividend(LCSCollisionData.m0_LCS_X.getInteger(), LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m2C_projectionWidthScale);
+        var14[1] = pCurrentMatrix->matrix[7] - setDividend(LCSCollisionData.m4_LCS_Y.getInteger(), LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m30_projectionHeightScale);
         var14[2] = pCurrentMatrix->matrix[11] - LCSCollisionData.m28_LCSDepthMax;
 
         sVec2_FP varC;
         updateEdgePositionSub3Sub1(var14, &varC);
 
-        var14[0] = LCSCollisionData.m20_LCSWidthMin;
-        var14[1] = LCSCollisionData.m24_LCSDepthMin;
-        var14[2] = LCSCollisionData.m28_LCSDepthMax;
+        var14[0] = pCurrentMatrix->matrix[8];
+        var14[1] = pCurrentMatrix->matrix[9];
+        var14[2] = pCurrentMatrix->matrix[10];
         sVec2_FP var4;
         updateEdgePositionSub3Sub1(var14, &var4);
 
@@ -1021,7 +1021,7 @@ void updateEdgeLookAt(sEdgeTask* r4)
         varC -= var4;
 
         varC[0] = varC[0].normalized();
-        varC[1] = varC[1].normalized();
+        varC[1] = (-varC[1]).normalized();
 
         //0605C12E
         if (varC[0] > 0x18E38E3)
@@ -1030,7 +1030,7 @@ void updateEdgeLookAt(sEdgeTask* r4)
         }
         if (varC[0] < -0x18E38E3)
         {
-            varC[0] = 0x18E38E3;
+            varC[0] = -0x18E38E3;
         }
 
         if (varC[1] > 0x38E38E3)
@@ -1039,7 +1039,7 @@ void updateEdgeLookAt(sEdgeTask* r4)
         }
         if (varC[1] < -0x38E38E3)
         {
-            varC[1] = 0x38E38E3;
+            varC[1] = -0x38E38E3;
         }
 
         r4->m20_lookAtAngle[0] += MTH_Mul(varC[0] - r4->m20_lookAtAngle[0], 0xB333);

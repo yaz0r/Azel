@@ -133,6 +133,15 @@ struct sVec3_FP
         return newValue;
     }
 
+    sVec3_FP operator / (const s32 value) const
+    {
+        sVec3_FP newValue = *this;
+        newValue[0] /= value;
+        newValue[1] /= value;
+        newValue[2] /= value;
+        return newValue;
+    }
+
     sVec3_FP operator >> (const int amount) const
     {
         sVec3_FP newValue = *this;

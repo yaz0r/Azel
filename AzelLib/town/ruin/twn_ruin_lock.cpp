@@ -33,8 +33,10 @@ void sLockTask::Update(sLockTask* pThis)
         pThis->m10.m40 = 0;
     }
 
-    mainLogicInitSub0(&pThis->m10, readSaturnU8(readSaturnEA(pThis->mC + 0x24)));
-    mainLogicInitSub1(&pThis->m10, readSaturnEA(pThis->mC + 0x24) + 8, readSaturnEA(pThis->mC + 0x24) + 0x14);
+    sSaturnPtr configEA = readSaturnEA(pThis->mC + 0x24);
+
+    mainLogicInitSub0(&pThis->m10, readSaturnU8(configEA));
+    mainLogicInitSub1(&pThis->m10, readSaturnVec3(configEA + 8), readSaturnVec3(configEA + 0x14));
     pThis->m_UpdateMethod = &sLockTask::UpdateAlternate;
     pThis->m_DrawMethod = &sLockTask::Draw;
 }

@@ -38,7 +38,7 @@ void scriptUpdateSub0Sub0(sMainLogic_74* r4)
 {
     const sVec3_FP& r12 = *r4->m34_pRotation;
 
-    switch (r4->m0_collisionType)
+    switch (r4->m0_collisionSetup.m0_collisionType)
     {
     case 0:
     case 1:
@@ -300,7 +300,7 @@ void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
     r14 -= var10[1];
     r14 -= var10[2];
 
-    switch (r4->m0_collisionType)
+    switch (r4->m0_collisionSetup.m0_collisionType)
     {
     case 0:
     case 1:
@@ -598,7 +598,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[1] - r14->m14_collisionClip[1]) >= 0))
             {
                 //6008DE4
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -647,7 +647,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[1] - r14->m14_collisionClip[1]) <= 0))
             {
                 //06008EBC
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -702,7 +702,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[2] - r14->m14_collisionClip[2]) >= 0))
             {
                 //6008FE2
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -751,7 +751,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[2] - r14->m14_collisionClip[2]) <= 0))
             {
                 //060090BA
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -806,7 +806,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[0] - r14->m14_collisionClip[0]) >= 0))
             {
                 //60091D2
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -855,7 +855,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[0] - r14->m14_collisionClip[0]) <= 0))
             {
                 //060092AA
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -910,7 +910,7 @@ void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
     }
 
     std::vector<sProcessed3dModel::sQuad>::const_iterator quadIterator = r5->mC_Quads.begin();
-    if (r4->m2C == 0)
+    if (r4->m2C_collisionSetupIndex == 0)
     {
         while (quadIterator != r5->mC_Quads.end())
         {
@@ -1309,7 +1309,7 @@ void scriptUpdateSub0Sub4(sMainLogic_74* r4)
 {
     popMatrix();
 
-    switch (r4->m0_collisionType)
+    switch (r4->m0_collisionSetup.m0_collisionType)
     {
     case 0:
     case 1:
@@ -1334,13 +1334,13 @@ void scriptUpdateSub0()
             sMainLogic_74* r14 = r11->m4;
             r11 = r11->m0_pNext;
 
-            if (r14->m2_collisionLayersBitField)
+            if (r14->m0_collisionSetup.m2_collisionLayersBitField)
             {
                 scriptUpdateSub0Sub0(r14);
                 s32 r9 = r8 + 1;
                 do 
                 {
-                    if (r14->m2_collisionLayersBitField & (1 << r9))
+                    if (r14->m0_collisionSetup.m2_collisionLayersBitField & (1 << r9))
                     {
                         sResData1C* r12 = resData.m8_headOfLinkedList[r9];
                         while (r12)
@@ -1349,7 +1349,7 @@ void scriptUpdateSub0()
                             r12 = r12->m0_pNext;
                             if (scriptUpdateSub0Sub1(r14, r13))
                             {
-                                if ((r14->m0_collisionType == 0) && r13->m3C_scriptEA.m_offset)
+                                if ((r14->m0_collisionSetup.m0_collisionType == 0) && r13->m3C_scriptEA.m_offset)
                                 {
                                     //06007B16
                                     addBackgroundScript(r13->m3C_scriptEA, 1, r13->m38_pOwner, 0);
@@ -1357,7 +1357,7 @@ void scriptUpdateSub0()
 
                                 r14->m48 = r13;
                                 r13->m48 = r14;
-                                if (r14->m0_collisionType >= 2)
+                                if (r14->m0_collisionSetup.m0_collisionType >= 2)
                                 {
                                     goto endOfLoop;
                                 }
@@ -1367,7 +1367,7 @@ void scriptUpdateSub0()
                 } while (++r9 < 5);
                 //06007B3C
                 
-                if (r14->m2_collisionLayersBitField & 0x10)
+                if (r14->m0_collisionSetup.m2_collisionLayersBitField & 0x10)
                 {
                     scriptUpdateSub0Sub2(r14, resData.m0);
                 }
@@ -2160,7 +2160,7 @@ void updateTownLCSTargetPosition(sScriptTask* pThis)
         break;
     case 2:
         translateCurrentMatrix(pThis->mC->m8_position);
-        if (pThis->mC->m2C == 3)
+        if (pThis->mC->m2C_collisionSetupIndex == 3)
         {
             adjustMatrixTranslation(pThis->mC->m14_collisionClip[1] / 2);
         }

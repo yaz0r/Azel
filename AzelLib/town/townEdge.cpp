@@ -195,10 +195,10 @@ void EdgeUpdateSub0(sMainLogic_74* r14_pose)
         return;
 
     sResData1C& r5 = resData.m1C[resData.m4++];
-    r5.m0_pNext = resData.m8_headOfLinkedList[r14_pose->m2C];
+    r5.m0_pNext = resData.m8_headOfLinkedList[r14_pose->m2C_collisionSetupIndex];
     r5.m4 = r14_pose;
 
-    resData.m8_headOfLinkedList[r14_pose->m2C] = &r5;
+    resData.m8_headOfLinkedList[r14_pose->m2C_collisionSetupIndex] = &r5;
 
     sMatrix4x3 var4;
     initMatrixToIdentity(&var4);
@@ -287,7 +287,7 @@ void initEdgeNPC(sEdgeTask* pThis, sSaturnPtr arg)
     }
 
     mainLogicInitSub0(&pThis->m84, readSaturnU8(arg + 0x34));
-    mainLogicInitSub1(&pThis->m84, arg + 0x3C, arg + 0x48);
+    mainLogicInitSub1(&pThis->m84, readSaturnVec3(arg + 0x3C), readSaturnVec3(arg + 0x48));
     initEdgeNPCSub1(pThis);
     pThis->m17B = 0;
 }
