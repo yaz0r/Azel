@@ -174,7 +174,7 @@ struct sNpcData
         s_vdp2StringTask* m16C_displayStringTask;
         s_receivedItemTask* m16C_receivedItemTask;
     };
-    s32 m170;
+    struct s_multiChoiceTask* m170_multiChoiceTask;
 };
 
 extern sNpcData npcData0;
@@ -237,6 +237,7 @@ extern p_workArea townVar0;
 
 s32 initNPC(s32 arg);
 s32 initNPCFromStruct(sSaturnPtr);
+s32 mainLogicUpdateSub0(s32 r4_x, s32 r5_y);
 void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y);
 
 struct sCellObjectListNode
@@ -305,3 +306,5 @@ void mainLogicUpdateSub3();
 void drawLcs();
 void updateEdgePosition(sNPC* r4);
 s32 TwnFadeOut(s32 arg0);
+s32 TwnFadeIn(s32 arg0);
+void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5);

@@ -1591,11 +1591,6 @@ bool azelSdl2_EndFrame()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (useVDP1GL)
-        {
-            renderVdp1ToGL(internalResolution[0], internalResolution[1]);
-        }
-
         glFrontFace(GL_CW);
         glCullFace(GL_BACK);
         glEnable(GL_CULL_FACE);
@@ -1606,6 +1601,11 @@ bool azelSdl2_EndFrame()
 #ifndef USE_NULL_RENDERER
         glDisable(GL_CULL_FACE);
 #endif
+
+        if (useVDP1GL)
+        {
+            renderVdp1ToGL(internalResolution[0], internalResolution[1]);
+        }
     }
     
     //Compose

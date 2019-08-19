@@ -90,7 +90,7 @@ void registerNpcs(sSaturnPtr r4_townSetup, sSaturnPtr r5_script, s32 r6)
     npcData0.m164_cinematicBars = 0;
     npcData0.m168 = 0;
     npcData0.m16C_displayStringTask = 0;
-    npcData0.m170 = 0;
+    npcData0.m170_multiChoiceTask = 0;
 
     for (int i = 0; i < npcData0.m70_npcPointerArray.size(); i++)
     {
@@ -1200,21 +1200,6 @@ s32 scriptFunction_605B320(s32 arg0, s32 arg1)
     return 0;
 }
 
-s32 scriptFunction_6054334_disableLock(s32 arg0, s32 arg1)
-{
-    p_workArea pTask = getNpcDataByIndexAsTask(arg0);
-    if (pTask)
-    {
-        sLockTask* pLockTask = pTask->castTo<sLockTask>();
-        pLockTask->m8C_status = arg1;
-        if (arg1 == 1)
-        {
-            playSoundEffect(101);
-        }
-    }
-    return 0;
-}
-
 void TWN_RUIN_data::create()
 {
     if (gTWN_RUIN == NULL)
@@ -1251,6 +1236,7 @@ void TWN_RUIN_data::init()
 
     overlayScriptFunctions.m_oneArg[0x605C83C] = &TwnFadeOut;
     overlayScriptFunctions.m_oneArg[0x605c7c4] = &TwnFadeIn;
+    overlayScriptFunctions.m_oneArg[0x6054364] = &scriptFunction_6054364_waitForLockDisableCompletion;
 
     overlayScriptFunctions.m_twoArg[0x605B320] = &scriptFunction_605B320;
     overlayScriptFunctions.m_twoArg[0x6054334] = &scriptFunction_6054334_disableLock;

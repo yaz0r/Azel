@@ -77,8 +77,8 @@ struct s_workAreaTemplateWithArg : public s_workArea
     typedef void (*FunctionType)(T*);
     typedef void (*InitFunctionType)(T*, argType ...);
 
-    FunctionType m_UpdateMethod;
-    FunctionType m_DrawMethod;
+    FunctionType m_UpdateMethod; //8
+    FunctionType m_DrawMethod; //C
     FunctionType m_DeleteMethod;
 
     struct TypedTaskDefinition

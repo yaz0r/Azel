@@ -3,6 +3,7 @@
 #include "townScript.h"
 #include "town/ruin/twn_ruin.h"
 #include "town/exca/twn_exca.h"
+#include "town/e006/twn_e006.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
 
@@ -221,6 +222,10 @@ void loadTownPrg(s8 r4, s8 r5)
     else if (overlayFileName == "TWN_EXCA.PRG")
     {
         gFieldOverlayFunction = overlayStart_TWN_EXCA;
+    }
+    else if (overlayFileName == "TWN_E006.PRG")
+    {
+        gFieldOverlayFunction = overlayStart_TWN_E006;
     }
     else
     {
@@ -476,6 +481,39 @@ s32 initNPCFromStruct(sSaturnPtr r4)
     gTownGrid.m140_perCellObjectList[r4_cellY * gTownGrid.m0_sizeX + r12_cellX] = r13;
 }
 
+void initNPCSub2(s32 r5)
+{
+    s_fileEntry& fileEntry = dramAllocatorEnd[r5];
+    if (fileEntry.m8_refcount)
+    {
+        if (--fileEntry.m8_refcount == 0)
+        {
+            assert(0);
+            //loadDragonSub1Sub1(fileEntry.mC_buffer);
+            if (fileEntry.mC_buffer)
+            {
+                fileEntry.mC_buffer->getTask()->markFinished();
+            }
+            fileEntry.mC_buffer = nullptr;
+        }
+    }
+}
+
+void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5)
+{
+    if (pThis->m8 && (pThis->m8->m8 == pThis))
+    {
+        pThis->m8->m8 = nullptr;
+    }
+
+    if (!r5.isNull())
+    {
+        initNPCSub2(readSaturnS32(r5));
+    }
+
+    pThisAsTask->getTask()->markFinished();
+}
+
 static const std::array<sCollisionSetup, 5> collisionSetupArray = {
     {
         {1,0,0x10},
@@ -511,6 +549,14 @@ void mainLogicUpdateSub0Sub0(sTownGrid* r4)
 void mainLogicUpdateSub0Sub1(s32 r4, sTownGrid* r5)
 {
     assert(0);
+}
+
+//TODO:kernel
+s32 mainLogicUpdateSub0(s32 r4_x, s32 r5_y)
+{
+    // proxy for script
+    mainLogicUpdateSub0(fixedPoint(r4_x), fixedPoint(r5_y));
+    return 0;
 }
 
 //TODO:kernel

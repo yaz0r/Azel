@@ -21,6 +21,9 @@ struct sLockTask : public s_workAreaTemplateWithArgWithCopy<sLockTask, sSaturnPt
     sVec3_FP m74_translation;
     sVec3_FP m80_rotation;
     s16 m8C_status;
-    s16 m8E;
+    s16 m8E_translationLength;
     //size 0x90
 };
+
+s32 scriptFunction_6054334_disableLock(s32 arg0, s32 arg1);
+s32 scriptFunction_6054364_waitForLockDisableCompletion(s32 arg0);
