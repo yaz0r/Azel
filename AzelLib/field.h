@@ -299,6 +299,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
 struct s_memoryAreaOutput
 {
     u8* m0_mainMemory;
+    struct s_fileBundle* m0_mainMemoryBundle;
     u32 m4_characterArea;
 };
 
@@ -525,7 +526,7 @@ struct s_DataTable2Sub0
     sVec3_FP m4_position;
     sVec3_S16_12_4 m10_rotation;
     s32 m18;
-    sSaturnPtr m1C;
+    sSaturnPtr m1C_modelData;
     // size is 0x20
 };
 
@@ -734,17 +735,18 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     static void Draw(s_FieldSubTaskWorkArea*);
     static void Delete(s_FieldSubTaskWorkArea*);
 
-    u8* memoryArea[3]; // 0
-    u32 characterArea[3]; // C
-    u8* memoryArea_edge; // 18
-    u32 characterArea_edge; // 1C
-    u8* memoryArea_bottom; // 20
-    u8* memoryArea_top; // 24
-    u32 characterArea_bottom; // 28
-    u32 characterArea_top; // 2C
-    const s_MCB_CGB* fileList; // 30
-    u32 MCBFilesSizes[32]; // 34
-    u32 CGBFilesSizes[32]; // 1B4
+    std::array<u8*, 3> m0_memoryArea; // 0
+    std::array<struct s_fileBundle*, 3> m0_bundles;
+    std::array<u32, 3> mC_characterArea; // C
+    u8* m18_memoryArea_edge; // 18
+    u32 m1C_characterArea_edge; // 1C
+    u8* m20_memoryArea_bottom; // 20
+    u8* m24_memoryArea_top; // 24
+    u32 m28_characterArea_bottom; // 28
+    u32 m2C_characterArea_top; // 2C
+    const s_MCB_CGB* m30_fileList; // 30
+    u32 m34_MCBFilesSizes[32]; // 34
+    u32 m1B4_CGBFilesSizes[32]; // 1B4
     s_fieldOverlaySubTaskWorkArea* m334;
     s_dragonTaskWorkArea* m338_pDragonTask; // 338
     s_FieldRadar* m33C_pPaletteTask;
@@ -760,10 +762,10 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     u8 m369; // 369
     u8 m36C;
     u32 m370_fieldDebuggerWho; // 370
-    void(*pUpdateFunction1)(); // 374
-    u8 debugMenuStatus1[2]; // 37C
-    u8 debugMenuStatus2_a; // 37E
-    u8 debugMenuStatus3; //380
+    void(*m374_pUpdateFunction1)(); // 374
+    u8 m37C_debugMenuStatus1[2]; // 37C
+    u8 m37E_debugMenuStatus2_a; // 37E
+    u8 m380_debugMenuStatus3; //380
 };
 
 struct s_fieldSpecificData_A3 : public s_workAreaTemplate<s_fieldSpecificData_A3>

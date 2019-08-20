@@ -3,6 +3,7 @@
 #include "town/townDebugSelect.h"
 #include "kernel/animation.h"
 #include "kernel/vdp1Allocator.h"
+#include "kernel/fileBundle.h"
 
 s_exitMenuTaskSub1Task* gExitMenuTaskSub1Task = nullptr;
 
@@ -858,7 +859,7 @@ void unimplementedDraw(s_3dModel* pDragonStateData1)
     assert(0);
 }
 
-void modeDrawFunction10Sub1(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseData>::iterator& r14)
+void modeDrawFunction10Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& r14)
 {
     do
     {
@@ -866,33 +867,33 @@ void modeDrawFunction10Sub1(u8* pModelDataRoot, u8* pModelData, std::vector<sPos
         translateCurrentMatrix(&r14->m0_translation);
         rotateCurrentMatrixZYX(&r14->mC_rotation);
 
-        if (u32 offset = READ_BE_U32(pModelData))
+        if (pModelData->m0_3dModel)
         {
-            addObjectToDrawList(pModelDataRoot, offset);
+            addObjectToDrawList(pModelData->m0_3dModel);
         }
 
-        if (u32 offset = READ_BE_U32(pModelData + 4))
+        if (pModelData->m4_subNode)
         {
             r14++;
-            modeDrawFunction10Sub1(pModelDataRoot, pModelDataRoot + offset, r14);
+            modeDrawFunction10Sub1(pModelData->m4_subNode, r14);
         }
 
 
         popMatrix();
 
         // End of model
-        if (READ_BE_U32(pModelData + 8) == 0)
+        if (pModelData->m8_nextNode == nullptr)
         {
             return;
         }
 
         r14++;
-        pModelData = pModelDataRoot + READ_BE_U32(pModelData + 8);
+        pModelData = pModelData->m8_nextNode;
 
     } while (1);
 }
 
-void modeDrawFunction6Sub1(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseData>::iterator& pPoseData, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do
     {
@@ -900,9 +901,9 @@ void modeDrawFunction6Sub1(u8* pModelDataRoot, u8* pModelData, std::vector<sPose
         translateCurrentMatrix(&pPoseData->m0_translation);
         rotateCurrentMatrixZYX(&pPoseData->mC_rotation);
 
-        if (u32 offset = READ_BE_U32(pModelData))
+        if (pModelData->m0_3dModel)
         {
-            addObjectToDrawList(pModelDataRoot, offset);
+            addObjectToDrawList(pModelData->m0_3dModel);
         }
 
         assert((*r7).size() == r6->m_count);
@@ -920,7 +921,7 @@ void modeDrawFunction6Sub1(u8* pModelDataRoot, u8* pModelData, std::vector<sPose
             transformAndAddVecByCurrentMatrix(&input, &output);
         }
 
-        if (u32 offset = READ_BE_U32(pModelData + 4))
+        if (pModelData->m4_subNode)
         {
             // next matrix
             pPoseData++;
@@ -929,13 +930,13 @@ void modeDrawFunction6Sub1(u8* pModelDataRoot, u8* pModelData, std::vector<sPose
             // next ???
             r7++;
 
-            modeDrawFunction6Sub1(pModelDataRoot, pModelDataRoot + offset, pPoseData, r6, r7);
+            modeDrawFunction6Sub1(pModelData->m4_subNode, pPoseData, r6, r7);
         }
 
         popMatrix();
 
         // End of model
-        if (READ_BE_U32(pModelData + 8) == 0)
+        if (pModelData->m8_nextNode == nullptr)
         {
             return;
         }
@@ -947,20 +948,20 @@ void modeDrawFunction6Sub1(u8* pModelDataRoot, u8* pModelData, std::vector<sPose
         // next ???
         r7++;
 
-        pModelData = pModelDataRoot + READ_BE_U32(pModelData + 8);
+        pModelData = pModelData->m8_nextNode;
     } while (1);
 }
 
-void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, std::vector<sMatrix4x3>::iterator& modelMatrix, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void submitModelToRendering(sModelHierarchy* pModelData, std::vector<sMatrix4x3>::iterator& modelMatrix, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do 
     {
         pushCurrentMatrix();
         multiplyCurrentMatrix(&(*modelMatrix));
 
-        if (u32 offset = READ_BE_U32(pModelData))
+        if (pModelData->m0_3dModel)
         {
-            addObjectToDrawList(pModelDataRoot, offset);
+            addObjectToDrawList(pModelData->m0_3dModel);
         }
 
         assert((*r7).size() == r6->m_count);
@@ -978,7 +979,7 @@ void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, std::vector<sMat
             transformAndAddVecByCurrentMatrix(&input, &output);
         }
 
-        if (u32 offset = READ_BE_U32(pModelData + 4))
+        if (pModelData->m4_subNode)
         {
             // next matrix
             modelMatrix++;
@@ -987,13 +988,13 @@ void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, std::vector<sMat
             // next ???
             r7++;
 
-            submitModelToRendering(pModelDataRoot, pModelDataRoot + offset, modelMatrix, r6, r7);
+            submitModelToRendering(pModelData->m4_subNode, modelMatrix, r6, r7);
         }
 
         popMatrix();
 
         // End of model
-        if (READ_BE_U32(pModelData + 8) == 0)
+        if (pModelData->m8_nextNode == nullptr)
         {
             return;
         }
@@ -1005,7 +1006,7 @@ void submitModelToRendering(u8* pModelDataRoot, u8* pModelData, std::vector<sMat
         // next ???
         r7++;
 
-        pModelData = pModelDataRoot + READ_BE_U32(pModelData + 8);
+        pModelData = pModelData->m8_nextNode;
     } while (1);
 }
 
@@ -1021,13 +1022,13 @@ void modelDrawFunction1(s_3dModel* pDragonStateData1)
 
     if (pDragonStateData1->m8 & 1)
     {
-        u8* r4 = pDragonStateData1->m4_pModelFile + READ_BE_U32(pDragonStateData1->m4_pModelFile + pDragonStateData1->mC_modelIndexOffset);
-        submitModelToRendering(pDragonStateData1->m4_pModelFile, r4, var_8, var_4, var_0);
+        sModelHierarchy* r4 = pDragonStateData1->m4_pModelFile->getModelHierarchy(pDragonStateData1->mC_modelIndexOffset);
+        submitModelToRendering(r4, var_8, var_4, var_0);
     }
     else
     {
-        u8* r4 = pDragonStateData1->m4_pModelFile + READ_BE_U32(pDragonStateData1->m4_pModelFile + pDragonStateData1->mC_modelIndexOffset);
-        modeDrawFunction1Sub2(pDragonStateData1->m4_pModelFile, r4, var_8, var_4, var_0);
+        sModelHierarchy* r4 = pDragonStateData1->m4_pModelFile->getModelHierarchy(pDragonStateData1->mC_modelIndexOffset);
+        modeDrawFunction1Sub2(r4, var_8, var_4, var_0);
     }
 }
 void modelDrawFunction2(s_3dModel* pModel)
@@ -1047,40 +1048,40 @@ void modelDrawFunction6(s_3dModel* pModel)
     std::vector<std::vector<sVec3_FP>>::iterator var_0 = pModel->m44.begin();
     std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
     const s_RiderDefinitionSub* var_4 = pModel->m40;
-    u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+    sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
 
     if (pModel->m8 & 1)
     {
-        modeDrawFunction6Sub1(pModel->m4_pModelFile, r4, pPoseData, var_4, var_0);
+        modeDrawFunction6Sub1(r4, pPoseData, var_4, var_0);
     }
     else
     {
-        modeDrawFunction6Sub2(pModel->m4_pModelFile, r4, pPoseData, var_4, var_0);
+        modeDrawFunction6Sub2(r4, pPoseData, var_4, var_0);
     }
 }
 void modelDrawFunction9(s_3dModel* pModel)
 {
     if (pModel->m8 & 1)
     {
-        u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+        sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
         std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
         FunctionUnimplemented(); // TODO: should be vertex colored variant!
-        modeDrawFunction10Sub1(pModel->m4_pModelFile, r4, pPoseData); 
+        modeDrawFunction10Sub1(r4, pPoseData);
     }
 }
 void modelDrawFunction10(s_3dModel* pModel)
 {
     if (pModel->m8 & 1)
     {
-        u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+        sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
         std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
-        modeDrawFunction10Sub1(pModel->m4_pModelFile, r4, pPoseData);
+        modeDrawFunction10Sub1(r4, pPoseData);
     }
 }
 
-s32 riderInit(s_3dModel* r4_pModel, u8* r5)
+s32 riderInit(s_3dModel* r4_pModel, sAnimationData* pAnimation)
 {
-    if (r5 == NULL)
+    if (pAnimation == NULL)
     {
         if (r4_pModel->mA_animationFlags & 8)
         {
@@ -1103,34 +1104,37 @@ s32 riderInit(s_3dModel* r4_pModel, u8* r5)
 
     if (r4_pModel->m30_pCurrentAnimation == NULL)
     {
-        r4_pModel->mA_animationFlags |= READ_BE_U16(r5);
+        r4_pModel->mA_animationFlags |= pAnimation->m0_flags;
         initModelDrawFunction(r4_pModel);
-        return createDragonStateSubData1Sub1(r4_pModel, r5);
+        return createDragonStateSubData1Sub1(r4_pModel, pAnimation);
     }
 
-    if (READ_BE_U16(r4_pModel->m30_pCurrentAnimation) != READ_BE_U16(r5))
+    if (r4_pModel->m30_pCurrentAnimation->m0_flags != pAnimation->m0_flags)
     {
         //060215EC
         r4_pModel->mA_animationFlags &= ~0x0038;
-        r4_pModel->mA_animationFlags |= READ_BE_U16(r5);
+        r4_pModel->mA_animationFlags |= pAnimation->m0_flags;
         initModelDrawFunction(r4_pModel);
-        return createDragonStateSubData1Sub1(r4_pModel, r5);
+        return createDragonStateSubData1Sub1(r4_pModel, pAnimation);
     }
 
     //06021620
-    r4_pModel->m30_pCurrentAnimation = r5;
+    r4_pModel->m30_pCurrentAnimation = pAnimation;
     r4_pModel->m10_currentAnimationFrame = 0;
 
-    switch (READ_BE_U16(r5) & 7)
+    switch (pAnimation->m0_flags & 7)
     {
     case 1:
     case 4:
     case 5:
         for (s32 r7 = 0; r7 < r4_pModel->m12_numBones; r7++)
         {
-            r4_pModel->m2C_poseData[r7].m48[0].currentStep = 0;
-            r4_pModel->m2C_poseData[r7].m48[0].delay = 0;
-            r4_pModel->m2C_poseData[r7].m48[0].value = 0;
+            for(int j=0; j<9; j++)
+            {
+                r4_pModel->m2C_poseData[r7].m48[j].currentStep = 0;
+                r4_pModel->m2C_poseData[r7].m48[j].delay = 0;
+                r4_pModel->m2C_poseData[r7].m48[j].value = 0;
+            }
         }
     default:
         break;
@@ -1145,7 +1149,7 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
     {
         if (pDragonStateData1->m40)
         {
-            if (pDragonStateData1->m38)
+            if (pDragonStateData1->m38_pColorAnim)
             {
                 pDragonStateData1->m18_drawFunction = modelDrawFunction0;
             }
@@ -1156,7 +1160,7 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
         }
         else
         {
-            if (pDragonStateData1->m38)
+            if (pDragonStateData1->m38_pColorAnim)
             {
                 pDragonStateData1->m18_drawFunction = modelDrawFunction2;
             }
@@ -1176,7 +1180,7 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
             }
             else
             {
-                if (pDragonStateData1->m38)
+                if (pDragonStateData1->m38_pColorAnim)
                 {
                     pDragonStateData1->m18_drawFunction = modelDrawFunction5;
                 }
@@ -1194,7 +1198,7 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
             }
             else
             {
-                if (pDragonStateData1->m38)
+                if (pDragonStateData1->m38_pColorAnim)
                 {
                     pDragonStateData1->m18_drawFunction = modelDrawFunction9;
                 }
@@ -1208,19 +1212,19 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
     }
 }
 
-void countNumBonesInModel(s_3dModel* pDragonStateData1, u8* pDragonModelData, u8* pStartOfData)
+void countNumBonesInModel(s_3dModel* p3dModel, sModelHierarchy* pHierarchy)
 {
     do
     {
-        pDragonStateData1->m12_numBones++;
-        if (READ_BE_U32(pDragonModelData + 4))
+        p3dModel->m12_numBones++;
+        if (pHierarchy->m4_subNode)
         {
-            countNumBonesInModel(pDragonStateData1, pStartOfData + READ_BE_U32(pDragonModelData + 4), pStartOfData);
+            countNumBonesInModel(p3dModel, pHierarchy->m4_subNode);
         }
 
-        if (READ_BE_U32(pDragonModelData + 8))
+        if (pHierarchy->m8_nextNode)
         {
-            pDragonModelData = pStartOfData + READ_BE_U32(pDragonModelData + 8);
+            pHierarchy = pHierarchy->m8_nextNode;
         }
         else
         {
@@ -1254,72 +1258,77 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     return true;
 }
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 animationFlags, u8* pDragonModel, u16 modelIndexOffset, u8* pAnimationData, u8* pDefaultPose, u8* unkArg2, const s_RiderDefinitionSub* unkArg3)
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, sAnimationData* pAnimationData, sStaticPoseData* pDefaultPose, u8* colorAnim, const s_RiderDefinitionSub* unkArg3)
 {
-    pDragonStateData1->m0_pOwnerTask = pWorkArea;
-    pDragonStateData1->m4_pModelFile = pDragonModel;
-    pDragonStateData1->mC_modelIndexOffset = modelIndexOffset;
-    pDragonStateData1->m34_pDefaultPose = pDefaultPose;
-    pDragonStateData1->m38 = unkArg2;
-    pDragonStateData1->m14 = 0;
-    pDragonStateData1->m16 = 0;
-    pDragonStateData1->m8 = 1;
+    p3dModel->m0_pOwnerTask = pWorkArea;
+    p3dModel->m4_pModelFile = pDragonBundle;
+    p3dModel->mC_modelIndexOffset = modelIndexOffset;
+    p3dModel->m34_pDefaultPose = pDefaultPose;
+    p3dModel->m38_pColorAnim = colorAnim;
+    p3dModel->m14 = 0;
+    p3dModel->m16_previousAnimationFrame = 0;
+    p3dModel->m8 = 1;
 
     if (pAnimationData)
     {
-        pDragonStateData1->mA_animationFlags = READ_BE_U16(pAnimationData) | animationFlags;
-        pDragonStateData1->m12_numBones = READ_BE_U16(pAnimationData + 2);
+        p3dModel->mA_animationFlags = pAnimationData->m0_flags | animationFlags;
+        p3dModel->m12_numBones = pAnimationData->m2_numBones;
     }
     else
     {
-        pDragonStateData1->mA_animationFlags = animationFlags;
-        pDragonStateData1->m12_numBones = 0;
-        countNumBonesInModel(pDragonStateData1, pDragonModel + READ_BE_U32(pDragonModel + pDragonStateData1->mC_modelIndexOffset), pDragonModel);
+        p3dModel->mA_animationFlags = animationFlags;
+        p3dModel->m12_numBones = 0;
+        countNumBonesInModel(p3dModel, pDragonBundle->getModelHierarchy(p3dModel->mC_modelIndexOffset));
     }
 
-    pDragonStateData1->m2C_poseData.resize(pDragonStateData1->m12_numBones);
-
-    if (pDragonStateData1->mA_animationFlags & 0x200)
+    if (pDefaultPose)
     {
-        pDragonStateData1->m3C_boneMatrices.resize(pDragonStateData1->m12_numBones);
-        assert(pDragonStateData1->m3C_boneMatrices.size());
+        assert(p3dModel->m12_numBones == pDefaultPose->m0_bones.size());
+    }
 
-        pDragonStateData1->m8 |= 2;
+    p3dModel->m2C_poseData.resize(p3dModel->m12_numBones);
+
+    if (p3dModel->mA_animationFlags & 0x200)
+    {
+        p3dModel->m3C_boneMatrices.resize(p3dModel->m12_numBones);
+        assert(p3dModel->m3C_boneMatrices.size());
+
+        p3dModel->m8 |= 2;
     }
     else
     {
-        pDragonStateData1->m3C_boneMatrices.resize(0);
-        pDragonStateData1->m8 &= ~2;
+        p3dModel->m3C_boneMatrices.resize(0);
+        p3dModel->m8 &= ~2;
     }
 
     if (unkArg3)
     {
-        if (!createDragonStateSubData1Sub2(pDragonStateData1, unkArg3))
+        if (!createDragonStateSubData1Sub2(p3dModel, unkArg3))
             return false;
     }
     else
     {
-        pDragonStateData1->m40 = 0;
+        p3dModel->m40 = 0;
     }
 
     if (pAnimationData)
     {
-        if (createDragonStateSubData1Sub1(pDragonStateData1, pAnimationData) == 0)
+        if (createDragonStateSubData1Sub1(p3dModel, pAnimationData) == 0)
             return false;
     }
     else
     {
-        pDragonStateData1->m30_pCurrentAnimation = NULL;
-        pDragonStateData1->m10_currentAnimationFrame = 0;
+        p3dModel->m30_pCurrentAnimation = NULL;
+        p3dModel->m10_currentAnimationFrame = 0;
 
-        copyPosePosition(pDragonStateData1);
-        copyPoseRotation(pDragonStateData1);
-        resetPoseScale(pDragonStateData1);
+        copyPosePosition(p3dModel);
+        copyPoseRotation(p3dModel);
+        resetPoseScale(p3dModel);
     }
 
-    initModelDrawFunction(pDragonStateData1);
+    initModelDrawFunction(p3dModel);
 
-    pDragonStateData1->m1C_addToDisplayListFunction = addObjectToDrawList;
+    p3dModel->m1C_addToDisplayListFunction = addObjectToDrawList;
 
     return true;
 }
@@ -1527,7 +1536,7 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
     s_dragonState* pDragonState = createSubTaskFromFunction<s_dragonState>(pWorkArea, nullptr);
 
-    pDragonState->m0_pDragonModelRawData = gDragonModel;
+    pDragonState->m0_pDragonModelBundle = new s_fileBundle(gDragonModel);
     pDragonState->mC_dragonType = dragonLevel;
     pDragonState->m14_modelIndex = pDragonData3->m_m8[0].m_m0[0];
     pDragonState->m18_shadowModelIndex = pDragonData3->m_m8[0].m_m0[1];
@@ -1535,11 +1544,10 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     pDragonState->m24_dragonAnimCount = pDragonAnimOffsets->m_count;
     pDragonState->m88 = 1;
 
-    u8* pDragonModel = pDragonState->m0_pDragonModelRawData;
-    u8* pDefaultAnimationData = pDragonModel + READ_BE_U32(pDragonModel + pDragonState->m20_dragonAnimOffsets[0]);
-    u8* defaultPose = pDragonModel + READ_BE_U32(pDragonModel + pDragonData3->m_m8[0].m_m0[2]);
+    sAnimationData* pDefaultAnimationData = pDragonState->m0_pDragonModelBundle->getAnimation(pDragonState->m20_dragonAnimOffsets[0]);
+    sStaticPoseData* defaultPose = pDragonState->m0_pDragonModelBundle->getStaticPose(pDragonData3->m_m8[0].m_m0[2], pDefaultAnimationData->m2_numBones);
 
-    init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonModel, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m_m8);
+    init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonState->m0_pDragonModelBundle, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m_m8);
 
     init3DModelAnims(pDragonState, &pDragonState->m28_dragon3dModel, &pDragonState->m78_animData, getDragonDataByIndex(dragonLevel));
 
@@ -1685,7 +1693,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
 {
     const s_RiderDefinition* r13 = &gRiderTable[riderType];
 
-    u8* pModelData1 = NULL;
+    sAnimationData* pAnimation = NULL;
 
     s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
 
@@ -1709,6 +1717,7 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
         }
 
         loadFile(r13->m_MCBName, riderModel, 0x2C00);
+        pLoadRiderWorkArea->m0_riderBundle = new s_fileBundle(riderModel);
 
         if (r13->m_CGBName)
         {
@@ -1720,10 +1729,10 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
         assert(0);
     }
 
-    u8* pModel = pLoadRiderWorkArea->m0_riderModel;
-    u8* pDefaultPose = pModel + READ_BE_U32(pModel + r13->m_flags2);
+    s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
+    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m_modelIndex)->countNumberOfBones());
 
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pModel, pLoadRiderWorkArea->m_modelIndex, pModelData1, pDefaultPose, 0, r13->m_pExtraData);
+    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
 
     return pLoadRiderWorkArea;
 }
@@ -1732,7 +1741,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
 {
     const s_RiderDefinition* r13 = &gRiderTable[riderType];
 
-    u8* pModelData1 = NULL;
+    sAnimationData* pAnimation = NULL;
 
     s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
 
@@ -1746,6 +1755,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
     if (riderType < 6)
     {
         pLoadRiderWorkArea->m0_riderModel = rider2Model;
+
         if (riderType == 1)
         {
             pLoadRiderWorkArea->m_14 = 0x24;
@@ -1756,6 +1766,7 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
         }
 
         loadFile(r13->m_MCBName, rider2Model, 0x2E80);
+        pLoadRiderWorkArea->m0_riderBundle = new s_fileBundle(rider2Model);
 
         if (r13->m_CGBName)
         {
@@ -1767,10 +1778,10 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
         assert(0);
     }
 
-    u8* pModel = pLoadRiderWorkArea->m0_riderModel;
-    u8* pModelData2 = pModel + READ_BE_U32(pModel + r13->m_flags2);
+    s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
+    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m_modelIndex)->countNumberOfBones());
 
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pModel, pLoadRiderWorkArea->m_modelIndex, pModelData1, pModelData2, 0, r13->m_pExtraData);
+    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
 
     return pLoadRiderWorkArea;
 }
@@ -1919,9 +1930,9 @@ void s_FieldSubTaskWorkArea::Update(s_FieldSubTaskWorkArea* pFieldSubTaskWorkAre
 
 void s_FieldSubTaskWorkArea::Draw(s_FieldSubTaskWorkArea* pFieldSubTaskWorkArea)
 {
-    if (pFieldSubTaskWorkArea->pUpdateFunction1)
+    if (pFieldSubTaskWorkArea->m374_pUpdateFunction1)
     {
-        pFieldSubTaskWorkArea->pUpdateFunction1();
+        pFieldSubTaskWorkArea->m374_pUpdateFunction1();
     }
 
     if (pFieldSubTaskWorkArea->pUpdateFunction2)
@@ -4048,7 +4059,7 @@ p_workArea createContinueTask(p_workArea pWorkArea)
     return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 1, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
 }
 
-void playAnimationGenericSub1Sub0(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14)
+void playAnimationGenericSub1Sub0(sModelHierarchy* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14)
 {
     do
     {
@@ -4059,33 +4070,33 @@ void playAnimationGenericSub1Sub0(u8* pModelDataRoot, u8* pModelData, std::vecto
         scaleCurrentMatrixRow1(r14->m18_scale[1]);
         scaleCurrentMatrixRow2(r14->m18_scale[2]);
 
-        if (u32 offset = READ_BE_U32(pModelData))
+        if (pModelData->m0_3dModel)
         {
-            addObjectToDrawList(pModelDataRoot, offset);
+            addObjectToDrawList(pModelData->m0_3dModel);
         }
 
-        if (u32 offset = READ_BE_U32(pModelData + 4))
+        if (pModelData->m4_subNode)
         {
             // next matrix
             r14++;
-            playAnimationGenericSub1Sub0(pModelDataRoot, pModelDataRoot + offset, r14);
+            playAnimationGenericSub1Sub0(pModelData->m4_subNode, r14);
         }
 
         popMatrix();
 
         // End of model
-        if (READ_BE_U32(pModelData + 8) == 0)
+        if (pModelData->m8_nextNode == nullptr)
         {
             return;
         }
 
         // next matrix
         r14++;
-        pModelData = pModelDataRoot + READ_BE_U32(pModelData + 8);
+        pModelData = pModelData->m8_nextNode;
     } while (1);
 }
 
-void playAnimationGenericSub0Sub0(u8* pModelDataRoot, u8* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void playAnimationGenericSub0Sub0(sModelHierarchy* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do
     {
@@ -4096,9 +4107,9 @@ void playAnimationGenericSub0Sub0(u8* pModelDataRoot, u8* pModelData, std::vecto
         scaleCurrentMatrixRow1(r14->m18_scale[1]);
         scaleCurrentMatrixRow2(r14->m18_scale[2]);
 
-        if (u32 offset = READ_BE_U32(pModelData))
+        if (pModelData->m0_3dModel)
         {
-            addObjectToDrawList(pModelDataRoot, offset);
+            addObjectToDrawList(pModelData->m0_3dModel);
         }
 
         for (u32 i = 0; i < r6->m_count; i++)
@@ -4109,7 +4120,7 @@ void playAnimationGenericSub0Sub0(u8* pModelDataRoot, u8* pModelData, std::vecto
             transformAndAddVecByCurrentMatrix(&input, &output);
         }
 
-        if (u32 offset = READ_BE_U32(pModelData + 4))
+        if (pModelData->m4_subNode)
         {
             // next matrix
             r14++;
@@ -4118,13 +4129,13 @@ void playAnimationGenericSub0Sub0(u8* pModelDataRoot, u8* pModelData, std::vecto
             // next ???
             r7++;
 
-            playAnimationGenericSub0Sub0(pModelDataRoot, pModelDataRoot + offset, r14, r6, r7);
+            playAnimationGenericSub0Sub0(pModelData->m4_subNode, r14, r6, r7);
         }
 
         popMatrix();
 
         // End of model
-        if (READ_BE_U32(pModelData + 8) == 0)
+        if (pModelData->m8_nextNode == nullptr)
         {
             return;
         }
@@ -4135,21 +4146,21 @@ void playAnimationGenericSub0Sub0(u8* pModelDataRoot, u8* pModelData, std::vecto
         r6++;
         // next ???
         r7++;
-        pModelData = pModelDataRoot + READ_BE_U32(pModelData + 8);
+        pModelData = pModelData->m8_nextNode;
 
     } while (1);
 }
 
 void playAnimationGenericSub0(s_3dModel* pModel)
 {
-    u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+    sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
 
     if (pModel->m8 & 1)
     {
         std::vector<sPoseDataInterpolation>::iterator r5 = pModel->m48_poseDataInterpolation.begin();
         const s_RiderDefinitionSub* r6 = pModel->m40;
         std::vector<std::vector<sVec3_FP>>::iterator r7 = pModel->m44.begin();
-        playAnimationGenericSub0Sub0(pModel->m4_pModelFile, r4, r5, r6, r7);
+        playAnimationGenericSub0Sub0(r4, r5, r6, r7);
     }
     else
     {
@@ -4162,13 +4173,13 @@ void playAnimationGenericSub1(s_3dModel* pModel)
 {
     if (pModel->m8 & 1)
     {
-        u8* r4 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
+        sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
         std::vector<sPoseDataInterpolation>::iterator r5 = pModel->m48_poseDataInterpolation.begin();
-        playAnimationGenericSub1Sub0(pModel->m4_pModelFile, r4, r5);
+        playAnimationGenericSub1Sub0(r4, r5);
     }
 }
 
-void playAnimationGeneric(s_3dModel* pModel, u8* pAnimation, s32 interpolationLength)
+void playAnimationGeneric(s_3dModel* pModel, sAnimationData* pAnimation, s32 interpolationLength)
 {
     if (setupPoseInterpolation(pModel, interpolationLength) && !(pModel->mA_animationFlags & 0x200))
     {

@@ -7,6 +7,7 @@
 #include "town/townMainLogic.h"
 #include "kernel/animation.h"
 #include "kernel/vdp1Allocator.h"
+#include "kernel/fileBundle.h"
 
 #include "twn_ruin_lock.h"
 
@@ -1101,19 +1102,22 @@ void updateEdgePosition(sNPC* r4)
             r12->mF |= 0x80;
             if (r12->m2C_currentAnimation != 4)
             {
-                r12->m2C_currentAnimation = 4;
-                u8* buffer;
-                if (readSaturnU16(r12->m30_animationTable + 0x10) == 0)
+                r12->m2C_currentAnimation = 4; //falling
+                sSaturnPtr var0 = r12->m30_animationTable + 4 * r12->m2C_currentAnimation; // walk animation
+
+                u32 offset = readSaturnU16(var0 + 2);
+                sAnimationData* buffer;
+                if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = r12->m0_dramAllocation;
+                    buffer = r12->m0_dramAllocation->getAnimation(offset);
                 }
 
                 // play falling animation
-                playAnimationGeneric(&r12->m34_3dModel, buffer + READ_BE_U32(buffer + readSaturnU16(r12->m30_animationTable + 0x10 + 2)), 5);
+                playAnimationGeneric(&r12->m34_3dModel, buffer, 5);
             }
         }
     }

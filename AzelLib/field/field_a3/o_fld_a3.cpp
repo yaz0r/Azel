@@ -7,6 +7,7 @@
 #include "a3_2_crashedImperialShip.h"
 
 #include "kernel/animation.h"
+#include "kernel/fileBundle.h"
 #include "kernel/cinematicBarsTask.h"
 #include "collision.h"
 
@@ -1415,7 +1416,7 @@ s_DataTable2* readDataTable2(sSaturnPtr EA)
                 newEntry.m10_rotation[1] = readSaturnS16(cellEA + 0x12);
                 newEntry.m10_rotation[2] = readSaturnS16(cellEA + 0x14);
                 newEntry.m18 = readSaturnS32(cellEA + 0x18);
-                newEntry.m1C = readSaturnEA(cellEA + 0x1C);
+                newEntry.m1C_modelData = readSaturnEA(cellEA + 0x1C);
 
                 pNewData2->m0[i].push_back(newEntry);
 
@@ -2667,11 +2668,11 @@ void s_riderAnimTask::Update(s_riderAnimTask* pThis)
             return;
         case 0:
             pThis->m8_delay = pThis->m10_animSequence->m2;
-            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderModel + READ_BE_U32(pThis->m18->m0_riderModel + pThis->m1C[pThis->m10_animSequence->m1]), pThis->m10_animSequence->m2);
+            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderBundle->getAnimation(pThis->m1C[pThis->m10_animSequence->m1]), pThis->m10_animSequence->m2);
             break;
         case 1:
             pThis->m8_delay = pThis->m10_animSequence->m2;
-            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderModel + READ_BE_U32(pThis->m18->m0_riderModel + pThis->m1C[pThis->m10_animSequence->m1 + 0x10]), 15);
+            playAnimationGeneric(&pThis->m14_riderState->m18_3dModel, pThis->m18->m0_riderBundle->getAnimation(pThis->m1C[pThis->m10_animSequence->m1 + 0x10]), 15);
             break;
         default:
             assert(0);
@@ -2689,14 +2690,14 @@ void s_riderAnimTask::Update(s_riderAnimTask* pThis)
             pThis->m10_animSequence++;
             return;
         case 1:
-            if (pThis->m14_riderState->m18_3dModel.m16 < pThis->mC)
+            if (pThis->m14_riderState->m18_3dModel.m16_previousAnimationFrame < pThis->mC)
             {
                 if ((--pThis->m8_delay) <= 0)
                 {
                     pThis->m10_animSequence++;
                 }
             }
-            pThis->mC = pThis->m14_riderState->m18_3dModel.m16;
+            pThis->mC = pThis->m14_riderState->m18_3dModel.m16_previousAnimationFrame;
             return;
         }
     default:
@@ -3956,25 +3957,11 @@ struct s_DragonRiderTask : public s_workAreaTemplate<s_DragonRiderTask>
 
 void s_DragonRiderTask::dragonRidersTaskInit(s_DragonRiderTask* pWorkArea)
 {
-    {
-        u8* pData = NULL;
-        if (u32 offset = READ_BE_U32(pRider1State->m0_riderModel + 0x30))
-        {
-            pData = pRider1State->m0_riderModel + offset;
-        }
-        riderInit(&pRider1State->m18_3dModel, pData);
-        updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
-    }
+    riderInit(&pRider1State->m18_3dModel, pRider1State->m0_riderBundle->getAnimation(0x30));
+    updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
 
-    {
-        u8* pData = NULL;
-        if (u32 offset = READ_BE_U32(pRider2State->m0_riderModel + 0x30))
-        {
-            pData = pRider2State->m0_riderModel + offset;
-        }
-        riderInit(&pRider2State->m18_3dModel, pData);
-        updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
-    }
+    riderInit(&pRider2State->m18_3dModel, pRider2State->m0_riderBundle->getAnimation(0x30));
+    updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
 }
 
 void s_DragonRiderTask::dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea)
@@ -4234,7 +4221,7 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 
 void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDragonState, int param2)
 {
-    setupModelAnimation(&pDragonState->m28_dragon3dModel, pDragonState->m0_pDragonModelRawData + READ_BE_U32(pDragonState->m0_pDragonModelRawData + pDragonState->m20_dragonAnimOffsets[param2]));
+    setupModelAnimation(&pDragonState->m28_dragon3dModel, pDragonState->m0_pDragonModelBundle->getAnimation(pDragonState->m20_dragonAnimOffsets[param2]));
     updateAndInterpolateAnimation(&pDragonState->m28_dragon3dModel);
 
     pWorkArea->m23A_dragonAnimation = param2;
@@ -5666,12 +5653,12 @@ void dragonFieldPlayAnimation(s_dragonTaskWorkArea* r14, s_dragonState* r13, u8 
 
     if (r5 == r4)
     {
-        setupModelAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelRawData + READ_BE_U32(r13->m0_pDragonModelRawData + r13->m20_dragonAnimOffsets[r12]));
+        setupModelAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelBundle->getAnimation(r13->m20_dragonAnimOffsets[r12]));
         r14->m23B = 1;
     }
     else
     {
-        playAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelRawData + READ_BE_U32(r13->m0_pDragonModelRawData + r13->m20_dragonAnimOffsets[r12]), 10);
+        playAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelBundle->getAnimation(r13->m20_dragonAnimOffsets[r12]), 10);
         r14->m23B = 0;
     }
 
@@ -5765,7 +5752,7 @@ void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonSt
             }
 
             //6073524
-            if (r5->m28_dragon3dModel.m16)
+            if (r5->m28_dragon3dModel.m16_previousAnimationFrame)
             {
                 return;
             }
@@ -6119,7 +6106,7 @@ void updateCameraFromDragon()
     {
         if (updateCameraFromDragonSub1(i))
         {
-            if (getFieldTaskPtr()->m8_pSubFieldData->debugMenuStatus1[i] == 0)
+            if (getFieldTaskPtr()->m8_pSubFieldData->m37C_debugMenuStatus1[i] == 0)
             {
                 sFieldCameraStatus* pFieldCameraStatus = &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4[i];
                 if (pFieldCameraStatus->m78)
@@ -6255,11 +6242,11 @@ void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
 
     if (pTypedWorkArea->m249_noCollisionAndHideDragon)
     {
-        WRITE_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30) & ~1);
+        WRITE_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30) & ~1);
     }
     else
     {
-        WRITE_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelRawData + 0x30) | 1);
+        WRITE_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30) | 1);
     }
 
     pushCurrentMatrix();
@@ -6665,27 +6652,27 @@ void createRandomBattleTask(s_workArea* pWorkArea)
 void fieldDebugMenuUpdate1()
 {
     s_FieldSubTaskWorkArea* pSubFieldData = getFieldTaskPtr()->m8_pSubFieldData;
-    if ((pSubFieldData->debugMenuStatus1[0] == 0) && (pSubFieldData->m369 == 0))
+    if ((pSubFieldData->m37C_debugMenuStatus1[0] == 0) && (pSubFieldData->m369 == 0))
     {
-        if (pSubFieldData->debugMenuStatus3 == 0)
+        if (pSubFieldData->m380_debugMenuStatus3 == 0)
         {
             if (readKeyboardToggle(0x84))
             {
-                pSubFieldData->debugMenuStatus1[1]++;
-                pSubFieldData->debugMenuStatus2_a = 0;
+                pSubFieldData->m37C_debugMenuStatus1[1]++;
+                pSubFieldData->m37E_debugMenuStatus2_a = 0;
                 clearVdp2TextMemory();
             }
             else
             {
                 if (readKeyboardToggle(0xF6))
                 {
-                    pSubFieldData->debugMenuStatus1[1] = 0;
+                    pSubFieldData->m37C_debugMenuStatus1[1] = 0;
                     clearVdp2TextMemory();
                 }
             }
         }
 
-        switch (pSubFieldData->debugMenuStatus1[1])
+        switch (pSubFieldData->m37C_debugMenuStatus1[1])
         {
         case 0:
             break;
@@ -6694,7 +6681,7 @@ void fieldDebugMenuUpdate1()
             break;
         }
 
-        if (pSubFieldData->debugMenuStatus1[1])
+        if (pSubFieldData->m37C_debugMenuStatus1[1])
         {
             getFieldTaskPtr()->m28_status |= 8;
         }
@@ -6771,7 +6758,7 @@ bool initField(p_workArea workArea, const s_MCB_CGB* fieldFileList, u32 arg)
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50D = 1;
 
     getFieldTaskPtr()->m8_pSubFieldData->pUpdateFunction2 = fieldDebugMenuUpdate2;
-    getFieldTaskPtr()->m8_pSubFieldData->pUpdateFunction1 = fieldDebugMenuUpdate1;
+    getFieldTaskPtr()->m8_pSubFieldData->m374_pUpdateFunction1 = fieldDebugMenuUpdate1;
 
     pauseEngine[2] = 1;
 

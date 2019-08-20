@@ -110,6 +110,13 @@ struct sVec3_FP
         return *this;
     }
 
+    sVec3_FP  operator *(const sVec3_FP otherVec) const
+    {
+        sVec3_FP newValue = *this;
+        newValue *= otherVec;
+        return newValue;
+    }
+
     sVec3_FP operator + (const sVec3_FP otherVec) const
     {
         sVec3_FP newValue = *this;
@@ -461,7 +468,7 @@ struct s_RiderDefinition
     const char* m_MCBName; //0
     const char* m_CGBName; //4
     u16 m_flags; //8
-    u16 m_flags2; //A
+    u16 mA_offsetToDefaultPose; //A
     const s_RiderDefinitionSub* m_pExtraData; //C
 };
 
@@ -520,16 +527,16 @@ struct sPoseDataInterpolation
 struct s_3dModel
 {
     s_workArea* m0_pOwnerTask; //0
-    u8* m4_pModelFile; //4
+    struct s_fileBundle* m4_pModelFile; //4
 
     u16 m8; //8 2 = m3C_boneMatrices is allocated
-    u16 mA_animationFlags; //A
+    u16 mA_animationFlags; //A 0x100: only root has translation
     u16 mC_modelIndexOffset; //C
 
     u16 m10_currentAnimationFrame; //10
     u16 m12_numBones; //12
     s16 m14; //14
-    u16 m16; //16
+    u16 m16_previousAnimationFrame; //16
 
     void (*m18_drawFunction)(s_3dModel*); // 18
     void (*m1C_addToDisplayListFunction)(u8*, u32); // 1C
@@ -538,10 +545,10 @@ struct s_3dModel
     void (*m28_scaleUpdateFunction)(s_3dModel*); // 28
     std::vector<sPoseData> m2C_poseData; //2C
 
-    u8* m30_pCurrentAnimation; //30
+    struct sAnimationData* m30_pCurrentAnimation;
 
-    u8* m34_pDefaultPose; //34
-    u8* m38; //38
+    struct sStaticPoseData* m34_pDefaultPose; //34
+    u8* m38_pColorAnim; //38
 
     std::vector<sMatrix4x3> m3C_boneMatrices; //3C
 
@@ -593,7 +600,7 @@ struct s_dragonState : public s_workAreaTemplate<s_dragonState>
         return &taskDefinition;
     }
 
-    u8* m0_pDragonModelRawData; //0
+    struct s_fileBundle* m0_pDragonModelBundle;
     u32 mC_dragonType;//C F can contain some other info
     s16 m10_cursorX;//10
     s16 m12_cursorY;//12

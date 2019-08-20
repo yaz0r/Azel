@@ -4,6 +4,7 @@
 #include "townEdge.h"
 #include "townLCS.h"
 #include "kernel/animation.h"
+#include "kernel/fileBundle.h"
 #include "town/ruin/twn_ruin.h"
 
 void updateEdgeSub3(sEdgeTask* pThis);
@@ -13,65 +14,59 @@ sEdgeTask* startEdgeTask(sSaturnPtr r4)
     return createSiblingTaskWithArgWithCopy<sEdgeTask>(allocateNPC(currentResTask, readSaturnS32(r4)), r4);
 }
 
-void applyAnimation(u8* base, u32 offset, std::vector<sPoseData>::iterator& pose)
+void applyAnimation(sModelHierarchy* pNode, std::vector<sPoseData>::iterator& pose)
 {
-    u8* r13 = base + offset;
-
     pushCurrentMatrix();
     {
         translateCurrentMatrix(&pose->m0_translation);
         rotateCurrentMatrixZYX(&pose->mC_rotation);
-        if (READ_BE_U32(r13))
+        if (pNode->m0_3dModel)
         {
-            addObjectToDrawList(base, READ_BE_U32(r13));
+            addObjectToDrawList(pNode->m0_3dModel);
         }
-        if (READ_BE_U32(r13 + 4))
+        if (pNode->m4_subNode)
         {
             pose++;
-            applyAnimation(base, READ_BE_U32(r13 + 4), pose);
+            applyAnimation(pNode->m4_subNode, pose);
         }
     }
     popMatrix();
-    if (READ_BE_U32(r13 + 8))
+    if (pNode->m8_nextNode)
     {
         pose++;
-        applyAnimation(base, READ_BE_U32(r13 + 8), pose);
+        applyAnimation(pNode->m8_nextNode, pose);
     }
 
 }
 
-void applyAnimation2(u8* base, u32 offset, std::vector<sPoseDataInterpolation>::iterator pose)
+void applyAnimation2(sModelHierarchy* pNode, std::vector<sPoseDataInterpolation>::iterator& pose)
 {
-    u8* r13 = base + offset;
-
     pushCurrentMatrix();
     {
         translateCurrentMatrix(&pose->m0_translation);
         rotateCurrentMatrixZYX(&pose->mC_rotation);
-        if (READ_BE_U32(r13))
+        if (pNode->m0_3dModel)
         {
-            addObjectToDrawList(base, READ_BE_U32(r13));
+            addObjectToDrawList(pNode->m0_3dModel);
         }
-        if (READ_BE_U32(r13 + 4))
+        if (pNode->m4_subNode)
         {
             pose++;
-            applyAnimation2(base, READ_BE_U32(r13 + 4), pose);
+            applyAnimation2(pNode->m4_subNode, pose);
         }
     }
     popMatrix();
-    if (READ_BE_U32(r13 + 8))
+    if (pNode->m8_nextNode)
     {
         pose++;
-        applyAnimation2(base, READ_BE_U32(r13 + 8), pose);
+        applyAnimation2(pNode->m8_nextNode, pose);
     }
-
 }
 
 void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 {
     std::vector<sPoseData>::iterator r14_pose = pModel->m2C_poseData.begin();
-    u8* r12 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
-    r12 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+    sModelHierarchy* r12 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset)->m4_subNode;
 
     pushCurrentMatrix();
     {
@@ -86,12 +81,12 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
             rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0x4CCC));
             rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
-            if (READ_BE_U32(r12))
+            if (r12->m0_3dModel)
             {
-                addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r12));
+                addObjectToDrawList(r12->m0_3dModel);
             }
 
-            u8* r13 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+            sModelHierarchy* r13 = r12->m4_subNode;
             pushCurrentMatrix();
             {
                 r14_pose++;
@@ -100,31 +95,31 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
                 rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0xB333));
                 rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
-                if (READ_BE_U32(r13))
+                if (r13->m0_3dModel)
                 {
-                    addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r13));
+                    addObjectToDrawList(r13->m0_3dModel);
                 }
 
-                if (READ_BE_U32(r13 + 4))
+                if (r13->m4_subNode)
                 {
                     r14_pose++;
-                    applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r13 + 4), r14_pose);
+                    applyAnimation(r13->m4_subNode, r14_pose);
                 }
             }
             popMatrix();
 
-            if (READ_BE_U32(r13 + 8))
+            if (r13->m8_nextNode)
             {
                 r14_pose++;
-                applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r13 + 8), r14_pose);
+                applyAnimation(r13->m8_nextNode, r14_pose);
             }
         }
         popMatrix();
 
-        if (READ_BE_U32(r12 + 8))
+        if (r12->m8_nextNode)
         {
             r14_pose++;
-            applyAnimation(pModel->m4_pModelFile, READ_BE_U32(r12 + 8), r14_pose);
+            applyAnimation(r12->m8_nextNode, r14_pose);
         }
     }
     popMatrix();
@@ -134,8 +129,7 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
 void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
 {
     std::vector<sPoseDataInterpolation>::iterator r14_pose = pModel->m48_poseDataInterpolation.begin();
-    u8* r12 = pModel->m4_pModelFile + READ_BE_U32(pModel->m4_pModelFile + pModel->mC_modelIndexOffset);
-    r12 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+    sModelHierarchy* r12 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset)->m4_subNode;
 
     pushCurrentMatrix();
     {
@@ -150,12 +144,12 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
             rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0x4CCC));
             rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
-            if (READ_BE_U32(r12))
+            if (r12->m0_3dModel)
             {
-                addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r12));
+                addObjectToDrawList(r12->m0_3dModel);
             }
 
-            u8* r13 = pModel->m4_pModelFile + READ_BE_U32(r12 + 4);
+            sModelHierarchy* r13 = r12->m4_subNode;
             pushCurrentMatrix();
             {
                 r14_pose++;
@@ -164,31 +158,31 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
                 rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0xB333));
                 rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
 
-                if (READ_BE_U32(r13))
+                if (r13->m0_3dModel)
                 {
-                    addObjectToDrawList(pModel->m4_pModelFile, READ_BE_U32(r13));
+                    addObjectToDrawList(r13->m0_3dModel);
                 }
 
-                if (READ_BE_U32(r13 + 4))
+                if (r13->m4_subNode)
                 {
                     r14_pose++;
-                    applyAnimation2(pModel->m4_pModelFile, READ_BE_U32(r13 + 4), r14_pose);
+                    applyAnimation2(r13->m4_subNode, r14_pose);
                 }
             }
             popMatrix();
 
-            if (READ_BE_U32(r13 + 8))
+            if (r13->m8_nextNode)
             {
                 r14_pose++;
-                applyAnimation2(pModel->m4_pModelFile, READ_BE_U32(r13 + 8), r14_pose);
+                applyAnimation2(r13->m8_nextNode, r14_pose);
             }
         }
         popMatrix();
 
-        if (READ_BE_U32(r12 + 8))
+        if (r12->m8_nextNode)
         {
             r14_pose++;
-            applyAnimation2(pModel->m4_pModelFile, READ_BE_U32(r12 + 8), r14_pose);
+            applyAnimation2(r12->m8_nextNode, r14_pose);
         }
     }
     popMatrix();
@@ -285,7 +279,7 @@ void initEdgeNPC(sEdgeTask* pThis, sSaturnPtr arg)
     pThis->m84.m3C_scriptEA = readSaturnEA(arg + 0x38);
     if (u16 offset = readSaturnU16(arg + 0x36))
     {
-        pThis->m84.m40 = READ_BE_U32(pThis->m0_dramAllocation + offset);
+        pThis->m84.m40 = pThis->m0_dramAllocation->getRawFileAtOffset(offset);
     }
     else
     {
@@ -302,7 +296,11 @@ void sEdgeTask::Init(sEdgeTask* pThis, sSaturnPtr arg)
 {
     initEdgeNPC(pThis, arg);
 
-    init3DModelRawData(pThis, &pThis->m34_3dModel, 0x100, pThis->m0_dramAllocation, readSaturnU16(arg + 0x22), nullptr, pThis->m0_dramAllocation + READ_BE_U32(pThis->m0_dramAllocation + readSaturnU16(arg + 0x24)), nullptr, nullptr);
+    s_fileBundle* pBundle = pThis->m0_dramAllocation;
+    u32 modelIndex = readSaturnU16(arg + 0x22);
+    sStaticPoseData* pStaticPoseData = pBundle->getStaticPose(readSaturnU16(arg + 0x24), pBundle->getModelHierarchy(modelIndex)->countNumberOfBones());
+
+    init3DModelRawData(pThis, &pThis->m34_3dModel, 0x100, pBundle, modelIndex, nullptr, pStaticPoseData, nullptr, nullptr);
 
     if (readSaturnU8(arg + 0x21) & 0x40)
     {
@@ -430,18 +428,20 @@ void sEdgeTask::Update(sEdgeTask* pThis)
             if (pThis->m2C_currentAnimation != 1)
             {
                 pThis->m2C_currentAnimation = 1;
-                sSaturnPtr var0 = pThis->m30_animationTable + 4; // walk animation
-                u8* buffer;
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation; // walk animation
+
+                u32 offset = readSaturnU16(var0 + 2);
+                sAnimationData* buffer;
                 if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = pThis->m0_dramAllocation;
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
                 }
 
-                playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
+                playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
             }
             r12 >>= 16;
         }
@@ -452,18 +452,20 @@ void sEdgeTask::Update(sEdgeTask* pThis)
             {
                 //0x605A20C
                 pThis->m2C_currentAnimation = 0;
-                sSaturnPtr var0 = pThis->m30_animationTable; // stand animation
-                u8* buffer;
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation; // stand animation
+
+                u32 offset = readSaturnU16(var0 + 2);
+                sAnimationData* buffer;
                 if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = pThis->m0_dramAllocation;
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
                 }
 
-                playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
+                playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
 
             }
 
@@ -539,17 +541,19 @@ void updateEdgeSub3Sub0(sEdgeTask* pThis)
 
             pThis->m2C_currentAnimation = r12;
             sSaturnPtr var0 = pThis->m30_animationTable + pThis->m2C_currentAnimation * 4;
-            u8* buffer;
+
+            u32 offset = readSaturnU16(var0 + 2);
+            sAnimationData* buffer;
             if (readSaturnU16(var0))
             {
-                buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
             }
             else
             {
-                buffer = pThis->m0_dramAllocation;
+                buffer = pThis->m0_dramAllocation->getAnimation(offset);
             }
 
-            playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), r6);
+            playAnimationGeneric(&pThis->m34_3dModel, buffer, r6);
         }
     }
 
@@ -560,12 +564,12 @@ void updateEdgeSub3Sub0(sEdgeTask* pThis)
 void updateEdgeSub3(sEdgeTask* pThis)
 {
     sNPCE8* r13 = &pThis->mE8;
-    fixedPoint var8 = r13->m0_position[0] - r13->m54_oldPosition[0];
-    fixedPoint var0 = r13->m0_position[1] - r13->m54_oldPosition[1];
-    fixedPoint var4 = r13->m0_position[2] - r13->m54_oldPosition[2];
 
-    s32 r4 = sqrt_I(var8 * var8 + var0 * var0 + var4 * var4) * 0x1E1;
-    u32 animCounter = (pThis->m28_animationLeftOver + r4);
+    sVec3_FP delta = r13->m0_position - r13->m54_oldPosition;
+    sVec3_FP deltaSquare = delta * delta;
+
+    s32 r4 = sqrt_I(deltaSquare[0] + deltaSquare[1] + deltaSquare[2]) * 0x1E1;
+    s32 animCounter = (pThis->m28_animationLeftOver + r4);
     pThis->m28_animationLeftOver = animCounter & 0xFFFF;
 
     if (r4 > 0x666)
@@ -573,45 +577,70 @@ void updateEdgeSub3(sEdgeTask* pThis)
         //605C33C
         switch (pThis->m2C_currentAnimation)
         {
+        case 2:
+            if (r4 < 0x28000)
+            {
+                //0605C34C
+                pThis->m2C_currentAnimation = 1; // run to walk
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation;
+
+                u32 offset = readSaturnU16(var0 + 2);
+                sAnimationData* buffer;
+                if (readSaturnU16(var0))
+                {
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
+                }
+                else
+                {
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
+                }
+
+                playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
+            }
+            break;
         case 1:
             if (r4 > 0x30000)
             {
                 //0605C3AE
                 pThis->m2C_currentAnimation = 2; // run animation
-                sSaturnPtr var0 = pThis->m30_animationTable + 8;
-                u8* buffer;
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation;
+
+                u32 offset = readSaturnU16(var0 + 2);
+                sAnimationData* buffer;
                 if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = pThis->m0_dramAllocation;
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
                 }
 
-                playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
+                playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
                 break;
 
             }
             break;
         default:
             //0x605C3DA
-        {
-            pThis->m2C_currentAnimation = 1;
-            sSaturnPtr var0 = pThis->m30_animationTable + 4;
-            u8* buffer;
-            if (readSaturnU16(var0))
             {
-                buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation;
-            }
-            else
-            {
-                buffer = pThis->m0_dramAllocation;
-            }
+                pThis->m2C_currentAnimation = 1; // walk animation
+                sSaturnPtr var0 = pThis->m30_animationTable + 4 * pThis->m2C_currentAnimation;
 
-            playAnimationGeneric(&pThis->m34_3dModel, buffer + READ_BE_U32(readSaturnU16(var0 + 2) + buffer), 5);
-            break;
-        }
+                u32 offset = readSaturnU16(var0 + 2);
+                sAnimationData* buffer;
+                if (readSaturnU16(var0))
+                {
+                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
+                }
+                else
+                {
+                    buffer = pThis->m0_dramAllocation->getAnimation(offset);
+                }
+
+                playAnimationGeneric(&pThis->m34_3dModel, buffer, 5);
+                break;
+            }
         }
 
         //0605C402
@@ -662,7 +691,7 @@ void sEdgeTask::Draw(sEdgeTask* pThis)
     // draw the shadow
     if (pThis->mF & 0x80)
     {
-        addObjectToDrawList(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation, READ_BE_U32(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation + readSaturnU16(pThis->m30_animationTable + 2)));
+        addObjectToDrawList(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawBuffer(), dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawFileOffset(readSaturnU16(pThis->m30_animationTable + 2)));
     }
 
     if (pThis->m34_3dModel.m48_poseDataInterpolation.size())

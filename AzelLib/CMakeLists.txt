@@ -24,6 +24,8 @@ file(GLOB SRC_TOWN
 file(GLOB_RECURSE SRC_TOWN_RUIN
     "town/ruin/*.cpp"
     "town/ruin/*.h"
+    "town/exca/*.cpp"
+    "town/exca/*.h"
 )
 
 file(GLOB_RECURSE SRC_FIELD_A3

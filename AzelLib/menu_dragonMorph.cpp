@@ -1,4 +1,6 @@
 #include "PDS.h"
+#include "kernel/fileBundle.h"
+#include "kernel/animation.h"
 
 struct s_lightSetup
 {
@@ -39,7 +41,7 @@ struct s_dragonMenuDragonWorkArea : public s_workAreaTemplate<s_dragonMenuDragon
     u32 mC; //C
     sVec3_FP modelTranslation; //10
     sVec3_FP modelRotation; //1C
-    u8* m28; //28
+    struct sAnimationData* m28_animation; //28
     u32 m2C; //2C
     u16 m30; //30
     s_dragonMenuDragonWorkAreaSub1 m34; //34
@@ -331,8 +333,8 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonInit(s_dragonMenuDragonWorkArea
     dragonMenuDragonInitSub1(&pWorkArea->m34);
 
     pWorkArea->m30 = getVdp2VramU16(0x25002);
-    pWorkArea->m28 = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation;
-    pWorkArea->m2C = gDragonState->m28_dragon3dModel.m16;
+    pWorkArea->m28_animation = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation;
+    pWorkArea->m2C = gDragonState->m28_dragon3dModel.m16_previousAnimationFrame;
 
     pWorkArea->m0 = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
@@ -343,7 +345,7 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonInit(s_dragonMenuDragonWorkArea
     pWorkArea->modelRotation[1] = fixedPoint(0x638E38E);
     pWorkArea->modelRotation[2] = fixedPoint(0xF555555);
 
-    playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelRawData + READ_BE_U32(gDragonState->m0_pDragonModelRawData + gDragonState->m20_dragonAnimOffsets[0]), 0); // Todo: is the [0] correct?
+    playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelBundle->getAnimation(gDragonState->m20_dragonAnimOffsets[0]), 0); // Todo: is the [0] correct?
 
     dragonMenuDragonInitSub3(&gDragonState->m78_animData);
 
@@ -764,10 +766,10 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkAr
         }
         else
         {
-            r3 = READ_BE_S16(gDragonState->m28_dragon3dModel.m30_pCurrentAnimation + 4);
+            r3 = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation->m4_numFrames;
         }
         r3--;
-        if (gDragonState->m28_dragon3dModel.m16 >= r3)
+        if (gDragonState->m28_dragon3dModel.m16_previousAnimationFrame >= r3)
         {
             s_animLoop* pAnimLoop = dragonAnimLoop[gDragonState->mC_dragonType][gDragonState->m1C_dragonArchetype];
 
@@ -782,7 +784,7 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkAr
 
             u16 animIndex = pAnimLoop->m_values[pWorkArea->mC];
             u32 animOffset = gDragonState->m20_dragonAnimOffsets[animIndex];
-            playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelRawData + READ_BE_U32(gDragonState->m0_pDragonModelRawData + animOffset), 0);
+            playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelBundle->getAnimation(animOffset), 0);
         }
     }
 

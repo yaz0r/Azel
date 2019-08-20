@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "kernel/animation.h"
+#include "kernel/fileBundle.h"
 #include "a3_background_layer.h"
 // Above Excavation
 
@@ -281,7 +282,7 @@ void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
 {
     if (r4->mA_animationFlags & 0x38)
     {
-        s16 type = READ_BE_S16(r4->m30_pCurrentAnimation) & 7;
+        s16 type = r4->m30_pCurrentAnimation->m0_flags & 7;
         switch (type)
         {
         default:
@@ -325,11 +326,11 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         {
         case 0:
         {
-            u8* pModel = pThis->m0.m0_mainMemory;
-            u8* pModelData1 = pModel + READ_BE_U32(pModel + 0x1A0);
-            u8* pDefaultPose = pModel + READ_BE_U32(pModel + LCSItemBox_Table2[r13->m42]);
+            s_fileBundle* pBundle = pThis->m0.m0_mainMemoryBundle;
+            sAnimationData* pAnimation = pBundle->getAnimation(0x1A0);
+            sStaticPoseData* pDefaultPose = pBundle->getStaticPose(LCSItemBox_Table2[r13->m42], pAnimation->m2_numBones);
 
-            init3DModelRawData(pThis, &pThis->m98, 0, pModel, LCSItemBox_Table3[r13->m42], pModelData1, pDefaultPose, 0, 0);
+            init3DModelRawData(pThis, &pThis->m98_3dModel, 0, pBundle, LCSItemBox_Table3[r13->m42], pAnimation, pDefaultPose, 0, 0);
 
             if (pThis->m80 > 0)
             {
@@ -338,7 +339,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
                     pThis->m_DrawMethod = LCSItemBox_OpenedBoxDraw;
                     pThis->mEA_wasRendered = 3;
 
-                    itemBoxType1InitSub0(&pThis->m98, 20);
+                    itemBoxType1InitSub0(&pThis->m98_3dModel, 20);
                 }
             }
             break;
@@ -659,7 +660,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
             pThis->mEA_wasRendered++;
             // fall
         case 1:
-            stepAnimation(&pThis->m98);
+            stepAnimation(&pThis->m98_3dModel);
             pThis->mEA_wasRendered++;
             pThis->mE8--;
             if (pThis->mE8 <= 0)
@@ -685,7 +686,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         scaleCurrentMatrixRow0(pThis->m78_scale);
         scaleCurrentMatrixRow1(pThis->m78_scale);
         scaleCurrentMatrixRow2(pThis->m78_scale);
-        pThis->m98.m18_drawFunction(&pThis->m98);
+        pThis->m98_3dModel.m18_drawFunction(&pThis->m98_3dModel);
         popMatrix();
     }
 
@@ -715,7 +716,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
     s8 m8D;
     s32 m90;
     s32 m94;
-    s_3dModel m98;
+    s_3dModel m98_3dModel;
     s16 mE8;
     s16 mEA_wasRendered;
     p_workArea mEC_savePointParticlesTask;
@@ -843,8 +844,10 @@ struct fieldA3_1_startTasks_subTask : public s_workAreaTemplateWithArg<fieldA3_1
     {
         getMemoryArea(&pThis->m0_memoryArea, 3);
 
-        u8* p3dModelRawData = pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory);
-        init3DModelRawData(pThis, &pThis->m9C_3dModel, 0, p3dModelRawData, 4, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x324), pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x2A0), 0, nullptr);
+        s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+        sAnimationData* pAnimation = pBundle->getAnimation(0x324);
+        sStaticPoseData* pPose = pBundle->getStaticPose(0x2A0, pAnimation->m2_numBones);
+        init3DModelRawData(pThis, &pThis->m9C_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m9C_3dModel);
 
         pThis->m8_translation = readSaturnVec3(arg);
@@ -887,8 +890,11 @@ struct fieldA3_1_startTasks_subTask2 : public s_workAreaTemplateWithArg<fieldA3_
     {
         getMemoryArea(&pThis->m0_memoryArea, 3);
 
-        u8* p3dModelRawData = pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory);
-        init3DModelRawData(pThis, &pThis->m78_3dModel, 0, p3dModelRawData, 4, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x324), pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x2A0), 0, nullptr);
+        s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+        sAnimationData* pAnimation = pBundle->getAnimation(0x324);
+        sStaticPoseData* pPose = pBundle->getStaticPose(0x2A0, pAnimation->m2_numBones);
+
+        init3DModelRawData(pThis, &pThis->m78_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m78_3dModel);
 
         pThis->m8_translation = readSaturnVec3(arg);
@@ -928,8 +934,11 @@ struct fieldA3_1_startTasks_subTask3 : public s_workAreaTemplateWithArg<fieldA3_
     {
         getMemoryArea(&pThis->m0_memoryArea, 3);
 
-        u8* p3dModelRawData = pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory);
-        init3DModelRawData(pThis, &pThis->m3C_3dModel, 0, p3dModelRawData, 4, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x324), pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x2A0), 0, nullptr);
+        s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+        sAnimationData* pAnimation = pBundle->getAnimation(0x324);
+        sStaticPoseData* pPose = pBundle->getStaticPose(0x2A0, pAnimation->m2_numBones);
+
+        init3DModelRawData(pThis, &pThis->m3C_3dModel, 0, pBundle, 4, pAnimation, pPose, 0, nullptr);
         stepAnimation(&pThis->m3C_3dModel);
 
         pThis->m8_translation = readSaturnVec3(arg);
