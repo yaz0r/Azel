@@ -568,7 +568,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
         if (depthRangeIndex <= pGridTask->m1300)
         {
-            LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemory, LCSItemBox_Table5[pThis->m8C], LCSItemBox_Table4[pThis->m8C]);
+            LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemoryBundle, LCSItemBox_Table5[pThis->m8C], LCSItemBox_Table4[pThis->m8C]);
         }
 
         popMatrix();
@@ -597,7 +597,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
         if (depthRangeIndex <= pGridTask->m1300)
         {
-            addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x5C));
+            addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x5C));
 
             pushCurrentMatrix();
 
@@ -609,7 +609,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
             rotateCurrentMatrixShiftedY(rotation2[1] + pThis->m90);
             rotateCurrentMatrixShiftedX(rotation2[0]);
 
-            addObjectToDrawList(pThis->m0.m0_mainMemory, READ_BE_U32(pThis->m0.m0_mainMemory + 0x60));
+            addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x60));
 
             popMatrix();
         }
@@ -633,7 +633,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
         if (depthRangeIndex <= pGridTask->m1300)
         {
-            LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemory, 8, 0x14C);
+            LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemoryBundle, 8, 0x14C);
             pThis->mEA_wasRendered = 1;
         }
         else

@@ -29,7 +29,7 @@ u8* getVdp2Vram(u32 offset)
 
 u8* getVdp2Cram(u32 offset)
 {
-    return vdp2CRam + offset;
+    return vdp2CRam + (offset & 0xFFF);
 }
 
 u8 getVdp2VramU8(u32 offset)

@@ -3,6 +3,7 @@
 #include "townScript.h"
 #include "town/ruin/twn_ruin.h"
 #include "town/exca/twn_exca.h"
+#include "town/e006/twn_e006.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
 
@@ -113,11 +114,11 @@ void createCellObjects(s32 r4_currentX, s32 r5_currentY)
             sTownObject* r0 = nullptr;
             if (r3 > 0)
             {
-                r0 = gCurrentTownOverlay->createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(createEnvironmentTask2Sub0Sub0(gTownGrid.m34, r3), r12, readSaturnU32(r12 + 0x10), r14->m4);
+                r0 = gCurrentTownOverlay->createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(createEnvironmentTask2Sub0Sub0(gTownGrid.m34_dataBuffer, r3), r12, readSaturnU32(r12 + 0x10), r14->m4);
             }
             else
             {
-                r0 = gCurrentTownOverlay->createObjectTaskFromEA_subTaskWithEAArg(gTownGrid.m34, r12, readSaturnU32(r12 + 0x10), r14->m4);
+                r0 = gCurrentTownOverlay->createObjectTaskFromEA_subTaskWithEAArg(gTownGrid.m34_dataBuffer, r12, readSaturnU32(r12 + 0x10), r14->m4);
             }
 
             assert(r0);
@@ -147,7 +148,7 @@ void createEnvironmentTask2(s32 r4, sTownGrid* r14)
             continue;
 
         sSaturnPtr cellData = readSaturnEA(r14->m38_EnvironmentSetup + 4 * (r14->m0_sizeX * r14->m14_currentY + r14->m10_currentX + r12));
-        sTownCellTask* newCellTask = createSiblingTaskWithArgWithCopy<sTownCellTask>(r14->m34, cellData);
+        sTownCellTask* newCellTask = createSiblingTaskWithArgWithCopy<sTownCellTask>(r14->m34_dataBuffer, cellData);
         r14->m40_cellTasks[(r14->mC + r4) & 7][(r14->m8 + r12) & 7] = newCellTask;
 
         createCellObjects(r14->m10_currentX + r12, r4 + r14->m14_currentY);
@@ -186,7 +187,7 @@ void loadTownPrgSub0()
     gTownGrid.m0_sizeX = 0;
     gTownGrid.m4_sizeY = 0;
     gTownGrid.m140_perCellObjectList.clear();
-    gTownGrid.m34 = 0;
+    gTownGrid.m34_dataBuffer = nullptr;
     gTownGrid.m18_createCell = createEnvironmentTask2;
     gTownGrid.m1C = createEnvironmentTask;
     gTownGrid.m20_deleteCell = initNPCSub0Sub0;
@@ -221,6 +222,10 @@ void loadTownPrg(s8 r4, s8 r5)
     else if (overlayFileName == "TWN_EXCA.PRG")
     {
         gFieldOverlayFunction = overlayStart_TWN_EXCA;
+    }
+    else if (overlayFileName == "TWN_E006.PRG")
+    {
+        gFieldOverlayFunction = overlayStart_TWN_E006;
     }
     else
     {
@@ -371,7 +376,7 @@ void initNPCSub0Sub2(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 
 
     gTownGrid.m0_sizeX = r6_sizeX;
     gTownGrid.m4_sizeY = r7_sizeY;
-    gTownGrid.m34 = buffer;
+    gTownGrid.m34_dataBuffer = buffer;
     gTownGrid.m28_cellSize = cellSize;
     gTownGrid.m2C = MTH_Mul(0x10A3D, cellSize);
     gTownGrid.m30_worldToCellIndex = FP_Div(0x10000, cellSize);
@@ -476,45 +481,62 @@ s32 initNPCFromStruct(sSaturnPtr r4)
     gTownGrid.m140_perCellObjectList[r4_cellY * gTownGrid.m0_sizeX + r12_cellX] = r13;
 }
 
+void initNPCSub2(s32 r5)
+{
+    s_fileEntry& fileEntry = dramAllocatorEnd[r5];
+    if (fileEntry.m8_refcount)
+    {
+        if (--fileEntry.m8_refcount == 0)
+        {
+            assert(0);
+            //loadDragonSub1Sub1(fileEntry.mC_buffer);
+            if (fileEntry.mC_buffer)
+            {
+                fileEntry.mC_buffer->getTask()->markFinished();
+            }
+            fileEntry.mC_buffer = nullptr;
+        }
+    }
+}
+
+void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5)
+{
+    if (pThis->m8 && (pThis->m8->m8 == pThis))
+    {
+        pThis->m8->m8 = nullptr;
+    }
+
+    if (!r5.isNull())
+    {
+        initNPCSub2(readSaturnS32(r5));
+    }
+
+    pThisAsTask->getTask()->markFinished();
+}
+
+static const std::array<sCollisionSetup, 5> collisionSetupArray = {
+    {
+        {1,0,0x10},
+        {1,1,0x1C},
+        {0,0,0x18},
+        {2,1,0},
+        {3,1,0}
+    }
+};
+
 void mainLogicInitSub0(sMainLogic_74* r4, s32 r5)
 {
-    r4->m2C = r5;
-    r4->m0_collisionType = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5));
-    r4->m1 = readSaturnS8(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5 + 1));
-    r4->m2_collisionLayersBitField = readSaturnS16(gCommonFile.getSaturnPtr(0x201BB8 + 4 * r5 + 2));
+    r4->m2C_collisionSetupIndex = r5;
+    r4->m0_collisionSetup = collisionSetupArray[r5];
 }
-void mainLogicInitSub1(sMainLogic_74* r4, sSaturnPtr r5, sSaturnPtr r6)
+
+void mainLogicInitSub1(sMainLogic_74* r4, const sVec3_FP& r5, const sVec3_FP& r6)
 {
-    r4->m20[0] = (readSaturnS32(r5) + readSaturnS32(r6)) / 2;
-    r4->m20[1] = (readSaturnS32(r5 + 4) + readSaturnS32(r6 + 4)) / 2;
-    r4->m20[2] = (readSaturnS32(r5 + 8) + readSaturnS32(r6 + 8)) / 2;
+    r4->m20 = (r5 + r6) / 2;
 
-    if (readSaturnS32(r6) > readSaturnS32(r5))
-    {
-        r4->m14_collisionClip[0] = r4->m20[0] - readSaturnS32(r5);
-    }
-    else
-    {
-        r4->m14_collisionClip[0] = r4->m20[0] - readSaturnS32(r6);
-    }
-
-    if (readSaturnS32(r6 + 4) > readSaturnS32(r5 + 4))
-    {
-        r4->m14_collisionClip[1] = r4->m20[1] - readSaturnS32(r5 + 4);
-    }
-    else
-    {
-        r4->m14_collisionClip[1] = r4->m20[1] - readSaturnS32(r6 + 4);
-    }
-
-    if (readSaturnS32(r6 + 8) > readSaturnS32(r5 + 8))
-    {
-        r4->m14_collisionClip[2] = r4->m20[2] - readSaturnS32(r5 + 8);
-    }
-    else
-    {
-        r4->m14_collisionClip[2] = r4->m20[2] - readSaturnS32(r6 + 8);
-    }
+    r4->m14_collisionClip[0] = r4->m20[0] - std::min(r5[0], r6[0]);
+    r4->m14_collisionClip[1] = r4->m20[1] - std::min(r5[1], r6[1]);
+    r4->m14_collisionClip[2] = r4->m20[2] - std::min(r5[2], r6[2]);
 
     r4->m4_collisionRadius = sqrt_F(MTH_Product3d_FP(r4->m14_collisionClip, r4->m14_collisionClip));
 }
@@ -527,6 +549,14 @@ void mainLogicUpdateSub0Sub0(sTownGrid* r4)
 void mainLogicUpdateSub0Sub1(s32 r4, sTownGrid* r5)
 {
     assert(0);
+}
+
+//TODO:kernel
+s32 mainLogicUpdateSub0(s32 r4_x, s32 r5_y)
+{
+    // proxy for script
+    mainLogicUpdateSub0(fixedPoint(r4_x), fixedPoint(r5_y));
+    return 0;
 }
 
 //TODO:kernel
@@ -605,7 +635,7 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
                         u16 offset = readSaturnU16(readSaturnEA(r14) + r4 * 2);
                         if (offset)
                         {
-                            addObjectToDrawList(pThis->m0_dramAllocation->getRawBuffer(), pThis->m0_dramAllocation->getRawFileOffset(offset));
+                            addObjectToDrawList(pThis->m0_dramAllocation->get3DModel(offset));
                         }
 
                         popMatrix();

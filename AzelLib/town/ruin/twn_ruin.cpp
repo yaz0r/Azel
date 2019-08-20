@@ -90,7 +90,7 @@ void registerNpcs(sSaturnPtr r4_townSetup, sSaturnPtr r5_script, s32 r6)
     npcData0.m164_cinematicBars = 0;
     npcData0.m168 = 0;
     npcData0.m16C_displayStringTask = 0;
-    npcData0.m170 = 0;
+    npcData0.m170_multiChoiceTask = 0;
 
     for (int i = 0; i < npcData0.m70_npcPointerArray.size(); i++)
     {
@@ -364,7 +364,7 @@ void cameraFollowMode0_LCSSub1(sMainLogic* r4)
     sVec3_FP* r13 = &r4->m18_position;
     if ((npcData0.mFC & 1) && (currentResTask->m8_currentLCSType))
     {
-        assert(0);
+        //assert(0);
         /*
         if (currentResTask->m8 == 1)
         {
@@ -376,7 +376,8 @@ void cameraFollowMode0_LCSSub1(sMainLogic* r4)
         }
         */
         //6055C48
-        assert(0);
+        //assert(0);
+        FunctionUnimplemented();
     }
 
     //6055CCA
@@ -723,6 +724,11 @@ s32 TwnFadeIn(s32 arg0)
     return 0;
 }
 
+s32 isObjectCloseEnoughToActivate()
+{
+    return !canCurrentResActivate();
+}
+
 s32 hasLoadingCompleted()
 {
     FunctionUnimplemented();
@@ -819,7 +825,7 @@ s32 scriptFunction_605762A()
     twnMainLogicTask->m134_autoWalkPositionStep[2] = MTH_Mul(0x199, var0[2]);
 
     twnMainLogicTask->m118_autoWalkDuration = 5;
-    twnMainLogicTask->m14_EdgeTask->m84.m0_collisionType = 1;
+    twnMainLogicTask->m14_EdgeTask->m84.m0_collisionSetup.m0_collisionType = 1;
 
     return 1;
 }
@@ -961,6 +967,7 @@ void updateEdgePositionSub3Sub1(const sVec3_FP& r4, sVec2_FP* r5)
         }
     }
 
+    //6036342
     fixedPoint r0 = sqrt_F(FP_Pow2(r4[0]) + FP_Pow2(r4[2]));
 
     if (r4[1] >= 0)
@@ -975,14 +982,15 @@ void updateEdgePositionSub3Sub1(const sVec3_FP& r4, sVec2_FP* r5)
     (*r5)[1] = atan2_FP(r4[0], r4[2]);
 }
 
-void updateEdgePositionSub3(sEdgeTask* r4)
+void updateEdgeLookAt(sEdgeTask* r4)
 {
     sNPCE8* r13_npcE8 = &r4->mE8;
 
     if ((currentResTask->m8_currentLCSType) && (npcData0.mFC & 1))
     {
         //605BEEA
-        assert(0);
+        //assert(0);
+        FunctionUnimplemented();
     }
     //605C018
     else if ((npcData0.mFC & 0x10) && !(npcData0.mFC & 0x8))
@@ -995,16 +1003,16 @@ void updateEdgePositionSub3(sEdgeTask* r4)
         adjustMatrixTranslation(0x1800);
         sVec3_FP var14;
 
-        var14[0] = pCurrentMatrix->matrix[3] - setDividend(LCSCollisionData.m0_LCS_X, LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m2C_projectionWidthScale);
-        var14[1] = pCurrentMatrix->matrix[7] - setDividend(LCSCollisionData.m4_LCS_Y, LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m30_projectionHeightScale);
+        var14[0] = pCurrentMatrix->matrix[3] - setDividend(LCSCollisionData.m0_LCS_X.getInteger(), LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m2C_projectionWidthScale);
+        var14[1] = pCurrentMatrix->matrix[7] - setDividend(LCSCollisionData.m4_LCS_Y.getInteger(), LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m30_projectionHeightScale);
         var14[2] = pCurrentMatrix->matrix[11] - LCSCollisionData.m28_LCSDepthMax;
 
         sVec2_FP varC;
         updateEdgePositionSub3Sub1(var14, &varC);
 
-        var14[0] = LCSCollisionData.m20_LCSWidthMin;
-        var14[1] = LCSCollisionData.m24_LCSDepthMin;
-        var14[2] = LCSCollisionData.m28_LCSDepthMax;
+        var14[0] = pCurrentMatrix->matrix[8];
+        var14[1] = pCurrentMatrix->matrix[9];
+        var14[2] = pCurrentMatrix->matrix[10];
         sVec2_FP var4;
         updateEdgePositionSub3Sub1(var14, &var4);
 
@@ -1013,7 +1021,7 @@ void updateEdgePositionSub3(sEdgeTask* r4)
         varC -= var4;
 
         varC[0] = varC[0].normalized();
-        varC[1] = varC[1].normalized();
+        varC[1] = (-varC[1]).normalized();
 
         //0605C12E
         if (varC[0] > 0x18E38E3)
@@ -1022,7 +1030,7 @@ void updateEdgePositionSub3(sEdgeTask* r4)
         }
         if (varC[0] < -0x18E38E3)
         {
-            varC[0] = 0x18E38E3;
+            varC[0] = -0x18E38E3;
         }
 
         if (varC[1] > 0x38E38E3)
@@ -1031,11 +1039,11 @@ void updateEdgePositionSub3(sEdgeTask* r4)
         }
         if (varC[1] < -0x38E38E3)
         {
-            varC[1] = 0x38E38E3;
+            varC[1] = -0x38E38E3;
         }
 
-        r4->m20[0] += MTH_Mul(varC[0] - r4->m20[0], 0xB333);
-        r4->m20[1] += MTH_Mul(varC[1] - r4->m20[1], 0xB333);
+        r4->m20_lookAtAngle[0] += MTH_Mul(varC[0] - r4->m20_lookAtAngle[0], 0xB333);
+        r4->m20_lookAtAngle[1] += MTH_Mul(varC[1] - r4->m20_lookAtAngle[1], 0xB333);
     }
     else
     {
@@ -1052,14 +1060,14 @@ void updateEdgePositionSub3(sEdgeTask* r4)
 
         if (r13)
         {
-            r4->m20[1] += MTH_Mul(r13 - r4->m20[1], 0xB333);
+            r4->m20_lookAtAngle[1] += MTH_Mul(r13 - r4->m20_lookAtAngle[1], 0xB333);
         }
         else
         {
-            r4->m20[1] += MTH_Mul(r13 - r4->m20[1], 0x8000);
+            r4->m20_lookAtAngle[1] += MTH_Mul(r13 - r4->m20_lookAtAngle[1], 0x8000);
         }
 
-        r4->m20[0] = MTH_Mul(r4->m20[0], 0xB333);
+        r4->m20_lookAtAngle[0] = MTH_Mul(r4->m20_lookAtAngle[0], 0xB333);
     }
 }
 
@@ -1181,12 +1189,12 @@ void updateEdgePosition(sNPC* r4)
 
     r13->m0_position += r13->m18_stepTranslationInWorld;
 
-    updateEdgePositionSub3(r12);
+    updateEdgeLookAt(r12);
 
     r12->m14C_inputFlags = 0;
 }
 
-s32 scriptFunction_6057058(s32 arg0, s32 arg1)
+s32 scriptFunction_605B320(s32 arg0, s32 arg1)
 {
     getNpcDataByIndex(arg0)->mE_controlState = arg1;
     return 0;
@@ -1224,9 +1232,12 @@ void TWN_RUIN_data::init()
     overlayScriptFunctions.m_zeroArg[0x6057570] = &hasLoadingCompleted;
     overlayScriptFunctions.m_zeroArg[0x6057058] = &scriptFunction_6057058;
     overlayScriptFunctions.m_zeroArg[0x605762A] = &scriptFunction_605762A;
+    overlayScriptFunctions.m_zeroArg[0x605800E] = &isObjectCloseEnoughToActivate;
 
     overlayScriptFunctions.m_oneArg[0x605C83C] = &TwnFadeOut;
     overlayScriptFunctions.m_oneArg[0x605c7c4] = &TwnFadeIn;
+    overlayScriptFunctions.m_oneArg[0x6054364] = &scriptFunction_6054364_waitForLockDisableCompletion;
 
-    overlayScriptFunctions.m_twoArg[0x605B320] = &scriptFunction_6057058;
+    overlayScriptFunctions.m_twoArg[0x605B320] = &scriptFunction_605B320;
+    overlayScriptFunctions.m_twoArg[0x6054334] = &scriptFunction_6054334_disableLock;
 }

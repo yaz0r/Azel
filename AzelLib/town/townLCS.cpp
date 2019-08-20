@@ -486,10 +486,10 @@ bool setTBitIfCollisionWithQuad(sResCameraProperties* r6, sTransformedVertice& r
 
 void testQuadsForCollisionSub0(const sProcessed3dModel::sQuad& r4, s32& r5_result, sResCameraProperties* r6, sTransformedVertice& r10, sTransformedVertice& r11, sTransformedVertice& r12, sTransformedVertice& r13)
 {
-    s16 r1 = r10.m4_fullPrecisionZ >> 16;
-    s16 r2 = r11.m4_fullPrecisionZ >> 16;
-    s16 r3 = r12.m4_fullPrecisionZ >> 16;
-    s16 r8 = r13.m4_fullPrecisionZ >> 16;
+    s32 r1 = r10.m4_fullPrecisionZ >> 16;
+    s32 r2 = r11.m4_fullPrecisionZ >> 16;
+    s32 r3 = r12.m4_fullPrecisionZ >> 16;
+    s32 r8 = r13.m4_fullPrecisionZ >> 16;
 
     u8 r0 = r4.m8_lightingControl & 0xF0;
     switch (r0)
@@ -535,8 +535,8 @@ void testQuadsForCollisionSub0(const sProcessed3dModel::sQuad& r4, s32& r5_resul
     }
 
     //601E65A
-    r1 <<= 8;
-    if (r1 < r6->m28_LCSDepthMax)
+    r1 *= 0x100;
+    if (r1 <= r6->m28_LCSDepthMax)
     {
         r6->m28_LCSDepthMax = r1;
         r5_result = r4.m12_onCollisionScriptIndex;
@@ -700,7 +700,7 @@ void findLCSCollision()
         {
             sMainLogic_74* r14 = r12->m4;
             r12 = r12->m0_pNext;
-            if (r14->m1)
+            if (r14->m0_collisionSetup.m1)
             {
                 var4.m0_radius = r14->m4_collisionRadius;
 

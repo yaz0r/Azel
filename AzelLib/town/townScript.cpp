@@ -38,7 +38,7 @@ void scriptUpdateSub0Sub0(sMainLogic_74* r4)
 {
     const sVec3_FP& r12 = *r4->m34_pRotation;
 
-    switch (r4->m0_collisionType)
+    switch (r4->m0_collisionSetup.m0_collisionType)
     {
     case 0:
     case 1:
@@ -126,7 +126,7 @@ s32 scriptUpdateSub0Sub1(sMainLogic_74* r13, sMainLogic_74* r14)
             return 0;
 
         //0600874E
-        assert(0);
+        FunctionUnimplemented();
     }
 
     return 0;
@@ -300,7 +300,7 @@ void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
     r14 -= var10[1];
     r14 -= var10[2];
 
-    switch (r4->m0_collisionType)
+    switch (r4->m0_collisionSetup.m0_collisionType)
     {
     case 0:
     case 1:
@@ -593,7 +593,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[1] - r14->m14_collisionClip[1]) >= 0))
             {
                 //6008DE4
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -642,7 +642,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[1] - r14->m14_collisionClip[1]) <= 0))
             {
                 //06008EBC
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -697,7 +697,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[2] - r14->m14_collisionClip[2]) >= 0))
             {
                 //6008FE2
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -746,7 +746,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[2] - r14->m14_collisionClip[2]) <= 0))
             {
                 //060090BA
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -801,7 +801,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[0] - r14->m14_collisionClip[0]) >= 0))
             {
                 //60091D2
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -850,7 +850,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     r11_vertice3.vertice[0] - r14->m14_collisionClip[0]) <= 0))
             {
                 //060092AA
-                switch (r14->m0_collisionType)
+                switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
                     resValue1 = 1;
@@ -905,7 +905,7 @@ void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
     }
 
     std::vector<sProcessed3dModel::sQuad>::const_iterator quadIterator = r5->mC_Quads.begin();
-    if (r4->m2C == 0)
+    if (r4->m2C_collisionSetupIndex == 0)
     {
         while (quadIterator != r5->mC_Quads.end())
         {
@@ -1304,7 +1304,7 @@ void scriptUpdateSub0Sub4(sMainLogic_74* r4)
 {
     popMatrix();
 
-    switch (r4->m0_collisionType)
+    switch (r4->m0_collisionSetup.m0_collisionType)
     {
     case 0:
     case 1:
@@ -1329,13 +1329,13 @@ void scriptUpdateSub0()
             sMainLogic_74* r14 = r11->m4;
             r11 = r11->m0_pNext;
 
-            if (r14->m2_collisionLayersBitField)
+            if (r14->m0_collisionSetup.m2_collisionLayersBitField)
             {
                 scriptUpdateSub0Sub0(r14);
                 s32 r9 = r8 + 1;
                 do 
                 {
-                    if (r14->m2_collisionLayersBitField & (1 << r9))
+                    if (r14->m0_collisionSetup.m2_collisionLayersBitField & (1 << r9))
                     {
                         sResData1C* r12 = resData.m8_headOfLinkedList[r9];
                         while (r12)
@@ -1344,7 +1344,7 @@ void scriptUpdateSub0()
                             r12 = r12->m0_pNext;
                             if (scriptUpdateSub0Sub1(r14, r13))
                             {
-                                if ((r14->m0_collisionType == 0) && r13->m3C_scriptEA.m_offset)
+                                if ((r14->m0_collisionSetup.m0_collisionType == 0) && r13->m3C_scriptEA.m_offset)
                                 {
                                     //06007B16
                                     addBackgroundScript(r13->m3C_scriptEA, 1, r13->m38_pOwner, 0);
@@ -1352,7 +1352,7 @@ void scriptUpdateSub0()
 
                                 r14->m48 = r13;
                                 r13->m48 = r14;
-                                if (r14->m0_collisionType >= 2)
+                                if (r14->m0_collisionSetup.m0_collisionType >= 2)
                                 {
                                     goto endOfLoop;
                                 }
@@ -1362,7 +1362,7 @@ void scriptUpdateSub0()
                 } while (++r9 < 5);
                 //06007B3C
                 
-                if (r14->m2_collisionLayersBitField & 0x10)
+                if (r14->m0_collisionSetup.m2_collisionLayersBitField & 0x10)
                 {
                     scriptUpdateSub0Sub2(r14, resData.m0);
                 }
@@ -1463,6 +1463,18 @@ sNPC* getNpcDataByIndex(s32 r4)
     return npcData0.m70_npcPointerArray[r4].pNPC;
 }
 
+p_workArea getNpcDataByIndexAsTask(s32 r4)
+{
+    if (r4 == -1)
+    {
+        return npcData0.m104_currentScript.m8_owner.getAsTask();
+    }
+
+    assert(0);
+    return NULL;
+    //return npcData0.m70_npcPointerArray[r4].pNPC;
+}
+
 s32 setNpcLocation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
 {
     sNPC* pNPC = getNpcDataByIndex(r4_npcIndex);
@@ -1489,10 +1501,25 @@ s32 setNpcOrientation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
     return 0;
 }
 
+s32 terminateTown()
+{
+    if (townDebugTask2)
+    {
+        townDebugTask2->getTask()->markFinished();
+    }
+
+    closeAllOpenFiles();
+
+    return 0;
+}
+
 sKernelScriptFunctions gKernelScriptFunctions =
 {
     // zero arg
-    {},
+    {
+        {0x602C1D0, &stopAllSounds},
+        {0x603011E, &terminateTown},
+    },
     // one arg
     {
         {0x600CCB4, &initNPC},
@@ -1505,6 +1532,7 @@ sKernelScriptFunctions gKernelScriptFunctions =
     // two arg
     {
         {0x600CC78, &setSomethingInNpc0},
+        {0x60144c0, &mainLogicUpdateSub0}
     },
     // four arg
     {
@@ -1623,6 +1651,233 @@ sSaturnPtr getAlignOn4(const sSaturnPtr& inPtr)
     return output;
 }
 
+// Todo: might be the same as s_multiChoiceTask2
+struct s_multiChoiceTask : public s_workAreaTemplate< s_multiChoiceTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { NULL, &s_multiChoiceTask::Update, &s_multiChoiceTask::Draw, &s_multiChoiceTask::Delete };
+        return &taskDefinition;
+    }
+
+    static void Update(s_multiChoiceTask*);
+    static void Draw(s_multiChoiceTask*);
+    static void Delete(s_multiChoiceTask* pThis)
+    {
+        pThis->clearMultiChoiceBox();
+
+        if (pThis->m10)
+        {
+            *pThis->m10 = nullptr;
+        }
+    }
+
+    void drawMultiChoice();
+    void clearMultiChoiceBox()
+    {
+        FunctionUnimplemented();
+    }
+
+    u8 m0_Status;
+    s8 m1;
+    s8 m2_defaultResult;
+    s8 m3_quantity;
+    s8 m4_quantityMax;
+    s8 m5_selectedEntry;
+    s8 m6_numEntries;
+    s8 m7;
+    s8 m8;
+    s32* mC_result;
+    s_multiChoiceTask** m10;
+    s16 m14_x;
+    s16 m16_y;
+    s16 m1A_width;
+    s16 m1C_height;
+    s8 m20;
+    sSaturnPtr m24_strings;
+    s16* m28_colors;
+    //size 0x2C
+};
+
+void s_multiChoiceTask::drawMultiChoice()
+{
+    setupVDP2StringRendering(m14_x + 2, m16_y + 1, m1A_width - 4, m1C_height - 2);
+
+    s32 r4 = m1 - (m3_quantity + 1) * 4;
+    if (r4 >= 0)
+    {
+        m6_numEntries = 4;
+    }
+    else
+    {
+        m6_numEntries = r4 + 4;
+    }
+
+    m20 = m1C_height;
+    m1C_height = (m6_numEntries * 2) + 2;
+    m5_selectedEntry = 0;
+    if (m1C_height < m20)
+    {
+         clearBlueBox(m14_x, m16_y + m1C_height, m1A_width, m20 - m1C_height);
+    }
+
+    drawBlueBox(m14_x, m16_y, m1A_width, m1C_height);
+
+    setupVDP2StringRendering(m14_x + 2, m16_y + 1, m1A_width - 4, m1C_height - 2);
+    vdp2StringContext.m0 = 0;
+
+    for (int i = 0; i < m6_numEntries; i++)
+    {
+        vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + 2;
+        vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + i * 2;
+
+        drawObjectName(readSaturnString(readSaturnEA(m24_strings + (m3_quantity * 4 + i) * 4)).c_str());
+    }
+}
+
+void s_multiChoiceTask::Update(s_multiChoiceTask* pThis)
+{
+    switch (pThis->m0_Status)
+    {
+    case 0:
+        pThis->m0_Status++;
+    case 1:
+        pThis->drawMultiChoice();
+        playSoundEffect(3);
+        pThis->m0_Status++;
+        return;
+    case 2:
+        if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x10) // up
+        {
+            pThis->m5_selectedEntry--;
+            if (pThis->m5_selectedEntry < 0)
+            {
+                pThis->m5_selectedEntry += pThis->m6_numEntries;
+            }
+            playSoundEffect(2);
+        }
+        else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x20) // down
+        {
+            pThis->m5_selectedEntry++;
+            if (pThis->m5_selectedEntry >= pThis->m6_numEntries)
+            {
+                pThis->m5_selectedEntry -= pThis->m6_numEntries;
+            }
+            playSoundEffect(2);
+        }
+        else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x40)
+        {
+            if (pThis->m3_quantity > 0)
+            {
+                pThis->m3_quantity--;
+                pThis->drawMultiChoice();
+                playSoundEffect(6);
+            }
+        }
+        else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x80)
+        {
+            if (pThis->m3_quantity < pThis->m4_quantityMax)
+            {
+                pThis->m3_quantity++;
+                pThis->drawMultiChoice();
+                playSoundEffect(6);
+            }
+        }
+
+        if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 6) // select
+        {
+            *pThis->mC_result = pThis->m5_selectedEntry + pThis->m3_quantity * 4;
+            playSoundEffect(0);
+            pThis->m0_Status++;
+        }
+        else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 1) // cancel
+        {
+            if (pThis->m2_defaultResult)
+            {
+                *pThis->mC_result = -1;
+                playSoundEffect(1);
+                pThis->m0_Status++;
+            }
+        }
+        return;
+    case 3:
+        pThis->mC_result = 0;
+        pThis->m0_Status++;
+        return;
+    case 4:
+        pThis->getTask()->markFinished();
+        return;
+    default:
+        assert(0);
+        break;
+    }
+}
+
+void drawMultiChoiceVdp1Cursor(s32 r4_x, s32 r5_y, sSaturnPtr r6_spritePtr, s32 r7_color)
+{
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000 | readSaturnU16(r6_spritePtr + 4)); // command
+    setVdp1VramU16(vdp1WriteEA + 0x04, 0x80); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, 0x4000 + r7_color); // CMDCOLR
+    setVdp1VramU16(vdp1WriteEA + 0x08, readSaturnU16(r6_spritePtr)); // CMDSRCA
+    setVdp1VramU16(vdp1WriteEA + 0x0A, readSaturnU16(r6_spritePtr + 2)); // CMDSIZE
+    setVdp1VramU16(vdp1WriteEA + 0x0C, readSaturnU16(r6_spritePtr + 6) + r4_x - 176); // CMDXA
+    setVdp1VramU16(vdp1WriteEA + 0x0E, readSaturnU16(r6_spritePtr + 8) + r5_y - 112); // CMDYA
+
+    s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
+    pExtendedCommand->depth = 0;
+
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+}
+
+void s_multiChoiceTask::Draw(s_multiChoiceTask* pThis)
+{
+    drawMultiChoiceVdp1Cursor((pThis->m14_x + 2) * 8, (pThis->m16_y + pThis->m5_selectedEntry * 2 + 1) * 8, gCommonFile.getSaturnPtr(0x20FFE0 + pThis->m7 * 10), 0x7F0);
+}
+
+void startDialogTask(p_workArea r4_parent, s_multiChoiceTask** r5_outputTask, s32* r6_outputResult, s32 r7_index, sSaturnPtr arg0)
+{
+    s_multiChoiceTask* pMultiChoiceTask = createSubTask<s_multiChoiceTask>(r4_parent);
+
+    pMultiChoiceTask->m0_Status = 0;
+    pMultiChoiceTask->m5_selectedEntry = 0;
+
+    if (r7_index >= 0)
+    {
+        pMultiChoiceTask->m1 = r7_index;
+        pMultiChoiceTask->m2_defaultResult = 1;
+    }
+    else
+    {
+        pMultiChoiceTask->m1 = -r7_index;
+        pMultiChoiceTask->m2_defaultResult = 0;
+    }
+
+    pMultiChoiceTask->m24_strings = arg0;
+    pMultiChoiceTask->m3_quantity = 0;
+    pMultiChoiceTask->m4_quantityMax = performDivision(4, pMultiChoiceTask->m1 - 1);
+    pMultiChoiceTask->m7 = 0;
+    pMultiChoiceTask->m8 = 0;
+    pMultiChoiceTask->m14_x = 2;
+    pMultiChoiceTask->m16_y = 4;
+    pMultiChoiceTask->m1A_width = 0x22;
+    pMultiChoiceTask->m1C_height = 0xA;
+    pMultiChoiceTask->mC_result = r6_outputResult;
+    pMultiChoiceTask->m10 = r5_outputTask;
+    if (r5_outputTask)
+    {
+        *r5_outputTask = pMultiChoiceTask;
+    }
+}
+
 sSaturnPtr runScript(sNpcData* r13_pThis)
 {
     sRunningScriptContext* varC = &r13_pThis->m104_currentScript;
@@ -1642,8 +1897,7 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
         case 1: //end
             if (r13_pThis->m11C_currentStackPointer == r13_pThis->m120_stack.end())
             {
-                r14.m_offset = 0;
-                return r14;
+                return sSaturnPtr::getNull();
             }
             else
             {
@@ -1715,6 +1969,18 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             }
             r14 += 2;
             break;
+        case 10://greater
+            r14 = getAlignOn2(r14);
+            if (readSaturnS16(r14) < r13_pThis->m118_currentResult)
+            {
+                r13_pThis->m118_currentResult = 1;
+            }
+            else
+            {
+                r13_pThis->m118_currentResult = 0;
+            }
+            r14 += 2;
+            break;
         case 12: // less
             r14 = getAlignOn2(r14);
             if (readSaturnS16(r14) > r13_pThis->m118_currentResult)
@@ -1764,6 +2030,23 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
                 var0 += 3334;
             }
             r13_pThis->m118_currentResult = mainGameState.readPackedBits(var0, r6);
+            break;
+        }
+        case 20: // add to packed bits var
+        {
+            s8 var4 = readSaturnS8(r14++);
+            r14 = getAlignOn2(r14);
+            s16 var0 = readSaturnS16(r14);
+            r14 += 2;
+            s16 var8 = readSaturnS16(r14);
+            r14 += 2;
+            if (var0 < 1000)
+            {
+                var0 += 3334;
+            }
+            s32 value = mainGameState.readPackedBits(var0, var4);
+            value += var8;
+            mainGameState.setPackedBits(var0, var4, value);
             break;
         }
         case 21:
@@ -1828,6 +2111,16 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             setupVDP2StringRendering(3, 25, 38, 2);
             clearVdp2TextArea();
             break;
+        case 31: // wait for native function to return != 0
+            {
+                sSaturnPtr r14Back = r14 - 1;
+                r14 = callNativeWithArguments(r13_pThis, r14);
+                if (r13_pThis->m118_currentResult == 0)
+                {
+                    return r14Back;
+                }
+            }
+            break;
         case 32: // wait fade
         {
             if (!g_fadeControls.m0_fade0.m20_stopped)
@@ -1836,6 +2129,9 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             }
             break;
         }
+        case 33:
+            playSoundEffect(readSaturnS8(r14++));
+            break;
         case 36: // display string
             if (r13_pThis->m16C_displayStringTask)
             {
@@ -1853,6 +2149,108 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
                 r14 += 4;
 
                 createDisplayStringBorromScreenTask(currentResTask, &r13_pThis->m16C_displayStringTask, duration, stringPtr);
+            }
+            break;
+        case 39: // multi-choice
+        {
+            if (r13_pThis->m170_multiChoiceTask)
+            {
+                if (r13_pThis->m170_multiChoiceTask->m0_Status != 4)
+                {
+                    return r14 - 1;
+                }
+                
+                s8 r4 = readSaturnS8(r14++);
+                if (r4 > 0)
+                {
+                    r14 = getAlignOn4(r14);
+                    r14 += r4 * 4;
+                }
+
+                r13_pThis->mF0 = 0;
+                return r14;
+            }
+
+            if (r13_pThis->m16C_displayStringTask)
+            {
+                assert(0);
+            }
+
+            sSaturnPtr var0 = r14 - 1;
+            s8 r7 = readSaturnS8(r14++);
+            if (r7)
+            {
+                startDialogTask(currentResTask, &r13_pThis->m170_multiChoiceTask, &r13_pThis->m118_currentResult, r7, getAlignOn4(r14));
+                return var0;
+            }
+            break;
+        }
+        case 41: // get inventory count
+            {
+                r14 = getAlignOn2(r14);
+                s16 itemIndex = readSaturnS16(r14);
+                r14 += 2;
+                if (itemIndex < 77)
+                {
+                    r13_pThis->m118_currentResult = mainGameState.consumables[itemIndex];
+                }
+                else
+                {
+                    r13_pThis->m118_currentResult = mainGameState.getBit(243 + itemIndex);
+                }
+            }
+            break;
+        case 43: // add to inventory
+            {
+                s8 count = readSaturnS8(r14);
+                r14++;
+                r14 = getAlignOn2(r14);
+                s16 itemIndex = readSaturnS16(r14);
+                r14 += 2;
+                if (itemIndex < 77)
+                {
+                    mainGameState.consumables[itemIndex] += count;
+                }
+                else
+                {
+                    mainGameState.setBit(243 + itemIndex);
+                }
+
+                // clamp
+                if (itemIndex < 77)
+                {
+                    if (mainGameState.consumables[itemIndex] > 99)
+                    {
+                        mainGameState.consumables[itemIndex] = 99;
+                    }
+                }
+            }
+            break;
+        case 48:
+            if (r13_pThis->m16C_receivedItemTask)
+            {
+                if (r13_pThis->m16C_receivedItemTask->m0 != 4)
+                {
+                    return r14 - 1;
+                }
+
+                r13_pThis->mF0 = 0;
+                r14 = getAlignOn2(r14);
+                r14 += 6;
+                return r14;
+            }
+            else
+            {
+                sSaturnPtr r11 = r14 - 1;
+                r14 = getAlignOn2(r14);
+                s16 r6 = readSaturnS16(r14);
+                r14 += 2;
+                s16 itemIndex = readSaturnS16(r14);
+                r14 += 2;
+                s16 itemCount = readSaturnS16(r14);
+                r14 += 2;
+                createReceiveItemTask(currentResTask, &r13_pThis->m16C_receivedItemTask, r6, itemIndex, itemCount);
+                return r11;
             }
             break;
         default:
@@ -1914,10 +2312,13 @@ void scriptUpdateRunScript()
                     npcData0.mFC |= 0xF;
                     graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
                     npcData0.m0_numBackgroundScripts = 0;
+                    return;
                 }
 
                 r9++;
             } while (--r8_numBackgroundScripts);
+
+            npcData0.m0_numBackgroundScripts = 0;
         }
     }
 }
@@ -1969,8 +2370,6 @@ void sScriptTask::Update(sScriptTask* pThis)
         pThis->m18_LCSFocusLineScale--;
     }
 
-    pThis->m8_currentLCSType = 0;
-    pThis->m4 = sSaturnPtr::getNull();
     if (!(npcData0.mFC & 0x10))
     {
         pThis->m8_currentLCSType = 0;
@@ -1980,7 +2379,10 @@ void sScriptTask::Update(sScriptTask* pThis)
     {
         if (pThis->m8_currentLCSType == 2)
         {
-            assert(0);
+            if (pThis->mC->m38_pOwner->getTask()->isFinished())
+            {
+                pThis->m8_currentLCSType = 0;
+            }
         }
 
         //60305A8
@@ -2039,6 +2441,12 @@ void sScriptTask::Update(sScriptTask* pThis)
                 pThis->m1E_LCS_Y = LCSCollisionData.m4_LCS_Y.getInteger();
                 playSoundEffect(0x24);
             }
+
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6)
+            {
+                // Activate LCS
+                addBackgroundScript(r13, 3, r11, nullptr);
+            }
         }
 
         pThis->m4 = r13;
@@ -2063,7 +2471,7 @@ void updateTownLCSTargetPosition(sScriptTask* pThis)
         break;
     case 2:
         translateCurrentMatrix(pThis->mC->m8_position);
-        if (pThis->mC->m2C == 3)
+        if (pThis->mC->m2C_collisionSetupIndex == 3)
         {
             adjustMatrixTranslation(pThis->mC->m14_collisionClip[1] / 2);
         }

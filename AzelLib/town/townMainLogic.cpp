@@ -41,7 +41,7 @@ void sMainLogic::Init(sMainLogic* pThis)
     pThis->m74_townCamera.m40 = 0;
 
     mainLogicInitSub0(&pThis->m74_townCamera, 0);
-    mainLogicInitSub1(&pThis->m74_townCamera, gTWN_RUIN->getSaturnPtr(0x605EEE4), gTWN_RUIN->getSaturnPtr(0x605EEF0));
+    mainLogicInitSub1(&pThis->m74_townCamera, readSaturnVec3(gTWN_RUIN->getSaturnPtr(0x605EEE4)), readSaturnVec3(gTWN_RUIN->getSaturnPtr(0x605EEF0)));
 
     npcData0.mFC &= ~0x10;
 
@@ -161,7 +161,7 @@ void mainLogicUpdateSub4(sMainLogic* pThis)
         {
             if (--pThis->m118_autoWalkDuration == 0)
             {
-                pThis->m14_EdgeTask->m84.m0_collisionType = 0;
+                pThis->m14_EdgeTask->m84.m0_collisionSetup.m0_collisionType = 0;
             }
 
             pThis->m11C_autoWalkStartPosition += pThis->m134_autoWalkPositionStep;

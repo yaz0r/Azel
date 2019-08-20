@@ -195,10 +195,10 @@ void EdgeUpdateSub0(sMainLogic_74* r14_pose)
         return;
 
     sResData1C& r5 = resData.m1C[resData.m4++];
-    r5.m0_pNext = resData.m8_headOfLinkedList[r14_pose->m2C];
+    r5.m0_pNext = resData.m8_headOfLinkedList[r14_pose->m2C_collisionSetupIndex];
     r5.m4 = r14_pose;
 
-    resData.m8_headOfLinkedList[r14_pose->m2C] = &r5;
+    resData.m8_headOfLinkedList[r14_pose->m2C_collisionSetupIndex] = &r5;
 
     sMatrix4x3 var4;
     initMatrixToIdentity(&var4);
@@ -287,7 +287,7 @@ void initEdgeNPC(sEdgeTask* pThis, sSaturnPtr arg)
     }
 
     mainLogicInitSub0(&pThis->m84, readSaturnU8(arg + 0x34));
-    mainLogicInitSub1(&pThis->m84, arg + 0x3C, arg + 0x48);
+    mainLogicInitSub1(&pThis->m84, readSaturnVec3(arg + 0x3C), readSaturnVec3(arg + 0x48));
     initEdgeNPCSub1(pThis);
     pThis->m17B = 0;
 }
@@ -385,7 +385,7 @@ void sEdgeTask::Update(sEdgeTask* pThis)
         //auto walk
         if (!(pThis->mF & 2) && !(pThis->mF & 8))
         {
-            pThis->m20[1] = MTH_Mul(pThis->m20[1], 0xB333);
+            pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
         }
 
         if (pThis->mC & 2)
@@ -689,18 +689,18 @@ void sEdgeTask::Draw(sEdgeTask* pThis)
     rotateCurrentMatrixShiftedY(0x8000000);
 
     // draw the shadow
-    if (pThis->mF & 0x80)
+    if ((pThis->mF & 0x80) == 0)
     {
-        addObjectToDrawList(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawBuffer(), dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getRawFileOffset(readSaturnU16(pThis->m30_animationTable + 2)));
+        addObjectToDrawList(dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->get3DModel(readSaturnU16(pThis->m30_animationTable + 2)));
     }
 
     if (pThis->m34_3dModel.m48_poseDataInterpolation.size())
     {
-        applyEdgeAnimation2(&pThis->m34_3dModel, &pThis->m20);
+        applyEdgeAnimation2(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
     }
     else
     {
-        applyEdgeAnimation(&pThis->m34_3dModel, &pThis->m20);
+        applyEdgeAnimation(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
     }
 
     popMatrix();

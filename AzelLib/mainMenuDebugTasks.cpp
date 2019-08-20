@@ -2247,7 +2247,7 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
 
     static void genericOptionMenuDelete(s_fieldDebugTaskWorkArea* pThis)
     {
-        assert(0);
+        FunctionUnimplemented();
     }
 
     p_workArea m8; // 8
@@ -2299,7 +2299,7 @@ struct {
 void setNextGameStatus(u32 r4)
 {
     PDS_Log("Requesting new game state: %d\n", r4);
-    assert(gGameStatus.m8_nextGameStatus == 0);
+    //assert(gGameStatus.m8_nextGameStatus == 0);
     if (gGameStatus.m8_nextGameStatus == 0)
     {
         gGameStatus.m8_nextGameStatus = r4;
@@ -3704,7 +3704,7 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
 
 void s_menuGraphicsTask::Delete(s_menuGraphicsTask*)
 {
-    assert(0);
+    FunctionUnimplemented();
 }
 
 p_workArea createMenuTask(p_workArea parentTask)
@@ -3824,17 +3824,14 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
     case 6: // initiate captain scene
         mainGameState.setBit(4, 3);
         mainGameState.setBit(10, 6);
-        PDS_unimplemented("HACK: skipping to Excavation site #3");
-        //setNextGameStatus(81);
-        setNextGameStatus(83);
+        setNextGameStatus(81);
         break;
+    case 79: // ?
     case 80: // above excavation
     case 81: // captain scene intro (gameplay)
     case 82:
     case 83: // excavation site #3 (tutorial)
         setNextGameStatus(79);
-        break;
-    case 79: // no automatic state increase?
         break;
     default:
         assert(0);
@@ -3861,9 +3858,10 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
     return 0;
 }
 
-void stopAllSounds()
+s32 stopAllSounds()
 {
     gSoloud.stopAll();
+    return 0;
 }
 
 p_workArea loadField(p_workArea r4, s32 r5)
@@ -3888,11 +3886,7 @@ p_workArea loadField(p_workArea r4, s32 r5)
 
 p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     NULL,
-#ifdef _DEBUG
     loadTown,
-#else
-    NULL,
-#endif
     NULL,
     loadField,
     NULL,

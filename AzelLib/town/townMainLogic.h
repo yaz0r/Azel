@@ -37,9 +37,10 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     sVec3_FP m11C_autoWalkStartPosition;
     sVec3_FP m128_autoWalkStartRotation;
     sVec3_FP m134_autoWalkPositionStep;
-    // size 0x320
+    // size 0x140
 };
 
 extern sMainLogic* twnMainLogicTask;
 
 p_workArea startMainLogic(p_workArea pParent);
+void mainLogicInitSub2();

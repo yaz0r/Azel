@@ -19,5 +19,6 @@ void DEBUG_setRandomSeed(u32);
 void initRandomSeed(u32 init);
 u32 randomNumber();
 
+void closeAllOpenFiles();
 bool readKeyboardToggle(u16 keyIndex);
 

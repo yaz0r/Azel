@@ -203,7 +203,7 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
     case 0:
     {
         // 4 bpp Bank mode
-        u32 colorLut = quad.CMDCOLR * 2;
+        u32 colorLut = quad.CMDCOLR;
         u32 colorOffset = (VDP2Regs_.mE6_CRAOFB & 0x70) << 4;
         assert(colorOffset == 0);
 
@@ -224,8 +224,8 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
 
                 if (character)
                 {
-                    u32 paletteOffset = colorLut + 2 * character;//((paletteNumber << 4) + dotColor) * 2 + layerData.CAOS * 0x200;
-                    u16 color = getVdp2CramU16(paletteOffset);
+                    u32 paletteOffset = character | colorLut;//((paletteNumber << 4) + dotColor) * 2 + layerData.CAOS * 0x200;
+                    u16 color = getVdp2CramU16(paletteOffset * 2);
                     u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
 
                     *texture++ = finalColor;

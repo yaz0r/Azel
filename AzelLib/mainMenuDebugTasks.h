@@ -12,7 +12,7 @@ p_workArea createContinueTask(p_workArea pWorkArea);
 u32 updateAndInterpolateAnimation(s_3dModel* r4);
 
 p_workArea createMenuTask(p_workArea parentTask);
-void stopAllSounds();
+s32 stopAllSounds();
 
 extern p_workArea fieldTaskVar0;
 extern u32 fieldTaskVar2;

@@ -66,3 +66,8 @@ u32 randomNumber()
 }
 bool readKeyboardToggle(u16 keyIndex) { return false; }
 
+void closeAllOpenFiles()
+{
+
+}
+

@@ -145,7 +145,7 @@ struct s_multiChoiceTask2 : public s_workAreaTemplate< s_multiChoiceTask2>
     s8 m7;
     s8 m8;
     s32* mC_result;
-    s_multiChoiceTask2** m10;
+    p_workArea m10;
     s16 m14_x;
     s16 m16_y;
     s16 m1A_width;

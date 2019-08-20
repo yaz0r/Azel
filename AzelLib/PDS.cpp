@@ -1056,7 +1056,7 @@ s8 READ_BE_S8(const void* ptr)
 
 void adjustMatrixTranslation(fixedPoint r4)
 {
-    pCurrentMatrix->matrix[3] += (((s64)pCurrentMatrix->matrix[1] * (s64)r4) >> 32);
-    pCurrentMatrix->matrix[7] += (((s64)pCurrentMatrix->matrix[5] * (s64)r4) >> 32);
-    pCurrentMatrix->matrix[11] += (((s64)pCurrentMatrix->matrix[9] * (s64)r4) >> 32);
+    pCurrentMatrix->matrix[3] += (((s64)pCurrentMatrix->matrix[1] * (s64)r4) >> 16);
+    pCurrentMatrix->matrix[7] += (((s64)pCurrentMatrix->matrix[5] * (s64)r4) >> 16);
+    pCurrentMatrix->matrix[11] += (((s64)pCurrentMatrix->matrix[9] * (s64)r4) >> 16);
 }

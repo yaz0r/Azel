@@ -133,6 +133,15 @@ struct sVec3_FP
         return newValue;
     }
 
+    sVec3_FP operator / (const s32 value) const
+    {
+        sVec3_FP newValue = *this;
+        newValue[0] /= value;
+        newValue[1] /= value;
+        newValue[2] /= value;
+        return newValue;
+    }
+
     sVec3_FP operator >> (const int amount) const
     {
         sVec3_FP newValue = *this;
@@ -539,7 +548,7 @@ struct s_3dModel
     u16 m16_previousAnimationFrame; //16
 
     void (*m18_drawFunction)(s_3dModel*); // 18
-    void (*m1C_addToDisplayListFunction)(u8*, u32); // 1C
+    void (*m1C_addToDisplayListFunction)(struct sProcessed3dModel*); // 1C
     void (*m20_positionUpdateFunction)(s_3dModel*); // 20
     void (*m24_rotationUpdateFunction)(s_3dModel*); // 24
     void (*m28_scaleUpdateFunction)(s_3dModel*); // 28

@@ -46,16 +46,21 @@ struct sNPCE8
     sVec3_FP m54_oldPosition;
 };
 
-struct sMainLogic_74
+struct sCollisionSetup
 {
     s8 m0_collisionType;
     s8 m1;
     s16 m2_collisionLayersBitField;
+};
+
+struct sMainLogic_74
+{
+    sCollisionSetup m0_collisionSetup;
     fixedPoint m4_collisionRadius;
     sVec3_FP m8_position;
     sVec3_FP m14_collisionClip;
     sVec3_FP m20;
-    s32 m2C;
+    s32 m2C_collisionSetupIndex;
     sVec3_FP* m30_pPosition;
     sVec3_FP* m34_pRotation;
     p_workArea m38_pOwner;
@@ -73,12 +78,12 @@ struct sNPC
     s8 mC;
     s8 mD;
     s8 mE_controlState;
-    s8 mF; // 0x80 = enable shadow
+    s8 mF; // 0x80 = disable shadow
     sSaturnPtr m10_InitPtr;
     void (*m14_updateFunction)(sNPC*);
     sSaturnPtr m18;
     s32 m1C;
-    sVec2_FP m20;
+    sVec2_FP m20_lookAtAngle;
     fixedPoint m28_animationLeftOver;
     fixedPoint m2C_currentAnimation;
     sSaturnPtr m30_animationTable;
@@ -155,7 +160,7 @@ struct sNpcData
     s32 mF0;
     s32 mF4;
     s32 mF8;
-    s32 mFC;
+    s32 mFC; // 0x10: LCS Active
     s32 m100;
     sRunningScriptContext m104_currentScript;
     s32 m116;
@@ -165,8 +170,11 @@ struct sNpcData
     sVec3_FP* m160_pEdgePosition;
     s_cinematicBarTask* m164_cinematicBars;
     s32 m168;
-    s_vdp2StringTask* m16C_displayStringTask;
-    s32 m170;
+    union {
+        s_vdp2StringTask* m16C_displayStringTask;
+        s_receivedItemTask* m16C_receivedItemTask;
+    };
+    struct s_multiChoiceTask* m170_multiChoiceTask;
 };
 
 extern sNpcData npcData0;
@@ -186,7 +194,7 @@ void loadTownPrg(s8 r4, s8 r5);
 void startScriptTask(p_workArea r4);
 
 void mainLogicInitSub0(sMainLogic_74*, s32);
-void mainLogicInitSub1(sMainLogic_74*, sSaturnPtr, sSaturnPtr);
+void mainLogicInitSub1(sMainLogic_74*, const sVec3_FP&, const sVec3_FP&);
 
 struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
 {
@@ -229,6 +237,7 @@ extern p_workArea townVar0;
 
 s32 initNPC(s32 arg);
 s32 initNPCFromStruct(sSaturnPtr);
+s32 mainLogicUpdateSub0(s32 r4_x, s32 r5_y);
 void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y);
 
 struct sCellObjectListNode
@@ -271,7 +280,7 @@ struct sTownGrid
     fixedPoint m28_cellSize;
     fixedPoint m2C;
     fixedPoint m30_worldToCellIndex;
-    npcFileDeleter* m34;
+    npcFileDeleter* m34_dataBuffer;
     sSaturnPtr m38_EnvironmentSetup;
     s32* m3C;
     std::array<std::array<sTownCellTask*, 8>, 8> m40_cellTasks;
@@ -297,3 +306,5 @@ void mainLogicUpdateSub3();
 void drawLcs();
 void updateEdgePosition(sNPC* r4);
 s32 TwnFadeOut(s32 arg0);
+s32 TwnFadeIn(s32 arg0);
+void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5);
