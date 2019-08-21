@@ -607,38 +607,6 @@ void mainLogicUpdateSub3()
     }
 }
 
-struct sCameraTask : public s_workAreaTemplate<sCameraTask>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &sCameraTask::Init, &sCameraTask::Update, nullptr, nullptr };
-        return &taskDefinition;
-    }
-
-    static void Init(sCameraTask* pThis)
-    {
-        FunctionUnimplemented();
-    }
-    static void Update(sCameraTask* pThis)
-    {
-        FunctionUnimplemented();
-    }
-
-    u8 m0;
-    u8 m1;
-    u32 m8;
-    u32 m30;
-    //size 0x64
-};
-
-sCameraTask* cameraTaskPtr = nullptr;
-
-p_workArea startCameraTask(p_workArea pParent)
-{
-    cameraTaskPtr = createSubTask<sCameraTask>(pParent);
-    return cameraTaskPtr;
-}
-
 s32* twnVar1;
 s32 twnVar2 = 0x7FFFFFFF;
 
@@ -697,7 +665,7 @@ s32 TwnFadeOut(s32 arg0)
     return 0;
 }
 
-u16 TwnFadeInComputeColor(u32 r4, u32 r5)
+u16 TwnFadeInComputeColor(sSaturnPtr r4, u32 r5)
 {
     FunctionUnimplemented();
     return 0;

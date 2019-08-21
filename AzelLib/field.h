@@ -354,6 +354,8 @@ struct s_RGB8
     }
 };
 
+s_RGB8 readSaturnRGB8(sSaturnPtr& ptr);
+
 struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s32>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()

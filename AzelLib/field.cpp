@@ -420,3 +420,13 @@ void callGridCellDraw_normalSub2(p_workArea r4, s32 r5)
 {
     gridCellDraw_normalSub2(r4, r5, 0x10000);
 }
+
+s_RGB8 readSaturnRGB8(sSaturnPtr& ptr)
+{
+    s_RGB8 newValue;
+    newValue.m0 = readSaturnU8(ptr + 0);
+    newValue.m1 = readSaturnU8(ptr + 1);
+    newValue.m2 = readSaturnU8(ptr + 2);
+
+    return newValue;
+}

@@ -666,3 +666,11 @@ s32 isDataLoaded(s32 fileIndex)
 
     return 1;
 }
+
+sCameraTask* cameraTaskPtr = nullptr;
+
+p_workArea startCameraTask(p_workArea pParent)
+{
+    cameraTaskPtr = createSubTask<sCameraTask>(pParent);
+    return cameraTaskPtr;
+}

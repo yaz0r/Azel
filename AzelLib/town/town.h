@@ -292,6 +292,37 @@ struct sTownGrid
 
 extern sTownGrid gTownGrid;
 
+struct sCameraTask : public s_workAreaTemplate<sCameraTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sCameraTask::Init, &sCameraTask::Update, nullptr, nullptr };
+        return &taskDefinition;
+    }
+
+    static void Init(sCameraTask* pThis)
+    {
+        FunctionUnimplemented();
+    }
+    static void Update(sCameraTask* pThis)
+    {
+        FunctionUnimplemented();
+    }
+
+    u8 m0;
+    u8 m1;
+    u8 m2;
+    s32 m4;
+    sSaturnPtr m8;
+    s_RGB8 m10;
+    sVec3_FP m14;
+    u32 m30;
+    //size 0x64
+};
+
+extern sCameraTask* cameraTaskPtr;
+p_workArea startCameraTask(p_workArea pParent);
+
 s32 isDataLoaded(s32 fileIndex);
 
 // todo: kernel

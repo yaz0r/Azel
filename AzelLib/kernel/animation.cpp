@@ -663,7 +663,18 @@ u32 setupModelAnimation(s_3dModel* pModel, sAnimationData* pAnimation)
 {
     if (pAnimation == NULL)
     {
-        assert(0);
+        if (pModel->mA_animationFlags & 0x10)
+        {
+            copyPoseRotation(pModel);
+        }
+        if (pModel->mA_animationFlags & 0x20)
+        {
+            resetPoseScale(pModel);
+        }
+
+        pModel->mA_animationFlags &= ~0x38;
+        pModel->m30_pCurrentAnimation = nullptr;
+        return 1;
     }
     else
     {

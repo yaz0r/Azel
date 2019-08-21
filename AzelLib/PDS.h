@@ -184,6 +184,14 @@ struct sSaturnPtr
         temp.m_file = NULL;
         return temp;
     }
+
+    static sSaturnPtr& createFromRaw(u32 offset, struct sSaturnMemoryFile* pFile = nullptr)
+    {
+        static sSaturnPtr temp;
+        temp.m_offset = offset;
+        temp.m_file = pFile;
+        return temp;
+    }
 };
 
 struct sSaturnMemoryFile

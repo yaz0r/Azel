@@ -16,16 +16,9 @@ file(GLOB_RECURSE SRC_KERNEL
     "kernel/*.h"
 )
 
-file(GLOB SRC_TOWN
+file(GLOB_RECURSE SRC_TOWN
     "town/*.cpp"
     "town/*.h"
-)
-
-file(GLOB_RECURSE SRC_TOWN_RUIN
-    "town/ruin/*.cpp"
-    "town/ruin/*.h"
-    "town/exca/*.cpp"
-    "town/exca/*.h"
 )
 
 file(GLOB_RECURSE SRC_FIELD_A3
@@ -38,7 +31,6 @@ set(SOURCES
  ${SRC_KERNEL}
  ${SRC_ROOT}
  ${SRC_TOWN}
- ${SRC_TOWN_RUIN}
  ${SRC_FIELD_A3}
 
 ${THIRD_PARTY}/imgui/imgui.cpp
@@ -55,12 +47,20 @@ set(SOURCES
 )
 ENDIF()
 
+function(assign_source_group)
+    foreach(_source IN ITEMS ${ARGN})
+        if (IS_ABSOLUTE "${_source}")
+            file(RELATIVE_PATH _source_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${_source}")
+        else()
+            set(_source_rel "${_source}")
+        endif()
+        get_filename_component(_source_path "${_source_rel}" PATH)
+        string(REPLACE "/" "\\" _source_path_msvc "${_source_path}")
+        source_group("${_source_path_msvc}" FILES "${_source}")
+    endforeach()
+endfunction(assign_source_group)
 
-source_group("src" FILES ${SRC_ROOT})
-source_group("src\\kernel" FILES ${SRC_KERNEL})
-source_group("src\\town" FILES ${SRC_TOWN})
-source_group("src\\town\\ruin" FILES ${SRC_TOWN_RUIN})
-source_group("src\\field\\field_a3" FILES ${SRC_FIELD_A3})
+assign_source_group(${SOURCES})
 
 if (MSVC)
     set(SOURCES
