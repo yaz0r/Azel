@@ -649,6 +649,7 @@ struct s_graphicEngineStatus_4514_inputStatus
     s8 m2_analogX;
     s8 m3_analogY;
     s8 m4;
+    s8 m5;
     u16 m6_buttonDown; // direction
     u16 m8_newButtonDown; // button mask
     u16 mA;

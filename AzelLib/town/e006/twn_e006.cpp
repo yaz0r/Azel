@@ -69,9 +69,20 @@ s32 scriptFunction_605bb24(s32 r4, s32 r5)
     return 0;
 }
 
+struct sTownCutscene_28
+{
+    s32 m0;
+    std::array<s32, 2> m98;
+};
+
+struct sTownCutscene
+{
+    sTownCutscene_28 m28;
+};
+
 struct sStreamingParams
 {
-    sTownCutscene* m0;
+    s32* m0;
     s32 m4;
     u8* m8_buffer;
     s32 mC_bufferSize;
@@ -79,17 +90,34 @@ struct sStreamingParams
     s32 m14_audioBufferSize;
 };
 
-s32 openFileForStreaming(sStreamingParams* r4, const std::string& fileName)
+sTownCutscene* openFileForStreaming(sStreamingParams* r4, const std::string& fileName)
 {
-    return 0;
+    return nullptr;
 }
 
 s32 e006Task0Var0 = 0;
 
-struct sTownCutscene
+void updateCutsceneStreaming(sTownCutscene* r4)
 {
-    s32 m28;
-};
+    FunctionUnimplemented();
+}
+
+void pauseCutscene(sTownCutscene* r4, s32 r5)
+{
+    FunctionUnimplemented();
+}
+
+void cutsceneUpdateInputSub0(sTownCutscene* r4, s32 r5, s32 r6)
+{
+    r4->m28.m98[0] = r5;
+    r4->m28.m98[1] = r6;
+}
+
+// TODO: kernel
+s32 scriptFunction_605861eSub0Sub0(sTownCutscene* r4)
+{
+    return r4->m28.m0;
+}
 
 struct sE006Task0 : public s_workAreaTemplateWithArg<sE006Task0, s32>
 {
@@ -117,6 +145,57 @@ struct sE006Task0 : public s_workAreaTemplateWithArg<sE006Task0, s32>
 
     }
 
+    static void cutsceneDrawSub0(sE006Task0* pThis, s32 r5)
+    {
+        s32 iVar3 = 0x400;
+        if (g_fadeControls.m0_fade0.m20_stopped == 0)
+        {
+            if (scriptFunction_605861eSub0Sub0(pThis->m0) == 1)
+            {
+                vdp2DebugPrintSetPosition(0x13, 0xd);
+                drawLineLargeFont("     ");
+                pauseEngine[0] = 0;
+                pauseCutscene(pThis->m0, 1);
+            }
+        }
+        else {
+            if ((graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.m8_newButtonDown & 8) != 0) {
+                u8 bVar1 = pauseEngine[0] == 0;
+                if (bVar1) {
+                    vdp2DebugPrintSetPosition(0x13, 0xd);
+                    drawLineLargeFont("PAUSE");
+                }
+                else {
+                    vdp2DebugPrintSetPosition(0x13, 0xd);
+                    drawLineLargeFont("     ");
+                }
+                pauseEngine[0] = bVar1;
+                pauseCutscene(pThis->m0, !bVar1);
+            }
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2) {
+                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4 == 0) {
+                    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5 != 0) {
+                        iVar3 = 0x400 - ((int)(((int)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5 & 0xffU) * 5) >> 1);
+                    }
+                }
+                else {
+                    iVar3 = ((int)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4 & 0xffU) * (r5 + -1) * 4 + 0x400;
+                }
+            }
+            else {
+                if (((int)(short)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x8000U) == 0) {
+                    if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x800) != 0) {
+                        iVar3 = 0x155;
+                    }
+                }
+                else {
+                    iVar3 = r5 * 0x3fd;
+                }
+            }
+        }
+        cutsceneUpdateInputSub0(pThis->m0, iVar3, 1);
+    }
+
     static void Draw(sE006Task0* pThis)
     {
 
@@ -128,8 +207,8 @@ struct sE006Task0 : public s_workAreaTemplateWithArg<sE006Task0, s32>
         }
 
         cutsceneDrawSub0(pThis, 7);
-        cutsceneDrawSub1(&pThis->m4);
-        if (scriptFunction_605861eSub0Sub0(&pThis->m4) == 5)
+        updateCutsceneStreaming(pThis->m0);
+        if (scriptFunction_605861eSub0Sub0(pThis->m0) == 5)
         {
             pThis->getTask()->markFinished();
         }
@@ -140,8 +219,8 @@ struct sE006Task0 : public s_workAreaTemplateWithArg<sE006Task0, s32>
         FunctionUnimplemented();
     }
 
-    s32 m0;
-    sTownCutscene m4;
+    sTownCutscene* m0;
+    s32 m4;
     u8* m75;
     // size: 0x1d8
 };
@@ -158,17 +237,11 @@ s32 scriptFunction_60573b0(s32 r4)
     return 0;
 }
 
-// TODO: kernel
-s32 scriptFunction_605861eSub0Sub0(sTownCutscene* r4)
-{
-    return r4->m28;
-}
-
 s32 scriptFunction_605861eSub0()
 {
     if ((e006Task0 != nullptr) && (npcData0.mF0 == 0))
     {
-        s32 iVar1 = scriptFunction_605861eSub0Sub0(e006Task0);
+        s32 iVar1 = scriptFunction_605861eSub0Sub0(e006Task0->m0);
         if ((iVar1 != 5) && (iVar1 != -1))
             return 0;
     }
