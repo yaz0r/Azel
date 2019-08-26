@@ -282,6 +282,7 @@ extern u8 pauseEngine[8];
 extern u32 azelCdNumber;
 
 void WRITE_BE_U16(const void* ptr, u16 value);
+void WRITE_BE_U32(const void* ptr, u32 value);
 
 sVec3_FP READ_BE_Vec3(const void* ptr);
 

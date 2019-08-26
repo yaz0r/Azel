@@ -6,6 +6,7 @@
 #include "town/townMainLogic.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/animation.h"
+#include "kernel/fileBundle.h"
 
 struct TWN_E006_data : public sTownOverlay
 {
@@ -69,12 +70,6 @@ s32 scriptFunction_605bb24(s32 r4, s32 r5)
     return 0;
 }
 
-struct sStreamingFile_28
-{
-    s32 m0;
-    std::array<s32, 2> m98;
-};
-
 struct GfsHn
 {
     FILE* fHandle;
@@ -92,14 +87,61 @@ struct sStreamingFile_198
     //size 0x20?
 };
 
-struct sStreamingFile
+struct sStreamingFile_28
 {
-    sStreamingFile_28 m28;
+    s32 m0;
+    s32 m4;
+    s32 m8;
+    s32 mC;
+    s32 m10;
+    u32 m14;
+    u32 m18;
+    s32 m1C;
+    sVdp2StringControl* m20_vdp2StringControl;
+    u32 m24;
+    u32 m28;
+    u8* m2C;
+    u8* m30;
+    u8* m34;
+    u8* m38;
+    u8* m3C;
+    u8* m40;
+    u32 m44;
     u32 m4C;
+    u32 m48;
     u32 m50;
     u32 m54;
-    u32 m58;
-    u32 m5C;
+    u8* m58;
+    u8* m5C_audioBuffer;
+    u32 m60;
+    u32 m64_sampleIndex;
+    u32 m68_writePosition;
+    u32 m6C;
+    u32 m70;
+    u32 m84_frameIndex;
+    u32 m88;
+    u32 m90;
+    u32 m94;
+    std::array<s32, 2> m98;
+};
+
+struct sStreamingFile
+{
+    u8* m0_buffer;
+    u32 m4_bufferSize;
+    s32 m8;
+    s32 m10;
+    s32 m14;
+    u8* m18_audioBuffer;
+    u32 m1C_audioBufferSize;
+    s32 m20;
+    s32 m24;
+    sStreamingFile_28 m28;
+    u32 mC8[0x10][3];
+    u32 m188_camera; // probably in m28
+    u32 m18C;
+    u32 m190_emptyBytes;
+    u8* m194;
     sStreamingFile_198 m198;
     //size 0x1B8?
 };
@@ -117,18 +159,107 @@ struct sStreamingParams
 GfsHn GFS_Open(const std::string& name)
 {
     GfsHn temp;
-    temp.fHandle = fopen(name.c_str());
+    temp.fHandle = fopen(name.c_str(), "rb");
     return temp;
 }
 
-void GFS_GetFileSize(GfsHn hanfle, s32* sectorSize, s32* numSector, s32* lastSize)
+void GFS_GetFileSize(GfsHn handle, s32* sectorSize, s32* numSector, s32* lastSize)
+{
+    u32 position = ftell(handle.fHandle);
+
+    fseek(handle.fHandle, 0, SEEK_END);
+    u32 size = ftell(handle.fHandle);
+
+    fseek(handle.fHandle, position, SEEK_SET);
+
+    *sectorSize = 0x800;
+    *numSector = size / 0x800;
+    *lastSize = size - (*numSector * 0x800);
+}
+
+s32 numReadBytes = 0;
+
+s32 GFS_NwExecOne(GfsHn hanle)
+{
+    FunctionUnimplemented();
+    return 0;
+}
+
+void GFS_NwGetStat(GfsHn handle, s32* stat, s32* nbytes)
+{
+    *nbytes = numReadBytes;
+    FunctionUnimplemented();
+}
+
+s32 GFS_NwFread(GfsHn handle, s32 numSectors, u8* buffer, s32 bufferSize)
+{
+    assert(bufferSize >= numSectors * 0x800);
+    numReadBytes = numSectors * 0x800;
+    return fread(buffer, numSectors, 0x800, handle.fHandle);
+}
+
+void GFS_NwCdRead(GfsHn handle)
 {
     FunctionUnimplemented();
 }
 
 sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 bufferSize, u8* audioBuffer, u32 audioBufferSize)
 {
-    FunctionUnimplemented();
+    param_1->m0_buffer = buffer;
+    param_1->m4_bufferSize = bufferSize;
+    addToMemoryLayout(buffer, bufferSize);
+    param_1->m8 = 0;
+    param_1->m10 = 0;
+    param_1->m14 = 0;
+    param_1->m18_audioBuffer = audioBuffer;
+    param_1->m1C_audioBufferSize = audioBufferSize;
+    param_1->m20 = 0;
+    param_1->m24 = 7;
+    param_1->m194 = param_1->m0_buffer;
+    (param_1->m28).m0 = 0;
+    (param_1->m28).m4 = 0;
+    (param_1->m28).m8 = 0;
+    (param_1->m28).mC = 0;
+    (param_1->m28).m10 = 0;
+    (param_1->m28).m1C = 0;
+    param_1->m28.m20_vdp2StringControl = pVdp2StringControl;
+    (param_1->m28).m28 = 0;
+    (param_1->m28).m24 = 0;
+    u8* puVar2 = param_1->m0_buffer;
+    (param_1->m28).m34 = puVar2;
+    (param_1->m28).m2C = puVar2;
+    u32 uVar1 = param_1->m4_bufferSize & 0x7ff;
+    (param_1->m28).m4C = uVar1 + 0x1800;
+    if (param_1->m4_bufferSize <= uVar1 + 0x2000) {
+        return (sStreamingFile*)0x0;
+    }
+    (param_1->m28).m48 = param_1->m4_bufferSize - (param_1->m28).m4C;
+    (param_1->m28).m3C = param_1->m0_buffer;
+    puVar2 = (param_1->m28).m3C + (param_1->m28).m48;
+    (param_1->m28).m40 = puVar2;
+    (param_1->m28).m30 = puVar2;
+    (param_1->m28).m38 = puVar2;
+    (param_1->m28).m50 = 0;
+    (param_1->m28).m5C_audioBuffer = param_1->m18_audioBuffer;
+    (param_1->m28).m64_sampleIndex = 0;
+    (param_1->m28).m68_writePosition = 0;
+    (param_1->m28).m6C = 0;
+    (param_1->m28).m84_frameIndex = 0;
+    (param_1->m28).m88 = 0;
+    param_1->m18C = 0;
+
+    param_1->m190_emptyBytes = 0;
+    (param_1->m28).m90 = 0x400;
+    (param_1->m28).m94 = 1;
+    (param_1->m28).m98[0] = 0;
+    (param_1->m28).m98[1] = 0;
+
+    for(int i=0; i<0x10; i++)
+    {
+        param_1->mC8[i][0] = 0;
+        param_1->mC8[i][1] = 0;
+        param_1->mC8[i][2] = 0;
+    }
     return param_1;
 }
 
@@ -137,9 +268,11 @@ void GFS_SetTransPara(GfsHn hanfle, s32 numSectors)
     FunctionUnimplemented();
 }
 
-void prereadStreamingData(sStreamingFile*)
+void prereadStreamingData(sStreamingFile* param_1)
 {
-    FunctionUnimplemented();
+    if (0 < (int)(param_1->m198).m14_numSectors) {
+        GFS_NwCdRead((param_1->m198).m0_gfsHandle);
+    }
 }
 
 sStreamingFile* openFileForStreaming(sStreamingParams* param_1, const std::string& param_2)
@@ -158,7 +291,7 @@ sStreamingFile* openFileForStreaming(sStreamingParams* param_1, const std::strin
     }
     else {
         psVar2 = initStreamingHandle(param_1->m0_streamingFile, param_1->m8_buffer, param_1->mC_bufferSize, param_1->m10_audioBuffer, param_1->m14_audioBufferSize);
-        if (psVar2 != (sStreamingFile*)0x0) {
+        if (psVar2 != nullptr) {
             (psVar2->m198).m0_gfsHandle = dVar1;
             GFS_GetFileSize(dVar1, &sectorSize, &numSectors, &lastSize);
             (psVar2->m198).m14_numSectors = numSectors;
@@ -175,23 +308,47 @@ sStreamingFile* openFileForStreaming(sStreamingParams* param_1, const std::strin
 
 s32 e006Task0Var0 = 0;
 
-void getNextStreamingBuffer(sStreamingFile* iParm1, void** pBuffer, int* pBufferSize)
+void getNextStreamingBuffer(sStreamingFile* iParm1, u8** pBuffer, int* pBufferSize)
 {
     s32 iVar1;
     s32 iVar2;
 
-    if ((iParm1->m5C == iParm1->m54) && (iParm1->m4C != iParm1->m50)) {
+    if ((iParm1->m28.m34 == iParm1->m28.m2C) && (iParm1->m28.m24 != iParm1->m28.m28)) {
         *pBufferSize = 0;
-        *pBuffer = (void*)0x0;
+        *pBuffer = nullptr;
         return;
     }
-    iVar2 = iParm1->m58 - iParm1->m54;
-    if (((u32)iParm1->m54 < (u32)iParm1->m5C) && (iVar1 = iParm1->m5C - iParm1->m54, iVar1 < iVar2))
+    iVar2 = iParm1->m28.m30 - iParm1->m28.m2C;
+    if (((u32)iParm1->m28.m2C < (u32)iParm1->m28.m34) && (iVar1 = iParm1->m28.m34 - iParm1->m28.m2C, iVar1 < iVar2))
     {
         iVar2 = iVar1;
     }
     *pBufferSize = iVar2;
-    *pBuffer = (void*)iParm1->m54;
+    *pBuffer = iParm1->m28.m2C;
+    return;
+}
+
+void updateStreamingFileReadSub0(sStreamingFile* iParm1)
+{
+    FunctionUnimplemented();
+}
+
+void updateStreamingFileReadSub1(sStreamingFile* param_1, s32 param_2)
+{
+    (param_1->m28).m24 += param_2;
+    (param_1->m28).m2C += param_2;
+}
+
+void updateStreamingFileReadSub2(sStreamingFile* param_1)
+{
+    u8* puVar1;
+
+    puVar1 = (param_1->m28).m2C;
+    if ((((param_1->m28).m30 <= puVar1) && ((param_1->m28).m34 <= puVar1)) && (2 < (param_1->m28).m0))
+    {
+        (param_1->m28).m2C = (param_1->m28).m3C;
+        (param_1->m28).m30 = (param_1->m28).m3C + ((param_1->m28).m48 & ~0x7FF);
+    }
     return;
 }
 
@@ -202,10 +359,10 @@ void updateStreamingFileRead(sStreamingFile* iParm1)
     u32 uVar3;
     sStreamingFile_198* psVar4;
     s32 bufferSize;
-    void* buffer;
+    u8* buffer;
 
     psVar4 = &iParm1->m198;
-    if ((iParm1->m198).m18_fileSize <= iParm1->m4C) {
+    if ((iParm1->m198).m18_fileSize <= iParm1->m28.m24) {
         return;
     }
     if (((iParm1->m198).m8 == 0) && (getNextStreamingBuffer(iParm1, &buffer, &bufferSize), 0x7ff < bufferSize)) {
@@ -251,9 +408,439 @@ void updateStreamingFileRead(sStreamingFile* iParm1)
     updateStreamingFileReadSub2(iParm1);
 }
 
-void updateCutsceneStreaming(sStreamingFile* r4)
+void executeCutsceneCommandsSub0Sub0(sStreamingFile* pThis, int param_2)
 {
-    updateStreamingFileRead(r4);
+    (pThis->m28).m28 += param_2;
+    (pThis->m28).m34 += param_2;
+    if ((pThis->m28).m38 <= (pThis->m28).m34) {
+        (pThis->m28).m34 = (pThis->m28).m34 + (int)((pThis->m28).m3C + -(int)(pThis->m28).m38);
+        (pThis->m28).m38 = (pThis->m28).m30;
+    }
+    return;
+}
+
+s32 executeCutsceneCommandsSub0(sStreamingFile* pThis)
+{
+    if (pThis->m28.m48 < pThis->m28.m44)
+    {
+        return -1;
+    }
+    if (pThis->m4_bufferSize < pThis->m28.m44 + 0x1000) {
+        return -1;
+    }
+
+    u32 iVar3 = pThis->m4_bufferSize - (pThis->m28).m44;
+    u32 uVar2 = iVar3 - 0x1000 & ~0x7FF;
+    (pThis->m28).m48 = uVar2;
+    (pThis->m28).m4C = iVar3 - uVar2;
+    u8* puVar1 = pThis->m0_buffer;
+    (pThis->m28).m3C = puVar1 + (pThis->m28).m44;
+    (pThis->m28).m40 = puVar1 + (pThis->m28).m44 + (pThis->m28).m48;
+    (pThis->m28).m60 = READ_BE_U32(pThis->m194 + 8) >> 0x10;
+    if (pThis->m194[5] == 8) {
+        if (pThis->m194[4] != 2) {
+            uVar2 = pThis->m1C_audioBufferSize;
+            goto LAB_0600ecca;
+        }
+        uVar2 = pThis->m1C_audioBufferSize;
+    }
+    else {
+        if (pThis->m194[4] == 2) {
+            uVar2 = pThis->m1C_audioBufferSize >> 1;
+        }
+        else {
+            uVar2 = pThis->m1C_audioBufferSize;
+        }
+    }
+
+    uVar2 = uVar2 >> 1;
+LAB_0600ecca:
+    uVar2 = uVar2 & 0xfffff000;
+    if (uVar2 >> 0xc < 2) {
+        return -1;
+    }
+    if (pThis->m194[5] != 8) {
+        uVar2 = uVar2 << 1;
+    }
+    (pThis->m28).m54 = uVar2;
+    (pThis->m28).m58 = pThis->m18_audioBuffer + uVar2;
+    (pThis->m28).m0 = 3;
+    executeCutsceneCommandsSub0Sub0(pThis, READ_BE_U32(pThis->m194));
+    return 0;
+}
+
+void cutsceneFillCommandBuffer(sStreamingFile* param_1, u8* param_2)
+{
+    u32  uVar2;
+
+    if ((param_1->m28).m38 < param_2 + 0x10) {
+        u8* puVar4 = (param_1->m28).m3C;
+        u8* puVar3 = (param_1->m28).m38;
+        uVar2 = (u32)(param_2 + 0x10 + -(int)puVar3) >> 2;
+        do {
+            uVar2 = uVar2 - 1;
+            
+            WRITE_BE_U16(puVar3, READ_BE_U32(puVar4));
+
+            puVar4 = puVar4 + 4;
+            puVar3 = puVar3 + 4;
+        } while (uVar2 != 0);
+    }
+    return;
+}
+
+struct sCutsceneCommandDefaultTask : public s_workAreaTemplate<sCutsceneCommandDefaultTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, &sCutsceneCommandDefaultTask::Draw, &sCutsceneCommandDefaultTask::Delete };
+        return &taskDefinition;
+    }
+
+    static void Draw(sCutsceneCommandDefaultTask* pThis)
+    {
+        pushCurrentMatrix();
+        pThis->m8.m18_drawFunction(&pThis->m8);
+        popMatrix();
+    }
+
+    static void Delete(sCutsceneCommandDefaultTask* pThis)
+    {
+        assert(0);
+    }
+
+    s_fileBundle* m0;
+    s_vdp1AllocationNode* m4;
+    s_3dModel m8;
+    //size: 0x58
+};
+
+void displayOutOfMemory(u32, u32)
+{
+    assert(0);
+}
+
+void cutsceneCommandDefaultSub0(sCutsceneCommandDefaultTask* r4, u32 iParm2, u32 iParm3)
+{
+    u8* unaff_r13 = nullptr;
+    s_vdp1AllocationNode* unaff_r14 = nullptr;
+
+    if (iParm2 != 0)
+    {
+        unaff_r13 = dramAllocate(iParm2);
+        if(unaff_r13 == 0)
+        {
+            displayOutOfMemory(0, 1);
+        }
+    }
+    if (iParm3 != 0)
+    {
+        unaff_r14 = vdp1Allocate(iParm3);
+        if (unaff_r14 == 0)
+        {
+            displayOutOfMemory(0, 2);
+        }
+    }
+    r4->m0 = new s_fileBundle(unaff_r13);
+    r4->m4 = unaff_r14;
+    return;
+}
+
+// TODO: kernel
+void setupCutsceneDragonSub0(sStreamingFile* r4, u32 param_2, u32 param_3, p_workArea param_4, s_3dModel* pModel)
+{
+    FunctionUnimplemented();
+}
+
+void cutsceneCommandDefaultSub1(sStreamingFile* psParm1, u8* pSource, u8* pDest, u32 size)
+{
+    if ((psParm1->m28).m38 <= pSource) {
+        pSource = pSource + -(int)(psParm1->m28).m38 + (int)(psParm1->m28).m3C;
+    }
+    u32 uVar3 = (int)pSource + (size - (int)(psParm1->m28).m38);
+    if ((int)uVar3 < 0) {
+        uVar3 = 0;
+    }
+    if (size - uVar3 != 0) {
+        u32 uVar1 = size - uVar3 >> 2;
+        memcpy(pDest, pSource, uVar1 * 4);
+        pDest += uVar1;
+        pSource += uVar1;
+    }
+    if (uVar3 != 0) {
+        u8* puVar4 = (psParm1->m28).m3C;
+        uVar3 = uVar3 >> 2;
+        memcpy(pDest, puVar4, uVar3 * 4);
+    }
+}
+
+s32 cutsceneCommandDefault(sStreamingFile* psParm1)
+{
+    u8* local_r13_28 = (psParm1->m28).m34;
+    sCutsceneCommandDefaultTask* piVar2 = createSubTask<sCutsceneCommandDefaultTask>(currentResTask);
+    setupCutsceneDragonSub0(psParm1, READ_BE_U32(local_r13_28 + 4) + -0x10, 1, piVar2, &piVar2->m8);
+    u32 iVar6 = READ_BE_U32(local_r13_28 + 8) + -0x10;
+    u32 iVar5 = READ_BE_U32(local_r13_28) - iVar6;
+    cutsceneCommandDefaultSub0(piVar2, iVar6, iVar5);
+
+    u32 uVar3 = 0;
+
+    if (iVar5 != 0) {
+        u16 sVar1 = piVar2->m4->m4_vdp1Memory;
+        cutsceneCommandDefaultSub1(psParm1, local_r13_28 + READ_BE_U32(local_r13_28 + 8), getVdp1Pointer(0x25C00000 + ((int)sVar1 & 0xffffU) * 8), iVar5);
+        addToMemoryLayout(getVdp1Pointer(0x25C00000 + ((int)sVar1 & 0xffffU) * 8), iVar5);
+    }
+    if (iVar6 != 0) {
+        cutsceneCommandDefaultSub1(psParm1, local_r13_28 + 0x10, piVar2->m0->getRawBuffer(), iVar6);
+        addToMemoryLayout(piVar2->m0->getRawBuffer(), iVar6);
+        if (iVar5 == 0) {
+            uVar3 = 0;
+        }
+        else {
+            uVar3 = piVar2->m4->m4_vdp1Memory;
+        }
+        //patchFilePointers(iVar4->getRawBuffer(), uVar3);
+    }
+
+    u16 modelIndex = READ_BE_U16(local_r13_28 + 0xc);
+    sModelHierarchy* pHierarchy = piVar2->m0->getModelHierarchy(modelIndex);
+    sStaticPoseData* pStaticPose = piVar2->m0->getStaticPose(READ_BE_U16(local_r13_28 + 0xe), pHierarchy->countNumberOfBones());
+
+    init3DModelRawData(piVar2, &piVar2->m8, 0, piVar2->m0, modelIndex, 0, pStaticPose, 0, 0);
+    return 0;
+}
+
+void cutsceneCommand0Sub0(sStreamingFile* param_1)
+{
+    assert(0);
+}
+
+void cutsceneCommand0Sub1(sStreamingFile* param_1)
+{
+    assert(0);
+}
+
+u8* cutsceneCommand0Sub5(sStreamingFile* param_1, u32)
+{
+    assert(0);
+    return 0;
+}
+
+void cutsceneCommand0Sub2(u8*)
+{
+    assert(0);
+}
+
+void cutsceneCommand0Sub3(sStreamingFile* param_1, u32, u8*)
+{
+    assert(0);
+}
+
+void cutsceneCommand0Sub4(sStreamingFile* param_1, u32)
+{
+    assert(0);
+}
+
+s32 cutsceneCommand0(sStreamingFile* param_1)
+{
+    u8* local_r0_130;
+    u8* local_r10_28;
+    u8* local_r11_140;
+    u8* local_24;
+
+    local_r10_28 = (param_1->m28).m34;
+    if ((param_1->m28).m0 == 4) {
+        if ((param_1->m28).m88 == 0) {
+            cutsceneCommand0Sub0(param_1);
+        }
+        if ((u32)(param_1->m28).m88 <= (param_1->m28).m84_frameIndex) {
+            if ((param_1->m28).m14 != 0) {
+                cutsceneCommand0Sub1(param_1);
+                (param_1->m28).m14 = 0;
+            }
+            local_24 = local_r10_28 + 0x10;
+            (param_1->m28).m88 = (param_1->m28).m88 + READ_BE_U32(local_r10_28 + 8);
+            while (local_24 < local_r10_28 + READ_BE_U32(local_r10_28)) {
+                local_r0_130 = cutsceneCommand0Sub5(param_1, READ_BE_U32(local_24));
+                local_r11_140 = local_r0_130 + 8;
+                switch (READ_BE_U32(local_r0_130 + 4)) {
+                case 0:
+                    cutsceneCommand0Sub2(local_r11_140);
+                    break;
+                case 1:
+                    setupVDP2StringRendering(3, 0x19, 0x26, 2);
+                    VDP2DrawString((char*)local_r11_140);
+                    (param_1->m28).m1C = 1;
+                    break;
+                case 2:
+                    clearVdp2TextArea();
+                    (param_1->m28).m1C = 0;
+                    break;
+                case 0x10:
+                case 0x11:
+                case 0x12:
+                case 0x13:
+                case 0x14:
+                case 0x15:
+                case 0x16:
+                case 0x17:
+                case 0x18:
+                case 0x19:
+                case 0x1a:
+                case 0x1b:
+                case 0x1c:
+                case 0x1d:
+                case 0x1e:
+                case 0x1f:
+                    cutsceneCommand0Sub3(param_1, READ_BE_U32(local_r0_130 + 4) + -0x10, local_r11_140);
+                    break;
+                case 0x20:
+                case 0x21:
+                case 0x22:
+                case 0x23:
+                case 0x24:
+                case 0x25:
+                case 0x26:
+                case 0x27:
+                case 0x28:
+                case 0x29:
+                case 0x2a:
+                case 0x2b:
+                case 0x2c:
+                case 0x2d:
+                case 0x2e:
+                case 0x2f:
+                    cutsceneCommand0Sub4(param_1, READ_BE_U32(local_r0_130 + 4) + -0x20);
+                }
+                local_24 = local_24 + READ_BE_U32(local_r0_130);
+            }
+            return 0;
+        }
+    }
+    return -1;
+}
+
+void executeCutsceneCommands(sStreamingFile* psParm1)
+{
+    psParm1->m18C++;
+    int iVar1 = psParm1->m28.m0;
+    if (psParm1->m28.m0 == 2)
+    {
+        if (executeCutsceneCommandsSub0(psParm1) != 0)
+            goto  LAB_0600eb14;
+    }
+    else
+    {
+        if (iVar1 != 3) {
+            if (iVar1 != 4) {
+                return;
+            }
+            if ((psParm1->m28).m8 == 0) {
+                assert(0);
+                /*
+                FUN_0600dedc(psParm1);
+                if ((VDP2Regs_.TVSTAT & 1) == 0) {
+                    uVar2 = 0x1b4f4f0;
+                }
+                else {
+                    uVar2 = 0x1b1ebfc;
+                }
+                uVar2 = setDividend((psParm1->m28).m78, *(undefined4*)(puVar3 + 0xc), (uVar2 >> 0xe) + 1 >> 1
+                );
+                (psParm1->m28).m84_frameIndex = uVar2;
+                FUN_0600df52(psParm1);
+                if ((psParm1->m28).m98[0] != 0) {
+                    (psParm1->m28).m90 = (psParm1->m28).m98[0];
+                    (psParm1->m28).m94 = (psParm1->m28).m98[1];
+                    FUN_0600e1b2(psParm1, 0xffffffff);
+                    (psParm1->m28).m98[0] = 0;
+                    (psParm1->m28).m98[1] = 0;
+                }
+                */
+            }
+            goto LAB_0600eb14;
+        }
+    }
+
+    if ((psParm1->m28).m4 != 0) {
+        //executeCutsceneCommandsSub1(psParm1);
+        assert(0);
+    }
+    LAB_0600eb14:
+    if ((psParm1->m28).m18 != 0) {
+        if ((psParm1->m28).m64_sampleIndex * 0x1000 + (psParm1->m28).m6C < (psParm1->m28).m70) {
+            //executeCutsceneCommandsSub1(psParm1);
+            assert(0);
+            (psParm1->m28).mC = 0;
+        }
+        else {
+            //executeCutsceneCommandsSub2(psParm1);
+            assert(0);
+            (psParm1->m28).m50 = 0;
+            (psParm1->m28).m18 = 0;
+        }
+    }
+
+    if (((psParm1->m28).m88 != 0) && (READ_BE_U32(psParm1->m194 + 0x10) <= (psParm1->m28).m84_frameIndex)) {
+        updateStreamingFileReadSub0(psParm1);
+        return;
+    }
+
+    do {
+        u32 uVar2 = (psParm1->m28).m24 - (psParm1->m28).m28;
+        if (uVar2 < 0x10) {
+            return;
+        }
+
+        if ((int)uVar2 < READ_BE_U32((psParm1->m28).m34)) {
+            return;
+        }
+
+        cutsceneFillCommandBuffer(psParm1, (psParm1->m28).m34);
+        switch (READ_BE_U32((psParm1->m28).m34 + 4)) {
+        case 0x0:
+            iVar1 = cutsceneCommand0(psParm1);
+            break;
+        case 0x11:
+            iVar1 = cutsceneCommandDefault(psParm1);
+            break;
+        default:
+            assert(0);
+        }
+        if (iVar1 != 0) {
+            return;
+        }
+    def_600EBA2:
+        executeCutsceneCommandsSub0Sub0(psParm1, READ_BE_U32((psParm1->m28).m34));
+        (psParm1->m28).m10 = (psParm1->m28).m10 + 1;
+    } while (true);
+}
+
+void syncCutsceneTimer(sStreamingFile* psParm1)
+{
+    FunctionUnimplemented();
+}
+
+void updateCutsceneStreaming(sStreamingFile* psParm1)
+{
+    updateStreamingFileRead(psParm1);
+    executeCutsceneCommands(psParm1);
+    syncCutsceneTimer(psParm1);
+    if (enableDebugTask)
+    {
+        vdp2DebugPrintSetPosition(2, 0xd);
+        vdp2PrintfLargeFont("Frame: %5d", (psParm1->m28).m84_frameIndex);
+        vdp2DebugPrintSetPosition(2, 0xf);
+        vdp2PrintfSmallFont("Sample: %4d", (psParm1->m28).m64_sampleIndex);
+        vdp2DebugPrintSetPosition(2, 0x10);
+        vdp2PrintfSmallFont("stock: %8d", ((psParm1->m28).m68_writePosition - (psParm1->m28).m6C) + (psParm1->m28).m64_sampleIndex * -0x1000);
+        vdp2DebugPrintSetPosition(2, 0x11);
+        vdp2PrintfSmallFont("write: %8d", (psParm1->m28).m68_writePosition);
+        vdp2DebugPrintSetPosition(2, 0x12);
+        vdp2PrintfSmallFont("empty: %4d", psParm1->m190_emptyBytes);
+        vdp2DebugPrintSetPosition(2, 0x13);
+        vdp2PrintfSmallFont("camera: %2d", psParm1->m188_camera);
+    }
 
     FunctionUnimplemented();
 }
@@ -434,14 +1021,7 @@ struct sE006Task1 : public s_workAreaTemplate<sE006Task1>
 };
 
 // TODO: kernel
-void setupCutsceneDragonSub0(sE006Task0* r4, u32 r5, u32 r6, sE006Task1* r7, s_3dModel* pModel)
-{
-    FunctionUnimplemented();
-}
-
-
-// TODO: kernel
-void setupCutsceneDragon(sE006Task0* r4, u32 r5, sE006Task1* r6, s_3dModel* pModel)
+void setupCutsceneDragon(sStreamingFile* r4, u32 r5, sE006Task1* r6, s_3dModel* pModel)
 {
     setupCutsceneDragonSub0(r4, r5, 3, r6, pModel);
 }
@@ -455,7 +1035,7 @@ s32 scriptFunction_605861e(s32 r4)
         pNewSubTask->m0 = r4Ptr;
         pNewSubTask->m8 = 0x80000000;
 
-        setupCutsceneDragon(e006Task0, readSaturnU8(r4Ptr + 1), pNewSubTask, &gDragonState->m28_dragon3dModel);
+        setupCutsceneDragon(e006Task0->m0, readSaturnU8(r4Ptr + 1), pNewSubTask, &gDragonState->m28_dragon3dModel);
         npcData0.m70_npcPointerArray[readSaturnU8(r4Ptr + 0)].workArea = pNewSubTask;
         setupModelAnimation(&gDragonState->m28_dragon3dModel, nullptr);
     }
