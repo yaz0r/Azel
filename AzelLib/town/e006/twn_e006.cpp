@@ -118,11 +118,21 @@ struct sStreamingFile_28
     u32 m68_writePosition;
     u32 m6C;
     u32 m70;
+    u32 m78;
+    u32 m7C;
+    u32 m80_cpuTimer;
     u32 m84_frameIndex;
     u32 m88;
     u32 m90;
     u32 m94;
     std::array<s32, 2> m98;
+};
+
+struct sStreamingFile_C8
+{
+    u32 m0;
+    p_workArea m4;
+    s_3dModel* m8;
 };
 
 struct sStreamingFile
@@ -137,7 +147,7 @@ struct sStreamingFile
     s32 m20;
     s32 m24;
     sStreamingFile_28 m28;
-    u32 mC8[0x10][3];
+    std::array<sStreamingFile_C8, 0x10> mC8;
     u32 m188_camera; // probably in m28
     u32 m18C;
     u32 m190_emptyBytes;
@@ -256,9 +266,9 @@ sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 buf
 
     for(int i=0; i<0x10; i++)
     {
-        param_1->mC8[i][0] = 0;
-        param_1->mC8[i][1] = 0;
-        param_1->mC8[i][2] = 0;
+        param_1->mC8[i].m0 = 0;
+        param_1->mC8[i].m4 = 0;
+        param_1->mC8[i].m8 = 0;
     }
     return param_1;
 }
@@ -506,7 +516,7 @@ struct sCutsceneCommandDefaultTask : public s_workAreaTemplate<sCutsceneCommandD
 
     static void Delete(sCutsceneCommandDefaultTask* pThis)
     {
-        assert(0);
+        FunctionUnimplemented();
     }
 
     s_fileBundle* m0;
@@ -547,9 +557,14 @@ void cutsceneCommandDefaultSub0(sCutsceneCommandDefaultTask* r4, u32 iParm2, u32
 }
 
 // TODO: kernel
-void setupCutsceneDragonSub0(sStreamingFile* r4, u32 param_2, u32 param_3, p_workArea param_4, s_3dModel* pModel)
+void setupCutsceneDragonSub0(sStreamingFile* r4, u32 index, u32 param_3, p_workArea param_4, s_3dModel* pModel)
 {
-    FunctionUnimplemented();
+    if (index < 0x11)
+    {
+        r4->mC8[index].m0 = param_3;
+        r4->mC8[index].m4 = param_4;
+        r4->mC8[index].m8 = pModel;
+    }
 }
 
 void cutsceneCommandDefaultSub1(sStreamingFile* psParm1, u8* pSource, u8* pDest, u32 size)
@@ -610,9 +625,17 @@ s32 cutsceneCommandDefault(sStreamingFile* psParm1)
     return 0;
 }
 
+u32 readCPUTimer()
+{
+    static u32 cpuTimer = 0x12345;
+    return ++cpuTimer;
+}
+
 void cutsceneCommand0Sub0(sStreamingFile* param_1)
 {
-    assert(0);
+    param_1->m28.m78 = 0;
+    param_1->m28.m7C = 0;
+    param_1->m28.m80_cpuTimer = readCPUTimer();
 }
 
 void cutsceneCommand0Sub1(sStreamingFile* param_1)
@@ -620,20 +643,134 @@ void cutsceneCommand0Sub1(sStreamingFile* param_1)
     assert(0);
 }
 
-u8* cutsceneCommand0Sub5(sStreamingFile* param_1, u32)
+u8* cutsceneCommand0Sub5(sStreamingFile* param_1, u8* param_2)
 {
-    assert(0);
-    return 0;
+    u8* local_r1_100;
+    u8* local_r2_48;
+    u8* puVar1;
+    u8* local_r2_100;
+    u8* local_r4_34;
+    u8* local_r6_62;
+    u8* ppuVar2;
+    u32 uVar3;
+
+    if (param_2 < (param_1->m28).m38) {
+        if ((param_1->m28).m38 < param_2 + 8) {
+            local_r6_62 = (param_1->m28).m3C;
+            local_r4_34 = (param_1->m28).m38;
+            uVar3 = (u32)(param_2 + 8 -local_r4_34) >> 2;
+            memcpy(local_r4_34, local_r6_62, uVar3 * 4);
+            local_r4_34 += uVar3 * 4;
+            local_r6_62 += uVar3 * 4;
+
+            uVar3 = (READ_BE_U32(param_2) - 8U) >> 2;
+            memcpy(local_r4_34, local_r6_62, uVar3 * 4);
+            local_r4_34 += uVar3 * 4;
+            local_r6_62 += uVar3 * 4;
+        }
+        else {
+            if ((param_1->m28).m38 < param_2 + READ_BE_U32(param_2)) {
+                local_r1_100 = (param_1->m28).m3C;
+                ppuVar2 = (param_1->m28).m38;
+                uVar3 = (param_2 + READ_BE_U32(param_2) -ppuVar2) >> 2;
+                memcpy(ppuVar2, local_r1_100, uVar3 *4);
+            }
+        }
+        return param_2;
+    }
+    return param_2 + -(int)(param_1->m28).m38 + (int)(param_1->m28).m3C;
 }
 
-void cutsceneCommand0Sub2(u8*)
+int convertCutsceneRotationComponent(int param_1, int param_2)
 {
-    assert(0);
+    switch (param_2) {
+    case 0:
+        return param_1;
+    case 6:
+        param_1 = param_1 << 2;
+    case 4:
+        param_1 = param_1 << 2;
+    case 2:
+        return param_1 << 2;
+    case 7:
+        param_1 = param_1 << 2;
+    case 5:
+        param_1 = param_1 << 2;
+    case 3:
+        param_1 = param_1 << 2;
+    case 1:
+        return param_1 << 1;
+    case 0xe:
+        param_1 = param_1 << 2;
+    case 0xc:
+        param_1 = param_1 << 2;
+    case 10:
+        param_1 = param_1 << 2;
+    case 8:
+        return param_1 << 8;
+    case 0xf:
+        param_1 = param_1 << 2;
+    case 0xd:
+        param_1 = param_1 << 2;
+    case 0xb:
+        param_1 = param_1 << 2;
+    case 9:
+        return param_1 << 9;
+    case 0x16:
+        param_1 = param_1 << 2;
+    case 0x14:
+        param_1 = param_1 << 2;
+    case 0x12:
+        param_1 = param_1 << 2;
+    case 0x10:
+        return param_1 << 0x10;
+    case 0x17:
+        param_1 = param_1 << 2;
+    case 0x15:
+        param_1 = param_1 << 2;
+    case 0x13:
+        param_1 = param_1 << 2;
+    case 0x11:
+        return param_1 << 0x11;
+    case 0x1c:
+        param_1 = param_1 << 2;
+    case 0x1a:
+        param_1 = param_1 << 2;
+    case 0x18:
+        return param_1 << 0x18;
+    case 0x1d:
+        param_1 = param_1 << 2;
+    case 0x1b:
+        param_1 = param_1 << 2;
+    case 0x19:
+        return param_1 << 0x19;
+    case 0x1e:
+        return 0;
+    case 0x1f:
+        return 0;
+    default:
+        return 0;
+    }
+}
+
+void cutsceneCommand0Sub2(u8* param_1)
+{
+    sVec3_FP local_10;
+    local_10[0] = convertCutsceneRotationComponent(READ_BE_U16(param_1), READ_BE_U16(param_1 + 6) >> 0xc);
+    local_10[1] = convertCutsceneRotationComponent(READ_BE_U16(param_1 + 2), READ_BE_U16(param_1 + 8) >> 0xc);
+    local_10[2] = convertCutsceneRotationComponent(READ_BE_U16(param_1 + 4), READ_BE_U16(param_1 + 10) >> 0xc);
+
+    sVec3_S16 local_18;
+    local_18[0] = READ_BE_U16(param_1 + 6);
+    local_18[1] = READ_BE_U16(param_1 + 8);
+    local_18[2] = READ_BE_U16(param_1 + 10);
+    updateEngineCamera(&cameraProperties2, local_10, local_18);
 }
 
 void cutsceneCommand0Sub3(sStreamingFile* param_1, u32, u8*)
 {
-    assert(0);
+    FunctionUnimplemented();
+    //assert(0);
 }
 
 void cutsceneCommand0Sub4(sStreamingFile* param_1, u32)
@@ -661,7 +798,7 @@ s32 cutsceneCommand0(sStreamingFile* param_1)
             local_24 = local_r10_28 + 0x10;
             (param_1->m28).m88 = (param_1->m28).m88 + READ_BE_U32(local_r10_28 + 8);
             while (local_24 < local_r10_28 + READ_BE_U32(local_r10_28)) {
-                local_r0_130 = cutsceneCommand0Sub5(param_1, READ_BE_U32(local_24));
+                local_r0_130 = cutsceneCommand0Sub5(param_1, local_24);
                 local_r11_140 = local_r0_130 + 8;
                 switch (READ_BE_U32(local_r0_130 + 4)) {
                 case 0:
@@ -720,6 +857,20 @@ s32 cutsceneCommand0(sStreamingFile* param_1)
     return -1;
 }
 
+void executeCutsceneCommandsSub1(sStreamingFile* param_1)
+{
+    u32 uVar1;
+
+    uVar1 = param_1->m8;
+    if ((param_1->m198).m18_fileSize <= uVar1) {
+        uVar1 = (param_1->m198).m18_fileSize;
+    }
+    if (uVar1 <= (param_1->m28).m24) {
+        (param_1->m28).m0 = 4;
+    }
+    return;
+}
+
 void executeCutsceneCommands(sStreamingFile* psParm1)
 {
     psParm1->m18C++;
@@ -736,7 +887,8 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
                 return;
             }
             if ((psParm1->m28).m8 == 0) {
-                assert(0);
+                FunctionUnimplemented();
+                //assert(0);
                 /*
                 FUN_0600dedc(psParm1);
                 if ((VDP2Regs_.TVSTAT & 1) == 0) {
@@ -763,13 +915,12 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
     }
 
     if ((psParm1->m28).m4 != 0) {
-        //executeCutsceneCommandsSub1(psParm1);
-        assert(0);
+        executeCutsceneCommandsSub1(psParm1);
     }
     LAB_0600eb14:
     if ((psParm1->m28).m18 != 0) {
         if ((psParm1->m28).m64_sampleIndex * 0x1000 + (psParm1->m28).m6C < (psParm1->m28).m70) {
-            //executeCutsceneCommandsSub1(psParm1);
+            //executeCutsceneCommandsSub1b(psParm1);
             assert(0);
             (psParm1->m28).mC = 0;
         }
@@ -1053,9 +1204,20 @@ s32 scriptFunction_605838C(s32 r4)
     return 0;
 }
 
+// TODO: kernel
+void scriptFunction_60573d8Sub0(sStreamingFile* r4)
+{
+    r4->m28.m4 = 1;
+}
+
 s32 scriptFunction_60573d8()
 {
-    FunctionUnimplemented();
+    npcData0.mF0 = 0;
+    if (e006Task0 != nullptr)
+    {
+        scriptFunction_60573d8Sub0(e006Task0->m0);
+    }
+    npcData0.mF0 = 0;
     return 0;
 }
 

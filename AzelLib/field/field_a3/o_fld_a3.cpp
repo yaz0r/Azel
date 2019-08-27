@@ -3861,12 +3861,12 @@ void fieldOverlaySubTaskInitSub5(u32 r4)
 void updateCameraFromDragonSub2(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
 {
     sFieldCameraStatus* r13 = &pTypedWorkArea->m3E4[pTypedWorkArea->m50C];
-    s16 r15[3];
+    sVec3_S16 r15;
     r15[0] = r13->mC_rotation[0] >> 16;
     r15[1] = r13->mC_rotation[1] >> 16;
     r15[2] = r13->mC_rotation[2] >> 16;
 
-    updateEngineCamera(&cameraProperties2, r13, r15);
+    updateEngineCamera(&cameraProperties2, r13->m0_position, r15);
 
     copyMatrix(pCurrentMatrix, &pTypedWorkArea->m384);
     copyMatrix(&cameraProperties2.m28[0], &pTypedWorkArea->m3B4);

@@ -114,20 +114,20 @@ void initMatrixToIdentity(sMatrix4x3* matrix)
     matrix->matrix[11] = 0;
 }
 
-void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6)
+void updateEngineCamera(s_cameraProperties2* r4, const sVec3_FP& r5_position, const sVec3_S16& r6_rotation)
 {
-    r4->mC_rotation[0] = r6[0];
-    r4->mC_rotation[1] = r6[1];
-    r4->mC_rotation[2] = r6[2];
+    r4->mC_rotation[0] = r6_rotation[0];
+    r4->mC_rotation[1] = r6_rotation[1];
+    r4->mC_rotation[2] = r6_rotation[2];
 
     sVec3_FP translation;
 
-    r4->m0_position[0] = r5->m0_position[0];
-    translation[0] = -r5->m0_position[0];
-    r4->m0_position[1] = r5->m0_position[1];
-    translation[1] = -r5->m0_position[1];
-    r4->m0_position[2] = r5->m0_position[2];
-    translation[2] = -r5->m0_position[2];
+    r4->m0_position[0] = r5_position[0];
+    translation[0] = -r5_position[0];
+    r4->m0_position[1] = r5_position[1];
+    translation[1] = -r5_position[1];
+    r4->m0_position[2] = r5_position[2];
+    translation[2] = -r5_position[2];
 
     resetMatrixStack();
 

@@ -61,7 +61,7 @@ extern sMatrix4x3* pCurrentMatrix;
 void addObjectToDrawList(struct sProcessed3dModel* pObjectData);
 void addBillBoardToDrawList(u8* pObjectData, u32 offset);
 
-void updateEngineCamera(s_cameraProperties2* r4, sFieldCameraStatus* r5, s16* r6);
+void updateEngineCamera(s_cameraProperties2* r4, const sVec3_FP& r5_position, const sVec3_S16& r6_rotation);
 
 void multiplyMatrix(sMatrix4x3* matrixA, sMatrix4x3* matrixB);
 
