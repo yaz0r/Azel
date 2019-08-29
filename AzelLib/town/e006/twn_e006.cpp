@@ -79,9 +79,9 @@ struct sStreamingFile_198
 {
     GfsHn m0_gfsHandle;
     u32 m4_transfertSectorSize;
-    u32 m8;
-    u32 mC;
-    u32 m10;
+    u32 m8_readIsPending;
+    u32 mC_pendingReadSize;
+    u32 m10_numBytesReadForCurrentRequest;
     u32 m14_numSectors;
     u32 m18_fileSize;
     //size 0x20?
@@ -98,15 +98,15 @@ struct sStreamingFile_28
     u32 m18;
     s32 m1C;
     sVdp2StringControl* m20_vdp2StringControl;
-    u32 m24;
+    u32 m24_currentPositionInFile;
     u32 m28;
-    u8* m2C;
+    u8* m2C_pBufferWrite;
     u8* m30;
-    u8* m34;
+    u8* m34_pBufferRead;
     u8* m38;
     u8* m3C;
     u8* m40;
-    u32 m44;
+    u32 m44_headerSize;
     u32 m4C;
     u32 m48;
     u32 m50;
@@ -189,10 +189,11 @@ void GFS_GetFileSize(GfsHn handle, s32* sectorSize, s32* numSector, s32* lastSiz
 
 s32 numReadBytes = 0;
 
+s32 gNumSectors = 0;
+
 s32 GFS_NwExecOne(GfsHn hanle)
 {
-    FunctionUnimplemented();
-    return 0;
+    return 1;
 }
 
 void GFS_NwGetStat(GfsHn handle, s32* stat, s32* nbytes)
@@ -203,6 +204,7 @@ void GFS_NwGetStat(GfsHn handle, s32* stat, s32* nbytes)
 
 s32 GFS_NwFread(GfsHn handle, s32 numSectors, u8* buffer, s32 bufferSize)
 {
+    gNumSectors = numSectors;
     assert(bufferSize >= numSectors * 0x800);
     numReadBytes = numSectors * 0x800;
     return fread(buffer, numSectors, 0x800, handle.fHandle);
@@ -234,10 +236,10 @@ sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 buf
     (param_1->m28).m1C = 0;
     param_1->m28.m20_vdp2StringControl = pVdp2StringControl;
     (param_1->m28).m28 = 0;
-    (param_1->m28).m24 = 0;
+    (param_1->m28).m24_currentPositionInFile = 0;
     u8* puVar2 = param_1->m0_buffer;
-    (param_1->m28).m34 = puVar2;
-    (param_1->m28).m2C = puVar2;
+    (param_1->m28).m34_pBufferRead = puVar2;
+    (param_1->m28).m2C_pBufferWrite = puVar2;
     u32 uVar1 = param_1->m4_bufferSize & 0x7ff;
     (param_1->m28).m4C = uVar1 + 0x1800;
     if (param_1->m4_bufferSize <= uVar1 + 0x2000) {
@@ -306,7 +308,7 @@ sStreamingFile* openFileForStreaming(sStreamingParams* param_1, const std::strin
             GFS_GetFileSize(dVar1, &sectorSize, &numSectors, &lastSize);
             (psVar2->m198).m14_numSectors = numSectors;
             (psVar2->m198).m18_fileSize = (numSectors - 1) * sectorSize + (lastSize & ~3);
-            (psVar2->m198).m8 = 0;
+            (psVar2->m198).m8_readIsPending = 0;
             (psVar2->m198).m4_transfertSectorSize = 0x14;
             GFS_SetTransPara(dVar1, 0x14);
             prereadStreamingData(psVar2);
@@ -323,18 +325,18 @@ void getNextStreamingBuffer(sStreamingFile* iParm1, u8** pBuffer, int* pBufferSi
     s32 iVar1;
     s32 iVar2;
 
-    if ((iParm1->m28.m34 == iParm1->m28.m2C) && (iParm1->m28.m24 != iParm1->m28.m28)) {
+    if ((iParm1->m28.m34_pBufferRead == iParm1->m28.m2C_pBufferWrite) && (iParm1->m28.m24_currentPositionInFile != iParm1->m28.m28)) {
         *pBufferSize = 0;
         *pBuffer = nullptr;
         return;
     }
-    iVar2 = iParm1->m28.m30 - iParm1->m28.m2C;
-    if (((u32)iParm1->m28.m2C < (u32)iParm1->m28.m34) && (iVar1 = iParm1->m28.m34 - iParm1->m28.m2C, iVar1 < iVar2))
+    iVar2 = iParm1->m28.m30 - iParm1->m28.m2C_pBufferWrite;
+    if (((u32)iParm1->m28.m2C_pBufferWrite < (u32)iParm1->m28.m34_pBufferRead) && (iVar1 = iParm1->m28.m34_pBufferRead - iParm1->m28.m2C_pBufferWrite, iVar1 < iVar2))
     {
         iVar2 = iVar1;
     }
     *pBufferSize = iVar2;
-    *pBuffer = iParm1->m28.m2C;
+    *pBuffer = iParm1->m28.m2C_pBufferWrite;
     return;
 }
 
@@ -343,20 +345,20 @@ void updateStreamingFileReadSub0(sStreamingFile* iParm1)
     FunctionUnimplemented();
 }
 
-void updateStreamingFileReadSub1(sStreamingFile* param_1, s32 param_2)
+void incrementReadPosition(sStreamingFile* param_1, s32 param_2)
 {
-    (param_1->m28).m24 += param_2;
-    (param_1->m28).m2C += param_2;
+    (param_1->m28).m24_currentPositionInFile += param_2;
+    (param_1->m28).m2C_pBufferWrite += param_2;
 }
 
-void updateStreamingFileReadSub2(sStreamingFile* param_1)
+void handleReadBufferOverflow(sStreamingFile* param_1)
 {
     u8* puVar1;
 
-    puVar1 = (param_1->m28).m2C;
-    if ((((param_1->m28).m30 <= puVar1) && ((param_1->m28).m34 <= puVar1)) && (2 < (param_1->m28).m0))
+    puVar1 = (param_1->m28).m2C_pBufferWrite;
+    if ((((param_1->m28).m30 <= puVar1) && ((param_1->m28).m34_pBufferRead <= puVar1)) && (2 < (param_1->m28).m0))
     {
-        (param_1->m28).m2C = (param_1->m28).m3C;
+        (param_1->m28).m2C_pBufferWrite = (param_1->m28).m3C;
         (param_1->m28).m30 = (param_1->m28).m3C + ((param_1->m28).m48 & ~0x7FF);
     }
     return;
@@ -365,28 +367,27 @@ void updateStreamingFileReadSub2(sStreamingFile* param_1)
 void updateStreamingFileRead(sStreamingFile* iParm1)
 {
     s32 iVar1;
-    s32 nSectors;
-    u32 uVar3;
     sStreamingFile_198* psVar4;
     s32 bufferSize;
     u8* buffer;
 
     psVar4 = &iParm1->m198;
-    if ((iParm1->m198).m18_fileSize <= iParm1->m28.m24) {
+    if ((iParm1->m198).m18_fileSize <= iParm1->m28.m24_currentPositionInFile) {
         return;
     }
-    if (((iParm1->m198).m8 == 0) && (getNextStreamingBuffer(iParm1, &buffer, &bufferSize), 0x7ff < bufferSize)) {
+    if (((iParm1->m198).m8_readIsPending == 0) && (getNextStreamingBuffer(iParm1, &buffer, &bufferSize), 0x7ff < bufferSize)) {
+        s32 numSectorsToRead;
         if (bufferSize < (iParm1->m198).m4_transfertSectorSize * 0x800) {
-            nSectors = performDivision(0x800, bufferSize);
+            numSectorsToRead = performDivision(0x800, bufferSize);
         }
         else {
-            nSectors = (iParm1->m198).m4_transfertSectorSize;
+            numSectorsToRead = (iParm1->m198).m4_transfertSectorSize;
         }
-        iVar1 = GFS_NwFread(psVar4->m0_gfsHandle, nSectors, buffer, nSectors * 0x800);
+        iVar1 = GFS_NwFread(psVar4->m0_gfsHandle, numSectorsToRead, buffer, numSectorsToRead * 0x800);
         if (-1 < iVar1) {
-            (iParm1->m198).mC = nSectors * 0x800;
-            (iParm1->m198).m10 = 0;
-            (iParm1->m198).m8 = 1;
+            (iParm1->m198).mC_pendingReadSize = numSectorsToRead * 0x800;
+            (iParm1->m198).m10_numBytesReadForCurrentRequest = 0;
+            (iParm1->m198).m8_readIsPending = 1;
         }
         else
         {
@@ -396,9 +397,9 @@ void updateStreamingFileRead(sStreamingFile* iParm1)
         
     }
 
-    if ((iParm1->m198).m8 == 1) {
-        nSectors = GFS_NwExecOne(psVar4->m0_gfsHandle);
-        if (nSectors < 0)
+    if ((iParm1->m198).m8_readIsPending == 1) {
+        s32 completed = GFS_NwExecOne(psVar4->m0_gfsHandle);
+        if (completed < 0)
         {
             updateStreamingFileReadSub0(iParm1);
             return;
@@ -407,23 +408,26 @@ void updateStreamingFileRead(sStreamingFile* iParm1)
         s32 stat;
         s32 nbyte;
         GFS_NwGetStat(psVar4->m0_gfsHandle, &stat, &nbyte);
-        if ((0 < nbyte) && (uVar3 = nbyte - (iParm1->m198).m10 & ~3, 0 < (int)uVar3)) {
-            (iParm1->m198).m10 = (iParm1->m198).m10 + uVar3;
-            updateStreamingFileReadSub1(iParm1, uVar3);
+
+        u32 numBytesReadForCurrentRequest = nbyte - (iParm1->m198).m10_numBytesReadForCurrentRequest & ~3;
+        if ((0 < nbyte) && (0 < numBytesReadForCurrentRequest)) {
+            (iParm1->m198).m10_numBytesReadForCurrentRequest += numBytesReadForCurrentRequest;
+            incrementReadPosition(iParm1, numBytesReadForCurrentRequest);
         }
-        if (((iParm1->m198).mC <= nbyte) || (nSectors == 0)) {
-            (iParm1->m198).m8 = 0;
+
+        if (((iParm1->m198).mC_pendingReadSize <= nbyte) || (completed == 0)) {
+            (iParm1->m198).m8_readIsPending = 0;
         }
     }
-    updateStreamingFileReadSub2(iParm1);
+    handleReadBufferOverflow(iParm1);
 }
 
 void executeCutsceneCommandsSub0Sub0(sStreamingFile* pThis, int param_2)
 {
     (pThis->m28).m28 += param_2;
-    (pThis->m28).m34 += param_2;
-    if ((pThis->m28).m38 <= (pThis->m28).m34) {
-        (pThis->m28).m34 = (pThis->m28).m34 + (int)((pThis->m28).m3C + -(int)(pThis->m28).m38);
+    (pThis->m28).m34_pBufferRead += param_2;
+    if ((pThis->m28).m38 <= (pThis->m28).m34_pBufferRead) {
+        (pThis->m28).m34_pBufferRead = (pThis->m28).m34_pBufferRead + (int)((pThis->m28).m3C + -(int)(pThis->m28).m38);
         (pThis->m28).m38 = (pThis->m28).m30;
     }
     return;
@@ -431,21 +435,22 @@ void executeCutsceneCommandsSub0Sub0(sStreamingFile* pThis, int param_2)
 
 s32 executeCutsceneCommandsSub0(sStreamingFile* pThis)
 {
-    if (pThis->m28.m48 < pThis->m28.m44)
+    if (pThis->m28.m48 < pThis->m28.m44_headerSize)
     {
         return -1;
     }
-    if (pThis->m4_bufferSize < pThis->m28.m44 + 0x1000) {
+    pThis->m28.m44_headerSize = READ_BE_U32(pThis->m194);
+    if (pThis->m4_bufferSize < pThis->m28.m44_headerSize + 0x1000) {
         return -1;
     }
 
-    u32 iVar3 = pThis->m4_bufferSize - (pThis->m28).m44;
+    u32 iVar3 = pThis->m4_bufferSize - (pThis->m28).m44_headerSize;
     u32 uVar2 = iVar3 - 0x1000 & ~0x7FF;
     (pThis->m28).m48 = uVar2;
     (pThis->m28).m4C = iVar3 - uVar2;
     u8* puVar1 = pThis->m0_buffer;
-    (pThis->m28).m3C = puVar1 + (pThis->m28).m44;
-    (pThis->m28).m40 = puVar1 + (pThis->m28).m44 + (pThis->m28).m48;
+    (pThis->m28).m3C = puVar1 + (pThis->m28).m44_headerSize;
+    (pThis->m28).m40 = puVar1 + (pThis->m28).m44_headerSize + (pThis->m28).m48;
     (pThis->m28).m60 = READ_BE_U32(pThis->m194 + 8) >> 0x10;
     if (pThis->m194[5] == 8) {
         if (pThis->m194[4] != 2) {
@@ -591,7 +596,7 @@ void cutsceneCommandDefaultSub1(sStreamingFile* psParm1, u8* pSource, u8* pDest,
 
 s32 cutsceneCommandDefault(sStreamingFile* psParm1)
 {
-    u8* local_r13_28 = (psParm1->m28).m34;
+    u8* local_r13_28 = (psParm1->m28).m34_pBufferRead;
     sCutsceneCommandDefaultTask* piVar2 = createSubTask<sCutsceneCommandDefaultTask>(currentResTask);
     setupCutsceneDragonSub0(psParm1, READ_BE_U32(local_r13_28 + 4) + -0x10, 1, piVar2, &piVar2->m8);
     u32 iVar6 = READ_BE_U32(local_r13_28 + 8) + -0x10;
@@ -785,7 +790,7 @@ s32 cutsceneCommand0(sStreamingFile* param_1)
     u8* local_r11_140;
     u8* local_24;
 
-    local_r10_28 = (param_1->m28).m34;
+    local_r10_28 = (param_1->m28).m34_pBufferRead;
     if ((param_1->m28).m0 == 4) {
         if ((param_1->m28).m88 == 0) {
             cutsceneCommand0Sub0(param_1);
@@ -808,6 +813,7 @@ s32 cutsceneCommand0(sStreamingFile* param_1)
                     setupVDP2StringRendering(3, 0x19, 0x26, 2);
                     VDP2DrawString((char*)local_r11_140);
                     (param_1->m28).m1C = 1;
+
                     break;
                 case 2:
                     clearVdp2TextArea();
@@ -865,7 +871,7 @@ void executeCutsceneCommandsSub1(sStreamingFile* param_1)
     if ((param_1->m198).m18_fileSize <= uVar1) {
         uVar1 = (param_1->m198).m18_fileSize;
     }
-    if (uVar1 <= (param_1->m28).m24) {
+    if (uVar1 <= (param_1->m28).m24_currentPositionInFile) {
         (param_1->m28).m0 = 4;
     }
     return;
@@ -888,6 +894,9 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
             }
             if ((psParm1->m28).m8 == 0) {
                 FunctionUnimplemented();
+
+                // hack!
+                (psParm1->m28).m84_frameIndex++;
                 //assert(0);
                 /*
                 FUN_0600dedc(psParm1);
@@ -938,17 +947,17 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
     }
 
     do {
-        u32 uVar2 = (psParm1->m28).m24 - (psParm1->m28).m28;
+        u32 uVar2 = (psParm1->m28).m24_currentPositionInFile - (psParm1->m28).m28;
         if (uVar2 < 0x10) {
             return;
         }
 
-        if ((int)uVar2 < READ_BE_U32((psParm1->m28).m34)) {
+        if ((int)uVar2 < READ_BE_U32((psParm1->m28).m34_pBufferRead)) {
             return;
         }
 
-        cutsceneFillCommandBuffer(psParm1, (psParm1->m28).m34);
-        switch (READ_BE_U32((psParm1->m28).m34 + 4)) {
+        cutsceneFillCommandBuffer(psParm1, (psParm1->m28).m34_pBufferRead);
+        switch (READ_BE_U32((psParm1->m28).m34_pBufferRead + 4)) {
         case 0x0:
             iVar1 = cutsceneCommand0(psParm1);
             break;
@@ -962,7 +971,7 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
             return;
         }
     def_600EBA2:
-        executeCutsceneCommandsSub0Sub0(psParm1, READ_BE_U32((psParm1->m28).m34));
+        executeCutsceneCommandsSub0Sub0(psParm1, READ_BE_U32((psParm1->m28).m34_pBufferRead));
         (psParm1->m28).m10 = (psParm1->m28).m10 + 1;
     } while (true);
 }
@@ -1235,9 +1244,40 @@ s32 scriptFunction_6056926()
     return 0;
 }
 
+// kernel
+s32 __udivsi3(s32 r0, s32 r1)
+{
+    return r1 / r0;
+}
+s32 getPositionInEDK(sStreamingFile* iParm1)
+{
+    s32 dVar1;
+    int iVar2;
+
+    iVar2 = (iParm1->m28).m0;
+    if ((iVar2 < 4) && (iVar2 != 1)) {
+        return 0x7fffffff;
+    }
+    if ((VDP2Regs_.m4_TVSTAT & 1) == 0) {
+        iVar2 = 60;
+    }
+    else {
+        iVar2 = 50;
+    }
+    dVar1 = __udivsi3(READ_BE_U32(iParm1->m194 + 0xc), (READ_BE_U32(iParm1->m194 + 0x10) - (iParm1->m28).m84_frameIndex) * iVar2);
+    return dVar1;
+}
+
 s32 scriptFunction_6057438()
 {
-    FunctionUnimplemented();
+    if (e006Task0)
+    {
+        if (npcData0.mF0 == 0)
+        {
+            s32 iVar1 = getPositionInEDK(e006Task0->m0);
+            return (int)(iVar1 + (u32)(iVar1 < 0)) >> 1;
+        }
+    }
     return 0;
 }
 
