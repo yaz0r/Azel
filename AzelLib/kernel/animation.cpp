@@ -55,6 +55,22 @@ u32 sModelHierarchy::countNumberOfBones()
     return count;
 }
 
+void sModelHierarchy::patchFilePointers(u32 offset)
+{
+    if (m0_3dModel)
+    {
+        m0_3dModel->patchFilePointers(offset);
+    }
+    if (m4_subNode)
+    {
+        m4_subNode->patchFilePointers(offset);
+    }
+    if (m8_nextNode)
+    {
+        m8_nextNode->patchFilePointers(offset);
+    }
+}
+
 sStaticPoseData::sStaticPoseData(u8* base, u32 offset, u32 numBones)
 {
     base += offset;

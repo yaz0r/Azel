@@ -625,6 +625,7 @@ s32 cutsceneCommandDefault(sStreamingFile* psParm1)
     u16 modelIndex = READ_BE_U16(local_r13_28 + 0xc);
     sModelHierarchy* pHierarchy = piVar2->m0->getModelHierarchy(modelIndex);
     sStaticPoseData* pStaticPose = piVar2->m0->getStaticPose(READ_BE_U16(local_r13_28 + 0xe), pHierarchy->countNumberOfBones());
+    pHierarchy->patchFilePointers(piVar2->m4->m4_vdp1Memory);
 
     init3DModelRawData(piVar2, &piVar2->m8, 0, piVar2->m0, modelIndex, 0, pStaticPose, 0, 0);
     return 0;
@@ -761,21 +762,71 @@ int convertCutsceneRotationComponent(int param_1, int param_2)
 void cutsceneCommand0Sub2(u8* param_1)
 {
     sVec3_FP local_10;
-    local_10[0] = convertCutsceneRotationComponent(READ_BE_U16(param_1), READ_BE_U16(param_1 + 6) >> 0xc);
-    local_10[1] = convertCutsceneRotationComponent(READ_BE_U16(param_1 + 2), READ_BE_U16(param_1 + 8) >> 0xc);
-    local_10[2] = convertCutsceneRotationComponent(READ_BE_U16(param_1 + 4), READ_BE_U16(param_1 + 10) >> 0xc);
+    local_10[0] = convertCutsceneRotationComponent(READ_BE_S16(param_1), READ_BE_S16(param_1 + 6) >> 0xc);
+    local_10[1] = convertCutsceneRotationComponent(READ_BE_S16(param_1 + 2), READ_BE_S16(param_1 + 8) >> 0xc);
+    local_10[2] = convertCutsceneRotationComponent(READ_BE_S16(param_1 + 4), READ_BE_S16(param_1 + 10) >> 0xc);
 
     sVec3_S16 local_18;
-    local_18[0] = READ_BE_U16(param_1 + 6);
-    local_18[1] = READ_BE_U16(param_1 + 8);
-    local_18[2] = READ_BE_U16(param_1 + 10);
+    local_18[0] = READ_BE_S16(param_1 + 6);
+    local_18[1] = READ_BE_S16(param_1 + 8);
+    local_18[2] = READ_BE_S16(param_1 + 10);
     updateEngineCamera(&cameraProperties2, local_10, local_18);
 }
 
-void cutsceneCommand0Sub3(sStreamingFile* param_1, u32, u8*)
+void cutsceneCommand0Sub3Sub0(s_3dModel* pModel, u8* pData)
 {
-    FunctionUnimplemented();
-    //assert(0);
+    u32 boneCount = pModel->m12_numBones;
+    std::vector<sPoseData>::iterator& poseData = pModel->m2C_poseData.begin();
+
+    poseData->m0_translation[0] = convertCutsceneRotationComponent(READ_BE_S16(pData), READ_BE_S16(pData + 6) >> 0xc);
+    poseData->m0_translation[1] = convertCutsceneRotationComponent(READ_BE_S16(pData + 2), READ_BE_S16(pData + 8) >> 0xc);
+    poseData->m0_translation[2] = convertCutsceneRotationComponent(READ_BE_S16(pData + 4), READ_BE_S16(pData + 10) >> 0xc);
+    pData += 6;
+
+    do
+    {
+        poseData->mC_rotation[0] = READ_BE_S16(pData + 0) << 0x10;
+        poseData->mC_rotation[1] = READ_BE_S16(pData + 2) << 0x10;
+        poseData->mC_rotation[2] = READ_BE_S16(pData + 4) << 0x10;
+
+        pData += 6;
+        poseData++;
+    } while (--boneCount);
+}
+
+void cutsceneCommand0Sub3Sub1(s_3dModel* pModel, u8* pData)
+{
+    u32 boneCount = pModel->m12_numBones;
+    std::vector<sPoseData>::iterator& poseData = pModel->m2C_poseData.begin();
+
+    do
+    {
+        poseData->m0_translation[0] = convertCutsceneRotationComponent(READ_BE_S16(pData), READ_BE_S16(pData + 6) >> 0xc);
+        poseData->m0_translation[1] = convertCutsceneRotationComponent(READ_BE_S16(pData + 2), READ_BE_S16(pData + 8) >> 0xc);
+        poseData->m0_translation[2] = convertCutsceneRotationComponent(READ_BE_S16(pData + 4), READ_BE_S16(pData + 10) >> 0xc);
+
+        poseData->mC_rotation[0] = READ_BE_S16(pData + 6) << 0x10;
+        poseData->mC_rotation[1] = READ_BE_S16(pData + 8) << 0x10;
+        poseData->mC_rotation[2] = READ_BE_S16(pData + 10) << 0x10;
+
+        pData += 12;
+        poseData++;
+    } while (--boneCount);
+}
+
+
+void cutsceneCommand0Sub3(sStreamingFile* param_1, u32 param_2, u8* param_3)
+{
+    sStreamingFile_C8* local_r14_24 = &param_1->mC8[param_2];
+    if ((local_r14_24->m0 != 0) && ((local_r14_24->m8) != 0)) {
+        if (local_r14_24->m0 == 3) {
+            cutsceneCommand0Sub3Sub0(local_r14_24->m8, param_3);
+            return;
+        }
+        cutsceneCommand0Sub3Sub1(local_r14_24->m8, param_3);
+        return;
+    }
+    return;
 }
 
 void cutsceneCommand0Sub4(sStreamingFile* param_1, u32)
@@ -877,6 +928,20 @@ void executeCutsceneCommandsSub1(sStreamingFile* param_1)
     return;
 }
 
+s32 cutsceneCommand2(sStreamingFile* psParm1)
+{
+    u8* pDest;
+    int size;
+
+    u8* piVar1 = (psParm1->m28).m34_pBufferRead;
+    size = READ_BE_U32(piVar1) + -0x10;
+    pDest = (u8*)allocateHeap(size);
+    cutsceneCommandDefaultSub1(psParm1, (u8*)(piVar1 + 4), pDest, size);
+    resetVdp2StringsSub1((u16*)pDest);
+    return 0;
+}
+
+
 void executeCutsceneCommands(sStreamingFile* psParm1)
 {
     psParm1->m18C++;
@@ -957,11 +1022,16 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
         }
 
         cutsceneFillCommandBuffer(psParm1, (psParm1->m28).m34_pBufferRead);
-        switch (READ_BE_U32((psParm1->m28).m34_pBufferRead + 4)) {
+        int opcode = READ_BE_U32((psParm1->m28).m34_pBufferRead + 4);
+        switch (opcode) {
         case 0x0:
             iVar1 = cutsceneCommand0(psParm1);
             break;
+        case 0x2:
+            iVar1 = cutsceneCommand2(psParm1);
+            break;
         case 0x11:
+        case 0x13:
             iVar1 = cutsceneCommandDefault(psParm1);
             break;
         default:

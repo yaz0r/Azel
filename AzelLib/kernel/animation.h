@@ -37,6 +37,7 @@ struct sModelHierarchy
     sModelHierarchy* m4_subNode;
     sModelHierarchy* m8_nextNode;
 
+    void patchFilePointers(u32 offset);
     u32 countNumberOfBones();
 };
 

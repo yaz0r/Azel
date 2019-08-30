@@ -467,6 +467,15 @@ struct sProcessed3dModel
     u32 m4_numVertices;
     std::vector<sVec3_S16_12_4> m8_vertices;
     std::vector<sQuad> mC_Quads;
+
+    void patchFilePointers(u32 offset)
+    {
+        for (int i = 0; i < mC_Quads.size(); i++)
+        {
+            mC_Quads[i].mE_CMDCOLR += offset;
+            mC_Quads[i].m10_CMDSRCA += offset;
+        }
+    }
 };
 
 extern p_workArea(*gFieldOverlayFunction)(p_workArea workArea, u32 arg);
