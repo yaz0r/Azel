@@ -130,9 +130,9 @@ struct sStreamingFile_28
 
 struct sStreamingFile_C8
 {
-    u32 m0;
-    p_workArea m4;
-    s_3dModel* m8;
+    u32 m0_compressionType;
+    p_workArea m4_pOwner;
+    s_3dModel* m8_p3dModel;
 };
 
 struct sStreamingFile
@@ -147,7 +147,7 @@ struct sStreamingFile
     s32 m20;
     s32 m24;
     sStreamingFile_28 m28;
-    std::array<sStreamingFile_C8, 0x10> mC8;
+    std::array<sStreamingFile_C8, 0x10> mC8_cutsceneEntities;
     u32 m188_camera; // probably in m28
     u32 m18C;
     u32 m190_emptyBytes;
@@ -268,9 +268,9 @@ sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 buf
 
     for(int i=0; i<0x10; i++)
     {
-        param_1->mC8[i].m0 = 0;
-        param_1->mC8[i].m4 = 0;
-        param_1->mC8[i].m8 = 0;
+        param_1->mC8_cutsceneEntities[i].m0_compressionType = 0;
+        param_1->mC8_cutsceneEntities[i].m4_pOwner = 0;
+        param_1->mC8_cutsceneEntities[i].m8_p3dModel = 0;
     }
     return param_1;
 }
@@ -566,9 +566,9 @@ void setupCutsceneDragonSub0(sStreamingFile* r4, u32 index, u32 param_3, p_workA
 {
     if (index < 0x11)
     {
-        r4->mC8[index].m0 = param_3;
-        r4->mC8[index].m4 = param_4;
-        r4->mC8[index].m8 = pModel;
+        r4->mC8_cutsceneEntities[index].m0_compressionType = param_3;
+        r4->mC8_cutsceneEntities[index].m4_pOwner = param_4;
+        r4->mC8_cutsceneEntities[index].m8_p3dModel = pModel;
     }
 }
 
@@ -762,14 +762,14 @@ int convertCutsceneRotationComponent(int param_1, int param_2)
 void cutsceneCommand0Sub2(u8* param_1)
 {
     sVec3_FP local_10;
-    local_10[0] = convertCutsceneRotationComponent(READ_BE_S16(param_1), READ_BE_S16(param_1 + 6) >> 0xc);
-    local_10[1] = convertCutsceneRotationComponent(READ_BE_S16(param_1 + 2), READ_BE_S16(param_1 + 8) >> 0xc);
-    local_10[2] = convertCutsceneRotationComponent(READ_BE_S16(param_1 + 4), READ_BE_S16(param_1 + 10) >> 0xc);
+    local_10[0] = convertCutsceneRotationComponent(READ_BE_S16(param_1), READ_BE_U16(param_1 + 6) >> 0xc);
+    local_10[1] = convertCutsceneRotationComponent(READ_BE_S16(param_1 + 2), READ_BE_U16(param_1 + 8) >> 0xc);
+    local_10[2] = convertCutsceneRotationComponent(READ_BE_S16(param_1 + 4), READ_BE_U16(param_1 + 10) >> 0xc);
 
     sVec3_S16 local_18;
-    local_18[0] = READ_BE_S16(param_1 + 6);
-    local_18[1] = READ_BE_S16(param_1 + 8);
-    local_18[2] = READ_BE_S16(param_1 + 10);
+    local_18[0] = READ_BE_U16(param_1 + 6) & 0xfff;
+    local_18[1] = READ_BE_U16(param_1 + 8) & 0xfff;
+    local_18[2] = READ_BE_U16(param_1 + 10) & 0xfff;
     updateEngineCamera(&cameraProperties2, local_10, local_18);
 }
 
@@ -778,18 +778,18 @@ void cutsceneCommand0Sub3Sub0(s_3dModel* pModel, u8* pData)
     u32 boneCount = pModel->m12_numBones;
     std::vector<sPoseData>::iterator& poseData = pModel->m2C_poseData.begin();
 
-    poseData->m0_translation[0] = convertCutsceneRotationComponent(READ_BE_S16(pData), READ_BE_S16(pData + 6) >> 0xc);
-    poseData->m0_translation[1] = convertCutsceneRotationComponent(READ_BE_S16(pData + 2), READ_BE_S16(pData + 8) >> 0xc);
-    poseData->m0_translation[2] = convertCutsceneRotationComponent(READ_BE_S16(pData + 4), READ_BE_S16(pData + 10) >> 0xc);
+    poseData->m0_translation[0] = convertCutsceneRotationComponent(READ_BE_S16(pData), READ_BE_U16(pData + 6) >> 0xc);
+    poseData->m0_translation[1] = convertCutsceneRotationComponent(READ_BE_S16(pData + 2), READ_BE_U16(pData + 8) >> 0xc);
+    poseData->m0_translation[2] = convertCutsceneRotationComponent(READ_BE_S16(pData + 4), READ_BE_U16(pData + 10) >> 0xc);
     pData += 6;
 
     do
     {
-        poseData->mC_rotation[0] = READ_BE_S16(pData + 0) << 0x10;
-        poseData->mC_rotation[1] = READ_BE_S16(pData + 2) << 0x10;
-        poseData->mC_rotation[2] = READ_BE_S16(pData + 4) << 0x10;
+        poseData->mC_rotation[0] = (READ_BE_U16(pData + 0) & 0xfff) << 0x10;
+        poseData->mC_rotation[1] = (READ_BE_U16(pData + 2) & 0xfff) << 0x10;
+        poseData->mC_rotation[2] = (READ_BE_U16(pData + 4) & 0xfff) << 0x10;
 
-        pData += 6;
+        pData += 12;
         poseData++;
     } while (--boneCount);
 }
@@ -801,13 +801,13 @@ void cutsceneCommand0Sub3Sub1(s_3dModel* pModel, u8* pData)
 
     do
     {
-        poseData->m0_translation[0] = convertCutsceneRotationComponent(READ_BE_S16(pData), READ_BE_S16(pData + 6) >> 0xc);
-        poseData->m0_translation[1] = convertCutsceneRotationComponent(READ_BE_S16(pData + 2), READ_BE_S16(pData + 8) >> 0xc);
-        poseData->m0_translation[2] = convertCutsceneRotationComponent(READ_BE_S16(pData + 4), READ_BE_S16(pData + 10) >> 0xc);
+        poseData->m0_translation[0] = convertCutsceneRotationComponent(READ_BE_S16(pData), READ_BE_U16(pData + 6) >> 0xc);
+        poseData->m0_translation[1] = convertCutsceneRotationComponent(READ_BE_S16(pData + 2), READ_BE_U16(pData + 8) >> 0xc);
+        poseData->m0_translation[2] = convertCutsceneRotationComponent(READ_BE_S16(pData + 4), READ_BE_U16(pData + 10) >> 0xc);
 
-        poseData->mC_rotation[0] = READ_BE_S16(pData + 6) << 0x10;
-        poseData->mC_rotation[1] = READ_BE_S16(pData + 8) << 0x10;
-        poseData->mC_rotation[2] = READ_BE_S16(pData + 10) << 0x10;
+        poseData->mC_rotation[0] = (READ_BE_U16(pData + 6) & 0xfff) << 0x10;
+        poseData->mC_rotation[1] = (READ_BE_U16(pData + 8) & 0xfff) << 0x10;
+        poseData->mC_rotation[2] = (READ_BE_U16(pData + 10) & 0xfff) << 0x10;
 
         pData += 12;
         poseData++;
@@ -817,13 +817,13 @@ void cutsceneCommand0Sub3Sub1(s_3dModel* pModel, u8* pData)
 
 void cutsceneCommand0Sub3(sStreamingFile* param_1, u32 param_2, u8* param_3)
 {
-    sStreamingFile_C8* local_r14_24 = &param_1->mC8[param_2];
-    if ((local_r14_24->m0 != 0) && ((local_r14_24->m8) != 0)) {
-        if (local_r14_24->m0 == 3) {
-            cutsceneCommand0Sub3Sub0(local_r14_24->m8, param_3);
+    sStreamingFile_C8* local_r14_24 = &param_1->mC8_cutsceneEntities[param_2];
+    if ((local_r14_24->m0_compressionType != 0) && ((local_r14_24->m8_p3dModel) != 0)) {
+        if (local_r14_24->m0_compressionType == 3) {
+            cutsceneCommand0Sub3Sub0(local_r14_24->m8_p3dModel, param_3);
             return;
         }
-        cutsceneCommand0Sub3Sub1(local_r14_24->m8, param_3);
+        cutsceneCommand0Sub3Sub1(local_r14_24->m8_p3dModel, param_3);
         return;
     }
     return;
@@ -1222,6 +1222,66 @@ s32 scriptFunction_605861eSub0()
     return 1;
 }
 
+struct sDragonCutsceneData
+{
+    s16 m0;
+    s32 m4;
+    s32 m8;
+};
+
+const std::array<sDragonCutsceneData, DR_LEVEL_MAX> dragonCutsceneData = {
+    {
+        {
+            8,
+            0xAA24AE,
+            0xEE68F3,
+        },
+        {
+            8,
+            0xAA24AE,
+            0xEE68F3,
+        },
+        {
+            0x16,
+            0xEE6608,
+            0x132AA4C,
+        },
+        {
+            0xA,
+            0,
+            0,
+        },
+        {
+            0xB,
+            0x120F336,
+            0x165377A,
+        },
+        {
+            0x18,
+            0,
+            0,
+        },
+        {
+            0x16,
+            0,
+            0,
+        },
+        {
+            0x7,
+            0,
+            0,
+        },
+        {
+            0,
+            0,
+            0,
+        },
+    }
+};
+
+sVec3_FP gDragonCutscenePosition = { 0,0,0 };
+sVec3_FP gDragonCutsceneRotation = { 0,0,0 };
+
 struct sE006Task1 : public s_workAreaTemplate<sE006Task1>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -1232,12 +1292,28 @@ struct sE006Task1 : public s_workAreaTemplate<sE006Task1>
 
     static void Update(sE006Task1* pThis)
     {
-        FunctionUnimplemented();
+        u32 iVar2 = (gDragonState->mC_dragonType * 0xc) >> 8;
+        s32 iVar3 = gDragonState->m28_dragon3dModel.m2C_poseData[dragonCutsceneData[iVar2].m0].mC_rotation[2];
+        fixedPoint uVar1 = iVar3 - pThis->m8;
+        if ((dragonCutsceneData[iVar2].m4 <= iVar3) && (iVar3 <= dragonCutsceneData[iVar2].m8 + iVar2)) {
+            if ((uVar1.normalized() < -0x222222) && (-1 < readSaturnS16(pThis->m0 + 2))) {
+                playSoundEffect(readSaturnS16(pThis->m0 + 2));
+            }
+        }
+        pThis->m8 = iVar3;
+        return;
     }
 
     static void Draw(sE006Task1* pThis)
     {
-        FunctionUnimplemented();
+        for (int i = 0; i < gDragonState->m28_dragon3dModel.m12_numBones; i++)
+        {
+            initMatrixToIdentity(&gDragonState->m28_dragon3dModel.m3C_boneMatrices[i]);
+            translateMatrix(gDragonState->m28_dragon3dModel.m2C_poseData[i].m0_translation, &gDragonState->m28_dragon3dModel.m3C_boneMatrices[i]);
+            rotateMatrixZYX(&gDragonState->m28_dragon3dModel.m2C_poseData[i].mC_rotation, &gDragonState->m28_dragon3dModel.m3C_boneMatrices[i]);
+        }
+
+        submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &gDragonCutscenePosition, &gDragonCutsceneRotation, 0);
     }
 
     static void Delete(sE006Task1* pThis)
