@@ -28,7 +28,7 @@ void LCSItemBox_DrawType0Sub0Sub0(sModelHierarchy* pHierarchy, std::vector<sStat
         if (pHierarchy->m4_subNode)
         {
             r5++;
-            LCSItemBox_DrawType0Sub0Sub0(pHierarchy, r5);
+            LCSItemBox_DrawType0Sub0Sub0(pHierarchy->m4_subNode, r5);
         }
 
         popMatrix();
