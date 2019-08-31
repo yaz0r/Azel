@@ -4,6 +4,7 @@
 #include "town/ruin/twn_ruin.h"
 #include "town/exca/twn_exca.h"
 #include "town/e006/twn_e006.h"
+#include "town/e011/twn_e011.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
 
@@ -170,7 +171,8 @@ void initNPCSub0Sub0(s32 r3, sTownGrid* r14)
     {
         if (r14->m40_cellTasks[var24][(r14->m8 + r13) & 7])
         {
-            assert(0);
+            //TODO: we should be deleting the content here
+            FunctionUnimplemented();
         }
     } while (++r13 <= 2);
 }
@@ -226,6 +228,10 @@ void loadTownPrg(s8 r4, s8 r5)
     else if (overlayFileName == "TWN_E006.PRG")
     {
         gFieldOverlayFunction = overlayStart_TWN_E006;
+    }
+    else if (overlayFileName == "TWN_E011.PRG")
+    {
+        gFieldOverlayFunction = overlayStart_TWN_E011;
     }
     else
     {
@@ -338,7 +344,9 @@ void initNPCSub1()
 
     if (gTownGrid.m140_perCellObjectList.size())
     {
-        assert(0);
+        // TODO: cleanup cells data
+        FunctionUnimplemented();
+        //assert(0);
         //freeVdp1Block(initNPCSub0Var0.m34, initNPCSub0Var0.m140);
         gTownGrid.m140_perCellObjectList.clear();
     }
@@ -401,6 +409,24 @@ struct sNullTask : public s_workAreaTemplate<sNullTask>
     //size: 0x0
 };
 
+void decreaseNPCRefCount(s32 r5)
+{
+    s_fileEntry& fileEntry = dramAllocatorEnd[r5];
+    if (fileEntry.m8_refcount)
+    {
+        if (--fileEntry.m8_refcount == 0)
+        {
+            assert(0);
+            //loadDragonSub1Sub1(fileEntry.mC_buffer);
+            if (fileEntry.mC_buffer)
+            {
+                fileEntry.mC_buffer->getTask()->markFinished();
+            }
+            fileEntry.mC_buffer = nullptr;
+        }
+    }
+}
+
 s32 initNPC(s32 arg)
 {
     sSaturnPtr r13 = npcData0.m60_townSetup + arg * 12;
@@ -410,7 +436,13 @@ s32 initNPC(s32 arg)
     }
     else
     {
-        assert(0);
+        sSaturnPtr pcVar1 = npcData0.m60_townSetup + npcData0.m5E * 12;
+        if (readSaturnU8(r13) != readSaturnU8(pcVar1))
+        {
+            initNPCSub1();
+            decreaseNPCRefCount(readSaturnU8(pcVar1));
+            allocateNPC(currentResTask, readSaturnS8(r13));
+        }
     }
 
     npcData0.m5E = arg;
@@ -481,24 +513,6 @@ s32 initNPCFromStruct(sSaturnPtr r4)
     gTownGrid.m140_perCellObjectList[r4_cellY * gTownGrid.m0_sizeX + r12_cellX] = r13;
 }
 
-void initNPCSub2(s32 r5)
-{
-    s_fileEntry& fileEntry = dramAllocatorEnd[r5];
-    if (fileEntry.m8_refcount)
-    {
-        if (--fileEntry.m8_refcount == 0)
-        {
-            assert(0);
-            //loadDragonSub1Sub1(fileEntry.mC_buffer);
-            if (fileEntry.mC_buffer)
-            {
-                fileEntry.mC_buffer->getTask()->markFinished();
-            }
-            fileEntry.mC_buffer = nullptr;
-        }
-    }
-}
-
 void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5)
 {
     if (pThis->m8 && (pThis->m8->m8 == pThis))
@@ -508,7 +522,7 @@ void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5)
 
     if (!r5.isNull())
     {
-        initNPCSub2(readSaturnS32(r5));
+        decreaseNPCRefCount(readSaturnS32(r5));
     }
 
     pThisAsTask->getTask()->markFinished();

@@ -12,6 +12,7 @@ typedef s32(*scriptFunction_zero_arg)();
 typedef s32(*scriptFunction_one_arg)(s32 arg0);
 typedef s32(*scriptFunction_one_arg_ptr)(sSaturnPtr arg0);
 typedef s32(*scriptFunction_two_arg)(s32 arg0, s32 arg1);
+typedef s32(*scriptFunction_three_arg)(s32 arg0, s32 arg1, s32 arg2);
 typedef s32(*scriptFunction_four_arg)(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 
 struct sKernelScriptFunctions
@@ -20,6 +21,7 @@ struct sKernelScriptFunctions
     std::map<u32, scriptFunction_one_arg> m_oneArg;
     std::map<u32, scriptFunction_one_arg_ptr> m_oneArgPtr;
     std::map<u32, scriptFunction_two_arg> m_twoArg;
+    std::map<u32, scriptFunction_three_arg> m_threeArg;
     std::map<u32, scriptFunction_four_arg> m_fourArg;
 };
 

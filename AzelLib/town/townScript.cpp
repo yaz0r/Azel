@@ -2,6 +2,7 @@
 #include "town.h"
 #include "townScript.h"
 #include "townLCS.h"
+#include "town/e006/twn_e006.h"
 #include "town/ruin/twn_ruin.h"
 #include "kernel/cinematicBarsTask.h"
 #include "kernel/fileBundle.h"
@@ -1534,6 +1535,10 @@ sKernelScriptFunctions gKernelScriptFunctions =
         {0x600CC78, &setSomethingInNpc0},
         {0x60144c0, &mainLogicUpdateSub0}
     },
+    // three arg
+    {
+
+    },
     // four arg
     {
         {0x605AEE0, &setNpcLocation},
@@ -1566,7 +1571,7 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            return sSaturnPtr::getNull();
+            FunctionUnimplemented();
         }
         break;
     case 1:
@@ -1594,7 +1599,7 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            return sSaturnPtr::getNull();
+            FunctionUnimplemented();
         }
         break;
     case 2:
@@ -1611,7 +1616,18 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            return sSaturnPtr::getNull();
+            FunctionUnimplemented();
+        }
+        break;
+    case 3:
+        if (gKernelScriptFunctions.m_threeArg.count(functionEA.m_offset))
+        {
+            scriptFunction_three_arg pFunction = gKernelScriptFunctions.m_threeArg.find(functionEA.m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12));
+        }
+        else
+        {
+            FunctionUnimplemented();
         }
         break;
     case 4:
@@ -1622,7 +1638,7 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            return sSaturnPtr::getNull();
+            FunctionUnimplemented();
         }
         break;
     default:
@@ -1942,8 +1958,8 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             r14 = callNativeWithArguments(r13_pThis, r14);
 
             // hack: this isn't in the original assembly, but allow returning null for unhandled functions and just stopping the script
-            if (r14.isNull())
-                return r14;
+            //if (r14.isNull())
+            //    return r14;
             break;
         case 8: //equal
             r14 = getAlignOn2(r14);
@@ -1971,26 +1987,22 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             break;
         case 10://greater
             r14 = getAlignOn2(r14);
-            if (readSaturnS16(r14) < r13_pThis->m118_currentResult)
-            {
-                r13_pThis->m118_currentResult = 1;
-            }
-            else
-            {
-                r13_pThis->m118_currentResult = 0;
-            }
+            r13_pThis->m118_currentResult = readSaturnS16(r14) < r13_pThis->m118_currentResult;
+            r14 += 2;
+            break;
+        case 11:
+            r14 = getAlignOn2(r14);
+            r13_pThis->m118_currentResult = readSaturnS16(r14) <= r13_pThis->m118_currentResult;
             r14 += 2;
             break;
         case 12: // less
             r14 = getAlignOn2(r14);
-            if (readSaturnS16(r14) > r13_pThis->m118_currentResult)
-            {
-                r13_pThis->m118_currentResult = 1;
-            }
-            else
-            {
-                r13_pThis->m118_currentResult = 0;
-            }
+            r13_pThis->m118_currentResult = readSaturnS16(r14) > r13_pThis->m118_currentResult;
+            r14 += 2;
+            break;
+        case 13:
+            r14 = getAlignOn2(r14);
+            r13_pThis->m118_currentResult = readSaturnS16(r14) >= r13_pThis->m118_currentResult;
             r14 += 2;
             break;
         case 15:
@@ -2132,6 +2144,9 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
         case 33:
             playSoundEffect(readSaturnS8(r14++));
             break;
+        case 34:
+            playPCM(currentResTask, readSaturnS8(r14++));
+            break;
         case 36: // display string
             if (r13_pThis->m16C_displayStringTask)
             {
@@ -2226,6 +2241,32 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
                 }
             }
             break;
+        case 46: // cutscene control
+        {
+            sSaturnPtr startOfOpcode = r14 - 1;
+            r14 = getAlignOn2(r14);
+            s16 frame = readSaturnS16(r14);
+            r14 += 2;
+            if (r13_pThis->mF0 == 0)
+            {
+                if (e006Task0)
+                {
+                    s32 currentFrame = getCutsceneFrameIndex(e006Task0->m0);
+                    if (currentFrame <= frame)
+                        return startOfOpcode;
+                }
+            }
+            else
+            {
+                if ((r13_pThis->mF4 == 0) && (r13_pThis->mF8 != 0))
+                {
+                    r13_pThis->m100 = 0x3C;
+                    r13_pThis->mF8 = 0;
+                    return r14;
+                }
+            }
+            break;
+        }
         case 48:
             if (r13_pThis->m16C_receivedItemTask)
             {

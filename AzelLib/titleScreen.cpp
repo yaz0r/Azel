@@ -304,27 +304,32 @@ struct s_titleScreenWorkArea : public s_workAreaTemplate<s_titleScreenWorkArea>
     static void Init(s_titleScreenWorkArea*);
     static void Draw(s_titleScreenWorkArea*);
 
-    u32 m_status;
-    u32 m_delay;
-    p_workArea m_overlayTask;
+    u32 m0_status;
+    u32 m4_delay;
+    p_workArea m8_overlayTask;
 };
 
 void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
 {
-    switch (pWorkArea->m_status)
+    switch (pWorkArea->m0_status)
     {
     case 0:
-        if (pWorkArea->m_overlayTask)
+        if (pWorkArea->m8_overlayTask)
         {
-
+#ifdef SHIPPING_BUILD
+            if (!pWorkArea->m8_overlayTask->getTask()->isFinished())
+            {
+                return;
+            }
+#endif
         }
-        pWorkArea->m_status++;
+        pWorkArea->m0_status++;
     case 1:
         // ? not sure what this does
-        pWorkArea->m_status++;
+        pWorkArea->m0_status++;
     case 2:
-        pWorkArea->m_delay = 60; // start chrono?
-        pWorkArea->m_status++;
+        pWorkArea->m4_delay = 60; // start chrono?
+        pWorkArea->m0_status++;
     case 3:
         if (debugEnabled)
         {
@@ -332,20 +337,20 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
         }
         else
         {
-            if (--pWorkArea->m_delay)
+            if (--pWorkArea->m4_delay)
                 return;
         }
-        pWorkArea->m_status++;
+        pWorkArea->m0_status++;
     case 4:
         createSubTask<s_pressStartButtonTaskWorkArea>(pWorkArea);
 
-        pWorkArea->m_delay = 44 * 60;
+        pWorkArea->m4_delay = 44 * 60;
         if (VDP2Regs_.m4_TVSTAT & 1)
         {
             assert(false);
         }
 
-        pWorkArea->m_status++;
+        pWorkArea->m0_status++;
     case 5:
         if (enableDebugTask)
         {
@@ -357,17 +362,17 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
 #endif
         {
             playSoundEffect(8);
-            pWorkArea->m_status = 7;
+            pWorkArea->m0_status = 7;
             return;
         }
 
-        if (--pWorkArea->m_delay)
+        if (--pWorkArea->m4_delay)
             return;
 
         fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, 30);
         titleScreenDrawSub3(3);
 
-        pWorkArea->m_status++;
+        pWorkArea->m0_status++;
     case 6:
 
         assert(false);
@@ -387,7 +392,7 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
 
 void s_titleScreenWorkArea::Init(s_titleScreenWorkArea* pThis)
 {
-    pThis->m_overlayTask = TITLE_OVERLAY::overlayStart(pThis);
+    pThis->m8_overlayTask = TITLE_OVERLAY::overlayStart(pThis);
 }
 
 p_workArea createTitleScreenTask(p_workArea workArea)

@@ -70,92 +70,6 @@ s32 scriptFunction_605bb24(s32 r4, s32 r5)
     return 0;
 }
 
-struct GfsHn
-{
-    FILE* fHandle;
-};
-
-struct sStreamingFile_198
-{
-    GfsHn m0_gfsHandle;
-    u32 m4_transfertSectorSize;
-    u32 m8_readIsPending;
-    u32 mC_pendingReadSize;
-    u32 m10_numBytesReadForCurrentRequest;
-    u32 m14_numSectors;
-    u32 m18_fileSize;
-    //size 0x20?
-};
-
-struct sStreamingFile_28
-{
-    s32 m0;
-    s32 m4;
-    s32 m8;
-    s32 mC;
-    s32 m10;
-    u32 m14;
-    u32 m18;
-    s32 m1C;
-    sVdp2StringControl* m20_vdp2StringControl;
-    u32 m24_currentPositionInFile;
-    u32 m28;
-    u8* m2C_pBufferWrite;
-    u8* m30;
-    u8* m34_pBufferRead;
-    u8* m38;
-    u8* m3C;
-    u8* m40;
-    u32 m44_headerSize;
-    u32 m4C;
-    u32 m48;
-    u32 m50;
-    u32 m54;
-    u8* m58;
-    u8* m5C_audioBuffer;
-    u32 m60;
-    u32 m64_sampleIndex;
-    u32 m68_writePosition;
-    u32 m6C;
-    u32 m70;
-    u32 m78;
-    u32 m7C;
-    u32 m80_cpuTimer;
-    u32 m84_frameIndex;
-    u32 m88;
-    u32 m90;
-    u32 m94;
-    std::array<s32, 2> m98;
-};
-
-struct sStreamingFile_C8
-{
-    u32 m0_compressionType;
-    p_workArea m4_pOwner;
-    s_3dModel* m8_p3dModel;
-};
-
-struct sStreamingFile
-{
-    u8* m0_buffer;
-    u32 m4_bufferSize;
-    s32 m8;
-    s32 m10;
-    s32 m14;
-    u8* m18_audioBuffer;
-    u32 m1C_audioBufferSize;
-    s32 m20;
-    s32 m24;
-    sStreamingFile_28 m28;
-    std::array<sStreamingFile_C8, 0x10> mC8_cutsceneEntities;
-    u32 m188_camera; // probably in m28
-    u32 m18C;
-    u32 m190_emptyBytes;
-    u8* m194;
-    sStreamingFile_198 m198;
-    //size 0x1B8?
-};
-
 struct sStreamingParams
 {
     sStreamingFile* m0_streamingFile;
@@ -829,9 +743,23 @@ void cutsceneCommand0Sub3(sStreamingFile* param_1, u32 param_2, u8* param_3)
     return;
 }
 
-void cutsceneCommand0Sub4(sStreamingFile* param_1, u32)
+// delete a cutscene 3d model
+void cutsceneCommand0Sub4_deleteCutsceneEntity(sStreamingFile* param_1, u32 entityIndex)
 {
-    assert(0);
+    sStreamingFile_C8& entity = param_1->mC8_cutsceneEntities[entityIndex];
+    if ((entity.m0_compressionType != 0) && (entity.m4_pOwner))
+    {
+        entity.m4_pOwner->getTask()->markFinished();
+        entity.m0_compressionType = 0;
+        entity.m4_pOwner = nullptr;
+        entity.m8_p3dModel = nullptr;
+    }
+}
+
+s32 cutsceneCommand1(sStreamingFile* param_1)
+{
+    FunctionUnimplemented();
+    return 0;
 }
 
 s32 cutsceneCommand0(sStreamingFile* param_1)
@@ -904,7 +832,7 @@ s32 cutsceneCommand0(sStreamingFile* param_1)
                 case 0x2d:
                 case 0x2e:
                 case 0x2f:
-                    cutsceneCommand0Sub4(param_1, READ_BE_U32(local_r0_130 + 4) + -0x20);
+                    cutsceneCommand0Sub4_deleteCutsceneEntity(param_1, READ_BE_U32(local_r0_130 + 4) + -0x20);
                 }
                 local_24 = local_24 + READ_BE_U32(local_r0_130);
             }
@@ -1027,11 +955,34 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
         case 0x0:
             iVar1 = cutsceneCommand0(psParm1);
             break;
+        case 0x1:
+            iVar1 = cutsceneCommand1(psParm1);
+            if (iVar1 != 0)
+            {
+                psParm1->m28.mC = 1;
+                return;
+            }
+            psParm1->m28.mC = 0;
+            break;
         case 0x2:
             iVar1 = cutsceneCommand2(psParm1);
             break;
+        case 0x10:
         case 0x11:
+        case 0x12:
         case 0x13:
+        case 0x14:
+        case 0x15:
+        case 0x16:
+        case 0x17:
+        case 0x18:
+        case 0x19:
+        case 0x1A:
+        case 0x1B:
+        case 0x1C:
+        case 0x1D:
+        case 0x1E:
+        case 0x1F:
             iVar1 = cutsceneCommandDefault(psParm1);
             break;
         default:
@@ -1092,115 +1043,101 @@ s32 scriptFunction_605861eSub0Sub0(sStreamingFile* r4)
     return r4->m28.m0;
 }
 
-struct sE006Task0 : public s_workAreaTemplateWithArg<sE006Task0, s32>
+void sE006Task0::Init(sE006Task0* pThis, s32 arg)
 {
-    static TypedTaskDefinition* getTypedTaskDefinition()
+    pThis->m1D4 = dramAllocate(0x20000);
+
+    sStreamingParams streamingParams;
+    streamingParams.m0_streamingFile = &pThis->m4;
+    streamingParams.m4_streamingFileSize = sizeof(pThis->m4);
+    streamingParams.m8_buffer = pThis->m1D4;
+    streamingParams.mC_bufferSize = 0x20000;
+    streamingParams.m10_audioBuffer = nullptr;//TODO: figure this out
+    streamingParams.m14_audioBufferSize = 0x8000;
+
+    std::string streamFileName = readSaturnString(sSaturnPtr::createFromRaw(arg, gCurrentTownOverlay));
+    findMandatoryFileOnDisc(streamFileName.c_str());
+    pThis->m0 = openFileForStreaming(&streamingParams, streamFileName);
+
+}
+
+void sE006Task0::cutsceneDrawSub0(sE006Task0* pThis, s32 r5)
+{
+    s32 iVar3 = 0x400;
+    if (g_fadeControls.m0_fade0.m20_stopped == 0)
     {
-        static TypedTaskDefinition taskDefinition = { &sE006Task0::Init, nullptr, &sE006Task0::Draw, &sE006Task0::Delete };
-        return &taskDefinition;
-    }
-
-    static void Init(sE006Task0* pThis, s32 arg)
-    {
-        pThis->m1D4 = dramAllocate(0x20000);
-
-        sStreamingParams streamingParams;
-        streamingParams.m0_streamingFile = &pThis->m4;
-        streamingParams.m4_streamingFileSize = sizeof(pThis->m4);
-        streamingParams.m8_buffer = pThis->m1D4;
-        streamingParams.mC_bufferSize = 0x20000;
-        streamingParams.m10_audioBuffer = nullptr;//TODO: figure this out
-        streamingParams.m14_audioBufferSize = 0x8000;
-
-        std::string streamFileName = readSaturnString(sSaturnPtr::createFromRaw(arg, gTWN_E006));
-        findMandatoryFileOnDisc(streamFileName.c_str());
-        pThis->m0 = openFileForStreaming(&streamingParams, streamFileName);
-
-    }
-
-    static void cutsceneDrawSub0(sE006Task0* pThis, s32 r5)
-    {
-        s32 iVar3 = 0x400;
-        if (g_fadeControls.m0_fade0.m20_stopped == 0)
+        if (scriptFunction_605861eSub0Sub0(pThis->m0) == 1)
         {
-            if (scriptFunction_605861eSub0Sub0(pThis->m0) == 1)
-            {
+            vdp2DebugPrintSetPosition(0x13, 0xd);
+            drawLineLargeFont("     ");
+            pauseEngine[0] = 0;
+            pauseCutscene(pThis->m0, 1);
+        }
+    }
+    else {
+        if ((graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.m8_newButtonDown & 8) != 0) {
+            u8 bVar1 = pauseEngine[0] == 0;
+            if (bVar1) {
+                vdp2DebugPrintSetPosition(0x13, 0xd);
+                drawLineLargeFont("PAUSE");
+            }
+            else {
                 vdp2DebugPrintSetPosition(0x13, 0xd);
                 drawLineLargeFont("     ");
-                pauseEngine[0] = 0;
-                pauseCutscene(pThis->m0, 1);
             }
+            pauseEngine[0] = bVar1;
+            pauseCutscene(pThis->m0, !bVar1);
         }
-        else {
-            if ((graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.m8_newButtonDown & 8) != 0) {
-                u8 bVar1 = pauseEngine[0] == 0;
-                if (bVar1) {
-                    vdp2DebugPrintSetPosition(0x13, 0xd);
-                    drawLineLargeFont("PAUSE");
-                }
-                else {
-                    vdp2DebugPrintSetPosition(0x13, 0xd);
-                    drawLineLargeFont("     ");
-                }
-                pauseEngine[0] = bVar1;
-                pauseCutscene(pThis->m0, !bVar1);
-            }
-            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2) {
-                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4 == 0) {
-                    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5 != 0) {
-                        iVar3 = 0x400 - ((int)(((int)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5 & 0xffU) * 5) >> 1);
-                    }
-                }
-                else {
-                    iVar3 = ((int)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4 & 0xffU) * (r5 + -1) * 4 + 0x400;
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2) {
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4 == 0) {
+                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5 != 0) {
+                    iVar3 = 0x400 - ((int)(((int)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5 & 0xffU) * 5) >> 1);
                 }
             }
             else {
-                if (((int)(short)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x8000U) == 0) {
-                    if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x800) != 0) {
-                        iVar3 = 0x155;
-                    }
-                }
-                else {
-                    iVar3 = r5 * 0x3fd;
-                }
+                iVar3 = ((int)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4 & 0xffU) * (r5 + -1) * 4 + 0x400;
             }
         }
-        cutsceneUpdateInputSub0(pThis->m0, iVar3, 1);
-    }
-
-    static void Draw(sE006Task0* pThis)
-    {
-
-        if ((g_fadeControls.m0_fade0.m20_stopped != 0) &&
-            (((readKeyboardToggle(0x87) != 0 && ((e006Task0Var0 & 4) == 0)) ||
-            ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) != 0))))
-        {
-            npcData0.mF0 = 1;
-        }
-
-        cutsceneDrawSub0(pThis, 7);
-        updateCutsceneStreaming(pThis->m0);
-        if (scriptFunction_605861eSub0Sub0(pThis->m0) == 5)
-        {
-            pThis->getTask()->markFinished();
+        else {
+            if (((int)(short)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x8000U) == 0) {
+                if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x800) != 0) {
+                    iVar3 = 0x155;
+                }
+            }
+            else {
+                iVar3 = r5 * 0x3fd;
+            }
         }
     }
+    cutsceneUpdateInputSub0(pThis->m0, iVar3, 1);
+}
 
-    static void Delete(sE006Task0* pThis)
+void sE006Task0::Draw(sE006Task0* pThis)
+{
+
+    if ((g_fadeControls.m0_fade0.m20_stopped != 0) &&
+        (((readKeyboardToggle(0x87) != 0 && ((e006Task0Var0 & 4) == 0)) ||
+        ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) != 0))))
     {
-        FunctionUnimplemented();
+        npcData0.mF0 = 1;
     }
 
-    sStreamingFile* m0;
-    sStreamingFile m4;
-    u8* m1D4;
-    // size: 0x1d8
-};
+    cutsceneDrawSub0(pThis, 7);
+    updateCutsceneStreaming(pThis->m0);
+    if (scriptFunction_605861eSub0Sub0(pThis->m0) == 5)
+    {
+        pThis->getTask()->markFinished();
+    }
+}
+
+void sE006Task0::Delete(sE006Task0* pThis)
+{
+    FunctionUnimplemented();
+}
 
 sE006Task0* e006Task0 = nullptr;
 
-s32 scriptFunction_60573b0(s32 r4)
+s32 createEPKPlayer(s32 r4)
 {
     npcData0.mF4 = 1;
     npcData0.mF0 = 0;
@@ -1210,7 +1147,7 @@ s32 scriptFunction_60573b0(s32 r4)
     return 0;
 }
 
-s32 scriptFunction_605861eSub0()
+s32 e006_scriptFunction_605861eSub0()
 {
     if ((e006Task0 != nullptr) && (npcData0.mF0 == 0))
     {
@@ -1327,15 +1264,21 @@ struct sE006Task1 : public s_workAreaTemplate<sE006Task1>
 };
 
 // TODO: kernel
-void setupCutsceneDragon(sStreamingFile* r4, u32 r5, sE006Task1* r6, s_3dModel* pModel)
+void setupCutsceneDragon(sStreamingFile* r4, u32 r5, p_workArea r6, s_3dModel* pModel)
 {
     setupCutsceneDragonSub0(r4, r5, 3, r6, pModel);
 }
 
-s32 scriptFunction_605861e(s32 r4)
+// TODO: kernel
+void setupCutsceneModelType2(sStreamingFile* r4, u32 r5, p_workArea r6, s_3dModel* pModel)
 {
-    sSaturnPtr r4Ptr = sSaturnPtr::createFromRaw(r4, gTWN_E006);
-    if (scriptFunction_605861eSub0() == 0)
+    setupCutsceneDragonSub0(r4, r5, 2, r6, pModel);
+}
+
+s32 setupDragonEntityForCutscene(s32 r4)
+{
+    sSaturnPtr r4Ptr = sSaturnPtr::createFromRaw(r4, gCurrentTownOverlay);
+    if (e006_scriptFunction_605861eSub0() == 0)
     {
         sE006Task1* pNewSubTask = createSubTask<sE006Task1>(currentResTask);
         pNewSubTask->m0 = r4Ptr;
@@ -1365,7 +1308,7 @@ void scriptFunction_60573d8Sub0(sStreamingFile* r4)
     r4->m28.m4 = 1;
 }
 
-s32 scriptFunction_60573d8()
+s32 e006_scriptFunction_60573d8()
 {
     npcData0.mF0 = 0;
     if (e006Task0 != nullptr)
@@ -1376,7 +1319,7 @@ s32 scriptFunction_60573d8()
     return 0;
 }
 
-s32 scriptFunction_6056918()
+s32 e006_scriptFunction_6056918()
 {
     twnMainLogicTask->m_UpdateMethod = nullptr;
     twnMainLogicTask->m_DrawMethod = nullptr;
@@ -1437,14 +1380,14 @@ void TWN_E006_data::init()
 {
     gCurrentTownOverlay = this;
 
-    overlayScriptFunctions.m_zeroArg[0x60573d8] = &scriptFunction_60573d8;
-    overlayScriptFunctions.m_zeroArg[0x6056918] = &scriptFunction_6056918;
+    overlayScriptFunctions.m_zeroArg[0x60573d8] = &e006_scriptFunction_60573d8;
+    overlayScriptFunctions.m_zeroArg[0x6056918] = &e006_scriptFunction_6056918;
     overlayScriptFunctions.m_zeroArg[0x6057438] = &scriptFunction_6057438;
     overlayScriptFunctions.m_zeroArg[0x6057470] = &scriptFunction_6057470;
     overlayScriptFunctions.m_zeroArg[0x6056926] = &scriptFunction_6056926;
 
-    overlayScriptFunctions.m_oneArg[0x60573b0] = &scriptFunction_60573b0;
-    overlayScriptFunctions.m_oneArg[0x605861e] = &scriptFunction_605861e;
+    overlayScriptFunctions.m_oneArg[0x60573b0] = &createEPKPlayer;
+    overlayScriptFunctions.m_oneArg[0x605861e] = &setupDragonEntityForCutscene;
     overlayScriptFunctions.m_oneArg[0x605838C] = &scriptFunction_605838C;
     overlayScriptFunctions.m_oneArg[0x605be04] = &TwnFadeOut;
     overlayScriptFunctions.m_oneArg[0x605bd8c] = &TwnFadeIn;
@@ -1555,4 +1498,9 @@ p_workArea overlayStart_TWN_E006(p_workArea pUntypedThis, u32 arg)
     startCameraTask(pThis);
 
     return pThis;
+}
+
+s32 getCutsceneFrameIndex(sStreamingFile* pStreamingFile)
+{
+    return pStreamingFile->m28.m84_frameIndex;
 }
