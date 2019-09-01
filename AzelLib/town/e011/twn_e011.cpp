@@ -39,6 +39,43 @@ void e011_cameraDraw(sCameraTask* pThis)
     setupLight(stack16[0], stack16[1], stack16[2], pThis->m10.toU32());
 }
 
+u32 modulateColor(sSaturnPtr r4, u32 r5)
+{
+    FunctionUnimplemented();
+    return 0;
+}
+
+u32 modulateColorByEvent(sCameraTask* cameraTaskPtr, s32 r5)
+{
+    FunctionUnimplemented();
+    return 0;
+}
+
+s32 e011_scriptFunction_0605ce38(int iParm1)
+
+{
+    u32 unaff_r12;
+
+    switch (cameraTaskPtr->m0)
+    {
+    case 0:
+    case 2:
+        unaff_r12 = modulateColor(cameraTaskPtr->m8, cameraTaskPtr->m30);
+        break;
+    case 1:
+        unaff_r12 = modulateColorByEvent(cameraTaskPtr, cameraTaskPtr->m4 + iParm1);
+        break;
+    default:
+        assert(0);
+        break;
+    }
+    
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0xc210, iParm1);
+    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), unaff_r12, iParm1);
+    cameraTaskPtr->m1 = 1;
+    return 1;
+}
+
 s32 scriptFunction_605cbd0(s32 r4, s32 r5)
 {
     sVec3_FP r4Value = readSaturnVec3(sSaturnPtr::createFromRaw(r4, gTWN_E011)); //todo: that could be a vec2
@@ -131,17 +168,31 @@ s32 e011_scriptFunction_6059af0(s32 r4)
     return 0;
 }
 
+s32 e011_scriptFunction_06059b7a(s32 param1)
+{
+    if ((e006_scriptFunction_605861eSub0() == 0) && (npcData0.m70_npcPointerArray[param1].workArea != nullptr))
+    {
+        npcData0.m70_npcPointerArray[param1].workArea->getTask()->markFinished();
+        npcData0.m70_npcPointerArray[param1].workArea = nullptr;
+    }
+
+    return 0xBADF00D;
+}
+
 void TWN_E011_data::init()
 {
     gCurrentTownOverlay = this;
 
     overlayScriptFunctions.m_zeroArg[0x6058484] = &e006_scriptFunction_60573d8;
     overlayScriptFunctions.m_zeroArg[0x60579c4] = &e006_scriptFunction_6056918;
+    overlayScriptFunctions.m_zeroArg[0x60584a6] = &e006_scriptFunction_605861eSub0;
 
     overlayScriptFunctions.m_oneArg[0x605ceb0] = &TwnFadeOut;
     overlayScriptFunctions.m_oneArg[0x605845c] = &createEPKPlayer;
     overlayScriptFunctions.m_oneArg[0x6059af0] = &e011_scriptFunction_6059af0;
     overlayScriptFunctions.m_oneArg[0x60596ca] = &setupDragonEntityForCutscene;
+    overlayScriptFunctions.m_oneArg[0x605ce38] = &e011_scriptFunction_0605ce38;
+    overlayScriptFunctions.m_oneArg[0x6059b7a] = &e011_scriptFunction_06059b7a;
 
     overlayScriptFunctions.m_twoArg[0x605cbd0] = &scriptFunction_605cbd0;
 }

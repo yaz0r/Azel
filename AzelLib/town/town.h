@@ -316,6 +316,7 @@ struct sCameraTask : public s_workAreaTemplate<sCameraTask>
     u8 m2;
     s32 m4;
     sSaturnPtr m8;
+    u32 mC;
     s_RGB8 m10;
     sVec3_FP m14;
     u32 m30;

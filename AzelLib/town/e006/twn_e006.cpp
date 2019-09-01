@@ -673,7 +673,7 @@ int convertCutsceneRotationComponent(int param_1, int param_2)
     }
 }
 
-void cutsceneCommand0Sub2(u8* param_1)
+void cutsceneCommand0Sub2_updateCamera(u8* param_1)
 {
     sVec3_FP local_10;
     local_10[0] = convertCutsceneRotationComponent(READ_BE_S16(param_1), READ_BE_U16(param_1 + 6) >> 0xc);
@@ -729,7 +729,7 @@ void cutsceneCommand0Sub3Sub1(s_3dModel* pModel, u8* pData)
 }
 
 
-void cutsceneCommand0Sub3(sStreamingFile* param_1, u32 param_2, u8* param_3)
+void cutsceneCommand0Sub3_updateAnimation(sStreamingFile* param_1, u32 param_2, u8* param_3)
 {
     sStreamingFile_C8* local_r14_24 = &param_1->mC8_cutsceneEntities[param_2];
     if ((local_r14_24->m0_compressionType != 0) && ((local_r14_24->m8_p3dModel) != 0)) {
@@ -786,7 +786,7 @@ s32 cutsceneCommand0(sStreamingFile* param_1)
                 local_r11_140 = local_r0_130 + 8;
                 switch (READ_BE_U32(local_r0_130 + 4)) {
                 case 0:
-                    cutsceneCommand0Sub2(local_r11_140);
+                    cutsceneCommand0Sub2_updateCamera(local_r11_140);
                     break;
                 case 1:
                     setupVDP2StringRendering(3, 0x19, 0x26, 2);
@@ -814,7 +814,7 @@ s32 cutsceneCommand0(sStreamingFile* param_1)
                 case 0x1d:
                 case 0x1e:
                 case 0x1f:
-                    cutsceneCommand0Sub3(param_1, READ_BE_U32(local_r0_130 + 4) + -0x10, local_r11_140);
+                    cutsceneCommand0Sub3_updateAnimation(param_1, READ_BE_U32(local_r0_130 + 4) + -0x10, local_r11_140);
                     break;
                 case 0x20:
                 case 0x21:
@@ -833,6 +833,9 @@ s32 cutsceneCommand0(sStreamingFile* param_1)
                 case 0x2e:
                 case 0x2f:
                     cutsceneCommand0Sub4_deleteCutsceneEntity(param_1, READ_BE_U32(local_r0_130 + 4) + -0x20);
+                    break;
+                default:
+                    assert(0);
                 }
                 local_24 = local_24 + READ_BE_U32(local_r0_130);
             }
@@ -889,7 +892,7 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
                 FunctionUnimplemented();
 
                 // hack!
-                (psParm1->m28).m84_frameIndex++;
+                (psParm1->m28).m84_frameIndex+=2;
                 //assert(0);
                 /*
                 FUN_0600dedc(psParm1);

@@ -516,6 +516,10 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                     {
                         const sProcessed3dModel::sQuad& currentQuad = pModel->mC_Quads[i];
 
+                        char string[1024] = "";
+                        sprintf(string, "Quad: CMDSRCA: %04X CMDCOLR: %04X", currentQuad.m10_CMDSRCA, currentQuad.mE_CMDCOLR);
+                        glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 0, GL_DEBUG_SEVERITY_NOTIFICATION, strlen(string), string);
+
                         u8 lightingMode = (currentQuad.m8_lightingControl >> 8) & 3;
 
                         u32 indices[6] = { 0, 1, 2, 0, 2, 3 };
@@ -1027,7 +1031,12 @@ void flushObjectsToDrawList()
     {
         SingleDrawcallVertexArray.clear();
         SingleDrawcallIndexArray.clear();
+
+        char string[1024] = "";
+        sprintf(string, "DrawObject %d", i);
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, strlen(string), string);
         drawObject(&objectRenderList[i], getProjectionMatrix());
+        glPopDebugGroup();
     }
 
     checkGL();

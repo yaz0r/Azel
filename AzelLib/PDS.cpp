@@ -560,11 +560,6 @@ void patchFilePointers(u8* destination, u32 characterArea)
 
 int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 {
-    if (strstr(fileName, ".MCB"))
-    {
-        registerModelAndCharacter(destination, 0x25C00000 + (vdp1Pointer << 3));
-    }
-
     sFileInfoSub* pFileHandle = openFileHandle(fileName);
 
     if (pFileHandle == NULL)
