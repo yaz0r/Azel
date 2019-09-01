@@ -266,19 +266,16 @@ npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32
         r14_vdp1Memory = vdp1Allocate(vramFileSize);
     }
 
-    u8* r12_dramMemory = nullptr;
-    if (ramFileSize)
-    {
-        r12_dramMemory = dramAllocate(ramFileSize);
-    }
+    s_fileBundle* r12_dramMemory = nullptr;
 
     if (r14_vdp1Memory)
     {
-        loadFile(ramFileName.c_str(), r12_dramMemory, r14_vdp1Memory->m4_vdp1Memory);
+        loadFile(ramFileName.c_str(), &r12_dramMemory, r14_vdp1Memory->m4_vdp1Memory);
     }
     else
     {
-        loadFile(ramFileName.c_str(), r12_dramMemory, 1);
+        assert(0);
+        loadFile(ramFileName.c_str(), &r12_dramMemory, 1);
     }
 
     if (r14_vdp1Memory)
@@ -286,7 +283,7 @@ npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32
         loadFile(vramFileName.c_str(), getVdp1Pointer((r14_vdp1Memory->m4_vdp1Memory << 3) + 0x25C00000), 0);
     }
 
-    r13->m0_dramAllocation = new s_fileBundle(r12_dramMemory);
+    r13->m0_dramAllocation = r12_dramMemory;
     r13->m4_vd1Allocation = r14_vdp1Memory;
     r13->mA = -1;
     r13->m8 = -1;

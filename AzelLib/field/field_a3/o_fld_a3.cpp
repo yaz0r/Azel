@@ -220,8 +220,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                 {
                     if (r14->m0b_models[4] == nullptr)
                     {
-                        u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0_offsetTable + 8));
-                        r14->m0b_models[4] = new sProcessed3dModel(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
+                        r14->m0b_models[4] = pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->getCollisionModel(readSaturnS16(r14->m0_offsetTable + 8));
                     }
                     var_54 = gridCellDraw_normalSub0(r14->m0b_models[4], r14->m4);
                 }
@@ -238,8 +237,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                 {
                     if (r14->m0b_models[depthRangeIndex] == nullptr)
                     {
-                        u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0_offsetTable + depthRangeIndex * 2));
-                        r14->m0b_models[depthRangeIndex] = new sProcessed3dModel(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
+                        r14->m0b_models[depthRangeIndex] = pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(readSaturnS16(r14->m0_offsetTable + depthRangeIndex * 2));
                     }
                     addObjectToDrawList(r14->m0b_models[depthRangeIndex]);
                 }
@@ -281,8 +279,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                 u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
                 if (depthRangeIndex <= r13->m1300)
                 {
-                    u32 offset = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + readSaturnS16(r14->m0));
-                    addBillBoardToDrawList(pTypedWorkAread->m0_memoryLayout.m0_mainMemory, offset);
+                    addBillBoardToDrawList(pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(readSaturnS16(r14->m0)));
 
                     if (readSaturnS16(r14->m0 + 2))
                     {

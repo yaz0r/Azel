@@ -127,7 +127,8 @@ void loadFileFromFileList(u32 index)
 
     if (pFileData->MCB)
     {
-        loadFile(pFileData->MCB, fieldTaskPtr->m8_pSubFieldData->m0_memoryArea[slot], fieldTaskPtr->m8_pSubFieldData->mC_characterArea[slot] >> 3);
+        loadFile(pFileData->MCB, &fieldTaskPtr->m8_pSubFieldData->m0_bundles[slot], fieldTaskPtr->m8_pSubFieldData->mC_characterArea[slot] >> 3);
+        fieldTaskPtr->m8_pSubFieldData->m0_memoryArea[slot] = fieldTaskPtr->m8_pSubFieldData->m0_bundles[slot]->getRawBuffer();
     }
 
     if (pFileData->CGB)

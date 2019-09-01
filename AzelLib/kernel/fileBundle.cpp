@@ -3,7 +3,8 @@
 #include "animation.h"
 
 s_fileBundle::s_fileBundle(u8* rawBundle):
-    mRawBundle(rawBundle)
+    mRawBundle(rawBundle),
+    mVdp1Offset(0)
 {
 
 }
@@ -29,6 +30,25 @@ u32 s_fileBundle::getRawFileOffset(u32 offset)
 }
 
 sProcessed3dModel* s_fileBundle::get3DModel(u32 offset)
+{
+    std::map<u32, sProcessed3dModel*>::iterator it = mModels.find(offset);
+    if (it == mModels.end())
+    {
+        sProcessed3dModel* pCachedData = nullptr;
+        u32 offsetInBundle = getRawFileOffset(offset);
+        if (offsetInBundle)
+        {
+            pCachedData = new sProcessed3dModel(mRawBundle, getRawFileOffset(offset));
+            pCachedData->patchFilePointers(mVdp1Offset);
+        }
+        mModels[offset] = pCachedData;
+        return pCachedData;
+    }
+
+    return it->second;
+}
+
+sProcessed3dModel* s_fileBundle::getCollisionModel(u32 offset)
 {
     std::map<u32, sProcessed3dModel*>::iterator it = mModels.find(offset);
     if (it == mModels.end())
@@ -97,6 +117,7 @@ sModelHierarchy* s_fileBundle::readNode(u8* pBase, u32 offset)
     if (modelOffset)
     {
         pNewNode->m0_3dModel = new sProcessed3dModel(pBase, modelOffset);
+        pNewNode->m0_3dModel->patchFilePointers(mVdp1Offset);
     }
 
     if (subNodeOffset)

@@ -629,7 +629,7 @@ void findLCSCollisionInCell(sResCameraProperties* r14, sTownCellTask* r12)
         {
             pushCurrentMatrix();
             translateCurrentMatrix(readSaturnVec3(r13 + 4));
-            sProcessed3dModel* model = r12->m0_dramAllocation->get3DModel(readSaturnU32(r13));
+            sProcessed3dModel* model = r12->m0_dramAllocation->getCollisionModel(readSaturnU32(r13));
             s32 r0 = testMeshVisibility(r14, *model);
             if (r0 != -1)
             {

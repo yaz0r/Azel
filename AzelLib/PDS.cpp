@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "kernel/fileBundle.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "Winmm.lib")
@@ -553,13 +554,16 @@ bool addFileToMemoryLayout(const char* fileName, u8* destination, u32 fileSize, 
     return false;
 }
 
-void patchFilePointers(u8* destination, u32 characterArea)
+void patchFilePointers(s_fileBundle* destination, u32 characterArea)
 {
-
+    destination->setPatchFilePointers(characterArea);
 }
 
+// version used for raw data (non-bundle)
 int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 {
+    assert(vdp1Pointer == 0);
+
     sFileInfoSub* pFileHandle = openFileHandle(fileName);
 
     if (pFileHandle == NULL)
@@ -583,7 +587,52 @@ int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 
     if (vdp1Pointer)
     {
-        patchFilePointers(destination, vdp1Pointer);
+        assert(0);
+    }
+
+    fclose(pFileHandle->fHandle);
+
+    freeFileInfoStruct(pFileHandle);
+
+    if (enableDebugTask)
+    {
+        assert(0);
+    }
+
+    return 0;
+}
+
+// version used for bundles
+int loadFile(const char* fileName, s_fileBundle** destination, u16 vdp1Pointer)
+{
+    sFileInfoSub* pFileHandle = openFileHandle(fileName);
+
+    if (pFileHandle == NULL)
+    {
+        return -1;
+    }
+
+    s_fileBundle* pNewBundle = new s_fileBundle(new u8[pFileHandle->m_fileSize]);
+
+    *destination = pNewBundle;
+
+    if (addFileToMemoryLayout(fileName, pNewBundle->getRawBuffer(), pFileHandle->m_fileSize, vdp1Pointer))
+    {
+        assert(0);
+    }
+
+    //writeLoadingFileDebugInfo(fileInfoStruct.m0, fileName);
+
+    fileInfoStruct.m0 = 1;
+
+    pFileHandle->m_18 = 0;
+    pFileHandle->m1A_vdp1Data = vdp1Pointer;
+
+    fread(pNewBundle->getRawBuffer(), pFileHandle->m_fileSize, 1, pFileHandle->fHandle);
+
+    if (vdp1Pointer)
+    {
+        patchFilePointers(pNewBundle, vdp1Pointer);
     }
 
     fclose(pFileHandle->fHandle);

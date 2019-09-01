@@ -249,6 +249,7 @@ void setVdp2VramU32(u32 offset, u32 value);
 u8* getVdp2Cram(u32 offset);
 
 int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer);
+int loadFile(const char* fileName, s_fileBundle** destination, u16 vdp1Pointer);
 void addToMemoryLayout(u8* pointer, u32 unk0);
 void asyncDmaCopy(void* source, void* target, u32 size, u32 unk);
 void asyncDmaCopy(sSaturnPtr EA, void* target, u32 size, u32 unk);

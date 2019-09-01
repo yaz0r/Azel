@@ -160,6 +160,7 @@ s32 e011_scriptFunction_6059af0(s32 r4)
         s16 hierarchyIndex = readSaturnS16(r4Ptr + 4);
         sModelHierarchy* pHierarchy = pBundle->getModelHierarchy(hierarchyIndex);
         sStaticPoseData* pPose = pBundle->getStaticPose(readSaturnU16(r4Ptr + 6), pHierarchy->countNumberOfBones());
+        //pHierarchy->patchFilePointers(dramAllocatorEnd[readSaturnU8(r4Ptr)].mC_buffer->m4_vd1Allocation->m4_vdp1Memory);
         init3DModelRawData(pNewSubTask, &pNewSubTask->mC_3dModel, 0, pBundle, hierarchyIndex, nullptr, pPose, nullptr, nullptr);
 
         npcData0.m70_npcPointerArray[readSaturnU8(r4Ptr + 1)].workArea = pNewSubTask;

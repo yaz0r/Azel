@@ -846,7 +846,7 @@ u8* dramAllocate(u32 size)
     return NULL;
 }
 
-u8 gDragonModel[0x16500];
+s_fileBundle* gDragonModel = nullptr;
 u8 gDragonVram[0x4000];
 
 void unimplementedUpdate(s_3dModel* pDragonStateData1)
@@ -1536,7 +1536,7 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
     s_dragonState* pDragonState = createSubTaskFromFunction<s_dragonState>(pWorkArea, nullptr);
 
-    pDragonState->m0_pDragonModelBundle = new s_fileBundle(gDragonModel);
+    pDragonState->m0_pDragonModelBundle = gDragonModel;
     pDragonState->mC_dragonType = dragonLevel;
     pDragonState->m14_modelIndex = pDragonData3->m_m8[0].m_m0[0];
     pDragonState->m18_shadowModelIndex = pDragonData3->m_m8[0].m_m0[1];
@@ -1558,7 +1558,7 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 
 void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 {
-    loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, gDragonModel, 0x2400);
+    loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, &gDragonModel, 0x2400);
     loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, getVdp1Pointer(0x25C12000), NULL);
 
     createDragon3DModel(pWorkArea, dragonLevel);
@@ -1686,8 +1686,8 @@ const s_RiderDefinition gRiderTable[] = {
 s_loadRiderWorkArea* pRider1State = NULL;
 s_loadRiderWorkArea* pRider2State = NULL;
 
-u8 riderModel[0x4F00];
-u8 rider2Model[0xC00];
+s_fileBundle* riderModel = nullptr;
+s_fileBundle* rider2Model = nullptr;
 
 s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
 {
@@ -1706,7 +1706,6 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
 
     if (riderType < 6)
     {
-        pLoadRiderWorkArea->m0_riderModel = riderModel;
         if (riderType == 1)
         {
             pLoadRiderWorkArea->m_14 = 0x24;
@@ -1716,8 +1715,8 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
             pLoadRiderWorkArea->m_14 = 0;
         }
 
-        loadFile(r13->m_MCBName, riderModel, 0x2C00);
-        pLoadRiderWorkArea->m0_riderBundle = new s_fileBundle(riderModel);
+        loadFile(r13->m_MCBName, &riderModel, 0x2C00);
+        pLoadRiderWorkArea->m0_riderBundle = riderModel;
 
         if (r13->m_CGBName)
         {
@@ -1754,8 +1753,6 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
 
     if (riderType < 6)
     {
-        pLoadRiderWorkArea->m0_riderModel = rider2Model;
-
         if (riderType == 1)
         {
             pLoadRiderWorkArea->m_14 = 0x24;
@@ -1765,8 +1762,8 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
             pLoadRiderWorkArea->m_14 = 0;
         }
 
-        loadFile(r13->m_MCBName, rider2Model, 0x2E80);
-        pLoadRiderWorkArea->m0_riderBundle = new s_fileBundle(rider2Model);
+        loadFile(r13->m_MCBName, &rider2Model, 0x2E80);
+        pLoadRiderWorkArea->m0_riderBundle = rider2Model;
 
         if (r13->m_CGBName)
         {

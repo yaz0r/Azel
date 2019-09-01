@@ -25,7 +25,6 @@ struct s_loadRiderWorkArea : public s_workAreaTemplate<s_loadRiderWorkArea>
         return &taskDefinition;
     }
 
-    u8* m0_riderModel; //0
     struct s_fileBundle* m0_riderBundle;
     u32 m4; //4
     s_workArea* m_ParentWorkArea; //8
@@ -66,7 +65,7 @@ struct s_vblankData {
 };
 extern s_vblankData vblankData;
 
-extern u8 gDragonModel[0x16500];
+extern s_fileBundle* gDragonModel;
 
 bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, s_fileBundle* pDragonBundle, u16 modelIndexOffset, struct sAnimationData* pAnimationData, struct sStaticPoseData* pDefaultPose, u8* colorAnim, const s_RiderDefinitionSub* unkArg3);
 void initModelDrawFunction(s_3dModel* pDragonStateData1);
