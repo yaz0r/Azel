@@ -141,27 +141,6 @@ void addBillBoardToDrawList(sProcessed3dModel* pObjectData)
     objectRenderList.push_back(newObject);
 }
 
-void addBillBoardToDrawList(u8* pObjectData, u32 offset)
-{
-    sKey thisKey;
-    thisKey.pObjectData = pObjectData;
-    thisKey.offset = offset;
-
-    sProcessed3dModel* pModel = NULL;
-    auto search = modelMap.find(thisKey);
-    if (search != modelMap.end())
-    {
-        pModel = search->second;
-    }
-    else
-    {
-        pModel = new sProcessed3dModel(pObjectData, offset);
-        modelMap[thisKey] = pModel;
-    }
-
-    addBillBoardToDrawList(pModel);
-}
-
 void checkGLImpl(const char* file, unsigned int line)
 {
     GLenum error = glGetError();

@@ -298,7 +298,6 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
 
 struct s_memoryAreaOutput
 {
-    u8* m0_mainMemory;
     struct s_fileBundle* m0_mainMemoryBundle;
     u32 m4_characterArea;
 };
@@ -737,7 +736,6 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     static void Draw(s_FieldSubTaskWorkArea*);
     static void Delete(s_FieldSubTaskWorkArea*);
 
-    std::array<u8*, 3> m0_memoryArea; // 0
     std::array<struct s_fileBundle*, 3> m0_bundles;
     std::array<u32, 3> mC_characterArea; // C
     u8* m18_memoryArea_edge; // 18

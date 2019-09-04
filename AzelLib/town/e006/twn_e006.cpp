@@ -498,8 +498,8 @@ void cutsceneCommandDefaultSub1(sStreamingFile* psParm1, u8* pSource, u8* pDest,
     if (size - uVar3 != 0) {
         u32 uVar1 = size - uVar3 >> 2;
         memcpy(pDest, pSource, uVar1 * 4);
-        pDest += uVar1;
-        pSource += uVar1;
+        pDest += uVar1 * 4;
+        pSource += uVar1 * 4;
     }
     if (uVar3 != 0) {
         u8* puVar4 = (psParm1->m28).m3C;

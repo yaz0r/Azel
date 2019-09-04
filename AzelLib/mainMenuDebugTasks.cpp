@@ -4,6 +4,11 @@
 #include "kernel/animation.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
+#include "kernel/loadSavegameScreen.h"
+#include "kernel/menuCursor.h"
+#include "kernel/menuSprite.h"
+
+u8* savegameVar0 = nullptr;
 
 s_exitMenuTaskSub1Task* gExitMenuTaskSub1Task = nullptr;
 
@@ -2163,7 +2168,7 @@ void s_fieldTaskWorkArea::fieldTaskUpdate(s_fieldTaskWorkArea* pWorkArea)
 }
 void s_fieldTaskWorkArea::fieldTaskDelete(s_fieldTaskWorkArea*)
 {
-    assert(0);
+    fieldTaskPtr = nullptr;
 }
 
 p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg)
@@ -2293,7 +2298,7 @@ struct {
     u8 mB;
 } var_60525E8;
 
-void setNextGameStatus(u32 r4)
+s32 setNextGameStatus(s32 r4)
 {
     PDS_Log("Requesting new game state: %d\n", r4);
     //assert(gGameStatus.m8_nextGameStatus == 0);
@@ -2306,6 +2311,8 @@ void setNextGameStatus(u32 r4)
     {
         PDS_Log("[ERROR] Requesting new game state failed to change to: %d!\n", r4);
     }
+
+    return 0;
 }
 
 u8 array_24BCA0[0x104];
@@ -2801,30 +2808,6 @@ struct s_statusMenuTaskWorkArea : public s_workAreaTemplate<s_statusMenuTaskWork
     u32 selectedMenu; //0
 };
 
-struct sMainMenuTaskInitData2
-{
-    s_graphicEngineStatus_40BC* m0;
-    u16* m4;
-};
-
-struct s_MenuCursorWorkArea : public s_workAreaTemplateWithArg<s_MenuCursorWorkArea,sMainMenuTaskInitData2*>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &s_MenuCursorWorkArea::menuCursorTaskInit , &s_MenuCursorWorkArea::menuCursorTaskUpdate, &s_MenuCursorWorkArea::menuCursorTaskDraw, NULL};
-        return &taskDefinition;
-    }
-
-    static void menuCursorTaskInit(s_MenuCursorWorkArea*, sMainMenuTaskInitData2*);
-    static void menuCursorTaskUpdate(s_MenuCursorWorkArea*);
-    static void menuCursorTaskDraw(s_MenuCursorWorkArea*);
-
-    s32 selectedMenu;
-    s_graphicEngineStatus_40BC* m4;
-    u16* m8;
-    s32 mC;
-};
-
 struct s_mainMenuWorkArea : public s_workAreaTemplate<s_mainMenuWorkArea>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
@@ -2907,14 +2890,6 @@ void mainMenuTaskInitSub2TaskWorkArea::Init(mainMenuTaskInitSub2TaskWorkArea* pT
     pThis->spriteData = typedArg->m4;
 }
 
-struct s_menuSprite
-{
-    s16 SRCA;
-    s16 SIZE;
-    s16 X;
-    s16 Y;
-};
-
 s_menuSprite spriteData1[] =
 {
     {0x2118, 0x520, 0, 0},
@@ -2956,27 +2931,6 @@ s_vd1ExtendedCommand* fetchVdp1ExtendedCommand(u32 vd1PacketStart)
         return NULL;
 
     return pPacket;
-}
-
-void drawMenuSprite(s_menuSprite* r4, s16 r5, s16 r6, u32 r7)
-{
-    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0, normal sprite + JUMP
-    setVdp1VramU16(vdp1WriteEA + 0x04, 0x80); // CMDPMOD
-    setVdp1VramU16(vdp1WriteEA + 0x06, r7); // CMDCOLR
-    setVdp1VramU16(vdp1WriteEA + 0x08, r4->SRCA); // CMDSRCA
-    setVdp1VramU16(vdp1WriteEA + 0x0A, r4->SIZE); // CMDSIZE
-    setVdp1VramU16(vdp1WriteEA + 0x0C, r4->X + r5 - 0xB0); // CMDXA
-    setVdp1VramU16(vdp1WriteEA + 0x0E, r4->Y + r6 - 0x70); // CMDYA
-
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
-
-    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
-    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
 void mainMenuTaskInitSub2TaskWorkArea::Draw(mainMenuTaskInitSub2TaskWorkArea* pWorkArea)
@@ -3142,44 +3096,6 @@ void mainMenuTaskInitSub4(p_workArea typelessWorkArea)
     createSubTaskFromFunction<s_mainMenuTaskInitSub4SubWorkArea>(typelessWorkArea, mainMenuTaskInitSub4Sub);
 }
 
-void s_MenuCursorWorkArea::menuCursorTaskInit(s_MenuCursorWorkArea* pThis, sMainMenuTaskInitData2* pMenuData)
-{
-    pThis->m4 = pMenuData->m0;
-    pThis->m8 = pMenuData->m4;
-}
-
-void s_MenuCursorWorkArea::menuCursorTaskUpdate(s_MenuCursorWorkArea* pWorkArea)
-{
-    if (--pWorkArea->mC < 0)
-    {
-        pWorkArea->mC = 40;
-    }
-}
-
-s_menuSprite cursorSpriteDef0 = { 0x2080, 0x520, 0, 0};
-s_menuSprite cursorSpriteDef1 = { 0x2030, 0x520, 0, 0 };
-
-void s_MenuCursorWorkArea::menuCursorTaskDraw(s_MenuCursorWorkArea* pWorkArea)
-{
-    if (pWorkArea->selectedMenu < 0)
-        return;
-
-    s32 X = pWorkArea->m8[pWorkArea->selectedMenu*2 + 0] - pWorkArea->m4->scrollX;
-    s32 Y = pWorkArea->m8[pWorkArea->selectedMenu*2 + 1] - pWorkArea->m4->scrollY;
-
-    if (pWorkArea->mC > 20)
-    {
-        drawMenuSprite(&cursorSpriteDef0, X, Y, 0x760);
-    }
-
-    drawMenuSprite(&cursorSpriteDef1, X, Y, 0x760);
-}
-
-s_MenuCursorWorkArea* createMenuCursorTask(p_workArea pWorkArea, sMainMenuTaskInitData2* r5)
-{
-    return createSubTaskWithArg<s_MenuCursorWorkArea, sMainMenuTaskInitData2*>(pWorkArea, r5);
-}
-
 u32 mainMenuTaskInitData1[5] = {
     0x71450,
     0x714D6,
@@ -3245,7 +3161,7 @@ void s_mainMenuWorkArea::Init(s_mainMenuWorkArea* pWorkArea)
     if (r14 >= 0)
     {
         pWorkArea->m10_cursorTask = createMenuCursorTask(pWorkArea, &mainMenuTaskInitData2);
-        pWorkArea->m10_cursorTask->selectedMenu = r14;
+        pWorkArea->m10_cursorTask->m0_selectedEntry = r14;
     }
 
     createSubTaskWithArg<s_menuDragonCrestTaskWorkArea,s_graphicEngineStatus_40BC*>(pWorkArea, &graphicEngineStatus.m40BC_layersConfig[0]);
@@ -3342,7 +3258,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
     case 0:
         pWorkArea->mC = createSubTask< s_statusMenuTaskWorkArea>(pWorkArea);
         pWorkArea->mC->selectedMenu = pWorkArea->selectedMenu;
-        pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
+        pWorkArea->m10_cursorTask->m0_selectedEntry = pWorkArea->selectedMenu;
         pWorkArea->m0++;
     case 1:
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1) // B
@@ -3416,7 +3332,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
 
             pWorkArea->selectedMenu = selectedMenu;
             pWorkArea->mC->selectedMenu = pWorkArea->selectedMenu;
-            pWorkArea->m10_cursorTask->selectedMenu = pWorkArea->selectedMenu;
+            pWorkArea->m10_cursorTask->m0_selectedEntry = pWorkArea->selectedMenu;
         }
         break;
     case 2:
@@ -3464,12 +3380,6 @@ p_workArea createMapTask(p_workArea workArea)
 }
 
 p_workArea createSystemMenuTask(p_workArea workArea)
-{
-    assert(0);
-    return NULL;
-}
-
-p_workArea createLoadTask(p_workArea workArea)
 {
     assert(0);
     return NULL;
@@ -3761,14 +3671,18 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task* pW
 
     switch (menuID)
     {
-    case 0:
-        return setNextGameStatus(1);
-    case 1:
-        return setNextGameStatus(0x4A);
+    case 0: //new game
+        setNextGameStatus(1);
+        return;
+    case 1: //continue
+        setNextGameStatus(0x4A);
+        return;
     case 2:
-        return setNextGameStatus(0x71);
+        setNextGameStatus(0x71);
+        return;
     case 3:
-        return setNextGameStatus(0x72);
+        setNextGameStatus(0x72);
+        return;
     default:
         assert(0);
     }
@@ -3816,19 +3730,27 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
         break;
     case 5: // elevator video
         mainGameState.setBit(4, 2);
-        setNextGameStatus(80);
+        setNextGameStatus(0x50);
         break;
     case 6: // initiate captain scene
         mainGameState.setBit(4, 3);
         mainGameState.setBit(10, 6);
-        setNextGameStatus(81);
+        setNextGameStatus(0x51);
         break;
-    case 79: // ?
-    case 80: // above excavation
-    case 81: // captain scene intro (gameplay)
-    case 82:
-    case 83: // excavation site #3 (tutorial)
-        setNextGameStatus(79);
+    case 0x4A: // load savegame?
+        if (savegameVar0 == nullptr)
+        {
+            return -1;
+        }
+        break;
+    case 0x50: // above excavation
+    case 0x51: // captain scene intro (gameplay)
+    case 0x52:
+    case 0x53: // excavation site #3 (tutorial)
+        setNextGameStatus(0x4F);
+        break;
+
+    case 0x4F:
         break;
     default:
         assert(0);
@@ -3891,7 +3813,7 @@ p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     NULL,
     NULL,
     NULL,
-    NULL,
+    initLoadSavegameScreen,
     NULL,
 };
 
@@ -3971,32 +3893,56 @@ void s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task* pW
         //06027574
         switch (gGameStatus.m8_nextGameStatus)
         {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 79:
-        case 80:
-        case 81:
-        case 83:
+        default:
             if ((gGameStatus.m2 == 0) && (gGameStatus.m6_previousGameStatus != 0x4F))
             {
                 initFileLayoutTable();
             }
         case 8:
-        case 25:
+        case 0x19:
             stopAllSounds();
-        case 12:
-        case 22:
-        case 37:
+        case 0xC:
+        case 0x16:
+        case 0x25:
             fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0, 30);
             fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0, 30);
             break;
-        default:
-            assert(0);
+        case 9:
+        case 0xb:
+        case 0xe:
+        case 0x10:
+        case 0x15:
+        case 0x18:
+        case 0x1a:
+        case 0x1b:
+        case 0x1f:
+        case 0x22:
+        case 0x23:
+        case 0x26:
+        case 0x28:
+        case 0x2a:
+        case 0x2d:
+        case 0x34:
+        case 0x35:
+        case 0x38:
+        case 0x39:
+        case 0x3a:
+        case 0x3b:
+        case 0x3c:
+        case 0x3d:
+        case 0x3e:
+        case 0x3f:
+        case 0x40:
+        case 0x41:
+        case 0x42:
+        case 0x43:
+        case 0x44:
+        case 0x66:
+            break;
+        case 0x70:
+            initFileLayoutTable();
+            fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0, 30);
+            fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0, 30);
             break;
         }
 

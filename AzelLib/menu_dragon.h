@@ -6,3 +6,4 @@ void resetVdp2LayersAutoScroll();
 void clearVdp2TextArea();
 void drawObjectName(const char* string);
 void printVdp2Number(s32 number);
+void startVdp2LayerScroll(s32 layerId, s32 x, s32 y, s32 numSteps);

@@ -559,6 +559,11 @@ void patchFilePointers(s_fileBundle* destination, u32 characterArea)
     destination->setPatchFilePointers(characterArea);
 }
 
+int loadFile2(const char* fileName, u8* destination, u16 vdp1Pointer)
+{
+    return loadFile(fileName, destination, vdp1Pointer);
+}
+
 // version used for raw data (non-bundle)
 int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 {
@@ -1104,3 +1109,4 @@ void adjustMatrixTranslation(fixedPoint r4)
     pCurrentMatrix->matrix[7] += (((s64)pCurrentMatrix->matrix[5] * (s64)r4) >> 16);
     pCurrentMatrix->matrix[11] += (((s64)pCurrentMatrix->matrix[9] * (s64)r4) >> 16);
 }
+

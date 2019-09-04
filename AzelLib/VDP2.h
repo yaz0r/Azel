@@ -108,6 +108,10 @@ struct s_VDP2Regs
     u16 mF8_PRINA;
     u16 mFA_PRINB;
     u16 mFC_PRIR;
+    u16 m100_CCRSA;
+    u16 m102_CCRSB;
+    u16 m104_CCRSC;
+    u16 m106_CCRSD;
     u16 m10A_CCRNB;
     u16 m110_CLOFEN;
     u16 m112_CLOFSL;
@@ -170,10 +174,10 @@ void setupVDP2CoordinatesIncrement2(u32, u32);
 void initVDP2();
 void reinitVdp2();
 
-void setupNBG0(sLayerConfig* setup);
-void setupNBG1(sLayerConfig* setup);
-void setupNBG2(sLayerConfig* setup);
-void setupNBG3(sLayerConfig* setup);
+void setupNBG0(const sLayerConfig* setup);
+void setupNBG1(const sLayerConfig* setup);
+void setupNBG2(const sLayerConfig* setup);
+void setupNBG3(const sLayerConfig* setup);
 
 void setupVDP2StringRendering(s32 x, s32 y, s32 width, s32 height);
 void vdp2DebugPrintSetPosition(s32 x, s32 y);
@@ -249,6 +253,7 @@ void setVdp2VramU32(u32 offset, u32 value);
 u8* getVdp2Cram(u32 offset);
 
 int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer);
+int loadFile2(const char* fileName, u8* destination, u16 vdp1Pointer);
 int loadFile(const char* fileName, s_fileBundle** destination, u16 vdp1Pointer);
 void addToMemoryLayout(u8* pointer, u32 unk0);
 void asyncDmaCopy(void* source, void* target, u32 size, u32 unk);

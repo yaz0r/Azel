@@ -54,7 +54,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
         {
             // init running
         case 0:
-            update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x300));
+            update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemoryBundle->getRawFileAtOffset(0x300));
             mainGameState.clearBit(0xA2, 3);
             pThis->m9C_status++;
             //fall
@@ -79,7 +79,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             break;
         case 2: // init shutdown
             pThis->m68_LCSTarget.m18_diableFlags |= 1;
-            update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x304));
+            update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemoryBundle->getRawFileAtOffset(0x304));
             pThis->m9C_status++;
             //fall
         case 3: //shutting down
@@ -103,7 +103,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             break;
         case 4: // finish shutdown
             soundFunc(104);
-            update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x304));
+            update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemoryBundle->getRawFileAtOffset(0x304));
             if (pThis->m18_3dModel.m38_pColorAnim)
             {
                 pThis->m18_3dModel.m14 = READ_BE_S16(pThis->m18_3dModel.m38_pColorAnim) - 1;
@@ -121,7 +121,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             break;
         case 6: // init startup
             pThis->m68_LCSTarget.m18_diableFlags |= 1;
-            update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemory + READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x308));
+            update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemoryBundle->getRawFileAtOffset(0x308));
             pThis->m9C_status++;
             //fall
         case 7: // starting up

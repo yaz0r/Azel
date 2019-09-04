@@ -462,19 +462,21 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
             transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60);
 
+            sStaticPoseData* pPose = pThis->m0.m0_mainMemoryBundle->getStaticPose(0x190, 2);
+
             {
                 pushCurrentMatrix();
-                translateCurrentMatrix(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190));
-                rotateCurrentMatrixZYX(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0xC));
+                translateCurrentMatrix(pPose->m0_bones[0].m0_translation);
+                rotateCurrentMatrixZYX(pPose->m0_bones[0].mC_rotation);
 
                 gridCellDraw_normalSub2(pThis, 0x138, pThis->m7C);
 
                 {
                     pushCurrentMatrix();
-                    translateCurrentMatrix(READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x190 + 0x24));
-                    rotateCurrentMatrixShiftedZ(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0x14));
-                    rotateCurrentMatrixShiftedY(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0x10) + pThis->m90);
-                    rotateCurrentMatrixShiftedX(READ_BE_S32(pThis->m0.m0_mainMemory + 0x190 + 0x24 + 0xC));
+                    translateCurrentMatrix(pPose->m0_bones[1].m0_translation);
+                    rotateCurrentMatrixShiftedZ(pPose->m0_bones[1].mC_rotation[2]);
+                    rotateCurrentMatrixShiftedY(pPose->m0_bones[1].mC_rotation[1] + pThis->m90);
+                    rotateCurrentMatrixShiftedX(pPose->m0_bones[1].mC_rotation[0]);
 
                     gridCellDraw_normalSub2(pThis, 0x13C, pThis->m7C);
 
@@ -587,8 +589,10 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
         pushCurrentMatrix();
 
-        sVec3_FP translation = READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x148);
-        sVec3_FP rotation = READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x148 + 0xC);
+        sStaticPoseData* pPose = pThis->m0.m0_mainMemoryBundle->getStaticPose(0x148, 2);
+
+        sVec3_FP translation = pPose->m0_bones[0].m0_translation;
+        sVec3_FP rotation = pPose->m0_bones[0].mC_rotation;
 
         translateCurrentMatrix(&translation);
         rotateCurrentMatrixZYX(&rotation);
@@ -601,8 +605,8 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
             pushCurrentMatrix();
 
-            sVec3_FP translation2 = READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x148 + 0x24);
-            sVec3_FP rotation2 = READ_BE_Vec3(pThis->m0.m0_mainMemory + 0x148 + 0x24 + 0xC);
+            sVec3_FP translation2 = pPose->m0_bones[1].m0_translation;
+            sVec3_FP rotation2 = pPose->m0_bones[1].mC_rotation;
 
             translateCurrentMatrix(&translation2);
             rotateCurrentMatrixShiftedZ(rotation2[2]);
@@ -866,7 +870,7 @@ struct fieldA3_1_startTasks_subTask : public s_workAreaTemplateWithArg<fieldA3_1
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m8_translation);
         rotateCurrentMatrixZYX(&pThis->m14_rotation);
-        addBillBoardToDrawList(pThis->m0_memoryArea.m0_mainMemory, READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0xA0)); // draw a bird
+        addBillBoardToDrawList(pThis->m0_memoryArea.m0_mainMemoryBundle->get3DModel(0xA0)); // draw a bird
         popMatrix();
     }
 
@@ -911,7 +915,7 @@ struct fieldA3_1_startTasks_subTask2 : public s_workAreaTemplateWithArg<fieldA3_
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m8_translation);
         rotateCurrentMatrixZYX(&pThis->m14_rotation);
-        addBillBoardToDrawList(pThis->m0_memoryArea.m0_mainMemory, READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0x9C));
+        addBillBoardToDrawList(pThis->m0_memoryArea.m0_mainMemoryBundle->get3DModel(0x9C));
         popMatrix();
     }
 
@@ -956,7 +960,7 @@ struct fieldA3_1_startTasks_subTask3 : public s_workAreaTemplateWithArg<fieldA3_
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m8_translation);
         rotateCurrentMatrixZYX(&pThis->m20_rotation);
-        addBillBoardToDrawList(pThis->m0_memoryArea.m0_mainMemory, READ_BE_U32(pThis->m0_memoryArea.m0_mainMemory + 0xA0)); // draw a bird
+        addBillBoardToDrawList(pThis->m0_memoryArea.m0_mainMemoryBundle->get3DModel(0xA0)); // draw a bird
         popMatrix();
     }
 

@@ -72,11 +72,12 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1);
 u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, struct sAnimationData* pAnimation);
 s32 riderInit(s_3dModel* r4, struct sAnimationData* pAnimation);
 void playAnimationGeneric(s_3dModel* pModel, struct sAnimationData* pAnimation, s32 interpolationLength);
-void setNextGameStatus(u32 r4);
+s32 setNextGameStatus(s32 r4);
 u32 performModulo(u32 r0, u32 r1);
 u32 performModulo2(u32 r0, u32 r1);
 void resetTempAllocators();
 u16 loadFnt(const char* filename);
+void clearVdp2Menu();
 
 struct s_fileEntry
 {
@@ -110,3 +111,4 @@ struct s_exitMenuTaskSub1Task : public s_workAreaTemplateWithArg<s_exitMenuTaskS
 };
 
 extern s_exitMenuTaskSub1Task* gExitMenuTaskSub1Task;
+void setOpenMenu7();

@@ -17,7 +17,7 @@ s_titleMenuEntry mainMenu[] = {
 
 s_titleMenuEntry mainMenuDebug[] = {
     {1, -8, " NEW GAME ", createNewGameTask },
- //   {1, -7, " CONTINUE ", createContinueTask },
+    {1, -7, " CONTINUE ", createContinueTask },
     {1, -6, "   TOWN   ", createTownDebugTask },
     {1, -5, "  FIELD   ", createFieldDebugTask },
 //    {1, -4, "  BATTLE  ", createBattleDebugTask },

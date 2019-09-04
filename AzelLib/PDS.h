@@ -192,6 +192,8 @@ struct sSaturnPtr
         temp.m_file = pFile;
         return temp;
     }
+
+    u8* getRawPointer();
 };
 
 struct sSaturnMemoryFile

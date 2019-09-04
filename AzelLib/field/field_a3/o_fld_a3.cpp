@@ -206,10 +206,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
         while (r14->m0_offsetTable.m_offset)
         {
             r13->m12E0++;
-
-            s16 r2 = readSaturnS16(r14->m0_offsetTable);
-            u32 r1 = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r2);
-            r13->m12F0 += READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r1 + 4);
+            r13->m12F0 += pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(readSaturnS16(r14->m0_offsetTable))->m4_numVertices;
 
             if (!r13->m12FC_isObjectClipped(&r14->m4, r15))
             {
@@ -264,10 +261,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
         while (r14 != pTypedWorkAread->mC_pCell2_billboards->end())
         {
             r13->m12E0++;
-
-            s16 r2 = readSaturnS16(r14->m0);
-            u32 r1 = READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r2);
-            r13->m12F0 += READ_BE_U32(pTypedWorkAread->m0_memoryLayout.m0_mainMemory + r1 + 4);
+            r13->m12F0 += pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(readSaturnS16(r14->m0))->m4_numVertices;
 
             if (!r13->m12FC_isObjectClipped(&r14->m4, r15))
             {

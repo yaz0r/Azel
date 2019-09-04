@@ -807,3 +807,12 @@ sVec3_FP readSaturnVec3(sSaturnPtr ptr)
 
     return newVec;
 }
+
+u8* sSaturnPtr::getRawPointer()
+{
+    sSaturnMemoryFile* pFile = m_file;
+    u32 offsetInFile = m_offset - m_file->m_base;
+    assert(offsetInFile <= pFile->m_dataSize);
+
+    return pFile->m_data + offsetInFile;
+}

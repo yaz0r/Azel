@@ -452,7 +452,7 @@ sLayerConfig textLayerVdp2Setup[] = {
     m0_END
 };
 
-void setupNBG0(sLayerConfig* setup)
+void setupNBG0(const sLayerConfig* setup)
 {
     while (eVdp2LayerConfig command = setup->m_configType)
     {
@@ -495,7 +495,7 @@ void setupNBG0(sLayerConfig* setup)
     vdp2Controls.m_isDirty = true;
 }
 
-void setupNBG1(sLayerConfig* setup)
+void setupNBG1(const sLayerConfig* setup)
 {
     while (eVdp2LayerConfig command = setup->m_configType)
     {
@@ -556,7 +556,7 @@ void setupNBG1(sLayerConfig* setup)
     vdp2Controls.m_isDirty = true;
 }
 
-void setupNBG2(sLayerConfig* setup)
+void setupNBG2(const sLayerConfig* setup)
 {
     while (eVdp2LayerConfig command = setup->m_configType)
     {
@@ -608,7 +608,7 @@ void setupNBG2(sLayerConfig* setup)
     vdp2Controls.m_isDirty = true;
 }
 
-void setupNBG3(sLayerConfig* setup)
+void setupNBG3(const sLayerConfig* setup)
 {
     while (eVdp2LayerConfig command = setup->m_configType)
     {

@@ -316,7 +316,44 @@ void modelMode5_position0(s_3dModel* pDragonStateData1)
 
 void modelMode5_position1(s_3dModel* p3dModel)
 {
-    FunctionUnimplemented();
+    std::vector<sPoseData>& pPoseData = p3dModel->m2C_poseData;
+    if (p3dModel->m10_currentAnimationFrame & 3)
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            pPoseData[i].m0_translation += pPoseData[i].m24_halfTranslation;
+        }
+        return;
+    }
+    if (p3dModel->m10_currentAnimationFrame == 0)
+    {
+        std::vector<sAnimationData::sTrackHeader>::const_iterator r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader.begin();
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            pPoseData[i].m0_translation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], r13->m14_trackData[0], r13->m0_tracksLength[0]);
+            pPoseData[i].m0_translation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], r13->m14_trackData[1], r13->m0_tracksLength[1]);
+            pPoseData[i].m0_translation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], r13->m14_trackData[2], r13->m0_tracksLength[2]);
+            r13++;
+        }
+
+        if (p3dModel->m30_pCurrentAnimation->m4_numFrames - 1 <= p3dModel->m10_currentAnimationFrame)
+        {
+            return;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            pPoseData[i].m0_translation += pPoseData[i].m24_halfTranslation;
+        }
+
+        if (p3dModel->m30_pCurrentAnimation->m4_numFrames - 1 <= p3dModel->m10_currentAnimationFrame)
+        {
+            return;
+        }
+    }
+    assert(0);
 }
 
 void modelMode5_rotation(s_3dModel* p3dModel)

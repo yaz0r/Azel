@@ -1525,10 +1525,11 @@ sKernelScriptFunctions gKernelScriptFunctions =
     {
         {0x600CCB4, &initNPC},
         {0x602c2ca, &playSoundEffect},
+        {0x6027110, &setNextGameStatus},
     },
     // one arg ptr
     {
-        {0x6014DF2, &initNPCFromStruct}
+        {0x6014DF2, &initNPCFromStruct},
     },
     // two arg
     {
@@ -1634,6 +1635,12 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         if (gKernelScriptFunctions.m_fourArg.count(functionEA.m_offset))
         {
             scriptFunction_four_arg pFunction = gKernelScriptFunctions.m_fourArg.find(functionEA.m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12), readSaturnS32(r14 + 16));
+        }
+        else if (gCurrentTownOverlay->overlayScriptFunctions.m_fourArg.count(functionEA.m_offset))
+        {
+            assert(gCurrentTownOverlay == r14.m_file);
+            scriptFunction_four_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_fourArg.find(functionEA.m_offset)->second;
             r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12), readSaturnS32(r14 + 16));
         }
         else
