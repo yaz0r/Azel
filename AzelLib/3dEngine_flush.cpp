@@ -200,7 +200,18 @@ GLuint compileShader(const char* VS, const char* PS)
 
     GLint IsLinked = 0;
     glGetProgramiv(shaderprogram, GL_LINK_STATUS, &IsLinked);
-    assert(IsLinked);
+    if (IsLinked == 0)
+    {
+        GLint maxLength;
+        glGetShaderiv(shaderprogram, GL_INFO_LOG_LENGTH, &maxLength);
+        char* fragmentInfoLog = (char*)malloc(maxLength);
+
+        glGetShaderInfoLog(shaderprogram, maxLength, &maxLength, fragmentInfoLog);
+
+        assert(false);
+
+        free(fragmentInfoLog);
+    }
 
     return shaderprogram;
 }

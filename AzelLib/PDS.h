@@ -44,8 +44,8 @@ extern SoLoud::Soloud gSoloud;
 #include <algorithm>
 
 void checkGLImpl(const char*, unsigned int line);
-//#define checkGL() checkGLImpl(__FILE__, __LINE__);
-#define checkGL()
+#define checkGL() checkGLImpl(__FILE__, __LINE__);
+//#define checkGL()
 
 #if (defined(__ANDROID__)) || (defined(__EMSCRIPTEN__))
     #define USE_GL_ES3

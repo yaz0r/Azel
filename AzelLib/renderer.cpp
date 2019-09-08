@@ -36,10 +36,16 @@ GLuint gCompositedFB = 0;
 GLuint gCompositedTexture = 0;
 
 GLuint gVdp1Texture = 0;
-GLuint gNBG0Texture = 0;
-GLuint gNBG1Texture = 0;
-GLuint gNBG2Texture = 0;
-GLuint gNBG3Texture = 0;
+
+struct s_NBG_data
+{
+    GLuint FB;
+    GLuint Texture;
+};
+
+s_NBG_data NBG_data[4];
+
+GLuint gVDP2Program = 0;
 
 #ifdef SHIPPING_BUILD
 int frameLimit = 30;
@@ -150,6 +156,33 @@ void SDL_ES3_backend::bindBackBuffer()
 #endif
 }
 
+GLuint compileShader(const char* VS, const char* PS);
+
+bool loadFileToVector(std::vector<char>& outputVector, const std::string& filename)
+{
+    FILE* fHandle = fopen(filename.c_str(), "r");
+    if (fHandle == nullptr)
+        return false;
+    fseek(fHandle, 0, SEEK_END);
+    u32 size = ftell(fHandle);
+    fseek(fHandle, 0, SEEK_SET);
+    outputVector.resize(size);
+    fread(&outputVector[0], 1, size, fHandle);
+    fclose(fHandle);
+
+    outputVector.push_back('\0');
+}
+
+GLuint compileShaderFromFiles(const std::string& VSFile, const std::string& PSFile)
+{
+    std::vector<char> VSSource;
+    std::vector<char> PSSource;
+
+    loadFileToVector(VSSource, VSFile);
+    loadFileToVector(PSSource, PSFile);
+
+    return compileShader(&VSSource[0], &PSSource[0]);
+}
 
 void azelSdl2_Init()
 {
@@ -229,11 +262,13 @@ void azelSdl2_Init()
     glGenFramebuffers(1, &gCompositedFB);
     glGenTextures(1, &gCompositedTexture);
 
+    for (int i = 0; i < 4; i++)
+    {
+        glGenTextures(1, &NBG_data[i].Texture);
+        glGenFramebuffers(1, &NBG_data[i].FB);
+    }
     glGenTextures(1, &gVdp1Texture);
-    glGenTextures(1, &gNBG0Texture);
-    glGenTextures(1, &gNBG1Texture);
-    glGenTextures(1, &gNBG2Texture);
-    glGenTextures(1, &gNBG3Texture);
+
 #endif
     
 #ifdef _DEBUG
@@ -241,6 +276,7 @@ void azelSdl2_Init()
 #endif
     
 #endif
+    gVDP2Program = compileShaderFromFiles("VDP2_vs.glsl", "VDP2_ps.glsl");
 }
 
 GLuint getTextureForLayer(eLayers layerIndex)
@@ -252,13 +288,13 @@ GLuint getTextureForLayer(eLayers layerIndex)
     case SPRITE_SOFTWARE:
         return gVdp1Texture;
     case NBG0:
-        return gNBG0Texture;
+        return NBG_data[0].Texture;
     case NBG1:
-        return gNBG1Texture;
+        return NBG_data[1].Texture;
     //case NBG2:
     //    return gNBG2Texture;
     case NBG3:
-        return gNBG3Texture;
+        return NBG_data[3].Texture;
     default:
         assert(0);
         break;
@@ -542,6 +578,151 @@ struct s_layerData
     s32 scrollY;
 };
 
+void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
+{
+
+    glBindFramebuffer(GL_FRAMEBUFFER, NBGData.FB);
+    glBindTexture(GL_TEXTURE_2D, NBGData.Texture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, NBGData.Texture, 0);
+
+    GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    
+
+    glViewport(0, 0, textureWidth, textureHeight);
+
+    glClearColor(1, 0, 0, 1);
+    glClearDepthf(0.f);
+
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    {
+        static GLuint quad_VertexArrayID;
+        static GLuint quad_vertexbuffer = 0;
+        static GLint texID_VDP2_RAM = 0;
+        static GLint texID_VDP2_CRAM = 0;
+        static GLuint vdp2_ram_buffer = 0;
+        static GLuint vdp2_cram_buffer = 0;
+        static GLuint vdp2_ram_texture = 0;
+        static GLuint vdp2_cram_texture = 0;
+
+        static bool initialized = false;
+        if (!initialized)
+        {
+            static const GLfloat g_quad_vertex_buffer_data[] = {
+                -1.0f, -1.0f, 0.0f,
+                1.0f, -1.0f, 0.0f,
+                -1.0f,  1.0f, 0.0f,
+                -1.0f,  1.0f, 0.0f,
+                1.0f, -1.0f, 0.0f,
+                1.0f,  1.0f, 0.0f,
+            };
+
+            glGenVertexArrays(1, &quad_VertexArrayID);
+            glBindVertexArray(quad_VertexArrayID);
+            glGenBuffers(1, &quad_vertexbuffer);
+
+            glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+            texID_VDP2_RAM = glGetUniformLocation(gVDP2Program, "s_VDP2_RAM");
+            texID_VDP2_CRAM = glGetUniformLocation(gVDP2Program, "s_VDP2_CRAM");
+
+            glGenBuffers(1, &vdp2_ram_buffer);
+            glGenBuffers(1, &vdp2_cram_buffer);
+
+            glGenTextures(1, &vdp2_ram_texture);
+            glGenTextures(1, &vdp2_cram_texture);
+
+            initialized = true;
+        }
+
+        // update VDP buffers
+        {
+            glBindBuffer(GL_TEXTURE_BUFFER, vdp2_ram_buffer);
+            glBufferData(GL_TEXTURE_BUFFER, 0x80000, NULL, GL_DYNAMIC_DRAW);  // Alloc
+            glBufferSubData(GL_TEXTURE_BUFFER, 0, 0x80000, getVdp2Vram(0));              // Fill
+
+            glBindBuffer(GL_TEXTURE_BUFFER, vdp2_cram_buffer);
+            glBufferData(GL_TEXTURE_BUFFER, 0x80000, NULL, GL_DYNAMIC_DRAW);  // Alloc
+            glBufferSubData(GL_TEXTURE_BUFFER, 0, 0x1000, getVdp2Cram(0));              // Fill
+        }
+
+        glUseProgram(gVDP2Program);
+
+        /*glActiveTexture(GL_TEXTURE0);
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, vdp2_ram_buffer);
+        
+
+        glActiveTexture(GL_TEXTURE1);
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, vdp2_cram_buffer);
+        */
+
+        //glUniform1i(texID_VDP2_RAM, 0);
+        //glUniform1i(texID_VDP2_CRAM, 0);
+
+        //glBindBufferBase(GL_TEXTURE_BUFFER, texID_VDP2_RAM, vdp2_ram_buffer);
+        //glBindBufferBase(GL_TEXTURE_BUFFER, texID_VDP2_CRAM, vdp2_cram_buffer);
+
+        if(texID_VDP2_RAM > -1)
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_BUFFER, vdp2_ram_texture);
+            glTexBuffer(GL_TEXTURE_BUFFER, GL_R8UI, vdp2_ram_buffer);
+            glUniform1i(glGetUniformLocation(gVDP2Program, "s_VDP2_RAM"), 0);
+        }
+
+        if (texID_VDP2_CRAM > -1)
+        {
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_BUFFER, vdp2_cram_texture);
+            glTexBuffer(GL_TEXTURE_BUFFER, GL_R8UI, vdp2_cram_buffer);
+            glUniform1i(glGetUniformLocation(gVDP2Program, "s_VDP2_CRAM"), 1);
+        }
+
+        glUniform1i(glGetUniformLocation(gVDP2Program, "CHSZ"), layerData.CHSZ);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "CHCN"), layerData.CHCN);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "PNB"), layerData.PNB);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "CNSM"), layerData.CNSM);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "CAOS"), layerData.CAOS);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "PLSZ"), layerData.PLSZ);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "SCN"), layerData.SCN);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "planeOffsets[0]"), layerData.planeOffsets[0]);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "planeOffsets[1]"), layerData.planeOffsets[1]);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "planeOffsets[2]"), layerData.planeOffsets[2]);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "planeOffsets[3]"), layerData.planeOffsets[3]);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "scrollX"), layerData.scrollX);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "scrollY"), layerData.scrollY);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "outputHeight"), textureHeight);
+
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+        glVertexAttribPointer(
+            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+            3,                  // size
+            GL_FLOAT,           // type
+            GL_FALSE,           // normalized?
+            0,                  // stride
+            (void*)0            // array buffer offset
+        );
+
+        // Draw the triangle !
+        checkGL();
+        glDrawArrays(GL_TRIANGLES, 0, 6); // From index 0 to 3 -> 1 triangle
+
+        glDisableVertexAttribArray(0);
+    }
+    
+    gBackend->bindBackBuffer();
+}
+
 void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u32* textureOutput)
 {
     for (int i = 0; i < textureWidth * textureHeight; i++)
@@ -743,8 +924,6 @@ void renderBG0(u32 width, u32 height)
         textureHeight *= 2;
     }
 
-    u32* textureOutput = new u32[textureWidth * textureHeight];
-
     if(vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0x1)
     {
         s_layerData planeData;
@@ -770,26 +949,30 @@ void renderBG0(u32 width, u32 height)
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 >> 8) & 0x3F)) * pageSize;
 
-        renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-    }
+        if (0)
+        {
+            u32* textureOutput = new u32[textureWidth * textureHeight];
+            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
 
 #ifndef USE_NULL_RENDERER
-    glBindTexture(GL_TEXTURE_2D, gNBG0Texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glBindTexture(GL_TEXTURE_2D, NBG_data[0].Texture);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #endif
-    
-    delete[] textureOutput;
-
+            delete[] textureOutput;
+        }
+        else
+        {
+            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[0]);
+        }
+    }
 }
 
 void renderBG1(u32 width, u32 height)
 {
     u32 textureWidth = width;
     u32 textureHeight = height;
-
-    u32* textureOutput = new u32[textureWidth * textureHeight];
 
     if (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0x2)
     {
@@ -817,17 +1000,24 @@ void renderBG1(u32 width, u32 height)
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 >> 8) & 0x3F)) * pageSize;
 
-        renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-    }
-
+        if (0)
+        {
+            u32* textureOutput = new u32[textureWidth * textureHeight];
+            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
 #ifndef USE_NULL_RENDERER
-    glBindTexture(GL_TEXTURE_2D, gNBG1Texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glBindTexture(GL_TEXTURE_2D, NBG_data[1].Texture);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #endif
-    
-    delete[] textureOutput;
+
+            delete[] textureOutput;
+        }
+        else
+        {
+            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[1]);
+        }
+    }
 }
 
 void renderBG2()
@@ -871,8 +1061,6 @@ void renderBG3(u32 width, u32 height)
     u32 textureWidth = width;
     u32 textureHeight = height;
 
-    u32* textureOutput = new u32[textureWidth * textureHeight];
-
     if (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0x8)
     {
         s_layerData planeData;
@@ -899,17 +1087,24 @@ void renderBG3(u32 width, u32 height)
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m4E_MPCDN3 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m4E_MPCDN3 >> 8) & 0x3F)) * pageSize;
 
-        renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-    }
-
+        if (0)
+        {
+            u32* textureOutput = new u32[textureWidth * textureHeight];
+            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
 #ifndef USE_NULL_RENDERER
-    glBindTexture(GL_TEXTURE_2D, gNBG3Texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glBindTexture(GL_TEXTURE_2D, NBG_data[3].Texture);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #endif
+            delete[] textureOutput;
+        }
+        else
+        {
+            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[3]);
+        }
+    }
     
-    delete[] textureOutput;
 }
 
 u32* vdp1TextureOutput;
@@ -1506,10 +1701,10 @@ bool azelSdl2_EndFrame()
 
     if(ImGui::Begin("VDP"))
     {
-        ImGui::Image((ImTextureID)gNBG0Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
-        ImGui::Image((ImTextureID)gNBG1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::Image((ImTextureID)gNBG2Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
-        ImGui::Image((ImTextureID)gNBG3Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); 
+        ImGui::Image((ImTextureID)NBG_data[0].Texture , ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+        ImGui::Image((ImTextureID)NBG_data[1].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image((ImTextureID)NBG_data[2].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+        ImGui::Image((ImTextureID)NBG_data[3].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
 
         ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
         ImGui::Image((ImTextureID)gVdp1PolyTexture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
