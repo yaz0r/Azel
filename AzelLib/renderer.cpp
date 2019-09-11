@@ -271,7 +271,7 @@ void azelSdl2_Init()
 
 #endif
     
-#ifdef _DEBUG
+#ifndef SHIPPING_BUILD
     SDL_GL_SetSwapInterval(0);
 #endif
     
@@ -580,36 +580,11 @@ struct s_layerData
 
 void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
 {
-
-    glBindFramebuffer(GL_FRAMEBUFFER, NBGData.FB);
-    glBindTexture(GL_TEXTURE_2D, NBGData.Texture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, NBGData.Texture, 0);
-
-    GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-    
-
-    glViewport(0, 0, textureWidth, textureHeight);
-
-    glClearColor(1, 0, 0, 1);
-    glClearDepthf(0.f);
-
-    glClear(GL_COLOR_BUFFER_BIT);
-
     {
         static GLuint quad_VertexArrayID;
         static GLuint quad_vertexbuffer = 0;
         static GLint texID_VDP2_RAM = 0;
         static GLint texID_VDP2_CRAM = 0;
-        static GLuint vdp2_ram_buffer = 0;
-        static GLuint vdp2_cram_buffer = 0;
         static GLuint vdp2_ram_texture = 0;
         static GLuint vdp2_cram_texture = 0;
 
@@ -635,9 +610,6 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
             texID_VDP2_RAM = glGetUniformLocation(gVDP2Program, "s_VDP2_RAM");
             texID_VDP2_CRAM = glGetUniformLocation(gVDP2Program, "s_VDP2_CRAM");
 
-            glGenBuffers(1, &vdp2_ram_buffer);
-            glGenBuffers(1, &vdp2_cram_buffer);
-
             glGenTextures(1, &vdp2_ram_texture);
             glGenTextures(1, &vdp2_cram_texture);
 
@@ -646,14 +618,38 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
 
         // update VDP buffers
         {
-            glBindBuffer(GL_TEXTURE_BUFFER, vdp2_ram_buffer);
-            glBufferData(GL_TEXTURE_BUFFER, 0x80000, NULL, GL_DYNAMIC_DRAW);  // Alloc
-            glBufferSubData(GL_TEXTURE_BUFFER, 0, 0x80000, getVdp2Vram(0));              // Fill
+            glBindTexture(GL_TEXTURE_2D, vdp2_ram_texture);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 512 * 4, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp2Vram(0));
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-            glBindBuffer(GL_TEXTURE_BUFFER, vdp2_cram_buffer);
-            glBufferData(GL_TEXTURE_BUFFER, 0x80000, NULL, GL_DYNAMIC_DRAW);  // Alloc
-            glBufferSubData(GL_TEXTURE_BUFFER, 0, 0x1000, getVdp2Cram(0));              // Fill
+            glBindTexture(GL_TEXTURE_2D, vdp2_cram_texture);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 256, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp2Cram(0));
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, NBGData.FB);
+        glBindTexture(GL_TEXTURE_2D, NBGData.Texture);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, NBGData.Texture, 0);
+
+        GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+
+        glViewport(0, 0, textureWidth, textureHeight);
+
+        glClearColor(1, 0, 0, 1);
+        glClearDepthf(0.f);
+
+        glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(gVDP2Program);
 
@@ -674,16 +670,14 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         if(texID_VDP2_RAM > -1)
         {
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_BUFFER, vdp2_ram_texture);
-            glTexBuffer(GL_TEXTURE_BUFFER, GL_R8UI, vdp2_ram_buffer);
+            glBindTexture(GL_TEXTURE_2D, vdp2_ram_texture);
             glUniform1i(glGetUniformLocation(gVDP2Program, "s_VDP2_RAM"), 0);
         }
 
         if (texID_VDP2_CRAM > -1)
         {
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_BUFFER, vdp2_cram_texture);
-            glTexBuffer(GL_TEXTURE_BUFFER, GL_R8UI, vdp2_cram_buffer);
+            glBindTexture(GL_TEXTURE_2D, vdp2_cram_texture);
             glUniform1i(glGetUniformLocation(gVDP2Program, "s_VDP2_CRAM"), 1);
         }
 

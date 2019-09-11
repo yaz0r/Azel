@@ -148,6 +148,7 @@ void checkGLImpl(const char* file, unsigned int line)
     if (error != GL_NO_ERROR)
     {
         printf("GL error %d: file: %s line:%d\n", error, file, line);
+
         assert(0);
     }
     
