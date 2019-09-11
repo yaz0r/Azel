@@ -28,6 +28,7 @@
 		3307807A22BAB27C0033C8AE /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807922BAB27C0033C8AE /* QuartzCore.framework */; };
 		3307807C22BAB2930033C8AE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807B22BAB2930033C8AE /* CoreGraphics.framework */; };
 		3328FE272328DA120098E5AF /* VDP2_ps.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE232328DA120098E5AF /* VDP2_ps.glsl */; };
+		3328FE29232966890098E5AF /* VDP2_vs.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE28232966890098E5AF /* VDP2_vs.glsl */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -94,6 +95,7 @@
 		3307807922BAB27C0033C8AE /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		3307807B22BAB2930033C8AE /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		3328FE232328DA120098E5AF /* VDP2_ps.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = VDP2_ps.glsl; path = ../../data/VDP2_ps.glsl; sourceTree = "<group>"; };
+		3328FE28232966890098E5AF /* VDP2_vs.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = VDP2_vs.glsl; path = ../../data/VDP2_vs.glsl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,6 +142,7 @@
 		33077F1F22B9F3670033C8AE /* azel */ = {
 			isa = PBXGroup;
 			children = (
+				3328FE28232966890098E5AF /* VDP2_vs.glsl */,
 				3328FE232328DA120098E5AF /* VDP2_ps.glsl */,
 				3307801122BA063D0033C8AE /* tvos.xcassets */,
 				33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */,
@@ -277,6 +280,7 @@
 			files = (
 				3328FE272328DA120098E5AF /* VDP2_ps.glsl in Resources */,
 				3307801222BA063D0033C8AE /* tvos.xcassets in Resources */,
+				3328FE29232966890098E5AF /* VDP2_vs.glsl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

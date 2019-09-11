@@ -1901,7 +1901,7 @@ bool azelSdl2_EndFrame()
     
     checkGL();
     
-    static bool bImguiEnabled = false;
+    static bool bImguiEnabled = true;
 
 #ifndef USE_NULL_RENDERER
     if (ImGui::GetIO().KeysDown[SDL_SCANCODE_GRAVE] && (ImGui::GetIO().KeysDownDuration[SDL_SCANCODE_GRAVE] == 0.f))
