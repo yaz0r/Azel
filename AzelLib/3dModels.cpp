@@ -47,5 +47,6 @@ void LCSItemBox_DrawType0Sub0(s_fileBundle* r4, s16 r5, s16 r6)
     sModelHierarchy* pHierarchy = r4->getModelHierarchy(r5);
     sStaticPoseData* pStaticPose = r4->getStaticPose(r6, pHierarchy->countNumberOfBones());
 
-    LCSItemBox_DrawType0Sub0Sub0(pHierarchy, pStaticPose->m0_bones.begin());
+    std::vector<sStaticPoseData::sBonePoseData>::const_iterator bones = pStaticPose->m0_bones.begin();
+    LCSItemBox_DrawType0Sub0Sub0(pHierarchy, bones);
 }

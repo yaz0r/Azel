@@ -353,7 +353,7 @@ struct s_RGB8
     }
 };
 
-s_RGB8 readSaturnRGB8(sSaturnPtr& ptr);
+s_RGB8 readSaturnRGB8(const sSaturnPtr& ptr);
 
 struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s32>
 {

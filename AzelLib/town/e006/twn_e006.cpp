@@ -245,7 +245,7 @@ void getNextStreamingBuffer(sStreamingFile* iParm1, u8** pBuffer, int* pBufferSi
         return;
     }
     iVar2 = iParm1->m28.m30 - iParm1->m28.m2C_pBufferWrite;
-    if (((u32)iParm1->m28.m2C_pBufferWrite < (u32)iParm1->m28.m34_pBufferRead) && (iVar1 = iParm1->m28.m34_pBufferRead - iParm1->m28.m2C_pBufferWrite, iVar1 < iVar2))
+    if (((intptr_t)iParm1->m28.m2C_pBufferWrite < (intptr_t)iParm1->m28.m34_pBufferRead) && (iVar1 = iParm1->m28.m34_pBufferRead - iParm1->m28.m2C_pBufferWrite, iVar1 < iVar2))
     {
         iVar2 = iVar1;
     }
@@ -341,7 +341,7 @@ void executeCutsceneCommandsSub0Sub0(sStreamingFile* pThis, int param_2)
     (pThis->m28).m28 += param_2;
     (pThis->m28).m34_pBufferRead += param_2;
     if ((pThis->m28).m38 <= (pThis->m28).m34_pBufferRead) {
-        (pThis->m28).m34_pBufferRead = (pThis->m28).m34_pBufferRead + (int)((pThis->m28).m3C + -(int)(pThis->m28).m38);
+        (pThis->m28).m34_pBufferRead = (pThis->m28).m34_pBufferRead + (intptr_t)((pThis->m28).m3C + -(intptr_t)(pThis->m28).m38);
         (pThis->m28).m38 = (pThis->m28).m30;
     }
     return;
@@ -405,7 +405,7 @@ void cutsceneFillCommandBuffer(sStreamingFile* param_1, u8* param_2)
     if ((param_1->m28).m38 < param_2 + 0x10) {
         u8* puVar4 = (param_1->m28).m3C;
         u8* puVar3 = (param_1->m28).m38;
-        uVar2 = (u32)(param_2 + 0x10 + -(int)puVar3) >> 2;
+        uVar2 = (intptr_t)(param_2 + 0x10 + -(intptr_t)puVar3) >> 2;
         do {
             uVar2 = uVar2 - 1;
             
@@ -489,9 +489,9 @@ void setupCutsceneDragonSub0(sStreamingFile* r4, u32 index, u32 param_3, p_workA
 void cutsceneCommandDefaultSub1(sStreamingFile* psParm1, u8* pSource, u8* pDest, u32 size)
 {
     if ((psParm1->m28).m38 <= pSource) {
-        pSource = pSource + -(int)(psParm1->m28).m38 + (int)(psParm1->m28).m3C;
+        pSource = pSource + -(intptr_t)(psParm1->m28).m38 + (intptr_t)(psParm1->m28).m3C;
     }
-    u32 uVar3 = (int)pSource + (size - (int)(psParm1->m28).m38);
+    u32 uVar3 = (intptr_t)pSource + (size - (intptr_t)(psParm1->m28).m38);
     if ((int)uVar3 < 0) {
         uVar3 = 0;
     }
@@ -598,7 +598,7 @@ u8* cutsceneCommand0Sub5(sStreamingFile* param_1, u8* param_2)
         }
         return param_2;
     }
-    return param_2 + -(int)(param_1->m28).m38 + (int)(param_1->m28).m3C;
+    return param_2 + -(intptr_t)(param_1->m28).m38 + (intptr_t)(param_1->m28).m3C;
 }
 
 int convertCutsceneRotationComponent(int param_1, int param_2)
@@ -690,7 +690,7 @@ void cutsceneCommand0Sub2_updateCamera(u8* param_1)
 void cutsceneCommand0Sub3Sub0(s_3dModel* pModel, u8* pData)
 {
     u32 boneCount = pModel->m12_numBones;
-    std::vector<sPoseData>::iterator& poseData = pModel->m2C_poseData.begin();
+    std::vector<sPoseData>::iterator poseData = pModel->m2C_poseData.begin();
 
     poseData->m0_translation[0] = convertCutsceneRotationComponent(READ_BE_S16(pData), READ_BE_U16(pData + 6) >> 0xc);
     poseData->m0_translation[1] = convertCutsceneRotationComponent(READ_BE_S16(pData + 2), READ_BE_U16(pData + 8) >> 0xc);
@@ -711,7 +711,7 @@ void cutsceneCommand0Sub3Sub0(s_3dModel* pModel, u8* pData)
 void cutsceneCommand0Sub3Sub1(s_3dModel* pModel, u8* pData)
 {
     u32 boneCount = pModel->m12_numBones;
-    std::vector<sPoseData>::iterator& poseData = pModel->m2C_poseData.begin();
+    std::vector<sPoseData>::iterator poseData = pModel->m2C_poseData.begin();
 
     do
     {
