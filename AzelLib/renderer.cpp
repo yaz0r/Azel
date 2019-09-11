@@ -37,6 +37,10 @@ GLuint gCompositedTexture = 0;
 
 GLuint gVdp1Texture = 0;
 
+GLuint vdp1_ram_texture = 0;
+GLuint vdp2_ram_texture = 0;
+GLuint vdp2_cram_texture = 0;
+
 struct s_NBG_data
 {
     GLuint FB;
@@ -276,6 +280,11 @@ void azelSdl2_Init()
 #endif
     
 #endif
+
+    glGenTextures(1, &vdp1_ram_texture);
+    glGenTextures(1, &vdp2_ram_texture);
+    glGenTextures(1, &vdp2_cram_texture);
+
     gVDP2Program = compileShaderFromFiles("VDP2_vs.glsl", "VDP2_ps.glsl");
 }
 
@@ -585,8 +594,6 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         static GLuint quad_vertexbuffer = 0;
         static GLint texID_VDP2_RAM = 0;
         static GLint texID_VDP2_CRAM = 0;
-        static GLuint vdp2_ram_texture = 0;
-        static GLuint vdp2_cram_texture = 0;
 
         static bool initialized = false;
         if (!initialized)
@@ -609,24 +616,7 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
 
             texID_VDP2_RAM = glGetUniformLocation(gVDP2Program, "s_VDP2_RAM");
             texID_VDP2_CRAM = glGetUniformLocation(gVDP2Program, "s_VDP2_CRAM");
-
-            glGenTextures(1, &vdp2_ram_texture);
-            glGenTextures(1, &vdp2_cram_texture);
-
             initialized = true;
-        }
-
-        // update VDP buffers
-        {
-            glBindTexture(GL_TEXTURE_2D, vdp2_ram_texture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 512 * 4, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp2Vram(0));
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-            glBindTexture(GL_TEXTURE_2D, vdp2_cram_texture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 256, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp2Cram(0));
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, NBGData.FB);
@@ -1686,6 +1676,24 @@ bool azelSdl2_EndFrame()
 #endif
         delete[] vdp1TextureOutput;
         vdp1TextureOutput = NULL;
+    }
+
+    // update VDP buffers
+    {
+        glBindTexture(GL_TEXTURE_2D, vdp1_ram_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 0x80000 / 256, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp1Pointer(0x25C00000));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        glBindTexture(GL_TEXTURE_2D, vdp2_ram_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 0x80000 / 256, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp2Vram(0));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        glBindTexture(GL_TEXTURE_2D, vdp2_cram_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 0x1000 / 256, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp2Cram(0));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
     renderBG0(vdp2ResolutionWidth, vdp2ResolutionHeight);
