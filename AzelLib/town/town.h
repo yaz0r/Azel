@@ -191,6 +191,8 @@ extern townDebugTask2Function* townDebugTask2;
 extern u8 townBuffer[0xB0000];
 
 p_workArea loadTown(p_workArea r4, s32 r5);
+p_workArea loadTown2(p_workArea r4, s32 r5);
+
 void loadTownPrg(s8 r4, s8 r5);
 
 void startScriptTask(p_workArea r4);

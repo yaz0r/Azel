@@ -733,7 +733,9 @@ u32 setupModelAnimation(s_3dModel* pModel, sAnimationData* pAnimation)
     {
         if (pModel->m30_pCurrentAnimation == NULL)
         {
-            assert(0);
+            pModel->mA_animationFlags |= pAnimation->m0_flags;
+            initModelDrawFunction(pModel);
+            return dragonFieldTaskInitSub3Sub1Sub1(pModel, pAnimation);
         }
         else
         {

@@ -247,13 +247,24 @@ void loadTownPrg(s8 r4, s8 r5)
     gFieldOverlayFunction(townDebugTask2, r5);
 }
 
-p_workArea loadTown(p_workArea r4, s32 r5)
+p_workArea loadTownSub(p_workArea r4, s32 r5)
 {
     townDebugTask2 = createSubTaskFromFunction<townDebugTask2Function>(r4, &townDebugTask2Function::Update);
 
     loadTownPrg(readSaturnS8(gCommonFile.getSaturnPtr(0x2166E4 + r5 * 2 + 0)), readSaturnS8(gCommonFile.getSaturnPtr(0x2166E5 + r5 * 2 + 1)));
 
     return townDebugTask2;
+}
+
+p_workArea loadTown(p_workArea r4, s32 r5)
+{
+    return loadTownSub(r4, r5);
+}
+
+p_workArea loadTown2(p_workArea r4, s32 r5)
+{
+    mainGameState.setPackedBits(0x87, 6, gGameStatus.m4_gameStatus - 0x50);
+    return loadTownSub(r4, r5);
 }
 
 npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32 ramFileSize, const std::string& vramFileName, s32 vramFileSize, s32 arg)

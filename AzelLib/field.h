@@ -1,5 +1,7 @@
 #pragma once
 
+#include "kernel/moduleManager.h"
+
 struct s_fieldCameraConfig
 {
     sVec3_FP m0_min;
@@ -879,10 +881,10 @@ struct s_fieldSub0Task : public s_workAreaTemplate<s_fieldSub0Task>
         fieldTaskVar0 = nullptr;
         
         //FIX:
-        if(gExitMenuTaskSub1Task)
+        if(gModuleManager)
         {
-            assert(gExitMenuTaskSub1Task->m8 == pThis);
-            gExitMenuTaskSub1Task->m8 = nullptr;
+            assert(gModuleManager->m8 == pThis);
+            gModuleManager->m8 = nullptr;
         }
     }
 };

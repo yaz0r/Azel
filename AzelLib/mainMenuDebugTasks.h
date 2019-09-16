@@ -92,23 +92,12 @@ struct s_fileEntry
 extern std::vector<s_fileEntry> dramAllocatorEnd;
 
 u8* dramAllocate(u32 size);
-
-struct s_exitMenuTaskSub1Task : public s_workAreaTemplateWithArg<s_exitMenuTaskSub1Task, s32>
-{
-    static const TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static const TypedTaskDefinition taskDefinition = { &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskInit, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskUpdate, &s_exitMenuTaskSub1Task::exitMenuTaskSub1TaskDraw, NULL};
-        return &taskDefinition;
-    }
-    
-    static void exitMenuTaskSub1TaskInit(s_exitMenuTaskSub1Task*, s32);
-    static void exitMenuTaskSub1TaskUpdate(s_exitMenuTaskSub1Task*);
-    static void exitMenuTaskSub1TaskDraw(s_exitMenuTaskSub1Task*);
-    
-    u32 state; // 0
-    p_workArea m8;
-    u32 mC;
-};
-
-extern s_exitMenuTaskSub1Task* gExitMenuTaskSub1Task;
+p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg);
+void updateDragonStatsFromLevel();
+p_workArea createLoadingTask(p_workArea parentTask, s8 arg);
+void loadDragon(s_workArea* pWorkArea);
+void loadCurrentRider(s_workArea* pWorkArea);
+void loadCurrentRider2(s_workArea* pWorkArea);
+void freeRamResource();
+p_workArea loadField(p_workArea r4, s32 r5);
 void setOpenMenu7();
