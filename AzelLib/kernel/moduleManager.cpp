@@ -6,7 +6,6 @@
 u8 array_24BCA0[0x104];
 u8 array_250000[0x20000];
 
-u8* savegameVar0 = nullptr;
 s_moduleManager* gModuleManager = nullptr;
 
 s_gameStatus gGameStatus;
@@ -224,6 +223,20 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
         mainGameState.setBit(12, 7);
         mainGameState.setBit(13, 1);
         setNextGameStatus(0x53);
+        break;
+    case 8: // after cutscene meeting Gash
+        mainGameState.setBit(4, 5);
+        setNextGameStatus(9);
+        break;
+    case 9:
+        mainGameState.setBit(10, 7);
+        setNextGameStatus(10);
+        break;
+    case 10:
+        mainGameState.setBit(4, 6);
+        mainGameState.setBit(13, 2);
+        mainGameState.clearBit(13, 0);
+        setNextGameStatus(0x4F);
         break;
     case 0x4A: // load savegame?
         if (savegameVar0 == nullptr)

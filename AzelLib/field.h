@@ -486,13 +486,8 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
 
 struct s_grid1
 {
-    s_grid1()
-    {
-        m0b_models.fill(nullptr);
-    }
     sSaturnPtr EA;
-    sSaturnPtr m0_offsetTable; // table of 5 u16, first 4 are LOD model offset (usually the same), last is collision mesh
-    std::array<struct sProcessed3dModel*, 5> m0b_models;
+    std::array<u16, 5> m0_modelsOffets;
     sVec3_FP m4;
     sVec3_S16_12_4 m10;
     s16 m16;
@@ -513,7 +508,7 @@ struct s_grid3
 
 struct s_DataTable3
 {
-    s_grid1** m0_environmentGrid;
+    std::vector<std::vector<s_grid1>> m0_environmentGrid;
     std::vector<std::vector<s_grid2>> m4;
     s_grid3** m8;
     u32 mC;
@@ -557,7 +552,7 @@ struct s_visdibilityCellTask : public s_workAreaTemplate<s_visdibilityCellTask>
     static void gridCellDraw_normal(s_visdibilityCellTask*);
 
     s_memoryAreaOutput m0_memoryLayout; // 0
-    s_grid1* m8_pEnvironmentCell; // 8
+    std::vector<s_grid1>* m8_pEnvironmentCell; // 8
     std::vector<s_grid2>* mC_pCell2_billboards; // 0xC
     s_grid3* m10_pCell3; // 0x10
     u32 m14_index; // 14
@@ -643,7 +638,7 @@ struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWork
     u16 m12F2_renderMode; // 12F2
     u8 updateVisibleCells;
     u8(*m12F8_convertCameraPositionToGrid)(s_visibilityGridWorkArea* pFieldCameraTask1); // 12F8
-    s32(*m12FC_isObjectClipped)(sVec3_FP* r4, s32 r5); // 12F8
+    s32(*m12FC_isObjectClipped)(const sVec3_FP* r4, s32 r5); // 12F8
     u8 m1300;
     //size: 1304
 };

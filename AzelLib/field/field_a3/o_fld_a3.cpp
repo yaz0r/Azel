@@ -17,7 +17,7 @@ sMatrix4x3* fieldCameraTask1DrawSub1();
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
 void updateCameraScriptSub1(u32 r4);
 void fieldOverlaySubTaskInitSub5(u32 r4);
-s32 checkPositionVisibility(sVec3_FP* r4, s32 r5);
+s32 checkPositionVisibility(const sVec3_FP* r4, s32 r5);
 
 #ifdef PDS_TOOL
 bool bMakeEverythingVisible = false;
@@ -95,9 +95,9 @@ void setupGridCell(s_visibilityGridWorkArea* r4, s_visdibilityCellTask* r5, int 
 {
     getMemoryArea(&r5->m0_memoryLayout, r4->m30->mC);
     r5->m14_index = index;
-    if (r4->m30->m0_environmentGrid)
+    if (r4->m30->m0_environmentGrid.size())
     {
-        r5->m8_pEnvironmentCell = r4->m30->m0_environmentGrid[index];
+        r5->m8_pEnvironmentCell = &r4->m30->m0_environmentGrid[index];
     }
     if (r4->m30->m4.size())
     {
@@ -133,7 +133,7 @@ u32 gridCellDraw_GetDepthRange(fixedPoint r4)
     return rangeIndex;
 }
 
-u8 gridCellDraw_normalSub0(sProcessed3dModel* r4, sVec3_FP& r5)
+u8 gridCellDraw_normalSub0(sProcessed3dModel* r4, const sVec3_FP& r5)
 {
     s_visibilityGridWorkArea* var_1C = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
     sVec3_FP DragonPos = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
@@ -202,24 +202,24 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
 
     if (pTypedWorkAread->m8_pEnvironmentCell)
     {
-        s_grid1* r14 = pTypedWorkAread->m8_pEnvironmentCell;
-        while (r14->m0_offsetTable.m_offset)
+        std::vector<s_grid1>::const_iterator r14 = pTypedWorkAread->m8_pEnvironmentCell->begin();
+        while (r14 != pTypedWorkAread->m8_pEnvironmentCell->end())
         {
             r13->m12E0++;
-            r13->m12F0 += pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(readSaturnS16(r14->m0_offsetTable))->m4_numVertices;
+            if (r14->m0_modelsOffets[0])
+            {
+                r13->m12F0 += pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(r14->m0_modelsOffets[0])->m4_numVertices;
+            }
 
             if (!r13->m12FC_isObjectClipped(&r14->m4, r15))
             {
                 u32 var_54 = 0;
                 r13->m12E2++;
 
-                if (readSaturnU16(r14->m0_offsetTable + 8))
+                if (r14->m0_modelsOffets[4])
                 {
-                    if (r14->m0b_models[4] == nullptr)
-                    {
-                        r14->m0b_models[4] = pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->getCollisionModel(readSaturnS16(r14->m0_offsetTable + 8));
-                    }
-                    var_54 = gridCellDraw_normalSub0(r14->m0b_models[4], r14->m4);
+                    sProcessed3dModel* pCollisionModel = pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(r14->m0_modelsOffets[4]);
+                    var_54 = gridCellDraw_normalSub0(pCollisionModel, r14->m4);
                 }
 
                 pushCurrentMatrix();
@@ -230,13 +230,10 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
 
                 u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
 
-                if (readSaturnU16(r14->m0_offsetTable + depthRangeIndex * 2))
+                if (r14->m0_modelsOffets[depthRangeIndex])
                 {
-                    if (r14->m0b_models[depthRangeIndex] == nullptr)
-                    {
-                        r14->m0b_models[depthRangeIndex] = pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(readSaturnS16(r14->m0_offsetTable + depthRangeIndex * 2));
-                    }
-                    addObjectToDrawList(r14->m0b_models[depthRangeIndex]);
+                    sProcessed3dModel* pModel = pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(r14->m0_modelsOffets[depthRangeIndex]);
+                    addObjectToDrawList(pModel);
                 }
 
                 if (var_54)
@@ -1250,7 +1247,7 @@ s_cameraScript* readCameraScript(sSaturnPtr EA)
 }
 
 
-s_grid1* readEnvironmentGridCell(sSaturnPtr gridCellEA)
+std::vector<s_grid1> readEnvironmentGridCell(sSaturnPtr gridCellEA)
 {
     assert(gridCellEA.m_offset);
 
@@ -1263,37 +1260,37 @@ s_grid1* readEnvironmentGridCell(sSaturnPtr gridCellEA)
     }
     gridCellEA = gridCellEA + (-0x18 * numEntries);
 
-    s_grid1* pCellArray = new s_grid1[numEntries + 1];
-    s_grid1* pCell = pCellArray;
+    std::vector<s_grid1> pCellArray;
+    pCellArray.resize(numEntries);
+
     for (int i = 0; i < numEntries; i++)
     {
-        pCell->EA = gridCellEA;
-        pCell->m0_offsetTable = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
-        pCell->m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
-        pCell->m10[0] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
-        pCell->m10[1] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
-        pCell->m10[2] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
-        pCell->m16 = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
-
-        pCell++;
+        pCellArray[i].EA = gridCellEA;
+        sSaturnPtr modelsArrayStart = readSaturnEA(gridCellEA); gridCellEA = gridCellEA + 4;
+        for (int j = 0; j < 5; j++)
+        {
+            pCellArray[i].m0_modelsOffets[j] = readSaturnU16(modelsArrayStart + j * 2);
+        }
+        pCellArray[i].m4 = readSaturnVec3(gridCellEA); gridCellEA = gridCellEA + 4 * 3;
+        pCellArray[i].m10[0] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
+        pCellArray[i].m10[1] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
+        pCellArray[i].m10[2] = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
+        pCellArray[i].m16 = readSaturnS16(gridCellEA); gridCellEA = gridCellEA + 2;
     }
-    memset(pCell, 0, sizeof(s_grid1));
 
     return pCellArray;
 }
 
-s_grid1** readEnvironmentGrid(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
+std::vector<std::vector<s_grid1>> readEnvironmentGrid(sSaturnPtr gridEA, u32 gridWidth, u32 gridHeight)
 {
+    std::vector<std::vector<s_grid1>> pGrid;
     if (gridEA.m_offset == 0)
-        return NULL;
+        return pGrid;
 
-    s_grid1** pGrid = new s_grid1*[gridWidth*gridHeight];
-    memset(pGrid, 0, sizeof(s_grid1*) * gridWidth*gridHeight);
+    pGrid.resize(gridWidth * gridHeight);
 
     for (int i = 0; i < gridWidth * gridHeight; i++)
     {
-        pGrid[i] = NULL;
-
         sSaturnPtr cellEA = readSaturnEA(gridEA); gridEA = gridEA + 4;
         if (cellEA.m_offset)
         {
@@ -6364,7 +6361,7 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
     return bDirty;
 }
 
-s32 checkPositionVisibility(sVec3_FP* r4, s32 r5)
+s32 checkPositionVisibility(const sVec3_FP* r4, s32 r5)
 {
 #ifdef PDS_TOOL
     if (bMakeEverythingVisible)

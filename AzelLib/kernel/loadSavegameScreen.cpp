@@ -4,6 +4,8 @@
 #include "menuSprite.h"
 #include "loadSavegameScreen.h"
 
+u8* savegameVar0 = nullptr;
+
 struct sLoadSavegameScreen : public s_workAreaTemplateWithArg<sLoadSavegameScreen, p_workArea>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -21,15 +23,44 @@ struct sLoadSavegameScreen : public s_workAreaTemplateWithArg<sLoadSavegameScree
         fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
         fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
     }
-    static void Draw(sLoadSavegameScreen*)
+    static void Draw(sLoadSavegameScreen* pTask)
     {
-        FunctionUnimplemented();
+        switch (pTask->m0_status)
+        {
+        case 0:
+            savegameVar0 = nullptr;
+            pTask->m0_status++;
+            return;
+        case 1:
+            if (savegameVar0 == nullptr)
+            {
+                pTask->getTask()->markFinished();
+                return;
+            }
+            int azelCdNumberFromSave = mainGameState.readPackedBits(0xD4, 2);
+            if (azelCdNumberFromSave == azelCdNumber)
+            {
+                assert(0);
+            }
+            else
+            {
+                setNextGameStatus(azelCdNumberFromSave + +0x4B);
+            }
+            break;
+        default:
+            assert(0);
+        }
+
+        updateDragonIfCursorChanged(mainGameState.gameStats.m1_dragonLevel);
+        loadRiderIfChanged(mainGameState.gameStats.m2_rider1);
+        loadRider2IfChanged(mainGameState.gameStats.m3_rider2);
     }
     static void Delete(sLoadSavegameScreen*)
     {
-        FunctionUnimplemented();
+        freeRamResource();
     }
 
+    u32 m0_status;
     p_workArea m4;
     //size: 8
 };

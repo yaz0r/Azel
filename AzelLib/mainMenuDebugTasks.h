@@ -101,3 +101,7 @@ void loadCurrentRider2(s_workArea* pWorkArea);
 void freeRamResource();
 p_workArea loadField(p_workArea r4, s32 r5);
 void setOpenMenu7();
+
+void updateDragonIfCursorChanged(u32 level);
+void loadRiderIfChanged(u32 rider);
+void loadRider2IfChanged(u32 rider);
