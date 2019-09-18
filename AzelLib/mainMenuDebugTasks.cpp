@@ -3293,12 +3293,6 @@ p_workArea createSystemMenuTask(p_workArea workArea)
     return NULL;
 }
 
-p_workArea createSaveTask(p_workArea workArea)
-{
-    assert(0);
-    return NULL;
-}
-
 p_workArea createMenuBKTask(p_workArea workArea)
 {
     assert(0);
