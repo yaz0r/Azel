@@ -10,6 +10,11 @@ s_moduleManager* gModuleManager = nullptr;
 
 s_gameStatus gGameStatus;
 
+s32 saveVarGameMode;
+s32 saveVarFieldIndex;
+s32 saveVarSubFieldIndex;
+s32 saveVarSavePointIndex;
+
 p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     NULL,
     loadTown,
@@ -59,7 +64,7 @@ void initNewGameState()
     mainGameState.gameStats.currentHP = mainGameState.gameStats.maxHP;
     mainGameState.gameStats.currentBP = mainGameState.gameStats.maxBP;
 
-    strcpy(mainGameState.gameStats.dragonName, "Dragon");
+    strcpy(mainGameState.gameStats.mA5_dragonName, "Dragon");
 
     u32 zweiPlayTime = getPanzerZweiPlayTime(0);
     u32 zweiPlayTimeSlot1 = getPanzerZweiPlayTime(1);
@@ -73,13 +78,6 @@ void initNewGameState()
         assert(0);
     }
 }
-
-struct {
-    u8 m8;
-    u8 m9;
-    u8 mA;
-    u8 mB;
-} var_60525E8;
 
 s32 setNextGameStatus(s32 r4)
 {
@@ -127,10 +125,10 @@ void moduleManager_Init(s_moduleManager* pWorkArea, s32 menuID)
     mainGameState.gameStats.m2_rider1 = 1;
     mainGameState.gameStats.m3_rider2 = 0;
 
-    var_60525E8.m8 = 0;
-    var_60525E8.m9 = 0;
-    var_60525E8.mA = 0;
-    var_60525E8.mB = 0;
+    saveVarGameMode = 0;
+    saveVarFieldIndex = 0;
+    saveVarSubFieldIndex = 0;
+    saveVarSavePointIndex = 0;
 
     exitMenuTaskSub1TaskInitSub1();
 
@@ -452,4 +450,13 @@ p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID)
     };
 
     return createSubTaskWithArg<s_moduleManager, s32>(pTypelessWorkArea, menuID, &taskDefinition);
+}
+
+void setupSaveParams(s32 fieldIndex, s32 subFieldIndex, s32 savepointIndex)
+{
+    graphicEngineStatus.m40AC.m0_menuId = 8; // trigger the save menu
+    saveVarGameMode = mainGameState.readPackedBits(0x87, 6) + 0x50;
+    saveVarFieldIndex = fieldIndex;
+    saveVarSubFieldIndex = subFieldIndex;
+    saveVarSavePointIndex = savepointIndex;
 }

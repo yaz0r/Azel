@@ -191,8 +191,8 @@ struct saveMenuSubTask0 : public s_workAreaTemplateWithArg<saveMenuSubTask0, sSa
     static void Init(saveMenuSubTask0* pThis, sSaturnPtr r5)
     {
         pThis->mC = r5;
-        pThis->m20 = performDivision(8, readSaturnS16(r5));
-        pThis->m22 = performDivision(8, readSaturnS16(r5 + 2));
+        pThis->m20_stringRenderingX = performDivision(8, readSaturnS16(r5));
+        pThis->m22_stringRenderingY = performDivision(8, readSaturnS16(r5 + 2));
     }
 
     static void Draw(saveMenuSubTask0* pThis)
@@ -243,34 +243,53 @@ struct saveMenuSubTask0 : public s_workAreaTemplateWithArg<saveMenuSubTask0, sSa
             break;
         }
 
-        pThis->m1C = (pThis->m18 >> 16) + readSaturnS16(pThis->mC);
-        pThis->m1E = readSaturnS16(pThis->mC + 2);
+        pThis->m1C_posX = pThis->m18 + readSaturnS16(pThis->mC);
+        pThis->m1E_posY = readSaturnS16(pThis->mC + 2);
 
         static const s_menuSprite spriteData = { 0x2400, 0x202F, 0, 0 };
 
-        drawMenuSprite2(&spriteData, pThis->m1C, pThis->m1E, 0x2500);
-        s32 var1 = performDivision(8, pThis->m1C);
-        s32 var2 = performDivision(8, pThis->m1E);
-        if ((var1 != pThis->m20) || (var2 + 0x20 != pThis->m22))
+        drawMenuSprite2(&spriteData, pThis->m1C_posX, pThis->m1E_posY, 0x2500);
+        s32 var1 = performDivision(8, pThis->m1C_posX);
+        s32 var2 = performDivision(8, pThis->m1E_posY);
+        if ((var1 != pThis->m20_stringRenderingX) || (var2 + 0x20 != pThis->m22_stringRenderingY))
         {
             saveScreenClearSlotData(pThis);
-            pThis->m20 = var1;
-            pThis->m22 = var2 + 0x20;
+            pThis->m20_stringRenderingX = var1;
+            pThis->m22_stringRenderingY = var2 + 0x20;
             saveScreenDisplaySlotData(pThis);
         }
         if (pThis->m8->m0_slotStatus == 1)
         {
-            saveScreenDisplaySlotData2(&pThis->m1C, pThis->m8->m4_miniData.m1);
+            saveScreenDisplaySlotData2(&pThis->m1C_posX, pThis->m8->m4_miniData.m1);
         }
     }
 
     static void saveScreenClearSlotData(saveMenuSubTask0* pThis)
     {
-        FunctionUnimplemented();
+        s32 X = pThis->m20_stringRenderingX;
+        s32 Y = pThis->m22_stringRenderingY;
+
+        s32 XMax = X + 0x20;
+        if (XMax > 0x3F)
+        {
+            XMax = 0x3F;
+        }
+
+        setupVDP2StringRendering(X, Y, XMax - X, 6);
+        clearVdp2TextArea();
+
+        if (X < 0x18)
+        {
+            vdp2DebugPrintSetPosition(X + 0x14, Y + 0x1);
+            drawLineLargeFont("     ");
+            vdp2DebugPrintSetPosition(X + 0x14, Y + 0x3);
+            drawLineLargeFont("     ");
+        }
     }
+
     static void saveScreenDisplaySlotData(saveMenuSubTask0* pThis)
     {
-        setupVDP2StringRendering(pThis->m20, pThis->m22, 0x20, 6);
+        setupVDP2StringRendering(pThis->m20_stringRenderingX, pThis->m22_stringRenderingY, 0x20, 6);
         vdp2StringContext.m0 = 0;
         vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + 2;
         vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 1;
@@ -304,10 +323,10 @@ struct saveMenuSubTask0 : public s_workAreaTemplateWithArg<saveMenuSubTask0, sSa
     s32 m10_status;
     s32 m14;
     s32 m18;
-    s16 m1C;
-    s16 m1E;
-    s16 m20;
-    s16 m22;
+    s16 m1C_posX;
+    s16 m1E_posY;
+    s16 m20_stringRenderingX;
+    s16 m22_stringRenderingY;
     // 0x24
 };
 
@@ -437,7 +456,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
         for (int i = 0; i < 3; i++)
         {
             saveMenuSubTask0* pNewTask = createSubTaskWithArg<saveMenuSubTask0, sSaturnPtr>(pThis, gCommonFile.getSaturnPtr(0x20F778) + i * 4);
-            pThis->m28[i] = pNewTask;
+            pThis->m28_slotInfoDisplayTask[i] = pNewTask;
             pNewTask->m0 = -1;
             pNewTask->m8 = &pThis->m3C[i];
         }
@@ -491,15 +510,35 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
         return -1;
     }
 
-    static u32 getMinimalInfoFromSaveFile(u32 deivce, const std::string& saveFileName, sSaveTaskSubStruct0MiniData* outputData)
+    static s_mainGameState* loadRawSaveFile(u32 device, const std::string& saveFileName)
     {
-        outputData->m0 = 1;
-        outputData->m1 = 1;
-        outputData->m2_location = 3;
-        outputData->m4 = 4;
-        outputData->m8_playerName = "test";
-        outputData->m19_dragonName = "Dragon";
-        return 1;
+        FILE* fHandle = fopen(saveFileName.c_str(), "rb");
+        if (fHandle)
+        {
+            s_mainGameState* pNewGameState = new s_mainGameState;
+            fread(&pNewGameState, sizeof(s_mainGameState), 1, fHandle);
+            fclose(fHandle);
+            return pNewGameState;
+        }
+
+        return NULL;
+    }
+
+    static u32 getMinimalInfoFromSaveFile(u32 device, const std::string& saveFileName, sSaveTaskSubStruct0MiniData* outputData)
+    {
+        s_mainGameState* loadedGameState = loadRawSaveFile(device, saveFileName);
+        if (loadedGameState)
+        {
+            outputData->m0 = loadedGameState->gameStats.mC_laserPower;
+            outputData->m1 = loadedGameState->gameStats.mC_laserPower;
+            outputData->m2_location = device;
+            outputData->m4 = device;
+            outputData->m8_playerName = "test";
+            outputData->m19_dragonName = "Dragon";
+            delete loadedGameState;
+            return 1;
+        }
+        return 0;
     }
 
     static void loadSavesDirectory(sSaveTask* pThis)
@@ -540,9 +579,39 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
         }
     }
 
+    static void saveDrawSub1Sub1(sSaveTask* pThis, const std::array<std::string, 6> & stringArray)
+    {
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x41)
+        {
+            pThis->m8 = -1;
+            pThis->m24->m0 = -1;
+            pThis->m28_slotInfoDisplayTask[0]->m0 = -1;
+            pThis->m28_slotInfoDisplayTask[0]->m4_delay = 0;
+            pThis->m28_slotInfoDisplayTask[1]->m0 = -1;
+            pThis->m28_slotInfoDisplayTask[1]->m4_delay = 3;
+            pThis->m28_slotInfoDisplayTask[2]->m0 = -1;
+            pThis->m28_slotInfoDisplayTask[2]->m4_delay = 6;
+            playSoundEffect(0);
+            DisplayMenuMsg(stringArray[pThis->m14_selectedDevice]);
+        }
+        if (loadDrawSub1Sub0(&pThis->m20_selectedFileInDevice, 0, 2))
+        {
+            displaySaveLocation(pThis, stringArray);
+        }
+        pThis->m24->m0 = pThis->m20_selectedFileInDevice;
+    }
+
     static void saveDrawSub1(sSaveTask* pThis)
     {
-        FunctionUnimplemented();
+        if (pThis->m34)
+        {
+            assert(0);
+        }
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6)
+        {
+            assert(0);
+        }
+        saveDrawSub1Sub1(pThis, saveStrings);
     }
 
     static void loadDrawSub0(sSaveTask* pThis)
@@ -598,12 +667,12 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                     //cancel out of the file selection and back to device list
                     pThis->m8 = -1;
                     pThis->m24->m0 = -1;
-                    pThis->m28[0]->m0 = -1;
-                    pThis->m28[0]->m4_delay = 0;
-                    pThis->m28[1]->m0 = -1;
-                    pThis->m28[1]->m4_delay = 3;
-                    pThis->m28[2]->m0 = -1;
-                    pThis->m28[2]->m4_delay = 6;
+                    pThis->m28_slotInfoDisplayTask[0]->m0 = -1;
+                    pThis->m28_slotInfoDisplayTask[0]->m4_delay = 0;
+                    pThis->m28_slotInfoDisplayTask[1]->m0 = -1;
+                    pThis->m28_slotInfoDisplayTask[1]->m4_delay = 3;
+                    pThis->m28_slotInfoDisplayTask[2]->m0 = -1;
+                    pThis->m28_slotInfoDisplayTask[2]->m4_delay = 6;
                     playSoundEffect(0);
                     DisplayMenuMsg(loadStrings[pThis->m14_selectedDevice]);
                     return;
@@ -734,12 +803,12 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                 }
                 pThis->m8 = 0;
                 pThis->m20_selectedFileInDevice = -1;
-                pThis->m28[0]->m0 = 0;
-                pThis->m28[0]->m4_delay = 0;
-                pThis->m28[1]->m0 = 1;
-                pThis->m28[1]->m4_delay = 3;
-                pThis->m28[2]->m0 = 2;
-                pThis->m28[2]->m4_delay = 6;
+                pThis->m28_slotInfoDisplayTask[0]->m0 = 0;
+                pThis->m28_slotInfoDisplayTask[0]->m4_delay = 0;
+                pThis->m28_slotInfoDisplayTask[1]->m0 = 1;
+                pThis->m28_slotInfoDisplayTask[1]->m4_delay = 3;
+                pThis->m28_slotInfoDisplayTask[2]->m0 = 2;
+                pThis->m28_slotInfoDisplayTask[2]->m4_delay = 6;
                 graphicEngineStatus.m4 = 1;
                 playSoundEffect(0);
             }
@@ -823,12 +892,12 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                 }
                 pThis->m8 = 0;
                 pThis->m20_selectedFileInDevice = -1;
-                pThis->m28[0]->m0 = 0;
-                pThis->m28[0]->m4_delay = 0;
-                pThis->m28[1]->m0 = 1;
-                pThis->m28[1]->m4_delay = 3;
-                pThis->m28[2]->m0 = 2;
-                pThis->m28[2]->m4_delay = 6;
+                pThis->m28_slotInfoDisplayTask[0]->m0 = 0;
+                pThis->m28_slotInfoDisplayTask[0]->m4_delay = 0;
+                pThis->m28_slotInfoDisplayTask[1]->m0 = 1;
+                pThis->m28_slotInfoDisplayTask[1]->m4_delay = 3;
+                pThis->m28_slotInfoDisplayTask[2]->m0 = 2;
+                pThis->m28_slotInfoDisplayTask[2]->m4_delay = 6;
                 graphicEngineStatus.m4 = 1;
                 playSoundEffect(0);
             }
@@ -885,7 +954,8 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
     u8 m1C[3];
     s32 m20_selectedFileInDevice;
     s_MenuCursor2* m24;
-    saveMenuSubTask0* m28[3];
+    saveMenuSubTask0* m28_slotInfoDisplayTask[3];
+    u32 m34;
     u32 m38;
     sSaveTaskSubStruct0 m3C[3];
     u8* mCC;

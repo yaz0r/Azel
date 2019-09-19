@@ -34,3 +34,4 @@ sNPC* getNpcDataByIndex(s32 r4);
 p_workArea getNpcDataByIndexAsTask(s32 r4);
 
 void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_12_4* r7);
+

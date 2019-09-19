@@ -120,6 +120,7 @@ struct s_vdp2StringTask : public s_workAreaTemplate<s_vdp2StringTask>
     // size 2C
 };
 
+#if 0
 struct s_multiChoiceTask2 : public s_workAreaTemplate< s_multiChoiceTask2>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -156,6 +157,7 @@ struct s_multiChoiceTask2 : public s_workAreaTemplate< s_multiChoiceTask2>
     s16* m28_colors;
     //size 0x2C
 };
+#endif
 
 struct s_multiChoice
 {
@@ -273,7 +275,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
     struct s_cinematicBarTask* m30_cinematicBarTask;
     u32 m34;
     s_vdp2StringTask* m38_dialogStringTask;
-    s_multiChoiceTask2* m3C_multichoiceTask;
+    struct s_multiChoiceTask* m3C_multichoiceTask;
     struct s_receivedItemTask* m40_receivedItemTask;
     s_multiChoice* m44_multiChoiceData;
     s_workArea* m48_cutsceneTask; // s_cutsceneTask or s_cutsceneTask2 or s_cutsceneTask3
@@ -804,7 +806,7 @@ struct s_fieldTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldTaskWorkAre
     s_workArea* m4_overlayTaskData;//4
     s_FieldSubTaskWorkArea* m8_pSubFieldData; // 0x8
     struct s_fieldSpecificData_A3* mC; // background task buffer?
-    u32 m28_status; // 0x28
+    u32 m28_status; // 0x28 (0x40: a multichoice dialog callback is pending)
     s16 m2C_currentFieldIndex; // 0x2C
     s16 m2E_currentSubFieldIndex; // 0x2E;
     s16 m30; // 0x30

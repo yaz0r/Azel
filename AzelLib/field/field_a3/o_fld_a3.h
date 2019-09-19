@@ -80,7 +80,7 @@ struct s_itemBoxDefinition
     sVec3_FP m18_boundingMax;
     sVec3_FP m24_rotation;
     fixedPoint m30_scale;
-    fixedPoint m34;
+    s32 m34_bitIndex;
     s32 m38;
     s32 m3C_receivedItemId;
     s8 m40_receivedItemQuantity;
@@ -94,6 +94,7 @@ p_workArea fieldA3_1_createItemBoxes_Sub1(s_itemBoxDefinition* r4);
 
 s_cameraScript* readCameraScript(sSaturnPtr EA);
 void dispatchTutorialMultiChoiceSub2();
+s32 queueNewFieldScript(sSaturnPtr r4, s32 r5);
 
 struct s_fieldA3_1_task4 : public s_workAreaTemplate<s_fieldA3_1_task4>
 {

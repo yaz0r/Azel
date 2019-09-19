@@ -217,9 +217,91 @@ struct s_itemType0 : public s_workAreaTemplate<s_itemType0>
     //size: 8
 };
 
-void LCSItemBox_CallbackSavePoint(p_workArea, sLCSTarget*)
+struct s_dialogCallbackTask : public s_workAreaTemplate<s_dialogCallbackTask>
 {
-    FunctionUnimplemented();
+    typedef void(*tCallback)(s32);
+
+    static void Init(s_dialogCallbackTask*)
+    {
+        //empty
+    }
+
+    static void Draw(s_dialogCallbackTask* pThis)
+    {
+        s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+        getFieldTaskPtr()->m28_status |= 0x40;
+        switch (pThis->mC)
+        {
+        case 0: // wait for multichoice dialog
+            if (pScript->m3C_multichoiceTask)
+            {
+                pThis->mC++;
+            }
+            break;
+        case 1: // wait for multichoice dialog to complete
+            if (pScript->m3C_multichoiceTask == nullptr)
+            {
+                pThis->getTask()->markFinished(); // delete will trigger the callback
+            }
+            break;
+        default:
+            assert(0);
+        }
+    }
+
+    static void Delete(s_dialogCallbackTask* pThis)
+    {
+        if (getFieldTaskPtr()->m8_pSubFieldData)
+        {
+            s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+            getFieldTaskPtr()->m28_status &= ~0x40;
+
+            if (pScript->m54_currentResult > -1)
+            {
+                if (pThis->m0_callbacks[pScript->m54_currentResult])
+                {
+                    pThis->m0_callbacks[pScript->m54_currentResult](pThis->m10);
+                }
+            }
+        }
+    }
+
+    std::array<tCallback, 2> m0_callbacks;
+    u32 mC;
+    s32 m10;
+    //size 0x14
+};
+
+void startScript_savePointCallback(s32 savePointIndex)
+{
+    setupSaveParams(getFieldTaskPtr()->m2C_currentFieldIndex, getFieldTaskPtr()->m2E_currentSubFieldIndex, savePointIndex);
+    if (getFieldTaskPtr()->m8_pSubFieldData->m370_fieldDebuggerWho & 1)
+    {
+        assert(0);
+    }
+}
+
+void registerCallbackForDialog(s_dialogCallbackTask::tCallback callback1, s_dialogCallbackTask::tCallback callback2, s32 r6)
+{
+    static const s_dialogCallbackTask::TypedTaskDefinition definition = {
+        s_dialogCallbackTask::Init,
+        nullptr,
+        s_dialogCallbackTask::Draw,
+        s_dialogCallbackTask::Delete
+    };
+    s_dialogCallbackTask* pCallbackTask = createSubTask<s_dialogCallbackTask>(getFieldTaskPtr(), &definition);
+    pCallbackTask->m0_callbacks[0] = callback1;
+    pCallbackTask->m0_callbacks[1] = callback2;
+    pCallbackTask->m10 = r6;
+}
+
+void startScript_savePoint(s32 index)
+{
+    sSaturnPtr pScript = gFLD_A3->getSaturnPtr(0x06080efb);
+    if (queueNewFieldScript(pScript, -1) != 0)
+    {
+        registerCallbackForDialog(startScript_savePointCallback, nullptr, index);
+    }
 }
 
 void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*);
@@ -311,8 +393,8 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
         pThis->m6C_rotation = r13->m24_rotation;
         pThis->m78_scale = r13->m30_scale;
         pThis->m7C = FP_Div(0x10000, r13->m30_scale);
-        pThis->m80 = r13->m34;
-        pThis->m84 = r13->m38;
+        pThis->m80_bitIndex = r13->m34_bitIndex;
+        pThis->m84_savePointIndex = r13->m38;
         pThis->m8B_LCSType = r13->m41_LCSType;
         pThis->m88_receivedItemId = r13->m3C_receivedItemId;
         pThis->m8A_receivedItemQuantity = r13->m40_receivedItemQuantity;
@@ -332,9 +414,9 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
 
             init3DModelRawData(pThis, &pThis->m98_3dModel, 0, pBundle, LCSItemBox_Table3[r13->m42], pAnimation, pDefaultPose, 0, 0);
 
-            if (pThis->m80 > 0)
+            if (pThis->m80_bitIndex > 0)
             {
-                if (mainGameState.getBit566(pThis->m80))
+                if (mainGameState.getBit566(pThis->m80_bitIndex))
                 {
                     pThis->m_DrawMethod = LCSItemBox_OpenedBoxDraw;
                     pThis->mEA_wasRendered = 3;
@@ -710,8 +792,8 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
     sVec3_FP m6C_rotation;
     fixedPoint m78_scale;
     fixedPoint m7C;
-    fixedPoint m80;
-    s16 m84;
+    s32 m80_bitIndex;
+    s16 m84_savePointIndex;
     s16 m86;
     s16 m88_receivedItemId;
     s8 m8A_receivedItemQuantity;
@@ -727,6 +809,16 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
     //size: F0
 };
 
+void LCSItemBox_CallbackSavePoint(p_workArea r4, sLCSTarget*)
+{
+    s_itemBoxType1* pThis = (s_itemBoxType1*)r4;
+    startScript_savePoint(pThis->m84_savePointIndex - 1);
+    if (pThis->m80_bitIndex > 999)
+    {
+        mainGameState.setBit566(pThis->m80_bitIndex);
+    }
+}
+
 void LCSItemBox_Callback1(p_workArea r4, sLCSTarget*)
 {
     s_itemBoxType1* pThis = (s_itemBoxType1*)r4;
@@ -739,7 +831,7 @@ void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*)
     if (pThis->m21 & 0x20)
         return;
 
-    mainGameState.setBit566(pThis->m80);
+    mainGameState.setBit566(pThis->m80_bitIndex);
 
     pThis->LCSItemBox_Callback0Sub0();
     playSoundEffect(0x17);

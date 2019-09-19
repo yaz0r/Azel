@@ -296,7 +296,7 @@ void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw(s_drawDragonMenuStat
         if (mainGameState.getBit(0x1B, 5))
         {
             setupVDP2StringRendering(25, 56, 16, 2);
-            VDP2DrawString(mainGameState.gameStats.dragonName);
+            VDP2DrawString(mainGameState.gameStats.mA5_dragonName);
         }
     }
 

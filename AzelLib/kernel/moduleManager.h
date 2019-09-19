@@ -23,3 +23,5 @@ extern s_gameStatus gGameStatus;
 
 extern s_moduleManager* gModuleManager;
 void initNewGameState();
+
+void setupSaveParams(s32 fieldIndex, s32 subFieldIndex, s32 savepointIndex);

@@ -306,6 +306,9 @@ struct s_gameStats
     u8 m2_rider1; // 2
     u8 m3_rider2; // 3
 
+    u16 mA_weaponType;
+    u16 mC_laserPower;
+
     u16 currentHP; // 0x10
     u16 classMaxHP; // 0x12
     u16 currentBP; // 0x14
@@ -319,8 +322,8 @@ struct s_gameStats
 
     u32 m70; //70
 
-    char playerName[17];
-    char dragonName[17];
+    char m94_playerName[17];
+    char mA5_dragonName[17];
     e_dragonArchetype dragonArchetype;//B6
 
     u16 maxHP; // B8

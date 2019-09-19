@@ -11,6 +11,8 @@
 #include "kernel/cinematicBarsTask.h"
 #include "collision.h"
 
+#include "kernel/dialogTask.h"
+
 void updateDragonDefault(s_dragonTaskWorkArea*);
 void updateCutscene(s_dragonTaskWorkArea* r14);
 sMatrix4x3* fieldCameraTask1DrawSub1();
@@ -2916,6 +2918,7 @@ void createMultiChoiceDefault(s32 r4)
     createMultiChoice(r4, -1);
 }
 
+#if 0
 void s_multiChoiceTask2::drawMultiChoice()
 {
     drawBlueBox(m14_x, m16_y, m1A_width, m1C_height);
@@ -3000,57 +3003,7 @@ void s_multiChoiceTask2::Draw(s_multiChoiceTask2*)
 {
     PDS_unimplemented("s_multiChoiceTask2::Draw");
 }
-
-s_multiChoiceTask2* updateMultiChoice(p_workArea parentTask, s_multiChoiceTask2** r5, s32* r6_currentChoice, s32 r7_minusCurrentChoice, sSaturnPtr scriptPtr, s16* choiceTable, s32 moreCurrentChoice)
-{
-    s_multiChoiceTask2* r14 = createSubTask<s_multiChoiceTask2>(parentTask);
-
-    r14->m0_Status = 0;
-    r14->m5_selectedEntry = moreCurrentChoice;
-
-    if (r7_minusCurrentChoice >= 0)
-    {
-        r14->m1 = r7_minusCurrentChoice;
-        r14->m2_defaultResult = 1;
-    }
-    else
-    {
-        r14->m1 = -r7_minusCurrentChoice;
-        r14->m2_defaultResult = 0;
-    }
-
-    r14->m24_strings = scriptPtr;
-    r14->m28_colors = choiceTable;
-    r14->m3 = 0;
-    r14->m4 = 0;
-    r14->m6_numEntries = r14->m1;
-    r14->m5_selectedEntry = moreCurrentChoice;
-    r14->m7 = 0;
-    r14->m8 = 0;
-    r14->m14_x = 2;
-    r14->m16_y = 4;
-
-    s32 r12 = 0;
-    for (int i = 0; i < r14->m1; i++)
-    {
-        s32 stringLength = computeStringLength(scriptPtr + i * 4, 38);
-        if (stringLength > r12)
-        {
-            r12 = stringLength;
-        }
-    }
-
-    r14->m1A_width = ((r12 + 1) & ~1) + 6;
-    r14->m1C_height = (r14->m1 * 2) + 2;
-    r14->mC_result = r6_currentChoice;
-
-    if (r5)
-    {
-        *r5 = r14;
-    }
-
-    return r14;
-}
+#endif
 
 s32 fieldPlayPCM(sSaturnPtr pPcmNameEA)
 {
@@ -3242,6 +3195,41 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
                 return r10;
             }
             break;
+        case 31: // used for dialog "do you want to save"
+        {
+            sSaturnPtr opcodeStart = pScript - 1;
+            s8 numChoices = readSaturnS8(pScript);
+            if (m3C_multichoiceTask != nullptr)
+            {
+                if (m3C_multichoiceTask->m0_Status != 4)
+                {
+                    return opcodeStart;
+                }
+                if (numChoices < 1)
+                {
+                    return opcodeStart + 2;
+                }
+                pScript = pScript + 1;
+                if (numChoices > 0)
+                {
+                    pScript = pScript + 3;
+                    pScript.m_offset &= ~3;
+                    pScript = pScript + numChoices * 4;
+                }
+                return pScript;
+            }
+            pScript = pScript + 1;
+            pScript = pScript + 3;
+
+            pScript.m_offset &= ~3;
+            sSaturnPtr choicesList = pScript;
+            if (numChoices)
+            {
+                startDialogTask(this, &m3C_multichoiceTask, &m54_currentResult, -numChoices, choicesList);
+                return opcodeStart;
+            }
+            break;
+        }
         case 33: // multi choice
             if (m3C_multichoiceTask)
             {
@@ -3869,7 +3857,7 @@ s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr)
     pItemBoxDefinition->m18_boundingMax = readSaturnVec3(ptr); ptr += 4 * 3;
     pItemBoxDefinition->m24_rotation = readSaturnVec3(ptr); ptr += 4 * 3;
     pItemBoxDefinition->m30_scale = readSaturnS32(ptr); ptr += 4;
-    pItemBoxDefinition->m34 = readSaturnS32(ptr); ptr += 4;
+    pItemBoxDefinition->m34_bitIndex = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m38 = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m3C_receivedItemId = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m40_receivedItemQuantity = readSaturnS8(ptr); ptr += 1;
