@@ -1,5 +1,7 @@
 #include "PDS.h"
 
+p_workArea createBattleDebugTask(p_workArea);
+
 struct s_titleMenuEntry
 {
     u16 m_isEnabled;
@@ -20,7 +22,7 @@ s_titleMenuEntry mainMenuDebug[] = {
     {1, -7, " CONTINUE ", createContinueTask },
     {1, -6, "   TOWN   ", createTownDebugTask },
     {1, -5, "  FIELD   ", createFieldDebugTask },
-//    {1, -4, "  BATTLE  ", createBattleDebugTask },
+    {1, -4, "  BATTLE  ", createBattleDebugTask },
 //    {1, -3, "  SOUND   ", createSoundDebugTask },
 //    {1, -2, "  MOVIE   ", createMovieDebugTask },
 };

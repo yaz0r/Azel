@@ -184,7 +184,7 @@ void initNPCSub0Sub1()
 
 s32 initNPCSub0Var1 = 0x7FFFFFFF;
 
-void loadTownPrgSub0()
+void initTownGrid()
 {
     gTownGrid.m0_sizeX = 0;
     gTownGrid.m4_sizeY = 0;
@@ -242,7 +242,7 @@ void loadTownPrg(s8 r4, s8 r5)
     resetCameraProperties2(&cameraProperties2);
     reset3dEngine();
     resetTempAllocators();
-    loadTownPrgSub0();
+    initTownGrid();
     setupDragonForTown(gDragonState->m0_pDragonModelBundle);
     gFieldOverlayFunction(townDebugTask2, r5);
 }

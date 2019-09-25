@@ -2,6 +2,7 @@
 #include "moduleManager.h"
 #include "town/town.h"
 #include "loadSavegameScreen.h"
+#include "battle/battleManager.h"
 
 u8 array_24BCA0[0x104];
 u8 array_250000[0x20000];
@@ -134,7 +135,7 @@ void moduleManager_Init(s_moduleManager* pWorkArea, s32 menuID)
 
     createMenuTask(pWorkArea);
     createFieldTask(pWorkArea, 1);
-    createLoadingTask(pWorkArea, 1);
+    createBattleManager(pWorkArea, 1);
     resetTempAllocators();
     initDramAllocator(pWorkArea, array_250000, 0x28000, 0);
 

@@ -26,7 +26,7 @@ void playMusic(u8 musicNumber, u8 unk1)
     }
     PDS_unimplemented("playMusic");
 }
-bool soundFunc1() { PDS_unimplemented("soundFunc1"); return 0; }
+bool soundFunc1() { PDS_unimplemented("soundFunc1"); return 1; } // return 1 when sound is finished?
 
 void playPCM(p_workArea, u32) { PDS_unimplemented("playPCM"); }
 

@@ -2,7 +2,6 @@
 
 p_workArea createTownDebugTask(p_workArea);
 p_workArea createFieldDebugTask(p_workArea);
-p_workArea createBattleDebugTask(p_workArea);
 p_workArea createSoundDebugTask(p_workArea);
 p_workArea createMovieDebugTask(p_workArea);
 
@@ -94,7 +93,6 @@ extern std::vector<s_fileEntry> dramAllocatorEnd;
 u8* dramAllocate(u32 size);
 p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg);
 void updateDragonStatsFromLevel();
-p_workArea createLoadingTask(p_workArea parentTask, s8 arg);
 void loadDragon(s_workArea* pWorkArea);
 void loadCurrentRider(s_workArea* pWorkArea);
 void loadCurrentRider2(s_workArea* pWorkArea);

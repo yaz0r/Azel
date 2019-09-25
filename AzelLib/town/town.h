@@ -200,6 +200,8 @@ void startScriptTask(p_workArea r4);
 void mainLogicInitSub0(sMainLogic_74*, s32);
 void mainLogicInitSub1(sMainLogic_74*, const sVec3_FP&, const sVec3_FP&);
 
+void initTownGrid();
+
 struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()

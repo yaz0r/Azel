@@ -7,129 +7,15 @@
 #include "kernel/loadSavegameScreen.h"
 #include "kernel/menuCursor.h"
 #include "kernel/menuSprite.h"
+#include "battle/battleManager.h"
 
 p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID);
 
 extern p_workArea(*statusMenuSubMenus[])(p_workArea);
 
-struct sLoadingTaskWorkArea* gLoadingTaskWorkArea = NULL;
-
 s16 loadingTaskVar0 = 0x1D;
 p_workArea(*gFieldOverlayFunction)(p_workArea workArea, u32 arg);
 p_workArea fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMenuSelection, u32 m3A, u32 currentSubFieldIndex);
-
-struct sLoadingTaskWorkArea : public s_workAreaTemplateWithArg<sLoadingTaskWorkArea, s8>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &sLoadingTaskWorkArea::Init, &sLoadingTaskWorkArea::Update, NULL, &sLoadingTaskWorkArea::Delete};
-        return &taskDefinition;
-    }
-
-    static void Init(sLoadingTaskWorkArea* pThis, s8 arg)
-    {
-        gLoadingTaskWorkArea = pThis;
-
-        pThis->m0_status = 0;
-        pThis->m2 = -1;
-        pThis->m4 = -1;
-        pThis->m6 = 0;
-        pThis->m8 = 0;
-        pThis->mA = 0;
-        pThis->mC = arg;
-
-        if (arg)
-        {
-            s32 r6 = 0x3E8;
-            s32 r4 = r6;
-            do
-            {
-                if (r4 >= r6)
-                {
-                    mainGameState.clearBit(0xC3E + r4);
-                }
-                else
-                {
-                    mainGameState.clearBit(r4);
-                }
-
-                /*
-                s32 r3;
-                if (r4 >= r6)
-                {
-                    r3 = 0xC3E + r4;
-                }
-                else
-                {
-                    r3 = r4;
-                }
-
-                r3 = r3 / 8;
-                s32 r0;
-                if (r4 >= r6)
-                {
-                    r0 = 0xC3E + r4;
-                }
-                else
-                {
-                    r0 = r4;
-                }
-
-                r0 &= 7;
-
-                u8 r1 = reverseBitMasks[r0];
-
-                mainGameState.bitField[r3] &= r1;*/
-            } while (--r4);
-        }
-        else
-        {
-            assert(0);
-        }
-    }
-
-    void loadingTaskUpdateSub0()
-    {
-        if (mC)
-            return;
-
-        assert(0);
-    }
-
-    static void Update(sLoadingTaskWorkArea* pThis)
-    {
-        switch (pThis->m0_status)
-        {
-        case 0:
-            pThis->loadingTaskUpdateSub0();
-            pThis->m0_status++;
-            break;
-        case 1:
-            break;
-        default:
-            assert(0);
-        }
-    }
-
-    void static Delete(sLoadingTaskWorkArea*)
-    {
-        PDS_unimplemented("sLoadingTaskWorkArea::Delete");
-    }
-
-    s16 m0_status;
-    s16 m2;
-    s16 m4;
-    s16 m6;
-    s16 m8;
-    s16 mA;
-    s8 mC;
-    s32 m10;
-};
-
-p_workArea createLoadingTask(p_workArea parentTask, s8 arg)
-{
-    return createSiblingTaskWithArg<sLoadingTaskWorkArea, s8>(parentTask, arg);
-}
 
 struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskWorkArea, p_workArea>
 {
@@ -2141,6 +2027,12 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
         return &taskDefinition;
     }
 
+    static const TypedTaskDefinition* getBattleDebugTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::battleDebugTaskInit, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete };
+        return &taskDefinition;
+    }
+
     static const TypedTaskDefinition* getExitMenuTaskDefinition()
     {
         static const TypedTaskDefinition taskDefinition = { &s_fieldDebugTaskWorkArea::initExitMenuTask, NULL, &s_fieldDebugTaskWorkArea::genericTaskRestartGameWhenFinished, &s_fieldDebugTaskWorkArea::genericOptionMenuDelete};
@@ -2185,7 +2077,18 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
         initNewGameState();
         pThis->m8 = createFieldTask(pThis, 0);
 
-        createLoadingTask(pThis->m8, 1);
+        createBattleManager(pThis->m8, 1);
+        createMenuTask(pThis->m8);
+        createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(pThis->m8, pThis->m8);
+    }
+
+    static void battleDebugTaskInit(s_fieldDebugTaskWorkArea* pThis, s32)
+    {
+        pauseEngine[2] = 0;
+
+        initNewGameState();
+
+        pThis->m8 = createBattleManager(pThis, 0);
         createMenuTask(pThis->m8);
         createSiblingTaskWithArg<s_flagEditTaskWorkArea, p_workArea>(pThis->m8, pThis->m8);
     }
@@ -2215,12 +2118,13 @@ p_workArea createFieldDebugTask(p_workArea pWorkArea)
 {
     return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 0, s_fieldDebugTaskWorkArea::getFieldDebugTaskDefinition());
 }
-
-p_workArea createBattleDebugTask(p_workArea)
+p_workArea createBattleDebugTask(p_workArea pWorkArea)
 {
-    assert(0);
-    return NULL;
+    return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 0, s_fieldDebugTaskWorkArea::getBattleDebugTaskDefinition());
 }
+
+
+
 p_workArea createSoundDebugTask(p_workArea)
 {
     assert(0);
