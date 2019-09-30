@@ -9,12 +9,14 @@ struct sBattleManager : public s_workAreaTemplateWithArg<sBattleManager, s8>
     s16 m8;
     s16 mA_pendingBattleOverlayId;
     s8 mC;
+    s8 mD;
     // usually battle overlay, can also be battle debug list
     union {
         p_workArea m10_subTask_debugList;
         struct sBattleOverlayTask* m10_battleOverlay;
     };
-    
+
+    //size m14
 };
 
 sBattleManager* getBattleManager();

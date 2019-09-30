@@ -1031,7 +1031,7 @@ void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
 
     //6007DF8
     sVec3_FP var14;
-    var14.zero();
+    var14.zeroize();
 
     sVec3_FP var8;
     sVec3_FP& r9 = var8;
@@ -2176,7 +2176,7 @@ sVec3_FP getEnvLCSTargetPosition(s32 index)
     sVec3_FP position;
     if (index >= npcData0.m68_numEnvLCSTargets)
     {
-        position.zero();
+        position.zeroize();
     }
     else
     {

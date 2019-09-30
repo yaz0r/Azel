@@ -841,7 +841,7 @@ p_workArea create_A3_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r
 
     pNewTask->m14_position = r5.m4_position;
     *pNewTask->mC = 0;
-    pNewTask->m28.zero();
+    pNewTask->m28.zeroize();
     if (r5.m10_rotation[0])
     {
         pNewTask->m3A_rotation = 0x800 - r5.m10_rotation[1];
@@ -1631,14 +1631,14 @@ void dragonFieldTaskUpdateSub5Sub2(s_fieldOverlaySubTaskWorkArea* r4, sFieldCame
     r5->m5C[2] = interpolateRotation(r5->m5C[2], 0, 0x2000, 0x444444, 0);
 
     r5->m5C += r5->m68;
-    r5->m68.zero();
+    r5->m68.zeroize();
 
     r5->m44[0] = interpolateDistance(r5->m44[0], 0, 0x2000, 0xAAA, 0);
     r5->m44[1] = interpolateDistance(r5->m44[1], 0, 0x2000, 0xAAA, 0);
     r5->m44[2] = interpolateDistance(r5->m44[2], 0, 0x2000, 0xAAA, 0);
 
     r5->m44 += r5->m50;
-    r5->m50.zero();
+    r5->m50.zeroize();
 
     r5->m0_position = r5->m44 + *r4->m2E4[4].mC_pPosition;
 
@@ -2307,10 +2307,10 @@ void initScriptTable1(std::vector<s_scriptData1>& pData1)
     for (int i = 0; i < pData1.size(); i++)
     {
         pData1[i].m0 = 0;
-        pData1[i].m4.zero();
-        pData1[i].m10.zero();
-        pData1[i].m1C.zero();
-        pData1[i].m28.zero();
+        pData1[i].m4.zeroize();
+        pData1[i].m10.zeroize();
+        pData1[i].m1C.zeroize();
+        pData1[i].m28.zeroize();
         pData1[i].m34 = 0;
         pData1[i].m38 = 0;
     }
@@ -3594,7 +3594,7 @@ void fieldOverlaySubTaskInitSub2Sub1Sub2(sFieldCameraStatus* r14, s_dragonTaskWo
     r14->m5C += r14->m68;
     r14->mC_rotation += r14->m5C;
 
-    r14->m68.zero();
+    r14->m68.zeroize();
 
     r14->mC_rotation[0] = r14->mC_rotation[0].normalized();
     r14->m18 = r14->m18.normalized();
@@ -3626,7 +3626,7 @@ void fieldOverlaySubTaskInitSub2Sub1Sub2(sFieldCameraStatus* r14, s_dragonTaskWo
     r14->m44 += r14->m50;
 
     r14->m0_position += r14->m44;
-    r14->m50.zero();
+    r14->m50.zeroize();
 }
 
 void fieldOverlaySubTaskInitSub2Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkArea* r12)
@@ -5005,7 +5005,7 @@ void integrateDragonMovement(s_dragonTaskWorkArea* r14)
 
     r14->m20_angle += r14->m1AC;
 
-    r14->m1A0.zero();
+    r14->m1A0.zeroize();
 
     // ~0607FFEC 
     r14->m194[0] = interpolateDistance(r14->m194[0], 0, 0x2000, 0xAAA, 0x10);
@@ -5027,7 +5027,7 @@ void integrateDragonMovement(s_dragonTaskWorkArea* r14)
     }
     r14->m160_deltaTranslation[2] += r14->m194[2] - MTH_Mul(r14->m88_matrix.matrix[10], r14->m154_dragonSpeed);
 
-    r14->m188.zero();
+    r14->m188.zeroize();
 
     if (r14->mF4)
     {

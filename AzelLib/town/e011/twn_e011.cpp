@@ -132,7 +132,7 @@ struct sE011Task1 : public s_workAreaTemplate<sE011Task1>
     {
         pushCurrentMatrix();
         translateCurrentMatrix(pThis->m5C);
-        pThis->mC_3dModel.m2C_poseData[0].m0_translation.zero();
+        pThis->mC_3dModel.m2C_poseData[0].m0_translation.zeroize();
         pThis->mC_3dModel.m18_drawFunction(&pThis->mC_3dModel);
         popMatrix();
     }

@@ -220,8 +220,8 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     pNewObj->m30_rotation[0] = r5.m10_rotation[0];
     pNewObj->m30_rotation[1] = r5.m10_rotation[1];
     pNewObj->m30_rotation[2] = r5.m10_rotation[2];
-    pNewObj->m18.zero();
-    pNewObj->m24.zero();
+    pNewObj->m18.zeroize();
+    pNewObj->m24.zeroize();
     pNewObj->m3A = 0;
 
     s32 param = readSaturnS32(sSaturnPtr({ 0x6092570, gFLD_A3 }) + 4 * r5.m18);

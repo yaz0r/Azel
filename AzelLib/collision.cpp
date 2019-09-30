@@ -382,7 +382,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         return;
 
     sCollisionTempStruct var60;
-    var60.m0_translationToResolve.zero();
+    var60.m0_translationToResolve.zeroize();
     fixedPoint var0 = 0x8000;
 
     var60.mC_collisionRadius = 0x8000;

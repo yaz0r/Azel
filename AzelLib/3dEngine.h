@@ -1,5 +1,7 @@
 #pragma once
 
+void resetCamera(u32 x0, u32 y0, u32 x1, u32 y1, u32 centerX, u32 centerY);
+
 void reset3dEngine();
 void resetProjectVector();
 void pushProjectionStack();

@@ -564,12 +564,12 @@ struct s_dramAllocationNode
 
 struct s_dramAllocator
 {
-    s_dramAllocationNode* buffer; //0
-    u32 pNext; // 4
-    u8* allocationStart; //0x8
-    u8* allocationEnd; // 0xC
-    s_dramAllocator* m_nextNode; // 0x10
-    u32 var_14;
+    s_dramAllocationNode* m0_buffer; //0
+    u32 m4_pNext; // 4
+    u8* m8_allocationStart; //0x8
+    u8* mC_allocationEnd; // 0xC
+    s_dramAllocator* m10_nextNode; // 0x10
+    u32 m14;
 }; // size 18
 
 
@@ -587,7 +587,18 @@ void loadRamResource(s_workArea* pWorkArea)
 {
     if (dramAllocatorHead)
     {
-        assert(0);
+        u8* pVar2 = dramAllocatorHead->m8_allocationStart;
+        u8* pVar5 = dramAllocatorHead->mC_allocationEnd;
+
+        int iVar4 = 0;
+        while (pVar2 < pVar5)
+        {
+            s_dramAllocationNode* pNode = (s_dramAllocationNode*)pVar2;
+            pVar2 += pNode->size;
+            iVar4 += 8;
+        }
+
+        FunctionUnimplemented();
     }
 }
 
@@ -597,9 +608,9 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
 
     s_dramAllocator* pDramAllocator = (s_dramAllocator*)allocateHeapForTask(pWorkArea, sizeof(s_dramAllocator));
     
-    pDramAllocator->allocationStart = dest;
-    pDramAllocator->allocationEnd = dest + size;
-    pDramAllocator->m_nextNode = dramAllocatorHead;
+    pDramAllocator->m8_allocationStart = dest;
+    pDramAllocator->mC_allocationEnd = dest + size;
+    pDramAllocator->m10_nextNode = dramAllocatorHead;
     dramAllocatorHead = pDramAllocator;
 
     dramAllocatorEnd.clear();
@@ -633,8 +644,8 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
 
     s_dramAllocationNode* pNode = (s_dramAllocationNode*)dest;
 
-    pDramAllocator->buffer = pNode;
-    pDramAllocator->pNext = pNext;
+    pDramAllocator->m0_buffer = pNode;
+    pDramAllocator->m4_pNext = pNext;
 
     pNode->m_pNext = NULL;
     pNode->size = size;
@@ -650,7 +661,7 @@ u8* dramAllocate(u32 size)
     // TODO: does the alignment stuff still works in 64bits?
     u32 paddedSize = (size + sizeof(s_dramAllocationNode) + 0xF) & ~0xF;
 
-    s_dramAllocationNode** r5 = &dramAllocatorHead->buffer;
+    s_dramAllocationNode** r5 = &dramAllocatorHead->m0_buffer;
 
     while (s_dramAllocationNode* r14 = *r5)
     {
@@ -1296,10 +1307,10 @@ void copyAnimMatrix(const sDragonAnimDataSubRanges* source, sDragonAnimDataSubRa
 
 void initRuntimeAnimDataSub1(const sDragonAnimDataSub* animDataSub, s_runtimeAnimData* subData)
 {
-    subData->m0_root.zero();
-    subData->m_vec_C.zero();
-    subData->m_vec_18.zero();
-    subData->m24_rootDelta.zero();
+    subData->m0_root.zeroize();
+    subData->m_vec_C.zeroize();
+    subData->m_vec_18.zeroize();
+    subData->m24_rootDelta.zeroize();
 
     copyAnimMatrix(animDataSub->m_data, &subData->m_factors);
 
@@ -1637,7 +1648,7 @@ void loadCurrentRider2(s_workArea* pWorkArea)
 
 void updateDragonIfCursorChanged(u32 level)
 {
-    assert(0);
+    FunctionUnimplemented();
 }
 
 void loadRiderIfChanged(u32 rider)

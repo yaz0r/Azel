@@ -51,7 +51,7 @@ struct sVec3_FP
     }
     std::array<fixedPoint,3> m_value;
 
-    void zero()
+    void zeroize()
     {
         m_value[0] = 0;
         m_value[1] = 0;
@@ -308,6 +308,7 @@ struct s_gameStats
 
     u16 mA_weaponType;
     u16 mC_laserPower;
+    u16 mE_shotPower;
 
     u16 currentHP; // 0x10
     u16 classMaxHP; // 0x12

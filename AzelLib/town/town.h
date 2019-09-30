@@ -237,7 +237,7 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
     //size 0x10
 };
 
-npcFileDeleter* allocateNPC(struct sScriptTask* r4, s32 r5);
+npcFileDeleter* allocateNPC(p_workArea r4, s32 r5);
 
 extern p_workArea townVar0;
 
@@ -346,3 +346,5 @@ void updateEdgePosition(sNPC* r4);
 s32 TwnFadeOut(s32 arg0);
 s32 TwnFadeIn(s32 arg0);
 void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5);
+
+npcFileDeleter* loadNPCFile2(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, s32 index);

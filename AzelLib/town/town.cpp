@@ -267,7 +267,7 @@ p_workArea loadTown2(p_workArea r4, s32 r5)
     return loadTownSub(r4, r5);
 }
 
-npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32 ramFileSize, const std::string& vramFileName, s32 vramFileSize, s32 arg)
+npcFileDeleter* loadNPCFile(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, const std::string& vramFileName, s32 vramFileSize, s32 arg)
 {
     npcFileDeleter* r13 = createSubTask<npcFileDeleter>(r4);
 
@@ -279,14 +279,17 @@ npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32
 
     s_fileBundle* r12_dramMemory = nullptr;
 
-    if (r14_vdp1Memory)
+    if(ramFileSize)
     {
-        loadFile(ramFileName.c_str(), &r12_dramMemory, r14_vdp1Memory->m4_vdp1Memory);
-    }
-    else
-    {
-        assert(0);
-        loadFile(ramFileName.c_str(), &r12_dramMemory, 1);
+        if (r14_vdp1Memory)
+        {
+            loadFile(ramFileName.c_str(), &r12_dramMemory, r14_vdp1Memory->m4_vdp1Memory);
+        }
+        else
+        {
+            assert(0);
+            loadFile(ramFileName.c_str(), &r12_dramMemory, 1);
+        }
     }
 
     if (r14_vdp1Memory)
@@ -303,7 +306,25 @@ npcFileDeleter* loadNPCFile(sScriptTask* r4, const std::string& ramFileName, s32
     return r13;
 }
 
-npcFileDeleter* allocateNPC(sScriptTask* r4, s32 r5)
+npcFileDeleter* loadNPCFile2(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, s32 index)
+{
+    npcFileDeleter* r13 = createSubTask<npcFileDeleter>(r4);
+
+    s_fileBundle* r12_dramMemory = nullptr;
+    loadFile(ramFileName.c_str(), &r12_dramMemory, 0);
+
+    r13->m0_dramAllocation = r12_dramMemory;
+    r13->m4_vd1Allocation = nullptr;
+    r13->mA = -1;
+    r13->m8 = -1;
+    r13->mC = index;
+
+    //TODO: slave cachePurge
+
+    return r13;
+}
+
+npcFileDeleter* allocateNPC(p_workArea r4, s32 r5)
 {
     s_fileEntry& r14 = dramAllocatorEnd[r5];
     if (r14.m8_refcount++)

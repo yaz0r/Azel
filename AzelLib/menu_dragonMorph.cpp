@@ -71,10 +71,10 @@ void dragonMenuDragonInitSub3(s3DModelAnimData* pDragonStateData2)
 {
     for (int i = 0; i < pDragonStateData2->countAnims; i++)
     {
-        pDragonStateData2->m8_runtimeAnimData[i].m0_root.zero();
-        pDragonStateData2->m8_runtimeAnimData[i].m_vec_C.zero();
-        pDragonStateData2->m8_runtimeAnimData[i].m_vec_18.zero();
-        pDragonStateData2->m8_runtimeAnimData[i].m24_rootDelta.zero();
+        pDragonStateData2->m8_runtimeAnimData[i].m0_root.zeroize();
+        pDragonStateData2->m8_runtimeAnimData[i].m_vec_C.zeroize();
+        pDragonStateData2->m8_runtimeAnimData[i].m_vec_18.zeroize();
+        pDragonStateData2->m8_runtimeAnimData[i].m24_rootDelta.zeroize();
     }
 }
 

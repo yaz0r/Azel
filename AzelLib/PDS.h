@@ -210,6 +210,8 @@ struct sSaturnMemoryFile
         newPtr.m_offset = base;
         return newPtr;
     }
+
+    virtual void init() {}
 };
 
 bool findFileOnDisc(const std::string& filename);
