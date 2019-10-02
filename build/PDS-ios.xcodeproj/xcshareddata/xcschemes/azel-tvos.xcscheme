@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "33077F1C22B9F3670033C8AE"
-               BuildableName = "azel.app"
-               BlueprintName = "azel"
+               BlueprintIdentifier = "33587AC92344337D00D90AEA"
+               BuildableName = "azel-tvos.app"
+               BlueprintName = "azel-tvos"
                ReferencedContainer = "container:PDS-ios.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,19 +27,17 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <Testables>
-      </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "33077F1C22B9F3670033C8AE"
-            BuildableName = "azel.app"
-            BlueprintName = "azel"
+            BuildableName = "azel-ios.app"
+            BlueprintName = "azel-ios"
             ReferencedContainer = "container:PDS-ios.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
+      <Testables>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -56,14 +54,12 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "33077F1C22B9F3670033C8AE"
-            BuildableName = "azel.app"
-            BlueprintName = "azel"
+            BlueprintIdentifier = "33587AC92344337D00D90AEA"
+            BuildableName = "azel-tvos.app"
+            BlueprintName = "azel-tvos"
             ReferencedContainer = "container:PDS-ios.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -71,15 +67,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "33077F1C22B9F3670033C8AE"
-            BuildableName = "azel.app"
-            BlueprintName = "azel"
-            ReferencedContainer = "container:PDS-ios.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

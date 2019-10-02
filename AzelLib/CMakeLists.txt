@@ -26,7 +26,7 @@ file(GLOB_RECURSE SRC_FIELD_A3
     "field/field_a3/*.h"
 )
 
-file(GLOB_RESURSE SRC_BATTLE
+file(GLOB_RECURSE SRC_BATTLE
     "battle/*.cpp"
     "battle/*.h"
     "battle/BTL_A3/*.cpp"
@@ -137,4 +137,10 @@ else()
 endif()
 
 
+IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
+add_library (AzelLib-ios ${SOURCES})
+ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES tvOS)
+add_library (AzelLib-tvos ${SOURCES})
+ELSE()
 add_library (AzelLib ${SOURCES})
+ENDIF()

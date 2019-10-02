@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		33077F4322B9F9BC0033C8AE /* PDS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F4122B9F9BC0033C8AE /* PDS.cpp */; };
-		33077F6A22B9FDFB0033C8AE /* libAzelLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33077F3D22B9F97D0033C8AE /* libAzelLib.a */; };
-		33077F6B22B9FDFE0033C8AE /* libsoloud.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33077F3F22B9F97D0033C8AE /* libsoloud.a */; };
 		33077F6D22B9FE420033C8AE /* common_generated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6C22B9FE420033C8AE /* common_generated.cpp */; };
 		33077F7322B9FE490033C8AE /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */; };
 		33077F7422B9FE490033C8AE /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6F22B9FE490033C8AE /* imgui_draw.cpp */; };
@@ -29,50 +27,165 @@
 		3307807C22BAB2930033C8AE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807B22BAB2930033C8AE /* CoreGraphics.framework */; };
 		3328FE272328DA120098E5AF /* VDP2_ps.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE232328DA120098E5AF /* VDP2_ps.glsl */; };
 		3328FE29232966890098E5AF /* VDP2_vs.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE28232966890098E5AF /* VDP2_vs.glsl */; };
+		33587ACF2344337D00D90AEA /* common_generated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6C22B9FE420033C8AE /* common_generated.cpp */; };
+		33587AD02344337D00D90AEA /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7222B9FE490033C8AE /* imgui_impl_sdl.cpp */; };
+		33587AD12344337D00D90AEA /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7122B9FE490033C8AE /* imgui_widgets.cpp */; };
+		33587AD22344337D00D90AEA /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */; };
+		33587AD32344337D00D90AEA /* PDS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F4122B9F9BC0033C8AE /* PDS.cpp */; };
+		33587AD42344337D00D90AEA /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6F22B9FE490033C8AE /* imgui_draw.cpp */; };
+		33587AD52344337D00D90AEA /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7022B9FE490033C8AE /* imgui.cpp */; };
+		33587AD72344337D00D90AEA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807B22BAB2930033C8AE /* CoreGraphics.framework */; };
+		33587AD82344337D00D90AEA /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807922BAB27C0033C8AE /* QuartzCore.framework */; };
+		33587AD92344337D00D90AEA /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807522BAB2130033C8AE /* AudioToolbox.framework */; };
+		33587ADA2344337D00D90AEA /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807322BAB1AE0033C8AE /* CoreMotion.framework */; };
+		33587ADB2344337D00D90AEA /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806D22BAB17B0033C8AE /* GameController.framework */; };
+		33587ADC2344337D00D90AEA /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806B22BAB1720033C8AE /* Metal.framework */; };
+		33587ADD2344337D00D90AEA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806922BAB1670033C8AE /* UIKit.framework */; };
+		33587ADE2344337D00D90AEA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806722BAB1540033C8AE /* Foundation.framework */; };
+		33587ADF2344337D00D90AEA /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806522BAB1460033C8AE /* OpenGLES.framework */; };
+		33587AE02344337D00D90AEA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806322BAB13B0033C8AE /* AVFoundation.framework */; };
+		33587AE22344337D00D90AEA /* VDP2_ps.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE232328DA120098E5AF /* VDP2_ps.glsl */; };
+		33587AE32344337D00D90AEA /* tvos.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3307801122BA063D0033C8AE /* tvos.xcassets */; };
+		33587AE42344337D00D90AEA /* VDP2_vs.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE28232966890098E5AF /* VDP2_vs.glsl */; };
+		33587AEC2344347A00D90AEA /* tvos.plist in Resources */ = {isa = PBXBuildFile; fileRef = 33587AEB2344347A00D90AEA /* tvos.plist */; };
+		33587AF92344364000D90AEA /* libAzelLib-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587AC6234432DB00D90AEA /* libAzelLib-tvos.a */; };
+		33587AFA2344364300D90AEA /* libsoloud-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587AC8234432DB00D90AEA /* libsoloud-tvos.a */; };
+		33587AFB234436A800D90AEA /* libAzelLib-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABB234432CE00D90AEA /* libAzelLib-ios.a */; };
+		33587AFC234436AB00D90AEA /* libsoloud-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABD234432CE00D90AEA /* libsoloud-ios.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		33077F3C22B9F97D0033C8AE /* PBXContainerItemProxy */ = {
+		3324E2E223430A260059DE3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 33077F3522B9F97D0033C8AE /* PDS.xcodeproj */;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 01ECA9DD1E7443D0A160BBD2;
-			remoteInfo = AzelLib;
+			remoteGlobalIDString = FD6526630DE8FCCB002AD96B;
+			remoteInfo = "libSDL-iOS";
 		};
-		33077F3E22B9F97D0033C8AE /* PBXContainerItemProxy */ = {
+		3324E2E423430A260059DE3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 33077F3522B9F97D0033C8AE /* PDS.xcodeproj */;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8CF757240A7F481C85EBACB2;
-			remoteInfo = soloud;
+			remoteGlobalIDString = 52ED1E5C222889500061FCE0;
+			remoteInfo = "libSDL-iOS-dylib";
 		};
-		33077F4422B9F9DE0033C8AE /* PBXContainerItemProxy */ = {
+		3324E2E623430A260059DE3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 33077F3522B9F97D0033C8AE /* PDS.xcodeproj */;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = FAB598141BB5C1B100BE72C5;
+			remoteInfo = "libSDL-tvOS";
+		};
+		3324E2E823430A260059DE3C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F3E3C7572241389A007D243C;
+			remoteInfo = "libSDL-tvOS-dylib";
+		};
+		3324E2EA23430A260059DE3C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F3E3C65222406928007D243C;
+			remoteInfo = "libSDLmain-iOS";
+		};
+		3324E2EC23430A260059DE3C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F3E3C75F224138AE007D243C;
+			remoteInfo = "libSDLmain-tvOS";
+		};
+		3324E2EE23430A650059DE3C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 0B0743EDAEDD4D8791BCB30A;
-			remoteInfo = AzelLib;
+			remoteGlobalIDString = FD6526620DE8FCCB002AD96B;
+			remoteInfo = "libSDL-iOS";
 		};
-		33077F4622B9F9E00033C8AE /* PBXContainerItemProxy */ = {
+		3324E2F223430A6D0059DE3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 33077F3522B9F97D0033C8AE /* PDS.xcodeproj */;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = C9460DEC6D8649C3B1A7D711;
-			remoteInfo = soloud;
+			remoteGlobalIDString = F3E3C56022406928007D243C;
+			remoteInfo = "libSDLmain-iOS";
 		};
-		33077F4922B9FC450033C8AE /* PBXContainerItemProxy */ = {
+		33587ABA234432CE00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 33077F3522B9F97D0033C8AE /* PDS.xcodeproj */;
+			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 68E480560F3848B690DDA8BF;
-			remoteInfo = PDS;
+			remoteGlobalIDString = 865D3244E63C4B45B11B346D;
+			remoteInfo = "AzelLib-ios";
+		};
+		33587ABC234432CE00D90AEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 212FDD9CED38467B8DFA18EA;
+			remoteInfo = "soloud-ios";
+		};
+		33587AC5234432DB00D90AEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7D3AB6A3607D4D0E80495FE8;
+			remoteInfo = "AzelLib-tvos";
+		};
+		33587AC7234432DB00D90AEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BDF02692BA8A433A83B41BC7;
+			remoteInfo = "soloud-tvos";
+		};
+		33587AED2344356900D90AEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 4BFEEB8AD8DC4684BECF587E;
+			remoteInfo = "AzelLib-ios";
+		};
+		33587AEF2344356D00D90AEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 09060BC25F18408B9D2577EE;
+			remoteInfo = "soloud-ios";
+		};
+		33587AF12344357A00D90AEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = E59CD6E27B904FB380913917;
+			remoteInfo = "AzelLib-tvos";
+		};
+		33587AF32344357C00D90AEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 125986FB136F49E7B1DA97F9;
+			remoteInfo = "soloud-tvos";
+		};
+		33587AF52344358300D90AEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = FAB598131BB5C1B100BE72C5;
+			remoteInfo = "libSDL-tvOS";
+		};
+		33587AF72344358700D90AEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F3E3C758224138AE007D243C;
+			remoteInfo = "libSDLmain-tvOS";
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		33077F1D22B9F3670033C8AE /* azel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = azel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		33077F1D22B9F3670033C8AE /* azel-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "azel-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		33077F2B22B9F3690033C8AE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		33077F3522B9F97D0033C8AE /* PDS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PDS.xcodeproj; path = ../../../perso/PanzerSaga/build/ios/PDS.xcodeproj; sourceTree = "<group>"; };
 		33077F4122B9F9BC0033C8AE /* PDS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PDS.cpp; path = ../../../../perso/PanzerSaga/PDS/PDS.cpp; sourceTree = "<group>"; };
 		33077F6C22B9FE420033C8AE /* common_generated.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = common_generated.cpp; path = ../../../../perso/PanzerSaga/PDS/common_generated.cpp; sourceTree = "<group>"; };
 		33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imgui_impl_opengl3.cpp; path = ../../../../perso/PanzerSaga/ThirdParty/imgui/examples/imgui_impl_opengl3.cpp; sourceTree = "<group>"; };
@@ -94,8 +207,13 @@
 		3307807722BAB23E0033C8AE /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		3307807922BAB27C0033C8AE /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		3307807B22BAB2930033C8AE /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
+		3324E2D323430A260059DE3C /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "../ThirdParty/SDL2/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
 		3328FE232328DA120098E5AF /* VDP2_ps.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = VDP2_ps.glsl; path = ../../data/VDP2_ps.glsl; sourceTree = "<group>"; };
 		3328FE28232966890098E5AF /* VDP2_vs.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = VDP2_vs.glsl; path = ../../data/VDP2_vs.glsl; sourceTree = "<group>"; };
+		33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "PDS-ios.xcodeproj"; path = "ios/PDS-ios.xcodeproj"; sourceTree = "<group>"; };
+		33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "PDS-tvos.xcodeproj"; path = "tvos/PDS-tvos.xcodeproj"; sourceTree = "<group>"; };
+		33587AE92344337D00D90AEA /* azel-tvos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "azel-tvos.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		33587AEB2344347A00D90AEA /* tvos.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = tvos.plist; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,18 +221,37 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				33587AFB234436A800D90AEA /* libAzelLib-ios.a in Frameworks */,
 				3307807C22BAB2930033C8AE /* CoreGraphics.framework in Frameworks */,
 				3307807A22BAB27C0033C8AE /* QuartzCore.framework in Frameworks */,
 				3307807622BAB2130033C8AE /* AudioToolbox.framework in Frameworks */,
 				3307807422BAB1AE0033C8AE /* CoreMotion.framework in Frameworks */,
 				3307806E22BAB17B0033C8AE /* GameController.framework in Frameworks */,
 				3307806C22BAB1720033C8AE /* Metal.framework in Frameworks */,
+				33587AFC234436AB00D90AEA /* libsoloud-ios.a in Frameworks */,
 				3307806A22BAB1670033C8AE /* UIKit.framework in Frameworks */,
 				3307806822BAB1540033C8AE /* Foundation.framework in Frameworks */,
 				3307806622BAB1460033C8AE /* OpenGLES.framework in Frameworks */,
 				3307806422BAB13B0033C8AE /* AVFoundation.framework in Frameworks */,
-				33077F6B22B9FDFE0033C8AE /* libsoloud.a in Frameworks */,
-				33077F6A22B9FDFB0033C8AE /* libAzelLib.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		33587AD62344337D00D90AEA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				33587AD72344337D00D90AEA /* CoreGraphics.framework in Frameworks */,
+				33587AD82344337D00D90AEA /* QuartzCore.framework in Frameworks */,
+				33587AD92344337D00D90AEA /* AudioToolbox.framework in Frameworks */,
+				33587AF92344364000D90AEA /* libAzelLib-tvos.a in Frameworks */,
+				33587ADA2344337D00D90AEA /* CoreMotion.framework in Frameworks */,
+				33587ADB2344337D00D90AEA /* GameController.framework in Frameworks */,
+				33587ADC2344337D00D90AEA /* Metal.framework in Frameworks */,
+				33587ADD2344337D00D90AEA /* UIKit.framework in Frameworks */,
+				33587ADE2344337D00D90AEA /* Foundation.framework in Frameworks */,
+				33587AFA2344364300D90AEA /* libsoloud-tvos.a in Frameworks */,
+				33587ADF2344337D00D90AEA /* OpenGLES.framework in Frameworks */,
+				33587AE02344337D00D90AEA /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -124,7 +261,9 @@
 		33077F1422B9F3670033C8AE = {
 			isa = PBXGroup;
 			children = (
-				33077F3522B9F97D0033C8AE /* PDS.xcodeproj */,
+				33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */,
+				33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */,
+				3324E2D323430A260059DE3C /* SDL.xcodeproj */,
 				33077F1F22B9F3670033C8AE /* azel */,
 				33077F1E22B9F3670033C8AE /* Products */,
 				33077F6922B9FDFB0033C8AE /* Frameworks */,
@@ -134,7 +273,8 @@
 		33077F1E22B9F3670033C8AE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				33077F1D22B9F3670033C8AE /* azel.app */,
+				33077F1D22B9F3670033C8AE /* azel-ios.app */,
+				33587AE92344337D00D90AEA /* azel-tvos.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -142,6 +282,7 @@
 		33077F1F22B9F3670033C8AE /* azel */ = {
 			isa = PBXGroup;
 			children = (
+				33587AEB2344347A00D90AEA /* tvos.plist */,
 				3328FE28232966890098E5AF /* VDP2_vs.glsl */,
 				3328FE232328DA120098E5AF /* VDP2_ps.glsl */,
 				3307801122BA063D0033C8AE /* tvos.xcassets */,
@@ -155,16 +296,6 @@
 				33077F2B22B9F3690033C8AE /* Info.plist */,
 			);
 			path = azel;
-			sourceTree = "<group>";
-		};
-		33077F3622B9F97D0033C8AE /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				33077F3D22B9F97D0033C8AE /* libAzelLib.a */,
-				33077F4A22B9FC450033C8AE /* PDS */,
-				33077F3F22B9F97D0033C8AE /* libsoloud.a */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		33077F6922B9FDFB0033C8AE /* Frameworks */ = {
@@ -187,12 +318,43 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		3324E2D423430A260059DE3C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3324E2E323430A260059DE3C /* libSDL2.a */,
+				3324E2E523430A260059DE3C /* libSDL2.dylib */,
+				3324E2E723430A260059DE3C /* libSDL2.a */,
+				3324E2E923430A260059DE3C /* libSDL2.dylib */,
+				3324E2EB23430A260059DE3C /* libSDLmain.a */,
+				3324E2ED23430A260059DE3C /* libSDLmain.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		33587AB4234432CE00D90AEA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				33587ABB234432CE00D90AEA /* libAzelLib-ios.a */,
+				33587ABD234432CE00D90AEA /* libsoloud-ios.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		33587ABF234432DB00D90AEA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				33587AC6234432DB00D90AEA /* libAzelLib-tvos.a */,
+				33587AC8234432DB00D90AEA /* libsoloud-tvos.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		33077F1C22B9F3670033C8AE /* azel */ = {
+		33077F1C22B9F3670033C8AE /* azel-ios */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 33077F3022B9F3690033C8AE /* Build configuration list for PBXNativeTarget "azel" */;
+			buildConfigurationList = 33077F3022B9F3690033C8AE /* Build configuration list for PBXNativeTarget "azel-ios" */;
 			buildPhases = (
 				33077F1922B9F3670033C8AE /* Sources */,
 				33077F1A22B9F3670033C8AE /* Frameworks */,
@@ -202,12 +364,36 @@
 			buildRules = (
 			);
 			dependencies = (
-				33077F4722B9F9E00033C8AE /* PBXTargetDependency */,
-				33077F4522B9F9DE0033C8AE /* PBXTargetDependency */,
+				33587AF02344356D00D90AEA /* PBXTargetDependency */,
+				33587AEE2344356900D90AEA /* PBXTargetDependency */,
+				3324E2F323430A6D0059DE3C /* PBXTargetDependency */,
+				3324E2EF23430A650059DE3C /* PBXTargetDependency */,
 			);
-			name = azel;
+			name = "azel-ios";
 			productName = azel;
-			productReference = 33077F1D22B9F3670033C8AE /* azel.app */;
+			productReference = 33077F1D22B9F3670033C8AE /* azel-ios.app */;
+			productType = "com.apple.product-type.application";
+		};
+		33587AC92344337D00D90AEA /* azel-tvos */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 33587AE62344337D00D90AEA /* Build configuration list for PBXNativeTarget "azel-tvos" */;
+			buildPhases = (
+				33587ACE2344337D00D90AEA /* Sources */,
+				33587AD62344337D00D90AEA /* Frameworks */,
+				33587AE12344337D00D90AEA /* Resources */,
+				33587AE52344337D00D90AEA /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				33587AF82344358700D90AEA /* PBXTargetDependency */,
+				33587AF62344358300D90AEA /* PBXTargetDependency */,
+				33587AF42344357C00D90AEA /* PBXTargetDependency */,
+				33587AF22344357A00D90AEA /* PBXTargetDependency */,
+			);
+			name = "azel-tvos";
+			productName = azel;
+			productReference = 33587AE92344337D00D90AEA /* azel-tvos.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -237,38 +423,95 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 33077F3622B9F97D0033C8AE /* Products */;
-					ProjectRef = 33077F3522B9F97D0033C8AE /* PDS.xcodeproj */;
+					ProductGroup = 33587AB4234432CE00D90AEA /* Products */;
+					ProjectRef = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
+				},
+				{
+					ProductGroup = 33587ABF234432DB00D90AEA /* Products */;
+					ProjectRef = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
+				},
+				{
+					ProductGroup = 3324E2D423430A260059DE3C /* Products */;
+					ProjectRef = 3324E2D323430A260059DE3C /* SDL.xcodeproj */;
 				},
 			);
 			projectRoot = "";
 			targets = (
-				33077F1C22B9F3670033C8AE /* azel */,
+				33077F1C22B9F3670033C8AE /* azel-ios */,
+				33587AC92344337D00D90AEA /* azel-tvos */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		33077F3D22B9F97D0033C8AE /* libAzelLib.a */ = {
+		3324E2E323430A260059DE3C /* libSDL2.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libAzelLib.a;
-			remoteRef = 33077F3C22B9F97D0033C8AE /* PBXContainerItemProxy */;
+			path = libSDL2.a;
+			remoteRef = 3324E2E223430A260059DE3C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		33077F3F22B9F97D0033C8AE /* libsoloud.a */ = {
+		3324E2E523430A260059DE3C /* libSDL2.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libsoloud.a;
-			remoteRef = 33077F3E22B9F97D0033C8AE /* PBXContainerItemProxy */;
+			path = libSDL2.dylib;
+			remoteRef = 3324E2E423430A260059DE3C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		33077F4A22B9FC450033C8AE /* PDS */ = {
+		3324E2E723430A260059DE3C /* libSDL2.a */ = {
 			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = PDS;
-			path = PDS.app;
-			remoteRef = 33077F4922B9FC450033C8AE /* PBXContainerItemProxy */;
+			fileType = archive.ar;
+			path = libSDL2.a;
+			remoteRef = 3324E2E623430A260059DE3C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3324E2E923430A260059DE3C /* libSDL2.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDL2.dylib;
+			remoteRef = 3324E2E823430A260059DE3C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3324E2EB23430A260059DE3C /* libSDLmain.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDLmain.a;
+			remoteRef = 3324E2EA23430A260059DE3C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3324E2ED23430A260059DE3C /* libSDLmain.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDLmain.a;
+			remoteRef = 3324E2EC23430A260059DE3C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		33587ABB234432CE00D90AEA /* libAzelLib-ios.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libAzelLib-ios.a";
+			remoteRef = 33587ABA234432CE00D90AEA /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		33587ABD234432CE00D90AEA /* libsoloud-ios.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libsoloud-ios.a";
+			remoteRef = 33587ABC234432CE00D90AEA /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		33587AC6234432DB00D90AEA /* libAzelLib-tvos.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libAzelLib-tvos.a";
+			remoteRef = 33587AC5234432DB00D90AEA /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		33587AC8234432DB00D90AEA /* libsoloud-tvos.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libsoloud-tvos.a";
+			remoteRef = 33587AC7234432DB00D90AEA /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -278,9 +521,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				33587AEC2344347A00D90AEA /* tvos.plist in Resources */,
 				3328FE272328DA120098E5AF /* VDP2_ps.glsl in Resources */,
 				3307801222BA063D0033C8AE /* tvos.xcassets in Resources */,
 				3328FE29232966890098E5AF /* VDP2_vs.glsl in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		33587AE12344337D00D90AEA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				33587AE22344337D00D90AEA /* VDP2_ps.glsl in Resources */,
+				33587AE32344337D00D90AEA /* tvos.xcassets in Resources */,
+				33587AE42344337D00D90AEA /* VDP2_vs.glsl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +542,23 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		3307800822BA034F0033C8AE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp ../data/* $CONFIGURATION_BUILD_DIR/$CONTENTS_FOLDER_PATH/\n\n";
+		};
+		33587AE52344337D00D90AEA /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -321,18 +592,62 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		33587ACE2344337D00D90AEA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				33587ACF2344337D00D90AEA /* common_generated.cpp in Sources */,
+				33587AD02344337D00D90AEA /* imgui_impl_sdl.cpp in Sources */,
+				33587AD12344337D00D90AEA /* imgui_widgets.cpp in Sources */,
+				33587AD22344337D00D90AEA /* imgui_impl_opengl3.cpp in Sources */,
+				33587AD32344337D00D90AEA /* PDS.cpp in Sources */,
+				33587AD42344337D00D90AEA /* imgui_draw.cpp in Sources */,
+				33587AD52344337D00D90AEA /* imgui.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		33077F4522B9F9DE0033C8AE /* PBXTargetDependency */ = {
+		3324E2EF23430A650059DE3C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = AzelLib;
-			targetProxy = 33077F4422B9F9DE0033C8AE /* PBXContainerItemProxy */;
+			name = "libSDL-iOS";
+			targetProxy = 3324E2EE23430A650059DE3C /* PBXContainerItemProxy */;
 		};
-		33077F4722B9F9E00033C8AE /* PBXTargetDependency */ = {
+		3324E2F323430A6D0059DE3C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = soloud;
-			targetProxy = 33077F4622B9F9E00033C8AE /* PBXContainerItemProxy */;
+			name = "libSDLmain-iOS";
+			targetProxy = 3324E2F223430A6D0059DE3C /* PBXContainerItemProxy */;
+		};
+		33587AEE2344356900D90AEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "AzelLib-ios";
+			targetProxy = 33587AED2344356900D90AEA /* PBXContainerItemProxy */;
+		};
+		33587AF02344356D00D90AEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "soloud-ios";
+			targetProxy = 33587AEF2344356D00D90AEA /* PBXContainerItemProxy */;
+		};
+		33587AF22344357A00D90AEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "AzelLib-tvos";
+			targetProxy = 33587AF12344357A00D90AEA /* PBXContainerItemProxy */;
+		};
+		33587AF42344357C00D90AEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "soloud-tvos";
+			targetProxy = 33587AF32344357C00D90AEA /* PBXContainerItemProxy */;
+		};
+		33587AF62344358300D90AEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL-tvOS";
+			targetProxy = 33587AF52344358300D90AEA /* PBXContainerItemProxy */;
+		};
+		33587AF82344358700D90AEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDLmain-tvOS";
+			targetProxy = 33587AF72344358700D90AEA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -387,7 +702,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -440,7 +755,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -463,6 +778,7 @@
 					../ThirdParty/glm,
 				);
 				INFOPLIST_FILE = ios.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -490,6 +806,7 @@
 					../ThirdParty/glm,
 				);
 				INFOPLIST_FILE = ios.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -500,6 +817,62 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		33587AE72344337D00D90AEA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-2";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 83K9KCTHZY;
+				HEADER_SEARCH_PATHS = (
+					../AzelLib,
+					../ThirdParty/SDL2/include,
+					../ThirdParty/soloud/soloud/include,
+					../ThirdParty/imgui,
+					../ThirdParty/glm,
+				);
+				INFOPLIST_FILE = tvos.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = "../ThirdParty/SDL2/Xcode-iOS/SDL/build/libSDL2_iphone.a";
+				PRODUCT_BUNDLE_IDENTIFIER = net.yaz0r.azel;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = appletvos;
+			};
+			name = Debug;
+		};
+		33587AE82344337D00D90AEA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-2";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 83K9KCTHZY;
+				HEADER_SEARCH_PATHS = (
+					../AzelLib,
+					../ThirdParty/SDL2/include,
+					../ThirdParty/soloud/soloud/include,
+					../ThirdParty/imgui,
+					../ThirdParty/glm,
+				);
+				INFOPLIST_FILE = tvos.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = "../ThirdParty/SDL2/Xcode-iOS/SDL/build/libSDL2_iphone.a";
+				PRODUCT_BUNDLE_IDENTIFIER = net.yaz0r.azel;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = appletvos;
 			};
 			name = Release;
 		};
@@ -515,11 +888,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		33077F3022B9F3690033C8AE /* Build configuration list for PBXNativeTarget "azel" */ = {
+		33077F3022B9F3690033C8AE /* Build configuration list for PBXNativeTarget "azel-ios" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				33077F3122B9F3690033C8AE /* Debug */,
 				33077F3222B9F3690033C8AE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		33587AE62344337D00D90AEA /* Build configuration list for PBXNativeTarget "azel-tvos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				33587AE72344337D00D90AEA /* Debug */,
+				33587AE82344337D00D90AEA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

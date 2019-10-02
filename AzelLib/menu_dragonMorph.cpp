@@ -177,7 +177,7 @@ void generateLightFalloffMap(u32 r4, u32 r5, u32 r6)
     //addSlaveCommand(0,0,0, copyFalloffTableToSlave);
 }
 
-void generateCameraMatrixSub1(sVec3_FP& r4, sVec3_FP& r5_output)
+void generateCameraMatrixSub1(const sVec3_FP& r4, sVec3_FP& r5_output)
 {
     sVec2_FP temp;
     generateCameraMatrixSub1(r4, temp);
@@ -186,7 +186,7 @@ void generateCameraMatrixSub1(sVec3_FP& r4, sVec3_FP& r5_output)
     r5_output[1] = temp[1];
 }
 
-void generateCameraMatrixSub1(sVec3_FP& r4, sVec2_FP& r5)
+void generateCameraMatrixSub1(const sVec3_FP& r4, sVec2_FP& r5)
 {
     if ((r4[0] == 0) && (r4[2] == 0))
     {
