@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(soloud C)
 
+IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
+set(SOLOUD_LIB_NAME soloud-ios)
+ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES tvOS)
+set(SOLOUD_LIB_NAME soloud-tvos)
+ELSE()
+set(SOLOUD_LIB_NAME soloud)
+ENDIF()
+
 file(GLOB_RECURSE SOLOUD_HEADERS ${soloud_SOURCE_DIR}/soloud/include/*.h)
 file(GLOB_RECURSE SOLOUD_SOURCES
     ${soloud_SOURCE_DIR}/soloud/src/core/*.cpp
@@ -16,11 +24,11 @@ ${SOLOUD_HEADERS}
 ${SOLOUD_SOURCES}
 )
 
-add_library(soloud STATIC ${SOLOUD_SOURCES})
+add_library(${SOLOUD_LIB_NAME} STATIC ${SOLOUD_SOURCES})
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 IF(${CMAKE_SYSTEM_NAME} STREQUAL watchOS)
-target_compile_definitions(soloud PRIVATE WITH_NULL=1)
+target_compile_definitions(${SOLOUD_LIB_NAME} PRIVATE WITH_NULL=1)
 ELSE()
-target_compile_definitions(soloud PRIVATE WITH_SDL2_STATIC=1)
+target_compile_definitions(${SOLOUD_LIB_NAME} PRIVATE WITH_SDL2_STATIC=1)
 ENDIF()

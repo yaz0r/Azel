@@ -26,12 +26,20 @@ file(GLOB_RECURSE SRC_FIELD_A3
     "field/field_a3/*.h"
 )
 
+file(GLOB_RECURSE SRC_BATTLE
+    "battle/*.cpp"
+    "battle/*.h"
+    "battle/BTL_A3/*.cpp"
+    "battle/BTL_A3/*.h"
+)
+
 set(SOURCES
  ${SOURCES}
  ${SRC_KERNEL}
  ${SRC_ROOT}
  ${SRC_TOWN}
  ${SRC_FIELD_A3}
+ ${SRC_BATTLE}
 
 ${THIRD_PARTY}/imgui/imgui.cpp
 ${THIRD_PARTY}/imgui/imgui_draw.cpp
@@ -129,4 +137,10 @@ else()
 endif()
 
 
+IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
+add_library (AzelLib-ios ${SOURCES})
+ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES tvOS)
+add_library (AzelLib-tvos ${SOURCES})
+ELSE()
 add_library (AzelLib ${SOURCES})
+ENDIF()

@@ -1,4 +1,11 @@
-project(PDS)
+IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
+	project(PDS-ios)
+ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES tvOS)
+	project(PDS-tvos)
+ELSE()
+	project(PDS)
+ENDIF()
+
 cmake_minimum_required(VERSION 3.9)
 
 set(THIRD_PARTY "${CMAKE_SOURCE_DIR}/ThirdParty")
@@ -16,7 +23,6 @@ add_subdirectory( AzelLib )
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
 	add_subdirectory( ${THIRD_PARTY}/soloud )
-	add_subdirectory( PDS )
 ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL watchOS)
 	add_subdirectory( ${THIRD_PARTY}/soloud )
 	add_subdirectory( PDS_WatchOS )
