@@ -1,13 +1,24 @@
 #include "PDS.h"
 #include "BTL_A3.h"
 #include "battle/battleManager.h"
-#include "battle/battleOverlay.h"
 #include "battle/battleMainTask.h"
 #include "town/town.h"
 #include "kernel/vdp1Allocator.h"
 #include "battle/battleEngine.h"
 
-BTL_A3_data* g_BTL_A3 = nullptr;
+struct BTL_A3_data* g_BTL_A3 = nullptr;
+
+struct BTL_A3_data : public battleOverlay
+{
+    sSaturnPtr getBattleEngineInitData() override
+    {
+        return getSaturnPtr(0x60AAFA0);
+    }
+    void invoke(sSaturnPtr Func, struct s_battleDragon*, u32, u32) override
+    {
+        FunctionUnimplemented();
+    }
+};
 
 void battle_A3_initMusic(p_workArea pThis)
 {
@@ -118,6 +129,8 @@ p_workArea overlayStart_BTL_A3(p_workArea parent)
         g_BTL_A3->m_dataSize = fileSize;
         g_BTL_A3->m_base = 0x6054000;
         g_BTL_A3->init();
+
+        gCurrentBattleOverlay = g_BTL_A3;
     }
 
     return createBattleMainTask(parent, &battle_A3_initMusic, battle_A3_func0);

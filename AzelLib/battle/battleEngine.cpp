@@ -3,73 +3,12 @@
 #include "battleManager.h"
 #include "battleOverlay.h"
 #include "battleGrid.h"
+#include "battleEngineSub0.h"
+#include "battleOverlay_20.h"
 
 #include "BTL_A3/BTL_A3.h"
 
 void fieldPaletteTaskInitSub0Sub2();
-
-struct s_battleEngineSub
-{
-    s8 m0;
-    s32 m4;
-    s32 m8;
-    // size C?
-};
-
-struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine, sSaturnPtr>
-{
-    sVec3_FP mC;
-    sVec3_FP m18;
-    sVec3_FP m6C;
-    sVec3_FP m104;
-    u32 m188_flags;
-    s8 m18C_status;
-    std::array<s32, 2> m190;
-    sVec3_FP m1A0;
-    sVec3_FP m1AC;
-    fixedPoint m1D0;
-    fixedPoint m1D4;
-    int m1E8[2];
-    sMatrix4x3 m1F0;
-    s8 m22C;
-    s8 m22D;
-    s8 m230;
-    sVec3_FP m234;
-    sVec3_FP m240;
-    sVec3_FP m24C;
-    sVec3_FP m258;
-    sVec3_FP m264;
-    sVec3_FP m270;
-    std::array<s32, 4> m354;
-    std::array<s32, 4> m364;
-    std::array<s32, 4> m374;
-    std::array<s16, 3> m390;
-    std::array<s16, 2> m398;
-    s16 m3A2;
-    std::array<s16, 2> m3A4;
-    sSaturnPtr m3A8_overlayBattledata;
-    sSaturnPtr m3AC;
-    s8 m3B0_subBattleId;
-    s8 m3B1;
-    s32 m3B4;
-    s32 m3B8;
-    s32 m3BC;
-    s8 m3CA;
-    p_workArea m3CC;
-    sVec3_FP* m3D8;
-    s32 m434;
-    s32 m43C;
-    fixedPoint m440;
-    std::array<fixedPoint, 4> m45C;
-    fixedPoint m46C;
-    fixedPoint m470;
-    sVec3_FP m474;
-    std::array<s16, 2> m480;
-    std::array<std::array<s16, 2>, 5> m484;
-    s16 m498;
-    std::array<s_battleEngineSub, 0x7F> m49C;
-    // size: 0xaa8
-};
 
 void initBattleEngineArray()
 {
@@ -245,7 +184,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     int uVar4;
     int uVar3;
 
-    sSaturnPtr pData = readSaturnEA(g_BTL_A3->getSaturnPtr(0x60AAFA0) + getBattleManager()->m4 * 4);
+    sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getBattleEngineInitData() + getBattleManager()->m4 * 4);
     if (pData.isNull())
     {
         cStack60 = 0x64;
@@ -393,23 +332,49 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     }
 }
 
-p_workArea battleEngine_UpdateSub0(p_workArea parent)
+void battleEngine_UpdateSub1Sub0(s32 param_1)
 {
-    FunctionUnimplemented();
-    return nullptr;
+    if (param_1 > 100)
+    {
+        param_1 = 100;
+    }
+    else if (param_1 < 0)
+    {
+        param_1 = 0;
+    }
+
+    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m0 = setDividend(getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m2 * 65536, param_1 * 65536, 0x640000);
 }
 
-void battleEngine_UpdateSub1(int)
+void battleEngine_UpdateSub1(int bitMask)
 {
-    FunctionUnimplemented();
+    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
+    int iVar7 = 0;
+    while (readSaturnU32(pBattleEngine->m3AC + iVar7 * 0xC) != 0)
+    {
+        if (bitMask & readSaturnU32(pBattleEngine->m3AC + iVar7 * 0xC + 8))
+        {
+            sSaturnPtr functionPointer = readSaturnEA(pBattleEngine->m3AC + iVar7 * 0xC);
+            gCurrentBattleOverlay->invoke(functionPointer, getBattleManager()->m10_battleOverlay->m18_dragon, readSaturnU32(pBattleEngine->m3AC + iVar7 * 0xC + 4), iVar7);
+            pBattleEngine->m3B1++;
+
+            sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getBattleEngineInitData() + getBattleManager()->m4 * 4);
+            if (readSaturnU32(pData) == 0)
+            {
+                getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m2 = 150;
+                battleEngine_UpdateSub1Sub0(0);
+            }
+            else
+            {
+                getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m2 = readSaturnS16(pData + getBattleManager()->m8 * 0x10 + 2);
+                battleEngine_UpdateSub1Sub0(readSaturnS8(pData + getBattleManager()->m8 * 0x10 + 8 + getBattleManager()->m10_battleOverlay->m4_battleEngine->m2CC));
+            }
+        }
+        iVar7++;
+    }
 }
 
 void battleEngine_UpdateSub2(p_workArea)
-{
-    FunctionUnimplemented();
-}
-
-void battleEngine_UpdateSub3(struct npcFileDeleter*)
 {
     FunctionUnimplemented();
 }
@@ -465,12 +430,12 @@ void battleEngine_Update(s_battleEngine* pThis)
 
         fieldPaletteTaskInitSub0Sub2();
 
-        pThis->m3CC = battleEngine_UpdateSub0(pThis);
+        pThis->m3CC = createBattleEngineSub0(pThis);
         pThis->m3B1 = 0;
 
         battleEngine_UpdateSub1(1);
         battleEngine_UpdateSub2(pThis);
-        battleEngine_UpdateSub3(dramAllocatorEnd[0].mC_buffer);
+        createBattleOverlay_task20(dramAllocatorEnd[0].mC_buffer);
         battleEngine_UpdateSub4(dramAllocatorEnd[0].mC_buffer);
         battleEngine_UpdateSub5();
 

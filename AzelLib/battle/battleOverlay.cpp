@@ -5,6 +5,8 @@
 
 std::string sBattleOverlayName = "";
 
+battleOverlay* gCurrentBattleOverlay = nullptr;
+
 static void battleOverlayTask_Init(sBattleOverlayTask* pThis)
 {
     getBattleManager()->m10_battleOverlay = pThis;
