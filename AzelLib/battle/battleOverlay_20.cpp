@@ -4,15 +4,40 @@
 #include "battleOverlay.h"
 #include "kernel/vdp1Allocator.h"
 #include "town/town.h" // todo: for npcFileDeleter
+#include "battleManager.h"
+#include "battleOverlay.h"
+#include "battleEngine.h"
 
-void s_battleOverlay_20_update(s_battleOverlay_20*)
+void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
 {
-    FunctionUnimplemented();
+    pThis->m2C++;
+    switch (pThis->m10)
+    {
+    case 0:
+        if (BattleEngineSub0_UpdateSub0())
+        {
+            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C == 2)
+                return;
+            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C == 0xE)
+                return;
+        }
+        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x80000)
+        {
+            assert(0);
+        }
+        break;
+    default:
+        assert(0);
+        break;
+    }
 }
 
 void s_battleOverlay_20_draw(s_battleOverlay_20*)
 {
-    FunctionUnimplemented();
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 8)
+    {
+        assert(0);
+    }
 }
 
 void s_battleOverlay_20_delete(s_battleOverlay_20*)

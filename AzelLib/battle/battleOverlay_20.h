@@ -14,6 +14,7 @@ struct s_battleOverlay_20 : public s_workAreaTemplate<s_battleOverlay_20>
     u16 m22;
     u16 m24;
     s32 m28;
+    u32 m2C;
     //size 0x68
 };
 

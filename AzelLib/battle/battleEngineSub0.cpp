@@ -5,15 +5,6 @@
 #include "battleEngine.h"
 #include "battleOverlay_20.h"
 
-s32 BattleEngineSub0_UpdateSub0()
-{
-    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x80) != 0)
-    {
-        return 1;
-    }
-    return 0;
-}
-
 void BattleEngineSub0_Update(s_battleEngineSub0* pThis)
 {
     int iVar2;

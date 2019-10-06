@@ -73,6 +73,17 @@ struct sVec3_FP
         return m_value == otherVec.m_value;
     }
 
+    sVec3_FP operator-() const
+    {
+        sVec3_FP result;
+        result[0] = -m_value[0];
+        result[1] = -m_value[1];
+        result[2] = -m_value[2];
+
+        return result;
+
+    }
+
     sVec3_FP operator-(sVec3_FP otherVec) const
     {
         sVec3_FP result;
@@ -224,6 +235,8 @@ struct sVec2_FP
         return *this;
     }
 };
+
+sVec3_FP MTH_Mul(const fixedPoint& a, const sVec3_FP& b);
 
 void Imgui_FP(const char* label, fixedPoint* pFP);
 void Imgui_FP_Angle(const char* name, fixedPoint* pFP);

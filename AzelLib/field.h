@@ -355,6 +355,15 @@ struct s_RGB8
     {
         return ((m2 & 0xFF) << 16) | ((m1 & 0xFF) << 8) | (m0 & 0xFF);
     }
+
+    static s_RGB8 fromVector(const sVec3_FP& inputColor)
+    {
+        s_RGB8 temp;
+        temp.m0 = inputColor[0].getInteger();
+        temp.m1 = inputColor[1].getInteger();
+        temp.m2 = inputColor[2].getInteger();
+        return temp;
+    }
 };
 
 s_RGB8 readSaturnRGB8(const sSaturnPtr& ptr);
