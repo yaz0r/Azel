@@ -151,14 +151,14 @@ s32 sqrt_I(s32 r4)
     return 0;
 }
 
-void initVDP1Projection(fixedPoint r4, u32 mode)
+void initVDP1Projection(fixedPoint fov, u32 mode)
 {
     {
-        float fValueInRad = r4.toFloat() * ((glm::pi<float>() / 2.f) / 1024.f);
+        float fValueInRad = fov.toFloat() * ((glm::pi<float>() / 2.f) / 1024.f);
         float fValueInDegree = glm::degrees<float>(fValueInRad);
         RendererSetFov(fValueInDegree);
     }
-    u32 angle = r4.getInteger();
+    u32 angle = fov.getInteger();
 
     fixedPoint sin = getSin(angle);
     fixedPoint cos = getCos(angle);

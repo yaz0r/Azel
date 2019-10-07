@@ -3,18 +3,9 @@
 #include "battleManager.h"
 #include "battleOverlay.h"
 #include "battleEngine.h"
+#include "battleDebug.h"
+#include "battleGrid.h"
 #include "kernel/fileBundle.h"
-
-s32 s_battleDragon_InitSub0()
-{
-    s8 bVar1 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m230;
-
-    if ((((bVar1 != 0) && (bVar1 != 1)) && (bVar1 != 2)) &&
-        (((bVar1 != 3 && (bVar1 != 8)) && (bVar1 != 10)))) {
-        return 0;
-    }
-    return 1;
-}
 
 void s_battleDragon_InitSub4Sub0()
 {
@@ -93,13 +84,328 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
     FunctionUnimplemented();
 }
 
+void s_battleDragon_UpdateSub0()
+{
+    if (gDragonState->m88)
+    {
+        FunctionUnimplemented();
+    }
+}
+
+void s_battleDragon_UpdateSub1(s_battleDragon* pThis)
+{
+    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
+    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xF])
+    {
+        assert(0);
+    }
+
+    sVec3_FP iVar3 = pThis->m8_position;
+    sVec3_FP local_44 = pBattleEngine->m104_dragonStartPosition + pBattleEngine->m164;
+    local_44 -= pBattleEngine->m234;
+    
+    pushCurrentMatrix();
+    translateCurrentMatrix(pBattleEngine->m234);
+    rotateCurrentMatrixZYX(pBattleEngine->m220);
+    sVec3_FP auStack56;
+    transformAndAddVecByCurrentMatrix(&local_44, &auStack56);
+    transformAndAddVec(auStack56, pThis->m8_position, cameraProperties2.m28[0]);
+    popMatrix();
+    pThis->m5C_deltaPosition = pThis->m8_position - iVar3;
+}
+
+void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
+{
+    int uVar5 = pThis->m84 & 0x1F;
+    int uVar7 = pThis->m84 & 0x20;
+    if (mainGameState.gameStats.m1_dragonLevel == 8)
+    {
+        assert(0);
+    }
+    
+    if (pThis->m1C4 & 0x40)
+    {
+        assert(0);
+    }
+
+    if (uVar7 == 0)
+    {
+        pThis->m1C4 &= ~1;
+    }
+    else
+    {
+        pThis->m1C4 |= 1;
+    }
+
+    if ((pThis->m84 & 2) == 0)
+    {
+        if ((pThis->m84 & 4) == 0)
+        {
+            if (pThis->m84 & 1)
+            {
+                assert(0);
+            }
+            if (pThis->m84 & 0x10)
+            {
+                assert(0);
+            }
+            if(pThis->m84 & 0x8)
+            {
+                assert(0);
+            }
+        }
+        else
+        {
+            pThis->m1CE = -1;
+            pThis->m1C4 |= 4;
+        }
+    }
+    else
+    {
+        pThis->m1CE = -1;
+        pThis->m1C4 |= 2;
+    }
+
+    if ((pThis->m1C4 & 2) == 0)
+    {
+        if ((pThis->m1C4 & 4) == 0)
+        {
+            if (uVar5)
+                return;
+
+            if ((mainGameState.gameStats.maxHP / 4) == 0)
+            {
+                FunctionUnimplemented();
+            }
+            else
+            {
+                FunctionUnimplemented();
+            }
+
+            s_battleDragon_InitSub4Sub0();
+            if (gDragonState->mC_dragonType == 8)
+            {
+                assert(0);
+            }
+            else
+            {
+                int iVar2 = pThis->m1CC;
+                if (((((iVar2 == 0) || (iVar2 == 1)) || (iVar2 == 5)) || (iVar2 == 6)) &&
+                    ((gDragonState->m28_dragon3dModel).m16_previousAnimationFrame == 0xc)) {
+                    playSoundEffect(0xb);
+                }
+            }
+            return;
+        }
+        else
+        {
+            pThis->m1CC = 0x11;
+            s_battleDragon_InitSub4(pThis->m1CC, 9);
+            pThis->m1CE = -1;
+            pThis->m1C4 &= ~4;
+        }
+    }
+    else
+    {
+        pThis->m1CC = 0x10;
+        playSoundEffect(0x12);
+        s_battleDragon_InitSub4(pThis->m1CC, 9);
+        pThis->m1CE = -1;
+        pThis->m1C4 &= ~2;
+    }
+}
+
+void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
+{
+    s32 uVar4 = pThis->m84;
+    if (gDragonState->mC_dragonType == 8)
+    {
+        assert(0);
+    }
+
+    if (uVar4 & 0x2E00)
+    {
+        assert(0);
+    }
+
+    if (uVar4 & 0x5000)
+    {
+        assert(0);
+    }
+
+    if ((pThis->m1C4 & 0x80) == 0)
+    {
+        if (pThis->m1D0 < 1)
+        {
+            pThis->m1D0 = 0;
+            if ((getBattleManager()->m10_battleOverlay->m18_dragon->m84 & 0x100) == 0)
+            {
+                if (pThis->m84 & 0x18)
+                {
+                    s_battleDragon_InitSub3(pRider1State, 0x58, 5);
+                }
+            }
+            else
+            {
+                assert(0);
+            }
+        }
+        else
+        {
+            assert(0);
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+
+    updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
+    if ((pThis->m1C4 & 0x100) == 0)
+    {
+        if ((getBattleManager()->m10_battleOverlay->m18_dragon->m84 & 0x100) == 0)
+        {
+            if (pThis->m84 & 0x18)
+            {
+                s_battleDragon_InitSub3(pRider2State, 0x58, 5);
+            }
+        }
+        else
+        {
+            assert(0);
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+
+    updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
+}
+
+void s_battleDragon_UpdateSub2(s_battleDragon* pThis)
+{
+    int gridMode = getBattleManager()->m10_battleOverlay->m8_gridTask->m2;
+    if ((gridMode == 3) || (gridMode != 4))
+        return;
+
+    pThis->m44_deltaRotation[0] += MTH_Mul(pThis->m74_targetRotation[0] - pThis->m14_rotation[0], 0x51E);
+    pThis->m44_deltaRotation[0] -= MTH_Mul(pThis->m44_deltaRotation[0], 0x3333);
+    pThis->m14_rotation[0] += pThis->m44_deltaRotation[0];
+
+    pThis->m44_deltaRotation[1] += MTH_Mul(pThis->m74_targetRotation[1] - pThis->m14_rotation[1], 0x51E);
+    pThis->m44_deltaRotation[1] -= MTH_Mul(pThis->m44_deltaRotation[1], 0x3333);
+    pThis->m14_rotation[1] += pThis->m44_deltaRotation[1];
+
+    pThis->m44_deltaRotation[2] += MTH_Mul(pThis->m74_targetRotation[2] - pThis->m14_rotation[2], 0x51E);
+    pThis->m44_deltaRotation[2] -= MTH_Mul(pThis->m44_deltaRotation[2], 0x3333);
+    pThis->m14_rotation[2] += pThis->m44_deltaRotation[2];
+
+    s_battleDragon_UpdateSub2Sub0(pThis);
+    s_battleDragon_UpdateSub2Sub1(pThis);
+}
+
+void s_battleDragon_UpdateSub3(s_battleDragon* pThis)
+{
+    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
+
+    fixedPoint iStack44;
+    fixedPoint iStack40;
+    fixedPoint iStack36;
+    fixedPoint iStack56;
+    fixedPoint iVar2;
+    if (s_battleDragon_InitSub0() == 0)
+    {
+        assert(0);
+    }
+    else
+    {
+        iStack40 = MTH_Mul_5_6(getCos(pBattleEngine->m440.getInteger()), -pThis->m1C8, pBattleEngine->m1BC);
+        iStack44 = MTH_Mul(-pThis->m1C8, pBattleEngine->m1B8);
+        iStack36 = MTH_Mul_5_6(getCos(pBattleEngine->m440.getInteger()), -pThis->m1C8, pBattleEngine->m1BC);
+        iStack56 = MTH_Mul(0xE38E38, pBattleEngine->m1B8);
+        MTH_Mul_5_6(getCos(pBattleEngine->m440.getInteger()), 0xFE000000, pBattleEngine->m1BC);
+        iVar2 = MTH_Mul_5_6(getCos(pBattleEngine->m440.getInteger()), 0xfeaaaaab, -pBattleEngine->m1BC);
+    }
+
+    if ((pThis->m1C4 & 8) == 0)
+    {
+        pThis->m74_targetRotation[0] = iStack56;
+        pThis->m74_targetRotation[2] = iVar2;
+    }
+
+    updateDragonMovementFromControllerType1Sub2Sub1(&gDragonState->m78_animData, iStack44);
+    updateDragonMovementFromControllerType1Sub2Sub2(&gDragonState->m78_animData, iStack40);
+    updateDragonMovementFromControllerType1Sub2Sub3(&gDragonState->m78_animData, iStack36);
+}
+
+void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
+{
+    if ((pThis->m1C4 & 8) == 0)
+    {
+        if (pThis->mDC & 0x80000)
+        {
+            assert(0);
+        }
+
+        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x1000)
+        {
+            assert(0);
+        }
+    }
+}
+
+void s_battleDragon_UpdateSub5(s_battleDragon* pThis)
+{
+    if (pThis->m1C4 & 8)
+    {
+        assert(0);
+    }
+}
+
+void s_battleDragon_UpdateSub6()
+{
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x4000000)
+    {
+        assert(0);
+    }
+
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x2000000)
+    {
+        assert(0);
+    }
+}
+
 static void s_battleDragon_Update(s_battleDragon* pThis)
 {
-    FunctionUnimplemented();
+    s_battleDragon_UpdateSub0();
+    s_battleDragon_UpdateSub1(pThis);
+    pThis->m84 = pThis->m88;
+    pThis->m88 = 0;
+    s_battleDragon_UpdateSub2(pThis);
+    pThis->m14_rotation += pThis->m44_deltaRotation;
+    s_battleDragon_UpdateSub3(pThis);
+    if ((mainGameState.gameStats.m1_dragonLevel == 6) && (pThis->m24C != 0))
+    {
+        assert(0);
+    }
+    s_battleDragon_UpdateSub4(pThis);
+    s_battleDragon_UpdateSub5(pThis);
+    s_battleDragon_UpdateSub6();
 }
 
 static void s_battleDragon_Draw(s_battleDragon* pThis)
 {
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 8)
+    {
+        assert(0);
+    }
+
+    FunctionUnimplemented();
+
+    // TODO: this is a shortcut for debugging
+    submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, 0, &pThis->m8_position, &pThis->m14_rotation, 0);
+
     FunctionUnimplemented();
 }
 

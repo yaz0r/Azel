@@ -8,12 +8,6 @@ struct battleOverlay : public sSaturnMemoryFile
 
 extern battleOverlay* gCurrentBattleOverlay;
 
-struct sBattleOverlayTask_C
-{
-    s32 m200;
-    s32 m204;
-};
-
 struct sBattleOverlayTask : public s_workAreaTemplate<sBattleOverlayTask>
 {
     s16 m0;

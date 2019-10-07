@@ -5,6 +5,7 @@
 #include "battleGrid.h"
 #include "battleEngineSub0.h"
 #include "battleOverlay_20.h"
+#include "battleOverlay_C.h"
 #include "battleDebug.h"
 #include "battleDragon.h"
 
@@ -129,9 +130,37 @@ void createBattleDisplayCommandHelpTask(p_workArea parent, sSaturnPtr data)
     FunctionUnimplemented();
 }
 
+void battleEngine_InitSub8Sub0(sVec2_FP& param)
+{
+    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
+    s_battleGrid* pBattleGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
+
+    sVec3_FP delta = *pBattleEngine->m3D8 - *pBattleEngine->m3D4;
+    generateCameraMatrixSub1(delta, param);
+    
+    pBattleEngine->m1C8 = param[0];
+    pBattleEngine->m1CC = param[1];
+
+    pBattleGrid->m64[0] = param[0];
+    pBattleGrid->m64[1] = param[1];
+}
+
+void battleEngine_InitSub8Sub1(sVec2_FP& param)
+{
+    s_battleGrid* pBattleGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
+    pBattleGrid->mB4_gridRotation[0] = param[0];
+    pBattleGrid->mB4_gridRotation[1] = param[1];
+}
+
 void battleEngine_InitSub8()
 {
-    FunctionUnimplemented();
+    s_battleGrid* pBattleGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
+    pBattleGrid->m180_gridTranslation = *pBattleGrid->m1B8;
+    sVec2_FP auStack16;
+    battleEngine_InitSub8Sub0(auStack16);
+    battleEngine_InitSub8Sub1(auStack16);
+    pBattleGrid->m18C.zeroize();
+    pBattleGrid->mC0_gridRotationInterpolation.zeroize();
 }
 
 void battleEngine_InitSub9(p_workArea parent)
@@ -146,7 +175,16 @@ void battleEngine_InitSub10(p_workArea parent)
 
 void battleEngine_InitSub11()
 {
-    FunctionUnimplemented();
+    int iVar1 = gDragonState->mC_dragonType;
+    if (((((iVar1 == 1) || (iVar1 == 2)) || (iVar1 == 3)) || ((iVar1 == 4 || (iVar1 == 5)))) ||
+        ((iVar1 == 6 || ((iVar1 == 7 || (iVar1 == 8)))))) {
+        mainGameState.consumables[49] |= 4;
+        mainGameState.consumables[52] |= 0x74;
+    }
+    else {
+        mainGameState.consumables[49] &= ~4;
+        mainGameState.consumables[52] &= ~0x74;
+    }
 }
 
 void executeFuncPtr(sSaturnPtr funcPtr, s_battleEngine* pThis)
@@ -362,39 +400,162 @@ void battleEngine_UpdateSub1(int bitMask)
     }
 }
 
-void battleEngine_UpdateSub2(p_workArea)
-{
-    FunctionUnimplemented();
-}
-
 void battleEngine_UpdateSub4(struct npcFileDeleter*)
 {
     FunctionUnimplemented();
 }
 
+s32 s_battleDragon_InitSub0()
+{
+    s8 bVar1 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m230;
+
+    if ((((bVar1 != 0) && (bVar1 != 1)) && (bVar1 != 2)) &&
+        (((bVar1 != 3 && (bVar1 != 8)) && (bVar1 != 10)))) {
+        return 0;
+    }
+    return 1;
+}
+
+
 void battleEngine_UpdateSub5()
 {
-    FunctionUnimplemented();
+    s_battleDragon* pDragon = getBattleManager()->m10_battleOverlay->m18_dragon;
+
+    if (s_battleDragon_InitSub0() == 0)
+    {
+        assert(0);
+    }
+    else
+    {
+        pDragon->m74_targetRotation[1] -= pDragon->m74_targetRotation[1].normalized();
+    }
 }
 
-void battleEngine_UpdateSub10(int)
+void battleEngine_UpdateSub6(s_battleEngine* pThis)
 {
-    FunctionUnimplemented();
+    pThis->m1A0 = pThis->m1AC;
 }
 
-void battleEngine_UpdateSub7(p_workArea)
+void battleEngine_UpdateSub10(int param)
 {
-    FunctionUnimplemented();
+    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
+    pBattleEngine->m38C = param;
+    pBattleEngine->m188_flags |= 0x80;
+    pBattleEngine->m188_flags &= ~0x100;
+    pBattleEngine->m188_flags &= ~0x2000;
+    pBattleEngine->m188_flags |= 0x10;
+    pBattleEngine->m188_flags |= 0x20;
+    pBattleEngine->m188_flags |= 0x200;
+    pBattleEngine->m38D = 0;
+    pBattleEngine->m384 = 0;
+    pBattleEngine->m386 = 0;
+    pBattleEngine->m184 = 0;
+    pBattleEngine->m3E8.zeroize();
+    battleEngine_UpdateSub6(pBattleEngine);
 }
 
-void battleEngine_UpdateSub8(p_workArea)
+void battleEngine_UpdateSub8(s_battleEngine* pThis)
 {
-    FunctionUnimplemented();
+    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x16])
+    {
+        assert(0);
+    }
+
+    pThis->m264 += pThis->m1A0;
+    pThis->m234 + pThis->m270 + pThis->m264;
+    pThis->m240 = pThis->m270 + pThis->m258 + pThis->m264;
 }
 
-void battleEngine_UpdateSub9(p_workArea)
+s32 battleEngine_UpdateSub7Sub0Sub0()
 {
-    FunctionUnimplemented();
+    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x20) == 0)
+        return 1;
+    return 0;
+}
+
+s32 battleEngine_UpdateSub7Sub0Sub2Sub0()
+{
+    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x10) == 0)
+        return 1;
+    return 0;
+}
+
+s32 battleEngine_UpdateSub7Sub0()
+{
+    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
+    if (pBattleEngine->m3B2 < 1)
+    {
+        if (battleEngine_UpdateSub7Sub0Sub0() == 0)
+            return 0;
+
+        assert(0);
+    }
+    assert(0);
+}
+
+void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
+{
+    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
+    if (pBattleEngine->m188_flags & 0x20000)
+    {
+        assert(0);
+    }
+}
+
+void battleEngine_UpdateSub7Sub0Sub2(s_battleEngine* pThis)
+{
+    if (battleEngine_UpdateSub7Sub0Sub2Sub0() != 0)
+    {
+        assert(0);
+    }
+}
+
+void battleEngine_UpdateSub9(s_battleEngine* pThis)
+{
+    sVec2_FP aiStack52;
+
+    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x200000) == 0)
+    {
+        battleEngine_InitSub2Sub0(pThis);
+        pThis->mC = pThis->m234 + pThis->m24C;
+        pThis->m6C[0] = MTH_Mul(pThis->m46C, getSin(pThis->m440.getInteger()));
+        pThis->m6C[2] = MTH_Mul(pThis->m470, getCos(pThis->m440.getInteger()));
+        pThis->m104_dragonStartPosition[0] = pThis->m234[0] + pThis->m6C[0];
+        pThis->m104_dragonStartPosition[2] = pThis->m234[2] + pThis->m6C[2];
+
+        generateCameraMatrixSub1(pThis->mC - pThis->m104_dragonStartPosition, aiStack52);
+        pThis->m43C = aiStack52[0];
+    }
+
+    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x800) == 0)
+    {
+        sVec3_FP iStack88 = pThis->m104_dragonStartPosition + MTH_Mul(0x8000, pThis->mC - pThis->m104_dragonStartPosition);
+
+        sVec2_FP aiStack96;
+        // TODO: there is some dead code here?
+        generateCameraMatrixSub1(iStack88, aiStack96);
+        pThis->m1C8 = aiStack96[0];
+        pThis->m1CC = aiStack96[1];
+
+        getBattleManager()->m10_battleOverlay->m8_gridTask->m64[0] = aiStack96[0];
+        getBattleManager()->m10_battleOverlay->m8_gridTask->m64[1] = aiStack96[1];
+    }
+    else
+    {
+        battleEngine_InitSub8Sub0(aiStack52);
+    }
+    battleEngine_InitSub3Sub0(pThis);
+}
+
+void battleEngine_UpdateSub7(s_battleEngine* pThis)
+{
+    battleEngine_UpdateSub8(pThis);
+    if (battleEngine_UpdateSub7Sub0() == 1)
+        return;
+    battleEngine_UpdateSub7Sub0Sub1(pThis);
+    battleEngine_UpdateSub7Sub0Sub2(pThis);
+    battleEngine_UpdateSub9(pThis);
+    assert(0);
 }
 
 void battleEngine_Update(s_battleEngine* pThis)

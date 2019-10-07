@@ -23,11 +23,20 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
 {
     //0/4 are copy
     sVec3_FP m8_position;
+    sVec3_FP m14_rotation;
+    sVec3_FP m44_deltaRotation;
+    sVec3_FP m5C_deltaPosition;
+    sVec3_FP m74_targetRotation;
+    s32 m84;
+    s32 m88;
     s_battleDragon_8C m8C;
+    u32 mDC;
     sVec3_FP m1A4;
+    u32 m1C4;
     s32 m1C8;
     s16 m1CC;
     s16 m1CE;
+    s16 m1D0;
     s32 m24C;
     // size 0x250
 };

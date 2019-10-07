@@ -243,14 +243,14 @@ void transformVecByCurrentMatrix(const sVec3_FP& r4, sVec3_FP& r5)
     transformVec(r4, r5, *pCurrentMatrix);
 }
 
-void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sVec3_FP& r6, const sVec3_FP& r7)
+void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& position, const sVec3_FP& target, const sVec3_FP& up)
 {
     sVec2_FP var_4;
     sVec3_FP var_24;
     sMatrix4x3 var_30;
 
-    sVec3_FP var_18 = r6 - r13;
-    sVec3_FP var_C = r7 - r13;
+    sVec3_FP var_18 = target - position;
+    sVec3_FP var_C = up - position;
 
     r4->m20_previousRotation[0] = r4->mC_rotation[0];
     r4->m20_previousRotation[1] = r4->mC_rotation[1];
@@ -271,14 +271,14 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& r13, const sV
 
     r4->mC_rotation[2] = atan2(-var_24[0], var_24[1]);
 
-    r4->m0_position[0] = r13[0];
-    var_24[0] = -r13[0];
+    r4->m0_position[0] = position[0];
+    var_24[0] = -position[0];
     
-    r4->m0_position[1] = r13[1];
-    var_24[1] = -r13[1];
+    r4->m0_position[1] = position[1];
+    var_24[1] = -position[1];
 
-    r4->m0_position[2] = r13[2];
-    var_24[2] = -r13[2];
+    r4->m0_position[2] = position[2];
+    var_24[2] = -position[2];
 
     resetMatrixStack();
 
