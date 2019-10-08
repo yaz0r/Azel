@@ -7,10 +7,6 @@
 #include <limits.h> // for PATH_MAX?
 #endif
 
-SDL_Window *gWindow;
-SDL_Window *gWindowVulkan;
-SDL_GLContext gGlcontext;
-
 void azelInit();
 void resetEngine();
 void readInputsFromSMPC();

@@ -1,16 +1,16 @@
 #include "PDS.h"
-#include "SDL_vulkan.h"
-#include "vulkan/vulkan.hpp"
 #include <soloud.h>
 
-#define IMGUI_API
+#include "renderer/renderer.h"
+#include "renderer/renderer_gl.h"
+#include "renderer/renderer_vk.h"
 
-#include "imgui_impl_opengl3.h"
+#define IMGUI_API
 #include "imgui_impl_sdl.h"
 
-#ifdef _WIN32
-#pragma comment(lib, "Opengl32.lib")
-#endif
+extern SDL_Window* gWindowGL;
+extern SDL_GLContext gGlcontext;
+extern const char* gGLSLVersion;
 
 #if defined(__EMSCRIPTEN__) || defined(TARGET_OS_IOS) || defined(TARGET_OS_TV)
 static float gVolume = 1.f;
@@ -25,10 +25,6 @@ static float gVolume = 0.f;
 bool useVDP1GL = true;
 
 SoLoud::Soloud gSoloud; // Engine core
-
-extern SDL_Window *gWindow;
-extern SDL_Window *gWindowVulkan;
-extern SDL_GLContext gGlcontext;
 
 GLuint gVdp1PolyFB = 0;
 GLuint gVdp1PolyTexture = 0;
@@ -62,8 +58,6 @@ int frameLimit = -1;
 int frameLimit = 30;
 #endif
 #endif
-
-extern const char* gGLSLVersion;
 
 #ifdef USE_GL_ES3
 const GLchar blit_vs[] =
@@ -131,38 +125,7 @@ enum eLayers {
     MAX
 };
 
-class backend
-{
-public:
-    virtual void bindBackBuffer() = 0;
-};
-
-class SDL_ES3_backend : public backend
-{
-public:
-    virtual void bindBackBuffer() override;
-};
-
 backend* gBackend = nullptr;
-
-void SDL_ES3_backend::bindBackBuffer()
-{
-#ifndef USE_NULL_RENDERER
-#ifdef __IPHONEOS__
-    SDL_SysWMinfo wmi;
-    SDL_VERSION(&wmi.version);
-    SDL_GetWindowWMInfo(gWindow, &wmi);
-    
-    glBindFramebuffer(GL_FRAMEBUFFER, wmi.info.uikit.framebuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, wmi.info.uikit.colorbuffer);
-#else
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-#endif
-    int internalResolution[2] = { 1024, 720 };
-    SDL_GL_GetDrawableSize(gWindow, &internalResolution[0], &internalResolution[1]);
-    glViewport(0, 0, internalResolution[0], internalResolution[1]);
-#endif
-}
 
 GLuint compileShader(const char* VS, const char* PS);
 
@@ -194,84 +157,14 @@ GLuint compileShaderFromFiles(const std::string& VSFile, const std::string& PSFi
 
 void azelSdl2_Init()
 {
-    gBackend = new SDL_ES3_backend();
-    
-#ifndef USE_NULL_RENDERER
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) != 0)
+#ifdef WITH_VK
+    gBackend = SDL_VK_backend::create();
+    //if (gBackend == nullptr)
+#endif
     {
-        assert(false);
+        gBackend = SDL_ES3_backend::create();
     }
-
-#ifdef USE_GL_ES3 
-    const char* glsl_version = "#version 300 es\n";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#else
-    const char* glsl_version = "#version 330\n";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-#endif
     
-    gGLSLVersion = glsl_version;
-    
-    u32 flags = 0;
-    flags |= SDL_WINDOW_OPENGL;
-    flags |= SDL_WINDOW_RESIZABLE;
-    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-       
-#ifdef __IPHONEOS__
-    flags |= SDL_WINDOW_FULLSCREEN;
-#endif
-    
-    int resolution[2] = { 1280, 814 };
-#if (defined(__APPLE__) && (TARGET_OS_OSX))
-    resolution[0] = 320;
-    resolution[1] = 200;
-#endif
-    gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution[0], resolution[1], flags);
-    if(gWindow == nullptr)
-    {
-        vkCreateInstance(NULL, nullptr, NULL);
-        assert(gWindow);
-    }
-
-    gGlcontext = SDL_GL_CreateContext(gWindow);
-    assert(gGlcontext);
-
-#ifdef USE_GL
-    gl3wInit();
-#endif
-    
-    flags &= ~SDL_WINDOW_OPENGL;
-    flags |= SDL_WINDOW_VULKAN;
-
-    gWindowVulkan = SDL_CreateWindow("PDS: Azel Vulkan", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution[0], resolution[1], flags);
-    
-    // Setup ImGui binding
-    ImGui::CreateContext();
-
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-#if !defined(__EMSCRIPTEN__) && !defined(TARGET_OS_IOS) && !defined(TARGET_OS_TV)
-//    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-#endif
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
-
-    printf("glsl_version: %s\n", glsl_version);
-
-    ImGui_ImplOpenGL3_Init(glsl_version);
-    ImGui_ImplSDL2_InitForOpenGL(gWindow, gGlcontext);
-
-#ifndef USE_NULL_RENDERER
     // setup vdp1 Poly
     glGenFramebuffers(1, &gVdp1PolyFB);
     glGenTextures(1, &gVdp1PolyTexture);
@@ -288,19 +181,17 @@ void azelSdl2_Init()
     }
     glGenTextures(1, &gVdp1Texture);
 
-#endif
-    
-#ifndef SHIPPING_BUILD
-    SDL_GL_SetSwapInterval(0);
-#endif
-    
-#endif
-
     glGenTextures(1, &vdp1_ram_texture);
     glGenTextures(1, &vdp2_ram_texture);
     glGenTextures(1, &vdp2_cram_texture);
 
     gVDP2Program = compileShaderFromFiles("VDP2_vs.glsl", "VDP2_ps.glsl");
+
+#ifndef SHIPPING_BUILD
+    SDL_GL_SetSwapInterval(0);
+#endif
+
+
 }
 
 GLuint getTextureForLayer(eLayers layerIndex)
@@ -562,12 +453,12 @@ void azelSdl2_StartFrame()
     }
 
     checkGL();
-    
-    ImGui_ImplOpenGL3_NewFrame();
-    
+
+    gBackend->ImGUI_NewFrame();
+
     checkGL();
-    
-    ImGui_ImplSDL2_NewFrame(gWindow);
+
+    ImGui_ImplSDL2_NewFrame(gWindowGL);
     ImGui::NewFrame();
     
     checkGL();
@@ -1735,7 +1626,7 @@ bool azelSdl2_EndFrame()
     static int internalResolution[2] = { 1024, 720 };
     
 #ifndef USE_NULL_RENDERER
-    SDL_GL_GetDrawableSize(gWindow, &internalResolution[0], &internalResolution[1]);
+    SDL_GL_GetDrawableSize(gWindowGL, &internalResolution[0], &internalResolution[1]);
 #if (defined(__APPLE__) && TARGET_OS_SIMULATOR)
     internalResolution[0] /= 8;
     internalResolution[1] /= 8;
@@ -1927,7 +1818,7 @@ bool azelSdl2_EndFrame()
     }
     if (bImguiEnabled)
     {
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        gBackend->ImGUI_RenderDrawData(ImGui::GetDrawData());
     }
     else
     {
@@ -1942,7 +1833,7 @@ bool azelSdl2_EndFrame()
     {
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
-        SDL_GL_MakeCurrent(gWindow, gGlcontext);
+        SDL_GL_MakeCurrent(gWindowGL, gGlcontext);
     }
 #endif
 
@@ -1961,7 +1852,7 @@ bool azelSdl2_EndFrame()
             SDL_Delay(timeToWait);
         }
 
-        SDL_GL_SwapWindow(gWindow);
+        SDL_GL_SwapWindow(gWindowGL);
 
         last_time = SDL_GetPerformanceCounter();
     }

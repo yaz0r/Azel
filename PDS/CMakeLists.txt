@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-include_directories("." "${CMAKE_SOURCE_DIR}/AzelLib" "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/imgui/examples/libs/gl3w" "${THIRD_PARTY}/soloud/soloud/include" "${THIRD_PARTY}/glm")
+include_directories("." "${CMAKE_SOURCE_DIR}/AzelLib" "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/imgui/examples/libs/gl3w" "${THIRD_PARTY}/soloud/soloud/include" "${THIRD_PARTY}/glm" "${VULKAN_INCLUDE_PATH}")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,6 +35,7 @@ ${THIRD_PARTY}/imgui/imgui.cpp
 ${THIRD_PARTY}/imgui/imgui_draw.cpp
 ${THIRD_PARTY}/imgui/imgui_widgets.cpp
 ${THIRD_PARTY}/imgui/examples/imgui_impl_opengl3.cpp
+${THIRD_PARTY}/imgui/examples/imgui_impl_vulkan.cpp
 ${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
 )
 
@@ -164,6 +165,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
  TARGET_LINK_LIBRARIES(PDS ${THIRD_PARTY}/SDL2/Xcode-iOS/SDL/build/Release\\\${EFFECTIVE_PLATFORM_NAME}/libSDL2.a)
 ELSE()
  TARGET_LINK_LIBRARIES(PDS SDL2main SDL2-static soloud AzelLib)
+ TARGET_LINK_LIBRARIES(PDS C:/VulkanSDK/1.1.121.2/Lib/vulkan-1.lib)
  if(UNIX)
   TARGET_LINK_LIBRARIES(PDS -lGL)
  endif()

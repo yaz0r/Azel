@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "renderer/renderer_gl.h"
 
 extern std::array<sMatrix4x3, 16> matrixStack;
 
@@ -1117,41 +1118,7 @@ extern s16 localCoordiantesY;
 
 GLuint Get2dUIShader()
 {
-#ifdef USE_GL_ES3
     static const GLchar UI_vs[] =
-    "#version 300 es\n"
-    "in vec3 a_position;   \n"
-    "in vec2 a_texcoord;   \n"
-    "out  highp vec2 v_texcoord;     \n"
-    "out  highp float v_depth;    \n"
-    "void main()                  \n"
-    "{                            \n"
-    "   gl_Position = vec4(a_position, 1); \n"
-    "   gl_Position.x = (a_position.x / (352.f/2.f)) - 1.f;"
-    "   gl_Position.y = 1.f - (a_position.y / (224.f/2.f));"
-    "   v_depth = a_position.z;"
-    "   v_texcoord = a_texcoord; \n"
-    "} "
-    ;
-    
-    const GLchar UI_ps[] =
-    "#version 300 es\n"
-    "precision highp float;                                    \n"
-    "in highp vec2 v_texcoord;                                \n"
-    "in  highp float v_depth;\n"
-    "uniform sampler2D s_texture;                            \n"
-    "out vec4 fragColor;                                    \n"
-    "void main()                                            \n"
-    "{                                                        \n"
-    "    vec4 txcol = texture(s_texture, v_texcoord);        \n"
-    "   if(txcol.a <= 0.f) discard;\n"
-    "   fragColor = txcol; \n"
-    "   fragColor.w = 1.f;                                \n"
-    "}                                                        \n"
-    ;
-#else
-    static const GLchar UI_vs[] =
-        "#version 330 \n"
         "in vec3 a_position;   \n"
         "in vec2 a_texcoord;   \n"
         "out  highp vec2 v_texcoord;     \n"
@@ -1167,7 +1134,6 @@ GLuint Get2dUIShader()
         ;
 
     const GLchar UI_ps[] =
-        "#version 330 \n"
         "precision highp float;									\n"
         "in highp vec2 v_texcoord;								\n"
         "in  highp float v_depth;\n"
@@ -1182,7 +1148,7 @@ GLuint Get2dUIShader()
         "   gl_FragDepth = v_depth;\n"
         "}														\n"
         ;
-#endif
+
     static GLuint UIShaderIndex = 0;
     if (UIShaderIndex == 0)
     {
@@ -1196,7 +1162,6 @@ GLuint Get2dUIShader()
 GLuint GetWorldSpaceLineShader()
 {
     static const GLchar UI_vs[] =
-        "#version 330 \n"
         "uniform mat4 u_projectionMatrix;    \n"
         "uniform mat4 u_viewMatrix;    \n"
         "in vec3 a_position;   \n"
@@ -1211,7 +1176,6 @@ GLuint GetWorldSpaceLineShader()
         ;
 
     const GLchar UI_ps[] =
-        "#version 330 \n"
         "precision highp float;									\n"
         "in highp vec3 v_color;								\n"
         "in  highp float v_depth;\n"
@@ -1238,7 +1202,6 @@ GLuint GetWorldSpaceLineShader()
 GLuint GetLineShader()
 {
     static const GLchar UI_vs[] =
-        "#version 330 \n"
         "in vec3 a_position;   \n"
         "in vec3 a_color;   \n"
         "out  highp vec3 v_color;     \n"
@@ -1254,7 +1217,6 @@ GLuint GetLineShader()
         ;
 
     const GLchar UI_ps[] =
-        "#version 330 \n"
         "precision highp float;									\n"
         "in highp vec3 v_color;								\n"
         "in  highp float v_depth;\n"

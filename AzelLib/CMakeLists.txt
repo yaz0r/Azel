@@ -1,59 +1,20 @@
 cmake_minimum_required(VERSION 3.9)
 
-include_directories("." "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/imgui/examples/libs/gl3w" "${THIRD_PARTY}/soloud/soloud/include" "${THIRD_PARTY}/glm" "${THIRD_PARTY}/MoltenVK/MoltenVK/include")
+include_directories("." "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/imgui/examples/libs/gl3w" "${THIRD_PARTY}/soloud/soloud/include" "${THIRD_PARTY}/glm" "${THIRD_PARTY}/MoltenVK/MoltenVK/include" "${VULKAN_INCLUDE_PATH}")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-file(GLOB SRC_ROOT
+file(GLOB_RECURSE SRC_ROOT
     "*.cpp"
     "*.h"
 )
 
-file(GLOB_RECURSE SRC_KERNEL
-    "kernel/*.cpp"
-    "kernel/*.h"
-)
-
-file(GLOB_RECURSE SRC_TOWN
-    "town/*.cpp"
-    "town/*.h"
-)
-
-file(GLOB_RECURSE SRC_FIELD_A3
-    "field/field_a3/*.cpp"
-    "field/field_a3/*.h"
-)
-
-file(GLOB_RECURSE SRC_BATTLE
-    "battle/*.cpp"
-    "battle/*.h"
-    "battle/BTL_A3/*.cpp"
-    "battle/BTL_A3/*.h"
-)
-
 set(SOURCES
  ${SOURCES}
- ${SRC_KERNEL}
  ${SRC_ROOT}
- ${SRC_TOWN}
- ${SRC_FIELD_A3}
- ${SRC_BATTLE}
-
-${THIRD_PARTY}/imgui/imgui.cpp
-${THIRD_PARTY}/imgui/imgui_draw.cpp
-${THIRD_PARTY}/imgui/imgui_widgets.cpp
 )
-
-IF(${CMAKE_SYSTEM_NAME} STREQUAL watchOS)
-ELSE()
-set(SOURCES
- ${SOURCES}
- ${THIRD_PARTY}/imgui/examples/imgui_impl_opengl3.cpp
- ${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
-)
-ENDIF()
 
 function(assign_source_group)
     foreach(_source IN ITEMS ${ARGN})
@@ -69,6 +30,13 @@ function(assign_source_group)
 endfunction(assign_source_group)
 
 assign_source_group(${SOURCES})
+
+set(SOURCES
+ ${SOURCES}
+ ${THIRD_PARTY}/imgui/imgui.cpp
+ ${THIRD_PARTY}/imgui/imgui_draw.cpp
+ ${THIRD_PARTY}/imgui/imgui_widgets.cpp
+)
 
 if (MSVC)
     set(SOURCES
