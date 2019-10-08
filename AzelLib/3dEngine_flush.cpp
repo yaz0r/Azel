@@ -7,6 +7,8 @@ extern std::array<sMatrix4x3, 16> matrixStack;
 
 #if !defined(USE_NULL_RENDERER)
 
+const char* gGLSLVersion = nullptr;
+
 void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color = { 1,0,0,1 });
 
 struct sDebugLines
@@ -158,7 +160,8 @@ void checkGLImpl(const char* file, unsigned int line)
 GLuint compileShader(const char* VS, const char* PS)
 {
     GLuint vertexshader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexshader, 1, &VS, 0);
+    const GLchar* vertex_shader_with_version[2] = { gGLSLVersion, VS };
+    glShaderSource(vertexshader, 2, vertex_shader_with_version, 0);
     glCompileShader(vertexshader);
     GLint IsCompiled_VS = 0;
     glGetShaderiv(vertexshader, GL_COMPILE_STATUS, &IsCompiled_VS);
@@ -176,7 +179,8 @@ GLuint compileShader(const char* VS, const char* PS)
     }
 
     GLuint fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentshader, 1, &PS, 0);
+    const GLchar* pixel_shader_with_version[2] = { gGLSLVersion, PS };
+    glShaderSource(fragmentshader, 2, pixel_shader_with_version, 0);
     glCompileShader(fragmentshader);
     GLint IsCompiled_PS = 0;
     glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &IsCompiled_PS);

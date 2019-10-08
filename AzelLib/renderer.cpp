@@ -61,6 +61,8 @@ int frameLimit = 30;
 #endif
 #endif
 
+extern const char* gGLSLVersion;
+
 #ifdef USE_GL_ES3
 const GLchar blit_vs[] =
 "#version 300 es\n"
@@ -199,11 +201,11 @@ void azelSdl2_Init()
     }
 
 #ifdef USE_GL_ES3 
-    const char* glsl_version = "#version 300 es";
+    const char* glsl_version = "#version 300 es\n";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #else
-    const char* glsl_version = "#version 130";
+    const char* glsl_version = "#version 330\n";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
@@ -214,6 +216,8 @@ void azelSdl2_Init()
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 #endif
+    
+    gGLSLVersion = glsl_version;
     
     u32 flags = 0;
     flags |= SDL_WINDOW_OPENGL;

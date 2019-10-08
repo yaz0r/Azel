@@ -52,6 +52,8 @@
 		33587AFA2344364300D90AEA /* libsoloud-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587AC8234432DB00D90AEA /* libsoloud-tvos.a */; };
 		33587AFB234436A800D90AEA /* libAzelLib-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABB234432CE00D90AEA /* libAzelLib-ios.a */; };
 		33587AFC234436AB00D90AEA /* libsoloud-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABD234432CE00D90AEA /* libsoloud-ios.a */; };
+		33AB9184234C1E1600BB34F3 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2E323430A260059DE3C /* libSDL2.a */; };
+		33AB918E234C1E1C00BB34F3 /* libSDLmain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2EB23430A260059DE3C /* libSDLmain.a */; };
 		33EA648B234C1708006F24DA /* common_generated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6C22B9FE420033C8AE /* common_generated.cpp */; };
 		33EA648C234C1708006F24DA /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7222B9FE490033C8AE /* imgui_impl_sdl.cpp */; };
 		33EA648D234C1708006F24DA /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7122B9FE490033C8AE /* imgui_widgets.cpp */; };
@@ -321,11 +323,13 @@
 			files = (
 				33587AFB234436A800D90AEA /* libAzelLib-ios.a in Frameworks */,
 				3307807C22BAB2930033C8AE /* CoreGraphics.framework in Frameworks */,
+				33AB918E234C1E1C00BB34F3 /* libSDLmain.a in Frameworks */,
 				3307807A22BAB27C0033C8AE /* QuartzCore.framework in Frameworks */,
 				3307807622BAB2130033C8AE /* AudioToolbox.framework in Frameworks */,
 				3307807422BAB1AE0033C8AE /* CoreMotion.framework in Frameworks */,
 				3307806E22BAB17B0033C8AE /* GameController.framework in Frameworks */,
 				3307806C22BAB1720033C8AE /* Metal.framework in Frameworks */,
+				33AB9184234C1E1600BB34F3 /* libSDL2.a in Frameworks */,
 				33587AFC234436AB00D90AEA /* libsoloud-ios.a in Frameworks */,
 				3307806A22BAB1670033C8AE /* UIKit.framework in Frameworks */,
 				3307806822BAB1540033C8AE /* Foundation.framework in Frameworks */,
