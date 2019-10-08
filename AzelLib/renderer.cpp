@@ -1,5 +1,6 @@
 #include "PDS.h"
-
+#include "SDL_vulkan.h"
+#include "vulkan/vulkan.hpp"
 #include <soloud.h>
 
 #define IMGUI_API
@@ -26,6 +27,7 @@ bool useVDP1GL = true;
 SoLoud::Soloud gSoloud; // Engine core
 
 extern SDL_Window *gWindow;
+extern SDL_Window *gWindowVulkan;
 extern SDL_GLContext gGlcontext;
 
 GLuint gVdp1PolyFB = 0;
@@ -223,7 +225,7 @@ void azelSdl2_Init()
     flags |= SDL_WINDOW_OPENGL;
     flags |= SDL_WINDOW_RESIZABLE;
     flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-    
+       
 #ifdef __IPHONEOS__
     flags |= SDL_WINDOW_FULLSCREEN;
 #endif
@@ -234,7 +236,11 @@ void azelSdl2_Init()
     resolution[1] = 200;
 #endif
     gWindow = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution[0], resolution[1], flags);
-    assert(gWindow);
+    if(gWindow == nullptr)
+    {
+        vkCreateInstance(NULL, nullptr, NULL);
+        assert(gWindow);
+    }
 
     gGlcontext = SDL_GL_CreateContext(gWindow);
     assert(gGlcontext);
@@ -242,7 +248,12 @@ void azelSdl2_Init()
 #ifdef USE_GL
     gl3wInit();
 #endif
+    
+    flags &= ~SDL_WINDOW_OPENGL;
+    flags |= SDL_WINDOW_VULKAN;
 
+    gWindowVulkan = SDL_CreateWindow("PDS: Azel Vulkan", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution[0], resolution[1], flags);
+    
     // Setup ImGui binding
     ImGui::CreateContext();
 

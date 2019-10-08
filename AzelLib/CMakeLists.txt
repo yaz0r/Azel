@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-include_directories("." "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/imgui/examples/libs/gl3w" "${THIRD_PARTY}/soloud/soloud/include" "${THIRD_PARTY}/glm")
+include_directories("." "${THIRD_PARTY}/imgui" "${THIRD_PARTY}/SDL2/include" "${THIRD_PARTY}/imgui/examples" "${THIRD_PARTY}/imgui/examples/libs/gl3w" "${THIRD_PARTY}/soloud/soloud/include" "${THIRD_PARTY}/glm" "${THIRD_PARTY}/MoltenVK/MoltenVK/include")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

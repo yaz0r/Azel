@@ -52,8 +52,12 @@
 		33587AFA2344364300D90AEA /* libsoloud-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587AC8234432DB00D90AEA /* libsoloud-tvos.a */; };
 		33587AFB234436A800D90AEA /* libAzelLib-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABB234432CE00D90AEA /* libAzelLib-ios.a */; };
 		33587AFC234436AB00D90AEA /* libsoloud-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABD234432CE00D90AEA /* libsoloud-ios.a */; };
+		33AA2699234C4DC8001E535D /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AA2698234C4DC8001E535D /* libMoltenVK.a */; };
+		33AA26AC234C4DCD001E535D /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AA26AB234C4DCD001E535D /* libMoltenVK.a */; };
 		33AB9184234C1E1600BB34F3 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2E323430A260059DE3C /* libSDL2.a */; };
 		33AB918E234C1E1C00BB34F3 /* libSDLmain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2EB23430A260059DE3C /* libSDLmain.a */; };
+		33AB91A5234C469F00BB34F3 /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AB91A4234C469F00BB34F3 /* libMoltenVK.a */; };
+		33AB91A7234C4AF400BB34F3 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AB91A6234C4AF400BB34F3 /* IOSurface.framework */; };
 		33EA648B234C1708006F24DA /* common_generated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6C22B9FE420033C8AE /* common_generated.cpp */; };
 		33EA648C234C1708006F24DA /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7222B9FE490033C8AE /* imgui_impl_sdl.cpp */; };
 		33EA648D234C1708006F24DA /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7122B9FE490033C8AE /* imgui_widgets.cpp */; };
@@ -170,28 +174,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = D0871D7950D040B3979E9739;
+			remoteGlobalIDString = 8F7621AE370046BA8DCB0DF9;
 			remoteInfo = "AzelLib-ios";
 		};
 		33587AEF2344356D00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 157DE14D6A23408BA3ED15D3;
+			remoteGlobalIDString = E4DFEF34C7704D7FA64DAD30;
 			remoteInfo = "soloud-ios";
 		};
 		33587AF12344357A00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 9B5F1E39B65A46479DE36391;
+			remoteGlobalIDString = 83249A5C1BBF4263AEFD7C15;
 			remoteInfo = "AzelLib-tvos";
 		};
 		33587AF32344357C00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = C728AC636D2646C082ACE2CA;
+			remoteGlobalIDString = 9AFAF9F26B96475D88D5EC9D;
 			remoteInfo = "soloud-tvos";
 		};
 		33587AF52344358300D90AEA /* PBXContainerItemProxy */ = {
@@ -261,14 +265,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = FF87F66DEEA344988F28C279;
+			remoteGlobalIDString = B723673F1DFA4C23988E3AFE;
 			remoteInfo = "AzelLib-darwin";
 		};
 		33EA64B3234C1952006F24DA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 3206E697ABE84FBF9CA73839;
+			remoteGlobalIDString = 71939E9D1E4C4E49B8101939;
 			remoteInfo = "soloud-darwin";
 		};
 /* End PBXContainerItemProxy section */
@@ -304,6 +308,14 @@
 		33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "PDS-tvos.xcodeproj"; path = "tvos/PDS-tvos.xcodeproj"; sourceTree = "<group>"; };
 		33587AE92344337D00D90AEA /* azel-tvos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "azel-tvos.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		33587AEB2344347A00D90AEA /* tvos.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = tvos.plist; sourceTree = SOURCE_ROOT; };
+		33AA2698234C4DC8001E535D /* libMoltenVK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMoltenVK.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		33AA26AB234C4DCD001E535D /* libMoltenVK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMoltenVK.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		33AB918F234C431A00BB34F3 /* MoltenVKPackaging.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MoltenVKPackaging.xcodeproj; path = ../ThirdParty/MoltenVK/MoltenVKPackaging.xcodeproj; sourceTree = "<group>"; };
+		33AB9198234C438600BB34F3 /* libMoltenVK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMoltenVK.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		33AB919A234C450700BB34F3 /* libMoltenVK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMoltenVK.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		33AB91A0234C464400BB34F3 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MoltenVK.framework; path = ../ThirdParty/MoltenVK/Package/Debug/MoltenVK/macOS/framework/MoltenVK.framework; sourceTree = "<group>"; };
+		33AB91A4234C469F00BB34F3 /* libMoltenVK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMoltenVK.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		33AB91A6234C4AF400BB34F3 /* IOSurface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOSurface.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/IOSurface.framework; sourceTree = DEVELOPER_DIR; };
 		33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "PDS-Darwin.xcodeproj"; path = "osx/PDS-Darwin.xcodeproj"; sourceTree = "<group>"; };
 		33EA6472234C16CA006F24DA /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = ../ThirdParty/SDL2/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
 		33EA64A7234C1708006F24DA /* azel-macos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "azel-macos.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -326,6 +338,7 @@
 				33AB918E234C1E1C00BB34F3 /* libSDLmain.a in Frameworks */,
 				3307807A22BAB27C0033C8AE /* QuartzCore.framework in Frameworks */,
 				3307807622BAB2130033C8AE /* AudioToolbox.framework in Frameworks */,
+				33AA2699234C4DC8001E535D /* libMoltenVK.a in Frameworks */,
 				3307807422BAB1AE0033C8AE /* CoreMotion.framework in Frameworks */,
 				3307806E22BAB17B0033C8AE /* GameController.framework in Frameworks */,
 				3307806C22BAB1720033C8AE /* Metal.framework in Frameworks */,
@@ -346,6 +359,7 @@
 				33587AD82344337D00D90AEA /* QuartzCore.framework in Frameworks */,
 				33587AD92344337D00D90AEA /* AudioToolbox.framework in Frameworks */,
 				33587AF92344364000D90AEA /* libAzelLib-tvos.a in Frameworks */,
+				33AA26AC234C4DCD001E535D /* libMoltenVK.a in Frameworks */,
 				33587ADA2344337D00D90AEA /* CoreMotion.framework in Frameworks */,
 				33587ADB2344337D00D90AEA /* GameController.framework in Frameworks */,
 				33587ADC2344337D00D90AEA /* Metal.framework in Frameworks */,
@@ -361,11 +375,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				33AB91A7234C4AF400BB34F3 /* IOSurface.framework in Frameworks */,
 				33EA64AE234C18AE006F24DA /* OpenGL.framework in Frameworks */,
 				33EA6493234C1708006F24DA /* CoreGraphics.framework in Frameworks */,
 				33EA64B7234C1A3E006F24DA /* CoreAudio.framework in Frameworks */,
 				33EA6494234C1708006F24DA /* QuartzCore.framework in Frameworks */,
 				33EA6495234C1708006F24DA /* AudioToolbox.framework in Frameworks */,
+				33AB91A5234C469F00BB34F3 /* libMoltenVK.a in Frameworks */,
 				33EA64B9234C1A58006F24DA /* ForceFeedback.framework in Frameworks */,
 				33EA64AA234C177D006F24DA /* libsoloud-darwin.a in Frameworks */,
 				33EA6498234C1708006F24DA /* GameController.framework in Frameworks */,
@@ -384,6 +400,7 @@
 		33077F1422B9F3670033C8AE = {
 			isa = PBXGroup;
 			children = (
+				33AB918F234C431A00BB34F3 /* MoltenVKPackaging.xcodeproj */,
 				33EA6472234C16CA006F24DA /* SDL.xcodeproj */,
 				33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */,
 				33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */,
@@ -429,6 +446,13 @@
 		33077F6922B9FDFB0033C8AE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				33AA26AB234C4DCD001E535D /* libMoltenVK.a */,
+				33AA2698234C4DC8001E535D /* libMoltenVK.a */,
+				33AB91A6234C4AF400BB34F3 /* IOSurface.framework */,
+				33AB91A4234C469F00BB34F3 /* libMoltenVK.a */,
+				33AB91A0234C464400BB34F3 /* MoltenVK.framework */,
+				33AB919A234C450700BB34F3 /* libMoltenVK.a */,
+				33AB9198234C438600BB34F3 /* libMoltenVK.a */,
 				33EA64BC234C1A97006F24DA /* AppKit.framework */,
 				33EA64BA234C1A75006F24DA /* CoreFoundation.framework */,
 				33EA64B8234C1A58006F24DA /* ForceFeedback.framework */,
@@ -478,6 +502,13 @@
 			children = (
 				33587AC6234432DB00D90AEA /* libAzelLib-tvos.a */,
 				33587AC8234432DB00D90AEA /* libsoloud-tvos.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		33AB9190234C431A00BB34F3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -596,6 +627,10 @@
 			productRefGroup = 33077F1E22B9F3670033C8AE /* Products */;
 			projectDirPath = "";
 			projectReferences = (
+				{
+					ProductGroup = 33AB9190234C431A00BB34F3 /* Products */;
+					ProjectRef = 33AB918F234C431A00BB34F3 /* MoltenVKPackaging.xcodeproj */;
+				},
 				{
 					ProductGroup = 33EA6468234C164A006F24DA /* Products */;
 					ProjectRef = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
@@ -1171,11 +1206,13 @@
 					../ThirdParty/imgui,
 					../ThirdParty/glm,
 					../ThirdParty/imgui/examples/libs/gl3w,
+					../ThirdParty/MoltenVK/MoltenVK/include,
 				);
 				INFOPLIST_FILE = "azel-tvos copy-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.yaz0r.azel;
@@ -1200,11 +1237,13 @@
 					../ThirdParty/imgui,
 					../ThirdParty/glm,
 					../ThirdParty/imgui/examples/libs/gl3w,
+					../ThirdParty/MoltenVK/MoltenVK/include,
 				);
 				INFOPLIST_FILE = "azel-tvos copy-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = net.yaz0r.azel;

@@ -8,6 +8,7 @@
 #endif
 
 SDL_Window *gWindow;
+SDL_Window *gWindowVulkan;
 SDL_GLContext gGlcontext;
 
 void azelInit();
