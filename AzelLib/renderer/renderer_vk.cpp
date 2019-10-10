@@ -12,12 +12,15 @@
 #include "imgui_impl_vulkan.h"
 
 #include <optional>
+#include <set>
 
 SDL_Window* gWindowVulkan = nullptr;
 VkInstance gVkInstance = VK_NULL_HANDLE;
 VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 VkDevice device = VK_NULL_HANDLE;
 VkQueue graphicsQueue = VK_NULL_HANDLE;
+VkSurfaceKHR surface = VK_NULL_HANDLE;
+VkQueue presentQueue = VK_NULL_HANDLE;
 
 backend* SDL_VK_backend::create()
 {
@@ -71,9 +74,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> presentFamily;
 
     bool isComplete() {
-        return graphicsFamily.has_value();
+        return graphicsFamily.has_value() && presentFamily.has_value();
     }
 };
 
@@ -91,6 +95,13 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     for (const auto& queueFamily : queueFamilies) {
         if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             indices.graphicsFamily = i;
+        }
+
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+
+        if (queueFamily.queueCount > 0 && presentSupport) {
+            indices.presentFamily = i;
         }
 
         if (indices.isComplete()) {
@@ -137,6 +148,29 @@ bool SDL_VK_backend::init()
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
+    unsigned int count;
+    // get count of required extensions
+    if (!SDL_Vulkan_GetInstanceExtensions(NULL, &count, NULL))
+        assert(0);
+
+    static const char* const additionalExtensions[] =
+    {
+        VK_EXT_DEBUG_REPORT_EXTENSION_NAME, // example additional extension
+    };
+    size_t additionalExtensionsCount = sizeof(additionalExtensions) / sizeof(additionalExtensions[0]);
+    size_t extensionCount = count + additionalExtensionsCount;
+    const char** names = (const char**)malloc(sizeof(const char*) * extensionCount);
+    if (!names)
+        assert(0);
+
+    // get names of required extensions
+    if (!SDL_Vulkan_GetInstanceExtensions(NULL, &count, names))
+        assert(0);
+
+    // copy additional extensions after required extensions
+    for (size_t i = 0; i < additionalExtensionsCount; i++)
+        names[i + count] = additionalExtensions[i];
+
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
@@ -146,8 +180,13 @@ bool SDL_VK_backend::init()
         createInfo.ppEnabledLayerNames = validationLayers.data();
     }
 
+    createInfo.enabledExtensionCount = extensionCount;
+    createInfo.ppEnabledExtensionNames = names;
+
     
     vkCreateInstance(&createInfo, nullptr, &gVkInstance);
+
+    SDL_Vulkan_CreateSurface(gWindowVulkan, gVkInstance, &surface);
 
     // setup debug message
     {
@@ -230,6 +269,24 @@ bool SDL_VK_backend::init()
         }
 
         vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+
+        // create the presentation queue
+        {
+            QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+            std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+            std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+
+            float queuePriority = 1.0f;
+            for (uint32_t queueFamily : uniqueQueueFamilies) {
+                VkDeviceQueueCreateInfo queueCreateInfo = {};
+                queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+                queueCreateInfo.queueFamilyIndex = queueFamily;
+                queueCreateInfo.queueCount = 1;
+                queueCreateInfo.pQueuePriorities = &queuePriority;
+                queueCreateInfos.push_back(queueCreateInfo);
+            }
+        }
     }
 
     return true;

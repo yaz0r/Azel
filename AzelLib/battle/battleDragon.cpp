@@ -49,6 +49,12 @@ void s_battleDragon_InitSub3(s_loadRiderWorkArea* pRider, s16 param2, s32 param3
     updateAndInterpolateAnimation(&pRider->m18_3dModel);
 }
 
+void s_battleDragon_InitSub1(s_loadRiderWorkArea* pRider, s16 param2, s32 param3)
+{
+    playAnimationGeneric(&pRider->m18_3dModel, pRider1State->m0_riderBundle->getAnimation(param2), param3);
+    updateAndInterpolateAnimation(&pRider->m18_3dModel);
+}
+
 static void s_battleDragon_Init(s_battleDragon* pThis)
 {
     getBattleManager()->m10_battleOverlay->m18_dragon = pThis;
@@ -215,6 +221,48 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
     }
 }
 
+void s_battleDragon_UpdateSub2Sub1Sub0()
+{
+    if (gDragonState->mC_dragonType != 8)
+    {
+        u16 offset;
+        if (s_battleDragon_InitSub0() == 0)
+        {
+            offset = 0x5C;
+        }
+        else
+        {
+            offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C * 2);
+        }
+        s_battleDragon_InitSub3(pRider1State, offset, 0);
+    }
+    else
+    {
+        if (s_battleDragon_InitSub0())
+        {
+            s_battleDragon_InitSub1(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae378) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C * 2), 10);
+        }
+        else
+        {
+            s_battleDragon_InitSub1(pRider1State, 0x114, 10);
+        }
+    }
+}
+
+void s_battleDragon_UpdateSub2Sub1Sub1()
+{
+    u16 offset;
+    if (s_battleDragon_InitSub0() == 0)
+    {
+        offset = 0x5C;
+    }
+    else
+    {
+        offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C * 2);
+    }
+    s_battleDragon_InitSub3(pRider2State, offset, 0xF);
+}
+
 void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
 {
     s32 uVar4 = pThis->m84;
@@ -247,7 +295,7 @@ void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
             }
             else
             {
-                assert(0);
+                s_battleDragon_UpdateSub2Sub1Sub0();
             }
         }
         else
@@ -272,7 +320,7 @@ void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
         }
         else
         {
-            assert(0);
+            s_battleDragon_UpdateSub2Sub1Sub1();
         }
     }
     else
@@ -398,7 +446,8 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
 {
     if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 8)
     {
-        assert(0);
+        // This setup lights
+        FunctionUnimplemented();
     }
 
     FunctionUnimplemented();

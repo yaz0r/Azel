@@ -7,6 +7,7 @@
 #include "battleManager.h"
 #include "battleOverlay.h"
 #include "battleEngine.h"
+#include "battleDebug.h"
 
 void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
 {
@@ -16,9 +17,9 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
     case 0:
         if (BattleEngineSub0_UpdateSub0())
         {
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C == 2)
+            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 2)
                 return;
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C == 0xE)
+            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xE)
                 return;
         }
         if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x80000)
@@ -32,11 +33,84 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
     }
 }
 
-void s_battleOverlay_20_draw(s_battleOverlay_20*)
+void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
+{
+    {
+        u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1001); // command 0
+        setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
+        setVdp1VramU16(vdp1WriteEA + 0x06, pThis->m14_vdp1Memory + 0x2ebc); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, pThis->m14_vdp1Memory + 0x278); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x0A, 0x108); // CMDSIZE
+        setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m1A - 0x82); // CMDXA
+        setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x5C - pThis->m1C)); // CMDYA
+        setVdp1VramU16(vdp1WriteEA + 0x14, pThis->m1A + 0x87); // CMDXC
+        setVdp1VramU16(vdp1WriteEA + 0x16, -(-0x73 - pThis->m1A)); // CMDYC
+
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+        graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+    }
+
+    sSaturnPtr currentSprite = gCurrentBattleOverlay->getSaturnPtr(0x60b19b8);
+    while (currentSprite.m_offset < gCurrentBattleOverlay->getSaturnPtr(0x60b19c1).m_offset)
+    {
+        assert(0);
+        u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1001); // command 0
+        setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
+        setVdp1VramU16(vdp1WriteEA + 0x06, pThis->m14_vdp1Memory + 0x2ebc); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, pThis->m14_vdp1Memory + 0x278); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x0A, 0x108); // CMDSIZE
+        setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m1A - 0x82); // CMDXA
+        setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x5C - pThis->m1C)); // CMDYA
+        setVdp1VramU16(vdp1WriteEA + 0x14, pThis->m1A + 0x87); // CMDXC
+        setVdp1VramU16(vdp1WriteEA + 0x16, -(-0x73 - pThis->m1A)); // CMDYC
+
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+        graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+    }
+}
+
+void s_battleOverlay_20_drawSub1(s_battleOverlay_20* pThis)
+{
+    FunctionUnimplemented();
+}
+
+
+void s_battleOverlay_20_draw(s_battleOverlay_20* pThis)
 {
     if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 8)
     {
-        assert(0);
+        if (BattleEngineSub0_UpdateSub0())
+        {
+            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 2)
+                return;
+            //if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xE)
+            //    return;
+        }
+
+        s_battleOverlay_20_drawSub0(pThis);
+        s_battleOverlay_20_drawSub1(pThis);
+
+        if(getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x21] == 0)
+        {
+            pThis->m0 = 0;
+        }
+        else
+        {
+            pThis->m0 = 1;
+        }
     }
 }
 

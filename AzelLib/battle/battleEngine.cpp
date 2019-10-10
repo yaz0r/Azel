@@ -439,15 +439,15 @@ void battleEngine_UpdateSub6(s_battleEngine* pThis)
 void battleEngine_UpdateSub10(int param)
 {
     s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
-    pBattleEngine->m38C = param;
+    pBattleEngine->m38C_battleIntroType = param;
     pBattleEngine->m188_flags |= 0x80;
     pBattleEngine->m188_flags &= ~0x100;
     pBattleEngine->m188_flags &= ~0x2000;
     pBattleEngine->m188_flags |= 0x10;
     pBattleEngine->m188_flags |= 0x20;
     pBattleEngine->m188_flags |= 0x200;
-    pBattleEngine->m38D = 0;
-    pBattleEngine->m384 = 0;
+    pBattleEngine->m38D_battleIntroStatus = 0;
+    pBattleEngine->m384_battleIntroDelay = 0;
     pBattleEngine->m386 = 0;
     pBattleEngine->m184 = 0;
     pBattleEngine->m3E8.zeroize();
@@ -480,6 +480,52 @@ s32 battleEngine_UpdateSub7Sub0Sub2Sub0()
     return 0;
 }
 
+void battleEngine_UpdateSub7Sub1()
+{
+    s_battleGrid* pGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x20000)
+    {
+        assert(0);
+        sVec3_FP local_1c;
+        //battleEngine_UpdateSub7Sub1Sub0(pGrid->m280_lightAngle1, &local_1c);
+        pGrid->m1CC_lightColor = pGrid->m1D8_newLightColor;
+    }
+}
+
+void battleEngine_UpdateSub7Sub2()
+{
+    getBattleManager()->m10_battleOverlay->m8_gridTask->m1 = 0;
+
+    getBattleManager()->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * getBattleManager()->m10_battleOverlay->m8_gridTask->m1);
+    getBattleManager()->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac484) + 0x24 * getBattleManager()->m10_battleOverlay->m8_gridTask->m1);
+}
+
+void battleEngine_UpdateSub7Sub3Sub0()
+{
+    getBattleManager()->m10_battleOverlay->m8_gridTask->mB4_gridRotation[2] = 0;
+    getBattleManager()->m10_battleOverlay->m8_gridTask->m64[2] = 0;
+}
+
+void battleEngine_UpdateSub7Sub3()
+{
+    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
+    s_battleGrid* pGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
+    pBattleEngine->m188_flags &= ~0x800;
+
+    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB] == 0)
+    {
+        pGrid->m34 = pBattleEngine->m104_dragonStartPosition + pGrid->m1C + pGrid->m28;
+        battleEngine_InitSub6(&pGrid->m34);
+        pBattleEngine->m3D8 = &pBattleEngine->mC;
+        battleEngine_UpdateSub7Sub3Sub0();
+    }
+}
+
+void battleEngine_UpdateSub7Sub3Sub4(p_workArea parent)
+{
+    FunctionUnimplemented();
+}
+
 s32 battleEngine_UpdateSub7Sub0()
 {
     s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
@@ -488,6 +534,43 @@ s32 battleEngine_UpdateSub7Sub0()
         if (battleEngine_UpdateSub7Sub0Sub0() == 0)
             return 0;
 
+        battleEngine_UpdateSub7Sub1();
+        pBattleEngine->m1B8 = 0;
+        pBattleEngine->m1BC = 0;
+        pBattleEngine->m3B2 = 0;
+
+        clearVdp2TextMemory();
+        fieldPaletteTaskInitSub0Sub2();
+
+        pBattleEngine->m18C_status = 4;
+        pBattleEngine->m188_flags &= ~0x80000;
+        if (0 < mainGameState.gameStats.currentHP)
+        {
+            battleEngine_UpdateSub7Sub2();
+            battleEngine_UpdateSub7Sub3();
+
+            if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x10000) == 0)
+            {
+                getBattleManager()->mE = 0;
+            }
+            else
+            {
+                getBattleManager()->mE = 3;
+            }
+
+            if ((((pBattleEngine->m230 != 1) && (pBattleEngine->m230 != 3)) && (pBattleEngine->m230 != 5)) && ((pBattleEngine->m230 != 7 && (pBattleEngine->m230 != 8))))
+            {
+                pBattleEngine->m188_flags |= 8;
+                battleEngine_UpdateSub7Sub3Sub4(pBattleEngine);
+                return 1;
+            }
+
+            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x10000)
+            {
+                assert(0);
+            }
+            assert(0);
+        }
         assert(0);
     }
     assert(0);
@@ -547,6 +630,226 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
     battleEngine_InitSub3Sub0(pThis);
 }
 
+void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6)
+{
+    uParm2 = uParm2.normalized();
+
+    if (((int)uParm2 < -0x2000000) || (0x1ffffff < (int)uParm2)) {
+        if (((int)uParm2 < -0x6000000) || (-0x2000001 < (int)uParm2)) {
+            if (((int)uParm2 < 0x2000000) || (0x6000000 <= (int)uParm2))
+            {
+                if (pThis->m22C != 0)
+                {
+                    getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
+                    pThis->m22C = pThis->m22D;
+                    getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
+                }
+                if (r6 == 0)
+                {
+                    pThis->m22C = 2;
+                }
+                else
+                {
+                    pThis->m22C = 0;
+                }
+            }
+            else
+            {
+                if (pThis->m22C != 3)
+                {
+                    getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
+                    pThis->m22C = pThis->m22D;
+                    getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
+                }
+                if (r6 == 0)
+                {
+                    pThis->m22C = 1;
+                }
+                else
+                {
+                    pThis->m22C = 3;
+                }
+            }
+        }
+        else
+        {
+            if (pThis->m22C != 1)
+            {
+                getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
+                pThis->m22C = pThis->m22D;
+                getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
+            }
+            if (r6 == 0)
+            {
+                pThis->m22C = 3;
+            }
+            else
+            {
+                pThis->m22C = 1;
+            }
+
+        }
+    }
+    else
+    {
+        if (pThis->m22C != 2)
+        {
+            getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
+            pThis->m22C = pThis->m22D;
+            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
+        }
+        if (r6 == 0)
+        {
+            pThis->m22C = 0;
+        }
+        else
+        {
+            pThis->m22C = 2;
+        }
+    }
+}
+
+void battleEngine_UpdateSub7Sub0Sub3(s_battleEngine* pThis)
+{
+    if (battleEngine_UpdateSub7Sub0Sub2Sub0)
+    {
+        battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440, 0);
+    }
+}
+
+void battleCreateCinematicBars(s_battleEngine* pThis)
+{
+    FunctionUnimplemented();
+}
+
+p_workArea battleIntroSub0(p_workArea parent)
+{
+    return nullptr;
+}
+
+void updateBattleIntro(s_battleEngine* pThis)
+{
+    if (BattleEngineSub0_UpdateSub0() == 0)
+        return;
+
+    switch (pThis->m38C_battleIntroType)
+    {
+    case 0xe:
+        switch (pThis->m38D_battleIntroStatus)
+        {
+        case 0:
+            battleCreateCinematicBars(pThis);
+            pThis->m3D0 = 0;
+            pThis->m38D_battleIntroStatus++;
+            return;
+        case 1:
+            if (4 < pThis->m384_battleIntroDelay++)
+            {
+                pThis->m384_battleIntroDelay = 0;
+                pThis->m38D_battleIntroStatus++;
+                pThis->m3D0 = battleIntroSub0(pThis);
+
+                g_fadeControls.m_4D = 6;
+                if (g_fadeControls.m_4C < g_fadeControls.m_4D)
+                {
+                    vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+                    vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
+                }
+
+                fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
+                g_fadeControls.m_4D = 5;
+            }
+            return;
+        case 2:
+            if (pThis->m3D0 == nullptr)
+            {
+                pThis->m384_battleIntroDelay = 0;
+                pThis->m38D_battleIntroStatus++;
+
+                g_fadeControls.m_4D = 6;
+                if (g_fadeControls.m_4C < g_fadeControls.m_4D)
+                {
+                    vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+                    vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
+                }
+
+                fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
+                g_fadeControls.m_4D = 5;
+
+                getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags &= ~0x20;
+            }
+            return;
+        case 3:
+            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags &= ~0x80000;
+            return;
+        case 4:
+            //06068542
+            assert(0);
+        default:
+            assert(0);
+            break;
+        }
+        assert(0);
+        break;
+    default:
+        assert(0);
+        break;
+    }
+}
+
+void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
+{
+    if ((pThis->m388 & 4) == 0)
+    {
+        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498 &&
+            battleEngine_UpdateSub7Sub0Sub2Sub0() &&
+            ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x80000) == 0)
+            ) {
+            assert(0);
+        }
+    }
+}
+
+void battleEngine_UpdateSub7Sub0Sub6(s_battleEngine* pThis)
+{
+    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x4000) && (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m10 & 1))
+    {
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags &= ~0x4000;
+    }
+    if (((pThis->m388 & 2) == 0) &&
+        (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498) &&
+        (battleEngine_UpdateSub7Sub0Sub2Sub0())
+        )
+    {
+        assert(0);
+    }
+}
+
+void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
+{
+    if ((pThis->m388 & 1) == 0)
+    {
+        if ((0 < getBattleManager()->m10_battleOverlay->m4_battleEngine->m498) &&
+            (battleEngine_UpdateSub7Sub0Sub2Sub0() != 0)) {
+            if ((pThis->m3CA < '\x01') ||
+                (((graphicEngineStatus.m4514.mD8_buttonConfig[2][2] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown) == 0 ||
+                ((getBattleManager()->m10_battleOverlay->mC->m20A) < 1))))
+            {
+                if (graphicEngineStatus.m4514.mD8_buttonConfig[2][2] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown)
+                {
+                    playSoundEffect(5);
+                }
+            }
+            else
+            {
+                getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags &= ~0x40;
+                battleEngine_UpdateSub10(0);
+                pThis->m184 = 0;
+            }
+        }
+    }
+}
+
 void battleEngine_UpdateSub7(s_battleEngine* pThis)
 {
     battleEngine_UpdateSub8(pThis);
@@ -555,6 +858,15 @@ void battleEngine_UpdateSub7(s_battleEngine* pThis)
     battleEngine_UpdateSub7Sub0Sub1(pThis);
     battleEngine_UpdateSub7Sub0Sub2(pThis);
     battleEngine_UpdateSub9(pThis);
+    battleEngine_UpdateSub7Sub0Sub3(pThis);
+    updateBattleIntro(pThis);
+    battleEngine_UpdateSub7Sub0Sub5(pThis);
+    battleEngine_UpdateSub7Sub0Sub6(pThis);
+    battleEngine_UpdateSub7Sub0Sub7(pThis);
+
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498 < 1)
+        return;
+
     assert(0);
 }
 

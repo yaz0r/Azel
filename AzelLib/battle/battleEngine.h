@@ -43,11 +43,11 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     std::array<s32, 4> m354;
     std::array<s32, 4> m364;
     std::array<s32, 4> m374;
-    s16 m384;
+    s16 m384_battleIntroDelay;
     s16 m386;
     u16 m388;
-    s8 m38C;
-    s8 m38D;
+    s8 m38C_battleIntroType;
+    s8 m38D_battleIntroStatus;
     std::array<s16, 3> m390;
     std::array<s16, 2> m398;
     s16 m3A2;
@@ -62,6 +62,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s32 m3BC;
     s8 m3CA;
     struct s_battleEngineSub0* m3CC;
+    p_workArea m3D0;
     sVec3_FP* m3D4;
     sVec3_FP* m3D8;
     sVec3_FP m3E8;

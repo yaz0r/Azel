@@ -34,7 +34,7 @@
 
 struct s_battleDebug : public s_workAreaTemplate<s_battleDebug>
 {
-    std::array<s8, 0x1D> mFlags;
+    std::array<s8, 0x22> mFlags;
     //size 0x22
 };
 

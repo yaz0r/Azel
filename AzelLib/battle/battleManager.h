@@ -10,6 +10,7 @@ struct sBattleManager : public s_workAreaTemplateWithArg<sBattleManager, s8>
     s16 mA_pendingBattleOverlayId;
     s8 mC;
     s8 mD;
+    s8 mE;
     // usually battle overlay, can also be battle debug list
     union {
         p_workArea m10_subTask_debugList;

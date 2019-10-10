@@ -28,6 +28,11 @@ struct s_workArea
     {
         return static_cast<T*>(this);
     }
+
+#ifndef SHIPPING_BUILD
+    virtual void Inspect() {}
+#endif
+
 };
 
 static void UnimplementedImpl(const char* functionName)

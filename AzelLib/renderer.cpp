@@ -158,7 +158,7 @@ GLuint compileShaderFromFiles(const std::string& VSFile, const std::string& PSFi
 void azelSdl2_Init()
 {
 #ifdef WITH_VK
-    gBackend = SDL_VK_backend::create();
+    //gBackend = SDL_VK_backend::create();
     //if (gBackend == nullptr)
 #endif
     {
