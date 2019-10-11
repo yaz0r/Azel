@@ -8,6 +8,7 @@
 #include "battleOverlay_C.h"
 #include "battleDebug.h"
 #include "battleDragon.h"
+#include "battleIntro.h"
 
 #include "BTL_A3/BTL_A3.h"
 
@@ -28,19 +29,19 @@ void initBattleEngineArray()
 
 void battleEngine_InitSub0(s_battleEngine* pThis)
 {
-    switch (pThis->m22C)
+    switch (pThis->m22C_battleDirection)
     {
     case 0:
-        pThis->m440 = 0;
+        pThis->m440_battleDirectionAngle = 0;
         break;
     case 1:
-        pThis->m440 = 0x4000000;
+        pThis->m440_battleDirectionAngle = 0x4000000;
         break;
     case 2:
-        pThis->m440 = 0x8000000;
+        pThis->m440_battleDirectionAngle = 0x8000000;
         break;
     case 3:
-        pThis->m440 = -0x4000000;
+        pThis->m440_battleDirectionAngle = -0x4000000;
         break;
     default:
         assert(0);
@@ -54,7 +55,7 @@ void battleEngine_InitSub1(s_battleEngine* pThis)
 
 void battleEngine_InitSub2Sub0(s_battleEngine* pThis)
 {
-    s32 var1 = pThis->m440.normalized();
+    s32 var1 = pThis->m440_battleDirectionAngle.normalized();
     if ((var1 < -0x4000000) || (var1 > 0x3ffffff))
     {
         pThis->m470 = pThis->m45C[2];
@@ -78,8 +79,8 @@ void battleEngine_InitSub2(s_battleEngine* pThis)
 {
     battleEngine_InitSub2Sub0(pThis);
     pThis->mC = pThis->m234 + pThis->m24C;
-    pThis->m6C[0] = MTH_Mul(pThis->m46C, getSin(pThis->m440.getInteger() & 0xFFF));
-    pThis->m6C[2] = MTH_Mul(pThis->m46C, getCos(pThis->m440.getInteger() & 0xFFF));
+    pThis->m6C[0] = MTH_Mul(pThis->m46C, getSin(pThis->m440_battleDirectionAngle.getInteger() & 0xFFF));
+    pThis->m6C[2] = MTH_Mul(pThis->m46C, getCos(pThis->m440_battleDirectionAngle.getInteger() & 0xFFF));
 
     pThis->m104_dragonStartPosition[0] = pThis->m234[0] + pThis->m6C[0];
     pThis->m104_dragonStartPosition[2] = pThis->m234[2] + pThis->m6C[2];
@@ -103,8 +104,8 @@ void battleEngine_InitSub3Sub0(s_battleEngine* pThis)
 
 void battleEngine_InitSub3(s_battleEngine* pThis)
 {
-    pThis->m104_dragonStartPosition[1] = pThis->m364[getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C] + pThis->m354[3];
-    pThis->m270[1] = pThis->m374[getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C];
+    pThis->m104_dragonStartPosition[1] = pThis->m364[getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection] + pThis->m354[3];
+    pThis->m270[1] = pThis->m374[getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection];
 
     battleEngine_InitSub3Sub0(pThis);
 }
@@ -117,7 +118,7 @@ void battleEngine_InitSub5(p_workArea parent)
 void battleEngine_InitSub6(sVec3_FP* pData)
 {
     getBattleManager()->m10_battleOverlay->m4_battleEngine->m3D4 = pData;
-    getBattleManager()->m10_battleOverlay->m8_gridTask->m1B8 = pData;
+    getBattleManager()->m10_battleOverlay->m8_gridTask->m1B8_pCameraTranslationSource = pData;
 }
 
 void battleEngine_InitSub7(sVec3_FP* pData)
@@ -141,26 +142,26 @@ void battleEngine_InitSub8Sub0(sVec2_FP& param)
     pBattleEngine->m1C8 = param[0];
     pBattleEngine->m1CC = param[1];
 
-    pBattleGrid->m64[0] = param[0];
-    pBattleGrid->m64[1] = param[1];
+    pBattleGrid->m64_cameraRotationTarget[0] = param[0];
+    pBattleGrid->m64_cameraRotationTarget[1] = param[1];
 }
 
 void battleEngine_InitSub8Sub1(sVec2_FP& param)
 {
     s_battleGrid* pBattleGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
-    pBattleGrid->mB4_gridRotation[0] = param[0];
-    pBattleGrid->mB4_gridRotation[1] = param[1];
+    pBattleGrid->mB4_cameraRotation[0] = param[0];
+    pBattleGrid->mB4_cameraRotation[1] = param[1];
 }
 
 void battleEngine_InitSub8()
 {
     s_battleGrid* pBattleGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
-    pBattleGrid->m180_gridTranslation = *pBattleGrid->m1B8;
+    pBattleGrid->m180_cameraTranslation = *pBattleGrid->m1B8_pCameraTranslationSource;
     sVec2_FP auStack16;
     battleEngine_InitSub8Sub0(auStack16);
     battleEngine_InitSub8Sub1(auStack16);
     pBattleGrid->m18C.zeroize();
-    pBattleGrid->mC0_gridRotationInterpolation.zeroize();
+    pBattleGrid->mC0_cameraRotationInterpolation.zeroize();
 }
 
 void battleEngine_InitSub9(p_workArea parent)
@@ -226,29 +227,29 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     if (var6 < cStack60)
     {
-        pThis->m22C = 0;
+        pThis->m22C_battleDirection = 0;
     }
     else
     {
         uVar3 += cStack60;
         if (var6 < uVar3)
         {
-            pThis->m22C = 1;
+            pThis->m22C_battleDirection = 1;
         }
         else
         {
             if (var6 < uVar3 + uVar4)
             {
-                pThis->m22C = 2;
+                pThis->m22C_battleDirection = 2;
             }
             else
             {
-                pThis->m22C = 3;
+                pThis->m22C_battleDirection = 3;
             }
         }
     }
 
-    pThis->m22D = pThis->m22C;
+    pThis->m22D_originalBattleDirection = pThis->m22C_battleDirection;
 
     if (pData.isNull())
     {
@@ -317,7 +318,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     battleEngine_InitSub3(pThis);
     battleEngine_createDragonTask(pThis);
     battleEngine_InitSub5(pThis);
-    battleEngine_InitSub6(&getBattleManager()->m10_battleOverlay->m8_gridTask->m34);
+    battleEngine_InitSub6(&getBattleManager()->m10_battleOverlay->m8_gridTask->m34_cameraPosition);
     battleEngine_InitSub7(&pThis->mC);
     battleEngine_InitSub8();
     battleEngine_InitSub9(pThis);
@@ -502,8 +503,8 @@ void battleEngine_UpdateSub7Sub2()
 
 void battleEngine_UpdateSub7Sub3Sub0()
 {
-    getBattleManager()->m10_battleOverlay->m8_gridTask->mB4_gridRotation[2] = 0;
-    getBattleManager()->m10_battleOverlay->m8_gridTask->m64[2] = 0;
+    getBattleManager()->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = 0;
+    getBattleManager()->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = 0;
 }
 
 void battleEngine_UpdateSub7Sub3()
@@ -514,8 +515,8 @@ void battleEngine_UpdateSub7Sub3()
 
     if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB] == 0)
     {
-        pGrid->m34 = pBattleEngine->m104_dragonStartPosition + pGrid->m1C + pGrid->m28;
-        battleEngine_InitSub6(&pGrid->m34);
+        pGrid->m34_cameraPosition = pBattleEngine->m104_dragonStartPosition + pGrid->m1C + pGrid->m28;
+        battleEngine_InitSub6(&pGrid->m34_cameraPosition);
         pBattleEngine->m3D8 = &pBattleEngine->mC;
         battleEngine_UpdateSub7Sub3Sub0();
     }
@@ -601,8 +602,8 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
     {
         battleEngine_InitSub2Sub0(pThis);
         pThis->mC = pThis->m234 + pThis->m24C;
-        pThis->m6C[0] = MTH_Mul(pThis->m46C, getSin(pThis->m440.getInteger()));
-        pThis->m6C[2] = MTH_Mul(pThis->m470, getCos(pThis->m440.getInteger()));
+        pThis->m6C[0] = MTH_Mul(pThis->m46C, getSin(pThis->m440_battleDirectionAngle.getInteger()));
+        pThis->m6C[2] = MTH_Mul(pThis->m470, getCos(pThis->m440_battleDirectionAngle.getInteger()));
         pThis->m104_dragonStartPosition[0] = pThis->m234[0] + pThis->m6C[0];
         pThis->m104_dragonStartPosition[2] = pThis->m234[2] + pThis->m6C[2];
 
@@ -620,8 +621,8 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
         pThis->m1C8 = aiStack96[0];
         pThis->m1CC = aiStack96[1];
 
-        getBattleManager()->m10_battleOverlay->m8_gridTask->m64[0] = aiStack96[0];
-        getBattleManager()->m10_battleOverlay->m8_gridTask->m64[1] = aiStack96[1];
+        getBattleManager()->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[0] = aiStack96[0];
+        getBattleManager()->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[1] = aiStack96[1];
     }
     else
     {
@@ -638,93 +639,88 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
         if (((int)uParm2 < -0x6000000) || (-0x2000001 < (int)uParm2)) {
             if (((int)uParm2 < 0x2000000) || (0x6000000 <= (int)uParm2))
             {
-                if (pThis->m22C != 0)
+                if (pThis->m22C_battleDirection != 0)
                 {
                     getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
-                    pThis->m22C = pThis->m22D;
+                    pThis->m22C_battleDirection = pThis->m22D_originalBattleDirection;
                     getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
                 }
                 if (r6 == 0)
                 {
-                    pThis->m22C = 2;
+                    pThis->m22C_battleDirection = 2;
                 }
                 else
                 {
-                    pThis->m22C = 0;
+                    pThis->m22C_battleDirection = 0;
                 }
             }
             else
             {
-                if (pThis->m22C != 3)
+                if (pThis->m22C_battleDirection != 3)
                 {
                     getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
-                    pThis->m22C = pThis->m22D;
+                    pThis->m22C_battleDirection = pThis->m22D_originalBattleDirection;
                     getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
                 }
                 if (r6 == 0)
                 {
-                    pThis->m22C = 1;
+                    pThis->m22C_battleDirection = 1;
                 }
                 else
                 {
-                    pThis->m22C = 3;
+                    pThis->m22C_battleDirection = 3;
                 }
             }
         }
         else
         {
-            if (pThis->m22C != 1)
+            if (pThis->m22C_battleDirection != 1)
             {
                 getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
-                pThis->m22C = pThis->m22D;
+                pThis->m22C_battleDirection = pThis->m22D_originalBattleDirection;
                 getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
             }
             if (r6 == 0)
             {
-                pThis->m22C = 3;
+                pThis->m22C_battleDirection = 3;
             }
             else
             {
-                pThis->m22C = 1;
+                pThis->m22C_battleDirection = 1;
             }
 
         }
     }
     else
     {
-        if (pThis->m22C != 2)
+        if (pThis->m22C_battleDirection != 2)
         {
             getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
-            pThis->m22C = pThis->m22D;
+            pThis->m22C_battleDirection = pThis->m22D_originalBattleDirection;
             getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
         }
         if (r6 == 0)
         {
-            pThis->m22C = 0;
+            pThis->m22C_battleDirection = 0;
         }
         else
         {
-            pThis->m22C = 2;
+            pThis->m22C_battleDirection = 2;
         }
     }
 }
 
 void battleEngine_UpdateSub7Sub0Sub3(s_battleEngine* pThis)
 {
-    if (battleEngine_UpdateSub7Sub0Sub2Sub0)
+    if (battleEngine_UpdateSub7Sub0Sub2Sub0())
     {
-        battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440, 0);
+        battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440_battleDirectionAngle, 0);
     }
 }
 
 void battleCreateCinematicBars(s_battleEngine* pThis)
 {
     FunctionUnimplemented();
-}
-
-p_workArea battleIntroSub0(p_workArea parent)
-{
-    return nullptr;
 }
 
 void updateBattleIntro(s_battleEngine* pThis)
@@ -747,7 +743,7 @@ void updateBattleIntro(s_battleEngine* pThis)
             {
                 pThis->m384_battleIntroDelay = 0;
                 pThis->m38D_battleIntroStatus++;
-                pThis->m3D0 = battleIntroSub0(pThis);
+                pThis->m3D0 = createBattleIntroTask(pThis);
 
                 g_fadeControls.m_4D = 6;
                 if (g_fadeControls.m_4C < g_fadeControls.m_4D)

@@ -78,17 +78,17 @@ void dragonMenuDragonInitSub3(s3DModelAnimData* pDragonStateData2)
     }
 }
 
-void updateDragonMovementFromControllerType1Sub2Sub1(s3DModelAnimData* r4, fixedPoint r5)
+void incrementAnimationRootY(s3DModelAnimData* r4, fixedPoint r5)
 {
     r4->m8_runtimeAnimData->m24_rootDelta[0] += r5;
 }
 
-void updateDragonMovementFromControllerType1Sub2Sub2(s3DModelAnimData* r4, fixedPoint r5)
+void incrementAnimationRootX(s3DModelAnimData* r4, fixedPoint r5)
 {
     r4->m8_runtimeAnimData->m24_rootDelta[1] += r5;
 }
 
-void updateDragonMovementFromControllerType1Sub2Sub3(s3DModelAnimData* r4, fixedPoint r5)
+void incrementAnimationRootZ(s3DModelAnimData* r4, fixedPoint r5)
 {
     r4->m8_runtimeAnimData->m24_rootDelta[2] += r5;
 }

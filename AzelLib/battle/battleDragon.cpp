@@ -69,8 +69,8 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
     }
     else
     {
-        s_battleDragon_InitSub3(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C * 2), 0);
-        s_battleDragon_InitSub3(pRider2State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C * 2), 0);
+        s_battleDragon_InitSub3(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2), 0);
+        s_battleDragon_InitSub3(pRider2State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2), 0);
         pThis->m1CC = 2;
     }
 
@@ -232,7 +232,7 @@ void s_battleDragon_UpdateSub2Sub1Sub0()
         }
         else
         {
-            offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C * 2);
+            offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2);
         }
         s_battleDragon_InitSub3(pRider1State, offset, 0);
     }
@@ -240,7 +240,7 @@ void s_battleDragon_UpdateSub2Sub1Sub0()
     {
         if (s_battleDragon_InitSub0())
         {
-            s_battleDragon_InitSub1(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae378) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C * 2), 10);
+            s_battleDragon_InitSub1(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae378) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2), 10);
         }
         else
         {
@@ -258,7 +258,7 @@ void s_battleDragon_UpdateSub2Sub1Sub1()
     }
     else
     {
-        offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C * 2);
+        offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2);
     }
     s_battleDragon_InitSub3(pRider2State, offset, 0xF);
 }
@@ -357,34 +357,35 @@ void s_battleDragon_UpdateSub3(s_battleDragon* pThis)
 {
     s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
 
-    fixedPoint iStack44;
-    fixedPoint iStack40;
-    fixedPoint iStack36;
-    fixedPoint iStack56;
-    fixedPoint iVar2;
+    fixedPoint stepY;
+    fixedPoint stepX;
+    fixedPoint stepZ;
+    fixedPoint rotationX;
+    fixedPoint rotationZ;
     if (s_battleDragon_InitSub0() == 0)
     {
         assert(0);
     }
     else
     {
-        iStack40 = MTH_Mul_5_6(getCos(pBattleEngine->m440.getInteger()), -pThis->m1C8, pBattleEngine->m1BC);
-        iStack44 = MTH_Mul(-pThis->m1C8, pBattleEngine->m1B8);
-        iStack36 = MTH_Mul_5_6(getCos(pBattleEngine->m440.getInteger()), -pThis->m1C8, pBattleEngine->m1BC);
-        iStack56 = MTH_Mul(0xE38E38, pBattleEngine->m1B8);
-        MTH_Mul_5_6(getCos(pBattleEngine->m440.getInteger()), 0xFE000000, pBattleEngine->m1BC);
-        iVar2 = MTH_Mul_5_6(getCos(pBattleEngine->m440.getInteger()), 0xfeaaaaab, -pBattleEngine->m1BC);
+        stepX = MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), -pThis->m1C8, pBattleEngine->m1BC);
+        stepY = MTH_Mul(-pThis->m1C8, pBattleEngine->m1B8);
+        stepZ = MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), -pThis->m1C8, pBattleEngine->m1BC);
+
+        rotationX = MTH_Mul(0xE38E38, pBattleEngine->m1B8);
+        MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), 0xFE000000, pBattleEngine->m1BC);
+        rotationZ = MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), 0xfeaaaaab, -pBattleEngine->m1BC);
     }
 
     if ((pThis->m1C4 & 8) == 0)
     {
-        pThis->m74_targetRotation[0] = iStack56;
-        pThis->m74_targetRotation[2] = iVar2;
+        pThis->m74_targetRotation[0] = rotationX;
+        pThis->m74_targetRotation[2] = rotationZ;
     }
 
-    updateDragonMovementFromControllerType1Sub2Sub1(&gDragonState->m78_animData, iStack44);
-    updateDragonMovementFromControllerType1Sub2Sub2(&gDragonState->m78_animData, iStack40);
-    updateDragonMovementFromControllerType1Sub2Sub3(&gDragonState->m78_animData, iStack36);
+    incrementAnimationRootY(&gDragonState->m78_animData, stepY);
+    incrementAnimationRootX(&gDragonState->m78_animData, stepX);
+    incrementAnimationRootZ(&gDragonState->m78_animData, stepZ);
 }
 
 void s_battleDragon_UpdateSub4(s_battleDragon* pThis)

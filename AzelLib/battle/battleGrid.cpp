@@ -30,11 +30,11 @@ void battleGrid_init(s_battleGrid* pThis)
     pThis->m4 = 0;
     pThis->mC = 0;
     pThis->m10.zeroize();
-    pThis->m64.zeroize();
+    pThis->m64_cameraRotationTarget.zeroize();
     pThis->m70.zeroize();
-    pThis->mE4_currentCameraPosition.zeroize();
-    pThis->mF0_currentCameraTarget.zeroize();
-    pThis->mFC_cameraUp.zeroize();
+    pThis->mE4_currentCameraReferenceCenter.zeroize();
+    pThis->mF0_currentCameraReferenceForward.zeroize();
+    pThis->mFC_cameraReferenceUp.zeroize();
     pThis->m108_deltaCameraPosition.zeroize();
     pThis->m114_deltaCameraTarget.zeroize();
     pThis->m12C_cameraInterpolationSpeed = 0x1999;
@@ -42,18 +42,18 @@ void battleGrid_init(s_battleGrid* pThis)
 
     pThis->m134_desiredCameraPosition = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24);
     pThis->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24 + 0xC);
-    pThis->mFC_cameraUp = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24 + 0x18);
+    pThis->mFC_cameraReferenceUp = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24 + 0x18);
 
-    pThis->mB4_gridRotation.zeroize();
-    pThis->mC0_gridRotationInterpolation.zeroize();
+    pThis->mB4_cameraRotation.zeroize();
+    pThis->mC0_cameraRotationInterpolation.zeroize();
 
-    pThis->mCC[0] = 0x6666;
-    pThis->mCC[1] = 0x2666;
-    pThis->mCC[2] = 0x4CCC;
+    pThis->mCC_cameraInterpolationRotationFactor[0] = 0x6666;
+    pThis->mCC_cameraInterpolationRotationFactor[1] = 0x2666;
+    pThis->mCC_cameraInterpolationRotationFactor[2] = 0x4CCC;
 
-    pThis->mD8[0] = 0x6666;
-    pThis->mD8[1] = 0x4CCC;
-    pThis->mD8[2] = 0x8000;
+    pThis->mD8_cameraInterpolationRotationFactor2[0] = 0x6666;
+    pThis->mD8_cameraInterpolationRotationFactor2[1] = 0x4CCC;
+    pThis->mD8_cameraInterpolationRotationFactor2[2] = 0x8000;
 
     pThis->m198[0] = 0x3333;
     pThis->m198[1] = 0x3333;
@@ -91,8 +91,8 @@ void battleGrid_updateSub0(s_battleGrid* pThis)
 {
     pThis->m8 = pThis->mC;
     pThis->mC = 0;
-    pThis->m64[0] = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1C8;
-    pThis->m64[1] = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1CC;
+    pThis->m64_cameraRotationTarget[0] = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1C8;
+    pThis->m64_cameraRotationTarget[1] = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1CC;
 
     pThis->m1B4 = 0;
     pThis->m1B0 = 0;
@@ -104,36 +104,36 @@ void battleGrid_updateSub1Sub0(s_battleGrid* pThis)
     pThis->m40 -= MTH_Mul(0x8000, pThis->m40);
     pThis->m28 += pThis->m40;
 
-    pThis->m90 += MTH_Mul(0x3333, -pThis->m84_gridRotationDelta);
+    pThis->m90 += MTH_Mul(0x3333, -pThis->m84_cameraRotationDelta);
     pThis->m90 -= MTH_Mul(0x8000, pThis->m90);
-    pThis->m84_gridRotationDelta += pThis->m90;
+    pThis->m84_cameraRotationDelta += pThis->m90;
 }
 
 void battleGrid_updateSub1Sub1(s_battleGrid* pThis)
 {
-    pThis->m108_deltaCameraPosition[0] += MTH_Mul(pThis->m134_desiredCameraPosition[0] - pThis->mE4_currentCameraPosition[0], pThis->m12C_cameraInterpolationSpeed);
+    pThis->m108_deltaCameraPosition[0] += MTH_Mul(pThis->m134_desiredCameraPosition[0] - pThis->mE4_currentCameraReferenceCenter[0], pThis->m12C_cameraInterpolationSpeed);
     pThis->m108_deltaCameraPosition[0] -= MTH_Mul(pThis->m108_deltaCameraPosition[0], pThis->m130_cameraInterpolationSpeed2);
-    pThis->mE4_currentCameraPosition[0] += pThis->m108_deltaCameraPosition[0];
+    pThis->mE4_currentCameraReferenceCenter[0] += pThis->m108_deltaCameraPosition[0];
 
-    pThis->m108_deltaCameraPosition[1] += MTH_Mul(pThis->m134_desiredCameraPosition[1] - pThis->mE4_currentCameraPosition[1], pThis->m12C_cameraInterpolationSpeed);
+    pThis->m108_deltaCameraPosition[1] += MTH_Mul(pThis->m134_desiredCameraPosition[1] - pThis->mE4_currentCameraReferenceCenter[1], pThis->m12C_cameraInterpolationSpeed);
     pThis->m108_deltaCameraPosition[1] -= MTH_Mul(pThis->m108_deltaCameraPosition[1], pThis->m130_cameraInterpolationSpeed2);
-    pThis->mE4_currentCameraPosition[1] += pThis->m108_deltaCameraPosition[1];
+    pThis->mE4_currentCameraReferenceCenter[1] += pThis->m108_deltaCameraPosition[1];
 
-    pThis->m108_deltaCameraPosition[2] += MTH_Mul(pThis->m134_desiredCameraPosition[2] - pThis->mE4_currentCameraPosition[2], pThis->m12C_cameraInterpolationSpeed);
+    pThis->m108_deltaCameraPosition[2] += MTH_Mul(pThis->m134_desiredCameraPosition[2] - pThis->mE4_currentCameraReferenceCenter[2], pThis->m12C_cameraInterpolationSpeed);
     pThis->m108_deltaCameraPosition[2] -= MTH_Mul(pThis->m108_deltaCameraPosition[2], pThis->m130_cameraInterpolationSpeed2);
-    pThis->mE4_currentCameraPosition[2] += pThis->m108_deltaCameraPosition[2];
+    pThis->mE4_currentCameraReferenceCenter[2] += pThis->m108_deltaCameraPosition[2];
 
-    pThis->m114_deltaCameraTarget[0] += MTH_Mul(pThis->m140_desiredCameraTarget[0] - pThis->mF0_currentCameraTarget[0], pThis->m12C_cameraInterpolationSpeed);
+    pThis->m114_deltaCameraTarget[0] += MTH_Mul(pThis->m140_desiredCameraTarget[0] - pThis->mF0_currentCameraReferenceForward[0], pThis->m12C_cameraInterpolationSpeed);
     pThis->m114_deltaCameraTarget[0] -= MTH_Mul(pThis->m114_deltaCameraTarget[0], pThis->m130_cameraInterpolationSpeed2);
-    pThis->mF0_currentCameraTarget[0] += pThis->m114_deltaCameraTarget[0];
+    pThis->mF0_currentCameraReferenceForward[0] += pThis->m114_deltaCameraTarget[0];
 
-    pThis->m114_deltaCameraTarget[1] += MTH_Mul(pThis->m140_desiredCameraTarget[1] - pThis->mF0_currentCameraTarget[1], pThis->m12C_cameraInterpolationSpeed);
+    pThis->m114_deltaCameraTarget[1] += MTH_Mul(pThis->m140_desiredCameraTarget[1] - pThis->mF0_currentCameraReferenceForward[1], pThis->m12C_cameraInterpolationSpeed);
     pThis->m114_deltaCameraTarget[1] -= MTH_Mul(pThis->m114_deltaCameraTarget[1], pThis->m130_cameraInterpolationSpeed2);
-    pThis->mF0_currentCameraTarget[1] += pThis->m114_deltaCameraTarget[1];
+    pThis->mF0_currentCameraReferenceForward[1] += pThis->m114_deltaCameraTarget[1];
 
-    pThis->m114_deltaCameraTarget[2] += MTH_Mul(pThis->m140_desiredCameraTarget[2] - pThis->mF0_currentCameraTarget[2], pThis->m12C_cameraInterpolationSpeed);
+    pThis->m114_deltaCameraTarget[2] += MTH_Mul(pThis->m140_desiredCameraTarget[2] - pThis->mF0_currentCameraReferenceForward[2], pThis->m12C_cameraInterpolationSpeed);
     pThis->m114_deltaCameraTarget[2] -= MTH_Mul(pThis->m114_deltaCameraTarget[2], pThis->m130_cameraInterpolationSpeed2);
-    pThis->mF0_currentCameraTarget[2] += pThis->m114_deltaCameraTarget[2];
+    pThis->mF0_currentCameraReferenceForward[2] += pThis->m114_deltaCameraTarget[2];
 }
 
 void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
@@ -162,50 +162,49 @@ void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
         assert(0);
     }
 
-    pThis->m34 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m104_dragonStartPosition + pThis->m1C + pThis->m28;
+    pThis->m34_cameraPosition = getBattleManager()->m10_battleOverlay->m4_battleEngine->m104_dragonStartPosition + pThis->m1C + pThis->m28;
 
-    pThis->m180_gridTranslation[0] = (*pThis->m1B8)[0];
-    pThis->m180_gridTranslation[1] = (*pThis->m1B8)[1];
-
-    if (getBattleManager()->m10_battleOverlay->mC->m204 + 0x1000 < pThis->m180_gridTranslation[1])
+    pThis->m180_cameraTranslation[0] = (*pThis->m1B8_pCameraTranslationSource)[0];
+    pThis->m180_cameraTranslation[1] = (*pThis->m1B8_pCameraTranslationSource)[1];
+    
+    if (getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude + 0x1000 >= pThis->m180_cameraTranslation[1])
     {
-        if (getBattleManager()->m10_battleOverlay->mC->m200 - 0x1000 <= pThis->m180_gridTranslation[1])
-        {
-            pThis->m180_gridTranslation[1] = getBattleManager()->m10_battleOverlay->mC->m200 - 0x1000;
-        }
+        pThis->m180_cameraTranslation[1] = getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude + 0x1000;
     }
-    else
+    else if (getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude - 0x1000 <= pThis->m180_cameraTranslation[1])
     {
-        pThis->m180_gridTranslation[1] = getBattleManager()->m10_battleOverlay->mC->m204 + 0x1000;
+        pThis->m180_cameraTranslation[1] = getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude - 0x1000;
     }
-
-    pThis->m180_gridTranslation[2] = (*pThis->m1B8)[2];
+    
+    pThis->m180_cameraTranslation[2] = (*pThis->m1B8_pCameraTranslationSource)[2];
 }
 
 void battleGrid_updateSub1Sub3(s_battleGrid* pThis)
 {
-    pThis->m64[0] += pThis->m1BC[0];
-    pThis->m64[1] += pThis->m1BC[1];
-    pThis->mCC[0] = 0x1999;
-    pThis->mCC[1] = 0x1999;
-    pThis->mCC[2] = 0x1999;
-    pThis->mD8[0] = 0x8000;
-    pThis->mD8[1] = 0x8000;
-    pThis->mD8[2] = 0x8000;
+    pThis->m64_cameraRotationTarget[0] += pThis->m1BC_cameraRotationStep[0];
+    pThis->m64_cameraRotationTarget[1] += pThis->m1BC_cameraRotationStep[1];
 
-    pThis->mB4_gridRotation += pThis->m84_gridRotationDelta;
+    pThis->mCC_cameraInterpolationRotationFactor[0] = 0x1999;
+    pThis->mCC_cameraInterpolationRotationFactor[1] = 0x1999;
+    pThis->mCC_cameraInterpolationRotationFactor[2] = 0x1999;
 
-    pThis->mC0_gridRotationInterpolation[0] += MTH_Mul(fixedPoint(std::min(int(pThis->m64[0]), 0x382d82d) - pThis->mB4_gridRotation[0]).normalized(), pThis->mCC[0]);
-    pThis->mC0_gridRotationInterpolation[0] -= MTH_Mul(pThis->mC0_gridRotationInterpolation[0], pThis->mD8[0]);
-    pThis->mB4_gridRotation[0] += pThis->mC0_gridRotationInterpolation[0];
+    pThis->mD8_cameraInterpolationRotationFactor2[0] = 0x8000;
+    pThis->mD8_cameraInterpolationRotationFactor2[1] = 0x8000;
+    pThis->mD8_cameraInterpolationRotationFactor2[2] = 0x8000;
 
-    pThis->mC0_gridRotationInterpolation[1] += MTH_Mul(fixedPoint(pThis->m64[1] - pThis->mB4_gridRotation[1]).normalized(), pThis->mCC[1]);
-    pThis->mC0_gridRotationInterpolation[1] -= MTH_Mul(pThis->mC0_gridRotationInterpolation[1], pThis->mD8[1]);
-    pThis->mB4_gridRotation[1] += pThis->mC0_gridRotationInterpolation[1];
+    pThis->mB4_cameraRotation += pThis->m84_cameraRotationDelta;
 
-    pThis->mC0_gridRotationInterpolation[2] += MTH_Mul(fixedPoint(pThis->m64[2] - pThis->mB4_gridRotation[2]).normalized(), pThis->mCC[2]);
-    pThis->mC0_gridRotationInterpolation[2] -= MTH_Mul(pThis->mC0_gridRotationInterpolation[2], pThis->mD8[2]);
-    pThis->mB4_gridRotation[2] += pThis->mC0_gridRotationInterpolation[2];
+    pThis->mC0_cameraRotationInterpolation[0] += MTH_Mul(fixedPoint(std::min(int(pThis->m64_cameraRotationTarget[0]), 0x382d82d) - pThis->mB4_cameraRotation[0]).normalized(), pThis->mCC_cameraInterpolationRotationFactor[0]);
+    pThis->mC0_cameraRotationInterpolation[0] -= MTH_Mul(pThis->mC0_cameraRotationInterpolation[0], pThis->mD8_cameraInterpolationRotationFactor2[0]);
+    pThis->mB4_cameraRotation[0] += pThis->mC0_cameraRotationInterpolation[0];
+
+    pThis->mC0_cameraRotationInterpolation[1] += MTH_Mul(fixedPoint(pThis->m64_cameraRotationTarget[1] - pThis->mB4_cameraRotation[1]).normalized(), pThis->mCC_cameraInterpolationRotationFactor[1]);
+    pThis->mC0_cameraRotationInterpolation[1] -= MTH_Mul(pThis->mC0_cameraRotationInterpolation[1], pThis->mD8_cameraInterpolationRotationFactor2[1]);
+    pThis->mB4_cameraRotation[1] += pThis->mC0_cameraRotationInterpolation[1];
+
+    pThis->mC0_cameraRotationInterpolation[2] += MTH_Mul(fixedPoint(pThis->m64_cameraRotationTarget[2] - pThis->mB4_cameraRotation[2]).normalized(), pThis->mCC_cameraInterpolationRotationFactor[2]);
+    pThis->mC0_cameraRotationInterpolation[2] -= MTH_Mul(pThis->mC0_cameraRotationInterpolation[2], pThis->mD8_cameraInterpolationRotationFactor2[2]);
+    pThis->mB4_cameraRotation[2] += pThis->mC0_cameraRotationInterpolation[2];
 }
 
 void battleGrid_updateSub1(s_battleGrid* pThis)
@@ -214,9 +213,9 @@ void battleGrid_updateSub1(s_battleGrid* pThis)
     {
         battleGrid_updateSub1Sub0(pThis);
         battleGrid_updateSub1Sub1(pThis);
-        initMatrixToIdentity(&pThis->m150_gridMatrix);
+        initMatrixToIdentity(&pThis->m150_cameraMatrix);
         battleGrid_updateSub1Sub2(pThis);
-        translateMatrix(&pThis->m180_gridTranslation, &pThis->m150_gridMatrix);
+        translateMatrix(&pThis->m180_cameraTranslation, &pThis->m150_cameraMatrix);
         if ((pThis->m1C8_flags & 2) == 0)
         {
             battleGrid_updateSub1Sub3(pThis);
@@ -226,7 +225,7 @@ void battleGrid_updateSub1(s_battleGrid* pThis)
             assert(0);
             //battleGrid_updateSub1Sub4(iParm1);
         }
-        rotateMatrixZYX(&pThis->mB4_gridRotation, &pThis->m150_gridMatrix);
+        rotateMatrixZYX(&pThis->mB4_cameraRotation, &pThis->m150_cameraMatrix);
     }
 }
 
@@ -252,7 +251,7 @@ void battleGrid_update(s_battleGrid* pThis)
 
     if ((pThis->m1C8_flags & 0x10) && !(pThis->m1C8_flags & 0x40))
     {
-        mainLogicUpdateSub0(pThis->m180_gridTranslation[0], pThis->m180_gridTranslation[2]);
+        mainLogicUpdateSub0(pThis->m180_cameraTranslation[0], pThis->m180_cameraTranslation[2]);
     }
 }
 
@@ -270,21 +269,21 @@ void battleGrid_draw(s_battleGrid* pThis)
     sVec3_FP transformedCameraUp;
     sVec3_FP transformedCameraTarget;
     sVec3_FP transformedCameraPosition;
-    transformAndAddVec(pThis->mFC_cameraUp, transformedCameraUp, pThis->m150_gridMatrix);
-    transformAndAddVec(pThis->mF0_currentCameraTarget, transformedCameraTarget, pThis->m150_gridMatrix);
-    transformAndAddVec(pThis->mE4_currentCameraPosition, transformedCameraPosition, pThis->m150_gridMatrix);
+    transformAndAddVec(pThis->mFC_cameraReferenceUp, transformedCameraUp, pThis->m150_cameraMatrix);
+    transformAndAddVec(pThis->mF0_currentCameraReferenceForward, transformedCameraTarget, pThis->m150_cameraMatrix);
+    transformAndAddVec(pThis->mE4_currentCameraReferenceCenter, transformedCameraPosition, pThis->m150_cameraMatrix);
 
     fixedPoint iVar3 = transformedCameraPosition[1] - 0x1000;
-    if (iVar3 < getBattleManager()->m10_battleOverlay->mC->m204)
+    if (iVar3 < getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude)
     {
-        transformedCameraTarget[1] -= iVar3 - getBattleManager()->m10_battleOverlay->mC->m204;
-        transformedCameraPosition[1] -= iVar3 - getBattleManager()->m10_battleOverlay->mC->m204;
+        transformedCameraTarget[1] -= iVar3 - getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude;
+        transformedCameraPosition[1] -= iVar3 - getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude;
     }
 
-    if (getBattleManager()->m10_battleOverlay->mC->m200 + pThis->m134_desiredCameraPosition[2] < transformedCameraPosition[1])
+    if (getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude + pThis->m134_desiredCameraPosition[2] < transformedCameraPosition[1])
     {
-        transformedCameraTarget[1] -= getBattleManager()->m10_battleOverlay->mC->m200 - pThis->m134_desiredCameraPosition[2];
-        transformedCameraPosition[1] -= getBattleManager()->m10_battleOverlay->mC->m200 - pThis->m134_desiredCameraPosition[2];
+        transformedCameraTarget[1] -= getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
+        transformedCameraPosition[1] -= getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
     }
 
     generateCameraMatrix(&cameraProperties2, transformedCameraPosition, transformedCameraTarget, transformedCameraUp);

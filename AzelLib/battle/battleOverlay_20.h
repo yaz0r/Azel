@@ -7,8 +7,8 @@ struct s_battleOverlay_20 : public s_workAreaTemplate<s_battleOverlay_20>
     u16 m14_vdp1Memory;
     u16 m16;
     u16 m18;
-    u16 m1A;
-    u16 m1C;
+    s16 m1A_X;
+    s16 m1C_Y;
     u16 m1E;
     u16 m20;
     u16 m22;

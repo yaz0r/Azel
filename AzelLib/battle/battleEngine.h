@@ -30,8 +30,8 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     int m1E8[2];
     sMatrix4x3 m1F0;
     sVec3_FP m220;
-    s8 m22C;
-    s8 m22D;
+    s8 m22C_battleDirection;
+    s8 m22D_originalBattleDirection;
     s8 m230;
     sVec3_FP m234;
     sVec3_FP m240;
@@ -68,7 +68,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP m3E8;
     s32 m434;
     s32 m43C;
-    fixedPoint m440;
+    fixedPoint m440_battleDirectionAngle;
     std::array<fixedPoint, 4> m45C;
     fixedPoint m46C;
     fixedPoint m470;
@@ -82,5 +82,9 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
 
 s32 BattleEngineSub0_UpdateSub0();
 s32 s_battleDragon_InitSub0();
+
+void battleEngine_InitSub6(sVec3_FP* pData);
+void battleEngine_InitSub7(sVec3_FP* pData);
+void battleEngine_InitSub8();
 
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);

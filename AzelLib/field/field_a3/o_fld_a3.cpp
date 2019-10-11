@@ -4331,22 +4331,22 @@ void updateDragonMovementFromControllerType1Sub2(s_dragonTaskWorkArea* r14, s_dr
 {
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // down
     {
-        updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, r14->m178[3]);
+        incrementAnimationRootY(&r12->m78_animData, r14->m178[3]);
     }
     else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // up
     {
-        updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, -r14->m178[3]);
+        incrementAnimationRootY(&r12->m78_animData, -r14->m178[3]);
     }
 
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7]) // right
     {
-        updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, r14->m178[3]);
-        updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, -r14->m178[3]);
+        incrementAnimationRootX(&r12->m78_animData, r14->m178[3]);
+        incrementAnimationRootZ(&r12->m78_animData, -r14->m178[3]);
     }
     else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6]) // left
     {
-        updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, -r14->m178[3]);
-        updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, r14->m178[3]);
+        incrementAnimationRootX(&r12->m78_animData, -r14->m178[3]);
+        incrementAnimationRootZ(&r12->m78_animData, r14->m178[3]);
     }
 }
 
@@ -4365,11 +4365,11 @@ void updateDragonMovementFromControllerType2Sub2(s_dragonTaskWorkArea* r11, s_dr
     s32 var0 = r11->m246_previousAnalogY - r4_y;
     if (var0 > 0x40)
     {
-        updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * var0));
+        incrementAnimationRootY(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * var0));
     }
     else if (var0 < -0x40)
     {
-        updateDragonMovementFromControllerType1Sub2Sub1(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * var0));
+        incrementAnimationRootY(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * var0));
     }
 
     //607F1E8
@@ -4377,13 +4377,13 @@ void updateDragonMovementFromControllerType2Sub2(s_dragonTaskWorkArea* r11, s_dr
     s32 r10 = r11->m245_previousAnalogX - r4_x;
     if (r10 > 0x40)
     {
-        updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, performDivision(0x80, -(r11->m178[3].asS32() * r10)));
-        updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * r10));
+        incrementAnimationRootX(&r12->m78_animData, performDivision(0x80, -(r11->m178[3].asS32() * r10)));
+        incrementAnimationRootZ(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * r10));
     }
     else if (r10 < -0x40)
     {
-        updateDragonMovementFromControllerType1Sub2Sub2(&r12->m78_animData, performDivision(0x80, -(r11->m178[3].asS32() * r10)));
-        updateDragonMovementFromControllerType1Sub2Sub3(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * r10));
+        incrementAnimationRootX(&r12->m78_animData, performDivision(0x80, -(r11->m178[3].asS32() * r10)));
+        incrementAnimationRootZ(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * r10));
     }
 }
 
