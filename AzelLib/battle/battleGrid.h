@@ -64,6 +64,10 @@ struct s_battleGrid : public s_workAreaTemplate<s_battleGrid>
     s32 m31C;
     s32 m320;
     //size: 0x324
+
+#ifndef SHIPPING_BUILD
+    void Inspect() override;
+#endif
 };
 
 p_workArea createBattleEnvironmentGridTask(p_workArea parent);

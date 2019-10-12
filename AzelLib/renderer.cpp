@@ -1619,7 +1619,8 @@ bool azelSdl2_EndFrame()
     }
     ImGui::End();
 
-    DebugTasks();
+    PrintDebugTasksHierarchy();
+    PrintDebugTasksInfo();
 
     checkGL();
     

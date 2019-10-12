@@ -383,5 +383,6 @@ struct s_dummyWorkArea : s_workArea
 
 };
 
-void DebugTasks();
+void PrintDebugTasksHierarchy();
+void PrintDebugTasksInfo();
 

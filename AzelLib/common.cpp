@@ -816,3 +816,55 @@ u8* sSaturnPtr::getRawPointer()
 
     return pFile->m_data + offsetInFile;
 }
+
+#ifndef SHIPPING_BUILD
+void InspectTask(const char* className, void* pBase, const std::vector<s_memberDefinitions>& members)
+{
+    ImGui::Begin(className);
+    ImGui::Columns(3);
+    for (int i = 0; i < members.size(); i++)
+    {
+        size_t sVec3_FP_type = typeid(sVec3_FP).hash_code();
+        const s_memberDefinitions& member = members[i];
+        if (member.m_type == typeid(sVec3_FP).hash_code())
+        {
+            ImGui::Text("sVec3_FP");
+            ImGui::NextColumn();
+            ImGui::Text(member.m_name.c_str());
+            ImGui::NextColumn();
+            Imgui_Vec3FP((sVec3_FP*)(member.m_ptr + (u8*)pBase));
+            ImGui::NextColumn();
+        }
+        else if (member.m_type == typeid(s8).hash_code())
+        {
+            ImGui::Text("s8");
+            ImGui::NextColumn();
+            ImGui::Text(member.m_name.c_str());
+            ImGui::NextColumn();
+            ImGui::PushID(member.m_name.c_str());
+            int value = *(s8*)(member.m_ptr + (u8*)pBase);
+            ImGui::InputInt("", &value);
+            ImGui::PopID();
+            ImGui::NextColumn();
+        }
+        else if (member.m_type == typeid(s32).hash_code())
+        {
+            ImGui::Text("s32");
+            ImGui::NextColumn();
+            ImGui::Text(member.m_name.c_str());
+            ImGui::NextColumn();
+            ImGui::PushID(member.m_name.c_str());
+            int value = *(s32*)(member.m_ptr + (u8*)pBase);
+            ImGui::InputInt("", &value);
+            ImGui::PopID();
+            ImGui::NextColumn();
+        }
+        else
+        {
+            assert(0);
+        }
+    }
+    ImGui::Columns(1);
+    ImGui::End();
+}
+#endif

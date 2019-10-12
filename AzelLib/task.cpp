@@ -3,32 +3,53 @@
 s_task* taskListHead;
 int numActiveTask;
 
-void PrintDebugTask(s_task* pTask)
+void PrintDebugTaskHierarchy(s_task* pTask)
 {
     ImGui::PushID(0);
     if(ImGui::TreeNode(pTask->m_taskName))
     {
         if (pTask->m4_pSubTask)
         {
-            PrintDebugTask(pTask->m4_pSubTask);
+            PrintDebugTaskHierarchy(pTask->m4_pSubTask);
         }
         ImGui::TreePop();
     }
     if (pTask->m0_pNextTask)
     {
-        PrintDebugTask(pTask->m0_pNextTask);
+        PrintDebugTaskHierarchy(pTask->m0_pNextTask);
     }
     ImGui::PopID();
 }
 
-void DebugTasks()
+void PrintDebugTasksHierarchy()
 {
     ImGui::Begin("Tasks");
     if (taskListHead)
     {
-        PrintDebugTask(taskListHead);
+        PrintDebugTaskHierarchy(taskListHead);
     }
     ImGui::End();
+}
+
+void PrintDebugTaskInfo(s_task* pTask)
+{
+    pTask->getWorkArea()->Inspect();
+    if (pTask->m4_pSubTask)
+    {
+        PrintDebugTaskInfo(pTask->m4_pSubTask);
+    }
+    if (pTask->m0_pNextTask)
+    {
+        PrintDebugTaskInfo(pTask->m0_pNextTask);
+    }
+}
+
+void PrintDebugTasksInfo()
+{
+    if (taskListHead)
+    {
+        PrintDebugTaskInfo(taskListHead);
+    }
 }
 
 void processTasks(s_task** ppTask)

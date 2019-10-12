@@ -345,3 +345,38 @@ p_workArea createBattleEnvironmentGridTask(p_workArea parent)
 
     return createSubTask<s_battleGrid>(parent, &definition);
 }
+
+#ifndef SHIPPING_BUILD
+
+static const std::vector<s_memberDefinitions> members = {
+    MEMBER_TYPE(s_battleGrid, m0),
+    MEMBER_TYPE(s_battleGrid, m1),
+    MEMBER_TYPE(s_battleGrid, m2),
+    MEMBER_TYPE(s_battleGrid, m4),
+    MEMBER_TYPE(s_battleGrid, m8),
+    MEMBER_TYPE(s_battleGrid, mC),
+    MEMBER_TYPE(s_battleGrid, m10),
+    MEMBER_TYPE(s_battleGrid, m1C),
+    MEMBER_TYPE(s_battleGrid, m28),
+    MEMBER_TYPE(s_battleGrid, m34_cameraPosition),
+    MEMBER_TYPE(s_battleGrid, m40),
+    MEMBER_TYPE(s_battleGrid, m64_cameraRotationTarget),
+    MEMBER_TYPE(s_battleGrid, m70),
+    MEMBER_TYPE(s_battleGrid, m84_cameraRotationDelta),
+    MEMBER_TYPE(s_battleGrid, m90),
+    MEMBER_TYPE(s_battleGrid, mB4_cameraRotation),
+    MEMBER_TYPE(s_battleGrid, mC0_cameraRotationInterpolation),
+    MEMBER_TYPE(s_battleGrid, mCC_cameraInterpolationRotationFactor),
+    MEMBER_TYPE(s_battleGrid, mD8_cameraInterpolationRotationFactor2),
+    MEMBER_TYPE(s_battleGrid, mE4_currentCameraReferenceCenter),
+    MEMBER_TYPE(s_battleGrid, mF0_currentCameraReferenceForward),
+    MEMBER_TYPE(s_battleGrid, mFC_cameraReferenceUp),
+    MEMBER_TYPE(s_battleGrid, m108_deltaCameraPosition),
+    MEMBER_TYPE(s_battleGrid, m114_deltaCameraTarget),
+};
+
+void s_battleGrid::Inspect()
+{
+    InspectTask(str(s_battleGrid), this, members);
+}
+#endif

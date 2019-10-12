@@ -238,11 +238,26 @@ struct sVec2_FP
 
 sVec3_FP MTH_Mul(const fixedPoint& a, const sVec3_FP& b);
 
+#define xstr(a) str(a)
+#define str(a) #a
+
+#ifndef SHIPPING_BUILD
 void Imgui_FP(const char* label, fixedPoint* pFP);
 void Imgui_FP_Angle(const char* name, fixedPoint* pFP);
 void Imgui_Vec3FP(sVec3_FP* pVector);
 void Imgui_Vec3FP(const char* name, sVec3_FP* pVector);
 
+struct s_memberDefinitions {
+    const std::string m_name;
+    const u32 m_ptr;
+    const size_t m_type;
+};
+
+#define MEMBER_TYPE(classname, name) {#name, offsetof(classname, name), typeid(((classname*)nullptr)->name).hash_code()}
+
+void InspectTask(const char* className, void* pBase, const std::vector<s_memberDefinitions>& members);
+
+#endif
 
 #include "kernel/fade.h"
 
