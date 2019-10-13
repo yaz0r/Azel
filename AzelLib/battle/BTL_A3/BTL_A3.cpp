@@ -1,10 +1,13 @@
 #include "PDS.h"
+#include "kernel/debug/trace.h"
 #include "BTL_A3.h"
 #include "battle/battleManager.h"
 #include "battle/battleMainTask.h"
 #include "town/town.h"
 #include "kernel/vdp1Allocator.h"
 #include "battle/battleEngine.h"
+
+#include "BTL_A3_BaltorFormation.h"
 
 struct BTL_A3_data* g_BTL_A3 = nullptr;
 
@@ -14,9 +17,18 @@ struct BTL_A3_data : public battleOverlay
     {
         return getSaturnPtr(0x60AAFA0);
     }
-    void invoke(sSaturnPtr Func, struct s_battleDragon*, u32, u32) override
+    void invoke(sSaturnPtr Func, p_workArea pParent, u32 arg0, u32 arg1) override
     {
-        FunctionUnimplemented();
+        switch (Func.m_offset)
+        {
+        case 0x060565da:
+            Create_BTL_A3_BaltorFormation(pParent, arg0);
+            break;
+        default:
+            FunctionUnimplemented();
+            break;
+        }
+        
     }
 };
 
@@ -133,5 +145,6 @@ p_workArea overlayStart_BTL_A3(p_workArea parent)
         gCurrentBattleOverlay = g_BTL_A3;
     }
 
+    startTrace("BTL_A3.trace.txt");
     return createBattleMainTask(parent, &battle_A3_initMusic, battle_A3_func0);
 }

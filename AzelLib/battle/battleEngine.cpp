@@ -9,6 +9,7 @@
 #include "battleDebug.h"
 #include "battleDragon.h"
 #include "battleIntro.h"
+#include "battleEngineSub1.h"
 
 #include "BTL_A3/BTL_A3.h"
 
@@ -165,11 +166,6 @@ void battleEngine_InitSub8()
 }
 
 void battleEngine_InitSub9(p_workArea parent)
-{
-    FunctionUnimplemented();
-}
-
-void battleEngine_InitSub10(p_workArea parent)
 {
     FunctionUnimplemented();
 }
@@ -345,7 +341,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     pThis->m480.fill(-1);
     pThis->m190.fill(0);
 
-    battleEngine_InitSub10(pThis);
+    createBattleEngineSub1(pThis);
     battleEngine_InitSub11();
 
     if (mainGameState.gameStats.mC_laserPower < 1) {

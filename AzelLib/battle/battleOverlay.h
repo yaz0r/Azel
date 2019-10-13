@@ -3,7 +3,7 @@
 struct battleOverlay : public sSaturnMemoryFile
 {
     virtual sSaturnPtr getBattleEngineInitData() = 0;
-    virtual void invoke(sSaturnPtr Func, struct s_battleDragon*, u32, u32) = 0;
+    virtual void invoke(sSaturnPtr Func, p_workArea pParent, u32, u32) = 0;
 };
 
 extern battleOverlay* gCurrentBattleOverlay;

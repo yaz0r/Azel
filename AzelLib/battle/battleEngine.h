@@ -3,7 +3,7 @@
 struct s_battleEngineSub
 {
     s8 m0;
-    s32 m4;
+    struct s_battleDragon_8C* m4;
     s32 m8;
     // size C?
 };

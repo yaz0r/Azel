@@ -7,8 +7,6 @@
 #pragma comment(lib, "Version.lib")
 #endif
 
-bool compareTrace = false;
-
 bool hasEncounterData;
 bool debugEnabled = false; // watchdog bit 1
 

@@ -7,6 +7,7 @@
 #include "kernel/cinematicBarsTask.h"
 #include "kernel/fileBundle.h"
 #include "kernel/dialogTask.h"
+#include "kernel/debug/trace.h"
 
 #include <map>
 
@@ -358,7 +359,7 @@ s32 scriptUpdateSub0Sub3Sub1(fixedPoint r4_x, fixedPoint r5_z)
 
 sTownCellTask* scriptUpdateSub0Sub3Sub0(fixedPoint r4_x, fixedPoint r5_z)
 {
-    if (compareTrace)
+    if (isTraceEnabled())
     {
         addTraceLog("scriptUpdateSub0Sub3Sub0 testing cell: 0x%04X 0x%04X\n", r4_x.asS32(), r5_z.asS32());
     }
@@ -393,7 +394,7 @@ sTownCellTask* scriptUpdateSub0Sub3Sub0(fixedPoint r4_x, fixedPoint r5_z)
     if (r5_cellY > 3)
         return nullptr;
 
-    if (compareTrace)
+    if (isTraceEnabled())
     {
         addTraceLog("scriptUpdateSub0Sub3Sub0 found cell. GridSize: %d %d\n", gTownGrid.m0_sizeX, gTownGrid.m4_sizeY);
     }
@@ -878,7 +879,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
 
 void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
 {
-    if (compareTrace)
+    if (isTraceEnabled())
     {
         addTraceLog("processTownMeshCollision: current matrix: ");
         for (int i = 0; i < 4 * 3; i++)
@@ -890,7 +891,7 @@ void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
     std::array<sProcessedVertice, 255> transformedVertices;
     u32 clipFlag = transformTownMeshVertices(r5->m8_vertices, transformedVertices, r5->m4_numVertices, r4->m14_collisionClip);
 
-    if (compareTrace)
+    if (isTraceEnabled())
     {
         addTraceLog("processTownMeshCollision: vertices: ");
         for (int i = 0; i < r5->m4_numVertices; i++)
@@ -1379,33 +1380,9 @@ void scriptUpdateSub0()
     }
 }
 
-void addTraceLog(const char* fmt, ...)
-{
-    static FILE* fHandle = nullptr;
-    if (fHandle == nullptr)
-    {
-        fHandle = fopen("azelLog.txt", "r");
-        assert(fHandle);
-    }
-
-    char buffer[1024];
-
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buffer, fmt, args);
-    va_end(args);
-
-    char buffer2[1024];
-    fread(buffer2, 1, strlen(buffer), fHandle);
-    buffer2[strlen(buffer)] = 0;
-
-    printf(buffer);
-    assert(strcmp(buffer2, buffer) == 0);
-}
-
 void initResTable()
 {
-    if (compareTrace)
+    if (isTraceEnabled())
     {
         addTraceLog("InitResTable: resValue0=%d\n", resValue0);
     }
@@ -1685,7 +1662,7 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
     {
         u8 r0_opcode = readSaturnU8(r14++);
 
-        if (compareTrace)
+        if (isTraceEnabled())
         {
             addTraceLog("runScript_interceptOpcode 0x%02X\n", r0_opcode);
         }

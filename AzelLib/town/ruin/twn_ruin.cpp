@@ -8,6 +8,7 @@
 #include "kernel/animation.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
+#include "kernel/debug/trace.h"
 
 #include "twn_ruin_lock.h"
 
@@ -576,10 +577,7 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
     EdgeUpdateSub0(&r14_townTask->m74_townCamera);
     mainLogicUpdateSub5(r14_townTask);
 
-    if (compareTrace)
-    {
-        addTraceLog("cameraFollowMode0Bis set camera position: 0x%04X 0x%04X 0x%04X\n", r14_townTask->m38_interpolatedCameraPosition[0].asS32(), r14_townTask->m38_interpolatedCameraPosition[1].asS32(), r14_townTask->m38_interpolatedCameraPosition[2].asS32());
-    }
+    addTraceLog("cameraFollowMode0Bis set camera position: 0x%04X 0x%04X 0x%04X\n", r14_townTask->m38_interpolatedCameraPosition[0].asS32(), r14_townTask->m38_interpolatedCameraPosition[1].asS32(), r14_townTask->m38_interpolatedCameraPosition[2].asS32());
 }
 
 void mainLogicUpdateSub3()

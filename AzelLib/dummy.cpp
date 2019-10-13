@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "kernel/debug/trace.h"
 
 u32 isInMenu2;
 
@@ -61,6 +62,9 @@ u32 randomNumber()
     r0 = ((r0 & 0xFFFF) << 16) | ((r0 >> 16) & 0xFFFF);
     r1 |= r2;
     RNG_seed = r1;
+
+    readTraceLog("Random: 0x%08X\n", r0);
+
     return r0;
 
 }

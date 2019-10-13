@@ -6,6 +6,7 @@
 #include "battleDebug.h"
 #include "battleGrid.h"
 #include "kernel/fileBundle.h"
+#include "kernel/debug/trace.h"
 
 void s_battleDragon_InitSub4Sub0()
 {
@@ -116,6 +117,12 @@ void s_battleDragon_UpdateSub1(s_battleDragon* pThis)
     sVec3_FP auStack56;
     transformAndAddVecByCurrentMatrix(&local_44, &auStack56);
     transformAndAddVec(auStack56, pThis->m8_position, cameraProperties2.m28[0]);
+
+    if (isTraceEnabled())
+    {
+        addTraceLog("DragonPosition: 0x%08X 0x%08X 0x%08X\n", pThis->m8_position[0].asS32(), pThis->m8_position[1].asS32(), pThis->m8_position[2].asS32());
+    }
+
     popMatrix();
     pThis->m5C_deltaPosition = pThis->m8_position - iVar3;
 }

@@ -7,6 +7,8 @@ struct s_battleDragon_8C
     sVec3_FP* m8;
     s32 mC;
     sVec3_FP m10;
+    sVec3_FP m1C;
+    sVec3_FP m28;
     s32 m4C;
     sVec3_FP m40;
     s32 m50;
@@ -42,3 +44,5 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
 };
 
 void battleEngine_createDragonTask(s_workAreaCopy* parent);
+
+void s_battleDragon_InitSub5Sub0(s_battleDragon_8C* pThis);
