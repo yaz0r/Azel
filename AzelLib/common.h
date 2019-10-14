@@ -161,6 +161,15 @@ struct sVec3_FP
         newValue[2].m_value >>= amount;
         return newValue;
     }
+
+    sVec3_FP normalized() const
+    {
+        sVec3_FP newValue;
+        newValue[0] = m_value[0].normalized();
+        newValue[1] = m_value[1].normalized();
+        newValue[2] = m_value[2].normalized();
+        return newValue;
+    }
 };
 
 struct sVec3_S16_12_4
@@ -286,6 +295,16 @@ std::string readSaturnString(sSaturnPtr ptr);
 struct sMatrix4x3
 {
     std::array<fixedPoint, 4*3> matrix;
+
+    sVec3_FP getTranslation()
+    {
+        sVec3_FP value;
+        value[0] = matrix[3];
+        value[1] = matrix[7];
+        value[2] = matrix[11];
+
+        return value;
+    }
 };
 
 enum e_dragonLevel : unsigned char {

@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
+#include "kernel/debug/trace.h"
 
 struct s_lightSetup
 {
@@ -188,6 +189,10 @@ void generateCameraMatrixSub1(const sVec3_FP& r4, sVec3_FP& r5_output)
 
 void generateCameraMatrixSub1(const sVec3_FP& r4, sVec2_FP& r5)
 {
+    if (isTraceEnabled())
+    {
+        //addTraceLog(r4, "generateCameraMatrixSub1_start");
+    }
     if ((r4[0] == 0) && (r4[2] == 0))
     {
         if (r4[1] >= 0)
@@ -214,6 +219,11 @@ void generateCameraMatrixSub1(const sVec3_FP& r4, sVec2_FP& r5)
         }
 
         r5[1] = atan2_FP(-r4[0], -r4[2]);
+    }
+
+    if (isTraceEnabled())
+    {
+        //addTraceLog(r5, "generateCameraMatrixSub1_end");
     }
 }
 
@@ -245,6 +255,13 @@ void transformVecByCurrentMatrix(const sVec3_FP& r4, sVec3_FP& r5)
 
 void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& position, const sVec3_FP& target, const sVec3_FP& up)
 {
+    if (isTraceEnabled())
+    {
+        addTraceLog(position, "position");
+        addTraceLog(target, "target");
+        addTraceLog(up, "up");
+    }
+
     sVec2_FP var_4;
     sVec3_FP var_24;
     sMatrix4x3 var_30;
@@ -304,6 +321,11 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& position, con
     r4->m28[0].matrix[2] = -r4->m28[0].matrix[2];
     r4->m28[0].matrix[6] = -r4->m28[0].matrix[6];
     r4->m28[0].matrix[10] = -r4->m28[0].matrix[10];
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(cameraProperties2.m28[0], "cameraProperties2.m28[0]");
+    }
 }
 
 void resetCameraProperties2(s_cameraProperties2* r4)

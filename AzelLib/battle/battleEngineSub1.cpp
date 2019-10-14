@@ -1,5 +1,9 @@
 #include "PDS.h"
 #include "battleEngineSub1.h"
+#include "battleManager.h"
+#include "battleOverlay.h"
+#include "battleEngine.h"
+#include "battleDragon.h"
 
 struct sBattleEngineSub1 : public s_workAreaTemplate<sBattleEngineSub1>
 {
@@ -11,6 +15,11 @@ struct sBattleEngineSub1 : public s_workAreaTemplate<sBattleEngineSub1>
 
 void battleEngineSub1_Update(sBattleEngineSub1* pThis)
 {
+    FunctionUnimplemented();
+
+    sVec2_FP temp;
+    generateCameraMatrixSub1(getBattleManager()->m10_battleOverlay->m4_battleEngine->mC - getBattleManager()->m10_battleOverlay->m18_dragon->m8_position, temp);
+
     FunctionUnimplemented();
 }
 

@@ -120,7 +120,10 @@ void s_battleDragon_UpdateSub1(s_battleDragon* pThis)
 
     if (isTraceEnabled())
     {
-        addTraceLog("DragonPosition: 0x%08X 0x%08X 0x%08X\n", pThis->m8_position[0].asS32(), pThis->m8_position[1].asS32(), pThis->m8_position[2].asS32());
+        addTraceLog(pBattleEngine->m234, "pBattleEngine->m234");
+        addTraceLog(pBattleEngine->m220, "pBattleEngine->m220");
+        addTraceLog(cameraProperties2.m28[0], "cameraProperties2.m28[0]");
+        addTraceLog(pThis->m8_position, "DragonPosition");
     }
 
     popMatrix();

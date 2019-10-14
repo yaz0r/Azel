@@ -125,7 +125,7 @@ public:
         return value;
     }
 
-    fixedPoint normalized()
+    fixedPoint normalized() const
     {
         if (m_value & 0x8000000)
         {

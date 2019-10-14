@@ -16,6 +16,8 @@ void sBattleOverlayTask_C_Init(sBattleOverlayTask_C* pThis)
 
 void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
 {
+    pThis->m200_cameraMinAltitude = getBattleManager()->m10_battleOverlay->m4_battleEngine->m354[2];
+    pThis->m204_cameraMaxAltitude = getBattleManager()->m10_battleOverlay->m4_battleEngine->m354[3];
     FunctionUnimplemented();
 }
 

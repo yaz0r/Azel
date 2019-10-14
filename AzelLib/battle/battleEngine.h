@@ -27,6 +27,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s32 m1CC;
     fixedPoint m1D0;
     fixedPoint m1D4;
+    u16 m1E0;
     int m1E8[2];
     sMatrix4x3 m1F0;
     sVec3_FP m220;

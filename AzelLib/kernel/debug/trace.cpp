@@ -12,7 +12,6 @@ void startTrace(const char* name)
     if (fHandle == nullptr)
     {
         fHandle = fopen(name, "r");
-        assert(fHandle);
     }
 }
 
@@ -32,7 +31,10 @@ void readTraceLog(const char* fmt, u32& value)
             buffer.push_back(newChar);
         }
 
-        sscanf(&buffer[0], fmt, &value);
+        if (buffer.size())
+        {
+            sscanf(&buffer[0], fmt, &value);
+        }
     }
 }
 
@@ -48,10 +50,30 @@ void addTraceLog(const char* fmt, ...)
         va_end(args);
 
         char buffer2[1024];
-        fread(buffer2, 1, strlen(buffer), fHandle);
+        if (fread(buffer2, 1, strlen(buffer), fHandle) != strlen(buffer))
+            return;
         buffer2[strlen(buffer)] = 0;
 
         printf(buffer);
         assert(strcmp(buffer2, buffer) == 0);
     }
 }
+
+void addTraceLog(const sVec3_FP& vec, const char* name)
+{
+    addTraceLog("%s: 0x%08X 0x%08X 0x%08X\n", name, vec[0].asS32(), vec[1].asS32(), vec[2].asS32());
+}
+void addTraceLog(const sVec2_FP& vec, const char* name)
+{
+    addTraceLog("%s: 0x%08X 0x%08X\n", name, vec[0].asS32(), vec[1].asS32());
+}
+void addTraceLog(const sMatrix4x3& matrix, const char* name)
+{
+    addTraceLog("%s: 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X\n", name,
+        matrix.matrix[0].asS32(), matrix.matrix[1].asS32(), matrix.matrix[2].asS32(), matrix.matrix[3].asS32(),
+        matrix.matrix[4].asS32(), matrix.matrix[5].asS32(), matrix.matrix[6].asS32(), matrix.matrix[7].asS32(),
+        matrix.matrix[8].asS32(), matrix.matrix[9].asS32(), matrix.matrix[10].asS32(), matrix.matrix[11].asS32()
+    );
+}
+
+

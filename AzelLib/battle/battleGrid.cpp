@@ -7,6 +7,8 @@
 #include "battleOverlay_C.h"
 #include "town/town.h" // todo: clean
 
+#include "kernel/debug/trace.h"
+
 void battleGrid_initSub0()
 {
     getBattleManager()->m10_battleOverlay->m8_gridTask->m218_fov = 0x11c71c7;
@@ -177,10 +179,24 @@ void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
     }
     
     pThis->m180_cameraTranslation[2] = (*pThis->m1B8_pCameraTranslationSource)[2];
+
+    if (isTraceEnabled())
+    {
+        addTraceLog((*pThis->m1B8_pCameraTranslationSource), "cameraTranslationSource");
+        addTraceLog(pThis->m180_cameraTranslation, "cameraTranslation");
+    }
 }
 
 void battleGrid_updateSub1Sub3(s_battleGrid* pThis)
 {
+    if (isTraceEnabled())
+    {
+        addTraceLog(pThis->m1BC_cameraRotationStep, "m1BC_cameraRotationStep");
+        addTraceLog(pThis->m84_cameraRotationDelta, "m84_cameraRotationDelta");
+        addTraceLog(pThis->mB4_cameraRotation, "mB4_cameraRotation");
+        addTraceLog(pThis->mC0_cameraRotationInterpolation, "mC0_cameraRotationInterpolation");
+    }
+
     pThis->m64_cameraRotationTarget[0] += pThis->m1BC_cameraRotationStep[0];
     pThis->m64_cameraRotationTarget[1] += pThis->m1BC_cameraRotationStep[1];
 
@@ -226,6 +242,12 @@ void battleGrid_updateSub1(s_battleGrid* pThis)
             //battleGrid_updateSub1Sub4(iParm1);
         }
         rotateMatrixZYX(&pThis->mB4_cameraRotation, &pThis->m150_cameraMatrix);
+
+        if (isTraceEnabled())
+        {
+            addTraceLog(pThis->m180_cameraTranslation, "cameraTranslation");
+            addTraceLog(pThis->mB4_cameraRotation, "cameraRotation");
+        }
     }
 }
 
@@ -257,6 +279,11 @@ void battleGrid_update(s_battleGrid* pThis)
 
 void battleGrid_draw(s_battleGrid* pThis)
 {
+    if (isTraceEnabled())
+    {
+        addTraceLog(pThis->m150_cameraMatrix, "pThis->m150_cameraMatrix");
+    }
+
     if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB])
     {
         assert(0);

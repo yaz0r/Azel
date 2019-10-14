@@ -10,6 +10,7 @@
 #include "battleDragon.h"
 #include "battleIntro.h"
 #include "battleEngineSub1.h"
+#include "kernel/debug/trace.h"
 
 #include "BTL_A3/BTL_A3.h"
 
@@ -459,7 +460,7 @@ void battleEngine_UpdateSub8(s_battleEngine* pThis)
     }
 
     pThis->m264 += pThis->m1A0;
-    pThis->m234 + pThis->m270 + pThis->m264;
+    pThis->m234 = pThis->m270 + pThis->m264;
     pThis->m240 = pThis->m270 + pThis->m258 + pThis->m264;
 }
 
@@ -603,6 +604,12 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
         pThis->m104_dragonStartPosition[0] = pThis->m234[0] + pThis->m6C[0];
         pThis->m104_dragonStartPosition[2] = pThis->m234[2] + pThis->m6C[2];
 
+        if (isTraceEnabled())
+        {
+            addTraceLog(pThis->mC, "C");
+            addTraceLog(pThis->m104_dragonStartPosition, "m104_dragonStartPosition");
+        }
+
         generateCameraMatrixSub1(pThis->mC - pThis->m104_dragonStartPosition, aiStack52);
         pThis->m43C = aiStack52[0];
     }
@@ -613,7 +620,7 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
 
         sVec2_FP aiStack96;
         // TODO: there is some dead code here?
-        generateCameraMatrixSub1(iStack88, aiStack96);
+        generateCameraMatrixSub1(iStack88 - getBattleManager()->m10_battleOverlay->m8_gridTask->m34_cameraPosition, aiStack96);
         pThis->m1C8 = aiStack96[0];
         pThis->m1CC = aiStack96[1];
 
@@ -859,7 +866,8 @@ void battleEngine_UpdateSub7(s_battleEngine* pThis)
     if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498 < 1)
         return;
 
-    assert(0);
+    FunctionUnimplemented();
+    //assert(0);
 }
 
 void battleEngine_Update(s_battleEngine* pThis)

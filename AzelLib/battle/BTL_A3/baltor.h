@@ -5,39 +5,23 @@
 struct sBaltor_68_30
 {
     sBaltor_68_30* m0;
-    s32 m4;
-    s32 m8;
-    s32 mC;
-    sVec3_FP m10;
-    s32 m1C;
-    s32 m20;
-    s32 m24;
-    s32 m28;
-    s32 m2C;
-    s32 m30;
-    s32 m34;
-    s32 m38;
-    s32 m3C;
+    sVec3_FP m4;
+    sVec3_FP m10_translation;
+    sVec3_FP m1C;
+    sVec3_FP m28;
+    sVec3_FP m34;
     s16 m40;
-    s32 m44;
-    s32 m48;
-    s32 m4C;
+    sVec3_FP m44;
     s32 m50;
     //size 0x54
 };
 
 struct sBaltor_68
 {
-    s32 m0;
-    s32 m4;
-    s32 m8;
-    s32 mC;
-    s32 m10;
-    s32 m14;
-    s32 m18;
-    s32 m1C;
-    s32 m20;
-    void (*m24_update)();
+    sVec3_FP m0_translation;
+    sVec3_FP mC_rotation;
+    sVec3_FP m18;
+    void (*m24_update)(sBaltor_68_30*, sVec3_FP*, sVec3_FP*, sVec3_FP*);
     void (*m28_draw)();
     void (*m2C_delete)();
     std::vector<sBaltor_68_30> m30;
@@ -46,10 +30,10 @@ struct sBaltor_68
 
 struct sBaltor : public s_workAreaTemplateWithArgWithCopy<sBaltor, struct sFormationData*>
 {
-    s8 m2;
+    s8 m8_mode;
     s8 mA_indexInFormation;
     s16 mC;
-    s8 m10;
+    s8 m10_HP;
     std::vector<s_battleDragon_8C> m14;
     std::vector<sVec3_FP> m18;
     std::array<sVec3_FP*, 3> m1C;
@@ -58,12 +42,12 @@ struct sBaltor : public s_workAreaTemplateWithArgWithCopy<sBaltor, struct sForma
     s_3dModel* m38_3dModel;
     sSaturnPtr m3C_dataPtr;
     p_workArea m40;
-    s8 m48;
-    s8 m49;
+    sVec3_FP m44;
+    sVec3_FP m50;
+    sVec3_FP m5C;
     sBaltor_68* m68;
-    u32 m6C;
-    u32 m70;
-    u32 m74;
+    sVec3_FP m6C;
+    sVec3_FP m78;
     // 0x94
 };
 

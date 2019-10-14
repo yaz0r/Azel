@@ -228,6 +228,7 @@ class MathTest
 public:
     MathTest()
     {
+        assert(atan2_FP(s32(0x64000), s32(0x00400000)) == s32(0x1De0000));
         assert(atan2(s32(0xDB4D), s32(0x80000)) == s32(0x45));
 
         assert(atan2_FP(s32(0), s32(0xFF00)) == s32(0));
@@ -238,6 +239,71 @@ public:
 }g_MathTest;
 
 #endif
+
+u32 Q = 0;
+u32 M = 0;
+u32 T = 0;
+
+void div1(s32& rm, s32& rn)
+{
+    unsigned long tmp0;
+    unsigned char old_q, tmp1;
+    old_q = Q;
+    Q = (unsigned char)((0x80000000 & rn) != 0);
+    rn <<= 1;
+    rn |= (unsigned long)T;
+    switch (old_q) {
+    case 0:
+        switch (M) {
+            case 0:tmp0 = rn;
+                rn -= rm;
+                tmp1 = (rn > tmp0);
+                switch (Q) {
+                case 0:Q = tmp1;
+                    break;
+                case 1:Q = (unsigned char)(tmp1 == 0);
+                    break;
+                }
+                break;
+            case 1:tmp0 = rn;
+                rn += rm;
+                tmp1 = (rn < tmp0);
+                switch (Q) {
+                case 0:Q = (unsigned char)(tmp1 == 0);
+                    break;
+                case 1:Q = tmp1;
+                    break;
+                }
+                break;
+            }
+           break;
+    case 1:
+        switch (M) {
+        case 0:tmp0 = rn;
+            rn += rm;
+            tmp1 = (rn < tmp0);
+            switch (Q) {
+            case 0:Q = tmp1;
+                break;
+            case 1:Q = (unsigned char)(tmp1 == 0);
+                break;
+            }
+            break;
+        case 1:tmp0 = rn;
+            rn -= rm;
+            tmp1 = (rn > tmp0);
+            switch (Q) {
+            case 0:Q = (unsigned char)(tmp1 == 0);
+                break;
+            case 1:Q = tmp1;
+                break;
+            }
+            break;
+        }
+           break;
+    }
+    T = (Q == M);
+}
 
 // this is atan2
 // see https://www.dsprelated.com/showarticle/1052.php
@@ -277,8 +343,18 @@ s32 atan2_FP(s32 y, s32 x)
         r1++;
     }
 
-    s32 z = ((float)abs(y) / (float)abs(x)) * 2048;
+    y <<= 10;
+    x <<= 10;
 
+    M = T = Q = 0;
+
+    for (int i = 0; i < 11; i++)
+    {
+        div1(x, y);
+    }
+    //s32 z = ((float)abs(y*1024) / (float)abs(x*1024)) * 2048;
+
+    s32 z = (y << 1) | T;
     s32 tanValue = atanTable[z & 0x7FF];
 
     tanValue <<= 16;
