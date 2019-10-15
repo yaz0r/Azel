@@ -5,13 +5,14 @@
 #include "battleEngine.h"
 #include "battleDragon.h"
 #include "kernel/fileBundle.h"
+#include "kernel/debug/trace.h"
 
 #include "town/town.h" // TODO: remove
 
 struct sBattleIntroSubTask : public s_workAreaTemplate<sBattleIntroSubTask>
 {
     s16 m0_frameIndex;
-    sVec3_FP m4;
+    sVec3_FP m4_translation;
     sVec3_FP m10;
     u8* m1C_pCameraData;
     u8* m20;
@@ -49,7 +50,7 @@ void createBattleIntroTaskSub2(sBattleIntroSubTask* pThis)
 
     u8* cameraData = pThis->m1C_pCameraData + (s64)pThis->m0_frameIndex * 6;
 
-    s16 rawCameraData[3];
+    s32 rawCameraData[3];
     rawCameraData[0] = READ_BE_S16(cameraData + 0) * 32;
     rawCameraData[1] = READ_BE_S16(cameraData + 2) * 32;
     rawCameraData[2] = READ_BE_S16(cameraData + 4) * 32;
@@ -80,21 +81,31 @@ void createBattleIntroTaskSub2(sBattleIntroSubTask* pThis)
         assert(0);
     }
 
-    switch (pThis->m28)
+    if(pThis->m28)
     {
-    case 0:
-    case 2:
-        localVector[0] = -localVector[0];
-        break;
-    case 1:
-    case 3:
-        localVector[2] = -localVector[2];
-        break;
-    default:
-        assert(0);
+        switch (pThis->m25)
+        {
+        case 0:
+        case 2:
+            localVector[0] = -localVector[0];
+            break;
+        case 1:
+        case 3:
+            localVector[2] = -localVector[2];
+            break;
+        default:
+            assert(0);
+        }
     }
 
-    pThis->m4 = getBattleManager()->m10_battleOverlay->m18_dragon->m8_position + getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0 + localVector;
+    if (isTraceEnabled())
+    {
+        addTraceLog(getBattleManager()->m10_battleOverlay->m18_dragon->m8_position, "dragon");
+        addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
+        addTraceLog(localVector, "localVector");
+    }
+
+    pThis->m4_translation = getBattleManager()->m10_battleOverlay->m18_dragon->m8_position + getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0 + localVector;
 }
 
 void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
@@ -177,7 +188,7 @@ p_workArea createBattleIntroTask(p_workArea parent)
 
     createBattleIntroTaskSub2(pNewTask);
     createBattleIntroTaskSub3(pNewTask);
-    battleEngine_InitSub6(&pNewTask->m4);
+    battleEngine_InitSub6(&pNewTask->m4_translation);
     battleEngine_InitSub7(&pNewTask->m10);
     battleEngine_InitSub8();
 

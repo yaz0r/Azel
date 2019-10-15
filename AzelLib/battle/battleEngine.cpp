@@ -512,6 +512,12 @@ void battleEngine_UpdateSub7Sub3()
 
     if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB] == 0)
     {
+        if (isTraceEnabled())
+        {
+            addTraceLog(pGrid->m1C, "pGrid->m1C");
+            addTraceLog(pGrid->m28, "pGrid->m28");
+            addTraceLog(pBattleEngine->m104_dragonStartPosition, "pBattleEngine->m104_dragonStartPosition");
+        }
         pGrid->m34_cameraPosition = pBattleEngine->m104_dragonStartPosition + pGrid->m1C + pGrid->m28;
         battleEngine_InitSub6(&pGrid->m34_cameraPosition);
         pBattleEngine->m3D8 = &pBattleEngine->mC;
