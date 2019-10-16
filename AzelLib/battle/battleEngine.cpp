@@ -138,6 +138,12 @@ void battleEngine_InitSub8Sub0(sVec2_FP& param)
     s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
     s_battleGrid* pBattleGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
 
+    if (isTraceEnabled())
+    {
+        addTraceLog(*pBattleEngine->m3D8, "3D8");
+        addTraceLog(*pBattleEngine->m3D4, "3D4");
+    }
+
     sVec3_FP delta = *pBattleEngine->m3D8 - *pBattleEngine->m3D4;
     generateCameraMatrixSub1(delta, param);
     
@@ -150,6 +156,10 @@ void battleEngine_InitSub8Sub0(sVec2_FP& param)
 
 void battleEngine_InitSub8Sub1(sVec2_FP& param)
 {
+    if (isTraceEnabled())
+    {
+        addTraceLog(param, "param");
+    }
     s_battleGrid* pBattleGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
     pBattleGrid->mB4_cameraRotation[0] = param[0];
     pBattleGrid->mB4_cameraRotation[1] = param[1];

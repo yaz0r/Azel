@@ -13,7 +13,7 @@ struct sBattleIntroSubTask : public s_workAreaTemplate<sBattleIntroSubTask>
 {
     s16 m0_frameIndex;
     sVec3_FP m4_translation;
-    sVec3_FP m10;
+    sVec3_FP m10_rotation;
     u8* m1C_pCameraData;
     u8* m20;
     s8 m24_interpolationType;
@@ -110,20 +110,22 @@ void createBattleIntroTaskSub2(sBattleIntroSubTask* pThis)
 
 void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
 {
-    sVec3_FP temp = getBattleManager()->m10_battleOverlay->m18_dragon->m8_position + getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0;
+    sVec3_FP deltaPosition = getBattleManager()->m10_battleOverlay->m18_dragon->m8_position + getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0;
 
     switch (pThis->m24_interpolationType)
     {
     case 0:
-        pThis->m10[0] = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC[0] + MTH_Mul(READ_BE_S16(pThis->m20 + pThis->m0_frameIndex * 6 + 4) * 256, temp[0] - getBattleManager()->m10_battleOverlay->m4_battleEngine->mC[0]);
-        pThis->m10[1] = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC[1] + MTH_Mul(READ_BE_S16(pThis->m20 + pThis->m0_frameIndex * 6 + 4) * 256, temp[1] - getBattleManager()->m10_battleOverlay->m4_battleEngine->mC[1]);
-        pThis->m10[2] = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC[2] + MTH_Mul(READ_BE_S16(pThis->m20 + pThis->m0_frameIndex * 6 + 4) * 256, temp[1] - getBattleManager()->m10_battleOverlay->m4_battleEngine->mC[2]);
+        pThis->m10_rotation = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC +
+            MTH_Mul(
+                fixedPoint(READ_BE_S16(pThis->m20 + pThis->m0_frameIndex * 6 + 4)) * 256,
+                deltaPosition - getBattleManager()->m10_battleOverlay->m4_battleEngine->mC
+            );
         break;
     case 1:
-        pThis->m10 = temp + MTH_Mul(FP_Div(pThis->m0_frameIndex * 512, 0x960000), getBattleManager()->m10_battleOverlay->m4_battleEngine->mC - temp);
+        pThis->m10_rotation = deltaPosition + MTH_Mul(FP_Div(pThis->m0_frameIndex * 512, 0x960000), getBattleManager()->m10_battleOverlay->m4_battleEngine->mC - deltaPosition);
         break;
     case 2:
-        pThis->m10 = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC;
+        pThis->m10_rotation = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC;
         break;
     default:
         assert(0);
@@ -189,7 +191,7 @@ p_workArea createBattleIntroTask(p_workArea parent)
     createBattleIntroTaskSub2(pNewTask);
     createBattleIntroTaskSub3(pNewTask);
     battleEngine_InitSub6(&pNewTask->m4_translation);
-    battleEngine_InitSub7(&pNewTask->m10);
+    battleEngine_InitSub7(&pNewTask->m10_rotation);
     battleEngine_InitSub8();
 
     return pNewTask;

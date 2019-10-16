@@ -228,6 +228,11 @@ void battleGrid_updateSub1Sub3(s_battleGrid* pThis)
     pThis->mC0_cameraRotationInterpolation[2] += MTH_Mul(fixedPoint(pThis->m64_cameraRotationTarget[2] - pThis->mB4_cameraRotation[2]).normalized(), pThis->mCC_cameraInterpolationRotationFactor[2]);
     pThis->mC0_cameraRotationInterpolation[2] -= MTH_Mul(pThis->mC0_cameraRotationInterpolation[2], pThis->mD8_cameraInterpolationRotationFactor2[2]);
     pThis->mB4_cameraRotation[2] += pThis->mC0_cameraRotationInterpolation[2];
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(pThis->mB4_cameraRotation, "mB4_cameraRotation");
+    }
 }
 
 void battleGrid_updateSub1(s_battleGrid* pThis)
