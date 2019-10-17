@@ -1,5 +1,5 @@
 #include "PDS.h"
-#include "baltor.h"
+#include "baldor.h"
 #include "battle/battleFormation.h"
 #include "battle/battleManager.h"
 #include "battle/battleOverlay.h"
@@ -12,7 +12,7 @@
 #include "mainMenuDebugTasks.h"
 #include "town/town.h"
 
-void Baltor_initSub0Sub2(sBaltor* pThis, sFormationData* pFormationEntry)
+void Baldor_initSub0Sub2(sBaldor* pThis, sFormationData* pFormationEntry)
 {
     pThis->m34_formationEntry = pFormationEntry;
     for (int i = 0; i < 3; i++)
@@ -31,7 +31,7 @@ p_workArea createBaldorSubTask0(sVec3_FP* arg0, s32 arg1, s8* arg2, s8 arg3)
     return nullptr;
 }
 
-s_3dModel* Baltor_create3dModel(sBaltor* pThis, sSaturnPtr dataPtr, s32 arg)
+s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
 {
     u8 fileBundleIndex = readSaturnS8(dataPtr);
     s_fileBundle* pFileBundle = dramAllocatorEnd[fileBundleIndex].mC_buffer->m0_dramAllocation;
@@ -48,12 +48,12 @@ s_3dModel* Baltor_create3dModel(sBaltor* pThis, sSaturnPtr dataPtr, s32 arg)
     return pOutputModel;
 }
 
-void Baltor_initSub0Sub1(sBaltor* pThis, p_workArea, s16, std::vector<s_battleDragon_8C>&, std::vector<sVec3_FP>&)
+void Baldor_initSub0Sub1(sBaldor* pThis, p_workArea, s16, std::vector<s_battleDragon_8C>&, std::vector<sVec3_FP>&)
 {
     FunctionUnimplemented();
 }
 
-void Baltor_initSub0(sBaltor* pThis, sSaturnPtr dataPtr, sFormationData* pFormationEntry, s32 arg)
+void Baldor_initSub0(sBaldor* pThis, sSaturnPtr dataPtr, sFormationData* pFormationEntry, s32 arg)
 {
     pThis->m3C_dataPtr = dataPtr;
     if (readSaturnS8(dataPtr + 2) == 0)
@@ -63,11 +63,11 @@ void Baltor_initSub0(sBaltor* pThis, sSaturnPtr dataPtr, sFormationData* pFormat
     }
     else
     {
-        pThis->m38_3dModel = Baltor_create3dModel(pThis, dataPtr, 0);
-        Baltor_initSub0Sub1(pThis, pThis->m38_3dModel->m0_pOwnerTask, pThis->mC, pThis->m14, pThis->m18);
+        pThis->m38_3dModel = Baldor_create3dModel(pThis, dataPtr, 0);
+        Baldor_initSub0Sub1(pThis, pThis->m38_3dModel->m0_pOwnerTask, pThis->mC, pThis->m14, pThis->m18);
     }
 
-    Baltor_initSub0Sub2(pThis, pFormationEntry);
+    Baldor_initSub0Sub2(pThis, pFormationEntry);
     pThis->m40 = createBaldorSubTask0(pThis->m1C[0], 0, &pThis->m10_HP, readSaturnS8(pThis->m3C_dataPtr + 1));
     if (-1 < arg)
     {
@@ -87,17 +87,17 @@ void Baltor_initSub0(sBaltor* pThis, sSaturnPtr dataPtr, sFormationData* pFormat
     }
 }
 
-void Baltor_initSub1Sub0(p_workArea, s_battleDragon_8C*)
+void Baldor_initSub1Sub0(p_workArea, s_battleDragon_8C*)
 {
     FunctionUnimplemented();
 }
 
-void Baltor_initSub1Sub1(p_workArea, s_battleDragon_8C*)
+void Baldor_initSub1Sub1(p_workArea, s_battleDragon_8C*)
 {
     FunctionUnimplemented();
 }
 
-void Baltor_initSub1(s_battleDragon_8C* param_1, s_battleDragon* param_2, sVec3_FP* param_3, s32 param_4, u32 param_5, u32 param_6, u32 param_7, u32 param_8)
+void Baldor_initSub1(s_battleDragon_8C* param_1, s_battleDragon* param_2, sVec3_FP* param_3, s32 param_4, u32 param_5, u32 param_6, u32 param_7, u32 param_8)
 {
     param_1->m0 = param_2;
     param_1->m4 = param_3;
@@ -131,8 +131,8 @@ void Baltor_initSub1(s_battleDragon_8C* param_1, s_battleDragon* param_2, sVec3_
                 if (param_1->m50 & 1)
                     return;
 
-                Baltor_initSub1Sub0(getBattleManager()->m10_battleOverlay->m4_battleEngine, param_1);
-                Baltor_initSub1Sub1(getBattleManager()->m10_battleOverlay->m4_battleEngine, param_1);
+                Baldor_initSub1Sub0(getBattleManager()->m10_battleOverlay->m4_battleEngine, param_1);
+                Baldor_initSub1Sub1(getBattleManager()->m10_battleOverlay->m4_battleEngine, param_1);
 
                 getBattleManager()->m10_battleOverlay->m4_battleEngine->m498++;
             }
@@ -141,7 +141,7 @@ void Baltor_initSub1(s_battleDragon_8C* param_1, s_battleDragon* param_2, sVec3_
     }
 }
 
-void monsterPart_defaultUpdate(sBaltor_68_30*, sVec3_FP*, sVec3_FP*, sVec3_FP*)
+void monsterPart_defaultUpdate(sBaldor_68_30*, sVec3_FP*, sVec3_FP*, sVec3_FP*)
 {
     assert(0);
 }
@@ -156,7 +156,7 @@ void monsterPart_defaultDelete()
     assert(0);
 }
 
-void baldorPart_update(sBaltor_68_30* pThis, sVec3_FP* pTranslation, sVec3_FP* pRotation, sVec3_FP* param4)
+void baldorPart_update(sBaldor_68_30* pThis, sVec3_FP* pTranslation, sVec3_FP* pRotation, sVec3_FP* param4)
 {
     pThis->m34[0] += MTH_Mul(fixedPoint((*param4)[0] - pThis->m1C[0]).normalized(), pThis->m44[0]);
     pThis->m34[1] += MTH_Mul(fixedPoint((*param4)[1] - pThis->m1C[1]).normalized(), pThis->m44[1]);
@@ -193,7 +193,7 @@ void baldorPart_delete()
     assert(0);
 }
 
-void Baltor_initSub2Sub0(sBaltor_68* pData)
+void Baldor_initSub2Sub0(sBaldor_68* pData)
 {
     pData->m0_translation.zeroize();
     pData->mC_rotation.zeroize();
@@ -204,7 +204,7 @@ void Baltor_initSub2Sub0(sBaltor_68* pData)
     pData->m30.resize(0);
 }
 
-void Baltor_initSub2Sub1(sBaltor_68_30* pEntry, sBaltor_68_30* pNextEntry)
+void Baldor_initSub2Sub1(sBaldor_68_30* pEntry, sBaldor_68_30* pNextEntry)
 {
     pEntry->m0 = pNextEntry;
     pEntry->m4.zeroize();
@@ -217,32 +217,32 @@ void Baltor_initSub2Sub1(sBaltor_68_30* pEntry, sBaltor_68_30* pNextEntry)
     pEntry->m50 = 0;
 }
 
-sBaltor_68* Baltor_initSub2(p_workArea parent, int numEntries)
+sBaldor_68* Baldor_initSub2(p_workArea parent, int numEntries)
 {
-    sBaltor_68* pNewData = new sBaltor_68;
-    Baltor_initSub2Sub0(pNewData);
+    sBaldor_68* pNewData = new sBaldor_68;
+    Baldor_initSub2Sub0(pNewData);
 
     pNewData->m30.resize(numEntries);
 
-    Baltor_initSub2Sub1(&pNewData->m30[numEntries - 1], nullptr);
+    Baldor_initSub2Sub1(&pNewData->m30[numEntries - 1], nullptr);
     int iVar1 = numEntries - 1;
     while (iVar1 != 0)
     {
-        Baltor_initSub2Sub1(&pNewData->m30[iVar1 - 1], &pNewData->m30[iVar1]);
+        Baldor_initSub2Sub1(&pNewData->m30[iVar1 - 1], &pNewData->m30[iVar1]);
         iVar1--;
     }
 
     return pNewData;
 }
 
-void Baltor_initSub3Sub0(sBaltor_68_30* dest, sSaturnPtr source)
+void Baldor_initSub3Sub0(sBaldor_68_30* dest, sSaturnPtr source)
 {
     dest->m40 = readSaturnS16(source);
     dest->m44 = readSaturnVec3(source + 4);
     dest->m50 = readSaturnS32(source + 0x10);
 }
 
-void Baltor_initSub3(sBaltor_68* pThis, int arg2, sSaturnPtr arg3)
+void Baldor_initSub3(sBaldor_68* pThis, int arg2, sSaturnPtr arg3)
 {
     if (arg2 == 1)
     {
@@ -253,17 +253,17 @@ void Baltor_initSub3(sBaltor_68* pThis, int arg2, sSaturnPtr arg3)
 
     if (!arg3.isNull())
     {
-        sBaltor_68_30* piVar1 = &pThis->m30[0];
+        sBaldor_68_30* piVar1 = &pThis->m30[0];
         do
         {
-            Baltor_initSub3Sub0(piVar1, arg3);
+            Baldor_initSub3Sub0(piVar1, arg3);
             piVar1 = piVar1->m0;
             arg3 += 0x14;
         } while (piVar1);
     }
 }
 
-void Baltor_init(sBaltor* pThis, sFormationData* pFormationEntry)
+void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
 {
     sSaturnPtr puVar7;
     if ((getBattleManager()->m6_subBattleId == 8) || (getBattleManager()->m6_subBattleId == 9)) // middle boss  (with queen)
@@ -275,7 +275,7 @@ void Baltor_init(sBaltor* pThis, sFormationData* pFormationEntry)
         puVar7 = gCurrentBattleOverlay->getSaturnPtr(0x60a73a0);
     }
 
-    Baltor_initSub0(pThis, puVar7, pFormationEntry, 0);
+    Baldor_initSub0(pThis, puVar7, pFormationEntry, 0);
 
     pThis->m14.resize(4);
     pThis->m18.resize(4);
@@ -292,12 +292,12 @@ void Baltor_init(sBaltor* pThis, sFormationData* pFormationEntry)
             ivar2 = 0xf0000002;
         }
 
-        Baltor_initSub1(&pThis->m14[i], nullptr, &pThis->m18[i], 0x1000, ivar2, 0, 0, 10);
+        Baldor_initSub1(&pThis->m14[i], nullptr, &pThis->m18[i], 0x1000, ivar2, 0, 0, 10);
     }
 
     pThis->m28[0] = pThis->m28[1];
 
-    pThis->m68 = Baltor_initSub2(pThis, 6);
+    pThis->m68 = Baldor_initSub2(pThis, 6);
 
     if ((getBattleManager()->m6_subBattleId == 8) || (getBattleManager()->m6_subBattleId == 9))
     {
@@ -305,10 +305,10 @@ void Baltor_init(sBaltor* pThis, sFormationData* pFormationEntry)
     }
     else
     {
-        Baltor_initSub3(pThis->m68, 1, gCurrentBattleOverlay->getSaturnPtr(0x60a7e5c));
+        Baldor_initSub3(pThis->m68, 1, gCurrentBattleOverlay->getSaturnPtr(0x60a7e5c));
         sSaturnPtr pDataSource = gCurrentBattleOverlay->getSaturnPtr(0x60a7f4c);
 
-        std::vector<sBaltor_68_30>::iterator dest = pThis->m68->m30.begin();
+        std::vector<sBaldor_68_30>::iterator dest = pThis->m68->m30.begin();
         for (int i = 0; i < 2; i++)
         {
             dest->m10_translation = readSaturnVec3(pDataSource + 0);
@@ -330,12 +330,12 @@ void Baltor_init(sBaltor* pThis, sFormationData* pFormationEntry)
     pThis->m6C[2] = randomNumber();
 }
 
-void Baltor_updateSub0(sBaltor* pThis)
+void Baldor_updateSub0(sBaldor* pThis)
 {
     FunctionUnimplemented();
 }
 
-void Baltor_updateSub1(sVec3_FP* param1, sVec3_FP* param2, sVec3_FP* param3, s32 param4, s32 param5, s8 param6)
+void Baldor_updateSub1(sVec3_FP* param1, sVec3_FP* param2, sVec3_FP* param3, s32 param4, s32 param5, s8 param6)
 {
     switch(param6)
     {
@@ -361,7 +361,7 @@ void Baltor_updateSub1(sVec3_FP* param1, sVec3_FP* param2, sVec3_FP* param3, s32
     }
 }
 
-void Baltor_update(sBaltor* pThis)
+void Baldor_update(sBaldor* pThis)
 {
     if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
     {
@@ -395,12 +395,12 @@ void Baltor_update(sBaltor* pThis)
     pThis->m68->mC_rotation = *pThis->m28[0];
     pThis->m68->m18 = *pThis->m28[0];
 
-    sBaltor_68* pData = pThis->m68;
+    sBaldor_68* pData = pThis->m68;
     pData->m24_update(&pData->m30[0], &pData->m0_translation, &pData->mC_rotation, &pData->m18);
 
     pThis->m78 = pThis->m50;
 
-    Baltor_updateSub0(pThis);
+    Baldor_updateSub0(pThis);
 
     switch (pThis->m8_mode)
     {
@@ -420,7 +420,7 @@ void Baltor_update(sBaltor* pThis)
         assert(0);
     }
 
-    Baltor_updateSub1(pThis->m1C[1], &pThis->m50, &pThis->m44, 0x1999, 0x147, 0);
+    Baldor_updateSub1(pThis->m1C[1], &pThis->m50, &pThis->m44, 0x1999, 0x147, 0);
 
     sVec2_FP temp;
     generateCameraMatrixSub1(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0 + pThis->m78, temp);
@@ -429,21 +429,21 @@ void Baltor_update(sBaltor* pThis)
     (*pThis->m28[1])[1] = temp[1] + 0x8000000;
     (*pThis->m28[1])[2] = 0;
 
-    Baltor_updateSub1(pThis->m28[0], &pThis->m5C, pThis->m28[1], 0x1999, 0x28F, 1);
+    Baldor_updateSub1(pThis->m28[0], &pThis->m5C, pThis->m28[1], 0x1999, 0x28F, 1);
 }
 
-void Baltor_draw(sBaltor* pThis)
+void Baldor_draw(sBaldor* pThis)
 {
     FunctionUnimplemented();
 }
 
-sBaltor* createBaltor(s_workAreaCopy* parent, sFormationData* pFormationEntry)
+sBaldor* createBaldor(s_workAreaCopy* parent, sFormationData* pFormationEntry)
 {
-    static const sBaltor::TypedTaskDefinition definition = {
-        Baltor_init,
-        Baltor_update,
-        Baltor_draw,
+    static const sBaldor::TypedTaskDefinition definition = {
+        Baldor_init,
+        Baldor_update,
+        Baldor_draw,
         nullptr,
     };
-    return createSiblingTaskWithArgWithCopy<sBaltor, sFormationData*>(parent, pFormationEntry, &definition);
+    return createSiblingTaskWithArgWithCopy<sBaldor, sFormationData*>(parent, pFormationEntry, &definition);
 }

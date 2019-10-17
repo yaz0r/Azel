@@ -7,7 +7,7 @@
 #include "kernel/vdp1Allocator.h"
 #include "battle/battleEngine.h"
 
-#include "BTL_A3_BaltorFormation.h"
+#include "BTL_A3_BaldorFormation.h"
 
 struct BTL_A3_data* g_BTL_A3 = nullptr;
 
@@ -22,7 +22,7 @@ struct BTL_A3_data : public battleOverlay
         switch (Func.m_offset)
         {
         case 0x060565da:
-            Create_BTL_A3_BaltorFormation(pParent, arg0);
+            Create_BTL_A3_BaldorFormation(pParent, arg0);
             break;
         default:
             FunctionUnimplemented();

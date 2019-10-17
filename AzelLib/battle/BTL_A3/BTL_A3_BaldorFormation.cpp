@@ -3,14 +3,14 @@
 #include "battle/battleOverlay.h"
 #include "battle/battleEngine.h"
 #include "battle/battleFormation.h"
-#include "BTL_A3_BaltorFormation.h"
-#include "baltor.h"
+#include "BTL_A3_BaldorFormation.h"
+#include "baldor.h"
 
 #include "town/town.h" // TODO: cleanup
 
 // internal name: Hebi (snake)
 
-struct BTL_A3_BaltorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaltorFormation, u32>
+struct BTL_A3_BaldorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaldorFormation, u32>
 {
     s8 m0;
     s8 m1;
@@ -20,7 +20,7 @@ struct BTL_A3_BaltorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaltorFo
     // size 0x14
 };
 
-void BTL_A3_BaltorFormation_InitSub0Sub0(u32 uParm1)
+void BTL_A3_BaldorFormation_InitSub0Sub0(u32 uParm1)
 {
     if (uParm1 == 0)
     {
@@ -32,7 +32,7 @@ void BTL_A3_BaltorFormation_InitSub0Sub0(u32 uParm1)
     }
 }
 
-void BTL_A3_BaltorFormation_InitSub0(u32 uParm1)
+void BTL_A3_BaldorFormation_InitSub0(u32 uParm1)
 {
     int uVar1;
 
@@ -56,10 +56,10 @@ void BTL_A3_BaltorFormation_InitSub0(u32 uParm1)
             }
         }
     }
-    BTL_A3_BaltorFormation_InitSub0Sub0(uVar1);
+    BTL_A3_BaldorFormation_InitSub0Sub0(uVar1);
 }
 
-void BTL_A3_BaltorFormation_InitSub1Sub0(u32 uParm1)
+void BTL_A3_BaldorFormation_InitSub1Sub0(u32 uParm1)
 {
     if (uParm1 & 0xFFFF == 0)
     {
@@ -71,7 +71,7 @@ void BTL_A3_BaltorFormation_InitSub1Sub0(u32 uParm1)
     }
 }
 
-void BTL_A3_BaltorFormation_InitSub1(u32 param_1)
+void BTL_A3_BaldorFormation_InitSub1(u32 param_1)
 
 {
     int uVar1;
@@ -96,7 +96,7 @@ void BTL_A3_BaltorFormation_InitSub1(u32 param_1)
             }
         }
     }
-    BTL_A3_BaltorFormation_InitSub1Sub0(uVar1);
+    BTL_A3_BaldorFormation_InitSub1Sub0(uVar1);
 }
 
 void displayFormationName(short uParm1, char uParm2, char uParm3)
@@ -104,7 +104,7 @@ void displayFormationName(short uParm1, char uParm2, char uParm3)
     FunctionUnimplemented();
 }
 
-void BTL_A3_BaltorFormation_Init(BTL_A3_BaltorFormation* pThis, u32 formationID)
+void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
 {
     allocateNPC(pThis, 10);
 
@@ -131,31 +131,31 @@ void BTL_A3_BaltorFormation_Init(BTL_A3_BaltorFormation* pThis, u32 formationID)
         pThis->m4_formationData[i].m0[2] = readSaturnVec3(formationDataSource + 0xC * i + 0);
         pThis->m4_formationData[i].m24[1][1] = 0x8000000;
 
-        sBaltor* pBaltor = createBaltor(pBuffer, &pThis->m4_formationData[i]);
-        pBaltor->mA_indexInFormation = i;
+        sBaldor* pBaldor = createBaldor(pBuffer, &pThis->m4_formationData[i]);
+        pBaldor->mA_indexInFormation = i;
     }
 
-    BTL_A3_BaltorFormation_InitSub0(2);
-    BTL_A3_BaltorFormation_InitSub1(0);
+    BTL_A3_BaldorFormation_InitSub0(2);
+    BTL_A3_BaldorFormation_InitSub1(0);
     pThis->m8 = 0x3C;
     displayFormationName(0, 1, 9);
     pThis->m0 = 0;
     pThis->m1 = 0;
 }
 
-void BTL_A3_BaltorFormation_Update(BTL_A3_BaltorFormation* pThis)
+void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
 {
     FunctionUnimplemented();
 }
 
-p_workArea Create_BTL_A3_BaltorFormation(p_workArea parent, u32 arg)
+p_workArea Create_BTL_A3_BaldorFormation(p_workArea parent, u32 arg)
 {
-    static const BTL_A3_BaltorFormation::TypedTaskDefinition definition = {
-        BTL_A3_BaltorFormation_Init,
-        BTL_A3_BaltorFormation_Update,
+    static const BTL_A3_BaldorFormation::TypedTaskDefinition definition = {
+        BTL_A3_BaldorFormation_Init,
+        BTL_A3_BaldorFormation_Update,
         nullptr,
         nullptr,
     };
 
-    return createSubTaskWithArg<BTL_A3_BaltorFormation>(parent, arg, &definition);
+    return createSubTaskWithArg<BTL_A3_BaldorFormation>(parent, arg, &definition);
 }
