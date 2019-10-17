@@ -117,7 +117,7 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
     case 0:
         pThis->m10_rotation = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC +
             MTH_Mul(
-                fixedPoint(READ_BE_S16(pThis->m20 + pThis->m0_frameIndex * 6 + 4)) * 256,
+                fixedPoint(READ_BE_S16(pThis->m20 + pThis->m0_frameIndex * 2)) * 256,
                 deltaPosition - getBattleManager()->m10_battleOverlay->m4_battleEngine->mC
             );
         break;
@@ -129,6 +129,14 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
         break;
     default:
         assert(0);
+    }
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(getBattleManager()->m10_battleOverlay->m18_dragon->m8_position, "m8_position");
+        addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
+        addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->mC, "mC");
+        addTraceLog(pThis->m10_rotation, "m10_rotation");
     }
 }
 
