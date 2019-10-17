@@ -9,12 +9,15 @@ std::vector<sFormationData> allocateFormationData(p_workArea pParent, u32 format
     for (int i = 0; i < formationSize; i++)
     {
         sFormationData& formationEntry = formation[i];
-        for (int j = 0; j < 3; j++)
-        {
-            formationEntry.m0[j].zeroize();
-            formationEntry.m24[j].zeroize();
-        }
-        formationEntry.m24[0][1] = 0x8000000;
+        formationEntry.m0.m0.zeroize();
+        formationEntry.m0.mC.zeroize();
+        formationEntry.m0.m18.zeroize();
+
+        formationEntry.m24.m0.zeroize();
+        formationEntry.m24.mC.zeroize();
+        formationEntry.m24.m18.zeroize();
+
+        formationEntry.m24.m0[1] = 0x8000000;
     }
 
     return formation;

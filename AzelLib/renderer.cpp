@@ -53,7 +53,7 @@ GLuint gVDP2Program = 0;
 int frameLimit = 30;
 #else
 #if defined(PDS_TOOL) && !(defined(__EMSCRIPTEN__) || defined(TARGET_OS_IOS) || defined(TARGET_OS_TV))
-int frameLimit = -1;
+int frameLimit = 30;
 #else
 int frameLimit = 30;
 #endif

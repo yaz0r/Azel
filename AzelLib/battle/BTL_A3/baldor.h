@@ -1,6 +1,7 @@
 #pragma once
 
 #include "battle/battleDragon.h" // todo: clean
+#include "battle/battleFormation.h"
 
 struct sBaldor_68_30
 {
@@ -22,7 +23,7 @@ struct sBaldor_68
     sVec3_FP mC_rotation;
     sVec3_FP m18;
     void (*m24_update)(sBaldor_68_30*, sVec3_FP*, sVec3_FP*, sVec3_FP*);
-    void (*m28_draw)();
+    void (*m28_draw)(struct sBaldor*, sBaldor_68_30*);
     void (*m2C_delete)();
     std::vector<sBaldor_68_30> m30;
     //size 0x34
@@ -32,19 +33,20 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
 {
     s8 m8_mode;
     s8 mA_indexInFormation;
+    s8 mB;
     s16 mC;
     s8 m10_HP;
     std::vector<s_battleDragon_8C> m14;
     std::vector<sVec3_FP> m18;
-    std::array<sVec3_FP*, 3> m1C;
-    std::array<sVec3_FP*, 3> m28;
+    pvecControl m1C_translation;
+    pvecControl m28_rotation;
     struct sFormationData* m34_formationEntry;
     s_3dModel* m38_3dModel;
     sSaturnPtr m3C_dataPtr;
     p_workArea m40;
-    sVec3_FP m44;
-    sVec3_FP m50;
-    sVec3_FP m5C;
+    sVec3_FP m44_translationTarget;
+    sVec3_FP m50_translationDelta;
+    sVec3_FP m5C_rotationDelta;
     sBaldor_68* m68;
     sVec3_FP m6C;
     sVec3_FP m78;

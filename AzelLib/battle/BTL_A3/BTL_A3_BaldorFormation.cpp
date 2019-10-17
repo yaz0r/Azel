@@ -20,7 +20,7 @@ struct BTL_A3_BaldorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaldorFo
     // size 0x14
 };
 
-void BTL_A3_BaldorFormation_InitSub0Sub0(u32 uParm1)
+void BTL_A3_BaldorFormation_InitSub0Sub0(s16 uParm1)
 {
     if (uParm1 == 0)
     {
@@ -59,9 +59,9 @@ void BTL_A3_BaldorFormation_InitSub0(u32 uParm1)
     BTL_A3_BaldorFormation_InitSub0Sub0(uVar1);
 }
 
-void BTL_A3_BaldorFormation_InitSub1Sub0(u32 uParm1)
+void BTL_A3_BaldorFormation_InitSub1Sub0(s16 uParm1)
 {
-    if (uParm1 & 0xFFFF == 0)
+    if (uParm1 == 0)
     {
         getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0 &= ~0xF0;
     }
@@ -127,9 +127,9 @@ void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
     sSaturnPtr formationDataSource = gCurrentBattleOverlay->getSaturnPtr(0x60a809c) + 4 * formationID;
     for (int i = 0; i < pThis->m12_formationSize; i++)
     {
-        pThis->m4_formationData[i].m0[1] = readSaturnVec3(formationDataSource + 0xC * i + 0);
-        pThis->m4_formationData[i].m0[2] = readSaturnVec3(formationDataSource + 0xC * i + 0);
-        pThis->m4_formationData[i].m24[1][1] = 0x8000000;
+        pThis->m4_formationData[i].m0.mC = readSaturnVec3(readSaturnEA(formationDataSource) + 0xC * i + 0);
+        pThis->m4_formationData[i].m0.m18 = readSaturnVec3(readSaturnEA(formationDataSource) + 0xC * i + 0);
+        pThis->m4_formationData[i].m24.m18[1] = 0x8000000;
 
         sBaldor* pBaldor = createBaldor(pBuffer, &pThis->m4_formationData[i]);
         pBaldor->mA_indexInFormation = i;

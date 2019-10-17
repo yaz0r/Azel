@@ -7,6 +7,7 @@
 #include "battle/battleDebug.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
+#include "kernel/debug/trace.h"
 
 #include "battle/battleDragon.h" // todo: clean by moving s_battleDragon_8C to its own file
 #include "mainMenuDebugTasks.h"
@@ -15,11 +16,14 @@
 void Baldor_initSub0Sub2(sBaldor* pThis, sFormationData* pFormationEntry)
 {
     pThis->m34_formationEntry = pFormationEntry;
-    for (int i = 0; i < 3; i++)
-    {
-        pThis->m1C[i] = &pFormationEntry->m0[i];
-        pThis->m28[i] = &pFormationEntry->m24[i];
-    }
+
+    pThis->m1C_translation.m0_current = &pFormationEntry->m0.m0;
+    pThis->m1C_translation.m4 = &pFormationEntry->m0.mC;
+    pThis->m1C_translation.m8 = &pFormationEntry->m0.m18;
+
+    pThis->m28_rotation.m0_current = &pFormationEntry->m24.m0;
+    pThis->m28_rotation.m4 = &pFormationEntry->m24.mC;
+    pThis->m28_rotation.m8 = &pFormationEntry->m24.m18;
 
     pFormationEntry->m48 = 0;
     pFormationEntry->m49 = 0;
@@ -68,7 +72,7 @@ void Baldor_initSub0(sBaldor* pThis, sSaturnPtr dataPtr, sFormationData* pFormat
     }
 
     Baldor_initSub0Sub2(pThis, pFormationEntry);
-    pThis->m40 = createBaldorSubTask0(pThis->m1C[0], 0, &pThis->m10_HP, readSaturnS8(pThis->m3C_dataPtr + 1));
+    pThis->m40 = createBaldorSubTask0(pThis->m1C_translation.m0_current, 0, &pThis->m10_HP, readSaturnS8(pThis->m3C_dataPtr + 1));
     if (-1 < arg)
     {
         u8 bundleIdx = readSaturnS8(dataPtr);
@@ -146,7 +150,7 @@ void monsterPart_defaultUpdate(sBaldor_68_30*, sVec3_FP*, sVec3_FP*, sVec3_FP*)
     assert(0);
 }
 
-void monsterPart_defaultDraw()
+void monsterPart_defaultDraw(sBaldor*, sBaldor_68_30*)
 {
     assert(0);
 }
@@ -183,9 +187,22 @@ void baldorPart_update(sBaldor_68_30* pThis, sVec3_FP* pTranslation, sVec3_FP* p
     }
 }
 
-void baldorPart_draw()
+void baldorPart_draw(sBaldor* pBaltor, sBaldor_68_30* pBaltorPart)
 {
-    assert(0);
+    while (1)
+    {
+        if (pBaltorPart->m40 > 0)
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(pBaltorPart->m4);
+            rotateCurrentMatrixZYX(pBaltorPart->m1C);
+            addObjectToDrawList(pBaltor->m0_dramAllocation->get3DModel(pBaltorPart->m40));
+            popMatrix();
+        }
+        if (pBaltorPart->m0 == nullptr)
+            break;
+        pBaltorPart = pBaltorPart->m0;
+    }
 }
 
 void baldorPart_delete()
@@ -295,7 +312,7 @@ void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
         Baldor_initSub1(&pThis->m14[i], nullptr, &pThis->m18[i], 0x1000, ivar2, 0, 0, 10);
     }
 
-    pThis->m28[0] = pThis->m28[1];
+    pThis->m28_rotation.m0_current = pThis->m28_rotation.m4;
 
     pThis->m68 = Baldor_initSub2(pThis, 6);
 
@@ -312,15 +329,15 @@ void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
         for (int i = 0; i < 2; i++)
         {
             dest->m10_translation = readSaturnVec3(pDataSource + 0);
-            dest->m1C[1] = (*pThis->m28[1])[1];
+            dest->m1C[1] = (*pThis->m28_rotation.m4)[1];
             dest++;
 
             dest->m10_translation = readSaturnVec3(pDataSource + 0xC);
-            dest->m1C[1] = (*pThis->m28[1])[1];
+            dest->m1C[1] = (*pThis->m28_rotation.m4)[1];
             dest++;
 
             dest->m10_translation = readSaturnVec3(pDataSource + 0xC);
-            dest->m1C[1] = (*pThis->m28[1])[1];
+            dest->m1C[1] = (*pThis->m28_rotation.m4)[1];
             dest++;
         }
     }
@@ -335,26 +352,26 @@ void Baldor_updateSub0(sBaldor* pThis)
     FunctionUnimplemented();
 }
 
-void Baldor_updateSub1(sVec3_FP* param1, sVec3_FP* param2, sVec3_FP* param3, s32 param4, s32 param5, s8 param6)
+void Baldor_updateSub1(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s32 pDeltaFactor, s32 pDistanceToTargetFactor, s8 translationOrRotation)
 {
-    switch(param6)
+    switch(translationOrRotation)
     {
     case 0:
-        if (param2 == nullptr)
+        if (pDelta == nullptr)
         {
             assert(0);
         }
         else
         {
-            *param2 -= MTH_Mul(param4, *param2);
-            *param2 += MTH_Mul(param5, *param3 - *param1);
+            *pDelta -= MTH_Mul(pDeltaFactor, *pDelta);
+            *pDelta += MTH_Mul(pDistanceToTargetFactor, *pTarget - *pCurrent);
         }
-        *param1 += *param2;
+        *pCurrent += *pDelta;
         break;
     case 1:
-        *param2 = (*param2 - MTH_Mul(param4, *param2)).normalized();
-        *param2 = (*param2 + MTH_Mul(param5, (*param3 - *param1).normalized())).normalized();
-        *param1 = (*param1 + *param2).normalized();
+        *pDelta = (*pDelta - MTH_Mul(pDeltaFactor, *pDelta)).normalized();
+        *pDelta = (*pDelta + MTH_Mul(pDistanceToTargetFactor, (*pTarget - *pCurrent).normalized())).normalized();
+        *pCurrent = (*pCurrent + *pDelta).normalized();
         break;
     default:
         assert(0);
@@ -368,7 +385,7 @@ void Baldor_update(sBaldor* pThis)
         assert(0);
     }
 
-    *pThis->m1C[0] = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC + *pThis->m1C[1];
+    *pThis->m1C_translation.m0_current = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC + *pThis->m1C_translation.m4;
 
     if (0 < pThis->mC)
     {
@@ -376,29 +393,29 @@ void Baldor_update(sBaldor* pThis)
     }
 
     stepAnimation(pThis->m38_3dModel);
-    pThis->m44 = *pThis->m1C[2];
+    pThis->m44_translationTarget = *pThis->m1C_translation.m8;
 
     if ((getBattleManager()->m6_subBattleId != 8) && (getBattleManager()->m6_subBattleId != 9))
     {
         pThis->m6C += sVec3_FP(0x222222, 0x16c16c, 0xb60b6);
 
-        pThis->m44[0] += MTH_Mul(0xA000, getSin(pThis->m6C[0]));
-        pThis->m44[1] += MTH_Mul(0xA000, getSin(pThis->m6C[1]));
-        pThis->m44[2] += MTH_Mul(0xA000, getSin(pThis->m6C[2]));
+        pThis->m44_translationTarget[0] += MTH_Mul(0xA000, getSin(pThis->m6C[0]));
+        pThis->m44_translationTarget[1] += MTH_Mul(0xA000, getSin(pThis->m6C[1]));
+        pThis->m44_translationTarget[2] += MTH_Mul(0xA000, getSin(pThis->m6C[2]));
     }
     else
     {
         assert(0);
     }
 
-    pThis->m68->m0_translation = *pThis->m1C[0];
-    pThis->m68->mC_rotation = *pThis->m28[0];
-    pThis->m68->m18 = *pThis->m28[0];
+    pThis->m68->m0_translation = *pThis->m1C_translation.m0_current;
+    pThis->m68->mC_rotation = *pThis->m28_rotation.m0_current;
+    pThis->m68->m18 = *pThis->m28_rotation.m0_current;
 
     sBaldor_68* pData = pThis->m68;
     pData->m24_update(&pData->m30[0], &pData->m0_translation, &pData->mC_rotation, &pData->m18);
 
-    pThis->m78 = pThis->m50;
+    pThis->m78 = pThis->m50_translationDelta;
 
     Baldor_updateSub0(pThis);
 
@@ -420,21 +437,43 @@ void Baldor_update(sBaldor* pThis)
         assert(0);
     }
 
-    Baldor_updateSub1(pThis->m1C[1], &pThis->m50, &pThis->m44, 0x1999, 0x147, 0);
+    Baldor_updateSub1(pThis->m1C_translation.m4, &pThis->m50_translationDelta, &pThis->m44_translationTarget, 0x1999, 0x147, 0);
 
     sVec2_FP temp;
     generateCameraMatrixSub1(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0 + pThis->m78, temp);
 
-    (*pThis->m28[1])[0] = -temp[0];
-    (*pThis->m28[1])[1] = temp[1] + 0x8000000;
-    (*pThis->m28[1])[2] = 0;
+    (*pThis->m28_rotation.m4)[0] = -temp[0];
+    (*pThis->m28_rotation.m4)[1] = temp[1] + 0x8000000;
+    (*pThis->m28_rotation.m4)[2] = 0;
 
-    Baldor_updateSub1(pThis->m28[0], &pThis->m5C, pThis->m28[1], 0x1999, 0x28F, 1);
+    Baldor_updateSub1(pThis->m28_rotation.m0_current, &pThis->m5C_rotationDelta, pThis->m28_rotation.m4, 0x1999, 0x28F, 1);
 }
 
 void Baldor_draw(sBaldor* pThis)
 {
-    FunctionUnimplemented();
+    if (isTraceEnabled())
+    {
+        addTraceLog(*pThis->m1C_translation.m0_current, "BaldorTranslation");
+        addTraceLog(*pThis->m28_rotation.m0_current, "BaldorRotation");
+    }
+
+    if (pThis->mB & 8)
+    {
+        assert(0);
+    }
+    pushCurrentMatrix();
+    translateCurrentMatrix(pThis->m1C_translation.m0_current);
+    rotateCurrentMatrixYXZ(pThis->m28_rotation.m0_current);
+    pThis->m38_3dModel->m18_drawFunction(pThis->m38_3dModel);
+    popMatrix();
+
+    sBaldor_68* pBaldorPart = pThis->m68;
+    pBaldorPart->m28_draw(pThis, &pBaldorPart->m30[0]);
+
+    if (pThis->mB & 8)
+    {
+        assert(0);
+    }
 }
 
 sBaldor* createBaldor(s_workAreaCopy* parent, sFormationData* pFormationEntry)

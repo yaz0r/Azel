@@ -400,6 +400,13 @@ void rotateMatrixZYX(const sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
     rotateMatrixX((*rotationVec)[0].getInteger(), pMatrix);
 }
 
+void rotateMatrixYXZ(const sVec3_FP* rotationVec, sMatrix4x3* pMatrix)
+{
+    rotateMatrixY((*rotationVec)[1].getInteger(), pMatrix);
+    rotateMatrixX((*rotationVec)[0].getInteger(), pMatrix);
+    rotateMatrixZ((*rotationVec)[2].getInteger(), pMatrix);
+}
+
 void rotateCurrentMatrixZYX(const sVec3_FP* rotationVec)
 {
     rotateMatrixZYX(rotationVec, pCurrentMatrix);
@@ -408,6 +415,16 @@ void rotateCurrentMatrixZYX(const sVec3_FP* rotationVec)
 void rotateCurrentMatrixZYX(const sVec3_FP& rotationVec)
 {
     rotateMatrixZYX(&rotationVec, pCurrentMatrix);
+}
+
+void rotateCurrentMatrixYXZ(const sVec3_FP* rotationVec)
+{
+    rotateMatrixYXZ(rotationVec, pCurrentMatrix);
+}
+
+void rotateCurrentMatrixYXZ(const sVec3_FP& rotationVec)
+{
+    rotateMatrixYXZ(&rotationVec, pCurrentMatrix);
 }
 
 void rotateMatrixZYX_s16(const sVec3_S16_12_4& rotationVec, sMatrix4x3* pMatrix)
