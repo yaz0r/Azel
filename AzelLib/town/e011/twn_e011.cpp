@@ -125,7 +125,7 @@ struct sE011Task1 : public s_workAreaTemplate<sE011Task1>
         sSaturnPtr dragonDataTableEntry = readSaturnEA(dragonDataTable + 4 * gDragonState->mC_dragonType);
         sSaturnPtr pcVar1 = (dragonDataTableEntry + readSaturnU8(pThis->m8 + 3) * 2);
 
-        transformAndAddVec(gDragonState->m28_dragon3dModel.m44[readSaturnU8(pcVar1)][readSaturnU8(pcVar1 + 1)], pThis->m5C, cameraProperties2.m28[0]);
+        transformAndAddVec(gDragonState->m28_dragon3dModel.m44_hotpointData[readSaturnU8(pcVar1)][readSaturnU8(pcVar1 + 1)], pThis->m5C, cameraProperties2.m28[0]);
     }
 
     static void Draw(sE011Task1* pThis)

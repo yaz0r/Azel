@@ -453,18 +453,151 @@ static void s_battleDragon_Update(s_battleDragon* pThis)
     s_battleDragon_UpdateSub6();
 }
 
+static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
+{
+    FunctionUnimplemented();
+    return 0;
+}
+
+fixedPoint s_battleDragon_getRiderRotationSub0(s32 inValue)
+{
+    if (inValue > -1)
+        return (readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + (inValue / 16))) * 0x10000;
+    return (readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + (-inValue / 16))) * -0x10000;
+}
+
+void s_battleDragon_getRiderRotation(sVec3_FP& outputRotation, const sMatrix4x3& inMatrix)
+{
+    outputRotation[0] = s_battleDragon_getRiderRotationSub0(-inMatrix.matrix[6]);
+    outputRotation[1] = atan2_FP(inMatrix.matrix[2], inMatrix.matrix[10]);
+    outputRotation[2] = atan2_FP(inMatrix.matrix[4], inMatrix.matrix[5]);
+}
+
+void s_battleDragon_UpdateRider1PositionSub0(sVec3_FP& output, int index)
+{
+    sSaturnPtr pHotpointData = gCurrentBattleOverlay->getSaturnPtr(0x60ade04);
+    sSaturnPtr pDragonHotpointData = readSaturnEA(pHotpointData + 4 * gDragonState->mC_dragonType);
+    s8 data0 = readSaturnS8(pDragonHotpointData + index * 2 + 0);
+    s8 data1 = readSaturnS8(pDragonHotpointData + index * 2 + 1);
+
+    const sVec3_FP* pData = &gDragonState->m28_dragon3dModel.m44_hotpointData[data0][data1];
+    if (pData)
+    {
+        transformAndAddVec(*pData, output, cameraProperties2.m28[0]);
+    }
+}
+
+void s_battleDragon_UpdateRider1Position()
+{
+    for (int i = 0; i < 6; i++)
+    {
+        s_battleDragon_UpdateRider1PositionSub0(getBattleManager()->m10_battleOverlay->m18_dragon->mFC_hotpoints[i], i);
+    }
+}
+
+static void s_battleDragon_DrawRiderWeapon(s_battleDragon* pThis)
+{
+    if (mainGameState.gameStats.m1_dragonLevel == 8)
+    {
+        if (pRider1State->m18_3dModel.m44_hotpointData[3].size() == 0)
+        {
+            pThis->mF0 = pThis->m8_position;
+        }
+        else
+        {
+            transformAndAddVec(pRider1State->m18_3dModel.m44_hotpointData[3][0], pThis->mF0, cameraProperties2.m28[0]);
+        }
+    }
+    else
+    {
+        if (pRider1State->m18_3dModel.m44_hotpointData[1].size() == 0)
+        {
+            pThis->mF0 = pThis->m8_position;
+        }
+        else
+        {
+            transformAndAddVec(pRider1State->m18_3dModel.m44_hotpointData[1][0], pThis->mF0, cameraProperties2.m28[0]);
+        }
+    }
+
+    s32 iVar2 = s_battleDragon_InitSub0();
+    if ((iVar2 == 0) || ((pThis->m1C4 & 0x200) != 0))
+    {
+        iVar2 = 0;
+    }
+    else
+    {
+        iVar2 = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x060ae3bc) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 4);
+    }
+
+    sVec3_FP weaponRotation = pThis->m14_rotation + sVec3_FP(0, 0x8000000 + iVar2, 0);
+
+    pushCurrentMatrix();
+    translateCurrentMatrix(pThis->mF0);
+    rotateCurrentMatrixYXZ(weaponRotation);
+    addObjectToDrawList(pRider1State->m0_riderBundle->get3DModel(pRider1State->m14_weaponModelIndex));
+    popMatrix();
+}
+
 static void s_battleDragon_Draw(s_battleDragon* pThis)
 {
     if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 8)
     {
         // This setup lights
+        //setupLightColor(s_RGB8::fromVector(getBattleManager()->m10_battleOverlay->m8_gridTask->m1F0).toU32());
+        //battleEngine_UpdateSub7Sub1Sub0()
         FunctionUnimplemented();
     }
 
-    FunctionUnimplemented();
+    u32 cVar3 = s_battleDragon_UpdateAnimationState(pThis);
+    
+    sVec3_FP rotation = pThis->m14_rotation + sVec3_FP(0, 0x8000000, 0);
 
-    // TODO: this is a shortcut for debugging
-    submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, 0, &pThis->m8_position, &pThis->m14_rotation, 0);
+    if ((getBattleManager()->m2_currentBattleOverlayId == 0) || (getBattleManager()->m2_currentBattleOverlayId == 0x10))
+    {
+        submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, 0, &pThis->m8_position, &rotation, 0);
+    }
+    else
+    {
+        if (mainGameState.gameStats.m1_dragonLevel == 8)
+        {
+            submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, 0, &pThis->m8_position, &rotation, 0);
+        }
+        else
+        {
+            submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m8_position, &rotation, getBattleManager()->m10_battleOverlay->m4_battleEngine->m354[3]);
+        }
+    }
+
+    sVec3_FP riderRotation;
+    s_battleDragon_getRiderRotation(riderRotation, gDragonState->m28_dragon3dModel.m3C_boneMatrices[0]);
+    s_battleDragon_UpdateRider1Position();
+
+    if (cVar3)
+    {
+        assert(0);
+    }
+
+    riderRotation += pThis->m14_rotation + sVec3_FP(0, 0x8000000, 0);
+
+    if (pRider1State->mC_riderType)
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(getBattleManager()->m10_battleOverlay->m18_dragon->mFC_hotpoints[0]);
+        rotateCurrentMatrixYXZ(riderRotation);
+        pRider1State->m18_3dModel.m18_drawFunction(&pRider1State->m18_3dModel);
+        popMatrix();
+    }
+    s_battleDragon_DrawRiderWeapon(pThis);
+
+    if (pRider2State->mC_riderType)
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(getBattleManager()->m10_battleOverlay->m18_dragon->mFC_hotpoints[1]);
+        rotateCurrentMatrixYXZ(riderRotation);
+        pRider2State->m18_3dModel.m18_drawFunction(&pRider2State->m18_3dModel);
+        popMatrix();
+    }
 
     FunctionUnimplemented();
 }

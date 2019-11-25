@@ -197,7 +197,7 @@ void battleEngine_InitSub11()
 
 void executeFuncPtr(sSaturnPtr funcPtr, s_battleEngine* pThis)
 {
-    FunctionUnimplemented();
+    gCurrentBattleOverlay->invoke(funcPtr, pThis);
 }
 
 void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
@@ -357,7 +357,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     if (mainGameState.gameStats.mC_laserPower < 1) {
         mainGameState.gameStats.mC_laserPower = 80;
-        mainGameState.gameStats.mE_shotPower = 60;
+        mainGameState.gameStats.mE_gunPower = 60;
     }
 
     for (int i = 0; i < 5; i++)
@@ -558,7 +558,7 @@ s32 battleEngine_UpdateSub7Sub0()
 
         pBattleEngine->m18C_status = 4;
         pBattleEngine->m188_flags &= ~0x80000;
-        if (0 < mainGameState.gameStats.currentHP)
+        if (0 < mainGameState.gameStats.m10_currentHP)
         {
             battleEngine_UpdateSub7Sub2();
             battleEngine_UpdateSub7Sub3();
@@ -587,7 +587,21 @@ s32 battleEngine_UpdateSub7Sub0()
         }
         assert(0);
     }
-    assert(0);
+
+    if (mainGameState.gameStats.m10_currentHP < 1)
+    {
+        assert(0);
+    }
+    else
+    {
+        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 4)
+        {
+            assert(0);
+        }
+    }
+
+    pBattleEngine->m3B2 = 0;
+    return 0;
 }
 
 void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
@@ -865,6 +879,13 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
     }
 }
 
+s32 battleEngine_UpdateSub7Sub4()
+{
+    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x200) == 0)
+        return 1;
+    return 0;
+}
+
 void battleEngine_UpdateSub7(s_battleEngine* pThis)
 {
     battleEngine_UpdateSub8(pThis);
@@ -881,6 +902,13 @@ void battleEngine_UpdateSub7(s_battleEngine* pThis)
 
     if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498 < 1)
         return;
+
+    if (battleEngine_UpdateSub7Sub4() == 0)
+    {
+        pThis->m1BC = 0;
+        pThis->m1B8 = 0;
+        return;
+    }
 
     FunctionUnimplemented();
     //assert(0);
@@ -900,8 +928,8 @@ void battleEngine_Update(s_battleEngine* pThis)
         pThis->m1E8[1] = 0x1000;
         pThis->m398[0] = 0;
         pThis->m398[1] = 0;
-        pThis->m3A4[0] = 2;
-        pThis->m3A4[1] = 0x10;
+        pThis->m3A4_prelockMode[0] = 2;
+        pThis->m3A4_prelockMode[1] = 0x10;
 
         pThis->m188_flags |= 0x8000;
 
@@ -942,6 +970,7 @@ void battleEngine_Update(s_battleEngine* pThis)
 
 void battleEngine_Draw(s_battleEngine* pThis)
 {
+    // seems to be all debug input related
     FunctionUnimplemented();
 }
 

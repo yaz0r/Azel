@@ -2,7 +2,9 @@
 #include "battle/battleManager.h"
 #include "battle/battleOverlay.h"
 #include "battle/battleEngine.h"
+#include "battle/battleEngineSub0.h"
 #include "battle/battleFormation.h"
+#include "battle/battleDebug.h"
 #include "BTL_A3_BaldorFormation.h"
 #include "baldor.h"
 
@@ -145,7 +147,54 @@ void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
 
 void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
 {
-    FunctionUnimplemented();
+    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
+    {
+        assert(0);
+    }
+
+    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3B2++;
+
+    switch (pThis->m0)
+    {
+    case 0:
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    bool bVar3 = false;
+    for (int i = 0; i < pThis->m12_formationSize; i++)
+    {
+        if (pThis->m4_formationData[i].m48 == 0)
+        {
+            bVar3 = true;
+            break;
+        }
+    }
+
+    if (!bVar3)
+    {
+        assert(0);
+    }
+
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m8 == 0)
+        return;
+
+    if (BattleEngineSub0_UpdateSub0() != 0)
+        return;
+
+    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
+    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
+
+    if (!bVar3)
+        return;
+
+    switch(getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection)
+    {
+    default:
+        assert(0);
+    }
 }
 
 p_workArea Create_BTL_A3_BaldorFormation(p_workArea parent, u32 arg)

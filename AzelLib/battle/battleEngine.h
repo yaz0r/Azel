@@ -14,7 +14,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP m18;
     sVec3_FP m6C;
     sVec3_FP m104_dragonStartPosition;
-    u32 m188_flags;
+    u32 m188_flags; // 8: setup lights color for dragon
     s8 m18C_status;
     std::array<s32, 2> m190;
     sVec3_FP m164;
@@ -51,8 +51,9 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s8 m38D_battleIntroStatus;
     std::array<s16, 3> m390;
     std::array<s16, 2> m398;
+    u8 m3A0_LaserType; // 0: single, else multi
     s16 m3A2;
-    std::array<s16, 2> m3A4;
+    std::array<s16, 2> m3A4_prelockMode;
     sSaturnPtr m3A8_overlayBattledata;
     sSaturnPtr m3AC;
     s8 m3B0_subBattleId;
@@ -87,5 +88,6 @@ s32 s_battleDragon_InitSub0();
 void battleEngine_InitSub6(sVec3_FP* pData);
 void battleEngine_InitSub7(sVec3_FP* pData);
 void battleEngine_InitSub8();
+void battleEngine_UpdateSub7Sub3();
 
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);

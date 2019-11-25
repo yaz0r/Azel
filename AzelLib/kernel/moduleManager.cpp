@@ -62,7 +62,7 @@ void initNewGameState()
 
     updateDragonStatsFromLevel();
 
-    mainGameState.gameStats.currentHP = mainGameState.gameStats.maxHP;
+    mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.maxHP;
     mainGameState.gameStats.currentBP = mainGameState.gameStats.maxBP;
 
     strcpy(mainGameState.gameStats.mA5_dragonName, "Dragon");

@@ -422,16 +422,13 @@ void Baldor_update(sBaldor* pThis)
     switch (pThis->m8_mode)
     {
     case 0:
-        FunctionUnimplemented();
+        pThis->m6C[0] += 0x16C16C;
         break;
     case 1:
-        FunctionUnimplemented();
+        pThis->m6C[0] -= 0x1907f6;
         break;
     case 2:
-        FunctionUnimplemented();
-        break;
-    case 0xb:
-        FunctionUnimplemented();
+        pThis->m6C[0] += 0x1fdb97;
         break;
     default:
         assert(0);

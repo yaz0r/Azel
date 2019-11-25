@@ -355,9 +355,9 @@ struct s_gameStats
 
     u16 mA_weaponType;
     u16 mC_laserPower;
-    u16 mE_shotPower;
+    u16 mE_gunPower;
 
-    u16 currentHP; // 0x10
+    u16 m10_currentHP; // 0x10
     u16 classMaxHP; // 0x12
     u16 currentBP; // 0x14
     u16 classMaxBP; // 0x16
@@ -613,7 +613,7 @@ struct s_3dModel
     std::vector<sMatrix4x3> m3C_boneMatrices; //3C
 
     const s_RiderDefinitionSub* m40; //40
-    std::vector<std::vector<sVec3_FP>> m44; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
+    std::vector<std::vector<sVec3_FP>> m44_hotpointData; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
     std::vector<sPoseDataInterpolation> m48_poseDataInterpolation; //48
 
     u16 m4C_interpolationStep; //4C

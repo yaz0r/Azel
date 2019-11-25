@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "kernel/debug/trace.h"
 #include "BTL_A3.h"
+#include "BTL_A3_Env.h"
 #include "battle/battleManager.h"
 #include "battle/battleMainTask.h"
 #include "town/town.h"
@@ -28,7 +29,18 @@ struct BTL_A3_data : public battleOverlay
             FunctionUnimplemented();
             break;
         }
-        
+    }
+    void invoke(sSaturnPtr Func, p_workArea pParent) override
+    {
+        switch (Func.m_offset)
+        {
+        case 0x06054b58:
+            Create_BTL_A3_Env(pParent);
+            break;
+        default:
+            FunctionUnimplemented();
+            break;
+        }
     }
 };
 

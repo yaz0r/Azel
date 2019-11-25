@@ -90,8 +90,8 @@ void updateDragonStatsFromLevel()
         gameStats.maxBP = dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxBP;
     }
 
-    if (gameStats.currentHP > gameStats.maxHP)
-        gameStats.currentHP = gameStats.maxHP;
+    if (gameStats.m10_currentHP > gameStats.maxHP)
+        gameStats.m10_currentHP = gameStats.maxHP;
 
     if (gameStats.currentBP > gameStats.maxBP)
         gameStats.currentBP = gameStats.maxBP;
@@ -869,7 +869,7 @@ void modelDrawFunction0(s_3dModel* pModel)
 }
 void modelDrawFunction1(s_3dModel* pDragonStateData1)
 {
-    std::vector<std::vector<sVec3_FP>>::iterator var_0 = pDragonStateData1->m44.begin();
+    std::vector<std::vector<sVec3_FP>>::iterator var_0 = pDragonStateData1->m44_hotpointData.begin();
     std::vector<sMatrix4x3>::iterator var_8 = pDragonStateData1->m3C_boneMatrices.begin();
     const s_RiderDefinitionSub* var_4 = pDragonStateData1->m40;
 
@@ -898,7 +898,7 @@ void modelDrawFunction5(s_3dModel* pModel)
 }
 void modelDrawFunction6(s_3dModel* pModel)
 {
-    std::vector<std::vector<sVec3_FP>>::iterator var_0 = pModel->m44.begin();
+    std::vector<std::vector<sVec3_FP>>::iterator var_0 = pModel->m44_hotpointData.begin();
     std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
     const s_RiderDefinitionSub* var_4 = pModel->m40;
     sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
@@ -1090,7 +1090,7 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
 {
     pDragonStateData1->m40 = unkArg;
 
-    pDragonStateData1->m44.resize(pDragonStateData1->m12_numBones);
+    pDragonStateData1->m44_hotpointData.resize(pDragonStateData1->m12_numBones);
 
     const s_RiderDefinitionSub* r12 = pDragonStateData1->m40;
 
@@ -1098,11 +1098,11 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     {
         if (r12->m_count > 0)
         {
-            pDragonStateData1->m44[i].resize(r12->m_count);
+            pDragonStateData1->m44_hotpointData[i].resize(r12->m_count);
         }
         else
         {
-            pDragonStateData1->m44[i].resize(0);
+            pDragonStateData1->m44_hotpointData[i].resize(0);
         }
 
         r12 ++;
@@ -1552,8 +1552,8 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
 
     pLoadRiderWorkArea->m4 = 0;
     pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
-    pLoadRiderWorkArea->m_riderType = riderType;
-    pLoadRiderWorkArea->m_modelIndex = r13->m_flags;
+    pLoadRiderWorkArea->mC_riderType = riderType;
+    pLoadRiderWorkArea->m10_modelIndex = r13->m_flags;
 
     pRider1State = pLoadRiderWorkArea;
 
@@ -1561,11 +1561,11 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
     {
         if (riderType == 1)
         {
-            pLoadRiderWorkArea->m_14 = 0x24;
+            pLoadRiderWorkArea->m14_weaponModelIndex = 0x24;
         }
         else
         {
-            pLoadRiderWorkArea->m_14 = 0;
+            pLoadRiderWorkArea->m14_weaponModelIndex = 0;
         }
 
         loadFile(r13->m_MCBName, &riderModel, 0x2C00);
@@ -1582,9 +1582,9 @@ s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
     }
 
     s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
-    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m_modelIndex)->countNumberOfBones());
+    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m10_modelIndex)->countNumberOfBones());
 
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
+    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m10_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
 
     return pLoadRiderWorkArea;
 }
@@ -1599,8 +1599,8 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
 
     pLoadRiderWorkArea->m4 = 0;
     pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
-    pLoadRiderWorkArea->m_riderType = riderType;
-    pLoadRiderWorkArea->m_modelIndex = r13->m_flags;
+    pLoadRiderWorkArea->mC_riderType = riderType;
+    pLoadRiderWorkArea->m10_modelIndex = r13->m_flags;
 
     pRider2State = pLoadRiderWorkArea;
 
@@ -1608,11 +1608,11 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
     {
         if (riderType == 1)
         {
-            pLoadRiderWorkArea->m_14 = 0x24;
+            pLoadRiderWorkArea->m14_weaponModelIndex = 0x24;
         }
         else
         {
-            pLoadRiderWorkArea->m_14 = 0;
+            pLoadRiderWorkArea->m14_weaponModelIndex = 0;
         }
 
         loadFile(r13->m_MCBName, &rider2Model, 0x2E80);
@@ -1629,9 +1629,9 @@ s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
     }
 
     s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
-    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m_modelIndex)->countNumberOfBones());
+    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m10_modelIndex)->countNumberOfBones());
 
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
+    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m10_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
 
     return pLoadRiderWorkArea;
 }
@@ -1952,7 +1952,7 @@ void setupPlayer(u32 fieldIndex)
         assert(false);
     }
 
-    mainGameState.gameStats.currentHP = mainGameState.gameStats.maxHP;
+    mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.maxHP;
     mainGameState.gameStats.currentBP = mainGameState.gameStats.maxBP;
 
     freeRamResource();
@@ -3043,7 +3043,7 @@ void s_statusMenuTaskWorkArea::Draw(s_statusMenuTaskWorkArea* pWorkArea)
     }
 
     vdp2DebugPrintSetPosition(3, 39);
-    vdp2PrintfLargeFont("HP  %4d/%4d", mainGameState.gameStats.currentHP, mainGameState.gameStats.maxHP);
+    vdp2PrintfLargeFont("HP  %4d/%4d", mainGameState.gameStats.m10_currentHP, mainGameState.gameStats.maxHP);
 
     vdp2DebugPrintSetPosition(3, 41);
     vdp2PrintfLargeFont("BP  %4d/%4d", mainGameState.gameStats.currentBP, mainGameState.gameStats.maxBP);
@@ -3574,7 +3574,7 @@ void playAnimationGenericSub0(s_3dModel* pModel)
     {
         std::vector<sPoseDataInterpolation>::iterator r5 = pModel->m48_poseDataInterpolation.begin();
         const s_RiderDefinitionSub* r6 = pModel->m40;
-        std::vector<std::vector<sVec3_FP>>::iterator r7 = pModel->m44.begin();
+        std::vector<std::vector<sVec3_FP>>::iterator r7 = pModel->m44_hotpointData.begin();
         playAnimationGenericSub0Sub0(r4, r5, r6, r7);
     }
     else

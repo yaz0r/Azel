@@ -6174,7 +6174,7 @@ void getDragonHotSpot(s_dragonState* r4, u32 r5, sVec3_FP* r6)
     if (pHotSpotData->m0 < 0) // don't think that can ever happen
         return;
 
-    sVec3_FP* pVec = &r4->m28_dragon3dModel.m44[pHotSpotData->m0][pHotSpotData->m4];
+    sVec3_FP* pVec = &r4->m28_dragon3dModel.m44_hotpointData[pHotSpotData->m0][pHotSpotData->m4];
     transformAndAddVec(*pVec, *r6, cameraProperties2.m28[0]);
 }
 
@@ -6256,15 +6256,15 @@ void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
             popMatrix();
 
             // draw rider's gun
-            if (pRider1State->m18_3dModel.m44[5].size())
+            if (pRider1State->m18_3dModel.m44_hotpointData[5].size())
             {
                 //060744AA
-                transformAndAddVec(pRider1State->m18_3dModel.m44[5][0], rider1_hotSpot, cameraProperties2.m28[0]);
+                transformAndAddVec(pRider1State->m18_3dModel.m44_hotpointData[5][0], rider1_hotSpot, cameraProperties2.m28[0]);
                 pushCurrentMatrix();
                 translateCurrentMatrix(&rider1_hotSpot);
                 rotateCurrentMatrixShiftedY(0x8000000);
                 multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
-                addObjectToDrawList(pRider1State->m0_riderBundle->get3DModel(pRider1State->m_14));
+                addObjectToDrawList(pRider1State->m0_riderBundle->get3DModel(pRider1State->m14_weaponModelIndex));
                 popMatrix();
             }
         }
@@ -6288,7 +6288,7 @@ void initFieldDragon(s_workArea* pWorkArea, u32 param)
         //loadRiderIfChanged(mainGameState.gameStats.rider1);
         //loadRider2IfChanged(mainGameState.gameStats.rider1);
 
-        mainGameState.gameStats.currentHP = mainGameState.gameStats.maxHP;
+        mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.maxHP;
         mainGameState.gameStats.currentBP = mainGameState.gameStats.maxBP;
 
         getFieldTaskPtr()->updateDragonAndRiderOnInit = 2;

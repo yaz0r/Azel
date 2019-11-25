@@ -95,6 +95,7 @@ p_workArea fieldA3_1_createItemBoxes_Sub1(s_itemBoxDefinition* r4);
 s_cameraScript* readCameraScript(sSaturnPtr EA);
 void dispatchTutorialMultiChoiceSub2();
 s32 queueNewFieldScript(sSaturnPtr r4, s32 r5);
+void fieldPaletteTaskInitSub0();
 
 struct s_fieldA3_1_task4 : public s_workAreaTemplate<s_fieldA3_1_task4>
 {

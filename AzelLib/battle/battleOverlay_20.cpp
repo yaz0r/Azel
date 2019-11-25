@@ -192,7 +192,7 @@ void createBattleOverlay_task20(npcFileDeleter* parent)
     pNewTask->m22 = 0x66;
     pNewTask->m24 = 0xb3;
 
-    createBattleHPOrBpDisplayTask(parent, &mainGameState.gameStats.currentHP, &mainGameState.gameStats.maxHP, &pNewTask->m1E, 1);
+    createBattleHPOrBpDisplayTask(parent, &mainGameState.gameStats.m10_currentHP, &mainGameState.gameStats.maxHP, &pNewTask->m1E, 1);
     createBattleHPOrBpDisplayTask(parent, &mainGameState.gameStats.currentBP, &mainGameState.gameStats.maxBP, &pNewTask->m22, 0);
     createPGTask(parent, &pNewTask->m16, 0);
 

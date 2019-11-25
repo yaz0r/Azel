@@ -27,9 +27,9 @@ struct s_loadRiderWorkArea : public s_workAreaTemplate<s_loadRiderWorkArea>
     struct s_fileBundle* m0_riderBundle;
     u32 m4; //4
     s_workArea* m_ParentWorkArea; //8
-    u32 m_riderType; //C
-    u32 m_modelIndex; // 10
-    u32 m_14; //14
+    u32 mC_riderType; //C
+    u32 m10_modelIndex; // 10
+    u32 m14_weaponModelIndex; //14
     s_3dModel m18_3dModel;//18
 };
 

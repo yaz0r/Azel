@@ -23,11 +23,6 @@ struct sBattleIntroSubTask : public s_workAreaTemplate<sBattleIntroSubTask>
     // size 0x30
 };
 
-static void sBattleIntroSubTask_delete(sBattleIntroSubTask* pThis)
-{
-    FunctionUnimplemented();
-}
-
 void createBattleIntroTaskSub0()
 {
     getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 0x800;
@@ -139,6 +134,26 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
         addTraceLog(pThis->m10_rotation, "m10_rotation");
     }
 }
+
+static void sBattleIntroSubTask_delete(sBattleIntroSubTask* pThis)
+{
+    pThis->m0_frameIndex = 0x95;
+    createBattleIntroTaskSub2(pThis);
+    createBattleIntroTaskSub3(pThis);
+    battleEngine_UpdateSub7Sub3();
+    g_fadeControls.m_4D = 6;
+
+    if (g_fadeControls.m_4C < g_fadeControls.m_4D)
+    {
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
+    }
+
+    fadePalette(&g_fadeControls.m24_fade1, 0xC210, 0xC210, 1);
+    fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
+    g_fadeControls.m_4D = 5;
+}
+
 
 static void sBattleIntroSubTask_update(sBattleIntroSubTask* pThis)
 {
