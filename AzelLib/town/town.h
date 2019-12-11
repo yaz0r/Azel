@@ -265,9 +265,9 @@ struct sTownCellTask : public s_workAreaTemplateWithArgWithCopy<sTownCellTask, s
     static void Init(sTownCellTask* pThis, sSaturnPtr arg);
     static void Draw(sTownCellTask* pThis);
 
-    //size 0x18
     sSaturnPtr m8;
     sVec3_FP mC_position;
+    //size 0x18
 };
 
 
@@ -348,3 +348,5 @@ s32 TwnFadeIn(s32 arg0);
 void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5);
 
 npcFileDeleter* loadNPCFile2(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, s32 index);
+void initNPCSub0Sub2(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6_sizeX, u8 r7_sizeY, fixedPoint cellSize);
+fixedPoint generateObjectMatrix(sSaturnPtr r4, sSaturnPtr r5);

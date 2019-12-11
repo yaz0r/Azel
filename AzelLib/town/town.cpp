@@ -194,8 +194,8 @@ void initTownGrid()
     gTownGrid.m1C = createEnvironmentTask;
     gTownGrid.m20_deleteCell = initNPCSub0Sub0;
     gTownGrid.m24 = initNPCSub0Sub1;
-    gTownGrid.m40_cellTasks[0].fill(0);
-    gTownGrid.m40_cellTasks[1].fill(0);
+    gTownGrid.m40_cellTasks[0].fill(nullptr);
+    gTownGrid.m40_cellTasks[1].fill(nullptr);
     gTownGrid.m3C = &initNPCSub0Var1;
 }
 
