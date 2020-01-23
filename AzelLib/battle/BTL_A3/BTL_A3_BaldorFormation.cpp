@@ -18,6 +18,7 @@ struct BTL_A3_BaldorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaldorFo
     s8 m1;
     std::vector<sFormationData> m4_formationData;
     s16 m8;
+    s16 m10;
     s8 m12_formationSize;
     // size 0x14
 };
@@ -94,7 +95,7 @@ void BTL_A3_BaldorFormation_InitSub1(u32 param_1)
                 if (param_1 != 3) {
                     return;
                 }
-                uVar1 = 8;
+uVar1 = 8;
             }
         }
     }
@@ -145,6 +146,22 @@ void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
     pThis->m1 = 0;
 }
 
+void BTL_A3_BaldorFormation_UpdateSub0(int param1)
+{
+    battleEngine_SetBattleIntroType(8);
+    getBattleManager()->m10_battleOverlay->m4_battleEngine->m433 = param1;
+}
+
+void BTL_A3_BaldorFormation_UpdateSub1(int param1, int param2, int param3)
+{
+    FunctionUnimplemented();
+}
+
+void BTL_A3_BaldorFormation_UpdateSub2(int param2)
+{
+    FunctionUnimplemented();
+}
+
 void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
 {
     if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
@@ -152,12 +169,60 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
         assert(0);
     }
 
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3B2++;
+    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3B2_numBattleFormationRunning++;
 
     switch (pThis->m0)
     {
     case 0:
         break;
+    case 1:
+    case 2:
+        switch (pThis->m1)
+        {
+        case 0:
+            if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m2000) {
+                pThis->m10 = 18;
+                pThis->m1++;
+            }
+            break;
+        case 1:
+            if (--pThis->m10 > 0)
+            {
+                return;
+            }
+            for (int i = 0; i < pThis->m12_formationSize; i++)
+            {
+                if ((pThis->m4_formationData[i].m48 & 1) != 0) {
+                    pThis->m4_formationData[i].m49 = 1;
+                    pThis->m1++;
+                    return;
+                }
+            }
+            pThis->m1 = 10;
+            return;
+        case 2:
+            for (int i = 0; i < pThis->m12_formationSize; i++)
+            {
+                if ((pThis->m4_formationData[i].m48 & 1) != 0) {
+                    return;
+                }
+            }
+            pThis->m1 = 1;
+            return;
+        case 10:
+            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m100 = 1;
+            for (int i = 0; i < pThis->m12_formationSize; i++)
+            {
+                pThis->m4_formationData[i].m49 = 0;
+            }
+            pThis->m0 = 0;
+            pThis->m1 = 0;
+            return;
+        default:
+            assert(0);
+            break;
+        }
+        return;
     default:
         assert(0);
         break;
@@ -190,8 +255,59 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
     if (!bVar3)
         return;
 
-    switch(getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection)
+    switch (getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection)
     {
+    case 1:
+    case 3:
+        if ((randomNumber() & 1) == 0) {
+            BTL_A3_BaldorFormation_UpdateSub0(2);
+        }
+        else
+        {
+            BTL_A3_BaldorFormation_UpdateSub0(7);
+        }
+        for (int i = 0; i < pThis->m12_formationSize; i++)
+        {
+            pThis->m4_formationData[i].m49 = 3;
+        }
+        BTL_A3_BaldorFormation_UpdateSub1(2, 0x1E, 0);
+        BTL_A3_BaldorFormation_UpdateSub2(2);
+        BTL_A3_BaldorFormation_UpdateSub2(3);
+        pThis->m0 = 2;
+        break;
+    case 2:
+    {
+        switch (performModulo2(3, randomNumber()))
+        {
+        case 0:
+            battleEngine_SetBattleIntroType(7);
+            break;
+        case 1:
+            BTL_A3_BaldorFormation_UpdateSub0(8);
+            break;
+        case 2:
+            BTL_A3_BaldorFormation_UpdateSub0(1);
+            break;
+        default:
+            assert(0);
+        }
+
+        int numEntriesFound = 0;
+        for (int i = 0; i < pThis->m12_formationSize; i++)
+        {
+            if ((pThis->m4_formationData[i].m48 & 4) == 0) {
+                pThis->m4_formationData[i].m49 = 2;
+                numEntriesFound++;
+                if (numEntriesFound > 1)
+                    break;
+            }
+        }
+
+        BTL_A3_BaldorFormation_UpdateSub1(1, 0x1E, 0);
+        BTL_A3_BaldorFormation_UpdateSub2(2);
+        pThis->m0 = 1;
+        break;
+    }
     default:
         assert(0);
     }

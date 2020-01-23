@@ -9,10 +9,10 @@ void BattleEngineSub0_Update(s_battleEngineSub0* pThis)
 {
     int iVar2;
     sBattleManager* psVar1 = getBattleManager();
-    if (((psVar1->m10_battleOverlay->m4_battleEngine->m188_flags & 8) == 0) &&
+    if ((!psVar1->m10_battleOverlay->m4_battleEngine->m188_flags.m8) &&
         (((iVar2 = BattleEngineSub0_UpdateSub0(), iVar2 == 0 ||
         (psVar1 = getBattleManager(),
-            (psVar1->m10_battleOverlay->m4_battleEngine->m188_flags & 0x1000000) != 0)) &&
+            (psVar1->m10_battleOverlay->m4_battleEngine->m188_flags.m1000000) != 0)) &&
             (pThis->m8 == 0))))
     {
         if (pThis->m0 < 0)
@@ -37,7 +37,7 @@ void BattleEngineSub0_Update(s_battleEngineSub0* pThis)
 
 void BattleEngineSub0_Draw(s_battleEngineSub0* pThis)
 {
-    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 8) == 0)
+    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
     {
         if (getBattleManager()->m10_battleOverlay->m20->m0 == 1)
         {

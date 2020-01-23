@@ -22,7 +22,7 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
             if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xE)
                 return;
         }
-        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x80000)
+        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000)
         {
             assert(0);
         }
@@ -46,6 +46,9 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x5C - pThis->m1C_Y)); // CMDYA
         setVdp1VramU16(vdp1WriteEA + 0x14, pThis->m1A_X + 0x87); // CMDXC
         setVdp1VramU16(vdp1WriteEA + 0x16, -(-0x73 - pThis->m1C_Y)); // CMDYC
+
+        s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
+        pExtendedCommand->depth = 0;
 
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
@@ -71,6 +74,9 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         setVdp1VramU16(vdp1WriteEA + 0x0C, readSaturnS16(currentSprite) + pThis->m1A_X - 0xb0); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-pThis->m1C_Y - readSaturnS16(currentSprite + 2)) + 0x70); // CMDYA
 
+        s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
+        pExtendedCommand->depth = 0;
+
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
@@ -92,6 +98,9 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m16 - 0x8E); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x33 - pThis->m18)); // CMDYA
 
+        s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
+        pExtendedCommand->depth = 0;
+
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
@@ -110,6 +119,9 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         setVdp1VramU16(vdp1WriteEA + 0x0A, 0x553); // CMDSIZE
         setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m16 - 0xB0); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x31 - pThis->m18)); // CMDYA
+
+        s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
+        pExtendedCommand->depth = 0;
 
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
@@ -130,7 +142,7 @@ void s_battleOverlay_20_drawSub1(s_battleOverlay_20* pThis)
 
 void s_battleOverlay_20_draw(s_battleOverlay_20* pThis)
 {
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 8)
+    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
     {
         if (BattleEngineSub0_UpdateSub0())
         {

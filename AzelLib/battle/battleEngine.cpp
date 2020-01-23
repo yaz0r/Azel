@@ -21,7 +21,7 @@ void initBattleEngineArray()
     s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
 
     pBattleEngine->m498 = 0;
-    for (int i = 0; i < 0x7F; i++)
+    for (int i = 0; i < 0x80; i++)
     {
         pBattleEngine->m49C[i].m0 = -1;
         pBattleEngine->m49C[i].m4 = 0;
@@ -444,16 +444,16 @@ void battleEngine_UpdateSub6(s_battleEngine* pThis)
     pThis->m1A0 = pThis->m1AC;
 }
 
-void battleEngine_UpdateSub10(int param)
+void battleEngine_SetBattleIntroType(int param)
 {
     s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
     pBattleEngine->m38C_battleIntroType = param;
-    pBattleEngine->m188_flags |= 0x80;
-    pBattleEngine->m188_flags &= ~0x100;
-    pBattleEngine->m188_flags &= ~0x2000;
-    pBattleEngine->m188_flags |= 0x10;
-    pBattleEngine->m188_flags |= 0x20;
-    pBattleEngine->m188_flags |= 0x200;
+    pBattleEngine->m188_flags.m80 = 1;
+    pBattleEngine->m188_flags.m100 = 0;
+    pBattleEngine->m188_flags.m2000 = 0;
+    pBattleEngine->m188_flags.m10 = 1;
+    pBattleEngine->m188_flags.m20_battleIntroRunning = 1;
+    pBattleEngine->m188_flags.m200 = 1;
     pBattleEngine->m38D_battleIntroStatus = 0;
     pBattleEngine->m384_battleIntroDelay = 0;
     pBattleEngine->m386 = 0;
@@ -474,16 +474,16 @@ void battleEngine_UpdateSub8(s_battleEngine* pThis)
     pThis->m240 = pThis->m270 + pThis->m258 + pThis->m264;
 }
 
-s32 battleEngine_UpdateSub7Sub0Sub0()
+s32 battleEngine_UpdateSub7Sub0Sub0() // 0x20 is indicating battle intro is running
 {
-    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x20) == 0)
+    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning)
         return 1;
     return 0;
 }
 
 s32 battleEngine_UpdateSub7Sub0Sub2Sub0()
 {
-    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x10) == 0)
+    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m10)
         return 1;
     return 0;
 }
@@ -491,7 +491,7 @@ s32 battleEngine_UpdateSub7Sub0Sub2Sub0()
 void battleEngine_UpdateSub7Sub1()
 {
     s_battleGrid* pGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x20000)
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m20000)
     {
         assert(0);
         sVec3_FP local_1c;
@@ -518,7 +518,7 @@ void battleEngine_UpdateSub7Sub3()
 {
     s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
     s_battleGrid* pGrid = getBattleManager()->m10_battleOverlay->m8_gridTask;
-    pBattleEngine->m188_flags &= ~0x800;
+    pBattleEngine->m188_flags.m800 = 0;
 
     if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB] == 0)
     {
@@ -543,7 +543,7 @@ void battleEngine_UpdateSub7Sub3Sub4(p_workArea parent)
 s32 battleEngine_UpdateSub7Sub0()
 {
     s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
-    if (pBattleEngine->m3B2 < 1)
+    if (pBattleEngine->m3B2_numBattleFormationRunning < 1)
     {
         if (battleEngine_UpdateSub7Sub0Sub0() == 0)
             return 0;
@@ -551,19 +551,19 @@ s32 battleEngine_UpdateSub7Sub0()
         battleEngine_UpdateSub7Sub1();
         pBattleEngine->m1B8 = 0;
         pBattleEngine->m1BC = 0;
-        pBattleEngine->m3B2 = 0;
+        pBattleEngine->m3B2_numBattleFormationRunning = 0;
 
         clearVdp2TextMemory();
         fieldPaletteTaskInitSub0Sub2();
 
         pBattleEngine->m18C_status = 4;
-        pBattleEngine->m188_flags &= ~0x80000;
+        pBattleEngine->m188_flags.m80000 = 0;
         if (0 < mainGameState.gameStats.m10_currentHP)
         {
             battleEngine_UpdateSub7Sub2();
             battleEngine_UpdateSub7Sub3();
 
-            if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x10000) == 0)
+            if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m10000)
             {
                 getBattleManager()->mE = 0;
             }
@@ -574,12 +574,12 @@ s32 battleEngine_UpdateSub7Sub0()
 
             if ((((pBattleEngine->m230 != 1) && (pBattleEngine->m230 != 3)) && (pBattleEngine->m230 != 5)) && ((pBattleEngine->m230 != 7 && (pBattleEngine->m230 != 8))))
             {
-                pBattleEngine->m188_flags |= 8;
+                pBattleEngine->m188_flags.m8 = 1;
                 battleEngine_UpdateSub7Sub3Sub4(pBattleEngine);
                 return 1;
             }
 
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x10000)
+            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m10000)
             {
                 assert(0);
             }
@@ -594,20 +594,20 @@ s32 battleEngine_UpdateSub7Sub0()
     }
     else
     {
-        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 4)
+        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m4)
         {
             assert(0);
         }
     }
 
-    pBattleEngine->m3B2 = 0;
+    pBattleEngine->m3B2_numBattleFormationRunning = 0;
     return 0;
 }
 
 void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
 {
     s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
-    if (pBattleEngine->m188_flags & 0x20000)
+    if (pBattleEngine->m188_flags.m20000)
     {
         assert(0);
     }
@@ -625,7 +625,7 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
 {
     sVec2_FP aiStack52;
 
-    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x200000) == 0)
+    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m200000)
     {
         battleEngine_InitSub2Sub0(pThis);
         pThis->mC = pThis->m234 + pThis->m24C;
@@ -644,7 +644,7 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
         pThis->m43C = aiStack52[0];
     }
 
-    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x800) == 0)
+    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m800)
     {
         sVec3_FP iStack88 = pThis->m104_dragonStartPosition + MTH_Mul(0x8000, pThis->mC - pThis->m104_dragonStartPosition);
 
@@ -676,7 +676,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
                 {
                     getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
                     pThis->m22C_battleDirection = pThis->m22D_originalBattleDirection;
-                    getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
+                    getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
                 }
                 if (r6 == 0)
                 {
@@ -693,7 +693,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
                 {
                     getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
                     pThis->m22C_battleDirection = pThis->m22D_originalBattleDirection;
-                    getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
+                    getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
                 }
                 if (r6 == 0)
                 {
@@ -711,7 +711,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
             {
                 getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
                 pThis->m22C_battleDirection = pThis->m22D_originalBattleDirection;
-                getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
+                getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
             }
             if (r6 == 0)
             {
@@ -730,7 +730,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
         {
             getBattleManager()->m10_battleOverlay->m18_dragon->m88 |= 0x100;
             pThis->m22C_battleDirection = pThis->m22D_originalBattleDirection;
-            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 2;
+            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
         }
         if (r6 == 0)
         {
@@ -805,15 +805,18 @@ void updateBattleIntro(s_battleEngine* pThis)
                 fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
                 g_fadeControls.m_4D = 5;
 
-                getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags &= ~0x20;
+                getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
             }
             return;
         case 3:
-            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags &= ~0x80000;
+            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000 = 0;
             return;
         case 4:
-            //06068542
-            assert(0);
+            if (pThis->m384_battleIntroDelay++ > 4)
+            {
+                assert(0);
+            }
+            return;
         default:
             assert(0);
             break;
@@ -824,6 +827,8 @@ void updateBattleIntro(s_battleEngine* pThis)
         assert(0);
         break;
     }
+
+    assert(0);
 }
 
 void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
@@ -832,7 +837,7 @@ void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
     {
         if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498 &&
             battleEngine_UpdateSub7Sub0Sub2Sub0() &&
-            ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x80000) == 0)
+            (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000)
             ) {
             assert(0);
         }
@@ -841,9 +846,9 @@ void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
 
 void battleEngine_UpdateSub7Sub0Sub6(s_battleEngine* pThis)
 {
-    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x4000) && (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m10 & 1))
+    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m4000) && (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m10 & 1))
     {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags &= ~0x4000;
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
     }
     if (((pThis->m388 & 2) == 0) &&
         (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498) &&
@@ -871,8 +876,8 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
             }
             else
             {
-                getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags &= ~0x40;
-                battleEngine_UpdateSub10(0);
+                getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 0;
+                battleEngine_SetBattleIntroType(0);
                 pThis->m184 = 0;
             }
         }
@@ -881,7 +886,7 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
 
 s32 battleEngine_UpdateSub7Sub4()
 {
-    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x200) == 0)
+    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m200)
         return 1;
     return 0;
 }
@@ -931,7 +936,7 @@ void battleEngine_Update(s_battleEngine* pThis)
         pThis->m3A4_prelockMode[0] = 2;
         pThis->m3A4_prelockMode[1] = 0x10;
 
-        pThis->m188_flags |= 0x8000;
+        pThis->m188_flags.m8000 = 1;
 
         fieldPaletteTaskInitSub0Sub2();
 
@@ -944,7 +949,7 @@ void battleEngine_Update(s_battleEngine* pThis)
         battleEngine_UpdateSub4(dramAllocatorEnd[0].mC_buffer);
         battleEngine_UpdateSub5();
 
-        battleEngine_UpdateSub10(0xE);
+        battleEngine_SetBattleIntroType(0xE);
         return;
     case 1:
         battleEngine_UpdateSub7(pThis);
@@ -981,7 +986,7 @@ void battleEngine_Delete(s_battleEngine* pThis)
 
 s32 BattleEngineSub0_UpdateSub0()
 {
-    if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x80) != 0)
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80 == 0)
     {
         return 1;
     }

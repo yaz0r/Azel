@@ -591,7 +591,21 @@ void mainLogicUpdateSub0Sub0(sTownGrid* r4)
 
 void mainLogicUpdateSub0Sub1(s32 r4, sTownGrid* r5)
 {
-    assert(0);
+    switch (r4)
+    {
+    case -1:
+        r5->m20_deleteCell(2, r5);
+        r5->mC = (r5->mC - 1) & 7;
+        r5->m14_currentY--;
+        r5->m18_createCell(-2, r5);
+        break;
+    case 1:
+        r5->m20_deleteCell(-2, r5);
+        r5->mC = (r5->mC + 1) & 7;
+        r5->m14_currentY++;
+        r5->m18_createCell(2, r5);
+        break;
+    }
 }
 
 //TODO:kernel

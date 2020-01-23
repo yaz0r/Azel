@@ -14,7 +14,32 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP m18;
     sVec3_FP m6C;
     sVec3_FP m104_dragonStartPosition;
-    u32 m188_flags; // 8: setup lights color for dragon
+    struct {
+        u32 m1 : 1;
+        u32 m2 : 1;
+        u32 m4 : 1;
+        u32 m8 : 1;
+        u32 m10 : 1;
+        u32 m20_battleIntroRunning : 1;
+        u32 m40 : 1;
+        u32 m80 : 1;
+        u32 m100 : 1;
+        u32 m200 : 1;
+        u32 m800 : 1;
+        u32 m1000 : 1;
+        u32 m2000 : 1;
+        u32 m4000 : 1;
+        u32 m8000 : 1;
+        u32 m10000 : 1;
+        u32 m20000 : 1;
+        u32 m80000 : 1;
+        u32 m200000 : 1;
+        u32 m400000 : 1;
+        u32 m1000000 : 1;
+        u32 m2000000 : 1;
+        u32 m4000000 : 1;
+    } m188_flags;
+    //u32 m188_flags; // 8: setup lights color for dragon
     s8 m18C_status;
     std::array<s32, 2> m190;
     sVec3_FP m164;
@@ -58,7 +83,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sSaturnPtr m3AC;
     s8 m3B0_subBattleId;
     s8 m3B1;
-    s8 m3B2;
+    s8 m3B2_numBattleFormationRunning;
     s32 m3B4;
     s32 m3B8;
     s32 m3BC;
@@ -68,6 +93,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP* m3D4;
     sVec3_FP* m3D8;
     sVec3_FP m3E8;
+    u8 m433;
     s32 m434;
     s32 m43C;
     fixedPoint m440_battleDirectionAngle;
@@ -89,5 +115,6 @@ void battleEngine_InitSub6(sVec3_FP* pData);
 void battleEngine_InitSub7(sVec3_FP* pData);
 void battleEngine_InitSub8();
 void battleEngine_UpdateSub7Sub3();
+void battleEngine_SetBattleIntroType(int param);
 
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);

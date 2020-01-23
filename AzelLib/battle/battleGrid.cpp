@@ -142,7 +142,7 @@ void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
 {
     if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xA] == 0)
     {
-        if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x400000) == 0)
+        if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
         {
             pThis->m198[0] = 0x3333;
             pThis->m198[1] = 0x3333;

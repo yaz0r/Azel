@@ -25,7 +25,7 @@ struct sBattleIntroSubTask : public s_workAreaTemplate<sBattleIntroSubTask>
 
 void createBattleIntroTaskSub0()
 {
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags |= 0x800;
+    getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 1;
 }
 
 s32 createBattleIntroTaskSub1()

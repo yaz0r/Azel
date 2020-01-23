@@ -407,7 +407,7 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
             assert(0);
         }
 
-        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x1000)
+        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m1000)
         {
             assert(0);
         }
@@ -424,12 +424,12 @@ void s_battleDragon_UpdateSub5(s_battleDragon* pThis)
 
 void s_battleDragon_UpdateSub6()
 {
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x4000000)
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000)
     {
         assert(0);
     }
 
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 0x2000000)
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000)
     {
         assert(0);
     }
@@ -541,7 +541,7 @@ static void s_battleDragon_DrawRiderWeapon(s_battleDragon* pThis)
 
 static void s_battleDragon_Draw(s_battleDragon* pThis)
 {
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags & 8)
+    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
     {
         // This setup lights
         //setupLightColor(s_RGB8::fromVector(getBattleManager()->m10_battleOverlay->m8_gridTask->m1F0).toU32());
