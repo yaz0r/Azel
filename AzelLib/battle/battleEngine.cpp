@@ -4,7 +4,7 @@
 #include "battleOverlay.h"
 #include "battleGrid.h"
 #include "battleEngineSub0.h"
-#include "battleOverlay_20.h"
+#include "battleHud.h"
 #include "battleOverlay_C.h"
 #include "battleDebug.h"
 #include "battleDragon.h"

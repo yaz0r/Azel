@@ -3,7 +3,7 @@
 #include "battleManager.h"
 #include "battleOverlay.h"
 #include "battleEngine.h"
-#include "battleOverlay_20.h"
+#include "battleHud.h"
 
 void BattleEngineSub0_Update(s_battleEngineSub0* pThis)
 {

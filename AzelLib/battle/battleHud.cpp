@@ -1,5 +1,5 @@
 #include "PDS.h"
-#include "battleOverlay_20.h"
+#include "battleHud.h"
 #include "battleManager.h"
 #include "battleOverlay.h"
 #include "kernel/vdp1Allocator.h"
