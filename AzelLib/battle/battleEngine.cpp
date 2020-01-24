@@ -557,7 +557,7 @@ s32 battleEngine_UpdateSub7Sub0()
         fieldPaletteTaskInitSub0Sub2();
 
         pBattleEngine->m18C_status = 4;
-        pBattleEngine->m188_flags.m80000 = 0;
+        pBattleEngine->m188_flags.m80000_hideBattleHUD = 0;
         if (0 < mainGameState.gameStats.m10_currentHP)
         {
             battleEngine_UpdateSub7Sub2();
@@ -809,7 +809,7 @@ void updateBattleIntro(s_battleEngine* pThis)
             }
             return;
         case 3:
-            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000 = 0;
+            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
             return;
         case 4:
             if (pThis->m384_battleIntroDelay++ > 4)
@@ -837,7 +837,7 @@ void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
     {
         if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498 &&
             battleEngine_UpdateSub7Sub0Sub2Sub0() &&
-            (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000)
+            (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
             ) {
             assert(0);
         }

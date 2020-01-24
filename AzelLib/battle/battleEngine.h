@@ -32,7 +32,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
         u32 m8000 : 1;
         u32 m10000 : 1;
         u32 m20000 : 1;
-        u32 m80000 : 1;
+        u32 m80000_hideBattleHUD : 1;
         u32 m200000 : 1;
         u32 m400000 : 1;
         u32 m1000000 : 1;
