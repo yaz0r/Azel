@@ -7,7 +7,7 @@ struct battleHud2 : public s_workAreaTemplate<battleHud2>
     u32 m0_vdp1Memory;
     u32 m4;
     u16 mC;
-    u16 mE;
+    u16 mE_offsetY;
     u16 m12_mode;
     u16 m14_nextMode;
     sVec2_S16 m16_dragonIconPosition;

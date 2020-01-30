@@ -12,7 +12,7 @@ void battleHud2_Init(battleHud2* pThis)
 {
     pThis->m4 = 0;
     pThis->mC = 0;
-    pThis->mE = 0x47;
+    pThis->mE_offsetY = 0x47;
 }
 
 void battleHud2_Update(battleHud2* pThis)
@@ -64,7 +64,7 @@ void battleHud2_Update(battleHud2* pThis)
         {
             pThis->m12_mode = pThis->m14_nextMode;
         }
-        pThis->mE = (pThis->m20.m0_currentValue + 0x8000) >> 0x10;
+        pThis->mE_offsetY = (pThis->m20.m0_currentValue + 0x8000) >> 0x10;
         break;
     default:
         assert(0);
@@ -80,9 +80,9 @@ void battleHud2_DrawSub0(battleHud2* pThis)
     generateCameraMatrixSub1(local_20, local_28);
 
     pThis->m16_dragonIconPosition[0] = MTH_Mul(0x140000, getSin(local_28[1].getInteger())) - 7;
-    pThis->m16_dragonIconPosition[1] = (-pThis->mE - MTH_Mul(0x110000, getCos(local_28[1].getInteger()))) - 0x3A;
+    pThis->m16_dragonIconPosition[1] = (-pThis->mE_offsetY - MTH_Mul(0x110000, getCos(local_28[1].getInteger()))) - 0x3A;
     pThis->m1A = -0x13;
-    pThis->m1C = -0x31 - pThis->mE;
+    pThis->m1C = -0x31 - pThis->mE_offsetY;
 }
 
 // This draw the radar ring
