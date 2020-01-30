@@ -1284,6 +1284,11 @@ void NormalSpriteDrawGL(u32 vdp1EA)
         if (pExtendedCommand)
         {
             quadDepth = pExtendedCommand->depth;
+            glEnable(GL_DEPTH_TEST);
+        }
+        else
+        {
+            glDisable(GL_DEPTH_TEST);
         }
 
         tempQuad.m_vertices[0].m_originalVertices[0] = X;
@@ -1542,6 +1547,11 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
         if (pExtendedCommand)
         {
             quadDepth = pExtendedCommand->depth;
+            glEnable(GL_DEPTH_TEST);
+        }
+        else
+        {
+            glDisable(GL_DEPTH_TEST);
         }
 
         tempQuad.m_vertices[0].m_originalVertices[0] = X0;

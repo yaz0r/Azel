@@ -7410,7 +7410,8 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     auto& r13 = graphicEngineStatus.m14_vdp1Context[0];
     r13.m10 ++;
     r11.m14_vdp1Context[0].m10 ++;//?
-    auto r12 = r11.m14_vdp1Context[0].m10 - 1;
+    int gradiantIndex = r11.m14_vdp1Context[0].m10 - r11.m14_vdp1Context[0].m14->begin();
+    sPerQuadDynamicColor& r12 = *(r11.m14_vdp1Context[0].m10 - 1);
     u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
     u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
@@ -7431,12 +7432,12 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     setVdp1VramU16(vdp1WriteEA + 0x10, r5[0][0]); // CMDXB
     setVdp1VramU16(vdp1WriteEA + 0x12, -r5[0][1]); // CMDYB
 
-    (*r12)[0][0] = arg0->m0[r7][0][0];
-    (*r12)[0][1] = arg0->m0[r7][0][1];
-    (*r12)[1][0] = arg0->m0[r7][1][0];
-    (*r12)[1][1] = arg0->m0[r7][1][1];
+    r12.m0[0][0] = arg0->m0[r7][0][0];
+    r12.m0[0][1] = arg0->m0[r7][0][1];
+    r12.m0[1][0] = arg0->m0[r7][1][0];
+    r12.m0[1][1] = arg0->m0[r7][1][1];
 
-    setVdp1VramU16(vdp1WriteEA + 0x1C, (size_t)(&(*r12))>>3); //CMDGRDA
+    setVdp1VramU16(vdp1WriteEA + 0x1C, gradiantIndex); //CMDGRDA
 
     r13.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
     r13.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
@@ -7454,7 +7455,8 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
         auto& r14 = graphicEngineStatus.m14_vdp1Context[0];
         u32 vdp1WriteEA = r14.m0_currentVdp1WriteEA;
         graphicEngineStatus.m14_vdp1Context[0].m10++;
-        auto r9 = graphicEngineStatus.m14_vdp1Context[0].m10 - 1;
+        int gradiantIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        sPerQuadDynamicColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
 
         u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub3Data0.m0;
         u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub3Data0.m4;
@@ -7474,12 +7476,12 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
         setVdp1VramU16(vdp1WriteEA + 0x10, arg0[0] - arg4[0]); // CMDXB
         setVdp1VramU16(vdp1WriteEA + 0x12, -arg0[1] + arg4[1]); // CMDYB
 
-        (*r9)[0][0] = arg8->m0[r7][0][0];
-        (*r9)[0][1] = arg8->m0[r7][0][1];
-        (*r9)[1][0] = arg8->m0[r7][1][0];
-        (*r9)[1][1] = arg8->m0[r7][1][1];
+        r9.m0[0][0] = arg8->m0[r7][0][0];
+        r9.m0[0][1] = arg8->m0[r7][0][1];
+        r9.m0[1][0] = arg8->m0[r7][1][0];
+        r9.m0[1][1] = arg8->m0[r7][1][1];
 
-        setVdp1VramU16(vdp1WriteEA + 0x1C, (size_t)(&(*r9)) >> 3); //CMDGRDA
+        setVdp1VramU16(vdp1WriteEA + 0x1C, gradiantIndex); //CMDGRDA
 
         r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
         r14.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
@@ -7494,7 +7496,8 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     auto& r14 = graphicEngineStatus.m14_vdp1Context[0];
     u32 vdp1WriteEA = r14.m0_currentVdp1WriteEA;
     graphicEngineStatus.m14_vdp1Context[0].m10++;
-    auto r9 = graphicEngineStatus.m14_vdp1Context[0].m10 - 1;
+    int gradiantIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+    sPerQuadDynamicColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
 
     u16 CMDCOLR = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
     u16 CMDSRCA = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
@@ -7514,12 +7517,12 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     setVdp1VramU16(vdp1WriteEA + 0x10, r5[3][0]); // CMDXB
     setVdp1VramU16(vdp1WriteEA + 0x12, -r5[3][1]); // CMDYB
 
-    (*r9)[0][0] = arg8->m0[r7][0][0];
-    (*r9)[0][1] = arg8->m0[r7][0][1];
-    (*r9)[1][0] = arg8->m0[r7][1][0];
-    (*r9)[1][1] = arg8->m0[r7][1][1];
+    r9.m0[0][0] = arg8->m0[r7][0][0];
+    r9.m0[0][1] = arg8->m0[r7][0][1];
+    r9.m0[1][0] = arg8->m0[r7][1][0];
+    r9.m0[1][1] = arg8->m0[r7][1][1];
 
-    setVdp1VramU16(vdp1WriteEA + 0x1C, (size_t)(&(*r9)) >> 3); //CMDGRDA
+    setVdp1VramU16(vdp1WriteEA + 0x1C, gradiantIndex); //CMDGRDA
 
     r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
     r14.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;

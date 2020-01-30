@@ -250,7 +250,7 @@ void createPGTask(npcFileDeleter* parent, u16*, s32)
     FunctionUnimplemented();
 }
 
-void createBattleOverlay_task20(npcFileDeleter* parent)
+void battleEngine_CreateHud1(npcFileDeleter* parent)
 {
     static const s_battleOverlay_20::TypedTaskDefinition definition = {
         nullptr,

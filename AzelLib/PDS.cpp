@@ -302,13 +302,13 @@ void initVDP1()
     graphicEngineStatus.m14_vdp1Context[1].m0_currentVdp1WriteEA = 0x25C07FE0;
     graphicEngineStatus.m14_vdp1Context[1].mC = 0;
 
-    graphicEngineStatus.m14_vdp1Context[0].m14 = (std::array<sVec2_S16[4], 1024>*)(getVdp1Pointer(0x25C7C000));
-    graphicEngineStatus.m14_vdp1Context[0].m10 = graphicEngineStatus.m14_vdp1Context[0].m14->begin();
-    graphicEngineStatus.m14_vdp1Context[0].m18 = graphicEngineStatus.m14_vdp1Context[0].m14->end();
+    //graphicEngineStatus.m14_vdp1Context[0].m14 = (std::array<sPerQuadDynamicColor, 1024>*)(getVdp1Pointer(0x25C7C000));
+    graphicEngineStatus.m14_vdp1Context[0].m10 = graphicEngineStatus.m14_vdp1Context[0].m14[0].begin();
+    //graphicEngineStatus.m14_vdp1Context[0].m18 = graphicEngineStatus.m14_vdp1Context[0].m14[1]->begin();
 
-    graphicEngineStatus.m14_vdp1Context[1].m14 = (std::array<sVec2_S16[4], 1024>*)(getVdp1Pointer(0x25C7E000));
-    graphicEngineStatus.m14_vdp1Context[1].m10 = graphicEngineStatus.m14_vdp1Context[1].m14->begin();
-    graphicEngineStatus.m14_vdp1Context[1].m18 = graphicEngineStatus.m14_vdp1Context[1].m14->end();
+    //graphicEngineStatus.m14_vdp1Context[1].m14 = (std::array<sPerQuadDynamicColor, 1024>*)(getVdp1Pointer(0x25C7E000));
+    graphicEngineStatus.m14_vdp1Context[1].m10 = graphicEngineStatus.m14_vdp1Context[1].m14[0].begin();
+    //graphicEngineStatus.m14_vdp1Context[1].m18 = graphicEngineStatus.m14_vdp1Context[1].m14->end();
 
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet = graphicEngineStatus.m14_vdp1Context[0].m24_vdp1Packets;
     graphicEngineStatus.m14_vdp1Context[0].m1C = 0;
@@ -970,6 +970,9 @@ void interruptVDP1Update()
     int r6 = graphicEngineStatus.doubleBufferState;
     graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m4[r6];
     graphicEngineStatus.m14_vdp1Context[1].m0_currentVdp1WriteEA = graphicEngineStatus.m14_vdp1Context[1].m4[r6];
+
+    graphicEngineStatus.m14_vdp1Context[0].m10 = graphicEngineStatus.m14_vdp1Context[0].m14[r6].begin();
+    graphicEngineStatus.m14_vdp1Context[1].m10 = graphicEngineStatus.m14_vdp1Context[1].m14[r6].begin();
 }
 
 u32 frameIndex = 0;

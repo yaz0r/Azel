@@ -11,6 +11,9 @@ struct s_battleOverlay_20_sub
     s16 m18;
 };
 
+void s_battleOverlay_20_updateSub0(s_battleOverlay_20_sub* pData);
+s32 s_battleOverlay_20_updateSub1(s_battleOverlay_20_sub* pData);
+
 struct s_battleOverlay_20 : public s_workAreaTemplate<s_battleOverlay_20>
 {
     s8 m0;
@@ -32,4 +35,4 @@ struct s_battleOverlay_20 : public s_workAreaTemplate<s_battleOverlay_20>
     //size 0x68
 };
 
-void createBattleOverlay_task20(struct npcFileDeleter*);
+void battleEngine_CreateHud1(struct npcFileDeleter*);

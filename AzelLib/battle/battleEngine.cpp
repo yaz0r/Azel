@@ -5,6 +5,7 @@
 #include "battleGrid.h"
 #include "battleEngineSub0.h"
 #include "battleHud.h"
+#include "battleRadar.h"
 #include "battleOverlay_C.h"
 #include "battleDebug.h"
 #include "battleDragon.h"
@@ -408,11 +409,6 @@ void battleEngine_UpdateSub1(int bitMask)
     }
 }
 
-void battleEngine_UpdateSub4(struct npcFileDeleter*)
-{
-    FunctionUnimplemented();
-}
-
 s32 s_battleDragon_InitSub0()
 {
     s8 bVar1 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m230;
@@ -453,7 +449,7 @@ void battleEngine_SetBattleIntroType(int param)
     pBattleEngine->m188_flags.m2000 = 0;
     pBattleEngine->m188_flags.m10 = 1;
     pBattleEngine->m188_flags.m20_battleIntroRunning = 1;
-    pBattleEngine->m188_flags.m200 = 1;
+    pBattleEngine->m188_flags.m200_suppressBattleInputs = 1;
     pBattleEngine->m38D_battleIntroStatus = 0;
     pBattleEngine->m384_battleIntroDelay = 0;
     pBattleEngine->m386 = 0;
@@ -886,7 +882,7 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
 
 s32 battleEngine_UpdateSub7Sub4()
 {
-    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m200)
+    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m200_suppressBattleInputs)
         return 1;
     return 0;
 }
@@ -923,7 +919,7 @@ void battleEngine_Update(s_battleEngine* pThis)
 {
     switch (pThis->m18C_status)
     {
-    case 0:
+    case 0: // init
         pThis->m18[0] = 0;
         pThis->m18[1] = 0x8000000;
         pThis->m18[2] = 0;
@@ -945,13 +941,13 @@ void battleEngine_Update(s_battleEngine* pThis)
 
         battleEngine_UpdateSub1(1);
         battleEngine_UpdateSub2(pThis);
-        createBattleOverlay_task20(dramAllocatorEnd[0].mC_buffer);
-        battleEngine_UpdateSub4(dramAllocatorEnd[0].mC_buffer);
+        battleEngine_CreateHud1(dramAllocatorEnd[0].mC_buffer);
+        battleEngine_CreateHud2(dramAllocatorEnd[0].mC_buffer);
         battleEngine_UpdateSub5();
 
         battleEngine_SetBattleIntroType(0xE);
         return;
-    case 1:
+    case 1: // running
         battleEngine_UpdateSub7(pThis);
         battleEngine_UpdateSub5();
         return;

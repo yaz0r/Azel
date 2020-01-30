@@ -24,7 +24,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
         u32 m40 : 1;
         u32 m80 : 1;
         u32 m100 : 1;
-        u32 m200 : 1;
+        u32 m200_suppressBattleInputs : 1;
         u32 m800 : 1;
         u32 m1000 : 1;
         u32 m2000 : 1;
@@ -52,12 +52,13 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s32 m1CC;
     fixedPoint m1D0;
     fixedPoint m1D4;
-    u16 m1E0;
+    u16 m1E0_radarStatus; // 2 groups of 4 bits
     int m1E8[2];
     sMatrix4x3 m1F0;
     sVec3_FP m220;
     s8 m22C_battleDirection;
     s8 m22D_originalBattleDirection;
+    u8 m22F_battleRadarLockIcon;
     s8 m230;
     sVec3_FP m234;
     sVec3_FP m240;

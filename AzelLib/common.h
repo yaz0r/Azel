@@ -827,14 +827,18 @@ struct s_vd1ExtendedCommand
 s_vd1ExtendedCommand* createVdp1ExtendedCommand(u32 vd1PacketStart);
 s_vd1ExtendedCommand* fetchVdp1ExtendedCommand(u32 vd1PacketStart);
 
+struct sPerQuadDynamicColor
+{
+    sVec2_S16 m0[4];
+};
+
 struct s_vdp1Context
 {
     u32 m0_currentVdp1WriteEA; //0
     u32 m4[2]; //4
     u32 mC; //C
-    std::array<sVec2_S16[4], 1024>::iterator m10; //10
-    std::array<sVec2_S16[4], 1024>* m14; //14
-    std::array<sVec2_S16[4], 1024>::iterator m18; //18
+    std::array<sPerQuadDynamicColor, 1024>::iterator m10; //10
+    std::array<sPerQuadDynamicColor, 1024> m14[2]; //14 this used to be allocated inside of VDP1 memory
     u32 m1C; //1C
     s_vdp1Packet* m20_pCurrentVdp1Packet; //20
     s_vdp1Packet m24_vdp1Packets[1024]; // 24

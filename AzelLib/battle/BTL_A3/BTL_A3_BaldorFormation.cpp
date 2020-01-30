@@ -27,11 +27,11 @@ void BTL_A3_BaldorFormation_InitSub0Sub0(s16 uParm1)
 {
     if (uParm1 == 0)
     {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0 &= ~0xF;
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus &= ~0xF;
     }
     else
     {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0 |= uParm1 & 0xF;
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus |= uParm1 & 0xF;
     }
 }
 
@@ -64,47 +64,78 @@ void BTL_A3_BaldorFormation_InitSub0(u32 uParm1)
 
 void BTL_A3_BaldorFormation_InitSub1Sub0(s16 uParm1)
 {
-    if (uParm1 == 0)
+    if ((uParm1 & 0xFFFF) == 0)
     {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0 &= ~0xF0;
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus &= ~0xF0;
     }
     else
     {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0 |= (uParm1 & 0xF) << 4;
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus |= (uParm1 & 0xF) << 4;
+    }
+}
+
+void BTL_A3_BaldorFormation_UpdateSub2Sub0(s32 uParm1)
+{
+    if ((uParm1 & 0xFFFF) == 0)
+    {
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus &= ~0xF00;
+    }
+    else
+    {
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus |= (uParm1 & 0xF) << 8;
     }
 }
 
 void BTL_A3_BaldorFormation_InitSub1(u32 param_1)
-
 {
-    int uVar1;
+    switch (param_1 & 0xff)
+    {
+    case 0:
+        BTL_A3_BaldorFormation_InitSub1Sub0(1);
+        break;
+    case 1:
+        BTL_A3_BaldorFormation_InitSub1Sub0(2);
+        break;
+    case 2:
+        BTL_A3_BaldorFormation_InitSub1Sub0(4);
+    break;
+    case 3:
+        BTL_A3_BaldorFormation_InitSub1Sub0(8);
+        break;
+    default:
+        assert(0);
+        break;
+    }
+}
 
-    param_1 = param_1 & 0xff;
-    if (param_1 == 0) {
-        uVar1 = 1;
+void BTL_A3_BaldorFormation_UpdateSub2(int param_1)
+{
+    switch (param_1 & 0xff)
+    {
+    case 0:
+        BTL_A3_BaldorFormation_UpdateSub2Sub0(1);
+        break;
+    case 1:
+        BTL_A3_BaldorFormation_UpdateSub2Sub0(2);
+        break;
+    case 2:
+        BTL_A3_BaldorFormation_UpdateSub2Sub0(4);
+        break;
+    case 3:
+        BTL_A3_BaldorFormation_UpdateSub2Sub0(8);
+        break;
+    default:
+        assert(0);
+        break;
     }
-    else {
-        if (param_1 == 1) {
-            uVar1 = 2;
-        }
-        else {
-            if (param_1 == 2) {
-                uVar1 = 4;
-            }
-            else {
-                if (param_1 != 3) {
-                    return;
-                }
-uVar1 = 8;
-            }
-        }
-    }
-    BTL_A3_BaldorFormation_InitSub1Sub0(uVar1);
 }
 
 void displayFormationName(short uParm1, char uParm2, char uParm3)
 {
-    FunctionUnimplemented();
+    if (getBattleManager()->m10_battleOverlay->m14)
+    {
+        assert(0);
+    }
 }
 
 void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
@@ -154,12 +185,10 @@ void BTL_A3_BaldorFormation_UpdateSub0(int param1)
 
 void BTL_A3_BaldorFormation_UpdateSub1(int param1, int param2, int param3)
 {
-    FunctionUnimplemented();
-}
-
-void BTL_A3_BaldorFormation_UpdateSub2(int param2)
-{
-    FunctionUnimplemented();
+    if (getBattleManager()->m10_battleOverlay->m14)
+    {
+        assert(0);
+    }
 }
 
 void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
