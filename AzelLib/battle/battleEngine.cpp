@@ -261,11 +261,11 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     if (pData.isNull())
     {
-        pThis->m3CA = 0;
+        pThis->m3B4.m16_combo = 0;
     }
     else
     {
-        readSaturnS8(pData + getBattleManager()->m8 * 0x10 + 0xC);
+        pThis->m3B4.m16_combo = readSaturnS8(pData + getBattleManager()->m8 * 0x10 + 0xC);
     }
 
     pThis->m270.zeroize();
@@ -305,9 +305,9 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     pThis->m3A2 = 0;
 
-    pThis->m3B4 = 0x3C0000;
-    pThis->m3B8 = 0x10000;
-    pThis->m3BC = 0;
+    pThis->m3B4.m0_max = 0x3C0000;
+    pThis->m3B4.m4 = 0x10000;
+    pThis->m3B4.m8 = 0;
 
     initMatrixToIdentity(&pThis->m1F0);
 
@@ -861,7 +861,7 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
     {
         if ((0 < getBattleManager()->m10_battleOverlay->m4_battleEngine->m498) &&
             (battleEngine_UpdateSub7Sub0Sub2Sub0() != 0)) {
-            if ((pThis->m3CA < '\x01') ||
+            if ((pThis->m3B4.m16_combo < '\x01') ||
                 (((graphicEngineStatus.m4514.mD8_buttonConfig[2][2] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown) == 0 ||
                 ((getBattleManager()->m10_battleOverlay->mC->m20A) < 1))))
             {

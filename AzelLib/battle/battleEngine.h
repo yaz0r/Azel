@@ -8,6 +8,17 @@ struct s_battleEngineSub
     // size C?
 };
 
+struct s_battleEngine_3B4
+{
+    fixedPoint m0_max;
+    s32 m4;
+    s32 m8;
+    s32 mC;
+    fixedPoint m10_value;
+    s16 m14;
+    s8 m16_combo;
+};
+
 struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine, sSaturnPtr>
 {
     sVec3_FP mC;
@@ -85,10 +96,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s8 m3B0_subBattleId;
     s8 m3B1;
     s8 m3B2_numBattleFormationRunning;
-    s32 m3B4;
-    s32 m3B8;
-    s32 m3BC;
-    s8 m3CA;
+    s_battleEngine_3B4 m3B4;
     struct s_battleEngineSub0* m3CC;
     p_workArea m3D0;
     sVec3_FP* m3D4;

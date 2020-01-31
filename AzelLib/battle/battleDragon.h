@@ -36,6 +36,7 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
     sVec3_FP mF0;
     std::array<sVec3_FP, 6> mFC_hotpoints;
     sVec3_FP m1A4;
+    u32 m1C0;
     u32 m1C4;
     s32 m1C8;
     s16 m1CC;
