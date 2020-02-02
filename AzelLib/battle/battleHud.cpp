@@ -117,9 +117,6 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         setVdp1VramU16(vdp1WriteEA + 0x14, pThis->m1A_part2X + 0x87); // CMDXC
         setVdp1VramU16(vdp1WriteEA + 0x16, -(-0x73 - pThis->m1C_part2Y)); // CMDYC
 
-        s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
-        pExtendedCommand->depth = 0;
-
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
@@ -144,9 +141,6 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         setVdp1VramU16(vdp1WriteEA + 0x0C, readSaturnS16(currentSprite) + pThis->m1A_part2X - 0xb0); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-pThis->m1C_part2Y - readSaturnS16(currentSprite + 2)) + 0x70); // CMDYA
 
-        s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
-        pExtendedCommand->depth = 0;
-
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
@@ -168,9 +162,6 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m16_part1X - 0x8E); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x33 - pThis->m18_part1Y)); // CMDYA
 
-        s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
-        pExtendedCommand->depth = 0;
-
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
@@ -189,9 +180,6 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         setVdp1VramU16(vdp1WriteEA + 0x0A, 0x553); // CMDSIZE
         setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m16_part1X - 0xB0); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x31 - pThis->m18_part1Y)); // CMDYA
-
-        s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
-        pExtendedCommand->depth = 0;
 
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;

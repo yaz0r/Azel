@@ -1318,6 +1318,7 @@ void renderVdp1ToGL(u32 width, u32 height)
             break;
         case 4:
             // draw polygon
+            PolyDrawGL(vdp1EA);
             break;
         case 5:
             PolyLineDrawGL(vdp1EA);

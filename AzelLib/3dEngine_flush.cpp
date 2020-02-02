@@ -2022,6 +2022,36 @@ void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)
     glUseProgram(0);
 }
 
+void PolyDrawGL(u32 vdp1EA)
+{
+    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
+    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
+    s16 CMDXA = getVdp1VramS16(vdp1EA + 0xC);
+    s16 CMDYA = getVdp1VramS16(vdp1EA + 0xE);
+    s16 CMDXB = getVdp1VramS16(vdp1EA + 0x10);
+    s16 CMDYB = getVdp1VramS16(vdp1EA + 0x12);
+    s16 CMDXC = getVdp1VramS16(vdp1EA + 0x14);
+    s16 CMDYC = getVdp1VramS16(vdp1EA + 0x16);
+    s16 CMDXD = getVdp1VramS16(vdp1EA + 0x18);
+    s16 CMDYD = getVdp1VramS16(vdp1EA + 0x1A);
+    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+
+    u32 finalColor;
+    if (CMDCOLR & 0x8000)
+    {
+        finalColor = 0xFF000000 | (((CMDCOLR & 0x1F) << 3) | ((CMDCOLR & 0x03E0) << 6) | ((CMDCOLR & 0x7C00) << 9));
+    }
+    else
+    {
+        finalColor = 0xFF0000FF;
+    }
+
+    drawLineGL(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);
+    drawLineGL(CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, finalColor);
+    drawLineGL(CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, finalColor);
+    drawLineGL(CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, finalColor);
+}
+
 void PolyLineDrawGL(u32 vdp1EA)
 {
     u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
