@@ -244,39 +244,43 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
     if ((getBattleManager()->m10_battleOverlay->m20->m0 != 0) && (getBattleManager()->m10_battleOverlay->m20->m0 != 1))
         return;
 
-    sVec2_S16 local_34[5];
+    sVec2_S16 UIStart;
 
-    local_34[4][0] = 0x22 + getBattleManager()->m10_battleOverlay->m20->m16_part1X;
-    local_34[4][1] = 0xA3 + getBattleManager()->m10_battleOverlay->m20->m18_part1Y;
-    local_34[2][0] = local_34[4][0] + 0xa5;
-    local_34[2][1] = local_34[4][1] + 0x1f;
-    local_34[1][0] = local_34[4][0] + 0xcc;
-    local_34[1][1] = local_34[4][1] + 0x1f;
-    local_34[0][0] = local_34[4][0] + 0xf3;
-    local_34[0][1] = local_34[4][1] + 0x1f;
+    UIStart[0] = 0x22 + getBattleManager()->m10_battleOverlay->m20->m16_part1X;
+    UIStart[1] = 0xA3 + getBattleManager()->m10_battleOverlay->m20->m18_part1Y;
+
+    sVec2_S16 gauge0;
+    sVec2_S16 gauge1;
+    sVec2_S16 gauge2;
+    gauge0[0] = UIStart[0] + 0xa5;
+    gauge0[1] = UIStart[1] + 0x1f;
+    gauge1[0] = UIStart[0] + 0xcc;
+    gauge1[1] = UIStart[1] + 0x1f;
+    gauge2[0] = UIStart[0] + 0xf3;
+    gauge2[1] = UIStart[1] + 0x1f;
 
     switch (pThis->m0->m16_combo)
     {
     case 0:
-        drawGauge(local_34[2], 0x24, 0, pThis->m0->m10_value, pThis->m0->m0_max, 0, 0xFFE8);
+        drawGauge(gauge0, 0x24, 0, pThis->m0->m10_value, pThis->m0->m0_max, 0, 0xFFE8);
         break;
     case 1:
-        drawGauge(local_34[2], 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
+        drawGauge(gauge0, 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
 
         if (pThis->m27_numPowerGauges != 1)
         {
-            drawGauge(local_34[1], 0x24, 0, pThis->m0->m10_value, pThis->m0->m0_max, 0, 0xFFE8);
+            drawGauge(gauge1, 0x24, 0, pThis->m0->m10_value, pThis->m0->m0_max, 0, 0xFFE8);
         }
         break;
     case 2:
-        drawGauge(local_34[2], 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
-        drawGauge(local_34[1], 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
-        drawGauge(local_34[0], 0x24, 0, pThis->m0->m10_value, pThis->m0->m0_max, 0, 0xFFE8);
+        drawGauge(gauge0, 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
+        drawGauge(gauge1, 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
+        drawGauge(gauge2, 0x24, 0, pThis->m0->m10_value, pThis->m0->m0_max, 0, 0xFFE8);
         break;
     case 3: // all filled
-        drawGauge(local_34[2], 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
-        drawGauge(local_34[1], 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
-        drawGauge(local_34[0], 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
+        drawGauge(gauge0, 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
+        drawGauge(gauge1, 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
+        drawGauge(gauge2, 0x24, 0, pThis->m0->m0_max, pThis->m0->m0_max, 0, bVar3 ? 0xFFE8 : 0xFFFF);
         break;
     default:
         assert(0);
@@ -284,8 +288,9 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
     }
 
     // Draw HP gauge
-    local_34[3][0] = local_34[4][0] + 0x11;
-    local_34[3][1] = local_34[4][1] + 0x20;
+    sVec2_S16 tempCoordinates;
+    tempCoordinates[0] = UIStart[0] + 0x11;
+    tempCoordinates[1] = UIStart[1] + 0x20;
 
     int currentHP = mainGameState.gameStats.m10_currentHP;
     int maxHP = mainGameState.gameStats.maxHP;
@@ -293,23 +298,23 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
     {
         if (currentHP > (maxHP / 2))
         {
-            drawGauge(local_34[3], 0x28, 3, currentHP, maxHP, 0, 0xA3E8);
+            drawGauge(tempCoordinates, 0x28, 3, currentHP, maxHP, 0, 0xA3E8);
         }
         else
         {
-            drawGauge(local_34[3], 0x28, 3, currentHP, maxHP, 0, 0xA318);
+            drawGauge(tempCoordinates, 0x28, 3, currentHP, maxHP, 0, 0xA318);
         }
     }
     else
     {
-        drawGauge(local_34[3], 0x28, 3, currentHP, maxHP, 0, 0xA118);
+        drawGauge(tempCoordinates, 0x28, 3, currentHP, maxHP, 0, 0xA118);
     }
 
     // Draw BP gauge
-    local_34[3][0] = local_34[4][0] + 0x3F;
-    local_34[3][1] = local_34[4][1] + 0x20;
+    tempCoordinates[0] = UIStart[0] + 0x3F;
+    tempCoordinates[1] = UIStart[1] + 0x20;
 
-    drawGauge(local_34[3], 0x28, 3, mainGameState.gameStats.currentBP, mainGameState.gameStats.maxBP, 0, 0xFE10);
+    drawGauge(tempCoordinates, 0x28, 3, mainGameState.gameStats.currentBP, mainGameState.gameStats.maxBP, 0, 0xFE10);
 
     battlePowerGauge_drawSub0(pThis);
 }
