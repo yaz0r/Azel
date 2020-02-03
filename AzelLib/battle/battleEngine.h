@@ -21,8 +21,9 @@ struct s_battleEngine_3B4
 
 struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine, sSaturnPtr>
 {
-    sVec3_FP mC;
+    sVec3_FP mC_battleCenter;
     sVec3_FP m18;
+    sVec3_FP m60;
     sVec3_FP m6C;
     sVec3_FP m104_dragonStartPosition;
     struct {
@@ -46,7 +47,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
         u32 m80000_hideBattleHUD : 1;
         u32 m200000 : 1;
         u32 m400000 : 1;
-        u32 m1000000 : 1;
+        u32 m1000000_dragonMoving : 1;
         u32 m2000000 : 1;
         u32 m4000000 : 1;
     } m188_flags;
@@ -57,8 +58,8 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s16 m184;
     sVec3_FP m1A0;
     sVec3_FP m1AC;
-    s32 m1B8;
-    s32 m1BC;
+    s32 m1B8_dragonPitch;
+    s32 m1BC_dragonYaw;
     s32 m1C8;
     s32 m1CC;
     fixedPoint m1D0;
@@ -69,6 +70,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP m220;
     s8 m22C_battleDirection;
     s8 m22D_originalBattleDirection;
+    s8 m22E_dragonMoveDirection;
     u8 m22F_battleRadarLockIcon;
     s8 m230;
     sVec3_FP m234;
@@ -77,7 +79,25 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP m258;
     sVec3_FP m264;
     sVec3_FP m270;
-    s8 m2CC;
+
+    struct s_27C
+    {
+        sVec3_FP m0;
+        sVec3_FP mC;
+        sVec3_FP m18;
+        sVec3_FP m24;
+        sVec3_FP m3C;
+        sVec3_FP m48;
+        s8 m50;
+        sVec3_FP m54;
+        fixedPoint m60;
+        fixedPoint m64;
+        s16 m68;
+        //size: 0x68
+    };
+
+    s_27C m27C;
+    s_27C m2E8;
     std::array<s32, 4> m354;
     std::array<s32, 4> m364;
     std::array<s32, 4> m374;
@@ -105,6 +125,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     u8 m433;
     s32 m434;
     s32 m43C;
+    s32 m440;
     fixedPoint m440_battleDirectionAngle;
     std::array<fixedPoint, 4> m45C;
     fixedPoint m46C;

@@ -492,7 +492,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         sVec2_FP var28;
         if (gDragonState->mC_dragonType != DR_LEVEL_8_FLOATER)
         {
-            generateCameraMatrixSub1(r14_pDragonTask->m160_deltaTranslation, var28);
+            computeVectorAngles(r14_pDragonTask->m160_deltaTranslation, var28);
             var28[0] = -var28[0];
 
             if (r14_pDragonTask->m154_dragonSpeed < 0x2AA)

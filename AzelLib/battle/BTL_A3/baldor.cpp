@@ -385,7 +385,7 @@ void Baldor_update(sBaldor* pThis)
         assert(0);
     }
 
-    *pThis->m1C_translation.m0_current = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC + *pThis->m1C_translation.m4;
+    *pThis->m1C_translation.m0_current = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter + *pThis->m1C_translation.m4;
 
     if (0 < pThis->mC)
     {
@@ -437,7 +437,7 @@ void Baldor_update(sBaldor* pThis)
     Baldor_updateSub1(pThis->m1C_translation.m4, &pThis->m50_translationDelta, &pThis->m44_translationTarget, 0x1999, 0x147, 0);
 
     sVec2_FP temp;
-    generateCameraMatrixSub1(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0 + pThis->m78, temp);
+    computeVectorAngles(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0 + pThis->m78, temp);
 
     (*pThis->m28_rotation.m4)[0] = -temp[0];
     (*pThis->m28_rotation.m4)[1] = temp[1] + 0x8000000;

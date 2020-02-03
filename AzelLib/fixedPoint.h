@@ -176,3 +176,5 @@ void asyncDivStart(s32 r4, fixedPoint r5);
 void asyncDivStart_integer(s32 r4, s32 r5);
 fixedPoint asyncDivEnd();
 
+int convertCutsceneRotationComponent(int param_1, int param_2);
+

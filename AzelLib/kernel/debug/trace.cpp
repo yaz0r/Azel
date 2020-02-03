@@ -8,6 +8,7 @@ FILE* fHandle = nullptr;
 
 void startTrace(const char* name)
 {
+    return;
     fHandle = nullptr;
     if (fHandle == nullptr)
     {

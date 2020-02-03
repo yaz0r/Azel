@@ -378,13 +378,13 @@ void s_battleDragon_UpdateSub3(s_battleDragon* pThis)
     }
     else
     {
-        stepX = MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), -pThis->m1C8, pBattleEngine->m1BC);
-        stepY = MTH_Mul(-pThis->m1C8, pBattleEngine->m1B8);
-        stepZ = MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), -pThis->m1C8, pBattleEngine->m1BC);
+        stepX = MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), -pThis->m1C8, pBattleEngine->m1BC_dragonYaw);
+        stepY = MTH_Mul(-pThis->m1C8, pBattleEngine->m1B8_dragonPitch);
+        stepZ = MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), -pThis->m1C8, pBattleEngine->m1BC_dragonYaw);
 
-        rotationX = MTH_Mul(0xE38E38, pBattleEngine->m1B8);
-        MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), 0xFE000000, pBattleEngine->m1BC);
-        rotationZ = MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), 0xfeaaaaab, -pBattleEngine->m1BC);
+        rotationX = MTH_Mul(0xE38E38, pBattleEngine->m1B8_dragonPitch);
+        MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), -0x2000000, pBattleEngine->m1BC_dragonYaw);
+        rotationZ = MTH_Mul_5_6(getCos(pBattleEngine->m440_battleDirectionAngle.getInteger()), -0x1555555, -pBattleEngine->m1BC_dragonYaw);
     }
 
     if ((pThis->m1C4 & 8) == 0)

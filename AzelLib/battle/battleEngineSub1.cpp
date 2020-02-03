@@ -18,7 +18,7 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
     FunctionUnimplemented();
 
     sVec2_FP temp;
-    generateCameraMatrixSub1(getBattleManager()->m10_battleOverlay->m4_battleEngine->mC - getBattleManager()->m10_battleOverlay->m18_dragon->m8_position, temp);
+    computeVectorAngles(getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter - getBattleManager()->m10_battleOverlay->m18_dragon->m8_position, temp);
 
     FunctionUnimplemented();
 }

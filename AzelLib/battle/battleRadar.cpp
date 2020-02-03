@@ -72,15 +72,15 @@ void battleHud2_Update(battleHud2* pThis)
     }
 }
 
-void battleHud2_DrawSub0(battleHud2* pThis)
+void battleRadar_UpdateDragonPosition(battleHud2* pThis)
 {
-    sVec3_FP local_20 = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC - getBattleManager()->m10_battleOverlay->m18_dragon->m8_position;
+    sVec3_FP local_20 = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter - getBattleManager()->m10_battleOverlay->m18_dragon->m8_position;
     sVec2_FP local_28;
 
-    generateCameraMatrixSub1(local_20, local_28);
+    computeVectorAngles(local_20, local_28);
 
-    pThis->m16_dragonIconPosition[0] = MTH_Mul(0x140000, getSin(local_28[1].getInteger())) - 7;
-    pThis->m16_dragonIconPosition[1] = (-pThis->mE_offsetY - MTH_Mul(0x110000, getCos(local_28[1].getInteger()))) - 0x3A;
+    pThis->m16_dragonIconPosition[0] = MTH_Mul(0x140000, getSin(local_28[1].getInteger())).getInteger() - 7;
+    pThis->m16_dragonIconPosition[1] = fixedPoint(-pThis->mE_offsetY - MTH_Mul(0x110000, getCos(local_28[1].getInteger()))).getInteger() - 0x3A;
     pThis->m1A = -0x13;
     pThis->m1C = -0x31 - pThis->mE_offsetY;
 }
@@ -108,7 +108,7 @@ void battleHud2_DrawSub1(battleHud2* pThis)
 
 void battleHud2_DrawSub2(battleHud2* pThis)
 {
-    // this draws the radar quadrant?
+    // this draws the radar quadrant
 
     u16 radarStatus_danger = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus;
     u16 radarStatus_safe = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus >> 4;
@@ -514,7 +514,7 @@ void battleHud2_Draw(battleHud2* pThis)
                     return;
             }
 
-            battleHud2_DrawSub0(pThis);
+            battleRadar_UpdateDragonPosition(pThis);
             battleHud2_DrawSub1(pThis);
             battleHud2_DrawSub2(pThis);
             battleHud2_DrawSub3(pThis);
@@ -529,7 +529,7 @@ void battleHud2_Draw(battleHud2* pThis)
     }
 }
 
-void battleEngine_CreateHud2(npcFileDeleter* parent)
+void battleEngine_CreateRadar(npcFileDeleter* parent)
 {
     static const battleHud2::TypedTaskDefinition definition = {
         &battleHud2_Init,

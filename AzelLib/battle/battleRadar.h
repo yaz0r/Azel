@@ -17,4 +17,4 @@ struct battleHud2 : public s_workAreaTemplate<battleHud2>
     //size 0x3C
 };
 
-void battleEngine_CreateHud2(struct npcFileDeleter*);
+void battleEngine_CreateRadar(struct npcFileDeleter*);

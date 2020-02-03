@@ -490,7 +490,7 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
     sVec3_FP var4 = r14_townTask->m18_position - r14_townTask->m5C_rawCameraPosition;
     r14_townTask->m24_distance = sqrt_F(MTH_Product3d_FP(var4, var4));
 
-    generateCameraMatrixSub1(var4, r14_townTask->m68_cameraRotation);
+    computeVectorAngles(var4, r14_townTask->m68_cameraRotation);
 
     s32 r4 = atan2_FP(0x147, r14_townTask->m24_distance);
     if (r4 > 0x1555555)

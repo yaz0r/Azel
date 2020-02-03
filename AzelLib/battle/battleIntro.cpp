@@ -110,17 +110,17 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
     switch (pThis->m24_interpolationType)
     {
     case 0:
-        pThis->m10_rotation = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC +
+        pThis->m10_rotation = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter +
             MTH_Mul(
                 fixedPoint(READ_BE_S16(pThis->m20 + pThis->m0_frameIndex * 2)) * 256,
-                deltaPosition - getBattleManager()->m10_battleOverlay->m4_battleEngine->mC
+                deltaPosition - getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter
             );
         break;
     case 1:
-        pThis->m10_rotation = deltaPosition + MTH_Mul(FP_Div(pThis->m0_frameIndex * 512, 0x960000), getBattleManager()->m10_battleOverlay->m4_battleEngine->mC - deltaPosition);
+        pThis->m10_rotation = deltaPosition + MTH_Mul(FP_Div(pThis->m0_frameIndex * 512, 0x960000), getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter - deltaPosition);
         break;
     case 2:
-        pThis->m10_rotation = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC;
+        pThis->m10_rotation = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
         break;
     default:
         assert(0);
@@ -130,7 +130,7 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
     {
         addTraceLog(getBattleManager()->m10_battleOverlay->m18_dragon->m8_position, "m8_position");
         addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
-        addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->mC, "mC");
+        addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter, "mC");
         addTraceLog(pThis->m10_rotation, "m10_rotation");
     }
 }
