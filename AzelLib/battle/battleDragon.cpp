@@ -565,7 +565,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
         }
         else
         {
-            submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m8_position, &rotation, getBattleManager()->m10_battleOverlay->m4_battleEngine->m354[3]);
+            submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m8_position, &rotation, getBattleManager()->m10_battleOverlay->m4_battleEngine->m35C_cameraAltitudeMinMax[1]);
         }
     }
 

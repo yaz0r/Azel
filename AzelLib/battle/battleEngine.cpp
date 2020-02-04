@@ -15,6 +15,7 @@
 
 #include "BTL_A3/BTL_A3.h"
 
+void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
 void fieldPaletteTaskInitSub0Sub2();
 
 void initBattleEngineArray()
@@ -96,18 +97,19 @@ void battleEngine_InitSub2(s_battleEngine* pThis)
 
 void battleEngine_InitSub3Sub0(s_battleEngine* pThis)
 {
-    if (pThis->m104_dragonStartPosition[1] < pThis->m354[1]) {
-        pThis->m104_dragonStartPosition[1] = pThis->m354[1];
-    }
-    else if (pThis->m354[0] < pThis->m104_dragonStartPosition[1])
+    if (pThis->m104_dragonStartPosition[1] < pThis->m354_dragonAltitudeMinMax[1])
     {
-        pThis->m104_dragonStartPosition[1] = pThis->m354[0];
+        pThis->m104_dragonStartPosition[1] = pThis->m354_dragonAltitudeMinMax[1];
+    }
+    else if (pThis->m104_dragonStartPosition[1] > pThis->m354_dragonAltitudeMinMax[0])
+    {
+        pThis->m104_dragonStartPosition[1] = pThis->m354_dragonAltitudeMinMax[0];
     }
 }
 
 void battleEngine_InitSub3(s_battleEngine* pThis)
 {
-    pThis->m104_dragonStartPosition[1] = pThis->m364[getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection] + pThis->m354[3];
+    pThis->m104_dragonStartPosition[1] = pThis->m364[getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection] + pThis->m35C_cameraAltitudeMinMax[1];
     pThis->m270[1] = pThis->m374[getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection];
 
     battleEngine_InitSub3Sub0(pThis);
@@ -277,10 +279,15 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     pThis->m234 = pThis->m264 + pThis->m270;
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 2; i++)
     {
-        pThis->m354[i] = readSaturnS32(battleData_4 + 0xC + i * 4);
+        pThis->m354_dragonAltitudeMinMax[i] = readSaturnS32(battleData_4 + 0xC + i * 4);
     }
+    for (int i = 0; i < 2; i++)
+    {
+        pThis->m35C_cameraAltitudeMinMax[i] = readSaturnS32(battleData_4 + 0x14 + i * 4);
+    }
+
     pThis->m230 = readSaturnS8(battleData_4 + 0x58);
     for (int i = 0; i < 4; i++)
     {
@@ -603,16 +610,38 @@ s32 battleEngine_UpdateSub7Sub0()
 void battleEngine_UpdateSub7Sub0Sub1Sub1(s_battleEngine::s_27C* pThis)
 {
     pThis->m48 = (pThis->m54 - pThis->m3C) / 2;
-    pThis->m60 = 0;
-    pThis->m64 = FP_Div(0x8000000, pThis->m68 << 16);
+    pThis->m60_currentStep = 0;
+    pThis->m64_stepSize = FP_Div(0x8000000, pThis->m68_rate << 16);
 }
 
 void battleEngine_UpdateSub7Sub0Sub1Sub2(s_battleEngine::s_27C* pThis)
 {
-    pThis->m18 = (pThis->m24 - pThis->mC) / 2;
-    pThis->m60 = 0;
-    pThis->m64 = FP_Div(0x8000000, pThis->m68 << 16);
-    pThis->m0 = pThis->mC;
+    pThis->m18_middle = (pThis->m24_targetValue - pThis->mC_initialValue) / 2;
+    pThis->m60_currentStep = 0;
+    pThis->m64_stepSize = FP_Div(0x8000000, pThis->m68_rate << 16);
+    pThis->m0_computedValue = pThis->mC_initialValue;
+}
+
+bool battleEngine_UpdateSub7Sub0Sub1Sub4(s_battleEngine::s_27C* pThis)
+{
+    if (pThis->m60_currentStep > 0x7ffffff)
+    {
+        pThis->m60_currentStep = 0x8000000;
+        pThis->m64_stepSize = 0;
+        pThis->m0_computedValue = pThis->m24_targetValue;
+        return true;
+    }
+    else
+    {
+        pThis->m0_computedValue = pThis->m18_middle + pThis->mC_initialValue - MTH_Mul(getCos(pThis->m60_currentStep.getInteger()), pThis->m18_middle);
+        pThis->m60_currentStep += pThis->m64_stepSize;
+        return false;
+    }
+}
+
+void battleEngine_UpdateSub7Sub0Sub1Sub5(s_battleEngine::s_27C* pThis)
+{
+    pThis->m30 = pThis->m48 + pThis->m3C - -MTH_Mul(getCos(pThis->m60_currentStep.getInteger()), pThis->m48);
 }
 
 void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
@@ -641,159 +670,201 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
 
     switch (pThis->m38D_battleIntroStatus)
     {
-    case 0:
-        break;
-    default:
-        assert(0);
-    }
-
-    sVec3_FP stackx4;
-    sVec3_FP stackx10;
-    sVec3_FP stackx34;
-    sVec3_FP stackx40;
-
-    stackx4.zeroize();
-    stackx10.zeroize();
-    stackx34.zeroize();
-    stackx40.zeroize();
-
-    sVec3_FP stackx1C_dragonTargetRotation = getBattleManager()->m10_battleOverlay->m18_dragon->m74_targetRotation;
-    sVec3_FP stackx28 = stackx1C_dragonTargetRotation;
-
-    stackx10 = pThis->m60;
-
-    char pcVar15;
-
-    switch (pThis->m22C_battleDirection)
-    {
-    case 0:
-        switch (pThis->m22E_dragonMoveDirection)
+    case 0: // init dragon move
         {
-        case 1:
-            stackx40[1] = 0x4000000;
-            stackx28[1] += 0x4000000;
-            pcVar15 = 1;
-            break;
-        case 2:
-            stackx40[1] = -0x4000000;
-            stackx28[1] -= 0x4000000;
-            pcVar15 = 3;
-            break;
-        case 3:
-            stackx40[1] = 0x8000000;
-            stackx28[1] += 0x8000000;
-            pcVar15 = 2;
-            break;
-        default:
-            assert(0);
+            pThis->m38D_battleIntroStatus++;
+
+            sVec3_FP stackx4;
+            sVec3_FP stackx10;
+            sVec3_FP stackx34;
+            sVec3_FP stackx40;
+
+            stackx4.zeroize();
+            stackx10.zeroize();
+            stackx34.zeroize();
+            stackx40.zeroize();
+
+            sVec3_FP stackx1C_dragonTargetRotation = getBattleManager()->m10_battleOverlay->m18_dragon->m74_targetRotation;
+            sVec3_FP stackx28 = stackx1C_dragonTargetRotation;
+
+            stackx10 = pThis->m60;
+
+            char pcVar15;
+
+            switch (pThis->m22C_battleDirection)
+            {
+            case 0:
+                switch (pThis->m22E_dragonMoveDirection)
+                {
+                case 1:
+                    stackx40[1] = 0x4000000;
+                    stackx28[1] += 0x4000000;
+                    pcVar15 = 1;
+                    break;
+                case 2:
+                    stackx40[1] = -0x4000000;
+                    stackx28[1] -= 0x4000000;
+                    pcVar15 = 3;
+                    break;
+                case 3:
+                    stackx40[1] = 0x8000000;
+                    stackx28[1] += 0x8000000;
+                    pcVar15 = 2;
+                    break;
+                default:
+                    assert(0);
+                }
+                break;
+            case 1:
+                switch (pThis->m22E_dragonMoveDirection)
+                {
+                case 1:
+                    stackx40[1] = 0x8000000;
+                    stackx28[1] += 0x4000000;
+                    pcVar15 = 2;
+                    break;
+                case 2:
+                    stackx40[1] = 0;
+                    stackx28[1] -= 0x4000000;
+                    pcVar15 = 0;
+                    break;
+                case 3:
+                    stackx40[1] = -0x4000000;
+                    stackx28[1] += 0x4000000;
+                    pcVar15 = 3;
+                    break;
+                default:
+                    assert(0);
+                }
+            case 2:
+                switch (pThis->m22E_dragonMoveDirection)
+                {
+                case 1:
+                    stackx40[1] = 0xC000000;
+                    stackx28[1] += 0x4000000;
+                    pcVar15 = 3;
+                    break;
+                case 2:
+                    stackx40[1] = 0;
+                    stackx28[1] -= 0x4000000;
+                    pcVar15 = 0;
+                    break;
+                case 3:
+                    stackx40[1] = 0x4000000;
+                    stackx28[1] += 0x8000000;
+                    pcVar15 = 1;
+                    break;
+                default:
+                    assert(0);
+                }
+                break;
+            case 3:
+                switch (pThis->m22E_dragonMoveDirection)
+                {
+                case 1:
+                    stackx40[1] = 0;
+                    stackx28[1] += 0x4000000;
+                    pcVar15 = 0;
+                    break;
+                case 2:
+                    stackx40[1] = -0x8000000;
+                    stackx28[1] -= 0x4000000;
+                    pcVar15 = 2;
+                    break;
+                case 3:
+                    stackx40[1] = 0x4000000;
+                    stackx28[1] += 0x8000000;
+                    pcVar15 = 1;
+                    break;
+                default:
+                    assert(0);
+                }
+                break;
+            default:
+                assert(0);
+            }
+
+            pThis->m27C.m3C[0] = pThis->m43C;
+            pThis->m27C.m3C[1] = pThis->m440;
+            pThis->m27C.m3C[2] = 0;
+
+            pThis->m27C.m54[0] = 0;
+            pThis->m27C.m54[1] = stackx40[1];
+            pThis->m27C.m54[2] = 0;
+
+            battleEngine_UpdateSub7Sub0Sub1Sub1(&pThis->m27C);
+
+            pThis->m2E8.m3C = stackx1C_dragonTargetRotation;
+            pThis->m2E8.m54 = stackx28;
+
+            battleEngine_UpdateSub7Sub0Sub1Sub1(&pThis->m2E8);
+
+            pThis->m27C.mC_initialValue.zeroize();
+            pThis->m27C.m24_targetValue.zeroize();
+
+            pThis->m27C.mC_initialValue[0] = pThis->m164[0];
+            pThis->m27C.mC_initialValue[1] = pThis->m104_dragonStartPosition[1] - pThis->m35C_cameraAltitudeMinMax[1];
+            pThis->m27C.mC_initialValue[2] = pThis->m164[2];
+
+            pThis->m27C.m24_targetValue[0] = 0;
+            pThis->m27C.m24_targetValue[1] = pThis->m364[pcVar15];
+            pThis->m27C.m24_targetValue[2] = 0;
+
+            battleEngine_UpdateSub7Sub0Sub1Sub2(&pThis->m27C);
+
+            pThis->m2E8.mC_initialValue.zeroize();
+            pThis->m2E8.m24_targetValue.zeroize();
+
+            pThis->m2E8.mC_initialValue[1] = pThis->m270[1];
+            pThis->m2E8.m24_targetValue[1] = pThis->m374[pcVar15];
+
+            battleEngine_UpdateSub7Sub0Sub1Sub2(&pThis->m2E8);
+
+            createBattleIntroTaskSub0();
         }
         break;
     case 1:
-        switch(pThis->m22E_dragonMoveDirection)
+        // dragon moving
+        if (battleEngine_UpdateSub7Sub0Sub1Sub4(&pThis->m2E8))
         {
-        case 1:
-            stackx40[1] = 0x8000000;
-            stackx28[1] += 0x4000000;
-            pcVar15 = 2;
-            break;
-        case 2:
-            stackx40[1] = 0;
-            stackx28[1] -= 0x4000000;
-            pcVar15 = 0;
-            break;
-        case 3:
-            stackx40[1] = -0x4000000;
-            stackx28[1] += 0x4000000;
-            pcVar15 = 3;
-            break;
-        default:
-            assert(0);
+            battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440, 0);
+            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 1;
+            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
+            pThis->m38D_battleIntroStatus++; // go to state 2 (finished)
+            pThis->m384_battleIntroDelay = 0;
+            pThis->m398[0] = 0;
+            pThis->m390[2] = 0;
         }
-    case 2:
-        switch (pThis->m22E_dragonMoveDirection)
+
+        battleEngine_UpdateSub7Sub0Sub1Sub5(&pThis->m27C);
+        pThis->m43C = pThis->m27C.m30[0];
+        pThis->m440 = pThis->m27C.m30[1];
+
+        battleEngine_UpdateSub7Sub0Sub1Sub5(&pThis->m2E8);
+        getBattleManager()->m10_battleOverlay->m18_dragon->m74_targetRotation[1] = pThis->m2E8.m30[1];
+
+        if (pThis->m22E_dragonMoveDirection == 1)
         {
-        case 1:
-            stackx40[1] = 0xC000000;
-            stackx28[1] += 0x4000000;
-            pcVar15 = 3;
-            break;
-        case 2:
-            stackx40[1] = 0;
-            stackx28[1] -= 0x4000000;
-            pcVar15 = 0;
-            break;
-        case 3:
-            stackx40[1] = 0x4000000;
-            stackx28[1] += 0x8000000;
-            pcVar15 = 1;
-            break;
-        default:
-            assert(0);
+            getBattleManager()->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[1] = MTH_Mul(getSin(pThis->m2E8.m60_currentStep), 0xaaaaaa);
         }
-        break;
-    case 3:
-        switch (pThis->m22E_dragonMoveDirection)
+        else
         {
-        case 1:
-            stackx40[1] = 0;
-            stackx28[1] += 0x4000000;
-            pcVar15 = 0;
-            break;
-        case 2:
-            stackx40[1] = -0x8000000;
-            stackx28[1] -= 0x4000000;
-            pcVar15 = 2;
-            break;
-        case 3:
-            stackx40[1] = 0x4000000;
-            stackx28[1] += 0x8000000;
-            pcVar15 = 1;
-            break;
-        default:
-            assert(0);
+            getBattleManager()->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[1] = MTH_Mul(getSin(pThis->m2E8.m60_currentStep), -0xaaaaaa);
         }
+        getBattleManager()->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[1] = getBattleManager()->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[1];
+
+        pThis->m270[1] = pThis->m2E8.m0_computedValue[1];
+
+        battleEngine_UpdateSub7Sub0Sub1Sub4(&pThis->m27C);
+
+        pThis->m104_dragonStartPosition[1] = pThis->m27C.m0_computedValue[1] + pThis->m35C_cameraAltitudeMinMax[1];
+
+        pThis->m164[0] = pThis->m27C.m0_computedValue[0];
+        pThis->m164[2] = pThis->m27C.m0_computedValue[2];
         break;
     default:
         assert(0);
     }
-
-    pThis->m27C.m3C[0] = pThis->m43C;
-    pThis->m27C.m3C[1] = pThis->m440;
-    pThis->m27C.m3C[2] = 0;
-
-    pThis->m27C.m54[0] = 0;
-    pThis->m27C.m54[1] = stackx40[1];
-    pThis->m27C.m54[2] = 0;
-
-    battleEngine_UpdateSub7Sub0Sub1Sub1(&pThis->m27C);
-
-    pThis->m2E8.m3C = stackx1C_dragonTargetRotation;
-    pThis->m2E8.m54 = stackx28;
-
-    battleEngine_UpdateSub7Sub0Sub1Sub1(&pThis->m2E8);
-
-    pThis->m27C.mC.zeroize();
-    pThis->m27C.m24.zeroize();
-
-    pThis->m27C.mC[0] = pThis->m164[0];
-    pThis->m27C.mC[1] = pThis->m104_dragonStartPosition[1] - pThis->m354[3];
-    pThis->m27C.mC[2] = pThis->m164[2];
-
-    pThis->m27C.m24[0] = 0;
-    pThis->m27C.m24[0] = pThis->m364[pcVar15];
-    pThis->m27C.m24[2] = 0;
-
-    battleEngine_UpdateSub7Sub0Sub1Sub2(&pThis->m27C);
-
-    pThis->m2E8.mC.zeroize();
-    pThis->m2E8.m24.zeroize();
-
-    pThis->m2E8.mC[1] = pThis->m270[1];
-    pThis->m2E8.m24[1] = pThis->m374[pcVar15];
-
-    battleEngine_UpdateSub7Sub0Sub1Sub2(&pThis->m2E8);
-
-    createBattleIntroTaskSub0();
 }
 
 void battleEngine_UpdateSub7Sub0Sub2(s_battleEngine* pThis)
@@ -1085,8 +1156,8 @@ void initiateDragonBattleMove(int param1, s16 param2)
     getBattleManager()->m10_battleOverlay->m4_battleEngine->m22E_dragonMoveDirection = param1;
 
     s32 dragonAgilityForMove = getDragonAgilityForMove(param2);
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m27C.m68 = dragonAgilityForMove;
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m2E8.m68 = dragonAgilityForMove;
+    getBattleManager()->m10_battleOverlay->m4_battleEngine->m27C.m68_rate = dragonAgilityForMove;
+    getBattleManager()->m10_battleOverlay->m4_battleEngine->m2E8.m68_rate = dragonAgilityForMove;
 
     getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m1000000_dragonMoving = 1;
 }

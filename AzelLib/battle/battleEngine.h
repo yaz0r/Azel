@@ -82,23 +82,25 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
 
     struct s_27C
     {
-        sVec3_FP m0;
-        sVec3_FP mC;
-        sVec3_FP m18;
-        sVec3_FP m24;
+        sVec3_FP m0_computedValue;
+        sVec3_FP mC_initialValue;
+        sVec3_FP m18_middle;
+        sVec3_FP m24_targetValue;
+        sVec3_FP m30;
         sVec3_FP m3C;
         sVec3_FP m48;
         s8 m50;
         sVec3_FP m54;
-        fixedPoint m60;
-        fixedPoint m64;
-        s16 m68;
+        fixedPoint m60_currentStep;
+        fixedPoint m64_stepSize;
+        s16 m68_rate;
         //size: 0x68
     };
 
     s_27C m27C;
     s_27C m2E8;
-    std::array<s32, 4> m354;
+    sVec2_FP m354_dragonAltitudeMinMax;
+    sVec2_FP m35C_cameraAltitudeMinMax;
     std::array<s32, 4> m364;
     std::array<s32, 4> m374;
     s16 m384_battleIntroDelay;
