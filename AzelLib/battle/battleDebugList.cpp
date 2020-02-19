@@ -56,17 +56,39 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
         playSoundEffect(7);
     }
 
+    sSaturnPtr battleActivationList = gCommonFile.getSaturnPtr(0x2002bc);
+    sSaturnPtr battleOverlaySetup = gCommonFile.getSaturnPtr(0x2005dc);
+
     if (s_battlePrgTask_var0 == 0)
     {
-        FunctionUnimplemented();
+        // Select battle module
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20)
+        {
+            FunctionUnimplemented();
+        }
+        if(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10)
+        {
+            FunctionUnimplemented();
+        }
     }
     else
     {
+        // Select sub battle
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20)
+        {
+            pBattleManager->m6_subBattleId++;
+            if (readSaturnU32(battleOverlaySetup + pBattleManager->mA_pendingBattleOverlayId * 0x14 + 0xC) <= pBattleManager->m6_subBattleId)
+            {
+                pBattleManager->m6_subBattleId = 0;
+            }
+        }
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10)
+        {
+
+        }
+
         FunctionUnimplemented();
     }
-
-    sSaturnPtr battleActivationList = gCommonFile.getSaturnPtr(0x2002bc);
-    sSaturnPtr battleOverlaySetup = gCommonFile.getSaturnPtr(0x2005dc);
 
     int printY = 0x4;
     for (int i = 0; i < 0x1B; i++)

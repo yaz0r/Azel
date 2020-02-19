@@ -1,5 +1,5 @@
 #include "PDS.h"
-#include "BTL_A3_Env.h"
+#include "BTL_A3_map6.h"
 #include "battle/battleManager.h"
 #include "battle/battleOverlay.h"
 #include "battle/battleGrid.h"
@@ -7,14 +7,7 @@
 #include "town/town.h" // TODO: remove
 #include "kernel/fileBundle.h"
 
-struct s_BTL_A3_Env : public s_workAreaTemplate<s_BTL_A3_Env>
-{
-    s32 m38;
-    npcFileDeleter* m58;
-    // 0x9C
-};
-
-static void s_BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
+void s_BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
 {
     getBattleManager()->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
@@ -154,13 +147,13 @@ void initGridForBattle(npcFileDeleter* pFile, sSaturnPtr r5_envConfig, s32 r6_si
     initNPCSub0Sub2(pFile, r5_envConfig, r6_sizeX, r7_sizeY, r8_cellSize);
 }
 
-static void BTL_A3_Env_Init(s_BTL_A3_Env* pThis)
+static void BTL_A3_map6_Init(s_BTL_A3_Env* pThis)
 {
     loadFile("SCBTLA31.SCB", getVdp2Vram(0x40000), 0);
     loadFile("SCBTL_A3.PNB", getVdp2Vram(0x62800), 0);
     loadFile("SPACE.PNB", getVdp2Vram(0x64000), 0);
 
-    pThis->m38 = 0x64000;
+    pThis->m38 = -0x64000;
 
     s_BTL_A3_Env_InitVdp2(pThis);
 
@@ -173,20 +166,20 @@ static void BTL_A3_Env_Init(s_BTL_A3_Env* pThis)
     FunctionUnimplemented();
 }
 
-static void s_BTL_A3_Env_Update(s_BTL_A3_Env* pThis)
+void s_BTL_A3_Env_Update(s_BTL_A3_Env* pThis)
 {
     FunctionUnimplemented();
 }
 
-static void s_BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)
+void s_BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)
 {
     FunctionUnimplemented();
 }
 
-p_workArea Create_BTL_A3_Env(p_workArea parent)
+p_workArea Create_BTL_A3_map6(p_workArea parent)
 {
     static const s_BTL_A3_Env::TypedTaskDefinition definition = {
-        &BTL_A3_Env_Init,
+        &BTL_A3_map6_Init,
         &s_BTL_A3_Env_Update,
         &s_BTL_A3_Env_Draw,
         nullptr,

@@ -461,9 +461,10 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
 
 fixedPoint s_battleDragon_getRiderRotationSub0(s32 inValue)
 {
+    // TODO: this is atan? Might be buggy
     if (inValue > -1)
-        return (readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + (inValue / 16))) * 0x10000;
-    return (readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + (-inValue / 16))) * -0x10000;
+        return (readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + (inValue / 4))) * 0x10000;
+    return (readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + (-inValue / 4))) * -0x10000;
 }
 
 void s_battleDragon_getRiderRotation(sVec3_FP& outputRotation, const sMatrix4x3& inMatrix)

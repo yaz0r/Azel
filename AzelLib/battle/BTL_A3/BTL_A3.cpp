@@ -1,7 +1,8 @@
 #include "PDS.h"
 #include "kernel/debug/trace.h"
 #include "BTL_A3.h"
-#include "BTL_A3_Env.h"
+#include "BTL_A3_map3.h"
+#include "BTL_A3_map6.h"
 #include "battle/battleManager.h"
 #include "battle/battleMainTask.h"
 #include "town/town.h"
@@ -35,7 +36,10 @@ struct BTL_A3_data : public battleOverlay
         switch (Func.m_offset)
         {
         case 0x06054b58:
-            Create_BTL_A3_Env(pParent);
+            Create_BTL_A3_map6(pParent); //map6
+            break;
+        case 0x06054b44: //map3
+            Create_BTL_A3_map3(pParent);
             break;
         default:
             FunctionUnimplemented();
