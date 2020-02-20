@@ -234,7 +234,7 @@ void initEdgeNPCSub0(sEdgeTask* pThis, s32 r5, sSaturnPtr r6)
     case 3:
         if (r6.m_file != gTWN_RUIN)
         {
-            PDS_Log("Recheck initEdgeNPCSub0 for other towns than ruin");
+            PDS_Log("Recheck initEdgeNPCSub0 for other towns than ruin", 0);
         }
         else
         {

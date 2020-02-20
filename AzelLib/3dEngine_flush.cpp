@@ -1222,7 +1222,7 @@ GLuint GetLineShader()
         "in  highp float v_depth;\n"
         "uniform sampler2D s_texture;							\n"
         "out vec4 fragColor;									\n"
-        "out highp float gl_FragDepth ; \n"
+        //"out highp float gl_FragDepth ; \n"
         "void main()											\n"
         "{														\n"
         "   fragColor.xyz = v_color; \n"
