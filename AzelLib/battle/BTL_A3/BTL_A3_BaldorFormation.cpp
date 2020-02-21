@@ -179,7 +179,7 @@ void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
 
 void BTL_A3_BaldorFormation_UpdateSub0(int param1)
 {
-    battleEngine_SetBattleIntroType(8);
+    battleEngine_SetBattleMode(eBattleModes::m8);
     getBattleManager()->m10_battleOverlay->m4_battleEngine->m433 = param1;
 }
 
@@ -284,10 +284,21 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
     if (!bVar3)
         return;
 
-    switch (getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection)
+    switch (getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
     {
+    case 0:
+        // Dragon is behind the formation, move it in front of it
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m22E_dragonMoveDirection = 3;
+        battleEngine_SetBattleMode(eBattleModes::mB);
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m38D_battleIntroStatus = 2;
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m27C_dragonMovementInterpolator1.m68_rate = 0x3C;
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m2E8_dragonMovementInterpolator2.m68_rate = 0x3C;
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m400000 = 1;
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m38E = 0;
+        break;
     case 1:
     case 3:
+        // Dragon is on the side of the formation, just attack
         if ((randomNumber() & 1) == 0) {
             BTL_A3_BaldorFormation_UpdateSub0(2);
         }
@@ -300,16 +311,17 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
             pThis->m4_formationData[i].m49 = 3;
         }
         BTL_A3_BaldorFormation_UpdateSub1(2, 0x1E, 0);
-        BTL_A3_BaldorFormation_UpdateSub2(2);
+        BTL_A3_BaldorFormation_UpdateSub2(1);
         BTL_A3_BaldorFormation_UpdateSub2(3);
         pThis->m0 = 2;
         break;
     case 2:
     {
+        // Dragon is in front of formation, critical attack
         switch (performModulo2(3, randomNumber()))
         {
         case 0:
-            battleEngine_SetBattleIntroType(7);
+            battleEngine_SetBattleMode(eBattleModes::m7);
             break;
         case 1:
             BTL_A3_BaldorFormation_UpdateSub0(8);

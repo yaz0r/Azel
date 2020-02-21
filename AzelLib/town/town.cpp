@@ -586,7 +586,8 @@ void mainLogicInitSub1(sMainLogic_74* r4, const sVec3_FP& r5, const sVec3_FP& r6
 
 void mainLogicUpdateSub0Sub0(sTownGrid* r4)
 {
-    assert(0);
+    //assert(0);
+    FunctionUnimplemented();
 }
 
 void mainLogicUpdateSub0Sub1(s32 r4, sTownGrid* r5)

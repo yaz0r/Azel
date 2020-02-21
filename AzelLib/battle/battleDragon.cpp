@@ -60,7 +60,7 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
 {
     getBattleManager()->m10_battleOverlay->m18_dragon = pThis;
 
-    pThis->m8_position = getBattleManager()->m10_battleOverlay->m4_battleEngine->m104_dragonStartPosition;
+    pThis->m8_position = getBattleManager()->m10_battleOverlay->m4_battleEngine->m104_dragonPosition;
     resetMatrixStack();
     pThis->m1CE = 0;
 
@@ -70,8 +70,8 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
     }
     else
     {
-        s_battleDragon_InitSub3(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2), 0);
-        s_battleDragon_InitSub3(pRider2State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2), 0);
+        s_battleDragon_InitSub3(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
+        s_battleDragon_InitSub3(pRider2State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
         pThis->m1CC = 2;
     }
 
@@ -108,7 +108,7 @@ void s_battleDragon_UpdateSub1(s_battleDragon* pThis)
     }
 
     sVec3_FP iVar3 = pThis->m8_position;
-    sVec3_FP local_44 = pBattleEngine->m104_dragonStartPosition + pBattleEngine->m164;
+    sVec3_FP local_44 = pBattleEngine->m104_dragonPosition + pBattleEngine->m164;
     local_44 -= pBattleEngine->m234;
     
     pushCurrentMatrix();
@@ -242,7 +242,7 @@ void s_battleDragon_UpdateSub2Sub1Sub0()
         }
         else
         {
-            offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2);
+            offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2);
         }
         s_battleDragon_InitSub3(pRider1State, offset, 0);
     }
@@ -250,7 +250,7 @@ void s_battleDragon_UpdateSub2Sub1Sub0()
     {
         if (s_battleDragon_InitSub0())
         {
-            s_battleDragon_InitSub1(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae378) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2), 10);
+            s_battleDragon_InitSub1(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae378) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 10);
         }
         else
         {
@@ -268,7 +268,7 @@ void s_battleDragon_UpdateSub2Sub1Sub1()
     }
     else
     {
-        offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 2);
+        offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2);
     }
     s_battleDragon_InitSub3(pRider2State, offset, 0xF);
 }
@@ -426,7 +426,8 @@ void s_battleDragon_UpdateSub6()
 {
     if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000)
     {
-        assert(0);
+        battleEngine_UpdateSub7Sub3();
+        getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 0;
     }
 
     if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000)
@@ -528,7 +529,7 @@ static void s_battleDragon_DrawRiderWeapon(s_battleDragon* pThis)
     }
     else
     {
-        iVar2 = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x060ae3bc) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection * 4);
+        iVar2 = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x060ae3bc) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4);
     }
 
     sVec3_FP weaponRotation = pThis->m14_rotation + sVec3_FP(0, 0x8000000 + iVar2, 0);

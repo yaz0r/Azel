@@ -127,11 +127,11 @@ void Baldor_initSub1(s_battleDragon_8C* param_1, s_battleDragon* param_2, sVec3_
     {
         int iVar3 = 0;
         do {
-            if (psVar4->m0 == -1)
+            if (psVar4->m0_isActive == -1)
             {
-                psVar4->m0 = 0;
+                psVar4->m0_isActive = 0;
                 psVar4->m4 = param_1;
-                psVar4->m8 = 0x7fffffff;
+                psVar4->m8_distanceToDragonSquare = 0x7fffffff;
                 if (param_1->m50 & 1)
                     return;
 

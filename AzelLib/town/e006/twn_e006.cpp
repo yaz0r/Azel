@@ -601,8 +601,10 @@ u8* cutsceneCommand0Sub5(sStreamingFile* param_1, u8* param_2)
     return param_2 + -(intptr_t)(param_1->m28).m38 + (intptr_t)(param_1->m28).m3C;
 }
 
-int convertCutsceneRotationComponent(int param_1, int param_2)
+int shiftLeft32(int param_1, int param_2)
 {
+    return param_1 << param_2;
+
     switch (param_2) {
     case 0:
         return param_1;
@@ -676,9 +678,9 @@ int convertCutsceneRotationComponent(int param_1, int param_2)
 void cutsceneCommand0Sub2_updateCamera(u8* param_1)
 {
     sVec3_FP local_10;
-    local_10[0] = convertCutsceneRotationComponent(READ_BE_S16(param_1), READ_BE_U16(param_1 + 6) >> 0xc);
-    local_10[1] = convertCutsceneRotationComponent(READ_BE_S16(param_1 + 2), READ_BE_U16(param_1 + 8) >> 0xc);
-    local_10[2] = convertCutsceneRotationComponent(READ_BE_S16(param_1 + 4), READ_BE_U16(param_1 + 10) >> 0xc);
+    local_10[0] = shiftLeft32(READ_BE_S16(param_1), READ_BE_U16(param_1 + 6) >> 0xc);
+    local_10[1] = shiftLeft32(READ_BE_S16(param_1 + 2), READ_BE_U16(param_1 + 8) >> 0xc);
+    local_10[2] = shiftLeft32(READ_BE_S16(param_1 + 4), READ_BE_U16(param_1 + 10) >> 0xc);
 
     sVec3_S16 local_18;
     local_18[0] = READ_BE_U16(param_1 + 6) & 0xfff;
@@ -692,9 +694,9 @@ void cutsceneCommand0Sub3Sub0(s_3dModel* pModel, u8* pData)
     u32 boneCount = pModel->m12_numBones;
     std::vector<sPoseData>::iterator poseData = pModel->m2C_poseData.begin();
 
-    poseData->m0_translation[0] = convertCutsceneRotationComponent(READ_BE_S16(pData), READ_BE_U16(pData + 6) >> 0xc);
-    poseData->m0_translation[1] = convertCutsceneRotationComponent(READ_BE_S16(pData + 2), READ_BE_U16(pData + 8) >> 0xc);
-    poseData->m0_translation[2] = convertCutsceneRotationComponent(READ_BE_S16(pData + 4), READ_BE_U16(pData + 10) >> 0xc);
+    poseData->m0_translation[0] = shiftLeft32(READ_BE_S16(pData), READ_BE_U16(pData + 6) >> 0xc);
+    poseData->m0_translation[1] = shiftLeft32(READ_BE_S16(pData + 2), READ_BE_U16(pData + 8) >> 0xc);
+    poseData->m0_translation[2] = shiftLeft32(READ_BE_S16(pData + 4), READ_BE_U16(pData + 10) >> 0xc);
     pData += 6;
 
     do
@@ -715,9 +717,9 @@ void cutsceneCommand0Sub3Sub1(s_3dModel* pModel, u8* pData)
 
     do
     {
-        poseData->m0_translation[0] = convertCutsceneRotationComponent(READ_BE_S16(pData), READ_BE_U16(pData + 6) >> 0xc);
-        poseData->m0_translation[1] = convertCutsceneRotationComponent(READ_BE_S16(pData + 2), READ_BE_U16(pData + 8) >> 0xc);
-        poseData->m0_translation[2] = convertCutsceneRotationComponent(READ_BE_S16(pData + 4), READ_BE_U16(pData + 10) >> 0xc);
+        poseData->m0_translation[0] = shiftLeft32(READ_BE_S16(pData), READ_BE_U16(pData + 6) >> 0xc);
+        poseData->m0_translation[1] = shiftLeft32(READ_BE_S16(pData + 2), READ_BE_U16(pData + 8) >> 0xc);
+        poseData->m0_translation[2] = shiftLeft32(READ_BE_S16(pData + 4), READ_BE_U16(pData + 10) >> 0xc);
 
         poseData->mC_rotation[0] = (READ_BE_U16(pData + 6) & 0xfff) << 0x10;
         poseData->mC_rotation[1] = (READ_BE_U16(pData + 8) & 0xfff) << 0x10;

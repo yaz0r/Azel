@@ -16,6 +16,12 @@ void sBattleOverlayTask_C_Init(sBattleOverlayTask_C* pThis)
     }
 }
 
+s32 sBattleOverlayTask_C_UpdateSub0(s_battleDragon_8C* pThis)
+{
+    FunctionUnimplemented();
+    return 0;
+}
+
 void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
 {
     pThis->m200_cameraMinAltitude = getBattleManager()->m10_battleOverlay->m4_battleEngine->m35C_cameraAltitudeMinMax[0];
@@ -24,7 +30,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
     std::array<s_battleEngineSub, 0x80>::iterator psVar8 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m49C.begin();
     for (int i = 0; i < 0x80; i++)
     {
-        if (psVar8->m0 > -1)
+        if (psVar8->m0_isActive > -1)
         {
             if ((psVar8->m4->m50 & 0x40000) == 0) {
                 psVar8->m4->m40 = *psVar8->m4->m4;
@@ -36,8 +42,8 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
                 {
                     getBattleManager()->m10_battleOverlay->m4_battleEngine->m498--;
                 }
-                psVar8->m0 = -1;
-                psVar8->m8 = 0x7fffffff;
+                psVar8->m0_isActive = -1;
+                psVar8->m8_distanceToDragonSquare = 0x7fffffff;
                 psVar8->m4 = nullptr;
             }
         }
@@ -64,13 +70,49 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
     psVar8 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m49C.begin();
     for (int i = 0; i < 0x80; i++)
     {
-        psVar8->m8 = 0x7fffffff;
-        if (psVar8->m0 != -1)
+        psVar8->m8_distanceToDragonSquare = 0x7fffffff;
+        if (psVar8->m0_isActive != -1)
         {
-            psVar8->m8 = 0x7ffffffe;
-            psVar8->m0 = 0;
-            switch (getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection)
+            psVar8->m8_distanceToDragonSquare = 0x7ffffffe;
+            psVar8->m0_isActive = 0;
+            switch (getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
             {
+            case 0:
+                psVar8->m4->m5A = 0;
+                if ((psVar8->m4->m50 & 0x80000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4))
+                {
+                    psVar8->m0_isActive = 1;
+                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, getBattleManager()->m10_battleOverlay->m18_dragon->m8_position);
+                    pThis->m20A_numActiveEntries++;
+                }
+                break;
+            case 1:
+                psVar8->m4->m5A = 0;
+                if ((psVar8->m4->m50 & 0x40000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4))
+                {
+                    psVar8->m0_isActive = 1;
+                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, getBattleManager()->m10_battleOverlay->m18_dragon->m8_position);
+                    pThis->m20A_numActiveEntries++;
+                }
+                break;
+            case 2:
+                psVar8->m4->m5A = 0;
+                if ((psVar8->m4->m50 & 0x20000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4))
+                {
+                    psVar8->m0_isActive = 1;
+                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, getBattleManager()->m10_battleOverlay->m18_dragon->m8_position);
+                    pThis->m20A_numActiveEntries++;
+                }
+                break;
+            case 3:
+                psVar8->m4->m5A = 0;
+                if ((psVar8->m4->m50 & 0x10000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4))
+                {
+                    psVar8->m0_isActive = 1;
+                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, getBattleManager()->m10_battleOverlay->m18_dragon->m8_position);
+                    pThis->m20A_numActiveEntries++;
+                }
+                break;
             default:
                 assert(0);
             }

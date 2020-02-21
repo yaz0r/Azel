@@ -207,7 +207,7 @@ p_workArea createBattleIntroTask(p_workArea parent)
         pNewTask->m24_interpolationType = 1;
     }
 
-    pNewTask->m25 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_battleDirection;
+    pNewTask->m25 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
     pNewTask->m28 = (randomNumber() & 1) != 0;
     pNewTask->m0_frameIndex = 0;
 
