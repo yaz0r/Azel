@@ -53,11 +53,12 @@
 		33587AFB234436A800D90AEA /* libAzelLib-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABB234432CE00D90AEA /* libAzelLib-ios.a */; };
 		33587AFC234436AB00D90AEA /* libsoloud-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABD234432CE00D90AEA /* libsoloud-ios.a */; };
 		33AA2699234C4DC8001E535D /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AA2698234C4DC8001E535D /* libMoltenVK.a */; };
-		33AA26AC234C4DCD001E535D /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AA26AB234C4DCD001E535D /* libMoltenVK.a */; };
 		33AB9184234C1E1600BB34F3 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2E323430A260059DE3C /* libSDL2.a */; };
 		33AB918E234C1E1C00BB34F3 /* libSDLmain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2EB23430A260059DE3C /* libSDLmain.a */; };
 		33AB91A5234C469F00BB34F3 /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AB91A4234C469F00BB34F3 /* libMoltenVK.a */; };
 		33AB91A7234C4AF400BB34F3 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AB91A6234C4AF400BB34F3 /* IOSurface.framework */; };
+		33E0779C240039090060EC3E /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2E723430A260059DE3C /* libSDL2.a */; };
+		33E077A9240039130060EC3E /* libSDLmain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2ED23430A260059DE3C /* libSDLmain.a */; };
 		33EA648B234C1708006F24DA /* common_generated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6C22B9FE420033C8AE /* common_generated.cpp */; };
 		33EA648C234C1708006F24DA /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7222B9FE490033C8AE /* imgui_impl_sdl.cpp */; };
 		33EA648D234C1708006F24DA /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7122B9FE490033C8AE /* imgui_widgets.cpp */; };
@@ -174,28 +175,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 8F7621AE370046BA8DCB0DF9;
+			remoteGlobalIDString = 31A09A367DB8418FB8D6A0F8;
 			remoteInfo = "AzelLib-ios";
 		};
 		33587AEF2344356D00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = E4DFEF34C7704D7FA64DAD30;
+			remoteGlobalIDString = 9FDBBE4DB71940ED9BA44221;
 			remoteInfo = "soloud-ios";
 		};
 		33587AF12344357A00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 83249A5C1BBF4263AEFD7C15;
+			remoteGlobalIDString = 9A228278B39D44749F8F8965;
 			remoteInfo = "AzelLib-tvos";
 		};
 		33587AF32344357C00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 9AFAF9F26B96475D88D5EC9D;
+			remoteGlobalIDString = 64895893154F4C21AF560408;
 			remoteInfo = "soloud-tvos";
 		};
 		33587AF52344358300D90AEA /* PBXContainerItemProxy */ = {
@@ -265,14 +266,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = B723673F1DFA4C23988E3AFE;
+			remoteGlobalIDString = 6054255EC90A42E693A325F8;
 			remoteInfo = "AzelLib-darwin";
 		};
 		33EA64B3234C1952006F24DA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 71939E9D1E4C4E49B8101939;
+			remoteGlobalIDString = 0ACE8E6AE8BC406496381245;
 			remoteInfo = "soloud-darwin";
 		};
 /* End PBXContainerItemProxy section */
@@ -356,15 +357,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				33587AD72344337D00D90AEA /* CoreGraphics.framework in Frameworks */,
+				33E077A9240039130060EC3E /* libSDLmain.a in Frameworks */,
 				33587AD82344337D00D90AEA /* QuartzCore.framework in Frameworks */,
 				33587AD92344337D00D90AEA /* AudioToolbox.framework in Frameworks */,
 				33587AF92344364000D90AEA /* libAzelLib-tvos.a in Frameworks */,
-				33AA26AC234C4DCD001E535D /* libMoltenVK.a in Frameworks */,
 				33587ADA2344337D00D90AEA /* CoreMotion.framework in Frameworks */,
 				33587ADB2344337D00D90AEA /* GameController.framework in Frameworks */,
 				33587ADC2344337D00D90AEA /* Metal.framework in Frameworks */,
 				33587ADD2344337D00D90AEA /* UIKit.framework in Frameworks */,
 				33587ADE2344337D00D90AEA /* Foundation.framework in Frameworks */,
+				33E0779C240039090060EC3E /* libSDL2.a in Frameworks */,
 				33587AFA2344364300D90AEA /* libsoloud-tvos.a in Frameworks */,
 				33587ADF2344337D00D90AEA /* OpenGLES.framework in Frameworks */,
 				33587AE02344337D00D90AEA /* AVFoundation.framework in Frameworks */,

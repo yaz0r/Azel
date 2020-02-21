@@ -1226,7 +1226,7 @@ GLuint GetLineShader()
         "void main()											\n"
         "{														\n"
         "   fragColor.xyz = v_color; \n"
-        "   fragColor.w = 1;								\n"
+        "   fragColor.w = 1.f;								\n"
         "   gl_FragDepth = v_depth;\n"
         "}														\n"
         ;
