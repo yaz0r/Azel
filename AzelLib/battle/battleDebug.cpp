@@ -5,7 +5,7 @@
 
 static void s_battleDebug_Init(s_battleDebug* pThis)
 {
-    getBattleManager()->m10_battleOverlay->m10_inBattleDebug = pThis;
+    gBattleManager->m10_battleOverlay->m10_inBattleDebug = pThis;
     for (int i = 0; i < 0x1D; i++)
     {
         // This init the debug flags based on the gamestate internal flags

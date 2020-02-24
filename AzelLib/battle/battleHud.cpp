@@ -43,12 +43,12 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
     case 0: //hidden
         if (BattleEngineSub0_UpdateSub0())
         {
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 2)
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
                 return;
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xE)
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xE)
                 return;
         }
-        if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
         {
             pThis->m30.m4 = 0x470000;
             pThis->m30.mC = 0;
@@ -64,9 +64,9 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
         }
         break;
     case 1: //visible
-        if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
         {
-            if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xC) && 1)
+            if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && 1)
             {
                 // Test on previous line is incomplete!
                 assert(0);
@@ -223,20 +223,20 @@ void battleHud_drawStatusString(s_battleOverlay_20* pThis)
 
 void s_battleOverlay_20_draw(s_battleOverlay_20* pThis)
 {
-    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
     {
         if (BattleEngineSub0_UpdateSub0())
         {
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 2)
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
                 return;
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xE)
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xE)
                 return;
         }
 
         s_battleOverlay_20_drawSub0(pThis);
         battleHud_drawStatusString(pThis);
 
-        if(getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x21] == 0)
+        if(gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x21] == 0)
         {
             pThis->m0 = 0;
         }
@@ -268,7 +268,7 @@ void battleEngine_CreateHud1(npcFileDeleter* parent)
 
     s_battleOverlay_20* pNewTask = createSubTask<s_battleOverlay_20>(parent, &definition);
 
-    getBattleManager()->m10_battleOverlay->m20 = pNewTask;
+    gBattleManager->m10_battleOverlay->m20 = pNewTask;
 
     pNewTask->m14_vdp1Memory = parent->m4_vd1Allocation->m4_vdp1Memory;
     pNewTask->m16_part1X = 0;

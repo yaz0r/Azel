@@ -4,12 +4,12 @@
 #include "battle/battleOverlay.h"
 
 sBattleManager* gBattleManager = NULL;
-
-sBattleManager* getBattleManager()
+/*
+sBattleManager* gBattleManager
 {
     return gBattleManager;
 }
-
+*/
 void battleManager_Init(sBattleManager* pThis, s8 arg)
 {
     gBattleManager = pThis;

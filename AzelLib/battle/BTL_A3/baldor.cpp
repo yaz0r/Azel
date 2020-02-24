@@ -17,13 +17,13 @@ void Baldor_initSub0Sub2(sBaldor* pThis, sFormationData* pFormationEntry)
 {
     pThis->m34_formationEntry = pFormationEntry;
 
-    pThis->m1C_translation.m0_current = &pFormationEntry->m0.m0;
-    pThis->m1C_translation.m4 = &pFormationEntry->m0.mC;
-    pThis->m1C_translation.m8 = &pFormationEntry->m0.m18;
+    pThis->m1C_translation.m0_current = &pFormationEntry->m0_translation.m0_current;
+    pThis->m1C_translation.m4_target = &pFormationEntry->m0_translation.mC_target;
+    pThis->m1C_translation.m8 = &pFormationEntry->m0_translation.m18;
 
-    pThis->m28_rotation.m0_current = &pFormationEntry->m24.m0;
-    pThis->m28_rotation.m4 = &pFormationEntry->m24.mC;
-    pThis->m28_rotation.m8 = &pFormationEntry->m24.m18;
+    pThis->m28_rotation.m0_current = &pFormationEntry->m24_rotation.m0_current;
+    pThis->m28_rotation.m4_target = &pFormationEntry->m24_rotation.mC_target;
+    pThis->m28_rotation.m8 = &pFormationEntry->m24_rotation.m18;
 
     pFormationEntry->m48 = 0;
     pFormationEntry->m49 = 0;
@@ -121,9 +121,9 @@ void Baldor_initSub1(s_battleDragon_8C* param_1, s_battleDragon* param_2, sVec3_
     param_1->m54 = 0;
     param_1->m60 = param_8;
 
-    std::array<s_battleEngineSub, 0x80>::iterator psVar4 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m49C.begin();
+    std::array<s_battleEngineSub, 0x80>::iterator psVar4 = gBattleManager->m10_battleOverlay->m4_battleEngine->m49C.begin();
 
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498 < 0x80)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m498 < 0x80)
     {
         int iVar3 = 0;
         do {
@@ -135,10 +135,10 @@ void Baldor_initSub1(s_battleDragon_8C* param_1, s_battleDragon* param_2, sVec3_
                 if (param_1->m50 & 1)
                     return;
 
-                Baldor_initSub1Sub0(getBattleManager()->m10_battleOverlay->m4_battleEngine, param_1);
-                Baldor_initSub1Sub1(getBattleManager()->m10_battleOverlay->m4_battleEngine, param_1);
+                Baldor_initSub1Sub0(gBattleManager->m10_battleOverlay->m4_battleEngine, param_1);
+                Baldor_initSub1Sub1(gBattleManager->m10_battleOverlay->m4_battleEngine, param_1);
 
-                getBattleManager()->m10_battleOverlay->m4_battleEngine->m498++;
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m498++;
             }
             psVar4++;
         } while (++iVar3 < 0x80);
@@ -283,7 +283,7 @@ void Baldor_initSub3(sBaldor_68* pThis, int arg2, sSaturnPtr arg3)
 void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
 {
     sSaturnPtr puVar7;
-    if ((getBattleManager()->m6_subBattleId == 8) || (getBattleManager()->m6_subBattleId == 9)) // middle boss  (with queen)
+    if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9)) // middle boss  (with queen)
     {
         puVar7 = gCurrentBattleOverlay->getSaturnPtr(0x60a75f0);
     }
@@ -312,11 +312,11 @@ void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
         Baldor_initSub1(&pThis->m14[i], nullptr, &pThis->m18[i], 0x1000, ivar2, 0, 0, 10);
     }
 
-    pThis->m28_rotation.m0_current = pThis->m28_rotation.m4;
+    *pThis->m28_rotation.m0_current = *pThis->m28_rotation.m4_target;
 
     pThis->m68 = Baldor_initSub2(pThis, 6);
 
-    if ((getBattleManager()->m6_subBattleId == 8) || (getBattleManager()->m6_subBattleId == 9))
+    if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9))
     {
         assert(0);
     }
@@ -329,15 +329,15 @@ void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
         for (int i = 0; i < 2; i++)
         {
             dest->m10_translation = readSaturnVec3(pDataSource + 0);
-            dest->m1C[1] = (*pThis->m28_rotation.m4)[1];
+            dest->m1C[1] = (*pThis->m28_rotation.m4_target)[1];
             dest++;
 
             dest->m10_translation = readSaturnVec3(pDataSource + 0xC);
-            dest->m1C[1] = (*pThis->m28_rotation.m4)[1];
+            dest->m1C[1] = (*pThis->m28_rotation.m4_target)[1];
             dest++;
 
             dest->m10_translation = readSaturnVec3(pDataSource + 0xC);
-            dest->m1C[1] = (*pThis->m28_rotation.m4)[1];
+            dest->m1C[1] = (*pThis->m28_rotation.m4_target)[1];
             dest++;
         }
     }
@@ -347,9 +347,176 @@ void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
     pThis->m6C[2] = randomNumber();
 }
 
+s32 Baldor_updateSub0Sub0(sBaldor* pThis, std::vector<s_battleDragon_8C>& param2, s16 entriesToParse, s16& param4)
+{
+    int uVar4 = 0;
+    int sVar3 = 0;
+    if(entriesToParse > 0)
+    {
+        std::vector<s_battleDragon_8C>::iterator& uVar5 = param2.begin();
+        int sVar1 = 0;
+        while (uVar5 - param2.begin() < entriesToParse)
+        {
+            sVar3 = sVar1;
+            if (uVar5->m50 & 0x80000)
+            {
+                uVar4 = 1;
+                sVar3 += uVar5->m58;
+            }
+            uVar5++;
+            sVar1 = sVar3;
+        }
+    }
+    param4 = sVar3;
+    return uVar4;
+}
+
+sVec3_FP* Baldor_updateSub0Sub1Sub0(std::vector<s_battleDragon_8C>& param1, int param2)
+{
+    sVec3_FP* iVar3 = nullptr;
+    for (int i=0; i<param2; i++)
+    {
+        s_battleDragon_8C& value = param1[i];
+        if (value.m50 & 0x80000)
+        {
+            iVar3 = &value.m34;
+        }
+    }
+    return iVar3;
+}
+
+void Baldor_updateSub0Sub1(sBaldor* pThis)
+{
+    pThis->m5C_rotationDelta[0] += (randomNumber() & 0x3fffff) - 0x1fffff;
+    pThis->m5C_rotationDelta[1] += (randomNumber() & 0x3fffff) - 0x1fffff;
+    pThis->m5C_rotationDelta[2] += (randomNumber() & 0x7fffff) - 0x3fffff;
+
+    sVec3_FP* piVar2 = Baldor_updateSub0Sub1Sub0(pThis->m14, pThis->mC);
+    if (piVar2)
+    {
+        pThis->m50_translationDelta += *piVar2;
+    }
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(pThis->m50_translationDelta, "BaldorTranslationDelta");
+    }
+}
+
+sVec3_FP* Baldor_updateSub0Sub2Sub1(s_battleDragon_8C& param1)
+{
+    return &param1.m10;
+}
+
+void Baldor_updateSub0Sub2Sub2(sVec3_FP* param1, s32 param2, s32 param3, s8 param4)
+{
+    int iVar2;
+
+    switch (param4)
+    {
+    case 0:
+        if (gBattleManager->m2_currentBattleOverlayId == 1)
+        {
+            iVar2 = 3;
+        }
+        else
+        {
+            iVar2 = 2;
+        }
+        break;
+    case 1:
+    case 2:
+        if (gBattleManager->m2_currentBattleOverlayId == 1)
+        {
+            iVar2 = 5;
+        }
+        else
+        {
+            iVar2 = 4;
+        }
+        break;
+    default:
+        if (gBattleManager->m2_currentBattleOverlayId == 1)
+        {
+            iVar2 = 8;
+        }
+        else
+        {
+            iVar2 = 7;
+        }
+        break;
+    }
+
+    FunctionUnimplemented();
+}
+
+void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<s_battleDragon_8C>& param2, int param3, int param4, p_workArea param5)
+{
+    for (int i = 0; i < param3; i++)
+    {
+        s_battleDragon_8C& value = param2[i];
+        if (value.m50 & 0x80000)
+        {
+            if (param4)
+            {
+                assert(0);
+            }
+
+            value.m50 &= ~0x80000;
+            value.m50 &= ~0x20000;
+
+            Baldor_updateSub0Sub2Sub2(Baldor_updateSub0Sub2Sub1(value), 0, 0x30000, 1);
+        }
+    }
+
+    if (param5)
+    {
+        assert(0);
+    }
+}
+
+void Baldor_updateSub0Sub3(sBaldor* pThis, s16 param2, sVec3_FP* param3, s32 param4)
+{
+    // spawn sibling task (with damage display?)
+    FunctionUnimplemented();
+}
+
 void Baldor_updateSub0(sBaldor* pThis)
 {
-    FunctionUnimplemented();
+    s16 local_10;
+
+    if (!(pThis->m34_formationEntry->m48 & 4))
+    {
+        if (Baldor_updateSub0Sub0(pThis, pThis->m14, pThis->mC, local_10))
+        {
+            pThis->mE += local_10;
+            pThis->m12 = 1;
+            pThis->mB |= 8;
+            Baldor_updateSub0Sub1(pThis);
+            pThis->m10_HP -= local_10;
+            if (pThis->m10_HP < 1)
+            {
+                Baldor_updateSub0Sub2(pThis, pThis->m14, pThis->mC, 0, pThis->m40);
+                pThis->m34_formationEntry->m48 |= 4;
+                Baldor_updateSub0Sub3(pThis, pThis->mE, pThis->m1C_translation.m0_current, 1);
+                playSoundEffect(0x66);
+                pThis->m8_mode = 0xB;
+                pThis->m9 = 0;
+            }
+            else
+            {
+                Baldor_updateSub0Sub2(pThis, pThis->m14, pThis->mC, 1, pThis->m40);
+                playSoundEffect(0x65);
+            }
+        }
+
+        if (pThis->m12 && (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000))
+        {
+            Baldor_updateSub0Sub3(pThis, pThis->mE, pThis->m1C_translation.m0_current, 1);
+            pThis->mE = 0;
+            pThis->m12 = 0;
+        }
+    }
 }
 
 void Baldor_updateSub1(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s32 pDeltaFactor, s32 pDistanceToTargetFactor, s8 translationOrRotation)
@@ -378,14 +545,157 @@ void Baldor_updateSub1(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, 
     }
 }
 
+struct sBaldorAttack : public s_workAreaTemplate<sBaldorAttack>
+{
+    sBaldor_68* m0;
+    s16 m4_delay;
+    s16 m6_baldorPartEmittingAttack;
+    s16 m8_numAttackRotation;
+    u8 mA_state;
+    sBaldor* mC;
+
+    // size: 0x10
+};
+
+void BaldorAttack_createAttackModel(sVec3_FP* partPosition, sVec3_FP* target, sSaturnPtr param3)
+{
+    FunctionUnimplemented();
+}
+
+void BaldorAttack_update(sBaldorAttack* pThis)
+{
+    switch (pThis->mA_state)
+    {
+    case 0:
+        if (--pThis->m4_delay < 0)
+        {
+            pThis->m4_delay = 3;
+            sVec3_FP local1C = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+            local1C[2] += pThis->m6_baldorPartEmittingAttack * 0x2000;
+
+            BaldorAttack_createAttackModel(&pThis->m0->m30[pThis->m6_baldorPartEmittingAttack].m4, &local1C, gCurrentBattleOverlay->getSaturnPtr(0x60a8018));
+
+            if (++pThis->m6_baldorPartEmittingAttack > 5)
+            {
+                pThis->m6_baldorPartEmittingAttack = 0;
+                if (++pThis->m8_numAttackRotation > 0)
+                {
+                    pThis->m4_delay = 9;
+                    pThis->mA_state++;
+                }
+            }
+        }
+        break;
+    case 1:
+        if (--pThis->m4_delay < 0)
+        {
+            pThis->getTask()->markFinished();
+        }
+        break;
+    default:
+        assert(0);
+    }
+}
+
+p_workArea Baldor_createAttackTask(sBaldor* pThis)
+{
+    sBaldorAttack* pNewTask = createSubTaskFromFunction<sBaldorAttack>(pThis, &BaldorAttack_update);
+    pNewTask->m0 = pThis->m68;
+    pNewTask->mC = pThis;
+
+    return pNewTask;
+}
+
+void Baldor_update_mode1(sBaldor* pThis)
+{
+    FunctionUnimplemented();
+}
+
+void Baldor_update_mode2(sBaldor* pThis)
+{
+    switch (pThis->m9)
+    {
+    case 0: // init attack
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000)
+        {
+            return;
+        }
+
+        if (pThis->m34_formationEntry->m49 != 1)
+        {
+            return;
+        }
+
+        pThis->m34_formationEntry->m48 &= ~1;
+        pThis->m34_formationEntry->m48 |= 2;
+
+        switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+        {
+        case 1:
+            pThis->m5C_rotationDelta[1] += 0x71C71C;
+            break;
+        case 3:
+            pThis->m5C_rotationDelta[1] -= 0x71C71C;
+            break;
+        default:
+            break;
+        }
+
+        pThis->m90_attackTask = Baldor_createAttackTask(pThis);
+        playSoundEffect(0x68);
+        pThis->m9++;
+        break;
+    case 1: // attack is running
+        if (pThis->m90_attackTask && !pThis->m90_attackTask->getTask()->isFinished())
+            return;
+        pThis->m34_formationEntry->m48 &= ~2;
+        pThis->m9++;
+        break;
+    case 2: // attack is finished
+        pThis->m8_mode = 0;
+        pThis->m9 = 0;
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void Baldor_update_mode0(sBaldor* pThis)
+{
+    switch (pThis->m34_formationEntry->m49)
+    {
+    case 0:
+        break;
+    case 2:
+        pThis->m8_mode = 1;
+        pThis->m34_formationEntry->m48 |= 1;
+        pThis->m34_formationEntry->m49 = 0;
+        break;
+    case 3: // attack queued
+        pThis->m8_mode = 2; // enter attack mode
+        pThis->m34_formationEntry->m48 |= 1;
+        pThis->m34_formationEntry->m49 = 0;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+}
+
 void Baldor_update(sBaldor* pThis)
 {
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
     {
         assert(0);
     }
 
-    *pThis->m1C_translation.m0_current = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter + *pThis->m1C_translation.m4;
+    if (isTraceEnabled())
+    {
+        addTraceLog(*pThis->m1C_translation.m4_target, "BaldorTranslation_m4");
+        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter, "battleCenter");
+    }
+
+    *pThis->m1C_translation.m0_current = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter + *pThis->m1C_translation.m4_target;
 
     if (0 < pThis->mC)
     {
@@ -395,13 +705,13 @@ void Baldor_update(sBaldor* pThis)
     stepAnimation(pThis->m38_3dModel);
     pThis->m44_translationTarget = *pThis->m1C_translation.m8;
 
-    if ((getBattleManager()->m6_subBattleId != 8) && (getBattleManager()->m6_subBattleId != 9))
+    if ((gBattleManager->m6_subBattleId != 8) && (gBattleManager->m6_subBattleId != 9))
     {
         pThis->m6C += sVec3_FP(0x222222, 0x16c16c, 0xb60b6);
 
-        pThis->m44_translationTarget[0] += MTH_Mul(0xA000, getSin(pThis->m6C[0]));
-        pThis->m44_translationTarget[1] += MTH_Mul(0xA000, getSin(pThis->m6C[1]));
-        pThis->m44_translationTarget[2] += MTH_Mul(0xA000, getSin(pThis->m6C[2]));
+        pThis->m44_translationTarget[0] += MTH_Mul(0xA000, getSin(pThis->m6C[0].getInteger()));
+        pThis->m44_translationTarget[1] += MTH_Mul(0xA000, getSin(pThis->m6C[1].getInteger()));
+        pThis->m44_translationTarget[2] += MTH_Mul(0xA000, getSin(pThis->m6C[2].getInteger()));
     }
     else
     {
@@ -421,29 +731,46 @@ void Baldor_update(sBaldor* pThis)
 
     switch (pThis->m8_mode)
     {
-    case 0:
-        pThis->m6C[0] += 0x16C16C;
+    case 0: //idle
+        Baldor_update_mode0(pThis);
         break;
-    case 1:
-        pThis->m6C[0] -= 0x1907f6;
+    case 1: // attacking in front
+        Baldor_update_mode1(pThis);
         break;
-    case 2:
-        pThis->m6C[0] += 0x1fdb97;
+    case 2: // attacking on the side
+        Baldor_update_mode2(pThis);
         break;
     default:
         assert(0);
     }
 
-    Baldor_updateSub1(pThis->m1C_translation.m4, &pThis->m50_translationDelta, &pThis->m44_translationTarget, 0x1999, 0x147, 0);
+    Baldor_updateSub1(pThis->m1C_translation.m4_target, &pThis->m50_translationDelta, &pThis->m44_translationTarget, 0x1999, 0x147, 0);
 
     sVec2_FP temp;
-    computeVectorAngles(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0 + pThis->m78, temp);
+    computeVectorAngles(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0 + pThis->m78, temp);
 
-    (*pThis->m28_rotation.m4)[0] = -temp[0];
-    (*pThis->m28_rotation.m4)[1] = temp[1] + 0x8000000;
-    (*pThis->m28_rotation.m4)[2] = 0;
+    if (isTraceEnabled())
+    {
+        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
+        addTraceLog(pThis->m78, "m78");
+        addTraceLog(temp, "temp");
+        addTraceLog(*pThis->m28_rotation.m0_current, "current");
+        addTraceLog(pThis->m5C_rotationDelta, "delta");
+        addTraceLog(*pThis->m28_rotation.m4_target, "target");
+    }
 
-    Baldor_updateSub1(pThis->m28_rotation.m0_current, &pThis->m5C_rotationDelta, pThis->m28_rotation.m4, 0x1999, 0x28F, 1);
+    (*pThis->m28_rotation.m4_target)[0] = -temp[0];
+    (*pThis->m28_rotation.m4_target)[1] = temp[1] + 0x8000000;
+    (*pThis->m28_rotation.m4_target)[2] = 0;
+
+    Baldor_updateSub1(pThis->m28_rotation.m0_current, &pThis->m5C_rotationDelta, pThis->m28_rotation.m4_target, 0x1999, 0x28F, 1);
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(*pThis->m1C_translation.m0_current, "BaldorTranslation");
+        addTraceLog(*pThis->m28_rotation.m0_current, "BaldorRotation");
+        addTraceLog(*pThis->m1C_translation.m4_target, "BaldorTranslation_m4");
+    }
 }
 
 void Baldor_draw(sBaldor* pThis)

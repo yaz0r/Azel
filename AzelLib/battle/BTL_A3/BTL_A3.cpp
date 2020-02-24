@@ -50,15 +50,15 @@ struct BTL_A3_data : public battleOverlay
 
 void battle_A3_initMusic(p_workArea pThis)
 {
-    if ((getBattleManager()->m6_subBattleId == 8) || (getBattleManager()->m6_subBattleId == 9))
+    if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9))
     {
         playMusic(6, 0);
-        getBattleManager()->m10_battleOverlay->m3 = 1;
+        gBattleManager->m10_battleOverlay->m3 = 1;
     }
     else
     {
         playMusic(4, 0);
-        getBattleManager()->m10_battleOverlay->m3 = 1;
+        gBattleManager->m10_battleOverlay->m3 = 1;
     }
     playPCM(pThis, 100);
 }
@@ -104,23 +104,23 @@ npcFileDeleter* initMemoryForBattleSub0(p_workArea pThis, s32 fileIndex)
 
 void initMemoryForBattle(p_workArea pThis, const char** assetList)
 {
-    if (getBattleManager()->mC == 0)
+    if (gBattleManager->mC == 0)
     {
         resetTempAllocators();
-        initDramAllocator(getBattleManager()->m10_battleOverlay, townBuffer, sizeof(townBuffer), assetList);
-        if (getBattleManager()->mD == 0)
+        initDramAllocator(gBattleManager->m10_battleOverlay, townBuffer, sizeof(townBuffer), assetList);
+        if (gBattleManager->mD == 0)
         {
-            loadDragon(getBattleManager());
+            loadDragon(gBattleManager);
             mainGameState.gameStats.m2_rider1 = 1;
             mainGameState.gameStats.m3_rider2 = 2;
-            loadCurrentRider(getBattleManager());
-            loadCurrentRider2(getBattleManager());
-            getBattleManager()->mD = 1;
+            loadCurrentRider(gBattleManager);
+            loadCurrentRider2(gBattleManager);
+            gBattleManager->mD = 1;
             updateDragonIfCursorChanged(0);
         }
     }
-    initDramAllocator(getBattleManager()->m10_battleOverlay, townBuffer, sizeof(townBuffer), assetList);
-    initVdp1Ram(getBattleManager()->m10_battleOverlay, 0x25C18800, 0x63800);
+    initDramAllocator(gBattleManager->m10_battleOverlay, townBuffer, sizeof(townBuffer), assetList);
+    initVdp1Ram(gBattleManager->m10_battleOverlay, 0x25C18800, 0x63800);
     allocateNPC(pThis, 0);
     allocateNPC(pThis, 2);
     initMemoryForBattleSub0(pThis, 4);

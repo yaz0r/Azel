@@ -9,7 +9,7 @@ battleOverlay* gCurrentBattleOverlay = nullptr;
 
 static void battleOverlayTask_Init(sBattleOverlayTask* pThis)
 {
-    getBattleManager()->m10_battleOverlay = pThis;
+    gBattleManager->m10_battleOverlay = pThis;
     mainGameState.setPackedBits(0, 2, 1);
 
     fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), -1, 0x3C);
@@ -40,11 +40,11 @@ static void battleOverlayTask_Draw(sBattleOverlayTask* pThis)
         pThis->m0++;
         break;
     case 1:
-        sBattleOverlayName = readSaturnString(readSaturnEA(battleOverlaySetup + getBattleManager()->m2_currentBattleOverlayId * 0x14 + 4));
+        sBattleOverlayName = readSaturnString(readSaturnEA(battleOverlaySetup + gBattleManager->m2_currentBattleOverlayId * 0x14 + 4));
         loadFnt("ITEM.FNT");
         pThis->m2++;
         {
-            std::string customFontName = readSaturnString(readSaturnEA(battleOverlaySetup + getBattleManager()->m2_currentBattleOverlayId * 0x14 + 8));
+            std::string customFontName = readSaturnString(readSaturnEA(battleOverlaySetup + gBattleManager->m2_currentBattleOverlayId * 0x14 + 8));
             loadFnt(customFontName.c_str());
             pThis->m2++;
             if (sBattleOverlayName == std::string("BTL_A3.PRG"))

@@ -21,7 +21,7 @@ static void BTL_A3_map3_Init(s_BTL_A3_Env* pThis)
     initGridForBattle(dramAllocatorEnd[8].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x60a5c78), 2, 2, 0x400000);
     pThis->m58 = dramAllocatorEnd[8].mC_buffer;
 
-    getBattleManager()->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
+    gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
 
     FunctionUnimplemented();
 

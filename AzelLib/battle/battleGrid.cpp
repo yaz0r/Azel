@@ -11,8 +11,8 @@
 
 void battleGrid_initSub0()
 {
-    getBattleManager()->m10_battleOverlay->m8_gridTask->m218_fov = 0x11c71c7;
-    getBattleManager()->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x20;
+    gBattleManager->m10_battleOverlay->m8_gridTask->m218_fov = 0x11c71c7;
+    gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x20;
 }
 
 void battleGrid_initSub1(s_battleGrid* pThis)
@@ -23,7 +23,7 @@ void battleGrid_initSub1(s_battleGrid* pThis)
 
 void battleGrid_init(s_battleGrid* pThis)
 {
-    getBattleManager()->m10_battleOverlay->m8_gridTask = pThis;
+    gBattleManager->m10_battleOverlay->m8_gridTask = pThis;
 
     pThis->m0 = 1;
     pThis->m1 = 0;
@@ -93,8 +93,8 @@ void battleGrid_updateSub0(s_battleGrid* pThis)
 {
     pThis->m8 = pThis->mC;
     pThis->mC = 0;
-    pThis->m64_cameraRotationTarget[0] = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1C8;
-    pThis->m64_cameraRotationTarget[1] = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1CC;
+    pThis->m64_cameraRotationTarget[0] = gBattleManager->m10_battleOverlay->m4_battleEngine->m1C8;
+    pThis->m64_cameraRotationTarget[1] = gBattleManager->m10_battleOverlay->m4_battleEngine->m1CC;
 
     pThis->m1B4 = 0;
     pThis->m1B0 = 0;
@@ -140,9 +140,9 @@ void battleGrid_updateSub1Sub1(s_battleGrid* pThis)
 
 void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
 {
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xA] == 0)
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xA] == 0)
     {
-        if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
         {
             pThis->m198[0] = 0x3333;
             pThis->m198[1] = 0x3333;
@@ -166,23 +166,26 @@ void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
 
     if (isTraceEnabled())
     {
-        addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->m104_dragonPosition, "m104_dragonStartPosition");
+        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m104_dragonPosition, "m104_dragonStartPosition");
         addTraceLog(pThis->m1C, "pThis->m1C");
         addTraceLog(pThis->m28, "pThis->m28");
     }
 
-    pThis->m34_cameraPosition = getBattleManager()->m10_battleOverlay->m4_battleEngine->m104_dragonPosition + pThis->m1C + pThis->m28;
+    pThis->m34_cameraPosition = gBattleManager->m10_battleOverlay->m4_battleEngine->m104_dragonPosition + pThis->m1C + pThis->m28;
 
     pThis->m180_cameraTranslation[0] = (*pThis->m1B8_pCameraTranslationSource)[0];
     pThis->m180_cameraTranslation[1] = (*pThis->m1B8_pCameraTranslationSource)[1];
     
-    if (getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude + 0x1000 >= pThis->m180_cameraTranslation[1])
+    if (gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude + 0x1000 < pThis->m180_cameraTranslation[1])
     {
-        pThis->m180_cameraTranslation[1] = getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude + 0x1000;
+        if (gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude - 0x1000 <= pThis->m180_cameraTranslation[1])
+        {
+            pThis->m180_cameraTranslation[1] = gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude - 0x1000;
+        }
     }
-    else if (getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude - 0x1000 <= pThis->m180_cameraTranslation[1])
+    else
     {
-        pThis->m180_cameraTranslation[1] = getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude - 0x1000;
+        pThis->m180_cameraTranslation[1] = gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude + 0x1000;
     }
     
     pThis->m180_cameraTranslation[2] = (*pThis->m1B8_pCameraTranslationSource)[2];
@@ -237,7 +240,7 @@ void battleGrid_updateSub1Sub3(s_battleGrid* pThis)
 
 void battleGrid_updateSub1(s_battleGrid* pThis)
 {
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB] == 0)
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB] == 0)
     {
         battleGrid_updateSub1Sub0(pThis);
         battleGrid_updateSub1Sub1(pThis);
@@ -296,11 +299,11 @@ void battleGrid_draw(s_battleGrid* pThis)
         addTraceLog(pThis->m150_cameraMatrix, "pThis->m150_cameraMatrix");
     }
 
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB])
     {
         assert(0);
     }
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xC])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xC])
     {
         assert(0);
     }
@@ -313,21 +316,21 @@ void battleGrid_draw(s_battleGrid* pThis)
     transformAndAddVec(pThis->mE4_currentCameraReferenceCenter, transformedCameraPosition, pThis->m150_cameraMatrix);
 
     fixedPoint iVar3 = transformedCameraPosition[1] - 0x1000;
-    if (iVar3 < getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude)
+    if (iVar3 < gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude)
     {
-        transformedCameraTarget[1] -= iVar3 - getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude;
-        transformedCameraPosition[1] -= iVar3 - getBattleManager()->m10_battleOverlay->mC->m204_cameraMaxAltitude;
+        transformedCameraTarget[1] -= iVar3 - gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude;
+        transformedCameraPosition[1] -= iVar3 - gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude;
     }
 
-    if (getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude + pThis->m134_desiredCameraPosition[2] < transformedCameraPosition[1])
+    if (gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude + pThis->m134_desiredCameraPosition[2] < transformedCameraPosition[1])
     {
-        transformedCameraTarget[1] -= getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
-        transformedCameraPosition[1] -= getBattleManager()->m10_battleOverlay->mC->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
+        transformedCameraTarget[1] -= gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
+        transformedCameraPosition[1] -= gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
     }
 
     generateCameraMatrix(&cameraProperties2, transformedCameraPosition, transformedCameraTarget, transformedCameraUp);
 
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x12])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x12])
     {
         assert(0);
     }
@@ -346,7 +349,7 @@ void battleGrid_draw(s_battleGrid* pThis)
         s_RGB8::fromVector(pThis->m208_lightFalloff2).toU32()
     );
 
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xD])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xD])
     {
         assert(0);
     }
@@ -357,12 +360,12 @@ void battleGrid_draw(s_battleGrid* pThis)
         pThis->m1C8_flags &= ~0x20;
     }
 
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x12])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x12])
     {
         assert(0);
     }
 
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x11])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x11])
     {
         assert(0);
     }

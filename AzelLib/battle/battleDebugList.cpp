@@ -12,7 +12,7 @@ struct s_battlePrgTask : public s_workAreaTemplate<s_battlePrgTask>
 
 static void s_battlePrgTask_Init(s_battlePrgTask*)
 {
-    sBattleManager* pLoadingTask = getBattleManager();
+    sBattleManager* pLoadingTask = gBattleManager;
     if (pLoadingTask->mA_pendingBattleOverlayId < 0)
     {
         pLoadingTask->mA_pendingBattleOverlayId = 0;
@@ -44,7 +44,7 @@ static void s_battlePrgTask_Init(s_battlePrgTask*)
 static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
 {
     pThis->m0++;
-    sBattleManager* pBattleManager = getBattleManager();
+    sBattleManager* pBattleManager = gBattleManager;
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x80)
     {
         s_battlePrgTask_var0 = 1;

@@ -32,10 +32,13 @@ struct sBaldor_68
 struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sFormationData*>
 {
     s8 m8_mode;
+    s8 m9;
     s8 mA_indexInFormation;
     s8 mB;
     s16 mC;
+    s16 mE;
     s8 m10_HP;
+    s8 m12;
     std::vector<s_battleDragon_8C> m14;
     std::vector<sVec3_FP> m18;
     pvecControl m1C_translation;
@@ -50,6 +53,7 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
     sBaldor_68* m68;
     sVec3_FP m6C;
     sVec3_FP m78;
+    p_workArea m90_attackTask;
     // 0x94
 };
 

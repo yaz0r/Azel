@@ -9,6 +9,7 @@ struct s_battleDragon_8C
     sVec3_FP m10;
     sVec3_FP m1C;
     sVec3_FP m28;
+    sVec3_FP m34;
     s32 m4C;
     sVec3_FP m40;
     s32 m50;
@@ -19,6 +20,8 @@ struct s_battleDragon_8C
     s8 m5E;
     s8 m5F;
     s8 m60;
+
+    //size: 64
 };
 
 struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
@@ -32,6 +35,9 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
     s32 m84;
     s32 m88;
     s_battleDragon_8C m8C;
+    sVec3_FP m90;
+    sVec3_FP m9C;
+    sVec3_FP mCC;
     u32 mDC;
     sVec3_FP mF0;
     std::array<sVec3_FP, 6> mFC_hotpoints;
@@ -39,9 +45,15 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
     u32 m1C0;
     u32 m1C4;
     s32 m1C8;
-    s16 m1CC;
-    s16 m1CE;
+    s16 m1CC_currentAnimation;
+    s16 m1CE_positionInAnimList;
     s16 m1D0;
+    s16 m1D4;
+    fixedPoint m208;
+    s32 m20C;
+    s16 m210;
+    std::array<s8, 4> m244;
+    std::array<s8, 4> m248;
     s32 m24C;
     // size 0x250
 };

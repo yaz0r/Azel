@@ -23,12 +23,12 @@ void battleHud2_Update(battleHud2* pThis)
     case 0: // hidden
         if (BattleEngineSub0_UpdateSub0())
         {
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 2)
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
                 return;
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xE)
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xE)
                 return;
         }
-        if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
         {
             pThis->m20.m4 = 0x470000;
             pThis->m20.mC = 0;
@@ -40,9 +40,9 @@ void battleHud2_Update(battleHud2* pThis)
         }
         break;
     case 1: // visible
-        if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
         {
-            if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xC)
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC)
             {
                 // Test is incomplete
                 assert(0);
@@ -74,7 +74,7 @@ void battleHud2_Update(battleHud2* pThis)
 
 void battleRadar_UpdateDragonPosition(battleHud2* pThis)
 {
-    sVec3_FP local_20 = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter - getBattleManager()->m10_battleOverlay->m18_dragon->m8_position;
+    sVec3_FP local_20 = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
     sVec2_FP local_28;
 
     computeVectorAngles(local_20, local_28);
@@ -110,8 +110,8 @@ void battleHud2_DrawSub2(battleHud2* pThis)
 {
     // this draws the radar quadrant
 
-    u16 radarStatus_danger = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus;
-    u16 radarStatus_safe = getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus >> 4;
+    u16 radarStatus_danger = gBattleManager->m10_battleOverlay->m4_battleEngine->m1E0_quadrantBitStatus;
+    u16 radarStatus_safe = gBattleManager->m10_battleOverlay->m4_battleEngine->m1E0_quadrantBitStatus >> 4;
 
     if (radarStatus_danger & 1)
     {
@@ -361,7 +361,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
     }
 
-    u8 radarLockIcon = getBattleManager()->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon;
+    u8 radarLockIcon = gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon;
     if (radarLockIcon & 1)
     {
         //bottom
@@ -503,14 +503,14 @@ void battleHud2_DrawSub4(battleHud2* pThis)
 
 void battleHud2_Draw(battleHud2* pThis)
 {
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m3A4_prelockMode[1] & 0x10) {
-        if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3A4_prelockMode[1] & 0x10) {
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
         {
             if (BattleEngineSub0_UpdateSub0())
             {
-                if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 2)
+                if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
                     return;
-                if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xE)
+                if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xE)
                     return;
             }
 
@@ -520,7 +520,7 @@ void battleHud2_Draw(battleHud2* pThis)
             battleHud2_DrawSub3(pThis);
             battleHud2_DrawSub4(pThis);
 
-            if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x18])
+            if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x18])
             {
                 assert(0);
             }

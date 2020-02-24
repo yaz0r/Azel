@@ -897,9 +897,9 @@ u32 setupPoseInterpolation(s_3dModel* pModel, u32 interpolationLength)
     }
 }
 
-void playAnimation(s_3dModel* pModel, sAnimationData* pAnimation, u32 r6)
+void playAnimation(s_3dModel* pModel, sAnimationData* pAnimation, u32 interpolationLength)
 {
-    if (setupPoseInterpolation(pModel, r6) && ((pModel->mA_animationFlags & 0x200) == 0))
+    if (setupPoseInterpolation(pModel, interpolationLength) && ((pModel->mA_animationFlags & 0x200) == 0))
     {
         assert(0);
     }

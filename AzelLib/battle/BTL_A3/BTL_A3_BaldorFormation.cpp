@@ -14,8 +14,8 @@
 
 struct BTL_A3_BaldorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaldorFormation, u32>
 {
-    s8 m0;
-    s8 m1;
+    s8 m0_formationState;
+    s8 m1_formationSubState;
     std::vector<sFormationData> m4_formationData;
     s16 m8;
     s16 m10;
@@ -23,116 +23,9 @@ struct BTL_A3_BaldorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaldorFo
     // size 0x14
 };
 
-void BTL_A3_BaldorFormation_InitSub0Sub0(s16 uParm1)
-{
-    if (uParm1 == 0)
-    {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus &= ~0xF;
-    }
-    else
-    {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus |= uParm1 & 0xF;
-    }
-}
-
-void BTL_A3_BaldorFormation_InitSub0(u32 uParm1)
-{
-    int uVar1;
-
-    uParm1 = uParm1 & 0xff;
-    if (uParm1 == 0) {
-        uVar1 = 1;
-    }
-    else {
-        if (uParm1 == 1) {
-            uVar1 = 2;
-        }
-        else {
-            if (uParm1 == 2) {
-                uVar1 = 4;
-            }
-            else {
-                if (uParm1 != 3) {
-                    return;
-                }
-                uVar1 = 8;
-            }
-        }
-    }
-    BTL_A3_BaldorFormation_InitSub0Sub0(uVar1);
-}
-
-void BTL_A3_BaldorFormation_InitSub1Sub0(s16 uParm1)
-{
-    if ((uParm1 & 0xFFFF) == 0)
-    {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus &= ~0xF0;
-    }
-    else
-    {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus |= (uParm1 & 0xF) << 4;
-    }
-}
-
-void BTL_A3_BaldorFormation_UpdateSub2Sub0(s32 uParm1)
-{
-    if ((uParm1 & 0xFFFF) == 0)
-    {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus &= ~0xF00;
-    }
-    else
-    {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m1E0_radarStatus |= (uParm1 & 0xF) << 8;
-    }
-}
-
-void BTL_A3_BaldorFormation_InitSub1(u32 param_1)
-{
-    switch (param_1 & 0xff)
-    {
-    case 0:
-        BTL_A3_BaldorFormation_InitSub1Sub0(1);
-        break;
-    case 1:
-        BTL_A3_BaldorFormation_InitSub1Sub0(2);
-        break;
-    case 2:
-        BTL_A3_BaldorFormation_InitSub1Sub0(4);
-    break;
-    case 3:
-        BTL_A3_BaldorFormation_InitSub1Sub0(8);
-        break;
-    default:
-        assert(0);
-        break;
-    }
-}
-
-void BTL_A3_BaldorFormation_UpdateSub2(int param_1)
-{
-    switch (param_1 & 0xff)
-    {
-    case 0:
-        BTL_A3_BaldorFormation_UpdateSub2Sub0(1);
-        break;
-    case 1:
-        BTL_A3_BaldorFormation_UpdateSub2Sub0(2);
-        break;
-    case 2:
-        BTL_A3_BaldorFormation_UpdateSub2Sub0(4);
-        break;
-    case 3:
-        BTL_A3_BaldorFormation_UpdateSub2Sub0(8);
-        break;
-    default:
-        assert(0);
-        break;
-    }
-}
-
 void displayFormationName(short uParm1, char uParm2, char uParm3)
 {
-    if (getBattleManager()->m10_battleOverlay->m14)
+    if (gBattleManager->m10_battleOverlay->m14)
     {
         assert(0);
     }
@@ -161,31 +54,31 @@ void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
     sSaturnPtr formationDataSource = gCurrentBattleOverlay->getSaturnPtr(0x60a809c) + 4 * formationID;
     for (int i = 0; i < pThis->m12_formationSize; i++)
     {
-        pThis->m4_formationData[i].m0.mC = readSaturnVec3(readSaturnEA(formationDataSource) + 0xC * i + 0);
-        pThis->m4_formationData[i].m0.m18 = readSaturnVec3(readSaturnEA(formationDataSource) + 0xC * i + 0);
-        pThis->m4_formationData[i].m24.m18[1] = 0x8000000;
+        pThis->m4_formationData[i].m0_translation.mC_target = readSaturnVec3(readSaturnEA(formationDataSource) + 0xC * i + 0);
+        pThis->m4_formationData[i].m0_translation.m18 = readSaturnVec3(readSaturnEA(formationDataSource) + 0xC * i + 0);
+        pThis->m4_formationData[i].m24_rotation.mC_target[1] = 0x8000000;
 
         sBaldor* pBaldor = createBaldor(pBuffer, &pThis->m4_formationData[i]);
         pBaldor->mA_indexInFormation = i;
     }
 
-    BTL_A3_BaldorFormation_InitSub0(2);
-    BTL_A3_BaldorFormation_InitSub1(0);
+    battleEngine_FlagQuadrantForSafety(2);
+    battleEngine_FlagQuadrantForDanger(0);
     pThis->m8 = 0x3C;
     displayFormationName(0, 1, 9);
-    pThis->m0 = 0;
-    pThis->m1 = 0;
+    pThis->m0_formationState = 0;
+    pThis->m1_formationSubState = 0;
 }
 
-void BTL_A3_BaldorFormation_UpdateSub0(int param1)
+void battleEngine_PlayAttackCamera(int param1)
 {
-    battleEngine_SetBattleMode(eBattleModes::m8);
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m433 = param1;
+    battleEngine_SetBattleMode(eBattleModes::m8_playAttackCamera);
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m433_attackCameraIndex = param1;
 }
 
-void BTL_A3_BaldorFormation_UpdateSub1(int param1, int param2, int param3)
+void battleEngine_displayAttackName(int param1, int param2, int param3)
 {
-    if (getBattleManager()->m10_battleOverlay->m14)
+    if (gBattleManager->m10_battleOverlay->m14)
     {
         assert(0);
     }
@@ -193,25 +86,25 @@ void BTL_A3_BaldorFormation_UpdateSub1(int param1, int param2, int param3)
 
 void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
 {
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
     {
         assert(0);
     }
 
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3B2_numBattleFormationRunning++;
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m3B2_numBattleFormationRunning++;
 
-    switch (pThis->m0)
+    switch (pThis->m0_formationState)
     {
     case 0:
         break;
     case 1:
     case 2:
-        switch (pThis->m1)
+        switch (pThis->m1_formationSubState)
         {
         case 0:
-            if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m2000) {
+            if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000) {
                 pThis->m10 = 18;
-                pThis->m1++;
+                pThis->m1_formationSubState++;
             }
             break;
         case 1:
@@ -223,11 +116,11 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
             {
                 if ((pThis->m4_formationData[i].m48 & 1) != 0) {
                     pThis->m4_formationData[i].m49 = 1;
-                    pThis->m1++;
+                    pThis->m1_formationSubState++;
                     return;
                 }
             }
-            pThis->m1 = 10;
+            pThis->m1_formationSubState = 10;
             return;
         case 2:
             for (int i = 0; i < pThis->m12_formationSize; i++)
@@ -236,16 +129,16 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
                     return;
                 }
             }
-            pThis->m1 = 1;
+            pThis->m1_formationSubState = 1;
             return;
         case 10:
-            getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m100 = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100 = 1;
             for (int i = 0; i < pThis->m12_formationSize; i++)
             {
                 pThis->m4_formationData[i].m49 = 0;
             }
-            pThis->m0 = 0;
-            pThis->m1 = 0;
+            pThis->m0_formationState = 0;
+            pThis->m1_formationSubState = 0;
             return;
         default:
             assert(0);
@@ -257,63 +150,66 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
         break;
     }
 
-    bool bVar3 = false;
+    bool bFormationDefeated = false;
     for (int i = 0; i < pThis->m12_formationSize; i++)
     {
         if (pThis->m4_formationData[i].m48 == 0)
         {
-            bVar3 = true;
+            bFormationDefeated = true;
             break;
         }
     }
 
-    if (!bVar3)
+    if (!bFormationDefeated)
     {
-        assert(0);
+        if (--pThis->m8 < 0)
+        {
+            pThis->getTask()->markFinished();
+        }
     }
 
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m8 == 0)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 == 0)
         return;
 
     if (BattleEngineSub0_UpdateSub0() != 0)
         return;
 
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
 
-    if (!bVar3)
+    if (!bFormationDefeated)
         return;
 
-    switch (getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+    switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
     {
     case 0:
         // Dragon is behind the formation, move it in front of it
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m22E_dragonMoveDirection = 3;
-        battleEngine_SetBattleMode(eBattleModes::mB);
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m38D_battleIntroStatus = 2;
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m27C_dragonMovementInterpolator1.m68_rate = 0x3C;
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m2E8_dragonMovementInterpolator2.m68_rate = 0x3C;
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m400000 = 1;
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m38E = 0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m22E_dragonMoveDirection = 3;
+        battleEngine_SetBattleMode(eBattleModes::mB_enemyMovingDragon);
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m38D_battleIntroStatus = 2;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m27C_dragonMovementInterpolator1.m68_rate = 0x3C;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m2E8_dragonMovementInterpolator2.m68_rate = 0x3C;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000 = 1;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m38E = 0;
         break;
     case 1:
     case 3:
         // Dragon is on the side of the formation, just attack
         if ((randomNumber() & 1) == 0) {
-            BTL_A3_BaldorFormation_UpdateSub0(2);
+            battleEngine_PlayAttackCamera(2);
         }
         else
         {
-            BTL_A3_BaldorFormation_UpdateSub0(7);
+            battleEngine_PlayAttackCamera(7);
         }
         for (int i = 0; i < pThis->m12_formationSize; i++)
         {
             pThis->m4_formationData[i].m49 = 3;
         }
-        BTL_A3_BaldorFormation_UpdateSub1(2, 0x1E, 0);
-        BTL_A3_BaldorFormation_UpdateSub2(1);
-        BTL_A3_BaldorFormation_UpdateSub2(3);
-        pThis->m0 = 2;
+        battleEngine_displayAttackName(2, 0x1E, 0);
+        battleEngine_FlagQuadrantForAttack(1);
+        battleEngine_FlagQuadrantForAttack(3);
+        pThis->m0_formationState = 2;
         break;
     case 2:
     {
@@ -324,10 +220,10 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
             battleEngine_SetBattleMode(eBattleModes::m7);
             break;
         case 1:
-            BTL_A3_BaldorFormation_UpdateSub0(8);
+            battleEngine_PlayAttackCamera(8);
             break;
         case 2:
-            BTL_A3_BaldorFormation_UpdateSub0(1);
+            battleEngine_PlayAttackCamera(1);
             break;
         default:
             assert(0);
@@ -344,9 +240,9 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
             }
         }
 
-        BTL_A3_BaldorFormation_UpdateSub1(1, 0x1E, 0);
-        BTL_A3_BaldorFormation_UpdateSub2(2);
-        pThis->m0 = 1;
+        battleEngine_displayAttackName(1, 0x1E, 0);
+        battleEngine_FlagQuadrantForAttack(2);
+        pThis->m0_formationState = 1;
         break;
     }
     default:

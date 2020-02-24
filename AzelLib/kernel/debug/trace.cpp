@@ -8,7 +8,7 @@ FILE* fHandle = nullptr;
 
 void startTrace(const char* name)
 {
-    return;
+    //return;
     fHandle = nullptr;
     if (fHandle == nullptr)
     {
@@ -21,6 +21,8 @@ bool isTraceEnabled()
     return fHandle != nullptr;
 }
 
+static int counter = 0;
+
 void readTraceLog(const char* fmt, u32& value)
 {
     if(fHandle)
@@ -32,9 +34,15 @@ void readTraceLog(const char* fmt, u32& value)
             buffer.push_back(newChar);
         }
 
+        char internalFormat[1024];
+        sprintf(internalFormat, "%d: %s", counter++, fmt);
+
         if (buffer.size())
         {
-            sscanf(&buffer[0], fmt, &value);
+            if (sscanf(&buffer[0], internalFormat, &value) != 1)
+            {
+                assert(0);
+            }
         }
     }
 }
@@ -44,10 +52,11 @@ void addTraceLog(const char* fmt, ...)
     if (fHandle)
     {
         char buffer[1024];
+        sprintf(buffer, "%d: ", counter++);
 
         va_list args;
         va_start(args, fmt);
-        vsprintf(buffer, fmt, args);
+        vsprintf(buffer + strlen(buffer), fmt, args);
         va_end(args);
 
         char buffer2[1024];

@@ -8,10 +8,10 @@
 void BattleEngineSub0_Update(s_battleEngineSub0* pThis)
 {
     int iVar2;
-    sBattleManager* psVar1 = getBattleManager();
+    sBattleManager* psVar1 = gBattleManager;
     if ((!psVar1->m10_battleOverlay->m4_battleEngine->m188_flags.m8) &&
         (((iVar2 = BattleEngineSub0_UpdateSub0(), iVar2 == 0 ||
-        (psVar1 = getBattleManager(),
+        (psVar1 = gBattleManager,
             (psVar1->m10_battleOverlay->m4_battleEngine->m188_flags.m1000000_dragonMoving) != 0)) &&
             (pThis->m8 == 0))))
     {
@@ -21,7 +21,7 @@ void BattleEngineSub0_Update(s_battleEngineSub0* pThis)
         }
         if (pThis->m2 != 0)
         {
-            if ((getBattleManager()->m10_battleOverlay->m4_battleEngine->m388 & 0x400) == 0)
+            if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m388 & 0x400) == 0)
             {
                 pThis->m0 += 1;
             }
@@ -37,9 +37,9 @@ void BattleEngineSub0_Update(s_battleEngineSub0* pThis)
 
 void BattleEngineSub0_Draw(s_battleEngineSub0* pThis)
 {
-    if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
     {
-        if (getBattleManager()->m10_battleOverlay->m20->m0 == 1)
+        if (gBattleManager->m10_battleOverlay->m20->m0 == 1)
         {
             assert(0);
         }

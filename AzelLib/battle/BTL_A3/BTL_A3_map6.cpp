@@ -9,7 +9,7 @@
 
 void s_BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
 {
-    getBattleManager()->m10_battleOverlay->m1C_envTask = pThis;
+    gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
 
     fieldPaletteTaskInitSub0();
@@ -161,7 +161,7 @@ static void BTL_A3_map6_Init(s_BTL_A3_Env* pThis)
     initGridForBattle(dramAllocatorEnd[8].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x60a6698), 2, 2, 0x400000);
     pThis->m58 = dramAllocatorEnd[8].mC_buffer;
 
-    getBattleManager()->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
+    gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
 
     FunctionUnimplemented();
 }

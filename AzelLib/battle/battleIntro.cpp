@@ -25,12 +25,12 @@ struct sBattleIntroSubTask : public s_workAreaTemplate<sBattleIntroSubTask>
 
 void createBattleIntroTaskSub0()
 {
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 1;
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 1;
 }
 
 s32 createBattleIntroTaskSub1()
 {
-    s8 bVar1 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m230;
+    s8 bVar1 = gBattleManager->m10_battleOverlay->m4_battleEngine->m230;
 
     if ((((bVar1 != 1) && (bVar1 != 3)) && (bVar1 != 5)) &&
         (((bVar1 != 7 && (bVar1 != 8)) && ((bVar1 != 9 && (bVar1 != 10)))))) {
@@ -95,32 +95,32 @@ void createBattleIntroTaskSub2(sBattleIntroSubTask* pThis)
 
     if (isTraceEnabled())
     {
-        addTraceLog(getBattleManager()->m10_battleOverlay->m18_dragon->m8_position, "dragon");
-        addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
+        addTraceLog(gBattleManager->m10_battleOverlay->m18_dragon->m8_position, "dragon");
+        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
         addTraceLog(localVector, "localVector");
     }
 
-    pThis->m4_translation = getBattleManager()->m10_battleOverlay->m18_dragon->m8_position + getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0 + localVector;
+    pThis->m4_translation = gBattleManager->m10_battleOverlay->m18_dragon->m8_position + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0 + localVector;
 }
 
 void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
 {
-    sVec3_FP deltaPosition = getBattleManager()->m10_battleOverlay->m18_dragon->m8_position + getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0;
+    sVec3_FP deltaPosition = gBattleManager->m10_battleOverlay->m18_dragon->m8_position + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
 
     switch (pThis->m24_interpolationType)
     {
     case 0:
-        pThis->m10_rotation = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter +
+        pThis->m10_rotation = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter +
             MTH_Mul(
                 fixedPoint(READ_BE_S16(pThis->m20 + pThis->m0_frameIndex * 2)) * 256,
-                deltaPosition - getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter
+                deltaPosition - gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter
             );
         break;
     case 1:
-        pThis->m10_rotation = deltaPosition + MTH_Mul(FP_Div(pThis->m0_frameIndex * 512, 0x960000), getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter - deltaPosition);
+        pThis->m10_rotation = deltaPosition + MTH_Mul(FP_Div(pThis->m0_frameIndex * 512, 0x960000), gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - deltaPosition);
         break;
     case 2:
-        pThis->m10_rotation = getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
+        pThis->m10_rotation = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
         break;
     default:
         assert(0);
@@ -128,9 +128,9 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
 
     if (isTraceEnabled())
     {
-        addTraceLog(getBattleManager()->m10_battleOverlay->m18_dragon->m8_position, "m8_position");
-        addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
-        addTraceLog(getBattleManager()->m10_battleOverlay->m4_battleEngine->mC_battleCenter, "mC");
+        addTraceLog(gBattleManager->m10_battleOverlay->m18_dragon->m8_position, "m8_position");
+        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
+        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter, "mC");
         addTraceLog(pThis->m10_rotation, "m10_rotation");
     }
 }
@@ -173,7 +173,7 @@ static void sBattleIntroSubTask_update(sBattleIntroSubTask* pThis)
     pThis->m0_frameIndex++;
     if (pThis->m0_frameIndex > 0x95)
     {
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m3D0 = nullptr;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3D0 = nullptr;
         pThis->getTask()->markFinished();
     }
 }
@@ -207,7 +207,7 @@ p_workArea createBattleIntroTask(p_workArea parent)
         pNewTask->m24_interpolationType = 1;
     }
 
-    pNewTask->m25 = getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
+    pNewTask->m25 = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
     pNewTask->m28 = (randomNumber() & 1) != 0;
     pNewTask->m0_frameIndex = 0;
 

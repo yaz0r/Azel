@@ -266,6 +266,27 @@ T* createSubTaskWithCopy(s_workAreaCopy* parentTask, const typename T::TypedTask
     return pNewTask;
 }
 
+template<typename T>
+T* createSiblingTaskWithCopy(s_workAreaCopy* parentTask, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
+{
+    T* pNewTask = static_cast<T*>(createSiblingTaskWithArg(parentTask, new T));
+    pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
+    pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
+    pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
+    pNewTask->getTask()->m_taskName = T::getTaskName();
+
+    //copy
+    pNewTask->m0_dramAllocation = parentTask->m0_dramAllocation;
+    pNewTask->m4_vd1Allocation = parentTask->m4_vd1Allocation;
+
+    if (pTypeTaskDefinition->m_pInit)
+    {
+        pTypeTaskDefinition->m_pInit(pNewTask);
+        //((pNewTask)->*(pTypeTaskDefinition->m_pInit))();
+    }
+    PDS_CategorizedLog(eLogCategories::log_task, "Created task %s\n", T::getTaskName());
+    return pNewTask;
+}
 template<typename T, typename argType>
 T* createSubTaskWithArg(p_workArea parentTask, argType arg, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
 {

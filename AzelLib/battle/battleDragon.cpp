@@ -7,6 +7,7 @@
 #include "battleGrid.h"
 #include "kernel/fileBundle.h"
 #include "kernel/debug/trace.h"
+#include "kernel/animation.h"
 
 void s_battleDragon_InitSub4Sub0()
 {
@@ -14,9 +15,9 @@ void s_battleDragon_InitSub4Sub0()
     updateAnimationMatrices(&gDragonState->m78_animData, &gDragonState->m28_dragon3dModel);
 }
 
-void s_battleDragon_InitSub4(int arg0, int arg1)
+void s_battleDragon_InitSub4(int arg0, int interpolationLength)
 {
-    playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelBundle->getAnimation(gDragonState->m20_dragonAnimOffsets[arg0]), arg1);
+    playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelBundle->getAnimation(gDragonState->m20_dragonAnimOffsets[arg0]), interpolationLength);
     s_battleDragon_InitSub4Sub0();
 }
 
@@ -58,11 +59,11 @@ void s_battleDragon_InitSub1(s_loadRiderWorkArea* pRider, s16 param2, s32 param3
 
 static void s_battleDragon_Init(s_battleDragon* pThis)
 {
-    getBattleManager()->m10_battleOverlay->m18_dragon = pThis;
+    gBattleManager->m10_battleOverlay->m18_dragon = pThis;
 
-    pThis->m8_position = getBattleManager()->m10_battleOverlay->m4_battleEngine->m104_dragonPosition;
+    pThis->m8_position = gBattleManager->m10_battleOverlay->m4_battleEngine->m104_dragonPosition;
     resetMatrixStack();
-    pThis->m1CE = 0;
+    pThis->m1CE_positionInAnimList = 0;
 
     if (s_battleDragon_InitSub0() == 0)
     {
@@ -70,12 +71,12 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
     }
     else
     {
-        s_battleDragon_InitSub3(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
-        s_battleDragon_InitSub3(pRider2State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
-        pThis->m1CC = 2;
+        s_battleDragon_InitSub3(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
+        s_battleDragon_InitSub3(pRider2State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
+        pThis->m1CC_currentAnimation = 2;
     }
 
-    s_battleDragon_InitSub4(pThis->m1CC, 0);
+    s_battleDragon_InitSub4(pThis->m1CC_currentAnimation, 0);
     s_battleDragon_InitSub5(&pThis->m8C, pThis, &pThis->m1A4, 0x1000, 0xf0000001);
     pThis->m1C8 = 0x111111;
 
@@ -101,8 +102,8 @@ void s_battleDragon_UpdateSub0()
 
 void s_battleDragon_UpdateSub1(s_battleDragon* pThis)
 {
-    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0xF])
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xF])
     {
         assert(0);
     }
@@ -128,6 +129,39 @@ void s_battleDragon_UpdateSub1(s_battleDragon* pThis)
 
     popMatrix();
     pThis->m5C_deltaPosition = pThis->m8_position - iVar3;
+}
+
+void battleDragon_updateAnimation(s_battleDragon* pThis, sSaturnPtr animData)
+{
+    s16 originalAnimation = pThis->m1CC_currentAnimation;
+    int interpolationLength = 0;
+
+    int numFrames = 0;
+    if (gDragonState->m28_dragon3dModel.m30_pCurrentAnimation)
+    {
+        numFrames = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation->m4_numFrames;
+    }
+
+    if (numFrames - 1 <= gDragonState->m28_dragon3dModel.m16_previousAnimationFrame)
+    {
+        sSaturnPtr pDragonAnimData = readSaturnEA(animData + gDragonState->m1C_dragonArchetype * 4 + gDragonState->mC_dragonType * 0x14);
+
+        pThis->m1CE_positionInAnimList++;
+        pThis->m1CC_currentAnimation = readSaturnS8(pDragonAnimData + pThis->m1CE_positionInAnimList);
+
+        if (pThis->m1CC_currentAnimation < 0)
+        {
+            pThis->m1CE_positionInAnimList = 0;
+            pThis->m1CC_currentAnimation = readSaturnS8(pDragonAnimData + pThis->m1CE_positionInAnimList);
+        }
+
+        if (pThis->m1CC_currentAnimation != originalAnimation)
+        {
+            interpolationLength = 9;
+        }
+
+        s_battleDragon_InitSub4(pThis->m1CC_currentAnimation, interpolationLength);
+    }
 }
 
 void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
@@ -172,13 +206,13 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
         }
         else
         {
-            pThis->m1CE = -1;
+            pThis->m1CE_positionInAnimList = -1;
             pThis->m1C4 |= 4;
         }
     }
     else
     {
-        pThis->m1CE = -1;
+        pThis->m1CE_positionInAnimList = -1;
         pThis->m1C4 |= 2;
     }
 
@@ -189,13 +223,27 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
             if (uVar5)
                 return;
 
-            if ((mainGameState.gameStats.maxHP / 4) == 0)
+            if (uVar7 == 0)
             {
-                FunctionUnimplemented();
+                if ((mainGameState.gameStats.maxHP / 4) > mainGameState.gameStats.m10_currentHP)
+                {
+                    battleDragon_updateAnimation(pThis, gCurrentBattleOverlay->getSaturnPtr(0x60adf08));
+                }
+                else
+                {
+                    battleDragon_updateAnimation(pThis, gCurrentBattleOverlay->getSaturnPtr(0x60ade68));
+                }
             }
             else
             {
-                FunctionUnimplemented();
+                if ((mainGameState.gameStats.maxHP / 4) > mainGameState.gameStats.m10_currentHP)
+                {
+                    battleDragon_updateAnimation(pThis, gCurrentBattleOverlay->getSaturnPtr(0x60ae048));
+                }
+                else
+                {
+                    battleDragon_updateAnimation(pThis, gCurrentBattleOverlay->getSaturnPtr(0x60adfa8));
+                }
             }
 
             s_battleDragon_InitSub4Sub0();
@@ -205,7 +253,7 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
             }
             else
             {
-                int iVar2 = pThis->m1CC;
+                int iVar2 = pThis->m1CC_currentAnimation;
                 if (((((iVar2 == 0) || (iVar2 == 1)) || (iVar2 == 5)) || (iVar2 == 6)) &&
                     ((gDragonState->m28_dragon3dModel).m16_previousAnimationFrame == 0xc)) {
                     playSoundEffect(0xb);
@@ -215,18 +263,18 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
         }
         else
         {
-            pThis->m1CC = 0x11;
-            s_battleDragon_InitSub4(pThis->m1CC, 9);
-            pThis->m1CE = -1;
+            pThis->m1CC_currentAnimation = 0x11;
+            s_battleDragon_InitSub4(pThis->m1CC_currentAnimation, 9);
+            pThis->m1CE_positionInAnimList = -1;
             pThis->m1C4 &= ~4;
         }
     }
     else
     {
-        pThis->m1CC = 0x10;
+        pThis->m1CC_currentAnimation = 0x10;
         playSoundEffect(0x12);
-        s_battleDragon_InitSub4(pThis->m1CC, 9);
-        pThis->m1CE = -1;
+        s_battleDragon_InitSub4(pThis->m1CC_currentAnimation, 9);
+        pThis->m1CE_positionInAnimList = -1;
         pThis->m1C4 &= ~2;
     }
 }
@@ -242,7 +290,7 @@ void s_battleDragon_UpdateSub2Sub1Sub0()
         }
         else
         {
-            offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2);
+            offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2);
         }
         s_battleDragon_InitSub3(pRider1State, offset, 0);
     }
@@ -250,7 +298,7 @@ void s_battleDragon_UpdateSub2Sub1Sub0()
     {
         if (s_battleDragon_InitSub0())
         {
-            s_battleDragon_InitSub1(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae378) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 10);
+            s_battleDragon_InitSub1(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae378) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 10);
         }
         else
         {
@@ -268,7 +316,7 @@ void s_battleDragon_UpdateSub2Sub1Sub1()
     }
     else
     {
-        offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2);
+        offset = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2);
     }
     s_battleDragon_InitSub3(pRider2State, offset, 0xF);
 }
@@ -296,7 +344,7 @@ void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
         if (pThis->m1D0 < 1)
         {
             pThis->m1D0 = 0;
-            if ((getBattleManager()->m10_battleOverlay->m18_dragon->m84 & 0x100) == 0)
+            if ((gBattleManager->m10_battleOverlay->m18_dragon->m84 & 0x100) == 0)
             {
                 if (pThis->m84 & 0x18)
                 {
@@ -321,7 +369,7 @@ void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
     updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
     if ((pThis->m1C4 & 0x100) == 0)
     {
-        if ((getBattleManager()->m10_battleOverlay->m18_dragon->m84 & 0x100) == 0)
+        if ((gBattleManager->m10_battleOverlay->m18_dragon->m84 & 0x100) == 0)
         {
             if (pThis->m84 & 0x18)
             {
@@ -343,7 +391,7 @@ void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
 
 void s_battleDragon_UpdateSub2(s_battleDragon* pThis)
 {
-    int gridMode = getBattleManager()->m10_battleOverlay->m8_gridTask->m2;
+    int gridMode = gBattleManager->m10_battleOverlay->m8_gridTask->m2;
     if ((gridMode == 3) || (gridMode != 4))
         return;
 
@@ -365,7 +413,7 @@ void s_battleDragon_UpdateSub2(s_battleDragon* pThis)
 
 void s_battleDragon_UpdateSub3(s_battleDragon* pThis)
 {
-    s_battleEngine* pBattleEngine = getBattleManager()->m10_battleOverlay->m4_battleEngine;
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
 
     fixedPoint stepY;
     fixedPoint stepX;
@@ -407,9 +455,20 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
             assert(0);
         }
 
-        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m1000)
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000)
         {
-            assert(0);
+            if (!(pThis->m1C4 & 0x10))
+            {
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x400)
+                {
+                    pThis->m1D4 = 0;
+                }
+            }
+            else if (pThis->m1D4 > -1)
+            {
+                pThis->m1C4 &= 0x10;
+                assert(0);
+            }
         }
     }
 }
@@ -424,13 +483,13 @@ void s_battleDragon_UpdateSub5(s_battleDragon* pThis)
 
 void s_battleDragon_UpdateSub6()
 {
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000)
     {
         battleEngine_UpdateSub7Sub3();
-        getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 0;
     }
 
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000)
     {
         assert(0);
     }
@@ -456,8 +515,154 @@ static void s_battleDragon_Update(s_battleDragon* pThis)
 
 static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
 {
-    FunctionUnimplemented();
-    return 0;
+    bool bVar1 = false;
+    int local_24 = 0;
+    int cVar7;
+    int currentIndex = 0;
+    do
+    {
+        if (!(pThis->m244[currentIndex] & 1))
+        {
+            switch (currentIndex)
+            {
+            case 0:
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x100)
+                {
+                    bVar1 = true;
+                    pThis->m210 = 0x1E;
+                    pThis->m244[0] |= 1;
+                    cVar7 = 0x1B;
+                    playSoundEffect(0x1B);
+                }
+                break;
+            case 1:
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x200)
+                {
+                    bVar1 = true;
+                    pThis->m210 = 0x1E;
+                    pThis->m244[1] |= 1;
+                    cVar7 = 0x1B;
+                    playSoundEffect(0x1B);
+                }
+                break;
+            case 2:
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x80)
+                {
+                    bVar1 = true;
+                    pThis->m210 = 0x1E;
+                    pThis->m244[2] |= 1;
+                    cVar7 = 0x1B;
+                    playSoundEffect(0x1B);
+                }
+                break;
+            case 3:
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x8000)
+                {
+                    gBattleManager->m10_battleOverlay->m18_dragon->m1C0 &= ~0x8000;
+                    int uVar6 = ((pThis->m244[3] & 0xF0) >> 4) + 1;
+                    if (uVar6 < 4)
+                    {
+                        pThis->m210 = 0x28;
+                    }
+                    else
+                    {
+                        pThis->m210 = 0x50;
+                    }
+                    bVar1 = true;
+                    cVar7 = uVar6 * 0x10;
+                    pThis->m244[3] |= cVar7;
+                }
+                break;
+            default:
+                assert(0);
+            }
+
+            if (bVar1)
+            {
+                pThis->m208 = pThis->m210 << 16;
+                pThis->m244[currentIndex] |= 2;
+                pThis->m20C = 0;
+            }
+        }
+        else
+        {
+            switch (currentIndex)
+            {
+            case 0:
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x100)
+                {
+                    pThis->m244[0] = 0;
+                    pThis->m248[0] = 0;
+                }
+                break;
+            case 1:
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x200)
+                {
+                    pThis->m244[1] = 0;
+                    pThis->m248[1] = 0;
+                }
+                break;
+            case 2:
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x80)
+                {
+                    pThis->m244[2] = 0;
+                    pThis->m248[2] = 0;
+                }
+                break;
+            default:
+                assert(0);
+            }
+        }
+        if ((pThis->m244[currentIndex] & 2) && (pThis->m248[currentIndex] == 0))
+        {
+            if (--pThis->m210 < 1)
+            {
+                if (pThis->m20C == 0)
+                {
+                    switch (currentIndex)
+                    {
+                    case 0:
+                    case 1:
+                    case 2:
+                        pThis->m210 = 0x3C;
+                        break;
+                    case 3:
+                        assert(0);
+                    default:
+                        break;
+                    }
+
+                    pThis->m208 = pThis->m210 << 16;
+                    pThis->m20C = 1;
+                }
+                else
+                {
+                    pThis->m210 = 0;
+                    if (currentIndex == 3)
+                    {
+                        pThis->m244[3] = 0;
+                        pThis->m248[3] = 0;
+                    }
+                    else
+                    {
+                        pThis->m248[currentIndex] = 1;
+                    }
+                }
+            }
+
+            local_24 = 1;
+            cVar7 = currentIndex;
+            break;
+        }
+
+        currentIndex++;
+    } while (currentIndex <= 3);
+
+    if (local_24)
+    {
+        FunctionUnimplemented();
+    }
+    return local_24;
 }
 
 fixedPoint s_battleDragon_getRiderRotationSub0(s32 inValue)
@@ -493,7 +698,7 @@ void s_battleDragon_UpdateRider1Position()
 {
     for (int i = 0; i < 6; i++)
     {
-        s_battleDragon_UpdateRider1PositionSub0(getBattleManager()->m10_battleOverlay->m18_dragon->mFC_hotpoints[i], i);
+        s_battleDragon_UpdateRider1PositionSub0(gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[i], i);
     }
 }
 
@@ -529,7 +734,7 @@ static void s_battleDragon_DrawRiderWeapon(s_battleDragon* pThis)
     }
     else
     {
-        iVar2 = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x060ae3bc) + getBattleManager()->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4);
+        iVar2 = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x060ae3bc) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4);
     }
 
     sVec3_FP weaponRotation = pThis->m14_rotation + sVec3_FP(0, 0x8000000 + iVar2, 0);
@@ -543,10 +748,10 @@ static void s_battleDragon_DrawRiderWeapon(s_battleDragon* pThis)
 
 static void s_battleDragon_Draw(s_battleDragon* pThis)
 {
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
     {
         // This setup lights
-        //setupLightColor(s_RGB8::fromVector(getBattleManager()->m10_battleOverlay->m8_gridTask->m1F0).toU32());
+        //setupLightColor(s_RGB8::fromVector(gBattleManager->m10_battleOverlay->m8_gridTask->m1F0).toU32());
         //battleEngine_UpdateSub7Sub1Sub0()
         FunctionUnimplemented();
     }
@@ -555,7 +760,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
     
     sVec3_FP rotation = pThis->m14_rotation + sVec3_FP(0, 0x8000000, 0);
 
-    if ((getBattleManager()->m2_currentBattleOverlayId == 0) || (getBattleManager()->m2_currentBattleOverlayId == 0x10))
+    if ((gBattleManager->m2_currentBattleOverlayId == 0) || (gBattleManager->m2_currentBattleOverlayId == 0x10))
     {
         submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, 0, &pThis->m8_position, &rotation, 0);
     }
@@ -567,7 +772,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
         }
         else
         {
-            submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m8_position, &rotation, getBattleManager()->m10_battleOverlay->m4_battleEngine->m35C_cameraAltitudeMinMax[1]);
+            submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m8_position, &rotation, gBattleManager->m10_battleOverlay->m4_battleEngine->m35C_cameraAltitudeMinMax[1]);
         }
     }
 
@@ -585,7 +790,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
     if (pRider1State->mC_riderType)
     {
         pushCurrentMatrix();
-        translateCurrentMatrix(getBattleManager()->m10_battleOverlay->m18_dragon->mFC_hotpoints[0]);
+        translateCurrentMatrix(gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[0]);
         rotateCurrentMatrixYXZ(riderRotation);
         pRider1State->m18_3dModel.m18_drawFunction(&pRider1State->m18_3dModel);
         popMatrix();
@@ -595,13 +800,20 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
     if (pRider2State->mC_riderType)
     {
         pushCurrentMatrix();
-        translateCurrentMatrix(getBattleManager()->m10_battleOverlay->m18_dragon->mFC_hotpoints[1]);
+        translateCurrentMatrix(gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[1]);
         rotateCurrentMatrixYXZ(riderRotation);
         pRider2State->m18_3dModel.m18_drawFunction(&pRider2State->m18_3dModel);
         popMatrix();
     }
 
-    FunctionUnimplemented();
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    {
+        FunctionUnimplemented();
+    }
+
+    transformAndAddVecByCurrentMatrix(&pThis->m8_position, &pThis->m1A4);
+    pThis->mCC = pThis->m90;
+    pThis->m9C = pThis->m8_position;
 }
 
 static void s_battleDragon_Delete(s_battleDragon* pThis)

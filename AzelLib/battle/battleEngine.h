@@ -24,9 +24,10 @@ enum eBattleModes
     m0 = 0,
     m6_dragonMoving = 6,
     m7 = 7,
-    m8 = 8,
-    mB = 0xB,
-    mE = 0xE,
+    m8_playAttackCamera = 8,
+    mA = 0xA,
+    mB_enemyMovingDragon = 0xB,
+    mE_battleIntro = 0xE,
     m10 = 0x10,
 };
 
@@ -76,7 +77,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s32 m1CC;
     fixedPoint m1D0;
     fixedPoint m1D4;
-    u16 m1E0_radarStatus; // 2 groups of 4 bits
+    u16 m1E0_quadrantBitStatus; // 3 groups of 4 bits
     int m1E8[2];
     sMatrix4x3 m1F0;
     sVec3_FP m220;
@@ -118,7 +119,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s16 m384_battleIntroDelay;
     s16 m386;
     u16 m388;
-    eBattleModes m38C_battleIntroType;
+    eBattleModes m38C_battleMode;
     s8 m38D_battleIntroStatus;
     s8 m38E;
     std::array<s16, 3> m390;
@@ -137,7 +138,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP* m3D4;
     sVec3_FP* m3D8;
     sVec3_FP m3E8;
-    u8 m433;
+    u8 m433_attackCameraIndex;
     s32 m434;
     s32 m43C;
     fixedPoint m440_battleDirectionAngle;
@@ -160,5 +161,9 @@ void battleEngine_InitSub8();
 void battleEngine_UpdateSub7Sub3();
 
 void battleEngine_SetBattleMode(eBattleModes param);
+
+void battleEngine_FlagQuadrantForSafety(u8 quadrant);
+void battleEngine_FlagQuadrantForDanger(u8 quadrant);
+void battleEngine_FlagQuadrantForAttack(u8 quadrant);
 
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);

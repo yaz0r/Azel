@@ -27,7 +27,7 @@ struct battlePowerGauge : public s_workAreaTemplate<battlePowerGauge>
 
 void battlePowerGauge_update(battlePowerGauge* pThis)
 {
-    if ((getBattleManager()->m10_battleOverlay->m18_dragon->m1C0 & 0x20) == 0)
+    if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x20) == 0)
     {
         pThis->m27_numPowerGauges = 3;
     }
@@ -43,9 +43,9 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
         }
     }
 
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m498 > 0)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m498 > 0)
     {
-        if (!getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
         {
             if (pThis->m14 != pThis->m0->m0_max)
             {
@@ -53,7 +53,7 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
             }
             pThis->m14 = pThis->m0->m0_max;
 
-            if (!BattleEngineSub0_UpdateSub0() || getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
+            if (!BattleEngineSub0_UpdateSub0() || gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
             {
                 if (pThis->m0->m0_max == 0)
                 {
@@ -63,7 +63,7 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
                 else
                 {
                     pThis->mC = pThis->m0->m10_value;
-                    if (!(getBattleManager()->m10_battleOverlay->m4_battleEngine->m388 & 0x400) && (pThis->m20 == 0))
+                    if (!(gBattleManager->m10_battleOverlay->m4_battleEngine->m388 & 0x400) && (pThis->m20 == 0))
                     {
                         pThis->m0->m10_value += pThis->m0->m4;
                     }
@@ -218,7 +218,7 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
     pThis->m18++;
     bool bVar3 = performModulo(2, pThis->m18) != 0;
 
-    if (getBattleManager()->m10_battleOverlay->m10_inBattleDebug->mFlags[0x16])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x16])
     {
         vdp2DebugPrintSetPosition(1, 0x11);
         vdp2PrintfSmallFont("PG VAL:%3d", pThis->m0->m10_value.getInteger());
@@ -228,26 +228,26 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
         vdp2PrintfSmallFont("COMBO :%1d,%1d", pThis->m0->m16_combo);
     }
 
-    if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
     {
         return;
     }
 
     if (BattleEngineSub0_UpdateSub0())
     {
-        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 2)
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
             return;
-        if (getBattleManager()->m10_battleOverlay->m4_battleEngine->m38C_battleIntroType == 0xE)
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xE)
             return;
     }
 
-    if ((getBattleManager()->m10_battleOverlay->m20->m0 != 0) && (getBattleManager()->m10_battleOverlay->m20->m0 != 1))
+    if ((gBattleManager->m10_battleOverlay->m20->m0 != 0) && (gBattleManager->m10_battleOverlay->m20->m0 != 1))
         return;
 
     sVec2_S16 UIStart;
 
-    UIStart[0] = 0x22 + getBattleManager()->m10_battleOverlay->m20->m16_part1X;
-    UIStart[1] = 0xA3 + getBattleManager()->m10_battleOverlay->m20->m18_part1Y;
+    UIStart[0] = 0x22 + gBattleManager->m10_battleOverlay->m20->m16_part1X;
+    UIStart[1] = 0xA3 + gBattleManager->m10_battleOverlay->m20->m18_part1Y;
 
     sVec2_S16 gauge0;
     sVec2_S16 gauge1;
@@ -331,8 +331,8 @@ void createPowerGaugeTask(npcFileDeleter* parent, u16*, s32)
 
     battlePowerGauge* pNewTask = createSubTask<battlePowerGauge>(parent, &definition);
 
-    pNewTask->m0 = &getBattleManager()->m10_battleOverlay->m4_battleEngine->m3B4;
-    getBattleManager()->m10_battleOverlay->m4_battleEngine->m3B4.m10_value = getBattleManager()->m10_battleOverlay->m4_battleEngine->m3B4.m8;
+    pNewTask->m0 = &gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4;
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m10_value = gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m8;
 
     pNewTask->m18 = 0;
     pNewTask->mC = pNewTask->m0->m10_value;

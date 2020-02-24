@@ -20,6 +20,6 @@ struct sBattleManager : public s_workAreaTemplateWithArg<sBattleManager, s8>
     //size m14
 };
 
-sBattleManager* getBattleManager();
+extern sBattleManager* gBattleManager;
 sBattleManager* createBattleManager(p_workArea parentTask, s8 arg);
 void startDebugBattle(s32 battleOverlayId);
