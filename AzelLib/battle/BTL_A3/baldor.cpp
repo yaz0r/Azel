@@ -353,7 +353,7 @@ s32 Baldor_updateSub0Sub0(sBaldor* pThis, std::vector<s_battleDragon_8C>& param2
     int sVar3 = 0;
     if(entriesToParse > 0)
     {
-        std::vector<s_battleDragon_8C>::iterator& uVar5 = param2.begin();
+        std::vector<s_battleDragon_8C>::iterator uVar5 = param2.begin();
         int sVar1 = 0;
         while (uVar5 - param2.begin() < entriesToParse)
         {
