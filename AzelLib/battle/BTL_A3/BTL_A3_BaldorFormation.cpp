@@ -132,7 +132,7 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
             pThis->m1_formationSubState = 1;
             return;
         case 10:
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100 = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
             for (int i = 0; i < pThis->m12_formationSize; i++)
             {
                 pThis->m4_formationData[i].m49 = 0;
@@ -186,7 +186,7 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
         // Dragon is behind the formation, move it in front of it
         gBattleManager->m10_battleOverlay->m4_battleEngine->m22E_dragonMoveDirection = 3;
         battleEngine_SetBattleMode(eBattleModes::mB_enemyMovingDragon);
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m38D_battleIntroStatus = 2;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m38D_battleSubMode = 2;
         gBattleManager->m10_battleOverlay->m4_battleEngine->m27C_dragonMovementInterpolator1.m68_rate = 0x3C;
         gBattleManager->m10_battleOverlay->m4_battleEngine->m2E8_dragonMovementInterpolator2.m68_rate = 0x3C;
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000 = 1;

@@ -167,8 +167,8 @@ void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
     if (isTraceEnabled())
     {
         addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m104_dragonPosition, "m104_dragonStartPosition");
-        addTraceLog(pThis->m1C, "pThis->m1C");
-        addTraceLog(pThis->m28, "pThis->m28");
+        //addTraceLog(pThis->m1C, "pThis->m1C");
+        //addTraceLog(pThis->m28, "pThis->m28");
     }
 
     pThis->m34_cameraPosition = gBattleManager->m10_battleOverlay->m4_battleEngine->m104_dragonPosition + pThis->m1C + pThis->m28;

@@ -47,7 +47,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
         u32 m20_battleIntroRunning : 1;
         u32 m40 : 1;
         u32 m80 : 1;
-        u32 m100 : 1;
+        u32 m100_attackAnimationFinished : 1;
         u32 m200_suppressBattleInputs : 1;
         u32 m800 : 1;
         u32 m1000 : 1;
@@ -116,11 +116,11 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec2_FP m35C_cameraAltitudeMinMax;
     std::array<s32, 4> m364_perQuadrantDragonAltitude;
     std::array<s32, 4> m374_perQuadrantEnemyAltitude;
-    s16 m384_battleIntroDelay;
+    s16 m384_battleModeDelay;
     s16 m386;
     u16 m388;
     eBattleModes m38C_battleMode;
-    s8 m38D_battleIntroStatus;
+    s8 m38D_battleSubMode;
     s8 m38E;
     std::array<s16, 3> m390;
     std::array<s16, 2> m398;
@@ -137,7 +137,11 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     p_workArea m3D0;
     sVec3_FP* m3D4;
     sVec3_FP* m3D8;
+    sVec3_FP m3DC;
     sVec3_FP m3E8;
+    sVec3_FP m3F4;
+    s16 m430;
+    u8 m432;
     u8 m433_attackCameraIndex;
     s32 m434;
     s32 m43C;

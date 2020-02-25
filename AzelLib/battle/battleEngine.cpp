@@ -495,13 +495,13 @@ void battleEngine_SetBattleMode(eBattleModes param)
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     pBattleEngine->m38C_battleMode = param;
     pBattleEngine->m188_flags.m80 = 1;
-    pBattleEngine->m188_flags.m100 = 0;
+    pBattleEngine->m188_flags.m100_attackAnimationFinished = 0;
     pBattleEngine->m188_flags.m2000 = 0;
     pBattleEngine->m188_flags.m10 = 1;
     pBattleEngine->m188_flags.m20_battleIntroRunning = 1;
     pBattleEngine->m188_flags.m200_suppressBattleInputs = 1;
-    pBattleEngine->m38D_battleIntroStatus = 0;
-    pBattleEngine->m384_battleIntroDelay = 0;
+    pBattleEngine->m38D_battleSubMode = 0;
+    pBattleEngine->m384_battleModeDelay = 0;
     pBattleEngine->m386 = 0;
     pBattleEngine->m184 = 0;
     pBattleEngine->m3E8.zeroize();
@@ -513,7 +513,7 @@ void battleEngine_SetBattleMode16()
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     pBattleEngine->m38C_battleMode = eBattleModes::m10;
     pBattleEngine->m188_flags.m800 = 0;
-    pBattleEngine->m188_flags.m100 = 0;
+    pBattleEngine->m188_flags.m100_attackAnimationFinished = 0;
     pBattleEngine->m188_flags.m2000 = 0;
     pBattleEngine->m188_flags.m40 = 0;
     pBattleEngine->m188_flags.m400000 = 0;
@@ -525,7 +525,7 @@ void battleEngine_SetBattleMode16()
     pBattleEngine->m390[0] = 0;
     pBattleEngine->m390[2] = 0;
 
-    pBattleEngine->m384_battleIntroDelay = 0;
+    pBattleEngine->m384_battleModeDelay = 0;
     pBattleEngine->m386 = 0;
     pBattleEngine->m3E8.zeroize();
     battleEngine_UpdateSub6(pBattleEngine);
@@ -736,11 +736,11 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
 
     gBattleManager->m10_battleOverlay->m4_battleEngine->m190[0]++;
 
-    switch (pThis->m38D_battleIntroStatus)
+    switch (pThis->m38D_battleSubMode)
     {
     case 0: // init dragon move
         {
-            pThis->m38D_battleIntroStatus++;
+            pThis->m38D_battleSubMode++;
 
             sVec3_FP stackx4;
             sVec3_FP stackx10;
@@ -898,8 +898,8 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
             battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440_battleDirectionAngle, 0);
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 1;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
-            pThis->m38D_battleIntroStatus++; // go to state 2 (finished)
-            pThis->m384_battleIntroDelay = 0;
+            pThis->m38D_battleSubMode++; // go to state 2 (finished)
+            pThis->m384_battleModeDelay = 0;
             pThis->m398[0] = 0;
             pThis->m390[2] = 0;
         }
@@ -931,7 +931,7 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
         pThis->m164[2] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[2];
         break;
     case 2: // dragon move is over
-        if (pThis->m384_battleIntroDelay++ < 5)
+        if (pThis->m384_battleModeDelay++ < 5)
             return;
 
         battleEngine_SetBattleMode16();
@@ -1086,12 +1086,148 @@ void battleCreateCinematicBars(s_battleEngine* pThis)
 
 struct sEnemyAttackCamera : public s_workAreaTemplate<sEnemyAttackCamera>
 {
+    s8 m1_cameraIndex;
+    sVec3_FP m4;
+    sVec3_FP m10;
+    sVec3_FP m1C;
+    sVec3_FP m34;
+    sVec3_FP m40;
+    sVec3_FP m4C;
+    s16 m58;
+
     // size: 5C
 };
 
+void attackCamera1(sVec3_FP* pOutput)
+{
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    pOutput->zeroize();
+
+    int randomValue = randomNumber() & 1;
+
+    switch (pBattleEngine->m22C_dragonCurrentQuadrant)
+    {
+    case 0:
+        (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        if (randomValue == 0)
+        {
+            (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        }
+        else
+        {
+            (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        }
+        break;
+    case 1:
+        (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        if (randomValue == 0)
+        {
+            (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        }
+        else
+        {
+            (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        }
+        break;
+    case 2:
+        (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        if (randomValue == 0)
+        {
+            (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        }
+        else
+        {
+            (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        }
+        break;
+    case 3:
+        (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        if (randomValue == 0)
+        {
+            (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        }
+        else
+        {
+            (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        }
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void attackCamera3(sVec3_FP* pOutput, s32 param2)
+{
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    switch (param2)
+    {
+    case 0:
+        pOutput->zeroize();
+        *pOutput = MTH_Mul(0x8000, pBattleEngine->mC_battleCenter - gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
+        break;
+    case 1:
+        *pOutput = pBattleEngine->mC_battleCenter - gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+        break;
+    case 2:
+        pOutput->zeroize();
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void attackCamera8(sVec3_FP* pOutput, s32 param2)
+{
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    switch (param2)
+    {
+    case 1:
+        (*pOutput)[1] = gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1] - pBattleEngine->mC_battleCenter[1];
+        break;
+    case 2:
+        (*pOutput)[1] = MTH_Mul(0x8000, gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1] - pBattleEngine->m35C_cameraAltitudeMinMax[1]);
+        break;
+    case 3:
+        (*pOutput)[1] = MTH_Mul(-0x8000, gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1] - pBattleEngine->m35C_cameraAltitudeMinMax[1]);
+        break;
+    case 4:
+    case 5:
+        (*pOutput)[1] = pBattleEngine->m35C_cameraAltitudeMinMax[1] - (gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1] + 0x5000);
+        break;
+    default:
+        assert(0);
+    }
+}
+
 void sEnemyAttackCamera_init(sEnemyAttackCamera* pThis)
 {
-    FunctionUnimplemented();
+    pThis->m4.zeroize();
+    pThis->m34.zeroize();
+    pThis->m10.zeroize();
+    pThis->m40.zeroize();
+    pThis->m1C.zeroize();
+    pThis->m4C.zeroize();
+    pThis->m1_cameraIndex = gBattleManager->m10_battleOverlay->m4_battleEngine->m433_attackCameraIndex;
+    pThis->m58 = 0;
+
+    switch (pThis->m1_cameraIndex)
+    {
+    case 0:
+        battleEngine_UpdateSub7Sub3();
+        battleEngine_UpdateSub7Sub2();
+        pThis->getTask()->markFinished();
+        break;
+    case 1:
+        attackCamera1(&pThis->m4);
+        attackCamera3(&pThis->m34, 0);
+        attackCamera8(&pThis->m4, pThis->m1_cameraIndex);
+        break;
+    default:
+        assert(0);
+    }
 }
 
 void sEnemyAttackCamera_update(sEnemyAttackCamera* pThis)
@@ -1101,11 +1237,11 @@ void sEnemyAttackCamera_update(sEnemyAttackCamera* pThis)
 
 void battleEngine_updateBattleMode_8_playAttackCamera(s_battleEngine* pThis)
 {
-    switch (pThis->m38D_battleIntroStatus)
+    switch (pThis->m38D_battleSubMode)
     {
     case 0:
         battleCreateCinematicBars(pThis);
-        pThis->m38D_battleIntroStatus++;
+        pThis->m38D_battleSubMode++;
 
         {
             static const sEnemyAttackCamera::TypedTaskDefinition definition = {
@@ -1119,33 +1255,33 @@ void battleEngine_updateBattleMode_8_playAttackCamera(s_battleEngine* pThis)
         }
         return;
     case 1:
-        if (++pThis->m384_battleIntroDelay > 4)
+        if (++pThis->m384_battleModeDelay > 4)
         {
-            pThis->m384_battleIntroDelay = 0;
+            pThis->m384_battleModeDelay = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000 = 1;
-            pThis->m38D_battleIntroStatus++;
+            pThis->m38D_battleSubMode++;
         }
         break;
     case 2:
-        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100)
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
         {
-            pThis->m38D_battleIntroStatus++;
+            pThis->m38D_battleSubMode++;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 1;
         }
         break;
     case 3:
-        if (++pThis->m384_battleIntroDelay > 0xF)
+        if (++pThis->m384_battleModeDelay > 0xF)
         {
-            pThis->m384_battleIntroDelay = 0;
-            pThis->m38D_battleIntroStatus++;
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 1;
         }
         break;
     case 4:
-        if (++pThis->m384_battleIntroDelay > 0xF)
+        if (++pThis->m384_battleModeDelay > 0xF)
         {
-            pThis->m384_battleIntroDelay = 0;
-            pThis->m38D_battleIntroStatus++;
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
@@ -1153,11 +1289,11 @@ void battleEngine_updateBattleMode_8_playAttackCamera(s_battleEngine* pThis)
         break;
     case 5:
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10 = 0;
-        pThis->m38D_battleIntroStatus++;
+        pThis->m38D_battleSubMode++;
         break;
     case 6:
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
-        pThis->m38D_battleIntroStatus++;
+        pThis->m38D_battleSubMode++;
         break;
     case 7:
         battleEngine_SetBattleMode16();
@@ -1171,18 +1307,18 @@ void battleEngine_updateBattleMode_8_playAttackCamera(s_battleEngine* pThis)
 
 void battleEngine_updateBattleMode_E_battleIntro(s_battleEngine* pThis)
 {
-    switch (pThis->m38D_battleIntroStatus)
+    switch (pThis->m38D_battleSubMode)
     {
     case 0:
         battleCreateCinematicBars(pThis);
         pThis->m3D0 = 0;
-        pThis->m38D_battleIntroStatus++;
+        pThis->m38D_battleSubMode++;
         return;
     case 1:
-        if (4 < pThis->m384_battleIntroDelay++)
+        if (4 < pThis->m384_battleModeDelay++)
         {
-            pThis->m384_battleIntroDelay = 0;
-            pThis->m38D_battleIntroStatus++;
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
             pThis->m3D0 = createBattleIntroTask(pThis);
 
             g_fadeControls.m_4D = 6;
@@ -1199,8 +1335,8 @@ void battleEngine_updateBattleMode_E_battleIntro(s_battleEngine* pThis)
     case 2:
         if (pThis->m3D0 == nullptr)
         {
-            pThis->m384_battleIntroDelay = 0;
-            pThis->m38D_battleIntroStatus++;
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
 
             g_fadeControls.m_4D = 6;
             if (g_fadeControls.m_4C < g_fadeControls.m_4D)
@@ -1217,10 +1353,10 @@ void battleEngine_updateBattleMode_E_battleIntro(s_battleEngine* pThis)
         return;
     case 3:
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
-        pThis->m38D_battleIntroStatus++;
+        pThis->m38D_battleSubMode++;
         return;
     case 4:
-        if (pThis->m384_battleIntroDelay++ > 4)
+        if (pThis->m384_battleModeDelay++ > 4)
         {
             battleEngine_SetBattleMode16();
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
@@ -1232,6 +1368,133 @@ void battleEngine_updateBattleMode_E_battleIntro(s_battleEngine* pThis)
     }
 }
 
+void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4)
+{
+    sVec3_FP temp;
+
+    pushCurrentMatrix();
+    translateCurrentMatrix(param2);
+    rotateCurrentMatrixYXZ(&param4);
+    transformAndAddVecByCurrentMatrix(&param3, &temp);
+    transformAndAddVec(temp, *pVec, cameraProperties2.m28[0]);
+    popMatrix();
+}
+
+void battleEngine_updateBattleMode_7_sub0()
+{
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    if (pBattleEngine->m432 & 4)
+    {
+        battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4, *pBattleEngine->m3D8, pBattleEngine->m3E8, pBattleEngine->m3DC);
+        return;
+    }
+    if ((pBattleEngine->m432 & 1) == 0)
+    {
+        if ((pBattleEngine->m432 & 2) == 0)
+        {
+            pBattleEngine->m3DC[1] += 0xb60b6;
+            battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4, *pBattleEngine->m3D8, pBattleEngine->m3E8, pBattleEngine->m3DC);
+            return;
+        }
+    }
+    else
+    {
+        if (pBattleEngine->m430 > 0)
+        {
+            pBattleEngine->m430--;
+            pBattleEngine->m3DC[1] += 0xb60b6;
+            battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4, *pBattleEngine->m3D8, pBattleEngine->m3E8, pBattleEngine->m3DC);
+            return;
+        }
+    }
+
+    createBattleIntroTaskSub0();
+    pBattleEngine->m3E8.zeroize();
+    pBattleEngine->m3DC.zeroize();
+
+    pBattleEngine->m3E8[2] = 0x1000;
+
+    static const std::array<s32, 4> table = {
+        0x0,     0x4000000,     0x8000000,     0xC000000
+    };
+
+    pBattleEngine->m3DC[1] = table[pBattleEngine->m22C_dragonCurrentQuadrant];
+
+    battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4, *pBattleEngine->m3D8, pBattleEngine->m3E8, pBattleEngine->m3DC);
+    battleEngine_InitSub6(&pBattleEngine->m3F4);
+    battleEngine_InitSub7(&gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
+    battleEngine_InitSub8();
+    pBattleEngine->m432 = 4;
+    pBattleEngine->m430 = 0;
+}
+
+void battleEngine_updateBattleMode_7(s_battleEngine* pThis)
+{
+    switch (pThis->m38D_battleSubMode)
+    {
+    case 0:
+        battleCreateCinematicBars(pThis);
+        pThis->m38D_battleSubMode++;
+        battleEngine_updateBattleMode_7_sub0();
+        break;
+    case 1:
+        battleEngine_updateBattleMode_7_sub0();
+        if (++pThis->m384_battleModeDelay > 4)
+        {
+            pThis->m384_battleModeDelay = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000 = 1;
+            pThis->m38D_battleSubMode++;
+        }
+        break;
+    case 2:
+        battleEngine_updateBattleMode_7_sub0();
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
+        {
+            pThis->m38D_battleSubMode++;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 1;
+        }
+        break;
+    case 3:
+        battleEngine_updateBattleMode_7_sub0();
+        if (++pThis->m384_battleModeDelay > 0xf)
+        {
+            pThis->m384_battleModeDelay = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000 = 1;
+            pThis->m38D_battleSubMode++;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 1;
+        }
+        break;
+    case 4:
+        if (++pThis->m384_battleModeDelay > 0xf)
+        {
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+        }
+        break;
+    case 5:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10 = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 6:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 7:
+        if (++pThis->m384_battleModeDelay > 5)
+        {
+            battleEngine_SetBattleMode16();
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
+        }
+        break;
+    default:
+        assert(0);
+    }
+}
+
 void updateBattleIntro(s_battleEngine* pThis)
 {
     if (BattleEngineSub0_UpdateSub0() == 0)
@@ -1240,6 +1503,9 @@ void updateBattleIntro(s_battleEngine* pThis)
     switch (pThis->m38C_battleMode)
     {
     case eBattleModes::m6_dragonMoving:
+        break;
+    case eBattleModes::m7:
+        battleEngine_updateBattleMode_7(pThis);
         break;
     case eBattleModes::m8_playAttackCamera:
         battleEngine_updateBattleMode_8_playAttackCamera(pThis);

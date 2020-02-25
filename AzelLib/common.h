@@ -734,7 +734,7 @@ struct s_graphicEngineStatus_4514_sub
 struct s_graphicEngineStatus_4514
 {
     s_graphicEngineStatus_4514_sub m0_inputDevices[2]; // one per input port
-    u16 mD8_buttonConfig[3][16]; //0: on feet, 1: dragon
+    u16 mD8_buttonConfig[3][16]; //0: on feet, 1: dragon, 2: battle
     u8 m138[3];
 };
 
