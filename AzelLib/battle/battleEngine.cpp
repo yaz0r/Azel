@@ -113,20 +113,20 @@ void battleEngine_InitSub2Sub0(s_battleEngine* pThis)
     s32 var1 = pThis->m440_battleDirectionAngle.normalized();
     if ((var1 < -0x4000000) || (var1 > 0x3ffffff))
     {
-        pThis->m46C_dragon2dSpeed[1] = pThis->m45C_perQuadrantDragonSpeed[1][0];
+        pThis->m46C_dragon2dSpeed[1] = pThis->m45C_perQuadrantDragonSpeed[2];
     }
     else
     {
-        pThis->m46C_dragon2dSpeed[1] = pThis->m45C_perQuadrantDragonSpeed[0][0];
+        pThis->m46C_dragon2dSpeed[1] = pThis->m45C_perQuadrantDragonSpeed[0];
     }
 
     if (var1 < 1)
     {
-        pThis->m46C_dragon2dSpeed[0] = pThis->m45C_perQuadrantDragonSpeed[1][1];
+        pThis->m46C_dragon2dSpeed[0] = pThis->m45C_perQuadrantDragonSpeed[3];
     }
     else
     {
-        pThis->m46C_dragon2dSpeed[0] = pThis->m45C_perQuadrantDragonSpeed[0][1];
+        pThis->m46C_dragon2dSpeed[0] = pThis->m45C_perQuadrantDragonSpeed[1];
     }
 }
 
@@ -331,10 +331,9 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     }
 
     pThis->m230 = readSaturnS8(battleData_4 + 0x58);
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 4; i++)
     {
-        pThis->m45C_perQuadrantDragonSpeed[i][0] = readSaturnS32(battleData_4 + 0x1C + i * 8 + 0);
-        pThis->m45C_perQuadrantDragonSpeed[i][1] = readSaturnS32(battleData_4 + 0x1C + i * 8 + 4);
+        pThis->m45C_perQuadrantDragonSpeed[i] = readSaturnS32(battleData_4 + 0x1C + i * 4);
     }
     pThis->m24C.zeroize();
     for (int i = 0; i < 4; i++)
@@ -1090,6 +1089,7 @@ struct sEnemyAttackCamera : public s_workAreaTemplate<sEnemyAttackCamera>
     sVec3_FP m4;
     sVec3_FP m10;
     sVec3_FP m1C;
+    sVec3_FP m28;
     sVec3_FP m34;
     sVec3_FP m40;
     sVec3_FP m4C;
@@ -1109,48 +1109,132 @@ void attackCamera1(sVec3_FP* pOutput)
     switch (pBattleEngine->m22C_dragonCurrentQuadrant)
     {
     case 0:
-        (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         if (randomValue == 0)
         {
-            (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+            (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         }
         else
         {
-            (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+            (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         }
         break;
     case 1:
-        (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         if (randomValue == 0)
         {
-            (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+            (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         }
         else
         {
-            (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+            (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         }
         break;
     case 2:
-        (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         if (randomValue == 0)
         {
-            (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+            (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         }
         else
         {
-            (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+            (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         }
         break;
     case 3:
-        (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+        (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         if (randomValue == 0)
         {
-            (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+            (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         }
         else
         {
-            (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant][0] / 2;
+            (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant] / 2;
         }
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void attackCamera2(sVec3_FP* pOutput)
+{
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    pOutput->zeroize();
+
+    int randomValue = randomNumber() & 1;
+
+    switch (pBattleEngine->m22C_dragonCurrentQuadrant)
+    {
+    case 0:
+        (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        if (randomValue == 0)
+        {
+            (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        }
+        else
+        {
+            (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        }
+        break;
+    case 1:
+        (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        if (randomValue == 0)
+        {
+            (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        }
+        else
+        {
+            (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        }
+        break;
+    case 2:
+        (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        if (randomValue == 0)
+        {
+            (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        }
+        else
+        {
+            (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        }
+        break;
+    case 3:
+        (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        if (randomValue == 0)
+        {
+            (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        }
+        else
+        {
+            (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        }
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void attackCamera4(sVec3_FP* pOutput)
+{
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    pOutput->zeroize();
+
+    switch (pBattleEngine->m22C_dragonCurrentQuadrant)
+    {
+    case 0:
+        (*pOutput)[2] = -pBattleEngine->m45C_perQuadrantDragonSpeed[2] - pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        break;
+    case 1:
+        (*pOutput)[0] = -pBattleEngine->m45C_perQuadrantDragonSpeed[3] - pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        break;
+    case 2:
+        (*pOutput)[2] = pBattleEngine->m45C_perQuadrantDragonSpeed[0] + pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
+        break;
+    case 3:
+        (*pOutput)[0] = pBattleEngine->m45C_perQuadrantDragonSpeed[1] + pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant];
         break;
     default:
         assert(0);
@@ -1197,8 +1281,189 @@ void attackCamera8(sVec3_FP* pOutput, s32 param2)
     case 5:
         (*pOutput)[1] = pBattleEngine->m35C_cameraAltitudeMinMax[1] - (gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1] + 0x5000);
         break;
+    case 6:
+    case 7:
+    case 8:
+        (*pOutput)[1] = 0;
+        break;
     default:
         assert(0);
+    }
+}
+
+void attackCamera5(sEnemyAttackCamera* pThis)
+{
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    switch (pBattleEngine->m22C_dragonCurrentQuadrant)
+    {
+    case 0:
+        pThis->m4[2] = MTH_Mul(0xC000, pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant]);
+        break;
+    case 1:
+        pThis->m4[0] = MTH_Mul(0xC000, pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant]);
+        break;
+    case 2:
+        pThis->m4[2] = -MTH_Mul(0xC000, pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant]);
+        break;
+    case 3:
+        pThis->m4[0] = -MTH_Mul(0xC000, pBattleEngine->m45C_perQuadrantDragonSpeed[pBattleEngine->m22C_dragonCurrentQuadrant]);
+        break;
+    default:
+        assert(0);
+    }
+
+    if ((randomNumber() & 1) == 0)
+    {
+        pThis->m1C[1] = 0xb60b6;
+    }
+    else
+    {
+        pThis->m1C[1] = -0xb60b6;
+    }
+
+    switch (performModulo2(3, randomNumber()))
+    {
+    case 0:
+        pThis->m1C[0] = 0x2D82D;
+        break;
+    case 1:
+        pThis->m1C[0] = -0x2D82D;
+        break;
+    case 2:
+        pThis->m1C[0] = 0;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    pThis->m10[0] = MTH_Mul(-0x1E0000, pThis->m1C[0]);
+    pThis->m10[1] = MTH_Mul(-0x1E0000, pThis->m1C[1]);
+}
+
+void attackCamera7(sEnemyAttackCamera* pThis)
+{
+    if ((randomNumber() & 1) == 0)
+    {
+        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = -0xAAAAAA;
+        pThis->m10[1] = -0xAAAAAA;
+        pThis->m1C[1] = 0xb60b6;
+    }
+    else
+    {
+        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = 0xAAAAAA;
+        pThis->m10[1] = 0xAAAAAA;
+        pThis->m1C[1] = 0xb60b6;
+    }
+
+    if ((gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter[1] - gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1]) < 0)
+    {
+        pThis->m10[0] = 0x38E38E;
+        pThis->m1C[0] = -0x5b05b;
+    }
+    else
+    {
+        pThis->m10[0] = -0x38E38E;
+        pThis->m1C[0] = 0x5b05b;
+    }
+
+    pThis->m4.zeroize();
+
+    int randomValue = randomNumber() & 1;
+
+    switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+    {
+    case 0:
+        if (randomValue == 0)
+        {
+            pThis->m4[2] = MTH_Mul(0xC000, gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[3]);
+        }
+        else
+        {
+            pThis->m4[2] = MTH_Mul(0xC000, gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[1]);
+        }
+        break;
+    case 1:
+        if (randomValue == 0)
+        {
+            pThis->m4[0] = MTH_Mul(0xC000, gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[0]);
+        }
+        else
+        {
+            pThis->m4[0] = MTH_Mul(0xC000, gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[2]);
+        }
+        break;
+    case 2:
+        if (randomValue == 0)
+        {
+            pThis->m4[2] = -MTH_Mul(0xC000, gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[1]);
+        }
+        else
+        {
+            pThis->m4[2] = -MTH_Mul(0xC000, gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[3]);
+        }
+        break;
+    case 3:
+        if (randomValue == 0)
+        {
+            pThis->m4[0] = -MTH_Mul(0xC000, gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[2]);
+        }
+        else
+        {
+            pThis->m4[0] = -MTH_Mul(0xC000, gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[0]);
+        }
+        break;
+    default:
+        assert(0);
+        break;
+    }
+}
+
+void attackCamera6(sEnemyAttackCamera* pThis)
+{
+    if ((randomNumber() & 1) == 0)
+    {
+        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = -0xAAAAAA;
+        pThis->m10[1] = -0xAAAAAA;
+        pThis->m1C[1] = 0xb60b6;
+    }
+    else
+    {
+        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = 0xAAAAAA;
+        pThis->m10[1] = 0xAAAAAA;
+        pThis->m1C[1] = 0xb60b6;
+    }
+
+    if ((gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter[1] - gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1]) < 0)
+    {
+        pThis->m10[0] = 0x38E38E;
+        pThis->m1C[0] = -0x5b05b;
+    }
+    else
+    {
+        pThis->m10[0] = -0x38E38E;
+        pThis->m1C[0] = 0x5b05b;
+    }
+
+    pThis->m4.zeroize();
+
+    switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+    {
+    case 0:
+        pThis->m4[2] = 0xC000;
+        break;
+    case 1:
+        pThis->m4[0] = 0xC000;
+        break;
+    case 2:
+        pThis->m4[2] = -0xC000;
+        break;
+    case 3:
+        pThis->m4[0] = -0xC000;
+        break;
+    default:
+        assert(0);
+        break;
     }
 }
 
@@ -1219,20 +1484,172 @@ void sEnemyAttackCamera_init(sEnemyAttackCamera* pThis)
         battleEngine_UpdateSub7Sub3();
         battleEngine_UpdateSub7Sub2();
         pThis->getTask()->markFinished();
-        break;
+        return;
     case 1:
         attackCamera1(&pThis->m4);
         attackCamera3(&pThis->m34, 0);
-        attackCamera8(&pThis->m4, pThis->m1_cameraIndex);
+        break;
+    case 2:
+    case 3:
+    case 5:
+        attackCamera2(&pThis->m4);
+        attackCamera3(&pThis->m34, 0);
+    case 4:
+        attackCamera4(&pThis->m4);
+        attackCamera3(&pThis->m34, 0);
+        break;
+    case 6:
+        attackCamera5(pThis);
+        attackCamera3(&pThis->m34, 2);
+        break;
+    case 7:
+        attackCamera7(pThis);
+        attackCamera3(&pThis->m28, 1);
+        break;
+    case 8:
+        attackCamera6(pThis);
+        attackCamera3(&pThis->m28, 1);
         break;
     default:
         assert(0);
+    }
+
+    attackCamera8(&pThis->m4, pThis->m1_cameraIndex);
+
+}
+
+void sEnemyAttackCamera_updateSub0(int param_1)
+{
+    if (param_1 > 2)
+    {
+        param_1 = 0;
+    }
+
+    gBattleManager->m10_battleOverlay->m8_gridTask->m1 = param_1;
+    gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
+    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac484) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
+}
+
+void sEnemyAttackCamera_updateSub1(int param_1)
+{
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+
+    switch (param_1)
+    {
+    case 0:
+        pGrid->mE4_currentCameraReferenceCenter = MTH_Mul(0x8000, pGrid->mE4_currentCameraReferenceCenter - pGrid->m134_desiredCameraPosition);
+        pGrid->mF0_currentCameraReferenceForward = MTH_Mul(0x8000, pGrid->mF0_currentCameraReferenceForward - pGrid->m140_desiredCameraTarget);
+        break;
+    case 1:
+        pGrid->mE4_currentCameraReferenceCenter = MTH_Mul(0x8000, pGrid->m134_desiredCameraPosition - pGrid->mE4_currentCameraReferenceCenter);
+        pGrid->mF0_currentCameraReferenceForward = MTH_Mul(0x8000, pGrid->m140_desiredCameraTarget - pGrid->mF0_currentCameraReferenceForward);
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    pGrid->m108_deltaCameraPosition.zeroize();
+    pGrid->m114_deltaCameraTarget.zeroize();
+}
+
+void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4)
+{
+    sVec3_FP temp;
+
+    pushCurrentMatrix();
+    translateCurrentMatrix(param2);
+    rotateCurrentMatrixYXZ(&param4);
+    transformAndAddVecByCurrentMatrix(&param3, &temp);
+    transformAndAddVec(temp, *pVec, cameraProperties2.m28[0]);
+    popMatrix();
+}
+
+void sEnemyAttackCamera_updateSub2()
+{
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 0;
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB] == 0)
+    {
+        gBattleManager->m10_battleOverlay->m8_gridTask->m34_cameraPosition =
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m104_dragonPosition
+            + gBattleManager->m10_battleOverlay->m8_gridTask->m1C
+            + gBattleManager->m10_battleOverlay->m8_gridTask->m28;
+
+        battleEngine_InitSub6(&gBattleManager->m10_battleOverlay->m8_gridTask->m34_cameraPosition);
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3D8 = &gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
+        battleEngine_InitSub8();
+        battleEngine_UpdateSub7Sub3Sub0();
     }
 }
 
 void sEnemyAttackCamera_update(sEnemyAttackCamera* pThis)
 {
-    FunctionUnimplemented();
+    pThis->m58++;
+    if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000)
+    {
+        pThis->m10 += pThis->m1C;
+        pThis->m40 += pThis->m4C;
+        switch (pThis->m1_cameraIndex)
+        {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m418, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m4, pThis->m10);
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m34, pThis->m40);
+            break;
+        case 8:
+            if (pThis->m58 < 0x1E)
+            {
+                pThis->m34 = pThis->m28;
+            }
+            else
+            {
+                if (pThis->m58 < 0x5A)
+                {
+                    pThis->m34 = MTH_Mul(FP_Div(0x54 - pThis->m58, 0x3C), pThis->m28);
+                }
+                else
+                {
+                    pThis->m34.zeroize();
+                }
+            }
+
+            if (pThis->m10[0] > 0x1555555)
+            {
+                pThis->m1C[0] = 0;
+            }
+
+            if (pThis->m10[0] < -0x1555555)
+            {
+                pThis->m1C[0] = 0;
+            }
+
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m418, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m4, pThis->m10);
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m34, pThis->m40);
+            break;
+        default:
+            assert(0);
+            break;
+        }
+
+        if (pThis->m58 == 1)
+        {
+            battleEngine_InitSub6(&gBattleManager->m10_battleOverlay->m4_battleEngine->m418);
+            battleEngine_InitSub7(&gBattleManager->m10_battleOverlay->m4_battleEngine->m424);
+            sEnemyAttackCamera_updateSub0(1);
+            sEnemyAttackCamera_updateSub1(0);
+            battleEngine_InitSub8();
+        }
+    }
+    else
+    {
+        battleEngine_UpdateSub7Sub2();
+        sEnemyAttackCamera_updateSub1(1);
+        sEnemyAttackCamera_updateSub2();
+        pThis->getTask()->markFinished();
+    }
 }
 
 void battleEngine_updateBattleMode_8_playAttackCamera(s_battleEngine* pThis)
@@ -1366,18 +1783,6 @@ void battleEngine_updateBattleMode_E_battleIntro(s_battleEngine* pThis)
         assert(0);
         break;
     }
-}
-
-void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4)
-{
-    sVec3_FP temp;
-
-    pushCurrentMatrix();
-    translateCurrentMatrix(param2);
-    rotateCurrentMatrixYXZ(&param4);
-    transformAndAddVecByCurrentMatrix(&param3, &temp);
-    transformAndAddVec(temp, *pVec, cameraProperties2.m28[0]);
-    popMatrix();
 }
 
 void battleEngine_updateBattleMode_7_sub0()
