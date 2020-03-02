@@ -173,4 +173,6 @@ void battleEngine_FlagQuadrantForSafety(u8 quadrant);
 void battleEngine_FlagQuadrantForDanger(u8 quadrant);
 void battleEngine_FlagQuadrantForAttack(u8 quadrant);
 
+void fieldPaletteTaskInitSub0Sub2(); // TODO: clean
+
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);

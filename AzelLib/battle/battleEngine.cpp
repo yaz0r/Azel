@@ -17,7 +17,6 @@
 #include "BTL_A3/BTL_A3.h"
 
 void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
-void fieldPaletteTaskInitSub0Sub2();
 
 void battleEngine_FlagQuadrantBitForSafety(u16 uParm1)
 {

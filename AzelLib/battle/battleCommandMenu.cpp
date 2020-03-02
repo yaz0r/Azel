@@ -16,6 +16,39 @@ void BattleCommandMenu_UpdateSub0()
     vdp2Controls.m_isDirty = 1;
 }
 
+void createBattleCommandMenuSub0Sub0(sBattleCommandMenu::s1C0* pThis)
+{
+    pThis->m8 = (pThis->mC - pThis->m4) / 2;
+    pThis->m10_currentStepValue = 0;
+    pThis->m14_stepIncrement = FP_Div(0x8000000, ((int)pThis->m18) << 16);
+    pThis->m0_currentValue = pThis->m4;
+}
+
+void createBattleCommandMenuSub0(sBattleCommandMenu* pThis, char param2)
+{
+    switch (param2)
+    {
+    case 0:
+        pThis->m1C0.m4 = -0x5A0000;
+        pThis->m1C0.mC = 0;
+        pThis->m1C0.m18 = 4;
+        break;
+    case 1:
+        pThis->m1C0.m4 = 0;
+        pThis->m1C0.mC = -0x5A0000;
+        pThis->m1C0.m18 = 8;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    createBattleCommandMenuSub0Sub0(&pThis->m1C0);
+
+    pThis->m14 = (pThis->m1C0.m0_currentValue + 0x8000) >> 0x10;
+}
+
+
 int BattleCommandMenu_Interpolate(sBattleCommandMenu::s1C0* pData)
 {
     if (pData->m10_currentStepValue > 0x7ffffff)
@@ -31,6 +64,11 @@ int BattleCommandMenu_Interpolate(sBattleCommandMenu::s1C0* pData)
         pData->m10_currentStepValue += pData->m14_stepIncrement;
         return false;
     }
+}
+
+void BattleCommandMenu_DisplayCommandString(sBattleCommandMenu* pThis)
+{
+    FunctionUnimplemented();
 }
 
 void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
@@ -80,7 +118,38 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 pThis->m0--;
             }
         }
-        assert(0);
+        BattleCommandMenu_DisplayCommandString(pThis);
+        if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6) == 0)
+        {
+            if (((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1) != 0) &&
+                ((gBattleManager->m10_battleOverlay->m4_battleEngine->m388 & 0x100U) == 0))
+            {
+                // cancel out of menu
+                fieldPaletteTaskInitSub0Sub2();
+                setupVDP2StringRendering(6, 0x17, 0x20, 2);
+                pThis->m20 &= ~1;
+                pThis->m20 |= 0x10;
+                clearVdp2TextArea();
+                pThis->m2_mode = 7;
+                createBattleCommandMenuSub0(pThis, 1);
+                playSoundEffect(4);
+            }
+        }
+        else if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m388 & 0x80U) == 0)
+        {
+            //select current entry
+            fieldPaletteTaskInitSub0Sub2();
+            setupVDP2StringRendering(6, 0x17, 0x20, 2);
+            pThis->m20 &= ~1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
+            createBattleCommandMenuSub0(pThis, 1);
+            switch (pThis->m0)
+            {
+            default:
+                assert(0);
+                break;
+            }
+        }
         break;
     default:
         assert(0);
@@ -198,8 +267,11 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
             graphicEngineStatus.m14_vdp1Context[0].mC += 1;
         }
         break;
-        default:
+        case 3:
             assert(0);
+            break;
+        default:
+            break;
         }
     }
 }
@@ -207,38 +279,6 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
 void BattleCommandMenu_Delete(sBattleCommandMenu* pThis)
 {
     FunctionUnimplemented();
-}
-
-void createBattleCommandMenuSub0Sub0(sBattleCommandMenu::s1C0* pThis)
-{
-    pThis->m8 = (pThis->mC - pThis->m4) / 2;
-    pThis->m10_currentStepValue = 0;
-    pThis->m14_stepIncrement = FP_Div(0x8000000, ((int)pThis->m18) << 16);
-    pThis->m0_currentValue = pThis->m4;
-}
-
-void createBattleCommandMenuSub0(sBattleCommandMenu* pThis, char param2)
-{
-    switch (param2)
-    {
-    case 0:
-        pThis->m1C0.m4 = -0x5A0000;
-        pThis->m1C0.mC = 0;
-        pThis->m1C0.m18 = 4;
-        break;
-    case 1:
-        pThis->m1C0.m4 = 0;
-        pThis->m1C0.mC = -0x5A0000;
-        pThis->m1C0.m18 = 8;
-        break;
-    default:
-        assert(0);
-        break;
-    }
-
-    createBattleCommandMenuSub0Sub0(&pThis->m1C0);
-
-    pThis->m14 = (pThis->m1C0.m0_currentValue + 0x8000) >> 0x10;
 }
 
 void createBattleCommandMenu(p_workArea parent)
