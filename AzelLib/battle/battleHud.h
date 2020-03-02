@@ -28,7 +28,7 @@ struct s_battleOverlay_20 : public s_workAreaTemplate<s_battleOverlay_20>
     u16 m20;
     u16 m22;
     u16 m24;
-    s32 m28;
+    struct sBattleCommandMenu* m28_battleCommandMenu;
     u32 m2C;
     s_battleOverlay_20_sub m30;
     s_battleOverlay_20_sub m4C;

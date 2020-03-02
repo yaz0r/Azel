@@ -27,6 +27,7 @@ enum eBattleModes
     m8_playAttackCamera = 8,
     mA = 0xA,
     mB_enemyMovingDragon = 0xB,
+    mC_commandMenuOpen = 0xC,
     mE_battleIntro = 0xE,
     m10 = 0x10,
 };

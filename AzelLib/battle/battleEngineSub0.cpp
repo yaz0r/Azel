@@ -39,7 +39,7 @@ void BattleEngineSub0_Draw(s_battleEngineSub0* pThis)
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
     {
-        if (gBattleManager->m10_battleOverlay->m20->m0 == 1)
+        if (gBattleManager->m10_battleOverlay->m20_battleHud->m0 == 1)
         {
             assert(0);
         }

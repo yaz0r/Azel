@@ -6,6 +6,7 @@
 #include "battleDebug.h"
 #include "battleDragon.h"
 #include "town/town.h" // todo: for npcFileDeleter
+#include "battleCommandMenu.h"
 #include "kernel/vdp1Allocator.h"
 
 void battleHud2_Init(battleHud2* pThis)
@@ -42,10 +43,15 @@ void battleHud2_Update(battleHud2* pThis)
     case 1: // visible
         if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
         {
-            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC)
+            if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && ((gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu->m20 & 0x10) == 0))
             {
-                // Test is incomplete
-                assert(0);
+                pThis->m20.m4 = 0;
+                pThis->m20.mC = -0x180000;
+                pThis->m20.m18 = 4;
+                s_battleOverlay_20_updateSub0(&pThis->m20);
+
+                pThis->m12_mode = 4;
+                pThis->m14_nextMode = 2;
             }
         }
         else
@@ -57,6 +63,40 @@ void battleHud2_Update(battleHud2* pThis)
 
             pThis->m12_mode = 4;
             pThis->m14_nextMode = 3;
+        }
+        break;
+    case 2: // command menu open
+        if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && ((gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu->m20 & 0x10) != 0))
+        {
+            pThis->m20.m4 = -0x180000;
+            pThis->m20.mC = 0;
+            pThis->m20.m18 = 4;
+            s_battleOverlay_20_updateSub0(&pThis->m20);
+
+            pThis->m12_mode = 4;
+            pThis->m14_nextMode = 1;
+        }
+        else if (gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu == nullptr)
+        {
+            pThis->m20.m4 = -0x180000;
+            pThis->m20.mC = 0x470000;
+            pThis->m20.m18 = 4;
+            s_battleOverlay_20_updateSub0(&pThis->m20);
+
+            pThis->m12_mode = 4;
+            pThis->m14_nextMode = 3;
+        }
+        break;
+    case 3:
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD == 0)
+        {
+            pThis->m20.m4 = 0x470000;
+            pThis->m20.mC = 0;
+            pThis->m20.m18 = 4;
+            s_battleOverlay_20_updateSub0(&pThis->m20);
+
+            pThis->m12_mode = 4;
+            pThis->m14_nextMode = 1;
         }
         break;
     case 4: // scrolling

@@ -9,6 +9,7 @@
 #include "battleEngine.h"
 #include "battleDebug.h"
 #include "battlePowerGauge.h"
+#include "battleCommandMenu.h"
 
 void s_battleOverlay_20_updateSub0(s_battleOverlay_20_sub* pData)
 {
@@ -66,10 +67,20 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
     case 1: //visible
         if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
         {
-            if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && 1)
+            if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && ((gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu->m20 & 0x10) == 0))
             {
-                // Test on previous line is incomplete!
-                assert(0);
+                // open command menu, scroll up
+                pThis->m30.m4 = 0;
+                pThis->m30.mC = -0x180000;
+                pThis->m30.m18 = 4;
+                s_battleOverlay_20_updateSub0(&pThis->m30);
+
+                pThis->m4C.m4 = 0x470000;
+                pThis->m4C.mC = 0x180000;
+                pThis->m4C.m18 = 4;
+                s_battleOverlay_20_updateSub0(&pThis->m4C);
+                pThis->m10_currentMode = 3;
+                pThis->m12_nextMode = 2;
             }
         }
         else
@@ -88,7 +99,37 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
             pThis->m12_nextMode = 0;
         }
         break;
-    case 3: //scrolling
+    case 2: // command menu open
+        if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && ((gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu->m20 & 0x10) != 0))
+        {
+            pThis->m30.m4 = -0x180000;
+            pThis->m30.mC = 0;
+            pThis->m30.m18 = 4;
+            s_battleOverlay_20_updateSub0(&pThis->m30);
+
+            pThis->m4C.m4 = -0x180000;
+            pThis->m4C.mC = 0x470000;
+            pThis->m4C.m18 = 4;
+            s_battleOverlay_20_updateSub0(&pThis->m4C);
+            pThis->m10_currentMode = 3;
+            pThis->m12_nextMode = 1;
+        }
+        else if (gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu == nullptr)
+        {
+            pThis->m30.m4 = -0x180000;
+            pThis->m30.mC = 0x470000;
+            pThis->m30.m18 = 4;
+            s_battleOverlay_20_updateSub0(&pThis->m30);
+
+            pThis->m4C.m4 = -0x180000;
+            pThis->m4C.mC = 0x470000;
+            pThis->m4C.m18 = 4;
+            s_battleOverlay_20_updateSub0(&pThis->m4C);
+            pThis->m10_currentMode = 3;
+            pThis->m12_nextMode = 0;
+        }
+        break;
+    case 3: // scrolling
         if (s_battleOverlay_20_updateSub1(&pThis->m30))
         {
             pThis->m10_currentMode = pThis->m12_nextMode;
@@ -268,7 +309,7 @@ void battleEngine_CreateHud1(npcFileDeleter* parent)
 
     s_battleOverlay_20* pNewTask = createSubTask<s_battleOverlay_20>(parent, &definition);
 
-    gBattleManager->m10_battleOverlay->m20 = pNewTask;
+    gBattleManager->m10_battleOverlay->m20_battleHud = pNewTask;
 
     pNewTask->m14_vdp1Memory = parent->m4_vd1Allocation->m4_vdp1Memory;
     pNewTask->m16_part1X = 0;
@@ -285,6 +326,6 @@ void battleEngine_CreateHud1(npcFileDeleter* parent)
     createPowerGaugeTask(parent, &pNewTask->m16_part1X, 0);
 
     pNewTask->m0 = 0;
-    pNewTask->m28 = 0;
+    pNewTask->m28_battleCommandMenu = nullptr;
     pNewTask->m10_currentMode = 0;
 }

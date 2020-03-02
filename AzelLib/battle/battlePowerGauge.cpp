@@ -241,13 +241,13 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
             return;
     }
 
-    if ((gBattleManager->m10_battleOverlay->m20->m0 != 0) && (gBattleManager->m10_battleOverlay->m20->m0 != 1))
+    if ((gBattleManager->m10_battleOverlay->m20_battleHud->m0 != 0) && (gBattleManager->m10_battleOverlay->m20_battleHud->m0 != 1))
         return;
 
     sVec2_S16 UIStart;
 
-    UIStart[0] = 0x22 + gBattleManager->m10_battleOverlay->m20->m16_part1X;
-    UIStart[1] = 0xA3 + gBattleManager->m10_battleOverlay->m20->m18_part1Y;
+    UIStart[0] = 0x22 + gBattleManager->m10_battleOverlay->m20_battleHud->m16_part1X;
+    UIStart[1] = 0xA3 + gBattleManager->m10_battleOverlay->m20_battleHud->m18_part1Y;
 
     sVec2_S16 gauge0;
     sVec2_S16 gauge1;

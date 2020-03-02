@@ -21,7 +21,7 @@ struct sBattleOverlayTask : public s_workAreaTemplate<sBattleOverlayTask>
     void* m14;
     struct s_battleDragon* m18_dragon;
     p_workArea m1C_envTask;
-    struct s_battleOverlay_20* m20;
+    struct s_battleOverlay_20* m20_battleHud;
     s32 m24;
     //size 0x28
 };

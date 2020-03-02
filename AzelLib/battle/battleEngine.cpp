@@ -11,6 +11,7 @@
 #include "battleDragon.h"
 #include "battleIntro.h"
 #include "battleEngineSub1.h"
+#include "battleCommandMenu.h"
 #include "kernel/debug/trace.h"
 
 #include "BTL_A3/BTL_A3.h"
@@ -1915,6 +1916,8 @@ void updateBattleIntro(s_battleEngine* pThis)
     case eBattleModes::m8_playAttackCamera:
         battleEngine_updateBattleMode_8_playAttackCamera(pThis);
         break;
+    case eBattleModes::mC_commandMenuOpen:
+        break;
     case eBattleModes::mE_battleIntro:
         battleEngine_updateBattleMode_E_battleIntro(pThis);
         break;
@@ -1948,9 +1951,10 @@ void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
             ) {
             if ((pThis->m3B4.m16_combo > 0) && (graphicEngineStatus.m4514.mD8_buttonConfig[2][1] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown))
             {
-                assert(0);
-            }
-            if ((pThis->m388 & 0x200) == 0)
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 0;
+                battleEngine_SetBattleMode(mC_commandMenuOpen);
+                createBattleCommandMenu(gBattleManager->m10_battleOverlay->m20_battleHud);
+            } else if ((pThis->m388 & 0x200) == 0)
             {
                 if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 8)
                 {
