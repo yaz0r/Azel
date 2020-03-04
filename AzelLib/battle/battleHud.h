@@ -2,7 +2,7 @@
 
 struct s_battleOverlay_20_sub
 {
-    s32 m0_currentValue;
+    fixedPoint m0_currentValue;
     s32 m4;
     s32 m8;
     s32 mC;

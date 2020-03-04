@@ -2,10 +2,11 @@
 
 struct sBattleCommandMenu : public s_workAreaTemplate<sBattleCommandMenu>
 {
-    s8 m0;
-    s8 m1;
+    s8 m0_selectedBattleCommand;
+    s8 m1_numBattleCommands;
     s8 m2_mode;
-    std::array<s8, 6> m4;
+    s8 m3;
+    std::array<s8, 6> m4_enabledBattleCommands;
     s16 mC;
     s16 mE;
     s16 m14;
@@ -14,7 +15,7 @@ struct sBattleCommandMenu : public s_workAreaTemplate<sBattleCommandMenu>
     u32 m20;
     struct s1C0 // TODO: is this the same as s_battleOverlay_20_sub ?
     {
-        s32 m0_currentValue;
+        fixedPoint m0_currentValue;
         s32 m4;
         s32 m8;
         s32 mC;
