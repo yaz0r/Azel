@@ -6139,11 +6139,13 @@ void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
         generateLightFalloffMap(pTypedWorkArea->mCB_falloffColor0.toU32(), pTypedWorkArea->mCE_falloffColor1.toU32(), pTypedWorkArea->mD1_falloffColor2.toU32());
     }
 
+#ifndef SHIPPING_BUILD
     if (ImGui::Begin("Field"))
     {
         Imgui_FP_Angle("Field of view", &pTypedWorkArea->m1CC_fieldOfView);
     }
     ImGui::End();
+#endif
 
     //0607416C
     initVDP1Projection(pTypedWorkArea->m1CC_fieldOfView / 2, 0);

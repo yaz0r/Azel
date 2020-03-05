@@ -2,6 +2,9 @@
 
 #ifdef SHIPPING_BUILD
 #define addTraceLog(...);
+#define readTraceLog(...);
+#define isTraceEnabled() false
+#define startTrace(...);
 #else
 void addTraceLog(const sVec3_FP&, const char* name);
 void addTraceLog(const sVec2_FP&, const char* name);

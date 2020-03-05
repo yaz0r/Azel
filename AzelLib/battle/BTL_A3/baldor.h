@@ -58,3 +58,5 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
 };
 
 sBaldor* createBaldor(s_workAreaCopy* parent, struct sFormationData* pFormationEntry);
+
+sVec3_FP* Baldor_updateSub0Sub2Sub1(s_battleDragon_8C& param1); // TODO: cleanup

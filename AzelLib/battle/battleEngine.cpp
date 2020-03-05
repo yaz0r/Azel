@@ -15,6 +15,7 @@
 #include "kernel/debug/trace.h"
 
 #include "BTL_A3/BTL_A3.h"
+#include "BTL_A3/baldor.h" // TODO: cleanup
 
 void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
 
@@ -899,8 +900,8 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
             pThis->m38D_battleSubMode++; // go to state 2 (finished)
             pThis->m384_battleModeDelay = 0;
-            pThis->m398[0] = 0;
-            pThis->m390[2] = 0;
+            pThis->m398_currentSelectedEnemy = 0;
+            pThis->m39C_maxSelectableEnemies = 0;
         }
 
         stepInterpolator(&pThis->m27C_dragonMovementInterpolator1);
@@ -1836,68 +1837,166 @@ void battleEngine_updateBattleMode_7_sub0()
 
 void battleEngine_updateBattleMode_7(s_battleEngine* pThis)
 {
+switch (pThis->m38D_battleSubMode)
+{
+case 0:
+    battleCreateCinematicBars(pThis);
+    pThis->m38D_battleSubMode++;
+    battleEngine_updateBattleMode_7_sub0();
+    break;
+case 1:
+    battleEngine_updateBattleMode_7_sub0();
+    if (++pThis->m384_battleModeDelay > 4)
+    {
+        pThis->m384_battleModeDelay = 0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000 = 1;
+        pThis->m38D_battleSubMode++;
+    }
+    break;
+case 2:
+    battleEngine_updateBattleMode_7_sub0();
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
+    {
+        pThis->m38D_battleSubMode++;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 1;
+    }
+    break;
+case 3:
+    battleEngine_updateBattleMode_7_sub0();
+    if (++pThis->m384_battleModeDelay > 0xf)
+    {
+        pThis->m384_battleModeDelay = 0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000 = 1;
+        pThis->m38D_battleSubMode++;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 1;
+    }
+    break;
+case 4:
+    if (++pThis->m384_battleModeDelay > 0xf)
+    {
+        pThis->m384_battleModeDelay = 0;
+        pThis->m38D_battleSubMode++;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+    }
+    break;
+case 5:
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10 = 0;
+    pThis->m38D_battleSubMode++;
+    break;
+case 6:
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
+    pThis->m38D_battleSubMode++;
+    break;
+case 7:
+    if (++pThis->m384_battleModeDelay > 5)
+    {
+        battleEngine_SetBattleMode16();
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
+    }
+    break;
+default:
+    assert(0);
+}
+}
+
+void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
+{
     switch (pThis->m38D_battleSubMode)
     {
     case 0:
-        battleCreateCinematicBars(pThis);
-        pThis->m38D_battleSubMode++;
-        battleEngine_updateBattleMode_7_sub0();
-        break;
-    case 1:
-        battleEngine_updateBattleMode_7_sub0();
-        if (++pThis->m384_battleModeDelay > 4)
+        createBattleIntroTaskSub0();
+        pThis->m40C = pThis->mC_battleCenter;
+        battleEngine_InitSub7(&pThis->m40C);
+        if (mainGameState.gameStats.mA_weaponType == 0x40)
         {
+            pThis->m38D_battleSubMode = 2;
+        }
+        else
+        {
+            pThis->m38D_battleSubMode = 1;
+        }
+        gBattleManager->m10_battleOverlay->m8_gridTask->m138 = sVec3_FP(0x5000, 0, 0);
+        playSoundEffect(7);
+        pThis->m188_flags.m2 = 1;
+        break;
+    case 1: // select enemy phase
+        if (gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies > 0)
+        {
+            pThis->m39C_maxSelectableEnemies = gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies;
+            if (gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies - 1 < pThis->m398_currentSelectedEnemy)
+            {
+                pThis->m398_currentSelectedEnemy = gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies - 1;
+            }
+
+            // rotate selected enemy
+            if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x80) == 0)
+            {
+                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x40)
+                {
+                    pThis->m398_currentSelectedEnemy--;
+                    if (pThis->m398_currentSelectedEnemy < 0)
+                    {
+                        pThis->m398_currentSelectedEnemy += pThis->m39C_maxSelectableEnemies;
+                    }
+                    playSoundEffect(2);
+                }
+            }
+            else
+            {
+                pThis->m398_currentSelectedEnemy++;
+                if (pThis->m390[1] <= pThis->m398_currentSelectedEnemy)
+                {
+                    pThis->m398_currentSelectedEnemy -= pThis->m39C_maxSelectableEnemies;
+                }
+                playSoundEffect(2);
+            }
+
+            // mark all enemies are deselected
+            int iVar2 = gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies - 1;
+            while (iVar2 > -1)
+            {
+                s_battleDragon_8C* pEntry = gBattleManager->m10_battleOverlay->mC->m0[iVar2]->m4;
+                pEntry->m50 &= ~0x200000;
+                iVar2--;
+            }
+            
+            // flag current enemy selected
+            gBattleManager->m10_battleOverlay->mC->m0[pThis->m398_currentSelectedEnemy]->m4->m50 |= 0x200000;
+
+            pThis->m40C = *Baldor_updateSub0Sub2Sub1(*gBattleManager->m10_battleOverlay->mC->m0[pThis->m398_currentSelectedEnemy]->m4) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
+            gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[2] = -vecDistance(*pThis->m3D4, *pThis->m3D8);
+
+            if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6) == 0)
+            {
+                if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1) == 0) {
+                    return;
+                }
+                // validate enemy selection
+
+                assert(0);
+            }
+
+            // cancel out of enemy selection
+            if (pThis->m388 & 0x80)
+            {
+                return;
+            }
+
+            pThis->m38D_battleSubMode = 3;
             pThis->m384_battleModeDelay = 0;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000 = 1;
-            pThis->m38D_battleSubMode++;
+            break;
         }
-        break;
-    case 2:
-        battleEngine_updateBattleMode_7_sub0();
-        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
-        {
-            pThis->m38D_battleSubMode++;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 1;
-        }
-        break;
-    case 3:
-        battleEngine_updateBattleMode_7_sub0();
-        if (++pThis->m384_battleModeDelay > 0xf)
-        {
-            pThis->m384_battleModeDelay = 0;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000 = 1;
-            pThis->m38D_battleSubMode++;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 1;
-        }
-        break;
-    case 4:
-        if (++pThis->m384_battleModeDelay > 0xf)
-        {
-            pThis->m384_battleModeDelay = 0;
-            pThis->m38D_battleSubMode++;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
-        }
-        break;
-    case 5:
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10 = 0;
-        pThis->m38D_battleSubMode++;
-        break;
-    case 6:
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
-        pThis->m38D_battleSubMode++;
-        break;
-    case 7:
-        if (++pThis->m384_battleModeDelay > 5)
-        {
-            battleEngine_SetBattleMode16();
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
-        }
-        break;
+
     default:
         assert(0);
     }
+}
+
+void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* pThis)
+{
+
 }
 
 void updateBattleIntro(s_battleEngine* pThis)
@@ -1907,6 +2006,12 @@ void updateBattleIntro(s_battleEngine* pThis)
 
     switch (pThis->m38C_battleMode)
     {
+    case eBattleModes::m0_shootEnemyWithGun:
+        battleEngine_updateBattleMode_0_shootEnemyWithGun(pThis);
+        break;
+    case eBattleModes::m3_shootEnemeyWithHomingLaser:
+        battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(pThis);
+        break;
     case eBattleModes::m6_dragonMoving:
         break;
     case eBattleModes::m7:
@@ -1998,7 +2103,7 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
             (battleEngine_UpdateSub7Sub0Sub2Sub0() != 0)) {
             if ((pThis->m3B4.m16_combo < '\x01') ||
                 (((graphicEngineStatus.m4514.mD8_buttonConfig[2][2] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown) == 0 ||
-                ((gBattleManager->m10_battleOverlay->mC->m20A_numActiveEntries) < 1))))
+                ((gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies) < 1))))
             {
                 if (graphicEngineStatus.m4514.mD8_buttonConfig[2][2] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown)
                 {
@@ -2008,7 +2113,7 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
             else
             {
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 0;
-                battleEngine_SetBattleMode(eBattleModes::m0);
+                battleEngine_SetBattleMode(eBattleModes::m0_shootEnemyWithGun);
                 pThis->m184 = 0;
             }
         }
@@ -2203,8 +2308,8 @@ void battleEngine_Update(s_battleEngine* pThis)
 
         pThis->m1E8[0] = 0x2000;
         pThis->m1E8[1] = 0x1000;
-        pThis->m398[0] = 0;
-        pThis->m398[1] = 0;
+        pThis->m398_currentSelectedEnemy = 0;
+        pThis->m39C_maxSelectableEnemies = 0;
         pThis->m3A4_prelockMode[0] = 2;
         pThis->m3A4_prelockMode[1] = 0x10;
 

@@ -7,7 +7,7 @@
 #define PDS_TOOL
 
 #ifndef _DEBUG
-//#define SHIPPING_BUILD
+#define SHIPPING_BUILD
 #endif
 
 #ifdef WIN32

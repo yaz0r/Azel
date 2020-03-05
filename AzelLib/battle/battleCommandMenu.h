@@ -11,8 +11,11 @@ struct sBattleCommandMenu : public s_workAreaTemplate<sBattleCommandMenu>
     s16 mE;
     s16 m14;
     s16 m16;
+    s16 m18_oldDragonAtk;
+    s16 m1A_oldDragonDef;
     s32 m1C;
     u32 m20;
+    s32 m24;
     struct s1C0 // TODO: is this the same as s_battleOverlay_20_sub ?
     {
         fixedPoint m0_currentValue;

@@ -19,7 +19,7 @@ void sBattleOverlayTask_C_Init(sBattleOverlayTask_C* pThis)
 s32 sBattleOverlayTask_C_UpdateSub0(s_battleDragon_8C* pThis)
 {
     FunctionUnimplemented();
-    return 0;
+    return 1;
 }
 
 void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
@@ -65,7 +65,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
         }
     }
 
-    pThis->m20A_numActiveEntries = 0;
+    pThis->m20A_numSelectableEnemies = 0;
 
     psVar8 = gBattleManager->m10_battleOverlay->m4_battleEngine->m49C.begin();
     for (int i = 0; i < 0x80; i++)
@@ -83,7 +83,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
                 {
                     psVar8->m0_isActive = 1;
                     psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-                    pThis->m20A_numActiveEntries++;
+                    pThis->m20A_numSelectableEnemies++;
                 }
                 break;
             case 1:
@@ -92,7 +92,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
                 {
                     psVar8->m0_isActive = 1;
                     psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-                    pThis->m20A_numActiveEntries++;
+                    pThis->m20A_numSelectableEnemies++;
                 }
                 break;
             case 2:
@@ -101,7 +101,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
                 {
                     psVar8->m0_isActive = 1;
                     psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-                    pThis->m20A_numActiveEntries++;
+                    pThis->m20A_numSelectableEnemies++;
                 }
                 break;
             case 3:
@@ -110,7 +110,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
                 {
                     psVar8->m0_isActive = 1;
                     psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-                    pThis->m20A_numActiveEntries++;
+                    pThis->m20A_numSelectableEnemies++;
                 }
                 break;
             default:

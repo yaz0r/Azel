@@ -193,6 +193,7 @@ void sMainLogic::Update(sMainLogic* pThis)
     pThis->m10(pThis);
 
     // Hack
+#ifndef SHIPPING_BUILD
     {
         static bool forceCameraPosition = false;
         ImGui::Begin("Town");
@@ -209,6 +210,7 @@ void sMainLogic::Update(sMainLogic* pThis)
             pThis->m44_cameraTarget = pThis->m14_EdgeTask->mE8.m0_position;
         }
     }
+#endif
 
     pThis->m50_upVector = pThis->m38_interpolatedCameraPosition;
     pThis->m50_upVector[1] += 0x10000;

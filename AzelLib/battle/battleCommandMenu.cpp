@@ -103,6 +103,18 @@ s32 createBattleCommandMenuSub2(s32 param1)
     return iVar1;
 }
 
+s32 BattleCommandMenu_CountSubMenuEntries(sBattleCommandMenu* pThis)
+{
+    FunctionUnimplemented();
+    return 1;
+}
+
+int isBattleCommandEnabled(sBattleCommandMenu* pThis, int buttonIndex)
+{
+    FunctionUnimplemented();
+    return 1;
+}
+
 void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
 {
     pThis->m1C++;
@@ -178,11 +190,11 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             int uVar9;
             switch (pThis->m0_selectedBattleCommand)
             {
-            case 0:
+            case 0: // gun attack
                 uVar9 = 0;
                 if ((0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m498)
                     && (0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo)
-                    && (0 < gBattleManager->m10_battleOverlay->mC->m20A_numActiveEntries))
+                    && (0 < gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies))
                 {
                     pThis->m20 |= 0x12;
                     clearVdp2TextArea();
@@ -191,17 +203,91 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                     pThis->m3 = 0;
                 }
                 break;
-            case 1:
+            case 1: // homing laser
                 uVar9 = 0;
                 if (((0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m498) &&
-                    ('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo)) &&
+                    (0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo)) &&
                     ((((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 1) == 0 &&
-                    (0 < (gBattleManager->m10_battleOverlay->mC->m20A_numActiveEntries))))) {
+                    (0 < (gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies))))) {
                     pThis->m20 |= 0x14;
                     clearVdp2TextArea();
                     uVar9 = 1;
                     pThis->m2_mode = 7;
                     pThis->m3 = 0;
+                }
+                break;
+            case 2: // items
+                uVar9 = 0;
+                if ('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) {
+                    pThis->m24 = BattleCommandMenu_CountSubMenuEntries(pThis);
+                    int iVar8;
+                    if ((0 < pThis->m24) && (pThis->m1DC[0] == 0)) {
+                        pThis->m20 |= 8;
+                        pThis->m2_mode = 3;
+                        clearVdp2TextArea();
+                        pThis->m3 = 0;
+                        uVar9 = 1;
+                    }
+                }
+                break;
+            case 3: // berserk
+                uVar9 = 0;
+                if (('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) &&
+                    (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 1) == 0)) {
+                    pThis->m24 = BattleCommandMenu_CountSubMenuEntries(pThis);
+                    int iVar8;
+                    if ((0 < pThis->m24) &&
+                        ((isBattleCommandEnabled(pThis, pThis->m0_selectedBattleCommand) > 0 &&
+                        (pThis->m1DC[1] == 0)))) {
+                        pThis->m20 |= 8;
+                        pThis->m2_mode = 4;
+                        clearVdp2TextArea();
+                        pThis->m3 = 0;
+                        uVar9 = 1;
+                    }
+                }
+                break;
+            case 4: // change weapon?
+                uVar9 = 0;
+                if ('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) {
+                    pThis->m24 = BattleCommandMenu_CountSubMenuEntries(pThis);
+                    int iVar8;
+                    if ((0 < pThis->m24) && (pThis->m1DC[2] == 0)) {
+                        pThis->m20 |= 8;
+                        pThis->m2_mode = 5;
+                        clearVdp2TextArea();
+                        pThis->m3 = 0;
+                        uVar9 = 1;
+                    }
+                }
+                break;
+            case 5: // change form?
+                uVar9 = 0;
+                if (('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) &&
+                    (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 1) == 0)) {
+                    int bVar2 = 0;
+                    if (gBattleManager->mC == 0)
+                    {
+                        bVar2 = 1;
+                    }
+                    else if ((gDragonState->mC_dragonType != 0) && (gDragonState->mC_dragonType != 8))
+                    {
+                        bVar2 = 1;
+                    }
+
+                    if (bVar2)
+                    {
+                        fieldPaletteTaskInitSub0Sub2();
+                        setupVDP2StringRendering(6, 0x17, 0x20, 2);
+                        clearVdp2TextArea();
+                        pThis->m2_mode = 6;
+                        pThis->m3 = 0;
+                        playSoundEffect(4);
+                        uVar9 = 1;
+                        pThis->m18_oldDragonAtk = mainGameState.gameStats.dragonAtt;
+                        pThis->m1A_oldDragonDef = mainGameState.gameStats.dragonDef;
+                        graphicEngineStatus.m40AC.m0_menuId = 3;
+                    }
                 }
                 break;
             default:
@@ -212,7 +298,19 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             createBattleCommandMenuSub1(pThis, uVar9);
         }
         break;
-    case 7:
+    case 3: // item selection
+        assert(0);
+        break;
+    case 4: // berserk selection
+        assert(0);
+        break;
+    case 5: // weapon change
+        assert(0);
+        break;
+    case 6: // form change
+        assert(0);
+        break;
+    case 7: // used for gun attack and homing laser
         if (BattleCommandMenu_Interpolate(&pThis->m1C0))
         {
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m0_max = createBattleCommandMenuSub2(0x3C) << 0x10;
@@ -221,14 +319,14 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             {
                 if (pThis->m20 & 4)
                 {
-                    battleEngine_SetBattleMode(eBattleModes::m3);
+                    battleEngine_SetBattleMode(eBattleModes::m3_shootEnemeyWithHomingLaser);
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m184 = 0;
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m390[0] = 0;
                 }
             }
             else
             {
-                battleEngine_SetBattleMode(eBattleModes::m0);
+                battleEngine_SetBattleMode(eBattleModes::m0_shootEnemyWithGun);
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m3A7 = 0;
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m184 = 0;
             }
@@ -245,12 +343,6 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
     {
         assert(0);
     }
-}
-
-int isBattleCommandEnabled(sBattleCommandMenu* pThis, int buttonIndex)
-{
-    FunctionUnimplemented();
-    return 1;
 }
 
 void BattleCommandMenu_DrawButton(sBattleCommandMenu* pThis, int buttonIndex)

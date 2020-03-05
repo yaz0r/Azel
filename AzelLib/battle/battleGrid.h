@@ -30,6 +30,7 @@ struct s_battleGrid : public s_workAreaTemplate<s_battleGrid>
     s32 m12C_cameraInterpolationSpeed;
     s32 m130_cameraInterpolationSpeed2;
     sVec3_FP m134_desiredCameraPosition;
+    sVec3_FP m138;
     sVec3_FP m140_desiredCameraTarget;
     s32 m14C;
     sMatrix4x3 m150_cameraMatrix;

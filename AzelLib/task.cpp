@@ -33,6 +33,7 @@ void PrintDebugTasksHierarchy()
 
 void PrintDebugTaskInfo(s_task* pTask)
 {
+#ifndef SHIPPING_BUILD
     pTask->getWorkArea()->Inspect();
     if (pTask->m4_pSubTask)
     {
@@ -42,6 +43,7 @@ void PrintDebugTaskInfo(s_task* pTask)
     {
         PrintDebugTaskInfo(pTask->m0_pNextTask);
     }
+#endif
 }
 
 void PrintDebugTasksInfo()
