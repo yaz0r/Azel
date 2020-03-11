@@ -107,7 +107,7 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     static void Laser3Init(s_LCSTask340Sub*);
     static void Laser3Update(s_LCSTask340Sub*);
     static void Laser3Draw(s_LCSTask340Sub*);
-    void Init3Sub3(s_LCSTask340Sub_m58* r4, s32 s5, sSaturnPtr r6);
+    static void Init3Sub3(s_LCSTask340Sub_m58* r4, s32 s5, sSaturnPtr r6);
 
     static void Update0(s_LCSTask340Sub*);
 

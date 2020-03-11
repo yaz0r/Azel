@@ -16,7 +16,7 @@ struct sBattleOverlayTask : public s_workAreaTemplate<sBattleOverlayTask>
     s8 m3;
     struct s_battleEngine* m4_battleEngine;
     struct s_battleGrid* m8_gridTask;
-    struct sBattleOverlayTask_C* mC;
+    struct sBattleOverlayTask_C* mC_targetSystem;
     struct s_battleDebug* m10_inBattleDebug;
     void* m14;
     struct s_battleDragon* m18_dragon;

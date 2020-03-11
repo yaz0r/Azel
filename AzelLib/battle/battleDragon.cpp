@@ -21,19 +21,19 @@ void s_battleDragon_InitSub4(int arg0, int interpolationLength)
     s_battleDragon_InitSub4Sub0();
 }
 
-void s_battleDragon_InitSub5Sub0(s_battleDragon_8C* pThis)
+void battleTargetable_updatePosition(sBattleTargetable* pThis)
 {
-    transformAndAddVec(*pThis->m4, pThis->m10, cameraProperties2.m28[0]);
+    transformAndAddVec(*pThis->m4, pThis->m10_position, cameraProperties2.m28[0]);
 }
 
-void s_battleDragon_InitSub5(s_battleDragon_8C* pThis, s_battleDragon* param2, sVec3_FP* param3, s32 param4, s32 param5)
+void s_battleDragon_InitSub5(sBattleTargetable* pThis, s_battleDragon* param2, sVec3_FP* param3, s32 param4, s32 param5)
 {
     pThis->m0 = param2;
     pThis->m4 = param3;
     pThis->m4C = param4;
     pThis->m40 = *param3;
-    s_battleDragon_InitSub5Sub0(pThis);
-    pThis->m8 = &pThis->m10;
+    battleTargetable_updatePosition(pThis);
+    pThis->m8 = &pThis->m10_position;
     pThis->mC = 0;
     pThis->m50 = param5;
     pThis->m58 = 0;

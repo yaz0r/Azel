@@ -759,16 +759,16 @@ void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::
             addObjectToDrawList(pModelData->m0_3dModel);
         }
 
-        assert((*r7).size() == r6->m_count);
+        assert((*r7).size() == r6->m4_count);
 
-        if (r6->m_count == 0)
+        if (r6->m4_count == 0)
         {
             assert((*r7).size() == 0);
         }
 
-        for (u32 i = 0; i < r6->m_count; i++)
+        for (u32 i = 0; i < r6->m4_count; i++)
         {
-            sSaturnPtr r4 = r6->m_ptr + (i * 20) + 4;
+            sSaturnPtr r4 = r6->m0_ptr + (i * 20) + 4;
             sVec3_FP input = readSaturnVec3(r4);
             sVec3_FP& output = (*r7)[i];
             transformAndAddVecByCurrentMatrix(&input, &output);
@@ -817,16 +817,16 @@ void submitModelToRendering(sModelHierarchy* pModelData, std::vector<sMatrix4x3>
             addObjectToDrawList(pModelData->m0_3dModel);
         }
 
-        assert((*r7).size() == r6->m_count);
+        assert((*r7).size() == r6->m4_count);
 
-        if (r6->m_count == 0)
+        if (r6->m4_count == 0)
         {
             assert((*r7).size() == 0);
         }
 
-        for (u32 i = 0; i < r6->m_count; i++)
+        for (u32 i = 0; i < r6->m4_count; i++)
         {
-            sSaturnPtr r4 = r6->m_ptr + (i * 20) + 4;
+            sSaturnPtr r4 = r6->m0_ptr + (i * 20) + 4;
             sVec3_FP input = readSaturnVec3(r4);
             sVec3_FP& output = (*r7)[i];
             transformAndAddVecByCurrentMatrix(&input, &output);
@@ -1096,9 +1096,9 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
 
     for(u32 i=0; i<pDragonStateData1->m12_numBones; i++)
     {
-        if (r12->m_count > 0)
+        if (r12->m4_count > 0)
         {
-            pDragonStateData1->m44_hotpointData[i].resize(r12->m_count);
+            pDragonStateData1->m44_hotpointData[i].resize(r12->m4_count);
         }
         else
         {
@@ -3527,9 +3527,9 @@ void playAnimationGenericSub0Sub0(sModelHierarchy* pModelData, std::vector<sPose
             addObjectToDrawList(pModelData->m0_3dModel);
         }
 
-        for (u32 i = 0; i < r6->m_count; i++)
+        for (u32 i = 0; i < r6->m4_count; i++)
         {
-            sSaturnPtr r4 = r6->m_ptr + (i * 20) + 4;
+            sSaturnPtr r4 = r6->m0_ptr + (i * 20) + 4;
             sVec3_FP input = readSaturnVec3(r4);
             sVec3_FP& output = (*r7)[i];
             transformAndAddVecByCurrentMatrix(&input, &output);

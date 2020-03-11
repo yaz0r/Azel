@@ -8,15 +8,15 @@
 
 void sBattleOverlayTask_C_Init(sBattleOverlayTask_C* pThis)
 {
-    gBattleManager->m10_battleOverlay->mC = pThis;
+    gBattleManager->m10_battleOverlay->mC_targetSystem = pThis;
 
     for (int i = 0; i < 0x80; i++)
     {
-        pThis->m0[i] = &gBattleManager->m10_battleOverlay->m4_battleEngine->m49C[i];
+        pThis->m0_enemyTargetables[i] = &gBattleManager->m10_battleOverlay->m4_battleEngine->m49C_enemies[i];
     }
 }
 
-s32 sBattleOverlayTask_C_UpdateSub0(s_battleDragon_8C* pThis)
+s32 sBattleOverlayTask_C_UpdateSub0(sBattleTargetable* pThis)
 {
     FunctionUnimplemented();
     return 1;
@@ -27,24 +27,24 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
     pThis->m200_cameraMinAltitude = gBattleManager->m10_battleOverlay->m4_battleEngine->m35C_cameraAltitudeMinMax[0];
     pThis->m204_cameraMaxAltitude = gBattleManager->m10_battleOverlay->m4_battleEngine->m35C_cameraAltitudeMinMax[1];
 
-    std::array<s_battleEngineSub, 0x80>::iterator psVar8 = gBattleManager->m10_battleOverlay->m4_battleEngine->m49C.begin();
+    std::array<s_battleEnemy, 0x80>::iterator psVar8 = gBattleManager->m10_battleOverlay->m4_battleEngine->m49C_enemies.begin();
     for (int i = 0; i < 0x80; i++)
     {
         if (psVar8->m0_isActive > -1)
         {
-            if ((psVar8->m4->m50 & 0x40000) == 0) {
-                psVar8->m4->m40 = *psVar8->m4->m4;
-                s_battleDragon_InitSub5Sub0(psVar8->m4);
+            if ((psVar8->m4_targetable->m50 & 0x40000) == 0) {
+                psVar8->m4_targetable->m40 = *psVar8->m4_targetable->m4;
+                battleTargetable_updatePosition(psVar8->m4_targetable);
             }
             else
             {
-                if ((psVar8->m4->m50 & 1) == 0)
+                if ((psVar8->m4_targetable->m50 & 1) == 0)
                 {
-                    gBattleManager->m10_battleOverlay->m4_battleEngine->m498--;
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies--;
                 }
                 psVar8->m0_isActive = -1;
                 psVar8->m8_distanceToDragonSquare = 0x7fffffff;
-                psVar8->m4 = nullptr;
+                psVar8->m4_targetable = nullptr;
             }
         }
         psVar8++;
@@ -67,7 +67,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
 
     pThis->m20A_numSelectableEnemies = 0;
 
-    psVar8 = gBattleManager->m10_battleOverlay->m4_battleEngine->m49C.begin();
+    psVar8 = gBattleManager->m10_battleOverlay->m4_battleEngine->m49C_enemies.begin();
     for (int i = 0; i < 0x80; i++)
     {
         psVar8->m8_distanceToDragonSquare = 0x7fffffff;
@@ -78,38 +78,38 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
             switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
             {
             case 0:
-                psVar8->m4->m5A = 0;
-                if ((psVar8->m4->m50 & 0x80000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4))
+                psVar8->m4_targetable->m5A = 0;
+                if ((psVar8->m4_targetable->m50 & 0x80000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4_targetable))
                 {
                     psVar8->m0_isActive = 1;
-                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
+                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
                     pThis->m20A_numSelectableEnemies++;
                 }
                 break;
             case 1:
-                psVar8->m4->m5A = 0;
-                if ((psVar8->m4->m50 & 0x40000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4))
+                psVar8->m4_targetable->m5A = 0;
+                if ((psVar8->m4_targetable->m50 & 0x40000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4_targetable))
                 {
                     psVar8->m0_isActive = 1;
-                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
+                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
                     pThis->m20A_numSelectableEnemies++;
                 }
                 break;
             case 2:
-                psVar8->m4->m5A = 0;
-                if ((psVar8->m4->m50 & 0x20000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4))
+                psVar8->m4_targetable->m5A = 0;
+                if ((psVar8->m4_targetable->m50 & 0x20000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4_targetable))
                 {
                     psVar8->m0_isActive = 1;
-                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
+                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
                     pThis->m20A_numSelectableEnemies++;
                 }
                 break;
             case 3:
-                psVar8->m4->m5A = 0;
-                if ((psVar8->m4->m50 & 0x10000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4))
+                psVar8->m4_targetable->m5A = 0;
+                if ((psVar8->m4_targetable->m50 & 0x10000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4_targetable))
                 {
                     psVar8->m0_isActive = 1;
-                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4->m10, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
+                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
                     pThis->m20A_numSelectableEnemies++;
                 }
                 break;

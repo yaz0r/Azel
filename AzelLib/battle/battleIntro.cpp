@@ -12,8 +12,8 @@
 struct sBattleIntroSubTask : public s_workAreaTemplate<sBattleIntroSubTask>
 {
     s16 m0_frameIndex;
-    sVec3_FP m4_translation;
-    sVec3_FP m10_rotation;
+    sVec3_FP m4_currentCameraPosition;
+    sVec3_FP m10_desiredCameraPosition;
     u8* m1C_pCameraData;
     u8* m20;
     s8 m24_interpolationType;
@@ -100,7 +100,7 @@ void createBattleIntroTaskSub2(sBattleIntroSubTask* pThis)
         addTraceLog(localVector, "localVector");
     }
 
-    pThis->m4_translation = gBattleManager->m10_battleOverlay->m18_dragon->m8_position + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0 + localVector;
+    pThis->m4_currentCameraPosition = gBattleManager->m10_battleOverlay->m18_dragon->m8_position + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0 + localVector;
 }
 
 void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
@@ -110,17 +110,17 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
     switch (pThis->m24_interpolationType)
     {
     case 0:
-        pThis->m10_rotation = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter +
+        pThis->m10_desiredCameraPosition = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter +
             MTH_Mul(
                 fixedPoint(READ_BE_S16(pThis->m20 + pThis->m0_frameIndex * 2)) * 256,
                 deltaPosition - gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter
             );
         break;
     case 1:
-        pThis->m10_rotation = deltaPosition + MTH_Mul(FP_Div(pThis->m0_frameIndex * 512, 0x960000), gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - deltaPosition);
+        pThis->m10_desiredCameraPosition = deltaPosition + MTH_Mul(FP_Div(pThis->m0_frameIndex * 512, 0x960000), gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - deltaPosition);
         break;
     case 2:
-        pThis->m10_rotation = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
+        pThis->m10_desiredCameraPosition = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
         break;
     default:
         assert(0);
@@ -131,7 +131,7 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
         addTraceLog(gBattleManager->m10_battleOverlay->m18_dragon->m8_position, "m8_position");
         addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
         addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter, "mC");
-        addTraceLog(pThis->m10_rotation, "m10_rotation");
+        addTraceLog(pThis->m10_desiredCameraPosition, "m10_rotation");
     }
 }
 
@@ -213,8 +213,8 @@ p_workArea createBattleIntroTask(p_workArea parent)
 
     createBattleIntroTaskSub2(pNewTask);
     createBattleIntroTaskSub3(pNewTask);
-    battleEngine_InitSub6(&pNewTask->m4_translation);
-    battleEngine_InitSub7(&pNewTask->m10_rotation);
+    battleEngine_setCurrentCameraPositionPointer(&pNewTask->m4_currentCameraPosition);
+    battleEngine_setDesiredCameraPositionPointer(&pNewTask->m10_desiredCameraPosition);
     battleEngine_InitSub8();
 
     return pNewTask;

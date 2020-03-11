@@ -1,9 +1,9 @@
 #pragma once
 
-struct s_battleEngineSub
+struct s_battleEnemy
 {
     s8 m0_isActive;
-    struct s_battleDragon_8C* m4;
+    struct sBattleTargetable* m4_targetable;
     s32 m8_distanceToDragonSquare;
     // size C?
 };
@@ -30,7 +30,7 @@ enum eBattleModes
     mB_enemyMovingDragon = 0xB,
     mC_commandMenuOpen = 0xC,
     mE_battleIntro = 0xE,
-    m10 = 0x10,
+    m10_position = 0x10,
 };
 
 struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine, sSaturnPtr>
@@ -130,6 +130,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     u8 m3A0_LaserType; // 0: single, else multi
     s16 m3A2;
     std::array<s8, 2> m3A4_prelockMode;
+    s8 m3A6_numGunShots;
     s8 m3A7;
     sSaturnPtr m3A8_overlayBattledata;
     sSaturnPtr m3AC;
@@ -139,12 +140,12 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s_battleEngine_3B4 m3B4;
     struct s_battleEngineSub0* m3CC;
     p_workArea m3D0;
-    sVec3_FP* m3D4;
-    sVec3_FP* m3D8;
+    sVec3_FP* m3D4_pCurrentCameraPosition;
+    sVec3_FP* m3D8_pDesiredCameraPosition;
     sVec3_FP m3DC;
     sVec3_FP m3E8;
     sVec3_FP m3F4;
-    sVec3_FP m40C;
+    sVec3_FP m40C_gunTarget;
     sVec3_FP m418;
     sVec3_FP m424;
     s16 m430;
@@ -158,16 +159,16 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP m474;
     std::array<s16, 2> m480;
     std::array<std::array<s16, 2>, 5> m484;
-    s16 m498;
-    std::array<s_battleEngineSub, 0x80> m49C;
+    s16 m498_numEnemies;
+    std::array<s_battleEnemy, 0x80> m49C_enemies;
     // size: 0xaa8
 };
 
 s32 BattleEngineSub0_UpdateSub0();
 s32 s_battleDragon_InitSub0();
 
-void battleEngine_InitSub6(sVec3_FP* pData);
-void battleEngine_InitSub7(sVec3_FP* pData);
+void battleEngine_setCurrentCameraPositionPointer(sVec3_FP* pData);
+void battleEngine_setDesiredCameraPositionPointer(sVec3_FP* pData);
 void battleEngine_InitSub8();
 void battleEngine_UpdateSub7Sub3();
 

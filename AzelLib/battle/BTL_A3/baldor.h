@@ -35,12 +35,12 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
     s8 m9;
     s8 mA_indexInFormation;
     s8 mB;
-    s16 mC;
+    s16 mC_numTargetables;
     s16 mE;
     s8 m10_HP;
     s8 m12;
-    std::vector<s_battleDragon_8C> m14;
-    std::vector<sVec3_FP> m18;
+    std::vector<sBattleTargetable> m14_targetable;
+    std::vector<sVec3_FP> m18_position;
     pvecControl m1C_translation;
     pvecControl m28_rotation;
     struct sFormationData* m34_formationEntry;
@@ -59,4 +59,4 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
 
 sBaldor* createBaldor(s_workAreaCopy* parent, struct sFormationData* pFormationEntry);
 
-sVec3_FP* Baldor_updateSub0Sub2Sub1(s_battleDragon_8C& param1); // TODO: cleanup
+sVec3_FP* getBattleTargetablePosition(sBattleTargetable& param1); // TODO: cleanup

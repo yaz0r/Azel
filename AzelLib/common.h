@@ -368,6 +368,8 @@ struct s_gameStats
     u32 dyne; // 38
     u32 frameCounter; //3C
 
+    s32 m5C_gunShotFired;
+
     u32 m70; //70
 
     char m94_playerName[17];
@@ -519,8 +521,8 @@ extern const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX];
 
 struct s_RiderDefinitionSub
 {
-    sSaturnPtr m_ptr;
-    u32 m_count;
+    sSaturnPtr m0_ptr;
+    u32 m4_count;
 };
 
 struct s_RiderDefinition

@@ -1,12 +1,12 @@
 #pragma once
 
-struct s_battleDragon_8C
+struct sBattleTargetable
 {
     struct s_battleDragon* m0;
     sVec3_FP* m4;
     sVec3_FP* m8;
     s32 mC;
-    sVec3_FP m10;
+    sVec3_FP m10_position;
     sVec3_FP m1C;
     sVec3_FP m28;
     sVec3_FP m34;
@@ -34,7 +34,7 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
     sVec3_FP m74_targetRotation;
     s32 m84;
     s32 m88;
-    s_battleDragon_8C m8C;
+    sBattleTargetable m8C;
     sVec3_FP m90;
     sVec3_FP m9C;
     sVec3_FP mCC;
@@ -60,4 +60,4 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
 
 void battleEngine_createDragonTask(s_workAreaCopy* parent);
 
-void s_battleDragon_InitSub5Sub0(s_battleDragon_8C* pThis);
+void battleTargetable_updatePosition(sBattleTargetable* pThis);

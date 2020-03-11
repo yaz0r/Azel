@@ -192,9 +192,9 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             {
             case 0: // gun attack
                 uVar9 = 0;
-                if ((0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m498)
+                if ((0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies)
                     && (0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo)
-                    && (0 < gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies))
+                    && (0 < gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies))
                 {
                     pThis->m20 |= 0x12;
                     clearVdp2TextArea();
@@ -205,10 +205,10 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 break;
             case 1: // homing laser
                 uVar9 = 0;
-                if (((0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m498) &&
+                if (((0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies) &&
                     (0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo)) &&
                     ((((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 1) == 0 &&
-                    (0 < (gBattleManager->m10_battleOverlay->mC->m20A_numSelectableEnemies))))) {
+                    (0 < (gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies))))) {
                     pThis->m20 |= 0x14;
                     clearVdp2TextArea();
                     uVar9 = 1;

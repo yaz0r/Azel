@@ -370,6 +370,21 @@ T* createSubTaskFromFunction(p_workArea parentTask, typename T::FunctionType Upd
     return pNewTask;
 }
 
+template<typename T>
+T* createSubTaskFromFunctionWithCopy(s_workAreaCopy* parentTask, typename T::FunctionType UpdateFunction)
+{
+    T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, new T));
+    pNewTask->m_UpdateMethod = UpdateFunction;
+    pNewTask->getTask()->m_taskName = T::getTaskName();
+
+    //copy
+    pNewTask->m0_dramAllocation = parentTask->m0_dramAllocation;
+    pNewTask->m4_vd1Allocation = parentTask->m4_vd1Allocation;
+
+    PDS_CategorizedLog(eLogCategories::log_task, "Created task (from function) with copy%s\n", T::getTaskName());
+    return pNewTask;
+}
+
 p_workArea createSubTask(p_workArea workArea, p_workArea pNewWorkArea);
 p_workArea createSubTaskWithArg(p_workArea workArea, p_workArea pNewWorkArea);
 p_workArea createSiblingTaskWithArg(p_workArea workArea, p_workArea pNewWorkArea);

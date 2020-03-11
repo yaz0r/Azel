@@ -43,7 +43,7 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
         }
     }
 
-    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m498 > 0)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies > 0)
     {
         if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
         {

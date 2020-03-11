@@ -176,16 +176,16 @@ void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
     pThis->m180_cameraTranslation[0] = (*pThis->m1B8_pCameraTranslationSource)[0];
     pThis->m180_cameraTranslation[1] = (*pThis->m1B8_pCameraTranslationSource)[1];
     
-    if (gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude + 0x1000 < pThis->m180_cameraTranslation[1])
+    if (gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude + 0x1000 < pThis->m180_cameraTranslation[1])
     {
-        if (gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude - 0x1000 <= pThis->m180_cameraTranslation[1])
+        if (gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude - 0x1000 <= pThis->m180_cameraTranslation[1])
         {
-            pThis->m180_cameraTranslation[1] = gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude - 0x1000;
+            pThis->m180_cameraTranslation[1] = gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude - 0x1000;
         }
     }
     else
     {
-        pThis->m180_cameraTranslation[1] = gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude + 0x1000;
+        pThis->m180_cameraTranslation[1] = gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude + 0x1000;
     }
     
     pThis->m180_cameraTranslation[2] = (*pThis->m1B8_pCameraTranslationSource)[2];
@@ -316,16 +316,16 @@ void battleGrid_draw(s_battleGrid* pThis)
     transformAndAddVec(pThis->mE4_currentCameraReferenceCenter, transformedCameraPosition, pThis->m150_cameraMatrix);
 
     fixedPoint iVar3 = transformedCameraPosition[1] - 0x1000;
-    if (iVar3 < gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude)
+    if (iVar3 < gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude)
     {
-        transformedCameraTarget[1] -= iVar3 - gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude;
-        transformedCameraPosition[1] -= iVar3 - gBattleManager->m10_battleOverlay->mC->m204_cameraMaxAltitude;
+        transformedCameraTarget[1] -= iVar3 - gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude;
+        transformedCameraPosition[1] -= iVar3 - gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude;
     }
 
-    if (gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude + pThis->m134_desiredCameraPosition[2] < transformedCameraPosition[1])
+    if (gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude + pThis->m134_desiredCameraPosition[2] < transformedCameraPosition[1])
     {
-        transformedCameraTarget[1] -= gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
-        transformedCameraPosition[1] -= gBattleManager->m10_battleOverlay->mC->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
+        transformedCameraTarget[1] -= gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
+        transformedCameraPosition[1] -= gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
     }
 
     generateCameraMatrix(&cameraProperties2, transformedCameraPosition, transformedCameraTarget, transformedCameraUp);
