@@ -125,6 +125,18 @@ public:
         return value;
     }
 
+    static fixedPoint fromInteger(s16 integer)
+    {
+        fixedPoint newFixedPoint;
+        newFixedPoint.setFromInteger(integer);
+        return newFixedPoint;
+    }
+
+    static s32 toInteger(const fixedPoint& fp)
+    {
+        return fp.asS32() >> 0x10;
+    }
+
     fixedPoint normalized() const
     {
         if (m_value & 0x8000000)

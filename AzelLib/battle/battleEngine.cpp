@@ -2044,8 +2044,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
             pThis->m40C_gunTarget = *getBattleTargetablePosition(*gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
         }
         gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[2] = -vecDistance(*pThis->m3D4_pCurrentCameraPosition, *pThis->m3D8_pDesiredCameraPosition);
-        pThis->m384_battleModeDelay++;
-        if (pThis->m384_battleModeDelay > 4)
+        if (pThis->m384_battleModeDelay++ > 4)
         {
             pThis->m384_battleModeDelay = 0;
             pThis->m38D_battleSubMode++;
@@ -2064,7 +2063,28 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
         pThis->m40C_gunTarget = pThis->mC_battleCenter + pThis->m3E8;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
         {
-            assert(0);
+            if (pThis->m384_battleModeDelay++ > 6)
+            {
+                pThis->m384_battleModeDelay = 0;
+                pThis->m38D_battleSubMode++;
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+            }
+        }
+        break;
+    case 7:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10 = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 8:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 9:
+        if (++pThis->m384_battleModeDelay > 4)
+        {
+            battleEngine_SetBattleMode16();
         }
         break;
     default:
