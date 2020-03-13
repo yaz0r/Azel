@@ -32,6 +32,7 @@ struct sGunArg
 struct sGunShotTask : public s_workAreaTemplateWithArgWithCopy<sGunShotTask, sGunArg*>
 {
     s_LCSTask340Sub::s_LCSTask340Sub_m58 m8;
+    sSaturnPtr m10_spriteSetup;
     sVec3_FP m14;
     sVec3_FP m20_transformedVector;
     sVec3_FP m2C;
@@ -128,13 +129,45 @@ s32 sGunShotTask_UpdateSub0(sVec3_FP* param1, sVec3_FP* param2, sVec3_FP* param3
     }
 }
 
+void increateBP(s32 param_1)
+{
+    if (mainGameState.gameStats.maxBP < mainGameState.gameStats.m14_currentBP + param_1)
+    {
+        mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.maxBP;
+    }
+    else
+    {
+        mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.m14_currentBP + param_1;
+    }
+}
+
 s32 sGunShotTask_UpdateSub1Sub0(sBattleTargetable* pTargetable, s32 param_2)
 {
     if ((((mainGameState.gameStats.mA_weaponType != 0x39) &&
         (mainGameState.gameStats.mA_weaponType != 0x3a)) &&
         (mainGameState.gameStats.mA_weaponType != 0x3b)) &&
         (mainGameState.gameStats.mA_weaponType != 0x3c)) {
-        assert(0);
+
+        s32 iVar1;
+
+        if (mainGameState.gameStats.mA_weaponType == 0x3d) {
+            iVar1 = gBattleManager->m10_battleOverlay->m4_battleEngine->m3A6_numGunShots * 0xc0000;
+        }
+        else {
+            if (mainGameState.gameStats.mA_weaponType != 0x3e) {
+                if (mainGameState.gameStats.mA_weaponType != 0x3f) {
+                    return param_2;
+                }
+                if (pTargetable->m60 < 0xb) {
+                    return param_2;
+                }
+                iVar1 = MTH_Mul(fixedPoint::fromInteger(param_2), 0x1b333);
+                return fixedPoint::toInteger(iVar1 + 0x8000);
+            }
+            iVar1 = gBattleManager->m10_battleOverlay->m4_battleEngine->m3A6_numGunShots << 0x14;
+        }
+        iVar1 = FP_Div(fixedPoint::fromInteger(mainGameState.gameStats.maxBP), iVar1);
+        increateBP(fixedPoint::toInteger(iVar1 + 0x8000));
     }
 
     return param_2;
@@ -311,9 +344,161 @@ void sGunShotTask_Update(sGunShotTask* pThis)
     }
 }
 
-void sGunShotTask_Draw(sGunShotTask* pThis)
+void sGunShotTask_SetupSpriteData(sGunShotTask* pThis)
+{
+    switch (mainGameState.gameStats.mA_weaponType)
+    {
+    case 0x39:
+        pThis->m10_spriteSetup = gCurrentBattleOverlay->getSaturnPtr(0x60AE424);
+        break;
+    case 0x3B:
+        pThis->m10_spriteSetup = gCurrentBattleOverlay->getSaturnPtr(0x60AE42C);
+        break;
+    case 0x3F:
+        pThis->m10_spriteSetup = gCurrentBattleOverlay->getSaturnPtr(0x60AE43C);
+        break;
+    case 0x40:
+        pThis->m10_spriteSetup = gCurrentBattleOverlay->getSaturnPtr(0x60AE434);
+        break;
+    default:
+        break;
+    }
+}
+
+s32 isGunShotVisible(std::array<sVec3_FP, 2>& param_1, s_graphicEngineStatus_405C& param_2)
 {
     FunctionUnimplemented();
+    return 1;
+}
+
+s32 sGunShotTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param_1, s32 param_2, s_graphicEngineStatus_405C& param_3, sMatrix4x3& param_4)
+{
+    if (isGunShotVisible(param_1, param_3))
+    {
+        sVec2_FP local_38;
+        fixedPoint ratio0 = FP_Div(0x10000, param_1[0][2]);
+        local_38[0] = MTH_Mul_5_6(param_3.m18_widthScale, param_1[0][0], ratio0);
+        local_38[1] = MTH_Mul_5_6(param_3.m1C_heightScale, param_1[0][1], ratio0);
+
+        sVec2_FP local_2c;
+        fixedPoint ratio1 = FP_Div(0x10000, param_1[1][2]);
+        local_2c[0] = MTH_Mul_5_6(param_3.m18_widthScale, param_1[1][0], ratio1);
+        local_2c[1] = MTH_Mul_5_6(param_3.m1C_heightScale, param_1[1][1], ratio1);
+
+        s32 angle = atan2(local_38[1] - local_2c[1], local_38[0] - local_2c[0]);
+
+        sVec2_FP iVar9;
+        iVar9[0] = MTH_Mul_5_6(param_3.m18_widthScale, MTH_Mul(param_2, getSin(angle)), ratio0);
+        iVar9[1] = MTH_Mul_5_6(param_3.m1C_heightScale, MTH_Mul(param_2, getCos(angle)), ratio0);
+
+        param_4.matrix[0] = local_38[0] - iVar9[0];
+        param_4.matrix[1] = local_38[1] + iVar9[1];
+        param_4.matrix[9] = local_38[0] + iVar9[0];
+        param_4.matrix[10] = local_38[1] - iVar9[1];
+
+        sVec2_FP iVar3;
+        iVar3[0] = MTH_Mul_5_6(param_3.m18_widthScale, MTH_Mul(param_2, getSin(angle)), ratio1);
+        iVar3[1] = MTH_Mul_5_6(param_3.m1C_heightScale, MTH_Mul(param_2, getCos(angle)), ratio1);
+
+        param_4.matrix[3] = local_2c[0] - iVar3[0];
+        param_4.matrix[4] = local_2c[1] + iVar3[1];
+        param_4.matrix[6] = local_2c[0] + iVar3[0];
+        param_4.matrix[7] = local_2c[1] - iVar3[1];
+
+        return 1;
+    }
+
+    return 0;
+}
+
+void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 param_3, s16 param_4, u16 param_5, sSaturnPtr param_6, s32 param_7)
+{
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // command 0
+    setVdp1VramU16(vdp1WriteEA + 0x04, 0x484 | param_7); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, param_5); // CMDCOLR
+    setVdp1VramU16(vdp1WriteEA + 0x08, param_3); // CMDSRCA
+    setVdp1VramU16(vdp1WriteEA + 0x0A, param_4); // CMDSIZE
+    setVdp1VramU16(vdp1WriteEA + 0x0C, param_1.matrix[0].toInteger()); // CMDXA
+    setVdp1VramU16(vdp1WriteEA + 0x0E, -param_1.matrix[1].toInteger()); // CMDYA
+    setVdp1VramU16(vdp1WriteEA + 0x10, param_1.matrix[3].toInteger());
+    setVdp1VramU16(vdp1WriteEA + 0x12, -param_1.matrix[4].toInteger());
+    setVdp1VramU16(vdp1WriteEA + 0x14, param_1.matrix[6].toInteger());
+    setVdp1VramU16(vdp1WriteEA + 0x16, -param_1.matrix[7].toInteger());
+    setVdp1VramU16(vdp1WriteEA + 0x18, param_1.matrix[9].toInteger());
+    setVdp1VramU16(vdp1WriteEA + 0x1A, -param_1.matrix[10].toInteger());
+
+    int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+    sPerQuadDynamicColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
+
+    FunctionUnimplemented();
+    /*
+    outputColor.m0[0][0] = readSaturnU16(param_6 + 0);
+    outputColor.m0[0][1] = readSaturnU16(param_6 + 2);
+    outputColor.m0[1][0] = readSaturnU16(param_6 + 4);
+    outputColor.m0[1][1] = readSaturnU16(param_6 + 6);
+    */
+    setVdp1VramU16(vdp1WriteEA + 0x1C, outputColorIndex);
+
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+}
+
+void sGunShotTask_DrawSub1(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 param_3, s16 param_4, u16 param_5, sSaturnPtr param_6, s32 param_7)
+{
+    std::array<sVec3_FP, 2> sStack32;
+    transformAndAddVecByCurrentMatrix(&param_1[0], &sStack32[0]);
+    transformAndAddVecByCurrentMatrix(&param_1[1], &sStack32[1]);
+
+    sMatrix4x3 local_50;
+
+    if (sGunShotTask_DrawSub1Sub0(sStack32, param_2, graphicEngineStatus.m405C, local_50))
+    {
+        //if (sGunShotTask_DrawSub1Sub1(local_50, graphicEngineStatus.m405C) && sGunShotTask_DrawSub1Sub2(local_50))
+        FunctionUnimplemented();
+        {
+            sGunShotTask_DrawSub1Sub3(local_50, sStack32[1][2], param_3, param_4, param_5, param_6, param_7);
+        }
+    }
+}
+
+void sGunShotTask_Draw(sGunShotTask* pThis)
+{
+    if (!(pThis->m65 & 1))
+    {
+        std::array<sVec3_FP, 2> local_24;
+        local_24[0] = pThis->m14;
+        local_24[1] = pThis->m20_transformedVector;
+
+        sGunShotTask_SetupSpriteData(pThis);
+
+        if (!(pThis->m65 & 4))
+        {
+            assert(0);
+        }
+        else
+        {
+            sGunShotTask_DrawSub1(
+                local_24,
+                readSaturnS32(pThis->m94 + 0xC),
+                readSaturnU16(pThis->m94 + 0x4) + pThis->m90_vdp1Memory,
+                readSaturnS16(pThis->m94 + 0x6),
+                readSaturnU16(pThis->m94 + 0x8) + pThis->m90_vdp1Memory,
+                pThis->m10_spriteSetup,
+                8
+            );
+        }
+    }
+    else
+    {
+        assert(0);
+    }
 }
 
 void sGunShotRootTask_Update(sGunShotRootTask* pThis)

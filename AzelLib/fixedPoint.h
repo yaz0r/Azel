@@ -137,6 +137,11 @@ public:
         return fp.asS32() >> 0x10;
     }
 
+    s32 toInteger()
+    {
+        return toInteger(m_value);
+    }
+
     fixedPoint normalized() const
     {
         if (m_value & 0x8000000)

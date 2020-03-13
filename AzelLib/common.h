@@ -358,9 +358,9 @@ struct s_gameStats
     u16 mE_gunPower;
 
     u16 m10_currentHP; // 0x10
-    u16 classMaxHP; // 0x12
-    u16 currentBP; // 0x14
-    u16 classMaxBP; // 0x16
+    u16 m12_classMaxHP; // 0x12
+    u16 m14_currentBP; // 0x14
+    u16 m16_classMaxBP; // 0x16
     u16 m18; // 0x18
     s16 dragonCursorX; //1A
     s16 dragonCursorY; //1C

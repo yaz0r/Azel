@@ -6291,7 +6291,7 @@ void initFieldDragon(s_workArea* pWorkArea, u32 param)
         //loadRider2IfChanged(mainGameState.gameStats.rider1);
 
         mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.maxHP;
-        mainGameState.gameStats.currentBP = mainGameState.gameStats.maxBP;
+        mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.maxBP;
 
         getFieldTaskPtr()->updateDragonAndRiderOnInit = 2;
     }

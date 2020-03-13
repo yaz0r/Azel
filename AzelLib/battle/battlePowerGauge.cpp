@@ -314,7 +314,7 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
     tempCoordinates[0] = UIStart[0] + 0x3F;
     tempCoordinates[1] = UIStart[1] + 0x20;
 
-    drawGauge(tempCoordinates, 0x28, 3, mainGameState.gameStats.currentBP, mainGameState.gameStats.maxBP, 0, 0xFE10);
+    drawGauge(tempCoordinates, 0x28, 3, mainGameState.gameStats.m14_currentBP, mainGameState.gameStats.maxBP, 0, 0xFE10);
 
     battlePowerGauge_drawSub0(pThis);
 }

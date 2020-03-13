@@ -81,8 +81,8 @@ void updateDragonStatsFromLevel()
 
     if (gameStats.m1_dragonLevel < DR_LEVEL_8_FLOATER)
     {
-        gameStats.maxHP = gameStats.classMaxHP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxHP;
-        gameStats.maxBP = gameStats.classMaxBP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxBP;
+        gameStats.maxHP = gameStats.m12_classMaxHP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxHP;
+        gameStats.maxBP = gameStats.m16_classMaxBP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxBP;
     }
     else
     {
@@ -93,8 +93,8 @@ void updateDragonStatsFromLevel()
     if (gameStats.m10_currentHP > gameStats.maxHP)
         gameStats.m10_currentHP = gameStats.maxHP;
 
-    if (gameStats.currentBP > gameStats.maxBP)
-        gameStats.currentBP = gameStats.maxBP;
+    if (gameStats.m14_currentBP > gameStats.maxBP)
+        gameStats.m14_currentBP = gameStats.maxBP;
 
     computeDragonSprAndAglFromCursor();
 }
@@ -1953,7 +1953,7 @@ void setupPlayer(u32 fieldIndex)
     }
 
     mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.maxHP;
-    mainGameState.gameStats.currentBP = mainGameState.gameStats.maxBP;
+    mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.maxBP;
 
     freeRamResource();
 }
@@ -3046,7 +3046,7 @@ void s_statusMenuTaskWorkArea::Draw(s_statusMenuTaskWorkArea* pWorkArea)
     vdp2PrintfLargeFont("HP  %4d/%4d", mainGameState.gameStats.m10_currentHP, mainGameState.gameStats.maxHP);
 
     vdp2DebugPrintSetPosition(3, 41);
-    vdp2PrintfLargeFont("BP  %4d/%4d", mainGameState.gameStats.currentBP, mainGameState.gameStats.maxBP);
+    vdp2PrintfLargeFont("BP  %4d/%4d", mainGameState.gameStats.m14_currentBP, mainGameState.gameStats.maxBP);
 
     vdp2DebugPrintSetPosition(3, 49);
     vdp2PrintfLargeFont("DYNE %8d", mainGameState.gameStats.dyne);
