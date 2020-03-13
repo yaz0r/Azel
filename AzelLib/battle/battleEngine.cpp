@@ -351,9 +351,9 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     pThis->m1D0 = 0x111111;
     pThis->m1D4 = 0x111111;
 
-    pThis->m390[0] = 0;
-    pThis->m390[1] = 2;
-    pThis->m390[2] = 0;
+    pThis->m390 = 0;
+    pThis->m392 = 2;
+    pThis->m394 = 0;
 
     pThis->m3A2 = 0;
 
@@ -524,8 +524,8 @@ void battleEngine_SetBattleMode16()
 
     battleEngine_FlagQuadrantBitForAttack(0);
 
-    pBattleEngine->m390[0] = 0;
-    pBattleEngine->m390[2] = 0;
+    pBattleEngine->m390 = 0;
+    pBattleEngine->m392 = 0;
 
     pBattleEngine->m384_battleModeDelay = 0;
     pBattleEngine->m386 = 0;
@@ -1910,6 +1910,9 @@ void increaseStatsCount(int statIndex)
     case 1:
         mainGameState.gameStats.m5C_gunShotFired++;
         break;
+    case 2:
+        mainGameState.gameStats.m60_homingLaserFired++;
+        break;
     default:
         assert(0);
     }
@@ -1962,7 +1965,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
             else
             {
                 pThis->m398_currentSelectedEnemy++;
-                if (pThis->m390[1] <= pThis->m398_currentSelectedEnemy)
+                if (pThis->m392 <= pThis->m398_currentSelectedEnemy)
                 {
                     pThis->m398_currentSelectedEnemy -= pThis->m39C_maxSelectableEnemies;
                 }
@@ -2092,9 +2095,173 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
     }
 }
 
+void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaserSub0(s_battleEngine* pThis, sVec3_FP* param_2)
+{
+    param_2->zeroize();
+
+    switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+    {
+    case 0:
+        (*param_2)[2] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        (*param_2)[0] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        break;
+    case 1:
+        (*param_2)[0] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        (*param_2)[2] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        break;
+    case 2:
+        (*param_2)[2] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        (*param_2)[0] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        break;
+    case 3:
+        (*param_2)[0] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        (*param_2)[2] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void battleEngine_createHomingLaserRootTask(s_battleEngine* pThis, s16 param_2)
+{
+    FunctionUnimplemented();
+}
+
 void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* pThis)
 {
+    switch (pThis->m38D_battleSubMode)
+    {
+    case 0:
+        pThis->m38D_battleSubMode++;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1 = 1;
+        if (pThis->m390 == -1)
+        {
+            pThis->m386 = 1;
+            pThis->m390 = 0;
+        }
+        else
+        {
+            pThis->m386 = 0;
+        }
+        pThis->m384_battleModeDelay = 0;
+        break;
+    case 1:
+        pThis->m396 = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x060ad4e4) + gDragonState->mC_dragonType * 2);
 
+        if (pThis->m396 < gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies) {
+            pThis->m394 = pThis->m396;
+        }
+        else {
+            pThis->m394 = gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies;
+        }
+
+        if (pThis->m390++ >= pThis->m392)
+        {
+            pThis->m390 = 0;
+            if (pThis->m394 <= pThis->m384_battleModeDelay)
+            {
+                if (pThis->m394 > 0)
+                {
+                    battleCreateCinematicBars(pThis);
+                    pThis->m384_battleModeDelay = 0;
+                    pThis->m38D_battleSubMode++;
+                    if ((gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x15] == 0) && (pThis->m386 != 1))
+                    {
+                        pThis->m3B4.m16_combo--;
+                    }
+                    pThis->m386 = 0;
+                    increaseStatsCount(2);
+                }
+                else
+                {
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
+                    battleEngine_SetBattleMode16();
+                }
+            }
+            else
+            {
+                // make enemy targetables selected one by one
+                if (pThis->m3A0_LaserType == 0)
+                {
+                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m384_battleModeDelay]->m4_targetable->m50 |= 0x20000;
+                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m384_battleModeDelay]->m4_targetable->m50 &= ~0x10000;
+                }
+                else
+                {
+                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable->m50 |= 0x20000;
+                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable->m50 &= ~0x10000;
+                }
+                pThis->m384_battleModeDelay++;
+            }
+        }
+        break;
+    case 2:
+        if (pThis->m384_battleModeDelay++ > 4)
+        {
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
+            createBattleIntroTaskSub0();
+
+            gBattleManager->m10_battleOverlay->m8_gridTask->m138[1] = 0;
+            gBattleManager->m10_battleOverlay->m8_gridTask->mE4_currentCameraReferenceCenter[2] = 0;
+            gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[2] = -0xF000;
+            gBattleManager->m10_battleOverlay->m8_gridTask->m108_deltaCameraPosition[2] = 0;
+
+            pThis->m3E8.zeroize();
+            pThis->m3DC.zeroize();
+            pThis->m3F4.zeroize();
+
+            battleEngine_updateBattleMode_3_shootEnemyWithHomingLaserSub0(pThis, &pThis->m3E8);
+            battleEngineSub1_UpdateSub2(&pThis->m3F4, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
+            battleEngine_setCurrentCameraPositionPointer(&pThis->m3F4);
+            battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
+            battleEngine_InitSub8();
+        }
+        break;
+    case 3:
+        battleEngineSub1_UpdateSub2(&pThis->m3F4, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
+        if (pThis->m384_battleModeDelay++ > 5)
+        {
+            gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 1;
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
+        }
+        break;
+    case 4:
+        battleEngineSub1_UpdateSub2(&pThis->m3F4, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
+        if (gDragonState->mC_dragonType == 8)
+        {
+            if (pThis->m384_battleModeDelay++ == 3)
+            {
+                battleEngine_createHomingLaserRootTask(pThis, pThis->m394);
+                pThis->m384_battleModeDelay = 0;
+                pThis->m38D_battleSubMode++;
+            }
+        }
+        else
+        {
+            if (pThis->m384_battleModeDelay++ == 5)
+            {
+                battleEngine_createHomingLaserRootTask(pThis, pThis->m394);
+                pThis->m384_battleModeDelay = 0;
+                pThis->m38D_battleSubMode++;
+            }
+        }
+        break;
+    case 5:
+        battleEngineSub1_UpdateSub2(&pThis->m3F4, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
+        if (pThis->m384_battleModeDelay++ == 2)
+        {
+            battleEngine_setDesiredCameraPositionPointer(&pThis->mC_battleCenter);
+        }
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
+        {
+            assert(0);
+        }
+        break;
+    default:
+        assert(0);
+    }
 }
 
 void updateBattleIntro(s_battleEngine* pThis)

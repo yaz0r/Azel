@@ -32,7 +32,7 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
     sVec3_FP m44_deltaRotation;
     sVec3_FP m5C_deltaPosition;
     sVec3_FP m74_targetRotation;
-    s32 m84;
+    s32 m84; // 1: play homing laser animation
     s32 m88;
     sBattleTargetable m8C;
     sVec3_FP m90;

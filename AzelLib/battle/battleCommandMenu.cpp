@@ -321,7 +321,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 {
                     battleEngine_SetBattleMode(eBattleModes::m3_shootEnemeyWithHomingLaser);
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m184 = 0;
-                    gBattleManager->m10_battleOverlay->m4_battleEngine->m390[0] = 0;
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m390 = 0;
                 }
             }
             else

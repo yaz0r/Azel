@@ -369,6 +369,7 @@ struct s_gameStats
     u32 frameCounter; //3C
 
     s32 m5C_gunShotFired;
+    s32 m60_homingLaserFired;
 
     u32 m70; //70
 

@@ -124,7 +124,10 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     eBattleModes m38C_battleMode;
     s8 m38D_battleSubMode;
     s8 m38E;
-    std::array<s16, 3> m390;
+    s16 m390;
+    s16 m392;
+    s16 m394;
+    s16 m396;
     s16 m398_currentSelectedEnemy;
     s16 m39C_maxSelectableEnemies;
     u8 m3A0_LaserType; // 0: single, else multi

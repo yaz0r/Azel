@@ -193,7 +193,16 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
         {
             if (pThis->m84 & 1)
             {
-                assert(0);
+                if(uVar7 == 0)
+                {
+                    pThis->m1CC_currentAnimation = 10;
+                }
+                else
+                {
+                    pThis->m1CC_currentAnimation = 0xB;
+                }
+                s_battleDragon_InitSub4(pThis->m1CC_currentAnimation, 9);
+                return;
             }
             if (pThis->m84 & 0x10)
             {
