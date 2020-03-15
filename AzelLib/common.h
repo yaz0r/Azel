@@ -172,6 +172,8 @@ struct sVec3_FP
     }
 };
 
+sVec3_FP FP_Div(sVec3_FP divident, fixedPoint divisor);
+
 struct sVec3_S16_12_4
 {
     std::array<s16, 3> m_value;
@@ -362,8 +364,8 @@ struct s_gameStats
     u16 m14_currentBP; // 0x14
     u16 m16_classMaxBP; // 0x16
     u16 m18; // 0x18
-    s16 dragonCursorX; //1A
-    s16 dragonCursorY; //1C
+    s16 m1A_dragonCursorX; //1A
+    s16 m1C_dragonCursorY; //1C
     u32 XP; //20
     u32 dyne; // 38
     u32 frameCounter; //3C

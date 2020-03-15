@@ -66,8 +66,8 @@ void computeDragonSprAndAglFromCursor()
     case DR_LEVEL_0_BASIC_WING:
     case DR_LEVEL_6_LIGHT_WING:
     case DR_LEVEL_8_FLOATER:
-        mainGameState.gameStats.dragonCursorX = 0;
-        mainGameState.gameStats.dragonCursorY = 0;
+        mainGameState.gameStats.m1A_dragonCursorX = 0;
+        mainGameState.gameStats.m1C_dragonCursorY = 0;
         break;
     default:
         assert(0);
@@ -1504,13 +1504,13 @@ void loadDragon(s_workArea* pWorkArea)
 
     updateDragonStatsFromLevel();
 
-    gDragonState->m10_cursorX = mainGameState.gameStats.dragonCursorX;
-    gDragonState->m12_cursorY = mainGameState.gameStats.dragonCursorY;
+    gDragonState->m10_cursorX = mainGameState.gameStats.m1A_dragonCursorX;
+    gDragonState->m12_cursorY = mainGameState.gameStats.m1C_dragonCursorY;
     gDragonState->m1C_dragonArchetype = mainGameState.gameStats.dragonArchetype;
 
     s_loadDragonWorkArea* pLoadDragonWorkArea = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
-    morphDragon(pLoadDragonWorkArea, &gDragonState->m28_dragon3dModel, pLoadDragonWorkArea->m8_MCBInDram, pDragonData3, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
+    morphDragon(pLoadDragonWorkArea, &gDragonState->m28_dragon3dModel, pLoadDragonWorkArea->m8_MCBInDram, pDragonData3, mainGameState.gameStats.m1A_dragonCursorX, mainGameState.gameStats.m1C_dragonCursorY);
 
     loadDragonSub1(pLoadDragonWorkArea);
 }

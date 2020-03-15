@@ -22,7 +22,57 @@ sCommonOverlay_data gCommonFile;
 
 void sCommonOverlay_data::init()
 {
-    
+    // dragonLevelStats
+    {
+        sSaturnPtr pDataTable = getSaturnPtr(0x206FF8);
+        for (int i=0; i<9; i++)
+        {
+            sSaturnPtr pData = readSaturnEA(pDataTable + 4 * i);
+            sDragonLevelStat entry;
+
+            for (int j=0; j<3; j++)
+            {
+                entry.m0[j] = readSaturnS8(pData + 0 + j);
+            }
+            for (int j = 0; j < 3; j++)
+            {
+                entry.m3[j] = readSaturnS8(pData + 3 + j);
+            }
+            for (int j = 0; j < 3; j++)
+            {
+                entry.m6[j] = readSaturnS8(pData + 6 + j);
+            }
+            for (int j = 0; j < 3; j++)
+            {
+                entry.m9[j] = readSaturnS8(pData + 9 + j);
+            }
+            for (int j = 0; j < 3; j++)
+            {
+                entry.mC[j] = readSaturnS8(pData + 0xC + j);
+            }
+            for (int j = 0; j < 3; j++)
+            {
+                entry.mF[j] = readSaturnS8(pData + 0xF + j);
+            }
+            for (int j = 0; j < 3; j++)
+            {
+                entry.m12[j] = readSaturnS8(pData + 0x12 + j);
+            }
+            for (int j = 0; j < 3; j++)
+            {
+                entry.m15[j] = readSaturnS8(pData + 0x15 + j);
+            }
+            for (int j = 0; j < 3; j++)
+            {
+                entry.m18[j] = readSaturnS8(pData + 0x18 + j);
+            }
+            for (int j = 0; j < 3; j++)
+            {
+                entry.m1B[j] = readSaturnS8(pData + 0x1B + j);
+            }
+            dragonLevelStats.push_back(entry);
+        }
+    }
 }
 
 bool findFileOnDisc(const std::string& filename)

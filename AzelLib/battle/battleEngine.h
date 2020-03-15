@@ -5,7 +5,7 @@ struct s_battleEnemy
     s8 m0_isActive;
     struct sBattleTargetable* m4_targetable;
     s32 m8_distanceToDragonSquare;
-    // size C?
+    // size C
 };
 
 struct s_battleEngine_3B4

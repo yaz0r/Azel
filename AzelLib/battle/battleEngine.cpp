@@ -14,6 +14,7 @@
 #include "battleCommandMenu.h"
 #include "battleDebug.h"
 #include "gunShotRootTask.h"
+#include "homingLaser.h"
 #include "kernel/debug/trace.h"
 
 #include "BTL_A3/BTL_A3.h"
@@ -2120,11 +2121,6 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaserSub0(s_battleEngin
     default:
         assert(0);
     }
-}
-
-void battleEngine_createHomingLaserRootTask(s_battleEngine* pThis, s16 param_2)
-{
-    FunctionUnimplemented();
 }
 
 void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* pThis)

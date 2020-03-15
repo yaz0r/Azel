@@ -688,11 +688,11 @@ s_animLoop* dragonAnimLoop[DR_LEVEL_MAX][DR_ARCHETYPE_MAX] =
 
 void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkArea* pWorkArea)
 {
-    gDragonState->m10_cursorX = mainGameState.gameStats.dragonCursorX;
-    gDragonState->m12_cursorY = mainGameState.gameStats.dragonCursorY;
+    gDragonState->m10_cursorX = mainGameState.gameStats.m1A_dragonCursorX;
+    gDragonState->m12_cursorY = mainGameState.gameStats.m1C_dragonCursorY;
     gDragonState->m1C_dragonArchetype = mainGameState.gameStats.dragonArchetype;
 
-    fixedPoint r0 = sqrt_F(FP_Pow2(performDivision(0x880, mainGameState.gameStats.dragonCursorX << 16)) + FP_Pow2(performDivision(0x880, mainGameState.gameStats.dragonCursorY << 16)));
+    fixedPoint r0 = sqrt_F(FP_Pow2(performDivision(0x880, mainGameState.gameStats.m1A_dragonCursorX << 16)) + FP_Pow2(performDivision(0x880, mainGameState.gameStats.m1C_dragonCursorY << 16)));
 
     fixedPoint r6;
     s32 r10;
@@ -812,7 +812,7 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkAr
 
     updateAndInterpolateAnimation(&gDragonState->m28_dragon3dModel);
     updateAnimationMatrices(&gDragonState->m78_animData, &gDragonState->m28_dragon3dModel);
-    morphDragon(pWorkArea->m0, &gDragonState->m28_dragon3dModel, pWorkArea->m0->m8_MCBInDram, pWorkArea->m4, mainGameState.gameStats.dragonCursorX, mainGameState.gameStats.dragonCursorY);
+    morphDragon(pWorkArea->m0, &gDragonState->m28_dragon3dModel, pWorkArea->m0->m8_MCBInDram, pWorkArea->m4, mainGameState.gameStats.m1A_dragonCursorX, mainGameState.gameStats.m1C_dragonCursorY);
 }
 
 void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u32 shadowModelIndex, sVec3_FP* translation, sVec3_FP* rotation, fixedPoint shadowHeight)
