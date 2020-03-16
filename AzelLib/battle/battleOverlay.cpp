@@ -7,6 +7,12 @@ std::string sBattleOverlayName = "";
 
 battleOverlay* gCurrentBattleOverlay = nullptr;
 
+const std::vector<sF0Color> battleOverlay::m60AE424 = {{0xFE00, 0xC208, 0xC208, 0xFE00}};
+const std::vector<sF0Color> battleOverlay::m60AE42C;
+const std::vector<sF0Color> battleOverlay::m60AE434;
+const std::vector<sF0Color> battleOverlay::m60AE43C;
+
+
 static void battleOverlayTask_Init(sBattleOverlayTask* pThis)
 {
     gBattleManager->m10_battleOverlay = pThis;

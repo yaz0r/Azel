@@ -5,6 +5,12 @@ struct battleOverlay : public sSaturnMemoryFile
     virtual sSaturnPtr getBattleEngineInitData() = 0;
     virtual void invoke(sSaturnPtr Func, p_workArea pParent) = 0;
     virtual void invoke(sSaturnPtr Func, p_workArea pParent, u32, u32) = 0;
+
+    // Colors used for gun shots
+    static const std::vector<sF0Color> m60AE424;
+    static const std::vector<sF0Color> m60AE42C;
+    static const std::vector<sF0Color> m60AE434;
+    static const std::vector<sF0Color> m60AE43C;
 };
 
 extern battleOverlay* gCurrentBattleOverlay;

@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "gunShotRootTask.h"
 #include "battleManager.h"
 #include "battleOverlay.h"
 #include "battleEngine.h"
@@ -32,7 +33,7 @@ struct sGunArg
 struct sGunShotTask : public s_workAreaTemplateWithArgWithCopy<sGunShotTask, sGunArg*>
 {
     s_LCSTask340Sub::s_LCSTask340Sub_m58 m8;
-    sSaturnPtr m10_spriteSetup;
+    const std::vector<sF0Color>* m10_colorSetup;
     sVec3_FP m14;
     sVec3_FP m20_transformedVector;
     sVec3_FP m2C;
@@ -184,6 +185,16 @@ s32 sGunShotTask_UpdateSub1Sub2(sBattleTargetable* pTargetable, s16 param_2, s32
         {
             iVar2 = 0x10000;
             if (pTargetable->m50 & 0x800)
+            {
+                iVar2 = 0x8000;
+            }
+        }
+        break;
+    case 1:
+        if (!(pTargetable->m50 & 0x400))
+        {
+            iVar2 = 0x10000;
+            if (pTargetable->m50 & 0x200)
             {
                 iVar2 = 0x8000;
             }
@@ -349,16 +360,16 @@ void sGunShotTask_SetupSpriteData(sGunShotTask* pThis)
     switch (mainGameState.gameStats.mA_weaponType)
     {
     case 0x39:
-        pThis->m10_spriteSetup = gCurrentBattleOverlay->getSaturnPtr(0x60AE424);
+        pThis->m10_colorSetup = &battleOverlay::m60AE424;
         break;
     case 0x3B:
-        pThis->m10_spriteSetup = gCurrentBattleOverlay->getSaturnPtr(0x60AE42C);
+        pThis->m10_colorSetup = &battleOverlay::m60AE42C;
         break;
     case 0x3F:
-        pThis->m10_spriteSetup = gCurrentBattleOverlay->getSaturnPtr(0x60AE43C);
+        pThis->m10_colorSetup = &battleOverlay::m60AE43C;
         break;
     case 0x40:
-        pThis->m10_spriteSetup = gCurrentBattleOverlay->getSaturnPtr(0x60AE434);
+        pThis->m10_colorSetup = &battleOverlay::m60AE434;
         break;
     default:
         break;
@@ -411,7 +422,7 @@ s32 sGunShotTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param_1, s32 param_2, s_g
     return 0;
 }
 
-void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 param_3, s16 param_4, u16 param_5, sSaturnPtr param_6, s32 param_7)
+void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 param_3, s16 param_4, u16 param_5, const sF0Color& param_6, s32 param_7)
 {
     u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
     setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // command 0
@@ -450,7 +461,7 @@ void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 par
 
 }
 
-void sGunShotTask_DrawSub1(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 param_3, s16 param_4, u16 param_5, sSaturnPtr param_6, s32 param_7)
+void sGunShotTask_DrawSub1(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 param_3, s16 param_4, u16 param_5, const sF0Color& param_6, s32 param_7)
 {
     std::array<sVec3_FP, 2> sStack32;
     transformAndAddVecByCurrentMatrix(&param_1[0], &sStack32[0]);
@@ -490,7 +501,7 @@ void sGunShotTask_Draw(sGunShotTask* pThis)
                 readSaturnU16(pThis->m94 + 0x4) + pThis->m90_vdp1Memory,
                 readSaturnS16(pThis->m94 + 0x6),
                 readSaturnU16(pThis->m94 + 0x8) + pThis->m90_vdp1Memory,
-                pThis->m10_spriteSetup,
+                (*pThis->m10_colorSetup)[0],
                 8
             );
         }

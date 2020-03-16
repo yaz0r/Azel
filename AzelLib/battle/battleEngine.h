@@ -183,5 +183,6 @@ void battleEngine_FlagQuadrantForDanger(u8 quadrant);
 void battleEngine_FlagQuadrantForAttack(u8 quadrant);
 
 void fieldPaletteTaskInitSub0Sub2(); // TODO: clean
+void sEnemyAttackCamera_updateSub2();
 
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);

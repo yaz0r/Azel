@@ -46,6 +46,11 @@ struct BTL_A3_data : public battleOverlay
             break;
         }
     }
+
+    virtual void init()
+    {
+
+    }
 };
 
 void battle_A3_initMusic(p_workArea pThis)

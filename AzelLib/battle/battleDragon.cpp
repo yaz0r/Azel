@@ -500,7 +500,8 @@ void s_battleDragon_UpdateSub6()
 
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000)
     {
-        assert(0);
+        sEnemyAttackCamera_updateSub2();
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000 = 0;
     }
 }
 

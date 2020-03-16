@@ -2252,7 +2252,42 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
         }
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
         {
-            assert(0);
+            pThis->m394 = 0;
+            battleEngine_UpdateSub7Sub2();
+            gBattleManager->m10_battleOverlay->m8_gridTask->mE4_currentCameraReferenceCenter = gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition;
+            gBattleManager->m10_battleOverlay->m8_gridTask->mF0_currentCameraReferenceForward = gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget;
+            gBattleManager->m10_battleOverlay->m8_gridTask->m108_deltaCameraPosition.zeroize();
+            gBattleManager->m10_battleOverlay->m8_gridTask->m114_deltaCameraTarget.zeroize();
+
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000 = 1;
+            pThis->m384_battleModeDelay = 0;
+
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 1;
+            pThis->m38D_battleSubMode++;
+        }
+        break;
+    case 6:
+        if (pThis->m384_battleModeDelay++ > 0xF)
+        {
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+        }
+        break;
+    case 7:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10 = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 8:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 9:
+        if (pThis->m384_battleModeDelay++ > 4)
+        {
+            battleEngine_SetBattleMode16();
         }
         break;
     default:
