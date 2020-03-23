@@ -1,18 +1,6 @@
 #pragma once
 
-struct s_battleOverlay_20_sub
-{
-    fixedPoint m0_currentValue;
-    s32 m4;
-    s32 m8;
-    s32 mC;
-    fixedPoint m10_currentStepValue;
-    s32 m14_stepIncrement;
-    s16 m18;
-};
-
-void s_battleOverlay_20_updateSub0(s_battleOverlay_20_sub* pData);
-s32 s_battleOverlay_20_updateSub1(s_battleOverlay_20_sub* pData);
+#include "battle/interpolators/FPInterpolator.h"
 
 struct s_battleOverlay_20 : public s_workAreaTemplate<s_battleOverlay_20>
 {
@@ -30,8 +18,8 @@ struct s_battleOverlay_20 : public s_workAreaTemplate<s_battleOverlay_20>
     u16 m24;
     struct sBattleCommandMenu* m28_battleCommandMenu;
     u32 m2C;
-    s_battleOverlay_20_sub m30;
-    s_battleOverlay_20_sub m4C;
+    sFPInterpolator m30;
+    sFPInterpolator m4C;
     //size 0x68
 };
 

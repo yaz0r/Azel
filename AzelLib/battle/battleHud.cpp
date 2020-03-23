@@ -11,31 +11,6 @@
 #include "battlePowerGauge.h"
 #include "battleCommandMenu.h"
 
-void s_battleOverlay_20_updateSub0(s_battleOverlay_20_sub* pData)
-{
-    pData->m8 = (pData->mC - pData->m4) / 2;
-    pData->m10_currentStepValue = 0;
-    pData->m14_stepIncrement = FP_Div(0x8000000, pData->m18 << 0x10);
-    pData->m0_currentValue = pData->m4;
-}
-
-s32 s_battleOverlay_20_updateSub1(s_battleOverlay_20_sub* pData)
-{
-    if (pData->m10_currentStepValue > 0x7ffffff)
-    {
-        pData->m10_currentStepValue = 0x8000000;
-        pData->m14_stepIncrement = 0;
-        pData->m0_currentValue = pData->mC;
-        return true;
-    }
-    else
-    {
-        pData->m0_currentValue = (pData->m8 + pData->m4) - MTH_Mul(getCos(pData->m10_currentStepValue.getInteger() & 0xFFF), pData->m8);
-        pData->m10_currentStepValue += pData->m14_stepIncrement;
-        return false;
-    }
-}
-
 void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
 {
     pThis->m2C++;
@@ -51,15 +26,15 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
         }
         if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
         {
-            pThis->m30.m4 = 0x470000;
-            pThis->m30.mC = 0;
-            pThis->m30.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m30);
+            pThis->m30.m4_startValue = 0x470000;
+            pThis->m30.mC_targetValue = 0;
+            pThis->m30.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m30);
 
-            pThis->m4C.m4 = 0x470000;
-            pThis->m4C.mC = 0x470000;
-            pThis->m4C.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m4C);
+            pThis->m4C.m4_startValue = 0x470000;
+            pThis->m4C.mC_targetValue = 0x470000;
+            pThis->m4C.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m4C);
             pThis->m10_currentMode = 3;
             pThis->m12_nextMode = 1;
         }
@@ -70,15 +45,15 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
             if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && ((gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu->m20 & 0x10) == 0))
             {
                 // open command menu, scroll up
-                pThis->m30.m4 = 0;
-                pThis->m30.mC = -0x180000;
-                pThis->m30.m18 = 4;
-                s_battleOverlay_20_updateSub0(&pThis->m30);
+                pThis->m30.m4_startValue = 0;
+                pThis->m30.mC_targetValue = -0x180000;
+                pThis->m30.m18_interpolationLength = 4;
+                FPInterpolator_Init(&pThis->m30);
 
-                pThis->m4C.m4 = 0x470000;
-                pThis->m4C.mC = 0x180000;
-                pThis->m4C.m18 = 4;
-                s_battleOverlay_20_updateSub0(&pThis->m4C);
+                pThis->m4C.m4_startValue = 0x470000;
+                pThis->m4C.mC_targetValue = 0x180000;
+                pThis->m4C.m18_interpolationLength = 4;
+                FPInterpolator_Init(&pThis->m4C);
                 pThis->m10_currentMode = 3;
                 pThis->m12_nextMode = 2;
             }
@@ -86,15 +61,15 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
         else
         {
             // start hiding
-            pThis->m30.m4 = 0;
-            pThis->m30.mC = 0x470000;
-            pThis->m30.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m30);
+            pThis->m30.m4_startValue = 0;
+            pThis->m30.mC_targetValue = 0x470000;
+            pThis->m30.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m30);
 
-            pThis->m4C.m4 = 0x470000;
-            pThis->m4C.mC = 0x470000;
-            pThis->m4C.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m4C);
+            pThis->m4C.m4_startValue = 0x470000;
+            pThis->m4C.mC_targetValue = 0x470000;
+            pThis->m4C.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m4C);
             pThis->m10_currentMode = 3;
             pThis->m12_nextMode = 0;
         }
@@ -102,39 +77,39 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
     case 2: // command menu open
         if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && ((gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu->m20 & 0x10) != 0))
         {
-            pThis->m30.m4 = -0x180000;
-            pThis->m30.mC = 0;
-            pThis->m30.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m30);
+            pThis->m30.m4_startValue = -0x180000;
+            pThis->m30.mC_targetValue = 0;
+            pThis->m30.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m30);
 
-            pThis->m4C.m4 = -0x180000;
-            pThis->m4C.mC = 0x470000;
-            pThis->m4C.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m4C);
+            pThis->m4C.m4_startValue = -0x180000;
+            pThis->m4C.mC_targetValue = 0x470000;
+            pThis->m4C.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m4C);
             pThis->m10_currentMode = 3;
             pThis->m12_nextMode = 1;
         }
         else if (gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu == nullptr)
         {
-            pThis->m30.m4 = -0x180000;
-            pThis->m30.mC = 0x470000;
-            pThis->m30.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m30);
+            pThis->m30.m4_startValue = -0x180000;
+            pThis->m30.mC_targetValue = 0x470000;
+            pThis->m30.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m30);
 
-            pThis->m4C.m4 = -0x180000;
-            pThis->m4C.mC = 0x470000;
-            pThis->m4C.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m4C);
+            pThis->m4C.m4_startValue = -0x180000;
+            pThis->m4C.mC_targetValue = 0x470000;
+            pThis->m4C.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m4C);
             pThis->m10_currentMode = 3;
             pThis->m12_nextMode = 0;
         }
         break;
     case 3: // scrolling
-        if (s_battleOverlay_20_updateSub1(&pThis->m30))
+        if (FPInterpolator_Step(&pThis->m30))
         {
             pThis->m10_currentMode = pThis->m12_nextMode;
         }
-        s_battleOverlay_20_updateSub1(&pThis->m4C);
+        FPInterpolator_Step(&pThis->m4C);
         pThis->m18_part1Y = (pThis->m30.m0_currentValue + 0x8000) >> 0x10;
         pThis->m1C_part2Y = (pThis->m4C.m0_currentValue + 0x8000) >> 0x10;
         break;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "battle/interpolators/FPInterpolator.h"
+
 struct sBattleCommandMenu : public s_workAreaTemplate<sBattleCommandMenu>
 {
     s8 m0_selectedBattleCommand;
@@ -16,16 +18,7 @@ struct sBattleCommandMenu : public s_workAreaTemplate<sBattleCommandMenu>
     s32 m1C;
     u32 m20;
     s32 m24;
-    struct s1C0 // TODO: is this the same as s_battleOverlay_20_sub ?
-    {
-        fixedPoint m0_currentValue;
-        s32 m4;
-        s32 m8;
-        s32 mC;
-        fixedPoint m10_currentStepValue;
-        s32 m14_stepIncrement;
-        s16 m18;
-    } m1C0;
+    sFPInterpolator m1C0_scrollInterpolator;
     sVec3_FP m1DC;
     //size 0x1e8
 };

@@ -632,7 +632,7 @@ s32 battleEngine_UpdateSub7Sub0()
 
         pBattleEngine->m18C_status = 4;
         pBattleEngine->m188_flags.m80000_hideBattleHUD = 0;
-        if (0 < mainGameState.gameStats.m10_currentHP)
+        if (mainGameState.gameStats.m10_currentHP > 0)
         {
             battleEngine_UpdateSub7Sub2();
             battleEngine_UpdateSub7Sub3();
@@ -1091,12 +1091,12 @@ struct sEnemyAttackCamera : public s_workAreaTemplate<sEnemyAttackCamera>
 {
     s8 m1_cameraIndex;
     sVec3_FP m4;
-    sVec3_FP m10;
-    sVec3_FP m1C;
+    sVec3_FP m10_rotation1;
+    sVec3_FP m1C_rotation1Step;
     sVec3_FP m28;
     sVec3_FP m34;
-    sVec3_FP m40;
-    sVec3_FP m4C;
+    sVec3_FP m40_rotation2;
+    sVec3_FP m4C_rotation2Step;
     s16 m58;
 
     // size: 5C
@@ -1318,57 +1318,57 @@ void attackCamera5(sEnemyAttackCamera* pThis)
 
     if ((randomNumber() & 1) == 0)
     {
-        pThis->m1C[1] = 0xb60b6;
+        pThis->m1C_rotation1Step[1] = 0xb60b6;
     }
     else
     {
-        pThis->m1C[1] = -0xb60b6;
+        pThis->m1C_rotation1Step[1] = -0xb60b6;
     }
 
     switch (performModulo2(3, randomNumber()))
     {
     case 0:
-        pThis->m1C[0] = 0x2D82D;
+        pThis->m1C_rotation1Step[0] = 0x2D82D;
         break;
     case 1:
-        pThis->m1C[0] = -0x2D82D;
+        pThis->m1C_rotation1Step[0] = -0x2D82D;
         break;
     case 2:
-        pThis->m1C[0] = 0;
+        pThis->m1C_rotation1Step[0] = 0;
         break;
     default:
         assert(0);
         break;
     }
 
-    pThis->m10[0] = MTH_Mul(-0x1E0000, pThis->m1C[0]);
-    pThis->m10[1] = MTH_Mul(-0x1E0000, pThis->m1C[1]);
+    pThis->m10_rotation1[0] = MTH_Mul(-0x1E0000, pThis->m1C_rotation1Step[0]);
+    pThis->m10_rotation1[1] = MTH_Mul(-0x1E0000, pThis->m1C_rotation1Step[1]);
 }
 
 void attackCamera7(sEnemyAttackCamera* pThis)
 {
     if ((randomNumber() & 1) == 0)
     {
-        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = -0xAAAAAA;
-        pThis->m10[1] = -0xAAAAAA;
-        pThis->m1C[1] = 0xb60b6;
+        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = -0x71c71c;
+        pThis->m10_rotation1[1] = -0x5555555;
+        pThis->m1C_rotation1Step[1] = 0xb60b6;
     }
     else
     {
-        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = 0xAAAAAA;
-        pThis->m10[1] = 0xAAAAAA;
-        pThis->m1C[1] = 0xb60b6;
+        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = 0x71c71c;
+        pThis->m10_rotation1[1] = 0x5555555;
+        pThis->m1C_rotation1Step[1] = -0xb60b6;
     }
 
     if ((gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter[1] - gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1]) < 0)
     {
-        pThis->m10[0] = 0x38E38E;
-        pThis->m1C[0] = -0x5b05b;
+        pThis->m10_rotation1[0] = 0x555555;
+        pThis->m1C_rotation1Step[0] = -0x2d82d;
     }
     else
     {
-        pThis->m10[0] = -0x38E38E;
-        pThis->m1C[0] = 0x5b05b;
+        pThis->m10_rotation1[0] = -0x555555;
+        pThis->m1C_rotation1Step[0] = 0x2d82d;
     }
 
     pThis->m4.zeroize();
@@ -1428,25 +1428,25 @@ void attackCamera6(sEnemyAttackCamera* pThis)
     if ((randomNumber() & 1) == 0)
     {
         gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = -0xAAAAAA;
-        pThis->m10[1] = -0xAAAAAA;
-        pThis->m1C[1] = 0xb60b6;
+        pThis->m10_rotation1[1] = -0xAAAAAA;
+        pThis->m1C_rotation1Step[1] = 0xb60b6;
     }
     else
     {
         gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = 0xAAAAAA;
-        pThis->m10[1] = 0xAAAAAA;
-        pThis->m1C[1] = 0xb60b6;
+        pThis->m10_rotation1[1] = 0xAAAAAA;
+        pThis->m1C_rotation1Step[1] = 0xb60b6;
     }
 
     if ((gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter[1] - gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1]) < 0)
     {
-        pThis->m10[0] = 0x38E38E;
-        pThis->m1C[0] = -0x5b05b;
+        pThis->m10_rotation1[0] = 0x38E38E;
+        pThis->m1C_rotation1Step[0] = -0x5b05b;
     }
     else
     {
-        pThis->m10[0] = -0x38E38E;
-        pThis->m1C[0] = 0x5b05b;
+        pThis->m10_rotation1[0] = -0x38E38E;
+        pThis->m1C_rotation1Step[0] = 0x5b05b;
     }
 
     pThis->m4.zeroize();
@@ -1473,12 +1473,13 @@ void attackCamera6(sEnemyAttackCamera* pThis)
 
 void sEnemyAttackCamera_init(sEnemyAttackCamera* pThis)
 {
+    createBattleIntroTaskSub0();
     pThis->m4.zeroize();
     pThis->m34.zeroize();
-    pThis->m10.zeroize();
-    pThis->m40.zeroize();
-    pThis->m1C.zeroize();
-    pThis->m4C.zeroize();
+    pThis->m10_rotation1.zeroize();
+    pThis->m40_rotation2.zeroize();
+    pThis->m1C_rotation1Step.zeroize();
+    pThis->m4C_rotation2Step.zeroize();
     pThis->m1_cameraIndex = gBattleManager->m10_battleOverlay->m4_battleEngine->m433_attackCameraIndex;
     pThis->m58 = 0;
 
@@ -1531,7 +1532,7 @@ void sEnemyAttackCamera_updateSub0(int param_1)
 
     gBattleManager->m10_battleOverlay->m8_gridTask->m1 = param_1;
     gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
-    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac484) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
+    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1 + 0xC);
 }
 
 void sEnemyAttackCamera_updateSub1(int param_1)
@@ -1557,16 +1558,24 @@ void sEnemyAttackCamera_updateSub1(int param_1)
     pGrid->m114_deltaCameraTarget.zeroize();
 }
 
-void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4)
+void battleEngineSub1_UpdateSub2(sVec3_FP* pOutput, const sVec3_FP& translation, const sVec3_FP& inputVector, const sVec3_FP& rotation)
 {
     sVec3_FP temp;
 
     pushCurrentMatrix();
-    translateCurrentMatrix(param2);
-    rotateCurrentMatrixYXZ(&param4);
-    transformAndAddVecByCurrentMatrix(&param3, &temp);
-    transformAndAddVec(temp, *pVec, cameraProperties2.m28[0]);
+    translateCurrentMatrix(translation);
+    rotateCurrentMatrixYXZ(&rotation);
+    transformAndAddVecByCurrentMatrix(&inputVector, &temp);
+    transformAndAddVec(temp, *pOutput, cameraProperties2.m28[0]);
     popMatrix();
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(translation, "battleEngineSub1_UpdateSub2 translation");
+        addTraceLog(inputVector, "battleEngineSub1_UpdateSub2 inputVector");
+        addTraceLog(rotation, "battleEngineSub1_UpdateSub2 rotation");
+        addTraceLog(*pOutput, "battleEngineSub1_UpdateSub2 output");
+    }
 }
 
 void sEnemyAttackCamera_updateSub2()
@@ -1591,8 +1600,8 @@ void sEnemyAttackCamera_update(sEnemyAttackCamera* pThis)
     pThis->m58++;
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000)
     {
-        pThis->m10 += pThis->m1C;
-        pThis->m40 += pThis->m4C;
+        pThis->m10_rotation1 += pThis->m1C_rotation1Step;
+        pThis->m40_rotation2 += pThis->m4C_rotation2Step;
         switch (pThis->m1_cameraIndex)
         {
         case 1:
@@ -1600,8 +1609,38 @@ void sEnemyAttackCamera_update(sEnemyAttackCamera* pThis)
         case 3:
         case 4:
         case 5:
-            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m418, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m4, pThis->m10);
-            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m34, pThis->m40);
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m418, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m4, pThis->m10_rotation1);
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m34, pThis->m40_rotation2);
+            break;
+        case 7:
+            if (pThis->m58 < 0x1E)
+            {
+                pThis->m34 = pThis->m28;
+            }
+            else
+            {
+                if (pThis->m58 < 0x5A)
+                {
+                    pThis->m34 = MTH_Mul(FP_Div(0x54 - pThis->m58, 0x3C), pThis->m28);
+                }
+                else
+                {
+                    pThis->m34.zeroize();
+                }
+            }
+
+            if (pThis->m10_rotation1[0] > 0x1555555)
+            {
+                pThis->m1C_rotation1Step[0] = 0;
+            }
+
+            if (pThis->m10_rotation1[0] < -0x1555555)
+            {
+                pThis->m1C_rotation1Step[0] = 0;
+            }
+
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m418, gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter, pThis->m4, pThis->m10_rotation1);
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m34, pThis->m40_rotation2);
             break;
         case 8:
             if (pThis->m58 < 0x1E)
@@ -1620,18 +1659,18 @@ void sEnemyAttackCamera_update(sEnemyAttackCamera* pThis)
                 }
             }
 
-            if (pThis->m10[0] > 0x1555555)
+            if (pThis->m10_rotation1[0] > 0x1555555)
             {
-                pThis->m1C[0] = 0;
+                pThis->m1C_rotation1Step[0] = 0;
             }
 
-            if (pThis->m10[0] < -0x1555555)
+            if (pThis->m10_rotation1[0] < -0x1555555)
             {
-                pThis->m1C[0] = 0;
+                pThis->m1C_rotation1Step[0] = 0;
             }
 
-            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m418, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m4, pThis->m10);
-            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m34, pThis->m40);
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m418, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m4, pThis->m10_rotation1);
+            battleEngineSub1_UpdateSub2(&gBattleManager->m10_battleOverlay->m4_battleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m34, pThis->m40_rotation2);
             break;
         default:
             assert(0);

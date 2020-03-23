@@ -452,7 +452,7 @@ s32 sGunShotTask_DrawSub1Sub1(sMatrix4x3*, s_graphicEngineStatus_405C&)
     return 1;
 }
 
-void sHomingLaserTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param1, sSaturnPtr param_2, u16 param_3, s16 param_4, s16 param_5, const sF0Color& param_6, s32 param_7)
+void sHomingLaserTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param1, sSaturnPtr param_2, u16 param_3, s16 param_4, s16 param_5, const sF0Color* param_6, s32 param_7)
 {
     std::array<sVec3_FP, 2> sStack32;
 
@@ -499,7 +499,7 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
         }
         sSaturnPtr iVar5 = pThis->m10;
 
-        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + readSaturnS16(iVar5 + 8), readSaturnS16(iVar5 + 0xE), readSaturnS16(iVar5 + 0x14) + pThis->m14, (*iVar4)[iVar3 - 2], 8);
+        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + readSaturnS16(iVar5 + 8), readSaturnS16(iVar5 + 0xE), readSaturnS16(iVar5 + 0x14) + pThis->m14, &(*iVar4)[iVar3 - 2], 8);
     }
 
     iVar3 = pThis->m4_numLaserNodes - 2;
@@ -523,7 +523,7 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
         }
         sSaturnPtr iVar5 = pThis->m10;
 
-        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + readSaturnS16(iVar5 + 6), readSaturnS16(iVar5 + 0xC), readSaturnS16(iVar5 + 0x12) + pThis->m14, (*iVar4)[iVar3 - 1], 8);
+        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + readSaturnS16(iVar5 + 6), readSaturnS16(iVar5 + 0xC), readSaturnS16(iVar5 + 0x12) + pThis->m14, &(*iVar4)[iVar3 - 1], 8);
         iVar3--;
     }
     if (pThis->m8 < 1)
@@ -546,7 +546,7 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
         }
         sSaturnPtr iVar5 = pThis->m10;
 
-        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + readSaturnS16(iVar5 + 4), readSaturnS16(iVar5 + 0xA), readSaturnS16(iVar5 + 0x10) + pThis->m14, (*iVar4)[iVar3], 8);
+        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + readSaturnS16(iVar5 + 4), readSaturnS16(iVar5 + 0xA), readSaturnS16(iVar5 + 0x10) + pThis->m14, &(*iVar4)[iVar3], 8);
     }
 }
 

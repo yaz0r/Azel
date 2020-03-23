@@ -1,6 +1,7 @@
 #pragma once
 
 #include "battleHud.h"
+#include "battle/interpolators/FPInterpolator.h"
 
 struct battleHud2 : public s_workAreaTemplate<battleHud2>
 {
@@ -13,7 +14,7 @@ struct battleHud2 : public s_workAreaTemplate<battleHud2>
     sVec2_S16 m16_dragonIconPosition;
     s16 m1A;
     s16 m1C;
-    s_battleOverlay_20_sub m20;
+    sFPInterpolator m20_scrollInterpolator;
     //size 0x3C
 };
 

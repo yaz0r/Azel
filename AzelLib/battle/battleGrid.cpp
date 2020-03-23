@@ -167,8 +167,8 @@ void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
     if (isTraceEnabled())
     {
         addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m104_dragonPosition, "m104_dragonStartPosition");
-        //addTraceLog(pThis->m1C, "pThis->m1C");
-        //addTraceLog(pThis->m28, "pThis->m28");
+        addTraceLog(pThis->m1C, "pThis->m1C");
+        addTraceLog(pThis->m28, "pThis->m28");
     }
 
     pThis->m34_cameraPosition = gBattleManager->m10_battleOverlay->m4_battleEngine->m104_dragonPosition + pThis->m1C + pThis->m28;
@@ -201,6 +201,7 @@ void battleGrid_updateSub1Sub3(s_battleGrid* pThis)
 {
     if (isTraceEnabled())
     {
+        addTraceLog(pThis->m64_cameraRotationTarget, "m64_cameraRotationTarget");
         addTraceLog(pThis->m1BC_cameraRotationStep, "m1BC_cameraRotationStep");
         addTraceLog(pThis->m84_cameraRotationDelta, "m84_cameraRotationDelta");
         addTraceLog(pThis->mB4_cameraRotation, "mB4_cameraRotation");
@@ -256,7 +257,7 @@ void battleGrid_updateSub1(s_battleGrid* pThis)
             assert(0);
             //battleGrid_updateSub1Sub4(iParm1);
         }
-        rotateMatrixZYX(&pThis->mB4_cameraRotation, &pThis->m150_cameraMatrix);
+        rotateMatrixYXZ(&pThis->mB4_cameraRotation, &pThis->m150_cameraMatrix);
 
         if (isTraceEnabled())
         {

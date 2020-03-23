@@ -5,6 +5,8 @@
 #include "battleEngine.h"
 #include "battleDragon.h"
 #include "battleGrid.h"
+#include "kernel/debug/trace.h"
+#include "battle/interpolators/vec2FPInterpolator.h"
 
 struct sBattleEngineSub1 : public s_workAreaTemplate<sBattleEngineSub1>
 {
@@ -12,11 +14,9 @@ struct sBattleEngineSub1 : public s_workAreaTemplate<sBattleEngineSub1>
     s8 m1;
     s8 m2;
     s16 m4;
-    s16 m6;
-    fixedPoint m14;
-    fixedPoint m18;
-    fixedPoint m2C;
-    fixedPoint m30;
+    s16 m6_interpolationLength;
+    sVec2FPInterpolator m8;
+    sVec2FPInterpolator m44;
     sVec3_FP m80;
     //size 0x8C;
 };
@@ -31,6 +31,11 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
 
     sVec2_FP temp;
     computeVectorAngles(gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - gBattleManager->m10_battleOverlay->m18_dragon->m8_position, temp);
+
+    sVec3_FP local_50;
+    local_50[0] = 0;
+    local_50[1] = temp[1];
+    local_50[2] = 0;
 
     if (BattleEngineSub0_UpdateSub0())
     {
@@ -55,7 +60,7 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
             gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[1] = 0;
             gBattleManager->m10_battleOverlay->m8_gridTask->m1C.zeroize();
             pThis->m80.zeroize();
-            pThis->m6 = 0x3C;
+            pThis->m6_interpolationLength = 0x3C;
             return;
         case 0xC:
         case 0xf:
@@ -70,7 +75,7 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
     case 0:
         pThis->m0 = 1;
         pThis->m4 = 0;
-        pThis->m6 = 0x3C;
+        pThis->m6_interpolationLength = 0x3C;
         break;
     case 1:
         do 
@@ -78,15 +83,46 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
             pThis->m1 = randomNumber() & 7;
         } while (pThis->m1 == pThis->m2);
         pThis->m2 = pThis->m1;
-        pThis->m14 = gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[0];
-        pThis->m18 = gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[1];
-        pThis->m2C = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x60ab120) + pThis->m1 * 8 + 0);
-        pThis->m30 = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x60ab120) + pThis->m1 * 8 + 4);
-        FunctionUnimplemented();
+        pThis->m8.mC_startValue[0] = gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[0];
+        pThis->m8.mC_startValue[1] = gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[1];
+        pThis->m8.m24_targetValue[0] = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x60ab120) + pThis->m1 * 8 + 0);
+        pThis->m8.m24_targetValue[1] = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x60ab120) + pThis->m1 * 8 + 4);
+        pThis->m8.m38_interpolationLength = pThis->m6_interpolationLength;
+        vec2FPInterpolator_Init(&pThis->m8);
+        pThis->m44.mC_startValue = pThis->m80;
+        pThis->m44.m24_targetValue = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60AB160) + pThis->m1 * 0xC);
+        pThis->m44.m38_interpolationLength = pThis->m6_interpolationLength;
+        vec2FPInterpolator_Init(&pThis->m44);
         pThis->m0++;
         break;
     case 2:
-        FunctionUnimplemented();
+        {
+            vec2FPInterpolator_Step(&pThis->m8);
+            gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[0] = pThis->m8.m0_currentValue[0];
+            gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[1] = pThis->m8.m0_currentValue[1];
+
+            if (vec2FPInterpolator_Step(&pThis->m44))
+            {
+                pThis->m0++;
+            }
+            pThis->m80 = pThis->m44.m0_currentValue;
+
+            sVec3_FP local_2c;
+            battleEngineSub1_UpdateSub2(&local_2c, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m44.m0_currentValue, local_50);
+
+            if (isTraceEnabled())
+            {
+                addTraceLog(local_2c, "local_2c");
+                addTraceLog(gBattleManager->m10_battleOverlay->m18_dragon->m8_position, "m8_position");
+            }
+
+            gBattleManager->m10_battleOverlay->m8_gridTask->m1C = local_2c - gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+        }
+        break;
+    case 3:
+        pThis->m0 = 1;
+        pThis->m4 = 0;
+        pThis->m6_interpolationLength = 0x78;
         break;
     default:
         assert(0);
@@ -109,7 +145,7 @@ void createBattleEngineSub1(p_workArea parent)
     };
 
     sBattleEngineSub1* pNewTask = createSubTask<sBattleEngineSub1>(parent, &definition);
-    pNewTask->m6 = 0x3C;
+    pNewTask->m6_interpolationLength = 0x3C;
     pNewTask->m1 = randomNumber() & 7;
     pNewTask->m2 = randomNumber() & 7;
 }

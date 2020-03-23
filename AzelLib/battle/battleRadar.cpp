@@ -31,10 +31,10 @@ void battleHud2_Update(battleHud2* pThis)
         }
         if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
         {
-            pThis->m20.m4 = 0x470000;
-            pThis->m20.mC = 0;
-            pThis->m20.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m20);
+            pThis->m20_scrollInterpolator.m4_startValue = 0x470000;
+            pThis->m20_scrollInterpolator.mC_targetValue = 0;
+            pThis->m20_scrollInterpolator.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m20_scrollInterpolator);
 
             pThis->m12_mode = 4;
             pThis->m14_nextMode = 1;
@@ -45,10 +45,10 @@ void battleHud2_Update(battleHud2* pThis)
         {
             if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && ((gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu->m20 & 0x10) == 0))
             {
-                pThis->m20.m4 = 0;
-                pThis->m20.mC = -0x180000;
-                pThis->m20.m18 = 4;
-                s_battleOverlay_20_updateSub0(&pThis->m20);
+                pThis->m20_scrollInterpolator.m4_startValue = 0;
+                pThis->m20_scrollInterpolator.mC_targetValue = -0x180000;
+                pThis->m20_scrollInterpolator.m18_interpolationLength = 4;
+                FPInterpolator_Init(&pThis->m20_scrollInterpolator);
 
                 pThis->m12_mode = 4;
                 pThis->m14_nextMode = 2;
@@ -56,32 +56,32 @@ void battleHud2_Update(battleHud2* pThis)
         }
         else
         {
-            pThis->m20.m4 = 0;
-            pThis->m20.mC = 0x470000;
-            pThis->m20.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m20);
+            pThis->m20_scrollInterpolator.m4_startValue = 0;
+            pThis->m20_scrollInterpolator.mC_targetValue = 0x470000;
+            pThis->m20_scrollInterpolator.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m20_scrollInterpolator);
 
             pThis->m12_mode = 4;
             pThis->m14_nextMode = 3;
         }
         break;
     case 2: // command menu open
-        if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0xC) && ((gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu->m20 & 0x10) != 0))
+        if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == mC_commandMenuOpen) && ((gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu->m20 & 0x10) != 0))
         {
-            pThis->m20.m4 = -0x180000;
-            pThis->m20.mC = 0;
-            pThis->m20.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m20);
+            pThis->m20_scrollInterpolator.m4_startValue = -0x180000;
+            pThis->m20_scrollInterpolator.mC_targetValue = 0;
+            pThis->m20_scrollInterpolator.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m20_scrollInterpolator);
 
             pThis->m12_mode = 4;
             pThis->m14_nextMode = 1;
         }
         else if (gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu == nullptr)
         {
-            pThis->m20.m4 = -0x180000;
-            pThis->m20.mC = 0x470000;
-            pThis->m20.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m20);
+            pThis->m20_scrollInterpolator.m4_startValue = -0x180000;
+            pThis->m20_scrollInterpolator.mC_targetValue = 0x470000;
+            pThis->m20_scrollInterpolator.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m20_scrollInterpolator);
 
             pThis->m12_mode = 4;
             pThis->m14_nextMode = 3;
@@ -90,21 +90,21 @@ void battleHud2_Update(battleHud2* pThis)
     case 3:
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD == 0)
         {
-            pThis->m20.m4 = 0x470000;
-            pThis->m20.mC = 0;
-            pThis->m20.m18 = 4;
-            s_battleOverlay_20_updateSub0(&pThis->m20);
+            pThis->m20_scrollInterpolator.m4_startValue = 0x470000;
+            pThis->m20_scrollInterpolator.mC_targetValue = 0;
+            pThis->m20_scrollInterpolator.m18_interpolationLength = 4;
+            FPInterpolator_Init(&pThis->m20_scrollInterpolator);
 
             pThis->m12_mode = 4;
             pThis->m14_nextMode = 1;
         }
         break;
     case 4: // scrolling
-        if (s_battleOverlay_20_updateSub1(&pThis->m20))
+        if (FPInterpolator_Step(&pThis->m20_scrollInterpolator))
         {
             pThis->m12_mode = pThis->m14_nextMode;
         }
-        pThis->mE_offsetY = (pThis->m20.m0_currentValue + 0x8000) >> 0x10;
+        pThis->mE_offsetY = fixedPoint::toInteger(pThis->m20_scrollInterpolator.m0_currentValue + 0x8000);
         break;
     default:
         assert(0);

@@ -422,7 +422,7 @@ s32 sGunShotTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param_1, s32 param_2, s_g
     return 0;
 }
 
-void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 param_3, s16 param_4, u16 param_5, const sF0Color& param_6, s32 param_7)
+void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 param_3, s16 param_4, u16 param_5, const sF0Color* param_6, s32 param_7)
 {
     u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
     setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // command 0
@@ -461,7 +461,7 @@ void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 par
 
 }
 
-void sGunShotTask_DrawSub1(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 param_3, s16 param_4, u16 param_5, const sF0Color& param_6, s32 param_7)
+void sGunShotTask_DrawSub1(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 param_3, s16 param_4, u16 param_5, const sF0Color* param_6, s32 param_7)
 {
     std::array<sVec3_FP, 2> sStack32;
     transformAndAddVecByCurrentMatrix(&param_1[0], &sStack32[0]);
@@ -501,7 +501,7 @@ void sGunShotTask_Draw(sGunShotTask* pThis)
                 readSaturnU16(pThis->m94 + 0x4) + pThis->m90_vdp1Memory,
                 readSaturnS16(pThis->m94 + 0x6),
                 readSaturnU16(pThis->m94 + 0x8) + pThis->m90_vdp1Memory,
-                (*pThis->m10_colorSetup)[0],
+                pThis->m10_colorSetup ? &(*pThis->m10_colorSetup)[0] : nullptr,
                 8
             );
         }

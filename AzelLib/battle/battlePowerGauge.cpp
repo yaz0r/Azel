@@ -25,6 +25,73 @@ struct battlePowerGauge : public s_workAreaTemplate<battlePowerGauge>
     //size 0x28
 };
 
+struct sGaugeIncreaseEffectRoot : public s_workAreaTemplate<sGaugeIncreaseEffectRoot>
+{
+    s32 m0_step;
+    // size 0x8
+};
+
+struct sGaugeIncreaseEffect : public s_workAreaTemplate<sGaugeIncreaseEffect>
+{
+    struct sInitParams
+    {
+        sVec3_FP* m0;
+        s32 m4;
+        s32 m8;
+        s32 mC;
+        s32 m10;
+        s16 m14;
+        s16 m16;
+    };
+
+    // size 0x7C
+};
+
+void sGaugeIncreaseEffect_createEffect(sGaugeIncreaseEffectRoot* pThis, sGaugeIncreaseEffect::sInitParams* param_2)
+{
+    FunctionUnimplemented();
+
+    randomNumber();
+    randomNumber();
+    randomNumber();
+}
+
+void sGaugeIncreaseEffectRoot_Update(sGaugeIncreaseEffectRoot* pThis)
+{
+    if (++pThis->m0_step >= 0x14)
+    {
+        pThis->getTask()->markFinished();
+        return;
+    }
+
+    sGaugeIncreaseEffect::sInitParams params;
+    params.m0 = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
+    params.m4 = randomNumber();
+    params.m8 = randomNumber();
+    params.m10 = 0xCCC;
+    params.m14 = 10;
+
+    switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo)
+    {
+    case 1:
+        params.mC = 0x2000;
+        params.m16 = 0;
+        break;
+    case 2:
+        params.mC = 0x3000;
+        params.m16 = 1;
+        break;
+    case 3:
+        params.mC = 0x4000;
+        params.m16 = 2;
+        break;
+    default:
+        assert(0);
+    }
+
+    sGaugeIncreaseEffect_createEffect(pThis, &params);
+}
+
 void battlePowerGauge_update(battlePowerGauge* pThis)
 {
     if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x20) == 0)
@@ -95,8 +162,16 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
                                     pThis->m20 = 1;
                                     pThis->m0->mC = 0x10000;
                                 }
-                                FunctionUnimplemented();
-                                //createSubTask()
+
+                                static const sGaugeIncreaseEffectRoot::TypedTaskDefinition taskDefinition =
+                                {
+                                    nullptr,
+                                    sGaugeIncreaseEffectRoot_Update,
+                                    nullptr,
+                                    nullptr,
+                                };
+                                createSubTask<sGaugeIncreaseEffectRoot>(pThis, &taskDefinition);
+
                                 if (mainGameState.gameStats.m1_dragonLevel == 8)
                                 {
                                     playSoundEffect(0x20);

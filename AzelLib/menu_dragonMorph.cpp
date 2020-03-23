@@ -191,7 +191,7 @@ void computeVectorAngles(const sVec3_FP& r4, sVec2_FP& r5)
 {
     if (isTraceEnabled())
     {
-        //addTraceLog(r4, "generateCameraMatrixSub1_start");
+        addTraceLog(r4, "generateCameraMatrixSub1_start");
     }
     if ((r4[0] == 0) && (r4[2] == 0))
     {

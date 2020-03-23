@@ -20,55 +20,30 @@ void BattleCommandMenu_UpdateSub0()
     vdp2Controls.m_isDirty = 1;
 }
 
-void createBattleCommandMenuSub0Sub0(sBattleCommandMenu::s1C0* pThis)
-{
-    pThis->m8 = (pThis->mC - pThis->m4) / 2;
-    pThis->m10_currentStepValue = 0;
-    pThis->m14_stepIncrement = FP_Div(0x8000000, ((int)pThis->m18) << 16);
-    pThis->m0_currentValue = pThis->m4;
-}
-
 void createBattleCommandMenuSub0(sBattleCommandMenu* pThis, char param2)
 {
     switch (param2)
     {
     case 0:
-        pThis->m1C0.m4 = -0x5A0000;
-        pThis->m1C0.mC = 0;
-        pThis->m1C0.m18 = 4;
+        pThis->m1C0_scrollInterpolator.m4_startValue = -0x5A0000;
+        pThis->m1C0_scrollInterpolator.mC_targetValue = 0;
+        pThis->m1C0_scrollInterpolator.m18_interpolationLength = 4;
         break;
     case 1:
-        pThis->m1C0.m4 = 0;
-        pThis->m1C0.mC = -0x5A0000;
-        pThis->m1C0.m18 = 8;
+        pThis->m1C0_scrollInterpolator.m4_startValue = 0;
+        pThis->m1C0_scrollInterpolator.mC_targetValue = -0x5A0000;
+        pThis->m1C0_scrollInterpolator.m18_interpolationLength = 8;
         break;
     default:
         assert(0);
         break;
     }
 
-    createBattleCommandMenuSub0Sub0(&pThis->m1C0);
+    FPInterpolator_Init(&pThis->m1C0_scrollInterpolator);
 
-    pThis->m14 = (pThis->m1C0.m0_currentValue + 0x8000) >> 0x10;
+    pThis->m14 = (pThis->m1C0_scrollInterpolator.m0_currentValue + 0x8000) >> 0x10;
 }
 
-
-int BattleCommandMenu_Interpolate(sBattleCommandMenu::s1C0* pData)
-{
-    if (pData->m10_currentStepValue > 0x7ffffff)
-    {
-        pData->m10_currentStepValue = 0x8000000;
-        pData->m14_stepIncrement = 0;
-        pData->m0_currentValue = pData->mC;
-        return true;
-    }
-    else
-    {
-        pData->m0_currentValue = (pData->m8 + pData->m4) - MTH_Mul(getCos(pData->m10_currentStepValue.getInteger() & 0xFFF), pData->m8);
-        pData->m10_currentStepValue += pData->m14_stepIncrement;
-        return false;
-    }
-}
 
 void BattleCommandMenu_DisplayCommandString(sBattleCommandMenu* pThis)
 {
@@ -124,11 +99,11 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
         pThis->m2_mode = 1;
         break;
     case 1:
-        if (BattleCommandMenu_Interpolate(&pThis->m1C0))
+        if (FPInterpolator_Step(&pThis->m1C0_scrollInterpolator))
         {
             pThis->m2_mode = 2;
         }
-        pThis->m14 = (pThis->m1C0.m0_currentValue + 0x8000) >> 0x10;
+        pThis->m14 = (pThis->m1C0_scrollInterpolator.m0_currentValue + 0x8000) >> 0x10;
         BattleCommandMenu_UpdateSub0();
         break;
     case 2:
@@ -311,7 +286,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
         assert(0);
         break;
     case 7: // used for gun attack and homing laser
-        if (BattleCommandMenu_Interpolate(&pThis->m1C0))
+        if (FPInterpolator_Step(&pThis->m1C0_scrollInterpolator))
         {
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m0_max = createBattleCommandMenuSub2(0x3C) << 0x10;
             battleEngine_SetBattleMode16();
@@ -333,7 +308,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             fieldPaletteTaskInitSub0Sub0();
             pThis->getTask()->markFinished();
         }
-        pThis->m14 = (pThis->m1C0.m0_currentValue + 0x8000) >> 16;
+        pThis->m14 = (pThis->m1C0_scrollInterpolator.m0_currentValue + 0x8000) >> 16;
         break;
     default:
         assert(0);
