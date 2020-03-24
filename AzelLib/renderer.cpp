@@ -45,7 +45,7 @@ struct s_NBG_data
     GLuint Texture;
 };
 
-s_NBG_data NBG_data[4];
+std::array<s_NBG_data, 5> NBG_data;
 
 GLuint gVDP2Program = 0;
 
@@ -121,6 +121,7 @@ enum eLayers {
     NBG1,
     //NBG2,
     NBG3,
+    RGB0,
 
     MAX
 };
@@ -174,7 +175,7 @@ void azelSdl2_Init()
     glGenFramebuffers(1, &gCompositedFB);
     glGenTextures(1, &gCompositedTexture);
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < NBG_data.size(); i++)
     {
         glGenTextures(1, &NBG_data[i].Texture);
         glGenFramebuffers(1, &NBG_data[i].FB);
@@ -210,6 +211,8 @@ GLuint getTextureForLayer(eLayers layerIndex)
     //    return gNBG2Texture;
     case NBG3:
         return NBG_data[3].Texture;
+    case RGB0:
+        return NBG_data[4].Texture;
     default:
         assert(0);
         break;
@@ -232,6 +235,8 @@ bool isBackgroundEnabled(eLayers layerIndex)
     //    return vdp2Controls.m_pendingVdp2Regs->BGON & 4;
     case NBG3:
         return vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 8;
+    case RGB0:
+        return vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0x10;
     default:
         assert(0);
         break;
@@ -254,6 +259,8 @@ int getPriorityForLayer(eLayers layerIndex)
  //       return vdp2Controls.m_pendingVdp2Regs->PRINB & 7;
     case NBG3:
         return (vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB >> 8) & 7;
+    case RGB0:
+        return (vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR) & 7;
     default:
         assert(0);
         break;
@@ -997,6 +1004,57 @@ void renderBG3(u32 width, u32 height)
     
 }
 
+void renderRGB0(u32 width, u32 height)
+{
+    u32 textureWidth = width;
+    u32 textureHeight = height;
+
+    if (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0x10)
+    {
+        s_layerData planeData;
+
+        planeData.CHSZ = (vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB >> 8) & 0x1;
+        planeData.CHCN = (vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB >> 12) & 0x7;
+        planeData.PNB = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR >> 15) & 0x1;
+        planeData.CNSM = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR >> 14) & 0x1;
+        planeData.CAOS = (vdp2Controls.m4_pendingVdp2Regs->mE6_CRAOFB >> 0) & 0x7;
+        planeData.PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ >> 8) & 3;
+        planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR) & 0x1F;
+        planeData.scrollX = 0;
+        planeData.scrollY = 0;
+
+        u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
+        u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
+
+        u32 pageSize = pageDimension * pageDimension * patternSize;
+
+        u32 offset = ((vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN >> 12) & 7) << 6;
+
+        planeData.planeOffsets[0] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m50_MPABRA & 0x3F)) * pageSize;
+        planeData.planeOffsets[1] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m50_MPABRA >> 8) & 0x3F)) * pageSize;
+        planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m52_MPCDRA & 0x3F)) * pageSize;
+        planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m52_MPCDRA >> 8) & 0x3F)) * pageSize;
+
+        if (0)
+        {
+            u32* textureOutput = new u32[textureWidth * textureHeight];
+            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
+#ifndef USE_NULL_RENDERER
+            glBindTexture(GL_TEXTURE_2D, NBG_data[3].Texture);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+#endif
+            delete[] textureOutput;
+        }
+        else
+        {
+            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[4]);
+        }
+    }
+
+}
+
 u32* vdp1TextureOutput;
 u32 vdp1TextureWidth;
 u32 vdp1TextureHeight;
@@ -1607,15 +1665,24 @@ bool azelSdl2_EndFrame()
     renderBG1(vdp2ResolutionWidth, vdp2ResolutionHeight);
     //renderBG2(vdp2ResolutionWidth, vdp2ResolutionHeight);
     renderBG3(vdp2ResolutionWidth, vdp2ResolutionHeight);
+    renderRGB0(vdp2ResolutionWidth, vdp2ResolutionHeight);
 
     if(ImGui::Begin("VDP"))
     {
-        ImGui::Image((ImTextureID)NBG_data[0].Texture , ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+        ImGui::Text("NBG0");
+        ImGui::Image((ImTextureID)NBG_data[0].Texture , ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Text("NBG1");
         ImGui::Image((ImTextureID)NBG_data[1].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::Image((ImTextureID)NBG_data[2].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+        ImGui::Text("NBG2");
+        ImGui::Image((ImTextureID)NBG_data[2].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Text("NBG3");
         ImGui::Image((ImTextureID)NBG_data[3].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Text("RGB0");
+        ImGui::Image((ImTextureID)NBG_data[4].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
 
-        ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+        ImGui::Text("VDP1");
+        ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Text("VDP1 poly");
         ImGui::Image((ImTextureID)gVdp1PolyTexture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
     }
     ImGui::End();
@@ -1732,7 +1799,15 @@ bool azelSdl2_EndFrame()
 
         glViewport(0, 0, internalResolution[0], internalResolution[1]);
 
-        glClearColor(0, 0, 0, 0);
+        //get clear color of back screen
+        u32 backscreenColorAddress = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0x7FFFF) * 2;
+        u16 backScreenColor = *(u16*)getVdp2Vram(backscreenColorAddress);
+
+        float R = ((backScreenColor & 0x1F) << 3) >> 0;
+        float G = ((backScreenColor & 0x03E0) << 6) >> 8;
+        float B = ((backScreenColor & 0x7C00) << 9) >> 16;
+
+        glClearColor(R / 0xFF, G / 0xFF, B / 0xFF, 0x0);
         glClearDepthf(0.f);
 
         glClear(GL_COLOR_BUFFER_BIT);

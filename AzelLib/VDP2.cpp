@@ -651,6 +651,93 @@ void setupNBG3(const sLayerConfig* setup)
     vdp2Controls.m_isDirty = true;
 }
 
+void setupRGB0(const sLayerConfig* setup)
+{
+    while (eVdp2LayerConfig command = setup->m_configType)
+    {
+        u32 arg = setup->m_value;
+
+        setup++;
+
+        switch (command)
+        {
+        case m2_CHCN:
+            vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0x8fff) | (arg << 0xC);
+            break;
+        case m5_CHSZ:
+            vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0xFEFF) | (arg << 8);
+            break;
+        case m6_PNB:
+            vdp2Controls.m4_pendingVdp2Regs->m38_PNCR = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR & 0x7FFF) | (arg << 15);
+            break;
+        case m7_CNSM:
+            vdp2Controls.m4_pendingVdp2Regs->m38_PNCR = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR & 0xBFFF) | (arg << 14);
+            break;
+        case m11_SCN:
+            vdp2Controls.m4_pendingVdp2Regs->m38_PNCR = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR & 0xFFE0) | (arg << 0);
+            break;
+        case m27_RPMD:
+            vdp2Controls.m4_pendingVdp2Regs->mB0_RPMD = (vdp2Controls.m4_pendingVdp2Regs->mB0_RPMD & 0xFFFC) | arg;
+            break;
+        case m34_W0E:
+            vdp2Controls.m4_pendingVdp2Regs->mD4_WCTLC = (vdp2Controls.m4_pendingVdp2Regs->mD4_WCTLC & 0xFFFD) | (arg << 1);
+            break;
+        case m37_W0A:
+            vdp2Controls.m4_pendingVdp2Regs->mD4_WCTLC = (vdp2Controls.m4_pendingVdp2Regs->mD4_WCTLC & 0xFFFE) | (arg << 0);
+            break;
+        default:
+            assert(false);
+            break;
+        }
+    };
+
+    // force BG layer RGB0 on
+    vdp2Controls.m4_pendingVdp2Regs->m20_BGON = (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0xFFEF) | 0x10;
+
+    vdp2Controls.m_isDirty = true;
+}
+
+void setupRotationParams(const sLayerConfig* setup)
+{
+    while (eVdp2LayerConfig command = setup->m_configType)
+    {
+        u32 arg = setup->m_value;
+
+        setup++;
+
+        switch (command)
+        {
+        case m31_RxKTE:
+            vdp2Controls.m4_pendingVdp2Regs->mB4_KTCTL = (vdp2Controls.m4_pendingVdp2Regs->mB4_KTCTL & 0xFFFE) | (arg & 1);
+            break;
+        default:
+            assert(false);
+            break;
+        }
+    };
+
+    vdp2Controls.m_isDirty = true;
+}
+
+void setupRotationParams2(const sLayerConfig* setup)
+{
+    while (eVdp2LayerConfig command = setup->m_configType)
+    {
+        u32 arg = setup->m_value;
+
+        setup++;
+
+        switch (command)
+        {
+        default:
+            assert(false);
+            break;
+        }
+    };
+
+    vdp2Controls.m_isDirty = true;
+}
+
 u32 rotateRightR0ByR1(u32 r0, u32 r1)
 {
     return r0 >> r1;

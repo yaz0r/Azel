@@ -1437,7 +1437,7 @@ void fieldPaletteTaskInitSub0()
 {
     fieldPaletteTaskInitSub0Sub0();
 
-    sLayerConfig setup[] =
+    static const sLayerConfig setup[] =
     {
         m2_CHCN,  0, // 16 colors
         m5_CHSZ,  1, // character size is 2 cells x 2 cells (16*16)

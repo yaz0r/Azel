@@ -84,16 +84,18 @@ struct s_VDP2Regs
 
     u16 m9A_SCRCTL;
 
+    u32 mA8_LCTA;
     u32 mAC_BKTA;
 
+    u16 mB0_RPMD;
+    u16 mB4_KTCTL;
     //
     u16 mD0_WCTLA;
     u16 mD2_WCTLB;
-
+    u16 mD4_WCTLC;
     //
     u16 mE0_SPCTL;
-    //
-
+    u16 mE2_SDCTL;
     u16 mE4_CRAOFA;
     u16 mE6_CRAOFB; // unset?
     s16 mE8_LNCLEN;
@@ -113,6 +115,7 @@ struct s_VDP2Regs
     u16 m104_CCRSC;
     u16 m106_CCRSD;
     u16 m10A_CCRNB;
+    u16 m10C_CCRR;
     u16 m110_CLOFEN;
     u16 m112_CLOFSL;
     s16 m114_COAR;
@@ -151,6 +154,8 @@ enum eVdp2LayerConfig
     m11_SCN = 11,
     m12_PLSZ = 12,
     m21 = 21,
+    m27_RPMD = 27,
+    m31_RxKTE = 31,
     m34_W0E = 34,
     m37_W0A = 37,
     m40_CAOS = 40,
@@ -178,6 +183,9 @@ void setupNBG0(const sLayerConfig* setup);
 void setupNBG1(const sLayerConfig* setup);
 void setupNBG2(const sLayerConfig* setup);
 void setupNBG3(const sLayerConfig* setup);
+void setupRGB0(const sLayerConfig* setup);
+void setupRotationParams(const sLayerConfig* setup);
+void setupRotationParams2(const sLayerConfig* setup);
 
 void setupVDP2StringRendering(s32 x, s32 y, s32 width, s32 height);
 void vdp2DebugPrintSetPosition(s32 x, s32 y);
