@@ -307,6 +307,11 @@ struct sMatrix4x3
 
         return value;
     }
+
+    fixedPoint& operator[](int i)
+    {
+        return matrix[i];
+    }
 };
 
 enum e_dragonLevel : unsigned char {
@@ -769,8 +774,8 @@ struct s_graphicEngineStatus_405C
     u16 VDP1_Y1; // 3E
     u16 VDP1_X2; // 40
     u16 VDP1_Y2; // 42
-    u16 localCoordinatesX; // 44
-    u16 localCoordinatesY; // 46
+    u16 m44_localCoordinatesX; // 44
+    u16 m46_localCoordinatesY; // 46
     u32 setClippingCoordinatesEA; // 0x48 ptr in VDP1 Memory
     u32 setLocalCoordinatesEA; // 0x4C ptr in VDP1 Memory
 
@@ -884,4 +889,7 @@ extern u16 atanTable[2049];
 extern u16 resetVdp2StringsData[4106];
 
 void registerModelAndCharacter(u8* model, u32 character);
+
+void getVdp1ClippingCoordinates(std::array<s16, 4>& r4);
+void getVdp1LocalCoordinates(std::array<s16, 2>& r4);
 

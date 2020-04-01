@@ -98,8 +98,8 @@ void addObjectToDrawList(sProcessed3dModel* pObjectData)
     s_objectToRender newObject;
     newObject.m_pObject = pObjectData;
     newObject.m_modelMatrix = *pCurrentMatrix;
-    newObject.m_2dOffset[0] = (graphicEngineStatus.m405C.localCoordinatesX - (352.f / 2.f)) / 352.f;
-    newObject.m_2dOffset[1] = (graphicEngineStatus.m405C.localCoordinatesY - (224.f / 2.f)) / 224.f;
+    newObject.m_2dOffset[0] = (graphicEngineStatus.m405C.m44_localCoordinatesX - (352.f / 2.f)) / 352.f;
+    newObject.m_2dOffset[1] = (graphicEngineStatus.m405C.m46_localCoordinatesY - (224.f / 2.f)) / 224.f;
     newObject.m_isBillboard = 0;
 
     objectRenderList.push_back(newObject);
@@ -137,8 +137,8 @@ void addBillBoardToDrawList(sProcessed3dModel* pObjectData)
     s_objectToRender newObject;
     newObject.m_pObject = pObjectData;
     newObject.m_modelMatrix = cameraProperties2.m88_billboardViewMatrix;
-    newObject.m_2dOffset[0] = (graphicEngineStatus.m405C.localCoordinatesX - (352.f / 2.f)) / 352.f;
-    newObject.m_2dOffset[1] = (graphicEngineStatus.m405C.localCoordinatesY - (224.f / 2.f)) / 224.f;
+    newObject.m_2dOffset[0] = (graphicEngineStatus.m405C.m44_localCoordinatesX - (352.f / 2.f)) / 352.f;
+    newObject.m_2dOffset[1] = (graphicEngineStatus.m405C.m46_localCoordinatesY - (224.f / 2.f)) / 224.f;
     newObject.m_isBillboard = 1;
 
     objectRenderList.push_back(newObject);

@@ -27,6 +27,15 @@ u8* getVdp2Vram(u32 offset)
     return vdp2Ram + offset;
 }
 
+u32 getVdp2VramOffset(u8* ptr)
+{
+    intptr_t offset = ptr - vdp2Ram;
+    assert(offset >= 0);
+    assert(offset < 0x80000);
+
+    return (u32)offset + 0x25E00000;
+}
+
 u8* getVdp2Cram(u32 offset)
 {
     return vdp2CRam + (offset & 0xFFF);
@@ -771,19 +780,19 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
         break;
     }
 
-    u32 shitValue;
+    u32 shiftValue;
     if (patternNameDataSize)
     {
         // 1 word
         if (characterSize)
         {
             // 2x2
-            shitValue = 11; // 0x800
+            shiftValue = 11; // 0x800
         }
         else
         {
             // 1x1
-            shitValue = 13; // 0x2000
+            shiftValue = 13; // 0x2000
         }
     }
     else
@@ -792,12 +801,12 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
         if (characterSize)
         {
             // 2x2
-            shitValue = 12; // 0x1000
+            shiftValue = 12; // 0x1000
         }
         else
         {
             // 1x1
-            shitValue = 14; // 0x4000
+            shiftValue = 14; // 0x4000
         }
     }
 
@@ -806,29 +815,29 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
     u32 planeCOffset = planeC;// - 0x25E00000;
     u32 planeDOffset = planeD;// - 0x25E00000;
 
-    u32 mapOffset = (rotateRightR0ByR1(planeAOffset, shitValue + 6)) & 7;
+    u32 mapOffset = (rotateRightR0ByR1(planeAOffset, shiftValue + 6)) & 7;
 
     switch (layer)
     {
     case 0:
         vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 0xFFF0) | (mapOffset);
-        vdp2Controls.m4_pendingVdp2Regs->m40_MPABN0 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
-        vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m40_MPABN0 = ((rotateRightR0ByR1(planeBOffset, shiftValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shiftValue);
+        vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 = ((rotateRightR0ByR1(planeDOffset, shiftValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shiftValue);
         break;
     case 1:
         vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 0xFF0F) | (mapOffset << 4);
-        vdp2Controls.m4_pendingVdp2Regs->m44_MPABN1 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
-        vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m44_MPABN1 = ((rotateRightR0ByR1(planeBOffset, shiftValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shiftValue);
+        vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 = ((rotateRightR0ByR1(planeDOffset, shiftValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shiftValue);
         break;
     case 2:
         vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 0xF0FF) | (mapOffset << 8);
-        vdp2Controls.m4_pendingVdp2Regs->m48_MPABN2 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
-        vdp2Controls.m4_pendingVdp2Regs->m4A_MPCDN2 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m48_MPABN2 = ((rotateRightR0ByR1(planeBOffset, shiftValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shiftValue);
+        vdp2Controls.m4_pendingVdp2Regs->m4A_MPCDN2 = ((rotateRightR0ByR1(planeDOffset, shiftValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shiftValue);
         break;
     case 3:
         vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 0x0FFF) | (mapOffset << 12);
-        vdp2Controls.m4_pendingVdp2Regs->m4C_MPABN3 = ((rotateRightR0ByR1(planeBOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shitValue);
-        vdp2Controls.m4_pendingVdp2Regs->m4E_MPCDN3 = ((rotateRightR0ByR1(planeDOffset, shitValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shitValue);
+        vdp2Controls.m4_pendingVdp2Regs->m4C_MPABN3 = ((rotateRightR0ByR1(planeBOffset, shiftValue) & 0x3F) << 8) | rotateRightR0ByR1(planeAOffset, shiftValue);
+        vdp2Controls.m4_pendingVdp2Regs->m4E_MPCDN3 = ((rotateRightR0ByR1(planeDOffset, shiftValue) & 0x3F) << 8) | rotateRightR0ByR1(planeCOffset, shiftValue);
         break;
     default:
         assert(0);
@@ -935,17 +944,37 @@ void setFontDefaultColors()
     copyFontToVdp2();
 }
 
+std::array<sVdpVar1, 14> vdpVar1;
+
+void initVdp2Var1()
+{
+    for (int i=0; i<14; i++)
+    {
+        vdpVar1[i].mF = 0;
+    }
+}
+
+sVdpVar1* vdpVar2;
+sVdpVar1* vdpVar3;
+
+void initVdp2Var2()
+{
+    vdpVar2 = &vdpVar1[0];
+    vdpVar3 = &vdpVar1[0];
+    vdpVar1[0].m10 = 0;
+}
+
 void initVDP2()
 {
-    vdp2Controls.m_0 = 0;
+    vdp2Controls.m0_doubleBufferIndex = 0;
     vdp2Controls.m4_pendingVdp2Regs = &vdp2Controls.m20_registers[0];
 
     resetVdp2RegsCopies();
     clearVdp2VRam(0, 0x80000);
     clearVdp2CRam(0, 0x1000);
 
-    //initVdp2Var1();
-    //initVdp2Var2();
+    initVdp2Var1();
+    initVdp2Var2();
 
     setupVdp2TextLayerColor();
     loadFont();
@@ -955,13 +984,13 @@ void initVDP2()
 
 void reinitVdp2()
 {
-    vdp2Controls.m_0 = 0;
+    vdp2Controls.m0_doubleBufferIndex = 0;
     vdp2Controls.m4_pendingVdp2Regs = &vdp2Controls.m20_registers[0];
 
     resetVdp2RegsCopies();
 
-    //initVdp2Var1();
-    //initVdp2Var2();
+    initVdp2Var1();
+    initVdp2Var2();
 
     initVdp2TextLayer();
     setFontDefaultColors();

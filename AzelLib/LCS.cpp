@@ -1421,21 +1421,12 @@ const std::array<fixedPoint, 10> LCSSelectedSubTask_DrawData1 =
     0x1999,
 };
 
-// TODO: move to kernel
-void LCSSelectedSubTask_DrawSub0(s16* r4)
-{
-    r4[0] = graphicEngineStatus.m405C.VDP1_X1;
-    r4[1] = graphicEngineStatus.m405C.VDP1_Y1;
-    r4[2] = graphicEngineStatus.m405C.VDP1_X2;
-    r4[3] = graphicEngineStatus.m405C.VDP1_Y2;
-}
-
 void sLCSSelectedSub::Draw(sLCSSelectedSub* pThis)
 {
     s32 var0 = LCSSelectedSubTask_DrawData0[pThis->mC_numFrames];
 
-    s16 varC[4];
-    LCSSelectedSubTask_DrawSub0(varC);
+    std::array<s16, 4> varC;
+    getVdp1ClippingCoordinates(varC);
 
     s32 r11 = LCSSelectedSubTask_DrawData1[pThis->mC_numFrames];
 

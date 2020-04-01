@@ -817,6 +817,21 @@ u8* sSaturnPtr::getRawPointer()
     return pFile->m_data + offsetInFile;
 }
 
+// TODO: move to kernel
+void getVdp1ClippingCoordinates(std::array<s16, 4>& r4)
+{
+    r4[0] = graphicEngineStatus.m405C.VDP1_X1;
+    r4[1] = graphicEngineStatus.m405C.VDP1_Y1;
+    r4[2] = graphicEngineStatus.m405C.VDP1_X2;
+    r4[3] = graphicEngineStatus.m405C.VDP1_Y2;
+}
+
+void getVdp1LocalCoordinates(std::array<s16, 2>& r4)
+{
+    r4[0] = graphicEngineStatus.m405C.m44_localCoordinatesX;
+    r4[1] = graphicEngineStatus.m405C.m46_localCoordinatesY;
+}
+
 #ifndef SHIPPING_BUILD
 void InspectTask(const char* className, void* pBase, const std::vector<s_memberDefinitions>& members)
 {

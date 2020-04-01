@@ -83,17 +83,21 @@ struct s_VDP2Regs
     u16 m98_ZMCTL;
 
     u16 m9A_SCRCTL;
-
+    u8* m9C_VCSTA;
+    u8* mA0_LSTA0;
+    u8* mA4_LSTA1;
     u32 mA8_LCTA;
     u32 mAC_BKTA;
 
     u16 mB0_RPMD;
     u16 mB4_KTCTL;
+    s16 mB6_KTAOF;
     //
     u16 mD0_WCTLA;
     u16 mD2_WCTLB;
     u16 mD4_WCTLC;
-    //
+    u32 mD8_LWTA0;
+    u32 mDC_LWTA1;
     u16 mE0_SPCTL;
     u16 mE2_SDCTL;
     u16 mE4_CRAOFA;
@@ -129,7 +133,7 @@ extern s_VDP2Regs VDP2Regs_;
 
 struct sVdp2Controls
 {
-    u32 m_0;
+    u32 m0_doubleBufferIndex;
     s_VDP2Regs* m4_pendingVdp2Regs; // 4
     u32 m_8;
     u32 m_C;
@@ -244,6 +248,22 @@ extern u32 vdp2TextMemoryOffset;
 
 extern sVdp2StringControl* pVdp2StringControl;
 
+typedef std::vector<fixedPoint> tCoefficientTable;
+
+struct sVdpVar1
+{
+    void* m0;
+    void* m4;
+    u8* m8;
+    s16 mC;
+    s8 mE;
+    s8 mF;
+    s32 m10;
+    // size 0x14
+};
+
+extern std::array<sVdpVar1, 14> vdpVar1;
+
 s32 setActiveFont(u16 r4);
 
 void unpackGraphicsToVDP2(u8* compressedData, u8* destination);
@@ -256,6 +276,7 @@ u8 getVdp2VramU8(u32 offset);
 u16 getVdp2CramU16(u32 offset);
 
 u8* getVdp2Vram(u32 offset);
+u32 getVdp2VramOffset(u8* ptr);
 void setVdp2VramU16(u32 offset, u16 value);
 void setVdp2VramU32(u32 offset, u32 value);
 u8* getVdp2Cram(u32 offset);
@@ -298,3 +319,5 @@ s32 computeStringLength(sSaturnPtr pString, s32 r5);
 void drawBlueBox(s32 x, s32 y, s32 width, s32 height);
 void clearBlueBox(s32 x, s32 y, s32 width, s32 height);
 void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId);
+
+u32 rotateRightR0ByR1(u32 r0, u32 r1);

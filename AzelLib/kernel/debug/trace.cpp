@@ -5,14 +5,18 @@
 #include <stdlib.h>
 
 FILE* fHandle = nullptr;
+bool bTraceEnabled = false;
 
 void startTrace(const char* name)
 {
     //return;
     fHandle = nullptr;
-    if (fHandle == nullptr)
+    if (bTraceEnabled)
     {
-        fHandle = fopen(name, "r");
+        if (fHandle == nullptr)
+        {
+            fHandle = fopen(name, "r");
+        }
     }
 }
 
@@ -65,7 +69,7 @@ void addTraceLog(const char* fmt, ...)
         buffer2[strlen(buffer)] = 0;
 
         printf(buffer);
-        assert(strcmp(buffer2, buffer) == 0);
+       assert(strcmp(buffer2, buffer) == 0);
     }
 }
 

@@ -121,7 +121,7 @@ enum eLayers {
     NBG1,
     //NBG2,
     NBG3,
-    RGB0,
+    RBG0,
 
     MAX
 };
@@ -211,7 +211,7 @@ GLuint getTextureForLayer(eLayers layerIndex)
     //    return gNBG2Texture;
     case NBG3:
         return NBG_data[3].Texture;
-    case RGB0:
+    case RBG0:
         return NBG_data[4].Texture;
     default:
         assert(0);
@@ -235,7 +235,7 @@ bool isBackgroundEnabled(eLayers layerIndex)
     //    return vdp2Controls.m_pendingVdp2Regs->BGON & 4;
     case NBG3:
         return vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 8;
-    case RGB0:
+    case RBG0:
         return vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0x10;
     default:
         assert(0);
@@ -259,7 +259,7 @@ int getPriorityForLayer(eLayers layerIndex)
  //       return vdp2Controls.m_pendingVdp2Regs->PRINB & 7;
     case NBG3:
         return (vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB >> 8) & 7;
-    case RGB0:
+    case RBG0:
         return (vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR) & 7;
     default:
         assert(0);
@@ -652,6 +652,8 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
         break;
     }
 
+    layerData.planeOffsets[0] = 0x62800 + 540;
+
     for (u32 rawOutputY = 0; rawOutputY < textureHeight; rawOutputY++)
     {
         for (u32 rawOutputX = 0; rawOutputX < textureWidth; rawOutputX++)
@@ -704,8 +706,18 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
                 u16 patternName = getVdp2VramU16(startOfPattern);
                 u16 supplementalCharacterName = layerData.SCN;
 
-                // assuming supplement mode 0 with no data
-                paletteNumber = (patternName >> 12) & 0xF;
+                switch (layerData.CHCN)
+                {
+                case 0:
+                    // assuming supplement mode 0 with no data
+                    paletteNumber = (patternName & 0xF000) >> 12;
+                    break;
+                case 1:
+                    paletteNumber = (patternName & 0x7000) >> 8;
+                    break;
+                default:
+                    assert(0);
+                }
 
                 switch (layerData.CNSM)
                 {
@@ -810,7 +822,7 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
     }
 }
 
-void renderBG0(u32 width, u32 height)
+void renderBG0(u32 width, u32 height, bool bGPU)
 {
     u32 textureWidth = width;
     u32 textureHeight = height;
@@ -846,7 +858,7 @@ void renderBG0(u32 width, u32 height)
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 >> 8) & 0x3F)) * pageSize;
 
-        if (0)
+        if (!bGPU)
         {
             u32* textureOutput = new u32[textureWidth * textureHeight];
             renderLayer(planeData, textureWidth, textureHeight, textureOutput);
@@ -866,7 +878,7 @@ void renderBG0(u32 width, u32 height)
     }
 }
 
-void renderBG1(u32 width, u32 height)
+void renderBG1(u32 width, u32 height, bool bGPU)
 {
     u32 textureWidth = width;
     u32 textureHeight = height;
@@ -897,7 +909,7 @@ void renderBG1(u32 width, u32 height)
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 >> 8) & 0x3F)) * pageSize;
 
-        if (0)
+        if (!bGPU)
         {
             u32* textureOutput = new u32[textureWidth * textureHeight];
             renderLayer(planeData, textureWidth, textureHeight, textureOutput);
@@ -953,7 +965,7 @@ void renderBG2()
     */
 }
 
-void renderBG3(u32 width, u32 height)
+void renderBG3(u32 width, u32 height, bool bGPU)
 {
     u32 textureWidth = width;
     u32 textureHeight = height;
@@ -984,7 +996,7 @@ void renderBG3(u32 width, u32 height)
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m4E_MPCDN3 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m4E_MPCDN3 >> 8) & 0x3F)) * pageSize;
 
-        if (0)
+        if (!bGPU)
         {
             u32* textureOutput = new u32[textureWidth * textureHeight];
             renderLayer(planeData, textureWidth, textureHeight, textureOutput);
@@ -1004,7 +1016,7 @@ void renderBG3(u32 width, u32 height)
     
 }
 
-void renderRGB0(u32 width, u32 height)
+void renderRBG0(u32 width, u32 height, bool bGPU)
 {
     u32 textureWidth = width;
     u32 textureHeight = height;
@@ -1028,19 +1040,19 @@ void renderRGB0(u32 width, u32 height)
 
         u32 pageSize = pageDimension * pageDimension * patternSize;
 
-        u32 offset = ((vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN >> 12) & 7) << 6;
+        u32 offset = ((vdp2Controls.m4_pendingVdp2Regs->m3E_MPOFR >> 0) & 7) << 6;
 
         planeData.planeOffsets[0] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m50_MPABRA & 0x3F)) * pageSize;
         planeData.planeOffsets[1] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m50_MPABRA >> 8) & 0x3F)) * pageSize;
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m52_MPCDRA & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m52_MPCDRA >> 8) & 0x3F)) * pageSize;
 
-        if (0)
+        if (!bGPU)
         {
             u32* textureOutput = new u32[textureWidth * textureHeight];
             renderLayer(planeData, textureWidth, textureHeight, textureOutput);
 #ifndef USE_NULL_RENDERER
-            glBindTexture(GL_TEXTURE_2D, NBG_data[3].Texture);
+            glBindTexture(GL_TEXTURE_2D, NBG_data[4].Texture);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1612,6 +1624,11 @@ bool azelSdl2_EndFrame()
     case 1:
         outputResolutionWidth = 352;
         break;
+    case 3:
+        // TODO: fix
+        //outputResolutionWidth = 704; //this should be correct, but breaks the title screen
+        outputResolutionWidth = 352;
+        break;
     default:
         assert(0);
         break;
@@ -1661,24 +1678,44 @@ bool azelSdl2_EndFrame()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
-    renderBG0(vdp2ResolutionWidth, vdp2ResolutionHeight);
-    renderBG1(vdp2ResolutionWidth, vdp2ResolutionHeight);
+    static bool BG0_GPU = true;
+    static bool BG1_GPU = true;
+    static bool BG2_GPU = true;
+    static bool BG3_GPU = true;
+    static bool RBG0_GPU = false;
+
+    renderBG0(vdp2ResolutionWidth, vdp2ResolutionHeight, BG0_GPU);
+    renderBG1(vdp2ResolutionWidth, vdp2ResolutionHeight, BG1_GPU);
     //renderBG2(vdp2ResolutionWidth, vdp2ResolutionHeight);
-    renderBG3(vdp2ResolutionWidth, vdp2ResolutionHeight);
-    renderRGB0(vdp2ResolutionWidth, vdp2ResolutionHeight);
+    renderBG3(vdp2ResolutionWidth, vdp2ResolutionHeight, BG3_GPU);
+    renderRBG0(vdp2ResolutionWidth, vdp2ResolutionHeight, RBG0_GPU);
 
     if(ImGui::Begin("VDP"))
     {
-        ImGui::Text("NBG0");
+        ImGui::PushID("BG0");
+        ImGui::Text("NBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG0_GPU);
         ImGui::Image((ImTextureID)NBG_data[0].Texture , ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::Text("NBG1");
+        ImGui::PopID();
+
+        ImGui::PushID("BG1");
+        ImGui::Text("NBG1"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG1_GPU);
         ImGui::Image((ImTextureID)NBG_data[1].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::Text("NBG2");
+        ImGui::PopID();
+
+        ImGui::PushID("BG2");
+        ImGui::Text("NBG2"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG2_GPU);
         ImGui::Image((ImTextureID)NBG_data[2].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::Text("NBG3");
+        ImGui::PopID();
+
+        ImGui::PushID("BG3");
+        ImGui::Text("NBG3"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG3_GPU);
         ImGui::Image((ImTextureID)NBG_data[3].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::Text("RGB0");
+        ImGui::PopID();
+
+        ImGui::PushID("RBG0");
+        ImGui::Text("RBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &RBG0_GPU);
         ImGui::Image((ImTextureID)NBG_data[4].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::PopID();
 
         ImGui::Text("VDP1");
         ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
@@ -1852,6 +1889,9 @@ bool azelSdl2_EndFrame()
         ImGui::PushItemWidth(100);
         ImGui::SliderFloat("Volume", &gVolume, 0, 1);
         ImGui::PopItemWidth();
+
+        extern bool bTraceEnabled;
+        ImGui::Checkbox("Trace", &bTraceEnabled);
 
         ImGui::EndMainMenuBar();
     }

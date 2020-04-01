@@ -108,10 +108,9 @@ void loadTitleScreenGraphics()
 {
     reinitVdp2();
 
-    vdp2Controls.m_0 = (vdp2Controls.m_0 & 0xFFF8) | 3;
-    vdp2Controls.m_isDirty = 1;
+    vdp2Controls.m4_pendingVdp2Regs->m0_TVMD = (vdp2Controls.m4_pendingVdp2Regs->m0_TVMD & 0xFFF8) | 3; // HRESO 704
     vdp2Controls.m4_pendingVdp2Regs->m0_TVMD = (vdp2Controls.m4_pendingVdp2Regs->m0_TVMD & 0xFF3F) | 0xC0; // LSMD0 & 1 to 1 (double density interlace)
-    vdp2Controls.m_isDirty = 1; // because why not?
+    vdp2Controls.m_isDirty = 1;
 
     loadFile("TITLEE.SCB", getVdp2Vram(0x20000), 0);
     addToMemoryLayout(getVdp2Vram(0x20000), 1);

@@ -60,7 +60,7 @@ struct s_A3_BackgroundLayer : public s_workAreaTemplate<s_A3_BackgroundLayer>
         s16 var0 = cameraProperties2.mC_rotation[0] + r2;
         s32 var4 = var0 & 0xFFF;
         pThis->mC = pThis->m10 - MTH_Mul(graphicEngineStatus.m405C.m1C_heightScale ,FP_Div(getSin(var4), getCos(var4)));
-        pThis->m8 = -80 + performModulo(80, MTH_Mul(graphicEngineStatus.m405C.m18_widthScale, MTH_Mul(cameraProperties2.mC_rotation[1], 0x3243F) << 5));
+        pThis->m8 = -80 + performModulo(80, MTH_Mul(graphicEngineStatus.m405C.m18_widthScale, MTH_Mul((s32)cameraProperties2.mC_rotation[1], 0x3243F) << 5));
     }
 
     static void Draw(s_A3_BackgroundLayer* pThis)

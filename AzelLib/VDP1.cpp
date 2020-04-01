@@ -44,3 +44,4 @@ u16 VDP1_EWDR = 0;
 u16 VDP1_EWLR = 0;
 u16 VDP1_EWRR = 0;
 
+

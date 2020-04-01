@@ -15,7 +15,7 @@ static void BTL_A3_map3_Init(s_BTL_A3_Env* pThis)
 
     pThis->m38 = -0x8000;
 
-    s_BTL_A3_Env_InitVdp2(pThis);
+    BTL_A3_Env_InitVdp2(pThis);
 
     allocateNPC(pThis, 8);
     initGridForBattle(dramAllocatorEnd[8].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x60a5c78), 2, 2, 0x400000);
@@ -42,8 +42,8 @@ p_workArea Create_BTL_A3_map3(p_workArea parent)
 {
     static const s_BTL_A3_Env::TypedTaskDefinition definition = {
         &BTL_A3_map3_Init,
-        &s_BTL_A3_Env_Update,
-        &s_BTL_A3_Env_Draw,
+        &BTL_A3_Env_Update,
+        &BTL_A3_Env_Draw,
         nullptr,
     };
 

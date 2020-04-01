@@ -96,8 +96,8 @@ void incrementAnimationRootZ(s3DModelAnimData* r4, fixedPoint r5)
 
 void setupVdp1LocalCoordinatesAndClipping()
 {
-    setVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xC, graphicEngineStatus.m405C.localCoordinatesX);
-    setVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xE, graphicEngineStatus.m405C.localCoordinatesY);
+    setVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xC, graphicEngineStatus.m405C.m44_localCoordinatesX);
+    setVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xE, graphicEngineStatus.m405C.m46_localCoordinatesY);
 
     if (graphicEngineStatus.m405C.VDP1_X1 > 0)
     {
@@ -371,8 +371,8 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonInit(s_dragonMenuDragonWorkArea
 
     dragonMenuDragonInitSub3(&gDragonState->m78_animData);
 
-    graphicEngineStatus.m405C.localCoordinatesX = 120;
-    graphicEngineStatus.m405C.localCoordinatesY = 112;
+    graphicEngineStatus.m405C.m44_localCoordinatesX = 120;
+    graphicEngineStatus.m405C.m46_localCoordinatesY = 112;
 
     setupVdp1LocalCoordinatesAndClipping();
 

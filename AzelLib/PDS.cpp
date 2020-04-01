@@ -272,8 +272,8 @@ void initVDP1()
     graphicEngineStatus.m405C.VDP1_X2 = 352;
     graphicEngineStatus.m405C.VDP1_Y2 = 224;
 
-    graphicEngineStatus.m405C.localCoordinatesX = 176;
-    graphicEngineStatus.m405C.localCoordinatesY = 112;
+    graphicEngineStatus.m405C.m44_localCoordinatesX = 176;
+    graphicEngineStatus.m405C.m46_localCoordinatesY = 112;
 
     graphicEngineStatus.m405C.m10_nearClipDistance = 0x999;
     graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
