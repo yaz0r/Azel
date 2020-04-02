@@ -2397,7 +2397,8 @@ void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
             {
                 if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 8)
                 {
-                    assert(0);
+                    battleEngine_SetBattleMode(mC_commandMenuOpen);
+                    createBattleCommandMenu(gBattleManager->m10_battleOverlay->m20_battleHud);
                 }
                 if (graphicEngineStatus.m4514.mD8_buttonConfig[2][1] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown)
                 {

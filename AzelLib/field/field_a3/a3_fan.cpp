@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "a3_fan.h"
 #include "kernel/fileBundle.h"
+#include "items.h"
 
 struct s_A3_0_Obj4 : public s_workAreaTemplate<s_A3_0_Obj4>
 {
@@ -172,10 +173,10 @@ void create_A3_0_Obj4(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         pNewTask->m1C_speedIncrement = 0;
         pNewTask->m20_numFramesToChangeSpeed = 0;
 
-        s32 LCSParameter = readSaturnS32(sSaturnPtr({ 0x608EF08, gFLD_A3 }) + r5.m18 * 4);
+        eItems LCSParameter = (eItems)readSaturnS32(sSaturnPtr({ 0x608EF08, gFLD_A3 }) + r5.m18 * 4);
         if (LCSParameter == -1)
         {
-            createLCSTarget(&pNewTask->m24_LCSTarget, pNewTask, &A3_0_Obj4_LCSCallback, &r5.m4_position, 0, 2, 0, -1, 0, 6);
+            createLCSTarget(&pNewTask->m24_LCSTarget, pNewTask, &A3_0_Obj4_LCSCallback, &r5.m4_position, 0, 2, 0, eItems::mMinusOne, 0, 6);
         }
         else
         {

@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "a3_background_layer.h"
+#include "items.h"
 
 void fieldA3_2_exit0(p_workArea, sLCSTarget*)
 {
@@ -46,7 +47,7 @@ struct fieldA3_2_exitLCSTask : public s_workAreaTemplate<fieldA3_2_exitLCSTask>
 
             static sVec3_FP exitLocations[4];
             exitLocations[r12] = readSaturnVec3(gFLD_A3->getSaturnPtr(0x6081E28 + 4 * 3 * r12));
-            createLCSTarget(&pThis->m0[r12], pThis, fieldA3_2_exitFuncTable[r12], &exitLocations[r12], &pThis->mD0[r12], 3, 0, -1, 0, 0);
+            createLCSTarget(&pThis->m0[r12], pThis, fieldA3_2_exitFuncTable[r12], &exitLocations[r12], &pThis->mD0[r12], 3, 0, eItems::mMinusOne, 0, 0);
 
             getFieldTaskPtr()->mC->m9F_A3_2_exits[r12] = 0;
         }

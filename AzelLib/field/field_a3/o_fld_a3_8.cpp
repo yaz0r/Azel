@@ -3,6 +3,7 @@
 #include "o_fld_a3_4.h"
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
+#include "items.h"
 
 struct fieldA3_8_exitTask : public s_workAreaTemplate<fieldA3_8_exitTask>
 {
@@ -253,7 +254,7 @@ void fieldA3_8_create_generatorTask(p_workArea workArea)
         pNewTask->m9C_status = 0;
     }
 
-    createLCSTarget(&pNewTask->m68_LCSTarget, pNewTask, &fieldA3_8_create_generatorLCSTarget, &pNewTask->m8_position, nullptr, 0, 0, -1, 0, 0);
+    createLCSTarget(&pNewTask->m68_LCSTarget, pNewTask, &fieldA3_8_create_generatorLCSTarget, &pNewTask->m8_position, nullptr, 0, 0, eItems::mMinusOne, 0, 0);
     createSubTaskFromFunction<fieldA3_8_generatorCameraTask>(pNewTask, &fieldA3_8_generatorCameraTask::Update);
 }
 

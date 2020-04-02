@@ -2,6 +2,7 @@
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
 #include "a3_background_layer.h"
+#include "items.h"
 // Above Excavation
 
 void fieldA3_1_startTasks_sub1Task_InitSub0(p_workArea, sLCSTarget*)
@@ -43,7 +44,7 @@ struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_sta
         };
         for (int i = 2; i >= 0; i--)
         {
-            createLCSTarget(&pThis->m0[i], pThis, fieldA3_1_startTasks_sub1Task_InitFunctionTable[i], &fieldA3_1_startTasks_sub1Task_InitPositionTable[i], NULL, 3, 0, -1, 0, 0);
+            createLCSTarget(&pThis->m0[i], pThis, fieldA3_1_startTasks_sub1Task_InitFunctionTable[i], &fieldA3_1_startTasks_sub1Task_InitPositionTable[i], NULL, 3, 0, eItems::mMinusOne, 0, 0);
             getFieldTaskPtr()->mC->m9C_A3_1_exits[i] = 0;
         }
 

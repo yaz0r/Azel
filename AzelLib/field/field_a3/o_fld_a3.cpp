@@ -11,6 +11,8 @@
 #include "kernel/cinematicBarsTask.h"
 #include "collision.h"
 
+#include "items.h"
+
 #include "kernel/dialogTask.h"
 
 void updateDragonDefault(s_dragonTaskWorkArea*);
@@ -773,7 +775,7 @@ void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32
     pNewObj->m_UpdateMethod = &A3_Obj2_Update;
     pNewObj->m_DrawMethod = &A3_Obj2_Draw;
 
-    createLCSTarget(&pNewObj->m60, pNewObj, &create_A3_Obj2_Sub1, &pNewObj->m10_position, 0, 0, 0, -1, 0, 0);
+    createLCSTarget(&pNewObj->m60, pNewObj, &create_A3_Obj2_Sub1, &pNewObj->m10_position, 0, 0, 0, eItems::mMinusOne, 0, 0);
 
     getFieldTaskPtr()->mC->m8 = 0;
 }
@@ -3859,7 +3861,9 @@ s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr)
     pItemBoxDefinition->m30_scale = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m34_bitIndex = readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m38 = readSaturnS32(ptr); ptr += 4;
-    pItemBoxDefinition->m3C_receivedItemId = readSaturnS32(ptr); ptr += 4;
+    assert(readSaturnS32(ptr) >= eItems::min);
+    assert(readSaturnS32(ptr) <= eItems::max);
+    pItemBoxDefinition->m3C_receivedItemId = (eItems)readSaturnS32(ptr); ptr += 4;
     pItemBoxDefinition->m40_receivedItemQuantity = readSaturnS8(ptr); ptr += 1;
     pItemBoxDefinition->m41_LCSType = readSaturnS8(ptr); ptr += 1;
     pItemBoxDefinition->m42 = readSaturnS8(ptr); ptr += 1;
@@ -7203,35 +7207,7 @@ void s_LCSTask340Sub::Delete3(s_LCSTask340Sub* pThis)
             //0607A1C2
             getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount--;
             createReceiveItemTask(r13, &r13->m40_receivedItemTask, 45, pThis->m24_receivedItemId, pThis->m26_receivedItemQuantity);
-            if (pThis->m24_receivedItemId < 77)
-            {
-                //0607A1F6
-                if (mainGameState.consumables[pThis->m24_receivedItemId] + pThis->m26_receivedItemQuantity > 99)
-                {
-                    mainGameState.consumables[pThis->m24_receivedItemId] = 99;
-                }
-                else
-                {
-                    mainGameState.consumables[pThis->m24_receivedItemId] += pThis->m26_receivedItemQuantity;
-                }
-            }
-            else
-            {
-                //607A2A8
-                if (pThis->m26_receivedItemQuantity == 1)
-                {
-                    mainGameState.setBit(243 + pThis->m24_receivedItemId);
-                }
-                else if (pThis->m26_receivedItemQuantity == -1)
-                {
-                    mainGameState.clearBit(243 + pThis->m24_receivedItemId);
-                }
-                else
-                {
-                    assert(0);
-                }
-            }
-
+            mainGameState.addItemCount(pThis->m24_receivedItemId, pThis->m26_receivedItemQuantity);
         }
     }
     else

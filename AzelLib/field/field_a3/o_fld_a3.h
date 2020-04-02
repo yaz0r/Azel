@@ -66,7 +66,7 @@ struct sLaserArgs
     sVec3_FP* m10;
     sLCSTarget* m14;
     s_LCSTask340* m18;
-    s16 m1C_receivedItemId;
+    eItems m1C_receivedItemId;
     s8 m1E_receivedItemQuantity;
     s8 m1F;
 };
@@ -82,7 +82,7 @@ struct s_itemBoxDefinition
     fixedPoint m30_scale;
     s32 m34_bitIndex;
     s32 m38;
-    s32 m3C_receivedItemId;
+    eItems m3C_receivedItemId; // TODO: was 32bit in original, but no need
     s8 m40_receivedItemQuantity;
     s8 m41_LCSType; // 2 : savepoint
     s8 m42;

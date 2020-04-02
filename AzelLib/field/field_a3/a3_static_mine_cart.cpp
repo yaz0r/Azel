@@ -2,6 +2,7 @@
 #include "a3_static_mine_cart.h"
 #include "a3_dynamic_mine_cart.h"
 #include "kernel/fileBundle.h"
+#include "items.h"
 
 struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
 {
@@ -224,10 +225,10 @@ void create_A3_0_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     pNewObj->m24.zeroize();
     pNewObj->m3A = 0;
 
-    s32 param = readSaturnS32(sSaturnPtr({ 0x6092570, gFLD_A3 }) + 4 * r5.m18);
-    if (param == -1)
+    eItems param = (eItems)readSaturnS32(sSaturnPtr({ 0x6092570, gFLD_A3 }) + 4 * r5.m18);
+    if (param == eItems::mMinusOne)
     {
-        createLCSTarget(&pNewObj->m3C, pNewObj, &A3_0_Obj0_Callback, &pNewObj->mC_position, 0, 0, 0, -1, 0, 0);
+        createLCSTarget(&pNewObj->m3C, pNewObj, &A3_0_Obj0_Callback, &pNewObj->mC_position, 0, 0, 0, eItems::mMinusOne, 0, 0);
     }
     else
     {

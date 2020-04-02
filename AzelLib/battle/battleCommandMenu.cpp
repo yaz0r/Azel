@@ -7,6 +7,8 @@
 #include "battleEngine.h"
 #include "battleOverlay_C.h"
 #include "battleDragon.h"
+#include "battleItemSelection.h"
+#include "items.h"
 #include "mainMenuDebugTasks.h" // TODO: clean
 #include "town/town.h" // TODO: clean
 #include "kernel/vdp1Allocator.h" // TODO: clean
@@ -18,6 +20,25 @@ void BattleCommandMenu_UpdateSub0()
 {
     vdp2Controls.m4_pendingVdp2Regs->m26_SFCODE = 0xC000;
     vdp2Controls.m_isDirty = 1;
+}
+
+void setBattleFont(int param_1)
+{
+    FunctionUnimplemented();
+/*    if (param_1 == 0)
+    {
+        setActiveFont(gBattleManager->m10_battleOverlay->m14->m18);
+    }
+    else
+    {
+        setActiveFont(gBattleManager->m10_battleOverlay->m14->m17);
+    }
+    */
+}
+
+void drawUsedItemName(s32, s32)
+{
+    FunctionUnimplemented();
 }
 
 void createBattleCommandMenuSub0(sBattleCommandMenu* pThis, char param2)
@@ -78,16 +99,74 @@ s32 createBattleCommandMenuSub2(s32 param1)
     return iVar1;
 }
 
-s32 BattleCommandMenu_CountSubMenuEntries(sBattleCommandMenu* pThis)
+void addObjectToList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
 {
-    FunctionUnimplemented();
-    return 1;
+    bool bVar1 = false;
+    switch (index)
+    {
+    case eItems::m1_blastChip:
+    case eItems::m2_dualBlastChip:
+    case eItems::m3_triBlastChip:
+        if (gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies < 1)
+        {
+            bVar1 = true;
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    pEntry->m0_itemIndex = index;
+    if (!bVar1)
+    {
+        pEntry->m2 = 0;
+    }
+}
+
+s32 BattleCommandMenu_PopulateSubMenu(sBattleCommandMenu* pThis)
+{
+    int totalEntryCount = 0;
+    switch (pThis->m0_selectedBattleCommand)
+    {
+    case 2: // items
+        for (int i=0; i<0x38; i++)
+        {
+            pThis->m34_itemList[i].m0_itemIndex = 0;
+            pThis->m34_itemList[i].m2 = 1;
+        }
+        for (int i = 0; i < 0x38; i++)
+        {
+            eItems itemEntry = (eItems)i;
+
+            const sObjectListEntry* pObject = getObjectListEntry(itemEntry);
+            if (pObject->m0_flags & 2)
+            {
+                if ((pObject->m1_type == 6) || (pObject->m1_type == 7) || (pObject->m1_type == 8))
+                {
+                    if (mainGameState.getItemCount(itemEntry))
+                    {
+                        addObjectToList(&pThis->m34_itemList[totalEntryCount++], itemEntry);
+                    }
+                }
+            }
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    return totalEntryCount;
 }
 
 int isBattleCommandEnabled(sBattleCommandMenu* pThis, int buttonIndex)
 {
     FunctionUnimplemented();
     return 1;
+}
+
+void drawBattleItemMenuSelectedItem(sBattleCommandMenu* pThis, std::array<sBattleCommandMenu::sSubMenuEntry, 0x38>& p2, sBattleItemSelectionTask* pMenu)
+{
+    FunctionUnimplemented();
 }
 
 void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
@@ -175,7 +254,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                     clearVdp2TextArea();
                     uVar9 = 1;
                     pThis->m2_mode = 7;
-                    pThis->m3 = 0;
+                    pThis->m3_itemMenuOpen = 0;
                 }
                 break;
             case 1: // homing laser
@@ -188,19 +267,19 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                     clearVdp2TextArea();
                     uVar9 = 1;
                     pThis->m2_mode = 7;
-                    pThis->m3 = 0;
+                    pThis->m3_itemMenuOpen = 0;
                 }
                 break;
             case 2: // items
                 uVar9 = 0;
                 if ('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) {
-                    pThis->m24 = BattleCommandMenu_CountSubMenuEntries(pThis);
+                    pThis->m24 = BattleCommandMenu_PopulateSubMenu(pThis);
                     int iVar8;
-                    if ((0 < pThis->m24) && (pThis->m1DC[0] == 0)) {
+                    if ((0 < pThis->m24) && (pThis->m1DC_itemSelectionMenuHead == nullptr)) {
                         pThis->m20 |= 8;
                         pThis->m2_mode = 3;
                         clearVdp2TextArea();
-                        pThis->m3 = 0;
+                        pThis->m3_itemMenuOpen = 0;
                         uVar9 = 1;
                     }
                 }
@@ -209,15 +288,15 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 uVar9 = 0;
                 if (('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) &&
                     (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 1) == 0)) {
-                    pThis->m24 = BattleCommandMenu_CountSubMenuEntries(pThis);
+                    pThis->m24 = BattleCommandMenu_PopulateSubMenu(pThis);
                     int iVar8;
                     if ((0 < pThis->m24) &&
                         ((isBattleCommandEnabled(pThis, pThis->m0_selectedBattleCommand) > 0 &&
-                        (pThis->m1DC[1] == 0)))) {
+                        (pThis->m1E0_berserkSelectionMenuHead == nullptr)))) {
                         pThis->m20 |= 8;
                         pThis->m2_mode = 4;
                         clearVdp2TextArea();
-                        pThis->m3 = 0;
+                        pThis->m3_itemMenuOpen = 0;
                         uVar9 = 1;
                     }
                 }
@@ -225,13 +304,13 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             case 4: // change weapon?
                 uVar9 = 0;
                 if ('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) {
-                    pThis->m24 = BattleCommandMenu_CountSubMenuEntries(pThis);
+                    pThis->m24 = BattleCommandMenu_PopulateSubMenu(pThis);
                     int iVar8;
-                    if ((0 < pThis->m24) && (pThis->m1DC[2] == 0)) {
+                    if ((0 < pThis->m24) && (pThis->m1E4_weaponSelectionMenuHead == nullptr)) {
                         pThis->m20 |= 8;
                         pThis->m2_mode = 5;
                         clearVdp2TextArea();
-                        pThis->m3 = 0;
+                        pThis->m3_itemMenuOpen = 0;
                         uVar9 = 1;
                     }
                 }
@@ -256,7 +335,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                         setupVDP2StringRendering(6, 0x17, 0x20, 2);
                         clearVdp2TextArea();
                         pThis->m2_mode = 6;
-                        pThis->m3 = 0;
+                        pThis->m3_itemMenuOpen = 0;
                         playSoundEffect(4);
                         uVar9 = 1;
                         pThis->m18_oldDragonAtk = mainGameState.gameStats.dragonAtt;
@@ -274,7 +353,41 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
         }
         break;
     case 3: // item selection
-        assert(0);
+        FPInterpolator_Step(&pThis->m1C0_scrollInterpolator);
+        pThis->m14 = fixedPoint::toInteger(pThis->m1C0_scrollInterpolator.m0_currentValue + 0x8000);
+        if (pThis->m3_itemMenuOpen == 0)
+        {
+            setBattleFont(0);
+            createBattleItemSelectionTask(pThis, &pThis->m1DC_itemSelectionMenuHead, &pThis->m28, pThis->m24, pThis->m34_itemList);
+            pThis->m20 &= ~0x20;
+            pThis->m3_itemMenuOpen = 1;
+        }
+        else if (pThis->m3_itemMenuOpen)
+        {
+            if (pThis->m1DC_itemSelectionMenuHead)
+            {
+                drawBattleItemMenuSelectedItem(pThis, pThis->m34_itemList, pThis->m1DC_itemSelectionMenuHead);
+            }
+            else
+            {
+                if (pThis->m28 < 0)
+                {
+                    createBattleCommandMenuSub0(pThis, 0);
+                    pThis->m2_mode = 1;
+                }
+                else
+                {
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m39E_selectedItem = pThis->m34_itemList[pThis->m28].m0_itemIndex;
+                    battleEngine_SetBattleMode(m1_useItem);
+                    fieldPaletteTaskInitSub0Sub0();
+                    pThis->getTask()->markFinished();
+                }
+
+                pThis->m20 &= ~0x8;
+                pThis->m20 &= ~0x20;
+                drawUsedItemName(-1, 0);
+            }
+        }
         break;
     case 4: // berserk selection
         assert(0);
@@ -308,7 +421,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             fieldPaletteTaskInitSub0Sub0();
             pThis->getTask()->markFinished();
         }
-        pThis->m14 = (pThis->m1C0_scrollInterpolator.m0_currentValue + 0x8000) >> 16;
+        pThis->m14 = fixedPoint::toInteger(pThis->m1C0_scrollInterpolator.m0_currentValue + 0x8000);
         break;
     default:
         assert(0);
@@ -489,7 +602,7 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
             break;
         case 2:
         {
-            // cursor
+            // cursor shadow
             u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
             setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
             setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
@@ -529,7 +642,46 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
         }
         break;
         case 3:
-            assert(0);
+            // cursor shadow
+            {
+                u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+                setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+                setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
+                setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2ECC); // CMDCOLR
+                setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x218); // CMDSRCA
+                setVdp1VramU16(vdp1WriteEA + 0x0A, 0x418); // CMDSIZE
+                setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->mC + readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0); // CMDXA
+                setVdp1VramU16(vdp1WriteEA + 0x0E, -((-readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70)); // CMDYA
+
+                graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+                graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+                graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+                graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+                graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+                graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+            }
+
+            // cursor
+            {
+                u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+                setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+                setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
+                setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2ECC); // CMDCOLR
+                setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x248); // CMDSRCA
+                setVdp1VramU16(vdp1WriteEA + 0x0A, 0x418); // CMDSIZE
+                setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->mC + readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0); // CMDXA
+                setVdp1VramU16(vdp1WriteEA + 0x0E, -((-readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70)); // CMDYA
+
+                graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+                graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+                graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+                graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+                graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+                graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+            }
             break;
         default:
             break;
@@ -570,7 +722,9 @@ void createBattleCommandMenu(p_workArea parent)
 
     createBattleCommandMenuSub0(pThis, 0);
 
-    pThis->m1DC.zeroize();
+    pThis->m1DC_itemSelectionMenuHead = nullptr;
+    pThis->m1E0_berserkSelectionMenuHead = nullptr;
+    pThis->m1E4_weaponSelectionMenuHead = nullptr;
     pThis->m4_enabledBattleCommands.fill(0);
     pThis->m1_numBattleCommands = 6;
 }

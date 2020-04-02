@@ -22,6 +22,7 @@ struct s_battleEngine_3B4
 enum eBattleModes
 {
     m0_shootEnemyWithGun = 0,
+    m1_useItem = 1,
     m3_shootEnemeyWithHomingLaser = 3, //target enemy?
     m6_dragonMoving = 6,
     m7 = 7,
@@ -130,6 +131,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s16 m396;
     s16 m398_currentSelectedEnemy;
     s16 m39C_maxSelectableEnemies;
+    s16 m39E_selectedItem;
     u8 m3A0_LaserType; // 0: single, else multi
     s16 m3A2;
     std::array<s8, 2> m3A4_prelockMode;

@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "items.h"
 
 // Conana's nest
 
@@ -25,7 +26,7 @@ struct fieldA3_3_exitTask : public s_workAreaTemplate<fieldA3_3_exitTask>
     {
         static const sVec3_FP position = { 0xC0000, -0x10000, -0x66000 };
 
-        createLCSTarget(&pThis->m0, pThis, fieldA3_3_exitTaskCallback, &position, NULL, 3, 0, -1, 0, 0);
+        createLCSTarget(&pThis->m0, pThis, fieldA3_3_exitTaskCallback, &position, NULL, 3, 0, eItems::mMinusOne, 0, 0);
         getFieldTaskPtr()->mC->mA3_conanaNestExit = 0;
     }
 

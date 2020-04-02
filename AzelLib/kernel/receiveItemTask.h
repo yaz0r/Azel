@@ -19,10 +19,10 @@ struct s_receivedItemTask : s_workAreaTemplate<s_receivedItemTask>
     s16 m16_y;
     s16 m1A_width;
     s16 m1C_height;
-    s16 m24_receivedItemId;
-    s16 m26_receivedItemQuanity;
+    eItems m24_receivedItemId;
+    s16 m26_receivedItemQuantity;
     s16 m28_itemNameLength;
     // size 0x2C
 };
 
-s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedItemTask** r5, s32 r6, s32 r7_receivedItemId, s32 arg0_receivedItemQuanity);
+s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedItemTask** r5, s32 r6, eItems r7_receivedItemId, s32 arg0_receivedItemQuanity);

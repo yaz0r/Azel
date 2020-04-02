@@ -8,6 +8,8 @@
 #define IMGUI_API
 #include "imgui_impl_sdl.h"
 
+#include "items.h"
+
 extern SDL_Window* gWindowGL;
 extern SDL_GLContext gGlcontext;
 extern const char* gGLSLVersion;
@@ -1873,6 +1875,8 @@ bool azelSdl2_EndFrame()
     }
     ImGui::End();
 
+    static bool bInventoryOpen = false;
+
     if (ImGui::BeginMainMenuBar())
     {
         ImGui::Text(" %.2f FPS (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
@@ -1890,10 +1894,64 @@ bool azelSdl2_EndFrame()
         ImGui::SliderFloat("Volume", &gVolume, 0, 1);
         ImGui::PopItemWidth();
 
+        if (ImGui::BeginMenu("GameState"))
+        {
+            ImGui::MenuItem("Inventory", NULL, &bInventoryOpen);
+            ImGui::EndMenu();
+        }
+
         extern bool bTraceEnabled;
         ImGui::Checkbox("Trace", &bTraceEnabled);
 
         ImGui::EndMainMenuBar();
+    }
+
+    if (bInventoryOpen)
+    {
+        ImGui::Begin("Inventory");
+
+        ImGui::Columns(4);
+        for (int i=0; i<0xB0; i++)
+        {
+            const sObjectListEntry* pObject = getObjectListEntry((eItems)i);
+
+            ImGui::PushID(i);
+
+            ImGui::Text("0x%04X", i); ImGui::NextColumn();
+            ImGui::Text(pObject->m4_name.c_str()); ImGui::NextColumn();
+            ImGui::Text(pObject->m8_description.c_str()); ImGui::NextColumn();
+
+            if (i< 0x4D)
+            {
+                int owned = mainGameState.consumables[i];
+                if (ImGui::InputInt("owned", &owned))
+                {
+                    mainGameState.consumables[i] = owned;
+                }
+            }
+            else
+            {
+                bool owned = mainGameState.getBit(0xF3 + i);
+                if (ImGui::Checkbox("owned", &owned))
+                {
+                    if (owned)
+                    {
+                        mainGameState.setBit(0xF3 + i);
+                    }
+                    else
+                    {
+                        mainGameState.clearBit(0xF3 + i);
+                    }
+                    
+                }
+            }
+            ImGui::NextColumn();
+            ImGui::Separator();
+
+            ImGui::PopID();
+        }
+        ImGui::Columns(1);
+        ImGui::End();
     }
 
     checkGL();

@@ -35,7 +35,7 @@ struct sLCSTarget
     const sVec3_FP* mC_optionalRotation;
     s16 m10_flags;
     s16 m12;
-    s16 m14_receivedItemId;
+    eItems m14_receivedItemId;
     s8 m16_receivedItemQuantity;
     s8 m17;
     s8 m18_diableFlags; // 1: disabled, 4: not visible/facing away?
@@ -141,7 +141,7 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     sVec3_FP* m18;
     sLCSTarget* m1C;
     struct s_LCSTask340* m20;
-    s16 m24_receivedItemId;
+    eItems m24_receivedItemId;
     s8 m26_receivedItemQuantity;
     s8 m27;
     void (*m28_laserInit)(s_LCSTask340Sub*);
@@ -269,20 +269,7 @@ struct sLCSSelected : public s_workAreaTemplate<sLCSSelected>
     //size 0x30
 };
 
-struct sObjectListEntry
-{
-    s8 m0;
-    s8 m1;
-    s8 m2;
-    s8 m3;
-    std::string m4_name;
-    std::string m8_description;
-};
-
-sObjectListEntry* getObjectListEntry(s32 entry);
-s32 getObjectIcon(s32 objectID);
-
-void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, s16 receivedItemId, s32 receivedItemQuantity, s32 arg14);
+void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* arg0, s16 flags, s16 argA, eItems receivedItemId, s32 receivedItemQuantity, s32 arg14);
 void updateLCSTarget(sLCSTarget* r14);
 void LCSTaskDrawSub();
 void allocateLCSEntry(s_visibilityGridWorkArea* r4, sProcessed3dModel* r5, fixedPoint r6);

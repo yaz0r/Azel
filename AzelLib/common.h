@@ -2,6 +2,8 @@
 
 #include <array>
 
+enum eItems : s16;
+
 extern const u8 bitMasks[];
 extern const u8 reverseBitMasks[];
 
@@ -406,7 +408,72 @@ private:
     std::vector<sBitfieldMapEntry> m_bitFieldMap;
 
 public:
-    std::array<s8, 77> consumables;
+
+    s8 getItemCount(eItems itemIndex)
+    {
+        if (itemIndex < 0x4D)
+        {
+            return consumables[itemIndex];
+        }
+        else
+        {
+            return getBit(0xF3 + itemIndex);
+        }
+    }
+
+    void setItemCount(eItems itemIndex, s8 count)
+    {
+        if (itemIndex < 0x4D)
+        {
+            consumables[itemIndex] = count;
+        }
+        else
+        {
+            if (count)
+            {
+                setBit(0xF3 + itemIndex);
+            }
+            else
+            {
+                clearBit(0xF3 + itemIndex);
+            }
+        }
+    }
+
+    void addItemCount(eItems itemIndex, s8 count)
+    {
+        if (itemIndex < 0x4D)
+        {
+            //0607A1F6
+            if (consumables[itemIndex] + count > 99)
+            {
+                consumables[itemIndex] = 99;
+            }
+            else
+            {
+                consumables[itemIndex] += count;
+            }
+        }
+        else
+        {
+            //607A2A8
+            if (count == 1)
+            {
+                setBit(0xF3 + itemIndex);
+            }
+            else if (count == -1)
+            {
+                clearBit(0xF3 + itemIndex);
+            }
+            else
+            {
+                assert(0);
+            }
+        }
+
+    }
+
+    std::array<s8, 0x4D> consumables;
     s_gameStats gameStats;
 
     void reset()

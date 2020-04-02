@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "a3_dynamic_mine_cart.h"
 #include "kernel/fileBundle.h"
+#include "items.h"
 
 // This is confusing. This adjust the vertical position of the cart based on the dragon proximity.
 // Visually, this just move the cart slightly up when colliding with the dragon. But is pretty much invisible most of the time since the dragon can't get close enough to the cart.
@@ -257,7 +258,7 @@ void create_A3_0_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
             pNewTask->m1C = readSaturnS32(sSaturnPtr({ 0x6092714, gFLD_A3 }) + (r12 - 3) * 8);
             pNewTask->m24 = readSaturnS32(sSaturnPtr({ 0x6092714, gFLD_A3 }) + (r12 - 3) * 8 + 4);
             pNewTask->mC = sSaturnPtr({ 0x609271C, gFLD_A3 }) + (r12 - 3) * 4;
-            createLCSTarget(&pNewTask->m38_LCSTarget, pNewTask, &A3_0_Obj3_LCSCallback, &pNewTask->m10_position, 0, 0, 0, -1, 0, 0);
+            createLCSTarget(&pNewTask->m38_LCSTarget, pNewTask, &A3_0_Obj3_LCSCallback, &pNewTask->m10_position, 0, 0, 0, eItems::mMinusOne, 0, 0);
         }
         break;
     default:

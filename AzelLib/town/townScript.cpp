@@ -1962,16 +1962,9 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
         case 41: // get inventory count
             {
                 r14 = getAlignOn2(r14);
-                s16 itemIndex = readSaturnS16(r14);
+                eItems itemIndex = (eItems)readSaturnS16(r14);
                 r14 += 2;
-                if (itemIndex < 77)
-                {
-                    r13_pThis->m118_currentResult = mainGameState.consumables[itemIndex];
-                }
-                else
-                {
-                    r13_pThis->m118_currentResult = mainGameState.getBit(243 + itemIndex);
-                }
+                r13_pThis->m118_currentResult = mainGameState.getItemCount(itemIndex);
             }
             break;
         case 43: // add to inventory
@@ -1979,25 +1972,9 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
                 s8 count = readSaturnS8(r14);
                 r14++;
                 r14 = getAlignOn2(r14);
-                s16 itemIndex = readSaturnS16(r14);
+                eItems itemIndex = (eItems)readSaturnS16(r14);
                 r14 += 2;
-                if (itemIndex < 77)
-                {
-                    mainGameState.consumables[itemIndex] += count;
-                }
-                else
-                {
-                    mainGameState.setBit(243 + itemIndex);
-                }
-
-                // clamp
-                if (itemIndex < 77)
-                {
-                    if (mainGameState.consumables[itemIndex] > 99)
-                    {
-                        mainGameState.consumables[itemIndex] = 99;
-                    }
-                }
+                mainGameState.addItemCount(itemIndex, count);
             }
             break;
         case 46: // cutscene control
@@ -2045,7 +2022,7 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
                 r14 = getAlignOn2(r14);
                 s16 r6 = readSaturnS16(r14);
                 r14 += 2;
-                s16 itemIndex = readSaturnS16(r14);
+                eItems itemIndex = (eItems)readSaturnS16(r14);
                 r14 += 2;
                 s16 itemCount = readSaturnS16(r14);
                 r14 += 2;

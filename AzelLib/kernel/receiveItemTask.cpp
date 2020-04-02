@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "items.h"
 
 static void s_receivedItemTask_DisplayReceivedObject(s_receivedItemTask* pThis)
 {
@@ -12,7 +13,7 @@ static void s_receivedItemTask_DisplayReceivedObject(s_receivedItemTask* pThis)
     vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y;
     drawObjectName(getObjectListEntry(pThis->m24_receivedItemId)->m4_name.c_str());
 
-    if (pThis->m26_receivedItemQuanity > 0)
+    if (pThis->m26_receivedItemQuantity > 0)
     {
         s32 r2;
         if (pThis->m28_itemNameLength + 1 >= 0)
@@ -40,7 +41,7 @@ static void s_receivedItemTask_DisplayReceivedObject(s_receivedItemTask* pThis)
         vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + pThis->m28_itemNameLength +r2 + 2;
         vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y;
 
-        printVdp2Number(pThis->m26_receivedItemQuanity);
+        printVdp2Number(pThis->m26_receivedItemQuantity);
     }
 }
 
@@ -117,7 +118,7 @@ s32 createReceiveItemTaskSub0(const char* inputString, s32 maxLength)
     return r6;
 }
 
-s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedItemTask** r5, s32 r6, s32 r7_receivedItemId, s32 arg0_receivedItemQuanity)
+s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedItemTask** r5, s32 r6, eItems r7_receivedItemId, s32 arg0_receivedItemQuantity)
 {
     s_receivedItemTask* pNewTask = createSubTask<s_receivedItemTask>(r4_parentTask);
 
@@ -135,11 +136,11 @@ s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedIt
 
     //601C39E
     pNewTask->m24_receivedItemId = r7_receivedItemId;
-    pNewTask->m26_receivedItemQuanity = arg0_receivedItemQuanity;
+    pNewTask->m26_receivedItemQuantity = arg0_receivedItemQuantity;
 
     pNewTask->m28_itemNameLength = createReceiveItemTaskSub0(getObjectListEntry(r7_receivedItemId)->m4_name.c_str(), 34);
     s32 r4 = pNewTask->m28_itemNameLength + 2;
-    if (arg0_receivedItemQuanity <= 0)
+    if (arg0_receivedItemQuantity <= 0)
     {
         //0601C3CA
         assert(0);

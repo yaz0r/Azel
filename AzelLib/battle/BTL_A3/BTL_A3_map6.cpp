@@ -682,7 +682,6 @@ void BTL_A3_Env_DrawSub8(s_BTL_A3_Env* pThis)
     sVec3_FP cameraRotation = pThis->m18_cameraRotation;
     if (pThis->m18_cameraRotation[0] == 0)
     {
-        assert(0);
         cameraRotation[0] = -0x12345; // was that a debug piece of code left over?
     }
     

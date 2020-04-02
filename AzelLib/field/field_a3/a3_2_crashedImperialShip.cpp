@@ -2,6 +2,7 @@
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
 #include "a3_2_crashedImperialShip.h"
+#include "items.h"
 
 void fieldA3_2_createCrashedImpertialShipExplosions(p_workArea)
 {
@@ -122,7 +123,7 @@ void create_A3_2_crashedImperialShip(s_visdibilityCellTask* r4, s_DataTable2Sub0
     init3DModelRawData(pNewTask, &pNewTask->m40_3dModel, 0, pBundle, readSaturnS16(r5.m1C_modelData), pAnimation, pPose, nullptr, nullptr);
     stepAnimation(&pNewTask->m40_3dModel);
 
-    createLCSTarget(&pNewTask->m90_LCSTarget, pNewTask, &fieldA3_2_crashedImpertialShip_LCSCallback, &pNewTask->m2C_LCSTargetLocation, nullptr, 0, 0, 140, 1, 0);
+    createLCSTarget(&pNewTask->m90_LCSTarget, pNewTask, &fieldA3_2_crashedImpertialShip_LCSCallback, &pNewTask->m2C_LCSTargetLocation, nullptr, 0, 0, eItems::m8C_recording, 1, 0);
     pNewTask->m3C_status = 0;
 
     getFieldTaskPtr()->mC->m164_A3_2_crashedImperialShipTask = pNewTask;

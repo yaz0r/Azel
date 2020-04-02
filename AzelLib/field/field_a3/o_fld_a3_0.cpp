@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "a3_0_task4.h"
+#include "items.h"
 
 void subfieldA3_0Sub0(s_dragonTaskWorkArea* r4)
 {
@@ -195,7 +196,7 @@ struct sfieldA3_0_createExitTask : public s_workAreaTemplate<sfieldA3_0_createEx
 
             fieldA3_0_exitPosition[r12] = readSaturnVec3({ 0x6081DA4 + 4 * 3 * r12, gFLD_A3 });
 
-            createLCSTarget(&pThis->m0_LCSTargets[r12], pThis, fieldA3_0_exitFunctionTable[r12], &fieldA3_0_exitPosition[r12], &pThis->m1A0_rotation[r12], 3, 0, -1, 0, 0);
+            createLCSTarget(&pThis->m0_LCSTargets[r12], pThis, fieldA3_0_exitFunctionTable[r12], &fieldA3_0_exitPosition[r12], &pThis->m1A0_rotation[r12], 3, 0, eItems::mMinusOne, 0, 0);
 
             getFieldTaskPtr()->mC->m94_A3_0_exits[r12] = 0;
         }
