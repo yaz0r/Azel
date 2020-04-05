@@ -1598,7 +1598,7 @@ void clearBlueBox(s32 x, s32 y, s32 width, s32 height)
     }
 }
 
-void drawBlueBox(s32 x, s32 y, s32 width, s32 hight)
+void drawBlueBox(s32 x, s32 y, s32 width, s32 hight, u32)
 {
     PDS_unimplemented("drawBlueBox");
 }
@@ -1615,7 +1615,7 @@ void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId)
 
 void s_vdp2StringTask::UpdateSub1()
 {
-    drawBlueBox(m14_x, m16_y, m1A_width, m1C_height);
+    drawBlueBox(m14_x, m16_y, m1A_width, m1C_height, 0x1000);
 
     setupVDP2StringRendering(m14_x + 4, m16_y + 1, m1A_width - 8, m1C_height - 2);
 

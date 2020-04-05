@@ -18,15 +18,16 @@ struct sBattleCommandMenu : public s_workAreaTemplate<sBattleCommandMenu>
     s32 m1C;
     u32 m20;
     s32 m24;
-    s32 m28;
+    s32 m28_selectedItem;
+    s32 m2C_selectedBerserk;
     struct sSubMenuEntry
     {
-        s16 m0_itemIndex;
+        eItems m0_itemIndex;
         s16 m2;
     };
-    std::array<sSubMenuEntry, 0x38> m34_itemList;
-    std::array<sSubMenuEntry, 0x22> m114_berserkList;
-    std::array<sSubMenuEntry, 0x9> m19C_weaponList;
+    std::vector<sSubMenuEntry> m34_itemList; // 0x38 entries
+    std::vector<sSubMenuEntry> m114_berserkList; // 0x22 entries
+    std::vector<sSubMenuEntry> m19C_weaponList; // 0x9 entries
     sFPInterpolator m1C0_scrollInterpolator;
     struct sBattleItemSelectionTask* m1DC_itemSelectionMenuHead;
     struct sBattleItemSelectionTask* m1E0_berserkSelectionMenuHead;

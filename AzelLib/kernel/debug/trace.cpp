@@ -27,7 +27,7 @@ bool isTraceEnabled()
 
 static int counter = 0;
 
-void readTraceLog(const char* fmt, u32& value)
+void readTraceLogU32(u32& value, const char* name)
 {
     if(fHandle)
     {
@@ -39,15 +39,79 @@ void readTraceLog(const char* fmt, u32& value)
         }
 
         char internalFormat[1024];
-        sprintf(internalFormat, "%d: %s", counter++, fmt);
+        sprintf(internalFormat, "%d: %s: 0x%%08X", counter++, name);
 
         if (buffer.size())
         {
-            if (sscanf(&buffer[0], internalFormat, &value) != 1)
+            int tempValue;
+            if (sscanf(&buffer[0], internalFormat, &tempValue) != 1)
             {
                 assert(0);
             }
+            value = tempValue;
         }
+    }
+}
+
+void readTraceLogU16(u16& value, const char* name)
+{
+    if (fHandle)
+    {
+        std::vector<char> buffer;
+        char newChar;
+        while (fread(&newChar, 1, 1, fHandle) && (newChar != '\n'))
+        {
+            buffer.push_back(newChar);
+        }
+
+        char internalFormat[1024];
+        sprintf(internalFormat, "%d: %s: 0x%%04X", counter++, name);
+
+        if (buffer.size())
+        {
+            int tempValue;
+            if (sscanf(&buffer[0], internalFormat, &tempValue) != 1)
+            {
+                assert(0);
+            }
+            value = tempValue;
+        }
+    }
+}
+
+void readTraceLogU8(u8& value, const char* name)
+{
+    if (fHandle)
+    {
+        std::vector<char> buffer;
+        char newChar;
+        while (fread(&newChar, 1, 1, fHandle) && (newChar != '\n'))
+        {
+            buffer.push_back(newChar);
+        }
+
+        char internalFormat[1024];
+        sprintf(internalFormat, "%d: %s: 0x%%04X", counter++, name);
+
+        if (buffer.size())
+        {
+            int tempValue;
+            if (sscanf(&buffer[0], internalFormat, &tempValue) != 1)
+            {
+                assert(0);
+            }
+            value = tempValue;
+        }
+    }
+}
+
+void readTraceLogS8(s8& value, const char* name)
+{
+    if(fHandle)
+    {
+        u8 temp;
+        readTraceLogU8(temp, name);
+        value = temp;
     }
 }
 

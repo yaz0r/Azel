@@ -4,6 +4,7 @@
 void s_multiChoiceTask::drawMultiChoice()
 {
     setupVDP2StringRendering(m14_x + 2, m16_y + 1, m1A_width - 4, m1C_height - 2);
+    clearVdp2TextArea();
 
     s32 r4 = m1 - (m3_quantity + 1) * 4;
     if (r4 >= 0)
@@ -23,7 +24,7 @@ void s_multiChoiceTask::drawMultiChoice()
         clearBlueBox(m14_x, m16_y + m1C_height, m1A_width, m20 - m1C_height);
     }
 
-    drawBlueBox(m14_x, m16_y, m1A_width, m1C_height);
+    drawBlueBox(m14_x, m16_y, m1A_width, m1C_height, 0x1000);
 
     setupVDP2StringRendering(m14_x + 2, m16_y + 1, m1A_width - 4, m1C_height - 2);
     vdp2StringContext.m0 = 0;

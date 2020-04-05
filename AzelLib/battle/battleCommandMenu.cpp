@@ -99,9 +99,16 @@ s32 createBattleCommandMenuSub2(s32 param1)
     return iVar1;
 }
 
+bool isFlashChipDisabledInBattle()
+{
+    FunctionUnimplemented();
+
+    return true;
+}
+
 void addObjectToList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
 {
-    bool bVar1 = false;
+    bool itemDisabled = false;
     switch (index)
     {
     case eItems::m1_blastChip:
@@ -109,15 +116,45 @@ void addObjectToList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
     case eItems::m3_triBlastChip:
         if (gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies < 1)
         {
-            bVar1 = true;
+            itemDisabled = true;
         }
         break;
+    case eItems::m4_flashChip:
+        if (isFlashChipDisabledInBattle())
+        {
+            itemDisabled = true;
+        }
+        break;
+    case eItems::m5_elixirMinor:
+        if (mainGameState.gameStats.m10_currentHP == mainGameState.gameStats.maxHP)
+        {
+            itemDisabled = true;
+        }
+        break;
+    case eItems::m6_berserkMicro:
+        if (mainGameState.gameStats.m14_currentBP == mainGameState.gameStats.maxBP)
+        {
+            itemDisabled = true;
+        }
+    break;
     default:
         assert(0);
     }
 
     pEntry->m0_itemIndex = index;
-    if (!bVar1)
+    if (!itemDisabled)
+    {
+        pEntry->m2 = 0;
+    }
+}
+
+void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
+{
+    FunctionUnimplemented();
+
+    bool itemDisabled = false;
+    pEntry->m0_itemIndex = index;
+    if (!itemDisabled)
     {
         pEntry->m2 = 0;
     }
@@ -131,7 +168,7 @@ s32 BattleCommandMenu_PopulateSubMenu(sBattleCommandMenu* pThis)
     case 2: // items
         for (int i=0; i<0x38; i++)
         {
-            pThis->m34_itemList[i].m0_itemIndex = 0;
+            pThis->m34_itemList[i].m0_itemIndex = eItems::m0_dummy;
             pThis->m34_itemList[i].m2 = 1;
         }
         for (int i = 0; i < 0x38; i++)
@@ -151,6 +188,36 @@ s32 BattleCommandMenu_PopulateSubMenu(sBattleCommandMenu* pThis)
             }
         }
         break;
+    case 3: // berserks
+        for (int i=0; i<0x22; i++)
+        {
+            pThis->m114_berserkList[i].m0_itemIndex = eItems::m0_dummy;
+            pThis->m114_berserkList[i].m2 = 0;
+        }
+        // for each class types
+        for (int classType = 0; classType < 6; classType++)
+        {
+            sSaturnPtr classBerserksTable = readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x60ac094) + classType * 4);
+
+            for (int classBerserkIndex = 0; classBerserkIndex < 5; classBerserkIndex++)
+            {
+                eItems berserkId = (eItems)readSaturnS16(classBerserksTable + classBerserkIndex * 8 + 6);
+                if (berserkId)
+                {
+                    if (mainGameState.getItemCount(berserkId) == 0)
+                    {
+                        pThis->m114_berserkList[classType * 5 + classBerserkIndex].m0_itemIndex = eItems::mA6_unlearned;
+                        pThis->m114_berserkList[classType * 5 + classBerserkIndex].m2 = 1;
+                    }
+                    else
+                    {
+                        addBerserkToActiveList(&pThis->m114_berserkList[classType * 5 + classBerserkIndex], berserkId);
+                    }
+                }
+                totalEntryCount++;
+            }
+        }
+        break;
     default:
         assert(0);
     }
@@ -164,7 +231,12 @@ int isBattleCommandEnabled(sBattleCommandMenu* pThis, int buttonIndex)
     return 1;
 }
 
-void drawBattleItemMenuSelectedItem(sBattleCommandMenu* pThis, std::array<sBattleCommandMenu::sSubMenuEntry, 0x38>& p2, sBattleItemSelectionTask* pMenu)
+void drawBattleItemMenuSelectedItem(sBattleCommandMenu* pThis, std::vector<sBattleCommandMenu::sSubMenuEntry>& p2, sBattleItemSelectionTask* pMenu)
+{
+    FunctionUnimplemented();
+}
+
+void printBerserkAttackClass(int pageIndex)
 {
     FunctionUnimplemented();
 }
@@ -358,7 +430,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
         if (pThis->m3_itemMenuOpen == 0)
         {
             setBattleFont(0);
-            createBattleItemSelectionTask(pThis, &pThis->m1DC_itemSelectionMenuHead, &pThis->m28, pThis->m24, pThis->m34_itemList);
+            createBattleItemSelectionTask(pThis, &pThis->m1DC_itemSelectionMenuHead, &pThis->m28_selectedItem, pThis->m24, pThis->m34_itemList);
             pThis->m20 &= ~0x20;
             pThis->m3_itemMenuOpen = 1;
         }
@@ -370,14 +442,14 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             }
             else
             {
-                if (pThis->m28 < 0)
+                if (pThis->m28_selectedItem < 0)
                 {
                     createBattleCommandMenuSub0(pThis, 0);
                     pThis->m2_mode = 1;
                 }
                 else
                 {
-                    gBattleManager->m10_battleOverlay->m4_battleEngine->m39E_selectedItem = pThis->m34_itemList[pThis->m28].m0_itemIndex;
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m39E_selectedItem = pThis->m34_itemList[pThis->m28_selectedItem].m0_itemIndex;
                     battleEngine_SetBattleMode(m1_useItem);
                     fieldPaletteTaskInitSub0Sub0();
                     pThis->getTask()->markFinished();
@@ -390,7 +462,43 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
         }
         break;
     case 4: // berserk selection
-        assert(0);
+        FPInterpolator_Step(&pThis->m1C0_scrollInterpolator);
+        pThis->m14 = fixedPoint::toInteger(pThis->m1C0_scrollInterpolator.m0_currentValue + 0x8000);
+        if (pThis->m3_itemMenuOpen == 0)
+        {
+            setBattleFont(0);
+            createBattleItemSelectionTask(pThis, &pThis->m1E0_berserkSelectionMenuHead, &pThis->m2C_selectedBerserk, pThis->m24, pThis->m114_berserkList);
+            pThis->m20 &= ~0x20;
+            pThis->m3_itemMenuOpen = 1;
+        }
+        else if (pThis->m3_itemMenuOpen)
+        {
+            if (pThis->m1E0_berserkSelectionMenuHead)
+            {
+                drawBattleItemMenuSelectedItem(pThis, pThis->m114_berserkList, pThis->m1E0_berserkSelectionMenuHead);
+                printBerserkAttackClass(pThis->m1E0_berserkSelectionMenuHead->m3_currentPageIndex);
+            }
+            else
+            {
+                if (pThis->m2C_selectedBerserk < 0)
+                {
+                    createBattleCommandMenuSub0(pThis, 0);
+                    pThis->m2_mode = 1;
+                }
+                else
+                {
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m3A2_selectedBerserk = pThis->m114_berserkList[pThis->m2C_selectedBerserk].m0_itemIndex;
+                    battleEngine_SetBattleMode(m4_useBerserk);
+                    fieldPaletteTaskInitSub0Sub0();
+                    pThis->getTask()->markFinished();
+                }
+
+                pThis->m20 &= ~0x8;
+                pThis->m20 &= ~0x20;
+                drawUsedItemName(-1, 0);
+                printBerserkAttackClass(6);
+            }
+        }
         break;
     case 5: // weapon change
         assert(0);
@@ -704,6 +812,12 @@ void createBattleCommandMenu(p_workArea parent)
     };
 
     sBattleCommandMenu* pThis = createSubTask<sBattleCommandMenu>(parent, &definition);
+
+    // allocate those as they used to be static
+    pThis->m34_itemList.resize(0x38);
+    pThis->m114_berserkList.resize(0x22);
+    pThis->m19C_weaponList.resize(0x9);
+
     gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu = pThis;
     pThis->mC = 0x19;
     pThis->mE = 0xC;

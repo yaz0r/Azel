@@ -26,6 +26,10 @@ enum eItems : s16 {
 
     m8C_recording = 0x8C, // imperial ship recording in A3
 
+    // Quantities only valid for items up to 0x91 (the end of inventory and start of berzerks)
+
+    mA6_unlearned = 0xA6, // used for skills not yet learned
+
     max = 0xB4,
 };
 

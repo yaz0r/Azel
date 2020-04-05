@@ -63,7 +63,12 @@ u32 randomNumber()
     r1 |= r2;
     RNG_seed = r1;
 
-    readTraceLog("Random: 0x%08X\n", r0);
+    if (isTraceEnabled())
+    {
+        extern bool delayTrace;
+        delayTrace = false;
+        readTraceLogU32(r0, "Random");
+    }
 
     return r0;
 

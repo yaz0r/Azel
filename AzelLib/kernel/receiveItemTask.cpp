@@ -3,7 +3,7 @@
 
 static void s_receivedItemTask_DisplayReceivedObject(s_receivedItemTask* pThis)
 {
-    drawBlueBox(pThis->m14_x, pThis->m16_y, pThis->m1A_width, pThis->m1C_height);
+    drawBlueBox(pThis->m14_x, pThis->m16_y, pThis->m1A_width, pThis->m1C_height, 0x1000);
     displayObjectIcon(0, pThis->m14_x + 4, pThis->m16_y + 1,getObjectIcon(pThis->m24_receivedItemId));
     setupVDP2StringRendering(pThis->m14_x + 6, pThis->m16_y + 1, pThis->m1A_width - 0xA, pThis->m1C_height - 2);
 

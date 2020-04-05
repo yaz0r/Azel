@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "kernel/fileBundle.h"
+#include "kernel/debug/trace.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "Winmm.lib")
@@ -374,9 +375,21 @@ void initVDP1()
     }
 }
 
+void initVBlankData()
+{
+    vblankData.m0 = 0;
+    vblankData.m4 = 0;
+    vblankData.m8 = 0;
+    vblankData.mC = 0;
+    vblankData.m10 = 0;
+    vblankData.m14 = 2;
+    vblankData.m18 = 0;
+    vblankData.m1C = 0;
+}
+
 void resetEngine()
 {
-    //initVBlankData();
+    initVBlankData();
     //initDmaChain();
     //initFileSystem();
     //resetInputs();
@@ -1027,6 +1040,8 @@ void interruptVDP1Update()
 
 u32 frameIndex = 0;
 
+bool delayTrace = true;
+
 bool bContinue = true;
 void loopIteration()
 {
@@ -1072,6 +1087,26 @@ void loopIteration()
         ImGui::End();
 
         //updateInputDebug();
+
+        if (isTraceEnabled())
+        {
+            if(!delayTrace)
+            {
+                readTraceLogU8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType, "input_m0");
+                readTraceLogS8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX, "input_m2");
+                readTraceLogS8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY, "input_m3");
+                readTraceLogS8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4, "input_m4");
+                readTraceLogS8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5, "input_m5");
+                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown, "input_m6");
+                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown, "input_m8");
+                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mA, "input_mA");
+                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2, "input_mC");
+                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mE, "input_mE");
+                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m10, "input_m10");
+                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m12, "input_m12");
+                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m14, "input_m14");
+            }
+        }
 
         runTasks();
 

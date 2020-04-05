@@ -316,7 +316,7 @@ void printVdp2String(s_stringStatusQuery* vars);
 void VDP2DrawString(const char*);
 s32 computeStringLength(sSaturnPtr pString, s32 r5);
 
-void drawBlueBox(s32 x, s32 y, s32 width, s32 height);
+void drawBlueBox(s32 x, s32 y, s32 width, s32 height, u32);
 void clearBlueBox(s32 x, s32 y, s32 width, s32 height);
 void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId);
 

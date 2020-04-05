@@ -48,5 +48,6 @@ struct s_multiChoiceTask : public s_workAreaTemplate< s_multiChoiceTask>
     //size 0x2C
 };
 
+void drawMultiChoiceVdp1Cursor(s32 r4_x, s32 r5_y, sSaturnPtr r6_spritePtr, s32 r7_color);
 void startDialogTask(p_workArea r4_parent, s_multiChoiceTask** r5_outputTask, s32* r6_outputResult, s32 r7_index, sSaturnPtr arg0);
 s_multiChoiceTask* updateMultiChoice(p_workArea parentTask, s_multiChoiceTask** r5, s32* r6_currentChoice, s32 r7_minusCurrentChoice, sSaturnPtr scriptPtr, s16* choiceTable, s32 moreCurrentChoice);

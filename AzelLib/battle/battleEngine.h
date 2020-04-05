@@ -24,6 +24,7 @@ enum eBattleModes
     m0_shootEnemyWithGun = 0,
     m1_useItem = 1,
     m3_shootEnemeyWithHomingLaser = 3, //target enemy?
+    m4_useBerserk,
     m6_dragonMoving = 6,
     m7 = 7,
     m8_playAttackCamera = 8,
@@ -131,9 +132,9 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s16 m396;
     s16 m398_currentSelectedEnemy;
     s16 m39C_maxSelectableEnemies;
-    s16 m39E_selectedItem;
+    eItems m39E_selectedItem;
     u8 m3A0_LaserType; // 0: single, else multi
-    s16 m3A2;
+    eItems m3A2_selectedBerserk;
     std::array<s8, 2> m3A4_prelockMode;
     s8 m3A6_numGunShots;
     s8 m3A7;
@@ -166,6 +167,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     std::array<std::array<s16, 2>, 5> m484;
     s16 m498_numEnemies;
     std::array<s_battleEnemy, 0x80> m49C_enemies;
+    p_workArea mAA4;
     // size: 0xaa8
 };
 

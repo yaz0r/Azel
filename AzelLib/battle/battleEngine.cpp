@@ -16,6 +16,7 @@
 #include "gunShotRootTask.h"
 #include "homingLaser.h"
 #include "kernel/debug/trace.h"
+#include "items.h"
 
 #include "BTL_A3/BTL_A3.h"
 #include "BTL_A3/baldor.h" // TODO: cleanup
@@ -356,7 +357,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     pThis->m392 = 2;
     pThis->m394 = 0;
 
-    pThis->m3A2 = 0;
+    pThis->m3A2_selectedBerserk = eItems::m0_dummy;
 
     pThis->m3B4.m0_max = 0x3C0000;
     pThis->m3B4.m4 = 0x10000;
@@ -2135,6 +2136,50 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
     }
 }
 
+p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
+{
+    FunctionUnimplemented();
+
+    return nullptr;
+}
+
+void battleEngine_updateBattleMode_1_useItem(s_battleEngine* pThis)
+{
+    /*
+    switch (pThis->m38D_battleSubMode)
+    {
+    case 0:
+        battleCreateCinematicBars(pThis);
+        pThis->m38D_battleSubMode++;
+        pThis->mAA4 = 
+    }
+    */
+    FunctionUnimplemented();
+}
+
+void battleEngine_updateBattleMode_4_useBerserk(s_battleEngine* pThis)
+{
+    switch (pThis->m38D_battleSubMode)
+    {
+    case 0:
+        battleCreateCinematicBars(pThis);
+        pThis->mAA4 = loadItemResources(pThis, pThis->m3A2_selectedBerserk);
+        if ((pThis->m3A2_selectedBerserk == 0x99) || (pThis->m3A2_selectedBerserk == 0xA0))
+        {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1 = 1;
+        }
+        pThis->m38D_battleSubMode++;
+        break;
+    case 1:
+        if (pThis->m384_battleModeDelay++ < 5)
+            break;
+
+    default:
+        assert(0);
+    }
+    FunctionUnimplemented();
+}
+
 void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaserSub0(s_battleEngine* pThis, sVec3_FP* param_2)
 {
     param_2->zeroize();
@@ -2344,8 +2389,14 @@ void updateBattleIntro(s_battleEngine* pThis)
     case eBattleModes::m0_shootEnemyWithGun:
         battleEngine_updateBattleMode_0_shootEnemyWithGun(pThis);
         break;
+    case eBattleModes::m1_useItem:
+        battleEngine_updateBattleMode_1_useItem(pThis);
+        break;
     case eBattleModes::m3_shootEnemeyWithHomingLaser:
         battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(pThis);
+        break;
+    case eBattleModes::m4_useBerserk:
+        battleEngine_updateBattleMode_4_useBerserk(pThis);
         break;
     case eBattleModes::m6_dragonMoving:
         break;
