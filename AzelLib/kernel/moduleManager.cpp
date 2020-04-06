@@ -58,7 +58,7 @@ void initNewGameState()
     mainGameState.setBit(0x2B * 8 + 2);
     mainGameState.setBit(0x2D * 8 + 5);
 
-    mainGameState.gameStats.m18 = 400;
+    mainGameState.gameStats.m18_statAxisScale = 400;
 
     updateDragonStatsFromLevel();
 

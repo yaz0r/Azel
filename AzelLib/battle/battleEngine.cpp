@@ -679,41 +679,82 @@ s32 battleEngine_UpdateSub7Sub0()
     return 0;
 }
 
+#ifndef SHIPPING_BUILD
+void addTraceLog(s_battleEngine::s_27C* pThis, const char* name)
+{
+    addTraceLog(pThis->m0_computedValue, "m0_computedValue");
+    addTraceLog(pThis->mC_initialValue, "mC_initialValue");
+    addTraceLog(pThis->m18_middle, "m18_middle");
+    addTraceLog(pThis->m24_targetValue, "m24_targetValue");
+    addTraceLog(pThis->m30, "m30");
+    addTraceLog(pThis->m3C, "m3C");
+    addTraceLog(pThis->m48, "m48");
+    addTraceLog(pThis->m50, "m50");
+    addTraceLog(pThis->m54, "m54");
+    addTraceLog(pThis->m60_currentStep, "m60_currentStep");
+    addTraceLog(pThis->m64_stepSize, "m64_stepSize");
+    addTraceLog(pThis->m68_rate, "m68_rate");
+}
+#endif
+
 void battleEngine_UpdateSub7Sub0Sub1Sub1(s_battleEngine::s_27C* pThis)
 {
     pThis->m48 = (pThis->m54 - pThis->m3C) / 2;
     pThis->m60_currentStep = 0;
-    pThis->m64_stepSize = FP_Div(0x8000000, pThis->m68_rate << 16);
+    pThis->m64_stepSize = FP_Div(0x8000000, fixedPoint::fromInteger(pThis->m68_rate));
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(pThis, "interpolator");
+    }
 }
 
 void battleEngine_UpdateSub7Sub0Sub1Sub2(s_battleEngine::s_27C* pThis)
 {
     pThis->m18_middle = (pThis->m24_targetValue - pThis->mC_initialValue) / 2;
     pThis->m60_currentStep = 0;
-    pThis->m64_stepSize = FP_Div(0x8000000, pThis->m68_rate << 16);
+    pThis->m64_stepSize = FP_Div(0x8000000, fixedPoint::fromInteger(pThis->m68_rate));
     pThis->m0_computedValue = pThis->mC_initialValue;
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(pThis, "interpolator");
+    }
 }
 
 bool updateInterpolator(s_battleEngine::s_27C* pThis)
 {
+    bool result;
     if (pThis->m60_currentStep > 0x7ffffff)
     {
         pThis->m60_currentStep = 0x8000000;
         pThis->m64_stepSize = 0;
         pThis->m0_computedValue = pThis->m24_targetValue;
-        return true;
+        result = true;
     }
     else
     {
         pThis->m0_computedValue = pThis->m18_middle + pThis->mC_initialValue - MTH_Mul(getCos(pThis->m60_currentStep.getInteger()), pThis->m18_middle);
         pThis->m60_currentStep += pThis->m64_stepSize;
-        return false;
+        result = false;
     }
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(pThis, "interpolator");
+    }
+
+    return result;
 }
 
 void stepInterpolator(s_battleEngine::s_27C* pThis)
 {
-    pThis->m30 = pThis->m48 + pThis->m3C - -MTH_Mul(getCos(pThis->m60_currentStep.getInteger()), pThis->m48);
+    pThis->m30 = pThis->m48 + pThis->m3C - MTH_Mul(getCos(pThis->m60_currentStep.getInteger()), pThis->m48);
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(pThis, "interpolator");
+    }
 }
 
 void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
@@ -745,6 +786,8 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
     case 0: // init dragon move
         {
             pThis->m38D_battleSubMode++;
+
+            battleEngine_convertBattleQuadrantToBattleDirection(pThis);
 
             sVec3_FP stackx4;
             sVec3_FP stackx10;
@@ -968,6 +1011,10 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
 
         if (isTraceEnabled())
         {
+            addTraceLog(pThis->m46C_dragon2dSpeed, "m46C_dragon2dSpeed");
+            addTraceLog(pThis->m440_battleDirectionAngle, "m440_battleDirectionAngle");
+            addTraceLog(pThis->m234, "234");
+            addTraceLog(pThis->m6C_dragonIntegrateStep, "m6C_dragonIntegrateStep");
             addTraceLog(pThis->mC_battleCenter, "C");
             addTraceLog(pThis->m104_dragonPosition, "m104_dragonStartPosition");
         }

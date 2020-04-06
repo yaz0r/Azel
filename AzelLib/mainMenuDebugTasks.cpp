@@ -59,7 +59,7 @@ struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskW
 
 void computeDragonSprAndAglFromCursor()
 {
-    u32 r6 = mainGameState.gameStats.m18 + 1;
+    u32 statAxisScale = mainGameState.gameStats.m18_statAxisScale + 1;
 
     switch (mainGameState.gameStats.m1_dragonLevel)
     {
@@ -73,6 +73,49 @@ void computeDragonSprAndAglFromCursor()
         assert(0);
         break;
     }
+
+    // figure out the dragon archetype
+    mainGameState.gameStats.dragonArchetype = DR_ARCHETYPE_4_SPIRITUAL;
+
+    int cursorX = mainGameState.gameStats.m1A_dragonCursorX;
+    if (cursorX < 0)
+    {
+        cursorX = -cursorX;
+        mainGameState.gameStats.dragonArchetype = DR_ARCHETYPE_2_ATTACK;
+    }
+
+    e_dragonArchetype archetypeFromAxisY = DR_ARCHETYPE_3_AGILITY;
+    int cursorY = mainGameState.gameStats.m1C_dragonCursorY;
+    if (cursorY < 0)
+    {
+        cursorY = -cursorY;
+        archetypeFromAxisY = DR_ARCHETYPE_1_DEFENSE;
+    }
+
+    if (cursorX < 0x400)
+    {
+        mainGameState.gameStats.dragonArchetype = DR_ARCHETYPE_0_NORMAL;
+    }
+    if (cursorY < 0x400)
+    {
+        archetypeFromAxisY = DR_ARCHETYPE_0_NORMAL;
+    }
+
+    if (
+        ((mainGameState.gameStats.dragonArchetype != DR_ARCHETYPE_0_NORMAL) || (archetypeFromAxisY != DR_ARCHETYPE_0_NORMAL))
+        && (cursorX < cursorY) // more influence by Y than X
+        )
+    {
+        mainGameState.gameStats.dragonArchetype = archetypeFromAxisY;
+    }
+
+    // stats based on Y
+    mainGameState.gameStats.dragonAgl = performDivision(0x2000, (mainGameState.gameStats.m1C_dragonCursorY + 0x800) * statAxisScale);
+    mainGameState.gameStats.dragonDef = (statAxisScale / 2) - mainGameState.gameStats.dragonAgl;
+
+    // stats based on X
+    mainGameState.gameStats.dragonSpr = performDivision(0x2000, (mainGameState.gameStats.m1A_dragonCursorX + 0x800) * statAxisScale);
+    mainGameState.gameStats.dragonAtt = (statAxisScale / 2) - mainGameState.gameStats.dragonSpr;
 }
 
 void updateDragonStatsFromLevel()

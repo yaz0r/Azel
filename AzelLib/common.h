@@ -370,7 +370,7 @@ struct s_gameStats
     u16 m12_classMaxHP; // 0x12
     u16 m14_currentBP; // 0x14
     u16 m16_classMaxBP; // 0x16
-    u16 m18; // 0x18
+    u16 m18_statAxisScale; // 0x18
     s16 m1A_dragonCursorX; //1A
     s16 m1C_dragonCursorY; //1C
     u32 XP; //20

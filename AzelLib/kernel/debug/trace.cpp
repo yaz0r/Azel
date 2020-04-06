@@ -145,6 +145,21 @@ void addTraceLog(const sVec2_FP& vec, const char* name)
 {
     addTraceLog("%s: 0x%08X 0x%08X\n", name, vec[0].asS32(), vec[1].asS32());
 }
+void addTraceLog(const fixedPoint& value, const char* name)
+{
+    addTraceLog("%s: 0x%08X\n", name, value.asS32());
+}
+
+void addTraceLog(const s8& value, const char* name)
+{
+    addTraceLog("%s: 0x%02X\n", name, value);
+}
+
+void addTraceLog(const s16& value, const char* name)
+{
+    addTraceLog("%s: 0x%04X\n", name, value);
+}
+
 void addTraceLog(const sMatrix4x3& matrix, const char* name)
 {
     addTraceLog("%s: 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X\n", name,
