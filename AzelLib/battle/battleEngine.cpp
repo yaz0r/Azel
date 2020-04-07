@@ -860,7 +860,7 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
                     pcVar15 = 3;
                     break;
                 case 2:
-                    stackx40[1] = 0;
+                    stackx40[1] = 0x4000000;
                     stackx28[1] -= 0x4000000;
                     pcVar15 = 0;
                     break;
@@ -960,13 +960,13 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
 
         if (pThis->m22E_dragonMoveDirection == 1)
         {
-            gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[1] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep), 0xaaaaaa);
+            gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep.toInteger()), 0xaaaaaa);
         }
         else
         {
-            gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[1] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep), -0xaaaaaa);
+            gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep.toInteger()), -0xaaaaaa);
         }
-        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[1] = gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[1];
+        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2];
 
         pThis->m270_enemyAltitude[1] = pThis->m2E8_dragonMovementInterpolator2.m0_computedValue[1];
 
