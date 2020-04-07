@@ -5,6 +5,10 @@
 #define readTraceLog(...);
 #define isTraceEnabled() false
 #define startTrace(...);
+#define readTraceLogU8(...);
+#define readTraceLogS8(...);
+#define readTraceLogU16(...);
+#define readTraceLogU32(...);
 #else
 void addTraceLog(const s8&, const char* name);
 void addTraceLog(const s16&, const char* name);

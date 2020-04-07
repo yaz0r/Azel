@@ -151,6 +151,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP m3DC;
     sVec3_FP m3E8;
     sVec3_FP m3F4;
+    sVec3_FP m400;
     sVec3_FP m40C_gunTarget;
     sVec3_FP m418;
     sVec3_FP m424;
@@ -160,6 +161,8 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s32 m434;
     s32 m43C;
     fixedPoint m440_battleDirectionAngle;
+    fixedPoint m444;
+    fixedPoint m448;
     std::array<fixedPoint, 4> m45C_perQuadrantDragonSpeed;
     sVec2_FP m46C_dragon2dSpeed;
     sVec3_FP m474;

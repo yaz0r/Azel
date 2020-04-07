@@ -23,6 +23,23 @@
 
 void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
 
+void battleCreateCinematicBars(s_battleEngine* pThis)
+{
+    FunctionUnimplemented();
+}
+
+void sEnemyAttackCamera_updateSub0(int param_1)
+{
+    if (param_1 > 2)
+    {
+        param_1 = 0;
+    }
+
+    gBattleManager->m10_battleOverlay->m8_gridTask->m1 = param_1;
+    gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
+    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1 + 0xC);
+}
+
 void battleEngine_FlagQuadrantBitForSafety(u16 uParm1)
 {
     if (uParm1 == 0)
@@ -757,6 +774,38 @@ void stepInterpolator(s_battleEngine::s_27C* pThis)
     }
 }
 
+void triggerIfBattleModeA(s_battleEngine* pThis)
+{
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::mA)
+    {
+        createBattleIntroTaskSub0();
+        sEnemyAttackCamera_updateSub0(2);
+    }
+}
+
+void monsterMoveDragonSub0(s_battleEngine* pThis)
+{
+    fixedPoint uVar1 = pThis->m448.normalized();
+
+    if ((uVar1 < -0x4000000) || (uVar1 > 0x3ffffff))
+    {
+        pThis->m46C_dragon2dSpeed[1] = pThis->m45C_perQuadrantDragonSpeed[0];
+    }
+    else
+    {
+        pThis->m46C_dragon2dSpeed[1] = pThis->m45C_perQuadrantDragonSpeed[2];
+    }
+
+    if (uVar1 < 1)
+    {
+        pThis->m46C_dragon2dSpeed[0] = pThis->m45C_perQuadrantDragonSpeed[1];
+    }
+    else
+    {
+        pThis->m46C_dragon2dSpeed[0] = pThis->m45C_perQuadrantDragonSpeed[3];
+    }
+}
+
 void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
 {
     if (!BattleEngineSub0_UpdateSub0()) {
@@ -767,23 +816,11 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
     switch (pThis->m38C_battleMode)
     {
     case eBattleModes::m6_dragonMoving:
-        break;
-    case eBattleModes::mA:
-        assert(0);
-        break;
-    case eBattleModes::mB_enemyMovingDragon:
-        assert(0);
-        break;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m190[0]++;
 
-    default:
-        return;
-    }
-
-    gBattleManager->m10_battleOverlay->m4_battleEngine->m190[0]++;
-
-    switch (pThis->m38D_battleSubMode)
-    {
-    case 0: // init dragon move
+        switch (pThis->m38D_battleSubMode)
+        {
+        case 0: // init dragon move
         {
             pThis->m38D_battleSubMode++;
 
@@ -851,6 +888,7 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
                 default:
                     assert(0);
                 }
+                break;
             case 2:
                 switch (pThis->m22E_dragonMoveDirection)
                 {
@@ -938,53 +976,218 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
             createBattleIntroTaskSub0();
         }
         break;
-    case 1:
-        // dragon moving
-        if (updateInterpolator(&pThis->m2E8_dragonMovementInterpolator2))
-        {
-            battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440_battleDirectionAngle, 0);
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 1;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
-            pThis->m38D_battleSubMode++; // go to state 2 (finished)
-            pThis->m384_battleModeDelay = 0;
-            pThis->m398_currentSelectedEnemy = 0;
-            pThis->m39C_maxSelectableEnemies = 0;
+        case 1:
+            // dragon moving
+            if (updateInterpolator(&pThis->m2E8_dragonMovementInterpolator2))
+            {
+                battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440_battleDirectionAngle, 0);
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 1;
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
+                pThis->m38D_battleSubMode++; // go to state 2 (finished)
+                pThis->m384_battleModeDelay = 0;
+                pThis->m398_currentSelectedEnemy = 0;
+                pThis->m39C_maxSelectableEnemies = 0;
+            }
+
+            stepInterpolator(&pThis->m27C_dragonMovementInterpolator1);
+            pThis->m43C = pThis->m27C_dragonMovementInterpolator1.m30[0];
+            pThis->m440_battleDirectionAngle = pThis->m27C_dragonMovementInterpolator1.m30[1];
+
+            stepInterpolator(&pThis->m2E8_dragonMovementInterpolator2);
+            gBattleManager->m10_battleOverlay->m18_dragon->m74_targetRotation[1] = pThis->m2E8_dragonMovementInterpolator2.m30[1];
+
+            if (pThis->m22E_dragonMoveDirection == 1)
+            {
+                gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep.toInteger()), 0xaaaaaa);
+            }
+            else
+            {
+                gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep.toInteger()), -0xaaaaaa);
+            }
+            gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2];
+
+            pThis->m270_enemyAltitude[1] = pThis->m2E8_dragonMovementInterpolator2.m0_computedValue[1];
+
+            updateInterpolator(&pThis->m27C_dragonMovementInterpolator1);
+
+            pThis->m104_dragonPosition[1] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[1] + pThis->m35C_cameraAltitudeMinMax[1];
+
+            pThis->m164[0] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[0];
+            pThis->m164[2] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[2];
+            break;
+        case 2: // dragon move is over
+            if (pThis->m384_battleModeDelay++ < 5)
+                return;
+
+            battleEngine_SetBattleMode16();
+            break;
+        default:
+            assert(0);
         }
-
-        stepInterpolator(&pThis->m27C_dragonMovementInterpolator1);
-        pThis->m43C = pThis->m27C_dragonMovementInterpolator1.m30[0];
-        pThis->m440_battleDirectionAngle = pThis->m27C_dragonMovementInterpolator1.m30[1];
-
-        stepInterpolator(&pThis->m2E8_dragonMovementInterpolator2);
-        gBattleManager->m10_battleOverlay->m18_dragon->m74_targetRotation[1] = pThis->m2E8_dragonMovementInterpolator2.m30[1];
-
-        if (pThis->m22E_dragonMoveDirection == 1)
-        {
-            gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep.toInteger()), 0xaaaaaa);
-        }
-        else
-        {
-            gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep.toInteger()), -0xaaaaaa);
-        }
-        gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2];
-
-        pThis->m270_enemyAltitude[1] = pThis->m2E8_dragonMovementInterpolator2.m0_computedValue[1];
-
-        updateInterpolator(&pThis->m27C_dragonMovementInterpolator1);
-
-        pThis->m104_dragonPosition[1] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[1] + pThis->m35C_cameraAltitudeMinMax[1];
-
-        pThis->m164[0] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[0];
-        pThis->m164[2] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[2];
         break;
-    case 2: // dragon move is over
-        if (pThis->m384_battleModeDelay++ < 5)
-            return;
+    case eBattleModes::mB_enemyMovingDragon:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m190[0]++;
+        // fall through
+    case eBattleModes::mA:
+        switch (pThis->m38D_battleSubMode)
+        {
+        case 0:
+            battleCreateCinematicBars(pThis);
+            pThis->m38D_battleSubMode++;
+            gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[0] = 0;
+            gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[1] = 0;
+            break;
+        case 1:
+            if (pThis->m384_battleModeDelay++ >= 5)
+            {
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000 = 1;
+                pThis->m384_battleModeDelay = 0;
+                pThis->m38D_battleSubMode++;
+            }
+            break;
+        case 2:
+        {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m200000 = 1;
+            pThis->m38D_battleSubMode++;
+            int dStack72 = 0;            int iVar3 = 3;
+            int stackx40_1 = 0;
+            fixedPoint dVar7 = pThis->m164[0];
+            fixedPoint dVar8 = pThis->m164[2];
+            switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+            {
+            case 0:
+                dStack72 = 0x8000000;
+                switch (pThis->m22E_dragonMoveDirection)
+                {
+                case 1:
+                    pThis->m270_enemyAltitude[0] += pThis->m45C_perQuadrantDragonSpeed[3];
+                    pThis->m270_enemyAltitude[2] += pThis->m45C_perQuadrantDragonSpeed[0];
+                    pThis->m258[0] = -pThis->m45C_perQuadrantDragonSpeed[3];
+                    pThis->m258[2] = 0;
+                    stackx40_1 = 0x4000000;
+                    break;
+                case 2:
+                    pThis->m270_enemyAltitude[0] -= pThis->m45C_perQuadrantDragonSpeed[1];
+                    pThis->m270_enemyAltitude[2] += pThis->m45C_perQuadrantDragonSpeed[0];
+                    pThis->m258[0] = -pThis->m45C_perQuadrantDragonSpeed[1];
+                    pThis->m258[2] = 0;
+                    stackx40_1 = 0xc000000;
+                    break;
+                case 3:
+                case 4:
+                    pThis->m270_enemyAltitude[2] += pThis->m45C_perQuadrantDragonSpeed[0] + pThis->m45C_perQuadrantDragonSpeed[2];
+                    pThis->m258[0] = 0;
+                    pThis->m258[2] = -pThis->m45C_perQuadrantDragonSpeed[2];
+                    break;
+                case 5:
+                    pThis->m270_enemyAltitude[2] += pThis->m45C_perQuadrantDragonSpeed[0] + pThis->m45C_perQuadrantDragonSpeed[2];
+                    pThis->m258[0] = 0;
+                    pThis->m258[2] = -pThis->m45C_perQuadrantDragonSpeed[2];
+                    stackx40_1 = 0x10000000;
+                    iVar3 = 2;
+                    break;
+                default:
+                    assert(0);
+                }
+                break;
+            default:
+                assert(0);
+            }
 
-        battleEngine_SetBattleMode16();
+            pThis->m2E8_dragonMovementInterpolator2.m3C = sVec3_FP(0, dStack72, 0);
+            pThis->m2E8_dragonMovementInterpolator2.m54 = sVec3_FP(0, stackx40_1, 0);
+
+            battleEngine_UpdateSub7Sub0Sub1Sub1(&pThis->m2E8_dragonMovementInterpolator2);
+
+            pThis->m240 = pThis->m270_enemyAltitude + pThis->m258 + pThis->m264;
+
+            pThis->m27C_dragonMovementInterpolator1.mC_initialValue = pThis->m104_dragonPosition - pThis->m240;
+            pThis->m27C_dragonMovementInterpolator1.mC_initialValue[1] = pThis->m104_dragonPosition[1] - pThis->m35C_cameraAltitudeMinMax[1];
+            pThis->m27C_dragonMovementInterpolator1.m24_targetValue = sVec3_FP(0, pThis->m364_perQuadrantDragonAltitude[iVar3], 0);
+            battleEngine_UpdateSub7Sub0Sub1Sub2(&pThis->m27C_dragonMovementInterpolator1);
+
+            pThis->m2E8_dragonMovementInterpolator2.mC_initialValue = sVec3_FP(dVar7, pThis->m270_enemyAltitude[1], dVar8);
+            pThis->m2E8_dragonMovementInterpolator2.m24_targetValue = sVec3_FP(0, pThis->m374_perQuadrantEnemyAltitude[iVar3], 0);
+            battleEngine_UpdateSub7Sub0Sub1Sub2(&pThis->m2E8_dragonMovementInterpolator2);
+
+            triggerIfBattleModeA(pThis);
+            break;
+        }
+
+        case 3:
+            if (updateInterpolator(&pThis->m2E8_dragonMovementInterpolator2))
+            {
+                battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m448, 1);
+                battleEngine_convertBattleQuadrantToBattleDirection(pThis);
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m200000 = 0;
+                pThis->m394 = 0;
+                pThis->m398_currentSelectedEnemy = 0;
+                pThis->m384_battleModeDelay = 0;
+                if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == eBattleModes::mA)
+                {
+                    pThis->m38D_battleSubMode++;
+                }
+                else
+                {
+                    pThis->m38D_battleSubMode = 0x8;
+                    battleEngine_UpdateSub7Sub2();
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000 = 0;
+                }
+            }
+            else
+            {
+                stepInterpolator(&pThis->m2E8_dragonMovementInterpolator2);
+                pThis->m444 = pThis->m2E8_dragonMovementInterpolator2.m30[0];
+                pThis->m448 = pThis->m2E8_dragonMovementInterpolator2.m30[1];
+                monsterMoveDragonSub0(pThis);
+
+                if (pThis->m22E_dragonMoveDirection == 3)
+                {
+                    switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+                    {
+                    case 0:
+                    case 2:
+                        pThis->m46C_dragon2dSpeed[0] = 0;
+                        break;
+                    case 1:
+                    case 3:
+                        pThis->m46C_dragon2dSpeed[1] = 0;
+                        break;
+                    default:
+                        assert(0);
+                    }
+                }
+
+                pThis->m6C_dragonIntegrateStep[0] = MTH_Mul(pThis->m46C_dragon2dSpeed[0], getSin(pThis->m448.getInteger()));
+                pThis->m6C_dragonIntegrateStep[2] = MTH_Mul(pThis->m46C_dragon2dSpeed[1], getCos(pThis->m448.getInteger()));
+
+                pThis->mC_battleCenter[0] = pThis->m240[0] + pThis->m6C_dragonIntegrateStep[0];
+                pThis->mC_battleCenter[2] = pThis->m240[2] + pThis->m6C_dragonIntegrateStep[2];
+
+                pThis->m270_enemyAltitude[1] = pThis->m2E8_dragonMovementInterpolator2.m0_computedValue[1];
+
+                pThis->m164[0] = pThis->m2E8_dragonMovementInterpolator2.m0_computedValue[0];
+                pThis->m164[2] = pThis->m2E8_dragonMovementInterpolator2.m0_computedValue[2];
+
+                updateInterpolator(&pThis->m27C_dragonMovementInterpolator1);
+
+                pThis->m104_dragonPosition = pThis->m27C_dragonMovementInterpolator1.m0_computedValue + pThis->m240;
+                pThis->m104_dragonPosition[1] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[1] + pThis->m35C_cameraAltitudeMinMax[1];
+
+                if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::mA)
+                {
+                    battleEngineSub1_UpdateSub2(&pThis->m400, gBattleManager->m10_battleOverlay->m8_gridTask->m34_cameraPosition, pThis->m3E8, pThis->m3DC);
+                }
+            }
+            break;
+        }
+
         break;
+
     default:
-        assert(0);
+        return;
     }
 }
 
@@ -1128,11 +1331,6 @@ void battleEngine_UpdateSub7Sub0Sub3(s_battleEngine* pThis)
     {
         battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440_battleDirectionAngle, 0);
     }
-}
-
-void battleCreateCinematicBars(s_battleEngine* pThis)
-{
-    FunctionUnimplemented();
 }
 
 struct sEnemyAttackCamera : public s_workAreaTemplate<sEnemyAttackCamera>
@@ -1569,18 +1767,6 @@ void sEnemyAttackCamera_init(sEnemyAttackCamera* pThis)
 
     attackCamera8(&pThis->m4, pThis->m1_cameraIndex);
 
-}
-
-void sEnemyAttackCamera_updateSub0(int param_1)
-{
-    if (param_1 > 2)
-    {
-        param_1 = 0;
-    }
-
-    gBattleManager->m10_battleOverlay->m8_gridTask->m1 = param_1;
-    gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
-    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1 + 0xC);
 }
 
 void sEnemyAttackCamera_updateSub1(int param_1)
@@ -2452,6 +2638,8 @@ void updateBattleIntro(s_battleEngine* pThis)
         break;
     case eBattleModes::m8_playAttackCamera:
         battleEngine_updateBattleMode_8_playAttackCamera(pThis);
+        break;
+    case eBattleModes::mB_enemyMovingDragon:
         break;
     case eBattleModes::mC_commandMenuOpen:
         break;
