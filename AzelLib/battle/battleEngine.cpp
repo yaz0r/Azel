@@ -2406,7 +2406,7 @@ void battleEngine_updateBattleMode_4_useBerserk(s_battleEngine* pThis)
     case 1:
         if (pThis->m384_battleModeDelay++ < 5)
             break;
-
+        assert(0);
     default:
         assert(0);
     }

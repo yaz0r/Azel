@@ -611,10 +611,10 @@ void findLCSCollisionInCell(sResCameraProperties* r14, sTownCellTask* r12)
     if (r12 == nullptr)
         return;
 
-    if (r12->m8.isNull())
+    if (r12->m8_cellPtr.isNull())
         return;
 
-    if (readSaturnS32(r12->m8 + 0x14) == 0)
+    if (readSaturnS32(r12->m8_cellPtr + 0x14) == 0)
         return;
 
     pushCurrentMatrix();
@@ -624,7 +624,7 @@ void findLCSCollisionInCell(sResCameraProperties* r14, sTownCellTask* r12)
         (pCurrentMatrix->matrix[3] >= MTH_Mul(pCurrentMatrix->matrix[11], r14->m34_boundMinX) - r14->m54) && (pCurrentMatrix->matrix[3] <= MTH_Mul(pCurrentMatrix->matrix[11], r14->m3C_boundMaxX) + r14->m58)
         )
     {
-        sSaturnPtr r13 = readSaturnEA(r12->m8 + 0x14);
+        sSaturnPtr r13 = readSaturnEA(r12->m8_cellPtr + 0x14);
         while (readSaturnS32(r13))
         {
             pushCurrentMatrix();

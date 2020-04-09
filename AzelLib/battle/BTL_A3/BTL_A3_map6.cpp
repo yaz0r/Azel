@@ -7,6 +7,8 @@
 #include "town/town.h" // TODO: remove
 #include "kernel/fileBundle.h"
 #include "kernel/loadSavegameScreen.h" //TODO: remove
+#include "BTL_A3_data.h"
+#include "kernel/grid.h"
 
 void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr)
 {
@@ -364,6 +366,11 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
     case 8:
         setupRotationMapPlanes(0, gCurrentBattleOverlay->getSaturnPtr(0x60a6cfc));
         break;
+    case 2:
+    case 4:
+    case 9:
+        setupRotationMapPlanes(0, gCurrentBattleOverlay->getSaturnPtr(0x60a6d80));
+        break;
     default:
         assert(0);
     }
@@ -433,7 +440,7 @@ void sBattleEnvironmentGridCell_Init(sTownCellTask* pThis, sSaturnPtr arg)
         pThis->m_DrawMethod = nullptr;
     }
 
-    pThis->m8 = arg;
+    pThis->m8_cellPtr = arg;
     pThis->mC_position = readSaturnVec3(arg + 0x0);
 }
 
@@ -449,7 +456,7 @@ void sBattleEnvironmentGridCell_Draw(sTownCellTask* pThis)
 
         if (((-(iVar1 + iVar2) <= pCurrentMatrix->matrix[3]) && (pCurrentMatrix->matrix[3] <= iVar1 + iVar2)))
         {
-            sSaturnPtr r14 = readSaturnEA(pThis->m8 + 0xC);
+            sSaturnPtr r14 = readSaturnEA(pThis->m8_cellPtr + 0xC);
             if (r14.m_offset)
             {
                 while (readSaturnS32(r14))
@@ -472,7 +479,7 @@ void sBattleEnvironmentGridCell_Draw(sTownCellTask* pThis)
                 }
             }
 
-            r14 = readSaturnEA(pThis->m8 + 0x10);
+            r14 = readSaturnEA(pThis->m8_cellPtr + 0x10);
             if (r14.m_offset)
             {
                 FunctionUnimplemented();
@@ -505,7 +512,7 @@ void battleGrid_createCell(s32 index, sTownGrid* pGrid)
         int uVar4 = pGrid->m10_currentX + i & sizeXMinusOne;
         int offsetX = (sizeXMask & (pGrid->m10_currentX + i)) * pGrid->m28_cellSize;
 
-        sSaturnPtr cellData = readSaturnEA(pGrid->m38_EnvironmentSetup + 4 * (pGrid->m0_sizeX * uVar5 + uVar4));
+        sSaturnPtr cellData = pGrid->m38_EnvironmentSetup->cells[uVar4][uVar5];
 
         static const sTownCellTask::TypedTaskDefinition definition = { sBattleEnvironmentGridCell_Init , nullptr, sBattleEnvironmentGridCell_Draw, nullptr};
         sTownCellTask* newCellTask = createSiblingTaskWithArgWithCopy<sTownCellTask>(pGrid->m34_dataBuffer, cellData, &definition);
@@ -541,14 +548,14 @@ void battleGrid_deleteCell(s32 index, sTownGrid* pGrid)
     }
 }
 
-void initGridForBattle(npcFileDeleter* pFile, sSaturnPtr r5_envConfig, s32 r6_sizeX, s32 r7_sizeY, s32 r8_cellSize)
+void initGridForBattle(npcFileDeleter* pFile, const struct sGrid* pGrid, s32 r6_sizeX, s32 r7_sizeY, s32 r8_cellSize)
 {
     gTownGrid.m18_createCell = battleGrid_createCell;
     gTownGrid.m1C = battleGrid_cellFunc1;
     gTownGrid.m20_deleteCell = battleGrid_deleteCell;
     gTownGrid.m24 = battleGrid_cellFunc2;
 
-    initNPCSub0Sub2(pFile, r5_envConfig, r6_sizeX, r7_sizeY, r8_cellSize);
+    initNPCSub0Sub2(pFile, pGrid, r6_sizeX, r7_sizeY, r8_cellSize);
 }
 
 struct sBTL_A3_map6_sub : public s_workAreaTemplate<sBTL_A3_map6_sub>
@@ -582,7 +589,7 @@ static void BTL_A3_map6_Init(s_BTL_A3_Env* pThis)
     BTL_A3_Env_InitVdp2(pThis);
 
     allocateNPC(pThis, 8);
-    initGridForBattle(dramAllocatorEnd[8].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x60a6698), 2, 2, 0x400000);
+    initGridForBattle(dramAllocatorEnd[8].mC_buffer, g_BTL_A3->m_map6, 2, 2, 0x400000);
     pThis->m58 = dramAllocatorEnd[8].mC_buffer;
 
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;

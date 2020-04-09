@@ -2,56 +2,17 @@
 #include "kernel/debug/trace.h"
 #include "BTL_A3.h"
 #include "BTL_A3_map3.h"
+#include "BTL_A3_map4.h"
 #include "BTL_A3_map6.h"
 #include "battle/battleManager.h"
 #include "battle/battleMainTask.h"
 #include "town/town.h"
 #include "kernel/vdp1Allocator.h"
 #include "battle/battleEngine.h"
+#include "BTL_A3_data.h"
 
 #include "BTL_A3_BaldorFormation.h"
 
-struct BTL_A3_data* g_BTL_A3 = nullptr;
-
-struct BTL_A3_data : public battleOverlay
-{
-    sSaturnPtr getBattleEngineInitData() override
-    {
-        return getSaturnPtr(0x60AAFA0);
-    }
-    void invoke(sSaturnPtr Func, p_workArea pParent, u32 arg0, u32 arg1) override
-    {
-        switch (Func.m_offset)
-        {
-        case 0x060565da:
-            Create_BTL_A3_BaldorFormation(pParent, arg0);
-            break;
-        default:
-            FunctionUnimplemented();
-            break;
-        }
-    }
-    void invoke(sSaturnPtr Func, p_workArea pParent) override
-    {
-        switch (Func.m_offset)
-        {
-        case 0x06054b58:
-            Create_BTL_A3_map6(pParent); //map6
-            break;
-        case 0x06054b44: //map3
-            Create_BTL_A3_map3(pParent);
-            break;
-        default:
-            FunctionUnimplemented();
-            break;
-        }
-    }
-
-    virtual void init()
-    {
-
-    }
-};
 
 void battle_A3_initMusic(p_workArea pThis)
 {

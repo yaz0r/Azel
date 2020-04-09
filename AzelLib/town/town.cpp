@@ -7,6 +7,7 @@
 #include "town/e011/twn_e011.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
+#include "kernel/grid.h"
 
 sTownOverlay* gCurrentTownOverlay = nullptr;
 
@@ -148,7 +149,7 @@ void createEnvironmentTask2(s32 r4, sTownGrid* r14)
         if (r14->m10_currentX + r12 >= r14->m0_sizeX)
             continue;
 
-        sSaturnPtr cellData = readSaturnEA(r14->m38_EnvironmentSetup + 4 * (r14->m0_sizeX * r14->m14_currentY + r14->m10_currentX + r12));
+        sSaturnPtr cellData = r14->m38_EnvironmentSetup->cells[r14->m10_currentX+r12][r14->m14_currentY];
         sTownCellTask* newCellTask = createSiblingTaskWithArgWithCopy<sTownCellTask>(r14->m34_dataBuffer, cellData);
         r14->m40_cellTasks[(r14->mC + r4) & 7][(r14->m8 + r12) & 7] = newCellTask;
 
@@ -407,7 +408,7 @@ void initNPCSub0Sub2Sub0()
     gTownGrid.m148_objectListNodes[0x3F].m0_next = nullptr;
 }
 
-void initNPCSub0Sub2(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6_sizeX, u8 r7_sizeY, fixedPoint cellSize)
+void initNPCSub0Sub2(npcFileDeleter* buffer, const struct sGrid* pGrid, u8 r6_sizeX, u8 r7_sizeY, fixedPoint cellSize)
 {
     initNPCSub1();
 
@@ -417,20 +418,20 @@ void initNPCSub0Sub2(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 
     gTownGrid.m28_cellSize = cellSize;
     gTownGrid.m2C = MTH_Mul(0x10A3D, cellSize);
     gTownGrid.m30_worldToCellIndex = FP_Div(0x10000, cellSize);
-    gTownGrid.m38_EnvironmentSetup = pEnvironemntSetupEA;
+    gTownGrid.m38_EnvironmentSetup = pGrid;
 
     initNPCSub0Sub2Sub0();
     createTownCellsForCoordinates(-3, -3, &gTownGrid);
 }
 
-void initNPCSub0(npcFileDeleter* buffer, sSaturnPtr pEnvironemntSetupEA, u8 r6, u8 r7, fixedPoint stackArg0)
+void initNPCSub0(npcFileDeleter* buffer, const struct sGrid* pGrid, u8 gridSizeX, u8 gridSizeY, fixedPoint cellSize)
 {
     gTownGrid.m18_createCell = createEnvironmentTask2;
     gTownGrid.m1C = createEnvironmentTask;
     gTownGrid.m20_deleteCell = initNPCSub0Sub0;
     gTownGrid.m24 = initNPCSub0Sub1;
 
-    initNPCSub0Sub2(buffer, pEnvironemntSetupEA, r6, r7, stackArg0);
+    initNPCSub0Sub2(buffer, pGrid, gridSizeX, gridSizeY, cellSize);
 }
 
 struct sNullTask : public s_workAreaTemplate<sNullTask>
@@ -481,7 +482,13 @@ s32 initNPC(s32 arg)
     npcData0.m68_numEnvLCSTargets = readSaturnS32(r12_environmentSetup + 0xC);
     npcData0.m6C_LCSTargets = readSaturnEA(r12_environmentSetup + 0x10);
 
-    initNPCSub0(dramAllocatorEnd[readSaturnS8(r13)].mC_buffer, readSaturnEA(r12_environmentSetup + 8), readSaturnU8(r12_environmentSetup), readSaturnU8(r12_environmentSetup + 1), readSaturnFP(r12_environmentSetup + 4));
+    static const struct sGrid* pGrid = nullptr;
+    if (pGrid)
+    {
+        delete pGrid;
+    }
+    pGrid = readGrid(readSaturnEA(r12_environmentSetup + 8), readSaturnU8(r12_environmentSetup), readSaturnU8(r12_environmentSetup + 1));
+    initNPCSub0(dramAllocatorEnd[readSaturnS8(r13)].mC_buffer, pGrid, readSaturnU8(r12_environmentSetup), readSaturnU8(r12_environmentSetup + 1), readSaturnFP(r12_environmentSetup + 4));
 
     if (townVar0)
     {
@@ -662,7 +669,7 @@ void sTownCellTask::Init(sTownCellTask* pThis, sSaturnPtr arg)
         pThis->m_UpdateMethod = nullptr;
     }
 
-    pThis->m8 = arg;
+    pThis->m8_cellPtr = arg;
     pThis->mC_position = readSaturnVec3(arg);
 }
 
@@ -678,7 +685,7 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
             fixedPoint r4 = varMinusOne + MTH_Mul(gTownGrid.m2C, gTownGrid.m28_cellSize);
             if ((pCurrentMatrix->matrix[3] >= -r4) && (pCurrentMatrix->matrix[3] <= r4))
             {
-                sSaturnPtr r14 = readSaturnEA(pThis->m8 + 0xC);
+                sSaturnPtr r14 = readSaturnEA(pThis->m8_cellPtr + 0xC);
                 if (r14.m_offset)
                 {
                     while (readSaturnS32(r14))
@@ -701,7 +708,7 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
                     }
                 }
 
-                r14 = readSaturnEA(pThis->m8 + 0x10);
+                r14 = readSaturnEA(pThis->m8_cellPtr + 0x10);
                 if (r14.m_offset)
                 {
                     FunctionUnimplemented();

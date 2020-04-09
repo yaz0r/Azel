@@ -934,10 +934,10 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
     if (r13 == nullptr)
         return;
 
-    if (r13->m8.m_offset == 0)
+    if (r13->m8_cellPtr.m_offset == 0)
         return;
 
-    if (readSaturnU32(r13->m8 + 0x14) == 0)
+    if (readSaturnU32(r13->m8_cellPtr + 0x14) == 0)
         return;
 
     pushCurrentMatrix();
@@ -947,7 +947,7 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
         sVec3_FP var0_positionInCell;
         var0_positionInCell = r12->m8_position - r13->mC_position;
 
-        sSaturnPtr r14 = readSaturnEA(r13->m8 + 0x14);
+        sSaturnPtr r14 = readSaturnEA(r13->m8_cellPtr + 0x14);
         while (readSaturnU32(r14))
         {
             sProcessed3dModel* mesh = r13->m0_dramAllocation->getCollisionModel(readSaturnU32(r14));
