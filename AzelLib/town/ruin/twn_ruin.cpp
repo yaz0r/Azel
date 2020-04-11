@@ -80,11 +80,11 @@ void startRuinBackgroundTask(p_workArea pThis)
     createSubTask<sRuinBackgroundTask>(pThis);
 }
 
-void registerNpcs(sSaturnPtr r4_townSetup, sSaturnPtr r5_script, s32 r6)
+void registerNpcs(const std::vector<const sTownSetup*>& townSetups, sSaturnPtr r5_script, s32 r6)
 {
     npcData0.m0_numBackgroundScripts = 0;
     npcData0.m5E = -1;
-    npcData0.m60_townSetup = r4_townSetup;
+    npcData0.m60_townSetup = &townSetups;
     npcData0.mFC = 0;
     npcData0.m100 = 0;
     npcData0.m11C_currentStackPointer = npcData0.m120_stack.end();
@@ -347,16 +347,16 @@ void moveTownLCSCursor(sMainLogic* r4)
 }
 
 // TODO kernel
-sSaturnPtr cameraFollowMode0_LCSSub1Sub0(s32 r4)
+const sVec3_FP* cameraFollowMode0_LCSSub1Sub0(s32 r4)
 {
     if (r4 >= npcData0.m68_numEnvLCSTargets)
     {
         assert(0);
-        return sSaturnPtr::getNull();
+        return nullptr;
     }
     else
     {
-        return npcData0.m6C_LCSTargets + r4 * 12;
+        return &(*npcData0.m6C_LCSTargets)[r4];
     }
 }
 
@@ -633,7 +633,7 @@ p_workArea overlayStart_TWN_RUIN(p_workArea pUntypedThis, u32 arg)
 
     initVdp1Ram(pThis, 0x25C18800, 0x63800);
 
-    registerNpcs(gTWN_RUIN->getSaturnPtr(0x605E984), gTWN_RUIN->getSaturnPtr(0x06054398), arg);
+    registerNpcs(gTWN_RUIN->mTownSetups, gTWN_RUIN->getSaturnPtr(0x06054398), arg);
 
     startScriptTask(pThis);
 
@@ -1206,4 +1206,6 @@ void TWN_RUIN_data::init()
 
     overlayScriptFunctions.m_twoArg[0x605B320] = &scriptFunction_605B320;
     overlayScriptFunctions.m_twoArg[0x6054334] = &scriptFunction_6054334_disableLock;
+
+    mTownSetups.push_back(readTownSetup(getSaturnPtr(0x605E984), 12));
 }

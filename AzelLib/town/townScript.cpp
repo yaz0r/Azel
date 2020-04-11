@@ -603,7 +603,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
-                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                        addBackgroundScript((*npcData0.m64_scriptList)[r5_quad.m12_onCollisionScriptIndex], 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
                     }
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
@@ -652,7 +652,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
-                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                        addBackgroundScript((*npcData0.m64_scriptList)[r5_quad.m12_onCollisionScriptIndex], 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
                     }
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
@@ -707,7 +707,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
-                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                        addBackgroundScript((*npcData0.m64_scriptList)[r5_quad.m12_onCollisionScriptIndex], 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
                     }
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
@@ -756,7 +756,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
-                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                        addBackgroundScript((*npcData0.m64_scriptList)[r5_quad.m12_onCollisionScriptIndex], 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
                     }
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
@@ -811,7 +811,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
-                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                        addBackgroundScript((*npcData0.m64_scriptList)[r5_quad.m12_onCollisionScriptIndex], 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
                     }
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
@@ -860,7 +860,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
-                        addBackgroundScript(readSaturnEA(npcData0.m64_scriptList + r5_quad.m12_onCollisionScriptIndex * 4), 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
+                        addBackgroundScript((*npcData0.m64_scriptList)[r5_quad.m12_onCollisionScriptIndex], 1, nullptr, &r5_quad.m14_extraData[0].m0_normals);
                     }
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
@@ -2134,7 +2134,7 @@ sVec3_FP getEnvLCSTargetPosition(s32 index)
     }
     else
     {
-        position = readSaturnVec3(npcData0.m6C_LCSTargets + index * 12);
+        position = (*npcData0.m6C_LCSTargets)[index];
     }
 
     return position;
@@ -2193,7 +2193,7 @@ void sScriptTask::Update(sScriptTask* pThis)
         case 1: // environment object
             var0 = pThis;
             pThis->m10_distanceToLCS = vecDistance(getEnvLCSTargetPosition(pThis->mC_AsIndex), *npcData0.m160_pEdgePosition);
-            r13 = readSaturnEA(npcData0.m64_scriptList + pThis->mC_AsIndex * 4);
+            r13 = (*npcData0.m64_scriptList)[pThis->mC_AsIndex];
             r11 = nullptr;
             break;
         case 2: // NPC object

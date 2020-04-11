@@ -181,6 +181,8 @@ struct TWN_EXCA_data : public sTownOverlay
 
         overlayScriptFunctions.m_fourArg[0x605be24] = &setNpcLocation;
         overlayScriptFunctions.m_fourArg[0x605be52] = &setNpcOrientation;
+
+        mTownSetups.push_back(readTownSetup(getSaturnPtr(0x605fd4c), 1));
     }
 
     sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override
@@ -297,7 +299,7 @@ p_workArea overlayStart_TWN_EXCA(p_workArea pUntypedThis, u32 arg)
 
     initVdp1Ram(pThis, 0x25C18800, 0x63800);
 
-    registerNpcs(gTWN_EXCA->getSaturnPtr(0x605fd4c), gTWN_EXCA->getSaturnPtr(0x6054768), arg);
+    registerNpcs(gTWN_EXCA->mTownSetups, gTWN_EXCA->getSaturnPtr(0x6054768), arg);
 
     startScriptTask(pThis);
 

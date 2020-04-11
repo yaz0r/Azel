@@ -25,6 +25,24 @@ struct sKernelScriptFunctions
     std::map<u32, scriptFunction_four_arg> m_fourArg;
 };
 
+struct sTownGridSetup
+{
+    s8 m0_width;
+    s8 m1_height;
+    fixedPoint m4_cellSize;
+    const struct sGrid* m8_pGrid;
+    s32 mC_numEnvLCSTargets;
+    std::vector<sVec3_FP> m10_nLCSTargets;
+};
+
+struct sTownSetup
+{
+    s8 m0;
+    const sTownGridSetup* m4_gridSetup;
+    std::vector<sSaturnPtr> m8_scripts;
+    // size 0xC
+};
+
 struct sTownOverlay : public sSaturnMemoryFile
 {
     virtual void init() = 0;
@@ -32,7 +50,11 @@ struct sTownOverlay : public sSaturnMemoryFile
     virtual sTownObject* createObjectTaskFromEA_subTaskWithEAArg(struct npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) = 0;
 
     sKernelScriptFunctions overlayScriptFunctions;
+
+    std::vector<const sTownSetup*> mTownSetups;
 };
+
+const sTownSetup* readTownSetup(sSaturnPtr ptr, int numScripts);
 
 extern sTownOverlay* gCurrentTownOverlay;
 
@@ -154,10 +176,10 @@ struct sNpcData
     s8 m5C;
     s8 m5D;
     s8 m5E;
-    sSaturnPtr m60_townSetup;
-    sSaturnPtr m64_scriptList;
+    const std::vector<const sTownSetup*>* m60_townSetup;
+    const std::vector <sSaturnPtr>* m64_scriptList;
     s32 m68_numEnvLCSTargets;
-    sSaturnPtr m6C_LCSTargets;
+    const std::vector<sVec3_FP>* m6C_LCSTargets;
     std::array<NPCProxy, 32> m70_npcPointerArray;
     s32 mF0;
     s32 mF4;
@@ -336,7 +358,7 @@ s32 isDataLoaded(s32 fileIndex);
 s32 MTH_Mul32(fixedPoint a, fixedPoint b);
 
 // todo: move out of twn_ruin
-void registerNpcs(sSaturnPtr r4_townSetup, sSaturnPtr r5_script, s32 r6);
+void registerNpcs(const std::vector<const sTownSetup*>& townSetups, sSaturnPtr r5_script, s32 r6);
 p_workArea startCameraTask(p_workArea pParent);
 extern s32* twnVar1;
 extern s32 twnVar2;

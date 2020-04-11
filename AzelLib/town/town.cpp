@@ -17,6 +17,38 @@ u8 townBuffer[0xB0000];
 
 townDebugTask2Function* townDebugTask2 = nullptr;
 
+// TODO: move to townGrid
+const sTownGridSetup* readTownGridSetup(sSaturnPtr ptr)
+{
+    sTownGridSetup* pNewTownGridSetup = new sTownGridSetup;
+    pNewTownGridSetup->m0_width = readSaturnS8(ptr + 0);
+    pNewTownGridSetup->m1_height = readSaturnS8(ptr + 1);
+    pNewTownGridSetup->m4_cellSize = readSaturnFP(ptr + 4);
+    pNewTownGridSetup->m8_pGrid = readGrid(readSaturnEA(ptr + 8), pNewTownGridSetup->m0_width, pNewTownGridSetup->m1_height);
+    pNewTownGridSetup->mC_numEnvLCSTargets = readSaturnS32(ptr + 0xC);
+
+    for (int i=0; i< pNewTownGridSetup->mC_numEnvLCSTargets; i++)
+    {
+        pNewTownGridSetup->m10_nLCSTargets.push_back(readSaturnVec3(readSaturnEA(ptr + 0x10) + i * 12));
+    }
+
+    return pNewTownGridSetup;
+}
+
+const sTownSetup* readTownSetup(sSaturnPtr ptr, int numScripts)
+{
+    sTownSetup* pNewTownSetup = new sTownSetup;
+    pNewTownSetup->m0 = readSaturnS8(ptr + 0);
+    pNewTownSetup->m4_gridSetup = readTownGridSetup(readSaturnEA(ptr + 4));
+
+    for (int i = 0; i < numScripts; i++)
+    {
+        pNewTownSetup->m8_scripts.push_back(readSaturnEA(readSaturnEA(ptr + 8) + i * 4));
+    }
+
+    return pNewTownSetup;
+}
+
 void townDebugTask2Function::Update(townDebugTask2Function* pThis)
 {
     if (readKeyboardToggle(0x87))
@@ -459,36 +491,30 @@ void decreaseNPCRefCount(s32 r5)
 
 s32 initNPC(s32 arg)
 {
-    sSaturnPtr r13 = npcData0.m60_townSetup + arg * 12;
+    const sTownSetup* r13 = (*npcData0.m60_townSetup)[arg];
     if (npcData0.m5E < 0)
     {
-        allocateNPC(currentResTask, readSaturnS8(r13));
+        allocateNPC(currentResTask, r13->m0);
     }
     else
     {
-        sSaturnPtr pcVar1 = npcData0.m60_townSetup + npcData0.m5E * 12;
-        if (readSaturnU8(r13) != readSaturnU8(pcVar1))
+        const sTownSetup* pcVar1 = (*npcData0.m60_townSetup)[npcData0.m5E];
+        if (r13->m0 != pcVar1->m0)
         {
             initNPCSub1();
-            decreaseNPCRefCount(readSaturnU8(pcVar1));
-            allocateNPC(currentResTask, readSaturnS8(r13));
+            decreaseNPCRefCount(pcVar1->m0);
+            allocateNPC(currentResTask, r13->m0);
         }
     }
 
     npcData0.m5E = arg;
-    npcData0.m64_scriptList = readSaturnEA(r13 + 8);
+    npcData0.m64_scriptList = &r13->m8_scripts;
 
-    sSaturnPtr r12_environmentSetup = readSaturnEA(r13 + 4);
-    npcData0.m68_numEnvLCSTargets = readSaturnS32(r12_environmentSetup + 0xC);
-    npcData0.m6C_LCSTargets = readSaturnEA(r12_environmentSetup + 0x10);
+    const sTownGridSetup* r12_environmentSetup = r13->m4_gridSetup;
+    npcData0.m68_numEnvLCSTargets = r12_environmentSetup->mC_numEnvLCSTargets;
+    npcData0.m6C_LCSTargets = &r12_environmentSetup->m10_nLCSTargets;
 
-    static const struct sGrid* pGrid = nullptr;
-    if (pGrid)
-    {
-        delete pGrid;
-    }
-    pGrid = readGrid(readSaturnEA(r12_environmentSetup + 8), readSaturnU8(r12_environmentSetup), readSaturnU8(r12_environmentSetup + 1));
-    initNPCSub0(dramAllocatorEnd[readSaturnS8(r13)].mC_buffer, pGrid, readSaturnU8(r12_environmentSetup), readSaturnU8(r12_environmentSetup + 1), readSaturnFP(r12_environmentSetup + 4));
+    initNPCSub0(dramAllocatorEnd[r13->m0].mC_buffer, r12_environmentSetup->m8_pGrid, r12_environmentSetup->m0_width, r12_environmentSetup->m1_height, r12_environmentSetup->m4_cellSize);
 
     if (townVar0)
     {

@@ -196,6 +196,9 @@ void TWN_E011_data::init()
     overlayScriptFunctions.m_oneArg[0x6059b7a] = &e011_scriptFunction_06059b7a;
 
     overlayScriptFunctions.m_twoArg[0x605cbd0] = &scriptFunction_605cbd0;
+
+    mTownSetups.push_back(readTownSetup(getSaturnPtr(0x0605ef14), 1));
+    mTownSetups.push_back(readTownSetup(getSaturnPtr(0x0605ef20), 1));
 }
 
 sTownObject* TWN_E011_data::createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg)
@@ -285,7 +288,7 @@ p_workArea overlayStart_TWN_E011(p_workArea pUntypedThis, u32 arg)
 
     initVdp1Ram(pThis, 0x25C18800, 0x63800);
 
-    registerNpcs(gTWN_E011->getSaturnPtr(0x0605ef14), gTWN_E011->getSaturnPtr(0x605414c), arg);
+    registerNpcs(gTWN_E011->mTownSetups, gTWN_E011->getSaturnPtr(0x605414c), arg);
 
     startScriptTask(pThis);
 
