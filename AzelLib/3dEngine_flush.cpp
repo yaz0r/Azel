@@ -934,6 +934,8 @@ float* getProjectionMatrix()
 
 void flushObjectsToDrawList()
 {
+    ZoneScopedN("flushObjectsToDrawList");
+
     gVertexArray.resize(1024 * 1024);
     checkGL();
 
@@ -1034,6 +1036,8 @@ void flushObjectsToDrawList()
         drawObject(&objectRenderList[i], getProjectionMatrix());
         //glPopDebugGroup();
     }
+
+    TracyPlot("ObjectRenderList size", (int64_t)objectRenderList.size());
 
     checkGL();
     glUseProgram(0);

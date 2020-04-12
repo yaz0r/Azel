@@ -16,7 +16,19 @@ struct s_workArea
         void* ptr = malloc(size);
         memset(ptr, 0, size);
 
+#ifdef TRACY_ENABLE
+        TracyAlloc(ptr, size);
+#endif
+
         return ptr;
+    }
+
+    void operator delete(void* ptr) noexcept
+    {
+#ifdef TRACY_ENABLE
+        TracyFree(ptr);
+#endif
+        free(ptr);
     }
 
     virtual void Update() = 0;

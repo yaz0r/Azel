@@ -3481,7 +3481,7 @@ p_workArea createMenuTask(p_workArea parentTask)
 
 s_vblankData vblankData;
 
-s32 stopAllSounds()
+s32 fadeOutAllSequences()
 {
     gSoloud.stopAll();
     return 0;

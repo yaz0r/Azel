@@ -1069,7 +1069,7 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
 
 }
 
-u32* vdp1TextureOutput;
+std::vector<u32> vdp1TextureOutput;
 u32 vdp1TextureWidth;
 u32 vdp1TextureHeight;
 
@@ -1358,6 +1358,8 @@ void PolyLineDraw(u32 vdp1EA)
 
 void renderVdp1ToGL(u32 width, u32 height)
 {
+    ZoneScopedN("renderVdp1ToGL");
+
     u32 vdp1EA = 0x25C00000;
 
     while (1)
@@ -1642,8 +1644,8 @@ bool azelSdl2_EndFrame()
     {
         vdp1TextureWidth = outputResolutionWidth;
         vdp1TextureHeight = outputResolutionHeight;
-        vdp1TextureOutput = new u32[vdp1TextureWidth * vdp1TextureHeight];
-        memset(vdp1TextureOutput, 0x00, vdp1TextureWidth * vdp1TextureHeight * 4);
+        vdp1TextureOutput.resize(vdp1TextureWidth * vdp1TextureHeight);
+        memset(&vdp1TextureOutput[0], 0x00, vdp1TextureWidth * vdp1TextureHeight * 4);
     }
 
     if (!useVDP1GL)
@@ -1654,12 +1656,10 @@ bool azelSdl2_EndFrame()
     {
 #ifndef USE_NULL_RENDERER
         glBindTexture(GL_TEXTURE_2D, gVdp1Texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, vdp1TextureWidth, vdp1TextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, vdp1TextureOutput);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, vdp1TextureWidth, vdp1TextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, &vdp1TextureOutput[0]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #endif
-        delete[] vdp1TextureOutput;
-        vdp1TextureOutput = NULL;
     }
 
     // update VDP buffers
@@ -1822,6 +1822,8 @@ bool azelSdl2_EndFrame()
     //Compose
 #ifndef USE_NULL_RENDERER
     {
+        ZoneScopedN("Compose");
+
         glBindFramebuffer(GL_FRAMEBUFFER, gCompositedFB);
         glBindTexture(GL_TEXTURE_2D, gCompositedTexture);
 
@@ -2015,6 +2017,8 @@ bool azelSdl2_EndFrame()
     glFlush();
     checkGL();
     {
+        ZoneScopedN("WaitNextFrame");
+
         static Uint64 last_time = SDL_GetPerformanceCounter();
         Uint64 now = SDL_GetPerformanceCounter();
 
@@ -2034,6 +2038,9 @@ bool azelSdl2_EndFrame()
     
     checkGL();
 #endif
+
+    FrameMark;
+
     return !closeApp;
 }
 

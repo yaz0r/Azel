@@ -20,7 +20,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
 
         fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
 
-        stopAllSounds();
+        fadeOutAllSequences();
 
         pThis->CountNumberOfSubTown();
 

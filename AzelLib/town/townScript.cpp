@@ -1496,7 +1496,7 @@ sKernelScriptFunctions gKernelScriptFunctions =
 {
     // zero arg
     {
-        {0x602C1D0, &stopAllSounds},
+        {0x602C1D0, &fadeOutAllSequences},
         {0x603011E, &terminateTown},
     },
     // one arg

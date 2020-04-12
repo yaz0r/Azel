@@ -16,6 +16,12 @@
 
 #define NOMINMAX
 
+#define TRACY_ENABLE
+#define TRACY_CALLSTACK 20
+#ifdef TRACY_ENABLE
+#include "Tracy.hpp"
+#endif
+
 #include <SDL.h>
 #include <SDL_syswm.h>
 

@@ -60,6 +60,8 @@ void processTasks(s_task** ppTask)
     
     do
     {
+        ZoneScoped
+        ZoneName(pTask->m_taskName, strlen(pTask->m_taskName));
         if (!(pTask->isFinished()))
         {
             if (pTask->isPaused())
@@ -75,6 +77,7 @@ void processTasks(s_task** ppTask)
             }
             if (!pauseEngine[0])
             {
+                
                 pTask->getWorkArea()->Update();
             }
 

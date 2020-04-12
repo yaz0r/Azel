@@ -8,6 +8,21 @@
 #pragma comment(lib, "Version.lib")
 #endif
 
+#ifdef TRACY_ENABLE
+#include "TracyClient.cpp"
+void* operator new(std::size_t count)
+{
+    auto ptr = malloc(count);
+    TracyAlloc(ptr, count);
+    return ptr;
+}
+void operator delete(void* ptr) noexcept
+{
+    TracyFree(ptr);
+    free(ptr);
+}
+#endif
+
 bool hasEncounterData;
 bool debugEnabled = false; // watchdog bit 1
 

@@ -360,7 +360,7 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
             }
         case 8:
         case 0x19:
-            stopAllSounds();
+            fadeOutAllSequences();
         case 0xC:
         case 0x16:
         case 0x25:

@@ -93,6 +93,6 @@ extern sPDS_Logger PDS_Logger[eLogCategories::log_max];
 #else
 #define PDS_Log(string, ...) {PDS_Logger[log_default].AddLog(string, __VA_ARGS__);}
 #define PDS_CategorizedLog(logCategory, string, ...) {PDS_Logger[logCategory].AddLog(string, __VA_ARGS__);}
-#define PDS_unimplemented(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger[log_unimlemented].AddLog("Unimplemented: %s\n", name);}}
+#define PDS_unimplemented(name) { TracyMessage(name, strlen(name)); static bool printed = false; if(!printed) {printed = true; PDS_Logger[log_unimlemented].AddLog("Unimplemented: %s\n", name);}}
 #define PDS_warningOnce(name) { static bool printed = false; if(!printed) {printed = true; PDS_Logger[log_warning].AddLog("Warning: %s\n", name);}}
 #endif

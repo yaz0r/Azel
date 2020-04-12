@@ -1478,7 +1478,7 @@ p_workArea overlayStart_TWN_E006(p_workArea pUntypedThis, u32 arg)
     playMusic(-1, 0);
     playMusic(68, 0);
 
-    stopAllSounds();
+    fadeOutAllSequences();
 
     graphicEngineStatus.m405C.m10_nearClipDistance = 0x800;
     graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);

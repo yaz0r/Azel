@@ -2513,7 +2513,7 @@ s32 dispatchTutorialMultiChoice()
         }
         else
         {
-            stopAllSounds();
+            fadeOutAllSequences();
             dispatchTutorialMultiChoiceSub2();
         }
 
