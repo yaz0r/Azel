@@ -6,6 +6,7 @@
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
 #include "town/ruin/twn_ruin.h"
+#include "audio/systemSounds.h"
 
 void updateEdgeSub3(sEdgeTask* pThis);
 
@@ -654,7 +655,7 @@ void updateEdgeSub3(sEdgeTask* pThis)
                     s32 frameIndex = stepAnimation(&pThis->m34_3dModel);
                     if ((frameIndex == 8) || (frameIndex == 0x1B))
                     {
-                        playSoundEffect(0x22);
+                        playSystemSoundEffect(0x22);
                     }
                 } while (--animCounter);
             }
@@ -665,7 +666,7 @@ void updateEdgeSub3(sEdgeTask* pThis)
                     s32 frameIndex = stepAnimation(&pThis->m34_3dModel);
                     if ((frameIndex == 0xB) || (frameIndex == 0x2B))
                     {
-                        playSoundEffect(0x23);
+                        playSystemSoundEffect(0x23);
                     }
                 } while (--animCounter);
             }

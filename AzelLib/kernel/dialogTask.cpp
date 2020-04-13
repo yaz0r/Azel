@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "dialogTask.h"
+#include "audio/systemSounds.h"
 
 void s_multiChoiceTask::drawMultiChoice()
 {
@@ -46,7 +47,7 @@ void s_multiChoiceTask::Update(s_multiChoiceTask* pThis)
         pThis->m0_Status++;
     case 1:
         pThis->drawMultiChoice();
-        playSoundEffect(3);
+        playSystemSoundEffect(3);
         pThis->m0_Status++;
         return;
     case 2:
@@ -57,7 +58,7 @@ void s_multiChoiceTask::Update(s_multiChoiceTask* pThis)
             {
                 pThis->m5_selectedEntry += pThis->m6_numEntries;
             }
-            playSoundEffect(2);
+            playSystemSoundEffect(2);
         }
         else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x20) // down
         {
@@ -66,7 +67,7 @@ void s_multiChoiceTask::Update(s_multiChoiceTask* pThis)
             {
                 pThis->m5_selectedEntry -= pThis->m6_numEntries;
             }
-            playSoundEffect(2);
+            playSystemSoundEffect(2);
         }
         else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x40)
         {
@@ -74,7 +75,7 @@ void s_multiChoiceTask::Update(s_multiChoiceTask* pThis)
             {
                 pThis->m3_quantity--;
                 pThis->drawMultiChoice();
-                playSoundEffect(6);
+                playSystemSoundEffect(6);
             }
         }
         else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x80)
@@ -83,14 +84,14 @@ void s_multiChoiceTask::Update(s_multiChoiceTask* pThis)
             {
                 pThis->m3_quantity++;
                 pThis->drawMultiChoice();
-                playSoundEffect(6);
+                playSystemSoundEffect(6);
             }
         }
 
         if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 6) // select
         {
             *pThis->mC_result = pThis->m5_selectedEntry + pThis->m3_quantity * 4;
-            playSoundEffect(0);
+            playSystemSoundEffect(0);
             pThis->m0_Status++;
         }
         else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 1) // cancel
@@ -98,7 +99,7 @@ void s_multiChoiceTask::Update(s_multiChoiceTask* pThis)
             if (pThis->m2_defaultResult)
             {
                 *pThis->mC_result = -1;
-                playSoundEffect(1);
+                playSystemSoundEffect(1);
                 pThis->m0_Status++;
             }
         }

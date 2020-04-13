@@ -1,0 +1,9 @@
+[submodule "argparse"]
+	path = argparse
+	url = https://github.com/Cofyc/argparse
+[submodule "win32_utf8"]
+	path = win32_utf8
+	url = https://github.com/thpatch/win32_utf8
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/ocornut/imgui

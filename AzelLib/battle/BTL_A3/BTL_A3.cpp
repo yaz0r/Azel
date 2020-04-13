@@ -12,7 +12,7 @@
 #include "BTL_A3_data.h"
 
 #include "BTL_A3_BaldorFormation.h"
-
+#include "audio/soundDriver.h"
 
 void battle_A3_initMusic(p_workArea pThis)
 {

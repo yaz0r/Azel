@@ -8,10 +8,12 @@
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 #include "kernel/debug/trace.h"
+#include "audio/systemSounds.h"
 
 #include "battle/battleDragon.h" // todo: clean by moving s_battleDragon_8C to its own file
 #include "mainMenuDebugTasks.h"
 #include "town/town.h"
+
 
 void Baldor_initSub0Sub2(sBaldor* pThis, sFormationData* pFormationEntry)
 {
@@ -544,14 +546,14 @@ void Baldor_updateSub0(sBaldor* pThis)
                 Baldor_updateSub0Sub2(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 0, pThis->m40);
                 pThis->m34_formationEntry->m48 |= 4;
                 Baldor_updateSub0Sub3(pThis, pThis->mE, pThis->m1C_translation.m0_current, 1);
-                playSoundEffect(0x66);
+                playSystemSoundEffect(0x66);
                 pThis->m8_mode = 0xB;
                 pThis->m9 = 0;
             }
             else
             {
                 Baldor_updateSub0Sub2(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 1, pThis->m40);
-                playSoundEffect(0x65);
+                playSystemSoundEffect(0x65);
             }
         }
 
@@ -687,7 +689,7 @@ void Baldor_update_mode2(sBaldor* pThis)
         }
 
         pThis->m90_attackTask = Baldor_createAttackTask(pThis);
-        playSoundEffect(0x68);
+        playSystemSoundEffect(0x68);
         pThis->m9++;
         break;
     case 1: // attack is running

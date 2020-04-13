@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "audio/systemSounds.h"
 
 p_workArea createBattleDebugTask(p_workArea);
 
@@ -122,7 +123,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xE)
 #endif
             {
-                playSoundEffect(0);
+                playSystemSoundEffect(0);
 
                 clearVdp2TextMemory();
                 initialTaskStatus.m_pendingTask = pWorkArea->m_menu[pWorkArea->m_currentSelection].m_createTask;
@@ -148,7 +149,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
 
                 if (newSelection != pWorkArea->m_currentSelection)
                 {
-                    playSoundEffect(10);
+                    playSystemSoundEffect(10);
                     pWorkArea->m_currentSelection = newSelection;
                     pWorkArea->m_status2 = 1;
                     pWorkArea->m_blinkDelay = 15;
@@ -169,7 +170,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
 
                 if (newSelection != pWorkArea->m_currentSelection)
                 {
-                    playSoundEffect(10);
+                    playSystemSoundEffect(10);
                     pWorkArea->m_currentSelection = newSelection;
                     pWorkArea->m_status2 = 1;
                     pWorkArea->m_blinkDelay = 15;
@@ -363,7 +364,7 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) // if start was pressed
 #endif
         {
-            playSoundEffect(8);
+            playSystemSoundEffect(8);
             pWorkArea->m0_status = 7;
             return;
         }

@@ -6,10 +6,13 @@
 #include "a3_fan.h"
 #include "a3_2_crashedImperialShip.h"
 
+#include "audio/systemSounds.h"
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
 #include "kernel/cinematicBarsTask.h"
 #include "collision.h"
+
+#include "audio/soundDriver.h"
 
 #include "items.h"
 
@@ -3386,7 +3389,7 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
         graphicEngineStatus.m40AC.m1_isMenuAllowed = 1;
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][13])
         {
-            playSoundEffect(0);
+            playSystemSoundEffect(0);
             graphicEngineStatus.m40AC.m0_menuId = 5;
             return;
         }
@@ -7192,7 +7195,7 @@ void s_LCSTask340Sub_Delete3Sub0(s32 r4)
 void s_LCSTask340Sub::Delete3(s_LCSTask340Sub* pThis)
 {
     s_LCSTask340Sub_Delete3Sub0(pThis->m27);
-    playSoundEffect(17);
+    playSystemSoundEffect(17);
 
     if (pThis->m24_receivedItemId >= 0)
     {

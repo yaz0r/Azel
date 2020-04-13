@@ -1,6 +1,8 @@
 #include "PDS.h"
 #include "kernel/fileBundle.h"
 #include "kernel/debug/trace.h"
+#include "audio/soundDriver.h"
+#include "audio/soundDataTable.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "Winmm.lib")
@@ -89,6 +91,8 @@ void sCommonOverlay_data::init()
             dragonLevelStats.push_back(entry);
         }
     }
+
+    soundDataTableInit();
 }
 
 bool findFileOnDisc(const std::string& filename)
@@ -852,6 +856,7 @@ void azelInit()
     initSMPC();
 
     // stuff
+    initSoundDriver();
     initInitialTaskStatsAndDebug();
 
     // stuff
@@ -1129,7 +1134,7 @@ void loopIteration()
 
         flushVdp1();
 
-        //updateSound();
+        updateSound();
 
         //lastUpdateFunction();
 
@@ -1143,6 +1148,8 @@ void loopIteration()
     }
 
     bContinue = azelSdl2_EndFrame();
+
+    updateSoundInterrupt();
 
     frameIndex++;
 }

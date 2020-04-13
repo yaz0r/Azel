@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "battleDebugList.h"
 #include "battle/battleManager.h"
+#include "audio/systemSounds.h"
 
 u32 s_battlePrgTask_var0 = 0;
 
@@ -48,12 +49,12 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x80)
     {
         s_battlePrgTask_var0 = 1;
-        playSoundEffect(7);
+        playSystemSoundEffect(7);
     }
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x40)
     {
         s_battlePrgTask_var0 = 0;
-        playSoundEffect(7);
+        playSystemSoundEffect(7);
     }
 
     sSaturnPtr battleActivationList = gCommonFile.getSaturnPtr(0x2002bc);
@@ -139,7 +140,7 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
 
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xE)
     {
-        playSoundEffect(0xC);
+        playSystemSoundEffect(0xC);
         startDebugBattle(pBattleManager->mA_pendingBattleOverlayId);
     }
 }

@@ -7,6 +7,7 @@
 #include "battleDragon.h"
 #include "battleHud.h"
 #include "town/town.h" // todo: for npcFileDeleter
+#include "audio/systemSounds.h"
 
 struct battlePowerGauge : public s_workAreaTemplate<battlePowerGauge>
 {
@@ -174,11 +175,11 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
 
                                 if (mainGameState.gameStats.m1_dragonLevel == 8)
                                 {
-                                    playSoundEffect(0x20);
+                                    playSystemSoundEffect(0x20);
                                 }
                                 else
                                 {
-                                    playSoundEffect(0x19);
+                                    playSystemSoundEffect(0x19);
                                 }
                                 pThis->m25 = 1;
                                 pThis->m26 = 0;

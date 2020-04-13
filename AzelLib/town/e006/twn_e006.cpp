@@ -7,6 +7,8 @@
 #include "kernel/vdp1Allocator.h"
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
+#include "audio/soundDriver.h"
+#include "audio/systemSounds.h"
 
 struct TWN_E006_data : public sTownOverlay
 {
@@ -1239,7 +1241,7 @@ struct sE006Task1 : public s_workAreaTemplate<sE006Task1>
         fixedPoint uVar1 = iVar3 - pThis->m8;
         if ((dragonCutsceneData[iVar2].m4 <= iVar3) && (iVar3 <= dragonCutsceneData[iVar2].m8 + iVar2)) {
             if ((uVar1.normalized() < -0x222222) && (-1 < readSaturnS16(pThis->m0 + 2))) {
-                playSoundEffect(readSaturnS16(pThis->m0 + 2));
+                playSystemSoundEffect(readSaturnS16(pThis->m0 + 2));
             }
         }
         pThis->m8 = iVar3;

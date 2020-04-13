@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "items.h"
+#include "audio/systemSounds.h"
 
 p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5);
 void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6);
@@ -282,7 +283,7 @@ void LCSTaskDrawSub1Sub2Sub2Sub1(s_LCSTask* r4, sLCSTarget* r5)
     r5->m1A++;
     r5->m19 = (r5->m19 & 0xF0) | 1;
 
-    playSoundEffect(0xA);
+    playSystemSoundEffect(0xA);
 
     LCSTaskDrawSub1Sub5(r4);
 
@@ -835,7 +836,7 @@ void LCSTaskDrawSub1Sub2Sub0Sub1Sub0(s_LCSTask* r4, sLCSTarget* r5, s32 r6)
     }
 
     LCSTaskDrawSub1Sub2Sub0Sub2Sub0(r4, &var8, 3);
-    playSoundEffect(0x15);
+    playSystemSoundEffect(0x15);
 }
 
 void LCSTaskDrawSub1Sub2Sub0Sub1(s_LCSTask* r4)
@@ -1126,7 +1127,7 @@ void LCSTaskDrawSub1Sub2(s_LCSTask* r4)
 
         s8 r13 = LCS_AccessSoundTable2[r4->m838_Next->m8->m10_flags & 3];
 
-        playSoundEffect(LCS_AccessSoundTable[r13]);
+        playSystemSoundEffect(LCS_AccessSoundTable[r13]);
 
         if (r13 == 1)
         {

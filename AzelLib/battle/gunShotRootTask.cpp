@@ -9,6 +9,7 @@
 #include "town/town.h" // todo: clean
 #include "kernel/vdp1Allocator.h" // todo: clean
 #include "BTL_A3/baldor.h" // todo: clean
+#include "audio/systemSounds.h"
 
 struct sGunShotRootTask : public s_workAreaTemplateWithCopy<sGunShotRootTask>
 {
@@ -94,7 +95,7 @@ void sGunShotTask_Init(sGunShotTask* pThis, sGunArg* arg)
 
     pThis->m44 = 0x3000;
 
-    playSoundEffect(9);
+    playSystemSoundEffect(9);
 
     if (pThis->m65 & 4)
     {

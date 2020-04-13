@@ -3,6 +3,7 @@
 #include "menuCursor.h"
 #include "menuSprite.h"
 #include "loadSavegameScreen.h"
+#include "audio/systemSounds.h"
 
 u8* savegameVar0 = nullptr;
 
@@ -591,7 +592,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
             pThis->m28_slotInfoDisplayTask[1]->m4_delay = 3;
             pThis->m28_slotInfoDisplayTask[2]->m0 = -1;
             pThis->m28_slotInfoDisplayTask[2]->m4_delay = 6;
-            playSoundEffect(0);
+            playSystemSoundEffect(0);
             DisplayMenuMsg(stringArray[pThis->m14_selectedDevice]);
         }
         if (loadDrawSub1Sub0(&pThis->m20_selectedFileInDevice, 0, 2))
@@ -646,7 +647,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                 }
             }
             *param1 = var1;
-            playSoundEffect(10);
+            playSystemSoundEffect(10);
             return 1;
         }
         return 0;
@@ -673,7 +674,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                     pThis->m28_slotInfoDisplayTask[1]->m4_delay = 3;
                     pThis->m28_slotInfoDisplayTask[2]->m0 = -1;
                     pThis->m28_slotInfoDisplayTask[2]->m4_delay = 6;
-                    playSoundEffect(0);
+                    playSystemSoundEffect(0);
                     DisplayMenuMsg(loadStrings[pThis->m14_selectedDevice]);
                     return;
                 }
@@ -686,11 +687,11 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
             }
             if (pThis->m3C[pThis->m20_selectedFileInDevice].m0_slotStatus != 1)
             {
-                playSoundEffect(5);
+                playSystemSoundEffect(5);
                 DisplayMenuMsg("Not used");
                 return;
             }
-            playSoundEffect(0);
+            playSystemSoundEffect(0);
             graphicEngineStatus.m4 = 1;
             DisplayMenuMsg("Load Game");
             pThis->m38 = 1;
@@ -772,7 +773,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                 {
                     if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x30) == 0)
                         return;
-                    playSoundEffect(10);
+                    playSystemSoundEffect(10);
                     if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x10) == 0)
                     {
                         do
@@ -810,7 +811,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                 pThis->m28_slotInfoDisplayTask[2]->m0 = 2;
                 pThis->m28_slotInfoDisplayTask[2]->m4_delay = 6;
                 graphicEngineStatus.m4 = 1;
-                playSoundEffect(0);
+                playSystemSoundEffect(0);
             }
             else
             {
@@ -819,7 +820,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                     pThis->m4_status++;
                     return;
                 }
-                playSoundEffect(5);
+                playSystemSoundEffect(5);
             }
             return;
         }
@@ -861,7 +862,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                 {
                     if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x30) == 0)
                         return;
-                    playSoundEffect(10);
+                    playSystemSoundEffect(10);
                     if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x10) == 0)
                     {
                         do
@@ -899,7 +900,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                 pThis->m28_slotInfoDisplayTask[2]->m0 = 2;
                 pThis->m28_slotInfoDisplayTask[2]->m4_delay = 6;
                 graphicEngineStatus.m4 = 1;
-                playSoundEffect(0);
+                playSystemSoundEffect(0);
             }
             else
             {
@@ -908,12 +909,12 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                     pThis->m4_status++;
                     return;
                 }
-                playSoundEffect(5);
+                playSystemSoundEffect(5);
             }
             return;
         }
         case 2:
-            playSoundEffect(1);
+            playSystemSoundEffect(1);
             setupVDP2StringRendering(0, 0x22, 0x2C, 0x1C);
             clearVdp2TextArea();
             clearVdp2Menu();

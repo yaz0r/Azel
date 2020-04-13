@@ -3,6 +3,9 @@
 #include "kernel/fileBundle.h"
 #include "a3_background_layer.h"
 #include "items.h"
+#include "audio/soundDriver.h"
+#include "audio/systemSounds.h"
+
 // Above Excavation
 
 void fieldA3_1_startTasks_sub1Task_InitSub0(p_workArea, sLCSTarget*)
@@ -835,7 +838,7 @@ void LCSItemBox_Callback0(p_workArea r4, sLCSTarget*)
     mainGameState.setBit566(pThis->m80_bitIndex);
 
     pThis->LCSItemBox_Callback0Sub0();
-    playSoundEffect(0x17);
+    playSystemSoundEffect(0x17);
 
     pThis->m_UpdateMethod = &s_itemBoxType1::LCSItemBox_OpenedBoxUpdate;
     pThis->m_DrawMethod = &s_itemBoxType1::LCSItemBox_OpenedBoxDraw;

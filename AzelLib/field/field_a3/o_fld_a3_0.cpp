@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "a3_0_task4.h"
 #include "items.h"
+#include "audio/soundDriver.h"
 
 void subfieldA3_0Sub0(s_dragonTaskWorkArea* r4)
 {

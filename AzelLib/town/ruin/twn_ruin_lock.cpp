@@ -4,6 +4,7 @@
 #include "twn_ruin.h"
 #include "twn_ruin_lock.h"
 #include "kernel/fileBundle.h"
+#include "audio/systemSounds.h"
 
 void sLockTask::Init(sLockTask* pThis, sSaturnPtr r5)
 {
@@ -89,7 +90,7 @@ s32 scriptFunction_6054334_disableLock(s32 arg0, s32 arg1)
         pLockTask->m8C_status = arg1;
         if (arg1 == 1)
         {
-            playSoundEffect(101);
+            playSystemSoundEffect(101);
         }
     }
     return 0;

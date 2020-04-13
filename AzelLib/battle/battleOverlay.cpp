@@ -2,6 +2,7 @@
 #include "battleOverlay.h"
 #include "battleManager.h"
 #include "BTL_A3/BTL_A3.h"
+#include "audio/systemSounds.h"
 
 std::string sBattleOverlayName = "";
 
@@ -21,7 +22,7 @@ static void battleOverlayTask_Init(sBattleOverlayTask* pThis)
     fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), -1, 0x3C);
     fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), -1, 0x3C);
 
-    playSoundEffect(0x10);
+    playSystemSoundEffect(0x10);
 }
 
 extern s32 e006Task0Var0;

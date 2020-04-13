@@ -3,6 +3,8 @@
 #include "o_fld_a3_4.h"
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
+#include "audio/systemSounds.h"
+#include "audio/soundDriver.h"
 #include "items.h"
 
 struct fieldA3_8_exitTask : public s_workAreaTemplate<fieldA3_8_exitTask>
@@ -61,9 +63,9 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             //fall
         // running
         case 1:
-            if (!isSoundPlaying(104))
+            if (findSound(104) < 0)
             {
-                playSoundEffect(104);
+                playSystemSoundEffect(104);
             }
             if (mainGameState.getBit(0x6D, 2))
             {

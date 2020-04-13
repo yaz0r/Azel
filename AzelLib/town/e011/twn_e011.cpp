@@ -9,6 +9,7 @@
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
 #include "mainMenuDebugTasks.h"
+#include "audio/soundDriver.h"
 
 struct TWN_E011_data : public sTownOverlay
 {

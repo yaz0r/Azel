@@ -17,6 +17,7 @@
 #include "homingLaser.h"
 #include "kernel/debug/trace.h"
 #include "items.h"
+#include "audio/systemSounds.h"
 
 #include "BTL_A3/BTL_A3.h"
 #include "BTL_A3/baldor.h" // TODO: cleanup
@@ -2211,7 +2212,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
         gBattleManager->m10_battleOverlay->m8_gridTask->m138[0] = 0x5000;
         gBattleManager->m10_battleOverlay->m8_gridTask->m138[1] = 0;
         gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[1] = 0;
-        playSoundEffect(7);
+        playSystemSoundEffect(7);
         pThis->m188_flags.m2 = 1;
         break;
     case 1: // select enemy phase
@@ -2233,7 +2234,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
                     {
                         pThis->m398_currentSelectedEnemy += pThis->m39C_maxSelectableEnemies;
                     }
-                    playSoundEffect(2);
+                    playSystemSoundEffect(2);
                 }
             }
             else
@@ -2243,7 +2244,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
                 {
                     pThis->m398_currentSelectedEnemy -= pThis->m39C_maxSelectableEnemies;
                 }
-                playSoundEffect(2);
+                playSystemSoundEffect(2);
             }
 
             // mark all enemies are deselected
@@ -2276,7 +2277,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
                 battleEngine_UpdateSub7Sub2();
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
                 battleEngine_SetBattleMode16();
-                playSoundEffect(1);
+                playSystemSoundEffect(1);
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 1;
                 return;
             }
@@ -2688,7 +2689,7 @@ void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
                 }
                 if (graphicEngineStatus.m4514.mD8_buttonConfig[2][1] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown)
                 {
-                    playSoundEffect(5);
+                    playSystemSoundEffect(5);
                 }
             }
         }
@@ -2712,7 +2713,7 @@ void battleEngine_UpdateSub7Sub0Sub6(s_battleEngine* pThis)
         }
         if (graphicEngineStatus.m4514.mD8_buttonConfig[2][0] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown)
         {
-            playSoundEffect(5);
+            playSystemSoundEffect(5);
         }
     }
 }
@@ -2729,7 +2730,7 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
             {
                 if (graphicEngineStatus.m4514.mD8_buttonConfig[2][2] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown)
                 {
-                    playSoundEffect(5);
+                    playSystemSoundEffect(5);
                 }
             }
             else
@@ -2857,7 +2858,7 @@ void battleEngine_UpdateSub7(s_battleEngine* pThis)
                 (((graphicEngineStatus.m4514.mD8_buttonConfig[2][7] | graphicEngineStatus.m4514.mD8_buttonConfig[2][6]) & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown) != 0)
                 )
             {
-                playSoundEffect(5);
+                playSystemSoundEffect(5);
                 return;
             }
 

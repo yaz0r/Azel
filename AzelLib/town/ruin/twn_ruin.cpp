@@ -9,6 +9,7 @@
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
 #include "kernel/debug/trace.h"
+#include "audio/soundDriver.h"
 
 #include "twn_ruin_lock.h"
 

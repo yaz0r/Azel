@@ -3,6 +3,7 @@
 #include "town/town.h"
 #include "loadSavegameScreen.h"
 #include "battle/battleManager.h"
+#include "audio/soundDriver.h"
 
 u8 array_24BCA0[0x104];
 u8 array_250000[0x20000];

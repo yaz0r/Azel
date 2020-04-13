@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "audio/systemSounds.h"
 
 struct s_dragonMenuSubTask1WorkArea : public s_workAreaTemplate<s_dragonMenuSubTask1WorkArea>
 {
@@ -383,7 +384,7 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
     case 3:
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 7)
         {
-            playSoundEffect(0);
+            playSystemSoundEffect(0);
             pWorkArea->m14->m_DrawMethod = NULL;
             if (pWorkArea->m10)
             {

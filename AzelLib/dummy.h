@@ -5,14 +5,10 @@
 extern u32 isInMenu2;
 
 void soundFunc(int);
-s32 playSoundEffect(s32);
-bool isSoundPlaying(int);
 bool keyboardIsKeyDown(u8 keycode);
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2);
 void titleScreenDrawSub3(u32);
 
-void playMusic(u8 unk0, u8 unk1);
-void playPCM(p_workArea, u32);
 bool soundFunc1();
 
 void DEBUG_setRandomSeed(u32);

@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "a3_background_layer.h"
 #include "items.h"
+#include "audio/soundDriver.h"
 
 void fieldA3_2_exit0(p_workArea, sLCSTarget*)
 {

@@ -8,6 +8,8 @@
 #include "kernel/fileBundle.h"
 #include "kernel/dialogTask.h"
 #include "kernel/debug/trace.h"
+#include "audio/soundDriver.h"
+#include "audio/systemSounds.h"
 
 #include <map>
 
@@ -1502,7 +1504,7 @@ sKernelScriptFunctions gKernelScriptFunctions =
     // one arg
     {
         {0x600CCB4, &initNPC},
-        {0x602c2ca, &playSoundEffect},
+        {0x602c2ca, &playSystemSoundEffect},
         {0x6027110, &setNextGameStatus},
     },
     // one arg ptr
@@ -1901,7 +1903,7 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             break;
         }
         case 33:
-            playSoundEffect(readSaturnS8(r14++));
+            playSystemSoundEffect(readSaturnS8(r14++));
             break;
         case 34:
             playPCM(currentResTask, readSaturnS8(r14++));
@@ -2216,7 +2218,7 @@ void sScriptTask::Update(sScriptTask* pThis)
                 pThis->m18_LCSFocusLineScale = 8;
                 pThis->m1C_LCS_X = LCSCollisionData.m0_LCS_X.getInteger();
                 pThis->m1E_LCS_Y = LCSCollisionData.m4_LCS_Y.getInteger();
-                playSoundEffect(0x24);
+                playSystemSoundEffect(0x24);
             }
 
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6)

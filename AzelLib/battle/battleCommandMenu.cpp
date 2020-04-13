@@ -12,6 +12,7 @@
 #include "mainMenuDebugTasks.h" // TODO: clean
 #include "town/town.h" // TODO: clean
 #include "kernel/vdp1Allocator.h" // TODO: clean
+#include "audio/systemSounds.h"
 
 void fieldPaletteTaskInitSub0Sub0(); // TODO: clean
 
@@ -75,7 +76,7 @@ void createBattleCommandMenuSub1(sBattleCommandMenu* pThis, int param2)
 {
     if (param2 == 0)
     {
-        playSoundEffect(5);
+        playSystemSoundEffect(5);
         BattleCommandMenu_DisplayCommandString(pThis);
     }
 }
@@ -264,7 +265,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
         {
             if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20) && ((gBattleManager->m10_battleOverlay->m4_battleEngine->m388 & 0x10) == 0))
             {
-                playSoundEffect(2);
+                playSystemSoundEffect(2);
                 do 
                 {
                     pThis->m0_selectedBattleCommand++;
@@ -277,7 +278,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
         }
         else if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m388 & 8) == 0)
         {
-            playSoundEffect(2);
+            playSystemSoundEffect(2);
             pThis->m0_selectedBattleCommand--;
             if (pThis->m0_selectedBattleCommand < 0)
             {
@@ -302,7 +303,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 clearVdp2TextArea();
                 pThis->m2_mode = 7;
                 createBattleCommandMenuSub0(pThis, 1);
-                playSoundEffect(4);
+                playSystemSoundEffect(4);
             }
         }
         else if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m388 & 0x80U) == 0)
@@ -408,7 +409,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                         clearVdp2TextArea();
                         pThis->m2_mode = 6;
                         pThis->m3_itemMenuOpen = 0;
-                        playSoundEffect(4);
+                        playSystemSoundEffect(4);
                         uVar9 = 1;
                         pThis->m18_oldDragonAtk = mainGameState.gameStats.dragonAtt;
                         pThis->m1A_oldDragonDef = mainGameState.gameStats.dragonDef;
@@ -821,7 +822,7 @@ void createBattleCommandMenu(p_workArea parent)
     gBattleManager->m10_battleOverlay->m20_battleHud->m28_battleCommandMenu = pThis;
     pThis->mC = 0x19;
     pThis->mE = 0xC;
-    playSoundEffect(3);
+    playSystemSoundEffect(3);
 
     pThis->m0_selectedBattleCommand = mainGameState.readPackedBits(0x1043, 4);
 

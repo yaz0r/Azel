@@ -8,6 +8,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/debug/trace.h"
 #include "kernel/animation.h"
+#include "audio/systemSounds.h"
 
 void s_battleDragon_InitSub4Sub0()
 {
@@ -265,7 +266,7 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
                 int iVar2 = pThis->m1CC_currentAnimation;
                 if (((((iVar2 == 0) || (iVar2 == 1)) || (iVar2 == 5)) || (iVar2 == 6)) &&
                     ((gDragonState->m28_dragon3dModel).m16_previousAnimationFrame == 0xc)) {
-                    playSoundEffect(0xb);
+                    playSystemSoundEffect(0xb);
                 }
             }
             return;
@@ -281,7 +282,7 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
     else
     {
         pThis->m1CC_currentAnimation = 0x10;
-        playSoundEffect(0x12);
+        playSystemSoundEffect(0x12);
         s_battleDragon_InitSub4(pThis->m1CC_currentAnimation, 9);
         pThis->m1CE_positionInAnimList = -1;
         pThis->m1C4 &= ~2;
@@ -542,7 +543,7 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
                     pThis->m210 = 0x1E;
                     pThis->m244[0] |= 1;
                     cVar7 = 0x1B;
-                    playSoundEffect(0x1B);
+                    playSystemSoundEffect(0x1B);
                 }
                 break;
             case 1:
@@ -552,7 +553,7 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
                     pThis->m210 = 0x1E;
                     pThis->m244[1] |= 1;
                     cVar7 = 0x1B;
-                    playSoundEffect(0x1B);
+                    playSystemSoundEffect(0x1B);
                 }
                 break;
             case 2:
@@ -562,7 +563,7 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
                     pThis->m210 = 0x1E;
                     pThis->m244[2] |= 1;
                     cVar7 = 0x1B;
-                    playSoundEffect(0x1B);
+                    playSystemSoundEffect(0x1B);
                 }
                 break;
             case 3:

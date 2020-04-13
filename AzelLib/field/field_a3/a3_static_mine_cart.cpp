@@ -3,6 +3,7 @@
 #include "a3_dynamic_mine_cart.h"
 #include "kernel/fileBundle.h"
 #include "items.h"
+#include "audio/systemSounds.h"
 
 struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
 {
@@ -82,7 +83,7 @@ void A3_3_Obj0_Update1(s_A3_3_Obj0* pThis)
         A3_3_Obj0_Update1Sub0(&pThis->mC_position, &pThis->m8->m4_position);
         break;
     case 1:
-        playSoundEffect(0x17);
+        playSystemSoundEffect(0x17);
         A3_3_Obj0_Update1Sub1(pThis, &pThis->mC_position);
         pThis->m24[1] = -327;
         pThis->m18[1] = 0x1800;
@@ -113,7 +114,7 @@ void A3_3_Obj0_Update2(s_A3_3_Obj0* pThis)
         pThis->m38_currentDelay--;
         if (pThis->m38_currentDelay <= 0)
         {
-            playSoundEffect(0x17);
+            playSystemSoundEffect(0x17);
             pThis->m18[0] = -pThis->m18[0];
             pThis->m18[2] = -pThis->m18[2];
 
@@ -138,7 +139,7 @@ void A3_3_Obj0_Update0(s_A3_3_Obj0* pThis)
 
         if (pThis->m38_currentDelay >= pThis->m36_delay)
         {
-            playSoundEffect(0x17);
+            playSystemSoundEffect(0x17);
             pThis->m18[0] = -pThis->m18[0];
             pThis->m18[2] = pThis->m18[2] / 2;
 

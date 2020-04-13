@@ -8,6 +8,7 @@
 #include "kernel/menuCursor.h"
 #include "kernel/menuSprite.h"
 #include "battle/battleManager.h"
+#include "audio/systemSounds.h"
 
 p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID);
 
@@ -3129,7 +3130,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
     case 1:
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1) // B
         {
-            playSoundEffect(1);
+            playSystemSoundEffect(1);
             fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
             fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
             if (pWorkArea)
@@ -3146,10 +3147,10 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
         {
             if (pWorkArea->m3_menuButtonStates[pWorkArea->selectedMenu] == 0)
             {
-                playSoundEffect(5);
+                playSystemSoundEffect(5);
                 return;
             }
-            playSoundEffect(0);
+            playSystemSoundEffect(0);
             if (pWorkArea->mC)
             {
                 pWorkArea->mC->getTask()->markFinished();
@@ -3161,7 +3162,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
         }
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x30) // UP or DOWN
         {
-            playSoundEffect(10);
+            playSystemSoundEffect(10);
             
             s32 selectedMenu = pWorkArea->selectedMenu;
 
@@ -3353,7 +3354,7 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
             if (graphicEngineStatus.m40AC.m1_isMenuAllowed)
             {
                 graphicEngineStatus.m40AC.m0_menuId = 1;
-                playSoundEffect(0);
+                playSystemSoundEffect(0);
             }
             else
             {
@@ -3403,7 +3404,7 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
                 }
                 if (graphicEngineStatus.m40AC.m3)
                 {
-                    playSoundEffect(5);
+                    playSystemSoundEffect(5);
                     return;
                 }
             }
@@ -3411,7 +3412,7 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
             {
                 return;
             }
-            playSoundEffect(4);
+            playSystemSoundEffect(4);
             fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
             fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
             pWorkArea->state++;
@@ -3480,12 +3481,6 @@ p_workArea createMenuTask(p_workArea parentTask)
 }
 
 s_vblankData vblankData;
-
-s32 fadeOutAllSequences()
-{
-    gSoloud.stopAll();
-    return 0;
-}
 
 p_workArea loadField(p_workArea r4, s32 r5)
 {

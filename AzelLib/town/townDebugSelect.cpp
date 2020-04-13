@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "town.h"
 #include "townDebugSelect.h"
+#include "audio/soundDriver.h"
 
 struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
 {

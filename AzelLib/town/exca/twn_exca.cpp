@@ -8,6 +8,7 @@
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
 #include "kernel/vdp1Allocator.h"
+#include "audio/soundDriver.h"
 
 struct sTownDragon : public s_workAreaTemplateWithArg<sTownDragon, sSaturnPtr>, sTownObject
 {

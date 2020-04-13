@@ -3,6 +3,7 @@
 #include "battleItemSelection.h"
 #include "items.h"
 #include "kernel/dialogTask.h"
+#include "audio/systemSounds.h"
 
 void updateBattleItemMenuList(sBattleItemSelectionTask* pThis)
 {
@@ -111,7 +112,7 @@ void sBattleItemSelectionTask_Update(sBattleItemSelectionTask* pThis)
         pThis->m0_state++;
     case 1:
         updateBattleItemMenuList(pThis);
-        playSoundEffect(3);
+        playSystemSoundEffect(3);
         pThis->m0_state++;
         break;
     case 2:
@@ -122,7 +123,7 @@ void sBattleItemSelectionTask_Update(sBattleItemSelectionTask* pThis)
             {
                 pThis->m5_currentSelectionInPage += pThis->m6_numEntriesInPage;
             }
-            playSoundEffect(2);
+            playSystemSoundEffect(2);
         }
         else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x20)
         {
@@ -131,7 +132,7 @@ void sBattleItemSelectionTask_Update(sBattleItemSelectionTask* pThis)
             {
                 pThis->m5_currentSelectionInPage -= pThis->m6_numEntriesInPage;
             }
-            playSoundEffect(2);
+            playSystemSoundEffect(2);
         }
         else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x40)
         {
@@ -139,7 +140,7 @@ void sBattleItemSelectionTask_Update(sBattleItemSelectionTask* pThis)
             {
                 pThis->m3_currentPageIndex--;
                 updateBattleItemMenuList(pThis);
-                playSoundEffect(6);
+                playSystemSoundEffect(6);
             }
         }
         else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x80)
@@ -148,7 +149,7 @@ void sBattleItemSelectionTask_Update(sBattleItemSelectionTask* pThis)
             {
                 pThis->m3_currentPageIndex++;
                 updateBattleItemMenuList(pThis);
-                playSoundEffect(6);
+                playSystemSoundEffect(6);
             }
         }
 
@@ -156,12 +157,12 @@ void sBattleItemSelectionTask_Update(sBattleItemSelectionTask* pThis)
         {
             if ((*pThis->m24)[pThis->m3_currentPageIndex * 5 + pThis->m4].m2 &1)
             {
-                playSoundEffect(5);
+                playSystemSoundEffect(5);
             }
             else
             {
                 *pThis->mC_selectedEntry = pThis->m3_currentPageIndex * 5 + pThis->m4;
-                playSoundEffect(0);
+                playSystemSoundEffect(0);
                 pThis->m0_state++;
             }
         }
@@ -171,7 +172,7 @@ void sBattleItemSelectionTask_Update(sBattleItemSelectionTask* pThis)
             if (pThis->m2)
             {
                 *pThis->mC_selectedEntry = -1;
-                playSoundEffect(1);
+                playSystemSoundEffect(1);
                 pThis->m0_state++;
             }
         }

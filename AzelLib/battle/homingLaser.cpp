@@ -10,6 +10,7 @@
 #include "BTL_A3/baldor.h" // TODO: cleanup
 #include "kernel/vdp1Allocator.h"
 #include "gunShotRootTask.h" // TODO: cleanup
+#include "audio/systemSounds.h"
 
 struct sHomingLaserRootTask : public s_workAreaTemplateWithCopy<sHomingLaserRootTask>
 {
@@ -238,7 +239,7 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
     pThis->m58[0] = 0;
     pThis->m5C[0] = 0;
 
-    playSoundEffect(8);
+    playSystemSoundEffect(8);
 
     sHomingLaserTask_InitSub0(&pThis->mF0, pThis, pThis->m90_dragonPosition, pThis->m4_vd1Allocation->m4_vdp1Memory, gCurrentBattleOverlay->getSaturnPtr(0x60ADCE4));
 
@@ -359,7 +360,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
 
                     pThis->m34 = MTH_Mul(-0x10000, pThis->m34);
 
-                    playSoundEffect(0x16);
+                    playSystemSoundEffect(0x16);
                     pThis->m7E = 3;
                 }
             }

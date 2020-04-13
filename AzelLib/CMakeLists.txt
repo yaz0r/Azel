@@ -11,6 +11,7 @@ include_directories(
     "${THIRD_PARTY}/MoltenVK/MoltenVK/include"
     "${VULKAN_INCLUDE_PATH}"
     "${THIRD_PARTY}/tracy"
+    "${THIRD_PARTY}/aosdk"
 )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -47,6 +48,16 @@ set(SOURCES
  ${THIRD_PARTY}/imgui/imgui.cpp
  ${THIRD_PARTY}/imgui/imgui_draw.cpp
  ${THIRD_PARTY}/imgui/imgui_widgets.cpp
+
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kcpu.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kopac.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kopdm.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kopnz.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kops.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/sat_hw.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/scsp.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/scspdsp.c
+ #${THIRD_PARTY}/aosdk/eng_ssf/scsplfo.c
 )
 
 if (MSVC)
