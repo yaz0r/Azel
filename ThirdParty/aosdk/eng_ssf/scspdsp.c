@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <math.h>
-#include "../ao.h"
-#include "../cpuintrf.h"
+#include "ao.h"
+#include "cpuintrf.h"
 #include "scsp.h"
 
 static UINT16 PACK(INT32 val)

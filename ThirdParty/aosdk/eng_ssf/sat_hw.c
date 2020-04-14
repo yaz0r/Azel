@@ -73,7 +73,7 @@ void sat_hw_init(void)
 unsigned int m68k_read_memory_8(unsigned int address)
 {
 	if (address < (512*1024))
-		return sat_ram[address^1];
+		return sat_ram[address];
 
 	if (address >= 0x100000 && address < 0x100c00)
 	{
@@ -93,7 +93,10 @@ unsigned int m68k_read_memory_16(unsigned int address)
 {
 	if (address < (512*1024))
 	{
-		return mem_readword_swap((unsigned short *)(sat_ram+address));
+        unsigned char* ptr = sat_ram + address;
+        unsigned short int data = *(unsigned short int*)(ptr);
+        data = ((data >> 8) & 0xFF) | ((data & 0xFF) << 8);
+        return data;
 	}
 
 	if (address >= 0x100000 && address < 0x100c00)
@@ -107,7 +110,10 @@ unsigned int m68k_read_memory_32(unsigned int address)
 {
 	if (address < 0x80000)
 	{
-		return sat_ram[address+2] | sat_ram[address+3]<<8 | sat_ram[address]<<16 | sat_ram[address+1]<<24;
+        unsigned char* ptr = sat_ram + address;
+        unsigned int data = *(unsigned int*)(ptr);
+        data = ((data >> 24) & 0xFF) | ((data >> 8) & 0xFF00) | ((data << 8) & 0xFF0000) | ((data << 24) & 0xFF000000);
+        return data;
 	}
 
 	printf("R32 @ %x\n", address);
@@ -118,7 +124,7 @@ void m68k_write_memory_8(unsigned int address, unsigned int data)
 {
 	if (address < 0x80000)
 	{
-		sat_ram[address^1] = data;
+		sat_ram[address] = data;
 		return;
 	}
 
@@ -137,8 +143,9 @@ void m68k_write_memory_16(unsigned int address, unsigned int data)
 {
 	if (address < 0x80000)
 	{
-		sat_ram[address+1] = (data>>8)&0xff;
-		sat_ram[address] = data&0xff;
+        unsigned char* ptr = sat_ram + address;
+        data = ((data >> 8) & 0xFF) | ((data & 0xFF) << 8);
+        *(unsigned short int*)(ptr) = data;
 		return;
 	}
 
@@ -153,10 +160,9 @@ void m68k_write_memory_32(unsigned int address, unsigned int data)
 {
 	if (address < 0x80000)
 	{
-		sat_ram[address+1] = (data>>24)&0xff;
-		sat_ram[address] = (data>>16)&0xff;
-		sat_ram[address+3] = (data>>8)&0xff;
-		sat_ram[address+2] = data&0xff;
+        unsigned char* ptr = sat_ram + address;
+        data = ((data >> 24) & 0xFF) | ((data >> 8) & 0xFF00) | ((data << 8) & 0xFF0000) | ((data << 24) & 0xFF000000);
+        *(unsigned int*)(ptr) = data;
 		return;
 	}
 

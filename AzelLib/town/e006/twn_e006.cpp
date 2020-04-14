@@ -1477,8 +1477,8 @@ p_workArea overlayStart_TWN_E006(p_workArea pUntypedThis, u32 arg)
 
     pThis->m_DeleteMethod = &townOverlayDelete;
 
-    playMusic(-1, 0);
-    playMusic(68, 0);
+    loadSoundBanks(-1, 0);
+    loadSoundBanks(68, 0);
 
     fadeOutAllSequences();
 

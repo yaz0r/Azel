@@ -1963,16 +1963,19 @@ bool azelSdl2_EndFrame()
         switch (i)
         {
         case eLogCategories::log_default:
-            PDS_Logger[eLogCategories::log_default].Draw("Default log");
+            PDS_Logger[i].Draw("Default log");
             break;
         case eLogCategories::log_task:
-            PDS_Logger[eLogCategories::log_task].Draw("Task log");
+            PDS_Logger[i].Draw("Task log");
             break;
         case eLogCategories::log_unimlemented:
-            PDS_Logger[eLogCategories::log_unimlemented].Draw("Unimplemented log");
+            PDS_Logger[i].Draw("Unimplemented log");
+            break;
+        case eLogCategories::log_m68k:
+            PDS_Logger[i].Draw("Sound m68k");
             break;
         case eLogCategories::log_warning:
-            PDS_Logger[eLogCategories::log_warning].Draw("Warning log");
+            PDS_Logger[i].Draw("Warning log");
             break;
         default:
             assert(0);

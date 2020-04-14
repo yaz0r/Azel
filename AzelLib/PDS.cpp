@@ -3,6 +3,7 @@
 #include "kernel/debug/trace.h"
 #include "audio/soundDriver.h"
 #include "audio/soundDataTable.h"
+#include "audio/audioDebug.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "Winmm.lib")
@@ -1146,6 +1147,8 @@ void loopIteration()
         }
         checkGL();
     }
+
+    audioDebug();
 
     bContinue = azelSdl2_EndFrame();
 

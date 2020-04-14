@@ -18,12 +18,12 @@ void battle_A3_initMusic(p_workArea pThis)
 {
     if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9))
     {
-        playMusic(6, 0);
+        loadSoundBanks(6, 0);
         gBattleManager->m10_battleOverlay->m3 = 1;
     }
     else
     {
-        playMusic(4, 0);
+        loadSoundBanks(4, 0);
         gBattleManager->m10_battleOverlay->m3 = 1;
     }
     playPCM(pThis, 100);

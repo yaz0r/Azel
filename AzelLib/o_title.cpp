@@ -155,7 +155,7 @@ void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkAr
     {
     case 0:
         loadTitleScreenGraphics();
-        playMusic(0x4B, 0);
+        loadSoundBanks(0x4B, 0);
         pWorkArea->m_4 = 150;
         pWorkArea->m_status++;
     case 1:

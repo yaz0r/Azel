@@ -78,6 +78,7 @@ enum eLogCategories
     log_default = 0,
     log_task,
     log_unimlemented,
+    log_m68k,
     log_warning,
 
     log_max

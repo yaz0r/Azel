@@ -6807,17 +6807,17 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
 
     if (getFieldTaskPtr()->m2E_currentSubFieldIndex == 2)
     {
-        playMusic(3, 0);
+        loadSoundBanks(3, 0);
     }
     else
     {
         if (getFieldTaskPtr()->m32 == -1)
         {
-            playMusic(1, 0);
+            loadSoundBanks(1, 0);
         }
         else
         {
-            playMusic(2, 0);
+            loadSoundBanks(2, 0);
         }
     }
     //0605404C

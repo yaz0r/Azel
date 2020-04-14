@@ -72,7 +72,7 @@ struct sSoundEngine
     const sSequenceConfig* m1B4_pPreviousSequenceData;
     s16 m1B8_numActiveSequence;
     s16 m1BA;
-    std::array<sSCSPCommand, 0x3F> m1BC_SCSPCommands;
+    std::array<sSCSPCommand, 0x40> m1BC_SCSPCommands;
     s16 m5BC_numEnqueuedSCSPCommands;
     s16 m5BE_numMaxEnqueuedSCSPCommands;
     s16 m5C0_SCSPCurrentCommandEntry;
@@ -156,16 +156,6 @@ void initSoundDriver()
     loadFile("SDDRVS.TSK", sat_ram, 0);
     loadFile("AREAMAP.SND", sat_ram + 0x0a000, 0);
 
-    // now flip everything (this makes sense because he's using starscream)
-    for (int i = 0; i < 512 * 1024; i += 2)
-    {
-        uint8 temp;
-
-        temp = sat_ram[i];
-        sat_ram[i] = sat_ram[i + 1];
-        sat_ram[i + 1] = temp;
-    }
-
     m68k_write_memory_8(0x4E1, m68k_read_memory_8(0x4E1) | 0x80);
 
     //while (SMPC_Status & 1);
@@ -201,7 +191,7 @@ void getSequenceData(sSoundEngine* pSoundEngine, s32 sequenceNumber, s32 unk, s3
     getSequenceDataSub(entry);
 
     pSoundEngine->m1BA = 0;
-    if ((entryIndex < 0) || (pSoundEngine->m1B0_pSequenceData->m8 != SoundDataTable[entryIndex].m8))
+    if ((entryIndex < 0) || (pSoundEngine->m1B0_pSequenceData->m8_areaMapIndex != SoundDataTable[entryIndex].m8_areaMapIndex))
     {
         pSoundEngine->m68A_currentSoundLoadingState = 0;
     }
@@ -216,7 +206,7 @@ void getSequenceData(sSoundEngine* pSoundEngine, s32 sequenceNumber, s32 unk, s3
     pSoundEngine->m68D = 0;
 }
 
-void playMusic(s8 musicNumber, s8 unk1)
+void loadSoundBanks(s8 musicNumber, s8 unk1)
 {
     if (soundEngine.m10_sequenceTable[soundEngine.m1B8_numActiveSequence].m33 == 0)
     {
@@ -241,12 +231,12 @@ void playMusic(s8 musicNumber, s8 unk1)
     switch (musicNumber)
     {
     case 1:
-        gWave.load("1.OGG");
-        gSoloud.play(gWave);
+        //gWave.load("1.OGG");
+       // gSoloud.play(gWave);
         break;
     case 75:
-        gWave.load("75.OGG");
-        gSoloud.play(gWave);
+        //gWave.load("75.OGG");
+       // gSoloud.play(gWave);
         break;
     }
     PDS_unimplemented("playMusic");
@@ -254,13 +244,31 @@ void playMusic(s8 musicNumber, s8 unk1)
 
 s32 fadeOutAllSequences()
 {
-    gSoloud.stopAll();
+    //gSoloud.stopAll();
     return 0;
 }
 
-void playPCM(p_workArea, u32)
+struct sPlayPCM : public s_workAreaTemplate<sPlayPCM>
 {
-    PDS_unimplemented("playPCM");
+    s16 m0_soundId;
+    s32 m4_volume = 0x7F;
+    // size 0x8
+};
+
+void playPCMFunction(sPlayPCM* pThis)
+{
+    if ((soundEngine.m68A_currentSoundLoadingState < 0) && (soundEngine.m68E == 0))
+    {
+        enqueuePlaySoundEffect(pThis->m0_soundId, 1, pThis->m4_volume, 0);
+        pThis->getTask()->markFinished();
+    }
+}
+
+void playPCM(p_workArea parent, u32 id)
+{
+    sPlayPCM* pNewTask = createSubTaskFromFunction<sPlayPCM>(parent, &playPCMFunction);
+    pNewTask->m0_soundId = id;
+    pNewTask->m4_volume = 0x7F;
 }
 
 void enqueuePlaySoundEffect(s32 soundIndex, s32 bankIndex, s32 volume, s32 unk)
@@ -337,11 +345,9 @@ bool isSoundFileLoaded(sSaturnPtr pConfig)
 
 void markMapAreaTransfered(sSoundEngine* pSoundEngine)
 {
-    s32 offset = 0x504;
-    for (int i=0; i< pSoundEngine->m1B0_pSequenceData->mC; i++)
+    for (int i=0; i< pSoundEngine->m1B0_pSequenceData->mC_numMapEntries; i++)
     {
-        m68k_write_memory_8(offset, 0x80);
-        offset += 0x80;
+        m68k_write_memory_8(0x504 + 8*i, 0x80);
     }
 }
 
@@ -363,7 +369,7 @@ void updateSoundLoadingState(sSoundEngine* pSoundEngine)
         break;
     }
     case 1:
-        sendMapChangeCommand(pSoundEngine, pSoundEngine->m1B0_pSequenceData->m8, 0x8);
+        sendMapChangeCommand(pSoundEngine, pSoundEngine->m1B0_pSequenceData->m8_areaMapIndex, 0x8);
         pSoundEngine->m68A_currentSoundLoadingState++;
         break;
     case 2:
@@ -503,7 +509,7 @@ void enqueueSCSPCommand(sSCSPCommand* pCommand)
     int commandIndex = (soundEngine.m5BC_numEnqueuedSCSPCommands + 1) & 0x3F;
     if (commandIndex == soundEngine.m5BE_numMaxEnqueuedSCSPCommands)
     {
-        soundEngine.m5BE_numMaxEnqueuedSCSPCommands = (soundEngine.m5BE_numMaxEnqueuedSCSPCommands + 1) & 0x3F;;
+        soundEngine.m5BE_numMaxEnqueuedSCSPCommands = (soundEngine.m5BE_numMaxEnqueuedSCSPCommands + 1) & 0x3F;
     }
 
     soundEngine.m1BC_SCSPCommands[commandIndex] = *pCommand;
@@ -523,30 +529,29 @@ void updateSoundSub(sSoundEngine* pSoundEngine)
             {
                 sSaturnPtr pSoundConfig = getConfigForSound(pSoundEngine, pSoundCommand.m0_soundIndex);
 
-                s8 entryIndex = readSaturnS8(pSoundConfig + 0);
-                s8 soundControl = readSaturnS8(pSoundConfig + 1);
-                s8 priorityLevel = readSaturnS8(pSoundConfig + 3);
+                s8 sequenceDataBankNumber = readSaturnS8(pSoundConfig + 0);
+                s8 soundNumberInSequenceData = readSaturnS8(pSoundConfig + 1);
+                s8 soundControlId = readSaturnS8(pSoundConfig + 3);
 
-                if (pSoundCommand.m3_volume != pSequence.m0[entryIndex].m2_volume)
+                if (pSoundCommand.m3_volume != pSequence.m0[sequenceDataBankNumber].m2_volume)
                 {
                     sSCSPCommand command;
                     command.m0 = 0x5; // Sequence volume
-                    command.m2_P1 = soundControl;
+                    command.m2_P1 = soundControlId;
                     command.m3_P2 = pSoundCommand.m3_volume;
                     command.m4_P3 = 0;
                     enqueueSCSPCommand(&command);
-                    pSequence.m0[entryIndex].m2_volume = pSoundCommand.m3_volume;
+                    pSequence.m0[sequenceDataBankNumber].m2_volume = pSoundCommand.m3_volume;
                 }
 
                 sSCSPCommand command;
                 command.m0 = 0x1; // Sequence start
-                command.m1_reserved = 0;
-                command.m2_P1 = soundControl;
-                command.m3_P2 = entryIndex;
-                command.m4_P3 = priorityLevel;
+                command.m2_P1 = soundControlId;
+                command.m3_P2 = sequenceDataBankNumber;
+                command.m4_P3 = soundNumberInSequenceData;
                 enqueueSCSPCommand(&command);
-                pSequence.m0[entryIndex].m0_soundIndex = pSoundCommand.m0_soundIndex;
-                pSequence.m0[entryIndex].m4_isStarted = 1;
+                pSequence.m0[sequenceDataBankNumber].m0_soundIndex = pSoundCommand.m0_soundIndex;
+                pSequence.m0[sequenceDataBankNumber].m4_isStarted = 1;
             }
         }
         else
@@ -567,8 +572,21 @@ void updateSoundSub(sSoundEngine* pSoundEngine)
 
 sSaturnPtr getPlayerSoundBankName(const sSequenceConfig* pConfig)
 {
-    FunctionUnimplemented();
-    return gCommonFile.getSaturnPtr(0x213d48);
+    switch(pConfig->mD_playerSoundTypes)
+    {
+    case 0:
+        if (mainGameState.gameStats.m1_dragonLevel > 8)
+            return readSaturnEA(gCommonFile.getSaturnPtr(0x213D90));
+        else
+            return readSaturnEA(gCommonFile.getSaturnPtr(0x213D90) + mainGameState.gameStats.m1_dragonLevel * 4);
+        break;
+    case 1:
+        return gCommonFile.getSaturnPtr(0x213dc0);
+    case 2:
+        return gCommonFile.getSaturnPtr(0x213de4);
+    default:
+        assert(0);
+    }
 }
 
 void updateSound()
@@ -635,41 +653,59 @@ int m68k_instructionCallback()
     switch (PC)
     {
     case 0x010F4:
-        printf("Start executing command\n");
+        PDS_CategorizedLog(log_m68k, "Start executing command 0x%02X\n", m68k_read_memory_8(0x9ffc));
+        switch (m68k_read_memory_8(0x9ffc))
+        {
+        case 1:
+            PDS_CategorizedLog(log_m68k, "P1: 0x%02X\n", m68k_read_memory_8(m68k_get_reg(nullptr, m68k_register_t::M68K_REG_A0) + 2));
+            PDS_CategorizedLog(log_m68k, "P2: 0x%02X\n", m68k_read_memory_8(m68k_get_reg(nullptr, m68k_register_t::M68K_REG_A0) + 3));
+            PDS_CategorizedLog(log_m68k, "P3: 0x%02X\n", m68k_read_memory_8(m68k_get_reg(nullptr, m68k_register_t::M68K_REG_A0) + 4));
+            PDS_CategorizedLog(log_m68k, "P4: 0x%02X\n", m68k_read_memory_8(m68k_get_reg(nullptr, m68k_register_t::M68K_REG_A0) + 5));
+            break;
+        default:
+            break;
+        }
         break;
     case 0x1116:
-        printf("Clear timing flag\n");
+        PDS_CategorizedLog(log_m68k, "Clear timing flag\n");
         break;
-    case 0x1B56:
-        printf("Jump to command handler\n");
-        break;
+    /*case 0x1B56:
+        PDS_CategorizedLog(log_m68k, "Jump to command handler\n");
+        break;*/
     case 0x10f8:
-        printf("Command done\n");
+        if (m68k_read_memory_16(0x416) || m68k_read_memory_32(0x420))
+        {
+            u16 ErrorStatus = m68k_read_memory_16(0x416);
+            u32 ErrorStatusBitMap = m68k_read_memory_32(0x420);
+            //assert(0);
+        }
+        //PDS_CategorizedLog(log_m68k, "Command done\n");
         break;
+        /*
     case 0x20da:
-        printf("Start executing command 0x10\n");
+        PDS_CategorizedLog(log_m68k, "Start executing command 0x10\n");
         break;
     case 0x20e6:
-        printf("Command 0x10: starting to stop all sequence play\n");
+        PDS_CategorizedLog(log_m68k, "Command 0x10: starting to stop all sequence play\n");
         break;
     case 0x2108:
-        printf("Command 0x10: starting to stop all pcm play\n");
+        PDS_CategorizedLog(log_m68k, "Command 0x10: starting to stop all pcm play\n");
         break;
     case 0x2136:
-        printf("Command 0x10: starting to init DSP\n");
+        PDS_CategorizedLog(log_m68k, "Command 0x10: starting to init DSP\n");
         break;
     case 0x2152:
-        printf("DSP init done\n");
+        PDS_CategorizedLog(log_m68k, "DSP init done\n");
         break;
     case 0x2158:
-        printf("Command 0x10: starting to init mixer\n");
+        PDS_CategorizedLog(log_m68k, "Command 0x10: starting to init mixer\n");
         break;
     case 0x215E:
-        printf("Command 0x10: restore SR!\n");
+        PDS_CategorizedLog(log_m68k, "Command 0x10: restore SR!\n");
         break;
     case 0x2160:
-        printf("Command 0x10: done!\n");
-        break;
+        PDS_CategorizedLog(log_m68k, "Command 0x10: done!\n");
+        break;*/
     default:
         break;
     }

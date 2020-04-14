@@ -37,8 +37,6 @@ enum
 	#define LSB_FIRST	1
 #endif
 
-#define LSB_FIRST 1
-
 typedef unsigned char ao_bool;
 
 #ifdef __GNUC__

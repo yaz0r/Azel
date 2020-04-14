@@ -615,8 +615,8 @@ p_workArea overlayStart_TWN_RUIN(p_workArea pUntypedThis, u32 arg)
 
     pThis->m_DeleteMethod = &townOverlayDelete;
 
-    playMusic(-1, 0);
-    playMusic(59, 0);
+    loadSoundBanks(-1, 0);
+    loadSoundBanks(59, 0);
 
     playPCM(pThis, 100);
 

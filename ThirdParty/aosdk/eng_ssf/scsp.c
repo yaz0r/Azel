@@ -23,8 +23,8 @@
 
 #include <math.h>
 #include <string.h>
-#include "../ao.h"
-#include "../cpuintrf.h"
+#include "ao.h"
+#include "cpuintrf.h"
 #include "scsp.h"
 #include "sat_hw.h"
 
@@ -731,8 +731,8 @@ INLINE INT32 SCSP_UpdateSlot(struct _SCSP *SCSP, struct _SLOT *slot)
 
 	if(PCM8B(slot))	//8 bit signed
 	{
-		INT8 *p1=(signed char *) (SCSP->SCSPRAM+(((SA(slot)+addr1)^1)&0x7FFFF));
-		INT8 *p2=(signed char *) (SCSP->SCSPRAM+(((SA(slot)+addr2)^1)&0x7FFFF));
+        INT8* p1 = (signed char*)(SCSP->SCSPRAM + (((SA(slot) + addr1)) & 0x7FFFF));
+        INT8* p2 = (signed char*)(SCSP->SCSPRAM + (((SA(slot) + addr2)) & 0x7FFFF));
 		//sample=(p[0])<<8;
 		INT32 s;
 		INT32 fpart=slot->cur_addr&((1<<SHIFT)-1);
@@ -746,7 +746,14 @@ INLINE INT32 SCSP_UpdateSlot(struct _SCSP *SCSP, struct _SLOT *slot)
 		//sample=LE16(p[0]);
 		INT32 s;
 		INT32 fpart=slot->cur_addr&((1<<SHIFT)-1);
-		s=(int) LE16(p1[0])*((1<<SHIFT)-fpart)+(int) LE16(p2[0])*fpart;
+
+        INT16 p1data = *p1;
+        p1data = ((p1data >> 8) & 0xFF) | ((p1data & 0xFF) << 8);
+
+        INT16 p2data = *p2;
+        p2data = ((p2data >> 8) & 0xFF) | ((p2data & 0xFF) << 8);
+
+		s=(int)(p1data)*((1<<SHIFT)-fpart)+(int)(p2data)*fpart;
 		sample=(s>>SHIFT);
 	}
 
@@ -966,7 +973,7 @@ void SCSP_Update(void *param, INT16 **inputs, stereo_sample_t *sample)
 
 void *scsp_start(const void *config)
 {
-	const struct SCSPinterface *intf = (struct SCSPinterface*)config;
+	const struct SCSPinterface *intf = (const struct SCSPinterface*)config;
 
 	memset(&SCSP, 0, sizeof(struct _SCSP));
 

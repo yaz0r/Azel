@@ -26,15 +26,15 @@ bool SCSPStreamInstance::hasEnded()
 
 unsigned int SCSPStreamInstance::getAudio(float* aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize)
 {
-    aSamplesToRead = std::min<int>(aSamplesToRead, 20);
-    for (int i=0; i<aSamplesToRead/2; i++)
+    //aSamplesToRead = std::min<int>(aSamplesToRead, 20);
+    for (int i=0; i<aSamplesToRead; i++)
     {
         stereo_sample_t sample;
-        m68k_execute((11300000 / 60) / 735);
+        m68k_execute(((11300000 / 60) / 735) * 2);
         SCSP_Update(NULL, NULL, &sample);
 
-        aBuffer[i * 2] = sample.l / (float)0xFFFF;
-        aBuffer[i * 2 + 1] = sample.r / (float)0xFFFF;
+        aBuffer[i] = sample.l / (float)0x8000;
+        aBuffer[aBufferSize + i] = sample.r / (float)0x8000;
     }
 
     return aSamplesToRead;
@@ -42,7 +42,7 @@ unsigned int SCSPStreamInstance::getAudio(float* aBuffer, unsigned int aSamplesT
 
 SCSPStream::SCSPStream()
 {
-
+    mChannels = 2;
 }
 
 SCSPStream::~SCSPStream()
