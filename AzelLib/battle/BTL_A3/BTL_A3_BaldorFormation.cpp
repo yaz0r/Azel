@@ -153,7 +153,7 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
     bool bFormationDefeated = false;
     for (int i = 0; i < pThis->m12_formationSize; i++)
     {
-        if (pThis->m4_formationData[i].m48 == 0)
+        if ((pThis->m4_formationData[i].m48 & 4) == 0)
         {
             bFormationDefeated = true;
             break;

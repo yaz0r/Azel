@@ -9,6 +9,7 @@
 #include "kernel/menuSprite.h"
 #include "battle/battleManager.h"
 #include "audio/systemSounds.h"
+#include "audio/soundDriver.h"
 
 p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID);
 
@@ -1793,7 +1794,7 @@ void s_FieldSubTaskWorkArea::Update(s_FieldSubTaskWorkArea* pFieldSubTaskWorkAre
     case 0:
         if (openFileListHead == NULL)
         {
-            if (!soundFunc1())
+            if (!isSoundLoadingFinished())
             {
                 g_fadeControls.m_4D = 6;
 

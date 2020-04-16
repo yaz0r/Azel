@@ -251,7 +251,7 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
     sHomingLaserTask_InitSub1(&pThis->mF0, pThis, pThis->m90_dragonPosition, pThis->m4_vd1Allocation->m4_vdp1Memory, &local_34, &local_40);
 }
 
-void Baldor_updateSub0Sub2Sub2Sub0(npcFileDeleter* param1, sSaturnPtr param2, const std::vector<sVec3_FP>& param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s32 param8)
+void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const sVec3_FP* param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s32 param8)
 {
     FunctionUnimplemented();
 }
@@ -267,7 +267,7 @@ void sHomingLaserTask_UpdateSub0(sHomingLaserTask* pThis)
         local_20[1] = performModulo2(0x111, randomNumber()) - 0x88;
         local_20[2] = performModulo2(0x111, randomNumber()) - 0x88;
 
-        Baldor_updateSub0Sub2Sub2Sub0(dramAllocatorEnd[0].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x060b0658), pThis->m60, &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, &local_20, 0x10000, 0, 0);
+        createDamageSpriteEffect(dramAllocatorEnd[0].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x060b0658), &pThis->m60[0], &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, &local_20, 0x10000, 0, 0);
     }
 }
 

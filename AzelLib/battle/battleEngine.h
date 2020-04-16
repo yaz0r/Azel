@@ -194,4 +194,6 @@ void sEnemyAttackCamera_updateSub2();
 
 void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4);
 
+s32 battleEngine_UpdateSub7Sub0Sub2Sub0();
+
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);

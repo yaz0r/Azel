@@ -7413,10 +7413,10 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     setVdp1VramU16(vdp1WriteEA + 0x10, r5[0][0]); // CMDXB
     setVdp1VramU16(vdp1WriteEA + 0x12, -r5[0][1]); // CMDYB
 
-    r12.m0[0][0] = arg0->m0[r7][0][0];
-    r12.m0[0][1] = arg0->m0[r7][0][1];
-    r12.m0[1][0] = arg0->m0[r7][1][0];
-    r12.m0[1][1] = arg0->m0[r7][1][1];
+    r12.m0[0] = arg0->m0[r7][0][0];
+    r12.m0[1] = arg0->m0[r7][0][1];
+    r12.m0[2] = arg0->m0[r7][1][0];
+    r12.m0[3] = arg0->m0[r7][1][1];
 
     setVdp1VramU16(vdp1WriteEA + 0x1C, gradiantIndex); //CMDGRDA
 
@@ -7457,10 +7457,10 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
         setVdp1VramU16(vdp1WriteEA + 0x10, arg0[0] - arg4[0]); // CMDXB
         setVdp1VramU16(vdp1WriteEA + 0x12, -arg0[1] + arg4[1]); // CMDYB
 
-        r9.m0[0][0] = arg8->m0[r7][0][0];
-        r9.m0[0][1] = arg8->m0[r7][0][1];
-        r9.m0[1][0] = arg8->m0[r7][1][0];
-        r9.m0[1][1] = arg8->m0[r7][1][1];
+        r9.m0[0] = arg8->m0[r7][0][0];
+        r9.m0[1] = arg8->m0[r7][0][1];
+        r9.m0[2] = arg8->m0[r7][1][0];
+        r9.m0[3] = arg8->m0[r7][1][1];
 
         setVdp1VramU16(vdp1WriteEA + 0x1C, gradiantIndex); //CMDGRDA
 
@@ -7498,10 +7498,10 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     setVdp1VramU16(vdp1WriteEA + 0x10, r5[3][0]); // CMDXB
     setVdp1VramU16(vdp1WriteEA + 0x12, -r5[3][1]); // CMDYB
 
-    r9.m0[0][0] = arg8->m0[r7][0][0];
-    r9.m0[0][1] = arg8->m0[r7][0][1];
-    r9.m0[1][0] = arg8->m0[r7][1][0];
-    r9.m0[1][1] = arg8->m0[r7][1][1];
+    r9.m0[0] = arg8->m0[r7][0][0];
+    r9.m0[1] = arg8->m0[r7][0][1];
+    r9.m0[2] = arg8->m0[r7][1][0];
+    r9.m0[3] = arg8->m0[r7][1][1];
 
     setVdp1VramU16(vdp1WriteEA + 0x1C, gradiantIndex); //CMDGRDA
 

@@ -906,7 +906,7 @@ s_vd1ExtendedCommand* fetchVdp1ExtendedCommand(u32 vd1PacketStart);
 
 struct sPerQuadDynamicColor
 {
-    sVec2_S16 m0[4];
+    s16 m0[4];
 };
 
 struct s_vdp1Context

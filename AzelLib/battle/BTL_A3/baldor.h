@@ -32,7 +32,7 @@ struct sBaldor_68
 struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sFormationData*>
 {
     s8 m8_mode;
-    s8 m9;
+    s8 m9_attackStatus;
     s8 mA_indexInFormation;
     s8 mB;
     s16 mC_numTargetables;

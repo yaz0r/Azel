@@ -5,7 +5,7 @@ struct sBattleTargetable
     struct s_battleDragon* m0;
     sVec3_FP* m4;
     sVec3_FP* m8;
-    s32 mC;
+    sVec3_FP* mC;
     sVec3_FP m10_position;
     sVec3_FP m1C;
     sVec3_FP m28;
@@ -50,12 +50,13 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
     s16 m1CE_positionInAnimList;
     s16 m1D0;
     s16 m1D4;
+    s16 m1D6;
     fixedPoint m208;
     s32 m20C;
     s16 m210;
     std::array<s8, 4> m244;
     std::array<s8, 4> m248;
-    s32 m24C;
+    p_workArea m24C;
     // size 0x250
 };
 

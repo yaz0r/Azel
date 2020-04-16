@@ -713,4 +713,10 @@ int m68k_instructionCallback()
     return 0;
 }
 
+bool isSoundLoadingFinished()
+{
+    return (u32)(-1 < soundEngine.m68A_currentSoundLoadingState) ^ 1;
+}
+
+
 

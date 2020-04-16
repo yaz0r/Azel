@@ -8,8 +8,6 @@ bool keyboardIsKeyDown(u8 keycode) { PDS_unimplemented("keyboardIsKeyDown");  re
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2) { PDS_unimplemented("titleMenuToggleTutorials"); }
 void titleScreenDrawSub3(u32) { PDS_unimplemented("titleScreenDrawSub3"); }
 
-bool soundFunc1() { PDS_unimplemented("soundFunc1"); return 1; } // return 1 when sound is finished?
-
 u32 RNG_seed = 0;
 void DEBUG_setRandomSeed(u32 seed)
 {

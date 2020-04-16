@@ -30,7 +30,7 @@ unsigned int SCSPStreamInstance::getAudio(float* aBuffer, unsigned int aSamplesT
     for (int i=0; i<aSamplesToRead; i++)
     {
         stereo_sample_t sample;
-        m68k_execute(((11300000 / 60) / 735) * 2);
+        m68k_execute((11300000 / 60) / 735);
         SCSP_Update(NULL, NULL, &sample);
 
         aBuffer[i] = sample.l / (float)0x8000;

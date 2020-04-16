@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "battleMainTask.h"
 #include "town/town.h" // TODO: split out the town grid
+#include "audio/soundDriver.h"
 
 struct sBattleMainTask : public s_workAreaTemplate<sBattleMainTask>
 {
@@ -20,7 +21,7 @@ static void battleMainTask_Draw(sBattleMainTask* pThis)
         pThis->m0_status++;
         break;
     case 1:
-        if (soundFunc1())
+        if (isSoundLoadingFinished())
         {
             pThis->m0_status++;
         }

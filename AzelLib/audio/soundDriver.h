@@ -10,3 +10,4 @@ void enqueuePlaySoundEffect(s32 soundIndex, s32 bankIndex, s32 volume, s32 unk);
 
 s32 fadeOutAllSequences();
 s32 findSound(s32 soundIndex);
+bool isSoundLoadingFinished();

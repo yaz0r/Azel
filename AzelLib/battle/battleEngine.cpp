@@ -263,12 +263,18 @@ void battleEngine_InitSub11()
     int iVar1 = gDragonState->mC_dragonType;
     if (((((iVar1 == 1) || (iVar1 == 2)) || (iVar1 == 3)) || ((iVar1 == 4 || (iVar1 == 5)))) ||
         ((iVar1 == 6 || ((iVar1 == 7 || (iVar1 == 8)))))) {
-        mainGameState.consumables[49] |= 4;
-        mainGameState.consumables[52] |= 0x74;
+        mainGameState.setBit(0xF3 + 0xB2, 5);
+        mainGameState.setBit(0xF3 + 0x9A, 5);
+        mainGameState.setBit(0xF3 + 0xAE, 1);
+        mainGameState.setBit(0xF3 + 0xB0, 3);
+        mainGameState.setBit(0xF3 + 0xAF, 2);
     }
     else {
-        mainGameState.consumables[49] &= ~4;
-        mainGameState.consumables[52] &= ~0x74;
+        mainGameState.clearBit(0xF3 + 0xB2);
+        mainGameState.clearBit(0xF3 + 0x9A);
+        mainGameState.clearBit(0xF3 + 0xAE);
+        mainGameState.clearBit(0xF3 + 0xB0);
+        mainGameState.clearBit(0xF3 + 0xAF);
     }
 }
 
@@ -2225,24 +2231,21 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
             }
 
             // rotate selected enemy
-            if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x80) == 0)
-            {
-                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x40)
-                {
-                    pThis->m398_currentSelectedEnemy--;
-                    if (pThis->m398_currentSelectedEnemy < 0)
-                    {
-                        pThis->m398_currentSelectedEnemy += pThis->m39C_maxSelectableEnemies;
-                    }
-                    playSystemSoundEffect(2);
-                }
-            }
-            else
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x80)
             {
                 pThis->m398_currentSelectedEnemy++;
-                if (pThis->m392 <= pThis->m398_currentSelectedEnemy)
+                if (pThis->m39C_maxSelectableEnemies <= pThis->m398_currentSelectedEnemy)
                 {
                     pThis->m398_currentSelectedEnemy -= pThis->m39C_maxSelectableEnemies;
+                }
+                playSystemSoundEffect(2);
+            }
+            else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x40)
+            {
+                pThis->m398_currentSelectedEnemy--;
+                if (pThis->m398_currentSelectedEnemy < 0)
+                {
+                    pThis->m398_currentSelectedEnemy += pThis->m39C_maxSelectableEnemies;
                 }
                 playSystemSoundEffect(2);
             }

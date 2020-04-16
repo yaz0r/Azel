@@ -9,8 +9,6 @@ bool keyboardIsKeyDown(u8 keycode);
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2);
 void titleScreenDrawSub3(u32);
 
-bool soundFunc1();
-
 void DEBUG_setRandomSeed(u32);
 void initRandomSeed(u32 init);
 u32 randomNumber();

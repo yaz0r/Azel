@@ -159,7 +159,7 @@ void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkAr
         pWorkArea->m_4 = 150;
         pWorkArea->m_status++;
     case 1:
-        if (!soundFunc1())
+        if (!isSoundLoadingFinished())
         {
             if(--pWorkArea->m_4)
                 break;

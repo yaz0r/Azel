@@ -8,11 +8,14 @@
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 #include "kernel/debug/trace.h"
+#include "kernel/vdp1Allocator.h"
 #include "audio/systemSounds.h"
 
 #include "battle/battleDragon.h" // todo: clean by moving s_battleDragon_8C to its own file
 #include "mainMenuDebugTasks.h"
 #include "town/town.h"
+
+void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const sVec3_FP* param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s32 param8); // todo: remove
 
 
 void Baldor_initSub0Sub2(sBaldor* pThis, sFormationData* pFormationEntry)
@@ -60,15 +63,438 @@ s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
     return pOutputModel;
 }
 
+struct sBaldorSubTask : public s_workAreaTemplateWithCopy<sBaldorSubTask>
+{
+    sBattleTargetable* m84_pTargetable;
+    sVec3_FP* m94;
+    s16 mA6;
+    u16 mAC_vdp1Offset;
+    s16 mA4;
+    s16 mA8;
+    s8 mAF;
+    // size 0xB0
+};
 
-void Baldor_initSub1Sub0(p_workArea, sBattleTargetable*)
+void sBaldorSubTask0_update1(sBaldorSubTask* pThis)
 {
     FunctionUnimplemented();
 }
 
-void Baldor_initSub1Sub1(p_workArea, sBattleTargetable*)
+void sBaldorSubTask0_draw1(sBaldorSubTask* pThis)
 {
     FunctionUnimplemented();
+}
+
+void sBaldorSubTask0_draw(sBaldorSubTask*)
+{
+    FunctionUnimplemented();
+}
+
+void sBaldorSubTask0_update(sBaldorSubTask* pThis)
+{
+    if (pThis->m84_pTargetable == nullptr)
+    {
+        pThis->getTask()->markFinished();
+        return;
+    }
+
+    if ((pThis->m84_pTargetable->m50 & 0x40000) == 0)
+    {
+        if ((pThis->m84_pTargetable->m5A > 0) && !(pThis->m84_pTargetable->m50 & 0x100000))
+        {
+            if (pThis->m84_pTargetable->m50 & 0x200000)
+            {
+                playSystemSoundEffect(10);
+                pThis->mAF = 0;
+                pThis->mA4 = 0x10;
+                pThis->m_UpdateMethod = sBaldorSubTask0_update1;
+                pThis->m_DrawMethod = sBaldorSubTask0_draw1;
+            }
+            else if (battleEngine_UpdateSub7Sub0Sub2Sub0()
+                || (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == m0_shootEnemyWithGun)
+                || (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == m6_dragonMoving)
+                || (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == mB_enemyMovingDragon)
+                || (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == mC_commandMenuOpen)
+                )
+            {
+                pThis->m_DrawMethod = sBaldorSubTask0_draw;
+                pThis->mA4++;
+                if (pThis->mA4 >= 9)
+                {
+                    pThis->mA4 = 0;
+                }
+            }
+        }
+        else
+        {
+            pThis->m_DrawMethod = nullptr;
+        }
+    }
+    else
+    {
+        pThis->m84_pTargetable->m50 &= ~0x20000;
+        pThis->m84_pTargetable->m50 &= ~0x10000;
+        pThis->getTask()->markFinished();
+    }
+}
+
+void getVdp1ClippingPlanes(fixedPoint& nearPlane, fixedPoint& farPlane)
+{
+    nearPlane = graphicEngineStatus.m405C.m10_nearClipDistance;
+    farPlane = graphicEngineStatus.m405C.m14_farClipDistance;
+}
+
+void getVdp1ScreenResolution(s16 (&screenResolution)[4])
+{
+    screenResolution[0] = graphicEngineStatus.m405C.mC;
+    screenResolution[1] = graphicEngineStatus.m405C.m8;
+    screenResolution[2] = graphicEngineStatus.m405C.mE;
+    screenResolution[3] = graphicEngineStatus.m405C.mA;
+}
+
+bool isSpriteVisible(sVec3_FP* pPosition, sVec2_S16& outputProjected)
+{
+    fixedPoint nearPlane;
+    fixedPoint farPlane;
+    getVdp1ClippingPlanes(nearPlane, farPlane);
+    if (((*pPosition)[2] > nearPlane) && ((*pPosition)[2] < farPlane))
+    {
+        s16 xProj;
+        s16 yProj;
+        getVdp1ProjectionParams(&xProj, &yProj);
+        outputProjected[0] = setDividend(xProj, (*pPosition)[0], (*pPosition)[2]);
+        outputProjected[1] = setDividend(xProj, (*pPosition)[1], (*pPosition)[2]);
+
+        s16 screenResolution[4];
+        getVdp1ScreenResolution(screenResolution);
+
+        if ((outputProjected[1] <= screenResolution[1]) && (outputProjected[1] >= screenResolution[3]) && (outputProjected[0] >= screenResolution[0]) && (outputProjected[0] <= screenResolution[2]))
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+void sBaldorSubTask1_drawSub1(sVec2_S16& projected, sVec2_S16& pValue, sVec2_S16& pOutput)
+{
+    pOutput[0] = projected[0] - (pValue[0] / 2);
+    pOutput[1] = projected[1] + (pValue[1] / 2);
+}
+
+void sBaldorSubTask1_drawSub0(sVec2_S16& projected, sVec2_S16& pValue, s32(&pOutput)[4])
+{
+    pOutput[0] = projected[0] - (pValue[0] / 2);
+    pOutput[1] = projected[1] + (pValue[1] / 2);
+    pOutput[2] = projected[0] - (pValue[0] / 2) + pValue[0];
+    pOutput[3] = projected[1] + (pValue[1] / 2) - pValue[1];
+}
+
+void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
+{
+    pThis->mA4++;
+    sVec2_S16 projected;
+    if (!isSpriteVisible(pThis->m84_pTargetable->m4, projected))
+    {
+        return;
+    }
+
+    s16 uVar4 = performModulo(8, pThis->mA4);
+    if (uVar4 < 4)
+    {
+        pThis->mA8 = 0;
+    }
+    else
+    {
+        pThis->mA8 = 1;
+    }
+
+    sVec2_S16 local_28;
+    sVec2_S16 local_30;
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    s32 local_40[4];
+
+    switch (pThis->mA6)
+    {
+    case 0:
+        local_28[0] = 0x20;
+        local_28[1] = 0x20;
+
+        if (pThis->m84_pTargetable->m60 > 10)
+        {
+            if (uVar4 < 2)
+            {
+                local_28[0] = 0x10;
+                local_28[1] = 0x10;
+            }
+            else if (uVar4 < 5)
+            {
+                local_28[0] = 0x18;
+                local_28[1] = 0x18;
+            }
+        }
+
+        sBaldorSubTask1_drawSub0(projected, local_28, local_40);
+
+        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1001); // command 0
+        setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
+        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xEB0); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x0A, 0x420); // CMDSIZE
+        setVdp1VramU16(vdp1WriteEA + 0x0C, local_40[0]); // CMDXA
+        setVdp1VramU16(vdp1WriteEA + 0x0E, -local_40[1]); // CMDYA
+        setVdp1VramU16(vdp1WriteEA + 0x14, local_40[2]); // CMDXB
+        setVdp1VramU16(vdp1WriteEA + 0x16, -local_40[3]); // CMDYB
+
+            // setup gradient
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = 0xC3FF;
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = 0xC3FF;
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = 0xC3FF;
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = 0xC3FF;
+        setVdp1VramU16(vdp1WriteEA + 0x1C, graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
+        graphicEngineStatus.m14_vdp1Context[0].m10++;
+
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+        graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+        vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        if (pThis->mA8) // blinking part of the cursor
+        {
+            setVdp1VramU16(vdp1WriteEA + 0x00, 0x1001); // command 0
+            setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xEF0); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x0A, 0x420); // CMDSIZE
+            setVdp1VramU16(vdp1WriteEA + 0x0C, local_40[0]); // CMDXA
+            setVdp1VramU16(vdp1WriteEA + 0x0E, -local_40[1]); // CMDYA
+            setVdp1VramU16(vdp1WriteEA + 0x14, local_40[2]); // CMDXB
+            setVdp1VramU16(vdp1WriteEA + 0x16, -local_40[3]); // CMDYB
+
+            // setup gradient
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = 0xC3FF;
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = 0xC3FF;
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = 0xC3FF;
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = 0xC3FF;
+            setVdp1VramU16(vdp1WriteEA + 0x1C, graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
+            graphicEngineStatus.m14_vdp1Context[0].m10++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+            vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        }
+        break;
+    case 1: // anti laser
+        local_28[0] = 0x30;
+        local_28[1] = 0x20;
+
+        sBaldorSubTask1_drawSub1(projected, local_28, local_30);
+
+        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+        setVdp1VramU16(vdp1WriteEA + 0x04, 0x1488); // CMDPMOD
+        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2F08); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xF30); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x0A, 0x620); // CMDSIZE
+        setVdp1VramU16(vdp1WriteEA + 0x0C, local_30.m_value[0]); // CMDXA
+        setVdp1VramU16(vdp1WriteEA + 0x0E, -local_30.m_value[1]); // CMDYA
+
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+        graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+        vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        if (pThis->mA8) // blinking part of the cursor
+        {
+            local_28[0] = 0x30;
+            local_28[1] = 0x20;
+
+            sBaldorSubTask1_drawSub1(projected, local_28, local_30);
+
+            setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+            setVdp1VramU16(vdp1WriteEA + 0x04, 0x1488); // CMDPMOD
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EE4); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xF90); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x0A, 0x620); // CMDSIZE
+            setVdp1VramU16(vdp1WriteEA + 0x0C, local_30.m_value[0]); // CMDXA
+            setVdp1VramU16(vdp1WriteEA + 0x0E, -local_30.m_value[1]); // CMDYA
+
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+            vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        }
+        break;
+    case 2: // anti-shot
+        local_28[0] = 0x30;
+        local_28[1] = 0x20;
+
+        sBaldorSubTask1_drawSub1(projected, local_28, local_30);
+
+        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+        setVdp1VramU16(vdp1WriteEA + 0x04, 0x1488); // CMDPMOD
+        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2F08); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xFF0); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x0A, 0x620); // CMDSIZE
+        setVdp1VramU16(vdp1WriteEA + 0x0C, local_30.m_value[0]); // CMDXA
+        setVdp1VramU16(vdp1WriteEA + 0x0E, -local_30.m_value[1]); // CMDYA
+
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+        graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+        vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        if (pThis->mA8) // blinking part of the cursor
+        {
+            local_28[0] = 0x30;
+            local_28[1] = 0x20;
+
+            sBaldorSubTask1_drawSub1(projected, local_28, local_30);
+
+            setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+            setVdp1VramU16(vdp1WriteEA + 0x04, 0x1488); // CMDPMOD
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EE4); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x1050); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x0A, 0x620); // CMDSIZE
+            setVdp1VramU16(vdp1WriteEA + 0x0C, local_30.m_value[0]); // CMDXA
+            setVdp1VramU16(vdp1WriteEA + 0x0E, -local_30.m_value[1]); // CMDYA
+
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+            vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        }
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void sBaldorSubTask1_update(sBaldorSubTask* pThis)
+{
+    if (pThis->m84_pTargetable == nullptr)
+    {
+        pThis->m_DrawMethod = nullptr;
+        pThis->getTask()->markFinished();
+        return;
+    }
+
+    if (pThis->m84_pTargetable->m50 & 0x40000)
+    {
+        pThis->m_DrawMethod = nullptr;
+        pThis->getTask()->markFinished();
+        return;
+    }
+
+    if (pThis->m84_pTargetable->m50 & 0x100000)
+    {
+        pThis->m84_pTargetable->m50 &= ~0x200000;
+    }
+
+    if (!(pThis->m84_pTargetable->m50 & 0x200000))
+    {
+        pThis->m_DrawMethod = nullptr;
+        return;
+    }
+
+    if (pThis->m84_pTargetable->m50 & 0x1000)
+    {
+        if (pThis->m84_pTargetable->m50 & 0x400)
+        {
+            pThis->mA6 = 0;
+        }
+        else
+        {
+            pThis->mA6 = 2;
+        }
+    }
+    else if (pThis->m84_pTargetable->m50 & 0x400)
+    {
+        pThis->mA6 = 1;
+    }
+    else if (pThis->m84_pTargetable->m50 & 0x800)
+    {
+        if (pThis->m84_pTargetable->m50 & 0x200)
+        {
+            pThis->mA6 = 0;
+        }
+        else
+        {
+            pThis->mA6 = 2;
+        }
+    }
+    else
+    {
+        if (pThis->m84_pTargetable->m50 & 0x200)
+        {
+            pThis->mA6 = 1;
+        }
+        else
+        {
+            pThis->mA6 = 0;
+        }
+    }
+
+    pThis->m_DrawMethod = sBaldorSubTask1_draw;
+}
+
+void Baldor_initSub1Sub0(s_workAreaCopy* parent, sBattleTargetable* pTargetable)
+{
+    static const sBaldorSubTask::TypedTaskDefinition pTaskDefinition = {
+        nullptr,
+        sBaldorSubTask0_update,
+        sBaldorSubTask0_draw,
+        nullptr,
+    };
+
+    sBaldorSubTask* pNewTask = createSubTaskWithCopy<sBaldorSubTask>(parent, &pTaskDefinition);
+    pNewTask->m84_pTargetable = pTargetable;
+    pNewTask->m94 = pNewTask->m84_pTargetable->m4;
+    pNewTask->m84_pTargetable->m50 |= 0x10000;
+    pNewTask->mAC_vdp1Offset = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory;
+}
+
+void Baldor_initSub1Sub1(s_workAreaCopy* parent, sBattleTargetable* pTargetable)
+{
+    static const sBaldorSubTask::TypedTaskDefinition pTaskDefinition = {
+        nullptr,
+        sBaldorSubTask1_update,
+        sBaldorSubTask1_draw,
+        nullptr,
+    };
+
+    sBaldorSubTask* pNewTask = createSubTaskWithCopy<sBaldorSubTask>(parent, &pTaskDefinition);
+    pNewTask->m84_pTargetable = pTargetable;
+    pNewTask->m94 = pNewTask->m84_pTargetable->m4;
+    pNewTask->mAC_vdp1Offset = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory;
 }
 
 void Baldor_initSub1(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_FP* param_3, s32 param_4, u32 param_5, u32 param_6, u32 param_7, u32 param_8)
@@ -548,7 +974,7 @@ void Baldor_updateSub0(sBaldor* pThis)
                 Baldor_updateSub0Sub3(pThis, pThis->mE, pThis->m1C_translation.m0_current, 1);
                 playSystemSoundEffect(0x66);
                 pThis->m8_mode = 0xB;
-                pThis->m9 = 0;
+                pThis->m9_attackStatus = 0;
             }
             else
             {
@@ -653,14 +1079,121 @@ p_workArea Baldor_createAttackTask(sBaldor* pThis)
     return pNewTask;
 }
 
-void Baldor_update_mode1(sBaldor* pThis)
+void applyDamageSub(sBattleTargetable& param_1, sVec3_FP& param_2)
 {
-    FunctionUnimplemented();
+    param_1.mC = &param_2;
+    param_1.m28 = param_2;
+    transformAndAddVecByCurrentMatrix(&param_1.m28, &param_1.m1C);
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x14])
+    {
+        assert(0);
+    }
 }
 
+void applyDamage(sBattleTargetable& param_1, s32 damageValue, sVec3_FP& param_3, s32 param_4, const sVec3_FP& param_5, s32 param_8)
+{
+    gBattleManager->m10_battleOverlay->m18_dragon->m1D6 += damageValue;
+    param_1.m50 |= 0x80000;
+    param_1.m58 = gBattleManager->m10_battleOverlay->m18_dragon->m1D6;
+
+    applyDamageSub(param_1, param_3);
+
+    param_1.m5E = param_4;
+    param_1.m54 = 0;
+    param_1.m54 |= param_8;
+
+    param_1.m34 = MTH_Mul(FP_Div(0x1000, sqrt_F(MTH_Product3d_FP(param_5, param_5))), param_5);
+}
+
+// front attack (evil bite)
+void Baldor_update_mode1(sBaldor* pThis)
+{
+    switch (pThis->m9_attackStatus)
+    {
+    case 0:
+        if (pThis->m34_formationEntry->m49 != 1)
+        {
+            return;
+        }
+
+        pThis->m34_formationEntry->m48 &= ~1;
+        pThis->m34_formationEntry->m48 |= 2;
+        pThis->m9_attackStatus++;
+        break;
+    case 1:
+        pThis->m44_translationTarget = gBattleManager->m10_battleOverlay->m18_dragon->m8_position - gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
+        switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+        {
+        case 0:
+            pThis->m44_translationTarget[2] -= 0x3000;
+            break;
+        case 1:
+            pThis->m44_translationTarget[0] -= 0x3000;
+            break;
+        case 2:
+            pThis->m44_translationTarget[2] += 0x3000;
+            break;
+        case 3:
+            pThis->m44_translationTarget[0] += 0x3000;
+            break;
+        default:
+            assert(0);
+        }
+
+        riderInit(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_buffer->m0_dramAllocation->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 2)));
+        pThis->m9_attackStatus = 2;
+        break;
+    case 2:
+        pThis->m44_translationTarget = gBattleManager->m10_battleOverlay->m18_dragon->m8_position - gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
+        switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+        {
+        case 0:
+            pThis->m44_translationTarget[2] -= 0x3000;
+            break;
+        case 1:
+            pThis->m44_translationTarget[0] -= 0x3000;
+            break;
+        case 2:
+            pThis->m44_translationTarget[2] += 0x3000;
+            break;
+        case 3:
+            pThis->m44_translationTarget[0] += 0x3000;
+            break;
+        default:
+            assert(0);
+        }
+
+        if (pThis->m38_3dModel->m16_previousAnimationFrame != 0x1E)
+            return;
+
+        applyDamage(gBattleManager->m10_battleOverlay->m18_dragon->m8C, 27, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 3, gBattleManager->m10_battleOverlay->m18_dragon->m8_position - *pThis->m1C_translation.m0_current, 0);
+        createDamageSpriteEffect(dramAllocatorEnd[6].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x060a912), &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+        playSystemSoundEffect(0x67);
+        pThis->m9_attackStatus = 3;
+        break;
+    case 3:
+        // animation finished
+        if (pThis->m38_3dModel->m16_previousAnimationFrame < (pThis->m38_3dModel->m30_pCurrentAnimation ? pThis->m38_3dModel->m30_pCurrentAnimation->m4_numFrames : 0) - 1)
+        {
+            return;
+        }
+        riderInit(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_buffer->m0_dramAllocation->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 0)));
+        pThis->m34_formationEntry->m48 &= ~2;
+        pThis->m9_attackStatus = 4;
+        break;
+    case 4:
+        pThis->m8_mode = 0;
+        pThis->m9_attackStatus = 0;
+        break;
+    default:
+        assert(0);
+    }
+}
+
+// side attack
 void Baldor_update_mode2(sBaldor* pThis)
 {
-    switch (pThis->m9)
+    switch (pThis->m9_attackStatus)
     {
     case 0: // init attack
         if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000)
@@ -690,17 +1223,17 @@ void Baldor_update_mode2(sBaldor* pThis)
 
         pThis->m90_attackTask = Baldor_createAttackTask(pThis);
         playSystemSoundEffect(0x68);
-        pThis->m9++;
+        pThis->m9_attackStatus++;
         break;
     case 1: // attack is running
         if (pThis->m90_attackTask && !pThis->m90_attackTask->getTask()->isFinished())
             return;
         pThis->m34_formationEntry->m48 &= ~2;
-        pThis->m9++;
+        pThis->m9_attackStatus++;
         break;
     case 2: // attack is finished
         pThis->m8_mode = 0;
-        pThis->m9 = 0;
+        pThis->m9_attackStatus = 0;
         break;
     default:
         assert(0);

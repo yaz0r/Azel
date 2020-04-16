@@ -89,15 +89,42 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
     {
         pThis->m24C = 0;
     }
-
-    FunctionUnimplemented();
 }
 
-void s_battleDragon_UpdateSub0()
+void battleEngine_InitSub11();
+
+void s_battleDragon_UpdateSub0(s_battleDragon* pThis)
 {
     if (gDragonState->m88)
     {
-        FunctionUnimplemented();
+        battleEngine_InitSub11();
+        if (mainGameState.gameStats.m1_dragonLevel == 8)
+        {
+            assert(0);
+        }
+        else
+        {
+            if (pRider1State->mC_riderType > 5)
+            {
+                loadRiderIfChanged(1);
+            }
+            if (pRider2State->mC_riderType > 5)
+            {
+                loadRider2IfChanged(4);
+            }
+            if (mainGameState.gameStats.m1_dragonLevel == 6)
+            {
+                assert(0);
+            }
+            else
+            {
+                if (pThis->m24C)
+                {
+                    pThis->m24C->getTask()->markFinished();
+                    pThis->m24C = nullptr;
+                }
+            }
+        }
     }
 }
 
@@ -508,7 +535,7 @@ void s_battleDragon_UpdateSub6()
 
 static void s_battleDragon_Update(s_battleDragon* pThis)
 {
-    s_battleDragon_UpdateSub0();
+    s_battleDragon_UpdateSub0(pThis);
     s_battleDragon_UpdateSub1(pThis);
     pThis->m84 = pThis->m88;
     pThis->m88 = 0;

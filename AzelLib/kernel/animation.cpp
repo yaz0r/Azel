@@ -543,9 +543,16 @@ void modelMode4_rotation(s_3dModel* p3dModel)
     }
 }
 
-void modelMode0_position(s_3dModel*)
+void modelMode0_position(s_3dModel* p3dModel)
 {
-    PDS_unimplemented("modelMode0_position");
+    std::vector<sPoseData>& pPoseData = p3dModel->m2C_poseData;
+    for (int i = 0; i < p3dModel->m12_numBones; i++)
+    {
+        const sAnimationData::sTrackHeader& r6 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
+        pPoseData[i].m0_translation.m_value[0] = r6.m14_trackData[0][p3dModel->m10_currentAnimationFrame] * 0x10;
+        pPoseData[i].m0_translation.m_value[1] = r6.m14_trackData[1][p3dModel->m10_currentAnimationFrame] * 0x10;
+        pPoseData[i].m0_translation.m_value[2] = r6.m14_trackData[2][p3dModel->m10_currentAnimationFrame] * 0x10;
+    }
 }
 
 void modelMode0_rotation(s_3dModel* p3dModel)
