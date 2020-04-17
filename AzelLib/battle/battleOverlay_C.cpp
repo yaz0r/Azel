@@ -22,6 +22,41 @@ s32 sBattleOverlayTask_C_UpdateSub0(sBattleTargetable* pThis)
     return 1;
 }
 
+void sortEnemyByDistanceToDragon(s32 start, s32 end)
+{
+    do 
+    {
+        std::array<struct s_battleEnemy*, 0x80>& arrayToSort = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables;
+        s32 iVar3 = arrayToSort[(start + end) / 2]->m8_distanceToDragonSquare;
+        s32 iVar1 = start;
+        s32 iVar5 = end;
+        while (1)
+        {
+            while (arrayToSort[iVar1]->m8_distanceToDragonSquare < iVar3)
+            {
+                iVar1++;
+            }
+            while (iVar3 < arrayToSort[iVar5]->m8_distanceToDragonSquare)
+            {
+                iVar5--;
+            }
+            if (iVar5 <= iVar1)
+            {
+                break;
+            }
+            std::swap(arrayToSort[iVar1], arrayToSort[iVar5]);
+            iVar1++;
+            iVar5--;
+        }
+        if (start < iVar1 - 1)
+        {
+            sortEnemyByDistanceToDragon(start, iVar1 - 1);
+        }
+        start = iVar5 + 1;
+    } while (start < end);
+    
+}
+
 void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
 {
     pThis->m200_cameraMinAltitude = gBattleManager->m10_battleOverlay->m4_battleEngine->m35C_cameraAltitudeMinMax[0];
@@ -54,14 +89,14 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
     {
         if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1)
         {
-            if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2)
+            if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon)
             {
                 return;
             }
         }
         else
         {
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
         }
     }
 
@@ -120,7 +155,26 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
         psVar8++;
     }
 
-    FunctionUnimplemented();
+    if ((pThis->m20A_numSelectableEnemies > 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon))
+    {
+        sortEnemyByDistanceToDragon(0, 0x7F);
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 0;
+    }
+
+    for (int i=0; i<pThis->m20A_numSelectableEnemies; i++)
+    {
+        pThis->m0_enemyTargetables[i]->m0_isActive = i + 1;
+        pThis->m0_enemyTargetables[i]->m4_targetable->m5A = i + 1;
+    }
+
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1)
+    {
+        for (int i=0; i<gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies; i++)
+        {
+            gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50 &= ~0x20000;
+        }
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1 = 0;
+    }
 }
 
 void sBattleOverlayTask_C_Draw(sBattleOverlayTask_C* pThis)

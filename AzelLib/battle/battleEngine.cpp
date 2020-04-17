@@ -558,7 +558,7 @@ void battleEngine_SetBattleMode16()
     pBattleEngine->m3E8.zeroize();
     battleEngine_UpdateSub6(pBattleEngine);
 
-    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
 }
 
 void battleEngine_UpdateSub8(s_battleEngine* pThis)
@@ -1265,7 +1265,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
                 {
                     gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 0x100;
                     pThis->m22C_dragonCurrentQuadrant = pThis->m22D_dragonPreviousQuadrant;
-                    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
                 }
                 if (r6 == 0)
                 {
@@ -1282,7 +1282,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
                 {
                     gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 0x100;
                     pThis->m22C_dragonCurrentQuadrant = pThis->m22D_dragonPreviousQuadrant;
-                    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
                 }
                 if (r6 == 0)
                 {
@@ -1300,7 +1300,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
             {
                 gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 0x100;
                 pThis->m22C_dragonCurrentQuadrant = pThis->m22D_dragonPreviousQuadrant;
-                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
             }
             if (r6 == 0)
             {
@@ -1319,7 +1319,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
         {
             gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 0x100;
             pThis->m22C_dragonCurrentQuadrant = pThis->m22D_dragonPreviousQuadrant;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
         }
         if (r6 == 0)
         {
@@ -1985,7 +1985,7 @@ void battleEngine_updateBattleMode_8_playAttackCamera(s_battleEngine* pThis)
             pThis->m38D_battleSubMode++;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
         }
         break;
     case 5:
@@ -2161,7 +2161,7 @@ void battleEngine_updateBattleMode_7(s_battleEngine* pThis)
             pThis->m38D_battleSubMode++;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
         }
         break;
     case 5:
@@ -2219,7 +2219,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
         gBattleManager->m10_battleOverlay->m8_gridTask->m138[1] = 0;
         gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[1] = 0;
         playSystemSoundEffect(7);
-        pThis->m188_flags.m2 = 1;
+        pThis->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
         break;
     case 1: // select enemy phase
         if (gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies > 0)
@@ -2350,7 +2350,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
                 pThis->m38D_battleSubMode++;
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
-                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
             }
         }
         break;
@@ -2594,7 +2594,7 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
             pThis->m38D_battleSubMode++;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2 = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
         }
         break;
     case 7:
@@ -2712,9 +2712,22 @@ void battleEngine_UpdateSub7Sub0Sub6(s_battleEngine* pThis)
     {
         if ((pThis->m3B4.m16_combo > 0) && !gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 && (graphicEngineStatus.m4514.mD8_buttonConfig[2][0] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown))
         {
-            assert(0);
+            if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 1)
+            {
+                playSystemSoundEffect(5);
+            }
+            else
+            {
+                if (gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies > 0)
+                {
+                    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 0;
+                    battleEngine_SetBattleMode(eBattleModes::m3_shootEnemeyWithHomingLaser);
+                    pThis->m184 = 0;
+                    pThis->m390 = 0;
+                }
+            }
         }
-        if (graphicEngineStatus.m4514.mD8_buttonConfig[2][0] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown)
+        else if (graphicEngineStatus.m4514.mD8_buttonConfig[2][0] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown)
         {
             playSystemSoundEffect(5);
         }

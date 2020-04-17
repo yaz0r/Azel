@@ -44,7 +44,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP m104_dragonPosition;
     struct {
         u32 m1 : 1;
-        u32 m2 : 1;
+        u32 m2_needToSortEnemiesByDistanceFromDragon : 1;
         u32 m4 : 1;
         u32 m8 : 1;
         u32 m10 : 1;

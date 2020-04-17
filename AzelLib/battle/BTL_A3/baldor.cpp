@@ -65,35 +65,401 @@ s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
 
 struct sBaldorSubTask : public s_workAreaTemplateWithCopy<sBaldorSubTask>
 {
+    fixedPoint m1C;
     sBattleTargetable* m84_pTargetable;
     sVec3_FP* m94;
-    s16 mA6;
-    u16 mAC_vdp1Offset;
+    s32 m98;
+    fixedPoint m9C;
+    s16 mA6_cursorType;
     s16 mA4;
-    s16 mA8;
+    s16 mA8_cursorFrameCounter;
+    u16 mAC_vdp1Offset;
     s8 mAF;
     // size 0xB0
 };
 
-void sBaldorSubTask0_update1(sBaldorSubTask* pThis)
+void getVdp1ClippingPlanes(fixedPoint& nearPlane, fixedPoint& farPlane)
 {
-    FunctionUnimplemented();
+    nearPlane = graphicEngineStatus.m405C.m10_nearClipDistance;
+    farPlane = graphicEngineStatus.m405C.m14_farClipDistance;
+}
+
+void getVdp1ScreenResolution(s16(&screenResolution)[4])
+{
+    screenResolution[0] = graphicEngineStatus.m405C.mC;
+    screenResolution[1] = graphicEngineStatus.m405C.m8;
+    screenResolution[2] = graphicEngineStatus.m405C.mE;
+    screenResolution[3] = graphicEngineStatus.m405C.mA;
+}
+
+bool isSpriteVisible(sVec3_FP* pPosition, sVec2_S16& outputProjected)
+{
+    fixedPoint nearPlane;
+    fixedPoint farPlane;
+    getVdp1ClippingPlanes(nearPlane, farPlane);
+    if (((*pPosition)[2] > nearPlane) && ((*pPosition)[2] < farPlane))
+    {
+        s16 xProj;
+        s16 yProj;
+        getVdp1ProjectionParams(&xProj, &yProj);
+        outputProjected[0] = setDividend(xProj, (*pPosition)[0], (*pPosition)[2]);
+        outputProjected[1] = setDividend(yProj, (*pPosition)[1], (*pPosition)[2]);
+
+        s16 screenResolution[4];
+        getVdp1ScreenResolution(screenResolution);
+
+        if ((outputProjected[1] <= screenResolution[1]) && (outputProjected[1] >= screenResolution[3]) && (outputProjected[0] >= screenResolution[0]) && (outputProjected[0] <= screenResolution[2]))
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+void sBaldorSubTask1_drawSub1(sVec2_S16& projected, sVec2_S16& pValue, sVec2_S16& pOutput)
+{
+    pOutput[0] = projected[0] - (pValue[0] / 2);
+    pOutput[1] = projected[1] + (pValue[1] / 2);
+}
+
+void sBaldorSubTask1_drawSub0(sVec2_S16& projected, sVec2_S16& pValue, s32(&pOutput)[4])
+{
+    pOutput[0] = projected[0] - (pValue[0] / 2);
+    pOutput[1] = projected[1] + (pValue[1] / 2);
+    pOutput[2] = projected[0] - (pValue[0] / 2) + pValue[0];
+    pOutput[3] = projected[1] + (pValue[1] / 2) - pValue[1];
+}
+
+static const std::array<sVec3_FP, 4> squareData = {
+    {
+        {0, 0x2800, 0},
+        {0x2800, 0, 0},
+        {0, -0x2800, 0},
+        {-0x2800, 0, 0},
+    }
+};
+
+// todo: kernel
+void projectPoint(const sVec3_FP& inCoordinate, sVec2_FP& outCoordinate)
+{
+    s16 xProj;
+    s16 yProj;
+    getVdp1ProjectionParams(&xProj, &yProj);
+    outCoordinate[0] = setDividend(xProj, inCoordinate[0], inCoordinate[2]);
+    outCoordinate[1] = setDividend(yProj, inCoordinate[1], inCoordinate[2]);
+}
+
+// todo: kernel
+// todo: this is missing the visibility check
+s32 drawLineSquareProject(const std::array<sVec3_FP, 4>& coordinates, std::array<sVec2_FP, 4>& projectedCoordinates)
+{
+    for (int i=0; i<4; i++)
+    {
+        projectPoint(coordinates[i], projectedCoordinates[i]);
+    }
+
+    return 1;
+}
+
+// todo: kernel
+void drawLineSquareVdp1(u16 param1, std::array < sVec2_FP, 4>& projectedCoordinates, u16 color, fixedPoint depth)
+{
+    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1005); // command 0
+    setVdp1VramU16(vdp1WriteEA + 0x04, 0x400 | param1); // CMDPMOD
+    setVdp1VramU16(vdp1WriteEA + 0x06, color); // CMDCOLR
+    setVdp1VramU16(vdp1WriteEA + 0x0C, projectedCoordinates[0][0]); // CMDXA
+    setVdp1VramU16(vdp1WriteEA + 0x0E, -projectedCoordinates[0][1]); // CMDYA
+    setVdp1VramU16(vdp1WriteEA + 0x10, projectedCoordinates[1][0]); // CMDXB
+    setVdp1VramU16(vdp1WriteEA + 0x12, -projectedCoordinates[1][1]); // CMDYB
+    setVdp1VramU16(vdp1WriteEA + 0x14, projectedCoordinates[2][0]); // CMDXC
+    setVdp1VramU16(vdp1WriteEA + 0x16, -projectedCoordinates[2][1]); // CMDYC
+    setVdp1VramU16(vdp1WriteEA + 0x18, projectedCoordinates[3][0]); // CMDXD
+    setVdp1VramU16(vdp1WriteEA + 0x1A, -projectedCoordinates[3][1]); // CMDYD
+
+    fixedPoint computedDepth = depth * graphicEngineStatus.m405C.m38;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = computedDepth.getInteger();
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+}
+
+// todo: kernel
+void drawLineSquare(const std::array<sVec3_FP, 4>& coordinates, u16 color, s32 depth)
+{
+    std::array<sVec2_FP, 4> projectedCoordinates;
+
+    if (drawLineSquareProject(coordinates, projectedCoordinates))
+    {
+        if (color < 0)
+        {
+            color = coordinates[0][2];
+        }
+        drawLineSquareVdp1(0xc0, projectedCoordinates, color, depth);
+    }
 }
 
 void sBaldorSubTask0_draw1(sBaldorSubTask* pThis)
 {
-    FunctionUnimplemented();
+    std::array<sVec3_FP, 4> tempCoordinates;
+    std::array<sVec3_FP, 4> outputCoordinates;
+
+    for (int i = 3; i >= 0; i--)
+    {
+        fixedPoint iVar1 = MTH_Mul(squareData[i][0], getCos(pThis->m1C.getInteger()));
+        fixedPoint iVar2 = MTH_Mul(squareData[i][1], getSin(pThis->m1C.getInteger()));
+        tempCoordinates[i][0] = iVar1 - iVar2;
+
+        iVar1 = MTH_Mul(squareData[i][0], getSin(pThis->m1C.getInteger()));
+        iVar2 = MTH_Mul(squareData[i][1], getCos(pThis->m1C.getInteger()));
+        tempCoordinates[i][1] = iVar1 + iVar2;
+        tempCoordinates[i][2] = 0;
+
+        tempCoordinates[i] = MTH_Mul(pThis->m9C, tempCoordinates[i]);
+        outputCoordinates[i] = *pThis->m84_pTargetable->m4 + tempCoordinates[i];
+    }
+
+    drawLineSquare(outputCoordinates, -1, 0xA000);
 }
 
-void sBaldorSubTask0_draw(sBaldorSubTask*)
+void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
 {
-    FunctionUnimplemented();
+    pThis->mA8_cursorFrameCounter = (pThis->mA8_cursorFrameCounter + 1) & 0xFF;
+
+    sSaturnPtr spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60AB2DC);
+    if (!(pThis->m84_pTargetable->m50 & 0x20000))
+    {
+        spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60ab2ec);
+    }
+    else if ((pThis->mA6_cursorType == 1) && (pThis->mA4 != 0))
+    {
+        spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60ab2e4);
+    }
+
+    sVec2_S16 coordinates;
+    if (isSpriteVisible(pThis->m84_pTargetable->m4, coordinates))
+    {
+        if (!(pThis->m84_pTargetable->m50 & 0x20000))
+        {
+            // display the Weak reticule
+            int uVar3 = performModulo(8, pThis->mA8_cursorFrameCounter) & 0xFF;
+            if (3 < uVar3)
+            {
+                spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60AB2DC);
+            }
+
+            sVec2_S16 size;
+            size[0] = 0x18;
+            size[1] = 0x20;
+
+            sVec2_S16 finalSize;
+            sBaldorSubTask1_drawSub1(coordinates, size, finalSize);
+
+            u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+            setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+            setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2ED8); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xE28); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x0A, 0x320); // CMDSIZE
+            setVdp1VramU16(vdp1WriteEA + 0x0C, finalSize[0]); // CMDXA
+            setVdp1VramU16(vdp1WriteEA + 0x0E, -finalSize[1]); // CMDYA
+
+            // setup gradient
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = readSaturnU16(spriteDef + 0);
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = readSaturnU16(spriteDef + 2);
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = readSaturnU16(spriteDef + 4);
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = readSaturnU16(spriteDef + 6);
+            setVdp1VramU16(vdp1WriteEA + 0x1C, graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
+            graphicEngineStatus.m14_vdp1Context[0].m10++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+            if (uVar3 < 4)
+            {
+                sVec2_S16 size;
+                size[0] = 0x18;
+                size[1] = 0x20;
+
+                sVec2_S16 finalSize;
+                sBaldorSubTask1_drawSub1(coordinates, size, finalSize);
+
+                u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+                setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+                setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
+                setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2ED8); // CMDCOLR
+                setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xE58); // CMDSRCA
+                setVdp1VramU16(vdp1WriteEA + 0x0A, 0x320); // CMDSIZE
+                setVdp1VramU16(vdp1WriteEA + 0x0C, finalSize[0]); // CMDXA
+                setVdp1VramU16(vdp1WriteEA + 0x0E, -finalSize[1]); // CMDYA
+
+                // setup gradient
+                graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = 0xFFFF;
+                graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = 0xFFFF;
+                graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = 0xFFFF;
+                graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = 0xFFFF;
+                setVdp1VramU16(vdp1WriteEA + 0x1C, graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
+                graphicEngineStatus.m14_vdp1Context[0].m10++;
+
+                graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+                graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+                graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+                graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+                graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+                graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+            }
+        }
+        else
+        {
+            // display the normal reticule
+            sVec2_S16 size;
+            size[0] = 0x18;
+            size[1] = 0x20;
+
+            sVec2_S16 finalSize;
+            sBaldorSubTask1_drawSub1(coordinates, size, finalSize);
+
+            u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+            setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+            setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xE88); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x0A, 0x318); // CMDSIZE
+            setVdp1VramU16(vdp1WriteEA + 0x0C, finalSize[0]); // CMDXA
+            setVdp1VramU16(vdp1WriteEA + 0x0E, -finalSize[1]); // CMDYA
+
+            // setup gradient
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = readSaturnU16(spriteDef + 0);
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = readSaturnU16(spriteDef + 2);
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = readSaturnU16(spriteDef + 4);
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = readSaturnU16(spriteDef + 6);
+            setVdp1VramU16(vdp1WriteEA + 0x1C, graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
+            graphicEngineStatus.m14_vdp1Context[0].m10++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+        }
+    }
+}
+
+void sBaldorSubTask0_update(sBaldorSubTask* pThis);
+
+void sBaldorSubTask0_update1(sBaldorSubTask* pThis)
+{
+    if (pThis->m84_pTargetable == nullptr)
+    {
+        pThis->m_DrawMethod = nullptr;
+        pThis->getTask()->markFinished();
+        return;
+    }
+
+    if ((pThis->m84_pTargetable->m50 & 0x40000) == 0)
+    {
+        if (pThis->m84_pTargetable->m5A < 1)
+        {
+            pThis->m84_pTargetable->m50 &= ~0x20000;
+            pThis->m_UpdateMethod = sBaldorSubTask0_update;
+            pThis->m_DrawMethod = nullptr;
+            pThis->m98 &= ~1;
+        }
+        else
+        {
+            if (!(pThis->m84_pTargetable->m50 & 0x20000))
+            {
+                pThis->mAF = 0;
+                pThis->mA4 = 0;
+                pThis->m_UpdateMethod = sBaldorSubTask0_update;
+                pThis->m_DrawMethod = nullptr;
+            }
+            else
+            {
+                if (!(pThis->m84_pTargetable->m50 & 0x100000))
+                {
+                    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m396 == gBattleManager->m10_battleOverlay->m4_battleEngine->m394)
+                    {
+                        pThis->mA6_cursorType = 1;
+                        if (pThis->mA4 == 0)
+                        {
+                            pThis->mA4 = 1;
+                        }
+                        else
+                        {
+                            pThis->mA4 = 0;
+                        }
+                    }
+                    else
+                    {
+                        pThis->mA6_cursorType = 0;
+                        pThis->mA4 = 0;
+                    }
+
+
+                    if (pThis->mAF == 0)
+                    {
+                        pThis->m9C = 0x80000;
+                        pThis->m1C = randomNumber();
+                        pThis->mAF++;
+                        return;
+                    }
+
+                    if (pThis->mAF != 1)
+                    {
+                        return;
+                    }
+
+                    pThis->m1C += 0x1555555;
+
+                    if (pThis->m9C > 0x10000)
+                    {
+                        pThis->m9C -= 0x10000;
+                        return;
+                    }
+
+                    pThis->m9C = 0x10000;
+                    pThis->mAF += 1;
+                    pThis->m98 |= 1;
+                    pThis->m_DrawMethod = sBaldorSubTask0_draw;
+                }
+                pThis->m84_pTargetable->m50 &= ~0x20000;
+                pThis->mAF = 0;
+                pThis->mA4 = 0;
+                pThis->m_UpdateMethod = sBaldorSubTask0_update;
+                pThis->m_DrawMethod = nullptr;
+            }
+
+            pThis->m98 &= ~1;
+        }
+    }
+    else
+    {
+        pThis->m84_pTargetable->m50 &= ~0x20000;
+        pThis->m84_pTargetable->m50 &= ~0x10000;
+        pThis->getTask()->markFinished();
+    }
 }
 
 void sBaldorSubTask0_update(sBaldorSubTask* pThis)
 {
     if (pThis->m84_pTargetable == nullptr)
     {
+        pThis->m_DrawMethod = nullptr;
         pThis->getTask()->markFinished();
         return;
     }
@@ -102,7 +468,7 @@ void sBaldorSubTask0_update(sBaldorSubTask* pThis)
     {
         if ((pThis->m84_pTargetable->m5A > 0) && !(pThis->m84_pTargetable->m50 & 0x100000))
         {
-            if (pThis->m84_pTargetable->m50 & 0x200000)
+            if (pThis->m84_pTargetable->m50 & 0x20000)
             {
                 playSystemSoundEffect(10);
                 pThis->mAF = 0;
@@ -138,59 +504,6 @@ void sBaldorSubTask0_update(sBaldorSubTask* pThis)
     }
 }
 
-void getVdp1ClippingPlanes(fixedPoint& nearPlane, fixedPoint& farPlane)
-{
-    nearPlane = graphicEngineStatus.m405C.m10_nearClipDistance;
-    farPlane = graphicEngineStatus.m405C.m14_farClipDistance;
-}
-
-void getVdp1ScreenResolution(s16 (&screenResolution)[4])
-{
-    screenResolution[0] = graphicEngineStatus.m405C.mC;
-    screenResolution[1] = graphicEngineStatus.m405C.m8;
-    screenResolution[2] = graphicEngineStatus.m405C.mE;
-    screenResolution[3] = graphicEngineStatus.m405C.mA;
-}
-
-bool isSpriteVisible(sVec3_FP* pPosition, sVec2_S16& outputProjected)
-{
-    fixedPoint nearPlane;
-    fixedPoint farPlane;
-    getVdp1ClippingPlanes(nearPlane, farPlane);
-    if (((*pPosition)[2] > nearPlane) && ((*pPosition)[2] < farPlane))
-    {
-        s16 xProj;
-        s16 yProj;
-        getVdp1ProjectionParams(&xProj, &yProj);
-        outputProjected[0] = setDividend(xProj, (*pPosition)[0], (*pPosition)[2]);
-        outputProjected[1] = setDividend(xProj, (*pPosition)[1], (*pPosition)[2]);
-
-        s16 screenResolution[4];
-        getVdp1ScreenResolution(screenResolution);
-
-        if ((outputProjected[1] <= screenResolution[1]) && (outputProjected[1] >= screenResolution[3]) && (outputProjected[0] >= screenResolution[0]) && (outputProjected[0] <= screenResolution[2]))
-        {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-void sBaldorSubTask1_drawSub1(sVec2_S16& projected, sVec2_S16& pValue, sVec2_S16& pOutput)
-{
-    pOutput[0] = projected[0] - (pValue[0] / 2);
-    pOutput[1] = projected[1] + (pValue[1] / 2);
-}
-
-void sBaldorSubTask1_drawSub0(sVec2_S16& projected, sVec2_S16& pValue, s32(&pOutput)[4])
-{
-    pOutput[0] = projected[0] - (pValue[0] / 2);
-    pOutput[1] = projected[1] + (pValue[1] / 2);
-    pOutput[2] = projected[0] - (pValue[0] / 2) + pValue[0];
-    pOutput[3] = projected[1] + (pValue[1] / 2) - pValue[1];
-}
-
 void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
 {
     pThis->mA4++;
@@ -203,11 +516,11 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
     s16 uVar4 = performModulo(8, pThis->mA4);
     if (uVar4 < 4)
     {
-        pThis->mA8 = 0;
+        pThis->mA8_cursorFrameCounter = 0;
     }
     else
     {
-        pThis->mA8 = 1;
+        pThis->mA8_cursorFrameCounter = 1;
     }
 
     sVec2_S16 local_28;
@@ -215,7 +528,7 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
     u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
     s32 local_40[4];
 
-    switch (pThis->mA6)
+    switch (pThis->mA6_cursorType)
     {
     case 0:
         local_28[0] = 0x20;
@@ -264,7 +577,7 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
         vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-        if (pThis->mA8) // blinking part of the cursor
+        if (pThis->mA8_cursorFrameCounter) // blinking part of the cursor
         {
             setVdp1VramU16(vdp1WriteEA + 0x00, 0x1001); // command 0
             setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
@@ -318,7 +631,7 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
         vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-        if (pThis->mA8) // blinking part of the cursor
+        if (pThis->mA8_cursorFrameCounter) // blinking part of the cursor
         {
             local_28[0] = 0x30;
             local_28[1] = 0x20;
@@ -367,7 +680,7 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
         vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-        if (pThis->mA8) // blinking part of the cursor
+        if (pThis->mA8_cursorFrameCounter) // blinking part of the cursor
         {
             local_28[0] = 0x30;
             local_28[1] = 0x20;
@@ -429,37 +742,37 @@ void sBaldorSubTask1_update(sBaldorSubTask* pThis)
     {
         if (pThis->m84_pTargetable->m50 & 0x400)
         {
-            pThis->mA6 = 0;
+            pThis->mA6_cursorType = 0;
         }
         else
         {
-            pThis->mA6 = 2;
+            pThis->mA6_cursorType = 2;
         }
     }
     else if (pThis->m84_pTargetable->m50 & 0x400)
     {
-        pThis->mA6 = 1;
+        pThis->mA6_cursorType = 1;
     }
     else if (pThis->m84_pTargetable->m50 & 0x800)
     {
         if (pThis->m84_pTargetable->m50 & 0x200)
         {
-            pThis->mA6 = 0;
+            pThis->mA6_cursorType = 0;
         }
         else
         {
-            pThis->mA6 = 2;
+            pThis->mA6_cursorType = 2;
         }
     }
     else
     {
         if (pThis->m84_pTargetable->m50 & 0x200)
         {
-            pThis->mA6 = 1;
+            pThis->mA6_cursorType = 1;
         }
         else
         {
-            pThis->mA6 = 0;
+            pThis->mA6_cursorType = 0;
         }
     }
 
