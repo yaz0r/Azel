@@ -243,7 +243,42 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
     sVec2_S16 coordinates;
     if (isSpriteVisible(pThis->m84_pTargetable->m4, coordinates))
     {
-        if (!(pThis->m84_pTargetable->m50 & 0x20000))
+        if (pThis->m84_pTargetable->m50 & 0x20000)
+        {
+            // display the normal reticule
+            sVec2_S16 size;
+            size[0] = 0x18;
+            size[1] = 0x20;
+
+            sVec2_S16 finalSize;
+            sBaldorSubTask1_drawSub1(coordinates, size, finalSize);
+
+            u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+            setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
+            setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xE88); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x0A, 0x318); // CMDSIZE
+            setVdp1VramU16(vdp1WriteEA + 0x0C, finalSize[0]); // CMDXA
+            setVdp1VramU16(vdp1WriteEA + 0x0E, -finalSize[1]); // CMDYA
+
+            // setup gradient
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = readSaturnU16(spriteDef + 0);
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = readSaturnU16(spriteDef + 2);
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = readSaturnU16(spriteDef + 4);
+            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = readSaturnU16(spriteDef + 6);
+            setVdp1VramU16(vdp1WriteEA + 0x1C, graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
+            graphicEngineStatus.m14_vdp1Context[0].m10++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+        }
+        else
         {
             // display the Weak reticule
             int uVar3 = performModulo(8, pThis->mA8_cursorFrameCounter) & 0xFF;
@@ -319,42 +354,6 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
                 graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
             }
-        }
-        else
-        {
-            // display the normal reticule
-            sVec2_S16 size;
-            size[0] = 0x18;
-            size[1] = 0x20;
-
-            sVec2_S16 finalSize;
-            sBaldorSubTask1_drawSub1(coordinates, size, finalSize);
-
-            u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-            setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
-            setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
-            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
-            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xE88); // CMDSRCA
-            setVdp1VramU16(vdp1WriteEA + 0x0A, 0x318); // CMDSIZE
-            setVdp1VramU16(vdp1WriteEA + 0x0C, finalSize[0]); // CMDXA
-            setVdp1VramU16(vdp1WriteEA + 0x0E, -finalSize[1]); // CMDYA
-
-            // setup gradient
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = readSaturnU16(spriteDef + 0);
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = readSaturnU16(spriteDef + 2);
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = readSaturnU16(spriteDef + 4);
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = readSaturnU16(spriteDef + 6);
-            setVdp1VramU16(vdp1WriteEA + 0x1C, graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
-            graphicEngineStatus.m14_vdp1Context[0].m10++;
-
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
-
-            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
-            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
-
         }
     }
 }

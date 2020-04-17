@@ -17,8 +17,8 @@ struct sHomingLaserRootTask : public s_workAreaTemplateWithCopy<sHomingLaserRoot
     struct sHomingLaserRootTask_sub
     {
         sBattleTargetable* m0_targetable;
-        sVec3_FP* m4;
-        s8 m8;
+        sVec3_FP* m4_pLaserSource;
+        s8 m8_pLaserId;
     };
     std::vector<sHomingLaserRootTask_sub> m8;
     s16 m64;
@@ -29,25 +29,25 @@ struct sHomingLaserRootTask : public s_workAreaTemplateWithCopy<sHomingLaserRoot
 
 struct sHomingLaserTask : public s_workAreaTemplateWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>
 {
-    sVec3_FP m10;
+    sVec3_FP m10_laserPosition;
     sVec3_FP m1C;
     fixedPoint m24;
     fixedPoint m30;
-    sVec3_FP m34;
+    sVec3_FP m34_laserDelta;
     sVec3_FP m40;
     sVec3_FP m4C;
     std::vector<s32> m58;
-    std::vector<s32> m5C;
+    std::vector<s32> m5C_laserArc;
     std::vector<sVec3_FP> m60;
-    std::vector<sVec3_FP> m64;
+    std::vector<sVec3_FP> m64_laserTrajectory;
     s32 m68;
-    s32 m6C;
-    s32 m70;
-    s8 m7E;
+    s32 m6C_numFramesToDestination;
+    s32 m70_totalLaserNumFrames;
+    s8 m7E_status;
     sBattleTargetable* m84_targetable;
     s8 m80;
     sVec3_FP* m88_targetablePosition;
-    sVec3_FP* m8C;
+    sVec3_FP* m8C_laserSource;
     sVec3_FP* m90_dragonPosition;
     sVec2_FP m94;
     struct sF0
@@ -56,7 +56,7 @@ struct sHomingLaserTask : public s_workAreaTemplateWithArgWithCopy<sHomingLaserT
         s32 m4_numLaserNodes;
         s32 m8;
         s32 mC;
-        sSaturnPtr m10;
+        const sLaserData* m10_laserData;
         u16 m14;
 
         std::vector<sF0Color> m18_color;
@@ -64,11 +64,11 @@ struct sHomingLaserTask : public s_workAreaTemplateWithArgWithCopy<sHomingLaserT
     // size 0x10C
 };
 
-void sHomingLaserTask_InitSub0(sHomingLaserTask::sF0* pThis, sHomingLaserTask* param_2, sVec3_FP* param_3, u16 param_4, sSaturnPtr param_5)
+void sHomingLaserTask_InitSub0(sHomingLaserTask::sF0* pThis, sHomingLaserTask* param_2, sVec3_FP* param_3, u16 param_4, const sLaserData* pLaserData)
 {
     pThis->m14 = param_4;
-    pThis->m10 = param_5;
-    pThis->m4_numLaserNodes = readSaturnS32(param_5 + 0x20);
+    pThis->m10_laserData = pLaserData;
+    pThis->m4_numLaserNodes = pLaserData->m20_numLaserNodes;
     pThis->m18_color.clear();
     pThis->m0_laserNodePosition.resize(pThis->m4_numLaserNodes);
     for (int i=0; i<pThis->m4_numLaserNodes; i++)
@@ -199,15 +199,15 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
         return;
     }
 
-    pThis->m8C = arg->m4;
+    pThis->m8C_laserSource = arg->m4_pLaserSource;
     pThis->m88_targetablePosition = getBattleTargetablePosition(*pThis->m84_targetable);
-    pThis->m80 = arg->m8;
+    pThis->m80 = arg->m8_pLaserId;
     pThis->m90_dragonPosition = &gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
-    pThis->m10 = *pThis->m8C;
-    pThis->m6C = pThis->m80 * 2 + 0xF;
-    pThis->m70 = pThis->m80 * 2 + 0xF;
+    pThis->m10_laserPosition = *pThis->m8C_laserSource;
+    pThis->m6C_numFramesToDestination = pThis->m80 * 2 + 0xF;
+    pThis->m70_totalLaserNumFrames = pThis->m80 * 2 + 0xF;
 
-    sVec3_FP local_18 = *pThis->m88_targetablePosition - pThis->m10;
+    sVec3_FP local_18 = *pThis->m88_targetablePosition - pThis->m10_laserPosition;
 
     pThis->m4C[1] = MTH_Mul(0x4000, sqrt_F(MTH_Product3d_FP(local_18, local_18)));
 
@@ -216,7 +216,7 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
     pThis->m24 = readSaturnFP(gCurrentBattleOverlay->getSaturnPtr(0x60AD510) + pThis->m80 * 4);
 
     pushCurrentMatrix();
-    translateCurrentMatrix(pThis->m10);
+    translateCurrentMatrix(pThis->m10_laserPosition);
     rotateCurrentMatrixShiftedY(-pThis->m94[1]);
     rotateCurrentMatrixShiftedX(-pThis->m94[0]);
     rotateCurrentMatrixShiftedZ(pThis->m24);
@@ -225,23 +225,23 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
     transformAndAddVec(sStack36, pThis->m40, cameraProperties2.m28[0]);
     popMatrix();
 
-    pThis->m40 -= pThis->m10;
+    pThis->m40 -= pThis->m10_laserPosition;
     pThis->m60.resize(10);
-    pThis->m64.resize(10);
+    pThis->m64_laserTrajectory.resize(10);
     pThis->m58.resize(1);
-    pThis->m5C.resize(1);
+    pThis->m5C_laserArc.resize(1);
 
     for (int i=0; i<10; i++)
     {
-        pThis->m64[i].zeroize();
+        pThis->m64_laserTrajectory[i].zeroize();
     }
 
     pThis->m58[0] = 0;
-    pThis->m5C[0] = 0;
+    pThis->m5C_laserArc[0] = 0;
 
     playSystemSoundEffect(8);
 
-    sHomingLaserTask_InitSub0(&pThis->mF0, pThis, pThis->m90_dragonPosition, pThis->m4_vd1Allocation->m4_vdp1Memory, gCurrentBattleOverlay->getSaturnPtr(0x60ADCE4));
+    sHomingLaserTask_InitSub0(&pThis->mF0, pThis, pThis->m90_dragonPosition, pThis->m4_vd1Allocation->m4_vdp1Memory, &gCurrentBattleOverlay->mLaserData);
 
     sVec3_FP local_34;
     sVec3_FP local_40;
@@ -258,7 +258,7 @@ void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const s
 
 void sHomingLaserTask_UpdateSub0(sHomingLaserTask* pThis)
 {
-    if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x80) && (pThis->m6C < 0xB))
+    if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x80) && (pThis->m6C_numFramesToDestination < 0xB))
     {
         randomNumber();
 
@@ -305,33 +305,33 @@ void sGunShotTask_UpdateSub2Sub0(sBattleTargetable* param_1, s16, sVec3_FP*, s8,
 
 void sHomingLaserTask_Update(sHomingLaserTask* pThis)
 {
-    switch (pThis->m7E)
+    switch (pThis->m7E_status)
     {
     case 0:
-        pThis->m7E++;
+        pThis->m7E_status++;
         break;
     case 1:
         // if target is inactive
         if ((pThis->m84_targetable == nullptr) || (pThis->m84_targetable->m50 & 0x140001))
         {
-            pThis->m7E = 3;
-            pThis->m34 = pThis->m64[0] - pThis->m64[1];
-            pThis->m6C = 0x1E;
+            pThis->m7E_status = 3;
+            pThis->m34_laserDelta = pThis->m64_laserTrajectory[0] - pThis->m64_laserTrajectory[1];
+            pThis->m6C_numFramesToDestination = 0x1E;
         }
         else
         {
-            for (int i=0; i<8; i++)
+            for (int i=8; i>=0; i--)
             {
-                pThis->m64[i + 1] = pThis->m64[i];
+                pThis->m64_laserTrajectory[i + 1] = pThis->m64_laserTrajectory[i];
             }
 
-            if (pThis->m6C < 1)
+            if (pThis->m6C_numFramesToDestination < 1)
             {
-                pThis->m64[0] = *pThis->m88_targetablePosition - *pThis->m8C;
-                pThis->m34 = pThis->m64[0] - pThis->m64[1];
-                pThis->m6C = 0x1E;
-                pThis->m5C[0] = 0x10000;
-                pThis->m7E++;
+                pThis->m64_laserTrajectory[0] = *pThis->m88_targetablePosition - *pThis->m8C_laserSource;
+                pThis->m34_laserDelta = pThis->m64_laserTrajectory[0] - pThis->m64_laserTrajectory[1];
+                pThis->m6C_numFramesToDestination = 0x1E;
+                pThis->m5C_laserArc[0] = 0x10000;
+                pThis->m7E_status++;
 
                 int iVar8;
                 if (mainGameState.gameStats.m1_dragonLevel == 8)
@@ -345,12 +345,12 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
 
                 int uVar3 = sHomingLaserTask_UpdateSub1(fixedPoint::toInteger(FP_Div(iVar8, fixedPoint::fromInteger(readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AD4E4) + gDragonState->mC_dragonType * 2))) + 0x8000));
                 sGunShotTask_UpdateSub2Sub0(pThis->m84_targetable, sGunShotTask_UpdateSub1Sub2(pThis->m84_targetable, uVar3, 1), pThis->m88_targetablePosition, 2,
-                    pThis->m34[0], pThis->m34[1], pThis->m34[2], 0x1000);
+                    pThis->m34_laserDelta[0], pThis->m34_laserDelta[1], pThis->m34_laserDelta[2], 0x1000);
 
                 if ((pThis->m84_targetable->m60 == 0) || (pThis->m84_targetable->m50 & 0x400))
                 {
                     sVec2_FP asStack84;
-                    computeVectorAngles(pThis->m34, asStack84);
+                    computeVectorAngles(pThis->m34_laserDelta, asStack84);
                     
                     sVec3_FP dStack96;
                     dStack96[0] = asStack84[0];
@@ -358,20 +358,21 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
                     dStack96[2] = randomNumber();
                     sGunShotTask_UpdateSub2Sub2(pThis, pThis->m88_targetablePosition, &dStack96, 0x4CCC);
 
-                    pThis->m34 = MTH_Mul(-0x10000, pThis->m34);
+                    pThis->m34_laserDelta = MTH_Mul(-0x10000, pThis->m34_laserDelta);
 
                     playSystemSoundEffect(0x16);
-                    pThis->m7E = 3;
+                    pThis->m7E_status = 3;
                 }
             }
             else
             {
-                pThis->m10 = MTH_Mul(FP_Div(fixedPoint::fromInteger(pThis->m70 - pThis->m6C), fixedPoint::fromInteger(pThis->m70)), *pThis->m88_targetablePosition - *pThis->m8C) + *pThis->m8C;
-                pThis->m5C[0] = getSin(FP_Div(0x8000000, fixedPoint::fromInteger(pThis->m70)));
+                fixedPoint ratioInLaser = FP_Div(fixedPoint::fromInteger(pThis->m70_totalLaserNumFrames - pThis->m6C_numFramesToDestination), fixedPoint::fromInteger(pThis->m70_totalLaserNumFrames));
+                pThis->m10_laserPosition = MTH_Mul(ratioInLaser, *pThis->m88_targetablePosition - *pThis->m8C_laserSource) + *pThis->m8C_laserSource;
+                pThis->m5C_laserArc[0] = getSin(MTH_Mul(FP_Div(0x8000000, fixedPoint::fromInteger(pThis->m70_totalLaserNumFrames)), ratioInLaser).toInteger());
 
                 pushCurrentMatrix();
-                translateCurrentMatrix(pThis->m10);
-                sVec3_FP local_40 = MTH_Mul(pThis->m5C[0], pThis->m40);
+                translateCurrentMatrix(pThis->m10_laserPosition);
+                sVec3_FP local_40 = MTH_Mul(pThis->m5C_laserArc[0], pThis->m40);
                 rotateCurrentMatrixYXZ(pThis->m1C);
 
                 sVec3_FP sStack52;
@@ -379,17 +380,42 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
                 transformAndAddVec(sStack52, local_40, cameraProperties2.m28[0]);
                 popMatrix();
 
-                pThis->m64[0] = local_40 - *pThis->m8C;
+                pThis->m64_laserTrajectory[0] = local_40 - *pThis->m8C_laserSource;
 
-                pThis->m6C--;
+                pThis->m6C_numFramesToDestination--;
 
                 sHomingLaserTask_UpdateSub0(pThis);
             }
         }
         break;
-    default:
+    case 2:
+        for (int i = 8; i >= 0; i--)
+        {
+            pThis->m64_laserTrajectory[i + 1] = pThis->m64_laserTrajectory[i];
+        }
+        pThis->m64_laserTrajectory[0] += pThis->m34_laserDelta;
+        if (gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude < pThis->m60[0][1])
+        {
+            if (pThis->m6C_numFramesToDestination-- < 0)
+            {
+                pThis->getTask()->markFinished();
+            }
+            else
+            {
+                if (pThis->m6C_numFramesToDestination == 0x1D)
+                {
+                    pThis->mF0.mC = 1;
+                }
+            }
+        }
+        else
+        {
+            pThis->getTask()->markFinished();
+        }
         break;
+    default:
         assert(0);
+        break;
     }
 
     pThis->m24 += pThis->m30;
@@ -400,7 +426,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
     }
 }
 
-s32 sHomingLaserTask_DrawSub1Sub0Sub0(std::array<sVec3_FP, 2>& param_1, sSaturnPtr param_2, s_graphicEngineStatus_405C& param_3, sMatrix4x3* param_4)
+s32 sHomingLaserTask_DrawSub1Sub0Sub0(std::array<sVec3_FP, 2>& param_1, std::array<fixedPoint,2>& param_2, s_graphicEngineStatus_405C& param_3, sMatrix4x3* param_4)
 {
     if (isGunShotVisible(param_1, param_3))
     {
@@ -415,8 +441,8 @@ s32 sHomingLaserTask_DrawSub1Sub0Sub0(std::array<sVec3_FP, 2>& param_1, sSaturnP
         fixedPoint angle = atan2(iVar3 - iVar5, iVar2 - iVar4);
 
         {
-            fixedPoint iVar6 = MTH_Mul(readSaturnFP(param_2), getSin(angle));
-            fixedPoint iVar7 = MTH_Mul(readSaturnFP(param_2), getCos(angle));
+            fixedPoint iVar6 = MTH_Mul(param_2[0], getSin(angle));
+            fixedPoint iVar7 = MTH_Mul(param_2[0], getCos(angle));
 
             iVar6 = MTH_Mul_5_6(param_3.m18_widthScale, iVar6, ratio0);
             iVar7 = MTH_Mul_5_6(param_3.m1C_heightScale, iVar7, ratio0);
@@ -428,8 +454,8 @@ s32 sHomingLaserTask_DrawSub1Sub0Sub0(std::array<sVec3_FP, 2>& param_1, sSaturnP
         }
 
         {
-            fixedPoint iVar2 = MTH_Mul(readSaturnFP(param_2), getSin(angle));
-            fixedPoint iVar3 = MTH_Mul(readSaturnFP(param_2), getCos(angle));
+            fixedPoint iVar2 = MTH_Mul(param_2[1], getSin(angle));
+            fixedPoint iVar3 = MTH_Mul(param_2[1], getCos(angle));
 
             iVar2 = MTH_Mul_5_6(param_3.m18_widthScale, iVar2, ratio1);
             iVar3 = MTH_Mul_5_6(param_3.m1C_heightScale, iVar3, ratio1);
@@ -453,12 +479,13 @@ s32 sGunShotTask_DrawSub1Sub1(sMatrix4x3*, s_graphicEngineStatus_405C&)
     return 1;
 }
 
-void sHomingLaserTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param1, sSaturnPtr param_2, u16 param_3, s16 param_4, s16 param_5, const sF0Color* param_6, s32 param_7)
+void sHomingLaserTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param1, std::array<fixedPoint, 2>& param_2, u16 param_3, s16 param_4, s16 param_5, const sF0Color* param_6, s32 param_7)
 {
-    std::array<sVec3_FP, 2> sStack32;
+    drawDebugLine(param1[0], param1[0]);
 
+    std::array<sVec3_FP, 2> sStack32;
     transformAndAddVecByCurrentMatrix(&param1[0], &sStack32[0]);
-    transformAndAddVecByCurrentMatrix(&param1[1], &sStack32[1]);
+    transformAndAddVecByCurrentMatrix(&param1[0], &sStack32[1]);
 
     sMatrix4x3 sStack80;
 
@@ -478,6 +505,11 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
         return;
     }
 
+    for (int i=0; i< pThis->m4_numLaserNodes - 1; i++)
+    {
+        drawDebugLine(pThis->m0_laserNodePosition[i], pThis->m0_laserNodePosition[i+1]);
+    }
+
     int iVar1 = pThis->m8;
     int iVar3 = pThis->m4_numLaserNodes;
 
@@ -486,21 +518,20 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
         uStack64[0] = pThis->m0_laserNodePosition[iVar3 - 2];
         uStack64[1] = pThis->m0_laserNodePosition[iVar3 - 1];
 
-        sSaturnPtr local_28 = pThis->m10 + 0x18 + (iVar3 - 2) * 4;
-        sSaturnPtr local_24 = pThis->m10 + 0x18 + (iVar3 - 1) * 4;
+        std::array<fixedPoint, 2> local_28;
+        local_28[0] = pThis->m10_laserData->m18_vertices[iVar3 - 2];
+        local_28[1] = pThis->m10_laserData->m18_vertices[iVar3 - 1];
 
-        std::vector<sF0Color>* iVar4;
+        const sF0Color* iVar4;
         if (pThis->m18_color.size() == 0)
         {
-            //iVar4 = pThis->m10
+            iVar4 = &pThis->m10_laserData->m1C_colors[iVar3 - 2];
         }
         else
         {
-            iVar4 = &pThis->m18_color;
+            iVar4 = &pThis->m18_color[iVar3 - 2];
         }
-        sSaturnPtr iVar5 = pThis->m10;
-
-        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + readSaturnS16(iVar5 + 8), readSaturnS16(iVar5 + 0xE), readSaturnS16(iVar5 + 0x14) + pThis->m14, &(*iVar4)[iVar3 - 2], 8);
+        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + pThis->m10_laserData->m8, pThis->m10_laserData->mE, pThis->m14 + pThis->m10_laserData->m14, iVar4, 8);
     }
 
     iVar3 = pThis->m4_numLaserNodes - 2;
@@ -510,21 +541,21 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
         uStack64[0] = pThis->m0_laserNodePosition[iVar3 - 1];
         uStack64[1] = pThis->m0_laserNodePosition[iVar3];
 
-        sSaturnPtr local_28 = pThis->m10 + 0x18 + (iVar3 - 1) * 4;
-        sSaturnPtr local_24 = pThis->m10 + 0x18 + (iVar3) * 4;
+        std::array<fixedPoint, 2> local_28;
+        local_28[0] = pThis->m10_laserData->m18_vertices[iVar3 - 1];
+        local_28[1] = pThis->m10_laserData->m18_vertices[iVar3];
 
-        std::vector<sF0Color>* iVar4;
+        const sF0Color* iVar4;
         if (pThis->m18_color.size() == 0)
         {
-            //iVar4 = pThis->m10
+            iVar4 = &pThis->m10_laserData->m1C_colors[iVar3 - 1];
         }
         else
         {
-            iVar4 = &pThis->m18_color;
+            iVar4 = &pThis->m18_color[iVar3 - 1];
         }
-        sSaturnPtr iVar5 = pThis->m10;
 
-        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + readSaturnS16(iVar5 + 6), readSaturnS16(iVar5 + 0xC), readSaturnS16(iVar5 + 0x12) + pThis->m14, &(*iVar4)[iVar3 - 1], 8);
+        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + pThis->m10_laserData->m6, pThis->m10_laserData->mC, pThis->m14 + pThis->m10_laserData->m12, iVar4, 8);
         iVar3--;
     }
     if (pThis->m8 < 1)
@@ -533,33 +564,33 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
         uStack64[0] = pThis->m0_laserNodePosition[iVar3];
         uStack64[1] = pThis->m0_laserNodePosition[iVar3 + 1];
 
-        sSaturnPtr local_28 = pThis->m10 + 0x18 + (iVar3) * 4;
-        sSaturnPtr local_24 = pThis->m10 + 0x18 + (iVar3 + 1) * 4;
+        std::array<fixedPoint, 2> local_28;
+        local_28[0] = pThis->m10_laserData->m18_vertices[iVar3];
+        local_28[1] = pThis->m10_laserData->m18_vertices[iVar3 + 1];
 
-        std::vector<sF0Color>* iVar4;
+        const sF0Color* iVar4;
         if (pThis->m18_color.size() == 0)
         {
-            //iVar4 = pThis->m10
+            iVar4 = &pThis->m10_laserData->m1C_colors[iVar3];
         }
         else
         {
-            iVar4 = &pThis->m18_color;
+            iVar4 = &pThis->m18_color[iVar3];
         }
-        sSaturnPtr iVar5 = pThis->m10;
 
-        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + readSaturnS16(iVar5 + 4), readSaturnS16(iVar5 + 0xA), readSaturnS16(iVar5 + 0x10) + pThis->m14, &(*iVar4)[iVar3], 8);
+        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + pThis->m10_laserData->m4, pThis->m10_laserData->mA, pThis->m14 + pThis->m10_laserData->m10, iVar4, 8);
     }
 }
 
 void sHomingLaserTask_Draw(sHomingLaserTask* pThis)
 {
-    for (int i = 0; i < 8; i++)
+    for (int i = 9; i >= 0; i--)
     {
-        sVec3_FP local_2c = *pThis->m8C - *pThis->m90_dragonPosition;
+        sVec3_FP local_2c = *pThis->m8C_laserSource - *pThis->m90_dragonPosition;
 
         pushCurrentMatrix();
         translateCurrentMatrix(pThis->m90_dragonPosition);
-        local_2c += pThis->m64[i];
+        local_2c += pThis->m64_laserTrajectory[i];
 
         sVec3_FP sStack56;
         transformAndAddVecByCurrentMatrix(&local_2c, &sStack56);
@@ -568,7 +599,7 @@ void sHomingLaserTask_Draw(sHomingLaserTask* pThis)
         popMatrix();
     }
 
-    if (pThis->m7E == 3)
+    if (pThis->m7E_status == 3)
     {
         assert(0);
     }
@@ -619,8 +650,8 @@ void homingLaserRootTask_Update(sHomingLaserRootTask* pThis)
                 if (!(gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50 & 0x40000))
                 {
                     pThis->m8[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable;
-                    pThis->m8[i].m4 = &gBattleManager->m10_battleOverlay->m18_dragon->m144;
-                    pThis->m8[i].m8 = i;
+                    pThis->m8[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
+                    pThis->m8[i].m8_pLaserId = i;
                     createSiblingTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8[i], &homingLaserDefinition);
                 }
             }
@@ -630,8 +661,8 @@ void homingLaserRootTask_Update(sHomingLaserRootTask* pThis)
                 if (!(gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50 & 0x40000))
                 {
                     pThis->m8[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable;
-                    pThis->m8[i].m4 = &gBattleManager->m10_battleOverlay->m18_dragon->m144;
-                    pThis->m8[i].m8 = i;
+                    pThis->m8[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
+                    pThis->m8[i].m8_pLaserId = i;
                     createSiblingTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8[i], &homingLaserDefinition);
                 }
             }

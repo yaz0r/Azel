@@ -8,11 +8,11 @@ std::string sBattleOverlayName = "";
 
 battleOverlay* gCurrentBattleOverlay = nullptr;
 
-const std::vector<sF0Color> battleOverlay::m60AE424 = {{0xFE00, 0xC208, 0xC208, 0xFE00}};
-const std::vector<sF0Color> battleOverlay::m60AE42C;
-const std::vector<sF0Color> battleOverlay::m60AE434;
-const std::vector<sF0Color> battleOverlay::m60AE43C;
-
+const std::vector<sF0Color> battleOverlay::m60AE424 = { {0xFE00, 0xC208, 0xC208, 0xFE00} };
+const std::vector<sF0Color> battleOverlay::m60AE42C = { {0x8E1F, 0x8F1F, 0x8F1F, 0x8F1F} };
+const std::vector<sF0Color> battleOverlay::m60AE434 = { {0x83EE, 0x93EE, 0x93EE, 0x83EE} };
+const std::vector<sF0Color> battleOverlay::m60AE43C = { {0x83FF, 0x83FF, 0x83FF, 0x83FF} };
+sLaserData battleOverlay::mLaserData;
 
 static void battleOverlayTask_Init(sBattleOverlayTask* pThis)
 {

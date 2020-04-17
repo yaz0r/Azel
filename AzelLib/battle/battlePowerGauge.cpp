@@ -74,6 +74,10 @@ void sGaugeIncreaseEffectRoot_Update(sGaugeIncreaseEffectRoot* pThis)
 
     switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo)
     {
+    case 0: // happens when we gained a gaunge when we just used one
+        params.mC = 0;
+        params.m16 = 0;
+        break;
     case 1:
         params.mC = 0x2000;
         params.m16 = 0;

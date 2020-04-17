@@ -1,5 +1,22 @@
 #pragma once
 
+struct sLaserData
+{
+    s16 m4;
+    s16 m6;
+    s16 m8;
+    s16 mA;
+    s16 mC;
+    s16 mE;
+    s16 m10;
+    s16 m12;
+    s16 m14;
+    std::vector<fixedPoint> m18_vertices;
+    std::vector<sF0Color> m1C_colors;
+    s32 m20_numLaserNodes;
+    // size?
+};
+
 struct battleOverlay : public sSaturnMemoryFile
 {
     virtual sSaturnPtr getBattleEngineInitData() = 0;
@@ -11,6 +28,9 @@ struct battleOverlay : public sSaturnMemoryFile
     static const std::vector<sF0Color> m60AE42C;
     static const std::vector<sF0Color> m60AE434;
     static const std::vector<sF0Color> m60AE43C;
+
+    // laser data
+    static sLaserData mLaserData;
 };
 
 extern battleOverlay* gCurrentBattleOverlay;
