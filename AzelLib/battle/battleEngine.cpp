@@ -551,7 +551,7 @@ void battleEngine_SetBattleMode16()
     battleEngine_FlagQuadrantBitForAttack(0);
 
     pBattleEngine->m390 = 0;
-    pBattleEngine->m392 = 0;
+    pBattleEngine->m394 = 0;
 
     pBattleEngine->m384_battleModeDelay = 0;
     pBattleEngine->m386 = 0;
@@ -2424,20 +2424,20 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaserSub0(s_battleEngin
     switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
     {
     case 0:
-        (*param_2)[2] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
-        (*param_2)[0] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        (*param_2)[2] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        (*param_2)[0] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
         break;
     case 1:
         (*param_2)[0] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
         (*param_2)[2] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
         break;
     case 2:
-        (*param_2)[2] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
-        (*param_2)[0] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        (*param_2)[2] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        (*param_2)[0] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
         break;
     case 3:
         (*param_2)[0] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
-        (*param_2)[2] = pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
+        (*param_2)[2] = -pThis->m45C_perQuadrantDragonSpeed[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant] / 4;
         break;
     default:
         assert(0);

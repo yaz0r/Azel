@@ -12,7 +12,7 @@ struct sLaserData
     s16 m12;
     s16 m14;
     std::vector<fixedPoint> m18_vertices;
-    std::vector<sF0Color> m1C_colors;
+    std::vector<quadColor> m1C_colors;
     s32 m20_numLaserNodes;
     // size?
 };
@@ -24,10 +24,10 @@ struct battleOverlay : public sSaturnMemoryFile
     virtual void invoke(sSaturnPtr Func, p_workArea pParent, u32, u32) = 0;
 
     // Colors used for gun shots
-    static const std::vector<sF0Color> m60AE424;
-    static const std::vector<sF0Color> m60AE42C;
-    static const std::vector<sF0Color> m60AE434;
-    static const std::vector<sF0Color> m60AE43C;
+    static const std::vector<quadColor> m60AE424;
+    static const std::vector<quadColor> m60AE42C;
+    static const std::vector<quadColor> m60AE434;
+    static const std::vector<quadColor> m60AE43C;
 
     // laser data
     static sLaserData mLaserData;

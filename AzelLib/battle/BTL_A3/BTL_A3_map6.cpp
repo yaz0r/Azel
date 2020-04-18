@@ -452,7 +452,7 @@ void sBattleEnvironmentGridCell_Draw(sTownCellTask* pThis)
     if ((graphicEngineStatus.m405C.m10_nearClipDistance - gTownGrid.m2C) <= pCurrentMatrix->matrix[11])
     {
         s32 iVar1 = MTH_Mul(pCurrentMatrix->matrix[11], graphicEngineStatus.m405C.m2C_widthRatio);
-        s32 iVar2 = MTH_Mul(gTownGrid.m2C, graphicEngineStatus.m405C.m2C_widthRatio);
+        s32 iVar2 = MTH_Mul(gTownGrid.m2C, graphicEngineStatus.m405C.m28_widthRatio2);
 
         if (((-(iVar1 + iVar2) <= pCurrentMatrix->matrix[3]) && (pCurrentMatrix->matrix[3] <= iVar1 + iVar2)))
         {

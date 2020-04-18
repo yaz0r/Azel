@@ -71,10 +71,10 @@ void BTL_A3_data::init()
     for (int i=0; i< mLaserData.m20_numLaserNodes; i++)
     {
         mLaserData.m18_vertices[i] = readSaturnFP(laserVerticesEA + 4 * i);
-        mLaserData.m1C_colors[i].m0_colors[0] = readSaturnU16(laserColorsEA + 4 * 2 * i + 0);
-        mLaserData.m1C_colors[i].m0_colors[1] = readSaturnU16(laserColorsEA + 4 * 2 * i + 2);
-        mLaserData.m1C_colors[i].m0_colors[2] = readSaturnU16(laserColorsEA + 4 * 2 * i + 4);
-        mLaserData.m1C_colors[i].m0_colors[3] = readSaturnU16(laserColorsEA + 4 * 2 * i + 6);
+        mLaserData.m1C_colors[i][0] = readSaturnU16(laserColorsEA + 4 * 2 * i + 0);
+        mLaserData.m1C_colors[i][1] = readSaturnU16(laserColorsEA + 4 * 2 * i + 2);
+        mLaserData.m1C_colors[i][2] = readSaturnU16(laserColorsEA + 4 * 2 * i + 4);
+        mLaserData.m1C_colors[i][3] = readSaturnU16(laserColorsEA + 4 * 2 * i + 6);
     }
 }
 

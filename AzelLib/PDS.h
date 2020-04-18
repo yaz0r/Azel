@@ -499,8 +499,5 @@ s32 MTH_Product2d(s32(&r4)[2], s32(&r5)[2]);
 fixedPoint MulVec2(const sVec2_FP& r4, const sVec2_FP& r5);
 void adjustMatrixTranslation(fixedPoint r4);
 
-struct sF0Color
-{
-    std::array<u16, 4> m0_colors;
-};
-
+typedef u16 saturnPackedColor;
+typedef std::array<saturnPackedColor, 4> quadColor;
