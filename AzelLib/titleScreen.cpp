@@ -360,9 +360,7 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
             assert(false);
         }
 
-#ifndef __IPHONEOS__
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) // if start was pressed
-#endif
         {
             playSystemSoundEffect(8);
             pWorkArea->m0_status = 7;
@@ -377,9 +375,7 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
 
         pWorkArea->m0_status++;
     case 6:
-
-        assert(false);
-        //if (menuUnk0[32]) <- wrong?
+        if (g_fadeControls.m0_fade0.m20_stopped != 0)
         {
             initialTaskStatus.m_pendingTask = startSegaLogoModule;
         }

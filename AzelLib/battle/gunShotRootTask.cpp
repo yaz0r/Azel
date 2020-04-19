@@ -58,7 +58,7 @@ struct sGunShotTask : public s_workAreaTemplateWithArgWithCopy<sGunShotTask, sGu
 void sGunShotTask_Init(sGunShotTask* pThis, sGunArg* arg)
 {
     pThis->m68 = arg->m0;
-    if ((pThis->m68 == nullptr) || (pThis->m68->m50 & 0x40001))
+    if ((pThis->m68 == nullptr) || (pThis->m68->m50_flags & 0x40001))
     {
         pThis->getTask()->markFinished();
         return;
@@ -182,20 +182,20 @@ s32 sGunShotTask_UpdateSub1Sub2(sBattleTargetable* pTargetable, s16 param_2, s32
     switch (param_3)
     {
     case 0:
-        if (!(pTargetable->m50 & 0x1000))
+        if (!(pTargetable->m50_flags & 0x1000))
         {
             iVar2 = 0x10000;
-            if (pTargetable->m50 & 0x800)
+            if (pTargetable->m50_flags & 0x800)
             {
                 iVar2 = 0x8000;
             }
         }
         break;
     case 1:
-        if (!(pTargetable->m50 & 0x400))
+        if (!(pTargetable->m50_flags & 0x400))
         {
             iVar2 = 0x10000;
-            if (pTargetable->m50 & 0x200)
+            if (pTargetable->m50_flags & 0x200)
             {
                 iVar2 = 0x8000;
             }
@@ -258,19 +258,19 @@ void sGunShotTask_Update(sGunShotTask* pThis)
 {
     if (!(pThis->m65 & 2))
     {
-        pThis->m80 += gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
+        pThis->m80 += gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
     }
     else
     {
         pThis->m80 = *pThis->m6C;
     }
 
-    sVec3_FP local_54 = pThis->m14 + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
+    sVec3_FP local_54 = pThis->m14 + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
 
     switch (pThis->m64)
     {
     case 0:
-        if ((!(pThis->m65 & 4) && ((pThis->m68 != nullptr) && (pThis->m68->m50 & 0x40001))) || ((pThis->m68 != nullptr) && (pThis->m68->m50 & 0x140001)))
+        if ((!(pThis->m65 & 4) && ((pThis->m68 != nullptr) && (pThis->m68->m50_flags & 0x40001))) || ((pThis->m68 != nullptr) && (pThis->m68->m50_flags & 0x140001)))
         {
             pThis->m64 = 1;
             pThis->m14 = pThis->m2C + local_54;
@@ -320,7 +320,7 @@ void sGunShotTask_Update(sGunShotTask* pThis)
                     pThis->m58 = 0;
 
                     sVec3_FP sStack72;
-                    transformAndAddVec(*pThis->m68->m4, sStack72, cameraProperties2.m28[0]);
+                    transformAndAddVec(*pThis->m68->m4_pPosition, sStack72, cameraProperties2.m28[0]);
                     sGunShotTask_UpdateSub2(pThis, sGunShotTask_UpdateSub1(pThis), &sStack72);
                 }
             }

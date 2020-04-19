@@ -73,8 +73,8 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     std::array<s32, 2> m190;
     sVec3_FP m164;
     s16 m184;
-    sVec3_FP m1A0;
-    sVec3_FP m1AC;
+    sVec3_FP m1A0_battleAutoScrollDelta;
+    sVec3_FP m1AC_battleAutoScrollDeltaBackup;
     s32 m1B8_dragonPitch;
     s32 m1BC_dragonYaw;
     s32 m1C8;
@@ -150,7 +150,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     sVec3_FP* m3D8_pDesiredCameraPosition;
     sVec3_FP m3DC;
     sVec3_FP m3E8;
-    sVec3_FP m3F4;
+    sVec3_FP m3F4_cameraPositionWhileShooting;
     sVec3_FP m400;
     sVec3_FP m40C_gunTarget;
     sVec3_FP m418;

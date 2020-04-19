@@ -16,10 +16,38 @@ void sBattleOverlayTask_C_Init(sBattleOverlayTask_C* pThis)
     }
 }
 
-s32 sBattleOverlayTask_C_UpdateSub0(sBattleTargetable* pThis)
+// is targetable for gun
+bool sBattleOverlayTask_C_IsTargetableForGun(sBattleTargetable* pThis)
 {
-    FunctionUnimplemented();
-    return 1;
+    bool isVisible;
+    sVec3_FP position = *pThis->m4_pPosition;
+
+    if (((((((pThis->m50_flags) & 1) == 0) && (((pThis->m50_flags) & 0x100000) == 0)) &&
+        ((gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude) <= pThis->m10_position[1])) &&
+        (pThis->m10_position[1] <= (gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude))) &&
+        (((gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1) != 0 ||
+            (((pThis->m50_flags) & 2) == 0))))
+    {
+        fixedPoint clippingPlaneNear;
+        fixedPoint clippingPlaneFar;
+        getVdp1ClippingPlanes(clippingPlaneNear, clippingPlaneFar);
+
+        isVisible = position[2] <= clippingPlaneFar;
+        if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1F] == 0)
+        {
+            isVisible = 1;
+        }
+        else
+        {
+            assert(0);
+        }
+
+    }
+    else
+    {
+        isVisible = false;
+    }
+    return isVisible;
 }
 
 void sortEnemyByDistanceToDragon(s32 start, s32 end)
@@ -67,13 +95,13 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
     {
         if (psVar8->m0_isActive > -1)
         {
-            if ((psVar8->m4_targetable->m50 & 0x40000) == 0) {
-                psVar8->m4_targetable->m40 = *psVar8->m4_targetable->m4;
+            if ((psVar8->m4_targetable->m50_flags & 0x40000) == 0) {
+                psVar8->m4_targetable->m40 = *psVar8->m4_targetable->m4_pPosition;
                 battleTargetable_updatePosition(psVar8->m4_targetable);
             }
             else
             {
-                if ((psVar8->m4_targetable->m50 & 1) == 0)
+                if ((psVar8->m4_targetable->m50_flags & 1) == 0)
                 {
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies--;
                 }
@@ -114,7 +142,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
             {
             case 0:
                 psVar8->m4_targetable->m5A = 0;
-                if ((psVar8->m4_targetable->m50 & 0x80000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4_targetable))
+                if ((psVar8->m4_targetable->m50_flags & 0x80000000) && sBattleOverlayTask_C_IsTargetableForGun(psVar8->m4_targetable))
                 {
                     psVar8->m0_isActive = 1;
                     psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
@@ -123,7 +151,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
                 break;
             case 1:
                 psVar8->m4_targetable->m5A = 0;
-                if ((psVar8->m4_targetable->m50 & 0x40000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4_targetable))
+                if ((psVar8->m4_targetable->m50_flags & 0x40000000) && sBattleOverlayTask_C_IsTargetableForGun(psVar8->m4_targetable))
                 {
                     psVar8->m0_isActive = 1;
                     psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
@@ -132,7 +160,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
                 break;
             case 2:
                 psVar8->m4_targetable->m5A = 0;
-                if ((psVar8->m4_targetable->m50 & 0x20000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4_targetable))
+                if ((psVar8->m4_targetable->m50_flags & 0x20000000) && sBattleOverlayTask_C_IsTargetableForGun(psVar8->m4_targetable))
                 {
                     psVar8->m0_isActive = 1;
                     psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
@@ -141,7 +169,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
                 break;
             case 3:
                 psVar8->m4_targetable->m5A = 0;
-                if ((psVar8->m4_targetable->m50 & 0x10000000) && sBattleOverlayTask_C_UpdateSub0(psVar8->m4_targetable))
+                if ((psVar8->m4_targetable->m50_flags & 0x10000000) && sBattleOverlayTask_C_IsTargetableForGun(psVar8->m4_targetable))
                 {
                     psVar8->m0_isActive = 1;
                     psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
@@ -171,7 +199,7 @@ void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
     {
         for (int i=0; i<gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies; i++)
         {
-            gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50 &= ~0x20000;
+            gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50_flags &= ~0x20000;
         }
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1 = 0;
     }

@@ -1,5 +1,11 @@
 #include "PDS.h"
 
+void getVdp1ClippingPlanes(fixedPoint& nearPlane, fixedPoint& farPlane)
+{
+    nearPlane = graphicEngineStatus.m405C.m10_nearClipDistance;
+    farPlane = graphicEngineStatus.m405C.m14_farClipDistance;
+}
+
 u8 VDP1Vram[0x80000];
 
 void setVdp1VramU16(u32 EA, u16 value)

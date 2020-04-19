@@ -96,16 +96,16 @@ void createBattleIntroTaskSub2(sBattleIntroSubTask* pThis)
     if (isTraceEnabled())
     {
         addTraceLog(gBattleManager->m10_battleOverlay->m18_dragon->m8_position, "dragon");
-        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
+        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, "m1A0");
         addTraceLog(localVector, "localVector");
     }
 
-    pThis->m4_currentCameraPosition = gBattleManager->m10_battleOverlay->m18_dragon->m8_position + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0 + localVector;
+    pThis->m4_currentCameraPosition = gBattleManager->m10_battleOverlay->m18_dragon->m8_position + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta + localVector;
 }
 
 void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
 {
-    sVec3_FP deltaPosition = gBattleManager->m10_battleOverlay->m18_dragon->m8_position + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
+    sVec3_FP deltaPosition = gBattleManager->m10_battleOverlay->m18_dragon->m8_position + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
 
     switch (pThis->m24_interpolationType)
     {
@@ -129,7 +129,7 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
     if (isTraceEnabled())
     {
         addTraceLog(gBattleManager->m10_battleOverlay->m18_dragon->m8_position, "m8_position");
-        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
+        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, "m1A0");
         addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter, "mC");
         addTraceLog(pThis->m10_desiredCameraPosition, "m10_rotation");
     }

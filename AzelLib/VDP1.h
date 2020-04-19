@@ -1,5 +1,7 @@
 #pragma once
 
+void getVdp1ClippingPlanes(fixedPoint& nearPlane, fixedPoint& farPlane);
+
 extern u16 VDP1_PTMR;
 extern u16 VDP1_EWDR;
 extern u16 VDP1_EWLR;

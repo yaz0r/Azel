@@ -78,12 +78,6 @@ struct sBaldorSubTask : public s_workAreaTemplateWithCopy<sBaldorSubTask>
     // size 0xB0
 };
 
-void getVdp1ClippingPlanes(fixedPoint& nearPlane, fixedPoint& farPlane)
-{
-    nearPlane = graphicEngineStatus.m405C.m10_nearClipDistance;
-    farPlane = graphicEngineStatus.m405C.m14_farClipDistance;
-}
-
 void getVdp1ScreenResolution(s16(&screenResolution)[4])
 {
     screenResolution[0] = graphicEngineStatus.m405C.mC;
@@ -220,7 +214,7 @@ void sBaldorSubTask0_draw1(sBaldorSubTask* pThis)
         tempCoordinates[i][2] = 0;
 
         tempCoordinates[i] = MTH_Mul(pThis->m9C, tempCoordinates[i]);
-        outputCoordinates[i] = *pThis->m84_pTargetable->m4 + tempCoordinates[i];
+        outputCoordinates[i] = *pThis->m84_pTargetable->m4_pPosition + tempCoordinates[i];
     }
 
     drawLineSquare(outputCoordinates, -1, 0xA000);
@@ -231,7 +225,7 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
     pThis->mA8_cursorFrameCounter = (pThis->mA8_cursorFrameCounter + 1) & 0xFF;
 
     sSaturnPtr spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60AB2DC);
-    if (!(pThis->m84_pTargetable->m50 & 0x20000))
+    if (!(pThis->m84_pTargetable->m50_flags & 0x20000))
     {
         spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60ab2ec);
     }
@@ -241,9 +235,9 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
     }
 
     sVec2_S16 coordinates;
-    if (isSpriteVisible(pThis->m84_pTargetable->m4, coordinates))
+    if (isSpriteVisible(pThis->m84_pTargetable->m4_pPosition, coordinates))
     {
-        if (pThis->m84_pTargetable->m50 & 0x20000)
+        if (pThis->m84_pTargetable->m50_flags & 0x20000)
         {
             // display the normal reticule
             sVec2_S16 size;
@@ -369,18 +363,18 @@ void sBaldorSubTask0_update1(sBaldorSubTask* pThis)
         return;
     }
 
-    if ((pThis->m84_pTargetable->m50 & 0x40000) == 0)
+    if ((pThis->m84_pTargetable->m50_flags & 0x40000) == 0)
     {
         if (pThis->m84_pTargetable->m5A < 1)
         {
-            pThis->m84_pTargetable->m50 &= ~0x20000;
+            pThis->m84_pTargetable->m50_flags &= ~0x20000;
             pThis->m_UpdateMethod = sBaldorSubTask0_update;
             pThis->m_DrawMethod = nullptr;
             pThis->m98 &= ~1;
         }
         else
         {
-            if (!(pThis->m84_pTargetable->m50 & 0x20000))
+            if (!(pThis->m84_pTargetable->m50_flags & 0x20000))
             {
                 pThis->mAF = 0;
                 pThis->mA4 = 0;
@@ -389,7 +383,7 @@ void sBaldorSubTask0_update1(sBaldorSubTask* pThis)
             }
             else
             {
-                if (!(pThis->m84_pTargetable->m50 & 0x100000))
+                if (!(pThis->m84_pTargetable->m50_flags & 0x100000))
                 {
                     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m396 == gBattleManager->m10_battleOverlay->m4_battleEngine->m394)
                     {
@@ -436,7 +430,7 @@ void sBaldorSubTask0_update1(sBaldorSubTask* pThis)
                     pThis->m98 |= 1;
                     pThis->m_DrawMethod = sBaldorSubTask0_draw;
                 }
-                pThis->m84_pTargetable->m50 &= ~0x20000;
+                pThis->m84_pTargetable->m50_flags &= ~0x20000;
                 pThis->mAF = 0;
                 pThis->mA4 = 0;
                 pThis->m_UpdateMethod = sBaldorSubTask0_update;
@@ -448,8 +442,8 @@ void sBaldorSubTask0_update1(sBaldorSubTask* pThis)
     }
     else
     {
-        pThis->m84_pTargetable->m50 &= ~0x20000;
-        pThis->m84_pTargetable->m50 &= ~0x10000;
+        pThis->m84_pTargetable->m50_flags &= ~0x20000;
+        pThis->m84_pTargetable->m50_flags &= ~0x10000;
         pThis->getTask()->markFinished();
     }
 }
@@ -463,11 +457,11 @@ void sBaldorSubTask0_update(sBaldorSubTask* pThis)
         return;
     }
 
-    if ((pThis->m84_pTargetable->m50 & 0x40000) == 0)
+    if ((pThis->m84_pTargetable->m50_flags & 0x40000) == 0)
     {
-        if ((pThis->m84_pTargetable->m5A > 0) && !(pThis->m84_pTargetable->m50 & 0x100000))
+        if ((pThis->m84_pTargetable->m5A > 0) && !(pThis->m84_pTargetable->m50_flags & 0x100000))
         {
-            if (pThis->m84_pTargetable->m50 & 0x20000)
+            if (pThis->m84_pTargetable->m50_flags & 0x20000)
             {
                 playSystemSoundEffect(10);
                 pThis->mAF = 0;
@@ -497,8 +491,8 @@ void sBaldorSubTask0_update(sBaldorSubTask* pThis)
     }
     else
     {
-        pThis->m84_pTargetable->m50 &= ~0x20000;
-        pThis->m84_pTargetable->m50 &= ~0x10000;
+        pThis->m84_pTargetable->m50_flags &= ~0x20000;
+        pThis->m84_pTargetable->m50_flags &= ~0x10000;
         pThis->getTask()->markFinished();
     }
 }
@@ -507,7 +501,7 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
 {
     pThis->mA4++;
     sVec2_S16 projected;
-    if (!isSpriteVisible(pThis->m84_pTargetable->m4, projected))
+    if (!isSpriteVisible(pThis->m84_pTargetable->m4_pPosition, projected))
     {
         return;
     }
@@ -719,27 +713,27 @@ void sBaldorSubTask1_update(sBaldorSubTask* pThis)
         return;
     }
 
-    if (pThis->m84_pTargetable->m50 & 0x40000)
+    if (pThis->m84_pTargetable->m50_flags & 0x40000)
     {
         pThis->m_DrawMethod = nullptr;
         pThis->getTask()->markFinished();
         return;
     }
 
-    if (pThis->m84_pTargetable->m50 & 0x100000)
+    if (pThis->m84_pTargetable->m50_flags & 0x100000)
     {
-        pThis->m84_pTargetable->m50 &= ~0x200000;
+        pThis->m84_pTargetable->m50_flags &= ~0x200000;
     }
 
-    if (!(pThis->m84_pTargetable->m50 & 0x200000))
+    if (!(pThis->m84_pTargetable->m50_flags & 0x200000))
     {
         pThis->m_DrawMethod = nullptr;
         return;
     }
 
-    if (pThis->m84_pTargetable->m50 & 0x1000)
+    if (pThis->m84_pTargetable->m50_flags & 0x1000)
     {
-        if (pThis->m84_pTargetable->m50 & 0x400)
+        if (pThis->m84_pTargetable->m50_flags & 0x400)
         {
             pThis->mA6_cursorType = 0;
         }
@@ -748,13 +742,13 @@ void sBaldorSubTask1_update(sBaldorSubTask* pThis)
             pThis->mA6_cursorType = 2;
         }
     }
-    else if (pThis->m84_pTargetable->m50 & 0x400)
+    else if (pThis->m84_pTargetable->m50_flags & 0x400)
     {
         pThis->mA6_cursorType = 1;
     }
-    else if (pThis->m84_pTargetable->m50 & 0x800)
+    else if (pThis->m84_pTargetable->m50_flags & 0x800)
     {
-        if (pThis->m84_pTargetable->m50 & 0x200)
+        if (pThis->m84_pTargetable->m50_flags & 0x200)
         {
             pThis->mA6_cursorType = 0;
         }
@@ -765,7 +759,7 @@ void sBaldorSubTask1_update(sBaldorSubTask* pThis)
     }
     else
     {
-        if (pThis->m84_pTargetable->m50 & 0x200)
+        if (pThis->m84_pTargetable->m50_flags & 0x200)
         {
             pThis->mA6_cursorType = 1;
         }
@@ -789,8 +783,8 @@ void Baldor_initSub1Sub0(s_workAreaCopy* parent, sBattleTargetable* pTargetable)
 
     sBaldorSubTask* pNewTask = createSubTaskWithCopy<sBaldorSubTask>(parent, &pTaskDefinition);
     pNewTask->m84_pTargetable = pTargetable;
-    pNewTask->m94 = pNewTask->m84_pTargetable->m4;
-    pNewTask->m84_pTargetable->m50 |= 0x10000;
+    pNewTask->m94 = pNewTask->m84_pTargetable->m4_pPosition;
+    pNewTask->m84_pTargetable->m50_flags |= 0x10000;
     pNewTask->mAC_vdp1Offset = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory;
 }
 
@@ -805,14 +799,14 @@ void Baldor_initSub1Sub1(s_workAreaCopy* parent, sBattleTargetable* pTargetable)
 
     sBaldorSubTask* pNewTask = createSubTaskWithCopy<sBaldorSubTask>(parent, &pTaskDefinition);
     pNewTask->m84_pTargetable = pTargetable;
-    pNewTask->m94 = pNewTask->m84_pTargetable->m4;
+    pNewTask->m94 = pNewTask->m84_pTargetable->m4_pPosition;
     pNewTask->mAC_vdp1Offset = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory;
 }
 
 void Baldor_initSub1(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_FP* param_3, s32 param_4, u32 param_5, u32 param_6, u32 param_7, u32 param_8)
 {
     param_1->m0 = param_2;
-    param_1->m4 = param_3;
+    param_1->m4_pPosition = param_3;
     param_1->m4C = param_4;
     param_1->m40 = *param_3;
     battleTargetable_updatePosition(param_1);
@@ -820,7 +814,7 @@ void Baldor_initSub1(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_
     param_1->mC = 0;
     param_1->m1C.zeroize();
     param_1->m28.zeroize();
-    param_1->m50 = param_5;
+    param_1->m50_flags = param_5;
     param_1->m58 = 0;
     param_1->m5A = 0;
     param_1->m5E = 0;
@@ -840,7 +834,7 @@ void Baldor_initSub1(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_
                 psVar4->m0_isActive = 0;
                 psVar4->m4_targetable = param_1;
                 psVar4->m8_distanceToDragonSquare = 0x7fffffff;
-                if (param_1->m50 & 1)
+                if (param_1->m50_flags & 1)
                     return;
 
                 Baldor_initSub1Sub0(gBattleManager->m10_battleOverlay->m4_battleEngine, param_1);
@@ -882,7 +876,7 @@ void Baldor_initSub0Sub1(sBaldor* pThis, s_3dModel* pModel, s16* param3, std::ve
             {
                 for (int j = 0; j < pModel->m40[i].m4_count; j++)
                 {
-                    param4[currentEntryIndex].m4 = nullptr;
+                    param4[currentEntryIndex].m4_pPosition = nullptr;
 
                     sSaturnPtr puVar1 = pModel->m40[i].m0_ptr + (i * 20);
 
@@ -1143,7 +1137,7 @@ s32 Baldor_updateSub0Sub0(sBaldor* pThis, std::vector<sBattleTargetable>& param2
         while (uVar5 - param2.begin() < entriesToParse)
         {
             sVar3 = sVar1;
-            if (uVar5->m50 & 0x80000)
+            if (uVar5->m50_flags & 0x80000)
             {
                 uVar4 = 1;
                 sVar3 += uVar5->m58;
@@ -1162,7 +1156,7 @@ sVec3_FP* Baldor_updateSub0Sub1Sub0(std::vector<sBattleTargetable>& param1, int 
     for (int i=0; i<param2; i++)
     {
         sBattleTargetable& value = param1[i];
-        if (value.m50 & 0x80000)
+        if (value.m50_flags & 0x80000)
         {
             iVar3 = &value.m34;
         }
@@ -1240,15 +1234,15 @@ void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param
     for (int i = 0; i < param3; i++)
     {
         sBattleTargetable& value = param2[i];
-        if (value.m50 & 0x80000)
+        if (value.m50_flags & 0x80000)
         {
             if (param4)
             {
                 assert(0);
             }
 
-            value.m50 &= ~0x80000;
-            value.m50 &= ~0x20000;
+            value.m50_flags &= ~0x80000;
+            value.m50_flags &= ~0x20000;
 
             Baldor_updateSub0Sub2Sub2(getBattleTargetablePosition(value), 0, 0x30000, 1);
         }
@@ -1405,7 +1399,7 @@ void applyDamageSub(sBattleTargetable& param_1, sVec3_FP& param_2)
 void applyDamage(sBattleTargetable& param_1, s32 damageValue, sVec3_FP& param_3, s32 param_4, const sVec3_FP& param_5, s32 param_8)
 {
     gBattleManager->m10_battleOverlay->m18_dragon->m1D6 += damageValue;
-    param_1.m50 |= 0x80000;
+    param_1.m50_flags |= 0x80000;
     param_1.m58 = gBattleManager->m10_battleOverlay->m18_dragon->m1D6;
 
     applyDamageSub(param_1, param_3);
@@ -1642,11 +1636,11 @@ void Baldor_update(sBaldor* pThis)
     Baldor_updateSub1(pThis->m1C_translation.m4_target, &pThis->m50_translationDelta, &pThis->m44_translationTarget, 0x1999, 0x147, 0);
 
     sVec2_FP temp;
-    computeVectorAngles(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0 + pThis->m78, temp);
+    computeVectorAngles(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta + pThis->m78, temp);
 
     if (isTraceEnabled())
     {
-        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, "m1A0");
+        addTraceLog(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, "m1A0");
         addTraceLog(pThis->m78, "m78");
         addTraceLog(temp, "temp");
         addTraceLog(*pThis->m28_rotation.m0_current, "current");

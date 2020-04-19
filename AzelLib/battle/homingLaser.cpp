@@ -193,7 +193,7 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
     pThis->m4_vd1Allocation = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation;
     pThis->m84_targetable = arg->m0_targetable;
 
-    if ((pThis->m84_targetable == nullptr) || (pThis->m84_targetable->m50 & 0x140001))
+    if ((pThis->m84_targetable == nullptr) || (pThis->m84_targetable->m50_flags & 0x140001))
     {
         pThis->getTask()->markFinished();
         return;
@@ -267,7 +267,7 @@ void sHomingLaserTask_UpdateSub0(sHomingLaserTask* pThis)
         local_20[1] = performModulo2(0x111, randomNumber()) - 0x88;
         local_20[2] = performModulo2(0x111, randomNumber()) - 0x88;
 
-        createDamageSpriteEffect(dramAllocatorEnd[0].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x060b0658), &pThis->m60[0], &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0, &local_20, 0x10000, 0, 0);
+        createDamageSpriteEffect(dramAllocatorEnd[0].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x060b0658), &pThis->m60[0], &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, &local_20, 0x10000, 0, 0);
     }
 }
 
@@ -312,7 +312,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
         break;
     case 1:
         // if target is inactive
-        if ((pThis->m84_targetable == nullptr) || (pThis->m84_targetable->m50 & 0x140001))
+        if ((pThis->m84_targetable == nullptr) || (pThis->m84_targetable->m50_flags & 0x140001))
         {
             pThis->m7E_status = 3;
             pThis->m34_laserDelta = pThis->m64_laserTrajectory[0] - pThis->m64_laserTrajectory[1];
@@ -347,7 +347,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
                 sGunShotTask_UpdateSub2Sub0(pThis->m84_targetable, sGunShotTask_UpdateSub1Sub2(pThis->m84_targetable, uVar3, 1), pThis->m88_targetablePosition, 2,
                     pThis->m34_laserDelta[0], pThis->m34_laserDelta[1], pThis->m34_laserDelta[2], 0x1000);
 
-                if ((pThis->m84_targetable->m60 == 0) || (pThis->m84_targetable->m50 & 0x400))
+                if ((pThis->m84_targetable->m60 == 0) || (pThis->m84_targetable->m50_flags & 0x400))
                 {
                     sVec2_FP asStack84;
                     computeVectorAngles(pThis->m34_laserDelta, asStack84);
@@ -655,7 +655,7 @@ void homingLaserRootTask_Update(sHomingLaserRootTask* pThis)
             if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3A0_LaserType == 0)
             {
                 // Use all targetables
-                if (!(gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50 & 0x40000))
+                if (!(gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50_flags & 0x40000))
                 {
                     pThis->m8[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable;
                     pThis->m8[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
@@ -666,7 +666,7 @@ void homingLaserRootTask_Update(sHomingLaserRootTask* pThis)
             else
             {
                 // Use targetable 0
-                if (!(gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50 & 0x40000))
+                if (!(gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50_flags & 0x40000))
                 {
                     pThis->m8[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable;
                     pThis->m8[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];

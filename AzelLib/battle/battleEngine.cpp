@@ -1,4 +1,4 @@
-﻿#include "PDS.h"
+#include "PDS.h"
 #include "battleEngine.h"
 #include "battleManager.h"
 #include "battleOverlay.h"
@@ -124,11 +124,6 @@ void battleEngine_convertBattleQuadrantToBattleDirection(s_battleEngine* pThis)
     default:
         assert(0);
     }
-}
-
-void battleEngine_InitSub1(s_battleEngine* pThis)
-{
-    pThis->m1AC = pThis->m1A0;
 }
 
 void battleEngine_InitSub2Sub0(s_battleEngine* pThis)
@@ -283,6 +278,16 @@ void executeFuncPtr(sSaturnPtr funcPtr, s_battleEngine* pThis)
     gCurrentBattleOverlay->invoke(funcPtr, pThis);
 }
 
+void battleEngine_RestoreBattleAutoScrollDelta(s_battleEngine* pThis)
+{
+    pThis->m1A0_battleAutoScrollDelta = pThis->m1AC_battleAutoScrollDeltaBackup;
+}
+
+void battleEngine_BackupBattleAutoScrollDelta(s_battleEngine* pThis)
+{
+    pThis->m1AC_battleAutoScrollDeltaBackup = pThis->m1A0_battleAutoScrollDelta;
+}
+
 void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 {
     gBattleManager->m10_battleOverlay->m4_battleEngine = pThis;
@@ -343,7 +348,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     pThis->m270_enemyAltitude.zeroize();
     pThis->m258.zeroize();
-    pThis->m1A0 = readSaturnVec3(battleData_4 + 0x4C);
+    pThis->m1A0_battleAutoScrollDelta = readSaturnVec3(battleData_4 + 0x4C);
     pThis->m264 = readSaturnVec3(battleData_4 + 0x00);
 
     pThis->m264[1] = readSaturnFP(battleData_4 + 0x18);
@@ -393,13 +398,12 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     createBattleEnvironmentGridTask(pThis);
 
-    pThis->m264 += pThis->m1A0;
+    pThis->m264 += pThis->m1A0_battleAutoScrollDelta;
     pThis->m234 = pThis->m270_enemyAltitude + pThis->m264;
-
     pThis->m240 = pThis->m270_enemyAltitude + pThis->m258 + pThis->m264;
 
     battleEngine_convertBattleQuadrantToBattleDirection(pThis);
-    battleEngine_InitSub1(pThis);
+    battleEngine_BackupBattleAutoScrollDelta(pThis);
     battleEngine_InitSub2(pThis);
     battleEngine_InitSub3(pThis);
     battleEngine_createDragonTask(pThis);
@@ -513,11 +517,6 @@ void battleEngine_UpdateSub5()
     }
 }
 
-void battleEngine_UpdateSub6(s_battleEngine* pThis)
-{
-    pThis->m1A0 = pThis->m1AC;
-}
-
 void battleEngine_SetBattleMode(eBattleModes param)
 {
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -533,7 +532,7 @@ void battleEngine_SetBattleMode(eBattleModes param)
     pBattleEngine->m386 = 0;
     pBattleEngine->m184 = 0;
     pBattleEngine->m3E8.zeroize();
-    battleEngine_UpdateSub6(pBattleEngine);
+    battleEngine_RestoreBattleAutoScrollDelta(pBattleEngine);
 }
 
 void battleEngine_SetBattleMode16()
@@ -556,19 +555,19 @@ void battleEngine_SetBattleMode16()
     pBattleEngine->m384_battleModeDelay = 0;
     pBattleEngine->m386 = 0;
     pBattleEngine->m3E8.zeroize();
-    battleEngine_UpdateSub6(pBattleEngine);
+    battleEngine_RestoreBattleAutoScrollDelta(pBattleEngine);
 
     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
 }
 
-void battleEngine_UpdateSub8(s_battleEngine* pThis)
+void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
 {
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x16])
     {
         assert(0);
     }
 
-    pThis->m264 += pThis->m1A0;
+    pThis->m264 += pThis->m1A0_battleAutoScrollDelta;
     pThis->m234 = pThis->m270_enemyAltitude + pThis->m264;
     pThis->m240 = pThis->m270_enemyAltitude + pThis->m258 + pThis->m264;
 }
@@ -1056,7 +1055,8 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
         {
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m200000 = 1;
             pThis->m38D_battleSubMode++;
-            int dStack72 = 0;            int iVar3 = 3;
+            int dStack72 = 0;
+            int iVar3 = 3;
             int stackx40_1 = 0;
             fixedPoint dVar7 = pThis->m164[0];
             fixedPoint dVar8 = pThis->m164[2];
@@ -2075,7 +2075,7 @@ void battleEngine_updateBattleMode_7_sub0()
 
     if (pBattleEngine->m432 & 4)
     {
-        battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4, *pBattleEngine->m3D8_pDesiredCameraPosition, pBattleEngine->m3E8, pBattleEngine->m3DC);
+        battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4_cameraPositionWhileShooting, *pBattleEngine->m3D8_pDesiredCameraPosition, pBattleEngine->m3E8, pBattleEngine->m3DC);
         return;
     }
     if ((pBattleEngine->m432 & 1) == 0)
@@ -2083,7 +2083,7 @@ void battleEngine_updateBattleMode_7_sub0()
         if ((pBattleEngine->m432 & 2) == 0)
         {
             pBattleEngine->m3DC[1] += 0xb60b6;
-            battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4, *pBattleEngine->m3D8_pDesiredCameraPosition, pBattleEngine->m3E8, pBattleEngine->m3DC);
+            battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4_cameraPositionWhileShooting, *pBattleEngine->m3D8_pDesiredCameraPosition, pBattleEngine->m3E8, pBattleEngine->m3DC);
             return;
         }
     }
@@ -2093,7 +2093,7 @@ void battleEngine_updateBattleMode_7_sub0()
         {
             pBattleEngine->m430--;
             pBattleEngine->m3DC[1] += 0xb60b6;
-            battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4, *pBattleEngine->m3D8_pDesiredCameraPosition, pBattleEngine->m3E8, pBattleEngine->m3DC);
+            battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4_cameraPositionWhileShooting, *pBattleEngine->m3D8_pDesiredCameraPosition, pBattleEngine->m3E8, pBattleEngine->m3DC);
             return;
         }
     }
@@ -2110,8 +2110,8 @@ void battleEngine_updateBattleMode_7_sub0()
 
     pBattleEngine->m3DC[1] = table[pBattleEngine->m22C_dragonCurrentQuadrant];
 
-    battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4, *pBattleEngine->m3D8_pDesiredCameraPosition, pBattleEngine->m3E8, pBattleEngine->m3DC);
-    battleEngine_setCurrentCameraPositionPointer(&pBattleEngine->m3F4);
+    battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4_cameraPositionWhileShooting, *pBattleEngine->m3D8_pDesiredCameraPosition, pBattleEngine->m3E8, pBattleEngine->m3DC);
+    battleEngine_setCurrentCameraPositionPointer(&pBattleEngine->m3F4_cameraPositionWhileShooting);
     battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
     battleEngine_InitSub8();
     pBattleEngine->m432 = 4;
@@ -2255,14 +2255,14 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
             while (iVar2 > -1)
             {
                 sBattleTargetable* pEntry = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[iVar2]->m4_targetable;
-                pEntry->m50 &= ~0x200000;
+                pEntry->m50_flags &= ~0x200000;
                 iVar2--;
             }
             
             // flag current enemy selected
-            gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable->m50 |= 0x200000;
+            gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable->m50_flags |= 0x200000;
 
-            pThis->m40C_gunTarget = *getBattleTargetablePosition(*gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
+            pThis->m40C_gunTarget = *getBattleTargetablePosition(*gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
             gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[2] = -vecDistance(*pThis->m3D4_pCurrentCameraPosition, *pThis->m3D8_pDesiredCameraPosition);
 
             if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6) == 0)
@@ -2274,7 +2274,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
                 // validate enemy selection
                 for (int i = 0; i < gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies; i++)
                 {
-                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50 &= ~0x200000;
+                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50_flags &= ~0x200000;
                 }
 
                 battleEngine_UpdateSub7Sub2();
@@ -2302,7 +2302,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
         }
         else
         {
-            pThis->m40C_gunTarget = *getBattleTargetablePosition(*gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
+            pThis->m40C_gunTarget = *getBattleTargetablePosition(*gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
         }
         gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[2] = -vecDistance(*pThis->m3D4_pCurrentCameraPosition, *pThis->m3D8_pDesiredCameraPosition);
 
@@ -2322,14 +2322,14 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
         }
         else
         {
-            pThis->m40C_gunTarget = *getBattleTargetablePosition(*gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
+            pThis->m40C_gunTarget = *getBattleTargetablePosition(*gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
         }
         gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[2] = -vecDistance(*pThis->m3D4_pCurrentCameraPosition, *pThis->m3D8_pDesiredCameraPosition);
         if (pThis->m384_battleModeDelay++ > 4)
         {
             pThis->m384_battleModeDelay = 0;
             pThis->m38D_battleSubMode++;
-            pThis->m40C_gunTarget = *getBattleTargetablePosition(*gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0;
+            pThis->m40C_gunTarget = *getBattleTargetablePosition(*gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m398_currentSelectedEnemy]->m4_targetable) + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
             pThis->m3E8 = pThis->m40C_gunTarget - pThis->mC_battleCenter;
             battleEngine_setDesiredCameraPositionPointer(&pThis->m40C_gunTarget);
         }
@@ -2500,13 +2500,13 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
                 // make enemy targetables selected one by one
                 if (pThis->m3A0_LaserType == 0)
                 {
-                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m384_battleModeDelay]->m4_targetable->m50 |= 0x20000;
-                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m384_battleModeDelay]->m4_targetable->m50 &= ~0x10000;
+                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m384_battleModeDelay]->m4_targetable->m50_flags |= 0x20000;
+                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->m384_battleModeDelay]->m4_targetable->m50_flags &= ~0x10000;
                 }
                 else
                 {
-                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable->m50 |= 0x20000;
-                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable->m50 &= ~0x10000;
+                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable->m50_flags |= 0x20000;
+                    gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable->m50_flags &= ~0x10000;
                 }
                 pThis->m384_battleModeDelay++;
             }
@@ -2526,17 +2526,17 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
 
             pThis->m3E8.zeroize();
             pThis->m3DC.zeroize();
-            pThis->m3F4.zeroize();
+            pThis->m3F4_cameraPositionWhileShooting.zeroize();
 
             battleEngine_updateBattleMode_3_shootEnemyWithHomingLaserSub0(pThis, &pThis->m3E8);
-            battleEngineSub1_UpdateSub2(&pThis->m3F4, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
-            battleEngine_setCurrentCameraPositionPointer(&pThis->m3F4);
+            battleEngineSub1_UpdateSub2(&pThis->m3F4_cameraPositionWhileShooting, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
+            battleEngine_setCurrentCameraPositionPointer(&pThis->m3F4_cameraPositionWhileShooting);
             battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
             battleEngine_InitSub8();
         }
         break;
     case 3:
-        battleEngineSub1_UpdateSub2(&pThis->m3F4, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
+        battleEngineSub1_UpdateSub2(&pThis->m3F4_cameraPositionWhileShooting, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
         if (pThis->m384_battleModeDelay++ > 5)
         {
             gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 1;
@@ -2545,7 +2545,7 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
         }
         break;
     case 4:
-        battleEngineSub1_UpdateSub2(&pThis->m3F4, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
+        battleEngineSub1_UpdateSub2(&pThis->m3F4_cameraPositionWhileShooting, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
         if (gDragonState->mC_dragonType == 8)
         {
             if (pThis->m384_battleModeDelay++ == 3)
@@ -2566,7 +2566,7 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
         }
         break;
     case 5:
-        battleEngineSub1_UpdateSub2(&pThis->m3F4, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
+        battleEngineSub1_UpdateSub2(&pThis->m3F4_cameraPositionWhileShooting, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
         if (pThis->m384_battleModeDelay++ == 2)
         {
             battleEngine_setDesiredCameraPositionPointer(&pThis->mC_battleCenter);
@@ -2740,7 +2740,7 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
     {
         if ((0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies) &&
             (battleEngine_UpdateSub7Sub0Sub2Sub0() != 0)) {
-            if ((pThis->m3B4.m16_combo < '\x01') ||
+            if ((pThis->m3B4.m16_combo < 1) ||
                 (((graphicEngineStatus.m4514.mD8_buttonConfig[2][2] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown) == 0 ||
                 ((gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies) < 1))))
             {
@@ -2785,7 +2785,7 @@ void initiateDragonBattleMove(int param1, s16 param2)
 
 void battleEngine_UpdateSub7(s_battleEngine* pThis)
 {
-    battleEngine_UpdateSub8(pThis);
+    battleEngine_ApplyBattleAutoScrollDelta(pThis);
     if (battleEngine_UpdateSub7Sub0() == 1)
         return;
     battleEngine_UpdateSub7Sub0Sub1(pThis);
@@ -2972,14 +2972,14 @@ void battleEngine_Update(s_battleEngine* pThis)
         battleEngine_UpdateSub5();
         return;
     case 2:
-        battleEngine_UpdateSub8(pThis);
+        battleEngine_ApplyBattleAutoScrollDelta(pThis);
         battleEngine_UpdateSub9(pThis);
         battleEngine_UpdateSub5();
         return;
     case 3:
         return;
     case 4:
-        battleEngine_UpdateSub8(pThis);
+        battleEngine_ApplyBattleAutoScrollDelta(pThis);
         battleEngine_UpdateSub9(pThis);
         battleEngine_UpdateSub5();
         return;
