@@ -37,7 +37,6 @@
 		33587AD72344337D00D90AEA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807B22BAB2930033C8AE /* CoreGraphics.framework */; };
 		33587AD82344337D00D90AEA /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807922BAB27C0033C8AE /* QuartzCore.framework */; };
 		33587AD92344337D00D90AEA /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807522BAB2130033C8AE /* AudioToolbox.framework */; };
-		33587ADA2344337D00D90AEA /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807322BAB1AE0033C8AE /* CoreMotion.framework */; };
 		33587ADB2344337D00D90AEA /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806D22BAB17B0033C8AE /* GameController.framework */; };
 		33587ADC2344337D00D90AEA /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806B22BAB1720033C8AE /* Metal.framework */; };
 		33587ADD2344337D00D90AEA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806922BAB1670033C8AE /* UIKit.framework */; };
@@ -52,7 +51,6 @@
 		33587AFA2344364300D90AEA /* libsoloud-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587AC8234432DB00D90AEA /* libsoloud-tvos.a */; };
 		33587AFB234436A800D90AEA /* libAzelLib-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABB234432CE00D90AEA /* libAzelLib-ios.a */; };
 		33587AFC234436AB00D90AEA /* libsoloud-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABD234432CE00D90AEA /* libsoloud-ios.a */; };
-		33AA2699234C4DC8001E535D /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AA2698234C4DC8001E535D /* libMoltenVK.a */; };
 		33AB9184234C1E1600BB34F3 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2E323430A260059DE3C /* libSDL2.a */; };
 		33AB918E234C1E1C00BB34F3 /* libSDLmain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2EB23430A260059DE3C /* libSDLmain.a */; };
 		33AB91A5234C469F00BB34F3 /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AB91A4234C469F00BB34F3 /* libMoltenVK.a */; };
@@ -175,28 +173,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 31A09A367DB8418FB8D6A0F8;
+			remoteGlobalIDString = D0CDA2E736E24CD283A07164;
 			remoteInfo = "AzelLib-ios";
 		};
 		33587AEF2344356D00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 9FDBBE4DB71940ED9BA44221;
+			remoteGlobalIDString = E820A108A57245B685B68928;
 			remoteInfo = "soloud-ios";
 		};
 		33587AF12344357A00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 9A228278B39D44749F8F8965;
+			remoteGlobalIDString = 42F693C1DF5841ABABBB9CEC;
 			remoteInfo = "AzelLib-tvos";
 		};
 		33587AF32344357C00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 64895893154F4C21AF560408;
+			remoteGlobalIDString = 26CCC8BCA0B14FCA8DA54672;
 			remoteInfo = "soloud-tvos";
 		};
 		33587AF52344358300D90AEA /* PBXContainerItemProxy */ = {
@@ -266,14 +264,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 6054255EC90A42E693A325F8;
+			remoteGlobalIDString = BFC5C2E1AF0347E993518889;
 			remoteInfo = "AzelLib-darwin";
 		};
 		33EA64B3234C1952006F24DA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 0ACE8E6AE8BC406496381245;
+			remoteGlobalIDString = BF217B83B7C14F0D919FF43D;
 			remoteInfo = "soloud-darwin";
 		};
 /* End PBXContainerItemProxy section */
@@ -311,7 +309,6 @@
 		33587AEB2344347A00D90AEA /* tvos.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = tvos.plist; sourceTree = SOURCE_ROOT; };
 		33AA2698234C4DC8001E535D /* libMoltenVK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMoltenVK.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		33AA26AB234C4DCD001E535D /* libMoltenVK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMoltenVK.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		33AB918F234C431A00BB34F3 /* MoltenVKPackaging.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MoltenVKPackaging.xcodeproj; path = ../ThirdParty/MoltenVK/MoltenVKPackaging.xcodeproj; sourceTree = "<group>"; };
 		33AB9198234C438600BB34F3 /* libMoltenVK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMoltenVK.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		33AB919A234C450700BB34F3 /* libMoltenVK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libMoltenVK.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		33AB91A0234C464400BB34F3 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MoltenVK.framework; path = ../ThirdParty/MoltenVK/Package/Debug/MoltenVK/macOS/framework/MoltenVK.framework; sourceTree = "<group>"; };
@@ -339,7 +336,6 @@
 				33AB918E234C1E1C00BB34F3 /* libSDLmain.a in Frameworks */,
 				3307807A22BAB27C0033C8AE /* QuartzCore.framework in Frameworks */,
 				3307807622BAB2130033C8AE /* AudioToolbox.framework in Frameworks */,
-				33AA2699234C4DC8001E535D /* libMoltenVK.a in Frameworks */,
 				3307807422BAB1AE0033C8AE /* CoreMotion.framework in Frameworks */,
 				3307806E22BAB17B0033C8AE /* GameController.framework in Frameworks */,
 				3307806C22BAB1720033C8AE /* Metal.framework in Frameworks */,
@@ -361,7 +357,6 @@
 				33587AD82344337D00D90AEA /* QuartzCore.framework in Frameworks */,
 				33587AD92344337D00D90AEA /* AudioToolbox.framework in Frameworks */,
 				33587AF92344364000D90AEA /* libAzelLib-tvos.a in Frameworks */,
-				33587ADA2344337D00D90AEA /* CoreMotion.framework in Frameworks */,
 				33587ADB2344337D00D90AEA /* GameController.framework in Frameworks */,
 				33587ADC2344337D00D90AEA /* Metal.framework in Frameworks */,
 				33587ADD2344337D00D90AEA /* UIKit.framework in Frameworks */,
@@ -402,7 +397,6 @@
 		33077F1422B9F3670033C8AE = {
 			isa = PBXGroup;
 			children = (
-				33AB918F234C431A00BB34F3 /* MoltenVKPackaging.xcodeproj */,
 				33EA6472234C16CA006F24DA /* SDL.xcodeproj */,
 				33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */,
 				33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */,
@@ -504,13 +498,6 @@
 			children = (
 				33587AC6234432DB00D90AEA /* libAzelLib-tvos.a */,
 				33587AC8234432DB00D90AEA /* libsoloud-tvos.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		33AB9190234C431A00BB34F3 /* Products */ = {
-			isa = PBXGroup;
-			children = (
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -629,10 +616,6 @@
 			productRefGroup = 33077F1E22B9F3670033C8AE /* Products */;
 			projectDirPath = "";
 			projectReferences = (
-				{
-					ProductGroup = 33AB9190234C431A00BB34F3 /* Products */;
-					ProjectRef = 33AB918F234C431A00BB34F3 /* MoltenVKPackaging.xcodeproj */;
-				},
 				{
 					ProductGroup = 33EA6468234C164A006F24DA /* Products */;
 					ProjectRef = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
@@ -1021,6 +1004,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -1074,6 +1058,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -1095,6 +1080,7 @@
 					../ThirdParty/soloud/soloud/include,
 					../ThirdParty/imgui,
 					../ThirdParty/glm,
+					../ThirdParty/tracy,
 				);
 				INFOPLIST_FILE = ios.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
@@ -1122,6 +1108,7 @@
 					../ThirdParty/soloud/soloud/include,
 					../ThirdParty/imgui,
 					../ThirdParty/glm,
+					../ThirdParty/tracy,
 				);
 				INFOPLIST_FILE = ios.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
@@ -1151,6 +1138,7 @@
 					../ThirdParty/soloud/soloud/include,
 					../ThirdParty/imgui,
 					../ThirdParty/glm,
+					../ThirdParty/tracy,
 				);
 				INFOPLIST_FILE = tvos.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
@@ -1179,6 +1167,7 @@
 					../ThirdParty/soloud/soloud/include,
 					../ThirdParty/imgui,
 					../ThirdParty/glm,
+					../ThirdParty/tracy,
 				);
 				INFOPLIST_FILE = tvos.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
@@ -1209,6 +1198,7 @@
 					../ThirdParty/glm,
 					../ThirdParty/imgui/examples/libs/gl3w,
 					../ThirdParty/MoltenVK/MoltenVK/include,
+					../ThirdParty/tracy,
 				);
 				INFOPLIST_FILE = "azel-tvos copy-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1240,6 +1230,7 @@
 					../ThirdParty/glm,
 					../ThirdParty/imgui/examples/libs/gl3w,
 					../ThirdParty/MoltenVK/MoltenVK/include,
+					../ThirdParty/tracy,
 				);
 				INFOPLIST_FILE = "azel-tvos copy-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

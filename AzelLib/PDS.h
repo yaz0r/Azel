@@ -16,11 +16,14 @@
 
 #define NOMINMAX
 
+#if defined(__APPLE__) && TARGET_OS_SIMULATOR
+#undef TRACE_ENABLE  // can't use tracy in simulator
+#else
 #define TRACY_ENABLE
 #define TRACY_CALLSTACK 20
-#ifdef TRACY_ENABLE
-#include "Tracy.hpp"
 #endif
+
+#include "Tracy.hpp"
 
 #include <SDL.h>
 #include <SDL_syswm.h>

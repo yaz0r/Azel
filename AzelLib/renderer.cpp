@@ -194,7 +194,7 @@ void azelSdl2_Init()
     SDL_GL_SetSwapInterval(0);
 #endif
 
-
+    checkGL();
 }
 
 GLuint getTextureForLayer(eLayers layerIndex)

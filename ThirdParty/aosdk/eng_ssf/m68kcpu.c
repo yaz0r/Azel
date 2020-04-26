@@ -659,7 +659,7 @@ int m68k_execute(int num_cycles)
 			/* Call external hook to peek at CPU */
 			m68ki_instr_hook(); /* auto-disable (see m68kcpu.h) */
 
-            m68k_instructionCallback();
+            //m68k_instructionCallback();
 
 //			if (REG_PC == m68k_trap0) printf("at trap0 (crash), prev_pc = %x\n", REG_PPC);
 
