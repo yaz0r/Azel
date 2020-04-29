@@ -6,7 +6,6 @@
 #include "battleDebug.h"
 #include "battleOverlay_C.h"
 #include "town/town.h" // todo: clean
-
 #include "kernel/debug/trace.h"
 
 void battleGrid_initSub0()
@@ -261,8 +260,8 @@ void battleGrid_updateSub1(s_battleGrid* pThis)
 
         if (isTraceEnabled())
         {
-            addTraceLog(pThis->m180_cameraTranslation, "cameraTranslation");
-            addTraceLog(pThis->mB4_cameraRotation, "cameraRotation");
+            //addTraceLog(pThis->m180_cameraTranslation, "cameraTranslation");
+            //addTraceLog(pThis->mB4_cameraRotation, "cameraRotation");
         }
     }
 }
@@ -298,6 +297,9 @@ void battleGrid_draw(s_battleGrid* pThis)
     if (isTraceEnabled())
     {
         addTraceLog(pThis->m150_cameraMatrix, "pThis->m150_cameraMatrix");
+        addTraceLog(pThis->mFC_cameraReferenceUp, "up");
+        addTraceLog(pThis->mF0_currentCameraReferenceForward, "forward");
+        addTraceLog(pThis->mE4_currentCameraReferenceCenter, "center");
     }
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB])

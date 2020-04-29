@@ -3,16 +3,13 @@
 
 sFadeControls g_fadeControls;
 
-u32 convertColorToU32(const sVec3_FP& inColor)
+u32 convertColorToU32ForFade(const sVec3_FP& inColor)
 {
-    PDS_unimplemented("convertColorToU32");
-    u32 color = 0;
-    /*
-    u32 color = (((s32)(((u32)inColor[2].m_value >> 4) << 16)) + 0x10) << 10;
-    color |= (((s32)(((u32)inColor[1].m_value >> 4) << 16)) + 0x10) << 5;
-    color |= (((s32)(((u32)inColor[0].m_value >> 4) << 16)) + 0x10) << 0;
-*/
-    return color | 0x8000;
+    u32 color = ((inColor[0].toInteger() >> 4) + 0x10) << 10;
+    color |= ((inColor[1].toInteger() >> 4) + 0x10) << 5;
+    color |= ((inColor[2].toInteger() >> 4) + 0x10);
+    color |= 0x8000;
+    return color;
 }
 
 s16 unpackColor(s16 inColor)

@@ -11,6 +11,7 @@
 #include "kernel/vdp1Allocator.h"
 #include "gunShotRootTask.h" // TODO: cleanup
 #include "audio/systemSounds.h"
+#include "kernel/debug/trace.h"
 
 struct sHomingLaserRootTask : public s_workAreaTemplateWithCopy<sHomingLaserRootTask>
 {
@@ -45,7 +46,7 @@ struct sHomingLaserTask : public s_workAreaTemplateWithArgWithCopy<sHomingLaserT
     s32 m70_totalLaserNumFrames;
     s8 m7E_status;
     sBattleTargetable* m84_targetable;
-    s8 m80;
+    s8 m80_laserIndexInGroup;
     sVec3_FP* m88_targetablePosition;
     sVec3_FP* m8C_laserSource;
     sVec3_FP* m90_dragonPosition;
@@ -95,8 +96,8 @@ void sHomingLaserTask_InitSub1(sHomingLaserTask::sF0* pThis, sHomingLaserTask* p
     {
         for (int j=0; j<3; j++)
         {
-            pThis->m18_color[j][2] = (local_a0[i][2].toInteger() << 10) | (local_a0[i][1].toInteger() << 5) | (local_a0[i][0].toInteger() << 5) | 0x8000;
-            pThis->m18_color[j][3] = (local_a0[i][2].toInteger() << 10) | (local_a0[i][1].toInteger() << 5) | (local_a0[i][0].toInteger() << 5) | 0x8000;
+            pThis->m18_color[j][2] = (local_a0[i][2].toInteger() << 10) | (local_a0[i][1].toInteger() << 5) | (local_a0[i][0].toInteger()) | 0x8000;
+            pThis->m18_color[j][3] = (local_a0[i][2].toInteger() << 10) | (local_a0[i][1].toInteger() << 5) | (local_a0[i][0].toInteger()) | 0x8000;
         }
     }
 }
@@ -201,11 +202,14 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
 
     pThis->m8C_laserSource = arg->m4_pLaserSource;
     pThis->m88_targetablePosition = getBattleTargetablePosition(*pThis->m84_targetable);
-    pThis->m80 = arg->m8_pLaserId;
+    pThis->m80_laserIndexInGroup = arg->m8_pLaserId;
     pThis->m90_dragonPosition = &gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
     pThis->m10_laserPosition = *pThis->m8C_laserSource;
-    pThis->m6C_numFramesToDestination = pThis->m80 * 2 + 0xF;
-    pThis->m70_totalLaserNumFrames = pThis->m80 * 2 + 0xF;
+    pThis->m6C_numFramesToDestination = pThis->m80_laserIndexInGroup * 2 + 0xF;
+    pThis->m70_totalLaserNumFrames = pThis->m80_laserIndexInGroup * 2 + 0xF;
+
+    addTraceLog(*pThis->m88_targetablePosition, "targetablePosition");
+    addTraceLog(pThis->m10_laserPosition, "m10_laserPosition");
 
     sVec3_FP local_18 = *pThis->m88_targetablePosition - pThis->m10_laserPosition;
 
@@ -213,7 +217,7 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
 
     pThis->m30 = performModulo2(0x5b05b0, randomNumber()) - 0x2D82D8;
     computeVectorAngles(local_18, pThis->m94);
-    pThis->m24 = readSaturnFP(gCurrentBattleOverlay->getSaturnPtr(0x60AD510) + pThis->m80 * 4);
+    pThis->m24 = readSaturnFP(gCurrentBattleOverlay->getSaturnPtr(0x60AD510) + pThis->m80_laserIndexInGroup * 4);
 
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->m10_laserPosition);

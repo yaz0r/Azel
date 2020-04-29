@@ -131,7 +131,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
                 titleScreenDrawSub3(2);
 
                 // fade out to black
-                fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, 30);
+                fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0x8000, 30);
                 return;
             }
 
@@ -370,7 +370,7 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
         if (--pWorkArea->m4_delay)
             return;
 
-        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, 30);
+        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0x8000, 30);
         titleScreenDrawSub3(3);
 
         pWorkArea->m0_status++;
@@ -435,7 +435,7 @@ void s_warningWorkArea::Draw(s_warningWorkArea* pWorkArea)
     case 2: // fade out init?
         if (!(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8))
             return;
-        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0, 30);
+        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0, 30);
         pWorkArea->m_status++;
     case 3: // wait fade out
         if (!g_fadeControls.m0_fade0.m20_stopped)
@@ -515,7 +515,7 @@ void s_warningWorkArea::Init(s_warningWorkArea* pWorkArea)
         vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
     }
 
-    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
 }
 
 p_workArea startWarningTask(s_workArea* workArea)

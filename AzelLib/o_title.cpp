@@ -179,7 +179,7 @@ void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkAr
             vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
         }
 
-        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
+        fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
 
         //TODO: maybe more stuff here
 

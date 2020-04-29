@@ -23,7 +23,7 @@ struct sFadeControls
 
 extern sFadeControls g_fadeControls;
 
-u32 convertColorToU32(const sVec3_FP& inColor);
+u32 convertColorToU32ForFade(const sVec3_FP& inColor);
 s32 fadePalette(sFadeControlsChannel* arrayData, u32 from, u32 to, u32 steps);
 void updateFadeInterrupt();
 

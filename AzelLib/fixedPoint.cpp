@@ -123,6 +123,15 @@ sVec3_FP MTH_Mul(const fixedPoint& a, const sVec3_FP& b)
     return temp;
 }
 
+sVec3_FP MTH_Mul(const sVec3_FP& a, const sVec3_FP& b)
+{
+    sVec3_FP temp;
+    temp[0] = MTH_Mul(a[0], b[0]);
+    temp[1] = MTH_Mul(a[1], b[1]);
+    temp[2] = MTH_Mul(a[2], b[2]);
+    return temp;
+}
+
 fixedPoint FP_Pow2(fixedPoint r4)
 {
     s64 result = ((s64)r4.asS32()) * ((s64)r4.asS32());

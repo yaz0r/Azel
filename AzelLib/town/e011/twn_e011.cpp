@@ -71,8 +71,8 @@ s32 e011_scriptFunction_0605ce38(int iParm1)
         break;
     }
     
-    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0xc210, iParm1);
-    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), unaff_r12, iParm1);
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0xc210, iParm1);
+    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), unaff_r12, iParm1);
     cameraTaskPtr->m1 = 1;
     return 1;
 }

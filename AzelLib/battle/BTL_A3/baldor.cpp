@@ -5,6 +5,7 @@
 #include "battle/battleOverlay.h"
 #include "battle/battleEngine.h"
 #include "battle/battleDebug.h"
+#include "battle/battleDamageDisplay.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 #include "kernel/debug/trace.h"
@@ -923,7 +924,7 @@ void Baldor_initSub0(sBaldor* pThis, sSaturnPtr dataPtr, sFormationData* pFormat
     }
 }
 
-void monsterPart_defaultUpdate(sBaldor_68_30*, sVec3_FP*, sVec3_FP*, sVec3_FP*)
+void monsterPart_defaultUpdate(sBaldor_68_30*, const sVec3_FP*, const sVec3_FP*, const sVec3_FP*)
 {
     assert(0);
 }
@@ -938,11 +939,9 @@ void monsterPart_defaultDelete()
     assert(0);
 }
 
-void baldorPart_update(sBaldor_68_30* pThis, sVec3_FP* pTranslation, sVec3_FP* pRotation, sVec3_FP* param4)
+void baldorPart_update(sBaldor_68_30* pThis, const sVec3_FP* pTranslation, const sVec3_FP* pRotation, const sVec3_FP* param4)
 {
-    pThis->m34[0] += MTH_Mul(fixedPoint((*param4)[0] - pThis->m1C[0]).normalized(), pThis->m44[0]);
-    pThis->m34[1] += MTH_Mul(fixedPoint((*param4)[1] - pThis->m1C[1]).normalized(), pThis->m44[1]);
-    pThis->m34[2] += MTH_Mul(fixedPoint((*param4)[2] - pThis->m1C[2]).normalized(), pThis->m44[2]);
+    pThis->m34 += MTH_Mul((*param4 - pThis->m1C).normalized(), pThis->m44);
 
     pThis->m34 -= MTH_Mul(pThis->m50, pThis->m28);
 
@@ -959,9 +958,16 @@ void baldorPart_update(sBaldor_68_30* pThis, sVec3_FP* pTranslation, sVec3_FP* p
 
     pThis->m4 = pTemp.getTranslation();
 
-    if (pThis->m0)
+    addTraceLog(pThis->m10_translation, "pThis->m10");
+    addTraceLog(pThis->m1C, "pThis->m1C");
+    addTraceLog(pThis->m28, "pThis->m28");
+    addTraceLog(pThis->m34, "pThis->m34");
+    addTraceLog(pThis->m50, "pThis->m50");
+    addTraceLog(pThis->m4, "pThis->m4");
+
+    if (pThis->m0_child)
     {
-        baldorPart_update(pThis->m0, &pThis->m4, &pThis->m1C, &pThis->m1C);
+        baldorPart_update(pThis->m0_child, &pThis->m4, &pThis->m1C, &pThis->m1C);
     }
 }
 
@@ -977,9 +983,9 @@ void baldorPart_draw(sBaldor* pBaltor, sBaldor_68_30* pBaltorPart)
             addObjectToDrawList(pBaltor->m0_dramAllocation->get3DModel(pBaltorPart->m40));
             popMatrix();
         }
-        if (pBaltorPart->m0 == nullptr)
+        if (pBaltorPart->m0_child == nullptr)
             break;
-        pBaltorPart = pBaltorPart->m0;
+        pBaltorPart = pBaltorPart->m0_child;
     }
 }
 
@@ -1001,7 +1007,7 @@ void Baldor_initSub2Sub0(sBaldor_68* pData)
 
 void Baldor_initSub2Sub1(sBaldor_68_30* pEntry, sBaldor_68_30* pNextEntry)
 {
-    pEntry->m0 = pNextEntry;
+    pEntry->m0_child = pNextEntry;
     pEntry->m4.zeroize();
     pEntry->m10_translation.zeroize();
     pEntry->m1C.zeroize();
@@ -1052,7 +1058,7 @@ void Baldor_initSub3(sBaldor_68* pThis, int arg2, sSaturnPtr arg3)
         do
         {
             Baldor_initSub3Sub0(piVar1, arg3);
-            piVar1 = piVar1->m0;
+            piVar1 = piVar1->m0_child;
             arg3 += 0x14;
         } while (piVar1);
     }
@@ -1104,20 +1110,12 @@ void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
         Baldor_initSub3(pThis->m68, 1, gCurrentBattleOverlay->getSaturnPtr(0x60a7e5c));
         sSaturnPtr pDataSource = gCurrentBattleOverlay->getSaturnPtr(0x60a7f4c);
 
-        std::vector<sBaldor_68_30>::iterator dest = pThis->m68->m30.begin();
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 6; i++)
         {
-            dest->m10_translation = readSaturnVec3(pDataSource + 0);
-            dest->m1C[1] = (*pThis->m28_rotation.m4_target)[1];
-            dest++;
+            sBaldor_68_30& dest = pThis->m68->m30[i];
 
-            dest->m10_translation = readSaturnVec3(pDataSource + 0xC);
-            dest->m1C[1] = (*pThis->m28_rotation.m4_target)[1];
-            dest++;
-
-            dest->m10_translation = readSaturnVec3(pDataSource + 0xC);
-            dest->m1C[1] = (*pThis->m28_rotation.m4_target)[1];
-            dest++;
+            dest.m10_translation = readSaturnVec3(pDataSource + 0xC * i);
+            dest.m1C[1] = (*pThis->m28_rotation.m4_target)[1];
         }
     }
 
@@ -1182,12 +1180,7 @@ void Baldor_updateSub0Sub1(sBaldor* pThis)
     }
 }
 
-sVec3_FP* getBattleTargetablePosition(sBattleTargetable& param1)
-{
-    return &param1.m10_position;
-}
-
-void Baldor_updateSub0Sub2Sub2(sVec3_FP* param1, s32 param2, s32 param3, s8 param4)
+void Baldor_updateSub0Sub2Sub2(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s8 param4)
 {
     int iVar2;
 
@@ -1226,7 +1219,7 @@ void Baldor_updateSub0Sub2Sub2(sVec3_FP* param1, s32 param2, s32 param3, s8 para
         break;
     }
 
-    FunctionUnimplemented();
+    createDamageSpriteEffect(dramAllocatorEnd[0].mC_buffer, readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x060abef4) + iVar2 * 4), param1, param2, 0, param3, 0, 0);
 }
 
 void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param2, int param3, int param4, p_workArea param5)
@@ -1244,7 +1237,7 @@ void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param
             value.m50_flags &= ~0x80000;
             value.m50_flags &= ~0x20000;
 
-            Baldor_updateSub0Sub2Sub2(getBattleTargetablePosition(value), 0, 0x30000, 1);
+            Baldor_updateSub0Sub2Sub2(getBattleTargetablePosition(value), nullptr, 0x30000, 1);
         }
     }
 
@@ -1254,30 +1247,24 @@ void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param
     }
 }
 
-void Baldor_updateSub0Sub3(sBaldor* pThis, s16 param2, sVec3_FP* param3, s32 param4)
-{
-    // spawn sibling task (with damage display?)
-    FunctionUnimplemented();
-}
-
 void Baldor_updateSub0(sBaldor* pThis)
 {
-    s16 local_10;
+    s16 damageValue;
 
     if (!(pThis->m34_formationEntry->m48 & 4))
     {
-        if (Baldor_updateSub0Sub0(pThis, pThis->m14_targetable, pThis->mC_numTargetables, local_10))
+        if (Baldor_updateSub0Sub0(pThis, pThis->m14_targetable, pThis->mC_numTargetables, damageValue))
         {
-            pThis->mE += local_10;
+            pThis->mE_damageValue += damageValue;
             pThis->m12 = 1;
             pThis->mB |= 8;
             Baldor_updateSub0Sub1(pThis);
-            pThis->m10_HP -= local_10;
+            pThis->m10_HP -= damageValue;
             if (pThis->m10_HP < 1)
             {
                 Baldor_updateSub0Sub2(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 0, pThis->m40);
                 pThis->m34_formationEntry->m48 |= 4;
-                Baldor_updateSub0Sub3(pThis, pThis->mE, pThis->m1C_translation.m0_current, 1);
+                createDamageDisplayTask(pThis, pThis->mE_damageValue, pThis->m1C_translation.m0_current, 1);
                 playSystemSoundEffect(0x66);
                 pThis->m8_mode = 0xB;
                 pThis->m9_attackStatus = 0;
@@ -1291,8 +1278,8 @@ void Baldor_updateSub0(sBaldor* pThis)
 
         if (pThis->m12 && (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000))
         {
-            Baldor_updateSub0Sub3(pThis, pThis->mE, pThis->m1C_translation.m0_current, 1);
-            pThis->mE = 0;
+            createDamageDisplayTask(pThis, pThis->mE_damageValue, pThis->m1C_translation.m0_current, 1);
+            pThis->mE_damageValue = 0;
             pThis->m12 = 0;
         }
     }
@@ -1583,11 +1570,12 @@ void Baldor_update(sBaldor* pThis)
 
     *pThis->m1C_translation.m0_current = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter + *pThis->m1C_translation.m4_target;
 
-    if (0 < pThis->mC_numTargetables)
+    if (pThis->mC_numTargetables > 0)
     {
-        for (int i = 0; i < 4; i++) // actually hard coded to 4
+        transformAndAddVecByCurrentMatrix(pThis->m1C_translation.m0_current, &pThis->m18_position[0]);
+        for (int i = 1; i < 4; i++) // actually hard coded to 4
         {
-            transformAndAddVecByCurrentMatrix(&pThis->m68->m30[i].m4, &pThis->m18_position[i]);
+            transformAndAddVecByCurrentMatrix(&pThis->m68->m30[i-1].m4, &pThis->m18_position[i]);
         }
     }
 

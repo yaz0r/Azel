@@ -22,11 +22,6 @@ void s_battleDragon_InitSub4(int arg0, int interpolationLength)
     s_battleDragon_InitSub4Sub0();
 }
 
-void battleTargetable_updatePosition(sBattleTargetable* pThis)
-{
-    transformAndAddVec(*pThis->m4_pPosition, pThis->m10_position, cameraProperties2.m28[0]);
-}
-
 void s_battleDragon_InitSub5(sBattleTargetable* pThis, s_battleDragon* param2, sVec3_FP* param3, s32 param4, s32 param5)
 {
     pThis->m0 = param2;

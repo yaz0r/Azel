@@ -1804,8 +1804,8 @@ void s_FieldSubTaskWorkArea::Update(s_FieldSubTaskWorkArea* pFieldSubTaskWorkAre
                     vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
                 }
 
-                fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
-                fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), g_fadeControls.m_4A, 30);
+                fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), g_fadeControls.m_48, 30);
+                fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), g_fadeControls.m_4A, 30);
 
                 pFieldSubTaskWorkArea->fieldSubTaskStatus++;
             }

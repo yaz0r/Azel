@@ -5,7 +5,7 @@
 
 struct sBaldor_68_30
 {
-    sBaldor_68_30* m0;
+    sBaldor_68_30* m0_child;
     sVec3_FP m4;
     sVec3_FP m10_translation;
     sVec3_FP m1C;
@@ -13,7 +13,7 @@ struct sBaldor_68_30
     sVec3_FP m34;
     s16 m40;
     sVec3_FP m44;
-    s32 m50;
+    fixedPoint m50;
     //size 0x54
 };
 
@@ -22,7 +22,7 @@ struct sBaldor_68
     sVec3_FP m0_translation;
     sVec3_FP mC_rotation;
     sVec3_FP m18;
-    void (*m24_update)(sBaldor_68_30*, sVec3_FP*, sVec3_FP*, sVec3_FP*);
+    void (*m24_update)(sBaldor_68_30*, const sVec3_FP*, const sVec3_FP*, const sVec3_FP*);
     void (*m28_draw)(struct sBaldor*, sBaldor_68_30*);
     void (*m2C_delete)();
     std::vector<sBaldor_68_30> m30;
@@ -36,7 +36,7 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
     s8 mA_indexInFormation;
     s8 mB;
     s16 mC_numTargetables;
-    s16 mE;
+    s16 mE_damageValue;
     s8 m10_HP;
     s8 m12;
     std::vector<sBattleTargetable> m14_targetable;
@@ -59,4 +59,3 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
 
 sBaldor* createBaldor(s_workAreaCopy* parent, struct sFormationData* pFormationEntry);
 
-sVec3_FP* getBattleTargetablePosition(sBattleTargetable& param1); // TODO: cleanup

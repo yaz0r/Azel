@@ -365,8 +365,8 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
         case 0xC:
         case 0x16:
         case 0x25:
-            fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0, 30);
-            fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0, 30);
+            fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0, 30);
+            fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), 0, 30);
             break;
         case 9:
         case 0xb:
@@ -402,8 +402,8 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
             break;
         case 0x70:
             initFileLayoutTable();
-            fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0, 30);
-            fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0, 30);
+            fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0, 30);
+            fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), 0, 30);
             break;
         }
 

@@ -243,8 +243,8 @@ struct exitCutsceneTaskUpdateSub0Sub1Sub0 : public s_workAreaTemplate<exitCutsce
                 vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
             }
 
-            fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), pThis->m0, pThis->m10);
-            fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), pThis->m0, pThis->m10);
+            fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), pThis->m0, pThis->m10);
+            fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), pThis->m0, pThis->m10);
             pThis->m14_status++;
             //fall through
         case 1:

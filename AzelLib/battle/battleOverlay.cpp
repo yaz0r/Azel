@@ -19,8 +19,8 @@ static void battleOverlayTask_Init(sBattleOverlayTask* pThis)
     gBattleManager->m10_battleOverlay = pThis;
     mainGameState.setPackedBits(0, 2, 1);
 
-    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), -1, 0x3C);
-    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), -1, 0x3C);
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), -1, 0x3C);
+    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), -1, 0x3C);
 
     playSystemSoundEffect(0x10);
 }

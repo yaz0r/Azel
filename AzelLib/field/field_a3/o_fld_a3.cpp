@@ -2824,8 +2824,8 @@ void scriptFunction_6067E68_fadeOut(s32 arg0)
         vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
     }
 
-    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, arg0*2);
-    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0 * 2);
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0x8000, arg0*2);
+    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0 * 2);
 }
 
 void scriptFunction_6067ec0_fadeIn(s32 arg0)

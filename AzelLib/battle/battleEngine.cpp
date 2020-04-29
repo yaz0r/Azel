@@ -210,11 +210,8 @@ void battleEngine_InitSub8Sub0(sVec2_FP& param)
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     s_battleGrid* pBattleGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
 
-    if (isTraceEnabled())
-    {
-        addTraceLog(*pBattleEngine->m3D8_pDesiredCameraPosition, "3D8");
-        addTraceLog(*pBattleEngine->m3D4_pCurrentCameraPosition, "3D4");
-    }
+    addTraceLog(*pBattleEngine->m3D8_pDesiredCameraPosition, "3D8");
+    addTraceLog(*pBattleEngine->m3D4_pCurrentCameraPosition, "3D4");
 
     sVec3_FP delta = *pBattleEngine->m3D8_pDesiredCameraPosition - *pBattleEngine->m3D4_pCurrentCameraPosition;
     computeVectorAngles(delta, param);
@@ -228,10 +225,8 @@ void battleEngine_InitSub8Sub0(sVec2_FP& param)
 
 void battleEngine_InitSub8Sub1(sVec2_FP& param)
 {
-    if (isTraceEnabled())
-    {
-        addTraceLog(param, "param");
-    }
+    addTraceLog(param, "param");
+
     s_battleGrid* pBattleGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
     pBattleGrid->mB4_cameraRotation[0] = param[0];
     pBattleGrid->mB4_cameraRotation[1] = param[1];
@@ -241,6 +236,8 @@ void battleEngine_InitSub8()
 {
     s_battleGrid* pBattleGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
     pBattleGrid->m180_cameraTranslation = *pBattleGrid->m1B8_pCameraTranslationSource;
+    addTraceLog(pBattleGrid->m180_cameraTranslation, "cameraTranslation");
+
     sVec2_FP auStack16;
     battleEngine_InitSub8Sub0(auStack16);
     battleEngine_InitSub8Sub1(auStack16);
@@ -2215,8 +2212,8 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
         {
             pThis->m38D_battleSubMode = 1;
         }
-        gBattleManager->m10_battleOverlay->m8_gridTask->m138[0] = 0x5000;
-        gBattleManager->m10_battleOverlay->m8_gridTask->m138[1] = 0;
+        gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition[1] = 0x5000;
+        gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition[2] = 0;
         gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[1] = 0;
         playSystemSoundEffect(7);
         pThis->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
@@ -2519,7 +2516,7 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
             pThis->m38D_battleSubMode++;
             createBattleIntroTaskSub0();
 
-            gBattleManager->m10_battleOverlay->m8_gridTask->m138[1] = 0;
+            gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition[2] = 0;
             gBattleManager->m10_battleOverlay->m8_gridTask->mE4_currentCameraReferenceCenter[2] = 0;
             gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget[2] = -0xF000;
             gBattleManager->m10_battleOverlay->m8_gridTask->m108_deltaCameraPosition[2] = 0;

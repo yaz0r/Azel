@@ -658,8 +658,8 @@ p_workArea overlayStart_TWN_RUIN(p_workArea pUntypedThis, u32 arg)
 s32 TwnFadeOut(s32 arg0)
 {
     cameraTaskPtr->m1 = 0;
-    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0x8000, arg0);
-    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0);
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0x8000, arg0);
+    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0);
     graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
     return 0;
 }
@@ -683,8 +683,8 @@ s32 TwnFadeIn(s32 arg0)
         break;
     }
 
-    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32(g_fadeControls.m0_fade0.m0_color), 0xC210, arg0);
-    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0);
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0xC210, arg0);
+    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0);
 
     cameraTaskPtr->m1 = 1;
 
