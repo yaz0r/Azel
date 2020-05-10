@@ -4,7 +4,9 @@
 u32 isInMenu2;
 
 void soundFunc(int) { PDS_unimplemented("soundFunc"); }
+#if !defined(SHIPPING_BUILD)
 bool keyboardIsKeyDown(u8 keycode) { PDS_unimplemented("keyboardIsKeyDown");  return false; }
+#endif
 void titleMenuToggleTutorials(struct s_titleMenuEntry* menu1, struct s_titleMenuEntry* menu2) { PDS_unimplemented("titleMenuToggleTutorials"); }
 void titleScreenDrawSub3(u32) { PDS_unimplemented("titleScreenDrawSub3"); }
 

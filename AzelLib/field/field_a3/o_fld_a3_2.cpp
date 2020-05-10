@@ -2,6 +2,7 @@
 #include "a3_background_layer.h"
 #include "items.h"
 #include "audio/soundDriver.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 void fieldA3_2_exit0(p_workArea, sLCSTarget*)
 {

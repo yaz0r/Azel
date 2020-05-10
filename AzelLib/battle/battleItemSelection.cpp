@@ -4,6 +4,7 @@
 #include "items.h"
 #include "kernel/dialogTask.h"
 #include "audio/systemSounds.h"
+#include "commonOverlay.h"
 
 void updateBattleItemMenuList(sBattleItemSelectionTask* pThis)
 {

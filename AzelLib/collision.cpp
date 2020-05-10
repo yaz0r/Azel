@@ -1,4 +1,6 @@
 #include "PDS.h"
+#include "processModel.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 static bool bDrawCollisions = false;
 
@@ -365,11 +367,14 @@ s32 collisionSub0(sProcessed3dModel* collisionMesh, sCollisionTempStruct& r5, sV
 
 void dragonFieldTaskUpdateSub1Sub1()
 {
-    if (ImGui::Begin("Collisions"))
+    if(!isShipping())
     {
-        ImGui::Checkbox("Draw Collisions", &bDrawCollisions);
+        if (ImGui::Begin("Collisions"))
+        {
+            ImGui::Checkbox("Draw Collisions", &bDrawCollisions);
+        }
+        ImGui::End();
     }
-    ImGui::End();
 
     s_dragonTaskWorkArea* r14_pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     s_visibilityGridWorkArea* r12_pVisibilityGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;

@@ -13,6 +13,7 @@
 void addTraceLog(const s8&, const char* name);
 void addTraceLog(const s16&, const char* name);
 void addTraceLog(const u16&, const char* name);
+void addTraceLog(const s32&, const char* name);
 void addTraceLog(const fixedPoint&, const char* name);
 void addTraceLog(const sVec3_FP&, const char* name);
 void addTraceLog(const sVec2_FP&, const char* name);

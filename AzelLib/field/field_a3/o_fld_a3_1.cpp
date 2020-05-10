@@ -5,6 +5,7 @@
 #include "items.h"
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 // Above Excavation
 

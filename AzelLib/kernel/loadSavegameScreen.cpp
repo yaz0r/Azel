@@ -4,6 +4,7 @@
 #include "menuSprite.h"
 #include "loadSavegameScreen.h"
 #include "audio/systemSounds.h"
+#include "commonOverlay.h"
 
 u8* savegameVar0 = nullptr;
 

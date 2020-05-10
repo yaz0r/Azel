@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "commonOverlay.h"
 
 s_graphicEngineStatus graphicEngineStatus;
 
@@ -688,20 +689,6 @@ void memcpy_dma(void* src, void* dst, u32 size)
     memcpy(dst, src, size);
 }
 
-extern s32 CosSinTable[5120];
-
-fixedPoint getCos(u32 value)
-{
-    value &= 0xFFF;
-    return fixedPoint(CosSinTable[value + 1024]);
-}
-
-fixedPoint getSin(u32 value)
-{
-    value &= 0xFFF;
-    return fixedPoint(CosSinTable[value]);
-}
-
 u8 readSaturnU8(sSaturnPtr ptr)
 {
     sSaturnMemoryFile* pFile = ptr.m_file;
@@ -782,6 +769,10 @@ sSaturnPtr readSaturnEA(sSaturnPtr ptr)
 std::string readSaturnString(sSaturnPtr ptr)
 {
     std::string newString;
+    if (ptr.isNull())
+    {
+        return newString;
+    }
 
     while (s8 newChar = readSaturnS8(ptr))
     {

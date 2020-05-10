@@ -2,6 +2,7 @@
 #include "battleDebugList.h"
 #include "battle/battleManager.h"
 #include "audio/systemSounds.h"
+#include "commonOverlay.h"
 
 u32 s_battlePrgTask_var0 = 0;
 
@@ -19,8 +20,7 @@ static void s_battlePrgTask_Init(s_battlePrgTask*)
         pLoadingTask->mA_pendingBattleOverlayId = 0;
     }
 
-    sSaturnPtr battleListData = gCommonFile.getSaturnPtr(0x2002bc);
-    while (readSaturnU8(battleListData + pLoadingTask->mA_pendingBattleOverlayId) == 0)
+    while (gCommonFile.battleActivationList[pLoadingTask->mA_pendingBattleOverlayId] == 0)
     {
         pLoadingTask->mA_pendingBattleOverlayId++;
     }
@@ -57,9 +57,6 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
         playSystemSoundEffect(7);
     }
 
-    sSaturnPtr battleActivationList = gCommonFile.getSaturnPtr(0x2002bc);
-    sSaturnPtr battleOverlaySetup = gCommonFile.getSaturnPtr(0x2005dc);
-
     if (s_battlePrgTask_var0 == 0)
     {
         // Select battle module
@@ -78,7 +75,7 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20)
         {
             pBattleManager->m6_subBattleId++;
-            if (readSaturnU32(battleOverlaySetup + pBattleManager->mA_pendingBattleOverlayId * 0x14 + 0xC) <= pBattleManager->m6_subBattleId)
+            if (gCommonFile.battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles <= pBattleManager->m6_subBattleId)
             {
                 pBattleManager->m6_subBattleId = 0;
             }
@@ -104,9 +101,9 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
             vdp2PrintStatus.m10_palette = 0x8000;
         }
 
-        if (readSaturnU8(battleActivationList + i) != 0)
+        if (gCommonFile.battleActivationList[i] != 0)
         {
-            vdp2DebugPrintNewLine(readSaturnString(readSaturnEA(battleOverlaySetup + i * 0x14)));
+            vdp2DebugPrintNewLine(gCommonFile.battleOverlaySetup[i].m0_name);
             if ((s_battlePrgTask_var0 == 0) && (pBattleManager->mA_pendingBattleOverlayId == i))
             {
                 vdp2PrintStatus.m10_palette = 0xD000;
@@ -117,8 +114,7 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
         }
     }
 
-    int numSubBattle = readSaturnS32(battleOverlaySetup + (pBattleManager->mA_pendingBattleOverlayId * 0x14) + 0xC);
-    sSaturnPtr subBattleTable = readSaturnEA(battleOverlaySetup + (pBattleManager->mA_pendingBattleOverlayId * 0x14) + 0x10);
+    int numSubBattle = gCommonFile.battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles;
     for (int i = 0; i < numSubBattle; i++)
     {
         vdp2DebugPrintSetPosition(0x12, i + 4);
@@ -128,7 +124,7 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
             vdp2PrintStatus.m10_palette = 0x8000;
         }
 
-        vdp2DebugPrintNewLine(readSaturnString(readSaturnEA(subBattleTable + i * 4)));
+        vdp2DebugPrintNewLine(gCommonFile.battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].m10_subBattles[i]);
     }
 
     if (s_battlePrgTask_var0 != 0)

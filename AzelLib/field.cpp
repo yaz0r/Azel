@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 s_fieldTaskWorkArea* fieldTaskPtr = NULL;
 

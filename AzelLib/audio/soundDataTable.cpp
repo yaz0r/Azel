@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "commonOverlay.h"
 #include "soundDataTable.h"
 
 std::vector<sSequenceConfig> SoundDataTable;

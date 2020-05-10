@@ -76,6 +76,7 @@ bool SDL_ES3_backend::init()
     gl3wInit();
 #endif
 
+#ifndef SHIPPING_BUILD
     imguiGLContext = ImGui::CreateContext();
     ImGui::SetCurrentContext(imguiGLContext);
 
@@ -92,6 +93,7 @@ bool SDL_ES3_backend::init()
 
     ImGui_ImplOpenGL3_Init(gGLSLVersion);
     ImGui_ImplSDL2_InitForOpenGL(gWindowGL, gGlcontext);
+#endif
 
     return true;
 }
@@ -115,12 +117,18 @@ void SDL_ES3_backend::bindBackBuffer()
 
 void SDL_ES3_backend::ImGUI_NewFrame()
 {
-    ImGui_ImplOpenGL3_NewFrame();
+    if (!isShipping())
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+    }
 }
 
 void SDL_ES3_backend::ImGUI_RenderDrawData(ImDrawData* pDrawData)
 {
-    ImGui_ImplOpenGL3_RenderDrawData(pDrawData);
+    if (!isShipping())
+    {
+        ImGui_ImplOpenGL3_RenderDrawData(pDrawData);
+    }
 }
 
 #endif

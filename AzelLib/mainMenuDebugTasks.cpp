@@ -10,6 +10,8 @@
 #include "battle/battleManager.h"
 #include "audio/systemSounds.h"
 #include "audio/soundDriver.h"
+#include "commonOverlay.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID);
 

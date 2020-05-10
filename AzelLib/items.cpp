@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "items.h"
+#include "commonOverlay.h"
 
 const sObjectListEntry* getObjectListEntry(eItems entry)
 {

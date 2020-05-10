@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "a3_crane_lower.h"
 #include "kernel/fileBundle.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 // crane lower part
 struct s_A3_0_Obj2 : public s_workAreaTemplate<s_A3_0_Obj2>

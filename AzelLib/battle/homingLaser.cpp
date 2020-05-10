@@ -12,6 +12,7 @@
 #include "gunShotRootTask.h" // TODO: cleanup
 #include "audio/systemSounds.h"
 #include "kernel/debug/trace.h"
+#include "commonOverlay.h"
 
 struct sHomingLaserRootTask : public s_workAreaTemplateWithCopy<sHomingLaserRootTask>
 {
@@ -21,7 +22,7 @@ struct sHomingLaserRootTask : public s_workAreaTemplateWithCopy<sHomingLaserRoot
         sVec3_FP* m4_pLaserSource;
         s8 m8_pLaserId;
     };
-    std::vector<sHomingLaserRootTask_sub> m8;
+    std::vector<sHomingLaserRootTask_sub> m8_individualLaser;
     s16 m64;
     s16 m6C_status;
     s16 m6E_numMaxEnemies;
@@ -313,7 +314,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
     {
     case 0:
         pThis->m7E_status++;
-        break;
+        // fall through
     case 1:
         // if target is inactive
         if ((pThis->m84_targetable == nullptr) || (pThis->m84_targetable->m50_flags & 0x140001))
@@ -370,9 +371,10 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
             }
             else
             {
-                fixedPoint ratioInLaser = FP_Div(fixedPoint::fromInteger(pThis->m70_totalLaserNumFrames - pThis->m6C_numFramesToDestination), fixedPoint::fromInteger(pThis->m70_totalLaserNumFrames));
+                fixedPoint stepInLaser = fixedPoint::fromInteger(pThis->m70_totalLaserNumFrames - pThis->m6C_numFramesToDestination);
+                fixedPoint ratioInLaser = FP_Div(stepInLaser, fixedPoint::fromInteger(pThis->m70_totalLaserNumFrames));
                 pThis->m10_laserPosition = MTH_Mul(ratioInLaser, *pThis->m88_targetablePosition - *pThis->m8C_laserSource) + *pThis->m8C_laserSource;
-                pThis->m5C_laserArc[0] = getSin(MTH_Mul(FP_Div(0x8000000, fixedPoint::fromInteger(pThis->m70_totalLaserNumFrames)), ratioInLaser).toInteger());
+                pThis->m5C_laserArc[0] = getSin(MTH_Mul(FP_Div(0x8000000, fixedPoint::fromInteger(pThis->m70_totalLaserNumFrames)), stepInLaser).toInteger());
 
                 pushCurrentMatrix();
                 translateCurrentMatrix(pThis->m10_laserPosition);
@@ -427,6 +429,18 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
     if (pThis->mF0.m8 <= pThis->mF0.m4_numLaserNodes - 1)
     {
         pThis->mF0.m8 += pThis->mF0.mC;
+    }
+
+    if (isTraceEnabled())
+    {
+        addTraceLog(pThis->m10_laserPosition, "laserPosition");
+        addTraceLog(pThis->m5C_laserArc[0], "laserArc");
+        addTraceLog(*pThis->m8C_laserSource, "laserSource");
+        addTraceLog(pThis->m40, "m40");
+        for (int i = 0; i < 10; i++)
+        {
+            addTraceLog(pThis->m64_laserTrajectory[i], "trajectory");
+        }
     }
 }
 
@@ -661,10 +675,10 @@ void homingLaserRootTask_Update(sHomingLaserRootTask* pThis)
                 // Use all targetables
                 if (!(gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50_flags & 0x40000))
                 {
-                    pThis->m8[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable;
-                    pThis->m8[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
-                    pThis->m8[i].m8_pLaserId = i;
-                    createSiblingTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8[i], &homingLaserDefinition);
+                    pThis->m8_individualLaser[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable;
+                    pThis->m8_individualLaser[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
+                    pThis->m8_individualLaser[i].m8_pLaserId = i;
+                    createSiblingTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8_individualLaser[i], &homingLaserDefinition);
                 }
             }
             else
@@ -672,10 +686,10 @@ void homingLaserRootTask_Update(sHomingLaserRootTask* pThis)
                 // Use targetable 0
                 if (!(gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50_flags & 0x40000))
                 {
-                    pThis->m8[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable;
-                    pThis->m8[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
-                    pThis->m8[i].m8_pLaserId = i;
-                    createSiblingTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8[i], &homingLaserDefinition);
+                    pThis->m8_individualLaser[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable;
+                    pThis->m8_individualLaser[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
+                    pThis->m8_individualLaser[i].m8_pLaserId = i;
+                    createSiblingTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8_individualLaser[i], &homingLaserDefinition);
                 }
             }
         }
@@ -718,5 +732,5 @@ void battleEngine_createHomingLaserRootTask(s_workAreaCopy* pParent, s32 numMaxE
         pNewTask->m6E_numMaxEnemies = numMaxEnemies;
     }
 
-    pNewTask->m8.resize(pNewTask->m6E_numMaxEnemies);
+    pNewTask->m8_individualLaser.resize(pNewTask->m6E_numMaxEnemies);
 }

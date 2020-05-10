@@ -9,6 +9,7 @@
 #include "kernel/debug/trace.h"
 #include "kernel/animation.h"
 #include "audio/systemSounds.h"
+#include "commonOverlay.h"
 
 void s_battleDragon_InitSub4Sub0()
 {
@@ -698,22 +699,14 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
     return local_24;
 }
 
-fixedPoint s_battleDragon_getRiderRotationSub0(s32 inValue)
-{
-    // TODO: this is atan? Might be buggy
-    if (inValue > -1)
-        return (fixedPoint::fromInteger(readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + 2 * (inValue / 16))));
-    return (-fixedPoint::fromInteger(readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + 2 * (-inValue / 16))));
-}
-
 void s_battleDragon_getRiderRotation(sVec3_FP& outputRotation, const sMatrix4x3& inMatrix)
 {
-    outputRotation[0] = s_battleDragon_getRiderRotationSub0(-inMatrix.matrix[6]);
+    outputRotation[0] = atan_FP(-inMatrix.matrix[6]);
     outputRotation[1] = atan2_FP(inMatrix.matrix[2], inMatrix.matrix[10]);
     outputRotation[2] = atan2_FP(inMatrix.matrix[4], inMatrix.matrix[5]);
 }
 
-void s_battleDragon_UpdateRider1PositionSub0(sVec3_FP& output, int index)
+void s_battleDragon_UpdateHotPoint(sVec3_FP& output, int index)
 {
     sSaturnPtr pHotpointData = gCurrentBattleOverlay->getSaturnPtr(0x60ade04);
     sSaturnPtr pDragonHotpointData = readSaturnEA(pHotpointData + 4 * gDragonState->mC_dragonType);
@@ -727,11 +720,11 @@ void s_battleDragon_UpdateRider1PositionSub0(sVec3_FP& output, int index)
     }
 }
 
-void s_battleDragon_UpdateRider1Position()
+void s_battleDragon_UpdateHotPoints()
 {
     for (int i = 0; i < 6; i++)
     {
-        s_battleDragon_UpdateRider1PositionSub0(gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[i], i);
+        s_battleDragon_UpdateHotPoint(gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[i], i);
     }
 }
 
@@ -811,7 +804,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
 
     sVec3_FP riderRotation;
     s_battleDragon_getRiderRotation(riderRotation, gDragonState->m28_dragon3dModel.m3C_boneMatrices[0]);
-    s_battleDragon_UpdateRider1Position();
+    s_battleDragon_UpdateHotPoints();
 
     if (cVar3)
     {

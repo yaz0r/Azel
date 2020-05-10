@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "items.h"
 #include "audio/soundDriver.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 // Conana's nest
 

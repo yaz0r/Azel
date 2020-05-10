@@ -2,6 +2,7 @@
 #include "town.h"
 #include "townDebugSelect.h"
 #include "audio/soundDriver.h"
+#include "commonOverlay.h"
 
 struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
 {

@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "o_fld_a3_0.h"
 #include "o_fld_a3_4.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 void fieldA3_A_task0Sub0()
 {

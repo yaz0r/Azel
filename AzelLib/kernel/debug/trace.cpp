@@ -160,6 +160,11 @@ void addTraceLog(const s16& value, const char* name)
     addTraceLog("%s: 0x%04X\n", name, value);
 }
 
+void addTraceLog(const s32& value, const char* name)
+{
+    addTraceLog("%s: 0x%08X\n", name, value);
+}
+
 void addTraceLog(const sMatrix4x3& matrix, const char* name)
 {
     addTraceLog("%s: 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X\n", name,

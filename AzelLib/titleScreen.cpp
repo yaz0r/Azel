@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "audio/systemSounds.h"
+#include "o_title.h"
 
 p_workArea createBattleDebugTask(p_workArea);
 
@@ -12,8 +13,8 @@ struct s_titleMenuEntry
 };
 
 s_titleMenuEntry mainMenu[] = {
-    {1, -6, " NEW GAME ", NULL /*createNewGameTask*/},
-    {1, -5, " CONTINUE ", NULL /*createContinueTask*/},
+    {1, -6, " NEW GAME ", createNewGameTask},
+    {1, -5, " CONTINUE ", createContinueTask},
     {1, -4, "TUTORIAL 1", NULL /*createTutorial1Task*/},
     {1, -3, "TUTORIAL 2", NULL /*createTutorial2Task*/},
 };
@@ -58,19 +59,22 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
         switch (pWorkArea->m_status)
         {
         case 0:
-            PDS_warningOnce("Setting up menu as debug");
-            //if (keyboardIsKeyDown(0xF6))
+#if !defined(SHIPPING_BUILD)
+        PDS_warningOnce("Setting up menu as debug");
+        if (keyboardIsKeyDown(0xF6) || true)
         {
             pWorkArea->m_menu = mainMenuDebug;
             pWorkArea->m_numMenuEntry = sizeof(mainMenuDebug) / sizeof(mainMenuDebug[0]);
         }
-        /*else
+        else
+#else
         {
             pWorkArea->m_menu = mainMenu;
-            pWorkArea->m_numMenuEntry = 4;
+            pWorkArea->m_numMenuEntry = 2; // sizeof(mainMenu) / sizeof(mainMenu[0]);
 
             titleMenuToggleTutorials(&mainMenu[2], &mainMenu[3]);
-        }*/
+        }
+#endif
         pWorkArea->m_vertialLocation = 0;
 
         if (VDP2Regs_.m4_TVSTAT & 1)
@@ -119,9 +123,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
             randomNumber(); // to increment seed
 
             // start or A?
-#ifndef __IPHONEOS__
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xE)
-#endif
             {
                 playSystemSoundEffect(0);
 

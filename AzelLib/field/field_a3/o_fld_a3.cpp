@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "o_fld_a3.h"
 #include "a3_crane_upper.h"
 #include "a3_crane_lower.h"
 #include "a3_static_mine_cart.h"
@@ -17,6 +18,7 @@
 #include "items.h"
 
 #include "kernel/dialogTask.h"
+#include "processModel.h"
 
 void updateDragonDefault(s_dragonTaskWorkArea*);
 void updateCutscene(s_dragonTaskWorkArea* r14);
@@ -6349,11 +6351,14 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
         bDirty = 1;
     }
 
-    if (ImGui::Begin("Camera"))
+    if(!isShipping())
     {
-        ImGui::Text("cell: X: %d, Y:%d", pFieldCameraTask1->m18_cameraGridLocation[0], pFieldCameraTask1->m18_cameraGridLocation[1]);
+        if (ImGui::Begin("Camera"))
+        {
+            ImGui::Text("cell: X: %d, Y:%d", pFieldCameraTask1->m18_cameraGridLocation[0], pFieldCameraTask1->m18_cameraGridLocation[1]);
+        }
+        ImGui::End();
     }
-    ImGui::End();
 
     return bDirty;
 }

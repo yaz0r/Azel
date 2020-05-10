@@ -43,29 +43,6 @@ endfunction(assign_source_group)
 
 assign_source_group(${SOURCES})
 
-set(SOURCES
- ${SOURCES}
- ${THIRD_PARTY}/imgui/imgui.cpp
- ${THIRD_PARTY}/imgui/imgui_draw.cpp
- ${THIRD_PARTY}/imgui/imgui_widgets.cpp
-
- ${THIRD_PARTY}/aosdk/eng_ssf/m68kcpu.c
- ${THIRD_PARTY}/aosdk/eng_ssf/m68kopac.c
- ${THIRD_PARTY}/aosdk/eng_ssf/m68kopdm.c
- ${THIRD_PARTY}/aosdk/eng_ssf/m68kopnz.c
- ${THIRD_PARTY}/aosdk/eng_ssf/m68kops.c
- ${THIRD_PARTY}/aosdk/eng_ssf/sat_hw.c
- ${THIRD_PARTY}/aosdk/eng_ssf/scsp.c
- ${THIRD_PARTY}/aosdk/eng_ssf/scspdsp.c
- #${THIRD_PARTY}/aosdk/eng_ssf/scsplfo.c
-)
-
-if (MSVC)
-    set(SOURCES
-        ${SOURCES}
-        ${THIRD_PARTY}/imgui/examples/libs/gl3w/GL/gl3w.c
-    )
-endif()
 
 if( MSVC )
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x -D_HAS_EXCEPTIONS=0 /GR-")
@@ -126,6 +103,34 @@ else()
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
 
+ADD_MSVC_PRECOMPILED_HEADER("PDS.h" "PDS_Precompiled.cpp" SOURCES)
+
+SET_SOURCE_FILES_PROPERTIES("PDS_Precompiled.cpp"
+                            PROPERTIES COMPILE_FLAGS "/Yc\"PDS.h\" /FI\"PDS.h\" /Fp\"PDS.pch\""
+                                        OBJECT_DEPENDS "PDS.pch")  
+if (MSVC)
+    set(SOURCES
+        ${SOURCES}
+        ${THIRD_PARTY}/imgui/examples/libs/gl3w/GL/gl3w.c
+    )
+endif()
+
+set(SOURCES
+ ${SOURCES}
+ ${THIRD_PARTY}/imgui/imgui.cpp
+ ${THIRD_PARTY}/imgui/imgui_draw.cpp
+ ${THIRD_PARTY}/imgui/imgui_widgets.cpp
+
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kcpu.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kopac.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kopdm.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kopnz.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/m68kops.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/sat_hw.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/scsp.c
+ ${THIRD_PARTY}/aosdk/eng_ssf/scspdsp.c
+ #${THIRD_PARTY}/aosdk/eng_ssf/scsplfo.c
+)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
 add_library (AzelLib-ios ${SOURCES})

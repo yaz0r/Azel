@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "dialogTask.h"
 #include "audio/systemSounds.h"
+#include "commonOverlay.h"
 
 void s_multiChoiceTask::drawMultiChoice()
 {

@@ -3,6 +3,7 @@
 #include "kernel/fileBundle.h"
 #include "a3_2_crashedImperialShip.h"
 #include "items.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 void fieldA3_2_createCrashedImpertialShipExplosions(p_workArea)
 {

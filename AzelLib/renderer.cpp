@@ -306,7 +306,11 @@ void azelSdl2_StartFrame()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        ImGui_ImplSDL2_ProcessEvent(&event);
+        if (!isShipping())
+        {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+        }
+        
         switch (event.type)
         {
         case SDL_MOUSEMOTION:
@@ -463,12 +467,12 @@ void azelSdl2_StartFrame()
 
     checkGL();
 
-    gBackend->ImGUI_NewFrame();
-
-    checkGL();
-
-    ImGui_ImplSDL2_NewFrame(gWindowGL);
-    ImGui::NewFrame();
+    if (!isShipping())
+    {
+        gBackend->ImGUI_NewFrame();
+        ImGui_ImplSDL2_NewFrame(gWindowGL);
+        ImGui::NewFrame();
+    }
     
     checkGL();
 #endif
@@ -1692,42 +1696,46 @@ bool azelSdl2_EndFrame()
     renderBG3(vdp2ResolutionWidth, vdp2ResolutionHeight, BG3_GPU);
     renderRBG0(vdp2ResolutionWidth, vdp2ResolutionHeight, RBG0_GPU);
 
-    if(ImGui::Begin("VDP"))
+    if(!isShipping())
     {
-        ImGui::PushID("BG0");
-        ImGui::Text("NBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG0_GPU);
-        ImGui::Image((ImTextureID)NBG_data[0].Texture , ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::PopID();
+        if(ImGui::Begin("VDP"))
+        {
+            ImGui::PushID("BG0");
+            ImGui::Text("NBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG0_GPU);
+            ImGui::Image((ImTextureID)NBG_data[0].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::PopID();
 
-        ImGui::PushID("BG1");
-        ImGui::Text("NBG1"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG1_GPU);
-        ImGui::Image((ImTextureID)NBG_data[1].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::PopID();
+            ImGui::PushID("BG1");
+            ImGui::Text("NBG1"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG1_GPU);
+            ImGui::Image((ImTextureID)NBG_data[1].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::PopID();
 
-        ImGui::PushID("BG2");
-        ImGui::Text("NBG2"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG2_GPU);
-        ImGui::Image((ImTextureID)NBG_data[2].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::PopID();
+            ImGui::PushID("BG2");
+            ImGui::Text("NBG2"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG2_GPU);
+            ImGui::Image((ImTextureID)NBG_data[2].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::PopID();
 
-        ImGui::PushID("BG3");
-        ImGui::Text("NBG3"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG3_GPU);
-        ImGui::Image((ImTextureID)NBG_data[3].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::PopID();
+            ImGui::PushID("BG3");
+            ImGui::Text("NBG3"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG3_GPU);
+            ImGui::Image((ImTextureID)NBG_data[3].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::PopID();
 
-        ImGui::PushID("RBG0");
-        ImGui::Text("RBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &RBG0_GPU);
-        ImGui::Image((ImTextureID)NBG_data[4].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::PopID();
+            ImGui::PushID("RBG0");
+            ImGui::Text("RBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &RBG0_GPU);
+            ImGui::Image((ImTextureID)NBG_data[4].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::PopID();
 
-        ImGui::Text("VDP1");
-        ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::Text("VDP1 poly");
-        ImGui::Image((ImTextureID)gVdp1PolyTexture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Text("VDP1");
+            ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Text("VDP1 poly");
+            ImGui::Image((ImTextureID)gVdp1PolyTexture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+        }
+        ImGui::End();
+
+        PrintDebugTasksHierarchy();
+        PrintDebugTasksInfo();
     }
-    ImGui::End();
 
-    PrintDebugTasksHierarchy();
-    PrintDebugTasksInfo();
 
     checkGL();
     
@@ -1752,11 +1760,14 @@ bool azelSdl2_EndFrame()
     
     checkGL();
 
-    ImGui::Begin("Config");
+    if(!isShipping())
     {
-        ImGui::InputInt2("Internal Resolution", internalResolution);
+        if (ImGui::Begin("Config"))
+        {
+            ImGui::InputInt2("Internal Resolution", internalResolution);
+        }
+        ImGui::End();
     }
-    ImGui::End();
 
     // render VDP1 frame buffer
     if(1)
@@ -1869,133 +1880,141 @@ bool azelSdl2_EndFrame()
 
     gBackend->bindBackBuffer();
 
-    ImGui::Begin("Final Composition");
+    if (!isShipping())
     {
-        ImVec2 textureSize = ImGui::GetWindowSize();
-        textureSize.y = textureSize.x * (224.f / 352.f);
-        ImGui::Image((ImTextureID)gCompositedTexture, textureSize, ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
-    }
-    ImGui::End();
-
-    static bool bInventoryOpen = false;
-
-    if (ImGui::BeginMainMenuBar())
-    {
-        ImGui::Text(" %.2f FPS (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
-
-        if (ImGui::BeginMenu("Framerate"))
+        ImGui::Begin("Final Composition");
         {
-            bool unlimited = true;
-            if (ImGui::MenuItem("Unlimited", NULL, frameLimit == -1)) frameLimit = -1;
-            if (ImGui::MenuItem("30", NULL, frameLimit == 30)) frameLimit = 30;
-            if (ImGui::MenuItem("5", NULL, frameLimit == 5)) frameLimit = 5;
-            ImGui::EndMenu();
+            ImVec2 textureSize = ImGui::GetWindowSize();
+            textureSize.y = textureSize.x * (224.f / 352.f);
+            ImGui::Image((ImTextureID)gCompositedTexture, textureSize, ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
         }
-
-        ImGui::PushItemWidth(100);
-        ImGui::SliderFloat("Volume", &gVolume, 0, 1);
-        ImGui::PopItemWidth();
-
-        if (ImGui::BeginMenu("GameState"))
-        {
-            ImGui::MenuItem("Inventory", NULL, &bInventoryOpen);
-            ImGui::EndMenu();
-        }
-
-        extern bool bTraceEnabled;
-        ImGui::Checkbox("Trace", &bTraceEnabled);
-
-        ImGui::EndMainMenuBar();
-    }
-
-    if (bInventoryOpen)
-    {
-        ImGui::Begin("Inventory");
-
-        ImGui::Columns(4);
-        for (int i=0; i<0xB0; i++)
-        {
-            const sObjectListEntry* pObject = getObjectListEntry((eItems)i);
-
-            ImGui::PushID(i);
-
-            ImGui::Text("0x%04X", i); ImGui::NextColumn();
-            ImGui::Text(pObject->m4_name.c_str()); ImGui::NextColumn();
-            ImGui::Text(pObject->m8_description.c_str()); ImGui::NextColumn();
-
-            if (i< 0x4D)
-            {
-                int owned = mainGameState.consumables[i];
-                if (ImGui::InputInt("owned", &owned))
-                {
-                    mainGameState.consumables[i] = owned;
-                }
-            }
-            else
-            {
-                bool owned = mainGameState.getBit(0xF3 + i);
-                if (ImGui::Checkbox("owned", &owned))
-                {
-                    if (owned)
-                    {
-                        mainGameState.setBit(0xF3 + i);
-                    }
-                    else
-                    {
-                        mainGameState.clearBit(0xF3 + i);
-                    }
-                    
-                }
-            }
-            ImGui::NextColumn();
-            ImGui::Separator();
-
-            ImGui::PopID();
-        }
-        ImGui::Columns(1);
         ImGui::End();
+
+        static bool bInventoryOpen = false;
+
+        if (ImGui::BeginMainMenuBar())
+        {
+            ImGui::Text(" %.2f FPS (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+
+            if (ImGui::BeginMenu("Framerate"))
+            {
+                bool unlimited = true;
+                if (ImGui::MenuItem("Unlimited", NULL, frameLimit == -1)) frameLimit = -1;
+                if (ImGui::MenuItem("30", NULL, frameLimit == 30)) frameLimit = 30;
+                if (ImGui::MenuItem("5", NULL, frameLimit == 5)) frameLimit = 5;
+                ImGui::EndMenu();
+            }
+
+            ImGui::PushItemWidth(100);
+            ImGui::SliderFloat("Volume", &gVolume, 0, 1);
+            ImGui::PopItemWidth();
+
+            if (ImGui::BeginMenu("GameState"))
+            {
+                ImGui::MenuItem("Inventory", NULL, &bInventoryOpen);
+                ImGui::EndMenu();
+            }
+
+            extern bool bTraceEnabled;
+            ImGui::Checkbox("Trace", &bTraceEnabled);
+
+            ImGui::EndMainMenuBar();
+        }
+
+        if (bInventoryOpen)
+        {
+            ImGui::Begin("Inventory");
+
+            ImGui::Columns(4);
+            for (int i = 0; i < 0xB0; i++)
+            {
+                const sObjectListEntry* pObject = getObjectListEntry((eItems)i);
+
+                ImGui::PushID(i);
+
+                ImGui::Text("0x%04X", i); ImGui::NextColumn();
+                ImGui::Text(pObject->m4_name.c_str()); ImGui::NextColumn();
+                ImGui::Text(pObject->m8_description.c_str()); ImGui::NextColumn();
+
+                if (i < 0x4D)
+                {
+                    int owned = mainGameState.consumables[i];
+                    if (ImGui::InputInt("owned", &owned))
+                    {
+                        mainGameState.consumables[i] = owned;
+                    }
+                }
+                else
+                {
+                    bool owned = mainGameState.getBit(0xF3 + i);
+                    if (ImGui::Checkbox("owned", &owned))
+                    {
+                        if (owned)
+                        {
+                            mainGameState.setBit(0xF3 + i);
+                        }
+                        else
+                        {
+                            mainGameState.clearBit(0xF3 + i);
+                        }
+
+                    }
+                }
+                ImGui::NextColumn();
+                ImGui::Separator();
+
+                ImGui::PopID();
+            }
+            ImGui::Columns(1);
+            ImGui::End();
+        }
     }
 
     checkGL();
-#ifndef SHIPPING_BUILD
-    for (int i = 0; i < eLogCategories::log_max; i++)
+
+    if(!isShipping())
     {
-        switch (i)
+#if !defined(SHIPPING_BUILD)
+        for (int i = 0; i < eLogCategories::log_max; i++)
         {
-        case eLogCategories::log_default:
-            PDS_Logger[i].Draw("Default log");
-            break;
-        case eLogCategories::log_task:
-            PDS_Logger[i].Draw("Task log");
-            break;
-        case eLogCategories::log_unimlemented:
-            PDS_Logger[i].Draw("Unimplemented log");
-            break;
-        case eLogCategories::log_m68k:
-            PDS_Logger[i].Draw("Sound m68k");
-            break;
-        case eLogCategories::log_warning:
-            PDS_Logger[i].Draw("Warning log");
-            break;
-        default:
-            assert(0);
-            break;
+            switch (i)
+            {
+            case eLogCategories::log_default:
+                PDS_Logger[i].Draw("Default log");
+                break;
+            case eLogCategories::log_task:
+                PDS_Logger[i].Draw("Task log");
+                break;
+            case eLogCategories::log_unimlemented:
+                PDS_Logger[i].Draw("Unimplemented log");
+                break;
+            case eLogCategories::log_m68k:
+                PDS_Logger[i].Draw("Sound m68k");
+                break;
+            case eLogCategories::log_warning:
+                PDS_Logger[i].Draw("Warning log");
+                break;
+            default:
+                assert(0);
+                break;
+            }
         }
-    }
 #endif
-    ImGui::Render();
+        ImGui::Render();
+    }
+    
     
     checkGL();
     
     static bool bImguiEnabled = false;
 
 #ifndef USE_NULL_RENDERER
+#ifndef SHIPPING_BUILD
     if (ImGui::GetIO().KeysDown[SDL_SCANCODE_GRAVE] && (ImGui::GetIO().KeysDownDuration[SDL_SCANCODE_GRAVE] == 0.f))
     {
-#ifndef SHIPPING_BUILD
         bImguiEnabled = !bImguiEnabled;
-#endif
     }
+#endif
     if (bImguiEnabled)
     {
         gBackend->ImGUI_RenderDrawData(ImGui::GetDrawData());
@@ -2006,9 +2025,10 @@ bool azelSdl2_EndFrame()
     }
     
     checkGL();
+
     // Update and Render additional Platform Windows
+#ifndef SHIPPING_BUILD
     ImGuiIO& io = ImGui::GetIO();
-#if 1
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         ImGui::UpdatePlatformWindows();

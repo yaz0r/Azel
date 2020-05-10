@@ -3,6 +3,7 @@
 #include "battleManager.h"
 #include "BTL_A3/BTL_A3.h"
 #include "audio/systemSounds.h"
+#include "commonOverlay.h"
 
 std::string sBattleOverlayName = "";
 
@@ -38,8 +39,6 @@ static void battleOverlayTask_Update(sBattleOverlayTask* pThis)
 
 static void battleOverlayTask_Draw(sBattleOverlayTask* pThis)
 {
-    sSaturnPtr battleOverlaySetup = gCommonFile.getSaturnPtr(0x2005dc);
-
     switch (pThis->m0)
     {
     case 0:
@@ -47,11 +46,11 @@ static void battleOverlayTask_Draw(sBattleOverlayTask* pThis)
         pThis->m0++;
         break;
     case 1:
-        sBattleOverlayName = readSaturnString(readSaturnEA(battleOverlaySetup + gBattleManager->m2_currentBattleOverlayId * 0x14 + 4));
+        sBattleOverlayName = gCommonFile.battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m4_prg;
         loadFnt("ITEM.FNT");
         pThis->m2++;
         {
-            std::string customFontName = readSaturnString(readSaturnEA(battleOverlaySetup + gBattleManager->m2_currentBattleOverlayId * 0x14 + 8));
+            std::string customFontName = gCommonFile.battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m8_fnt;
             loadFnt(customFontName.c_str());
             pThis->m2++;
             if (sBattleOverlayName == std::string("BTL_A3.PRG"))

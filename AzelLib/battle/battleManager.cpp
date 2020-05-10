@@ -2,6 +2,7 @@
 #include "battleManager.h"
 #include "battle/battleDebugList.h"
 #include "battle/battleOverlay.h"
+#include "commonOverlay.h"
 
 sBattleManager* gBattleManager = NULL;
 /*
@@ -120,8 +121,7 @@ static int loadBattleOverlay(sBattleManager* pThis)
     pThis->mA_pendingBattleOverlayId = -1;
     loadBattleOverlaySub0(pThis);
 
-    sSaturnPtr battleOverlaySetup = gCommonFile.getSaturnPtr(0x2005dc);
-    if (readSaturnU32(battleOverlaySetup + pThis->m2_currentBattleOverlayId * 0x14 + 4) == 0)
+    if (gCommonFile.battleOverlaySetup[pThis->m2_currentBattleOverlayId].m4_prg.length() == 0)
     {
         return 0;
     }

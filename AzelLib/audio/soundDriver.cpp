@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "soundDriver.h"
 #include "soundDataTable.h"
+#include "commonOverlay.h"
 
 extern "C" {
 #include "ao.h"

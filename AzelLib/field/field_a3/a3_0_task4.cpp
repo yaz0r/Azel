@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "a3_0_task4.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 void fieldA3_0_task4_updateSub0(s_dragonTaskWorkArea* pDragon)
 {

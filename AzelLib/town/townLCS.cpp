@@ -2,6 +2,7 @@
 #include "town.h"
 #include "townLCS.h"
 #include "kernel/fileBundle.h"
+#include "processModel.h"
 
 sResCameraProperties LCSCollisionData;
 

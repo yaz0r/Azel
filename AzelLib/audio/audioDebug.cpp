@@ -9,6 +9,7 @@ extern "C" {
 
 void audioDebug()
 {
+#ifndef SHIPPING_BUILD
     ImGui::Begin("Sound Debugger");
     {
         for (int i=0; i<32; i++)
@@ -36,5 +37,6 @@ void audioDebug()
         }
     }
     ImGui::End();
+#endif
 }
 

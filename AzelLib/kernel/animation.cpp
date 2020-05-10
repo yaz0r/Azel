@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "animation.h"
+#include "processModel.h"
 
 sAnimationData::sAnimationData(u8* base, u32 offset)
 {

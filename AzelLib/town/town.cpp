@@ -8,6 +8,7 @@
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
 #include "kernel/grid.h"
+#include "commonOverlay.h"
 
 sTownOverlay* gCurrentTownOverlay = nullptr;
 

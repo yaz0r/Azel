@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "fileBundle.h"
 #include "animation.h"
+#include "processModel.h"
 
 s_fileBundle::s_fileBundle(u8* rawBundle):
     mRawBundle(rawBundle),

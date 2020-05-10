@@ -950,10 +950,6 @@ void memcpy_dma(void* src, void* dst, u32 size);
 
 void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** assetList);
 
-fixedPoint getCos(u32 value);
-fixedPoint getSin(u32 value);
-
-extern u16 atanTable[2049];
 extern u16 resetVdp2StringsData[4106];
 
 void registerModelAndCharacter(u8* model, u32 character);

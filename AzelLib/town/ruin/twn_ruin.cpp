@@ -1098,9 +1098,12 @@ void updateEdgePosition(sNPC* r4)
     }
     //605B9AA
     static bool gGravity = true;
-    ImGui::Begin("Town");
-    ImGui::Checkbox("Gravity", &gGravity);
-    ImGui::End();
+    if(!isShipping())
+    {
+        ImGui::Begin("Town");
+        ImGui::Checkbox("Gravity", &gGravity);
+        ImGui::End();
+    }
 
     if (gGravity)
     {

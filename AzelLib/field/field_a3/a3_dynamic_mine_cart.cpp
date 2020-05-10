@@ -2,6 +2,7 @@
 #include "a3_dynamic_mine_cart.h"
 #include "kernel/fileBundle.h"
 #include "items.h"
+#include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
 // This is confusing. This adjust the vertical position of the cart based on the dragon proximity.
 // Visually, this just move the cart slightly up when colliding with the dragon. But is pretty much invisible most of the time since the dragon can't get close enough to the cart.
