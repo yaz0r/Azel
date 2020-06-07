@@ -9,7 +9,6 @@ include_directories(
     "${THIRD_PARTY}/soloud/soloud/include"
     "${THIRD_PARTY}/glm"
     "${THIRD_PARTY}/MoltenVK/MoltenVK/include"
-    "${VULKAN_INCLUDE_PATH}"
     "${THIRD_PARTY}/tracy"
     "${THIRD_PARTY}/aosdk"
 )

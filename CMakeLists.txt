@@ -49,7 +49,7 @@ set( CMAKE_CXX_FLAGS_SHIPPING "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -D SHIPPING_BUI
 
 set(THIRD_PARTY "${CMAKE_SOURCE_DIR}/ThirdParty")
 
-set(VULKAN_INCLUDE_PATH "C:/VulkanSDK/1.1.121.2/Include")
+#set(VULKAN_INCLUDE_PATH "C:/VulkanSDK/1.1.121.2/Include")
 
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 #set(VIDEO_OPENGLES OFF CACHE BOOL "" FORCE)
@@ -72,6 +72,6 @@ ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 ELSE()
 	add_subdirectory( ${THIRD_PARTY}/SDL2 )
 	add_subdirectory( ${THIRD_PARTY}/soloud )
-	add_subdirectory( PDS_Tool )
+	#add_subdirectory( PDS_Tool )
 	add_subdirectory( PDS )
 ENDIF()

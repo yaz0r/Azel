@@ -70,12 +70,12 @@ void checkGLImpl(const char*, unsigned int line);
         #define USE_GL_ES3
         #define GLES_SILENCE_DEPRECATION
         #define WITH_GL
-        #define WITH_VK
+        //#define WITH_VK
     #elif (defined(__APPLE__) && TARGET_OS_WATCH)
         #define USE_NULL_RENDERER
     #else
         #define USE_GL
-        #define WITH_VK
+        //#define WITH_VK
         #define WITH_GL
     #endif
 #endif

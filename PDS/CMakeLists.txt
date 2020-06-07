@@ -9,7 +9,6 @@ include_directories(
     "${THIRD_PARTY}/imgui/examples/libs/gl3w"
     "${THIRD_PARTY}/soloud/soloud/include"
     "${THIRD_PARTY}/glm"
-    "${VULKAN_INCLUDE_PATH}"
     "${THIRD_PARTY}/tracy"
 )
 
@@ -46,7 +45,7 @@ ${THIRD_PARTY}/imgui/imgui.cpp
 ${THIRD_PARTY}/imgui/imgui_draw.cpp
 ${THIRD_PARTY}/imgui/imgui_widgets.cpp
 ${THIRD_PARTY}/imgui/examples/imgui_impl_opengl3.cpp
-${THIRD_PARTY}/imgui/examples/imgui_impl_vulkan.cpp
+#${THIRD_PARTY}/imgui/examples/imgui_impl_vulkan.cpp
 ${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
 )
 
