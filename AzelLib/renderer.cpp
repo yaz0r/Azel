@@ -28,6 +28,12 @@ bool useVDP1GL = true;
 
 SoLoud::Soloud gSoloud; // Engine core
 
+int internalResolution[2] = { 1024, 720 };
+
+bgfx::FrameBufferHandle gBGFXVdp1PolyFB = BGFX_INVALID_HANDLE;
+bgfx::TextureHandle vdp1BufferTexture = BGFX_INVALID_HANDLE;
+bgfx::TextureHandle vdp1DepthBufferTexture = BGFX_INVALID_HANDLE;
+
 GLuint gVdp1PolyFB = 0;
 GLuint gVdp1PolyTexture = 0;
 GLuint gVdp1PolyDepth = 0;
@@ -43,8 +49,13 @@ GLuint vdp2_cram_texture = 0;
 
 struct s_NBG_data
 {
+    bgfx::FrameBufferHandle BGFXFB = BGFX_INVALID_HANDLE;
+    bgfx::TextureHandle BGFXTexture = BGFX_INVALID_HANDLE;
     GLuint FB;
     GLuint Texture;
+
+    int m_currentWidth = -1;
+    int m_currentHeight = -1;
 };
 
 std::array<s_NBG_data, 5> NBG_data;
@@ -168,7 +179,22 @@ void azelSdl2_Init()
         gBackend = SDL_ES3_backend::create();
     }
     
+
     // setup vdp1 Poly
+    const uint64_t tsFlags = 0
+        | BGFX_SAMPLER_MIN_POINT
+        | BGFX_SAMPLER_MAG_POINT
+        | BGFX_SAMPLER_MIP_POINT
+        | BGFX_SAMPLER_U_CLAMP
+        | BGFX_SAMPLER_V_CLAMP
+        ;
+
+    vdp1BufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 2, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
+    vdp1DepthBufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 1, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | tsFlags);
+    std::array<bgfx::Attachment,2> vdp1BufferAt;
+    vdp1BufferAt[0].init(vdp1BufferTexture);
+    vdp1BufferAt[1].init(vdp1DepthBufferTexture);
+    gBGFXVdp1PolyFB = bgfx::createFrameBuffer(2, &vdp1BufferAt[0], false);
     glGenFramebuffers(1, &gVdp1PolyFB);
     glGenTextures(1, &gVdp1PolyTexture);
     glGenRenderbuffers(1, &gVdp1PolyDepth);
@@ -508,6 +534,37 @@ struct s_layerData
 
 void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
 {
+    // BGFX update texture size if needed
+    if ((NBGData.m_currentWidth != textureWidth) || (NBGData.m_currentHeight != textureHeight))
+    {
+        if (isValid(NBGData.BGFXFB))
+        {
+            bgfx::destroy(NBGData.BGFXFB);
+        }
+        
+        if (isValid(NBGData.BGFXTexture))
+        {
+            bgfx::destroy(NBGData.BGFXTexture);
+        }
+        
+
+        const uint64_t tsFlags = 0
+            | BGFX_SAMPLER_MIN_POINT
+            | BGFX_SAMPLER_MAG_POINT
+            | BGFX_SAMPLER_MIP_POINT
+            | BGFX_SAMPLER_U_CLAMP
+            | BGFX_SAMPLER_V_CLAMP
+            ;
+
+        NBGData.BGFXTexture = bgfx::createTexture2D(textureWidth, textureHeight, false, 2, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
+        std::array<bgfx::Attachment, 1> attachements;
+        attachements[0].init(NBGData.BGFXTexture);
+        NBGData.BGFXFB = bgfx::createFrameBuffer(1, &attachements[0], false);
+
+        NBGData.m_currentWidth = textureWidth;
+        NBGData.m_currentHeight = textureHeight;
+    }
+
     {
         static GLuint quad_VertexArrayID;
         static GLuint quad_vertexbuffer = 0;
@@ -561,20 +618,6 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(gVDP2Program);
-
-        /*glActiveTexture(GL_TEXTURE0);
-        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, vdp2_ram_buffer);
-        
-
-        glActiveTexture(GL_TEXTURE1);
-        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, vdp2_cram_buffer);
-        */
-
-        //glUniform1i(texID_VDP2_RAM, 0);
-        //glUniform1i(texID_VDP2_CRAM, 0);
-
-        //glBindBufferBase(GL_TEXTURE_BUFFER, texID_VDP2_RAM, vdp2_ram_buffer);
-        //glBindBufferBase(GL_TEXTURE_BUFFER, texID_VDP2_CRAM, vdp2_cram_buffer);
 
         if(texID_VDP2_RAM > -1)
         {
@@ -1738,8 +1781,7 @@ bool azelSdl2_EndFrame()
 
 
     checkGL();
-    
-    static int internalResolution[2] = { 1024, 720 };
+   
     
 #ifndef USE_NULL_RENDERER
     SDL_GL_GetDrawableSize(gWindowGL, &internalResolution[0], &internalResolution[1]);
@@ -1773,6 +1815,9 @@ bool azelSdl2_EndFrame()
     if(1)
     {
 #ifndef USE_NULL_RENDERER
+
+        bgfx::setViewFrameBuffer(view_vdp1Poly, gBGFXVdp1PolyFB);
+
         checkGL();
         glBindFramebuffer(GL_FRAMEBUFFER, gVdp1PolyFB);
         glBindTexture(GL_TEXTURE_2D, gVdp1PolyTexture);
@@ -2036,6 +2081,15 @@ bool azelSdl2_EndFrame()
         SDL_GL_MakeCurrent(gWindowGL, gGlcontext);
     }
 #endif
+
+    bgfx::setViewRect(0, 0, 0, uint16_t(200), uint16_t(200));
+    bgfx::touch(0);
+
+    bgfx::dbgTextClear();
+    bgfx::dbgTextPrintf(0, 1, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
+
+
+    bgfx::frame();
 
     glFlush();
     checkGL();

@@ -13,6 +13,7 @@
 #endif
 
 SDL_Window* gWindowGL = nullptr;
+SDL_Window* gWindowBGFX = nullptr;
 SDL_GLContext gGlcontext = nullptr;
 extern const char* gGLSLVersion;
 ImGuiContext* imguiGLContext = nullptr;
@@ -53,7 +54,6 @@ bool SDL_ES3_backend::init()
     gGLSLVersion = glsl_version;
 
     u32 flags = 0;
-    flags |= SDL_WINDOW_OPENGL;
     flags |= SDL_WINDOW_RESIZABLE;
     flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
@@ -66,11 +66,37 @@ bool SDL_ES3_backend::init()
     resolution[0] = 320;
     resolution[1] = 200;
 #endif
-    gWindowGL = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution[0], resolution[1], flags);
+    gWindowGL = SDL_CreateWindow("PDS: Azel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution[0], resolution[1], flags | SDL_WINDOW_OPENGL);
     assert(gWindowGL);
 
     gGlcontext = SDL_GL_CreateContext(gWindowGL);
     assert(gGlcontext);
+
+    gWindowBGFX = SDL_CreateWindow("BGFX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution[0], resolution[1], flags);
+
+    SDL_SysWMinfo wmi;
+    SDL_VERSION(&wmi.version);
+    if (!SDL_GetWindowWMInfo(gWindowBGFX, &wmi)) {
+        return false;
+    }
+
+    bgfx::Init initparam;
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+    initparam.platformData.ndt = wmi.info.x11.display;
+    initparam.platformData.nwh = (void*)(uintptr_t)wmi.info.x11.window;
+#elif BX_PLATFORM_OSX
+    initparam.platformData.ndt = NULL;
+    initparam.platformData.nwh = wmi.info.cocoa.window;
+#elif BX_PLATFORM_WINDOWS || 1
+    initparam.platformData.ndt = NULL;
+    initparam.platformData.nwh = wmi.info.win.window;
+#elif BX_PLATFORM_STEAMLINK
+    initparam.platformData.ndt = wmi.info.vivante.display;
+    initparam.platformData.nwh = wmi.info.vivante.window;
+#endif // BX_PLATFORM_
+
+    bgfx::init(initparam);
+    bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
 
 #ifdef USE_GL
     gl3wInit();

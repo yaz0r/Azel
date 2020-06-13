@@ -11,6 +11,7 @@ include_directories(
     "${THIRD_PARTY}/MoltenVK/MoltenVK/include"
     "${THIRD_PARTY}/tracy"
     "${THIRD_PARTY}/aosdk"
+    "${THIRD_PARTY}/bgfx.cmake/bgfx/include"
 )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -114,6 +115,33 @@ if (MSVC)
     )
 endif()
 
+# SHADERS
+# shaderc_parse(
+#	FILE filename
+#	OUTPUT filename
+#	FRAGMENT|VERTEX|COMPUTE
+#	ANDROID|ASM_JS|IOS|LINUX|NACL|OSX|WINDOWS
+#	[PROFILE profile]
+#	[O 0|1|2|3]
+#	[VARYINGDEF filename]
+#	[BIN2C filename]
+#	[INCLUDES include;include]
+#	[DEFINES include;include]
+#	[DEPENDS]
+#	[PREPROCESS]
+#	[RAW]
+#	[VERBOSE]
+#	[DEBUG]
+#	[DISASM]
+#	[WERROR]
+# )
+
+#PROFILE vs_5_0
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.glsl_bin VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.glsl_bin FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.dx_bin VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE vs_5_0)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.dx_bin FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE ps_5_0)
+
 set(SOURCES
  ${SOURCES}
  ${THIRD_PARTY}/imgui/imgui.cpp
@@ -129,6 +157,12 @@ set(SOURCES
  ${THIRD_PARTY}/aosdk/eng_ssf/scsp.c
  ${THIRD_PARTY}/aosdk/eng_ssf/scspdsp.c
  #${THIRD_PARTY}/aosdk/eng_ssf/scsplfo.c
+
+ ${THIRD_PARTY}/../data/VDP2_vs.glsl
+ ${THIRD_PARTY}/../data/VDP2_vs.sc
+ ${THIRD_PARTY}/../data/VDP2_ps.glsl
+ ${THIRD_PARTY}/../data/VDP2_ps.sc
+
 )
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
