@@ -607,13 +607,13 @@ struct s_RiderDefinition
     const char* m_CGBName; //4
     u16 m_flags; //8
     u16 mA_offsetToDefaultPose; //A
-    const s_RiderDefinitionSub* m_pExtraData; //C
+    std::vector<s_RiderDefinitionSub>* m_pExtraData; //C
 };
 
 struct sDragonData3Sub
 {
     u16 m_m0[4];
-    s_RiderDefinitionSub* m_m8;
+    std::vector<s_RiderDefinitionSub>* m_m8;
 };
 
 struct sDragonData3
@@ -690,7 +690,7 @@ struct s_3dModel
 
     std::vector<sMatrix4x3> m3C_boneMatrices; //3C
 
-    const s_RiderDefinitionSub* m40; //40
+    std::vector<s_RiderDefinitionSub>* m40; //40
     std::vector<std::vector<sVec3_FP>> m44_hotpointData; //44 one entry per bone, and each bone get an array of vertex (hot-spots on the model?)
     std::vector<sPoseDataInterpolation> m48_poseDataInterpolation; //48
 

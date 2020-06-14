@@ -62,15 +62,33 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
     resetMatrixStack();
     pThis->m1CE_positionInAnimList = 0;
 
-    if (s_battleDragon_InitSub0() == 0)
+    if (isBattleAutoScroll() == 0)
     {
-        assert(0);
+        pThis->m74_targetRotation[1] = pThis->m14_rotation[1] = readSaturnFP(gCurrentBattleOverlay->getSaturnPtr(0x60ae3bc) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4);
+
+        if (gDragonState->mC_dragonType == 8)
+        {
+            assert(0);
+        }
+        else
+        {
+            s_battleDragon_InitSub3(pRider1State, 0x5C, 0);
+            s_battleDragon_InitSub3(pRider2State, 0x50, 0);
+            pThis->m1CC_currentAnimation = 2;
+        }
     }
     else
     {
-        s_battleDragon_InitSub3(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
-        s_battleDragon_InitSub3(pRider2State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
-        pThis->m1CC_currentAnimation = 2;
+        if (gDragonState->mC_dragonType == 8)
+        {
+            assert(0);
+        }
+        else
+        {
+            s_battleDragon_InitSub3(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae368) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
+            s_battleDragon_InitSub3(pRider2State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae370) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
+            pThis->m1CC_currentAnimation = 2;
+        }
     }
 
     s_battleDragon_InitSub4(pThis->m1CC_currentAnimation, 0);
@@ -317,7 +335,7 @@ void s_battleDragon_UpdateSub2Sub1Sub0()
     if (gDragonState->mC_dragonType != 8)
     {
         u16 offset;
-        if (s_battleDragon_InitSub0() == 0)
+        if (isBattleAutoScroll() == 0)
         {
             offset = 0x5C;
         }
@@ -329,7 +347,7 @@ void s_battleDragon_UpdateSub2Sub1Sub0()
     }
     else
     {
-        if (s_battleDragon_InitSub0())
+        if (isBattleAutoScroll())
         {
             s_battleDragon_InitSub1(pRider1State, readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ae378) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 10);
         }
@@ -343,7 +361,7 @@ void s_battleDragon_UpdateSub2Sub1Sub0()
 void s_battleDragon_UpdateSub2Sub1Sub1()
 {
     u16 offset;
-    if (s_battleDragon_InitSub0() == 0)
+    if (isBattleAutoScroll() == 0)
     {
         offset = 0x5C;
     }
@@ -453,9 +471,15 @@ void s_battleDragon_UpdateSub3(s_battleDragon* pThis)
     fixedPoint stepZ;
     fixedPoint rotationX;
     fixedPoint rotationZ;
-    if (s_battleDragon_InitSub0() == 0)
+    if (isBattleAutoScroll() == 0)
     {
-        assert(0);
+        stepX = MTH_Mul(-pThis->m1C8, pBattleEngine->m1BC_dragonYaw);
+        stepY = MTH_Mul(-pThis->m1C8, pBattleEngine->m1B8_dragonPitch);
+        stepZ = MTH_Mul(-pThis->m1C8, pBattleEngine->m1BC_dragonYaw);
+
+        rotationX = MTH_Mul(0xE38E38, pBattleEngine->m1B8_dragonPitch);
+        MTH_Mul(0x2000000, pBattleEngine->m1BC_dragonYaw);
+        rotationZ = MTH_Mul(0x1555555, -pBattleEngine->m1BC_dragonYaw);
     }
     else
     {
@@ -753,7 +777,7 @@ static void s_battleDragon_DrawRiderWeapon(s_battleDragon* pThis)
         }
     }
 
-    s32 iVar2 = s_battleDragon_InitSub0();
+    s32 iVar2 = isBattleAutoScroll();
     if ((iVar2 == 0) || ((pThis->m1C4 & 0x200) != 0))
     {
         iVar2 = 0;

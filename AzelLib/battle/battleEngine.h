@@ -175,7 +175,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
 };
 
 s32 BattleEngineSub0_UpdateSub0();
-s32 s_battleDragon_InitSub0();
+s32 isBattleAutoScroll();
 
 void battleEngine_setCurrentCameraPositionPointer(sVec3_FP* pData);
 void battleEngine_setDesiredCameraPositionPointer(sVec3_FP* pData);

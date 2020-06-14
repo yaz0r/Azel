@@ -488,7 +488,7 @@ void battleEngine_UpdateSub1(int bitMask)
     }
 }
 
-s32 s_battleDragon_InitSub0()
+s32 isBattleAutoScroll()
 {
     s8 bVar1 = gBattleManager->m10_battleOverlay->m4_battleEngine->m230;
 
@@ -504,9 +504,26 @@ void battleEngine_UpdateSub5()
 {
     s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
 
-    if (s_battleDragon_InitSub0() == 0)
+    if (isBattleAutoScroll() == 0)
     {
-        assert(0);
+        pDragon->m88 |= 0x20;
+        switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+        {
+        case 0:
+            pDragon->m74_targetRotation[1] -= pDragon->m74_targetRotation[1].normalized();
+            break;
+        case 1:
+            pDragon->m74_targetRotation[1] += 0x4000000 - pDragon->m74_targetRotation[1] & 0xfffffff;
+            break;
+        case 2:
+            pDragon->m74_targetRotation[1] += 0x8000000 - pDragon->m74_targetRotation[1] & 0xfffffff;
+            break;
+        case 3:
+            pDragon->m74_targetRotation[1] += -0x4000000 - pDragon->m74_targetRotation[1].normalized();
+            break;
+        default:
+            assert(0);
+        }
     }
     else
     {

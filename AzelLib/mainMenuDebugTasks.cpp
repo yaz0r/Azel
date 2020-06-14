@@ -793,7 +793,7 @@ void modeDrawFunction10Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>:
     } while (1);
 }
 
-void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, std::vector<s_RiderDefinitionSub>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do
     {
@@ -852,7 +852,7 @@ void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::
     } while (1);
 }
 
-void submitModelToRendering(sModelHierarchy* pModelData, std::vector<sMatrix4x3>::iterator& modelMatrix, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void submitModelToRendering(sModelHierarchy* pModelData, std::vector<sMatrix4x3>::iterator& modelMatrix, std::vector<s_RiderDefinitionSub>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do 
     {
@@ -918,7 +918,7 @@ void modelDrawFunction1(s_3dModel* pDragonStateData1)
 {
     std::vector<std::vector<sVec3_FP>>::iterator var_0 = pDragonStateData1->m44_hotpointData.begin();
     std::vector<sMatrix4x3>::iterator var_8 = pDragonStateData1->m3C_boneMatrices.begin();
-    const s_RiderDefinitionSub* var_4 = pDragonStateData1->m40;
+    std::vector<s_RiderDefinitionSub>::iterator var_4 = pDragonStateData1->m40->begin();
 
     if (pDragonStateData1->m8 & 1)
     {
@@ -947,7 +947,7 @@ void modelDrawFunction6(s_3dModel* pModel)
 {
     std::vector<std::vector<sVec3_FP>>::iterator var_0 = pModel->m44_hotpointData.begin();
     std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
-    const s_RiderDefinitionSub* var_4 = pModel->m40;
+    std::vector<s_RiderDefinitionSub>::iterator var_4 = pModel->m40->begin();
     sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
 
     if (pModel->m8 & 1)
@@ -1133,13 +1133,13 @@ void countNumBonesInModel(s_3dModel* p3dModel, sModelHierarchy* pHierarchy)
     }while (true);
 }
 
-bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDefinitionSub* unkArg)
+bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, std::vector<s_RiderDefinitionSub>* unkArg)
 {
     pDragonStateData1->m40 = unkArg;
 
     pDragonStateData1->m44_hotpointData.resize(pDragonStateData1->m12_numBones);
 
-    const s_RiderDefinitionSub* r12 = pDragonStateData1->m40;
+    std::vector<s_RiderDefinitionSub>::iterator r12 = pDragonStateData1->m40->begin();
 
     for(u32 i=0; i<pDragonStateData1->m12_numBones; i++)
     {
@@ -1158,7 +1158,7 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     return true;
 }
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, sAnimationData* pAnimationData, sStaticPoseData* pDefaultPose, u8* colorAnim, const s_RiderDefinitionSub* unkArg3)
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, sAnimationData* pAnimationData, sStaticPoseData* pDefaultPose, u8* colorAnim, std::vector<s_RiderDefinitionSub>* unkArg3)
 {
     p3dModel->m0_pOwnerTask = pWorkArea;
     p3dModel->m4_pModelFile = pDragonBundle;
@@ -1208,7 +1208,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animatio
     }
     else
     {
-        p3dModel->m40 = 0;
+        p3dModel->m40 = nullptr;
     }
 
     if (pAnimationData)
@@ -1562,7 +1562,7 @@ void loadDragon(s_workArea* pWorkArea)
     loadDragonSub1(pLoadDragonWorkArea);
 }
 
-const s_RiderDefinitionSub gEdgeExtraData[] =
+std::vector<s_RiderDefinitionSub> gEdgeExtraData =
 {
     { NULL, 0 },
     { NULL, 0 },
@@ -1572,14 +1572,14 @@ const s_RiderDefinitionSub gEdgeExtraData[] =
     { { 0x2020E8, &gCommonFile }, 1 },
 };
 
-const s_RiderDefinition gRiderTable[] = {
+s_RiderDefinition gRiderTable[] = {
     { "RIDER0.MCB",  NULL,          0x4,    0x08, NULL},
-    { "EDGE.MCB",   "EDGE.CGB",     0x4,    0x28, gEdgeExtraData },
+    { "EDGE.MCB",   "EDGE.CGB",     0x4,    0x28, &gEdgeExtraData },
     { "GUSH.MCB",   "GUSH.CGB",     0x4,    0x20, NULL },
     { "PAET.MCB",   "PAET.CGB",     0x4,    0x20, NULL },
     { "AZCT.MCB",   "AZCT.CGB",     0x4,    0x20, NULL },
     { "AZEL.MCB",   "AZEL.CGB",     0x4,    0x20, NULL },
-    { NULL,         NULL,           0x8,    0xC4, (s_RiderDefinitionSub*)1 },
+    { NULL,         NULL,           0x8,    0xC4, (std::vector<s_RiderDefinitionSub>*)1 },
     { NULL,         NULL,           0xC,    0xC8, NULL },
 };
 
@@ -3552,7 +3552,7 @@ void playAnimationGenericSub1Sub0(sModelHierarchy* pModelData, std::vector<sPose
     } while (1);
 }
 
-void playAnimationGenericSub0Sub0(sModelHierarchy* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void playAnimationGenericSub0Sub0(sModelHierarchy* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14, std::vector<s_RiderDefinitionSub>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do
     {
@@ -3614,7 +3614,7 @@ void playAnimationGenericSub0(s_3dModel* pModel)
     if (pModel->m8 & 1)
     {
         std::vector<sPoseDataInterpolation>::iterator r5 = pModel->m48_poseDataInterpolation.begin();
-        const s_RiderDefinitionSub* r6 = pModel->m40;
+        std::vector<s_RiderDefinitionSub>::iterator r6 = pModel->m40->begin();
         std::vector<std::vector<sVec3_FP>>::iterator r7 = pModel->m44_hotpointData.begin();
         playAnimationGenericSub0Sub0(r4, r5, r6, r7);
     }

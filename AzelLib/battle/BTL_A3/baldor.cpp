@@ -56,7 +56,7 @@ s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
 
 
     sSaturnPtr hotSpotDataEA = animData + readSaturnU32(animData + 4);
-    s_RiderDefinitionSub * pHotSpotsData = nullptr;
+    std::vector<s_RiderDefinitionSub> * pHotSpotsData = nullptr;
     assert(animData == hotSpotDataEA); // else we need to load the data
 
     init3DModelRawData(pThis, pOutputModel, 0, pFileBundle, readSaturnU16(animData), 0, pFileBundle->getStaticPose(readSaturnU16(animData + 2), pHierarchy->countNumberOfBones()), nullptr, pHotSpotsData);
@@ -849,7 +849,7 @@ void Baldor_initSub1(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_
     }
 }
 
-void Baldor_initSub0Sub1(sBaldor* pThis, s_3dModel* pModel, s16* param3, std::vector<sBattleTargetable>& param4, std::vector<sVec3_FP>& param5)
+void Baldor_initSub0Sub1(p_workArea pThis, s_3dModel* pModel, s16* param3, std::vector<sBattleTargetable>& param4, std::vector<sVec3_FP>& param5)
 {
     if(pModel->m40 == nullptr)
     {
@@ -862,7 +862,7 @@ void Baldor_initSub0Sub1(sBaldor* pThis, s_3dModel* pModel, s16* param3, std::ve
         int count = 0;
         for (int i=0; i<pModel->m12_numBones; i++)
         {
-            count += pModel->m40[i].m4_count;
+            count += (*pModel->m40)[i].m4_count;
         }
 
         *param3 = count;
@@ -875,11 +875,11 @@ void Baldor_initSub0Sub1(sBaldor* pThis, s_3dModel* pModel, s16* param3, std::ve
         {
             if (pModel->m44_hotpointData[i].size())
             {
-                for (int j = 0; j < pModel->m40[i].m4_count; j++)
+                for (int j = 0; j < (*pModel->m40)[i].m4_count; j++)
                 {
                     param4[currentEntryIndex].m4_pPosition = nullptr;
 
-                    sSaturnPtr puVar1 = pModel->m40[i].m0_ptr + (i * 20);
+                    sSaturnPtr puVar1 = (*pModel->m40)[i].m0_ptr + (i * 20);
 
                     Baldor_initSub1(&param4[currentEntryIndex], nullptr, &param5[currentEntryIndex], readSaturnS32(puVar1 + 4 * 4), readSaturnS32(puVar1), 0, 0, 10);
 
