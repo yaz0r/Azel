@@ -83,11 +83,13 @@ sUrchinFormationData* readUrchinFormation(sSaturnPtr ptrEA)
         if(subEntry.m_offset)
         {
             sUrchinFormationDataSub* pSubEntry = new sUrchinFormationDataSub;
+            pSubEntry->m0 = readSaturnS8(subEntry + 0);
             pSubEntry->m1 = readSaturnS8(subEntry + 1);
             pSubEntry->m2 = readSaturnS8(subEntry + 2);
             pSubEntry->m8 = readSaturnU16(subEntry + 8);
             pSubEntry->mA = readSaturnU16(subEntry + 0xA);
             pSubEntry->mC = readRiderDefinitionSub(readSaturnEA(subEntry + 0xC), 0x18);
+            pSubEntry->m1C = readSaturnEA(subEntry + 0x1C);
             pSubEntry->m24 = readSaturnU32(subEntry + 0x24);
             pNewData->m4[i] = pSubEntry;
         }

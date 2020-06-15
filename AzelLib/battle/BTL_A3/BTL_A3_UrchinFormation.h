@@ -2,11 +2,13 @@
 
 struct sUrchinFormationDataSub
 {
+    s8 m0;
     s8 m1;
     s8 m2;
     u16 m8;
     u16 mA;
     std::vector<s_RiderDefinitionSub>* mC;
+    sSaturnPtr m1C;
     u32 m24;
 };
 
@@ -48,7 +50,8 @@ struct sBTL_A3_UrchinFormation_18
     std::array<s8, 3> mA;
     std::array<s8, 2> mD;
     s8 m10;
-    sBTL_A3_UrchinFormation_18_14* m14;
+    s8 m12;
+    std::vector<sBTL_A3_UrchinFormation_18_14> m14;
 };
 
 p_workArea Create_BTL_A3_UrchinFormationConfig(p_workArea parent, u32 arg);

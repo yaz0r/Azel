@@ -852,6 +852,72 @@ void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::
     } while (1);
 }
 
+void modeDrawFunction4Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, std::vector<s_RiderDefinitionSub>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+{
+    do
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pPoseData->m0_translation);
+        rotateCurrentMatrixZYX(&pPoseData->mC_rotation);
+        scaleCurrentMatrixRow0(pPoseData->m18_scale[0]);
+        scaleCurrentMatrixRow1(pPoseData->m18_scale[1]);
+        scaleCurrentMatrixRow2(pPoseData->m18_scale[2]);
+        if (pModelData->m0_3dModel)
+        {
+            addObjectToDrawList(pModelData->m0_3dModel);
+        }
+
+        assert((*r7).size() == r6->m4_count);
+
+        if (r6->m4_count == 0)
+        {
+            assert((*r7).size() == 0);
+        }
+
+        for (u32 i = 0; i < r6->m4_count; i++)
+        {
+            sSaturnPtr r4 = r6->m0_ptr + (i * 20) + 4;
+            sVec3_FP input = readSaturnVec3(r4);
+            sVec3_FP& output = (*r7)[i];
+            transformAndAddVecByCurrentMatrix(&input, &output);
+        }
+
+        if (pModelData->m4_subNode)
+        {
+            // next matrix
+            pPoseData++;
+            // next bone stuff
+            r6++;
+            // next ???
+            r7++;
+
+            modeDrawFunction4Sub1(pModelData->m4_subNode, pPoseData, r6, r7);
+        }
+
+        popMatrix();
+
+        // End of model
+        if (pModelData->m8_nextNode == nullptr)
+        {
+            return;
+        }
+
+        // next matrix
+        pPoseData++;
+        // next bone stuff
+        r6++;
+        // next ???
+        r7++;
+
+        pModelData = pModelData->m8_nextNode;
+    } while (1);
+}
+
+void modeDrawFunction4Sub2(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, std::vector<s_RiderDefinitionSub>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+{
+    PDS_unimplemented("modeDrawFunction4Sub2");
+}
+
 void submitModelToRendering(sModelHierarchy* pModelData, std::vector<sMatrix4x3>::iterator& modelMatrix, std::vector<s_RiderDefinitionSub>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do 
@@ -938,6 +1004,22 @@ void modelDrawFunction2(s_3dModel* pModel)
 void modelDrawFunction3(s_3dModel* pModel)
 {
     unimplementedDraw(pModel);
+}
+void modelDrawFunction4(s_3dModel* pModel)
+{
+    std::vector<std::vector<sVec3_FP>>::iterator var_0 = pModel->m44_hotpointData.begin();
+    std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
+    std::vector<s_RiderDefinitionSub>::iterator var_4 = pModel->m40->begin();
+    sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
+
+    if (pModel->m8 & 1)
+    {
+        modeDrawFunction4Sub1(r4, pPoseData, var_4, var_0);
+    }
+    else
+    {
+        modeDrawFunction4Sub2(r4, pPoseData, var_4, var_0);
+    }
 }
 void modelDrawFunction5(s_3dModel* pModel)
 {
@@ -1076,7 +1158,14 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
         {
             if (pDragonStateData1->mA_animationFlags & 0x20)
             {
-                assert(0);
+                if (pDragonStateData1->m38_pColorAnim)
+                {
+                    assert(0);
+                }
+                else
+                {
+                    pDragonStateData1->m18_drawFunction = modelDrawFunction4;
+                }
             }
             else
             {

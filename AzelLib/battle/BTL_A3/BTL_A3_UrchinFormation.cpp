@@ -48,7 +48,7 @@ void BTL_A3_UrchinFormation_Init(BTL_A3_UrchinFormation* pThis, const sUrchinFor
 {
     pThis->m30_config = config;
     pThis->m3 = config->m0;
-    pThis->m18.m14 = (sBTL_A3_UrchinFormation_18_14*)allocateHeapForTask(pThis, pThis->m3 * sizeof(sBTL_A3_UrchinFormation_18_14));
+    pThis->m18.m14.resize(pThis->m3);
     formationCopyParams(&pThis->m18, config->m10->m0, pThis->m3);
     if (createBattleIntroTaskSub1() == 0)
     {
