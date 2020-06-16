@@ -90,6 +90,7 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
             pSubEntry->m8 = readSaturnU16(subEntry + 8);
             pSubEntry->mA = readSaturnU16(subEntry + 0xA);
             pSubEntry->mC = readRiderDefinitionSub(readSaturnEA(subEntry + 0xC), 0x18);
+            pSubEntry->m18 = readSaturnS8(subEntry + 0x18);
             pSubEntry->m1C = readSaturnEA(subEntry + 0x1C);
             pSubEntry->m24 = readSaturnU32(subEntry + 0x24);
             pNewData->m4_perTypeParams[i] = pSubEntry;

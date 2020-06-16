@@ -27,8 +27,10 @@ struct sUrchin : public s_workAreaTemplateWithArgWithCopy<sUrchin, sGenericForma
     s8 mAE;
     s8 mAF;
     s8 mB0;
+    s8 mB1;
     s8 mB4;
     s16 mB6_numTargetables;
+    s16 mB8;
     std::vector<sBattleTargetable> mC0_targetable;
     std::vector<sVec3_FP> mC4_position;
     p_workArea mC8;
@@ -96,11 +98,153 @@ void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)
 
     if (!readSaturnEA(pConfig->m1C).isNull())
     {
-        assert(0);
+        FunctionUnimplemented();
     }
 
     if ((gBattleManager->m4 == 8) && (gBattleManager->m6_subBattleId == 4)) {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon =  0xB;
+    }
+}
+
+const std::array<std::array<s8,4>, 4> enemyQuadrantsTable = {
+    {
+        {
+            0x2,
+            0x3,
+            0x0,
+            0x1,
+        },
+        {
+            0x1,
+            0x2,
+            0x3,
+            0x0,
+        },
+        {
+            0x0,
+            0x1,
+            0x2,
+            0x3,
+        },
+        {
+            0x3,
+            0x0,
+            0x1,
+            0x2,
+        }
+        }
+};
+
+void urchinUpdateSub0(sUrchin* pThis)
+{
+    s8 cVar1 = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
+
+    if ((pThis->mB0 & 8) == 0)
+    {
+        if ((pThis->mB0 & 0x10) == 0)
+        {
+            if ((cVar1 != 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38D_battleSubMode == 4))
+            {
+                for (int i = 0; i < pThis->mB6_numTargetables; i++)
+                {
+                    if (pThis->mC0_targetable[i].m5A == gBattleManager->m10_battleOverlay->m4_battleEngine->m398_currentSelectedEnemy + 1)
+                    {
+                        pThis->mB8 = gBattleManager->m10_battleOverlay->m4_battleEngine->m398_currentSelectedEnemy * 2 + 0x1E;
+                        pThis->mB0 |= 8;
+                        pThis->mAD = 0;
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            stepAnimation(&pThis->m5C_model);
+            if (pThis->mB8-- < 0)
+            {
+                for (int i = 0; i < pThis->mB6_numTargetables; i++)
+                {
+                    pThis->mC0_targetable[i].m50_flags &= ~0x100000;
+                }
+                pThis->mB0 &= ~0x10;
+                pThis->mD0->m14[pThis->mAE].m18 |= 0x20;
+            }
+        }
+    }
+    else
+    {
+        assert(0); // untested
+        if (pThis->mB8-- < 0)
+        {
+            s32 stack40;
+            s32 stack36;
+            switch (cVar1)
+            {
+            case 1:
+                if ((randomNumber() & 0x8000000) == 0)
+                {
+                    stack40 = randomNumber() & 0xFFF;
+                }
+                else
+                {
+                    stack40 = randomNumber() | 0xF000;
+                }
+
+                if ((randomNumber() & 0x8000000) == 0)
+                {
+                    stack36 = randomNumber() & 0xFFF;
+                }
+                else
+                {
+                    stack36 = randomNumber() | 0xF000;
+                }
+                break;
+            case 2:
+                stack40 = 0;
+                if ((randomNumber() & 0x8000000) == 0)
+                {
+                    stack36 = randomNumber() & 0xFFF;
+                }
+                else
+                {
+                    stack36 = randomNumber() | 0xF000;
+                }
+                break;
+            default:
+                break;
+            }
+            pThis->m2C_positionDelta[1] += MTH_Mul(pThis->mCC->m18 * 0x10000, getSin(stack40));
+            pThis->m2C_positionDelta[0] += MTH_Mul(MTH_Mul(pThis->mCC->m18 * 0x10000, getCos(stack40)), getSin(stack36));
+            pThis->m2C_positionDelta[2] += MTH_Mul(MTH_Mul(pThis->mCC->m18 * 0x10000, getCos(stack40)), getCos(stack36));
+
+            for (int i = 0; i < pThis->mB6_numTargetables; i++)
+            {
+                pThis->mC0_targetable[i].m50_flags |= 0x100000;
+            }
+
+            pThis->mB8 = (gBattleManager->m10_battleOverlay->m4_battleEngine->m398_currentSelectedEnemy * 2) + 0xF;
+
+            pThis->mB0 &= ~0x80;
+            pThis->mB0 |= 0x10;
+        }
+    }
+}
+
+void urchinUpdateSub1(sUrchin* pThis)
+{
+    FunctionUnimplemented();
+}
+
+void urchinUpdateSub2(sUrchin* pThis)
+{
+    if ((BattleEngineSub0_UpdateSub0() == 0) && (pThis->mB1 !=  pThis->mD0->m7[pThis->mAF]))
+    {
+        assert(0);
+    }
+
+    if (pThis->mD0->m14[pThis->mAF].m19 & 2)
+    {
+        assert(0);
     }
 }
 
@@ -163,6 +307,10 @@ void Urchin_update(sUrchin* pThis)
                 Baldor_updateSub1(&pThis->m38_rotationCurrent, &pThis->m50_rotationDelta, &pThis->m44_rotationTarget, 0x1999, 0x28F, 1);
                 break;
             }
+
+            urchinUpdateSub0(pThis);
+            urchinUpdateSub1(pThis);
+            urchinUpdateSub2(pThis);
 
             break;
         default:

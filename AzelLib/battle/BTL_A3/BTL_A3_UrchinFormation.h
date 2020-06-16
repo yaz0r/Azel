@@ -8,6 +8,7 @@ struct sGenericFormationPerTypeData
     u16 m8;
     u16 mA;
     std::vector<s_RiderDefinitionSub>* mC;
+    s8 m18;
     sSaturnPtr m1C;
     u32 m24;
 };

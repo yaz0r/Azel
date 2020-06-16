@@ -137,10 +137,10 @@ void BTL_A3_UrchinFormation_Delete(BTL_A3_UrchinFormation* pThis)
 p_workArea Create_BTL_A3_UrchinFormation(p_workArea parent, const sGenericFormationData* config)
 {
     static const BTL_A3_UrchinFormation::TypedTaskDefinition definition = {
-    BTL_A3_UrchinFormation_Init,
-    BTL_A3_UrchinFormation_Update,
-    nullptr,
-    BTL_A3_UrchinFormation_Delete,
+        BTL_A3_UrchinFormation_Init,
+        BTL_A3_UrchinFormation_Update,
+        nullptr,
+        BTL_A3_UrchinFormation_Delete,
     };
 
     return createSubTaskWithArg<BTL_A3_UrchinFormation>(parent, config, &definition);
