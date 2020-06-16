@@ -12,7 +12,7 @@
 
 void Baldor_updateSub1(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s32 pDeltaFactor, s32 pDistanceToTargetFactor, s8 translationOrRotation); // TODO: cleanup
 
-struct sUrchin : public s_workAreaTemplateWithArgWithCopy<sUrchin, sUrchinFormationDataSub*>
+struct sUrchin : public s_workAreaTemplateWithArgWithCopy<sUrchin, sGenericFormationPerTypeData*>
 {
     sVec3_FP m8;
     sVec3_FP m14_positionCurrent;
@@ -32,7 +32,7 @@ struct sUrchin : public s_workAreaTemplateWithArgWithCopy<sUrchin, sUrchinFormat
     std::vector<sBattleTargetable> mC0_targetable;
     std::vector<sVec3_FP> mC4_position;
     p_workArea mC8;
-    sUrchinFormationDataSub* mCC;
+    sGenericFormationPerTypeData* mCC;
     sBTL_A3_UrchinFormation_18* mD0;
     p_workArea mD4;
     p_workArea mD8;
@@ -82,7 +82,7 @@ bool updateUrchinAnimationSequence(sUrchin* pThis, u16 param_2, int param_3, int
     }
 }
 
-void Urchin_init(sUrchin* pThis, sUrchinFormationDataSub* pConfig)
+void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)
 {
     pThis->mCC = pConfig;
 
@@ -177,7 +177,7 @@ void Urchin_draw(sUrchin* pThis)
 {
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->m8);
-    translateCurrentMatrix(pThis->m38_rotationCurrent);
+    rotateCurrentMatrixYXZ(pThis->m38_rotationCurrent);
     if (pThis->mB0 & 2)
     {
         assert(0);
@@ -195,7 +195,7 @@ void Urchin_delete(sUrchin* pThis)
     FunctionUnimplemented();
 }
 
-void createUrchin(sUrchinFormationDataSub* pConfig, sBTL_A3_UrchinFormation_18& param2, int param3, int param4)
+void createUrchin(sGenericFormationPerTypeData* pConfig, sBTL_A3_UrchinFormation_18& param2, int param3, int param4)
 {
     static const sUrchin::TypedTaskDefinition definition = {
         Urchin_init,

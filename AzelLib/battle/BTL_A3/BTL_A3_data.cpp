@@ -42,6 +42,7 @@ void BTL_A3_data::invoke(sSaturnPtr Func, p_workArea pParent)
         break;
     case 0x06054b4e: // map4
         Create_BTL_A3_map4(pParent);
+        break;
     default:
         FunctionUnimplemented();
         break;
@@ -67,14 +68,14 @@ std::vector<s_RiderDefinitionSub>* readRiderDefinitionSub(sSaturnPtr ptrEA, int 
     return pNewVector;
 }
 
-sUrchinFormationData* readUrchinFormation(sSaturnPtr ptrEA)
+sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
 {
-    sUrchinFormationData* pNewData = new sUrchinFormationData;
+    sGenericFormationData* pNewData = new sGenericFormationData;
 
-    pNewData->m0 = readSaturnS8(ptrEA + 0);
+    pNewData->m0_formationSize = readSaturnS8(ptrEA + 0);
     for (int i = 0; i < 3; i++)
     {
-        pNewData->m1[i] = readSaturnS8(ptrEA + 1 + i);
+        pNewData->m1_perTypeCount[i] = readSaturnS8(ptrEA + 1 + i);
     }
 
     for (int i = 0; i < 3; i++)
@@ -82,7 +83,7 @@ sUrchinFormationData* readUrchinFormation(sSaturnPtr ptrEA)
         sSaturnPtr subEntry = readSaturnEA(ptrEA + 4 + i * 4);
         if(subEntry.m_offset)
         {
-            sUrchinFormationDataSub* pSubEntry = new sUrchinFormationDataSub;
+            sGenericFormationPerTypeData* pSubEntry = new sGenericFormationPerTypeData;
             pSubEntry->m0 = readSaturnS8(subEntry + 0);
             pSubEntry->m1 = readSaturnS8(subEntry + 1);
             pSubEntry->m2 = readSaturnS8(subEntry + 2);
@@ -91,18 +92,18 @@ sUrchinFormationData* readUrchinFormation(sSaturnPtr ptrEA)
             pSubEntry->mC = readRiderDefinitionSub(readSaturnEA(subEntry + 0xC), 0x18);
             pSubEntry->m1C = readSaturnEA(subEntry + 0x1C);
             pSubEntry->m24 = readSaturnU32(subEntry + 0x24);
-            pNewData->m4[i] = pSubEntry;
+            pNewData->m4_perTypeParams[i] = pSubEntry;
         }
         else
         {
-            pNewData->m4[i] = nullptr;
+            pNewData->m4_perTypeParams[i] = nullptr;
         }
     }
 
-    pNewData->m10 = new sUrchinFormationDataSub_10;
-    for (int i = 0; i < pNewData->m0; i++)
+    pNewData->m10_formationSubData = new sGenericFormationSubData;
+    for (int i = 0; i < pNewData->m0_formationSize; i++)
     {
-        pNewData->m10->m0.push_back(readSaturnVec3(readSaturnEA(readSaturnEA(ptrEA + 0x10)) + i * 0xC));
+        pNewData->m10_formationSubData->m0_perEnemyPosition.push_back(readSaturnVec3(readSaturnEA(readSaturnEA(ptrEA + 0x10)) + i * 0xC));
     }
 
     pNewData->m14 = readSaturnS8(ptrEA + 0x14);

@@ -1,6 +1,6 @@
 #pragma once
 
-struct sUrchinFormationDataSub
+struct sGenericFormationPerTypeData
 {
     s8 m0;
     s8 m1;
@@ -12,17 +12,17 @@ struct sUrchinFormationDataSub
     u32 m24;
 };
 
-struct sUrchinFormationDataSub_10
+struct sGenericFormationSubData
 {
-    std::vector<sVec3_FP> m0;
+    std::vector<sVec3_FP> m0_perEnemyPosition;
 };
 
-struct sUrchinFormationData
+struct sGenericFormationData
 {
-    s8 m0;
-    std::array<s8, 3> m1;
-    std::array<sUrchinFormationDataSub*, 3> m4;
-    sUrchinFormationDataSub_10* m10;
+    s8 m0_formationSize;
+    std::array<s8, 3> m1_perTypeCount;
+    std::array<sGenericFormationPerTypeData*, 3> m4_perTypeParams;
+    sGenericFormationSubData* m10_formationSubData;
     s8 m14;
     s8 m15;
     s8 m16;

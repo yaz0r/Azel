@@ -1,3 +1,3 @@
 #pragma once
 
-void createUrchin(struct sUrchinFormationDataSub* pConfig, struct sBTL_A3_UrchinFormation_18&, int, int);
+void createUrchin(struct sGenericFormationPerTypeData* pConfig, struct sBTL_A3_UrchinFormation_18&, int, int);

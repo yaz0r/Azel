@@ -10,17 +10,17 @@
 s32 createBattleIntroTaskSub1(); //TODO cleanup
 void displayFormationName(short uParm1, char uParm2, char uParm3); //TODO cleanup
 
-struct BTL_A3_UrchinFormation : public s_workAreaTemplateWithArg<BTL_A3_UrchinFormation, const sUrchinFormationData*>
+struct BTL_A3_UrchinFormation : public s_workAreaTemplateWithArg<BTL_A3_UrchinFormation, const sGenericFormationData*>
 {
     s8 m1;
     s8 m2;
-    s8 m3;
+    s8 m3_formationSize;
     s8 m7;
     s16 m14;
     sBTL_A3_UrchinFormation_18 m18;
-    const sUrchinFormationData* m30_config;
+    const sGenericFormationData* m30_config;
     s8 m38;
-    std::array<s8, 2> m44;
+    std::array<s8, 3> m44;
     // size 0x4C
 };
 
@@ -44,12 +44,12 @@ void formationCopyParams(sBTL_A3_UrchinFormation_18* pDest, const std::vector<sV
     }
 }
 
-void BTL_A3_UrchinFormation_Init(BTL_A3_UrchinFormation* pThis, const sUrchinFormationData* config)
+void BTL_A3_UrchinFormation_Init(BTL_A3_UrchinFormation* pThis, const sGenericFormationData* config)
 {
     pThis->m30_config = config;
-    pThis->m3 = config->m0;
-    pThis->m18.m14.resize(pThis->m3);
-    formationCopyParams(&pThis->m18, config->m10->m0, pThis->m3);
+    pThis->m3_formationSize = config->m0_formationSize;
+    pThis->m18.m14.resize(pThis->m3_formationSize);
+    formationCopyParams(&pThis->m18, config->m10_formationSubData->m0_perEnemyPosition, pThis->m3_formationSize);
     if (createBattleIntroTaskSub1() == 0)
     {
         pThis->m1 = 1;
@@ -70,15 +70,15 @@ void BTL_A3_UrchinFormation_Init(BTL_A3_UrchinFormation* pThis, const sUrchinFor
     bool bVar3 = false;
     bool bVar2 = false;
     int numModelIndex = 0;
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 3; i++)
     {
         pThis->m44[i] = -1;
-        sUrchinFormationDataSub* pEnemyEntry = config->m4[i];
+        sGenericFormationPerTypeData* pEnemyEntry = config->m4_perTypeParams[i];
         if (pEnemyEntry)
         {
             allocateNPC(pThis, pEnemyEntry->m1);
             pThis->m18.mD[i] = config->m18[i];
-            for (int j = 0; j < config->m1[i]; j++)
+            for (int j = 0; j < config->m1_perTypeCount[i]; j++)
             {
                 createUrchin(pEnemyEntry, pThis->m18, numModelIndex, i);
                 numModelIndex++;
@@ -134,7 +134,7 @@ void BTL_A3_UrchinFormation_Delete(BTL_A3_UrchinFormation* pThis)
     //empty
 }
 
-p_workArea Create_BTL_A3_UrchinFormation(p_workArea parent, const sUrchinFormationData* config)
+p_workArea Create_BTL_A3_UrchinFormation(p_workArea parent, const sGenericFormationData* config)
 {
     static const BTL_A3_UrchinFormation::TypedTaskDefinition definition = {
     BTL_A3_UrchinFormation_Init,
@@ -151,14 +151,14 @@ p_workArea Create_BTL_A3_UrchinFormationConfig(p_workArea parent, u32 arg)
     switch (arg)
     {
     case 3:
-        return Create_BTL_A3_UrchinFormation(parent, g_BTL_A3->m_60A8AE8_urchinFormation);
+        return Create_BTL_A3_UrchinFormation(parent, g_BTL_A3->m_60A8AE8_urchinFormation); // KURAGE(Urchin) Fx2
     case 4:
     case 5:
-        return Create_BTL_A3_UrchinFormation(parent, g_BTL_A3->m_60a8ac4_urchinFormation);
+        return Create_BTL_A3_UrchinFormation(parent, g_BTL_A3->m_60a8ac4_urchinFormation); // KURAGE(Urchin) M&F
     case 6:
-        return Create_BTL_A3_UrchinFormation(parent, g_BTL_A3->m_60a7d34_urchinFormation);
+        return Create_BTL_A3_UrchinFormation(parent, g_BTL_A3->m_60a7d34_urchinFormation); // BENITATENA (Pattergo) Zako
     case 7:
-        return Create_BTL_A3_UrchinFormation(parent, g_BTL_A3->m_60a7d58_urchinFormation);
+        return Create_BTL_A3_UrchinFormation(parent, g_BTL_A3->m_60a7d58_urchinFormation); // BENITATENA (Pattergo) Boss
     default:
         assert(0);
         return nullptr;

@@ -647,6 +647,7 @@ struct sPoseData
     sVec3_FP m18_scale; // 18
     sVec3_FP m24_halfTranslation; // 24
     sVec3_FP m30_halfRotation; // 30
+    sVec3_FP m3C_halfScale; // 3C
     sAnimTrackStatus m48[9];
     //size B4
 };
