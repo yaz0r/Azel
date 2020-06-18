@@ -19,8 +19,8 @@ static void BTL_A3_map3_Init(s_BTL_A3_Env* pThis)
     BTL_A3_Env_InitVdp2(pThis);
 
     allocateNPC(pThis, 8);
-    initGridForBattle(dramAllocatorEnd[8].mC_buffer, g_BTL_A3->m_map3, 2, 2, 0x400000);
-    pThis->m58 = dramAllocatorEnd[8].mC_buffer;
+    initGridForBattle(dramAllocatorEnd[8].mC_fileBundle, g_BTL_A3->m_map3, 2, 2, 0x400000);
+    pThis->m58 = dramAllocatorEnd[8].mC_fileBundle;
 
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
 

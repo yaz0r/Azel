@@ -331,7 +331,7 @@ const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX] = {
     },
 };
 
-std::vector<s_RiderDefinitionSub> dragon0_sub0 = {
+std::vector<s_hotpointDefinition> dragon0_sub0 = {
     { {0x20212C, &gCommonFile }, 2 },
     { NULL, 0 },
     { NULL, 0 },
@@ -378,7 +378,7 @@ const sDragonData3 dragonData3[DR_LEVEL_MAX] =
             4,0,0,0, NULL,
             4,0,0,0, NULL,
             4,0,0,0, NULL,
-            4,8,260,0, (std::vector<s_RiderDefinitionSub>*)1,
+            4,8,260,0, (std::vector<s_hotpointDefinition>*)1,
         }
     },
     //1
@@ -386,13 +386,13 @@ const sDragonData3 dragonData3[DR_LEVEL_MAX] =
         75,
         32,
         {
-            4,8,268,1424, (std::vector<s_RiderDefinitionSub>*)1,
-            4,24,1324,1424, (std::vector<s_RiderDefinitionSub>*)1,
-            8,28,1328,1724, (std::vector<s_RiderDefinitionSub>*)1,
-            12,32,1332,2024, (std::vector<s_RiderDefinitionSub>*)1,
-            16,36,1336,2324, (std::vector<s_RiderDefinitionSub>*)1,
-            20,40,1340,2624, (std::vector<s_RiderDefinitionSub>*)1,
-            4,8,268,1424, (std::vector<s_RiderDefinitionSub>*)1,
+            4,8,268,1424, (std::vector<s_hotpointDefinition>*)1,
+            4,24,1324,1424, (std::vector<s_hotpointDefinition>*)1,
+            8,28,1328,1724, (std::vector<s_hotpointDefinition>*)1,
+            12,32,1332,2024, (std::vector<s_hotpointDefinition>*)1,
+            16,36,1336,2324, (std::vector<s_hotpointDefinition>*)1,
+            20,40,1340,2624, (std::vector<s_hotpointDefinition>*)1,
+            4,8,268,1424, (std::vector<s_hotpointDefinition>*)1,
         }
     },
     //2
@@ -400,13 +400,13 @@ const sDragonData3 dragonData3[DR_LEVEL_MAX] =
         77,
         32,
         {
-            4,8,268,1540, (std::vector<s_RiderDefinitionSub>*)1,
-            4,24,1324,1540, (std::vector<s_RiderDefinitionSub>*)1,
-            8,28,1328,1848, (std::vector<s_RiderDefinitionSub>*)1,
-            12,32,1332,2156, (std::vector<s_RiderDefinitionSub>*)1,
-            16,36,1336,2464, (std::vector<s_RiderDefinitionSub>*)1,
-            20,40,1340,2772, (std::vector<s_RiderDefinitionSub>*)1,
-            4,8,268,1540, (std::vector<s_RiderDefinitionSub>*)1,
+            4,8,268,1540, (std::vector<s_hotpointDefinition>*)1,
+            4,24,1324,1540, (std::vector<s_hotpointDefinition>*)1,
+            8,28,1328,1848, (std::vector<s_hotpointDefinition>*)1,
+            12,32,1332,2156, (std::vector<s_hotpointDefinition>*)1,
+            16,36,1336,2464, (std::vector<s_hotpointDefinition>*)1,
+            20,40,1340,2772, (std::vector<s_hotpointDefinition>*)1,
+            4,8,268,1540, (std::vector<s_hotpointDefinition>*)1,
         }
     },
     //3
@@ -414,13 +414,13 @@ const sDragonData3 dragonData3[DR_LEVEL_MAX] =
         78,
         31,
         {
-            4,8,260,1612, (std::vector<s_RiderDefinitionSub>*)1,
-            4,24,1284,1612, (std::vector<s_RiderDefinitionSub>*)1,
-            8,28,1288,1924, (std::vector<s_RiderDefinitionSub>*)1,
-            12,32,1292,2236, (std::vector<s_RiderDefinitionSub>*)1,
-            16,36,1296,2548, (std::vector<s_RiderDefinitionSub>*)1,
-            20,40,1300,2860, (std::vector<s_RiderDefinitionSub>*)1,
-            4,8,260,1612, (std::vector<s_RiderDefinitionSub>*)1,
+            4,8,260,1612, (std::vector<s_hotpointDefinition>*)1,
+            4,24,1284,1612, (std::vector<s_hotpointDefinition>*)1,
+            8,28,1288,1924, (std::vector<s_hotpointDefinition>*)1,
+            12,32,1292,2236, (std::vector<s_hotpointDefinition>*)1,
+            16,36,1296,2548, (std::vector<s_hotpointDefinition>*)1,
+            20,40,1300,2860, (std::vector<s_hotpointDefinition>*)1,
+            4,8,260,1612, (std::vector<s_hotpointDefinition>*)1,
         }
     },
     //4
@@ -428,13 +428,13 @@ const sDragonData3 dragonData3[DR_LEVEL_MAX] =
         77,
         33,
         {
-            4,8,276,1568, (std::vector<s_RiderDefinitionSub>*)1,
-            4,24,1364,1568, (std::vector<s_RiderDefinitionSub>*)1,
-            8,28,1368,1876, (std::vector<s_RiderDefinitionSub>*)1,
-            12,32,1372,2184, (std::vector<s_RiderDefinitionSub>*)1,
-            16,36,1376,2492, (std::vector<s_RiderDefinitionSub>*)1,
-            20,40,1380,2800, (std::vector<s_RiderDefinitionSub>*)1,
-            4,8,276,1568, (std::vector<s_RiderDefinitionSub>*)1,
+            4,8,276,1568, (std::vector<s_hotpointDefinition>*)1,
+            4,24,1364,1568, (std::vector<s_hotpointDefinition>*)1,
+            8,28,1368,1876, (std::vector<s_hotpointDefinition>*)1,
+            12,32,1372,2184, (std::vector<s_hotpointDefinition>*)1,
+            16,36,1376,2492, (std::vector<s_hotpointDefinition>*)1,
+            20,40,1380,2800, (std::vector<s_hotpointDefinition>*)1,
+            4,8,276,1568, (std::vector<s_hotpointDefinition>*)1,
         }
     },
     //5
@@ -442,12 +442,12 @@ const sDragonData3 dragonData3[DR_LEVEL_MAX] =
         80,
         30,
         {
-            4,8,252,1628, (std::vector<s_RiderDefinitionSub>*)1,
-            4,24,1244,1628, (std::vector<s_RiderDefinitionSub>*)1,
-            8,28,1248,1948, (std::vector<s_RiderDefinitionSub>*)1,
-            12,32,1252,2268, (std::vector<s_RiderDefinitionSub>*)1,
-            16,36,1256,2588, (std::vector<s_RiderDefinitionSub>*)1,
-            20,40,1260,2908, (std::vector<s_RiderDefinitionSub>*)1,
+            4,8,252,1628, (std::vector<s_hotpointDefinition>*)1,
+            4,24,1244,1628, (std::vector<s_hotpointDefinition>*)1,
+            8,28,1248,1948, (std::vector<s_hotpointDefinition>*)1,
+            12,32,1252,2268, (std::vector<s_hotpointDefinition>*)1,
+            16,36,1256,2588, (std::vector<s_hotpointDefinition>*)1,
+            20,40,1260,2908, (std::vector<s_hotpointDefinition>*)1,
             4,0,0,0, NULL,
         }
     },
@@ -456,7 +456,7 @@ const sDragonData3 dragonData3[DR_LEVEL_MAX] =
         0,
         0,
         {
-            4,8,220,0, (std::vector<s_RiderDefinitionSub>*)1,
+            4,8,220,0, (std::vector<s_hotpointDefinition>*)1,
             4,0,0,0, NULL,
             4,0,0,0, NULL,
             4,0,0,0, NULL,
@@ -470,12 +470,12 @@ const sDragonData3 dragonData3[DR_LEVEL_MAX] =
         80,
         28,
         {
-            4,8,236,1680, (std::vector<s_RiderDefinitionSub>*)1,
-            4,24,1164,1680, (std::vector<s_RiderDefinitionSub>*)1,
-            8,28,1168,2000, (std::vector<s_RiderDefinitionSub>*)1,
-            12,32,1172,2320, (std::vector<s_RiderDefinitionSub>*)1,
-            16,36,1176,2640, (std::vector<s_RiderDefinitionSub>*)1,
-            20,40,1180,2960, (std::vector<s_RiderDefinitionSub>*)1,
+            4,8,236,1680, (std::vector<s_hotpointDefinition>*)1,
+            4,24,1164,1680, (std::vector<s_hotpointDefinition>*)1,
+            8,28,1168,2000, (std::vector<s_hotpointDefinition>*)1,
+            12,32,1172,2320, (std::vector<s_hotpointDefinition>*)1,
+            16,36,1176,2640, (std::vector<s_hotpointDefinition>*)1,
+            20,40,1180,2960, (std::vector<s_hotpointDefinition>*)1,
             4,0,0,0, NULL,
         }
     },

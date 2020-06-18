@@ -586,14 +586,14 @@ void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
     pThis->m240 = pThis->m270_enemyAltitude + pThis->m258 + pThis->m264;
 }
 
-s32 battleEngine_UpdateSub7Sub0Sub0() // 0x20 is indicating battle intro is running
+bool battleEngine_UpdateSub7Sub0Sub0() // 0x20 is indicating battle intro is running
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning)
         return 1;
     return 0;
 }
 
-s32 battleEngine_UpdateSub7Sub0Sub2Sub0()
+bool battleEngine_UpdateSub7Sub0Sub2Sub0()
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10)
         return 1;
@@ -2975,8 +2975,8 @@ void battleEngine_Update(s_battleEngine* pThis)
 
         battleEngine_UpdateSub1(1);
         battleEngine_UpdateSub2(pThis);
-        battleEngine_CreateHud1(dramAllocatorEnd[0].mC_buffer);
-        battleEngine_CreateRadar(dramAllocatorEnd[0].mC_buffer);
+        battleEngine_CreateHud1(dramAllocatorEnd[0].mC_fileBundle);
+        battleEngine_CreateRadar(dramAllocatorEnd[0].mC_fileBundle);
         battleEngine_UpdateSub5();
 
         battleEngine_SetBattleMode(eBattleModes::mE_battleIntro);

@@ -35,7 +35,7 @@ void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
 {
     allocateNPC(pThis, 10);
 
-    npcFileDeleter* pBuffer = dramAllocatorEnd[10].mC_buffer;
+    npcFileDeleter* pBuffer = dramAllocatorEnd[10].mC_fileBundle;
 
     if (formationID == 0)
     {

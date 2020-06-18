@@ -190,13 +190,13 @@ p_workArea createBattleIntroTask(p_workArea parent)
 
     sBattleIntroSubTask* pNewTask = createSubTask<sBattleIntroSubTask>(parent, &definition);
 
-    pNewTask->m2C = dramAllocatorEnd[4].mC_buffer;
+    pNewTask->m2C = dramAllocatorEnd[4].mC_fileBundle;
     createBattleIntroTaskSub0();
 
     int randomIntroId = performModulo2(3, randomNumber());
 
-    pNewTask->m1C_pCameraData = pNewTask->m2C->m0_dramAllocation->getRawBuffer() + 0x384 * randomIntroId;
-    pNewTask->m20 = pNewTask->m2C->m0_dramAllocation->getRawBuffer() + 0x384 * 3;
+    pNewTask->m1C_pCameraData = pNewTask->m2C->m0_fileBundle->getRawBuffer() + 0x384 * randomIntroId;
+    pNewTask->m20 = pNewTask->m2C->m0_fileBundle->getRawBuffer() + 0x384 * 3;
 
     if (createBattleIntroTaskSub1() == 0)
     {

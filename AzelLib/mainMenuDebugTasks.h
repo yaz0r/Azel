@@ -65,7 +65,7 @@ extern s_vblankData vblankData;
 
 extern s_fileBundle* gDragonModel;
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, s_fileBundle* pDragonBundle, u16 modelIndexOffset, struct sAnimationData* pAnimationData, struct sStaticPoseData* pDefaultPose, u8* colorAnim, std::vector<s_RiderDefinitionSub>* unkArg3);
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, s_fileBundle* pDragonBundle, u16 modelIndexOffset, struct sAnimationData* pAnimationData, struct sStaticPoseData* pDefaultPose, u8* colorAnim, std::vector<s_hotpointDefinition>* unkArg3);
 void initModelDrawFunction(s_3dModel* pDragonStateData1);
 u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, struct sAnimationData* pAnimation);
 s32 riderInit(s_3dModel* r4, struct sAnimationData* pAnimation);
@@ -83,7 +83,7 @@ struct s_fileEntry
     s32 m0_fileID; // was the file index in the CD, but useless here
     s32 m4_fileSize;
     s32 m8_refcount;
-    struct npcFileDeleter* mC_buffer;
+    struct npcFileDeleter* mC_fileBundle;
     // size 0x10
 };
 

@@ -49,17 +49,17 @@ void BTL_A3_data::invoke(sSaturnPtr Func, p_workArea pParent)
     }
 }
 
-std::vector<s_RiderDefinitionSub>* readRiderDefinitionSub(sSaturnPtr ptrEA, int numEntry)
+std::vector<s_hotpointDefinition>* readRiderDefinitionSub(sSaturnPtr ptrEA, int numEntry)
 {
     if (ptrEA.isNull())
     {
         return nullptr;
     }
 
-    std::vector<s_RiderDefinitionSub>* pNewVector = new std::vector<s_RiderDefinitionSub>;
+    std::vector<s_hotpointDefinition>* pNewVector = new std::vector<s_hotpointDefinition>;
     for (int i=0; i<numEntry; i++)
     {
-        s_RiderDefinitionSub newValue;
+        s_hotpointDefinition newValue;
         newValue.m0_ptr = readSaturnEA(ptrEA + 8 * i);
         newValue.m4_count = readSaturnU32(ptrEA + 8 * i + 4);
         pNewVector->push_back(newValue);
@@ -85,14 +85,16 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
         {
             sGenericFormationPerTypeData* pSubEntry = new sGenericFormationPerTypeData;
             pSubEntry->m0 = readSaturnS8(subEntry + 0);
-            pSubEntry->m1 = readSaturnS8(subEntry + 1);
+            pSubEntry->m1_fileBundleIndex = readSaturnS8(subEntry + 1);
             pSubEntry->m2 = readSaturnS8(subEntry + 2);
-            pSubEntry->m8 = readSaturnU16(subEntry + 8);
-            pSubEntry->mA = readSaturnU16(subEntry + 0xA);
-            pSubEntry->mC = readRiderDefinitionSub(readSaturnEA(subEntry + 0xC), 0x18);
+            pSubEntry->m4 = readSaturnS16(subEntry + 4);
+            pSubEntry->m8_modelOffset = readSaturnU16(subEntry + 8);
+            pSubEntry->mA_poseOffset = readSaturnU16(subEntry + 0xA);
+            pSubEntry->mC_hotspotDefinitions = readRiderDefinitionSub(readSaturnEA(subEntry + 0xC), 0x18);
             pSubEntry->m18 = readSaturnS8(subEntry + 0x18);
             pSubEntry->m1C = readSaturnEA(subEntry + 0x1C);
             pSubEntry->m24 = readSaturnU32(subEntry + 0x24);
+            pSubEntry->m38 = readSaturnS8(subEntry + 0x38);
             pNewData->m4_perTypeParams[i] = pSubEntry;
         }
         else
@@ -112,10 +114,12 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
     pNewData->m16 = readSaturnS8(ptrEA + 0x16);
     pNewData->m17 = readSaturnS8(ptrEA + 0x17);
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 3; i++)
     {
         pNewData->m18[i] = readSaturnS8(ptrEA + 0x18 + i);
     }
+
+    pNewData->m1C = readSaturnS32(ptrEA + 0x1C);
 
     for (int i = 0; i < 3; i++)
     {

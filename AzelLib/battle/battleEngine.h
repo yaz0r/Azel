@@ -23,8 +23,10 @@ enum eBattleModes
 {
     m0_shootEnemyWithGun = 0,
     m1_useItem = 1,
+    m2 = 2,
     m3_shootEnemeyWithHomingLaser = 3, //target enemy?
     m4_useBerserk,
+    m5 = 5,
     m6_dragonMoving = 6,
     m7 = 7,
     m8_playAttackCamera = 8,
@@ -194,6 +196,10 @@ void sEnemyAttackCamera_updateSub2();
 
 void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4);
 
-s32 battleEngine_UpdateSub7Sub0Sub2Sub0();
+bool battleEngine_UpdateSub7Sub0Sub0();
+bool battleEngine_UpdateSub7Sub0Sub2Sub0();
+
+void battleEngine_FlagQuadrantBitForSafety(u16 uParm1);
+void battleEngine_FlagQuadrantBitForDanger(u16 uParm1);
 
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);

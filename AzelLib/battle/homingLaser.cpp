@@ -192,7 +192,7 @@ void updateDragonStats(int type, sVec3_FP* pOutput)
 
 void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomingLaserRootTask_sub* arg)
 {
-    pThis->m4_vd1Allocation = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation;
+    pThis->m4_vd1Allocation = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation;
     pThis->m84_targetable = arg->m0_targetable;
 
     if ((pThis->m84_targetable == nullptr) || (pThis->m84_targetable->m50_flags & 0x140001))
@@ -272,7 +272,7 @@ void sHomingLaserTask_UpdateSub0(sHomingLaserTask* pThis)
         local_20[1] = performModulo2(0x111, randomNumber()) - 0x88;
         local_20[2] = performModulo2(0x111, randomNumber()) - 0x88;
 
-        createDamageSpriteEffect(dramAllocatorEnd[0].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x060b0658), &pThis->m60[0], &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, &local_20, 0x10000, 0, 0);
+        createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, gCurrentBattleOverlay->getSaturnPtr(0x060b0658), &pThis->m60[0], &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, &local_20, 0x10000, 0, 0);
     }
 }
 

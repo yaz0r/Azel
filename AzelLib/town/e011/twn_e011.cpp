@@ -155,7 +155,7 @@ s32 e011_scriptFunction_6059af0(s32 r4)
     if (e006_scriptFunction_605861eSub0() == 0)
     {
         sE011Task1* pNewSubTask = createSubTask<sE011Task1>(currentResTask);
-        s_fileBundle* pBundle = dramAllocatorEnd[readSaturnU8(r4Ptr)].mC_buffer->m0_dramAllocation;
+        s_fileBundle* pBundle = dramAllocatorEnd[readSaturnU8(r4Ptr)].mC_fileBundle->m0_fileBundle;
         pNewSubTask->m8 = r4Ptr;
 
         s16 hierarchyIndex = readSaturnS16(r4Ptr + 4);

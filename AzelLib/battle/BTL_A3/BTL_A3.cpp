@@ -62,10 +62,10 @@ npcFileDeleter* initMemoryForBattleSub0(p_workArea pThis, s32 fileIndex)
     fileEntry.m8_refcount++;
     if (fileEntry.m8_refcount != 1)
     {
-        return fileEntry.mC_buffer;
+        return fileEntry.mC_fileBundle;
     }
 
-    fileEntry.mC_buffer = loadNPCFile2(pThis, fileEntry.mFileName, fileEntry.m4_fileSize, fileIndex);
+    fileEntry.mC_fileBundle = loadNPCFile2(pThis, fileEntry.mFileName, fileEntry.m4_fileSize, fileIndex);
 }
 
 void initMemoryForBattle(p_workArea pThis, const char** assetList)
