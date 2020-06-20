@@ -95,13 +95,13 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
     s_battleDragon_InitSub5(&pThis->m8C, pThis, &pThis->m1A4, 0x1000, 0xf0000001);
     pThis->m1C8 = 0x111111;
 
-    if ((mainGameState.gameStats.m1_dragonLevel == 6) && (pThis->m24C == 0))
+    if ((mainGameState.gameStats.m1_dragonLevel == 6) && (pThis->m24C_lightWingEffectTask == 0))
     {
-        assert(0);
+        FunctionUnimplemented();
     }
     else
     {
-        pThis->m24C = 0;
+        pThis->m24C_lightWingEffectTask = 0;
     }
 }
 
@@ -128,14 +128,14 @@ void s_battleDragon_UpdateSub0(s_battleDragon* pThis)
             }
             if (mainGameState.gameStats.m1_dragonLevel == 6)
             {
-                assert(0);
+                FunctionUnimplemented();
             }
             else
             {
-                if (pThis->m24C)
+                if (pThis->m24C_lightWingEffectTask)
                 {
-                    pThis->m24C->getTask()->markFinished();
-                    pThis->m24C = nullptr;
+                    pThis->m24C_lightWingEffectTask->getTask()->markFinished();
+                    pThis->m24C_lightWingEffectTask = nullptr;
                 }
             }
         }
@@ -562,7 +562,7 @@ static void s_battleDragon_Update(s_battleDragon* pThis)
     s_battleDragon_UpdateSub2(pThis);
     pThis->m14_rotation += pThis->m44_deltaRotation;
     s_battleDragon_UpdateSub3(pThis);
-    if ((mainGameState.gameStats.m1_dragonLevel == 6) && (pThis->m24C != 0))
+    if ((mainGameState.gameStats.m1_dragonLevel == 6) && (pThis->m24C_lightWingEffectTask != 0))
     {
         assert(0);
     }

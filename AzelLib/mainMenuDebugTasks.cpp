@@ -76,7 +76,6 @@ void computeDragonSprAndAglFromCursor()
         mainGameState.gameStats.m1C_dragonCursorY = 0;
         break;
     default:
-        assert(0);
         break;
     }
 

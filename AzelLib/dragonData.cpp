@@ -12,77 +12,16 @@ u8 gDragonVram[0x4000];
 struct sDragonAnimDataSub
 {
     s32 count;
-    const sDragonAnimDataSubRanges* m_data;
+    sDragonAnimDataSubRanges* m_data;
 };
 
 struct sDragonAnimData
 {
-    const sDragonAnimDataSub* m_0;
-    const sDragonAnimDataSub* m_4;
-    const sDragonAnimDataSub* m_8;
-    const sDragonAnimDataSub* m_C;
+    sDragonAnimDataSub* m0;
+    std::array<std::vector<sDragonAnimDataSub>, 3> m4;
 };
 
-const sDragonAnimDataSubRanges dragon0AnimsData0 =
-{
-    {0x2423, 0x2423, 0x2423},
-    {0xB800, 0xB800, 0xB800},
-    {0xE38E38, 0xE38E38, 0xE38E38},
-    {-0xE38E38, -0xE38E38, -0xE38E38},
-};
-const sDragonAnimDataSubRanges dragon0AnimsData1 =
-{
-    {0x400, 0x400, 0x400},
-    {0x1000, 0x1000, 0x1000},
-    {0xE38E38, 0xE38E38, 0xE38E38},
-    {-0xE38E38, -0xE38E38, -0xE38E38},
-};
-
-const sDragonAnimDataSub dragon0Anims0[1] =
-{
-    { 0x01, &dragon0AnimsData0 },
-};
-
-const sDragonAnimDataSub dragon0Anims1[] =
-{
-    { 0x0E, &dragon0AnimsData1 },
-    { 0x0F, &dragon0AnimsData1 },
-    { 0x10, &dragon0AnimsData1 },
-    { 0x11, &dragon0AnimsData1 },
-    { -1, NULL },
-};
-
-const sDragonAnimDataSub dragon0Anims2[] =
-{
-    { 0x02, &dragon0AnimsData0 },
-    { 0x03, &dragon0AnimsData0 },
-    { 0x04, &dragon0AnimsData0 },
-    { 0x05, &dragon0AnimsData0 },
-    { 0x06, &dragon0AnimsData0 },
-    { -1, NULL },
-};
-
-const sDragonAnimData dragon0Anims =
-{
-    dragon0Anims0,
-    dragon0Anims1,
-    dragon0Anims2,
-    NULL,
-};
-
-const sDragonAnimData* dragonAnimData[DR_ANIM_MAX] =
-{
-    &dragon0Anims,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-};
+std::array<sDragonAnimData, DR_ANIM_MAX> dragonAnimData;
 
 const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX] = {
     //DR_LEVEL_0_BASIC_WING
@@ -341,15 +280,15 @@ const s_dragonData2 dragonAnimOffsets[DR_LEVEL_MAX] = {
 s_dragonState* gDragonState = NULL;
 
 
-u32 countNumAnimData(s3DModelAnimData* pDragonStateData2, const sDragonAnimData* dragonAnims)
+u32 countNumAnimData(s3DModelAnimData* pDragonStateData2, sDragonAnimData* dragonAnims)
 {
     pDragonStateData2->count0 = 0;
     pDragonStateData2->count1 = 0;
     pDragonStateData2->count2 = 0;
 
-    const sDragonAnimDataSub* r6 = dragonAnims->m_4;
-    if (r6)
+    if(dragonAnims->m4[0].size())
     {
+        std::vector<sDragonAnimDataSub>::iterator r6 = dragonAnims->m4[0].begin();
         while (r6->count >= 0)
         {
             pDragonStateData2->count0++;
@@ -357,9 +296,9 @@ u32 countNumAnimData(s3DModelAnimData* pDragonStateData2, const sDragonAnimData*
         }
     }
 
-    r6 = dragonAnims->m_8;
-    if (r6)
+    if (dragonAnims->m4[1].size())
     {
+        std::vector<sDragonAnimDataSub>::iterator r6 = dragonAnims->m4[1].begin();
         while (r6->count >= 0)
         {
             pDragonStateData2->count1++;
@@ -367,9 +306,9 @@ u32 countNumAnimData(s3DModelAnimData* pDragonStateData2, const sDragonAnimData*
         }
     }
 
-    r6 = dragonAnims->m_C;
-    if (r6)
+    if (dragonAnims->m4[2].size())
     {
+        std::vector<sDragonAnimDataSub>::iterator r6 = dragonAnims->m4[2].begin();
         while (r6->count >= 0)
         {
             pDragonStateData2->count2++;
@@ -380,12 +319,12 @@ u32 countNumAnimData(s3DModelAnimData* pDragonStateData2, const sDragonAnimData*
     return pDragonStateData2->count0 + pDragonStateData2->count1 + pDragonStateData2->count2 + 1;
 }
 
-void copyAnimMatrix(const sDragonAnimDataSubRanges* source, sDragonAnimDataSubRanges* destination)
+void copyAnimMatrix(sDragonAnimDataSubRanges* source, sDragonAnimDataSubRanges* destination)
 {
     *destination = *source;
 }
 
-void initRuntimeAnimDataSub1(const sDragonAnimDataSub* animDataSub, s_runtimeAnimData* subData)
+void initRuntimeAnimDataSub1(sDragonAnimDataSub* animDataSub, s_runtimeAnimData* subData)
 {
     subData->m0_root.zeroize();
     subData->m_vec_C.zeroize();
@@ -397,49 +336,49 @@ void initRuntimeAnimDataSub1(const sDragonAnimDataSub* animDataSub, s_runtimeAni
     subData->dataSource = animDataSub;
 }
 
-void initRuntimeAnimData(const sDragonAnimData* dragonAnims, s_runtimeAnimData* subData)
+void initRuntimeAnimData(sDragonAnimData* dragonAnims, s_runtimeAnimData* subData)
 {
-    initRuntimeAnimDataSub1(dragonAnims->m_0, &subData[0]);
+    initRuntimeAnimDataSub1(dragonAnims->m0, &subData[0]);
     u32 r14 = 1;
 
-    if (dragonAnims->m_4)
+    if (dragonAnims->m4[0].size())
     {
-        const sDragonAnimDataSub* r12 = dragonAnims->m_4;
+        std::vector<sDragonAnimDataSub>::iterator r12 = dragonAnims->m4[0].begin();
 
         while (r12->count >= 0)
         {
-            initRuntimeAnimDataSub1(r12, &subData[r14]);
+            initRuntimeAnimDataSub1(&(*r12), &subData[r14]);
             r14++;
             r12++;
         }
     }
 
-    if (dragonAnims->m_8)
+    if (dragonAnims->m4[1].size())
     {
-        const sDragonAnimDataSub* r12 = dragonAnims->m_8;
+        std::vector<sDragonAnimDataSub>::iterator r12 = dragonAnims->m4[1].begin();
 
         while (r12->count >= 0)
         {
-            initRuntimeAnimDataSub1(r12, &subData[r14]);
+            initRuntimeAnimDataSub1(&(*r12), &subData[r14]);
             r14++;
             r12++;
         }
     }
 
-    if (dragonAnims->m_C)
+    if (dragonAnims->m4[2].size())
     {
-        const sDragonAnimDataSub* r12 = dragonAnims->m_C;
+        std::vector<sDragonAnimDataSub>::iterator r12 = dragonAnims->m4[2].begin();
 
         while (r12->count >= 0)
         {
-            initRuntimeAnimDataSub1(r12, &subData[r14]);
+            initRuntimeAnimDataSub1(&(*r12), &subData[r14]);
             r14++;
             r12++;
         }
     }
 }
 
-void init3DModelAnims(s_dragonState* pDragonState, s_3dModel* pDragonStateData1, s3DModelAnimData* p3DModelAnimData, const sDragonAnimData* dragonAnims)
+void init3DModelAnims(s_dragonState* pDragonState, s_3dModel* pDragonStateData1, s3DModelAnimData* p3DModelAnimData, sDragonAnimData* dragonAnims)
 {
     p3DModelAnimData->m0_animData = dragonAnims;
 
@@ -452,9 +391,9 @@ void init3DModelAnims(s_dragonState* pDragonState, s_3dModel* pDragonStateData1,
     initRuntimeAnimData(dragonAnims, p3DModelAnimData->m8_runtimeAnimData);
 }
 
-const sDragonAnimData* getDragonDataByIndex(e_dragonLevel dragonLevel)
+sDragonAnimData* getDragonDataByIndex(e_dragonLevel dragonLevel)
 {
-    return dragonAnimData[dragonLevel];
+    return &dragonAnimData[dragonLevel];
 }
 
 void loadDragonSoundBank(e_dragonLevel dragonLevel)
@@ -507,7 +446,7 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
 
     if (dragonFilenameTable[dragonLevel].m_M.MCB)
     {
-        assert(0);
+        FunctionUnimplemented();
         loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->m8_dramAllocation, 0/*pLoadDragonWorkArea->m8_MCBInDram >> 3*/);
         loadFile(dragonFilenameTable[dragonLevel].m_M.CGB, pLoadDragonWorkArea->m8_MCBInDram, 0);
 
@@ -525,7 +464,7 @@ void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonSt
     const sDragonData3Sub* r13 = &pDragonData3->m_m8[1];
     const sDragonData3Sub* r11 = &pDragonData3->m_m8[5];
 
-    assert(false);
+    FunctionUnimplemented();
 }
 
 void dramFree(u8* ptr)
@@ -596,31 +535,93 @@ void loadDragon(s_workArea* pWorkArea)
 
 void loadDragonDataFromCommon()
 {
-    sSaturnPtr ptr = gCommonFile.getSaturnPtr(0x2065e8);
-    for (int i = 0; i < e_dragonLevel::DR_LEVEL_MAX; i++)
+    // Load the dragon models stuff
     {
-        s_fileBundle* pDragonModel = nullptr;
-        loadFile(dragonFilenameTable[i].m_base.MCB, &pDragonModel, 0x2400);
-
-        sDragonData3& entry = dragonData3[i];
-        entry.m_m0 = readSaturnU32(ptr + 0); ptr += 4;
-        entry.m_m4 = readSaturnU16(ptr + 2); ptr += 2;
-        entry.m_m6 = readSaturnU16(ptr + 2); ptr += 2;
-        for (int j = 0; j < 7; j++)
+        sSaturnPtr ptr = gCommonFile.getSaturnPtr(0x2065e8);
+        for (int i = 0; i < e_dragonLevel::DR_LEVEL_MAX; i++)
         {
-            sDragonData3Sub& subEntry = entry.m_m8[j];
+            s_fileBundle* pDragonModel = nullptr;
+            loadFile(dragonFilenameTable[i].m_base.MCB, &pDragonModel, 0x2400);
 
-            subEntry.m0_modelIndex = readSaturnU16(ptr); ptr += 2;
-            subEntry.m2_shadowModelIndex = readSaturnU16(ptr); ptr += 2;
-            subEntry.m4_poseModelIndex = readSaturnU16(ptr); ptr += 2;
-            subEntry.m6 = readSaturnU16(ptr); ptr += 2;
-            subEntry.m_m8 = nullptr;
-
-            sSaturnPtr hotpointsPtr = readSaturnEA(ptr); ptr += 4;
-
-            if (!hotpointsPtr.isNull() && (j==0))
+            sDragonData3& entry = dragonData3[i];
+            entry.m_m0 = readSaturnU32(ptr + 0); ptr += 4;
+            entry.m_m4 = readSaturnU16(ptr + 2); ptr += 2;
+            entry.m_m6 = readSaturnU16(ptr + 2); ptr += 2;
+            for (int j = 0; j < 7; j++)
             {
-                subEntry.m_m8 = readRiderDefinitionSub(hotpointsPtr);
+                sDragonData3Sub& subEntry = entry.m_m8[j];
+
+                subEntry.m0_modelIndex = readSaturnU16(ptr); ptr += 2;
+                subEntry.m2_shadowModelIndex = readSaturnU16(ptr); ptr += 2;
+                subEntry.m4_poseModelIndex = readSaturnU16(ptr); ptr += 2;
+                subEntry.m6 = readSaturnU16(ptr); ptr += 2;
+                subEntry.m_m8 = nullptr;
+
+                sSaturnPtr hotpointsPtr = readSaturnEA(ptr); ptr += 4;
+
+                if (!hotpointsPtr.isNull() && (j == 0))
+                {
+                    subEntry.m_m8 = readRiderDefinitionSub(hotpointsPtr);
+                }
+            }
+        }
+    }
+
+
+    // Load the dragon anim stuff
+    {
+        for (int i = 0; i < DR_ANIM_MAX; i++)
+        {
+            sSaturnPtr ptr = readSaturnEA(gCommonFile.getSaturnPtr(0x00202054 + 4 * i));
+
+            for (int j=0; j<4; j++)
+            {
+                sSaturnPtr subPtr = readSaturnEA(ptr + j * 4);
+                if (!subPtr.isNull())
+                {
+                    while (1)
+                    {
+                        sDragonAnimDataSub* pOutput = nullptr;
+
+                        if (j == 0)
+                        {
+                            dragonAnimData[i].m0 = new sDragonAnimDataSub;
+                            pOutput = dragonAnimData[i].m0;
+                        }
+                        else
+                        {
+                            dragonAnimData[i].m4[j - 1].resize(dragonAnimData[i].m4[j - 1].size() + 1);
+                            pOutput = &dragonAnimData[i].m4[j - 1][dragonAnimData[i].m4[j - 1].size() - 1];
+                        }
+
+                        pOutput->count = readSaturnS32(subPtr + 0);
+                        pOutput->m_data = nullptr;
+
+                        if (pOutput->count != -1)
+                        {
+                            sSaturnPtr subSubPtr = readSaturnEA(subPtr + 4);
+
+                            sDragonAnimDataSubRanges* subSubEntry = new sDragonAnimDataSubRanges;
+                            subSubEntry->m_vec0 = readSaturnVec3(subSubPtr + 0);
+                            subSubEntry->m_vecC = readSaturnVec3(subSubPtr + 0xC);
+                            subSubEntry->m_max = readSaturnVec3(subSubPtr + 0x18);
+                            subSubEntry->m_min = readSaturnVec3(subSubPtr + 0x24);
+
+                            pOutput->m_data = subSubEntry;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        if (j == 0)
+                        {
+                            break;
+                        }
+
+                        subPtr += 8;
+                    }
+                }
             }
         }
     }
