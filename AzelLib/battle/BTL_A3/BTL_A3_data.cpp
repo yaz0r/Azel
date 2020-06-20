@@ -49,23 +49,14 @@ void BTL_A3_data::invoke(sSaturnPtr Func, p_workArea pParent)
     }
 }
 
-std::vector<s_hotpointDefinition>* readRiderDefinitionSub(sSaturnPtr ptrEA, int numEntry)
+sHotpointBundle* readRiderDefinitionSub(sSaturnPtr ptrEA)
 {
     if (ptrEA.isNull())
     {
         return nullptr;
     }
 
-    std::vector<s_hotpointDefinition>* pNewVector = new std::vector<s_hotpointDefinition>;
-    for (int i=0; i<numEntry; i++)
-    {
-        s_hotpointDefinition newValue;
-        newValue.m0_ptr = readSaturnEA(ptrEA + 8 * i);
-        newValue.m4_count = readSaturnU32(ptrEA + 8 * i + 4);
-        pNewVector->push_back(newValue);
-    }
-
-    return pNewVector;
+    return new sHotpointBundle(ptrEA);
 }
 
 sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
@@ -90,10 +81,33 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
             pSubEntry->m4 = readSaturnS16(subEntry + 4);
             pSubEntry->m8_modelOffset = readSaturnU16(subEntry + 8);
             pSubEntry->mA_poseOffset = readSaturnU16(subEntry + 0xA);
-            pSubEntry->mC_hotspotDefinitions = readRiderDefinitionSub(readSaturnEA(subEntry + 0xC), 0x18);
+            pSubEntry->mC_hotspotDefinitions = readRiderDefinitionSub(readSaturnEA(subEntry + 0xC));
             pSubEntry->m18 = readSaturnS8(subEntry + 0x18);
-            pSubEntry->m1C = readSaturnEA(subEntry + 0x1C);
+
+            sSaturnPtr ptrTo1C = readSaturnEA(subEntry + 0x1C);
+            for (int j=0; j<1; j++)
+            {
+                sGenericFormationPerTypeDataSub1C subData1C;
+
+                subData1C.m0 = readSaturnEA(ptrTo1C + 0);
+                subData1C.m4[0] = readSaturnEA(ptrTo1C + 0x4 + 0);
+                subData1C.m4[1] = readSaturnEA(ptrTo1C + 0x4 + 4);
+                subData1C.m4[2] = readSaturnEA(ptrTo1C + 0x4 + 8);
+                subData1C.m4[3] = readSaturnEA(ptrTo1C + 0x4 + 0xC);
+                subData1C.m14[0] = readSaturnS8(ptrTo1C + 0x14 + 0);
+                subData1C.m14[1] = readSaturnS8(ptrTo1C + 0x14 + 1);
+                subData1C.m14[2] = readSaturnS8(ptrTo1C + 0x14 + 2);
+                subData1C.m14[3] = readSaturnS8(ptrTo1C + 0x14 + 3);
+                subData1C.m1C_animationOffset = readSaturnU16(ptrTo1C + 0x1C);
+                subData1C.m1E = readSaturnS8(ptrTo1C + 0x1E);
+                pSubEntry->m1C.push_back(subData1C);
+            }
+
             pSubEntry->m24 = readSaturnU32(subEntry + 0x24);
+            pSubEntry->m28[0] = readSaturnS8(subEntry + 0x28 + 0);
+            pSubEntry->m28[1] = readSaturnS8(subEntry + 0x28 + 1);
+            pSubEntry->m28[2] = readSaturnS8(subEntry + 0x28 + 2);
+            pSubEntry->m28[3] = readSaturnS8(subEntry + 0x28 + 3);
             pSubEntry->m38 = readSaturnS8(subEntry + 0x38);
             pNewData->m4_perTypeParams[i] = pSubEntry;
         }

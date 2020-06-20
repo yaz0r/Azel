@@ -56,7 +56,7 @@ s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
 
 
     sSaturnPtr hotSpotDataEA = animData + readSaturnU32(animData + 4);
-    std::vector<s_hotpointDefinition> * pHotSpotsData = nullptr;
+    sHotpointBundle* pHotSpotsData = nullptr;
     assert(animData == hotSpotDataEA); // else we need to load the data
 
     init3DModelRawData(pThis, pOutputModel, 0, pFileBundle, readSaturnU16(animData), 0, pFileBundle->getStaticPose(readSaturnU16(animData + 2), pHierarchy->countNumberOfBones()), nullptr, pHotSpotsData);
@@ -879,9 +879,9 @@ void Baldor_initSub0Sub1(p_workArea pThis, s_3dModel* pModel, s16* param3, std::
                 {
                     param4[currentEntryIndex].m4_pPosition = nullptr;
 
-                    sSaturnPtr puVar1 = (*pModel->m40)[i].m0_ptr + (i * 20);
+                    s_hotpoinEntry& puVar1 = (*pModel->m40)[i].m0[i];
 
-                    Baldor_initSub1(&param4[currentEntryIndex], nullptr, &param5[currentEntryIndex], readSaturnS32(puVar1 + 4 * 4), readSaturnS32(puVar1), 0, 0, 10);
+                    Baldor_initSub1(&param4[currentEntryIndex], nullptr, &param5[currentEntryIndex], puVar1.m10, puVar1.m0, 0, 0, 10);
 
                     currentEntryIndex++;
                 }

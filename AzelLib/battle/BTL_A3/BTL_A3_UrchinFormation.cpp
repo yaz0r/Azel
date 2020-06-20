@@ -205,11 +205,11 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub2(BTL_A3_UrchinFormation* pThis)
         if (pThis->m18.m4[cVar1])
         {
             int uVar6 = enemyQuadrantsTable[pThis->m18.mD[0] + cVar1][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
-            sSaturnPtr iVar5 = pThis->m30_config->m4_perTypeParams[cVar1]->m1C + pThis->m18.m7[cVar1] * 0x24;
-            sSaturnPtr iVar9 = readSaturnEA(iVar5 + uVar6 * 4 + 4);
+            sGenericFormationPerTypeDataSub1C& iVar5 = pThis->m30_config->m4_perTypeParams[cVar1]->m1C[pThis->m18.m7[cVar1]];
+            sSaturnPtr iVar9 = iVar5.m4[uVar6];
             if (!iVar9.isNull())
             {
-                if (readSaturnU8(iVar5 + uVar6 * 4 + 0x14))
+                if (iVar5.m14[uVar6])
                 {
                     assert(0);
                 }
@@ -310,7 +310,36 @@ bool BTL_A3_UrchinFormation_UpdateSub0(BTL_A3_UrchinFormation* pThis)
 // This is responsible to setup the quadrant danger/safety
 void BTL_A3_UrchinFormation_UpdateSub1(BTL_A3_UrchinFormation* pThis)
 {
-    FunctionUnimplemented();
+    for (int i=0; i<4; i++)
+    {
+        int uVar3 = 0;
+        for (int j = 0; j < 3; j++)
+        {
+            if (pThis->m18.m4[j] && pThis->m30_config->m4_perTypeParams[j])
+            {
+                static const std::array<s8, 4> tempArray =
+                {
+                    6,4,2,0
+                };
+                int uVar1 = rotateRightR0ByR1(pThis->m30_config->m4_perTypeParams[j]->m1C[pThis->m18.m7[j]].m1E, tempArray[enemyQuadrantsTable[pThis->m18.mD[j]][i]]);
+                uVar3 |= uVar1 & 3;
+            }
+        }
+
+        switch (uVar3)
+        {
+        case 0:
+            battleEngine_FlagQuadrantForDanger(i);
+            break;
+        case 1:
+        case 3:
+            battleEngine_FlagQuadrantForSafety(i);
+            break;
+        default:
+            assert(0);
+            break;
+        }
+    }
 }
 
 void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)

@@ -63,9 +63,7 @@ struct s_vblankData {
 };
 extern s_vblankData vblankData;
 
-extern s_fileBundle* gDragonModel;
-
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, s_fileBundle* pDragonBundle, u16 modelIndexOffset, struct sAnimationData* pAnimationData, struct sStaticPoseData* pDefaultPose, u8* colorAnim, std::vector<s_hotpointDefinition>* unkArg3);
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* pDragonStateData1, u32 unkArg0, s_fileBundle* pDragonBundle, u16 modelIndexOffset, struct sAnimationData* pAnimationData, struct sStaticPoseData* pDefaultPose, u8* colorAnim, sHotpointBundle* unkArg3);
 void initModelDrawFunction(s_3dModel* pDragonStateData1);
 u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, struct sAnimationData* pAnimation);
 s32 riderInit(s_3dModel* r4, struct sAnimationData* pAnimation);
@@ -92,9 +90,7 @@ extern std::vector<s_fileEntry> dramAllocatorEnd;
 u8* dramAllocate(u32 size);
 p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg);
 void updateDragonStatsFromLevel();
-void loadDragon(s_workArea* pWorkArea);
-void loadCurrentRider(s_workArea* pWorkArea);
-void loadCurrentRider2(s_workArea* pWorkArea);
+
 void freeRamResource();
 p_workArea loadField(p_workArea r4, s32 r5);
 void setOpenMenu7();

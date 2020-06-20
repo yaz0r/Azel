@@ -98,10 +98,10 @@ void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)
 
     init3DModelRawData(pThis, &pThis->m5C_model, 0, pThis->m0_fileBundle, pConfig->m8_modelOffset, nullptr, pStaticPose, nullptr, pConfig->mC_hotspotDefinitions);
     Baldor_initSub0Sub1(pThis, &pThis->m5C_model, &pThis->mB6_numTargetables, pThis->mC0_targetable, pThis->mC4_position);
-    updateUrchinAnimationSequence(pThis, readSaturnS16(pConfig->m1C + 0x1C), 0, 1, 1);
+    updateUrchinAnimationSequence(pThis, pConfig->m1C[0].m1C_animationOffset, 0, 1, 1);
     pThis->mC8 = createBaldorSubTask0(&pThis->m8, 0, &pThis->mB4, pConfig->m0);
 
-    if (!readSaturnEA(pConfig->m1C).isNull())
+    if (!pConfig->m1C[0].m0.isNull())
     {
         FunctionUnimplemented();
     }
@@ -148,7 +148,7 @@ void urchinUpdateSub0(sUrchin* pThis)
     {
         if ((pThis->mB0_flags & 0x10) == 0)
         {
-            if ((cVar1 != 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38D_battleSubMode == 4))
+            if ((cVar1 != 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == eBattleModes::m0_shootEnemyWithGun) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38D_battleSubMode == 4))
             {
                 for (int i = 0; i < pThis->mB6_numTargetables; i++)
                 {
@@ -237,7 +237,43 @@ void urchinUpdateSub0(sUrchin* pThis)
 
 void urchinUpdateSub1(sUrchin* pThis)
 {
-    FunctionUnimplemented();
+    s8 cVar1 = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
+
+    if ((pThis->mB0_flags & 8) == 0)
+    {
+        if ((pThis->mB0_flags & 0x10) == 0)
+        {
+            if ((cVar1 != 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == eBattleModes::m3_shootEnemeyWithHomingLaser) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38D_battleSubMode == 4))
+            {
+                for (int i = 0; i < pThis->mB6_numTargetables; i++)
+                {
+                    if ((pThis->mC0_targetable[i].m5A <= gBattleManager->m10_battleOverlay->m4_battleEngine->m394) && (pThis->mC0_targetable[i].m5A != 0))
+                    {
+                        pThis->mB8_delay = gBattleManager->m10_battleOverlay->m4_battleEngine->m394 * 4 + 0xF;
+                        pThis->mB0_flags |= 8;
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            stepAnimation(&pThis->m5C_model);
+            if (pThis->mB8_delay-- < 0)
+            {
+                for (int i = 0; i < pThis->mB6_numTargetables; i++)
+                {
+                    pThis->mC0_targetable[i].m50_flags &= ~0x100000;
+                }
+                pThis->mB0_flags &= ~0x10;
+                pThis->mD0->m14[pThis->mAE].m18 |= 0x20;
+            }
+        }
+    }
+    else
+    {
+        assert(0);
+    }
 }
 
 void urchinUpdateSub2(sUrchin* pThis)
@@ -255,12 +291,30 @@ void urchinUpdateSub2(sUrchin* pThis)
 
 void urchinUpdateSub3(s_3dModel* pModel, std::vector<sVec3_FP>& pPosition)
 {
-    FunctionUnimplemented();
+    if (pModel->m40)
+    {
+        int outputIndex = 0;
+        for (int i=0; i<pModel->m12_numBones; i++)
+        {
+            if (pModel->m44_hotpointData[i].size())
+            {
+                for (int j = 0; j < (*pModel->m40)[i].m4_count; j++)
+                {
+                    pPosition[outputIndex++] = pModel->m44_hotpointData[i][j];
+                }
+            }
+        }
+    }
 }
 
 void urchinUpdateSub4(sUrchin* pThis)
 {
-    FunctionUnimplemented();
+    int uVar1 = pThis->mCC->m28[enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant]];
+
+    for (int i = 0; i < pThis->mB6_numTargetables; i++)
+    {
+        pThis->mC0_targetable[i].m60 = uVar1;
+    }
 }
 
 void Urchin_update(sUrchin* pThis)
@@ -350,7 +404,7 @@ void Urchin_update(sUrchin* pThis)
                 {
                     pThis->mB0_flags &= ~4;
                 }
-                else if (updateUrchinAnimationSequence(pThis, readSaturnS32(pThis->mCC->m1C + pThis->mB1 * 0x24 + 0x1C), 1, 1, 1))
+                else if (updateUrchinAnimationSequence(pThis, pThis->mCC->m1C[pThis->mB1].m1C_animationOffset, 1, 1, 1))
                 {
                     pThis->mB0_flags &= ~4;
                 }

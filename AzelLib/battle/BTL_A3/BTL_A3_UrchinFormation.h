@@ -1,5 +1,15 @@
 #pragma once
 
+struct sGenericFormationPerTypeDataSub1C
+{
+    sSaturnPtr m0;
+    std::array<sSaturnPtr, 4> m4;
+    std::array<s8, 4> m14;
+    u16 m1C_animationOffset;
+    s8 m1E;
+    // size 0x24
+};
+
 struct sGenericFormationPerTypeData
 {
     s8 m0;
@@ -8,10 +18,11 @@ struct sGenericFormationPerTypeData
     s16 m4;
     u16 m8_modelOffset;
     u16 mA_poseOffset;
-    std::vector<s_hotpointDefinition>* mC_hotspotDefinitions;
+    sHotpointBundle* mC_hotspotDefinitions;
     s8 m18;
-    sSaturnPtr m1C;
+    std::vector<sGenericFormationPerTypeDataSub1C> m1C;
     u32 m24;
+    std::array<s8, 4> m28;
     s8 m38;
 };
 

@@ -5,6 +5,8 @@
 #include "battle/battleManager.h"
 #include "audio/soundDriver.h"
 #include "commonOverlay.h"
+#include "dragonData.h"
+#include "dragonRider.h"
 
 u8 array_24BCA0[0x104];
 u8 array_250000[0x20000];

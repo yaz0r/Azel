@@ -595,35 +595,52 @@ struct s_dragonFileConfig {
 
 extern const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX];
 
+struct s_hotpoinEntry
+{
+    s32 m0;
+    sVec3_FP m4;
+    s32 m10;
+    // size 0x14
+};
+
 struct s_hotpointDefinition
 {
+    std::vector<s_hotpoinEntry> m0;
     sSaturnPtr m0_ptr;
     u32 m4_count;
 };
 
-struct s_RiderDefinition
+struct sHotpointBundle
 {
-    const char* m_MCBName; //0
-    const char* m_CGBName; //4
-    u16 m_flags; //8
-    u16 mA_offsetToDefaultPose; //A
-    std::vector<s_hotpointDefinition>* m_pExtraData; //C
+public:
+    sHotpointBundle(sSaturnPtr EA) : m_EA(EA)
+    {
+
+    }
+    std::vector<s_hotpointDefinition>* getData(struct s_3dModel* pModel);
+private:
+    sSaturnPtr m_EA;
+    std::vector<s_hotpointDefinition> m_cachedData;
 };
 
 struct sDragonData3Sub
 {
-    u16 m_m0[4];
-    std::vector<s_hotpointDefinition>* m_m8;
+    u16 m0_modelIndex;
+    u16 m2_shadowModelIndex;
+    u16 m4_poseModelIndex;
+    u16 m6;
+    sHotpointBundle* m_m8;
 };
 
 struct sDragonData3
 {
     u32 m_m0;
-    u32 m_m4;
+    u16 m_m4;
+    u16 m_m6;
     sDragonData3Sub m_m8[7];
 };
 
-extern const sDragonData3 dragonData3[DR_LEVEL_MAX];
+extern std::array<sDragonData3, DR_LEVEL_MAX> dragonData3;
 
 struct s_dragonData2
 {
