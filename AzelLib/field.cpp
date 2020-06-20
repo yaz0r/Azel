@@ -157,7 +157,7 @@ void DragonUpdateCutscene(s_dragonTaskWorkArea* r4)
     switch (r4->m104_dragonScriptStatus)
     {
     case 0:
-        updateCameraScriptSub0(r4->mB8);
+        updateCameraScriptSub0(r4->mB8_lightWingEffect);
         r4->mF8_Flags &= ~0x400;
         r4->mF8_Flags |= 0x20000;
         dragonFieldTaskInitSub4Sub6(r4);

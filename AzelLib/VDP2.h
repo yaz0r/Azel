@@ -230,7 +230,7 @@ extern sVdp2StringContext vdp2StringContext;
 
 struct sVdp2StringControl
 {
-    u32 f0_index;
+    u32 m0_index;
     u32 m4;
     u16* m8;
     u16* mC;
@@ -291,7 +291,7 @@ void asyncDmaCopy(sSaturnPtr EA, void* target, u32 size, u32 unk);
 void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD);
 s32 resetVdp2StringsSub1(u16* pData);
 
-struct s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, struct s_vdp2StringTask** r5, s16 duration, sSaturnPtr pString);
+struct s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, s_vdp2StringTask** r5, s16 duration, sSaturnPtr pString);
 
 struct s_stringStatusQuery
 {

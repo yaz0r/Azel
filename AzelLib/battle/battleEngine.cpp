@@ -13,6 +13,7 @@
 #include "battleEngineSub1.h"
 #include "battleCommandMenu.h"
 #include "battleDebug.h"
+#include "battleTextDisplay.h"
 #include "gunShotRootTask.h"
 #include "homingLaser.h"
 #include "kernel/debug/trace.h"
@@ -200,11 +201,6 @@ void battleEngine_setDesiredCameraPositionPointer(sVec3_FP* pData)
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3D8_pDesiredCameraPosition = pData;
 }
 
-void createBattleDisplayCommandHelpTask(p_workArea parent, sSaturnPtr data)
-{
-    FunctionUnimplemented();
-}
-
 void battleEngine_InitSub8Sub0(sVec2_FP& param)
 {
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -295,7 +291,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     pThis->m3AC = readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 );
 
     createInBattleDebugTask(pThis);
-    createBattleDisplayCommandHelpTask(pThis, readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 + 0xC));
+    createBattleTextDisplay(pThis, readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 + 0xC));
     initBattleEngineArray();
 
     int randomQuadrantOdd = performModulo2(100, randomNumber()) % 0xFF;

@@ -20,6 +20,8 @@
 #include "kernel/dialogTask.h"
 #include "processModel.h"
 
+#include "kernel/textDisplay.h"
+
 void updateDragonDefault(s_dragonTaskWorkArea*);
 void updateCutscene(s_dragonTaskWorkArea* r14);
 sMatrix4x3* fieldCameraTask1DrawSub1();
@@ -1570,7 +1572,7 @@ void updateCutscene(s_dragonTaskWorkArea* r14)
         if (r14->mF8_Flags & 0x40000)
         {
             updateCameraScriptSub0Sub2(r14);
-            updateCameraScriptSub0(r14->mB8);
+            updateCameraScriptSub0(r14->mB8_lightWingEffect);
             r14->mF8_Flags &= ~0x40000;
         }
         r14->m104_dragonScriptStatus++;
@@ -2781,14 +2783,14 @@ s32 executeNative(sSaturnPtr ptr)
         return 0; // result ignored?
     case 0x6074C78:
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m249_noCollisionAndHideDragon = 0;
-        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mB8)
+        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mB8_lightWingEffect)
         {
             assert(0);
         }
         return 0; // result ignored?
     case 0x06074C36:
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m249_noCollisionAndHideDragon = 1;
-        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mB8)
+        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mB8_lightWingEffect)
         {
             assert(0);
         }
@@ -5471,7 +5473,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
     switch (r4->m104_dragonScriptStatus)
     {
     case 0:
-        updateCameraScriptSub0(r4->mB8);
+        updateCameraScriptSub0(r4->mB8_lightWingEffect);
         updateCameraScriptSub1(0);
         r4->mF8_Flags &= 0xFFFFFBFF;
         r4->mF8_Flags |= 0x20000;
@@ -5566,9 +5568,9 @@ void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
 
     createSubTask<s_DragonRiderTask>(pThis);
 
-    if (gDragonState->mC_dragonType == DR_LEVEL_6_LIGHT_WING)
+    if ((gDragonState->mC_dragonType == DR_LEVEL_6_LIGHT_WING) && (pThis->mB8_lightWingEffect == nullptr))
     {
-        assert(0);
+        FunctionUnimplemented();
     }
 
     dragonFieldTaskInitSub5(pThis);
@@ -5582,7 +5584,7 @@ void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
 void dragonFieldTaskUpdateSub1(s_dragonTaskWorkArea* pTypedWorkArea)
 {
     pTypedWorkArea->mFC = 0;
-    pTypedWorkArea->m100 = 0;
+    pTypedWorkArea->m100_previousDragonType = 0;
 
     pTypedWorkArea->m14_oldPos = pTypedWorkArea->m8_pos;
 
@@ -6038,15 +6040,14 @@ void s_dragonTaskWorkArea::Update(s_dragonTaskWorkArea* pTypedWorkArea)
 
     fieldTaskVar2 = gDragonState->mC_dragonType;
 
-    if (pTypedWorkArea->mB8)
+    if (pTypedWorkArea->mB8_lightWingEffect)
     {
         assert(0);
     }
 
-    if (gDragonState->mC_dragonType != pTypedWorkArea->m100)
+    if (gDragonState->mC_dragonType != pTypedWorkArea->m100_previousDragonType)
     {
-        assert(0); // because untested
-        pTypedWorkArea->m100 = gDragonState->mC_dragonType;
+        pTypedWorkArea->m100_previousDragonType = gDragonState->mC_dragonType;
         dragonFieldTaskUpdateSub2(gDragonState->mC_dragonType + 1);
 
         if (gDragonState->mC_dragonType == DR_LEVEL_8_FLOATER)

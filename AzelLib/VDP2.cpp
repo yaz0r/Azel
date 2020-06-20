@@ -1141,12 +1141,12 @@ void clearVdp2TextMemoryRect(s32 r4, s32 r5, s32 r6, s32 r7)
 s32 setActiveFont(u16 r4)
 {
     sVdp2StringControl* r14 = &vdp2StringControlBuffer;
-    u16 fontIndex = pVdp2StringControl->f0_index;
+    u16 fontIndex = pVdp2StringControl->m0_index;
     if (fontIndex != r4)
     {
         do 
         {
-            if (r14->f0_index == r4)
+            if (r14->m0_index == r4)
             {
                 resetCharacterMaps();
 
@@ -1171,7 +1171,7 @@ void initVdp2StringControl()
 {
     pVdp2StringControl = &vdp2StringControlBuffer;
 
-    pVdp2StringControl->f0_index = 0;
+    pVdp2StringControl->m0_index = 0;
     pVdp2StringControl->m4 = 0;
     pVdp2StringControl->m8 = 0;
     pVdp2StringControl->mC = 0;
@@ -1360,7 +1360,7 @@ s32 resetVdp2StringsSub1(u16* pData)
     sVdp2StringControl* pNew = static_cast<sVdp2StringControl*>(allocateHeap(sizeof(sVdp2StringControl)));
     assert(pNew);
 
-    pNew->f0_index = pOld->f0_index + 1;
+    pNew->m0_index = pOld->m0_index + 1;
     pNew->m4 = pData[0];
     pNew->m8 = pData;
     pNew->mC = 0;
@@ -1393,7 +1393,7 @@ s32 resetVdp2StringsSub1(u16* pData)
         resetVdp2StringsSub1Sub1();
     }
 
-    return pVdp2StringControl->f0_index;
+    return pVdp2StringControl->m0_index;
 }
 
 void resetVdp2Strings()
@@ -1598,9 +1598,99 @@ void clearBlueBox(s32 x, s32 y, s32 width, s32 height)
     }
 }
 
-void drawBlueBox(s32 x, s32 y, s32 width, s32 hight, u32)
+void drawBlueBox(s32 x, s32 y, s32 width, s32 height, u32 param5)
 {
-    PDS_unimplemented("drawBlueBox");
+    width /= 2;
+    int iVar6 = (((int)y >> 1) * 0x20 + (x >> 1)) * 2;
+    u32 puVar8 = 0x25E05800 + iVar6;
+
+    // Draw the top
+    {
+        u16 sVar3;
+        if ((y & 1) == 0)
+        {
+            sVar3 = 0x79;
+        }
+        else
+        {
+            sVar3 = 0x82;
+        }
+
+        sVar3 += param5;
+
+        // draw opening sprite
+        setVdp2VramU16(puVar8, sVar3);
+        u32 psVar2 = 0x25E05800 + iVar6 + 2;
+        iVar6 = 2;
+        // draw span
+        if (2 < width)
+        {
+            do
+            {
+                iVar6++;
+                setVdp2VramU16(psVar2, sVar3 + 1);
+                psVar2 += 2;
+            } while (iVar6 < width);
+        }
+        // draw closing sprite
+        setVdp2VramU16(psVar2, sVar3 + 2);
+    }
+
+    // Draw the middle
+    {
+        iVar6 = 2;
+        while (iVar6 < ((int)(height + y + 1) >> 1) - ((int)y >> 1))
+        {
+            u32 puVar7 = puVar8 + 0x40;
+            int iVar4 = 2;
+            setVdp2VramU16(puVar7, param5 + 0x7C); // opening sprite
+            u32 psVar2 = puVar8 + 0x42;
+            if (width > 2)
+            {
+                do {
+                    setVdp2VramU16(psVar2, param5 + 0x7D); // draw span
+                    iVar4++;
+                    psVar2 += 2;
+                } while (iVar4 < width);
+            }
+            setVdp2VramU16(psVar2, param5 + 0x7E); // draw closing sprite
+            iVar6++;
+            puVar8 = puVar7;
+        }
+    }
+    puVar8 += 0x40;
+
+    // Draw the bottom
+    {
+        u16 sVar3;
+        if ((height + y & 1) == 0)
+        {
+            sVar3 = 0x7F;
+        }
+        else
+        {
+            sVar3 = 0x85;
+        }
+
+        sVar3 += param5;
+
+        // draw opening sprite
+        setVdp2VramU16(puVar8, sVar3);
+        u32 psVar2 = puVar8 + 2;
+        iVar6 = 2;
+        // draw span
+        if (2 < width)
+        {
+            do
+            {
+                iVar6++;
+                setVdp2VramU16(psVar2, sVar3 + 1);
+                psVar2 += 2;
+            } while (iVar6 < width);
+        }
+        // draw closing sprite
+        setVdp2VramU16(psVar2, sVar3 + 2);
+    }
 }
 
 void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId)
@@ -1613,111 +1703,4 @@ void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId)
     setVdp2VramU16(offset + 0x82, glyph + 3);
 }
 
-void s_vdp2StringTask::UpdateSub1()
-{
-    drawBlueBox(m14_x, m16_y, m1A_width, m1C_height, 0x1000);
-
-    setupVDP2StringRendering(m14_x + 4, m16_y + 1, m1A_width - 8, m1C_height - 2);
-
-    vdp2StringContext.m0 = 0;
-    VDP2DrawString((char*)getSaturnPtr(m24_string));
-}
-
-void s_vdp2StringTask::Update(s_vdp2StringTask* pThis)
-{
-    switch (pThis->m0_status)
-    {
-    case 0:
-        pThis->m0_status++;
-    case 1:
-        pThis->UpdateSub1();
-        pThis->m0_status++;
-        return;
-    case 2:
-        switch (pThis->m2_durationMode)
-        {
-        case 0:
-            if (--pThis->mA_duration <= 0)
-            {
-                pThis->m0_status++;
-                return;
-            }
-            else
-            {
-                if ((graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0xF) || readKeyboardToggle(0x87))
-                {
-                    pThis->m0_status++;
-                }
-                return;
-            }
-        default:
-            assert(0);
-            break;
-        }
-    case 3:
-        pThis->m0_status++;
-        return;
-    case 4:
-        pThis->getTask()->markFinished();
-        return;
-    default:
-        assert(0);
-        break;
-    }
-}
-
-void vdp2StringTaskDeleteSub0(s_vdp2StringTask* pThis)
-{
-    setupVDP2StringRendering(pThis->m14_x + 4, pThis->m16_y + 1, pThis->m1A_width - 8, pThis->m1C_height - 2);
-    clearVdp2TextArea();
-    clearBlueBox(pThis->m14_x, pThis->m16_y, pThis->m1A_width, pThis->m1C_height);
-}
-
-void s_vdp2StringTask::Delete(s_vdp2StringTask* pThis)
-{
-    vdp2StringTaskDeleteSub0(pThis);
-
-    if (pThis->m10)
-    {
-        *pThis->m10 = NULL;
-    }
-}
-
-s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, s_vdp2StringTask** r5, s16 duration, sSaturnPtr pString)
-{
-    s_vdp2StringTask* r14 = createSubTask<s_vdp2StringTask>(pTask);
-
-    r14->m0_status = 0;
-    if (duration > 0)
-    {
-        r14->mA_duration = duration;
-        r14->m2_durationMode = 0;
-    }
-    else if (duration < 0)
-    {
-        r14->mA_duration = -duration;
-        r14->m2_durationMode = 1;
-    }
-    else
-    {
-        r14->mA_duration = 0;
-        r14->m2_durationMode = 2;
-    }
-
-    r14->m24_string = pString;
-
-    s32 stringLength = computeStringLength(pString, 36);
-
-    r14->m14_x = (((44 - stringLength) / 2) - 4) & ~1;
-    r14->m16_y = 4;
-    r14->m1A_width = stringLength + 8;
-    r14->m1C_height = 8;
-    r14->m10 = r5;
-    if (r5)
-    {
-        *r5 = r14;
-    }
-
-    return r14;
-}
 

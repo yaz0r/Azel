@@ -7,8 +7,9 @@
 #include "battle/battleDebug.h"
 #include "BTL_A3_BaldorFormation.h"
 #include "baldor.h"
-
+#include "battle/battleTextDisplay.h"
 #include "town/town.h" // TODO: cleanup
+#include "kernel/textDisplay.h"
 
 // internal name: Hebi (snake)
 
@@ -25,9 +26,15 @@ struct BTL_A3_BaldorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaldorFo
 
 void displayFormationName(short uParm1, char uParm2, char uParm3)
 {
-    if (gBattleManager->m10_battleOverlay->m14)
+    sBattleTextDisplayTask* pDisplayTextTask = gBattleManager->m10_battleOverlay->m14_textDisplay;
+    if (pDisplayTextTask)
     {
-        assert(0);
+        pDisplayTextTask->m12_textIndex = uParm1;
+        pDisplayTextTask->m14 = 0xFFA6;
+        pDisplayTextTask->m19 = uParm2;
+        pDisplayTextTask->m1A = uParm3;
+
+        createDisplayFormationNameText(pDisplayTextTask, &pDisplayTextTask->m8, pDisplayTextTask->m14, readSaturnEA(pDisplayTextTask->m0_texts + 4 * pDisplayTextTask->m12_textIndex), pDisplayTextTask->m19, pDisplayTextTask->m1A);
     }
 }
 
@@ -78,9 +85,12 @@ void battleEngine_PlayAttackCamera(int param1)
 
 void battleEngine_displayAttackName(int param1, int param2, int param3)
 {
-    if (gBattleManager->m10_battleOverlay->m14)
+    sBattleTextDisplayTask* pDisplayText = gBattleManager->m10_battleOverlay->m14_textDisplay;
+    if (pDisplayText)
     {
-        assert(0);
+        pDisplayText->m14 = 0x2D;
+        pDisplayText->m10 = param1;
+        createDisplayStringBorromScreenTask(pDisplayText, &pDisplayText->m8, -pDisplayText->m14, readSaturnEA(pDisplayText->m0_texts + pDisplayText->m10 * 4));
     }
 }
 
