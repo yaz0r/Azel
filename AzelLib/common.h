@@ -949,7 +949,7 @@ struct s_graphicEngineStatus
     u8 doubleBufferState;
     u8 m3;
     u8 m4;
-    u8 m5;
+    u8 m5_isTildeDown;
     u16 m6; // vdp1 write offset
     u32 m8; // vdp1 write EA for user clipping parameters
     u32 mC; // vdp1 write EA of background sprite

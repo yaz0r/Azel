@@ -51,7 +51,7 @@ void s_MenuCursor2::Draw(s_MenuCursor2* pThis)
     if (pThis->m0 < 0)
         return;
 
-    s32 iVar1 = pThis->mC - vblankData.m14;
+    s32 iVar1 = pThis->mC - vblankData.m14_numVsyncPerFrame;
     s32 uVar3 = pThis->m8;
     if (iVar1 < 1)
     {

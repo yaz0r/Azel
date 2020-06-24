@@ -52,14 +52,14 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
 void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u8* pMCB, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY);
 
 struct s_vblankData {
-    u32 m0;
-    u32 m4;
+    u32 m0_frameReadyToPresent;
+    u32 m4_wasFrameOutDisplayed;
     u32 m8;
-    u32 mC;
-    u32 m10;
-    u32 m14;
+    u32 mC_numFramesPresented;
+    u32 m10_numVsyncSinceLastPresent;
+    u32 m14_numVsyncPerFrame;
     u32 m18;
-    u32 m1C;
+    u32 m1C_callback;
 };
 extern s_vblankData vblankData;
 

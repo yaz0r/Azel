@@ -43,7 +43,7 @@ struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskW
         case 0:
             if (readKeyboardToggle(0x85))
             {
-                assert(0);
+                FunctionUnimplemented();
             }
             break;
         default:
@@ -236,7 +236,6 @@ void updateFieldTaskNoBattleOverride(s_fieldTaskWorkArea* pWorkArea)
     switch (pWorkArea->m3C_fieldTaskState)
     {
     case 0:
-        break;
     case 3:
         fieldTaskUpdateSub0(pWorkArea->m36_fieldIndexMenuSelection, pWorkArea->m38_subFieldIndexMenuSelection, pWorkArea->m3A, pWorkArea->m2E_currentSubFieldIndex);
         break;
@@ -2663,9 +2662,9 @@ void s_mainMenuWorkArea::Init(s_mainMenuWorkArea* pWorkArea)
 
     mainMenuTaskInitSub4(pWorkArea);
 
-    pWorkArea->m1 = vblankData.m14;
+    pWorkArea->m1 = vblankData.m14_numVsyncPerFrame;
 
-    vblankData.m14 = 1;
+    vblankData.m14_numVsyncPerFrame = 1;
 
     fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
     fadePalette(&g_fadeControls.m24_fade1, 0xC210, 0xC210, 1);

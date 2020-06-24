@@ -99,6 +99,9 @@ struct s_multiChoice
     s16* m0_choiceTable;
     s32 m4_currentChoice;
     s32 m8_numChoices;
+    s32 mC;
+
+    // size 0x10
 };
 
 struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
@@ -604,6 +607,7 @@ struct s_randomBattleWorkArea : public s_workAreaTemplate<s_randomBattleWorkArea
 
     void(*m0)();
     u8 m4;
+    u8 m5;
     // size 8
 };
 

@@ -17,6 +17,8 @@ void soundDataTableInit()
         entry.mA = readSaturnS16(dataTableEA + 0xA);
         entry.mC_numMapEntries = readSaturnU8(dataTableEA + 0xC);
         entry.mD_playerSoundTypes = readSaturnU8(dataTableEA + 0xD);
+        entry.mE = readSaturnU8(dataTableEA + 0xE);
+        entry.mF = readSaturnU8(dataTableEA + 0xF);
         dataTableEA += 0x10;
         SoundDataTable.push_back(entry);
     }

@@ -157,7 +157,7 @@ enum eVdp2LayerConfig
     m9_SCC = 9,
     m11_SCN = 11,
     m12_PLSZ = 12,
-    m21 = 21,
+    m21_LCSY = 21,
     m27_RPMD = 27,
     m31_RxKTE = 31,
     m34_W0E = 34,
@@ -165,7 +165,7 @@ enum eVdp2LayerConfig
     m40_CAOS = 40,
     m41 = 41,
     m44_CCEN = 44,
-    m45 = 45,
+    m45_COEN = 45,
     m46_SCCM = 46,
 };
 
@@ -252,16 +252,16 @@ typedef std::vector<fixedPoint> tCoefficientTable;
 
 struct sVdpVar1
 {
-    void* m0;
-    void* m4;
-    u8* m8;
-    s16 mC;
-    s8 mE;
-    s8 mF;
-    s32 m10;
+    void* m0_source[2];
+    u8* m8_destination;
+    s16 mC_size;
+    s8 mE_isDoubleBuffered;
+    s8 mF_isPending;
+    sVdpVar1* m10_nextTransfert;
     // size 0x14
 };
 
+extern sVdpVar1* vdpVar3;
 extern std::array<sVdpVar1, 14> vdpVar1;
 
 s32 setActiveFont(u16 r4);
@@ -270,6 +270,7 @@ void unpackGraphicsToVDP2(u8* compressedData, u8* destination);
 
 void resetVdp2Strings();
 
+u32 getVdp2VramU32(u32 offset);
 u16 getVdp2VramU16(u32 offset);
 u8 getVdp2VramU8(u32 offset);
 
@@ -278,6 +279,7 @@ u16 getVdp2CramU16(u32 offset);
 u8* getVdp2Vram(u32 offset);
 u32 getVdp2VramOffset(u8* ptr);
 void setVdp2VramU16(u32 offset, u16 value);
+void setVdp2VramU8(u32 offset, u8 value);
 void setVdp2VramU32(u32 offset, u32 value);
 u8* getVdp2Cram(u32 offset);
 
@@ -315,9 +317,12 @@ void printVdp2String(s_stringStatusQuery* vars);
 
 void VDP2DrawString(const char*);
 s32 computeStringLength(sSaturnPtr pString, s32 r5);
+s32 computeStringLength(const char*, s32 r5);
 
 void drawBlueBox(s32 x, s32 y, s32 width, s32 height, u32);
 void clearBlueBox(s32 x, s32 y, s32 width, s32 height);
 void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId);
 
 u32 rotateRightR0ByR1(u32 r0, u32 r1);
+
+void interruptVDP2Update();

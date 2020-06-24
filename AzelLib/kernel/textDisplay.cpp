@@ -204,7 +204,7 @@ s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, s_vdp2St
     r14->m14_x = (((44 - stringLength) / 2) - 4) & ~1;
     r14->m16_y = 4;
     r14->m1A_width = stringLength + 8;
-    r14->m1C_height = 8;
+    r14->m1C_height = 4;
     r14->m10 = r5;
     if (r5)
     {

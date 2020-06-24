@@ -662,7 +662,7 @@ s32 battleEngine_UpdateSub7Sub0()
         pBattleEngine->m3B2_numBattleFormationRunning = 0;
 
         clearVdp2TextMemory();
-        fieldPaletteTaskInitSub0Sub2();
+        ResetNBG1Map();
 
         pBattleEngine->m18C_status = 4;
         pBattleEngine->m188_flags.m80000_hideBattleHUD = 0;
@@ -2964,7 +2964,7 @@ void battleEngine_Update(s_battleEngine* pThis)
 
         pThis->m188_flags.m8000 = 1;
 
-        fieldPaletteTaskInitSub0Sub2();
+        ResetNBG1Map();
 
         pThis->m3CC = createBattleEngineSub0(pThis);
         pThis->m3B1 = 0;

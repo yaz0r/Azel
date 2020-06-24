@@ -1432,14 +1432,18 @@ void fieldPaletteTaskInitSub0Sub0()
     vdp2Controls.m4_pendingVdp2Regs->m14_CYCA1 = 1;
 }
 
-void fieldPaletteTaskInitSub0Sub1()
+void createNGB1DefaultBlackCell()
 {
-    FunctionUnimplemented();
+    for (int i = 0; i < 4 * 4; i++)
+    {
+        setVdp2VramU32(0x5C00 + i * 4, 0x509A509A);
+    }
 }
 
-void fieldPaletteTaskInitSub0Sub2()
+void ResetNBG1Map()
 {
-    FunctionUnimplemented();
+    memset(getVdp2Vram(0x5800), 0, 0x80 * 4);
+    createNGB1DefaultBlackCell();
 }
 
 void fieldPaletteTaskInitSub0()
@@ -1452,13 +1456,13 @@ void fieldPaletteTaskInitSub0()
         m5_CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
         m6_PNB,  1, // pattern data size is 1 word
         m12_PLSZ, 0, // plane is 1H x 1V
-        m46_SCCM, 2,
-        m44_CCEN, 1,
+        m46_SCCM, 2, // special color calculation mode 2 (per dot)
+        m44_CCEN, 1, // color calculation mode enabled
         m41, 1,
         m40_CAOS, 7,
         m9_SCC, 1,
-        m45, 16,
-        m21, 1,
+        m45_COEN, 16, // color offset mode enabled
+        m21_LCSY, 1, // enable vertical scroll (for cutscene bars)
         m0_END,
     };
 
@@ -1466,8 +1470,8 @@ void fieldPaletteTaskInitSub0()
 
     initLayerMap(1, 0x5800, 0x5800, 0x5800, 0x5800);
 
-    fieldPaletteTaskInitSub0Sub1();
-    fieldPaletteTaskInitSub0Sub2();
+    writeCinematicBarsToVdp2();
+    ResetNBG1Map();
 }
 
 void s_fieldPaletteTaskWorkArea::Init(s_fieldPaletteTaskWorkArea* pThis)
@@ -2508,6 +2512,128 @@ void dispatchTutorialMultiChoiceSub2()
     fieldTaskPtr->m3D = -1;
 }
 
+void markMultiChoiceEntrySeen(s32 result)
+{
+    if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData)
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData->m0_choiceTable[result] = 9;
+    }
+}
+
+void dispatchTutorialMultiChoiceSub3(s_fieldScriptWorkArea* pThis, int result)
+{
+    FunctionUnimplemented();
+}
+
+s32 battleIndex;
+
+struct sBattleLoadingTask : public s_workAreaTemplate<sBattleLoadingTask>
+{
+    s32 m0_enemyId;
+    s32 m4;
+    s32 m8_status;
+    // size 0xC
+};
+
+void battleLoading_Init(sBattleLoadingTask* pThis)
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m5 = 1;
+    //pThis->m0 = ???? TODO: figure this out, but might be an error in original code that reads from r5 while not actually passing a parameter, it just happens to be what we already put in this var
+    battleLoading_InitSub0();
+    playSystemSoundEffect(0x10); // play "enter battle" sound
+
+    getFieldTaskPtr()->m4_overlayTaskData->getTask()->markPaused(); // pause field
+
+    if (g_fadeControls.m_4C < g_fadeControls.m_4D)
+    {
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 8;
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 8;
+    }
+
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0xFC1F, 0x1E);
+}
+
+void battleLoading_Draw(sBattleLoadingTask* pThis)
+{
+    switch (pThis->m8_status)
+    {
+    case 0:
+        pThis->m8_status++;
+        break;
+    case 1:
+        if (readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2) > -1)
+        {
+            loadSoundBanks(readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2), 0);
+        }
+        pThis->m8_status++;
+        break;
+    case 2:
+        if (isSoundLoadingFinished())
+        {
+            if (readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2) > -1)
+            {
+                playPCM(pThis, readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2));
+            }
+            pThis->m8_status++;
+        }
+        break;
+    case 3:
+        if (readKeyboardToggle(0xDA))
+        {
+            assert(0);
+        }
+        //if (readKeyboardToggle(0xF6)) // HACK: for debugging
+        {
+            pThis->m8_status++;
+        }
+        break;
+    case 4:
+        FunctionUnimplemented();
+        pThis->m8_status++;
+        break;
+    case 5:
+        if (isSoundLoadingFinished())
+        {
+            pThis->getTask()->markFinished();
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    FunctionUnimplemented();
+    //debugSound(0);
+    vdp2DebugPrintSetPosition(3, 0x19);
+    vdp2PrintfLargeFont("ENEMY:%2d ", pThis->m0_enemyId);
+}
+
+void battleLoading_Delete(sBattleLoadingTask* pThis)
+{
+    FunctionUnimplemented();
+}
+
+void startBattleTutorial(int tutorialIndex, int param2)
+{
+    if ((getFieldTaskPtr()->m28_status & 1) == 0)
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m4 = 2;
+        battleIndex = tutorialIndex;
+    }
+    else
+    {
+        static const sBattleLoadingTask::TypedTaskDefinition definition =
+        {
+            battleLoading_Init,
+            nullptr,
+            battleLoading_Draw,
+            battleLoading_Delete,
+        };
+        sBattleLoadingTask* pNewTask = createSubTask<sBattleLoadingTask>(getFieldTaskPtr(), &definition);
+        pNewTask->m0_enemyId = tutorialIndex;
+        pNewTask->m4 = param2;
+    }
+}
+
 s32 dispatchTutorialMultiChoice()
 {
     s32 result = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData->m4_currentChoice;
@@ -2523,11 +2649,35 @@ s32 dispatchTutorialMultiChoice()
             fadeOutAllSequences();
             dispatchTutorialMultiChoiceSub2();
         }
+    }
+    else
+    {
+        static const std::array<s8, 8> tutorialIndex = {
+            0xB,
+            0xC,
+            0xD,
+            0xE,
+            0xF,
+            -1,
+            -1,
+            -1
+        };
 
-        return result;
+        if (tutorialIndex[result] < 0)
+        {
+            getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData->mC = 0;
+            dispatchTutorialMultiChoiceSub3(getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE, result);
+            playSystemSoundEffect(3);
+        }
+        else
+        {
+            getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData->mC = 1;
+            startBattleTutorial(tutorialIndex[result], -1);
+        }
+
+        markMultiChoiceEntrySeen(result);
     }
 
-    assert(0);
     return result;
 }
 
@@ -2772,6 +2922,18 @@ s32 executeNative(sSaturnPtr ptr)
         return playRiderAnim(0, readRiderAnimData({ 0x60832F8, gFLD_A3 }));
     case 0x060558a8:
         return playRiderAnim(0, readRiderAnimData({ 0x6083318, gFLD_A3 }));
+    case 0x605F22C:
+        return getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData->mC;
+    case 0x060688d6:
+        if ((encounterTaskVar0 != 2) && (getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m5 != 3))
+        {
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
+        break;
     case 0x0606ad04:
         getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 1;
         return 0; // result ignored?
@@ -2927,93 +3089,6 @@ void createMultiChoiceDefault(s32 r4)
     createMultiChoice(r4, -1);
 }
 
-#if 0
-void s_multiChoiceTask2::drawMultiChoice()
-{
-    drawBlueBox(m14_x, m16_y, m1A_width, m1C_height);
-
-    setupVDP2StringRendering(m14_x + 2, m16_y + 1, m1A_width - 4, m1C_height - 2);
-
-    for (int i = 0; i < m6_numEntries; i++)
-    {
-        vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + 2;
-        vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + i * 2;
-        if (i < 0)
-        {
-            vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + i * 2 + vdp2StringContext.m18_Height;
-        }
-
-        vdp2StringContext.m0 = m28_colors[i];
-        drawObjectName((char*)getSaturnPtr(readSaturnEA(m24_strings + i * 4)));
-    }
-}
-
-void s_multiChoiceTask2::Update(s_multiChoiceTask2* pThis)
-{
-    switch (pThis->m0_Status)
-    {
-    case 0:
-        pThis->m0_Status++;
-    case 1:
-        pThis->drawMultiChoice();
-        playSoundEffect(3);
-        pThis->m0_Status++;
-        return;
-    case 2:
-        if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x10) // up
-        {
-            pThis->m5_selectedEntry--;
-            if (pThis->m5_selectedEntry < 0)
-            {
-                pThis->m5_selectedEntry += pThis->m6_numEntries;
-            }
-            playSoundEffect(2);
-        }
-        else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0x20) // down
-        {
-            pThis->m5_selectedEntry++;
-            if (pThis->m5_selectedEntry >= pThis->m6_numEntries)
-            {
-                pThis->m5_selectedEntry -= pThis->m6_numEntries;
-            }
-            playSoundEffect(2);
-        }
-
-        if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 6) // select
-        {
-            *pThis->mC_result = pThis->m5_selectedEntry;
-            playSoundEffect(0);
-            pThis->m0_Status++;
-        }
-        else if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 1) // cancel
-        {
-            if (pThis->m2_defaultResult)
-            {
-                *pThis->mC_result = pThis->m2_defaultResult - 1;
-                playSoundEffect(1);
-                pThis->m0_Status++;
-            }
-        }
-        return;
-    case 3:
-        pThis->mC_result = NULL;
-        pThis->m0_Status++;
-        return;
-    case 4:
-        pThis->getTask()->markFinished();
-        return;
-    default:
-        assert(0);
-        break;
-    }
-}
-
-void s_multiChoiceTask2::Draw(s_multiChoiceTask2*)
-{
-    PDS_unimplemented("s_multiChoiceTask2::Draw");
-}
-#endif
-
 s32 fieldPlayPCM(sSaturnPtr pPcmNameEA)
 {
     char* pPcmName = (char*)getSaturnPtr(pPcmNameEA);
@@ -3091,6 +3166,33 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
                 m54_currentResult = -1;
             }
             pScript = pScript + 2;
+            break;
+        case 7:
+            pScript = pScript + 1;
+            pScript.m_offset &= ~1;
+
+            if (m54_currentResult >= readSaturnS16(pScript))
+            {
+                m54_currentResult = 0;
+            }
+            else
+            {
+                m54_currentResult = -1;
+            }
+            pScript = pScript + 2;
+            break;
+        case 12:
+            if (m54_currentResult == 0)
+            {
+                sSaturnPtr r3 = pScript + 3;
+                r3.m_offset &= ~3;
+                pScript = readSaturnEA(r3);
+            }
+            else
+            {
+                pScript = pScript + 7;
+                pScript.m_offset &= ~3;
+            }
             break;
         case 14:
             pScript = callNative(pScript);

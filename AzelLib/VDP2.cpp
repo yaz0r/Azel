@@ -24,7 +24,7 @@ u8* getVdp2Vram(u32 offset)
     {
         return getVdp2Vram(offset - 0x25E00000);
     }
-    return vdp2Ram + offset;
+    return vdp2Ram + (offset & 0x1FFFFF);
 }
 
 u32 getVdp2VramOffset(u8* ptr)
@@ -46,6 +46,11 @@ u8 getVdp2VramU8(u32 offset)
     return *(u8*)getVdp2Vram(offset);
 }
 
+u32 getVdp2VramU32(u32 offset)
+{
+    return (*(u8*)getVdp2Vram(offset) << 24) | (*(u8*)getVdp2Vram(offset + 1) << 16) | (*(u8*)getVdp2Vram(offset + 2) << 8) | (*(u8*)getVdp2Vram(offset + 3) << 0);
+}
+
 u16 getVdp2VramU16(u32 offset)
 {
     u32 high = *(u8*)getVdp2Vram(offset);
@@ -58,6 +63,11 @@ void setVdp2VramU16(u32 offset, u16 value)
 {
     *(u8*)getVdp2Vram(offset) = (value >> 8) & 0xFF;
     *(u8*)getVdp2Vram(offset+1) = value & 0xFF;
+}
+
+void setVdp2VramU8(u32 offset, u8 value)
+{
+    *(u8*)getVdp2Vram(offset) = value;
 }
 
 void setVdp2VramU32(u32 offset, u32 value)
@@ -535,8 +545,8 @@ void setupNBG1(const sLayerConfig* setup)
         case m12_PLSZ:
             vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ & 0xFFF3) | (arg << 2);
             break;
-        case m21:
-            vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL = (vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL & ~0x100) | (arg << 8);
+        case m21_LCSY:
+            vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL = (vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL & ~0x400) | (arg << 10);
             break;
         case m40_CAOS:
             vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA & 0xFF8F) | (arg << 4);
@@ -550,7 +560,7 @@ void setupNBG1(const sLayerConfig* setup)
         case m46_SCCM:
             vdp2Controls.m4_pendingVdp2Regs->mEE_SFCCMD = (vdp2Controls.m4_pendingVdp2Regs->mEE_SFCCMD & ~0xC) | (arg << 2);
             break;
-        case m45:
+        case m45_COEN:
             vdp2Controls.m4_pendingVdp2Regs->m110_CLOFEN = (vdp2Controls.m4_pendingVdp2Regs->m110_CLOFEN & ~0x2) | (arg << 1);
             break;
         default:
@@ -950,7 +960,7 @@ void initVdp2Var1()
 {
     for (int i=0; i<14; i++)
     {
-        vdpVar1[i].mF = 0;
+        vdpVar1[i].mF_isPending = 0;
     }
 }
 
@@ -961,7 +971,7 @@ void initVdp2Var2()
 {
     vdpVar2 = &vdpVar1[0];
     vdpVar3 = &vdpVar1[0];
-    vdpVar1[0].m10 = 0;
+    vdpVar1[0].m10_nextTransfert = nullptr;
 }
 
 void initVDP2()
@@ -1472,7 +1482,7 @@ void addStringToVdp2(const char* string, s_stringStatusQuery* vars)
     vars->m18_windowX2 = vdp2StringContext.mC_X + vdp2StringContext.m14_Width;
     vars->m1C_windowY2 = vdp2StringContext.m10_Y + vdp2StringContext.m18_Height;
     vars->m20_string = string;
-    vars->m24_vdp2MemoryOffset = vdp2TextMemoryOffset + ((vdp2StringContext.m8_cursorY << 6) + vdp2StringContext.m4_cursorX) * 2;
+    vars->m24_vdp2MemoryOffset = vdp2TextMemoryOffset + ((vdp2StringContext.m8_cursorY * 0x40) + vdp2StringContext.m4_cursorX) * 2;
     vars->m28 = vdp2StringContext.m0;
     vars->m2C = vdp2StringContext.m38;
 }
@@ -1497,11 +1507,24 @@ void printVdp2StringSub2(s32 r4)
     FunctionUnimplemented();
 }
 
+//
+void printVdp2StringSub1(s_stringStatusQuery* vars)
+{
+    if (vars->m2C & 1)
+    {
+        int stringLength = computeStringLength(vars->m20_string, vars->m8_windowWidth);
+        if (stringLength < vars->m8_windowWidth)
+        {
+            vars->m0_cursorX += (vars->m8_windowWidth - stringLength) / 2;
+        }
+    }
+}
+
 void printVdp2String(s_stringStatusQuery* vars)
 {
     u32 r11 = (printVdp2StringTable[vars->m28] << 12) + 0x63;
-
-    vars->m24_vdp2MemoryOffset = vdp2TextMemoryOffset + (((vars->m4_cursorY << 6) + vars->m0_cursorX)) * 2;
+    printVdp2StringSub1(vars);
+    vars->m24_vdp2MemoryOffset = vdp2TextMemoryOffset + (((vars->m4_cursorY * 0x40) + vars->m0_cursorX)) * 2;
 
     while (u8 r4 = *(vars->m20_string++))
     {
@@ -1554,10 +1577,15 @@ void printVdp2String(s_stringStatusQuery* vars)
 
 s32 computeStringLength(sSaturnPtr pString, s32 r5)
 {
+    return computeStringLength(readSaturnString(pString).c_str(), r5);
+}
+
+s32 computeStringLength(const char* pString, s32 r5)
+{
     s32 r14 = 1;
     while (r5 > r14)
     {
-        u8 r4 = readSaturnS8(pString);
+        u8 r4 = *pString;
         pString = pString + 1;
         r4 &= 0xFF;
         switch (r4)
@@ -1703,4 +1731,34 @@ void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId)
     setVdp2VramU16(offset + 0x82, glyph + 3);
 }
 
+void flushPengingVDP2Transfers()
+{
+    sVdpVar1* pTransfert = vdpVar2;
+    while (pTransfert = pTransfert->m10_nextTransfert, pTransfert != nullptr)
+    {
+        pTransfert->mF_isPending = 0;
+        if (pTransfert->mE_isDoubleBuffered == 0)
+        {
+            memcpy_dma(pTransfert->m0_source[0], pTransfert->m8_destination, pTransfert->mC_size * 0x10);
+        }
+        else
+        {
+            memcpy_dma(pTransfert->m0_source[vdp2Controls.m0_doubleBufferIndex], pTransfert->m8_destination, pTransfert->mC_size * 0x10);
+        }
+    }
+}
+
+void interruptVDP2Update()
+{
+    //vdp2Controls.m0_doubleBufferIndex ^= 1;
+    vdp2Controls.m4_pendingVdp2Regs = &vdp2Controls.m20_registers[vdp2Controls.m0_doubleBufferIndex];
+    updateVDP2Regs();
+    if (vdp2Controls.m_isDirty)
+    {
+        //dmaVDP2Regs();
+        vdp2Controls.m_isDirty = 0;
+    }
+    flushPengingVDP2Transfers();
+    initVdp2Var2();
+}
 

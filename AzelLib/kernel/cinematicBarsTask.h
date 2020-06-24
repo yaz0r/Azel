@@ -41,3 +41,5 @@ struct s_cinematicBarTask : public s_workAreaTemplate<s_cinematicBarTask>
 
 s_cinematicBarTask* createCinematicBarTask(p_workArea pParentTask);
 void setupCinematicBars(s_cinematicBarTask* pCinematicBar, s32 r5);
+void writeCinematicBarsToVdp2();
+
