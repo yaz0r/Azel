@@ -1,6 +1,8 @@
 #include "PDS.h"
 #include "commonOverlay.h"
 #include "audio/soundDataTable.h"
+#include "dragonData.h"
+#include "dragonRider.h"
 
 sCommonOverlay_data gCommonFile;
 
@@ -100,4 +102,7 @@ void sCommonOverlay_data::init()
             battleActivationList.push_back(readSaturnS8(battleActivationListEA + i));
         }
     }
+
+    loadDragonDataFromCommon();
+    loadDragonRiderDataFromCommon();
 }

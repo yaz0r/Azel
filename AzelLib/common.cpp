@@ -266,424 +266,6 @@ const s_fieldDefinition fieldDefinitions[] =
     { "  BT1 ", "FLD_A7.PRG", "FLD_A7.FNT", sizeof(m_BTFields) / sizeof(m_BTFields[0]), m_BTFields },
 };
 
-const s_dragonFileConfig dragonFilenameTable[DR_LEVEL_MAX] = {
-    //DR_LEVEL_0_BASIC_WING
-    {
-        { "DRAGON0.MCB",    "DRAGON0.CGB" },
-        { NULL,             NULL },
-        { "DRAGONC0.MCB",   "DRAGONC0.CGB" },
-    },
-
-    //DR_LEVEL_1_VALIANT_WING
-    {
-        { "DRAGON1.MCB",     "DRAGON1.CGB" },
-        { "DRAGONM1.MCB",    "DRAGONM1.CGB" },
-        { "DRAGONC1.MCB",    "DRAGONC1.CGB" },
-    },
-
-    //DR_LEVEL_2_STRIPE_WING
-    {
-        { "DRAGON2.MCB",     "DRAGON2.CGB" },
-        { "DRAGONM2.MCB",    "DRAGONM2.CGB" },
-        { "DRAGONC2.MCB",    "DRAGONC2.CGB" },
-    },
-
-    //DR_LEVEL_3_PANZER_WING
-    {
-        { "DRAGON3.MCB",     "DRAGON3.CGB" },
-        { "DRAGONM3.MCB",    "DRAGONM3.CGB" },
-        { "DRAGONC3.MCB",    "DRAGONC3.CGB" },
-    },
-
-    //DR_LEVEL_4_EYE_WING
-    {
-        { "DRAGON4.MCB",     "DRAGON4.CGB" },
-        { "DRAGONM4.MCB",    "DRAGONM4.CGB" },
-        { "DRAGONC4.MCB",    "DRAGONC4.CGB" },
-    },
-
-    //DR_LEVEL_5_ARM_WING
-    {
-        { "DRAGON5.MCB",     "DRAGON5.CGB" },
-        { "DRAGONM5.MCB",    "DRAGONM5.CGB" },
-        { NULL,              NULL },
-    },
-
-    //DR_LEVEL_6_LIGHT_WING
-    {
-        { "DRAGON6.MCB",    "DRAGON6.CGB" },
-        { NULL,             NULL },
-        { NULL,             NULL },
-    },
-
-    //DR_LEVEL_7_SOLO_WING
-    {
-        { "DRAGON7.MCB",     "DRAGON7.CGB" },
-        { "DRAGONM7.MCB",    "DRAGONM7.CGB" },
-        { NULL,              NULL },
-    },
-
-    //DR_LEVEL_8_FLOATER
-    {
-        { "KTEI.MCB",       "KTEI.CGB" },
-        { NULL,             NULL },
-        { NULL,             NULL },
-    },
-};
-
-s_RiderDefinitionSub dragon0_sub0[31] = {
-    { {0x20212C, &gCommonFile }, 2 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { {0x202154, &gCommonFile }, 1 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { {0x202168, &gCommonFile }, 1 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { {0x20217C, &gCommonFile }, 2 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-};
-
-const sDragonData3 dragonData3[DR_LEVEL_MAX] =
-{
-    //0
-    {
-        0,
-        0,
-        {
-            4,8,260,0, dragon0_sub0,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,8,260,0, (s_RiderDefinitionSub*)1,
-        }
-    },
-    //1
-    {
-        75,
-        32,
-        {
-            4,8,268,1424, (s_RiderDefinitionSub*)1,
-            4,24,1324,1424, (s_RiderDefinitionSub*)1,
-            8,28,1328,1724, (s_RiderDefinitionSub*)1,
-            12,32,1332,2024, (s_RiderDefinitionSub*)1,
-            16,36,1336,2324, (s_RiderDefinitionSub*)1,
-            20,40,1340,2624, (s_RiderDefinitionSub*)1,
-            4,8,268,1424, (s_RiderDefinitionSub*)1,
-        }
-    },
-    //2
-    {
-        77,
-        32,
-        {
-            4,8,268,1540, (s_RiderDefinitionSub*)1,
-            4,24,1324,1540, (s_RiderDefinitionSub*)1,
-            8,28,1328,1848, (s_RiderDefinitionSub*)1,
-            12,32,1332,2156, (s_RiderDefinitionSub*)1,
-            16,36,1336,2464, (s_RiderDefinitionSub*)1,
-            20,40,1340,2772, (s_RiderDefinitionSub*)1,
-            4,8,268,1540, (s_RiderDefinitionSub*)1,
-        }
-    },
-    //3
-    {
-        78,
-        31,
-        {
-            4,8,260,1612, (s_RiderDefinitionSub*)1,
-            4,24,1284,1612, (s_RiderDefinitionSub*)1,
-            8,28,1288,1924, (s_RiderDefinitionSub*)1,
-            12,32,1292,2236, (s_RiderDefinitionSub*)1,
-            16,36,1296,2548, (s_RiderDefinitionSub*)1,
-            20,40,1300,2860, (s_RiderDefinitionSub*)1,
-            4,8,260,1612, (s_RiderDefinitionSub*)1,
-        }
-    },
-    //4
-    {
-        77,
-        33,
-        {
-            4,8,276,1568, (s_RiderDefinitionSub*)1,
-            4,24,1364,1568, (s_RiderDefinitionSub*)1,
-            8,28,1368,1876, (s_RiderDefinitionSub*)1,
-            12,32,1372,2184, (s_RiderDefinitionSub*)1,
-            16,36,1376,2492, (s_RiderDefinitionSub*)1,
-            20,40,1380,2800, (s_RiderDefinitionSub*)1,
-            4,8,276,1568, (s_RiderDefinitionSub*)1,
-        }
-    },
-    //5
-    {
-        80,
-        30,
-        {
-            4,8,252,1628, (s_RiderDefinitionSub*)1,
-            4,24,1244,1628, (s_RiderDefinitionSub*)1,
-            8,28,1248,1948, (s_RiderDefinitionSub*)1,
-            12,32,1252,2268, (s_RiderDefinitionSub*)1,
-            16,36,1256,2588, (s_RiderDefinitionSub*)1,
-            20,40,1260,2908, (s_RiderDefinitionSub*)1,
-            4,0,0,0, NULL,
-        }
-    },
-    //6
-    {
-        0,
-        0,
-        {
-            4,8,220,0, (s_RiderDefinitionSub*)1,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-        }
-    },
-    //7
-    {
-        80,
-        28,
-        {
-            4,8,236,1680, (s_RiderDefinitionSub*)1,
-            4,24,1164,1680, (s_RiderDefinitionSub*)1,
-            8,28,1168,2000, (s_RiderDefinitionSub*)1,
-            12,32,1172,2320, (s_RiderDefinitionSub*)1,
-            16,36,1176,2640, (s_RiderDefinitionSub*)1,
-            20,40,1180,2960, (s_RiderDefinitionSub*)1,
-            4,0,0,0, NULL,
-        }
-    },
-    //8
-    {
-        0,
-        0,
-        {
-            4,0,192,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-            4,0,0,0, NULL,
-        }
-    },
-};
-
-const u16 dragonData2_0[] = {
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150
-};
-
-const u16 dragonData2_1[] = {
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150,
-    0x154,
-    0x158,
-};
-
-const u16 dragonData2_2[] = {
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150,
-    0x154,
-    0x158,
-};
-
-const u16 dragonData2_3[] = {
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150
-};
-
-const u16 dragonData2_4[] = {
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-    0x14C,
-    0x150,
-    0x154,
-    0x158,
-    0x15C,
-    0x160
-};
-
-const u16 dragonData2_5[] = {
-    0x104,
-    0x108,
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-    0x13C,
-    0x140,
-    0x144,
-    0x148,
-};
-
-const u16 dragonData2_6[] = {
-    0xE4,
-    0xE8,
-    0xEC,
-    0xF0,
-    0xF4,
-    0xF8,
-    0xFC,
-    0x100,
-    0x104,
-    0x108,
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-};
-
-const u16 dragonData2_7[] = {
-    0xF4,
-    0xF8,
-    0xFC,
-    0x100,
-    0x104,
-    0x108,
-    0x10C,
-    0x110,
-    0x114,
-    0x118,
-    0x11C,
-    0x120,
-    0x124,
-    0x128,
-    0x12C,
-    0x130,
-    0x134,
-    0x138,
-};
-
-const u16 dragonData2_8[] = {
-    0xD0,
-    0xD4,
-    0xD8,
-    0xDC,
-};
-
-const s_dragonData2 dragonAnimOffsets[DR_LEVEL_MAX] = {
-    { dragonData2_0, 0x12 },
-    { dragonData2_1, 0x12 },
-    { dragonData2_2, 0x12 },
-    { dragonData2_3, 0x12 },
-    { dragonData2_4, 0x12 },
-    { dragonData2_5, 0x12 },
-    { dragonData2_6, 0x12 },
-    { dragonData2_7, 0x12 },
-    { dragonData2_8, 4 },
-};
-
-s_dragonState* gDragonState = NULL;
-
 void memcpy_dma(void* src, void* dst, u32 size)
 {
     memcpy(dst, src, size);
@@ -821,6 +403,40 @@ void getVdp1LocalCoordinates(std::array<s16, 2>& r4)
 {
     r4[0] = graphicEngineStatus.m405C.m44_localCoordinatesX;
     r4[1] = graphicEngineStatus.m405C.m46_localCoordinatesY;
+}
+
+std::vector<s_hotpointDefinition>* sHotpointBundle::getData(struct s_3dModel* pModel)
+{
+    if(m_EA.isNull())
+    {
+        return nullptr;
+    }
+
+    if (m_cachedData.size())
+    {
+        assert(m_cachedData.size() == pModel->m12_numBones);
+        return &m_cachedData;
+    }
+
+    for (int i = 0; i < pModel->m12_numBones; i++)
+    {
+        s_hotpointDefinition newValue;
+        sSaturnPtr ptr = readSaturnEA(m_EA + 8 * i);
+        newValue.m4_count = readSaturnU32(m_EA + 8 * i + 4);
+        for (int j = 0; j < newValue.m4_count; j++)
+        {
+            s_hotpoinEntry entry;
+            entry.m0 = readSaturnS32(ptr + 0);
+            entry.m4 = readSaturnVec3(ptr + 4);
+            entry.m10 = readSaturnS32(ptr + 0x10);
+            ptr += 0x14;
+
+            newValue.m0.push_back(entry);
+        }
+        m_cachedData.push_back(newValue);
+    }
+
+    return &m_cachedData;
 }
 
 #ifndef SHIPPING_BUILD

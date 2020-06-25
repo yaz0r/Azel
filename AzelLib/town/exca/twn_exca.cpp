@@ -71,17 +71,17 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgWithCopy<sExcaEntity0, sSa
             s16 animationIndex = readSaturnS16(pThis->mC + 0x22);
             s16 poseIndex = readSaturnS16(pThis->mC + 0x24);
 
-            sModelHierarchy* pHierarchy = pThis->m0_dramAllocation->getModelHierarchy(modelIndex);
-            sStaticPoseData* pPose = pThis->m0_dramAllocation->getStaticPose(poseIndex, pHierarchy->countNumberOfBones());
+            sModelHierarchy* pHierarchy = pThis->m0_fileBundle->getModelHierarchy(modelIndex);
+            sStaticPoseData* pPose = pThis->m0_fileBundle->getStaticPose(poseIndex, pHierarchy->countNumberOfBones());
 
             if (animationIndex == 0)
             {
-                init3DModelRawData(pThis, &pThis->m10_3dModel, 0, pThis->m0_dramAllocation, modelIndex, nullptr, pPose, nullptr, nullptr);
+                init3DModelRawData(pThis, &pThis->m10_3dModel, 0, pThis->m0_fileBundle, modelIndex, nullptr, pPose, nullptr, nullptr);
             }
             else
             {
-                sAnimationData* pAnimation = pThis->m0_dramAllocation->getAnimation(animationIndex);
-                init3DModelRawData(pThis, &pThis->m10_3dModel, 0, pThis->m0_dramAllocation, modelIndex, pAnimation, pPose, nullptr, nullptr);
+                sAnimationData* pAnimation = pThis->m0_fileBundle->getAnimation(animationIndex);
+                init3DModelRawData(pThis, &pThis->m10_3dModel, 0, pThis->m0_fileBundle, modelIndex, pAnimation, pPose, nullptr, nullptr);
                 stepAnimation(&pThis->m10_3dModel);
             }
 

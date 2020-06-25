@@ -118,7 +118,7 @@ void registerNpcs(const std::vector<const sTownSetup*>& townSetups, sSaturnPtr r
 void drawLcsSprite(const sVec2_S16& r4, s32 r5_index)
 {
     sSaturnPtr r5_spriteData = gTWN_RUIN->getSaturnPtr(0x605EEFC + r5_index * 0x1C);
-    s32 r6 = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory;
+    s32 r6 = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
     s32 var4 = readSaturnU16(r5_spriteData + 6) + r6;
     s32 var0 = readSaturnU16(r5_spriteData + 0xA) + r6;
     s32 var8 = readSaturnS32(r5_spriteData + 0xC) >> 12;
@@ -1084,11 +1084,11 @@ void updateEdgePosition(sNPC* r4)
                 sAnimationData* buffer;
                 if (readSaturnU16(var0))
                 {
-                    buffer = dramAllocatorEnd[0].mC_buffer->m0_dramAllocation->getAnimation(offset);
+                    buffer = dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(offset);
                 }
                 else
                 {
-                    buffer = r12->m0_dramAllocation->getAnimation(offset);
+                    buffer = r12->m0_fileBundle->getAnimation(offset);
                 }
 
                 // play falling animation

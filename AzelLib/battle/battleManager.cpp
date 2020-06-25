@@ -112,7 +112,7 @@ static void  loadBattleOverlaySub0(sBattleManager* pThis)
     pThis->m6_subBattleId = sVar3;
 }
 
-static int loadBattleOverlay(sBattleManager* pThis)
+static int loadBattleOverlay_debug(sBattleManager* pThis)
 {
     vdp2DebugPrintSetPosition(3, 0x18);
     vdp2PrintStatus.m10_palette = 0xd000;
@@ -141,7 +141,7 @@ static void battleManager_Update(sBattleManager* pThis)
     case 1: // ready state, waiting for battle
         break;
     case 2: // start battle
-        if (loadBattleOverlay(pThis) != 0)
+        if (loadBattleOverlay_debug(pThis) != 0)
             return;
         pThis->m0_status = 1;
         break;

@@ -9,6 +9,8 @@ struct sSequenceConfig
     s16 mA;
     u8 mC_numMapEntries;
     u8 mD_playerSoundTypes;
+    u8 mE;
+    u8 mF;
 };
 
 void soundDataTableInit();

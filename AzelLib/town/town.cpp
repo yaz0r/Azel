@@ -94,7 +94,7 @@ npcFileDeleter* createEnvironmentTask2Sub0Sub0(p_workArea r4_parent, s32 r5)
     s_fileEntry& r14 = dramAllocatorEnd[r5];
     if (r14.m8_refcount++)
     {
-        return r14.mC_buffer;
+        return r14.mC_fileBundle;
     }
 
     // first use
@@ -127,8 +127,8 @@ npcFileDeleter* createEnvironmentTask2Sub0Sub0(p_workArea r4_parent, s32 r5)
         loadTownFile(r10_vdp1File.mFileName, getVdp1Pointer(0x25C00000 + (r13_vdp1Allocation->m4_vdp1Memory << 3)), 0);
     }
 
-    r14.mC_buffer = r12;
-    r12->m0_dramAllocation = new s_fileBundle(r11_dramAllocation);
+    r14.mC_fileBundle = r12;
+    r12->m0_fileBundle = new s_fileBundle(r11_dramAllocation);
     r12->m4_vd1Allocation = r13_vdp1Allocation;
     r12->m8 = r14.m0_fileID >> 16;
     r12->mA = r10_vdp1File.m0_fileID >> 16;
@@ -331,7 +331,7 @@ npcFileDeleter* loadNPCFile(p_workArea r4, const std::string& ramFileName, s32 r
         loadFile(vramFileName.c_str(), getVdp1Pointer((r14_vdp1Memory->m4_vdp1Memory << 3) + 0x25C00000), 0);
     }
 
-    r13->m0_dramAllocation = r12_dramMemory;
+    r13->m0_fileBundle = r12_dramMemory;
     r13->m4_vd1Allocation = r14_vdp1Memory;
     r13->mA = -1;
     r13->m8 = -1;
@@ -347,7 +347,7 @@ npcFileDeleter* loadNPCFile2(p_workArea r4, const std::string& ramFileName, s32 
     s_fileBundle* r12_dramMemory = nullptr;
     loadFile(ramFileName.c_str(), &r12_dramMemory, 0);
 
-    r13->m0_dramAllocation = r12_dramMemory;
+    r13->m0_fileBundle = r12_dramMemory;
     r13->m4_vd1Allocation = nullptr;
     r13->mA = -1;
     r13->m8 = -1;
@@ -363,12 +363,12 @@ npcFileDeleter* allocateNPC(p_workArea r4, s32 r5)
     s_fileEntry& r14 = dramAllocatorEnd[r5];
     if (r14.m8_refcount++)
     {
-        return r14.mC_buffer;
+        return r14.mC_fileBundle;
     }
 
     s_fileEntry& vdp1File = dramAllocatorEnd[r5 + 1];
-    r14.mC_buffer = loadNPCFile(r4, r14.mFileName, r14.m4_fileSize, vdp1File.mFileName, vdp1File.m4_fileSize, r5);
-    return r14.mC_buffer;
+    r14.mC_fileBundle = loadNPCFile(r4, r14.mFileName, r14.m4_fileSize, vdp1File.mFileName, vdp1File.m4_fileSize, r5);
+    return r14.mC_fileBundle;
 }
 
 void freeVdp1Block(npcFileDeleter*, s32)
@@ -481,11 +481,11 @@ void decreaseNPCRefCount(s32 r5)
         {
             assert(0);
             //loadDragonSub1Sub1(fileEntry.mC_buffer);
-            if (fileEntry.mC_buffer)
+            if (fileEntry.mC_fileBundle)
             {
-                fileEntry.mC_buffer->getTask()->markFinished();
+                fileEntry.mC_fileBundle->getTask()->markFinished();
             }
-            fileEntry.mC_buffer = nullptr;
+            fileEntry.mC_fileBundle = nullptr;
         }
     }
 }
@@ -515,7 +515,7 @@ s32 initNPC(s32 arg)
     npcData0.m68_numEnvLCSTargets = r12_environmentSetup->mC_numEnvLCSTargets;
     npcData0.m6C_LCSTargets = &r12_environmentSetup->m10_nLCSTargets;
 
-    initNPCSub0(dramAllocatorEnd[r13->m0].mC_buffer, r12_environmentSetup->m8_pGrid, r12_environmentSetup->m0_width, r12_environmentSetup->m1_height, r12_environmentSetup->m4_cellSize);
+    initNPCSub0(dramAllocatorEnd[r13->m0].mC_fileBundle, r12_environmentSetup->m8_pGrid, r12_environmentSetup->m0_width, r12_environmentSetup->m1_height, r12_environmentSetup->m4_cellSize);
 
     if (townVar0)
     {
@@ -727,7 +727,7 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
                         u16 offset = readSaturnU16(readSaturnEA(r14) + r4 * 2);
                         if (offset)
                         {
-                            addObjectToDrawList(pThis->m0_dramAllocation->get3DModel(offset));
+                            addObjectToDrawList(pThis->m0_fileBundle->get3DModel(offset));
                         }
 
                         popMatrix();
@@ -748,7 +748,7 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
 
 s32 isDataLoaded(s32 fileIndex)
 {
-    npcFileDeleter* r4 = dramAllocatorEnd[fileIndex].mC_buffer;
+    npcFileDeleter* r4 = dramAllocatorEnd[fileIndex].mC_fileBundle;
     if (r4 == nullptr)
         return 1;
     if (r4->m8 >= 0)

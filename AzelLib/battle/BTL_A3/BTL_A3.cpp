@@ -10,6 +10,8 @@
 #include "kernel/vdp1Allocator.h"
 #include "battle/battleEngine.h"
 #include "BTL_A3_data.h"
+#include "dragonData.h"
+#include "dragonRider.h"
 
 #include "BTL_A3_BaldorFormation.h"
 #include "audio/soundDriver.h"
@@ -32,26 +34,37 @@ void battle_A3_initMusic(p_workArea pThis)
 static const char* assetList[] = {
     "BATTLE.MCB",
     "BATTLE.CGB",
+
     "TUP.MCB",
     "TUP.CGB",
+
     "ENCAM.BDB",
     (char*)-1,
+
     (char*)-1,
     "A3CMN.CGB",
+
     "KEIKOKU.MCB",
     "KEIKOKU.CGB",
+
     "HEBIMUSI.MCB",
     "HEBIMUSI.CGB",
+
     "KURAGE.MCB",
     "KURAGE.CGB",
+
     "BENITATE.MCB",
     "BENITATE.CGB",
+
     "HEBISU.MCB",
     "HEBISU.CGB",
+
     "FLD_A3.MCB",
     "FLD_A3.CGB",
+
     "BTFALLA3.MCB",
     "BTFALLA3.CGB",
+
     nullptr,
     nullptr,
 };
@@ -62,10 +75,10 @@ npcFileDeleter* initMemoryForBattleSub0(p_workArea pThis, s32 fileIndex)
     fileEntry.m8_refcount++;
     if (fileEntry.m8_refcount != 1)
     {
-        return fileEntry.mC_buffer;
+        return fileEntry.mC_fileBundle;
     }
 
-    fileEntry.mC_buffer = loadNPCFile2(pThis, fileEntry.mFileName, fileEntry.m4_fileSize, fileIndex);
+    fileEntry.mC_fileBundle = loadNPCFile2(pThis, fileEntry.mFileName, fileEntry.m4_fileSize, fileIndex);
 }
 
 void initMemoryForBattle(p_workArea pThis, const char** assetList)

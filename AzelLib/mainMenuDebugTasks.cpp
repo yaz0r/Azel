@@ -12,6 +12,8 @@
 #include "audio/soundDriver.h"
 #include "commonOverlay.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "dragonData.h"
+#include "dragonRider.h"
 
 p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID);
 
@@ -41,7 +43,7 @@ struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskW
         case 0:
             if (readKeyboardToggle(0x85))
             {
-                assert(0);
+                FunctionUnimplemented();
             }
             break;
         default:
@@ -74,7 +76,6 @@ void computeDragonSprAndAglFromCursor()
         mainGameState.gameStats.m1C_dragonCursorY = 0;
         break;
     default:
-        assert(0);
         break;
     }
 
@@ -235,7 +236,6 @@ void updateFieldTaskNoBattleOverride(s_fieldTaskWorkArea* pWorkArea)
     switch (pWorkArea->m3C_fieldTaskState)
     {
     case 0:
-        break;
     case 3:
         fieldTaskUpdateSub0(pWorkArea->m36_fieldIndexMenuSelection, pWorkArea->m38_subFieldIndexMenuSelection, pWorkArea->m3A, pWorkArea->m2E_currentSubFieldIndex);
         break;
@@ -681,7 +681,7 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
             }
 
             newFileEntry.m8_refcount = 0;
-            newFileEntry.mC_buffer = 0;
+            newFileEntry.mC_fileBundle = 0;
 
             dramAllocatorEnd.push_back(newFileEntry);
 
@@ -746,9 +746,6 @@ u8* dramAllocate(u32 size)
     return NULL;
 }
 
-s_fileBundle* gDragonModel = nullptr;
-u8 gDragonVram[0x4000];
-
 void unimplementedUpdate(s_3dModel* pDragonStateData1)
 {
     assert(0);
@@ -793,7 +790,7 @@ void modeDrawFunction10Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>:
     } while (1);
 }
 
-void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, std::vector<s_hotpointDefinition>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do
     {
@@ -815,8 +812,7 @@ void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::
 
         for (u32 i = 0; i < r6->m4_count; i++)
         {
-            sSaturnPtr r4 = r6->m0_ptr + (i * 20) + 4;
-            sVec3_FP input = readSaturnVec3(r4);
+            sVec3_FP input = r6->m0[i].m4;
             sVec3_FP& output = (*r7)[i];
             transformAndAddVecByCurrentMatrix(&input, &output);
         }
@@ -852,7 +848,72 @@ void modeDrawFunction6Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::
     } while (1);
 }
 
-void submitModelToRendering(sModelHierarchy* pModelData, std::vector<sMatrix4x3>::iterator& modelMatrix, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void modeDrawFunction4Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, std::vector<s_hotpointDefinition>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+{
+    do
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pPoseData->m0_translation);
+        rotateCurrentMatrixZYX(&pPoseData->mC_rotation);
+        scaleCurrentMatrixRow0(pPoseData->m18_scale[0]);
+        scaleCurrentMatrixRow1(pPoseData->m18_scale[1]);
+        scaleCurrentMatrixRow2(pPoseData->m18_scale[2]);
+        if (pModelData->m0_3dModel)
+        {
+            addObjectToDrawList(pModelData->m0_3dModel);
+        }
+
+        assert((*r7).size() == r6->m4_count);
+
+        if (r6->m4_count == 0)
+        {
+            assert((*r7).size() == 0);
+        }
+
+        for (u32 i = 0; i < r6->m4_count; i++)
+        {
+            sVec3_FP input = r6->m0[i].m4;
+            sVec3_FP& output = (*r7)[i];
+            transformAndAddVecByCurrentMatrix(&input, &output);
+        }
+
+        if (pModelData->m4_subNode)
+        {
+            // next matrix
+            pPoseData++;
+            // next bone stuff
+            r6++;
+            // next ???
+            r7++;
+
+            modeDrawFunction4Sub1(pModelData->m4_subNode, pPoseData, r6, r7);
+        }
+
+        popMatrix();
+
+        // End of model
+        if (pModelData->m8_nextNode == nullptr)
+        {
+            return;
+        }
+
+        // next matrix
+        pPoseData++;
+        // next bone stuff
+        r6++;
+        // next ???
+        r7++;
+
+        pModelData = pModelData->m8_nextNode;
+    } while (1);
+}
+
+void modeDrawFunction4Sub2(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData, std::vector<s_hotpointDefinition>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+{
+    PDS_unimplemented("modeDrawFunction4Sub2");
+}
+
+void submitModelToRendering(sModelHierarchy* pModelData, std::vector<sMatrix4x3>::iterator& modelMatrix, std::vector<s_hotpointDefinition>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do 
     {
@@ -873,8 +934,7 @@ void submitModelToRendering(sModelHierarchy* pModelData, std::vector<sMatrix4x3>
 
         for (u32 i = 0; i < r6->m4_count; i++)
         {
-            sSaturnPtr r4 = r6->m0_ptr + (i * 20) + 4;
-            sVec3_FP input = readSaturnVec3(r4);
+            sVec3_FP input = r6->m0[i].m4;
             sVec3_FP& output = (*r7)[i];
             transformAndAddVecByCurrentMatrix(&input, &output);
         }
@@ -918,7 +978,7 @@ void modelDrawFunction1(s_3dModel* pDragonStateData1)
 {
     std::vector<std::vector<sVec3_FP>>::iterator var_0 = pDragonStateData1->m44_hotpointData.begin();
     std::vector<sMatrix4x3>::iterator var_8 = pDragonStateData1->m3C_boneMatrices.begin();
-    const s_RiderDefinitionSub* var_4 = pDragonStateData1->m40;
+    std::vector<s_hotpointDefinition>::iterator var_4 = pDragonStateData1->m40->begin();
 
     if (pDragonStateData1->m8 & 1)
     {
@@ -939,6 +999,22 @@ void modelDrawFunction3(s_3dModel* pModel)
 {
     unimplementedDraw(pModel);
 }
+void modelDrawFunction4(s_3dModel* pModel)
+{
+    std::vector<std::vector<sVec3_FP>>::iterator var_0 = pModel->m44_hotpointData.begin();
+    std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
+    std::vector<s_hotpointDefinition>::iterator var_4 = pModel->m40->begin();
+    sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
+
+    if (pModel->m8 & 1)
+    {
+        modeDrawFunction4Sub1(r4, pPoseData, var_4, var_0);
+    }
+    else
+    {
+        modeDrawFunction4Sub2(r4, pPoseData, var_4, var_0);
+    }
+}
 void modelDrawFunction5(s_3dModel* pModel)
 {
     unimplementedDraw(pModel);
@@ -947,7 +1023,7 @@ void modelDrawFunction6(s_3dModel* pModel)
 {
     std::vector<std::vector<sVec3_FP>>::iterator var_0 = pModel->m44_hotpointData.begin();
     std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
-    const s_RiderDefinitionSub* var_4 = pModel->m40;
+    std::vector<s_hotpointDefinition>::iterator var_4 = pModel->m40->begin();
     sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
 
     if (pModel->m8 & 1)
@@ -1076,7 +1152,14 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
         {
             if (pDragonStateData1->mA_animationFlags & 0x20)
             {
-                assert(0);
+                if (pDragonStateData1->m38_pColorAnim)
+                {
+                    assert(0);
+                }
+                else
+                {
+                    pDragonStateData1->m18_drawFunction = modelDrawFunction4;
+                }
             }
             else
             {
@@ -1133,13 +1216,13 @@ void countNumBonesInModel(s_3dModel* p3dModel, sModelHierarchy* pHierarchy)
     }while (true);
 }
 
-bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDefinitionSub* unkArg)
+bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, sHotpointBundle* unkArg)
 {
-    pDragonStateData1->m40 = unkArg;
+    pDragonStateData1->m40 = unkArg->getData(pDragonStateData1);
 
     pDragonStateData1->m44_hotpointData.resize(pDragonStateData1->m12_numBones);
 
-    const s_RiderDefinitionSub* r12 = pDragonStateData1->m40;
+    std::vector<s_hotpointDefinition>::iterator r12 = pDragonStateData1->m40->begin();
 
     for(u32 i=0; i<pDragonStateData1->m12_numBones; i++)
     {
@@ -1158,7 +1241,7 @@ bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, const s_RiderDe
     return true;
 }
 
-bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, sAnimationData* pAnimationData, sStaticPoseData* pDefaultPose, u8* colorAnim, const s_RiderDefinitionSub* unkArg3)
+bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, sAnimationData* pAnimationData, sStaticPoseData* pDefaultPose, u8* colorAnim, sHotpointBundle* unkArg3)
 {
     p3dModel->m0_pOwnerTask = pWorkArea;
     p3dModel->m4_pModelFile = pDragonBundle;
@@ -1208,7 +1291,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animatio
     }
     else
     {
-        p3dModel->m40 = 0;
+        p3dModel->m40 = nullptr;
     }
 
     if (pAnimationData)
@@ -1231,466 +1314,6 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animatio
     p3dModel->m1C_addToDisplayListFunction = addObjectToDrawList;
 
     return true;
-}
-
-struct sDragonAnimDataSub
-{
-    s32 count;
-    const sDragonAnimDataSubRanges* m_data;
-};
-
-struct sDragonAnimData
-{
-    const sDragonAnimDataSub* m_0;
-    const sDragonAnimDataSub* m_4;
-    const sDragonAnimDataSub* m_8;
-    const sDragonAnimDataSub* m_C;
-};
-
-const sDragonAnimDataSubRanges dragon0AnimsData0 =
-{
-    {0x2423, 0x2423, 0x2423},
-    {0xB800, 0xB800, 0xB800},
-    {0xE38E38, 0xE38E38, 0xE38E38},
-    {-0xE38E38, -0xE38E38, -0xE38E38},
-};
-const sDragonAnimDataSubRanges dragon0AnimsData1 =
-{
-    {0x400, 0x400, 0x400},
-    {0x1000, 0x1000, 0x1000},
-    {0xE38E38, 0xE38E38, 0xE38E38},
-    {-0xE38E38, -0xE38E38, -0xE38E38},
-};
-
-const sDragonAnimDataSub dragon0Anims0[1] =
-{
-    { 0x01, &dragon0AnimsData0 },
-};
-
-const sDragonAnimDataSub dragon0Anims1[] =
-{
-    { 0x0E, &dragon0AnimsData1 },
-    { 0x0F, &dragon0AnimsData1 },
-    { 0x10, &dragon0AnimsData1 },
-    { 0x11, &dragon0AnimsData1 },
-    { -1, NULL },
-};
-
-const sDragonAnimDataSub dragon0Anims2[] =
-{
-    { 0x02, &dragon0AnimsData0 },
-    { 0x03, &dragon0AnimsData0 },
-    { 0x04, &dragon0AnimsData0 },
-    { 0x05, &dragon0AnimsData0 },
-    { 0x06, &dragon0AnimsData0 },
-    { -1, NULL },
-};
-
-const sDragonAnimData dragon0Anims =
-{
-    dragon0Anims0,
-    dragon0Anims1,
-    dragon0Anims2,
-    NULL,
-};
-
-const sDragonAnimData* dragonAnimData[DR_ANIM_MAX] =
-{
-    &dragon0Anims,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-    (const sDragonAnimData*)1,
-};
-
-u32 countNumAnimData(s3DModelAnimData* pDragonStateData2, const sDragonAnimData* dragonAnims)
-{
-    pDragonStateData2->count0 = 0;
-    pDragonStateData2->count1 = 0;
-    pDragonStateData2->count2 = 0;
-
-    const sDragonAnimDataSub* r6 = dragonAnims->m_4;
-    if (r6)
-    {
-        while (r6->count >= 0)
-        {
-            pDragonStateData2->count0++;
-            r6++;
-        }
-    }
-
-    r6 = dragonAnims->m_8;
-    if (r6)
-    {
-        while (r6->count >= 0)
-        {
-            pDragonStateData2->count1++;
-            r6++;
-        }
-    }
-
-    r6 = dragonAnims->m_C;
-    if (r6)
-    {
-        while (r6->count >= 0)
-        {
-            pDragonStateData2->count2++;
-            r6++;
-        }
-    }
-
-    return pDragonStateData2->count0 + pDragonStateData2->count1 + pDragonStateData2->count2 + 1;
-}
-
-void copyAnimMatrix(const sDragonAnimDataSubRanges* source, sDragonAnimDataSubRanges* destination)
-{
-    *destination = *source;
-}
-
-void initRuntimeAnimDataSub1(const sDragonAnimDataSub* animDataSub, s_runtimeAnimData* subData)
-{
-    subData->m0_root.zeroize();
-    subData->m_vec_C.zeroize();
-    subData->m_vec_18.zeroize();
-    subData->m24_rootDelta.zeroize();
-
-    copyAnimMatrix(animDataSub->m_data, &subData->m_factors);
-
-    subData->dataSource = animDataSub;
-}
-
-void initRuntimeAnimData(const sDragonAnimData* dragonAnims, s_runtimeAnimData* subData)
-{
-    initRuntimeAnimDataSub1(dragonAnims->m_0, &subData[0]);
-    u32 r14 = 1;
-
-    if (dragonAnims->m_4)
-    {
-        const sDragonAnimDataSub* r12 = dragonAnims->m_4;
-
-        while (r12->count >= 0)
-        {
-            initRuntimeAnimDataSub1(r12, &subData[r14]);
-            r14++;
-            r12++;
-        }
-    }
-    
-    if (dragonAnims->m_8)
-    {
-        const sDragonAnimDataSub* r12 = dragonAnims->m_8;
-
-        while (r12->count >= 0)
-        {
-            initRuntimeAnimDataSub1(r12, &subData[r14]);
-            r14++;
-            r12++;
-        }
-    }
-
-    if (dragonAnims->m_C)
-    {
-        const sDragonAnimDataSub* r12 = dragonAnims->m_C;
-
-        while (r12->count >= 0)
-        {
-            initRuntimeAnimDataSub1(r12, &subData[r14]);
-            r14++;
-            r12++;
-        }
-    }
-}
-
-void init3DModelAnims(s_dragonState* pDragonState, s_3dModel* pDragonStateData1, s3DModelAnimData* p3DModelAnimData, const sDragonAnimData* dragonAnims)
-{
-    p3DModelAnimData->m0_animData = dragonAnims;
-
-    p3DModelAnimData->countAnims = countNumAnimData(p3DModelAnimData, dragonAnims);
-
-    p3DModelAnimData->m4_boneMatrices = &pDragonStateData1->m3C_boneMatrices;
-
-    p3DModelAnimData->m8_runtimeAnimData = static_cast<s_runtimeAnimData*>(allocateHeapForTask(pDragonState, p3DModelAnimData->countAnims * sizeof(s_runtimeAnimData)));
-
-    initRuntimeAnimData(dragonAnims, p3DModelAnimData->m8_runtimeAnimData);
-}
-
-const sDragonAnimData* getDragonDataByIndex(e_dragonLevel dragonLevel)
-{
-    return dragonAnimData[dragonLevel];
-}
-
-void loadDragonSoundBank(e_dragonLevel dragonLevel)
-{
-    //assert(0);
-}
-
-void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
-{
-    const sDragonData3* pDragonData3 = &dragonData3[dragonLevel];
-    const s_dragonData2* pDragonAnimOffsets = &dragonAnimOffsets[dragonLevel];
-
-    s_dragonState* pDragonState = createSubTaskFromFunction<s_dragonState>(pWorkArea, nullptr);
-
-    pDragonState->m0_pDragonModelBundle = gDragonModel;
-    pDragonState->mC_dragonType = dragonLevel;
-    pDragonState->m14_modelIndex = pDragonData3->m_m8[0].m_m0[0];
-    pDragonState->m18_shadowModelIndex = pDragonData3->m_m8[0].m_m0[1];
-    pDragonState->m20_dragonAnimOffsets = pDragonAnimOffsets->m_data;
-    pDragonState->m24_dragonAnimCount = pDragonAnimOffsets->m_count;
-    pDragonState->m88 = 1;
-
-    sAnimationData* pDefaultAnimationData = pDragonState->m0_pDragonModelBundle->getAnimation(pDragonState->m20_dragonAnimOffsets[0]);
-    sStaticPoseData* defaultPose = pDragonState->m0_pDragonModelBundle->getStaticPose(pDragonData3->m_m8[0].m_m0[2], pDefaultAnimationData->m2_numBones);
-
-    init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonState->m0_pDragonModelBundle, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m_m8);
-
-    init3DModelAnims(pDragonState, &pDragonState->m28_dragon3dModel, &pDragonState->m78_animData, getDragonDataByIndex(dragonLevel));
-
-    loadDragonSoundBank(dragonLevel);
-
-    gDragonState = pDragonState;
-}
-
-void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
-{
-    loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, &gDragonModel, 0x2400);
-    loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, getVdp1Pointer(0x25C12000), NULL);
-
-    createDragon3DModel(pWorkArea, dragonLevel);
-}
-
-s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
-{
-    s_loadDragonWorkArea* pLoadDragonWorkArea = createSubTaskFromFunction<s_loadDragonWorkArea>(pWorkArea, nullptr);
-
-    pLoadDragonWorkArea->m8_dramAllocation = dramAllocate(0x1F600);
-    pLoadDragonWorkArea->m4_vramAllocation = NULL;
-    pLoadDragonWorkArea->m8_MCBInDram = pLoadDragonWorkArea->m8_dramAllocation + 0x18E00;
-
-    if (dragonFilenameTable[dragonLevel].m_M.MCB)
-    {
-        assert(0);
-        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->m8_dramAllocation, 0/*pLoadDragonWorkArea->m8_MCBInDram >> 3*/);
-        loadFile(dragonFilenameTable[dragonLevel].m_M.CGB, pLoadDragonWorkArea->m8_MCBInDram, 0);
-
-    }
-    return pLoadDragonWorkArea;
-}
-
-void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u8* pMCB, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY)
-{
-    if (pDragonData3->m_m0 == 0)
-    {
-        return;
-    }
-
-    const sDragonData3Sub* r13 = &pDragonData3->m_m8[1];
-    const sDragonData3Sub* r11 = &pDragonData3->m_m8[5];
-
-    assert(false);
-}
-
-void dramFree(u8* ptr)
-{
-    PDS_unimplemented("dramFree not implemented");
-}
-
-void vdp1Free(u8* ptr)
-{
-    PDS_unimplemented("vdp1Free not implemented");
-}
-
-void loadDragonSub1Sub1(s_loadDragonWorkArea* pLoadDragonWorkArea)
-{
-    /*
-    if (pLoadDragonWorkArea->MCBOffsetInDram >= 0)
-    {
-        deleteLoadedFile(pLoadDragonWorkArea->MCBOffsetInDram);
-        pLoadDragonWorkArea->MCBOffsetInDram = -1;
-    }
-
-    if (pLoadDragonWorkArea->CGBOffsetInDram >= 0)
-    {
-        deleteLoadedFile(pLoadDragonWorkArea->CGBOffsetInDram);
-        CGBOffsetInDram->MCBOffsetInDram = -1;
-    }
-    */
-    if (pLoadDragonWorkArea->m8_dramAllocation)
-    {
-        dramFree(pLoadDragonWorkArea->m8_dramAllocation);
-        pLoadDragonWorkArea->m8_dramAllocation = NULL;
-    }
-
-    if (pLoadDragonWorkArea->m4_vramAllocation)
-    {
-        vdp1Free(pLoadDragonWorkArea->m4_vramAllocation);
-        pLoadDragonWorkArea->m4_vramAllocation = NULL;
-    }
-}
-
-void loadDragonSub1(s_loadDragonWorkArea* pLoadDragonWorkArea)
-{
-    if (pLoadDragonWorkArea)
-    {
-        loadDragonSub1Sub1(pLoadDragonWorkArea);
-
-        pLoadDragonWorkArea->getTask()->markFinished();
-    }
-}
-
-void loadDragon(s_workArea* pWorkArea)
-{
-    const sDragonData3* pDragonData3 = &dragonData3[mainGameState.gameStats.m1_dragonLevel];
-
-    loadDragonFiles(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
-
-    updateDragonStatsFromLevel();
-
-    gDragonState->m10_cursorX = mainGameState.gameStats.m1A_dragonCursorX;
-    gDragonState->m12_cursorY = mainGameState.gameStats.m1C_dragonCursorY;
-    gDragonState->m1C_dragonArchetype = mainGameState.gameStats.dragonArchetype;
-
-    s_loadDragonWorkArea* pLoadDragonWorkArea = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
-
-    morphDragon(pLoadDragonWorkArea, &gDragonState->m28_dragon3dModel, pLoadDragonWorkArea->m8_MCBInDram, pDragonData3, mainGameState.gameStats.m1A_dragonCursorX, mainGameState.gameStats.m1C_dragonCursorY);
-
-    loadDragonSub1(pLoadDragonWorkArea);
-}
-
-const s_RiderDefinitionSub gEdgeExtraData[] =
-{
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { NULL, 0 },
-    { { 0x2020E8, &gCommonFile }, 1 },
-};
-
-const s_RiderDefinition gRiderTable[] = {
-    { "RIDER0.MCB",  NULL,          0x4,    0x08, NULL},
-    { "EDGE.MCB",   "EDGE.CGB",     0x4,    0x28, gEdgeExtraData },
-    { "GUSH.MCB",   "GUSH.CGB",     0x4,    0x20, NULL },
-    { "PAET.MCB",   "PAET.CGB",     0x4,    0x20, NULL },
-    { "AZCT.MCB",   "AZCT.CGB",     0x4,    0x20, NULL },
-    { "AZEL.MCB",   "AZEL.CGB",     0x4,    0x20, NULL },
-    { NULL,         NULL,           0x8,    0xC4, (s_RiderDefinitionSub*)1 },
-    { NULL,         NULL,           0xC,    0xC8, NULL },
-};
-
-s_loadRiderWorkArea* pRider1State = NULL;
-s_loadRiderWorkArea* pRider2State = NULL;
-
-s_fileBundle* riderModel = nullptr;
-s_fileBundle* rider2Model = nullptr;
-
-s_loadRiderWorkArea* loadRider(s_workArea* pWorkArea, u8 riderType)
-{
-    const s_RiderDefinition* r13 = &gRiderTable[riderType];
-
-    sAnimationData* pAnimation = NULL;
-
-    s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
-
-    pLoadRiderWorkArea->m4 = 0;
-    pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
-    pLoadRiderWorkArea->mC_riderType = riderType;
-    pLoadRiderWorkArea->m10_modelIndex = r13->m_flags;
-
-    pRider1State = pLoadRiderWorkArea;
-
-    if (riderType < 6)
-    {
-        if (riderType == 1)
-        {
-            pLoadRiderWorkArea->m14_weaponModelIndex = 0x24;
-        }
-        else
-        {
-            pLoadRiderWorkArea->m14_weaponModelIndex = 0;
-        }
-
-        loadFile(r13->m_MCBName, &riderModel, 0x2C00);
-        pLoadRiderWorkArea->m0_riderBundle = riderModel;
-
-        if (r13->m_CGBName)
-        {
-            loadFile(r13->m_CGBName, getVdp1Pointer(0x25C16000), 0);
-        }
-    }
-    else
-    {
-        assert(0);
-    }
-
-    s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
-    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m10_modelIndex)->countNumberOfBones());
-
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m10_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
-
-    return pLoadRiderWorkArea;
-}
-
-s_loadRiderWorkArea* loadRider2(s_workArea* pWorkArea, u8 riderType)
-{
-    const s_RiderDefinition* r13 = &gRiderTable[riderType];
-
-    sAnimationData* pAnimation = NULL;
-
-    s_loadRiderWorkArea* pLoadRiderWorkArea = createSubTaskFromFunction < s_loadRiderWorkArea>(pWorkArea, nullptr);
-
-    pLoadRiderWorkArea->m4 = 0;
-    pLoadRiderWorkArea->m_ParentWorkArea = pWorkArea;
-    pLoadRiderWorkArea->mC_riderType = riderType;
-    pLoadRiderWorkArea->m10_modelIndex = r13->m_flags;
-
-    pRider2State = pLoadRiderWorkArea;
-
-    if (riderType < 6)
-    {
-        if (riderType == 1)
-        {
-            pLoadRiderWorkArea->m14_weaponModelIndex = 0x24;
-        }
-        else
-        {
-            pLoadRiderWorkArea->m14_weaponModelIndex = 0;
-        }
-
-        loadFile(r13->m_MCBName, &rider2Model, 0x2E80);
-        pLoadRiderWorkArea->m0_riderBundle = rider2Model;
-
-        if (r13->m_CGBName)
-        {
-            loadFile(r13->m_CGBName, getVdp1Pointer(0x25C17400), 0);
-        }
-    }
-    else
-    {
-        assert(0);
-    }
-
-    s_fileBundle* pBundle = pLoadRiderWorkArea->m0_riderBundle;
-    sStaticPoseData* pDefaultPose = pBundle->getStaticPose(r13->mA_offsetToDefaultPose, pBundle->getModelHierarchy(pLoadRiderWorkArea->m10_modelIndex)->countNumberOfBones());
-
-    init3DModelRawData(pLoadRiderWorkArea, &pLoadRiderWorkArea->m18_3dModel, 0, pBundle, pLoadRiderWorkArea->m10_modelIndex, pAnimation, pDefaultPose, 0, r13->m_pExtraData);
-
-    return pLoadRiderWorkArea;
-}
-
-void loadCurrentRider(s_workArea* pWorkArea)
-{
-    loadRider(pWorkArea, mainGameState.gameStats.m2_rider1);
-}
-
-void loadCurrentRider2(s_workArea* pWorkArea)
-{
-    loadRider2(pWorkArea, mainGameState.gameStats.m3_rider2);
 }
 
 void updateDragonIfCursorChanged(u32 level)
@@ -2243,7 +1866,7 @@ void menuGraphicsTaskDrawSub1()
 
     u32 backScreenTableOffset = vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0x7FFFF;
     graphicEngineStatus.m40E4->m400 = getVdp2VramU16(backScreenTableOffset);
-    graphicEngineStatus.m40E4->m402 = pVdp2StringControl->f0_index;
+    graphicEngineStatus.m40E4->m402 = pVdp2StringControl->m0_index;
 }
 
 sLayerConfig menuNBG01Setup[] =
@@ -3039,9 +2662,9 @@ void s_mainMenuWorkArea::Init(s_mainMenuWorkArea* pWorkArea)
 
     mainMenuTaskInitSub4(pWorkArea);
 
-    pWorkArea->m1 = vblankData.m14;
+    pWorkArea->m1 = vblankData.m14_numVsyncPerFrame;
 
-    vblankData.m14 = 1;
+    vblankData.m14_numVsyncPerFrame = 1;
 
     fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
     fadePalette(&g_fadeControls.m24_fade1, 0xC210, 0xC210, 1);
@@ -3552,7 +3175,7 @@ void playAnimationGenericSub1Sub0(sModelHierarchy* pModelData, std::vector<sPose
     } while (1);
 }
 
-void playAnimationGenericSub0Sub0(sModelHierarchy* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14, const s_RiderDefinitionSub*& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
+void playAnimationGenericSub0Sub0(sModelHierarchy* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14, std::vector<s_hotpointDefinition>::iterator& r6, std::vector<std::vector<sVec3_FP>>::iterator& r7)
 {
     do
     {
@@ -3570,8 +3193,7 @@ void playAnimationGenericSub0Sub0(sModelHierarchy* pModelData, std::vector<sPose
 
         for (u32 i = 0; i < r6->m4_count; i++)
         {
-            sSaturnPtr r4 = r6->m0_ptr + (i * 20) + 4;
-            sVec3_FP input = readSaturnVec3(r4);
+            sVec3_FP input = r6->m0[i].m4;
             sVec3_FP& output = (*r7)[i];
             transformAndAddVecByCurrentMatrix(&input, &output);
         }
@@ -3614,7 +3236,7 @@ void playAnimationGenericSub0(s_3dModel* pModel)
     if (pModel->m8 & 1)
     {
         std::vector<sPoseDataInterpolation>::iterator r5 = pModel->m48_poseDataInterpolation.begin();
-        const s_RiderDefinitionSub* r6 = pModel->m40;
+        std::vector<s_hotpointDefinition>::iterator r6 = pModel->m40->begin();
         std::vector<std::vector<sVec3_FP>>::iterator r7 = pModel->m44_hotpointData.begin();
         playAnimationGenericSub0Sub0(r4, r5, r6, r7);
     }

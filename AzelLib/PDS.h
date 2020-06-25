@@ -308,6 +308,7 @@ s32 sqrt_I(s32 r4);
 void initFileLayoutTable();
 
 extern bool hasEncounterData;
+extern u8 encounterTaskVar0;
 
 #include "trigo.h"
 

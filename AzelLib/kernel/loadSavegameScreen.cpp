@@ -467,8 +467,8 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
         pThis->m18->m0_selectedEntry = pThis->m14_selectedDevice;
         pThis->m24 = createMenuCursorTask2(pThis, &saveMenuData2);
         pThis->m24->m0 = pThis->m20_selectedFileInDevice;
-        pThis->m0 = vblankData.m14;
-        vblankData.m14 = 1;
+        pThis->m0 = vblankData.m14_numVsyncPerFrame;
+        vblankData.m14_numVsyncPerFrame = 1;
 
         fadePalette(&g_fadeControls.m0_fade0, 0xC210, 0xC210, 1);
         fadePalette(&g_fadeControls.m24_fade1, 0xC210, 0xC210, 1);

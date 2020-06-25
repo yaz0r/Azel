@@ -65,7 +65,7 @@ void sGunShotTask_Init(sGunShotTask* pThis, sGunArg* arg)
     }
 
     pThis->m65 = arg->mE;
-    pThis->m90_vdp1Memory = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory;
+    pThis->m90_vdp1Memory = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
 
     if ((pThis->m65 & 1) == 0)
     {

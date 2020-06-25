@@ -173,12 +173,12 @@ void setVdp2TableAddress(int p1, u8* vdp2Dest)
 void setupScrollAndRotation(int p1, void* p2, void* p3, u8* coefficientTableAddress, u8 p5)
 {
     sVdpVar1& dest = vdpVar1[p1];
-    dest.mE = 1;
-    dest.m0 = &p2;
-    dest.m4 = &p3;
-    dest.m8 = coefficientTableAddress;
-    dest.mC = p5;
-    dest.m10 = 0;
+    dest.mE_isDoubleBuffered = 1;
+    dest.m0_source[0] = &p2;
+    dest.m0_source[1] = &p3;
+    dest.m8_destination = coefficientTableAddress;
+    dest.mC_size = p5;
+    dest.m10_nextTransfert = 0;
 
     setVdp2TableAddress(p1, coefficientTableAddress);
 }
@@ -471,7 +471,7 @@ void sBattleEnvironmentGridCell_Draw(sTownCellTask* pThis)
                     u16 offset = readSaturnU16(readSaturnEA(r14) + r4 * 2);
                     if (offset)
                     {
-                        addObjectToDrawList(pThis->m0_dramAllocation->get3DModel(offset));
+                        addObjectToDrawList(pThis->m0_fileBundle->get3DModel(offset));
                     }
 
                     popMatrix();
@@ -589,8 +589,8 @@ static void BTL_A3_map6_Init(s_BTL_A3_Env* pThis)
     BTL_A3_Env_InitVdp2(pThis);
 
     allocateNPC(pThis, 8);
-    initGridForBattle(dramAllocatorEnd[8].mC_buffer, g_BTL_A3->m_map6, 2, 2, 0x400000);
-    pThis->m58 = dramAllocatorEnd[8].mC_buffer;
+    initGridForBattle(dramAllocatorEnd[8].mC_fileBundle, g_BTL_A3->m_map6, 2, 2, 0x400000);
+    pThis->m58 = dramAllocatorEnd[8].mC_fileBundle;
 
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
 

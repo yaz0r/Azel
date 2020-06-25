@@ -5,6 +5,8 @@
 #include "battle/battleManager.h"
 #include "audio/soundDriver.h"
 #include "commonOverlay.h"
+#include "dragonData.h"
+#include "dragonRider.h"
 
 u8 array_24BCA0[0x104];
 u8 array_250000[0x20000];
@@ -174,7 +176,7 @@ void moduleManager_Init(s_moduleManager* pWorkArea, s32 menuID)
 
 void moduleManager_Update(s_moduleManager*)
 {
-    mainGameState.gameStats.frameCounter += vblankData.mC;
+    mainGameState.gameStats.frameCounter += vblankData.mC_numFramesPresented;
 }
 
 s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)

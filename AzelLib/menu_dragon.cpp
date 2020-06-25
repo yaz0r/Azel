@@ -92,7 +92,7 @@ struct s_dragonMenuWorkArea : public s_workAreaTemplate<s_dragonMenuWorkArea>
 void s_dragonMenuWorkArea::dragonMenuTaskInit(s_dragonMenuWorkArea* pThis)
 {
     graphicEngineStatus.m40AC.m9 = 3;
-    pThis->m4 = vblankData.m14;
+    pThis->m4 = vblankData.m14_numVsyncPerFrame;
 
     createSubTask<s_dragonMenuSubTask1WorkArea>(pThis);
 }
@@ -366,7 +366,7 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
         }
         pWorkArea->m0++;
     case 2:
-        vblankData.m14 = 2;
+        vblankData.m14_numVsyncPerFrame = 2;
         
         pWorkArea->mC = createDragonMenuMorhTask(pWorkArea);
 
@@ -395,7 +395,7 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
                 pWorkArea->m18->getTask()->markFinished();
             }
 
-            vblankData.m14 = pWorkArea->m4;
+            vblankData.m14_numVsyncPerFrame = pWorkArea->m4;
             if (graphicEngineStatus.m40AC.m0_menuId != 1)
             {
                 fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);

@@ -518,6 +518,11 @@ void computePosition(u32 patternX, u32 patternY, u32 patternDimension, u32 cellX
 
 struct s_layerData
 {
+    s_layerData()
+    {
+        lineScrollEA = 0;
+    }
+
     u32 CHSZ;
     u32 CHCN;
     u32 PNB;
@@ -530,6 +535,8 @@ struct s_layerData
 
     s32 scrollX;
     s32 scrollY;
+
+    s32 lineScrollEA;
 };
 
 void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
@@ -647,6 +654,7 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         glUniform1i(glGetUniformLocation(gVDP2Program, "scrollX"), layerData.scrollX);
         glUniform1i(glGetUniformLocation(gVDP2Program, "scrollY"), layerData.scrollY);
         glUniform1i(glGetUniformLocation(gVDP2Program, "outputHeight"), textureHeight);
+        glUniform1i(glGetUniformLocation(gVDP2Program, "lineScrollEA"), layerData.lineScrollEA);
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
@@ -701,14 +709,20 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
         break;
     }
 
-    layerData.planeOffsets[0] = 0x62800 + 540;
-
     for (u32 rawOutputY = 0; rawOutputY < textureHeight; rawOutputY++)
     {
         for (u32 rawOutputX = 0; rawOutputX < textureWidth; rawOutputX++)
         {
-            s32 outputX = rawOutputX + layerData.scrollX;
-            s32 outputY = rawOutputY + layerData.scrollY;
+            s32 outputX = rawOutputX;
+            s32 outputY = rawOutputY;
+
+            if (layerData.lineScrollEA)
+            {
+                outputY = getVdp2VramU32(layerData.lineScrollEA + rawOutputY * 4) >> 16;
+            }
+
+            outputX += layerData.scrollX;
+            outputY += layerData.scrollY;
 
             if (outputX < 0)
                 continue;
@@ -957,6 +971,11 @@ void renderBG1(u32 width, u32 height, bool bGPU)
         planeData.planeOffsets[1] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m44_MPABN1 >> 8) & 0x3F)) * pageSize;
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 >> 8) & 0x3F)) * pageSize;
+
+        if (vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL & 0x400)
+        {
+            planeData.lineScrollEA = getVdp2VramOffset(vdp2Controls.m4_pendingVdp2Regs->mA4_LSTA1) - 0x25E00000;
+        }
 
         if (!bGPU)
         {

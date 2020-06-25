@@ -209,7 +209,9 @@ void modelMode1_position0(s_3dModel* p3dModel)
     {
         if (p3dModel->m8 & 4)
         {
-            assert(0);
+            r13_pPoseData->m0_translation[0] = stepAnimationTrack(r13_pPoseData->m48[0], r14.m14_trackData[0], r14.m0_tracksLength[0]);
+            r13_pPoseData->m0_translation[1] = stepAnimationTrack(r13_pPoseData->m48[1], r14.m14_trackData[1], r14.m0_tracksLength[1]);
+            r13_pPoseData->m0_translation[2] = stepAnimationTrack(r13_pPoseData->m48[2], r14.m14_trackData[2], r14.m0_tracksLength[2]);
         }
         else
         {
@@ -336,11 +338,6 @@ void modelMode5_position1(s_3dModel* p3dModel)
             pPoseData[i].m0_translation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], r13->m14_trackData[2], r13->m0_tracksLength[2]);
             r13++;
         }
-
-        if (p3dModel->m30_pCurrentAnimation->m4_numFrames - 1 <= p3dModel->m10_currentAnimationFrame)
-        {
-            return;
-        }
     }
     else
     {
@@ -348,13 +345,18 @@ void modelMode5_position1(s_3dModel* p3dModel)
         {
             pPoseData[i].m0_translation += pPoseData[i].m24_halfTranslation;
         }
+    }
 
-        if (p3dModel->m30_pCurrentAnimation->m4_numFrames - 1 <= p3dModel->m10_currentAnimationFrame)
+    if (p3dModel->m30_pCurrentAnimation->m4_numFrames - 1 > p3dModel->m10_currentAnimationFrame)
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
-            return;
+            const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
+            pPoseData[i].m24_halfTranslation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]) / 4;
+            pPoseData[i].m24_halfTranslation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]) / 4;
+            pPoseData[i].m24_halfTranslation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], r13.m14_trackData[2], r13.m0_tracksLength[2]) / 4;
         }
     }
-    assert(0);
 }
 
 void modelMode5_rotation(s_3dModel* p3dModel)
@@ -403,9 +405,37 @@ void modelMode5_rotation(s_3dModel* p3dModel)
     }
 }
 
-void modelMode5_scale(s_3dModel* pDragonStateData1)
+// TODO: recheck that
+void modelMode5_scale(s_3dModel* p3dModel)
 {
-    FunctionUnimplemented();
+    sPoseData& r14_pPoseData = p3dModel->m2C_poseData[0];
+    const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[0];
+    sStaticPoseData* r4 = p3dModel->m34_pDefaultPose;
+
+    if (p3dModel->m10_currentAnimationFrame & 3)
+    {
+        r14_pPoseData.m18_scale += r14_pPoseData.m3C_halfScale;
+    }
+    else
+    {
+        if (p3dModel->m10_currentAnimationFrame)
+        {
+            r14_pPoseData.m18_scale += r14_pPoseData.m3C_halfScale;
+        }
+        else
+        {
+            stepAnimationTrack(r14_pPoseData.m48[6], r13.m14_trackData[6], r13.m0_tracksLength[6]);
+            stepAnimationTrack(r14_pPoseData.m48[7], r13.m14_trackData[7], r13.m0_tracksLength[7]);
+            stepAnimationTrack(r14_pPoseData.m48[8], r13.m14_trackData[8], r13.m0_tracksLength[8]);
+        }
+
+        if (p3dModel->m30_pCurrentAnimation->m4_numFrames - 1 > p3dModel->m10_currentAnimationFrame)
+        {
+            r14_pPoseData.m3C_halfScale[0] = stepAnimationTrack(r14_pPoseData.m48[6], r13.m14_trackData[6], r13.m0_tracksLength[6]) / 4;
+            r14_pPoseData.m3C_halfScale[1] = stepAnimationTrack(r14_pPoseData.m48[7], r13.m14_trackData[7], r13.m0_tracksLength[7]) / 4;
+            r14_pPoseData.m3C_halfScale[2] = stepAnimationTrack(r14_pPoseData.m48[8], r13.m14_trackData[8], r13.m0_tracksLength[8]) / 4;
+        }
+    }
 }
 
 void modelMode4_position0(s_3dModel* p3dModel)
@@ -590,7 +620,7 @@ u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, sAnimationData* pMode
 
     switch (flags & 7)
     {
-    case 0:
+    case 0: // quantized but full frame
         p3dModel->m20_positionUpdateFunction = modelMode0_position;
         p3dModel->m24_rotationUpdateFunction = modelMode0_rotation;
         p3dModel->m28_scaleUpdateFunction = modelMode0_scale;
@@ -618,7 +648,7 @@ u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, sAnimationData* pMode
             }
         }
         break;
-    case 4:
+    case 4: // every other frames
         if (p3dModel->mA_animationFlags & 0x100)
         {
             p3dModel->m20_positionUpdateFunction = modelMode4_position0;
@@ -640,7 +670,7 @@ u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, sAnimationData* pMode
             }
         }
         break;
-    case 5:
+    case 5: // every 4 frames
         if (p3dModel->mA_animationFlags & 0x100)
         {
             p3dModel->m20_positionUpdateFunction = modelMode5_position0;

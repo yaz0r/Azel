@@ -1,0 +1,505 @@
+#include "PDS.h"
+#include "urchin.h"
+#include "BTL_A3_UrchinFormation.h"
+#include "kernel/fileBundle.h"
+#include "kernel/animation.h"
+#include "battle/battleManager.h"
+#include "battle/battleOverlay.h"
+#include "battle/battleEngine.h"
+#include "battle/battleDebug.h"
+#include "battle/battleTargetable.h"
+#include "battle/battleDamageDisplay.h"
+#include "commonOverlay.h"
+#include "town/town.h" //TODO: cleanup
+
+void Baldor_updateSub1(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s32 pDeltaFactor, s32 pDistanceToTargetFactor, s8 translationOrRotation); // TODO: cleanup
+s32 Baldor_updateSub0Sub0(p_workArea pThis, std::vector<sBattleTargetable>& param2, s16 entriesToParse, s16& param4); // TODO: cleanup
+
+struct sUrchin : public s_workAreaTemplateWithArgWithCopy<sUrchin, sGenericFormationPerTypeData*>
+{
+    sVec3_FP m8;
+    sVec3_FP m14_positionCurrent;
+    sVec3_FP m20_positionTarget;
+    sVec3_FP m2C_positionDelta;
+    sVec3_FP m38_rotationCurrent;
+    sVec3_FP m44_rotationTarget;
+    sVec3_FP m50_rotationDelta;
+    s_3dModel m5C_model;
+    s8 mAC;
+    s8 mAD;
+    s8 mAE;
+    s8 mAF;
+    s8 mB0_flags;
+    s8 mB1;
+    s8 mB2;
+    s8 mB4;
+    s16 mB6_numTargetables;
+    s16 mB8_delay;
+    s16 mBC_damage;
+    std::vector<sBattleTargetable> mC0_targetable;
+    std::vector<sVec3_FP> mC4_position;
+    p_workArea mC8;
+    sGenericFormationPerTypeData* mCC;
+    sBTL_A3_UrchinFormation_18* mD0;
+    p_workArea mD4;
+    p_workArea mD8;
+    //size 0xDC
+};
+
+void Baldor_initSub0Sub1(p_workArea pThis, s_3dModel* pModel, s16* param3, std::vector<sBattleTargetable>& param4, std::vector<sVec3_FP>& param5); // TODO: cleanup
+p_workArea createBaldorSubTask0(sVec3_FP* arg0, s32 arg1, s8* arg2, s8 arg3); // TODO: cleanup
+
+bool updateUrchinAnimationSequence(sUrchin* pThis, u16 param_2, int param_3, int param_4, int param_5)
+{
+    if (param_3)
+    {
+        int numFramesInAnimation;
+        if (pThis->m5C_model.m30_pCurrentAnimation == nullptr)
+        {
+            numFramesInAnimation = 0;
+        }
+        else
+        {
+            numFramesInAnimation = pThis->m5C_model.m30_pCurrentAnimation->m4_numFrames;
+        }
+        if (pThis->m5C_model.m16_previousAnimationFrame < numFramesInAnimation - 1)
+        {
+            return false;
+        }
+    }
+
+    if (param_2 == 0)
+    {
+        if (param_4)
+        {
+            riderInit(&pThis->m5C_model, nullptr);
+        }
+    }
+    else
+    {
+        riderInit(&pThis->m5C_model, pThis->m0_fileBundle->getAnimation(param_2));
+        if (param_5)
+        {
+            int numFrameToSkip = randomNumber() & 0x1F;
+            for (int i = 0; i < numFrameToSkip; i++)
+            {
+                stepAnimation(&pThis->m5C_model);
+            }
+        }
+    }
+}
+
+void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)
+{
+    pThis->mCC = pConfig;
+
+    sModelHierarchy* pHierarchy = pThis->m0_fileBundle->getModelHierarchy(pConfig->m8_modelOffset);
+    sStaticPoseData* pStaticPose = pThis->m0_fileBundle->getStaticPose(pConfig->mA_poseOffset, pHierarchy->countNumberOfBones());
+
+    init3DModelRawData(pThis, &pThis->m5C_model, 0, pThis->m0_fileBundle, pConfig->m8_modelOffset, nullptr, pStaticPose, nullptr, pConfig->mC_hotspotDefinitions);
+    Baldor_initSub0Sub1(pThis, &pThis->m5C_model, &pThis->mB6_numTargetables, pThis->mC0_targetable, pThis->mC4_position);
+    updateUrchinAnimationSequence(pThis, pConfig->m1C[0].m1C_animationOffset, 0, 1, 1);
+    pThis->mC8 = createBaldorSubTask0(&pThis->m8, 0, &pThis->mB4, pConfig->m0);
+
+    if (!pConfig->m1C[0].m0.isNull())
+    {
+        FunctionUnimplemented();
+    }
+
+    if ((gBattleManager->m4 == 8) && (gBattleManager->m6_subBattleId == 4)) {
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon =  0xB;
+    }
+}
+
+std::array<std::array<s8,4>, 4> enemyQuadrantsTable = {
+    {
+        {
+            0x2,
+            0x3,
+            0x0,
+            0x1,
+        },
+        {
+            0x1,
+            0x2,
+            0x3,
+            0x0,
+        },
+        {
+            0x0,
+            0x1,
+            0x2,
+            0x3,
+        },
+        {
+            0x3,
+            0x0,
+            0x1,
+            0x2,
+        }
+    }
+};
+
+void urchinUpdateSub0(sUrchin* pThis)
+{
+    s8 cVar1 = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
+
+    if ((pThis->mB0_flags & 8) == 0)
+    {
+        if ((pThis->mB0_flags & 0x10) == 0)
+        {
+            if ((cVar1 != 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == eBattleModes::m0_shootEnemyWithGun) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38D_battleSubMode == 4))
+            {
+                for (int i = 0; i < pThis->mB6_numTargetables; i++)
+                {
+                    if (pThis->mC0_targetable[i].m5A == gBattleManager->m10_battleOverlay->m4_battleEngine->m398_currentSelectedEnemy + 1)
+                    {
+                        pThis->mB8_delay = gBattleManager->m10_battleOverlay->m4_battleEngine->m398_currentSelectedEnemy * 2 + 0x1E;
+                        pThis->mB0_flags |= 8;
+                        pThis->mAD = 0;
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            stepAnimation(&pThis->m5C_model);
+            if (pThis->mB8_delay-- < 0)
+            {
+                for (int i = 0; i < pThis->mB6_numTargetables; i++)
+                {
+                    pThis->mC0_targetable[i].m50_flags &= ~0x100000;
+                }
+                pThis->mB0_flags &= ~0x10;
+                pThis->mD0->m14[pThis->mAE].m18 |= 0x20;
+            }
+        }
+    }
+    else
+    {
+        assert(0); // untested
+        if (pThis->mB8_delay-- < 0)
+        {
+            s32 stack40;
+            s32 stack36;
+            switch (cVar1)
+            {
+            case 1:
+                if ((randomNumber() & 0x8000000) == 0)
+                {
+                    stack40 = randomNumber() & 0xFFF;
+                }
+                else
+                {
+                    stack40 = randomNumber() | 0xF000;
+                }
+
+                if ((randomNumber() & 0x8000000) == 0)
+                {
+                    stack36 = randomNumber() & 0xFFF;
+                }
+                else
+                {
+                    stack36 = randomNumber() | 0xF000;
+                }
+                break;
+            case 2:
+                stack40 = 0;
+                if ((randomNumber() & 0x8000000) == 0)
+                {
+                    stack36 = randomNumber() & 0xFFF;
+                }
+                else
+                {
+                    stack36 = randomNumber() | 0xF000;
+                }
+                break;
+            default:
+                break;
+            }
+            pThis->m2C_positionDelta[1] += MTH_Mul(pThis->mCC->m18 * 0x10000, getSin(stack40));
+            pThis->m2C_positionDelta[0] += MTH_Mul(MTH_Mul(pThis->mCC->m18 * 0x10000, getCos(stack40)), getSin(stack36));
+            pThis->m2C_positionDelta[2] += MTH_Mul(MTH_Mul(pThis->mCC->m18 * 0x10000, getCos(stack40)), getCos(stack36));
+
+            for (int i = 0; i < pThis->mB6_numTargetables; i++)
+            {
+                pThis->mC0_targetable[i].m50_flags |= 0x100000;
+            }
+
+            pThis->mB8_delay = (gBattleManager->m10_battleOverlay->m4_battleEngine->m398_currentSelectedEnemy * 2) + 0xF;
+
+            pThis->mB0_flags &= ~0x80;
+            pThis->mB0_flags |= 0x10;
+        }
+    }
+}
+
+void urchinUpdateSub1(sUrchin* pThis)
+{
+    s8 cVar1 = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
+
+    if ((pThis->mB0_flags & 8) == 0)
+    {
+        if ((pThis->mB0_flags & 0x10) == 0)
+        {
+            if ((cVar1 != 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == eBattleModes::m3_shootEnemeyWithHomingLaser) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38D_battleSubMode == 4))
+            {
+                for (int i = 0; i < pThis->mB6_numTargetables; i++)
+                {
+                    if ((pThis->mC0_targetable[i].m5A <= gBattleManager->m10_battleOverlay->m4_battleEngine->m394) && (pThis->mC0_targetable[i].m5A != 0))
+                    {
+                        pThis->mB8_delay = gBattleManager->m10_battleOverlay->m4_battleEngine->m394 * 4 + 0xF;
+                        pThis->mB0_flags |= 8;
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            stepAnimation(&pThis->m5C_model);
+            if (pThis->mB8_delay-- < 0)
+            {
+                for (int i = 0; i < pThis->mB6_numTargetables; i++)
+                {
+                    pThis->mC0_targetable[i].m50_flags &= ~0x100000;
+                }
+                pThis->mB0_flags &= ~0x10;
+                pThis->mD0->m14[pThis->mAE].m18 |= 0x20;
+            }
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+}
+
+void urchinUpdateSub2(sUrchin* pThis)
+{
+    if ((BattleEngineSub0_UpdateSub0() == 0) && (pThis->mB1 !=  pThis->mD0->m7[pThis->mAF]))
+    {
+        assert(0);
+    }
+
+    if (pThis->mD0->m14[pThis->mAF].m19 & 2)
+    {
+        assert(0);
+    }
+}
+
+void urchinUpdateSub3(s_3dModel* pModel, std::vector<sVec3_FP>& pPosition)
+{
+    if (pModel->m40)
+    {
+        int outputIndex = 0;
+        for (int i=0; i<pModel->m12_numBones; i++)
+        {
+            if (pModel->m44_hotpointData[i].size())
+            {
+                for (int j = 0; j < (*pModel->m40)[i].m4_count; j++)
+                {
+                    pPosition[outputIndex++] = pModel->m44_hotpointData[i][j];
+                }
+            }
+        }
+    }
+}
+
+void urchinUpdateSub4(sUrchin* pThis)
+{
+    int uVar1 = pThis->mCC->m28[enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant]];
+
+    for (int i = 0; i < pThis->mB6_numTargetables; i++)
+    {
+        pThis->mC0_targetable[i].m60 = uVar1;
+    }
+}
+
+void Urchin_update(sUrchin* pThis)
+{
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
+    {
+        assert(0);
+    }
+
+    pThis->m8 = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter + pThis->m14_positionCurrent;
+    pThis->mD0->m14[pThis->mAE].m0 = pThis->m8;
+
+    if ((pThis->mAC == 6) && (pThis->mAD == 6))
+    {
+        assert(0);
+    }
+
+    if ((pThis->mD0->m14[pThis->mAE].m18 & 4) == 0)
+    {
+        pThis->mD0->m4[pThis->mAF] = 1;
+
+        if (pThis->mCC->m2)
+        {
+            pThis->mD0->m10 = 1;
+        }
+
+        if (pThis->mD0->m12 & 1)
+        {
+            assert(0);
+        }
+
+        if (pThis->mD0->m12 & 6)
+        {
+            assert(0);
+        }
+
+        stepAnimation(&pThis->m5C_model);
+
+        if (pThis->mD8)
+        {
+            assert(0);
+        }
+
+        if (pThis->mD4)
+        {
+            assert(0);
+        }
+
+        switch (pThis->mAC)
+        {
+        case 0:
+            Baldor_updateSub1(&pThis->m14_positionCurrent, &pThis->m2C_positionDelta, &pThis->m20_positionTarget, 0x1999, 0x28F, 0);
+
+            switch (gBattleManager->m4)
+            {
+            case 5:
+                assert(0);
+            case 8:
+                assert(0);
+            default:
+                Baldor_updateSub1(&pThis->m38_rotationCurrent, &pThis->m50_rotationDelta, &pThis->m44_rotationTarget, 0x1999, 0x28F, 1);
+                break;
+            }
+
+            urchinUpdateSub0(pThis);
+            urchinUpdateSub1(pThis);
+            urchinUpdateSub2(pThis);
+
+            break;
+        default:
+            assert(0);
+        }
+
+        urchinUpdateSub3(&pThis->m5C_model, pThis->mC4_position);
+
+        if (pThis->mCC->m38)
+        {
+            assert(0);
+        }
+
+        s16 local_30;
+        if (Baldor_updateSub0Sub0(pThis, pThis->mC0_targetable, pThis->mB6_numTargetables, local_30) == 0)
+        {
+            if (pThis->mB0_flags & 4)
+            {
+                if (pThis->mCC->m4 == 0)
+                {
+                    pThis->mB0_flags &= ~4;
+                }
+                else if (updateUrchinAnimationSequence(pThis, pThis->mCC->m1C[pThis->mB1].m1C_animationOffset, 1, 1, 1))
+                {
+                    pThis->mB0_flags &= ~4;
+                }
+            }
+        }
+        else
+        {
+            assert(0);
+        }
+
+        urchinUpdateSub4(pThis);
+
+        if (BattleEngineSub0_UpdateSub0() == 0)
+        {
+            pThis->mD0->m14[pThis->mAE].m18 &= ~0x20;
+        }
+
+        pThis->mD0->m14[pThis->mAE].m1A = FP_Div(pThis->mB4 * 0x640000, fixedPoint::fromInteger(readSaturnS16(gCommonFile.getSaturnPtr(0x0020179c) + pThis->mCC->m0 * 4))).toInteger();
+
+        if (pThis->mD0->m14[pThis->mAE].m1C != 0)
+        {
+            assert(0);
+        }
+
+        if (pThis->mB2 && gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000)
+        {
+            createDamageDisplayTask(pThis, pThis->mBC_damage, &pThis->m8, 1);
+            pThis->mBC_damage = 0;
+            pThis->mB2 = 0;
+        }
+    }
+}
+
+void Urchin_draw(sUrchin* pThis)
+{
+    pushCurrentMatrix();
+    translateCurrentMatrix(pThis->m8);
+    rotateCurrentMatrixYXZ(pThis->m38_rotationCurrent);
+    if (pThis->mB0_flags & 2)
+    {
+        assert(0);
+    }
+    pThis->m5C_model.m18_drawFunction(&pThis->m5C_model);
+    if (pThis->mB0_flags & 2)
+    {
+        assert(0);
+    }
+    popMatrix();
+}
+
+void Urchin_delete(sUrchin* pThis)
+{
+    FunctionUnimplemented();
+}
+
+void createUrchin(sGenericFormationPerTypeData* pConfig, sBTL_A3_UrchinFormation_18& param2, int param3, int param4)
+{
+    static const sUrchin::TypedTaskDefinition definition = {
+        Urchin_init,
+        Urchin_update,
+        Urchin_draw,
+        Urchin_delete,
+    };
+
+    sUrchin* pNewTask = createSiblingTaskWithArgWithCopy<sUrchin>(dramAllocatorEnd[pConfig->m1_fileBundleIndex].mC_fileBundle, pConfig, &definition);
+
+    pNewTask->mD0 = &param2;
+    pNewTask->mAE = param3;
+    pNewTask->mAF = param4;
+
+    sBTL_A3_UrchinFormation_18_14* iVar4 = &param2.m14[pNewTask->mAE];
+    iVar4->m18 |= param4;
+
+    pNewTask->m14_positionCurrent = iVar4->mC;
+    pNewTask->m20_positionTarget = iVar4->mC;
+
+    switch (param2.mD[pNewTask->mAF])
+    {
+    case 0:
+        pNewTask->m38_rotationCurrent[1] = 0;
+        break;
+    case 1:
+        pNewTask->m38_rotationCurrent[1] = 0x4000000;
+        break;
+    case 2:
+        pNewTask->m38_rotationCurrent[1] = 0x8000000;
+        break;
+    case 3:
+        pNewTask->m38_rotationCurrent[1] = 0xC000000;
+        break;
+    default:
+        assert(0);
+    }
+
+    pNewTask->m44_rotationTarget = pNewTask->m38_rotationCurrent;
+
+    iVar4->m18 &= ~4;
+}

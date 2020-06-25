@@ -27,6 +27,7 @@ void operator delete(void* ptr) noexcept
 #endif
 
 bool hasEncounterData;
+u8 encounterTaskVar0;
 bool debugEnabled = false; // watchdog bit 1
 
 int enableDebugTask;
@@ -226,7 +227,7 @@ void initVDP1()
     graphicEngineStatus.m3 = 1;
     graphicEngineStatus.doubleBufferState = 0;
     graphicEngineStatus.m4 = 0;
-    graphicEngineStatus.m5 = 0;
+    graphicEngineStatus.m5_isTildeDown = 0;
 
     graphicEngineStatus.m405C.VDP1_X1 = 0;
     graphicEngineStatus.m405C.VDP1_Y1 = 0;
@@ -268,6 +269,7 @@ void initVDP1()
     vdp1WriteEA += 0x20;
     graphicEngineStatus.mC = vdp1WriteEA;
 
+    /*
     setVdp1VramU16(vdp1WriteEA + 0x00, 0x4); // command 4: polygon draw
     setVdp1VramU16(vdp1WriteEA + 0x04, 0xC0); // CMDPMOD
     setVdp1VramU16(vdp1WriteEA + 0x06, 0); // CMDCOLR
@@ -280,7 +282,7 @@ void initVDP1()
     setVdp1VramS16(vdp1WriteEA + 0x18, -176); //XD
     setVdp1VramU16(vdp1WriteEA + 0x1A, 112); // YD
     vdp1WriteEA += 0x20;
-
+    */
     setVdp1VramU16(vdp1WriteEA + 0x00, 0xA); // command 10: set local coordinates
     setVdp1VramU16(vdp1WriteEA + 0x0C, 176);
     setVdp1VramU16(vdp1WriteEA + 0x0E, 111);
@@ -338,14 +340,14 @@ void initVDP1()
 
 void initVBlankData()
 {
-    vblankData.m0 = 0;
-    vblankData.m4 = 0;
+    vblankData.m0_frameReadyToPresent = 0;
+    vblankData.m4_wasFrameOutDisplayed = 0;
     vblankData.m8 = 0;
-    vblankData.mC = 0;
-    vblankData.m10 = 0;
-    vblankData.m14 = 2;
+    vblankData.mC_numFramesPresented = 0;
+    vblankData.m10_numVsyncSinceLastPresent = 0;
+    vblankData.m14_numVsyncPerFrame = 2;
     vblankData.m18 = 0;
-    vblankData.m1C = 0;
+    vblankData.m1C_callback = 0;
 }
 
 void resetEngine()
@@ -994,6 +996,65 @@ void interruptVDP1Update()
     graphicEngineStatus.m14_vdp1Context[1].m10 = graphicEngineStatus.m14_vdp1Context[1].m14[r6].begin();
 }
 
+void interrupt_VBlankIn()
+{
+    vblankData.m8++;
+    vblankData.m18++;
+    vblankData.m10_numVsyncSinceLastPresent++;
+
+    if ((vblankData.m14_numVsyncPerFrame <= vblankData.m10_numVsyncSinceLastPresent) && (vblankData.m0_frameReadyToPresent == 1))
+    {
+        if ((graphicEngineStatus.m3 == 0) || ((/*(VDP1_EDSR & 2) != 0 ||*/ (3 < vblankData.m18))))
+        {
+            vblankData.m0_frameReadyToPresent = 0;
+            vblankData.m10_numVsyncSinceLastPresent = 0;
+            vblankData.mC_numFramesPresented++;
+
+            interruptVDP2Update();
+            setupVdp1LocalCoordinatesAndClipping();
+            interruptVDP1Update();
+        }
+        else
+        {
+            // Frame was missed!
+            //assert(0);
+        }
+    }
+
+    updateFadeInterrupt();
+}
+
+void endOfFrame()
+{
+    if (keyboardIsKeyDown(0x8E))
+    {
+        graphicEngineStatus.m5_isTildeDown = 1;
+    }
+
+    if (readKeyboardToggle(0x104))
+    {
+        FunctionUnimplemented();
+    }
+
+    if (enableDebugTask)
+    {
+        assert(0);
+    }
+
+    vblankData.m0_frameReadyToPresent = 1;
+    while(vblankData.m0_frameReadyToPresent != 0)
+    {
+        interrupt_VBlankIn();
+    }
+
+    if (enableDebugTask)
+    {
+        assert(0);
+    }
+
+    vblankData.m18 = 0;
+}
+
 u32 frameIndex = 0;
 
 bool delayTrace = true;
@@ -1027,7 +1088,7 @@ void loopIteration()
         checkGL();
         
 
-        //updateDebug();
+        endOfFrame();
 
         //copySMPCOutputStatus();
 
@@ -1076,12 +1137,6 @@ void loopIteration()
 
         //lastUpdateFunction();
 
-        // interrupt stuff
-        {
-            interruptVDP1Update();
-            updateFadeInterrupt();
-            updateFadeInterrupt(); // because game is running at 30 and interrupt happens at 60
-        }
         checkGL();
     }
 
@@ -1124,6 +1179,12 @@ u16 READ_BE_U16(const void* ptr)
     u16 data = *(u16*)(ptr);
     data = ((data >> 8) & 0xFF) | ((data & 0xFF) << 8);
     return data;
+}
+
+void WRITE_BE_U32(const void* ptr, u32 data)
+{
+    data = ((data >> 24) & 0xFF) | ((data >> 8) & 0xFF00) | ((data << 8) & 0xFF0000) | ((data << 24) & 0xFF000000);
+    *(u32*)(ptr) = data;
 }
 
 void WRITE_BE_U16(const void* ptr, u16 data)

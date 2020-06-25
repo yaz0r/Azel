@@ -12,6 +12,7 @@
 #include "audio/systemSounds.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "processModel.h" //TOOD: cleanup
+#include "kernel/textDisplay.h"
 
 #include <map>
 
@@ -954,7 +955,7 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
         sSaturnPtr r14 = readSaturnEA(r13->m8_cellPtr + 0x14);
         while (readSaturnU32(r14))
         {
-            sProcessed3dModel* mesh = r13->m0_dramAllocation->getCollisionModel(readSaturnU32(r14));
+            sProcessed3dModel* mesh = r13->m0_fileBundle->getCollisionModel(readSaturnU32(r14));
             sVec3_FP meshPositionInCell = readSaturnVec3(r14 + 4);
             if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(mesh->m0_radius + r12->m4_collisionRadius))
             {

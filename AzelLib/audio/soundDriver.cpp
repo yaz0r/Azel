@@ -187,7 +187,7 @@ void getSequenceData(sSoundEngine* pSoundEngine, s32 sequenceNumber, s32 unk, s3
     pSoundEngine->m1B0_pSequenceData = &SoundDataTable[sequenceNumber];
     entry.m33 = 0;
     entry.m30 = sequenceNumber;
-    entry.m33 = unk;
+    entry.m32 = unk;
 
     getSequenceDataSub(entry);
 
@@ -207,6 +207,74 @@ void getSequenceData(sSoundEngine* pSoundEngine, s32 sequenceNumber, s32 unk, s3
     pSoundEngine->m68D = 0;
 }
 
+void loadSoundBanksSub0Sub0Sub0(sSoundEngineSub* source, sSoundEngineSub* dest)
+{
+    for (int i=0; i<8; i++)
+    {
+        dest->m0[i].m0_soundIndex = source->m0[i].m0_soundIndex;
+        dest->m0[i].m2_volume = source->m0[i].m2_volume;
+    }
+}
+
+void loadSoundBanksSub0Sub0(sSoundEngine* pSoundEngine, s8 musicNumber, s8 unk1, s32 sequenceId)
+{
+    sSoundEngineSub* previousSequence = &pSoundEngine->m10_sequenceTable[sequenceId - 1];
+    sSoundEngineSub* newSequence = &pSoundEngine->m10_sequenceTable[sequenceId];
+
+    if (pSoundEngine->m1B0_pSequenceData->mE)
+    {
+        previousSequence->m30 += pSoundEngine->m1B0_pSequenceData->mE;
+    }
+    pSoundEngine->m1B4_pPreviousSequenceData = pSoundEngine->m1B0_pSequenceData;
+    pSoundEngine->m1B0_pSequenceData = &SoundDataTable[musicNumber];
+    previousSequence->m33 = 1;
+
+    newSequence->m30 = musicNumber;
+    newSequence->m32 = unk1;
+
+    getSequenceDataSub(*previousSequence);
+
+    loadSoundBanksSub0Sub0Sub0(previousSequence, newSequence);
+
+    pSoundEngine->m1BA = 0;
+    if (newSequence->m30 == previousSequence->m30) // same music as before, no need to load
+    {
+        pSoundEngine->m68A_currentSoundLoadingState = 8;
+    }
+    else if (pSoundEngine->m1B0_pSequenceData->m8_areaMapIndex == SoundDataTable[previousSequence->m30].m8_areaMapIndex) // same aread map as before
+    {
+        pSoundEngine->m68A_currentSoundLoadingState = 2;
+    }
+    else
+    {
+        pSoundEngine->m68A_currentSoundLoadingState = 0;
+    }
+
+    pSoundEngine->m68D = 0;
+}
+
+void loadSoundBanksSub0(s8 musicNumber, s8 unk1)
+{
+    soundEngine.m1B8_numActiveSequence++;
+    if (soundEngine.m1B8_numActiveSequence > 7)
+    {
+        soundEngine.m1B8_numActiveSequence = 7;
+    }
+    else
+    {
+        if (musicNumber < 0)
+        {
+            assert(0);
+        }
+        else
+        {
+            loadSoundBanksSub0Sub0(&soundEngine, musicNumber, unk1, soundEngine.m1B8_numActiveSequence);
+            soundEngine.m68B = 0;
+            soundEngine.m68F_updateSoundLoadingState = 1;
+        }
+    }
+}
+
 void loadSoundBanks(s8 musicNumber, s8 unk1)
 {
     if (soundEngine.m10_sequenceTable[soundEngine.m1B8_numActiveSequence].m33 == 0)
@@ -224,23 +292,8 @@ void loadSoundBanks(s8 musicNumber, s8 unk1)
     }
     else
     {
-        assert(0);
+        loadSoundBanksSub0(musicNumber, unk1);
     }
-
-    static SoLoud::WavStream gWave;
-
-    switch (musicNumber)
-    {
-    case 1:
-        //gWave.load("1.OGG");
-       // gSoloud.play(gWave);
-        break;
-    case 75:
-        //gWave.load("75.OGG");
-       // gSoloud.play(gWave);
-        break;
-    }
-    PDS_unimplemented("playMusic");
 }
 
 s32 fadeOutAllSequences()
@@ -668,7 +721,7 @@ int m68k_instructionCallback()
         }
         break;
     case 0x1116:
-        PDS_CategorizedLog(log_m68k, "Clear timing flag\n");
+        PDS_CategorizedLog(log_m68k, "Clear timing flag\n", 0);
         break;
     /*case 0x1B56:
         PDS_CategorizedLog(log_m68k, "Jump to command handler\n");
@@ -719,5 +772,9 @@ bool isSoundLoadingFinished()
     return (u32)(-1 < soundEngine.m68A_currentSoundLoadingState) ^ 1;
 }
 
+void battleLoading_InitSub0()
+{
+    soundEngine.m10_sequenceTable[soundEngine.m1B8_numActiveSequence].m33 = 1;
+}
 
 

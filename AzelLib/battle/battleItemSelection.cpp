@@ -205,7 +205,7 @@ void sBattleItemSelectionTask_Draw(sBattleItemSelectionTask* pThis)
         drawMultiChoiceVdp1Cursor((pThis->m14_listX + pThis->m1A_listWidth - 2) * 8, (pThis->m16_listY * 8 + (pThis->m1C_listHeight * 8) / 2) - 8, gCommonFile.getSaturnPtr(0x210030), 0x760);
     }
 
-    pThis->m8 += vblankData.m14;
+    pThis->m8 += vblankData.m14_numVsyncPerFrame;
     if (pThis->m8 > 1)
     {
         pThis->m7++;

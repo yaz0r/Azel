@@ -151,8 +151,8 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
         setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
         setVdp1VramU16(vdp1WriteEA + 0x04, readSaturnS16(spriteData + 10)); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, readSaturnS16(spriteData + 6) + dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, readSaturnS16(spriteData + 2) + dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x06, readSaturnS16(spriteData + 6) + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, readSaturnS16(spriteData + 2) + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDSRCA
         setVdp1VramU16(vdp1WriteEA + 0x0A, readSaturnS16(spriteData + 8)); // CMDSIZE
         setVdp1VramU16(vdp1WriteEA + 0x0C, readSaturnS16(currentSprite) + pThis->m1A_part2X - 0xb0); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-pThis->m1C_part2Y - readSaturnS16(currentSprite + 2)) + 0x70); // CMDYA
@@ -172,8 +172,8 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
         setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
         setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, 0x2ED0 + dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, 0x554 + dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x06, 0x2ED0 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, 0x554 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDSRCA
         setVdp1VramU16(vdp1WriteEA + 0x0A, 0x252e); // CMDSIZE
         setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m16_part1X - 0x8E); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x33 - pThis->m18_part1Y)); // CMDYA
@@ -191,8 +191,8 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
         setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
         setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, 0x2ED0 + dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, 0x4d4 + dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x06, 0x2ED0 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, 0x4d4 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDSRCA
         setVdp1VramU16(vdp1WriteEA + 0x0A, 0x553); // CMDSIZE
         setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m16_part1X - 0xB0); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x31 - pThis->m18_part1Y)); // CMDYA

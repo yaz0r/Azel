@@ -12,6 +12,11 @@ struct BTL_A3_data : public battleOverlay
     const struct sGrid* m_map3;
     const struct sGrid* m_map4;
     const struct sGrid* m_map6;
+
+    const struct sGenericFormationData* m_60A8AE8_urchinFormation;
+    const struct sGenericFormationData* m_60a8ac4_urchinFormation;
+    const struct sGenericFormationData* m_60a7d34_urchinFormation;
+    const struct sGenericFormationData* m_60a7d58_urchinFormation;
 };
 
 extern BTL_A3_data* g_BTL_A3;

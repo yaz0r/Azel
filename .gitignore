@@ -6,3 +6,5 @@
 
 *.user
 xcuserdata
+build/vs2019
+*.xcuserdatad

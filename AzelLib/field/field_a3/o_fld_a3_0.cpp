@@ -37,10 +37,12 @@ void fieldA3_0_tutorialTask_update(s_fieldA3_0_tutorialTask* workArea)
 
 void create_fieldA3_0_tutorialTask(p_workArea workArea)
 {
-    if ((getFieldTaskPtr()->m2C_currentFieldIndex != 2) || mainGameState.getBit(0xA2, 2))
+    if ((getFieldTaskPtr()->m2C_currentFieldIndex == 2) && mainGameState.getBit(0xA2, 2) != 0)
     {
-        createSubTaskFromFunction<s_fieldA3_0_tutorialTask>(workArea, fieldA3_0_tutorialTask_update);
+        return;
     }
+
+    createSubTaskFromFunction<s_fieldA3_0_tutorialTask>(workArea, fieldA3_0_tutorialTask_update);
 }
 
 void fieldA3_0_createItemBoxes(p_workArea workArea)

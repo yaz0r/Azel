@@ -94,76 +94,14 @@ struct s_animDataFrame
     s16 m2;
 };
 
-struct s_vdp2StringTask : public s_workAreaTemplate<s_vdp2StringTask>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { NULL, &s_vdp2StringTask::Update, NULL, &s_vdp2StringTask::Delete};
-        return &taskDefinition;
-    }
-
-    static void Update(s_vdp2StringTask*);
-    static void Delete(s_vdp2StringTask*);
-
-    void UpdateSub1();
-
-    // variables
-    u8 m0_status;
-    s8 m2_durationMode;
-    s16 mA_duration;
-    s_vdp2StringTask** m10;
-    s16 m14_x;
-    s16 m16_y;
-    s16 m1A_width;
-    s16 m1C_height;
-    sSaturnPtr m24_string;
-    // size 2C
-};
-
-#if 0
-struct s_multiChoiceTask2 : public s_workAreaTemplate< s_multiChoiceTask2>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { NULL, &s_multiChoiceTask2::Update, &s_multiChoiceTask2::Draw, &s_multiChoiceTask2::Delete};
-        return &taskDefinition;
-    }
-
-    static void Update(s_multiChoiceTask2*);
-    static void Draw(s_multiChoiceTask2*);
-    static void Delete(s_multiChoiceTask2*)
-    {
-        assert(0);
-    }
-
-    void drawMultiChoice();
-
-    u8 m0_Status;
-    s8 m1;
-    s8 m2_defaultResult;
-    s8 m3;
-    s8 m4;
-    s8 m5_selectedEntry;
-    s8 m6_numEntries;
-    s8 m7;
-    s8 m8;
-    s32* mC_result;
-    p_workArea m10;
-    s16 m14_x;
-    s16 m16_y;
-    s16 m1A_width;
-    s16 m1C_height;
-    sSaturnPtr m24_strings;
-    s16* m28_colors;
-    //size 0x2C
-};
-#endif
-
 struct s_multiChoice
 {
     s16* m0_choiceTable;
     s32 m4_currentChoice;
     s32 m8_numChoices;
+    s32 mC;
+
+    // size 0x10
 };
 
 struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
@@ -395,7 +333,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     s_dragonTaskWorkArea_48 m48;
 
     sMatrix4x3 m88_matrix; // 88
-    p_workArea mB8;
+    p_workArea mB8_lightWingEffect;
     sVec3_FP* mBC;
 
     fixedPoint mC0_lightRotationAroundDragon;
@@ -413,7 +351,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     void(*mF4)(s_dragonTaskWorkArea*);
     u32 mF8_Flags; // F8 Flags 0x400 : collisions enabled
     u32 mFC; // FC
-    u32 m100;
+    u32 m100_previousDragonType;
     u32 m104_dragonScriptStatus;
     s32 m108;
     sVec3_FP m10C_hotSpot2;
@@ -669,6 +607,7 @@ struct s_randomBattleWorkArea : public s_workAreaTemplate<s_randomBattleWorkArea
 
     void(*m0)();
     u8 m4;
+    u8 m5;
     // size 8
 };
 

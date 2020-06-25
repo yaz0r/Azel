@@ -114,7 +114,7 @@ struct s_workAreaTemplate : public s_workAreaTemplateWithArg<T>
 
 struct s_workAreaCopy : public s_workArea
 {
-    struct s_fileBundle* m0_dramAllocation;
+    struct s_fileBundle* m0_fileBundle;
     struct s_vdp1AllocationNode* m4_vd1Allocation;
 };
 
@@ -266,7 +266,7 @@ T* createSubTaskWithCopy(s_workAreaCopy* parentTask, const typename T::TypedTask
     pNewTask->getTask()->m_taskName = T::getTaskName();
 
     //copy
-    pNewTask->m0_dramAllocation = parentTask->m0_dramAllocation;
+    pNewTask->m0_fileBundle = parentTask->m0_fileBundle;
     pNewTask->m4_vd1Allocation = parentTask->m4_vd1Allocation;
 
     if (pTypeTaskDefinition->m_pInit)
@@ -288,7 +288,7 @@ T* createSiblingTaskWithCopy(s_workAreaCopy* parentTask, const typename T::Typed
     pNewTask->getTask()->m_taskName = T::getTaskName();
 
     //copy
-    pNewTask->m0_dramAllocation = parentTask->m0_dramAllocation;
+    pNewTask->m0_dramAllocation = parentTask->m0_fileBundle;
     pNewTask->m4_vd1Allocation = parentTask->m4_vd1Allocation;
 
     if (pTypeTaskDefinition->m_pInit)
@@ -343,7 +343,7 @@ T* createSiblingTaskWithArgWithCopy(s_workAreaCopy* parentTask, argType arg, con
     pNewTask->getTask()->m_taskName = T::getTaskName();
 
     //copy
-    pNewTask->m0_dramAllocation = parentTask->m0_dramAllocation;
+    pNewTask->m0_fileBundle = parentTask->m0_fileBundle;
     pNewTask->m4_vd1Allocation = parentTask->m4_vd1Allocation;
 
     if (pTypeTaskDefinition->m_pInit)
@@ -390,7 +390,7 @@ T* createSubTaskFromFunctionWithCopy(s_workAreaCopy* parentTask, typename T::Fun
     pNewTask->getTask()->m_taskName = T::getTaskName();
 
     //copy
-    pNewTask->m0_dramAllocation = parentTask->m0_dramAllocation;
+    pNewTask->m0_fileBundle = parentTask->m0_fileBundle;
     pNewTask->m4_vd1Allocation = parentTask->m4_vd1Allocation;
 
     PDS_CategorizedLog(eLogCategories::log_task, "Created task (from function) with copy%s\n", T::getTaskName());

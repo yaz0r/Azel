@@ -13,6 +13,7 @@
 #include "battleEngineSub1.h"
 #include "battleCommandMenu.h"
 #include "battleDebug.h"
+#include "battleTextDisplay.h"
 #include "gunShotRootTask.h"
 #include "homingLaser.h"
 #include "kernel/debug/trace.h"
@@ -200,11 +201,6 @@ void battleEngine_setDesiredCameraPositionPointer(sVec3_FP* pData)
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3D8_pDesiredCameraPosition = pData;
 }
 
-void createBattleDisplayCommandHelpTask(p_workArea parent, sSaturnPtr data)
-{
-    FunctionUnimplemented();
-}
-
 void battleEngine_InitSub8Sub0(sVec2_FP& param)
 {
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -295,7 +291,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     pThis->m3AC = readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 );
 
     createInBattleDebugTask(pThis);
-    createBattleDisplayCommandHelpTask(pThis, readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 + 0xC));
+    createBattleTextDisplay(pThis, readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 + 0xC));
     initBattleEngineArray();
 
     int randomQuadrantOdd = performModulo2(100, randomNumber()) % 0xFF;
@@ -488,7 +484,7 @@ void battleEngine_UpdateSub1(int bitMask)
     }
 }
 
-s32 s_battleDragon_InitSub0()
+s32 isBattleAutoScroll()
 {
     s8 bVar1 = gBattleManager->m10_battleOverlay->m4_battleEngine->m230;
 
@@ -504,9 +500,26 @@ void battleEngine_UpdateSub5()
 {
     s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
 
-    if (s_battleDragon_InitSub0() == 0)
+    if (isBattleAutoScroll() == 0)
     {
-        assert(0);
+        pDragon->m88 |= 0x20;
+        switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+        {
+        case 0:
+            pDragon->m74_targetRotation[1] -= pDragon->m74_targetRotation[1].normalized();
+            break;
+        case 1:
+            pDragon->m74_targetRotation[1] += 0x4000000 - pDragon->m74_targetRotation[1] & 0xfffffff;
+            break;
+        case 2:
+            pDragon->m74_targetRotation[1] += 0x8000000 - pDragon->m74_targetRotation[1] & 0xfffffff;
+            break;
+        case 3:
+            pDragon->m74_targetRotation[1] += -0x4000000 - pDragon->m74_targetRotation[1].normalized();
+            break;
+        default:
+            assert(0);
+        }
     }
     else
     {
@@ -569,14 +582,14 @@ void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
     pThis->m240 = pThis->m270_enemyAltitude + pThis->m258 + pThis->m264;
 }
 
-s32 battleEngine_UpdateSub7Sub0Sub0() // 0x20 is indicating battle intro is running
+bool battleEngine_UpdateSub7Sub0Sub0() // 0x20 is indicating battle intro is running
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning)
         return 1;
     return 0;
 }
 
-s32 battleEngine_UpdateSub7Sub0Sub2Sub0()
+bool battleEngine_UpdateSub7Sub0Sub2Sub0()
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10)
         return 1;
@@ -649,7 +662,7 @@ s32 battleEngine_UpdateSub7Sub0()
         pBattleEngine->m3B2_numBattleFormationRunning = 0;
 
         clearVdp2TextMemory();
-        fieldPaletteTaskInitSub0Sub2();
+        ResetNBG1Map();
 
         pBattleEngine->m18C_status = 4;
         pBattleEngine->m188_flags.m80000_hideBattleHUD = 0;
@@ -2951,15 +2964,15 @@ void battleEngine_Update(s_battleEngine* pThis)
 
         pThis->m188_flags.m8000 = 1;
 
-        fieldPaletteTaskInitSub0Sub2();
+        ResetNBG1Map();
 
         pThis->m3CC = createBattleEngineSub0(pThis);
         pThis->m3B1 = 0;
 
         battleEngine_UpdateSub1(1);
         battleEngine_UpdateSub2(pThis);
-        battleEngine_CreateHud1(dramAllocatorEnd[0].mC_buffer);
-        battleEngine_CreateRadar(dramAllocatorEnd[0].mC_buffer);
+        battleEngine_CreateHud1(dramAllocatorEnd[0].mC_fileBundle);
+        battleEngine_CreateRadar(dramAllocatorEnd[0].mC_fileBundle);
         battleEngine_UpdateSub5();
 
         battleEngine_SetBattleMode(eBattleModes::mE_battleIntro);

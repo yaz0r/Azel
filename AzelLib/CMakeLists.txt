@@ -8,7 +8,6 @@ include_directories(
     "${THIRD_PARTY}/imgui/examples/libs/gl3w"
     "${THIRD_PARTY}/soloud/soloud/include"
     "${THIRD_PARTY}/glm"
-    "${THIRD_PARTY}/MoltenVK/MoltenVK/include"
     "${THIRD_PARTY}/tracy"
     "${THIRD_PARTY}/aosdk"
     "${THIRD_PARTY}/bgfx.cmake/bgfx/include"
@@ -103,38 +102,20 @@ else()
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
 
+if (MSVC)
 ADD_MSVC_PRECOMPILED_HEADER("PDS.h" "PDS_Precompiled.cpp" SOURCES)
 
 SET_SOURCE_FILES_PROPERTIES("PDS_Precompiled.cpp"
                             PROPERTIES COMPILE_FLAGS "/Yc\"PDS.h\" /FI\"PDS.h\" /Fp\"PDS.pch\""
-                                        OBJECT_DEPENDS "PDS.pch")  
+                                        OBJECT_DEPENDS "PDS.pch")
+endif()
+                                        
 if (MSVC)
     set(SOURCES
         ${SOURCES}
         ${THIRD_PARTY}/imgui/examples/libs/gl3w/GL/gl3w.c
     )
 endif()
-
-# SHADERS
-# shaderc_parse(
-#	FILE filename
-#	OUTPUT filename
-#	FRAGMENT|VERTEX|COMPUTE
-#	ANDROID|ASM_JS|IOS|LINUX|NACL|OSX|WINDOWS
-#	[PROFILE profile]
-#	[O 0|1|2|3]
-#	[VARYINGDEF filename]
-#	[BIN2C filename]
-#	[INCLUDES include;include]
-#	[DEFINES include;include]
-#	[DEPENDS]
-#	[PREPROCESS]
-#	[RAW]
-#	[VERBOSE]
-#	[DEBUG]
-#	[DISASM]
-#	[WERROR]
-# )
 
 #PROFILE vs_5_0
 shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.glsl_bin VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)

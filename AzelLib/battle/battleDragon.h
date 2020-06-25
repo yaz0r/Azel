@@ -34,7 +34,7 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
     s16 m210;
     std::array<s8, 4> m244;
     std::array<s8, 4> m248;
-    p_workArea m24C;
+    p_workArea m24C_lightWingEffectTask;
     // size 0x250
 };
 

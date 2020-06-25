@@ -44,7 +44,7 @@ p_workArea createBaldorSubTask0(sVec3_FP* arg0, s32 arg1, s8* arg2, s8 arg3)
 s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
 {
     u8 fileBundleIndex = readSaturnS8(dataPtr);
-    s_fileBundle* pFileBundle = dramAllocatorEnd[fileBundleIndex].mC_buffer->m0_dramAllocation;
+    s_fileBundle* pFileBundle = dramAllocatorEnd[fileBundleIndex].mC_fileBundle->m0_fileBundle;
     sSaturnPtr animData = readSaturnEA(dataPtr + 8) + arg * 8;
 
     s_3dModel* pOutputModel = new s_3dModel;
@@ -56,7 +56,7 @@ s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
 
 
     sSaturnPtr hotSpotDataEA = animData + readSaturnU32(animData + 4);
-    s_RiderDefinitionSub * pHotSpotsData = nullptr;
+    sHotpointBundle* pHotSpotsData = nullptr;
     assert(animData == hotSpotDataEA); // else we need to load the data
 
     init3DModelRawData(pThis, pOutputModel, 0, pFileBundle, readSaturnU16(animData), 0, pFileBundle->getStaticPose(readSaturnU16(animData + 2), pHierarchy->countNumberOfBones()), nullptr, pHotSpotsData);
@@ -251,8 +251,8 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
             u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
             setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
             setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
-            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
-            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xE88); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xE88); // CMDSRCA
             setVdp1VramU16(vdp1WriteEA + 0x0A, 0x318); // CMDSIZE
             setVdp1VramU16(vdp1WriteEA + 0x0C, finalSize[0]); // CMDXA
             setVdp1VramU16(vdp1WriteEA + 0x0E, -finalSize[1]); // CMDYA
@@ -292,8 +292,8 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
             u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
             setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
             setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
-            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2ED8); // CMDCOLR
-            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xE28); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2ED8); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xE28); // CMDSRCA
             setVdp1VramU16(vdp1WriteEA + 0x0A, 0x320); // CMDSIZE
             setVdp1VramU16(vdp1WriteEA + 0x0C, finalSize[0]); // CMDXA
             setVdp1VramU16(vdp1WriteEA + 0x0E, -finalSize[1]); // CMDYA
@@ -326,8 +326,8 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
                 u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
                 setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
                 setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
-                setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2ED8); // CMDCOLR
-                setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xE58); // CMDSRCA
+                setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2ED8); // CMDCOLR
+                setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xE58); // CMDSRCA
                 setVdp1VramU16(vdp1WriteEA + 0x0A, 0x320); // CMDSIZE
                 setVdp1VramU16(vdp1WriteEA + 0x0C, finalSize[0]); // CMDXA
                 setVdp1VramU16(vdp1WriteEA + 0x0E, -finalSize[1]); // CMDYA
@@ -546,8 +546,8 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
 
         setVdp1VramU16(vdp1WriteEA + 0x00, 0x1001); // command 0
         setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xEB0); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xEB0); // CMDSRCA
         setVdp1VramU16(vdp1WriteEA + 0x0A, 0x420); // CMDSIZE
         setVdp1VramU16(vdp1WriteEA + 0x0C, local_40[0]); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -local_40[1]); // CMDYA
@@ -575,8 +575,8 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
         {
             setVdp1VramU16(vdp1WriteEA + 0x00, 0x1001); // command 0
             setVdp1VramU16(vdp1WriteEA + 0x04, 0x148C); // CMDPMOD
-            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
-            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xEF0); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2EBC); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xEF0); // CMDSRCA
             setVdp1VramU16(vdp1WriteEA + 0x0A, 0x420); // CMDSIZE
             setVdp1VramU16(vdp1WriteEA + 0x0C, local_40[0]); // CMDXA
             setVdp1VramU16(vdp1WriteEA + 0x0E, -local_40[1]); // CMDYA
@@ -610,8 +610,8 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
 
         setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
         setVdp1VramU16(vdp1WriteEA + 0x04, 0x1488); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2F08); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xF30); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2F08); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xF30); // CMDSRCA
         setVdp1VramU16(vdp1WriteEA + 0x0A, 0x620); // CMDSIZE
         setVdp1VramU16(vdp1WriteEA + 0x0C, local_30.m_value[0]); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -local_30.m_value[1]); // CMDYA
@@ -634,8 +634,8 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
 
             setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
             setVdp1VramU16(vdp1WriteEA + 0x04, 0x1488); // CMDPMOD
-            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EE4); // CMDCOLR
-            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xF90); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2EE4); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xF90); // CMDSRCA
             setVdp1VramU16(vdp1WriteEA + 0x0A, 0x620); // CMDSIZE
             setVdp1VramU16(vdp1WriteEA + 0x0C, local_30.m_value[0]); // CMDXA
             setVdp1VramU16(vdp1WriteEA + 0x0E, -local_30.m_value[1]); // CMDYA
@@ -659,8 +659,8 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
 
         setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
         setVdp1VramU16(vdp1WriteEA + 0x04, 0x1488); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2F08); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xFF0); // CMDSRCA
+        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2F08); // CMDCOLR
+        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xFF0); // CMDSRCA
         setVdp1VramU16(vdp1WriteEA + 0x0A, 0x620); // CMDSIZE
         setVdp1VramU16(vdp1WriteEA + 0x0C, local_30.m_value[0]); // CMDXA
         setVdp1VramU16(vdp1WriteEA + 0x0E, -local_30.m_value[1]); // CMDYA
@@ -683,8 +683,8 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
 
             setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
             setVdp1VramU16(vdp1WriteEA + 0x04, 0x1488); // CMDPMOD
-            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EE4); // CMDCOLR
-            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x1050); // CMDSRCA
+            setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2EE4); // CMDCOLR
+            setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x1050); // CMDSRCA
             setVdp1VramU16(vdp1WriteEA + 0x0A, 0x620); // CMDSIZE
             setVdp1VramU16(vdp1WriteEA + 0x0C, local_30.m_value[0]); // CMDXA
             setVdp1VramU16(vdp1WriteEA + 0x0E, -local_30.m_value[1]); // CMDYA
@@ -786,7 +786,7 @@ void Baldor_initSub1Sub0(s_workAreaCopy* parent, sBattleTargetable* pTargetable)
     pNewTask->m84_pTargetable = pTargetable;
     pNewTask->m94 = pNewTask->m84_pTargetable->m4_pPosition;
     pNewTask->m84_pTargetable->m50_flags |= 0x10000;
-    pNewTask->mAC_vdp1Offset = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory;
+    pNewTask->mAC_vdp1Offset = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
 }
 
 void Baldor_initSub1Sub1(s_workAreaCopy* parent, sBattleTargetable* pTargetable)
@@ -801,7 +801,7 @@ void Baldor_initSub1Sub1(s_workAreaCopy* parent, sBattleTargetable* pTargetable)
     sBaldorSubTask* pNewTask = createSubTaskWithCopy<sBaldorSubTask>(parent, &pTaskDefinition);
     pNewTask->m84_pTargetable = pTargetable;
     pNewTask->m94 = pNewTask->m84_pTargetable->m4_pPosition;
-    pNewTask->mAC_vdp1Offset = dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory;
+    pNewTask->mAC_vdp1Offset = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
 }
 
 void Baldor_initSub1(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_FP* param_3, s32 param_4, u32 param_5, u32 param_6, u32 param_7, u32 param_8)
@@ -849,7 +849,7 @@ void Baldor_initSub1(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_
     }
 }
 
-void Baldor_initSub0Sub1(sBaldor* pThis, s_3dModel* pModel, s16* param3, std::vector<sBattleTargetable>& param4, std::vector<sVec3_FP>& param5)
+void Baldor_initSub0Sub1(p_workArea pThis, s_3dModel* pModel, s16* param3, std::vector<sBattleTargetable>& param4, std::vector<sVec3_FP>& param5)
 {
     if(pModel->m40 == nullptr)
     {
@@ -862,7 +862,7 @@ void Baldor_initSub0Sub1(sBaldor* pThis, s_3dModel* pModel, s16* param3, std::ve
         int count = 0;
         for (int i=0; i<pModel->m12_numBones; i++)
         {
-            count += pModel->m40[i].m4_count;
+            count += (*pModel->m40)[i].m4_count;
         }
 
         *param3 = count;
@@ -875,13 +875,13 @@ void Baldor_initSub0Sub1(sBaldor* pThis, s_3dModel* pModel, s16* param3, std::ve
         {
             if (pModel->m44_hotpointData[i].size())
             {
-                for (int j = 0; j < pModel->m40[i].m4_count; j++)
+                for (int j = 0; j < (*pModel->m40)[i].m4_count; j++)
                 {
                     param4[currentEntryIndex].m4_pPosition = nullptr;
 
-                    sSaturnPtr puVar1 = pModel->m40[i].m0_ptr + (i * 20);
+                    s_hotpoinEntry& puVar1 = (*pModel->m40)[i].m0[i];
 
-                    Baldor_initSub1(&param4[currentEntryIndex], nullptr, &param5[currentEntryIndex], readSaturnS32(puVar1 + 4 * 4), readSaturnS32(puVar1), 0, 0, 10);
+                    Baldor_initSub1(&param4[currentEntryIndex], nullptr, &param5[currentEntryIndex], puVar1.m10, puVar1.m0, 0, 0, 10);
 
                     currentEntryIndex++;
                 }
@@ -911,7 +911,7 @@ void Baldor_initSub0(sBaldor* pThis, sSaturnPtr dataPtr, sFormationData* pFormat
         u8 bundleIdx = readSaturnS8(dataPtr);
         u32 offset = readSaturnU16(readSaturnEA(dataPtr + 0xC) + arg * 2);
 
-        sAnimationData* pAnimation = dramAllocatorEnd[bundleIdx].mC_buffer->m0_dramAllocation->getAnimation(offset);
+        sAnimationData* pAnimation = dramAllocatorEnd[bundleIdx].mC_fileBundle->m0_fileBundle->getAnimation(offset);
 
         riderInit(pThis->m38_3dModel, pAnimation);
 
@@ -980,7 +980,7 @@ void baldorPart_draw(sBaldor* pBaltor, sBaldor_68_30* pBaltorPart)
             pushCurrentMatrix();
             translateCurrentMatrix(pBaltorPart->m4);
             rotateCurrentMatrixZYX(pBaltorPart->m1C);
-            addObjectToDrawList(pBaltor->m0_dramAllocation->get3DModel(pBaltorPart->m40));
+            addObjectToDrawList(pBaltor->m0_fileBundle->get3DModel(pBaltorPart->m40));
             popMatrix();
         }
         if (pBaltorPart->m0_child == nullptr)
@@ -1124,7 +1124,7 @@ void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
     pThis->m6C[2] = randomNumber();
 }
 
-s32 Baldor_updateSub0Sub0(sBaldor* pThis, std::vector<sBattleTargetable>& param2, s16 entriesToParse, s16& param4)
+s32 Baldor_updateSub0Sub0(p_workArea pThis, std::vector<sBattleTargetable>& param2, s16 entriesToParse, s16& param4)
 {
     int uVar4 = 0;
     int sVar3 = 0;
@@ -1219,7 +1219,7 @@ void Baldor_updateSub0Sub2Sub2(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s
         break;
     }
 
-    createDamageSpriteEffect(dramAllocatorEnd[0].mC_buffer, readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x060abef4) + iVar2 * 4), param1, param2, 0, param3, 0, 0);
+    createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x060abef4) + iVar2 * 4), param1, param2, 0, param3, 0, 0);
 }
 
 void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param2, int param3, int param4, p_workArea param5)
@@ -1433,7 +1433,7 @@ void Baldor_update_mode1(sBaldor* pThis)
             assert(0);
         }
 
-        riderInit(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_buffer->m0_dramAllocation->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 2)));
+        riderInit(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_fileBundle->m0_fileBundle->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 2)));
         pThis->m9_attackStatus = 2;
         break;
     case 2:
@@ -1460,7 +1460,7 @@ void Baldor_update_mode1(sBaldor* pThis)
             return;
 
         applyDamage(gBattleManager->m10_battleOverlay->m18_dragon->m8C, 27, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 3, gBattleManager->m10_battleOverlay->m18_dragon->m8_position - *pThis->m1C_translation.m0_current, 0);
-        createDamageSpriteEffect(dramAllocatorEnd[6].mC_buffer, gCurrentBattleOverlay->getSaturnPtr(0x060a912), &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+        createDamageSpriteEffect(dramAllocatorEnd[6].mC_fileBundle, gCurrentBattleOverlay->getSaturnPtr(0x060a912), &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, 0, 0);
         playSystemSoundEffect(0x67);
         pThis->m9_attackStatus = 3;
         break;
@@ -1470,7 +1470,7 @@ void Baldor_update_mode1(sBaldor* pThis)
         {
             return;
         }
-        riderInit(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_buffer->m0_dramAllocation->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 0)));
+        riderInit(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_fileBundle->m0_fileBundle->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 0)));
         pThis->m34_formationEntry->m48 &= ~2;
         pThis->m9_attackStatus = 4;
         break;

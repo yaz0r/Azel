@@ -23,8 +23,10 @@ enum eBattleModes
 {
     m0_shootEnemyWithGun = 0,
     m1_useItem = 1,
+    m2 = 2,
     m3_shootEnemeyWithHomingLaser = 3, //target enemy?
     m4_useBerserk,
+    m5 = 5,
     m6_dragonMoving = 6,
     m7 = 7,
     m8_playAttackCamera = 8,
@@ -175,7 +177,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
 };
 
 s32 BattleEngineSub0_UpdateSub0();
-s32 s_battleDragon_InitSub0();
+s32 isBattleAutoScroll();
 
 void battleEngine_setCurrentCameraPositionPointer(sVec3_FP* pData);
 void battleEngine_setDesiredCameraPositionPointer(sVec3_FP* pData);
@@ -189,11 +191,15 @@ void battleEngine_FlagQuadrantForSafety(u8 quadrant);
 void battleEngine_FlagQuadrantForDanger(u8 quadrant);
 void battleEngine_FlagQuadrantForAttack(u8 quadrant);
 
-void fieldPaletteTaskInitSub0Sub2(); // TODO: clean
+void ResetNBG1Map(); // TODO: clean
 void sEnemyAttackCamera_updateSub2();
 
 void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4);
 
-s32 battleEngine_UpdateSub7Sub0Sub2Sub0();
+bool battleEngine_UpdateSub7Sub0Sub0();
+bool battleEngine_UpdateSub7Sub0Sub2Sub0();
+
+void battleEngine_FlagQuadrantBitForSafety(u16 uParm1);
+void battleEngine_FlagQuadrantBitForDanger(u16 uParm1);
 
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);
