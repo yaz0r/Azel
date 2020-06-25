@@ -721,7 +721,7 @@ int m68k_instructionCallback()
         }
         break;
     case 0x1116:
-        PDS_CategorizedLog(log_m68k, "Clear timing flag\n");
+        PDS_CategorizedLog(log_m68k, "Clear timing flag\n", 0);
         break;
     /*case 0x1B56:
         PDS_CategorizedLog(log_m68k, "Jump to command handler\n");

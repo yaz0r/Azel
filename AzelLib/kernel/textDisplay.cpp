@@ -47,7 +47,7 @@ void textDisplay_update(s_vdp2StringTask* pThis)
         pThis->m0_status++;
         break;
     case 2:
-        FunctionUnimplemented(0);
+        FunctionUnimplemented();
         break;
     default:
         assert(0);

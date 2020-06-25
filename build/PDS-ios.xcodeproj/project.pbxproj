@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		33077F4322B9F9BC0033C8AE /* PDS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F4122B9F9BC0033C8AE /* PDS.cpp */; };
-		33077F6D22B9FE420033C8AE /* common_generated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6C22B9FE420033C8AE /* common_generated.cpp */; };
 		33077F7322B9FE490033C8AE /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */; };
 		33077F7422B9FE490033C8AE /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6F22B9FE490033C8AE /* imgui_draw.cpp */; };
 		33077F7522B9FE490033C8AE /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7022B9FE490033C8AE /* imgui.cpp */; };
@@ -27,7 +26,6 @@
 		3307807C22BAB2930033C8AE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807B22BAB2930033C8AE /* CoreGraphics.framework */; };
 		3328FE272328DA120098E5AF /* VDP2_ps.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE232328DA120098E5AF /* VDP2_ps.glsl */; };
 		3328FE29232966890098E5AF /* VDP2_vs.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE28232966890098E5AF /* VDP2_vs.glsl */; };
-		33587ACF2344337D00D90AEA /* common_generated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6C22B9FE420033C8AE /* common_generated.cpp */; };
 		33587AD02344337D00D90AEA /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7222B9FE490033C8AE /* imgui_impl_sdl.cpp */; };
 		33587AD12344337D00D90AEA /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7122B9FE490033C8AE /* imgui_widgets.cpp */; };
 		33587AD22344337D00D90AEA /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */; };
@@ -53,11 +51,9 @@
 		33587AFC234436AB00D90AEA /* libsoloud-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587ABD234432CE00D90AEA /* libsoloud-ios.a */; };
 		33AB9184234C1E1600BB34F3 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2E323430A260059DE3C /* libSDL2.a */; };
 		33AB918E234C1E1C00BB34F3 /* libSDLmain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2EB23430A260059DE3C /* libSDLmain.a */; };
-		33AB91A5234C469F00BB34F3 /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AB91A4234C469F00BB34F3 /* libMoltenVK.a */; };
 		33AB91A7234C4AF400BB34F3 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33AB91A6234C4AF400BB34F3 /* IOSurface.framework */; };
 		33E0779C240039090060EC3E /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2E723430A260059DE3C /* libSDL2.a */; };
 		33E077A9240039130060EC3E /* libSDLmain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3324E2ED23430A260059DE3C /* libSDLmain.a */; };
-		33EA648B234C1708006F24DA /* common_generated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6C22B9FE420033C8AE /* common_generated.cpp */; };
 		33EA648C234C1708006F24DA /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7222B9FE490033C8AE /* imgui_impl_sdl.cpp */; };
 		33EA648D234C1708006F24DA /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7122B9FE490033C8AE /* imgui_widgets.cpp */; };
 		33EA648E234C1708006F24DA /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */; };
@@ -173,28 +169,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = D0CDA2E736E24CD283A07164;
+			remoteGlobalIDString = 06CA2D93AD0741008EC7E41F;
 			remoteInfo = "AzelLib-ios";
 		};
 		33587AEF2344356D00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = E820A108A57245B685B68928;
+			remoteGlobalIDString = 866097E530C64E8993620B62;
 			remoteInfo = "soloud-ios";
 		};
 		33587AF12344357A00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 42F693C1DF5841ABABBB9CEC;
+			remoteGlobalIDString = 84AFF30145084136B2478BE8;
 			remoteInfo = "AzelLib-tvos";
 		};
 		33587AF32344357C00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 26CCC8BCA0B14FCA8DA54672;
+			remoteGlobalIDString = D077B7A7B3AC4B448A08172A;
 			remoteInfo = "soloud-tvos";
 		};
 		33587AF52344358300D90AEA /* PBXContainerItemProxy */ = {
@@ -264,14 +260,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = BFC5C2E1AF0347E993518889;
+			remoteGlobalIDString = 51D15B3244B64934A13EADCF;
 			remoteInfo = "AzelLib-darwin";
 		};
 		33EA64B3234C1952006F24DA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = BF217B83B7C14F0D919FF43D;
+			remoteGlobalIDString = C2E7B2E95A59471E8B76D9B4;
 			remoteInfo = "soloud-darwin";
 		};
 /* End PBXContainerItemProxy section */
@@ -280,7 +276,6 @@
 		33077F1D22B9F3670033C8AE /* azel-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "azel-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		33077F2B22B9F3690033C8AE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		33077F4122B9F9BC0033C8AE /* PDS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PDS.cpp; path = ../../../../perso/PanzerSaga/PDS/PDS.cpp; sourceTree = "<group>"; };
-		33077F6C22B9FE420033C8AE /* common_generated.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = common_generated.cpp; path = ../../../../perso/PanzerSaga/PDS/common_generated.cpp; sourceTree = "<group>"; };
 		33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imgui_impl_opengl3.cpp; path = ../../../../perso/PanzerSaga/ThirdParty/imgui/examples/imgui_impl_opengl3.cpp; sourceTree = "<group>"; };
 		33077F6F22B9FE490033C8AE /* imgui_draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imgui_draw.cpp; path = ../../../../perso/PanzerSaga/ThirdParty/imgui/imgui_draw.cpp; sourceTree = "<group>"; };
 		33077F7022B9FE490033C8AE /* imgui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imgui.cpp; path = ../../../../perso/PanzerSaga/ThirdParty/imgui/imgui.cpp; sourceTree = "<group>"; };
@@ -378,7 +373,6 @@
 				33EA64B7234C1A3E006F24DA /* CoreAudio.framework in Frameworks */,
 				33EA6494234C1708006F24DA /* QuartzCore.framework in Frameworks */,
 				33EA6495234C1708006F24DA /* AudioToolbox.framework in Frameworks */,
-				33AB91A5234C469F00BB34F3 /* libMoltenVK.a in Frameworks */,
 				33EA64B9234C1A58006F24DA /* ForceFeedback.framework in Frameworks */,
 				33EA64AA234C177D006F24DA /* libsoloud-darwin.a in Frameworks */,
 				33EA6498234C1708006F24DA /* GameController.framework in Frameworks */,
@@ -432,7 +426,6 @@
 				33077F7022B9FE490033C8AE /* imgui.cpp */,
 				33077F6F22B9FE490033C8AE /* imgui_draw.cpp */,
 				33077F7122B9FE490033C8AE /* imgui_widgets.cpp */,
-				33077F6C22B9FE420033C8AE /* common_generated.cpp */,
 				33077F4122B9F9BC0033C8AE /* PDS.cpp */,
 				33077F2B22B9F3690033C8AE /* Info.plist */,
 			);
@@ -854,7 +847,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				33077F6D22B9FE420033C8AE /* common_generated.cpp in Sources */,
 				33077F7722B9FE490033C8AE /* imgui_impl_sdl.cpp in Sources */,
 				33077F7622B9FE490033C8AE /* imgui_widgets.cpp in Sources */,
 				33077F7322B9FE490033C8AE /* imgui_impl_opengl3.cpp in Sources */,
@@ -868,7 +860,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				33587ACF2344337D00D90AEA /* common_generated.cpp in Sources */,
 				33587AD02344337D00D90AEA /* imgui_impl_sdl.cpp in Sources */,
 				33587AD12344337D00D90AEA /* imgui_widgets.cpp in Sources */,
 				33587AD22344337D00D90AEA /* imgui_impl_opengl3.cpp in Sources */,
@@ -882,7 +873,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				33EA648B234C1708006F24DA /* common_generated.cpp in Sources */,
 				33EA648C234C1708006F24DA /* imgui_impl_sdl.cpp in Sources */,
 				33EA648D234C1708006F24DA /* imgui_widgets.cpp in Sources */,
 				33EA648E234C1708006F24DA /* imgui_impl_opengl3.cpp in Sources */,

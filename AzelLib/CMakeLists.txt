@@ -102,11 +102,14 @@ else()
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
 
+if (MSVC)
 ADD_MSVC_PRECOMPILED_HEADER("PDS.h" "PDS_Precompiled.cpp" SOURCES)
 
 SET_SOURCE_FILES_PROPERTIES("PDS_Precompiled.cpp"
                             PROPERTIES COMPILE_FLAGS "/Yc\"PDS.h\" /FI\"PDS.h\" /Fp\"PDS.pch\""
-                                        OBJECT_DEPENDS "PDS.pch")  
+                                        OBJECT_DEPENDS "PDS.pch")
+endif()
+                                        
 if (MSVC)
     set(SOURCES
         ${SOURCES}
