@@ -12,6 +12,10 @@
 #pragma comment(lib, "Opengl32.lib")
 #endif
 
+extern "C" {
+void* cbSetupMetalLayer(void*);
+}
+
 SDL_Window* gWindowGL = nullptr;
 SDL_Window* gWindowBGFX = nullptr;
 SDL_GLContext gGlcontext = nullptr;
@@ -84,10 +88,10 @@ bool SDL_ES3_backend::init()
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
     initparam.platformData.ndt = wmi.info.x11.display;
     initparam.platformData.nwh = (void*)(uintptr_t)wmi.info.x11.window;
-#elif BX_PLATFORM_OSX
+#elif BX_PLATFORM_OSX || 1
     initparam.platformData.ndt = NULL;
-    initparam.platformData.nwh = wmi.info.cocoa.window;
-#elif BX_PLATFORM_WINDOWS || 1
+    initparam.platformData.nwh = cbSetupMetalLayer(wmi.info.cocoa.window);
+#elif BX_PLATFORM_WINDOWS
     initparam.platformData.ndt = NULL;
     initparam.platformData.nwh = wmi.info.win.window;
 #elif BX_PLATFORM_STEAMLINK

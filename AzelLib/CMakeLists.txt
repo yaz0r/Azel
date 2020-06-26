@@ -117,12 +117,6 @@ if (MSVC)
     )
 endif()
 
-#PROFILE vs_5_0
-shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.glsl_bin DEBUG VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
-shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.glsl_bin DEBUG FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
-shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.dx11_bin DEBUG VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE vs_5_0)
-shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.dx11_bin DEBUG FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE ps_5_0)
-
 set(SOURCES
  ${SOURCES}
  ${THIRD_PARTY}/imgui/imgui.cpp
@@ -143,13 +137,42 @@ set(SOURCES
  ${THIRD_PARTY}/../data/VDP2_vs.sc
  ${THIRD_PARTY}/../data/VDP2_ps.glsl
  ${THIRD_PARTY}/../data/VDP2_ps.sc
-
-  ${THIRD_PARTY}/../data/VDP2_vs.glsl_bin
-  ${THIRD_PARTY}/../data/VDP2_ps.glsl_bin
-  ${THIRD_PARTY}/../data/VDP2_vs.dx11_bin
-  ${THIRD_PARTY}/../data/VDP2_ps.dx11_bin
-
 )
+
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.glsl_bin DEBUG VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.glsl_bin DEBUG FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+set(SOURCES
+${SOURCES}
+${THIRD_PARTY}/../data/VDP2_vs.glsl_bin
+${THIRD_PARTY}/../data/VDP2_ps.glsl_bin
+)
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.metal_bin DEBUG VERTEX IOS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.metal_bin DEBUG FRAGMENT IOS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
+set(SOURCES
+${SOURCES}
+${THIRD_PARTY}/../data/VDP2_vs.metal_bin
+${THIRD_PARTY}/../data/VDP2_ps.metal_bin
+)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.metal_bin DEBUG VERTEX OSX VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.metal_bin DEBUG FRAGMENT OSX VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
+set(SOURCES
+${SOURCES}
+${THIRD_PARTY}/../data/VDP2_vs.metal_bin
+${THIRD_PARTY}/../data/VDP2_ps.metal_bin
+)
+else()
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.dx11_bin DEBUG VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE vs_5_0)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.dx11_bin DEBUG FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE ps_5_0)
+
+set(SOURCES
+${SOURCES}
+${THIRD_PARTY}/../data/VDP2_vs.dx11_bin
+${THIRD_PARTY}/../data/VDP2_ps.dx11_bin
+)
+endif()
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
 add_library (AzelLib-ios ${SOURCES})

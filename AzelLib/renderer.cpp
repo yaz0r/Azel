@@ -204,6 +204,7 @@ bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string
     case bgfx::RendererType::Direct3D11:
     case bgfx::RendererType::Direct3D12: shaderFileExtension = ".dx11_bin";  break;
     case bgfx::RendererType::OpenGL:     shaderFileExtension = ".glsl_bin";  break;
+    case bgfx::RendererType::Metal:     shaderFileExtension = ".metal_bin";  break;
     default:
         assert(0);
     }
@@ -243,8 +244,8 @@ void azelSdl2_Init()
         | BGFX_SAMPLER_V_CLAMP
         ;
 
-    vdp1BufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 2, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
-    vdp1DepthBufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 1, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | tsFlags);
+    vdp1BufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 0, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
+    vdp1DepthBufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 0, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | tsFlags);
     std::array<bgfx::Attachment,2> vdp1BufferAt;
     vdp1BufferAt[0].init(vdp1BufferTexture);
     vdp1BufferAt[1].init(vdp1DepthBufferTexture);
@@ -765,7 +766,7 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
             };
 
             static const short int g_quad_index_buffer_data[] = {
-                0,1,2,3,4,5,6
+                0,1,2,3,4,5
             };
 
             quad_vertexbuffer = bgfx::createVertexBuffer(bgfx::copy(g_quad_vertex_buffer_data, sizeof(g_quad_vertex_buffer_data)), ms_layout);
@@ -778,6 +779,8 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
             initialized = true;
         }
 
+        bgfx::setState(BGFX_STATE_DEPTH_TEST_NEVER);
+        
         bgfx::setViewRect(NBGData.viewId, 0, 0, textureWidth, textureHeight);
         bgfx::setViewClear(NBGData.viewId, BGFX_CLEAR_COLOR);
 
