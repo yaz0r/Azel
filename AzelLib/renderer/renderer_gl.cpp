@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include <bx/platform.h>
 
 #ifdef WITH_GL
 
@@ -88,7 +89,7 @@ bool SDL_ES3_backend::init()
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
     initparam.platformData.ndt = wmi.info.x11.display;
     initparam.platformData.nwh = (void*)(uintptr_t)wmi.info.x11.window;
-#elif BX_PLATFORM_OSX || 1
+#elif BX_PLATFORM_OSX
     initparam.platformData.ndt = NULL;
     initparam.platformData.nwh = cbSetupMetalLayer(wmi.info.cocoa.window);
 #elif BX_PLATFORM_WINDOWS

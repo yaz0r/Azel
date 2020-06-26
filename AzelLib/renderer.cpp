@@ -624,7 +624,7 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
             | BGFX_SAMPLER_V_CLAMP
             ;
 
-        NBGData.BGFXTexture = bgfx::createTexture2D(textureWidth, textureHeight, false, 2, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
+        NBGData.BGFXTexture = bgfx::createTexture2D(textureWidth, textureHeight, false, 0, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
         std::array<bgfx::Attachment, 1> attachements;
         attachements[0].init(NBGData.BGFXTexture);
         NBGData.BGFXFB = bgfx::createFrameBuffer(1, &attachements[0], false);
@@ -779,7 +779,7 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
             initialized = true;
         }
 
-        bgfx::setState(BGFX_STATE_DEPTH_TEST_NEVER);
+        //bgfx::setState(BGFX_STATE_DEPTH_TEST_ALWAYS);
         
         bgfx::setViewRect(NBGData.viewId, 0, 0, textureWidth, textureHeight);
         bgfx::setViewClear(NBGData.viewId, BGFX_CLEAR_COLOR);
