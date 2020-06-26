@@ -118,10 +118,10 @@ if (MSVC)
 endif()
 
 #PROFILE vs_5_0
-shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.glsl_bin VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
-shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.glsl_bin FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
-shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.dx_bin VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE vs_5_0)
-shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.dx_bin FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE ps_5_0)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.glsl_bin DEBUG VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.glsl_bin DEBUG FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_vs.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_vs.dx11_bin DEBUG VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE vs_5_0)
+shaderc(FILE ${THIRD_PARTY}/../data/VDP2_ps.sc OUTPUT ${THIRD_PARTY}/../data/VDP2_ps.dx11_bin DEBUG FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/VDP2_vs.varying.def.sc INCLUDES ${BGFX_DIR}/src PROFILE ps_5_0)
 
 set(SOURCES
  ${SOURCES}
@@ -143,6 +143,11 @@ set(SOURCES
  ${THIRD_PARTY}/../data/VDP2_vs.sc
  ${THIRD_PARTY}/../data/VDP2_ps.glsl
  ${THIRD_PARTY}/../data/VDP2_ps.sc
+
+  ${THIRD_PARTY}/../data/VDP2_vs.glsl_bin
+  ${THIRD_PARTY}/../data/VDP2_ps.glsl_bin
+  ${THIRD_PARTY}/../data/VDP2_vs.dx11_bin
+  ${THIRD_PARTY}/../data/VDP2_ps.dx11_bin
 
 )
 

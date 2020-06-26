@@ -43,6 +43,10 @@ GLuint gCompositedTexture = 0;
 
 GLuint gVdp1Texture = 0;
 
+bgfx::TextureHandle bgfx_vdp1_ram_texture = BGFX_INVALID_HANDLE;
+bgfx::TextureHandle bgfx_vdp2_ram_texture = BGFX_INVALID_HANDLE;
+bgfx::TextureHandle bgfx_vdp2_cram_texture = BGFX_INVALID_HANDLE;
+
 GLuint vdp1_ram_texture = 0;
 GLuint vdp2_ram_texture = 0;
 GLuint vdp2_cram_texture = 0;
@@ -51,6 +55,9 @@ struct s_NBG_data
 {
     bgfx::FrameBufferHandle BGFXFB = BGFX_INVALID_HANDLE;
     bgfx::TextureHandle BGFXTexture = BGFX_INVALID_HANDLE;
+    bgfx::TextureHandle bgfx_vdp2_planeDataBuffer = BGFX_INVALID_HANDLE;
+    bgfx::ViewId viewId = -1;
+    int planeId = -1;
     GLuint FB;
     GLuint Texture;
 
@@ -61,6 +68,7 @@ struct s_NBG_data
 std::array<s_NBG_data, 5> NBG_data;
 
 GLuint gVDP2Program = 0;
+bgfx::ProgramHandle bgfx_vdp2_program = BGFX_INVALID_HANDLE;
 
 #ifdef SHIPPING_BUILD
 int frameLimit = 30;
@@ -145,7 +153,7 @@ GLuint compileShader(const char* VS, const char* PS);
 
 bool loadFileToVector(std::vector<char>& outputVector, const std::string& filename)
 {
-    FILE* fHandle = fopen(filename.c_str(), "r");
+    FILE* fHandle = fopen(filename.c_str(), "rb");
     if (fHandle == nullptr)
         return false;
     fseek(fHandle, 0, SEEK_END);
@@ -167,6 +175,52 @@ GLuint compileShaderFromFiles(const std::string& VSFile, const std::string& PSFi
     loadFileToVector(PSSource, PSFile);
 
     return compileShader(&VSSource[0], &PSSource[0]);
+}
+
+bgfx::ShaderHandle loadBgfxShader(const std::string& filename)
+{
+    std::vector<u8> memBlob;
+    FILE* fHandle = fopen(filename.c_str(), "rb");
+    if (fHandle == nullptr)
+        return BGFX_INVALID_HANDLE;
+    fseek(fHandle, 0, SEEK_END);
+    u32 size = ftell(fHandle);
+    fseek(fHandle, 0, SEEK_SET);
+    memBlob.resize(size);
+    fread(&memBlob[0], 1, size, fHandle);
+    fclose(fHandle);
+
+    bgfx::ShaderHandle handle = bgfx::createShader(bgfx::copy(&memBlob[0], size));
+    bgfx::setName(handle, filename.c_str());
+
+    return handle;
+}
+
+bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string& PSFile)
+{
+    std::string shaderFileExtension = "";
+    switch (bgfx::getRendererType())
+    {
+    case bgfx::RendererType::Direct3D11:
+    case bgfx::RendererType::Direct3D12: shaderFileExtension = ".dx11_bin";  break;
+    case bgfx::RendererType::OpenGL:     shaderFileExtension = ".glsl_bin";  break;
+    default:
+        assert(0);
+    }
+
+    bgfx::ShaderHandle vsh = loadBgfxShader(VSFile + shaderFileExtension);
+    bgfx::ShaderHandle psh = loadBgfxShader(PSFile + shaderFileExtension);
+    
+    /*
+    std::array<bgfx::UniformHandle, 32> uniforms;
+    int numUniforms = bgfx::getShaderUniforms(psh, &uniforms[0], 32);
+    for (int i = 0; i < numUniforms; i++)
+    {
+        bgfx::UniformInfo info;
+        bgfx::getUniformInfo(uniforms[i], info);
+    }
+    */
+    return bgfx::createProgram(vsh, psh, true /* destroy shaders when program is destroyed */);
 }
 
 void azelSdl2_Init()
@@ -205,6 +259,8 @@ void azelSdl2_Init()
 
     for (int i = 0; i < NBG_data.size(); i++)
     {
+        NBG_data[i].planeId = i;
+        NBG_data[i].viewId = 5+i;
         glGenTextures(1, &NBG_data[i].Texture);
         glGenFramebuffers(1, &NBG_data[i].FB);
     }
@@ -214,8 +270,12 @@ void azelSdl2_Init()
     glGenTextures(1, &vdp2_ram_texture);
     glGenTextures(1, &vdp2_cram_texture);
 
-    gVDP2Program = compileShaderFromFiles("VDP2_vs.glsl", "VDP2_ps.glsl");
+    bgfx_vdp1_ram_texture = bgfx::createTexture2D(256, 0x80000 / 256, false, 1, bgfx::TextureFormat::R8U, 0);
+    bgfx_vdp2_ram_texture = bgfx::createTexture2D(256, 0x80000 / 256, false, 1, bgfx::TextureFormat::R8U, 0);
+    bgfx_vdp2_cram_texture = bgfx::createTexture2D(256, 0x1000 / 256, false, 1, bgfx::TextureFormat::R8U, 0);
 
+    gVDP2Program = compileShaderFromFiles("VDP2_vs.glsl", "VDP2_ps.glsl");
+    bgfx_vdp2_program = loadBgfxProgram("VDP2_vs", "VDP2_ps");
 #ifndef SHIPPING_BUILD
     SDL_GL_SetSwapInterval(0);
 #endif
@@ -568,6 +628,10 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         attachements[0].init(NBGData.BGFXTexture);
         NBGData.BGFXFB = bgfx::createFrameBuffer(1, &attachements[0], false);
 
+        NBGData.bgfx_vdp2_planeDataBuffer = bgfx::createTexture2D(16, 16, 0, 0, bgfx::TextureFormat::R32U);
+
+        bgfx::setViewFrameBuffer(NBGData.viewId, NBGData.BGFXFB);
+
         NBGData.m_currentWidth = textureWidth;
         NBGData.m_currentHeight = textureHeight;
     }
@@ -672,6 +736,61 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         glDrawArrays(GL_TRIANGLES, 0, 6); // From index 0 to 3 -> 1 triangle
 
         glDisableVertexAttribArray(0);
+    }
+
+    {
+        // BGFX version
+        static bgfx::VertexBufferHandle quad_vertexbuffer = BGFX_INVALID_HANDLE;
+        static bgfx::IndexBufferHandle quad_indexbuffer = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle texID_VDP2_RAM = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle texID_VDP2_CRAM = BGFX_INVALID_HANDLE;
+        static bgfx::VertexLayout ms_layout;
+        static bgfx::UniformHandle planeDataBuffer = BGFX_INVALID_HANDLE;
+
+        static bool initialized = false;
+        if (!initialized)
+        {
+            ms_layout
+                .begin()
+                .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+                .end();
+
+            static const float g_quad_vertex_buffer_data[] = {
+                -1.0f, -1.0f, 0.0f,
+                1.0f, -1.0f, 0.0f,
+                -1.0f,  1.0f, 0.0f,
+                -1.0f,  1.0f, 0.0f,
+                1.0f, -1.0f, 0.0f,
+                1.0f,  1.0f, 0.0f,
+            };
+
+            static const short int g_quad_index_buffer_data[] = {
+                0,1,2,3,4,5,6
+            };
+
+            quad_vertexbuffer = bgfx::createVertexBuffer(bgfx::copy(g_quad_vertex_buffer_data, sizeof(g_quad_vertex_buffer_data)), ms_layout);
+            quad_indexbuffer = bgfx::createIndexBuffer(bgfx::copy(g_quad_index_buffer_data, sizeof(g_quad_index_buffer_data)));
+
+            texID_VDP2_RAM = bgfx::createUniform("s_VDP2_RAM", bgfx::UniformType::Sampler);
+            texID_VDP2_CRAM = bgfx::createUniform("s_VDP2_CRAM", bgfx::UniformType::Sampler);
+            planeDataBuffer = bgfx::createUniform("s_planeConfig", bgfx::UniformType::Sampler);
+
+            initialized = true;
+        }
+
+        bgfx::setViewRect(NBGData.viewId, 0, 0, textureWidth, textureHeight);
+        bgfx::setViewClear(NBGData.viewId, BGFX_CLEAR_COLOR);
+
+        bgfx::updateTexture2D(NBGData.bgfx_vdp2_planeDataBuffer, 0, 0, 0, 0, sizeof(layerData)/4, 1, bgfx::copy(&layerData, sizeof(layerData)));
+
+        bgfx::setTexture(0, texID_VDP2_RAM, bgfx_vdp2_ram_texture);
+        bgfx::setTexture(1, texID_VDP2_CRAM, bgfx_vdp2_cram_texture);
+        bgfx::setTexture(2, planeDataBuffer, NBGData.bgfx_vdp2_planeDataBuffer);
+
+        bgfx::setVertexBuffer(0, quad_vertexbuffer);
+        bgfx::setIndexBuffer(quad_indexbuffer);
+        bgfx::submit(NBGData.viewId, bgfx_vdp2_program);
+
     }
     
     gBackend->bindBackBuffer();
@@ -1744,6 +1863,12 @@ bool azelSdl2_EndFrame()
         glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 0x1000 / 256, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp2Cram(0));
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    }
+
+    {
+        bgfx::updateTexture2D(bgfx_vdp1_ram_texture, 0, 0, 0, 0, 256, 0x80000 / 256, bgfx::makeRef(getVdp1Pointer(0x25C00000), 0x80000));
+        bgfx::updateTexture2D(bgfx_vdp2_ram_texture, 0, 0, 0, 0, 256, 0x80000 / 256, bgfx::makeRef(getVdp2Vram(0), 0x80000));
+        bgfx::updateTexture2D(bgfx_vdp2_cram_texture, 0, 0, 0, 0, 256, 0x1000 / 256, bgfx::makeRef(getVdp2Cram(0), 0x1000));
     }
 
     static bool BG0_GPU = true;
