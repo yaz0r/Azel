@@ -171,8 +171,8 @@ GLuint compileShaderFromFiles(const std::string& VSFile, const std::string& PSFi
     std::vector<char> VSSource;
     std::vector<char> PSSource;
 
-    loadFileToVector(VSSource, VSFile);
-    loadFileToVector(PSSource, PSFile);
+    loadFileToVector(VSSource, std::string("shaders/") + VSFile);
+    loadFileToVector(PSSource, std::string("shaders/") + PSFile);
 
     return compileShader(&VSSource[0], &PSSource[0]);
 }
@@ -202,15 +202,15 @@ bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string
     switch (bgfx::getRendererType())
     {
     case bgfx::RendererType::Direct3D11:
-    case bgfx::RendererType::Direct3D12: shaderFileExtension = ".dx11_bin";  break;
-    case bgfx::RendererType::OpenGL:     shaderFileExtension = ".glsl_bin";  break;
-    case bgfx::RendererType::Metal:     shaderFileExtension = ".metal_bin";  break;
+    case bgfx::RendererType::Direct3D12: shaderFileExtension = ".dx11.bin";  break;
+    case bgfx::RendererType::OpenGL:     shaderFileExtension = ".glsl.bin";  break;
+    case bgfx::RendererType::Metal:     shaderFileExtension = ".metal.bin";  break;
     default:
         assert(0);
     }
 
-    bgfx::ShaderHandle vsh = loadBgfxShader(VSFile + shaderFileExtension);
-    bgfx::ShaderHandle psh = loadBgfxShader(PSFile + shaderFileExtension);
+    bgfx::ShaderHandle vsh = loadBgfxShader(std::string("shaders/generated/") + VSFile + shaderFileExtension);
+    bgfx::ShaderHandle psh = loadBgfxShader(std::string("shaders/generated/") + PSFile + shaderFileExtension);
     
     /*
     std::array<bgfx::UniformHandle, 32> uniforms;
@@ -624,10 +624,8 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
             | BGFX_SAMPLER_V_CLAMP
             ;
 
-        NBGData.BGFXTexture = bgfx::createTexture2D(textureWidth, textureHeight, false, 0, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
-        std::array<bgfx::Attachment, 1> attachements;
-        attachements[0].init(NBGData.BGFXTexture);
-        NBGData.BGFXFB = bgfx::createFrameBuffer(1, &attachements[0], false);
+        NBGData.BGFXFB = bgfx::createFrameBuffer(textureWidth, textureHeight, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
+        NBGData.BGFXTexture = bgfx::getTexture(NBGData.BGFXFB);
 
         NBGData.bgfx_vdp2_planeDataBuffer = bgfx::createTexture2D(16, 16, 0, 0, bgfx::TextureFormat::R32U);
 
@@ -779,7 +777,10 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
             initialized = true;
         }
 
-        //bgfx::setState(BGFX_STATE_DEPTH_TEST_ALWAYS);
+        bgfx::setState(0
+            | BGFX_STATE_WRITE_RGB
+            | BGFX_STATE_WRITE_A
+        );
         
         bgfx::setViewRect(NBGData.viewId, 0, 0, textureWidth, textureHeight);
         bgfx::setViewClear(NBGData.viewId, BGFX_CLEAR_COLOR);
@@ -2063,6 +2064,7 @@ bool azelSdl2_EndFrame()
                 if (isBackgroundEnabled(layerIndex) && (getPriorityForLayer(layerIndex) == priorityIndex))
                 {
                     renderTexturedQuad(getTextureForLayer(layerIndex));
+                    //renderTexturedQuadBgfx(getTextureForLayerBgfx(layerIndex));
                 }
             }
             
@@ -2214,6 +2216,7 @@ bool azelSdl2_EndFrame()
     else
     {
         renderTexturedQuad(gCompositedTexture);
+        //renderTexturedQuadBgfx(gBgfxCompositedTexture);
     }
     
     checkGL();
