@@ -100,6 +100,9 @@ bool SDL_ES3_backend::init()
     initparam.platformData.nwh = wmi.info.vivante.window;
 #endif // BX_PLATFORM_
 
+    //initparam.type = bgfx::RendererType::OpenGL;
+    //initparam.type = bgfx::RendererType::Vulkan;
+
     bgfx::init(initparam);
     //bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
 

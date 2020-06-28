@@ -205,7 +205,8 @@ bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string
     case bgfx::RendererType::Direct3D11:
     case bgfx::RendererType::Direct3D12: shaderFileExtension = ".dx11.bin";  break;
     case bgfx::RendererType::OpenGL:     shaderFileExtension = ".glsl.bin";  break;
-    case bgfx::RendererType::Metal:     shaderFileExtension = ".metal.bin";  break;
+    case bgfx::RendererType::Metal:      shaderFileExtension = ".metal.bin";  break;
+    case bgfx::RendererType::Vulkan:     shaderFileExtension = ".spirv.bin";  break;
     default:
         assert(0);
     }
@@ -234,13 +235,13 @@ void azelSdl2_Init()
     {
         gBackend = SDL_ES3_backend::create();
     }
-    
+
 
     // setup vdp1 Poly
     const uint64_t tsFlags = 0
-        | BGFX_SAMPLER_MIN_POINT
-        | BGFX_SAMPLER_MAG_POINT
-        | BGFX_SAMPLER_MIP_POINT
+        //| BGFX_SAMPLER_MIN_POINT
+        //| BGFX_SAMPLER_MAG_POINT
+        //| BGFX_SAMPLER_MIP_POINT
         | BGFX_SAMPLER_U_CLAMP
         | BGFX_SAMPLER_V_CLAMP
         ;
@@ -643,9 +644,9 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         
 
         const uint64_t tsFlags = 0
-            | BGFX_SAMPLER_MIN_POINT
-            | BGFX_SAMPLER_MAG_POINT
-            | BGFX_SAMPLER_MIP_POINT
+            //| BGFX_SAMPLER_MIN_POINT
+            //| BGFX_SAMPLER_MAG_POINT
+            //| BGFX_SAMPLER_MIP_POINT
             | BGFX_SAMPLER_U_CLAMP
             | BGFX_SAMPLER_V_CLAMP
             ;

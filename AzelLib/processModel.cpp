@@ -294,8 +294,8 @@ void sProcessed3dModel::generateVertexBuffer()
 
         for (int j = 0; j < 4; j++)
         {
-            m_vertexBuffer[i * 4 + j].texcoord0[0] = uv[vertexOrder[j]][0] / atlasTextureWidth;
-            m_vertexBuffer[i * 4 + j].texcoord0[1] = uv[vertexOrder[j]][1] / atlasTextureHeight;
+            m_vertexBuffer[i * 4 + j].texcoord0[0] = uv[vertexOrder[j]][0]/* / atlasTextureWidth */;
+            m_vertexBuffer[i * 4 + j].texcoord0[1] = uv[vertexOrder[j]][1]/* / atlasTextureHeight */;
 
         }
     }

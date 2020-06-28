@@ -960,7 +960,7 @@ float* getProjectionMatrix()
 {
     static float fEarlyProjectionMatrix[4 * 4];
 
-    float zNear = 0.1f;
+    float zNear = 0.01f;
     float zFar = 1000.f;
 
 #if 0
