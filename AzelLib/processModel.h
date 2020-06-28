@@ -20,103 +20,7 @@ struct sProcessed3dModel
         std::vector<sQuadExtra> m14_extraData;
     };
 
-    sProcessed3dModel(u8* base, u32 offset)
-    {
-        _base = base;
-
-        u8* pRawModel = base + offset;
-
-        m0_radius = READ_BE_S32(pRawModel + 0);
-        m4_numVertices = READ_BE_U32(pRawModel + 4);
-        u32 verticesOffset = READ_BE_U32(pRawModel + 8);
-        m8_vertices.reserve(m4_numVertices);
-
-        for (u32 i = 0; i < m4_numVertices; i++)
-        {
-            u8* startOfVertice = base + verticesOffset + (3 * 2 * i);
-
-            sVec3_S16_12_4 vertice;
-            vertice[0] = READ_BE_S16(startOfVertice + 0);
-            vertice[1] = READ_BE_S16(startOfVertice + 2);
-            vertice[2] = READ_BE_S16(startOfVertice + 4);
-
-            m8_vertices.push_back(vertice);
-        }
-
-        u8* startOfQuad = pRawModel + 0xC;
-        while (1)
-        {
-            sQuad newQuad;
-            newQuad.m0_indices[0] = READ_BE_U16(startOfQuad + 0);
-            newQuad.m0_indices[1] = READ_BE_U16(startOfQuad + 2);
-            newQuad.m0_indices[2] = READ_BE_U16(startOfQuad + 4);
-            newQuad.m0_indices[3] = READ_BE_U16(startOfQuad + 6);
-
-            if ((newQuad.m0_indices[0] == 0) && (newQuad.m0_indices[1] == 0) && (newQuad.m0_indices[2] == 0) && (newQuad.m0_indices[3] == 0))
-            {
-                break;
-            }
-
-            startOfQuad += 8;
-
-            newQuad.m8_lightingControl = READ_BE_U16(startOfQuad); startOfQuad += 2;
-            newQuad.mA_CMDCTRL = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDCTRL (but modified)
-            newQuad.mC_CMDPMOD = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDPMOD
-            newQuad.mE_CMDCOLR = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDCOLR
-            newQuad.m10_CMDSRCA = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDSRCA
-            newQuad.m12_onCollisionScriptIndex = READ_BE_U16(startOfQuad); startOfQuad += 2; // CMDSIZEd
-
-            u8 lightingMode = (newQuad.m8_lightingControl >> 8) & 3;
-
-            switch (lightingMode)
-            {
-            case 0: // plain texture
-                break;
-            case 1: // texture + single normal, used for shadows
-                newQuad.m14_extraData.push_back(readExtraData(startOfQuad, false));
-                startOfQuad += 2; // 3 words + padding
-                break;
-            case 2: // texture + normal + color per vertex
-                for (int i = 0; i < 4; i++)
-                {
-                    newQuad.m14_extraData.push_back(readExtraData(startOfQuad, true));
-                }
-                break;
-            case 3: // texture + normal per vertex
-                for (int i = 0; i < 4; i++)
-                {
-                    newQuad.m14_extraData.push_back(readExtraData(startOfQuad, false));
-                }
-                break;
-            }
-
-            mC_Quads.push_back(newQuad);
-        }
-    }
-
-    sQuadExtra readExtraData(u8*& data, bool readColor)
-    {
-        sQuadExtra newData;
-
-        newData.m0_normals[0] = READ_BE_S16(data); data += 2;
-        newData.m0_normals[1] = READ_BE_S16(data); data += 2;
-        newData.m0_normals[2] = READ_BE_S16(data); data += 2;
-
-        if (readColor)
-        {
-            newData.m6_colors[0] = READ_BE_U16(data); data += 2;
-            newData.m6_colors[1] = READ_BE_U16(data); data += 2;
-            newData.m6_colors[2] = READ_BE_U16(data); data += 2;
-        }
-        else
-        {
-            newData.m6_colors[0] = 0;
-            newData.m6_colors[1] = 0;
-            newData.m6_colors[2] = 0;
-        }
-
-        return newData;
-    }
+    sProcessed3dModel(u8* base, u32 offset);
 
     // build from raw data
     sProcessed3dModel(const fixedPoint& radius, const std::vector<sVec3_S16_12_4>& vertices, const std::vector<sQuad>& quads)
@@ -143,4 +47,21 @@ struct sProcessed3dModel
             mC_Quads[i].m10_CMDSRCA += offset;
         }
     }
+
+    void generateVertexBuffer();
+
+    struct sVertexBufferEntry
+    {
+        float position[3];
+        float texcoord0[2];
+    };
+    std::vector<sVertexBufferEntry> m_vertexBuffer;
+    std::vector<u16> m_indexBuffer;
+
+    bgfx::VertexLayout m_vertexLayout;
+    bgfx::VertexBufferHandle m_vertexBufferHandle = BGFX_INVALID_HANDLE;
+    bgfx::IndexBufferHandle m_indexBufferHandle = BGFX_INVALID_HANDLE;
+    bgfx::TextureHandle m_textureAtlas = BGFX_INVALID_HANDLE;
+
+    bool m_vertexBuffersDirty = true;
 };

@@ -101,7 +101,7 @@ bool SDL_ES3_backend::init()
 #endif // BX_PLATFORM_
 
     bgfx::init(initparam);
-    bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
+    //bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
 
 #ifdef USE_GL
     gl3wInit();

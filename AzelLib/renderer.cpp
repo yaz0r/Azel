@@ -38,6 +38,7 @@ GLuint gVdp1PolyFB = 0;
 GLuint gVdp1PolyTexture = 0;
 GLuint gVdp1PolyDepth = 0;
 
+bgfx::FrameBufferHandle gBgfxCompositedFB = BGFX_INVALID_HANDLE;
 GLuint gCompositedFB = 0;
 GLuint gCompositedTexture = 0;
 
@@ -261,7 +262,8 @@ void azelSdl2_Init()
     for (int i = 0; i < NBG_data.size(); i++)
     {
         NBG_data[i].planeId = i;
-        NBG_data[i].viewId = 5+i;
+        NBG_data[i].viewId = VDP2_viewsStart + i;
+        assert(NBG_data[i].viewId <= VDP2_MAX);
         glGenTextures(1, &NBG_data[i].Texture);
         glGenFramebuffers(1, &NBG_data[i].FB);
     }
@@ -282,6 +284,30 @@ void azelSdl2_Init()
 #endif
 
     checkGL();
+}
+
+bgfx::TextureHandle getTextureForLayerBgfx(eLayers layerIndex)
+{
+    switch (layerIndex)
+    {
+    case SPRITE_POLY:
+        return bgfx::getTexture(gBGFXVdp1PolyFB);
+    case SPRITE_SOFTWARE:
+        return BGFX_INVALID_HANDLE;
+    case NBG0:
+        return NBG_data[0].BGFXTexture;
+    case NBG1:
+        return NBG_data[1].BGFXTexture;
+        //case NBG2:
+        //    return gNBG2Texture;
+    case NBG3:
+        return NBG_data[3].BGFXTexture;
+    case RBG0:
+        return NBG_data[4].BGFXTexture;
+    default:
+        assert(0);
+        break;
+    }
 }
 
 GLuint getTextureForLayer(eLayers layerIndex)
@@ -1682,6 +1708,65 @@ void renderVdp1()
     }
 }
 
+void renderTexturedQuadBgfx(bgfx::ViewId outputView, bgfx::TextureHandle sourceTexture)
+{
+    if (!bgfx::isValid(sourceTexture))
+    {
+        return;
+    }
+    static bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+    static bgfx::VertexBufferHandle quad_vertexbuffer = BGFX_INVALID_HANDLE;
+    static bgfx::IndexBufferHandle quad_indexbuffer = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle inputTexture = BGFX_INVALID_HANDLE;
+    static bgfx::VertexLayout ms_layout;
+
+    static bool initialized = false;
+    if (!initialized)
+    {
+        program = loadBgfxProgram("VDP2_blit_vs", "VDP2_blit_ps");
+
+        ms_layout
+            .begin()
+            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .end();
+
+        static const float g_quad_vertex_buffer_data[] = {
+            -1.0f, -1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            -1.0f,  1.0f, 0.0f,
+            -1.0f,  1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            1.0f,  1.0f, 0.0f,
+        };
+
+        static const short int g_quad_index_buffer_data[] = {
+            0,1,2,3,4,5
+        };
+
+        quad_vertexbuffer = bgfx::createVertexBuffer(bgfx::copy(g_quad_vertex_buffer_data, sizeof(g_quad_vertex_buffer_data)), ms_layout);
+        quad_indexbuffer = bgfx::createIndexBuffer(bgfx::copy(g_quad_index_buffer_data, sizeof(g_quad_index_buffer_data)));
+
+        inputTexture = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
+
+        initialized = true;
+    }
+
+    bgfx::setState(0
+        | BGFX_STATE_WRITE_RGB
+        | BGFX_STATE_WRITE_A
+        | BGFX_STATE_DEPTH_TEST_ALWAYS
+    );
+
+    bgfx::setViewRect(outputView, 0, 0, internalResolution[0], internalResolution[1]);
+    bgfx::setViewClear(outputView, BGFX_CLEAR_COLOR);
+
+    bgfx::setTexture(0, inputTexture, sourceTexture);
+
+    bgfx::setVertexBuffer(0, quad_vertexbuffer);
+    bgfx::setIndexBuffer(quad_indexbuffer);
+    bgfx::submit(outputView, program);
+}
+
 #ifndef USE_NULL_RENDERER
 void renderTexturedQuad(GLuint sourceTexture)
 {
@@ -1964,7 +2049,10 @@ bool azelSdl2_EndFrame()
     {
 #ifndef USE_NULL_RENDERER
 
-        bgfx::setViewFrameBuffer(view_vdp1Poly, gBGFXVdp1PolyFB);
+        bgfx::setViewFrameBuffer(vdp1_gpuView, gBGFXVdp1PolyFB);
+        bgfx::setViewRect(vdp1_gpuView, 0, 0, internalResolution[0], internalResolution[1]);
+
+        bgfx::setViewClear(vdp1_gpuView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0);
 
         checkGL();
         glBindFramebuffer(GL_FRAMEBUFFER, gVdp1PolyFB);
@@ -2064,7 +2152,7 @@ bool azelSdl2_EndFrame()
                 if (isBackgroundEnabled(layerIndex) && (getPriorityForLayer(layerIndex) == priorityIndex))
                 {
                     renderTexturedQuad(getTextureForLayer(layerIndex));
-                    //renderTexturedQuadBgfx(getTextureForLayerBgfx(layerIndex));
+                    renderTexturedQuadBgfx(CompositeView, getTextureForLayerBgfx(layerIndex));
                 }
             }
             
@@ -2216,7 +2304,7 @@ bool azelSdl2_EndFrame()
     else
     {
         renderTexturedQuad(gCompositedTexture);
-        //renderTexturedQuadBgfx(gBgfxCompositedTexture);
+        //renderTexturedQuadBgfx(0, bgfx::getTexture(gBgfxCompositedFB));
     }
     
     checkGL();

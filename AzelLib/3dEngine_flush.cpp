@@ -2,6 +2,8 @@
 #include "renderer/renderer_gl.h"
 #include "processModel.h"
 
+#include <bx/math.h>
+
 extern std::array<sMatrix4x3, 16> matrixStack;
 
 #include "3dEngine_textureCache.h"
@@ -270,7 +272,6 @@ const GLchar azel_ps[] =
 const GLchar azel_vs[] =
 "#version 330 \n"
 "uniform mat4 u_mvpMatrix;    \n"
-"uniform mat4 u_modelMatrix;    \n"
 "uniform vec2 u_2dOffset;   \n"
 "in vec3 a_position;   \n"
 "in vec2 a_texcoord;   \n"
@@ -279,7 +280,7 @@ const GLchar azel_vs[] =
 "out  highp vec4 v_color;     \n"
 "void main()                  \n"
 "{                            \n"
-"   gl_Position = u_mvpMatrix * u_modelMatrix * vec4(a_position, 1); \n"
+"   gl_Position = u_mvpMatrix * vec4(a_position, 1); \n"
 "   gl_Position.xy += u_2dOffset; \n"
 "   v_texcoord = a_texcoord; \n"
 "	v_color = a_color; \n"
@@ -428,8 +429,11 @@ GLuint colorRampTexture = 0;
 std::vector<s_vertexData> SingleDrawcallVertexArray;
 std::vector<uint32_t> SingleDrawcallIndexArray;
 
+bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string& PSFile); // TODO: clean
+
 void drawObject(s_objectToRender* pObject, float* projectionMatrix)
 {
+    pObject->m_pObject->generateVertexBuffer();
     //return drawObject_SingleDrawCall(pObject, projectionMatrix);
 
     checkGL();
@@ -444,24 +448,79 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
             objectMatrix[i] = pObject->m_modelMatrix.matrix[i] / quantisation;
         }
         objectMatrix[15] = 1.f;
-
-        transposeMatrix(objectMatrix);
-
-        //glMatrixMode(GL_MODELVIEW);
-        //glLoadMatrixf(objectMatrix);
     }
 
-    float objectProjMatrix[4 * 4];
-    multiplyMatrices(objectMatrix, projectionMatrix, objectProjMatrix);
-
-    if (pObject->m_isBillboard)
+    static bgfx::ProgramHandle vdp1_program = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle vdp1_2dOffset_handle = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle vdp1_modelMatrix = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle vdp1_modelViewProj = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle vdp1_textureSampler = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(vdp1_program))
     {
-        glDisable(GL_CULL_FACE);
+        vdp1_program = loadBgfxProgram("VDP1_vs", "VDP1_ps");
+        vdp1_2dOffset_handle = bgfx::createUniform("u_2dOffset", bgfx::UniformType::Vec4);
+        vdp1_modelViewProj = bgfx::createUniform("u_customModelViewProj", bgfx::UniformType::Mat4);
+        vdp1_textureSampler = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
     }
-    else
+
+    if(0)
     {
-        glEnable(GL_CULL_FACE);
+        float proj[16];
+        bx::mtxProj(proj, 50.0f, float(352.f) / float(224.f), 0.1f, 1000.f, bgfx::getCaps()->homogeneousDepth);
+
+        float view[16];
+        bx::mtxIdentity(view);
+
+        bgfx::setViewTransform(vdp1_gpuView, objectMatrix, proj);
     }
+
+    //transposeMatrix(objectMatrix);
+    transposeMatrix(projectionMatrix);
+
+    glm::mat4 tempProjection;
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            tempProjection[i][j] = projectionMatrix[j * 4 + i];
+        }
+    }
+
+    glm::mat4 tempObjectMatrix;
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            tempObjectMatrix[i][j] = objectMatrix[j * 4 + i];
+        }
+    }
+    glm::mat4 mvpMatrix = tempProjection * tempObjectMatrix;
+
+    //bgfx::setUniform(vdp1_modelMatrix, objectMatrix);
+    float _2dOffset[4];
+    _2dOffset[0] = pObject->m_2dOffset[0];
+    _2dOffset[1] = pObject->m_2dOffset[1];
+    bgfx::setUniform(vdp1_2dOffset_handle, _2dOffset);
+    bgfx::setUniform(vdp1_modelViewProj, &mvpMatrix[0][0]);
+
+    bgfx::setTransform(objectMatrix);
+
+    uint64_t state = 0
+        | BGFX_STATE_DEPTH_TEST_LEQUAL
+        | BGFX_STATE_WRITE_RGB
+        | BGFX_STATE_WRITE_A
+        | BGFX_STATE_WRITE_Z
+        | BGFX_STATE_CULL_CCW
+        | BGFX_STATE_MSAA
+        | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
+        ;
+
+    bgfx::setState(state);
+
+    bgfx::setTexture(0, vdp1_textureSampler, pObject->m_pObject->m_textureAtlas);
+    bgfx::setVertexBuffer(0, pObject->m_pObject->m_vertexBufferHandle);
+    bgfx::setIndexBuffer(pObject->m_pObject->m_indexBufferHandle);
+    bgfx::submit(vdp1_gpuView, vdp1_program);
 
     {
         checkGL();
@@ -469,7 +528,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
         checkGL();
         if (modelProjection != -1)
         {
-            glUniformMatrix4fv(modelProjection, 1, GL_FALSE, projectionMatrix);
+            glUniformMatrix4fv(modelProjection, 1, GL_FALSE, &mvpMatrix[0][0]);
         }
         checkGL();
 
@@ -782,6 +841,16 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
                                     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                                     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
                                     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+                                    if (pObject->m_isBillboard)
+                                    {
+                                        glDisable(GL_CULL_FACE);
+                                    }
+                                    else
+                                    {
+                                        glEnable(GL_CULL_FACE);
+                                    }
+
                                     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)0);
                                     checkGL();
                                     glDisableVertexAttribArray(vertexp);
