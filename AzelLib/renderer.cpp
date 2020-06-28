@@ -214,16 +214,12 @@ bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string
     bgfx::ShaderHandle vsh = loadBgfxShader(std::string("shaders/generated/") + VSFile + shaderFileExtension);
     bgfx::ShaderHandle psh = loadBgfxShader(std::string("shaders/generated/") + PSFile + shaderFileExtension);
     
-    /*
-    std::array<bgfx::UniformHandle, 32> uniforms;
-    int numUniforms = bgfx::getShaderUniforms(psh, &uniforms[0], 32);
-    for (int i = 0; i < numUniforms; i++)
-    {
-        bgfx::UniformInfo info;
-        bgfx::getUniformInfo(uniforms[i], info);
-    }
-    */
-    return bgfx::createProgram(vsh, psh, true /* destroy shaders when program is destroyed */);
+    assert(bgfx::isValid(vsh));
+    assert(bgfx::isValid(psh));
+
+    bgfx::ProgramHandle ProgramHandle = bgfx::createProgram(vsh, psh, true /* destroy shaders when program is destroyed */);
+    assert(bgfx::isValid(ProgramHandle));
+    return ProgramHandle;
 }
 
 void azelSdl2_Init()

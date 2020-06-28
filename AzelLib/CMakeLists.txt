@@ -202,6 +202,8 @@ endif()
 endmacro()
 
 addShaderProgram(VDP1_vs VDP1_ps VDP1.varying.def)
+addShaderProgram(VDP1_vertexColor_vs VDP1_vertexColor_ps VDP1.varying.def)
+addShaderProgram(VDP1_2dUI_vs VDP1_2dUI_ps VDP1.varying.def)
 addShaderProgram(VDP2_vs VDP2_ps VDP2_vs.varying.def)
 addShaderProgram(VDP2_blit_vs VDP2_blit_ps VDP2_blit.varying.def)
 

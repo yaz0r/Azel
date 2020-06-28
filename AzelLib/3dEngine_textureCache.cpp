@@ -14,6 +14,7 @@ struct s_cachedTexture
     u16 CMDSRCA;
     u16 CMDSIZE;
     GLuint textureHandle;
+    bgfx::TextureHandle m_handle;
 };
 
 std::unordered_map<u64, s_cachedTexture> textureCache;
@@ -245,6 +246,59 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
     return (u32*)textureOutput;
 }
 
+bgfx::TextureHandle getTextureForQuadBGFX(s_quad& quad)
+{
+    u64 textureHash = (quad.CMDCTRL | ((u64)quad.CMDPMOD << 16) | ((u64)quad.CMDCOLR << 32) | ((u64)quad.CMDSRCA << 48)) ^ quad.CMDSIZE;
+
+    auto search = textureCache.find(textureHash);
+    if (search != textureCache.end())
+    {
+        s_cachedTexture& cachedEntry = search->second;
+        assert((quad.CMDCTRL == cachedEntry.CMDCTRL)
+            && (quad.CMDPMOD == cachedEntry.CMDPMOD)
+            && (quad.CMDCOLR == cachedEntry.CMDCOLR)
+            && (quad.CMDSRCA == cachedEntry.CMDSRCA)
+            && (quad.CMDSIZE == cachedEntry.CMDSIZE)
+        );
+
+        return cachedEntry.m_handle;
+    }
+
+    s_cachedTexture newTexture;
+
+    newTexture.CMDCTRL = quad.CMDCTRL;
+    newTexture.CMDPMOD = quad.CMDPMOD;
+    newTexture.CMDCOLR = quad.CMDCOLR;
+    newTexture.CMDSRCA = quad.CMDSRCA;
+    newTexture.CMDSIZE = quad.CMDSIZE;
+
+    u16 textureWidth;
+    u16 textureHeight;
+    u32* textureOutput = decodeVdp1Quad(quad, textureWidth, textureHeight);
+
+    GLuint textureHandle;
+    glGenTextures(1, &textureHandle);
+
+    newTexture.textureHandle = textureHandle;
+
+    const uint64_t tsFlags = 0
+        | BGFX_SAMPLER_U_CLAMP
+        | BGFX_SAMPLER_V_CLAMP
+        ;
+
+    newTexture.m_handle = bgfx::createTexture2D(textureWidth, textureHeight, false, 1, bgfx::TextureFormat::RGBA8, tsFlags, bgfx::copy(textureOutput, textureWidth * textureHeight * 4));
+
+    glBindTexture(GL_TEXTURE_2D, textureHandle);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    textureCache[textureHash] = newTexture;
+
+    return newTexture.m_handle;
+}
 
 GLuint getTextureForQuad(s_quad& quad)
 {
@@ -280,6 +334,12 @@ GLuint getTextureForQuad(s_quad& quad)
     glGenTextures(1, &textureHandle);
 
     newTexture.textureHandle = textureHandle;
+
+    const uint64_t tsFlags = 0
+        | BGFX_SAMPLER_U_CLAMP
+        | BGFX_SAMPLER_V_CLAMP
+        ;
+    newTexture.m_handle = bgfx::createTexture2D(textureWidth, textureHeight, false, 1, bgfx::TextureFormat::RGBA8, tsFlags, bgfx::copy(textureOutput, textureWidth * textureHeight * 4));
 
 #if 0
     AddString(outstring, "Texture address = %08X\r\n", ((unsigned int)cmd.CMDSRCA) << 3);

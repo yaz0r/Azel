@@ -24,3 +24,4 @@ struct s_quad
 
 u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight);
 unsigned int getTextureForQuad(s_quad& quad);
+bgfx::TextureHandle getTextureForQuadBGFX(s_quad& quad);

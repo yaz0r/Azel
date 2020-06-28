@@ -431,7 +431,7 @@ std::vector<uint32_t> SingleDrawcallIndexArray;
 
 bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string& PSFile); // TODO: clean
 
-void drawObject(s_objectToRender* pObject, float* projectionMatrix)
+void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
 {
     pObject->m_pObject->generateVertexBuffer();
     //return drawObject_SingleDrawCall(pObject, projectionMatrix);
@@ -475,8 +475,8 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
     }
 
     //transposeMatrix(objectMatrix);
-    transposeMatrix(projectionMatrix);
-
+    //transposeMatrix(projectionMatrix);
+    /*
     glm::mat4 tempProjection;
     for (int i = 0; i < 4; i++)
     {
@@ -485,7 +485,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
             tempProjection[i][j] = projectionMatrix[j * 4 + i];
         }
     }
-
+    */
     glm::mat4 tempObjectMatrix;
     for (int i = 0; i < 4; i++)
     {
@@ -494,7 +494,7 @@ void drawObject(s_objectToRender* pObject, float* projectionMatrix)
             tempObjectMatrix[i][j] = objectMatrix[j * 4 + i];
         }
     }
-    glm::mat4 mvpMatrix = tempProjection * tempObjectMatrix;
+    glm::mat4 mvpMatrix = projectionMatrix * tempObjectMatrix;
 
     //bgfx::setUniform(vdp1_modelMatrix, objectMatrix);
     float _2dOffset[4];
@@ -956,7 +956,7 @@ void RendererSetFov(float fovInDegree)
     fov = fovInDegree;
 }
 
-float* getProjectionMatrix()
+glm::mat4 getProjectionMatrix()
 {
     static float fEarlyProjectionMatrix[4 * 4];
 
@@ -999,7 +999,7 @@ float* getProjectionMatrix()
         }
     }
 #endif
-    return fEarlyProjectionMatrix;
+    return testProj;
 }
 
 void flushObjectsToDrawList()
@@ -1236,6 +1236,17 @@ GLuint Get2dUIShader()
     return UIShaderIndex;
 }
 
+bgfx::ProgramHandle Get2dUIShaderBGFX()
+{
+    static bgfx::ProgramHandle programHandle = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(programHandle))
+    {
+        programHandle = loadBgfxProgram("VDP1_2dUI_vs", "VDP1_2dUI_ps");
+    }
+
+    return programHandle;
+}
+
 GLuint GetWorldSpaceLineShader()
 {
     static const GLchar UI_vs[] =
@@ -1274,6 +1285,17 @@ GLuint GetWorldSpaceLineShader()
     }
 
     return UIShaderIndex;
+}
+
+bgfx::ProgramHandle GetWorldSpaceLineShaderBGFX()
+{
+    static bgfx::ProgramHandle programHandle = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(programHandle))
+    {
+        programHandle = loadBgfxProgram("VDP1_vertexColor_vs", "VDP1_vertexColor_ps");
+    }
+
+    return programHandle;
 }
 
 GLuint GetLineShader()
@@ -1553,6 +1575,38 @@ void NormalSpriteDrawGL(u32 vdp1EA)
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 checkGL();
 
+
+                {
+                    bgfx::VertexLayout layout;
+                    layout
+                        .begin()
+                        .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+                        .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+                        .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Float)
+                        .end();
+
+                    bgfx::TransientVertexBuffer vertexBuffer;
+                    bgfx::TransientIndexBuffer indexBuffer;
+                    bgfx::allocTransientBuffers(&vertexBuffer, layout, 4, &indexBuffer, 6);
+
+                    u16 triVertexOrder[6] = { 2, 1, 0, 0, 3, 2 };
+
+                    memcpy(vertexBuffer.data, &gVertexArray[0], sizeof(gVertexArray[0]) * 4);
+                    memcpy(indexBuffer.data, triVertexOrder, 6 * 2);
+
+                    bgfx::setVertexBuffer(0, &vertexBuffer);
+                    bgfx::setIndexBuffer(&indexBuffer);
+
+                    static bgfx::UniformHandle textureUniform = BGFX_INVALID_HANDLE;
+                    if (!bgfx::isValid(textureUniform))
+                    {
+                        textureUniform = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
+                    }
+                    bgfx::setTexture(0, textureUniform, getTextureForQuadBGFX(tempQuad));
+
+                    bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
+                }
+
                 if (texture != -1)
                 {
                     glUniform1i(texture, 0);
@@ -1822,6 +1876,37 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
                     glActiveTexture(GL_TEXTURE0);
                     glBindTexture(GL_TEXTURE_2D, 0);
                 }
+
+                {
+                    bgfx::VertexLayout layout;
+                    layout
+                        .begin()
+                        .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+                        .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+                        .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Float)
+                        .end();
+
+                    bgfx::TransientVertexBuffer vertexBuffer;
+                    bgfx::TransientIndexBuffer indexBuffer;
+                    bgfx::allocTransientBuffers(&vertexBuffer, layout, 4, &indexBuffer, 6);
+
+                    u16 triVertexOrder[6] = { 2, 1, 0, 0, 3, 2 };
+
+                    memcpy(vertexBuffer.data, &gVertexArray[0], sizeof(gVertexArray[0]) * 4);
+                    memcpy(indexBuffer.data, triVertexOrder, 6 * 2);
+
+                    bgfx::setVertexBuffer(0, &vertexBuffer);
+                    bgfx::setIndexBuffer(&indexBuffer);
+
+                    static bgfx::UniformHandle textureUniform = BGFX_INVALID_HANDLE;
+                    if (!bgfx::isValid(textureUniform))
+                    {
+                        textureUniform = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
+                    }
+                    bgfx::setTexture(0, textureUniform, getTextureForQuadBGFX(tempQuad));
+
+                    bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
+                }
             }
         }
     }
@@ -1901,7 +1986,7 @@ void drawQuadGL(const sDebugQuad& quad)
 
     GLuint modelProjection = glGetUniformLocation(currentShader, (const GLchar*)"u_projectionMatrix");
     assert(modelProjection != -1);
-    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, getProjectionMatrix());
+    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, &getProjectionMatrix()[0][0]);
 
     GLuint viewMatrix = glGetUniformLocation(currentShader, (const GLchar*)"u_viewMatrix");
     assert(viewMatrix != -1);
@@ -1920,6 +2005,21 @@ void drawQuadGL(const sDebugQuad& quad)
     checkGL();
     glUseProgram(0);
     glEnable(GL_DEPTH_TEST);
+
+    {
+        bgfx::VertexLayout layout;
+        layout
+            .begin()
+            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Float)
+            .end();
+
+        bgfx::TransientVertexBuffer vertexBuffer;
+        bgfx::TransientIndexBuffer indexBuffer;
+        bgfx::allocTransientBuffers(&vertexBuffer, layout, 4, &indexBuffer, 6);
+
+        bgfx::submit(vdp1_gpuView, GetWorldSpaceLineShaderBGFX());
+    }
 }
 
 void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color)
@@ -1994,7 +2094,7 @@ void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color)
 
     GLuint modelProjection = glGetUniformLocation(currentShader, (const GLchar *)"u_projectionMatrix");
     assert(modelProjection != -1);
-    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, getProjectionMatrix());
+    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, &getProjectionMatrix()[0][0]);
 
     GLuint viewMatrix = glGetUniformLocation(currentShader, (const GLchar *)"u_viewMatrix");
     assert(viewMatrix != -1);
