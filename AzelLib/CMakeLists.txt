@@ -2,16 +2,20 @@ cmake_minimum_required(VERSION 3.9)
 
 include_directories(
     "."
-    "${THIRD_PARTY}/imgui"
+#    "${THIRD_PARTY}"
     "${THIRD_PARTY}/SDL2/include"
-    "${THIRD_PARTY}/imgui/examples"
-    "${THIRD_PARTY}/imgui/examples/libs/gl3w"
+    #"${THIRD_PARTY}/dear-imgui"
+    "${THIRD_PARTY}/dear-imgui/examples"
+    "${THIRD_PARTY}/dear-imgui/examples/libs/gl3w"
+    "${THIRD_PARTY}/bgfx.cmake/bgfx/3rdparty/dear-imgui"
     "${THIRD_PARTY}/soloud/soloud/include"
     "${THIRD_PARTY}/glm"
     "${THIRD_PARTY}/tracy"
-    "${THIRD_PARTY}/aosdk"
     "${THIRD_PARTY}/bgfx.cmake/bgfx/include"
     "${THIRD_PARTY}/bgfx.cmake/bx/include"
+    "${THIRD_PARTY}/bgfx.cmake/bgfx/3rdparty"
+    "${THIRD_PARTY}/bgfx.cmake/bimg/include"
+    "${THIRD_PARTY}/aosdk"
 )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -111,18 +115,15 @@ SET_SOURCE_FILES_PROPERTIES("PDS_Precompiled.cpp"
                                         OBJECT_DEPENDS "PDS.pch")
 endif()
                                         
-if (MSVC)
-    set(SOURCES
-        ${SOURCES}
-        ${THIRD_PARTY}/imgui/examples/libs/gl3w/GL/gl3w.c
-    )
-endif()
 
 set(SOURCES
  ${SOURCES}
- ${THIRD_PARTY}/imgui/imgui.cpp
- ${THIRD_PARTY}/imgui/imgui_draw.cpp
- ${THIRD_PARTY}/imgui/imgui_widgets.cpp
+ #${THIRD_PARTY}/dear-imgui/imgui.cpp
+ #${THIRD_PARTY}/dear-imgui/imgui_draw.cpp
+ #${THIRD_PARTY}/dear-imgui/imgui_widgets.cpp
+ 
+ #${THIRD_PARTY}/dear-imgui/examples/imgui_impl_opengl3.cpp
+ #${THIRD_PARTY}/dear-imgui/examples/imgui_impl_sdl.cpp
 
  ${THIRD_PARTY}/aosdk/eng_ssf/m68kcpu.c
  ${THIRD_PARTY}/aosdk/eng_ssf/m68kopac.c
@@ -137,6 +138,13 @@ set(SOURCES
  ${THIRD_PARTY}/../data/shaders/VDP2_vs.glsl
  ${THIRD_PARTY}/../data/shaders/VDP2_ps.glsl
 )
+
+if (MSVC)
+    set(SOURCES
+        ${SOURCES}
+        ${THIRD_PARTY}/dear-imgui/examples/libs/gl3w/GL/gl3w.c
+    )
+endif()
 
 macro(addShaderProgram vsname psname varyingname)
 

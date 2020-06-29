@@ -5,12 +5,22 @@
 #include "renderer/renderer_gl.h"
 #include "renderer/renderer_vk.h"
 
-#define IMGUI_API
-#include "imgui_impl_sdl.h"
+#include "../ThirdParty/bgfx.cmake/bgfx/examples/common/imgui/imgui.h"
+
+//#define IMGUI_API
+//#include "imgui_impl_sdl.h"
 
 #include "items.h"
+/*
+//#include "dear-imgui/imgui_user.h"
+#include "../examples/common/imgui/imgui.cpp"
+#include "dear-imgui/imgui_internal.h"
+//#include "dear-imgui/imgui_user.inl"
+#include "dear-imgui/imgui.cpp"
+*/
 
 extern SDL_Window* gWindowGL;
+extern SDL_Window* gWindowBGFX;
 extern SDL_GLContext gGlcontext;
 extern const char* gGLSLVersion;
 
@@ -232,22 +242,6 @@ void azelSdl2_Init()
         gBackend = SDL_ES3_backend::create();
     }
 
-
-    // setup vdp1 Poly
-    const uint64_t tsFlags = 0
-        //| BGFX_SAMPLER_MIN_POINT
-        //| BGFX_SAMPLER_MAG_POINT
-        //| BGFX_SAMPLER_MIP_POINT
-        | BGFX_SAMPLER_U_CLAMP
-        | BGFX_SAMPLER_V_CLAMP
-        ;
-
-    vdp1BufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 0, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
-    vdp1DepthBufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 0, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | tsFlags);
-    std::array<bgfx::Attachment,2> vdp1BufferAt;
-    vdp1BufferAt[0].init(vdp1BufferTexture);
-    vdp1BufferAt[1].init(vdp1DepthBufferTexture);
-    gBGFXVdp1PolyFB = bgfx::createFrameBuffer(2, &vdp1BufferAt[0], false);
     glGenFramebuffers(1, &gVdp1PolyFB);
     glGenTextures(1, &gVdp1PolyTexture);
     glGenRenderbuffers(1, &gVdp1PolyDepth);
@@ -279,6 +273,8 @@ void azelSdl2_Init()
 #ifndef SHIPPING_BUILD
     SDL_GL_SetSwapInterval(0);
 #endif
+
+    imguiCreate();
 
     checkGL();
 }
@@ -409,8 +405,86 @@ s8 convertAxis(s16 inputValue)
     return (s8)converted;
 }
 
+static bool         g_MousePressed[3] = { false, false, false };
+bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    switch (event->type)
+    {
+    case SDL_MOUSEWHEEL:
+    {
+        if (event->wheel.x > 0) io.MouseWheelH += 1;
+        if (event->wheel.x < 0) io.MouseWheelH -= 1;
+        if (event->wheel.y > 0) io.MouseWheel += 1;
+        if (event->wheel.y < 0) io.MouseWheel -= 1;
+        return true;
+    }
+    case SDL_MOUSEBUTTONDOWN:
+    {
+        if (event->button.button == SDL_BUTTON_LEFT) g_MousePressed[0] = true;
+        if (event->button.button == SDL_BUTTON_RIGHT) g_MousePressed[1] = true;
+        if (event->button.button == SDL_BUTTON_MIDDLE) g_MousePressed[2] = true;
+        return true;
+    }
+    case SDL_TEXTINPUT:
+    {
+        io.AddInputCharactersUTF8(event->text.text);
+        return true;
+    }
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+    {
+        int key = event->key.keysym.scancode;
+        IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
+        io.KeysDown[key] = (event->type == SDL_KEYDOWN);
+        io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
+        io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
+        io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
+#ifdef _WIN32
+        io.KeySuper = false;
+#else
+        io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+#endif
+        return true;
+    }
+    }
+    return false;
+}
+
 void azelSdl2_StartFrame()
 {
+    int oldResolution[2];
+    oldResolution[0] = internalResolution[0];
+    oldResolution[1] = internalResolution[1];
+
+    SDL_GetWindowSize(gWindowBGFX, &internalResolution[0], &internalResolution[1]);
+
+    if ((oldResolution[0] != internalResolution[0]) || (oldResolution[1] != internalResolution[1]))
+    {
+        bgfx::reset(internalResolution[0], internalResolution[1]);
+
+        if (bgfx::isValid(gBGFXVdp1PolyFB))
+        {
+            bgfx::destroy(gBGFXVdp1PolyFB);
+        }
+
+        // setup vdp1 Poly
+        const uint64_t tsFlags = 0
+            //| BGFX_SAMPLER_MIN_POINT
+            //| BGFX_SAMPLER_MAG_POINT
+            //| BGFX_SAMPLER_MIP_POINT
+            | BGFX_SAMPLER_U_CLAMP
+            | BGFX_SAMPLER_V_CLAMP
+            ;
+
+        vdp1BufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 0, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
+        vdp1DepthBufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 0, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | tsFlags);
+        std::array<bgfx::Attachment, 2> vdp1BufferAt;
+        vdp1BufferAt[0].init(vdp1BufferTexture);
+        vdp1BufferAt[1].init(vdp1DepthBufferTexture);
+        gBGFXVdp1PolyFB = bgfx::createFrameBuffer(2, &vdp1BufferAt[0], true);
+    }
+
 #ifndef USE_NULL_RENDERER
     checkGL();
     SDL_Event event;
@@ -579,9 +653,9 @@ void azelSdl2_StartFrame()
 
     if (!isShipping())
     {
-        gBackend->ImGUI_NewFrame();
-        ImGui_ImplSDL2_NewFrame(gWindowGL);
-        ImGui::NewFrame();
+        //gBackend->ImGUI_NewFrame();
+        
+        imguiBeginFrame(gUIState.mousex, gUIState.mousey, gUIState.mousedown, 0, internalResolution[0], internalResolution[1]);
     }
     
     checkGL();
@@ -652,12 +726,11 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
 
         NBGData.bgfx_vdp2_planeDataBuffer = bgfx::createTexture2D(16, 16, 0, 0, bgfx::TextureFormat::R32U);
 
-        bgfx::setViewFrameBuffer(NBGData.viewId, NBGData.BGFXFB);
-
         NBGData.m_currentWidth = textureWidth;
         NBGData.m_currentHeight = textureHeight;
     }
 
+    bgfx::setViewFrameBuffer(NBGData.viewId, NBGData.BGFXFB);
     {
         static GLuint quad_VertexArrayID;
         static GLuint quad_vertexbuffer = 0;
@@ -1975,33 +2048,33 @@ bool azelSdl2_EndFrame()
         {
             ImGui::PushID("BG0");
             ImGui::Text("NBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG0_GPU);
-            ImGui::Image((ImTextureID)NBG_data[0].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(ImGui::toId(NBG_data[0].BGFXTexture,0,0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
             ImGui::PopID();
 
             ImGui::PushID("BG1");
             ImGui::Text("NBG1"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG1_GPU);
-            ImGui::Image((ImTextureID)NBG_data[1].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(ImGui::toId(NBG_data[1].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
             ImGui::PopID();
 
             ImGui::PushID("BG2");
             ImGui::Text("NBG2"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG2_GPU);
-            ImGui::Image((ImTextureID)NBG_data[2].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(ImGui::toId(NBG_data[2].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
             ImGui::PopID();
 
             ImGui::PushID("BG3");
             ImGui::Text("NBG3"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG3_GPU);
-            ImGui::Image((ImTextureID)NBG_data[3].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(ImGui::toId(NBG_data[3].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
             ImGui::PopID();
 
             ImGui::PushID("RBG0");
             ImGui::Text("RBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &RBG0_GPU);
-            ImGui::Image((ImTextureID)NBG_data[4].Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(ImGui::toId(NBG_data[4].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
             ImGui::PopID();
 
-            ImGui::Text("VDP1");
-            ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            //ImGui::Text("VDP1");
+            //ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
             ImGui::Text("VDP1 poly");
-            ImGui::Image((ImTextureID)gVdp1PolyTexture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(ImGui::toId(bgfx::getTexture(gBGFXVdp1PolyFB), 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
         }
         ImGui::End();
 
@@ -2012,14 +2085,7 @@ bool azelSdl2_EndFrame()
 
     checkGL();
    
-    
-#ifndef USE_NULL_RENDERER
-    SDL_GL_GetDrawableSize(gWindowGL, &internalResolution[0], &internalResolution[1]);
-#if (defined(__APPLE__) && TARGET_OS_SIMULATOR)
-    internalResolution[0] /= 8;
-    internalResolution[1] /= 8;
-#endif
-    
+
     glViewport(0, 0, internalResolution[0], internalResolution[1]);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 
@@ -2028,7 +2094,6 @@ bool azelSdl2_EndFrame()
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-#endif
     
     checkGL();
 
@@ -2165,7 +2230,7 @@ bool azelSdl2_EndFrame()
         {
             ImVec2 textureSize = ImGui::GetWindowSize();
             textureSize.y = textureSize.x * (224.f / 352.f);
-            ImGui::Image((ImTextureID)gCompositedTexture, textureSize, ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+            //ImGui::Image((ImTextureID)gCompositedTexture, textureSize, ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
         }
         ImGui::End();
 
@@ -2279,7 +2344,6 @@ bool azelSdl2_EndFrame()
             }
         }
 #endif
-        ImGui::Render();
     }
     
     
@@ -2294,12 +2358,16 @@ bool azelSdl2_EndFrame()
         bImguiEnabled = !bImguiEnabled;
     }
 #endif
+
     if (bImguiEnabled)
     {
-        gBackend->ImGUI_RenderDrawData(ImGui::GetDrawData());
+        imguiEndFrame();
+        //gBackend->ImGUI_RenderDrawData(ImGui::GetDrawData());
+        //imguiDestroy()
     }
     else
     {
+        ImGui::Render();
         renderTexturedQuad(gCompositedTexture);
         //renderTexturedQuadBgfx(0, bgfx::getTexture(gBgfxCompositedFB));
     }
@@ -2308,20 +2376,15 @@ bool azelSdl2_EndFrame()
 
     // Update and Render additional Platform Windows
 #ifndef SHIPPING_BUILD
+    /*
     ImGuiIO& io = ImGui::GetIO();
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
         SDL_GL_MakeCurrent(gWindowGL, gGlcontext);
-    }
+    }*/
 #endif
-
-    bgfx::setViewRect(0, 0, 0, uint16_t(200), uint16_t(200));
-    bgfx::touch(0);
-
-    bgfx::dbgTextClear();
-    bgfx::dbgTextPrintf(0, 1, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
 
 
     bgfx::frame();

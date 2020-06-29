@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.9)
 include_directories(
     "."
     "${CMAKE_SOURCE_DIR}/AzelLib"
-    "${THIRD_PARTY}/imgui"
+    "${THIRD_PARTY}"
     "${THIRD_PARTY}/SDL2/include"
-    "${THIRD_PARTY}/imgui/examples"
-    "${THIRD_PARTY}/imgui/examples/libs/gl3w"
+    "${THIRD_PARTY}/dear-imgui/examples"
+    "${THIRD_PARTY}/dear-imgui/examples/libs/gl3w"
     "${THIRD_PARTY}/soloud/soloud/include"
     "${THIRD_PARTY}/glm"
     "${THIRD_PARTY}/tracy"
@@ -41,25 +41,11 @@ set(SOURCES
  ${SRC_KERNEL}
  ${SRC_ROOT}
  ${SRC_FIELD_A3}
-
-${THIRD_PARTY}/imgui/imgui.cpp
-${THIRD_PARTY}/imgui/imgui_draw.cpp
-${THIRD_PARTY}/imgui/imgui_widgets.cpp
-${THIRD_PARTY}/imgui/examples/imgui_impl_opengl3.cpp
-#${THIRD_PARTY}/imgui/examples/imgui_impl_vulkan.cpp
-${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
 )
 
 source_group("src" FILES ${SRC_ROOT})
 source_group("src\\kernel" FILES ${SRC_KERNEL})
 source_group("src\\field\\field_a3" FILES ${SRC_FIELD_A3})
-
-if (MSVC)
-    set(SOURCES
-        ${SOURCES}
-        ${THIRD_PARTY}/imgui/examples/libs/gl3w/GL/gl3w.c
-    )
-endif()
 
 if( MSVC )
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x -D_HAS_EXCEPTIONS=0 /GR-")
@@ -183,7 +169,7 @@ ELSE()
  endif()
 ENDIF()
 
-TARGET_LINK_LIBRARIES(PDS bgfx)
+TARGET_LINK_LIBRARIES(PDS bgfx example-common)
 
 set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT PDS)
 set_target_properties(PDS PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/data")

@@ -3,9 +3,9 @@
 
 #ifdef WITH_GL
 
-#define IMGUI_API
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
+//#define IMGUI_API
+//#include "dear-imgui/examples/imgui_impl_sdl.h"
+//#include "dear-imgui/examples/imgui_impl_opengl3.h"
 
 #include "renderer_gl.h"
 
@@ -119,14 +119,14 @@ bool SDL_ES3_backend::init()
 #if !defined(__EMSCRIPTEN__) && !defined(TARGET_OS_IOS) && !defined(TARGET_OS_TV)
 //    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 #endif
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
     printf("glsl_version: %s\n", gGLSLVersion);
 
-    ImGui_ImplOpenGL3_Init(gGLSLVersion);
-    ImGui_ImplSDL2_InitForOpenGL(gWindowGL, gGlcontext);
+    //ImGui_ImplOpenGL3_Init(gGLSLVersion);
+    //ImGui_ImplSDL2_InitForOpenGL(gWindowGL, gGlcontext);
 #endif
 
     return true;
@@ -153,7 +153,7 @@ void SDL_ES3_backend::ImGUI_NewFrame()
 {
     if (!isShipping())
     {
-        ImGui_ImplOpenGL3_NewFrame();
+        //ImGui_ImplOpenGL3_NewFrame();
     }
 }
 
@@ -161,7 +161,7 @@ void SDL_ES3_backend::ImGUI_RenderDrawData(ImDrawData* pDrawData)
 {
     if (!isShipping())
     {
-        ImGui_ImplOpenGL3_RenderDrawData(pDrawData);
+        //ImGui_ImplOpenGL3_RenderDrawData(pDrawData);
     }
 }
 
