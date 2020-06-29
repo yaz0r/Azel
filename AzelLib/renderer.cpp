@@ -7,22 +7,9 @@
 
 #include "../ThirdParty/bgfx.cmake/bgfx/examples/common/imgui/imgui.h"
 
-//#define IMGUI_API
-//#include "imgui_impl_sdl.h"
-
 #include "items.h"
-/*
-//#include "dear-imgui/imgui_user.h"
-#include "../examples/common/imgui/imgui.cpp"
-#include "dear-imgui/imgui_internal.h"
-//#include "dear-imgui/imgui_user.inl"
-#include "dear-imgui/imgui.cpp"
-*/
 
-extern SDL_Window* gWindowGL;
 extern SDL_Window* gWindowBGFX;
-extern SDL_GLContext gGlcontext;
-extern const char* gGLSLVersion;
 
 #if defined(__EMSCRIPTEN__) || defined(TARGET_OS_IOS) || defined(TARGET_OS_TV)
 static float gVolume = 1.f;
@@ -44,23 +31,11 @@ bgfx::FrameBufferHandle gBGFXVdp1PolyFB = BGFX_INVALID_HANDLE;
 bgfx::TextureHandle vdp1BufferTexture = BGFX_INVALID_HANDLE;
 bgfx::TextureHandle vdp1DepthBufferTexture = BGFX_INVALID_HANDLE;
 
-GLuint gVdp1PolyFB = 0;
-GLuint gVdp1PolyTexture = 0;
-GLuint gVdp1PolyDepth = 0;
-
 bgfx::FrameBufferHandle gBgfxCompositedFB = BGFX_INVALID_HANDLE;
-GLuint gCompositedFB = 0;
-GLuint gCompositedTexture = 0;
-
-GLuint gVdp1Texture = 0;
 
 bgfx::TextureHandle bgfx_vdp1_ram_texture = BGFX_INVALID_HANDLE;
 bgfx::TextureHandle bgfx_vdp2_ram_texture = BGFX_INVALID_HANDLE;
 bgfx::TextureHandle bgfx_vdp2_cram_texture = BGFX_INVALID_HANDLE;
-
-GLuint vdp1_ram_texture = 0;
-GLuint vdp2_ram_texture = 0;
-GLuint vdp2_cram_texture = 0;
 
 struct s_NBG_data
 {
@@ -69,8 +44,6 @@ struct s_NBG_data
     bgfx::TextureHandle bgfx_vdp2_planeDataBuffer = BGFX_INVALID_HANDLE;
     bgfx::ViewId viewId = -1;
     int planeId = -1;
-    GLuint FB;
-    GLuint Texture;
 
     int m_currentWidth = -1;
     int m_currentHeight = -1;
@@ -78,7 +51,6 @@ struct s_NBG_data
 
 std::array<s_NBG_data, 5> NBG_data;
 
-GLuint gVDP2Program = 0;
 bgfx::ProgramHandle bgfx_vdp2_program = BGFX_INVALID_HANDLE;
 
 #ifdef SHIPPING_BUILD
@@ -91,61 +63,6 @@ int frameLimit = 30;
 #endif
 #endif
 
-#ifdef USE_GL_ES3
-const GLchar blit_vs[] =
-"#version 300 es\n"
-"in vec3 a_position;   \n"
-"in vec2 a_texcoord;   \n"
-"out  highp vec2 v_texcoord;     \n"
-"void main()                  \n"
-"{                            \n"
-"   gl_Position = vec4(a_position, 1); \n"
-"   v_texcoord = (a_position.xy+vec2(1,1))/2.0;; \n"
-"} "
-;
-
-const GLchar blit_ps[] =
-"#version 300 es\n"
-"precision highp float;									\n"
-"in highp vec2 v_texcoord;								\n"
-"uniform sampler2D s_texture;							\n"
-"out vec4 fragColor;									\n"
-"void main()											\n"
-"{														\n"
-"	vec4 txcol = texture(s_texture, v_texcoord);		\n"
-"   if(txcol.a <= 0.f) discard;\n"
-"   fragColor = txcol; \n"
-"   fragColor.w = 1.f;								\n"
-"}														\n"
-;
-#elif defined(USE_GL)
-const GLchar blit_vs[] =
-"#version 330 \n"
-"in vec3 a_position;   \n"
-"in vec2 a_texcoord;   \n"
-"out  highp vec2 v_texcoord;     \n"
-"void main()                  \n"
-"{                            \n"
-"   gl_Position = vec4(a_position, 1); \n"
-"   v_texcoord = (a_position.xy+vec2(1,1))/2.0;; \n"
-"} "
-;
-
-const GLchar blit_ps[] =
-"#version 330 \n"
-"precision highp float;									\n"
-"in highp vec2 v_texcoord;								\n"
-"uniform sampler2D s_texture;							\n"
-"out vec4 fragColor;									\n"
-"void main()											\n"
-"{														\n"
-"	vec4 txcol = texture(s_texture, v_texcoord);		\n"
-"   if(txcol.a <= 0) discard;\n"
-"   fragColor = txcol; \n"
-"   fragColor.w = 1;								\n"
-"}														\n"
-;
-#endif
 enum eLayers {
     SPRITE_POLY,
     SPRITE_SOFTWARE,
@@ -159,34 +76,6 @@ enum eLayers {
 };
 
 backend* gBackend = nullptr;
-
-GLuint compileShader(const char* VS, const char* PS);
-
-bool loadFileToVector(std::vector<char>& outputVector, const std::string& filename)
-{
-    FILE* fHandle = fopen(filename.c_str(), "rb");
-    if (fHandle == nullptr)
-        return false;
-    fseek(fHandle, 0, SEEK_END);
-    u32 size = ftell(fHandle);
-    fseek(fHandle, 0, SEEK_SET);
-    outputVector.resize(size);
-    fread(&outputVector[0], 1, size, fHandle);
-    fclose(fHandle);
-
-    outputVector.push_back('\0');
-}
-
-GLuint compileShaderFromFiles(const std::string& VSFile, const std::string& PSFile)
-{
-    std::vector<char> VSSource;
-    std::vector<char> PSSource;
-
-    loadFileToVector(VSSource, std::string("shaders/") + VSFile);
-    loadFileToVector(PSSource, std::string("shaders/") + PSFile);
-
-    return compileShader(&VSSource[0], &PSSource[0]);
-}
 
 bgfx::ShaderHandle loadBgfxShader(const std::string& filename)
 {
@@ -242,33 +131,18 @@ void azelSdl2_Init()
         gBackend = SDL_ES3_backend::create();
     }
 
-    glGenFramebuffers(1, &gVdp1PolyFB);
-    glGenTextures(1, &gVdp1PolyTexture);
-    glGenRenderbuffers(1, &gVdp1PolyDepth);
-
-    // Composited output
-    glGenFramebuffers(1, &gCompositedFB);
-    glGenTextures(1, &gCompositedTexture);
 
     for (int i = 0; i < NBG_data.size(); i++)
     {
         NBG_data[i].planeId = i;
         NBG_data[i].viewId = VDP2_viewsStart + i;
         assert(NBG_data[i].viewId <= VDP2_MAX);
-        glGenTextures(1, &NBG_data[i].Texture);
-        glGenFramebuffers(1, &NBG_data[i].FB);
     }
-    glGenTextures(1, &gVdp1Texture);
-
-    glGenTextures(1, &vdp1_ram_texture);
-    glGenTextures(1, &vdp2_ram_texture);
-    glGenTextures(1, &vdp2_cram_texture);
 
     bgfx_vdp1_ram_texture = bgfx::createTexture2D(256, 0x80000 / 256, false, 1, bgfx::TextureFormat::R8U, 0);
     bgfx_vdp2_ram_texture = bgfx::createTexture2D(256, 0x80000 / 256, false, 1, bgfx::TextureFormat::R8U, 0);
     bgfx_vdp2_cram_texture = bgfx::createTexture2D(256, 0x1000 / 256, false, 1, bgfx::TextureFormat::R8U, 0);
 
-    gVDP2Program = compileShaderFromFiles("VDP2_vs.glsl", "VDP2_ps.glsl");
     bgfx_vdp2_program = loadBgfxProgram("VDP2_vs", "VDP2_ps");
 #ifndef SHIPPING_BUILD
     SDL_GL_SetSwapInterval(0);
@@ -297,30 +171,6 @@ bgfx::TextureHandle getTextureForLayerBgfx(eLayers layerIndex)
         return NBG_data[3].BGFXTexture;
     case RBG0:
         return NBG_data[4].BGFXTexture;
-    default:
-        assert(0);
-        break;
-    }
-}
-
-GLuint getTextureForLayer(eLayers layerIndex)
-{
-    switch (layerIndex)
-    {
-    case SPRITE_POLY:
-        return gVdp1PolyTexture;
-    case SPRITE_SOFTWARE:
-        return gVdp1Texture;
-    case NBG0:
-        return NBG_data[0].Texture;
-    case NBG1:
-        return NBG_data[1].Texture;
-    //case NBG2:
-    //    return gNBG2Texture;
-    case NBG3:
-        return NBG_data[3].Texture;
-    case RBG0:
-        return NBG_data[4].Texture;
     default:
         assert(0);
         break;
@@ -732,108 +582,6 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
 
     bgfx::setViewFrameBuffer(NBGData.viewId, NBGData.BGFXFB);
     {
-        static GLuint quad_VertexArrayID;
-        static GLuint quad_vertexbuffer = 0;
-        static GLint texID_VDP2_RAM = 0;
-        static GLint texID_VDP2_CRAM = 0;
-
-        static bool initialized = false;
-        if (!initialized)
-        {
-            static const GLfloat g_quad_vertex_buffer_data[] = {
-                -1.0f, -1.0f, 0.0f,
-                1.0f, -1.0f, 0.0f,
-                -1.0f,  1.0f, 0.0f,
-                -1.0f,  1.0f, 0.0f,
-                1.0f, -1.0f, 0.0f,
-                1.0f,  1.0f, 0.0f,
-            };
-
-            glGenVertexArrays(1, &quad_VertexArrayID);
-            glBindVertexArray(quad_VertexArrayID);
-            glGenBuffers(1, &quad_vertexbuffer);
-
-            glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-
-            texID_VDP2_RAM = glGetUniformLocation(gVDP2Program, "s_VDP2_RAM");
-            texID_VDP2_CRAM = glGetUniformLocation(gVDP2Program, "s_VDP2_CRAM");
-            initialized = true;
-        }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, NBGData.FB);
-        glBindTexture(GL_TEXTURE_2D, NBGData.Texture);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, NBGData.Texture, 0);
-
-        GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-        glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-
-
-        glViewport(0, 0, textureWidth, textureHeight);
-
-        glClearColor(1, 0, 0, 1);
-        glClearDepthf(0.f);
-
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glUseProgram(gVDP2Program);
-
-        if(texID_VDP2_RAM > -1)
-        {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, vdp2_ram_texture);
-            glUniform1i(glGetUniformLocation(gVDP2Program, "s_VDP2_RAM"), 0);
-        }
-
-        if (texID_VDP2_CRAM > -1)
-        {
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, vdp2_cram_texture);
-            glUniform1i(glGetUniformLocation(gVDP2Program, "s_VDP2_CRAM"), 1);
-        }
-
-        glUniform1i(glGetUniformLocation(gVDP2Program, "CHSZ"), layerData.CHSZ);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "CHCN"), layerData.CHCN);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "PNB"), layerData.PNB);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "CNSM"), layerData.CNSM);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "CAOS"), layerData.CAOS);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "PLSZ"), layerData.PLSZ);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "SCN"), layerData.SCN);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "planeOffsets[0]"), layerData.planeOffsets[0]);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "planeOffsets[1]"), layerData.planeOffsets[1]);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "planeOffsets[2]"), layerData.planeOffsets[2]);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "planeOffsets[3]"), layerData.planeOffsets[3]);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "scrollX"), layerData.scrollX);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "scrollY"), layerData.scrollY);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "outputHeight"), textureHeight);
-        glUniform1i(glGetUniformLocation(gVDP2Program, "lineScrollEA"), layerData.lineScrollEA);
-
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-        glVertexAttribPointer(
-            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-            3,                  // size
-            GL_FLOAT,           // type
-            GL_FALSE,           // normalized?
-            0,                  // stride
-            (void*)0            // array buffer offset
-        );
-
-        // Draw the triangle !
-        checkGL();
-        glDrawArrays(GL_TRIANGLES, 0, 6); // From index 0 to 3 -> 1 triangle
-
-        glDisableVertexAttribArray(0);
-    }
-
-    {
         // BGFX version
         static bgfx::VertexBufferHandle quad_vertexbuffer = BGFX_INVALID_HANDLE;
         static bgfx::IndexBufferHandle quad_indexbuffer = BGFX_INVALID_HANDLE;
@@ -1145,12 +893,8 @@ void renderBG0(u32 width, u32 height, bool bGPU)
             u32* textureOutput = new u32[textureWidth * textureHeight];
             renderLayer(planeData, textureWidth, textureHeight, textureOutput);
 
-#ifndef USE_NULL_RENDERER
-            glBindTexture(GL_TEXTURE_2D, NBG_data[0].Texture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#endif
+            assert(0); // need to update the texture in bgfx
+
             delete[] textureOutput;
         }
         else
@@ -1200,12 +944,8 @@ void renderBG1(u32 width, u32 height, bool bGPU)
         {
             u32* textureOutput = new u32[textureWidth * textureHeight];
             renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-#ifndef USE_NULL_RENDERER
-            glBindTexture(GL_TEXTURE_2D, NBG_data[1].Texture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#endif
+
+            assert(0); // need to update the texture in bgfx
 
             delete[] textureOutput;
         }
@@ -1287,12 +1027,9 @@ void renderBG3(u32 width, u32 height, bool bGPU)
         {
             u32* textureOutput = new u32[textureWidth * textureHeight];
             renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-#ifndef USE_NULL_RENDERER
-            glBindTexture(GL_TEXTURE_2D, NBG_data[3].Texture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#endif
+
+            assert(0); // need to update the texture in bgfx
+
             delete[] textureOutput;
         }
         else
@@ -1338,12 +1075,9 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
         {
             u32* textureOutput = new u32[textureWidth * textureHeight];
             renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-#ifndef USE_NULL_RENDERER
-            glBindTexture(GL_TEXTURE_2D, NBG_data[4].Texture);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#endif
+
+            //assert(0); // need to update the texture in bgfx
+
             delete[] textureOutput;
         }
         else
@@ -1837,117 +1571,6 @@ void renderTexturedQuadBgfx(bgfx::ViewId outputView, bgfx::TextureHandle sourceT
     bgfx::submit(outputView, program);
 }
 
-#ifndef USE_NULL_RENDERER
-void renderTexturedQuad(GLuint sourceTexture)
-{
-    static GLuint quad_VertexArrayID;
-    static GLuint shaderProgram = 0;
-    static GLuint vshader = 0;
-    static GLuint fshader = 0;
-    static GLuint quad_vertexbuffer = 0;
-    static GLuint texID;
-
-    static bool initialized = false;
-    if (!initialized)
-    {
-        static const GLfloat g_quad_vertex_buffer_data[] = {
-            -1.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            -1.0f,  1.0f, 0.0f,
-            -1.0f,  1.0f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            1.0f,  1.0f, 0.0f,
-        };
-
-        glGenVertexArrays(1, &quad_VertexArrayID);
-        glBindVertexArray(quad_VertexArrayID);
-        glGenBuffers(1, &quad_vertexbuffer);
-
-        vshader = glCreateShader(GL_VERTEX_SHADER);
-        {
-            volatile int compiled = 0;
-            const GLchar* pYglprg_normal_v[] = { blit_vs, NULL };
-            glShaderSource(vshader, 1, pYglprg_normal_v, NULL);
-            glCompileShader(vshader);
-            glGetShaderiv(vshader, GL_COMPILE_STATUS, (int*)& compiled);
-            if (compiled == GL_FALSE)
-            {
-                GLint maxLength = 0;
-                glGetShaderiv(vshader, GL_INFO_LOG_LENGTH, &maxLength);
-
-                // The maxLength includes the NULL character
-                std::vector<GLchar> errorLog(maxLength);
-                glGetShaderInfoLog(vshader, maxLength, &maxLength, &errorLog[0]);
-            }
-            while (!compiled);
-        }
-
-        fshader = glCreateShader(GL_FRAGMENT_SHADER);
-        {
-            volatile int compiled = 0;
-            const GLchar* pYglprg_normal_f[] = { blit_ps, NULL };
-            glShaderSource(fshader, 1, pYglprg_normal_f, NULL);
-            glCompileShader(fshader);
-            glGetShaderiv(fshader, GL_COMPILE_STATUS, (int*)& compiled);
-            if (compiled == GL_FALSE)
-            {
-                GLint maxLength = 0;
-                glGetShaderiv(fshader, GL_INFO_LOG_LENGTH, &maxLength);
-
-                // The maxLength includes the NULL character
-                std::vector<GLchar> errorLog(maxLength);
-                glGetShaderInfoLog(fshader, maxLength, &maxLength, &errorLog[0]);
-                PDS_unimplemented(errorLog.data());
-                assert(compiled);
-            }
-            while (!compiled);
-        }
-
-        shaderProgram = glCreateProgram();
-        {
-            volatile int linked = 0;
-            glAttachShader(shaderProgram, vshader);
-            glAttachShader(shaderProgram, fshader);
-            glLinkProgram(shaderProgram);
-            glGetProgramiv(shaderProgram, GL_LINK_STATUS, (int*)& linked);
-            assert(linked == 1);
-            while (!linked);
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-
-        texID = glGetUniformLocation(shaderProgram, "s_texture");
-        assert(texID >= 0);
-
-        initialized = true;
-    }
-
-
-    glUseProgram(shaderProgram);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sourceTexture);
-    // Set our "renderedTexture" sampler to user Texture Unit 0
-    glUniform1i(texID, 0);
-
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-    glVertexAttribPointer(
-        0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-        3,                  // size
-        GL_FLOAT,           // type
-        GL_FALSE,           // normalized?
-        0,                  // stride
-        (void*)0            // array buffer offset
-    );
-
-    // Draw the triangle !
-    glDrawArrays(GL_TRIANGLES, 0, 6); // From index 0 to 3 -> 1 triangle
-
-    glDisableVertexAttribArray(0);
-}
-#endif
-
 bool azelSdl2_EndFrame()
 {
     u32 outputResolutionWidth = 0;
@@ -1995,33 +1618,6 @@ bool azelSdl2_EndFrame()
     if (!useVDP1GL)
     {
         renderVdp1();
-    }
-    
-    {
-#ifndef USE_NULL_RENDERER
-        glBindTexture(GL_TEXTURE_2D, gVdp1Texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, vdp1TextureWidth, vdp1TextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, &vdp1TextureOutput[0]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#endif
-    }
-
-    // update VDP buffers
-    {
-        glBindTexture(GL_TEXTURE_2D, vdp1_ram_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 0x80000 / 256, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp1Pointer(0x25C00000));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-        glBindTexture(GL_TEXTURE_2D, vdp2_ram_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 0x80000 / 256, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp2Vram(0));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-        glBindTexture(GL_TEXTURE_2D, vdp2_cram_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 256, 0x1000 / 256, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, getVdp2Cram(0));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
     {
@@ -2082,21 +1678,6 @@ bool azelSdl2_EndFrame()
         PrintDebugTasksInfo();
     }
 
-
-    checkGL();
-   
-
-    glViewport(0, 0, internalResolution[0], internalResolution[1]);
-    glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-
-    glClearDepthf(1.f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
-    checkGL();
-
     if(!isShipping())
     {
         if (ImGui::Begin("Config"))
@@ -2109,63 +1690,15 @@ bool azelSdl2_EndFrame()
     // render VDP1 frame buffer
     if(1)
     {
-#ifndef USE_NULL_RENDERER
-
         bgfx::setViewFrameBuffer(vdp1_gpuView, gBGFXVdp1PolyFB);
         bgfx::setViewRect(vdp1_gpuView, 0, 0, internalResolution[0], internalResolution[1]);
 
         bgfx::setViewClear(vdp1_gpuView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0);
 
-        checkGL();
-        glBindFramebuffer(GL_FRAMEBUFFER, gVdp1PolyFB);
-        glBindTexture(GL_TEXTURE_2D, gVdp1PolyTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, internalResolution[0], internalResolution[1], 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        bgfx::setViewName(vdp1_gpuView, "Vdp1");
+        bgfx::setViewMode(vdp1_gpuView, bgfx::ViewMode::Sequential);
 
-        checkGL();
-        
-        glBindRenderbuffer(GL_RENDERBUFFER, gVdp1PolyDepth);
-
-        checkGL();
-        
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, internalResolution[0], internalResolution[1]);
-
-        checkGL();
-        
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, gVdp1PolyDepth);
-
-        checkGL();
-        
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gVdp1PolyTexture, 0);
-
-        checkGL();
-        
-        GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-
-        glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-        checkGL();
-        
-        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-
-        glViewport(0, 0, internalResolution[0], internalResolution[1]);
-
-        glClearColor(0, 0, 0, 0);
-        glClearDepthf(1.f);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glFrontFace(GL_CW);
-        glCullFace(GL_BACK);
-        glEnable(GL_CULL_FACE);
-        checkGL();
-#endif
         flushObjectsToDrawList();
-
-#ifndef USE_NULL_RENDERER
-        glDisable(GL_CULL_FACE);
-#endif
 
         if (useVDP1GL)
         {
@@ -2178,22 +1711,6 @@ bool azelSdl2_EndFrame()
     {
         ZoneScopedN("Compose");
 
-        glBindFramebuffer(GL_FRAMEBUFFER, gCompositedFB);
-        glBindTexture(GL_TEXTURE_2D, gCompositedTexture);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, internalResolution[0], internalResolution[1], 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gCompositedTexture, 0);
-
-        GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-        glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-
-        glViewport(0, 0, internalResolution[0], internalResolution[1]);
-
         //get clear color of back screen
         u32 backscreenColorAddress = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0x7FFFF) * 2;
         u16 backScreenColor = *(u16*)getVdp2Vram(backscreenColorAddress);
@@ -2202,10 +1719,7 @@ bool azelSdl2_EndFrame()
         float G = ((backScreenColor & 0x03E0) << 6) >> 8;
         float B = ((backScreenColor & 0x7C00) << 9) >> 16;
 
-        glClearColor(R / 0xFF, G / 0xFF, B / 0xFF, 0x0);
-        glClearDepthf(0.f);
-
-        glClear(GL_COLOR_BUFFER_BIT);
+        // TODOL set the bgfx back color to this color
 
         for (int priorityIndex = 0; priorityIndex <= 7; priorityIndex++)
         {
@@ -2213,7 +1727,6 @@ bool azelSdl2_EndFrame()
             {
                 if (isBackgroundEnabled(layerIndex) && (getPriorityForLayer(layerIndex) == priorityIndex))
                 {
-                    renderTexturedQuad(getTextureForLayer(layerIndex));
                     renderTexturedQuadBgfx(CompositeView, getTextureForLayerBgfx(layerIndex));
                 }
             }
@@ -2368,29 +1881,11 @@ bool azelSdl2_EndFrame()
     else
     {
         ImGui::Render();
-        renderTexturedQuad(gCompositedTexture);
         //renderTexturedQuadBgfx(0, bgfx::getTexture(gBgfxCompositedFB));
     }
     
-    checkGL();
-
-    // Update and Render additional Platform Windows
-#ifndef SHIPPING_BUILD
-    /*
-    ImGuiIO& io = ImGui::GetIO();
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    {
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-        SDL_GL_MakeCurrent(gWindowGL, gGlcontext);
-    }*/
-#endif
-
-
     bgfx::frame();
 
-    glFlush();
-    checkGL();
     {
         ZoneScopedN("WaitNextFrame");
 
@@ -2406,12 +1901,8 @@ bool azelSdl2_EndFrame()
             SDL_Delay(timeToWait);
         }
 
-        SDL_GL_SwapWindow(gWindowGL);
-
         last_time = SDL_GetPerformanceCounter();
     }
-    
-    checkGL();
 #endif
 
     FrameMark;

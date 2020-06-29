@@ -139,13 +139,6 @@ set(SOURCES
  ${THIRD_PARTY}/../data/shaders/VDP2_ps.glsl
 )
 
-if (MSVC)
-    set(SOURCES
-        ${SOURCES}
-        ${THIRD_PARTY}/dear-imgui/examples/libs/gl3w/GL/gl3w.c
-    )
-endif()
-
 macro(addShaderProgram vsname psname varyingname)
 
 set(SOURCES

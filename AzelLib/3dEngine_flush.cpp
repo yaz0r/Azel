@@ -147,170 +147,6 @@ void addBillBoardToDrawList(sProcessed3dModel* pObjectData)
     objectRenderList.push_back(newObject);
 }
 
-void checkGLImpl(const char* file, unsigned int line)
-{
-    GLenum error = glGetError();
-    
-    if (error != GL_NO_ERROR)
-    {
-        printf("GL error %d: file: %s line:%d\n", error, file, line);
-
-        //assert(0);
-    }
-    
-    //while (error != GL_NO_ERROR);
-}
-
-GLuint compileShader(const char* VS, const char* PS)
-{
-    GLuint vertexshader = glCreateShader(GL_VERTEX_SHADER);
-    const GLchar* vertex_shader_with_version[2] = { gGLSLVersion, VS };
-    glShaderSource(vertexshader, 2, vertex_shader_with_version, 0);
-    glCompileShader(vertexshader);
-    GLint IsCompiled_VS = 0;
-    glGetShaderiv(vertexshader, GL_COMPILE_STATUS, &IsCompiled_VS);
-    if (IsCompiled_VS == 0)
-    {
-        GLint maxLength;
-        glGetShaderiv(vertexshader, GL_INFO_LOG_LENGTH, &maxLength);
-        char* vertexInfoLog = (char *)malloc(maxLength);
-
-        glGetShaderInfoLog(vertexshader, maxLength, &maxLength, vertexInfoLog);
-
-        assert(false);
-
-        free(vertexInfoLog);
-    }
-
-    GLuint fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
-    const GLchar* pixel_shader_with_version[2] = { gGLSLVersion, PS };
-    glShaderSource(fragmentshader, 2, pixel_shader_with_version, 0);
-    glCompileShader(fragmentshader);
-    GLint IsCompiled_PS = 0;
-    glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &IsCompiled_PS);
-    if (IsCompiled_PS == 0)
-    {
-        GLint maxLength;
-        glGetShaderiv(fragmentshader, GL_INFO_LOG_LENGTH, &maxLength);
-        char* fragmentInfoLog = (char *)malloc(maxLength);
-
-        glGetShaderInfoLog(fragmentshader, maxLength, &maxLength, fragmentInfoLog);
-
-        assert(false);
-
-        free(fragmentInfoLog);
-    }
-
-    GLuint shaderprogram = glCreateProgram();
-    glAttachShader(shaderprogram, vertexshader);
-    glAttachShader(shaderprogram, fragmentshader);
-
-    glLinkProgram(shaderprogram);
-
-    GLint IsLinked = 0;
-    glGetProgramiv(shaderprogram, GL_LINK_STATUS, &IsLinked);
-    if (IsLinked == 0)
-    {
-        GLint maxLength;
-        glGetShaderiv(shaderprogram, GL_INFO_LOG_LENGTH, &maxLength);
-        char* fragmentInfoLog = (char*)malloc(maxLength);
-
-        glGetShaderInfoLog(shaderprogram, maxLength, &maxLength, fragmentInfoLog);
-
-        assert(false);
-
-        free(fragmentInfoLog);
-    }
-
-    return shaderprogram;
-}
-
-#define GL_SHADER_VERSION "#version 300 es\n"
-
-#ifdef USE_GL_ES3
-const GLchar azel_vs[] =
-"#version 300 es\n"
-"uniform mat4 u_mvpMatrix;    \n"
-"uniform mat4 u_modelMatrix;    \n"
-"uniform vec2 u_2dOffset;   \n"
-"in vec3 a_position;   \n"
-"in vec2 a_texcoord;   \n"
-"in vec4 a_color;   \n"
-"out  highp vec2 v_texcoord;     \n"
-"out  highp vec4 v_color;     \n"
-"void main()                  \n"
-"{                            \n"
-"   gl_Position = u_mvpMatrix * u_modelMatrix * vec4(a_position, 1); \n"
-"   gl_Position.xy += u_2dOffset; \n"
-"   v_texcoord = a_texcoord; \n"
-"	v_color = a_color; \n"
-"} "
-;
-
-const GLchar azel_ps[] =
-"#version 300 es\n"
-"precision highp float;                                    \n"
-"in highp vec2 v_texcoord;                                \n"
-"in highp vec4 v_color;                                \n"
-"uniform sampler2D s_texture;                            \n"
-"uniform float s_textureInfluence;                        \n"
-"uniform float s_ambientInfluence;                        \n"
-"out vec4 fragColor;                                    \n"
-"void main()                                            \n"
-"{                                                        \n"
-"   float distanceValue = mix(0.f, 10.f, 1.f-gl_FragCoord.z); \n"
-"   //distanceValue = clamp(distanceValue, 0, 1); \n"
-"    vec4 txcol = texture(s_texture, v_texcoord);        \n"
-"   if(txcol.a <= 0.f) discard;\n"
-"   fragColor = (clamp(txcol, 0.f, 1.f) * s_textureInfluence) + v_color;                                    \n"
-"   fragColor = txcol; \n"
-"   fragColor.w = 1.f;                                \n"
-"}                                                        \n"
-;
-
-#else
-const GLchar azel_vs[] =
-"#version 330 \n"
-"uniform mat4 u_mvpMatrix;    \n"
-"uniform vec2 u_2dOffset;   \n"
-"in vec3 a_position;   \n"
-"in vec2 a_texcoord;   \n"
-"in vec4 a_color;   \n"
-"out  highp vec2 v_texcoord;     \n"
-"out  highp vec4 v_color;     \n"
-"void main()                  \n"
-"{                            \n"
-"   gl_Position = u_mvpMatrix * vec4(a_position, 1); \n"
-"   gl_Position.xy += u_2dOffset; \n"
-"   v_texcoord = a_texcoord; \n"
-"	v_color = a_color; \n"
-"} "
-;
-
-const GLchar azel_ps[] =
-"#version 330 \n"
-"precision highp float;									\n"
-"in highp vec2 v_texcoord;								\n"
-"in highp vec4 v_color;								\n"
-"in vec4 gl_FragCoord;									\n"
-"uniform sampler2D s_texture;							\n"
-"uniform sampler2D s_falloff;							\n"
-"uniform float s_textureInfluence;						\n"
-"uniform float s_ambientInfluence;						\n"
-"out vec4 fragColor;									\n"
-"void main()											\n"
-"{														\n"
-"   float distanceValue = mix(0, 10, 1-gl_FragCoord.z); \n"
-"   //distanceValue = clamp(distanceValue, 0, 1); \n"
-"	vec4 fallout = texture(s_falloff, vec2(distanceValue,0)); \n"
-"	vec4 txcol = texture(s_texture, v_texcoord);		\n"
-"   if(txcol.a <= 0) discard;\n"
-"   fragColor = (clamp(txcol, 0, 1) * s_textureInfluence) + v_color;									\n"
-"   fragColor = txcol; \n"
-"   fragColor.w = 1;								\n"
-"}														\n"
-;
-#endif
 void multiplyMatrices(float* in1, float* in2, float* out)
 {
     float temp[4 * 4];
@@ -324,9 +160,6 @@ void multiplyMatrices(float* in1, float* in2, float* out)
     memcpy(out, temp, sizeof(float) * 4 * 4);
 }
 
-GLuint shaderProgram = 0;
-GLuint vshader = 0;
-GLuint fshader = 0;
 bool fillPolys = true;
 bool enableTextures = true;
 
@@ -424,7 +257,6 @@ struct s_vertexData
 std::vector<s_vertexData> gVertexArray;
 
 float textureInfluence = 0;
-GLuint colorRampTexture = 0;
 
 std::vector<s_vertexData> SingleDrawcallVertexArray;
 std::vector<uint32_t> SingleDrawcallIndexArray;
@@ -521,418 +353,6 @@ void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
     bgfx::setVertexBuffer(0, pObject->m_pObject->m_vertexBufferHandle);
     bgfx::setIndexBuffer(pObject->m_pObject->m_indexBufferHandle);
     bgfx::submit(vdp1_gpuView, vdp1_program);
-
-    {
-        checkGL();
-        GLuint modelProjection = glGetUniformLocation(shaderProgram, (const GLchar *)"u_mvpMatrix");
-        checkGL();
-        if (modelProjection != -1)
-        {
-            glUniformMatrix4fv(modelProjection, 1, GL_FALSE, &mvpMatrix[0][0]);
-        }
-        checkGL();
-
-        GLuint modelMatrixId = glGetUniformLocation(shaderProgram, (const GLchar *)"u_modelMatrix");
-        checkGL();
-        if (modelMatrixId != -1)
-        {
-            glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, objectMatrix);
-        }
-        checkGL();
-
-        GLuint offsetId = glGetUniformLocation(shaderProgram, (const GLchar *)"u_2dOffset");
-        checkGL();
-        if (modelMatrixId != -1)
-        {
-            glUniform2fv(offsetId, 1, pObject->m_2dOffset);
-        }
-        checkGL();
-    }
-
-    s32 lightVectorModelSpace[3] = { 0,0,0 };
-    {
-        /*
-        lightVectorModelSpace[0] = (pObject->m_lightVector[0] * pObject->m_modelMatrix[0] + pObject->m_lightVector[1] * pObject->m_modelMatrix[4] + pObject->m_lightVector[2] * pObject->m_modelMatrix[8]) >> 16;
-        lightVectorModelSpace[1] = (pObject->m_lightVector[0] * pObject->m_modelMatrix[1] + pObject->m_lightVector[1] * pObject->m_modelMatrix[5] + pObject->m_lightVector[2] * pObject->m_modelMatrix[9]) >> 16;
-        lightVectorModelSpace[2] = (pObject->m_lightVector[0] * pObject->m_modelMatrix[2] + pObject->m_lightVector[1] * pObject->m_modelMatrix[6] + pObject->m_lightVector[2] * pObject->m_modelMatrix[10]) >> 16;
-        */
-    }
-
-    sProcessed3dModel* pModel = pObject->m_pObject;
-    {
-        u32 currentBlockId = 0;
-        u32 currentBlockOffset = 0;
-
-        do
-        {
-            currentBlockOffset = 0;
-            {
-                {
-                    for(int i=0; i< pModel->mC_Quads.size(); i++)
-                    {
-                        const sProcessed3dModel::sQuad& currentQuad = pModel->mC_Quads[i];
-
-                        char string[1024] = "";
-                        sprintf(string, "Quad: CMDSRCA: %04X CMDCOLR: %04X", currentQuad.m10_CMDSRCA, currentQuad.mE_CMDCOLR);
-                        /*glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 0, GL_DEBUG_SEVERITY_NOTIFICATION, strlen(string), string);
-*/
-                        u8 lightingMode = (currentQuad.m8_lightingControl >> 8) & 3;
-
-                        u32 indices[6] = { 0, 1, 2, 0, 2, 3 };
-
-                        {
-                            s_quad tempQuad;
-                            tempQuad.model = pModel->_base;
-                            tempQuad.CMDCTRL = currentQuad.mA_CMDCTRL;
-                            tempQuad.CMDPMOD = currentQuad.mC_CMDPMOD;
-                            tempQuad.CMDCOLR = currentQuad.mE_CMDCOLR;
-                            tempQuad.CMDSRCA = currentQuad.m10_CMDSRCA;
-                            tempQuad.CMDSIZE = currentQuad.m12_onCollisionScriptIndex;
-
-                            for (int i = 0; i < 4; i++)
-                            {
-                                float fX = pModel->m8_vertices[currentQuad.m0_indices[i]][0] / quantisation;
-                                float fY = pModel->m8_vertices[currentQuad.m0_indices[i]][1] / quantisation;
-                                float fZ = pModel->m8_vertices[currentQuad.m0_indices[i]][2] / quantisation;
-
-                                tempQuad.m_vertices[i].m_originalVertices[0] = fX * 16;
-                                tempQuad.m_vertices[i].m_originalVertices[1] = fY * 16;
-                                tempQuad.m_vertices[i].m_originalVertices[2] = fZ * 16;
-                                tempQuad.m_vertices[i].m_originalVertices[3] = 1.f;
-                            }
-
-                            float perVertexColor[4][3];
-
-                            for (int i = 0; i < 4; i++)
-                            {
-                                perVertexColor[i][0] = 1.f;
-                                perVertexColor[i][1] = 1.f;
-                                perVertexColor[i][2] = 1.f;
-                            }
-
-                            float falloutColor[4][3];
-                            for (int i = 0; i < 4; i++)
-                            {
-                                GetDistanceFalloff(falloutColor[i], pObject, currentQuad.m0_indices[i]);
-                            }
-
-                            u8* colorOverrideEA = 0;
-                            //if (instanceEA)
-                            {
-                                /*u32 currectSeekAddress = instanceEA;
-                                while (AzelLowWramMemoryReadLong(currectSeekAddress) != 0xFFFFFFFF)
-                                {
-                                if (AzelLowWramMemoryReadLong(currectSeekAddress) == quadIndex)
-                                {
-                                colorOverrideEA = currectSeekAddress + 4;
-                                }
-                                currectSeekAddress += 0x10;
-                                }*/
-                            }
-
-                            switch (lightingMode)
-                            {
-                            case 0: // plain texture
-                                break;
-                            case 1: // texture + single normal, used for shadows
-                                ComputeColorFromNormal(currentQuad.m14_extraData[0], false, lightVectorModelSpace, pObject->m_lightColor, falloutColor[0], perVertexColor[0], colorOverrideEA);
-                                break;
-                            case 2: // texture + normal + color per vertex
-                                for (int i = 0; i < 4; i++)
-                                {
-                                    ComputeColorFromNormal(currentQuad.m14_extraData[i], true, lightVectorModelSpace, pObject->m_lightColor, falloutColor[i], perVertexColor[i], colorOverrideEA);
-                                }
-                                break;
-                            case 3: // texture + normal per vertex
-                                for (int i = 0; i < 4; i++)
-                                {
-                                    ComputeColorFromNormal(currentQuad.m14_extraData[i], false, lightVectorModelSpace, pObject->m_lightColor, falloutColor[i], perVertexColor[i], colorOverrideEA);
-                                }
-                                break;
-                            }
-
-                            checkGL();
-
-                            GLuint textureId = getTextureForQuad(tempQuad);
-                            if (textureId > 0)
-                            {
-                                checkGL();
-                                //glEnable(GL_ALPHA_TEST);
-                                //glAlphaFunc(GL_GREATER, 0.1);
-                                glBindTexture(GL_TEXTURE_2D, textureId);
-                                checkGL();
-
-                                int flip = (tempQuad.CMDCTRL & 0x30) >> 4;
-
-                                float uv[4][2];
-                                u16 color[4];
-
-                                uv[0][0] = 0;
-                                uv[0][1] = 0;
-                                color[0] = 1;
-                                //color[0] = MappedMemoryReadWord(quads[i].gouraudPointer + 0 * 2);
-
-                                uv[1][0] = 1;
-                                uv[1][1] = 0;
-                                color[1] = 1;
-                                //color[1] = MappedMemoryReadWord(quads[i].gouraudPointer + 1 * 2);
-
-                                uv[2][0] = 1;
-                                uv[2][1] = 1;
-                                color[2] = 1;
-                                //color[2] = MappedMemoryReadWord(quads[i].gouraudPointer + 2 * 2);
-
-                                uv[3][0] = 0;
-                                uv[3][1] = 1;
-                                color[3] = 1;
-                                //color[3] = MappedMemoryReadWord(quads[i].gouraudPointer + 3 * 2);
-
-                                //glColor3f(1, 1, 1);
-                                checkGL();
-                                //                                 if (enableTextures)
-                                //                                 {
-                                //                                     glEnable(GL_TEXTURE_2D);
-                                //                                 }
-                                //                                 else
-                                //                                 {
-                                //                                     glDisable(GL_TEXTURE_2D);
-                                //                                 }
-                                checkGL();
-                                bool bUseVBO = true;
-
-                                if (bUseVBO)
-                                {
-                                    char vertexOrder[4] = { 0, 1, 2, 3 };
-
-                                    switch (flip & 3)
-                                    {
-                                    case 1:
-                                        vertexOrder[0] = 1;
-                                        vertexOrder[1] = 0;
-                                        vertexOrder[2] = 3;
-                                        vertexOrder[3] = 2;
-                                        break;
-                                    case 2:
-                                        vertexOrder[0] = 3;
-                                        vertexOrder[1] = 2;
-                                        vertexOrder[2] = 1;
-                                        vertexOrder[3] = 0;
-                                        break;
-                                    case 3:
-                                        vertexOrder[0] = 2;
-                                        vertexOrder[1] = 3;
-                                        vertexOrder[2] = 0;
-                                        vertexOrder[3] = 1;
-                                        break;
-                                    }
-
-                                    for (int j = 0; j < 4; j++)
-                                    {
-                                        gVertexArray[j].textures[0] = uv[vertexOrder[j]][0];
-                                        gVertexArray[j].textures[1] = uv[vertexOrder[j]][1];
-
-                                        if (enableVertexColor)
-                                        {
-                                            //glColor4f(perVertexColor[j][2], perVertexColor[j][1], perVertexColor[j][0], 1);
-
-                                            gVertexArray[j].color[0] = perVertexColor[j][2];
-                                            gVertexArray[j].color[1] = perVertexColor[j][1];
-                                            gVertexArray[j].color[2] = perVertexColor[j][0];
-                                            gVertexArray[j].color[3] = 1;
-
-                                        }
-                                        else
-                                        {
-                                            //glColor4f(1, 1, 1, 1);
-
-                                            gVertexArray[j].color[0] = 1;
-                                            gVertexArray[j].color[1] = 1;
-                                            gVertexArray[j].color[2] = 1;
-                                            gVertexArray[j].color[3] = 1;
-                                        }
-
-                                        {
-                                            tempQuad.m_vertices[j].m_originalVertices[3] = 1;
-                                            //glVertex4fv(tempQuad.m_vertices[j].m_originalVertices);
-                                        }
-
-                                        gVertexArray[j].positions[0] = tempQuad.m_vertices[j].m_originalVertices[0];
-                                        gVertexArray[j].positions[1] = tempQuad.m_vertices[j].m_originalVertices[1];
-                                        gVertexArray[j].positions[2] = tempQuad.m_vertices[j].m_originalVertices[2];
-                                    }
-
-                                    checkGL();
-
-                                    GLuint vertexp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_position");
-                                    GLuint texcoordp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_texcoord");
-                                    GLuint colorp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_color");
-                                    GLuint texture = glGetUniformLocation(shaderProgram, (const GLchar*)"s_texture");
-                                    GLuint falloff = glGetUniformLocation(shaderProgram, (const GLchar*)"s_falloff");
-                                    GLuint textureInfluenceHandle = glGetUniformLocation(shaderProgram, (const GLchar*)"s_textureInfluence");
-
-                                    checkGL();
-
-                                    static GLuint vao = 0;
-                                    if (vao == 0)
-                                    {
-                                        glGenVertexArrays(1, &vao);
-                                    }
-                                    glBindVertexArray(vao);
-
-                                    static GLuint vbo = 0;
-                                    if (vbo == 0)
-                                    {
-                                        glGenBuffers(1, &vbo);
-                                    }
-                                    checkGL();
-                                    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                                    checkGL();
-                                    glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 4, &gVertexArray[0], GL_STATIC_DRAW);
-                                    checkGL();
-                                    glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->positions);
-                                    checkGL();
-                                    glEnableVertexAttribArray(vertexp);
-                                    checkGL();
-                                    if (texcoordp != -1)
-                                    {
-                                        glVertexAttribPointer(texcoordp, 2, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->textures);
-                                        glEnableVertexAttribArray(texcoordp);
-                                    }
-                                    checkGL();
-                                    if (colorp != -1)
-                                    {
-                                        glVertexAttribPointer(colorp, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->color);
-                                        glEnableVertexAttribArray(colorp);
-                                    }
-                                    checkGL();
-                                    if (texture != -1)
-                                    {
-                                        glUniform1i(texture, 0);
-                                        glActiveTexture(GL_TEXTURE0);
-                                        glBindTexture(GL_TEXTURE_2D, textureId);
-                                    }
-                                    checkGL();
-                                    if (textureInfluenceHandle != -1)
-                                    {
-                                        glUniform1f(textureInfluenceHandle, textureInfluence);
-                                    }
-                                    checkGL();
-                                    if (falloff != -1)
-                                    {
-                                        glUniform1i(falloff, 1);
-                                        glActiveTexture(GL_TEXTURE1);
-                                        glBindTexture(GL_TEXTURE_2D, colorRampTexture);
-                                    }
-
-                                    static GLuint indexBufferId = 0;
-                                    if (indexBufferId == 0)
-                                    {
-                                        char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
-                                        glGenBuffers(1, &indexBufferId);
-                                        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-                                        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
-                                    }
-                                    else
-                                    {
-                                        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-                                    }
-                                    
-                                    checkGL();
-                                    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                                    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
-                                    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-                                    if (pObject->m_isBillboard)
-                                    {
-                                        glDisable(GL_CULL_FACE);
-                                    }
-                                    else
-                                    {
-                                        glEnable(GL_CULL_FACE);
-                                    }
-
-                                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)0);
-                                    checkGL();
-                                    glDisableVertexAttribArray(vertexp);
-                                    checkGL();
-                                    if (texcoordp != -1)
-                                        glDisableVertexAttribArray(texcoordp);
-                                    checkGL();
-                                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                                    checkGL();
-
-                                    if (texture != -1)
-                                    {
-                                        glUniform1i(texture, 0);
-                                        glActiveTexture(GL_TEXTURE0);
-                                        glBindTexture(GL_TEXTURE_2D, 0);
-                                    }
-
-                                    if (falloff != -1)
-                                    {
-                                        glUniform1i(falloff, 0);
-                                        glActiveTexture(GL_TEXTURE1);
-                                        glBindTexture(GL_TEXTURE_2D, 0);
-                                    }
-                                }
-                                else
-                                {
-#if 0
-                                    glBegin(GL_QUADS);
-                                    for (int j = 0; j < 4; j++)
-                                    {
-                                    char vertexOrder[4] = { 0, 1, 2, 3 };
-
-                                    switch (flip & 3)
-                                    {
-                                    case 1:
-                                    vertexOrder[0] = 1;
-                                    vertexOrder[1] = 0;
-                                    vertexOrder[2] = 3;
-                                    vertexOrder[3] = 2;
-                                    break;
-                                    case 2:
-                                    vertexOrder[0] = 3;
-                                    vertexOrder[1] = 2;
-                                    vertexOrder[2] = 1;
-                                    vertexOrder[3] = 0;
-                                    break;
-                                    case 3:
-                                    vertexOrder[0] = 2;
-                                    vertexOrder[1] = 3;
-                                    vertexOrder[2] = 0;
-                                    vertexOrder[3] = 1;
-                                    break;
-                                    }
-
-                                    /*
-                                    glTexCoord2f(uv[vertexOrder[j]][0], uv[vertexOrder[j]][1]);
-                                    if (enableVertexColor)
-                                    {
-                                    glColor4f(perVertexColor[j][2], perVertexColor[j][1], perVertexColor[j][0], 1);
-                                    }
-                                    else
-                                    {
-                                    glColor4f(1, 1, 1, 1);
-                                    }
-
-                                    {
-                                    tempQuad.m_vertices[j].m_originalVertices[3] = 1;
-                                    glVertex4fv(tempQuad.m_vertices[j].m_originalVertices);
-                                    }
-
-                                    }
-                                    glEnd();
-                                    */
-#endif
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } while (0);
-    }
 }
 
 float* getViewMatrix()
@@ -1007,63 +427,7 @@ void flushObjectsToDrawList()
     ZoneScopedN("flushObjectsToDrawList");
 
     gVertexArray.resize(1024 * 1024);
-    checkGL();
 
-    static bool bInit = false;
-    if (!bInit)
-    {
-        vshader = glCreateShader(GL_VERTEX_SHADER);
-        {
-            volatile int compiled = 0;
-            const GLchar * pYglprg_normal_v[] = { azel_vs, NULL };
-            glShaderSource(vshader, 1, pYglprg_normal_v, NULL);
-            glCompileShader(vshader);
-            glGetShaderiv(vshader, GL_COMPILE_STATUS, (int*)&compiled);
-            if (compiled == GL_FALSE)
-            {
-                GLint maxLength = 0;
-                glGetShaderiv(vshader, GL_INFO_LOG_LENGTH, &maxLength);
-
-                // The maxLength includes the NULL character
-                std::vector<GLchar> errorLog(maxLength);
-                glGetShaderInfoLog(vshader, maxLength, &maxLength, &errorLog[0]);
-                PDS_unimplemented(errorLog.data());
-                assert(false);
-            }
-        }
-
-        fshader = glCreateShader(GL_FRAGMENT_SHADER);
-        {
-            volatile int compiled = 0;
-            const GLchar * pYglprg_normal_f[] = { azel_ps, NULL };
-            glShaderSource(fshader, 1, pYglprg_normal_f, NULL);
-            glCompileShader(fshader);
-            glGetShaderiv(fshader, GL_COMPILE_STATUS, (int*)&compiled);
-            if (compiled == GL_FALSE)
-            {
-                GLint maxLength = 0;
-                glGetShaderiv(fshader, GL_INFO_LOG_LENGTH, &maxLength);
-                
-                // The maxLength includes the NULL character
-                std::vector<GLchar> errorLog(maxLength);
-                glGetShaderInfoLog(fshader, maxLength, &maxLength, &errorLog[0]);
-                PDS_unimplemented(errorLog.data());
-                assert(false);
-            }
-        }
-
-        shaderProgram = glCreateProgram();
-        {
-            volatile int linked = 0;
-            glAttachShader(shaderProgram, vshader);
-            glAttachShader(shaderProgram, fshader);
-            glLinkProgram(shaderProgram);
-            glGetProgramiv(shaderProgram, GL_LINK_STATUS, (int*)&linked);
-            assert(linked == 1);
-        }
-
-        bInit = true;
-    }
 
     if(!isShipping())
     {
@@ -1093,11 +457,6 @@ void flushObjectsToDrawList()
         ImGui::End();
     }
 
-    checkGL();
-
-    glUseProgram(shaderProgram);
-    checkGL();
-
     for (int i = 0; i < objectRenderList.size(); i++)
     {
         SingleDrawcallVertexArray.clear();
@@ -1111,9 +470,6 @@ void flushObjectsToDrawList()
     }
 
     TracyPlot("ObjectRenderList size", (int64_t)objectRenderList.size());
-
-    checkGL();
-    glUseProgram(0);
 
     objectRenderList.clear();
 
@@ -1193,49 +549,6 @@ void tranformVec4ByfMatrix(float* inOutVec, const float* matrix)
 extern s16 localCoordiantesX;
 extern s16 localCoordiantesY;
 
-GLuint Get2dUIShader()
-{
-    static const GLchar UI_vs[] =
-        "in vec3 a_position;   \n"
-        "in vec2 a_texcoord;   \n"
-        "out  highp vec2 v_texcoord;     \n"
-        "out  highp float v_depth;    \n"
-        "void main()                  \n"
-        "{                            \n"
-        "   gl_Position = vec4(a_position, 1); \n"
-        "   gl_Position.x = (a_position.x / (352.f/2.f)) - 1.f;"
-        "   gl_Position.y = 1.f - (a_position.y / (224.f/2.f));"
-        "   v_depth = a_position.z;"
-        "   v_texcoord = a_texcoord; \n"
-        "} "
-        ;
-
-    const GLchar UI_ps[] =
-        "precision highp float;									\n"
-        "in highp vec2 v_texcoord;								\n"
-        "in  highp float v_depth;\n"
-        "uniform sampler2D s_texture;							\n"
-        "out vec4 fragColor;									\n"
-        "void main()											\n"
-        "{														\n"
-        "	vec4 txcol = texture(s_texture, v_texcoord);		\n"
-        "   if(txcol.a <= 0.f) discard;\n"
-        "   fragColor = txcol; \n"
-        "   fragColor.w = 1.f;								\n"
-        "   gl_FragDepth = v_depth;\n"
-        "}														\n"
-        ;
-
-    static GLuint UIShaderIndex = 0;
-    if (UIShaderIndex == 0)
-    {
-        UIShaderIndex = compileShader(UI_vs, UI_ps);
-        assert(UIShaderIndex);
-    }
-
-    return UIShaderIndex;
-}
-
 bgfx::ProgramHandle Get2dUIShaderBGFX()
 {
     static bgfx::ProgramHandle programHandle = BGFX_INVALID_HANDLE;
@@ -1247,46 +560,6 @@ bgfx::ProgramHandle Get2dUIShaderBGFX()
     return programHandle;
 }
 
-GLuint GetWorldSpaceLineShader()
-{
-    static const GLchar UI_vs[] =
-        "uniform mat4 u_projectionMatrix;    \n"
-        "uniform mat4 u_viewMatrix;    \n"
-        "in vec3 a_position;   \n"
-        "in vec3 a_color;   \n"
-        "out  highp vec3 v_color;     \n"
-        "out  highp float v_depth;    \n"
-        "void main()                  \n"
-        "{                            \n"
-        "   gl_Position = u_projectionMatrix * u_viewMatrix * vec4(a_position, 1); \n"
-        "   v_color = a_color; \n"
-        "} "
-        ;
-
-    const GLchar UI_ps[] =
-        "precision highp float;									\n"
-        "in highp vec3 v_color;								\n"
-        "in  highp float v_depth;\n"
-        "uniform sampler2D s_texture;							\n"
-        "out vec4 fragColor;									\n"
-        "void main()											\n"
-        "{														\n"
-        "   fragColor.xyz = v_color; \n"
-        "   fragColor.w = 1;								\n"
-        "   gl_FragDepth = v_depth;\n"
-        "}														\n"
-        ;
-
-    static GLuint UIShaderIndex = 0;
-    if (UIShaderIndex == 0)
-    {
-        UIShaderIndex = compileShader(UI_vs, UI_ps);
-        assert(UIShaderIndex);
-    }
-
-    return UIShaderIndex;
-}
-
 bgfx::ProgramHandle GetWorldSpaceLineShaderBGFX()
 {
     static bgfx::ProgramHandle programHandle = BGFX_INVALID_HANDLE;
@@ -1296,48 +569,6 @@ bgfx::ProgramHandle GetWorldSpaceLineShaderBGFX()
     }
 
     return programHandle;
-}
-
-GLuint GetLineShader()
-{
-    static const GLchar UI_vs[] =
-        "in vec3 a_position;   \n"
-        "in vec3 a_color;   \n"
-        "out  highp vec3 v_color;     \n"
-        "out  highp float v_depth;    \n"
-        "void main()                  \n"
-        "{                            \n"
-        "   gl_Position = vec4(a_position, 1); \n"
-        "   gl_Position.x = (a_position.x / (352.f/2.f)) - 1.f;"
-        "   gl_Position.y = 1.f - (a_position.y / (224.f/2.f));"
-        "   v_depth = a_position.z;"
-        "   v_color = a_color; \n"
-        "} "
-        ;
-
-    const GLchar UI_ps[] =
-        "precision highp float;									\n"
-        "in highp vec3 v_color;								\n"
-        "in  highp float v_depth;\n"
-        "uniform sampler2D s_texture;							\n"
-        "out vec4 fragColor;									\n"
-        //"out highp float gl_FragDepth ; \n"
-        "void main()											\n"
-        "{														\n"
-        "   fragColor.xyz = v_color; \n"
-        "   fragColor.w = 1.f;								\n"
-        "   gl_FragDepth = v_depth;\n"
-        "}														\n"
-        ;
-
-    static GLuint UIShaderIndex = 0;
-    if (UIShaderIndex == 0)
-    {
-        UIShaderIndex = compileShader(UI_vs, UI_ps);
-        assert(UIShaderIndex);
-    }
-
-    return UIShaderIndex;
 }
 
 void NormalSpriteDrawGL(u32 vdp1EA)
@@ -1361,9 +592,6 @@ void NormalSpriteDrawGL(u32 vdp1EA)
         s32 Width = ((CMDSIZE >> 8) & 0x3F) * 8;
         s32 Height = CMDSIZE & 0xFF;
 
-        glUseProgram(Get2dUIShader());
-        checkGL();
-
         float zNear = 0.1f;
         float zFar = 1000.f;
 
@@ -1375,19 +603,12 @@ void NormalSpriteDrawGL(u32 vdp1EA)
         tempQuad.CMDSRCA = CMDSRCA;
         tempQuad.CMDSIZE = CMDSIZE;
 
-        GLuint textureId = getTextureForQuad(tempQuad);
-
         float quadDepth = 0.9;
 
         s_vd1ExtendedCommand* pExtendedCommand = fetchVdp1ExtendedCommand(vdp1EA);
         if (pExtendedCommand)
         {
             quadDepth = pExtendedCommand->depth;
-            glEnable(GL_DEPTH_TEST);
-        }
-        else
-        {
-            glDisable(GL_DEPTH_TEST);
         }
 
         tempQuad.m_vertices[0].m_originalVertices[0] = X;
@@ -1406,12 +627,11 @@ void NormalSpriteDrawGL(u32 vdp1EA)
         tempQuad.m_vertices[3].m_originalVertices[1] = (Y + Height);
         tempQuad.m_vertices[3].m_originalVertices[2] = quadDepth;
 
-        if (textureId > 0)
+        if (1)
         {
             checkGL();
             //glEnable(GL_ALPHA_TEST);
             //glAlphaFunc(GL_GREATER, 0.1);
-            glBindTexture(GL_TEXTURE_2D, textureId);
             checkGL();
 
             int flip = (tempQuad.CMDCTRL & 0x30) >> 4;
@@ -1505,77 +725,6 @@ void NormalSpriteDrawGL(u32 vdp1EA)
                     gVertexArray[j].positions[2] = tempQuad.m_vertices[j].m_originalVertices[2];
                 }
 
-                checkGL();
-
-                GLuint vertexp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_position");
-                GLuint texcoordp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_texcoord");
-                GLuint texture = glGetUniformLocation(shaderProgram, (const GLchar*)"s_texture");
-
-                checkGL();
-
-                static GLuint vao = 0;
-                if (vao == 0)
-                {
-                    glGenVertexArrays(1, &vao);
-                }
-                glBindVertexArray(vao);
-
-                static GLuint vbo = 0;
-                if (vbo == 0)
-                {
-                    glGenBuffers(1, &vbo);
-                }
-                checkGL();
-                glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                checkGL();
-                glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 4, &gVertexArray[0], GL_STATIC_DRAW);
-                checkGL();
-                glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->positions);
-                checkGL();
-                glEnableVertexAttribArray(vertexp);
-                checkGL();
-                if (texcoordp != -1)
-                {
-                    glVertexAttribPointer(texcoordp, 2, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->textures);
-                    glEnableVertexAttribArray(texcoordp);
-                }
-                checkGL();
-                if (texture != -1)
-                {
-                    glUniform1i(texture, 0);
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, textureId);
-                }
-                checkGL();
-
-                static GLuint indexBufferId = 0;
-                if (indexBufferId == 0)
-                {
-                    char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
-                    glGenBuffers(1, &indexBufferId);
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
-                }
-                else
-                {
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-                }
-
-                checkGL();
-                //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
-                //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)0);
-                checkGL();
-                glDisableVertexAttribArray(vertexp);
-                checkGL();
-                if (texcoordp != -1)
-                    glDisableVertexAttribArray(texcoordp);
-                checkGL();
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-                checkGL();
-
-
                 {
                     bgfx::VertexLayout layout;
                     layout
@@ -1603,22 +752,18 @@ void NormalSpriteDrawGL(u32 vdp1EA)
                         textureUniform = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
                     }
                     bgfx::setTexture(0, textureUniform, getTextureForQuadBGFX(tempQuad));
-
+                    bgfx::setState(0 | BGFX_STATE_WRITE_RGB
+                        | BGFX_STATE_WRITE_A
+                        | BGFX_STATE_WRITE_Z
+                        | BGFX_STATE_DEPTH_TEST_LEQUAL
+                        | BGFX_STATE_CULL_CW
+                        | BGFX_STATE_MSAA
+                    );
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
-                }
-
-                if (texture != -1)
-                {
-                    glUniform1i(texture, 0);
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, 0);
                 }
             }
         }
     }
-
-    checkGL();
-    glUseProgram(0);
 }
 
 void ScaledSpriteDrawGL(u32 vdp1EA)
@@ -1656,9 +801,6 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
             break;
         }
 
-        glUseProgram(Get2dUIShader());
-        checkGL();
-
         float zNear = 0.1f;
         float zFar = 1000.f;
 
@@ -1670,19 +812,12 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
         tempQuad.CMDSRCA = CMDSRCA;
         tempQuad.CMDSIZE = CMDSIZE;
 
-        GLuint textureId = getTextureForQuad(tempQuad);
-
         float quadDepth = 0.9;
 
         s_vd1ExtendedCommand* pExtendedCommand = fetchVdp1ExtendedCommand(vdp1EA);
         if (pExtendedCommand)
         {
             quadDepth = pExtendedCommand->depth;
-            glEnable(GL_DEPTH_TEST);
-        }
-        else
-        {
-            glDisable(GL_DEPTH_TEST);
         }
 
         tempQuad.m_vertices[0].m_originalVertices[0] = X0;
@@ -1701,14 +836,8 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
         tempQuad.m_vertices[3].m_originalVertices[1] = Y1;
         tempQuad.m_vertices[3].m_originalVertices[2] = quadDepth;
 
-        if (textureId > 0)
+        if (1)
         {
-            checkGL();
-            //glEnable(GL_ALPHA_TEST);
-            //glAlphaFunc(GL_GREATER, 0.1);
-            glBindTexture(GL_TEXTURE_2D, textureId);
-            checkGL();
-
             int flip = (tempQuad.CMDCTRL & 0x30) >> 4;
 
             float uv[4][2];
@@ -1800,83 +929,6 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
                     gVertexArray[j].positions[2] = tempQuad.m_vertices[j].m_originalVertices[2];
                 }
 
-                checkGL();
-
-                GLuint vertexp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_position");
-                GLuint texcoordp = glGetAttribLocation(shaderProgram, (const GLchar *)"a_texcoord");
-                GLuint texture = glGetUniformLocation(shaderProgram, (const GLchar*)"s_texture");
-
-                checkGL();
-
-                static GLuint vao = 0;
-                if (vao == 0)
-                {
-                    glGenVertexArrays(1, &vao);
-                }
-                glBindVertexArray(vao);
-
-                static GLuint vbo = 0;
-                if (vbo == 0)
-                {
-                    glGenBuffers(1, &vbo);
-                }
-                checkGL();
-                glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                checkGL();
-                glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 4, &gVertexArray[0], GL_STATIC_DRAW);
-                checkGL();
-                glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->positions);
-                checkGL();
-                glEnableVertexAttribArray(vertexp);
-                checkGL();
-                if (texcoordp != -1)
-                {
-                    glVertexAttribPointer(texcoordp, 2, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->textures);
-                    glEnableVertexAttribArray(texcoordp);
-                }
-                checkGL();
-                if (texture != -1)
-                {
-                    glUniform1i(texture, 0);
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, textureId);
-                }
-                checkGL();
-
-                static GLuint indexBufferId = 0;
-                if (indexBufferId == 0)
-                {
-                    char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
-                    glGenBuffers(1, &indexBufferId);
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
-                }
-                else
-                {
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-                }
-
-                checkGL();
-                //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
-                //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)0);
-                checkGL();
-                glDisableVertexAttribArray(vertexp);
-                checkGL();
-                if (texcoordp != -1)
-                    glDisableVertexAttribArray(texcoordp);
-                checkGL();
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-                checkGL();
-
-                if (texture != -1)
-                {
-                    glUniform1i(texture, 0);
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, 0);
-                }
-
                 {
                     bgfx::VertexLayout layout;
                     layout
@@ -1905,14 +957,18 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
                     }
                     bgfx::setTexture(0, textureUniform, getTextureForQuadBGFX(tempQuad));
 
+                    bgfx::setState(0 | BGFX_STATE_WRITE_RGB
+                        | BGFX_STATE_WRITE_A
+                        | BGFX_STATE_WRITE_Z
+                        | BGFX_STATE_DEPTH_TEST_LEQUAL
+                        | BGFX_STATE_CULL_CW
+                        | BGFX_STATE_MSAA
+                    );
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
                 }
             }
         }
     }
-
-    checkGL();
-    glUseProgram(0);
 }
 
 void drawQuadGL(const sDebugQuad& quad)
@@ -1929,83 +985,6 @@ void drawQuadGL(const sDebugQuad& quad)
         gVertexArray[i].color[3] = quad.m_color.A;
     }
 
-    GLuint currentShader = GetWorldSpaceLineShader();
-    glUseProgram(currentShader);
-    checkGL();
-
-    GLuint vertexp = glGetAttribLocation(currentShader, (const GLchar*)"a_position");
-    GLuint colorp = glGetAttribLocation(currentShader, (const GLchar*)"a_color");
-
-    checkGL();
-
-    static GLuint vao = 0;
-    if (vao == 0)
-    {
-        glGenVertexArrays(1, &vao);
-    }
-    glBindVertexArray(vao);
-
-    static GLuint vbo = 0;
-    if (vbo == 0)
-    {
-        glGenBuffers(1, &vbo);
-    }
-    checkGL();
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    checkGL();
-    glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 4, &gVertexArray[0], GL_STATIC_DRAW);
-    checkGL();
-    glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*) & ((s_vertexData*)NULL)->positions);
-    checkGL();
-    glEnableVertexAttribArray(vertexp);
-    checkGL();
-    if (colorp != -1)
-    {
-        glVertexAttribPointer(colorp, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*) & ((s_vertexData*)NULL)->color);
-        glEnableVertexAttribArray(colorp);
-    }
-    checkGL();
-    static GLuint indexBufferId = 0;
-    if (indexBufferId == 0)
-    {
-        char triVertexOrder[6] = { 0, 1, 2, 2, 3, 0 };
-        glGenBuffers(1, &indexBufferId);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
-    }
-    else
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-    }
-
-    glDisable(GL_DEPTH_TEST);
-    checkGL();
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    GLuint modelProjection = glGetUniformLocation(currentShader, (const GLchar*)"u_projectionMatrix");
-    assert(modelProjection != -1);
-    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, &getProjectionMatrix()[0][0]);
-
-    GLuint viewMatrix = glGetUniformLocation(currentShader, (const GLchar*)"u_viewMatrix");
-    assert(viewMatrix != -1);
-    glUniformMatrix4fv(viewMatrix, 1, GL_FALSE, getViewMatrix());
-
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)0);
-    checkGL();
-    glDisableVertexAttribArray(vertexp);
-    checkGL();
-    if (colorp != -1)
-        glDisableVertexAttribArray(colorp);
-    checkGL();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    checkGL();
-
-    checkGL();
-    glUseProgram(0);
-    glEnable(GL_DEPTH_TEST);
-
     {
         bgfx::VertexLayout layout;
         layout
@@ -2017,6 +996,13 @@ void drawQuadGL(const sDebugQuad& quad)
         bgfx::TransientVertexBuffer vertexBuffer;
         bgfx::TransientIndexBuffer indexBuffer;
         bgfx::allocTransientBuffers(&vertexBuffer, layout, 4, &indexBuffer, 6);
+        bgfx::setState(0 | BGFX_STATE_WRITE_RGB
+            | BGFX_STATE_WRITE_A
+            | BGFX_STATE_WRITE_Z
+            | BGFX_STATE_DEPTH_TEST_LEQUAL
+            | BGFX_STATE_CULL_CW
+            | BGFX_STATE_MSAA
+        );
 
         bgfx::submit(vdp1_gpuView, GetWorldSpaceLineShaderBGFX());
     }
@@ -2036,83 +1022,6 @@ void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color)
     gVertexArray[0].color[1] = gVertexArray[1].color[1] = color.G;
     gVertexArray[0].color[2] = gVertexArray[1].color[2] = color.B;
     gVertexArray[0].color[3] = gVertexArray[1].color[3] = color.A;
-
-    GLuint currentShader = GetWorldSpaceLineShader();
-    glUseProgram(currentShader);
-    checkGL();
-
-    GLuint vertexp = glGetAttribLocation(currentShader, (const GLchar *)"a_position");
-    GLuint colorp = glGetAttribLocation(currentShader, (const GLchar *)"a_color");
-
-    checkGL();
-
-    static GLuint vao = 0;
-    if (vao == 0)
-    {
-        glGenVertexArrays(1, &vao);
-    }
-    glBindVertexArray(vao);
-
-    static GLuint vbo = 0;
-    if (vbo == 0)
-    {
-        glGenBuffers(1, &vbo);
-    }
-    checkGL();
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    checkGL();
-    glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 2, &gVertexArray[0], GL_STATIC_DRAW);
-    checkGL();
-    glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->positions);
-    checkGL();
-    glEnableVertexAttribArray(vertexp);
-    checkGL();
-    if (colorp != -1)
-    {
-        glVertexAttribPointer(colorp, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->color);
-        glEnableVertexAttribArray(colorp);
-    }
-    checkGL();
-    static GLuint indexBufferId = 0;
-    if (indexBufferId == 0)
-    {
-        char triVertexOrder[2] = { 0, 1 };
-        glGenBuffers(1, &indexBufferId);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
-    }
-    else
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-    }
-
-    glDisable(GL_DEPTH_TEST);
-    checkGL();
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    GLuint modelProjection = glGetUniformLocation(currentShader, (const GLchar *)"u_projectionMatrix");
-    assert(modelProjection != -1);
-    glUniformMatrix4fv(modelProjection, 1, GL_FALSE, &getProjectionMatrix()[0][0]);
-
-    GLuint viewMatrix = glGetUniformLocation(currentShader, (const GLchar *)"u_viewMatrix");
-    assert(viewMatrix != -1);
-    glUniformMatrix4fv(viewMatrix, 1, GL_FALSE, getViewMatrix());
-
-    glDrawElements(GL_LINES, 2, GL_UNSIGNED_BYTE, (void*)0);
-    checkGL();
-    glDisableVertexAttribArray(vertexp);
-    checkGL();
-    if (colorp != -1)
-        glDisableVertexAttribArray(colorp);
-    checkGL();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    checkGL();
-
-    checkGL();
-    glUseProgram(0);
-    glEnable(GL_DEPTH_TEST);
 }
 
 void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)
@@ -2129,74 +1038,6 @@ void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)
     gVertexArray[0].color[1] = gVertexArray[1].color[1] = ((finalColor >> 8) & 0xFF) / 256.f;
     gVertexArray[0].color[2] = gVertexArray[1].color[2] = ((finalColor >> 16) & 0xFF) / 256.f;
     gVertexArray[0].color[3] = gVertexArray[1].color[3] = ((finalColor >> 24) & 0xFF) / 256.f;
-
-    GLuint currentShader = GetLineShader();
-    glUseProgram(currentShader);
-    checkGL();
-
-    checkGL();
-
-    GLuint vertexp = glGetAttribLocation(currentShader, (const GLchar *)"a_position");
-    GLuint colorp = glGetAttribLocation(currentShader, (const GLchar *)"a_color");
-
-    checkGL();
-
-    static GLuint vao = 0;
-    if (vao == 0)
-    {
-        glGenVertexArrays(1, &vao);
-    }
-    glBindVertexArray(vao);
-
-    static GLuint vbo = 0;
-    if (vbo == 0)
-    {
-        glGenBuffers(1, &vbo);
-    }
-    checkGL();
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    checkGL();
-    glBufferData(GL_ARRAY_BUFFER, sizeof(s_vertexData) * 2, &gVertexArray[0], GL_STATIC_DRAW);
-    checkGL();
-    glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->positions);
-    checkGL();
-    glEnableVertexAttribArray(vertexp);
-    checkGL();
-    if (colorp != -1)
-    {
-        glVertexAttribPointer(colorp, 4, GL_FLOAT, GL_FALSE, sizeof(s_vertexData), (void*)&((s_vertexData*)NULL)->color);
-        glEnableVertexAttribArray(colorp);
-    }
-    checkGL();
-    static GLuint indexBufferId = 0;
-    if (indexBufferId == 0)
-    {
-        char triVertexOrder[2] = { 0, 1 };
-        glGenBuffers(1, &indexBufferId);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triVertexOrder), triVertexOrder, GL_STATIC_DRAW);
-    }
-    else
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-    }
-
-    checkGL();
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, triVertexOrder);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glDrawElements(GL_LINES, 2, GL_UNSIGNED_BYTE, (void*)0);
-    checkGL();
-    glDisableVertexAttribArray(vertexp);
-    checkGL();
-    if (colorp != -1)
-        glDisableVertexAttribArray(colorp);
-    checkGL();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    checkGL();
-
-    checkGL();
-    glUseProgram(0);
 }
 
 void PolyDrawGL(u32 vdp1EA)

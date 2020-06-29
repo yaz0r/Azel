@@ -13,7 +13,6 @@ struct s_cachedTexture
     u16 CMDCOLR;
     u16 CMDSRCA;
     u16 CMDSIZE;
-    GLuint textureHandle;
     bgfx::TextureHandle m_handle;
 };
 
@@ -276,211 +275,16 @@ bgfx::TextureHandle getTextureForQuadBGFX(s_quad& quad)
     u16 textureHeight;
     u32* textureOutput = decodeVdp1Quad(quad, textureWidth, textureHeight);
 
-    GLuint textureHandle;
-    glGenTextures(1, &textureHandle);
-
-    newTexture.textureHandle = textureHandle;
-
     const uint64_t tsFlags = 0
         | BGFX_SAMPLER_U_CLAMP
         | BGFX_SAMPLER_V_CLAMP
         ;
 
     newTexture.m_handle = bgfx::createTexture2D(textureWidth, textureHeight, false, 1, bgfx::TextureFormat::RGBA8, tsFlags, bgfx::copy(textureOutput, textureWidth * textureHeight * 4));
-
-    glBindTexture(GL_TEXTURE_2D, textureHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     textureCache[textureHash] = newTexture;
 
     return newTexture.m_handle;
-}
-
-GLuint getTextureForQuad(s_quad& quad)
-{
-    u64 textureHash = (quad.CMDCTRL | ((u64)quad.CMDPMOD << 16) | ((u64)quad.CMDCOLR << 32) | ((u64)quad.CMDSRCA << 48)) ^ quad.CMDSIZE;
-
-    auto search = textureCache.find(textureHash);
-    if (search != textureCache.end())
-    {
-        s_cachedTexture& cachedEntry = search->second;
-        assert((quad.CMDCTRL == cachedEntry.CMDCTRL)
-            && (quad.CMDPMOD == cachedEntry.CMDPMOD)
-            && (quad.CMDCOLR == cachedEntry.CMDCOLR)
-            && (quad.CMDSRCA == cachedEntry.CMDSRCA)
-            && (quad.CMDSIZE == cachedEntry.CMDSIZE)
-        );
-
-        return cachedEntry.textureHandle;
-    }
-
-    s_cachedTexture newTexture;
-
-    newTexture.CMDCTRL = quad.CMDCTRL;
-    newTexture.CMDPMOD = quad.CMDPMOD;
-    newTexture.CMDCOLR = quad.CMDCOLR;
-    newTexture.CMDSRCA = quad.CMDSRCA;
-    newTexture.CMDSIZE = quad.CMDSIZE;
-
-    u16 textureWidth;
-    u16 textureHeight;
-    u32* textureOutput = decodeVdp1Quad(quad, textureWidth, textureHeight);
-
-    GLuint textureHandle;
-    glGenTextures(1, &textureHandle);
-
-    newTexture.textureHandle = textureHandle;
-
-    const uint64_t tsFlags = 0
-        | BGFX_SAMPLER_U_CLAMP
-        | BGFX_SAMPLER_V_CLAMP
-        ;
-    newTexture.m_handle = bgfx::createTexture2D(textureWidth, textureHeight, false, 1, bgfx::TextureFormat::RGBA8, tsFlags, bgfx::copy(textureOutput, textureWidth * textureHeight * 4));
-
-#if 0
-    AddString(outstring, "Texture address = %08X\r\n", ((unsigned int)cmd.CMDSRCA) << 3);
-    AddString(outstring, "Texture width = %d, height = %d\r\n", (cmd.CMDSIZE & 0x3F00) >> 5, cmd.CMDSIZE & 0xFF);
-    AddString(outstring, "Texture read direction: ");
-
-    switch ((CMDCTRL >> 4) & 0x3)
-    {
-    case 0:
-        AddString(outstring, "Normal\r\n");
-        break;
-    case 1:
-        AddString(outstring, "Reversed horizontal\r\n");
-        break;
-    case 2:
-        AddString(outstring, "Reversed vertical\r\n");
-        break;
-    case 3:
-        AddString(outstring, "Reversed horizontal and vertical\r\n");
-        break;
-    default: break;
-    }
-
-    // Only draw commands use CMDPMOD
-    if (!(cmd.CMDCTRL & 0x0008))
-    {
-        if (cmd.CMDPMOD & 0x8000)
-        {
-            AddString(outstring, "MSB set\r\n");
-        }
-
-        if (cmd.CMDPMOD & 0x1000)
-        {
-            AddString(outstring, "High Speed Shrink Enabled\r\n");
-        }
-
-        if (!(cmd.CMDPMOD & 0x0800))
-        {
-            AddString(outstring, "Pre-clipping Enabled\r\n");
-        }
-
-        if (cmd.CMDPMOD & 0x0400)
-        {
-            AddString(outstring, "User Clipping Enabled\r\n");
-            AddString(outstring, "Clipping Mode = %d\r\n", (cmd.CMDPMOD >> 9) & 0x1);
-        }
-
-        if (cmd.CMDPMOD & 0x0100)
-        {
-            AddString(outstring, "Mesh Enabled\r\n");
-        }
-
-        if (!(cmd.CMDPMOD & 0x0080))
-        {
-            AddString(outstring, "End Code Enabled\r\n");
-        }
-
-        if (!(cmd.CMDPMOD & 0x0040))
-        {
-            AddString(outstring, "Transparent Pixel Enabled\r\n");
-        }
-
-        AddString(outstring, "Color mode: ");
-
-        switch ((cmd.CMDPMOD >> 3) & 0x7)
-        {
-        case 0:
-            AddString(outstring, "4 BPP(16 color bank)\r\n");
-            AddString(outstring, "Color bank: %08X\r\n", (cmd.CMDCOLR << 3));
-            break;
-        case 1:
-            AddString(outstring, "4 BPP(16 color LUT)\r\n");
-            AddString(outstring, "Color lookup table: %08X\r\n", (cmd.CMDCOLR << 3));
-            break;
-        case 2:
-            AddString(outstring, "8 BPP(64 color bank)\r\n");
-            AddString(outstring, "Color bank: %08X\r\n", (cmd.CMDCOLR << 3));
-            break;
-        case 3:
-            AddString(outstring, "8 BPP(128 color bank)\r\n");
-            AddString(outstring, "Color bank: %08X\r\n", (cmd.CMDCOLR << 3));
-            break;
-        case 4:
-            AddString(outstring, "8 BPP(256 color bank)\r\n");
-            AddString(outstring, "Color bank: %08X\r\n", (cmd.CMDCOLR << 3));
-            break;
-        case 5:
-            AddString(outstring, "15 BPP(RGB)\r\n");
-
-            // Only non-textured commands
-            if (cmd.CMDCTRL & 0x0004)
-            {
-                AddString(outstring, "Non-textured color: %04X\r\n", cmd.CMDCOLR);
-            }
-            break;
-        default: break;
-        }
-
-        AddString(outstring, "Color Calc. mode: ");
-
-        switch (cmd.CMDPMOD & 0x7)
-        {
-        case 0:
-            AddString(outstring, "Replace\r\n");
-            break;
-        case 1:
-            AddString(outstring, "Cannot overwrite/Shadow\r\n");
-            break;
-        case 2:
-            AddString(outstring, "Half-luminance\r\n");
-            break;
-        case 3:
-            AddString(outstring, "Replace/Half-transparent\r\n");
-            break;
-        case 4:
-            AddString(outstring, "Gouraud Shading\r\n");
-            AddString(outstring, "Gouraud Shading Table = %08X\r\n", ((unsigned int)cmd.CMDGRDA) << 3);
-            break;
-        case 6:
-            AddString(outstring, "Gouraud Shading + Half-luminance\r\n");
-            AddString(outstring, "Gouraud Shading Table = %08X\r\n", ((unsigned int)cmd.CMDGRDA) << 3);
-            break;
-        case 7:
-            AddString(outstring, "Gouraud Shading/Gouraud Shading + Half-transparent\r\n");
-            AddString(outstring, "Gouraud Shading Table = %08X\r\n", ((unsigned int)cmd.CMDGRDA) << 3);
-            break;
-        default: break;
-        }
-    }
-#endif
-
-    glBindTexture(GL_TEXTURE_2D, textureHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureOutput);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-    textureCache[textureHash] = newTexture;
-
-    return textureHandle;
 }
 
 #endif
