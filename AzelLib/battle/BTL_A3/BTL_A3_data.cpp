@@ -90,10 +90,23 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
                 sGenericFormationPerTypeDataSub1C subData1C;
 
                 subData1C.m0 = readSaturnEA(ptrTo1C + 0);
-                subData1C.m4[0] = readSaturnEA(ptrTo1C + 0x4 + 0);
-                subData1C.m4[1] = readSaturnEA(ptrTo1C + 0x4 + 4);
-                subData1C.m4[2] = readSaturnEA(ptrTo1C + 0x4 + 8);
-                subData1C.m4[3] = readSaturnEA(ptrTo1C + 0x4 + 0xC);
+                for (int k = 0; k < 4; k++)
+                {
+                    sSaturnPtr attackData = readSaturnEA(ptrTo1C + 0x4 + k * 4);
+                    if (attackData.isNull())
+                    {
+                        subData1C.m4[k] = nullptr;
+                    }
+                    else
+                    {
+                        subData1C.m4[k] = new sAttackCommand;
+
+                        subData1C.m4[k]->m4_cameraList = readSaturnEA(attackData + 4);
+                        subData1C.m4[k]->m8 = readSaturnS8(attackData + 8);
+                        subData1C.m4[k]->m9 = readSaturnU8(attackData + 9);
+                        subData1C.m4[k]->mA_attackDisplayName = readSaturnS8(attackData + 0xA);
+                    }
+                }
                 subData1C.m14[0] = readSaturnS8(ptrTo1C + 0x14 + 0);
                 subData1C.m14[1] = readSaturnS8(ptrTo1C + 0x14 + 1);
                 subData1C.m14[2] = readSaturnS8(ptrTo1C + 0x14 + 2);
@@ -117,11 +130,26 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
         }
     }
 
-    pNewData->m10_formationSubData = new sGenericFormationSubData;
-    for (int i = 0; i < pNewData->m0_formationSize; i++)
+    sSaturnPtr positionTableTable = readSaturnEA(ptrEA + 0x10);
+    do 
     {
-        pNewData->m10_formationSubData->m0_perEnemyPosition.push_back(readSaturnVec3(readSaturnEA(readSaturnEA(ptrEA + 0x10)) + i * 0xC));
-    }
+        sSaturnPtr positionTable = readSaturnEA(positionTableTable);
+        if (!positionTable.isNull())
+        {
+            sGenericFormationSubData* pNewFormation = new sGenericFormationSubData;
+            for (int i = 0; i < pNewData->m0_formationSize; i++)
+            {
+                pNewFormation->m0_perEnemyPosition.push_back(readSaturnVec3(positionTable + i * 0xC));
+            }
+            pNewData->m10_formationSubData.push_back(pNewFormation);
+        }
+        else
+        {
+            pNewData->m10_formationSubData.push_back(nullptr);
+            break;
+        }
+        positionTableTable += 4;
+    } while (1);
 
     pNewData->m14 = readSaturnS8(ptrEA + 0x14);
     pNewData->m15 = readSaturnS8(ptrEA + 0x15);

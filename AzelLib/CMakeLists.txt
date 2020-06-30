@@ -191,13 +191,13 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES Windows)
     )
 
     
-#    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.spirv.bin VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
-#    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.spirv.bin FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
-#    set(SOURCES
-#        ${SOURCES}
-#        ${THIRD_PARTY}/../data/shaders/generated/${vsname}.spirv.bin
-#        ${THIRD_PARTY}/../data/shaders/generated/${psname}.spirv.bin
-#    )
+    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.spirv.bin VERTEX LINUX VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
+    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.spirv.bin FRAGMENT LINUX VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
+    set(SOURCES
+        ${SOURCES}
+        ${THIRD_PARTY}/../data/shaders/generated/${vsname}.spirv.bin
+        ${THIRD_PARTY}/../data/shaders/generated/${psname}.spirv.bin
+    )
 endif()
 
 endmacro()

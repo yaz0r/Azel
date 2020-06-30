@@ -21,7 +21,16 @@ struct sTextDisplay : public s_workAreaTemplate<sTextDisplay>
 
 void textDisplay_udpate_drawTextSub(s32 x, s32 y, s32 width, s32 height)
 {
-    FunctionUnimplemented();
+    int iVar1 = (y * 0x40 + x) * 2;
+    int sVar2 = height * 0x1000 + width * 6;
+
+    setVdp2VramU16(vdp2TextMemoryOffset + 0x00 + iVar1, sVar2 + 0x248);
+    setVdp2VramU16(vdp2TextMemoryOffset + 0x02 + iVar1, sVar2 + 0x249);
+    setVdp2VramU16(vdp2TextMemoryOffset + 0x04 + iVar1, sVar2 + 0x24A);
+
+    setVdp2VramU16(vdp2TextMemoryOffset + 0x80 + iVar1, sVar2 + 0x24B);
+    setVdp2VramU16(vdp2TextMemoryOffset + 0x82 + iVar1, sVar2 + 0x24C);
+    setVdp2VramU16(vdp2TextMemoryOffset + 0x84 + iVar1, sVar2 + 0x24D);
 }
 
 void textDisplay_udpate_drawText(s_vdp2StringTask* pThis)
@@ -143,6 +152,13 @@ void s_vdp2StringTask::Update(s_vdp2StringTask* pThis)
                 }
                 return;
             }
+        case 1:
+            if (--pThis->mA_duration > 0)
+            {
+                return;
+            }
+            pThis->m0_status++;
+            break;
         default:
             assert(0);
             break;

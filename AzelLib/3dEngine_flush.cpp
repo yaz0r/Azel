@@ -283,41 +283,16 @@ void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
     }
 
     static bgfx::ProgramHandle vdp1_program = BGFX_INVALID_HANDLE;
-    static bgfx::UniformHandle vdp1_2dOffset_handle = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_modelMatrix = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_modelViewProj = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_textureSampler = BGFX_INVALID_HANDLE;
     if (!bgfx::isValid(vdp1_program))
     {
         vdp1_program = loadBgfxProgram("VDP1_vs", "VDP1_ps");
-        vdp1_2dOffset_handle = bgfx::createUniform("u_2dOffset", bgfx::UniformType::Vec4);
         vdp1_modelViewProj = bgfx::createUniform("u_customModelViewProj", bgfx::UniformType::Mat4);
         vdp1_textureSampler = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
     }
 
-    if(0)
-    {
-        float proj[16];
-        bx::mtxProj(proj, 50.0f, float(352.f) / float(224.f), 0.1f, 1000.f, bgfx::getCaps()->homogeneousDepth);
-
-        float view[16];
-        bx::mtxIdentity(view);
-
-        bgfx::setViewTransform(vdp1_gpuView, objectMatrix, proj);
-    }
-
-    //transposeMatrix(objectMatrix);
-    //transposeMatrix(projectionMatrix);
-    /*
-    glm::mat4 tempProjection;
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            tempProjection[i][j] = projectionMatrix[j * 4 + i];
-        }
-    }
-    */
     glm::mat4 tempObjectMatrix;
     for (int i = 0; i < 4; i++)
     {
@@ -332,7 +307,6 @@ void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
     float _2dOffset[4];
     _2dOffset[0] = pObject->m_2dOffset[0];
     _2dOffset[1] = pObject->m_2dOffset[1];
-    bgfx::setUniform(vdp1_2dOffset_handle, _2dOffset);
     bgfx::setUniform(vdp1_modelViewProj, &mvpMatrix[0][0]);
 
     bgfx::setTransform(objectMatrix);

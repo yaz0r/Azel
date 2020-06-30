@@ -1,9 +1,18 @@
 #pragma once
 
+struct sAttackCommand
+{
+    sSaturnPtr m4_cameraList;
+    s8 m8;
+    u8 m9;
+    s8 mA_attackDisplayName;
+    // size 0xC
+};
+
 struct sGenericFormationPerTypeDataSub1C
 {
     sSaturnPtr m0;
-    std::array<sSaturnPtr, 4> m4;
+    std::array<sAttackCommand*, 4> m4;
     std::array<s8, 4> m14;
     u16 m1C_animationOffset;
     s8 m1E;
@@ -36,7 +45,7 @@ struct sGenericFormationData
     s8 m0_formationSize;
     std::array<s8, 3> m1_perTypeCount;
     std::array<sGenericFormationPerTypeData*, 3> m4_perTypeParams;
-    sGenericFormationSubData* m10_formationSubData;
+    std::vector<sGenericFormationSubData*> m10_formationSubData;
     s8 m14;
     s8 m15;
     s8 m16;
@@ -60,14 +69,11 @@ struct sBTL_A3_UrchinFormation_18_14
 
 struct sBTL_A3_UrchinFormation_18
 {
-    sSaturnPtr m0;
+    sAttackCommand* m0;
     std::array<s8, 3> m4;
     std::array<s8, 3> m7;
     std::array<s8, 3> mA;
-    std::array<s8, 2> mD;
-    s8 m10;
-    s8 m11;
-    s8 m12;
+    std::array<s8, 6> mD;
     std::vector<sBTL_A3_UrchinFormation_18_14> m14;
 };
 

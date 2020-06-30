@@ -13,6 +13,8 @@
 
 s32 createBattleIntroTaskSub1(); //TODO cleanup
 void displayFormationName(short uParm1, char uParm2, char uParm3); //TODO cleanup
+void battleEngine_PlayAttackCamera(int param1); // TODO cleanup
+void battleEngine_displayAttackName(int param1, int param2, int param3); // TODO cleanup
 
 void playBattleSoundEffect(s16 effectIndex)
 {
@@ -24,12 +26,17 @@ struct BTL_A3_UrchinFormation : public s_workAreaTemplateWithArg<BTL_A3_UrchinFo
     s8 m1_state;
     s8 m2_subState;
     s8 m3_formationSize;
+    s8 m4;
     s8 m6;
     s8 m7;
     s16 m14;
     sBTL_A3_UrchinFormation_18 m18;
     const sGenericFormationData* m30_config;
+    s8 m34;
     s8 m38;
+    s8 m39;
+    s8 m3A;
+    s8 m3C;
     p_workArea m40;
     std::array<s8, 3> m44;
     std::array<s8, 3> m47; // size unknown, should be formation size
@@ -44,7 +51,7 @@ void formationCopyParams(sBTL_A3_UrchinFormation_18* pDest, const std::vector<sV
         pDest->m7[i] = 0;
         pDest->mA[i] = 0;
     }
-    pDest->m10 = 1;
+    pDest->mD[3] = 1;
 
     for (int i = 0; i < count; i++)
     {
@@ -61,7 +68,7 @@ void BTL_A3_UrchinFormation_Init(BTL_A3_UrchinFormation* pThis, const sGenericFo
     pThis->m30_config = config;
     pThis->m3_formationSize = config->m0_formationSize;
     pThis->m18.m14.resize(pThis->m3_formationSize);
-    formationCopyParams(&pThis->m18, config->m10_formationSubData->m0_perEnemyPosition, pThis->m3_formationSize);
+    formationCopyParams(&pThis->m18, config->m10_formationSubData[0]->m0_perEnemyPosition, pThis->m3_formationSize);
     if (createBattleIntroTaskSub1() == 0)
     {
         pThis->m1_state = 1;
@@ -151,9 +158,9 @@ void BTL_A3_UrchinFormation_Update_Mode0(BTL_A3_UrchinFormation* pThis)
 
 bool BTL_A3_UrchinFormation_Update_Mode1Sub0(BTL_A3_UrchinFormation* pThis)
 {
-    if (pThis->m18.m10 == 0)
+    if (pThis->m18.mD[3] == 0)
     {
-        pThis->m18.m11 = 1;
+        pThis->m18.mD[4] = 1;
     }
 
     if ((pThis->m7 == 2) && battleEngine_UpdateSub7Sub0Sub0())
@@ -182,7 +189,7 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub1(BTL_A3_UrchinFormation* pThis)
         }
     }
 
-    return (pThis->m18.m0.isNull()) ^ 1; // TODO: rewrite that
+    return (pThis->m18.m0 == nullptr) ^ 1; // TODO: rewrite that
 }
 
 static const std::array< const std::array<s8, 3>, 2> enemtyTable1 = {
@@ -206,16 +213,18 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub2(BTL_A3_UrchinFormation* pThis)
         {
             int uVar6 = enemyQuadrantsTable[pThis->m18.mD[0] + cVar1][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
             sGenericFormationPerTypeDataSub1C& iVar5 = pThis->m30_config->m4_perTypeParams[cVar1]->m1C[pThis->m18.m7[cVar1]];
-            sSaturnPtr iVar9 = iVar5.m4[uVar6];
-            if (!iVar9.isNull())
+            sAttackCommand* iVar9 = iVar5.m4[uVar6];
+            if (iVar9)
             {
                 if (iVar5.m14[uVar6])
                 {
                     assert(0);
                 }
-                if (readSaturnS8(iVar9 + 8) != 1)
+                if (iVar9->m8 != 1)
                 {
                     pThis->m18.m0 = iVar9;
+                    pThis->m34 = cVar1;
+                    return true;
                 }
             }
         }
@@ -224,10 +233,103 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub2(BTL_A3_UrchinFormation* pThis)
     return false;
 }
 
+void BTL_A3_UrchinFormation_Update_Mode1Sub6(BTL_A3_UrchinFormation* pThis)
+{
+    sSaturnPtr cameraList = pThis->m18.m0->m4_cameraList;
+    if (cameraList.isNull())
+    {
+        if (pThis->m18.m0->m8 == 5)
+        {
+            battleEngine_PlayAttackCamera(0);
+        }
+        else
+        {
+            static const std::array<eBattleModes, 8> battleModeTable = {
+                m8_playAttackCamera,
+                m8_playAttackCamera,
+                m7,
+                m8_playAttackCamera,
+                m8_playAttackCamera,
+                m7,
+                m7,
+                m7,
+            };
+            battleEngine_SetBattleMode(battleModeTable[pThis->m18.m0->m8]);
+        }
+    }
+    else
+    {
+        int iVar2 = 0;
+        while (readSaturnU8(cameraList + iVar2) != 0xE)
+        {
+            iVar2++;
+        }
+        int cameraId = performModulo2(iVar2, randomNumber());
+
+        if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
+        {
+            assert(0);
+        }
+
+        battleEngine_PlayAttackCamera(readSaturnU8(cameraList + cameraId));
+    }
+
+    if (pThis->m18.m0->mA_attackDisplayName != -1)
+    {
+        battleEngine_displayAttackName(pThis->m18.m0->mA_attackDisplayName, 0x1E, 0);
+    }
+}
+
+void BTL_A3_UrchinFormation_Update_Mode1Sub3(BTL_A3_UrchinFormation* pThis)
+{
+    pThis->m4++;
+    if (pThis->m30_config->m10_formationSubData[pThis->m4] == nullptr)
+    {
+        pThis->m4 = 0;
+    }
+    assert(0);
+}
+
+void BTL_A3_UrchinFormation_Update_Mode1Sub4(BTL_A3_UrchinFormation* pThis, sAttackCommand* param2)
+{
+    switch (param2->m9 & 6)
+    {
+    case 2:
+        pThis->m18.mD[5] &= ~6;
+        pThis->m18.mD[5] |= 2;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+        pThis->m18.mD[pThis->m34 + 1] &= 3;
+        break;
+    case 4:
+        pThis->m18.mD[5] &= ~6;
+        pThis->m18.mD[5] |= 4;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+        pThis->m18.mD[pThis->m34 + 3] &= 3;
+        break;
+    case 6:
+        pThis->m18.mD[5] &= ~6;
+        pThis->m18.mD[5] |= 6;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+        pThis->m18.mD[pThis->m34 + 2] &= 3;
+        break;
+    default:
+        assert(0);
+    }
+
+    if (gBattleManager->m4 == 5)
+    {
+        assert(0);
+    }
+    else if (gBattleManager->m4 == 7)
+    {
+        assert(0);
+    }
+}
+
 void BTL_A3_UrchinFormation_Update_Mode1(BTL_A3_UrchinFormation* pThis)
 {
-    pThis->m18.m12 = 0;
-    pThis->m18.m0 = sSaturnPtr::getNull();
+    pThis->m18.mD[5] = 0;
+    pThis->m18.m0 = nullptr;
 
     if (!BTL_A3_UrchinFormation_Update_Mode1Sub0(pThis) && !BTL_A3_UrchinFormation_Update_Mode1Sub1(pThis))
     {
@@ -246,12 +348,132 @@ void BTL_A3_UrchinFormation_Update_Mode1(BTL_A3_UrchinFormation* pThis)
         return;
     }
 
-    if (pThis->m18.m0.isNull())
+    if (pThis->m18.m0 == nullptr)
     {
         return;
     }
 
-    assert(0);
+    if (pThis->m18.m0->m9 & 0x80)
+    {
+        assert(0);
+    }
+
+    if (pThis->m18.m0->m8 == 0)
+    {
+        if ((pThis->m18.m0->m9 & 0x80) == 0)
+        {
+            if (pThis->m18.m0->m9 & 0x1)
+            {
+                BTL_A3_UrchinFormation_Update_Mode1Sub3(pThis);
+            }
+            if (pThis->m18.m0->m9 & 0x6)
+            {
+                BTL_A3_UrchinFormation_Update_Mode1Sub4(pThis, pThis->m18.m0);
+            }
+            if (pThis->m18.m0->m9 & 0x38)
+            {
+                assert(0);
+                //BTL_A3_UrchinFormation_Update_Mode1Sub5(pThis->m18.m0);
+            }
+        }
+        pThis->m6 = 0;
+        return;
+    }
+
+    BTL_A3_UrchinFormation_Update_Mode1Sub6(pThis);
+
+    pThis->m1_state = 2;
+    pThis->m2_subState = 1;
+}
+
+void BTL_A3_UrchinFormation_Update_Mode2Sub0(BTL_A3_UrchinFormation* pThis, sBTL_A3_UrchinFormation_18_14*, sBTL_A3_UrchinFormation_18_14*)
+{
+    FunctionUnimplemented();
+}
+
+void BTL_A3_UrchinFormation_Update_Mode2(BTL_A3_UrchinFormation* pThis)
+{
+    switch (pThis->m2_subState)
+    {
+    case 0x1E:
+        for (int i=0; i<pThis->m3_formationSize; i++)
+        {
+            pThis->m18.m14[i].m19 &= ~1;
+            pThis->m18.m14[i].m19 &= ~2;
+        }
+        pThis->m6 = 0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        if (pThis->m18.m0->m9 & 0x80)
+        {
+            return;
+        }
+        if ((pThis->m18.m0->m9 & 0x38) == 0)
+        {
+            if (pThis->m18.m0->m9 & 0x1)
+            {
+                BTL_A3_UrchinFormation_Update_Mode1Sub3(pThis);
+            }
+            if (pThis->m18.m0->m9 & 0x6)
+            {
+                BTL_A3_UrchinFormation_Update_Mode1Sub4(pThis, pThis->m18.m0);
+            }
+            pThis->m2_subState = 0x20;
+            return;
+        }
+        pThis->m2_subState++;
+        break;
+    case 0x20:
+        pThis->m1_state = 1;
+        pThis->m2_subState = 0;
+        return;
+    case 0:
+    case 0x1F:
+        assert(0);
+    default:
+        break;
+    }
+
+    s8 cVar1 = pThis->m18.m0->m8;
+    switch (cVar1)
+    {
+    case 0:
+        pThis->m2_subState = 0x1E;
+        return;
+    case 1:
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000)
+        {
+            assert(0);
+        }
+        break;
+    case 3:
+        for (int i=0; i<pThis->m3_formationSize; i++)
+        {
+            if (pThis->m18.m14[i].m18 & 0x10)
+            {
+                return;
+            }
+        }
+        {
+            int iVar7 = 200;
+            int ivar9 = pThis->m3_formationSize;
+            for (int i = 0; i < pThis->m3_formationSize; i++)
+            {
+                if (((pThis->m18.m14[i].m18 & 0x8) == 0) && (pThis->m18.m14[i].m1A < iVar7))
+                {
+                    iVar7 = pThis->m18.m14[i].m1A;
+                    ivar9 = i;
+                }
+            }
+            pThis->m3A = ivar9;
+            BTL_A3_UrchinFormation_Update_Mode2Sub0(pThis, &pThis->m18.m14[pThis->m39], &pThis->m18.m14[pThis->m3A]);
+            FunctionUnimplemented(); //something I don't get yet with the sound index
+            pThis->m3C = 0x3C;
+            pThis->m2_subState++;
+            break;
+        }
+    default:
+        assert(0);
+    }
 }
 
 bool BTL_A3_UrchinFormation_UpdateSub0(BTL_A3_UrchinFormation* pThis)
@@ -365,17 +587,17 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
             case 0:
                 if (pThis->m30_config->m1C)
                 {
-                    pThis->m2_subState = '\n';
+                    pThis->m2_subState = 0xA;
                 }
                 else
                 {
                     switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode)
                     {
-                    case '\a':
-                    case '\b':
-                    case '\t':
-                    case '\n':
-                    case '\v':
+                    case eBattleModes::m7:
+                    case eBattleModes::m8_playAttackCamera:
+                    case eBattleModes::m9:
+                    case eBattleModes::mA:
+                    case eBattleModes::mB_enemyMovingDragon:
                         pThis->m2_subState = 2;
                         break;
                     default:
@@ -404,7 +626,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
             case 3:
                 if (pThis->m40 == nullptr)
                 {
-                    pThis->m2_subState = '\n';
+                    pThis->m2_subState = 0xA;
                 }
                 break;
             case '\n':
@@ -448,11 +670,11 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
         }
         else
         {
-            if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != '\a') &&
-                (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != '\b') &&
-                (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != '\t') &&
-                (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != '\n') &&
-                (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != '\v')
+            if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::m7) &&
+                (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::m8_playAttackCamera) &&
+                (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::m9) &&
+                (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::mA) &&
+                (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::mB_enemyMovingDragon)
                 )
             {
                 battleEngine_FlagQuadrantBitForSafety(0);
@@ -470,6 +692,9 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
     case 1:
         BTL_A3_UrchinFormation_Update_Mode1(pThis);
         break;
+    case 2:
+        BTL_A3_UrchinFormation_Update_Mode2(pThis);
+        break;
     default:
         assert(0);
         break;
@@ -481,7 +706,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
         {
             pThis->m18.m4[i] = 0;
         }
-        pThis->m18.m10 = 0;
+        pThis->m18.mD[3] = 0;
     }
 }
 

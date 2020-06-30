@@ -30,6 +30,7 @@ enum eBattleModes
     m6_dragonMoving = 6,
     m7 = 7,
     m8_playAttackCamera = 8,
+    m9 = 9,
     mA = 0xA,
     mB_enemyMovingDragon = 0xB,
     mC_commandMenuOpen = 0xC,

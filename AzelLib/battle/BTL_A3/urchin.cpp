@@ -10,6 +10,7 @@
 #include "battle/battleTargetable.h"
 #include "battle/battleDamageDisplay.h"
 #include "commonOverlay.h"
+#include "BTL_A3_data.h"
 #include "town/town.h" //TODO: cleanup
 
 void Baldor_updateSub1(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s32 pDeltaFactor, s32 pDistanceToTargetFactor, s8 translationOrRotation); // TODO: cleanup
@@ -317,6 +318,66 @@ void urchinUpdateSub4(sUrchin* pThis)
     }
 }
 
+void Urchin_updateSub0(sUrchin* pThis)
+{
+    int iVar3 = 0;
+    switch (pThis->mD0->mD[5] & 6)
+    {
+    case 2:
+        iVar3 = 1;
+        break;
+    case 4:
+        iVar3 = 3;
+        break;
+    case 6:
+        iVar3 = 2;
+        break;
+    default:
+        assert(0);
+    }
+
+    pThis->m44_rotationTarget[1] = pThis->mD0->mD[pThis->mAF] << 26;
+
+    for (int i = 0; i < pThis->mB6_numTargetables; i++)
+    {
+        u32 targetableFlag = pThis->mC0_targetable[i].m50_flags;
+        if (((targetableFlag & 0xf0000000) == 0) && ((targetableFlag & 1) == 0))
+        {
+            pThis->mC0_targetable[i].m50_flags &= ~0xf0000000;
+
+            sSaturnPtr puVar5 = g_BTL_A3->getSaturnPtr(0x60AC254);
+            sSaturnPtr puVar6 = g_BTL_A3->getSaturnPtr(0x60AC254 + iVar3 * 4);
+
+            do 
+            {
+                if (targetableFlag & readSaturnU32(puVar5 + 0))
+                {
+                    pThis->mC0_targetable[i].m50_flags |= readSaturnU32(puVar6 + 0);
+                }
+
+                if (targetableFlag & readSaturnU32(puVar5 + 4))
+                {
+                    pThis->mC0_targetable[i].m50_flags |= readSaturnU32(puVar6 + 4);
+                }
+
+                if (targetableFlag & readSaturnU32(puVar5 + 8))
+                {
+                    pThis->mC0_targetable[i].m50_flags |= readSaturnU32(puVar6 + 8);
+                }
+
+                if (targetableFlag & readSaturnU32(puVar5 + 12))
+                {
+                    pThis->mC0_targetable[i].m50_flags |= readSaturnU32(puVar6 + 10);
+                }
+
+                puVar5 += 0x10;
+                puVar6 += 0x10;
+
+            } while (puVar5.m_offset < g_BTL_A3->getSaturnPtr(0x60AC264).m_offset);
+        }
+    }
+}
+
 void Urchin_update(sUrchin* pThis)
 {
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
@@ -338,17 +399,17 @@ void Urchin_update(sUrchin* pThis)
 
         if (pThis->mCC->m2)
         {
-            pThis->mD0->m10 = 1;
+            pThis->mD0->mD[3] = 1;
         }
 
-        if (pThis->mD0->m12 & 1)
+        if (pThis->mD0->mD[5] & 1)
         {
             assert(0);
         }
 
-        if (pThis->mD0->m12 & 6)
+        if (pThis->mD0->mD[5] & 6)
         {
-            assert(0);
+            Urchin_updateSub0(pThis);
         }
 
         stepAnimation(&pThis->m5C_model);
