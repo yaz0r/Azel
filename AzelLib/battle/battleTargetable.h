@@ -9,7 +9,7 @@ struct sBattleTargetable
     sVec3_FP m10_position;
     sVec3_FP m1C;
     sVec3_FP m28;
-    sVec3_FP m34;
+    sVec3_FP m34_impactVector;
     s32 m4C;
     sVec3_FP m40;
     u32 m50_flags;
@@ -17,11 +17,11 @@ struct sBattleTargetable
     s16 m58;
     s16 m5A;
     s16 m5C;
-    s8 m5E;
+    s8 m5E_impactForce;
     s8 m5F;
     s8 m60;
 
-    //size: 64
+    //size: 0x64
 };
 
 void battleTargetable_updatePosition(sBattleTargetable* pThis);

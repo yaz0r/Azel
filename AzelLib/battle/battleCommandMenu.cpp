@@ -85,8 +85,8 @@ s32 createBattleCommandMenuSub2(s32 param1)
 {
     int iVar1;
 
-    if (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 4) == 0) {
-        if (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 0x200) == 0) {
+    if (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers) & 4) == 0) {
+        if (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers) & 0x200) == 0) {
             iVar1 = 0x10000;
         }
         else {
@@ -334,7 +334,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 uVar9 = 0;
                 if (((0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies) &&
                     (0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo)) &&
-                    ((((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 1) == 0 &&
+                    ((((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers) & 1) == 0 &&
                     (0 < (gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies))))) {
                     pThis->m20 |= 0x14;
                     clearVdp2TextArea();
@@ -360,7 +360,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             case 3: // berserk
                 uVar9 = 0;
                 if (('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) &&
-                    (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 1) == 0)) {
+                    (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers) & 1) == 0)) {
                     pThis->m24 = BattleCommandMenu_PopulateSubMenu(pThis);
                     int iVar8;
                     if ((0 < pThis->m24) &&
@@ -391,7 +391,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
             case 5: // change form?
                 uVar9 = 0;
                 if (('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) &&
-                    (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0) & 1) == 0)) {
+                    (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers) & 1) == 0)) {
                     int bVar2 = 0;
                     if (gBattleManager->mC == 0)
                     {

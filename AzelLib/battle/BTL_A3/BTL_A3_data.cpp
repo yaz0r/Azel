@@ -9,7 +9,7 @@
 
 struct BTL_A3_data* g_BTL_A3 = nullptr;
 
-sSaturnPtr BTL_A3_data::getBattleEngineInitData()
+sSaturnPtr BTL_A3_data::getEncounterDataTable()
 {
     return getSaturnPtr(0x60AAFA0);
 }

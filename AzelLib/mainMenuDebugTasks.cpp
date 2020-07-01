@@ -1055,7 +1055,7 @@ void modelDrawFunction10(s_3dModel* pModel)
     }
 }
 
-s32 riderInit(s_3dModel* r4_pModel, sAnimationData* pAnimation)
+s32 initAnimation(s_3dModel* r4_pModel, sAnimationData* pAnimation)
 {
     if (pAnimation == NULL)
     {
@@ -3261,7 +3261,7 @@ void playAnimationGeneric(s_3dModel* pModel, sAnimationData* pAnimation, s32 int
 {
     if (setupPoseInterpolation(pModel, interpolationLength) && !(pModel->mA_animationFlags & 0x200))
     {
-        riderInit(pModel, pAnimation);
+        initAnimation(pModel, pAnimation);
 
         if (pModel->m40)
         {
@@ -3274,7 +3274,7 @@ void playAnimationGeneric(s_3dModel* pModel, sAnimationData* pAnimation, s32 int
     }
     else
     {
-        riderInit(pModel, pAnimation);
+        initAnimation(pModel, pAnimation);
     }
 }
 

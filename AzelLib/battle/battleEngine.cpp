@@ -297,7 +297,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     int randomQuadrantOdd = performModulo2(100, randomNumber()) % 0xFF;
     std::array<int, 3> perQuadrantOdds;
 
-    sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getBattleEngineInitData() + gBattleManager->m4 * 4);
+    sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getEncounterDataTable() + gBattleManager->m4 * 4);
     if (pData.isNull())
     {
         perQuadrantOdds[0] = 100;
@@ -306,6 +306,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     }
     else
     {
+        // Rate
         perQuadrantOdds[0] = readSaturnS8(pData + gBattleManager->m8 * 0x10 + 4);
         perQuadrantOdds[1] = readSaturnS8(pData + gBattleManager->m8 * 0x10 + 5);
         perQuadrantOdds[2] = readSaturnS8(pData + gBattleManager->m8 * 0x10 + 6);
@@ -336,6 +337,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     }
     else
     {
+        // combo
         pThis->m3B4.m16_combo = readSaturnS8(pData + gBattleManager->m8 * 0x10 + 0xC);
     }
 
@@ -424,7 +426,9 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     g_fadeControls.m_4D = 5;
 
-    pThis->m474.zeroize();
+    pThis->m474_time = 0;
+    pThis->m478 = 0;
+    pThis->m47C_exp = 0;
     pThis->m480.fill(-1);
     pThis->m190.fill(0);
 
@@ -468,7 +472,7 @@ void battleEngine_UpdateSub1(int bitMask)
             gCurrentBattleOverlay->invoke(functionPointer, gBattleManager->m10_battleOverlay->m18_dragon, readSaturnU32(pBattleEngine->m3AC + iVar7 * 0xC + 4), iVar7);
             pBattleEngine->m3B1++;
 
-            sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getBattleEngineInitData() + gBattleManager->m4 * 4);
+            sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getEncounterDataTable() + gBattleManager->m4 * 4);
             if (readSaturnU32(pData) == 0)
             {
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m2 = 150;
@@ -2722,7 +2726,7 @@ void battleEngine_UpdateSub7Sub0Sub6(s_battleEngine* pThis)
     {
         if ((pThis->m3B4.m16_combo > 0) && !gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 && (graphicEngineStatus.m4514.mD8_buttonConfig[2][0] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown))
         {
-            if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 1)
+            if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 1)
             {
                 playSystemSoundEffect(5);
             }
@@ -2839,7 +2843,7 @@ void battleEngine_UpdateSub7(s_battleEngine* pThis)
                     return;
                 }
 
-                if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 8) == 0)
+                if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) == 0)
                 {
                     assert(readSaturnS8(gCurrentBattleOverlay->getSaturnPtr(0x60A9281) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4) == quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][1]);
 
@@ -2862,7 +2866,7 @@ void battleEngine_UpdateSub7(s_battleEngine* pThis)
                     return;
                 }
 
-                if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 8) == 0)
+                if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) == 0)
                 {
                     assert(readSaturnS8(gCurrentBattleOverlay->getSaturnPtr(0x60A9282) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4) == quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][2]);
 
@@ -2880,7 +2884,7 @@ void battleEngine_UpdateSub7(s_battleEngine* pThis)
             }
             // 6059b1c
             if (
-                (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 8) != 0) | (bVar1)) &&
+                (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) != 0) | (bVar1)) &&
                 (((graphicEngineStatus.m4514.mD8_buttonConfig[2][7] | graphicEngineStatus.m4514.mD8_buttonConfig[2][6]) & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown) != 0)
                 )
             {

@@ -5,6 +5,7 @@
 #include "battleEngine.h"
 #include "battleDebug.h"
 #include "battleGrid.h"
+#include "battleDamageDisplay.h"
 #include "kernel/fileBundle.h"
 #include "kernel/debug/trace.h"
 #include "kernel/animation.h"
@@ -35,7 +36,7 @@ void s_battleDragon_InitSub5(sBattleTargetable* pThis, s_battleDragon* param2, s
     pThis->m50_flags = param5;
     pThis->m58 = 0;
     pThis->m5A = 0;
-    pThis->m5E = 0;
+    pThis->m5E_impactForce = 0;
     pThis->m5F = 0;
     pThis->m5C = 0;
     pThis->m54 = 0;
@@ -156,7 +157,7 @@ void s_battleDragon_UpdateSub1(s_battleDragon* pThis)
     
     pushCurrentMatrix();
     translateCurrentMatrix(pBattleEngine->m234);
-    rotateCurrentMatrixZYX(pBattleEngine->m220);
+    rotateCurrentMatrixZYX(pBattleEngine->m220_battleVector);
     sVec3_FP auStack56;
     transformAndAddVecByCurrentMatrix(&local_44, &auStack56);
     transformAndAddVec(auStack56, pThis->m8_position, cameraProperties2.m28[0]);
@@ -164,7 +165,7 @@ void s_battleDragon_UpdateSub1(s_battleDragon* pThis)
     if (isTraceEnabled())
     {
         addTraceLog(pBattleEngine->m234, "pBattleEngine->m234");
-        addTraceLog(pBattleEngine->m220, "pBattleEngine->m220");
+        addTraceLog(pBattleEngine->m220_battleVector, "pBattleEngine->m220");
         addTraceLog(cameraProperties2.m28[0], "cameraProperties2.m28[0]");
         addTraceLog(pThis->m8_position, "DragonPosition");
     }
@@ -248,7 +249,18 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
             }
             if (pThis->m84 & 0x10)
             {
-                assert(0);
+                if (uVar7 == 0)
+                {
+                    pThis->m1CC_currentAnimation = 0xE;
+                }
+                else
+                {
+                    pThis->m1CC_currentAnimation = 0xF;
+                }
+                incrementAnimationRootY(&gDragonState->m78_animData, pThis->m1C8 * -2);
+                pThis->m1CE_positionInAnimList = 0;
+                s_battleDragon_InitSub4(pThis->m1CC_currentAnimation, 0);
+                return;
             }
             if(pThis->m84 & 0x8)
             {
@@ -503,28 +515,142 @@ void s_battleDragon_UpdateSub3(s_battleDragon* pThis)
     incrementAnimationRootZ(&gDragonState->m78_animData, stepZ);
 }
 
+int computeDragonDamage(int damageValue)
+{
+    fixedPoint computedDamage = MTH_Mul(fixedPoint::fromInteger(damageValue), 0x13333 - MTH_Mul(0x6666, FP_Div(mainGameState.gameStats.dragonDef, 200)));
+
+    if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x20000)
+    {
+        computedDamage = MTH_Mul(computedDamage, 0x8000);
+    }
+    if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x100)
+    {
+        computedDamage = MTH_Mul(computedDamage, 0xab85);
+    }
+    if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x10)
+    {
+        computedDamage = MTH_Mul(computedDamage, 0x20000);
+    }
+
+    int finalComputedDamage = computedDamage.toInteger();
+    if (finalComputedDamage > 9999)
+    {
+        finalComputedDamage = 9999;
+    }
+
+    return finalComputedDamage;
+}
+
+void createDamageDisplayNumber(p_workArea parent, int damageTaken, sVec2_FP* offset, int param4)
+{
+    FunctionUnimplemented();
+}
+
 void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
 {
     if ((pThis->m1C4 & 8) == 0)
     {
-        if (pThis->mDC & 0x80000)
+        if (pThis->m8C.m50_flags & 0x80000)
         {
-            assert(0);
+            // dragon took damage
+            pThis->m8C.m50_flags &= ~0x80000;
+            if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x400)
+            {
+                assert(0);
+            }
+            int damage = computeDragonDamage(pThis->m8C.m58);
+            pThis->m1D6 = 0;
+            pThis->m1C4 |= 0x10;
+
+            // TODO: disable NO DEATH cheat
+            /*if (!gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x17])
+            {
+                mainGameState.gameStats.m10_currentHP -= damage;
+                pThis->m1D4 += damage;
+                if (mainGameState.gameStats.m10_currentHP < 1)
+                {
+                    // Dragon is dead!
+                    playSystemSoundEffect(0xF);
+                    FunctionUnimplemented();
+                }
+            }
+            else*/
+            {
+                pThis->m1D4_damageTaken += damage;
+                vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+                vdp2PrintStatus.m10_palette = 0xb000;
+                vdp2DebugPrintSetPosition(0x14, 0x1b);
+                vdp2PrintfSmallFont("NO DEATH");
+                vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
+            }
+
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m190[1] += damage;
+            createDamageDisplayTask(pThis, damage, &pThis->m8_position, 0);
+
+            fixedPoint impactForce;
+            switch (pThis->m8C.m5E_impactForce)
+            {
+            case 1:
+                pThis->m88 |= 8;
+                playSystemSoundEffect(0xD);
+                impactForce = 0x10000;
+                break;
+            case 2:
+                pThis->m88 |= 8;
+                playSystemSoundEffect(0xD);
+                impactForce = 0x14000;
+                break;
+            case 3:
+                pThis->m88 |= 0x10;
+                playSystemSoundEffect(0xE);
+                impactForce = 0x20000;
+                break;
+            default:
+                assert(0);
+            }
+            
+            // TODO: recheck this, this is pretty suspicious
+            sVec3_FP impactVector = MTH_Mul(impactForce, pThis->m8C.m34_impactVector);
+            sVec3_FP impactVector2;
+            impactVector2[0] = MTH_Mul(impactForce, setDividend(impactVector[0], impactVector[0], pThis->m8C.m34_impactVector[0]));
+            impactVector2[1] = MTH_Mul(impactForce, setDividend(impactVector[1], impactVector[1], pThis->m8C.m34_impactVector[1]));
+            impactVector2[2] = MTH_Mul(impactForce, setDividend(impactVector[2], impactVector[2], pThis->m8C.m34_impactVector[2]));
+
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == m8_playAttackCamera)
+            {
+                FunctionUnimplemented();
+            }
+            else
+            {
+                FunctionUnimplemented();
+            }
+            FunctionUnimplemented();
+            incrementAnimationRootY(&gDragonState->m78_animData, impactVector[1]);
+            incrementAnimationRootX(&gDragonState->m78_animData, impactVector[0]);
+            incrementAnimationRootZ(&gDragonState->m78_animData, impactVector[2]);
         }
 
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000)
         {
             if (!(pThis->m1C4 & 0x10))
             {
-                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x400)
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x400)
                 {
-                    pThis->m1D4 = 0;
+                    pThis->m1D4_damageTaken = 0;
                 }
             }
-            else if (pThis->m1D4 > -1)
+            else if (pThis->m1D4_damageTaken > -1)
             {
                 pThis->m1C4 &= 0x10;
-                assert(0);
+                sVec2_FP temp;
+                temp[0] = 0;
+                temp[1] = 0;
+                createDamageDisplayNumber(pThis, pThis->m1D4_damageTaken, &temp, 1);
+                pThis->m1D4_damageTaken = 0;
+                if (mainGameState.gameStats.m10_currentHP < 1)
+                {
+                    playSystemSoundEffect(0xE);
+                }
             }
         }
     }
@@ -584,7 +710,7 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
             switch (currentIndex)
             {
             case 0:
-                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x100)
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x100)
                 {
                     bVar1 = true;
                     pThis->m210 = 0x1E;
@@ -594,7 +720,7 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
                 }
                 break;
             case 1:
-                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x200)
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x200)
                 {
                     bVar1 = true;
                     pThis->m210 = 0x1E;
@@ -604,7 +730,7 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
                 }
                 break;
             case 2:
-                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x80)
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x80)
                 {
                     bVar1 = true;
                     pThis->m210 = 0x1E;
@@ -614,9 +740,9 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
                 }
                 break;
             case 3:
-                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x8000)
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x8000)
                 {
-                    gBattleManager->m10_battleOverlay->m18_dragon->m1C0 &= ~0x8000;
+                    gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers &= ~0x8000;
                     int uVar6 = ((pThis->m244[3] & 0xF0) >> 4) + 1;
                     if (uVar6 < 4)
                     {
@@ -647,21 +773,21 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
             switch (currentIndex)
             {
             case 0:
-                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x100)
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x100)
                 {
                     pThis->m244[0] = 0;
                     pThis->m248[0] = 0;
                 }
                 break;
             case 1:
-                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x200)
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x200)
                 {
                     pThis->m244[1] = 0;
                     pThis->m248[1] = 0;
                 }
                 break;
             case 2:
-                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x80)
+                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x80)
                 {
                     pThis->m244[2] = 0;
                     pThis->m248[2] = 0;
@@ -862,8 +988,8 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
     }
 
     transformAndAddVecByCurrentMatrix(&pThis->m8_position, &pThis->m1A4);
-    pThis->mCC = pThis->m90;
-    pThis->m9C = pThis->m8_position;
+    pThis->m8C.m40 = *pThis->m8C.m4_pPosition;
+    pThis->m8C.m10_position = pThis->m8_position;
 }
 
 static void s_battleDragon_Delete(s_battleDragon* pThis)

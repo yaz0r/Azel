@@ -99,7 +99,7 @@ void sGaugeIncreaseEffectRoot_Update(sGaugeIncreaseEffectRoot* pThis)
 
 void battlePowerGauge_update(battlePowerGauge* pThis)
 {
-    if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x20) == 0)
+    if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x20) == 0)
     {
         pThis->m27_numPowerGauges = 3;
     }

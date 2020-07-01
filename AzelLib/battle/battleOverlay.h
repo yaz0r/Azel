@@ -19,7 +19,7 @@ struct sLaserData
 
 struct battleOverlay : public sSaturnMemoryFile
 {
-    virtual sSaturnPtr getBattleEngineInitData() = 0;
+    virtual sSaturnPtr getEncounterDataTable() = 0;
     virtual void invoke(sSaturnPtr Func, p_workArea pParent) = 0;
     virtual void invoke(sSaturnPtr Func, p_workArea pParent, u32, u32) = 0;
 

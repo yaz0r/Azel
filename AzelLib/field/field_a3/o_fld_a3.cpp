@@ -4045,10 +4045,10 @@ struct s_DragonRiderTask : public s_workAreaTemplate<s_DragonRiderTask>
 
 void s_DragonRiderTask::dragonRidersTaskInit(s_DragonRiderTask* pWorkArea)
 {
-    riderInit(&pRider1State->m18_3dModel, pRider1State->m0_riderBundle->getAnimation(0x30));
+    initAnimation(&pRider1State->m18_3dModel, pRider1State->m0_riderBundle->getAnimation(0x30));
     updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
 
-    riderInit(&pRider2State->m18_3dModel, pRider2State->m0_riderBundle->getAnimation(0x30));
+    initAnimation(&pRider2State->m18_3dModel, pRider2State->m0_riderBundle->getAnimation(0x30));
     updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
 }
 
