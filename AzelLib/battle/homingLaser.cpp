@@ -263,7 +263,7 @@ void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const s
 
 void sHomingLaserTask_UpdateSub0(sHomingLaserTask* pThis)
 {
-    if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x80) && (pThis->m6C_numFramesToDestination < 0xB))
+    if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x80) && (pThis->m6C_numFramesToDestination < 0xB))
     {
         randomNumber();
 
@@ -286,11 +286,11 @@ s32 sHomingLaserTask_UpdateSub1(s16 param_1)
     iVar3 = performModulo2(iVar2 * 2 + 1, iVar3);
     iVar1 = iVar1 + 0x8000 + (iVar3 - iVar2) + 0x8000;
 
-    if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x80)
+    if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x80)
     {
         iVar1 = MTH_Mul(iVar1, 0x14CCC);
     }
-    if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0 & 0x10)
+    if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x10)
     {
         iVar1 = MTH_Mul(iVar1, 0x8000);
     }

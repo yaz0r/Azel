@@ -13,21 +13,17 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
     s32 m84; // 1: play homing laser animation
     s32 m88;
     sBattleTargetable m8C;
-    sVec3_FP m90;
-    sVec3_FP m9C;
-    sVec3_FP mCC;
-    u32 mDC;
     sVec3_FP mF0;
     std::array<sVec3_FP, 6> mFC_hotpoints;
     sVec3_FP m144; // not sure of type yet
     sVec3_FP m1A4;
-    u32 m1C0;
+    u32 m1C0_statusModifiers;
     u32 m1C4;
     s32 m1C8;
     s16 m1CC_currentAnimation;
     s16 m1CE_positionInAnimList;
     s16 m1D0;
-    s16 m1D4;
+    s16 m1D4_damageTaken;
     s16 m1D6;
     fixedPoint m208;
     s32 m20C;

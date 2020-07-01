@@ -73,12 +73,12 @@ bool updateUrchinAnimationSequence(sUrchin* pThis, u16 param_2, int param_3, int
     {
         if (param_4)
         {
-            riderInit(&pThis->m5C_model, nullptr);
+            initAnimation(&pThis->m5C_model, nullptr);
         }
     }
     else
     {
-        riderInit(&pThis->m5C_model, pThis->m0_fileBundle->getAnimation(param_2));
+        initAnimation(&pThis->m5C_model, pThis->m0_fileBundle->getAnimation(param_2));
         if (param_5)
         {
             int numFrameToSkip = randomNumber() & 0x1F;
@@ -217,6 +217,7 @@ void urchinUpdateSub0(sUrchin* pThis)
                 }
                 break;
             default:
+                assert(0);
                 break;
             }
             pThis->m2C_positionDelta[1] += MTH_Mul(pThis->mCC->m18 * 0x10000, getSin(stack40));

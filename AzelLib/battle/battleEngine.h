@@ -76,7 +76,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     std::array<s32, 2> m190;
     sVec3_FP m164;
     s16 m184;
-    sVec3_FP m1A0_battleAutoScrollDelta;
+    sVec3_FP m1A0_battleAutoScrollDelta; // Z SPD * 0x1a5e0 -> km/h
     sVec3_FP m1AC_battleAutoScrollDeltaBackup;
     s32 m1B8_dragonPitch;
     s32 m1BC_dragonYaw;
@@ -87,11 +87,11 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     u16 m1E0_quadrantBitStatus; // 3 groups of 4 bits
     int m1E8[2];
     sMatrix4x3 m1F0;
-    sVec3_FP m220;
-    s8 m22C_dragonCurrentQuadrant; // 1: right, 3: left, (0: bottom, 3: top)?
+    sVec3_FP m220_battleVector;
+    s8 m22C_dragonCurrentQuadrant; // 1: right, 3: left, (0: bottom, 3: top)? POS_F
     s8 m22D_dragonPreviousQuadrant;
-    s8 m22E_dragonMoveDirection;
-    u8 m22F_battleRadarLockIcon;
+    s8 m22E_dragonMoveDirection; // TURN_F
+    u8 m22F_battleRadarLockIcon; // LIMIT
     s8 m230;
     sVec3_FP m234;
     sVec3_FP m240;
@@ -168,7 +168,9 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     fixedPoint m448;
     std::array<fixedPoint, 4> m45C_perQuadrantDragonSpeed;
     sVec2_FP m46C_dragon2dSpeed;
-    sVec3_FP m474;
+    s32 m474_time;
+    s32 m478;
+    s32 m47C_exp;
     std::array<s16, 2> m480;
     std::array<std::array<s16, 2>, 5> m484;
     s16 m498_numEnemies;

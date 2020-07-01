@@ -818,7 +818,7 @@ void Baldor_initSub1(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_
     param_1->m50_flags = param_5;
     param_1->m58 = 0;
     param_1->m5A = 0;
-    param_1->m5E = 0;
+    param_1->m5E_impactForce = 0;
     param_1->m5F = param_6;
     param_1->m5C = param_7;
     param_1->m54 = 0;
@@ -913,7 +913,7 @@ void Baldor_initSub0(sBaldor* pThis, sSaturnPtr dataPtr, sFormationData* pFormat
 
         sAnimationData* pAnimation = dramAllocatorEnd[bundleIdx].mC_fileBundle->m0_fileBundle->getAnimation(offset);
 
-        riderInit(pThis->m38_3dModel, pAnimation);
+        initAnimation(pThis->m38_3dModel, pAnimation);
 
         int animationSteps = randomNumber() & 0x1F;
         while (animationSteps)
@@ -1156,7 +1156,7 @@ sVec3_FP* Baldor_updateSub0Sub1Sub0(std::vector<sBattleTargetable>& param1, int 
         sBattleTargetable& value = param1[i];
         if (value.m50_flags & 0x80000)
         {
-            iVar3 = &value.m34;
+            iVar3 = &value.m34_impactVector;
         }
     }
     return iVar3;
@@ -1391,11 +1391,11 @@ void applyDamage(sBattleTargetable& param_1, s32 damageValue, sVec3_FP& param_3,
 
     applyDamageSub(param_1, param_3);
 
-    param_1.m5E = param_4;
+    param_1.m5E_impactForce = param_4;
     param_1.m54 = 0;
     param_1.m54 |= param_8;
 
-    param_1.m34 = MTH_Mul(FP_Div(0x1000, sqrt_F(MTH_Product3d_FP(param_5, param_5))), param_5);
+    param_1.m34_impactVector = MTH_Mul(FP_Div(0x1000, sqrt_F(MTH_Product3d_FP(param_5, param_5))), param_5);
 }
 
 // front attack (evil bite)
@@ -1433,7 +1433,7 @@ void Baldor_update_mode1(sBaldor* pThis)
             assert(0);
         }
 
-        riderInit(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_fileBundle->m0_fileBundle->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 2)));
+        initAnimation(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_fileBundle->m0_fileBundle->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 2)));
         pThis->m9_attackStatus = 2;
         break;
     case 2:
@@ -1470,7 +1470,7 @@ void Baldor_update_mode1(sBaldor* pThis)
         {
             return;
         }
-        riderInit(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_fileBundle->m0_fileBundle->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 0)));
+        initAnimation(pThis->m38_3dModel, dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_fileBundle->m0_fileBundle->getAnimation(readSaturnU16(readSaturnEA(pThis->m3C_dataPtr + 0xC) + 0)));
         pThis->m34_formationEntry->m48 &= ~2;
         pThis->m9_attackStatus = 4;
         break;
@@ -1538,6 +1538,7 @@ void Baldor_update_mode0(sBaldor* pThis)
     switch (pThis->m34_formationEntry->m49)
     {
     case 0:
+    case 1:
         break;
     case 2:
         pThis->m8_mode = 1;
