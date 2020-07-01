@@ -592,14 +592,9 @@ void modelMode0_rotation(s_3dModel* p3dModel)
     for (int i = 0; i < p3dModel->m12_numBones; i++)
     {
         const sAnimationData::sTrackHeader& r6 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
-        /*
-        assert(r6.m14_trackData[3].size() == 1);
-        assert(r6.m14_trackData[4].size() == 1);
-        assert(r6.m14_trackData[5].size() == 1);
-        */
-        pPoseData[i].mC_rotation.m_value[0] = r6.m14_trackData[3][0] * 0x10000;
-        pPoseData[i].mC_rotation.m_value[1] = r6.m14_trackData[4][0] * 0x10000;
-        pPoseData[i].mC_rotation.m_value[2] = r6.m14_trackData[5][0] * 0x10000;
+        pPoseData[i].mC_rotation.m_value[0] = r6.m14_trackData[3][p3dModel->m10_currentAnimationFrame] * 0x10000;
+        pPoseData[i].mC_rotation.m_value[1] = r6.m14_trackData[4][p3dModel->m10_currentAnimationFrame] * 0x10000;
+        pPoseData[i].mC_rotation.m_value[2] = r6.m14_trackData[5][p3dModel->m10_currentAnimationFrame] * 0x10000;
     }
 }
 
