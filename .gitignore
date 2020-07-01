@@ -8,3 +8,5 @@
 xcuserdata
 build/vs2019
 *.xcuserdatad
+/data/shaders/generated
+/data/BTL_A3.trace.txt
