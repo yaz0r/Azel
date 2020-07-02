@@ -120,7 +120,7 @@ void battleRadar_UpdateDragonPosition(battleHud2* pThis)
     computeVectorAngles(local_20, local_28);
 
     pThis->m16_dragonIconPosition[0] = MTH_Mul(0x140000, getSin(local_28[1].getInteger())).getInteger() - 7;
-    pThis->m16_dragonIconPosition[1] = fixedPoint(-pThis->mE_offsetY - MTH_Mul(0x110000, getCos(local_28[1].getInteger()))).getInteger() - 0x3A;
+    pThis->m16_dragonIconPosition[1] = -pThis->mE_offsetY - MTH_Mul(0x110000, getCos(local_28[1].getInteger())).getInteger() - 0x3A;
     pThis->m1A = -0x13;
     pThis->m1C = -0x31 - pThis->mE_offsetY;
 }
