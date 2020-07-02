@@ -554,16 +554,16 @@ bgfx::ProgramHandle GetWorldSpaceVertexColorShaderBGFX()
     return programHandle;
 }
 
-void NormalSpriteDrawGL(u32 vdp1EA)
+void NormalSpriteDrawGL(s_vdp1Command* vdp1EA)
 {
-    u16 CMDCTRL = getVdp1VramU16(vdp1EA + 0);
-    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
-    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
-    u16 CMDSRCA = getVdp1VramU16(vdp1EA + 8);
-    u16 CMDSIZE = getVdp1VramU16(vdp1EA + 0xA);
-    s16 CMDXA = getVdp1VramU16(vdp1EA + 0xC);
-    s16 CMDYA = getVdp1VramU16(vdp1EA + 0xE);
-    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+    u16 CMDCTRL = vdp1EA->m0_CMDCTRL;
+    u16 CMDPMOD = vdp1EA->m4_CMDPMOD;
+    u16 CMDCOLR = vdp1EA->m6_CMDCOLR;
+    u16 CMDSRCA = vdp1EA->m8_CMDSRCA;
+    u16 CMDSIZE = vdp1EA->mA_CMDSIZE;
+    s16 CMDXA = vdp1EA->mC_CMDXA;
+    s16 CMDYA = vdp1EA->mE_CMDYA;
+    u16 CMDGRDA = vdp1EA->m1C_CMDGRA;
 
     if (CMDSRCA)
     {
@@ -588,7 +588,7 @@ void NormalSpriteDrawGL(u32 vdp1EA)
 
         float quadDepth = 0.9;
 
-        s_vd1ExtendedCommand* pExtendedCommand = fetchVdp1ExtendedCommand(vdp1EA);
+        s_vd1ExtendedCommand* pExtendedCommand = fetchVdp1ExtendedCommand(*vdp1EA);
         if (pExtendedCommand)
         {
             quadDepth = pExtendedCommand->depth;
@@ -612,11 +612,6 @@ void NormalSpriteDrawGL(u32 vdp1EA)
 
         if (1)
         {
-            checkGL();
-            //glEnable(GL_ALPHA_TEST);
-            //glAlphaFunc(GL_GREATER, 0.1);
-            checkGL();
-
             int flip = (tempQuad.CMDCTRL & 0x30) >> 4;
 
             float uv[4][2];
@@ -749,16 +744,16 @@ void NormalSpriteDrawGL(u32 vdp1EA)
     }
 }
 
-void ScaledSpriteDrawGL(u32 vdp1EA)
+void ScaledSpriteDrawGL(s_vdp1Command* vdp1EA)
 {
-    u16 CMDCTRL = getVdp1VramU16(vdp1EA + 0);
-    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
-    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
-    u16 CMDSRCA = getVdp1VramU16(vdp1EA + 8);
-    u16 CMDSIZE = getVdp1VramU16(vdp1EA + 0xA);
-    s16 CMDXA = getVdp1VramU16(vdp1EA + 0xC);
-    s16 CMDYA = getVdp1VramU16(vdp1EA + 0xE);
-    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+    u16 CMDCTRL = vdp1EA->m0_CMDCTRL;
+    u16 CMDPMOD = vdp1EA->m4_CMDPMOD;
+    u16 CMDCOLR = vdp1EA->m6_CMDCOLR;
+    u16 CMDSRCA = vdp1EA->m8_CMDSRCA;
+    u16 CMDSIZE = vdp1EA->mA_CMDSIZE;
+    s16 CMDXA = vdp1EA->mC_CMDXA;
+    s16 CMDYA = vdp1EA->mE_CMDYA;
+    u16 CMDGRDA = vdp1EA->m1C_CMDGRA;
 
     if (CMDSRCA)
     {
@@ -773,11 +768,11 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
         s32 X1;
         s32 Y1;
 
-        switch ((getVdp1VramU16(vdp1EA + 0) >> 8) & 0xF)
+        switch ((CMDCTRL >> 8) & 0xF)
         {
         case 0:
-            X1 = getVdp1VramS16(vdp1EA + 0x14) + localCoordiantesX + 1;
-            Y1 = getVdp1VramS16(vdp1EA + 0x16) + localCoordiantesY + 1;
+            X1 = vdp1EA->m14_CMDXC + localCoordiantesX + 1;
+            Y1 = vdp1EA->m16_CMDYC + localCoordiantesY + 1;
             break;
         default:
             assert(0);
@@ -797,7 +792,7 @@ void ScaledSpriteDrawGL(u32 vdp1EA)
 
         float quadDepth = 0.9;
 
-        s_vd1ExtendedCommand* pExtendedCommand = fetchVdp1ExtendedCommand(vdp1EA);
+        s_vd1ExtendedCommand* pExtendedCommand = fetchVdp1ExtendedCommand(*vdp1EA);
         if (pExtendedCommand)
         {
             quadDepth = pExtendedCommand->depth;
@@ -1109,19 +1104,19 @@ void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)
     }
 }
 
-void PolyDrawGL(u32 vdp1EA)
+void PolyDrawGL(s_vdp1Command* vdp1EA)
 {
-    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
-    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
-    s16 CMDXA = getVdp1VramS16(vdp1EA + 0xC);
-    s16 CMDYA = getVdp1VramS16(vdp1EA + 0xE);
-    s16 CMDXB = getVdp1VramS16(vdp1EA + 0x10);
-    s16 CMDYB = getVdp1VramS16(vdp1EA + 0x12);
-    s16 CMDXC = getVdp1VramS16(vdp1EA + 0x14);
-    s16 CMDYC = getVdp1VramS16(vdp1EA + 0x16);
-    s16 CMDXD = getVdp1VramS16(vdp1EA + 0x18);
-    s16 CMDYD = getVdp1VramS16(vdp1EA + 0x1A);
-    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+    u16 CMDPMOD = vdp1EA->m4_CMDPMOD;
+    u16 CMDCOLR = vdp1EA->m6_CMDCOLR;
+    s16 CMDXA = vdp1EA->mC_CMDXA;
+    s16 CMDYA = vdp1EA->mE_CMDYA;
+    s16 CMDXB = vdp1EA->m10_CMDXB;
+    s16 CMDYB = vdp1EA->m12_CMDYB;
+    s16 CMDXC = vdp1EA->m14_CMDXC;
+    s16 CMDYC = vdp1EA->m16_CMDYC;
+    s16 CMDXD = vdp1EA->m18_CMDXD;
+    s16 CMDYD = vdp1EA->m1A_CMDYD;
+    u16 CMDGRDA = vdp1EA->m1C_CMDGRA;
 
     u32 finalColor;
     if (CMDCOLR & 0x8000)
@@ -1190,19 +1185,19 @@ void PolyDrawGL(u32 vdp1EA)
     }
 }
 
-void PolyLineDrawGL(u32 vdp1EA)
+void PolyLineDrawGL(s_vdp1Command* vdp1EA)
 {
-    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
-    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
-    s16 CMDXA = getVdp1VramS16(vdp1EA + 0xC);
-    s16 CMDYA = getVdp1VramS16(vdp1EA + 0xE);
-    s16 CMDXB = getVdp1VramS16(vdp1EA + 0x10);
-    s16 CMDYB = getVdp1VramS16(vdp1EA + 0x12);
-    s16 CMDXC = getVdp1VramS16(vdp1EA + 0x14);
-    s16 CMDYC = getVdp1VramS16(vdp1EA + 0x16);
-    s16 CMDXD = getVdp1VramS16(vdp1EA + 0x18);
-    s16 CMDYD = getVdp1VramS16(vdp1EA + 0x1A);
-    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+    u16 CMDPMOD = vdp1EA->m4_CMDPMOD;
+    u16 CMDCOLR = vdp1EA->m6_CMDCOLR;
+    s16 CMDXA = vdp1EA->mC_CMDXA;
+    s16 CMDYA = vdp1EA->mE_CMDYA;
+    s16 CMDXB = vdp1EA->m10_CMDXB;
+    s16 CMDYB = vdp1EA->m12_CMDYB;
+    s16 CMDXC = vdp1EA->m14_CMDXC;
+    s16 CMDYC = vdp1EA->m16_CMDYC;
+    s16 CMDXD = vdp1EA->m18_CMDXD;
+    s16 CMDYD = vdp1EA->m1A_CMDYD;
+    u16 CMDGRDA = vdp1EA->m1C_CMDGRA;
 
     u32 finalColor;
     if (CMDCOLR & 0x8000)

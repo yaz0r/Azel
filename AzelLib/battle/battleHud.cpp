@@ -122,23 +122,23 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
 void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
 {
     {
-        u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1001); // command 0
-        setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, pThis->m14_vdp1Memory + 0x2ebc); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, pThis->m14_vdp1Memory + 0x278); // CMDSRCA
-        setVdp1VramU16(vdp1WriteEA + 0x0A, 0x108); // CMDSIZE
-        setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m1A_part2X - 0x82); // CMDXA
-        setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x5C - pThis->m1C_part2Y)); // CMDYA
-        setVdp1VramU16(vdp1WriteEA + 0x14, pThis->m1A_part2X + 0x87); // CMDXC
-        setVdp1VramU16(vdp1WriteEA + 0x16, -(-0x73 - pThis->m1C_part2Y)); // CMDYC
+        s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        vdp1WriteEA.m0_CMDCTRL = 0x1001; // command 0
+        vdp1WriteEA.m4_CMDPMOD = 0x88; // CMDPMOD
+        vdp1WriteEA.m6_CMDCOLR = pThis->m14_vdp1Memory + 0x2ebc; // CMDCOLR
+        vdp1WriteEA.m8_CMDSRCA = pThis->m14_vdp1Memory + 0x278; // CMDSRCA
+        vdp1WriteEA.mA_CMDSIZE = 0x108; // CMDSIZE
+        vdp1WriteEA.mC_CMDXA = pThis->m1A_part2X - 0x82; // CMDXA
+        vdp1WriteEA.mE_CMDYA = -(-0x5C - pThis->m1C_part2Y); // CMDYA
+        vdp1WriteEA.m14_CMDXC = pThis->m1A_part2X + 0x87; // CMDXC
+        vdp1WriteEA.m16_CMDYC = -(-0x73 - pThis->m1C_part2Y); // CMDYC
 
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
         graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
     }
 
@@ -148,61 +148,61 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
     {
         sSaturnPtr spriteData = readSaturnEA(spriteDataTable + 4 * i);
 
-        u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
-        setVdp1VramU16(vdp1WriteEA + 0x04, readSaturnS16(spriteData + 10)); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, readSaturnS16(spriteData + 6) + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, readSaturnS16(spriteData + 2) + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDSRCA
-        setVdp1VramU16(vdp1WriteEA + 0x0A, readSaturnS16(spriteData + 8)); // CMDSIZE
-        setVdp1VramU16(vdp1WriteEA + 0x0C, readSaturnS16(currentSprite) + pThis->m1A_part2X - 0xb0); // CMDXA
-        setVdp1VramU16(vdp1WriteEA + 0x0E, -(-pThis->m1C_part2Y - readSaturnS16(currentSprite + 2)) + 0x70); // CMDYA
+        s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        vdp1WriteEA.m0_CMDCTRL = 0x1000; // command 0
+        vdp1WriteEA.m4_CMDPMOD = readSaturnS16(spriteData + 10); // CMDPMOD
+        vdp1WriteEA.m6_CMDCOLR = readSaturnS16(spriteData + 6) + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory; // CMDCOLR
+        vdp1WriteEA.m8_CMDSRCA = readSaturnS16(spriteData + 2) + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory; // CMDSRCA
+        vdp1WriteEA.mA_CMDSIZE = readSaturnS16(spriteData + 8); // CMDSIZE
+        vdp1WriteEA.mC_CMDXA = readSaturnS16(currentSprite) + pThis->m1A_part2X - 0xb0; // CMDXA
+        vdp1WriteEA.mE_CMDYA = -(-pThis->m1C_part2Y - readSaturnS16(currentSprite + 2)) + 0x70; // CMDYA
 
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
         graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
         currentSprite += 2;
     }
 
     {
-        u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
-        setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, 0x2ED0 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, 0x554 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDSRCA
-        setVdp1VramU16(vdp1WriteEA + 0x0A, 0x252e); // CMDSIZE
-        setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m16_part1X - 0x8E); // CMDXA
-        setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x33 - pThis->m18_part1Y)); // CMDYA
+        s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        vdp1WriteEA.m0_CMDCTRL = 0x1000; // command 0
+        vdp1WriteEA.m4_CMDPMOD = 0x88; // CMDPMOD
+        vdp1WriteEA.m6_CMDCOLR = 0x2ED0 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory; // CMDCOLR
+        vdp1WriteEA.m8_CMDSRCA = 0x554 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory; // CMDSRCA
+        vdp1WriteEA.mA_CMDSIZE = 0x252e; // CMDSIZE
+        vdp1WriteEA.mC_CMDXA = pThis->m16_part1X - 0x8E; // CMDXA
+        vdp1WriteEA.mE_CMDYA = -(-0x33 - pThis->m18_part1Y); // CMDYA
 
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
         graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
     }
 
     {
-        u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
-        setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, 0x2ED0 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, 0x4d4 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory); // CMDSRCA
-        setVdp1VramU16(vdp1WriteEA + 0x0A, 0x553); // CMDSIZE
-        setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m16_part1X - 0xB0); // CMDXA
-        setVdp1VramU16(vdp1WriteEA + 0x0E, -(-0x31 - pThis->m18_part1Y)); // CMDYA
+        s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        vdp1WriteEA.m0_CMDCTRL = 0x1000; // command 0
+        vdp1WriteEA.m4_CMDPMOD = 0x88; // CMDPMOD
+        vdp1WriteEA.m6_CMDCOLR = 0x2ED0 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory; // CMDCOLR
+        vdp1WriteEA.m8_CMDSRCA = 0x4d4 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory; // CMDSRCA
+        vdp1WriteEA.mA_CMDSIZE = 0x553; // CMDSIZE
+        vdp1WriteEA.mC_CMDXA = pThis->m16_part1X - 0xB0; // CMDXA
+        vdp1WriteEA.mE_CMDYA = -(-0x31 - pThis->m18_part1Y); // CMDYA
 
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
         graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
         graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
     }
 

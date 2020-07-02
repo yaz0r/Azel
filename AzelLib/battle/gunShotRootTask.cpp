@@ -425,20 +425,20 @@ s32 sGunShotTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param_1, s32 param_2, s_g
 
 void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 param_3, s16 param_4, u16 param_5, const quadColor* param_6, s32 param_7)
 {
-    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // command 0
-    setVdp1VramU16(vdp1WriteEA + 0x04, 0x484 | param_7); // CMDPMOD
-    setVdp1VramU16(vdp1WriteEA + 0x06, param_5); // CMDCOLR
-    setVdp1VramU16(vdp1WriteEA + 0x08, param_3); // CMDSRCA
-    setVdp1VramU16(vdp1WriteEA + 0x0A, param_4); // CMDSIZE
-    setVdp1VramU16(vdp1WriteEA + 0x0C, param_1.matrix[0].toInteger()); // CMDXA
-    setVdp1VramU16(vdp1WriteEA + 0x0E, -param_1.matrix[1].toInteger()); // CMDYA
-    setVdp1VramU16(vdp1WriteEA + 0x10, param_1.matrix[3].toInteger());
-    setVdp1VramU16(vdp1WriteEA + 0x12, -param_1.matrix[4].toInteger());
-    setVdp1VramU16(vdp1WriteEA + 0x14, param_1.matrix[6].toInteger());
-    setVdp1VramU16(vdp1WriteEA + 0x16, -param_1.matrix[7].toInteger());
-    setVdp1VramU16(vdp1WriteEA + 0x18, param_1.matrix[9].toInteger());
-    setVdp1VramU16(vdp1WriteEA + 0x1A, -param_1.matrix[10].toInteger());
+    s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    vdp1WriteEA.m0_CMDCTRL = 0x1002; // command 0
+    vdp1WriteEA.m4_CMDPMOD = 0x484 | param_7; // CMDPMOD
+    vdp1WriteEA.m6_CMDCOLR = param_5; // CMDCOLR
+    vdp1WriteEA.m8_CMDSRCA = param_3; // CMDSRCA
+    vdp1WriteEA.mA_CMDSIZE = param_4; // CMDSIZE
+    vdp1WriteEA.mC_CMDXA = param_1.matrix[0].toInteger(); // CMDXA
+    vdp1WriteEA.mE_CMDYA = -param_1.matrix[1].toInteger(); // CMDYA
+    vdp1WriteEA.m10_CMDXB = param_1.matrix[3].toInteger();
+    vdp1WriteEA.m12_CMDYB = -param_1.matrix[4].toInteger();
+    vdp1WriteEA.m14_CMDXC = param_1.matrix[6].toInteger();
+    vdp1WriteEA.m16_CMDYC = -param_1.matrix[7].toInteger();
+    vdp1WriteEA.m18_CMDXD = param_1.matrix[9].toInteger();
+    vdp1WriteEA.m1A_CMDYD = -param_1.matrix[10].toInteger();
 
     int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
     sPerQuadDynamicColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
@@ -450,14 +450,14 @@ void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 par
     outputColor.m0[1][0] = readSaturnU16(param_6 + 4);
     outputColor.m0[1][1] = readSaturnU16(param_6 + 6);
     */
-    setVdp1VramU16(vdp1WriteEA + 0x1C, outputColorIndex);
+    vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
     graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
 }

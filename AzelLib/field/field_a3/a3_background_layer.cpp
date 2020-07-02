@@ -3,25 +3,25 @@
 
 void drawBackgroundSprite(const sVec2_S32& r4_position, fixedPoint r5_distance, u16 r6_sprite, s32 r7, s16 arg0, s16 arg1)
 {
-    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0, normal sprite + JUMP
-    setVdp1VramU16(vdp1WriteEA + 0x04, 0x480 | arg1); // CMDPMOD
-    setVdp1VramU16(vdp1WriteEA + 0x08, r6_sprite); // CMDSRCA
-    setVdp1VramU16(vdp1WriteEA + 0x0A, r7); // CMDSIZE
-    setVdp1VramU16(vdp1WriteEA + 0x06, arg0); // CMDCOLR
-    setVdp1VramU16(vdp1WriteEA + 0x0C, r4_position[0]); // CMDXA
-    setVdp1VramU16(vdp1WriteEA + 0x0E, -r4_position[1]); // CMDYA
+    vdp1WriteEA.m0_CMDCTRL = 0x1000; // command 0, normal sprite + JUMP
+    vdp1WriteEA.m4_CMDPMOD = 0x480 | arg1; // CMDPMOD
+    vdp1WriteEA.m8_CMDSRCA = r6_sprite; // CMDSRCA
+    vdp1WriteEA.mA_CMDSIZE = r7; // CMDSIZE
+    vdp1WriteEA.m6_CMDCOLR = arg0; // CMDCOLR
+    vdp1WriteEA.mC_CMDXA = r4_position[0]; // CMDXA
+    vdp1WriteEA.mE_CMDYA = -r4_position[1]; // CMDYA
 
     s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
     pExtendedCommand->depth = (float)r5_distance.asS32() / (float)graphicEngineStatus.m405C.m14_farClipDistance.asS32();
 
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r5_distance * graphicEngineStatus.m405C.m38).getInteger();
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
     graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
 }

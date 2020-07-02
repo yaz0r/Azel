@@ -216,6 +216,8 @@ void getVdp1ProjectionParams(s16* r4, s16* r5)
     *r5 = graphicEngineStatus.m405C.m1C_heightScale;
 }
 
+std::vector<s_vdp1Command> mainContextVdp1[2];
+std::vector<s_vdp1Command> mainContextVdp1_main[2];
 void initVDP1()
 {
     graphicEngineStatus.m0 = 0;
@@ -257,63 +259,82 @@ void initVDP1()
 
     initVDP1Projection(0x1C71C71, 0);
 
-    u32 vdp1WriteEA = 0x25C00000;
-    setVdp1VramU16(vdp1WriteEA + 0x00, 9); // command 9: set system clipping coordinates
-    setVdp1VramU16(vdp1WriteEA + 0x14, 0x160);
-    setVdp1VramU16(vdp1WriteEA + 0x16, 0x160 - 0x80);
-    vdp1WriteEA += 0x40;
+    mainContextVdp1[0].resize(1024);
+    mainContextVdp1[1].resize(1024);
+    mainContextVdp1_main[0].resize(1024);
+    mainContextVdp1_main[1].resize(1024);
+    std::vector<s_vdp1Command>::iterator vdp1CommandIterator = mainContextVdp1[0].begin();
+    
+    {
+        s_vdp1Command& newCommand = *vdp1CommandIterator++;
+        newCommand.m0_CMDCTRL = 9; // command 9: set system clipping coordinates
+        newCommand.m14_CMDXC = 0x160;
+        newCommand.m16_CMDYC = 0x160 - 0x80;
+    }
 
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0xA); // command 10: set local coordinates
-    setVdp1VramU16(vdp1WriteEA + 0x0C, 0x160 - 0x80 - 0x30);
-    setVdp1VramU16(vdp1WriteEA + 0x0E, 0x6F);
-    vdp1WriteEA += 0x20;
-    graphicEngineStatus.mC = vdp1WriteEA;
+    {
+        s_vdp1Command& newCommand = *vdp1CommandIterator++;
+        newCommand.m0_CMDCTRL = 0xA; // command 10: set local coordinates
+        newCommand.mC_CMDXA = 0x160 - 0x80 - 0x30;
+        newCommand.mE_CMDYA = 0x6F;
+    }
 
-    /*
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x4); // command 4: polygon draw
-    setVdp1VramU16(vdp1WriteEA + 0x04, 0xC0); // CMDPMOD
-    setVdp1VramU16(vdp1WriteEA + 0x06, 0); // CMDCOLR
-    setVdp1VramS16(vdp1WriteEA + 0x0C, -176); // XA
-    setVdp1VramU16(vdp1WriteEA + 0x0E, 79); // YA
-    setVdp1VramU16(vdp1WriteEA + 0x10, 175); // XB
-    setVdp1VramU16(vdp1WriteEA + 0x12, 79); // YB
-    setVdp1VramU16(vdp1WriteEA + 0x14, 175); // XC
-    setVdp1VramU16(vdp1WriteEA + 0x16, 112); // YC
-    setVdp1VramS16(vdp1WriteEA + 0x18, -176); //XD
-    setVdp1VramU16(vdp1WriteEA + 0x1A, 112); // YD
-    vdp1WriteEA += 0x20;
-    */
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0xA); // command 10: set local coordinates
-    setVdp1VramU16(vdp1WriteEA + 0x0C, 176);
-    setVdp1VramU16(vdp1WriteEA + 0x0E, 111);
-    graphicEngineStatus.m405C.setLocalCoordinatesEA = vdp1WriteEA;
-    vdp1WriteEA += 0x20;
+    if (0) // TODO: debug that
+    {
+        s_vdp1Command& newCommand = *vdp1CommandIterator++;
+        graphicEngineStatus.mC = &newCommand;
 
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1008); // command 8: user clipping coordinates
-    setVdp1VramU16(vdp1WriteEA + 0x0C, 0);
-    setVdp1VramU16(vdp1WriteEA + 0x0E, 0);
-    setVdp1VramU16(vdp1WriteEA + 0x14, 352);
-    setVdp1VramU16(vdp1WriteEA + 0x16, 224);
-    graphicEngineStatus.m405C.setClippingCoordinatesEA = vdp1WriteEA;
-    graphicEngineStatus.m8 = vdp1WriteEA + 2;
-    vdp1WriteEA += 0x20;
+        newCommand.m0_CMDCTRL = 4;
+        newCommand.m4_CMDPMOD = 0xC0;
+        newCommand.m6_CMDCOLR = 0;
+        newCommand.mC_CMDXA = -176;
+        newCommand.mE_CMDYA = 79;
+        newCommand.m10_CMDXB = 175;
+        newCommand.m12_CMDYB = 79;
+        newCommand.m14_CMDXC = 175;
+        newCommand.m16_CMDYC = 112;
+        newCommand.m18_CMDXD = -176;
+        newCommand.m1A_CMDYD = 112;
+    }
 
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x8000); // END
+    {
+        s_vdp1Command& newCommand = *vdp1CommandIterator++;
+        graphicEngineStatus.m405C.setLocalCoordinatesEA = &newCommand;
 
-    u32 vdp1Offset = vdp1WriteEA - 0x25C00000;
-    graphicEngineStatus.m6 = vdp1Offset >> 3;
-    vdp1WriteEA += 0x20;
+        newCommand.m0_CMDCTRL = 0xA; // command 10: set local coordinates
+        newCommand.mC_CMDXA = 176;
+        newCommand.mE_CMDYA = 111;
+    }
 
-    setVdp1VramU16(graphicEngineStatus.m8, graphicEngineStatus.m6);
+    {
+        s_vdp1Command& newCommand = *vdp1CommandIterator++;
+        graphicEngineStatus.m405C.setClippingCoordinatesEA = &newCommand;
+        graphicEngineStatus.m8 = &newCommand.m2_CMDLINK;
 
-    graphicEngineStatus.m14_vdp1Context[0].m4[0] = vdp1WriteEA;
-    graphicEngineStatus.m14_vdp1Context[0].m4[1] = graphicEngineStatus.m8;
-    graphicEngineStatus.m14_vdp1Context[1].m4[0] = 0x25C07FE0;
-    graphicEngineStatus.m14_vdp1Context[1].m4[1] = 0x25C0FFE0;
+        newCommand.m0_CMDCTRL = 0x1008; // command 8: user clipping coordinates
+        newCommand.mC_CMDXA = 0;
+        newCommand.mE_CMDYA = 0;
+        newCommand.m14_CMDXC = 352;
+        newCommand.m16_CMDYC = 224;
+    }
 
-    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA;
+    {
+        s_vdp1Command& newCommand = *vdp1CommandIterator++;
+        graphicEngineStatus.m6 = &newCommand;
+        newCommand.m0_CMDCTRL = 0x8000; // END
+    }
+
+    *graphicEngineStatus.m8 = graphicEngineStatus.m6;
+
+    graphicEngineStatus.m14_vdp1Context[0].m4[0] = mainContextVdp1_main[0].begin();
+    graphicEngineStatus.m14_vdp1Context[0].m4[1] = mainContextVdp1_main[1].begin();
+    //graphicEngineStatus.m14_vdp1Context[1].m4[0] = 0x25C07FE0;
+    //graphicEngineStatus.m14_vdp1Context[1].m4[1] = 0x25C0FFE0;
+
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1CommandIterator;
     graphicEngineStatus.m14_vdp1Context[0].mC = 0;
-    graphicEngineStatus.m14_vdp1Context[1].m0_currentVdp1WriteEA = 0x25C07FE0;
+    //graphicEngineStatus.m14_vdp1Context[1].m0_currentVdp1WriteEA = 0x25C07FE0;
+    //graphicEngineStatus.m14_vdp1Context[1].m0_currentVdp1WriteEA = nullptr;
     graphicEngineStatus.m14_vdp1Context[1].mC = 0;
 
     //graphicEngineStatus.m14_vdp1Context[0].m14 = (std::array<sPerQuadDynamicColor, 1024>*)(getVdp1Pointer(0x25C7C000));
@@ -930,15 +951,15 @@ void flushVdp1Sub5(s_vdp1Packet* r4, u32 r5, listEntry* list)
 
 void chainVdp1Packets(s_vdp1Packet* r4)
 {
-    setVdp1VramU16(graphicEngineStatus.m8, r4->m6_vdp1EA); // link clip command to first vdp1 packet
+    *graphicEngineStatus.m8 = r4->m6_vdp1EA;
 
     while (r4->m0_pNext)
     {
-        setVdp1VramU16(0x25C00000 + (r4->m6_vdp1EA << 3) + 2, r4->m0_pNext->m6_vdp1EA); // set the link address
+        r4->m6_vdp1EA->m2_CMDLINK = r4->m0_pNext->m6_vdp1EA;
         r4 = r4->m0_pNext;
     }
 
-    setVdp1VramU16(0x25C00000 + (r4->m6_vdp1EA << 3) + 2, graphicEngineStatus.m6);
+    r4->m6_vdp1EA->m2_CMDLINK = graphicEngineStatus.m6;
 }
 
 u32 numSpriteProcessed;
@@ -966,7 +987,7 @@ void flushVdp1()
     }
     else
     {
-        setVdp1VramU16(graphicEngineStatus.m8, graphicEngineStatus.m6);
+        *graphicEngineStatus.m8 = graphicEngineStatus.m6;
     }
     
     numSpriteProcessed = graphicEngineStatus.m14_vdp1Context[0].mC + graphicEngineStatus.m14_vdp1Context[1].mC;

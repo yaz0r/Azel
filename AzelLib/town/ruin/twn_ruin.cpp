@@ -133,27 +133,27 @@ void drawLcsSprite(const sVec2_S16& r4, s32 r5_index)
     var14[1] = var10[1] - varC;
 
     //////////
-    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
-    setVdp1VramU16(vdp1WriteEA + 0x00, readSaturnU16(r5_spriteData + 2)); // command
-    setVdp1VramU16(vdp1WriteEA + 0x04, readSaturnU16(r5_spriteData + 4)); // CMDPMOD
-    setVdp1VramU16(vdp1WriteEA + 0x06, var0); // CMDCOLR
-    setVdp1VramU16(vdp1WriteEA + 0x08, var4 ); // CMDSRCA
-    setVdp1VramU16(vdp1WriteEA + 0x0A, readSaturnU16(r5_spriteData + 8)); // CMDSIZE
-    setVdp1VramU16(vdp1WriteEA + 0x0C, var10[0]); // CMDXA
-    setVdp1VramU16(vdp1WriteEA + 0x0E, -var10[1]); // CMDYA
-    setVdp1VramU16(vdp1WriteEA + 0x14, var14[0]);
-    setVdp1VramU16(vdp1WriteEA + 0x16, -var14[1]);
+    vdp1WriteEA.m0_CMDCTRL = readSaturnU16(r5_spriteData + 2); // command
+    vdp1WriteEA.m4_CMDPMOD = readSaturnU16(r5_spriteData + 4); // CMDPMOD
+    vdp1WriteEA.m6_CMDCOLR = var0; // CMDCOLR
+    vdp1WriteEA.m8_CMDSRCA = var4; // CMDSRCA
+    vdp1WriteEA.mA_CMDSIZE = readSaturnU16(r5_spriteData + 8); // CMDSIZE
+    vdp1WriteEA.mC_CMDXA = var10[0]; // CMDXA
+    vdp1WriteEA.mE_CMDYA = -var10[1]; // CMDYA
+    vdp1WriteEA.m14_CMDXC = var14[0];
+    vdp1WriteEA.m16_CMDYC = -var14[1];
 
     s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
     pExtendedCommand->depth = 0;
 
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
     graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 

@@ -2,10 +2,10 @@
 
 void flushObjectsToDrawList();
 
-void NormalSpriteDrawGL(u32 vdp1EA);
-void ScaledSpriteDrawGL(u32 vdp1EA);
-void PolyLineDrawGL(u32 vdp1EA);
-void PolyDrawGL(u32 vdp1EA);
+void NormalSpriteDrawGL(s_vdp1Command* vdp1EA);
+void ScaledSpriteDrawGL(s_vdp1Command* vdp1EA);
+void PolyLineDrawGL(s_vdp1Command* vdp1EA);
+void PolyDrawGL(s_vdp1Command* vdp1EA);
 
 struct sFColor
 {

@@ -834,6 +834,38 @@ struct s_graphicEngineStatus_4514
     u8 m138[3];
 };
 
+struct s_vd1ExtendedCommand
+{
+    u32 frameIndex;
+    float depth;
+};
+
+
+struct s_vdp1Command
+{
+    u16 m0_CMDCTRL;
+    s_vdp1Command* m2_CMDLINK;
+    u16 m4_CMDPMOD;
+    u16 m6_CMDCOLR;
+    u16 m8_CMDSRCA;
+    u16 mA_CMDSIZE;
+    s16 mC_CMDXA;
+    s16 mE_CMDYA;
+    s16 m10_CMDXB;
+    s16 m12_CMDYB;
+    s16 m14_CMDXC;
+    s16 m16_CMDYC;
+    s16 m18_CMDXD;
+    s16 m1A_CMDYD;
+    u16 m1C_CMDGRA;
+    u16 m1E_DUMMY;
+
+    s_vd1ExtendedCommand ExtendedCommand;
+    // size 0x20
+};
+
+extern std::vector<s_vdp1Command> mainContextVdp1[2];
+
 struct s_graphicEngineStatus_405C
 {
     s16 m0;
@@ -862,8 +894,8 @@ struct s_graphicEngineStatus_405C
     u16 VDP1_Y2; // 42
     u16 m44_localCoordinatesX; // 44
     u16 m46_localCoordinatesY; // 46
-    u32 setClippingCoordinatesEA; // 0x48 ptr in VDP1 Memory
-    u32 setLocalCoordinatesEA; // 0x4C ptr in VDP1 Memory
+    s_vdp1Command* setClippingCoordinatesEA; // 0x48 ptr in VDP1 Memory
+    s_vdp1Command* setLocalCoordinatesEA; // 0x4C ptr in VDP1 Memory
 
     // size should be 50
 };
@@ -887,41 +919,16 @@ struct s_graphicEngineStatus_40BC
     u16 m8_scrollFrameCount;
 }; // size A?
 
+
 struct s_vdp1Packet
 {
     s_vdp1Packet* m0_pNext;
     u16 m4_bucketTypes; // 4
-    u16 m6_vdp1EA; //6
+    s_vdp1Command* m6_vdp1EA; //6
 };
 
-struct s_vdp1Command
-{
-    u16 CMDCTRL;
-    u16 CMDLINK;
-    u16 CMDPMOD;
-    u16 CMDCOLR;
-    u16 CMDSRCA;
-    u16 CMDSIZE;
-    u16 CMDXA;
-    u16 CMDYA;
-    u16 CMDXB;
-    u16 CMDYB;
-    u16 CMDXC;
-    u16 CMDYC;
-    u16 CMDXD;
-    u16 CMDYD;
-    u16 CMDGRA;
-    u16 _DUMMY;
-};
-
-struct s_vd1ExtendedCommand
-{
-    u32 frameIndex;
-    float depth;
-};
-
-s_vd1ExtendedCommand* createVdp1ExtendedCommand(u32 vd1PacketStart);
-s_vd1ExtendedCommand* fetchVdp1ExtendedCommand(u32 vd1PacketStart);
+s_vd1ExtendedCommand* createVdp1ExtendedCommand(s_vdp1Command& vd1PacketStart);
+s_vd1ExtendedCommand* fetchVdp1ExtendedCommand(s_vdp1Command& vd1PacketStart);
 
 struct sPerQuadDynamicColor
 {
@@ -930,8 +937,8 @@ struct sPerQuadDynamicColor
 
 struct s_vdp1Context
 {
-    u32 m0_currentVdp1WriteEA; //0
-    u32 m4[2]; //4
+    std::vector<s_vdp1Command>::iterator m0_currentVdp1WriteEA; //0
+    std::vector<s_vdp1Command>::iterator m4[2];
     u32 mC; //C
     std::array<sPerQuadDynamicColor, 1024>::iterator m10; //10
     std::array<sPerQuadDynamicColor, 1024> m14[2]; //14 this used to be allocated inside of VDP1 memory
@@ -939,8 +946,6 @@ struct s_vdp1Context
     s_vdp1Packet* m20_pCurrentVdp1Packet; //20
     s_vdp1Packet m24_vdp1Packets[1024]; // 24
     // size should be 2024
-
-    std::array<s_vd1ExtendedCommand, 1024> m_vd1pExtendedCommand;
 };
 
 struct s_graphicEngineStatus
@@ -950,9 +955,9 @@ struct s_graphicEngineStatus
     u8 m3;
     u8 m4;
     u8 m5_isTildeDown;
-    u16 m6; // vdp1 write offset
-    u32 m8; // vdp1 write EA for user clipping parameters
-    u32 mC; // vdp1 write EA of background sprite
+    s_vdp1Command* m6; // vdp1 write offset
+    s_vdp1Command** m8; // vdp1 write EA for user clipping parameters
+    s_vdp1Command* mC; // vdp1 write EA of background sprite
 
     s_vdp1Context m14_vdp1Context[2]; // 14
     s_graphicEngineStatus_405C m405C;

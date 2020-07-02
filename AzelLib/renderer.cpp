@@ -1095,24 +1095,22 @@ u32 vdp1TextureHeight;
 s16 localCoordiantesX;
 s16 localCoordiantesY;
 
-void SetLocalCoordinates(u32 vdp1EA)
+void SetLocalCoordinates(s_vdp1Command* vdp1EA)
 {
-    u16 CMDXA = getVdp1VramU16(vdp1EA + 0xC);
-    u16 CMDYA = getVdp1VramU16(vdp1EA + 0xE);
-
-    localCoordiantesX = CMDXA;
-    localCoordiantesY = CMDYA;
+    localCoordiantesX = vdp1EA->mC_CMDXA;
+    localCoordiantesY = vdp1EA->mE_CMDYA;
 }
 
-void NormalSpriteDraw(u32 vdp1EA)
+void NormalSpriteDraw(s_vdp1Command* vdp1EA)
 {
-    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
-    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
-    u16 CMDSRCA = getVdp1VramU16(vdp1EA + 8);
-    u16 CMDSIZE = getVdp1VramU16(vdp1EA + 0xA);
-    s16 CMDXA = getVdp1VramU16(vdp1EA + 0xC);
-    s16 CMDYA = getVdp1VramU16(vdp1EA + 0xE);
-    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+    u16 CMDCTRL = vdp1EA->m0_CMDCTRL;
+    u16 CMDPMOD = vdp1EA->m4_CMDPMOD;
+    u16 CMDCOLR = vdp1EA->m6_CMDCOLR;
+    u16 CMDSRCA = vdp1EA->m8_CMDSRCA;
+    u16 CMDSIZE = vdp1EA->mA_CMDSIZE;
+    s16 CMDXA = vdp1EA->mC_CMDXA;
+    s16 CMDYA = vdp1EA->mE_CMDYA;
+    u16 CMDGRDA = vdp1EA->m1C_CMDGRA;
 
     if (CMDSRCA)
     {
@@ -1193,15 +1191,16 @@ void NormalSpriteDraw(u32 vdp1EA)
     }
 }
 
-void ScaledSpriteDraw(u32 vdp1EA)
+void ScaledSpriteDraw(s_vdp1Command* vdp1EA)
 {
-    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
-    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
-    u16 CMDSRCA = getVdp1VramU16(vdp1EA + 8);
-    u16 CMDSIZE = getVdp1VramU16(vdp1EA + 0xA);
-    s16 CMDXA = getVdp1VramS16(vdp1EA + 0xC);
-    s16 CMDYA = getVdp1VramS16(vdp1EA + 0xE);
-    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+    u16 CMDCTRL = vdp1EA->m0_CMDCTRL;
+    u16 CMDPMOD = vdp1EA->m4_CMDPMOD;
+    u16 CMDCOLR = vdp1EA->m6_CMDCOLR;
+    u16 CMDSRCA = vdp1EA->m8_CMDSRCA;
+    u16 CMDSIZE = vdp1EA->mA_CMDSIZE;
+    s16 CMDXA = vdp1EA->mC_CMDXA;
+    s16 CMDYA = vdp1EA->mE_CMDYA;
+    u16 CMDGRDA = vdp1EA->m1C_CMDGRA;
 
     if (CMDSRCA)
     {
@@ -1215,11 +1214,11 @@ void ScaledSpriteDraw(u32 vdp1EA)
         s32 X1;
         s32 Y1;
 
-        switch ((getVdp1VramU16(vdp1EA + 0) >> 8) & 0xF)
+        switch ((CMDCTRL >> 8) & 0xF)
         {
         case 0:
-            X1 = getVdp1VramS16(vdp1EA + 0x14) + localCoordiantesX + 1;
-            Y1 = getVdp1VramS16(vdp1EA + 0x16) + localCoordiantesY + 1;
+            X1 = vdp1EA->m14_CMDXC + localCoordiantesX + 1;
+            Y1 = vdp1EA->m16_CMDYC + localCoordiantesY + 1;
             break;
         default:
             assert(0);
@@ -1345,19 +1344,19 @@ void drawLine(int x0, int y0, int x1, int y1, u32 color) {
     }
 }
 
-void PolyLineDraw(u32 vdp1EA)
+void PolyLineDraw(s_vdp1Command* vdp1EA)
 {
-    u16 CMDPMOD = getVdp1VramU16(vdp1EA + 4);
-    u16 CMDCOLR = getVdp1VramU16(vdp1EA + 6);
-    s16 CMDXA = getVdp1VramS16(vdp1EA + 0xC);
-    s16 CMDYA = getVdp1VramS16(vdp1EA + 0xE);
-    s16 CMDXB = getVdp1VramS16(vdp1EA + 0x10);
-    s16 CMDYB = getVdp1VramS16(vdp1EA + 0x12);
-    s16 CMDXC = getVdp1VramS16(vdp1EA + 0x14);
-    s16 CMDYC = getVdp1VramS16(vdp1EA + 0x16);
-    s16 CMDXD = getVdp1VramS16(vdp1EA + 0x18);
-    s16 CMDYD = getVdp1VramS16(vdp1EA + 0x1A);
-    u16 CMDGRDA = getVdp1VramU16(vdp1EA + 0x1C);
+    u16 CMDPMOD = vdp1EA->m4_CMDPMOD;
+    u16 CMDCOLR = vdp1EA->m6_CMDCOLR;
+    s16 CMDXA = vdp1EA->mC_CMDXA;
+    s16 CMDYA = vdp1EA->mE_CMDYA;
+    s16 CMDXB = vdp1EA->m10_CMDXB;
+    s16 CMDYB = vdp1EA->m12_CMDYB;
+    s16 CMDXC = vdp1EA->m14_CMDXC;
+    s16 CMDYC = vdp1EA->m16_CMDYC;
+    s16 CMDXD = vdp1EA->m18_CMDXD;
+    s16 CMDYD = vdp1EA->m1A_CMDYD;
+    u16 CMDGRDA = vdp1EA->m1C_CMDGRA;
 
     u32 finalColor;
     if (CMDCOLR & 0x8000)
@@ -1379,12 +1378,13 @@ void renderVdp1ToGL(u32 width, u32 height)
 {
     ZoneScopedN("renderVdp1ToGL");
 
-    u32 vdp1EA = 0x25C00000;
+    s_vdp1Command* vdp1EA = &mainContextVdp1[0][0];
 
     while (1)
     {
-        u16 CMDCTRL = getVdp1VramU16(vdp1EA);
-        u16 CMDLINK = getVdp1VramU16(vdp1EA + 2);
+        s_vdp1Command& command = *vdp1EA;
+        u16 CMDCTRL = command.m0_CMDCTRL;
+        s_vdp1Command* CMDLINK = command.m2_CMDLINK;
 
         u16 END = CMDCTRL >> 15;
         u16 JP = (CMDCTRL >> 12) & 7;
@@ -1400,21 +1400,21 @@ void renderVdp1ToGL(u32 width, u32 height)
         switch (COMM)
         {
         case 0:
-            NormalSpriteDrawGL(vdp1EA);
+            NormalSpriteDrawGL(&command);
             break;
         case 1:
-            ScaledSpriteDrawGL(vdp1EA);
+            ScaledSpriteDrawGL(&command);
             break;
         case 2:
             // distorted sprite draw
-            PolyLineDrawGL(vdp1EA);
+            PolyLineDrawGL(&command);
             break;
         case 4:
             // draw polygon
-            PolyDrawGL(vdp1EA);
+            PolyDrawGL(&command);
             break;
         case 5:
-            PolyLineDrawGL(vdp1EA);
+            PolyLineDrawGL(&command);
             break;
         case 8:
             // user clipping coordinates
@@ -1423,7 +1423,7 @@ void renderVdp1ToGL(u32 width, u32 height)
             // system clipping coordinates
             break;
         case 0xA:
-            SetLocalCoordinates(vdp1EA);
+            SetLocalCoordinates(&command);
             break;
         default:
             assert(0);
@@ -1433,10 +1433,10 @@ void renderVdp1ToGL(u32 width, u32 height)
         switch (JP)
         {
         case 0:
-            vdp1EA += 0x20;
+            vdp1EA++;
             break;
         case 1:
-            vdp1EA = 0x25C00000 + (CMDLINK << 3);
+            vdp1EA = vdp1EA->m2_CMDLINK;
             break;
         default:
             assert(0);
@@ -1447,12 +1447,13 @@ void renderVdp1ToGL(u32 width, u32 height)
 
 void renderVdp1()
 {
-    u32 vdp1EA = 0x25C00000;
+    s_vdp1Command* vdp1EA = &mainContextVdp1[0][0];
 
     while (1)
     {
-        u16 CMDCTRL = getVdp1VramU16(vdp1EA);
-        u16 CMDLINK = getVdp1VramU16(vdp1EA+2);
+        s_vdp1Command& command = *vdp1EA;
+        u16 CMDCTRL = command.m0_CMDCTRL;
+        s_vdp1Command* CMDLINK = command.m2_CMDLINK;
 
         u16 END = CMDCTRL >> 15;
         u16 JP = (CMDCTRL >> 12) & 7;
@@ -1468,20 +1469,20 @@ void renderVdp1()
         switch (COMM)
         {
         case 0:
-            NormalSpriteDraw(vdp1EA);
+            NormalSpriteDraw(&command);
             break;
         case 1:
-            ScaledSpriteDraw(vdp1EA);
+            ScaledSpriteDraw(&command);
             break;
         case 2:
             // distorted sprite draw
-            PolyLineDraw(vdp1EA);
+            PolyLineDraw(&command);
             break;
         case 4:
             // draw polygon
             break;
         case 5:
-            PolyLineDraw(vdp1EA);
+            PolyLineDraw(&command);
             break;
         case 8:
             // user clipping coordinates
@@ -1490,7 +1491,7 @@ void renderVdp1()
             // system clipping coordinates
             break;
         case 0xA:
-            SetLocalCoordinates(vdp1EA);
+            SetLocalCoordinates(&command);
             break;
         default:
             assert(0);
@@ -1500,10 +1501,10 @@ void renderVdp1()
         switch (JP)
         {
         case 0:
-            vdp1EA += 0x20;
+            vdp1EA++;
             break;
         case 1:
-            vdp1EA = 0x25C00000 + (CMDLINK << 3);
+            vdp1EA = vdp1EA->m2_CMDLINK;
             break;
         default:
             assert(0);

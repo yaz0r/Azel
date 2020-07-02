@@ -7501,39 +7501,39 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     r11.m14_vdp1Context[0].m10 ++;//?
     int gradiantIndex = r11.m14_vdp1Context[0].m10 - r11.m14_vdp1Context[0].m14->begin();
     sPerQuadDynamicColor& r12 = *(r11.m14_vdp1Context[0].m10 - 1);
-    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
 
     u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
     u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
     u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
 
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // CMDCTRL distorted sprite
-    setVdp1VramU16(vdp1WriteEA + 0x04, 0x048C); // CMDPMOD
-    setVdp1VramU16(vdp1WriteEA + 0x06, CMDCOLR); // CMDCOLR
-    setVdp1VramU16(vdp1WriteEA + 0x08, CMDSRCA); // CMDSRCA
-    setVdp1VramU16(vdp1WriteEA + 0x0A, CMDSIZE); // CMDSIZE
-    setVdp1VramU16(vdp1WriteEA + 0x0C, r5[3][0]); // CMDXA
-    setVdp1VramU16(vdp1WriteEA + 0x0E, -r5[3][1]); // CMDYA
-    setVdp1VramU16(vdp1WriteEA + 0x18, r5[2][0]); // CMDXD
-    setVdp1VramU16(vdp1WriteEA + 0x1A, -r5[2][1]); // CMDYD
-    setVdp1VramU16(vdp1WriteEA + 0x14, r5[1][0]); // CMDXC
-    setVdp1VramU16(vdp1WriteEA + 0x16, -r5[1][1]); // CMDYC
-    setVdp1VramU16(vdp1WriteEA + 0x10, r5[0][0]); // CMDXB
-    setVdp1VramU16(vdp1WriteEA + 0x12, -r5[0][1]); // CMDYB
+    s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    vdp1WriteEA.m0_CMDCTRL = 0x1002; // CMDCTRL distorted sprite
+    vdp1WriteEA.m4_CMDPMOD = 0x048C; // CMDPMOD
+    vdp1WriteEA.m6_CMDCOLR = CMDCOLR; // CMDCOLR
+    vdp1WriteEA.m8_CMDSRCA = CMDSRCA; // CMDSRCA
+    vdp1WriteEA.mA_CMDSIZE = CMDSIZE; // CMDSIZE
+    vdp1WriteEA.mC_CMDXA = r5[3][0]; // CMDXA
+    vdp1WriteEA.mE_CMDYA = -r5[3][1]; // CMDYA
+    vdp1WriteEA.m18_CMDXD = r5[2][0]; // CMDXD
+    vdp1WriteEA.m1A_CMDYD = -r5[2][1]; // CMDYD
+    vdp1WriteEA.m14_CMDXC = r5[1][0]; // CMDXC
+    vdp1WriteEA.m16_CMDYC = -r5[1][1]; // CMDYC
+    vdp1WriteEA.m10_CMDXB = r5[0][0]; // CMDXB
+    vdp1WriteEA.m12_CMDYB = -r5[0][1]; // CMDYB
 
     r12.m0[0] = arg0->m0[r7][0][0];
     r12.m0[1] = arg0->m0[r7][0][1];
     r12.m0[2] = arg0->m0[r7][1][0];
     r12.m0[3] = arg0->m0[r7][1][1];
 
-    setVdp1VramU16(vdp1WriteEA + 0x1C, gradiantIndex); //CMDGRDA
+    vdp1WriteEA.m1C_CMDGRA = gradiantIndex; //CMDGRDA
 
     r13.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
-    r13.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    r13.m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     r13.m20_pCurrentVdp1Packet++;
 
     graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
@@ -7542,7 +7542,6 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     if (argC >= r6)
     {
         auto& r14 = graphicEngineStatus.m14_vdp1Context[0];
-        u32 vdp1WriteEA = r14.m0_currentVdp1WriteEA;
         graphicEngineStatus.m14_vdp1Context[0].m10++;
         int gradiantIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
         sPerQuadDynamicColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
@@ -7551,39 +7550,39 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
         u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub3Data0.m4;
         u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
 
-        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // CMDCTRL distorted sprite
-        setVdp1VramU16(vdp1WriteEA + 0x04, 0x048C); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, CMDCOLR); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, CMDSRCA); // CMDSRCA
-        setVdp1VramU16(vdp1WriteEA + 0x0A, CMDSIZE); // CMDSIZE
-        setVdp1VramU16(vdp1WriteEA + 0x0C, arg0[0] - arg4[0]); // CMDXA
-        setVdp1VramU16(vdp1WriteEA + 0x0E, -arg0[1] - arg4[1]); // CMDYA
-        setVdp1VramU16(vdp1WriteEA + 0x18, arg0[0] + arg4[0]); // CMDXD
-        setVdp1VramU16(vdp1WriteEA + 0x1A, -arg0[1] - arg4[1]); // CMDYD
-        setVdp1VramU16(vdp1WriteEA + 0x14, arg0[0] + arg4[0]); // CMDXC
-        setVdp1VramU16(vdp1WriteEA + 0x16, -arg0[1] + arg4[1]); // CMDYC
-        setVdp1VramU16(vdp1WriteEA + 0x10, arg0[0] - arg4[0]); // CMDXB
-        setVdp1VramU16(vdp1WriteEA + 0x12, -arg0[1] + arg4[1]); // CMDYB
+        s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        vdp1WriteEA.m0_CMDCTRL = 0x1002; // CMDCTRL distorted sprite
+        vdp1WriteEA.m4_CMDPMOD = 0x048C; // CMDPMOD
+        vdp1WriteEA.m6_CMDCOLR = CMDCOLR; // CMDCOLR
+        vdp1WriteEA.m8_CMDSRCA = CMDSRCA; // CMDSRCA
+        vdp1WriteEA.mA_CMDSIZE = CMDSIZE; // CMDSIZE
+        vdp1WriteEA.mC_CMDXA = arg0[0] - arg4[0]; // CMDXA
+        vdp1WriteEA.mE_CMDYA = -arg0[1] - arg4[1]; // CMDYA
+        vdp1WriteEA.m18_CMDXD = arg0[0] + arg4[0]; // CMDXD
+        vdp1WriteEA.m1A_CMDYD = -arg0[1] - arg4[1]; // CMDYD
+        vdp1WriteEA.m14_CMDXC = arg0[0] + arg4[0]; // CMDXC
+        vdp1WriteEA.m16_CMDYC = -arg0[1] + arg4[1]; // CMDYC
+        vdp1WriteEA.m10_CMDXB = arg0[0] - arg4[0]; // CMDXB
+        vdp1WriteEA.m12_CMDYB = -arg0[1] + arg4[1]; // CMDYB
 
         r9.m0[0] = arg8->m0[r7][0][0];
         r9.m0[1] = arg8->m0[r7][0][1];
         r9.m0[2] = arg8->m0[r7][1][0];
         r9.m0[3] = arg8->m0[r7][1][1];
 
-        setVdp1VramU16(vdp1WriteEA + 0x1C, gradiantIndex); //CMDGRDA
+        vdp1WriteEA.m1C_CMDGRA = gradiantIndex; //CMDGRDA
 
         r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
-        r14.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+        r14.m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
         r14.m20_pCurrentVdp1Packet++;
 
         graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
     }
 
     auto& r14 = graphicEngineStatus.m14_vdp1Context[0];
-    u32 vdp1WriteEA = r14.m0_currentVdp1WriteEA;
     graphicEngineStatus.m14_vdp1Context[0].m10++;
     int gradiantIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
     sPerQuadDynamicColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
@@ -7592,33 +7591,34 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     u16 CMDSRCA = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
     u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
 
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1002); // CMDCTRL distorted sprite
-    setVdp1VramU16(vdp1WriteEA + 0x04, 0x048C); // CMDPMOD
-    setVdp1VramU16(vdp1WriteEA + 0x06, CMDCOLR); // CMDCOLR
-    setVdp1VramU16(vdp1WriteEA + 0x08, CMDSRCA); // CMDSRCA
-    setVdp1VramU16(vdp1WriteEA + 0x0A, CMDSIZE); // CMDSIZE
-    setVdp1VramU16(vdp1WriteEA + 0x0C, r5[0][0]); // CMDXA
-    setVdp1VramU16(vdp1WriteEA + 0x0E, -r5[0][1]); // CMDYA
-    setVdp1VramU16(vdp1WriteEA + 0x18, r5[1][0]); // CMDXD
-    setVdp1VramU16(vdp1WriteEA + 0x1A, -r5[1][1]); // CMDYD
-    setVdp1VramU16(vdp1WriteEA + 0x14, r5[2][0]); // CMDXC
-    setVdp1VramU16(vdp1WriteEA + 0x16, -r5[2][1]); // CMDYC
-    setVdp1VramU16(vdp1WriteEA + 0x10, r5[3][0]); // CMDXB
-    setVdp1VramU16(vdp1WriteEA + 0x12, -r5[3][1]); // CMDYB
+    s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    vdp1WriteEA.m0_CMDCTRL = 0x1002; // CMDCTRL distorted sprite
+    vdp1WriteEA.m4_CMDPMOD = 0x048C; // CMDPMOD
+    vdp1WriteEA.m6_CMDCOLR = CMDCOLR; // CMDCOLR
+    vdp1WriteEA.m8_CMDSRCA = CMDSRCA; // CMDSRCA
+    vdp1WriteEA.mA_CMDSIZE = CMDSIZE; // CMDSIZE
+    vdp1WriteEA.mC_CMDXA = r5[0][0]; // CMDXA
+    vdp1WriteEA.mE_CMDYA = -r5[0][1]; // CMDYA
+    vdp1WriteEA.m18_CMDXD = r5[1][0]; // CMDXD
+    vdp1WriteEA.m1A_CMDYD = -r5[1][1]; // CMDYD
+    vdp1WriteEA.m14_CMDXC = r5[2][0]; // CMDXC
+    vdp1WriteEA.m16_CMDYC = -r5[2][1]; // CMDYC
+    vdp1WriteEA.m10_CMDXB = r5[3][0]; // CMDXB
+    vdp1WriteEA.m12_CMDYB = -r5[3][1]; // CMDYB
 
     r9.m0[0] = arg8->m0[r7][0][0];
     r9.m0[1] = arg8->m0[r7][0][1];
     r9.m0[2] = arg8->m0[r7][1][0];
     r9.m0[3] = arg8->m0[r7][1][1];
 
-    setVdp1VramU16(vdp1WriteEA + 0x1C, gradiantIndex); //CMDGRDA
+    vdp1WriteEA.m1C_CMDGRA = gradiantIndex; //CMDGRDA
 
     r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
-    r14.m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    r14.m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     r14.m20_pCurrentVdp1Packet++;
 
     graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 

@@ -233,28 +233,26 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
 
 void drawGaugeVdp1(u16 mode, s16* params, u16 color, fixedPoint depth)
 {
-    u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-    setVdp1VramU16(vdp1WriteEA + 0x00, 0x1004); // command 0
-    setVdp1VramU16(vdp1WriteEA + 0x04, mode | 0x400); // CMDPMOD
-    setVdp1VramU16(vdp1WriteEA + 0x06, color); // CMDCOLR
-    //setVdp1VramU16(vdp1WriteEA + 0x08, params[0]); // CMDSRCA
-    //setVdp1VramU16(vdp1WriteEA + 0x0A, -params[1]); // CMDSIZE
-    setVdp1VramU16(vdp1WriteEA + 0x0C, params[0]); // CMDXA
-    setVdp1VramU16(vdp1WriteEA + 0x0E, -params[1]); // CMDYA
-    setVdp1VramU16(vdp1WriteEA + 0x10, params[2]); // CMDXB
-    setVdp1VramU16(vdp1WriteEA + 0x12, -params[3]); // CMDYB
-    setVdp1VramU16(vdp1WriteEA + 0x14, params[4]); // CMDXC
-    setVdp1VramU16(vdp1WriteEA + 0x16, -params[5]); // CMDYC
-    setVdp1VramU16(vdp1WriteEA + 0x18, params[6]); // CMDXD
-    setVdp1VramU16(vdp1WriteEA + 0x1A, -params[7]); // CMDYD
+    s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    vdp1WriteEA.m0_CMDCTRL = 0x1004; // command 0
+    vdp1WriteEA.m4_CMDPMOD = mode | 0x400; // CMDPMOD
+    vdp1WriteEA.m6_CMDCOLR = color; // CMDCOLR
+    vdp1WriteEA.mC_CMDXA = params[0]; // CMDXA
+    vdp1WriteEA.mE_CMDYA = -params[1]; // CMDYA
+    vdp1WriteEA.m10_CMDXB = params[2]; // CMDXB
+    vdp1WriteEA.m12_CMDYB = -params[3]; // CMDYB
+    vdp1WriteEA.m14_CMDXC = params[4]; // CMDXC
+    vdp1WriteEA.m16_CMDYC = -params[5]; // CMDYC
+    vdp1WriteEA.m18_CMDXD = params[6]; // CMDXD
+    vdp1WriteEA.m1A_CMDYD = -params[7]; // CMDYD
 
     fixedPoint computedDepth = depth * graphicEngineStatus.m405C.m38;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = computedDepth.getInteger();
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
     graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
 }

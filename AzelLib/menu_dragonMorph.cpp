@@ -58,9 +58,9 @@ void dragonMenuDragonInitSub1(s_dragonMenuDragonWorkAreaSub1* r4)
 {
     memcpy_dma(&graphicEngineStatus.m405C, &r4->m120, sizeof(s_graphicEngineStatus_405C));
 
-    r4->m170[0] = getVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xC);
-    r4->m170[1] = getVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xC);
-    r4->m170[2] = getVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x14);
+    r4->m170[0] = graphicEngineStatus.m405C.setLocalCoordinatesEA->mC_CMDXA;
+    r4->m170[1] = graphicEngineStatus.m405C.setClippingCoordinatesEA->mC_CMDXA;
+    r4->m170[2] = graphicEngineStatus.m405C.setClippingCoordinatesEA->m14_CMDXC;
 
     memcpy_dma(&lightSetup, &r4->lightSetup, sizeof(s_lightSetup));
 
@@ -96,43 +96,43 @@ void incrementAnimationRootZ(s3DModelAnimData* r4, fixedPoint r5)
 
 void setupVdp1LocalCoordinatesAndClipping()
 {
-    setVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xC, graphicEngineStatus.m405C.m44_localCoordinatesX);
-    setVdp1VramU16(graphicEngineStatus.m405C.setLocalCoordinatesEA + 0xE, graphicEngineStatus.m405C.m46_localCoordinatesY);
+    graphicEngineStatus.m405C.setLocalCoordinatesEA->mC_CMDXA = graphicEngineStatus.m405C.m44_localCoordinatesX;
+    graphicEngineStatus.m405C.setLocalCoordinatesEA->mE_CMDYA = graphicEngineStatus.m405C.m46_localCoordinatesY;
 
     if (graphicEngineStatus.m405C.VDP1_X1 > 0)
     {
-        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xC, graphicEngineStatus.m405C.VDP1_X1);
+        graphicEngineStatus.m405C.setClippingCoordinatesEA->mC_CMDXA = graphicEngineStatus.m405C.VDP1_X1;
     }
     else
     {
-        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xC, 0);
+        graphicEngineStatus.m405C.setClippingCoordinatesEA->mC_CMDXA = 0;
     }
 
     if (graphicEngineStatus.m405C.VDP1_Y1 > 0)
     {
-        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xE, graphicEngineStatus.m405C.VDP1_Y1);
+        graphicEngineStatus.m405C.setClippingCoordinatesEA->mE_CMDYA = graphicEngineStatus.m405C.VDP1_Y1;
     }
     else
     {
-        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0xE, 0);
+        graphicEngineStatus.m405C.setClippingCoordinatesEA->mE_CMDYA = 0;
     }
 
     if (graphicEngineStatus.m405C.VDP1_X2 < 0x160)
     {
-        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x14, graphicEngineStatus.m405C.VDP1_X2);
+        graphicEngineStatus.m405C.setClippingCoordinatesEA->m14_CMDXC = graphicEngineStatus.m405C.VDP1_X2;
     }
     else
     {
-        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x14, 0x160);
+        graphicEngineStatus.m405C.setClippingCoordinatesEA->m14_CMDXC = 0x160;
     }
 
     if (graphicEngineStatus.m405C.VDP1_Y2 < 0xE0)
     {
-        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x16, graphicEngineStatus.m405C.VDP1_Y2);
+        graphicEngineStatus.m405C.setClippingCoordinatesEA->m16_CMDYC = graphicEngineStatus.m405C.VDP1_Y2;
     }
     else
     {
-        setVdp1VramU16(graphicEngineStatus.m405C.setClippingCoordinatesEA + 0x16, 0xE0);
+        graphicEngineStatus.m405C.setClippingCoordinatesEA->m16_CMDYC = 0xE0;
     }
 }
 
