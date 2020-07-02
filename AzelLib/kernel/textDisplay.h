@@ -17,7 +17,7 @@ struct s_vdp2StringTask : public s_workAreaTemplate<s_vdp2StringTask>
     u8 m0_status;
     s8 m2_durationMode;
     s16 mA_duration;
-    s_vdp2StringTask** m10;
+    s_vdp2StringTask** m10_autoCloseDuration;
     s16 m14_x;
     s16 m16_y;
     s16 m1A_width;

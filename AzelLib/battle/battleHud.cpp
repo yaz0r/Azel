@@ -193,7 +193,7 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         vdp1WriteEA.m4_CMDPMOD = 0x88; // CMDPMOD
         vdp1WriteEA.m6_CMDCOLR = 0x2ED0 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory; // CMDCOLR
         vdp1WriteEA.m8_CMDSRCA = 0x4d4 + dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory; // CMDSRCA
-        vdp1WriteEA.mA_CMDSIZE = 0x553; // CMDSIZE
+        vdp1WriteEA.mA_CMDSIZE = 0x533; // CMDSIZE
         vdp1WriteEA.mC_CMDXA = pThis->m16_part1X - 0xB0; // CMDXA
         vdp1WriteEA.mE_CMDYA = -(-0x31 - pThis->m18_part1Y); // CMDYA
 

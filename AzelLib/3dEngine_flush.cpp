@@ -1128,21 +1128,29 @@ void PolyDrawGL(s_vdp1Command* vdp1EA)
         finalColor = 0xFF0000FF;
     }
 
+    float quadDepth = 0.9;
+
+    s_vd1ExtendedCommand* pExtendedCommand = fetchVdp1ExtendedCommand(*vdp1EA);
+    if (pExtendedCommand)
+    {
+        quadDepth = pExtendedCommand->depth;
+    }
+
     gVertexArray[0].positions[0] = CMDXA + localCoordiantesX;
     gVertexArray[0].positions[1] = CMDYA + localCoordiantesY;
-    gVertexArray[0].positions[2] = 0;
+    gVertexArray[0].positions[2] = quadDepth;
 
     gVertexArray[1].positions[0] = CMDXB + localCoordiantesX;
     gVertexArray[1].positions[1] = CMDYB + localCoordiantesY;
-    gVertexArray[1].positions[2] = 0;
+    gVertexArray[1].positions[2] = quadDepth;
 
     gVertexArray[2].positions[0] = CMDXC + localCoordiantesX;
     gVertexArray[2].positions[1] = CMDYC + localCoordiantesY;
-    gVertexArray[2].positions[2] = 0;
+    gVertexArray[2].positions[2] = quadDepth;
 
     gVertexArray[3].positions[0] = CMDXD + localCoordiantesX;
     gVertexArray[3].positions[1] = CMDYD + localCoordiantesY;
-    gVertexArray[3].positions[2] = 0;
+    gVertexArray[3].positions[2] = quadDepth;
 
     for (int i = 0; i < 4; i++)
     {

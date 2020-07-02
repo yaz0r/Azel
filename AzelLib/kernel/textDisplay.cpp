@@ -56,16 +56,46 @@ void textDisplay_update(s_vdp2StringTask* pThis)
         pThis->m0_status++;
         break;
     case 2:
-        FunctionUnimplemented();
+        switch (pThis->m2_durationMode)
+        {
+        case 1:
+            pThis->m10_autoCloseDuration--;
+            if (pThis->m10_autoCloseDuration <= 0)
+            {
+                pThis->m0_status++;
+            }
+            break;
+        default:
+            assert(0);
+        }
+        break;
+    case 3:
+        pThis->m0_status++;
+        break;
+    case 4:
+        pThis->getTask()->markFinished();
         break;
     default:
         assert(0);
     }
 }
 
+void clearTextDisplay(s_vdp2StringTask* pThis)
+{
+    setupVDP2StringRendering(pThis->m14_x + 8, pThis->m16_y + 1, pThis->m1A_width - 0xC, pThis->m1C_height - 2);
+    clearVdp2TextArea();
+    vdp2DebugPrintSetPosition(pThis->m14_x + 4, pThis->m16_y + 1);
+    clearVdp2TextLargeFont();
+    clearBlueBox(pThis->m14_x, pThis->m16_y, pThis->m1A_width, pThis->m1C_height);
+}
+
 void textDisplay_delete(s_vdp2StringTask* pThis)
 {
-    FunctionUnimplemented();
+    clearTextDisplay(pThis);
+    if (pThis->m10_autoCloseDuration)
+    {
+        *pThis->m10_autoCloseDuration = nullptr;
+    }
 }
 
 void createDisplayFormationNameText(p_workArea parentTask, s_vdp2StringTask** outputTask, s16 param3, sSaturnPtr stringEA, s16 param5, s16 param6)
@@ -103,12 +133,12 @@ void createDisplayFormationNameText(p_workArea parentTask, s_vdp2StringTask** ou
     pNewTask->m28 = param5;
     pNewTask->m2A = param6;
     int stringLength = computeStringLength(stringEA, 0x20);
-    pNewTask->m14_x = ((stringLength / 2) - 4) & ~1;
+    pNewTask->m14_x = (((0x28 - stringLength) / 2) - 4) & ~1;
     pNewTask->m16_y = 4;
     pNewTask->m1A_width = stringLength + 0xC;
     pNewTask->m1C_height = 4;
 
-    pNewTask->m10 = outputTask;
+    pNewTask->m10_autoCloseDuration = outputTask;
     if (outputTask)
     {
         *outputTask = pNewTask;
@@ -186,9 +216,9 @@ void s_vdp2StringTask::Delete(s_vdp2StringTask* pThis)
 {
     vdp2StringTaskDeleteSub0(pThis);
 
-    if (pThis->m10)
+    if (pThis->m10_autoCloseDuration)
     {
-        *pThis->m10 = NULL;
+        *pThis->m10_autoCloseDuration = NULL;
     }
 }
 
@@ -221,7 +251,7 @@ s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, s_vdp2St
     r14->m16_y = 4;
     r14->m1A_width = stringLength + 8;
     r14->m1C_height = 4;
-    r14->m10 = r5;
+    r14->m10_autoCloseDuration = r5;
     if (r5)
     {
         *r5 = r14;

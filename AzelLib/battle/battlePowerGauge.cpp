@@ -8,6 +8,7 @@
 #include "battleHud.h"
 #include "town/town.h" // todo: for npcFileDeleter
 #include "audio/systemSounds.h"
+#include "kernel/vdp1Allocator.h"
 
 struct battlePowerGauge : public s_workAreaTemplate<battlePowerGauge>
 {
@@ -288,7 +289,74 @@ void drawGauge(sVec2_S16& position, s32 maxSize, s32 param3, s32 value, s32 maxV
 
 void battlePowerGauge_drawSub0(battlePowerGauge* pThis)
 {
-    FunctionUnimplemented();
+    {
+        s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        vdp1WriteEA.m0_CMDCTRL = 0x1000; // command 0
+        vdp1WriteEA.m4_CMDPMOD = 0x8C; // CMDPMOD
+        vdp1WriteEA.m6_CMDCOLR = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2ECC; // CMDCOLR
+        vdp1WriteEA.m8_CMDSRCA = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2B8;
+        vdp1WriteEA.mA_CMDSIZE = 0xB05;
+        vdp1WriteEA.mC_CMDXA = gBattleManager->m10_battleOverlay->m20_battleHud->m16_part1X - 0x7E; // CMDXA
+        vdp1WriteEA.mE_CMDYA = -(-0x52 - gBattleManager->m10_battleOverlay->m20_battleHud->m18_part1Y); // CMDYA
+
+        // setup gradient
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = 0xC210;
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = 0xC210;
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = 0xC210;
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = 0xC210;
+        vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        graphicEngineStatus.m14_vdp1Context[0].m10++;
+
+
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+        graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
+        graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+    }
+
+    u16 color = 0xc210;
+    if (pThis->m25 == 1)
+    {
+        if (performModulo2(2, pThis->m18))
+        {
+            color = 0xFE10;
+        }
+        if (++pThis->m26 > 0xF)
+        {
+            pThis->m25 = 0;
+        }
+    }
+
+    {
+        s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+        vdp1WriteEA.m0_CMDCTRL = 0x1000; // command 0
+        vdp1WriteEA.m4_CMDPMOD = 0x8C; // CMDPMOD
+        vdp1WriteEA.m6_CMDCOLR = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2ECC; // CMDCOLR
+        vdp1WriteEA.m8_CMDSRCA = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x27C;
+        vdp1WriteEA.mA_CMDSIZE = 0xF08;
+        vdp1WriteEA.mC_CMDXA = gBattleManager->m10_battleOverlay->m20_battleHud->m16_part1X + 0x13; // CMDXA
+        vdp1WriteEA.mE_CMDYA = -(-0x52 - gBattleManager->m10_battleOverlay->m20_battleHud->m18_part1Y); // CMDYA
+
+        // setup gradient
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = color;
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = color;
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = color;
+        graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = color;
+        vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        graphicEngineStatus.m14_vdp1Context[0].m10++;
+
+
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
+        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+        graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
+        graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+    }
 }
 
 void battlePowerGauge_draw(battlePowerGauge* pThis)
