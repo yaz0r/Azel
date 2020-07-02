@@ -1398,7 +1398,7 @@ void applyDamage(sBattleTargetable& param_1, s32 damageValue, sVec3_FP& param_3,
     param_1.m34_impactVector = MTH_Mul(FP_Div(0x1000, sqrt_F(MTH_Product3d_FP(param_5, param_5))), param_5);
 }
 
-// front attack (evil bite)
+// front attack (terrible bite)
 void Baldor_update_mode1(sBaldor* pThis)
 {
     switch (pThis->m9_attackStatus)

@@ -22,9 +22,17 @@ struct s_cinematicBarTask : public s_workAreaTemplate<s_cinematicBarTask>
 
     void interpolateCinematicBar();
     void interpolateCinematicBarSub1();
-    void cinematicBarTaskSub0(s32 r5);
+    void cinematicBars_startOpening(s32 r5);
 
-    u8 m0_status;
+    enum eStatus : u8
+    {
+        m0_closed = 0,
+        m1_open = 1,
+        m2_opening = 2,
+        m3_closing = 3,
+    };
+
+    eStatus m0_status;
     s8 m1;
     s8 m2;
     s8 m3;
@@ -40,6 +48,6 @@ struct s_cinematicBarTask : public s_workAreaTemplate<s_cinematicBarTask>
 };
 
 s_cinematicBarTask* createCinematicBarTask(p_workArea pParentTask);
-void setupCinematicBars(s_cinematicBarTask* pCinematicBar, s32 r5);
+void cinematicBars_startClosing(s_cinematicBarTask* pCinematicBar, s32 r5);
 void writeCinematicBarsToVdp2();
 

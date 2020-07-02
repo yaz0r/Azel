@@ -3230,7 +3230,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
             else
             {
                 m30_cinematicBarTask = createCinematicBarTask(this);
-                setupCinematicBars(m30_cinematicBarTask, 4);
+                cinematicBars_startClosing(m30_cinematicBarTask, 4);
                 pScript = pScript - 1;
                 return pScript;
             }
@@ -3239,7 +3239,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
             if (m30_cinematicBarTask == NULL)
             {
                 m30_cinematicBarTask = createCinematicBarTask(this);
-                setupCinematicBars(m30_cinematicBarTask, 1);
+                cinematicBars_startClosing(m30_cinematicBarTask, 1);
             }
             break;
         case 26: // clean cinematic bars
@@ -3247,7 +3247,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
             {
                 if (m30_cinematicBarTask->m0_status == 1)
                 {
-                    m30_cinematicBarTask->cinematicBarTaskSub0(5);
+                    m30_cinematicBarTask->cinematicBars_startOpening(5);
                     pScript = pScript - 1;
                     return pScript;
                 }

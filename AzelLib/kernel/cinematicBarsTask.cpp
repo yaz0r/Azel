@@ -8,11 +8,11 @@ s_cinematicBarTask* createCinematicBarTask(p_workArea pParentTask)
     return createSubTask<s_cinematicBarTask>(pParentTask);
 }
 
-void setupCinematicBars(s_cinematicBarTask* pCinematicBar, s32 r5)
+void cinematicBars_startClosing(s_cinematicBarTask* pCinematicBar, s32 r5)
 {
     pCinematicBar->m1 = 0;
     pCinematicBar->m2 = r5;
-    pCinematicBar->m0_status = 2;
+    pCinematicBar->m0_status = s_cinematicBarTask::m2_opening;
 }
 
 std::array<u32, 256> interpolateCinematicBarData;
@@ -32,11 +32,11 @@ void s_cinematicBarTask::interpolateCinematicBarSub1()
     }
 }
 
-void s_cinematicBarTask::cinematicBarTaskSub0(s32 r5)
+void s_cinematicBarTask::cinematicBars_startOpening(s32 r5)
 {
     m1 = r5;
     m2 = r5;
-    m0_status = 3;
+    m0_status = s_cinematicBarTask::m3_closing;
 }
 
 void s_cinematicBarTask::interpolateCinematicBar()
@@ -65,19 +65,20 @@ void s_cinematicBarTask::Update(s_cinematicBarTask* pThis)
 {
     switch (pThis->m0_status)
     {
-    case 2:
+    case m0_closed:
+    case m1_open:
+        return;
+    case m2_opening:
         if (pThis->m2 == ++pThis->m1)
         {
-            pThis->m0_status = 1;
+            pThis->m0_status = m1_open;
         }
         pThis->interpolateCinematicBar();
         break;
-    case 1:
-        return;
-    case 3:
+    case m3_closing:
         if (--pThis->m1 == 0)
         {
-            pThis->m0_status = 0;
+            pThis->m0_status = m0_closed;
         }
         pThis->interpolateCinematicBar();
         break;

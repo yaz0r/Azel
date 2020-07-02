@@ -263,13 +263,8 @@ std::vector<uint32_t> SingleDrawcallIndexArray;
 
 bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string& PSFile); // TODO: clean
 
-void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
+glm::mat4 MatrixToGLM(const sMatrix4x3& inputMatrix)
 {
-    pObject->m_pObject->generateVertexBuffer();
-    //return drawObject_SingleDrawCall(pObject, projectionMatrix);
-
-    checkGL();
-
     float quantisation = (float)0x10000;
     float objectMatrix[4 * 4];
     {
@@ -277,10 +272,27 @@ void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
         memset(objectMatrix, 0, sizeof(objectMatrix));
         for (u32 i = 0; i < 4 * 3; i++)
         {
-            objectMatrix[i] = pObject->m_modelMatrix.matrix[i] / quantisation;
+            objectMatrix[i] = inputMatrix.matrix[i] / quantisation;
         }
         objectMatrix[15] = 1.f;
     }
+
+    glm::mat4 tempObjectMatrix;
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            tempObjectMatrix[i][j] = objectMatrix[j * 4 + i];
+        }
+    }
+
+    return tempObjectMatrix;
+}
+
+void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
+{
+    pObject->m_pObject->generateVertexBuffer();
+    //return drawObject_SingleDrawCall(pObject, projectionMatrix);
 
     static bgfx::ProgramHandle vdp1_program = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_modelMatrix = BGFX_INVALID_HANDLE;
@@ -293,23 +305,13 @@ void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
         vdp1_textureSampler = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
     }
 
-    glm::mat4 tempObjectMatrix;
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            tempObjectMatrix[i][j] = objectMatrix[j * 4 + i];
-        }
-    }
-    glm::mat4 mvpMatrix = projectionMatrix * tempObjectMatrix;
+    glm::mat4 mvpMatrix = projectionMatrix * MatrixToGLM(pObject->m_modelMatrix);
 
     //bgfx::setUniform(vdp1_modelMatrix, objectMatrix);
     float _2dOffset[4];
     _2dOffset[0] = pObject->m_2dOffset[0];
     _2dOffset[1] = pObject->m_2dOffset[1];
     bgfx::setUniform(vdp1_modelViewProj, &mvpMatrix[0][0]);
-
-    bgfx::setTransform(objectMatrix);
 
     uint64_t state = 0
         | BGFX_STATE_DEPTH_TEST_LEQUAL
@@ -329,19 +331,9 @@ void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
     bgfx::submit(vdp1_gpuView, vdp1_program);
 }
 
-float* getViewMatrix()
+glm::mat4 getViewMatrix()
 {
-    static float fViewMatrix[4 * 4];
-
-    memset(fViewMatrix, 0, sizeof(fViewMatrix));
-    for (u32 i = 0; i < 4 * 3; i++)
-    {
-        fViewMatrix[i] = matrixStack[0].matrix[i] / (float)0x10000;
-    }
-    fViewMatrix[15] = 1.f;
-    transposeMatrix(fViewMatrix);
-
-    return fViewMatrix;
+    return MatrixToGLM(matrixStack[0]);
 }
 
 float fov = 40.f;
@@ -431,6 +423,7 @@ void flushObjectsToDrawList()
         ImGui::End();
     }
 
+    bgfx::setMarker("Start object render list");
     for (int i = 0; i < objectRenderList.size(); i++)
     {
         SingleDrawcallVertexArray.clear();
@@ -442,22 +435,27 @@ void flushObjectsToDrawList()
         drawObject(&objectRenderList[i], getProjectionMatrix());
         //glPopDebugGroup();
     }
+    bgfx::setMarker("Finish object render list");
 
     TracyPlot("ObjectRenderList size", (int64_t)objectRenderList.size());
 
     objectRenderList.clear();
 
+    bgfx::setMarker("Start debug quads");
     for (int i = 0; i < debugQuads.size(); i++)
     {
         drawQuadGL(debugQuads[i]);
     }
     debugQuads.clear();
+    bgfx::setMarker("Finish debug quads");
 
+    bgfx::setMarker("Start debug lines");
     for(int i=0; i<debugLines.size(); i++)
     {
         drawLineGL(debugLines[i].position1, debugLines[i].position2, debugLines[i].m_color);
     }
     debugLines.clear();
+    bgfx::setMarker("Finish debug lines");
 }
 
 float invf(int i, int j, const float* m) {
@@ -534,7 +532,18 @@ bgfx::ProgramHandle Get2dUIShaderBGFX()
     return programHandle;
 }
 
-bgfx::ProgramHandle GetWorldSpaceLineShaderBGFX()
+bgfx::ProgramHandle Get2dUIVertexColorShaderBGFX()
+{
+    static bgfx::ProgramHandle programHandle = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(programHandle))
+    {
+        programHandle = loadBgfxProgram("VDP1_2dUIVertexColor_vs", "VDP1_2dUIVertexColor_ps");
+    }
+
+    return programHandle;
+}
+
+bgfx::ProgramHandle GetWorldSpaceVertexColorShaderBGFX()
 {
     static bgfx::ProgramHandle programHandle = BGFX_INVALID_HANDLE;
     if (!bgfx::isValid(programHandle))
@@ -964,12 +973,22 @@ void drawQuadGL(const sDebugQuad& quad)
         layout
             .begin()
             .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
             .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Float)
             .end();
 
         bgfx::TransientVertexBuffer vertexBuffer;
         bgfx::TransientIndexBuffer indexBuffer;
         bgfx::allocTransientBuffers(&vertexBuffer, layout, 4, &indexBuffer, 6);
+
+        u16 triVertexOrder[6] = { 2, 1, 0, 0, 3, 2 };
+
+        memcpy(vertexBuffer.data, &gVertexArray[0], sizeof(gVertexArray[0]) * 4);
+        memcpy(indexBuffer.data, triVertexOrder, 6 * 2);
+
+        bgfx::setVertexBuffer(0, &vertexBuffer);
+        bgfx::setIndexBuffer(&indexBuffer);
+
         bgfx::setState(0 | BGFX_STATE_WRITE_RGB
             | BGFX_STATE_WRITE_A
             | BGFX_STATE_WRITE_Z
@@ -978,7 +997,7 @@ void drawQuadGL(const sDebugQuad& quad)
             | BGFX_STATE_MSAA
         );
 
-        bgfx::submit(vdp1_gpuView, GetWorldSpaceLineShaderBGFX());
+        bgfx::submit(vdp1_gpuView, Get2dUIVertexColorShaderBGFX());
     }
 }
 
@@ -996,6 +1015,49 @@ void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color)
     gVertexArray[0].color[1] = gVertexArray[1].color[1] = color.G;
     gVertexArray[0].color[2] = gVertexArray[1].color[2] = color.B;
     gVertexArray[0].color[3] = gVertexArray[1].color[3] = color.A;
+
+    {
+        bgfx::VertexLayout layout;
+        layout
+            .begin()
+            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Float)
+            .end();
+
+        bgfx::TransientVertexBuffer vertexBuffer;
+        bgfx::TransientIndexBuffer indexBuffer;
+        bgfx::allocTransientBuffers(&vertexBuffer, layout, 2, &indexBuffer, 2);
+
+        u16 triVertexOrder[6] = { 0, 1 };
+
+        memcpy(vertexBuffer.data, &gVertexArray[0], sizeof(gVertexArray[0]) * 2);
+        memcpy(indexBuffer.data, triVertexOrder, 2 * 2);
+
+        bgfx::setState(0 | BGFX_STATE_WRITE_RGB
+            | BGFX_STATE_WRITE_A
+            | BGFX_STATE_WRITE_Z
+            | BGFX_STATE_DEPTH_TEST_LEQUAL
+            | BGFX_STATE_CULL_CW
+            | BGFX_STATE_MSAA
+            | BGFX_STATE_PT_LINES
+        );
+
+        static bgfx::UniformHandle vdp1_modelViewProj = BGFX_INVALID_HANDLE;
+        if (!isValid(vdp1_modelViewProj))
+        {
+            vdp1_modelViewProj = bgfx::createUniform("u_customModelViewProj", bgfx::UniformType::Mat4);
+        }
+        
+        glm::mat4 projectionViewMatrix = getProjectionMatrix() * getViewMatrix();
+
+        bgfx::setUniform(vdp1_modelViewProj, &projectionViewMatrix[0][0]);
+
+        bgfx::setVertexBuffer(0, &vertexBuffer);
+        bgfx::setIndexBuffer(&indexBuffer);
+
+        bgfx::submit(vdp1_gpuView, GetWorldSpaceVertexColorShaderBGFX());
+    }
 }
 
 void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)
@@ -1012,6 +1074,39 @@ void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)
     gVertexArray[0].color[1] = gVertexArray[1].color[1] = ((finalColor >> 8) & 0xFF) / 256.f;
     gVertexArray[0].color[2] = gVertexArray[1].color[2] = ((finalColor >> 16) & 0xFF) / 256.f;
     gVertexArray[0].color[3] = gVertexArray[1].color[3] = ((finalColor >> 24) & 0xFF) / 256.f;
+
+    {
+        bgfx::VertexLayout layout;
+        layout
+            .begin()
+            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Float)
+            .end();
+
+        bgfx::TransientVertexBuffer vertexBuffer;
+        bgfx::TransientIndexBuffer indexBuffer;
+        bgfx::allocTransientBuffers(&vertexBuffer, layout, 2, &indexBuffer, 2);
+
+        u16 triVertexOrder[6] = { 0, 1 };
+
+        memcpy(vertexBuffer.data, &gVertexArray[0], sizeof(gVertexArray[0]) * 2);
+        memcpy(indexBuffer.data, triVertexOrder, 2 * 2);
+
+        bgfx::setState(0 | BGFX_STATE_WRITE_RGB
+            | BGFX_STATE_WRITE_A
+            | BGFX_STATE_WRITE_Z
+            | BGFX_STATE_DEPTH_TEST_LEQUAL
+            | BGFX_STATE_CULL_CW
+            | BGFX_STATE_MSAA
+            | BGFX_STATE_PT_LINES
+        );
+
+        bgfx::setVertexBuffer(0, &vertexBuffer);
+        bgfx::setIndexBuffer(&indexBuffer);
+
+        bgfx::submit(vdp1_gpuView, Get2dUIVertexColorShaderBGFX());
+    }
 }
 
 void PolyDrawGL(u32 vdp1EA)
@@ -1038,10 +1133,61 @@ void PolyDrawGL(u32 vdp1EA)
         finalColor = 0xFF0000FF;
     }
 
-    drawLineGL(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);
-    drawLineGL(CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, finalColor);
-    drawLineGL(CMDXC + localCoordiantesX, CMDYC + localCoordiantesY, CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, finalColor);
-    drawLineGL(CMDXD + localCoordiantesX, CMDYD + localCoordiantesY, CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, finalColor);
+    gVertexArray[0].positions[0] = CMDXA + localCoordiantesX;
+    gVertexArray[0].positions[1] = CMDYA + localCoordiantesY;
+    gVertexArray[0].positions[2] = 0;
+
+    gVertexArray[1].positions[0] = CMDXB + localCoordiantesX;
+    gVertexArray[1].positions[1] = CMDYB + localCoordiantesY;
+    gVertexArray[1].positions[2] = 0;
+
+    gVertexArray[2].positions[0] = CMDXC + localCoordiantesX;
+    gVertexArray[2].positions[1] = CMDYC + localCoordiantesY;
+    gVertexArray[2].positions[2] = 0;
+
+    gVertexArray[3].positions[0] = CMDXD + localCoordiantesX;
+    gVertexArray[3].positions[1] = CMDYD + localCoordiantesY;
+    gVertexArray[3].positions[2] = 0;
+
+    for (int i = 0; i < 4; i++)
+    {
+        gVertexArray[i].color[0] = (finalColor & 0xFF) / 256.f;
+        gVertexArray[i].color[1] = ((finalColor >> 8) & 0xFF) / 256.f;
+        gVertexArray[i].color[2] = ((finalColor >> 16) & 0xFF) / 256.f;
+        gVertexArray[i].color[3] = ((finalColor >> 24) & 0xFF) / 256.f;
+    }
+
+    {
+        bgfx::VertexLayout layout;
+        layout
+            .begin()
+            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+            .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Float)
+            .end();
+
+        bgfx::TransientVertexBuffer vertexBuffer;
+        bgfx::TransientIndexBuffer indexBuffer;
+        bgfx::allocTransientBuffers(&vertexBuffer, layout, 4, &indexBuffer, 6);
+
+        u16 triVertexOrder[6] = { 2, 1, 0, 0, 3, 2 };
+
+        memcpy(vertexBuffer.data, &gVertexArray[0], sizeof(gVertexArray[0]) * 4);
+        memcpy(indexBuffer.data, triVertexOrder, 6 * 2);
+
+        bgfx::setState(0 | BGFX_STATE_WRITE_RGB
+            | BGFX_STATE_WRITE_A
+            | BGFX_STATE_WRITE_Z
+            | BGFX_STATE_DEPTH_TEST_LEQUAL
+            | BGFX_STATE_CULL_CW
+            | BGFX_STATE_MSAA
+        );
+
+        bgfx::setVertexBuffer(0, &vertexBuffer);
+        bgfx::setIndexBuffer(&indexBuffer);
+
+        bgfx::submit(vdp1_gpuView, Get2dUIVertexColorShaderBGFX());
+    }
 }
 
 void PolyLineDrawGL(u32 vdp1EA)

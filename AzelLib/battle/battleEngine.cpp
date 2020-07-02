@@ -17,6 +17,7 @@
 #include "gunShotRootTask.h"
 #include "homingLaser.h"
 #include "kernel/debug/trace.h"
+#include "kernel/cinematicBarsTask.h"
 #include "items.h"
 #include "audio/systemSounds.h"
 
@@ -25,9 +26,72 @@
 
 void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
 
+struct sBattleCinematicBars : public s_workAreaTemplate<sBattleCinematicBars>
+{
+    s_cinematicBarTask* m0_cinematicBarTask;
+    s16 m7;
+    s8 m22_status;
+    // size 0x2C
+};
+
+void sBattleCinematicBars_update(sBattleCinematicBars* pThis)
+{
+    switch (pThis->m22_status)
+    {
+    case 0:
+        pThis->m22_status++;
+        cinematicBars_startClosing(pThis->m0_cinematicBarTask, 4);
+        break;
+    case 1:
+        if (pThis->m0_cinematicBarTask->m0_status != s_cinematicBarTask::m1_open)
+        {
+            return;
+        }
+        pThis->m7 = 0;
+        pThis->m22_status++;
+        break;
+    case 2:
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
+        {
+            return;
+        }
+        pThis->m0_cinematicBarTask->cinematicBars_startOpening(4);
+        // TODO: another dummy call here
+        pThis->m22_status++;
+        break;
+    case 3:
+        if (pThis->m0_cinematicBarTask->m0_status != s_cinematicBarTask::m0_closed)
+        {
+            return;
+        }
+        pThis->m7 = 0;
+        pThis->m22_status++;
+        break;
+    case 4:
+        pThis->getTask()->markFinished();
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void sBattleCinematicBars_delete(sBattleCinematicBars* pThis)
+{
+    pThis->m0_cinematicBarTask->getTask()->markFinished();
+}
+
 void battleCreateCinematicBars(s_battleEngine* pThis)
 {
-    FunctionUnimplemented();
+    if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
+    {
+        sBattleCinematicBars* pNewTask = createSubTaskFromFunction<sBattleCinematicBars>(pThis, &sBattleCinematicBars_update);
+        pNewTask->m0_cinematicBarTask = createCinematicBarTask(pNewTask);
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 1;
+
+        //TODO: there is a call to a dummy function here. Look in proto?
+
+        pNewTask->m_DeleteMethod = &sBattleCinematicBars_delete;
+    }
 }
 
 void sEnemyAttackCamera_updateSub0(int param_1)

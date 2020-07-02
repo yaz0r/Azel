@@ -1853,7 +1853,7 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             else
             {
                 r13_pThis->m164_cinematicBars = createCinematicBarTask(currentResTask);
-                setupCinematicBars(r13_pThis->m164_cinematicBars, 4);
+                cinematicBars_startClosing(r13_pThis->m164_cinematicBars, 4);
                 return --r14;
             }
             break;
@@ -1862,7 +1862,7 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             {
                 if (r13_pThis->m164_cinematicBars->m0_status == 1)
                 {
-                    r13_pThis->m164_cinematicBars->cinematicBarTaskSub0(4);
+                    r13_pThis->m164_cinematicBars->cinematicBars_startOpening(4);
                     return --r14;
                 }
                 else if(r13_pThis->m164_cinematicBars->m0_status)
