@@ -10,6 +10,7 @@
 #include "battleDebug.h"
 #include "battlePowerGauge.h"
 #include "battleCommandMenu.h"
+#include "battleHpAndBpDisplay.h"
 
 void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
 {
@@ -268,11 +269,6 @@ void s_battleOverlay_20_delete(s_battleOverlay_20*)
     FunctionUnimplemented();
 }
 
-void createBattleHPOrBpDisplayTask(npcFileDeleter* parent, u16*, u16*, u16*, s32)
-{
-    FunctionUnimplemented();
-}
-
 void battleEngine_CreateHud1(npcFileDeleter* parent)
 {
     static const s_battleOverlay_20::TypedTaskDefinition definition = {
@@ -291,10 +287,10 @@ void battleEngine_CreateHud1(npcFileDeleter* parent)
     pNewTask->m18_part1Y = 0x47;
     pNewTask->m1A_part2X = 0;
     pNewTask->m1C_part2Y = 0x47;
-    pNewTask->m1E = 0x31;
-    pNewTask->m20 = 0xb3;
-    pNewTask->m22 = 0x66;
-    pNewTask->m24 = 0xb3;
+    pNewTask->m1E[0] = 0x31;
+    pNewTask->m1E[1] = 0xb3;
+    pNewTask->m22[0] = 0x66;
+    pNewTask->m22[1] = 0xb3;
 
     createBattleHPOrBpDisplayTask(parent, &mainGameState.gameStats.m10_currentHP, &mainGameState.gameStats.maxHP, &pNewTask->m1E, 1);
     createBattleHPOrBpDisplayTask(parent, &mainGameState.gameStats.m14_currentBP, &mainGameState.gameStats.maxBP, &pNewTask->m22, 0);

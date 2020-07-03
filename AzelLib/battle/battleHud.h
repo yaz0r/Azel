@@ -12,10 +12,8 @@ struct s_battleOverlay_20 : public s_workAreaTemplate<s_battleOverlay_20>
     u16 m18_part1Y;
     s16 m1A_part2X;
     s16 m1C_part2Y;
-    u16 m1E;
-    u16 m20;
-    u16 m22;
-    u16 m24;
+    sVec2_S16 m1E;
+    sVec2_S16 m22;
     struct sBattleCommandMenu* m28_battleCommandMenu;
     u32 m2C;
     sFPInterpolator m30;

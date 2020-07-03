@@ -1341,10 +1341,23 @@ s32 scriptFunction_6056926()
 }
 
 // kernel
-s32 __udivsi3(s32 r0, s32 r1)
+s32 udivsi3(s32 r0, s32 r1)
 {
     return r1 / r0;
 }
+
+s32 getPositionInEDKSub0(sStreamingFile* iParm1)
+{
+    int iVar2;
+    if ((VDP2Regs_.m4_TVSTAT & 1) == 0) {
+        iVar2 = 60;
+    }
+    else {
+        iVar2 = 50;
+    }
+    return udivsi3(READ_BE_U32(iParm1->m194 + 0xc), (READ_BE_U32(iParm1->m194 + 0x10) - (iParm1->m28).m84_frameIndex) * iVar2);
+}
+
 s32 getPositionInEDK(sStreamingFile* iParm1)
 {
     s32 dVar1;
@@ -1354,14 +1367,8 @@ s32 getPositionInEDK(sStreamingFile* iParm1)
     if ((iVar2 < 4) && (iVar2 != 1)) {
         return 0x7fffffff;
     }
-    if ((VDP2Regs_.m4_TVSTAT & 1) == 0) {
-        iVar2 = 60;
-    }
-    else {
-        iVar2 = 50;
-    }
-    dVar1 = __udivsi3(READ_BE_U32(iParm1->m194 + 0xc), (READ_BE_U32(iParm1->m194 + 0x10) - (iParm1->m28).m84_frameIndex) * iVar2);
-    return dVar1;
+
+    return getPositionInEDKSub0(iParm1);
 }
 
 s32 scriptFunction_6057438()

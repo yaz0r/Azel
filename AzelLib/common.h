@@ -367,11 +367,11 @@ struct s_gameStats
     u16 mC_laserPower;
     u16 mE_gunPower;
 
-    u16 m10_currentHP; // 0x10
-    u16 m12_classMaxHP; // 0x12
-    u16 m14_currentBP; // 0x14
-    u16 m16_classMaxBP; // 0x16
-    u16 m18_statAxisScale; // 0x18
+    s16 m10_currentHP; // 0x10
+    s16 m12_classMaxHP; // 0x12
+    s16 m14_currentBP; // 0x14
+    s16 m16_classMaxBP; // 0x16
+    s16 m18_statAxisScale; // 0x18
     s16 m1A_dragonCursorX; //1A
     s16 m1C_dragonCursorY; //1C
     u32 XP; //20
@@ -387,12 +387,12 @@ struct s_gameStats
     char mA5_dragonName[17];
     e_dragonArchetype dragonArchetype;//B6
 
-    u16 maxHP; // B8
-    u16 maxBP; // BA;
-    u16 dragonDef; // BC
-    u16 dragonAtt; // BE
-    u16 dragonAgl; // C0
-    u16 dragonSpr; // C2
+    s16 maxHP; // B8
+    s16 maxBP; // BA;
+    s16 dragonDef; // BC
+    s16 dragonAtt; // BE
+    s16 dragonAgl; // C0
+    s16 dragonSpr; // C2
 };
 
 struct sBitfieldMapEntry

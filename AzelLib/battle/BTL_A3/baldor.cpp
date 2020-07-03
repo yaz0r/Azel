@@ -310,6 +310,7 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
             graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 
             graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
             graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 
             if (uVar3 < 4)

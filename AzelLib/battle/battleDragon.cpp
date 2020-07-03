@@ -562,11 +562,10 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
             pThis->m1D6 = 0;
             pThis->m1C4 |= 0x10;
 
-            // TODO: disable NO DEATH cheat
-            /*if (!gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x17])
+            if (!gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x17])
             {
                 mainGameState.gameStats.m10_currentHP -= damage;
-                pThis->m1D4 += damage;
+                pThis->m1D4_damageTaken += damage;
                 if (mainGameState.gameStats.m10_currentHP < 1)
                 {
                     // Dragon is dead!
@@ -574,7 +573,7 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
                     FunctionUnimplemented();
                 }
             }
-            else*/
+            else
             {
                 pThis->m1D4_damageTaken += damage;
                 vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;

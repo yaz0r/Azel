@@ -344,3 +344,5 @@ void adjustMatrixTranslation(fixedPoint r4);
 
 typedef u16 saturnPackedColor;
 typedef std::array<saturnPackedColor, 4> quadColor;
+
+s32 udivsi3(s32 r0, s32 r1);
