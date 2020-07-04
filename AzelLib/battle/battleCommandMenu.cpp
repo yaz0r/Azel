@@ -656,7 +656,7 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
     }
 
-    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8 == 0)
+    if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
         // main command menu background
         {

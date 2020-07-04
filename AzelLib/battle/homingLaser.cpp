@@ -298,12 +298,7 @@ s32 sHomingLaserTask_UpdateSub1(s16 param_1)
     return fixedPoint::toInteger(iVar1 + 0x8000);
 }
 
-void sGunShotTask_UpdateSub2Sub2(s_workAreaCopy* pParent, sVec3_FP*, sVec3_FP*, fixedPoint)
-{
-    FunctionUnimplemented();
-}
-
-void sGunShotTask_UpdateSub2Sub0(sBattleTargetable* param_1, s16, sVec3_FP*, s8, fixedPoint, fixedPoint, fixedPoint, fixedPoint)
+void createGunAndLaserDamage3dModel(s_workAreaCopy* pParent, sVec3_FP*, sVec3_FP*, fixedPoint)
 {
     FunctionUnimplemented();
 }
@@ -349,8 +344,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
                 }
 
                 int uVar3 = sHomingLaserTask_UpdateSub1(fixedPoint::toInteger(FP_Div(iVar8, fixedPoint::fromInteger(readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AD4E4) + gDragonState->mC_dragonType * 2))) + 0x8000));
-                sGunShotTask_UpdateSub2Sub0(pThis->m84_targetable, sGunShotTask_UpdateSub1Sub2(pThis->m84_targetable, uVar3, 1), pThis->m88_targetablePosition, 2,
-                    pThis->m34_laserDelta[0], pThis->m34_laserDelta[1], pThis->m34_laserDelta[2], 0x1000);
+                applyDamageToEnnemy(pThis->m84_targetable, sGunShotTask_UpdateSub1Sub2(pThis->m84_targetable, uVar3, 1), pThis->m88_targetablePosition, 2, pThis->m34_laserDelta, 0x1000);
 
                 if ((pThis->m84_targetable->m60 == 0) || (pThis->m84_targetable->m50_flags & 0x400))
                 {
@@ -361,7 +355,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
                     dStack96[0] = asStack84[0];
                     dStack96[1] = asStack84[1];
                     dStack96[2] = randomNumber();
-                    sGunShotTask_UpdateSub2Sub2(pThis, pThis->m88_targetablePosition, &dStack96, 0x4CCC);
+                    createGunAndLaserDamage3dModel(pThis, pThis->m88_targetablePosition, &dStack96, 0x4CCC);
 
                     pThis->m34_laserDelta = MTH_Mul(-0x10000, pThis->m34_laserDelta);
 
@@ -418,6 +412,9 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
         {
             pThis->getTask()->markFinished();
         }
+        break;
+    case 3:
+        FunctionUnimplemented();
         break;
     default:
         assert(0);
@@ -608,6 +605,11 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
     }
 }
 
+void sHomingLaserTask_DrawSub0(sHomingLaserTask::sF0* pThis, int, int)
+{
+    FunctionUnimplemented();
+}
+
 void sHomingLaserTask_Draw(sHomingLaserTask* pThis)
 {
     for (int i = 9; i >= 0; i--)
@@ -627,7 +629,7 @@ void sHomingLaserTask_Draw(sHomingLaserTask* pThis)
 
     if (pThis->m7E_status == 3)
     {
-        assert(0);
+        sHomingLaserTask_DrawSub0(&pThis->mF0, pThis->m6C_numFramesToDestination, 0x1E);
     }
     else
     {

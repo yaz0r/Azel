@@ -377,12 +377,12 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonInit(s_dragonMenuDragonWorkArea
     setupVdp1LocalCoordinatesAndClipping();
 
     graphicEngineStatus.m405C.m10_nearClipDistance = 0x2000;
-    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, 0x2000);
+    graphicEngineStatus.m405C.m30_oneOverNearClip = FP_Div(0x10000, 0x2000);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0x100000;
-    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, 0x100000);
+    graphicEngineStatus.m405C.m38_oneOverFarClip = FP_Div(0x8000, 0x100000);
 
-    graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
+    graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
     generateLightFalloffMap(0x30102, 0, 0);
 

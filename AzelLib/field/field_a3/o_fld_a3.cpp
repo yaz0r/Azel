@@ -6933,12 +6933,12 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
 
 
     graphicEngineStatus.m405C.m10_nearClipDistance = 0x3000;
-    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
+    graphicEngineStatus.m405C.m30_oneOverNearClip = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0x200000;
-    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
+    graphicEngineStatus.m405C.m38_oneOverFarClip = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
 
-    graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
+    graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 1;
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts({ 0x60924FC, gFLD_A3 });
@@ -7500,7 +7500,7 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     r13.m10 ++;
     r11.m14_vdp1Context[0].m10 ++;//?
     int gradiantIndex = r11.m14_vdp1Context[0].m10 - r11.m14_vdp1Context[0].m14->begin();
-    sPerQuadDynamicColor& r12 = *(r11.m14_vdp1Context[0].m10 - 1);
+    quadColor& r12 = *(r11.m14_vdp1Context[0].m10 - 1);
 
     u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
     u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
@@ -7521,14 +7521,11 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     vdp1WriteEA.m10_CMDXB = r5[0][0]; // CMDXB
     vdp1WriteEA.m12_CMDYB = -r5[0][1]; // CMDYB
 
-    r12.m0[0] = arg0->m0[r7][0][0];
-    r12.m0[1] = arg0->m0[r7][0][1];
-    r12.m0[2] = arg0->m0[r7][1][0];
-    r12.m0[3] = arg0->m0[r7][1][1];
+    r12 = (*arg0)[r7];
 
     vdp1WriteEA.m1C_CMDGRA = gradiantIndex; //CMDGRDA
 
-    r13.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
+    r13.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38_oneOverFarClip).getInteger();
     r13.m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     r13.m20_pCurrentVdp1Packet++;
 
@@ -7544,7 +7541,7 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
         auto& r14 = graphicEngineStatus.m14_vdp1Context[0];
         graphicEngineStatus.m14_vdp1Context[0].m10++;
         int gradiantIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
-        sPerQuadDynamicColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
+        quadColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
 
         u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub3Data0.m0;
         u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub3Data0.m4;
@@ -7565,14 +7562,11 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
         vdp1WriteEA.m10_CMDXB = arg0[0] - arg4[0]; // CMDXB
         vdp1WriteEA.m12_CMDYB = -arg0[1] + arg4[1]; // CMDYB
 
-        r9.m0[0] = arg8->m0[r7][0][0];
-        r9.m0[1] = arg8->m0[r7][0][1];
-        r9.m0[2] = arg8->m0[r7][1][0];
-        r9.m0[3] = arg8->m0[r7][1][1];
+        r9 = (*arg8)[r7];
 
         vdp1WriteEA.m1C_CMDGRA = gradiantIndex; //CMDGRDA
 
-        r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
+        r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38_oneOverFarClip).getInteger();
         r14.m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
         r14.m20_pCurrentVdp1Packet++;
 
@@ -7585,7 +7579,7 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     auto& r14 = graphicEngineStatus.m14_vdp1Context[0];
     graphicEngineStatus.m14_vdp1Context[0].m10++;
     int gradiantIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
-    sPerQuadDynamicColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
+    quadColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
 
     u16 CMDCOLR = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
     u16 CMDSRCA = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
@@ -7606,14 +7600,11 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     vdp1WriteEA.m10_CMDXB = r5[3][0]; // CMDXB
     vdp1WriteEA.m12_CMDYB = -r5[3][1]; // CMDYB
 
-    r9.m0[0] = arg8->m0[r7][0][0];
-    r9.m0[1] = arg8->m0[r7][0][1];
-    r9.m0[2] = arg8->m0[r7][1][0];
-    r9.m0[3] = arg8->m0[r7][1][1];
+    r9 = (*arg8)[r7];
 
     vdp1WriteEA.m1C_CMDGRA = gradiantIndex; //CMDGRDA
 
-    r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38).getInteger();
+    r14.m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r6 * graphicEngineStatus.m405C.m38_oneOverFarClip).getInteger();
     r14.m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     r14.m20_pCurrentVdp1Packet++;
 

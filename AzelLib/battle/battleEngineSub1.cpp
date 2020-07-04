@@ -23,7 +23,7 @@ struct sBattleEngineSub1 : public s_workAreaTemplate<sBattleEngineSub1>
 
 void battleEngineSub1_Update(sBattleEngineSub1* pThis)
 {
-    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
         gBattleManager->m10_battleOverlay->m8_gridTask->m1C.zeroize();
         return;

@@ -37,7 +37,7 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
     s8 mB;
     s16 mC_numTargetables;
     s16 mE_damageValue;
-    s8 m10_HP;
+    s16 m10_HP;
     s8 m12;
     std::vector<sBattleTargetable> m14_targetable;
     std::vector<sVec3_FP> m18_position;
@@ -46,7 +46,7 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
     struct sFormationData* m34_formationEntry;
     s_3dModel* m38_3dModel;
     sSaturnPtr m3C_dataPtr;
-    p_workArea m40;
+    struct sEnemyLifeMeterTask* m40_enemyLifeMeterTask;
     sVec3_FP m44_translationTarget;
     sVec3_FP m50_translationDelta;
     sVec3_FP m5C_rotationDelta;

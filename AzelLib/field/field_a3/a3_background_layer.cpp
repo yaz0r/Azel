@@ -16,7 +16,7 @@ void drawBackgroundSprite(const sVec2_S32& r4_position, fixedPoint r5_distance, 
     s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
     pExtendedCommand->depth = (float)r5_distance.asS32() / (float)graphicEngineStatus.m405C.m14_farClipDistance.asS32();
 
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r5_distance * graphicEngineStatus.m405C.m38).getInteger();
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(r5_distance * graphicEngineStatus.m405C.m38_oneOverFarClip).getInteger();
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
 

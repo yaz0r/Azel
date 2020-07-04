@@ -155,10 +155,7 @@ void drawNumber(s16 value, sVec2_S16* positon, const quadColor* colors, s32 maxV
             vdp1WriteEA.mE_CMDYA = -tempPosition[1]; // CMDYA
 
             // setup gradient
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = (*colors)[0];
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = (*colors)[1];
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = (*colors)[2];
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = (*colors)[3];
+            *graphicEngineStatus.m14_vdp1Context[0].m10 = *colors;
             vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
             graphicEngineStatus.m14_vdp1Context[0].m10++;
 
@@ -179,7 +176,7 @@ void drawNumber(s16 value, sVec2_S16* positon, const quadColor* colors, s32 maxV
 void sBattleHpOrBpDisplay_draw(sBattleHpOrBpDisplay* pThis)
 {
     if (
-        (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8 == 0) &&
+        (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen) &&
         ((BattleEngineSub0_UpdateSub0() == 0) || ((gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::m2) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::mE_battleIntro)))
         )
     {

@@ -9,6 +9,7 @@
 #include "battle/battleDebug.h"
 #include "battle/battleTargetable.h"
 #include "battle/battleDamageDisplay.h"
+#include "battle/battleEnemyLifeMeter.h"
 #include "commonOverlay.h"
 #include "BTL_A3_data.h"
 #include "town/town.h" //TODO: cleanup
@@ -33,7 +34,7 @@ struct sUrchin : public s_workAreaTemplateWithArgWithCopy<sUrchin, sGenericForma
     s8 mB0_flags;
     s8 mB1;
     s8 mB2;
-    s8 mB4;
+    s16 mB4;
     s16 mB6_numTargetables;
     s16 mB8_delay;
     s16 mBC_damage;
@@ -48,7 +49,6 @@ struct sUrchin : public s_workAreaTemplateWithArgWithCopy<sUrchin, sGenericForma
 };
 
 void Baldor_initSub0Sub1(p_workArea pThis, s_3dModel* pModel, s16* param3, std::vector<sBattleTargetable>& param4, std::vector<sVec3_FP>& param5); // TODO: cleanup
-p_workArea createBaldorSubTask0(sVec3_FP* arg0, s32 arg1, s8* arg2, s8 arg3); // TODO: cleanup
 
 bool updateUrchinAnimationSequence(sUrchin* pThis, u16 param_2, int param_3, int param_4, int param_5)
 {
@@ -100,7 +100,7 @@ void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)
     init3DModelRawData(pThis, &pThis->m5C_model, 0, pThis->m0_fileBundle, pConfig->m8_modelOffset, nullptr, pStaticPose, nullptr, pConfig->mC_hotspotDefinitions);
     Baldor_initSub0Sub1(pThis, &pThis->m5C_model, &pThis->mB6_numTargetables, pThis->mC0_targetable, pThis->mC4_position);
     updateUrchinAnimationSequence(pThis, pConfig->m1C[0].m1C_animationOffset, 0, 1, 1);
-    pThis->mC8 = createBaldorSubTask0(&pThis->m8, 0, &pThis->mB4, pConfig->m0);
+    pThis->mC8 = createEnemyLifeMeterTask(&pThis->m8, 0, &pThis->mB4, pConfig->m0);
 
     if (!pConfig->m1C[0].m0.isNull())
     {

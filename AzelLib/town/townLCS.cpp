@@ -11,7 +11,7 @@ void copyCameraPropertiesToRes()
     LCSCollisionData.m8_LCSWidth = 2;
     LCSCollisionData.mC_LCSHeight = 2;
     LCSCollisionData.m10_activeLCSType = 0;
-    LCSCollisionData.m18 = graphicEngineStatus.m405C.m30;
+    LCSCollisionData.m18 = graphicEngineStatus.m405C.m30_oneOverNearClip;
     LCSCollisionData.m24_LCSDepthMin = graphicEngineStatus.m405C.m10_nearClipDistance;
     LCSCollisionData.m2C_projectionWidthScale = graphicEngineStatus.m405C.m18_widthScale;
     LCSCollisionData.m30_projectionHeightScale = graphicEngineStatus.m405C.m1C_heightScale;

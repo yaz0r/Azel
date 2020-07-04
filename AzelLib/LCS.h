@@ -72,7 +72,9 @@ struct s_LCSTask340SubSub : public s_workAreaTemplate<s_LCSTask340SubSub>
 };
 
 struct sLaserArgs;
-struct s_LCSTask_gradientData;
+
+typedef std::array<quadColor, 8> s_LCSTask_gradientData; // size 0x40
+
 struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLaserArgs*>
 {
     struct s_LCSTask340Sub_m58
@@ -171,12 +173,6 @@ struct s_LCSTask340
     s_LCSTask340Sub* m10;
     s32 m14;
     // size 0x18
-};
-
-struct s_LCSTask_gradientData
-{
-    std::array<sVec2_S16[2], 8> m0;
-    // size 0x40
 };
 
 struct s_LCSTask : public s_workAreaTemplate<s_LCSTask>

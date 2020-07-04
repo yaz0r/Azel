@@ -923,7 +923,7 @@ static void s_battleDragon_DrawRiderWeapon(s_battleDragon* pThis)
 
 static void s_battleDragon_Draw(s_battleDragon* pThis)
 {
-    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
         // This setup lights
         //setupLightColor(s_RGB8::fromVector(gBattleManager->m10_battleOverlay->m8_gridTask->m1F0).toU32());
@@ -981,7 +981,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
         popMatrix();
     }
 
-    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
         FunctionUnimplemented();
     }

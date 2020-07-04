@@ -49,7 +49,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
         u32 m1 : 1;
         u32 m2_needToSortEnemiesByDistanceFromDragon : 1;
         u32 m4 : 1;
-        u32 m8 : 1;
+        u32 m8_showingBattleResultScreen : 1;
         u32 m10 : 1;
         u32 m20_battleIntroRunning : 1;
         u32 m40 : 1;
@@ -172,7 +172,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     s32 m478;
     s32 m47C_exp;
     std::array<s16, 2> m480;
-    std::array<std::array<s16, 2>, 5> m484;
+    std::array<s16, 10> m484;
     s16 m498_numEnemies;
     std::array<s_battleEnemy, 0x80> m49C_enemies;
     p_workArea mAA4;

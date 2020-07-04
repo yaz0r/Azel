@@ -240,7 +240,7 @@ void battleHud_drawStatusString(s_battleOverlay_20* pThis)
 
 void s_battleOverlay_20_draw(s_battleOverlay_20* pThis)
 {
-    if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
         if (BattleEngineSub0_UpdateSub0())
         {

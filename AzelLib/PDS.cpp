@@ -241,12 +241,12 @@ void initVDP1()
     graphicEngineStatus.m405C.m46_localCoordinatesY = 112;
 
     graphicEngineStatus.m405C.m10_nearClipDistance = 0x999;
-    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
+    graphicEngineStatus.m405C.m30_oneOverNearClip = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0x200000;
-    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
+    graphicEngineStatus.m405C.m38_oneOverFarClip = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
 
-    graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
+    graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
     graphicEngineStatus.m405C.m0 = 242;
     graphicEngineStatus.m405C.m2 = -242;

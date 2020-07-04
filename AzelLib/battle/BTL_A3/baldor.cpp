@@ -6,6 +6,7 @@
 #include "battle/battleEngine.h"
 #include "battle/battleDebug.h"
 #include "battle/battleDamageDisplay.h"
+#include "battle/battleEnemyLifeMeter.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 #include "kernel/debug/trace.h"
@@ -33,12 +34,6 @@ void Baldor_initSub0Sub2(sBaldor* pThis, sFormationData* pFormationEntry)
 
     pFormationEntry->m48 = 0;
     pFormationEntry->m49 = 0;
-}
-
-p_workArea createBaldorSubTask0(sVec3_FP* arg0, s32 arg1, s8* arg2, s8 arg3)
-{
-    FunctionUnimplemented();
-    return nullptr;
 }
 
 s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
@@ -173,7 +168,7 @@ void drawLineSquareVdp1(u16 param1, std::array < sVec2_FP, 4>& projectedCoordina
     vdp1WriteEA.m18_CMDXD = projectedCoordinates[3][0]; // CMDXD
     vdp1WriteEA.m1A_CMDYD = -projectedCoordinates[3][1]; // CMDYD
 
-    fixedPoint computedDepth = depth * graphicEngineStatus.m405C.m38;
+    fixedPoint computedDepth = depth * graphicEngineStatus.m405C.m38_oneOverFarClip;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = computedDepth.getInteger();
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
@@ -257,10 +252,10 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
             vdp1WriteEA.mE_CMDYA = -finalSize[1]; // CMDYA
 
             // setup gradient
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = readSaturnU16(spriteDef + 0);
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = readSaturnU16(spriteDef + 2);
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = readSaturnU16(spriteDef + 4);
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = readSaturnU16(spriteDef + 6);
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[0] = readSaturnU16(spriteDef + 0);
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = readSaturnU16(spriteDef + 2);
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = readSaturnU16(spriteDef + 4);
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = readSaturnU16(spriteDef + 6);
             vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
             graphicEngineStatus.m14_vdp1Context[0].m10++;
 
@@ -298,10 +293,10 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
             vdp1WriteEA.mE_CMDYA = -finalSize[1]; // CMDYA
 
             // setup gradient
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = readSaturnU16(spriteDef + 0);
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = readSaturnU16(spriteDef + 2);
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = readSaturnU16(spriteDef + 4);
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = readSaturnU16(spriteDef + 6);
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[0] = readSaturnU16(spriteDef + 0);
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = readSaturnU16(spriteDef + 2);
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = readSaturnU16(spriteDef + 4);
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = readSaturnU16(spriteDef + 6);
             vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
             graphicEngineStatus.m14_vdp1Context[0].m10++;
 
@@ -332,10 +327,10 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
                 vdp1WriteEA.mE_CMDYA = -finalSize[1]; // CMDYA
 
                 // setup gradient
-                graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = 0xFFFF;
-                graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = 0xFFFF;
-                graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = 0xFFFF;
-                graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = 0xFFFF;
+                (*graphicEngineStatus.m14_vdp1Context[0].m10)[0] = 0xFFFF;
+                (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = 0xFFFF;
+                (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = 0xFFFF;
+                (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = 0xFFFF;
                 vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
                 graphicEngineStatus.m14_vdp1Context[0].m10++;
 
@@ -555,10 +550,10 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
             vdp1WriteEA.m16_CMDYC = -local_40[3]; // CMDYB
 
                 // setup gradient
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = 0xC3FF;
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = 0xC3FF;
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = 0xC3FF;
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = 0xC3FF;
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[0] = 0xC3FF;
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = 0xC3FF;
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = 0xC3FF;
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = 0xC3FF;
             vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
             graphicEngineStatus.m14_vdp1Context[0].m10++;
 
@@ -585,10 +580,10 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
             vdp1WriteEA.m16_CMDYC = -local_40[3]; // CMDYB
 
             // setup gradient
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = 0xC3FF;
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = 0xC3FF;
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = 0xC3FF;
-            graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = 0xC3FF;
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[0] = 0xC3FF;
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = 0xC3FF;
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = 0xC3FF;
+            (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = 0xC3FF;
             vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
             graphicEngineStatus.m14_vdp1Context[0].m10++;
 
@@ -906,7 +901,7 @@ void Baldor_initSub0(sBaldor* pThis, sSaturnPtr dataPtr, sFormationData* pFormat
     }
 
     Baldor_initSub0Sub2(pThis, pFormationEntry);
-    pThis->m40 = createBaldorSubTask0(pThis->m1C_translation.m0_current, 0, &pThis->m10_HP, readSaturnS8(pThis->m3C_dataPtr + 1));
+    pThis->m40_enemyLifeMeterTask = createEnemyLifeMeterTask(pThis->m1C_translation.m0_current, 0, &pThis->m10_HP, readSaturnS8(pThis->m3C_dataPtr + 1));
     if (-1 < arg)
     {
         u8 bundleIdx = readSaturnS8(dataPtr);
@@ -1223,7 +1218,12 @@ void Baldor_updateSub0Sub2Sub2(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s
     createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x060abef4) + iVar2 * 4), param1, param2, 0, param3, 0, 0);
 }
 
-void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param2, int param3, int param4, p_workArea param5)
+void Baldor_updateSub0Sub2Sub0(p_workArea, sBattleTargetable&, int)
+{
+    FunctionUnimplemented();
+}
+
+void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param2, int param3, int param4, sEnemyLifeMeterTask* param5)
 {
     for (int i = 0; i < param3; i++)
     {
@@ -1232,7 +1232,7 @@ void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param
         {
             if (param4)
             {
-                assert(0);
+                Baldor_updateSub0Sub2Sub0(pThis, value, 0);
             }
 
             value.m50_flags &= ~0x80000;
@@ -1244,7 +1244,7 @@ void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param
 
     if (param5)
     {
-        assert(0);
+        param5->m31 |= 2;
     }
 }
 
@@ -1263,7 +1263,7 @@ void Baldor_updateSub0(sBaldor* pThis)
             pThis->m10_HP -= damageValue;
             if (pThis->m10_HP < 1)
             {
-                Baldor_updateSub0Sub2(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 0, pThis->m40);
+                Baldor_updateSub0Sub2(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 0, pThis->m40_enemyLifeMeterTask);
                 pThis->m34_formationEntry->m48 |= 4;
                 createDamageDisplayTask(pThis, pThis->mE_damageValue, pThis->m1C_translation.m0_current, 1);
                 playSystemSoundEffect(0x66);
@@ -1272,7 +1272,7 @@ void Baldor_updateSub0(sBaldor* pThis)
             }
             else
             {
-                Baldor_updateSub0Sub2(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 1, pThis->m40);
+                Baldor_updateSub0Sub2(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 1, pThis->m40_enemyLifeMeterTask);
                 playSystemSoundEffect(0x65);
             }
         }
@@ -1373,32 +1373,6 @@ p_workArea Baldor_createAttackTask(sBaldor* pThis)
     return pNewTask;
 }
 
-void applyDamageSub(sBattleTargetable& param_1, sVec3_FP& param_2)
-{
-    param_1.mC = &param_2;
-    param_1.m28 = param_2;
-    transformAndAddVecByCurrentMatrix(&param_1.m28, &param_1.m1C);
-    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x14])
-    {
-        assert(0);
-    }
-}
-
-void applyDamage(sBattleTargetable& param_1, s32 damageValue, sVec3_FP& param_3, s32 param_4, const sVec3_FP& param_5, s32 param_8)
-{
-    gBattleManager->m10_battleOverlay->m18_dragon->m1D6 += damageValue;
-    param_1.m50_flags |= 0x80000;
-    param_1.m58 = gBattleManager->m10_battleOverlay->m18_dragon->m1D6;
-
-    applyDamageSub(param_1, param_3);
-
-    param_1.m5E_impactForce = param_4;
-    param_1.m54 = 0;
-    param_1.m54 |= param_8;
-
-    param_1.m34_impactVector = MTH_Mul(FP_Div(0x1000, sqrt_F(MTH_Product3d_FP(param_5, param_5))), param_5);
-}
-
 // front attack (terrible bite)
 void Baldor_update_mode1(sBaldor* pThis)
 {
@@ -1460,7 +1434,7 @@ void Baldor_update_mode1(sBaldor* pThis)
         if (pThis->m38_3dModel->m16_previousAnimationFrame != 0x1E)
             return;
 
-        applyDamage(gBattleManager->m10_battleOverlay->m18_dragon->m8C, 27, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 3, gBattleManager->m10_battleOverlay->m18_dragon->m8_position - *pThis->m1C_translation.m0_current, 0);
+        applyDamageToDragon(gBattleManager->m10_battleOverlay->m18_dragon->m8C, 27, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 3, gBattleManager->m10_battleOverlay->m18_dragon->m8_position - *pThis->m1C_translation.m0_current, 0);
         createDamageSpriteEffect(dramAllocatorEnd[6].mC_fileBundle, gCurrentBattleOverlay->getSaturnPtr(0x060a912), &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, 0, 0);
         playSystemSoundEffect(0x67);
         pThis->m9_attackStatus = 3;
@@ -1557,6 +1531,33 @@ void Baldor_update_mode0(sBaldor* pThis)
     }
 }
 
+void createBaldorDeathEffect(sBaldor* pThis)
+{
+    FunctionUnimplemented();
+}
+
+// Taking damage
+void Baldor_update_modeB(sBaldor* pThis)
+{
+    if (pThis->m9_attackStatus == 0)
+    {
+        for (int i = 0; i < pThis->mC_numTargetables; i++)
+        {
+            deleteTargetable(&pThis->m14_targetable[i]);
+        }
+
+        pThis->mC_numTargetables = 0;
+        pThis->m40_enemyLifeMeterTask->m31 |= 1;
+        pThis->m40_enemyLifeMeterTask->m31 |= 8;
+
+        createBaldorDeathEffect(pThis);
+
+        pThis->m34_formationEntry->m48 |= 0x40;
+
+        pThis->getTask()->markFinished();
+    }
+}
+
 void Baldor_update(sBaldor* pThis)
 {
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
@@ -1619,6 +1620,9 @@ void Baldor_update(sBaldor* pThis)
     case 2: // attacking on the side
         Baldor_update_mode2(pThis);
         break;
+    case 11: // taking damage
+        Baldor_update_modeB(pThis);
+        break;
     default:
         assert(0);
     }
@@ -1652,6 +1656,16 @@ void Baldor_update(sBaldor* pThis)
     }
 }
 
+void setupConditionalLightColor(int )
+{
+    FunctionUnimplemented();
+}
+
+void clearLightColor()
+{
+    FunctionUnimplemented();
+}
+
 void Baldor_draw(sBaldor* pThis)
 {
     if (isTraceEnabled())
@@ -1662,7 +1676,7 @@ void Baldor_draw(sBaldor* pThis)
 
     if (pThis->mB & 8)
     {
-        assert(0);
+        setupConditionalLightColor(10);
     }
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->m1C_translation.m0_current);
@@ -1675,7 +1689,8 @@ void Baldor_draw(sBaldor* pThis)
 
     if (pThis->mB & 8)
     {
-        assert(0);
+        clearLightColor();
+        pThis->mB &= ~8;
     }
 }
 

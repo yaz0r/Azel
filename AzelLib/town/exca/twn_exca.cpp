@@ -289,12 +289,12 @@ p_workArea overlayStart_TWN_EXCA(p_workArea pUntypedThis, u32 arg)
     loadFnt("EVTEXCA.FNT");
 
     graphicEngineStatus.m405C.m10_nearClipDistance = 0x800;
-    graphicEngineStatus.m405C.m30 = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
+    graphicEngineStatus.m405C.m30_oneOverNearClip = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
 
     graphicEngineStatus.m405C.m14_farClipDistance = 0x100000;
-    graphicEngineStatus.m405C.m38 = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
+    graphicEngineStatus.m405C.m38_oneOverFarClip = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
 
-    graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
+    graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
     initDramAllocator(pThis, townBuffer, sizeof(townBuffer), listOfFilesToLoad);
 

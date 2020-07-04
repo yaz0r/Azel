@@ -249,9 +249,35 @@ s32 sGunShotTask_UpdateSub1(sGunShotTask* pThis)
     return sGunShotTask_UpdateSub1Sub2(pThis->m68, sGunShotTask_UpdateSub1Sub0(pThis->m68, fixedPoint::toInteger(ratio + 0x8000)), 0);
 }
 
+void createGunAndLaserDamage3dModel(s_workAreaCopy* pParent, sVec3_FP*, sVec3_FP*, fixedPoint); // TODO: cleanup
+
 void sGunShotTask_UpdateSub2(sGunShotTask* pThis, s32 param_2, sVec3_FP* param_3)
 {
-    FunctionUnimplemented();
+    applyDamageToEnnemy(pThis->m68, param_2, param_3, 1, pThis->m2C, 0x800);
+    pThis->m68->m50_flags &= ~0x200000;
+    if (pThis->m68->m60 && !(pThis->m68->m50_flags & 0x1000))
+    {
+        if (pThis->m9C > -1)
+        {
+            FunctionUnimplemented();// createGunDamageSpriteTask
+        }
+        pThis->getTask()->markFinished();
+    }
+    else
+    {
+        sVec2_FP asStack84;
+        computeVectorAngles(pThis->m2C, asStack84);
+
+        sVec3_FP dStack96;
+        dStack96[0] = asStack84[0];
+        dStack96[1] = asStack84[1];
+        dStack96[2] = randomNumber();
+        createGunAndLaserDamage3dModel(pThis, &pThis->m14, &dStack96, 0x4CCC);
+
+        pThis->m64 = 2;
+        pThis->m58 = 10;
+        playSystemSoundEffect(0x16);
+    }
 }
 
 void sGunShotTask_Update(sGunShotTask* pThis)
@@ -360,6 +386,7 @@ void sGunShotTask_SetupSpriteData(sGunShotTask* pThis)
 {
     switch (mainGameState.gameStats.mA_weaponType)
     {
+    default:
     case 0x39:
         pThis->m10_colorSetup = &battleOverlay::m60AE424;
         break;
@@ -371,8 +398,6 @@ void sGunShotTask_SetupSpriteData(sGunShotTask* pThis)
         break;
     case 0x40:
         pThis->m10_colorSetup = &battleOverlay::m60AE434;
-        break;
-    default:
         break;
     }
 }
@@ -441,15 +466,8 @@ void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 par
     vdp1WriteEA.m1A_CMDYD = -param_1.matrix[10].toInteger();
 
     int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
-    sPerQuadDynamicColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
-
-    FunctionUnimplemented();
-    /*
-    outputColor.m0[0][0] = readSaturnU16(param_6 + 0);
-    outputColor.m0[0][1] = readSaturnU16(param_6 + 2);
-    outputColor.m0[1][0] = readSaturnU16(param_6 + 4);
-    outputColor.m0[1][1] = readSaturnU16(param_6 + 6);
-    */
+    quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
+    outputColor = *param_6;
     vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
@@ -502,7 +520,7 @@ void sGunShotTask_Draw(sGunShotTask* pThis)
                 readSaturnU16(pThis->m94 + 0x4) + pThis->m90_vdp1Memory,
                 readSaturnS16(pThis->m94 + 0x6),
                 readSaturnU16(pThis->m94 + 0x8) + pThis->m90_vdp1Memory,
-                pThis->m10_colorSetup ? &(*pThis->m10_colorSetup)[0] : nullptr,
+                &(*pThis->m10_colorSetup)[0],
                 8
             );
         }

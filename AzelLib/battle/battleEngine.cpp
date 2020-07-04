@@ -504,10 +504,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
         mainGameState.gameStats.mE_gunPower = 60;
     }
 
-    for (int i = 0; i < 5; i++)
-    {
-        pThis->m484[i].fill(-1);
-    }
+    pThis->m484.fill(-1);
 }
 
 void battleEngine_UpdateSub1Sub0(s32 param_1)
@@ -711,12 +708,12 @@ void battleEngine_UpdateSub7Sub3()
     }
 }
 
-void battleEngine_UpdateSub7Sub3Sub4(p_workArea parent)
+void createBattleResultScreen(p_workArea parent)
 {
     FunctionUnimplemented();
 }
 
-s32 battleEngine_UpdateSub7Sub0()
+s32 battleEngine_checkBattleCompletion()
 {
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     if (pBattleEngine->m3B2_numBattleFormationRunning < 1)
@@ -750,8 +747,8 @@ s32 battleEngine_UpdateSub7Sub0()
 
             if ((((pBattleEngine->m230 != 1) && (pBattleEngine->m230 != 3)) && (pBattleEngine->m230 != 5)) && ((pBattleEngine->m230 != 7 && (pBattleEngine->m230 != 8))))
             {
-                pBattleEngine->m188_flags.m8 = 1;
-                battleEngine_UpdateSub7Sub3Sub4(pBattleEngine);
+                pBattleEngine->m188_flags.m8_showingBattleResultScreen = 1;
+                createBattleResultScreen(pBattleEngine);
                 return 1;
             }
 
@@ -768,12 +765,9 @@ s32 battleEngine_UpdateSub7Sub0()
     {
         assert(0);
     }
-    else
+    else if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4)
     {
-        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4)
-        {
-            assert(0);
-        }
+        assert(0);
     }
 
     pBattleEngine->m3B2_numBattleFormationRunning = 0;
@@ -2864,7 +2858,7 @@ void initiateDragonBattleMove(int param1, s16 param2)
 void battleEngine_UpdateSub7(s_battleEngine* pThis)
 {
     battleEngine_ApplyBattleAutoScrollDelta(pThis);
-    if (battleEngine_UpdateSub7Sub0() == 1)
+    if (battleEngine_checkBattleCompletion() == 1)
         return;
     battleEngine_UpdateSub7Sub0Sub1(pThis);
     battleEngine_UpdateSub7Sub0Sub2(pThis);

@@ -294,6 +294,7 @@ s32 readSaturnS32(sSaturnPtr ptr);
 u32 readSaturnU32(sSaturnPtr ptr);
 fixedPoint readSaturnFP(sSaturnPtr ptr);
 sVec3_FP readSaturnVec3(sSaturnPtr ptr);
+sVec2_S16 readSaturnVec2_S16(sSaturnPtr ptr);
 sSaturnPtr readSaturnEA(sSaturnPtr ptr);
 std::string readSaturnString(sSaturnPtr ptr);
 
@@ -885,9 +886,9 @@ struct s_graphicEngineStatus_405C
     fixedPoint m24_heightRatio;
     fixedPoint m28_widthRatio2;
     fixedPoint m2C_widthRatio;
-    fixedPoint m30;
-    fixedPoint m34;
-    fixedPoint m38;
+    fixedPoint m30_oneOverNearClip;
+    fixedPoint m34_oneOverFarClip256;
+    fixedPoint m38_oneOverFarClip;
     u16 VDP1_X1; // 3C
     u16 VDP1_Y1; // 3E
     u16 VDP1_X2; // 40
@@ -930,18 +931,16 @@ struct s_vdp1Packet
 s_vd1ExtendedCommand* createVdp1ExtendedCommand(s_vdp1Command& vd1PacketStart);
 s_vd1ExtendedCommand* fetchVdp1ExtendedCommand(s_vdp1Command& vd1PacketStart);
 
-struct sPerQuadDynamicColor
-{
-    s16 m0[4];
-};
+typedef u16 saturnPackedColor;
+typedef std::array<saturnPackedColor, 4> quadColor;
 
 struct s_vdp1Context
 {
     std::vector<s_vdp1Command>::iterator m0_currentVdp1WriteEA; //0
     std::vector<s_vdp1Command>::iterator m4[2];
     u32 mC; //C
-    std::array<sPerQuadDynamicColor, 1024>::iterator m10; //10
-    std::array<sPerQuadDynamicColor, 1024> m14[2]; //14 this used to be allocated inside of VDP1 memory
+    std::array<quadColor, 1024>::iterator m10; //10
+    std::array<quadColor, 1024> m14[2]; //14 this used to be allocated inside of VDP1 memory
     u32 m1C; //1C
     s_vdp1Packet* m20_pCurrentVdp1Packet; //20
     s_vdp1Packet m24_vdp1Packets[1024]; // 24

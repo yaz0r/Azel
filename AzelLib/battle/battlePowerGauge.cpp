@@ -118,7 +118,7 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
 
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies > 0)
     {
-        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
         {
             if (pThis->m14 != pThis->m0->m0_max)
             {
@@ -232,22 +232,22 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
     }
 }
 
-void drawGaugeVdp1(u16 mode, s16* params, u16 color, fixedPoint depth)
+void drawGaugeVdp1(u16 mode, std::array<sVec2_S16, 4>& params, u16 color, fixedPoint depth)
 {
     s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
     vdp1WriteEA.m0_CMDCTRL = 0x1004; // command 0
     vdp1WriteEA.m4_CMDPMOD = mode | 0x400; // CMDPMOD
     vdp1WriteEA.m6_CMDCOLR = color; // CMDCOLR
-    vdp1WriteEA.mC_CMDXA = params[0]; // CMDXA
-    vdp1WriteEA.mE_CMDYA = -params[1]; // CMDYA
-    vdp1WriteEA.m10_CMDXB = params[2]; // CMDXB
-    vdp1WriteEA.m12_CMDYB = -params[3]; // CMDYB
-    vdp1WriteEA.m14_CMDXC = params[4]; // CMDXC
-    vdp1WriteEA.m16_CMDYC = -params[5]; // CMDYC
-    vdp1WriteEA.m18_CMDXD = params[6]; // CMDXD
-    vdp1WriteEA.m1A_CMDYD = -params[7]; // CMDYD
+    vdp1WriteEA.mC_CMDXA = params[0][0]; // CMDXA
+    vdp1WriteEA.mE_CMDYA = -params[0][1]; // CMDYA
+    vdp1WriteEA.m10_CMDXB = params[1][0]; // CMDXB
+    vdp1WriteEA.m12_CMDYB = -params[1][1]; // CMDYB
+    vdp1WriteEA.m14_CMDXC = params[2][0]; // CMDXC
+    vdp1WriteEA.m16_CMDYC = -params[2][1]; // CMDYC
+    vdp1WriteEA.m18_CMDXD = params[3][0]; // CMDXD
+    vdp1WriteEA.m1A_CMDYD = -params[3][1]; // CMDYD
 
-    fixedPoint computedDepth = depth * graphicEngineStatus.m405C.m38;
+    fixedPoint computedDepth = depth * graphicEngineStatus.m405C.m38_oneOverFarClip;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = computedDepth.getInteger();
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
     graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
@@ -273,16 +273,16 @@ void drawGauge(sVec2_S16& position, s32 maxSize, s32 param3, s32 value, s32 maxV
         }
         if (scaledValue > 0)
         {
-            s16 local_14[8];
-            local_14[0] = position[0] - 0xB0;
-            local_14[2] = scaledValue + position[0] - 0xB0;
-            local_14[1] = 0x70 - position[1];
-            local_14[5] = (-param3 - position[1]) + 0x70;
-            local_14[3] = local_14[1];
-            local_14[4] = local_14[2];
-            local_14[6] = local_14[0];
-            local_14[7] = local_14[5];
-            drawGaugeVdp1(0xC0, local_14, color, 0);
+            std::array<sVec2_S16, 4> gaugeDimensions;
+            gaugeDimensions[0][0] = position[0] - 0xB0;
+            gaugeDimensions[1][0] = scaledValue + position[0] - 0xB0;
+            gaugeDimensions[0][1] = 0x70 - position[1];
+            gaugeDimensions[2][1] = (-param3 - position[1]) + 0x70;
+            gaugeDimensions[1][1] = gaugeDimensions[0][1];
+            gaugeDimensions[2][0] = gaugeDimensions[1][0];
+            gaugeDimensions[3][0] = gaugeDimensions[0][0];
+            gaugeDimensions[3][1] = gaugeDimensions[2][1];
+            drawGaugeVdp1(0xC0, gaugeDimensions, color, 0);
         }
     }
 }
@@ -300,10 +300,10 @@ void battlePowerGauge_drawSub0(battlePowerGauge* pThis)
         vdp1WriteEA.mE_CMDYA = -(-0x52 - gBattleManager->m10_battleOverlay->m20_battleHud->m18_part1Y); // CMDYA
 
         // setup gradient
-        graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = 0xC210;
-        graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = 0xC210;
-        graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = 0xC210;
-        graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = 0xC210;
+        (*graphicEngineStatus.m14_vdp1Context[0].m10)[0] = 0xC210;
+        (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = 0xC210;
+        (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = 0xC210;
+        (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = 0xC210;
         vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
         graphicEngineStatus.m14_vdp1Context[0].m10++;
 
@@ -341,10 +341,10 @@ void battlePowerGauge_drawSub0(battlePowerGauge* pThis)
         vdp1WriteEA.mE_CMDYA = -(-0x52 - gBattleManager->m10_battleOverlay->m20_battleHud->m18_part1Y); // CMDYA
 
         // setup gradient
-        graphicEngineStatus.m14_vdp1Context[0].m10->m0[0] = color;
-        graphicEngineStatus.m14_vdp1Context[0].m10->m0[1] = color;
-        graphicEngineStatus.m14_vdp1Context[0].m10->m0[2] = color;
-        graphicEngineStatus.m14_vdp1Context[0].m10->m0[3] = color;
+        (*graphicEngineStatus.m14_vdp1Context[0].m10)[0] = color;
+        (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = color;
+        (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = color;
+        (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = color;
         vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
         graphicEngineStatus.m14_vdp1Context[0].m10++;
 
@@ -374,7 +374,7 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
         vdp2PrintfSmallFont("COMBO :%1d,%1d", pThis->m0->m16_combo);
     }
 
-    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8)
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
         return;
     }

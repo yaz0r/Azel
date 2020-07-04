@@ -279,9 +279,9 @@ void subfieldA3_0(p_workArea workArea)
             }
 
             graphicEngineStatus.m405C.m14_farClipDistance = 0x2AE000;
-            graphicEngineStatus.m405C.m38 = FP_Div(0x8000, 0x2AE000);
+            graphicEngineStatus.m405C.m38_oneOverFarClip = FP_Div(0x8000, 0x2AE000);
 
-            graphicEngineStatus.m405C.m34 = graphicEngineStatus.m405C.m38 << 8;
+            graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
         }
         else
         {
