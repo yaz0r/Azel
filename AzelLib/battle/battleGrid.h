@@ -50,6 +50,14 @@ struct s_battleGrid : public s_workAreaTemplate<s_battleGrid>
     sVec3_FP m208_lightFalloff2;
     s8 m214;
     s32 m218_fov;
+    sVec3_FP m21C_lightInterpolateCurrentValue;
+    sVec3_FP m228_lightInterpolate2CurrentValue;
+    sVec3_FP m234_lightInterpolateFinalValue;
+    sVec3_FP m240_lightInterpolate2FinalValue;
+    sVec3_FP m24C_lightInterpolateStep;
+    sVec3_FP m258_lightInterpolate2Step;
+    s16 m264_lightInterpolateNumSteps;
+    s16 m266_lightInterpolate2NumSteps;
     fixedPoint m280_lightAngle1;
     fixedPoint m284_lightAngle2;
     std::array<sVec3_FP, 4> m298;

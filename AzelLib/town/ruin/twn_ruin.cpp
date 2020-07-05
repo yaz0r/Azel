@@ -21,7 +21,7 @@ sTownObject* TWN_RUIN_data::createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(
     switch (definitionEA.m_offset)
     {
     case 0x605EA20:
-        return createSiblingTaskWithArgWithCopy<sLockTask>(parent, arg);
+        return createSubTaskWithArgWithCopy<sLockTask>(parent, arg);
     default:
         assert(0);
         break;

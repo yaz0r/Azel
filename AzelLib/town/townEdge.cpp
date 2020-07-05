@@ -12,7 +12,7 @@ void updateEdgeSub3(sEdgeTask* pThis);
 
 sEdgeTask* startEdgeTask(sSaturnPtr r4)
 {
-    return createSiblingTaskWithArgWithCopy<sEdgeTask>(allocateNPC(currentResTask, readSaturnS32(r4)), r4);
+    return createSubTaskWithArgWithCopy<sEdgeTask>(allocateNPC(currentResTask, readSaturnS32(r4)), r4);
 }
 
 void applyAnimation(sModelHierarchy* pNode, std::vector<sPoseData>::iterator& pose)

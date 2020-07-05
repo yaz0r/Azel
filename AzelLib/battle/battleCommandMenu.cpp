@@ -127,13 +127,13 @@ void addObjectToList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
         }
         break;
     case eItems::m5_elixirMinor:
-        if (mainGameState.gameStats.m10_currentHP == mainGameState.gameStats.maxHP)
+        if (mainGameState.gameStats.m10_currentHP == mainGameState.gameStats.mB8_maxHP)
         {
             itemDisabled = true;
         }
         break;
     case eItems::m6_berserkMicro:
-        if (mainGameState.gameStats.m14_currentBP == mainGameState.gameStats.maxBP)
+        if (mainGameState.gameStats.m14_currentBP == mainGameState.gameStats.mBA_maxBP)
         {
             itemDisabled = true;
         }
@@ -411,8 +411,8 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                         pThis->m3_itemMenuOpen = 0;
                         playSystemSoundEffect(4);
                         uVar9 = 1;
-                        pThis->m18_oldDragonAtk = mainGameState.gameStats.dragonAtt;
-                        pThis->m1A_oldDragonDef = mainGameState.gameStats.dragonDef;
+                        pThis->m18_oldDragonAtk = mainGameState.gameStats.mBE_dragonAtt;
+                        pThis->m1A_oldDragonDef = mainGameState.gameStats.mBC_dragonDef;
                         graphicEngineStatus.m40AC.m0_menuId = 3;
                     }
                 }

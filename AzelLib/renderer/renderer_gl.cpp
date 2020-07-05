@@ -1,8 +1,6 @@
 #include "PDS.h"
 #include <bx/platform.h>
 
-#ifdef WITH_GL
-
 //#define IMGUI_API
 //#include "dear-imgui/examples/imgui_impl_sdl.h"
 //#include "dear-imgui/examples/imgui_impl_opengl3.h"
@@ -97,4 +95,3 @@ void SDL_ES3_backend::ImGUI_RenderDrawData(ImDrawData* pDrawData)
     }
 }
 
-#endif

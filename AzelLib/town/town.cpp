@@ -183,7 +183,7 @@ void createEnvironmentTask2(s32 r4, sTownGrid* r14)
             continue;
 
         sSaturnPtr cellData = r14->m38_EnvironmentSetup->cells[r14->m10_currentX+r12][r14->m14_currentY];
-        sTownCellTask* newCellTask = createSiblingTaskWithArgWithCopy<sTownCellTask>(r14->m34_dataBuffer, cellData);
+        sTownCellTask* newCellTask = createSubTaskWithArgWithCopy<sTownCellTask>(r14->m34_dataBuffer, cellData);
         r14->m40_cellTasks[(r14->mC + r4) & 7][(r14->m8 + r12) & 7] = newCellTask;
 
         createCellObjects(r14->m10_currentX + r12, r4 + r14->m14_currentY);

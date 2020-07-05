@@ -375,25 +375,25 @@ struct s_gameStats
     s16 m18_statAxisScale; // 0x18
     s16 m1A_dragonCursorX; //1A
     s16 m1C_dragonCursorY; //1C
-    u32 XP; //20
-    u32 dyne; // 38
-    u32 frameCounter; //3C
+    u32 m20_XP; //20
+    u32 m38_dyne; // 38
+    u32 m3C_frameCounter; //3C
 
     s32 m5C_gunShotFired;
     s32 m60_homingLaserFired;
 
     u32 m70; //70
-
+    u32 m7C_overallRating;
     char m94_playerName[17];
     char mA5_dragonName[17];
-    e_dragonArchetype dragonArchetype;//B6
+    e_dragonArchetype mB6_dragonArchetype;//B6
 
-    s16 maxHP; // B8
-    s16 maxBP; // BA;
-    s16 dragonDef; // BC
-    s16 dragonAtt; // BE
-    s16 dragonAgl; // C0
-    s16 dragonSpr; // C2
+    s16 mB8_maxHP; // B8
+    s16 mBA_maxBP; // BA;
+    s16 mBC_dragonDef; // BC
+    s16 mBE_dragonAtt; // BE
+    s16 mC0_dragonAgl; // C0
+    s16 mC2_dragonSpr; // C2
 };
 
 struct sBitfieldMapEntry

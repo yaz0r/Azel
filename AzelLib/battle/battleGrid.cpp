@@ -266,15 +266,33 @@ void battleGrid_updateSub1(s_battleGrid* pThis)
     }
 }
 
-void battleGrid_updateSub2(s_battleGrid* pThis)
+void battleGrid_updateLightColorInterpolations(s_battleGrid* pThis)
 {
     if (pThis->m1C8_flags & 4)
     {
-        assert(0);
+        if (pThis->m264_lightInterpolateNumSteps-- < 1)
+        {
+            pThis->m1CC_lightColor = pThis->m234_lightInterpolateFinalValue;
+            pThis->m1C8_flags &= ~4;
+        }
+        else
+        {
+            pThis->m21C_lightInterpolateCurrentValue += pThis->m24C_lightInterpolateStep;
+            pThis->m1CC_lightColor = pThis->m21C_lightInterpolateCurrentValue;
+        }
     }
     if (pThis->m1C8_flags & 8)
     {
-        assert(0);
+        if (pThis->m266_lightInterpolate2NumSteps-- < 1)
+        {
+            pThis->m1E4_lightFalloff0 = pThis->m240_lightInterpolate2FinalValue;
+            pThis->m1C8_flags &= ~8;
+        }
+        else
+        {
+            pThis->m228_lightInterpolate2CurrentValue += pThis->m258_lightInterpolate2Step;
+            pThis->m1E4_lightFalloff0 = pThis->m228_lightInterpolate2CurrentValue;
+        }
     }
 }
 
@@ -284,7 +302,7 @@ void battleGrid_update(s_battleGrid* pThis)
 
     battleGrid_updateSub0(pThis);
     battleGrid_updateSub1(pThis);
-    battleGrid_updateSub2(pThis);
+    battleGrid_updateLightColorInterpolations(pThis);
 
     if ((pThis->m1C8_flags & 0x10) && !(pThis->m1C8_flags & 0x40))
     {

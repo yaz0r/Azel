@@ -275,6 +275,10 @@ bgfx::TextureHandle getTextureForQuadBGFX(s_quad& quad)
     u16 textureHeight;
     u32* textureOutput = decodeVdp1Quad(quad, textureWidth, textureHeight);
 
+    if (!textureWidth || !textureHeight)
+    {
+        return BGFX_INVALID_HANDLE;
+    }
     const uint64_t tsFlags = 0
         | BGFX_SAMPLER_U_CLAMP
         | BGFX_SAMPLER_V_CLAMP

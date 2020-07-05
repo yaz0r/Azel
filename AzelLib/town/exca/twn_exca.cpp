@@ -195,7 +195,7 @@ struct TWN_EXCA_data : public sTownOverlay
         {
         case 0x0606628c:
             assert(size == 0xE0);
-            return createSiblingTaskWithArgWithCopy<sExcaEntity0, sSaturnPtr>(parent, arg);
+            return createSubTaskWithArgWithCopy<sExcaEntity0, sSaturnPtr>(parent, arg);
         default:
             assert(0);
             break;

@@ -637,17 +637,6 @@ void NormalSpriteDrawGL(s_vdp1Command* vdp1EA)
             color[3] = 1;
             //color[3] = MappedMemoryReadWord(quads[i].gouraudPointer + 3 * 2);
 
-            //glColor3f(1, 1, 1);
-            checkGL();
-            //                                 if (enableTextures)
-            //                                 {
-            //                                     glEnable(GL_TEXTURE_2D);
-            //                                 }
-            //                                 else
-            //                                 {
-            //                                     glDisable(GL_TEXTURE_2D);
-            //                                 }
-            checkGL();
             {
                 char vertexOrder[4] = { 0, 1, 2, 3 };
 
@@ -841,17 +830,6 @@ void ScaledSpriteDrawGL(s_vdp1Command* vdp1EA)
             color[3] = 1;
             //color[3] = MappedMemoryReadWord(quads[i].gouraudPointer + 3 * 2);
 
-            //glColor3f(1, 1, 1);
-            checkGL();
-            //                                 if (enableTextures)
-            //                                 {
-            //                                     glEnable(GL_TEXTURE_2D);
-            //                                 }
-            //                                 else
-            //                                 {
-            //                                     glDisable(GL_TEXTURE_2D);
-            //                                 }
-            checkGL();
             {
                 char vertexOrder[4] = { 0, 1, 2, 3 };
 

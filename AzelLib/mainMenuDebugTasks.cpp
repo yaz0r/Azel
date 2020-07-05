@@ -80,13 +80,13 @@ void computeDragonSprAndAglFromCursor()
     }
 
     // figure out the dragon archetype
-    mainGameState.gameStats.dragonArchetype = DR_ARCHETYPE_4_SPIRITUAL;
+    mainGameState.gameStats.mB6_dragonArchetype = DR_ARCHETYPE_4_SPIRITUAL;
 
     int cursorX = mainGameState.gameStats.m1A_dragonCursorX;
     if (cursorX < 0)
     {
         cursorX = -cursorX;
-        mainGameState.gameStats.dragonArchetype = DR_ARCHETYPE_2_ATTACK;
+        mainGameState.gameStats.mB6_dragonArchetype = DR_ARCHETYPE_2_ATTACK;
     }
 
     e_dragonArchetype archetypeFromAxisY = DR_ARCHETYPE_3_AGILITY;
@@ -99,7 +99,7 @@ void computeDragonSprAndAglFromCursor()
 
     if (cursorX < 0x400)
     {
-        mainGameState.gameStats.dragonArchetype = DR_ARCHETYPE_0_NORMAL;
+        mainGameState.gameStats.mB6_dragonArchetype = DR_ARCHETYPE_0_NORMAL;
     }
     if (cursorY < 0x400)
     {
@@ -107,20 +107,20 @@ void computeDragonSprAndAglFromCursor()
     }
 
     if (
-        ((mainGameState.gameStats.dragonArchetype != DR_ARCHETYPE_0_NORMAL) || (archetypeFromAxisY != DR_ARCHETYPE_0_NORMAL))
+        ((mainGameState.gameStats.mB6_dragonArchetype != DR_ARCHETYPE_0_NORMAL) || (archetypeFromAxisY != DR_ARCHETYPE_0_NORMAL))
         && (cursorX < cursorY) // more influence by Y than X
         )
     {
-        mainGameState.gameStats.dragonArchetype = archetypeFromAxisY;
+        mainGameState.gameStats.mB6_dragonArchetype = archetypeFromAxisY;
     }
 
     // stats based on Y
-    mainGameState.gameStats.dragonAgl = performDivision(0x2000, (mainGameState.gameStats.m1C_dragonCursorY + 0x800) * statAxisScale);
-    mainGameState.gameStats.dragonDef = (statAxisScale / 2) - mainGameState.gameStats.dragonAgl;
+    mainGameState.gameStats.mC0_dragonAgl = performDivision(0x2000, (mainGameState.gameStats.m1C_dragonCursorY + 0x800) * statAxisScale);
+    mainGameState.gameStats.mBC_dragonDef = (statAxisScale / 2) - mainGameState.gameStats.mC0_dragonAgl;
 
     // stats based on X
-    mainGameState.gameStats.dragonSpr = performDivision(0x2000, (mainGameState.gameStats.m1A_dragonCursorX + 0x800) * statAxisScale);
-    mainGameState.gameStats.dragonAtt = (statAxisScale / 2) - mainGameState.gameStats.dragonSpr;
+    mainGameState.gameStats.mC2_dragonSpr = performDivision(0x2000, (mainGameState.gameStats.m1A_dragonCursorX + 0x800) * statAxisScale);
+    mainGameState.gameStats.mBE_dragonAtt = (statAxisScale / 2) - mainGameState.gameStats.mC2_dragonSpr;
 }
 
 void updateDragonStatsFromLevel()
@@ -129,20 +129,20 @@ void updateDragonStatsFromLevel()
 
     if (gameStats.m1_dragonLevel < DR_LEVEL_8_FLOATER)
     {
-        gameStats.maxHP = gameStats.m12_classMaxHP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxHP;
-        gameStats.maxBP = gameStats.m16_classMaxBP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxBP;
+        gameStats.mB8_maxHP = gameStats.m12_classMaxHP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxHP;
+        gameStats.mBA_maxBP = gameStats.m16_classMaxBP + dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxBP;
     }
     else
     {
-        gameStats.maxHP = dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxHP;
-        gameStats.maxBP = dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxBP;
+        gameStats.mB8_maxHP = dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxHP;
+        gameStats.mBA_maxBP = dragonPerLevelMaxHPBP[gameStats.m1_dragonLevel].maxBP;
     }
 
-    if (gameStats.m10_currentHP > gameStats.maxHP)
-        gameStats.m10_currentHP = gameStats.maxHP;
+    if (gameStats.m10_currentHP > gameStats.mB8_maxHP)
+        gameStats.m10_currentHP = gameStats.mB8_maxHP;
 
-    if (gameStats.m14_currentBP > gameStats.maxBP)
-        gameStats.m14_currentBP = gameStats.maxBP;
+    if (gameStats.m14_currentBP > gameStats.mBA_maxBP)
+        gameStats.m14_currentBP = gameStats.mBA_maxBP;
 
     computeDragonSprAndAglFromCursor();
 }
@@ -1331,6 +1331,16 @@ void loadRider2IfChanged(u32 rider)
     assert(0);
 }
 
+void freeRamResources(p_workArea)
+{
+    FunctionUnimplemented();
+}
+
+void vdp1FreeLastAllocation(p_workArea)
+{
+    FunctionUnimplemented();
+}
+
 void freeRamResource()
 {
     PDS_unimplemented("Unimplemented freeRamResource");
@@ -1355,7 +1365,7 @@ u16 loadFnt(const char* filename)
     return index;
 }
 
-void unloadFnt(const char*)
+void unloadFnt()
 {
     PDS_unimplemented("Unimplemented unloadFnt");
 }
@@ -1515,7 +1525,7 @@ void s_fieldStartOverlayTask::Delete(s_fieldStartOverlayTask* pThis)
 
     if (pFieldDefinition->m_fnt)
     {
-        unloadFnt(pFieldDefinition->m_fnt);
+        unloadFnt();
     }
 
     fieldTaskPtr->m4_overlayTaskData = NULL;
@@ -1622,8 +1632,8 @@ void setupPlayer(u32 fieldIndex)
         assert(false);
     }
 
-    mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.maxHP;
-    mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.maxBP;
+    mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.mB8_maxHP;
+    mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.mBA_maxBP;
 
     freeRamResource();
 }
@@ -2605,7 +2615,7 @@ void s_mainMenuWorkArea::Init(s_mainMenuWorkArea* pWorkArea)
         pWorkArea->m3_menuButtonStates[1] = -1;
     }
 
-    if (mainGameState.gameStats.XP) // defeated monsters menu
+    if (mainGameState.gameStats.m20_XP) // defeated monsters menu
     {
         pWorkArea->m3_menuButtonStates[2] = 1;
     }
@@ -2708,13 +2718,13 @@ void s_statusMenuTaskWorkArea::Draw(s_statusMenuTaskWorkArea* pWorkArea)
     }
 
     vdp2DebugPrintSetPosition(3, 39);
-    vdp2PrintfLargeFont("HP  %4d/%4d", mainGameState.gameStats.m10_currentHP, mainGameState.gameStats.maxHP);
+    vdp2PrintfLargeFont("HP  %4d/%4d", mainGameState.gameStats.m10_currentHP, mainGameState.gameStats.mB8_maxHP);
 
     vdp2DebugPrintSetPosition(3, 41);
-    vdp2PrintfLargeFont("BP  %4d/%4d", mainGameState.gameStats.m14_currentBP, mainGameState.gameStats.maxBP);
+    vdp2PrintfLargeFont("BP  %4d/%4d", mainGameState.gameStats.m14_currentBP, mainGameState.gameStats.mBA_maxBP);
 
     vdp2DebugPrintSetPosition(3, 49);
-    vdp2PrintfLargeFont("DYNE %8d", mainGameState.gameStats.dyne);
+    vdp2PrintfLargeFont("DYNE %8d", mainGameState.gameStats.m38_dyne);
 
     if (mainGameState.gameStats.m1_dragonLevel < DR_LEVEL_8_FLOATER)
     {

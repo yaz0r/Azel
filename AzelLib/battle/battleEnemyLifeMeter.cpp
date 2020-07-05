@@ -11,7 +11,7 @@ void drawGaugeVdp1(u16 mode, std::array<sVec2_S16, 4>& params, u16 color, fixedP
 
 void createEnemyLifeMeterTask_update(sEnemyLifeMeterTask* pThis)
 {
-    //if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1D])
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1D])
     {
         vdp2DebugPrintSetPosition(3, performModulo(10, pThis->m2C_entryIndex) + 10);
         vdp2PrintfSmallFont("no %d hp (%4d,%4d,%d) %d ", pThis->m2C_entryIndex, *pThis->m24, pThis->m1C.toInteger(), pThis->m20.toInteger(), performModulo2(10, randomNumber()));
@@ -125,8 +125,8 @@ void createEnemyLifeMeterTask_update(sEnemyLifeMeterTask* pThis)
 
     if ((pThis->m2C_entryIndex > -1) && (pThis->m31 & 1))
     {
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m474_time += readSaturnS16(gCommonFile.getSaturnPtr(0x201798 + pThis->m2C_entryIndex * 8));
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m478 += readSaturnS16(gCommonFile.getSaturnPtr(0x20179A + pThis->m2C_entryIndex * 8));
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m474_XPReceivedFromBattle += readSaturnS16(gCommonFile.getSaturnPtr(0x201798 + pThis->m2C_entryIndex * 8));
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m478_dyneReceivedFromBattle += readSaturnS16(gCommonFile.getSaturnPtr(0x20179A + pThis->m2C_entryIndex * 8));
         pThis->m31 &= ~1;
     }
 }

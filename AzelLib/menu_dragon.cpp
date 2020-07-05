@@ -264,7 +264,7 @@ void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw(s_drawDragonMenuStat
         drawObjectName("  Floater ");
         break;
     default:
-        drawObjectName(dragonArchetypesNames[mainGameState.gameStats.dragonArchetype]);
+        drawObjectName(dragonArchetypesNames[mainGameState.gameStats.mB6_dragonArchetype]);
         break;
     }
 
@@ -272,25 +272,25 @@ void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw(s_drawDragonMenuStat
     vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 3;
     drawObjectName("ATT PWR");
     vdp2DebugPrintSetPosition(37, 39);
-    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonAtt);
+    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.mBE_dragonAtt);
 
     vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
     vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 6;
     drawObjectName("DEF PWR");
     vdp2DebugPrintSetPosition(37, 42);
-    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonDef);
+    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.mBC_dragonDef);
 
     vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
     vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 9;
     drawObjectName("SPR PWR");
     vdp2DebugPrintSetPosition(37, 45);
-    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonSpr);
+    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.mC2_dragonSpr);
 
     vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
     vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + 12;
     drawObjectName("AGL PWR");
     vdp2DebugPrintSetPosition(37, 48);
-    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.dragonAgl);
+    vdp2PrintfLargeFont("%3d", mainGameState.gameStats.mC0_dragonAgl);
 
     if (mainGameState.gameStats.m1_dragonLevel < 8)
     {

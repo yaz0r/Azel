@@ -439,7 +439,7 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
     tempCoordinates[1] = UIStart[1] + 0x20;
 
     int currentHP = mainGameState.gameStats.m10_currentHP;
-    int maxHP = mainGameState.gameStats.maxHP;
+    int maxHP = mainGameState.gameStats.mB8_maxHP;
     if (currentHP > (maxHP / 4))
     {
         if (currentHP > (maxHP / 2))
@@ -460,7 +460,7 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
     tempCoordinates[0] = UIStart[0] + 0x3F;
     tempCoordinates[1] = UIStart[1] + 0x20;
 
-    drawGauge(tempCoordinates, 0x28, 3, mainGameState.gameStats.m14_currentBP, mainGameState.gameStats.maxBP, 0, 0xFE10);
+    drawGauge(tempCoordinates, 0x28, 3, mainGameState.gameStats.m14_currentBP, mainGameState.gameStats.mBA_maxBP, 0, 0xFE10);
 
     battlePowerGauge_drawSub0(pThis);
 }

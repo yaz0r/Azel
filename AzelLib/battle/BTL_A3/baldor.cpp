@@ -1702,5 +1702,5 @@ sBaldor* createBaldor(s_workAreaCopy* parent, sFormationData* pFormationEntry)
         Baldor_draw,
         nullptr,
     };
-    return createSiblingTaskWithArgWithCopy<sBaldor, sFormationData*>(parent, pFormationEntry, &definition);
+    return createSubTaskWithArgWithCopy<sBaldor, sFormationData*>(parent, pFormationEntry, &definition);
 }

@@ -288,7 +288,7 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
 
             if (uVar7 == 0)
             {
-                if ((mainGameState.gameStats.maxHP / 4) > mainGameState.gameStats.m10_currentHP)
+                if ((mainGameState.gameStats.mB8_maxHP / 4) > mainGameState.gameStats.m10_currentHP)
                 {
                     battleDragon_updateAnimation(pThis, gCurrentBattleOverlay->getSaturnPtr(0x60adf08));
                 }
@@ -299,7 +299,7 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
             }
             else
             {
-                if ((mainGameState.gameStats.maxHP / 4) > mainGameState.gameStats.m10_currentHP)
+                if ((mainGameState.gameStats.mB8_maxHP / 4) > mainGameState.gameStats.m10_currentHP)
                 {
                     battleDragon_updateAnimation(pThis, gCurrentBattleOverlay->getSaturnPtr(0x60ae048));
                 }
@@ -384,7 +384,27 @@ void s_battleDragon_UpdateSub2Sub1Sub1()
     s_battleDragon_InitSub3(pRider2State, offset, 0xF);
 }
 
-void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
+s32 isRiderAnimUpdateNecessary(s_loadRiderWorkArea* pRider)
+{
+    int numFramesInCurrentAnimation;
+    if (pRider->m18_3dModel.m30_pCurrentAnimation == 0)
+    {
+        numFramesInCurrentAnimation = 0;
+    }
+    else
+    {
+        numFramesInCurrentAnimation = pRider->m18_3dModel.m30_pCurrentAnimation->m4_numFrames;
+    }
+
+    if (numFramesInCurrentAnimation - 1 <= pRider->m18_3dModel.m16_previousAnimationFrame)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+void s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
 {
     s32 uVar4 = pThis->m84;
     if (gDragonState->mC_dragonType == 8)
@@ -394,12 +414,37 @@ void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
 
     if (uVar4 & 0x2E00)
     {
-        assert(0);
+        pThis->m1C4 |= 0x80;
+        if (pThis->m84 & 0x200)
+        {
+            s_battleDragon_InitSub3(pRider1State, 0x70, 5);
+        }
+        else if (pThis->m84 & 0x400)
+        {
+            s_battleDragon_InitSub3(pRider1State, 0x74, 5);
+        }
+        else if (pThis->m84 & 0x800)
+        {
+            s_battleDragon_InitSub3(pRider1State, 0x78, 5);
+        }
+        else if (pThis->m84 & 0x2000)
+        {
+            s_battleDragon_InitSub3(pRider1State, 0x80, 5);
+            pThis->m1C4 |= 0x200;
+        }
     }
 
     if (uVar4 & 0x5000)
     {
-        assert(0);
+        pThis->m1C4 |= 0x100;
+        if (pThis->m84 & 0x1000)
+        {
+            s_battleDragon_InitSub3(pRider2State, 0x7c, 5);
+        }
+        else if (pThis->m84 & 0x4000)
+        {
+            s_battleDragon_InitSub3(pRider2State, 0x84, 5);
+        }
     }
 
     if ((pThis->m1C4 & 0x80) == 0)
@@ -426,7 +471,19 @@ void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
     }
     else
     {
-        assert(0);
+        if (isRiderAnimUpdateNecessary(pRider1State))
+        {
+            pThis->m1C4 &= ~0x80;
+            if (pThis->m1C4 & 0x200)
+            {
+                pThis->m1D0 = 5;
+                s_battleDragon_InitSub3(pRider1State, 0x6C, pThis->m1D0);
+            }
+            else
+            {
+                s_battleDragon_UpdateSub2Sub1Sub0();
+            }
+        }
     }
 
     updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
@@ -446,7 +503,11 @@ void     s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
     }
     else
     {
-        assert(0);
+        if (isRiderAnimUpdateNecessary(pRider2State))
+        {
+            pThis->m1C4 &= ~0x100;
+            s_battleDragon_UpdateSub2Sub1Sub1();
+        }
     }
 
     updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
@@ -517,7 +578,7 @@ void s_battleDragon_UpdateSub3(s_battleDragon* pThis)
 
 int computeDragonDamage(int damageValue)
 {
-    fixedPoint computedDamage = MTH_Mul(fixedPoint::fromInteger(damageValue), 0x13333 - MTH_Mul(0x6666, FP_Div(mainGameState.gameStats.dragonDef, 200)));
+    fixedPoint computedDamage = MTH_Mul(fixedPoint::fromInteger(damageValue), 0x13333 - MTH_Mul(0x6666, FP_Div(mainGameState.gameStats.mBC_dragonDef, 200)));
 
     if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x20000)
     {

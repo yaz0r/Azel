@@ -5,6 +5,8 @@
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
 
+void unloadFnt(); // TODO: clean
+
 std::string sBattleOverlayName = "";
 
 battleOverlay* gCurrentBattleOverlay = nullptr;
@@ -48,11 +50,11 @@ static void battleOverlayTask_Draw(sBattleOverlayTask* pThis)
     case 1:
         sBattleOverlayName = gCommonFile.battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m4_prg;
         loadFnt("ITEM.FNT");
-        pThis->m2++;
+        pThis->m2_numLoadedFnt++;
         {
             std::string customFontName = gCommonFile.battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m8_fnt;
             loadFnt(customFontName.c_str());
-            pThis->m2++;
+            pThis->m2_numLoadedFnt++;
             if (sBattleOverlayName == std::string("BTL_A3.PRG"))
             {
                 overlayStart_BTL_A3(pThis);
@@ -73,7 +75,18 @@ static void battleOverlayTask_Draw(sBattleOverlayTask* pThis)
 
 static void battleOverlayTask_Delete(sBattleOverlayTask* pThis)
 {
-    FunctionUnimplemented();
+    while (pThis->m2_numLoadedFnt--)
+    {
+        unloadFnt();
+    }
+    if (pThis->m3)
+    {
+        titleScreenDrawSub3(1);
+    }
+
+    freeRamResources(gBattleManager->m10_battleOverlay);
+    vdp1FreeLastAllocation(gBattleManager->m10_battleOverlay);
+    gBattleManager->m10_battleOverlay = nullptr;
 }
 
 p_workArea createBattleOverlayTask(sBattleManager* pParent)

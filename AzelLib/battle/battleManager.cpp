@@ -130,6 +130,13 @@ static int loadBattleOverlay_debug(sBattleManager* pThis)
     return 1;
 }
 
+void battleManager_battleFinished(sBattleManager* pThis)
+{
+    terminateCurrentBattle(pThis->m10_battleOverlay);
+    graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
+    pauseEngine[2] = 0;
+}
+
 static void battleManager_Update(sBattleManager* pThis)
 {
     switch (pThis->m0_status)
@@ -146,6 +153,13 @@ static void battleManager_Update(sBattleManager* pThis)
         pThis->m0_status = 1;
         break;
     case 3: // battle running
+        break;
+    case 4: // end of battle
+        battleManager_battleFinished(pThis);
+        pThis->m0_status = 1;
+        break;
+    case 5:
+        pThis->m0_status = 0;
         break;
     default:
         assert(0);

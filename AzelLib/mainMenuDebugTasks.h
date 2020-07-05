@@ -92,6 +92,8 @@ p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg);
 void updateDragonStatsFromLevel();
 
 void freeRamResource();
+void freeRamResources(p_workArea);
+void vdp1FreeLastAllocation(p_workArea);
 p_workArea loadField(p_workArea r4, s32 r5);
 void setOpenMenu7();
 

@@ -523,7 +523,7 @@ void loadDragon(s_workArea* pWorkArea)
 
     gDragonState->m10_cursorX = mainGameState.gameStats.m1A_dragonCursorX;
     gDragonState->m12_cursorY = mainGameState.gameStats.m1C_dragonCursorY;
-    gDragonState->m1C_dragonArchetype = mainGameState.gameStats.dragonArchetype;
+    gDragonState->m1C_dragonArchetype = mainGameState.gameStats.mB6_dragonArchetype;
 
     s_loadDragonWorkArea* pLoadDragonWorkArea = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
     const sDragonData3* pDragonData3 = &dragonData3[mainGameState.gameStats.m1_dragonLevel];

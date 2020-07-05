@@ -515,7 +515,7 @@ void battleGrid_createCell(s32 index, sTownGrid* pGrid)
         sSaturnPtr cellData = pGrid->m38_EnvironmentSetup->cells[uVar4][uVar5];
 
         static const sTownCellTask::TypedTaskDefinition definition = { sBattleEnvironmentGridCell_Init , nullptr, sBattleEnvironmentGridCell_Draw, nullptr};
-        sTownCellTask* newCellTask = createSiblingTaskWithArgWithCopy<sTownCellTask>(pGrid->m34_dataBuffer, cellData, &definition);
+        sTownCellTask* newCellTask = createSubTaskWithArgWithCopy<sTownCellTask>(pGrid->m34_dataBuffer, cellData, &definition);
         pGrid->m40_cellTasks[(pGrid->mC + index) & 7][(pGrid->m8 + i) & 7] = newCellTask;
 
         newCellTask->mC_position[0] += offsetX;

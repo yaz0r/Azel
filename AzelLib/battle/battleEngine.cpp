@@ -14,6 +14,7 @@
 #include "battleCommandMenu.h"
 #include "battleDebug.h"
 #include "battleTextDisplay.h"
+#include "battleResultScreen.h"
 #include "gunShotRootTask.h"
 #include "homingLaser.h"
 #include "kernel/debug/trace.h"
@@ -490,8 +491,8 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     g_fadeControls.m_4D = 5;
 
-    pThis->m474_time = 0;
-    pThis->m478 = 0;
+    pThis->m474_XPReceivedFromBattle = 0;
+    pThis->m478_dyneReceivedFromBattle = 0;
     pThis->m47C_exp = 0;
     pThis->m480.fill(-1);
     pThis->m190.fill(0);
@@ -706,11 +707,6 @@ void battleEngine_UpdateSub7Sub3()
         pBattleEngine->m3D8_pDesiredCameraPosition = &pBattleEngine->mC_battleCenter;
         battleEngine_UpdateSub7Sub3Sub0();
     }
-}
-
-void createBattleResultScreen(p_workArea parent)
-{
-    FunctionUnimplemented();
 }
 
 s32 battleEngine_checkBattleCompletion()
@@ -2840,7 +2836,7 @@ s32 battleEngine_UpdateSub7Sub4()
 
 s32 getDragonAgilityForMove(s16 param)
 {
-    return MTH_Mul(0x10000, MTH_Mul(param * 0x10000, 0x18000 - MTH_Mul(0x10000, FP_Div(mainGameState.gameStats.dragonAgl, 200)))+ 0x8000).getInteger();
+    return MTH_Mul(0x10000, MTH_Mul(param * 0x10000, 0x18000 - MTH_Mul(0x10000, FP_Div(mainGameState.gameStats.mC0_dragonAgl, 200)))+ 0x8000).getInteger();
 }
 
 void initiateDragonBattleMove(int param1, s16 param2)
@@ -3067,9 +3063,23 @@ void battleEngine_Draw(s_battleEngine* pThis)
     FunctionUnimplemented();
 }
 
+void battleEngine_postBattleUpdateHPBP()
+{
+    if (mainGameState.gameStats.m10_currentHP < 1) {
+        mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.mB8_maxHP;
+        mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.mBA_maxBP;
+    }
+    if (10000 < mainGameState.gameStats.mB8_maxHP) {
+        mainGameState.gameStats.mB8_maxHP = 9999;
+    }
+    if (1000 < mainGameState.gameStats.mBA_maxBP) {
+        mainGameState.gameStats.mBA_maxBP = 999;
+    }
+}
+
 void battleEngine_Delete(s_battleEngine* pThis)
 {
-    FunctionUnimplemented();
+    battleEngine_postBattleUpdateHPBP();
 }
 
 s32 BattleEngineSub0_UpdateSub0()
@@ -3089,5 +3099,6 @@ p_workArea createBattleEngineTask(p_workArea parent, sSaturnPtr battleData)
         &battleEngine_Draw,
         &battleEngine_Delete,
     };
-    return createSiblingTaskWithArg<s_battleEngine>(parent, battleData, &definition);
+    //TODO this should have been createSubTaskWithArgWithCopy, but parent class doesn't have a copy, so it's probably a bug
+    return createSubTaskWithArg<s_battleEngine>(parent, battleData, &definition);
 }

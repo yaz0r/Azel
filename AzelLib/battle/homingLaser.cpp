@@ -278,7 +278,7 @@ void sHomingLaserTask_UpdateSub0(sHomingLaserTask* pThis)
 
 s32 sHomingLaserTask_UpdateSub1(s16 param_1)
 {
-    s32 iVar1 = FP_Div((int)(short)mainGameState.gameStats.dragonAtt, 200);
+    s32 iVar1 = FP_Div((int)(short)mainGameState.gameStats.mBE_dragonAtt, 200);
     iVar1 = MTH_Mul(0x9999, iVar1);
     iVar1 = MTH_Mul((int)param_1 << 0x10, iVar1 + 0xb333);
     s32 iVar2 = FP_Div(iVar1 + 0x8000, 0xa0000);
@@ -680,7 +680,7 @@ void homingLaserRootTask_Update(sHomingLaserRootTask* pThis)
                     pThis->m8_individualLaser[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable;
                     pThis->m8_individualLaser[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
                     pThis->m8_individualLaser[i].m8_pLaserId = i;
-                    createSiblingTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8_individualLaser[i], &homingLaserDefinition);
+                    createSubTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8_individualLaser[i], &homingLaserDefinition);
                 }
             }
             else
@@ -691,7 +691,7 @@ void homingLaserRootTask_Update(sHomingLaserRootTask* pThis)
                     pThis->m8_individualLaser[i].m0_targetable = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[0]->m4_targetable;
                     pThis->m8_individualLaser[i].m4_pLaserSource = &gBattleManager->m10_battleOverlay->m18_dragon->mFC_hotpoints[2];
                     pThis->m8_individualLaser[i].m8_pLaserId = i;
-                    createSiblingTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8_individualLaser[i], &homingLaserDefinition);
+                    createSubTaskWithArgWithCopy<sHomingLaserTask, sHomingLaserRootTask::sHomingLaserRootTask_sub*>(pThis, &pThis->m8_individualLaser[i], &homingLaserDefinition);
                 }
             }
         }

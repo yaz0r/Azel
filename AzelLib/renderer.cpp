@@ -149,8 +149,6 @@ void azelSdl2_Init()
 #endif
 
     imguiCreate();
-
-    checkGL();
 }
 
 bgfx::TextureHandle getTextureForLayerBgfx(eLayers layerIndex)
@@ -336,7 +334,6 @@ void azelSdl2_StartFrame()
     }
 
 #ifndef USE_NULL_RENDERER
-    checkGL();
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -499,16 +496,12 @@ void azelSdl2_StartFrame()
         }
     }
 
-    checkGL();
-
     if (!isShipping())
     {
         //gBackend->ImGUI_NewFrame();
         
         imguiBeginFrame(gUIState.mousex, gUIState.mousey, gUIState.mousedown, 0, internalResolution[0], internalResolution[1]);
     }
-    
-    checkGL();
 #endif
 }
 
@@ -1828,8 +1821,6 @@ bool azelSdl2_EndFrame()
         }
     }
 
-    checkGL();
-
     if(!isShipping())
     {
 #if !defined(SHIPPING_BUILD)
@@ -1860,9 +1851,7 @@ bool azelSdl2_EndFrame()
 #endif
     }
     
-    
-    checkGL();
-    
+
     static bool bImguiEnabled = false;
 
 #ifndef USE_NULL_RENDERER

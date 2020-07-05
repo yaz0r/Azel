@@ -1106,9 +1106,6 @@ void loopIteration()
             audioInitialized = true;
         }
 
-        checkGL();
-        
-
         endOfFrame();
 
         //copySMPCOutputStatus();
@@ -1157,8 +1154,6 @@ void loopIteration()
         updateSound();
 
         //lastUpdateFunction();
-
-        checkGL();
     }
 
     audioDebug();

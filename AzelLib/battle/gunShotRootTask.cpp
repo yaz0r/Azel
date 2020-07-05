@@ -133,9 +133,9 @@ s32 sGunShotTask_UpdateSub0(sVec3_FP* param1, sVec3_FP* param2, sVec3_FP* param3
 
 void increateBP(s32 param_1)
 {
-    if (mainGameState.gameStats.maxBP < mainGameState.gameStats.m14_currentBP + param_1)
+    if (mainGameState.gameStats.mBA_maxBP < mainGameState.gameStats.m14_currentBP + param_1)
     {
-        mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.maxBP;
+        mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.mBA_maxBP;
     }
     else
     {
@@ -168,7 +168,7 @@ s32 sGunShotTask_UpdateSub1Sub0(sBattleTargetable* pTargetable, s32 param_2)
             }
             iVar1 = gBattleManager->m10_battleOverlay->m4_battleEngine->m3A6_numGunShots << 0x14;
         }
-        iVar1 = FP_Div(fixedPoint::fromInteger(mainGameState.gameStats.maxBP), iVar1);
+        iVar1 = FP_Div(fixedPoint::fromInteger(mainGameState.gameStats.mBA_maxBP), iVar1);
         increateBP(fixedPoint::toInteger(iVar1 + 0x8000));
     }
 
@@ -584,7 +584,7 @@ void sGunShotRootTask_Update(sGunShotRootTask* pThis)
         args.m0 = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->mD4_currentSelectedEnemy]->m4_targetable;
         args.m4 = &gBattleManager->m10_battleOverlay->m18_dragon->mF0;
         args.mE = 6;
-        createSiblingTaskWithArgWithCopy<sGunShotTask>(gBattleManager->m10_battleOverlay->m4_battleEngine, &args, &gunShotDefinition);
+        createSubTaskWithArgWithCopy<sGunShotTask>(gBattleManager->m10_battleOverlay->m4_battleEngine, &args, &gunShotDefinition);
         break;
     default:
         assert(0);

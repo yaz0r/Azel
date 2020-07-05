@@ -60,28 +60,6 @@ extern SoLoud::Soloud gSoloud;
 #include <unordered_map>
 #include <algorithm>
 
-void checkGLImpl(const char*, unsigned int line);
-//#define checkGL() checkGLImpl(__FILE__, __LINE__);
-#define checkGL()
-
-#if (defined(__ANDROID__)) || (defined(__EMSCRIPTEN__))
-    #define USE_GL_ES3
-    #define WITH_GL
-#else
-    #if (defined(__APPLE__) && (TARGET_OS_IOS || TARGET_OS_TV))
-        #define USE_GL_ES3
-        #define GLES_SILENCE_DEPRECATION
-        #define WITH_GL
-        //#define WITH_VK
-    #elif (defined(__APPLE__) && TARGET_OS_WATCH)
-        #define USE_NULL_RENDERER
-    #else
-        #define USE_GL
-        //#define WITH_VK
-        #define WITH_GL
-    #endif
-#endif
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif

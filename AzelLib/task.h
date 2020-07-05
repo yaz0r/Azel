@@ -191,6 +191,7 @@ struct s_task
     s_task* m0_pNextTask;
     s_task* m4_pSubTask;
     u32 m14_flags;
+    // size 0x18
     const char* m_taskName;
 
     s_workArea* m_workArea;
@@ -334,9 +335,9 @@ T* createSiblingTaskWithArg(p_workArea parentTask, argType arg, const typename T
 }
 
 template<typename T, typename argType>
-T* createSiblingTaskWithArgWithCopy(s_workAreaCopy* parentTask, argType arg, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
+T* createSubTaskWithArgWithCopy(s_workAreaCopy* parentTask, argType arg, const typename T::TypedTaskDefinition* pTypeTaskDefinition = T::getTypedTaskDefinition())
 {
-    T* pNewTask = static_cast<T*>(createSiblingTaskWithArg(parentTask, new T));
+    T* pNewTask = static_cast<T*>(createSubTaskWithArg(parentTask, new T));
     pNewTask->m_UpdateMethod = pTypeTaskDefinition->m_pUpdate;
     pNewTask->m_DrawMethod = pTypeTaskDefinition->m_pDraw;
     pNewTask->m_DeleteMethod = pTypeTaskDefinition->m_pDelete;
@@ -369,6 +370,16 @@ T* createSiblingTask(p_workArea parentTask, const typename T::TypedTaskDefinitio
         //((pNewTask)->*(pTypeTaskDefinition->m_pInit))(arg);
     }
     PDS_CategorizedLog(eLogCategories::log_task, "Created task %s\n", T::getTaskName());
+    return pNewTask;
+}
+
+template<typename T>
+T* createSiblingTaskFromFunction(p_workArea parentTask, typename T::FunctionType UpdateFunction)
+{
+    T* pNewTask = static_cast<T*>(createSiblingTaskWithArg(parentTask, new T));
+    pNewTask->m_UpdateMethod = UpdateFunction;
+    pNewTask->getTask()->m_taskName = T::getTaskName();
+    PDS_CategorizedLog(eLogCategories::log_task, "Created task (from function) %s\n", T::getTaskName());
     return pNewTask;
 }
 

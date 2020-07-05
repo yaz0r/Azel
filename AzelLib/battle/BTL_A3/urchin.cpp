@@ -531,7 +531,7 @@ void createUrchin(sGenericFormationPerTypeData* pConfig, sBTL_A3_UrchinFormation
         Urchin_delete,
     };
 
-    sUrchin* pNewTask = createSiblingTaskWithArgWithCopy<sUrchin>(dramAllocatorEnd[pConfig->m1_fileBundleIndex].mC_fileBundle, pConfig, &definition);
+    sUrchin* pNewTask = createSubTaskWithArgWithCopy<sUrchin>(dramAllocatorEnd[pConfig->m1_fileBundleIndex].mC_fileBundle, pConfig, &definition);
 
     pNewTask->mD0 = &param2;
     pNewTask->mAE = param3;

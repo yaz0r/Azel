@@ -66,8 +66,8 @@ void initNewGameState()
 
     updateDragonStatsFromLevel();
 
-    mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.maxHP;
-    mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.maxBP;
+    mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.mB8_maxHP;
+    mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.mBA_maxBP;
 
     strcpy(mainGameState.gameStats.mA5_dragonName, "Dragon");
 
@@ -176,7 +176,7 @@ void moduleManager_Init(s_moduleManager* pWorkArea, s32 menuID)
 
 void moduleManager_Update(s_moduleManager*)
 {
-    mainGameState.gameStats.frameCounter += vblankData.mC_numFramesPresented;
+    mainGameState.gameStats.m3C_frameCounter += vblankData.mC_numFramesPresented;
 }
 
 s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)

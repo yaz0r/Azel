@@ -292,8 +292,8 @@ void battleEngine_CreateHud1(npcFileDeleter* parent)
     pNewTask->m22[0] = 0x66;
     pNewTask->m22[1] = 0xb3;
 
-    createBattleHPOrBpDisplayTask(parent, &mainGameState.gameStats.m10_currentHP, &mainGameState.gameStats.maxHP, &pNewTask->m1E, 1);
-    createBattleHPOrBpDisplayTask(parent, &mainGameState.gameStats.m14_currentBP, &mainGameState.gameStats.maxBP, &pNewTask->m22, 0);
+    createBattleHPOrBpDisplayTask(parent, &mainGameState.gameStats.m10_currentHP, &mainGameState.gameStats.mB8_maxHP, &pNewTask->m1E, 1);
+    createBattleHPOrBpDisplayTask(parent, &mainGameState.gameStats.m14_currentBP, &mainGameState.gameStats.mBA_maxBP, &pNewTask->m22, 0);
     createPowerGaugeTask(parent, &pNewTask->m16_part1X, 0);
 
     pNewTask->m0 = 0;

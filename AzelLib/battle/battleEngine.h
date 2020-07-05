@@ -168,8 +168,8 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     fixedPoint m448;
     std::array<fixedPoint, 4> m45C_perQuadrantDragonSpeed;
     sVec2_FP m46C_dragon2dSpeed;
-    s32 m474_time;
-    s32 m478;
+    s32 m474_XPReceivedFromBattle;
+    s32 m478_dyneReceivedFromBattle;
     s32 m47C_exp;
     std::array<s16, 2> m480;
     std::array<s16, 10> m484;
@@ -205,4 +205,8 @@ bool battleEngine_UpdateSub7Sub0Sub2Sub0();
 void battleEngine_FlagQuadrantBitForSafety(u16 uParm1);
 void battleEngine_FlagQuadrantBitForDanger(u16 uParm1);
 
+void battleEngine_InitSub2(s_battleEngine* pThis);
+void battleEngine_UpdateSub7Sub2();
+
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);
+
