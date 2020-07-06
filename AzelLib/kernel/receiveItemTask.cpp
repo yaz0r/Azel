@@ -47,7 +47,11 @@ static void s_receivedItemTask_DisplayReceivedObject(s_receivedItemTask* pThis)
 
 static void s_receivedItemTask_DeleteSub0(s_receivedItemTask* pThis)
 {
-    FunctionUnimplemented();
+    setupVDP2StringRendering(pThis->m14_x + 6, pThis->m16_y + 1, pThis->m1A_width - 10, pThis->m1C_height - 2);
+    clearVdp2TextArea();
+    vdp2DebugPrintSetPosition(pThis->m14_x + 4, pThis->m16_y + 1);
+    clearVdp2TextLargeFont();
+    clearBlueBox(pThis->m14_x, pThis->m16_y, pThis->m1A_width, pThis->m1C_height);
 }
 
 void s_receivedItemTask::Update(s_receivedItemTask* pThis)
@@ -62,27 +66,27 @@ void s_receivedItemTask::Update(s_receivedItemTask* pThis)
         pThis->m0++;
         break;
     case 2:
-        if (pThis->m2 == 0)
+        switch(pThis->m2_subMode)
         {
-            if (--pThis->mA <= 0)
+        case 0:
+            if (--pThis->mA < 1)
             {
                 pThis->m0++;
-                break;
+                return;
             }
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xF)
             {
-                if (readKeyboardToggle(0x87))
+                if (!readKeyboardToggle(0x87))
                 {
                     return;
                 }
+                pThis->m0++;
             }
-            pThis->m0++;
             break;
-        }
-        else
-        {
+        default:
             assert(0);
         }
+        break;
     case 3:
         pThis->m0++;
         break;
@@ -126,7 +130,7 @@ s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedIt
     {
         pNewTask->m0 = 0;
         pNewTask->mA = r6;
-        pNewTask->m2 = 0;
+        pNewTask->m2_subMode = 0;
     }
     else
     {

@@ -12,7 +12,7 @@ struct s_receivedItemTask : s_workAreaTemplate<s_receivedItemTask>
     static void Delete(s_receivedItemTask*);
 
     s8 m0;
-    s8 m2;
+    s8 m2_subMode;
     s16 mA;
     s_receivedItemTask** m10;
     s16 m14_x;
