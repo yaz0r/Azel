@@ -166,13 +166,15 @@ void initVDP1Projection(fixedPoint fov, u32 mode)
 {
     {
         float fValueInRad = fov.toFloat() * ((glm::pi<float>() / 2.f) / 1024.f);
-        float fValueInDegree = glm::degrees<float>(fValueInRad);
+        float fValueInDegree = glm::degrees<float>(fValueInRad) * 2;
         RendererSetFov(fValueInDegree);
     }
     u32 angle = fov.getInteger();
 
     fixedPoint sin = getSin(angle);
     fixedPoint cos = getCos(angle);
+
+    float fSin = sin.toFloat();
 
     s32 VDP1_Width = graphicEngineStatus.m405C.VDP1_X2 - graphicEngineStatus.m405C.VDP1_X1;
 
@@ -237,8 +239,8 @@ void initVDP1()
     graphicEngineStatus.m405C.VDP1_X2 = 352;
     graphicEngineStatus.m405C.VDP1_Y2 = 224;
 
-    graphicEngineStatus.m405C.m44_localCoordinatesX = 176;
-    graphicEngineStatus.m405C.m46_localCoordinatesY = 112;
+    graphicEngineStatus.m405C.m44_localCoordinatesX = 352 / 2;
+    graphicEngineStatus.m405C.m46_localCoordinatesY = 224 / 2;
 
     graphicEngineStatus.m405C.m10_nearClipDistance = 0x999;
     graphicEngineStatus.m405C.m30_oneOverNearClip = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
@@ -252,12 +254,13 @@ void initVDP1()
     graphicEngineStatus.m405C.m2 = -242;
     graphicEngineStatus.m405C.m4 = -326;
     graphicEngineStatus.m405C.m6 = 326;
-    graphicEngineStatus.m405C.m8 = 0x70;
-    graphicEngineStatus.m405C.mA = -112;
-    graphicEngineStatus.m405C.mC = -176;
-    graphicEngineStatus.m405C.mE = 176;
 
-    initVDP1Projection(0x1C71C71, 0);
+    graphicEngineStatus.m405C.m8 = 224 / 2;
+    graphicEngineStatus.m405C.mA = -(224 / 2);
+    graphicEngineStatus.m405C.mC = -(352 / 2);
+    graphicEngineStatus.m405C.mE = (352 / 2);
+
+    initVDP1Projection(DEG_80 / 2, 0);
 
     mainContextVdp1[0].resize(1024);
     mainContextVdp1[1].resize(1024);
@@ -288,9 +291,9 @@ void initVDP1()
         newCommand.m4_CMDPMOD = 0xC0;
         newCommand.m6_CMDCOLR = 0;
         newCommand.mC_CMDXA = -176;
-        newCommand.mE_CMDYA = 79;
+        newCommand.mE_CMDYA = 73;
         newCommand.m10_CMDXB = 175;
-        newCommand.m12_CMDYB = 79;
+        newCommand.m12_CMDYB = 73;
         newCommand.m14_CMDXC = 175;
         newCommand.m16_CMDYC = 112;
         newCommand.m18_CMDXD = -176;

@@ -336,7 +336,7 @@ glm::mat4 getViewMatrix()
     return MatrixToGLM(matrixStack[0]);
 }
 
-float fov = 40.f;
+float fov = 80.f;
 void RendererSetFov(float fovInDegree)
 {
     fov = fovInDegree;
@@ -373,17 +373,27 @@ glm::mat4 getProjectionMatrix()
     fEarlyProjectionMatrix[14] = 1.f;
     fEarlyProjectionMatrix[15] = 0;
 
-    transposeMatrix(fEarlyProjectionMatrix);
-#else
+    //transposeMatrix(fEarlyProjectionMatrix);
 
-    glm::mat4 testProj = glm::perspectiveFov(glm::radians(50.f), 352.f, 224.f, zNear, zFar);
+    glm::mat4 testProj;
     for (int i = 0; i < 4; i++)
     {
         for (int j = 0; j < 4; j++)
         {
-            fEarlyProjectionMatrix[i * 4 + j] = testProj[i][j];
+            testProj[i][j] = fEarlyProjectionMatrix[i * 4 + j];
         }
     }
+#else
+
+    static float currentFov = 59.f;
+    glm::mat4 testProj = glm::perspectiveFov(glm::radians(currentFov), 4.f, 3.f, zNear, zFar);
+
+    testProj[0][0] = graphicEngineStatus.m405C.m18_widthScale / (352.f / 2.f);
+    testProj[1][1] = graphicEngineStatus.m405C.m1C_heightScale / (224.f / 2.f);
+    testProj[2][2] = (zFar + zNear) / (zFar - zNear);
+    testProj[2][3] = 1.f;
+    testProj[3][2] = -2 * (zFar * zNear) / (zFar - zNear);
+
 #endif
     return testProj;
 }

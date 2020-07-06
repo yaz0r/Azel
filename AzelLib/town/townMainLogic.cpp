@@ -14,7 +14,7 @@ void mainLogicDummy(struct sMainLogic*)
 
 void mainLogicInitSub2()
 {
-    initVDP1Projection(0x1C71C71, 0);
+    initVDP1Projection(DEG_80 / 2, 0);
 }
 
 void sMainLogic::Init(sMainLogic* pThis)

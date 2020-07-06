@@ -321,3 +321,6 @@ fixedPoint MulVec2(const sVec2_FP& r4, const sVec2_FP& r5);
 void adjustMatrixTranslation(fixedPoint r4);
 
 s32 udivsi3(s32 r0, s32 r1);
+
+#define DEG_80 (0x038e38e2)
+#define DEG_50 (0x0238e38e)

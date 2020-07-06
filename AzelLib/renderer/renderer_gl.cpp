@@ -41,7 +41,7 @@ bool SDL_ES3_backend::init()
     flags |= SDL_WINDOW_FULLSCREEN;
 #endif
 
-    int resolution[2] = { 1280, 814 };
+    int resolution[2] = { 1280, 960 };
 
     gWindowBGFX = SDL_CreateWindow("BGFX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution[0], resolution[1], flags);
 

@@ -8,16 +8,16 @@
 #include "town/town.h" // todo: clean
 #include "kernel/debug/trace.h"
 
-void battleGrid_initSub0()
+void battleGrid_initSub0(fixedPoint fov)
 {
-    gBattleManager->m10_battleOverlay->m8_gridTask->m218_fov = 0x11c71c7;
+    gBattleManager->m10_battleOverlay->m8_gridTask->m218_halfFov = fov / 2;
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x20;
 }
 
 void battleGrid_initSub1(s_battleGrid* pThis)
 {
     pThis->m214 = 0;
-    battleGrid_initSub0();
+    battleGrid_initSub0(DEG_50); // 50 deg
 }
 
 void battleGrid_init(s_battleGrid* pThis)
@@ -377,7 +377,7 @@ void battleGrid_draw(s_battleGrid* pThis)
 
     if (pThis->m1C8_flags & 0x20)
     {
-        initVDP1Projection(pThis->m218_fov, 0);
+        initVDP1Projection(pThis->m218_halfFov, 0);
         pThis->m1C8_flags &= ~0x20;
     }
 

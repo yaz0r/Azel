@@ -25,7 +25,8 @@ bool useVDP1GL = true;
 
 SoLoud::Soloud gSoloud; // Engine core
 
-int internalResolution[2] = { 1024, 720 };
+int outputResolution[2] = { 1024, 814 };
+int internalResolution[2] = { 352, 224 };
 
 bgfx::FrameBufferHandle gBGFXVdp1PolyFB = BGFX_INVALID_HANDLE;
 bgfx::TextureHandle vdp1BufferTexture = BGFX_INVALID_HANDLE;
@@ -302,19 +303,22 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
 void azelSdl2_StartFrame()
 {
     int oldResolution[2];
-    oldResolution[0] = internalResolution[0];
-    oldResolution[1] = internalResolution[1];
+    oldResolution[0] = outputResolution[0];
+    oldResolution[1] = outputResolution[1];
 
-    SDL_GetWindowSize(gWindowBGFX, &internalResolution[0], &internalResolution[1]);
+    SDL_GetWindowSize(gWindowBGFX, &outputResolution[0], &outputResolution[1]);
 
-    if ((oldResolution[0] != internalResolution[0]) || (oldResolution[1] != internalResolution[1]))
+    if ((oldResolution[0] != outputResolution[0]) || (oldResolution[1] != outputResolution[1]))
     {
-        bgfx::reset(internalResolution[0], internalResolution[1]);
+        bgfx::reset(outputResolution[0], outputResolution[1]);
 
         if (bgfx::isValid(gBGFXVdp1PolyFB))
         {
             bgfx::destroy(gBGFXVdp1PolyFB);
         }
+
+        internalResolution[0] = outputResolution[0];
+        internalResolution[1] = outputResolution[0] * (3.f / 4.f);
 
         // setup vdp1 Poly
         const uint64_t tsFlags = 0
@@ -500,7 +504,7 @@ void azelSdl2_StartFrame()
     {
         //gBackend->ImGUI_NewFrame();
         
-        imguiBeginFrame(gUIState.mousex, gUIState.mousey, gUIState.mousedown, 0, internalResolution[0], internalResolution[1]);
+        imguiBeginFrame(gUIState.mousex, gUIState.mousey, gUIState.mousedown, 0, outputResolution[0], outputResolution[1]);
     }
 #endif
 }

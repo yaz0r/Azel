@@ -49,7 +49,7 @@ struct s_battleGrid : public s_workAreaTemplate<s_battleGrid>
     sVec3_FP m1FC_lightFalloff1;
     sVec3_FP m208_lightFalloff2;
     s8 m214;
-    s32 m218_fov;
+    s32 m218_halfFov;
     sVec3_FP m21C_lightInterpolateCurrentValue;
     sVec3_FP m228_lightInterpolate2CurrentValue;
     sVec3_FP m234_lightInterpolateFinalValue;

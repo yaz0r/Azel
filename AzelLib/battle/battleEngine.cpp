@@ -475,8 +475,8 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 
     executeFuncPtr(readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 + 8), pThis);
 
-    resetCamera(0, 0, 0x160, 0xe0, 0xb0, 0x70);
-    initVDP1Projection(0x1c71c71, 0);
+    resetCamera(0, 0, 352, 224, 352/2, 224/2);
+    initVDP1Projection(DEG_80 / 2, 0);
     setupVdp1LocalCoordinatesAndClipping();
 
     g_fadeControls.m_4D = 6;

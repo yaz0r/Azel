@@ -4251,7 +4251,7 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 
     dragonFieldTaskInitSub2Sub4(&pWorkArea->m48);
 
-    pWorkArea->m1CC_fieldOfView = 0x38E38E3; // field of view
+    pWorkArea->m1CC_fieldOfView = DEG_80; // field of view
     pWorkArea->m234 = 0;
 
     pWorkArea->m21C_DragonSpeedValues[0] = 0;
