@@ -2,6 +2,7 @@
 #include "items.h"
 #include "audio/soundDriver.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldRadar.h"
 
 // Conana's nest
 
@@ -103,7 +104,7 @@ void subfieldA3_3(p_workArea workArea)
 
     adjustVerticalLimits(-0x5C000, 0x76000);
 
-    subfieldA3_1_Sub0();
+    fieldRadar_enableAltitudeGauge();
 
     getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
 

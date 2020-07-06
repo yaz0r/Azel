@@ -3,6 +3,7 @@
 #include "items.h"
 #include "audio/soundDriver.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldRadar.h"
 
 void fieldA3_2_exit0(p_workArea, sLCSTarget*)
 {
@@ -191,7 +192,7 @@ void subfieldA3_2(p_workArea workArea)
 
     adjustVerticalLimits(-0x54000, 0x76000);
 
-    subfieldA3_1_Sub0();
+    fieldRadar_enableAltitudeGauge();
 
     //subfieldA3_1_Sub1();
 

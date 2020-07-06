@@ -3,6 +3,7 @@
 #include "items.h"
 #include "audio/soundDriver.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldRadar.h"
 
 void subfieldA3_0Sub0(s_dragonTaskWorkArea* r4)
 {
@@ -341,7 +342,7 @@ void subfieldA3_0(p_workArea workArea)
 
     adjustVerticalLimits(-0x5A000, 0x76000);
 
-    subfieldA3_1_Sub0();
+    fieldRadar_enableAltitudeGauge();
 
     getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
 

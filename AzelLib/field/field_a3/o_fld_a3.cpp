@@ -21,6 +21,7 @@
 #include "processModel.h"
 
 #include "kernel/textDisplay.h"
+#include "field/fieldRadar.h"
 
 void updateDragonDefault(s_dragonTaskWorkArea*);
 void updateCutscene(s_dragonTaskWorkArea* r14);
@@ -2271,11 +2272,6 @@ void nullBattle()
     // intentionally empty
 }
 
-void subfieldA3_1_Sub0()
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask->m58 = 1;
-}
-
 void subfieldA3_6(p_workArea workArea) { PDS_unimplemented("subfieldA3_6"); assert(false); }
 void subfieldA3_7(p_workArea workArea) { PDS_unimplemented("subfieldA3_7"); assert(false); }
 void subfieldA3_9(p_workArea workArea) { PDS_unimplemented("subfieldA3_9"); assert(false); }
@@ -2430,16 +2426,6 @@ s32 fieldScriptTaskUpdateSub4()
 s32 fieldScriptTaskUpdateSub5()
 {
     return getFieldTaskPtr()->m8_pSubFieldData->m334->m2E4[4].m18_maxDistanceSquare == 0;
-}
-
-void fieldScriptTaskUpdateSub6()
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask->m5A = 1;
-}
-
-void fieldScriptTaskUpdateSub7()
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask->m5A = 0;
 }
 
 void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub3()
@@ -3470,17 +3456,19 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
         }
     }
 
-    if (!fieldScriptTaskUpdateSub4() || fieldScriptTaskUpdateSub5() || !getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount || getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000)
+    if (((!fieldScriptTaskUpdateSub4()) && (fieldScriptTaskUpdateSub5() != 0)) &&
+        ((getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount) == '\0'
+            && ((getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000) == 0)))
     {
-        //06069A18
-        fieldScriptTaskUpdateSub6();
-        getFieldTaskPtr()->m28_status |= 0x40;
+        //06069A2C
+        fieldRadar_show();
+        getFieldTaskPtr()->m28_status &= ~0x40;
     }
     else
     {
-        //06069A2C
-        fieldScriptTaskUpdateSub7();
-        getFieldTaskPtr()->m28_status &= ~0x40;
+        //06069A18
+        fieldRadar_hide();
+        getFieldTaskPtr()->m28_status |= 0x40;
     }
 
     if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 ||
@@ -4057,104 +4045,6 @@ void s_DragonRiderTask::dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea)
     PDS_unimplemented("dragonRidersTaskUpdate");
 }
 
-void dragonFieldSubTask2InitSub1(s32 r4)
-{
-    s_FieldRadar* r14 = getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask;
-    r14->m64 = r4;
-    r14->m68 = MTH_Mul(r4, r4);
-}
-
-void s_FieldRadar::dragonFieldSubTask2Init(s_FieldRadar* pTypedWorkArea)
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m33C_pPaletteTask = pTypedWorkArea;
-
-    getMemoryArea(&pTypedWorkArea->m0, 0);
-    u32 r2 = pTypedWorkArea->m0.m4_characterArea - (0x25C00000);
-    pTypedWorkArea->m3C = (0x25C00000) + ((0x1748 + (r2 >> 3)) << 3);
-    pTypedWorkArea->m8 = 0x50;
-    pTypedWorkArea->mC = pTypedWorkArea->m8 + 0x30;
-    pTypedWorkArea->mE = -pTypedWorkArea->mA + 0x60;
-    pTypedWorkArea->m30 = 0x18;
-    pTypedWorkArea->m34 = 0x18;
-    pTypedWorkArea->m10 = 6;
-    pTypedWorkArea->m12 = -14;
-    pTypedWorkArea->m28 = -0x1D;
-    pTypedWorkArea->m2A = -0x21;
-
-    pTypedWorkArea->m50 = 0x1C;
-    pTypedWorkArea->m54 = 0x18;
-    pTypedWorkArea->m5C = 0x40000;
-    pTypedWorkArea->m60 = 0x40000;
-
-    dragonFieldSubTask2InitSub1(0x200000);
-}
-
-u8 fieldPalettes[1][0x20] =
-{
-    {
-        0xA0,
-        0xC4,
-        0x9C,
-        0x00,
-        0xA8,
-        0x00,
-        0xB8,
-        0x00,
-        0xC8,
-        0x00,
-        0xCC,
-        0x00,
-        0xD4,
-        0x00,
-        0xDC,
-        0x00,
-        0xE4,
-        0x00,
-        0xF0,
-        0x00,
-        0xFC,
-        0x00,
-        0xFC,
-        0x20,
-        0xFC,
-        0x61,
-        0xFC,
-        0xA2,
-        0xFC,
-        0xE3,
-        0xFD,
-        0x04,
-    },
-};
-
-s8 paletteIndexTable[4] = {
-    0,1,2,2
-};
-
-void s_FieldRadar::dragonFieldSubTask2Update(s_FieldRadar* pTypedWorkArea)
-{
-    PDS_unimplemented("dragonFieldSubTask2Update");
-
-    //if (graphicEngineStatus.m40AC.m8 == 2)
-    {
-        s8 paletteIndex = paletteIndexTable[pTypedWorkArea->m4C];
-
-        asyncDmaCopy(fieldPalettes[paletteIndex], getVdp1Pointer(pTypedWorkArea->m3C), 0x20, 0);
-    }
-
-
-}
-
-void s_FieldRadar::dragonFieldSubTask2Draw(s_FieldRadar* pTypedWorkArea)
-{
-    PDS_unimplemented("dragonFieldSubTask2Draw");
-}
-
-void initDragonFieldSubTask2(s_workArea* pWorkArea)
-{
-    createSubTask<s_FieldRadar>(pWorkArea);
-}
-
 void dragonFieldTaskInitSub2Sub2(fixedPoint* m178)
 {
     m178[0] = 0x222222;
@@ -4222,7 +4112,7 @@ sFieldCameraStatus* getFieldCameraStatus()
 
 void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 {
-    initDragonFieldSubTask2(pWorkArea);
+    createFieldRadar(pWorkArea);
 
     dragonFieldTaskInitSub2Sub2(pWorkArea->m178);
 

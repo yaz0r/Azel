@@ -46,7 +46,6 @@ void loadScriptData1(std::vector<s_scriptData1>& output, const sSaturnPtr& EA);
 void startCutscene(s_cutsceneData* r4);
 void createFieldPaletteTask(p_workArea parent);
 void adjustVerticalLimits(fixedPoint r4, fixedPoint r5);
-void subfieldA3_1_Sub0();
 void nullBattle();
 void getFieldDragonPosition(sVec3_FP* r4);
 u32 gridCellDraw_GetDepthRange(fixedPoint r4);

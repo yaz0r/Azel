@@ -611,41 +611,6 @@ struct s_randomBattleWorkArea : public s_workAreaTemplate<s_randomBattleWorkArea
     // size 8
 };
 
-struct s_FieldRadar : public s_workAreaTemplate<s_FieldRadar>
-{
-    static const TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static const TypedTaskDefinition taskDefinition = { dragonFieldSubTask2Init, dragonFieldSubTask2Update, dragonFieldSubTask2Draw, NULL};
-        return &taskDefinition;
-    }
-
-    static void dragonFieldSubTask2Init(s_FieldRadar*);
-    static void dragonFieldSubTask2Update(s_FieldRadar*);
-    static void dragonFieldSubTask2Draw(s_FieldRadar*);
-
-    s_memoryAreaOutput m0;
-    s16 m8;
-    s16 mA;
-    s16 mC;
-    s16 mE;
-    s16 m10;
-    s16 m12;
-    s16 m28;
-    s16 m2A;
-    s32 m30;
-    s32 m34;
-    u32 m3C;
-    s8 m4C;
-    s32 m50;
-    s32 m54;
-    s32 m58;
-    s8 m5A;
-    s32 m5C;
-    s32 m60;
-    s32 m64;
-    fixedPoint m68;
-};
-
 struct s_fieldPaletteTaskWorkSub
 {
     s32 m0;
@@ -696,7 +661,7 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     u32 m1B4_CGBFilesSizes[32]; // 1B4
     s_fieldOverlaySubTaskWorkArea* m334;
     s_dragonTaskWorkArea* m338_pDragonTask; // 338
-    s_FieldRadar* m33C_pPaletteTask;
+    struct s_FieldRadar* m33C_fieldRadar;
     s_LCSTask* m340_pLCS;
     s_randomBattleWorkArea* m344_randomBattleTask;
     s_visibilityGridWorkArea* m348_pFieldCameraTask1; // 348
@@ -759,7 +724,8 @@ struct s_fieldTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldTaskWorkAre
     s16 m2E_currentSubFieldIndex; // 0x2E;
     s16 m30; // 0x30
     s16 m32; // 0x32
-    u8 m35; // 0x35
+    s8 m34_radarDangerLevel;
+    s8 m35;
     s16 m36_fieldIndexMenuSelection; // 0x36
     s16 m38_subFieldIndexMenuSelection; // 0x38
     s16 m3A; // 0x3A
