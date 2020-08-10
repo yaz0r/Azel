@@ -1323,12 +1323,18 @@ void updateDragonIfCursorChanged(u32 level)
 
 void loadRiderIfChanged(u32 rider)
 {
-    assert(0);
+    if (pRider1State->mC_riderType != rider)
+    {
+        assert(0);
+    }
 }
 
 void loadRider2IfChanged(u32 rider)
 {
-    assert(0);
+    if (pRider2State->mC_riderType != rider)
+    {
+        assert(0);
+    }
 }
 
 void freeRamResources(p_workArea)
@@ -3125,12 +3131,14 @@ p_workArea loadField(p_workArea r4, s32 r5)
         mainGameState.setPackedBits(135, 6, gGameStatus.m4_gameStatus - 0x50);
     }
 
-    if (gGameStatus.m3 == 1)
+    if (gGameStatus.m3_loadingSaveFile == 1)
     {
-        assert(0);
+        return fieldTaskUpdateSub0(saveVarFieldIndex, saveVarSubFieldIndex, saveVarSavePointIndex, -1);
     }
-
-    return fieldTaskUpdateSub0(r5, 0, 0, -1);
+    else
+    {
+        return fieldTaskUpdateSub0(r5, 0, 0, -1);
+    }
 }
 
 p_workArea createNewGameTask(p_workArea pWorkArea)

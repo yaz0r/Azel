@@ -6,7 +6,120 @@
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
 
-u8* savegameVar0 = nullptr;
+s32 savegameVar0 = -1;
+
+struct sSaveProgressTask* createSaveProgressTask(struct sSaveTask* parent);
+
+// structure of the save data
+struct sSaveDataRaw
+{
+    u32 m0_checksum;
+    u32 m4; // always 0x10000 version?
+    u32 m8_saveGameMode; //?
+    s_mainGameState mC_mainGameState;
+    std::array<u8, 0x104> m394_battleResults;
+    std::array<std::array<u16, 16>, 3> m498_buttonConfig;
+};
+
+extern s32 saveVarGameMode; //TODO: cleanup
+extern std::array<u8, 0x104> battleResults; //TODO: cleanup
+
+u32 computeSaveChecksum(void* buffer, int size)
+{
+    FunctionUnimplemented();
+    return 0;
+}
+
+s32 writeSaveData(s32 deviceId, const std::string* filename, char* description, void* buffer, int size)
+{
+    char finalSaveFileName[1024];
+    sprintf(finalSaveFileName, "save\\%d\\%s", deviceId, filename->c_str());
+    FILE* fHandle = fopen(finalSaveFileName, "wb+");
+    if (fHandle)
+    {
+        fwrite(buffer, size, 1, fHandle);
+        fclose(fHandle);
+        return 0;
+    }
+    return -1;
+}
+
+s32 readFrombackup(s32 deviceId, const std::string* filename, sSaveDataRaw* buffer)
+{
+    char finalSaveFileName[1024];
+    sprintf(finalSaveFileName, "save\\%d\\%s", deviceId, filename->c_str());
+    FILE* fHandle = fopen(finalSaveFileName, "rb");
+    if (fHandle)
+    {
+        fread(buffer, sizeof(sSaveDataRaw), 1, fHandle);
+        fclose(fHandle);
+        return 0;
+    }
+    return -1;
+}
+
+u32 saveChecksum = -1;
+
+s32 readSave(u32 deviceId, const std::string& fileName)
+{
+    sSaveDataRaw saveDataBuffer;
+
+    int readStatus = readFrombackup(deviceId, &fileName, &saveDataBuffer);
+
+    if (readStatus == 0)
+    {
+        if (saveDataBuffer.m0_checksum == computeSaveChecksum(&saveDataBuffer, sizeof(saveDataBuffer)))
+        {
+            if (saveDataBuffer.m4 == 0x10000)
+            {
+                saveChecksum = saveDataBuffer.m0_checksum;
+                savegameVar0 = saveDataBuffer.m4;
+                saveVarGameMode = saveDataBuffer.m8_saveGameMode;
+                mainGameState = saveDataBuffer.mC_mainGameState;
+                battleResults = saveDataBuffer.m394_battleResults;
+                graphicEngineStatus.m4514.mD8_buttonConfig = saveDataBuffer.m498_buttonConfig;
+
+                FunctionUnimplemented(); // restore audio output mode here
+            }
+            else
+            {
+                return -3;
+            }
+        }
+        else
+        {
+            return -2;
+        }
+    }
+
+    return readStatus;
+}
+
+s32 saveData(int deviceId, const std::string* filename)
+{
+    sSaveDataRaw saveDataBuffer;
+
+    char fileDescription[] = "AZEL#_Lv__";
+    fileDescription[5] = '1' + mainGameState.readPackedBits(0xD4, 2);
+    fileDescription[8] = '0' + performDivision(10, mainGameState.gameStats.m0_level + 1);
+    fileDescription[9] = '0' + performModulo(10, mainGameState.gameStats.m0_level + 1);
+    savegameVar0 = 0x10000;
+
+    FunctionUnimplemented();
+    //mainGameState.setPackedBits(10, 1, soundOutputStatus == 0x80);
+
+    saveDataBuffer.m0_checksum = -1;
+    saveDataBuffer.m4 = savegameVar0;
+    saveDataBuffer.m8_saveGameMode = saveVarGameMode;
+
+    saveDataBuffer.mC_mainGameState = mainGameState;
+    saveDataBuffer.m394_battleResults = battleResults;
+    saveDataBuffer.m498_buttonConfig = graphicEngineStatus.m4514.mD8_buttonConfig;
+
+    saveDataBuffer.m0_checksum = computeSaveChecksum(&saveDataBuffer, sizeof(saveDataBuffer));
+
+    return writeSaveData(deviceId, filename, fileDescription, &saveDataBuffer, sizeof(saveDataBuffer));
+}
 
 struct sLoadSavegameScreen : public s_workAreaTemplateWithArg<sLoadSavegameScreen, p_workArea>
 {
@@ -30,12 +143,12 @@ struct sLoadSavegameScreen : public s_workAreaTemplateWithArg<sLoadSavegameScree
         switch (pTask->m0_status)
         {
         case 0:
-            savegameVar0 = nullptr;
+            savegameVar0 = 0;
             pTask->m0_status++;
             return;
         case 1:
         {
-            if (savegameVar0 == nullptr)
+            if (savegameVar0 == 0)
             {
                 pTask->getTask()->markFinished();
                 return;
@@ -43,11 +156,25 @@ struct sLoadSavegameScreen : public s_workAreaTemplateWithArg<sLoadSavegameScree
             int azelCdNumberFromSave = mainGameState.readPackedBits(0xD4, 2);
             if (azelCdNumberFromSave == azelCdNumber)
             {
-                assert(0);
+                if (saveVarGameMode == 0)
+                {
+                    if (azelCdNumber == 0)
+                    {
+                        setNextGameStatus(1);
+                    }
+                    else
+                    {
+                        setNextGameStatus(0x4F);
+                    }
+                }
+                else
+                {
+                    setNextGameStatus(saveVarGameMode);
+                }
             }
             else
             {
-                setNextGameStatus(azelCdNumberFromSave + +0x4B);
+                setNextGameStatus(azelCdNumberFromSave + 0x4B);
             }
             break;
         }
@@ -156,7 +283,7 @@ u32 getBupStatusDataSize()
 
 s32 getBupStatusWithBuffer(s32 slotIndex, u32 dataSize)
 {
-    return 0;
+    return 1;
 }
 
 s32 getBupStatus(s32 slotIndex)
@@ -166,11 +293,11 @@ s32 getBupStatus(s32 slotIndex)
 
 struct sSaveTaskSubStruct0MiniData
 {
-    s8 m0;
-    s8 m1;
+    s8 m0_level;
+    s8 m1_dragonLevel;
     s8 m2_location;
     s8 m3;
-    s32 m4;
+    s32 m4_device;
     std::string m8_playerName;
     std::string m19_dragonName;
 };
@@ -262,7 +389,7 @@ struct saveMenuSubTask0 : public s_workAreaTemplateWithArg<saveMenuSubTask0, sSa
         }
         if (pThis->m8->m0_slotStatus == 1)
         {
-            saveScreenDisplaySlotData2(&pThis->m1C_posX, pThis->m8->m4_miniData.m1);
+            saveScreenDisplaySlotData2(&pThis->m1C_posX, pThis->m8->m4_miniData.m1_dragonLevel);
         }
     }
 
@@ -426,6 +553,18 @@ void DisplayMenuMsg(const std::string& r4)
     drawObjectName(r4.c_str());
 }
 
+struct sSaveProgressTask : public s_workAreaTemplate<sSaveProgressTask>
+{
+    sSaveTaskSubStruct0* m0;
+    s32 m4_device;
+    const std::string* m8_filename;
+    u32* mC_pOperationResult;
+    s32 m10_status;
+    s32 m14;
+    s32 m18;
+    //size 0x1C
+};
+
 struct sSaveTask : public s_workAreaTemplate<sSaveTask>
 {
     static void Init(sSaveTask* pThis)
@@ -512,13 +651,16 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
         return -1;
     }
 
-    static s_mainGameState* loadRawSaveFile(u32 device, const std::string& saveFileName)
+    static sSaveDataRaw* loadRawSaveFile(u32 device, const std::string& saveFileName)
     {
-        FILE* fHandle = fopen(saveFileName.c_str(), "rb");
+        char finalSaveFileName[1024];
+        sprintf(finalSaveFileName, "save\\%d\\%s", device, saveFileName.c_str());
+
+        FILE* fHandle = fopen(finalSaveFileName, "rb");
         if (fHandle)
         {
-            s_mainGameState* pNewGameState = new s_mainGameState;
-            fread(&pNewGameState, sizeof(s_mainGameState), 1, fHandle);
+            sSaveDataRaw* pNewGameState = new sSaveDataRaw;
+            fread(pNewGameState, sizeof(sSaveDataRaw), 1, fHandle);
             fclose(fHandle);
             return pNewGameState;
         }
@@ -528,15 +670,25 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
 
     static u32 getMinimalInfoFromSaveFile(u32 device, const std::string& saveFileName, sSaveTaskSubStruct0MiniData* outputData)
     {
-        s_mainGameState* loadedGameState = loadRawSaveFile(device, saveFileName);
+        sSaveDataRaw* loadedGameState = loadRawSaveFile(device, saveFileName);
         if (loadedGameState)
         {
-            outputData->m0 = loadedGameState->gameStats.mC_laserPower;
-            outputData->m1 = loadedGameState->gameStats.mC_laserPower;
-            outputData->m2_location = device;
-            outputData->m4 = device;
-            outputData->m8_playerName = "test";
-            outputData->m19_dragonName = "Dragon";
+            outputData->m0_level = loadedGameState->mC_mainGameState.gameStats.m0_level;
+            outputData->m1_dragonLevel = loadedGameState->mC_mainGameState.gameStats.m1_dragonLevel;
+            outputData->m2_location = loadedGameState->mC_mainGameState.readPackedBits(0x87, 6);
+            outputData->m3 = loadedGameState->mC_mainGameState.readPackedBits(0xd4, 2);
+            outputData->m4_device = device;
+            outputData->m8_playerName = loadedGameState->mC_mainGameState.gameStats.m94_playerName;
+
+            if (loadedGameState->mC_mainGameState.readPackedBits(0xDD, 1) == 0)
+            {
+                outputData->m19_dragonName = "";
+            }
+            else
+            {
+                outputData->m19_dragonName = loadedGameState->mC_mainGameState.gameStats.mA5_dragonName;
+            }
+            
             delete loadedGameState;
             return 1;
         }
@@ -562,7 +714,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
 
     static void saveDrawSub0(sSaveTask* pThis)
     {
-        u32 var2 = getBupStatusWithBuffer(pThis->m14_selectedDevice, getBupStatusDataSize());
+        u32 var2 = getBupStatusWithBuffer(pThis->m14_selectedDevice, getBupStatusDataSize()); // get the amount of free space
 
         for (int i = 0; i < 3; i++)
         {
@@ -605,13 +757,35 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
 
     static void saveDrawSub1(sSaveTask* pThis)
     {
-        if (pThis->m34)
+        if (pThis->m34_pSaveProgressTask)
         {
-            assert(0);
+            if (!pThis->m34_pSaveProgressTask->getTask()->isFinished())
+            {
+                return;
+            }
+            switch (pThis->m38_operationResult)
+            {
+            case 0:
+                saveDrawSub0(pThis);
+
+                saveMenuSubTask0::saveScreenClearSlotData(pThis->m28_slotInfoDisplayTask[pThis->m20_selectedFileInDevice]);
+                saveMenuSubTask0::saveScreenDisplaySlotData(pThis->m28_slotInfoDisplayTask[pThis->m20_selectedFileInDevice]);
+
+                if (graphicEngineStatus.m40AC.m3 != 0)
+                {
+                    graphicEngineStatus.m40AC.m3 = 0;
+                }
+                break;
+            case 1:
+                displaySaveLocation(pThis, saveStrings);
+                break;
+            default:
+                assert(0);
+            }
         }
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6)
         {
-            assert(0);
+            pThis->m34_pSaveProgressTask = createSaveProgressTask(pThis);
         }
         saveDrawSub1Sub1(pThis, saveStrings);
     }
@@ -654,14 +828,9 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
         return 0;
     }
 
-    static s32 readSave(u32 deviceId, const std::string& fileName)
-    {
-        return -1;
-    }
-
     static void loadDrawSub1(sSaveTask* pThis)
     {
-        if (pThis->m38 == 0)
+        if (pThis->m38_operationResult == 0)
         {
             if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6) == 0)
             {
@@ -695,7 +864,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
             playSystemSoundEffect(0);
             graphicEngineStatus.m4 = 1;
             DisplayMenuMsg("Load Game");
-            pThis->m38 = 1;
+            pThis->m38_operationResult = 1;
         }
         else
         {
@@ -707,7 +876,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
             {
                 DisplayMenuMsg("It is incorrect data.");
             }
-            pThis->m38 = 0;
+            pThis->m38_operationResult = 0;
         }
     }
 
@@ -758,7 +927,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
                 if (pThis->m20_selectedFileInDevice < 0)
                 {
                     pThis->m20_selectedFileInDevice = 0;
-                    pThis->m38 = 0;
+                    pThis->m38_operationResult = 0;
                     saveDrawSub0(pThis);
                     displaySaveLocation(pThis, loadStrings);
                 }
@@ -825,6 +994,27 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
             }
             return;
         }
+        case 2:
+            playSystemSoundEffect(1);
+            setupVDP2StringRendering(0, 0x22, 0x2c, 0x1c);
+            clearVdp2TextArea();
+            clearVdp2Menu();
+            pThis->mC = 10;
+            startVdp2LayerScroll(0, 8, 0, 10);
+            pThis->m4_status = 3;
+            break;
+        case 3:
+            if (--pThis->mC)
+            {
+                return;
+            }
+            fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
+            fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
+            pThis->m4_status = 4;
+            break;
+        case 4:
+            pThis->getTask()->markFinished();
+            break;
         default:
             assert(0);
         }
@@ -957,12 +1147,84 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
     s32 m20_selectedFileInDevice;
     s_MenuCursor2* m24;
     saveMenuSubTask0* m28_slotInfoDisplayTask[3];
-    u32 m34;
-    u32 m38;
+    struct sSaveProgressTask* m34_pSaveProgressTask;
+    u32 m38_operationResult;
     sSaveTaskSubStruct0 m3C[3];
     u8* mCC;
     //size: 0xd0
 };
+
+void saveProgressTask_update(sSaveProgressTask* pThis)
+{
+    switch (pThis->m10_status)
+    {
+    case 0:
+        switch(pThis->m0->m0_slotStatus)
+        {
+        case 0: // not enough space
+            playSystemSoundEffect(5);
+            *pThis->mC_pOperationResult = 1;
+            pThis->getTask()->markFinished();
+            break;
+        case 1: // file already exists
+            pThis->m10_status = 1;
+            break;
+        case 2: // empty slot
+            playSystemSoundEffect(0);
+            pThis->m10_status = 3;
+            break;
+        default:
+            assert(0);
+        }
+    case 1:
+        DisplayMenuMsg("Will erase old file. Execute?\n");
+        FunctionUnimplemented();
+        pThis->m10_status++;
+        break;
+    case 2:
+        if (pThis->m14)
+        {
+            return;
+        }
+        if (pThis->m18 == 0)
+        {
+            *pThis->mC_pOperationResult = 1;
+            pThis->getTask()->markFinished();
+            return;
+        }
+        pThis->m10_status++;
+        break;
+    case 3:
+        DisplayMenuMsg("Saving:  Do not power down.");
+        graphicEngineStatus.m4 = 1;
+        pThis->m10_status++;
+        break;
+    case 4:
+        if (saveData(pThis->m4_device, pThis->m8_filename) == 0)
+        {
+            DisplayMenuMsg("The data has been saved.");
+            *pThis->mC_pOperationResult = 0;
+        }
+        else
+        {
+            DisplayMenuMsg("Cannot be saved correctly.");
+            *pThis->mC_pOperationResult = 2;
+        }
+        pThis->getTask()->markFinished();
+        break;
+    }
+}
+
+sSaveProgressTask* createSaveProgressTask(sSaveTask* parent)
+{
+    sSaveProgressTask* pNewTask = createSubTaskFromFunction<sSaveProgressTask>(parent, saveProgressTask_update);
+    pNewTask->m0 = &parent->m3C[parent->m20_selectedFileInDevice];
+    pNewTask->m4_device = parent->m14_selectedDevice;
+    pNewTask->m8_filename = &savegameName[parent->m20_selectedFileInDevice];
+    pNewTask->mC_pOperationResult = &parent->m38_operationResult;
+
+    return pNewTask;
+}
 
 p_workArea createLoadTask(p_workArea parent)
 {

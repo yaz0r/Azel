@@ -403,11 +403,12 @@ struct sBitfieldMapEntry
     const char* m_name;
 };
 
+extern std::vector<sBitfieldMapEntry> m_bitFieldMap;
+
 struct s_mainGameState
 {
 private:
     u8 bitField[630];
-    std::vector<sBitfieldMapEntry> m_bitFieldMap;
 
 public:
 
@@ -831,7 +832,7 @@ struct s_graphicEngineStatus_4514_sub
 struct s_graphicEngineStatus_4514
 {
     s_graphicEngineStatus_4514_sub m0_inputDevices[2]; // one per input port
-    u16 mD8_buttonConfig[3][16]; //0: on feet, 1: dragon, 2: battle
+    std::array<std::array<u16,16>, 3> mD8_buttonConfig; //0: on feet, 1: dragon, 2: battle
     u8 m138[3];
 };
 

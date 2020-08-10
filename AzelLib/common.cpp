@@ -8,6 +8,8 @@ const u8 reverseBitMasks[] = { 0x7F, 0xBF, 0xDF, 0xEF, 0xF7, 0xF8, 0xFD, 0xFE };
 
 u8 playerDataMemoryBuffer[0x28000];
 
+std::vector<sBitfieldMapEntry> m_bitFieldMap;
+
 s_mainGameState mainGameState;
 
 const s_dragonPerLevelMaxHPBP dragonPerLevelMaxHPBP[DR_LEVEL_MAX] = {

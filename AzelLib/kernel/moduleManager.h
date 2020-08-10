@@ -13,7 +13,7 @@ struct s_gameStatus {
     s8 m0_gameMode;
     s8 m1;
     s8 m2;
-    s8 m3;
+    s8 m3_loadingSaveFile;
     u16 m4_gameStatus;
     u16 m6_previousGameStatus;
     u16 m8_nextGameStatus;

@@ -8,7 +8,7 @@
 #include "dragonData.h"
 #include "dragonRider.h"
 
-u8 array_24BCA0[0x104];
+std::array<u8, 0x104> battleResults;
 u8 array_250000[0x20000];
 
 s_moduleManager* gModuleManager = nullptr;
@@ -36,7 +36,7 @@ p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
 
 void exitMenuTaskSub1TaskInitSub1()
 {
-    memset(array_24BCA0, 0, 0x104);
+    battleResults.fill(0);
 }
 
 u32 getPanzerZweiPlayTime(u32 slot)
@@ -111,7 +111,7 @@ void moduleManager_Init(s_moduleManager* pWorkArea, s32 menuID)
 
     gGameStatus.m0_gameMode = -1;
     gGameStatus.m1 = -1;
-    gGameStatus.m3 = 0;
+    gGameStatus.m3_loadingSaveFile = 0;
     gGameStatus.m4_gameStatus = 0;
     gGameStatus.m6_previousGameStatus = 0;
     gGameStatus.m8_nextGameStatus = 0;
@@ -242,7 +242,7 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
         setNextGameStatus(0x4F);
         break;
     case 0x4A: // load savegame?
-        if (savegameVar0 == nullptr)
+        if (savegameVar0 == 0)
         {
             return -1;
         }
@@ -421,11 +421,11 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
 
         if (gGameStatus.m6_previousGameStatus == 74)
         {
-            gGameStatus.m3 = 1;
+            gGameStatus.m3_loadingSaveFile = 1;
         }
         else
         {
-            gGameStatus.m3 = 0;
+            gGameStatus.m3_loadingSaveFile = 0;
         }
 
         if (overlayDispatchTable[gGameStatus.m0_gameMode])

@@ -792,7 +792,7 @@ struct s_fieldSub0Task : public s_workAreaTemplate<s_fieldSub0Task>
         fieldTaskVar0 = nullptr;
         
         //FIX:
-        if(gModuleManager)
+        if(gModuleManager && gModuleManager->m8)
         {
             assert(gModuleManager->m8 == pThis);
             gModuleManager->m8 = nullptr;
