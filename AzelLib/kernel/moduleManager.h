@@ -21,6 +21,18 @@ struct s_gameStatus {
 
 extern s_gameStatus gGameStatus;
 
+struct sSaveGameStatus
+{
+    u32 m0_checksum;
+    u32 m4_version;
+    u8 m8_gameMode;
+    u8 m9_fieldIndex;
+    u8 mA_subFieldIndex;
+    u8 mB_savePointIndex;
+};
+
+extern sSaveGameStatus gSaveGameStatus;
+
 extern s_moduleManager* gModuleManager;
 void initNewGameState();
 

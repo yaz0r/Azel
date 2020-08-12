@@ -15,10 +15,7 @@ s_moduleManager* gModuleManager = nullptr;
 
 s_gameStatus gGameStatus;
 
-s32 saveVarGameMode;
-s32 saveVarFieldIndex;
-s32 saveVarSubFieldIndex;
-s32 saveVarSavePointIndex;
+sSaveGameStatus gSaveGameStatus;
 
 p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     NULL,
@@ -130,11 +127,11 @@ void moduleManager_Init(s_moduleManager* pWorkArea, s32 menuID)
     mainGameState.gameStats.m2_rider1 = 1;
     mainGameState.gameStats.m3_rider2 = 0;
 
-    saveVarGameMode = 0;
-    saveVarFieldIndex = 0;
-    saveVarSubFieldIndex = 0;
-    saveVarSavePointIndex = 0;
-
+    gSaveGameStatus.m8_gameMode = 0;
+    gSaveGameStatus.m9_fieldIndex = 0;
+    gSaveGameStatus.mA_subFieldIndex = 0;
+    gSaveGameStatus.mB_savePointIndex = 0;
+    
     exitMenuTaskSub1TaskInitSub1();
 
     createMenuTask(pWorkArea);
@@ -242,7 +239,7 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
         setNextGameStatus(0x4F);
         break;
     case 0x4A: // load savegame?
-        if (savegameVar0 == 0)
+        if (gSaveGameStatus.m4_version == 0)
         {
             return -1;
         }
@@ -460,8 +457,8 @@ p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID)
 void setupSaveParams(s32 fieldIndex, s32 subFieldIndex, s32 savepointIndex)
 {
     graphicEngineStatus.m40AC.m0_menuId = 8; // trigger the save menu
-    saveVarGameMode = mainGameState.readPackedBits(0x87, 6) + 0x50;
-    saveVarFieldIndex = fieldIndex;
-    saveVarSubFieldIndex = subFieldIndex;
-    saveVarSavePointIndex = savepointIndex;
+    gSaveGameStatus.m8_gameMode = mainGameState.readPackedBits(0x87, 6) + 0x50;
+    gSaveGameStatus.m9_fieldIndex = fieldIndex;
+    gSaveGameStatus.mA_subFieldIndex = subFieldIndex;
+    gSaveGameStatus.mB_savePointIndex = savepointIndex;
 }

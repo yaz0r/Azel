@@ -121,5 +121,5 @@ void subfieldA3_A(p_workArea workArea)
 
     setupFieldCameraConfig_A3_4();
 
-    subfieldA3_4_sub1(workArea);
+    createVDP2FieldTask(workArea);
 }

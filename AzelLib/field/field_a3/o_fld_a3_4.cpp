@@ -7,9 +7,44 @@ void subfieldA3_4_sub0()
     FunctionUnimplemented();
 }
 
-void subfieldA3_4_sub1(p_workArea workArea)
+void vdp2FieldTask_init(s_fieldPaletteTaskWorkArea* pThis)
 {
-    FunctionUnimplemented();
+    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
+    reinitVdp2();
+    fieldPaletteTaskInitSub0();
+    
+    vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x31FF75FF;
+
+    // setup line color screen
+    *(u16*)getVdp2Vram(0x2A400) = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
+
+    // setup back screen color
+    *(u16*)getVdp2Vram(0x2A600) = 0x38E5;
+    vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x15300;
+
+    vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA = 0x405;
+    vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB = 0x507;
+    vdp2Controls.m4_pendingVdp2Regs->mF4_PRISC = 0x505;
+    vdp2Controls.m4_pendingVdp2Regs->mF6_PRISD = 0x505;
+    vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA = 0x600;
+    vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0x0;
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xFFF0) | 0x3;
+
+    vdp2Controls.m_isDirty = 1;
+}
+
+void vdp2FieldTask_update(s_fieldPaletteTaskWorkArea* pThis)
+{
+    // Nothing
+}
+
+void createVDP2FieldTask(p_workArea workArea)
+{
+    s_fieldPaletteTaskWorkArea::TypedTaskDefinition definition = {&vdp2FieldTask_init, &vdp2FieldTask_update, nullptr, nullptr};
+
+    createSubTask<s_fieldPaletteTaskWorkArea>(workArea, &definition);
 }
 
 void setupFieldCameraConfig_A3_4()
@@ -63,7 +98,7 @@ void subfieldA3_4(p_workArea workArea)
     s_DataTable3* pDataTable3 = readDataTable3({ 0x608EDA8, gFLD_A3 });
     setupField2(pDataTable3, fieldA3_4_startTasks);
 
-    if (!getFieldTaskPtr()->m30)
+    if (!getFieldTaskPtr()->m30_savePointIndex)
     {
         sVec3_FP position = readSaturnVec3({ 0x6081B0C, gFLD_A3 });
         sVec3_FP rotation = readSaturnVec3({ 0x6081C20, gFLD_A3 });
@@ -80,5 +115,5 @@ void subfieldA3_4(p_workArea workArea)
 
     setupFieldCameraConfig_A3_4();
 
-    subfieldA3_4_sub1(workArea);
+    createVDP2FieldTask(workArea);
 }

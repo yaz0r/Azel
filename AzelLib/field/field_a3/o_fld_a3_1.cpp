@@ -1180,7 +1180,7 @@ void subfieldA3_1(p_workArea workArea)
         setupDragonPosition(&position, &rotation);
     }
 
-    if (getFieldTaskPtr()->m30 != -1)
+    if (getFieldTaskPtr()->m30_savePointIndex != -1)
     {
         //6054472
         switch (getFieldTaskPtr()->m32)

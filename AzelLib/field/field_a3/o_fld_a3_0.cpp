@@ -251,7 +251,7 @@ void setupFieldCameraConfig_A3_0()
 
 void subfieldA3_0(p_workArea workArea)
 {
-    s16 r13 = getFieldTaskPtr()->m30;
+    s16 r13 = getFieldTaskPtr()->m30_savePointIndex;
 
     playPCM(workArea, 100);
     playPCM(workArea, 101);
@@ -290,7 +290,7 @@ void subfieldA3_0(p_workArea workArea)
             switch (getFieldTaskPtr()->m32)
             {
             case 4:
-                if (getFieldTaskPtr()->m30)
+                if (getFieldTaskPtr()->m30_savePointIndex)
                 {
                     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6090F54, gFLD_A3 });
                 }
@@ -300,7 +300,7 @@ void subfieldA3_0(p_workArea workArea)
                 }
                 break;
             case 5:
-                if (getFieldTaskPtr()->m30)
+                if (getFieldTaskPtr()->m30_savePointIndex)
                 {
                     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6091024, gFLD_A3 });
                 }
@@ -310,7 +310,7 @@ void subfieldA3_0(p_workArea workArea)
                 }
                 break;
             case 6:
-                if (getFieldTaskPtr()->m30)
+                if (getFieldTaskPtr()->m30_savePointIndex)
                 {
                     startCutscene(loadCutsceneData({ 0x6091934, gFLD_A3 }));
                 }

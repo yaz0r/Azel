@@ -6,22 +6,17 @@
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
 
-s32 savegameVar0 = -1;
-
 struct sSaveProgressTask* createSaveProgressTask(struct sSaveTask* parent);
 
 // structure of the save data
 struct sSaveDataRaw
 {
-    u32 m0_checksum;
-    u32 m4; // always 0x10000 version?
-    u32 m8_saveGameMode; //?
+    sSaveGameStatus m0_saveGameStatus;
     s_mainGameState mC_mainGameState;
     std::array<u8, 0x104> m394_battleResults;
     std::array<std::array<u16, 16>, 3> m498_buttonConfig;
 };
 
-extern s32 saveVarGameMode; //TODO: cleanup
 extern std::array<u8, 0x104> battleResults; //TODO: cleanup
 
 u32 computeSaveChecksum(void* buffer, int size)
@@ -58,8 +53,6 @@ s32 readFrombackup(s32 deviceId, const std::string* filename, sSaveDataRaw* buff
     return -1;
 }
 
-u32 saveChecksum = -1;
-
 s32 readSave(u32 deviceId, const std::string& fileName)
 {
     sSaveDataRaw saveDataBuffer;
@@ -68,13 +61,11 @@ s32 readSave(u32 deviceId, const std::string& fileName)
 
     if (readStatus == 0)
     {
-        if (saveDataBuffer.m0_checksum == computeSaveChecksum(&saveDataBuffer, sizeof(saveDataBuffer)))
+        if (saveDataBuffer.m0_saveGameStatus.m0_checksum == computeSaveChecksum(&saveDataBuffer, sizeof(saveDataBuffer)))
         {
-            if (saveDataBuffer.m4 == 0x10000)
+            if (saveDataBuffer.m0_saveGameStatus.m4_version == 0x10000)
             {
-                saveChecksum = saveDataBuffer.m0_checksum;
-                savegameVar0 = saveDataBuffer.m4;
-                saveVarGameMode = saveDataBuffer.m8_saveGameMode;
+                gSaveGameStatus = saveDataBuffer.m0_saveGameStatus;
                 mainGameState = saveDataBuffer.mC_mainGameState;
                 battleResults = saveDataBuffer.m394_battleResults;
                 graphicEngineStatus.m4514.mD8_buttonConfig = saveDataBuffer.m498_buttonConfig;
@@ -103,20 +94,17 @@ s32 saveData(int deviceId, const std::string* filename)
     fileDescription[5] = '1' + mainGameState.readPackedBits(0xD4, 2);
     fileDescription[8] = '0' + performDivision(10, mainGameState.gameStats.m0_level + 1);
     fileDescription[9] = '0' + performModulo(10, mainGameState.gameStats.m0_level + 1);
-    savegameVar0 = 0x10000;
+    gSaveGameStatus.m4_version = 0x10000;
 
     FunctionUnimplemented();
     //mainGameState.setPackedBits(10, 1, soundOutputStatus == 0x80);
 
-    saveDataBuffer.m0_checksum = -1;
-    saveDataBuffer.m4 = savegameVar0;
-    saveDataBuffer.m8_saveGameMode = saveVarGameMode;
-
+    saveDataBuffer.m0_saveGameStatus = gSaveGameStatus;
     saveDataBuffer.mC_mainGameState = mainGameState;
     saveDataBuffer.m394_battleResults = battleResults;
     saveDataBuffer.m498_buttonConfig = graphicEngineStatus.m4514.mD8_buttonConfig;
 
-    saveDataBuffer.m0_checksum = computeSaveChecksum(&saveDataBuffer, sizeof(saveDataBuffer));
+    saveDataBuffer.m0_saveGameStatus.m0_checksum = computeSaveChecksum(&saveDataBuffer, sizeof(saveDataBuffer));
 
     return writeSaveData(deviceId, filename, fileDescription, &saveDataBuffer, sizeof(saveDataBuffer));
 }
@@ -143,12 +131,12 @@ struct sLoadSavegameScreen : public s_workAreaTemplateWithArg<sLoadSavegameScree
         switch (pTask->m0_status)
         {
         case 0:
-            savegameVar0 = 0;
+            gSaveGameStatus.m4_version = 0;
             pTask->m0_status++;
             return;
         case 1:
         {
-            if (savegameVar0 == 0)
+            if (gSaveGameStatus.m4_version == 0)
             {
                 pTask->getTask()->markFinished();
                 return;
@@ -156,7 +144,7 @@ struct sLoadSavegameScreen : public s_workAreaTemplateWithArg<sLoadSavegameScree
             int azelCdNumberFromSave = mainGameState.readPackedBits(0xD4, 2);
             if (azelCdNumberFromSave == azelCdNumber)
             {
-                if (saveVarGameMode == 0)
+                if (gSaveGameStatus.m8_gameMode == 0)
                 {
                     if (azelCdNumber == 0)
                     {
@@ -169,7 +157,7 @@ struct sLoadSavegameScreen : public s_workAreaTemplateWithArg<sLoadSavegameScree
                 }
                 else
                 {
-                    setNextGameStatus(saveVarGameMode);
+                    setNextGameStatus(gSaveGameStatus.m8_gameMode);
                 }
             }
             else

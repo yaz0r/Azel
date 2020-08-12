@@ -85,7 +85,7 @@ void subfieldA3_C(p_workArea workArea)
     s_DataTable3* pDataTable3 = readDataTable3({ 0x608EEC8, gFLD_A3 });
     setupField2(pDataTable3, fieldA3_C_startTasks);
 
-    if (getFieldTaskPtr()->m30 == -1)
+    if (getFieldTaskPtr()->m30_savePointIndex == -1)
     {
         sVec3_FP position = readSaturnVec3({ 0x6081CD0 - 0xC, gFLD_A3 });
         sVec3_FP rotation = readSaturnVec3({ 0x6081CD0, gFLD_A3 });
@@ -111,5 +111,5 @@ void subfieldA3_C(p_workArea workArea)
 
     setupFieldCameraConfig_A3_4();
 
-    subfieldA3_4_sub1(workArea);
+    createVDP2FieldTask(workArea);
 }

@@ -165,7 +165,7 @@ void subfieldA3_2Sub0(s_dragonTaskWorkArea*)
 
 void subfieldA3_2(p_workArea workArea)
 {
-    s16 r13 = getFieldTaskPtr()->m30;
+    s16 r13 = getFieldTaskPtr()->m30_savePointIndex;
 
     playPCM(workArea, 100);
     playPCM(workArea, 101);

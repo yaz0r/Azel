@@ -313,7 +313,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 
         pFieldTask->m36_fieldIndexMenuSelection = pFieldTask->m2C_currentFieldIndex;
         pFieldTask->m38_subFieldIndexMenuSelection = pFieldTask->m2E_currentSubFieldIndex;
-        pFieldTask->m3A = pFieldTask->m30;
+        pFieldTask->m3A = pFieldTask->m30_savePointIndex;
         pFieldTask->m2E_currentSubFieldIndex = -1;
 
         if (pFieldTask->m36_fieldIndexMenuSelection < 0)
@@ -1537,11 +1537,11 @@ void s_fieldStartOverlayTask::Delete(s_fieldStartOverlayTask* pThis)
     fieldTaskPtr->m4_overlayTaskData = NULL;
 }
 
-p_workArea fieldTaskUpdateSub0(u32 fieldIndexMenuSelection, u32 subFieldIndexMenuSelection, u32 m3A, u32 currentSubFieldIndex)
+p_workArea fieldTaskUpdateSub0(u32 fieldIndex, u32 subFieldIndex, u32 savePointIndex, u32 currentSubFieldIndex)
 {
-    fieldTaskPtr->m2C_currentFieldIndex = fieldIndexMenuSelection;
-    fieldTaskPtr->m2E_currentSubFieldIndex = subFieldIndexMenuSelection;
-    fieldTaskPtr->m30 = m3A;
+    fieldTaskPtr->m2C_currentFieldIndex = fieldIndex;
+    fieldTaskPtr->m2E_currentSubFieldIndex = subFieldIndex;
+    fieldTaskPtr->m30_savePointIndex = savePointIndex;
     fieldTaskPtr->m32 = currentSubFieldIndex;
 
     if (fieldTaskVar0 == NULL)
@@ -3133,7 +3133,7 @@ p_workArea loadField(p_workArea r4, s32 r5)
 
     if (gGameStatus.m3_loadingSaveFile == 1)
     {
-        return fieldTaskUpdateSub0(saveVarFieldIndex, saveVarSubFieldIndex, saveVarSavePointIndex, -1);
+        return fieldTaskUpdateSub0(gSaveGameStatus.m9_fieldIndex, gSaveGameStatus.mA_subFieldIndex, gSaveGameStatus.mB_savePointIndex, -1);
     }
     else
     {
