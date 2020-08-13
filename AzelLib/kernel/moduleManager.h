@@ -28,7 +28,7 @@ struct sSaveGameStatus
     u8 m8_gameMode;
     u8 m9_fieldIndex;
     u8 mA_subFieldIndex;
-    u8 mB_savePointIndex;
+    s8 mB_entryPointIndex;
 };
 
 extern sSaveGameStatus gSaveGameStatus;

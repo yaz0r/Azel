@@ -722,8 +722,8 @@ struct s_fieldTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldTaskWorkAre
     u32 m28_status; // 0x28 (0x40: a multichoice dialog callback is pending)
     s16 m2C_currentFieldIndex; // 0x2C
     s16 m2E_currentSubFieldIndex; // 0x2E;
-    s16 m30_savePointIndex; // 0x30
-    s16 m32; // 0x32
+    s16 m30_fieldEntryPoint; // 0x30
+    s16 m32_previousSubField; // 0x32
     s8 m34_radarDangerLevel;
     s8 m35;
     s16 m36_fieldIndexMenuSelection; // 0x36

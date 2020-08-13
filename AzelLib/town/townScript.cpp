@@ -1692,12 +1692,14 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             u16 delay = readSaturnU16(r4);
             r4 += 2;
 
-            if (r13_pThis->mF0)
+            if (r13_pThis->mF0 && r13_pThis->mF4 && !r13_pThis->mF8) // skip delay
             {
-                assert(0);
+                r13_pThis->m100 = 0;
             }
-
-            r13_pThis->m100 = delay-1;
+            else
+            {
+                r13_pThis->m100 = delay - 1;
+            }
             return r4;
         }
         case 3: //jump

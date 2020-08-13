@@ -15,9 +15,9 @@ struct s_multiChoiceTask : public s_workAreaTemplate< s_multiChoiceTask>
     {
         pThis->clearMultiChoiceBox();
 
-        if (pThis->m10)
+        if (pThis->m10_outputTask)
         {
-            *pThis->m10 = nullptr;
+            *pThis->m10_outputTask = nullptr;
         }
     }
 
@@ -37,7 +37,7 @@ struct s_multiChoiceTask : public s_workAreaTemplate< s_multiChoiceTask>
     s8 m7;
     s8 m8;
     s32* mC_result;
-    s_multiChoiceTask** m10;
+    s_multiChoiceTask** m10_outputTask;
     s16 m14_x;
     s16 m16_y;
     s16 m1A_width;

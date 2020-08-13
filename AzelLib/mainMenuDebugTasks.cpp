@@ -313,7 +313,7 @@ struct s_fieldDebugListWorkArea : public s_workAreaTemplate<s_fieldDebugListWork
 
         pFieldTask->m36_fieldIndexMenuSelection = pFieldTask->m2C_currentFieldIndex;
         pFieldTask->m38_subFieldIndexMenuSelection = pFieldTask->m2E_currentSubFieldIndex;
-        pFieldTask->m3A = pFieldTask->m30_savePointIndex;
+        pFieldTask->m3A = pFieldTask->m30_fieldEntryPoint;
         pFieldTask->m2E_currentSubFieldIndex = -1;
 
         if (pFieldTask->m36_fieldIndexMenuSelection < 0)
@@ -1541,8 +1541,8 @@ p_workArea fieldTaskUpdateSub0(u32 fieldIndex, u32 subFieldIndex, u32 savePointI
 {
     fieldTaskPtr->m2C_currentFieldIndex = fieldIndex;
     fieldTaskPtr->m2E_currentSubFieldIndex = subFieldIndex;
-    fieldTaskPtr->m30_savePointIndex = savePointIndex;
-    fieldTaskPtr->m32 = currentSubFieldIndex;
+    fieldTaskPtr->m30_fieldEntryPoint = savePointIndex;
+    fieldTaskPtr->m32_previousSubField = currentSubFieldIndex;
 
     if (fieldTaskVar0 == NULL)
     {
@@ -3133,7 +3133,7 @@ p_workArea loadField(p_workArea r4, s32 r5)
 
     if (gGameStatus.m3_loadingSaveFile == 1)
     {
-        return fieldTaskUpdateSub0(gSaveGameStatus.m9_fieldIndex, gSaveGameStatus.mA_subFieldIndex, gSaveGameStatus.mB_savePointIndex, -1);
+        return fieldTaskUpdateSub0(gSaveGameStatus.m9_fieldIndex, gSaveGameStatus.mA_subFieldIndex, gSaveGameStatus.mB_entryPointIndex, -1);
     }
     else
     {

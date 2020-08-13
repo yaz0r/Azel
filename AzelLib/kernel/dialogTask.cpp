@@ -198,7 +198,7 @@ void startDialogTask(p_workArea r4_parent, s_multiChoiceTask** r5_outputTask, s3
     pMultiChoiceTask->m1A_width = 0x22;
     pMultiChoiceTask->m1C_height = 0xA;
     pMultiChoiceTask->mC_result = r6_outputResult;
-    pMultiChoiceTask->m10 = r5_outputTask;
+    pMultiChoiceTask->m10_outputTask = r5_outputTask;
     if (r5_outputTask)
     {
         *r5_outputTask = pMultiChoiceTask;
@@ -312,9 +312,9 @@ void clearMultiChoiceBox(s_multiChoiceTask* pThis)
 void s_multiChoiceTask2_Delete(s_multiChoiceTask* pThis)
 {
     clearMultiChoiceBox(pThis);
-    if (pThis->m10)
+    if (pThis->m10_outputTask)
     {
-        *pThis->m10 = nullptr;
+        *pThis->m10_outputTask = nullptr;
     }
 }
 
@@ -366,6 +366,7 @@ s_multiChoiceTask* updateMultiChoice(p_workArea parentTask, s_multiChoiceTask** 
     r14->m1A_width = ((r12 + 1) & ~1) + 6;
     r14->m1C_height = (r14->m1 * 2) + 2;
     r14->mC_result = r6_currentChoice;
+    r14->m10_outputTask = r5;
 
     if (r5)
     {

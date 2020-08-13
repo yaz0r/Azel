@@ -85,7 +85,7 @@ void subfieldA3_C(p_workArea workArea)
     s_DataTable3* pDataTable3 = readDataTable3({ 0x608EEC8, gFLD_A3 });
     setupField2(pDataTable3, fieldA3_C_startTasks);
 
-    if (getFieldTaskPtr()->m30_savePointIndex == -1)
+    if (getFieldTaskPtr()->m30_fieldEntryPoint == -1)
     {
         sVec3_FP position = readSaturnVec3({ 0x6081CD0 - 0xC, gFLD_A3 });
         sVec3_FP rotation = readSaturnVec3({ 0x6081CD0, gFLD_A3 });
@@ -93,7 +93,7 @@ void subfieldA3_C(p_workArea workArea)
     }
     else
     {
-        if (getFieldTaskPtr()->m32 == 2)
+        if (getFieldTaskPtr()->m32_previousSubField == 2)
         {
             sVec3_FP position = readSaturnVec3({ 0x6081BC0, gFLD_A3 });
             sVec3_FP rotation = readSaturnVec3({ 0x6081BD8, gFLD_A3 });

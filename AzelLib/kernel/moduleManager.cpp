@@ -130,7 +130,7 @@ void moduleManager_Init(s_moduleManager* pWorkArea, s32 menuID)
     gSaveGameStatus.m8_gameMode = 0;
     gSaveGameStatus.m9_fieldIndex = 0;
     gSaveGameStatus.mA_subFieldIndex = 0;
-    gSaveGameStatus.mB_savePointIndex = 0;
+    gSaveGameStatus.mB_entryPointIndex = 0;
     
     exitMenuTaskSub1TaskInitSub1();
 
@@ -333,9 +333,9 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
         {
             assert(0);
         }
-        if (*(COMMON_DAT + 0x12EAC + gGameStatus.m4_gameStatus * 2) == 4)
+        if ((readSaturnS8(gCommonFile.getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2)) == 4) && (gBattleManager->mE == 2))
         {
-            assert(0);
+            setNextGameStatus(0x49);
         }
         else
         {
@@ -454,11 +454,11 @@ p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID)
     return createSubTaskWithArg<s_moduleManager, s32>(pTypelessWorkArea, menuID, &taskDefinition);
 }
 
-void setupSaveParams(s32 fieldIndex, s32 subFieldIndex, s32 savepointIndex)
+void setupSaveParams(s32 fieldIndex, s32 subFieldIndex, s32 entryPointIndex)
 {
     graphicEngineStatus.m40AC.m0_menuId = 8; // trigger the save menu
     gSaveGameStatus.m8_gameMode = mainGameState.readPackedBits(0x87, 6) + 0x50;
     gSaveGameStatus.m9_fieldIndex = fieldIndex;
     gSaveGameStatus.mA_subFieldIndex = subFieldIndex;
-    gSaveGameStatus.mB_savePointIndex = savepointIndex;
+    gSaveGameStatus.mB_entryPointIndex = entryPointIndex;
 }

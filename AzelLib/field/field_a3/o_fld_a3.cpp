@@ -3125,7 +3125,8 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
             }
             else
             {
-                assert(0);
+                pScript = *m8_stackPointer;
+                m8_stackPointer++;
             }
             break;
         case 2: // wait
@@ -3218,6 +3219,12 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
                 m30_cinematicBarTask = createCinematicBarTask(this);
                 cinematicBars_startClosing(m30_cinematicBarTask, 4);
                 pScript = pScript - 1;
+                return pScript;
+            }
+            break;
+        case 0x24: // wait for button released
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 7)
+            {
                 return pScript;
             }
             break;
@@ -3406,7 +3413,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
         {
             sSaturnPtr r3 = pScript + 3;
             r3.m_offset &= ~3;
-            *(--m8_stackPointer) = pScript + 4; // store the return address
+            *(--m8_stackPointer) = r3 + 4; // store the return address
             pScript = readSaturnEA(r3);
             continue;
         }
@@ -6809,7 +6816,7 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     }
     else
     {
-        if (getFieldTaskPtr()->m32 == -1)
+        if (getFieldTaskPtr()->m32_previousSubField == -1)
         {
             loadSoundBanks(1, 0);
         }

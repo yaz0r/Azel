@@ -165,7 +165,7 @@ void subfieldA3_2Sub0(s_dragonTaskWorkArea*)
 
 void subfieldA3_2(p_workArea workArea)
 {
-    s16 r13 = getFieldTaskPtr()->m30_savePointIndex;
+    s16 r13 = getFieldTaskPtr()->m30_fieldEntryPoint;
 
     playPCM(workArea, 100);
     playPCM(workArea, 101);
@@ -177,8 +177,24 @@ void subfieldA3_2(p_workArea workArea)
 
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_2Sub0;
 
-    switch (getFieldTaskPtr()->m32)
+    switch (getFieldTaskPtr()->m32_previousSubField)
     {
+    case 0xB:
+        if (getFieldTaskPtr()->m30_fieldEntryPoint == 0)
+        {
+            // back from cave
+            getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x60912C8, gFLD_A3 });
+        }
+        else
+        {
+            // back from next zone
+            getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6091330, gFLD_A3 });
+        }
+        break;
+    case 0xC:
+        // back from next zone
+        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6091398, gFLD_A3 });
+        break;
     default:
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x6091260, gFLD_A3 });
         break;

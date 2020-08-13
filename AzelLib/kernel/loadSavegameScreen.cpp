@@ -1166,8 +1166,8 @@ void saveProgressTask_update(sSaveProgressTask* pThis)
         }
     case 1:
         DisplayMenuMsg("Will erase old file. Execute?\n");
-        FunctionUnimplemented();
-        pThis->m10_status++;
+        FunctionUnimplemented(); pThis->m10_status = 3;
+        //pThis->m10_status++;
         break;
     case 2:
         if (pThis->m14)

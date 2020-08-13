@@ -266,7 +266,7 @@ struct s_dialogCallbackTask : public s_workAreaTemplate<s_dialogCallbackTask>
             {
                 if (pThis->m0_callbacks[pScript->m54_currentResult])
                 {
-                    pThis->m0_callbacks[pScript->m54_currentResult](pThis->m10);
+                    pThis->m0_callbacks[pScript->m54_currentResult](pThis->m10_entryPointIndex);
                 }
             }
         }
@@ -274,13 +274,13 @@ struct s_dialogCallbackTask : public s_workAreaTemplate<s_dialogCallbackTask>
 
     std::array<tCallback, 2> m0_callbacks;
     u32 mC;
-    s32 m10;
+    s32 m10_entryPointIndex;
     //size 0x14
 };
 
-void startScript_savePointCallback(s32 savePointIndex)
+void startScript_savePointCallback(s32 entryPointIndex)
 {
-    setupSaveParams(getFieldTaskPtr()->m2C_currentFieldIndex, getFieldTaskPtr()->m2E_currentSubFieldIndex, savePointIndex);
+    setupSaveParams(getFieldTaskPtr()->m2C_currentFieldIndex, getFieldTaskPtr()->m2E_currentSubFieldIndex, entryPointIndex);
     if (getFieldTaskPtr()->m8_pSubFieldData->m370_fieldDebuggerWho & 1)
     {
         assert(0);
@@ -298,7 +298,7 @@ void registerCallbackForDialog(s_dialogCallbackTask::tCallback callback1, s_dial
     s_dialogCallbackTask* pCallbackTask = createSubTask<s_dialogCallbackTask>(getFieldTaskPtr(), &definition);
     pCallbackTask->m0_callbacks[0] = callback1;
     pCallbackTask->m0_callbacks[1] = callback2;
-    pCallbackTask->m10 = r6;
+    pCallbackTask->m10_entryPointIndex = r6;
 }
 
 void startScript_savePoint(s32 index)
@@ -365,6 +365,30 @@ p_workArea createSavePointParticles()
     return nullptr;
 }
 
+void itemBoxType1InitSub0Sub(s_3dModel* r4)
+{
+    if (!(r4->mA_animationFlags & 0x38))
+    {
+        return;
+    }
+
+    r4->m10_currentAnimationFrame = 0;
+    int animFlag = r4->m30_pCurrentAnimation->m0_flags & 7;
+    if ((animFlag == 1) || (animFlag == 4) || (animFlag == 5))
+    {
+        for (int i=0; i<r4->m12_numBones; i++)
+        {
+            for (int j=0; j<9; j++)
+            {
+                r4->m2C_poseData[i].m48[j].currentStep = 0;
+                r4->m2C_poseData[i].m48[j].delay = 0;
+                r4->m2C_poseData[i].m48[j].value = 0;
+            }
+        }
+    }
+    stepAnimation(r4);
+}
+
 //init box in already opened state
 void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
 {
@@ -373,6 +397,13 @@ void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
         s16 type = r4->m30_pCurrentAnimation->m0_flags & 7;
         switch (type)
         {
+        case 4:
+            itemBoxType1InitSub0Sub(r4);
+            for (int i=0; i<r5; i++)
+            {
+                stepAnimation(r4);
+            }
+            break;
         default:
             assert(0);
             break;
@@ -1172,24 +1203,27 @@ void subfieldA3_1(p_workArea workArea)
     s_DataTable2* pDataTable2 = readDataTable2({ 0x60866D0, gFLD_A3 });
     setupField(pDataTable3, pDataTable2, fieldA3_1_startTasks, pVisibility);
 
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_1Sub0;
+    fieldTaskPtr->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_1Sub0;
 
     {
-        sVec3_FP position = { 0x0, 0x0, 0x0 };
-        sVec3_FP rotation = { 0x154000, 0x0, -0x18E000 };
+        sVec3_FP position = { 0x448000, 0x69000, -0x1932000 };
+        sVec3_FP rotation = { 0x0, 0x0, 0x0 };
         setupDragonPosition(&position, &rotation);
     }
 
-    if (getFieldTaskPtr()->m30_savePointIndex != -1)
+    if (fieldTaskPtr->m30_fieldEntryPoint != -1)
     {
         //6054472
-        switch (getFieldTaskPtr()->m32)
+        switch (fieldTaskPtr->m32_previousSubField)
         {
         case 8:
-            assert(0);
+            fieldTaskPtr->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript({ 0x60911f8, gFLD_A3 }); // coming back from A3_0
+            break;
         case 9:
-            assert(0);
+            startCutscene(loadCutsceneData({ 0x6091be0, gFLD_A3 })); // coming back from nest
+            break;
         default:
+            // play above excavation intro already?
             if (mainGameState.getBit(0xA, 6))
             {
                 startCutscene(loadCutsceneData({ 0x6091688, gFLD_A3 }));
