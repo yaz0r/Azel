@@ -14,6 +14,7 @@
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "dragonData.h"
 #include "dragonRider.h"
+#include "menu/inventoryMenu.h"
 
 p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID);
 
@@ -2349,10 +2350,8 @@ void initVdp2ForStatusMenu()
     clearVdp2TextArea();
 }
 
-void mainMenuTaskInitSub3(u32 vdp2Offset, u32 r5, u32 r6, u32 r7)
+void switchVdp2MenuTileToHightlighted(u32 vdp2Offset, u32 r5, u32 r6, u32 r7)
 {
-    u32 r11 = 0xFFF;
-    r7 <<= 8;
     for (int i = 0; i < r6; i++)
     {
         u32 r14 = vdp2Offset;
@@ -2360,14 +2359,10 @@ void mainMenuTaskInitSub3(u32 vdp2Offset, u32 r5, u32 r6, u32 r7)
 
         for (int j = 0; j < r10; j++)
         {
-            u16 r1 = getVdp2VramU16(r14);
-            u16 r2 = r1;
-            r2 &= 0xFFF;
-            r1 ^= r1;
-            if (r1)
+            u16 spriteIndex = getVdp2VramU16(r14) & 0xFFF;
+            if (getVdp2VramU16(r14) != spriteIndex)
             {
-                r2 |= r7;
-                setVdp2VramU16(r14, r2);
+                setVdp2VramU16(r14, spriteIndex | (r7 << 8));
             }
             r14 += 2;
         }
@@ -2645,11 +2640,11 @@ void s_mainMenuWorkArea::Init(s_mainMenuWorkArea* pWorkArea)
             if (r14 < 0)
             {
                 r14 = 0;
-                mainMenuTaskInitSub3(mainMenuTaskInitData1[i], 3, 3, 0x620);
+                switchVdp2MenuTileToHightlighted(mainMenuTaskInitData1[i], 3, 3, 0x620);
             }
             else
             {
-                mainMenuTaskInitSub3(mainMenuTaskInitData1[i], 3, 3, 0x660);
+                switchVdp2MenuTileToHightlighted(mainMenuTaskInitData1[i], 3, 3, 0x660);
             }
             break;
         case -1:
@@ -2805,7 +2800,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
 
             if (pWorkArea->m3_menuButtonStates[selectedMenu] == 1)
             {
-                mainMenuTaskInitSub3(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x660);
+                switchVdp2MenuTileToHightlighted(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x660);
             }
 
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x10) // UP
@@ -2831,7 +2826,7 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
 
             if (pWorkArea->m3_menuButtonStates[selectedMenu] == 1)
             {
-                mainMenuTaskInitSub3(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x620);
+                switchVdp2MenuTileToHightlighted(mainMenuTaskInitData1[selectedMenu], 3, 3, 0x620);
             }
 
             pWorkArea->selectedMenu = selectedMenu;
@@ -2862,13 +2857,6 @@ void s_mainMenuWorkArea::Delete(s_mainMenuWorkArea*)
 p_workArea createMainMenuTask(p_workArea workArea)
 {
     return createSubTask<s_mainMenuWorkArea>(workArea);
-}
-
-p_workArea createInventoryMenuTask(p_workArea workArea)
-{
-    PDS_unimplemented("createInventoryMenuTask");
-    assert(0);
-    return NULL;
 }
 
 p_workArea createEnemyListMenuTask(p_workArea workArea)

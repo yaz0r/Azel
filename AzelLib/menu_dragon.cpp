@@ -124,54 +124,6 @@ void resetVdp2LayersAutoScroll()
     }
 }
 
-void clearVdp2TextAreaSub1Sub1(u16 r4)
-{
-    if (r4 >= 0x80)
-    {
-        //assert((characterMap1[r4 - 0x80] >> 16) == 0);
-        characterMap1[r4 - 0x80]--; // this only affect lower 16 bits
-    }
-}
-
-u32 clearVdp2TextAreaSub1(u16 r4, s32 x, s32 y)
-{
-    if (r4 == 0)
-    {
-        setVdp2VramU16(vdp2TextMemoryOffset + (y * 64 + x)*2, 0);
-    }
-
-    u16 var0 = characterMap2[(y << 6) + x];
-    u16 r13 = var0;
-    if (r13 == r4)
-    {
-        return 0;
-    }
-    if (r13 == 0)
-    {
-        return 2;
-    }
-
-    u16* var_14 = characterMap2 + ((x - (r13 & 1)) << 7);
-    y -= (2 & r13) >> 1;
-    var0 = (y << 1);
-    *(var_14 + (var0>>1)) = 0;
-
-    u16* var_10 = characterMap2 + ((x + 1) << 7);
-    *(var_10 + (var0>>1)) = 0;
-    *(var_14 + (y + 1)) = 0;
-    
-    *(var_10 + (y + 1)) = 0;
-
-    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x) * 2, 0);
-    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x)*2 + 2, 0);
-    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x)*2 + 0x80, 0);
-    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x)*2 + 0x82, 0);
-
-    clearVdp2TextAreaSub1Sub1(((r13 & 0x7FF) - 0x400) >> 2);
-
-    return 1;
-}
-
 void clearVdp2TextArea()
 {
     for (int x = vdp2StringContext.mC_X; x < vdp2StringContext.mC_X + vdp2StringContext.m14_Width; x++)
@@ -222,7 +174,7 @@ void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskInit(s_drawDragonMenuStat
 void drawObjectName(const char* string)
 {
     s_stringStatusQuery vars;
-    addStringToVdp2(string, &vars);
+    getVdp2StringContext(string, &vars);
     printVdp2String(&vars);
     moveVdp2TextCursor(&vars);
 }

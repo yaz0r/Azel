@@ -364,7 +364,7 @@ struct s_gameStats
     u8 m2_rider1; // 2
     u8 m3_rider2; // 3
 
-    u16 mA_weaponType;
+    eItems mA_weaponType;
     u16 mC_laserPower;
     u16 mE_gunPower;
 

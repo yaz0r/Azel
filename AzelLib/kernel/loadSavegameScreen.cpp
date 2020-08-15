@@ -553,6 +553,34 @@ struct sSaveProgressTask : public s_workAreaTemplate<sSaveProgressTask>
     //size 0x1C
 };
 
+u32 loadDrawSub1Sub0(s32* param1, u32 param2, u32 param3)
+{
+    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x30)
+    {
+        int var1;
+        if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10) == 0)
+        {
+            var1 = (*param1) + 1;
+            if (param3 < var1)
+            {
+                var1 = param2;
+            }
+        }
+        else
+        {
+            var1 = (*param1) - 1;
+            if (var1 < param2)
+            {
+                var1 = param3;
+            }
+        }
+        *param1 = var1;
+        playSystemSoundEffect(10);
+        return 1;
+    }
+    return 0;
+}
+
 struct sSaveTask : public s_workAreaTemplate<sSaveTask>
 {
     static void Init(sSaveTask* pThis)
@@ -786,34 +814,6 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
         }
 
         loadSavesDirectory(pThis);
-    }
-
-    static u32 loadDrawSub1Sub0(s32* param1, u32 param2, u32 param3)
-    {
-        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m12 & 0x30)
-        {
-            int var1;
-            if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m12 & 0x10) == 0)
-            {
-                var1 = (*param1) + 1;
-                if (param3 < var1)
-                {
-                    var1 = param2;
-                }
-            }
-            else
-            {
-                var1 = (*param1) - 1;
-                if (var1 < param2)
-                {
-                    var1 = param3;
-                }
-            }
-            *param1 = var1;
-            playSystemSoundEffect(10);
-            return 1;
-        }
-        return 0;
     }
 
     static void loadDrawSub1(sSaveTask* pThis)

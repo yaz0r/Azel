@@ -241,7 +241,6 @@ struct sVdp2StringControl
     sVdp2StringControl* pNext; // 1C?
 };
 
-extern u32 characterMap1[0x80];
 extern u16 characterMap2[0x1000];
 //extern u16* vdp2TextMemory;
 extern u32 vdp2TextMemoryOffset;
@@ -283,6 +282,9 @@ void setVdp2VramU8(u32 offset, u8 value);
 void setVdp2VramU32(u32 offset, u32 value);
 u8* getVdp2Cram(u32 offset);
 
+void clearVdp2TextAreaSub1Sub1(u16 r4);
+u32 clearVdp2TextAreaSub1(u16 r4, s32 x, s32 y);
+
 int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer);
 int loadFile2(const char* fileName, u8* destination, u16 vdp1Pointer);
 int loadFile(const char* fileName, s_fileBundle** destination, u16 vdp1Pointer);
@@ -311,7 +313,7 @@ struct s_stringStatusQuery
     u32 m2C;
 };
 
-void addStringToVdp2(const char* string, s_stringStatusQuery* vars);
+void getVdp2StringContext(const char* string, s_stringStatusQuery* vars);
 void moveVdp2TextCursor(s_stringStatusQuery* vars);
 void printVdp2String(s_stringStatusQuery* vars);
 
@@ -326,3 +328,7 @@ void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId);
 u32 rotateRightR0ByR1(u32 r0, u32 r1);
 
 void interruptVDP2Update();
+
+void printVdp2Number2(int value, int length);
+void printVdp2String2(const char* string);
+

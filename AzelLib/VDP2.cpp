@@ -854,14 +854,20 @@ void initLayerMap(u32 layer, u32 planeA, u32 planeB, u32 planeC, u32 planeD)
     }
 }
 
-u32 characterMap1[0x80];
+struct sCharacterMap1Entry
+{
+    u16 m0_value;
+    u16 m2_useCount;
+};
+std::array<sCharacterMap1Entry, 0x80> characterMap1;
 u16 characterMap2[0x1000];
 
 void resetCharacterMap1()
 {
     for (int i = 0; i < 0x80; i++)
     {
-        characterMap1[i] = 0;
+        characterMap1[i].m0_value = 0;
+        characterMap1[i].m2_useCount = 0;
     }
 }
 
@@ -1238,7 +1244,7 @@ sVdp2StringControl* getEndOfvdp2StringControlBufferList()
     return r4;
 }
 
-sVdp2StringControl* var_60525E4;
+sVdp2StringControl* extendedSprites;
 
 void loadCharacterToVdp2(s16 index, s16 offset)
 {
@@ -1249,7 +1255,14 @@ void loadCharacterToVdp2(s16 index, s16 offset)
 
     if (pVdp2StringControl->m14 == 4)
     {
-        assert(0);
+        if (r5 < 0x100)
+        {
+            r6 = extendedSprites->mC;
+        }
+        else
+        {
+            r5 -= 0x100;
+        }
     }
     else
     {
@@ -1388,7 +1401,7 @@ s32 resetVdp2StringsSub1(u16* pData)
         break;
     case 5:
         pNew->mC = pData + 0x10 / 2;
-        var_60525E4 = pNew;
+        extendedSprites = pNew;
         r12 = true;
         break;
     default:
@@ -1462,7 +1475,7 @@ void setupVDP2StringRendering(s32 x, s32 y, s32 width, s32 height)
 void VDP2DrawString(const char* string)
 {
     s_stringStatusQuery query;
-    addStringToVdp2(string, &query);
+    getVdp2StringContext(string, &query);
     
     query.m2C |= 1;
 
@@ -1471,7 +1484,7 @@ void VDP2DrawString(const char* string)
     moveVdp2TextCursor(&query);
 }
 
-void addStringToVdp2(const char* string, s_stringStatusQuery* vars)
+void getVdp2StringContext(const char* string, s_stringStatusQuery* vars)
 {
     vars->m0_cursorX = vdp2StringContext.m4_cursorX;
     vars->m4_cursorY = vdp2StringContext.m8_cursorY;
@@ -1760,5 +1773,181 @@ void interruptVDP2Update()
     }
     flushPengingVDP2Transfers();
     initVdp2Var2();
+}
+
+void printVdp2Number3(s_stringStatusQuery* vars, int value, int length)
+{
+    FunctionUnimplemented();
+}
+
+void printVdp2Number2(int value, int length)
+{
+    s_stringStatusQuery vars;
+    getVdp2StringContext(nullptr, &vars);
+    printVdp2Number3(&vars, value, length);
+    moveVdp2TextCursor(&vars);
+}
+
+int loadExtendedCharacter(u16 character)
+{
+    if (character < 0x8080)
+    {
+        return character + 0x8000;
+    }
+
+    // already loaded?
+    int iVar3 = 0x80;
+    std::array<sCharacterMap1Entry, 0x80>::iterator pdVar5 = characterMap1.begin();
+    int iVar1 = iVar3;
+    if (true) {
+        do {
+            if (pdVar5->m0_value == character)
+            {
+                pdVar5->m2_useCount++;
+                return iVar1;
+            }
+            iVar1 = iVar1 + 1;
+            pdVar5 = pdVar5 + 1;
+        } while (pdVar5 < characterMap1.end());
+    }
+
+    // now loaded, find a slot to load
+    int iVar2 = 0;
+    iVar1 = iVar3;
+    do {
+        if (characterMap1[iVar2].m2_useCount == 0) {
+            loadCharacterToVdp2(iVar3, character);
+            characterMap1[iVar2].m0_value = character;
+            characterMap1[iVar2].m2_useCount = 1;
+            return iVar1;
+        }
+        iVar2 = iVar2 + 1;
+        iVar1 = iVar1 + 1;
+        iVar3 = iVar3 + 1;
+    } while (iVar2 < 0x80);
+    
+    return 0;
+}
+
+void clearVdp2TextAreaSub1Sub1(u16 r4)
+{
+    if (r4 >= 0x80)
+    {
+        characterMap1[r4 - 0x80].m2_useCount--;
+    }
+}
+
+u32 clearVdp2TextAreaSub1(u16 r4, s32 x, s32 y)
+{
+    if (r4 == 0)
+    {
+        setVdp2VramU16(vdp2TextMemoryOffset + (y * 64 + x) * 2, 0);
+    }
+
+    u16 var0 = characterMap2[(y << 6) + x];
+    u16 r13 = var0;
+    if (r13 == r4)
+    {
+        return 0;
+    }
+    if (r13 == 0)
+    {
+        return 2;
+    }
+
+    u16* var_14 = characterMap2 + ((x - (r13 & 1)) << 7);
+    y -= (2 & r13) >> 1;
+    var0 = (y << 1);
+    *(var_14 + (var0 >> 1)) = 0;
+
+    u16* var_10 = characterMap2 + ((x + 1) << 7);
+    *(var_10 + (var0 >> 1)) = 0;
+    *(var_14 + (y + 1)) = 0;
+
+    *(var_10 + (y + 1)) = 0;
+
+    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x) * 2, 0);
+    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x) * 2 + 2, 0);
+    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x) * 2 + 0x80, 0);
+    setVdp2VramU16(vdp2TextMemoryOffset + ((y << 6) + x) * 2 + 0x82, 0);
+
+    clearVdp2TextAreaSub1Sub1(((r13 & 0x7FF) - 0x400) >> 2);
+
+    return 1;
+}
+
+s32 clearExtendedCharacter(u32 param_1, s_stringStatusQuery* vars)
+{
+    if (clearVdp2TextAreaSub1(param_1, vars->m0_cursorX, vars->m4_cursorY))
+    {
+        clearVdp2TextAreaSub1(param_1, vars->m0_cursorX + 1, vars->m4_cursorY);
+        clearVdp2TextAreaSub1(param_1, vars->m0_cursorX, vars->m4_cursorY + 1);
+        clearVdp2TextAreaSub1(param_1, vars->m0_cursorX + 1, vars->m4_cursorY + 1);
+        return 1;
+    }
+    return 0;
+}
+
+
+void printVdp2String3(s_stringStatusQuery* vars)
+{
+    u32 r11 = (printVdp2StringTable[vars->m28] *0x1000) + 0x400;
+    printVdp2StringSub1(vars);
+    vars->m24_vdp2MemoryOffset = vdp2TextMemoryOffset + (((vars->m4_cursorY * 0x40) + vars->m0_cursorX)) * 2;
+    do 
+    {
+        int character = (u8)*(vars->m20_string++);
+        if (character == 0)
+        {
+            return;
+        }
+        if (character < 0x10)
+        {
+            assert(0);
+        }
+        else
+        {
+            if (character > 0x7F)
+            {
+                character = (character * 0x100) + (u8) * (vars->m20_string++);
+            }
+
+            int characterSprite = loadExtendedCharacter(character) * 4 + r11;
+            if (!clearExtendedCharacter(characterSprite, vars))
+            {
+                clearVdp2TextAreaSub1Sub1(character);
+                vars->m24_vdp2MemoryOffset += 4;
+                vars->m0_cursorX++;
+            }
+            else
+            {
+                setVdp2VramU16(vars->m24_vdp2MemoryOffset + 0x00, characterSprite + 0);
+                setVdp2VramU16(vars->m24_vdp2MemoryOffset + 0x02, characterSprite + 1);
+                setVdp2VramU16(vars->m24_vdp2MemoryOffset + 0x80, characterSprite + 2);
+                setVdp2VramU16(vars->m24_vdp2MemoryOffset + 0x82, characterSprite + 3);
+
+                characterMap2[vars->m0_cursorX * 0x40 + vars->m4_cursorY] = characterSprite + 0;
+                characterMap2[(vars->m0_cursorX + 1) * 0x40 + vars->m4_cursorY] = characterSprite + 1;
+                characterMap2[vars->m0_cursorX * 0x40 + vars->m4_cursorY] = characterSprite + 2;
+                characterMap2[(vars->m0_cursorX + 1) * 0x40 + vars->m4_cursorY + 1] = characterSprite + 3;
+
+                vars->m24_vdp2MemoryOffset += 4;
+                vars->m0_cursorX += 2;
+            }
+        }
+
+        if ((vars->m8_windowWidth != 0) && (vars->m18_windowX2 - vars->m0_cursorX < 2)) {
+            assert(0);
+        }
+    } while ((vars->mC_windowHeight == 0) || (1 < vars->m1C_windowY2 - vars->m4_cursorY));
+    vars->m20_string--;
+}
+
+void printVdp2String2(const char* string)
+{
+    s_stringStatusQuery vars;
+    getVdp2StringContext(string, &vars);
+    printVdp2String3(&vars);
+    moveVdp2TextCursor(&vars);
 }
 
