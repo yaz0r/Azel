@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "audio/systemSounds.h"
+#include "commonOverlay.h"
 
 struct s_dragonMenuSubTask1WorkArea : public s_workAreaTemplate<s_dragonMenuSubTask1WorkArea>
 {
@@ -150,7 +151,7 @@ void initVdp2ForDragonMenu(u32 r4)
         clearVdp2TextArea();
     }
 
-    unpackGraphicsToVDP2(COMMON_DAT + 0xFE38, getVdp2Vram(0x71000));
+    unpackGraphicsToVDP2(gCommonFile->m_data + 0xFE38, getVdp2Vram(0x71000));
 }
 
 struct s_drawDragonMenuStatsTask : public s_workAreaTemplate<s_drawDragonMenuStatsTask>

@@ -186,6 +186,10 @@ void sProcessed3dModel::generateVertexBuffer()
         atlasTextureHeight += textureHeight;
     }
 
+    //TODO: this avoids the 0x0 texture case, but it's not super elegant
+    atlasTextureWidth = std::max(atlasTextureWidth, 1);
+    atlasTextureHeight = std::max(atlasTextureHeight, 1);
+
     std::vector<u8> atlasTexture;
     atlasTexture.resize(atlasTextureWidth* atlasTextureHeight * 4);
     for (int i = 0; i < atlasDefinition.size(); i++)
@@ -201,12 +205,15 @@ void sProcessed3dModel::generateVertexBuffer()
         u16 entryHeight = 0;
         u32* pDecodedTexture = decodeVdp1Quad(tempQuad, entryWidth, entryHeight);
 
-        u8* textureStartInAtlas = &atlasTexture[(atlasTextureWidth * atlasDefinition[i].startY + atlasDefinition[i].startX) * 4];
-        u8* pCurrentScanlineInAtlas = textureStartInAtlas;
-        for (int y = 0; y <entryHeight; y++)
+        if(entryWidth * entryHeight)
         {
-            memcpy(pCurrentScanlineInAtlas, pDecodedTexture + y * entryWidth, entryWidth * 4);
-            pCurrentScanlineInAtlas += atlasTextureWidth * 4;
+            u8* textureStartInAtlas = &atlasTexture[(atlasTextureWidth * atlasDefinition[i].startY + atlasDefinition[i].startX) * 4];
+            u8* pCurrentScanlineInAtlas = textureStartInAtlas;
+            for (int y = 0; y < entryHeight; y++)
+            {
+                memcpy(pCurrentScanlineInAtlas, pDecodedTexture + y * entryWidth, entryWidth * 4);
+                pCurrentScanlineInAtlas += atlasTextureWidth * 4;
+            }
         }
 
         delete[] pDecodedTexture;

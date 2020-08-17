@@ -7,6 +7,7 @@
 #include "battleGrid.h"
 #include "kernel/debug/trace.h"
 #include "battle/interpolators/vec2FPInterpolator.h"
+#include "battleGenericData.h"
 
 struct sBattleEngineSub1 : public s_workAreaTemplate<sBattleEngineSub1>
 {
@@ -85,12 +86,12 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
         pThis->m2 = pThis->m1;
         pThis->m8.mC_startValue[0] = gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[0];
         pThis->m8.mC_startValue[1] = gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep[1];
-        pThis->m8.m24_targetValue[0] = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x60ab120) + pThis->m1 * 8 + 0);
-        pThis->m8.m24_targetValue[1] = readSaturnS32(gCurrentBattleOverlay->getSaturnPtr(0x60ab120) + pThis->m1 * 8 + 4);
+        pThis->m8.m24_targetValue[0] = readSaturnS32(g_BTL_GenericData->getSaturnPtr(0x60ab120) + pThis->m1 * 8 + 0);
+        pThis->m8.m24_targetValue[1] = readSaturnS32(g_BTL_GenericData->getSaturnPtr(0x60ab120) + pThis->m1 * 8 + 4);
         pThis->m8.m38_interpolationLength = pThis->m6_interpolationLength;
         vec2FPInterpolator_Init(&pThis->m8);
         pThis->m44.mC_startValue = pThis->m80;
-        pThis->m44.m24_targetValue = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60AB160) + pThis->m1 * 0xC);
+        pThis->m44.m24_targetValue = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60AB160) + pThis->m1 * 0xC);
         pThis->m44.m38_interpolationLength = pThis->m6_interpolationLength;
         vec2FPInterpolator_Init(&pThis->m44);
         pThis->m0++;

@@ -6,6 +6,7 @@
 #include "battle/battleFormation.h"
 #include "battle/battleDebug.h"
 #include "BTL_A3_BaldorFormation.h"
+#include "BTL_A3_data.h"
 #include "baldor.h"
 #include "battle/battleTextDisplay.h"
 #include "town/town.h" // TODO: cleanup
@@ -58,7 +59,7 @@ void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
 
     pThis->m4_formationData = allocateFormationData(pThis, pThis->m12_formationSize);
 
-    sSaturnPtr formationDataSource = gCurrentBattleOverlay->getSaturnPtr(0x60a809c) + 4 * formationID;
+    sSaturnPtr formationDataSource = g_BTL_A3->getSaturnPtr(0x60a809c) + 4 * formationID;
     for (int i = 0; i < pThis->m12_formationSize; i++)
     {
         pThis->m4_formationData[i].m0_translation.mC_target = readSaturnVec3(readSaturnEA(formationDataSource) + 0xC * i + 0);

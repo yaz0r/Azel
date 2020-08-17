@@ -333,7 +333,7 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
         {
             assert(0);
         }
-        if ((readSaturnS8(gCommonFile.getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2)) == 4) && (gBattleManager->mE == 2))
+        if ((readSaturnS8(gCommonFile->getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2)) == 4) && (gBattleManager->mE == 2))
         {
             setNextGameStatus(0x49);
         }
@@ -413,8 +413,8 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
 
         PDS_Log("Switching to Game Satus %d\n", gGameStatus.m4_gameStatus);
 
-        gGameStatus.m0_gameMode = readSaturnS8(gCommonFile.getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2));
-        gGameStatus.m1 = readSaturnS8(gCommonFile.getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2) + 1);
+        gGameStatus.m0_gameMode = readSaturnS8(gCommonFile->getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2));
+        gGameStatus.m1 = readSaturnS8(gCommonFile->getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2) + 1);
 
         if (gGameStatus.m6_previousGameStatus == 74)
         {

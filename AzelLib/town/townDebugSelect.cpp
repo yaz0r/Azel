@@ -70,7 +70,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
         // switch to subTown selection
         if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0xC0)
         {
-            if (readSaturnEA(gCommonFile.getSaturnPtr(0x2165DC + pThis->m0_currentSelectedTown * 16)).m_offset)
+            if (readSaturnEA(gCommonFile->getSaturnPtr(0x2165DC + pThis->m0_currentSelectedTown * 16)).m_offset)
             {
                 if (pThis->m10[pThis->m0_currentSelectedTown])
                 {
@@ -103,7 +103,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
             }
 
             vdp2DebugPrintSetPosition(2, i + 4);
-            vdp2DebugPrintNewLine(readSaturnString(readSaturnEA(gCommonFile.getSaturnPtr(0x2165D4 + i * 16))));
+            vdp2DebugPrintNewLine(readSaturnString(readSaturnEA(gCommonFile->getSaturnPtr(0x2165D4 + i * 16))));
         }
 
         vdp2PrintStatus.m10_palette = 0x8000;
@@ -133,7 +133,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
 
     void CountNumberOfSubTown()
     {
-        sSaturnPtr r6 = readSaturnEA(gCommonFile.getSaturnPtr(0x2165D8 + 4 + m0_currentSelectedTown * 16));
+        sSaturnPtr r6 = readSaturnEA(gCommonFile->getSaturnPtr(0x2165D8 + 4 + m0_currentSelectedTown * 16));
         
         if (r6.m_offset == 0)
         {
@@ -163,7 +163,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
 
     s8 checkIfTownFileExists(s32 townIndex)
     {
-        sSaturnPtr fileListEA = readSaturnEA(gCommonFile.getSaturnPtr(0x2165E0 + townIndex * 16));
+        sSaturnPtr fileListEA = readSaturnEA(gCommonFile->getSaturnPtr(0x2165E0 + townIndex * 16));
         if (fileListEA.m_offset == 0)
             return 1;
 

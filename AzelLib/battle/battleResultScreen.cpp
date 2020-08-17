@@ -13,6 +13,7 @@
 #include "battleEnd.h"
 #include "audio/systemSounds.h"
 #include "BTL_A3/BTL_A3_data.h"
+#include "battle/battleGenericData.h"
 
 enum eBattleRating : s8
 {
@@ -219,8 +220,8 @@ void battleResultScreen_update(sBattleResultScreen* pThis)
         pThis->m80_battleRating = battleResultScreen_computeBattleRating(pThis);
 
         // print the battle rating (grey version, split in 2 strings)
-        battleResultScreen_createProgressiveText(pThis, readSaturnEA(g_BTL_A3->getSaturnPtr(0x60ab944) + pThis->m80_battleRating * 4), 0, 0, 0);
-        battleResultScreen_createProgressiveText(pThis, readSaturnEA(g_BTL_A3->getSaturnPtr(0x60ab944) + pThis->m80_battleRating * 4) + 0x10, 0, 0, 0);
+        battleResultScreen_createProgressiveText(pThis, readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x60ab944) + pThis->m80_battleRating * 4), 0, 0, 0);
+        battleResultScreen_createProgressiveText(pThis, readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x60ab944) + pThis->m80_battleRating * 4) + 0x10, 0, 0, 0);
 
         playSystemSoundEffect(0x11);
 
@@ -276,14 +277,14 @@ void battleResultScreen_update(sBattleResultScreen* pThis)
         if (pThis->m4 == 0x27)
         {
             // print the battle rating (over grey version)
-            battleResultScreen_createProgressiveText(pThis, readSaturnEA(g_BTL_A3->getSaturnPtr(0x60ab930) + pThis->m80_battleRating * 4), 0, pThis->m80_battleRating, 0);
+            battleResultScreen_createProgressiveText(pThis, readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x60ab930) + pThis->m80_battleRating * 4), 0, pThis->m80_battleRating, 0);
         }
 
         if (--pThis->m4 < 0)
         {
             // display Dyne count
-            battleResultScreen_createProgressiveText2(pThis, g_BTL_A3->getSaturnPtr(0x60ab9F0));
-            battleResultScreen_createProgressiveTextNumber(pThis, g_BTL_A3->getSaturnPtr(0x60abB90), gBattleManager->m10_battleOverlay->m4_battleEngine->m478_dyneReceivedFromBattle);
+            battleResultScreen_createProgressiveText2(pThis, g_BTL_GenericData->getSaturnPtr(0x60ab9F0));
+            battleResultScreen_createProgressiveTextNumber(pThis, g_BTL_GenericData->getSaturnPtr(0x60abB90), gBattleManager->m10_battleOverlay->m4_battleEngine->m478_dyneReceivedFromBattle);
 
             sVec2_S32 local_30;
             battleResultScreen_updateSub8(gBattleManager->m10_battleOverlay->m4_battleEngine->m478_dyneReceivedFromBattle, &local_30);
@@ -295,8 +296,8 @@ void battleResultScreen_update(sBattleResultScreen* pThis)
             if (mainGameState.gameStats.m1_dragonLevel != 8)
             {
                 // display XP gain
-                battleResultScreen_createProgressiveText2(pThis, g_BTL_A3->getSaturnPtr(0x60ab9E0));
-                battleResultScreen_createProgressiveTextNumber(pThis, g_BTL_A3->getSaturnPtr(0x60abB80), gBattleManager->m10_battleOverlay->m4_battleEngine->m474_XPReceivedFromBattle);
+                battleResultScreen_createProgressiveText2(pThis, g_BTL_GenericData->getSaturnPtr(0x60ab9E0));
+                battleResultScreen_createProgressiveTextNumber(pThis, g_BTL_GenericData->getSaturnPtr(0x60abB80), gBattleManager->m10_battleOverlay->m4_battleEngine->m474_XPReceivedFromBattle);
 
                 sVec2_S32 local_30;
                 battleResultScreen_updateSub8(gBattleManager->m10_battleOverlay->m4_battleEngine->m474_XPReceivedFromBattle, &local_30);

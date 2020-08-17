@@ -45,7 +45,10 @@ struct sTownSetup
 
 struct sTownOverlay : public sSaturnMemoryFile
 {
-    virtual void init() = 0;
+    sTownOverlay(const char* fileName) : sSaturnMemoryFile(fileName)
+    {
+    }
+
     virtual sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(struct npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) = 0;
     virtual sTownObject* createObjectTaskFromEA_subTaskWithEAArg(struct npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) = 0;
 

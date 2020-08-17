@@ -13,6 +13,7 @@
 #include "audio/systemSounds.h"
 #include "kernel/debug/trace.h"
 #include "commonOverlay.h"
+#include "battleGenericData.h"
 
 struct sHomingLaserRootTask : public s_workAreaTemplateWithCopy<sHomingLaserRootTask>
 {
@@ -147,7 +148,7 @@ void morphDragonSub1(s32 param_1, s32 param_2)
 
 void updateDragonStats(int type, sVec3_FP* pOutput)
 {
-    auto& pDragonLevelStats = gCommonFile.dragonLevelStats[mainGameState.gameStats.m1_dragonLevel];
+    auto& pDragonLevelStats = gCommonFile->dragonLevelStats[mainGameState.gameStats.m1_dragonLevel];
 
     std::array<s8, 3>::iterator pcVar4 = pDragonLevelStats.m18.begin();
     std::array<s8, 3>::iterator pcVar5 = pDragonLevelStats.m12.begin();
@@ -218,7 +219,7 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
 
     pThis->m30 = performModulo2(0x5b05b0, randomNumber()) - 0x2D82D8;
     computeVectorAngles(local_18, pThis->m94);
-    pThis->m24 = readSaturnFP(gCurrentBattleOverlay->getSaturnPtr(0x60AD510) + pThis->m80_laserIndexInGroup * 4);
+    pThis->m24 = readSaturnFP(g_BTL_GenericData->getSaturnPtr(0x60AD510) + pThis->m80_laserIndexInGroup * 4);
 
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->m10_laserPosition);
@@ -246,7 +247,7 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
 
     playSystemSoundEffect(8);
 
-    sHomingLaserTask_InitSub0(&pThis->mF0, pThis, pThis->m90_dragonPosition, pThis->m4_vd1Allocation->m4_vdp1Memory, &gCurrentBattleOverlay->mLaserData);
+    sHomingLaserTask_InitSub0(&pThis->mF0, pThis, pThis->m90_dragonPosition, pThis->m4_vd1Allocation->m4_vdp1Memory, &g_BTL_GenericData->mLaserData);
 
     sVec3_FP local_34;
     sVec3_FP local_40;
@@ -272,7 +273,7 @@ void sHomingLaserTask_UpdateSub0(sHomingLaserTask* pThis)
         local_20[1] = performModulo2(0x111, randomNumber()) - 0x88;
         local_20[2] = performModulo2(0x111, randomNumber()) - 0x88;
 
-        createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, gCurrentBattleOverlay->getSaturnPtr(0x060b0658), &pThis->m60[0], &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, &local_20, 0x10000, 0, 0);
+        createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, g_BTL_GenericData->getSaturnPtr(0x060b0658), &pThis->m60[0], &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, &local_20, 0x10000, 0, 0);
     }
 }
 
@@ -343,7 +344,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
                     iVar8 = fixedPoint::fromInteger(mainGameState.gameStats.mC_laserPower);
                 }
 
-                int uVar3 = sHomingLaserTask_UpdateSub1(fixedPoint::toInteger(FP_Div(iVar8, fixedPoint::fromInteger(readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AD4E4) + gDragonState->mC_dragonType * 2))) + 0x8000));
+                int uVar3 = sHomingLaserTask_UpdateSub1(fixedPoint::toInteger(FP_Div(iVar8, fixedPoint::fromInteger(readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AD4E4) + gDragonState->mC_dragonType * 2))) + 0x8000));
                 applyDamageToEnnemy(pThis->m84_targetable, sGunShotTask_UpdateSub1Sub2(pThis->m84_targetable, uVar3, 1), pThis->m88_targetablePosition, 2, pThis->m34_laserDelta, 0x1000);
 
                 if ((pThis->m84_targetable->m60 == 0) || (pThis->m84_targetable->m50_flags & 0x400))

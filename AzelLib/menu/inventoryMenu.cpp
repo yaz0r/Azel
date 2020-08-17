@@ -3,6 +3,7 @@
 #include "kernel/menuCursor.h"
 #include "items.h"
 #include "audio/systemSounds.h"
+#include "commonOverlay.h"
 
 void switchVdp2MenuTileToHightlighted(u32 vdp2Offset, u32 r5, u32 r6, u32 r7); // TODO: cleanup
 s32 getCurrentGunPower(); // TODO: cleanup
@@ -35,7 +36,7 @@ void initVdp2ForInventory(int param_1)
         setupVDP2StringRendering(0, 0x22, 0x2c, 0x1c);
         clearVdp2TextArea();
     }
-    unpackGraphicsToVDP2(COMMON_DAT + 0xed54, getVdp2Vram(0x71000));
+    unpackGraphicsToVDP2(gCommonFile->m_data + 0xed54, getVdp2Vram(0x71000));
     return;
 }
 
@@ -337,7 +338,7 @@ void inventoryPrintEntry(s32 param_1, eItems param_2)
     }
     vdp2StringContext.m8_cursorY += vdp2StringContext.m10_Y + param_1;
 
-    printVdp2String2("\x80\x81"); // X sign
+    printVdp2String2("\x80\x81"); // X sign asa  wide 2x2 character
 
     int quantity;
     if (param_2 < 0x4D)

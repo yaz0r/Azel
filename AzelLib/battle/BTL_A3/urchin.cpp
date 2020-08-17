@@ -484,7 +484,7 @@ void Urchin_update(sUrchin* pThis)
             pThis->mD0->m14[pThis->mAE].m18 &= ~0x20;
         }
 
-        pThis->mD0->m14[pThis->mAE].m1A = FP_Div(pThis->mB4 * 0x640000, fixedPoint::fromInteger(readSaturnS16(gCommonFile.getSaturnPtr(0x0020179c) + pThis->mCC->m0 * 4))).toInteger();
+        pThis->mD0->m14[pThis->mAE].m1A = FP_Div(pThis->mB4 * 0x640000, fixedPoint::fromInteger(readSaturnS16(gCommonFile->getSaturnPtr(0x0020179c) + pThis->mCC->m0 * 4))).toInteger();
 
         if (pThis->mD0->m14[pThis->mAE].m1C != 0)
         {

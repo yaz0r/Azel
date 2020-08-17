@@ -8,6 +8,7 @@
 #include "town/town.h" // todo: for npcFileDeleter
 #include "battleCommandMenu.h"
 #include "kernel/vdp1Allocator.h"
+#include "battleGenericData.h"
 
 void battleHud2_Init(battleHud2* pThis)
 {
@@ -168,10 +169,10 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         vdp1WriteEA.mC_CMDXA   = pThis->m1A; // CMDXA
         vdp1WriteEA.mE_CMDYA   = -(pThis->m1C); // CMDYA
 
-        outputColor[0] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * performModulo(0xf, pThis->m4));
-        outputColor[1] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 1));
-        outputColor[2] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 2));
-        outputColor[3] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 3));
+        outputColor[0] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * performModulo(0xf, pThis->m4));
+        outputColor[1] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 1));
+        outputColor[2] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 2));
+        outputColor[3] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 3));
 
         vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 
@@ -199,10 +200,10 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         vdp1WriteEA.mC_CMDXA = pThis->m1A; // CMDXA
         vdp1WriteEA.mE_CMDYA = -(pThis->m1C); // CMDYA
 
-        outputColor[0] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * performModulo(0xf, pThis->m4));
-        outputColor[1] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 1));
-        outputColor[2] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 2));
-        outputColor[3] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 3));
+        outputColor[0] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * performModulo(0xf, pThis->m4));
+        outputColor[1] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 1));
+        outputColor[2] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 2));
+        outputColor[3] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 3));
 
         vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 
@@ -230,10 +231,10 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         vdp1WriteEA.mC_CMDXA = pThis->m1A; // CMDXA
         vdp1WriteEA.mE_CMDYA = -(pThis->m1C); // CMDYA
 
-        outputColor[0] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * performModulo(0xf, pThis->m4));
-        outputColor[1] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 1));
-        outputColor[2] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 2));
-        outputColor[3] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 3));
+        outputColor[0] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * performModulo(0xf, pThis->m4));
+        outputColor[1] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 1));
+        outputColor[2] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 2));
+        outputColor[3] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 3));
 
         vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 
@@ -261,10 +262,10 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         vdp1WriteEA.mC_CMDXA = pThis->m1A; // CMDXA
         vdp1WriteEA.mE_CMDYA = -(pThis->m1C); // CMDYA
 
-        outputColor[0] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * performModulo(0xf, pThis->m4));
-        outputColor[1] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 1));
-        outputColor[2] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 2));
-        outputColor[3] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 3));
+        outputColor[0] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * performModulo(0xf, pThis->m4));
+        outputColor[1] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 1));
+        outputColor[2] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 2));
+        outputColor[3] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d94) + 2 * (performModulo(0xf, pThis->m4) + 3));
 
         vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 
@@ -292,10 +293,10 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         vdp1WriteEA.mC_CMDXA = pThis->m1A; // CMDXA
         vdp1WriteEA.mE_CMDYA = -(pThis->m1C); // CMDYA
 
-        outputColor[0] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * performModulo(0xf, pThis->m4));
-        outputColor[1] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 1));
-        outputColor[2] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 2));
-        outputColor[3] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 3));
+        outputColor[0] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * performModulo(0xf, pThis->m4));
+        outputColor[1] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 1));
+        outputColor[2] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 2));
+        outputColor[3] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 3));
 
         vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 
@@ -323,10 +324,10 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         vdp1WriteEA.mC_CMDXA = pThis->m1A; // CMDXA
         vdp1WriteEA.mE_CMDYA = -(pThis->m1C); // CMDYA
 
-        outputColor[0] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * performModulo(0xf, pThis->m4));
-        outputColor[1] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 1));
-        outputColor[2] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 2));
-        outputColor[3] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 3));
+        outputColor[0] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * performModulo(0xf, pThis->m4));
+        outputColor[1] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 1));
+        outputColor[2] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 2));
+        outputColor[3] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 3));
 
         vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 
@@ -385,10 +386,10 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         vdp1WriteEA.mC_CMDXA = pThis->m1A; // CMDXA
         vdp1WriteEA.mE_CMDYA = -(pThis->m1C); // CMDYA
 
-        outputColor[0] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * performModulo(0xf, pThis->m4));
-        outputColor[1] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 1));
-        outputColor[2] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 2));
-        outputColor[3] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 3));
+        outputColor[0] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * performModulo(0xf, pThis->m4));
+        outputColor[1] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 1));
+        outputColor[2] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 2));
+        outputColor[3] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 3));
 
         vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 
@@ -503,10 +504,10 @@ void battleHud2_DrawSub3(battleHud2* pThis)
     vdp1WriteEA.mC_CMDXA = pThis->m1A + 0x10; // CMDXA
     vdp1WriteEA.mE_CMDYA = -(pThis->m1C - 0xD); // CMDYA
 
-    outputColor[0] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d2c) + 2 * performModulo(0xd, pThis->m4));
-    outputColor[1] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d2c) + 2 * (performModulo(0xd, pThis->m4) + 1));
-    outputColor[2] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d2c) + 2 * (performModulo(0xd, pThis->m4) + 2));
-    outputColor[3] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1d2c) + 2 * (performModulo(0xd, pThis->m4) + 3));
+    outputColor[0] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d2c) + 2 * performModulo(0xd, pThis->m4));
+    outputColor[1] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d2c) + 2 * (performModulo(0xd, pThis->m4) + 1));
+    outputColor[2] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d2c) + 2 * (performModulo(0xd, pThis->m4) + 2));
+    outputColor[3] = readSaturnU16(g_BTL_GenericData->getSaturnPtr(0x060b1d2c) + 2 * (performModulo(0xd, pThis->m4) + 3));
 
     vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
 

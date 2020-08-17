@@ -13,6 +13,7 @@
 #include "town/town.h" // TODO: clean
 #include "kernel/vdp1Allocator.h" // TODO: clean
 #include "audio/systemSounds.h"
+#include "battle/battleGenericData.h"
 
 void fieldPaletteTaskInitSub0Sub0(); // TODO: clean
 
@@ -198,7 +199,7 @@ s32 BattleCommandMenu_PopulateSubMenu(sBattleCommandMenu* pThis)
         // for each class types
         for (int classType = 0; classType < 6; classType++)
         {
-            sSaturnPtr classBerserksTable = readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x60ac094) + classType * 4);
+            sSaturnPtr classBerserksTable = readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x60ac094) + classType * 4);
 
             for (int classBerserkIndex = 0; classBerserkIndex < 5; classBerserkIndex++)
             {
@@ -545,8 +546,8 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
 void BattleCommandMenu_DrawButton(sBattleCommandMenu* pThis, int buttonIndex)
 {
     int state = 0;
-    int buttonWidth = pThis->mC + pThis->m14 + readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ac154) + buttonIndex * 4) - 0xB0;
-    int buttonHeight = (-readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60ac154) + buttonIndex * 4 + 2) - pThis->mE) + 0x70;
+    int buttonWidth = pThis->mC + pThis->m14 + readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60ac154) + buttonIndex * 4) - 0xB0;
+    int buttonHeight = (-readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60ac154) + buttonIndex * 4 + 2) - pThis->mE) + 0x70;
 
     switch (buttonIndex)
     {
@@ -611,20 +612,20 @@ void BattleCommandMenu_DrawButton(sBattleCommandMenu* pThis, int buttonIndex)
     switch (state)
     {
     case 0:
-        pSpriteData = readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x60b1bec) + 4 * buttonIndex);
+        pSpriteData = readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x60b1bec) + 4 * buttonIndex);
     break;
     case 1:
         if(pThis->m0_selectedBattleCommand == buttonIndex)
         {
-            pSpriteData = readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x60b1bbc) + 4 * buttonIndex);
+            pSpriteData = readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x60b1bbc) + 4 * buttonIndex);
         }
         else
         {
-            pSpriteData = readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x60b1bd4) + 4 * buttonIndex);
+            pSpriteData = readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x60b1bd4) + 4 * buttonIndex);
         }
         break;
     case 2:
-        pSpriteData = readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x60b1c04) + 4 * buttonIndex);
+        pSpriteData = readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x60b1c04) + 4 * buttonIndex);
         break;
     default:
         assert(0);
@@ -718,8 +719,8 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
             vdp1WriteEA.m6_CMDCOLR = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2ECC;
             vdp1WriteEA.m8_CMDSRCA = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x218;
             vdp1WriteEA.mA_CMDSIZE = 0x418;
-            vdp1WriteEA.mC_CMDXA = pThis->mC + readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0;
-            vdp1WriteEA.mE_CMDYA = -((-readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70);
+            vdp1WriteEA.mC_CMDXA = pThis->mC + readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0;
+            vdp1WriteEA.mE_CMDYA = -((-readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70);
 
             graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
             graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
@@ -738,8 +739,8 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
             vdp1WriteEA.m6_CMDCOLR = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2ECC;
             vdp1WriteEA.m8_CMDSRCA = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x248;
             vdp1WriteEA.mA_CMDSIZE = 0x418;
-            vdp1WriteEA.mC_CMDXA = pThis->mC + readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0;
-            vdp1WriteEA.mE_CMDYA = -((-readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70);
+            vdp1WriteEA.mC_CMDXA = pThis->mC + readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0;
+            vdp1WriteEA.mE_CMDYA = -((-readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70);
 
             graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
             graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
@@ -759,8 +760,8 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
                 vdp1WriteEA.m6_CMDCOLR = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2ECC;
                 vdp1WriteEA.m8_CMDSRCA = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x218;
                 vdp1WriteEA.mA_CMDSIZE = 0x418;
-                vdp1WriteEA.mC_CMDXA = pThis->mC + readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0;
-                vdp1WriteEA.mE_CMDYA = -((-readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70);
+                vdp1WriteEA.mC_CMDXA = pThis->mC + readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0;
+                vdp1WriteEA.mE_CMDYA = -((-readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70);
 
                 graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
                 graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
@@ -779,8 +780,8 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
                 vdp1WriteEA.m6_CMDCOLR = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2ECC;
                 vdp1WriteEA.m8_CMDSRCA = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x248;
                 vdp1WriteEA.mA_CMDSIZE = 0x418;
-                vdp1WriteEA.mC_CMDXA = pThis->mC + readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0;
-                vdp1WriteEA.mE_CMDYA = -((-readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70);
+                vdp1WriteEA.mC_CMDXA = pThis->mC + readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AC154) + pThis->m0_selectedBattleCommand * 4) - 0xB0;
+                vdp1WriteEA.mE_CMDYA = -((-readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AC156) + pThis->m0_selectedBattleCommand * 4) - pThis->mE) + 0x70);
 
                 graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
                 graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;

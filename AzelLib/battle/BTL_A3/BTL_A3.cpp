@@ -79,6 +79,8 @@ npcFileDeleter* initMemoryForBattleSub0(p_workArea pThis, s32 fileIndex)
     }
 
     fileEntry.mC_fileBundle = loadNPCFile2(pThis, fileEntry.mFileName, fileEntry.m4_fileSize, fileIndex);
+
+    return fileEntry.mC_fileBundle;
 }
 
 void initMemoryForBattle(p_workArea pThis, const char** assetList)
@@ -119,27 +121,10 @@ p_workArea overlayStart_BTL_A3(p_workArea parent)
 {
     if (g_BTL_A3 == NULL)
     {
-        FILE* fHandle = fopen("BTL_A3.PRG", "rb");
-        assert(fHandle);
-
-        fseek(fHandle, 0, SEEK_END);
-        u32 fileSize = ftell(fHandle);
-
-        fseek(fHandle, 0, SEEK_SET);
-        u8* fileData = new u8[fileSize];
-        fread(fileData, fileSize, 1, fHandle);
-        fclose(fHandle);
-
         g_BTL_A3 = new BTL_A3_data();
-        g_BTL_A3->m_name = "BTL_A3.PRG";
-        g_BTL_A3->m_data = fileData;
-        g_BTL_A3->m_dataSize = fileSize;
-        g_BTL_A3->m_base = 0x6054000;
-        g_BTL_A3->init();
-
-        gCurrentBattleOverlay = g_BTL_A3;
     }
 
+    gCurrentBattleOverlay = g_BTL_A3;
     startTrace("BTL_A3.trace.txt");
     return createBattleMainTask(parent, &battle_A3_initMusic, battle_A3_func0);
 }

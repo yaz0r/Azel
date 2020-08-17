@@ -145,7 +145,7 @@ void drawMultiChoiceVdp1Cursor(s32 r4_x, s32 r5_y, sSaturnPtr r6_spritePtr, s32 
 
 void s_multiChoiceTask::Draw(s_multiChoiceTask* pThis)
 {
-    drawMultiChoiceVdp1Cursor((pThis->m14_x + 2) * 8, (pThis->m16_y + pThis->m5_selectedEntry * 2 + 1) * 8, gCommonFile.getSaturnPtr(0x20FFE0 + pThis->m7 * 10), 0x7F0);
+    drawMultiChoiceVdp1Cursor((pThis->m14_x + 2) * 8, (pThis->m16_y + pThis->m5_selectedEntry * 2 + 1) * 8, gCommonFile->getSaturnPtr(0x20FFE0 + pThis->m7 * 10), 0x7F0);
 
     if (pThis->m3_quantity > 0)
     {
@@ -287,7 +287,7 @@ void s_multiChoiceTask2_Update(s_multiChoiceTask* pThis)
 
 void s_multiChoiceTask2_Draw(s_multiChoiceTask* pThis)
 {
-    drawMultiChoiceVdp1Cursor((pThis->m14_x + 2) * 8, (pThis->m16_y + pThis->m5_selectedEntry * 2 + 1) * 8, gCommonFile.getSaturnPtr(0x20FFE0 + pThis->m7 * 10), 0x7F0);
+    drawMultiChoiceVdp1Cursor((pThis->m14_x + 2) * 8, (pThis->m16_y + pThis->m5_selectedEntry * 2 + 1) * 8, gCommonFile->getSaturnPtr(0x20FFE0 + pThis->m7 * 10), 0x7F0);
 
     pThis->m8 += vblankData.m14_numVsyncPerFrame;
 

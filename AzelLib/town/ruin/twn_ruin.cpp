@@ -611,6 +611,8 @@ s32 twnVar2 = 0x7FFFFFFF;
 
 p_workArea overlayStart_TWN_RUIN(p_workArea pUntypedThis, u32 arg)
 {
+    gTWN_RUIN->makeCurrent();
+
     townDebugTask2Function* pThis = static_cast<townDebugTask2Function*>(pUntypedThis);
 
     pThis->m_DeleteMethod = &townOverlayDelete;
@@ -1170,35 +1172,8 @@ s32 scriptFunction_605B320(s32 arg0, s32 arg1)
     return 0;
 }
 
-void TWN_RUIN_data::create()
+TWN_RUIN_data::TWN_RUIN_data() : sTownOverlay("TWN_RUIN.PRG")
 {
-    if (gTWN_RUIN == NULL)
-    {
-        FILE* fHandle = fopen("TWN_RUIN.PRG", "rb");
-        assert(fHandle);
-
-        fseek(fHandle, 0, SEEK_END);
-        u32 fileSize = ftell(fHandle);
-
-        fseek(fHandle, 0, SEEK_SET);
-        u8* fileData = new u8[fileSize];
-        fread(fileData, fileSize, 1, fHandle);
-        fclose(fHandle);
-
-        gTWN_RUIN = new TWN_RUIN_data();
-        gTWN_RUIN->m_name = "TWN_RUIN.PRG";
-        gTWN_RUIN->m_data = fileData;
-        gTWN_RUIN->m_dataSize = fileSize;
-        gTWN_RUIN->m_base = 0x6054000;
-
-        gTWN_RUIN->init();
-    }
-}
-
-void TWN_RUIN_data::init()
-{
-    gCurrentTownOverlay = this;
-
     overlayScriptFunctions.m_zeroArg[0x6057570] = &hasLoadingCompleted;
     overlayScriptFunctions.m_zeroArg[0x6057058] = &scriptFunction_6057058;
     overlayScriptFunctions.m_zeroArg[0x605762A] = &scriptFunction_605762A;

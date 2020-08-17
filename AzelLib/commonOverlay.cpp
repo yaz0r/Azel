@@ -4,20 +4,19 @@
 #include "dragonData.h"
 #include "dragonRider.h"
 
-sCommonOverlay_data gCommonFile;
+sCommonOverlay_data* gCommonFile = nullptr;
 
 void initCommonFile()
 {
-    gCommonFile.m_name = "COMMON.DAT";
-    gCommonFile.m_data = COMMON_DAT;
-    gCommonFile.m_dataSize = 0x98000;
-    gCommonFile.m_base = 0x00200000;
-    gCommonFile.init();
+    assert(gCommonFile == nullptr);
+    new sCommonOverlay_data;
 }
 
 
-void sCommonOverlay_data::init()
+sCommonOverlay_data::sCommonOverlay_data() : sSaturnMemoryFile("COMMON.DAT", 0x200000)
 {
+    gCommonFile = this;
+
     // dragonLevelStats
     {
         sSaturnPtr pDataTable = getSaturnPtr(0x206FF8);

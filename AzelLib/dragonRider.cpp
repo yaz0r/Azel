@@ -138,5 +138,5 @@ void loadCurrentRider2(s_workArea* pWorkArea)
 
 void loadDragonRiderDataFromCommon()
 {
-    gRiderTable[1].m_pExtraData = readRiderDefinitionSub(gCommonFile.getSaturnPtr(0x2020fc));
+    gRiderTable[1].m_pExtraData = readRiderDefinitionSub(gCommonFile->getSaturnPtr(0x2020fc));
 }

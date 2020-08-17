@@ -1,6 +1,6 @@
 #include "PDS.h"
 #include "twn_e011.h"
-#include "town/e006/twn_e006.h"
+#include "town/e006/twn_e006.h" // TODO cleanup
 #include "town/town.h"
 #include "town/townScript.h"
 #include "town/townEdge.h"
@@ -11,13 +11,25 @@
 #include "mainMenuDebugTasks.h"
 #include "audio/soundDriver.h"
 
+void setupVdp1Proj(fixedPoint fov); // TODO: cleanup
+
+struct TWN_E011_data* gTWN_E011 = nullptr;
+
 struct TWN_E011_data : public sTownOverlay
 {
-    void init() override;
+    TWN_E011_data();
+    static void makeCurrent()
+    {
+        if (gTWN_E011 == NULL)
+        {
+            gTWN_E011 = new TWN_E011_data();
+        }
+        gCurrentTownOverlay = gTWN_E011;
+    }
+
     sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override;
     sTownObject* createObjectTaskFromEA_subTaskWithEAArg(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override;
 };
-TWN_E011_data* gTWN_E011 = nullptr;
 
 // TODO: shared in EPKs
 void e011_cameraUpdate(sCameraTask* pThis)
@@ -52,6 +64,7 @@ u32 modulateColorByEvent(sCameraTask* cameraTaskPtr, s32 r5)
     return 0;
 }
 
+// TODO: that's generic right?
 s32 e011_scriptFunction_0605ce38(int iParm1)
 
 {
@@ -181,10 +194,8 @@ s32 e011_scriptFunction_06059b7a(s32 param1)
     return 0xBADF00D;
 }
 
-void TWN_E011_data::init()
+TWN_E011_data::TWN_E011_data() : sTownOverlay("TWN_E011.PRG")
 {
-    gCurrentTownOverlay = this;
-
     overlayScriptFunctions.m_zeroArg[0x6058484] = &e006_scriptFunction_60573d8;
     overlayScriptFunctions.m_zeroArg[0x60579c4] = &e006_scriptFunction_6056918;
     overlayScriptFunctions.m_zeroArg[0x60584a6] = &e006_scriptFunction_605861eSub0;
@@ -242,32 +253,9 @@ static void startE011BackgroundTask(p_workArea pThis)
     reinitVdp2();
 }
 
-void setupVdp1Proj(fixedPoint fov);
-
 p_workArea overlayStart_TWN_E011(p_workArea pUntypedThis, u32 arg)
 {
-    // load data
-    if (gTWN_E011 == NULL)
-    {
-        FILE* fHandle = fopen("TWN_E011.PRG", "rb");
-        assert(fHandle);
-
-        fseek(fHandle, 0, SEEK_END);
-        u32 fileSize = ftell(fHandle);
-
-        fseek(fHandle, 0, SEEK_SET);
-        u8* fileData = new u8[fileSize];
-        fread(fileData, fileSize, 1, fHandle);
-        fclose(fHandle);
-
-        gTWN_E011 = new TWN_E011_data();
-        gTWN_E011->m_name = "TWN_E011.PRG";
-        gTWN_E011->m_data = fileData;
-        gTWN_E011->m_dataSize = fileSize;
-        gTWN_E011->m_base = 0x6054000;
-
-        gTWN_E011->init();
-    }
+    gTWN_E011->makeCurrent();
     townDebugTask2Function* pThis = static_cast<townDebugTask2Function*>(pUntypedThis);
 
     pThis->m_DeleteMethod = &townOverlayDelete;

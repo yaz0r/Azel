@@ -71,6 +71,7 @@ static void  loadBattleOverlaySub0(sBattleManager* pThis)
     case 0:
         if (iVar2 == 10) {
             uVar4 = 0x10;
+            sVar3 = 0;
         }
         else {
             if (iVar2 != 0xb) {
@@ -121,7 +122,7 @@ static int loadBattleOverlay_debug(sBattleManager* pThis)
     pThis->mA_pendingBattleOverlayId = -1;
     loadBattleOverlaySub0(pThis);
 
-    if (gCommonFile.battleOverlaySetup[pThis->m2_currentBattleOverlayId].m4_prg.length() == 0)
+    if (gCommonFile->battleOverlaySetup[pThis->m2_currentBattleOverlayId].m4_prg.length() == 0)
     {
         return 0;
     }

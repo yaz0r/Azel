@@ -10,6 +10,7 @@
 #include "kernel/vdp1Allocator.h" // todo: clean
 #include "BTL_A3/baldor.h" // todo: clean
 #include "audio/systemSounds.h"
+#include "battleGenericData.h"
 
 struct sGunShotRootTask : public s_workAreaTemplateWithCopy<sGunShotRootTask>
 {
@@ -69,12 +70,12 @@ void sGunShotTask_Init(sGunShotTask* pThis, sGunArg* arg)
 
     if ((pThis->m65 & 1) == 0)
     {
-        pThis->m94 = gCurrentBattleOverlay->getSaturnPtr(0x060ae404);
+        pThis->m94 = g_BTL_GenericData->getSaturnPtr(0x060ae404);
     }
     else
     {
         pThis->m98 = arg->m8;
-        s_LCSTask340Sub::Init3Sub3(&pThis->m8, pThis->m90_vdp1Memory, readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x060abef4) + pThis->m98 * 4));
+        s_LCSTask340Sub::Init3Sub3(&pThis->m8, pThis->m90_vdp1Memory, readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x060abef4) + pThis->m98 * 4));
     }
     pThis->m70 = arg->m4;
     pThis->m14 = *arg->m4;
@@ -85,7 +86,7 @@ void sGunShotTask_Init(sGunShotTask* pThis, sGunArg* arg)
     {
         pThis->m58 = 9;
         pThis->m5C = 10;
-        pThis->m94 = gCurrentBattleOverlay->getSaturnPtr(0x60AE414);
+        pThis->m94 = g_BTL_GenericData->getSaturnPtr(0x60AE414);
     }
     else
     {
@@ -388,16 +389,16 @@ void sGunShotTask_SetupSpriteData(sGunShotTask* pThis)
     {
     default:
     case 0x39:
-        pThis->m10_colorSetup = &battleOverlay::m60AE424;
+        pThis->m10_colorSetup = &BTL_GenericData::m60AE424;
         break;
     case 0x3B:
-        pThis->m10_colorSetup = &battleOverlay::m60AE42C;
+        pThis->m10_colorSetup = &BTL_GenericData::m60AE42C;
         break;
     case 0x3F:
-        pThis->m10_colorSetup = &battleOverlay::m60AE43C;
+        pThis->m10_colorSetup = &BTL_GenericData::m60AE43C;
         break;
     case 0x40:
-        pThis->m10_colorSetup = &battleOverlay::m60AE434;
+        pThis->m10_colorSetup = &BTL_GenericData::m60AE434;
         break;
     }
 }

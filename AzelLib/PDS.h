@@ -182,6 +182,8 @@ struct sSaturnPtr
 
 struct sSaturnMemoryFile
 {
+    sSaturnMemoryFile(const char* fileName, u32 base = 0x6054000);
+
     std::string m_name;
     u8* m_data;
     u32 m_dataSize;
@@ -194,8 +196,6 @@ struct sSaturnMemoryFile
         newPtr.m_offset = base;
         return newPtr;
     }
-
-    virtual void init() {}
 };
 
 bool findFileOnDisc(const std::string& filename);

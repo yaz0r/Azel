@@ -2345,7 +2345,7 @@ void initVdp2ForStatusMenu()
     setVdp2LayerScroll(1, 0, 0x100);
     setVdp2LayerScroll(3, 0, 0x100);
     resetVdp2LayersAutoScroll();
-    unpackGraphicsToVDP2(COMMON_DAT + 0xF7F4, getVdp2Vram(0x71400));
+    unpackGraphicsToVDP2(gCommonFile->m_data + 0xF7F4, getVdp2Vram(0x71400));
     setupVDP2StringRendering(0, 34, 44, 28);
     clearVdp2TextArea();
 }
@@ -2587,7 +2587,7 @@ void mainMenuTaskInitSub4Sub(s_mainMenuTaskInitSub4SubWorkArea* pWorkArea)
         pWorkArea->_0 = 0;
     }
 
-    asyncDmaCopy(COMMON_DAT + 0xDB9C + pWorkArea->_0 * 14, getVdp2Cram(0xE00 + 0xC4), 14, 0);
+    asyncDmaCopy(gCommonFile->m_data + 0xDB9C + pWorkArea->_0 * 14, getVdp2Cram(0xE00 + 0xC4), 14, 0);
 }
 
 void mainMenuTaskInitSub4(p_workArea typelessWorkArea)

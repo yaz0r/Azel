@@ -36,8 +36,8 @@ fixedPoint getSin(u32 value)
 fixedPoint atan_FP(fixedPoint inValue)
 {
     if (inValue > -1)
-        return (fixedPoint::fromInteger(readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + 2 * (inValue / 16))));
-    return (-fixedPoint::fromInteger(readSaturnS16(gCommonFile.getSaturnPtr(0x021be80) + 2 * (-inValue / 16))));
+        return (fixedPoint::fromInteger(readSaturnS16(gCommonFile->getSaturnPtr(0x021be80) + 2 * (inValue / 16))));
+    return (-fixedPoint::fromInteger(readSaturnS16(gCommonFile->getSaturnPtr(0x021be80) + 2 * (-inValue / 16))));
 }
 
 s32 atan2(s32 y, s32 x)

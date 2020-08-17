@@ -317,9 +317,9 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
 
     fieldPaletteTaskInitSub0();
 
-    asyncDmaCopy(gCurrentBattleOverlay->getSaturnPtr(0x60A68BC), getVdp2Cram(0x400), 0x200, 0);
-    asyncDmaCopy(gCurrentBattleOverlay->getSaturnPtr(0x60A66BC), getVdp2Cram(0xA00), 0x200, 0);
-    asyncDmaCopy(gCurrentBattleOverlay->getSaturnPtr(0x60A6ABC), getVdp2Cram(0xC00), 0x200, 0);
+    asyncDmaCopy(g_BTL_A3->getSaturnPtr(0x60A68BC), getVdp2Cram(0x400), 0x200, 0);
+    asyncDmaCopy(g_BTL_A3->getSaturnPtr(0x60A66BC), getVdp2Cram(0xA00), 0x200, 0);
+    asyncDmaCopy(g_BTL_A3->getSaturnPtr(0x60A6ABC), getVdp2Cram(0xC00), 0x200, 0);
 
     static const sLayerConfig setup[] =
     {
@@ -364,18 +364,18 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
     case 6:
     case 7:
     case 8:
-        setupRotationMapPlanes(0, gCurrentBattleOverlay->getSaturnPtr(0x60a6cfc));
+        setupRotationMapPlanes(0, g_BTL_A3->getSaturnPtr(0x60a6cfc));
         break;
     case 2:
     case 4:
     case 9:
-        setupRotationMapPlanes(0, gCurrentBattleOverlay->getSaturnPtr(0x60a6d80));
+        setupRotationMapPlanes(0, g_BTL_A3->getSaturnPtr(0x60a6d80));
         break;
     default:
         assert(0);
     }
 
-    setupRotationMapPlanes(1, gCurrentBattleOverlay->getSaturnPtr(0x60a6d3c));
+    setupRotationMapPlanes(1, g_BTL_A3->getSaturnPtr(0x60a6d3c));
 
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80); // setup coefficients table A
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x24000), 0x80); // setup coefficients table B
@@ -424,11 +424,11 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
 
     vdp2Controls.m_isDirty = 1;
 
-    s_BTL_A3_Env_InitVdp2Sub4(gCurrentBattleOverlay->getSaturnPtr(0x60a6dd8));
+    s_BTL_A3_Env_InitVdp2Sub4(g_BTL_A3->getSaturnPtr(0x60a6dd8));
 
     pThis->m4C = 0;
 
-    pThis->m40 = gCurrentBattleOverlay->getSaturnPtr(0x60A6DD8);
+    pThis->m40 = g_BTL_A3->getSaturnPtr(0x60A6DD8);
     pThis->m44 = 0x4D5E540;
     pThis->m48 = 0xF5A;
 }

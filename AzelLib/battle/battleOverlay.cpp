@@ -2,6 +2,7 @@
 #include "battleOverlay.h"
 #include "battleManager.h"
 #include "BTL_A3/BTL_A3.h"
+#include "BTL_A3/BTL_A3_2.h"
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
 
@@ -10,12 +11,6 @@ void unloadFnt(); // TODO: clean
 std::string sBattleOverlayName = "";
 
 battleOverlay* gCurrentBattleOverlay = nullptr;
-
-const std::vector<quadColor> battleOverlay::m60AE424 = { {0xFE00, 0xC208, 0xC208, 0xFE00} };
-const std::vector<quadColor> battleOverlay::m60AE42C = { {0x8E1F, 0x8F1F, 0x8F1F, 0x8F1F} };
-const std::vector<quadColor> battleOverlay::m60AE434 = { {0x83EE, 0x93EE, 0x93EE, 0x83EE} };
-const std::vector<quadColor> battleOverlay::m60AE43C = { {0x83FF, 0x83FF, 0x83FF, 0x83FF} };
-sLaserData battleOverlay::mLaserData;
 
 static void battleOverlayTask_Init(sBattleOverlayTask* pThis)
 {
@@ -48,16 +43,20 @@ static void battleOverlayTask_Draw(sBattleOverlayTask* pThis)
         pThis->m0++;
         break;
     case 1:
-        sBattleOverlayName = gCommonFile.battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m4_prg;
+        sBattleOverlayName = gCommonFile->battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m4_prg;
         loadFnt("ITEM.FNT");
         pThis->m2_numLoadedFnt++;
         {
-            std::string customFontName = gCommonFile.battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m8_fnt;
+            std::string customFontName = gCommonFile->battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m8_fnt;
             loadFnt(customFontName.c_str());
             pThis->m2_numLoadedFnt++;
             if (sBattleOverlayName == std::string("BTL_A3.PRG"))
             {
                 overlayStart_BTL_A3(pThis);
+            }
+            else if (sBattleOverlayName == std::string("BTL_A3_2.PRG"))
+            {
+                overlayStart_BTL_A3_2(pThis);
             }
             else
             {

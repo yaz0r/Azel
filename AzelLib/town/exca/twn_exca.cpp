@@ -172,12 +172,20 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgWithCopy<sExcaEntity0, sSa
     //size: 0xE0
 };
 
+struct TWN_EXCA_data* gTWN_EXCA = NULL;
 struct TWN_EXCA_data : public sTownOverlay
 {
-    void init() override
+    static void makeCurrent()
     {
-        gCurrentTownOverlay = this;
+        if (gTWN_EXCA == NULL)
+        {
+            gTWN_EXCA = new TWN_EXCA_data();
+        }
+        gCurrentTownOverlay = gTWN_EXCA;
+    }
 
+    TWN_EXCA_data() : sTownOverlay("TWN_EXCA.PRG")
+    {
         overlayScriptFunctions.m_oneArg[0x605d780] = &TwnFadeOut;
 
         overlayScriptFunctions.m_fourArg[0x605be24] = &setNpcLocation;
@@ -222,9 +230,6 @@ struct TWN_EXCA_data : public sTownOverlay
     }
 };
 
-
-TWN_EXCA_data* gTWN_EXCA = NULL;
-
 static void townOverlayDelete(townDebugTask2Function* pThis)
 {
     FunctionUnimplemented();
@@ -255,28 +260,8 @@ static void startExcaBackgroundTask(p_workArea pThis)
 
 p_workArea overlayStart_TWN_EXCA(p_workArea pUntypedThis, u32 arg)
 {
-    // load data
-    if (gTWN_EXCA == NULL)
-    {
-        FILE* fHandle = fopen("TWN_EXCA.PRG", "rb");
-        assert(fHandle);
+    gTWN_EXCA->makeCurrent();
 
-        fseek(fHandle, 0, SEEK_END);
-        u32 fileSize = ftell(fHandle);
-
-        fseek(fHandle, 0, SEEK_SET);
-        u8* fileData = new u8[fileSize];
-        fread(fileData, fileSize, 1, fHandle);
-        fclose(fHandle);
-
-        gTWN_EXCA = new TWN_EXCA_data();
-        gTWN_EXCA->m_name = "TWN_EXCA.PRG";
-        gTWN_EXCA->m_data = fileData;
-        gTWN_EXCA->m_dataSize = fileSize;
-        gTWN_EXCA->m_base = 0x6054000;
-
-        gTWN_EXCA->init();
-    }
     townDebugTask2Function* pThis = static_cast<townDebugTask2Function*>(pUntypedThis);
 
     pThis->m_DeleteMethod = &townOverlayDelete;

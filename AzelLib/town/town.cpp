@@ -5,6 +5,7 @@
 #include "town/exca/twn_exca.h"
 #include "town/e006/twn_e006.h"
 #include "town/e011/twn_e011.h"
+#include "town/e014/twn_e014.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
 #include "kernel/grid.h"
@@ -248,9 +249,9 @@ void loadTownPrg(s8 r4, s8 r5)
 
     mainGameState.setPackedBits(0, 2, 2);
 
-    std::string overlayFileName = readSaturnString(readSaturnEA(gCommonFile.getSaturnPtr(0x002165D8 + r4 * 4 * 4)));
+    std::string overlayFileName = readSaturnString(readSaturnEA(gCommonFile->getSaturnPtr(0x002165D8 + r4 * 4 * 4)));
 
-    TWN_RUIN_data::create();
+    TWN_RUIN_data::makeCurrent(); // hack to load all the common data currently loaded from Ruin
     if (overlayFileName == "TWN_RUIN.PRG")
     {
         gFieldOverlayFunction = overlayStart_TWN_RUIN;
@@ -266,6 +267,10 @@ void loadTownPrg(s8 r4, s8 r5)
     else if (overlayFileName == "TWN_E011.PRG")
     {
         gFieldOverlayFunction = overlayStart_TWN_E011;
+    }
+    else if (overlayFileName == "TWN_E014.PRG")
+    {
+        gFieldOverlayFunction = overlayStart_TWN_E014;
     }
     else
     {
@@ -285,7 +290,7 @@ p_workArea loadTownSub(p_workArea r4, s32 r5)
 {
     townDebugTask2 = createSubTaskFromFunction<townDebugTask2Function>(r4, &townDebugTask2Function::Update);
 
-    loadTownPrg(readSaturnS8(gCommonFile.getSaturnPtr(0x2166E4 + r5 * 2 + 0)), readSaturnS8(gCommonFile.getSaturnPtr(0x2166E5 + r5 * 2 + 1)));
+    loadTownPrg(readSaturnS8(gCommonFile->getSaturnPtr(0x2166E4 + r5 * 2 + 0)), readSaturnS8(gCommonFile->getSaturnPtr(0x2166E5 + r5 * 2 + 1)));
 
     return townDebugTask2;
 }

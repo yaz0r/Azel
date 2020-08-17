@@ -4,6 +4,7 @@
 #include "audio/soundDriver.h"
 #include "audio/audioDebug.h"
 #include "commonOverlay.h"
+#include "battle/battleGenericData.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "Winmm.lib")
@@ -35,8 +36,6 @@ int enableDebugTask;
 u8 pauseEngine[8];
 
 u32 azelCdNumber = 0;
-
-u8 COMMON_DAT[0x98000];
 
 bool findFileOnDisc(const std::string& filename)
 {
@@ -811,9 +810,8 @@ void azelInit()
 
     // stuff
 
-    loadFile("COMMON.DAT", COMMON_DAT, 0);
     initCommonFile();
-
+    BTL_GenericData::staticInit(); // not in original
 
     initSMPC();
 
@@ -1236,5 +1234,24 @@ void adjustMatrixTranslation(fixedPoint r4)
     pCurrentMatrix->matrix[3] += (((s64)pCurrentMatrix->matrix[1] * (s64)r4) >> 16);
     pCurrentMatrix->matrix[7] += (((s64)pCurrentMatrix->matrix[5] * (s64)r4) >> 16);
     pCurrentMatrix->matrix[11] += (((s64)pCurrentMatrix->matrix[9] * (s64)r4) >> 16);
+}
+
+sSaturnMemoryFile::sSaturnMemoryFile(const char* fileName, u32 base)
+{
+    FILE* fHandle = fopen(fileName, "rb");
+    assert(fHandle);
+
+    fseek(fHandle, 0, SEEK_END);
+    u32 fileSize = ftell(fHandle);
+
+    fseek(fHandle, 0, SEEK_SET);
+    u8* fileData = new u8[fileSize];
+    fread(fileData, fileSize, 1, fHandle);
+    fclose(fHandle);
+
+    m_name = fileName;
+    m_data = fileData;
+    m_dataSize = fileSize;
+    m_base = base;
 }
 

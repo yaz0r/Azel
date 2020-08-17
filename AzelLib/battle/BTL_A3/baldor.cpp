@@ -12,6 +12,9 @@
 #include "kernel/debug/trace.h"
 #include "kernel/vdp1Allocator.h"
 #include "audio/systemSounds.h"
+#include "battle/battleGenericData.h"
+#include "BTL_A3.h"
+#include "BTL_A3_data.h"
 
 #include "battle/battleDragon.h" // todo: clean by moving s_battleDragon_8C to its own file
 #include "mainMenuDebugTasks.h"
@@ -219,14 +222,14 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
 {
     pThis->mA8_cursorFrameCounter = (pThis->mA8_cursorFrameCounter + 1) & 0xFF;
 
-    sSaturnPtr spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60AB2DC);
+    sSaturnPtr spriteDef = g_BTL_GenericData->getSaturnPtr(0x60AB2DC);
     if (!(pThis->m84_pTargetable->m50_flags & 0x20000))
     {
-        spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60ab2ec);
+        spriteDef = g_BTL_GenericData->getSaturnPtr(0x60ab2ec);
     }
     else if ((pThis->mA6_cursorType == 1) && (pThis->mA4 != 0))
     {
-        spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60ab2e4);
+        spriteDef = g_BTL_GenericData->getSaturnPtr(0x60ab2e4);
     }
 
     sVec2_S16 coordinates;
@@ -273,7 +276,7 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
             int uVar3 = performModulo(8, pThis->mA8_cursorFrameCounter) & 0xFF;
             if (3 < uVar3)
             {
-                spriteDef = gCurrentBattleOverlay->getSaturnPtr(0x60AB2DC);
+                spriteDef = g_BTL_GenericData->getSaturnPtr(0x60AB2DC);
             }
 
             sVec2_S16 size;
@@ -1065,11 +1068,11 @@ void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
     sSaturnPtr puVar7;
     if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9)) // middle boss  (with queen)
     {
-        puVar7 = gCurrentBattleOverlay->getSaturnPtr(0x60a75f0);
+        puVar7 = g_BTL_A3->getSaturnPtr(0x60a75f0);
     }
     else
     {
-        puVar7 = gCurrentBattleOverlay->getSaturnPtr(0x60a73a0);
+        puVar7 = g_BTL_A3->getSaturnPtr(0x60a73a0);
     }
 
     Baldor_initSub0(pThis, puVar7, pFormationEntry, 0);
@@ -1103,8 +1106,8 @@ void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
     }
     else
     {
-        Baldor_initSub3(pThis->m68, 1, gCurrentBattleOverlay->getSaturnPtr(0x60a7e5c));
-        sSaturnPtr pDataSource = gCurrentBattleOverlay->getSaturnPtr(0x60a7f4c);
+        Baldor_initSub3(pThis->m68, 1, g_BTL_A3->getSaturnPtr(0x60a7e5c));
+        sSaturnPtr pDataSource = g_BTL_A3->getSaturnPtr(0x60a7f4c);
 
         for (int i = 0; i < 6; i++)
         {
@@ -1215,7 +1218,7 @@ void Baldor_updateSub0Sub2Sub2(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s
         break;
     }
 
-    createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, readSaturnEA(gCurrentBattleOverlay->getSaturnPtr(0x060abef4) + iVar2 * 4), param1, param2, 0, param3, 0, 0);
+    createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x060abef4) + iVar2 * 4), param1, param2, 0, param3, 0, 0);
 }
 
 void Baldor_updateSub0Sub2Sub0(p_workArea, sBattleTargetable&, int)
@@ -1340,7 +1343,7 @@ void BaldorAttack_update(sBaldorAttack* pThis)
             sVec3_FP local1C = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
             local1C[2] += pThis->m6_baldorPartEmittingAttack * 0x2000;
 
-            BaldorAttack_createAttackModel(&pThis->m0->m30[pThis->m6_baldorPartEmittingAttack].m4, &local1C, gCurrentBattleOverlay->getSaturnPtr(0x60a8018));
+            BaldorAttack_createAttackModel(&pThis->m0->m30[pThis->m6_baldorPartEmittingAttack].m4, &local1C, g_BTL_A3->getSaturnPtr(0x60a8018));
 
             if (++pThis->m6_baldorPartEmittingAttack > 5)
             {
@@ -1435,7 +1438,7 @@ void Baldor_update_mode1(sBaldor* pThis)
             return;
 
         applyDamageToDragon(gBattleManager->m10_battleOverlay->m18_dragon->m8C, 27, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 3, gBattleManager->m10_battleOverlay->m18_dragon->m8_position - *pThis->m1C_translation.m0_current, 0);
-        createDamageSpriteEffect(dramAllocatorEnd[6].mC_fileBundle, gCurrentBattleOverlay->getSaturnPtr(0x060a912), &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+        createDamageSpriteEffect(dramAllocatorEnd[6].mC_fileBundle, g_BTL_GenericData->getSaturnPtr(0x060a912), &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, 0, 0);
         playSystemSoundEffect(0x67);
         pThis->m9_attackStatus = 3;
         break;

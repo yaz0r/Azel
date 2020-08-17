@@ -1,36 +1,15 @@
 #pragma once
 
-struct sLaserData
-{
-    s16 m4;
-    s16 m6;
-    s16 m8;
-    s16 mA;
-    s16 mC;
-    s16 mE;
-    s16 m10;
-    s16 m12;
-    s16 m14;
-    std::vector<fixedPoint> m18_vertices;
-    std::vector<quadColor> m1C_colors;
-    s32 m20_numLaserNodes;
-    // size?
-};
-
 struct battleOverlay : public sSaturnMemoryFile
 {
+    battleOverlay(const char* fileName) : sSaturnMemoryFile(fileName)
+    {
+
+    }
+
     virtual sSaturnPtr getEncounterDataTable() = 0;
     virtual void invoke(sSaturnPtr Func, p_workArea pParent) = 0;
     virtual void invoke(sSaturnPtr Func, p_workArea pParent, u32, u32) = 0;
-
-    // Colors used for gun shots
-    static const std::vector<quadColor> m60AE424;
-    static const std::vector<quadColor> m60AE42C;
-    static const std::vector<quadColor> m60AE434;
-    static const std::vector<quadColor> m60AE43C;
-
-    // laser data
-    static sLaserData mLaserData;
 };
 
 extern battleOverlay* gCurrentBattleOverlay;

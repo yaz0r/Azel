@@ -20,7 +20,7 @@ static void s_battlePrgTask_Init(s_battlePrgTask*)
         pLoadingTask->mA_pendingBattleOverlayId = 0;
     }
 
-    while (gCommonFile.battleActivationList[pLoadingTask->mA_pendingBattleOverlayId] == 0)
+    while (gCommonFile->battleActivationList[pLoadingTask->mA_pendingBattleOverlayId] == 0)
     {
         pLoadingTask->mA_pendingBattleOverlayId++;
     }
@@ -75,17 +75,21 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20)
         {
             pBattleManager->m6_subBattleId++;
-            if (gCommonFile.battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles <= pBattleManager->m6_subBattleId)
+            if (gCommonFile->battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles <= pBattleManager->m6_subBattleId)
             {
                 pBattleManager->m6_subBattleId = 0;
             }
+            playSystemSoundEffect(10);
         }
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10)
         {
-
+            pBattleManager->m6_subBattleId--;
+            if (pBattleManager->m6_subBattleId < 0)
+            {
+                pBattleManager->m6_subBattleId = gCommonFile->battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles - 1;
+            }
+            playSystemSoundEffect(10);
         }
-
-        FunctionUnimplemented();
     }
 
     int printY = 0x4;
@@ -101,9 +105,9 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
             vdp2PrintStatus.m10_palette = 0x8000;
         }
 
-        if (gCommonFile.battleActivationList[i] != 0)
+        if (gCommonFile->battleActivationList[i] != 0)
         {
-            vdp2DebugPrintNewLine(gCommonFile.battleOverlaySetup[i].m0_name);
+            vdp2DebugPrintNewLine(gCommonFile->battleOverlaySetup[i].m0_name);
             if ((s_battlePrgTask_var0 == 0) && (pBattleManager->mA_pendingBattleOverlayId == i))
             {
                 vdp2PrintStatus.m10_palette = 0xD000;
@@ -114,7 +118,7 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
         }
     }
 
-    int numSubBattle = gCommonFile.battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles;
+    int numSubBattle = gCommonFile->battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles;
     for (int i = 0; i < numSubBattle; i++)
     {
         vdp2DebugPrintSetPosition(0x12, i + 4);
@@ -124,7 +128,7 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
             vdp2PrintStatus.m10_palette = 0x8000;
         }
 
-        vdp2DebugPrintNewLine(gCommonFile.battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].m10_subBattles[i]);
+        vdp2DebugPrintNewLine(gCommonFile->battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].m10_subBattles[i]);
     }
 
     if (s_battlePrgTask_var0 != 0)

@@ -537,7 +537,7 @@ void loadDragonDataFromCommon()
 {
     // Load the dragon models stuff
     {
-        sSaturnPtr ptr = gCommonFile.getSaturnPtr(0x2065e8);
+        sSaturnPtr ptr = gCommonFile->getSaturnPtr(0x2065e8);
         for (int i = 0; i < e_dragonLevel::DR_LEVEL_MAX; i++)
         {
             s_fileBundle* pDragonModel = nullptr;
@@ -572,7 +572,7 @@ void loadDragonDataFromCommon()
     {
         for (int i = 0; i < DR_ANIM_MAX; i++)
         {
-            sSaturnPtr ptr = readSaturnEA(gCommonFile.getSaturnPtr(0x00202054 + 4 * i));
+            sSaturnPtr ptr = readSaturnEA(gCommonFile->getSaturnPtr(0x00202054 + 4 * i));
 
             for (int j=0; j<4; j++)
             {

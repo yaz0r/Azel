@@ -7,6 +7,7 @@
 #include "battleOverlay_C.h"
 #include "town/town.h" // todo: clean
 #include "kernel/debug/trace.h"
+#include "battleGenericData.h"
 
 void battleGrid_initSub0(fixedPoint fov)
 {
@@ -41,9 +42,9 @@ void battleGrid_init(s_battleGrid* pThis)
     pThis->m12C_cameraInterpolationSpeed = 0x1999;
     pThis->m130_cameraInterpolationSpeed2 = 0x6666;
 
-    pThis->m134_desiredCameraPosition = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24);
-    pThis->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24 + 0xC);
-    pThis->mFC_cameraReferenceUp = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24 + 0x18);
+    pThis->m134_desiredCameraPosition = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24);
+    pThis->m140_desiredCameraTarget = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24 + 0xC);
+    pThis->mFC_cameraReferenceUp = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac478) + pThis->m1 * 0x24 + 0x18);
 
     pThis->mB4_cameraRotation.zeroize();
     pThis->mC0_cameraRotationInterpolation.zeroize();

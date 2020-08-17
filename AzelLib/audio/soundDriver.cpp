@@ -555,7 +555,7 @@ sSaturnPtr getConfigForSound(sSoundEngine* pSoundEngine, s16 soundIndex)
     {
         return pSoundEngine->m1B0_pSequenceData->m4_soundConfigs + (soundIndex - 100) * 4;
     }
-    return gCommonFile.getSaturnPtr(0x02131c4) + soundIndex * 4; // systemSoundsConfig
+    return gCommonFile->getSaturnPtr(0x02131c4) + soundIndex * 4; // systemSoundsConfig
 }
 
 void enqueueSCSPCommand(sSCSPCommand* pCommand)
@@ -630,14 +630,14 @@ sSaturnPtr getPlayerSoundBankName(const sSequenceConfig* pConfig)
     {
     case 0:
         if (mainGameState.gameStats.m1_dragonLevel > 8)
-            return readSaturnEA(gCommonFile.getSaturnPtr(0x213D90));
+            return readSaturnEA(gCommonFile->getSaturnPtr(0x213D90));
         else
-            return readSaturnEA(gCommonFile.getSaturnPtr(0x213D90) + mainGameState.gameStats.m1_dragonLevel * 4);
+            return readSaturnEA(gCommonFile->getSaturnPtr(0x213D90) + mainGameState.gameStats.m1_dragonLevel * 4);
         break;
     case 1:
-        return gCommonFile.getSaturnPtr(0x213dc0);
+        return gCommonFile->getSaturnPtr(0x213dc0);
     case 2:
-        return gCommonFile.getSaturnPtr(0x213de4);
+        return gCommonFile->getSaturnPtr(0x213de4);
     default:
         assert(0);
     }

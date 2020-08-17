@@ -10,13 +10,22 @@
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
 
+struct TWN_E006_data* gTWN_E006 = nullptr;
 struct TWN_E006_data : public sTownOverlay
 {
-    void init() override;
+    TWN_E006_data();
+    static void makeCurrent()
+    {
+        if (gTWN_E006 == NULL)
+        {
+            gTWN_E006 = new TWN_E006_data();
+        }
+        gCurrentTownOverlay = gTWN_E006;
+    }
+
     sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override;
     sTownObject* createObjectTaskFromEA_subTaskWithEAArg(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override;
 };
-TWN_E006_data* gTWN_E006 = nullptr;
 
 void e006_cameraUpdate(sCameraTask* pThis)
 {
@@ -1371,7 +1380,7 @@ s32 getPositionInEDK(sStreamingFile* iParm1)
     return getPositionInEDKSub0(iParm1);
 }
 
-s32 scriptFunction_6057438()
+s32 e006_scriptFunction_6057438()
 {
     if (e006Task0)
     {
@@ -1390,13 +1399,11 @@ s32 scriptFunction_6057470()
     return 0;
 }
 
-void TWN_E006_data::init()
+TWN_E006_data::TWN_E006_data() : sTownOverlay("TWN_E006.PRG")
 {
-    gCurrentTownOverlay = this;
-
     overlayScriptFunctions.m_zeroArg[0x60573d8] = &e006_scriptFunction_60573d8;
     overlayScriptFunctions.m_zeroArg[0x6056918] = &e006_scriptFunction_6056918;
-    overlayScriptFunctions.m_zeroArg[0x6057438] = &scriptFunction_6057438;
+    overlayScriptFunctions.m_zeroArg[0x6057438] = &e006_scriptFunction_6057438;
     overlayScriptFunctions.m_zeroArg[0x6057470] = &scriptFunction_6057470;
     overlayScriptFunctions.m_zeroArg[0x6056926] = &scriptFunction_6056926;
 
@@ -1458,28 +1465,7 @@ void setupVdp1Proj(fixedPoint fov)
 
 p_workArea overlayStart_TWN_E006(p_workArea pUntypedThis, u32 arg)
 {
-    // load data
-    if (gTWN_E006 == NULL)
-    {
-        FILE* fHandle = fopen("TWN_E006.PRG", "rb");
-        assert(fHandle);
-
-        fseek(fHandle, 0, SEEK_END);
-        u32 fileSize = ftell(fHandle);
-
-        fseek(fHandle, 0, SEEK_SET);
-        u8* fileData = new u8[fileSize];
-        fread(fileData, fileSize, 1, fHandle);
-        fclose(fHandle);
-
-        gTWN_E006 = new TWN_E006_data();
-        gTWN_E006->m_name = "TWN_E006.PRG";
-        gTWN_E006->m_data = fileData;
-        gTWN_E006->m_dataSize = fileSize;
-        gTWN_E006->m_base = 0x6054000;
-
-        gTWN_E006->init();
-    }
+    gTWN_E006->makeCurrent();
     townDebugTask2Function* pThis = static_cast<townDebugTask2Function*>(pUntypedThis);
 
     pThis->m_DeleteMethod = &townOverlayDelete;

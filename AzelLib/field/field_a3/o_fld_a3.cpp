@@ -6783,24 +6783,7 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
 
     if (gFLD_A3 == NULL)
     {
-        FILE* fHandle = fopen("FLD_A3.PRG", "rb");
-        assert(fHandle);
-
-        fseek(fHandle, 0, SEEK_END);
-        u32 fileSize = ftell(fHandle);
-
-        fseek(fHandle, 0, SEEK_SET);
-        u8* fileData = new u8[fileSize];
-        fread(fileData, fileSize, 1, fHandle);
-        fclose(fHandle);
-
         gFLD_A3 = new FLD_A3_data();
-        gFLD_A3->m_name = "FLD_A3.PRG";
-        gFLD_A3->m_data = fileData;
-        gFLD_A3->m_dataSize = fileSize;
-        gFLD_A3->m_base = 0x6054000;
-        gFLD_A3->init();
-
         LCSTaskDrawSub5Sub1_Data1 = readLCSTaskDrawSub5Sub1_Data1({ 0x06093B28, gFLD_A3 });
     }
 

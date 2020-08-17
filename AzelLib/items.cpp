@@ -12,7 +12,7 @@ const sObjectListEntry* getObjectListEntry(eItems entry)
         return cacheEntry->second;
     }
 
-    sSaturnPtr EA = gCommonFile.getSaturnPtr(0x20C3F4);
+    sSaturnPtr EA = gCommonFile->getSaturnPtr(0x20C3F4);
     EA += 3 * 4 * entry;
 
     sObjectListEntry* pNewObjectEntry = new sObjectListEntry;

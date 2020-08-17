@@ -3,7 +3,7 @@
 class sCommonOverlay_data : public sSaturnMemoryFile
 {
 public:
-    void init();
+    sCommonOverlay_data();
 
     struct sDragonLevelStat
     {
@@ -34,4 +34,4 @@ public:
 
 void initCommonFile();
 
-extern sCommonOverlay_data gCommonFile;
+extern sCommonOverlay_data* gCommonFile;

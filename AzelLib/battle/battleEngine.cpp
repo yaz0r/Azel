@@ -21,8 +21,9 @@
 #include "kernel/cinematicBarsTask.h"
 #include "items.h"
 #include "audio/systemSounds.h"
+#include "battleGenericData.h"
 
-#include "BTL_A3/BTL_A3.h"
+#include "BTL_A3/BTL_A3.h" // TODO: cleanup
 #include "BTL_A3/baldor.h" // TODO: cleanup
 
 void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
@@ -103,8 +104,8 @@ void sEnemyAttackCamera_updateSub0(int param_1)
     }
 
     gBattleManager->m10_battleOverlay->m8_gridTask->m1 = param_1;
-    gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
-    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1 + 0xC);
+    gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
+    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1 + 0xC);
 }
 
 void battleEngine_FlagQuadrantBitForSafety(u16 uParm1)
@@ -678,8 +679,8 @@ void battleEngine_UpdateSub7Sub2()
 {
     gBattleManager->m10_battleOverlay->m8_gridTask->m1 = 0;
 
-    gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
-    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(gCurrentBattleOverlay->getSaturnPtr(0x60ac484) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
+    gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
+    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac484) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
 }
 
 void battleEngine_UpdateSub7Sub3Sub0()
@@ -2531,7 +2532,7 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
         pThis->m384_battleModeDelay = 0;
         break;
     case 1:
-        pThis->m396 = readSaturnS16(gCurrentBattleOverlay->getSaturnPtr(0x060ad4e4) + gDragonState->mC_dragonType * 2);
+        pThis->m396 = readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x060ad4e4) + gDragonState->mC_dragonType * 2);
 
         if (pThis->m396 < gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies) {
             pThis->m394 = pThis->m396;
@@ -2899,7 +2900,7 @@ void battleEngine_UpdateSub7(s_battleEngine* pThis)
 
                 if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) == 0)
                 {
-                    assert(readSaturnS8(gCurrentBattleOverlay->getSaturnPtr(0x60A9281) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4) == quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][1]);
+                    assert(readSaturnS8(g_BTL_GenericData->getSaturnPtr(0x60A9281) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4) == quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][1]);
 
                     int uVar4 = shiftLeft32(1, quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][1]);
                     if ((uVar4 & gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon) == 0)
@@ -2922,7 +2923,7 @@ void battleEngine_UpdateSub7(s_battleEngine* pThis)
 
                 if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) == 0)
                 {
-                    assert(readSaturnS8(gCurrentBattleOverlay->getSaturnPtr(0x60A9282) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4) == quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][2]);
+                    assert(readSaturnS8(g_BTL_GenericData->getSaturnPtr(0x60A9282) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 4) == quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][2]);
 
                     int uVar4 = shiftLeft32(1, quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][2]);
                     if ((uVar4 & gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon) == 0)

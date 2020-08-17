@@ -6,7 +6,7 @@ std::vector<sSequenceConfig> SoundDataTable;
 
 void soundDataTableInit()
 {
-    sSaturnPtr dataTableEA = gCommonFile.getSaturnPtr(0x2152d8);
+    sSaturnPtr dataTableEA = gCommonFile->getSaturnPtr(0x2152d8);
 
     for (int i=0; i<79; i++)
     {

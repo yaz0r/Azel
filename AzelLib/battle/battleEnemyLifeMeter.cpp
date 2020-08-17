@@ -125,8 +125,8 @@ void createEnemyLifeMeterTask_update(sEnemyLifeMeterTask* pThis)
 
     if ((pThis->m2C_entryIndex > -1) && (pThis->m31 & 1))
     {
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m474_XPReceivedFromBattle += readSaturnS16(gCommonFile.getSaturnPtr(0x201798 + pThis->m2C_entryIndex * 8));
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m478_dyneReceivedFromBattle += readSaturnS16(gCommonFile.getSaturnPtr(0x20179A + pThis->m2C_entryIndex * 8));
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m474_XPReceivedFromBattle += readSaturnS16(gCommonFile->getSaturnPtr(0x201798 + pThis->m2C_entryIndex * 8));
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m478_dyneReceivedFromBattle += readSaturnS16(gCommonFile->getSaturnPtr(0x20179A + pThis->m2C_entryIndex * 8));
         pThis->m31 &= ~1;
     }
 }
@@ -272,7 +272,7 @@ sEnemyLifeMeterTask* createEnemyLifeMeterTask(sVec3_FP* arg0, s32 arg1, s16* arg
     }
     else
     {
-        pNewTask->m28 = readSaturnS16(gCommonFile.getSaturnPtr(0x20179c + arg3 * 4));
+        pNewTask->m28 = readSaturnS16(gCommonFile->getSaturnPtr(0x20179c + arg3 * 4));
         *arg2 = pNewTask->m28;
     }
 

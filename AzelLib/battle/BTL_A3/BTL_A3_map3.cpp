@@ -29,7 +29,7 @@ static void BTL_A3_map3_Init(s_BTL_A3_Env* pThis)
     allocateNPC(pThis, 0x14);
 
     // Create the waterfalls objects
-    sSaturnPtr pVar2 = gCurrentBattleOverlay->getSaturnPtr(0x60a6f28);
+    sSaturnPtr pVar2 = g_BTL_A3->getSaturnPtr(0x60a6f28);
     do 
     {
         initNPCFromStruct(pVar2);

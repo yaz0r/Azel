@@ -11,6 +11,7 @@
 #include "battlePowerGauge.h"
 #include "battleCommandMenu.h"
 #include "battleHpAndBpDisplay.h"
+#include "battleGenericData.h"
 
 void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
 {
@@ -143,8 +144,8 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
     }
 
-    sSaturnPtr spriteDataTable = gCurrentBattleOverlay->getSaturnPtr(0x60b1a40);
-    sSaturnPtr currentSprite = gCurrentBattleOverlay->getSaturnPtr(0x60b19b8);
+    sSaturnPtr spriteDataTable = g_BTL_GenericData->getSaturnPtr(0x60b1a40);
+    sSaturnPtr currentSprite = g_BTL_GenericData->getSaturnPtr(0x60b19b8);
     for(int i=0; i<4; i++)
     {
         sSaturnPtr spriteData = readSaturnEA(spriteDataTable + 4 * i);

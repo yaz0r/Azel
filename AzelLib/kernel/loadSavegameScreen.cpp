@@ -252,9 +252,9 @@ void loadSaveBackground()
     loadFile2("SAVE.SCB", getVdp2Vram(0x20c00), 0);
     loadFile2("SAVE.CGB", getVdp1Pointer(0x25c12000), 0);
 
-    unpackGraphicsToVDP2(COMMON_DAT + 0xf3a2, getVdp2Vram(0x20000));
-    unpackGraphicsToVDP2(COMMON_DAT + 0xf068, getVdp2Vram(0x20800));
-    asyncDmaCopy(gCommonFile.getSaturnPtr(0x20F474), getVdp2Cram(0xA00), 0x200, 0);
+    unpackGraphicsToVDP2(gCommonFile->m_data + 0xf3a2, getVdp2Vram(0x20000));
+    unpackGraphicsToVDP2(gCommonFile->m_data + 0xf068, getVdp2Vram(0x20800));
+    asyncDmaCopy(gCommonFile->getSaturnPtr(0x20F474), getVdp2Cram(0xA00), 0x200, 0);
 
     graphicEngineStatus.m40BC_layersConfig[0].scrollX = 0x50;
     graphicEngineStatus.m40BC_layersConfig[0].scrollY = 0;
@@ -612,7 +612,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
 
         for (int i = 0; i < 3; i++)
         {
-            saveMenuSubTask0* pNewTask = createSubTaskWithArg<saveMenuSubTask0, sSaturnPtr>(pThis, gCommonFile.getSaturnPtr(0x20F778) + i * 4);
+            saveMenuSubTask0* pNewTask = createSubTaskWithArg<saveMenuSubTask0, sSaturnPtr>(pThis, gCommonFile->getSaturnPtr(0x20F778) + i * 4);
             pThis->m28_slotInfoDisplayTask[i] = pNewTask;
             pNewTask->m0 = -1;
             pNewTask->m8 = &pThis->m3C[i];

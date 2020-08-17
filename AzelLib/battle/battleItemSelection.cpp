@@ -193,16 +193,16 @@ void sBattleItemSelectionTask_Update(sBattleItemSelectionTask* pThis)
 
 void sBattleItemSelectionTask_Draw(sBattleItemSelectionTask* pThis)
 {
-    drawMultiChoiceVdp1Cursor((pThis->m14_listX + 2) * 8, (pThis->m16_listY + 1 + pThis->m5_currentSelectionInPage * 2) * 8, gCommonFile.getSaturnPtr(0x20FFE0) + pThis->m7 * 0xA, 0x7F0);
+    drawMultiChoiceVdp1Cursor((pThis->m14_listX + 2) * 8, (pThis->m16_listY + 1 + pThis->m5_currentSelectionInPage * 2) * 8, gCommonFile->getSaturnPtr(0x20FFE0) + pThis->m7 * 0xA, 0x7F0);
 
     if (pThis->m3_currentPageIndex > 0)
     {
-        drawMultiChoiceVdp1Cursor((pThis->m14_listX + 2) * 8, (pThis->m16_listY * 8 + (pThis->m1C_listHeight * 8)/2) - 8, gCommonFile.getSaturnPtr(0x21003A), 0x760);
+        drawMultiChoiceVdp1Cursor((pThis->m14_listX + 2) * 8, (pThis->m16_listY * 8 + (pThis->m1C_listHeight * 8)/2) - 8, gCommonFile->getSaturnPtr(0x21003A), 0x760);
     }
 
     if (pThis->m3_currentPageIndex < pThis->m4)
     {
-        drawMultiChoiceVdp1Cursor((pThis->m14_listX + pThis->m1A_listWidth - 2) * 8, (pThis->m16_listY * 8 + (pThis->m1C_listHeight * 8) / 2) - 8, gCommonFile.getSaturnPtr(0x210030), 0x760);
+        drawMultiChoiceVdp1Cursor((pThis->m14_listX + pThis->m1A_listWidth - 2) * 8, (pThis->m16_listY * 8 + (pThis->m1C_listHeight * 8) / 2) - 8, gCommonFile->getSaturnPtr(0x210030), 0x760);
     }
 
     pThis->m8 += vblankData.m14_numVsyncPerFrame;

@@ -5,6 +5,11 @@ struct FLD_A3_data : public sSaturnMemoryFile
     void init();
 
     std::vector<s_scriptData1> m6083244;
+
+    FLD_A3_data() : sSaturnMemoryFile("FLD_A3.PRG")
+    {
+
+    }
 };
 
 extern FLD_A3_data* gFLD_A3;
