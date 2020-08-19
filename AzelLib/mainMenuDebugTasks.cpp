@@ -237,6 +237,7 @@ void updateFieldTaskNoBattleOverride(s_fieldTaskWorkArea* pWorkArea)
     switch (pWorkArea->m3C_fieldTaskState)
     {
     case 0:
+        break;
     case 3:
         fieldTaskUpdateSub0(pWorkArea->m36_fieldIndexMenuSelection, pWorkArea->m38_subFieldIndexMenuSelection, pWorkArea->m3A, pWorkArea->m2E_currentSubFieldIndex);
         break;
@@ -250,6 +251,8 @@ void updateFieldTaskNoBattleOverride(s_fieldTaskWorkArea* pWorkArea)
         {
             pWorkArea->m3C_fieldTaskState = 3;
         }
+        break;
+    case 7:
         break;
     default:
         assert(0);
@@ -3137,6 +3140,16 @@ p_workArea createNewGameTask(p_workArea pWorkArea)
 p_workArea createContinueTask(p_workArea pWorkArea)
 {
     return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 1, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
+}
+
+p_workArea createTutorial1Task(p_workArea pWorkArea)
+{
+    return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 2, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
+}
+
+p_workArea createTutorial2Task(p_workArea pWorkArea)
+{
+    return createSubTaskWithArg<s_fieldDebugTaskWorkArea, s32>(pWorkArea, 3, s_fieldDebugTaskWorkArea::getExitMenuTaskDefinition());
 }
 
 void playAnimationGenericSub1Sub0(sModelHierarchy* pModelData, std::vector<sPoseDataInterpolation>::iterator& r14)

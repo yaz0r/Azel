@@ -4,19 +4,11 @@
 
 p_workArea createBattleDebugTask(p_workArea);
 
-struct s_titleMenuEntry
-{
-    u16 m_isEnabled;
-    s16 m_var2;
-    const char* m_text;
-    p_workArea(*m_createTask)(p_workArea);
-};
-
 s_titleMenuEntry mainMenu[] = {
     {1, -6, " NEW GAME ", createNewGameTask},
     {1, -5, " CONTINUE ", createContinueTask},
-    {1, -4, "TUTORIAL 1", NULL /*createTutorial1Task*/},
-    {1, -3, "TUTORIAL 2", NULL /*createTutorial2Task*/},
+    {1, -4, "TUTORIAL 1", createTutorial1Task},
+    {1, -3, "TUTORIAL 2", createTutorial2Task},
 };
 
 s_titleMenuEntry mainMenuDebug[] = {
@@ -61,20 +53,20 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
         case 0:
 #if !defined(SHIPPING_BUILD)
         PDS_warningOnce("Setting up menu as debug");
-        if (keyboardIsKeyDown(0xF6) || true)
+        if (keyboardIsKeyDown(0xF6) /*|| true*/)
         {
             pWorkArea->m_menu = mainMenuDebug;
             pWorkArea->m_numMenuEntry = sizeof(mainMenuDebug) / sizeof(mainMenuDebug[0]);
         }
         else
-#else
+#endif
         {
             pWorkArea->m_menu = mainMenu;
-            pWorkArea->m_numMenuEntry = 2; // sizeof(mainMenu) / sizeof(mainMenu[0]);
+            pWorkArea->m_numMenuEntry = sizeof(mainMenu) / sizeof(mainMenu[0]);
 
             titleMenuToggleTutorials(&mainMenu[2], &mainMenu[3]);
         }
-#endif
+
         pWorkArea->m_vertialLocation = 0;
 
         if (VDP2Regs_.m4_TVSTAT & 1)

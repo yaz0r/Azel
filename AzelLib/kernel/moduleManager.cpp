@@ -117,6 +117,7 @@ void moduleManager_Init(s_moduleManager* pWorkArea, s32 menuID)
 
     if (menuID == 3)
     {
+        //Tutorial 2
         mainGameState.gameStats.m1_dragonLevel = DR_LEVEL_1_VALIANT_WING;
     }
     else
@@ -158,10 +159,10 @@ void moduleManager_Init(s_moduleManager* pWorkArea, s32 menuID)
     case 1: //continue
         setNextGameStatus(0x4A);
         return;
-    case 2:
+    case 2: // tutorial 1
         setNextGameStatus(0x71);
         return;
-    case 3:
+    case 3: // tutorial 2
         setNextGameStatus(0x72);
         return;
     default:
@@ -250,6 +251,12 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
     case 0x53: // excavation site #3 (tutorial)
         setNextGameStatus(0x4F);
         break;
+
+    case 0x48:
+    case 0x71:
+    case 0x72:
+    case 0x74:
+        return -1;
 
     case 0x4F:
         break;

@@ -7,6 +7,8 @@ p_workArea createMovieDebugTask(p_workArea);
 
 p_workArea createNewGameTask(p_workArea pWorkArea);
 p_workArea createContinueTask(p_workArea pWorkArea);
+p_workArea createTutorial1Task(p_workArea pWorkArea);
+p_workArea createTutorial2Task(p_workArea pWorkArea);
 
 u32 updateAndInterpolateAnimation(s_3dModel* r4);
 
