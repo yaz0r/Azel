@@ -2,7 +2,7 @@
 #include "battleOverlay.h"
 #include "battleManager.h"
 #include "BTL_A3/BTL_A3.h"
-#include "BTL_A3/BTL_A3_2.h"
+#include "BTL_A3_2/BTL_A3_2.h"
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
 
