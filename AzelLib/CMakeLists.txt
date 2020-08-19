@@ -45,8 +45,6 @@ function(assign_source_group)
     endforeach()
 endfunction(assign_source_group)
 
-assign_source_group(${SOURCES})
-
 
 if( MSVC )
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x -D_HAS_EXCEPTIONS=0 /GR-")
@@ -135,25 +133,24 @@ set(SOURCES
  ${THIRD_PARTY}/aosdk/eng_ssf/scspdsp.c
  #${THIRD_PARTY}/aosdk/eng_ssf/scsplfo.c
 
- ${THIRD_PARTY}/../data/shaders/VDP2_vs.glsl
- ${THIRD_PARTY}/../data/shaders/VDP2_ps.glsl
+ "shaderc_prebuilt.cmake"
 )
+
+set( SHADERC_COMMAND "${THIRD_PARTY}/../build/vs2019_tools/Release/shaderc" )
+
+include(shaderc_prebuilt.cmake)
 
 macro(addShaderProgram vsname psname varyingname)
 
 set(SOURCES
     ${SOURCES}
-    ${THIRD_PARTY}/../data/shaders/${vsname}.sc
-    ${THIRD_PARTY}/../data/shaders/${psname}.sc
-    ${THIRD_PARTY}/../data/shaders/${varyingname}.sc
+    shaders/${vsname}.sc
+    shaders/${psname}.sc
+    shaders/${varyingname}.sc
 )
 
-include(shaderc_prebuilt.cmake)
-
-set( SHADERC_COMMAND "${THIRD_PARTY}/../build/vs2019_tools/Release/shaderc" )
-
-shaderc(FILE ${THIRD_PARTY}/../data/shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.glsl.bin VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
-shaderc(FILE ${THIRD_PARTY}/../data/shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.glsl.bin FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.glsl.bin VERTEX WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.glsl.bin FRAGMENT WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
 
 set(SOURCES
     ${SOURCES}
@@ -162,8 +159,8 @@ set(SOURCES
 )
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.metal.bin VERTEX IOS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.metal.bin FRAGMENT IOS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
+    shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.metal.bin VERTEX IOS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
+    shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.metal.bin FRAGMENT IOS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
     set(SOURCES
         ${SOURCES}
         ${THIRD_PARTY}/../data/shaders/generated/${vsname}.metal.bin
@@ -172,8 +169,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
 endif()
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.metal.bin VERTEX OSX VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.metal.bin FRAGMENT OSX VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
+    shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.metal.bin VERTEX OSX VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
+    shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.metal.bin FRAGMENT OSX VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
     set(SOURCES
         ${SOURCES}
         ${THIRD_PARTY}/../data/shaders/generated/${vsname}.metal.bin
@@ -182,10 +179,10 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
 endif()
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES Windows)
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.dx11.bin VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE vs_5_0)
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.dx11.bin FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE ps_5_0)
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.dx11.debug.bin DEBUG VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE vs_5_0)
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.dx11.debug.bin DEBUG FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE ps_5_0)
+    shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.dx11.bin VERTEX WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE vs_5_0)
+    shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.dx11.bin FRAGMENT WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE ps_5_0)
+    shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.dx11.debug.bin DEBUG VERTEX WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE vs_5_0)
+    shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.dx11.debug.bin DEBUG FRAGMENT WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE ps_5_0)
     set(SOURCES
         ${SOURCES}
         ${THIRD_PARTY}/../data/shaders/generated/${vsname}.dx11.bin
@@ -195,8 +192,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES Windows)
     )
 
     
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.spirv.bin VERTEX LINUX VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
-    shaderc(FILE ${THIRD_PARTY}/../data/shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.spirv.bin FRAGMENT LINUX VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
+    shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.spirv.bin VERTEX LINUX VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
+    shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.spirv.bin FRAGMENT LINUX VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
     set(SOURCES
         ${SOURCES}
         ${THIRD_PARTY}/../data/shaders/generated/${vsname}.spirv.bin
@@ -212,6 +209,8 @@ addShaderProgram(VDP1_2dUI_vs VDP1_2dUI_ps VDP1.varying.def)
 addShaderProgram(VDP1_2dUIVertexColor_vs VDP1_2dUIVertexColor_ps VDP1.varying.def)
 addShaderProgram(VDP2_vs VDP2_ps VDP2_vs.varying.def)
 addShaderProgram(VDP2_blit_vs VDP2_blit_ps VDP2_blit.varying.def)
+
+assign_source_group(${SOURCES})
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
 add_library (AzelLib-ios ${SOURCES})
