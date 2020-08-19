@@ -148,6 +148,10 @@ set(SOURCES
     ${THIRD_PARTY}/../data/shaders/${varyingname}.sc
 )
 
+include(shaderc_prebuilt.cmake)
+
+set( SHADERC_COMMAND "${THIRD_PARTY}/../build/vs2019_tools/Release/shaderc" )
+
 shaderc(FILE ${THIRD_PARTY}/../data/shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.glsl.bin VERTEX WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
 shaderc(FILE ${THIRD_PARTY}/../data/shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.glsl.bin FRAGMENT WINDOWS VARYINGDEF ${THIRD_PARTY}/../data/shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
 

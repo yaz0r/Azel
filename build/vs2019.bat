@@ -16,6 +16,12 @@ if exist "!InstallDir!\VC\Auxiliary\Build\vcvars64.bat" (
   echo "Could not find !InstallDir!\VC\Auxiliary\Build\vcvars64.bat"
 )
 
+mkdir vs2019_tools
+cd vs2019_tools
+cmake -G "Visual Studio 16 2019" -A x64 ..\..\ThirdParty\bgfx.cmake -DBGFX_BUILD_EXAMPLES=OFF -DBGFX_INSTALL=OFF 
+devenv.com bgfx.sln /build Release /project shaderc
+cd ..
+
 mkdir vs2019
 cd vs2019
 cmake -G "Visual Studio 16 2019" -A x64 ..\..\
