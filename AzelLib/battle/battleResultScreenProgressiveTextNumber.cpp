@@ -28,7 +28,7 @@ void battleResultScreen_updateSub8(int value, sVec2_S32* output)
     (*output)[1] = local_c[1];
 }
 
-void battleResultScreenProgressiveText_printNumber(std::array<s32, 4>& data, int value)
+void battleResultScreenProgressiveText_printNumber(const std::array<s32, 4>& data, int value)
 {
     vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
     vdp2PrintStatus.m10_palette = (data[2] & 0xF) << 0xC;

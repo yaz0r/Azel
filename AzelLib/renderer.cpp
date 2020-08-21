@@ -5,8 +5,8 @@
 #include "renderer/renderer_gl.h"
 #include "renderer/renderer_vk.h"
 
-#include "../ThirdParty/bgfx.cmake/bgfx/examples/common/imgui/imgui.h"
-
+//#include "../ThirdParty/bgfx.cmake/bgfx/examples/common/imgui/imgui.h"
+#include "imguiBGFX.h"
 #include "items.h"
 
 extern SDL_Window* gWindowBGFX;

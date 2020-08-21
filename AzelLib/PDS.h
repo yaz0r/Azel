@@ -35,7 +35,7 @@
 #include <soloud_wavstream.h>
 extern SoLoud::Soloud gSoloud;
 
-#include <dear-imgui/imgui.h>
+#include <imgui.h>
 
 #if defined(SHIPPING_BUILD)
 #define isShipping() true

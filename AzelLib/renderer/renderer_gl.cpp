@@ -58,6 +58,12 @@ bool SDL_ES3_backend::init()
 #elif BX_PLATFORM_OSX
     initparam.platformData.ndt = NULL;
     initparam.platformData.nwh = cbSetupMetalLayer(wmi.info.cocoa.window);
+#elif BX_PLATFORM_IOS
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
+    SDL_Renderer* pRenderer = SDL_CreateRenderer(gWindowBGFX, -1, 0);
+    initparam.platformData.ndt = NULL;
+    initparam.platformData.nwh = SDL_RenderGetMetalLayer(pRenderer);
+    initparam.type = bgfx::RendererType::Metal;
 #elif BX_PLATFORM_WINDOWS
     initparam.platformData.ndt = NULL;
     initparam.platformData.nwh = wmi.info.win.window;
@@ -68,6 +74,7 @@ bool SDL_ES3_backend::init()
 
     //initparam.type = bgfx::RendererType::OpenGL;
     //initparam.type = bgfx::RendererType::Vulkan;
+    //initparam.type = bgfx::RendererType::Metal;
     bgfx::init(initparam);
 
     //bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);

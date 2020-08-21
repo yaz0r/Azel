@@ -24,8 +24,6 @@
 		3307807622BAB2130033C8AE /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807522BAB2130033C8AE /* AudioToolbox.framework */; };
 		3307807A22BAB27C0033C8AE /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807922BAB27C0033C8AE /* QuartzCore.framework */; };
 		3307807C22BAB2930033C8AE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307807B22BAB2930033C8AE /* CoreGraphics.framework */; };
-		3328FE272328DA120098E5AF /* VDP2_ps.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE232328DA120098E5AF /* VDP2_ps.glsl */; };
-		3328FE29232966890098E5AF /* VDP2_vs.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE28232966890098E5AF /* VDP2_vs.glsl */; };
 		3345A00824A45D1A000B4600 /* libbgfx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459F7A24A45D00000B4600 /* libbgfx.a */; };
 		3345A00924A45D2F000B4600 /* libbx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459F7E24A45D00000B4600 /* libbx.a */; };
 		3345A00A24A45D33000B4600 /* libbimg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459F7C24A45D00000B4600 /* libbimg.a */; };
@@ -34,7 +32,8 @@
 		3345A06124A51F8A000B4600 /* libbgfx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459FCF24A45D00000B4600 /* libbgfx.a */; };
 		3345A06224A51FA6000B4600 /* libbimg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459FD124A45D00000B4600 /* libbimg.a */; };
 		3345A06324A51FA6000B4600 /* libbx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459FD324A45D00000B4600 /* libbx.a */; };
-		3345A06424A51FB2000B4600 /* libastc-codec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459F7824A45D00000B4600 /* libastc-codec.a */; };
+		3352169A24EF94530009F8B6 /* libastc-codec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459FCD24A45D00000B4600 /* libastc-codec.a */; };
+		3352169B24EF955C0009F8B6 /* libdear-imgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459FD524A45D00000B4600 /* libdear-imgui.a */; };
 		33587AD02344337D00D90AEA /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7222B9FE490033C8AE /* imgui_impl_sdl.cpp */; };
 		33587AD12344337D00D90AEA /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7122B9FE490033C8AE /* imgui_widgets.cpp */; };
 		33587AD22344337D00D90AEA /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */; };
@@ -50,9 +49,7 @@
 		33587ADE2344337D00D90AEA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806722BAB1540033C8AE /* Foundation.framework */; };
 		33587ADF2344337D00D90AEA /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806522BAB1460033C8AE /* OpenGLES.framework */; };
 		33587AE02344337D00D90AEA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806322BAB13B0033C8AE /* AVFoundation.framework */; };
-		33587AE22344337D00D90AEA /* VDP2_ps.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE232328DA120098E5AF /* VDP2_ps.glsl */; };
 		33587AE32344337D00D90AEA /* tvos.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3307801122BA063D0033C8AE /* tvos.xcassets */; };
-		33587AE42344337D00D90AEA /* VDP2_vs.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE28232966890098E5AF /* VDP2_vs.glsl */; };
 		33587AEC2344347A00D90AEA /* tvos.plist in Resources */ = {isa = PBXBuildFile; fileRef = 33587AEB2344347A00D90AEA /* tvos.plist */; };
 		33587AF92344364000D90AEA /* libAzelLib-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587AC6234432DB00D90AEA /* libAzelLib-tvos.a */; };
 		33587AFA2344364300D90AEA /* libsoloud-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33587AC8234432DB00D90AEA /* libsoloud-tvos.a */; };
@@ -76,9 +73,7 @@
 		33EA6499234C1708006F24DA /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806B22BAB1720033C8AE /* Metal.framework */; };
 		33EA649B234C1708006F24DA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806722BAB1540033C8AE /* Foundation.framework */; };
 		33EA649E234C1708006F24DA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3307806322BAB13B0033C8AE /* AVFoundation.framework */; };
-		33EA64A0234C1708006F24DA /* VDP2_ps.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE232328DA120098E5AF /* VDP2_ps.glsl */; };
 		33EA64A1234C1708006F24DA /* tvos.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3307801122BA063D0033C8AE /* tvos.xcassets */; };
-		33EA64A2234C1708006F24DA /* VDP2_vs.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 3328FE28232966890098E5AF /* VDP2_vs.glsl */; };
 		33EA64A9234C177D006F24DA /* libAzelLib-darwin.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33EA646F234C164A006F24DA /* libAzelLib-darwin.a */; };
 		33EA64AA234C177D006F24DA /* libsoloud-darwin.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33EA6471234C164A006F24DA /* libsoloud-darwin.a */; };
 		33EA64AE234C18AE006F24DA /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33EA64AD234C18AE006F24DA /* OpenGL.framework */; };
@@ -216,61 +211,12 @@
 			remoteGlobalIDString = 2662564A867F42D1AA9D2F49;
 			remoteInfo = "example-common";
 		};
-		33459F8924A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3F697CFCD4A44E499110140A;
-			remoteInfo = fcpp;
-		};
-		33459F8B24A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 96E1AE07ABCA4610B8252CB7;
-			remoteInfo = geometryc;
-		};
-		33459F8D24A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = BD0523D184C64E41933A0797;
-			remoteInfo = geometryv;
-		};
-		33459F8F24A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3761BA4863794B5FBEAB8252;
-			remoteInfo = glcpp;
-		};
-		33459F9124A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 7858789C47544AAF8D6C730B;
-			remoteInfo = "glsl-optimizer";
-		};
-		33459F9324A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D9041D04A2794A7BB32657A5;
-			remoteInfo = glslang;
-		};
 		33459F9524A45D00000B4600 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = FFC06215E7C74EEFB374FEC7;
 			remoteInfo = iqa;
-		};
-		33459F9724A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8FFBA57FAA1F4D22AA2DF6E2;
-			remoteInfo = mesa;
 		};
 		33459F9924A45D00000B4600 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -293,47 +239,12 @@
 			remoteGlobalIDString = D67F90C810E449BAB20740D8;
 			remoteInfo = pvrtc;
 		};
-		33459F9F24A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8297DD9AD4FB47AC8447EEAB;
-			remoteInfo = shaderc;
-		};
-		33459FA124A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 34756313D4F4400F94F7C61D;
-			remoteInfo = "spirv-cross";
-		};
-		33459FA324A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4F2C1A037E034D498D0483CB;
-			remoteInfo = "spirv-tools";
-		};
 		33459FA524A45D00000B4600 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 7286528624DB400D90CF4A89;
 			remoteInfo = squish;
-		};
-		33459FA724A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3B320E8593314AF5B96EF5B0;
-			remoteInfo = texturec;
-		};
-		33459FA924A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 79C3F6E351934CDD9DB2C605;
-			remoteInfo = texturev;
 		};
 		33459FCA24A45D00000B4600 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -405,61 +316,12 @@
 			remoteGlobalIDString = 80A8A51B36EE4311ACA774B4;
 			remoteInfo = "example-common";
 		};
-		33459FDE24A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 84114DE0DE7D41FF86E7854F;
-			remoteInfo = fcpp;
-		};
-		33459FE024A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 35FFD31ED2734EB4B61AB4CA;
-			remoteInfo = geometryc;
-		};
-		33459FE224A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = EAA442E65E1443F69D278BAF;
-			remoteInfo = geometryv;
-		};
-		33459FE424A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 1546DFD31B8E4E968CAC2BAA;
-			remoteInfo = glcpp;
-		};
-		33459FE624A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8D327C13F1D34C78B8803297;
-			remoteInfo = "glsl-optimizer";
-		};
-		33459FE824A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0866A6F0D6474A959CCCBF73;
-			remoteInfo = glslang;
-		};
 		33459FEA24A45D00000B4600 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = BFB003BC668C40C7AC05A40B;
 			remoteInfo = iqa;
-		};
-		33459FEC24A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 7C5A1697A9E3449A8F42375E;
-			remoteInfo = mesa;
 		};
 		33459FEE24A45D00000B4600 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -482,47 +344,12 @@
 			remoteGlobalIDString = 5010FC712F2448D78AC9865B;
 			remoteInfo = pvrtc;
 		};
-		33459FF424A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 64564B6CECA0437CBFD59132;
-			remoteInfo = shaderc;
-		};
-		33459FF624A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 182D0EF33B8A480AAB8FB42B;
-			remoteInfo = "spirv-cross";
-		};
-		33459FF824A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = FBF46DEA0BD041CC88D6ABDD;
-			remoteInfo = "spirv-tools";
-		};
 		33459FFA24A45D00000B4600 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 222E66DE55E94CD59BD95BD4;
 			remoteInfo = squish;
-		};
-		33459FFC24A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = A79C5E2A9F43441D89E6A215;
-			remoteInfo = texturec;
-		};
-		33459FFE24A45D00000B4600 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3E95C08AB9FC42969FAABB56;
-			remoteInfo = texturev;
 		};
 		33587ABA234432CE00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -556,28 +383,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = BD5AB5E19969448799A0DB1F;
+			remoteGlobalIDString = B71F88211A5044BC9FFA8BE2;
 			remoteInfo = "AzelLib-ios";
 		};
 		33587AEF2344356D00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 0DAB35B2A7F54F638A6577EC;
+			remoteGlobalIDString = 15BA962B35A846D7A81FA3DF;
 			remoteInfo = "soloud-ios";
 		};
 		33587AF12344357A00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 323A301ECB0A4E8CB724A699;
+			remoteGlobalIDString = 5694DDA71E6F45B898A297DB;
 			remoteInfo = "AzelLib-tvos";
 		};
 		33587AF32344357C00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = B48878C2C08E46709949E7AC;
+			remoteGlobalIDString = 934ACB85627C4515A1FB7342;
 			remoteInfo = "soloud-tvos";
 		};
 		33587AF52344358300D90AEA /* PBXContainerItemProxy */ = {
@@ -664,61 +491,12 @@
 			remoteGlobalIDString = ACC277240C284FCA87724C76;
 			remoteInfo = "example-common";
 		};
-		338857EA24A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0C4986137B8B485EA243E501;
-			remoteInfo = fcpp;
-		};
-		338857EC24A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 1DF2C5D5812649BBB68F47E8;
-			remoteInfo = geometryc;
-		};
-		338857EE24A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = BB526464A9444AA99D5268FF;
-			remoteInfo = geometryv;
-		};
-		338857F024A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D41F98E8B37A4D93B30C794D;
-			remoteInfo = glcpp;
-		};
-		338857F224A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = E049458101DC428494FB5B63;
-			remoteInfo = "glsl-optimizer";
-		};
-		338857F424A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = A8CEFC18BBDB469DB5E1EB4C;
-			remoteInfo = glslang;
-		};
 		338857F624A57AD80054AFF9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 39C64AEF757346DDAF2941DB;
 			remoteInfo = iqa;
-		};
-		338857F824A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 57D1401EDA3B4D0491E35CD0;
-			remoteInfo = mesa;
 		};
 		338857FA24A57AD80054AFF9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -741,47 +519,12 @@
 			remoteGlobalIDString = 0792195687F8428DBF8C7862;
 			remoteInfo = pvrtc;
 		};
-		3388580024A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 20D57911A36347C0BD88A2E9;
-			remoteInfo = shaderc;
-		};
-		3388580224A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 19C678BC9E5F4362BA4F1EB3;
-			remoteInfo = "spirv-cross";
-		};
-		3388580424A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = F0C011F3E44F4258A4F3AFE2;
-			remoteInfo = "spirv-tools";
-		};
 		3388580624A57AD80054AFF9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 43A8D387127D464AA16B18E2;
 			remoteInfo = squish;
-		};
-		3388580824A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = B1D82077F9F4444D97CD5CDE;
-			remoteInfo = texturec;
-		};
-		3388580A24A57AD80054AFF9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = C7F54380BDD84B32A98ECE20;
-			remoteInfo = texturev;
 		};
 		33EA646E234C164A006F24DA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -836,14 +579,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = BEFE795C344B4848BC5AFA05;
+			remoteGlobalIDString = B8BD087D296042DFA7A91D1D;
 			remoteInfo = "AzelLib-darwin";
 		};
 		33EA64B3234C1952006F24DA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = DAEE7658A42A4075A52C9115;
+			remoteGlobalIDString = 4D08BE820E854EE58F84C999;
 			remoteInfo = "soloud-darwin";
 		};
 /* End PBXContainerItemProxy section */
@@ -872,8 +615,6 @@
 		3307807922BAB27C0033C8AE /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		3307807B22BAB2930033C8AE /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		3324E2D323430A260059DE3C /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "../ThirdParty/SDL2/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
-		3328FE232328DA120098E5AF /* VDP2_ps.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = VDP2_ps.glsl; path = ../../data/VDP2_ps.glsl; sourceTree = "<group>"; };
-		3328FE28232966890098E5AF /* VDP2_vs.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = VDP2_vs.glsl; path = ../../data/VDP2_vs.glsl; sourceTree = "<group>"; };
 		3345A00F24A51B47000B4600 /* bgfxPatch.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = bgfxPatch.mm; path = ../../PDS/bgfxPatch.mm; sourceTree = "<group>"; };
 		33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "PDS-ios.xcodeproj"; path = "ios/PDS-ios.xcodeproj"; sourceTree = "<group>"; };
 		33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "PDS-tvos.xcodeproj"; path = "tvos/PDS-tvos.xcodeproj"; sourceTree = "<group>"; };
@@ -909,10 +650,11 @@
 				3307807A22BAB27C0033C8AE /* QuartzCore.framework in Frameworks */,
 				3307807622BAB2130033C8AE /* AudioToolbox.framework in Frameworks */,
 				3307807422BAB1AE0033C8AE /* CoreMotion.framework in Frameworks */,
+				3352169B24EF955C0009F8B6 /* libdear-imgui.a in Frameworks */,
 				3307806E22BAB17B0033C8AE /* GameController.framework in Frameworks */,
 				3307806C22BAB1720033C8AE /* Metal.framework in Frameworks */,
 				33AB9184234C1E1600BB34F3 /* libSDL2.a in Frameworks */,
-				3345A06424A51FB2000B4600 /* libastc-codec.a in Frameworks */,
+				3352169A24EF94530009F8B6 /* libastc-codec.a in Frameworks */,
 				3345A06324A51FA6000B4600 /* libbx.a in Frameworks */,
 				33587AFC234436AB00D90AEA /* libsoloud-ios.a in Frameworks */,
 				3307806A22BAB1670033C8AE /* UIKit.framework in Frameworks */,
@@ -1003,8 +745,6 @@
 			children = (
 				33EA64AF234C18E8006F24DA /* gl3w.c */,
 				33587AEB2344347A00D90AEA /* tvos.plist */,
-				3328FE28232966890098E5AF /* VDP2_vs.glsl */,
-				3328FE232328DA120098E5AF /* VDP2_ps.glsl */,
 				3307801122BA063D0033C8AE /* tvos.xcassets */,
 				33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */,
 				33077F7222B9FE490033C8AE /* imgui_impl_sdl.cpp */,
@@ -1077,24 +817,12 @@
 				33459FD924A45D00000B4600 /* libetc1.a */,
 				33459FDB24A45D00000B4600 /* libetc2.a */,
 				33459FDD24A45D00000B4600 /* libexample-common.a */,
-				33459FDF24A45D00000B4600 /* libfcpp.a */,
-				33459FE124A45D00000B4600 /* geometryc */,
-				33459FE324A45D00000B4600 /* geometryv */,
-				33459FE524A45D00000B4600 /* libglcpp.a */,
-				33459FE724A45D00000B4600 /* libglsl-optimizer.a */,
-				33459FE924A45D00000B4600 /* libglslang.a */,
 				33459FEB24A45D00000B4600 /* libiqa.a */,
-				33459FED24A45D00000B4600 /* libmesa.a */,
 				33459FEF24A45D00000B4600 /* libmeshoptimizer.a */,
 				33459FF124A45D00000B4600 /* libnvtt.a */,
 				33459FF324A45D00000B4600 /* libpvrtc.a */,
-				33459FF524A45D00000B4600 /* shaderc */,
 				33587ABD234432CE00D90AEA /* libsoloud-ios.a */,
-				33459FF724A45D00000B4600 /* libspirv-cross.a */,
-				33459FF924A45D00000B4600 /* libspirv-tools.a */,
 				33459FFB24A45D00000B4600 /* libsquish.a */,
-				33459FFD24A45D00000B4600 /* texturec */,
-				33459FFF24A45D00000B4600 /* texturev */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1113,24 +841,12 @@
 				338857E524A57AD80054AFF9 /* libetc1.a */,
 				338857E724A57AD80054AFF9 /* libetc2.a */,
 				338857E924A57AD80054AFF9 /* libexample-common.a */,
-				338857EB24A57AD80054AFF9 /* libfcpp.a */,
-				338857ED24A57AD80054AFF9 /* geometryc */,
-				338857EF24A57AD80054AFF9 /* geometryv */,
-				338857F124A57AD80054AFF9 /* libglcpp.a */,
-				338857F324A57AD80054AFF9 /* libglsl-optimizer.a */,
-				338857F524A57AD80054AFF9 /* libglslang.a */,
 				338857F724A57AD80054AFF9 /* libiqa.a */,
-				338857F924A57AD80054AFF9 /* libmesa.a */,
 				338857FB24A57AD80054AFF9 /* libmeshoptimizer.a */,
 				338857FD24A57AD80054AFF9 /* libnvtt.a */,
 				338857FF24A57AD80054AFF9 /* libpvrtc.a */,
-				3388580124A57AD80054AFF9 /* shaderc */,
 				33587AC8234432DB00D90AEA /* libsoloud-tvos.a */,
-				3388580324A57AD80054AFF9 /* libspirv-cross.a */,
-				3388580524A57AD80054AFF9 /* libspirv-tools.a */,
 				3388580724A57AD80054AFF9 /* libsquish.a */,
-				3388580924A57AD80054AFF9 /* texturec */,
-				3388580B24A57AD80054AFF9 /* texturev */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1149,24 +865,12 @@
 				33459F8424A45D00000B4600 /* libetc1.a */,
 				33459F8624A45D00000B4600 /* libetc2.a */,
 				33459F8824A45D00000B4600 /* libexample-common.a */,
-				33459F8A24A45D00000B4600 /* libfcpp.a */,
-				33459F8C24A45D00000B4600 /* geometryc */,
-				33459F8E24A45D00000B4600 /* geometryv */,
-				33459F9024A45D00000B4600 /* libglcpp.a */,
-				33459F9224A45D00000B4600 /* libglsl-optimizer.a */,
-				33459F9424A45D00000B4600 /* libglslang.a */,
 				33459F9624A45D00000B4600 /* libiqa.a */,
-				33459F9824A45D00000B4600 /* libmesa.a */,
 				33459F9A24A45D00000B4600 /* libmeshoptimizer.a */,
 				33459F9C24A45D00000B4600 /* libnvtt.a */,
 				33459F9E24A45D00000B4600 /* libpvrtc.a */,
-				33459FA024A45D00000B4600 /* shaderc */,
 				33EA6471234C164A006F24DA /* libsoloud-darwin.a */,
-				33459FA224A45D00000B4600 /* libspirv-cross.a */,
-				33459FA424A45D00000B4600 /* libspirv-tools.a */,
 				33459FA624A45D00000B4600 /* libsquish.a */,
-				33459FA824A45D00000B4600 /* texturec */,
-				33459FAA24A45D00000B4600 /* texturev */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1419,60 +1123,11 @@
 			remoteRef = 33459F8724A45D00000B4600 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		33459F8A24A45D00000B4600 /* libfcpp.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libfcpp.a;
-			remoteRef = 33459F8924A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459F8C24A45D00000B4600 /* geometryc */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = geometryc;
-			remoteRef = 33459F8B24A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459F8E24A45D00000B4600 /* geometryv */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = geometryv;
-			remoteRef = 33459F8D24A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459F9024A45D00000B4600 /* libglcpp.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libglcpp.a;
-			remoteRef = 33459F8F24A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459F9224A45D00000B4600 /* libglsl-optimizer.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libglsl-optimizer.a";
-			remoteRef = 33459F9124A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459F9424A45D00000B4600 /* libglslang.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libglslang.a;
-			remoteRef = 33459F9324A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		33459F9624A45D00000B4600 /* libiqa.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libiqa.a;
 			remoteRef = 33459F9524A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459F9824A45D00000B4600 /* libmesa.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libmesa.a;
-			remoteRef = 33459F9724A45D00000B4600 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		33459F9A24A45D00000B4600 /* libmeshoptimizer.a */ = {
@@ -1496,46 +1151,11 @@
 			remoteRef = 33459F9D24A45D00000B4600 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		33459FA024A45D00000B4600 /* shaderc */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = shaderc;
-			remoteRef = 33459F9F24A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FA224A45D00000B4600 /* libspirv-cross.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libspirv-cross.a";
-			remoteRef = 33459FA124A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FA424A45D00000B4600 /* libspirv-tools.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libspirv-tools.a";
-			remoteRef = 33459FA324A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		33459FA624A45D00000B4600 /* libsquish.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libsquish.a;
 			remoteRef = 33459FA524A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FA824A45D00000B4600 /* texturec */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = texturec;
-			remoteRef = 33459FA724A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FAA24A45D00000B4600 /* texturev */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = texturev;
-			remoteRef = 33459FA924A45D00000B4600 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		33459FCB24A45D00000B4600 /* libastc.a */ = {
@@ -1608,62 +1228,11 @@
 			remoteRef = 33459FDC24A45D00000B4600 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		33459FDF24A45D00000B4600 /* libfcpp.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libfcpp.a;
-			remoteRef = 33459FDE24A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FE124A45D00000B4600 /* geometryc */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = geometryc;
-			path = geometryc.app;
-			remoteRef = 33459FE024A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FE324A45D00000B4600 /* geometryv */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = geometryv;
-			path = geometryv.app;
-			remoteRef = 33459FE224A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FE524A45D00000B4600 /* libglcpp.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libglcpp.a;
-			remoteRef = 33459FE424A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FE724A45D00000B4600 /* libglsl-optimizer.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libglsl-optimizer.a";
-			remoteRef = 33459FE624A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FE924A45D00000B4600 /* libglslang.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libglslang.a;
-			remoteRef = 33459FE824A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		33459FEB24A45D00000B4600 /* libiqa.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libiqa.a;
 			remoteRef = 33459FEA24A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FED24A45D00000B4600 /* libmesa.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libmesa.a;
-			remoteRef = 33459FEC24A45D00000B4600 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		33459FEF24A45D00000B4600 /* libmeshoptimizer.a */ = {
@@ -1687,49 +1256,11 @@
 			remoteRef = 33459FF224A45D00000B4600 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		33459FF524A45D00000B4600 /* shaderc */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = shaderc;
-			path = shaderc.app;
-			remoteRef = 33459FF424A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FF724A45D00000B4600 /* libspirv-cross.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libspirv-cross.a";
-			remoteRef = 33459FF624A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FF924A45D00000B4600 /* libspirv-tools.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libspirv-tools.a";
-			remoteRef = 33459FF824A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		33459FFB24A45D00000B4600 /* libsquish.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libsquish.a;
 			remoteRef = 33459FFA24A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FFD24A45D00000B4600 /* texturec */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = texturec;
-			path = texturec.app;
-			remoteRef = 33459FFC24A45D00000B4600 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33459FFF24A45D00000B4600 /* texturev */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = texturev;
-			path = texturev.app;
-			remoteRef = 33459FFE24A45D00000B4600 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		33587ABB234432CE00D90AEA /* libAzelLib-ios.a */ = {
@@ -1830,62 +1361,11 @@
 			remoteRef = 338857E824A57AD80054AFF9 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		338857EB24A57AD80054AFF9 /* libfcpp.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libfcpp.a;
-			remoteRef = 338857EA24A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		338857ED24A57AD80054AFF9 /* geometryc */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = geometryc;
-			path = geometryc.app;
-			remoteRef = 338857EC24A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		338857EF24A57AD80054AFF9 /* geometryv */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = geometryv;
-			path = geometryv.app;
-			remoteRef = 338857EE24A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		338857F124A57AD80054AFF9 /* libglcpp.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libglcpp.a;
-			remoteRef = 338857F024A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		338857F324A57AD80054AFF9 /* libglsl-optimizer.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libglsl-optimizer.a";
-			remoteRef = 338857F224A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		338857F524A57AD80054AFF9 /* libglslang.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libglslang.a;
-			remoteRef = 338857F424A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		338857F724A57AD80054AFF9 /* libiqa.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libiqa.a;
 			remoteRef = 338857F624A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		338857F924A57AD80054AFF9 /* libmesa.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libmesa.a;
-			remoteRef = 338857F824A57AD80054AFF9 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		338857FB24A57AD80054AFF9 /* libmeshoptimizer.a */ = {
@@ -1909,49 +1389,11 @@
 			remoteRef = 338857FE24A57AD80054AFF9 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		3388580124A57AD80054AFF9 /* shaderc */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = shaderc;
-			path = shaderc.app;
-			remoteRef = 3388580024A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3388580324A57AD80054AFF9 /* libspirv-cross.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libspirv-cross.a";
-			remoteRef = 3388580224A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3388580524A57AD80054AFF9 /* libspirv-tools.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libspirv-tools.a";
-			remoteRef = 3388580424A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		3388580724A57AD80054AFF9 /* libsquish.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libsquish.a;
 			remoteRef = 3388580624A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3388580924A57AD80054AFF9 /* texturec */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = texturec;
-			path = texturec.app;
-			remoteRef = 3388580824A57AD80054AFF9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3388580B24A57AD80054AFF9 /* texturev */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			name = texturev;
-			path = texturev.app;
-			remoteRef = 3388580A24A57AD80054AFF9 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		33EA646F234C164A006F24DA /* libAzelLib-darwin.a */ = {
@@ -2004,9 +1446,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				33587AEC2344347A00D90AEA /* tvos.plist in Resources */,
-				3328FE272328DA120098E5AF /* VDP2_ps.glsl in Resources */,
 				3307801222BA063D0033C8AE /* tvos.xcassets in Resources */,
-				3328FE29232966890098E5AF /* VDP2_vs.glsl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2014,9 +1454,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				33587AE22344337D00D90AEA /* VDP2_ps.glsl in Resources */,
 				33587AE32344337D00D90AEA /* tvos.xcassets in Resources */,
-				33587AE42344337D00D90AEA /* VDP2_vs.glsl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2024,9 +1462,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				33EA64A0234C1708006F24DA /* VDP2_ps.glsl in Resources */,
 				33EA64A1234C1708006F24DA /* tvos.xcassets in Resources */,
-				33EA64A2234C1708006F24DA /* VDP2_vs.glsl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2048,7 +1484,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp ../data/* $CONFIGURATION_BUILD_DIR/$CONTENTS_FOLDER_PATH/\n\n";
+			shellScript = "cp -R ../data/* $CONFIGURATION_BUILD_DIR/$CONTENTS_FOLDER_PATH/\n\n";
 		};
 		33587AE52344337D00D90AEA /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;

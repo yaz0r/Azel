@@ -1,3 +1,9 @@
+mkdir apple_tools
+cd apple_tools
+cmake ..\..\ThirdParty\bgfx.cmake -DBGFX_BUILD_EXAMPLES=OFF -DBGFX_INSTALL=OFF
+make shaderc
+cd ..
+
 rm -rf ios
 mkdir ios 
 rm -rf tvos

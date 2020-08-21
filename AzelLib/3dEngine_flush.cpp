@@ -289,7 +289,7 @@ glm::mat4 MatrixToGLM(const sMatrix4x3& inputMatrix)
     return tempObjectMatrix;
 }
 
-void drawObject(s_objectToRender* pObject, glm::mat4& projectionMatrix)
+void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
 {
     pObject->m_pObject->generateVertexBuffer();
     //return drawObject_SingleDrawCall(pObject, projectionMatrix);
