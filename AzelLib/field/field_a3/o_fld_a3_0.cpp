@@ -38,7 +38,7 @@ void fieldA3_0_tutorialTask_update(s_fieldA3_0_tutorialTask* workArea)
 
 void create_fieldA3_0_tutorialTask(p_workArea workArea)
 {
-    if ((getFieldTaskPtr()->m2C_currentFieldIndex == 2) && mainGameState.getBit(0xA2, 2) != 0)
+    if ((getFieldTaskPtr()->m2C_currentFieldIndex == 2) && mainGameState.getBit(0xA2 * 8 + 2) != 0)
     {
         return;
     }

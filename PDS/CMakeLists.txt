@@ -5,8 +5,7 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/AzelLib"
     "${THIRD_PARTY}"
     "${THIRD_PARTY}/SDL2/include"
-    "${THIRD_PARTY}/dear-imgui/examples"
-    "${THIRD_PARTY}/dear-imgui/examples/libs/gl3w"
+    "${THIRD_PARTY}/imgui"
     "${THIRD_PARTY}/soloud/soloud/include"
     "${THIRD_PARTY}/glm"
     "${THIRD_PARTY}/tracy"
@@ -169,7 +168,7 @@ ELSE()
  endif()
 ENDIF()
 
-TARGET_LINK_LIBRARIES(PDS bgfx example-common)
+TARGET_LINK_LIBRARIES(PDS bgfx)
 
 set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT PDS)
 set_target_properties(PDS PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/data")

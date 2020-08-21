@@ -56,7 +56,7 @@ void loadingTaskUpdateSub0(sBattleManager* pThis)
     }
 }
 
-static void  loadBattleOverlaySub0(sBattleManager* pThis)
+void loadBattleOverlaySub0(sBattleManager* pThis)
 {
     pThis->m4 = pThis->m2_currentBattleOverlayId;
     pThis->m8 = pThis->m6_subBattleId;

@@ -65,7 +65,7 @@ struct fieldA3_A_task1 : public s_workAreaTemplate<fieldA3_A_task1>
 
     static void Update(fieldA3_A_task1* pThis)
     {
-        if (mainGameState.getBit(0x11, 7))
+        if (mainGameState.getBit(0x11 * 8 + 7))
         {
             pThis->getTask()->markFinished();
         }

@@ -109,3 +109,17 @@ p_workArea createBattleOverlayTask(sBattleManager* pParent)
 
     return pBattleOverlayTask;
 }
+
+p_workArea loadBattleOverlay(s32 battleId, s32 subBattleId)
+{
+    gBattleManager->m2_currentBattleOverlayId = battleId;
+    gBattleManager->m6_subBattleId = subBattleId;
+    loadBattleOverlaySub0(gBattleManager);
+    if (gCommonFile->battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m4_prg == "")
+    {
+        return nullptr;
+    }
+
+    return createBattleOverlayTask(gBattleManager);
+}
+

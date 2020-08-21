@@ -1141,9 +1141,9 @@ void LCSTaskDrawSub1(s_LCSTask* r4)
 {
     LCSTaskDrawSub1Sub0(r4);
 
-    if (getFieldTaskPtr()->m8_pSubFieldData)
+    if (r4->m8)
     {
-        getFieldTaskPtr()->m28_status |= 0x4;
+        fieldTaskPtr->m28_status |= 0x4;
         if (r4->m8 & 0x40)
         {
             return;
@@ -1151,7 +1151,7 @@ void LCSTaskDrawSub1(s_LCSTask* r4)
     }
     else
     {
-        getFieldTaskPtr()->m28_status &= ~0x4;
+        fieldTaskPtr->m28_status &= ~0x4;
     }
 
     LCSTaskDrawSub1Sub1(r4);

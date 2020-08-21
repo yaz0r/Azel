@@ -2600,9 +2600,9 @@ void battleLoading_Delete(sBattleLoadingTask* pThis)
 
 void startBattleTutorial(int tutorialIndex, int param2)
 {
-    if ((getFieldTaskPtr()->m28_status & 1) == 0)
+    if ((fieldTaskPtr->m28_status & 1) == 0)
     {
-        getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m4 = 2;
+        fieldTaskPtr->m8_pSubFieldData->m344_randomBattleTask->m4 = 2;
         battleIndex = tutorialIndex;
     }
     else
@@ -2627,7 +2627,7 @@ s32 dispatchTutorialMultiChoice()
     {
         if (getFieldTaskPtr()->m2C_currentFieldIndex == 2)
         {
-            mainGameState.setBit(0xA2, 2); // tutorial bit
+            mainGameState.setBit(0xA2 * 8 + 2); // tutorial bit
             dispatchTutorialMultiChoiceSub1();
         }
         else
@@ -4827,13 +4827,13 @@ void clearDragonPlayerInputs()
 
 u32 integrateDragonMovementSub4Sub3()
 {
-    u32 T = !mainGameState.getBit(0x2A, 6);
+    u32 T = !mainGameState.getBit(0x2A * 8 + 6);
     return T ^ 1;
 }
 
 u32 integrateDragonMovementSub4Sub2()
 {
-    u32 T = !mainGameState.getBit(0x2A, 7);
+    u32 T = !mainGameState.getBit(0x2A * 8 + 7);
     return T ^ 1;
 }
 
@@ -6575,7 +6575,7 @@ void LCSUpdateCursorFromInputSub0(s32 r4, sVec3_FP* r5)
 
 s8 LCSTaskDrawSub1Sub6()
 {
-    s8 r0 = !mainGameState.getBit(0x2B, 0);
+    s8 r0 = !mainGameState.getBit(0x2B * 8 + 0);
     r0 ^= 1;
     return r0;
 }
@@ -6612,8 +6612,7 @@ void s_randomBattleWorkArea::randomBattleTaskInit(s_randomBattleWorkArea* pWorkA
 
 bool isBattleEnabled()
 {
-    // TODO: recheck this
-    if (fieldTaskPtr->m28_status)
+    if (fieldTaskPtr->m28_status == 0)
     {
         return true;
     }
@@ -6622,7 +6621,7 @@ bool isBattleEnabled()
 
 void s_randomBattleWorkArea::randomBattleTaskDraw(s_randomBattleWorkArea* pWorkArea)
 {
-    if ((pWorkArea->m4 == 2) || isBattleEnabled() || (pWorkArea->m4 == 0) || ((getFieldTaskPtr()->m28_status & 0xFFFF) == 0))
+    if ((pWorkArea->m4 == 2) || isBattleEnabled() || ((pWorkArea->m4 != 0) && ((getFieldTaskPtr()->m28_status & 0xFFFF) == 0)))
     {
         hasEncounterData = 1;
     }
@@ -6640,43 +6639,51 @@ void createRandomBattleTask(s_workArea* pWorkArea)
 void fieldDebugMenuUpdate1()
 {
     s_FieldSubTaskWorkArea* pSubFieldData = getFieldTaskPtr()->m8_pSubFieldData;
-    if ((pSubFieldData->m37C_debugMenuStatus1[0] == 0) && (pSubFieldData->m369 == 0))
+
+    if (pSubFieldData->m37C_debugMenuStatus1[0])
     {
-        if (pSubFieldData->m380_debugMenuStatus3 == 0)
-        {
-            if (readKeyboardToggle(0x84))
-            {
-                pSubFieldData->m37C_debugMenuStatus1[1]++;
-                pSubFieldData->m37E_debugMenuStatus2_a = 0;
-                clearVdp2TextMemory();
-            }
-            else
-            {
-                if (readKeyboardToggle(0xF6))
-                {
-                    pSubFieldData->m37C_debugMenuStatus1[1] = 0;
-                    clearVdp2TextMemory();
-                }
-            }
-        }
+        return;
+    }
 
-        switch (pSubFieldData->m37C_debugMenuStatus1[1])
-        {
-        case 0:
-            break;
-        default:
-            assert(0);
-            break;
-        }
+    if (pSubFieldData->m369)
+    {
+        return;
+    }
 
-        if (pSubFieldData->m37C_debugMenuStatus1[1])
+    if (pSubFieldData->m380_debugMenuStatus3 == 0)
+    {
+        if (readKeyboardToggle(0x84))
         {
-            getFieldTaskPtr()->m28_status |= 8;
+            pSubFieldData->m37C_debugMenuStatus1[1]++;
+            pSubFieldData->m37E_debugMenuStatus2_a = 0;
+            clearVdp2TextMemory();
         }
         else
         {
-            getFieldTaskPtr()->m28_status &= 0xFFFFFFF7;
+            if (readKeyboardToggle(0xF6))
+            {
+                pSubFieldData->m37C_debugMenuStatus1[1] = 0;
+                clearVdp2TextMemory();
+            }
         }
+    }
+
+    switch (pSubFieldData->m37C_debugMenuStatus1[1])
+    {
+    case 0:
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    if (pSubFieldData->m37C_debugMenuStatus1[1])
+    {
+        fieldTaskPtr->m28_status |= 8;
+    }
+    else
+    {
+        fieldTaskPtr->m28_status &= ~8;
     }
 }
 void fieldDebugMenuUpdate2()

@@ -21,7 +21,7 @@ void sMainLogic::Init(sMainLogic* pThis)
 {
     twnMainLogicTask = pThis;
 
-    if (mainGameState.getBit(0x274, 7))
+    if (mainGameState.getBit(0x274 * 8 + 7))
     {
         pThis->m1_cameraParamsIndex = 1;
     }

@@ -115,12 +115,12 @@ endif()
 
 set(SOURCES
  ${SOURCES}
- #${THIRD_PARTY}/dear-imgui/imgui.cpp
- #${THIRD_PARTY}/dear-imgui/imgui_draw.cpp
- #${THIRD_PARTY}/dear-imgui/imgui_widgets.cpp
- 
- #${THIRD_PARTY}/dear-imgui/examples/imgui_impl_opengl3.cpp
- #${THIRD_PARTY}/dear-imgui/examples/imgui_impl_sdl.cpp
+
+ ${THIRD_PARTY}/imgui/imgui.cpp
+ ${THIRD_PARTY}/imgui/imgui.h
+ ${THIRD_PARTY}/imgui/imgui_draw.cpp
+ ${THIRD_PARTY}/imgui/imgui_internal.h
+ ${THIRD_PARTY}/imgui/imgui_widgets.cpp
 
  ${THIRD_PARTY}/aosdk/eng_ssf/m68kcpu.c
  ${THIRD_PARTY}/aosdk/eng_ssf/m68kopac.c

@@ -79,7 +79,7 @@ struct s_A3_0_Obj4 : public s_workAreaTemplate<s_A3_0_Obj4>
     {
         updateLCSTarget(&pThis->m24_LCSTarget);
 
-        if (mainGameState.getBit(0xA2, 3))
+        if (mainGameState.getBit(0xA2 * 8 + 3))
         {
             pThis->m_UpdateMethod = &s_A3_0_Obj4::Update4Sub0;
         }

@@ -23,3 +23,4 @@ struct sBattleManager : public s_workAreaTemplateWithArg<sBattleManager, s8>
 extern sBattleManager* gBattleManager;
 sBattleManager* createBattleManager(p_workArea parentTask, s8 arg);
 void startDebugBattle(s32 battleOverlayId);
+void  loadBattleOverlaySub0(sBattleManager* pThis);

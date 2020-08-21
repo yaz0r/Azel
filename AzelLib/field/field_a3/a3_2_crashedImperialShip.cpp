@@ -41,7 +41,7 @@ struct fieldA3_2_crashedImpertialShip : public s_workAreaTemplate<fieldA3_2_cras
             break;
         case 1: // recording activated
             pThis->m90_LCSTarget.m18_diableFlags |= 1;
-            if (mainGameState.getBit(0xA, 7))
+            if (mainGameState.getBit(0xA * 8 + 7))
             {
                 startFieldScript(16, 1452);
             }
@@ -103,10 +103,10 @@ void fieldA3_2_crashedImpertialShip_LCSCallback(p_workArea r4, sLCSTarget*)
 
 void create_A3_2_crashedImperialShip(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 {
-    if (mainGameState.getBit(0x6E, 5))
+    if (mainGameState.getBit(0x6E * 8 + 5))
         return;
 
-    if (mainGameState.getBit(0x6E, 6))
+    if (mainGameState.getBit(0x6E * 8 + 6))
         return;
 
     fieldA3_2_crashedImpertialShip* pNewTask = createSubTask<fieldA3_2_crashedImpertialShip>(r4);

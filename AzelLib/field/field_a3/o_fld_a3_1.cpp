@@ -64,7 +64,7 @@ struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_sta
         static const sVec2_FP zoneMax = { 0x3E0000 , -0x1400000 };
 
         // Conana’s Nest check
-        if (mainGameState.getBit(0x91, 4) && (r4_dragonPos[0] >= zoneMin[0]) && (r4_dragonPos[0] < zoneMax[0]) && (r4_dragonPos[2] >= zoneMin[1]) && (r4_dragonPos[2] < zoneMax[1]))
+        if (mainGameState.getBit(0x91 * 8 + 4) && (r4_dragonPos[0] >= zoneMin[0]) && (r4_dragonPos[0] < zoneMax[0]) && (r4_dragonPos[2] >= zoneMin[1]) && (r4_dragonPos[2] < zoneMax[1]))
         {
             pThis->m0[1].m18_diableFlags = 0;
         }
@@ -107,7 +107,7 @@ struct sFieldA3_1_fieldIntroTask : public s_workAreaTemplate<sFieldA3_1_fieldInt
 
 void create_fieldA3_1_fieldIntroTask(p_workArea workArea)
 {
-    if (!mainGameState.getBit(0xB5, 5))
+    if (!mainGameState.getBit(0xB5 * 8 + 5))
     {
         createSubTaskFromFunction<sFieldA3_1_fieldIntroTask>(workArea, &sFieldA3_1_fieldIntroTask::Update);
     }
@@ -161,7 +161,7 @@ struct sfieldA3_1_checkExitsTask : public s_workAreaTemplate<sfieldA3_1_checkExi
     {
         if (fieldA3_1_checkExitsTaskUpdate2Sub0())
         {
-            if (mainGameState.getBit(0xA, 6))
+            if (mainGameState.getBit(0xA * 8 + 6))
             {
                 dispatchTutorialMultiChoiceSub2();
             }
@@ -932,7 +932,7 @@ void fieldA3_1_task4_init(s_fieldA3_1_task4* pThis)
 {
     sSaturnPtr r6 = gFLD_A3->getSaturnPtr(0x06081E04);
 
-    if (mainGameState.getBit(0xA2, 3))
+    if (mainGameState.getBit(0xA2 * 8 + 3))
     {
         pThis->m0 = readSaturnS32(r6);
         pThis->m4 = readSaturnS32(r6 + 4);
@@ -1224,7 +1224,7 @@ void subfieldA3_1(p_workArea workArea)
             break;
         default:
             // play above excavation intro already?
-            if (mainGameState.getBit(0xA, 6))
+            if (mainGameState.getBit(0xA * 8 + 6))
             {
                 startCutscene(loadCutsceneData({ 0x6091688, gFLD_A3 }));
             }

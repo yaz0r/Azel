@@ -505,31 +505,14 @@ public:
         bitField[bitIndex / 8] |= 0x80 >> (bitIndex % 8);
     }
 
-    void setBit(u32 byteIndex, u32 bitIndex)
-    {
-        bitField[byteIndex] |= 0x80 >> bitIndex;
-    }
-
     void clearBit(u32 bitIndex)
     {
         bitField[bitIndex / 8] &= ~(0x80 >> (bitIndex % 8));
     }
 
-    void clearBit(u32 byteIndex, u32 bitIndex)
-    {
-        bitField[byteIndex] &= ~(0x80 >> bitIndex);
-    }
-
     bool getBit(u32 bitIndex)
     {
         if (bitField[bitIndex / 8] & (0x80 >> (bitIndex % 8)))
-            return true;
-        return false;
-    }
-
-    bool getBit(u32 byteIndex, u32 bitIndex)
-    {
-        if (bitField[byteIndex] & (0x80 >> (bitIndex)))
             return true;
         return false;
     }

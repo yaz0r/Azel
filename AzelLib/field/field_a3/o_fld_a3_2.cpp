@@ -68,7 +68,7 @@ struct fieldA3_2_exitLCSTask : public s_workAreaTemplate<fieldA3_2_exitLCSTask>
 
     static void Update(fieldA3_2_exitLCSTask* pThis)
     {
-        if (mainGameState.getBit(0x11, 5))
+        if (mainGameState.getBit(0x11 * 8 + 5))
         {
             pThis->m0[1].m18_diableFlags = 0;
             pThis->m_UpdateMethod = fieldA3_2_exitLCSTask::UpdateSub0;

@@ -431,6 +431,8 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     u8 m25C;
     s8 m25D;
     s8 m25E;
+
+    //size 0x260?
 };
 
 struct s_grid1

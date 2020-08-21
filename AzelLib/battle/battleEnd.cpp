@@ -53,7 +53,7 @@ void BattleEnd_delete(sBattleEnd* pThis)
     }
     else if (isCurrentBattleID(0x10, 0)) // Arachnoth boss fight
     {
-        mainGameState.setBit(0x11, 6);
+        mainGameState.setBit(0x11 * 8 + 6);
     }
     else if (isCurrentBattleID(0x12, 0))
     {

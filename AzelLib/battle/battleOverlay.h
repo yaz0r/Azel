@@ -32,3 +32,4 @@ struct sBattleOverlayTask : public s_workAreaTemplate<sBattleOverlayTask>
 };
 
 p_workArea createBattleOverlayTask(struct sBattleManager* pParent);
+p_workArea loadBattleOverlay(s32 battleId, s32 subBattleId);

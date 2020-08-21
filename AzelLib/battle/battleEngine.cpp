@@ -314,21 +314,22 @@ void battleEngine_InitSub9(p_workArea parent)
 
 void battleEngine_InitSub11()
 {
+    //TODO: recheck!
     int iVar1 = gDragonState->mC_dragonType;
     if (((((iVar1 == 1) || (iVar1 == 2)) || (iVar1 == 3)) || ((iVar1 == 4 || (iVar1 == 5)))) ||
         ((iVar1 == 6 || ((iVar1 == 7 || (iVar1 == 8)))))) {
-        mainGameState.setBit(0xF3 + 0xB2, 5);
-        mainGameState.setBit(0xF3 + 0x9A, 5);
-        mainGameState.setBit(0xF3 + 0xAE, 1);
-        mainGameState.setBit(0xF3 + 0xB0, 3);
-        mainGameState.setBit(0xF3 + 0xAF, 2);
+        mainGameState.setBit(52 * 8 + 5);
+        mainGameState.setBit(49 * 8 + 5);
+        mainGameState.setBit(52 * 8 + 1);
+        mainGameState.setBit(52 * 8 + 3);
+        mainGameState.setBit(52 * 8 + 2);
     }
     else {
-        mainGameState.clearBit(0xF3 + 0xB2);
-        mainGameState.clearBit(0xF3 + 0x9A);
-        mainGameState.clearBit(0xF3 + 0xAE);
-        mainGameState.clearBit(0xF3 + 0xB0);
-        mainGameState.clearBit(0xF3 + 0xAF);
+        mainGameState.clearBit(52 * 8 + 5);
+        mainGameState.clearBit(49 * 8 + 5);
+        mainGameState.clearBit(52 * 8 + 1);
+        mainGameState.clearBit(52 * 8 + 3);
+        mainGameState.clearBit(52 * 8 + 2);
     }
 }
 

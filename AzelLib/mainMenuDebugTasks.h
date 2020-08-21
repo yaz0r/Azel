@@ -102,3 +102,5 @@ void setOpenMenu7();
 void updateDragonIfCursorChanged(u32 level);
 void loadRiderIfChanged(u32 rider);
 void loadRider2IfChanged(u32 rider);
+
+p_workArea loadBattle(p_workArea r4, s32 r5);

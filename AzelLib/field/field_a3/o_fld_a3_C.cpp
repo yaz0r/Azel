@@ -15,7 +15,7 @@ struct fieldA3_C_task0 : public s_workAreaTemplate<fieldA3_C_task0>
         }
         else if(dragonPosition[2] < -0x2CB999)
         {
-            if(mainGameState.getBit(0xA, 7))
+            if(mainGameState.getBit(0xA *8 + 7))
             {
                 dispatchTutorialMultiChoiceSub2();
             }
@@ -44,7 +44,7 @@ struct fieldA3_C_task1 : public s_workAreaTemplate<fieldA3_C_task1>
 
     static void Update(fieldA3_C_task1* pThis)
     {
-        if (!mainGameState.getBit(0x11, 7))
+        if (!mainGameState.getBit(0x11 * 8 + 7))
         {
             pThis->m0 = 0x2A3333;
             pThis->m4 = 0;

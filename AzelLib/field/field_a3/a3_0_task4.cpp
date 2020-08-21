@@ -7,9 +7,9 @@ void fieldA3_0_task4_updateSub0(s_dragonTaskWorkArea* pDragon)
     sVec3_FP var8_dragonPosition;
     getFieldDragonPosition(&var8_dragonPosition);
 
-    if (mainGameState.getBit(0xA2, 3) || mainGameState.getBit(0x91, 3))
+    if (mainGameState.getBit(0xA2 * 8 + 3) || mainGameState.getBit(0x91 *8 + 3))
     {
-        if (!mainGameState.getBit(0x6D, 0))
+        if (!mainGameState.getBit(0x6D * 8 + 0))
         {
             return;
         }
@@ -29,11 +29,11 @@ void fieldA3_0_task4_updateSub0(s_dragonTaskWorkArea* pDragon)
         switch (pDragon->m108)
         {
         case 0:
-            if (mainGameState.getBit(0x6E, 0))
+            if (mainGameState.getBit(0x6E * 8 +0))
             {
                 pDragon->m108 = 5;
             }
-            else if(mainGameState.getBit(0x6D, 0))
+            else if(mainGameState.getBit(0x6D * 8 +0))
             {
                 pDragon->m108 = 3;
             }
@@ -90,7 +90,7 @@ struct s_A3_0_task4 : public s_workAreaTemplate<s_A3_0_task4>
 {
     static void update(s_A3_0_task4* pThis)
     {
-        if (mainGameState.getBit(0xA2, 3) || mainGameState.getBit(0x91, 3))
+        if (mainGameState.getBit(0xA2 * 8 + 3) || mainGameState.getBit(0x91 * 8 + 3))
         {
             soundFunc(0x67);
         }

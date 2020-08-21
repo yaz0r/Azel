@@ -15,6 +15,9 @@
 #include "dragonData.h"
 #include "dragonRider.h"
 #include "menu/inventoryMenu.h"
+#include "field/fieldEncounterTask.h"
+#include "field/fieldEncounterTask.h"
+#include "battle/battleOverlay.h"
 
 p_workArea createModuleManager(p_workArea pTypelessWorkArea, u32 menuID);
 
@@ -1494,11 +1497,6 @@ void s_FieldSubTaskWorkArea::Delete(s_FieldSubTaskWorkArea* pFieldSubTaskWorkAre
     fieldTaskPtr->m8_pSubFieldData = nullptr;
 }
 
-void createEncounterTask(s_workArea* pWorkArea)
-{
-    PDS_unimplemented("createEncounterTask");
-}
-
 void s_fieldStartOverlayTask::Init(s_fieldStartOverlayTask* pThis)
 {
     const s_fieldDefinition* pFieldDefinition = &fieldDefinitions[fieldTaskPtr->m2C_currentFieldIndex];
@@ -2610,7 +2608,7 @@ void s_mainMenuWorkArea::Init(s_mainMenuWorkArea* pWorkArea)
 {
     pWorkArea->m3_menuButtonStates[0] = 1; // item is always enabled
 
-    if (mainGameState.getBit(4, 2)) // dragon menu
+    if (mainGameState.getBit(4 * 8 + 2)) // dragon menu
     {
         pWorkArea->m3_menuButtonStates[1] = 1;
     }
@@ -3109,6 +3107,12 @@ p_workArea createMenuTask(p_workArea parentTask)
 }
 
 s_vblankData vblankData;
+
+p_workArea loadBattle(p_workArea r4, s32 r5)
+{
+    resetTempAllocators();
+    return loadBattleOverlay(readSaturnS8(gCommonFile->getSaturnPtr(0x212f96) + r5 * 2), readSaturnS8(gCommonFile->getSaturnPtr(0x212f96) + r5 * 2 + 1));
+}
 
 p_workArea loadField(p_workArea r4, s32 r5)
 {

@@ -223,7 +223,7 @@ void A3_0_Obj3_LCSCallback(p_workArea task, sLCSTarget*)
 {
     s_A3_0_Obj3* pThis = (s_A3_0_Obj3*)task;
 
-    mainGameState.setBit(0x93, 4);
+    mainGameState.setBit(0x93 * 8 + 4);
     pThis->m38_LCSTarget.m18_diableFlags |= 1;
     pThis->m6C = 1;
 }
@@ -249,7 +249,7 @@ void create_A3_0_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         pNewTask->mC = readSaturnEA(sSaturnPtr({ 0x609270C, gFLD_A3 }) + (r12 - 1) * 4);
         break;
     case 3:
-        if (mainGameState.getBit(0x93, 4))
+        if (mainGameState.getBit(0x93 * 8 + 4))
         {
             pNewTask->getTask()->markFinished();
         }

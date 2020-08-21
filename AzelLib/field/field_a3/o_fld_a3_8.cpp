@@ -59,7 +59,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             // init running
         case 0:
             update3dModelDrawFunctionForVertexAnimation(&pThis->m18_3dModel, pThis->m0_memoryArea.m0_mainMemoryBundle->getRawFileAtOffset(0x300));
-            mainGameState.clearBit(0xA2, 3);
+            mainGameState.clearBit(0xA2 * 8 + 3);
             pThis->m9C_status++;
             //fall
         // running
@@ -68,7 +68,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             {
                 playSystemSoundEffect(104);
             }
-            if (mainGameState.getBit(0x6D, 2))
+            if (mainGameState.getBit(0x6D * 8 + 2))
             {
                 pThis->m68_LCSTarget.m18_diableFlags = 0;
             }
@@ -116,7 +116,7 @@ struct fieldA3_8_generatorTask : public s_workAreaTemplate<fieldA3_8_generatorTa
             {
                 pThis->m18_3dModel.m14 = -1;
             }
-            mainGameState.setBit(0xA2, 3);
+            mainGameState.setBit(0xA2 * 8 + 3);
             pThis->m68_LCSTarget.m18_diableFlags = 0;
             pThis->m9C_status++;
             // fall
@@ -177,7 +177,7 @@ void fieldA3_8_create_generatorLCSTarget(p_workArea r4, sLCSTarget* r5)
 
     if (pThis->m9C_status == 1)
     {
-        if (mainGameState.getBit(0x6D, 3))
+        if (mainGameState.getBit(0x6D * 8 + 3))
         {
             startFieldScriptSkippable(0xC, 1449);
         }
@@ -189,7 +189,7 @@ void fieldA3_8_create_generatorLCSTarget(p_workArea r4, sLCSTarget* r5)
     }
     else
     {
-        if (mainGameState.getBit(0x6D, 5))
+        if (mainGameState.getBit(0x6D * 8 + 5))
         {
             startFieldScriptSkippable(0xD, 1450);
         }
@@ -205,7 +205,7 @@ struct fieldA3_8_generatorCameraTask : public s_workAreaTemplate<fieldA3_8_gener
 {
     static void Update(fieldA3_8_generatorCameraTask* pThis)
     {
-        if (mainGameState.getBit(0x6D, 2))
+        if (mainGameState.getBit(0x6D * 8 + 2))
         {
             pThis->getTask()->markFinished();
         }
@@ -248,7 +248,7 @@ void fieldA3_8_create_generatorTask(p_workArea workArea)
     stepAnimation(&pNewTask->m18_3dModel);
     func3dModelSub0(&pNewTask->m18_3dModel);
 
-    if (mainGameState.getBit(0xA2, 3))
+    if (mainGameState.getBit(0xA2 * 8 + 3))
     {
         pNewTask->m9C_status = 4;
     }
@@ -266,7 +266,7 @@ struct fieldA3_8_task2 : public s_workAreaTemplate<fieldA3_8_task2>
 {
     static void Update(fieldA3_8_task2* pThis)
     {
-        if (mainGameState.getBit(0xA2, 3))
+        if (mainGameState.getBit(0xA2 * 8 + 3))
         {
             pThis->m0 = 0x72000;
             pThis->m4 = 0;

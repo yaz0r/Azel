@@ -22,7 +22,7 @@ p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
     loadTown,
     loadTown2,
     loadField,
-    NULL,
+    loadBattle,
     NULL,
     NULL,
     NULL,
@@ -195,48 +195,48 @@ s32 exitMenuTaskSub1TaskDrawSub1(p_workArea pWorkArea, s32 index)
     case 0:
         break;
     case 1: // intro video
-        mainGameState.setBit(4, 0);
+        mainGameState.setBit(4 * 8 + 0);
         setNextGameStatus(2);
         break;
     case 2: // name entry
         setNextGameStatus(3);
         break;
     case 3: // resurrection video
-        mainGameState.setBit(4, 1);
+        mainGameState.setBit(4 * 8 + 1);
         setNextGameStatus(4);
         break;
     case 4: // ruins
         setNextGameStatus(5);
         break;
     case 5: // elevator video
-        mainGameState.setBit(4, 2);
+        mainGameState.setBit(4 * 8 + 2);
         setNextGameStatus(0x50);
         break;
     case 6: // initiate captain scene
-        mainGameState.setBit(4, 3);
-        mainGameState.setBit(10, 6);
+        mainGameState.setBit(4 * 8 + 3);
+        mainGameState.setBit(10 * 8 + 6);
         setNextGameStatus(0x51);
         break;
     case 7: // after captain scene
-        mainGameState.setBit(4, 4);
-        mainGameState.setBit(24, 1);
-        mainGameState.setBit(12, 6);
-        mainGameState.setBit(12, 7);
-        mainGameState.setBit(13, 1);
+        mainGameState.setBit(4 * 8 + 4);
+        mainGameState.setBit(24 * 8 + 1);
+        mainGameState.setBit(12 * 8 + 6);
+        mainGameState.setBit(12 * 8 + 7);
+        mainGameState.setBit(13 * 8 + 1);
         setNextGameStatus(0x53);
         break;
     case 8: // after cutscene meeting Gash
-        mainGameState.setBit(4, 5);
+        mainGameState.setBit(4 * 8 + 5);
         setNextGameStatus(9);
         break;
     case 9:
-        mainGameState.setBit(10, 7);
+        mainGameState.setBit(10 * 8 + 7);
         setNextGameStatus(10);
         break;
     case 10:
-        mainGameState.setBit(4, 6);
-        mainGameState.setBit(13, 2);
-        mainGameState.clearBit(13, 0);
+        mainGameState.setBit(4 * 8 + 6);
+        mainGameState.setBit(13 * 8 + 2);
+        mainGameState.clearBit(13 * 8 + 0);
         setNextGameStatus(0x4F);
         break;
     case 0x4A: // load savegame?
