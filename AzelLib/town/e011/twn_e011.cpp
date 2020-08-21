@@ -232,11 +232,6 @@ sTownObject* TWN_E011_data::createObjectTaskFromEA_subTaskWithEAArg(npcFileDelet
     return nullptr;
 }
 
-static void townOverlayDelete(townDebugTask2Function* pThis)
-{
-    FunctionUnimplemented();
-}
-
 static const char* listOfFilesToLoad[] = {
     "COMMON3.MCB",
     "COMMON3.CGB",

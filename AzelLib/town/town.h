@@ -375,3 +375,5 @@ void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5);
 npcFileDeleter* loadNPCFile2(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, s32 index);
 void initNPCSub0Sub2(npcFileDeleter* buffer, const struct sGrid* pGrid, u8 r6_sizeX, u8 r7_sizeY, fixedPoint cellSize);
 fixedPoint generateObjectMatrix(sSaturnPtr r4, sSaturnPtr r5);
+
+void townOverlayDelete(townDebugTask2Function* pThis);

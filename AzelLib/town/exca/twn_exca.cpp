@@ -230,11 +230,6 @@ struct TWN_EXCA_data : public sTownOverlay
     }
 };
 
-static void townOverlayDelete(townDebugTask2Function* pThis)
-{
-    FunctionUnimplemented();
-}
-
 static const char* listOfFilesToLoad[] = {
     "COMMON3.MCB",
     "COMMON3.CGB",

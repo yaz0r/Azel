@@ -44,11 +44,6 @@ const char* listOfFilesToLoad[] = {
     nullptr
 };
 
-void townOverlayDelete(townDebugTask2Function* pThis)
-{
-    FunctionUnimplemented();
-}
-
 struct sRuinBackgroundTask : public s_workAreaTemplate<sRuinBackgroundTask>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()

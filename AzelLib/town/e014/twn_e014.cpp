@@ -28,11 +28,6 @@ struct TWN_E014_data : public sTownOverlay
     sTownObject* createObjectTaskFromEA_subTaskWithEAArg(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override;
 };
 
-static void townOverlayDelete(townDebugTask2Function* pThis)
-{
-    FunctionUnimplemented();
-}
-
 static const char* listOfFilesToLoad[] = {
     "COMMON3.MCB",
     "COMMON3.CGB",

@@ -53,7 +53,7 @@ struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
         case 0:
 #if !defined(SHIPPING_BUILD)
         PDS_warningOnce("Setting up menu as debug");
-        if (keyboardIsKeyDown(0xF6) /*|| true*/)
+        if (keyboardIsKeyDown(0xF6) || true)
         {
             pWorkArea->m_menu = mainMenuDebug;
             pWorkArea->m_numMenuEntry = sizeof(mainMenuDebug) / sizeof(mainMenuDebug[0]);

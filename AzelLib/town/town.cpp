@@ -771,3 +771,15 @@ p_workArea startCameraTask(p_workArea pParent)
     cameraTaskPtr = createSubTask<sCameraTask>(pParent);
     return cameraTaskPtr;
 }
+
+void townOverlayDelete(townDebugTask2Function* pThis)
+{
+    FunctionUnimplemented();
+    
+    //FIX:
+    if(gModuleManager && gModuleManager->m8)
+    {
+        assert(gModuleManager->m8 == pThis);
+        gModuleManager->m8 = nullptr;
+    }
+}

@@ -116,7 +116,7 @@ void setupCinematicBarData(int param1, std::array<u32, 256>& dataArray, u32 vdpO
     vdpVar1[param1].mE_isDoubleBuffered = 0;
     vdpVar1[param1].m0_source[0] = &dataArray[0];
     vdpVar1[param1].m8_destination = getVdp2Vram(vdpOffset);
-    vdpVar1[param1].mC_size = numEntries;
+    vdpVar1[param1].mC_size = numEntries / 0x10;
     vdpVar1[param1].m10_nextTransfert = nullptr;
     setVdp2TableAddress(param1, getVdp2Vram(vdpOffset));
 }
