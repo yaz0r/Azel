@@ -318,8 +318,11 @@ void azelSdl2_StartFrame()
         }
 
         internalResolution[0] = outputResolution[0];
+#if defined(TARGET_OS_IOS) || defined(TARGET_OS_TV)
+        internalResolution[1] = outputResolution[1];
+#else
         internalResolution[1] = outputResolution[0] * (3.f / 4.f);
-
+#endif
         // setup vdp1 Poly
         const uint64_t tsFlags = 0
             //| BGFX_SAMPLER_MIN_POINT
@@ -445,7 +448,7 @@ void azelSdl2_StartFrame()
         graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m2_analogX = convertAxis(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX));
         graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m3_analogY = convertAxis(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY));
     }
-    else
+    //else
     {
         graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m0_inputType = 1;
 

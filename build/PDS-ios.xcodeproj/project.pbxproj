@@ -33,7 +33,10 @@
 		3345A06224A51FA6000B4600 /* libbimg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459FD124A45D00000B4600 /* libbimg.a */; };
 		3345A06324A51FA6000B4600 /* libbx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459FD324A45D00000B4600 /* libbx.a */; };
 		3352169A24EF94530009F8B6 /* libastc-codec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459FCD24A45D00000B4600 /* libastc-codec.a */; };
-		3352169B24EF955C0009F8B6 /* libdear-imgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33459FD524A45D00000B4600 /* libdear-imgui.a */; };
+		335216BA24EF9ED10009F8B6 /* libbgfx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 338857DB24A57AD80054AFF9 /* libbgfx.a */; };
+		335216BB24EF9ED10009F8B6 /* libbimg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 338857DD24A57AD80054AFF9 /* libbimg.a */; };
+		335216BC24EF9ED10009F8B6 /* libbx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 338857DF24A57AD80054AFF9 /* libbx.a */; };
+		335216BD24EF9F0C0009F8B6 /* libastc-codec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 338857D924A57AD80054AFF9 /* libastc-codec.a */; };
 		33587AD02344337D00D90AEA /* imgui_impl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7222B9FE490033C8AE /* imgui_impl_sdl.cpp */; };
 		33587AD12344337D00D90AEA /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F7122B9FE490033C8AE /* imgui_widgets.cpp */; };
 		33587AD22344337D00D90AEA /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 33077F6E22B9FE490033C8AE /* imgui_impl_opengl3.cpp */; };
@@ -351,6 +354,69 @@
 			remoteGlobalIDString = 222E66DE55E94CD59BD95BD4;
 			remoteInfo = squish;
 		};
+		335216A724EF9E980009F8B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33EA6472234C16CA006F24DA /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A7D88B5423E2437C00DCD162;
+			remoteInfo = "Framework-iOS";
+		};
+		335216A924EF9E980009F8B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33EA6472234C16CA006F24DA /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A7D88D1523E24BED00DCD162;
+			remoteInfo = "Framework-tvOS";
+		};
+		335216AB24EF9E980009F8B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33EA6472234C16CA006F24DA /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A7D88E5423E24D3B00DCD162;
+			remoteInfo = "Static Library-iOS";
+		};
+		335216AD24EF9E980009F8B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33EA6472234C16CA006F24DA /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A769B23D23E259AE00872273;
+			remoteInfo = "Static Library-tvOS";
+		};
+		335216AF24EF9E980009F8B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33EA6472234C16CA006F24DA /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A75FCEB323E25AB700529352;
+			remoteInfo = "Shared Library-iOS";
+		};
+		335216B124EF9E980009F8B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33EA6472234C16CA006F24DA /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A75FD06C23E25AC700529352;
+			remoteInfo = "Shared Library-tvOS";
+		};
+		335216B324EF9E980009F8B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33EA6472234C16CA006F24DA /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A75FDB8C23E4C74400529352;
+			remoteInfo = hidapi;
+		};
+		335216B524EF9E980009F8B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33EA6472234C16CA006F24DA /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A75FDB4923E399AC00529352;
+			remoteInfo = "hidapi-iOS";
+		};
+		335216B724EF9E980009F8B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33EA6472234C16CA006F24DA /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A75FDB6E23E3A2C900529352;
+			remoteInfo = "hidapi-tvOS";
+		};
 		33587ABA234432CE00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
@@ -383,28 +449,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = B71F88211A5044BC9FFA8BE2;
+			remoteGlobalIDString = 40A9A06626D24A189AE014A5;
 			remoteInfo = "AzelLib-ios";
 		};
 		33587AEF2344356D00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587AB3234432CE00D90AEA /* PDS-ios.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 15BA962B35A846D7A81FA3DF;
+			remoteGlobalIDString = 7FC5B22754DB45DD8A442174;
 			remoteInfo = "soloud-ios";
 		};
 		33587AF12344357A00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 5694DDA71E6F45B898A297DB;
+			remoteGlobalIDString = 90B861893E1F414F91D0ADBF;
 			remoteInfo = "AzelLib-tvos";
 		};
 		33587AF32344357C00D90AEA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33587ABE234432DB00D90AEA /* PDS-tvos.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 934ACB85627C4515A1FB7342;
+			remoteGlobalIDString = FDC332D367AB44FDAD540A30;
 			remoteInfo = "soloud-tvos";
 		};
 		33587AF52344358300D90AEA /* PBXContainerItemProxy */ = {
@@ -579,14 +645,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = B8BD087D296042DFA7A91D1D;
+			remoteGlobalIDString = BEF985874D0F4FC8AF6290B1;
 			remoteInfo = "AzelLib-darwin";
 		};
 		33EA64B3234C1952006F24DA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 33EA6467234C164A006F24DA /* PDS-Darwin.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 4D08BE820E854EE58F84C999;
+			remoteGlobalIDString = 6A6503E864544FB1BE56B84B;
 			remoteInfo = "soloud-darwin";
 		};
 /* End PBXContainerItemProxy section */
@@ -650,7 +716,6 @@
 				3307807A22BAB27C0033C8AE /* QuartzCore.framework in Frameworks */,
 				3307807622BAB2130033C8AE /* AudioToolbox.framework in Frameworks */,
 				3307807422BAB1AE0033C8AE /* CoreMotion.framework in Frameworks */,
-				3352169B24EF955C0009F8B6 /* libdear-imgui.a in Frameworks */,
 				3307806E22BAB17B0033C8AE /* GameController.framework in Frameworks */,
 				3307806C22BAB1720033C8AE /* Metal.framework in Frameworks */,
 				33AB9184234C1E1600BB34F3 /* libSDL2.a in Frameworks */,
@@ -677,12 +742,16 @@
 				33587AF92344364000D90AEA /* libAzelLib-tvos.a in Frameworks */,
 				33587ADB2344337D00D90AEA /* GameController.framework in Frameworks */,
 				33587ADC2344337D00D90AEA /* Metal.framework in Frameworks */,
+				335216BC24EF9ED10009F8B6 /* libbx.a in Frameworks */,
 				33587ADD2344337D00D90AEA /* UIKit.framework in Frameworks */,
+				335216BA24EF9ED10009F8B6 /* libbgfx.a in Frameworks */,
+				335216BD24EF9F0C0009F8B6 /* libastc-codec.a in Frameworks */,
 				33587ADE2344337D00D90AEA /* Foundation.framework in Frameworks */,
 				33E0779C240039090060EC3E /* libSDL2.a in Frameworks */,
 				33587AFA2344364300D90AEA /* libsoloud-tvos.a in Frameworks */,
 				33587ADF2344337D00D90AEA /* OpenGLES.framework in Frameworks */,
 				33587AE02344337D00D90AEA /* AVFoundation.framework in Frameworks */,
+				335216BB24EF9ED10009F8B6 /* libbimg.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -879,9 +948,18 @@
 			isa = PBXGroup;
 			children = (
 				33EA647A234C16CA006F24DA /* SDL2.framework */,
+				335216A824EF9E980009F8B6 /* SDL2.framework */,
+				335216AA24EF9E980009F8B6 /* SDL2.framework */,
 				33EA647C234C16CA006F24DA /* libSDL2.a */,
+				335216AC24EF9E980009F8B6 /* libSDL2.a */,
+				335216AE24EF9E980009F8B6 /* libSDL2.a */,
 				33EA647E234C16CA006F24DA /* libSDL2.dylib */,
+				335216B024EF9E980009F8B6 /* libSDL2.dylib */,
+				335216B224EF9E980009F8B6 /* libSDL2.dylib */,
 				33EA6480234C16CA006F24DA /* Standard DMG */,
+				335216B424EF9E980009F8B6 /* hidapi.framework */,
+				335216B624EF9E980009F8B6 /* hidapi.framework */,
+				335216B824EF9E980009F8B6 /* hidapi.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1263,6 +1341,69 @@
 			remoteRef = 33459FFA24A45D00000B4600 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		335216A824EF9E980009F8B6 /* SDL2.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SDL2.framework;
+			remoteRef = 335216A724EF9E980009F8B6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		335216AA24EF9E980009F8B6 /* SDL2.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SDL2.framework;
+			remoteRef = 335216A924EF9E980009F8B6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		335216AC24EF9E980009F8B6 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDL2.a;
+			remoteRef = 335216AB24EF9E980009F8B6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		335216AE24EF9E980009F8B6 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDL2.a;
+			remoteRef = 335216AD24EF9E980009F8B6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		335216B024EF9E980009F8B6 /* libSDL2.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libSDL2.dylib;
+			remoteRef = 335216AF24EF9E980009F8B6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		335216B224EF9E980009F8B6 /* libSDL2.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libSDL2.dylib;
+			remoteRef = 335216B124EF9E980009F8B6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		335216B424EF9E980009F8B6 /* hidapi.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = hidapi.framework;
+			remoteRef = 335216B324EF9E980009F8B6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		335216B624EF9E980009F8B6 /* hidapi.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = hidapi.framework;
+			remoteRef = 335216B524EF9E980009F8B6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		335216B824EF9E980009F8B6 /* hidapi.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = hidapi.framework;
+			remoteRef = 335216B724EF9E980009F8B6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		33587ABB234432CE00D90AEA /* libAzelLib-ios.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -1501,7 +1642,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp ../data/* $CONFIGURATION_BUILD_DIR/$CONTENTS_FOLDER_PATH/\n\n";
+			shellScript = "cp -R ../data/* $CONFIGURATION_BUILD_DIR/$CONTENTS_FOLDER_PATH/\n\n";
 		};
 		33EA64A3234C1708006F24DA /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1518,7 +1659,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir $CONFIGURATION_BUILD_DIR/$CONTENTS_FOLDER_PATH/Resources\ncp ../data/* $CONFIGURATION_BUILD_DIR/$CONTENTS_FOLDER_PATH/Resources\n";
+			shellScript = "mkdir $CONFIGURATION_BUILD_DIR/$CONTENTS_FOLDER_PATH/Resources\ncp -R ../data/* $CONFIGURATION_BUILD_DIR/$CONTENTS_FOLDER_PATH/Resources\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1812,6 +1953,7 @@
 					../ThirdParty/imgui,
 					../ThirdParty/glm,
 					../ThirdParty/tracy,
+					../ThirdParty/bgfx.cmake/bgfx/include,
 				);
 				INFOPLIST_FILE = tvos.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
@@ -1841,6 +1983,7 @@
 					../ThirdParty/imgui,
 					../ThirdParty/glm,
 					../ThirdParty/tracy,
+					../ThirdParty/bgfx.cmake/bgfx/include,
 				);
 				INFOPLIST_FILE = tvos.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.1;

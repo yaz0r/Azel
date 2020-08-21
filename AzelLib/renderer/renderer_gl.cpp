@@ -39,6 +39,7 @@ bool SDL_ES3_backend::init()
 
 #ifdef __IPHONEOS__
     flags |= SDL_WINDOW_FULLSCREEN;
+    flags |= SDL_WINDOW_METAL;
 #endif
 
     int resolution[2] = { 1280, 960 };
