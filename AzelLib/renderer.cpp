@@ -306,7 +306,11 @@ void azelSdl2_StartFrame()
     oldResolution[0] = outputResolution[0];
     oldResolution[1] = outputResolution[1];
 
+#if defined(TARGET_OS_IOS) || defined(TARGET_OS_TV)
+    SDL_Metal_GetDrawableSize(gWindowBGFX, &outputResolution[0], &outputResolution[1]);
+#else
     SDL_GetWindowSize(gWindowBGFX, &outputResolution[0], &outputResolution[1]);
+#endif
 
     if ((oldResolution[0] != outputResolution[0]) || (oldResolution[1] != outputResolution[1]))
     {
@@ -317,10 +321,11 @@ void azelSdl2_StartFrame()
             bgfx::destroy(gBGFXVdp1PolyFB);
         }
 
-        internalResolution[0] = outputResolution[0];
 #if defined(TARGET_OS_IOS) || defined(TARGET_OS_TV)
+        internalResolution[0] = outputResolution[0];
         internalResolution[1] = outputResolution[1];
 #else
+        internalResolution[0] = outputResolution[0];
         internalResolution[1] = outputResolution[0] * (3.f / 4.f);
 #endif
         // setup vdp1 Poly

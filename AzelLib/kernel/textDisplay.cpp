@@ -59,7 +59,7 @@ void textDisplay_update(s_vdp2StringTask* pThis)
         switch (pThis->m2_durationMode)
         {
         case 1:
-                assert(0);
+                FunctionUnimplemented();
             //pThis->m10_autoCloseDuration--;
             //if (pThis->m10_autoCloseDuration <= 0)
             {
