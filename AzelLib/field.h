@@ -117,7 +117,7 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
     s32 m0_status;
     s32 m4_riderIndex;
     s32 m8_delay;
-    s32 mC;
+    s32 mC_previousFrame;
     s_animDataFrame* m10_animSequence; // no sure
     s_loadRiderWorkArea* m14_riderState;
     s_loadRiderWorkArea* m18;

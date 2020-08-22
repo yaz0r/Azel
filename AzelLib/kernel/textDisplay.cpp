@@ -59,9 +59,8 @@ void textDisplay_update(s_vdp2StringTask* pThis)
         switch (pThis->m2_durationMode)
         {
         case 1:
-                FunctionUnimplemented();
-            //pThis->m10_autoCloseDuration--;
-            //if (pThis->m10_autoCloseDuration <= 0)
+            pThis->mA_duration--;
+            if (pThis->mA_duration <= 0)
             {
                 pThis->m0_status++;
             }
@@ -93,9 +92,9 @@ void clearTextDisplay(s_vdp2StringTask* pThis)
 void textDisplay_delete(s_vdp2StringTask* pThis)
 {
     clearTextDisplay(pThis);
-    if (pThis->m10_autoCloseDuration)
+    if (pThis->m10_pParentTask)
     {
-        *pThis->m10_autoCloseDuration = nullptr;
+        *pThis->m10_pParentTask = nullptr;
     }
 }
 
@@ -139,7 +138,7 @@ void createDisplayFormationNameText(p_workArea parentTask, s_vdp2StringTask** ou
     pNewTask->m1A_width = stringLength + 0xC;
     pNewTask->m1C_height = 4;
 
-    pNewTask->m10_autoCloseDuration = outputTask;
+    pNewTask->m10_pParentTask = outputTask;
     if (outputTask)
     {
         *outputTask = pNewTask;
@@ -217,9 +216,9 @@ void s_vdp2StringTask::Delete(s_vdp2StringTask* pThis)
 {
     vdp2StringTaskDeleteSub0(pThis);
 
-    if (pThis->m10_autoCloseDuration)
+    if (pThis->m10_pParentTask)
     {
-        *pThis->m10_autoCloseDuration = NULL;
+        *pThis->m10_pParentTask = NULL;
     }
 }
 
@@ -252,7 +251,7 @@ s_vdp2StringTask* createDisplayStringBorromScreenTask(p_workArea pTask, s_vdp2St
     r14->m16_y = 4;
     r14->m1A_width = stringLength + 8;
     r14->m1C_height = 4;
-    r14->m10_autoCloseDuration = r5;
+    r14->m10_pParentTask = r5;
     if (r5)
     {
         *r5 = r14;

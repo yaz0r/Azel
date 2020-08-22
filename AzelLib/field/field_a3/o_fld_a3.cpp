@@ -2812,28 +2812,33 @@ void s_riderAnimTask::Update(s_riderAnimTask* pThis)
             assert(0);
             break;
         }
+        pThis->mC_previousFrame = 0;
         updateAndInterpolateAnimation(&pThis->m14_riderState->m18_3dModel);
         pThis->m0_status++;
+        [[fallthrough]];
     case 1:
         switch (pThis->m10_animSequence->m0)
         {
         case 0:
-            if ((--pThis->m8_delay) > 0)
-                return;
-            pThis->m0_status = 0;
-            pThis->m10_animSequence++;
-            return;
-        case 1:
-            if (pThis->m14_riderState->m18_3dModel.m16_previousAnimationFrame < pThis->mC)
+            if ((--pThis->m8_delay) < -1)
             {
-                if ((--pThis->m8_delay) <= 0)
+                pThis->m0_status = 0;
+                pThis->m10_animSequence++;
+            }
+            break;
+        case 1:
+            if (pThis->m14_riderState->m18_3dModel.m16_previousAnimationFrame < pThis->mC_previousFrame)
+            {
+                if ((--pThis->m8_delay) < 1)
                 {
+                    pThis->m0_status = 0;
                     pThis->m10_animSequence++;
                 }
             }
-            pThis->mC = pThis->m14_riderState->m18_3dModel.m16_previousAnimationFrame;
-            return;
+            pThis->mC_previousFrame = pThis->m14_riderState->m18_3dModel.m16_previousAnimationFrame;
+            break;
         }
+        break;
     default:
         assert(false);
         break;
