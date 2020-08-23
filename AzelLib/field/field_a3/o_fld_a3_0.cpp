@@ -6,9 +6,40 @@
 #include "field/fieldRadar.h"
 #include "field/exitField.h"
 
+void pushDragonInvisibleWall(s_dragonTaskWorkArea* pDragon, sVec3_FP& dragonPosition)
+{
+    fixedPoint pushAmount;
+
+    if (dragonPosition[0] < 0x3A2001)
+    {
+        pushAmount = -MTH_Mul(0x4A12, randomNumber() & 0xFFFF);
+    }
+    else
+    {
+        pushAmount = -0x4A12;
+    }
+
+    pDragon->m160_deltaTranslation[0] += pushAmount;
+
+    if ((fieldTaskPtr->m8_pSubFieldData->m370_fieldDebuggerWho & 1) && (fieldTaskPtr->m8_pSubFieldData->m37C_debugMenuStatus1[1] == 0) && (fieldTaskPtr->m8_pSubFieldData->m369 == 0))
+    {
+        vdp2DebugPrintSetPosition(3, 0x19);
+        vdp2PrintfSmallFont("%08x ", -pushAmount);
+    }
+}
+
 void subfieldA3_0Sub0(s_dragonTaskWorkArea* r4)
 {
-    PDS_unimplemented("subfieldA3_0Sub0");
+    sVec3_FP dragonPosition;
+    getFieldDragonPosition(&dragonPosition);
+
+    if (!mainGameState.getBit(0xA2 * 8 + 3) && !mainGameState.getBit(0x91 * 8 + 3))
+    {
+        if ((dragonPosition[0] > 0x321FFF) && (dragonPosition[2] < -0x1229FFF))
+        {
+            pushDragonInvisibleWall(r4, dragonPosition);
+        }
+    }
 }
 
 p_workArea fieldA3_0_createTask0(p_workArea workArea)
