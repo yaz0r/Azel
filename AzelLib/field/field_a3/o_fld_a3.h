@@ -53,7 +53,6 @@ void createFieldPaletteTask(p_workArea parent);
 void adjustVerticalLimits(fixedPoint r4, fixedPoint r5);
 void nullBattle();
 void getFieldDragonPosition(sVec3_FP* r4);
-u32 gridCellDraw_GetDepthRange(fixedPoint r4);
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4);
 void setupField3(s_DataTable3* r4, void(*r5)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r6);
 s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* r4);
@@ -76,25 +75,6 @@ struct sLaserArgs
 };
 
 s_LCSTask340Sub* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, s8 r6);
-
-struct s_itemBoxDefinition
-{
-    sVec3_FP m0_pos;
-    sVec3_FP mC_boundingMin;
-    sVec3_FP m18_boundingMax;
-    sVec3_FP m24_rotation;
-    fixedPoint m30_scale;
-    s32 m34_bitIndex;
-    s32 m38;
-    eItems m3C_receivedItemId; // TODO: was 32bit in original, but no need
-    s8 m40_receivedItemQuantity;
-    s8 m41_LCSType; // 2 : savepoint
-    s8 m42;
-    s8 m43;
-    s8 m44;
-};
-s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr);
-p_workArea fieldA3_1_createItemBoxes_Sub1(s_itemBoxDefinition* r4);
 
 s_cameraScript* readCameraScript(sSaturnPtr EA);
 void dispatchTutorialMultiChoiceSub2();

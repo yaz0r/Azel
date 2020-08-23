@@ -2,6 +2,7 @@
 #include "o_fld_a3_0.h"
 #include "o_fld_a3_4.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldItemBox.h"
 
 struct fieldA3_5_exitTask : public s_workAreaTemplate<fieldA3_5_exitTask>
 {

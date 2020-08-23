@@ -12,6 +12,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/cinematicBarsTask.h"
 #include "collision.h"
+#include "field/fieldVisibilityGrid.h"
 
 #include "audio/soundDriver.h"
 
@@ -130,19 +131,6 @@ void s_visdibilityCellTask::gridCellDraw_untextured(s_visdibilityCellTask*)
 void s_visdibilityCellTask::gridCellDraw_collision(s_visdibilityCellTask*)
 {
     assert(0);
-}
-
-u32 gridCellDraw_GetDepthRange(fixedPoint r4)
-{
-    s_visibilityGridWorkArea* r5 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
-    u32 rangeIndex = 0;
-
-    while (r4 > (*r5->m2C_depthRangeTable)[rangeIndex])
-    {
-        rangeIndex++;
-    }
-
-    return rangeIndex;
 }
 
 u8 gridCellDraw_normalSub0(sProcessed3dModel* r4, const sVec3_FP& r5)
@@ -3957,28 +3945,6 @@ void updateCameraFromDragonSub2(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
 
     copyMatrix(pCurrentMatrix, &pTypedWorkArea->m384);
     copyMatrix(&cameraProperties2.m28[0], &pTypedWorkArea->m3B4);
-}
-
-s_itemBoxDefinition* readItemBoxDefinition(sSaturnPtr ptr)
-{
-    s_itemBoxDefinition* pItemBoxDefinition = new s_itemBoxDefinition;
-
-    pItemBoxDefinition->m0_pos = readSaturnVec3(ptr); ptr += 4 * 3;
-    pItemBoxDefinition->mC_boundingMin = readSaturnVec3(ptr); ptr += 4 * 3;
-    pItemBoxDefinition->m18_boundingMax = readSaturnVec3(ptr); ptr += 4 * 3;
-    pItemBoxDefinition->m24_rotation = readSaturnVec3(ptr); ptr += 4 * 3;
-    pItemBoxDefinition->m30_scale = readSaturnS32(ptr); ptr += 4;
-    pItemBoxDefinition->m34_bitIndex = readSaturnS32(ptr); ptr += 4;
-    pItemBoxDefinition->m38 = readSaturnS32(ptr); ptr += 4;
-    assert(readSaturnS32(ptr) >= eItems::min);
-    assert(readSaturnS32(ptr) <= eItems::max);
-    pItemBoxDefinition->m3C_receivedItemId = (eItems)readSaturnS32(ptr); ptr += 4;
-    pItemBoxDefinition->m40_receivedItemQuantity = readSaturnS8(ptr); ptr += 1;
-    pItemBoxDefinition->m41_LCSType = readSaturnS8(ptr); ptr += 1;
-    pItemBoxDefinition->m42 = readSaturnS8(ptr); ptr += 1;
-    pItemBoxDefinition->m43 = readSaturnS8(ptr); ptr += 1;
-    pItemBoxDefinition->m44 = readSaturnS8(ptr); ptr += 1;
-    return pItemBoxDefinition;
 }
 
 s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA)

@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "processModel.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldVisibilityGrid.h"
 
 static bool bDrawCollisions = false;
 

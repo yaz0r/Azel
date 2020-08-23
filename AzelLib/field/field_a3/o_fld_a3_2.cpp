@@ -5,6 +5,7 @@
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "field/fieldRadar.h"
 #include "field/exitField.h"
+#include "field/fieldItemBox.h"
 
 void fieldA3_2_exit0(p_workArea, sLCSTarget*)
 {

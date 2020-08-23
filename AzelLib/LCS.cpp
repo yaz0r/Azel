@@ -2,6 +2,7 @@
 #include "items.h"
 #include "audio/systemSounds.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldVisibilityGrid.h"
 
 p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5);
 void DrawLCSTarget(s_LCSTask* r14, sVec2_S16* r5, s32 r6);

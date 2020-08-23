@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldItemBox.h"
 
 struct fieldA3_C_task0 : public s_workAreaTemplate<fieldA3_C_task0>
 {
