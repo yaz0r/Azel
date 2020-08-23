@@ -10,6 +10,9 @@
 #include "kernel/fileBundle.h"
 #include "mainMenuDebugTasks.h"
 #include "audio/soundDriver.h"
+#include "town/townCamera.h"
+
+// https://youtu.be/Txks9hG21qs?t=2980
 
 void setupVdp1Proj(fixedPoint fov); // TODO: cleanup
 
@@ -31,27 +34,6 @@ struct TWN_E011_data : public sTownOverlay
     sTownObject* createObjectTaskFromEA_subTaskWithEAArg(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override;
 };
 
-// TODO: shared in EPKs
-void e011_cameraUpdate(sCameraTask* pThis)
-{
-    if ((npcData0.mFC & 1) == 0)
-    {
-        pThis->m4++;
-        if (pThis->m4 > 5400)
-        {
-            pThis->m4 = 5400;
-        }
-    }
-}
-
-// TODO: shared in EPKs
-void e011_cameraDraw(sCameraTask* pThis)
-{
-    sVec3_FP stack16;
-    transformVecByCurrentMatrix(pThis->m14, stack16);
-    setupLight(stack16[0], stack16[1], stack16[2], pThis->m10.toU32());
-}
-
 u32 modulateColor(sSaturnPtr r4, u32 r5)
 {
     FunctionUnimplemented();
@@ -61,67 +43,6 @@ u32 modulateColor(sSaturnPtr r4, u32 r5)
 u32 modulateColorByEvent(sCameraTask* cameraTaskPtr, s32 r5)
 {
     FunctionUnimplemented();
-    return 0;
-}
-
-// TODO: that's generic right?
-s32 e011_scriptFunction_0605ce38(int iParm1)
-
-{
-    u32 unaff_r12;
-
-    switch (cameraTaskPtr->m0)
-    {
-    case 0:
-    case 2:
-        unaff_r12 = modulateColor(cameraTaskPtr->m8, cameraTaskPtr->m30);
-        break;
-    case 1:
-        unaff_r12 = modulateColorByEvent(cameraTaskPtr, cameraTaskPtr->m4 + iParm1);
-        break;
-    default:
-        assert(0);
-        break;
-    }
-    
-    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0xc210, iParm1);
-    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), unaff_r12, iParm1);
-    cameraTaskPtr->m1 = 1;
-    return 1;
-}
-
-s32 scriptFunction_605cbd0(s32 r4, s32 r5)
-{
-    sVec3_FP r4Value = readSaturnVec3(sSaturnPtr::createFromRaw(r4, gTWN_E011)); //todo: that could be a vec2
-    sSaturnPtr r5Ptr = sSaturnPtr::createFromRaw(r5, gTWN_E011);
-    cameraTaskPtr->m8 = r5Ptr;
-
-    sMatrix4x3 var4;
-    initMatrixToIdentity(&var4);
-    rotateMatrixShiftedY(r4Value[1], &var4);
-    rotateMatrixShiftedX(r4Value[0], &var4);
-
-    cameraTaskPtr->m14[0] = var4.matrix[3];
-    cameraTaskPtr->m14[1] = var4.matrix[7];
-    cameraTaskPtr->m14[2] = var4.matrix[11];
-
-    cameraTaskPtr->m10 = readSaturnRGB8(r5Ptr);
-    cameraTaskPtr->m30 = 0x8000;
-
-    generateLightFalloffMap(readSaturnRGB8(r5Ptr + 3).toU32(), readSaturnRGB8(r5Ptr + 6).toU32(), readSaturnRGB8(r5Ptr + 9).toU32());
-
-    cameraTaskPtr->m_UpdateMethod = e011_cameraUpdate;
-    cameraTaskPtr->m_DrawMethod = e011_cameraDraw;
-
-    if (g_fadeControls.m_4C <= g_fadeControls.m_4D)
-    {
-        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
-        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
-    }
-
-    resetProjectVector();
-    cameraTaskPtr->m2 = 0;
-    cameraTaskPtr->m0 = 0;
     return 0;
 }
 
@@ -201,13 +122,13 @@ TWN_E011_data::TWN_E011_data() : sTownOverlay("TWN_E011.PRG")
     overlayScriptFunctions.m_zeroArg[0x60584a6] = &e006_scriptFunction_605861eSub0;
 
     overlayScriptFunctions.m_oneArg[0x605ceb0] = &TwnFadeOut;
+    overlayScriptFunctions.m_oneArg[0x605ce38] = &TwnFadeIn;
     overlayScriptFunctions.m_oneArg[0x605845c] = &createEPKPlayer;
     overlayScriptFunctions.m_oneArg[0x6059af0] = &e011_scriptFunction_6059af0;
     overlayScriptFunctions.m_oneArg[0x60596ca] = &setupDragonEntityForCutscene;
-    overlayScriptFunctions.m_oneArg[0x605ce38] = &e011_scriptFunction_0605ce38;
     overlayScriptFunctions.m_oneArg[0x6059b7a] = &e011_scriptFunction_06059b7a;
 
-    overlayScriptFunctions.m_twoArg[0x605cbd0] = &scriptFunction_605cbd0;
+    overlayScriptFunctions.m_twoArg[0x605cbd0] = &townCamera_setup;
 
     mTownSetups.push_back(readTownSetup(getSaturnPtr(0x0605ef14), 1));
     mTownSetups.push_back(readTownSetup(getSaturnPtr(0x0605ef20), 1));

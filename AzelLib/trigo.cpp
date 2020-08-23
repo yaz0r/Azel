@@ -283,3 +283,4 @@ s32 atan2_FP(s32 y, s32 x)
         assert(0);
     }
 }
+

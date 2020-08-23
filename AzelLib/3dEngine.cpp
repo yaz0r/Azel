@@ -520,3 +520,40 @@ void dragonFieldTaskDrawSub1Sub1(fixedPoint r4, fixedPoint r5, fixedPoint r6)
     PDS_unimplemented("dragonFieldTaskDrawSub1Sub1");
 }
 
+fixedPoint transformByMatrixRow0(const sVec3_FP& r4)
+{
+    s64 mac = 0;
+    mac += (s64)pCurrentMatrix->matrix[0] * (s64)r4[0].asS32();
+    mac += (s64)pCurrentMatrix->matrix[1] * (s64)r4[1].asS32();
+    mac += (s64)pCurrentMatrix->matrix[2] * (s64)r4[2].asS32();
+    return (mac >> 16) + pCurrentMatrix->matrix[3];
+}
+
+fixedPoint transformByMatrixRow1(const sVec3_FP& r4)
+{
+    s64 mac = 0;
+    mac += (s64)pCurrentMatrix->matrix[4] * (s64)r4[0].asS32();
+    mac += (s64)pCurrentMatrix->matrix[5] * (s64)r4[1].asS32();
+    mac += (s64)pCurrentMatrix->matrix[6] * (s64)r4[2].asS32();
+    return (mac >> 16) + pCurrentMatrix->matrix[7];
+}
+
+fixedPoint transformByMatrixRow2(const sVec3_FP& r4)
+{
+    s64 mac = 0;
+    mac += (s64)pCurrentMatrix->matrix[8] * (s64)r4[0].asS32();
+    mac += (s64)pCurrentMatrix->matrix[9] * (s64)r4[1].asS32();
+    mac += (s64)pCurrentMatrix->matrix[10] * (s64)r4[2].asS32();
+    return (mac >> 16) + pCurrentMatrix->matrix[11];
+}
+
+fixedPoint MulVec2(const sVec2_FP& r4, const sVec2_FP& r5)
+{
+    s64 mac = 0;
+    mac += (s64)r4.m_value[0] * (s64)r5.m_value[0];
+    mac += (s64)r4.m_value[1] * (s64)r5.m_value[1];
+
+    return fixedPoint(mac >> 16);
+}
+
+

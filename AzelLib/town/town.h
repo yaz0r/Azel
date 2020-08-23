@@ -365,10 +365,8 @@ void registerNpcs(const std::vector<const sTownSetup*>& townSetups, sSaturnPtr r
 p_workArea startCameraTask(p_workArea pParent);
 extern s32* twnVar1;
 extern s32 twnVar2;
-void mainLogicUpdateSub3();
 void drawLcs();
 void updateEdgePosition(sNPC* r4);
-s32 TwnFadeOut(s32 arg0);
 s32 TwnFadeIn(s32 arg0);
 void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5);
 

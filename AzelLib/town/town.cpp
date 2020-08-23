@@ -783,3 +783,4 @@ void townOverlayDelete(townDebugTask2Function* pThis)
         gModuleManager->m8 = nullptr;
     }
 }
+

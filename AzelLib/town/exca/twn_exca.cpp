@@ -9,6 +9,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/vdp1Allocator.h"
 #include "audio/soundDriver.h"
+#include "town/townCamera.h"
 
 struct sTownDragon : public s_workAreaTemplateWithArg<sTownDragon, sSaturnPtr>, sTownObject
 {
@@ -186,7 +187,14 @@ struct TWN_EXCA_data : public sTownOverlay
 
     TWN_EXCA_data() : sTownOverlay("TWN_EXCA.PRG")
     {
+        overlayScriptFunctions.m_zeroArg[0x06057f7c] = &scriptFunction_6057058_sub0;
+        overlayScriptFunctions.m_zeroArg[0x060584b4] = &hasLoadingCompleted;
+
         overlayScriptFunctions.m_oneArg[0x605d780] = &TwnFadeOut;
+        overlayScriptFunctions.m_oneArg[0x605d708] = &TwnFadeIn;
+        overlayScriptFunctions.m_oneArg[0x6059d08] = &SetupColorOffset;
+
+        overlayScriptFunctions.m_twoArg[0x605d4a0] = &townCamera_setup;
 
         overlayScriptFunctions.m_fourArg[0x605be24] = &setNpcLocation;
         overlayScriptFunctions.m_fourArg[0x605be52] = &setNpcOrientation;
