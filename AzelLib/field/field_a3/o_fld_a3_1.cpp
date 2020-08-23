@@ -460,6 +460,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, s_itemB
                     pThis->mEA_wasRendered = 3;
 
                     itemBoxType1InitSub0(&pThis->m98_3dModel, 20);
+                    return;
                 }
             }
             break;
