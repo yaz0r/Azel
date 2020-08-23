@@ -1104,7 +1104,7 @@ void subfieldA3_1Sub0Sub0()
 
     if (r14->m1D0_cameraScript)
     {
-        r14->mF0 = dragonFieldTaskInitSub4;
+        r14->mF0 = dragonAutomaticMovementWhenEnteringNewField;
     }
     else if (r14->m1D4_cutsceneData)
     {
@@ -4956,24 +4956,24 @@ void integrateDragonMovement(s_dragonTaskWorkArea* r14)
             fixedPoint r12 = r14->m154_dragonSpeed - r3;
             if (r12 < 0)
             {
-                r14->m15C_dragonSpeedIncrement = MTH_Mul(-r12, r14->m230);
+                r14->m15C_dragonSpeedIncrement = -MTH_Mul(r12, r14->m230);
             }
             else
             {
-                r14->m15C_dragonSpeedIncrement = -MTH_Mul(r12, r14->m230);
+                r14->m15C_dragonSpeedIncrement = MTH_Mul(-r12, r14->m230);
             }
         }
     }
     else
     {
         //607FE98
-        if (r14->m154_dragonSpeed >= 0)
+        if (r14->m154_dragonSpeed < 0)
         {
-            r14->m15C_dragonSpeedIncrement = MTH_Mul(-r14->m154_dragonSpeed, r14->m230);
+            r14->m15C_dragonSpeedIncrement = -MTH_Mul(r14->m154_dragonSpeed, r14->m230);
         }
         else
         {
-            r14->m15C_dragonSpeedIncrement = -MTH_Mul(r14->m154_dragonSpeed, r14->m230);
+            r14->m15C_dragonSpeedIncrement = MTH_Mul(-r14->m154_dragonSpeed, r14->m230);
         }
     }
 
@@ -5487,7 +5487,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
 
         r4->m160_deltaTranslation[0] = MTH_Mul(-r5->m1C, getSin(r4->m20_angle[1].getInteger() & 0xFFF));
         r4->m160_deltaTranslation[1] = performDivision(r4->m1E8_cameraScriptDelay, r5->m18 - r4->m8_pos[1]);
-        r4->m160_deltaTranslation[2] = MTH_Mul(-r5->m1C, getCos(r4->m20_angle[2].getInteger() & 0xFFF));
+        r4->m160_deltaTranslation[2] = MTH_Mul(-r5->m1C, getCos(r4->m20_angle[1].getInteger() & 0xFFF));
 
         dragonFieldTaskInitSub4Sub6(r4);
         updateCameraScriptSub0Sub2(r4);
@@ -5495,6 +5495,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
         getFieldCameraStatus()->m0_position = r5->m24_pos2;
         getFieldCameraStatus()->m88 = r4->m1E8_cameraScriptDelay;
         r4->m104_dragonScriptStatus++;
+        break;
     case 1:
         if (--r4->m1E8_cameraScriptDelay)
         {
@@ -5518,22 +5519,25 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
     }
 }
 
-void dragonFieldTaskInitSub4(s_dragonTaskWorkArea* pTypedWorkArea)
+void dragonAutomaticMovementWhenEnteringNewField(s_dragonTaskWorkArea* pTypedWorkArea)
 {
     getFieldTaskPtr()->m28_status |= 0x10000;
 
-    if (pTypedWorkArea->m1D4_cutsceneData)
+    if (pTypedWorkArea->m1D4_cutsceneData == nullptr)
     {
-        assert(0);
-    }
-    else if (pTypedWorkArea->m1D0_cameraScript)
-    {
-        updateCameraScript(pTypedWorkArea, pTypedWorkArea->m1D0_cameraScript);
+        if (pTypedWorkArea->m1D0_cameraScript == nullptr)
+        {
+            dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
+            dragonFieldTaskInitSub4Sub4();
+        }
+        else
+        {
+            updateCameraScript(pTypedWorkArea, pTypedWorkArea->m1D0_cameraScript);
+        }
     }
     else
     {
-        dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
-        dragonFieldTaskInitSub4Sub4();
+        assert(0);
     }
 
     dragonFieldTaskInitSub4Sub5(&pTypedWorkArea->m48, &pTypedWorkArea->m20_angle);
@@ -5568,7 +5572,7 @@ void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
     getMemoryArea(&pThis->m0, 0);
     dragonFieldTaskInitSub2(pThis);
     dragonFieldTaskInitSub3(pThis, gDragonState, 5);
-    pThis->mF0 = dragonFieldTaskInitSub4;
+    pThis->mF0 = dragonAutomaticMovementWhenEnteringNewField;
 
     createSubTask<s_DragonRiderTask>(pThis);
 
