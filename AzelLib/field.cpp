@@ -330,7 +330,7 @@ struct s_exitCutsceneTask : public s_workAreaTemplate<s_exitCutsceneTask>
             r14->m8_pos[1] = pThis->m0_pScript->m0_position[1] - ((pThis->m10_length + 5) * r14->m160_deltaTranslation[1]);
             r14->m8_pos[2] = pThis->m0_pScript->m0_position[2] - ((pThis->m10_length + 5) * r14->m160_deltaTranslation[2]);
 
-            r14->mF4 = DragonUpdateCutscene;
+            r14->mF0 = DragonUpdateCutscene;
             r14->m108 = 0;
             r14->mF4(r14);
 
