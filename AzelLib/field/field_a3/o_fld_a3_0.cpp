@@ -4,6 +4,7 @@
 #include "audio/soundDriver.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "field/fieldRadar.h"
+#include "field/exitField.h"
 
 void subfieldA3_0Sub0(s_dragonTaskWorkArea* r4)
 {

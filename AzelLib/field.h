@@ -824,7 +824,6 @@ void updateCameraScriptSub0Sub2(s_dragonTaskWorkArea* r4);
 void updateCameraScriptSub0(p_workArea r4);
 void dragonFieldTaskInitSub4Sub4();
 
-void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 param, s32 exitIndex, s32 arg0);
 void startExitFieldCutscene2(p_workArea parent, s_cutsceneData* pScript, s32 param, s32 exitIndex, s32 arg0);
 void initFieldDragonLight();
 
