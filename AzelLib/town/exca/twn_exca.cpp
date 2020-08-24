@@ -10,37 +10,7 @@
 #include "kernel/vdp1Allocator.h"
 #include "audio/soundDriver.h"
 #include "town/townCamera.h"
-
-struct sTownDragon : public s_workAreaTemplateWithArg<sTownDragon, sSaturnPtr>, sTownObject
-{
-    static TypedTaskDefinition * getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &sTownDragon::Init, &sTownDragon::Update, &sTownDragon::Draw, &sTownDragon::Delete };
-        return &taskDefinition;
-    }
-
-    static void Init(sTownDragon* pThis, sSaturnPtr arg)
-    {
-        FunctionUnimplemented();
-    }
-
-    static void Update(sTownDragon* pThis)
-    {
-        FunctionUnimplemented();
-    }
-
-    static void Draw(sTownDragon* pThis)
-    {
-        FunctionUnimplemented();
-    }
-
-    static void Delete(sTownDragon* pThis)
-    {
-        FunctionUnimplemented();
-    }
-
-    //size: 0xE8
-};
+#include "town/townDragon.h"
 
 struct sExcaEntity0 : public s_workAreaTemplateWithArgWithCopy<sExcaEntity0, sSaturnPtr>, sTownObject
 {
@@ -228,7 +198,7 @@ struct TWN_EXCA_data : public sTownOverlay
         {
         case 0x0606473c:
             assert(size == 0xE8);
-            return createSubTaskWithArg<sTownDragon, sSaturnPtr>(parent, arg);
+            return createTownDragon(parent, arg);
         default:
             assert(0);
             break;

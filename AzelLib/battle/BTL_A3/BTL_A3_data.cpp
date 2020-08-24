@@ -49,16 +49,6 @@ void BTL_A3_data::invoke(sSaturnPtr Func, p_workArea pParent)
     }
 }
 
-sHotpointBundle* readRiderDefinitionSub(sSaturnPtr ptrEA)
-{
-    if (ptrEA.isNull())
-    {
-        return nullptr;
-    }
-
-    return new sHotpointBundle(ptrEA);
-}
-
 sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
 {
     sGenericFormationData* pNewData = new sGenericFormationData;

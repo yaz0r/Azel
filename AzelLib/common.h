@@ -742,7 +742,7 @@ struct s_dragonState : public s_workAreaTemplate<s_dragonState>
     }
 
     struct s_fileBundle* m0_pDragonModelBundle;
-    u32 mC_dragonType;//C F can contain some other info
+    s32 mC_dragonType;//C
     s16 m10_cursorX;//10
     s16 m12_cursorY;//12
     u32 m14_modelIndex;//14

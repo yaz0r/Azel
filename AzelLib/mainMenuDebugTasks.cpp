@@ -1223,31 +1223,6 @@ void countNumBonesInModel(s_3dModel* p3dModel, sModelHierarchy* pHierarchy)
     }while (true);
 }
 
-bool createDragonStateSubData1Sub2(s_3dModel* pDragonStateData1, sHotpointBundle* unkArg)
-{
-    pDragonStateData1->m40 = unkArg->getData(pDragonStateData1);
-
-    pDragonStateData1->m44_hotpointData.resize(pDragonStateData1->m12_numBones);
-
-    std::vector<s_hotpointDefinition>::iterator r12 = pDragonStateData1->m40->begin();
-
-    for(u32 i=0; i<pDragonStateData1->m12_numBones; i++)
-    {
-        if (r12->m4_count > 0)
-        {
-            pDragonStateData1->m44_hotpointData[i].resize(r12->m4_count);
-        }
-        else
-        {
-            pDragonStateData1->m44_hotpointData[i].resize(0);
-        }
-
-        r12 ++;
-    }
-
-    return true;
-}
-
 bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animationFlags, s_fileBundle* pDragonBundle, u16 modelIndexOffset, sAnimationData* pAnimationData, sStaticPoseData* pDefaultPose, u8* colorAnim, sHotpointBundle* unkArg3)
 {
     p3dModel->m0_pOwnerTask = pWorkArea;
@@ -1293,7 +1268,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animatio
 
     if (unkArg3)
     {
-        if (!createDragonStateSubData1Sub2(p3dModel, unkArg3))
+        if (!model_initHotpointBundle(p3dModel, unkArg3))
             return false;
     }
     else

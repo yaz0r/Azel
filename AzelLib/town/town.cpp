@@ -326,8 +326,7 @@ npcFileDeleter* loadNPCFile(p_workArea r4, const std::string& ramFileName, s32 r
         }
         else
         {
-            assert(0);
-            loadFile(ramFileName.c_str(), &r12_dramMemory, 1);
+            loadFile(ramFileName.c_str(), &r12_dramMemory, 0);
         }
     }
 
@@ -371,8 +370,17 @@ npcFileDeleter* allocateNPC(p_workArea r4, s32 r5)
         return r14.mC_fileBundle;
     }
 
-    s_fileEntry& vdp1File = dramAllocatorEnd[r5 + 1];
-    r14.mC_fileBundle = loadNPCFile(r4, r14.mFileName, r14.m4_fileSize, vdp1File.mFileName, vdp1File.m4_fileSize, r5);
+    std::string vdp1FileName = "";
+    u32 vdp1FileSize = 0;
+
+    if (dramAllocatorEnd.size() > r5 + 1)
+    {
+        s_fileEntry& vdp1File = dramAllocatorEnd[r5 + 1];
+        vdp1FileName = vdp1File.mFileName;
+        vdp1FileSize = vdp1File.m4_fileSize;
+    }
+    
+    r14.mC_fileBundle = loadNPCFile(r4, r14.mFileName, r14.m4_fileSize, vdp1FileName, vdp1FileSize, r5);
     return r14.mC_fileBundle;
 }
 

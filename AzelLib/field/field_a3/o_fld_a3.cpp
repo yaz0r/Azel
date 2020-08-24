@@ -5741,7 +5741,6 @@ void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonSt
                 s32 r6 = getDragonFieldAnimation(pTypedWorkArea);
                 if (r6 == 0)
                 {
-                    PDS_warningOnce("recheck the logic here, it might be accessing mC_dragonType as a byte (read byte at F)\n");
                     std::vector<s8> r3 = getFieldDragonAnimTable(r5->mC_dragonType, r5->m1C_dragonArchetype);
 
                     pTypedWorkArea->m239++;

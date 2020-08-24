@@ -50,3 +50,38 @@ void LCSItemBox_DrawType0Sub0(s_fileBundle* r4, s16 r5, s16 r6)
     std::vector<sStaticPoseData::sBonePoseData>::const_iterator bones = pStaticPose->m0_bones.begin();
     LCSItemBox_DrawType0Sub0Sub0(pHierarchy, bones);
 }
+
+bool model_initHotpointBundle(s_3dModel* pDragonStateData1, sHotpointBundle* unkArg)
+{
+    pDragonStateData1->m40 = unkArg->getData(pDragonStateData1);
+
+    pDragonStateData1->m44_hotpointData.resize(pDragonStateData1->m12_numBones);
+
+    std::vector<s_hotpointDefinition>::iterator r12 = pDragonStateData1->m40->begin();
+
+    for (u32 i = 0; i < pDragonStateData1->m12_numBones; i++)
+    {
+        if (r12->m4_count > 0)
+        {
+            pDragonStateData1->m44_hotpointData[i].resize(r12->m4_count);
+        }
+        else
+        {
+            pDragonStateData1->m44_hotpointData[i].resize(0);
+        }
+
+        r12++;
+    }
+
+    return true;
+}
+
+sHotpointBundle* readRiderDefinitionSub(sSaturnPtr ptrEA)
+{
+    if (ptrEA.isNull())
+    {
+        return nullptr;
+    }
+
+    return new sHotpointBundle(ptrEA);
+}
