@@ -4,11 +4,12 @@
 #include "battle/battleOverlay.h"
 #include "battle/battleGrid.h"
 #include "field/field_a3/o_fld_a3.h" // TODO: remove
-#include "town/town.h" // TODO: remove
+#include "kernel/graphicalObject.h"
 #include "kernel/fileBundle.h"
 #include "kernel/loadSavegameScreen.h" //TODO: remove
 #include "BTL_A3_data.h"
 #include "kernel/grid.h"
+#include "town/town.h" // TODO: cleanup
 
 void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr)
 {

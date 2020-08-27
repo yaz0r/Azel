@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "BTL_A3_2_data.h"
+#include "Arachnoth.h"
 
 // Arachnoth boss battle
 
@@ -10,17 +11,12 @@ sSaturnPtr BTL_A3_2_data::getEncounterDataTable()
     return getSaturnPtr(0x60ab8dc);
 }
 
-void createArachnothFormation()
-{
-
-}
-
-void BTL_A3_2_data::invoke(sSaturnPtr Func, p_workArea pParent, u32 arg0, u32 arg1)
+void BTL_A3_2_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32 arg1)
 {
     switch (Func.m_offset)
     {
     case 0x60551A4:
-        createArachnothFormation();
+        createArachnothFormation(pParent, arg0, arg1);
         break;
     default:
         FunctionUnimplemented();
@@ -28,7 +24,7 @@ void BTL_A3_2_data::invoke(sSaturnPtr Func, p_workArea pParent, u32 arg0, u32 ar
     }
 }
 
-void BTL_A3_2_data::invoke(sSaturnPtr Func, p_workArea pParent)
+void BTL_A3_2_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent)
 {
     switch (Func.m_offset)
     {

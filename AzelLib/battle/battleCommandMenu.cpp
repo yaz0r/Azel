@@ -10,7 +10,7 @@
 #include "battleItemSelection.h"
 #include "items.h"
 #include "mainMenuDebugTasks.h" // TODO: clean
-#include "town/town.h" // TODO: clean
+#include "kernel/graphicalObject.h"
 #include "kernel/vdp1Allocator.h" // TODO: clean
 #include "audio/systemSounds.h"
 #include "battle/battleGenericData.h"

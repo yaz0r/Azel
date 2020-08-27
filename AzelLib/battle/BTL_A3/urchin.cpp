@@ -12,7 +12,7 @@
 #include "battle/battleEnemyLifeMeter.h"
 #include "commonOverlay.h"
 #include "BTL_A3_data.h"
-#include "town/town.h" //TODO: cleanup
+#include "kernel/graphicalObject.h"
 
 void Baldor_updateSub1(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s32 pDeltaFactor, s32 pDistanceToTargetFactor, s8 translationOrRotation); // TODO: cleanup
 s32 Baldor_updateSub0Sub0(p_workArea pThis, std::vector<sBattleTargetable>& param2, s16 entriesToParse, s16& param4); // TODO: cleanup

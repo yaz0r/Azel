@@ -8,7 +8,7 @@
 #include "battle/battleEngineSub0.h"
 #include "urchin.h"
 
-#include "town/town.h" //TODO cleanup
+#include "kernel/graphicalObject.h"
 #include "audio/soundDriver.h" // TODO cleanup
 
 s32 createBattleIntroTaskSub1(); //TODO cleanup

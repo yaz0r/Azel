@@ -5,8 +5,9 @@
 #include "battle/battleOverlay.h"
 #include "battle/battleGrid.h"
 #include "field/field_a3/o_fld_a3.h" // TODO: remove
-#include "town/town.h" // TODO: remove
+#include "kernel/graphicalObject.h"
 #include "BTL_A3_data.h"
+#include "town/town.h" // TODO: cleanup
 
 static void BTL_A3_map4_Init(s_BTL_A3_Env* pThis)
 {

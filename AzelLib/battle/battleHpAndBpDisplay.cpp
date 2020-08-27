@@ -3,7 +3,7 @@
 #include "battleOverlay.h"
 #include "battleEngine.h"
 #include "battleHud.h"
-#include "town/town.h" //TODO cleanup
+#include "kernel/graphicalObject.h"
 #include "BTL_A3/BTL_A3_data.h"
 #include "kernel/vdp1Allocator.h"
 

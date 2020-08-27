@@ -6,7 +6,7 @@
 #include "battleDragon.h"
 #include "battleOverlay_C.h"
 #include "LCS.h"
-#include "town/town.h" // todo: clean
+#include "kernel/graphicalObject.h"
 #include "kernel/vdp1Allocator.h" // todo: clean
 #include "BTL_A3/baldor.h" // todo: clean
 #include "audio/systemSounds.h"

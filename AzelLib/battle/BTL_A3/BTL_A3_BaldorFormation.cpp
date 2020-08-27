@@ -9,7 +9,7 @@
 #include "BTL_A3_data.h"
 #include "baldor.h"
 #include "battle/battleTextDisplay.h"
-#include "town/town.h" // TODO: cleanup
+#include "kernel/graphicalObject.h"
 #include "kernel/textDisplay.h"
 
 // internal name: Hebi (snake)

@@ -5,7 +5,7 @@
 #include "battleEngine.h"
 #include "battleDebug.h"
 #include "battleDragon.h"
-#include "town/town.h" // todo: for npcFileDeleter
+#include "kernel/graphicalObject.h"
 #include "battleCommandMenu.h"
 #include "kernel/vdp1Allocator.h"
 #include "battleGenericData.h"

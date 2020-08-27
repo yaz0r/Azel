@@ -6,7 +6,7 @@
 #include "BTL_A3_map6.h"
 #include "battle/battleManager.h"
 #include "battle/battleMainTask.h"
-#include "town/town.h"
+#include "kernel/graphicalObject.h"
 #include "kernel/vdp1Allocator.h"
 #include "battle/battleEngine.h"
 #include "BTL_A3_data.h"

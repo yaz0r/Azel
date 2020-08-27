@@ -6,8 +6,7 @@
 #include "battleDragon.h"
 #include "kernel/fileBundle.h"
 #include "kernel/debug/trace.h"
-
-#include "town/town.h" // TODO: remove
+#include "kernel/graphicalObject.h"
 
 struct sBattleIntroSubTask : public s_workAreaTemplate<sBattleIntroSubTask>
 {

@@ -213,7 +213,6 @@ struct townDebugTask2Function : public s_workAreaTemplate<townDebugTask2Function
 };
 
 extern townDebugTask2Function* townDebugTask2;
-extern u8 townBuffer[0xB0000];
 
 p_workArea loadTown(p_workArea r4, s32 r5);
 p_workArea loadTown2(p_workArea r4, s32 r5);
@@ -226,43 +225,6 @@ void mainLogicInitSub0(sMainLogic_74*, s32);
 void mainLogicInitSub1(sMainLogic_74*, const sVec3_FP&, const sVec3_FP&);
 
 void initTownGrid();
-
-struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, nullptr, &npcFileDeleter::Delete };
-        return &taskDefinition;
-    }
-
-    static void Delete(npcFileDeleter* pThis)
-    {
-        FunctionUnimplemented();
-    }
-
-    ////////////////////////////
-    static TypedTaskDefinition* getTypedTaskDefinition_townObject()
-    {
-        static TypedTaskDefinition taskDefinition = { nullptr, &npcFileDeleter::Update_TownObject, nullptr, &npcFileDeleter::Delete };
-        return &taskDefinition;
-    }
-
-    static void Update_TownObject(npcFileDeleter* pThis)
-    {
-        FunctionUnimplemented();
-    }
-
-    //////////////////////////////
-
-
-    //copy 0/4
-    s16 m8;
-    s16 mA;
-    s32 mC;
-    //size 0x10
-};
-
-npcFileDeleter* allocateNPC(p_workArea r4, s32 r5);
 
 extern p_workArea townVar0;
 

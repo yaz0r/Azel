@@ -5,6 +5,7 @@
 #include "town/townEdge.h"
 #include "town/townLCS.h"
 #include "town/townMainLogic.h"
+#include "kernel/graphicalObject.h"
 #include "kernel/animation.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"

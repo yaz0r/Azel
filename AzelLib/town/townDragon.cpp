@@ -2,6 +2,7 @@
 #include "townDragon.h"
 #include "town.h"
 #include "kernel/fileBundle.h"
+#include "kernel/graphicalObject.h"
 #include "town/ruin/twn_ruin.h" // TODO: cleanup
 
 struct sTownDragon : public s_workAreaTemplateWithArg<sTownDragon, sSaturnPtr>, sTownObject

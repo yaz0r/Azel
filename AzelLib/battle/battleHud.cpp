@@ -3,7 +3,7 @@
 #include "battleManager.h"
 #include "battleOverlay.h"
 #include "kernel/vdp1Allocator.h"
-#include "town/town.h" // todo: for npcFileDeleter
+#include "kernel/graphicalObject.h"
 #include "battleManager.h"
 #include "battleOverlay.h"
 #include "battleEngine.h"

@@ -14,7 +14,7 @@ sSaturnPtr BTL_A3_data::getEncounterDataTable()
     return getSaturnPtr(0x60AAFA0);
 }
 
-void BTL_A3_data::invoke(sSaturnPtr Func, p_workArea pParent, u32 arg0, u32 arg1)
+void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32 arg1)
 {
     switch (Func.m_offset)
     {
@@ -30,7 +30,7 @@ void BTL_A3_data::invoke(sSaturnPtr Func, p_workArea pParent, u32 arg0, u32 arg1
     }
 }
 
-void BTL_A3_data::invoke(sSaturnPtr Func, p_workArea pParent)
+void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent)
 {
     switch (Func.m_offset)
     {

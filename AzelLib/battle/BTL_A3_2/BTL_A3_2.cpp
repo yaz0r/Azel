@@ -2,7 +2,7 @@
 #include "BTL_A3_2.h"
 #include "battle/BTL_A3/BTL_A3.h"
 #include "BTL_A3_2_data.h"
-#include "town/town.h" // TODO: cleanup
+#include "kernel/graphicalObject.h"
 #include "battle/battleEngine.h"
 #include "battle/battleMainTask.h"
 #include "kernel/debug/trace.h"

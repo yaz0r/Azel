@@ -6,7 +6,7 @@
 #include "battleDragon.h"
 #include "battleOverlay_C.h"
 #include "mainMenuDebugTasks.h" // TODO: cleanup
-#include "town/town.h" // TODO: cleanup
+#include "kernel/graphicalObject.h"
 #include "BTL_A3/baldor.h" // TODO: cleanup
 #include "kernel/vdp1Allocator.h"
 #include "gunShotRootTask.h" // TODO: cleanup

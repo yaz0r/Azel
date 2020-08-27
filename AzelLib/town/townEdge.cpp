@@ -5,7 +5,8 @@
 #include "townLCS.h"
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
-#include "town/ruin/twn_ruin.h"
+#include "kernel/graphicalObject.h"
+#include "town/ruin/twn_ruin.h" //TODO: cleanup
 #include "audio/systemSounds.h"
 
 void updateEdgeSub3(sEdgeTask* pThis);

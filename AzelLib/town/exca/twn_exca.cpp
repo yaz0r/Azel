@@ -8,6 +8,7 @@
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
 #include "kernel/vdp1Allocator.h"
+#include "kernel/graphicalObject.h"
 #include "audio/soundDriver.h"
 #include "town/townCamera.h"
 #include "town/townDragon.h"

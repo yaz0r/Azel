@@ -8,8 +8,8 @@ struct battleOverlay : public sSaturnMemoryFile
     }
 
     virtual sSaturnPtr getEncounterDataTable() = 0;
-    virtual void invoke(sSaturnPtr Func, p_workArea pParent) = 0;
-    virtual void invoke(sSaturnPtr Func, p_workArea pParent, u32, u32) = 0;
+    virtual void invoke(sSaturnPtr Func, s_workAreaCopy* pParent) = 0;
+    virtual void invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32, u32) = 0;
 };
 
 extern battleOverlay* gCurrentBattleOverlay;

@@ -287,7 +287,7 @@ void initFileLayoutTable();
 
 extern bool hasEncounterData;
 extern u8 encounterTaskVar0;
-
+extern u8 townBuffer[0xB0000];
 #include "trigo.h"
 
 // Script macro stuff
