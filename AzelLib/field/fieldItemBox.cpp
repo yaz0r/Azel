@@ -64,31 +64,6 @@ static s16 LCSItemBox_Table2[] = {
     0x18C
 };
 
-// TODO: move to model functions
-void itemBoxType1InitSub0Sub(s_3dModel* r4)
-{
-    if (!(r4->mA_animationFlags & 0x38))
-    {
-        return;
-    }
-
-    r4->m10_currentAnimationFrame = 0;
-    int animFlag = r4->m30_pCurrentAnimation->m0_flags & 7;
-    if ((animFlag == 1) || (animFlag == 4) || (animFlag == 5))
-    {
-        for (int i = 0; i < r4->m12_numBones; i++)
-        {
-            for (int j = 0; j < 9; j++)
-            {
-                r4->m2C_poseData[i].m48[j].currentStep = 0;
-                r4->m2C_poseData[i].m48[j].delay = 0;
-                r4->m2C_poseData[i].m48[j].value = 0;
-            }
-        }
-    }
-    stepAnimation(r4);
-}
-
 //init box in already opened state
 // TODO: move to model functions
 void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
@@ -99,7 +74,7 @@ void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
         switch (type)
         {
         case 4:
-            itemBoxType1InitSub0Sub(r4);
+            resetAnimation(r4);
             for (int i = 0; i < r5; i++)
             {
                 stepAnimation(r4);

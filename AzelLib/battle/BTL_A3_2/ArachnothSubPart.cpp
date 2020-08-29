@@ -101,6 +101,7 @@ void arachnothInitSubModelAnimation(sArachnothSubModel* pThis, s32 animationInde
 {
     sAnimationData* pAnimation = pThis->m0->m0_fileBundle->getAnimation(readSaturnU16(readSaturnEA(pThis->m4 + 4) + animationIndex * 2));
     initAnimation(&pThis->m8_model, pAnimation);
+    resetAnimation(&pThis->m8_model);
     pThis->m74 = 1;
 
     if (unk == -2)
