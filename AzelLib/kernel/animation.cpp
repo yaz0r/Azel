@@ -606,7 +606,7 @@ void modelMode0_scale(s_3dModel*)
 
 void modelMode4_scale(s_3dModel*)
 {
-    assert(0);
+    PDS_unimplemented("modelMode4_scale");
 }
 
 u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, sAnimationData* pModelData)

@@ -97,9 +97,20 @@ void arachnothCreateSubModel2(sArachnothSubModel* pThis, s_workAreaCopy* pParent
     }
 }
 
-void arachnothInitSubModelAnimation(sArachnothSubModel* pThis, s32, s32)
+void arachnothInitSubModelAnimation(sArachnothSubModel* pThis, s32 animationIndex, s32 unk)
 {
-    FunctionUnimplemented();
+    sAnimationData* pAnimation = pThis->m0->m0_fileBundle->getAnimation(readSaturnU16(readSaturnEA(pThis->m4 + 4) + animationIndex * 2));
+    initAnimation(&pThis->m8_model, pAnimation);
+    pThis->m74 = 1;
+
+    if (unk == -2)
+    {
+        assert(0);
+    }
+    else
+    {
+        pThis->m7C = unk;
+    }    
 }
 
 void arachnothInitSubModelFunctions(sArachnothSubModel* pThis, s32, void (*param_2)(sArachnothSubModel*, s32), void (*param_3)(sArachnothSubModel*, s32), void (*param_4)(sArachnothSubModel*, s32))

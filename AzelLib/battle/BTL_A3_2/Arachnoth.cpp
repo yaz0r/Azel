@@ -14,11 +14,11 @@
 
 struct sArachnothFormation : public s_workAreaTemplateWithCopy<sArachnothFormation>
 {
-    sArachnothSubModel m8;
-    sArachnothSubModel m98;
-    sArachnothSubModel m128;
-    sArachnothSubModel* m1B8;
-    s_3dModel m1BC_3dModel; // -> 0x208
+    sArachnothSubModel m8_normalBody;
+    sArachnothSubModel m98_poisonDart;
+    sArachnothSubModel m128_eatDragonBody;
+    sArachnothSubModel* m1B8_currentActiveModel;
+    s_3dModel m1BC_debrits; // -> 0x208
     sVec3_FP m20C;
     sVec3_FP m218;
     sVec3_FP m224_translation;
@@ -46,7 +46,7 @@ struct sArachnothFormation : public s_workAreaTemplateWithCopy<sArachnothFormati
 
 void arachnothFormation_update(sArachnothFormation* pThis)
 {
-    s32 damageTaken = arachnothSubPartGetDamage(&pThis->m8) + arachnothSubPartGetDamage(&pThis->m98);
+    s32 damageTaken = arachnothSubPartGetDamage(&pThis->m8_normalBody) + arachnothSubPartGetDamage(&pThis->m98_poisonDart);
     if (damageTaken > 0)
     {
         assert(0);
@@ -57,7 +57,7 @@ void arachnothFormation_update(sArachnothFormation* pThis)
         pThis->m2A0--;
     }
 
-    if (pThis->m8.m6C || pThis->m98.m6C)
+    if (pThis->m8_normalBody.m6C || pThis->m98_poisonDart.m6C)
     {
         pThis->m2A4 = 1;
     }
@@ -67,21 +67,21 @@ void arachnothFormation_update(sArachnothFormation* pThis)
         assert(0);
     }
 
-    if (pThis->m1B8->m74 == 1)
+    if (pThis->m1B8_currentActiveModel->m74 == 1)
     {
-        int var5 = stepAnimation(&pThis->m1B8->m8_model);
-        if (var5 == pThis->m1B8->m7C)
+        int var5 = stepAnimation(&pThis->m1B8_currentActiveModel->m8_model);
+        if (var5 == pThis->m1B8_currentActiveModel->m7C)
         {
-            pThis->m1B8->m74 = 0;
+            pThis->m1B8_currentActiveModel->m74 = 0;
         }
     }
 
-    if (pThis->m98.m74 == 1)
+    if (pThis->m98_poisonDart.m74 == 1)
     {
-        int var5 = stepAnimation(&pThis->m98.m8_model);
-        if (var5 == pThis->m98.m7C)
+        int var5 = stepAnimation(&pThis->m98_poisonDart.m8_model);
+        if (var5 == pThis->m98_poisonDart.m7C)
         {
-            pThis->m98.m74 = 0;
+            pThis->m98_poisonDart.m74 = 0;
         }
     }
 
@@ -101,22 +101,52 @@ void arachnothFormation_update(sArachnothFormation* pThis)
 
 void arachnothFormation_draw(sArachnothFormation* pThis)
 {
-    FunctionUnimplemented();
+    if (pThis->m1B8_currentActiveModel->m70_flags & 0x800000)
+    {
+        assert(0);
+    }
 
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->m224_translation);
     rotateCurrentMatrixYXZ(pThis->m26C_rotation);
-    //pThis->m1BC_3dModel.m1C_addToDisplayListFunction(pThis->m1BC_3dModel.m4_pModelFile->getModelHierarchy(0x18)->m0_3dModel);
-    pThis->m1BC_3dModel.m18_drawFunction(&pThis->m1BC_3dModel);
+    pThis->m1B8_currentActiveModel->m8_model.m18_drawFunction(&pThis->m1B8_currentActiveModel->m8_model);
     popMatrix();
-    FunctionUnimplemented();
+
+    if (pThis->m1B8_currentActiveModel->m70_flags & 0x800000)
+    {
+        assert(0);
+    }
+
+    sVec3_FP dartPosition;
+    if (pThis->m1B8_currentActiveModel == &pThis->m8_normalBody)
+    {
+        transformAndAddVec(pThis->m1B8_currentActiveModel->m8_model.m44_hotpointData[3][0], dartPosition, cameraProperties2.m28[0]);
+    }
+    else
+    {
+        transformAndAddVec(pThis->m1B8_currentActiveModel->m8_model.m44_hotpointData[0x25][0], dartPosition, cameraProperties2.m28[0]);
+    }
+
+    if (pThis->m98_poisonDart.m70_flags & 0x800000)
+    {
+        assert(0);
+    }
 
     pushCurrentMatrix();
-    translateCurrentMatrix(pThis->m224_translation);
+    translateCurrentMatrix(dartPosition);
     rotateCurrentMatrixYXZ(pThis->m26C_rotation);
-    pThis->m98.m8_model.m18_drawFunction(&pThis->m98.m8_model);
+    pThis->m98_poisonDart.m8_model.m18_drawFunction(&pThis->m98_poisonDart.m8_model);
     popMatrix();
 
+    if (pThis->m98_poisonDart.m70_flags & 0x800000)
+    {
+        assert(0);
+    }
+
+    if ((pThis->m2A0 > 0) && (pThis->m344[0] == 0))
+    {
+        pThis->m29C_lifeMeter->m31 |= 2;
+    }
 }
 
 void arachnothUpdateQuadrants(sArachnothFormation* pThis)
@@ -138,21 +168,21 @@ void createArachnothFormation(s_workAreaCopy* pParent, u32 arg0, u32 arg1)
     allocateNPC(pThis, 8);
     pThis->m0_fileBundle = dramAllocatorEnd[8].mC_fileBundle->m0_fileBundle;
 
-    arachnothCreateSubModel(&pThis->m8, pThis, dramAllocatorEnd[8].mC_fileBundle, arg1, g_BTL_A3_2->getSaturnPtr(0x60A9578));
-    arachnothInitSubModelAnimation(&pThis->m8, 0, -1);
-    arachnothInitSubModelFunctions(&pThis->m8, 0, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
+    arachnothCreateSubModel(&pThis->m8_normalBody, pThis, dramAllocatorEnd[8].mC_fileBundle, arg1, g_BTL_A3_2->getSaturnPtr(0x60A9578));
+    arachnothInitSubModelAnimation(&pThis->m8_normalBody, 0, -1);
+    arachnothInitSubModelFunctions(&pThis->m8_normalBody, 0, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
 
-    arachnothCreateSubModel2(&pThis->m98, pThis, dramAllocatorEnd[8].mC_fileBundle, arg1, g_BTL_A3_2->getSaturnPtr(0x60A9584), g_BTL_A3_2->getSaturnPtr(0x60A9538), g_BTL_A3_2->getSaturnPtr(0x60A9540));
-    arachnothInitSubModelAnimation(&pThis->m98, 0, -1);
-    arachnothInitSubModelFunctions(&pThis->m98, 0, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
+    arachnothCreateSubModel2(&pThis->m98_poisonDart, pThis, dramAllocatorEnd[8].mC_fileBundle, arg1, g_BTL_A3_2->getSaturnPtr(0x60A9584), g_BTL_A3_2->getSaturnPtr(0x60A9538), g_BTL_A3_2->getSaturnPtr(0x60A9540));
+    arachnothInitSubModelAnimation(&pThis->m98_poisonDart, 0, -1);
+    arachnothInitSubModelFunctions(&pThis->m98_poisonDart, 0, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
 
-    arachnothCreateSubModel(&pThis->m128, pThis, dramAllocatorEnd[8].mC_fileBundle, arg1, g_BTL_A3_2->getSaturnPtr(0x60A9590));
-    arachnothInitSubModelAnimation(&pThis->m128, 0, -1);
-    arachnothInitSubModelFunctions(&pThis->m128, 0, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
+    arachnothCreateSubModel(&pThis->m128_eatDragonBody, pThis, dramAllocatorEnd[8].mC_fileBundle, arg1, g_BTL_A3_2->getSaturnPtr(0x60A9590));
+    arachnothInitSubModelAnimation(&pThis->m128_eatDragonBody, 0, -1);
+    arachnothInitSubModelFunctions(&pThis->m128_eatDragonBody, 0, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
 
     sModelHierarchy* pHierarchy = pThis->m0_fileBundle->getModelHierarchy(0x18);
     sStaticPoseData* pStaticPose = pThis->m0_fileBundle->getStaticPose(0x1CC, pHierarchy->countNumberOfBones());
-    init3DModelRawData(pThis, &pThis->m1BC_3dModel, 0, pThis->m0_fileBundle, 0x18, nullptr, pStaticPose, nullptr, nullptr);
+    init3DModelRawData(pThis, &pThis->m1BC_debrits, 0, pThis->m0_fileBundle, 0x18, nullptr, pStaticPose, nullptr, nullptr);
 
     pThis->m230[0] = 0x201000;
     pThis->m230[1] = 0x13000;
@@ -179,7 +209,7 @@ void createArachnothFormation(s_workAreaCopy* pParent, u32 arg0, u32 arg1)
     pThis->m2A4 = 0;
     pThis->m2A8 = 0;
 
-    pThis->m1B8 = &pThis->m8;
+    pThis->m1B8_currentActiveModel = &pThis->m8_normalBody;
 
     pThis->m2AC = 0;
     pThis->m2B0 = 0;
@@ -193,8 +223,8 @@ void createArachnothFormation(s_workAreaCopy* pParent, u32 arg0, u32 arg1)
     pThis->m23C = 1;
     pThis->m240 = 0x201000;
 
-    createArachnothFormationSub0(&pThis->m8, pThis->m278);
-    createArachnothFormationSub0(&pThis->m98, pThis->m278);
+    createArachnothFormationSub0(&pThis->m8_normalBody, pThis->m278);
+    createArachnothFormationSub0(&pThis->m98_poisonDart, pThis->m278);
     arachnothUpdateQuadrants(pThis);
     gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon = 1;
     displayFormationName(0, 1, 11);

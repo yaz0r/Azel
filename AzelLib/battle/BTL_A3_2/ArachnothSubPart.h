@@ -12,6 +12,7 @@ struct sArachnothSubModel
     s32 m64;
     s_workAreaCopy* m68;
     s32 m6C;
+    u32 m70_flags;
     s32 m74;
     s32 m7C;
     s32 m80;
