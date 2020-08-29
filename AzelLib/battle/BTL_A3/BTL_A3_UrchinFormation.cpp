@@ -6,13 +6,13 @@
 #include "battle/battleEngine.h"
 #include "battle/battleDebug.h"
 #include "battle/battleEngineSub0.h"
+#include "battle/battleTextDisplay.h"
 #include "urchin.h"
 
 #include "kernel/graphicalObject.h"
 #include "audio/soundDriver.h" // TODO cleanup
 
 s32 createBattleIntroTaskSub1(); //TODO cleanup
-void displayFormationName(short uParm1, char uParm2, char uParm3); //TODO cleanup
 void battleEngine_PlayAttackCamera(int param1); // TODO cleanup
 void battleEngine_displayAttackName(int param1, int param2, int param3); // TODO cleanup
 

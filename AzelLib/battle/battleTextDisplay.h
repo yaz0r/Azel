@@ -17,3 +17,4 @@ struct sBattleTextDisplayTask : public s_workAreaTemplate<sBattleTextDisplayTask
 };
 
 void createBattleTextDisplay(p_workArea parent, sSaturnPtr data);
+void displayFormationName(short uParm1, char uParm2, char uParm3);

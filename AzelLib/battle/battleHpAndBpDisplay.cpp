@@ -3,6 +3,7 @@
 #include "battleOverlay.h"
 #include "battleEngine.h"
 #include "battleHud.h"
+#include "battleGenericData.h"
 #include "kernel/graphicalObject.h"
 #include "BTL_A3/BTL_A3_data.h"
 #include "kernel/vdp1Allocator.h"
@@ -143,7 +144,7 @@ void drawNumber(s16 value, sVec2_S16* positon, const quadColor* colors, s32 maxV
         count = udivsi3(10, count);
         if (bVar3 || digitSpriteIndex || !value)
         {
-            sSaturnPtr digitData = g_BTL_A3->getSaturnPtr(0x60b1e8c + digitSpriteIndex * 0xC);
+            sSaturnPtr digitData = g_BTL_GenericData->getSaturnPtr(0x60b1e8c + digitSpriteIndex * 0xC);
 
             s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
             vdp1WriteEA.m0_CMDCTRL = 0x1000; // command 0

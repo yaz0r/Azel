@@ -25,20 +25,6 @@ struct BTL_A3_BaldorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaldorFo
     // size 0x14
 };
 
-void displayFormationName(short uParm1, char uParm2, char uParm3)
-{
-    sBattleTextDisplayTask* pDisplayTextTask = gBattleManager->m10_battleOverlay->m14_textDisplay;
-    if (pDisplayTextTask)
-    {
-        pDisplayTextTask->m12_textIndex = uParm1;
-        pDisplayTextTask->m14 = 0xFFA6;
-        pDisplayTextTask->m19 = uParm2;
-        pDisplayTextTask->m1A = uParm3;
-
-        createDisplayFormationNameText(pDisplayTextTask, &pDisplayTextTask->m8, pDisplayTextTask->m14, readSaturnEA(pDisplayTextTask->m0_texts + 4 * pDisplayTextTask->m12_textIndex), pDisplayTextTask->m19, pDisplayTextTask->m1A);
-    }
-}
-
 void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
 {
     allocateNPC(pThis, 10);

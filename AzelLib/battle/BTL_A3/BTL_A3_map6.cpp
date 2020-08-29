@@ -334,8 +334,6 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
         m37_W0A,  1,
         m0_END,
     };
-
-
     setupRGB0(setup);
 
     static const sLayerConfig rotationPrams[] =
@@ -343,13 +341,12 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
         m31_RxKTE, 1, // use coefficient table
         m0_END,
     };
+    setupRotationParams(rotationPrams);
 
     static const sLayerConfig rotationPrams2[] =
     {
         m0_END,
     };
-
-    setupRotationParams(rotationPrams);
     setupRotationParams2(rotationPrams2);
 
     vdp2Controls.m4_pendingVdp2Regs->mE_RAMCTL = (vdp2Controls.m4_pendingVdp2Regs->mE_RAMCTL & 0xFF00) | 0xb4;

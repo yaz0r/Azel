@@ -22,6 +22,16 @@ struct s_BTL_A3_Env : public s_workAreaTemplate<s_BTL_A3_Env>
     // 0x9C
 };
 
+//TODO: move to kernel
+void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes);
+void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, u8* coefficientTableAddress, u8 p5);
+void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table);
+void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr);
+extern tCoefficientTable coefficientA0;
+extern tCoefficientTable coefficientA1;
+extern tCoefficientTable coefficientB0;
+extern tCoefficientTable coefficientB1;
+
 void initGridForBattle(npcFileDeleter* pFile, const struct sGrid* pGrid, s32 r6_sizeX, s32 r7_sizeY, s32 r8_cellSize);
 void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis);
 void BTL_A3_Env_Update(s_BTL_A3_Env* pThis);

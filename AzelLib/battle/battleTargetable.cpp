@@ -824,7 +824,7 @@ void Baldor_initSub1Sub1(s_workAreaCopy* parent, sBattleTargetable* pTargetable)
     pNewTask->mAC_vdp1Offset = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
 }
 
-void initTargetable(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_FP* param_3, s32 param_4, u32 param_5, u32 param_6, u32 param_7, u32 param_8)
+void initTargetable(sBattleTargetable* param_1, s_workAreaCopy* param_2, sVec3_FP* param_3, s32 param_4, u32 param_5, u32 param_6, u32 param_7, u32 param_8)
 {
     param_1->m0 = param_2;
     param_1->m4_pPosition = param_3;

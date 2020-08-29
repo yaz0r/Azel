@@ -2,7 +2,7 @@
 
 struct sBattleTargetable
 {
-    struct s_battleDragon* m0;
+    s_workAreaCopy* m0;
     sVec3_FP* m4_pPosition;
     sVec3_FP* m8;
     sVec3_FP* mC;
@@ -29,4 +29,4 @@ sVec3_FP* getBattleTargetablePosition(sBattleTargetable& param1);
 void applyDamageToDragon(sBattleTargetable& pThis, s32 damageValue, sVec3_FP& param_3, s32 param_4, const sVec3_FP& param_5, s32 param_8);
 void applyDamageToEnnemy(sBattleTargetable* param_1, s16, sVec3_FP*, s8, const sVec3_FP& param_5, fixedPoint);
 void deleteTargetable(sBattleTargetable* pThis);
-void initTargetable(sBattleTargetable* param_1, s_battleDragon* param_2, sVec3_FP* param_3, s32 param_4, u32 param_5, u32 param_6, u32 param_7, u32 param_8);
+void initTargetable(sBattleTargetable* param_1, s_workAreaCopy* param_2, sVec3_FP* param_3, s32 param_4, u32 param_5, u32 param_6, u32 param_7, u32 param_8);
