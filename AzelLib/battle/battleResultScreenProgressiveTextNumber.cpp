@@ -57,7 +57,7 @@ void battleResultScreenProgressiveText_printNumber(const std::array<s32, 4>& dat
 
 void battleResultScreenProgressiveTextNumber_update(sBattleResultProgressiveTextNumber* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     /*if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 6) == 0)
     {
 

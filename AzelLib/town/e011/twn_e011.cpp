@@ -37,13 +37,13 @@ struct TWN_E011_data : public sTownOverlay
 
 u32 modulateColor(sSaturnPtr r4, u32 r5)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 0;
 }
 
 u32 modulateColorByEvent(sCameraTask* cameraTaskPtr, s32 r5)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 0;
 }
 
@@ -75,7 +75,7 @@ struct sE011Task1 : public s_workAreaTemplate<sE011Task1>
 
     static void Delete(sE011Task1* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     sSaturnPtr m8;
@@ -164,7 +164,7 @@ static const char* listOfFilesToLoad[] = {
 
 static void startE011BackgroundTask(p_workArea pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     // hack: to remove title screen
     reinitVdp2();

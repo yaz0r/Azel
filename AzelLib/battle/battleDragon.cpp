@@ -99,7 +99,7 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
 
     if ((mainGameState.gameStats.m1_dragonLevel == 6) && (pThis->m24C_lightWingEffectTask == 0))
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
     else
     {
@@ -130,7 +130,7 @@ void s_battleDragon_UpdateSub0(s_battleDragon* pThis)
             }
             if (mainGameState.gameStats.m1_dragonLevel == 6)
             {
-                FunctionUnimplemented();
+                Unimplemented();
             }
             else
             {
@@ -605,7 +605,7 @@ int computeDragonDamage(int damageValue)
 
 void createDamageDisplayNumber(p_workArea parent, int damageTaken, sVec2_FP* offset, int param4)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
@@ -632,7 +632,7 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
                 {
                     // Dragon is dead!
                     playSystemSoundEffect(0xF);
-                    FunctionUnimplemented();
+                    Unimplemented();
                 }
             }
             else
@@ -679,13 +679,13 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
 
             if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == m8_playAttackCamera)
             {
-                FunctionUnimplemented();
+                Unimplemented();
             }
             else
             {
-                FunctionUnimplemented();
+                Unimplemented();
             }
-            FunctionUnimplemented();
+            Unimplemented();
             incrementAnimationRootY(&gDragonState->m78_animData, impactVector[1]);
             incrementAnimationRootX(&gDragonState->m78_animData, impactVector[0]);
             incrementAnimationRootZ(&gDragonState->m78_animData, impactVector[2]);
@@ -905,7 +905,7 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
 
     if (local_24)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
     return local_24;
 }
@@ -990,7 +990,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
         // This setup lights
         //setupLightColor(s_RGB8::fromVector(gBattleManager->m10_battleOverlay->m8_gridTask->m1F0).toU32());
         //battleEngine_UpdateSub7Sub1Sub0()
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     u32 cVar3 = s_battleDragon_UpdateAnimationState(pThis);
@@ -1045,7 +1045,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
 
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     transformAndAddVecByCurrentMatrix(&pThis->m8_position, &pThis->m1A4);
@@ -1055,7 +1055,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
 
 static void s_battleDragon_Delete(s_battleDragon* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleEngine_createDragonTask(s_workAreaCopy* parent)

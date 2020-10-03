@@ -298,7 +298,7 @@ void drawInventoryStatusOrWeaponStats(s_inventoryMenu* pThis)
 
 void useInventoryItem(s_inventoryMenu* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 s32 inventoryMenuTaskDrawSub3(s32* pParam, int param_2, int param_3)
@@ -355,7 +355,7 @@ void inventoryPrintEntry(s32 param_1, eItems param_2)
 
 void inventoryPrintBerserk(s32, eItems, s32)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void inventoryPrintWeapon(s32 param_1, eItems param_2, s32 param_3)
@@ -423,7 +423,7 @@ void inventoryMenuTaskDrawSub1(s_inventoryMenu* pThis)
 
 void inventoryMenuTaskDrawSub2(s_inventoryMenu* pThis, s32 param_2)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void inventoryMenuTaskDrawSub0(s_inventoryMenu* pThis, s32 categoryId)
@@ -697,7 +697,7 @@ void inventoryMenuTaskDraw(s_inventoryMenu* pThis)
 
 void inventoryMenuTaskDelete(s_inventoryMenu* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 p_workArea createInventoryMenuTask(p_workArea parent)

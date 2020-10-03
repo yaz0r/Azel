@@ -62,11 +62,11 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
         // Select battle module
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20)
         {
-            FunctionUnimplemented();
+            Unimplemented();
         }
         if(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10)
         {
-            FunctionUnimplemented();
+            Unimplemented();
         }
     }
     else

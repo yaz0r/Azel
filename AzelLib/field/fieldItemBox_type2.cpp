@@ -5,7 +5,7 @@
 
 p_workArea createSavePointParticles()
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return nullptr;
 }
 

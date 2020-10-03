@@ -78,7 +78,7 @@ void sLockTask::Draw(sLockTask* pThis)
 
 void sLockTask::Delete(sLockTask* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 s32 scriptFunction_6054334_disableLock(s32 arg0, s32 arg1)

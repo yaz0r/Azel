@@ -486,7 +486,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
     }
 
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleHud2_DrawSub3(battleHud2* pThis)

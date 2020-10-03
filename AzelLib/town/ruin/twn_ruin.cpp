@@ -57,17 +57,17 @@ struct sRuinBackgroundTask : public s_workAreaTemplate<sRuinBackgroundTask>
     static void Init(sRuinBackgroundTask* pThis)
     {
         reinitVdp2();
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     static void Update(sRuinBackgroundTask* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     static void Draw(sRuinBackgroundTask* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     // size 0x9C
@@ -500,7 +500,7 @@ void updateEdgeLookAt(sEdgeTask* r4)
     {
         //605BEEA
         //assert(0);
-        FunctionUnimplemented();
+        Unimplemented();
     }
     //605C018
     else if ((npcData0.mFC & 0x10) && !(npcData0.mFC & 0x8))

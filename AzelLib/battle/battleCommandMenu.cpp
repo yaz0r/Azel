@@ -26,7 +26,7 @@ void BattleCommandMenu_UpdateSub0()
 
 void setBattleFont(int param_1)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 /*    if (param_1 == 0)
     {
         setActiveFont(gBattleManager->m10_battleOverlay->m14->m18);
@@ -40,7 +40,7 @@ void setBattleFont(int param_1)
 
 void drawUsedItemName(s32, s32)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void createBattleCommandMenuSub0(sBattleCommandMenu* pThis, char param2)
@@ -70,7 +70,7 @@ void createBattleCommandMenuSub0(sBattleCommandMenu* pThis, char param2)
 
 void BattleCommandMenu_DisplayCommandString(sBattleCommandMenu* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void createBattleCommandMenuSub1(sBattleCommandMenu* pThis, int param2)
@@ -103,7 +103,7 @@ s32 createBattleCommandMenuSub2(s32 param1)
 
 bool isFlashChipDisabledInBattle()
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     return true;
 }
@@ -152,7 +152,7 @@ void addObjectToList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
 
 void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     bool itemDisabled = false;
     pEntry->m0_itemIndex = index;
@@ -229,18 +229,18 @@ s32 BattleCommandMenu_PopulateSubMenu(sBattleCommandMenu* pThis)
 
 int isBattleCommandEnabled(sBattleCommandMenu* pThis, int buttonIndex)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 1;
 }
 
 void drawBattleItemMenuSelectedItem(sBattleCommandMenu* pThis, std::vector<sBattleCommandMenu::sSubMenuEntry>& p2, sBattleItemSelectionTask* pMenu)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void printBerserkAttackClass(int pageIndex)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
@@ -801,7 +801,7 @@ void BattleCommandMenu_Draw(sBattleCommandMenu* pThis)
 
 void BattleCommandMenu_Delete(sBattleCommandMenu* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void createBattleCommandMenu(p_workArea parent)

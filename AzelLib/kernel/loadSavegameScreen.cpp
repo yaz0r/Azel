@@ -21,7 +21,7 @@ extern std::array<u8, 0x104> battleResults; //TODO: cleanup
 
 u32 computeSaveChecksum(void* buffer, int size)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 0;
 }
 
@@ -70,7 +70,7 @@ s32 readSave(u32 deviceId, const std::string& fileName)
                 battleResults = saveDataBuffer.m394_battleResults;
                 graphicEngineStatus.m4514.mD8_buttonConfig = saveDataBuffer.m498_buttonConfig;
 
-                FunctionUnimplemented(); // restore audio output mode here
+                Unimplemented(); // restore audio output mode here
             }
             else
             {
@@ -96,7 +96,7 @@ s32 saveData(int deviceId, const std::string* filename)
     fileDescription[9] = '0' + performModulo(10, mainGameState.gameStats.m0_level + 1);
     gSaveGameStatus.m4_version = 0x10000;
 
-    FunctionUnimplemented();
+    Unimplemented();
     //mainGameState.setPackedBits(10, 1, soundOutputStatus == 0x80);
 
     saveDataBuffer.m0_saveGameStatus = gSaveGameStatus;
@@ -191,13 +191,13 @@ p_workArea initLoadSavegameScreen(p_workArea parent, s32)
 
 u8* backupMemoryForSaveScreen()
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return nullptr;
 }
 
 void loadSaveBackgroundSub0(const std::vector<std::array<s32, 2>> & r4)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void loadSaveBackground()
@@ -430,7 +430,7 @@ struct saveMenuSubTask0 : public s_workAreaTemplateWithArg<saveMenuSubTask0, sSa
     }
     static void saveScreenDisplaySlotData2(s16*, s32)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     s32 m0;
@@ -1116,12 +1116,12 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
             assert(0);
             break;
         }
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     static void Delete(sSaveTask* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     s32 m0;
@@ -1166,7 +1166,7 @@ void saveProgressTask_update(sSaveProgressTask* pThis)
         }
     case 1:
         DisplayMenuMsg("Will erase old file. Execute?\n");
-        FunctionUnimplemented(); pThis->m10_status = 3;
+        Unimplemented(); pThis->m10_status = 3;
         //pThis->m10_status++;
         break;
     case 2:

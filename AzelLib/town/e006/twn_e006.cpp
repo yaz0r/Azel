@@ -71,7 +71,7 @@ s32 GFS_NwExecOne(GfsHn hanle)
 void GFS_NwGetStat(GfsHn handle, s32* stat, s32* nbytes)
 {
     *nbytes = numReadBytes;
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 s32 GFS_NwFread(GfsHn handle, s32 numSectors, u8* buffer, s32 bufferSize)
@@ -84,7 +84,7 @@ s32 GFS_NwFread(GfsHn handle, s32 numSectors, u8* buffer, s32 bufferSize)
 
 void GFS_NwCdRead(GfsHn handle)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 bufferSize, u8* audioBuffer, u32 audioBufferSize)
@@ -149,7 +149,7 @@ sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 buf
 
 void GFS_SetTransPara(GfsHn hanfle, s32 numSectors)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void prereadStreamingData(sStreamingFile* param_1)
@@ -214,7 +214,7 @@ void getNextStreamingBuffer(sStreamingFile* iParm1, u8** pBuffer, int* pBufferSi
 
 void updateStreamingFileReadSub0(sStreamingFile* iParm1)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void incrementReadPosition(sStreamingFile* param_1, s32 param_2)
@@ -393,7 +393,7 @@ struct sCutsceneCommandDefaultTask : public s_workAreaTemplate<sCutsceneCommandD
 
     static void Delete(sCutsceneCommandDefaultTask* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     s_fileBundle* m0;
@@ -718,7 +718,7 @@ void cutsceneCommand0Sub4_deleteCutsceneEntity(sStreamingFile* param_1, u32 enti
 
 s32 cutsceneCommand1(sStreamingFile* param_1)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 0;
 }
 
@@ -849,7 +849,7 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
                 return;
             }
             if ((psParm1->m28).m8 == 0) {
-                FunctionUnimplemented();
+                Unimplemented();
 
                 // hack!
                 (psParm1->m28).m84_frameIndex+=2;
@@ -962,7 +962,7 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
 
 void syncCutsceneTimer(sStreamingFile* psParm1)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void updateCutsceneStreaming(sStreamingFile* psParm1)
@@ -986,12 +986,12 @@ void updateCutsceneStreaming(sStreamingFile* psParm1)
         vdp2PrintfSmallFont("camera: %2d", psParm1->m188_camera);
     }
 
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void pauseCutscene(sStreamingFile* r4, s32 r5)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void cutsceneUpdateInputSub0(sStreamingFile* r4, s32 r5, s32 r6)
@@ -1095,7 +1095,7 @@ void sE006Task0::Draw(sE006Task0* pThis)
 
 void sE006Task0::Delete(sE006Task0* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 sE006Task0* e006Task0 = nullptr;
@@ -1218,7 +1218,7 @@ struct sE006Task1 : public s_workAreaTemplate<sE006Task1>
 
     static void Delete(sE006Task1* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     sSaturnPtr m0;
@@ -1331,7 +1331,7 @@ s32 e006_scriptFunction_6057438()
 
 s32 scriptFunction_6057470()
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 0;
 }
 
@@ -1383,7 +1383,7 @@ static const char* listOfFilesToLoad[] = {
 
 static void startE006BackgroundTask(p_workArea pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     // hack: to remove title screen
     reinitVdp2();

@@ -133,7 +133,7 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
 
 void battleEngineSub1_Draw(sBattleEngineSub1* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void createBattleEngineSub1(p_workArea parent)

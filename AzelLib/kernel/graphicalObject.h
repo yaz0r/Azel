@@ -10,7 +10,7 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
 
     static void Delete(npcFileDeleter* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     ////////////////////////////
@@ -22,7 +22,7 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
 
     static void Update_TownObject(npcFileDeleter* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     //////////////////////////////

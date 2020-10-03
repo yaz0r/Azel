@@ -72,7 +72,7 @@ void A3_3_Obj0_Draw2(s_A3_3_Obj0* pThis)
 
 void A3_3_Obj0_Update1Sub1(s_A3_3_Obj0* pThis, sVec3_FP* pVec)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void A3_3_Obj0_Update1(s_A3_3_Obj0* pThis)

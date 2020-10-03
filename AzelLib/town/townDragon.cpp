@@ -58,7 +58,7 @@ void initDragonForTown(sTownDragon* pThis)
         pThis->m20 = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x606471C) + gDragonState->mC_dragonType * 4);
         reinitModel(&gDragonState->m28_dragon3dModel, readRiderDefinitionSub(readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x6064608 + gDragonState->mC_dragonType * 0x1C))));
         
-        FunctionUnimplemented();
+        Unimplemented();
     }
     gDragonState->m88 = 0;
     pThis->mD4_cursorX = mainGameState.gameStats.m1A_dragonCursorX;
@@ -131,14 +131,14 @@ static void sTownDragon_Draw(sTownDragon* pThis)
         submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m58, &pThis->m64, 0);
         if (pThis->mD)
         {
-            FunctionUnimplemented();
+            Unimplemented();
         }
     }
 }
 
 static void sTownDragon_Delete(sTownDragon* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 sTownObject* createTownDragon(p_workArea parent, sSaturnPtr arg)

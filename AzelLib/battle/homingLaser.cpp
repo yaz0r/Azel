@@ -259,7 +259,7 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
 
 void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const sVec3_FP* param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s32 param8)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void sHomingLaserTask_UpdateSub0(sHomingLaserTask* pThis)
@@ -301,7 +301,7 @@ s32 sHomingLaserTask_UpdateSub1(s16 param_1)
 
 void createGunAndLaserDamage3dModel(s_workAreaCopy* pParent, sVec3_FP*, sVec3_FP*, fixedPoint)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void sHomingLaserTask_Update(sHomingLaserTask* pThis)
@@ -415,7 +415,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
         }
         break;
     case 3:
-        FunctionUnimplemented();
+        Unimplemented();
         break;
     default:
         assert(0);
@@ -490,7 +490,7 @@ s32 sHomingLaserTask_DrawSub1Sub0Sub0(std::array<sVec3_FP, 2>& param_1, std::arr
 
 s32 sGunShotTask_DrawSub1Sub1(sMatrix4x3*, s_graphicEngineStatus_405C&)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     return 1;
 }
@@ -608,7 +608,7 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
 
 void sHomingLaserTask_DrawSub0(sHomingLaserTask::sF0* pThis, int, int)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void sHomingLaserTask_Draw(sHomingLaserTask* pThis)

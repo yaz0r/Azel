@@ -212,7 +212,7 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
 
 void battleHud_drawStatusString(s_battleOverlay_20* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     /*
     {
         int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
@@ -267,7 +267,7 @@ void s_battleOverlay_20_draw(s_battleOverlay_20* pThis)
 
 void s_battleOverlay_20_delete(s_battleOverlay_20*)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleEngine_CreateHud1(npcFileDeleter* parent)

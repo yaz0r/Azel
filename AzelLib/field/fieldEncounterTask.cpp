@@ -192,7 +192,7 @@ s32 evaluateRandomEncounterRate(sEncouterTask* pThis)
 
 void* backupGraphicsToEnterBattle(sEncouterTask* pThis, s32 param_1)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     return nullptr;
 }
@@ -264,12 +264,12 @@ void encounterTaskUpdate(sEncouterTask* pThis)
 
 void encounterTaskDraw(sEncouterTask* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void encounterTaskDelete(sEncouterTask* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void createEncounterTask(s_workArea* pWorkArea)

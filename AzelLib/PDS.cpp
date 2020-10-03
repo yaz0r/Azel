@@ -58,6 +58,7 @@ void initPauseSatus()
 
 s32 setDividend(s32 r4, s32 r5, s32 divisor)
 {
+    assert(divisor);
     s64 divident = (s64)r4 * (s64)r5;
     return (s32)(divident / divisor);
 }
@@ -1055,7 +1056,7 @@ void endOfFrame()
 
     if (readKeyboardToggle(0x104))
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     if (enableDebugTask)

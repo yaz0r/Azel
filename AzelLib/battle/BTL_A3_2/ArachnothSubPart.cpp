@@ -15,11 +15,11 @@ void arachnothCreateSubModel(sArachnothSubModel* pThis, s_workAreaCopy* pParent,
     sStaticPoseData* pStaticPose = pParent->m0_fileBundle->getStaticPose(readSaturnU16(psVar5 + 2), pHierarchy->countNumberOfBones());
     pThis->hotpointBundle = new sHotpointBundle(readSaturnEA(psVar5 + 4));
     init3DModelRawData(pParent, &pThis->m8_model, 0, param_3->m0_fileBundle, readSaturnU16(psVar5), nullptr, pStaticPose, nullptr, pThis->hotpointBundle);
-    pThis->m60 = pThis->m8_model.m12_numBones;
+    pThis->m60_numBones = pThis->m8_model.m12_numBones;
     pThis->m64 = 0;
     if (!readSaturnEA(psVar5 + 4).isNull())
     {
-        for (int i = 0; i < pThis->m60; i++)
+        for (int i = 0; i < pThis->m60_numBones; i++)
         {
             pThis->m64 += (*pThis->m8_model.m40)[i].m4_count;
         }
@@ -36,7 +36,7 @@ void arachnothCreateSubModel(sArachnothSubModel* pThis, s_workAreaCopy* pParent,
         pThis->m58_targetables.resize(pThis->m64);
         pThis->m5C_targetablesPosition.resize(pThis->m64);
 
-        for (int i = 0; i < pThis->m60; i++)
+        for (int i = 0; i < pThis->m60_numBones; i++)
         {
             if (pThis->m8_model.m44_hotpointData[i].size())
             {
@@ -61,12 +61,12 @@ void arachnothCreateSubModel2(sArachnothSubModel* pThis, s_workAreaCopy* pParent
     sStaticPoseData* pStaticPose = pParent->m0_fileBundle->getStaticPose(readSaturnU16(psVar5 + 2), pHierarchy->countNumberOfBones());
     pThis->hotpointBundle = new sHotpointBundle(readSaturnEA(psVar5 + 4));
     init3DModelRawData(pParent, &pThis->m8_model, 0, param_3->m0_fileBundle, readSaturnU16(psVar5), nullptr, pStaticPose, nullptr, pThis->hotpointBundle);
-    FunctionUnimplemented();
-    pThis->m60 = pThis->m8_model.m12_numBones;
+    Unimplemented();
+    pThis->m60_numBones = pThis->m8_model.m12_numBones;
     pThis->m64 = 0;
     if (!readSaturnEA(psVar5 + 4).isNull())
     {
-        for (int i = 0; i < pThis->m60; i++)
+        for (int i = 0; i < pThis->m60_numBones; i++)
         {
             pThis->m64 += (*pThis->m8_model.m40)[i].m4_count;
         }
@@ -83,7 +83,7 @@ void arachnothCreateSubModel2(sArachnothSubModel* pThis, s_workAreaCopy* pParent
         pThis->m58_targetables.resize(pThis->m64);
         pThis->m5C_targetablesPosition.resize(pThis->m64);
 
-        for (int i = 0; i < pThis->m60; i++)
+        for (int i = 0; i < pThis->m60_numBones; i++)
         {
             if (pThis->m8_model.m44_hotpointData[i].size())
             {
@@ -114,25 +114,52 @@ void arachnothInitSubModelAnimation(sArachnothSubModel* pThis, s32 animationInde
     }    
 }
 
-void arachnothInitSubModelFunctions(sArachnothSubModel* pThis, s32, void (*param_2)(sArachnothSubModel*, s32), void (*param_3)(sArachnothSubModel*, s32), void (*param_4)(sArachnothSubModel*, s32))
+void arachnothInitSubModelFunctions(sArachnothSubModel* pThis, void (*param_2)(sArachnothSubModel*, s32), void (*param_3)(sArachnothSubModel*, s32), void (*param_4)(sArachnothSubModel*, s32), void (*param_5)(sArachnothSubModel*, s32))
 {
-    FunctionUnimplemented();
+    pThis->m80 = param_2;
+    pThis->m84 = param_3;
+    pThis->m88 = param_4;
+    pThis->m8C = param_5;
 }
 
-void arachnothSubModelFunction0(sArachnothSubModel* pThis, s32) { FunctionUnimplemented(); }
-void arachnothSubModelFunction1(sArachnothSubModel* pThis, s32) { FunctionUnimplemented(); }
-void arachnothSubModelFunction2(sArachnothSubModel* pThis, s32) { FunctionUnimplemented(); }
+void arachnothSubModelFunction0(sArachnothSubModel* pThis, s32) { Unimplemented(); }
+void arachnothSubModelFunction1(sArachnothSubModel* pThis, s32) { Unimplemented(); }
+void arachnothSubModelFunction2(sArachnothSubModel* pThis, s32) { Unimplemented(); }
 
-void createArachnothFormationSub0(sArachnothSubModel* pThis, s32)
+void createArachnothFormationSub0(sArachnothSubModel* pThis, s32 param_2)
 {
-    FunctionUnimplemented();
+    sSaturnPtr iVar1 = readSaturnEA(readSaturnEA(pThis->m4) + 4);
+    int counter = 0;
+    if (!iVar1.isNull())
+    {
+        for (int i = 0; i < pThis->m60_numBones; i++)
+        {
+            sSaturnPtr data = iVar1 + 8 * i;
+            for (int j = 0; j < readSaturnS32(data + 4); j++)
+            {
+                u32 uVar3 = readSaturnU32(data + j * 0x14) >> 0x1C;
+                switch (param_2)
+                {
+                case 1:
+                    pThis->m58_targetables[counter++].m50_flags = (uVar3 >> 1) | (((uVar3 & 1) << 3) << 0x1C) | (readSaturnU32(data + j * 0x14) & 0x0fffffff);
+                    break;
+                case 2:
+                    pThis->m58_targetables[counter++].m50_flags = (uVar3 >> 2) | (((uVar3 & 3) << 2) << 0x1C) | (readSaturnU32(data + j * 0x14) & 0x0fffffff);
+                    break;
+                default:
+                    assert(0);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 s32 arachnothSubPartGetDamage(sArachnothSubModel* pThis)
 {
     if (pThis->m64)
     {
-        FunctionUnimplemented();
+        Unimplemented();
         return 0;
     }
     return 0;

@@ -54,7 +54,7 @@ static void UnimplementedImpl(const char* functionName)
 #endif // !SHIPPING_BUILD
 }
 
-#define FunctionUnimplemented() { static bool printed = false; if(!printed) {printed = true; UnimplementedImpl(__FUNCTION__);}}
+#define Unimplemented() { static bool printed = false; if(!printed) {printed = true; UnimplementedImpl(__FUNCTION__);}}
 
 typedef s_workArea* p_workArea;
 

@@ -104,7 +104,7 @@ void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)
 
     if (!pConfig->m1C[0].m0.isNull())
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     if ((gBattleManager->m4 == 8) && (gBattleManager->m6_subBattleId == 4)) {
@@ -519,7 +519,7 @@ void Urchin_draw(sUrchin* pThis)
 
 void Urchin_delete(sUrchin* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void createUrchin(sGenericFormationPerTypeData* pConfig, sBTL_A3_UrchinFormation_18& param2, int param3, int param4)

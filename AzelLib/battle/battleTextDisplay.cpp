@@ -35,7 +35,7 @@ void battleText_update(sBattleTextDisplayTask* pThis)
 
 void battleText_delete(sBattleTextDisplayTask* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void createBattleTextDisplay(p_workArea parent, sSaturnPtr data)

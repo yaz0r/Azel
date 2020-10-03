@@ -710,5 +710,5 @@ void sEdgeTask::Draw(sEdgeTask* pThis)
 
 void sEdgeTask::Delete(sEdgeTask* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }

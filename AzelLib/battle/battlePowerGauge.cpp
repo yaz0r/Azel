@@ -51,7 +51,7 @@ struct sGaugeIncreaseEffect : public s_workAreaTemplate<sGaugeIncreaseEffect>
 
 void sGaugeIncreaseEffect_createEffect(sGaugeIncreaseEffectRoot* pThis, sGaugeIncreaseEffect::sInitParams* param_2)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     randomNumber();
     randomNumber();

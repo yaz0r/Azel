@@ -275,12 +275,12 @@ struct fieldA3_1_startTasks_subTask : public s_workAreaTemplateWithArg<fieldA3_1
         pThis->m8_translation = readSaturnVec3(arg);
         pThis->m54 = 0x67B4;
 
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     static void Update(fieldA3_1_startTasks_subTask* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     static void Draw(fieldA3_1_startTasks_subTask* pThis)
@@ -320,12 +320,12 @@ struct fieldA3_1_startTasks_subTask2 : public s_workAreaTemplateWithArg<fieldA3_
         stepAnimation(&pThis->m78_3dModel);
 
         pThis->m8_translation = readSaturnVec3(arg);
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     static void Update(fieldA3_1_startTasks_subTask2* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     static void Draw(fieldA3_1_startTasks_subTask2* pThis)
@@ -370,7 +370,7 @@ struct fieldA3_1_startTasks_subTask3 : public s_workAreaTemplateWithArg<fieldA3_
 
     static void Update(fieldA3_1_startTasks_subTask3* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     static void Draw(fieldA3_1_startTasks_subTask3* pThis)
@@ -407,7 +407,7 @@ void fieldA3_1_startTasks_sub3_func(sfieldA3_1_startTasks_sub3_func_task* pThis)
     getFieldTaskPtr()->mC->mC0[7][1] = pThis->m0;
     getFieldTaskPtr()->mC->mC0[7][2] = pThis->m0;
     */
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void fieldA3_1_startTasks_sub3(p_workArea workArea)

@@ -388,7 +388,7 @@ void BTL_A3_UrchinFormation_Update_Mode1(BTL_A3_UrchinFormation* pThis)
 
 void BTL_A3_UrchinFormation_Update_Mode2Sub0(BTL_A3_UrchinFormation* pThis, sBTL_A3_UrchinFormation_18_14*, sBTL_A3_UrchinFormation_18_14*)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void BTL_A3_UrchinFormation_Update_Mode2(BTL_A3_UrchinFormation* pThis)
@@ -466,7 +466,7 @@ void BTL_A3_UrchinFormation_Update_Mode2(BTL_A3_UrchinFormation* pThis)
             }
             pThis->m3A = ivar9;
             BTL_A3_UrchinFormation_Update_Mode2Sub0(pThis, &pThis->m18.m14[pThis->m39], &pThis->m18.m14[pThis->m3A]);
-            FunctionUnimplemented(); //something I don't get yet with the sound index
+            Unimplemented(); //something I don't get yet with the sound index
             pThis->m3C = 0x3C;
             pThis->m2_subState++;
             break;

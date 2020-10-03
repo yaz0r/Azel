@@ -134,7 +134,7 @@ s32 scriptUpdateSub0Sub1(sMainLogic_74* r13, sMainLogic_74* r14)
             return 0;
 
         //0600874E
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     return 0;
@@ -1555,7 +1555,7 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            FunctionUnimplemented();
+            Unimplemented();
         }
         break;
     case 1:
@@ -1583,7 +1583,7 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            FunctionUnimplemented();
+            Unimplemented();
         }
         break;
     case 2:
@@ -1600,7 +1600,7 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            FunctionUnimplemented();
+            Unimplemented();
         }
         break;
     case 3:
@@ -1611,7 +1611,7 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            FunctionUnimplemented();
+            Unimplemented();
         }
         break;
     case 4:
@@ -1628,7 +1628,7 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            FunctionUnimplemented();
+            Unimplemented();
         }
         break;
     default:

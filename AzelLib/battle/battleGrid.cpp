@@ -395,7 +395,7 @@ void battleGrid_draw(s_battleGrid* pThis)
 
 void battleGrid_delete(s_battleGrid* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 p_workArea createBattleEnvironmentGridTask(p_workArea parent)

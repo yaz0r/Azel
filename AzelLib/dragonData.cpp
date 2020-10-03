@@ -398,7 +398,7 @@ sDragonAnimData* getDragonDataByIndex(e_dragonLevel dragonLevel)
 
 void loadDragonSoundBank(e_dragonLevel dragonLevel)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
@@ -446,7 +446,7 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
 
     if (dragonFilenameTable[dragonLevel].m_M.MCB)
     {
-        FunctionUnimplemented();
+        Unimplemented();
         loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->m8_dramAllocation, 0/*pLoadDragonWorkArea->m8_MCBInDram >> 3*/);
         loadFile(dragonFilenameTable[dragonLevel].m_M.CGB, pLoadDragonWorkArea->m8_MCBInDram, 0);
 
@@ -464,7 +464,7 @@ void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonSt
     const sDragonData3Sub* r13 = &pDragonData3->m_m8[1];
     const sDragonData3Sub* r11 = &pDragonData3->m_m8[5];
 
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void dramFree(u8* ptr)

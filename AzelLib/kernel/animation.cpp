@@ -226,7 +226,7 @@ void modelMode1_position0(s_3dModel* p3dModel)
 
 void modelMode1_position1(s_3dModel* p3dModel)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 #if 0
@@ -273,7 +273,7 @@ void modelMode1_rotation(s_3dModel* p3dModel)
 
 void modelMode1_scale(s_3dModel* pDragonStateData1)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void modelMode5_position0(s_3dModel* pDragonStateData1)

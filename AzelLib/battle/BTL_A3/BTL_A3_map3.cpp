@@ -25,7 +25,7 @@ static void BTL_A3_map3_Init(s_BTL_A3_Env* pThis)
 
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
 
-    FunctionUnimplemented();
+    Unimplemented();
 
     allocateNPC(pThis, 0x14);
 

@@ -1,16 +1,24 @@
 #include "PDS.h"
 #include "Arachnoth.h"
 #include "battle/battleManager.h"
+#include "battle/battleOverlay.h"
+#include "battle/battleDebug.h"
 #include "battle/battleEngine.h"
 #include "battle/battleEnemyLifeMeter.h"
 #include "battle/battleTextDisplay.h"
+#include "battle/battleEngineSub0.h"
+#include "battle/battleIntro.h"
+#include "battle/battleDragon.h"
 #include "BTL_A3_2_data.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 #include "kernel/graphicalObject.h"
+#include "audio/systemSounds.h"
 #include "ArachnothSubPart.h"
 
 // https://www.youtube.com/watch?v=Txks9hG21qs&feature=youtu.be&t=3130
+
+void battleEngine_displayAttackName(int param1, int param2, int param3); // TODO: Cleanup
 
 struct sArachnothFormation : public s_workAreaTemplateWithCopy<sArachnothFormation>
 {
@@ -24,11 +32,11 @@ struct sArachnothFormation : public s_workAreaTemplateWithCopy<sArachnothFormati
     sVec3_FP m224_translation;
     sVec3_FP m230;
     s32 m23C;
-    s32 m240;
+    sVec3_FP* m240;
     sVec3_FP m254;
     sVec3_FP m260;
     sVec3_FP m26C_rotation;
-    s32 m278;
+    s32 m278_targetedQuadrant;
     sVec3_FP m27C;
     sVec3_FP m288;
     s16 m298_life;
@@ -37,12 +45,366 @@ struct sArachnothFormation : public s_workAreaTemplateWithCopy<sArachnothFormati
     s32 m2A4;
     s32 m2A8;
     s32 m2AC;
-    s32 m2B0;
+    s32 m2B0_arachnothState;
     s32 m2B4;
+    s32 m2B8;
+    s32 m2BC;
+    s32 m2C0;
+    s32 m2C4;
+    sVec3_FP m2CC;
+    sVec3_FP m2D8;
+    sVec3_FP m2E4;
     std::array<fixedPoint, 6> m314;
     std::array<s32, 4> m344;
     //size 0x34C
 };
+
+void arachnothUpdateQuadrants(sArachnothFormation* pThis);
+
+void arachnoth_updateState1_sub0(sArachnothFormation* pThis)
+{
+    int oldTargetedQuadrant = pThis->m278_targetedQuadrant;
+    s32 quadrantDiff = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant - pThis->m278_targetedQuadrant;
+    quadrantDiff &= 3;
+
+    switch (quadrantDiff)
+    {
+    case 0:
+        break;
+    case 1:
+        pThis->m278_targetedQuadrant++;
+        pThis->m254[2] -= 0x16C16C;
+        break;
+    case 2:
+        if (pThis->m23C == 0)
+        {
+            pThis->m278_targetedQuadrant = 0;
+        }
+        else
+        {
+            pThis->m278_targetedQuadrant = 2;
+        }
+        if (oldTargetedQuadrant < pThis->m278_targetedQuadrant)
+        {
+            pThis->m254[2] -= 0x16C16C;
+        }
+        else
+        {
+            pThis->m254[2] += 0x16C16C;
+        }
+        break;
+    case 3:
+        pThis->m278_targetedQuadrant--;
+        pThis->m254[2] += 0x16C16C;
+        break;
+    default:
+        assert(0);
+    }
+
+    pThis->m278_targetedQuadrant &= 3;
+    pThis->m27C[1] = pThis->m278_targetedQuadrant << 0x1A;
+    createArachnothFormationSub0(&pThis->m8_normalBody, pThis->m278_targetedQuadrant);
+    createArachnothFormationSub0(&pThis->m98_poisonDart, pThis->m278_targetedQuadrant);
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+    arachnothUpdateQuadrants(pThis);
+}
+
+void arachnoth_updateState1_sub1(sArachnothFormation* pThis)
+{
+    s32 quadrantDiff = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant - pThis->m278_targetedQuadrant;
+    if (quadrantDiff)
+    {
+        if ((quadrantDiff & 3) < 3)
+        {
+            pThis->m254[2] -= 0x16C16C;
+        }
+        else
+        {
+            pThis->m254[2] += 0x16C16C;
+        }
+
+        pThis->m278_targetedQuadrant = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
+        pThis->m27C[1] = pThis->m278_targetedQuadrant << 0x1A;
+        createArachnothFormationSub0(&pThis->m8_normalBody, pThis->m278_targetedQuadrant);
+        createArachnothFormationSub0(&pThis->m98_poisonDart, pThis->m278_targetedQuadrant);
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+        arachnothUpdateQuadrants(pThis);
+    }
+}
+
+void arachnoth_updateState0_sub3(sArachnothFormation* pThis)
+{
+    int mode;
+    switch (pThis->m2AC)
+    {
+    case 0:
+        if (pThis->m2B8 < 6)
+        {
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant != pThis->m278_targetedQuadrant)
+            {
+                mode = 1;
+            }
+            else
+            {
+                if (randomNumber() & 1)
+                {
+                    mode = 2;
+                }
+                else
+                {
+                    mode = 3;
+                }
+            }
+        }
+        else
+        {
+            assert(0);
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    pThis->m2B8++;
+
+    if ((mode != 1) && (mode != 2) && (mode != 3) && pThis->m314[0])
+    {
+        assert(0);
+    }
+
+    switch (mode)
+    {
+    case 0:
+        break;
+    case 1:
+        switch (pThis->m2AC)
+        {
+        case 0:
+            arachnoth_updateState1_sub0(pThis);
+            break;
+        case 1:
+            arachnoth_updateState1_sub1(pThis);
+            break;
+        default:
+            assert(0);
+        }
+        battleEngine_SetBattleMode(m7);
+        pThis->m2BC = 0;
+        pThis->m2B0_arachnothState = 1;
+        break;
+    case 2: // start attack
+        battleEngine_SetBattleMode(m7);
+        battleEngine_displayAttackName(0xD, 0x5A, 0);
+        battleEngine_FlagQuadrantForAttack(pThis->m278_targetedQuadrant);
+        pThis->m2D8[0] = -0x2000000;
+        pThis->m2D8[1] = randomNumber() & 0xfffffff;
+        pThis->m2D8[2] = 0;
+
+        pThis->m2CC[0] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x32000);
+        pThis->m2CC[1] = MTH_Mul(-getSin(pThis->m2D8[0].getInteger()), 0x32000);
+        pThis->m2CC[2] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getCos(pThis->m2D8[1].getInteger()), 0x32000);
+
+        pThis->m2CC += *pThis->m240;
+        pThis->m2E4 = pThis->m224_translation;
+
+        createBattleIntroTaskSub0();
+        battleEngine_setCurrentCameraPositionPointer(&pThis->m2CC);
+        battleEngine_setDesiredCameraPositionPointer(&pThis->m224_translation);
+        battleEngine_InitSub8();
+
+        pThis->m2BC = 0x78;
+        pThis->m2B0_arachnothState = 2;
+        pThis->m2C0 = 0;
+        pThis->m2C4 = 0x1E;
+        break;
+    case 3:
+        Unimplemented();
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void arachnoth_updateState0_sub5(sArachnothFormation* pThis)
+{
+    Unimplemented();
+}
+
+void arachnoth_updateState0_sub6(sArachnothFormation* pThis)
+{
+    Unimplemented();
+}
+
+void createArachnothDigestiveEffect(p_workArea parent, sVec3_FP*, sVec3_FP* pPosition, s32 param4)
+{
+    Unimplemented();
+}
+
+void arachnoth_updateState2_sub0(sArachnothFormation* pThis)
+{
+    switch (pThis->m2C0)
+    {
+    case 0:
+        if (--pThis->m2C4 < 0)
+        {
+            pThis->m2C0++;
+            pThis->m2C4 = 0;
+        }
+        break;
+    case 1:
+        if ((randomNumber() & 3) == 0)
+        {
+            if (pThis->m2C4 == 4)
+            {
+                sMatrix4x3 matrix;
+                initMatrixToIdentity(&matrix);
+                rotateMatrixShiftedY(pThis->m26C_rotation[1], &matrix);
+                rotateMatrixShiftedX(pThis->m26C_rotation[0], &matrix);
+                rotateMatrixShiftedZ(pThis->m26C_rotation[2], &matrix);
+                sVec3_FP local_2c;
+                transformAndAddVec(sVec3_FP(0, 0, 0x5000), local_2c, matrix);
+                local_2c += pThis->m224_translation;
+                createArachnothDigestiveEffect(pThis, &local_2c, &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 5);
+                playSystemSoundEffect(0x71);
+                pThis->m254[0] -= 0xB60B6;
+                battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
+                pThis->m2C0++;
+                pThis->m2C4 = 0x20;
+            }
+            else
+            {
+                Unimplemented();
+                playSystemSoundEffect(0x71);
+                pThis->m254[0] -= 0xB60b6;
+                pThis->m2C4++;
+            }
+        }
+        break;
+    case 2:
+        if (--pThis->m2C4 < 0)
+        {
+            sVec3_FP local_2c;
+            fixedPoint local_68 = MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x1000);
+            local_2c[1] = MTH_Mul(getSin(MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x10000000).toInteger()), local_68);
+
+            local_68 = MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x1000);
+            local_68 = MTH_Mul(getCos(MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x10000000).toInteger()), local_68);
+            local_2c[2] = MTH_Mul(getSin(MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x10000000).toInteger()), local_68);
+
+            local_2c[0] = MTH_Mul(getSin(MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x10000000).toInteger()), local_68);
+
+            applyDamageToDragon(gBattleManager->m10_battleOverlay->m18_dragon->m8C, 40, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 3, local_2c, 0);
+            pThis->m2C0++;
+        }
+        break;
+    case 3:
+        break;
+    default:
+        assert(0);
+    }
+
+    pThis->m2D8[1] += 0xB60B6;
+
+    pThis->m2CC[0] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x32000);
+    pThis->m2CC[1] = MTH_Mul(-getSin(pThis->m2D8[0].getInteger()), 0x32000);
+    pThis->m2CC[2] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getCos(pThis->m2D8[1].getInteger()), 0x32000);
+
+    pThis->m2CC += *pThis->m240;
+}
+
+bool arachnoth_updateState2_sub1(sArachnothFormation* pThis)
+{
+    if (--pThis->m2BC < 0)
+    {
+        return true;
+    }
+    return false;
+}
+
+void arachnoth_updateState0_sub0(sArachnothFormation* pThis)
+{
+    Unimplemented();
+}
+
+void arachnoth_updateState(sArachnothFormation* pThis)
+{
+    switch (pThis->m2B0_arachnothState)
+    {
+    case 0:
+        arachnoth_updateState0_sub0(pThis);
+        if (!gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1D])
+        {
+            if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
+            {
+                if (!BattleEngineSub0_UpdateSub0() || battleEngine_UpdateSub7Sub0Sub0())
+                {
+                    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 == 1)
+                    {
+                        arachnoth_updateState0_sub3(pThis);
+                    }
+                }
+            }
+
+            if (pThis->m2AC == 0)
+            {
+                if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
+                {
+                    if (!BattleEngineSub0_UpdateSub0() || battleEngine_UpdateSub7Sub0Sub0())
+                    {
+                        if (pThis->m298_life < 1500)
+                        {
+                            if (pThis->m314[0])
+                            {
+                                assert(0);
+                            }
+                            arachnoth_updateState0_sub5(pThis);
+                        }
+                    }
+                }
+            }
+
+            if (pThis->m298_life < 1)
+            {
+                arachnoth_updateState0_sub6(pThis);
+            }
+        }
+        break;
+    case 1:
+        if (arachnoth_updateState2_sub1(pThis))
+        {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+            createArachnothFormationSub0(&pThis->m8_normalBody, pThis->m278_targetedQuadrant);
+            createArachnothFormationSub0(&pThis->m98_poisonDart, pThis->m278_targetedQuadrant);
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+            arachnothUpdateQuadrants(pThis);
+            if (((5 < pThis->m2B8) && (pThis->m2AC == 0)) && (pThis->m314[0] == 0))
+            {
+                assert(0);
+            }
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
+
+            pThis->m2B0_arachnothState = 0;
+        }
+        break;
+    case 2: // wait for end of attack
+        arachnoth_updateState2_sub0(pThis);
+        if (arachnoth_updateState2_sub1(pThis))
+        {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
+            sEnemyAttackCamera_updateSub2();
+            pThis->m2B0_arachnothState = 0;
+            pThis->m2B8 = 0;
+            arachnothUpdateQuadrants(pThis);
+        }
+        break;
+    default:
+        assert(0);
+        break;
+    }
+}
 
 void arachnothFormation_update(sArachnothFormation* pThis)
 {
@@ -96,7 +458,9 @@ void arachnothFormation_update(sArachnothFormation* pThis)
 
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3B2_numBattleFormationRunning++;
 
-    FunctionUnimplemented();
+    arachnoth_updateState(pThis);
+
+    Unimplemented();
 }
 
 void arachnothFormation_draw(sArachnothFormation* pThis)
@@ -151,7 +515,67 @@ void arachnothFormation_draw(sArachnothFormation* pThis)
 
 void arachnothUpdateQuadrants(sArachnothFormation* pThis)
 {
-    FunctionUnimplemented();
+    switch (pThis->m2AC)
+    {
+    case 0:
+        if (pThis->m2B8 > 5)
+        {
+            assert(0);
+            return;
+        }
+        break;
+    case 1:
+        if (pThis->m2B0_arachnothState != 7)
+        {
+            assert(0);
+            return;
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    battleEngine_FlagQuadrantBitForDanger(0);
+    for (int i=0; i<4;i++)
+    {
+        for (int j = 0; j <= 4; j++)
+        {
+            int quadrantToTest = i + j;
+            if (pThis->m278_targetedQuadrant != quadrantToTest)
+            {
+                if (pThis->m23C == 0)
+                {
+                    if (quadrantToTest != 2)
+                    {
+                        battleEngine_FlagQuadrantForDanger(quadrantToTest);
+                    }
+                }
+                else
+                {
+                    if (quadrantToTest != 0)
+                    {
+                        battleEngine_FlagQuadrantForDanger(quadrantToTest);
+                    }
+                }
+            }
+        }
+    }
+
+    battleEngine_FlagQuadrantBitForSafety(0);
+    if (pThis->m23C == 0)
+    {
+        if (pThis->m278_targetedQuadrant != 2)
+        {
+            battleEngine_FlagQuadrantForSafety(pThis->m278_targetedQuadrant);
+        }
+    }
+    else
+    {
+        if (pThis->m278_targetedQuadrant != 0)
+        {
+            battleEngine_FlagQuadrantForSafety(pThis->m278_targetedQuadrant);
+        }
+    }
 }
 
 void createArachnothFormation(s_workAreaCopy* pParent, u32 arg0, u32 arg1)
@@ -170,15 +594,15 @@ void createArachnothFormation(s_workAreaCopy* pParent, u32 arg0, u32 arg1)
 
     arachnothCreateSubModel(&pThis->m8_normalBody, pThis, dramAllocatorEnd[8].mC_fileBundle, arg1, g_BTL_A3_2->getSaturnPtr(0x60A9578));
     arachnothInitSubModelAnimation(&pThis->m8_normalBody, 0, -1);
-    arachnothInitSubModelFunctions(&pThis->m8_normalBody, 0, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
+    arachnothInitSubModelFunctions(&pThis->m8_normalBody, nullptr, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
 
     arachnothCreateSubModel2(&pThis->m98_poisonDart, pThis, dramAllocatorEnd[8].mC_fileBundle, arg1, g_BTL_A3_2->getSaturnPtr(0x60A9584), g_BTL_A3_2->getSaturnPtr(0x60A9538), g_BTL_A3_2->getSaturnPtr(0x60A9540));
     arachnothInitSubModelAnimation(&pThis->m98_poisonDart, 0, -1);
-    arachnothInitSubModelFunctions(&pThis->m98_poisonDart, 0, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
+    arachnothInitSubModelFunctions(&pThis->m98_poisonDart, nullptr, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
 
     arachnothCreateSubModel(&pThis->m128_eatDragonBody, pThis, dramAllocatorEnd[8].mC_fileBundle, arg1, g_BTL_A3_2->getSaturnPtr(0x60A9590));
     arachnothInitSubModelAnimation(&pThis->m128_eatDragonBody, 0, -1);
-    arachnothInitSubModelFunctions(&pThis->m128_eatDragonBody, 0, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
+    arachnothInitSubModelFunctions(&pThis->m128_eatDragonBody, nullptr, arachnothSubModelFunction0, arachnothSubModelFunction1, arachnothSubModelFunction2);
 
     sModelHierarchy* pHierarchy = pThis->m0_fileBundle->getModelHierarchy(0x18);
     sStaticPoseData* pStaticPose = pThis->m0_fileBundle->getStaticPose(0x1CC, pHierarchy->countNumberOfBones());
@@ -212,19 +636,21 @@ void createArachnothFormation(s_workAreaCopy* pParent, u32 arg0, u32 arg1)
     pThis->m1B8_currentActiveModel = &pThis->m8_normalBody;
 
     pThis->m2AC = 0;
-    pThis->m2B0 = 0;
+    pThis->m2B0_arachnothState = 0;
     pThis->m2B4 = 0;
     pThis->m27C.zeroize();
     pThis->m27C[1] = 0x8000000;
 
     pThis->m314.fill(0);
 
-    pThis->m278 = 2;
+    pThis->m278_targetedQuadrant = 2;
     pThis->m23C = 1;
-    pThis->m240 = 0x201000;
 
-    createArachnothFormationSub0(&pThis->m8_normalBody, pThis->m278);
-    createArachnothFormationSub0(&pThis->m98_poisonDart, pThis->m278);
+    static sVec3_FP offsetVector(0x201000, 0x13000, -0x1D2000);
+    pThis->m240 = &offsetVector;
+
+    createArachnothFormationSub0(&pThis->m8_normalBody, pThis->m278_targetedQuadrant);
+    createArachnothFormationSub0(&pThis->m98_poisonDart, pThis->m278_targetedQuadrant);
     arachnothUpdateQuadrants(pThis);
     gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon = 1;
     displayFormationName(0, 1, 11);

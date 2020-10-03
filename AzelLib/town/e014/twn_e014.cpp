@@ -39,7 +39,7 @@ static const char* listOfFilesToLoad[] = {
 
 void startE014BackgroundTask(p_workArea)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     // hack: to remove title screen
     reinitVdp2();

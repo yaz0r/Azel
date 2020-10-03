@@ -132,7 +132,7 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgWithCopy<sExcaEntity0, sSa
 
     static void Delete(sExcaEntity0* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     sSaturnPtr mC;
@@ -226,7 +226,7 @@ static const char* listOfFilesToLoad[] = {
 
 static void startExcaBackgroundTask(p_workArea pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     // hack: to remove title screen
     reinitVdp2();

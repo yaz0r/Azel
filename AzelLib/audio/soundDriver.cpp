@@ -161,7 +161,7 @@ void initSoundDriver()
 
     //while (SMPC_Status & 1);
 
-    FunctionUnimplemented();
+    Unimplemented();
 
 
     /////// init the scsp emulation
@@ -382,12 +382,12 @@ void sendMapChangeCommand(sSoundEngine* pSoundEngine, s32 map, s32 commandIndex)
 
 void checkDataAndStopAllSequences(sSoundEngine* pSoundEngine)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 bool waitForStopSoundCompletion(sSoundEngine* pSoundEngine)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     return 1;
 }
@@ -527,7 +527,7 @@ void updateSoundInterrupt()
         }
     }
 
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void getSequencesPlayStatus(sSoundEngine* pSoundEngine)
@@ -545,7 +545,7 @@ void updateSequenceStatus(sSoundEngine* pSoundEngine)
     if (pSoundEngine->m68A_currentSoundLoadingState < 0)
     {
         //assert(0);
-        FunctionUnimplemented();
+        Unimplemented();
     }
 }
 

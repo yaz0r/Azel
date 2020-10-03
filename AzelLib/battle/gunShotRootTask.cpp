@@ -104,7 +104,7 @@ void sGunShotTask_Init(sGunShotTask* pThis, sGunArg* arg)
     }
     pThis->m9C = arg->mC;
 
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void sGunShotTask_UpdateSub0Sub0(sVec3_FP* param_1, sVec3_FP* param_2, sVec3_FP* param_3)
@@ -260,7 +260,7 @@ void sGunShotTask_UpdateSub2(sGunShotTask* pThis, s32 param_2, sVec3_FP* param_3
     {
         if (pThis->m9C > -1)
         {
-            FunctionUnimplemented();// createGunDamageSpriteTask
+            Unimplemented();// createGunDamageSpriteTask
         }
         pThis->getTask()->markFinished();
     }
@@ -405,7 +405,7 @@ void sGunShotTask_SetupSpriteData(sGunShotTask* pThis)
 
 s32 isGunShotVisible(std::array<sVec3_FP, 2>& param_1, s_graphicEngineStatus_405C& param_2)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 1;
 }
 
@@ -492,7 +492,7 @@ void sGunShotTask_DrawSub1(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 pa
     if (sGunShotTask_DrawSub1Sub0(sStack32, param_2, graphicEngineStatus.m405C, local_50))
     {
         //if (sGunShotTask_DrawSub1Sub1(local_50, graphicEngineStatus.m405C) && sGunShotTask_DrawSub1Sub2(local_50))
-        FunctionUnimplemented();
+        Unimplemented();
         {
             sGunShotTask_DrawSub1Sub3(local_50, sStack32[1][2], param_3, param_4, param_5, param_6, param_7);
         }

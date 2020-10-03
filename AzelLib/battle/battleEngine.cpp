@@ -253,7 +253,7 @@ void battleEngine_InitSub3(s_battleEngine* pThis)
 
 void battleEngine_InitSub5(p_workArea parent)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleEngine_setCurrentCameraPositionPointer(sVec3_FP* pData)
@@ -309,7 +309,7 @@ void battleEngine_InitSub8()
 
 void battleEngine_InitSub9(p_workArea parent)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleEngine_InitSub11()
@@ -2445,7 +2445,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
 
 p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 
     return nullptr;
 }
@@ -2461,7 +2461,7 @@ void battleEngine_updateBattleMode_1_useItem(s_battleEngine* pThis)
         pThis->mAA4 = 
     }
     */
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleEngine_updateBattleMode_4_useBerserk(s_battleEngine* pThis)
@@ -2484,7 +2484,7 @@ void battleEngine_updateBattleMode_4_useBerserk(s_battleEngine* pThis)
     default:
         assert(0);
     }
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaserSub0(s_battleEngine* pThis, sVec3_FP* param_2)
@@ -3062,7 +3062,7 @@ void battleEngine_Update(s_battleEngine* pThis)
 void battleEngine_Draw(s_battleEngine* pThis)
 {
     // seems to be all debug input related
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleEngine_postBattleUpdateHPBP()

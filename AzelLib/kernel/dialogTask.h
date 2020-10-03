@@ -24,7 +24,7 @@ struct s_multiChoiceTask : public s_workAreaTemplate< s_multiChoiceTask>
     void drawMultiChoice();
     void clearMultiChoiceBox()
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     u8 m0_Status;

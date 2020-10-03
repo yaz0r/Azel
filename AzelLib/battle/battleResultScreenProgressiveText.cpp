@@ -45,7 +45,7 @@ void battleResultScreenProgressiveText_update(sBattleResultProgressiveText* pThi
             if (pThis->m11)
             {
                 // spawn particles
-                FunctionUnimplemented();
+                Unimplemented();
             }
             battleResultScreenProgressiveText_printCharacter(pThis);
             pThis->mD_positionInString++;
@@ -56,7 +56,7 @@ void battleResultScreenProgressiveText_update(sBattleResultProgressiveText* pThi
                 if (pThis->m11 > 1)
                 {
                     // spawn particles
-                    FunctionUnimplemented();
+                    Unimplemented();
                 }
                 pThis->getTask()->markFinished();
             }

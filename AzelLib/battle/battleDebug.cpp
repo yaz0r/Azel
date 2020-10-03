@@ -29,17 +29,17 @@ static void s_battleDebug_Init(s_battleDebug* pThis)
 
 static void s_battleDebug_Update(s_battleDebug* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 static void s_battleDebug_Draw(s_battleDebug* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 static void s_battleDebug_Delete(s_battleDebug* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void createInBattleDebugTask(p_workArea parent)

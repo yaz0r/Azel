@@ -902,12 +902,12 @@ struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
 
     static void Update(s_A3_Obj3*)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     static void Draw(s_A3_Obj3*)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     s_memoryAreaOutput m0;
@@ -949,7 +949,7 @@ void create_A3_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 
 void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, s32 r6)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
@@ -1979,7 +1979,7 @@ void s_cutsceneTask3::Update(s_cutsceneTask3* pThis)
 
 void s_cutsceneTask3::Draw(s_cutsceneTask3*)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void cutsceneTaskInitSub2(p_workArea r4, std::vector<s_scriptData1>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
@@ -2496,7 +2496,7 @@ void markMultiChoiceEntrySeen(s32 result)
 
 void dispatchTutorialMultiChoiceSub3(s_fieldScriptWorkArea* pThis, int result)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 s32 battleIndex;
@@ -2562,7 +2562,7 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
         }
         break;
     case 4:
-        FunctionUnimplemented();
+        Unimplemented();
         pThis->m8_status++;
         break;
     case 5:
@@ -2575,7 +2575,7 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
         assert(0);
     }
 
-    FunctionUnimplemented();
+    Unimplemented();
     //debugSound(0);
     vdp2DebugPrintSetPosition(3, 0x19);
     vdp2PrintfLargeFont("ENEMY:%2d ", pThis->m0_enemyId);
@@ -2583,7 +2583,7 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
 
 void battleLoading_Delete(sBattleLoadingTask* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void startBattleTutorial(int tutorialIndex, int param2)
@@ -5544,7 +5544,7 @@ void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
 
     if ((gDragonState->mC_dragonType == DR_LEVEL_6_LIGHT_WING) && (pThis->mB8_lightWingEffect == nullptr))
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     dragonFieldTaskInitSub5(pThis);
@@ -6524,7 +6524,7 @@ void LCSTask::LCSTaskInit(LCSTask*)
 
 p_workArea createLCSShootTask(s_LCSTask* r4, sLCSTarget* r5)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return NULL;
 }
 
@@ -6920,12 +6920,12 @@ void s_LCSTask340Sub::Laser3Init(s_LCSTask340Sub* pThis)
 
 void s_LCSTask340Sub::Laser3Update(s_LCSTask340Sub* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void s_LCSTask340Sub::Laser3Draw(s_LCSTask340Sub* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void s_LCSTask340Sub::Init2(s_LCSTask340Sub* pThis, sLaserArgs* arg)
@@ -7002,7 +7002,7 @@ void s_LCSTask340Sub::Laser2Update(s_LCSTask340Sub* pThis)
 
 void s_LCSTask340Sub::Laser2Draw(s_LCSTask340Sub*)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void s_LCSTask340Sub::Init3(s_LCSTask340Sub* pThis, sLaserArgs* arg)
@@ -7070,12 +7070,12 @@ void s_LCSTask340Sub::Laser0Init(s_LCSTask340Sub* pThis)
 
 void s_LCSTask340Sub::Laser0Draw(s_LCSTask340Sub* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void s_LCSTask340Sub_Laser0Update(s_LCSTask340Sub* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void s_LCSTask340Sub::Laser0Update(s_LCSTask340Sub* pThis)

@@ -295,11 +295,11 @@ struct sCameraTask : public s_workAreaTemplate<sCameraTask>
 
     static void Init(sCameraTask* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
     static void Update(sCameraTask* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     u8 m0;

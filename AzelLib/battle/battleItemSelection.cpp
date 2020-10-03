@@ -100,7 +100,7 @@ void updateBattleItemMenuList(sBattleItemSelectionTask* pThis)
         else
         {
             //assert(0);
-            FunctionUnimplemented();
+            Unimplemented();
         }
     }
 }
@@ -220,7 +220,7 @@ void sBattleItemSelectionTask_Draw(sBattleItemSelectionTask* pThis)
 // TODO: kernel
 void clearItemSelectionVdp2()
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void sBattleItemSelectionTask_Delete(sBattleItemSelectionTask* pThis)

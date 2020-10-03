@@ -128,7 +128,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
 
     void DrawSubTowns()
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     void CountNumberOfSubTown()

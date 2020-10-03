@@ -24,7 +24,7 @@ void battleResultScreenProgressiveText2_update(sBattleResultProgressiveText2* pT
             pThis->m1++;
             if (pThis->m1 > 1)
             {
-                FunctionUnimplemented(); // particle generation
+                Unimplemented(); // particle generation
                 pThis->m2++;
                 pThis->m0_positionInString++;
                 pThis->m1 = 0;

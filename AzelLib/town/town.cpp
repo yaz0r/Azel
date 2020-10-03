@@ -210,7 +210,7 @@ void initNPCSub0Sub0(s32 r3, sTownGrid* r14)
         if (r14->m40_cellTasks[var24][(r14->m8 + r13) & 7])
         {
             //TODO: we should be deleting the content here
-            FunctionUnimplemented();
+            Unimplemented();
         }
     } while (++r13 <= 2);
 }
@@ -241,7 +241,7 @@ void setupDragonForTown(s_fileBundle* pDragonBundle)
 {
     if (pDragonBundle->getRawFileAtOffset(0x48))
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 }
 
@@ -341,7 +341,7 @@ void initNPCSub1()
     if (gTownGrid.m140_perCellObjectList.size())
     {
         // TODO: cleanup cells data
-        FunctionUnimplemented();
+        Unimplemented();
         //assert(0);
         //freeVdp1Block(initNPCSub0Var0.m34, initNPCSub0Var0.m140);
         gTownGrid.m140_perCellObjectList.clear();
@@ -556,7 +556,7 @@ void mainLogicInitSub1(sMainLogic_74* r4, const sVec3_FP& r5, const sVec3_FP& r6
 void mainLogicUpdateSub0Sub0(sTownGrid* r4)
 {
     //assert(0);
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void mainLogicUpdateSub0Sub1(s32 r4, sTownGrid* r5)
@@ -673,7 +673,7 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
                 r14 = readSaturnEA(pThis->m8_cellPtr + 0x10);
                 if (r14.m_offset)
                 {
-                    FunctionUnimplemented();
+                    Unimplemented();
                 }
             }
         }
@@ -704,7 +704,7 @@ p_workArea startCameraTask(p_workArea pParent)
 
 void townOverlayDelete(townDebugTask2Function* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     
     //FIX:
     if(gModuleManager && gModuleManager->m8)

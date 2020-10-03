@@ -242,13 +242,13 @@ void createEnemyLifeMeterTask_draw(sEnemyLifeMeterTask* pThis)
             drawGaugeVdp1(0xC0, gaugeDimensions, enemyLifeGaugeColors[colorIndex], 0x10000);
         }
 
-        FunctionUnimplemented();
+        Unimplemented();
     }
 }
 
 void createEnemyLifeMeterTask_delete(sEnemyLifeMeterTask* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 sEnemyLifeMeterTask* createEnemyLifeMeterTask(sVec3_FP* arg0, s32 arg1, s16* arg2, s16 arg3)

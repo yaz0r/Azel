@@ -225,7 +225,7 @@ void sBattleOverlayTask_C_Draw(sBattleOverlayTask_C* pThis)
 
 void sBattleOverlayTask_C_Delete(sBattleOverlayTask_C* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 

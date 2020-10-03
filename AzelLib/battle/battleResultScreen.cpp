@@ -61,7 +61,7 @@ void battleGrid_setupLightInterpolation2(s8 param1, sVec3_FP param2, sVec3_FP pa
 
 eBattleRating battleResultScreen_computeBattleRating(sBattleResultScreen* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return eBattleRating::m4_excellent;
 }
 
@@ -95,23 +95,23 @@ static const std::array<fixedPoint, DR_LEVEL_MAX> resultScreenCameraPositionPerD
 
 void battleResultScreen_updateSub5(int XPReceived)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleResultScreen_printItemReceived(eBattleRating)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 s32 battleResultScreen_updateDragonAndRiderSub0()
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 0;
 }
 
 s32 battleResultScreen_updateDragonAndRiderSub1()
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 0;
 }
 
@@ -153,7 +153,7 @@ void battleResultScreen_updateDragonAndRider(eBattleRating rating)
 
 void battleResultScreen_checkLevelUp(sBattleResultScreen* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 bool isCurrentBattleID(s8 param1, s8 param2)
@@ -174,7 +174,7 @@ void battleResultScreen_updateSub17(sBattleResultScreen* pThis)
         return;
     }
     assert(0);
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleResultScreen_update(sBattleResultScreen* pThis)

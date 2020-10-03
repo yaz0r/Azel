@@ -13,7 +13,7 @@
 
 void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes)
@@ -249,7 +249,7 @@ void s_BTL_A3_Env_InitVdp2Sub3Sub1(sCoefficientTableData& table)
     table[0x1a] = 0;
     table[0x1b] = 0x10000;
     */
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table)
@@ -480,7 +480,7 @@ void sBattleEnvironmentGridCell_Draw(sTownCellTask* pThis)
             r14 = readSaturnEA(pThis->m8_cellPtr + 0x10);
             if (r14.m_offset)
             {
-                FunctionUnimplemented();
+                Unimplemented();
             }
         }
     }
@@ -489,7 +489,7 @@ void sBattleEnvironmentGridCell_Draw(sTownCellTask* pThis)
 
 void battleGrid_createCellSub0(sTownCellTask* r4_newCellTask, s32 r5, s32 r6, s32 r7, s32 r8)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleGrid_createCell(s32 index, sTownGrid* pGrid)
@@ -525,12 +525,12 @@ void battleGrid_createCell(s32 index, sTownGrid* pGrid)
 
 void battleGrid_cellFunc1()
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleGrid_cellFunc2()
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void battleGrid_deleteCell(s32 index, sTownGrid* pGrid)
@@ -563,17 +563,17 @@ struct sBTL_A3_map6_sub : public s_workAreaTemplate<sBTL_A3_map6_sub>
 
 void sBTL_A3_map6_sub_Init(sBTL_A3_map6_sub* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void sBTL_A3_map6_sub_Update(sBTL_A3_map6_sub* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void sBTL_A3_map6_sub_Draw(sBTL_A3_map6_sub* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 static void BTL_A3_map6_Init(s_BTL_A3_Env* pThis)
@@ -699,7 +699,7 @@ void BTL_A3_Env_DrawSub8(s_BTL_A3_Env* pThis)
 
     BTL_A3_Env_DrawSub8Sub1(-0x4000000 - cameraRotation[0], cameraRotation[1]);
     BTL_A3_Env_DrawSub6(pThis->m3C);
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)
@@ -727,7 +727,7 @@ void BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)
 
     int iVar3 = vdp2Controls.m_0
     */
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 p_workArea Create_BTL_A3_map6(p_workArea parent)

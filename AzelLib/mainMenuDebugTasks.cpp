@@ -47,7 +47,7 @@ struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskW
         case 0:
             if (readKeyboardToggle(0x85))
             {
-                FunctionUnimplemented();
+                Unimplemented();
             }
             break;
         default:
@@ -652,7 +652,7 @@ void loadRamResource(s_workArea* pWorkArea)
             iVar4 += 8;
         }
 
-        FunctionUnimplemented();
+        Unimplemented();
     }
 }
 
@@ -1048,7 +1048,7 @@ void modelDrawFunction9(s_3dModel* pModel)
     {
         sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
         std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
-        FunctionUnimplemented(); // TODO: should be vertex colored variant!
+        Unimplemented(); // TODO: should be vertex colored variant!
         modeDrawFunction10Sub1(r4, pPoseData);
     }
 }
@@ -1300,7 +1300,7 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animatio
 
 void updateDragonIfCursorChanged(u32 level)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void loadRiderIfChanged(u32 rider)
@@ -1321,12 +1321,12 @@ void loadRider2IfChanged(u32 rider)
 
 void freeRamResources(p_workArea)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void vdp1FreeLastAllocation(p_workArea)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void freeRamResource()
@@ -1777,7 +1777,7 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
 
     static void genericOptionMenuDelete(s_fieldDebugTaskWorkArea* pThis)
     {
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     p_workArea m8; // 8
@@ -3073,7 +3073,7 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
 
 void s_menuGraphicsTask::Delete(s_menuGraphicsTask*)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 p_workArea createMenuTask(p_workArea parentTask)

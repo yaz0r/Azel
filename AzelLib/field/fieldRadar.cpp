@@ -132,7 +132,7 @@ s8 paletteIndexTable[4] = {
 
 void createPaletteFadeTask(p_workArea parent, void* pal1, void* pal2, s32 duration)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void fieldRadar_udpate(s_FieldRadar* pThis)
@@ -235,7 +235,7 @@ void fieldRadar_draw(s_FieldRadar* pThis)
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
     }
 
-    FunctionUnimplemented(); // Radar line draw
+    Unimplemented(); // Radar line draw
 
     if (gDragonState->mC_dragonType == 8)
     {

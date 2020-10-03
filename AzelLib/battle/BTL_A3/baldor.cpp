@@ -437,7 +437,7 @@ void Baldor_updateSub0Sub2Sub2(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s
 
 void Baldor_updateSub0Sub2Sub0(p_workArea, sBattleTargetable&, int)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param2, int param3, int param4, sEnemyLifeMeterTask* param5)
@@ -543,7 +543,7 @@ struct sBaldorAttack : public s_workAreaTemplate<sBaldorAttack>
 
 void BaldorAttack_createAttackModel(sVec3_FP* partPosition, sVec3_FP* target, sSaturnPtr param3)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void BaldorAttack_update(sBaldorAttack* pThis)
@@ -750,7 +750,7 @@ void Baldor_update_mode0(sBaldor* pThis)
 
 void createBaldorDeathEffect(sBaldor* pThis)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 // Taking damage
@@ -875,12 +875,12 @@ void Baldor_update(sBaldor* pThis)
 
 void setupConditionalLightColor(int )
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void clearLightColor()
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void Baldor_draw(sBaldor* pThis)

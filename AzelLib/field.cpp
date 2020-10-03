@@ -318,7 +318,7 @@ void initFieldDragonLight()
 
 void gridCellDraw_normalSub2(p_workArea r4, s32 r5, s32 r6)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void callGridCellDraw_normalSub2(p_workArea r4, s32 r5)

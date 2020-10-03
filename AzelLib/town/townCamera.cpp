@@ -78,7 +78,7 @@ s32 TwnFadeOut(s32 arg0)
 
 u16 TwnFadeInComputeColor(sSaturnPtr r4, u32 r5)
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 0;
 }
 

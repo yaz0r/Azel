@@ -215,7 +215,7 @@ void cameraFollowMode0_LCSSub1(sMainLogic* r4)
         */
         //6055C48
         //assert(0);
-        FunctionUnimplemented();
+        Unimplemented();
     }
 
     //6055CCA
@@ -525,7 +525,7 @@ int scriptFunction_6057058_sub0()
 
 s32 hasLoadingCompleted()
 {
-    FunctionUnimplemented();
+    Unimplemented();
     return 1;
 }
 

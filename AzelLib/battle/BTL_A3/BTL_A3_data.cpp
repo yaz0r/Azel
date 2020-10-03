@@ -25,7 +25,7 @@ void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32
         Create_BTL_A3_UrchinFormationConfig(pParent, arg0);
         break;
     default:
-        FunctionUnimplemented();
+        Unimplemented();
         break;
     }
 }
@@ -44,7 +44,7 @@ void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent)
         Create_BTL_A3_map4(pParent);
         break;
     default:
-        FunctionUnimplemented();
+        Unimplemented();
         break;
     }
 }

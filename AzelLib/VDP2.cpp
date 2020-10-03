@@ -1517,7 +1517,7 @@ void printVdp2StringNewLine(s_stringStatusQuery* vars)
 
 void printVdp2StringSub2(s32 r4)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 //
@@ -1777,7 +1777,7 @@ void interruptVDP2Update()
 
 void printVdp2Number3(s_stringStatusQuery* vars, int value, int length)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void printVdp2Number2(int value, int length)

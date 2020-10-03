@@ -7,17 +7,17 @@
 
 void fieldA3_2_createCrashedImpertialShipExplosions(p_workArea)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void fieldA3_2_crashedImpertialShip_UpdateSub0(p_workArea, sVec3_FP*)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void fieldA3_2_crashedImpertialShip_customScriptCall(fieldA3_2_crashedImpertialShip* r4)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 struct fieldA3_2_crashedImpertialShip : public s_workAreaTemplate<fieldA3_2_crashedImpertialShip>
@@ -169,7 +169,7 @@ struct fieldA3_2_crashedImpertialShip2 : public s_workAreaTemplate<fieldA3_2_cra
 
 void create_A3_2_crashedImperialShip2Sub0(p_workArea)
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void create_A3_2_crashedImperialShip2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)

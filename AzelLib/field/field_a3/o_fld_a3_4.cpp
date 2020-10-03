@@ -5,7 +5,7 @@
 
 void subfieldA3_4_sub0()
 {
-    FunctionUnimplemented();
+    Unimplemented();
 }
 
 void vdp2FieldTask_init(s_fieldPaletteTaskWorkArea* pThis)
