@@ -19,3 +19,6 @@
 [submodule "ThirdParty/bgfx.cmake"]
 	path = ThirdParty/bgfx.cmake
 	url = git@github.com:widberg/bgfx.cmake.git
+[submodule "ThirdParty/ImGuizmo"]
+	path = ThirdParty/ImGuizmo
+	url = git@github.com:CedricGuillemet/ImGuizmo.git

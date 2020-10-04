@@ -12,6 +12,7 @@ include_directories(
     "${THIRD_PARTY}/tracy"
     "${THIRD_PARTY}/bgfx.cmake/bgfx/include"
     "${THIRD_PARTY}/bgfx.cmake/bx/include"
+    #"${THIRD_PARTY}/bgfx.cmake/bx/include/compat/msvc"
     "${THIRD_PARTY}/bgfx.cmake/bgfx/3rdparty"
     "${THIRD_PARTY}/bgfx.cmake/bimg/include"
     "${THIRD_PARTY}/aosdk"
@@ -121,6 +122,10 @@ set(SOURCES
  ${THIRD_PARTY}/imgui/imgui_draw.cpp
  ${THIRD_PARTY}/imgui/imgui_internal.h
  ${THIRD_PARTY}/imgui/imgui_widgets.cpp
+ ${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
+
+ ${THIRD_PARTY}/ImGuizmo/ImGuizmo.cpp
+ ${THIRD_PARTY}/ImGuizmo/ImGuizmo.h
 
  ${THIRD_PARTY}/aosdk/eng_ssf/m68kcpu.c
  ${THIRD_PARTY}/aosdk/eng_ssf/m68kopac.c

@@ -12,6 +12,8 @@
 #include "audio/systemSounds.h"
 #include "battleGenericData.h"
 
+void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s8 param4); // TODO: clean
+
 struct sGunShotRootTask : public s_workAreaTemplateWithCopy<sGunShotRootTask>
 {
     s16 mD4_currentSelectedEnemy;
@@ -351,6 +353,28 @@ void sGunShotTask_Update(sGunShotTask* pThis)
                     sGunShotTask_UpdateSub2(pThis, sGunShotTask_UpdateSub1(pThis), &sStack72);
                 }
             }
+        }
+        break;
+    case 2:
+        pThis->m2C = MTH_Mul(-0x8000, pThis->m2C);
+        pThis->m2C[0] += MTH_Mul(randomNumber() & 0xC000, pThis->m2C[0]);
+        pThis->m2C[1] += MTH_Mul(randomNumber() & 0xC000, pThis->m2C[1]);
+
+    case 3:
+        if (--pThis->m58 > -1)
+        {
+            sVec3_FP local_60 = gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta + pThis->m2C; // TODO: recheck
+            pThis->m14 += local_60;
+            if (pThis->m14[1] <= gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude)
+            {
+                Unimplemented();
+            }
+        }
+        else
+        {
+            pThis->getTask()->markFinished();
+            pThis->m68->m50_flags &= 0xFFDFFFFF;
+            CreateDamageSpriteForCurrentBattleOverlay(&pThis->m14, 0, 0x10000, 1);
         }
         break;
     default:

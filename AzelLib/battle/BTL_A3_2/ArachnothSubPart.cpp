@@ -137,30 +137,56 @@ void createArachnothFormationSub0(sArachnothSubModel* pThis, s32 param_2)
             sSaturnPtr data = iVar1 + 8 * i;
             for (int j = 0; j < readSaturnS32(data + 4); j++)
             {
-                u32 uVar3 = readSaturnU32(data + j * 0x14) >> 0x1C;
+                u32 uVar3 = readSaturnU32(readSaturnEA(data) + j * 0x14) >> 0x1C;
                 switch (param_2)
                 {
                 case 1:
-                    pThis->m58_targetables[counter++].m50_flags = (uVar3 >> 1) | (((uVar3 & 1) << 3) << 0x1C) | (readSaturnU32(data + j * 0x14) & 0x0fffffff);
+                    pThis->m58_targetables[counter].m50_flags = (((uVar3 >> 1) | ((uVar3 & 1) << 3)) << 0x1C) | (readSaturnU32(readSaturnEA(data) + j * 0x14) & 0x0fffffff);
                     break;
                 case 2:
-                    pThis->m58_targetables[counter++].m50_flags = (uVar3 >> 2) | (((uVar3 & 3) << 2) << 0x1C) | (readSaturnU32(data + j * 0x14) & 0x0fffffff);
+                    pThis->m58_targetables[counter].m50_flags = (((uVar3 >> 2) | ((uVar3 & 1) << 2)) << 0x1C) | (readSaturnU32(readSaturnEA(data) + j * 0x14) & 0x0fffffff);
+                    break;
+                case 3:
+                    pThis->m58_targetables[counter].m50_flags = (((uVar3 << 1) | ((uVar3 & 1) >> 3)) << 0x1C) | (readSaturnU32(readSaturnEA(data) + j * 0x14) & 0x0fffffff);
                     break;
                 default:
                     assert(0);
                     break;
                 }
+                counter++;
             }
         }
     }
+}
+
+void arachnothSubPart_updateTargetablesPosition(sArachnothSubModel* pThis)
+{
+    int currentTargetableId = 0;
+    for (int i=0; i<pThis->m60_numBones; i++)
+    {
+        const std::vector<sVec3_FP>& boneData = pThis->m8_model.m44_hotpointData[i];
+        if (boneData.size())
+        {
+            for (int j=0; j<boneData.size(); j++)
+            {
+                pThis->m5C_targetablesPosition[currentTargetableId++] = boneData[j];
+            }
+        }
+    }
+}
+
+s32 arachnothSubPart_getTargetablesDamage(sArachnothSubModel* pThis)
+{
+    Unimplemented();
+    return 0;
 }
 
 s32 arachnothSubPartGetDamage(sArachnothSubModel* pThis)
 {
     if (pThis->m64)
     {
-        Unimplemented();
-        return 0;
+        arachnothSubPart_updateTargetablesPosition(pThis);
+        return arachnothSubPart_getTargetablesDamage(pThis);
     }
     return 0;
 }

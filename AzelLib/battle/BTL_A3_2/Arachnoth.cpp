@@ -39,18 +39,20 @@ struct sArachnothFormation : public s_workAreaTemplateWithCopy<sArachnothFormati
     s32 m278_targetedQuadrant;
     sVec3_FP m27C;
     sVec3_FP m288;
+    s32 m294;
     s16 m298_life;
     sEnemyLifeMeterTask* m29C_lifeMeter;
     s32 m2A0;
     s32 m2A4;
     s32 m2A8;
-    s32 m2AC;
+    s32 m2AC_enrageState;
     s32 m2B0_arachnothState;
     s32 m2B4;
     s32 m2B8;
     s32 m2BC;
     s32 m2C0;
     s32 m2C4;
+    s32 m2C8;
     sVec3_FP m2CC;
     sVec3_FP m2D8;
     sVec3_FP m2E4;
@@ -132,10 +134,37 @@ void arachnoth_updateState1_sub1(sArachnothFormation* pThis)
     }
 }
 
+bool arachnoth_updateState0_sub3_sub(sArachnothFormation* pThis)
+{
+    if (pThis->m23C == 0)
+    {
+        if (pThis->m278_targetedQuadrant != 0)
+        {
+            return false;
+        }
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant != 0)
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if (pThis->m278_targetedQuadrant != 2)
+        {
+            return false;
+        }
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant != 2)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 void arachnoth_updateState0_sub3(sArachnothFormation* pThis)
 {
     int mode;
-    switch (pThis->m2AC)
+    switch (pThis->m2AC_enrageState)
     {
     case 0:
         if (pThis->m2B8 < 6)
@@ -158,7 +187,28 @@ void arachnoth_updateState0_sub3(sArachnothFormation* pThis)
         }
         else
         {
-            assert(0);
+            arachnoth_updateState1_sub1(pThis);
+            mode = 3;
+        }
+        break;
+    case 1:
+        if ((((gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant) == pThis->m278_targetedQuadrant) ||
+            ((gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant) == (pThis->m278_targetedQuadrant - 1U & 3))) ||
+            ((gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant) == (pThis->m278_targetedQuadrant + 1U & 3)))
+        {
+            arachnoth_updateState1_sub0(pThis);
+            if (!arachnoth_updateState0_sub3_sub(pThis))
+            {
+                mode = 5;
+            }
+            else
+            {
+                mode = 6;
+            }
+        }
+        else
+        {
+            mode = 1;
         }
         break;
     default:
@@ -169,7 +219,7 @@ void arachnoth_updateState0_sub3(sArachnothFormation* pThis)
 
     if ((mode != 1) && (mode != 2) && (mode != 3) && pThis->m314[0])
     {
-        assert(0);
+        Unimplemented();
     }
 
     switch (mode)
@@ -177,7 +227,7 @@ void arachnoth_updateState0_sub3(sArachnothFormation* pThis)
     case 0:
         break;
     case 1:
-        switch (pThis->m2AC)
+        switch (pThis->m2AC_enrageState)
         {
         case 0:
             arachnoth_updateState1_sub0(pThis);
@@ -218,16 +268,72 @@ void arachnoth_updateState0_sub3(sArachnothFormation* pThis)
         pThis->m2C4 = 0x1E;
         break;
     case 3:
-        Unimplemented();
+        battleEngine_SetBattleMode(m7);
+        battleEngine_displayAttackName(0x5, 0x5A, 0);
+        battleEngine_FlagQuadrantForAttack(pThis->m278_targetedQuadrant);
+
+        if (pThis->m314[0] == 0)
+        {
+            Unimplemented();
+        }
+        
+        pThis->m2D8[0] = 0;
+        pThis->m2D8[1] = (pThis->m278_targetedQuadrant + 1) * 0x4000000;
+        pThis->m2D8[2] = 0;
+
+        pThis->m2CC[0] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x3C000);
+        pThis->m2CC[1] = MTH_Mul(-getSin(pThis->m2D8[0].getInteger()), 0x3C000);
+        pThis->m2CC[2] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getCos(pThis->m2D8[1].getInteger()), 0x3C000);
+
+        pThis->m2CC += *pThis->m240;
+        pThis->m2E4 = pThis->m224_translation;
+
+        createBattleIntroTaskSub0();
+        battleEngine_setCurrentCameraPositionPointer(&pThis->m2CC);
+        battleEngine_setDesiredCameraPositionPointer(&pThis->m224_translation);
+        battleEngine_InitSub8();
+
+        pThis->m2BC = 0xD2;
+        pThis->m2B0_arachnothState = 3;
+        pThis->m2C0 = 0;
+        pThis->m2C4 = 0x3C;
         break;
     default:
         assert(0);
     }
 }
 
-void arachnoth_updateState0_sub5(sArachnothFormation* pThis)
+void arachnoth_updateState0_sub5Sub(sArachnothFormation* pThis)
 {
-    Unimplemented();
+    arachnothInitSubModelAnimation(&pThis->m8_normalBody, 1, -1);
+    arachnothInitSubModelAnimation(&pThis->m98_poisonDart, 1, -1);
+    pThis->m1B8_currentActiveModel = &pThis->m8_normalBody;
+}
+
+void arachnoth_startEnrage(sArachnothFormation* pThis)
+{
+    battleEngine_SetBattleMode(m7);
+    battleEngine_displayAttackName(2, 0x5a, 0);
+    pThis->m2D8[0] = -0x1000000;
+    pThis->m2D8[1] = 0x4000000;
+    pThis->m2D8[2] = 0;
+
+    pThis->m2CC[0] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x3C000);
+    pThis->m2CC[1] = MTH_Mul(-getSin(pThis->m2D8[0].getInteger()), 0x3C000);
+    pThis->m2CC[2] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getCos(pThis->m2D8[1].getInteger()), 0x3C000);
+
+    pThis->m2CC += *pThis->m240;
+
+    createBattleIntroTaskSub0();
+    battleEngine_setCurrentCameraPositionPointer(&pThis->m2CC);
+    battleEngine_setDesiredCameraPositionPointer(&pThis->m224_translation);
+    battleEngine_InitSub8();
+    arachnoth_updateState0_sub5Sub(pThis);
+
+    pThis->m2BC = 0xB4;
+    pThis->m2B0_arachnothState = 4;
+    pThis->m2C0 = 0;
+    pThis->m2C4 = 0x5A;
 }
 
 void arachnoth_updateState0_sub6(sArachnothFormation* pThis)
@@ -326,6 +432,60 @@ void arachnoth_updateState0_sub0(sArachnothFormation* pThis)
     Unimplemented();
 }
 
+void arachnoth_updateState4_sub0(sArachnothFormation* pThis)
+{
+    switch (pThis->m2C0)
+    {
+    case 0:
+        if (--pThis->m2C4 < 0)
+        {
+            pThis->m2C0++;
+            pThis->m2C4 = 7;
+            pThis->m2AC_enrageState = 1;
+            playSystemSoundEffect(0x70);
+            pThis->m2C8 = 0x1E;
+        }
+        break;
+    case 1:
+        if (pThis->m2C4 < 1)
+        {
+            pThis->m2C4++;
+            if (pThis->m2C4 == 0)
+            {
+                pThis->m2C4 = 7;
+            }
+            pThis->m254[1] -= 0xB60B6;
+        }
+        else
+        {
+            pThis->m2C4--;
+            if (pThis->m2C4 == 0)
+            {
+                pThis->m2C4 = -7;
+            }
+            pThis->m254[1] += 0xB60B6;
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    pThis->m254[0] -= 0x2468A;
+    pThis->m2D8[1] += 0xB60B6;
+
+    pThis->m2CC[0] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x3C000);
+    pThis->m2CC[1] = MTH_Mul(-getSin(pThis->m2D8[0].getInteger()), 0x3C000);
+    pThis->m2CC[2] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getCos(pThis->m2D8[1].getInteger()), 0x3C000);
+
+    pThis->m2CC += *pThis->m240;
+
+}
+
+void arachnoth_updateState3_sub0(sArachnothFormation* pThis)
+{
+    Unimplemented();
+}
+
 void arachnoth_updateState(sArachnothFormation* pThis)
 {
     switch (pThis->m2B0_arachnothState)
@@ -345,7 +505,7 @@ void arachnoth_updateState(sArachnothFormation* pThis)
                 }
             }
 
-            if (pThis->m2AC == 0)
+            if (pThis->m2AC_enrageState == 0)
             {
                 if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
                 {
@@ -357,7 +517,7 @@ void arachnoth_updateState(sArachnothFormation* pThis)
                             {
                                 assert(0);
                             }
-                            arachnoth_updateState0_sub5(pThis);
+                            arachnoth_startEnrage(pThis);
                         }
                     }
                 }
@@ -377,7 +537,7 @@ void arachnoth_updateState(sArachnothFormation* pThis)
             createArachnothFormationSub0(&pThis->m98_poisonDart, pThis->m278_targetedQuadrant);
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
             arachnothUpdateQuadrants(pThis);
-            if (((5 < pThis->m2B8) && (pThis->m2AC == 0)) && (pThis->m314[0] == 0))
+            if (((5 < pThis->m2B8) && (pThis->m2AC_enrageState == 0)) && (pThis->m314[0] == 0))
             {
                 assert(0);
             }
@@ -400,10 +560,57 @@ void arachnoth_updateState(sArachnothFormation* pThis)
             arachnothUpdateQuadrants(pThis);
         }
         break;
+    case 3:
+        arachnoth_updateState3_sub0(pThis);
+        if (arachnoth_updateState2_sub1(pThis))
+        {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
+            sEnemyAttackCamera_updateSub2();
+            pThis->m2B0_arachnothState = 0;
+            if(pThis->m314[0])
+            {
+                Unimplemented();
+            }
+            pThis->m2B8 = 0;
+            arachnothUpdateQuadrants(pThis);
+        }
+        break;
+    case 4:
+        arachnoth_updateState4_sub0(pThis);
+        if (arachnoth_updateState2_sub1(pThis))
+        {
+            arachnoth_updateState1_sub1(pThis);
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
+            sEnemyAttackCamera_updateSub2();
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m2 = 0x2D;
+            arachnothUpdateQuadrants(pThis);
+            pThis->m2B0_arachnothState = 0;
+        }
+        break;
     default:
         assert(0);
         break;
     }
+}
+
+void arachnothFormation_updateSub6(sArachnothSubModel* pThis, s32 param2, s32 param3)
+{
+    if (readSaturnS32(pThis->m4 + 8))
+    {
+        for (int i = 0; i < pThis->m64; i++)
+        {
+            pThis->m58_targetables[i].m60 = readSaturnS8(readSaturnEA(pThis->m4 + 8) + (param2 - param3 & 3));
+        }
+    }
+}
+
+void arachnothFormation_updateSub9(sArachnothFormation* pThis, sVec3_FP* position, sVec3_FP* rotation, sVec3_FP* param_4)
+{
+    Unimplemented();
 }
 
 void arachnothFormation_update(sArachnothFormation* pThis)
@@ -460,11 +667,94 @@ void arachnothFormation_update(sArachnothFormation* pThis)
 
     arachnoth_updateState(pThis);
 
+    arachnothFormation_updateSub6(&pThis->m8_normalBody, gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant, pThis->m278_targetedQuadrant);
+    arachnothFormation_updateSub6(&pThis->m98_poisonDart, gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant, pThis->m278_targetedQuadrant);
+
+    if ((pThis->m2B0_arachnothState != 8) && (pThis->m2B0_arachnothState != 9))
+    {
+        if ((randomNumber() & 0x1F) == 0)
+        {
+            sVec3_FP temp;
+            temp[0] = MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x6000) - 0x3000;
+            temp[1] = MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x2000) - 0x1000;
+            temp[2] = MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x3000) + 0x2000;
+            arachnothFormation_updateSub9(pThis, &pThis->m224_translation, &pThis->m26C_rotation, &temp);
+        }
+
+        pThis->m20C += MTH_Mul(0x28F, pThis->m230 - pThis->m224_translation);
+        pThis->m254 += MTH_Mul(0x147, (pThis->m27C - pThis->m26C_rotation).normalized());
+
+        if ((pThis->m2B0_arachnothState == 6) || (pThis->m2B0_arachnothState == 7))
+        {
+            pThis->m288[0] += MTH_Mul(0x8000 - pThis->m288[2], 0x41);
+        }
+        else if (pThis->m2AC_enrageState == 0)
+        {
+            if (--pThis->m294 < 1)
+            {
+                pThis->m288[0] += 0x28F;
+                pThis->m294 = 0x1C;
+            }
+            pThis->m288[0] += MTH_Mul(0x4000 - pThis->m288[2], 0xCCC);
+        }
+        else if (pThis->m2AC_enrageState == 1)
+        {
+            if (--pThis->m294 < 1)
+            {
+                pThis->m288[0] += 0xA3D;
+                pThis->m294 = 0x14;
+            }
+            pThis->m288[0] += MTH_Mul(0x8000 - pThis->m288[2], 0x147A);
+        }
+
+        if (pThis->m314[0])
+        {
+            pThis->m288[0] = pThis->m254[0] + 0x12345;
+        }
+    }
+
+    if (pThis->m314[0])
+    {
+        assert(0);
+    }
+
+    pThis->m218 += pThis->m20C;
+    pThis->m218 -= MTH_Mul(0x1999, pThis->m218);
+    pThis->m224_translation += pThis->m218;
+    pThis->m20C.zeroize();
+
+    pThis->m260 += pThis->m254;
+    pThis->m260 -= MTH_Mul(0xCCC, pThis->m260);
+
+    pThis->m26C_rotation += pThis->m260;
+    pThis->m26C_rotation[0].m_value &= 0xfffffff;
+    pThis->m26C_rotation[1].m_value &= 0xfffffff;
+    pThis->m26C_rotation[2].m_value &= 0xfffffff;
+
+    pThis->m254.zeroize();
+    pThis->m288[1] += pThis->m288[0];
+    pThis->m288[1] -= MTH_Mul(0xA3D, pThis->m288[1]);
+    pThis->m288[2] += pThis->m288[1];
+    pThis->m288[0] = 0;
+
+    //arachnothFormation_updateSub8(&pThis->m98_poisonDart, pThis, &pArachnothSubModelData3, &pArachnothSubModelData4, pThis->m288[2]);
+
     Unimplemented();
 }
 
 void arachnothFormation_draw(sArachnothFormation* pThis)
 {
+    if (!isShipping())
+    {
+        if (ImGui::Begin("Arachnoth"))
+        {
+            int life = pThis->m298_life;
+            ImGui::InputInt("Life", &life);
+            pThis->m298_life = life;
+        }
+        ImGui::End();
+    }
+
     if (pThis->m1B8_currentActiveModel->m70_flags & 0x800000)
     {
         assert(0);
@@ -515,7 +805,7 @@ void arachnothFormation_draw(sArachnothFormation* pThis)
 
 void arachnothUpdateQuadrants(sArachnothFormation* pThis)
 {
-    switch (pThis->m2AC)
+    switch (pThis->m2AC_enrageState)
     {
     case 0:
         if (pThis->m2B8 > 5)
@@ -527,7 +817,45 @@ void arachnothUpdateQuadrants(sArachnothFormation* pThis)
     case 1:
         if (pThis->m2B0_arachnothState != 7)
         {
-            assert(0);
+            battleEngine_FlagQuadrantBitForDanger(0);
+            int quadrant = (pThis->m278_targetedQuadrant + 2) & 3;
+            if (
+                ((pThis->m23C != 0 ) || (quadrant != 2)) &&
+                ((pThis->m23C != 1 ) || (quadrant != 0))
+                )
+            {
+                battleEngine_FlagQuadrantBitForDanger(quadrant);
+            }
+
+            battleEngine_FlagQuadrantBitForSafety(0);
+
+            quadrant = pThis->m278_targetedQuadrant & 3;
+            if (
+                ((pThis->m23C != 0) || (quadrant != 2)) &&
+                ((pThis->m23C != 1) || (quadrant != 0))
+                )
+            {
+                battleEngine_FlagQuadrantBitForSafety(quadrant);
+            }
+
+            quadrant = (pThis->m278_targetedQuadrant + 1) & 3;
+            if (
+                ((pThis->m23C != 0) || (quadrant != 2)) &&
+                ((pThis->m23C != 1) || (quadrant != 0))
+                )
+            {
+                battleEngine_FlagQuadrantBitForSafety(quadrant);
+            }
+
+            quadrant = (pThis->m278_targetedQuadrant - 1) & 3;
+            if (
+                ((pThis->m23C != 0) || (quadrant != 2)) &&
+                ((pThis->m23C != 1) || (quadrant != 0))
+                )
+            {
+                battleEngine_FlagQuadrantBitForSafety(quadrant);
+            }
+
             return;
         }
         break;
@@ -635,7 +963,7 @@ void createArachnothFormation(s_workAreaCopy* pParent, u32 arg0, u32 arg1)
 
     pThis->m1B8_currentActiveModel = &pThis->m8_normalBody;
 
-    pThis->m2AC = 0;
+    pThis->m2AC_enrageState = 0;
     pThis->m2B0_arachnothState = 0;
     pThis->m2B4 = 0;
     pThis->m27C.zeroize();

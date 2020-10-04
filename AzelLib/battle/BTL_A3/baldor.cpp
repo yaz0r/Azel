@@ -393,7 +393,7 @@ void Baldor_updateSub0Sub1(sBaldor* pThis)
     }
 }
 
-void Baldor_updateSub0Sub2Sub2(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s8 param4)
+void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s8 param4)
 {
     int iVar2;
 
@@ -455,7 +455,7 @@ void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param
             value.m50_flags &= ~0x80000;
             value.m50_flags &= ~0x20000;
 
-            Baldor_updateSub0Sub2Sub2(getBattleTargetablePosition(value), nullptr, 0x30000, 1);
+            CreateDamageSpriteForCurrentBattleOverlay(getBattleTargetablePosition(value), nullptr, 0x30000, 1);
         }
     }
 

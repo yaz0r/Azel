@@ -1,6 +1,8 @@
 #include "PDS.h"
 #include <soloud.h>
 
+#include <examples/imgui_impl_sdl.h>
+
 #include "renderer/renderer.h"
 #include "renderer/renderer_gl.h"
 #include "renderer/renderer_vk.h"
@@ -150,6 +152,7 @@ void azelSdl2_Init()
 #endif
 
     imguiCreate();
+    ImGui_ImplSDL2_InitForD3D(gWindowBGFX);
 }
 
 bgfx::TextureHandle getTextureForLayerBgfx(eLayers layerIndex)
@@ -255,6 +258,7 @@ s8 convertAxis(s16 inputValue)
 }
 
 static bool         g_MousePressed[3] = { false, false, false };
+/*
 bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -299,7 +303,7 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
     }
     return false;
 }
-
+*/
 void azelSdl2_StartFrame()
 {
     int oldResolution[2];
@@ -511,7 +515,9 @@ void azelSdl2_StartFrame()
     if (!isShipping())
     {
         //gBackend->ImGUI_NewFrame();
-        
+            // Pull the input from SDL2 instead
+        ImGui_ImplSDL2_NewFrame(gWindowBGFX);
+        //imguiBeginFrame(0, 0, 0, 0, outputResolution[0], outputResolution[1], -1);
         imguiBeginFrame(gUIState.mousex, gUIState.mousey, gUIState.mousedown, 0, outputResolution[0], outputResolution[1]);
     }
 #endif

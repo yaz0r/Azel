@@ -272,7 +272,7 @@ sEnemyLifeMeterTask* createEnemyLifeMeterTask(sVec3_FP* arg0, s32 arg1, s16* arg
     }
     else
     {
-        pNewTask->m28 = readSaturnS16(gCommonFile->getSaturnPtr(0x20179c + arg3 * 4));
+        pNewTask->m28 = readSaturnS16(gCommonFile->getSaturnPtr(0x20179c + arg3 * 4 * 2));
         *arg2 = pNewTask->m28;
     }
 
