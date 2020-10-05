@@ -16,7 +16,7 @@ s32 createBattleIntroTaskSub1(); //TODO cleanup
 void battleEngine_PlayAttackCamera(int param1); // TODO cleanup
 void battleEngine_displayAttackName(int param1, int param2, int param3); // TODO cleanup
 
-void playBattleSoundEffect(s16 effectIndex)
+void playBattleSoundEffect(s16 effectIndex) // TODO cleanup
 {
     enqueuePlaySoundEffect(effectIndex, 2, 0, 0);
 }

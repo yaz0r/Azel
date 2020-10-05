@@ -615,6 +615,16 @@ void updateSoundSub(sSoundEngine* pSoundEngine)
             {
                 switch (pSoundCommand.m2_bankIndex)
                 {
+                case 2:
+                case 3:
+                case 4:
+                {
+                    sSCSPCommand command;
+                    command.m0 = pSoundCommand.m2_bankIndex;
+                    command.m2_P1 = foundSound;
+                    enqueueSCSPCommand(&command);
+                    break;
+                }
                 default:
                     assert(0);
                 }
