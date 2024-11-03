@@ -6,3 +6,6 @@ Only Windows builds are supported right now. You need vs2022 installed with CMak
 * Use CMake to generate vs2022 solution
 * Put content of CD1 in data folder
 * Run the Azel project
+
+# Status
+* Still very early, but the beginning of the game is semi playable (with bugs) until the Arachnoth battle
