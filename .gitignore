@@ -11,3 +11,6 @@ build/vs2019
 /data/shaders/generated
 /data/BTL_A3.trace.txt
 /build/vs2019_tools
+build_vs2022
+vs2022_tools
+data

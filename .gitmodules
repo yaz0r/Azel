@@ -1,6 +1,6 @@
 [submodule "SDL2"]
 	path = ThirdParty/SDL2
-	url = https://github.com/SDL-mirror/SDL
+	url = https://github.com/libsdl-org/SDL.git
 [submodule "imgui"]
 	path = ThirdParty/imgui
 	url = https://github.com/ocornut/imgui
@@ -15,10 +15,10 @@
 	url = https://github.com/g-truc/glm
 [submodule "ThirdParty/tracy"]
 	path = ThirdParty/tracy
-	url = git@github.com:wolfpld/tracy.git
+	url = https://github.com/wolfpld/tracy.git
 [submodule "ThirdParty/bgfx.cmake"]
 	path = ThirdParty/bgfx.cmake
-	url = git@github.com:widberg/bgfx.cmake.git
+	url = https://github.com/bkaradzic/bgfx.cmake.git
 [submodule "ThirdParty/ImGuizmo"]
 	path = ThirdParty/ImGuizmo
-	url = git@github.com:CedricGuillemet/ImGuizmo.git
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
