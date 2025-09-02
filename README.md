@@ -1,4 +1,4 @@
-# Azel: Reverse engineering of a game where you play a spirit controlling a mercenary with an edge and a dragon
+# Azel: Reverse engineering of Panzer Dragoon Saga
 
 # Build
 Only Windows builds are supported right now. You need vs2022 installed with CMake
