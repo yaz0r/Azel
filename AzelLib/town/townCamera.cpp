@@ -91,7 +91,8 @@ s32 TwnFadeIn(s32 arg0)
         fadeColor = TwnFadeInComputeColor(cameraTaskPtr->m8, cameraTaskPtr->m30);
         break;
     default:
-        assert(0);
+        // TODO: implement other cases
+        fadeColor = 0x8000;
         break;
     }
 

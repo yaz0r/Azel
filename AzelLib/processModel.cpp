@@ -225,6 +225,8 @@ void sProcessed3dModel::generateVertexBuffer()
     }
 
     m_textureAtlas = bgfx::createTexture2D(atlasTextureWidth, atlasTextureHeight, false, 1, bgfx::TextureFormat::RGBA8, 0, bgfx::copy(&atlasTexture[0], atlasTextureWidth * atlasTextureHeight * 4));
+    m_textureAtlasWidth = atlasTextureWidth;
+    m_textureAtlasHeight = atlasTextureHeight;
 
     m_vertexBuffersDirty = false;
     m_vertexBuffer.resize(mC_Quads.size() * 4);

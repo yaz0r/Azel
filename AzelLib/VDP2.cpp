@@ -211,6 +211,7 @@ void clearVdp2TextSmallFont()
 
 void unpackGraphicsToVDP2(u8* compressedData, u8* destination)
 {
+    u8* originalDestination = destination;
     u8* pCurrentDestination = destination;
     u8 r6 = *(compressedData++);
     u8 r7 = 9;
@@ -286,6 +287,8 @@ void unpackGraphicsToVDP2(u8* compressedData, u8* destination)
                 else
                 {
                     // end of stream
+                    fprintf(stderr, "unpackGraphicsToVDP2: decompressed %ld bytes\n", (long)(pCurrentDestination - originalDestination));
+                    fflush(stderr);
                     return;
                 }
             }
@@ -332,17 +335,42 @@ void unpackGraphicsToVDP2(u8* compressedData, u8* destination)
 
 void loadFont()
 {
+    fprintf(stderr, "=== loadFont() called ===\n");
+    fflush(stderr);
+
     u32 fileSize = getFileSize("ASCII.CGZ");
+    fprintf(stderr, "loadFont: ASCII.CGZ fileSize=%d\n", fileSize);
+    fflush(stderr);
     assert(fileSize);
 
     u8* fontFile = new u8[fileSize];
     assert(fontFile);
 
     loadFile("ASCII.CGZ", fontFile, 0);
+    fprintf(stderr, "loadFont: file loaded, first 8 bytes: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+           fontFile[0], fontFile[1], fontFile[2], fontFile[3],
+           fontFile[4], fontFile[5], fontFile[6], fontFile[7]);
+    fflush(stderr);
 
     addToMemoryLayout(fontFile, 1);
 
+    // Font is loaded at VRAM offset 0. The decompressed data is structured so that
+    // pattern 0x63 (space character) points to VRAM offset 0x63 * 0x20 = 0xC60.
+    // The first 0xC60 bytes of decompressed data contain patterns 0x00-0x62 (unused/control chars).
     unpackGraphicsToVDP2(fontFile, VDP2_VRamStart);
+
+    // Check what's at the space character location (pattern 0x63 = VRAM offset 0xC60)
+    u8* spaceLocation = VDP2_VRamStart + 0xC60;
+    fprintf(stderr, "loadFont: unpacked to VRAM offset 0\n");
+    fprintf(stderr, "loadFont: data at space char (VRAM 0xC60): %02X %02X %02X %02X %02X %02X %02X %02X\n",
+           spaceLocation[0], spaceLocation[1], spaceLocation[2], spaceLocation[3],
+           spaceLocation[4], spaceLocation[5], spaceLocation[6], spaceLocation[7]);
+    // Check first printable char with pixels ('!' at pattern 0x65, VRAM 0xCA0)
+    u8* exclaimLocation = VDP2_VRamStart + 0xCA0;
+    fprintf(stderr, "loadFont: data at '!' char (VRAM 0xCA0): %02X %02X %02X %02X %02X %02X %02X %02X\n",
+           exclaimLocation[0], exclaimLocation[1], exclaimLocation[2], exclaimLocation[3],
+           exclaimLocation[4], exclaimLocation[5], exclaimLocation[6], exclaimLocation[7]);
+    fflush(stderr);
 
     if(0)
     {
@@ -352,6 +380,9 @@ void loadFont()
     }
 
     delete[] fontFile;
+
+    fprintf(stderr, "=== loadFont() done ===\n");
+    fflush(stderr);
 }
 
 void clearVdp2VRam(u32 offset, u32 size)
@@ -943,11 +974,51 @@ void copyFontToVdp2()
 
 void setFontDefaultColor(u32 paletteIndex, u16 color0, u16 color1)
 {
+    // Font palettes are at CRAM offset 0xE00 (vdp2FontPalettes)
+    // Each palette is 16 colors * 2 bytes = 32 bytes
+    // color0 is the main text color (center/body)
+    // color1 is the border/shadow color (outline)
+    u8* paletteBase = vdp2FontPalettes + paletteIndex * 32;
 
+    // Set all 16 colors
+    // Color 0: transparent
+    // Colors 1-7: border/outline color (black)
+    // Colors 8-15: main text color (white)
+    for (int i = 0; i < 16; i++)
+    {
+        u16 color;
+        if (i == 0)
+        {
+            // Color 0 is transparent
+            color = 0x0000;
+        }
+        else if (i <= 7)
+        {
+            // Colors 1-7: border/outline
+            color = color1;
+        }
+        else
+        {
+            // Colors 8-15: main text body
+            color = color0;
+        }
+
+        // Write color in big-endian format
+        paletteBase[i * 2] = (color >> 8) & 0xFF;
+        paletteBase[i * 2 + 1] = color & 0xFF;
+    }
 }
 
 void setFontDefaultColors()
 {
+    // First copy the font data to CRAM
+    copyFontToVdp2();
+
+    // Then set up the palette colors (this overwrites specific colors in the palettes)
+    // Palette 0: Grey text (0x4210) with black border (0x0000)
+    setFontDefaultColor(0, 0x4210, 0x0000);
+
+    // Palettes 7-14: Various colored text with gray shadow (0x8421)
     setFontDefaultColor(7, 0xF03C, 0x8421);
     setFontDefaultColor(8, 0xEB47, 0x8421);
     setFontDefaultColor(9, 0xA368, 0x8421);
@@ -957,7 +1028,8 @@ void setFontDefaultColors()
     setFontDefaultColor(13, 0x875A, 0x8421);
     setFontDefaultColor(14, 0xB18C, 0x8421);
 
-    copyFontToVdp2();
+    // Palette 15: Grey text (0x4210) with black border (0x0000)
+    setFontDefaultColor(15, 0x4210, 0x0000);
 }
 
 std::array<sVdpVar1, 14> vdpVar1;
@@ -1481,6 +1553,17 @@ void VDP2DrawString(const char* string)
 
     printVdp2String(&query);
 
+    #if !defined(SHIPPING_BUILD)
+    {
+        u16 w0 = getVdp2VramU16(vdp2TextMemoryOffset + 0x00);
+        u16 w1 = getVdp2VramU16(vdp2TextMemoryOffset + 0x02);
+        u16 w2 = getVdp2VramU16(vdp2TextMemoryOffset + 0x80);
+        u16 w3 = getVdp2VramU16(vdp2TextMemoryOffset + 0x82);
+        fprintf(stderr, "VDP2DrawString wrote: base=0x%X words=%04X,%04X,%04X,%04X cursor=(%d,%d)\n",
+                vdp2TextMemoryOffset, w0, w1, w2, w3, query.m0_cursorX, query.m4_cursorY);
+    }
+    #endif
+
     moveVdp2TextCursor(&query);
 }
 
@@ -1507,7 +1590,7 @@ void moveVdp2TextCursor(s_stringStatusQuery* vars)
 }
 
 u32 printVdp2StringTable[10] = {
-    12, 13, 7, 8, 9, 10, 11, 13, 7, 14
+    0, 13, 7, 8, 9, 10, 11, 13, 7, 14  // Changed index 0 from 12 to 0 for white text
 };
 
 void printVdp2StringNewLine(s_stringStatusQuery* vars)
@@ -1539,6 +1622,15 @@ void printVdp2String(s_stringStatusQuery* vars)
     printVdp2StringSub1(vars);
     vars->m24_vdp2MemoryOffset = vdp2TextMemoryOffset + (((vars->m4_cursorY * 0x40) + vars->m0_cursorX)) * 2;
 
+    #if !defined(SHIPPING_BUILD)
+    if (vars->m24_vdp2MemoryOffset >= 0x80000)
+    {
+        fprintf(stderr, "VDP2 text write OOB: base=0x%X cursor=(%d,%d) offset=0x%X\n",
+                vdp2TextMemoryOffset, vars->m0_cursorX, vars->m4_cursorY, vars->m24_vdp2MemoryOffset);
+        assert(false);
+    }
+    #endif
+
     while (u8 r4 = *(vars->m20_string++))
     {
         switch (r4)
@@ -1563,6 +1655,15 @@ void printVdp2String(s_stringStatusQuery* vars)
         default:
             setVdp2VramU16(vars->m24_vdp2MemoryOffset, r11 + (r4 - 0x20) * 2);
             setVdp2VramU16(vars->m24_vdp2MemoryOffset + 0x80, r11 + (r4 - 0x20) * 2 + 1);
+            #if !defined(SHIPPING_BUILD)
+            static bool loggedOnce = false;
+            if (!loggedOnce)
+            {
+                loggedOnce = true;
+                fprintf(stderr, "VDP2 text write: char=0x%02X glyph=0x%04X offset=0x%X base=0x%X\n",
+                        r4, r11 + (r4 - 0x20) * 2, vars->m24_vdp2MemoryOffset, vdp2TextMemoryOffset);
+            }
+            #endif
             vars->m24_vdp2MemoryOffset += 2;
             vars->m0_cursorX++;
             break;
@@ -1614,6 +1715,7 @@ s32 computeStringLength(const char* pString, s32 r5)
         }
         r14++;
     };
+    return r14;
 }
 
 void clearBlueBox(s32 x, s32 y, s32 width, s32 height)

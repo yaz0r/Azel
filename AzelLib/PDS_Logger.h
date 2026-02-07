@@ -84,6 +84,7 @@ enum eLogCategories
     log_max
 };
 extern sPDS_Logger PDS_Logger[eLogCategories::log_max];
+void cleanupLoggers();
 #endif
 
 #ifdef SHIPPING_BUILD

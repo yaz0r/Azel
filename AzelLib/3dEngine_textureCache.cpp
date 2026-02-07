@@ -49,6 +49,13 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
 
     int colorMode = (quad.CMDPMOD >> 3) & 0x7;
 
+    static bool debugColorMode = true;
+    if (debugColorMode && colorMode != 0 && colorMode != 1 && colorMode != 4) {
+        fprintf(stderr, "VDP1 texture decode: colorMode=%d CMDPMOD=0x%04X CMDCOLR=0x%04X\n",
+                colorMode, quad.CMDPMOD, quad.CMDCOLR);
+        debugColorMode = false;
+    }
+
     u8 SPD = ((quad.CMDPMOD & 0x40) != 0);
     u8 END = ((quad.CMDPMOD & 0x80) != 0);
     u8 MSB = ((quad.CMDPMOD & 0x8000) != 0);
@@ -118,16 +125,21 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
 
                         if (temp & 0x8000)
                         {
+                            // Direct RGB555 color (MSB set)
                             if (MSB) *texture++ = (alpha << 24);
                             else *texture++ = SAT2YAB1(alpha, temp);
                         }
                         else if (temp != 0x0000)
                         {
-                            //Vdp1ProcessSpritePixel(Vdp2Regs->SPCTL & 0xF, &temp, &shadow, &priority, &colorcl);
-                            //if( shadow != 0 ) 
-                            {
-                                *texture++ = 0x00;
+                            // Palette color - look up from Color RAM
+                            u16 color = getVdp2CramU16(temp * 2);
+                            u32 finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
+                            static bool debugLUT = true;
+                            if (debugLUT) {
+                                fprintf(stderr, "VDP1 LUT mode: temp=0x%04X color=0x%04X final=0x%08X\n", temp, color, finalColor);
+                                debugLUT = false;
                             }
+                            *texture++ = finalColor;
                             /*else
                             {
                             priority = ((u8 *)&Vdp2Regs->PRISA)[priority]&0x7;
@@ -279,6 +291,15 @@ bgfx::TextureHandle getTextureForQuadBGFX(s_quad& quad)
     {
         return BGFX_INVALID_HANDLE;
     }
+
+    // Debug: Log texture creation
+    static int textureCount = 0;
+    if (textureCount < 20) {
+        printf("VDP1 Texture %d: %dx%d (colorMode=%d, CMDSRCA=0x%04X)\n",
+               textureCount++, textureWidth, textureHeight,
+               (quad.CMDPMOD >> 3) & 0x7, quad.CMDSRCA);
+    }
+
     const uint64_t tsFlags = 0
         | BGFX_SAMPLER_U_CLAMP
         | BGFX_SAMPLER_V_CLAMP

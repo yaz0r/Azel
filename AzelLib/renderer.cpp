@@ -152,7 +152,12 @@ void azelSdl2_Init()
 #endif
 
     imguiCreate();
+#ifdef _WIN32
     ImGui_ImplSDL2_InitForD3D(gWindowBGFX);
+#else
+    // On Linux/Mac, use Vulkan init which is a no-op suitable for BGFX
+    ImGui_ImplSDL2_InitForVulkan(gWindowBGFX);
+#endif
 }
 
 bgfx::TextureHandle getTextureForLayerBgfx(eLayers layerIndex)
@@ -554,6 +559,7 @@ struct s_layerData
 
     s32 scrollX;
     s32 scrollY;
+    s32 outputHeight;
 
     s32 lineScrollEA;
 };
@@ -585,7 +591,7 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         NBGData.BGFXFB = bgfx::createFrameBuffer(textureWidth, textureHeight, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
         NBGData.BGFXTexture = bgfx::getTexture(NBGData.BGFXFB);
 
-        NBGData.bgfx_vdp2_planeDataBuffer = bgfx::createTexture2D(16, 16, 0, 0, bgfx::TextureFormat::R32U);
+        NBGData.bgfx_vdp2_planeDataBuffer = bgfx::createTexture2D(16, 1, false, 1, bgfx::TextureFormat::RGBA8);
 
         NBGData.m_currentWidth = textureWidth;
         NBGData.m_currentHeight = textureHeight;
@@ -600,6 +606,18 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         static bgfx::UniformHandle texID_VDP2_CRAM = BGFX_INVALID_HANDLE;
         static bgfx::VertexLayout ms_layout;
         static bgfx::UniformHandle planeDataBuffer = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_CHSZ = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_CHCN = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_PNB = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_CNSM = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_CAOS = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_PLSZ = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_SCN = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_planeOffsets = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_scrollX = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_scrollY = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_lineScrollEA = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_outputHeight = BGFX_INVALID_HANDLE;
 
         static bool initialized = false;
         if (!initialized)
@@ -628,6 +646,18 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
             texID_VDP2_RAM = bgfx::createUniform("s_VDP2_RAM", bgfx::UniformType::Sampler);
             texID_VDP2_CRAM = bgfx::createUniform("s_VDP2_CRAM", bgfx::UniformType::Sampler);
             planeDataBuffer = bgfx::createUniform("s_planeConfig", bgfx::UniformType::Sampler);
+            u_CHSZ = bgfx::createUniform("CHSZ", bgfx::UniformType::Vec4);
+            u_CHCN = bgfx::createUniform("CHCN", bgfx::UniformType::Vec4);
+            u_PNB = bgfx::createUniform("PNB", bgfx::UniformType::Vec4);
+            u_CNSM = bgfx::createUniform("CNSM", bgfx::UniformType::Vec4);
+            u_CAOS = bgfx::createUniform("CAOS", bgfx::UniformType::Vec4);
+            u_PLSZ = bgfx::createUniform("PLSZ", bgfx::UniformType::Vec4);
+            u_SCN = bgfx::createUniform("SCN", bgfx::UniformType::Vec4);
+            u_planeOffsets = bgfx::createUniform("planeOffsets", bgfx::UniformType::Vec4, 1);
+            u_scrollX = bgfx::createUniform("scrollX", bgfx::UniformType::Vec4);
+            u_scrollY = bgfx::createUniform("scrollY", bgfx::UniformType::Vec4);
+            u_lineScrollEA = bgfx::createUniform("lineScrollEA", bgfx::UniformType::Vec4);
+            u_outputHeight = bgfx::createUniform("outputHeight", bgfx::UniformType::Vec4);
 
             initialized = true;
         }
@@ -641,6 +671,37 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         bgfx::setViewClear(NBGData.viewId, BGFX_CLEAR_COLOR);
 
         bgfx::updateTexture2D(NBGData.bgfx_vdp2_planeDataBuffer, 0, 0, 0, 0, sizeof(layerData)/4, 1, bgfx::copy(&layerData, sizeof(layerData)));
+
+        const float v_CHSZ[4] = { (float)layerData.CHSZ, 0.0f, 0.0f, 0.0f };
+        const float v_CHCN[4] = { (float)layerData.CHCN, 0.0f, 0.0f, 0.0f };
+        const float v_PNB[4]  = { (float)layerData.PNB,  0.0f, 0.0f, 0.0f };
+        const float v_CNSM[4] = { (float)layerData.CNSM, 0.0f, 0.0f, 0.0f };
+        const float v_CAOS[4] = { (float)layerData.CAOS, 0.0f, 0.0f, 0.0f };
+        const float v_PLSZ[4] = { (float)layerData.PLSZ, 0.0f, 0.0f, 0.0f };
+        const float v_SCN[4]  = { (float)layerData.SCN,  0.0f, 0.0f, 0.0f };
+        const float v_planeOffsets[4] = {
+            (float)layerData.planeOffsets[0],
+            (float)layerData.planeOffsets[1],
+            (float)layerData.planeOffsets[2],
+            (float)layerData.planeOffsets[3],
+        };
+        const float v_scrollX[4] = { (float)layerData.scrollX, 0.0f, 0.0f, 0.0f };
+        const float v_scrollY[4] = { (float)layerData.scrollY, 0.0f, 0.0f, 0.0f };
+        const float v_lineScrollEA[4] = { (float)layerData.lineScrollEA, 0.0f, 0.0f, 0.0f };
+        const float v_outputHeight[4] = { (float)textureHeight, 0.0f, 0.0f, 0.0f };
+
+        bgfx::setUniform(u_CHSZ, v_CHSZ);
+        bgfx::setUniform(u_CHCN, v_CHCN);
+        bgfx::setUniform(u_PNB, v_PNB);
+        bgfx::setUniform(u_CNSM, v_CNSM);
+        bgfx::setUniform(u_CAOS, v_CAOS);
+        bgfx::setUniform(u_PLSZ, v_PLSZ);
+        bgfx::setUniform(u_SCN, v_SCN);
+        bgfx::setUniform(u_planeOffsets, v_planeOffsets);
+        bgfx::setUniform(u_scrollX, v_scrollX);
+        bgfx::setUniform(u_scrollY, v_scrollY);
+        bgfx::setUniform(u_lineScrollEA, v_lineScrollEA);
+        bgfx::setUniform(u_outputHeight, v_outputHeight);
 
         bgfx::setTexture(0, texID_VDP2_RAM, bgfx_vdp2_ram_texture);
         bgfx::setTexture(1, texID_VDP2_CRAM, bgfx_vdp2_cram_texture);
@@ -865,14 +926,9 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
 
 void renderBG0(u32 width, u32 height, bool bGPU)
 {
+    // Resolution scaling (LSMD/HRESO) is already handled in vdp2Resolution calculation
     u32 textureWidth = width;
     u32 textureHeight = height;
-
-    if ((vdp2Controls.m4_pendingVdp2Regs[0].m0_TVMD & 0xC0) == 0xC0)
-    {
-        textureWidth *= 2;
-        textureHeight *= 2;
-    }
 
     if(vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0x1)
     {
@@ -886,6 +942,7 @@ void renderBG0(u32 width, u32 height, bool bGPU)
         planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0) & 0x1F;
         planeData.scrollX = vdp2Controls.m4_pendingVdp2Regs->m70_SCXN0 >> 16;
         planeData.scrollY = vdp2Controls.m4_pendingVdp2Regs->m74_SCYN0 >> 16;
+        planeData.outputHeight = textureHeight;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -898,6 +955,61 @@ void renderBG0(u32 width, u32 height, bool bGPU)
         planeData.planeOffsets[1] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m40_MPABN0 >> 8) & 0x3F)) * pageSize;
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 >> 8) & 0x3F)) * pageSize;
+
+        static bool debugPrinted = false;
+        if (!debugPrinted && planeData.CHCN == 1)
+        {
+            debugPrinted = true;
+            printf("NBG0 Debug: CHSZ=%d CHCN=%d PNB=%d CNSM=%d CAOS=%d PLSZ=%d SCN=%d\n",
+                   planeData.CHSZ, planeData.CHCN, planeData.PNB, planeData.CNSM, planeData.CAOS, planeData.PLSZ, planeData.SCN);
+            printf("NBG0 Debug: scrollX=%d scrollY=%d\n", planeData.scrollX, planeData.scrollY);
+            printf("NBG0 Debug: pageDimension=%d patternSize=%d pageSize=%d offset=%d\n", pageDimension, patternSize, pageSize, offset);
+            printf("NBG0 Debug: planeOffsets[0]=0x%X [1]=0x%X [2]=0x%X [3]=0x%X\n",
+                   planeData.planeOffsets[0], planeData.planeOffsets[1], planeData.planeOffsets[2], planeData.planeOffsets[3]);
+            printf("NBG0 Debug: MPABN0=0x%X MPCDN0=0x%X MPOFN=0x%X\n",
+                   vdp2Controls.m4_pendingVdp2Regs->m40_MPABN0, vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0, vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN);
+            // Dump first few bytes of VRAM at planeOffsets[0] (pattern name data)
+            printf("NBG0 Debug: VRAM at 0x%X: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+                   planeData.planeOffsets[0],
+                   getVdp2VramU8(planeData.planeOffsets[0]),
+                   getVdp2VramU8(planeData.planeOffsets[0] + 1),
+                   getVdp2VramU8(planeData.planeOffsets[0] + 2),
+                   getVdp2VramU8(planeData.planeOffsets[0] + 3),
+                   getVdp2VramU8(planeData.planeOffsets[0] + 4),
+                   getVdp2VramU8(planeData.planeOffsets[0] + 5),
+                   getVdp2VramU8(planeData.planeOffsets[0] + 6),
+                   getVdp2VramU8(planeData.planeOffsets[0] + 7));
+            // Dump first few bytes of character data at 0x20000 and 0x20100 (SCB graphics)
+            printf("NBG0 Debug: SCB at 0x20000: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+                   getVdp2VramU8(0x20000),
+                   getVdp2VramU8(0x20001),
+                   getVdp2VramU8(0x20002),
+                   getVdp2VramU8(0x20003),
+                   getVdp2VramU8(0x20004),
+                   getVdp2VramU8(0x20005),
+                   getVdp2VramU8(0x20006),
+                   getVdp2VramU8(0x20007));
+            // Check at 0x20100 where actual character data should be for pattern 0x0402
+            printf("NBG0 Debug: SCB at 0x20100: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+                   getVdp2VramU8(0x20100),
+                   getVdp2VramU8(0x20101),
+                   getVdp2VramU8(0x20102),
+                   getVdp2VramU8(0x20103),
+                   getVdp2VramU8(0x20104),
+                   getVdp2VramU8(0x20105),
+                   getVdp2VramU8(0x20106),
+                   getVdp2VramU8(0x20107));
+            // Dump first few bytes of color RAM (palette)
+            printf("NBG0 Debug: CRAM at 0x0: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+                   *getVdp2Cram(0),
+                   *getVdp2Cram(1),
+                   *getVdp2Cram(2),
+                   *getVdp2Cram(3),
+                   *getVdp2Cram(4),
+                   *getVdp2Cram(5),
+                   *getVdp2Cram(6),
+                   *getVdp2Cram(7));
+        }
 
         if (!bGPU)
         {
@@ -933,6 +1045,7 @@ void renderBG1(u32 width, u32 height, bool bGPU)
         planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1) & 0x1F;
         planeData.scrollX = vdp2Controls.m4_pendingVdp2Regs->m80_SCXN1 >> 16;
         planeData.scrollY = vdp2Controls.m4_pendingVdp2Regs->m84_SCYN1 >> 16;
+        planeData.outputHeight = textureHeight;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -945,6 +1058,38 @@ void renderBG1(u32 width, u32 height, bool bGPU)
         planeData.planeOffsets[1] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m44_MPABN1 >> 8) & 0x3F)) * pageSize;
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m46_MPCDN1 >> 8) & 0x3F)) * pageSize;
+
+        static bool nbg1DebugPrinted = false;
+        if (!nbg1DebugPrinted && vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA == 0x706)
+        {
+            nbg1DebugPrinted = true;
+            fprintf(stderr, "NBG1 Debug: CHSZ=%d CHCN=%d PNB=%d CNSM=%d CAOS=%d PLSZ=%d SCN=%d\n",
+                    planeData.CHSZ, planeData.CHCN, planeData.PNB, planeData.CNSM,
+                    planeData.CAOS, planeData.PLSZ, planeData.SCN);
+            fprintf(stderr, "NBG1 Debug: planeOffsets[0]=0x%X [1]=0x%X [2]=0x%X [3]=0x%X\n",
+                    planeData.planeOffsets[0], planeData.planeOffsets[1],
+                    planeData.planeOffsets[2], planeData.planeOffsets[3]);
+            fprintf(stderr, "NBG1 Debug: Pattern data at 0x%X: %02X %02X %02X %02X\n",
+                    planeData.planeOffsets[0],
+                    getVdp2VramU8(planeData.planeOffsets[0]),
+                    getVdp2VramU8(planeData.planeOffsets[0]+1),
+                    getVdp2VramU8(planeData.planeOffsets[0]+2),
+                    getVdp2VramU8(planeData.planeOffsets[0]+3));
+            // Check pattern data at text position (35,26) = offset 0x6D20
+            fprintf(stderr, "NBG1 Debug: Text pattern at 0x6D20: %02X %02X %02X %02X\n",
+                    getVdp2VramU8(0x6D20),
+                    getVdp2VramU8(0x6D21),
+                    getVdp2VramU8(0x6D22),
+                    getVdp2VramU8(0x6D23));
+            // Font palette at CAOS=7 (offset 0xE00): dump colors 0, 1, and 15
+            u32 palBase = planeData.CAOS * 0x200;
+            fprintf(stderr, "NBG1 Debug: Palette base=0x%X, Color0=0x%04X Color1=0x%04X Color15=0x%04X\n",
+                    palBase,
+                    getVdp2CramU16(palBase + 0),
+                    getVdp2CramU16(palBase + 2),
+                    getVdp2CramU16(palBase + 30));
+            fflush(stderr);
+        }
 
         if (vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL & 0x400)
         {
@@ -1021,6 +1166,7 @@ void renderBG3(u32 width, u32 height, bool bGPU)
         planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m36_PNCN3) & 0x1F;
         planeData.scrollX = vdp2Controls.m4_pendingVdp2Regs->m94_SCXN3;
         planeData.scrollY = vdp2Controls.m4_pendingVdp2Regs->m96_SCYN3;
+        planeData.outputHeight = textureHeight;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -1033,6 +1179,43 @@ void renderBG3(u32 width, u32 height, bool bGPU)
         planeData.planeOffsets[1] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m4C_MPABN3 >> 8) & 0x3F)) * pageSize;
         planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m4E_MPCDN3 & 0x3F)) * pageSize;
         planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m4E_MPCDN3 >> 8) & 0x3F)) * pageSize;
+
+        static bool debugPrinted = false;
+        if (!debugPrinted) {
+            debugPrinted = true;
+            fprintf(stderr, "NBG3 Debug: CHSZ=%d CHCN=%d PNB=%d CNSM=%d CAOS=%d PLSZ=%d SCN=%d\n",
+                    planeData.CHSZ, planeData.CHCN, planeData.PNB, planeData.CNSM,
+                    planeData.CAOS, planeData.PLSZ, planeData.SCN);
+            fprintf(stderr, "NBG3 Debug: planeOffsets[0]=0x%X [1]=0x%X [2]=0x%X [3]=0x%X\n",
+                    planeData.planeOffsets[0], planeData.planeOffsets[1],
+                    planeData.planeOffsets[2], planeData.planeOffsets[3]);
+            // Print first few bytes of pattern name data
+            fprintf(stderr, "NBG3 Debug: Pattern data at 0x%X: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+                    planeData.planeOffsets[0],
+                    getVdp2Vram(planeData.planeOffsets[0])[0], getVdp2Vram(planeData.planeOffsets[0])[1],
+                    getVdp2Vram(planeData.planeOffsets[0])[2], getVdp2Vram(planeData.planeOffsets[0])[3],
+                    getVdp2Vram(planeData.planeOffsets[0])[4], getVdp2Vram(planeData.planeOffsets[0])[5],
+                    getVdp2Vram(planeData.planeOffsets[0])[6], getVdp2Vram(planeData.planeOffsets[0])[7]);
+            // Print font data at offset 0
+            fprintf(stderr, "NBG3 Debug: Font data at 0x0: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+                    getVdp2Vram(0)[0], getVdp2Vram(0)[1], getVdp2Vram(0)[2], getVdp2Vram(0)[3],
+                    getVdp2Vram(0)[4], getVdp2Vram(0)[5], getVdp2Vram(0)[6], getVdp2Vram(0)[7]);
+            // Print CRAM data at 0xE00 (font palettes)
+            fprintf(stderr, "NBG3 Debug: CRAM at 0xE00: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+                    getVdp2Cram(0xE00)[0], getVdp2Cram(0xE00)[1], getVdp2Cram(0xE00)[2], getVdp2Cram(0xE00)[3],
+                    getVdp2Cram(0xE00)[4], getVdp2Cram(0xE00)[5], getVdp2Cram(0xE00)[6], getVdp2Cram(0xE00)[7]);
+            // Print color 15 (text color) at 0xE1E and color 1 (border) at 0xE02
+            u16 color0 = getVdp2CramU16(0xE00);
+            u16 color1 = getVdp2CramU16(0xE02);
+            u16 color15 = getVdp2CramU16(0xE1E);
+            fprintf(stderr, "NBG3 Debug: Color0=0x%04X Color1=0x%04X Color15=0x%04X\n", color0, color1, color15);
+            // Convert to RGB to see actual colors
+            fprintf(stderr, "NBG3 Debug: Color15 RGB: R=%d G=%d B=%d (should be white=255,255,255)\n",
+                    (color15 & 0x1F) << 3, ((color15 >> 5) & 0x1F) << 3, ((color15 >> 10) & 0x1F) << 3);
+            fprintf(stderr, "NBG3 Debug: Color1 RGB: R=%d G=%d B=%d (should be black=0,0,0)\n",
+                    (color1 & 0x1F) << 3, ((color1 >> 5) & 0x1F) << 3, ((color1 >> 10) & 0x1F) << 3);
+            fflush(stderr);
+        }
 
         if (!bGPU)
         {
@@ -1069,6 +1252,7 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
         planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR) & 0x1F;
         planeData.scrollX = 0;
         planeData.scrollY = 0;
+        planeData.outputHeight = textureHeight;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -1372,11 +1556,14 @@ void PolyLineDraw(s_vdp1Command* vdp1EA)
     u32 finalColor;
     if (CMDCOLR & 0x8000)
     {
+        // Direct RGB555 color (MSB set)
         finalColor = 0xFF000000 | (((CMDCOLR & 0x1F) << 3) | ((CMDCOLR & 0x03E0) << 6) | ((CMDCOLR & 0x7C00) << 9));
     }
     else
     {
-        finalColor = 0xFF0000FF;
+        // Palette color - look up from Color RAM
+        u16 color = getVdp2CramU16(CMDCOLR * 2);
+        finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
     }
 
     drawLine(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);
@@ -1571,10 +1758,12 @@ void renderTexturedQuadBgfx(bgfx::ViewId outputView, bgfx::TextureHandle sourceT
         | BGFX_STATE_WRITE_RGB
         | BGFX_STATE_WRITE_A
         | BGFX_STATE_DEPTH_TEST_ALWAYS
+        | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
     );
 
     bgfx::setViewRect(outputView, 0, 0, internalResolution[0], internalResolution[1]);
-    bgfx::setViewClear(outputView, BGFX_CLEAR_COLOR);
+    // NOTE: Do NOT clear the view here - clearing happens once before compositing
+    // bgfx::setViewClear(outputView, BGFX_CLEAR_COLOR);
 
     bgfx::setTexture(0, inputTexture, sourceTexture);
 
@@ -1585,6 +1774,14 @@ void renderTexturedQuadBgfx(bgfx::ViewId outputView, bgfx::TextureHandle sourceT
 
 bool azelSdl2_EndFrame()
 {
+    static int endframe_calls = 0;
+    endframe_calls++;
+    if (endframe_calls <= 3)
+    {
+        fprintf(stderr, "=== azelSdl2_EndFrame called (#%d) ===\n", endframe_calls);
+        fflush(stderr);
+    }
+
     u32 outputResolutionWidth = 0;
     u32 outputResolutionHeight = 0;
 
@@ -1608,8 +1805,7 @@ bool azelSdl2_EndFrame()
         outputResolutionWidth = 352;
         break;
     case 3:
-        // TODO: fix
-        //outputResolutionWidth = 704; //this should be correct, but breaks the title screen
+        // VDP2 hi-res mode is 704 pixels, but VDP1/3D hardcodes 352 everywhere
         outputResolutionWidth = 352;
         break;
     default:
@@ -1617,8 +1813,19 @@ bool azelSdl2_EndFrame()
         break;
     }
 
-    u32 vdp2ResolutionWidth = outputResolutionWidth;
-    u32 vdp2ResolutionHeight = outputResolutionHeight;
+    // VDP2 needs to render at its native resolution (may differ from VDP1)
+    // HRESO=3 means 704 horizontal pixels
+    // LSMD controls interlace: 2 or 3 means double height (448 instead of 224)
+    u32 vdp2ResolutionWidth = (HRESO == 3) ? 704 : outputResolutionWidth;
+    u32 vdp2ResolutionHeight = (LSMD >= 2) ? (outputResolutionHeight * 2) : outputResolutionHeight;
+
+    static bool resDebugPrinted = false;
+    if (!resDebugPrinted) {
+        fprintf(stderr, "Resolution: HRESO=%d VRESO=%d LSMD=%d -> VDP2=%dx%d, VDP1=%dx%d\n",
+                HRESO, VRESO, LSMD, vdp2ResolutionWidth, vdp2ResolutionHeight,
+                outputResolutionWidth, outputResolutionHeight);
+        resDebugPrinted = true;
+    }
 
     {
         vdp1TextureWidth = outputResolutionWidth;
@@ -1731,7 +1938,42 @@ bool azelSdl2_EndFrame()
         float G = ((backScreenColor & 0x03E0) << 6) >> 8;
         float B = ((backScreenColor & 0x7C00) << 9) >> 16;
 
-        // TODOL set the bgfx back color to this color
+        // DEBUG: Print back screen color once
+        static bool backScreenDebugPrinted = false;
+        if (!backScreenDebugPrinted) {
+            fprintf(stderr, "BackScreen: addr=0x%X color=0x%04X R=%f G=%f B=%f\n",
+                    backscreenColorAddress, backScreenColor, R, G, B);
+            backScreenDebugPrinted = true;
+        }
+
+        // Set up the composite view ONCE before rendering all layers
+        // BGFX uses RGBA format: R in bits 24-31, G in 16-23, B in 8-15, A in 0-7
+        u32 clearColor = (u32(R) << 24) | (u32(G) << 16) | (u32(B) << 8) | 0xFF;
+        bgfx::setViewRect(CompositeView, 0, 0, internalResolution[0], internalResolution[1]);
+        bgfx::setViewClear(CompositeView, BGFX_CLEAR_COLOR, clearColor);
+        // Touch the view to ensure it's cleared even if no layers are rendered
+        bgfx::touch(CompositeView);
+
+        // Debug: print layer status when BGON changes
+        static u16 lastBGON = 0xFFFF;
+        u16 currentBGON = vdp2Controls.m4_pendingVdp2Regs->m20_BGON;
+        if (currentBGON != lastBGON) {
+            fprintf(stderr, "BGON changed: 0x%X -> 0x%X, PRINA=0x%X, PRINB=0x%X\n",
+                   lastBGON, currentBGON,
+                   vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA,
+                   vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB);
+            const char* layerNames[] = {"SPRITE_POLY", "SPRITE_SOFTWARE", "NBG0", "NBG1", "NBG3", "RBG0"};
+            for (eLayers layerIndex = SPRITE_POLY; layerIndex < eLayers::MAX; layerIndex = (eLayers)(layerIndex + 1))
+            {
+                fprintf(stderr, "  Layer %s: enabled=%d, priority=%d, texture valid=%d\n",
+                       layerNames[layerIndex],
+                       isBackgroundEnabled(layerIndex) ? 1 : 0,
+                       getPriorityForLayer(layerIndex),
+                       bgfx::isValid(getTextureForLayerBgfx(layerIndex)));
+            }
+            fflush(stderr);
+            lastBGON = currentBGON;
+        }
 
         for (int priorityIndex = 0; priorityIndex <= 7; priorityIndex++)
         {
@@ -1742,7 +1984,26 @@ bool azelSdl2_EndFrame()
                     renderTexturedQuadBgfx(CompositeView, getTextureForLayerBgfx(layerIndex));
                 }
             }
-            
+
+        }
+        // Print when PRINA is 0x706 (title screen config)
+        static bool titleCompositeDebugPrinted = false;
+        if (!titleCompositeDebugPrinted && vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA == 0x706)
+        {
+            titleCompositeDebugPrinted = true;
+            fprintf(stderr, "TITLE Composite: BGON=0x%X, PRINA=0x%X, PRINB=0x%X\n",
+                   vdp2Controls.m4_pendingVdp2Regs->m20_BGON,
+                   vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA,
+                   vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB);
+            for (eLayers layerIndex = SPRITE_POLY; layerIndex < eLayers::MAX; layerIndex = (eLayers)(layerIndex + 1))
+            {
+                const char* layerNames[] = {"SPRITE_POLY", "SPRITE_SOFTWARE", "NBG0", "NBG1", "NBG3", "RBG0"};
+                fprintf(stderr, "  Layer %s: enabled=%d, priority=%d\n",
+                       layerNames[layerIndex],
+                       isBackgroundEnabled(layerIndex) ? 1 : 0,
+                       getPriorityForLayer(layerIndex));
+            }
+            fflush(stderr);
         }
     }
 #endif

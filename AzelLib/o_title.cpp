@@ -1,6 +1,8 @@
 #include "PDS.h"
 #include "audio/soundDriver.h"
 
+void loadFont();
+
 namespace TITLE_OVERLAY {
 
 struct s_titleOverlayWorkArea : public s_workAreaTemplate<s_titleOverlayWorkArea>
@@ -108,6 +110,7 @@ sLayerConfig titleNBG1Setup[] =
 void loadTitleScreenGraphics()
 {
     reinitVdp2();
+    ::loadFont();
 
     vdp2Controls.m4_pendingVdp2Regs->m0_TVMD = (vdp2Controls.m4_pendingVdp2Regs->m0_TVMD & 0xFFF8) | 3; // HRESO 704
     vdp2Controls.m4_pendingVdp2Regs->m0_TVMD = (vdp2Controls.m4_pendingVdp2Regs->m0_TVMD & 0xFF3F) | 0xC0; // LSMD0 & 1 to 1 (double density interlace)
@@ -120,6 +123,7 @@ void loadTitleScreenGraphics()
     addToMemoryLayout(getVdp2Vram(0x10000), 1);
 
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 0x200, 0);
+    asyncDmaCopy(titleScreenPalette, getVdp2Cram(0xE00), 0x200, 0);
 
     vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x15FFFFF;
     vdp2Controls.m4_pendingVdp2Regs->m14_CYCA1 = 0x44FFFFF;
@@ -157,6 +161,9 @@ void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkAr
         loadTitleScreenGraphics();
         loadSoundBanks(0x4B, 0);
         pWorkArea->m_4 = 150;
+        setupVDP2StringRendering(6, 26, 40, 2);
+        VDP2DrawString("PANZER DRAGOON SAGA");
+        fprintf(stderr, "TITLE: debug string requested at textMem=0x%X\n", vdp2TextMemoryOffset);
         pWorkArea->m_status++;
     case 1:
         if (!isSoundLoadingFinished())

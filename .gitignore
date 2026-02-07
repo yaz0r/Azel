@@ -13,4 +13,8 @@ build/vs2019
 /build/vs2019_tools
 build_vs2022
 vs2022_tools
+build_linux
 data
+temp
+claude.md
+.claude

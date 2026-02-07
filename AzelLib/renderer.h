@@ -12,8 +12,9 @@ enum bgfxViews
     VDP2_NGB4,
     VDP2_MAX = VDP2_NGB4,
 
-    CompositeView,
+    // VDP1 must render BEFORE compositing
     vdp1_gpuView,
+    CompositeView,
 };
 
 void azelSdl2_Init();

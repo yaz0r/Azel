@@ -54,8 +54,16 @@ bool SDL_ES3_backend::init()
 
     bgfx::Init initparam;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-    initparam.platformData.ndt = wmi.info.x11.display;
-    initparam.platformData.nwh = (void*)(uintptr_t)wmi.info.x11.window;
+    if (wmi.subsystem == SDL_SYSWM_X11) {
+        initparam.platformData.ndt = wmi.info.x11.display;
+        initparam.platformData.nwh = (void*)(uintptr_t)wmi.info.x11.window;
+    }
+#if SDL_VERSION_ATLEAST(2, 0, 17)
+    else if (wmi.subsystem == SDL_SYSWM_WAYLAND) {
+        initparam.platformData.ndt = wmi.info.wl.display;
+        initparam.platformData.nwh = wmi.info.wl.egl_window;
+    }
+#endif
 #elif BX_PLATFORM_OSX
     initparam.platformData.ndt = NULL;
     initparam.platformData.nwh = cbSetupMetalLayer(wmi.info.cocoa.window);
@@ -73,9 +81,11 @@ bool SDL_ES3_backend::init()
     initparam.platformData.nwh = wmi.info.vivante.window;
 #endif // BX_PLATFORM_
 
-    //initparam.type = bgfx::RendererType::OpenGL;
-    //initparam.type = bgfx::RendererType::Vulkan;
-    //initparam.type = bgfx::RendererType::Metal;
+    // Use Vulkan for better integer precision and driver support on Linux
+    // initparam.type = bgfx::RendererType::OpenGL;
+    // initparam.type = bgfx::RendererType::Count; // Auto-detect
+    // initparam.type = bgfx::RendererType::Metal;
+    initparam.type = bgfx::RendererType::Vulkan;
     bgfx::init(initparam);
 
     //bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);

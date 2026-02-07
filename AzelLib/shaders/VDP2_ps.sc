@@ -3,9 +3,9 @@
 #define u32 highp uint
 #define s32 highp int
 
-highp USAMPLER2D(s_VDP2_RAM, 0);
-highp USAMPLER2D(s_VDP2_CRAM, 1);
-highp USAMPLER2D(s_planeConfig, 2);
+USAMPLER2D(s_VDP2_RAM, 0);
+USAMPLER2D(s_VDP2_CRAM, 1);
+SAMPLER2D(s_planeConfig, 2);
 
 #define in_CHSZ readFromPanelConfig(0)
 #define in_CHCN readFromPanelConfig(1)
@@ -40,13 +40,10 @@ struct s_layerData
 
 int readFromPanelConfig(s32 offset)
 {
-    ivec2 position;
-    position.x = offset;
-    position.y = 0;
-    uvec4 texel = texelFetch(s_planeConfig, position, 0);
-    s32 texelValue = int(texel.r);
-
-    return texelValue;
+    vec4 texel = texelFetch(s_planeConfig, ivec2(offset, 0), 0);
+    uvec4 bytes = uvec4(texel * 255.0 + 0.5);
+    s32 value = int(bytes.x | (bytes.y << 8) | (bytes.z << 16) | (bytes.w << 24));
+    return value;
 }
 
 int readFromSampler_VDP2_RAM(s32 offset)
@@ -121,15 +118,15 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
     s32 outputX = rawOutputX + layerData.scrollX;
     s32 outputY = rawOutputY + layerData.scrollY;
 
-    if (outputX < 0)
-        return vec4(1,0,0,1);
-    if (outputY < 0)
-        return vec4(1,0,0,1);
+    // VDP2 scroll coordinates wrap around the map dimensions
+    // Use proper modulo that handles negative values
+    outputX = ((outputX % mapDotWidth) + mapDotWidth) % mapDotWidth;
+    outputY = ((outputY % mapDotHeight) + mapDotHeight) % mapDotHeight;
 
     int planeX = outputX / planeDotWidth;
     int planeY = outputY / planeDotHeight;
     int dotInPlaneX = outputX % planeDotWidth;
-    int dotInPlaneY = outputY % planeDotWidth;
+    int dotInPlaneY = outputY % planeDotHeight;
 
     int pageX = dotInPlaneX / pageDotDimension;
     int pageY = dotInPlaneY / pageDotDimension;
@@ -164,8 +161,21 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
         int patternName = getVdp2VramU16(startOfPattern);
         int supplementalCharacterName = layerData.SCN;
 
-        // assuming supplement mode 0 with no data
-        paletteNumber = (patternName >> 12) & 0xF;
+        // Palette number depends on color mode (CHCN), match CPU path in renderer.cpp
+        if (layerData.CHCN == 0)
+        {
+            // 16 colors (4bpp)
+            paletteNumber = (patternName >> 12) & 0xF;
+        }
+        else if (layerData.CHCN == 1)
+        {
+            // 256 colors (8bpp): bits 12-14 become high bits of palette offset
+            paletteNumber = (patternName & 0x7000) >> 8;
+        }
+        else
+        {
+            paletteNumber = 0;
+        }
 
         if(layerData.CNSM == 0)
         {
@@ -196,6 +206,8 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
             }
         }
 
+        // Character offset is always 0x20 (32 bytes) per character number unit
+        // Game data is organized with pattern numbers spaced correctly for different color modes
         characterOffset = (characterNumber) * 0x20;
     }
     else if(patternSize == 4)
@@ -211,7 +223,8 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
     }
     else
     {
-        return vec4(1,0,0,1);
+        // Invalid pattern size - return YELLOW for debug
+        return vec4(1,1,0,1);
     }
 
     int cellIndex = cellX + cellY * 2;
@@ -243,7 +256,8 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
             dotColor = getVdp2VramU8(dotOffset);
         }
         else
-            return vec4(1,0,0,1);
+            // Invalid CHCN - return CYAN for debug
+            return vec4(0,1,1,1);
     }
 
     if(dotColor != 0)
@@ -278,6 +292,9 @@ void main()
     inputLayerData.planeOffsets[3] = in_planeOffsets_3;
     inputLayerData.scrollX = in_scrollX;
     inputLayerData.scrollY = in_scrollY;
+
+    // DEBUG: Uncomment to test shader is running
+    // gl_FragColor = vec4(0.5, 0.0, 0.5, 1.0); return;
 
     gl_FragColor = sampleLayer(int(gl_FragCoord.x), int(gl_FragCoord.y), inputLayerData);
 }

@@ -522,6 +522,9 @@ void freeFileInfoStruct(sFileInfoSub* pInfo)
 u32 getFileSize(const char* fileName)
 {
     FILE* fHandle = fopen(fileName, "rb");
+    if (!fHandle) {
+        fprintf(stderr, "ERROR: Cannot open file: %s\n", fileName);
+    }
     assert(fHandle);
 
     fseek(fHandle, 0, SEEK_END);
@@ -543,6 +546,12 @@ sFileInfoSub* openFileHandle(const char* fileName)
 
     FILE* fHandle = fopen(fileName, "rb");
     pFileHandle->fHandle = fHandle;
+
+    if (fHandle == nullptr) {
+        printf("Warning: File not found: %s\n", fileName);
+        pFileHandle->m_fileSize = 0;
+        return pFileHandle;
+    }
 
     fseek(fHandle, 0, SEEK_END);
     u32 fileSize = ftell(fHandle);
@@ -620,8 +629,9 @@ int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 
     sFileInfoSub* pFileHandle = openFileHandle(fileName);
 
-    if (pFileHandle == NULL)
+    if (pFileHandle == NULL || pFileHandle->m_fileSize == 0 || pFileHandle->fHandle == nullptr)
     {
+        if (pFileHandle) freeFileInfoStruct(pFileHandle);
         return -1;
     }
 
@@ -661,8 +671,10 @@ int loadFile(const char* fileName, s_fileBundle** destination, u16 vdp1Pointer)
 {
     sFileInfoSub* pFileHandle = openFileHandle(fileName);
 
-    if (pFileHandle == NULL)
+    if (pFileHandle == NULL || pFileHandle->m_fileSize == 0)
     {
+        *destination = nullptr;
+        if (pFileHandle) freeFileInfoStruct(pFileHandle);
         return -1;
     }
 
@@ -806,13 +818,24 @@ void initSMPC()
 
 void azelInit()
 {
+    fprintf(stderr, "=== azelInit() starting ===\n");
+    fflush(stderr);
+
     // stuff
 
+    fprintf(stderr, "azelInit: calling initFileInfoStruct\n");
+    fflush(stderr);
     initFileInfoStruct();
+    fprintf(stderr, "azelInit: initFileInfoStruct done\n");
+    fflush(stderr);
 
     // stuff
 
+    fprintf(stderr, "azelInit: calling initCommonFile\n");
+    fflush(stderr);
     initCommonFile();
+    fprintf(stderr, "azelInit: initCommonFile done\n");
+    fflush(stderr);
     BTL_GenericData::staticInit(); // not in original
 
     initSMPC();
@@ -820,6 +843,9 @@ void azelInit()
     // stuff
     initSoundDriver();
     initInitialTaskStatsAndDebug();
+
+    fprintf(stderr, "=== azelInit() complete ===\n");
+    fflush(stderr);
 
     // stuff
 }
@@ -1086,6 +1112,14 @@ bool delayTrace = true;
 bool bContinue = true;
 void loopIteration()
 {
+    static int loop_calls = 0;
+    loop_calls++;
+    if (loop_calls <= 3)
+    {
+        fprintf(stderr, "=== loopIteration called (#%d) ===\n", loop_calls);
+        fflush(stderr);
+    }
+
 #ifdef __EMSCRIPTEN__
     static bool gameRunning = false;
 #else

@@ -429,18 +429,25 @@ void inventoryMenuTaskDrawSub2(s_inventoryMenu* pThis, s32 param_2)
 void inventoryMenuTaskDrawSub0(s_inventoryMenu* pThis, s32 categoryId)
 {
     std::array<eItems, 100>::iterator psVar4 = pThis->m34_itemsInCurrentCategory.begin();
+    std::array<eItems, 100>::iterator psVar4End = pThis->m34_itemsInCurrentCategory.end();
     const s16* currentCategoryItemList = inventoryCatergoryTables[categoryId];
 
     switch (categoryId)
     {
     case 2: // berserks
-        assert(0);
+        // TODO: Missing implementation for berserk skills category
+        // Original game likely had special handling for dragon berserk abilities
+        Unimplemented();
         break;
     default:
         while (true)
         {
             int iVar1 = *(currentCategoryItemList++);
             if (iVar1 < 0) {
+                break;
+            }
+            // Bounds check to prevent array overflow
+            if (psVar4 >= psVar4End) {
                 break;
             }
             int itemCount;
