@@ -1,11 +1,26 @@
 # Azel: Reverse engineering of Panzer Dragoon Saga
 
 # Build
-Only Windows builds are supported right now. You need vs2022 installed with CMake
-* Clone with submodules (and recursive)
-* Run vs2022.bat to generate generate vs2022 solution
-* Put content of CD1 in data folder
-* Run the PDS project in the solution
+
+## Game data
+Extract the contents of Panzer Dragoon Saga CD1 into a `data/` folder in the project root.
+
+## Windows
+* Install Visual Studio 2022 with CMake support
+* Clone with submodules: `git clone --recursive`
+* Run `vs2022.bat` to generate the VS2022 solution
+* Build and run the `PDS` project
+
+## Linux
+* Install dependencies: `cmake`, `build-essential`, `libgl-dev`, `libx11-dev`, `libxrandr-dev`, `libxinerama-dev`, `libxcursor-dev`, `libxi-dev`, `libxkbcommon-dev`, `libwayland-dev`
+* Clone with submodules: `git clone --recursive`
+* Build:
+```
+mkdir build_linux && cd build_linux
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j$(nproc)
+```
+* Run from the project root (so it can find `data/`): `./build_linux/PDS/PDS`
 
 # Status
 * Still very early, but the beginning of the game is semi playable (with bugs) until the Arachnoth battle

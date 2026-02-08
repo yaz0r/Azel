@@ -105,7 +105,9 @@ else()
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
 
-set( CMAKE_EXE_LINKER_FLAGS_SHIPPING "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} /LTCG /OPT:ICF /OPT:REF /SUBSYSTEM:WINDOWS /DEBUG" )
+if(MSVC)
+    set( CMAKE_EXE_LINKER_FLAGS_SHIPPING "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} /LTCG /OPT:ICF /OPT:REF /SUBSYSTEM:WINDOWS /DEBUG" )
+endif()
 
 add_executable (PDS ${SOURCES})
 
@@ -161,7 +163,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
  TARGET_LINK_LIBRARIES(PDS soloud AzelLib)
  TARGET_LINK_LIBRARIES(PDS ${THIRD_PARTY}/SDL2/Xcode-iOS/SDL/build/Release\\\${EFFECTIVE_PLATFORM_NAME}/libSDL2.a)
 ELSE()
- TARGET_LINK_LIBRARIES(PDS SDL2main SDL2-static soloud AzelLib)
+ TARGET_LINK_LIBRARIES(PDS AzelLib soloud SDL2main SDL2-static)
  #TARGET_LINK_LIBRARIES(PDS C:/VulkanSDK/1.1.121.2/Lib/vulkan-1.lib)
  if(UNIX)
   TARGET_LINK_LIBRARIES(PDS -lGL)
@@ -193,3 +195,28 @@ set_target_properties(PDS PROPERTIES
 )
 ENDIF()
 
+# Create symlinks to data files and shaders for Linux builds
+if(UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
+    add_custom_command(TARGET PDS POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/data/shaders $<TARGET_FILE_DIR:PDS>/shaders
+        COMMENT "Creating symlink to shaders directory"
+    )
+    file(GLOB DATA_FILES "${CMAKE_SOURCE_DIR}/data/*.DAT" "${CMAKE_SOURCE_DIR}/data/*.PRG"
+                         "${CMAKE_SOURCE_DIR}/data/*.CGZ" "${CMAKE_SOURCE_DIR}/data/*.CGB"
+                         "${CMAKE_SOURCE_DIR}/data/*.SCB" "${CMAKE_SOURCE_DIR}/data/*.PNB"
+                         "${CMAKE_SOURCE_DIR}/data/*.MCB" "${CMAKE_SOURCE_DIR}/data/*.TSK"
+                         "${CMAKE_SOURCE_DIR}/data/*.TBL" "${CMAKE_SOURCE_DIR}/data/*.BIN"
+                         "${CMAKE_SOURCE_DIR}/data/*.MPB" "${CMAKE_SOURCE_DIR}/data/*.SSF"
+                         "${CMAKE_SOURCE_DIR}/data/*.FNT" "${CMAKE_SOURCE_DIR}/data/*.PCM"
+                         "${CMAKE_SOURCE_DIR}/data/*.SEQ" "${CMAKE_SOURCE_DIR}/data/*.EXB"
+                         "${CMAKE_SOURCE_DIR}/data/*.CPK" "${CMAKE_SOURCE_DIR}/data/*.EPK"
+                         "${CMAKE_SOURCE_DIR}/data/*.BDB" "${CMAKE_SOURCE_DIR}/data/*.TXT"
+                         "${CMAKE_SOURCE_DIR}/data/*.SND" "${CMAKE_SOURCE_DIR}/data/*.ini")
+    foreach(DATA_FILE ${DATA_FILES})
+        get_filename_component(DATA_FILE_NAME ${DATA_FILE} NAME)
+        add_custom_command(TARGET PDS POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E create_symlink ${DATA_FILE} $<TARGET_FILE_DIR:PDS>/${DATA_FILE_NAME}
+            COMMENT "Creating symlink to ${DATA_FILE_NAME}"
+        )
+    endforeach()
+endif()
