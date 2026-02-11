@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.9)
 include_directories(
     "."
 #    "${THIRD_PARTY}"
-    "${CMAKE_BINARY_DIR}/ThirdParty/SDL2/include-config-debug"
+    "${CMAKE_BINARY_DIR}/ThirdParty/SDL2/include-config-$<LOWER_CASE:$<CONFIG>>"
     "${CMAKE_BINARY_DIR}/ThirdParty/SDL2/include"
     "${THIRD_PARTY}/SDL2/include"
     "${THIRD_PARTY}/imgui"

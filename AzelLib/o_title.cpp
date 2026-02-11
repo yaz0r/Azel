@@ -109,28 +109,35 @@ sLayerConfig titleNBG1Setup[] =
 
 void loadTitleScreenGraphics()
 {
+    fprintf(stderr, "TITLE: loadTitleScreenGraphics() START\n"); fflush(stderr);
     reinitVdp2();
+    fprintf(stderr, "TITLE: reinitVdp2() done\n"); fflush(stderr);
     ::loadFont();
+    fprintf(stderr, "TITLE: loadFont() done\n"); fflush(stderr);
 
     vdp2Controls.m4_pendingVdp2Regs->m0_TVMD = (vdp2Controls.m4_pendingVdp2Regs->m0_TVMD & 0xFFF8) | 3; // HRESO 704
     vdp2Controls.m4_pendingVdp2Regs->m0_TVMD = (vdp2Controls.m4_pendingVdp2Regs->m0_TVMD & 0xFF3F) | 0xC0; // LSMD0 & 1 to 1 (double density interlace)
     vdp2Controls.m_isDirty = 1;
 
+    fprintf(stderr, "TITLE: loading TITLEE.SCB\n"); fflush(stderr);
     loadFile("TITLEE.SCB", getVdp2Vram(0x20000), 0);
     addToMemoryLayout(getVdp2Vram(0x20000), 1);
-
+    fprintf(stderr, "TITLE: loading TITLEE.PNB\n"); fflush(stderr);
     loadFile("TITLEE.PNB", getVdp2Vram(0x10000), 0);
     addToMemoryLayout(getVdp2Vram(0x10000), 1);
 
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 0x200, 0);
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0xE00), 0x200, 0);
+    fprintf(stderr, "TITLE: palette copied\n"); fflush(stderr);
 
     vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x15FFFFF;
     vdp2Controls.m4_pendingVdp2Regs->m14_CYCA1 = 0x44FFFFF;
     vdp2Controls.m4_pendingVdp2Regs->m18_CYCB0 = 0x44FFFFF;
     vdp2Controls.m4_pendingVdp2Regs->m1C_CYCB1 = 0x44FFFFF;
 
+    fprintf(stderr, "TITLE: setupNBG0\n"); fflush(stderr);
     setupNBG0(titleNBG0Setup);
+    fprintf(stderr, "TITLE: initLayerMap(0)\n"); fflush(stderr);
     initLayerMap(0, (0x10000), (0x10800), (0x10000), (0x10800));
 
     vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA = 0x706; // Layer0 = 6, Layer1 = 7
@@ -138,19 +145,25 @@ void loadTitleScreenGraphics()
     vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0;
     vdp2Controls.m_isDirty = 1; // because why not?
 
+    fprintf(stderr, "TITLE: TVSTAT=0x%X, TVSTAT&1=%d\n", VDP2Regs_.m4_TVSTAT, VDP2Regs_.m4_TVSTAT & 1); fflush(stderr);
     if (VDP2Regs_.m4_TVSTAT & 1)
     {
         pauseEngine[4] = 0;
+        fprintf(stderr, "TITLE: updateVDP2CoordinatesIncrement(0x10000, 0xE000) pauseEngine[4]=0\n"); fflush(stderr);
         updateVDP2CoordinatesIncrement(0x10000, 0xE000);
         pauseEngine[4] = 2;
     }
 
+    fprintf(stderr, "TITLE: setupNBG1\n"); fflush(stderr);
     setupNBG1(titleNBG1Setup);
+    fprintf(stderr, "TITLE: initLayerMap(1) vdp2TextMemoryOffset=0x%X\n", vdp2TextMemoryOffset); fflush(stderr);
     initLayerMap(1, vdp2TextMemoryOffset, vdp2TextMemoryOffset, vdp2TextMemoryOffset, vdp2TextMemoryOffset);
 
     pauseEngine[4] = 1;
+    fprintf(stderr, "TITLE: updateVDP2CoordinatesIncrement(0x8000, 0x8000) pauseEngine[4]=1\n"); fflush(stderr);
     updateVDP2CoordinatesIncrement(0x8000, 0x8000);
     pauseEngine[4] = 2;
+    fprintf(stderr, "TITLE: loadTitleScreenGraphics() DONE\n"); fflush(stderr);
 }
 
 void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkArea)
@@ -158,12 +171,16 @@ void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkAr
     switch (pWorkArea->m_status)
     {
     case 0:
+        fprintf(stderr, "TITLE: titleOverlay_Update case 0 START\n"); fflush(stderr);
         loadTitleScreenGraphics();
+        fprintf(stderr, "TITLE: loadSoundBanks\n"); fflush(stderr);
         loadSoundBanks(0x4B, 0);
         pWorkArea->m_4 = 150;
+        fprintf(stderr, "TITLE: setupVDP2StringRendering(6, 26, 40, 2)\n"); fflush(stderr);
         setupVDP2StringRendering(6, 26, 40, 2);
+        fprintf(stderr, "TITLE: VDP2DrawString start\n"); fflush(stderr);
         VDP2DrawString("PANZER DRAGOON SAGA");
-        fprintf(stderr, "TITLE: debug string requested at textMem=0x%X\n", vdp2TextMemoryOffset);
+        fprintf(stderr, "TITLE: VDP2DrawString done, textMem=0x%X\n", vdp2TextMemoryOffset); fflush(stderr);
         pWorkArea->m_status++;
     case 1:
         if (!isSoundLoadingFinished())

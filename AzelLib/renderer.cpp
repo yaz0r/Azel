@@ -448,6 +448,12 @@ void azelSdl2_StartFrame()
         buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN) << 5;
         buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT) << 6;
         buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) << 7;
+        // Saturn C, Z, X, L, R buttons
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) buttonMask |= 0x800;  // Saturn C
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X))              buttonMask |= 0x2000; // Saturn X
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))  buttonMask |= 0x1000; // Saturn Z
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_BACK))          buttonMask |= 0x4000; // Saturn L
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_GUIDE))         buttonMask |= 0x8000; // Saturn R
 
         graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown |= buttonMask;
 
@@ -498,6 +504,21 @@ void azelSdl2_StartFrame()
                     break;
                 case SDL_SCANCODE_RIGHT:
                     buttonMask = 0x80;
+                    break;
+                case SDL_SCANCODE_A:
+                    buttonMask = 0x800;  // Saturn C
+                    break;
+                case SDL_SCANCODE_S:
+                    buttonMask = 0x2000; // Saturn X
+                    break;
+                case SDL_SCANCODE_D:
+                    buttonMask = 0x1000; // Saturn Z
+                    break;
+                case SDL_SCANCODE_Q:
+                    buttonMask = 0x4000; // Saturn L
+                    break;
+                case SDL_SCANCODE_W:
+                    buttonMask = 0x8000; // Saturn R
                     break;
                 default:
                     break;
@@ -566,8 +587,8 @@ struct s_layerData
 
 void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
 {
-    // BGFX update texture size if needed
-    if ((NBGData.m_currentWidth != textureWidth) || (NBGData.m_currentHeight != textureHeight))
+    // BGFX update texture size if needed, or recreate if switching from software mode
+    if ((NBGData.m_currentWidth != textureWidth) || (NBGData.m_currentHeight != textureHeight) || !isValid(NBGData.BGFXFB))
     {
         if (isValid(NBGData.BGFXFB))
         {
@@ -714,6 +735,38 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
     }
     
     gBackend->bindBackBuffer();
+}
+
+void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u32* textureOutput);
+
+void renderLayerSoftware(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
+{
+    if ((NBGData.m_currentWidth != textureWidth) || (NBGData.m_currentHeight != textureHeight) || isValid(NBGData.BGFXFB))
+    {
+        if (isValid(NBGData.BGFXFB))
+        {
+            bgfx::destroy(NBGData.BGFXFB);
+            NBGData.BGFXFB = BGFX_INVALID_HANDLE;
+            NBGData.BGFXTexture = BGFX_INVALID_HANDLE;
+        }
+
+        const uint64_t tsFlags = 0
+            | BGFX_SAMPLER_U_CLAMP
+            | BGFX_SAMPLER_V_CLAMP
+            ;
+
+        NBGData.BGFXTexture = bgfx::createTexture2D(textureWidth, textureHeight, false, 1, bgfx::TextureFormat::BGRA8, tsFlags);
+
+        NBGData.m_currentWidth = textureWidth;
+        NBGData.m_currentHeight = textureHeight;
+    }
+
+    u32* textureOutput = new u32[textureWidth * textureHeight];
+    renderLayer(layerData, textureWidth, textureHeight, textureOutput);
+
+    bgfx::updateTexture2D(NBGData.BGFXTexture, 0, 0, 0, 0, textureWidth, textureHeight, bgfx::copy(textureOutput, textureWidth * textureHeight * 4));
+
+    delete[] textureOutput;
 }
 
 void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u32* textureOutput)
@@ -1013,12 +1066,7 @@ void renderBG0(u32 width, u32 height, bool bGPU)
 
         if (!bGPU)
         {
-            u32* textureOutput = new u32[textureWidth * textureHeight];
-            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-
-            assert(0); // need to update the texture in bgfx
-
-            delete[] textureOutput;
+            renderLayerSoftware(planeData, textureWidth, textureHeight, NBG_data[0]);
         }
         else
         {
@@ -1066,28 +1114,32 @@ void renderBG1(u32 width, u32 height, bool bGPU)
             fprintf(stderr, "NBG1 Debug: CHSZ=%d CHCN=%d PNB=%d CNSM=%d CAOS=%d PLSZ=%d SCN=%d\n",
                     planeData.CHSZ, planeData.CHCN, planeData.PNB, planeData.CNSM,
                     planeData.CAOS, planeData.PLSZ, planeData.SCN);
+            fprintf(stderr, "NBG1 Debug: scrollX=%d scrollY=%d (raw SCXN1=0x%08X SCYN1=0x%08X)\n",
+                    planeData.scrollX, planeData.scrollY,
+                    vdp2Controls.m4_pendingVdp2Regs->m80_SCXN1,
+                    vdp2Controls.m4_pendingVdp2Regs->m84_SCYN1);
+            fprintf(stderr, "NBG1 Debug: textureSize=%dx%d, HRESO=%d\n",
+                    textureWidth, textureHeight,
+                    (vdp2Controls.m4_pendingVdp2Regs->m0_TVMD) & 7);
             fprintf(stderr, "NBG1 Debug: planeOffsets[0]=0x%X [1]=0x%X [2]=0x%X [3]=0x%X\n",
                     planeData.planeOffsets[0], planeData.planeOffsets[1],
                     planeData.planeOffsets[2], planeData.planeOffsets[3]);
-            fprintf(stderr, "NBG1 Debug: Pattern data at 0x%X: %02X %02X %02X %02X\n",
-                    planeData.planeOffsets[0],
-                    getVdp2VramU8(planeData.planeOffsets[0]),
-                    getVdp2VramU8(planeData.planeOffsets[0]+1),
-                    getVdp2VramU8(planeData.planeOffsets[0]+2),
-                    getVdp2VramU8(planeData.planeOffsets[0]+3));
-            // Check pattern data at text position (35,26) = offset 0x6D20
-            fprintf(stderr, "NBG1 Debug: Text pattern at 0x6D20: %02X %02X %02X %02X\n",
-                    getVdp2VramU8(0x6D20),
-                    getVdp2VramU8(0x6D21),
-                    getVdp2VramU8(0x6D22),
-                    getVdp2VramU8(0x6D23));
-            // Font palette at CAOS=7 (offset 0xE00): dump colors 0, 1, and 15
-            u32 palBase = planeData.CAOS * 0x200;
-            fprintf(stderr, "NBG1 Debug: Palette base=0x%X, Color0=0x%04X Color1=0x%04X Color15=0x%04X\n",
-                    palBase,
-                    getVdp2CramU16(palBase + 0),
-                    getVdp2CramU16(palBase + 2),
-                    getVdp2CramU16(palBase + 30));
+            // Scan for non-zero patterns in NBG1 to find where text is
+            u32 pageDim = (planeData.CHSZ == 0) ? 64 : 32;
+            u32 patSz = (planeData.PNB == 0) ? 4 : 2;
+            fprintf(stderr, "NBG1 Debug: Non-zero patterns (first 20):\n");
+            int found = 0;
+            for (u32 row = 0; row < pageDim && found < 20; row++) {
+                for (u32 col = 0; col < pageDim && found < 20; col++) {
+                    u32 patAddr = planeData.planeOffsets[0] + (row * pageDim + col) * patSz;
+                    u16 pat = getVdp2VramU16(patAddr);
+                    if (pat != 0) {
+                        fprintf(stderr, "  tile(%d,%d) pat=0x%04X pixel=(%d,%d)\n",
+                                col, row, pat, col*8, row*8);
+                        found++;
+                    }
+                }
+            }
             fflush(stderr);
         }
 
@@ -1098,12 +1150,7 @@ void renderBG1(u32 width, u32 height, bool bGPU)
 
         if (!bGPU)
         {
-            u32* textureOutput = new u32[textureWidth * textureHeight];
-            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-
-            assert(0); // need to update the texture in bgfx
-
-            delete[] textureOutput;
+            renderLayerSoftware(planeData, textureWidth, textureHeight, NBG_data[1]);
         }
         else
         {
@@ -1219,19 +1266,14 @@ void renderBG3(u32 width, u32 height, bool bGPU)
 
         if (!bGPU)
         {
-            u32* textureOutput = new u32[textureWidth * textureHeight];
-            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-
-            assert(0); // need to update the texture in bgfx
-
-            delete[] textureOutput;
+            renderLayerSoftware(planeData, textureWidth, textureHeight, NBG_data[3]);
         }
         else
         {
             renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[3]);
         }
     }
-    
+
 }
 
 void renderRBG0(u32 width, u32 height, bool bGPU)
@@ -1268,12 +1310,7 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
 
         if (!bGPU)
         {
-            u32* textureOutput = new u32[textureWidth * textureHeight];
-            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-
-            //assert(0); // need to update the texture in bgfx
-
-            delete[] textureOutput;
+            renderLayerSoftware(planeData, textureWidth, textureHeight, NBG_data[4]);
         }
         else
         {
@@ -1779,6 +1816,9 @@ bool azelSdl2_EndFrame()
     if (endframe_calls <= 3)
     {
         fprintf(stderr, "=== azelSdl2_EndFrame called (#%d) ===\n", endframe_calls);
+        fprintf(stderr, "  TVMD=0x%04X BGON=0x%04X\n",
+                vdp2Controls.m4_pendingVdp2Regs->m0_TVMD,
+                vdp2Controls.m4_pendingVdp2Regs->m20_BGON);
         fflush(stderr);
     }
 
@@ -1801,31 +1841,29 @@ bool azelSdl2_EndFrame()
 
     switch (HRESO)
     {
+    case 0:
+    case 4:
+        outputResolutionWidth = 320;
+        break;
     case 1:
+    case 5:
         outputResolutionWidth = 352;
         break;
+    case 2:
+    case 6:
+        outputResolutionWidth = 320; // hi-res 640, but VDP1 hardcodes 320
+        break;
     case 3:
-        // VDP2 hi-res mode is 704 pixels, but VDP1/3D hardcodes 352 everywhere
-        outputResolutionWidth = 352;
+    case 7:
+        outputResolutionWidth = 352; // hi-res 704, but VDP1 hardcodes 352
         break;
     default:
         assert(0);
         break;
     }
 
-    // VDP2 needs to render at its native resolution (may differ from VDP1)
-    // HRESO=3 means 704 horizontal pixels
-    // LSMD controls interlace: 2 or 3 means double height (448 instead of 224)
-    u32 vdp2ResolutionWidth = (HRESO == 3) ? 704 : outputResolutionWidth;
+    u32 vdp2ResolutionWidth = (HRESO == 2 || HRESO == 6) ? 640 : (HRESO == 3 || HRESO == 7) ? 704 : outputResolutionWidth;
     u32 vdp2ResolutionHeight = (LSMD >= 2) ? (outputResolutionHeight * 2) : outputResolutionHeight;
-
-    static bool resDebugPrinted = false;
-    if (!resDebugPrinted) {
-        fprintf(stderr, "Resolution: HRESO=%d VRESO=%d LSMD=%d -> VDP2=%dx%d, VDP1=%dx%d\n",
-                HRESO, VRESO, LSMD, vdp2ResolutionWidth, vdp2ResolutionHeight,
-                outputResolutionWidth, outputResolutionHeight);
-        resDebugPrinted = true;
-    }
 
     {
         vdp1TextureWidth = outputResolutionWidth;
@@ -1851,13 +1889,17 @@ bool azelSdl2_EndFrame()
     static bool BG3_GPU = true;
     static bool RBG0_GPU = false;
 
+    if (endframe_calls <= 3) { fprintf(stderr, "  rendering BGs (res=%dx%d)\n", vdp2ResolutionWidth, vdp2ResolutionHeight); fflush(stderr); }
     renderBG0(vdp2ResolutionWidth, vdp2ResolutionHeight, BG0_GPU);
+    if (endframe_calls <= 3) { fprintf(stderr, "  BG0 done\n"); fflush(stderr); }
     renderBG1(vdp2ResolutionWidth, vdp2ResolutionHeight, BG1_GPU);
+    if (endframe_calls <= 3) { fprintf(stderr, "  BG1 done\n"); fflush(stderr); }
     //renderBG2(vdp2ResolutionWidth, vdp2ResolutionHeight);
     renderBG3(vdp2ResolutionWidth, vdp2ResolutionHeight, BG3_GPU);
+    if (endframe_calls <= 3) { fprintf(stderr, "  BG3 done\n"); fflush(stderr); }
     renderRBG0(vdp2ResolutionWidth, vdp2ResolutionHeight, RBG0_GPU);
-
-    if(!isShipping())
+    if (endframe_calls <= 3) { fprintf(stderr, "  RBG0 done\n"); fflush(stderr); }
+    if (endframe_calls <= 3) { fprintf(stderr, "  ImGui VDP start\n"); fflush(stderr); }
     {
         if(ImGui::Begin("VDP"))
         {
@@ -1896,6 +1938,7 @@ bool azelSdl2_EndFrame()
         PrintDebugTasksHierarchy();
         PrintDebugTasksInfo();
     }
+    if (endframe_calls <= 3) { fprintf(stderr, "  ImGui VDP done\n"); fflush(stderr); }
 
     if(!isShipping())
     {
@@ -1906,6 +1949,7 @@ bool azelSdl2_EndFrame()
         ImGui::End();
     }
 
+    if (endframe_calls <= 3) { fprintf(stderr, "  VDP1 render start\n"); fflush(stderr); }
     // render VDP1 frame buffer
     if(1)
     {
@@ -1925,10 +1969,13 @@ bool azelSdl2_EndFrame()
         }
     }
     
+    if (endframe_calls <= 3) { fprintf(stderr, "  VDP1 render done, compositing\n"); fflush(stderr); }
     //Compose
 #ifndef USE_NULL_RENDERER
     {
+        if (endframe_calls <= 3) { fprintf(stderr, "  compose: ZoneScoped\n"); fflush(stderr); }
         ZoneScopedN("Compose");
+        if (endframe_calls <= 3) { fprintf(stderr, "  compose: backscreen calc\n"); fflush(stderr); }
 
         //get clear color of back screen
         u32 backscreenColorAddress = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0x7FFFF) * 2;
@@ -1953,6 +2000,7 @@ bool azelSdl2_EndFrame()
         bgfx::setViewClear(CompositeView, BGFX_CLEAR_COLOR, clearColor);
         // Touch the view to ensure it's cleared even if no layers are rendered
         bgfx::touch(CompositeView);
+        if (endframe_calls <= 3) { fprintf(stderr, "  compose: view setup done, compositing layers\n"); fflush(stderr); }
 
         // Debug: print layer status when BGON changes
         static u16 lastBGON = 0xFFFF;
@@ -1975,17 +2023,24 @@ bool azelSdl2_EndFrame()
             lastBGON = currentBGON;
         }
 
+        if (endframe_calls <= 3) { fprintf(stderr, "  compose: loop start\n"); fflush(stderr); }
         for (int priorityIndex = 0; priorityIndex <= 7; priorityIndex++)
         {
-            for (eLayers layerIndex = SPRITE_POLY; layerIndex < eLayers::MAX; layerIndex = (eLayers)(layerIndex + 1))
+            if (isBackgroundEnabled(SPRITE_POLY) && (getPriorityForLayer(SPRITE_POLY) == priorityIndex))
+            {
+                if (endframe_calls <= 3) { fprintf(stderr, "  compose: SPRITE_POLY pri=%d\n", priorityIndex); fflush(stderr); }
+                renderTexturedQuadBgfx(CompositeView, getTextureForLayerBgfx(SPRITE_POLY));
+            }
+            for (eLayers layerIndex = NBG0; layerIndex < eLayers::MAX; layerIndex = (eLayers)(layerIndex + 1))
             {
                 if (isBackgroundEnabled(layerIndex) && (getPriorityForLayer(layerIndex) == priorityIndex))
                 {
+                    if (endframe_calls <= 3) { fprintf(stderr, "  compose: layer=%d pri=%d\n", layerIndex, priorityIndex); fflush(stderr); }
                     renderTexturedQuadBgfx(CompositeView, getTextureForLayerBgfx(layerIndex));
                 }
             }
-
         }
+        if (endframe_calls <= 3) { fprintf(stderr, "  compose: loop done\n"); fflush(stderr); }
         // Print when PRINA is 0x706 (title screen config)
         static bool titleCompositeDebugPrinted = false;
         if (!titleCompositeDebugPrinted && vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA == 0x706)
@@ -2007,6 +2062,7 @@ bool azelSdl2_EndFrame()
         }
     }
 #endif
+    if (endframe_calls <= 3) { fprintf(stderr, "  post-compose\n"); fflush(stderr); }
 
     gBackend->bindBackBuffer();
 
@@ -2152,8 +2208,9 @@ bool azelSdl2_EndFrame()
         ImGui::Render();
         //renderTexturedQuadBgfx(0, bgfx::getTexture(gBgfxCompositedFB));
     }
-    
+    if (endframe_calls <= 3) { fprintf(stderr, "  pre-bgfx::frame\n"); fflush(stderr); }
     bgfx::frame();
+    if (endframe_calls <= 3) { fprintf(stderr, "  post-bgfx::frame\n"); fflush(stderr); }
 
     {
         ZoneScopedN("WaitNextFrame");

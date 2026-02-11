@@ -5,37 +5,75 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/build_linux"
 DATA_DIR="$SCRIPT_DIR/data"
 NPROC=$(nproc 2>/dev/null || echo 4)
-BUILD_TYPE="${1:-RelWithDebInfo}"
 
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
+# --- Detect distro ---
+if command -v apt-get &>/dev/null; then
+    DISTRO="debian"
+elif command -v pacman &>/dev/null; then
+    DISTRO="arch"
+elif command -v dnf &>/dev/null; then
+    DISTRO="fedora"
+else
+    DISTRO="unknown"
+fi
+
+DEPS_APT="cmake g++ make pkg-config libgl-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev libvulkan-dev"
+DEPS_PAC="cmake gcc make pkgconf mesa libx11 libxrandr libxinerama libxcursor libxi libxkbcommon vulkan-icd-loader vulkan-headers"
+DEPS_DNF="cmake gcc-c++ make pkgconf-pkg-config mesa-libGL-devel libX11-devel libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel libxkbcommon-devel vulkan-loader-devel"
+
+# --- Install dependencies if requested ---
+if [ "${1:-}" = "--deps" ]; then
+    echo "Installing build dependencies..."
+    case "$DISTRO" in
+        debian) sudo apt-get update -qq && sudo apt-get install -y $DEPS_APT ;;
+        arch)   sudo pacman -S --needed $DEPS_PAC ;;
+        fedora) sudo dnf install -y $DEPS_DNF ;;
+        *)      echo -e "${RED}Unknown distro. Install dependencies manually:${NC}"
+                echo "  Tools: cmake, g++/gcc, make, pkg-config"
+                echo "  Libs:  GL, X11, Xrandr, Xinerama, Xcursor, Xi, xkbcommon, vulkan"
+                exit 1 ;;
+    esac
+    echo -e "${GREEN}Dependencies installed.${NC}"
+    shift
+fi
+
+BUILD_TYPE="${1:-RelWithDebInfo}"
+
 err=0
 
 # --- Check build tools ---
 for cmd in cmake g++ make pkg-config; do
     if ! command -v "$cmd" &>/dev/null; then
-        echo -e "${RED}MISSING:${NC} $cmd not found. Install it with your package manager."
+        echo -e "${RED}MISSING:${NC} $cmd not found. Run: ${YELLOW}$0 --deps${NC}"
         err=1
     fi
 done
 
 # --- Check system libraries (headers) ---
+# header:ubuntu-pkg:arch-pkg:fedora-pkg
 LIBS=(
-    "GL/gl.h:libgl-dev (or mesa-dev)"
-    "X11/Xlib.h:libx11-dev"
-    "X11/extensions/Xrandr.h:libxrandr-dev"
-    "X11/extensions/Xinerama.h:libxinerama-dev"
-    "X11/Xcursor/Xcursor.h:libxcursor-dev"
-    "X11/extensions/XInput2.h:libxi-dev"
-    "xkbcommon/xkbcommon.h:libxkbcommon-dev"
+    "GL/gl.h:libgl-dev:mesa:mesa-libGL-devel"
+    "X11/Xlib.h:libx11-dev:libx11:libX11-devel"
+    "X11/extensions/Xrandr.h:libxrandr-dev:libxrandr:libXrandr-devel"
+    "X11/extensions/Xinerama.h:libxinerama-dev:libxinerama:libXinerama-devel"
+    "X11/Xcursor/Xcursor.h:libxcursor-dev:libxcursor:libXcursor-devel"
+    "X11/extensions/XInput2.h:libxi-dev:libxi:libXi-devel"
+    "xkbcommon/xkbcommon.h:libxkbcommon-dev:libxkbcommon:libxkbcommon-devel"
 )
 
 for entry in "${LIBS[@]}"; do
-    header="${entry%%:*}"
-    pkg="${entry##*:}"
+    IFS=':' read -r header pkg_deb pkg_arch pkg_fed <<< "$entry"
+    case "$DISTRO" in
+        debian)  pkg="$pkg_deb" ;;
+        arch)    pkg="$pkg_arch" ;;
+        fedora)  pkg="$pkg_fed" ;;
+        *)       pkg="$pkg_deb" ;;
+    esac
     found=0
     for inc in /usr/include /usr/local/include; do
         if [ -f "$inc/$header" ]; then
@@ -44,7 +82,7 @@ for entry in "${LIBS[@]}"; do
         fi
     done
     if [ "$found" -eq 0 ]; then
-        echo -e "${RED}MISSING:${NC} $header not found. Install: ${YELLOW}$pkg${NC}"
+        echo -e "${RED}MISSING:${NC} $header not found. Install: ${YELLOW}$pkg${NC}  (or run: $0 --deps)"
         err=1
     fi
 done
@@ -98,7 +136,7 @@ echo ""
 
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
-cmake "$SCRIPT_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+cmake "$SCRIPT_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make -j"$NPROC"
 
 echo ""

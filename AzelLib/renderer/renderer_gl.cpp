@@ -1,5 +1,7 @@
 #include "PDS.h"
 #include <bx/platform.h>
+#include <cstdlib>
+#include <cstring>
 
 //#define IMGUI_API
 //#include "dear-imgui/examples/imgui_impl_sdl.h"
@@ -58,10 +60,10 @@ bool SDL_ES3_backend::init()
         initparam.platformData.ndt = wmi.info.x11.display;
         initparam.platformData.nwh = (void*)(uintptr_t)wmi.info.x11.window;
     }
-#if SDL_VERSION_ATLEAST(2, 0, 17)
+#if SDL_VERSION_ATLEAST(2, 0, 17) && defined(SDL_VIDEO_DRIVER_WAYLAND)
     else if (wmi.subsystem == SDL_SYSWM_WAYLAND) {
         initparam.platformData.ndt = wmi.info.wl.display;
-        initparam.platformData.nwh = wmi.info.wl.egl_window;
+        initparam.platformData.nwh = (void*)wmi.info.wl.surface;
     }
 #endif
 #elif BX_PLATFORM_OSX
@@ -81,12 +83,57 @@ bool SDL_ES3_backend::init()
     initparam.platformData.nwh = wmi.info.vivante.window;
 #endif // BX_PLATFORM_
 
-    // Use Vulkan for better integer precision and driver support on Linux
-    // initparam.type = bgfx::RendererType::OpenGL;
-    // initparam.type = bgfx::RendererType::Count; // Auto-detect
-    // initparam.type = bgfx::RendererType::Metal;
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+    // AZEL_RENDERER env var: "vulkan", "opengl", or unset (auto-detect)
+    const char* rendererEnv = getenv("AZEL_RENDERER");
+    if (rendererEnv && strcmp(rendererEnv, "opengl") == 0)
+    {
+        fprintf(stderr, "bgfx: forcing OpenGL backend (AZEL_RENDERER=opengl)\n");
+        initparam.type = bgfx::RendererType::OpenGL;
+        if (!bgfx::init(initparam))
+        {
+            fprintf(stderr, "bgfx: OpenGL init failed!\n");
+            return false;
+        }
+    }
+    else if (rendererEnv && strcmp(rendererEnv, "vulkan") == 0)
+    {
+        fprintf(stderr, "bgfx: forcing Vulkan backend (AZEL_RENDERER=vulkan)\n");
+        initparam.type = bgfx::RendererType::Vulkan;
+        if (!bgfx::init(initparam))
+        {
+            fprintf(stderr, "bgfx: Vulkan init failed!\n");
+            return false;
+        }
+    }
+    else
+    {
+        // Auto: try Vulkan first, fall back to OpenGL
+        initparam.type = bgfx::RendererType::Vulkan;
+        fprintf(stderr, "bgfx: trying Vulkan backend...\n");
+        if (!bgfx::init(initparam))
+        {
+            fprintf(stderr, "bgfx: Vulkan init failed, trying OpenGL...\n");
+            initparam.type = bgfx::RendererType::OpenGL;
+            if (!bgfx::init(initparam))
+            {
+                fprintf(stderr, "bgfx: OpenGL init also failed!\n");
+                return false;
+            }
+            fprintf(stderr, "bgfx: using OpenGL backend\n");
+        }
+        else
+        {
+            fprintf(stderr, "bgfx: using Vulkan backend\n");
+        }
+    }
+#elif BX_PLATFORM_IOS
+    // Already set to Metal above
+    bgfx::init(initparam);
+#else
     initparam.type = bgfx::RendererType::Vulkan;
     bgfx::init(initparam);
+#endif
 
     //bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
 
