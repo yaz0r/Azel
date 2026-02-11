@@ -2,6 +2,7 @@
 #include "audio/soundDriver.h"
 
 void loadFont();
+void setFontDefaultColor(u32 paletteIndex, u16 color0, u16 color1);
 
 namespace TITLE_OVERLAY {
 
@@ -130,6 +131,13 @@ void loadTitleScreenGraphics()
     // Don't copy background palette to CRAM 0xE00 - it overwrites font palettes
     // that NBG1 text needs (CAOS=7 reads from 0xE00). The background (NBG0)
     // uses CAOS=0 which reads from CRAM 0x000.
+
+    // Set title screen text palette colors (green with dark outline)
+    // Saturn RGB555: R=bits 0-4, G=bits 5-9, B=bits 10-14
+    setFontDefaultColor(9,  0x03E0, 0x0120);  // arrows: bright green body, dark green border
+    setFontDefaultColor(12, 0x03E0, 0x0120);  // menu text: bright green body, dark green border
+    setFontDefaultColor(13, 0x03E0, 0x0120);  // "PRESS START BUTTON": bright green body, dark green border
+
     fprintf(stderr, "TITLE: palette copied\n"); fflush(stderr);
 
     vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x15FFFFF;
