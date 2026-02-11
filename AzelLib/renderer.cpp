@@ -566,6 +566,8 @@ struct s_layerData
     s_layerData()
     {
         lineScrollEA = 0;
+        zoomX = 0x10000;
+        zoomY = 0x10000;
     }
 
     u32 CHSZ;
@@ -583,6 +585,9 @@ struct s_layerData
     s32 outputHeight;
 
     s32 lineScrollEA;
+
+    s32 zoomX;  // 16.16 fixed point, 0x10000 = 1.0
+    s32 zoomY;
 };
 
 void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
@@ -612,7 +617,7 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         NBGData.BGFXFB = bgfx::createFrameBuffer(textureWidth, textureHeight, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
         NBGData.BGFXTexture = bgfx::getTexture(NBGData.BGFXFB);
 
-        NBGData.bgfx_vdp2_planeDataBuffer = bgfx::createTexture2D(16, 1, false, 1, bgfx::TextureFormat::RGBA8);
+        NBGData.bgfx_vdp2_planeDataBuffer = bgfx::createTexture2D(20, 1, false, 1, bgfx::TextureFormat::RGBA8);
 
         NBGData.m_currentWidth = textureWidth;
         NBGData.m_currentHeight = textureHeight;
@@ -808,6 +813,10 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
             s32 outputX = rawOutputX;
             s32 outputY = rawOutputY;
 
+            // Apply coordinate increment (zoom)
+            outputX = (s32)((s64)outputX * layerData.zoomX >> 16);
+            outputY = (s32)((s64)outputY * layerData.zoomY >> 16);
+
             if (layerData.lineScrollEA)
             {
                 outputY = getVdp2VramU32(layerData.lineScrollEA + rawOutputY * 4) >> 16;
@@ -996,6 +1005,8 @@ void renderBG0(u32 width, u32 height, bool bGPU)
         planeData.scrollX = vdp2Controls.m4_pendingVdp2Regs->m70_SCXN0 >> 16;
         planeData.scrollY = vdp2Controls.m4_pendingVdp2Regs->m74_SCYN0 >> 16;
         planeData.outputHeight = textureHeight;
+        planeData.zoomX = vdp2Controls.m4_pendingVdp2Regs->m78_ZMXN0;
+        planeData.zoomY = vdp2Controls.m4_pendingVdp2Regs->m7C_ZMYN0;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -1094,6 +1105,8 @@ void renderBG1(u32 width, u32 height, bool bGPU)
         planeData.scrollX = vdp2Controls.m4_pendingVdp2Regs->m80_SCXN1 >> 16;
         planeData.scrollY = vdp2Controls.m4_pendingVdp2Regs->m84_SCYN1 >> 16;
         planeData.outputHeight = textureHeight;
+        planeData.zoomX = vdp2Controls.m4_pendingVdp2Regs->m88_ZMXN1;
+        planeData.zoomY = vdp2Controls.m4_pendingVdp2Regs->m8C_ZMYN1;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;

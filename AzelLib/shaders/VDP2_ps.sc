@@ -21,6 +21,8 @@ SAMPLER2D(s_planeConfig, 2);
 #define in_scrollX readFromPanelConfig(11)
 #define in_scrollY readFromPanelConfig(12)
 #define in_outputHeight readFromPanelConfig(13)
+#define in_zoomX readFromPanelConfig(15)
+#define in_zoomY readFromPanelConfig(16)
 
 struct s_layerData
 {
@@ -296,5 +298,7 @@ void main()
     // DEBUG: Uncomment to test shader is running
     // gl_FragColor = vec4(0.5, 0.0, 0.5, 1.0); return;
 
-    gl_FragColor = sampleLayer(int(gl_FragCoord.x), int(gl_FragCoord.y), inputLayerData);
+    int rawX = int(gl_FragCoord.x * float(in_zoomX) / 65536.0);
+    int rawY = int(gl_FragCoord.y * float(in_zoomY) / 65536.0);
+    gl_FragColor = sampleLayer(rawX, rawY, inputLayerData);
 }

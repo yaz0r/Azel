@@ -416,7 +416,9 @@ void resetVdp2RegsCopy(s_VDP2Regs* pRegisters)
     pRegisters->m18_CYCB0 = 0xFFFF;
     pRegisters->m1C_CYCB1 = 0xFFFF;
     pRegisters->m78_ZMXN0 = 0x10000;
+    pRegisters->m7C_ZMYN0 = 0x10000;
     pRegisters->m88_ZMXN1 = 0x10000;
+    pRegisters->m8C_ZMYN1 = 0x10000;
     pRegisters->mE0_SPCTL = 0x20;
 }
 
