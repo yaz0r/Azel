@@ -127,7 +127,9 @@ void loadTitleScreenGraphics()
     addToMemoryLayout(getVdp2Vram(0x10000), 1);
 
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 0x200, 0);
-    asyncDmaCopy(titleScreenPalette, getVdp2Cram(0xE00), 0x200, 0);
+    // Don't copy background palette to CRAM 0xE00 - it overwrites font palettes
+    // that NBG1 text needs (CAOS=7 reads from 0xE00). The background (NBG0)
+    // uses CAOS=0 which reads from CRAM 0x000.
     fprintf(stderr, "TITLE: palette copied\n"); fflush(stderr);
 
     vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x15FFFFF;
