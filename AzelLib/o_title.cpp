@@ -2,7 +2,7 @@
 #include "audio/soundDriver.h"
 
 void loadFont();
-void setFontDefaultColor(u32 paletteIndex, u16 color0, u16 color1);
+void setFontPaletteGradient(u32 paletteIndex, u16 bodyColor, u16 borderColor);
 
 namespace TITLE_OVERLAY {
 
@@ -131,9 +131,10 @@ void loadTitleScreenGraphics()
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0xE00), 0x200, 0);
 
     // Override text palettes at CRAM 0xE00 after background palette copy
-    setFontDefaultColor(9,  0x03E0, 0x0120);  // arrows: green gradient
-    setFontDefaultColor(12, 0xEF7B, 0x8421);  // menu text: white gradient
-    setFontDefaultColor(13, 0xEF7B, 0x8421);  // "PRESS START BUTTON": white gradient
+    // Uses setFontPaletteGradient which writes full gradient (entries 8-15)
+    setFontPaletteGradient(9,  0x03E0, 0x0120);  // arrows: green gradient
+    setFontPaletteGradient(12, 0xEF7B, 0x8421);  // menu text: white gradient
+    setFontPaletteGradient(13, 0xEF7B, 0x8421);  // "PRESS START BUTTON": white gradient
 
     fprintf(stderr, "TITLE: palette copied\n"); fflush(stderr);
 

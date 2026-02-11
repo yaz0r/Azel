@@ -983,7 +983,6 @@ void setFontDefaultColor(u32 paletteIndex, u16 color0, u16 color1)
     // Entries 8-15 are a gradient from color0 to color1
     u8* paletteBase = vdp2FontPalettes + paletteIndex * 32;
 
-    // Saturn RGB555: bits 4-0 = R, bits 9-5 = G, bits 14-10 = B
     int r0 = color0 & 0x1F;
     int g0 = (color0 >> 5) & 0x1F;
     int b0 = (color0 >> 10) & 0x1F;
@@ -1004,8 +1003,45 @@ void setFontDefaultColor(u32 paletteIndex, u16 color0, u16 color1)
         }
         else
         {
-            // Gradient from color0 (entry 8) to color1 (entry 15)
-            int t = i - 8; // 0 to 7
+            int t = i - 8;
+            int r = r0 + (r1 - r0) * t / 7;
+            int g = g0 + (g1 - g0) * t / 7;
+            int b = b0 + (b1 - b0) * t / 7;
+            color = (u16)((b << 10) | (g << 5) | r);
+        }
+
+        paletteBase[i * 2] = (color >> 8) & 0xFF;
+        paletteBase[i * 2 + 1] = color & 0xFF;
+    }
+}
+
+void setFontPaletteGradient(u32 paletteIndex, u16 bodyColor, u16 borderColor)
+{
+    // Write a full 16-entry palette with gradient body (entries 8-15)
+    // Used when pre-computed data isn't available (e.g. after background palette copy)
+    u8* paletteBase = vdp2FontPalettes + paletteIndex * 32;
+
+    int r0 = bodyColor & 0x1F;
+    int g0 = (bodyColor >> 5) & 0x1F;
+    int b0 = (bodyColor >> 10) & 0x1F;
+    int r1 = borderColor & 0x1F;
+    int g1 = (borderColor >> 5) & 0x1F;
+    int b1 = (borderColor >> 10) & 0x1F;
+
+    for (int i = 0; i < 16; i++)
+    {
+        u16 color;
+        if (i == 0)
+        {
+            color = 0x0000;
+        }
+        else if (i <= 7)
+        {
+            color = borderColor;
+        }
+        else
+        {
+            int t = i - 8;
             int r = r0 + (r1 - r0) * t / 7;
             int g = g0 + (g1 - g0) * t / 7;
             int b = b0 + (b1 - b0) * t / 7;
