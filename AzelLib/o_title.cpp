@@ -128,15 +128,13 @@ void loadTitleScreenGraphics()
     addToMemoryLayout(getVdp2Vram(0x10000), 1);
 
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 0x200, 0);
-    // Don't copy background palette to CRAM 0xE00 - it overwrites font palettes
-    // that NBG1 text needs (CAOS=7 reads from 0xE00). The background (NBG0)
-    // uses CAOS=0 which reads from CRAM 0x000.
+    asyncDmaCopy(titleScreenPalette, getVdp2Cram(0xE00), 0x200, 0);
 
-    // Set title screen text palette colors (green with dark outline)
-    // Saturn RGB555: R=bits 0-4, G=bits 5-9, B=bits 10-14
-    setFontDefaultColor(9,  0x03E0, 0x0120);  // arrows: bright green body, dark green border
-    setFontDefaultColor(12, 0x03E0, 0x0120);  // menu text: bright green body, dark green border
-    setFontDefaultColor(13, 0x03E0, 0x0120);  // "PRESS START BUTTON": bright green body, dark green border
+    // Override specific text palettes at CRAM 0xE00 with green for menu text
+    // (the background palette copy above fills CRAM 0xE00 for non-text areas)
+    setFontDefaultColor(9,  0x03E0, 0x0120);  // arrows: bright green gradient
+    setFontDefaultColor(12, 0x03E0, 0x0120);  // menu text: bright green gradient
+    setFontDefaultColor(13, 0x03E0, 0x0120);  // "PRESS START BUTTON": bright green gradient
 
     fprintf(stderr, "TITLE: palette copied\n"); fflush(stderr);
 
@@ -186,11 +184,8 @@ void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkAr
         fprintf(stderr, "TITLE: loadSoundBanks\n"); fflush(stderr);
         loadSoundBanks(0x4B, 0);
         pWorkArea->m_4 = 150;
-        fprintf(stderr, "TITLE: setupVDP2StringRendering(6, 26, 40, 2)\n"); fflush(stderr);
-        setupVDP2StringRendering(6, 26, 40, 2);
-        fprintf(stderr, "TITLE: VDP2DrawString start\n"); fflush(stderr);
-        VDP2DrawString("PANZER DRAGOON SAGA");
-        fprintf(stderr, "TITLE: VDP2DrawString done, textMem=0x%X\n", vdp2TextMemoryOffset); fflush(stderr);
+        // "PANZER DRAGOON SAGA" subtitle is part of the background art (NBG0)
+        // so skip drawing it again on NBG1
         pWorkArea->m_status++;
     case 1:
         if (!isSoundLoadingFinished())
