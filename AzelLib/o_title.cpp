@@ -130,11 +130,10 @@ void loadTitleScreenGraphics()
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0), 0x200, 0);
     asyncDmaCopy(titleScreenPalette, getVdp2Cram(0xE00), 0x200, 0);
 
-    // Override specific text palettes at CRAM 0xE00 with green for menu text
-    // (the background palette copy above fills CRAM 0xE00 for non-text areas)
-    setFontDefaultColor(9,  0x03E0, 0x0120);  // arrows: bright green gradient
-    setFontDefaultColor(12, 0x03E0, 0x0120);  // menu text: bright green gradient
-    setFontDefaultColor(13, 0x03E0, 0x0120);  // "PRESS START BUTTON": bright green gradient
+    // Override text palettes at CRAM 0xE00 after background palette copy
+    setFontDefaultColor(9,  0x03E0, 0x0120);  // arrows: green gradient
+    setFontDefaultColor(12, 0xEF7B, 0x8421);  // menu text: white gradient
+    setFontDefaultColor(13, 0xEF7B, 0x8421);  // "PRESS START BUTTON": white gradient
 
     fprintf(stderr, "TITLE: palette copied\n"); fflush(stderr);
 
