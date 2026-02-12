@@ -540,6 +540,8 @@ struct s_layerData
     s_layerData()
     {
         lineScrollEA = 0;
+        zoomX = 0x10000;
+        zoomY = 0x10000;
     }
 
     u32 CHSZ;
@@ -554,14 +556,18 @@ struct s_layerData
 
     s32 scrollX;
     s32 scrollY;
+    s32 outputHeight;
 
     s32 lineScrollEA;
+
+    s32 zoomX;  // 16.16 fixed point, 0x10000 = 1.0
+    s32 zoomY;
 };
 
 void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
 {
-    // BGFX update texture size if needed
-    if ((NBGData.m_currentWidth != textureWidth) || (NBGData.m_currentHeight != textureHeight))
+    // BGFX update texture size if needed, or recreate if switching from software mode
+    if ((NBGData.m_currentWidth != textureWidth) || (NBGData.m_currentHeight != textureHeight) || !isValid(NBGData.BGFXFB))
     {
         if (isValid(NBGData.BGFXFB))
         {
@@ -585,7 +591,7 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         NBGData.BGFXFB = bgfx::createFrameBuffer(textureWidth, textureHeight, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
         NBGData.BGFXTexture = bgfx::getTexture(NBGData.BGFXFB);
 
-        NBGData.bgfx_vdp2_planeDataBuffer = bgfx::createTexture2D(16, 16, 0, 0, bgfx::TextureFormat::R32U);
+        NBGData.bgfx_vdp2_planeDataBuffer = bgfx::createTexture2D(20, 1, false, 1, bgfx::TextureFormat::RGBA8);
 
         NBGData.m_currentWidth = textureWidth;
         NBGData.m_currentHeight = textureHeight;
@@ -600,6 +606,18 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         static bgfx::UniformHandle texID_VDP2_CRAM = BGFX_INVALID_HANDLE;
         static bgfx::VertexLayout ms_layout;
         static bgfx::UniformHandle planeDataBuffer = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_CHSZ = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_CHCN = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_PNB = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_CNSM = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_CAOS = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_PLSZ = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_SCN = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_planeOffsets = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_scrollX = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_scrollY = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_lineScrollEA = BGFX_INVALID_HANDLE;
+        static bgfx::UniformHandle u_outputHeight = BGFX_INVALID_HANDLE;
 
         static bool initialized = false;
         if (!initialized)
@@ -628,6 +646,18 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
             texID_VDP2_RAM = bgfx::createUniform("s_VDP2_RAM", bgfx::UniformType::Sampler);
             texID_VDP2_CRAM = bgfx::createUniform("s_VDP2_CRAM", bgfx::UniformType::Sampler);
             planeDataBuffer = bgfx::createUniform("s_planeConfig", bgfx::UniformType::Sampler);
+            u_CHSZ = bgfx::createUniform("CHSZ", bgfx::UniformType::Vec4);
+            u_CHCN = bgfx::createUniform("CHCN", bgfx::UniformType::Vec4);
+            u_PNB = bgfx::createUniform("PNB", bgfx::UniformType::Vec4);
+            u_CNSM = bgfx::createUniform("CNSM", bgfx::UniformType::Vec4);
+            u_CAOS = bgfx::createUniform("CAOS", bgfx::UniformType::Vec4);
+            u_PLSZ = bgfx::createUniform("PLSZ", bgfx::UniformType::Vec4);
+            u_SCN = bgfx::createUniform("SCN", bgfx::UniformType::Vec4);
+            u_planeOffsets = bgfx::createUniform("planeOffsets", bgfx::UniformType::Vec4, 1);
+            u_scrollX = bgfx::createUniform("scrollX", bgfx::UniformType::Vec4);
+            u_scrollY = bgfx::createUniform("scrollY", bgfx::UniformType::Vec4);
+            u_lineScrollEA = bgfx::createUniform("lineScrollEA", bgfx::UniformType::Vec4);
+            u_outputHeight = bgfx::createUniform("outputHeight", bgfx::UniformType::Vec4);
 
             initialized = true;
         }
@@ -642,6 +672,37 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
 
         bgfx::updateTexture2D(NBGData.bgfx_vdp2_planeDataBuffer, 0, 0, 0, 0, sizeof(layerData)/4, 1, bgfx::copy(&layerData, sizeof(layerData)));
 
+        const float v_CHSZ[4] = { (float)layerData.CHSZ, 0.0f, 0.0f, 0.0f };
+        const float v_CHCN[4] = { (float)layerData.CHCN, 0.0f, 0.0f, 0.0f };
+        const float v_PNB[4]  = { (float)layerData.PNB,  0.0f, 0.0f, 0.0f };
+        const float v_CNSM[4] = { (float)layerData.CNSM, 0.0f, 0.0f, 0.0f };
+        const float v_CAOS[4] = { (float)layerData.CAOS, 0.0f, 0.0f, 0.0f };
+        const float v_PLSZ[4] = { (float)layerData.PLSZ, 0.0f, 0.0f, 0.0f };
+        const float v_SCN[4]  = { (float)layerData.SCN,  0.0f, 0.0f, 0.0f };
+        const float v_planeOffsets[4] = {
+            (float)layerData.planeOffsets[0],
+            (float)layerData.planeOffsets[1],
+            (float)layerData.planeOffsets[2],
+            (float)layerData.planeOffsets[3],
+        };
+        const float v_scrollX[4] = { (float)layerData.scrollX, 0.0f, 0.0f, 0.0f };
+        const float v_scrollY[4] = { (float)layerData.scrollY, 0.0f, 0.0f, 0.0f };
+        const float v_lineScrollEA[4] = { (float)layerData.lineScrollEA, 0.0f, 0.0f, 0.0f };
+        const float v_outputHeight[4] = { (float)textureHeight, 0.0f, 0.0f, 0.0f };
+
+        bgfx::setUniform(u_CHSZ, v_CHSZ);
+        bgfx::setUniform(u_CHCN, v_CHCN);
+        bgfx::setUniform(u_PNB, v_PNB);
+        bgfx::setUniform(u_CNSM, v_CNSM);
+        bgfx::setUniform(u_CAOS, v_CAOS);
+        bgfx::setUniform(u_PLSZ, v_PLSZ);
+        bgfx::setUniform(u_SCN, v_SCN);
+        bgfx::setUniform(u_planeOffsets, v_planeOffsets);
+        bgfx::setUniform(u_scrollX, v_scrollX);
+        bgfx::setUniform(u_scrollY, v_scrollY);
+        bgfx::setUniform(u_lineScrollEA, v_lineScrollEA);
+        bgfx::setUniform(u_outputHeight, v_outputHeight);
+
         bgfx::setTexture(0, texID_VDP2_RAM, bgfx_vdp2_ram_texture);
         bgfx::setTexture(1, texID_VDP2_CRAM, bgfx_vdp2_cram_texture);
         bgfx::setTexture(2, planeDataBuffer, NBGData.bgfx_vdp2_planeDataBuffer);
@@ -653,6 +714,38 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
     }
     
     gBackend->bindBackBuffer();
+}
+
+void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u32* textureOutput);
+
+void renderLayerSoftware(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
+{
+    if ((NBGData.m_currentWidth != textureWidth) || (NBGData.m_currentHeight != textureHeight) || isValid(NBGData.BGFXFB))
+    {
+        if (isValid(NBGData.BGFXFB))
+        {
+            bgfx::destroy(NBGData.BGFXFB);
+            NBGData.BGFXFB = BGFX_INVALID_HANDLE;
+            NBGData.BGFXTexture = BGFX_INVALID_HANDLE;
+        }
+
+        const uint64_t tsFlags = 0
+            | BGFX_SAMPLER_U_CLAMP
+            | BGFX_SAMPLER_V_CLAMP
+            ;
+
+        NBGData.BGFXTexture = bgfx::createTexture2D(textureWidth, textureHeight, false, 1, bgfx::TextureFormat::BGRA8, tsFlags);
+
+        NBGData.m_currentWidth = textureWidth;
+        NBGData.m_currentHeight = textureHeight;
+    }
+
+    u32* textureOutput = new u32[textureWidth * textureHeight];
+    renderLayer(layerData, textureWidth, textureHeight, textureOutput);
+
+    bgfx::updateTexture2D(NBGData.BGFXTexture, 0, 0, 0, 0, textureWidth, textureHeight, bgfx::copy(textureOutput, textureWidth * textureHeight * 4));
+
+    delete[] textureOutput;
 }
 
 void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u32* textureOutput)
@@ -693,6 +786,10 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
         {
             s32 outputX = rawOutputX;
             s32 outputY = rawOutputY;
+
+            // Apply coordinate increment (zoom)
+            outputX = (s32)((s64)outputX * layerData.zoomX >> 16);
+            outputY = (s32)((s64)outputY * layerData.zoomY >> 16);
 
             if (layerData.lineScrollEA)
             {
@@ -868,12 +965,6 @@ void renderBG0(u32 width, u32 height, bool bGPU)
     u32 textureWidth = width;
     u32 textureHeight = height;
 
-    if ((vdp2Controls.m4_pendingVdp2Regs[0].m0_TVMD & 0xC0) == 0xC0)
-    {
-        textureWidth *= 2;
-        textureHeight *= 2;
-    }
-
     if(vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0x1)
     {
         s_layerData planeData;
@@ -886,6 +977,9 @@ void renderBG0(u32 width, u32 height, bool bGPU)
         planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0) & 0x1F;
         planeData.scrollX = vdp2Controls.m4_pendingVdp2Regs->m70_SCXN0 >> 16;
         planeData.scrollY = vdp2Controls.m4_pendingVdp2Regs->m74_SCYN0 >> 16;
+        planeData.outputHeight = textureHeight;
+        planeData.zoomX = vdp2Controls.m4_pendingVdp2Regs->m78_ZMXN0;
+        planeData.zoomY = vdp2Controls.m4_pendingVdp2Regs->m7C_ZMYN0;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -901,12 +995,7 @@ void renderBG0(u32 width, u32 height, bool bGPU)
 
         if (!bGPU)
         {
-            u32* textureOutput = new u32[textureWidth * textureHeight];
-            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-
-            assert(0); // need to update the texture in bgfx
-
-            delete[] textureOutput;
+            renderLayerSoftware(planeData, textureWidth, textureHeight, NBG_data[0]);
         }
         else
         {
@@ -953,12 +1042,7 @@ void renderBG1(u32 width, u32 height, bool bGPU)
 
         if (!bGPU)
         {
-            u32* textureOutput = new u32[textureWidth * textureHeight];
-            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-
-            assert(0); // need to update the texture in bgfx
-
-            delete[] textureOutput;
+            renderLayerSoftware(planeData, textureWidth, textureHeight, NBG_data[1]);
         }
         else
         {
@@ -1069,6 +1153,7 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
         planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR) & 0x1F;
         planeData.scrollX = 0;
         planeData.scrollY = 0;
+        planeData.outputHeight = textureHeight;
 
         u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
         u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -1084,12 +1169,7 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
 
         if (!bGPU)
         {
-            u32* textureOutput = new u32[textureWidth * textureHeight];
-            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
-
-            //assert(0); // need to update the texture in bgfx
-
-            delete[] textureOutput;
+            renderLayerSoftware(planeData, textureWidth, textureHeight, NBG_data[4]);
         }
         else
         {
@@ -1571,10 +1651,10 @@ void renderTexturedQuadBgfx(bgfx::ViewId outputView, bgfx::TextureHandle sourceT
         | BGFX_STATE_WRITE_RGB
         | BGFX_STATE_WRITE_A
         | BGFX_STATE_DEPTH_TEST_ALWAYS
+        | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
     );
 
     bgfx::setViewRect(outputView, 0, 0, internalResolution[0], internalResolution[1]);
-    bgfx::setViewClear(outputView, BGFX_CLEAR_COLOR);
 
     bgfx::setTexture(0, inputTexture, sourceTexture);
 
@@ -1604,12 +1684,20 @@ bool azelSdl2_EndFrame()
 
     switch (HRESO)
     {
+    case 0:
+    case 4:
+        outputResolutionWidth = 320;
+        break;
     case 1:
+    case 5:
         outputResolutionWidth = 352;
         break;
+    case 2:
+    case 6:
+        outputResolutionWidth = 320;
+        break;
     case 3:
-        // TODO: fix
-        //outputResolutionWidth = 704; //this should be correct, but breaks the title screen
+    case 7:
         outputResolutionWidth = 352;
         break;
     default:
@@ -1617,8 +1705,8 @@ bool azelSdl2_EndFrame()
         break;
     }
 
-    u32 vdp2ResolutionWidth = outputResolutionWidth;
-    u32 vdp2ResolutionHeight = outputResolutionHeight;
+    u32 vdp2ResolutionWidth = (HRESO == 2 || HRESO == 6) ? 640 : (HRESO == 3 || HRESO == 7) ? 704 : outputResolutionWidth;
+    u32 vdp2ResolutionHeight = (LSMD >= 2) ? (outputResolutionHeight * 2) : outputResolutionHeight;
 
     {
         vdp1TextureWidth = outputResolutionWidth;
