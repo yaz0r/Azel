@@ -1376,7 +1376,8 @@ void PolyLineDraw(s_vdp1Command* vdp1EA)
     }
     else
     {
-        finalColor = 0xFF0000FF;
+        u16 color = getVdp2CramU16(CMDCOLR * 2);
+        finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
     }
 
     drawLine(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);
