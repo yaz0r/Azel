@@ -152,7 +152,12 @@ void azelSdl2_Init()
 #endif
 
     imguiCreate();
+#ifdef _WIN32
     ImGui_ImplSDL2_InitForD3D(gWindowBGFX);
+#else
+    // On Linux/Mac, use Vulkan init which is a no-op suitable for BGFX
+    ImGui_ImplSDL2_InitForVulkan(gWindowBGFX);
+#endif
 }
 
 bgfx::TextureHandle getTextureForLayerBgfx(eLayers layerIndex)

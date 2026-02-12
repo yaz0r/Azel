@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.9)
 include_directories(
     "."
 #    "${THIRD_PARTY}"
+    "${CMAKE_BINARY_DIR}/ThirdParty/SDL2/include-config-$<LOWER_CASE:$<CONFIG>>"
+    "${CMAKE_BINARY_DIR}/ThirdParty/SDL2/include"
     "${THIRD_PARTY}/SDL2/include"
     "${THIRD_PARTY}/imgui"
     "${THIRD_PARTY}/ImGuizmo"
@@ -12,7 +14,7 @@ include_directories(
     "${THIRD_PARTY}/tracy"
     "${THIRD_PARTY}/bgfx.cmake/bgfx/include"
     "${THIRD_PARTY}/bgfx.cmake/bx/include"
-    "${THIRD_PARTY}/bgfx.cmake/bx/include/compat/msvc"
+    "$<$<CXX_COMPILER_ID:MSVC>:${THIRD_PARTY}/bgfx.cmake/bx/include/compat/msvc>"
     "${THIRD_PARTY}/bgfx.cmake/bgfx/3rdparty"
     "${THIRD_PARTY}/bgfx.cmake/bimg/include"
     "${THIRD_PARTY}/aosdk"
@@ -140,7 +142,11 @@ set(SOURCES
  "shaderc_prebuilt.cmake"
 )
 
-set( SHADERC_COMMAND "${THIRD_PARTY}/../vs2022_tools/Release/shaderc" )
+if(UNIX AND NOT APPLE)
+    set( SHADERC_COMMAND "${CMAKE_BINARY_DIR}/ThirdParty/bgfx.cmake/shaderc" )
+else()
+    set( SHADERC_COMMAND "${THIRD_PARTY}/../vs2022_tools/Release/shaderc" )
+endif()
 
 include(shaderc_prebuilt.cmake)
 
@@ -153,14 +159,32 @@ set(SOURCES
     shaders/${varyingname}.sc
 )
 
-shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.glsl.bin VERTEX WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
-shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.glsl.bin FRAGMENT WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+if(UNIX AND NOT APPLE)
+    # GLSL 150 is the max supported by old BGFX shaderc (1.10-1.50 only)
+    # The 704-pixel resolution fix may help more than shader version
+    shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.glsl.bin VERTEX LINUX VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 150)
+    shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.glsl.bin FRAGMENT LINUX VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 150)
+    # SPIRV shaders for Vulkan backend
+    shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.spirv.bin VERTEX LINUX VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
+    shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.spirv.bin FRAGMENT LINUX VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE spirv)
+else()
+    shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.glsl.bin VERTEX WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+    shaderc(FILE shaders/${psname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${psname}.glsl.bin FRAGMENT WINDOWS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE 430)
+endif()
 
 set(SOURCES
     ${SOURCES}
     ${THIRD_PARTY}/../data/shaders/generated/${vsname}.glsl.bin
     ${THIRD_PARTY}/../data/shaders/generated/${psname}.glsl.bin
 )
+
+if(UNIX AND NOT APPLE)
+    set(SOURCES
+        ${SOURCES}
+        ${THIRD_PARTY}/../data/shaders/generated/${vsname}.spirv.bin
+        ${THIRD_PARTY}/../data/shaders/generated/${psname}.spirv.bin
+    )
+endif()
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
     shaderc(FILE shaders/${vsname}.sc OUTPUT ${THIRD_PARTY}/../data/shaders/generated/${vsname}.metal.bin VERTEX IOS VARYINGDEF shaders/${varyingname}.sc INCLUDES ${BGFX_DIR}/src PROFILE metal)
@@ -224,4 +248,7 @@ ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
 add_library (AzelLib-darwin ${SOURCES})
 ELSE()
 add_library (AzelLib ${SOURCES})
+if(UNIX AND NOT APPLE)
+    add_dependencies(AzelLib shaderc)
+endif()
 ENDIF()
