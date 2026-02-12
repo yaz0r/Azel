@@ -49,5 +49,9 @@ int main(int argc, char* argv[])
         loopIteration();
     } while (bContinue);
 #endif
+
+#ifndef SHIPPING_BUILD
+    cleanupLoggers();
+#endif
     return 0;
 }

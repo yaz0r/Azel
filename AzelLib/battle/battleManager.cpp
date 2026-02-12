@@ -106,7 +106,7 @@ void loadBattleOverlaySub0(sBattleManager* pThis)
         }
         break;
     default:
-        assert(0);
+        break;
     }
 
     pThis->m2_currentBattleOverlayId = uVar4;
@@ -163,7 +163,7 @@ static void battleManager_Update(sBattleManager* pThis)
         pThis->m0_status = 0;
         break;
     default:
-        assert(0);
+        break;
     }
 }
 

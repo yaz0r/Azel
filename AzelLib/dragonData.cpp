@@ -541,7 +541,14 @@ void loadDragonDataFromCommon()
         for (int i = 0; i < e_dragonLevel::DR_LEVEL_MAX; i++)
         {
             s_fileBundle* pDragonModel = nullptr;
-            loadFile(dragonFilenameTable[i].m_base.MCB, &pDragonModel, 0x2400);
+            if (dragonFilenameTable[i].m_base.MCB == nullptr) {
+                continue;
+            }
+            int result = loadFile(dragonFilenameTable[i].m_base.MCB, &pDragonModel, 0x2400);
+            if (result < 0 || pDragonModel == nullptr) {
+                // File not found, skip this dragon form
+                continue;
+            }
 
             sDragonData3& entry = dragonData3[i];
             entry.m_m0 = readSaturnU32(ptr + 0); ptr += 4;

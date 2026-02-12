@@ -2765,7 +2765,16 @@ void s_mainMenuWorkArea::Draw(s_mainMenuWorkArea* pWorkArea)
             }
 
             pWorkArea->m8 = statusMenuSubMenus[pWorkArea->selectedMenu](pWorkArea);
-            pWorkArea->m0++;
+            if (pWorkArea->m8)
+            {
+                // Only advance state if submenu task was created successfully
+                pWorkArea->m0++;
+            }
+            else
+            {
+                // Submenu not implemented - play error sound and stay in current state
+                playSystemSoundEffect(5);
+            }
             return;
         }
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x30) // UP or DOWN
@@ -2837,25 +2846,29 @@ p_workArea createMainMenuTask(p_workArea workArea)
 
 p_workArea createEnemyListMenuTask(p_workArea workArea)
 {
-    assert(0);
+    // TODO: not yet implemented
+    Unimplemented();
     return NULL;
 }
 
 p_workArea createMapTask(p_workArea workArea)
 {
-    assert(0);
+    // TODO: not yet implemented
+    Unimplemented();
     return NULL;
 }
 
 p_workArea createSystemMenuTask(p_workArea workArea)
 {
-    assert(0);
+    // TODO: not yet implemented
+    Unimplemented();
     return NULL;
 }
 
 p_workArea createMenuBKTask(p_workArea workArea)
 {
-    assert(0);
+    // TODO: not yet implemented
+    Unimplemented();
     return NULL;
 }
 
