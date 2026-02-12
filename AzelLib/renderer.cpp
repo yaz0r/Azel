@@ -443,6 +443,12 @@ void azelSdl2_StartFrame()
         buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN) << 5;
         buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT) << 6;
         buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) << 7;
+        // Saturn C, Z, X, L, R buttons
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) buttonMask |= 0x800;  // Saturn C
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X))              buttonMask |= 0x2000; // Saturn X
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))  buttonMask |= 0x1000; // Saturn Z
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_BACK))          buttonMask |= 0x4000; // Saturn L
+        if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_GUIDE))         buttonMask |= 0x8000; // Saturn R
 
         graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown |= buttonMask;
 
@@ -493,6 +499,21 @@ void azelSdl2_StartFrame()
                     break;
                 case SDL_SCANCODE_RIGHT:
                     buttonMask = 0x80;
+                    break;
+                case SDL_SCANCODE_A:
+                    buttonMask = 0x800;  // Saturn C
+                    break;
+                case SDL_SCANCODE_S:
+                    buttonMask = 0x2000; // Saturn X
+                    break;
+                case SDL_SCANCODE_D:
+                    buttonMask = 0x1000; // Saturn Z
+                    break;
+                case SDL_SCANCODE_Q:
+                    buttonMask = 0x4000; // Saturn L
+                    break;
+                case SDL_SCANCODE_W:
+                    buttonMask = 0x8000; // Saturn R
                     break;
                 default:
                     break;

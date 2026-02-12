@@ -522,6 +522,8 @@ void freeFileInfoStruct(sFileInfoSub* pInfo)
 u32 getFileSize(const char* fileName)
 {
     FILE* fHandle = fopen(fileName, "rb");
+    if (!fHandle) {
+    }
     assert(fHandle);
 
     fseek(fHandle, 0, SEEK_END);
@@ -543,6 +545,12 @@ sFileInfoSub* openFileHandle(const char* fileName)
 
     FILE* fHandle = fopen(fileName, "rb");
     pFileHandle->fHandle = fHandle;
+
+    if (fHandle == nullptr) {
+        printf("Warning: File not found: %s\n", fileName);
+        pFileHandle->m_fileSize = 0;
+        return pFileHandle;
+    }
 
     fseek(fHandle, 0, SEEK_END);
     u32 fileSize = ftell(fHandle);
@@ -620,8 +628,9 @@ int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 
     sFileInfoSub* pFileHandle = openFileHandle(fileName);
 
-    if (pFileHandle == NULL)
+    if (pFileHandle == NULL || pFileHandle->m_fileSize == 0 || pFileHandle->fHandle == nullptr)
     {
+        if (pFileHandle) freeFileInfoStruct(pFileHandle);
         return -1;
     }
 
@@ -661,8 +670,10 @@ int loadFile(const char* fileName, s_fileBundle** destination, u16 vdp1Pointer)
 {
     sFileInfoSub* pFileHandle = openFileHandle(fileName);
 
-    if (pFileHandle == NULL)
+    if (pFileHandle == NULL || pFileHandle->m_fileSize == 0)
     {
+        *destination = nullptr;
+        if (pFileHandle) freeFileInfoStruct(pFileHandle);
         return -1;
     }
 
@@ -806,6 +817,7 @@ void initSMPC()
 
 void azelInit()
 {
+
     // stuff
 
     initFileInfoStruct();
@@ -820,6 +832,7 @@ void azelInit()
     // stuff
     initSoundDriver();
     initInitialTaskStatsAndDebug();
+
 
     // stuff
 }
@@ -1086,6 +1099,7 @@ bool delayTrace = true;
 bool bContinue = true;
 void loopIteration()
 {
+
 #ifdef __EMSCRIPTEN__
     static bool gameRunning = false;
 #else
