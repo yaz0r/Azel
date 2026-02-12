@@ -943,11 +943,81 @@ void copyFontToVdp2()
 
 void setFontDefaultColor(u32 paletteIndex, u16 color0, u16 color1)
 {
+    u8* paletteBase = vdp2FontPalettes + paletteIndex * 32;
 
+    int r0 = color0 & 0x1F;
+    int g0 = (color0 >> 5) & 0x1F;
+    int b0 = (color0 >> 10) & 0x1F;
+    int r1 = color1 & 0x1F;
+    int g1 = (color1 >> 5) & 0x1F;
+    int b1 = (color1 >> 10) & 0x1F;
+
+    for (int i = 0; i < 16; i++)
+    {
+        u16 color;
+        if (i == 0)
+        {
+            color = 0x0000;
+        }
+        else if (i <= 7)
+        {
+            color = color1;
+        }
+        else
+        {
+            int t = i - 8;
+            int r = r0 + (r1 - r0) * t / 7;
+            int g = g0 + (g1 - g0) * t / 7;
+            int b = b0 + (b1 - b0) * t / 7;
+            color = (u16)((b << 10) | (g << 5) | r);
+        }
+
+        paletteBase[i * 2] = (color >> 8) & 0xFF;
+        paletteBase[i * 2 + 1] = color & 0xFF;
+    }
+}
+
+void setFontPaletteGradient(u32 paletteIndex, u16 bodyColor, u16 borderColor)
+{
+    u8* paletteBase = vdp2FontPalettes + paletteIndex * 32;
+
+    int r0 = bodyColor & 0x1F;
+    int g0 = (bodyColor >> 5) & 0x1F;
+    int b0 = (bodyColor >> 10) & 0x1F;
+    int r1 = borderColor & 0x1F;
+    int g1 = (borderColor >> 5) & 0x1F;
+    int b1 = (borderColor >> 10) & 0x1F;
+
+    for (int i = 0; i < 16; i++)
+    {
+        u16 color;
+        if (i == 0)
+        {
+            color = 0x0000;
+        }
+        else if (i <= 7)
+        {
+            color = borderColor;
+        }
+        else
+        {
+            int t = i - 8;
+            int r = r0 + (r1 - r0) * t / 7;
+            int g = g0 + (g1 - g0) * t / 7;
+            int b = b0 + (b1 - b0) * t / 7;
+            color = (u16)((b << 10) | (g << 5) | r);
+        }
+
+        paletteBase[i * 2] = (color >> 8) & 0xFF;
+        paletteBase[i * 2 + 1] = color & 0xFF;
+    }
 }
 
 void setFontDefaultColors()
 {
+    copyFontToVdp2();
+
+    setFontDefaultColor(0, 0x4210, 0x0000);
     setFontDefaultColor(7, 0xF03C, 0x8421);
     setFontDefaultColor(8, 0xEB47, 0x8421);
     setFontDefaultColor(9, 0xA368, 0x8421);
@@ -957,7 +1027,7 @@ void setFontDefaultColors()
     setFontDefaultColor(13, 0x875A, 0x8421);
     setFontDefaultColor(14, 0xB18C, 0x8421);
 
-    copyFontToVdp2();
+    setFontDefaultColor(15, 0x4210, 0x0000);
 }
 
 std::array<sVdpVar1, 14> vdpVar1;
@@ -1507,7 +1577,7 @@ void moveVdp2TextCursor(s_stringStatusQuery* vars)
 }
 
 u32 printVdp2StringTable[10] = {
-    12, 13, 7, 8, 9, 10, 11, 13, 7, 14
+    0, 13, 7, 8, 9, 10, 11, 13, 7, 14
 };
 
 void printVdp2StringNewLine(s_stringStatusQuery* vars)
