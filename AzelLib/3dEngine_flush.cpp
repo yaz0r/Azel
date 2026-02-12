@@ -289,6 +289,21 @@ glm::mat4 MatrixToGLM(const sMatrix4x3& inputMatrix)
     return tempObjectMatrix;
 }
 
+// OpenGL Y-flip in projection matrix requires inverted culling
+static uint64_t getCullStateCW()
+{
+    if (bgfx::getRendererType() == bgfx::RendererType::OpenGL)
+        return BGFX_STATE_CULL_CCW;
+    return BGFX_STATE_CULL_CW;
+}
+
+static uint64_t getCullStateCCW()
+{
+    if (bgfx::getRendererType() == bgfx::RendererType::OpenGL)
+        return BGFX_STATE_CULL_CW;
+    return BGFX_STATE_CULL_CCW;
+}
+
 void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
 {
     pObject->m_pObject->generateVertexBuffer();
@@ -298,11 +313,13 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
     static bgfx::UniformHandle vdp1_modelMatrix = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_modelViewProj = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_textureSampler = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle vdp1_textureSize = BGFX_INVALID_HANDLE;
     if (!bgfx::isValid(vdp1_program))
     {
         vdp1_program = loadBgfxProgram("VDP1_vs", "VDP1_ps");
         vdp1_modelViewProj = bgfx::createUniform("u_customModelViewProj", bgfx::UniformType::Mat4);
         vdp1_textureSampler = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
+        vdp1_textureSize = bgfx::createUniform("u_textureSize", bgfx::UniformType::Vec4);
     }
 
     glm::mat4 mvpMatrix = projectionMatrix * MatrixToGLM(pObject->m_modelMatrix);
@@ -318,7 +335,7 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
         | BGFX_STATE_WRITE_RGB
         | BGFX_STATE_WRITE_A
         | BGFX_STATE_WRITE_Z
-        | BGFX_STATE_CULL_CCW
+        | getCullStateCCW()
         | BGFX_STATE_MSAA
         | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
         ;
@@ -326,6 +343,13 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
     bgfx::setState(state);
 
     bgfx::setTexture(0, vdp1_textureSampler, pObject->m_pObject->m_textureAtlas);
+    float textureSize[4] = {
+        static_cast<float>(pObject->m_pObject->m_textureAtlasWidth),
+        static_cast<float>(pObject->m_pObject->m_textureAtlasHeight),
+        0.0f,
+        0.0f
+    };
+    bgfx::setUniform(vdp1_textureSize, textureSize);
     bgfx::setVertexBuffer(0, pObject->m_pObject->m_vertexBufferHandle);
     bgfx::setIndexBuffer(pObject->m_pObject->m_indexBufferHandle);
     bgfx::submit(vdp1_gpuView, vdp1_program);
@@ -393,6 +417,12 @@ glm::mat4 getProjectionMatrix()
     testProj[2][2] = (zFar + zNear) / (zFar - zNear);
     testProj[2][3] = 1.f;
     testProj[3][2] = -2 * (zFar * zNear) / (zFar - zNear);
+
+    // Flip Y-axis for OpenGL (DirectX has Y-down clip space, OpenGL has Y-up)
+    if (bgfx::getRendererType() == bgfx::RendererType::OpenGL)
+    {
+        testProj[1][1] = -testProj[1][1];
+    }
 
 #endif
     return testProj;
@@ -733,7 +763,7 @@ void NormalSpriteDrawGL(s_vdp1Command* vdp1EA)
                         | BGFX_STATE_WRITE_A
                         | BGFX_STATE_WRITE_Z
                         | BGFX_STATE_DEPTH_TEST_LEQUAL
-                        | BGFX_STATE_CULL_CW
+                        | getCullStateCW()
                         | BGFX_STATE_MSAA
                     );
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
@@ -927,7 +957,7 @@ void ScaledSpriteDrawGL(s_vdp1Command* vdp1EA)
                         | BGFX_STATE_WRITE_A
                         | BGFX_STATE_WRITE_Z
                         | BGFX_STATE_DEPTH_TEST_LEQUAL
-                        | BGFX_STATE_CULL_CW
+                        | getCullStateCW()
                         | BGFX_STATE_MSAA
                     );
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
@@ -976,7 +1006,7 @@ void drawQuadGL(const sDebugQuad& quad)
             | BGFX_STATE_WRITE_A
             | BGFX_STATE_WRITE_Z
             | BGFX_STATE_DEPTH_TEST_LEQUAL
-            | BGFX_STATE_CULL_CW
+            | getCullStateCW()
             | BGFX_STATE_MSAA
         );
 
@@ -1021,7 +1051,7 @@ void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color)
             | BGFX_STATE_WRITE_A
             | BGFX_STATE_WRITE_Z
             | BGFX_STATE_DEPTH_TEST_LEQUAL
-            | BGFX_STATE_CULL_CW
+            | getCullStateCW()
             | BGFX_STATE_MSAA
             | BGFX_STATE_PT_LINES
         );
@@ -1080,7 +1110,7 @@ void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)
             | BGFX_STATE_WRITE_A
             | BGFX_STATE_WRITE_Z
             | BGFX_STATE_DEPTH_TEST_LEQUAL
-            | BGFX_STATE_CULL_CW
+            | getCullStateCW()
             | BGFX_STATE_MSAA
             | BGFX_STATE_PT_LINES
         );
@@ -1109,11 +1139,14 @@ void PolyDrawGL(s_vdp1Command* vdp1EA)
     u32 finalColor;
     if (CMDCOLR & 0x8000)
     {
+        // Direct RGB555 color (MSB set)
         finalColor = 0xFF000000 | (((CMDCOLR & 0x1F) << 3) | ((CMDCOLR & 0x03E0) << 6) | ((CMDCOLR & 0x7C00) << 9));
     }
     else
     {
-        finalColor = 0xFF0000FF;
+        // Palette color - look up from Color RAM
+        u16 color = getVdp2CramU16(CMDCOLR * 2);
+        finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
     }
 
     float quadDepth = 0.9;
@@ -1170,7 +1203,7 @@ void PolyDrawGL(s_vdp1Command* vdp1EA)
             | BGFX_STATE_WRITE_A
             | BGFX_STATE_WRITE_Z
             | BGFX_STATE_DEPTH_TEST_LEQUAL
-            | BGFX_STATE_CULL_CW
+            | getCullStateCW()
             | BGFX_STATE_MSAA
         );
 
@@ -1198,11 +1231,14 @@ void PolyLineDrawGL(s_vdp1Command* vdp1EA)
     u32 finalColor;
     if (CMDCOLR & 0x8000)
     {
+        // Direct RGB555 color (MSB set)
         finalColor = 0xFF000000 | (((CMDCOLR & 0x1F) << 3) | ((CMDCOLR & 0x03E0) << 6) | ((CMDCOLR & 0x7C00) << 9));
     }
     else
     {
-        finalColor = 0xFF0000FF;
+        // Palette color - look up from Color RAM
+        u16 color = getVdp2CramU16(CMDCOLR * 2);
+        finalColor = 0xFF000000 | (((color & 0x1F) << 3) | ((color & 0x03E0) << 6) | ((color & 0x7C00) << 9));
     }
 
     drawLineGL(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);

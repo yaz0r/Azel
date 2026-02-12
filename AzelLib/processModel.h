@@ -62,6 +62,8 @@ struct sProcessed3dModel
     bgfx::VertexBufferHandle m_vertexBufferHandle = BGFX_INVALID_HANDLE;
     bgfx::IndexBufferHandle m_indexBufferHandle = BGFX_INVALID_HANDLE;
     bgfx::TextureHandle m_textureAtlas = BGFX_INVALID_HANDLE;
+    int m_textureAtlasWidth = 1;
+    int m_textureAtlasHeight = 1;
 
     bool m_vertexBuffersDirty = true;
 };
