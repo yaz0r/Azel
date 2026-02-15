@@ -19,7 +19,7 @@ static float gVolume = 1.f;
 #ifdef SHIPPING_BUILD
 static float gVolume = 1.f;
 #else
-static float gVolume = 0.f;
+static float gVolume = 1.f;
 #endif
 #endif
 
@@ -1888,7 +1888,10 @@ bool azelSdl2_EndFrame()
     }
     else
     {
-        ImGui::Render();
+        if (!isShipping())
+        {
+            ImGui::Render();
+        }
         //renderTexturedQuadBgfx(0, bgfx::getTexture(gBgfxCompositedFB));
     }
     

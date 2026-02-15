@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.9)
 project(soloud C)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)

@@ -140,7 +140,11 @@ set(SOURCES
  "shaderc_prebuilt.cmake"
 )
 
-set( SHADERC_COMMAND "${THIRD_PARTY}/../vs2022_tools/Release/shaderc" )
+if(CMAKE_GENERATOR MATCHES "Visual Studio 17 2022")
+    set( SHADERC_COMMAND "${THIRD_PARTY}/../vs2022_tools/Release/shaderc" )
+elseif(CMAKE_GENERATOR MATCHES "Visual Studio 18 2026")
+    set( SHADERC_COMMAND "${THIRD_PARTY}/../vs2026_tools/Release/shaderc" )
+endif()
 
 include(shaderc_prebuilt.cmake)
 
@@ -218,10 +222,14 @@ assign_source_group(${SOURCES})
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS)
 add_library (AzelLib-ios ${SOURCES})
+target_compile_definitions( AzelLib-ios PUBLIC "BX_CONFIG_DEBUG=0" )
 ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES tvOS)
 add_library (AzelLib-tvos ${SOURCES})
+target_compile_definitions( AzelLib-tvos PUBLIC "BX_CONFIG_DEBUG=0" )
 ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
 add_library (AzelLib-darwin ${SOURCES})
+target_compile_definitions( AzelLib-darwin PUBLIC "BX_CONFIG_DEBUG=0" )
 ELSE()
 add_library (AzelLib ${SOURCES})
+target_compile_definitions( AzelLib PUBLIC "BX_CONFIG_DEBUG=0" )
 ENDIF()
