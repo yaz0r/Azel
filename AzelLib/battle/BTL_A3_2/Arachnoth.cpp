@@ -66,7 +66,7 @@ struct sArachnothFormation : public s_workAreaTemplateWithCopy<sArachnothFormati
     sVec3_FP m2D8;
     sVec3_FP m2E4;
     std::array<fixedPoint, 6> m314;
-    std::array<s32, 4> m344;
+    std::array<s32, 2> m344;
     //size 0x34C
 };
 
