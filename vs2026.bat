@@ -16,12 +16,6 @@ if exist "!InstallDir!\VC\Auxiliary\Build\vcvars64.bat" (
   echo "Could not find !InstallDir!\VC\Auxiliary\Build\vcvars64.bat"
 )
 
-mkdir vs2026_tools
-cd vs2026_tools
-"!InstallDir!\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake" -G "Visual Studio 18 2026" -A x64 ..\ThirdParty\bgfx.cmake -DBGFX_BUILD_EXAMPLES=OFF -DBGFX_INSTALL=OFF 
-devenv.com bgfx.sln /build Release /project shaderc
-cd ..
-
 "!InstallDir!\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake" -G "Visual Studio 18 2026" -A x64 -B build_vs2026
 
 pause

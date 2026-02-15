@@ -11,6 +11,8 @@
 #include "imguiBGFX.h"
 #include "items.h"
 
+bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string& PSFile);
+
 extern SDL_Window* gWindowBGFX;
 
 #if defined(__EMSCRIPTEN__) || defined(TARGET_OS_IOS) || defined(TARGET_OS_TV)
@@ -79,50 +81,6 @@ enum eLayers {
 };
 
 backend* gBackend = nullptr;
-
-bgfx::ShaderHandle loadBgfxShader(const std::string& filename)
-{
-    std::vector<u8> memBlob;
-    FILE* fHandle = fopen(filename.c_str(), "rb");
-    if (fHandle == nullptr)
-        return BGFX_INVALID_HANDLE;
-    fseek(fHandle, 0, SEEK_END);
-    u32 size = ftell(fHandle);
-    fseek(fHandle, 0, SEEK_SET);
-    memBlob.resize(size);
-    fread(&memBlob[0], 1, size, fHandle);
-    fclose(fHandle);
-
-    bgfx::ShaderHandle handle = bgfx::createShader(bgfx::copy(&memBlob[0], size));
-    bgfx::setName(handle, filename.c_str());
-
-    return handle;
-}
-
-bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string& PSFile)
-{
-    std::string shaderFileExtension = "";
-    switch (bgfx::getRendererType())
-    {
-    case bgfx::RendererType::Direct3D11:
-    case bgfx::RendererType::Direct3D12: shaderFileExtension = ".dx11.bin";  break;
-    case bgfx::RendererType::OpenGL:     shaderFileExtension = ".glsl.bin";  break;
-    case bgfx::RendererType::Metal:      shaderFileExtension = ".metal.bin";  break;
-    case bgfx::RendererType::Vulkan:     shaderFileExtension = ".spirv.bin";  break;
-    default:
-        assert(0);
-    }
-
-    bgfx::ShaderHandle vsh = loadBgfxShader(std::string("shaders/generated/") + VSFile + shaderFileExtension);
-    bgfx::ShaderHandle psh = loadBgfxShader(std::string("shaders/generated/") + PSFile + shaderFileExtension);
-    
-    assert(bgfx::isValid(vsh));
-    assert(bgfx::isValid(psh));
-
-    bgfx::ProgramHandle ProgramHandle = bgfx::createProgram(vsh, psh, true /* destroy shaders when program is destroyed */);
-    assert(bgfx::isValid(ProgramHandle));
-    return ProgramHandle;
-}
 
 void azelSdl2_Init()
 {

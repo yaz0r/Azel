@@ -5,6 +5,6 @@ $input v_color0
 void main()
 {
     gl_FragColor = v_color0;
-    gl_FragColor.w = 1;
+    gl_FragColor.w = 1.f;
 
 }

@@ -16,12 +16,6 @@ if exist "!InstallDir!\VC\Auxiliary\Build\vcvars64.bat" (
   echo "Could not find !InstallDir!\VC\Auxiliary\Build\vcvars64.bat"
 )
 
-mkdir vs2022_tools
-cd vs2022_tools
-cmake -G "Visual Studio 17 2022" -A x64 ..\ThirdParty\bgfx.cmake -DBGFX_BUILD_EXAMPLES=OFF -DBGFX_INSTALL=OFF 
-devenv.com bgfx.sln /build Release /project shaderc
-cd ..
-
 cmake -G "Visual Studio 17 2022" -A x64 -B build_vs2022
 
 pause

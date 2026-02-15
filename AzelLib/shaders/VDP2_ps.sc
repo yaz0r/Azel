@@ -3,9 +3,11 @@
 #define u32 highp uint
 #define s32 highp int
 
-highp USAMPLER2D(s_VDP2_RAM, 0);
-highp USAMPLER2D(s_VDP2_CRAM, 1);
-highp USAMPLER2D(s_planeConfig, 2);
+#pragma warning(disable : 3556)
+
+USAMPLER2D(s_VDP2_RAM, 0);
+USAMPLER2D(s_VDP2_CRAM, 1);
+USAMPLER2D(s_planeConfig, 2);
 
 #define in_CHSZ readFromPanelConfig(0)
 #define in_CHCN readFromPanelConfig(1)
@@ -156,8 +158,8 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
     int startOfPattern = startOfPage + patternNumber * patternSize;
 
     int characterNumber;
-    int paletteNumber;
-    int characterOffset;
+    int paletteNumber = 0;
+    int characterOffset = 0;
 
     if(patternSize == 2)
     {
