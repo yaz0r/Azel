@@ -11,6 +11,7 @@
 #include "BTL_A3/baldor.h" // todo: clean
 #include "audio/systemSounds.h"
 #include "battleGenericData.h"
+#include "kernel/rayDisplay.h"
 
 void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s8 param4); // TODO: clean
 
@@ -427,102 +428,6 @@ void sGunShotTask_SetupSpriteData(sGunShotTask* pThis)
     }
 }
 
-s32 isGunShotVisible(std::array<sVec3_FP, 2>& param_1, s_graphicEngineStatus_405C& param_2)
-{
-    Unimplemented();
-    return 1;
-}
-
-s32 sGunShotTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param_1, s32 param_2, s_graphicEngineStatus_405C& param_3, sMatrix4x3& param_4)
-{
-    if (isGunShotVisible(param_1, param_3))
-    {
-        sVec2_FP local_38;
-        fixedPoint ratio0 = FP_Div(0x10000, param_1[0][2]);
-        local_38[0] = MTH_Mul_5_6(param_3.m18_widthScale, param_1[0][0], ratio0);
-        local_38[1] = MTH_Mul_5_6(param_3.m1C_heightScale, param_1[0][1], ratio0);
-
-        sVec2_FP local_2c;
-        fixedPoint ratio1 = FP_Div(0x10000, param_1[1][2]);
-        local_2c[0] = MTH_Mul_5_6(param_3.m18_widthScale, param_1[1][0], ratio1);
-        local_2c[1] = MTH_Mul_5_6(param_3.m1C_heightScale, param_1[1][1], ratio1);
-
-        s32 angle = atan2(local_38[1] - local_2c[1], local_38[0] - local_2c[0]);
-
-        sVec2_FP iVar9;
-        iVar9[0] = MTH_Mul_5_6(param_3.m18_widthScale, MTH_Mul(param_2, getSin(angle)), ratio0);
-        iVar9[1] = MTH_Mul_5_6(param_3.m1C_heightScale, MTH_Mul(param_2, getCos(angle)), ratio0);
-
-        param_4.matrix[0] = local_38[0] - iVar9[0];
-        param_4.matrix[1] = local_38[1] + iVar9[1];
-        param_4.matrix[9] = local_38[0] + iVar9[0];
-        param_4.matrix[10] = local_38[1] - iVar9[1];
-
-        sVec2_FP iVar3;
-        iVar3[0] = MTH_Mul_5_6(param_3.m18_widthScale, MTH_Mul(param_2, getSin(angle)), ratio1);
-        iVar3[1] = MTH_Mul_5_6(param_3.m1C_heightScale, MTH_Mul(param_2, getCos(angle)), ratio1);
-
-        param_4.matrix[3] = local_2c[0] - iVar3[0];
-        param_4.matrix[4] = local_2c[1] + iVar3[1];
-        param_4.matrix[6] = local_2c[0] + iVar3[0];
-        param_4.matrix[7] = local_2c[1] - iVar3[1];
-
-        return 1;
-    }
-
-    return 0;
-}
-
-void sGunShotTask_DrawSub1Sub3(sMatrix4x3& param_1, fixedPoint& param_2, u16 param_3, s16 param_4, u16 param_5, const quadColor* param_6, s32 param_7)
-{
-    s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-    vdp1WriteEA.m0_CMDCTRL = 0x1002; // command 0
-    vdp1WriteEA.m4_CMDPMOD = 0x484 | param_7; // CMDPMOD
-    vdp1WriteEA.m6_CMDCOLR = param_5; // CMDCOLR
-    vdp1WriteEA.m8_CMDSRCA = param_3; // CMDSRCA
-    vdp1WriteEA.mA_CMDSIZE = param_4; // CMDSIZE
-    vdp1WriteEA.mC_CMDXA = param_1.matrix[0].toInteger(); // CMDXA
-    vdp1WriteEA.mE_CMDYA = -param_1.matrix[1].toInteger(); // CMDYA
-    vdp1WriteEA.m10_CMDXB = param_1.matrix[3].toInteger();
-    vdp1WriteEA.m12_CMDYB = -param_1.matrix[4].toInteger();
-    vdp1WriteEA.m14_CMDXC = param_1.matrix[6].toInteger();
-    vdp1WriteEA.m16_CMDYC = -param_1.matrix[7].toInteger();
-    vdp1WriteEA.m18_CMDXD = param_1.matrix[9].toInteger();
-    vdp1WriteEA.m1A_CMDYD = -param_1.matrix[10].toInteger();
-
-    int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
-    quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
-    outputColor = *param_6;
-    vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
-
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
-    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
-
-    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
-    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
-
-}
-
-void sGunShotTask_DrawSub1(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 param_3, s16 param_4, u16 param_5, const quadColor* param_6, s32 param_7)
-{
-    std::array<sVec3_FP, 2> sStack32;
-    transformAndAddVecByCurrentMatrix(&param_1[0], &sStack32[0]);
-    transformAndAddVecByCurrentMatrix(&param_1[1], &sStack32[1]);
-
-    sMatrix4x3 local_50;
-
-    if (sGunShotTask_DrawSub1Sub0(sStack32, param_2, graphicEngineStatus.m405C, local_50))
-    {
-        //if (sGunShotTask_DrawSub1Sub1(local_50, graphicEngineStatus.m405C) && sGunShotTask_DrawSub1Sub2(local_50))
-        Unimplemented();
-        {
-            sGunShotTask_DrawSub1Sub3(local_50, sStack32[1][2], param_3, param_4, param_5, param_6, param_7);
-        }
-    }
-}
-
 void sGunShotTask_Draw(sGunShotTask* pThis)
 {
     if (!(pThis->m65 & 1))
@@ -539,7 +444,7 @@ void sGunShotTask_Draw(sGunShotTask* pThis)
         }
         else
         {
-            sGunShotTask_DrawSub1(
+            displayRaySegment(
                 local_24,
                 readSaturnS32(pThis->m94 + 0xC),
                 readSaturnU16(pThis->m94 + 0x4) + pThis->m90_vdp1Memory,

@@ -2,8 +2,7 @@
 #include "ArachnothTentacle.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/graphicalObject.h"
-
-void sGunShotTask_DrawSub1(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 param_3, s16 param_4, u16 param_5, const quadColor* param_6, s32 param_7); // todo: cleanup
+#include "kernel/rayDisplay.h"
 
 void arachnothTentacle_updateMode1(sArachnothTentacle* pThis) {
     fixedPoint cosValue = getCos(pThis->m178_rotation->m_value[0].toInteger());
@@ -91,15 +90,15 @@ void arachnothTentacle_draw(sArachnothTentacle* pThis) {
         std::array<sVec3_FP, 2> line;
         line[0] = pThis->mC_segments[i].m18;
         line[1] = pThis->mC_segments[i-1].m18;
-        sGunShotTask_DrawSub1(line, tentacleData[i - 1], pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(2), pThis->m8->at(3), pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(4), &tentacleColor, 8);
+        displayRaySegment(line, tentacleData[i - 1], pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(2), pThis->m8->at(3), pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(4), &tentacleColor, 8);
         
         line[0] = pThis->mC_segments[i - 1].m18;
         line[1] = pThis->mC_segments[i - 2].m18;
-        sGunShotTask_DrawSub1(line, tentacleData[i - 1], pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(2), pThis->m8->at(3), pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(4), &tentacleColor, 8);
+        displayRaySegment(line, tentacleData[i - 1], pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(2), pThis->m8->at(3), pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(4), &tentacleColor, 8);
         
         line[0] = pThis->mC_segments[i - 2].m18;
         line[1] = pThis->mC_segments[i - 3].m18;
-        sGunShotTask_DrawSub1(line, tentacleData[i - 1], pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(2), pThis->m8->at(3), pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(4), &tentacleColor, 8);
+        displayRaySegment(line, tentacleData[i - 1], pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(2), pThis->m8->at(3), pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(4), &tentacleColor, 8);
     }
 }
 

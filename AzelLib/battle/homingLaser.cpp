@@ -14,6 +14,7 @@
 #include "kernel/debug/trace.h"
 #include "commonOverlay.h"
 #include "battleGenericData.h"
+#include "kernel/rayDisplay.h"
 
 struct sHomingLaserRootTask : public s_workAreaTemplateWithCopy<sHomingLaserRootTask>
 {
@@ -442,51 +443,6 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
     }
 }
 
-s32 sHomingLaserTask_DrawSub1Sub0Sub0(std::array<sVec3_FP, 2>& param_1, std::array<fixedPoint,2>& param_2, s_graphicEngineStatus_405C& param_3, sMatrix4x3* param_4)
-{
-    if (isGunShotVisible(param_1, param_3))
-    {
-        fixedPoint ratio0 = FP_Div(0x10000, param_1[0][2]);
-        fixedPoint iVar2 = MTH_Mul_5_6(param_3.m18_widthScale, param_1[0][0], ratio0);
-        fixedPoint iVar3 = MTH_Mul_5_6(param_3.m1C_heightScale, param_1[0][1], ratio0);
-
-        fixedPoint ratio1 = FP_Div(0x10000, param_1[1][2]);
-        fixedPoint iVar4 = MTH_Mul_5_6(param_3.m18_widthScale, param_1[1][0], ratio1);
-        fixedPoint iVar5 = MTH_Mul_5_6(param_3.m1C_heightScale, param_1[1][1], ratio1);
-
-        fixedPoint angle = atan2(iVar3 - iVar5, iVar2 - iVar4);
-
-        {
-            fixedPoint iVar6 = MTH_Mul(param_2[0], getSin(angle));
-            fixedPoint iVar7 = MTH_Mul(param_2[0], getCos(angle));
-
-            iVar6 = MTH_Mul_5_6(param_3.m18_widthScale, iVar6, ratio0);
-            iVar7 = MTH_Mul_5_6(param_3.m1C_heightScale, iVar7, ratio0);
-
-            param_4->matrix[0] = iVar2 - iVar6;
-            param_4->matrix[1] = iVar3 + iVar7;
-            param_4->matrix[9] = iVar2 + iVar6;
-            param_4->matrix[10] = iVar3 - iVar7;
-        }
-
-        {
-            fixedPoint iVar2 = MTH_Mul(param_2[1], getSin(angle));
-            fixedPoint iVar3 = MTH_Mul(param_2[1], getCos(angle));
-
-            iVar2 = MTH_Mul_5_6(param_3.m18_widthScale, iVar2, ratio1);
-            iVar3 = MTH_Mul_5_6(param_3.m1C_heightScale, iVar3, ratio1);
-
-            param_4->matrix[3] = iVar4 - iVar2;
-            param_4->matrix[4] = iVar5 + iVar3;
-            param_4->matrix[6] = iVar4 + iVar2;
-            param_4->matrix[7] = iVar5 - iVar3;
-        }
-
-        return 1;
-    }
-
-    return 0;
-}
 
 s32 sGunShotTask_DrawSub1Sub1(sMatrix4x3*, s_graphicEngineStatus_405C&)
 {
@@ -509,7 +465,7 @@ void sHomingLaserTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param1, std::array<f
 
     sMatrix4x3 sStack80;
 
-    if (sHomingLaserTask_DrawSub1Sub0Sub0(sStack32, param_2, graphicEngineStatus.m405C, &sStack80))
+    if (rayComputeDisplayMatrix_2Width(sStack32, param_2, graphicEngineStatus.m405C, &sStack80))
     {
         if (sGunShotTask_DrawSub1Sub1(&sStack80, graphicEngineStatus.m405C))
         {
