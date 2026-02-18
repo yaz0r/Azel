@@ -31,7 +31,10 @@ void applyDamageSub(sBattleTargetable& param_1, sVec3_FP& param_2)
     transformAndAddVecByCurrentMatrix(&param_1.m28, &param_1.m1C);
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x14])
     {
-        assert(0);
+        vdp2DebugPrintSetPosition(10, 0xf);
+        vdp2PrintfSmallFont("P1:%3d,%3d,%3d", param_2[0] >> 0xC, param_2[1] >> 0xc);
+        vdp2DebugPrintSetPosition(10, 0x10);
+        vdp2PrintfSmallFont("P2:%3d,%3d,%3d", param_1.m28[0] >> 0xC, param_1.m28[1] >> 0xC, param_1.m28[2] >> 0xC);
     }
 }
 

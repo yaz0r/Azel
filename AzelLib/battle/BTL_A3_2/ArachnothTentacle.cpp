@@ -1,5 +1,9 @@
 #include "PDS.h"
 #include "ArachnothTentacle.h"
+#include "kernel/vdp1Allocator.h"
+#include "kernel/graphicalObject.h"
+
+void sGunShotTask_DrawSub1(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 param_3, s16 param_4, u16 param_5, const quadColor* param_6, s32 param_7); // todo: cleanup
 
 void arachnothTentacle_updateMode1(sArachnothTentacle* pThis) {
     fixedPoint cosValue = getCos(pThis->m178_rotation->m_value[0].toInteger());
@@ -77,7 +81,26 @@ void arachnothTentacle_update(sArachnothTentacle* pThis) {
 }
 
 void arachnothTentacle_draw(sArachnothTentacle* pThis) {
-    Unimplemented();
+    for (int i = 9; i > 0; i -= 3) {
+        static std::array<s32, 9> tentacleData = { {
+                0x800, 0x800, 0x400, 0x400, 0x400, 0x333, 0x266, 0x199, 0x199
+        } };
+
+        static quadColor tentacleColor = { 0x806D, 0x80D2, 0x80D2, 0x806D };
+
+        std::array<sVec3_FP, 2> line;
+        line[0] = pThis->mC_segments[i].m18;
+        line[1] = pThis->mC_segments[i-1].m18;
+        sGunShotTask_DrawSub1(line, tentacleData[i - 1], pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(2), pThis->m8->at(3), pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(4), &tentacleColor, 8);
+        
+        line[0] = pThis->mC_segments[i - 1].m18;
+        line[1] = pThis->mC_segments[i - 2].m18;
+        sGunShotTask_DrawSub1(line, tentacleData[i - 1], pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(2), pThis->m8->at(3), pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(4), &tentacleColor, 8);
+        
+        line[0] = pThis->mC_segments[i - 2].m18;
+        line[1] = pThis->mC_segments[i - 3].m18;
+        sGunShotTask_DrawSub1(line, tentacleData[i - 1], pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(2), pThis->m8->at(3), pThis->m4_vd1Allocation->m4_vdp1Memory + pThis->m8->at(4), &tentacleColor, 8);
+    }
 }
 
 sArachnothTentacle* createArachnothTentacle(s_workAreaCopy* pParent, sVec3_FP* position, sVec3_FP* rotation, sVec3_FP* offset) {
@@ -90,7 +113,11 @@ sArachnothTentacle* createArachnothTentacle(s_workAreaCopy* pParent, sVec3_FP* p
 
     sArachnothTentacle* pNewTask = createSubTaskWithCopy<sArachnothTentacle>(pParent, &definition);
 
-    Unimplemented();
+    static std::array<s16, 6> tentacleData2 = { {
+        0,0, 0xCD0, 0x510, 0x2EEC, 0
+    } };
+    pNewTask->m8 = &tentacleData2;
+    pNewTask->m4_vd1Allocation = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation;
 
     pNewTask->m174_position = position;
     pNewTask->m178_rotation = rotation;

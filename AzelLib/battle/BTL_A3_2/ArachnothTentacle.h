@@ -9,6 +9,7 @@ struct sArachnothTentacleSub {
 
 struct sArachnothTentacle : public s_workAreaTemplateWithCopy<sArachnothTentacle>
 {
+    std::array<s16, 6>* m8;
     std::array<sArachnothTentacleSub, 10> mC_segments;
     sVec3_FP* m174_position;
     sVec3_FP* m178_rotation;
