@@ -444,7 +444,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
 }
 
 
-s32 sGunShotTask_DrawSub1Sub1(sMatrix4x3*, s_graphicEngineStatus_405C&)
+s32 sGunShotTask_DrawSub1Sub1(sScreenQuad3*, s_graphicEngineStatus_405C&)
 {
     Unimplemented();
 
@@ -463,13 +463,13 @@ void sHomingLaserTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param1, std::array<f
     transformAndAddVecByCurrentMatrix(&param1[0], &sStack32[0]);
     transformAndAddVecByCurrentMatrix(&param1[1], &sStack32[1]);
 
-    sMatrix4x3 sStack80;
+    sScreenQuad3 sStack80;
 
-    if (rayComputeDisplayMatrix_2Width(sStack32, param_2, graphicEngineStatus.m405C, &sStack80))
+    if (rayComputeDisplayMatrix_2Width(sStack32, param_2, graphicEngineStatus.m405C, sStack80))
     {
         if (sGunShotTask_DrawSub1Sub1(&sStack80, graphicEngineStatus.m405C))
         {
-            sGunShotTask_DrawSub1Sub3(sStack80, sStack32[1][2], param_3, param_4, param_5, param_6, param_7);
+            sendRaySegmentToVdp1(sStack80, sStack32[1][2], param_3, param_4, param_5, param_6, param_7);
         }
     }
 }

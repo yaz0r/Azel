@@ -168,7 +168,7 @@ void projectPoint(const sVec3_FP& inCoordinate, sVec2_FP& outCoordinate)
 
 // todo: kernel
 // todo: this is missing the visibility check
-s32 drawLineSquareProject(const std::array<sVec3_FP, 4>& coordinates, std::array<sVec2_FP, 4>& projectedCoordinates)
+s32 drawLineSquareProject(const std::array<sVec3_FP, 4>& coordinates, sScreenQuad& projectedCoordinates)
 {
     for (int i = 0; i < 4; i++)
     {
@@ -179,7 +179,7 @@ s32 drawLineSquareProject(const std::array<sVec3_FP, 4>& coordinates, std::array
 }
 
 // todo: kernel
-void drawLineSquareVdp1(u16 param1, std::array < sVec2_FP, 4>& projectedCoordinates, u16 color, fixedPoint depth)
+void drawLineSquareVdp1(u16 param1, sScreenQuad& projectedCoordinates, u16 color, fixedPoint depth)
 {
     s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
     vdp1WriteEA.m0_CMDCTRL = 0x1005; // command 0
@@ -206,7 +206,7 @@ void drawLineSquareVdp1(u16 param1, std::array < sVec2_FP, 4>& projectedCoordina
 // todo: kernel
 void drawLineSquare(const std::array<sVec3_FP, 4>& coordinates, u16 color, s32 depth)
 {
-    std::array<sVec2_FP, 4> projectedCoordinates;
+    sScreenQuad projectedCoordinates;
 
     if (drawLineSquareProject(coordinates, projectedCoordinates))
     {

@@ -302,7 +302,12 @@ void arachnoth_updateState0_sub3(sArachnothFormation* pThis)
         if (pThis->m314_tentacles[0][0] == 0)
         {
             static std::array<std::array<sVec3_FP, 3>, 2> arachnothTentacleInitialPosition = { {
-
+                {   sVec3_FP(0,-0x900, 0x6000),
+                    sVec3_FP(0,-0x1000, 0x5000),
+                    sVec3_FP(0,-0x2000, 0x4000) },
+                {   sVec3_FP(0,-0x900, 0x6000),
+                    sVec3_FP(0,-0x1000, 0x5000),
+                    sVec3_FP(0,-0x2000, 0x4000) },
             } };
 
             for (int i = 0; i < 2; i++) {

@@ -963,3 +963,5 @@ void registerModelAndCharacter(u8* model, u32 character);
 void getVdp1ClippingCoordinates(std::array<s16, 4>& r4);
 void getVdp1LocalCoordinates(std::array<s16, 2>& r4);
 
+typedef std::array < sVec2_FP, 4> sScreenQuad;
+typedef std::array < sVec3_FP, 4> sScreenQuad3;
