@@ -31,8 +31,8 @@ s32 rayComputeDisplayMatrix_fixedWidth(std::array<sVec3_FP, 2>& param_1, s32 par
 
         param_4[0][0] = local_38[0] - iVar9[0];
         param_4[0][1] = local_38[1] + iVar9[1];
-        param_4[3][1] = local_38[0] + iVar9[0];
-        param_4[3][0] = local_38[1] - iVar9[1];
+        param_4[3][0] = local_38[0] + iVar9[0];
+        param_4[3][1] = local_38[1] - iVar9[1];
 
         sVec2_FP iVar3;
         iVar3[0] = MTH_Mul_5_6(param_3.m18_widthScale, MTH_Mul(param_2, getSin(angle)), ratio1);
@@ -72,8 +72,8 @@ s32 rayComputeDisplayMatrix_2Width(std::array<sVec3_FP, 2>& param_1, std::array<
 
             param_4[0][0] = iVar2 - iVar6;
             param_4[0][1] = iVar3 + iVar7;
-            param_4[3][1] = iVar2 + iVar6;
-            param_4[3][0] = iVar3 - iVar7;
+            param_4[3][0] = iVar2 + iVar6;
+            param_4[3][1] = iVar3 - iVar7;
         }
 
         {
