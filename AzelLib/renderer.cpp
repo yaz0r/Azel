@@ -1660,12 +1660,16 @@ bool azelSdl2_EndFrame()
     // render VDP1 frame buffer
     if(1)
     {
+        bgfx::setViewName(vdp1_gpuView, "Vdp1");
         bgfx::setViewFrameBuffer(vdp1_gpuView, gBGFXVdp1PolyFB);
         bgfx::setViewRect(vdp1_gpuView, 0, 0, internalResolution[0], internalResolution[1]);
 
         bgfx::setViewClear(vdp1_gpuView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0);
 
-        bgfx::setViewName(vdp1_gpuView, "Vdp1");
+        float scaleX = internalResolution[0] / 352.f;
+        float scaleY = internalResolution[1] / 224.f;
+        bgfx::setViewScissor(vdp1_gpuView, cameraProperties.x0* scaleX, cameraProperties.y0* scaleY, cameraProperties.x1* scaleX - cameraProperties.x0 * scaleX, cameraProperties.y1* scaleY - cameraProperties.y0 * scaleY);
+
         bgfx::setViewMode(vdp1_gpuView, bgfx::ViewMode::Sequential);
 
         flushObjectsToDrawList();

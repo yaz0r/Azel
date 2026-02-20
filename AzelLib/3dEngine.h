@@ -24,6 +24,22 @@ struct s_cameraProperties2
 };
 extern s_cameraProperties2 cameraProperties2;
 
+struct sCameraProperties
+{
+    s16 m8; //8
+    s16 mA; //A
+    s16 mC; //C
+    s16 mE; //E
+
+    s16 x0; // 3C
+    s16 y0; // 3E
+    s16 x1; // 40
+    s16 y1; // 42
+    s16 centerX; // 44
+    s16 centerY; // 465
+};
+extern sCameraProperties cameraProperties;
+
 struct sFieldCameraStatus
 {
     sVec3_FP m0_position;

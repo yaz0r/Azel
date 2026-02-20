@@ -22,10 +22,13 @@
 #include "items.h"
 #include "audio/systemSounds.h"
 #include "battleGenericData.h"
+#include "kernel/fade.h"
 
 #include "BTL_A3/BTL_A3.h" // TODO: cleanup
 #include "BTL_A3/baldor.h" // TODO: cleanup
 
+// TODO: cleanup
+void BattleEnd_deleteSub0();
 void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
 
 struct sBattleCinematicBars : public s_workAreaTemplate<sBattleCinematicBars>
@@ -711,6 +714,97 @@ void battleEngine_UpdateSub7Sub3()
     }
 }
 
+struct sDragonDeathTask : public s_workAreaTemplate<sDragonDeathTask>
+{
+    u8 m0_state = 0;
+    s16 m2_x0;
+    s16 m4_y0;
+    s16 m6_x1;
+    s16 m8_y1;
+    s16 mA_initial_x0;
+    s16 mC_initial_y0;
+    s16 mE_initial_x1;
+    s16 m10_initial_y1;
+    s16 m12_target_x0;
+    s16 m14_target_y0;
+    s16 m16_target_x1;
+    s16 m18_target_y1;
+    s32 m1C_transitionDuration;
+    s16 m24_currentTick;
+    // size 0x28
+};
+
+void dragonDeathTask_init(sDragonDeathTask* pThis) {
+    pThis->m24_currentTick = 0;
+
+    pThis->m2_x0 = 0;
+    pThis->m4_y0 = 0;
+    pThis->m6_x1 = 352;
+    pThis->m8_y1 = 224;
+
+    pThis->mA_initial_x0 = pThis->m2_x0;
+    pThis->mC_initial_y0 = pThis->m4_y0;
+    pThis->mE_initial_x1 = pThis->m6_x1;
+    pThis->m10_initial_y1 = pThis->m8_y1;
+
+    pThis->m12_target_x0 = 0x60;
+    pThis->m14_target_y0 = 0x80;
+    pThis->m16_target_x1 = 0x100;
+    pThis->m18_target_y1 = 0xd0;
+
+    pThis->m1C_transitionDuration = 30;
+    *(u16*)getVdp2Vram(0x2A600) = 0x8000;
+    vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x15300;
+    g_fadeControls.m_4D = 6;
+    if ((char)g_fadeControls.m_4C < 7) {
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+    }
+    fadePalette(&g_fadeControls.m0_fade0, 0x819f, 0x8000, 0xa5);
+    g_fadeControls.m_4D = 5;
+}
+
+void dragonDeathTask_update(sDragonDeathTask* pThis) {
+    switch (pThis->m0_state) {
+    case 0:
+        pThis->m2_x0 = pThis->mA_initial_x0 + performDivision(pThis->m1C_transitionDuration, (pThis->m12_target_x0 - pThis->mA_initial_x0) * pThis->m24_currentTick);
+        pThis->m4_y0 = pThis->mC_initial_y0 + performDivision(pThis->m1C_transitionDuration, (pThis->m14_target_y0 - pThis->mC_initial_y0) * pThis->m24_currentTick);
+        pThis->m6_x1 = pThis->mE_initial_x1 + performDivision(pThis->m1C_transitionDuration, (pThis->m16_target_x1 - pThis->mE_initial_x1) * pThis->m24_currentTick);
+        pThis->m8_y1 = pThis->m10_initial_y1 + performDivision(pThis->m1C_transitionDuration, (pThis->m18_target_y1 - pThis->m10_initial_y1) * pThis->m24_currentTick);
+        resetCamera(pThis->m2_x0, pThis->m4_y0, pThis->m6_x1, pThis->m8_y1, (pThis->m2_x0 + pThis->m6_x1) / 2, (pThis->m4_y0 + pThis->m8_y1) / 2);
+        if (++pThis->m24_currentTick > pThis->m1C_transitionDuration) {
+            pThis->m24_currentTick = 0;
+            pThis->m0_state++;
+        }
+        break;
+    case 1:
+        if ((++pThis->m24_currentTick > 90) && pThis) {
+            pThis->getTask()->markFinished();
+        }
+        break;
+    }
+}
+
+void dragonDeathTask_delete(sDragonDeathTask* pThis) {
+    resetCamera(0, 0, 0x160, 0xe0, 0xb0, 0x70);
+    setupVdp1LocalCoordinatesAndClipping();
+    g_fadeControls.m_4D = 6;
+    if (g_fadeControls.m_4C < 7) {
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+    }
+    fadePalette(&g_fadeControls.m0_fade0, 0x8000, 0x8000, 1);
+    g_fadeControls.m_4D = 5;
+    BattleEnd_deleteSub0();
+}
+
+static const sDragonDeathTask::TypedTaskDefinition dragonDeathTaskDefinition = {
+    dragonDeathTask_init,
+    dragonDeathTask_update,
+    nullptr,
+    dragonDeathTask_delete,
+};
+
 s32 battleEngine_checkBattleCompletion()
 {
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -761,7 +855,22 @@ s32 battleEngine_checkBattleCompletion()
 
     if (mainGameState.gameStats.m10_currentHP < 1)
     {
-        assert(0);
+        if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x17] != 0) {
+            pBattleEngine->m3B2_numBattleFormationRunning = 0;
+            return 0;
+        }
+        if (battleEngine_UpdateSub7Sub0Sub0() != 0) {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+            pBattleEngine->m18C_status = 4;
+            pBattleEngine->m1B8_dragonPitch = 0;
+            pBattleEngine->m1BC_dragonYaw = 0;
+            pBattleEngine->m3B2_numBattleFormationRunning = 0;
+            clearVdp2TextMemory();
+            ResetNBG1Map();
+            createSubTask<sDragonDeathTask>(pBattleEngine, &dragonDeathTaskDefinition);
+            gBattleManager->mE = 2;
+            return 1;
+        }
     }
     else if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4)
     {

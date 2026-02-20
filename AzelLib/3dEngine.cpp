@@ -5,21 +5,7 @@ std::array<sMatrix4x3, 16>::iterator matrixStackIter = matrixStack.begin();
 sMatrix4x3* pCurrentMatrix = NULL;
 
 s_cameraProperties2 cameraProperties2;
-
-struct sCameraProperties
-{
-    s16 m8; //8
-    s16 mA; //A
-    s16 mC; //C
-    s16 mE; //E
-
-    s16 x0; // 3C
-    s16 y0; // 3E
-    s16 x1; // 40
-    s16 y1; // 42
-    s16 centerX; // 44
-    s16 centerY; // 465
-} cameraProperties;
+sCameraProperties cameraProperties;
 
 void resetCamera(u32 x0, u32 y0, u32 x1, u32 y1, u32 centerX, u32 centerY)
 {
@@ -82,7 +68,7 @@ void initProjectionStack_Master()
 
 void reset3dEngine()
 {
-    resetCamera(0, 0, 224, 352, 176, 112);
+    resetCamera(0, 0, 352, 224, 176, 112);
 
     initProjectionStack_Master();
 
