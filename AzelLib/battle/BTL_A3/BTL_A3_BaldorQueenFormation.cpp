@@ -62,6 +62,25 @@ void baldorQueenFormation_goToMode3(BTL_A3_BaldorQueenFormation* pThis)
     return;
 }
 
+void baldorQueenFormation_goToMode1(BTL_A3_BaldorQueenFormation* pThis)
+{
+    battleEngine_SetBattleMode(eBattleModes::m7);
+    int count = 0;
+    for (int i = 0; i < 6; i++) {
+        if ((pThis->m4[i + 1].m48 & 4) == 0)
+        {
+            count++;
+            pThis->m4[i + 1].m49 = 2;
+            if (count > 2) {
+                break;
+            }
+        }
+    }
+    battleEngine_displayAttackName(1, 0x1e, 0);
+    battleEngine_FlagQuadrantForAttack(pThis->mB);
+    pThis->m0_formationState = 1;
+    return;
+}
 
 void baldorQueenFormation_updateMode0(BTL_A3_BaldorQueenFormation* pThis) {
     char cVar1;
@@ -177,6 +196,9 @@ LAB_BTL_A3__060578fe:
     switch (targetMode) {
     case 0:
         baldorQueenFormation_goToMode3(pThis);
+        break;
+    case 1:
+        baldorQueenFormation_goToMode1(pThis);
         break;
     default:
         assert(0);
@@ -312,8 +334,6 @@ void BTL_A3_BaldorQueenFormation_Update(BTL_A3_BaldorQueenFormation* pThis) {
     default:
         assert(0);
     }
-
-    Unimplemented();
 }
 
 p_workArea Create_BTL_A3_BaldorQueenFormation(p_workArea parent, u32 arg) {

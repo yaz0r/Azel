@@ -25,6 +25,7 @@ void BaldorQueen_draw(sBaldorBase* pThisBase) {
     translateCurrentMatrix(pThis->m1C_translation.m0_current);
     rotateCurrentMatrixYXZ(pThis->m28_rotation.m0_current);
     pThis->m38_3dModel->m18_drawFunction(pThis->m38_3dModel);
+    popMatrix();
 }
 
 p_workArea baldorQueenCreateQueenTask(s_workAreaCopy* pParent, sFormationData* param_2) {
