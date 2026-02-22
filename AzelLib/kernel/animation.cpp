@@ -438,19 +438,91 @@ void modelMode5_scale(s_3dModel* p3dModel)
     }
 }
 
-void modelMode3_position(s_3dModel* p3dModel)
+void modelMode3_position(s_3dModel* p3dModel) // step every 4 frame
 {
-    Unimplemented();
+    if (p3dModel->m10_currentAnimationFrame & 3) {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            sPoseData& pPoseData = p3dModel->m2C_poseData.at(i);
+            pPoseData.m0_translation += pPoseData.m24_halfTranslation;
+        }
+    }
+    else {
+        int keyFrameIndex = p3dModel->m10_currentAnimationFrame / 4;
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            sPoseData& pPoseData = p3dModel->m2C_poseData.at(i);
+            const auto& trackData = p3dModel->m30_pCurrentAnimation->m8_trackHeader.at(i).m14_trackData;
+
+            pPoseData.m0_translation[0] = trackData[0][keyFrameIndex] * 0x10;
+            pPoseData.m0_translation[1] = trackData[1][keyFrameIndex] * 0x10;
+            pPoseData.m0_translation[2] = trackData[2][keyFrameIndex] * 0x10;
+
+            if (p3dModel->m10_currentAnimationFrame < p3dModel->m30_pCurrentAnimation->m4_numFrames - 1) {
+                pPoseData.m24_halfTranslation[0] = ((trackData[0][keyFrameIndex + 1] - trackData[0][keyFrameIndex]) * 0x10) / 4;
+                pPoseData.m24_halfTranslation[1] = ((trackData[1][keyFrameIndex + 1] - trackData[1][keyFrameIndex]) * 0x10) / 4;
+                pPoseData.m24_halfTranslation[2] = ((trackData[2][keyFrameIndex + 1] - trackData[2][keyFrameIndex]) * 0x10) / 4;
+            }
+        }
+    }
 }
 
 void modelMode3_rotation(s_3dModel* p3dModel)
 {
-    Unimplemented();
+    if (p3dModel->m10_currentAnimationFrame & 3) {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            sPoseData& pPoseData = p3dModel->m2C_poseData.at(i);
+            pPoseData.mC_rotation += pPoseData.m30_halfRotation;
+        }
+    }
+    else {
+        int frameEntry = p3dModel->m10_currentAnimationFrame / 4;
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            sPoseData& pPoseData = p3dModel->m2C_poseData.at(i);
+            const auto& trackData = p3dModel->m30_pCurrentAnimation->m8_trackHeader.at(i).m14_trackData;
+
+            pPoseData.mC_rotation[0] = trackData[3][frameEntry] * 0x10000;
+            pPoseData.mC_rotation[1] = trackData[4][frameEntry] * 0x10000;
+            pPoseData.mC_rotation[2] = trackData[5][frameEntry] * 0x10000;
+
+            if (p3dModel->m10_currentAnimationFrame < p3dModel->m30_pCurrentAnimation->m4_numFrames - 1) {
+                pPoseData.m30_halfRotation[0] = ((trackData[3][frameEntry + 1] - trackData[3][frameEntry]) * 0x10000) / 4;
+                pPoseData.m30_halfRotation[1] = ((trackData[4][frameEntry + 1] - trackData[4][frameEntry]) * 0x10000) / 4;
+                pPoseData.m30_halfRotation[2] = ((trackData[5][frameEntry + 1] - trackData[5][frameEntry]) * 0x10000) / 4;
+            }
+        }
+    }
 }
 
 void modelMode3_scale(s_3dModel* p3dModel)
 {
-    Unimplemented();
+    if (p3dModel->m10_currentAnimationFrame & 3) {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            sPoseData& pPoseData = p3dModel->m2C_poseData.at(i);
+            pPoseData.m18_scale += pPoseData.m3C_halfScale;
+        }
+    }
+    else {
+        int frameEntry = p3dModel->m10_currentAnimationFrame / 4;
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            sPoseData& pPoseData = p3dModel->m2C_poseData.at(i);
+            const auto& trackData = p3dModel->m30_pCurrentAnimation->m8_trackHeader.at(i).m14_trackData;
+
+            pPoseData.m18_scale[0] = trackData[6][frameEntry] * 0x10;
+            pPoseData.m18_scale[1] = trackData[7][frameEntry] * 0x10;
+            pPoseData.m18_scale[2] = trackData[8][frameEntry] * 0x10;
+
+            if (p3dModel->m10_currentAnimationFrame < p3dModel->m30_pCurrentAnimation->m4_numFrames - 1) {
+                pPoseData.m3C_halfScale[0] = ((trackData[6][frameEntry + 1] - trackData[6][frameEntry]) * 0x10) / 4;
+                pPoseData.m3C_halfScale[1] = ((trackData[7][frameEntry + 1] - trackData[7][frameEntry]) * 0x10) / 4;
+                pPoseData.m3C_halfScale[2] = ((trackData[8][frameEntry + 1] - trackData[8][frameEntry]) * 0x10) / 4;
+            }
+        }
+    }
 }
 
 void modelMode4_position0(s_3dModel* p3dModel)
@@ -658,7 +730,7 @@ u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, sAnimationData* pMode
             }
         }
         break;
-    case 3:
+    case 3: // every 8 frames
         p3dModel->m20_positionUpdateFunction = modelMode3_position;
         p3dModel->m24_rotationUpdateFunction = modelMode3_rotation;
         p3dModel->m28_scaleUpdateFunction = modelMode3_scale;
@@ -846,8 +918,7 @@ u32 stepAnimation(s_3dModel* p3DModel)
         p3DModel->m28_scaleUpdateFunction(p3DModel);
     }
 
-    p3DModel->m16_previousAnimationFrame = p3DModel->m10_currentAnimationFrame;
-    p3DModel->m10_currentAnimationFrame++;
+    p3DModel->m16_previousAnimationFrame = p3DModel->m10_currentAnimationFrame++;
 
     // animation reset
     if (p3DModel->m10_currentAnimationFrame >= p3DModel->m30_pCurrentAnimation->m4_numFrames)

@@ -12,8 +12,10 @@
 #include "audio/systemSounds.h"
 #include "battleGenericData.h"
 #include "kernel/rayDisplay.h"
+#include "BTL_A3/BTL_A3_data.h"
 
 void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s8 param4); // TODO: clean
+void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const sVec3_FP* param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s32 param8); // TODO: clean
 
 struct sGunShotRootTask : public s_workAreaTemplateWithCopy<sGunShotRootTask>
 {
@@ -284,6 +286,40 @@ void sGunShotTask_UpdateSub2(sGunShotTask* pThis, s32 param_2, sVec3_FP* param_3
     }
 }
 
+void Baldor_updateSub0Sub2Sub2(sVec3_FP* param_1, sVec3_FP* param_2, int param_3, u8 param_4) {
+    int entryToUse;
+    switch (param_4) {
+    case 0:
+        if (gBattleManager->m2_currentBattleOverlayId == 1) {
+            entryToUse = 3;
+        }
+        else {
+            entryToUse = 2;
+        }
+        break;
+    case 1:
+        if (gBattleManager->m2_currentBattleOverlayId == 1) {
+            entryToUse = 5;
+        }
+        else {
+            entryToUse = 4;
+        }
+        break;
+    case 2:
+        if (gBattleManager->m2_currentBattleOverlayId == 1) {
+            entryToUse = 8;
+        }
+        else {
+            entryToUse = 7;
+        }
+        break;
+    default:
+        assert(0);
+    }
+
+    createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, readSaturnEA(g_BTL_A3->getSaturnPtr(0x60ABEFA + 4 * entryToUse)), param_1, param_2, nullptr, param_3, 0, 0);
+}
+
 void sGunShotTask_Update(sGunShotTask* pThis)
 {
     if (!(pThis->m65 & 2))
@@ -356,17 +392,20 @@ void sGunShotTask_Update(sGunShotTask* pThis)
             }
         }
         break;
-    case 1:
+    case 1: //TODO how does this differ from case 3?
         if (--pThis->m58 > -1) {
             pThis->m14 += pThis->m2C + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
             if (pThis->m14[1] <= gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude)
             {
-                Unimplemented();
+                pThis->m_DrawMethod = nullptr;
+                Baldor_updateSub0Sub2Sub2(&pThis->m14, 0, 0x10000, 1);
+                pThis->m68->m50_flags &= ~0x200000;
+                pThis->getTask()->markFinished();
             }
         }
         else {
             pThis->getTask()->markFinished();
-            pThis->m68->m50_flags &= 0xFFDFFFFF;
+            pThis->m68->m50_flags &= ~0x200000;
             CreateDamageSpriteForCurrentBattleOverlay(&pThis->m14, 0, 0x10000, 1);
         }
         break;
@@ -375,19 +414,22 @@ void sGunShotTask_Update(sGunShotTask* pThis)
         pThis->m2C[0] += MTH_Mul(randomNumber() & 0xC000, pThis->m2C[0]);
         pThis->m2C[1] += MTH_Mul(randomNumber() & 0xC000, pThis->m2C[1]);
 
-    case 3:
+    case 3: //TODO how does this differ from case 1?
         if (--pThis->m58 > -1)
         {
             pThis->m14 += pThis->m2C + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
             if (pThis->m14[1] <= gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude)
             {
-                Unimplemented();
+                pThis->m_DrawMethod = nullptr;
+                Baldor_updateSub0Sub2Sub2(&pThis->m14, 0, 0x10000, 1);
+                pThis->m68->m50_flags &= ~0x200000;
+                pThis->getTask()->markFinished();
             }
         }
         else
         {
             pThis->getTask()->markFinished();
-            pThis->m68->m50_flags &= 0xFFDFFFFF;
+            pThis->m68->m50_flags &= ~0x200000;
             CreateDamageSpriteForCurrentBattleOverlay(&pThis->m14, 0, 0x10000, 1);
         }
         break;

@@ -155,7 +155,7 @@ struct s_workAreaTemplateWithArgWithCopy : public s_workAreaCopy
     typedef void (*InitFunctionType)(T*, argType ...);
 
     FunctionType m_UpdateMethod;
-    FunctionType m_DrawMethod;
+    FunctionType m_DrawMethod; // offset -0xC ? To recheck
     FunctionType m_DeleteMethod;
 
     struct TypedTaskDefinition

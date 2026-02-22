@@ -24,12 +24,13 @@ struct BTL_A3_BaldorQueenFormation : public s_workAreaTemplateWithArg<BTL_A3_Bal
     u8 m1_formationSubState;
     std::vector<sFormationData> m4;
     s16 m8;
-    u8 mB;
+    u8 mB_baldorsQuadrant;
     std::array<u8, 6> mC;
     u8 mA;
     s16 m14;
     p_workArea m18;
     fixedPoint m1C;
+    u8 m20_formationIndexOfAttackingBaldor;
     // size 0x24
 };
 
@@ -77,53 +78,31 @@ void baldorQueenFormation_goToMode1(BTL_A3_BaldorQueenFormation* pThis)
         }
     }
     battleEngine_displayAttackName(1, 0x1e, 0);
-    battleEngine_FlagQuadrantForAttack(pThis->mB);
+    battleEngine_FlagQuadrantForAttack(pThis->mB_baldorsQuadrant);
     pThis->m0_formationState = 1;
     return;
 }
 
 void baldorQueenFormation_updateMode0(BTL_A3_BaldorQueenFormation* pThis) {
-    char cVar1;
     unsigned int uVar2;
-    int targetMode;
-    int iVar4;
-    int iVar5;
+    int numActiveBaldor = 0;
+    
+    // TODO: This is done twice in a buggy way. Bug in the original code?
+    for (int i = 0; i < 6; i++) {
+        if ((pThis->m4[i + 1].m48 & 4) == 0) {
+            numActiveBaldor = numActiveBaldor + 1;
+        }
+    }
 
-    iVar5 = 0;
-    iVar4 = 0;
-    targetMode = 0;
-    while (iVar4 < 2) {
-        if (((&pThis->m4[1].m48)[targetMode] & 4) == 0) {
-            iVar5 = iVar5 + 1;
-        }
-        if (((&pThis->m4[2].m48)[targetMode] & 4) == 0) {
-            iVar5 = iVar5 + 1;
-        }
-        if (((&pThis->m4[3].m48)[targetMode] & 4) == 0) {
-            iVar5 = iVar5 + 1;
-        }
-        iVar4 = iVar4 + 4;
-        if (((&pThis->m4[4].m48)[targetMode] & 4) == 0) {
-            iVar5 = iVar5 + 1;
-        }
-        targetMode = targetMode + 0x130;
-    }
-    while (iVar4 < 6) {
-        iVar4 = iVar4 + 1;
-        if (((&pThis->m4[1].m48)[targetMode] & 4) == 0) {
-            iVar5 = iVar5 + 1;
-        }
-        targetMode = targetMode + 0x4c;
-    }
     battleEngine_FlagQuadrantBitForSafety(0);
     battleEngine_FlagQuadrantBitForDanger(0);
-    if (iVar5 == 0) {
+    if (numActiveBaldor == 0) {
         battleEngine_FlagQuadrantForDanger(0);
         uVar2 = 2;
     }
     else {
-        battleEngine_FlagQuadrantForSafety((int)(char)pThis->mB);
-        uVar2 = performModulo(4, pThis->mB + 2);
+        battleEngine_FlagQuadrantForSafety(pThis->mB_baldorsQuadrant);
+        uVar2 = performModulo(4, pThis->mB_baldorsQuadrant + 2);
     }
     battleEngine_FlagQuadrantForDanger(uVar2);
     if ((pThis->m4[0].m48 & 4) != 0) {
@@ -134,64 +113,66 @@ void baldorQueenFormation_updateMode0(BTL_A3_BaldorQueenFormation* pThis) {
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 == 0) {
         return;
     }
-    targetMode = BattleEngineSub0_UpdateSub0();
-    if (targetMode != 0) {
+
+    if (BattleEngineSub0_UpdateSub0() != 0) {
         return;
     }
     (gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8) = 0;
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
-    cVar1 = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
-    if (cVar1 != '\0') {
-        if (cVar1 == '\x01') {
-        LAB_BTL_A3__0605785e:
-            uVar2 = randomNumber();
 
-            static const std::array<u8, 4> attackList = { {0,1,2,4} };
+    // Trigger acid spray if player in the correct quadrant
+    switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant) {
+    case 0:
+    case 2:
+        // Safe, don't trigger acid spray attack
+        break;
+    case 1:
+    case 3:
+        // Trigger the acid spray
+        {
+            static const std::array<u8, 4> cameraList = { {0,1,2,4} };
+            battleEngine_PlayAttackCamera(cameraList[randomNumber() & 3]);
+        }
+        pThis->m4[0].m49 = 2;
+        battleEngine_displayAttackName(0xd, 0x1e, 0);
+        pThis->m0_formationState = 2;
+        return;
+    default:
+        assert(0);
 
-            battleEngine_PlayAttackCamera(attackList[uVar2 & 3]);
-            pThis->m4[0].m49 = 2;
-            battleEngine_displayAttackName(0xd, 0x1e, 0);
-            pThis->m0_formationState = 2;
-            return;
-        }
-        if (cVar1 != '\x02') {
-            if (cVar1 != '\x03') {
-                return;
-            }
-            goto LAB_BTL_A3__0605785e;
-        }
     }
-    if (pThis->mB == gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant) {
-        if (iVar5 == 0) {
-        LAB_BTL_A3__060578b6:
+
+    int targetMode = 0;
+
+    // if the player is in the same quadrant as the baldors, attack
+    if (pThis->mB_baldorsQuadrant == gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant) {
+        if (numActiveBaldor == 0) {
             targetMode = 0;
-            pThis->mB = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
-            goto LAB_BTL_A3__060578fe;
+            pThis->mB_baldorsQuadrant = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
         }
-        if (iVar5 == 6) {
+        else if (numActiveBaldor == 6) {
             targetMode = 1;
-            goto LAB_BTL_A3__060578fe;
         }
-        uVar2 = randomNumber();
-        if ((uVar2 & 1) == 0) {
-            targetMode = 1;
-            goto LAB_BTL_A3__060578fe;
+        else {
+            if ((randomNumber() & 1) == 0) {
+                targetMode = 1;
+            }
         }
     }
     else {
-        if (iVar5 == 0) goto LAB_BTL_A3__060578b6;
-        if (iVar5 == 6) {
-            targetMode = 2;
-            goto LAB_BTL_A3__060578fe;
+        if (numActiveBaldor == 0) {
+            targetMode = 0;
+            pThis->mB_baldorsQuadrant = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
         }
-        uVar2 = randomNumber();
-        if ((uVar2 & 1) == 0) {
+        else if (numActiveBaldor == 6) {
             targetMode = 2;
-            goto LAB_BTL_A3__060578fe;
+        }
+        else {
+            if ((randomNumber() & 1) == 0) {
+                targetMode = 2;
+            }
         }
     }
-    targetMode = 0;
-LAB_BTL_A3__060578fe:
 
     switch (targetMode) {
     case 0:
@@ -205,13 +186,155 @@ LAB_BTL_A3__060578fe:
     }
 }
 
+void baldorQueenFormation_updateMode1(BTL_A3_BaldorQueenFormation* pThis) {
+    switch (pThis->m1_formationSubState) {
+    case 0:
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000) {
+            pThis->m1C = randomNumber();
+
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8 = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+            pThis->m1C += 0x222222;
+
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C).getInteger());
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[1] += -0x5000;
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant == 0) {
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += 0xA000;
+            }
+            else {
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += -0xA000;
+            }
+
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3F4_cameraPositionWhileShooting = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
+
+            battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m4_battleEngine->m3F4_cameraPositionWhileShooting);
+            battleEngine_setCurrentCameraPositionPointer(&gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8);
+            createBattleIntroTaskSub0();
+            pThis->m1_formationSubState++;
+        }
+        break;
+    case 1: // Start attacking, select baldor
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8 = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+        pThis->m1C += 0x222222;
+
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C).getInteger());
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[1] += -0x5000;
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant == 0) {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += 0xA000;
+        }
+        else {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += -0xA000;
+        }
+
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3F4_cameraPositionWhileShooting = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
+
+        for (int i = 0; i < 6; i++) {
+            if (pThis->m4[i + 1].m48 & 1) {
+                pThis->m4[i + 1].m49 = 1;
+                pThis->m20_formationIndexOfAttackingBaldor = i + 1;
+                pThis->m1_formationSubState++;
+                return;
+            }
+        }
+        pThis->m14 = 30;
+        pThis->m1_formationSubState = 10;
+        break;
+    case 2: // Attacking baldor selected
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8 = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+        pThis->m1C += 0x222222;
+
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C).getInteger());
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[1] += -0x5000;
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant == 0) {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += 0xA000;
+        }
+        else {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += -0xA000;
+        }
+
+        // Track the baldor attacking
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3F4_cameraPositionWhileShooting = pThis->m4[pThis->m20_formationIndexOfAttackingBaldor].m0_translation.m0_current;
+
+        // Wait for all baldor to be done attacking
+        for (int i = 0; i < 6; i++) {
+            if (pThis->m4[i + 1].m48 & 2) {
+                return;
+            }
+        }
+        pThis->m1_formationSubState = 1;
+        break;
+    case 10: // Finished attacking
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8 = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+        pThis->m1C += 0x222222;
+
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C).getInteger());
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[1] += -0x5000;
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant == 0) {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += 0xA000;
+        }
+        else {
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += -0xA000;
+        }
+
+        // Track the last baldor attacking
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3F4_cameraPositionWhileShooting = pThis->m4[pThis->m20_formationIndexOfAttackingBaldor].m0_translation.m0_current;
+
+        // wait for delay
+        if (--pThis->m14 > -1)
+            return;
+
+        // Attack finished, cleanup
+        sEnemyAttackCamera_updateSub2();
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+
+        // Reset baldor state
+        for (int i = 0; i < 6; i++) {
+            pThis->m4[i + 1].m49 = 0;
+        }
+
+        pThis->m0_formationState = 0;
+        pThis->m1_formationSubState = 0;
+        break;
+    default:
+        assert(0);
+    }
+}
+
+void baldorQueenFormation_updateMode2(BTL_A3_BaldorQueenFormation* pThis) {
+    switch (pThis->m1_formationSubState) {
+    case 0:
+        if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000) == 0) {
+            return;
+        }
+        battleEngine_FlagQuadrantForAttack(gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant);
+        pThis->m1_formationSubState++;
+        break;
+    case 1:
+        pThis->m4[0].m49 = 1;
+        pThis->m1_formationSubState++;
+        break;
+    case 2: // wait for attack to finish
+        if (pThis->m4[0].m48 & 2)
+            return;
+        pThis->m1_formationSubState = 10;
+        break;
+    case 10: // finished attack
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        pThis->m4[0].m49 = 0;
+        pThis->m0_formationState = 0;
+        pThis->m1_formationSubState = 0;
+        break;
+    default:
+        assert(0);
+    }
+}
+
 void baldorQueenFormation_updateMode3(BTL_A3_BaldorQueenFormation* pThis) {
     switch (pThis->m1_formationSubState) {
     case 0:
         if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000) == 0) {
             return;
         }
-        if (pThis->mB == 0) {
+        if (pThis->mB_baldorsQuadrant == 0) {
             pThis->m1C = -0x11c71c7;
         }
         else {
@@ -250,9 +373,9 @@ void baldorQueenFormation_updateMode3(BTL_A3_BaldorQueenFormation* pThis) {
         // Try to spawn a new Baldor
         for (int i = 0; i < 6; i++) {
             if (pThis->m4[i + 1].m48 & 4) {
-                pThis->m4[i + 1].m0_translation.m18 = readSaturnVec3(g_BTL_A3->getSaturnPtr(0x60a8d78) + pThis->mC[i] * 12 + pThis->mB * 0x48);
+                pThis->m4[i + 1].m0_translation.m18 = readSaturnVec3(g_BTL_A3->getSaturnPtr(0x60a8d78) + pThis->mC[i] * 12 + pThis->mB_baldorsQuadrant * 0x48);
 
-                if (pThis->mB == 0) {
+                if (pThis->mB_baldorsQuadrant == 0) {
                     pThis->m4[i + 1].m24_rotation.mC_target[1] = 0;
                 }
                 else {
@@ -271,7 +394,7 @@ void baldorQueenFormation_updateMode3(BTL_A3_BaldorQueenFormation* pThis) {
                     randPosition[0] = (randomNumber() & 0xFFF) - 0x7FF;
                     randPosition[1] = (randomNumber() & 0xFFF) - 0x7FF;
                     randPosition[2] = (randomNumber() & 0xFFF) - 0x7FF;
-                    if (pThis->mB == 2) {
+                    if (pThis->mB_baldorsQuadrant == 2) {
                         randPosition[2] = -randPosition[2];
                     }
                     createDamageSpriteEffect(dramAllocatorEnd[0x10].mC_fileBundle, g_BTL_A3->getSaturnPtr(0x60a8fb4), &temp, &randPosition, nullptr, 0x10000, 0, (randomNumber() & 0xF) + 8);
@@ -328,8 +451,14 @@ void BTL_A3_BaldorQueenFormation_Update(BTL_A3_BaldorQueenFormation* pThis) {
     case 0:
         baldorQueenFormation_updateMode0(pThis);
         break;
+    case 1:
+        baldorQueenFormation_updateMode1(pThis); // Evil bite
+        break;
+    case 2:
+        baldorQueenFormation_updateMode2(pThis);
+        break;
     case 3:
-        baldorQueenFormation_updateMode3(pThis); // Spawn new Baldor
+        baldorQueenFormation_updateMode3(pThis); // Vile brood (spawn new baldors)
         break;
     default:
         assert(0);

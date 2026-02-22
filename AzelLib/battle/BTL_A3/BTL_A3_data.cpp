@@ -4,6 +4,7 @@
 #include "BTL_A3_map4.h"
 #include "BTL_A3_map6.h"
 #include "BTL_A3_gnd.h"
+#include "BTL_A3_wtr.h"
 #include "BTL_A3_BaldorFormation.h"
 #include "BTL_A3_UrchinFormation.h"
 #include "BTL_A3_BaldorQueenFormation.h"
@@ -50,6 +51,9 @@ void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent)
         break;
     case 0x06054b62: // gnd
         Create_BTL_A3_gnd(pParent);
+        break;
+    case 0x06054bcc: // wtr
+        Create_BTL_A3_wtr(pParent);
         break;
     default:
         Unimplemented();
