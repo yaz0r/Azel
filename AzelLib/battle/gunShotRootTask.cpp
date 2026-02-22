@@ -356,6 +356,20 @@ void sGunShotTask_Update(sGunShotTask* pThis)
             }
         }
         break;
+    case 1:
+        if (--pThis->m58 > -1) {
+            pThis->m14 += pThis->m2C + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
+            if (pThis->m14[1] <= gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude)
+            {
+                Unimplemented();
+            }
+        }
+        else {
+            pThis->getTask()->markFinished();
+            pThis->m68->m50_flags &= 0xFFDFFFFF;
+            CreateDamageSpriteForCurrentBattleOverlay(&pThis->m14, 0, 0x10000, 1);
+        }
+        break;
     case 2:
         pThis->m2C = MTH_Mul(-0x8000, pThis->m2C);
         pThis->m2C[0] += MTH_Mul(randomNumber() & 0xC000, pThis->m2C[0]);
@@ -364,8 +378,7 @@ void sGunShotTask_Update(sGunShotTask* pThis)
     case 3:
         if (--pThis->m58 > -1)
         {
-            sVec3_FP local_60 = gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta + pThis->m2C; // TODO: recheck
-            pThis->m14 += local_60;
+            pThis->m14 += pThis->m2C + gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
             if (pThis->m14[1] <= gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude)
             {
                 Unimplemented();

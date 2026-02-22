@@ -326,7 +326,19 @@ void Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormationEntry)
 
     if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9))
     {
-        assert(0);
+        // During the Queen baldor fight
+        Baldor_initSub3(pThis->m68, 1, g_BTL_A3->getSaturnPtr(0x60a7ed4));
+        sSaturnPtr pDataSource = g_BTL_A3->getSaturnPtr(0x60a7f94);
+
+        for (int i = 0; i < 6; i++)
+        {
+            sBaldor_68_30& dest = pThis->m68->m30[i];
+
+            dest.m10_translation = readSaturnVec3(pDataSource + 0xC * i);
+            dest.m1C[1] = MTH_Mul(0x1c71c71, (randomNumber() & 0x1ffff) - 0xffff) + pThis->m28_rotation.m4_target->m_value[1];
+            dest.m1C[0] = MTH_Mul(0x1c71c71, (randomNumber() & 0x1ffff) - 0xffff);
+            dest.m1C[2] = MTH_Mul(0x1c71c71, (randomNumber() & 0x1ffff) - 0xffff);
+        }
     }
     else
     {
@@ -815,6 +827,7 @@ void Baldor_update(sBaldorBase* pThisBase)
 
     if ((gBattleManager->m6_subBattleId != 8) && (gBattleManager->m6_subBattleId != 9))
     {
+        // Standalone battle
         pThis->m6C += sVec3_FP(0x222222, 0x16c16c, 0xb60b6);
 
         pThis->m44_translationTarget[0] += MTH_Mul(0xA000, getSin(pThis->m6C[0].getInteger()));
@@ -823,7 +836,29 @@ void Baldor_update(sBaldorBase* pThisBase)
     }
     else
     {
-        assert(0);
+        // With Baldor Queen
+        int position = performDivision(3, pThis->mA_indexInFormation);
+        switch (position) {
+        case 0:
+            pThis->m6C[0] += 0x16C16C;
+            break;
+        case 1:
+            pThis->m6C[0] += -0x1907f6;
+            break;
+        case 2:
+            pThis->m6C[0] += 0x1fdb97;
+            break;
+        }
+
+        if ((pThis->mA_indexInFormation & 1) == 0) {
+            pThis->m6C[1] += 0xB60B6;
+        }
+        else if ((pThis->mA_indexInFormation & 1) == 1) {
+            pThis->m6C[1] += -0xECA86;
+        }
+        pThis->m44_translationTarget[0] += MTH_Mul(0xA000, getSin(pThis->m6C[0].getInteger()));
+        pThis->m44_translationTarget[1] += MTH_Mul(0xA000, getSin(pThis->m6C[1].getInteger()));
+        pThis->m44_translationTarget[2] += MTH_Mul(0xF000, getCos(pThis->m6C[2].getInteger()));
     }
 
     pThis->m68->m0_translation = *pThis->m1C_translation.m0_current;
