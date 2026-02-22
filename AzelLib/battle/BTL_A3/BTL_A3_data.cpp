@@ -3,8 +3,10 @@
 #include "BTL_A3_map3.h"
 #include "BTL_A3_map4.h"
 #include "BTL_A3_map6.h"
+#include "BTL_A3_gnd.h"
 #include "BTL_A3_BaldorFormation.h"
 #include "BTL_A3_UrchinFormation.h"
+#include "BTL_A3_BaldorQueenFormation.h"
 #include "kernel/grid.h"
 
 struct BTL_A3_data* g_BTL_A3 = nullptr;
@@ -24,6 +26,9 @@ void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32
     case 0x6054DF4:
         Create_BTL_A3_UrchinFormationConfig(pParent, arg0);
         break;
+    case 0x06058da4:
+        Create_BTL_A3_BaldorQueenFormation(pParent, arg0);
+        break;
     default:
         Unimplemented();
         break;
@@ -42,6 +47,9 @@ void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent)
         break;
     case 0x06054b4e: // map4
         Create_BTL_A3_map4(pParent);
+        break;
+    case 0x06054b62: // gnd
+        Create_BTL_A3_gnd(pParent);
         break;
     default:
         Unimplemented();

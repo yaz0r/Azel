@@ -23,7 +23,7 @@
 void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const sVec3_FP* param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s32 param8); // todo: remove
 
 
-void Baldor_initSub0Sub2(sBaldor* pThis, sFormationData* pFormationEntry)
+void Baldor_initSub0Sub2(sBaldorBase* pThis, sFormationData* pFormationEntry)
 {
     pThis->m34_formationEntry = pFormationEntry;
 
@@ -39,7 +39,7 @@ void Baldor_initSub0Sub2(sBaldor* pThis, sFormationData* pFormationEntry)
     pFormationEntry->m49 = 0;
 }
 
-s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
+s_3dModel* Baldor_create3dModel(sBaldorBase* pThis, sSaturnPtr dataPtr, s32 arg)
 {
     u8 fileBundleIndex = readSaturnS8(dataPtr);
     s_fileBundle* pFileBundle = dramAllocatorEnd[fileBundleIndex].mC_fileBundle->m0_fileBundle;
@@ -53,9 +53,17 @@ s_3dModel* Baldor_create3dModel(sBaldor* pThis, sSaturnPtr dataPtr, s32 arg)
     sModelHierarchy* pHierarchy = pFileBundle->getModelHierarchy(readSaturnU16(animData));
 
 
-    sSaturnPtr hotSpotDataEA = animData + readSaturnU32(animData + 4);
+    sSaturnPtr hotSpotDataEA = readSaturnEA(animData + 4);
     sHotpointBundle* pHotSpotsData = nullptr;
-    assert(animData == hotSpotDataEA); // else we need to load the data
+    //assert(animData == hotSpotDataEA); // else we need to load the data
+    if (!hotSpotDataEA.isNull()) {
+        int numBones = pHierarchy->countNumberOfBones();
+        pOutputModel->m_hotpointBundles.reserve(numBones);
+        for (int i = 0; i < numBones; i++) {
+            pOutputModel->m_hotpointBundles.emplace_back(hotSpotDataEA + i * 8);
+        }
+        pHotSpotsData = pOutputModel->m_hotpointBundles.data();
+    }
 
     init3DModelRawData(pThis, pOutputModel, 0, pFileBundle, readSaturnU16(animData), 0, pFileBundle->getStaticPose(readSaturnU16(animData + 2), pHierarchy->countNumberOfBones()), nullptr, pHotSpotsData);
 
@@ -103,7 +111,7 @@ void Baldor_initSub0Sub1(p_workArea pThis, s_3dModel* pModel, s16* param3, std::
     }
 }
 
-void Baldor_initSub0(sBaldor* pThis, sSaturnPtr dataPtr, sFormationData* pFormationEntry, s32 arg)
+void Baldor_initSub0(sBaldorBase* pThis, sSaturnPtr dataPtr, sFormationData* pFormationEntry, s32 arg)
 {
     pThis->m3C_dataPtr = dataPtr;
     if (readSaturnS8(dataPtr + 2) == 0)
@@ -277,8 +285,10 @@ void Baldor_initSub3(sBaldor_68* pThis, int arg2, sSaturnPtr arg3)
     }
 }
 
-void Baldor_init(sBaldor* pThis, sFormationData* pFormationEntry)
+void Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormationEntry)
 {
+    sBaldor* pThis = (sBaldor*)pThisBase;
+
     sSaturnPtr puVar7;
     if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9)) // middle boss  (with queen)
     {
@@ -775,8 +785,9 @@ void Baldor_update_modeB(sBaldor* pThis)
     }
 }
 
-void Baldor_update(sBaldor* pThis)
+void Baldor_update(sBaldorBase* pThisBase)
 {
+    sBaldor* pThis = (sBaldor*)pThisBase;
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
     {
         assert(0);
@@ -883,8 +894,9 @@ void clearLightColor()
     Unimplemented();
 }
 
-void Baldor_draw(sBaldor* pThis)
+void Baldor_draw(sBaldorBase* pThisBase)
 {
+    sBaldor* pThis = (sBaldor*)pThisBase;
     if (isTraceEnabled())
     {
         addTraceLog(*pThis->m1C_translation.m0_current, "BaldorTranslation");

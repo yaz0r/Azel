@@ -1050,12 +1050,12 @@ void interrupt_VBlankIn()
 
 void endOfFrame()
 {
-    if (keyboardIsKeyDown(0x8E))
+    if (keyboardIsKeyDown(KEU_CODE_TILDE))
     {
         graphicEngineStatus.m5_isTildeDown = 1;
     }
 
-    if (readKeyboardToggle(0x104))
+    if (readKeyboardToggle(KEY_CODE_PRINT_SCREEN))
     {
         Unimplemented();
     }

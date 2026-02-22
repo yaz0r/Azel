@@ -76,7 +76,7 @@ void s_receivedItemTask::Update(s_receivedItemTask* pThis)
             }
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xF)
             {
-                if (!readKeyboardToggle(0x87))
+                if (!readKeyboardToggle(KEY_CODE_F12))
                 {
                     return;
                 }

@@ -1079,7 +1079,7 @@ void sE006Task0::Draw(sE006Task0* pThis)
 {
 
     if ((g_fadeControls.m0_fade0.m20_stopped != 0) &&
-        (((readKeyboardToggle(0x87) != 0 && ((e006Task0Var0 & 4) == 0)) ||
+        (((readKeyboardToggle(KEY_CODE_F12) != 0 && ((e006Task0Var0 & 4) == 0)) ||
         ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) != 0))))
     {
         npcData0.mF0 = 1;

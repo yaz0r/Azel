@@ -23,6 +23,7 @@
 
 #include "kernel/textDisplay.h"
 #include "field/fieldRadar.h"
+#include "field/battleStart.h"
 
 void updateDragonDefault(s_dragonTaskWorkArea*);
 void updateCutscene(s_dragonTaskWorkArea* r14);
@@ -2444,7 +2445,7 @@ void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub2()
 {
     fieldScriptTaskUpdateSub2Sub1();
 
-    if (readKeyboardToggle(0x87))
+    if (readKeyboardToggle(KEY_CODE_F12))
     {
         assert(0);
     }
@@ -2501,91 +2502,6 @@ void dispatchTutorialMultiChoiceSub3(s_fieldScriptWorkArea* pThis, int result)
 
 s32 battleIndex;
 
-struct sBattleLoadingTask : public s_workAreaTemplate<sBattleLoadingTask>
-{
-    s32 m0_enemyId;
-    s32 m4;
-    s32 m8_status;
-    // size 0xC
-};
-
-void battleLoading_Init(sBattleLoadingTask* pThis)
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m5 = 1;
-    //pThis->m0 = ???? TODO: figure this out, but might be an error in original code that reads from r5 while not actually passing a parameter, it just happens to be what we already put in this var
-    battleLoading_InitSub0();
-    playSystemSoundEffect(0x10); // play "enter battle" sound
-
-    getFieldTaskPtr()->m4_overlayTaskData->getTask()->markPaused(); // pause field
-
-    if (g_fadeControls.m_4C < g_fadeControls.m_4D)
-    {
-        vdp2Controls.m20_registers[0].m112_CLOFSL = 8;
-        vdp2Controls.m20_registers[1].m112_CLOFSL = 8;
-    }
-
-    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0xFC1F, 0x1E);
-}
-
-void battleLoading_Draw(sBattleLoadingTask* pThis)
-{
-    switch (pThis->m8_status)
-    {
-    case 0:
-        pThis->m8_status++;
-        break;
-    case 1:
-        if (readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2) > -1)
-        {
-            loadSoundBanks(readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2), 0);
-        }
-        pThis->m8_status++;
-        break;
-    case 2:
-        if (isSoundLoadingFinished())
-        {
-            if (readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2) > -1)
-            {
-                playPCM(pThis, readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2));
-            }
-            pThis->m8_status++;
-        }
-        break;
-    case 3:
-        if (readKeyboardToggle(0xDA))
-        {
-            assert(0);
-        }
-        //if (readKeyboardToggle(0xF6)) // HACK: for debugging
-        {
-            pThis->m8_status++;
-        }
-        break;
-    case 4:
-        Unimplemented();
-        pThis->m8_status++;
-        break;
-    case 5:
-        if (isSoundLoadingFinished())
-        {
-            pThis->getTask()->markFinished();
-        }
-        break;
-    default:
-        assert(0);
-    }
-
-    Unimplemented();
-    //debugSound(0);
-    vdp2DebugPrintSetPosition(3, 0x19);
-    vdp2PrintfLargeFont("ENEMY:%2d ", pThis->m0_enemyId);
-}
-
-void battleLoading_Delete(sBattleLoadingTask* pThis)
-{
-    Unimplemented();
-}
-
 void startBattleTutorial(int tutorialIndex, int param2)
 {
     if ((fieldTaskPtr->m28_status & 1) == 0)
@@ -2595,14 +2511,7 @@ void startBattleTutorial(int tutorialIndex, int param2)
     }
     else
     {
-        static const sBattleLoadingTask::TypedTaskDefinition definition =
-        {
-            battleLoading_Init,
-            nullptr,
-            battleLoading_Draw,
-            battleLoading_Delete,
-        };
-        sBattleLoadingTask* pNewTask = createSubTask<sBattleLoadingTask>(getFieldTaskPtr(), &definition);
+        sBattleLoadingTask* pNewTask = createSubTask<sBattleLoadingTask>(getFieldTaskPtr(), &battleStartTaskDefinition);
         pNewTask->m0_enemyId = tutorialIndex;
         pNewTask->m4 = param2;
     }
@@ -3431,7 +3340,7 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
         }
     }
 
-    if (readKeyboardToggle(0x87))
+    if (readKeyboardToggle(KEY_CODE_F12))
     {
         assert(0);
     }
@@ -6626,19 +6535,16 @@ void fieldDebugMenuUpdate1()
 
     if (pSubFieldData->m380_debugMenuStatus3 == 0)
     {
-        if (readKeyboardToggle(0x84))
+        if (readKeyboardToggle(KEY_CODE_F3))
         {
             pSubFieldData->m37C_debugMenuStatus1[1]++;
             pSubFieldData->m37E_debugMenuStatus2_a = 0;
             clearVdp2TextMemory();
         }
-        else
+        else if(readKeyboardToggle(0xF6))
         {
-            if (readKeyboardToggle(0xF6))
-            {
-                pSubFieldData->m37C_debugMenuStatus1[1] = 0;
-                clearVdp2TextMemory();
-            }
+            pSubFieldData->m37C_debugMenuStatus1[1] = 0;
+            clearVdp2TextMemory();
         }
     }
 
@@ -6665,7 +6571,7 @@ void fieldDebugMenuUpdate2()
     s_FieldSubTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData;
     if (!r14->m36C)
     {
-        if (readKeyboardToggle(0x86))
+        if (readKeyboardToggle(KEY_CODE_F2))
         {
             assert(0);
         }

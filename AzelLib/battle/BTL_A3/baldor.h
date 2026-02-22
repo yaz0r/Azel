@@ -29,7 +29,8 @@ struct sBaldor_68
     //size 0x34
 };
 
-struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sFormationData*>
+// This is shared with other battle models
+struct sBaldorBase : public s_workAreaTemplateWithArgWithCopy<sBaldorBase, struct sFormationData*>
 {
     s8 m8_mode;
     s8 m9_attackStatus;
@@ -47,6 +48,10 @@ struct sBaldor : public s_workAreaTemplateWithArgWithCopy<sBaldor, struct sForma
     s_3dModel* m38_3dModel;
     sSaturnPtr m3C_dataPtr;
     struct sEnemyLifeMeterTask* m40_enemyLifeMeterTask;
+};
+
+struct sBaldor : public sBaldorBase
+{
     sVec3_FP m44_translationTarget;
     sVec3_FP m50_translationDelta;
     sVec3_FP m5C_rotationDelta;

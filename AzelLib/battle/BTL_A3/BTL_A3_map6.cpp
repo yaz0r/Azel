@@ -184,7 +184,7 @@ void setupScrollAndRotation(int p1, void* p2, void* p3, u8* coefficientTableAddr
     setVdp2TableAddress(p1, coefficientTableAddress);
 }
 
-void s_BTL_A3_Env_InitVdp2Sub2Sub1(std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, int size)
+void initCoefficientTable(std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, int size)
 {
     for (int i=0; i<size; i++)
     {
@@ -193,24 +193,24 @@ void s_BTL_A3_Env_InitVdp2Sub2Sub1(std::vector<fixedPoint>& p2, std::vector<fixe
     }
 }
 
-std::array<std::vector<fixedPoint>*, 4> vdp2TableVar0;
+std::array<std::vector<fixedPoint>*, 4> vdp2CoefficientTables;
 
 // TODO: kernel
-void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, u8* coefficientTableAddress, u8 p5)
+void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, u8* coefficientTableAddress, u8 numCoefficients)
 {
-    setupScrollAndRotation(p1, &p2[0], &p3[0], coefficientTableAddress, p5);
-    s_BTL_A3_Env_InitVdp2Sub2Sub1(p2, p3, p5 * 4);
+    setupScrollAndRotation(p1, p2.data(), p3.data(), coefficientTableAddress, numCoefficients);
+    initCoefficientTable(p2, p3, numCoefficients * 4);
 
     // TODO: this is super broken in ghidra, why?
     switch (p1)
     {
     case 6:
-        vdp2TableVar0[0] = &p2;
-        vdp2TableVar0[1] = &p3;
+        vdp2CoefficientTables[0] = &p2;
+        vdp2CoefficientTables[1] = &p3;
         break;
     case 7:
-        vdp2TableVar0[2] = &p2;
-        vdp2TableVar0[3] = &p3;
+        vdp2CoefficientTables[2] = &p2;
+        vdp2CoefficientTables[3] = &p3;
         break;
     default:
         break;

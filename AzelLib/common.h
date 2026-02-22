@@ -701,6 +701,8 @@ struct s_3dModel
     u16 m4E_interpolationLength; //4E
 
     //size 0x4C
+
+    std::vector<sHotpointBundle> m_hotpointBundles; // the data for field m40 that was deserialized from the prg memory
 };
 
 struct sDragonAnimDataSubRanges

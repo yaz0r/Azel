@@ -28,7 +28,7 @@ extern s32 e006Task0Var0;
 static void battleOverlayTask_Update(sBattleOverlayTask* pThis)
 {
     pThis->m24++;
-    if (readKeyboardToggle(0x87) && (e006Task0Var0 & 4))
+    if (readKeyboardToggle(KEY_CODE_F12) && (e006Task0Var0 & 4))
     {
         assert(0);
     }

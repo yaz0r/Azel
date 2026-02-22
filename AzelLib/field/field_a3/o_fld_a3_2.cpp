@@ -6,6 +6,7 @@
 #include "field/fieldRadar.h"
 #include "field/exitField.h"
 #include "field/fieldItemBox.h"
+#include "field/battleStart.h"
 
 void fieldA3_2_exit0(p_workArea, sLCSTarget*)
 {
@@ -144,6 +145,80 @@ void fieldA3_2_createItemBoxes(p_workArea workArea)
     fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x609222C, gFLD_A3 }));
 }
 
+void startBaldorQueenBattle(int param_1, int param_2) {
+    if ((fieldTaskPtr->m28_status & 1) == 0) {
+        // battle disabled
+        assert(0);
+    }
+    else if ((fieldTaskPtr->m28_status & ~1) == 0) {
+        sBattleLoadingTask* pNewTask = createSubTask<sBattleLoadingTask>(getFieldTaskPtr(), &battleStartTaskDefinition);
+        pNewTask->m0_enemyId = param_1;
+        pNewTask->m4 = param_2;
+    }
+    else {
+        assert(0); // Is that reachable?
+    }
+
+}
+
+struct sBaldorQueenTrigger : public s_workAreaTemplate<sBaldorQueenTrigger> {
+    static void Update(sBaldorQueenTrigger* pThis) {
+        switch (pThis->m0_State) {
+        case 0:
+            if (fieldTaskPtr->m8_pSubFieldData->m338_pDragonTask->m8_pos[2] < -0xED8000) {
+                startBaldorQueenBattle(8, 0x8d);
+                pThis->m0_State++;
+            }
+            break;
+        case 1:
+            assert(0);
+            break;
+        default:
+            pThis->getTask()->markFinished();
+            break;
+        }
+    }
+
+    u32 m0_State = 0;
+    //size: 4
+};
+
+void fieldA3_2_createsBaldorQueenTrigger(p_workArea workArea) {
+    if (mainGameState.getBit(0x11 * 8 + 4) == 0) {
+        createSubTaskFromFunction<sBaldorQueenTrigger>(workArea, sBaldorQueenTrigger::Update);
+    }
+}
+
+struct sFieldA2_2_task7 : public s_workAreaTemplate<sFieldA2_2_task7> {
+    static void Update(sFieldA2_2_task7* pThis) {
+        if (fieldTaskPtr->m8_pSubFieldData->m338_pDragonTask->m8_pos[2] < -0x1E78000) {
+            assert(0);
+        }
+    }
+    //size: 0
+};
+
+
+void fieldA3_2_createTask7(p_workArea workArea) {
+    if (mainGameState.getBit(0x11 * 8 + 2) == 0) {
+        createSubTaskFromFunction<sFieldA2_2_task7>(workArea, sFieldA2_2_task7::Update);
+    }
+}
+
+void fieldA3_2_createTask8(p_workArea workArea) {
+    Unimplemented();
+}
+
+void fieldA3_2_createTask9(p_workArea workArea) {
+    if (mainGameState.getBit(0x10 * 8) != 0) {
+        assert(0);
+    }
+}
+
+void fieldA3_2_createSoundTask(p_workArea workArea) {
+    Unimplemented();
+}
+
 void fieldA3_2_startTasks(p_workArea workArea)
 {
     fieldA3_0_createTask0(workArea);
@@ -155,7 +230,11 @@ void fieldA3_2_startTasks(p_workArea workArea)
     fieldA3_2_createTask4(workArea);
     fieldA3_2_createCheckExitTask(workArea);
 
-    PDS_unimplemented("fieldA3_2_startTasks");
+    fieldA3_2_createsBaldorQueenTrigger(workArea);
+    fieldA3_2_createTask7(workArea);
+    fieldA3_2_createTask8(workArea);
+    fieldA3_2_createTask9(workArea);
+    fieldA3_2_createSoundTask(workArea);
 
     fieldA3_2_createItemBoxes(workArea);
 }

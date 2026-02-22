@@ -45,7 +45,7 @@ void BattleEnd_delete(sBattleEnd* pThis)
 
     if (isCurrentBattleID(0, 8))
     {
-        assert(0);
+        mainGameState.setBit(0x11 * 8 + 4); // Baldor queen mini boss
     }
     else if (isCurrentBattleID(0, 9))
     {

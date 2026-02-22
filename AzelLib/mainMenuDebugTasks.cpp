@@ -45,7 +45,7 @@ struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskW
         switch (pThis->state)
         {
         case 0:
-            if (readKeyboardToggle(0x85))
+            if (readKeyboardToggle(KEY_CODE_F1))
             {
                 Unimplemented();
             }
@@ -1022,6 +1022,10 @@ void modelDrawFunction4(s_3dModel* pModel)
         modeDrawFunction4Sub2(r4, pPoseData, var_4, var_0);
     }
 }
+void modelDrawFunction11(s_3dModel* pModel)
+{
+    unimplementedDraw(pModel);
+}
 void modelDrawFunction5(s_3dModel* pModel)
 {
     unimplementedDraw(pModel);
@@ -1184,7 +1188,12 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
         {
             if (pDragonStateData1->mA_animationFlags & 0x20)
             {
-                assert(0);
+                if (pDragonStateData1->m38_pColorAnim) {
+                    pDragonStateData1->m18_drawFunction = modelDrawFunction11;
+                }
+                else {
+                    pDragonStateData1->m18_drawFunction = modelDrawFunction4;
+                }
             }
             else
             {

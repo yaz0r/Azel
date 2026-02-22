@@ -759,22 +759,22 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkAr
         }
     }
 
-    if (readKeyboardToggle(0x10B))
+    if (readKeyboardToggle(KEY_CODE_PAGE_UP))
     {
         assert(0);
     }
 
-    if (readKeyboardToggle(0x10C))
+    if (readKeyboardToggle(KEY_CODE_PAGE_DOWN))
     {
         assert(0);
     }
 
-    if (readKeyboardToggle(0x107))
+    if (readKeyboardToggle(KEY_CODE_PAGE_HOME))
     {
         assert(0);
     }
 
-    if (readKeyboardToggle(0x108))
+    if (readKeyboardToggle(KEY_CODE_PAGE_END))
     {
         assert(0);
     }

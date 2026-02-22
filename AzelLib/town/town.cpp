@@ -54,7 +54,7 @@ const sTownSetup* readTownSetup(sSaturnPtr ptr, int numScripts)
 
 void townDebugTask2Function::Update(townDebugTask2Function* pThis)
 {
-    if (readKeyboardToggle(0x87))
+    if (readKeyboardToggle(KEY_CODE_F12))
     {
         assert(0);
     }

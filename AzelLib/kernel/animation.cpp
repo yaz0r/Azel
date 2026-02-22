@@ -438,6 +438,21 @@ void modelMode5_scale(s_3dModel* p3dModel)
     }
 }
 
+void modelMode3_position(s_3dModel* p3dModel)
+{
+    Unimplemented();
+}
+
+void modelMode3_rotation(s_3dModel* p3dModel)
+{
+    Unimplemented();
+}
+
+void modelMode3_scale(s_3dModel* p3dModel)
+{
+    Unimplemented();
+}
+
 void modelMode4_position0(s_3dModel* p3dModel)
 {
     sPoseData& rootPoseData = p3dModel->m2C_poseData[0];
@@ -643,6 +658,11 @@ u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, sAnimationData* pMode
             }
         }
         break;
+    case 3:
+        p3dModel->m20_positionUpdateFunction = modelMode3_position;
+        p3dModel->m24_rotationUpdateFunction = modelMode3_rotation;
+        p3dModel->m28_scaleUpdateFunction = modelMode3_scale;
+        return 1;
     case 4: // every other frames
         if (p3dModel->mA_animationFlags & 0x100)
         {
