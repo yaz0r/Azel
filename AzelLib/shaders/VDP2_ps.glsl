@@ -117,7 +117,7 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
     int planeX = outputX / planeDotWidth;
     int planeY = outputY / planeDotHeight;
     int dotInPlaneX = outputX % planeDotWidth;
-    int dotInPlaneY = outputY % planeDotWidth;
+    int dotInPlaneY = outputY % planeDotHeight;
 
     int pageX = dotInPlaneX / pageDotDimension;
     int pageY = dotInPlaneY / pageDotDimension;
@@ -134,10 +134,11 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
     int dotInCellX = dotInCharacterPatternX % cellDotDimension;
     int dotInCellY = dotInCharacterPatternY % cellDotDimension;
 
-    int planeNumber = planeY * (((layerData.PLSZ & 1) != 0) ? 2 : 1) + planeX;
+    int planeNumber = planeY * 2 + planeX;
     int startOfPlane = layerData.planeOffsets[planeNumber];
 
-    int pageNumber = pageY * pageDimension + pageX;
+    int pagesPerRow = ((layerData.PLSZ & 1) != 0) ? 2 : 1;
+    int pageNumber = pageY * pagesPerRow + pageX;
     int startOfPage = startOfPlane + pageNumber * pageSize;
 
     int patternNumber = characterPatternY * pageDimension + characterPatternX;
