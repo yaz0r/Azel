@@ -1,5 +1,7 @@
 #pragma once
 
+#include "kernel/vdp1AnimatedQuad.h"
+
 struct sLaserData
 {
     s16 m4;
@@ -29,6 +31,12 @@ struct BTL_GenericData : public sSaturnMemoryFile
 
     // laser data
     static sLaserData mLaserData;
+
+    static std::vector<sVdp1Quad> m_0x60a8c24_animatedQuad;
+    static std::vector<sVdp1Quad> m_0x60a8fb4_animatedQuad;
+    static std::vector<sVdp1Quad> m_0x60b0658_animatedQuad;
+    static std::vector<sVdp1Quad> m_0x60a9120_animatedQuad;
+    static std::vector<std::vector<sVdp1Quad>> m_0x60abef4_animatedQuads;
 
 private:
     BTL_GenericData();

@@ -13,10 +13,11 @@
 #include "BTL_A3_data.h"
 #include "baldor.h"
 #include "audio/systemSounds.h"
+#include "battle/particleEffect.h"
+#include "battle/battleGenericData.h"
 
 void battleEngine_PlayAttackCamera(int param1); // TODO cleanup
 void battleEngine_displayAttackName(int param1, int param2, int param3); // TODO: Cleanup
-void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const sVec3_FP* param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s32 param8); // TODO: cleanup
 
 struct BTL_A3_BaldorQueenFormation : public s_workAreaTemplateWithArg<BTL_A3_BaldorQueenFormation, u32>
 {
@@ -397,7 +398,7 @@ void baldorQueenFormation_updateMode3(BTL_A3_BaldorQueenFormation* pThis) {
                     if (pThis->mB_baldorsQuadrant == 2) {
                         randPosition[2] = -randPosition[2];
                     }
-                    createDamageSpriteEffect(dramAllocatorEnd[0x10].mC_fileBundle, g_BTL_A3->getSaturnPtr(0x60a8fb4), &temp, &randPosition, nullptr, 0x10000, 0, (randomNumber() & 0xF) + 8);
+                    createParticleEffect(dramAllocatorEnd[0x10].mC_fileBundle, &g_BTL_GenericData->m_0x60a8fb4_animatedQuad, &temp, &randPosition, nullptr, 0x10000, 0, (randomNumber() & 0xF) + 8);
                     playSystemSoundEffect(0x66);
                     pThis->m1_formationSubState = pThis->m1_formationSubState + 1;
                     pThis->m14 = 0x1b;

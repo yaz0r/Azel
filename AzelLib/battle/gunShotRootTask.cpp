@@ -13,9 +13,9 @@
 #include "battleGenericData.h"
 #include "kernel/rayDisplay.h"
 #include "BTL_A3/BTL_A3_data.h"
+#include "battle/particleEffect.h"
 
 void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s8 param4); // TODO: clean
-void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const sVec3_FP* param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s32 param8); // TODO: clean
 
 struct sGunShotRootTask : public s_workAreaTemplateWithCopy<sGunShotRootTask>
 {
@@ -39,7 +39,7 @@ struct sGunArg
 
 struct sGunShotTask : public s_workAreaTemplateWithArgWithCopy<sGunShotTask, sGunArg*>
 {
-    s_LCSTask340Sub::s_LCSTask340Sub_m58 m8;
+    sAnimatedQuad m8;
     const std::vector<quadColor>* m10_colorSetup;
     sVec3_FP m14;
     sVec3_FP m20_transformedVector;
@@ -80,7 +80,7 @@ void sGunShotTask_Init(sGunShotTask* pThis, sGunArg* arg)
     else
     {
         pThis->m98 = arg->m8;
-        s_LCSTask340Sub::Init3Sub3(&pThis->m8, pThis->m90_vdp1Memory, readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x060abef4) + pThis->m98 * 4));
+        particleInitSub(&pThis->m8, pThis->m90_vdp1Memory, &g_BTL_GenericData->m_0x60abef4_animatedQuads[pThis->m98]);
     }
     pThis->m70 = arg->m4;
     pThis->m14 = *arg->m4;
@@ -317,7 +317,7 @@ void Baldor_updateSub0Sub2Sub2(sVec3_FP* param_1, sVec3_FP* param_2, int param_3
         assert(0);
     }
 
-    createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, readSaturnEA(g_BTL_A3->getSaturnPtr(0x60ABEFA + 4 * entryToUse)), param_1, param_2, nullptr, param_3, 0, 0);
+    createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60abef4_animatedQuads[entryToUse], param_1, param_2, nullptr, param_3, 0, 0);
 }
 
 void sGunShotTask_Update(sGunShotTask* pThis)

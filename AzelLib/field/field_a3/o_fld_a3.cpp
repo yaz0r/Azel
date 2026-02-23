@@ -6764,7 +6764,7 @@ void s_LCSTask340Sub::Init0(s_LCSTask340Sub* pThis, sLaserArgs* arg)
 
     pThis->m154++;
 
-    pThis->Init3Sub3(&pThis->m58, (pThis->m0.m4_characterArea - (0x25C00000)) >> 3, { 0x0609518C, gFLD_A3 });
+    particleInitSub(&pThis->m58, (pThis->m0.m4_characterArea - (0x25C00000)) >> 3, &gFLD_A3->m_0x0609518C_animatedQuad);
 }
 
 void s_LCSTask340Sub::Init1(s_LCSTask340Sub* pThis, sLaserArgs* arg)
@@ -6801,14 +6801,6 @@ void s_LCSTask340Sub::Init1(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m28_laserInit(pThis);
 
     pThis->m154++;
-}
-
-void s_LCSTask340Sub::Init3Sub3(s_LCSTask340Sub_m58* r4, s32 r5, sSaturnPtr r6)
-{
-    r4->m6 = 0;
-    r4->m7 = 0;
-    r4->m0 = r6;
-    r4->m4 = r5;
 }
 
 static const std::array<fixedPoint, 2> s_LCSTask340Sub_Init3Sub0Data0 = {
@@ -6955,7 +6947,7 @@ void s_LCSTask340Sub::Init3(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m28_laserInit(pThis);
 
     pThis->m154++;
-    pThis->Init3Sub3(&pThis->m58, (pThis->m0.m4_characterArea - (0x25C00000)) >> 3, { 0x06095330, gFLD_A3 });
+    particleInitSub(&pThis->m58, (pThis->m0.m4_characterArea - (0x25C00000)) >> 3, &gFLD_A3->m_0x06095330_animatedQuad);
 }
 
 static const std::array<fixedPoint, 16> s_LCSTask340Sub_Init1Sub0Data0 = {

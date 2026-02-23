@@ -1,5 +1,7 @@
 #pragma once
 
+#include "kernel/vdp1AnimatedQuad.h"
+
 struct FLD_A3_data : public sSaturnMemoryFile
 {
     void init();
@@ -10,6 +12,9 @@ struct FLD_A3_data : public sSaturnMemoryFile
     {
 
     }
+
+    const std::vector<sVdp1Quad> m_0x0609518C_animatedQuad;
+    const std::vector<sVdp1Quad> m_0x06095330_animatedQuad;
 };
 
 extern FLD_A3_data* gFLD_A3;

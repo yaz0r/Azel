@@ -19,9 +19,7 @@
 #include "battle/battleDragon.h" // todo: clean by moving s_battleDragon_8C to its own file
 #include "mainMenuDebugTasks.h"
 #include "kernel/graphicalObject.h"
-
-void createDamageSpriteEffect(npcFileDeleter* param1, sSaturnPtr param2, const sVec3_FP* param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s32 param8); // todo: remove
-
+#include "battle/particleEffect.h"
 
 void Baldor_initSub0Sub2(sBaldorBase* pThis, sFormationData* pFormationEntry)
 {
@@ -292,10 +290,12 @@ void Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormationEntry)
     sSaturnPtr puVar7;
     if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9)) // middle boss  (with queen)
     {
+        // use simpler model from the baldor queen file
         puVar7 = g_BTL_A3->getSaturnPtr(0x60a75f0);
     }
     else
     {
+        // use the normal detailed model
         puVar7 = g_BTL_A3->getSaturnPtr(0x60a73a0);
     }
 
@@ -454,7 +454,7 @@ void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param
         break;
     }
 
-    createDamageSpriteEffect(dramAllocatorEnd[0].mC_fileBundle, readSaturnEA(g_BTL_GenericData->getSaturnPtr(0x060abef4) + iVar2 * 4), param1, param2, 0, param3, 0, 0);
+    createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60abef4_animatedQuads[iVar2], param1, param2, 0, param3, 0, 0);
 }
 
 void Baldor_updateSub0Sub2Sub0(p_workArea, sBattleTargetable&, int)
@@ -674,7 +674,7 @@ void Baldor_update_mode1(sBaldor* pThis)
             return;
 
         applyDamageToDragon(gBattleManager->m10_battleOverlay->m18_dragon->m8C, 27, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 3, gBattleManager->m10_battleOverlay->m18_dragon->m8_position - *pThis->m1C_translation.m0_current, 0);
-        createDamageSpriteEffect(dramAllocatorEnd[6].mC_fileBundle, g_BTL_GenericData->getSaturnPtr(0x060a912), &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+        createParticleEffect(dramAllocatorEnd[6].mC_fileBundle, &g_BTL_GenericData->m_0x60a9120_animatedQuad, &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, 0, 0);
         playSystemSoundEffect(0x67);
         pThis->m9_attackStatus = 3;
         break;

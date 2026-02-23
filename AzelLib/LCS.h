@@ -1,5 +1,7 @@
 #pragma once
 
+#include "kernel/vdp1AnimatedQuad.h"
+
 struct sLCSTaskDrawSub5Sub1_Data1
 {
     s16 m2;
@@ -77,14 +79,6 @@ typedef std::array<quadColor, 8> s_LCSTask_gradientData; // size 0x40
 
 struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLaserArgs*>
 {
-    struct s_LCSTask340Sub_m58
-    {
-        sSaturnPtr m0;
-        s16 m4;
-        s8 m6;
-        s8 m7;
-    };
-
     static const std::array<TypedTaskDefinition, 4> constructionTable;
 
     static void Init0(s_LCSTask340Sub*, sLaserArgs*);
@@ -109,7 +103,6 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     static void Laser3Init(s_LCSTask340Sub*);
     static void Laser3Update(s_LCSTask340Sub*);
     static void Laser3Draw(s_LCSTask340Sub*);
-    static void Init3Sub3(s_LCSTask340Sub_m58* r4, s32 s5, sSaturnPtr r6);
 
     static void Update0(s_LCSTask340Sub*);
 
@@ -153,7 +146,7 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     fixedPoint m38;
     fixedPoint m3C;
     s32 m40;
-    s_LCSTask340Sub_m58 m58;
+    sAnimatedQuad m58;
     sVec3_FP m60;
     std::array<sVec3_FP, 0x10> m6C;
     sVec3_FP m144;

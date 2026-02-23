@@ -2,13 +2,15 @@
 #include "baldorQueen.h"
 #include "baldor.h"
 #include "BTL_A3_data.h"
+#include "battle/battleGenericData.h"
 #include "battle/battleManager.h"
 #include "battle/battleDebug.h"
 #include "battle/battleEngine.h"
 #include "kernel/animation.h"
+#include "battle/particleEffect.h"
 
 void Baldor_initSub0(sBaldorBase* pThis, sSaturnPtr dataPtr, sFormationData* pFormationEntry, s32 arg); // TODO: cleanup
-void urchinUpdateSub3(s_3dModel* pModel, std::vector<sVec3_FP>& pPosition);
+void urchinUpdateSub3(s_3dModel* pModel, std::vector<sVec3_FP>& pPosition); // TODO: cleanup
 
 struct sBaldorQueen : public sBaldorBase
 {
@@ -24,6 +26,32 @@ void BaldorQueen_updateSub0(sBaldorQueen* pThis) {
     Unimplemented();
 }
 
+void BaldorQueen_updateMode0(sBaldorQueen* pThis) {
+    stepAnimation(pThis->m38_3dModel);
+    if (pThis->m10_HP > 415)
+    {
+        stepAnimation(pThis->m38_3dModel); // double animation speed when not damaged?
+    }
+    if ((randomNumber() & 0x1F) == 0) {
+        sVec3_FP tempVec;
+        transformAndAddVec(pThis->m38_3dModel->m44_hotpointData[1][3], tempVec, cameraProperties2.m28[1]);
+        for (int i = 0; i < 10; i++) {
+            sVec3_FP spawnLocation;
+            spawnLocation[0] = (randomNumber() & 0xFFF) - 0x7FF;
+            spawnLocation[1] = (randomNumber() & 0xFFF) - 0x17FF;
+            spawnLocation[2] = (randomNumber() & 0xFFF) - 0x7FF;
+
+            sVec3_FP tempVector2 = {0, -0x2C, 0};
+            createParticleEffect(dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_fileBundle, &g_BTL_GenericData->m_0x60a8c24_animatedQuad, &tempVec, &spawnLocation, &tempVector2, 0x10000, 0, (randomNumber() & 0x1F) + 0x18);
+        }
+    }
+    if (pThis->m34_formationEntry->m49 == 2) {
+        pThis->m8_mode = 1;
+        pThis->m34_formationEntry->m48 |= 1;
+        pThis->m34_formationEntry->m49 = 0;
+    }
+}
+
 void BaldorQueen_update(sBaldorBase* pThisBase) {
     sBaldorQueen* pThis = (sBaldorQueen*)pThisBase;
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B]) {
@@ -34,12 +62,7 @@ void BaldorQueen_update(sBaldorBase* pThisBase) {
     BaldorQueen_updateSub0(pThis);
     switch (pThis->m8_mode) {
     case 0:
-        stepAnimation(pThis->m38_3dModel);
-        if (pThis->m10_HP > 415)
-        {
-            stepAnimation(pThis->m38_3dModel); // double animation speed when not damaged?
-        }
-        Unimplemented();
+        BaldorQueen_updateMode0(pThis);
         break;
     default:
         assert(0);

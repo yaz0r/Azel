@@ -733,7 +733,6 @@ void NormalSpriteDrawGL(s_vdp1Command* vdp1EA)
                         | BGFX_STATE_WRITE_A
                         | BGFX_STATE_WRITE_Z
                         | BGFX_STATE_DEPTH_TEST_LEQUAL
-                        | BGFX_STATE_CULL_CW
                         | BGFX_STATE_MSAA
                     );
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
@@ -927,7 +926,6 @@ void ScaledSpriteDrawGL(s_vdp1Command* vdp1EA)
                         | BGFX_STATE_WRITE_A
                         | BGFX_STATE_WRITE_Z
                         | BGFX_STATE_DEPTH_TEST_LEQUAL
-                        | BGFX_STATE_CULL_CW
                         | BGFX_STATE_MSAA
                     );
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
