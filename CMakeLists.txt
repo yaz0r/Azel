@@ -97,9 +97,43 @@ ENDIF(MSVC)
 
 set(THIRD_PARTY "${CMAKE_SOURCE_DIR}/ThirdParty")
 
-# BGFX 
+# BGFX - disable tools in main build; shaderc is built separately below
 set(BGFX_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(BGFX_INSTALL OFF CACHE BOOL "" FORCE)
+set(BGFX_INSTALL        OFF CACHE BOOL "" FORCE)
+set(BGFX_BUILD_TOOLS    OFF CACHE BOOL "" FORCE)
+
+# Build shaderc independently, always in Release, regardless of main project config
+include(ExternalProject)
+if(WIN32)
+	set(SHADERC_BINARY "${CMAKE_BINARY_DIR}/bgfx_tools/cmake/bgfx/Release/shaderc.exe")
+else()
+	set(SHADERC_BINARY "${CMAKE_BINARY_DIR}/bgfx_tools/cmake/bgfx/shaderc")
+endif()
+
+ExternalProject_Add(bgfx_tools_build
+	SOURCE_DIR "${CMAKE_SOURCE_DIR}/ThirdParty/bgfx.cmake"
+	BINARY_DIR "${CMAKE_BINARY_DIR}/bgfx_tools"
+	CMAKE_ARGS
+		-DCMAKE_BUILD_TYPE=Release
+		-DCMAKE_CONFIGURATION_TYPES=Release
+		-DBGFX_BUILD_EXAMPLES=OFF
+		-DBGFX_BUILD_TOOLS=ON
+		-DBGFX_BUILD_TOOLS_SHADER=ON
+		-DBGFX_BUILD_TOOLS_TEXTURE=OFF
+		-DBGFX_BUILD_TOOLS_GEOMETRY=OFF
+		-DBGFX_BUILD_TOOLS_BIN2C=OFF
+		-DBGFX_INSTALL=OFF
+	BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target shaderc --config Release
+	INSTALL_COMMAND ""
+	BUILD_BYPRODUCTS "${SHADERC_BINARY}"
+)
+
+# Define bgfx::shaderc as an IMPORTED target BEFORE add_subdirectory(bgfx.cmake).
+# bgfxToolUtils.cmake guards bgfx_compile_shaders inside if(TARGET bgfx::shaderc),
+# so the target must exist at subdirectory-processing time.
+add_executable(bgfx::shaderc IMPORTED GLOBAL)
+set_target_properties(bgfx::shaderc PROPERTIES IMPORTED_LOCATION "${SHADERC_BINARY}")
+
 add_subdirectory( ${THIRD_PARTY}/bgfx.cmake )
 
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
@@ -112,6 +146,8 @@ set(SDL_X11_XSCRNSAVER OFF CACHE BOOL "" FORCE)
 set(SDL_X11_XTEST OFF CACHE BOOL "" FORCE)
 
 add_subdirectory( AzelLib )
+# Ensure shaderc is built by the ExternalProject before shader custom commands run
+add_dependencies(AzelLib bgfx_tools_build)
 add_subdirectory( ${THIRD_PARTY}/soloud )
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
