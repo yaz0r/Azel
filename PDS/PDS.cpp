@@ -12,7 +12,7 @@ void resetEngine();
 void readInputsFromSMPC();
 void updateInputs();
 void loopIteration();
-void azelSdl2_Init();
+void azelSdl_Init();
 
 extern bool bContinue;
 
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     chdir("../Resources");
 #endif
     
-    azelSdl2_Init();
+    azelSdl_Init();
 
     azelInit();
     resetEngine();

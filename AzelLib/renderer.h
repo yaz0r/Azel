@@ -16,6 +16,6 @@ enum bgfxViews
     vdp1_gpuView,
 };
 
-void azelSdl2_Init();
-void azelSdl2_StartFrame();
-bool azelSdl2_EndFrame();
+void azelSdl_Init();
+void azelSdl_StartFrame();
+bool azelSdl_EndFrame();

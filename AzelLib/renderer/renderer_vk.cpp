@@ -4,11 +4,11 @@
 
 #include "renderer_vk.h"
 
-#include "SDL_vulkan.h"
+#include <SDL3/SDL_vulkan.h>
 #include "vulkan/vulkan.hpp"
 
 #define IMGUI_API
-#include "imgui_impl_sdl.h"
+#include <backends/imgui_impl_sdl3.h>
 #include "imgui_impl_vulkan.h"
 
 #include <optional>
@@ -116,15 +116,12 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
 
 bool SDL_VK_backend::init()
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) != 0)
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD))
     {
         assert(false);
     }
 
-    u32 flags = 0;
-    flags |= SDL_WINDOW_VULKAN;
-    flags |= SDL_WINDOW_RESIZABLE;
-    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+    SDL_WindowFlags flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
 #ifdef __IPHONEOS__
     flags |= SDL_WINDOW_FULLSCREEN;
@@ -135,7 +132,7 @@ bool SDL_VK_backend::init()
     resolution[0] = 320;
     resolution[1] = 200;
 #endif
-    gWindowVulkan = SDL_CreateWindow("PDS: Azel Vulkan", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, resolution[0], resolution[1], flags);
+    gWindowVulkan = SDL_CreateWindow("PDS: Azel Vulkan", resolution[0], resolution[1], flags);
     assert(gWindowVulkan);
 
     bool enableValidationLayers = checkValidationLayerSupport();
@@ -148,9 +145,10 @@ bool SDL_VK_backend::init()
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
-    unsigned int count;
-    // get count of required extensions
-    if (!SDL_Vulkan_GetInstanceExtensions(NULL, &count, NULL))
+    // SDL3: SDL_Vulkan_GetInstanceExtensions returns the list directly
+    Uint32 count = 0;
+    const char* const* sdlExtensions = SDL_Vulkan_GetInstanceExtensions(&count);
+    if (!sdlExtensions)
         assert(0);
 
     static const char* const additionalExtensions[] =
@@ -163,9 +161,8 @@ bool SDL_VK_backend::init()
     if (!names)
         assert(0);
 
-    // get names of required extensions
-    if (!SDL_Vulkan_GetInstanceExtensions(NULL, &count, names))
-        assert(0);
+    for (Uint32 i = 0; i < count; i++)
+        names[i] = sdlExtensions[i];
 
     // copy additional extensions after required extensions
     for (size_t i = 0; i < additionalExtensionsCount; i++)
@@ -180,13 +177,13 @@ bool SDL_VK_backend::init()
         createInfo.ppEnabledLayerNames = validationLayers.data();
     }
 
-    createInfo.enabledExtensionCount = extensionCount;
+    createInfo.enabledExtensionCount = (uint32_t)extensionCount;
     createInfo.ppEnabledExtensionNames = names;
 
-    
+
     vkCreateInstance(&createInfo, nullptr, &gVkInstance);
 
-    SDL_Vulkan_CreateSurface(gWindowVulkan, gVkInstance, &surface);
+    SDL_Vulkan_CreateSurface(gWindowVulkan, gVkInstance, nullptr, &surface);
 
     // setup debug message
     {
