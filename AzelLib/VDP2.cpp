@@ -943,7 +943,16 @@ void copyFontToVdp2()
 
 void setFontDefaultColor(u32 paletteIndex, u16 color0, u16 color1)
 {
-
+    u16 uVar1 = (u16)((((color1 & 0xffff) >> 5 & 0x1f) + (color0 >> 5 & 0x1f) >> 1) << 10) |
+        (u16)((((color1 & 0xffff) >> 10 & 0x1f) + (color0 >> 10 & 0x1f) >> 1) << 5) |
+        (u16)((color0 & 0x1f) + (color1 & 0x1f) >> 1) | 0x8000;
+    defaultFontPalettes[paletteIndex * 0x10 + 1] = color0;
+    defaultFontPalettes[paletteIndex * 0x10 + 2] = uVar1;
+    defaultFontPalettes[paletteIndex * 0x10 + 3] = color0;
+    defaultFontPalettes[paletteIndex * 0x10 + 4] = vdp2StringContext.m3C;
+    defaultFontPalettes[paletteIndex * 0x10 + 5] = color0;
+    defaultFontPalettes[paletteIndex * 0x10 + 6] = uVar1;
+    defaultFontPalettes[paletteIndex * 0x10 + 7] = color0;
 }
 
 void setFontDefaultColors()
