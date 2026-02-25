@@ -88,6 +88,7 @@ bool updateUrchinAnimationSequence(sUrchin* pThis, u16 param_2, int param_3, int
             }
         }
     }
+    return true;
 }
 
 void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)

@@ -132,6 +132,7 @@ bgfx::TextureHandle getTextureForLayerBgfx(eLayers layerIndex)
         assert(0);
         break;
     }
+    return BGFX_INVALID_HANDLE;
 }
 
 bool isBackgroundEnabled(eLayers layerIndex)
@@ -156,6 +157,7 @@ bool isBackgroundEnabled(eLayers layerIndex)
         assert(0);
         break;
     }
+    return false;
 }
 
 int getPriorityForLayer(eLayers layerIndex)
@@ -180,6 +182,7 @@ int getPriorityForLayer(eLayers layerIndex)
         assert(0);
         break;
     }
+    return false;
 }
 
 bool closeApp = false;

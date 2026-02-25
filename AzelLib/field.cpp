@@ -134,7 +134,7 @@ void loadFileFromFileList(u32 index)
 
     if (pFileData->CGB)
     {
-        loadFile(pFileData->CGB, getVdp1Pointer(fieldTaskPtr->m8_pSubFieldData->mC_characterArea[slot]), NULL);
+        loadFile(pFileData->CGB, getVdp1Pointer(fieldTaskPtr->m8_pSubFieldData->mC_characterArea[slot]), 0);
     }
 }
 
