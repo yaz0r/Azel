@@ -658,6 +658,7 @@ sSaturnPtr getPlayerSoundBankName(const sSequenceConfig* pConfig)
     default:
         assert(0);
     }
+    return sSaturnPtr();
 }
 
 void updateSound()

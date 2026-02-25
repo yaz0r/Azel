@@ -431,7 +431,7 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
 {
     loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, &gDragonModel, 0x2400);
-    loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, getVdp1Pointer(0x25C12000), NULL);
+    loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, getVdp1Pointer(0x25C12000), 0);
 
     createDragon3DModel(pWorkArea, dragonLevel);
 }

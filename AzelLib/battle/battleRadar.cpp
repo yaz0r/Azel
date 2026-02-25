@@ -347,13 +347,13 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-        vdp1WriteEA.m0_CMDCTRL = 0x00, 0x1000; // command 0
-        vdp1WriteEA.m4_CMDPMOD = 0x04, 0x8C; // CMDPMOD
-        vdp1WriteEA.m6_CMDCOLR = 0x06, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2EE4; // CMDCOLR
-        vdp1WriteEA.m8_CMDSRCA = 0x08, dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xC20; // CMDSRCA
-        vdp1WriteEA.mA_CMDSIZE = 0x0A, 0x523; // CMDSIZE
-        vdp1WriteEA.mC_CMDXA = 0x0C, pThis->m1A; // CMDXA
-        vdp1WriteEA.mE_CMDYA = 0x0E, -(pThis->m1C); // CMDYA
+        vdp1WriteEA.m0_CMDCTRL = 0x1000; // command 0
+        vdp1WriteEA.m4_CMDPMOD = 0x8C; // CMDPMOD
+        vdp1WriteEA.m6_CMDCOLR = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0x2EE4; // CMDCOLR
+        vdp1WriteEA.m8_CMDSRCA = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory + 0xC20; // CMDSRCA
+        vdp1WriteEA.mA_CMDSIZE = 0x523; // CMDSIZE
+        vdp1WriteEA.mC_CMDXA = pThis->m1A; // CMDXA
+        vdp1WriteEA.mE_CMDYA = -(pThis->m1C); // CMDYA
 
         outputColor[0] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * performModulo(0xf, pThis->m4));
         outputColor[1] = readSaturnU16(gCurrentBattleOverlay->getSaturnPtr(0x060b1e0c) + 2 * (performModulo(0xf, pThis->m4) + 1));

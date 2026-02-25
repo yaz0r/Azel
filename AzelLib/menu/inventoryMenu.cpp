@@ -45,10 +45,10 @@ const std::array<u8, 3> inventoryMenuTable = {
 };
 
 const std::array<u32, 4> inventoryMenuSpriteTable = { {
-    {0x25E71084},
-    {0x25E71104},
-    {0x25E71184},
-    {0x25E71204},
+    0x25E71084,
+    0x25E71104,
+    0x25E71184,
+    0x25E71204,
 } };
 
 static const s16 sellableItemTable[] = {

@@ -1614,6 +1614,7 @@ s32 computeStringLength(const char* pString, s32 r5)
         }
         r14++;
     };
+    return r14;
 }
 
 void clearBlueBox(s32 x, s32 y, s32 width, s32 height)

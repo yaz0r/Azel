@@ -240,7 +240,7 @@ s32 getCurrentGunPower()
 {
     for (int i=0; i<9; i++)
     {
-        if ((mainGameState.gameStats.mA_weaponType == weaponTable[i].m0_weaponType))
+        if (mainGameState.gameStats.mA_weaponType == weaponTable[i].m0_weaponType)
         {
             return fixedPoint::toInteger(MTH_Mul(weaponTable[i].m4, fixedPoint::fromInteger(mainGameState.gameStats.mE_gunPower)) + 0x8000);
         }

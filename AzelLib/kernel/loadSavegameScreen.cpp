@@ -1131,7 +1131,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
     u32 m10;
     s32 m14_selectedDevice;
     s_MenuCursorWorkArea* m18;
-    u8 m1C[3];
+    s8 m1C[3];
     s32 m20_selectedFileInDevice;
     s_MenuCursor2* m24;
     saveMenuSubTask0* m28_slotInfoDisplayTask[3];

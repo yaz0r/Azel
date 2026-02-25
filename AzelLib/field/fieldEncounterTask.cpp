@@ -75,7 +75,7 @@ s32 getEncounterArea(sEncouterTask* pThis)
         sSaturnPtr local_14 = pThis->m1C;
         do 
         {
-            *getSaturnPtr(local_14 + 3);
+            *getSaturnPtr(local_14 + 3) = 0;
             piVar2 = readSaturnS32(local_14 + 0x1C);
             local_14 += 0x10;
         } while (piVar2 > -1);

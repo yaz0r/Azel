@@ -3354,7 +3354,7 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
         {
             pThis->m4_currentScript = pThis->runFieldScript();
 
-            if (pThis->m4_currentScript.m_offset == NULL)
+            if (pThis->m4_currentScript.m_offset == 0)
             {
                 pThis->fieldScriptTaskUpdateSub3();
             }
