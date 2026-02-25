@@ -15,9 +15,7 @@
 #undef TRACE_ENABLE
 
 #if !defined(SHIPPING_BUILD)
-#if defined(__APPLE__) && TARGET_OS_SIMULATOR
-// can't use trace on simulator
-#else
+#ifdef WIN32
 #define TRACY_ENABLE
 #define TRACY_CALLSTACK 20
 #endif
