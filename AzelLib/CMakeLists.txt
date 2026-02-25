@@ -10,7 +10,7 @@ include_directories(
     #"${THIRD_PARTY}/bgfx.cmake/bgfx/3rdparty/dear-imgui"
     "${THIRD_PARTY}/soloud/soloud/include"
     "${THIRD_PARTY}/glm"
-    "${THIRD_PARTY}/tracy"
+    "${THIRD_PARTY}/tracy/public"
     "${THIRD_PARTY}/bgfx.cmake/bgfx/include"
     "${THIRD_PARTY}/bgfx.cmake/bx/include"
     "${THIRD_PARTY}/bgfx.cmake/bx/include/compat/msvc"
@@ -19,7 +19,7 @@ include_directories(
     "${THIRD_PARTY}/aosdk"
 )
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -48,7 +48,7 @@ endfunction(assign_source_group)
 
 
 if( MSVC )
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x -D_HAS_EXCEPTIONS=0 /GR-")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -D_HAS_EXCEPTIONS=0 /GR-")
 	# Eliminate unreferenced functions and data
 	# Perform identical COMDAT folding
 	#set( REL_LINKER_FLAGS "/opt:ref /opt:icf /nodefaultlib:msvcrt" )

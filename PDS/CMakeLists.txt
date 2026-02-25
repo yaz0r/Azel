@@ -9,11 +9,11 @@ include_directories(
     "${THIRD_PARTY}/imgui/backends"
     "${THIRD_PARTY}/soloud/soloud/include"
     "${THIRD_PARTY}/glm"
-    "${THIRD_PARTY}/tracy"
+    "${THIRD_PARTY}/tracy/public"
     "${THIRD_PARTY}/bgfx.cmake/bgfx/include"
 )
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -41,6 +41,13 @@ set(SOURCES
  ${SRC_KERNEL}
  ${SRC_ROOT}
  ${SRC_FIELD_A3}
+ "${THIRD_PARTY}/tracy/public/TracyClient.cpp"
+)
+
+
+
+set_source_files_properties("${THIRD_PARTY}/tracy/public/TracyClient.cpp" PROPERTIES
+    CXX_STANDARD 17
 )
 
 source_group("src" FILES ${SRC_ROOT})
@@ -48,7 +55,7 @@ source_group("src\\kernel" FILES ${SRC_KERNEL})
 source_group("src\\field\\field_a3" FILES ${SRC_FIELD_A3})
 
 if( MSVC )
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -std=c++0x -D_HAS_EXCEPTIONS=0 /GR-")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -D_HAS_EXCEPTIONS=0 /GR-")
 	# Eliminate unreferenced functions and data
 	# Perform identical COMDAT folding
 	#set( REL_LINKER_FLAGS "/opt:ref /opt:icf /nodefaultlib:msvcrt" )

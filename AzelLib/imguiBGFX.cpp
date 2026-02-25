@@ -116,77 +116,159 @@ static void memFree(void* _ptr, void* _userData);
 
 struct OcornutImguiContext
 {
-	void render(ImDrawData* _drawData)
-	{
-		const ImGuiIO& io = ImGui::GetIO();
-		const float width = io.DisplaySize.x;
-		const float height = io.DisplaySize.y;
-
-		bgfx::setViewName(m_viewId, "ImGui");
-		bgfx::setViewMode(m_viewId, bgfx::ViewMode::Sequential);
-
-		const bgfx::Caps* caps = bgfx::getCaps();
-		{
-			float ortho[16];
-			bx::mtxOrtho(ortho, 0.0f, width, height, 0.0f, 0.0f, 1000.0f, 0.0f, caps->homogeneousDepth);
-			bgfx::setViewTransform(m_viewId, NULL, ortho);
-			bgfx::setViewRect(m_viewId, 0, 0, uint16_t(width), uint16_t(height));
-		}
-
-		// Render command lists
-		for (int32_t ii = 0, num = _drawData->CmdListsCount; ii < num; ++ii)
-		{
-			bgfx::TransientVertexBuffer tvb;
-			bgfx::TransientIndexBuffer tib;
-
-			const ImDrawList* drawList = _drawData->CmdLists[ii];
-			uint32_t numVertices = (uint32_t)drawList->VtxBuffer.size();
-			uint32_t numIndices = (uint32_t)drawList->IdxBuffer.size();
-
-			if (!checkAvailTransientBuffers(numVertices, m_layout, numIndices))
-			{
-				// not enough space in transient buffer just quit drawing the rest...
-				break;
-			}
-
-			bgfx::allocTransientVertexBuffer(&tvb, numVertices, m_layout);
-			bgfx::allocTransientIndexBuffer(&tib, numIndices);
-
-			ImDrawVert* verts = (ImDrawVert*)tvb.data;
-			bx::memCopy(verts, drawList->VtxBuffer.begin(), numVertices * sizeof(ImDrawVert));
-
-			ImDrawIdx* indices = (ImDrawIdx*)tib.data;
-			bx::memCopy(indices, drawList->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
-
-			uint32_t offset = 0;
-			for (const ImDrawCmd* cmd = drawList->CmdBuffer.begin(), *cmdEnd = drawList->CmdBuffer.end(); cmd != cmdEnd; ++cmd)
-			{
-				if (cmd->UserCallback)
-				{
-					cmd->UserCallback(drawList, cmd);
-				}
-				else if (0 != cmd->ElemCount)
-				{
-					uint64_t state = 0
-						| BGFX_STATE_WRITE_RGB
-						| BGFX_STATE_WRITE_A
-						| BGFX_STATE_MSAA
-						;
-
-					bgfx::TextureHandle th = m_texture;
-					bgfx::ProgramHandle program = m_program;
-
-                    if (cmd->TextureId)
+    void render(ImDrawData* _drawData)
+    {
+        if (NULL != _drawData->Textures)
+        {
+            for (ImTextureData* texData : *_drawData->Textures)
+            {
+                switch (texData->Status)
+                {
+                case ImTextureStatus_WantCreate:
+                {
+                    ImGui::TextureBgfx tex =
                     {
-                        union { ImTextureID ptr; struct { bgfx::TextureHandle handle; uint8_t flags; uint8_t mip; } s; } texture = { cmd->TextureId };
-                        state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & texture.s.flags)
+                        .handle = bgfx::createTexture2D(
+                              (uint16_t)texData->Width
+                            , (uint16_t)texData->Height
+                            , false
+                            , 1
+                            , bgfx::TextureFormat::BGRA8
+                            , 0
+                            ),
+                        .flags = IMGUI_FLAGS_ALPHA_BLEND,
+                        .mip = 0,
+                        .unused = 0,
+                    };
+
+                    bgfx::setName(tex.handle, "ImGui Font Atlas");
+                    bgfx::updateTexture2D(tex.handle, 0, 0, 0, 0
+                        , bx::narrowCast<uint16_t>(texData->Width)
+                        , bx::narrowCast<uint16_t>(texData->Height)
+                        , bgfx::copy(texData->GetPixels(), texData->GetSizeInBytes())
+                    );
+
+                    texData->SetTexID(bx::bitCast<ImTextureID>(tex));
+                    texData->SetStatus(ImTextureStatus_OK);
+                }
+                break;
+
+                case ImTextureStatus_WantDestroy:
+                {
+                    ImGui::TextureBgfx tex = bx::bitCast<ImGui::TextureBgfx>(texData->GetTexID());
+                    bgfx::destroy(tex.handle);
+                    texData->SetTexID(ImTextureID_Invalid);
+                    texData->SetStatus(ImTextureStatus_Destroyed);
+                }
+                break;
+
+                case ImTextureStatus_WantUpdates:
+                {
+                    ImGui::TextureBgfx tex = bx::bitCast<ImGui::TextureBgfx>(texData->GetTexID());
+
+                    for (ImTextureRect& rect : texData->Updates)
+                    {
+                        const uint32_t bpp = texData->BytesPerPixel;
+                        const bgfx::Memory* pix = bgfx::alloc(rect.h * rect.w * bpp);
+                        bx::gather(pix->data, texData->GetPixelsAt(rect.x, rect.y), texData->GetPitch(), rect.w * bpp, rect.h);
+                        bgfx::updateTexture2D(tex.handle, 0, 0, rect.x, rect.y, rect.w, rect.h, pix);
+                    }
+                }
+                break;
+
+                default:
+                    break;
+                }
+            }
+        }
+
+        // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
+        int32_t dispWidth = int32_t(_drawData->DisplaySize.x * _drawData->FramebufferScale.x);
+        int32_t dispHeight = int32_t(_drawData->DisplaySize.y * _drawData->FramebufferScale.y);
+        if (dispWidth <= 0
+            || dispHeight <= 0)
+        {
+            return;
+        }
+
+        bgfx::setViewName(m_viewId, "ImGui");
+        bgfx::setViewMode(m_viewId, bgfx::ViewMode::Sequential);
+
+        const bgfx::Caps* caps = bgfx::getCaps();
+        {
+            float ortho[16];
+            float x = _drawData->DisplayPos.x;
+            float y = _drawData->DisplayPos.y;
+            float width = _drawData->DisplaySize.x;
+            float height = _drawData->DisplaySize.y;
+
+            bx::mtxOrtho(ortho, x, x + width, y + height, y, 0.0f, 1000.0f, 0.0f, caps->homogeneousDepth);
+            bgfx::setViewTransform(m_viewId, NULL, ortho);
+            bgfx::setViewRect(m_viewId, 0, 0, uint16_t(width), uint16_t(height));
+        }
+
+        const ImVec2 clipPos = _drawData->DisplayPos;       // (0,0) unless using multi-viewports
+        const ImVec2 clipScale = _drawData->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
+
+        // Render command lists
+        for (int32_t ii = 0, num = _drawData->CmdListsCount; ii < num; ++ii)
+        {
+            bgfx::TransientVertexBuffer tvb;
+            bgfx::TransientIndexBuffer tib;
+
+            const ImDrawList* drawList = _drawData->CmdLists[ii];
+            uint32_t numVertices = (uint32_t)drawList->VtxBuffer.size();
+            uint32_t numIndices = (uint32_t)drawList->IdxBuffer.size();
+
+            if (!checkAvailTransientBuffers(numVertices, m_layout, numIndices))
+            {
+                // not enough space in transient buffer just quit drawing the rest...
+                break;
+            }
+
+            bgfx::allocTransientVertexBuffer(&tvb, numVertices, m_layout);
+            bgfx::allocTransientIndexBuffer(&tib, numIndices, sizeof(ImDrawIdx) == 4);
+
+            ImDrawVert* verts = (ImDrawVert*)tvb.data;
+            bx::memCopy(verts, drawList->VtxBuffer.begin(), numVertices * sizeof(ImDrawVert));
+
+            ImDrawIdx* indices = (ImDrawIdx*)tib.data;
+            bx::memCopy(indices, drawList->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
+
+            bgfx::Encoder* encoder = bgfx::begin();
+
+            for (const ImDrawCmd* cmd = drawList->CmdBuffer.begin(), *cmdEnd = drawList->CmdBuffer.end(); cmd != cmdEnd; ++cmd)
+            {
+                if (cmd->UserCallback)
+                {
+                    cmd->UserCallback(drawList, cmd);
+                }
+                else if (0 != cmd->ElemCount)
+                {
+                    uint64_t state = 0
+                        | BGFX_STATE_WRITE_RGB
+                        | BGFX_STATE_WRITE_A
+                        | BGFX_STATE_MSAA
+                        ;
+
+                    bgfx::TextureHandle th = BGFX_INVALID_HANDLE;
+                    bgfx::ProgramHandle program = m_program;
+
+                    const ImTextureID texId = cmd->GetTexID();
+
+                    if (ImTextureID_Invalid != texId)
+                    {
+                        ImGui::TextureBgfx tex = bx::bitCast<ImGui::TextureBgfx>(texId);
+
+                        state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & tex.flags)
                             ? BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
                             : BGFX_STATE_NONE
                             ;
-                        th = texture.s.handle;
-                        if (0 != texture.s.mip)
+                        th = tex.handle;
+
+                        if (0 != tex.mip)
                         {
-                            const float lodEnabled[4] = { float(texture.s.mip), 1.0f, 0.0f, 0.0f };
+                            const float lodEnabled[4] = { float(tex.mip), 1.0f, 0.0f, 0.0f };
                             bgfx::setUniform(u_imageLodEnabled, lodEnabled);
                             program = m_imageProgram;
                         }
@@ -196,24 +278,38 @@ struct OcornutImguiContext
                         state |= BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
                     }
 
-					const uint16_t xx = uint16_t(bx::max(cmd->ClipRect.x, 0.0f));
-					const uint16_t yy = uint16_t(bx::max(cmd->ClipRect.y, 0.0f));
-					bgfx::setScissor(xx, yy
-						, uint16_t(bx::min(cmd->ClipRect.z, 65535.0f) - xx)
-						, uint16_t(bx::min(cmd->ClipRect.w, 65535.0f) - yy)
-					);
+                    // Project scissor/clipping rectangles into framebuffer space
+                    ImVec4 clipRect;
+                    clipRect.x = (cmd->ClipRect.x - clipPos.x) * clipScale.x;
+                    clipRect.y = (cmd->ClipRect.y - clipPos.y) * clipScale.y;
+                    clipRect.z = (cmd->ClipRect.z - clipPos.x) * clipScale.x;
+                    clipRect.w = (cmd->ClipRect.w - clipPos.y) * clipScale.y;
 
-					bgfx::setState(state);
-					bgfx::setTexture(0, s_tex, th);
-					bgfx::setVertexBuffer(0, &tvb, 0, numVertices);
-					bgfx::setIndexBuffer(&tib, offset, cmd->ElemCount);
-					bgfx::submit(m_viewId, program);
-				}
+                    if (clipRect.x < dispWidth
+                        && clipRect.y < dispHeight
+                        && clipRect.z >= 0.0f
+                        && clipRect.w >= 0.0f)
+                    {
+                        const uint16_t xx = uint16_t(bx::max(clipRect.x, 0.0f));
+                        const uint16_t yy = uint16_t(bx::max(clipRect.y, 0.0f));
+                        encoder->setScissor(xx, yy
+                            , uint16_t(bx::min(clipRect.z, 65535.0f) - xx)
+                            , uint16_t(bx::min(clipRect.w, 65535.0f) - yy)
+                        );
 
-				offset += cmd->ElemCount;
-			}
-		}
-	}
+                        encoder->setState(state);
+                        encoder->setTexture(0, s_tex, th);
+                        encoder->setVertexBuffer(0, &tvb, cmd->VtxOffset, numVertices);
+                        encoder->setIndexBuffer(&tib, cmd->IdxOffset, cmd->ElemCount);
+                        encoder->submit(m_viewId, program);
+                    }
+                }
+            }
+
+            bgfx::end(encoder);
+        }
+    }
+
 
 	void create(float _fontSize, bx::AllocatorI* _allocator)
 	{

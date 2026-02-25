@@ -157,7 +157,7 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
     int patternNumber = characterPatternY * pageDimension + characterPatternX;
     int startOfPattern = startOfPage + patternNumber * patternSize;
 
-    int characterNumber;
+    int characterNumber = 0;
     int paletteNumber = 0;
     int characterOffset = 0;
 

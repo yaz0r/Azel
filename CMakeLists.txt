@@ -89,6 +89,10 @@ IF(MSVC)
    set(CMAKE_CXX_FLAGS_DEBUG_ASAN "${CMAKE_CXX_FLAGS_DEBUG_ASAN} /fsanitize=address /Zi")
    set(CMAKE_CXX_FLAGS_RELEASE_ASAN "${CMAKE_CXX_FLAGS_RELEASE_ASAN} /fsanitize=address /Oy-")
    set(CMAKE_CXX_FLAGS_SHIPPING_ASAN "${CMAKE_CXX_FLAGS_SHIPPING_ASAN} /fsanitize=address /Oy-")
+
+   # tracy in release build (but not shipping)
+   COPY_BUILD_CONFIG(Release Release_Tracy)
+   set(CMAKE_CXX_FLAGS_RELEASE_TRACY "${CMAKE_CXX_FLAGS_RELEASE_TRACY} -DTRACY_ENABLE")
 ENDIF(MSVC)
 
 set(THIRD_PARTY "${CMAKE_SOURCE_DIR}/ThirdParty")
@@ -106,7 +110,6 @@ set(SDL_DISKAUDIO OFF CACHE BOOL "" FORCE)
 set(SDL_DUMMYAUDIO OFF CACHE BOOL "" FORCE)
 set(SDL_X11_XSCRNSAVER OFF CACHE BOOL "" FORCE)
 set(SDL_X11_XTEST OFF CACHE BOOL "" FORCE)
-
 
 add_subdirectory( AzelLib )
 add_subdirectory( ${THIRD_PARTY}/soloud )

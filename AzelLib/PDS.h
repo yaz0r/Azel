@@ -16,19 +16,14 @@
 
 #define NOMINMAX
 
-#undef TRACE_ENABLE
-
-#if !defined(SHIPPING_BUILD)
-#ifdef WIN32
-#define TRACY_ENABLE
+#if defined(TRACY_ENABLE) && defined(WIN32)
 #define TRACY_CALLSTACK 20
-#endif
 #endif
 
 #define __STDC_FORMAT_MACROS 1
 #include <inttypes.h>
 
-#include "Tracy.hpp"
+#include "tracy/Tracy.hpp"
 
 #include <SDL3/SDL.h>
 
