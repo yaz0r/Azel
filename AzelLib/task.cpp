@@ -60,7 +60,7 @@ void processTasks(s_task** ppTask)
     
     do
     {
-        ZoneScoped
+        ZoneScoped;
         ZoneName(pTask->m_taskName, strlen(pTask->m_taskName));
         if (!(pTask->isFinished()))
         {

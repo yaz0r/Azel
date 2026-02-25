@@ -14,7 +14,6 @@
 
 #ifdef TRACY_ENABLE
 #include <inttypes.h>
-#include "TracyClient.cpp"
 void* operator new(std::size_t count)
 {
     auto ptr = malloc(count);
