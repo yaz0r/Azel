@@ -1436,6 +1436,7 @@ void ResetNBG1Map()
     createNGB1DefaultBlackCell();
 }
 
+// TODO: kernel
 void fieldPaletteTaskInitSub0()
 {
     fieldPaletteTaskInitSub0Sub0();

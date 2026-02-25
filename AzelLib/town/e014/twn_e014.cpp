@@ -8,6 +8,8 @@
 
 #include "town/e006/twn_e006.h" // TODO cleanup
 void setupVdp1Proj(fixedPoint fov); // TODO: cleanup
+void fieldPaletteTaskInitSub0(); // TODO cleanup
+void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes); // TODO cleanup
 
 // https://www.youtube.com/watch?v=Txks9hG21qs&feature=youtu.be&t=3345
 
@@ -37,12 +39,76 @@ static const char* listOfFilesToLoad[] = {
     nullptr
 };
 
-void startE014BackgroundTask(p_workArea)
-{
-    Unimplemented();
+struct E014_groundTask : public s_workAreaTemplate<E014_groundTask> {
+    // Mostly control the ground rendering on vdp2
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { E014_groundTask::Init, &E014_groundTask::Update, &E014_groundTask::Draw, nullptr };
+        return &taskDefinition;
+    }
 
-    // hack: to remove title screen
-    reinitVdp2();
+    static void Init(E014_groundTask* pThis) {
+        reinitVdp2();
+        fieldPaletteTaskInitSub0();
+        asyncDmaCopy(gTWN_E014->getSaturnPtr(0x605e170), getVdp2Cram(0xA00), 0x200, 0);
+        asyncDmaCopy(gTWN_E014->getSaturnPtr(0x605e370), getVdp2Cram(0), 0x200, 0);
+
+        static const sLayerConfig setup[] =
+        {
+            m2_CHCN,  1,
+            m5_CHSZ,  1, // character size is 2 cells x 2 cells (16*16)
+            m6_PNB,   1, // pattern data size is 1 word
+            m7_CNSM,  0,
+            m27_RPMD, 2, // rotation parameter mode: Use both A&B
+            m11_SCN,  8,
+            m34_W0E,  1,
+            m37_W0A,  1,
+            m0_END,
+        };
+        setupRGB0(setup);
+
+        static const sLayerConfig rotationPrams[] =
+        {
+            m31_RxKTE, 1, // use coefficient table
+            m0_END,
+        };
+        setupRotationParams(rotationPrams);
+
+        static const sLayerConfig rotationPrams2[] =
+        {
+            m0_END,
+        };
+        setupRotationParams2(rotationPrams2);
+
+        loadFile("CAMPSCR0.SCB", getVdp2Vram(0x40000), 0);
+        loadFile("CAMPSCR0.PNB", getVdp2Vram(0x60000), 0);
+
+        vdp2Controls.m4_pendingVdp2Regs->mE_RAMCTL = (vdp2Controls.m4_pendingVdp2Regs->mE_RAMCTL & 0xFF00) | 0xb4;
+        vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x13ff57ff;
+        vdp2Controls.m_isDirty = 1;
+
+        setupRotationMapPlanes(0, gTWN_E014->getSaturnPtr(0x5E570));
+        setupRotationMapPlanes(1, gTWN_E014->getSaturnPtr(0x5E5B0));
+
+        Unimplemented();
+    }
+
+    static void Update(E014_groundTask* pThis)
+    {
+        Unimplemented();
+    }
+
+    static void Draw(E014_groundTask* pThis)
+    {
+        Unimplemented();
+    }
+
+    // size 0x40
+};
+
+void startE014BackgroundTask(p_workArea parent)
+{
+    createSubTask(parent, E014_groundTask::
 }
 
 TWN_E014_data::TWN_E014_data() : sTownOverlay("TWN_E014.PRG")
