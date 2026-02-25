@@ -1,7 +1,7 @@
 #include "PDS.h"
 #include <soloud.h>
 
-#include <examples/imgui_impl_sdl.h>
+#include <backends/imgui_impl_sdl3.h>
 
 #include "renderer/renderer.h"
 #include "renderer/renderer_gl.h"
@@ -82,7 +82,7 @@ enum eLayers {
 
 backend* gBackend = nullptr;
 
-void azelSdl2_Init()
+void azelSdl_Init()
 {
 #ifdef WITH_VK
     //gBackend = SDL_VK_backend::create();
@@ -108,9 +108,6 @@ void azelSdl2_Init()
 #ifndef SHIPPING_BUILD
     SDL_GL_SetSwapInterval(0);
 #endif
-
-    imguiCreate();
-    ImGui_ImplSDL2_InitForD3D(gWindowBGFX);
 }
 
 bgfx::TextureHandle getTextureForLayerBgfx(eLayers layerIndex)
@@ -262,7 +259,7 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
     return false;
 }
 */
-void azelSdl2_StartFrame()
+void azelSdl_StartFrame()
 {
     int oldResolution[2];
     oldResolution[0] = outputResolution[0];
@@ -313,17 +310,17 @@ void azelSdl2_StartFrame()
     {
         if (!isShipping())
         {
-            ImGui_ImplSDL2_ProcessEvent(&event);
+            ImGui_ImplSDL3_ProcessEvent(&event);
         }
         
         switch (event.type)
         {
-        case SDL_MOUSEMOTION:
+        case SDL_EVENT_MOUSE_MOTION:
             // update mouse position
-            gUIState.mousex = event.motion.x;
-            gUIState.mousey = event.motion.y;
+            gUIState.mousex = (int)event.motion.x;
+            gUIState.mousey = (int)event.motion.y;
             break;
-        case SDL_MOUSEBUTTONDOWN:
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
             // update button down state if left-clicking
             if (event.button.button == 1)
             {
@@ -338,14 +335,14 @@ void azelSdl2_StartFrame()
                 gUIState.scroll = -1;
             }
             break;
-        case SDL_MOUSEBUTTONUP:
+        case SDL_EVENT_MOUSE_BUTTON_UP:
             // update button down state if left-clicking
             if (event.button.button == 1)
             {
                 gUIState.mousedown = 0;
             }
             break;
-        case SDL_MOUSEWHEEL:
+        case SDL_EVENT_MOUSE_WHEEL:
             if (event.wheel.y > 0)
             {
                 gUIState.scroll += 1;
@@ -359,7 +356,7 @@ void azelSdl2_StartFrame()
             break;
         }
 
-        if (event.type == SDL_QUIT)
+        if (event.type == SDL_EVENT_QUIT)
             closeApp = true;
     }
 #endif
@@ -372,19 +369,23 @@ void azelSdl2_StartFrame()
 
 #ifndef USE_NULL_RENDERER
 
-    static SDL_GameController* controller = nullptr;
+    static SDL_Gamepad* controller = nullptr;
     if(controller == nullptr)
     {
-        for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-            if (SDL_IsGameController(i)) {
-                controller = SDL_GameControllerOpen(i);
+        int numGamepads = 0;
+        SDL_JoystickID* gamepads = SDL_GetGamepads(&numGamepads);
+        if (gamepads)
+        {
+            for (int i = 0; i < numGamepads; ++i) {
+                controller = SDL_OpenGamepad(gamepads[i]);
                 if (controller) {
                     break;
                 }
                 else {
-                    fprintf(stderr, "Could not open gamecontroller %i: %s\n", i, SDL_GetError());
+                    fprintf(stderr, "Could not open gamepad %i: %s\n", i, SDL_GetError());
                 }
             }
+            SDL_free(gamepads);
         }
     }
 
@@ -393,14 +394,14 @@ void azelSdl2_StartFrame()
         graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m0_inputType = 2;
 
         u16 buttonMask = 0;
-        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A) << 0;
-        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B) << 1;
-        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y) << 2;
-        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_START) << 3;
-        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_UP) << 4;
-        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN) << 5;
-        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT) << 6;
-        buttonMask |= SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT) << 7;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_SOUTH) << 0;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_EAST) << 1;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_NORTH) << 2;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_START) << 3;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_UP) << 4;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_DOWN) << 5;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_LEFT) << 6;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_RIGHT) << 7;
 
         graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown |= buttonMask;
 
@@ -412,16 +413,16 @@ void azelSdl2_StartFrame()
 
         // analog
         // need to remap range [-32768 to 32767] to [0 - 255]
-        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m2_analogX = convertAxis(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX));
-        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m3_analogY = convertAxis(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY));
+        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m2_analogX = convertAxis(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX));
+        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m3_analogY = convertAxis(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY));
     }
     //else
     {
         graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m0_inputType = 1;
 
-        const Uint8* keyState = SDL_GetKeyboardState(NULL);
+        const bool* keyState = SDL_GetKeyboardState(NULL);
 
-        for (int i = 0; i < SDL_NUM_SCANCODES; i++)
+        for (int i = 0; i < SDL_SCANCODE_COUNT; i++)
         {
             if (keyState[i])
             {
@@ -474,7 +475,7 @@ void azelSdl2_StartFrame()
     {
         //gBackend->ImGUI_NewFrame();
             // Pull the input from SDL2 instead
-        ImGui_ImplSDL2_NewFrame(gWindowBGFX);
+        ImGui_ImplSDL3_NewFrame();
         //imguiBeginFrame(0, 0, 0, 0, outputResolution[0], outputResolution[1], -1);
         imguiBeginFrame(gUIState.mousex, gUIState.mousey, gUIState.mousedown, 0, outputResolution[0], outputResolution[1]);
     }
@@ -1541,7 +1542,7 @@ void renderTexturedQuadBgfx(bgfx::ViewId outputView, bgfx::TextureHandle sourceT
     bgfx::submit(outputView, program);
 }
 
-bool azelSdl2_EndFrame()
+bool azelSdl_EndFrame()
 {
     u32 outputResolutionWidth = 0;
     u32 outputResolutionHeight = 0;
@@ -1610,39 +1611,39 @@ bool azelSdl2_EndFrame()
 
     if(!isShipping())
     {
-        if(ImGui::Begin("VDP"))
-        {
-            ImGui::PushID("BG0");
-            ImGui::Text("NBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG0_GPU);
-            ImGui::Image(ImGui::toId(NBG_data[0].BGFXTexture,0,0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::PopID();
+            if (ImGui::Begin("VDP"))
+            {
+                ImGui::PushID("BG0");
+                ImGui::Text("NBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG0_GPU);
+                ImGui::Image(ImGui::toId(NBG_data[0].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::PopID();
 
-            ImGui::PushID("BG1");
-            ImGui::Text("NBG1"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG1_GPU);
-            ImGui::Image(ImGui::toId(NBG_data[1].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::PopID();
+                ImGui::PushID("BG1");
+                ImGui::Text("NBG1"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG1_GPU);
+                ImGui::Image(ImGui::toId(NBG_data[1].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::PopID();
 
-            ImGui::PushID("BG2");
-            ImGui::Text("NBG2"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG2_GPU);
-            ImGui::Image(ImGui::toId(NBG_data[2].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::PopID();
+                ImGui::PushID("BG2");
+                ImGui::Text("NBG2"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG2_GPU);
+                ImGui::Image(ImGui::toId(NBG_data[2].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::PopID();
 
-            ImGui::PushID("BG3");
-            ImGui::Text("NBG3"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG3_GPU);
-            ImGui::Image(ImGui::toId(NBG_data[3].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::PopID();
+                ImGui::PushID("BG3");
+                ImGui::Text("NBG3"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG3_GPU);
+                ImGui::Image(ImGui::toId(NBG_data[3].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::PopID();
 
-            ImGui::PushID("RBG0");
-            ImGui::Text("RBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &RBG0_GPU);
-            ImGui::Image(ImGui::toId(NBG_data[4].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::PopID();
+                ImGui::PushID("RBG0");
+                ImGui::Text("RBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &RBG0_GPU);
+                ImGui::Image(ImGui::toId(NBG_data[4].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::PopID();
 
-            //ImGui::Text("VDP1");
-            //ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::Text("VDP1 poly");
-            ImGui::Image(ImGui::toId(bgfx::getTexture(gBGFXVdp1PolyFB), 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
-        }
-        ImGui::End();
+                //ImGui::Text("VDP1");
+                //ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::Text("VDP1 poly");
+                ImGui::Image(ImGui::toId(bgfx::getTexture(gBGFXVdp1PolyFB), 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+            }
+            ImGui::End();
 
         PrintDebugTasksHierarchy();
         PrintDebugTasksInfo();
@@ -1836,7 +1837,7 @@ bool azelSdl2_EndFrame()
 
 #ifndef USE_NULL_RENDERER
 #ifndef SHIPPING_BUILD
-    if (ImGui::GetIO().KeysDown[SDL_SCANCODE_GRAVE] && (ImGui::GetIO().KeysDownDuration[SDL_SCANCODE_GRAVE] == 0.f))
+    if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent))
     {
         bImguiEnabled = !bImguiEnabled;
     }

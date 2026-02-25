@@ -4,8 +4,9 @@ include_directories(
     "."
     "${CMAKE_SOURCE_DIR}/AzelLib"
     "${THIRD_PARTY}"
-    "${THIRD_PARTY}/SDL2/include"
+    "${THIRD_PARTY}/SDL/include/SDL3"
     "${THIRD_PARTY}/imgui"
+    "${THIRD_PARTY}/imgui/backends"
     "${THIRD_PARTY}/soloud/soloud/include"
     "${THIRD_PARTY}/glm"
     "${THIRD_PARTY}/tracy"
@@ -161,7 +162,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES iOS|tvOS)
  TARGET_LINK_LIBRARIES(PDS soloud AzelLib)
  TARGET_LINK_LIBRARIES(PDS ${THIRD_PARTY}/SDL2/Xcode-iOS/SDL/build/Release\\\${EFFECTIVE_PLATFORM_NAME}/libSDL2.a)
 ELSE()
- TARGET_LINK_LIBRARIES(PDS AzelLib SDL2main SDL2-static soloud)
+ TARGET_LINK_LIBRARIES(PDS AzelLib SDL3-static soloud)
  #TARGET_LINK_LIBRARIES(PDS C:/VulkanSDK/1.1.121.2/Lib/vulkan-1.lib)
  if(UNIX)
   TARGET_LINK_LIBRARIES(PDS -lGL)

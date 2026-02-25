@@ -1092,7 +1092,7 @@ void loopIteration()
     static bool gameRunning = true;
 #endif
 
-    azelSdl2_StartFrame();
+    azelSdl_StartFrame();
     if (!gameRunning)
     {
         if (ImGui::GetIO().MouseClicked[0])
@@ -1102,13 +1102,6 @@ void loopIteration()
     }
     else
     {
-        static bool audioInitialized = false;
-        if (!audioInitialized)
-        {
-            gSoloud.init();
-            audioInitialized = true;
-        }
-
         endOfFrame();
 
         //copySMPCOutputStatus();
@@ -1161,7 +1154,7 @@ void loopIteration()
 
     audioDebug();
 
-    bContinue = azelSdl2_EndFrame();
+    bContinue = azelSdl_EndFrame();
 
     updateSoundInterrupt();
 

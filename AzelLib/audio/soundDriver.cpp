@@ -167,6 +167,13 @@ void initSoundDriver()
     /////// init the scsp emulation
     sat_hw_init();
 
+    static bool audioInitialized = false;
+    if (!audioInitialized)
+    {
+        gSoloud.init();
+        audioInitialized = true;
+    }
+
     static SCSPStream gSCSPStream;
     gSoloud.play(gSCSPStream);
 }

@@ -3,6 +3,8 @@
  * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
  */
 
+#include "PDS.h"
+
 #include <bgfx/bgfx.h>
 #include <bgfx/embedded_shader.h>
 #include <bx/allocator.h>
@@ -18,9 +20,6 @@
 
 //#include "ImGuizmo.h"
 
-#ifndef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
-#endif
 #include <imgui_internal.h>
 #include <../3rdparty/dear-imgui/widgets/dock.inl>
 //#include <../3rdparty/dear-imgui/widgets/gizmo.inl>
@@ -177,25 +176,25 @@ struct OcornutImguiContext
 					bgfx::TextureHandle th = m_texture;
 					bgfx::ProgramHandle program = m_program;
 
-					if (NULL != cmd->TextureId)
-					{
-						union { ImTextureID ptr; struct { bgfx::TextureHandle handle; uint8_t flags; uint8_t mip; } s; } texture = { cmd->TextureId };
-						state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & texture.s.flags)
-							? BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
-							: BGFX_STATE_NONE
-							;
-						th = texture.s.handle;
-						if (0 != texture.s.mip)
-						{
-							const float lodEnabled[4] = { float(texture.s.mip), 1.0f, 0.0f, 0.0f };
-							bgfx::setUniform(u_imageLodEnabled, lodEnabled);
-							program = m_imageProgram;
-						}
-					}
-					else
-					{
-						state |= BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
-					}
+                    if (cmd->TextureId)
+                    {
+                        union { ImTextureID ptr; struct { bgfx::TextureHandle handle; uint8_t flags; uint8_t mip; } s; } texture = { cmd->TextureId };
+                        state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & texture.s.flags)
+                            ? BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
+                            : BGFX_STATE_NONE
+                            ;
+                        th = texture.s.handle;
+                        if (0 != texture.s.mip)
+                        {
+                            const float lodEnabled[4] = { float(texture.s.mip), 1.0f, 0.0f, 0.0f };
+                            bgfx::setUniform(u_imageLodEnabled, lodEnabled);
+                            program = m_imageProgram;
+                        }
+                    }
+                    else
+                    {
+                        state |= BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+                    }
 
 					const uint16_t xx = uint16_t(bx::max(cmd->ClipRect.x, 0.0f));
 					const uint16_t yy = uint16_t(bx::max(cmd->ClipRect.y, 0.0f));
@@ -236,7 +235,7 @@ struct OcornutImguiContext
 
 		ImGuiIO& io = ImGui::GetIO();
 
-		io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
+		io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 
 		io.DisplaySize = ImVec2(1280.0f, 720.0f);
 		io.DeltaTime = 1.0f / 60.0f;
@@ -445,26 +444,7 @@ struct OcornutImguiContext
 	void endFrame()
 	{
 		ImGui::Render();
-		ImGui::UpdatePlatformWindows();
 		render(ImGui::GetDrawData());
-
-        ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-        for (int i = 1; i < platform_io.Viewports.Size; i++)
-        {
-            ImGuiViewport* viewport = platform_io.Viewports[i];
-            if (viewport->Flags & ImGuiViewportFlags_Minimized)
-                continue;
-            //if (platform_io.Platform_RenderWindow) platform_io.Platform_RenderWindow(viewport, platform_render_arg);
-            //if (platform_io.Renderer_RenderWindow) platform_io.Renderer_RenderWindow(viewport, renderer_render_arg);
-        }
-        for (int i = 1; i < platform_io.Viewports.Size; i++)
-        {
-            ImGuiViewport* viewport = platform_io.Viewports[i];
-            if (viewport->Flags & ImGuiViewportFlags_Minimized)
-                continue;
-            //if (platform_io.Platform_SwapBuffers) platform_io.Platform_SwapBuffers(viewport, platform_render_arg);
-            //if (platform_io.Renderer_SwapBuffers) platform_io.Renderer_SwapBuffers(viewport, renderer_render_arg);
-        }
 
 	}
 

@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+
 #if defined(__APPLE__)
 #include "TargetConditionals.h"
 #endif
@@ -26,8 +30,7 @@
 
 #include "Tracy.hpp"
 
-#include <SDL.h>
-#include <SDL_syswm.h>
+#include <SDL3/SDL.h>
 
 #include <bgfx/bgfx.h>
 

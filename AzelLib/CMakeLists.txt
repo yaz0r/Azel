@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.9)
 include_directories(
     "."
 #    "${THIRD_PARTY}"
-    "${THIRD_PARTY}/SDL2/include"
+    "${THIRD_PARTY}/SDL/include"
     "${THIRD_PARTY}/imgui"
+    "${THIRD_PARTY}/imgui/backends"
     "${THIRD_PARTY}/ImGuizmo"
     #"${THIRD_PARTY}/bgfx.cmake/bgfx/3rdparty/dear-imgui"
     "${THIRD_PARTY}/soloud/soloud/include"
@@ -121,8 +122,9 @@ set(SOURCES
  ${THIRD_PARTY}/imgui/imgui.h
  ${THIRD_PARTY}/imgui/imgui_draw.cpp
  ${THIRD_PARTY}/imgui/imgui_internal.h
+ ${THIRD_PARTY}/imgui/imgui_tables.cpp
  ${THIRD_PARTY}/imgui/imgui_widgets.cpp
- ${THIRD_PARTY}/imgui/examples/imgui_impl_sdl.cpp
+ ${THIRD_PARTY}/imgui/backends/imgui_impl_sdl3.cpp
 
  ${THIRD_PARTY}/ImGuizmo/ImGuizmo.cpp
  ${THIRD_PARTY}/ImGuizmo/ImGuizmo.h
@@ -139,12 +141,6 @@ set(SOURCES
 
  "shaderc_prebuilt.cmake"
 )
-
-if(CMAKE_GENERATOR MATCHES "Visual Studio 17 2022")
-    set( SHADERC_COMMAND "${THIRD_PARTY}/../vs2022_tools/Release/shaderc" )
-elseif(CMAKE_GENERATOR MATCHES "Visual Studio 18 2026")
-    set( SHADERC_COMMAND "${THIRD_PARTY}/../vs2026_tools/Release/shaderc" )
-endif()
 
 include(shaderc_prebuilt.cmake)
 
