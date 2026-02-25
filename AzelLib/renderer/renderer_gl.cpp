@@ -54,8 +54,10 @@ bool SDL_ES3_backend::init()
 
     bgfx::Init initparam;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#if SDL_VIDEO_DRIVER_X11
     initparam.platformData.ndt = wmi.info.x11.display;
     initparam.platformData.nwh = (void*)(uintptr_t)wmi.info.x11.window;
+#endif
 #elif BX_PLATFORM_OSX
     initparam.platformData.ndt = NULL;
     initparam.platformData.nwh = cbSetupMetalLayer(wmi.info.cocoa.window);
