@@ -41,17 +41,20 @@ typedef std::array<u16, 3> sVec3_U16;
 
 struct sVec3_FP
 {
-    sVec3_FP()
+    sVec3_FP() : m0_X(), m4_Y(), m8_Z()
     {
     }
 
     sVec3_FP(fixedPoint x, fixedPoint y, fixedPoint z)
+        : m0_X(x), m4_Y(y), m8_Z(z)
     {
-        m_value[0] = x;
-        m_value[1] = y;
-        m_value[2] = z;
     }
-    std::array<fixedPoint,3> m_value;
+
+    union
+    {
+        struct { fixedPoint m0_X, m4_Y, m8_Z; };
+        fixedPoint m_value[3];
+    };
 
     void zeroize()
     {
@@ -72,7 +75,7 @@ struct sVec3_FP
 
     bool operator==(const sVec3_FP otherVec) const
     {
-        return m_value == otherVec.m_value;
+        return m0_X == otherVec.m0_X && m4_Y == otherVec.m4_Y && m8_Z == otherVec.m8_Z;
     }
 
     sVec3_FP operator-() const
