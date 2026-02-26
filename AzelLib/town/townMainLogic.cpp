@@ -488,7 +488,172 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
     addTraceLog("cameraFollowMode0Bis set camera position: 0x%04X 0x%04X 0x%04X\n", r14_townTask->m38_interpolatedCameraPosition[0].asS32(), r14_townTask->m38_interpolatedCameraPosition[1].asS32(), r14_townTask->m38_interpolatedCameraPosition[2].asS32());
 }
 
-void mainLogicUpdateSub3()
+void cameraFollowMode3SubSub(sMainLogic* param_1, sVec3_FP* param_2) {
+    sVec3_FP temp0;
+    temp0[0] = transformByMatrixRow0(*param_2);
+    temp0[1] = transformByMatrixRow1(*param_2);
+    temp0[2] = transformByMatrixRow2(param_1->m18_position);
+
+    sVec2_FP local_2c;
+    local_2c[0] = FP_Div(temp0[0], temp0[2]);
+    local_2c[1] = FP_Div(temp0[1], temp0[2]);
+    if (local_2c[0] < 0) {
+        local_2c[0] = -local_2c[0];
+    }
+    if (local_2c[1] < 0) {
+        local_2c[1] = -local_2c[1];
+    }
+
+    if ((MTH_Mul(graphicEngineStatus.m405C.m18_widthScale, local_2c[0]) == 0) && (MTH_Mul(graphicEngineStatus.m405C.m1C_heightScale, local_2c[1]) == 0)) {
+        param_1->m44_cameraTarget = *param_2;
+    }
+    else {
+        if (0x800000 < local_2c[0]) {
+            local_2c[0] = 0x800000;
+        }
+        if (0x800000 < local_2c[1]) {
+            local_2c[1] = 0x800000;
+        }
+        fixedPoint iVar2 = MulVec2(local_2c, local_2c);
+        fixedPoint iVar1 = iVar2 >> 1;
+        if (0xb333 < iVar2 >> 1) {
+            iVar1 = 0xb333;
+        }
+        if (iVar1 < 0xccc) {
+            iVar1 = 0xccc;
+        }
+        iVar1 = 0x10000 - iVar1;
+
+        param_1->m44_cameraTarget = MTH_Mul(param_1->m44_cameraTarget - *param_2, iVar1) + *param_2;
+    }
+
+}
+
+void cameraFollowMode3Sub(sMainLogic* pThis) {
+    sVec3_FP delta = pThis->m18_position - pThis->m5C_rawCameraPosition;
+    fixedPoint distance = sqrt_F(MTH_Product3d_FP(delta, delta));
+
+    fixedPoint scale = -distance / 4;
+
+    if (scale > -0x800) {
+        scale = -0x800;
+    }
+
+    if (scale < -0x2800) {
+        scale = -0x2800;
+    }
+
+    sMatrix4x3 auStack_40;
+    initMatrixToIdentity(&auStack_40);
+    rotateMatrixShiftedY(pThis->m14_EdgeTask->mE8.mC_rotation[1], &auStack_40);
+    rotateMatrixShiftedX(pThis->m14_EdgeTask->mE8.mC_rotation[0], &auStack_40);
+    scaleMatrixRow2(scale, &auStack_40);
+
+    sVec3_FP local_58;
+    local_58[0] = auStack_40[2] + (pThis->m18_position)[0];
+    local_58[1] = auStack_40[6] + (pThis->m18_position)[1];
+    local_58[2] = auStack_40[10] + (pThis->m18_position)[2];
+    cameraFollowMode3SubSub(pThis, &local_58);
+}
+
+void cameraFollowMode3(sMainLogic* pThis) {
+
+    bool isFlipped = false;
+
+    cameraFollowMode3Sub(pThis);
+
+    sVec3_FP delta = pThis->m18_position - pThis->m5C_rawCameraPosition;
+    pThis->m24_distance = sqrt_F(MTH_Product3d_FP(delta, delta));
+
+    computeVectorAngles(delta, pThis->m68_cameraRotation);
+
+    pThis->m68_cameraRotation[0] = 0;
+
+    {
+        fixedPoint temp1 = (pThis->m68_cameraRotation[0] - pThis->mF0[0]) & 0xfffffff;
+        fixedPoint temp2 = (pThis->mF8[0] - pThis->m68_cameraRotation[2]) & 0xfffffff;
+
+        if (temp2 < temp1) {
+            isFlipped = true;
+            if ((temp2 / 2) + 0x8000000U < temp1) {
+                pThis->m68_cameraRotation[0] = pThis->mF0[0];
+            }
+            else {
+                pThis->m68_cameraRotation[0] = pThis->mF8[0];
+            }
+        }
+    }
+
+    {
+        fixedPoint temp2 = (pThis->m68_cameraRotation[1] - pThis->mF0[1]) & 0xfffffff;
+        fixedPoint temp1 = (pThis->mF8[1] - pThis->mF0[1]) & 0xfffffff;
+        if (temp1 < temp2) {
+            fixedPoint temp3;
+            fixedPoint temp4;
+            if ((temp1 / 2) + 0x8000000U < temp2) {
+                (pThis->m68_cameraRotation)[1] = pThis->mF0[1];
+                temp3 = -(pThis->m10C)[1];
+                temp4 = (pThis->m10C)[2];
+            }
+            else {
+                (pThis->m68_cameraRotation)[1] = pThis->mF8[1];
+                temp4 = (pThis->m10C)[2];
+                temp3 = (pThis->m10C)[1];
+            }
+
+            fixedPoint temp5 = MTH_Mul(delta[0], -(pThis->m100)[2]);
+            fixedPoint temp6 = MTH_Mul(delta[2], (pThis->m100)[0]);
+            if (temp5 + temp6 < 0) {
+                fixedPoint sum = temp3 + temp4;
+                int angle = sum.getInteger();
+                fixedPoint temp7 = FP_Div(getSin(angle), getCos(angle));
+                temp7 = MTH_Mul(temp5 + temp6, temp7);
+                fixedPoint iVar2 = MTH_Mul(delta[0], (pThis->m100)[0]);
+                fixedPoint iVar3 = MTH_Mul(delta[2], (pThis->m100)[2]);
+                (pThis->m10C)[0] = (pThis->m10C)[0] + ((iVar2 + iVar3) - temp7);
+                temp7 = FP_Pow2((pThis->m100)[0]);
+                iVar2 = FP_Pow2((pThis->m100)[2]);
+                if (temp7 + iVar2 < (pThis->m10C)[0]) {
+                    (pThis->m10C)[0] = temp7 + iVar2;
+                }
+                if ((pThis->m10C)[0] < 0) {
+                    (pThis->m10C)[0] = 0;
+                }
+            }
+            isFlipped = true;
+        }
+    }
+
+    fixedPoint temp7 = FP_Pow2((pThis->m100)[0]);
+    fixedPoint iVar2 = FP_Pow2((pThis->m100)[2]);
+    temp7 = FP_Div((pThis->m10C)[0], temp7 + iVar2);
+    iVar2 = MTH_Mul((pThis->m100)[0], temp7);
+    (pThis->m5C_rawCameraPosition)[0] = iVar2 + (pThis->mE4)[0];
+    iVar2 = MTH_Mul((pThis->m100)[1], temp7);
+    (pThis->m5C_rawCameraPosition)[1] = iVar2 + (pThis->mE4)[1];
+    temp7 = MTH_Mul((pThis->m100)[2], temp7);
+    (pThis->m5C_rawCameraPosition)[2] = temp7 + (pThis->mE4)[2];
+    (pThis->m38_interpolatedCameraPosition)[0] = (pThis->m5C_rawCameraPosition)[0];
+    (pThis->m38_interpolatedCameraPosition)[1] = (pThis->m5C_rawCameraPosition)[1];
+    (pThis->m38_interpolatedCameraPosition)[2] = (pThis->m5C_rawCameraPosition)[2];
+
+    if (isFlipped) {
+        sMatrix4x3 auStack_5c;
+        initMatrixToIdentity(&auStack_5c);
+        rotateMatrixShiftedY((pThis->m68_cameraRotation)[1], &auStack_5c);
+        rotateMatrixShiftedX((pThis->m68_cameraRotation)[0], &auStack_5c);
+        scaleMatrixRow2(pThis->m24_distance, &auStack_5c);
+        (pThis->m44_cameraTarget)[0] = (pThis->m38_interpolatedCameraPosition)[0] - auStack_5c[2];
+        (pThis->m44_cameraTarget)[1] = (pThis->m38_interpolatedCameraPosition)[1] - auStack_5c[6];
+        (pThis->m44_cameraTarget)[2] = (pThis->m38_interpolatedCameraPosition)[2] - auStack_5c[10];
+    }
+}
+
+void cameraFollowMode3_LCS(sMainLogic* pThis) {
+    Unimplemented();
+}
+
+void setupCameraUpdateForCurrentMode()
 {
     if (twnMainLogicTask->m14_EdgeTask == nullptr)
         return;
@@ -497,7 +662,7 @@ void mainLogicUpdateSub3()
 
     switch (twnMainLogicTask->m2_cameraFollowMode)
     {
-    case 0:
+    case 0: // Follow
         if (r5_inLcsMode)
         {
             twnMainLogicTask->m10 = &cameraFollowMode0_LCS;
@@ -505,6 +670,16 @@ void mainLogicUpdateSub3()
         else
         {
             twnMainLogicTask->m10 = &cameraFollowMode0Bis;
+        }
+        break;
+    case 3: // Fixed camera (camp)
+        if (r5_inLcsMode)
+        {
+            twnMainLogicTask->m10 = &cameraFollowMode3_LCS;
+        }
+        else
+        {
+            twnMainLogicTask->m10 = &cameraFollowMode3;
         }
         break;
     default:
@@ -518,7 +693,7 @@ int scriptFunction_6057058_sub0()
     twnMainLogicTask->m_DrawMethod = sMainLogic::Draw;
     scriptFunction_6057058_sub0Sub0();
     twnMainLogicTask->m2_cameraFollowMode = 0;
-    mainLogicUpdateSub3();
+    setupCameraUpdateForCurrentMode();
 
     return 0; // dummy
 }
@@ -576,7 +751,7 @@ void sMainLogic::Update(sMainLogic* pThis)
 
     if (!(npcData0.mFC & 1))
     {
-        mainLogicUpdateSub3();
+        setupCameraUpdateForCurrentMode();
     }
 
     pThis->m10(pThis);

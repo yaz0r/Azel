@@ -251,6 +251,7 @@ struct sVec2_FP
 
 sVec3_FP MTH_Mul(const fixedPoint& a, const sVec3_FP& b);
 sVec3_FP MTH_Mul(const sVec3_FP& a, const sVec3_FP& b);
+sVec3_FP MTH_Mul(const sVec3_FP& a, const fixedPoint& b);
 
 #define xstr(a) str(a)
 #define str(a) #a

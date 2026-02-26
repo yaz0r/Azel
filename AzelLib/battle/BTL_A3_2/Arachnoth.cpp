@@ -29,7 +29,7 @@
 //https://www.youtube.com/watch?v=s7ei8s5Smuw&t=224s
 
 void battleEngine_displayAttackName(int param1, int param2, int param3); // TODO: Cleanup
-void playBattleSoundEffect(s16 effectIndex); // TODO: cleanup
+s32 playBattleSoundEffect(s32 effectIndex); // TODO: cleanup
 
 struct sArachnothFormation : public s_workAreaTemplateWithCopy<sArachnothFormation>
 {

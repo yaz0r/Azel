@@ -16,6 +16,8 @@
 
 #include <map>
 
+s32 playBattleSoundEffect(s32 effectIndex); // TODO: cleanup
+
 sResData resData;
 
 s32 resValue0 = 0;
@@ -1497,18 +1499,24 @@ s32 terminateTown()
     return 0;
 }
 
+s32 getNpcData0_5d() {
+    return npcData0.m5D;
+}
+
 sKernelScriptFunctions gKernelScriptFunctions =
 {
     // zero arg
     {
         {0x602C1D0, &fadeOutAllSequences},
         {0x603011E, &terminateTown},
+        {0x600CDD4, &getNpcData0_5d},
     },
     // one arg
     {
         {0x600CCB4, &initNPC},
         {0x602c2ca, &playSystemSoundEffect},
         {0x6027110, &setNextGameStatus},
+        {0x602c32a, &playBattleSoundEffect},
     },
     // one arg ptr
     {
@@ -1782,6 +1790,19 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             }
 
             mainGameState.setBit(r4);
+            break;
+        }
+        case 16:
+        {
+            r14 = getAlignOn2(r14);
+            s16 r4 = readSaturnS16(r14);
+            r14 += 2;
+            if (r4 < 1000)
+            {
+                r4 += 3334;
+            }
+
+            mainGameState.clearBit(r4);
             break;
         }
         case 17:

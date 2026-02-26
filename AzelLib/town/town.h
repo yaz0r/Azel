@@ -295,11 +295,21 @@ struct sCameraTask : public s_workAreaTemplate<sCameraTask>
 
     static void Init(sCameraTask* pThis)
     {
-        Unimplemented();
+        if (mainGameState.getBit(1)) {
+            pThis->m4 = 5400;
+        }
+        else {
+            pThis->m4 = 0;
+        }
     }
     static void Update(sCameraTask* pThis)
     {
-        Unimplemented();
+        if ((npcData0.mFC & 1) == 0) {
+            if (++pThis->m4 > 5400) {
+                pThis->m4 = 5400;
+            }
+            
+        }
     }
 
     u8 m0;

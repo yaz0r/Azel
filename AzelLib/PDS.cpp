@@ -615,8 +615,6 @@ int loadFile2(const char* fileName, u8* destination, u16 vdp1Pointer)
 // version used for raw data (non-bundle)
 int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 {
-    assert(vdp1Pointer == 0);
-
     sFileInfoSub* pFileHandle = openFileHandle(fileName);
 
     if (pFileHandle == NULL)
@@ -640,7 +638,7 @@ int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 
     if (vdp1Pointer)
     {
-        assert(0);
+        //patchFilePointers(destination, vdp1Pointer);
     }
 
     fclose(pFileHandle->fHandle);

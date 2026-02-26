@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "town.h"
 #include "townScript.h"
+#include "town/camp/twn_camp.h"
 #include "town/ruin/twn_ruin.h"
 #include "town/exca/twn_exca.h"
 #include "town/e006/twn_e006.h"
@@ -274,6 +275,10 @@ void loadTownPrg(s8 r4, s8 r5)
     else if (overlayFileName == "TWN_E014.PRG")
     {
         gFieldOverlayFunction = overlayStart_TWN_E014;
+    }
+    else if (overlayFileName == "TWN_CAMP.PRG")
+    {
+        gFieldOverlayFunction = overlayStart_TWN_CAMP;
     }
     else
     {

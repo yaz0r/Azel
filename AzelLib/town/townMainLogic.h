@@ -33,6 +33,11 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     sVec3_FP m5C_rawCameraPosition;
     sVec3_FP m68_cameraRotation;
     sMainLogic_74 m74_townCamera;
+    sVec3_FP mE4;
+    std::array<fixedPoint, 2> mF0;
+    std::array<fixedPoint, 2> mF8;
+    sVec3_FP m100;
+    sVec3_FP m10C;
     s32 m118_autoWalkDuration;
     sVec3_FP m11C_autoWalkStartPosition;
     sVec3_FP m128_autoWalkStartRotation;
