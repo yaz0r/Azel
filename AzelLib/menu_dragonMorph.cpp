@@ -460,9 +460,9 @@ void updateAnimationMatricesSub1(s3DModelAnimData* r4, s_3dModel* r5)
 
 void updateAnimationMatricesSub2Sub1(s_runtimeAnimData* r4, sVec3_FP& r5, sVec3_FP& r6)
 {
-    r4->m0_root.m_value[0] = MTH_Mul(r4->m_factors.m_vec0[0], r6.m_value[0] - r5.m_value[0]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[0], r4->m_vec_C.m_value[0]);
-    r4->m0_root.m_value[1] = MTH_Mul(r4->m_factors.m_vec0[1], r6.m_value[1] - r5.m_value[1]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[1], r4->m_vec_C.m_value[1]);
-    r4->m0_root.m_value[2] = MTH_Mul(r4->m_factors.m_vec0[2], r6.m_value[2] - r5.m_value[2]) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[2], r4->m_vec_C.m_value[2]);
+    r4->m0_root.m0_X = MTH_Mul(r4->m_factors.m_vec0[0], r6.m0_X - r5.m0_X) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[0], r4->m_vec_C.m0_X);
+    r4->m0_root.m4_Y = MTH_Mul(r4->m_factors.m_vec0[1], r6.m4_Y - r5.m4_Y) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[1], r4->m_vec_C.m4_Y);
+    r4->m0_root.m8_Z = MTH_Mul(r4->m_factors.m_vec0[2], r6.m8_Z - r5.m8_Z) - MTH_Mul(0x10000 - r4->m_factors.m_vecC[2], r4->m_vec_C.m8_Z);
 }
 
 void updateAnimationMatricesSub2Sub2(s_runtimeAnimData* r4)
@@ -474,71 +474,71 @@ void updateAnimationMatricesSub2Sub3(s_runtimeAnimData* r4)
 {
     r4->m_vec_18 += r4->m_vec_C;
 
-    if (r4->m_vec_18.m_value[0].asS32() & 0x8000000)
+    if (r4->m_vec_18.m0_X.asS32() & 0x8000000)
     {
-        r4->m_vec_18.m_value[0] = r4->m_vec_18.m_value[0].asS32() | 0xF0000000;
+        r4->m_vec_18.m0_X = r4->m_vec_18.m0_X.asS32() | 0xF0000000;
     }
     else
     {
-        r4->m_vec_18.m_value[0] = r4->m_vec_18.m_value[0].asS32() & 0xFFFFFFF;
+        r4->m_vec_18.m0_X = r4->m_vec_18.m0_X.asS32() & 0xFFFFFFF;
     }
 
-    if (r4->m_vec_18.m_value[1].asS32() & 0x8000000)
+    if (r4->m_vec_18.m4_Y.asS32() & 0x8000000)
     {
-        r4->m_vec_18.m_value[1] = r4->m_vec_18.m_value[1].asS32() | 0xF0000000;
+        r4->m_vec_18.m4_Y = r4->m_vec_18.m4_Y.asS32() | 0xF0000000;
     }
     else
     {
-        r4->m_vec_18.m_value[1] = r4->m_vec_18.m_value[1].asS32() & 0xFFFFFFF;
+        r4->m_vec_18.m4_Y = r4->m_vec_18.m4_Y.asS32() & 0xFFFFFFF;
     }
 
-    if (r4->m_vec_18.m_value[2].asS32() & 0x8000000)
+    if (r4->m_vec_18.m8_Z.asS32() & 0x8000000)
     {
-        r4->m_vec_18.m_value[2] = r4->m_vec_18.m_value[2].asS32() | 0xF0000000;
+        r4->m_vec_18.m8_Z = r4->m_vec_18.m8_Z.asS32() | 0xF0000000;
     }
     else
     {
-        r4->m_vec_18.m_value[2] = r4->m_vec_18.m_value[2].asS32() & 0xFFFFFFF;
+        r4->m_vec_18.m8_Z = r4->m_vec_18.m8_Z.asS32() & 0xFFFFFFF;
     }
 
-    if (r4->m_vec_18.m_value[0] > r4->m_factors.m_max[0])
+    if (r4->m_vec_18.m0_X > r4->m_factors.m_max[0])
     {
-        r4->m_vec_18.m_value[0] = r4->m_factors.m_max[0];
+        r4->m_vec_18.m0_X = r4->m_factors.m_max[0];
         r4->m_vec_C[0] = 0;
     }
     else
     {
-        if (r4->m_vec_18.m_value[0] < r4->m_factors.m_min[0])
+        if (r4->m_vec_18.m0_X < r4->m_factors.m_min[0])
         {
-            r4->m_vec_18.m_value[0] = r4->m_factors.m_min[0];
+            r4->m_vec_18.m0_X = r4->m_factors.m_min[0];
             r4->m_vec_C[0] = 0;
         }
     }
 
-    if (r4->m_vec_18.m_value[1] > r4->m_factors.m_max[1])
+    if (r4->m_vec_18.m4_Y > r4->m_factors.m_max[1])
     {
-        r4->m_vec_18.m_value[1] = r4->m_factors.m_max[1];
+        r4->m_vec_18.m4_Y = r4->m_factors.m_max[1];
         r4->m_vec_C[1] = 0;
     }
     else
     {
-        if (r4->m_vec_18.m_value[1] < r4->m_factors.m_min[1])
+        if (r4->m_vec_18.m4_Y < r4->m_factors.m_min[1])
         {
-            r4->m_vec_18.m_value[1] = r4->m_factors.m_min[1];
+            r4->m_vec_18.m4_Y = r4->m_factors.m_min[1];
             r4->m_vec_C[1] = 0;
         }
     }
 
-    if (r4->m_vec_18.m_value[2] > r4->m_factors.m_max[2])
+    if (r4->m_vec_18.m8_Z > r4->m_factors.m_max[2])
     {
-        r4->m_vec_18.m_value[2] = r4->m_factors.m_max[2];
+        r4->m_vec_18.m8_Z = r4->m_factors.m_max[2];
         r4->m_vec_C[2] = 0;
     }
     else
     {
-        if (r4->m_vec_18.m_value[2] < r4->m_factors.m_min[2])
+        if (r4->m_vec_18.m8_Z < r4->m_factors.m_min[2])
         {
-            r4->m_vec_18.m_value[2] = r4->m_factors.m_min[2];
+            r4->m_vec_18.m8_Z = r4->m_factors.m_min[2];
             r4->m_vec_C[2] = 0;
         }
     }

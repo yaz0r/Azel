@@ -5,14 +5,14 @@
 #include "kernel/rayDisplay.h"
 
 void arachnothTentacle_updateMode1(sArachnothTentacle* pThis) {
-    fixedPoint cosValue = getCos(pThis->m178_rotation->m_value[0].toInteger());
-    fixedPoint iVar1 = MTH_Mul_5_6(cosValue, getSin(pThis->m178_rotation->m_value[1].toInteger()), 0xF000);
-    fixedPoint iVar2 = MTH_Mul(-getSin(pThis->m178_rotation->m_value[0].toInteger()), 0xF000);
-    fixedPoint rot3 = MTH_Mul_5_6(cosValue, getCos(pThis->m178_rotation->m_value[1].toInteger()), 0xF000);
+    fixedPoint cosValue = getCos(pThis->m178_rotation->m0_X.toInteger());
+    fixedPoint iVar1 = MTH_Mul_5_6(cosValue, getSin(pThis->m178_rotation->m4_Y.toInteger()), 0xF000);
+    fixedPoint iVar2 = MTH_Mul(-getSin(pThis->m178_rotation->m0_X.toInteger()), 0xF000);
+    fixedPoint rot3 = MTH_Mul_5_6(cosValue, getCos(pThis->m178_rotation->m4_Y.toInteger()), 0xF000);
 
-    pThis->mC_segments[0].m0[0] += MTH_Mul((iVar1 + pThis->m174_position->m_value[0]) - pThis->mC_segments[0].m18[0], 0x28f);
-    pThis->mC_segments[0].m0[1] += MTH_Mul((iVar2 + pThis->m174_position->m_value[1]) - pThis->mC_segments[0].m18[1], 0x28f);
-    pThis->mC_segments[0].m0[2] += MTH_Mul((iVar2 + pThis->m174_position->m_value[2]) - pThis->mC_segments[0].m18[2], 0x28f);
+    pThis->mC_segments[0].m0[0] += MTH_Mul((iVar1 + pThis->m174_position->m0_X) - pThis->mC_segments[0].m18[0], 0x28f);
+    pThis->mC_segments[0].m0[1] += MTH_Mul((iVar2 + pThis->m174_position->m4_Y) - pThis->mC_segments[0].m18[1], 0x28f);
+    pThis->mC_segments[0].m0[2] += MTH_Mul((iVar2 + pThis->m174_position->m8_Z) - pThis->mC_segments[0].m18[2], 0x28f);
 
     int segmentIndex = MTH_Mul(randomNumber() >> 0x10, 9);
     pThis->mC_segments[segmentIndex].m0[0] += MTH_Mul(randomNumber() >> 0x10, 0x666) - 0x333;
@@ -41,9 +41,9 @@ void arachnothTentacle_update(sArachnothTentacle* pThis) {
     if (pThis->m188_currentMode != 4) {
         sMatrix4x3 matrix;
         initMatrixToIdentity(&matrix);
-        rotateMatrixShiftedY(pThis->m178_rotation->m_value[1], &matrix);
-        rotateMatrixShiftedX(pThis->m178_rotation->m_value[0], &matrix);
-        rotateMatrixShiftedZ(pThis->m178_rotation->m_value[2], &matrix);
+        rotateMatrixShiftedY(pThis->m178_rotation->m4_Y, &matrix);
+        rotateMatrixShiftedX(pThis->m178_rotation->m0_X, &matrix);
+        rotateMatrixShiftedZ(pThis->m178_rotation->m8_Z, &matrix);
 
         sVec3_FP transformedPoint;
         transformAndAddVec(pThis->m17C_offset, transformedPoint, matrix);
@@ -124,9 +124,9 @@ sArachnothTentacle* createArachnothTentacle(s_workAreaCopy* pParent, sVec3_FP* p
 
     sMatrix4x3 matrix;
     initMatrixToIdentity(&matrix);
-    rotateMatrixShiftedY(pNewTask->m178_rotation->m_value[1], &matrix);
-    rotateMatrixShiftedX(pNewTask->m178_rotation->m_value[0], &matrix);
-    rotateMatrixShiftedZ(pNewTask->m178_rotation->m_value[2], &matrix);
+    rotateMatrixShiftedY(pNewTask->m178_rotation->m4_Y, &matrix);
+    rotateMatrixShiftedX(pNewTask->m178_rotation->m0_X, &matrix);
+    rotateMatrixShiftedZ(pNewTask->m178_rotation->m8_Z, &matrix);
 
     sVec3_FP transformedPoint;
     transformAndAddVec(pNewTask->m17C_offset, transformedPoint, matrix);

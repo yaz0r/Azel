@@ -333,9 +333,9 @@ void modelMode5_position1(s_3dModel* p3dModel)
         std::vector<sAnimationData::sTrackHeader>::const_iterator r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader.begin();
         for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
-            pPoseData[i].m0_translation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], r13->m14_trackData[0], r13->m0_tracksLength[0]);
-            pPoseData[i].m0_translation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], r13->m14_trackData[1], r13->m0_tracksLength[1]);
-            pPoseData[i].m0_translation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], r13->m14_trackData[2], r13->m0_tracksLength[2]);
+            pPoseData[i].m0_translation.m0_X = stepAnimationTrack(pPoseData[i].m48[0], r13->m14_trackData[0], r13->m0_tracksLength[0]);
+            pPoseData[i].m0_translation.m4_Y = stepAnimationTrack(pPoseData[i].m48[1], r13->m14_trackData[1], r13->m0_tracksLength[1]);
+            pPoseData[i].m0_translation.m8_Z = stepAnimationTrack(pPoseData[i].m48[2], r13->m14_trackData[2], r13->m0_tracksLength[2]);
             r13++;
         }
     }
@@ -352,9 +352,9 @@ void modelMode5_position1(s_3dModel* p3dModel)
         for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
             const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
-            pPoseData[i].m24_halfTranslation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]) / 4;
-            pPoseData[i].m24_halfTranslation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]) / 4;
-            pPoseData[i].m24_halfTranslation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], r13.m14_trackData[2], r13.m0_tracksLength[2]) / 4;
+            pPoseData[i].m24_halfTranslation.m0_X = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]) / 4;
+            pPoseData[i].m24_halfTranslation.m4_Y = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]) / 4;
+            pPoseData[i].m24_halfTranslation.m8_Z = stepAnimationTrack(pPoseData[i].m48[2], r13.m14_trackData[2], r13.m0_tracksLength[2]) / 4;
         }
     }
 }
@@ -383,9 +383,9 @@ void modelMode5_rotation(s_3dModel* p3dModel)
             std::vector<sAnimationData::sTrackHeader>::const_iterator r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader.begin();
             for (int i = 0; i < p3dModel->m12_numBones; i++)
             {
-                pPoseData[i].mC_rotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], r13->m14_trackData[3], r13->m0_tracksLength[3]) * 4096;
-                pPoseData[i].mC_rotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], r13->m14_trackData[4], r13->m0_tracksLength[4]) * 4096;
-                pPoseData[i].mC_rotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], r13->m14_trackData[5], r13->m0_tracksLength[5]) * 4096;
+                pPoseData[i].mC_rotation.m0_X = stepAnimationTrack(pPoseData[i].m48[3], r13->m14_trackData[3], r13->m0_tracksLength[3]) * 4096;
+                pPoseData[i].mC_rotation.m4_Y = stepAnimationTrack(pPoseData[i].m48[4], r13->m14_trackData[4], r13->m0_tracksLength[4]) * 4096;
+                pPoseData[i].mC_rotation.m8_Z = stepAnimationTrack(pPoseData[i].m48[5], r13->m14_trackData[5], r13->m0_tracksLength[5]) * 4096;
                 r13++;
             }
         }
@@ -395,9 +395,9 @@ void modelMode5_rotation(s_3dModel* p3dModel)
             std::vector<sAnimationData::sTrackHeader>::const_iterator r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader.begin();
             for (int i = 0; i < p3dModel->m12_numBones; i++)
             {
-                pPoseData[i].m30_halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], r13->m14_trackData[3], r13->m0_tracksLength[3]) * 1024;
-                pPoseData[i].m30_halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], r13->m14_trackData[4], r13->m0_tracksLength[4]) * 1024;
-                pPoseData[i].m30_halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], r13->m14_trackData[5], r13->m0_tracksLength[5]) * 1024;
+                pPoseData[i].m30_halfRotation.m0_X = stepAnimationTrack(pPoseData[i].m48[3], r13->m14_trackData[3], r13->m0_tracksLength[3]) * 1024;
+                pPoseData[i].m30_halfRotation.m4_Y = stepAnimationTrack(pPoseData[i].m48[4], r13->m14_trackData[4], r13->m0_tracksLength[4]) * 1024;
+                pPoseData[i].m30_halfRotation.m8_Z = stepAnimationTrack(pPoseData[i].m48[5], r13->m14_trackData[5], r13->m0_tracksLength[5]) * 1024;
                 r13++;
             }
         }
@@ -597,9 +597,9 @@ void modelMode4_position1(s_3dModel* p3dModel)
             assert(pPoseData[i].m48[2].currentStep == 0);
 
             const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
-            pPoseData[i].m0_translation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]);
-            pPoseData[i].m0_translation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]);
-            pPoseData[i].m0_translation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], r13.m14_trackData[2], r13.m0_tracksLength[2]);
+            pPoseData[i].m0_translation.m0_X = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]);
+            pPoseData[i].m0_translation.m4_Y = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]);
+            pPoseData[i].m0_translation.m8_Z = stepAnimationTrack(pPoseData[i].m48[2], r13.m14_trackData[2], r13.m0_tracksLength[2]);
         }
     }
 
@@ -608,9 +608,9 @@ void modelMode4_position1(s_3dModel* p3dModel)
         for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
             const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
-            pPoseData[i].m24_halfTranslation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]) / 2;
-            pPoseData[i].m24_halfTranslation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]) / 2;
-            pPoseData[i].m24_halfTranslation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[2], r13.m14_trackData[2], r13.m0_tracksLength[2]) / 2;
+            pPoseData[i].m24_halfTranslation.m0_X = stepAnimationTrack(pPoseData[i].m48[0], r13.m14_trackData[0], r13.m0_tracksLength[0]) / 2;
+            pPoseData[i].m24_halfTranslation.m4_Y = stepAnimationTrack(pPoseData[i].m48[1], r13.m14_trackData[1], r13.m0_tracksLength[1]) / 2;
+            pPoseData[i].m24_halfTranslation.m8_Z = stepAnimationTrack(pPoseData[i].m48[2], r13.m14_trackData[2], r13.m0_tracksLength[2]) / 2;
         }
     }
 }
@@ -643,9 +643,9 @@ void modelMode4_rotation(s_3dModel* p3dModel)
             assert(pPoseData[i].m48[5].currentStep == 0);
 
             const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
-            pPoseData[i].mC_rotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], r13.m14_trackData[3], r13.m0_tracksLength[3]) * 0x1000;
-            pPoseData[i].mC_rotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], r13.m14_trackData[4], r13.m0_tracksLength[4]) * 0x1000;
-            pPoseData[i].mC_rotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], r13.m14_trackData[5], r13.m0_tracksLength[5]) * 0x1000;
+            pPoseData[i].mC_rotation.m0_X = stepAnimationTrack(pPoseData[i].m48[3], r13.m14_trackData[3], r13.m0_tracksLength[3]) * 0x1000;
+            pPoseData[i].mC_rotation.m4_Y = stepAnimationTrack(pPoseData[i].m48[4], r13.m14_trackData[4], r13.m0_tracksLength[4]) * 0x1000;
+            pPoseData[i].mC_rotation.m8_Z = stepAnimationTrack(pPoseData[i].m48[5], r13.m14_trackData[5], r13.m0_tracksLength[5]) * 0x1000;
         }
     }
 
@@ -654,9 +654,9 @@ void modelMode4_rotation(s_3dModel* p3dModel)
         for (int i = 0; i < p3dModel->m12_numBones; i++)
         {
             const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
-            pPoseData[i].m30_halfRotation.m_value[0] = stepAnimationTrack(pPoseData[i].m48[3], r13.m14_trackData[3], r13.m0_tracksLength[3]) * (0x1000 / 2);
-            pPoseData[i].m30_halfRotation.m_value[1] = stepAnimationTrack(pPoseData[i].m48[4], r13.m14_trackData[4], r13.m0_tracksLength[4]) * (0x1000 / 2);
-            pPoseData[i].m30_halfRotation.m_value[2] = stepAnimationTrack(pPoseData[i].m48[5], r13.m14_trackData[5], r13.m0_tracksLength[5]) * (0x1000 / 2);
+            pPoseData[i].m30_halfRotation.m0_X = stepAnimationTrack(pPoseData[i].m48[3], r13.m14_trackData[3], r13.m0_tracksLength[3]) * (0x1000 / 2);
+            pPoseData[i].m30_halfRotation.m4_Y = stepAnimationTrack(pPoseData[i].m48[4], r13.m14_trackData[4], r13.m0_tracksLength[4]) * (0x1000 / 2);
+            pPoseData[i].m30_halfRotation.m8_Z = stepAnimationTrack(pPoseData[i].m48[5], r13.m14_trackData[5], r13.m0_tracksLength[5]) * (0x1000 / 2);
         }
     }
 }
@@ -667,9 +667,9 @@ void modelMode0_position(s_3dModel* p3dModel)
     for (int i = 0; i < p3dModel->m12_numBones; i++)
     {
         const sAnimationData::sTrackHeader& r6 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
-        pPoseData[i].m0_translation.m_value[0] = r6.m14_trackData[0][p3dModel->m10_currentAnimationFrame] * 0x10;
-        pPoseData[i].m0_translation.m_value[1] = r6.m14_trackData[1][p3dModel->m10_currentAnimationFrame] * 0x10;
-        pPoseData[i].m0_translation.m_value[2] = r6.m14_trackData[2][p3dModel->m10_currentAnimationFrame] * 0x10;
+        pPoseData[i].m0_translation.m0_X = r6.m14_trackData[0][p3dModel->m10_currentAnimationFrame] * 0x10;
+        pPoseData[i].m0_translation.m4_Y = r6.m14_trackData[1][p3dModel->m10_currentAnimationFrame] * 0x10;
+        pPoseData[i].m0_translation.m8_Z = r6.m14_trackData[2][p3dModel->m10_currentAnimationFrame] * 0x10;
     }
 }
 
@@ -679,9 +679,9 @@ void modelMode0_rotation(s_3dModel* p3dModel)
     for (int i = 0; i < p3dModel->m12_numBones; i++)
     {
         const sAnimationData::sTrackHeader& r6 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
-        pPoseData[i].mC_rotation.m_value[0] = r6.m14_trackData[3][p3dModel->m10_currentAnimationFrame] * 0x10000;
-        pPoseData[i].mC_rotation.m_value[1] = r6.m14_trackData[4][p3dModel->m10_currentAnimationFrame] * 0x10000;
-        pPoseData[i].mC_rotation.m_value[2] = r6.m14_trackData[5][p3dModel->m10_currentAnimationFrame] * 0x10000;
+        pPoseData[i].mC_rotation.m0_X = r6.m14_trackData[3][p3dModel->m10_currentAnimationFrame] * 0x10000;
+        pPoseData[i].mC_rotation.m4_Y = r6.m14_trackData[4][p3dModel->m10_currentAnimationFrame] * 0x10000;
+        pPoseData[i].mC_rotation.m8_Z = r6.m14_trackData[5][p3dModel->m10_currentAnimationFrame] * 0x10000;
     }
 }
 

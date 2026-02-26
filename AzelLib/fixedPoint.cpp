@@ -176,9 +176,9 @@ void Imgui_FP_Angle(const char* label, fixedPoint* pFP)
 void Imgui_Vec3FP(sVec3_FP* pVector)
 {
     ImGui::PushItemWidth(100);
-    Imgui_FP("x", &pVector->m_value[0]); ImGui::SameLine();
-    Imgui_FP("y", &pVector->m_value[1]); ImGui::SameLine();
-    Imgui_FP("z", &pVector->m_value[2]);
+    Imgui_FP("x", &pVector->m0_X); ImGui::SameLine();
+    Imgui_FP("y", &pVector->m4_Y); ImGui::SameLine();
+    Imgui_FP("z", &pVector->m8_Z);
     ImGui::PopItemWidth();
 }
 

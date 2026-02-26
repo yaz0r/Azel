@@ -272,9 +272,9 @@ void translateMatrix(const sVec3_FP* translation, sMatrix4x3* pMatrix)
     for(int i=0; i<3; i++)
     {
         s64 mac = 0;
-        mac += MUL_FP(translation->m_value[0], pMatrix->matrix[i * 4 + 0]);
-        mac += MUL_FP(translation->m_value[1], pMatrix->matrix[i * 4 + 1]);
-        mac += MUL_FP(translation->m_value[2], pMatrix->matrix[i * 4 + 2]);
+        mac += MUL_FP(translation->m0_X, pMatrix->matrix[i * 4 + 0]);
+        mac += MUL_FP(translation->m4_Y, pMatrix->matrix[i * 4 + 1]);
+        mac += MUL_FP(translation->m8_Z, pMatrix->matrix[i * 4 + 2]);
         pMatrix->matrix[i * 4 + 3] += mac >> 16;
     }
 }

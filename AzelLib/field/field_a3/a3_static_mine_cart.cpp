@@ -132,11 +132,11 @@ void A3_3_Obj0_Update0(s_A3_3_Obj0* pThis)
     case 0: // standing still
         break;
     case 1: // falling
-        pThis->m18.m_value[0] += pThis->m24.m_value[0];
-        pThis->m18.m_value[2] += pThis->m24.m_value[2];
+        pThis->m18.m0_X += pThis->m24.m0_X;
+        pThis->m18.m8_Z += pThis->m24.m8_Z;
 
-        pThis->mC_position.m_value[0] += pThis->m18.m_value[0];
-        pThis->mC_position.m_value[2] += pThis->m18.m_value[2];
+        pThis->mC_position.m0_X += pThis->m18.m0_X;
+        pThis->mC_position.m8_Z += pThis->m18.m8_Z;
 
         if (pThis->m38_currentDelay >= pThis->m36_delay)
         {
@@ -144,7 +144,7 @@ void A3_3_Obj0_Update0(s_A3_3_Obj0* pThis)
             pThis->m18[0] = -pThis->m18[0];
             pThis->m18[2] = pThis->m18[2] / 2;
 
-            pThis->m24.m_value[1] = -327;
+            pThis->m24.m4_Y = -327;
             pThis->m18[1] = 0x1800;
 
             pThis->m38_currentDelay = 0;

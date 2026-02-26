@@ -228,9 +228,9 @@ struct sfieldA3_0_createExitTask : public s_workAreaTemplate<sfieldA3_0_createEx
         for (s32 r12 = 7; r12 >= 0; r12--)
         {
             fixedPoint rotation = readSaturnFP({ 0x6081E64 + 4 * r12, gFLD_A3 });
-            pThis->m1A0_rotation[r12].m_value[0] = getSin(rotation.getInteger() & 0xFFF) >> 4;
-            pThis->m1A0_rotation[r12].m_value[1] = 0;
-            pThis->m1A0_rotation[r12].m_value[2] = getCos(rotation.getInteger() & 0xFFF) >> 4;
+            pThis->m1A0_rotation[r12].m0_X = getSin(rotation.getInteger() & 0xFFF) >> 4;
+            pThis->m1A0_rotation[r12].m4_Y = 0;
+            pThis->m1A0_rotation[r12].m8_Z = getCos(rotation.getInteger() & 0xFFF) >> 4;
 
             fieldA3_0_exitPosition[r12] = readSaturnVec3({ 0x6081DA4 + 4 * 3 * r12, gFLD_A3 });
 

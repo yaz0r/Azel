@@ -4116,15 +4116,15 @@ void startScriptLeaveArea()
 
 void dragonFieldTaskInitSub4Sub5(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13)
 {
-    r14->m30 = r13->m_value[0];
-    r14->m34 = r13->m_value[1];
-    r14->m38 = r13->m_value[2];
+    r14->m30 = r13->m0_X;
+    r14->m34 = r13->m4_Y;
+    r14->m38 = r13->m8_Z;
     r14->m3C = 1;
 
     initMatrixToIdentity(&r14->m0_matrix);
-    rotateMatrixShiftedY(r13->m_value[1], &r14->m0_matrix);
-    rotateMatrixShiftedX(r13->m_value[0], &r14->m0_matrix);
-    rotateMatrixShiftedZ(r13->m_value[2], &r14->m0_matrix);
+    rotateMatrixShiftedY(r13->m4_Y, &r14->m0_matrix);
+    rotateMatrixShiftedX(r13->m0_X, &r14->m0_matrix);
+    rotateMatrixShiftedZ(r13->m8_Z, &r14->m0_matrix);
 }
 
 void computeDragonDeltaTranslation(s_dragonTaskWorkArea* r14)

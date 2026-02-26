@@ -50,27 +50,33 @@ struct sVec3_FP
     {
     }
 
-    union
-    {
-        struct { fixedPoint m0_X, m4_Y, m8_Z; };
-        fixedPoint m_value[3];
-    };
+    fixedPoint m0_X, m4_Y, m8_Z;
 
     void zeroize()
     {
-        m_value[0] = 0;
-        m_value[1] = 0;
-        m_value[2] = 0;
+        m0_X = 0;
+        m4_Y = 0;
+        m8_Z = 0;
     }
 
     fixedPoint operator[](int i) const
     {
-        return m_value[i];
+        switch (i)
+        {
+            case 0:  return m0_X;
+            case 1:  return m4_Y;
+            default: return m8_Z;
+        }
     }
 
     fixedPoint& operator[](int i)
     {
-        return m_value[i];
+        switch (i)
+        {
+            case 0:  return m0_X;
+            case 1:  return m4_Y;
+            default: return m8_Z;
+        }
     }
 
     bool operator==(const sVec3_FP otherVec) const
@@ -81,9 +87,9 @@ struct sVec3_FP
     sVec3_FP operator-() const
     {
         sVec3_FP result;
-        result[0] = -m_value[0];
-        result[1] = -m_value[1];
-        result[2] = -m_value[2];
+        result.m0_X = -m0_X;
+        result.m4_Y = -m4_Y;
+        result.m8_Z = -m8_Z;
 
         return result;
 
@@ -92,36 +98,36 @@ struct sVec3_FP
     sVec3_FP operator-(sVec3_FP otherVec) const
     {
         sVec3_FP result;
-        result[0] = m_value[0] - otherVec[0];
-        result[1] = m_value[1] - otherVec[1];
-        result[2] = m_value[2] - otherVec[2];
+        result.m0_X = m0_X - otherVec.m0_X;
+        result.m4_Y = m4_Y - otherVec.m4_Y;
+        result.m8_Z = m8_Z - otherVec.m8_Z;
 
         return result;
     }
 
     sVec3_FP& operator+=(const sVec3_FP otherVec)
     {
-        m_value[0] += otherVec[0];
-        m_value[1] += otherVec[1];
-        m_value[2] += otherVec[2];
+        m0_X += otherVec.m0_X;
+        m4_Y += otherVec.m4_Y;
+        m8_Z += otherVec.m8_Z;
 
         return *this;
     }
 
     sVec3_FP& operator-=(const sVec3_FP otherVec)
     {
-        m_value[0] -= otherVec[0];
-        m_value[1] -= otherVec[1];
-        m_value[2] -= otherVec[2];
+        m0_X -= otherVec.m0_X;
+        m4_Y -= otherVec.m4_Y;
+        m8_Z -= otherVec.m8_Z;
 
         return *this;
     }
 
     sVec3_FP& operator*=(const sVec3_FP otherVec)
     {
-        m_value[0] *= otherVec[0];
-        m_value[1] *= otherVec[1];
-        m_value[2] *= otherVec[2];
+        m0_X *= otherVec.m0_X;
+        m4_Y *= otherVec.m4_Y;
+        m8_Z *= otherVec.m8_Z;
 
         return *this;
     }
@@ -161,18 +167,18 @@ struct sVec3_FP
     sVec3_FP operator >> (const int amount) const
     {
         sVec3_FP newValue = *this;
-        newValue[0].m_value >>= amount;
-        newValue[1].m_value >>= amount;
-        newValue[2].m_value >>= amount;
+        newValue.m0_X.m_value >>= amount;
+        newValue.m4_Y.m_value >>= amount;
+        newValue.m8_Z.m_value >>= amount;
         return newValue;
     }
 
     sVec3_FP normalized() const
     {
         sVec3_FP newValue;
-        newValue[0] = m_value[0].normalized();
-        newValue[1] = m_value[1].normalized();
-        newValue[2] = m_value[2].normalized();
+        newValue.m0_X = m0_X.normalized();
+        newValue.m4_Y = m4_Y.normalized();
+        newValue.m8_Z = m8_Z.normalized();
         return newValue;
     }
 };

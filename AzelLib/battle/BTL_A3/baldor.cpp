@@ -335,7 +335,7 @@ void Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormationEntry)
             sBaldor_68_30& dest = pThis->m68->m30[i];
 
             dest.m10_translation = readSaturnVec3(pDataSource + 0xC * i);
-            dest.m1C[1] = MTH_Mul(0x1c71c71, (randomNumber() & 0x1ffff) - 0xffff) + pThis->m28_rotation.m4_target->m_value[1];
+            dest.m1C[1] = MTH_Mul(0x1c71c71, (randomNumber() & 0x1ffff) - 0xffff) + pThis->m28_rotation.m4_target->m4_Y;
             dest.m1C[0] = MTH_Mul(0x1c71c71, (randomNumber() & 0x1ffff) - 0xffff);
             dest.m1C[2] = MTH_Mul(0x1c71c71, (randomNumber() & 0x1ffff) - 0xffff);
         }
