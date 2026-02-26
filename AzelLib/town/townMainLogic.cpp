@@ -550,9 +550,9 @@ void cameraFollowMode3Sub(sMainLogic* pThis) {
     scaleMatrixRow2(scale, &auStack_40);
 
     sVec3_FP local_58;
-    local_58[0] = auStack_40[2] + (pThis->m18_position)[0];
-    local_58[1] = auStack_40[6] + (pThis->m18_position)[1];
-    local_58[2] = auStack_40[10] + (pThis->m18_position)[2];
+    local_58.m0_X = auStack_40[2] + (pThis->m18_position).m0_X;
+    local_58.m4_Y = auStack_40[6] + (pThis->m18_position).m4_Y;
+    local_58.m8_Z = auStack_40[10] + (pThis->m18_position).m8_Z;
     cameraFollowMode3SubSub(pThis, &local_58);
 }
 
@@ -562,7 +562,7 @@ void cameraFollowMode3(sMainLogic* pThis) {
 
     cameraFollowMode3Sub(pThis);
 
-    sVec3_FP delta = pThis->m18_position - pThis->m5C_rawCameraPosition;
+    sVec3_FP delta = pThis->m44_cameraTarget - pThis->m5C_rawCameraPosition;
     pThis->m24_distance = sqrt_F(MTH_Product3d_FP(delta, delta));
 
     computeVectorAngles(delta, pThis->m68_cameraRotation);
@@ -571,7 +571,7 @@ void cameraFollowMode3(sMainLogic* pThis) {
 
     {
         fixedPoint temp1 = (pThis->m68_cameraRotation[0] - pThis->mF0[0]) & 0xfffffff;
-        fixedPoint temp2 = (pThis->mF8[0] - pThis->m68_cameraRotation[2]) & 0xfffffff;
+        fixedPoint temp2 = (pThis->mF8[0] - pThis->mF0[0]) & 0xfffffff;
 
         if (temp2 < temp1) {
             isFlipped = true;
@@ -601,18 +601,18 @@ void cameraFollowMode3(sMainLogic* pThis) {
                 temp3 = (pThis->m10C)[1];
             }
 
-            fixedPoint temp5 = MTH_Mul(delta[0], -(pThis->m100)[2]);
-            fixedPoint temp6 = MTH_Mul(delta[2], (pThis->m100)[0]);
+            fixedPoint temp5 = MTH_Mul(delta[0], -(pThis->m100_deltaPosition)[2]);
+            fixedPoint temp6 = MTH_Mul(delta[2], (pThis->m100_deltaPosition)[0]);
             if (temp5 + temp6 < 0) {
                 fixedPoint sum = temp3 + temp4;
                 int angle = sum.getInteger();
                 fixedPoint temp7 = FP_Div(getSin(angle), getCos(angle));
                 temp7 = MTH_Mul(temp5 + temp6, temp7);
-                fixedPoint iVar2 = MTH_Mul(delta[0], (pThis->m100)[0]);
-                fixedPoint iVar3 = MTH_Mul(delta[2], (pThis->m100)[2]);
+                fixedPoint iVar2 = MTH_Mul(delta[0], (pThis->m100_deltaPosition)[0]);
+                fixedPoint iVar3 = MTH_Mul(delta[2], (pThis->m100_deltaPosition)[2]);
                 (pThis->m10C)[0] = (pThis->m10C)[0] + ((iVar2 + iVar3) - temp7);
-                temp7 = FP_Pow2((pThis->m100)[0]);
-                iVar2 = FP_Pow2((pThis->m100)[2]);
+                temp7 = FP_Pow2((pThis->m100_deltaPosition)[0]);
+                iVar2 = FP_Pow2((pThis->m100_deltaPosition)[2]);
                 if (temp7 + iVar2 < (pThis->m10C)[0]) {
                     (pThis->m10C)[0] = temp7 + iVar2;
                 }
@@ -624,18 +624,12 @@ void cameraFollowMode3(sMainLogic* pThis) {
         }
     }
 
-    fixedPoint temp7 = FP_Pow2((pThis->m100)[0]);
-    fixedPoint iVar2 = FP_Pow2((pThis->m100)[2]);
+    fixedPoint temp7 = FP_Pow2((pThis->m100_deltaPosition)[0]);
+    fixedPoint iVar2 = FP_Pow2((pThis->m100_deltaPosition)[2]);
     temp7 = FP_Div((pThis->m10C)[0], temp7 + iVar2);
-    iVar2 = MTH_Mul((pThis->m100)[0], temp7);
-    (pThis->m5C_rawCameraPosition)[0] = iVar2 + (pThis->mE4)[0];
-    iVar2 = MTH_Mul((pThis->m100)[1], temp7);
-    (pThis->m5C_rawCameraPosition)[1] = iVar2 + (pThis->mE4)[1];
-    temp7 = MTH_Mul((pThis->m100)[2], temp7);
-    (pThis->m5C_rawCameraPosition)[2] = temp7 + (pThis->mE4)[2];
-    (pThis->m38_interpolatedCameraPosition)[0] = (pThis->m5C_rawCameraPosition)[0];
-    (pThis->m38_interpolatedCameraPosition)[1] = (pThis->m5C_rawCameraPosition)[1];
-    (pThis->m38_interpolatedCameraPosition)[2] = (pThis->m5C_rawCameraPosition)[2];
+
+    pThis->m5C_rawCameraPosition = MTH_Mul(pThis->m100_deltaPosition, temp7) + pThis->mE4_fixedPosition;
+    pThis->m38_interpolatedCameraPosition = pThis->m5C_rawCameraPosition;
 
     if (isFlipped) {
         sMatrix4x3 auStack_5c;

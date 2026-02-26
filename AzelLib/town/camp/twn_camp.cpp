@@ -91,20 +91,20 @@ int scriptFunction_606c70c(sSaturnPtr arg) {
         assert(0);
     }
     else {
-        twnMainLogicTask->mE4 = vector1;
-        twnMainLogicTask->m100 = vector2 - vector1;
+        twnMainLogicTask->mE4_fixedPosition = vector1;
+        twnMainLogicTask->m100_deltaPosition = vector2 - vector1;
         twnMainLogicTask->mF8[0] = readSaturnFP(arg + 4 * 6);
         twnMainLogicTask->mF0[0] = readSaturnFP(arg + 4 * 7);
         twnMainLogicTask->m10C[0] = 0;
         twnMainLogicTask->m10C[1] = readSaturnFP(arg + 4 * 8);
         twnMainLogicTask->m10C[2] = readSaturnFP(arg + 4 * 9);
 
-        fixedPoint temp = twnMainLogicTask->m10C[2] + atan2_FP(-twnMainLogicTask->m100[2], twnMainLogicTask->m100[0]);
+        fixedPoint temp = twnMainLogicTask->m10C[2] + atan2_FP(-twnMainLogicTask->m100_deltaPosition[2], twnMainLogicTask->m100_deltaPosition[0]);
         twnMainLogicTask->mF0[1] = temp - twnMainLogicTask->m10C[1];
         twnMainLogicTask->mF8[1] = temp + twnMainLogicTask->m10C[1];
 
         twnMainLogicTask->m44_cameraTarget = twnMainLogicTask->m14_EdgeTask->mE8.m0_position;
-        twnMainLogicTask->m5C_rawCameraPosition = twnMainLogicTask->mE4;
+        twnMainLogicTask->m5C_rawCameraPosition = twnMainLogicTask->mE4_fixedPosition;
 
         twnMainLogicTask->m2_cameraFollowMode = 3;
 
