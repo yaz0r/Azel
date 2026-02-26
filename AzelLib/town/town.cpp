@@ -689,13 +689,9 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
 s32 isDataLoaded(s32 fileIndex)
 {
     npcFileDeleter* r4 = dramAllocatorEnd[fileIndex].mC_fileBundle;
-    if (r4 == nullptr)
-        return 1;
-    if (r4->m8 >= 0)
+    if ((r4 != 0) && ((-1 < r4->m8 || (-1 < r4->mA)))) {
         return 0;
-    if (r4->mA >= 0)
-        return 0;
-
+    }
     return 1;
 }
 

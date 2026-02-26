@@ -18,38 +18,7 @@
 void unloadFnt(); // TODO: fix
 int scriptFunction_60541c4(int arg);
 void setupCameraUpdateForCurrentMode(); // todo clean
-
-struct sCampEntity0 : public s_workAreaTemplateWithArgWithCopy<sCampEntity0, sSaturnPtr>, sTownObject
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &sCampEntity0::Init, &sCampEntity0::Update, nullptr, nullptr };
-        return &taskDefinition;
-    }
-
-    static void Init(sCampEntity0* pThis, sSaturnPtr arg)
-    {
-        pThis->m10 = arg;
-        pThis->m14_position = readSaturnVec3(arg + 8);
-        pThis->m20_rotation = readSaturnVec3(arg + 0x14);
-        pThis->mD = (bool)(mainGameState.getBit(8));
-    }
-
-    static void Update(sCampEntity0* pThis)
-    {
-        Unimplemented();
-    }
-
-    bool mD;
-    sSaturnPtr m10;
-    sVec3_FP m14_position;
-    sVec3_FP m20_rotation;
-    //size: 0xE0
-};
-
-sTownObject* createCampEntity(s_workAreaCopy* parent, sSaturnPtr arg) {
-    return createSubTaskWithArgWithCopy<sCampEntity0, sSaturnPtr>(parent, arg);
-}
+sTownObject* createCampEntity(s_workAreaCopy* parent, sSaturnPtr arg); //todo: clean
 
 int scriptFunction_606cb54() {
     if (twnMainLogicTask->m14_EdgeTask) {
@@ -247,6 +216,76 @@ static const char* listOfFilesToLoad[] = {
     "X_A_AZ.CGB",
     nullptr
 };
+
+
+struct sCampEntity0 : public s_workAreaTemplateWithArgWithCopy<sCampEntity0, sSaturnPtr>, sTownObject
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sCampEntity0::Init, &sCampEntity0::Update, nullptr, nullptr };
+        return &taskDefinition;
+    }
+
+    static void Init(sCampEntity0* pThis, sSaturnPtr arg)
+    {
+        pThis->m10 = arg;
+        pThis->m14_position = readSaturnVec3(arg + 8);
+        pThis->m20_rotation = readSaturnVec3(arg + 0x14);
+        pThis->mD = (bool)(mainGameState.getBit(8));
+    }
+
+    static void Update(sCampEntity0* pThis)
+    {
+        if (isDataLoaded(readSaturnS32(pThis->m10))) {
+            sModelHierarchy* pHierarchy = pThis->m0_fileBundle->getModelHierarchy(4);
+            sStaticPoseData* pStaticPose = pThis->m0_fileBundle->getStaticPose(0x438, pHierarchy->countNumberOfBones());
+
+            init3DModelRawData(pThis, &pThis->m2C_model, 0, pThis->m0_fileBundle, 4, pThis->m0_fileBundle->getAnimation(0x488), pStaticPose, nullptr, nullptr);
+
+            pThis->m7C_scriptContext.m30_pPosition = &pThis->m14_position;
+            pThis->m7C_scriptContext.m34_pRotation = &pThis->m20_rotation;
+            pThis->m7C_scriptContext.m38_pOwner = pThis;
+            pThis->m7C_scriptContext.m3C_scriptEA = readSaturnEA(pThis->m10 + 0x20);
+            pThis->m7C_scriptContext.m40 = 0;
+            mainLogicInitSub0(&pThis->m7C_scriptContext, 4);
+            mainLogicInitSub1(&pThis->m7C_scriptContext, readSaturnVec3(gTWN_CAMP->getSaturnPtr(0x607b2ac)), readSaturnVec3(gTWN_CAMP->getSaturnPtr(0x607b2b8)));
+
+            pThis->m_UpdateMethod = Update2;
+            pThis->m_DrawMethod = Draw2;
+        }
+    }
+
+    static void Update2(sCampEntity0* pThis) { assert(0); }
+    static void Draw2(sCampEntity0* pThis) {
+        pushCurrentMatrix();
+        translateCurrentMatrix(pThis->m14_position);
+        rotateCurrentMatrixZYX(pThis->m20_rotation);
+        if (pThis->mD == 0) {
+            addObjectToDrawList(pThis->mF8);
+        }
+        else {
+            addObjectToDrawList(pThis->mF4);
+            pThis->m2C_model.m18_drawFunction(&pThis->m2C_model);
+        }
+
+        popMatrix();
+    }
+
+    bool mD;
+    sSaturnPtr m10;
+    sVec3_FP m14_position;
+    sVec3_FP m20_rotation;
+    s_3dModel m2C_model;
+    sMainLogic_74 m7C_scriptContext;
+    sProcessed3dModel* mF4;
+    sProcessed3dModel* mF8;
+    //size: 0xE0
+};
+
+sTownObject* createCampEntity(s_workAreaCopy* parent, sSaturnPtr arg) {
+    return createSubTaskWithArgWithCopy<sCampEntity0, sSaturnPtr>(parent, arg);
+}
+
 
 void townOverlayDelete_TwnCamp(townDebugTask2Function* pThis)
 {
