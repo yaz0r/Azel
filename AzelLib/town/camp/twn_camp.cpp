@@ -141,7 +141,11 @@ struct TWN_CAMP_data : public sTownOverlay
         overlayScriptFunctions.m_fourArg[0x60704c4] = &setNpcLocation;
         overlayScriptFunctions.m_fourArg[0x60704f2] = &setNpcOrientation;
 
-        mTownSetups.push_back(readTownSetup(getSaturnPtr(0x6074068), 1));
+        for (int i = 0; i < 8; i++) {
+            sSaturnPtr ptrBase = getSaturnPtr(0x6074068) + 0xC * i;
+            mTownSetups.push_back(readTownSetup(ptrBase, 15));
+        }
+        
     }
 
     sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override

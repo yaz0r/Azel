@@ -105,7 +105,7 @@ void registerNpcs(const std::vector<const sTownSetup*>& townSetups, sSaturnPtr r
     npcData0.m104_currentScript.m4 = 0;
     npcData0.m104_currentScript.m8_owner.reset();
 
-    npcData0.m116 = r6;
+    npcData0.m118_currentResult = r6;
 
     npcData0.mF0 = 0;
     npcData0.mF4 = 0;

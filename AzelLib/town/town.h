@@ -190,7 +190,6 @@ struct sNpcData
     s32 mFC; // 0x10: LCS Active
     s32 m100;
     sRunningScriptContext m104_currentScript;
-    s32 m116;
     s32 m118_currentResult;
     std::array<sSaturnPtr, 0x10>::iterator m11C_currentStackPointer;
     std::array<sSaturnPtr, 0x10> m120_stack;
