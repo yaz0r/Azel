@@ -34,7 +34,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
         pauseEngine[2] = 0;
         if ((graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0xE) && (pThis->m10[pThis->m0_currentSelectedTown]))
         {
-            loadTownPrg(pThis->m0_currentSelectedTown, pThis->m4);
+            loadTownPrg(pThis->m0_currentSelectedTown, pThis->m4_columnIndex);
             pThis->getTask()->markFinished();
             return;
         }
@@ -62,7 +62,17 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
             }
             break;
         case 1:
-            assert(0);
+            if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.mC_newButtonDown2 & 0x10) {
+                if (--pThis->m4_columnIndex < 0) {
+                    pThis->m4_columnIndex = pThis->m8 - 1;
+                }
+            }
+            else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20) {
+                if (++pThis->m4_columnIndex > pThis->m8 - 1) {
+                    pThis->m4_columnIndex = 0;
+                }
+            }
+            break;
         default:
             break;
         }
@@ -93,7 +103,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
             {
                 if (pThis->m0_currentSelectedTown == i)
                 {
-                    pThis->DrawSubTowns();
+                    pThis->DrawSubTowns(pThis);
                     vdp2PrintStatus.m10_palette = 0x8000;
                 }
                 else
@@ -116,19 +126,39 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
             break;
         case 1:
         {
-            fixedPoint var0 = performDivision(20, pThis->m4);
-            vdp2DebugPrintSetPosition(15 + 14 * var0, (var0 * 20) - pThis->m4 + 4);
+            fixedPoint div = performDivision(20, pThis->m4_columnIndex);
+            fixedPoint x = 15 + 14 * div;
+            fixedPoint y = pThis->m4_columnIndex + div * -0x14 + 4;
+            vdp2DebugPrintSetPosition(x, y);
             vdp2DebugPrintNewLine("\x7F");
             break;
         }
         default:
+            vdp2PrintStatus.m10_palette = 0x8000;
             break;
         }
     }
 
-    void DrawSubTowns()
+    void DrawSubTowns(townDebugSelect* pThis)
     {
-        Unimplemented();
+        sSaturnPtr subTownData = readSaturnEA(gCommonFile->getSaturnPtr(0x2165dc + pThis->m0_currentSelectedTown * 4 * 4));
+        if(!subTownData.isNull())
+        {
+            int i = 0;
+            while (!readSaturnEA(subTownData).isNull()) {
+                auto div = performDivision(0x14, i);
+                vdp2DebugPrintSetPosition(div * 0xe + 0x10, i + div * -0x14 + 4);
+                if (pThis->m4_columnIndex == i) {
+                    vdp2PrintStatus.m10_palette = 0x8000;
+                }
+                else {
+                    vdp2PrintStatus.m10_palette = 0xc000;
+                }
+                vdp2DebugPrintNewLine(readSaturnString(readSaturnEA(subTownData)));
+                i++;
+                subTownData += 4;
+            }
+        }
     }
 
     void CountNumberOfSubTown()
@@ -138,7 +168,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
         if (r6.m_offset == 0)
         {
             m8 = 0;
-            m4 = 0;
+            m4_columnIndex = 0;
             return;
         }
 
@@ -150,7 +180,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
         }
 
         m8 = count;
-        m4 = 0;
+        m4_columnIndex = 0;
     }
 
     void PrepareTownList()
@@ -180,7 +210,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
 
     //size 14
     s32 m0_currentSelectedTown;
-    s32 m4;
+    s32 m4_columnIndex;
     s32 m8;
     s32 mC_isSelectingSubTown;
     std::vector<s8> m10;
