@@ -27,20 +27,20 @@ struct BTL_A3_UrchinFormation : public s_workAreaTemplateWithArg<BTL_A3_UrchinFo
     s8 m1_state;
     s8 m2_subState;
     s8 m3_formationSize;
-    s8 m4;
-    s8 m6;
-    s8 m7;
-    s16 m14;
+    s8 m4_formationPhase;
+    s8 m6_attackFlag;
+    s8 m7_attackMode;
+    s16 m14_timer;
     sBTL_A3_UrchinFormation_18 m18;
     const sGenericFormationData* m30_config;
-    s8 m34;
-    s8 m38;
-    s8 m39;
-    s8 m3A;
-    s8 m3C;
-    p_workArea m40;
-    std::array<s8, 3> m44;
-    std::array<s8, 3> m47; // size unknown, should be formation size
+    s8 m34_attackingTypeIndex;
+    s8 m38_attackOrderReversed;
+    s8 m39_sourceEnemyIndex;
+    s8 m3A_weakestEnemyIndex;
+    s8 m3C_attackTimer;
+    p_workArea m40_pendingTask;
+    std::array<s8, 3> m44_prevSoundEffects;
+    std::array<s8, 3> m47_beamHitHandled; // size unknown, should be formation size
     // size 0x4C
 };
 
@@ -92,7 +92,7 @@ void BTL_A3_UrchinFormation_Init(BTL_A3_UrchinFormation* pThis, const sGenericFo
     int numModelIndex = 0;
     for (int i = 0; i < 3; i++)
     {
-        pThis->m44[i] = -1;
+        pThis->m44_prevSoundEffects[i] = -1;
         sGenericFormationPerTypeData* pEnemyEntry = config->m4_perTypeParams[i];
         if (pEnemyEntry)
         {
@@ -123,16 +123,16 @@ void BTL_A3_UrchinFormation_Init(BTL_A3_UrchinFormation* pThis, const sGenericFo
 
     if (bVar2 && bVar3)
     {
-        pThis->m7 = 2;
+        pThis->m7_attackMode = 2;
     }
-    pThis->m14 = 0x3C;
+    pThis->m14_timer = 0x3C;
     if (pThis->m30_config->m15 == 0)
     {
-        pThis->m38 = 1;
+        pThis->m38_attackOrderReversed = 1;
     }
     else
     {
-        pThis->m38 = 0;
+        pThis->m38_attackOrderReversed = 0;
     }
 
     displayFormationName(config->m15, config->m16, config->m17);
@@ -164,7 +164,7 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub0(BTL_A3_UrchinFormation* pThis)
         pThis->m18.mD[4] = 1;
     }
 
-    if ((pThis->m7 == 2) && battleEngine_UpdateSub7Sub0Sub0())
+    if ((pThis->m7_attackMode == 2) && battleEngine_UpdateSub7Sub0Sub0())
     {
         assert(0);
     }
@@ -183,7 +183,7 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub1(BTL_A3_UrchinFormation* pThis)
         {
             int uVar6 = enemyQuadrantsTable[pThis->m18.mD[0] + pThis->m18.m14[i].m18 & 3][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
 
-            if (((pThis->m18.m14[i].m18 & 8) == 0) && (pThis->m18.m14[i].m18 & 0x20) && (pThis->m47[i] == 0))
+            if (((pThis->m18.m14[i].m18 & 8) == 0) && (pThis->m18.m14[i].m18 & 0x20) && (pThis->m47_beamHitHandled[i] == 0))
             {
                 assert(0);
             }
@@ -204,12 +204,12 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub2(BTL_A3_UrchinFormation* pThis)
 {
     if (pThis->m30_config->m14)
     {
-        pThis->m38 = (pThis->m38 == 0);
+        pThis->m38_attackOrderReversed = (pThis->m38_attackOrderReversed == 0);
     }
 
     for (int i = 0; i < 3; i++)
     {
-        int cVar1 = pThis->m18.m4[enemtyTable1[pThis->m38][i]];
+        int cVar1 = pThis->m18.m4[enemtyTable1[pThis->m38_attackOrderReversed][i]];
         if (pThis->m18.m4[cVar1])
         {
             int uVar6 = enemyQuadrantsTable[pThis->m18.mD[0] + cVar1][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
@@ -224,7 +224,7 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub2(BTL_A3_UrchinFormation* pThis)
                 if (iVar9->m8 != 1)
                 {
                     pThis->m18.m0 = iVar9;
-                    pThis->m34 = cVar1;
+                    pThis->m34_attackingTypeIndex = cVar1;
                     return true;
                 }
             }
@@ -283,10 +283,10 @@ void BTL_A3_UrchinFormation_Update_Mode1Sub6(BTL_A3_UrchinFormation* pThis)
 
 void BTL_A3_UrchinFormation_Update_Mode1Sub3(BTL_A3_UrchinFormation* pThis)
 {
-    pThis->m4++;
-    if (pThis->m30_config->m10_formationSubData[pThis->m4] == nullptr)
+    pThis->m4_formationPhase++;
+    if (pThis->m30_config->m10_formationSubData[pThis->m4_formationPhase] == nullptr)
     {
-        pThis->m4 = 0;
+        pThis->m4_formationPhase = 0;
     }
     assert(0);
 }
@@ -299,19 +299,19 @@ void BTL_A3_UrchinFormation_Update_Mode1Sub4(BTL_A3_UrchinFormation* pThis, sAtt
         pThis->m18.mD[5] &= ~6;
         pThis->m18.mD[5] |= 2;
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
-        pThis->m18.mD[pThis->m34 + 1] &= 3;
+        pThis->m18.mD[pThis->m34_attackingTypeIndex + 1] &= 3;
         break;
     case 4:
         pThis->m18.mD[5] &= ~6;
         pThis->m18.mD[5] |= 4;
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
-        pThis->m18.mD[pThis->m34 + 3] &= 3;
+        pThis->m18.mD[pThis->m34_attackingTypeIndex + 3] &= 3;
         break;
     case 6:
         pThis->m18.mD[5] &= ~6;
         pThis->m18.mD[5] |= 6;
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
-        pThis->m18.mD[pThis->m34 + 2] &= 3;
+        pThis->m18.mD[pThis->m34_attackingTypeIndex + 2] &= 3;
         break;
     default:
         assert(0);
@@ -344,7 +344,7 @@ void BTL_A3_UrchinFormation_Update_Mode1(BTL_A3_UrchinFormation* pThis)
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
 
-    if ((pThis->m7 != 1) && (pThis->m6 == 0) && !BTL_A3_UrchinFormation_Update_Mode1Sub2(pThis))
+    if ((pThis->m7_attackMode != 1) && (pThis->m6_attackFlag == 0) && !BTL_A3_UrchinFormation_Update_Mode1Sub2(pThis))
     {
         return;
     }
@@ -377,7 +377,7 @@ void BTL_A3_UrchinFormation_Update_Mode1(BTL_A3_UrchinFormation* pThis)
                 //BTL_A3_UrchinFormation_Update_Mode1Sub5(pThis->m18.m0);
             }
         }
-        pThis->m6 = 0;
+        pThis->m6_attackFlag = 0;
         return;
     }
 
@@ -402,7 +402,7 @@ void BTL_A3_UrchinFormation_Update_Mode2(BTL_A3_UrchinFormation* pThis)
             pThis->m18.m14[i].m19 &= ~1;
             pThis->m18.m14[i].m19 &= ~2;
         }
-        pThis->m6 = 0;
+        pThis->m6_attackFlag = 0;
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
         if (pThis->m18.m0->m9 & 0x80)
         {
@@ -465,10 +465,10 @@ void BTL_A3_UrchinFormation_Update_Mode2(BTL_A3_UrchinFormation* pThis)
                     ivar9 = i;
                 }
             }
-            pThis->m3A = ivar9;
-            BTL_A3_UrchinFormation_Update_Mode2Sub0(pThis, &pThis->m18.m14[pThis->m39], &pThis->m18.m14[pThis->m3A]);
+            pThis->m3A_weakestEnemyIndex = ivar9;
+            BTL_A3_UrchinFormation_Update_Mode2Sub0(pThis, &pThis->m18.m14[pThis->m39_sourceEnemyIndex], &pThis->m18.m14[pThis->m3A_weakestEnemyIndex]);
             Unimplemented(); //something I don't get yet with the sound index
-            pThis->m3C = 0x3C;
+            pThis->m3C_attackTimer = 0x3C;
             pThis->m2_subState++;
             break;
         }
@@ -499,12 +499,12 @@ bool BTL_A3_UrchinFormation_UpdateSub0(BTL_A3_UrchinFormation* pThis)
 
         for (int i = 0; i < 3; i++)
         {
-            if (pThis->m44[i] != -1)
+            if (pThis->m44_prevSoundEffects[i] != -1)
             {
                 bool bVar4 = false;
                 for (int j = 0; j < 3; j++)
                 {
-                    if (pThis->m44[i] == local_2c[j])
+                    if (pThis->m44_prevSoundEffects[i] == local_2c[j])
                     {
                         bVar4 = true;
                         break;
@@ -513,7 +513,7 @@ bool BTL_A3_UrchinFormation_UpdateSub0(BTL_A3_UrchinFormation* pThis)
 
                 if (!bVar4)
                 {
-                    playBattleSoundEffect(pThis->m44[i]);
+                    playBattleSoundEffect(pThis->m44_prevSoundEffects[i]);
                 }
             }
         }
@@ -567,9 +567,9 @@ void BTL_A3_UrchinFormation_UpdateSub1(BTL_A3_UrchinFormation* pThis)
 
 void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
 {
-    if (pThis->m40 && pThis->m40->getTask()->isFinished())
+    if (pThis->m40_pendingTask && pThis->m40_pendingTask->getTask()->isFinished())
     {
-        pThis->m40 = nullptr;
+        pThis->m40_pendingTask = nullptr;
     }
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
@@ -625,7 +625,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
                 }
                 break;
             case 3:
-                if (pThis->m40 == nullptr)
+                if (pThis->m40_pendingTask == nullptr)
                 {
                     pThis->m2_subState = 0xA;
                 }
@@ -648,8 +648,8 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
                 }
                 else
                 {
-                    pThis->m14--;
-                    if (pThis->m14 < 0)
+                    pThis->m14_timer--;
+                    if (pThis->m14_timer < 0)
                     {
                         pThis->getTask()->markFinished();
                     }
