@@ -42,7 +42,7 @@ struct sUrchin : public s_workAreaTemplateWithArgWithCopy<sUrchin, sGenericForma
     std::vector<sVec3_FP> mC4_position;
     p_workArea mC8;
     sGenericFormationPerTypeData* mCC;
-    sBTL_A3_UrchinFormation_18* mD0;
+    sSharedFormationState* mD0;
     p_workArea mD4;
     p_workArea mD8;
     //size 0xDC
@@ -101,7 +101,7 @@ void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)
     init3DModelRawData(pThis, &pThis->m5C_model, 0, pThis->m0_fileBundle, pConfig->m8_modelOffset, nullptr, pStaticPose, nullptr, pConfig->mC_hotspotDefinitions);
     Baldor_initSub0Sub1(pThis, &pThis->m5C_model, &pThis->mB6_numTargetables, pThis->mC0_targetable, pThis->mC4_position);
     updateUrchinAnimationSequence(pThis, pConfig->m1C[0].m1C_animationOffset, 0, 1, 1);
-    pThis->mC8 = createEnemyLifeMeterTask(&pThis->m8, 0, &pThis->mB4, pConfig->m0);
+    pThis->mC8 = createEnemyLifeMeterTask(&pThis->m8, 0, &pThis->mB4, pConfig->m0_enemyTypeId);
 
     if (!pConfig->m1C[0].m0.isNull())
     {
@@ -174,7 +174,7 @@ void urchinUpdateSub0(sUrchin* pThis)
                     pThis->mC0_targetable[i].m50_flags &= ~0x100000;
                 }
                 pThis->mB0_flags &= ~0x10;
-                pThis->mD0->m14[pThis->mAE].m18 |= 0x20;
+                pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 0x20;
             }
         }
     }
@@ -221,9 +221,9 @@ void urchinUpdateSub0(sUrchin* pThis)
                 assert(0);
                 break;
             }
-            pThis->m2C_positionDelta[1] += MTH_Mul(pThis->mCC->m18 * 0x10000, getSin(stack40));
-            pThis->m2C_positionDelta[0] += MTH_Mul(MTH_Mul(pThis->mCC->m18 * 0x10000, getCos(stack40)), getSin(stack36));
-            pThis->m2C_positionDelta[2] += MTH_Mul(MTH_Mul(pThis->mCC->m18 * 0x10000, getCos(stack40)), getCos(stack36));
+            pThis->m2C_positionDelta[1] += MTH_Mul(pThis->mCC->m18_knockbackStrength * 0x10000, getSin(stack40));
+            pThis->m2C_positionDelta[0] += MTH_Mul(MTH_Mul(pThis->mCC->m18_knockbackStrength * 0x10000, getCos(stack40)), getSin(stack36));
+            pThis->m2C_positionDelta[2] += MTH_Mul(MTH_Mul(pThis->mCC->m18_knockbackStrength * 0x10000, getCos(stack40)), getCos(stack36));
 
             for (int i = 0; i < pThis->mB6_numTargetables; i++)
             {
@@ -269,7 +269,7 @@ void urchinUpdateSub1(sUrchin* pThis)
                     pThis->mC0_targetable[i].m50_flags &= ~0x100000;
                 }
                 pThis->mB0_flags &= ~0x10;
-                pThis->mD0->m14[pThis->mAE].m18 |= 0x20;
+                pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 0x20;
             }
         }
     }
@@ -281,12 +281,12 @@ void urchinUpdateSub1(sUrchin* pThis)
 
 void urchinUpdateSub2(sUrchin* pThis)
 {
-    if ((BattleEngineSub0_UpdateSub0() == 0) && (pThis->mB1 !=  pThis->mD0->m7[pThis->mAF]))
+    if ((BattleEngineSub0_UpdateSub0() == 0) && (pThis->mB1 !=  pThis->mD0->m7_attackAnimIndex[pThis->mAF]))
     {
         assert(0);
     }
 
-    if (pThis->mD0->m14[pThis->mAF].m19 & 2)
+    if (pThis->mD0->m14[pThis->mAF].m19_attackFlags & 2)
     {
         assert(0);
     }
@@ -388,16 +388,16 @@ void Urchin_update(sUrchin* pThis)
     }
 
     pThis->m8 = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter + pThis->m14_positionCurrent;
-    pThis->mD0->m14[pThis->mAE].m0 = pThis->m8;
+    pThis->mD0->m14[pThis->mAE].m0_worldPosition = pThis->m8;
 
     if ((pThis->mAC == 6) && (pThis->mAD == 6))
     {
         assert(0);
     }
 
-    if ((pThis->mD0->m14[pThis->mAE].m18 & 4) == 0)
+    if ((pThis->mD0->m14[pThis->mAE].m18_statusFlags & 4) == 0)
     {
-        pThis->mD0->m4[pThis->mAF] = 1;
+        pThis->mD0->m4_typeAlive[pThis->mAF] = 1;
 
         if (pThis->mCC->m2)
         {
@@ -482,12 +482,12 @@ void Urchin_update(sUrchin* pThis)
 
         if (BattleEngineSub0_UpdateSub0() == 0)
         {
-            pThis->mD0->m14[pThis->mAE].m18 &= ~0x20;
+            pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x20;
         }
 
-        pThis->mD0->m14[pThis->mAE].m1A = FP_Div(pThis->mB4 * 0x640000, fixedPoint::fromInteger(readSaturnS16(gCommonFile->getSaturnPtr(0x0020179c) + pThis->mCC->m0 * 4))).toInteger();
+        pThis->mD0->m14[pThis->mAE].m1A_hpRatio = FP_Div(pThis->mB4 * 0x640000, fixedPoint::fromInteger(readSaturnS16(gCommonFile->getSaturnPtr(0x0020179c) + pThis->mCC->m0_enemyTypeId * 4))).toInteger();
 
-        if (pThis->mD0->m14[pThis->mAE].m1C != 0)
+        if (pThis->mD0->m14[pThis->mAE].m1C_flags != 0)
         {
             assert(0);
         }
@@ -523,7 +523,7 @@ void Urchin_delete(sUrchin* pThis)
     Unimplemented();
 }
 
-void createUrchin(sGenericFormationPerTypeData* pConfig, sBTL_A3_UrchinFormation_18& param2, int param3, int param4)
+void createUrchin(sGenericFormationPerTypeData* pConfig, sSharedFormationState& param2, int param3, int param4)
 {
     static const sUrchin::TypedTaskDefinition definition = {
         Urchin_init,
@@ -538,11 +538,11 @@ void createUrchin(sGenericFormationPerTypeData* pConfig, sBTL_A3_UrchinFormation
     pNewTask->mAE = param3;
     pNewTask->mAF = param4;
 
-    sBTL_A3_UrchinFormation_18_14* iVar4 = &param2.m14[pNewTask->mAE];
-    iVar4->m18 |= param4;
+    sPerEnemySlot* iVar4 = &param2.m14[pNewTask->mAE];
+    iVar4->m18_statusFlags |= param4;
 
-    pNewTask->m14_positionCurrent = iVar4->mC;
-    pNewTask->m20_positionTarget = iVar4->mC;
+    pNewTask->m14_positionCurrent = iVar4->mC_initialPosition;
+    pNewTask->m20_positionTarget = iVar4->mC_initialPosition;
 
     switch (param2.mD[pNewTask->mAF])
     {
@@ -564,5 +564,5 @@ void createUrchin(sGenericFormationPerTypeData* pConfig, sBTL_A3_UrchinFormation
 
     pNewTask->m44_rotationTarget = pNewTask->m38_rotationCurrent;
 
-    iVar4->m18 &= ~4;
+    iVar4->m18_statusFlags &= ~4;
 }
