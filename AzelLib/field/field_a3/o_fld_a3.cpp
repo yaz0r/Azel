@@ -1650,7 +1650,7 @@ void dragonFieldTaskUpdateSub5Sub2(s_fieldOverlaySubTaskWorkArea* r4, sFieldCame
     var18 = *r4->m2E4[4].m10_pPosition2 - *r4->m2E4[4].mC_pPosition;
 
     sVec2_FP dummy;
-    computeVectorAngles(var18, dummy);
+    computeLookAt(var18, dummy);
 
     r5->mC_rotation[0] = r5->m5C[0] + dummy[0];
     r5->mC_rotation[1] = r5->m5C[1] + dummy[1];
@@ -3647,7 +3647,7 @@ void fieldOverlaySubTaskInitSub2Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkAr
     stack_8[1] = -r12->m88_matrix.matrix[6];
     stack_8[2] = -r12->m88_matrix.matrix[10];
 
-    computeVectorAngles(stack_8, var0);
+    computeLookAt(stack_8, var0);
 
     fieldOverlaySubTaskInitSub2Sub1Sub1(r14, r12);
 
@@ -3686,7 +3686,7 @@ void fieldOverlaySubTaskInitSub2Sub1(sFieldCameraStatus* r14, s_dragonTaskWorkAr
     stack_8[1] = -r12->m88_matrix.matrix[6];
     stack_8[2] = -r12->m88_matrix.matrix[10];
 
-    computeVectorAngles(stack_8, var0);
+    computeLookAt(stack_8, var0);
 
     fieldOverlaySubTaskInitSub2Sub1Sub1(r14, r12);
 
@@ -5106,7 +5106,7 @@ void dragonLeaveArea(s_dragonTaskWorkArea* r14)
     var_8[2] = r12->mC[2] - r14->m8_pos[2];
 
     sVec2_FP var0;
-    computeVectorAngles(var_8, var0);
+    computeLookAt(var_8, var0);
 
     // update yaw
     s32 tempRotX = r14->m3C[0] - r14->m20_angle[0];
@@ -5810,7 +5810,7 @@ void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4)
             sVec3_FP r15_8 = pDragonTask->m8_pos - pDragonTask->m1D0_cameraScript->m24_pos2;
 
             sVec2_FP r15;
-            computeVectorAngles(r15_8, r15);
+            computeLookAt(r15_8, r15);
 
             r4->mC_rotation[0] = r15[0];
             r4->mC_rotation[1] = r15[1];

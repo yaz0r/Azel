@@ -31,7 +31,7 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
     }
 
     sVec2_FP temp;
-    computeVectorAngles(gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - gBattleManager->m10_battleOverlay->m18_dragon->m8_position, temp);
+    computeLookAt(gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - gBattleManager->m10_battleOverlay->m18_dragon->m8_position, temp);
 
     sVec3_FP local_50;
     local_50[0] = 0;

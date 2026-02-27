@@ -2,8 +2,8 @@
 
 p_workArea createDragonMenuMorhTask(p_workArea pWorkArea);
 void updateAnimationMatrices(s3DModelAnimData* r4, s_3dModel* r5);
-void computeVectorAngles(const sVec3_FP& r4, sVec2_FP& r5);
-void computeVectorAngles(const sVec3_FP& r4, sVec3_FP& r5_output);
+void computeLookAt(const sVec3_FP& r4, sVec2_FP& r5);
+void computeLookAt(const sVec3_FP& r4, sVec3_FP& r5_output);
 void incrementAnimationRootY(s3DModelAnimData* r4, fixedPoint r5);
 void incrementAnimationRootX(s3DModelAnimData* r4, fixedPoint r5);
 void incrementAnimationRootZ(s3DModelAnimData* r4, fixedPoint r5);

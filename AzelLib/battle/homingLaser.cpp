@@ -221,7 +221,7 @@ void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomin
     pThis->m4C[1] = MTH_Mul(0x4000, sqrt_F(MTH_Product3d_FP(local_18, local_18)));
 
     pThis->m30 = performModulo2(0x5b05b0, randomNumber()) - 0x2D82D8;
-    computeVectorAngles(local_18, pThis->m94);
+    computeLookAt(local_18, pThis->m94);
     pThis->m24 = readSaturnFP(g_BTL_GenericData->getSaturnPtr(0x60AD510) + pThis->m80_laserIndexInGroup * 4);
 
     pushCurrentMatrix();
@@ -348,7 +348,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
                 if ((pThis->m84_targetable->m60 == 0) || (pThis->m84_targetable->m50_flags & 0x400))
                 {
                     sVec2_FP asStack84;
-                    computeVectorAngles(pThis->m34_laserDelta, asStack84);
+                    computeLookAt(pThis->m34_laserDelta, asStack84);
                     
                     sVec3_FP dStack96;
                     dStack96[0] = asStack84[0];

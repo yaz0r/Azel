@@ -229,7 +229,7 @@ void battleEngine_InitSub2(s_battleEngine* pThis)
     pThis->m104_dragonPosition[2] = pThis->m234[2] + pThis->m6C_dragonIntegrateStep[2];
 
     sVec3_FP temp;
-    computeVectorAngles(pThis->mC_battleCenter - pThis->m104_dragonPosition, temp);
+    computeLookAt(pThis->mC_battleCenter - pThis->m104_dragonPosition, temp);
 
     pThis->m43C = temp[0];
 }
@@ -279,7 +279,7 @@ void battleEngine_InitSub8Sub0(sVec2_FP& param)
     addTraceLog(*pBattleEngine->m3D4_pCurrentCameraPosition, "3D4");
 
     sVec3_FP delta = *pBattleEngine->m3D8_pDesiredCameraPosition - *pBattleEngine->m3D4_pCurrentCameraPosition;
-    computeVectorAngles(delta, param);
+    computeLookAt(delta, param);
     
     pBattleEngine->m1C8 = param[0];
     pBattleEngine->m1CC = param[1];
@@ -1430,7 +1430,7 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
             addTraceLog(pThis->m104_dragonPosition, "m104_dragonStartPosition");
         }
 
-        computeVectorAngles(pThis->mC_battleCenter - pThis->m104_dragonPosition, aiStack52);
+        computeLookAt(pThis->mC_battleCenter - pThis->m104_dragonPosition, aiStack52);
         pThis->m43C = aiStack52[0];
     }
 
@@ -1440,7 +1440,7 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
 
         sVec2_FP aiStack96;
         // TODO: there is some dead code here?
-        computeVectorAngles(iStack88 - gBattleManager->m10_battleOverlay->m8_gridTask->m34_cameraPosition, aiStack96);
+        computeLookAt(iStack88 - gBattleManager->m10_battleOverlay->m8_gridTask->m34_cameraPosition, aiStack96);
         pThis->m1C8 = aiStack96[0];
         pThis->m1CC = aiStack96[1];
 

@@ -33,7 +33,7 @@ void A3_3_Obj0_Update1Sub0(sVec3_FP* r4, sVec3_FP* r5)
         r12 = MTH_Mul_5_6(sqrt_F(var8_dragonPosition[1].getAbs()), r12, r12);
 
         sVec2_FP var0;
-        computeVectorAngles(var8_dragonPosition, var0);
+        computeLookAt(var8_dragonPosition, var0);
 
         (*r4)[0] = (*r5)[0] + MTH_Mul(r12, getSin(var0[1].getInteger() & 0xFFF));
         (*r4)[1] = (*r5)[1] + MTH_Mul(r12, -getSin(var0[0].getInteger() & 0xFFF));

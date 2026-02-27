@@ -398,7 +398,7 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
     sVec3_FP var4 = r14_townTask->m18_position - r14_townTask->m5C_rawCameraPosition;
     r14_townTask->m24_distance = sqrt_F(MTH_Product3d_FP(var4, var4));
 
-    computeVectorAngles(var4, r14_townTask->m68_cameraRotation);
+    computeLookAt(var4, r14_townTask->m68_cameraRotation);
 
     s32 r4 = atan2_FP(0x147, r14_townTask->m24_distance);
     if (r4 > 0x1555555)
@@ -516,7 +516,7 @@ void cameraFollowMode3SubSub(sMainLogic* param_1, sVec3_FP* param_2) {
         }
         fixedPoint iVar2 = MulVec2(local_2c, local_2c);
         fixedPoint iVar1 = iVar2 >> 1;
-        if (0xb333 < iVar2 >> 1) {
+        if (0xb333 < iVar1) {
             iVar1 = 0xb333;
         }
         if (iVar1 < 0xccc) {
@@ -558,23 +558,23 @@ void cameraFollowMode3Sub(sMainLogic* pThis) {
 
 void cameraFollowMode3(sMainLogic* pThis) {
 
-    bool isFlipped = false;
+    bool isClamped = false;
 
     cameraFollowMode3Sub(pThis);
 
     sVec3_FP delta = pThis->m44_cameraTarget - pThis->m5C_rawCameraPosition;
     pThis->m24_distance = sqrt_F(MTH_Product3d_FP(delta, delta));
 
-    computeVectorAngles(delta, pThis->m68_cameraRotation);
+    computeLookAt(delta, pThis->m68_cameraRotation);
 
-    pThis->m68_cameraRotation[0] = 0;
+    pThis->m68_cameraRotation.m8_Z = 0;
 
     {
         fixedPoint temp1 = (pThis->m68_cameraRotation[0] - pThis->mF0[0]) & 0xfffffff;
         fixedPoint temp2 = (pThis->mF8[0] - pThis->mF0[0]) & 0xfffffff;
 
         if (temp2 < temp1) {
-            isFlipped = true;
+            isClamped = true;
             if ((temp2 / 2) + 0x8000000U < temp1) {
                 pThis->m68_cameraRotation[0] = pThis->mF0[0];
             }
@@ -605,33 +605,34 @@ void cameraFollowMode3(sMainLogic* pThis) {
             fixedPoint temp6 = MTH_Mul(delta[2], (pThis->m100_deltaPosition)[0]);
             if (temp5 + temp6 < 0) {
                 fixedPoint sum = temp3 + temp4;
-                int angle = sum.getInteger();
+                int angle = (sum.asS32() >> 0x10) & 0xFFF;
                 fixedPoint temp7 = FP_Div(getSin(angle), getCos(angle));
                 temp7 = MTH_Mul(temp5 + temp6, temp7);
                 fixedPoint iVar2 = MTH_Mul(delta[0], (pThis->m100_deltaPosition)[0]);
                 fixedPoint iVar3 = MTH_Mul(delta[2], (pThis->m100_deltaPosition)[2]);
-                (pThis->m10C)[0] = (pThis->m10C)[0] + ((iVar2 + iVar3) - temp7);
-                temp7 = FP_Pow2((pThis->m100_deltaPosition)[0]);
-                iVar2 = FP_Pow2((pThis->m100_deltaPosition)[2]);
-                if (temp7 + iVar2 < (pThis->m10C)[0]) {
-                    (pThis->m10C)[0] = temp7 + iVar2;
+                pThis->m10C.m0_X += ((iVar2 + iVar3) - temp7);
+
+                temp7 = FP_Pow2((pThis->m100_deltaPosition).m0_X);
+                iVar2 = FP_Pow2((pThis->m100_deltaPosition).m8_Z);
+                if (temp7 + iVar2 < (pThis->m10C).m0_X) {
+                    (pThis->m10C).m0_X = temp7 + iVar2;
                 }
-                if ((pThis->m10C)[0] < 0) {
-                    (pThis->m10C)[0] = 0;
+                if ((pThis->m10C).m0_X < 0) {
+                    (pThis->m10C).m0_X = 0;
                 }
             }
-            isFlipped = true;
+            isClamped = true;
         }
     }
 
-    fixedPoint temp7 = FP_Pow2((pThis->m100_deltaPosition)[0]);
-    fixedPoint iVar2 = FP_Pow2((pThis->m100_deltaPosition)[2]);
+    fixedPoint temp7 = FP_Pow2((pThis->m100_deltaPosition).m0_X);
+    fixedPoint iVar2 = FP_Pow2((pThis->m100_deltaPosition).m8_Z);
     temp7 = FP_Div((pThis->m10C)[0], temp7 + iVar2);
 
     pThis->m5C_rawCameraPosition = MTH_Mul(pThis->m100_deltaPosition, temp7) + pThis->mE4_fixedPosition;
     pThis->m38_interpolatedCameraPosition = pThis->m5C_rawCameraPosition;
 
-    if (isFlipped) {
+    if (isClamped) {
         sMatrix4x3 auStack_5c;
         initMatrixToIdentity(&auStack_5c);
         rotateMatrixShiftedY((pThis->m68_cameraRotation)[1], &auStack_5c);
@@ -686,7 +687,7 @@ int scriptFunction_6057058_sub0()
 {
     twnMainLogicTask->m_DrawMethod = sMainLogic::Draw;
     scriptFunction_6057058_sub0Sub0();
-    twnMainLogicTask->m2_cameraFollowMode = 0;
+    twnMainLogicTask->m2_cameraFollowMode = sMainLogic::TackingMode_Follow;
     setupCameraUpdateForCurrentMode();
 
     return 0; // dummy

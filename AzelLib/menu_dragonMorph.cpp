@@ -178,16 +178,16 @@ void generateLightFalloffMap(u32 r4, u32 r5, u32 r6)
     //addSlaveCommand(0,0,0, copyFalloffTableToSlave);
 }
 
-void computeVectorAngles(const sVec3_FP& r4, sVec3_FP& r5_output)
+void computeLookAt(const sVec3_FP& r4, sVec3_FP& r5_output)
 {
     sVec2_FP temp;
-    computeVectorAngles(r4, temp);
+    computeLookAt(r4, temp);
 
     r5_output[0] = temp[0];
     r5_output[1] = temp[1];
 }
 
-void computeVectorAngles(const sVec3_FP& r4, sVec2_FP& r5)
+void computeLookAt(const sVec3_FP& r4, sVec2_FP& r5)
 {
     if (isTraceEnabled())
     {
@@ -275,7 +275,7 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& position, con
 
     r4->m14_previousPosition = r4->m0_position;
 
-    computeVectorAngles(var_18, var_4);
+    computeLookAt(var_18, var_4);
 
     r4->mC_rotation[0] = var_4[0] >> 16;
     r4->mC_rotation[1] = var_4[1] >> 16;

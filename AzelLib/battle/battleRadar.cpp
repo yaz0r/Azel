@@ -118,7 +118,7 @@ void battleRadar_UpdateDragonPosition(battleHud2* pThis)
     sVec3_FP local_20 = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
     sVec2_FP local_28;
 
-    computeVectorAngles(local_20, local_28);
+    computeLookAt(local_20, local_28);
 
     pThis->m16_dragonIconPosition[0] = MTH_Mul(0x140000, getSin(local_28[1].getInteger())).getInteger() - 7;
     pThis->m16_dragonIconPosition[1] = -pThis->mE_offsetY - MTH_Mul(0x110000, getCos(local_28[1].getInteger())).getInteger() - 0x3A;

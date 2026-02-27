@@ -893,7 +893,7 @@ void Baldor_update(sBaldorBase* pThisBase)
     Baldor_updateSub1(pThis->m1C_translation.m4_target, &pThis->m50_translationDelta, &pThis->m44_translationTarget, 0x1999, 0x147, 0);
 
     sVec2_FP temp;
-    computeVectorAngles(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta + pThis->m78_movementVector, temp);
+    computeLookAt(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta + pThis->m78_movementVector, temp);
 
     if (isTraceEnabled())
     {

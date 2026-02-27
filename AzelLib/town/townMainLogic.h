@@ -14,9 +14,14 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     static void Update(sMainLogic* pThis);
     static void Draw(sMainLogic* pThis);
 
+    enum eCameraTrackingMode : s8 {
+        TackingMode_Follow = 0,
+        TackingMode_Fixed = 3,
+    };
+
     s8 m0;
     s8 m1_cameraParamsIndex;
-    s8 m2_cameraFollowMode;
+    eCameraTrackingMode m2_cameraFollowMode;
     s8 m3;
     s32 m4_flags;
     s32 m8_inputX;
@@ -34,8 +39,8 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     sVec3_FP m68_cameraRotation;
     sMainLogic_74 m74_townCamera;
     sVec3_FP mE4_fixedPosition;
-    std::array<fixedPoint, 2> mF0;
-    std::array<fixedPoint, 2> mF8;
+    sVec2_FP mF0;
+    sVec2_FP mF8;
     sVec3_FP m100_deltaPosition;
     sVec3_FP m10C;
     s32 m118_autoWalkDuration;

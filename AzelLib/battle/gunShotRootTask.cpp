@@ -272,7 +272,7 @@ void sGunShotTask_UpdateSub2(sGunShotTask* pThis, s32 param_2, sVec3_FP* param_3
     else
     {
         sVec2_FP asStack84;
-        computeVectorAngles(pThis->m2C, asStack84);
+        computeLookAt(pThis->m2C, asStack84);
 
         sVec3_FP dStack96;
         dStack96[0] = asStack84[0];
@@ -440,7 +440,7 @@ void sGunShotTask_Update(sGunShotTask* pThis)
     if (!(pThis->m65 & 1))
     {
         sVec2_FP sStack116;
-        computeVectorAngles(pThis->m2C, sStack116);
+        computeLookAt(pThis->m2C, sStack116);
         sVec3_FP local_6c = sVec3_FP(0, 0, 0x8000);
 
         pushCurrentMatrix();
