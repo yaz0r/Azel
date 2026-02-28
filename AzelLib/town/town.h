@@ -183,7 +183,7 @@ struct sNpcData
     const std::vector <sSaturnPtr>* m64_scriptList;
     s32 m68_numEnvLCSTargets;
     const std::vector<sVec3_FP>* m6C_LCSTargets;
-    std::array<NPCProxy, 32> m70_npcPointerArray;
+    std::array<NPCProxy, 16> m70_npcPointerArray;
     s32 mF0;
     s32 mF4;
     s32 mF8;
@@ -197,10 +197,12 @@ struct sNpcData
     s_cinematicBarTask* m164_cinematicBars;
     s32 m168;
     union {
-        s_vdp2StringTask* m16C_displayStringTask;
+        s_vdp2StringTask* m16C_displayStringTask; //TODO: those are likely the same and should be merged
         s_receivedItemTask* m16C_receivedItemTask;
     };
     struct s_multiChoiceTask* m170_multiChoiceTask;
+
+    //size 0x174
 };
 
 extern sNpcData npcData0;

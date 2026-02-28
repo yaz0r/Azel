@@ -161,27 +161,28 @@ void rotl(u32& value)
 u32 readPackedBits(u8* bitField, u32 firstBitOffset, u32 numBits)
 {
     u32 r0_startOfByteInBits = (firstBitOffset & ~0x1F);
-    u32 r5_lastBitToChange = numBits + firstBitOffset - r0_startOfByteInBits ;
-    u8* r4_targetByte = bitField + (r0_startOfByteInBits / 8);
+    u32 lastBitToChange = numBits + firstBitOffset - r0_startOfByteInBits;
+    u8* targetByte = bitField + (r0_startOfByteInBits / 8);
     u32 r6_bitMask = longBitMask[numBits];
     u32 r1 = 0x20;
 
-    if (r5_lastBitToChange > 32)
+    if (lastBitToChange > 32)
     {
-        assert(0);
+        // we are overflowing into the next bit
+        Unimplemented();
         return 0;
     }
     else
     {
-        u32 value1 = (r4_targetByte[0] << 24) | (r4_targetByte[1] << 16) | (r4_targetByte[2] << 8) | (r4_targetByte[3]);
+        u32 value1 = (targetByte[0] << 24) | (targetByte[1] << 16) | (targetByte[2] << 8) | (targetByte[3]);
 
-        if (r5_lastBitToChange == 32)
+        if (lastBitToChange == 32)
         {
             return value1 & r6_bitMask;
         }
         else
         {
-            r1 -= r5_lastBitToChange;
+            r1 -= lastBitToChange;
             value1 >>= r1;
 
             return value1 & r6_bitMask;

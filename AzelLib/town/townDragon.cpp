@@ -5,24 +5,6 @@
 #include "kernel/graphicalObject.h"
 #include "town/ruin/twn_ruin.h" // TODO: cleanup
 
-struct sTownDragon : public s_workAreaTemplateWithArg<sTownDragon, sSaturnPtr>, sTownObject
-{
-    s8 mC;
-    s8 mD;
-    s16 m14;
-    npcFileDeleter* m1C;
-    sSaturnPtr m20;
-    sSaturnPtr m48;
-    sVec3_FP m4C;
-    sVec3_FP m58;
-    sVec3_FP m64;
-    sMainLogic_74 m70;
-    s16 mD4_cursorX;
-    s16 mD6_cursorY;
-    fixedPoint mD8;
-    //size: 0xE8
-};
-
 bool reinitModel(s_3dModel* pModel, sHotpointBundle* param2)
 {
     if (pModel->m40)
@@ -53,10 +35,17 @@ void initDragonForTown(sTownDragon* pThis)
         pThis->m14 = -1;
         pThis->m1C = dramAllocatorEnd[fileIndex].mC_fileBundle;
 
-        assert(gCurrentTownOverlay->m_name == "TWN_EXCA.PRG");
-
-        pThis->m20 = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x606471C) + gDragonState->mC_dragonType * 4);
-        reinitModel(&gDragonState->m28_dragon3dModel, readRiderDefinitionSub(readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x6064608 + gDragonState->mC_dragonType * 0x1C))));
+        if (gCurrentTownOverlay->m_name == "TWN_EXCA.PRG") {
+            pThis->m20 = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x606471C) + gDragonState->mC_dragonType * 4);
+            reinitModel(&gDragonState->m28_dragon3dModel, readRiderDefinitionSub(readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x6064608 + gDragonState->mC_dragonType * 0x1C))));
+        }
+        else if (gCurrentTownOverlay->m_name == "TWN_CAMP.PRG") {
+            pThis->m20 = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x607af3c) + gDragonState->mC_dragonType * 4);
+            reinitModel(&gDragonState->m28_dragon3dModel, readRiderDefinitionSub(readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x607abf0 + gDragonState->mC_dragonType * 0x1C))));
+        }
+        else {
+            assert(0);
+        }
         
         Unimplemented();
     }
@@ -97,7 +86,7 @@ static void sTownDragon_Init(sTownDragon* pThis, sSaturnPtr arg)
     playAnimation(&gDragonState->m28_dragon3dModel, pThis->m1C->m0_fileBundle->getAnimation(readSaturnU16(pThis->m20 + 2)), 0);
 }
 
-static void updateTownDragon(sTownDragon* pThis)
+void updateTownDragon(sTownDragon* pThis)
 {
     if (gDragonState->m88)
     {

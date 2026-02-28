@@ -117,6 +117,8 @@ void rotateCurrentMatrixZYX_s16(const sVec3_S16_12_4& rotationVec);
 void multiplyCurrentMatrix(sMatrix4x3* arg4);
 void multiplyCurrentMatrixSaveStack(sMatrix4x3* arg4);
 
+void scaleMatrixRow0(fixedPoint r4, sMatrix4x3* pMatrix);
+void scaleMatrixRow1(fixedPoint r4, sMatrix4x3* pMatrix);
 void scaleMatrixRow2(fixedPoint r4, sMatrix4x3* pMatrix);
 
 void scaleCurrentMatrixRow0(s32 r4);

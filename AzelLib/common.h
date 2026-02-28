@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <bitset>
+#include <bit>
 
 enum eItems : s16;
 
@@ -417,10 +419,7 @@ extern std::vector<sBitfieldMapEntry> m_bitFieldMap;
 
 struct s_mainGameState
 {
-private:
     u8 bitField[630];
-
-public:
 
     s8 getItemCount(eItems itemIndex)
     {
@@ -525,6 +524,13 @@ public:
         if (bitField[bitIndex / 8] & (0x80 >> (bitIndex % 8)))
             return true;
         return false;
+    }
+
+    bool getBit(u32 byteIndex, u8 mask)
+    {
+        assert(std::bitset<8>(mask).count() == 1);
+        int bit = std::countl_zero(mask);
+        return getBit(byteIndex * 8 + bit);
     }
 
     bool getBit566(u32 bitIndex)
@@ -977,3 +983,5 @@ void getVdp1LocalCoordinates(std::array<s16, 2>& r4);
 
 typedef std::array < sVec2_FP, 4> sScreenQuad;
 typedef std::array < sVec3_FP, 4> sScreenQuad3;
+
+u32 readPackedBits(u8* bitField, u32 firstBitOffset, u32 numBits);
