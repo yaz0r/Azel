@@ -73,9 +73,9 @@ void scriptUpdateSub0Sub0(sMainLogic_74* r4)
     pushCurrentMatrix();
 
     initMatrixToIdentity(pCurrentMatrix);
-    pCurrentMatrix->matrix[3] = r4->m14_collisionClip[0];
-    pCurrentMatrix->matrix[7] = r4->m14_collisionClip[1];
-    pCurrentMatrix->matrix[11] = r4->m14_collisionClip[2];
+    pCurrentMatrix->m[0][3] = r4->m14_collisionClip[0];
+    pCurrentMatrix->m[1][3] = r4->m14_collisionClip[1];
+    pCurrentMatrix->m[2][3] = r4->m14_collisionClip[2];
 
     rotateCurrentMatrixShiftedZ(-r12[2]);
     rotateCurrentMatrixShiftedX(-r12[0]);
@@ -293,9 +293,9 @@ void scriptUpdateSub0Sub2Sub5(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
 void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
 {
     sVec3_FP var4;
-    var4[0] = pCurrentMatrix->matrix[1];
-    var4[1] = pCurrentMatrix->matrix[5];
-    var4[2] = pCurrentMatrix->matrix[9];
+    var4[0] = pCurrentMatrix->m[0][1];
+    var4[1] = pCurrentMatrix->m[1][1];
+    var4[2] = pCurrentMatrix->m[2][1];
 
     sVec3_FP var10;
     var10[0] = MTH_Mul(var4[0], r4->m14_collisionClip[0]);
@@ -303,9 +303,9 @@ void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
     var10[2] = MTH_Mul(var4[2], r4->m14_collisionClip[2]);
 
     fixedPoint r14 = r5;
-    r14 += MTH_Mul(var4[0], pCurrentMatrix->matrix[3]);
-    r14 += MTH_Mul(var4[1], pCurrentMatrix->matrix[7]);
-    r14 += MTH_Mul(var4[2], pCurrentMatrix->matrix[11]);
+    r14 += MTH_Mul(var4[0], pCurrentMatrix->m[0][3]);
+    r14 += MTH_Mul(var4[1], pCurrentMatrix->m[1][3]);
+    r14 += MTH_Mul(var4[2], pCurrentMatrix->m[2][3]);
     r14 -= var10[0];
     r14 -= var10[1];
     r14 -= var10[2];
@@ -409,7 +409,7 @@ sTownCellTask* scriptUpdateSub0Sub3Sub0(fixedPoint r4_x, fixedPoint r5_z)
     return gTownGrid.m40_cellTasks[(gTownGrid.mC + r5_cellY) & 7][(gTownGrid.m8 + r13_cellX) & 7];
 }
 
-void convertVerticeTo16(std::array<fixedPoint, 4 * 3>::iterator& r1, std::array<sVec3_S16, 3>::iterator& r2)
+void convertVerticeTo16(fixedPoint*& r1, std::array<sVec3_S16, 3>::iterator& r2)
 {
     r2->m_value[0] = r1[0] >> 4;
     r2->m_value[1] = r1[1] >> 4;
@@ -427,7 +427,7 @@ struct sProcessedVertice
 
 s32 transformTownMeshVertices(const std::vector<sVec3_S16_12_4>& r4_vertices, std::array<sProcessedVertice, 255>& r5_outputConverted, s32 r6_numVertices, const sVec3_FP& r7_clip)
 {
-    std::array<fixedPoint, 4 * 3>::iterator r1 = pCurrentMatrix->matrix.begin();
+    fixedPoint* r1 = &pCurrentMatrix->m[0][0];
     std::array<sVec3_S16, 3> rotationMatrix;
     std::array<sVec3_S16, 3>::iterator r2 = rotationMatrix.begin();
 
@@ -889,10 +889,9 @@ void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
     if (isTraceEnabled())
     {
         addTraceLog("processTownMeshCollision: current matrix: ");
-        for (int i = 0; i < 4 * 3; i++)
-        {
-            addTraceLog("0x%08X ", pCurrentMatrix->matrix[i]);
-        }
+        for (int row = 0; row < 3; row++)
+            for (int col = 0; col < 4; col++)
+                addTraceLog("0x%08X ", pCurrentMatrix->m[row][col]);
         addTraceLog("\n");
     }
     std::array<sProcessedVertice, 255> transformedVertices;
@@ -2286,15 +2285,15 @@ void updateTownLCSTargetPosition(sScriptTask* pThis)
         break;
     }
 
-    if ((pCurrentMatrix->matrix[11] >= graphicEngineStatus.m405C.m14_farClipDistance) || (pCurrentMatrix->matrix[11] < graphicEngineStatus.m405C.m10_nearClipDistance))
+    if ((pCurrentMatrix->m[2][3] >= graphicEngineStatus.m405C.m14_farClipDistance) || (pCurrentMatrix->m[2][3] < graphicEngineStatus.m405C.m10_nearClipDistance))
     {
         pThis->m8_currentLCSType = 0;
     }
     else
     {
         sVec2_S16 LCSScreenCoordinates;
-        LCSScreenCoordinates[0] = setDividend(graphicEngineStatus.m405C.m18_widthScale, pCurrentMatrix->matrix[3], pCurrentMatrix->matrix[11]);
-        LCSScreenCoordinates[1] = setDividend(graphicEngineStatus.m405C.m1C_heightScale, pCurrentMatrix->matrix[7], pCurrentMatrix->matrix[11]);
+        LCSScreenCoordinates[0] = setDividend(graphicEngineStatus.m405C.m18_widthScale, pCurrentMatrix->m[0][3], pCurrentMatrix->m[2][3]);
+        LCSScreenCoordinates[1] = setDividend(graphicEngineStatus.m405C.m1C_heightScale, pCurrentMatrix->m[1][3], pCurrentMatrix->m[2][3]);
 
         if (
             (LCSScreenCoordinates[0] < graphicEngineStatus.m405C.mC - 0x10) || (LCSScreenCoordinates[0] > graphicEngineStatus.m405C.mE + 0x10) ||

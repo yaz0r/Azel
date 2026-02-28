@@ -32,7 +32,7 @@ void LCSItemBox_DrawType1(s_itemBoxType1* pThis)
     translateCurrentMatrix(&translation);
     rotateCurrentMatrixZYX(&rotation);
 
-    u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
+    u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->m[2][3]);
 
     if (depthRangeIndex <= pGridTask->m1300)
     {

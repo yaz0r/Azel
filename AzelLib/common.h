@@ -310,21 +310,21 @@ std::string readSaturnString(sSaturnPtr ptr);
 
 struct sMatrix4x3
 {
-    std::array<fixedPoint, 4*3> matrix;
+    fixedPoint m[3][4];
 
-    sVec3_FP getTranslation()
+    sVec3_FP getTranslation() const
     {
-        sVec3_FP value;
-        value[0] = matrix[3];
-        value[1] = matrix[7];
-        value[2] = matrix[11];
-
-        return value;
+        return sVec3_FP(m[0][3], m[1][3], m[2][3]);
     }
 
-    fixedPoint& operator[](int i)
+    fixedPoint* operator[](int i)
     {
-        return matrix[i];
+        return m[i];
+    }
+
+    const fixedPoint* operator[](int i) const
+    {
+        return m[i];
     }
 };
 

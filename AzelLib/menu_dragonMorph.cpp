@@ -230,21 +230,21 @@ void computeLookAt(const sVec3_FP& r4, sVec2_FP& r5)
 void transformVec(const sVec3_FP& r4, sVec3_FP& r5, const sMatrix4x3& r6)
 {
     s64 mac = 0;
-    mac += (s64)r6.matrix[0] * (s64)r4[0].asS32();
-    mac += (s64)r6.matrix[1] * (s64)r4[1].asS32();
-    mac += (s64)r6.matrix[2] * (s64)r4[2].asS32();
+    mac += (s64)r6.m[0][0] * (s64)r4[0].asS32();
+    mac += (s64)r6.m[0][1] * (s64)r4[1].asS32();
+    mac += (s64)r6.m[0][2] * (s64)r4[2].asS32();
     r5[0] = mac >> 16;
 
     mac = 0;
-    mac += (s64)r6.matrix[4] * (s64)r4[0].asS32();
-    mac += (s64)r6.matrix[5] * (s64)r4[1].asS32();
-    mac += (s64)r6.matrix[6] * (s64)r4[2].asS32();
+    mac += (s64)r6.m[1][0] * (s64)r4[0].asS32();
+    mac += (s64)r6.m[1][1] * (s64)r4[1].asS32();
+    mac += (s64)r6.m[1][2] * (s64)r4[2].asS32();
     r5[1] = mac >> 16;
 
     mac = 0;
-    mac += (s64)r6.matrix[8] * (s64)r4[0].asS32();
-    mac += (s64)r6.matrix[9] * (s64)r4[1].asS32();
-    mac += (s64)r6.matrix[10] * (s64)r4[2].asS32();
+    mac += (s64)r6.m[2][0] * (s64)r4[0].asS32();
+    mac += (s64)r6.m[2][1] * (s64)r4[1].asS32();
+    mac += (s64)r6.m[2][2] * (s64)r4[2].asS32();
     r5[2] = mac >> 16;
 }
 
@@ -318,9 +318,9 @@ void generateCameraMatrix(s_cameraProperties2* r4, const sVec3_FP& position, con
     rotateMatrixX(r4->mC_rotation[0], &r4->m28[0]);
     rotateMatrixZ(r4->mC_rotation[2], &r4->m28[0]);
 
-    r4->m28[0].matrix[2] = -r4->m28[0].matrix[2];
-    r4->m28[0].matrix[6] = -r4->m28[0].matrix[6];
-    r4->m28[0].matrix[10] = -r4->m28[0].matrix[10];
+    r4->m28[0].m[0][2] = -r4->m28[0].m[0][2];
+    r4->m28[0].m[1][2] = -r4->m28[0].m[1][2];
+    r4->m28[0].m[2][2] = -r4->m28[0].m[2][2];
 
     if (isTraceEnabled())
     {
@@ -826,15 +826,15 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
 
     if (shadowModelIndex)
     {
-        fixedPoint old4 = modelMatrix.matrix[4];
-        fixedPoint old5 = modelMatrix.matrix[5];
-        fixedPoint old6 = modelMatrix.matrix[6];
-        fixedPoint old7 = modelMatrix.matrix[7];
+        fixedPoint old4 = modelMatrix.m[1][0];
+        fixedPoint old5 = modelMatrix.m[1][1];
+        fixedPoint old6 = modelMatrix.m[1][2];
+        fixedPoint old7 = modelMatrix.m[1][3];
 
-        modelMatrix.matrix[4] = 0;
-        modelMatrix.matrix[5] = 0;
-        modelMatrix.matrix[6] = 0;
-        modelMatrix.matrix[7] = shadowHeight;
+        modelMatrix.m[1][0] = 0;
+        modelMatrix.m[1][1] = 0;
+        modelMatrix.m[1][2] = 0;
+        modelMatrix.m[1][3] = shadowHeight;
 
         pushCurrentMatrix();
         multiplyCurrentMatrix(&modelMatrix);
@@ -842,10 +842,10 @@ void submitModelAndShadowModelToRendering(s_3dModel* p3dModel, u32 modelIndex, u
         p3dModel->m18_drawFunction(p3dModel);
         popMatrix();
 
-        modelMatrix.matrix[4] = old4;
-        modelMatrix.matrix[5] = old5;
-        modelMatrix.matrix[6] = old6;
-        modelMatrix.matrix[7] = old7;
+        modelMatrix.m[1][0] = old4;
+        modelMatrix.m[1][1] = old5;
+        modelMatrix.m[1][2] = old6;
+        modelMatrix.m[1][3] = old7;
     }
 
     pushCurrentMatrix();

@@ -168,9 +168,9 @@ void addTraceLog(const s32& value, const char* name)
 void addTraceLog(const sMatrix4x3& matrix, const char* name)
 {
     addTraceLog("%s: 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X\n", name,
-        matrix.matrix[0].asS32(), matrix.matrix[1].asS32(), matrix.matrix[2].asS32(), matrix.matrix[3].asS32(),
-        matrix.matrix[4].asS32(), matrix.matrix[5].asS32(), matrix.matrix[6].asS32(), matrix.matrix[7].asS32(),
-        matrix.matrix[8].asS32(), matrix.matrix[9].asS32(), matrix.matrix[10].asS32(), matrix.matrix[11].asS32()
+        matrix.m[0][0].asS32(), matrix.m[0][1].asS32(), matrix.m[0][2].asS32(), matrix.m[0][3].asS32(),
+        matrix.m[1][0].asS32(), matrix.m[1][1].asS32(), matrix.m[1][2].asS32(), matrix.m[1][3].asS32(),
+        matrix.m[2][0].asS32(), matrix.m[2][1].asS32(), matrix.m[2][2].asS32(), matrix.m[2][3].asS32()
     );
 }
 

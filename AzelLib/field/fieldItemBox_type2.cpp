@@ -52,7 +52,7 @@ void LCSItemBox_DrawType2(s_itemBoxType1* pThis)
     scaleCurrentMatrixRow1(pThis->m78_scale);
     scaleCurrentMatrixRow2(pThis->m78_scale);
 
-    u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
+    u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->m[2][3]);
 
     if (depthRangeIndex <= pGridTask->m1300)
     {

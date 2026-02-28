@@ -133,9 +133,9 @@ static std::unordered_map<sKey, sProcessed3dModel*, KeyHasher> modelMap;
 
 void addBillBoardToDrawList(sProcessed3dModel* pObjectData)
 {
-    cameraProperties2.m88_billboardViewMatrix.matrix[3] = pCurrentMatrix->matrix[3];
-    cameraProperties2.m88_billboardViewMatrix.matrix[7] = pCurrentMatrix->matrix[7];
-    cameraProperties2.m88_billboardViewMatrix.matrix[11] = pCurrentMatrix->matrix[11];
+    cameraProperties2.m88_billboardViewMatrix.m[0][3] = pCurrentMatrix->m[0][3];
+    cameraProperties2.m88_billboardViewMatrix.m[1][3] = pCurrentMatrix->m[1][3];
+    cameraProperties2.m88_billboardViewMatrix.m[2][3] = pCurrentMatrix->m[2][3];
 
     s_objectToRender newObject;
     newObject.m_pObject = pObjectData;
@@ -270,10 +270,9 @@ glm::mat4 MatrixToGLM(const sMatrix4x3& inputMatrix)
     {
 
         memset(objectMatrix, 0, sizeof(objectMatrix));
-        for (u32 i = 0; i < 4 * 3; i++)
-        {
-            objectMatrix[i] = inputMatrix.matrix[i] / quantisation;
-        }
+        for (u32 row = 0; row < 3; row++)
+            for (u32 col = 0; col < 4; col++)
+                objectMatrix[row * 4 + col] = inputMatrix.m[row][col] / quantisation;
         objectMatrix[15] = 1.f;
     }
 
@@ -418,10 +417,10 @@ void flushObjectsToDrawList()
                     for (int j = 0; j < 3; j++)
                     {
                         float vertex[4];
-                        vertex[0] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 0] / (float)0x10000;
-                        vertex[1] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 1] / (float)0x10000;
-                        vertex[2] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 2] / (float)0x10000;
-                        vertex[3] = objectRenderList[i].m_modelMatrix.matrix[j * 4 + 3] / (float)0x10000;
+                        vertex[0] = objectRenderList[i].m_modelMatrix.m[j][0] / (float)0x10000;
+                        vertex[1] = objectRenderList[i].m_modelMatrix.m[j][1] / (float)0x10000;
+                        vertex[2] = objectRenderList[i].m_modelMatrix.m[j][2] / (float)0x10000;
+                        vertex[3] = objectRenderList[i].m_modelMatrix.m[j][3] / (float)0x10000;
 
                         sprintf(buffer, "M%d", j);
                         ImGui::InputFloat4(buffer, vertex);

@@ -83,9 +83,9 @@ const std::array<s8[2], 25> townGridSearchPattern = {
 void scriptUpdateSub2Sub0(sResCameraProperties* r4, s32 r5)
 {
     sVec3_FP var14;
-    var14[0] = pCurrentMatrix->matrix[1];
-    var14[1] = pCurrentMatrix->matrix[5];
-    var14[2] = pCurrentMatrix->matrix[9];
+    var14[0] = pCurrentMatrix->m[0][1];
+    var14[1] = pCurrentMatrix->m[1][1];
+    var14[2] = pCurrentMatrix->m[2][1];
 
     sVec2_FP var0;
     var0[0] = performDivision(r4->m2C_projectionWidthScale, r4->m0_LCS_X);
@@ -98,9 +98,9 @@ void scriptUpdateSub2Sub0(sResCameraProperties* r4, s32 r5)
     }
 
     sVec3_FP var8;
-    var8[0] = pCurrentMatrix->matrix[3] + MTH_Mul(r5, pCurrentMatrix->matrix[1]);
-    var8[1] = pCurrentMatrix->matrix[7] + MTH_Mul(r5, pCurrentMatrix->matrix[5]);
-    var8[2] = pCurrentMatrix->matrix[11] + MTH_Mul(r5, pCurrentMatrix->matrix[9]);
+    var8[0] = pCurrentMatrix->m[0][3] + MTH_Mul(r5, pCurrentMatrix->m[0][1]);
+    var8[1] = pCurrentMatrix->m[1][3] + MTH_Mul(r5, pCurrentMatrix->m[1][1]);
+    var8[2] = pCurrentMatrix->m[2][3] + MTH_Mul(r5, pCurrentMatrix->m[2][1]);
 
     fixedPoint r4_fp = FP_Div(MTH_Product3d_FP(var14, var8), r12);
     if (r4->m28_LCSDepthMax > r4_fp)
@@ -128,23 +128,23 @@ struct sTransformedVertice
 void computeFinalProjectionMatrix(const sProcessed3dModel& r4, const sMatrix4x3& r5, sResCameraProperties* r6, std::array<s16, 9> & outputMatrix, s32& r8_outputTranslationX, s32& r9_outputTranslationY, s32& r10_outputTranslationZ, s16*& r11, std::vector<sVec3_S16_12_4>::const_iterator& r12_pVertices, u32& r13_numVertices)
 {
     //r6 is off by 0x14 compared to asm
-    outputMatrix[0] = (r5.matrix[0] * (r6->m2C_projectionWidthScale * 16)) >> 16;
-    outputMatrix[1] = (r5.matrix[1] * (r6->m2C_projectionWidthScale * 16)) >> 16;
-    outputMatrix[2] = (r5.matrix[2] * (r6->m2C_projectionWidthScale * 16)) >> 16;
+    outputMatrix[0] = (r5.m[0][0] * (r6->m2C_projectionWidthScale * 16)) >> 16;
+    outputMatrix[1] = (r5.m[0][1] * (r6->m2C_projectionWidthScale * 16)) >> 16;
+    outputMatrix[2] = (r5.m[0][2] * (r6->m2C_projectionWidthScale * 16)) >> 16;
 
-    r8_outputTranslationX = (r5.matrix[3] * r6->m2C_projectionWidthScale);
+    r8_outputTranslationX = (r5.m[0][3] * r6->m2C_projectionWidthScale);
 
-    outputMatrix[3] = (r5.matrix[4] * (-r6->m30_projectionHeightScale * 16)) >> 16;
-    outputMatrix[4] = (r5.matrix[5] * (-r6->m30_projectionHeightScale * 16)) >> 16;
-    outputMatrix[5] = (r5.matrix[6] * (-r6->m30_projectionHeightScale * 16)) >> 16;
+    outputMatrix[3] = (r5.m[1][0] * (-r6->m30_projectionHeightScale * 16)) >> 16;
+    outputMatrix[4] = (r5.m[1][1] * (-r6->m30_projectionHeightScale * 16)) >> 16;
+    outputMatrix[5] = (r5.m[1][2] * (-r6->m30_projectionHeightScale * 16)) >> 16;
 
-    r9_outputTranslationY = (r5.matrix[7] * -r6->m30_projectionHeightScale);
+    r9_outputTranslationY = (r5.m[1][3] * -r6->m30_projectionHeightScale);
 
-    outputMatrix[6] = r5.matrix[8] >> 4;
-    outputMatrix[7] = r5.matrix[9] >> 4;
-    outputMatrix[8] = r5.matrix[10] >> 4;
+    outputMatrix[6] = r5.m[2][0] >> 4;
+    outputMatrix[7] = r5.m[2][1] >> 4;
+    outputMatrix[8] = r5.m[2][2] >> 4;
 
-    r10_outputTranslationZ = r5.matrix[11] << 8;
+    r10_outputTranslationZ = r5.m[2][3] << 8;
 
     r11 = &outputMatrix[6];
     r13_numVertices = r4.m4_numVertices;
@@ -583,25 +583,25 @@ s32 testMeshForCollision(const sProcessed3dModel& r4, const sMatrix4x3& r5, sRes
 s32 testMeshVisibility(sResCameraProperties* r14, const sProcessed3dModel& r11)
 {
     // check depth
-    if (pCurrentMatrix->matrix[11] < r14->m24_LCSDepthMin - r11.m0_radius)
+    if (pCurrentMatrix->m[2][3] < r14->m24_LCSDepthMin - r11.m0_radius)
         return -1;
 
-    if (pCurrentMatrix->matrix[11] > r14->m28_LCSDepthMax + r11.m0_radius)
+    if (pCurrentMatrix->m[2][3] > r14->m28_LCSDepthMax + r11.m0_radius)
         return -1;
 
     // check X
-    if (pCurrentMatrix->matrix[3] < MTH_Mul(pCurrentMatrix->matrix[11], r14->m34_boundMinX) - MTH_Mul(r11.m0_radius, r14->m38_radiusScaleMinX))
+    if (pCurrentMatrix->m[0][3] < MTH_Mul(pCurrentMatrix->m[2][3], r14->m34_boundMinX) - MTH_Mul(r11.m0_radius, r14->m38_radiusScaleMinX))
         return -1;
 
-    if (pCurrentMatrix->matrix[3] > MTH_Mul(pCurrentMatrix->matrix[11], r14->m3C_boundMaxX) + MTH_Mul(r11.m0_radius, r14->m40_radiusScaleMaxX))
+    if (pCurrentMatrix->m[0][3] > MTH_Mul(pCurrentMatrix->m[2][3], r14->m3C_boundMaxX) + MTH_Mul(r11.m0_radius, r14->m40_radiusScaleMaxX))
         return -1;
 
     //0601412C
     //check Y
-    if (pCurrentMatrix->matrix[7] < MTH_Mul(pCurrentMatrix->matrix[11], r14->m44_boundMinY) - MTH_Mul(r11.m0_radius, r14->m48_radiusScaleMinY))
+    if (pCurrentMatrix->m[1][3] < MTH_Mul(pCurrentMatrix->m[2][3], r14->m44_boundMinY) - MTH_Mul(r11.m0_radius, r14->m48_radiusScaleMinY))
         return -1;
 
-    if (pCurrentMatrix->matrix[7] > MTH_Mul(pCurrentMatrix->matrix[11], r14->m4C_boundMaxY) + MTH_Mul(r11.m0_radius, r14->m50_radiusScaleMaxY))
+    if (pCurrentMatrix->m[1][3] > MTH_Mul(pCurrentMatrix->m[2][3], r14->m4C_boundMaxY) + MTH_Mul(r11.m0_radius, r14->m50_radiusScaleMaxY))
         return -1;
 
     return testMeshForCollision(r11, *pCurrentMatrix, r14); //we should be passing r14->m14, but that seems to be a handrolled hack to alias r14->m14 to s_graphicEngineStatus_405C
@@ -621,8 +621,8 @@ void findLCSCollisionInCell(sResCameraProperties* r14, sTownCellTask* r12)
     pushCurrentMatrix();
     translateCurrentMatrix(r12->mC_position);
     if (
-        (pCurrentMatrix->matrix[11] >= r14->m24_LCSDepthMin - gTownGrid.m2C) && (pCurrentMatrix->matrix[11] <= r14->m2C_projectionWidthScale + gTownGrid.m2C) &&
-        (pCurrentMatrix->matrix[3] >= MTH_Mul(pCurrentMatrix->matrix[11], r14->m34_boundMinX) - r14->m54) && (pCurrentMatrix->matrix[3] <= MTH_Mul(pCurrentMatrix->matrix[11], r14->m3C_boundMaxX) + r14->m58)
+        (pCurrentMatrix->m[2][3] >= r14->m24_LCSDepthMin - gTownGrid.m2C) && (pCurrentMatrix->m[2][3] <= r14->m2C_projectionWidthScale + gTownGrid.m2C) &&
+        (pCurrentMatrix->m[0][3] >= MTH_Mul(pCurrentMatrix->m[2][3], r14->m34_boundMinX) - r14->m54) && (pCurrentMatrix->m[0][3] <= MTH_Mul(pCurrentMatrix->m[2][3], r14->m3C_boundMaxX) + r14->m58)
         )
     {
         sSaturnPtr r13 = readSaturnEA(r12->m8_cellPtr + 0x14);
@@ -728,31 +728,31 @@ void findLCSCollision()
                 translateCurrentMatrix(r14->m8_position);
                 sMatrix4x3& r5 = cameraProperties2.m88_billboardViewMatrix;
 
-                pCurrentMatrix->matrix[0] = r5.matrix[0];
-                pCurrentMatrix->matrix[1] = r5.matrix[1];
-                pCurrentMatrix->matrix[2] = r5.matrix[2];
-                pCurrentMatrix->matrix[4] = r5.matrix[4];
-                pCurrentMatrix->matrix[5] = r5.matrix[5];
-                pCurrentMatrix->matrix[6] = r5.matrix[6];
-                pCurrentMatrix->matrix[8] = r5.matrix[8];
-                pCurrentMatrix->matrix[9] = r5.matrix[9];
-                pCurrentMatrix->matrix[10] = r5.matrix[10];
+                pCurrentMatrix->m[0][0] = r5.m[0][0];
+                pCurrentMatrix->m[0][1] = r5.m[0][1];
+                pCurrentMatrix->m[0][2] = r5.m[0][2];
+                pCurrentMatrix->m[1][0] = r5.m[1][0];
+                pCurrentMatrix->m[1][1] = r5.m[1][1];
+                pCurrentMatrix->m[1][2] = r5.m[1][2];
+                pCurrentMatrix->m[2][0] = r5.m[2][0];
+                pCurrentMatrix->m[2][1] = r5.m[2][1];
+                pCurrentMatrix->m[2][2] = r5.m[2][2];
 
                 /**/
                 if (0)
                 {
-                    pCurrentMatrix->matrix[0] = 0xFFFF0000;
-                    pCurrentMatrix->matrix[1] = 0x00000000;
-                    pCurrentMatrix->matrix[2] = 0x00000000;
-                    pCurrentMatrix->matrix[3] = 0xFFFFF8CD;
-                    pCurrentMatrix->matrix[4] = 0x00000000;
-                    pCurrentMatrix->matrix[5] = 0x0000FF16;
-                    pCurrentMatrix->matrix[6] = 0xFFFFEA6E;
-                    pCurrentMatrix->matrix[7] = 0xFFFFE58C;
-                    pCurrentMatrix->matrix[8] = 0x00000000;
-                    pCurrentMatrix->matrix[9] = 0x00001592;
-                    pCurrentMatrix->matrix[10] = 0x0000FF16;
-                    pCurrentMatrix->matrix[11] = 0x00007F27;
+                    pCurrentMatrix->m[0][0] = 0xFFFF0000;
+                    pCurrentMatrix->m[0][1] = 0x00000000;
+                    pCurrentMatrix->m[0][2] = 0x00000000;
+                    pCurrentMatrix->m[0][3] = 0xFFFFF8CD;
+                    pCurrentMatrix->m[1][0] = 0x00000000;
+                    pCurrentMatrix->m[1][1] = 0x0000FF16;
+                    pCurrentMatrix->m[1][2] = 0xFFFFEA6E;
+                    pCurrentMatrix->m[1][3] = 0xFFFFE58C;
+                    pCurrentMatrix->m[2][0] = 0x00000000;
+                    pCurrentMatrix->m[2][1] = 0x00001592;
+                    pCurrentMatrix->m[2][2] = 0x0000FF16;
+                    pCurrentMatrix->m[2][3] = 0x00007F27;
 
                     LCSCollisionData.m34_boundMinX = 0xFFFFF295;
                     LCSCollisionData.m3C_boundMaxX = 0xFFFFF70E;

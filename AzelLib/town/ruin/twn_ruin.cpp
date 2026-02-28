@@ -513,16 +513,16 @@ void updateEdgeLookAt(sEdgeTask* r4)
         adjustMatrixTranslation(0x1800);
         sVec3_FP var14;
 
-        var14[0] = pCurrentMatrix->matrix[3] - setDividend(LCSCollisionData.m0_LCS_X.getInteger(), LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m2C_projectionWidthScale);
-        var14[1] = pCurrentMatrix->matrix[7] - setDividend(LCSCollisionData.m4_LCS_Y.getInteger(), LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m30_projectionHeightScale);
-        var14[2] = pCurrentMatrix->matrix[11] - LCSCollisionData.m28_LCSDepthMax;
+        var14[0] = pCurrentMatrix->m[0][3] - setDividend(LCSCollisionData.m0_LCS_X.getInteger(), LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m2C_projectionWidthScale);
+        var14[1] = pCurrentMatrix->m[1][3] - setDividend(LCSCollisionData.m4_LCS_Y.getInteger(), LCSCollisionData.m28_LCSDepthMax, LCSCollisionData.m30_projectionHeightScale);
+        var14[2] = pCurrentMatrix->m[2][3] - LCSCollisionData.m28_LCSDepthMax;
 
         sVec2_FP varC;
         updateEdgePositionSub3Sub1(var14, &varC);
 
-        var14[0] = pCurrentMatrix->matrix[8];
-        var14[1] = pCurrentMatrix->matrix[9];
-        var14[2] = pCurrentMatrix->matrix[10];
+        var14[0] = pCurrentMatrix->m[2][0];
+        var14[1] = pCurrentMatrix->m[2][1];
+        var14[2] = pCurrentMatrix->m[2][2];
         sVec2_FP var4;
         updateEdgePositionSub3Sub1(var14, &var4);
 
@@ -672,15 +672,15 @@ void updateEdgePosition(sNPC* r4)
         {
             if ((r14->m4C[0] == 0) && (r14->m4C[1] == 0))
             {
-                var10.matrix[2] = var10.matrix[1];
-                var10.matrix[6] = var10.matrix[5];
-                var10.matrix[10] = var10.matrix[9];
+                var10.m[0][2] = var10.m[0][1];
+                var10.m[1][2] = var10.m[1][1];
+                var10.m[2][2] = var10.m[2][1];
             }
             else if ((r14->m4C[1] == 0) && (r14->m4C[2] == 0))
             {
-                var10.matrix[0] = var10.matrix[1];
-                var10.matrix[4] = var10.matrix[5];
-                var10.matrix[8] = var10.matrix[9];
+                var10.m[0][0] = var10.m[0][1];
+                var10.m[1][0] = var10.m[1][1];
+                var10.m[2][0] = var10.m[2][1];
             }
             else
             {

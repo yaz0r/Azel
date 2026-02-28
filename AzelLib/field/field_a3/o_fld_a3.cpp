@@ -229,7 +229,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                 rotateCurrentMatrixY(r14->m10[1]);
                 rotateCurrentMatrixX(r14->m10[0]);
 
-                u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
+                u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->m[2][3]);
 
                 if (r14->m0_modelsOffets[depthRangeIndex])
                 {
@@ -268,7 +268,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                 pushCurrentMatrix();
                 translateCurrentMatrix(&r14->m4);
 
-                u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->matrix[11]);
+                u32 depthRangeIndex = gridCellDraw_GetDepthRange(pCurrentMatrix->m[2][3]);
                 if (depthRangeIndex <= r13->m1300)
                 {
                     addBillBoardToDrawList(pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle->get3DModel(readSaturnS16(r14->m0)));
@@ -3643,9 +3643,9 @@ void fieldOverlaySubTaskInitSub2Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkAr
     sVec2_FP var0;
     sVec3_FP stack_8;
 
-    stack_8[0] = -r12->m88_matrix.matrix[2];
-    stack_8[1] = -r12->m88_matrix.matrix[6];
-    stack_8[2] = -r12->m88_matrix.matrix[10];
+    stack_8[0] = -r12->m88_matrix.m[0][2];
+    stack_8[1] = -r12->m88_matrix.m[1][2];
+    stack_8[2] = -r12->m88_matrix.m[2][2];
 
     computeLookAt(stack_8, var0);
 
@@ -3682,9 +3682,9 @@ void fieldOverlaySubTaskInitSub2Sub1(sFieldCameraStatus* r14, s_dragonTaskWorkAr
     sVec2_FP var0;
     sVec3_FP stack_8;
 
-    stack_8[0] = -r12->m88_matrix.matrix[2];
-    stack_8[1] = -r12->m88_matrix.matrix[6];
-    stack_8[2] = -r12->m88_matrix.matrix[10];
+    stack_8[0] = -r12->m88_matrix.m[0][2];
+    stack_8[1] = -r12->m88_matrix.m[1][2];
+    stack_8[2] = -r12->m88_matrix.m[2][2];
 
     computeLookAt(stack_8, var0);
 
@@ -4908,15 +4908,15 @@ void integrateDragonMovement(s_dragonTaskWorkArea* r14)
     if (r14->m154_dragonSpeed < 0)
     {
         //06080066
-        r14->m160_deltaTranslation[0] += r14->m194[0] - MTH_Mul(r14->m88_matrix.matrix[2], r14->m154_dragonSpeed);
+        r14->m160_deltaTranslation[0] += r14->m194[0] - MTH_Mul(r14->m88_matrix.m[0][2], r14->m154_dragonSpeed);
         r14->m160_deltaTranslation[1] += r14->m194[1];
     }
     else
     {
-        r14->m160_deltaTranslation[0] += r14->m194[0] - MTH_Mul(r14->m88_matrix.matrix[2], r14->m154_dragonSpeed);
-        r14->m160_deltaTranslation[1] += r14->m194[1] + MTH_Mul(r14->m88_matrix.matrix[6], r14->m154_dragonSpeed);
+        r14->m160_deltaTranslation[0] += r14->m194[0] - MTH_Mul(r14->m88_matrix.m[0][2], r14->m154_dragonSpeed);
+        r14->m160_deltaTranslation[1] += r14->m194[1] + MTH_Mul(r14->m88_matrix.m[1][2], r14->m154_dragonSpeed);
     }
-    r14->m160_deltaTranslation[2] += r14->m194[2] - MTH_Mul(r14->m88_matrix.matrix[10], r14->m154_dragonSpeed);
+    r14->m160_deltaTranslation[2] += r14->m194[2] - MTH_Mul(r14->m88_matrix.m[2][2], r14->m154_dragonSpeed);
 
     r14->m188.zeroize();
 
@@ -6291,9 +6291,9 @@ s32 checkPositionVisibility(const sVec3_FP* r4, s32 r5)
     {
         sMatrix4x3* r5 = fieldCameraTask1DrawSub1();
         sVec3_FP varC;
-        varC[0] = r5->matrix[2];
-        varC[1] = r5->matrix[6];
-        varC[2] = r5->matrix[0xA];
+        varC[0] = r5->m[0][2];
+        varC[1] = r5->m[1][2];
+        varC[2] = r5->m[2][2];
 
         var18[0] -= varC[0] * 32;
         var18[1] -= varC[1] * 32;
@@ -6377,21 +6377,21 @@ void s_visibilityGridWorkArea::fieldCameraTask1Draw(s_visibilityGridWorkArea* pT
     copyMatrix(r13, &var00);
     rotateMatrixShiftedX(fixedPoint(0x238E38F), &var00);
 
-    pTypedWorkArea->m12AC[0] = var90.matrix[0 * 4 + 2]; // 8
-    pTypedWorkArea->m12AC[1] = var90.matrix[1 * 4 + 2]; // 18
-    pTypedWorkArea->m12AC[2] = var90.matrix[2 * 4 + 2]; // 28
+    pTypedWorkArea->m12AC[0] = var90.m[0][2]; // 8
+    pTypedWorkArea->m12AC[1] = var90.m[1][2]; // 18
+    pTypedWorkArea->m12AC[2] = var90.m[2][2]; // 28
 
-    pTypedWorkArea->m12B8[0] = var60.matrix[0 * 4 + 2]; // 8
-    pTypedWorkArea->m12B8[1] = var60.matrix[1 * 4 + 2]; // 18
-    pTypedWorkArea->m12B8[2] = var60.matrix[2 * 4 + 2]; // 28
+    pTypedWorkArea->m12B8[0] = var60.m[0][2]; // 8
+    pTypedWorkArea->m12B8[1] = var60.m[1][2]; // 18
+    pTypedWorkArea->m12B8[2] = var60.m[2][2]; // 28
 
-    pTypedWorkArea->m12C4[0] = var30.matrix[0 * 4 + 2]; // 8
-    pTypedWorkArea->m12C4[1] = var30.matrix[1 * 4 + 2]; // 18
-    pTypedWorkArea->m12C4[2] = var30.matrix[2 * 4 + 2]; // 28
+    pTypedWorkArea->m12C4[0] = var30.m[0][2]; // 8
+    pTypedWorkArea->m12C4[1] = var30.m[1][2]; // 18
+    pTypedWorkArea->m12C4[2] = var30.m[2][2]; // 28
 
-    pTypedWorkArea->m12D0[0] = var00.matrix[0 * 4 + 2]; // 8
-    pTypedWorkArea->m12D0[1] = var00.matrix[1 * 4 + 2]; // 18
-    pTypedWorkArea->m12D0[2] = var00.matrix[2 * 4 + 2]; // 28
+    pTypedWorkArea->m12D0[0] = var00.m[0][2]; // 8
+    pTypedWorkArea->m12D0[1] = var00.m[1][2]; // 18
+    pTypedWorkArea->m12D0[2] = var00.m[2][2]; // 28
 
     pTypedWorkArea->m12DC = asyncDivEnd();
 
@@ -7394,18 +7394,18 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
     r6 = 4;
     r7.m_offset = 0x6094D50;
     
-    pCurrentMatrix->matrix[0] = 0x0FFFC;
-    pCurrentMatrix->matrix[1] = 0x0;
-    pCurrentMatrix->matrix[2] = 0xFFFFFD41;
-    pCurrentMatrix->matrix[3] = 0xFFCA17CD;
-    pCurrentMatrix->matrix[4] = 0xFFFFFFEA;
-    pCurrentMatrix->matrix[5] = 0x0000FFE1;
-    pCurrentMatrix->matrix[6] = 0xFFFFF826;
-    pCurrentMatrix->matrix[7] = 0xFFFCA50E;
-    pCurrentMatrix->matrix[8] = 0xFFFFFD41;
-    pCurrentMatrix->matrix[9] = 0xFFFFF826;
-    pCurrentMatrix->matrix[10] = 0xFFFF0022;
-    pCurrentMatrix->matrix[11] = 0xFFACD3CB;
+    pCurrentMatrix->m[0][0] = 0x0FFFC;
+    pCurrentMatrix->m[0][1] = 0x0;
+    pCurrentMatrix->m[0][2] = 0xFFFFFD41;
+    pCurrentMatrix->m[0][3] = 0xFFCA17CD;
+    pCurrentMatrix->m[1][0] = 0xFFFFFFEA;
+    pCurrentMatrix->m[1][1] = 0x0000FFE1;
+    pCurrentMatrix->m[1][2] = 0xFFFFF826;
+    pCurrentMatrix->m[1][3] = 0xFFFCA50E;
+    pCurrentMatrix->m[2][0] = 0xFFFFFD41;
+    pCurrentMatrix->m[2][1] = 0xFFFFF826;
+    pCurrentMatrix->m[2][2] = 0xFFFF0022;
+    pCurrentMatrix->m[2][3] = 0xFFACD3CB;
     
 #endif
 

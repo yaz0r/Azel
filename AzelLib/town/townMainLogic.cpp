@@ -154,17 +154,17 @@ void scriptFunction_6057058_sub0Sub0()
     rotateMatrixShiftedY(r13->mC_rotation[1], &var0);
     rotateMatrixShiftedX(r13->mC_rotation[0], &var0);
 
-    twnMainLogicTask->m5C_rawCameraPosition[0] = var0.matrix[3] + MTH_Mul(var0.matrix[2], 0x199);
-    twnMainLogicTask->m5C_rawCameraPosition[1] = var0.matrix[7] + MTH_Mul(var0.matrix[6], 0x199);
-    twnMainLogicTask->m5C_rawCameraPosition[2] = var0.matrix[11] + MTH_Mul(var0.matrix[10], 0x199);
+    twnMainLogicTask->m5C_rawCameraPosition[0] = var0.m[0][3] + MTH_Mul(var0.m[0][2], 0x199);
+    twnMainLogicTask->m5C_rawCameraPosition[1] = var0.m[1][3] + MTH_Mul(var0.m[1][2], 0x199);
+    twnMainLogicTask->m5C_rawCameraPosition[2] = var0.m[2][3] + MTH_Mul(var0.m[2][2], 0x199);
 
     twnMainLogicTask->m38_interpolatedCameraPosition = twnMainLogicTask->m5C_rawCameraPosition;
     twnMainLogicTask->m50_upVector = twnMainLogicTask->m5C_rawCameraPosition;
     twnMainLogicTask->m50_upVector[1] += 0x10000;
 
-    twnMainLogicTask->m44_cameraTarget[0] = var0.matrix[3] + MTH_Mul(var0.matrix[2], -0x1000);
-    twnMainLogicTask->m44_cameraTarget[1] = var0.matrix[7] + MTH_Mul(var0.matrix[6], -0x1000);
-    twnMainLogicTask->m44_cameraTarget[2] = var0.matrix[11] + MTH_Mul(var0.matrix[10], -0x1000);
+    twnMainLogicTask->m44_cameraTarget[0] = var0.m[0][3] + MTH_Mul(var0.m[0][2], -0x1000);
+    twnMainLogicTask->m44_cameraTarget[1] = var0.m[1][3] + MTH_Mul(var0.m[1][2], -0x1000);
+    twnMainLogicTask->m44_cameraTarget[2] = var0.m[2][3] + MTH_Mul(var0.m[2][2], -0x1000);
 }
 
 void moveTownLCSCursor(sMainLogic* r4)
@@ -274,9 +274,9 @@ void cameraFollowMode0_LCS(sMainLogic* r14_pose)
     rotateMatrixShiftedX(r14_pose->m68_cameraRotation[0], &var4);
     scaleMatrixRow2(r14_pose->m24_distance, &var4);
 
-    r14_pose->m38_interpolatedCameraPosition[0] = var4.matrix[2] + r14_pose->m18_position[0];
-    r14_pose->m38_interpolatedCameraPosition[1] = var4.matrix[6] + r14_pose->m18_position[1];
-    r14_pose->m38_interpolatedCameraPosition[2] = var4.matrix[10] + r14_pose->m18_position[2];
+    r14_pose->m38_interpolatedCameraPosition[0] = var4.m[0][2] + r14_pose->m18_position[0];
+    r14_pose->m38_interpolatedCameraPosition[1] = var4.m[1][2] + r14_pose->m18_position[1];
+    r14_pose->m38_interpolatedCameraPosition[2] = var4.m[2][2] + r14_pose->m18_position[2];
 
     r14_pose->m5C_rawCameraPosition = r14_pose->m38_interpolatedCameraPosition;
 
@@ -347,9 +347,9 @@ void mainLogicUpdateSub5(sMainLogic* r4)
     scaleMatrixRow2(-r4->m24_distance / 2, &varC);
 
     sVec3_FP var0;
-    var0[0] = varC.matrix[2] + r4->m18_position[0];
-    var0[1] = varC.matrix[6] + r4->m18_position[1];
-    var0[2] = varC.matrix[10] + r4->m18_position[2];
+    var0[0] = varC.m[0][2] + r4->m18_position[0];
+    var0[1] = varC.m[1][2] + r4->m18_position[1];
+    var0[2] = varC.m[2][2] + r4->m18_position[2];
 
     updateCameraTarget(r4, var0);
 }
@@ -474,9 +474,9 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
     rotateMatrixShiftedX(r14_townTask->m68_cameraRotation[0], &var10);
     scaleMatrixRow2(r14_townTask->m24_distance, &var10);
 
-    r14_townTask->m5C_rawCameraPosition[0] = var10.matrix[2] + r14_townTask->m18_position[0];
-    r14_townTask->m5C_rawCameraPosition[1] = var10.matrix[6] + r14_townTask->m18_position[1];
-    r14_townTask->m5C_rawCameraPosition[2] = var10.matrix[10] + r14_townTask->m18_position[2];
+    r14_townTask->m5C_rawCameraPosition[0] = var10.m[0][2] + r14_townTask->m18_position[0];
+    r14_townTask->m5C_rawCameraPosition[1] = var10.m[1][2] + r14_townTask->m18_position[1];
+    r14_townTask->m5C_rawCameraPosition[2] = var10.m[2][2] + r14_townTask->m18_position[2];
 
     r14_townTask->m38_interpolatedCameraPosition[0] = r14_townTask->m5C_rawCameraPosition[0] + MTH_Mul(r14_townTask->m38_interpolatedCameraPosition[0] - r14_townTask->m5C_rawCameraPosition[0], r13);
     r14_townTask->m38_interpolatedCameraPosition[1] = r14_townTask->m5C_rawCameraPosition[1] + MTH_Mul(r14_townTask->m38_interpolatedCameraPosition[1] - r14_townTask->m5C_rawCameraPosition[1], r13);
@@ -550,9 +550,9 @@ void cameraFollowMode3Sub(sMainLogic* pThis) {
     scaleMatrixRow2(scale, &auStack_40);
 
     sVec3_FP local_58;
-    local_58.m0_X = auStack_40[2] + (pThis->m18_position).m0_X;
-    local_58.m4_Y = auStack_40[6] + (pThis->m18_position).m4_Y;
-    local_58.m8_Z = auStack_40[10] + (pThis->m18_position).m8_Z;
+    local_58.m0_X = auStack_40.m[0][2] + (pThis->m18_position).m0_X;
+    local_58.m4_Y = auStack_40.m[1][2] + (pThis->m18_position).m4_Y;
+    local_58.m8_Z = auStack_40.m[2][2] + (pThis->m18_position).m8_Z;
     cameraFollowMode3SubSub(pThis, &local_58);
 }
 
@@ -638,9 +638,9 @@ void cameraFollowMode3(sMainLogic* pThis) {
         rotateMatrixShiftedY((pThis->m68_cameraRotation)[1], &auStack_5c);
         rotateMatrixShiftedX((pThis->m68_cameraRotation)[0], &auStack_5c);
         scaleMatrixRow2(pThis->m24_distance, &auStack_5c);
-        (pThis->m44_cameraTarget)[0] = (pThis->m38_interpolatedCameraPosition)[0] - auStack_5c[2];
-        (pThis->m44_cameraTarget)[1] = (pThis->m38_interpolatedCameraPosition)[1] - auStack_5c[6];
-        (pThis->m44_cameraTarget)[2] = (pThis->m38_interpolatedCameraPosition)[2] - auStack_5c[10];
+        (pThis->m44_cameraTarget)[0] = (pThis->m38_interpolatedCameraPosition)[0] - auStack_5c.m[0][2];
+        (pThis->m44_cameraTarget)[1] = (pThis->m38_interpolatedCameraPosition)[1] - auStack_5c.m[1][2];
+        (pThis->m44_cameraTarget)[2] = (pThis->m38_interpolatedCameraPosition)[2] - auStack_5c.m[2][2];
     }
 }
 

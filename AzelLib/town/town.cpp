@@ -83,7 +83,7 @@ fixedPoint generateObjectMatrix(sSaturnPtr r4, sSaturnPtr r5)
     rotation[2] = readSaturnS16(r5+4);
     rotateMatrixZYX_s16(rotation, pCurrentMatrix);
 
-    return pCurrentMatrix->matrix[11];
+    return pCurrentMatrix->m[2][3];
 }
 
 void loadTownFile(std::string& filename, u8* destination, u16 relocation)
@@ -645,12 +645,12 @@ void sTownCellTask::Draw(sTownCellTask* pThis)
     pushCurrentMatrix();
     {
         translateCurrentMatrix(pThis->mC_position);
-        fixedPoint var0 = pCurrentMatrix->matrix[11];
+        fixedPoint var0 = pCurrentMatrix->m[2][3];
         if (var0 < gTownGrid.m2C - graphicEngineStatus.m405C.m10_nearClipDistance)
         {
             fixedPoint varMinusOne = MTH_Mul(var0, graphicEngineStatus.m405C.m2C_widthRatio);
             fixedPoint r4 = varMinusOne + MTH_Mul(gTownGrid.m2C, gTownGrid.m28_cellSize);
-            if ((pCurrentMatrix->matrix[3] >= -r4) && (pCurrentMatrix->matrix[3] <= r4))
+            if ((pCurrentMatrix->m[0][3] >= -r4) && (pCurrentMatrix->m[0][3] <= r4))
             {
                 sSaturnPtr r14 = readSaturnEA(pThis->m8_cellPtr + 0xC);
                 if (r14.m_offset)

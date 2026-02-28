@@ -912,9 +912,9 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
 
 void s_battleDragon_getRiderRotation(sVec3_FP& outputRotation, const sMatrix4x3& inMatrix)
 {
-    outputRotation[0] = atan_FP(-inMatrix.matrix[6]);
-    outputRotation[1] = atan2_FP(inMatrix.matrix[2], inMatrix.matrix[10]);
-    outputRotation[2] = atan2_FP(inMatrix.matrix[4], inMatrix.matrix[5]);
+    outputRotation[0] = atan_FP(-inMatrix.m[1][2]);
+    outputRotation[1] = atan2_FP(inMatrix.m[0][2], inMatrix.m[2][2]);
+    outputRotation[2] = atan2_FP(inMatrix.m[1][0], inMatrix.m[1][1]);
 }
 
 void s_battleDragon_UpdateHotPoint(sVec3_FP& output, int index)

@@ -420,9 +420,9 @@ void dragonFieldTaskUpdateSub1Sub1()
         copyToCurrentMatrix(&r13->m4_matrix);
 
         // put the object matrix in the dragon local space
-        pCurrentMatrix->matrix[3] -= r14_pDragonTask->m8_pos[0];
-        pCurrentMatrix->matrix[7] -= r14_pDragonTask->m8_pos[1];
-        pCurrentMatrix->matrix[11] -= r14_pDragonTask->m8_pos[2];
+        pCurrentMatrix->m[0][3] -= r14_pDragonTask->m8_pos[0];
+        pCurrentMatrix->m[1][3] -= r14_pDragonTask->m8_pos[1];
+        pCurrentMatrix->m[2][3] -= r14_pDragonTask->m8_pos[2];
 
         if (collisionSub0(r13->m0_model, var60, var40, r13->m34, r12_pVisibilityGrid->m48))
         {
@@ -475,9 +475,9 @@ void dragonFieldTaskUpdateSub1Sub1()
         r14_pDragonTask->m160_deltaTranslation = r14_pDragonTask->m8_pos - r14_pDragonTask->m14_oldPos;
 
         sVec3_FP var10;
-        var10[0] = -r14_pDragonTask->m88_matrix.matrix[2];
-        var10[1] = r14_pDragonTask->m88_matrix.matrix[6];
-        var10[2] = -r14_pDragonTask->m88_matrix.matrix[10];
+        var10[0] = -r14_pDragonTask->m88_matrix.m[0][2];
+        var10[1] = r14_pDragonTask->m88_matrix.m[1][2];
+        var10[2] = -r14_pDragonTask->m88_matrix.m[2][2];
 
         sVec3_FP var1C;
         var1C[0] = r14_pDragonTask->m160_deltaTranslation[0] << 16;

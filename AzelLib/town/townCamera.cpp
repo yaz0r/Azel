@@ -32,9 +32,9 @@ s32 townCamera_setup(s32 r4, s32 r5)
     rotateMatrixShiftedY(r4Value[1], &var4);
     rotateMatrixShiftedX(r4Value[0], &var4);
 
-    cameraTaskPtr->m14[0] = var4.matrix[3];
-    cameraTaskPtr->m14[1] = var4.matrix[7];
-    cameraTaskPtr->m14[2] = var4.matrix[11];
+    cameraTaskPtr->m14[0] = var4.m[0][3];
+    cameraTaskPtr->m14[1] = var4.m[1][3];
+    cameraTaskPtr->m14[2] = var4.m[2][3];
 
     cameraTaskPtr->m10 = readSaturnRGB8(r5Ptr);
     cameraTaskPtr->m30 = 0x8000;

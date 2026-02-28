@@ -1223,9 +1223,9 @@ s8 READ_BE_S8(const void* ptr)
 
 void adjustMatrixTranslation(fixedPoint r4)
 {
-    pCurrentMatrix->matrix[3] += (((s64)pCurrentMatrix->matrix[1] * (s64)r4) >> 16);
-    pCurrentMatrix->matrix[7] += (((s64)pCurrentMatrix->matrix[5] * (s64)r4) >> 16);
-    pCurrentMatrix->matrix[11] += (((s64)pCurrentMatrix->matrix[9] * (s64)r4) >> 16);
+    pCurrentMatrix->m[0][3] += (((s64)pCurrentMatrix->m[0][1] * (s64)r4) >> 16);
+    pCurrentMatrix->m[1][3] += (((s64)pCurrentMatrix->m[1][1] * (s64)r4) >> 16);
+    pCurrentMatrix->m[2][3] += (((s64)pCurrentMatrix->m[2][1] * (s64)r4) >> 16);
 }
 
 sSaturnMemoryFile::sSaturnMemoryFile(const char* fileName, u32 base)

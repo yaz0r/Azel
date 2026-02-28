@@ -447,12 +447,12 @@ void sBattleEnvironmentGridCell_Draw(sTownCellTask* pThis)
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->mC_position);
 
-    if ((graphicEngineStatus.m405C.m10_nearClipDistance - gTownGrid.m2C) <= pCurrentMatrix->matrix[11])
+    if ((graphicEngineStatus.m405C.m10_nearClipDistance - gTownGrid.m2C) <= pCurrentMatrix->m[2][3])
     {
-        s32 iVar1 = MTH_Mul(pCurrentMatrix->matrix[11], graphicEngineStatus.m405C.m2C_widthRatio);
+        s32 iVar1 = MTH_Mul(pCurrentMatrix->m[2][3], graphicEngineStatus.m405C.m2C_widthRatio);
         s32 iVar2 = MTH_Mul(gTownGrid.m2C, graphicEngineStatus.m405C.m28_widthRatio2);
 
-        if (((-(iVar1 + iVar2) <= pCurrentMatrix->matrix[3]) && (pCurrentMatrix->matrix[3] <= iVar1 + iVar2)))
+        if (((-(iVar1 + iVar2) <= pCurrentMatrix->m[0][3]) && (pCurrentMatrix->m[0][3] <= iVar1 + iVar2)))
         {
             sSaturnPtr r14 = readSaturnEA(pThis->m8_cellPtr + 0xC);
             if (r14.m_offset)
@@ -613,20 +613,20 @@ sMatrix4x3 vdpVar8;
 
 void BTL_A3_Env_DrawSub1ResetMatrix()
 {
-    vdpVar8[0] = 0x10000;
-    vdpVar8[1] = 0;
-    vdpVar8[2] = 0;
-    vdpVar8[3] = 0;
+    vdpVar8.m[0][0] = 0x10000;
+    vdpVar8.m[0][1] = 0;
+    vdpVar8.m[0][2] = 0;
+    vdpVar8.m[0][3] = 0;
 
-    vdpVar8[4] = 0x10000;
-    vdpVar8[5] = 0;
-    vdpVar8[6] = 0;
-    vdpVar8[7] = 0;
+    vdpVar8.m[1][0] = 0x10000;
+    vdpVar8.m[1][1] = 0;
+    vdpVar8.m[1][2] = 0;
+    vdpVar8.m[1][3] = 0;
 
-    vdpVar8[8] = 0x10000;
-    vdpVar8[9] = 0;
-    vdpVar8[10] = 0;
-    vdpVar8[11] = 0;
+    vdpVar8.m[2][0] = 0x10000;
+    vdpVar8.m[2][1] = 0;
+    vdpVar8.m[2][2] = 0;
+    vdpVar8.m[2][3] = 0;
 }
 
 void BTL_A3_Env_DrawSub1(int p1, fixedPoint p2)
@@ -655,29 +655,29 @@ void BTL_A3_Env_DrawSub8Sub1(fixedPoint p1, fixedPoint p2)
     fixedPoint cos2 = getCos(fixedPoint::toInteger(p2));
     fixedPoint sin2 = getSin(fixedPoint::toInteger(p2));
 
-    vdpVar8[0] = cos2;
-    vdpVar8[1] = MTH_Mul(-sin1, cos2);
-    vdpVar8[2] = MTH_Mul(cos1, cos2);
+    vdpVar8.m[0][0] = cos2;
+    vdpVar8.m[0][1] = MTH_Mul(-sin1, cos2);
+    vdpVar8.m[0][2] = MTH_Mul(cos1, cos2);
 
-    vdpVar8[3] = cos2;
-    vdpVar8[4] = MTH_Mul(sin1, sin2);
-    vdpVar8[5] = MTH_Mul(-cos1, sin2);
+    vdpVar8.m[0][3] = cos2;
+    vdpVar8.m[1][0] = MTH_Mul(sin1, sin2);
+    vdpVar8.m[1][1] = MTH_Mul(-cos1, sin2);
 
-    vdpVar8[6] = 0;
-    vdpVar8[7] = cos1;
-    vdpVar8[8] = sin1;
+    vdpVar8.m[1][2] = 0;
+    vdpVar8.m[1][3] = cos1;
+    vdpVar8.m[2][0] = sin1;
 
     vdpVar6[2] = 1;
 }
 
 void BTL_A3_Env_DrawSub6(fixedPoint param1)
 {
-    vdpVar8[0] = MTH_Mul(vdpVar8[0], param1);
-    vdpVar8[1] = MTH_Mul(vdpVar8[1], param1);
-    vdpVar8[2] = MTH_Mul(vdpVar8[2], param1);
-    vdpVar8[3] = MTH_Mul(vdpVar8[3], param1);
-    vdpVar8[4] = MTH_Mul(vdpVar8[4], param1);
-    vdpVar8[5] = MTH_Mul(vdpVar8[5], param1);
+    vdpVar8.m[0][0] = MTH_Mul(vdpVar8.m[0][0], param1);
+    vdpVar8.m[0][1] = MTH_Mul(vdpVar8.m[0][1], param1);
+    vdpVar8.m[0][2] = MTH_Mul(vdpVar8.m[0][2], param1);
+    vdpVar8.m[0][3] = MTH_Mul(vdpVar8.m[0][3], param1);
+    vdpVar8.m[1][0] = MTH_Mul(vdpVar8.m[1][0], param1);
+    vdpVar8.m[1][1] = MTH_Mul(vdpVar8.m[1][1], param1);
 }
 
 void BTL_A3_Env_DrawSub8(s_BTL_A3_Env* pThis)
