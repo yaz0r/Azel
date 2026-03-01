@@ -1,4 +1,4 @@
 #pragma once
 
-void dragonFieldTaskUpdateSub1Sub1();
+void resolveDragonTerrainCollision();
 

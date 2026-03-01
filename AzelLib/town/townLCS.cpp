@@ -678,7 +678,7 @@ sProcessed3dModel townLCSVisibilityTestMesh(fixedPoint(0), townLCSVisibilityTest
 
 void findLCSCollision()
 {
-    scriptUpdateSub2Sub0(&LCSCollisionData, resData.m0);
+    scriptUpdateSub2Sub0(&LCSCollisionData, gCollisionRegistry.m0);
 
     for (int i = 0; i < townGridSearchPattern.size(); i++)
     {
@@ -686,7 +686,7 @@ void findLCSCollision()
     }
 
     // find LCS collision with NPC objects
-    sResData* var10 = &resData;
+    sCollisionBodyRegistry* var10 = &gCollisionRegistry;
     sProcessed3dModel& var4 = townLCSVisibilityTestMesh;
 
     sVec3_S16_12_4& r10 = townLCSVisibilityTestMesh.m8_vertices[0];
@@ -696,7 +696,7 @@ void findLCSCollision()
 
     for (int i = 0; i < 5; i++)
     {
-        sResData1C* r12 = var10->m8_headOfLinkedList[i];
+        sCollisionBodyNode* r12 = var10->m8_headOfLinkedList[i];
         while (r12)
         {
             sCollisionBody* r14 = r12->m4;
@@ -737,35 +737,6 @@ void findLCSCollision()
                 pCurrentMatrix->m[2][0] = r5.m[2][0];
                 pCurrentMatrix->m[2][1] = r5.m[2][1];
                 pCurrentMatrix->m[2][2] = r5.m[2][2];
-
-                /**/
-                if (0)
-                {
-                    pCurrentMatrix->m[0][0] = 0xFFFF0000;
-                    pCurrentMatrix->m[0][1] = 0x00000000;
-                    pCurrentMatrix->m[0][2] = 0x00000000;
-                    pCurrentMatrix->m[0][3] = 0xFFFFF8CD;
-                    pCurrentMatrix->m[1][0] = 0x00000000;
-                    pCurrentMatrix->m[1][1] = 0x0000FF16;
-                    pCurrentMatrix->m[1][2] = 0xFFFFEA6E;
-                    pCurrentMatrix->m[1][3] = 0xFFFFE58C;
-                    pCurrentMatrix->m[2][0] = 0x00000000;
-                    pCurrentMatrix->m[2][1] = 0x00001592;
-                    pCurrentMatrix->m[2][2] = 0x0000FF16;
-                    pCurrentMatrix->m[2][3] = 0x00007F27;
-
-                    LCSCollisionData.m34_boundMinX = 0xFFFFF295;
-                    LCSCollisionData.m3C_boundMaxX = 0xFFFFF70E;
-
-                    LCSCollisionData.m44_boundMinY = 0xFFFFC8DC;
-                    LCSCollisionData.m4C_boundMaxY = 0xFFFFCE1C;
-
-                    LCSCollisionData.m1C_LCSHeightMin = 0x2A;
-                    LCSCollisionData.m1E_LCSHeightMax = 0x26;
-                    LCSCollisionData.m20_LCSWidthMin = 0xFFF4;
-                    LCSCollisionData.m22_LCSWidthMax = 0xFFF8;
-                }
-                /**/
 
                 if (testMeshVisibility(&LCSCollisionData, var4) == 0)
                 {

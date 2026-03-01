@@ -14,6 +14,7 @@
 #include "town/townDragon.h"
 #include "campDragon.h"
 #include "town/excaEntity.h"
+#include "town/collisionBody.h"
 
 void unloadFnt(); // TODO: fix
 int scriptFunction_60541c4(int arg);

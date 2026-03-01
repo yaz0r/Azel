@@ -366,7 +366,7 @@ s32 collisionSub0(sProcessed3dModel* collisionMesh, sCollisionTempStruct& r5, sV
     return r11;
 }
 
-void dragonFieldTaskUpdateSub1Sub1()
+void resolveDragonTerrainCollision()
 {
     if(!isShipping())
     {
@@ -387,6 +387,7 @@ void dragonFieldTaskUpdateSub1Sub1()
     if (r14_pDragonTask->m249_noCollisionAndHideDragon)
         return;
 
+    // Build collision sphere for the dragon
     sCollisionTempStruct var60;
     var60.m0_translationToResolve.zeroize();
     fixedPoint var0 = 0x8000;
@@ -404,14 +405,7 @@ void dragonFieldTaskUpdateSub1Sub1()
     r12_pVisibilityGrid->m48 = r12_pVisibilityGrid->m5A8.begin();
     r12_pVisibilityGrid->m40_activeCollisionEntriesCount = 0;
 
-    if(0)
-    {
-        r14_pDragonTask->m8_pos[0] = 0x00601dd5;
-        r14_pDragonTask->m8_pos[1] = 0x00051154;
-        r14_pDragonTask->m8_pos[2] = 0xfeffc6ac;
-    }
-
-    // find all potential collision and increment m40 for each
+    // Test the dragon sphere against all visible collision geometries in dragon-local space
     pushCurrentMatrix();
     for (int i = r12_pVisibilityGrid->m12E4_numCollisionGeometries - 1; i >= 0; i--)
     {
@@ -444,6 +438,7 @@ void dragonFieldTaskUpdateSub1Sub1()
             r14_pDragonTask->mF8_Flags &= ~0x100;
         }
 
+        // Pick the deepest penetration
         s_visibilityGridWorkArea_5A8* r13 = &r12_pVisibilityGrid->m5A8[0];
         for (int r4 = 1; r4 < r12_pVisibilityGrid->m40_activeCollisionEntriesCount; r4++)
         {
@@ -471,6 +466,7 @@ void dragonFieldTaskUpdateSub1Sub1()
             var4_speedIndex = 0;
         }
 
+        // Resolve dragon position out of the geometry
         r14_pDragonTask->m8_pos += var60.m0_translationToResolve;
         r14_pDragonTask->m160_deltaTranslation = r14_pDragonTask->m8_pos - r14_pDragonTask->m14_oldPos;
 
@@ -484,6 +480,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         var1C[1] = r14_pDragonTask->m160_deltaTranslation[1] << 16;
         var1C[2] = r14_pDragonTask->m160_deltaTranslation[2] << 16;
 
+        // Cap dragon speed at the speed tier limit
         fixedPoint varDragonSpeedValue = r14_pDragonTask->m21C_DragonSpeedValues[var4_speedIndex];
         if (r14_pDragonTask->m21C_DragonSpeedValues[var4_speedIndex] < sqrt_F(dot3_FP(&var1C, &var1C)).asS32() >> 8)
         {
@@ -494,6 +491,7 @@ void dragonFieldTaskUpdateSub1Sub1()
             r14_pDragonTask->m154_dragonSpeed = sqrt_F(dot3_FP(&var1C, &var1C)).asS32() >> 8;
         }
 
+        // Reorient dragon angles toward the post-resolution delta translation
         //06070D98
         sVec2_FP var28;
         if (gDragonState->mC_dragonType != DR_LEVEL_8_FLOATER)
@@ -518,6 +516,7 @@ void dragonFieldTaskUpdateSub1Sub1()
         return;
     }
 
+    // No collision — clear flags
     r14_pDragonTask->mF8_Flags &= ~0x300;
 
     if (gDragonState->mC_dragonType == DR_LEVEL_8_FLOATER)

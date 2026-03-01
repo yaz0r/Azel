@@ -531,32 +531,6 @@ void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5)
     pThisAsTask->getTask()->markFinished();
 }
 
-static const std::array<sCollisionSetup, 5> collisionSetupArray = {
-    {
-        {1,0,0x10},
-        {1,1,0x1C},
-        {0,0,0x18},
-        {2,1,0},
-        {3,1,0}
-    }
-};
-
-void setCollisionSetup(sCollisionBody* r4, s32 r5)
-{
-    r4->m2C_collisionSetupIndex = r5;
-    r4->m0_collisionSetup = collisionSetupArray[r5];
-}
-
-void setCollisionBounds(sCollisionBody* r4, const sVec3_FP& r5, const sVec3_FP& r6)
-{
-    r4->m20_AABBCenter = (r5 + r6) / 2;
-
-    r4->m14_halfAABB[0] = r4->m20_AABBCenter[0] - std::min(r5[0], r6[0]);
-    r4->m14_halfAABB[1] = r4->m20_AABBCenter[1] - std::min(r5[1], r6[1]);
-    r4->m14_halfAABB[2] = r4->m20_AABBCenter[2] - std::min(r5[2], r6[2]);
-
-    r4->m4_sphereRadius = sqrt_F(MTH_Product3d_FP(r4->m14_halfAABB, r4->m14_halfAABB));
-}
 
 void mainLogicUpdateSub0Sub0(sTownGrid* r4)
 {

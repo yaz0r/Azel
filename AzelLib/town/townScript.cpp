@@ -18,8 +18,6 @@
 
 s32 playBattleSoundEffect(s32 effectIndex); // TODO: cleanup
 
-sResData resData;
-
 s32 resValue0 = 0;
 s32 resValue1 = 0;
 sScriptTask* currentResTask = nullptr;
@@ -1332,7 +1330,7 @@ void scriptUpdateSub0()
 {
     for (int r8 = 4-1; r8 >= 0; r8--)
     {
-        sResData1C* r11 = resData.m8_headOfLinkedList[r8];
+        sCollisionBodyNode* r11 = gCollisionRegistry.m8_headOfLinkedList[r8];
         while (r11)
         {
             sCollisionBody* r14 = r11->m4;
@@ -1346,7 +1344,7 @@ void scriptUpdateSub0()
                 {
                     if (r14->m0_collisionSetup.m2_collisionLayersBitField & (1 << r9))
                     {
-                        sResData1C* r12 = resData.m8_headOfLinkedList[r9];
+                        sCollisionBodyNode* r12 = gCollisionRegistry.m8_headOfLinkedList[r9];
                         while (r12)
                         {
                             sCollisionBody* r13 = r12->m4;
@@ -1373,7 +1371,7 @@ void scriptUpdateSub0()
                 
                 if (r14->m0_collisionSetup.m2_collisionLayersBitField & 0x10)
                 {
-                    scriptUpdateSub0Sub2(r14, resData.m0);
+                    scriptUpdateSub0Sub2(r14, gCollisionRegistry.m0);
                 }
 
                 handleCollisionWithTownEnv(r14);
@@ -1392,8 +1390,8 @@ void initResTable()
     {
         addTraceLog("InitResTable: resValue0=%d\n", resValue0);
     }
-    resData.m8_headOfLinkedList.fill(0);
-    resData.m4 = 0;
+    gCollisionRegistry.m8_headOfLinkedList.fill(0);
+    gCollisionRegistry.m4 = 0;
 
     if (resValue0 < 0)
     {
@@ -2129,7 +2127,7 @@ void scriptUpdateRunScript()
 
 void sScriptTask::Init(sScriptTask* pThis)
 {
-    resData.m0 = 0;
+    gCollisionRegistry.m0 = 0;
     initResTable();
     copyCameraPropertiesToRes();
 }

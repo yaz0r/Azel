@@ -2,21 +2,6 @@
 
 struct sCollisionBody;
 
-struct sResData1C
-{
-    sResData1C* m0_pNext;
-    sCollisionBody* m4;
-};
-
-struct sResData
-{
-    s32 m0;
-    s32 m4;
-    std::array<sResData1C*, 5>m8_headOfLinkedList;
-    std::array<sResData1C, 0x3F>m1C;
-};
-extern sResData resData;
-
 struct sResCameraProperties
 {
     fixedPoint m0_LCS_X;

@@ -5474,7 +5474,7 @@ void dragonFieldTaskUpdateSub1(s_dragonTaskWorkArea* pTypedWorkArea)
 
     pTypedWorkArea->mF0(pTypedWorkArea);
 
-    dragonFieldTaskUpdateSub1Sub1();
+    resolveDragonTerrainCollision();
 }
 
 s32 getDragonSpeedIndex(s_dragonTaskWorkArea* pTypedWorkArea)

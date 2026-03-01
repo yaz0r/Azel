@@ -6,6 +6,7 @@
 #include "ruin/twn_ruin.h"
 #include "kernel/debug/trace.h"
 #include "townScript.h"
+#include "collisionBody.h"
 
 sMainLogic* twnMainLogicTask;
 
@@ -13,13 +14,13 @@ void mainLogicDummy(struct sMainLogic*)
 {
 }
 
-void mainLogicInitSub2()
+void initTownProjection()
 {
     initVDP1Projection(DEG_80 / 2, 0);
 }
 
 // read inputs
-void mainLogicUpdateSub1(sMainLogic* pThis)
+void readPlayerInput(sMainLogic* pThis)
 {
     if (!(npcData0.mFC & 8))
     {
@@ -91,7 +92,7 @@ void mainLogicUpdateSub1(sMainLogic* pThis)
     pThis->mC_inputY = r7;
 }
 
-void mainLogicUpdateSub2(sMainLogic* pThis)
+void processInputFlags(sMainLogic* pThis)
 {
     if (pThis->m4_flags & 0x4000000)
     {
@@ -122,7 +123,7 @@ void mainLogicUpdateSub2(sMainLogic* pThis)
     }
 }
 
-void mainLogicUpdateSub4(sMainLogic* pThis)
+void updateAutoWalk(sMainLogic* pThis)
 {
     if (pThis->m14_EdgeTask)
     {
@@ -335,7 +336,7 @@ void updateCameraTarget(sMainLogic* r4, const sVec3_FP& r14_pose)
     r4->m44_cameraTarget[2] = r14_pose[2] + MTH_Mul(r4->m44_cameraTarget[2] - r14_pose[2], r13);
 }
 
-void mainLogicUpdateSub5(sMainLogic* r4)
+void updateFollowCameraTarget(sMainLogic* r4)
 {
     sMatrix4x3 varC;
 
@@ -482,10 +483,8 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
     r14_townTask->m38_interpolatedCameraPosition[1] = r14_townTask->m5C_rawCameraPosition[1] + MTH_Mul(r14_townTask->m38_interpolatedCameraPosition[1] - r14_townTask->m5C_rawCameraPosition[1], r13);
     r14_townTask->m38_interpolatedCameraPosition[2] = r14_townTask->m5C_rawCameraPosition[2] + MTH_Mul(r14_townTask->m38_interpolatedCameraPosition[2] - r14_townTask->m5C_rawCameraPosition[2], r13);
 
-    EdgeUpdateSub0(&r14_townTask->m74_townCamera);
-    mainLogicUpdateSub5(r14_townTask);
-
-    addTraceLog("cameraFollowMode0Bis set camera position: 0x%04X 0x%04X 0x%04X\n", r14_townTask->m38_interpolatedCameraPosition[0].asS32(), r14_townTask->m38_interpolatedCameraPosition[1].asS32(), r14_townTask->m38_interpolatedCameraPosition[2].asS32());
+    registerCollisionBody(&r14_townTask->m74_townCamera);
+    updateFollowCameraTarget(r14_townTask);
 }
 
 void cameraFollowMode3SubSub(sMainLogic* param_1, sVec3_FP* param_2) {
@@ -765,7 +764,7 @@ void sMainLogic::Init(sMainLogic* pThis)
 
     npcData0.mFC &= ~0x10;
 
-    mainLogicInitSub2();
+    initTownProjection();
 }
 
 // Ok for camp
@@ -788,9 +787,9 @@ void sMainLogic::Update(sMainLogic* pThis)
         pThis->m18_position[1] += 0x1800;
     }
 
-    mainLogicUpdateSub1(pThis);
+    readPlayerInput(pThis);
 
-    mainLogicUpdateSub2(pThis);
+    processInputFlags(pThis);
 
     if (!(npcData0.mFC & 1))
     {
@@ -799,7 +798,7 @@ void sMainLogic::Update(sMainLogic* pThis)
 
     pThis->m10(pThis);
 
-    if ((gCurrentTownOverlay->m_name == "TWN_E006") || (gCurrentTownOverlay->m_name == "TWN_E014")) {
+    if ((gCurrentTownOverlay->m_name == "TWN_E006.PRG") || (gCurrentTownOverlay->m_name == "TWN_E014.PRG")) {
         assert(0); // this is actually incorrect version for those overlays
     }
 
@@ -807,7 +806,7 @@ void sMainLogic::Update(sMainLogic* pThis)
     pThis->m50_upVector[1] += 0x10000;
     pThis->m4_flags = 0;
 
-    mainLogicUpdateSub4(pThis);
+    updateAutoWalk(pThis);
 }
 
 void sMainLogic::Draw(sMainLogic* pThis)

@@ -2,6 +2,8 @@
 
 #include <map>
 
+#include "collisionBody.h"
+
 struct sTownObject
 {
     // 0-4 are copy
@@ -71,32 +73,6 @@ struct sNPCE8
     sVec3_FP m3C_targetPosition;
     sVec3_FP m48_targetRotation;
     sVec3_FP m54_oldPosition;
-};
-
-struct sCollisionSetup
-{
-    s8 m0_collisionType;
-    s8 m1;
-    s16 m2_collisionLayersBitField;
-};
-
-struct sCollisionBody
-{
-    sCollisionSetup m0_collisionSetup;
-    fixedPoint m4_sphereRadius;
-    sVec3_FP m8_position;
-    sVec3_FP m14_halfAABB;
-    sVec3_FP m20_AABBCenter;
-    s32 m2C_collisionSetupIndex;
-    sVec3_FP* m30_pPosition;
-    sVec3_FP* m34_pRotation;
-    p_workArea m38_pOwner;
-    sSaturnPtr m3C_scriptEA;
-    u8* m40;
-    s32 m44;
-    sCollisionBody* m48;
-    sVec3_FP m4C;
-    sVec3_FP m58_collisionSolveTranslation;
 };
 
 struct sNPC
@@ -221,9 +197,6 @@ p_workArea loadTown2(p_workArea r4, s32 r5);
 void loadTownPrg(s8 r4, s8 r5);
 
 void startScriptTask(p_workArea r4);
-
-void setCollisionSetup(sCollisionBody*, s32);
-void setCollisionBounds(sCollisionBody*, const sVec3_FP&, const sVec3_FP&);
 
 void initTownGrid();
 

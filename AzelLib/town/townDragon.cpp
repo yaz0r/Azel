@@ -107,7 +107,7 @@ static void sTownDragon_Update(sTownDragon* pThis)
         pThis->m58_position[0] = pThis->m4C_basePosition[0];
         pThis->m58_position[1] = pThis->m4C_basePosition[1] + pThis->mD8_heightOffset;
         pThis->m58_position[2] = pThis->m4C_basePosition[2];
-        EdgeUpdateSub0(&pThis->m70_collisionBody);
+        registerCollisionBody(&pThis->m70_collisionBody);
         updateAndInterpolateAnimation(&gDragonState->m28_dragon3dModel);
         updateAnimationMatrices(&gDragonState->m78_animData, &gDragonState->m28_dragon3dModel);
     }

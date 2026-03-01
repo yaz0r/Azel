@@ -110,7 +110,7 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgWithCopy<sExcaEntity0, sSa
         if (readSaturnEA(pThis->mC + 0x28).isNull())
             return;
 
-        EdgeUpdateSub0(&pThis->m60_scriptContext);
+        registerCollisionBody(&pThis->m60_scriptContext);
     }
 
     static void Draw2(sExcaEntity0* pThis)

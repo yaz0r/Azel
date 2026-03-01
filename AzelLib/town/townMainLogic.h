@@ -53,6 +53,6 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
 extern sMainLogic* twnMainLogicTask;
 
 p_workArea startMainLogic(p_workArea pParent);
-void mainLogicInitSub2();
+void initTownProjection();
 int scriptFunction_6057058_sub0();
 s32 hasLoadingCompleted();

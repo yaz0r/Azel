@@ -4,10 +4,10 @@
 #include "town/townDragon.h"
 #include "kernel/fileBundle.h"
 #include "kernel/graphicalObject.h"
+#include "town/collisionBody.h"
 
 void initDragonForTown(sTownDragon* pThis); // TODO: Cleanup
 void updateTownDragon(sTownDragon* pThis); // TODO: cleanup
-void EdgeUpdateSub0(struct sCollisionBody* r14_pose); // TODO cleanup
 
 struct sCampDragon_F8 {
     sVec3_FP m4;
@@ -170,7 +170,7 @@ void sCampDragon_Update(sTownDragon* pThisBase) {
 
     pThis->m58_position = pThis->m4C_basePosition;
     pThis->m58_position[1] += pThis->mD8_heightOffset;
-    EdgeUpdateSub0(&pThis->m70_collisionBody);
+    registerCollisionBody(&pThis->m70_collisionBody);
 
     for (int i = 0; i < pThis->mF4; i++) {
         assert(0);

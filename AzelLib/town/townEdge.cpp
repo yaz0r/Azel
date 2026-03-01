@@ -191,24 +191,6 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
 
 }
 
-void EdgeUpdateSub0(sCollisionBody* r14_pose)
-{
-    if (resData.m4 >= 0x3F)
-        return;
-
-    sResData1C& r5 = resData.m1C[resData.m4++];
-    r5.m0_pNext = resData.m8_headOfLinkedList[r14_pose->m2C_collisionSetupIndex];
-    r5.m4 = r14_pose;
-
-    resData.m8_headOfLinkedList[r14_pose->m2C_collisionSetupIndex] = &r5;
-
-    sMatrix4x3 var4;
-    initMatrixToIdentity(&var4);
-    rotateMatrixYXZ(r14_pose->m34_pRotation, &var4);
-    transformVec(r14_pose->m20_AABBCenter, r14_pose->m8_position, var4);
-
-    r14_pose->m8_position += *r14_pose->m30_pPosition;
-}
 
 void stepNPCForward(sNPCE8* pThis)
 {
@@ -494,7 +476,7 @@ void sEdgeTask::Update(sEdgeTask* pThis)
         break;
     }
 
-    EdgeUpdateSub0(&pThis->m84);
+    registerCollisionBody(&pThis->m84);
 }
 
 void updateEdgeSub3Sub0(sEdgeTask* pThis)

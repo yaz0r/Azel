@@ -5,6 +5,7 @@
 #include "twn_ruin_lock.h"
 #include "kernel/fileBundle.h"
 #include "audio/systemSounds.h"
+#include "town/collisionBody.h"
 
 void sLockTask::Init(sLockTask* pThis, sSaturnPtr r5)
 {
@@ -64,7 +65,7 @@ void sLockTask::UpdateAlternate(sLockTask* pThis)
         assert(0);
         break;
     }
-    EdgeUpdateSub0(&pThis->m10);
+    registerCollisionBody(&pThis->m10);
 }
 
 void sLockTask::Draw(sLockTask* pThis)
