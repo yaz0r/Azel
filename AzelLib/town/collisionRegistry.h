@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 struct sCollisionSetup
 {
@@ -57,8 +57,8 @@ void registerCollisionBody(sCollisionBody*);
 
 // Runs sphere broad-phase then per-face AABB collision tests for all registered bodies,
 // resolves inter-body and body-vs-environment penetrations, and fires collision scripts.
-void scriptUpdateSub0();
+void processAllCollisions();
 
 // Resets the per-frame collision registry (clears linked list heads, resets node counter)
-// and toggles the resValue0 oscillator used by AABB positioning.
-void initResTable();
+// and toggles the gCollisionPositionBias oscillator used by AABB positioning.
+void resetCollisionFrame();

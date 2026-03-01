@@ -1,4 +1,4 @@
-#include "PDS.h"
+﻿#include "PDS.h"
 #include "collisionRegistry.h"
 #include "townScript.h"
 #include "town.h"
@@ -42,10 +42,10 @@ void setCollisionBounds(sCollisionBody* r4, const sVec3_FP& r5, const sVec3_FP& 
 }
 
 // An oscillating offset applied to AABB world-space positioning; toggled each frame.
-s32 resValue0 = 0;
-s32 resValue1 = 0;
+s32 gCollisionPositionBias = 0;
+s32 gWallCollisionOccurred = 0;
 
-struct sScriptUpdateSub0Sub0Var0
+struct sContactFace
 {
     sVec3_FP m0_position;
     s32 mC_distance;
@@ -53,16 +53,16 @@ struct sScriptUpdateSub0Sub0Var0
     //size 0x14
 };
 
-std::array<sScriptUpdateSub0Sub0Var0, 12> scriptUpdateSub0Sub0Var0;
+std::array<sContactFace, 12> gContactFaces;
 
-struct sScriptUpdateSub0Sub0Var1
+struct sContactConstraints
 {
     s32 m0;
     s32 m4;
     s32 m8;
     s32 mC;
     //size 0x10?
-}scriptUpdateSub0Sub0Var1;
+}gContactConstraints;
 
 
 // Inserts the collision body into the per-type linked list for this frame and
@@ -88,7 +88,7 @@ void registerCollisionBody(sCollisionBody* r14_pose)
 
 // Pushes a local-space matrix for r4 centred on its AABB half-extents, rotated by owner
 // rotation, and translated so r4's world position maps to the origin.
-void scriptUpdateSub0Sub0(sCollisionBody* r4)
+void beginBodyCollisionTest(sCollisionBody* r4)
 {
     const sVec3_FP& r12 = *r4->m34_pRotation;
 
@@ -98,12 +98,12 @@ void scriptUpdateSub0Sub0(sCollisionBody* r4)
     case 1:
         for (int i = 0; i < 12; i++)
         {
-            scriptUpdateSub0Sub0Var0[i].mC_distance = 0;
+            gContactFaces[i].mC_distance = 0;
         }
-        scriptUpdateSub0Sub0Var1.m0 = 0;
-        scriptUpdateSub0Sub0Var1.m4 = 0;
-        scriptUpdateSub0Sub0Var1.m8 = 0;
-        scriptUpdateSub0Sub0Var1.mC = 0;
+        gContactConstraints.m0 = 0;
+        gContactConstraints.m4 = 0;
+        gContactConstraints.m8 = 0;
+        gContactConstraints.mC = 0;
     case 2:
         r4->m48 = 0;
     case 3:
@@ -126,15 +126,15 @@ void scriptUpdateSub0Sub0(sCollisionBody* r4)
     rotateCurrentMatrixShiftedY(-r12[1]);
 
     sVec3_FP var0;
-    var0[0] = -r4->m8_position[0] - resValue0;
+    var0[0] = -r4->m8_position[0] - gCollisionPositionBias;
     var0[1] = -r4->m8_position[1];
-    var0[2] = -r4->m8_position[2] - resValue0;
+    var0[2] = -r4->m8_position[2] - gCollisionPositionBias;
 
     translateCurrentMatrix(var0);
 }
 
 // Tests if spheres of r13 and r14 overlap; returns 1 if they do.
-s32 scriptUpdateSub0Sub1(sCollisionBody* r13, sCollisionBody* r14)
+s32 sphereOverlapTest(sCollisionBody* r13, sCollisionBody* r14)
 {
     if (r14->m40)
     {
@@ -153,19 +153,19 @@ s32 scriptUpdateSub0Sub1(sCollisionBody* r13, sCollisionBody* r14)
 }
 
 // Records the deepest Z- contact face (face normal pointing away from origin in Z).
-void scriptUpdateSub0Sub2Sub0(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void recordContactNegZ(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
     fixedPoint r5 = FP_Div(r12, (*r14)[2]) - r13->m14_halfAABB[2];
 
-    sScriptUpdateSub0Sub0Var0* r4;
+    sContactFace* r4;
     if (r12 < 0)
     {
-        r4 = &scriptUpdateSub0Sub0Var0[5];
+        r4 = &gContactFaces[5];
         r13->m44 |= 0x1;
     }
     else
     {
-        r4 = &scriptUpdateSub0Sub0Var0[11];
+        r4 = &gContactFaces[11];
         r13->m44 |= 0x100;
     }
 
@@ -178,19 +178,19 @@ void scriptUpdateSub0Sub2Sub0(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6,
 }
 
 // Records the deepest Z+ contact face.
-void scriptUpdateSub0Sub2Sub1(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void recordContactPosZ(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
     fixedPoint r5 = FP_Div(r12, (*r14)[2]) + r13->m14_halfAABB[2];
 
-    sScriptUpdateSub0Sub0Var0* r4;
+    sContactFace* r4;
     if (r12 < 0)
     {
-        r4 = &scriptUpdateSub0Sub0Var0[4];
+        r4 = &gContactFaces[4];
         r13->m44 |= 0x2;
     }
     else
     {
-        r4 = &scriptUpdateSub0Sub0Var0[10];
+        r4 = &gContactFaces[10];
         r13->m44 |= 0x200;
     }
 
@@ -203,19 +203,19 @@ void scriptUpdateSub0Sub2Sub1(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6,
 }
 
 // Records the deepest X- contact face.
-void scriptUpdateSub0Sub2Sub2(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void recordContactNegX(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
     fixedPoint r5 = FP_Div(r12, (*r14)[0]) - r13->m14_halfAABB[0];
 
-    sScriptUpdateSub0Sub0Var0* r4;
+    sContactFace* r4;
     if (r12 < 0)
     {
-        r4 = &scriptUpdateSub0Sub0Var0[1];
+        r4 = &gContactFaces[1];
         r13->m44 |= 0x10;
     }
     else
     {
-        r4 = &scriptUpdateSub0Sub0Var0[7];
+        r4 = &gContactFaces[7];
         r13->m44 |= 0x1000;
     }
 
@@ -228,19 +228,19 @@ void scriptUpdateSub0Sub2Sub2(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6,
 }
 
 // Records the deepest X+ contact face.
-void scriptUpdateSub0Sub2Sub3(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void recordContactPosX(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
     fixedPoint r5 = FP_Div(r12, (*r14)[0]) + r13->m14_halfAABB[0];
 
-    sScriptUpdateSub0Sub0Var0* r4;
+    sContactFace* r4;
     if (r12 < 0)
     {
-        r4 = &scriptUpdateSub0Sub0Var0[0];
+        r4 = &gContactFaces[0];
         r13->m44 |= 0x20;
     }
     else
     {
-        r4 = &scriptUpdateSub0Sub0Var0[6];
+        r4 = &gContactFaces[6];
         r13->m44 |= 0x2000;
     }
 
@@ -253,19 +253,19 @@ void scriptUpdateSub0Sub2Sub3(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6,
 }
 
 // Records the deepest Y- contact face.
-void scriptUpdateSub0Sub2Sub4(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void recordContactNegY(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
     fixedPoint r5 = FP_Div(r12, (*r14)[1]) - r13->m14_halfAABB[1];
 
-    sScriptUpdateSub0Sub0Var0* r4;
+    sContactFace* r4;
     if(r12 < 0)
     {
-        r4 = &scriptUpdateSub0Sub0Var0[4];
+        r4 = &gContactFaces[4];
         r13->m44 |= 0x8;
     }
     else
     {
-        r4 = &scriptUpdateSub0Sub0Var0[9];
+        r4 = &gContactFaces[9];
         r13->m44 |= 0x800;
     }
 
@@ -278,19 +278,19 @@ void scriptUpdateSub0Sub2Sub4(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6,
 }
 
 // Records the deepest Y+ contact face.
-void scriptUpdateSub0Sub2Sub5(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void recordContactPosY(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
     fixedPoint r5 = FP_Div(r12, (*r14)[1]) + r13->m14_halfAABB[1];
 
-    sScriptUpdateSub0Sub0Var0* r4;
+    sContactFace* r4;
     if (r12 < 0)
     {
-        r4 = &scriptUpdateSub0Sub0Var0[2];
+        r4 = &gContactFaces[2];
         r13->m44 |= 0x4;
     }
     else
     {
-        r4 = &scriptUpdateSub0Sub0Var0[8];
+        r4 = &gContactFaces[8];
         r13->m44 |= 0x400;
     }
 
@@ -304,7 +304,7 @@ void scriptUpdateSub0Sub2Sub5(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6,
 
 // Projects a face plane normal onto r4's AABB half-extents then dispatches to the
 // appropriate axis-contact recorder (Sub0–Sub5) based on penetration direction.
-void scriptUpdateSub0Sub2(sCollisionBody* r4, fixedPoint r5)
+void processContactFace(sCollisionBody* r4, fixedPoint r5)
 {
     sVec3_FP var4;
     var4[0] = pCurrentMatrix->m[0][1];
@@ -333,11 +333,11 @@ void scriptUpdateSub0Sub2(sCollisionBody* r4, fixedPoint r5)
         {
             if (r14 > var10[2])
             {
-                scriptUpdateSub0Sub2Sub0(r4, r14, &var10, &var4);
+                recordContactNegZ(r4, r14, &var10, &var4);
             }
             else
             {
-                scriptUpdateSub0Sub2Sub1(r4, r14, &var10, &var4);
+                recordContactPosZ(r4, r14, &var10, &var4);
             }
         }
         //60094AA
@@ -345,11 +345,11 @@ void scriptUpdateSub0Sub2(sCollisionBody* r4, fixedPoint r5)
         {
             if (r14 > var10[0])
             {
-                scriptUpdateSub0Sub2Sub2(r4, r14, &var10, &var4);
+                recordContactNegX(r4, r14, &var10, &var4);
             }
             else
             {
-                scriptUpdateSub0Sub2Sub3(r4, r14, &var10, &var4);
+                recordContactPosX(r4, r14, &var10, &var4);
             }
         }
         //60094E0
@@ -357,11 +357,11 @@ void scriptUpdateSub0Sub2(sCollisionBody* r4, fixedPoint r5)
         {
             if (r14 > var10[1])
             {
-                scriptUpdateSub0Sub2Sub4(r4, r14, &var10, &var4);
+                recordContactNegY(r4, r14, &var10, &var4);
             }
             else
             {
-                scriptUpdateSub0Sub2Sub5(r4, r14, &var10, &var4);
+                recordContactPosY(r4, r14, &var10, &var4);
             }
         }
         break;
@@ -371,7 +371,7 @@ void scriptUpdateSub0Sub2(sCollisionBody* r4, fixedPoint r5)
 }
 
 // Returns a sub-cell index (0–3) encoding which quadrant of the cell the position is in.
-s32 scriptUpdateSub0Sub3Sub1(fixedPoint r4_x, fixedPoint r5_z)
+s32 getSubCellQuadrant(fixedPoint r4_x, fixedPoint r5_z)
 {
     s32 r8 = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex * 2) & 1;
     s32 r0 = MTH_Mul32(r5_z, gTownGrid.m30_worldToCellIndex * 4) & 2;
@@ -380,11 +380,11 @@ s32 scriptUpdateSub0Sub3Sub1(fixedPoint r4_x, fixedPoint r5_z)
 }
 
 // Returns the sTownCellTask covering world position (r4_x, r5_z), or nullptr if out of range.
-sTownCellTask* scriptUpdateSub0Sub3Sub0(fixedPoint r4_x, fixedPoint r5_z)
+sTownCellTask* getCellAtWorldPos(fixedPoint r4_x, fixedPoint r5_z)
 {
     if (isTraceEnabled())
     {
-        addTraceLog("scriptUpdateSub0Sub3Sub0 testing cell: 0x%04X 0x%04X\n", r4_x.asS32(), r5_z.asS32());
+        addTraceLog("getCellAtWorldPos testing cell: 0x%04X 0x%04X\n", r4_x.asS32(), r5_z.asS32());
     }
 
     s32 r13_cellX = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex);
@@ -419,7 +419,7 @@ sTownCellTask* scriptUpdateSub0Sub3Sub0(fixedPoint r4_x, fixedPoint r5_z)
 
     if (isTraceEnabled())
     {
-        addTraceLog("scriptUpdateSub0Sub3Sub0 found cell. GridSize: %d %d\n", gTownGrid.m0_sizeX, gTownGrid.m4_sizeY);
+        addTraceLog("getCellAtWorldPos found cell. GridSize: %d %d\n", gTownGrid.m0_sizeX, gTownGrid.m4_sizeY);
     }
 
     return gTownGrid.m40_cellTasks[(gTownGrid.mC + r5_cellY) & 7][(gTownGrid.m8 + r13_cellX) & 7];
@@ -628,7 +628,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
-                    resValue1 = 1;
+                    gWallCollisionOccurred = 1;
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
@@ -637,7 +637,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
                     {
-                        scriptUpdateSub0Sub2Sub0(r14, var0, &var18, &varC);
+                        recordContactNegZ(r14, var0, &var18, &varC);
                     }
                     break;
                 default:
@@ -677,7 +677,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
-                    resValue1 = 1;
+                    gWallCollisionOccurred = 1;
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
@@ -686,7 +686,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
                     {
-                        scriptUpdateSub0Sub2Sub1(r14, var0, &var18, &varC);
+                        recordContactPosZ(r14, var0, &var18, &varC);
                     }
                     break;
                 default:
@@ -732,7 +732,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
-                    resValue1 = 1;
+                    gWallCollisionOccurred = 1;
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
@@ -741,7 +741,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
                     {
-                        scriptUpdateSub0Sub2Sub2(r14, var0, &var18, &varC);
+                        recordContactNegX(r14, var0, &var18, &varC);
                     }
                     break;
                 default:
@@ -781,7 +781,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
-                    resValue1 = 1;
+                    gWallCollisionOccurred = 1;
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
@@ -790,7 +790,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
                     {
-                        scriptUpdateSub0Sub2Sub3(r14, var0, &var18, &varC);
+                        recordContactPosX(r14, var0, &var18, &varC);
                     }
                     break;
                 default:
@@ -836,7 +836,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
-                    resValue1 = 1;
+                    gWallCollisionOccurred = 1;
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
@@ -845,7 +845,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
                     {
-                        scriptUpdateSub0Sub2Sub4(r14, var0, &var18, &varC);
+                        recordContactNegY(r14, var0, &var18, &varC);
                     }
                     break;
                 default:
@@ -885,7 +885,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 switch (r14->m0_collisionSetup.m0_collisionType)
                 {
                 case 0:
-                    resValue1 = 1;
+                    gWallCollisionOccurred = 1;
                     if (r5_quad.m12_onCollisionScriptIndex)
                     {
                         //060092C4
@@ -894,7 +894,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
                 case 1:
                     if ((r5_quad.m10_CMDSRCA & 0xF) == 0)
                     {
-                        scriptUpdateSub0Sub2Sub5(r14, var0, &var18, &varC);
+                        recordContactPosY(r14, var0, &var18, &varC);
                     }
                     break;
                 default:
@@ -959,7 +959,7 @@ void processTownMeshCollision(sCollisionBody* r4, const sProcessed3dModel* r5)
 }
 
 // Tests r12's AABB against all collision meshes inside the given town cell.
-void scriptUpdateSub0Sub3Sub2(sCollisionBody* r12, sTownCellTask* r13)
+void testBodyAgainstCell(sCollisionBody* r12, sTownCellTask* r13)
 {
     if (r13 == nullptr)
         return;
@@ -999,32 +999,32 @@ void scriptUpdateSub0Sub3Sub2(sCollisionBody* r12, sTownCellTask* r13)
 // Tests r4's AABB against the town environment cells that overlap its position.
 void handleCollisionWithTownEnv(sCollisionBody* r4)
 {
-    s32 type = scriptUpdateSub0Sub3Sub1(r4->m8_position[0], r4->m8_position[2]);
+    s32 type = getSubCellQuadrant(r4->m8_position[0], r4->m8_position[2]);
     switch (type)
     {
     case 0:
-        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0] - gTownGrid.m28_cellSize, r4->m8_position[2]));
-        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0], r4->m8_position[2] - gTownGrid.m28_cellSize));
-        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0] - gTownGrid.m28_cellSize, r4->m8_position[2] - gTownGrid.m28_cellSize));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0] - gTownGrid.m28_cellSize, r4->m8_position[2]));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0], r4->m8_position[2] - gTownGrid.m28_cellSize));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0] - gTownGrid.m28_cellSize, r4->m8_position[2] - gTownGrid.m28_cellSize));
         break;
     case 1:
-        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0] + gTownGrid.m28_cellSize, r4->m8_position[2]));
-        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0], r4->m8_position[2] - gTownGrid.m28_cellSize));
-        scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0] + gTownGrid.m28_cellSize, r4->m8_position[2] - gTownGrid.m28_cellSize));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0] + gTownGrid.m28_cellSize, r4->m8_position[2]));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0], r4->m8_position[2] - gTownGrid.m28_cellSize));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0] + gTownGrid.m28_cellSize, r4->m8_position[2] - gTownGrid.m28_cellSize));
         break;
     default:
         assert(0);
         break;
     }
 
-    scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0], r4->m8_position[2]));
+    testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0], r4->m8_position[2]));
 }
 
 // Resolves the final world-space push translation for r12 from the recorded contact faces,
 // clamps it to half the AABB extents, then rotates it into world space.
-void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
+void computeCollisionSeparation(sCollisionBody* r12)
 {
-    std::array<sScriptUpdateSub0Sub0Var0, 12>& r13 = scriptUpdateSub0Sub0Var0;
+    std::array<sContactFace, 12>& r13 = gContactFaces;
 
     r12->m44 &= ~(r12->m44 << 8);
 
@@ -1070,10 +1070,10 @@ void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
     sVec3_FP var8;
     sVec3_FP& r9 = var8;
 
-    //const sScriptUpdateSub0Sub0Var0& r10 = scriptUpdateSub0Sub0Var0[0];
-    //const sScriptUpdateSub0Sub0Var0& r8 = scriptUpdateSub0Sub0Var0[1];
-    //const sScriptUpdateSub0Sub0Var0& var0 = scriptUpdateSub0Sub0Var0[4];
-    //const sScriptUpdateSub0Sub0Var0& var4 = scriptUpdateSub0Sub0Var0[5];
+    //const sContactFace& r10 = gContactFaces[0];
+    //const sContactFace& r8 = gContactFaces[1];
+    //const sContactFace& var0 = gContactFaces[4];
+    //const sContactFace& var4 = gContactFaces[5];
 
     //06007E1A
     switch (r12->m44 & 0x33)
@@ -1083,49 +1083,49 @@ void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
     case 1: //
     {
         //6007F24
-        fixedPoint r10 = FP_Div(scriptUpdateSub0Sub0Var0[5].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[5].m0_position[1])));
-        var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[0], r10);
-        var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[2], r10);
+        fixedPoint r10 = FP_Div(gContactFaces[5].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[5].m0_position[1])));
+        var14[0] = MTH_Mul(gContactFaces[5].m0_position[0], r10);
+        var14[2] = MTH_Mul(gContactFaces[5].m0_position[2], r10);
         break;
     }
     case 2: // Y-
     {
         //6007EFA
-        fixedPoint r10 = FP_Div(scriptUpdateSub0Sub0Var0[4].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[4].m0_position[1])));
-        var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[0], r10);
-        var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[2], r10);
+        fixedPoint r10 = FP_Div(gContactFaces[4].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[4].m0_position[1])));
+        var14[0] = MTH_Mul(gContactFaces[4].m0_position[0], r10);
+        var14[2] = MTH_Mul(gContactFaces[4].m0_position[2], r10);
         break;
     }
     case 0x10:
     {
         //6007ED4
-        fixedPoint r10 = FP_Div(scriptUpdateSub0Sub0Var0[1].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[1].m0_position[1])));
-        var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[1].m0_position[0], r10);
-        var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[1].m0_position[2], r10);
+        fixedPoint r10 = FP_Div(gContactFaces[1].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[1].m0_position[1])));
+        var14[0] = MTH_Mul(gContactFaces[1].m0_position[0], r10);
+        var14[2] = MTH_Mul(gContactFaces[1].m0_position[2], r10);
         break;
     }
     case 0x20: // X+
     {
         //6007E94
-        fixedPoint r10 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
-        var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r10);
-        var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r10);
+        fixedPoint r10 = FP_Div(gContactFaces[0].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[0].m0_position[1])));
+        var14[0] = MTH_Mul(gContactFaces[0].m0_position[0], r10);
+        var14[2] = MTH_Mul(gContactFaces[0].m0_position[2], r10);
         break;
     }
     case 0x11:
         //600814C
-        if ((scriptUpdateSub0Sub0Var0[0].m0_position[2] <= 0) && (scriptUpdateSub0Sub0Var0[5].m0_position[0] <= 0))
+        if ((gContactFaces[0].m0_position[2] <= 0) && (gContactFaces[5].m0_position[0] <= 0))
         {
             //0600815A
-            fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
-            var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r8);
-            var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r8);
+            fixedPoint r8 = FP_Div(gContactFaces[0].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[0].m0_position[1])));
+            var14[0] = MTH_Mul(gContactFaces[0].m0_position[0], r8);
+            var14[2] = MTH_Mul(gContactFaces[0].m0_position[2], r8);
 
             //06008182
             {
-                fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[5].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[5].m0_position[1])));
-                r9[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[0], r8);
-                r9[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[2], r8);
+                fixedPoint r8 = FP_Div(gContactFaces[5].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[5].m0_position[1])));
+                r9[0] = MTH_Mul(gContactFaces[5].m0_position[0], r8);
+                r9[2] = MTH_Mul(gContactFaces[5].m0_position[2], r8);
             }
 
             if (var14[0] <= r9[0])
@@ -1141,24 +1141,24 @@ void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
         else
         {
             //600807A
-            var14[2] = scriptUpdateSub0Sub0Var0[4].mC_distance;
-            var14[0] = scriptUpdateSub0Sub0Var0[1].mC_distance - MTH_Mul(FP_Div(scriptUpdateSub0Sub0Var0[1].m0_position[2], scriptUpdateSub0Sub0Var0[1].m0_position[0]), var14[2]);
+            var14[2] = gContactFaces[4].mC_distance;
+            var14[0] = gContactFaces[1].mC_distance - MTH_Mul(FP_Div(gContactFaces[1].m0_position[2], gContactFaces[1].m0_position[0]), var14[2]);
         }
         break;
     case 0x12:
         //6007FF8
-        if ((scriptUpdateSub0Sub0Var0[0].m0_position[2] >= 0) && (scriptUpdateSub0Sub0Var0[4].m0_position[0] <= 0))
+        if ((gContactFaces[0].m0_position[2] >= 0) && (gContactFaces[4].m0_position[0] <= 0))
         {
             //06008006
-            fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
-            var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r8);
-            var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r8);
+            fixedPoint r8 = FP_Div(gContactFaces[0].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[0].m0_position[1])));
+            var14[0] = MTH_Mul(gContactFaces[0].m0_position[0], r8);
+            var14[2] = MTH_Mul(gContactFaces[0].m0_position[2], r8);
 
             //0600802E
             {
-                fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[4].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[4].m0_position[1])));
-                r9[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[0], r8);
-                r9[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[2], r8);
+                fixedPoint r8 = FP_Div(gContactFaces[4].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[4].m0_position[1])));
+                r9[0] = MTH_Mul(gContactFaces[4].m0_position[0], r8);
+                r9[2] = MTH_Mul(gContactFaces[4].m0_position[2], r8);
             }
 
             if (var14[0] > r9[0])
@@ -1174,24 +1174,24 @@ void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
         else
         {
             //600807A
-            var14[2] = scriptUpdateSub0Sub0Var0[4].mC_distance;
-            var14[0] = scriptUpdateSub0Sub0Var0[1].mC_distance - MTH_Mul(FP_Div(scriptUpdateSub0Sub0Var0[1].m0_position[2], scriptUpdateSub0Sub0Var0[1].m0_position[0]), var14[2]);
+            var14[2] = gContactFaces[4].mC_distance;
+            var14[0] = gContactFaces[1].mC_distance - MTH_Mul(FP_Div(gContactFaces[1].m0_position[2], gContactFaces[1].m0_position[0]), var14[2]);
         }
         break;
     case 0x21:
         //0600809C
-        if ((scriptUpdateSub0Sub0Var0[0].m0_position[2] >= 0) && (scriptUpdateSub0Sub0Var0[5].m0_position[0] <= 0))
+        if ((gContactFaces[0].m0_position[2] >= 0) && (gContactFaces[5].m0_position[0] <= 0))
         {
             //060080AA
-            fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
-            var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r8);
-            var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r8);
+            fixedPoint r8 = FP_Div(gContactFaces[0].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[0].m0_position[1])));
+            var14[0] = MTH_Mul(gContactFaces[0].m0_position[0], r8);
+            var14[2] = MTH_Mul(gContactFaces[0].m0_position[2], r8);
 
             //060080D2
             {
-                fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[5].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[5].m0_position[1])));
-                r9[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[0], r8);
-                r9[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[5].m0_position[2], r8);
+                fixedPoint r8 = FP_Div(gContactFaces[5].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[5].m0_position[1])));
+                r9[0] = MTH_Mul(gContactFaces[5].m0_position[0], r8);
+                r9[2] = MTH_Mul(gContactFaces[5].m0_position[2], r8);
             }
 
             if (var14[0] < r9[0])
@@ -1212,18 +1212,18 @@ void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
         break;
     case 0x22:
         //6007F56
-        if ((scriptUpdateSub0Sub0Var0[0].m0_position[2] >= 0) && (scriptUpdateSub0Sub0Var0[4].m0_position[0] >= 0))
+        if ((gContactFaces[0].m0_position[2] >= 0) && (gContactFaces[4].m0_position[0] >= 0))
         {
             //06007F64
-            fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[0].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[0].m0_position[1])));
-            var14[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[0], r8);
-            var14[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], r8);
+            fixedPoint r8 = FP_Div(gContactFaces[0].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[0].m0_position[1])));
+            var14[0] = MTH_Mul(gContactFaces[0].m0_position[0], r8);
+            var14[2] = MTH_Mul(gContactFaces[0].m0_position[2], r8);
 
             //6007F8A
             {
-                fixedPoint r8 = FP_Div(scriptUpdateSub0Sub0Var0[4].m10_y, sqrt_F(0x10000 - FP_Pow2(scriptUpdateSub0Sub0Var0[4].m0_position[1])));
-                r9[0] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[0], r8);
-                r9[2] = MTH_Mul(scriptUpdateSub0Sub0Var0[4].m0_position[2], r8);
+                fixedPoint r8 = FP_Div(gContactFaces[4].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[4].m0_position[1])));
+                r9[0] = MTH_Mul(gContactFaces[4].m0_position[0], r8);
+                r9[2] = MTH_Mul(gContactFaces[4].m0_position[2], r8);
             }
 
             if (var14[0] < r9[0])
@@ -1239,23 +1239,23 @@ void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
         else
         {
             //06007FD8
-            var14[2] = scriptUpdateSub0Sub0Var0[4].mC_distance;
-            var14[0] = scriptUpdateSub0Sub0Var0[0].mC_distance - MTH_Mul(FP_Div(scriptUpdateSub0Sub0Var0[0].m0_position[2], scriptUpdateSub0Sub0Var0[0].m0_position[0]), var14[2]);
+            var14[2] = gContactFaces[4].mC_distance;
+            var14[0] = gContactFaces[0].mC_distance - MTH_Mul(FP_Div(gContactFaces[0].m0_position[2], gContactFaces[0].m0_position[0]), var14[2]);
         }
         break;
     case 0x32:
         //0600821E
         var14[2] = FP_Div(
-            MTH_Mul_5_6(scriptUpdateSub0Sub0Var0[0].mC_distance - scriptUpdateSub0Sub0Var0[1].mC_distance, scriptUpdateSub0Sub0Var0[0].m0_position[0], scriptUpdateSub0Sub0Var0[1].m0_position[0]),
-            MTH_Mul(scriptUpdateSub0Sub0Var0[0].m0_position[2], scriptUpdateSub0Sub0Var0[1].m0_position[0]) - MTH_Mul(scriptUpdateSub0Sub0Var0[1].m0_position[2], scriptUpdateSub0Sub0Var0[0].m0_position[0]));
+            MTH_Mul_5_6(gContactFaces[0].mC_distance - gContactFaces[1].mC_distance, gContactFaces[0].m0_position[0], gContactFaces[1].m0_position[0]),
+            MTH_Mul(gContactFaces[0].m0_position[2], gContactFaces[1].m0_position[0]) - MTH_Mul(gContactFaces[1].m0_position[2], gContactFaces[0].m0_position[0]));
 
-        if (var14[2] < scriptUpdateSub0Sub0Var0[4].mC_distance)
+        if (var14[2] < gContactFaces[4].mC_distance)
         {
-            var14[2] = scriptUpdateSub0Sub0Var0[4].mC_distance;
+            var14[2] = gContactFaces[4].mC_distance;
         }
 
         //600829A
-        var14[0] = scriptUpdateSub0Sub0Var0[0].mC_distance - MTH_Mul(FP_Div(scriptUpdateSub0Sub0Var0[0].m0_position[2], scriptUpdateSub0Sub0Var0[0].m0_position[0]), var14[2]);
+        var14[0] = gContactFaces[0].mC_distance - MTH_Mul(FP_Div(gContactFaces[0].m0_position[2], gContactFaces[0].m0_position[0]), var14[2]);
         break;
     default:
         //assert(0);
@@ -1264,7 +1264,7 @@ void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
     }
 
     //6008446
-    const sScriptUpdateSub0Sub0Var0& r10 = r13[3];
+    const sContactFace& r10 = r13[3];
     switch (r12->m44 & 0xC)
     {
     case 0:
@@ -1281,13 +1281,13 @@ void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
     }
 
     //0600854A
-    if ((scriptUpdateSub0Sub0Var1.m0 != 0) || (scriptUpdateSub0Sub0Var1.m4 != 0))
+    if ((gContactConstraints.m0 != 0) || (gContactConstraints.m4 != 0))
     {
         assert(0);
     }
 
     //060085A4
-    if ((scriptUpdateSub0Sub0Var1.m8 != 0) || (scriptUpdateSub0Sub0Var1.mC != 0))
+    if ((gContactConstraints.m8 != 0) || (gContactConstraints.mC != 0))
     {
         assert(0);
     }
@@ -1336,9 +1336,9 @@ void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
     transformVec(var14, r12->m58_collisionSolveTranslation, var20);
 }
 
-// Pops the matrix pushed by scriptUpdateSub0Sub0, then for type 0/1 bodies computes
+// Pops the matrix pushed by beginBodyCollisionTest, then for type 0/1 bodies computes
 // the final world-space separation vector.
-void scriptUpdateSub0Sub4(sCollisionBody* r4)
+void endBodyCollisionTest(sCollisionBody* r4)
 {
     popMatrix();
 
@@ -1346,7 +1346,7 @@ void scriptUpdateSub0Sub4(sCollisionBody* r4)
     {
     case 0:
     case 1:
-        scriptUpdateSub0Sub4Sub0(r4);
+        computeCollisionSeparation(r4);
         break;
     case 2:
     case 3:
@@ -1359,7 +1359,7 @@ void scriptUpdateSub0Sub4(sCollisionBody* r4)
 
 // Processes all active collision bodies for this frame: runs sphere broad-phase,
 // per-face AABB environment tests, inter-body penetration resolution, and collision scripts.
-void scriptUpdateSub0()
+void processAllCollisions()
 {
     for (int r8 = 4-1; r8 >= 0; r8--)
     {
@@ -1371,7 +1371,7 @@ void scriptUpdateSub0()
 
             if (r14->m0_collisionSetup.m2_collisionLayersBitField)
             {
-                scriptUpdateSub0Sub0(r14);
+                beginBodyCollisionTest(r14);
                 s32 r9 = r8 + 1;
                 do
                 {
@@ -1382,7 +1382,7 @@ void scriptUpdateSub0()
                         {
                             sCollisionBody* r13 = r12->m4;
                             r12 = r12->m0_pNext;
-                            if (scriptUpdateSub0Sub1(r14, r13))
+                            if (sphereOverlapTest(r14, r13))
                             {
                                 if ((r14->m0_collisionSetup.m0_collisionType == 0) && r13->m3C_scriptEA.m_offset)
                                 {
@@ -1404,36 +1404,36 @@ void scriptUpdateSub0()
 
                 if (r14->m0_collisionSetup.m2_collisionLayersBitField & 0x10)
                 {
-                    scriptUpdateSub0Sub2(r14, gCollisionRegistry.m0);
+                    processContactFace(r14, gCollisionRegistry.m0);
                 }
 
                 handleCollisionWithTownEnv(r14);
 
             endOfLoop:
                 //06007B4E
-                scriptUpdateSub0Sub4(r14);
+                endBodyCollisionTest(r14);
             }
         }
     }
 }
 
 // Resets the per-frame collision registry (clears linked list heads, resets node counter)
-// and toggles the resValue0 oscillator used by AABB positioning.
-void initResTable()
+// and toggles the gCollisionPositionBias oscillator used by AABB positioning.
+void resetCollisionFrame()
 {
     if (isTraceEnabled())
     {
-        addTraceLog("InitResTable: resValue0=%d\n", resValue0);
+        addTraceLog("InitResTable: gCollisionPositionBias=%d\n", gCollisionPositionBias);
     }
     gCollisionRegistry.m8_headOfLinkedList.fill(0);
     gCollisionRegistry.m4 = 0;
 
-    if (resValue0 < 0)
+    if (gCollisionPositionBias < 0)
     {
-        resValue0 = 2;
+        gCollisionPositionBias = 2;
     }
     else
     {
-        resValue0 = -2;
+        gCollisionPositionBias = -2;
     }
 }

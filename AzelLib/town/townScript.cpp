@@ -781,7 +781,7 @@ void scriptUpdateRunScript()
 void sScriptTask::Init(sScriptTask* pThis)
 {
     gCollisionRegistry.m0 = 0;
-    initResTable();
+    resetCollisionFrame();
     copyCameraPropertiesToRes();
 }
 
@@ -908,8 +908,8 @@ void sScriptTask::Update(sScriptTask* pThis)
     }
 
     // 060306B4
-    scriptUpdateSub0();
-    initResTable();
+    processAllCollisions();
+    resetCollisionFrame();
     scriptUpdateRunScript();
 }
 
