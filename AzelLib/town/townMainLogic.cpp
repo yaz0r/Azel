@@ -644,8 +644,46 @@ void cameraFollowMode3(sMainLogic* pThis) {
     }
 }
 
+void cameraFollowMode3_updateCameraTargetFromRotation(sMainLogic* pThis) {
+    {
+        fixedPoint temp1 = (pThis->m68_cameraRotation[0] - pThis->mF0[0]) & 0xfffffff;
+        fixedPoint temp2 = (pThis->mF8[0] - pThis->mF0[0]) & 0xfffffff;
+        if (temp2 < temp1) {
+            if ((temp2 / 2) + 0x8000000U < temp1) {
+                pThis->m68_cameraRotation[0] = pThis->mF0[0];
+            } else {
+                pThis->m68_cameraRotation[0] = pThis->mF8[0];
+            }
+        }
+    }
+
+    {
+        fixedPoint temp1 = (pThis->m68_cameraRotation[1] - pThis->mF0[1]) & 0xfffffff;
+        fixedPoint temp2 = (pThis->mF8[1] - pThis->mF0[1]) & 0xfffffff;
+        if (temp2 < temp1) {
+            if ((temp2 / 2) + 0x8000000U < temp1) {
+                pThis->m68_cameraRotation[1] = pThis->mF0[1];
+            } else {
+                pThis->m68_cameraRotation[1] = pThis->mF8[1];
+            }
+        }
+    }
+
+    sMatrix4x3 mat;
+    initMatrixToIdentity(&mat);
+    rotateMatrixShiftedY(pThis->m68_cameraRotation[1], &mat);
+    rotateMatrixShiftedX(pThis->m68_cameraRotation[0], &mat);
+    scaleMatrixRow2(pThis->m24_distance, &mat);
+    pThis->m44_cameraTarget[0] = pThis->m38_interpolatedCameraPosition[0] - mat.m[0][2];
+    pThis->m44_cameraTarget[1] = pThis->m38_interpolatedCameraPosition[1] - mat.m[1][2];
+    pThis->m44_cameraTarget[2] = pThis->m38_interpolatedCameraPosition[2] - mat.m[2][2];
+}
+
 void cameraFollowMode3_LCS(sMainLogic* pThis) {
-    Unimplemented();
+    moveTownLCSCursor(pThis);
+    pThis->m68_cameraRotation[0] = (pThis->m68_cameraRotation[0] + MTH_Mul(0xE38E3, pThis->mC_inputY)) & 0xfffffff;
+    pThis->m68_cameraRotation[1] = (pThis->m68_cameraRotation[1] + MTH_Mul(0xE38E3, pThis->m8_inputX)) & 0xfffffff;
+    cameraFollowMode3_updateCameraTargetFromRotation(pThis);
 }
 
 void setupCameraUpdateForCurrentMode()
