@@ -722,8 +722,8 @@ void sMainLogic::Init(sMainLogic* pThis)
     pThis->m74_townCamera.m3C_scriptEA = sSaturnPtr::getNull();
     pThis->m74_townCamera.m40 = 0;
 
-    mainLogicInitSub0(&pThis->m74_townCamera, 0);
-    mainLogicInitSub1(&pThis->m74_townCamera, readSaturnVec3(gTWN_RUIN->getSaturnPtr(0x605EEE4)), readSaturnVec3(gTWN_RUIN->getSaturnPtr(0x605EEF0)));
+    setCollisionSetup(&pThis->m74_townCamera, 0);
+    setCollisionBounds(&pThis->m74_townCamera, readSaturnVec3(gTWN_RUIN->getSaturnPtr(0x605EEE4)), readSaturnVec3(gTWN_RUIN->getSaturnPtr(0x605EEF0)));
 
     npcData0.mFC &= ~0x10;
 

@@ -1,11 +1,11 @@
 #pragma once
 
-struct sMainLogic_74;
+struct sCollisionBody;
 
 struct sResData1C
 {
     sResData1C* m0_pNext;
-    sMainLogic_74* m4;
+    sCollisionBody* m4;
 };
 
 struct sResData
@@ -25,7 +25,7 @@ struct sResCameraProperties
     fixedPoint mC_LCSHeight;
     s32 m10_activeLCSType; // define the type of m14.
     s32 m14_activeLCSEnvironmentIndex; // used for LCS type 1 (environment LCS)
-    sMainLogic_74* m14_activeLCS; // used for LCS type 2 (npc LCS)
+    sCollisionBody* m14_activeLCS; // used for LCS type 2 (npc LCS)
     fixedPoint m18;
     s16 m1C_LCSHeightMin;
     s16 m1E_LCSHeightMax;

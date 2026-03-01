@@ -80,13 +80,13 @@ struct sCollisionSetup
     s16 m2_collisionLayersBitField;
 };
 
-struct sMainLogic_74
+struct sCollisionBody
 {
     sCollisionSetup m0_collisionSetup;
-    fixedPoint m4_collisionRadius;
+    fixedPoint m4_sphereRadius;
     sVec3_FP m8_position;
-    sVec3_FP m14_collisionClip;
-    sVec3_FP m20;
+    sVec3_FP m14_halfAABB;
+    sVec3_FP m20_AABBCenter;
     s32 m2C_collisionSetupIndex;
     sVec3_FP* m30_pPosition;
     sVec3_FP* m34_pRotation;
@@ -94,7 +94,7 @@ struct sMainLogic_74
     sSaturnPtr m3C_scriptEA;
     u8* m40;
     s32 m44;
-    sMainLogic_74* m48;
+    sCollisionBody* m48;
     sVec3_FP m4C;
     sVec3_FP m58_collisionSolveTranslation;
 };
@@ -115,7 +115,7 @@ struct sNPC
     fixedPoint m2C_currentAnimation;
     sSaturnPtr m30_animationTable;
     s_3dModel m34_3dModel;
-    sMainLogic_74 m84;
+    sCollisionBody m84;
     sNPCE8 mE8;
 };
 
@@ -222,8 +222,8 @@ void loadTownPrg(s8 r4, s8 r5);
 
 void startScriptTask(p_workArea r4);
 
-void mainLogicInitSub0(sMainLogic_74*, s32);
-void mainLogicInitSub1(sMainLogic_74*, const sVec3_FP&, const sVec3_FP&);
+void setCollisionSetup(sCollisionBody*, s32);
+void setCollisionBounds(sCollisionBody*, const sVec3_FP&, const sVec3_FP&);
 
 void initTownGrid();
 

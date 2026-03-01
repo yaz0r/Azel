@@ -699,20 +699,20 @@ void findLCSCollision()
         sResData1C* r12 = var10->m8_headOfLinkedList[i];
         while (r12)
         {
-            sMainLogic_74* r14 = r12->m4;
+            sCollisionBody* r14 = r12->m4;
             r12 = r12->m0_pNext;
             if (r14->m0_collisionSetup.m1)
             {
-                var4.m0_radius = r14->m4_collisionRadius;
+                var4.m0_radius = r14->m4_sphereRadius;
 
-                s16 r4 = r14->m14_collisionClip[0] >> 4;
+                s16 r4 = r14->m14_halfAABB[0] >> 4;
                 r10[0] = r4;
                 r9[0] = r4;
 
                 var0[0] = -r4;
                 r8[0] = -r4;
 
-                r4 = r14->m14_collisionClip[1] >> 4;
+                r4 = r14->m14_halfAABB[1] >> 4;
                 r8[1] = r4;
                 r10[1] = r4;
 

@@ -37,7 +37,7 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     sVec3_FP m50_upVector;
     sVec3_FP m5C_rawCameraPosition;
     sVec3_FP m68_cameraRotation;
-    sMainLogic_74 m74_townCamera;
+    sCollisionBody m74_townCamera;
     sVec3_FP mE4_fixedPosition;
     sVec2_FP mF0;
     sVec2_FP mF8;

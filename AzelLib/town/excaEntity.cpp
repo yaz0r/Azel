@@ -66,8 +66,8 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgWithCopy<sExcaEntity0, sSa
 
                 pThis->m60_scriptContext.m40 = puVar3;
 
-                mainLogicInitSub0(&pThis->m60_scriptContext, readSaturnU8(scriptConfigEA + 0));
-                mainLogicInitSub1(&pThis->m60_scriptContext, readSaturnVec3(scriptConfigEA + 0x8), readSaturnVec3(scriptConfigEA + 0x14));
+                setCollisionSetup(&pThis->m60_scriptContext, readSaturnU8(scriptConfigEA + 0));
+                setCollisionBounds(&pThis->m60_scriptContext, readSaturnVec3(scriptConfigEA + 0x8), readSaturnVec3(scriptConfigEA + 0x14));
             }
 
             pThis->m_UpdateMethod = &sExcaEntity0::Update2;
@@ -129,7 +129,7 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgWithCopy<sExcaEntity0, sSa
 
     sSaturnPtr mC;
     s_3dModel m10_3dModel;
-    sMainLogic_74 m60_scriptContext;
+    sCollisionBody m60_scriptContext;
     sVec3_FP mC4_position;
     sVec3_FP mD0_rotation;
     u8 mDC_status;

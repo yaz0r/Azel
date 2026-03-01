@@ -7,11 +7,13 @@
 
 void initDragonForTown(sTownDragon* pThis); // TODO: Cleanup
 void updateTownDragon(sTownDragon* pThis); // TODO: cleanup
-void EdgeUpdateSub0(struct sMainLogic_74* r14_pose); // TODO cleanup
+void EdgeUpdateSub0(struct sCollisionBody* r14_pose); // TODO cleanup
 
 struct sCampDragon_F8 {
     sVec3_FP m4;
-    sMainLogic_74 m10;
+    sCollisionBody m10_collisionBody;
+    sVec3_FP m74;
+    sVec3_FP m80;
     // size 0x8C
 };
 
@@ -29,7 +31,7 @@ s32 sCampDragon_InitSub1(sTownDragon* pThis) {
     fixedPoint X = readSaturnFP(*(npcData0.m120_stack.end() - 2));
     fixedPoint Y = readSaturnFP(*(npcData0.m120_stack.end() - 1));
 
-    return atan2_FP(X - (pThis->m58).m0_X, Y - (pThis->m58).m8_Z);
+    return atan2_FP(X - (pThis->m58_position).m0_X, Y - (pThis->m58_position).m8_Z);
 }
 
 void increaseGameResource(int param_1, int param_2) {
@@ -81,16 +83,16 @@ void sCampDragon_InitSub2(sCampDragon* pThis) {
 
 void sCampDragon_Init(sTownDragon* pThisBase, sSaturnPtr arg) {
     sCampDragon* pThis = (sCampDragon*)pThisBase;
-    pThis->m48 = arg;
-    pThis->m4C = pThis->m58 = readSaturnVec3(arg + 0x8);
-    pThis->m64 = readSaturnVec3(arg + 0x14);
+    pThis->m48_entityEA = arg;
+    pThis->m4C_basePosition = pThis->m58_position = readSaturnVec3(arg + 0x8);
+    pThis->m64_rotation = readSaturnVec3(arg + 0x14);
     npcData0.m70_npcPointerArray[readSaturnU16(arg + 0x20)].workArea = pThis;
-    pThis->m16 = 0x3C;
+    pThis->m16_timer = 0x3C;
     increaseGameResource(0xb, 0);
-    pThis->mF = sCampDragon_InitSub0();
+    pThis->mF_affinityLevel = sCampDragon_InitSub0();
     pThis->m40 = 0x8000000;
     pThis->m3C = 0x8000000;
-    pThis->mD8 = 0x1000;
+    pThis->mD8_heightOffset = 0x1000;
     s32 temp = 0x8000000;
     if (mainGameState.getBit(0x263, 0x20) == 0) {
         temp = 0x4000000;
@@ -98,13 +100,13 @@ void sCampDragon_Init(sTownDragon* pThisBase, sSaturnPtr arg) {
     else {
         temp += performDivision(0x19, mainGameState.gameStats.m7C_overallRating) * 0x2000000;
     }
-    pThis->m64.m4_Y = sCampDragon_InitSub1(pThis) + temp;
-    pThis->m70.m30_pPosition = &pThis->m58;
-    pThis->m70.m34_pRotation = &pThis->m64;
-    pThis->m70.m38_pOwner = pThis;
-    pThis->m70.m3C_scriptEA = pThis->m20;
-    pThis->m70.m40 = 0;
-    mainLogicInitSub0(&pThis->m70, 3);
+    pThis->m64_rotation.m4_Y = sCampDragon_InitSub1(pThis) + temp;
+    pThis->m70_collisionBody.m30_pPosition = &pThis->m58_position;
+    pThis->m70_collisionBody.m34_pRotation = &pThis->m64_rotation;
+    pThis->m70_collisionBody.m38_pOwner = pThis;
+    pThis->m70_collisionBody.m3C_scriptEA = pThis->m20_scriptEA;
+    pThis->m70_collisionBody.m40 = 0;
+    setCollisionSetup(&pThis->m70_collisionBody, 3);
 
     static const sVec3_FP param1 = {
         -0x1800,
@@ -118,20 +120,22 @@ void sCampDragon_Init(sTownDragon* pThisBase, sSaturnPtr arg) {
         0x1800,
     };
 
-    mainLogicInitSub1(&pThis->m70, param1, param2);
+    setCollisionBounds(&pThis->m70_collisionBody, param1, param2);
 
     for (int i = 0; i < 9; i++) {
         auto* psVar3 = &pThis->mF8[i];
-        (psVar3->m10).m30_pPosition = &psVar3->m4;
-        (psVar3->m10).m34_pRotation = &pThis->mE8;
-        (psVar3->m10).m38_pOwner = pThis;
-        (psVar3->m10).m3C_scriptEA = sSaturnPtr::getNull();
-        (psVar3->m10).m40 = nullptr;
+        (psVar3->m10_collisionBody).m30_pPosition = &psVar3->m4;
+        (psVar3->m10_collisionBody).m34_pRotation = &pThis->mE8;
+        (psVar3->m10_collisionBody).m38_pOwner = pThis;
+        (psVar3->m10_collisionBody).m3C_scriptEA = sSaturnPtr::getNull();
+        (psVar3->m10_collisionBody).m40 = nullptr;
+        setCollisionSetup(&psVar3->m10_collisionBody, 3);
+        setCollisionBounds(&psVar3->m10_collisionBody, psVar3->m74, psVar3->m80);
     }
     initDragonForTown(pThis);
-    pThis->m14 = 1;
+    pThis->m14_readyState = 1;
 
-    playAnimation(&gDragonState->m28_dragon3dModel, pThis->m1C->m0_fileBundle->getAnimation(readSaturnU16(pThis->m20 + 2)), 0);
+    playAnimation(&gDragonState->m28_dragon3dModel, pThis->m1C->m0_fileBundle->getAnimation(readSaturnU16(pThis->m20_scriptEA + 2)), 0);
     sCampDragon_InitSub2(pThis);
 }
 
@@ -140,10 +144,10 @@ void sCampDragon_UpdateSub0(sTownDragon* pThis) {
 }
 
 void sCampDragon_UpdateMode4(sTownDragon* pThis) {
-    switch (pThis->m11) {
+    switch (pThis->m11_subState) {
     case 0:
-        pThis->m12 = 1;
-        pThis->m11 = 1;
+        pThis->m12_eventFlag = 1;
+        pThis->m11_subState = 1;
         break;
     case 1:
         Unimplemented();
@@ -157,16 +161,16 @@ void sCampDragon_UpdateMode4(sTownDragon* pThis) {
 void sCampDragon_Update(sTownDragon* pThisBase) {
     sCampDragon* pThis = (sCampDragon*)pThisBase;
 
-    pThis->mD = 1;
+    pThis->mD_drawExtras = 1;
     updateTownDragon(pThis);
 
     if ((gDragonState->mC_dragonType < 0) || (7 < gDragonState->mC_dragonType)) {
         return;
     }
 
-    pThis->m58 = pThis->m4C;
-    pThis->m58[1] += pThis->mD8;
-    EdgeUpdateSub0(&pThis->m70);
+    pThis->m58_position = pThis->m4C_basePosition;
+    pThis->m58_position[1] += pThis->mD8_heightOffset;
+    EdgeUpdateSub0(&pThis->m70_collisionBody);
 
     for (int i = 0; i < pThis->mF4; i++) {
         assert(0);
@@ -175,7 +179,7 @@ void sCampDragon_Update(sTownDragon* pThisBase) {
     sCampDragon_UpdateSub0(pThis);
 
     if (pThis->mE == 0) {
-        switch (pThis->mF + pThis->m10) {
+        switch (pThis->mF_affinityLevel + pThis->m10_modeOffset) {
         case 4:
             sCampDragon_UpdateMode4(pThis);
             break;
@@ -191,7 +195,7 @@ void sCampDragon_Update(sTownDragon* pThisBase) {
         assert(0);
     }
 
-    if (pThis->m12 == 0) {
+    if (pThis->m12_eventFlag == 0) {
         Unimplemented();
     }
 
@@ -250,8 +254,8 @@ void sCampDragon_Draw(sTownDragon* pThisBase) {
         updateAnimationMatricesSub2(&gDragonState->m78_animData);
 
         Unimplemented();
-        submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m58, &pThis->m64, 0);
-        if (pThis->mD)
+        submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m58_position, &pThis->m64_rotation, 0);
+        if (pThis->mD_drawExtras)
         {
             Unimplemented();
         }

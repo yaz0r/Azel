@@ -191,7 +191,7 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
 
 }
 
-void EdgeUpdateSub0(sMainLogic_74* r14_pose)
+void EdgeUpdateSub0(sCollisionBody* r14_pose)
 {
     if (resData.m4 >= 0x3F)
         return;
@@ -205,7 +205,7 @@ void EdgeUpdateSub0(sMainLogic_74* r14_pose)
     sMatrix4x3 var4;
     initMatrixToIdentity(&var4);
     rotateMatrixYXZ(r14_pose->m34_pRotation, &var4);
-    transformVec(r14_pose->m20, r14_pose->m8_position, var4);
+    transformVec(r14_pose->m20_AABBCenter, r14_pose->m8_position, var4);
 
     r14_pose->m8_position += *r14_pose->m30_pPosition;
 }
@@ -288,8 +288,8 @@ void initEdgeNPC(sEdgeTask* pThis, sSaturnPtr arg)
         pThis->m84.m40 = 0;
     }
 
-    mainLogicInitSub0(&pThis->m84, readSaturnU8(arg + 0x34));
-    mainLogicInitSub1(&pThis->m84, readSaturnVec3(arg + 0x3C), readSaturnVec3(arg + 0x48));
+    setCollisionSetup(&pThis->m84, readSaturnU8(arg + 0x34));
+    setCollisionBounds(&pThis->m84, readSaturnVec3(arg + 0x3C), readSaturnVec3(arg + 0x48));
     initEdgeNPCSub1(pThis);
     pThis->m17B = 0;
 }

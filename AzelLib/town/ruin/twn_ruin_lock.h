@@ -17,7 +17,7 @@ struct sLockTask : public s_workAreaTemplateWithArgWithCopy<sLockTask, sSaturnPt
     //0-4: copy
     //8 : sTownObject
     sSaturnPtr mC;
-    sMainLogic_74 m10;
+    sCollisionBody m10;
     sVec3_FP m74_translation;
     sVec3_FP m80_rotation;
     s16 m8C_status;

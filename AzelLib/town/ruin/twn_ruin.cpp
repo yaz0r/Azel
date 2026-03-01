@@ -585,7 +585,7 @@ void updateEdgePosition(sNPC* r4)
 {
     sEdgeTask* r12 = static_cast<sEdgeTask*>(r4);
     sNPCE8* r13 = &r12->mE8;
-    sMainLogic_74* r14 = &r12->m84;
+    sCollisionBody* r14 = &r12->m84;
 
     updateEdgeControls(r12);
     updateEdgePositionSub1(r12);

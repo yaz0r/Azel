@@ -14,7 +14,7 @@ struct sScriptTask : public s_workAreaTemplate<sScriptTask>
 
     sSaturnPtr m4;
     s32 m8_currentLCSType;
-    sMainLogic_74* mC;
+    sCollisionBody* mC;
     s32 mC_AsIndex;
     fixedPoint m10_distanceToLCS;
     sVec2_S16 m14_LCS;

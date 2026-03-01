@@ -23,4 +23,4 @@ p_workArea overlayStart_TWN_RUIN(p_workArea pThis, u32 arg);
 s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr);
 s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr, s32 arg0);
 s32 TWN_RUIN_ExecuteNative(sSaturnPtr ptr, s32 arg0, s32 arg1);
-void EdgeUpdateSub0(struct sMainLogic_74* r14_pose);
+void EdgeUpdateSub0(struct sCollisionBody* r14_pose);

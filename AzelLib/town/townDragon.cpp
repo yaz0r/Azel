@@ -31,16 +31,16 @@ void initDragonForTown(sTownDragon* pThis)
     {
         int fileIndex = gDragonState->mC_dragonType * 2 + 10;
         allocateNPC(pThis, fileIndex);
-        pThis->mC = gDragonState->mC_dragonType;
-        pThis->m14 = -1;
+        pThis->mC_dragonType = gDragonState->mC_dragonType;
+        pThis->m14_readyState = -1;
         pThis->m1C = dramAllocatorEnd[fileIndex].mC_fileBundle;
 
         if (gCurrentTownOverlay->m_name == "TWN_EXCA.PRG") {
-            pThis->m20 = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x606471C) + gDragonState->mC_dragonType * 4);
+            pThis->m20_scriptEA = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x606471C) + gDragonState->mC_dragonType * 4);
             reinitModel(&gDragonState->m28_dragon3dModel, readRiderDefinitionSub(readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x6064608 + gDragonState->mC_dragonType * 0x1C))));
         }
         else if (gCurrentTownOverlay->m_name == "TWN_CAMP.PRG") {
-            pThis->m20 = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x607af3c) + gDragonState->mC_dragonType * 4);
+            pThis->m20_scriptEA = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x607af3c) + gDragonState->mC_dragonType * 4);
             reinitModel(&gDragonState->m28_dragon3dModel, readRiderDefinitionSub(readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x607abf0 + gDragonState->mC_dragonType * 0x1C))));
         }
         else {
@@ -56,16 +56,16 @@ void initDragonForTown(sTownDragon* pThis)
 
 static void sTownDragon_Init(sTownDragon* pThis, sSaturnPtr arg)
 {
-    pThis->m48 = arg;
-    pThis->m4C = pThis->m58 = readSaturnVec3(arg + 0x8);
-    pThis->m64 = readSaturnVec3(arg + 0x14);
-    pThis->mD8 = 0x1000;
-    pThis->m70.m30_pPosition = &pThis->m58;
-    pThis->m70.m34_pRotation = &pThis->m64;
-    pThis->m70.m38_pOwner = pThis;
-    pThis->m70.m3C_scriptEA = pThis->m20;
-    pThis->m70.m40 = 0;
-    mainLogicInitSub0(&pThis->m70, 3);
+    pThis->m48_entityEA = arg;
+    pThis->m4C_basePosition = pThis->m58_position = readSaturnVec3(arg + 0x8);
+    pThis->m64_rotation = readSaturnVec3(arg + 0x14);
+    pThis->mD8_heightOffset = 0x1000;
+    pThis->m70_collisionBody.m30_pPosition = &pThis->m58_position;
+    pThis->m70_collisionBody.m34_pRotation = &pThis->m64_rotation;
+    pThis->m70_collisionBody.m38_pOwner = pThis;
+    pThis->m70_collisionBody.m3C_scriptEA = pThis->m20_scriptEA;
+    pThis->m70_collisionBody.m40 = 0;
+    setCollisionSetup(&pThis->m70_collisionBody, 3);
 
     static const sVec3_FP param1 = {
         -0x1800,
@@ -79,11 +79,11 @@ static void sTownDragon_Init(sTownDragon* pThis, sSaturnPtr arg)
         0x1800,
     };
 
-    mainLogicInitSub1(&pThis->m70, param1, param2);
+    setCollisionBounds(&pThis->m70_collisionBody, param1, param2);
     initDragonForTown(pThis);
-    pThis->m14 = 1;
+    pThis->m14_readyState = 1;
 
-    playAnimation(&gDragonState->m28_dragon3dModel, pThis->m1C->m0_fileBundle->getAnimation(readSaturnU16(pThis->m20 + 2)), 0);
+    playAnimation(&gDragonState->m28_dragon3dModel, pThis->m1C->m0_fileBundle->getAnimation(readSaturnU16(pThis->m20_scriptEA + 2)), 0);
 }
 
 void updateTownDragon(sTownDragon* pThis)
@@ -100,14 +100,14 @@ void updateTownDragon(sTownDragon* pThis)
 
 static void sTownDragon_Update(sTownDragon* pThis)
 {
-    pThis->mD = 1;
+    pThis->mD_drawExtras = 1;
     updateTownDragon(pThis);
     if ((-1 < gDragonState->mC_dragonType) && (gDragonState->mC_dragonType < 8))
     {
-        pThis->m58[0] = pThis->m4C[0];
-        pThis->m58[1] = pThis->m4C[1] + pThis->mD8;
-        pThis->m58[2] = pThis->m4C[2];
-        EdgeUpdateSub0(&pThis->m70);
+        pThis->m58_position[0] = pThis->m4C_basePosition[0];
+        pThis->m58_position[1] = pThis->m4C_basePosition[1] + pThis->mD8_heightOffset;
+        pThis->m58_position[2] = pThis->m4C_basePosition[2];
+        EdgeUpdateSub0(&pThis->m70_collisionBody);
         updateAndInterpolateAnimation(&gDragonState->m28_dragon3dModel);
         updateAnimationMatrices(&gDragonState->m78_animData, &gDragonState->m28_dragon3dModel);
     }
@@ -117,8 +117,8 @@ static void sTownDragon_Draw(sTownDragon* pThis)
 {
     if ((-1 < gDragonState->mC_dragonType) && (gDragonState->mC_dragonType < 8))
     {
-        submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m58, &pThis->m64, 0);
-        if (pThis->mD)
+        submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m58_position, &pThis->m64_rotation, 0);
+        if (pThis->mD_drawExtras)
         {
             Unimplemented();
         }

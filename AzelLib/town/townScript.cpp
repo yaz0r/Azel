@@ -44,7 +44,7 @@ struct sScriptUpdateSub0Sub0Var1
 }scriptUpdateSub0Sub0Var1;
 
 
-void scriptUpdateSub0Sub0(sMainLogic_74* r4)
+void scriptUpdateSub0Sub0(sCollisionBody* r4)
 {
     const sVec3_FP& r12 = *r4->m34_pRotation;
 
@@ -73,9 +73,9 @@ void scriptUpdateSub0Sub0(sMainLogic_74* r4)
     pushCurrentMatrix();
 
     initMatrixToIdentity(pCurrentMatrix);
-    pCurrentMatrix->m[0][3] = r4->m14_collisionClip[0];
-    pCurrentMatrix->m[1][3] = r4->m14_collisionClip[1];
-    pCurrentMatrix->m[2][3] = r4->m14_collisionClip[2];
+    pCurrentMatrix->m[0][3] = r4->m14_halfAABB[0];
+    pCurrentMatrix->m[1][3] = r4->m14_halfAABB[1];
+    pCurrentMatrix->m[2][3] = r4->m14_halfAABB[2];
 
     rotateCurrentMatrixShiftedZ(-r12[2]);
     rotateCurrentMatrixShiftedX(-r12[0]);
@@ -124,7 +124,7 @@ void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_1
     npcData0.m0_numBackgroundScripts++;
 }
 
-s32 scriptUpdateSub0Sub1(sMainLogic_74* r13, sMainLogic_74* r14)
+s32 scriptUpdateSub0Sub1(sCollisionBody* r13, sCollisionBody* r14)
 {
     if (r14->m40)
     {
@@ -132,7 +132,7 @@ s32 scriptUpdateSub0Sub1(sMainLogic_74* r13, sMainLogic_74* r14)
     }
     else
     {
-        if (distanceSquareBetween2Points(r13->m8_position, r14->m8_position) >= FP_Pow2(r13->m4_collisionRadius + r13->m4_collisionRadius))
+        if (distanceSquareBetween2Points(r13->m8_position, r14->m8_position) >= FP_Pow2(r13->m4_sphereRadius + r13->m4_sphereRadius))
             return 0;
 
         //0600874E
@@ -143,9 +143,9 @@ s32 scriptUpdateSub0Sub1(sMainLogic_74* r13, sMainLogic_74* r14)
 }
 
 // Z-
-void scriptUpdateSub0Sub2Sub0(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void scriptUpdateSub0Sub2Sub0(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    fixedPoint r5 = FP_Div(r12, (*r14)[2]) - r13->m14_collisionClip[2];
+    fixedPoint r5 = FP_Div(r12, (*r14)[2]) - r13->m14_halfAABB[2];
 
     sScriptUpdateSub0Sub0Var0* r4;
     if (r12 < 0)
@@ -168,9 +168,9 @@ void scriptUpdateSub0Sub2Sub0(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
 }
 
 // Z+
-void scriptUpdateSub0Sub2Sub1(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void scriptUpdateSub0Sub2Sub1(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    fixedPoint r5 = FP_Div(r12, (*r14)[2]) + r13->m14_collisionClip[2];
+    fixedPoint r5 = FP_Div(r12, (*r14)[2]) + r13->m14_halfAABB[2];
 
     sScriptUpdateSub0Sub0Var0* r4;
     if (r12 < 0)
@@ -192,9 +192,9 @@ void scriptUpdateSub0Sub2Sub1(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
     }
 }
 
-void scriptUpdateSub0Sub2Sub2(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void scriptUpdateSub0Sub2Sub2(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    fixedPoint r5 = FP_Div(r12, (*r14)[0]) - r13->m14_collisionClip[0];
+    fixedPoint r5 = FP_Div(r12, (*r14)[0]) - r13->m14_halfAABB[0];
 
     sScriptUpdateSub0Sub0Var0* r4;
     if (r12 < 0)
@@ -217,9 +217,9 @@ void scriptUpdateSub0Sub2Sub2(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
 }
 
 // CollisionX+
-void scriptUpdateSub0Sub2Sub3(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void scriptUpdateSub0Sub2Sub3(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    fixedPoint r5 = FP_Div(r12, (*r14)[0]) + r13->m14_collisionClip[0];
+    fixedPoint r5 = FP_Div(r12, (*r14)[0]) + r13->m14_halfAABB[0];
 
     sScriptUpdateSub0Sub0Var0* r4;
     if (r12 < 0)
@@ -242,9 +242,9 @@ void scriptUpdateSub0Sub2Sub3(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
 }
 
 // CollisionY-
-void scriptUpdateSub0Sub2Sub4(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void scriptUpdateSub0Sub2Sub4(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    fixedPoint r5 = FP_Div(r12, (*r14)[1]) - r13->m14_collisionClip[1];
+    fixedPoint r5 = FP_Div(r12, (*r14)[1]) - r13->m14_halfAABB[1];
 
     sScriptUpdateSub0Sub0Var0* r4;
     if(r12 < 0)
@@ -266,9 +266,9 @@ void scriptUpdateSub0Sub2Sub4(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
     }
 }
 
-void scriptUpdateSub0Sub2Sub5(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
+void scriptUpdateSub0Sub2Sub5(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_FP* r14)
 {
-    fixedPoint r5 = FP_Div(r12, (*r14)[1]) + r13->m14_collisionClip[1];
+    fixedPoint r5 = FP_Div(r12, (*r14)[1]) + r13->m14_halfAABB[1];
 
     sScriptUpdateSub0Sub0Var0* r4;
     if (r12 < 0)
@@ -290,7 +290,7 @@ void scriptUpdateSub0Sub2Sub5(sMainLogic_74* r13, fixedPoint r12, sVec3_FP* r6, 
     }
 }
 
-void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
+void scriptUpdateSub0Sub2(sCollisionBody* r4, fixedPoint r5)
 {
     sVec3_FP var4;
     var4[0] = pCurrentMatrix->m[0][1];
@@ -298,9 +298,9 @@ void scriptUpdateSub0Sub2(sMainLogic_74* r4, fixedPoint r5)
     var4[2] = pCurrentMatrix->m[2][1];
 
     sVec3_FP var10;
-    var10[0] = MTH_Mul(var4[0], r4->m14_collisionClip[0]);
-    var10[1] = MTH_Mul(var4[1], r4->m14_collisionClip[1]);
-    var10[2] = MTH_Mul(var4[2], r4->m14_collisionClip[2]);
+    var10[0] = MTH_Mul(var4[0], r4->m14_halfAABB[0]);
+    var10[1] = MTH_Mul(var4[1], r4->m14_halfAABB[1]);
+    var10[2] = MTH_Mul(var4[2], r4->m14_halfAABB[2]);
 
     fixedPoint r14 = r5;
     r14 += MTH_Mul(var4[0], pCurrentMatrix->m[0][3]);
@@ -551,7 +551,7 @@ s32 testTownMeshQuadForCollisionSub1(const fixedPoint& r4, const fixedPoint& r5,
     return mac >> 32;
 }
 
-void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::sQuad& r5_quad, const std::array<sProcessedVertice, 255>& r6_vertices)
+void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::sQuad& r5_quad, const std::array<sProcessedVertice, 255>& r6_vertices)
 {
     const sProcessedVertice& r13_vertice0 = r6_vertices[r5_quad.m0_indices[0]];
     const sProcessedVertice& r10_vertice1 = r6_vertices[r5_quad.m0_indices[1]];
@@ -566,9 +566,9 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
     transformNormalByCurrentMatrix(r5_quad.m14_extraData[0].m0_normals, varC);
 
     sVec3_FP var18;
-    var18[0] = MTH_Mul(varC[0], r14->m14_collisionClip[0]);
-    var18[1] = MTH_Mul(varC[1], r14->m14_collisionClip[1]);
-    var18[2] = MTH_Mul(varC[2], r14->m14_collisionClip[2]);
+    var18[0] = MTH_Mul(varC[0], r14->m14_halfAABB[0]);
+    var18[1] = MTH_Mul(varC[1], r14->m14_halfAABB[1]);
+    var18[2] = MTH_Mul(varC[2], r14->m14_halfAABB[2]);
 
     fixedPoint var0 = MTH_Product3d_FP(varC, r13_vertice0.vertice) - var18[0] - var18[1] - var18[2];
 
@@ -579,28 +579,28 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
         {
             //06008D58
             if ((testTownMeshQuadForCollisionSub1(
-                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
-                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
-                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
-                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1]) >= 0) &&
+                    r13_vertice0.vertice[0] - r14->m14_halfAABB[0],
+                    r10_vertice1.vertice[1] - r14->m14_halfAABB[1],
+                    r10_vertice1.vertice[0] - r14->m14_halfAABB[0],
+                    r13_vertice0.vertice[1] - r14->m14_halfAABB[1]) >= 0) &&
                 //6008D7E
                 (testTownMeshQuadForCollisionSub1(
-                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
-                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
-                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
-                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1]) >= 0) &&
+                    r10_vertice1.vertice[0] - r14->m14_halfAABB[0],
+                    r9_vertice2.vertice[1] - r14->m14_halfAABB[1],
+                    r9_vertice2.vertice[0] - r14->m14_halfAABB[0],
+                    r10_vertice1.vertice[1] - r14->m14_halfAABB[1]) >= 0) &&
                 //6008DA0
                 (testTownMeshQuadForCollisionSub1(
-                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
-                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
-                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
-                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1]) >= 0) &&
+                    r9_vertice2.vertice[0] - r14->m14_halfAABB[0],
+                    r11_vertice3.vertice[1] - r14->m14_halfAABB[1],
+                    r11_vertice3.vertice[0] - r14->m14_halfAABB[0],
+                    r9_vertice2.vertice[1] - r14->m14_halfAABB[1]) >= 0) &&
                 //6008DC2
                 (testTownMeshQuadForCollisionSub1(
-                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
-                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
-                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
-                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1]) >= 0))
+                    r11_vertice3.vertice[0] - r14->m14_halfAABB[0],
+                    r13_vertice0.vertice[1] - r14->m14_halfAABB[1],
+                    r13_vertice0.vertice[0] - r14->m14_halfAABB[0],
+                    r11_vertice3.vertice[1] - r14->m14_halfAABB[1]) >= 0))
             {
                 //6008DE4
                 switch (r14->m0_collisionSetup.m0_collisionType)
@@ -628,28 +628,28 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
         {
             //06008E40
             if ((testTownMeshQuadForCollisionSub1(
-                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
-                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
-                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
-                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1]) <= 0) &&
+                    r13_vertice0.vertice[0] - r14->m14_halfAABB[0],
+                    r10_vertice1.vertice[1] - r14->m14_halfAABB[1],
+                    r10_vertice1.vertice[0] - r14->m14_halfAABB[0],
+                    r13_vertice0.vertice[1] - r14->m14_halfAABB[1]) <= 0) &&
                 //06008E62
                 (testTownMeshQuadForCollisionSub1(
-                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
-                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
-                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
-                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1]) <= 0) &&
+                    r10_vertice1.vertice[0] - r14->m14_halfAABB[0],
+                    r9_vertice2.vertice[1] - r14->m14_halfAABB[1],
+                    r9_vertice2.vertice[0] - r14->m14_halfAABB[0],
+                    r10_vertice1.vertice[1] - r14->m14_halfAABB[1]) <= 0) &&
                 //06008E80
                 (testTownMeshQuadForCollisionSub1(
-                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
-                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
-                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
-                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1]) <= 0) &&
+                    r9_vertice2.vertice[0] - r14->m14_halfAABB[0],
+                    r11_vertice3.vertice[1] - r14->m14_halfAABB[1],
+                    r11_vertice3.vertice[0] - r14->m14_halfAABB[0],
+                    r9_vertice2.vertice[1] - r14->m14_halfAABB[1]) <= 0) &&
                 //06008E9E
                 (testTownMeshQuadForCollisionSub1(
-                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
-                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
-                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
-                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1]) <= 0))
+                    r11_vertice3.vertice[0] - r14->m14_halfAABB[0],
+                    r13_vertice0.vertice[1] - r14->m14_halfAABB[1],
+                    r13_vertice0.vertice[0] - r14->m14_halfAABB[0],
+                    r11_vertice3.vertice[1] - r14->m14_halfAABB[1]) <= 0))
             {
                 //06008EBC
                 switch (r14->m0_collisionSetup.m0_collisionType)
@@ -683,28 +683,28 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
         {
             //6008F56
             if ((testTownMeshQuadForCollisionSub1(
-                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
-                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
-                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
-                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2]) >= 0) &&
+                    r13_vertice0.vertice[1] - r14->m14_halfAABB[1],
+                    r10_vertice1.vertice[2] - r14->m14_halfAABB[2],
+                    r10_vertice1.vertice[1] - r14->m14_halfAABB[1],
+                    r13_vertice0.vertice[2] - r14->m14_halfAABB[2]) >= 0) &&
                 //6008F7C
                 (testTownMeshQuadForCollisionSub1(
-                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
-                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
-                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
-                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2]) >= 0) &&
+                    r10_vertice1.vertice[1] - r14->m14_halfAABB[1],
+                    r9_vertice2.vertice[2] - r14->m14_halfAABB[2],
+                    r9_vertice2.vertice[1] - r14->m14_halfAABB[1],
+                    r10_vertice1.vertice[2] - r14->m14_halfAABB[2]) >= 0) &&
                 //6008F9E
                 (testTownMeshQuadForCollisionSub1(
-                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
-                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
-                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
-                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2]) >= 0) &&
+                    r9_vertice2.vertice[1] - r14->m14_halfAABB[1],
+                    r11_vertice3.vertice[2] - r14->m14_halfAABB[2],
+                    r11_vertice3.vertice[1] - r14->m14_halfAABB[1],
+                    r9_vertice2.vertice[2] - r14->m14_halfAABB[2]) >= 0) &&
                 //6008FC0
                 (testTownMeshQuadForCollisionSub1(
-                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
-                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
-                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
-                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2]) >= 0))
+                    r11_vertice3.vertice[1] - r14->m14_halfAABB[1],
+                    r13_vertice0.vertice[2] - r14->m14_halfAABB[2],
+                    r13_vertice0.vertice[1] - r14->m14_halfAABB[1],
+                    r11_vertice3.vertice[2] - r14->m14_halfAABB[2]) >= 0))
             {
                 //6008FE2
                 switch (r14->m0_collisionSetup.m0_collisionType)
@@ -732,28 +732,28 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
         {
             //600903E
             if ((testTownMeshQuadForCollisionSub1(
-                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
-                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
-                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
-                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2]) <= 0) &&
+                    r13_vertice0.vertice[1] - r14->m14_halfAABB[1],
+                    r10_vertice1.vertice[2] - r14->m14_halfAABB[2],
+                    r10_vertice1.vertice[1] - r14->m14_halfAABB[1],
+                    r13_vertice0.vertice[2] - r14->m14_halfAABB[2]) <= 0) &&
                 //6009060
                 (testTownMeshQuadForCollisionSub1(
-                    r10_vertice1.vertice[1] - r14->m14_collisionClip[1],
-                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
-                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
-                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2]) <= 0) &&
+                    r10_vertice1.vertice[1] - r14->m14_halfAABB[1],
+                    r9_vertice2.vertice[2] - r14->m14_halfAABB[2],
+                    r9_vertice2.vertice[1] - r14->m14_halfAABB[1],
+                    r10_vertice1.vertice[2] - r14->m14_halfAABB[2]) <= 0) &&
                 //0600907E
                 (testTownMeshQuadForCollisionSub1(
-                    r9_vertice2.vertice[1] - r14->m14_collisionClip[1],
-                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
-                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
-                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2]) <= 0) &&
+                    r9_vertice2.vertice[1] - r14->m14_halfAABB[1],
+                    r11_vertice3.vertice[2] - r14->m14_halfAABB[2],
+                    r11_vertice3.vertice[1] - r14->m14_halfAABB[1],
+                    r9_vertice2.vertice[2] - r14->m14_halfAABB[2]) <= 0) &&
                 //0600909C
                 (testTownMeshQuadForCollisionSub1(
-                    r11_vertice3.vertice[1] - r14->m14_collisionClip[1],
-                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
-                    r13_vertice0.vertice[1] - r14->m14_collisionClip[1],
-                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2]) <= 0))
+                    r11_vertice3.vertice[1] - r14->m14_halfAABB[1],
+                    r13_vertice0.vertice[2] - r14->m14_halfAABB[2],
+                    r13_vertice0.vertice[1] - r14->m14_halfAABB[1],
+                    r11_vertice3.vertice[2] - r14->m14_halfAABB[2]) <= 0))
             {
                 //060090BA
                 switch (r14->m0_collisionSetup.m0_collisionType)
@@ -787,28 +787,28 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
         {
             //6009146
             if ((testTownMeshQuadForCollisionSub1(
-                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
-                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
-                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
-                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0]) >= 0) &&
+                    r13_vertice0.vertice[2] - r14->m14_halfAABB[2],
+                    r10_vertice1.vertice[0] - r14->m14_halfAABB[0],
+                    r10_vertice1.vertice[2] - r14->m14_halfAABB[2],
+                    r13_vertice0.vertice[0] - r14->m14_halfAABB[0]) >= 0) &&
                 //600916C
                 (testTownMeshQuadForCollisionSub1(
-                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
-                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
-                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
-                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0]) >= 0) &&
+                    r10_vertice1.vertice[2] - r14->m14_halfAABB[2],
+                    r9_vertice2.vertice[0] - r14->m14_halfAABB[0],
+                    r9_vertice2.vertice[2] - r14->m14_halfAABB[2],
+                    r10_vertice1.vertice[0] - r14->m14_halfAABB[0]) >= 0) &&
                 //600918E
                 (testTownMeshQuadForCollisionSub1(
-                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
-                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
-                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
-                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0]) >= 0) &&
+                    r9_vertice2.vertice[2] - r14->m14_halfAABB[2],
+                    r11_vertice3.vertice[0] - r14->m14_halfAABB[0],
+                    r11_vertice3.vertice[2] - r14->m14_halfAABB[2],
+                    r9_vertice2.vertice[0] - r14->m14_halfAABB[0]) >= 0) &&
                 //60091B0
                 (testTownMeshQuadForCollisionSub1(
-                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
-                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
-                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
-                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0]) >= 0))
+                    r11_vertice3.vertice[2] - r14->m14_halfAABB[2],
+                    r13_vertice0.vertice[0] - r14->m14_halfAABB[0],
+                    r13_vertice0.vertice[2] - r14->m14_halfAABB[2],
+                    r11_vertice3.vertice[0] - r14->m14_halfAABB[0]) >= 0))
             {
                 //60091D2
                 switch (r14->m0_collisionSetup.m0_collisionType)
@@ -836,28 +836,28 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
         {
             //600922E
             if ((testTownMeshQuadForCollisionSub1(
-                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
-                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0],
-                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
-                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0]) <= 0) &&
+                    r13_vertice0.vertice[2] - r14->m14_halfAABB[2],
+                    r10_vertice1.vertice[0] - r14->m14_halfAABB[0],
+                    r10_vertice1.vertice[2] - r14->m14_halfAABB[2],
+                    r13_vertice0.vertice[0] - r14->m14_halfAABB[0]) <= 0) &&
                 //06009250
                 (testTownMeshQuadForCollisionSub1(
-                    r10_vertice1.vertice[2] - r14->m14_collisionClip[2],
-                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0],
-                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
-                    r10_vertice1.vertice[0] - r14->m14_collisionClip[0]) <= 0) &&
+                    r10_vertice1.vertice[2] - r14->m14_halfAABB[2],
+                    r9_vertice2.vertice[0] - r14->m14_halfAABB[0],
+                    r9_vertice2.vertice[2] - r14->m14_halfAABB[2],
+                    r10_vertice1.vertice[0] - r14->m14_halfAABB[0]) <= 0) &&
                 //0600926E
                 (testTownMeshQuadForCollisionSub1(
-                    r9_vertice2.vertice[2] - r14->m14_collisionClip[2],
-                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0],
-                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
-                    r9_vertice2.vertice[0] - r14->m14_collisionClip[0]) <= 0) &&
+                    r9_vertice2.vertice[2] - r14->m14_halfAABB[2],
+                    r11_vertice3.vertice[0] - r14->m14_halfAABB[0],
+                    r11_vertice3.vertice[2] - r14->m14_halfAABB[2],
+                    r9_vertice2.vertice[0] - r14->m14_halfAABB[0]) <= 0) &&
                 //0600928C
                 (testTownMeshQuadForCollisionSub1(
-                    r11_vertice3.vertice[2] - r14->m14_collisionClip[2],
-                    r13_vertice0.vertice[0] - r14->m14_collisionClip[0],
-                    r13_vertice0.vertice[2] - r14->m14_collisionClip[2],
-                    r11_vertice3.vertice[0] - r14->m14_collisionClip[0]) <= 0))
+                    r11_vertice3.vertice[2] - r14->m14_halfAABB[2],
+                    r13_vertice0.vertice[0] - r14->m14_halfAABB[0],
+                    r13_vertice0.vertice[2] - r14->m14_halfAABB[2],
+                    r11_vertice3.vertice[0] - r14->m14_halfAABB[0]) <= 0))
             {
                 //060092AA
                 switch (r14->m0_collisionSetup.m0_collisionType)
@@ -884,7 +884,7 @@ void testTownMeshQuadForCollision(sMainLogic_74* r14, const sProcessed3dModel::s
     }
 }
 
-void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
+void processTownMeshCollision(sCollisionBody* r4, const sProcessed3dModel* r5)
 {
     if (isTraceEnabled())
     {
@@ -895,7 +895,7 @@ void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
         addTraceLog("\n");
     }
     std::array<sProcessedVertice, 255> transformedVertices;
-    u32 clipFlag = transformTownMeshVertices(r5->m8_vertices, transformedVertices, r5->m4_numVertices, r4->m14_collisionClip);
+    u32 clipFlag = transformTownMeshVertices(r5->m8_vertices, transformedVertices, r5->m4_numVertices, r4->m14_halfAABB);
 
     if (isTraceEnabled())
     {
@@ -935,7 +935,7 @@ void processTownMeshCollision(sMainLogic_74* r4, const sProcessed3dModel* r5)
     }
 }
 
-void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
+void scriptUpdateSub0Sub3Sub2(sCollisionBody* r12, sTownCellTask* r13)
 {
     if (r13 == nullptr)
         return;
@@ -958,7 +958,7 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
         {
             sProcessed3dModel* mesh = r13->m0_fileBundle->getCollisionModel(readSaturnU32(r14));
             sVec3_FP meshPositionInCell = readSaturnVec3(r14 + 4);
-            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(mesh->m0_radius + r12->m4_collisionRadius))
+            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(mesh->m0_radius + r12->m4_sphereRadius))
             {
                 pushCurrentMatrix();
                 translateCurrentMatrix(meshPositionInCell);
@@ -972,7 +972,7 @@ void scriptUpdateSub0Sub3Sub2(sMainLogic_74* r12, sTownCellTask* r13)
     popMatrix();
 }
 
-void handleCollisionWithTownEnv(sMainLogic_74* r4)
+void handleCollisionWithTownEnv(sCollisionBody* r4)
 {
     s32 type = scriptUpdateSub0Sub3Sub1(r4->m8_position[0], r4->m8_position[2]);
     switch (type)
@@ -995,7 +995,7 @@ void handleCollisionWithTownEnv(sMainLogic_74* r4)
     scriptUpdateSub0Sub3Sub2(r4, scriptUpdateSub0Sub3Sub0(r4->m8_position[0], r4->m8_position[2]));
 }
 
-void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
+void scriptUpdateSub0Sub4Sub0(sCollisionBody* r12)
 {
     std::array< sScriptUpdateSub0Sub0Var0, 12>& r13 = scriptUpdateSub0Sub0Var0;
 
@@ -1272,34 +1272,34 @@ void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
     }
 
     //6008622
-    if (var14[0] > r12->m14_collisionClip[0] / 2)
+    if (var14[0] > r12->m14_halfAABB[0] / 2)
     {
-        var14[0] = r12->m14_collisionClip[0] / 2;
+        var14[0] = r12->m14_halfAABB[0] / 2;
     }
 
-    if (var14[0] < -r12->m14_collisionClip[0] / 2)
+    if (var14[0] < -r12->m14_halfAABB[0] / 2)
     {
-        var14[0] = -r12->m14_collisionClip[0] / 2;
+        var14[0] = -r12->m14_halfAABB[0] / 2;
     }
 
-    if (var14[1] > r12->m14_collisionClip[1] / 2)
+    if (var14[1] > r12->m14_halfAABB[1] / 2)
     {
-        var14[1] = r12->m14_collisionClip[1] / 2;
+        var14[1] = r12->m14_halfAABB[1] / 2;
     }
 
-    if (var14[1] < -r12->m14_collisionClip[1] / 2)
+    if (var14[1] < -r12->m14_halfAABB[1] / 2)
     {
-        var14[1] = -r12->m14_collisionClip[1] / 2;
+        var14[1] = -r12->m14_halfAABB[1] / 2;
     }
 
-    if (var14[2] > r12->m14_collisionClip[2] / 2)
+    if (var14[2] > r12->m14_halfAABB[2] / 2)
     {
-        var14[2] = r12->m14_collisionClip[2] / 2;
+        var14[2] = r12->m14_halfAABB[2] / 2;
     }
 
-    if (var14[2] < -r12->m14_collisionClip[2] / 2)
+    if (var14[2] < -r12->m14_halfAABB[2] / 2)
     {
-        var14[2] = -r12->m14_collisionClip[2] / 2;
+        var14[2] = -r12->m14_halfAABB[2] / 2;
     }
 
     //6008668
@@ -1309,7 +1309,7 @@ void scriptUpdateSub0Sub4Sub0(sMainLogic_74* r12)
     transformVec(var14, r12->m58_collisionSolveTranslation, var20);
 }
 
-void scriptUpdateSub0Sub4(sMainLogic_74* r4)
+void scriptUpdateSub0Sub4(sCollisionBody* r4)
 {
     popMatrix();
 
@@ -1335,7 +1335,7 @@ void scriptUpdateSub0()
         sResData1C* r11 = resData.m8_headOfLinkedList[r8];
         while (r11)
         {
-            sMainLogic_74* r14 = r11->m4;
+            sCollisionBody* r14 = r11->m4;
             r11 = r11->m0_pNext;
 
             if (r14->m0_collisionSetup.m2_collisionLayersBitField)
@@ -1349,7 +1349,7 @@ void scriptUpdateSub0()
                         sResData1C* r12 = resData.m8_headOfLinkedList[r9];
                         while (r12)
                         {
-                            sMainLogic_74* r13 = r12->m4;
+                            sCollisionBody* r13 = r12->m4;
                             r12 = r12->m0_pNext;
                             if (scriptUpdateSub0Sub1(r14, r13))
                             {
@@ -2277,7 +2277,7 @@ void updateTownLCSTargetPosition(sScriptTask* pThis)
         translateCurrentMatrix(pThis->mC->m8_position);
         if (pThis->mC->m2C_collisionSetupIndex == 3)
         {
-            adjustMatrixTranslation(pThis->mC->m14_collisionClip[1] / 2);
+            adjustMatrixTranslation(pThis->mC->m14_halfAABB[1] / 2);
         }
         break;
     default:

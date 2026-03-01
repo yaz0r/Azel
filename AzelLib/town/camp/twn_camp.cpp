@@ -247,8 +247,8 @@ struct sCampEntity0 : public s_workAreaTemplateWithArgWithCopy<sCampEntity0, sSa
             pThis->m7C_scriptContext.m38_pOwner = pThis;
             pThis->m7C_scriptContext.m3C_scriptEA = readSaturnEA(pThis->m10 + 0x20);
             pThis->m7C_scriptContext.m40 = 0;
-            mainLogicInitSub0(&pThis->m7C_scriptContext, 4);
-            mainLogicInitSub1(&pThis->m7C_scriptContext, readSaturnVec3(gTWN_CAMP->getSaturnPtr(0x607b2ac)), readSaturnVec3(gTWN_CAMP->getSaturnPtr(0x607b2b8)));
+            setCollisionSetup(&pThis->m7C_scriptContext, 4);
+            setCollisionBounds(&pThis->m7C_scriptContext, readSaturnVec3(gTWN_CAMP->getSaturnPtr(0x607b2ac)), readSaturnVec3(gTWN_CAMP->getSaturnPtr(0x607b2b8)));
 
             pThis->m_UpdateMethod = Update2;
             pThis->m_DrawMethod = Draw2;
@@ -276,7 +276,7 @@ struct sCampEntity0 : public s_workAreaTemplateWithArgWithCopy<sCampEntity0, sSa
     sVec3_FP m14_position;
     sVec3_FP m20_rotation;
     s_3dModel m2C_model;
-    sMainLogic_74 m7C_scriptContext;
+    sCollisionBody m7C_scriptContext;
     sProcessed3dModel* mF4;
     sProcessed3dModel* mF8;
     //size: 0xE0
