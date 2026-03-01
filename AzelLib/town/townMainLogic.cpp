@@ -768,6 +768,16 @@ void sMainLogic::Init(sMainLogic* pThis)
     mainLogicInitSub2();
 }
 
+// Ok for camp
+// Ok for cara
+// Ok for exca
+// Ok for jiri
+// Ok for ruin
+// Ok for seek
+// Ok for zoah
+// OK for E011
+// NOK for E006
+// NOK for E014
 void sMainLogic::Update(sMainLogic* pThis)
 {
     if (pThis->m14_EdgeTask)
@@ -789,25 +799,9 @@ void sMainLogic::Update(sMainLogic* pThis)
 
     pThis->m10(pThis);
 
-    // Hack
-#ifndef SHIPPING_BUILD
-    {
-        static bool forceCameraPosition = false;
-        ImGui::Begin("Town");
-        {
-            ImGui::Checkbox("Force camera position", &forceCameraPosition);
-            Imgui_Vec3FP("Camera position", &pThis->m38_interpolatedCameraPosition);
-            Imgui_Vec3FP("Camera target", &pThis->m44_cameraTarget);
-        }
-        ImGui::End();
-
-        if (forceCameraPosition && pThis->m14_EdgeTask)
-        {
-            pThis->m38_interpolatedCameraPosition = pThis->m14_EdgeTask->mE8.m0_position - sVec3_FP(0, 0, 0x5000);
-            pThis->m44_cameraTarget = pThis->m14_EdgeTask->mE8.m0_position;
-        }
+    if ((gCurrentTownOverlay->m_name == "TWN_E006") || (gCurrentTownOverlay->m_name == "TWN_E014")) {
+        assert(0); // this is actually incorrect version for those overlays
     }
-#endif
 
     pThis->m50_upVector = pThis->m38_interpolatedCameraPosition;
     pThis->m50_upVector[1] += 0x10000;
