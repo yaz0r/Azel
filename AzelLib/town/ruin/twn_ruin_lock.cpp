@@ -5,7 +5,7 @@
 #include "twn_ruin_lock.h"
 #include "kernel/fileBundle.h"
 #include "audio/systemSounds.h"
-#include "town/collisionBody.h"
+#include "town/collisionRegistry.h"
 
 void sLockTask::Init(sLockTask* pThis, sSaturnPtr r5)
 {

@@ -6,7 +6,7 @@
 #include "ruin/twn_ruin.h"
 #include "kernel/debug/trace.h"
 #include "townScript.h"
-#include "collisionBody.h"
+#include "collisionRegistry.h"
 
 sMainLogic* twnMainLogicTask;
 

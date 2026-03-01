@@ -4,7 +4,7 @@
 #include "town/townDragon.h"
 #include "kernel/fileBundle.h"
 #include "kernel/graphicalObject.h"
-#include "town/collisionBody.h"
+#include "town/collisionRegistry.h"
 
 void initDragonForTown(sTownDragon* pThis); // TODO: Cleanup
 void updateTownDragon(sTownDragon* pThis); // TODO: cleanup

@@ -2,7 +2,7 @@
 
 #include <map>
 
-#include "collisionBody.h"
+#include "collisionRegistry.h"
 
 struct sTownObject
 {

@@ -30,7 +30,7 @@ s32 setNpcOrientation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z);
 
 s32 setSomethingInNpc0(s32 arg0, s32 arg1);
 void startScriptTask(p_workArea r4);
-sNPC* getNpcDataByIndex(s32 r4);
+struct sNPC* getNpcDataByIndex(s32 r4);
 p_workArea getNpcDataByIndexAsTask(s32 r4);
 
 void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_12_4* r7);
