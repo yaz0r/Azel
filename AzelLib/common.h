@@ -533,6 +533,13 @@ struct s_mainGameState
         return getBit(byteIndex * 8 + bit);
     }
 
+    void setBit(u32 byteIndex, u8 mask)
+    {
+        assert(std::bitset<8>(mask).count() == 1);
+        int bit = std::countl_zero(mask);
+        setBit(byteIndex * 8 + bit);
+    }
+
     bool getBit566(u32 bitIndex)
     {
         if (bitIndex < 1000)

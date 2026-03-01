@@ -29,7 +29,18 @@ void initDragonForTown(sTownDragon* pThis)
 {
     if ((-1 < gDragonState->mC_dragonType) && (gDragonState->mC_dragonType < 8))
     {
-        int fileIndex = gDragonState->mC_dragonType * 2 + 10;
+        int fileIndex = gDragonState->mC_dragonType * 2;
+
+        if (gCurrentTownOverlay->m_name == "TWN_EXCA.PRG") {
+            fileIndex += 10;
+        }
+        else if (gCurrentTownOverlay->m_name == "TWN_CAMP.PRG") {
+            fileIndex += 0x14;
+        }
+        else {
+            assert(0);
+        }
+
         allocateNPC(pThis, fileIndex);
         pThis->mC_dragonType = gDragonState->mC_dragonType;
         pThis->m14_readyState = -1;

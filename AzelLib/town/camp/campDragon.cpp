@@ -76,7 +76,7 @@ s32 sCampDragon_InitSub0() {
 
 void sCampDragon_InitSub2(sCampDragon* pThis) {
     u32 temp = updateAndInterpolateAnimation(&gDragonState->m28_dragon3dModel);
-    if (pThis->m24) {
+    if (!pThis->m24.isNull()) {
         assert(0);
     }
 }
@@ -140,17 +140,73 @@ void sCampDragon_Init(sTownDragon* pThisBase, sSaturnPtr arg) {
 }
 
 void sCampDragon_UpdateSub0(sTownDragon* pThis) {
-    Unimplemented();
+    if (pThis->m11_subState < 9) {
+        if (((mainGameState.getBit(1, 0x80) == 0) && ((mainGameState.getBit(0x263, 0x20) != 0))))
+        {
+            if (pThis->m11_subState < 5) {
+                pThis->m10_modeOffset = 0;
+                int iVar1 = vecDistance(pThis->m58_position, *npcData0.m160_pEdgePosition);
+                if (pThis->m11_subState < 2) {
+                    if ((iVar1 < 0x5000) &&
+                        (pThis->m11_subState = 2, (mainGameState.getBit(0x263, 0x40) == 0))) {
+                        iVar1 = performDivision(0x19, mainGameState.gameStats.m7C_overallRating);
+                        increaseGameResource(10, iVar1);
+                        mainGameState.getBit(0x263, 0x40);
+                    }
+                }
+                else if ((1 < (char)pThis->m11_subState) && (0x6000 < iVar1)) {
+                    pThis->m11_subState = 0;
+                }
+            }
+        }
+        else {
+            pThis->m10_modeOffset = 0;
+            pThis->m11_subState = 9;
+        }
+    }
 }
 
-void sCampDragon_UpdateMode4(sTownDragon* pThis) {
+void sCampDragon_UpdateMode4Mode9Sub0(sCampDragon* pThis, int newReadyState)
+{
+    assert(gCurrentTownOverlay->m_name == "TWN_CAMP.PRG");
+
+    pThis->m14_readyState = newReadyState;
+    pThis->m24 = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x607acfc + newReadyState * 8));
+    pThis->m28 = readSaturnU32(gCurrentTownOverlay->getSaturnPtr(0x607ad00 + newReadyState * 8));
+    playAnimation(&gDragonState->m28_dragon3dModel, pThis->m1C->m0_fileBundle->getAnimation(readSaturnU16(pThis->m20_scriptEA + newReadyState * 2)), 0xF);
+}
+
+void sCampDragon_UpdateMode4Mode9(sCampDragon* param_1, int param_2)
+{
+    if (param_1->m14_readyState != param_2) {
+        if (param_1->m14_readyState < 10) {
+            if ((9 < param_2) && (param_2 != 0x17)) {
+                param_1->mE = param_1->mE | 1;
+                assert(gCurrentTownOverlay->m_name == "TWN_CAMP.PRG");
+                param_1->m34 = gCurrentTownOverlay->getSaturnPtr(0x607af5c);
+                param_2 = 0x17;
+            }
+        }
+        else if ((param_2 < 10) && (param_2 != 9)) {
+            param_2 = 9;
+            param_1->mE = param_1->mE | 1;
+            assert(gCurrentTownOverlay->m_name == "TWN_CAMP.PRG");
+            param_1->m34 = gCurrentTownOverlay->getSaturnPtr(0x607af5c);
+        }
+        sCampDragon_UpdateMode4Mode9Sub0(param_1, param_2);
+    }
+    sCampDragon_InitSub2(param_1);
+}
+
+void sCampDragon_UpdateMode4(sCampDragon* pThis) {
     switch (pThis->m11_subState) {
     case 0:
         pThis->m12_eventFlag = 1;
         pThis->m11_subState = 1;
         break;
-    case 1:
-        Unimplemented();
+    case 9:
+        pThis->m12_eventFlag = 0;
+        sCampDragon_UpdateMode4Mode9(pThis, 0);
         break;
     default:
         assert(0);

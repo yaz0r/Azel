@@ -16,7 +16,9 @@ struct sTownDragon : public s_workAreaTemplateWithArg<sTownDragon, sSaturnPtr>, 
     s16 m16_timer;
     npcFileDeleter* m1C;
     sSaturnPtr m20_scriptEA;
-    void* m24;
+    sSaturnPtr m24;
+    u32 m28;
+    sSaturnPtr m34;
     s32 m3C;
     s32 m40;
     sSaturnPtr m48_entityEA;
