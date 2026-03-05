@@ -194,7 +194,7 @@ void battleEngine_FlagQuadrantForSafety(u8 quadrant);
 void battleEngine_FlagQuadrantForDanger(u8 quadrant);
 void battleEngine_FlagQuadrantForAttack(u8 quadrant);
 
-void ResetNBG1Map(); // TODO: clean
+void resetNBG1Map(); // TODO: clean
 void sEnemyAttackCamera_updateSub2();
 
 void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4);

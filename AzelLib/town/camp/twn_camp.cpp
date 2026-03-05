@@ -15,6 +15,7 @@
 #include "campDragon.h"
 #include "town/excaEntity.h"
 #include "town/collisionRegistry.h"
+#include "campVdp2Plane.h"
 
 void unloadFnt(); // TODO: fix
 int scriptFunction_60541c4(int arg);
@@ -297,20 +298,6 @@ void townOverlayDelete_TwnCamp(townDebugTask2Function* pThis)
     unloadFnt();
 }
 
-void startCampBackgroundTask7(townDebugTask2Function* pThis) {
-    Unimplemented();
-
-    // hack: to remove title screen
-    reinitVdp2();
-}
-
-void startCampBackgroundTask(townDebugTask2Function* pThis) {
-    Unimplemented();
-
-    // hack: to remove title screen
-    reinitVdp2();
-}
-
 p_workArea overlayStart_TWN_CAMP(p_workArea pUntypedThis, u32 arg)
 {
     gTWN_CAMP->makeCurrent();
@@ -341,10 +328,10 @@ p_workArea overlayStart_TWN_CAMP(p_workArea pUntypedThis, u32 arg)
     startScriptTask(pThis);
 
     if (arg == 7) {
-        startCampBackgroundTask7(pThis);
+        createCampVdp2PlaneAlt(pThis);
     }
     else {
-        startCampBackgroundTask(pThis);
+        createCampVdp2Plane(pThis);
     }
 
     sEdgeTask* pEdgeTask = nullptr;

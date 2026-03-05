@@ -52,7 +52,7 @@ void increaseGameResource(int param_1, int param_2) {
     }
 }
 
-s32 sCampDragon_InitSub0() {
+s32 getDragonAffinityLevel() {
     s32 uVar1;
     int iVar2;
 
@@ -89,7 +89,7 @@ void sCampDragon_Init(sTownDragon* pThisBase, sSaturnPtr arg) {
     npcData0.m70_npcPointerArray[readSaturnU16(arg + 0x20)].workArea = pThis;
     pThis->m16_timer = 0x3C;
     increaseGameResource(0xb, 0);
-    pThis->mF_affinityLevel = sCampDragon_InitSub0();
+    pThis->mF_affinityLevel = getDragonAffinityLevel();
     pThis->m40 = 0x8000000;
     pThis->m3C = 0x8000000;
     pThis->mD8_heightOffset = 0x1000;

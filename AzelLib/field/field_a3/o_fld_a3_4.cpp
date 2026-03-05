@@ -12,7 +12,7 @@ void vdp2FieldTask_init(s_fieldPaletteTaskWorkArea* pThis)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
     reinitVdp2();
-    fieldPaletteTaskInitSub0();
+    initNBG1Layer();
     
     vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x31FF75FF;
 

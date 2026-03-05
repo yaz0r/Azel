@@ -297,7 +297,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 ((gBattleManager->m10_battleOverlay->m4_battleEngine->m388 & 0x100U) == 0))
             {
                 // cancel out of menu
-                ResetNBG1Map();
+                resetNBG1Map();
                 setupVDP2StringRendering(6, 0x17, 0x20, 2);
                 pThis->m20 &= ~1;
                 pThis->m20 |= 0x10;
@@ -310,7 +310,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
         else if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m388 & 0x80U) == 0)
         {
             //select current entry
-            ResetNBG1Map();
+            resetNBG1Map();
             setupVDP2StringRendering(6, 0x17, 0x20, 2);
             pThis->m20 &= ~1;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
@@ -405,7 +405,7 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
 
                     if (bVar2)
                     {
-                        ResetNBG1Map();
+                        resetNBG1Map();
                         setupVDP2StringRendering(6, 0x17, 0x20, 2);
                         clearVdp2TextArea();
                         pThis->m2_mode = 6;

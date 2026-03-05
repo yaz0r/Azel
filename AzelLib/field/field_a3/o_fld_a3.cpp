@@ -1430,14 +1430,14 @@ void createNGB1DefaultBlackCell()
     }
 }
 
-void ResetNBG1Map()
+void resetNBG1Map()
 {
     memset(getVdp2Vram(0x5800), 0, 0x80 * 4);
     createNGB1DefaultBlackCell();
 }
 
 // TODO: kernel
-void fieldPaletteTaskInitSub0()
+void initNBG1Layer()
 {
     fieldPaletteTaskInitSub0Sub0();
 
@@ -1462,7 +1462,7 @@ void fieldPaletteTaskInitSub0()
     initLayerMap(1, 0x5800, 0x5800, 0x5800, 0x5800);
 
     writeCinematicBarsToVdp2();
-    ResetNBG1Map();
+    resetNBG1Map();
 }
 
 void s_fieldPaletteTaskWorkArea::Init(s_fieldPaletteTaskWorkArea* pThis)
@@ -1471,7 +1471,7 @@ void s_fieldPaletteTaskWorkArea::Init(s_fieldPaletteTaskWorkArea* pThis)
 
     reinitVdp2();
 
-    fieldPaletteTaskInitSub0();
+    initNBG1Layer();
 
     pThis->m78 = (s_fieldPaletteTaskWorkSub*)allocateHeapForTask(pThis, sizeof(s_fieldPaletteTaskWorkSub));
     pThis->m78->m0 = 1;

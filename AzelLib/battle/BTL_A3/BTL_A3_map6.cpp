@@ -9,11 +9,35 @@
 #include "kernel/loadSavegameScreen.h" //TODO: remove
 #include "BTL_A3_data.h"
 #include "kernel/grid.h"
+#include "kernel/cinematicBarsTask.h"
 #include "town/town.h" // TODO: cleanup
 
-void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr)
+void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr param_1)
 {
-    Unimplemented();
+    // Setup clip distances from Saturn data
+    auto& clip = graphicEngineStatus.m405C;
+    clip.m14_farClipDistance  = readSaturnS32(param_1 + 0x38);
+    clip.m38_oneOverFarClip   = FP_Div(0x8000, clip.m14_farClipDistance);
+    clip.m34_oneOverFarClip256 = clip.m38_oneOverFarClip << 8;
+    clip.m10_nearClipDistance = readSaturnS32(param_1 + 0x3C);
+    clip.m30_oneOverNearClip  = FP_Div(0x10000, clip.m10_nearClipDistance);
+
+    // Setup light parameters in the battle grid
+    s_battleGrid* grid = gBattleManager->m10_battleOverlay->m8_gridTask;
+
+    grid->m1CC_lightColor    = readSaturnVec3(param_1 + 0x00);
+    grid->m1D8_newLightColor = grid->m1CC_lightColor;
+
+    grid->m1E4_lightFalloff0 = readSaturnVec3(param_1 + 0x0C);
+    grid->m1F0               = grid->m1E4_lightFalloff0;
+
+    grid->m1FC_lightFalloff1 = readSaturnVec3(param_1 + 0x18);
+    grid->m208_lightFalloff2 = readSaturnVec3(param_1 + 0x24);
+
+    grid->m280_lightAngle1       = readSaturnS32(param_1 + 0x30);
+    grid->m284_lightAngle2       = readSaturnS32(param_1 + 0x34);
+    grid->m28C_lightAngle1Initial = grid->m280_lightAngle1;
+    grid->m290_lightAngle2Initial = grid->m284_lightAngle2;
 }
 
 void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes)
@@ -95,19 +119,7 @@ tCoefficientTable coefficientA1(0x80 * 4);
 tCoefficientTable coefficientB0(0x80 * 4);
 tCoefficientTable coefficientB1(0x80 * 4);
 
-struct sCoefficientTableData
-{
-    s16 m34;
-    s16 m36;
-    s16 m38;
-    s16 m3C;
-    s16 m3E;
-    s16 m40;
-
-    // size 0x70
-};
-
-std::array<sCoefficientTableData, 4> tableCoefficient4_0;
+std::array<std::array<sCoefficientTableData, 2>, 2> gCoefficientTables;
 
 // TODO: figure out why the disassembly of r3 craps out
 void setVdp2TableAddress(int p1, u8* vdp2Dest)
@@ -193,7 +205,7 @@ void initCoefficientTable(std::vector<fixedPoint>& p2, std::vector<fixedPoint>& 
     }
 }
 
-std::array<std::vector<fixedPoint>*, 4> vdp2CoefficientTables;
+std::array<std::array<std::vector<fixedPoint>*, 2>, 2> gVdp2CoefficientTables;
 
 // TODO: kernel
 void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, u8* coefficientTableAddress, u8 numCoefficients)
@@ -205,12 +217,12 @@ void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>
     switch (p1)
     {
     case 6:
-        vdp2CoefficientTables[0] = &p2;
-        vdp2CoefficientTables[1] = &p3;
+        gVdp2CoefficientTables[0][0] = &p2;
+        gVdp2CoefficientTables[0][1] = &p3;
         break;
     case 7:
-        vdp2CoefficientTables[2] = &p2;
-        vdp2CoefficientTables[3] = &p3;
+        gVdp2CoefficientTables[1][0] = &p2;
+        gVdp2CoefficientTables[1][1] = &p3;
         break;
     default:
         break;
@@ -219,37 +231,38 @@ void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>
 
 void s_BTL_A3_Env_InitVdp2Sub3Sub1(sCoefficientTableData& table)
 {
-    /*
-    table[0] = 0;
-    table[1] = 0;
-    table[2] = 0;
-    table[3] = 0;
-    table[4] = 0x10000;
-    table[5] = 0x10000;
-    table[6] = 0;
-    table[7] = 0x10000;
-    table[8] = 0;
-    table[9] = 0;
-    table[0xa] = 0;
-    table[0xb] = 0x10000;
-    table[0xc] = 0;
-    table[0xd] = 0xb00070;
-    table[0xe] = 0xfb0000;
-    table[0xf] = 0xb00070;
-    table[0x10] = 0;
-    table[0x11] = 0;
-    table[0x12] = 0;
-    table[0x13] = 0x10000;
-    table[0x14] = 0x10000;
-    table[0x15] = 0;
-    table[0x16] = 0;
-    table[0x17] = 0;
-    table[0x18] = 0;
-    table[0x19] = 0;
-    table[0x1a] = 0;
-    table[0x1b] = 0x10000;
-    */
-    Unimplemented();
+    table.m0 = 0;
+    table.m4 = 0;
+    table.m8_Zst = 0;
+    table.mC = 0;
+    table.m10 = 0x10000;
+    table.m14 = 0x10000;
+    table.m18 = 0;
+    table.m1C = 0x10000;
+    table.m20 = 0;
+    table.m24 = 0;
+    table.m28 = 0;
+    table.m2C = 0x10000;
+    table.m30 = 0;
+    table.m34 = 0xB0;
+    table.m36 = 0x70;
+    table.m38 = 0xFB;
+    table.m3A = 0;
+    table.m3C = 0xB0;
+    table.m3E = 0x70;
+    table.m40 = 0;
+    table.m42 = 0;
+    table.m44 = 0;
+    table.m48 = 0;
+    table.m4C = 0x10000;
+    table.m50 = 0x10000;
+    table.m54 = 0;
+    table.m58 = 0;
+    table.m5C = 0;
+    table.m60 = 0;
+    table.m64 = 0;
+    table.m68 = 0;
+    table.m6C = 0x10000;
 }
 
 void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table)
@@ -261,14 +274,14 @@ void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table)
             return;
         }
 
-        s_BTL_A3_Env_InitVdp2Sub3Sub1(tableCoefficient4_0[2]);
-        s_BTL_A3_Env_InitVdp2Sub3Sub1(tableCoefficient4_0[3]);
-        setupScrollAndRotation(5, &tableCoefficient4_0[2], &tableCoefficient4_0[3], table + 0x80, 6);
+        s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[1][0]);
+        s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[1][1]);
+        setupScrollAndRotation(5, &gCoefficientTables[1][0], &gCoefficientTables[1][1], table + 0x80, 6);
     }
 
-    s_BTL_A3_Env_InitVdp2Sub3Sub1(tableCoefficient4_0[0]);
-    s_BTL_A3_Env_InitVdp2Sub3Sub1(tableCoefficient4_0[1]);
-    setupScrollAndRotation(5, &tableCoefficient4_0[0], &tableCoefficient4_0[1], table + 0x80, 6);
+    s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[0][0]);
+    s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[0][1]);
+    setupScrollAndRotation(5, &gCoefficientTables[0][0], &gCoefficientTables[0][1], table + 0x80, 6);
 }
 
 void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
@@ -316,7 +329,7 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
     gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
 
-    fieldPaletteTaskInitSub0();
+    initNBG1Layer();
 
     asyncDmaCopy(g_BTL_A3->getSaturnPtr(0x60A68BC), getVdp2Cram(0x400), 0x200, 0);
     asyncDmaCopy(g_BTL_A3->getSaturnPtr(0x60A66BC), getVdp2Cram(0xA00), 0x200, 0);
@@ -403,7 +416,7 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
             {0x2C, 0x1},
         }
     };
-    loadSaveBackgroundSub0(config);
+    applyLayerDisplayConfig(config);
 
     vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xF8FF) | 0x400;
     vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xFFF0) | 0x3;
@@ -607,38 +620,37 @@ void BTL_A3_Env_Update(s_BTL_A3_Env* pThis)
     // Empty
 }
 
-std::array<s8, 4> vdpVar6;
-fixedPoint vdpVar7;
-sMatrix4x3 vdpVar8;
+sRotationPassState gRotationPassState;
+sVdp2RotationData gVdp2RotationMatrix;
 
-void BTL_A3_Env_DrawSub1ResetMatrix()
+void beginRotationPass_resetMatrix()
 {
-    vdpVar8.m[0][0] = 0x10000;
-    vdpVar8.m[0][1] = 0;
-    vdpVar8.m[0][2] = 0;
-    vdpVar8.m[0][3] = 0;
+    gVdp2RotationMatrix.m[0][0] = 0x10000;
+    gVdp2RotationMatrix.m[0][1] = 0;
+    gVdp2RotationMatrix.m[0][2] = 0;
+    gVdp2RotationMatrix.m[1][0] = 0;
 
-    vdpVar8.m[1][0] = 0x10000;
-    vdpVar8.m[1][1] = 0;
-    vdpVar8.m[1][2] = 0;
-    vdpVar8.m[1][3] = 0;
+    gVdp2RotationMatrix.m[1][1] = 0x10000;
+    gVdp2RotationMatrix.m[1][2] = 0;
+    gVdp2RotationMatrix.m[2][0] = 0;
+    gVdp2RotationMatrix.m[2][1] = 0;
 
-    vdpVar8.m[2][0] = 0x10000;
-    vdpVar8.m[2][1] = 0;
-    vdpVar8.m[2][2] = 0;
-    vdpVar8.m[2][3] = 0;
+    gVdp2RotationMatrix.m[2][2] = 0x10000;
+    gVdp2RotationMatrix.Mx = 0;
+    gVdp2RotationMatrix.My = 0;
+    gVdp2RotationMatrix.Mz = 0;
 }
 
-void BTL_A3_Env_DrawSub1(int p1, fixedPoint p2)
+void beginRotationPass(int passIndex, fixedPoint focalLength)
 {
-    vdpVar6[1] = 0;
-    vdpVar6[2] = 0;
-    vdpVar6[0] = p1;
-    vdpVar7 = p2;
+    gRotationPassState.m1_scrollMode = 0;
+    gRotationPassState.m2_matrixMode = eRMM_roll;
+    gRotationPassState.m0_planeIndex = passIndex;
+    gRotationPassState.m4_focalLength = focalLength;
 
-    BTL_A3_Env_DrawSub1ResetMatrix();
+    beginRotationPass_resetMatrix();
 
-    if (vdpVar6[0] == 0)
+    if (gRotationPassState.m0_planeIndex == 0)
     {
         vdp2Controls.m_8 = fixedPoint::fromInteger(vdp2Controls.m_10);
     }
@@ -648,57 +660,266 @@ void BTL_A3_Env_DrawSub1(int p1, fixedPoint p2)
     }
 }
 
-void BTL_A3_Env_DrawSub8Sub1(fixedPoint p1, fixedPoint p2)
+// Copies the gVdp2RotationMatrix rotation matrix into the current coefficient table entry (FUN_0602915e)
+static void writeRotationMatrixToEntry()
 {
-    fixedPoint cos1 = getCos(fixedPoint::toInteger(p1));
-    fixedPoint sin1 = getSin(fixedPoint::toInteger(p1));
-    fixedPoint cos2 = getCos(fixedPoint::toInteger(p2));
-    fixedPoint sin2 = getSin(fixedPoint::toInteger(p2));
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
 
-    vdpVar8.m[0][0] = cos2;
-    vdpVar8.m[0][1] = MTH_Mul(-sin1, cos2);
-    vdpVar8.m[0][2] = MTH_Mul(cos1, cos2);
-
-    vdpVar8.m[0][3] = cos2;
-    vdpVar8.m[1][0] = MTH_Mul(sin1, sin2);
-    vdpVar8.m[1][1] = MTH_Mul(-cos1, sin2);
-
-    vdpVar8.m[1][2] = 0;
-    vdpVar8.m[1][3] = cos1;
-    vdpVar8.m[2][0] = sin1;
-
-    vdpVar6[2] = 1;
+    t.m1C = gVdp2RotationMatrix.m[0][0];
+    t.m20 = gVdp2RotationMatrix.m[0][1];
+    t.m24 = gVdp2RotationMatrix.m[0][2];
+    t.m28 = gVdp2RotationMatrix.m[1][0];
+    t.m2C = gVdp2RotationMatrix.m[1][1];
+    t.m30 = gVdp2RotationMatrix.m[1][2];
+    t.m44 = gVdp2RotationMatrix.Mx;
+    t.m48 = gVdp2RotationMatrix.My;
 }
 
-void BTL_A3_Env_DrawSub6(fixedPoint param1)
+// FUN_060061f0: Fills coefficient table entries by repeated fixed-point division
+// For each entry: table[i] = FP_Div(dividend, divisor), divisor -= step
+static void generatePerspectiveCoefficients(s32 dividend, s32 divisor, fixedPoint step, int count, std::vector<fixedPoint>* pTable)
 {
-    vdpVar8.m[0][0] = MTH_Mul(vdpVar8.m[0][0], param1);
-    vdpVar8.m[0][1] = MTH_Mul(vdpVar8.m[0][1], param1);
-    vdpVar8.m[0][2] = MTH_Mul(vdpVar8.m[0][2], param1);
-    vdpVar8.m[0][3] = MTH_Mul(vdpVar8.m[0][3], param1);
-    vdpVar8.m[1][0] = MTH_Mul(vdpVar8.m[1][0], param1);
-    vdpVar8.m[1][1] = MTH_Mul(vdpVar8.m[1][1], param1);
-}
-
-void BTL_A3_Env_DrawSub8(s_BTL_A3_Env* pThis)
-{
-    sCoefficientTableData& table = tableCoefficient4_0[vdp2Controls.m0_doubleBufferIndex];
-
-    sVec3_FP cameraRotation = pThis->m18_cameraRotation;
-    if (pThis->m18_cameraRotation[0] == 0)
-    {
-        cameraRotation[0] = -0x12345; // was that a debug piece of code left over?
+    std::vector<fixedPoint>& table = *pTable;
+    for (int i = 0; i < count; i++) {
+        table[i] = FP_Div(dividend, divisor);
+        divisor -= (s32)step;
     }
-    
-    table.m34 = pThis->m24_vdp1Clipping[0] + pThis->m24_vdp1Clipping[2];
-    table.m36 = pThis->m24_vdp1Clipping[1] + pThis->m24_vdp1Clipping[3];
-    table.m38 = pThis->m30_vdp1ProjectionParam[1];
-    table.m3C = table.m34;
-    table.m3E = table.m36;
-    table.m40 = 0;
+}
 
-    BTL_A3_Env_DrawSub8Sub1(-0x4000000 - cameraRotation[0], cameraRotation[1]);
-    BTL_A3_Env_DrawSub6(pThis->m3C);
+// Fills a range of coefficient table entries for the rotation pass (FUN_06029668)
+static void fillRotationCoefficientTable(int startY, int endY)
+{
+    int count = endY - startY;
+    if (count == 0) {
+        return;
+    }
+
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+
+    s32 diffX = (s32)t.m34 - (s32)t.m3C;
+    s32 diffY = (s32)t.m36 - (s32)t.m3E;
+    s32 diffZ = (s32)t.m38 - (s32)t.m40;
+
+    s32 dividend = (s32)gVdp2RotationMatrix.m[2][0] * diffX
+                 + (s32)gVdp2RotationMatrix.m[2][1] * diffY
+                 + (s32)gVdp2RotationMatrix.m[2][2] * diffZ
+                 + (s32)t.m40 * 0x10000
+                 + (s32)gVdp2RotationMatrix.Mz;
+
+    s32 divisor;
+    fixedPoint step;
+    if (gRotationPassState.m1_scrollMode == 0) {
+        divisor = (s32)gVdp2RotationMatrix.m[2][0] * (s32)t.m34
+                + (s32)gVdp2RotationMatrix.m[2][1] * ((s32)t.m36 - startY);
+        step = gVdp2RotationMatrix.m[2][1];
+    } else {
+        divisor = (s32)gVdp2RotationMatrix.m[2][0] * ((s32)t.m34 - startY)
+                + (s32)gVdp2RotationMatrix.m[2][1] * (s32)t.m36;
+        step = gVdp2RotationMatrix.m[2][0];
+    }
+
+    s32 zTerm = MTH_Mul(gVdp2RotationMatrix.m[2][2], (s32)t.m38 * 0x10000 - t.m8_Zst);
+    divisor += (s32)zTerm;
+
+    generatePerspectiveCoefficients(dividend, divisor, step, count,
+        gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex]);
+}
+
+void commitRotationPass()
+{
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+
+    if (gRotationPassState.m2_matrixMode == eRMM_roll) {
+        t.m0  = (s32)t.m3C * (0x10000 - (s32)gRotationPassState.m4_focalLength);
+        t.m4  = 0;
+        t.m8_Zst  = 0;
+        t.mC  = 0;
+        t.m10 = 0x10000;
+        t.m14 = (s32)gRotationPassState.m4_focalLength;
+        t.m18 = 0;
+    }
+    else if (gRotationPassState.m2_matrixMode == eRMM_pitchYaw) {
+        t.m0  = (s32)t.m3C * (0x10000 - (s32)gRotationPassState.m4_focalLength);
+        t.m4  = 0;
+        t.m8_Zst  = 0;
+        t.mC  = 0;
+        t.m10 = 0x10000;
+        t.m14 = (s32)gRotationPassState.m4_focalLength;
+        t.m18 = 0;
+        t.m54 = (s32)vdp2Controls.m_8;
+        s16 sVar1;
+        if (gRotationPassState.m1_scrollMode == 0) {
+            t.m58 = 0x10000;
+            sVar1 = 0xE2;
+            t.m5C = 0;
+        } else {
+            t.m58 = 0;
+            t.m5C = (s32)gRotationPassState.m4_focalLength;
+            sVar1 = 0x142;
+        }
+        fillRotationCoefficientTable(0, (int)sVar1);
+    }
+    else if (gRotationPassState.m2_matrixMode == eRMM_params) {
+        int firstParam;
+        s16 sVar1;
+        if (gRotationPassState.m1_scrollMode == 0) {
+            firstParam = 0xffffff9c; // -100
+            sVar1 = 0x144;
+        } else {
+            firstParam = 0xffffffdd; // -35
+            sVar1 = 0x185;
+        }
+        fillRotationCoefficientTable(firstParam, (int)sVar1);
+    }
+
+    writeRotationMatrixToEntry();
+
+    if (gRotationPassState.m0_planeIndex == 0) {
+        drawCinematicBar(4);
+    } else if (gRotationPassState.m0_planeIndex == 1) {
+        drawCinematicBar(5);
+    }
+}
+
+void buildRotationMatrixRoll(fixedPoint rollAngle)
+{
+    fixedPoint cosZ = getCos(fixedPoint::toInteger(rollAngle));
+    fixedPoint sinZ = getSin(fixedPoint::toInteger(rollAngle));
+
+    gVdp2RotationMatrix.m[0][0] = cosZ;
+    gVdp2RotationMatrix.m[0][1] = -sinZ;
+    gVdp2RotationMatrix.m[0][2] = 0;
+    gVdp2RotationMatrix.m[1][0] = sinZ;
+    gVdp2RotationMatrix.m[1][1] = cosZ;
+    gVdp2RotationMatrix.m[1][2] = 0;
+    gVdp2RotationMatrix.m[2][0] = 0;
+    gVdp2RotationMatrix.m[2][1] = 0;
+    gVdp2RotationMatrix.m[2][2] = 0x10000;
+    gRotationPassState.m2_matrixMode = eRMM_roll;
+}
+
+void setRotationScrollOffset(s32 scrollX, s32 scrollY)
+{
+    gVdp2RotationMatrix.Mx = scrollX;
+    gVdp2RotationMatrix.My = scrollY;
+}
+
+void writeRotationParams(fixedPoint rollAngle)
+{
+    fixedPoint cosRoll = getCos(fixedPoint::toInteger(rollAngle));
+    fixedPoint sinRoll = getSin(fixedPoint::toInteger(rollAngle));
+
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+
+    // Xst: rotate screen center into world space
+    t.m0 = MTH_Mul((s32)sinRoll * (s32)t.m3E - (s32)cosRoll * (s32)t.m3C, gRotationPassState.m4_focalLength) + (s32)t.m3C * 0x10000;
+    // Yst
+    t.m4 = -(s32)cosRoll * (s32)t.m3E - (s32)sinRoll * (s32)t.m3C + (s32)t.m3E * 0x10000;
+    // DXx, DXy
+    t.mC  = -(s32)sinRoll;
+    t.m10 = (s32)cosRoll;
+    // DYx, DYy
+    t.m14 = MTH_Mul(cosRoll, gRotationPassState.m4_focalLength);
+    t.m18 = MTH_Mul(sinRoll, gRotationPassState.m4_focalLength);
+
+    if (gRotationPassState.m1_scrollMode == 0) {
+        s32 kastArg = MTH_Mul(-(s32)sinRoll * (s32)t.m3C, gRotationPassState.m4_focalLength);
+        t.m54 = (kastArg - (s32)cosRoll * (s32)t.m3E) + (s32)t.m3E * 0x10000 + (s32)vdp2Controls.m_8 + 0x640000;
+        t.m58 = (s32)cosRoll;
+        t.m5C = MTH_Mul(sinRoll, gRotationPassState.m4_focalLength);
+    } else {
+        t.m54 = t.m0 + (s32)vdp2Controls.m_8 + 0x230000;
+        t.m58 = -(s32)sinRoll;
+        t.m5C = MTH_Mul(cosRoll, gRotationPassState.m4_focalLength);
+    }
+
+    gRotationPassState.m2_matrixMode = eRMM_params;
+}
+
+void buildRotationMatrixPitchYaw(fixedPoint pitchAngle, fixedPoint yawAngle)
+{
+    fixedPoint sin1 = getCos(fixedPoint::toInteger(pitchAngle));
+    fixedPoint cos1 = getSin(fixedPoint::toInteger(pitchAngle));
+    fixedPoint sin2 = getCos(fixedPoint::toInteger(yawAngle));
+    fixedPoint cos2 = getSin(fixedPoint::toInteger(yawAngle));
+
+    gVdp2RotationMatrix.m[0][0] = sin2;
+    gVdp2RotationMatrix.m[0][1] = MTH_Mul(-sin1, cos2);
+    gVdp2RotationMatrix.m[0][2] = MTH_Mul(cos1, cos2);
+
+    gVdp2RotationMatrix.m[1][0] = cos2;
+    gVdp2RotationMatrix.m[1][1] = MTH_Mul(sin1, sin2);
+    gVdp2RotationMatrix.m[1][2] = MTH_Mul(-cos1, sin2);
+
+    gVdp2RotationMatrix.m[2][0] = 0;
+    gVdp2RotationMatrix.m[2][1] = cos1;
+    gVdp2RotationMatrix.m[2][2] = sin1;
+
+    gRotationPassState.m2_matrixMode = eRMM_pitchYaw;
+}
+
+void scaleRotationMatrix(fixedPoint scale)
+{
+    gVdp2RotationMatrix.m[0][0] = MTH_Mul(gVdp2RotationMatrix.m[0][0], scale);
+    gVdp2RotationMatrix.m[0][1] = MTH_Mul(gVdp2RotationMatrix.m[0][1], scale);
+    gVdp2RotationMatrix.m[0][2] = MTH_Mul(gVdp2RotationMatrix.m[0][2], scale);
+    gVdp2RotationMatrix.m[1][0] = MTH_Mul(gVdp2RotationMatrix.m[1][0], scale);
+    gVdp2RotationMatrix.m[1][1] = MTH_Mul(gVdp2RotationMatrix.m[1][1], scale);
+    gVdp2RotationMatrix.m[1][2] = MTH_Mul(gVdp2RotationMatrix.m[1][2], scale);
+}
+
+void buildGroundRotation(s_BTL_A3_Env* pThis)
+{
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+
+    s32 rotX = pThis->m18_cameraRotation.m0_X;
+    if (rotX == 0) {
+        rotX = -0x12345; // debug guard against zero pitch
+    }
+    s32 rotY = pThis->m18_cameraRotation.m4_Y;
+    s32 rotZ = pThis->m18_cameraRotation.m8_Z;
+
+    s32 sumX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
+    t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
+    s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
+    t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
+    t.m3C = t.m34;
+    t.m3E = t.m36;
+    t.m40 = 0;
+
+    buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
+    scaleRotationMatrix(pThis->m3C);
+    writeRotationParams(-rotZ);
+
+    s32 diffX = (s32)t.m34 - (s32)t.m3C;
+    s32 diffY = (s32)t.m36 - (s32)t.m3E;
+    s32 diffZ = (s32)t.m38 - (s32)t.m40;
+
+    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C, (s32)pThis->mC_cameraPosition.m0_X << 4)
+                    - gVdp2RotationMatrix.m[0][0] * diffX - gVdp2RotationMatrix.m[0][1] * diffY - gVdp2RotationMatrix.m[0][2] * diffZ
+                    + (s32)(s16)t.m3C * -0x10000;
+    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C, (s32)pThis->mC_cameraPosition.m8_Z << 4)
+                    - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
+                    + (s32)(s16)t.m3E * -0x10000;
+    gVdp2RotationMatrix.Mz = (pThis->mC_cameraPosition.m4_Y - pThis->m38) * 0x10
+                    - gVdp2RotationMatrix.m[2][0] * diffX - gVdp2RotationMatrix.m[2][1] * diffY - gVdp2RotationMatrix.m[2][2] * diffZ
+                    + (s32)(s16)t.m40 * -0x10000;
+}
+
+s32 computeRotationScrollOffset()
+{
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+
+    s32 pivotX = (s32)gVdp2RotationMatrix.m[2][0] * (s32)t.m34;
+    s32 pivotY = (s32)gVdp2RotationMatrix.m[2][1] * (s32)t.m36;
+    s32 depthTerm = MTH_Mul(gVdp2RotationMatrix.m[2][2], (s32)t.m38 * 0x10000 - t.m8_Zst);
+
+    return FP_Div(pivotX + pivotY + depthTerm, gVdp2RotationMatrix.m[2][1]).getInteger();
+}
+
+static void BTL_A3_Env_DrawSub4(s_BTL_A3_Env* pThis)
+{
     Unimplemented();
 }
 
@@ -710,24 +931,44 @@ void BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)
     getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
     getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
-    BTL_A3_Env_DrawSub1(0, performDivision(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
-    BTL_A3_Env_DrawSub8(pThis);
-    /*
+    beginRotationPass(0, performDivision(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
+    buildGroundRotation(pThis);
     drawCinematicBar(6);
-    BTL_A3_Env_DrawSub2();
+    commitRotationPass();
 
-    pThis->m34 = BTL_A3_Env_DrawSub3();
-
+    pThis->m34 = computeRotationScrollOffset();
     BTL_A3_Env_DrawSub4(pThis);
 
-    pThis->m0 = (pThis->m18_cameraRotation[1] >> 0xC) * -0x400;
-    pThis->m4 = fixedPoint::fromInteger(495 - pThis->m34);
+    s32 scrollX = (pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
+    s32 scrollY = (0x1EF - pThis->m34) * 0x10000;
 
-    BTL_A3_Env_DrawSub1(1, performDivision(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
+    beginRotationPass(1, performDivision(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
-    int iVar3 = vdp2Controls.m_0
-    */
-    Unimplemented();
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+    s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
+    t.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
+    s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
+    t.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
+    t.m3C = t.m34;
+    t.m3E = t.m36;
+    t.m40 = 0;
+
+    buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
+    performDivision(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
+    scaleRotationMatrix(performDivision(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
+    setRotationScrollOffset(scrollX, scrollY);
+    commitRotationPass();
+
+    pauseEngine[4] = 0;
+    setupVDP2CoordinatesIncrement2(scrollX, 0);
+    pauseEngine[4] = 4;
+
+    auto* regs = vdp2Controls.m4_pendingVdp2Regs;
+    regs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;
+    regs->mC2_WPSY0 = pThis->m24_vdp1Clipping[1];
+    regs->mC4_WPEX0 = pThis->m24_vdp1Clipping[2] << 1;
+    regs->mC6_WPEY0 = pThis->m24_vdp1Clipping[3];
 }
 
 p_workArea Create_BTL_A3_map6(p_workArea parent)

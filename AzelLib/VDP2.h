@@ -210,6 +210,7 @@ enum eVdp2LayerConfig
     m9_SCC = 9,
     m11_SCN = 11,
     m12_PLSZ = 12,
+    m13 = 13,
     m21_LCSY = 21,
     m27_RPMD = 27,
     m31_RxKTE = 31,

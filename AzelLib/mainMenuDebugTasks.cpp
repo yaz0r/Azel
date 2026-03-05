@@ -151,83 +151,108 @@ void updateDragonStatsFromLevel()
     computeDragonSprAndAglFromCursor();
 }
 
-void rotl(u32& value)
-{
-    u32 bit = value & 0x80000000;
-    value <<= 1;
-    value |= (bit >> 31);
-}
-
 u32 readPackedBits(u8* bitField, u32 firstBitOffset, u32 numBits)
 {
-    u32 r0_startOfByteInBits = (firstBitOffset & ~0x1F);
-    u32 lastBitToChange = numBits + firstBitOffset - r0_startOfByteInBits;
-    u8* targetByte = bitField + (r0_startOfByteInBits / 8);
-    u32 r6_bitMask = longBitMask[numBits];
-    u32 r1 = 0x20;
+    u32 bitOffsetInWord = firstBitOffset & 0x1F;
+    u32 lastBitToChange = bitOffsetInWord + numBits;
 
-    if (lastBitToChange > 32)
+    u8* targetByte = bitField + ((firstBitOffset & ~0x1F) >> 3);
+    u32 word0 = ((u32)targetByte[0] << 24) | ((u32)targetByte[1] << 16) | ((u32)targetByte[2] << 8) | targetByte[3];
+    u32 mask = longBitMask[numBits];
+
+    if (lastBitToChange <= 32)
     {
-        // we are overflowing into the next bit
-        Unimplemented();
-        return 0;
+        if (lastBitToChange != 32)
+        {
+            u32 amountToRotate = 32 - lastBitToChange;
+            do {
+                word0 = (word0 >> 1) | (word0 << 31); // ROR
+                amountToRotate--;
+            } while (amountToRotate != 0);
+        }
+        return word0 & mask;
     }
     else
     {
-        u32 value1 = (targetByte[0] << 24) | (targetByte[1] << 16) | (targetByte[2] << 8) | (targetByte[3]);
+        u8* nextByte = targetByte + 4;
+        u32 word1 = ((u32)nextByte[0] << 24) | ((u32)nextByte[1] << 16) | ((u32)nextByte[2] << 8) | nextByte[3];
 
-        if (lastBitToChange == 32)
-        {
-            return value1 & r6_bitMask;
-        }
-        else
-        {
-            r1 -= lastBitToChange;
-            value1 >>= r1;
+        u32 amountToRotate = lastBitToChange - 32;
+        do {
+            u32 msb = (word1 & 0x80000000) ? 1 : 0;
+            word1 = (word1 << 1) | msb;
+            word0 = (word0 << 1) | msb;
+            amountToRotate--;
+        } while (amountToRotate != 0);
 
-            return value1 & r6_bitMask;
-        }
+        return word0 & mask;
     }
 }
 
 void setPackedBits(u8* bitField, u32 firstBitOffset, u32 numBits, u32 value)
 {
-    u32 startOfByteInBits = (firstBitOffset & ~0x1F);
-    u32 lastBitToChange = numBits + firstBitOffset - startOfByteInBits;
-    u8* targetByte = bitField + (startOfByteInBits / 8);
-    u32 bitMask = longBitMask[numBits];
+    u32 bitOffsetInWord = firstBitOffset & 0x1F;
+    u32 lastBitToChange = bitOffsetInWord + numBits;
 
-    value &= bitMask; // we can't set a value larger than the number of bits requested
+    u8* targetByte = bitField + ((firstBitOffset & ~0x1F) >> 3);
+    u32 mask = longBitMask[numBits];
+    value = value & mask;
+    u32 invMask = ~mask;
 
-    // read in the proper order
-    u32 value1 = (targetByte[0] << 24) | (targetByte[1] << 16) | (targetByte[2] << 8) | (targetByte[3]);
-
-    // did we overflow into the next u32?
-    if (lastBitToChange < 32)
+    if (lastBitToChange <= 32)
     {
-        bitMask ^= 0xFFFFFFFF;
-        if (32 != lastBitToChange)
+        if (lastBitToChange != 32)
         {
-            u32 r1 = 32 - lastBitToChange;
-
-            do
-            {
-                rotl(bitMask);
-                rotl(value);
-            } while (--r1);
+            u32 amountToRotate = 32 - lastBitToChange;
+            do {
+                invMask = (invMask << 1) | ((invMask & 0x80000000) ? 1 : 0); // ROL
+                value = (value << 1) | ((value & 0x80000000) ? 1 : 0); // ROL
+                amountToRotate--;
+            } while (amountToRotate != 0);
         }
 
-        value1 &= bitMask;
-        value1 |= value;
-
-        targetByte[0] = (value1 >> 24) & 0xFF;
-        targetByte[1] = (value1 >> 16) & 0xFF;
-        targetByte[2] = (value1 >> 8) & 0xFF;
-        targetByte[3] = (value1 >> 0) & 0xFF;
+        u32 word0 = ((u32)targetByte[0] << 24) | ((u32)targetByte[1] << 16) | ((u32)targetByte[2] << 8) | targetByte[3];
+        word0 = (word0 & invMask) | value;
+        targetByte[0] = (word0 >> 24) & 0xFF;
+        targetByte[1] = (word0 >> 16) & 0xFF;
+        targetByte[2] = (word0 >> 8) & 0xFF;
+        targetByte[3] = word0 & 0xFF;
     }
     else
     {
-        assert(0);
+        u32 invMask0 = 0, invMask1 = 0;
+        u32 value0 = 0, value1 = 0;
+
+        u32 amountToRotate = lastBitToChange - 32;
+        do {
+            u32 maskLsb = invMask & 1; invMask >>= 1;
+            invMask1 = (invMask1 >> 1) | (maskLsb ? 0x80000000 : 0);
+
+            u32 valLsb = value & 1; value >>= 1;
+            value1 = (value1 >> 1) | (valLsb ? 0x80000000 : 0);
+
+            amountToRotate--;
+        } while (amountToRotate != 0);
+
+        // Remainder of invMask and value goes into word0 accumulators
+        invMask0 = invMask;
+        value0 = value;
+
+        u8* nextByte = targetByte + 4;
+        u32 word0 = ((u32)targetByte[0] << 24) | ((u32)targetByte[1] << 16) | ((u32)targetByte[2] << 8) | targetByte[3];
+        u32 word1 = ((u32)nextByte[0] << 24) | ((u32)nextByte[1] << 16) | ((u32)nextByte[2] << 8) | nextByte[3];
+
+        word0 = (word0 & ~invMask0) | value0;
+        word1 = (word1 & ~invMask1) | value1;
+
+        targetByte[0] = (word0 >> 24) & 0xFF;
+        targetByte[1] = (word0 >> 16) & 0xFF;
+        targetByte[2] = (word0 >> 8) & 0xFF;
+        targetByte[3] = word0 & 0xFF;
+        nextByte[0] = (word1 >> 24) & 0xFF;
+        nextByte[1] = (word1 >> 16) & 0xFF;
+        nextByte[2] = (word1 >> 8) & 0xFF;
+        nextByte[3] = word1 & 0xFF;
     }
 }
 

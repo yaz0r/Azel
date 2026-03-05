@@ -195,9 +195,50 @@ u8* backupMemoryForSaveScreen()
     return nullptr;
 }
 
-void loadSaveBackgroundSub0(const std::vector<std::array<s32, 2>> & r4)
+void applyLayerDisplayConfig(const std::vector<std::array<s32, 2>> & r4)
 {
-    Unimplemented();
+    auto* regs = vdp2Controls.m4_pendingVdp2Regs;
+
+    for (auto& entry : r4)
+    {
+        s32 key   = entry[0];
+        s32 value = entry[1];
+        if (key == 0)
+            break;
+
+        switch (key)
+        {
+        // WCTLC window-enable bits
+        case 0x21: regs->mD4_WCTLC = (regs->mD4_WCTLC & 0x7FFF) | (value << 15); break;
+        case 0x22: regs->mD4_WCTLC = (regs->mD4_WCTLC & 0xFDFF) | (value << 9);  break;
+        case 0x23: regs->mD4_WCTLC = (regs->mD4_WCTLC & 0xF7FF) | (value << 11); break;
+        case 0x24: regs->mD4_WCTLC = (regs->mD4_WCTLC & 0xDFFF) | (value << 13); break;
+        case 0x25: regs->mD4_WCTLC = (regs->mD4_WCTLC & 0xFEFF) | (value << 8);  break;
+        case 0x26: regs->mD4_WCTLC = (regs->mD4_WCTLC & 0xFBFF) | (value << 10); break;
+        case 0x27: regs->mD4_WCTLC = (regs->mD4_WCTLC & 0xEFFF) | (value << 12); break;
+        // CRAOFB color offset bank
+        case 0x28: regs->mE6_CRAOFB = (regs->mE6_CRAOFB & 0xFF8F) | (value << 4); break;
+        // LNCLEN line color screen enable
+        case 0x2B: regs->mE8_LNCLEN = (regs->mE8_LNCLEN & 0xFFDF) | (value << 5); break;
+        // CCCTL color calculation enable
+        case 0x2C: regs->mEC_CCCTL  = (regs->mEC_CCCTL  & 0xFFBF) | (value << 6); break;
+        // CLOFEN color offset enable
+        case 0x2F: regs->m110_CLOFEN = (regs->m110_CLOFEN & 0xFFBF) | (value << 6); break;
+        // CLOFSL color offset select
+        case 0x30: regs->m112_CLOFSL = (regs->m112_CLOFSL & 0xFFBF) | (value << 6); break;
+        // CCR sprite A ratio (upper/lower 5-bit fields)
+        case 0x32: regs->m100_CCRSA = (regs->m100_CCRSA & 0xE0FF) | (value << 8); break;
+        case 0x33: regs->m100_CCRSA = (regs->m100_CCRSA & 0xFFE0) | value;         break;
+        case 0x34: regs->m102_CCRSB = (regs->m102_CCRSB & 0xE0FF) | (value << 8); break;
+        case 0x35: regs->m102_CCRSB = (regs->m102_CCRSB & 0xFFE0) | value;         break;
+        case 0x36: regs->m104_CCRSC = (regs->m104_CCRSC & 0xE0FF) | (value << 8); break;
+        case 0x37: regs->m104_CCRSC = (regs->m104_CCRSC & 0xFFE0) | value;         break;
+        case 0x38: regs->m106_CCRSD = (regs->m106_CCRSD & 0xE0FF) | (value << 8); break;
+        case 0x39: regs->m106_CCRSD = (regs->m106_CCRSD & 0xFFE0) | value;         break;
+        default: assert(0); break;
+        }
+        vdp2Controls.m_isDirty = 1;
+    }
 }
 
 void loadSaveBackground()
@@ -212,7 +253,7 @@ void loadSaveBackground()
         }
     };
 
-    loadSaveBackgroundSub0(config);
+    applyLayerDisplayConfig(config);
     vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xFFF0) | 3;
     vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = (vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF);
     vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xF8FF) | 0x600;

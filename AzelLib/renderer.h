@@ -9,8 +9,9 @@ enum bgfxViews
     VDP2_NGB1,
     VDP2_NGB2,
     VDP2_NGB3,
-    VDP2_NGB4,
-    VDP2_MAX = VDP2_NGB4,
+    VDP2_NGB4,          // RBG0 plane B (or single-plane RBG0)
+    VDP2_RBG0_PlaneA,   // RBG0 plane A overlay (dual-plane mode)
+    VDP2_MAX = VDP2_RBG0_PlaneA,
 
     CompositeView,
     vdp1_gpuView,

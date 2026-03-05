@@ -704,6 +704,12 @@ void setupRGB0(const sLayerConfig* setup)
         case m37_W0A:
             vdp2Controls.m4_pendingVdp2Regs->mD4_WCTLC = (vdp2Controls.m4_pendingVdp2Regs->mD4_WCTLC & 0xFFFE) | (arg << 0);
             break;
+        case m44_CCEN:
+            vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = (vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFFEF) | (arg << 4);
+            break;
+        case m45_COEN:
+            vdp2Controls.m4_pendingVdp2Regs->m10C_CCRR = arg;
+            break;
         default:
             assert(false);
             break;
@@ -726,6 +732,9 @@ void setupRotationParams(const sLayerConfig* setup)
 
         switch (command)
         {
+        case m13:
+            vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ & 0xF3FF) | ((arg & 3) << 10);
+            break;
         case m31_RxKTE:
             vdp2Controls.m4_pendingVdp2Regs->mB4_KTCTL = (vdp2Controls.m4_pendingVdp2Regs->mB4_KTCTL & 0xFFFE) | (arg & 1);
             break;

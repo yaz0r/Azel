@@ -819,7 +819,7 @@ s32 battleEngine_checkBattleCompletion()
         pBattleEngine->m3B2_numBattleFormationRunning = 0;
 
         clearVdp2TextMemory();
-        ResetNBG1Map();
+        resetNBG1Map();
 
         pBattleEngine->m18C_status = 4;
         pBattleEngine->m188_flags.m80000_hideBattleHUD = 0;
@@ -866,7 +866,7 @@ s32 battleEngine_checkBattleCompletion()
             pBattleEngine->m1BC_dragonYaw = 0;
             pBattleEngine->m3B2_numBattleFormationRunning = 0;
             clearVdp2TextMemory();
-            ResetNBG1Map();
+            resetNBG1Map();
             createSubTask<sDragonDeathTask>(pBattleEngine, &dragonDeathTaskDefinition);
             gBattleManager->mE = 2;
             return 1;
@@ -3157,7 +3157,7 @@ void battleEngine_Update(s_battleEngine* pThis)
 
         pThis->m188_flags.m8000 = 1;
 
-        ResetNBG1Map();
+        resetNBG1Map();
 
         pThis->m3CC = createBattleEngineSub0(pThis);
         pThis->m3B1 = 0;

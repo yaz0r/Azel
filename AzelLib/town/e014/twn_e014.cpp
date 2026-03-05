@@ -8,7 +8,7 @@
 
 #include "town/e006/twn_e006.h" // TODO cleanup
 void setupVdp1Proj(fixedPoint fov); // TODO: cleanup
-void fieldPaletteTaskInitSub0(); // TODO cleanup
+void initNBG1Layer(); // TODO cleanup
 void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes); // TODO cleanup
 void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, u8* coefficientTableAddress, u8 p5); // TODO cleanup
 extern tCoefficientTable coefficientA0; // TODO cleanup
@@ -16,7 +16,7 @@ extern tCoefficientTable coefficientA1; // TODO cleanup
 extern tCoefficientTable coefficientB0; // TODO cleanup
 extern tCoefficientTable coefficientB1; // TODO cleanup
 void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table); // TODO cleanup
-void BTL_A3_Env_DrawSub1(int p1, fixedPoint p2); // TODO cleanup
+void beginRotationPass(int passIndex, fixedPoint focalLength); // TODO cleanup
 
 // https://www.youtube.com/watch?v=Txks9hG21qs&feature=youtu.be&t=3345
 
@@ -56,7 +56,7 @@ struct E014_groundTask : public s_workAreaTemplate<E014_groundTask> {
 
     static void Init(E014_groundTask* pThis) {
         reinitVdp2();
-        fieldPaletteTaskInitSub0();
+        initNBG1Layer();
         asyncDmaCopy(gTWN_E014->getSaturnPtr(0x605e170), getVdp2Cram(0xA00), 0x200, 0);
         asyncDmaCopy(gTWN_E014->getSaturnPtr(0x605e370), getVdp2Cram(0), 0x200, 0);
 
@@ -129,7 +129,7 @@ struct E014_groundTask : public s_workAreaTemplate<E014_groundTask> {
         pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
         getVdp1ClippingCoordinates(pThis->m24_clippingCoordinates);
         getVdp1ProjectionParams(&pThis->m30_projWidth, &pThis->m32_projHeight);
-        BTL_A3_Env_DrawSub1(0, performDivision(pThis->m30_projWidth, pThis->m32_projHeight << 0x10));
+        beginRotationPass(0, performDivision(pThis->m30_projWidth, pThis->m32_projHeight << 0x10));
 
         Unimplemented();
     }

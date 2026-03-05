@@ -167,7 +167,14 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
         int supplementalCharacterName = layerData.SCN;
 
         // assuming supplement mode 0 with no data
-        paletteNumber = (patternName >> 12) & 0xF;
+        if(layerData.CHCN == 0)
+        {
+            paletteNumber = (patternName >> 12) & 0xF;
+        }
+        else
+        {
+            paletteNumber = (patternName >> 8) & 0x70;
+        }
 
         if(layerData.CNSM == 0)
         {

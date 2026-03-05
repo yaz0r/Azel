@@ -15,7 +15,7 @@ void BTL_A3_2_Env_InitVdp2(s_BTL_A3_Env* pThis)
 {
     gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
-    fieldPaletteTaskInitSub0();
+    initNBG1Layer();
     asyncDmaCopy(g_BTL_A3_2->getSaturnPtr(0x60a86e0), getVdp2Cram(0xA00), 0x200, 0);
     asyncDmaCopy(g_BTL_A3_2->getSaturnPtr(0x60a8ae0), getVdp2Cram(0xC00), 0x200, 0);
 
@@ -86,7 +86,7 @@ void BTL_A3_2_Env_InitVdp2(s_BTL_A3_Env* pThis)
             {0x2C, 0x1},
         }
     };
-    loadSaveBackgroundSub0(config);
+    applyLayerDisplayConfig(config);
 
     vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = (vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF);
     vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xF8FF) | 0x400;

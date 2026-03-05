@@ -60,6 +60,10 @@ struct s_battleGrid : public s_workAreaTemplate<s_battleGrid>
     s16 m266_lightInterpolate2NumSteps;
     fixedPoint m280_lightAngle1;
     fixedPoint m284_lightAngle2;
+    s32 m288;
+    fixedPoint m28C_lightAngle1Initial;
+    fixedPoint m290_lightAngle2Initial;
+    s32 m294;
     std::array<sVec3_FP, 4> m298;
     std::array<sVec3_FP, 4> m2C8;
     s32 m2F8;

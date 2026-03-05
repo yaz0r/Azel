@@ -84,7 +84,7 @@ s_LCSTask340Sub* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, 
 s_cameraScript* readCameraScript(sSaturnPtr EA);
 void dispatchTutorialMultiChoiceSub2();
 s32 queueNewFieldScript(sSaturnPtr r4, s32 r5);
-void fieldPaletteTaskInitSub0();
+void initNBG1Layer();
 
 struct s_fieldA3_1_task4 : public s_workAreaTemplate<s_fieldA3_1_task4>
 {
