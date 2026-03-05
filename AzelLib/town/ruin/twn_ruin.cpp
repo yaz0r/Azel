@@ -685,7 +685,29 @@ void updateEdgePosition(sNPC* r4)
             else
             {
                 //605BA64
-                assert(0);
+                fixedPoint ratio = FP_Div(FP_Pow2(r14->m4C[1]), fixedPoint(0x10000) - FP_Pow2(r14->m4C[2]));
+                fixedPoint scale0 = sqrt_F(ratio);
+                scaleMatrixRow0(scale0, &var10);
+
+                fixedPoint offset0 = sqrt_F(fixedPoint(0x10000) - ratio);
+                if (r14->m4C[0] > 0) {
+                    offset0 = -offset0;
+                }
+                var10.m[0][0] = var10.m[0][0] + MTH_Mul(var10.m[0][1], offset0);
+                var10.m[1][0] = var10.m[1][0] + MTH_Mul(var10.m[1][1], offset0);
+                var10.m[2][0] = var10.m[2][0] + MTH_Mul(var10.m[2][1], offset0);
+
+                fixedPoint ratio2 = FP_Div(FP_Pow2(r14->m4C[1]), fixedPoint(0x10000) - FP_Pow2(r14->m4C[0]));
+                fixedPoint scale2 = sqrt_F(ratio2);
+                scaleMatrixRow2(scale2, &var10);
+
+                fixedPoint offset2 = sqrt_F(fixedPoint(0x10000) - ratio2);
+                if (r14->m4C[2] > 0) {
+                    offset2 = -offset2;
+                }
+                var10.m[0][2] = var10.m[0][2] + MTH_Mul(var10.m[0][1], offset2);
+                var10.m[1][2] = var10.m[1][2] + MTH_Mul(var10.m[1][1], offset2);
+                var10.m[2][2] = var10.m[2][2] + MTH_Mul(var10.m[2][1], offset2);
             }
         }
     }
@@ -694,7 +716,25 @@ void updateEdgePosition(sNPC* r4)
     if ((r14->m44 & 4) && (r14->m4C[1] < 0xB504))
     {
         //605BB50
-        assert(0);
+        sVec3_FP slopeNormal;
+        slopeNormal[0] = MTH_Mul(r14->m4C[0], r14->m4C[1]);
+        fixedPoint nx2 = FP_Pow2(r14->m4C[0]);
+        fixedPoint nz2 = FP_Pow2(r14->m4C[2]);
+        slopeNormal[1] = -nz2 - nx2;
+        slopeNormal[2] = MTH_Mul(r14->m4C[2], r14->m4C[1]);
+
+        if (slopeNormal[1] < 0) {
+            slopeNormal[0] = -slopeNormal[0];
+            slopeNormal[1] = -slopeNormal[1];
+            slopeNormal[2] = -slopeNormal[2];
+        }
+
+        fixedPoint len = sqrt_F(MTH_Product3d_FP(slopeNormal, slopeNormal));
+        fixedPoint scale = FP_Div(r13->m30_stepTranslation[1], len);
+
+        r13->m30_stepTranslation[0] = MTH_Mul(slopeNormal[0], scale);
+        r13->m30_stepTranslation[1] = MTH_Mul(slopeNormal[1], scale);
+        r13->m30_stepTranslation[2] = MTH_Mul(slopeNormal[2], scale);
     }
 
     //605BBD6
