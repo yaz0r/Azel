@@ -181,7 +181,7 @@ void createEnvironmentTask2(s32 r4, sTownGrid* r14)
         return;
     }
 
-    for (int r12 = -2; r12 < 2; r12++)
+    for (int r12 = -2; r12 <= 2; r12++)
     {
         if (r14->m10_currentX + r12 < 0)
             continue;
@@ -196,30 +196,97 @@ void createEnvironmentTask2(s32 r4, sTownGrid* r14)
     }
 }
 
-void createEnvironmentTask()
+void createEnvironmentTask(s32 r4, sTownGrid* r14)
 {
-    assert(0);
+    s32 currentX = r14->m10_currentX + r4;
+    if (currentX < 0)
+        return;
+    if (currentX >= r14->m0_sizeX)
+        return;
+
+    for (int r13 = -2; r13 <= 2; r13++)
+    {
+        s32 currentY = r14->m14_currentY + r13;
+        if (currentY < 0)
+            continue;
+        if (currentY >= r14->m4_sizeY)
+            continue;
+
+        sSaturnPtr cellData = r14->m38_EnvironmentSetup->cells[currentX][currentY];
+        sTownCellTask* newCellTask = createSubTaskWithArgWithCopy<sTownCellTask>(r14->m34_dataBuffer, cellData);
+        r14->m40_cellTasks[(r14->mC + r13) & 7][(r14->m8 + r4) & 7] = newCellTask;
+
+        createCellObjects(currentX, currentY);
+    }
+}
+
+void decreaseNPCRefCount(s32 r5);
+
+void destroyCellObject(sCellObjectListNode* node)
+{
+    if (node->m8 != nullptr)
+    {
+        if (readSaturnS32(node->m4) > 0)
+        {
+            decreaseNPCRefCount(readSaturnS32(node->m4));
+        }
+        if (node->m8 != nullptr)
+        {
+            ((s_workArea*)node->m8)->getTask()->markFinished();
+        }
+        node->m8 = nullptr;
+    }
+}
+
+void deleteCellObjects(s32 x, s32 y)
+{
+    s32 index = y * gTownGrid.m0_sizeX + x;
+    sCellObjectListNode* node = gTownGrid.m140_perCellObjectList[index];
+    while (node)
+    {
+        destroyCellObject(node);
+        node = node->m0_next;
+    }
 }
 
 void initNPCSub0Sub0(s32 r3, sTownGrid* r14)
 {
     s32 r13 = -2;
-
     s32 var24 = ((r14->mC + r3) & 7);
 
-    do 
+    do
     {
-        if (r14->m40_cellTasks[var24][(r14->m8 + r13) & 7])
+        sTownCellTask*& cellTask = r14->m40_cellTasks[var24][(r14->m8 + r13) & 7];
+        if (cellTask)
         {
-            //TODO: we should be deleting the content here
-            Unimplemented();
+            deleteCellObjects(r14->m10_currentX + r13, r14->m14_currentY + r3);
+            if (cellTask)
+            {
+                ((s_workArea*)cellTask)->getTask()->markFinished();
+            }
+            cellTask = nullptr;
         }
     } while (++r13 <= 2);
 }
 
-void initNPCSub0Sub1()
+void initNPCSub0Sub1(s32 r3, sTownGrid* r14)
 {
-    assert(0);
+    s32 r13 = -2;
+    s32 var24 = r14->m8;
+
+    do
+    {
+        sTownCellTask*& cellTask = r14->m40_cellTasks[(r14->mC + r13) & 7][(var24 + r3) & 7];
+        if (cellTask)
+        {
+            deleteCellObjects(r14->m10_currentX + r3, r14->m14_currentY + r13);
+            if (cellTask)
+            {
+                ((s_workArea*)cellTask)->getTask()->markFinished();
+            }
+            cellTask = nullptr;
+        }
+    } while (++r13 <= 2);
 }
 
 s32 initNPCSub0Var1 = 0x7FFFFFFF;
@@ -231,9 +298,9 @@ void initTownGrid()
     gTownGrid.m140_perCellObjectList.clear();
     gTownGrid.m34_dataBuffer = nullptr;
     gTownGrid.m18_createCell = createEnvironmentTask2;
-    gTownGrid.m1C = createEnvironmentTask;
+    gTownGrid.m1C_createCellColumn = createEnvironmentTask;
     gTownGrid.m20_deleteCell = initNPCSub0Sub0;
-    gTownGrid.m24 = initNPCSub0Sub1;
+    gTownGrid.m24_deleteCellColumn = initNPCSub0Sub1;
     gTownGrid.m40_cellTasks[0].fill(nullptr);
     gTownGrid.m40_cellTasks[1].fill(nullptr);
     gTownGrid.m3C = &initNPCSub0Var1;
@@ -327,7 +394,7 @@ void deleteAllTownCells(sTownGrid* r13)
     {
         r13->m20_deleteCell(r14, r13);
         r14++;
-    }while(r14 < 2);
+    }while(r14 <= 2);
     
 }
 
@@ -338,7 +405,7 @@ void createTownCellsForCoordinates(s32 r4, s32 r5, sTownGrid* r6)
     r6->m10_currentX = r4;
     r6->m14_currentY = r5;
 
-    for (int i = -2; i < 2; i++)
+    for (int i = -2; i <= 2; i++)
     {
         r6->m18_createCell(i, r6);
     }
@@ -403,9 +470,9 @@ void initNPCSub0Sub2(npcFileDeleter* buffer, const struct sGrid* pGrid, u8 r6_si
 void initNPCSub0(npcFileDeleter* buffer, const struct sGrid* pGrid, u8 gridSizeX, u8 gridSizeY, fixedPoint cellSize)
 {
     gTownGrid.m18_createCell = createEnvironmentTask2;
-    gTownGrid.m1C = createEnvironmentTask;
+    gTownGrid.m1C_createCellColumn = createEnvironmentTask;
     gTownGrid.m20_deleteCell = initNPCSub0Sub0;
-    gTownGrid.m24 = initNPCSub0Sub1;
+    gTownGrid.m24_deleteCellColumn = initNPCSub0Sub1;
 
     initNPCSub0Sub2(buffer, pGrid, gridSizeX, gridSizeY, cellSize);
 }
@@ -537,10 +604,23 @@ void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5)
 }
 
 
-void mainLogicUpdateSub0Sub0(sTownGrid* r4)
+void mainLogicUpdateSub0Sub0(s32 r4, sTownGrid* r5)
 {
-    //assert(0);
-    Unimplemented();
+    switch (r4)
+    {
+    case -1:
+        r5->m24_deleteCellColumn(2, r5);
+        r5->m8 = (r5->m8 - 1) & 7;
+        r5->m10_currentX--;
+        r5->m1C_createCellColumn(-2, r5);
+        break;
+    case 1:
+        r5->m24_deleteCellColumn(-2, r5);
+        r5->m8 = (r5->m8 + 1) & 7;
+        r5->m10_currentX++;
+        r5->m1C_createCellColumn(2, r5);
+        break;
+    }
 }
 
 void mainLogicUpdateSub0Sub1(s32 r4, sTownGrid* r5)
@@ -576,34 +656,26 @@ void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y)
     s32 r12 = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex);
     s32 r11 = MTH_Mul32(r5_y, gTownGrid.m30_worldToCellIndex);
 
-    // not exactly the original code, but should be the same thing
-    s32 cellDistanceX = r12 - gTownGrid.m10_currentX;
-    if (cellDistanceX < 0)
-    {
-        cellDistanceX = -cellDistanceX;
-    }
+    s32 diffX = r12 - gTownGrid.m10_currentX;
+    s32 diffY = r11 - gTownGrid.m14_currentY;
+    s32 absDiffX = diffX < 0 ? -diffX : diffX;
+    s32 absDiffY = diffY < 0 ? -diffY : diffY;
 
-    s32 cellDistanceY = r11 - gTownGrid.m14_currentY;
-    if (cellDistanceY < 0)
-    {
-        cellDistanceY = -cellDistanceY;
-    }
-
-    if ((cellDistanceX > 1) || (cellDistanceY > 1))
+    if ((absDiffX > 1) || (absDiffY > 1))
     {
         deleteAllTownCells(&gTownGrid);
         createTownCellsForCoordinates(r12, r11, &gTownGrid);
     }
     else
     {
-        if (cellDistanceX)
+        if (absDiffX)
         {
-            mainLogicUpdateSub0Sub0(&gTownGrid);
+            mainLogicUpdateSub0Sub0(diffX, &gTownGrid);
         }
 
-        if (cellDistanceY)
+        if (absDiffY)
         {
-            mainLogicUpdateSub0Sub1(r12, &gTownGrid);
+            mainLogicUpdateSub0Sub1(diffY, &gTownGrid);
         }
     }
 }

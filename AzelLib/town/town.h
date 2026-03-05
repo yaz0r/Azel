@@ -241,9 +241,9 @@ struct sTownGrid
     s32 m10_currentX;
     s32 m14_currentY;
     void(*m18_createCell)(s32, sTownGrid*);
-    void(*m1C)();
+    void(*m1C_createCellColumn)(s32, sTownGrid*);
     void(*m20_deleteCell)(s32, sTownGrid*);
-    void(*m24)();
+    void(*m24_deleteCellColumn)(s32, sTownGrid*);
     fixedPoint m28_cellSize;
     fixedPoint m2C;
     fixedPoint m30_worldToCellIndex;
@@ -295,6 +295,7 @@ struct sCameraTask : public s_workAreaTemplate<sCameraTask>
     s_RGB8 m10;
     sVec3_FP m14;
     u32 m30;
+    fixedPoint m34_interpolatedLightData[12]; // 0x34-0x64, used by zoahCamera_update
     //size 0x64
 };
 

@@ -198,7 +198,7 @@ const std::array<sVec2_FP, 2> cameraParams = {
     }
 };
 
-void cameraFollowMode0_LCSSub1(sMainLogic* r4)
+void cameraUpdate_follow_LCSSub1(sMainLogic* r4)
 {
     sVec3_FP* r13 = &r4->m18_position;
     if ((npcData0.mFC & 1) && (currentResTask->m8_currentLCSType))
@@ -207,7 +207,7 @@ void cameraFollowMode0_LCSSub1(sMainLogic* r4)
         /*
         if (currentResTask->m8 == 1)
         {
-            r13 = cameraFollowMode0_LCSSub1Sub0(currentResTask->mC);
+            r13 = cameraUpdate_follow_LCSSub1Sub0(currentResTask->mC);
         }
         else
         {
@@ -225,7 +225,7 @@ void cameraFollowMode0_LCSSub1(sMainLogic* r4)
     r4->m44_cameraTarget[2] = MTH_Mul(r4->m44_cameraTarget[2] - (*r13)[2], 0xF333) + (*r13)[2];
 }
 
-void cameraFollowMode0_LCS(sMainLogic* r14_pose)
+void cameraUpdate_follow_LCS(sMainLogic* r14_pose)
 {
     sNPCE8* r12_npcData = &r14_pose->m14_EdgeTask->mE8;
 
@@ -281,7 +281,7 @@ void cameraFollowMode0_LCS(sMainLogic* r14_pose)
 
     r14_pose->m5C_rawCameraPosition = r14_pose->m38_interpolatedCameraPosition;
 
-    cameraFollowMode0_LCSSub1(r14_pose);
+    cameraUpdate_follow_LCSSub1(r14_pose);
 }
 
 void updateCameraTarget(sMainLogic* r4, const sVec3_FP& r14_pose)
@@ -355,7 +355,7 @@ void updateFollowCameraTarget(sMainLogic* r4)
     updateCameraTarget(r4, var0);
 }
 
-void cameraFollowMode0Bis(sMainLogic* r14_townTask)
+void cameraUpdate_follow(sMainLogic* r14_townTask)
 {
     sEdgeTask* r4_edge = r14_townTask->m14_EdgeTask;
     sNPCE8* r13_npcData = &r4_edge->mE8;
@@ -487,7 +487,7 @@ void cameraFollowMode0Bis(sMainLogic* r14_townTask)
     updateFollowCameraTarget(r14_townTask);
 }
 
-void cameraFollowMode3SubSub(sMainLogic* param_1, sVec3_FP* param_2) {
+void cameraUpdate_fixedSubSub(sMainLogic* param_1, sVec3_FP* param_2) {
     sVec3_FP temp0;
     temp0[0] = transformByMatrixRow0(*param_2);
     temp0[1] = transformByMatrixRow1(*param_2);
@@ -528,7 +528,7 @@ void cameraFollowMode3SubSub(sMainLogic* param_1, sVec3_FP* param_2) {
 
 }
 
-void cameraFollowMode3Sub(sMainLogic* pThis) {
+void cameraUpdate_fixedSub(sMainLogic* pThis) {
     sVec3_FP delta = pThis->m18_position - pThis->m5C_rawCameraPosition;
     fixedPoint distance = sqrt_F(MTH_Product3d_FP(delta, delta));
 
@@ -552,14 +552,14 @@ void cameraFollowMode3Sub(sMainLogic* pThis) {
     local_58.m0_X = auStack_40.m[0][2] + (pThis->m18_position).m0_X;
     local_58.m4_Y = auStack_40.m[1][2] + (pThis->m18_position).m4_Y;
     local_58.m8_Z = auStack_40.m[2][2] + (pThis->m18_position).m8_Z;
-    cameraFollowMode3SubSub(pThis, &local_58);
+    cameraUpdate_fixedSubSub(pThis, &local_58);
 }
 
-void cameraFollowMode3(sMainLogic* pThis) {
+void cameraUpdate_fixed(sMainLogic* pThis) {
 
     bool isClamped = false;
 
-    cameraFollowMode3Sub(pThis);
+    cameraUpdate_fixedSub(pThis);
 
     sVec3_FP delta = pThis->m44_cameraTarget - pThis->m5C_rawCameraPosition;
     pThis->m24_distance = sqrt_F(MTH_Product3d_FP(delta, delta));
@@ -643,7 +643,7 @@ void cameraFollowMode3(sMainLogic* pThis) {
     }
 }
 
-void cameraFollowMode3_updateCameraTargetFromRotation(sMainLogic* pThis) {
+void cameraUpdate_fixed_updateCameraTargetFromRotation(sMainLogic* pThis) {
     {
         fixedPoint temp1 = (pThis->m68_cameraRotation[0] - pThis->mF0[0]) & 0xfffffff;
         fixedPoint temp2 = (pThis->mF8[0] - pThis->mF0[0]) & 0xfffffff;
@@ -678,11 +678,11 @@ void cameraFollowMode3_updateCameraTargetFromRotation(sMainLogic* pThis) {
     pThis->m44_cameraTarget[2] = pThis->m38_interpolatedCameraPosition[2] - mat.m[2][2];
 }
 
-void cameraFollowMode3_LCS(sMainLogic* pThis) {
+void cameraUpdate_fixed_LCS(sMainLogic* pThis) {
     moveTownLCSCursor(pThis);
     pThis->m68_cameraRotation[0] = (pThis->m68_cameraRotation[0] + MTH_Mul(0xE38E3, pThis->mC_inputY)) & 0xfffffff;
     pThis->m68_cameraRotation[1] = (pThis->m68_cameraRotation[1] + MTH_Mul(0xE38E3, pThis->m8_inputX)) & 0xfffffff;
-    cameraFollowMode3_updateCameraTargetFromRotation(pThis);
+    cameraUpdate_fixed_updateCameraTargetFromRotation(pThis);
 }
 
 void setupCameraUpdateForCurrentMode()
@@ -697,21 +697,21 @@ void setupCameraUpdateForCurrentMode()
     case 0: // Follow
         if (r5_inLcsMode)
         {
-            twnMainLogicTask->m10 = &cameraFollowMode0_LCS;
+            twnMainLogicTask->m10 = &cameraUpdate_follow_LCS;
         }
         else
         {
-            twnMainLogicTask->m10 = &cameraFollowMode0Bis;
+            twnMainLogicTask->m10 = &cameraUpdate_follow;
         }
         break;
     case 3: // Fixed camera (camp)
         if (r5_inLcsMode)
         {
-            twnMainLogicTask->m10 = &cameraFollowMode3_LCS;
+            twnMainLogicTask->m10 = &cameraUpdate_fixed_LCS;
         }
         else
         {
-            twnMainLogicTask->m10 = &cameraFollowMode3;
+            twnMainLogicTask->m10 = &cameraUpdate_fixed;
         }
         break;
     default:

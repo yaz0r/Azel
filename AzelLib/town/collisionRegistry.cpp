@@ -1037,15 +1037,17 @@ void computeCollisionSeparation(sCollisionBody* r12)
 
     r12->m44 &= ~(r12->m44 << 8);
 
-    if ((r12->m44 & 0x400) && (r12->m44 & 0x8))
+    if ((r12->m44 & 0x400) && !(r12->m44 & 0x8))
     {
         //06007C86
-        assert(0);
+        r12->m44 |= 4;
+        r13[2] = r13[8];
     }
-    else if ((r12->m44 & 0x800) && (r12->m44 & 0x4))
+    else if ((r12->m44 & 0x800) && !(r12->m44 & 0x4))
     {
         //06007CBA
-        assert(0);
+        r12->m44 |= 8;
+        r13[3] = r13[9];
     }
     else if ((r12->m44 & 0x200) && !(r12->m44 & 0x1))
     {
@@ -1069,7 +1071,7 @@ void computeCollisionSeparation(sCollisionBody* r12)
     {
         //06007DD6
         r12->m44 |= 0x10;
-        r13[0] = r13[7];
+        r13[1] = r13[7];
     }
 
     //6007DF8

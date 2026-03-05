@@ -496,12 +496,12 @@ void battleGrid_createCell(s32 index, sTownGrid* pGrid)
     }
 }
 
-void battleGrid_cellFunc1()
+void battleGrid_cellFunc1(s32, sTownGrid*)
 {
     Unimplemented();
 }
 
-void battleGrid_cellFunc2()
+void battleGrid_cellFunc2(s32, sTownGrid*)
 {
     Unimplemented();
 }
@@ -522,9 +522,9 @@ void battleGrid_deleteCell(s32 index, sTownGrid* pGrid)
 void initGridForBattle(npcFileDeleter* pFile, const struct sGrid* pGrid, s32 r6_sizeX, s32 r7_sizeY, s32 r8_cellSize)
 {
     gTownGrid.m18_createCell = battleGrid_createCell;
-    gTownGrid.m1C = battleGrid_cellFunc1;
+    gTownGrid.m1C_createCellColumn = battleGrid_cellFunc1;
     gTownGrid.m20_deleteCell = battleGrid_deleteCell;
-    gTownGrid.m24 = battleGrid_cellFunc2;
+    gTownGrid.m24_deleteCellColumn = battleGrid_cellFunc2;
 
     initNPCSub0Sub2(pFile, pGrid, r6_sizeX, r7_sizeY, r8_cellSize);
 }

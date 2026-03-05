@@ -207,7 +207,7 @@ void drawLcs()
 }
 
 // TODO kernel
-const sVec3_FP* cameraFollowMode0_LCSSub1Sub0(s32 r4)
+const sVec3_FP* cameraUpdate_follow_LCSSub1Sub0(s32 r4)
 {
     if (r4 >= npcData0.m68_numEnvLCSTargets)
     {

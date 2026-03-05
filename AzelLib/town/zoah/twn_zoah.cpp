@@ -23,12 +23,94 @@ void unloadFnt(); // TODO: fix
 
 static void zoahCamera_update(sCameraTask* pThis)
 {
-    Unimplemented();
+    // Step 1: Increment time (same as townCamera_update)
+    if ((npcData0.mFC & 1) == 0)
+    {
+        pThis->m4++;
+        if (pThis->m4 > 5400)
+        {
+            pThis->m4 = 5400;
+        }
+    }
+
+    // Step 2: Select day/night color set from mC data table
+    sSaturnPtr colorSet0;
+    sSaturnPtr colorSet1;
+    u32 baseAddr = pThis->mC;
+    if (!mainGameState.getBit(8)) {
+        colorSet0 = sSaturnPtr::createFromRaw(baseAddr, gCurrentTownOverlay);
+        colorSet1 = sSaturnPtr::createFromRaw(baseAddr + 0x10, gCurrentTownOverlay);
+    } else {
+        colorSet0 = sSaturnPtr::createFromRaw(baseAddr + 0x30, gCurrentTownOverlay);
+        colorSet1 = sSaturnPtr::createFromRaw(baseAddr + 0x40, gCurrentTownOverlay);
+    }
+
+    // Step 3: Clamp time to 3600
+    s32 time = pThis->m4;
+    if (time > 0xe10) time = 0xe10;
+
+    s32 fadeTime = 0x708;
+    // Step 4: If time > 1799, shift to second color set
+    if (time > 0x707) {
+        colorSet0 = colorSet0 + 0x10;
+        colorSet1 = colorSet1 + 0x10;
+        time = time - 0x708;
+        fadeTime = 0xe10;
+    }
+
+    // Step 5: If fading active and time remaining, update fade palette
+    if (pThis->m1 != 0 && g_fadeControls.m24_fade1.m20_stopped != 0 && (0x708 - time) > 0) {
+        u16 fadeColor = TwnFadeInComputeColorInterp(fadeTime);
+        s32 curColor = convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color);
+        fadePalette(&g_fadeControls.m24_fade1, curColor, fadeColor, 0x708 - time);
+    }
+
+    // Step 6: Interpolate 12 bytes of color/lighting data between two sets
+    fixedPoint t = FP_Div(time, 0x708);
+    s32 invT = 0x10000 - (s32)t;
+
+    for (int i = 0; i < 12; i++) {
+        s8 c_target = readSaturnS8(colorSet1 + 4 + i);
+        s8 c_source = readSaturnS8(colorSet0 + 4 + i);
+        pThis->m34_interpolatedLightData[i] = fixedPoint((s32)c_target * (s32)t + (s32)c_source * invT);
+    }
+
+    // Step 7: Interpolate rotation and build light direction matrix
+    s16 rotX_target = readSaturnS16(colorSet1);
+    s16 rotX_source = readSaturnS16(colorSet0);
+    s16 rotY_target = readSaturnS16(colorSet1 + 2);
+    s16 rotY_source = readSaturnS16(colorSet0 + 2);
+
+    sMatrix4x3 mat;
+    initMatrixToIdentity(&mat);
+    rotateMatrixShiftedY(fixedPoint((s32)rotY_target * (s32)t + (s32)rotY_source * invT), &mat);
+    rotateMatrixShiftedX(fixedPoint((s32)rotX_target * (s32)t + (s32)rotX_source * invT), &mat);
+
+    pThis->m14[0] = mat.m[0][3];
+    pThis->m14[1] = mat.m[1][3];
+    pThis->m14[2] = mat.m[2][3];
+
+    // Step 8: Compute ambient RGB from first 3 interpolated values
+    fixedPoint* d = pThis->m34_interpolatedLightData;
+    pThis->m10.m0 = (s8)(((u32)((s32)d[0] + 0x8000) >> 16) & 0xFF);
+    pThis->m10.m1 = (s8)(((u32)((s32)d[1] + 0x8000) >> 16) & 0xFF);
+    pThis->m10.m2 = (s8)(((u32)((s32)d[2] + 0x8000) >> 16) & 0xFF);
 }
 
 static void zoahCamera_draw(sCameraTask* pThis)
 {
-    Unimplemented();
+    // Same as townCamera_draw: transform light vector and set up light
+    sVec3_FP stack16;
+    transformVecByCurrentMatrix(pThis->m14, stack16);
+    setupLight(stack16[0], stack16[1], stack16[2], pThis->m10.toU32());
+
+    // Generate light falloff map from interpolated data at m34[3..11]
+    fixedPoint* d = pThis->m34_interpolatedLightData;
+    auto fpToU8 = [](fixedPoint fp) -> u32 { return ((u32)((s32)fp + 0x8000) >> 16) & 0xFF; };
+    u32 f0 = fpToU8(d[3]) | (fpToU8(d[4]) << 8) | (fpToU8(d[5]) << 16);
+    u32 f1 = fpToU8(d[6]) | (fpToU8(d[7]) << 8) | (fpToU8(d[8]) << 16);
+    u32 f2 = fpToU8(d[9]) | (fpToU8(d[10]) << 8) | (fpToU8(d[11]) << 16);
+    generateLightFalloffMap(f0, f1, f2);
 }
 
 int scriptFunction_06098f30()
@@ -39,11 +121,8 @@ int scriptFunction_06098f30()
     return fileInfoStruct.m2C_allocatedHead == 0;
 }
 
-int scriptFunction_060989f8()
-{
-    Unimplemented();
-    return 0;
-}
+// scriptFunction_060989f8 is functionally identical to scriptFunction_6057058_sub0
+// (sets draw method, inits camera from Edge position, sets follow mode 0, calls setupCameraUpdateForCurrentMode)
 
 int scriptFunction_06096a98()
 {
@@ -76,8 +155,6 @@ s32 scriptFunction_0609dffe(s32 param_1)
 
 s32 scriptFunction_0609dffe(s32 param_1);
 int scriptFunction_06096a98();
-int scriptFunction_060989f8();
-
 static sTownObject* createZoahEntity(s_workAreaCopy* parent, sSaturnPtr arg);
 static sTownObject* createZoahNPC(s_workAreaCopy* parent, sSaturnPtr arg);
 
@@ -97,7 +174,7 @@ struct TWN_ZOAH_data : public sTownOverlay
     {
         overlayScriptFunctions.m_zeroArg[0x06098f30] = &scriptFunction_06098f30;
         overlayScriptFunctions.m_zeroArg[0x06096a98] = &scriptFunction_06096a98;
-        overlayScriptFunctions.m_zeroArg[0x060989f8] = &scriptFunction_060989f8;
+        overlayScriptFunctions.m_zeroArg[0x060989f8] = &scriptFunction_6057058_sub0;
 
         overlayScriptFunctions.m_oneArg[0x0609e184] = &TwnFadeIn;
         overlayScriptFunctions.m_oneArg[0x0609dffe] = &scriptFunction_0609dffe;
