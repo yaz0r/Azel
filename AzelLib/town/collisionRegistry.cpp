@@ -1012,8 +1012,17 @@ void handleCollisionWithTownEnv(sCollisionBody* r4)
         testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0], r4->m8_position[2] - gTownGrid.m28_cellSize));
         testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0] + gTownGrid.m28_cellSize, r4->m8_position[2] - gTownGrid.m28_cellSize));
         break;
+    case 2:
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0] - gTownGrid.m28_cellSize, r4->m8_position[2]));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0], r4->m8_position[2] + gTownGrid.m28_cellSize));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0] - gTownGrid.m28_cellSize, r4->m8_position[2] + gTownGrid.m28_cellSize));
+        break;
+    case 3:
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0] + gTownGrid.m28_cellSize, r4->m8_position[2]));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0], r4->m8_position[2] + gTownGrid.m28_cellSize));
+        testBodyAgainstCell(r4, getCellAtWorldPos(r4->m8_position[0] + gTownGrid.m28_cellSize, r4->m8_position[2] + gTownGrid.m28_cellSize));
+        break;
     default:
-        assert(0);
         break;
     }
 

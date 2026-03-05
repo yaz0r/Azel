@@ -76,10 +76,72 @@ s32 TwnFadeOut(s32 arg0)
     return 0;
 }
 
-u16 TwnFadeInComputeColor(sSaturnPtr r4, u32 r5)
+u16 TwnFadeInComputeColor(sSaturnPtr ptr, u32 factor)
 {
-    Unimplemented();
-    return 0;
+    s32 r = MTH_Mul(fixedPoint((s32)readSaturnS8(ptr + 0)), fixedPoint(factor));
+    s8 d3 = readSaturnS8(ptr + 3);
+    s32 g = MTH_Mul(fixedPoint((s32)readSaturnS8(ptr + 1)), fixedPoint(factor));
+    s8 d4 = readSaturnS8(ptr + 4);
+    s32 b = MTH_Mul(fixedPoint((s32)readSaturnS8(ptr + 2)), fixedPoint(factor));
+
+    s32 rVal = ((r + d3) >> 1) + 8;
+    s32 gVal = ((g + d4) >> 1) + 8;
+    s32 bVal = ((b + readSaturnS8(ptr + 5)) >> 1) + 8;
+
+    return (u16)(bVal * 0x400 | gVal * 0x20 | rVal | 0x8000);
+}
+
+static s32 clamp5bit(s32 val)
+{
+    if (val < 0) val = 0;
+    if (val > 0x1F) val = 0x1F;
+    return val;
+}
+
+u16 TwnFadeInComputeColorInterp(s32 time)
+{
+    sSaturnPtr colorSet0;
+    sSaturnPtr colorSet1;
+    u32 baseAddr = cameraTaskPtr->mC;
+
+    if (!mainGameState.getBit(8)) {
+        colorSet0 = sSaturnPtr::createFromRaw(baseAddr, gCurrentTownOverlay);
+        colorSet1 = sSaturnPtr::createFromRaw(baseAddr + 0x10, gCurrentTownOverlay);
+    } else {
+        colorSet0 = sSaturnPtr::createFromRaw(baseAddr + 0x30, gCurrentTownOverlay);
+        colorSet1 = sSaturnPtr::createFromRaw(baseAddr + 0x40, gCurrentTownOverlay);
+    }
+
+    if (time >= 0xe10) {
+        return TwnFadeInComputeColor(colorSet1 + 0x14, cameraTaskPtr->m30);
+    }
+
+    if (time > 0x707) {
+        colorSet0 = colorSet0 + 0x10;
+        colorSet1 = colorSet1 + 0x10;
+        time = time - 0x708;
+    }
+
+    fixedPoint t = FP_Div(time, 0x708);
+    s32 invT = 0x10000 - (s32)t;
+
+    s32 r0 = (s32)readSaturnS8(colorSet0 + 7) * 2 + (s32)readSaturnS8(colorSet0 + 4);
+    s32 g0 = (s32)readSaturnS8(colorSet0 + 8) * 2 + (s32)readSaturnS8(colorSet0 + 5);
+    s32 b0 = (s32)readSaturnS8(colorSet0 + 9) * 2 + (s32)readSaturnS8(colorSet0 + 6);
+
+    s32 r1 = (s32)readSaturnS8(colorSet1 + 7) * 2 + (s32)readSaturnS8(colorSet1 + 4);
+    s32 g1 = (s32)readSaturnS8(colorSet1 + 8) * 2 + (s32)readSaturnS8(colorSet1 + 5);
+    s32 b1 = (s32)readSaturnS8(colorSet1 + 9) * 2 + (s32)readSaturnS8(colorSet1 + 6);
+
+    s32 rVal = (s16)((r1 * (s32)t + r0 * invT) >> 18) + 8;
+    s32 gVal = (s16)((g1 * (s32)t + g0 * invT) >> 18) + 8;
+    s32 bVal = (s16)((b1 * (s32)t + b0 * invT) >> 18) + 8;
+
+    rVal = clamp5bit(rVal);
+    gVal = clamp5bit(gVal);
+    bVal = clamp5bit(bVal);
+
+    return (u16)(bVal << 10 | gVal << 5 | rVal | 0x8000);
 }
 
 s32 TwnFadeIn(s32 arg0)
@@ -88,7 +150,11 @@ s32 TwnFadeIn(s32 arg0)
     switch (cameraTaskPtr->m0)
     {
     case 0:
+    case 2:
         fadeColor = TwnFadeInComputeColor(cameraTaskPtr->m8, cameraTaskPtr->m30);
+        break;
+    case 1:
+        fadeColor = TwnFadeInComputeColorInterp(cameraTaskPtr->m4 + arg0);
         break;
     default:
         assert(0);
@@ -96,7 +162,7 @@ s32 TwnFadeIn(s32 arg0)
     }
 
     fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0xC210, arg0);
-    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0);
+    fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), fadeColor, arg0);
 
     cameraTaskPtr->m1 = 1;
 

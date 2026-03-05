@@ -203,11 +203,13 @@ extern sVdp2Controls vdp2Controls;
 enum eVdp2LayerConfig
 {
     m0_END = 0,
+    m1_TPEN = 1,
     m2_CHCN = 2,
     m5_CHSZ = 5,
     m6_PNB = 6,
     m7_CNSM = 7,
     m9_SCC = 9,
+    m10_SPN = 10,
     m11_SCN = 11,
     m12_PLSZ = 12,
     m13 = 13,

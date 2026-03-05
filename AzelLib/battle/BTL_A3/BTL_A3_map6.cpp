@@ -286,46 +286,6 @@ void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table)
 
 void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
 {
-    /* Expected results:
-    Parameter A/B switched via coefficients
-    8-bit(256 colors)
-    Tile(2H x 2V)
-    Plane Size = 1H x 1V
-    Pattern Name data size = 1 word
-    Character Number Supplement bit = 0
-    Special Priority bit = 0
-    Special Color Calculation bit = 0
-    Supplementary Palette number = 0
-    Supplementary Color number = 8
-    Plane A Address = 00063000
-    Plane B Address = 00063000
-    Plane C Address = 00063000
-    Plane D Address = 00063000
-    Plane E Address = 00063000
-    Plane F Address = 00063000
-    Plane G Address = 00063000
-    Plane H Address = 00063000
-    Plane I Address = 00063000
-    Plane J Address = 00063000
-    Plane K Address = 00063000
-    Plane L Address = 00063000
-    Plane M Address = 00063000
-    Plane N Address = 00063000
-    Plane O Address = 00063000
-    Plane P Address = 00063000
-    Window W0 Enabled:
-    Horizontal start = 0
-    Vertical start = 0
-    Horizontal end = 352
-    Vertical end = 224
-    Display inside of Window
-    Window Overlap Logic: OR
-    Color Ram Address Offset = 0
-    Priority = 3
-    Color Offset A Enabled
-    R = 0, G = 0, B = 0
-    Special Color Calculation 0
-*/
     gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
 
@@ -920,7 +880,11 @@ s32 computeRotationScrollOffset()
 
 static void BTL_A3_Env_DrawSub4(s_BTL_A3_Env* pThis)
 {
-    Unimplemented();
+    auto& table = *gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
+    for (int i = 0; i < 424; i++) {
+        table[1] = MTH_Mul(table[1], MTH_Mul(pThis->m48, getSin(pThis->m4C)) + 0x10000);
+    }
+    pThis->m4C += pThis->m40.m_offset; // TODO: this doesn't really make sense!
 }
 
 void BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)

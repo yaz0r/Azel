@@ -50,7 +50,7 @@ int scriptFunction_6056484(int arg) {
         assert(0);
         return 1;
     }
-    return 0;
+    return 1;
 }
 
 // Setup camera fixed for camp

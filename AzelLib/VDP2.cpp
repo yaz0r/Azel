@@ -481,6 +481,9 @@ void setupNBG0(const sLayerConfig* setup)
 
         switch (command)
         {
+        case m1_TPEN:
+            vdp2Controls.m4_pendingVdp2Regs->m20_BGON = (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0xFEFF) | (arg << 8);
+            break;
         case m2_CHCN:
             vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 0xFF8F) | (arg << 4);
             break;
@@ -493,14 +496,29 @@ void setupNBG0(const sLayerConfig* setup)
         case m7_CNSM:
             vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 & 0xBFFF) | (arg << 14);
             break;
+        case m10_SPN:
+            vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 & 0xFF1F) | (arg << 5);
+            break;
         case m11_SCN:
             vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 & 0xFFE0) | (arg << 0);
             break;
         case m12_PLSZ:
             vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ & 0xFFFC) | (arg << 0);
             break;
+        case m34_W0E:
+            vdp2Controls.m4_pendingVdp2Regs->mD0_WCTLA = (vdp2Controls.m4_pendingVdp2Regs->mD0_WCTLA & 0xFFFD) | (arg << 1);
+            break;
+        case m37_W0A:
+            vdp2Controls.m4_pendingVdp2Regs->mD0_WCTLA = (vdp2Controls.m4_pendingVdp2Regs->mD0_WCTLA & 0xFFFE) | (arg << 0);
+            break;
         case m40_CAOS:
             vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA & 0xFFF8) | (arg << 0);
+            break;
+        case m44_CCEN:
+            vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = (vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFFFE) | (arg << 0);
+            break;
+        case m45_COEN:
+            vdp2Controls.m4_pendingVdp2Regs->m108_CCRNA = (vdp2Controls.m4_pendingVdp2Regs->m108_CCRNA & 0xFFE0) | (arg << 0);
             break;
         default:
             assert(false);
@@ -1625,8 +1643,8 @@ s32 computeStringLength(const char* pString, s32 r5)
         case 0xA:
             return r14;
         case 0x25:
-            assert(0);
-            break;
+                assert(0);
+        break;
         default:
             break;
         }
