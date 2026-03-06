@@ -1,4 +1,7 @@
 #include "PDS.h"
+#include "lightSetup.h"
+
+s32 pointLightParams[5];
 
 std::array<sMatrix4x3,16> matrixStack;
 std::array<sMatrix4x3, 16>::iterator matrixStackIter = matrixStack.begin();
@@ -448,9 +451,20 @@ void dragonFieldTaskDrawSub1Sub0()
     PDS_unimplemented("dragonFieldTaskDrawSub1Sub0");
 }
 
-void dragonFieldTaskDrawSub1Sub1(fixedPoint r4, fixedPoint r5, fixedPoint r6)
+void dragonFieldTaskDrawSub1Sub1(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7)
 {
-    PDS_unimplemented("dragonFieldTaskDrawSub1Sub1");
+    lightSetup.m1C_pointLightX = r4;
+    lightSetup.m20_pointLightY = r5;
+    lightSetup.m24_pointLightZ = r6;
+    lightSetup.m28_pointLightParam = r7;
+
+    // Pre-compute point light parameters (originally run on slave SH-2)
+    pointLightParams[0] = (s32)r4;
+    pointLightParams[1] = (s32)r5;
+    pointLightParams[2] = (s32)r6;
+    pointLightParams[3] = (s32)r7 << 12;
+    s16 sVar1 = (s16)((u32)(s32)r7 >> 8);
+    pointLightParams[4] = (s32)sVar1 * (s32)sVar1;
 }
 
 fixedPoint transformByMatrixRow0(const sVec3_FP& r4)

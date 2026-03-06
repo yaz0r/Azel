@@ -263,7 +263,7 @@ void initEdgeNPC(sEdgeTask* pThis, sSaturnPtr arg)
     pThis->m84.m3C_scriptEA = readSaturnEA(arg + 0x38);
     if (u16 offset = readSaturnU16(arg + 0x36))
     {
-        pThis->m84.m40 = pThis->m0_fileBundle->getRawFileAtOffset(offset);
+        pThis->m84.m40 = pThis->m0_fileBundle->getCollisionModel(offset);
     }
     else
     {

@@ -6,6 +6,8 @@
 #include "kernel/debug/trace.h"
 #include "kernel/fileBundle.h"
 
+void processTownMeshCollision(sCollisionBody* r4, const sProcessed3dModel* r5);
+
 sCollisionBodyRegistry gCollisionRegistry;
 
 // Preset collision setups indexed by collision type.
@@ -138,15 +140,77 @@ s32 sphereOverlapTest(sCollisionBody* r13, sCollisionBody* r14)
 {
     if (r14->m40)
     {
-        assert(0);
+        gWallCollisionOccurred = 0;
+        fixedPoint dist2 = distanceSquareBetween2Points(r13->m8_position, *r14->m30_pPosition);
+        fixedPoint meshRadius = *(s32*)r14->m40;
+        fixedPoint threshold2 = FP_Pow2(meshRadius + r13->m4_sphereRadius);
+        if (dist2 < threshold2)
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(r14->m30_pPosition);
+            rotateCurrentMatrixZYX(r14->m34_pRotation);
+            processTownMeshCollision(r13, r14->m40);
+            popMatrix();
+        }
+        return gWallCollisionOccurred;
     }
     else
     {
-        if (distanceSquareBetween2Points(r13->m8_position, r14->m8_position) >= FP_Pow2(r13->m4_sphereRadius + r13->m4_sphereRadius))
+        if (distanceSquareBetween2Points(r13->m8_position, r14->m8_position) >= FP_Pow2(r13->m4_sphereRadius + r14->m4_sphereRadius))
             return 0;
 
-        //0600874E
-        Unimplemented();
+        sVec3_FP delta;
+        delta[0] = r14->m8_position[0] - r13->m8_position[0];
+        delta[1] = r14->m8_position[1] - r13->m8_position[1];
+        delta[2] = r14->m8_position[2] - r13->m8_position[2];
+
+        sVec3_FP localDelta;
+        transformVecByCurrentMatrix(delta, localDelta);
+
+        fixedPoint xzDist2 = FP_Pow2(localDelta[0]) + FP_Pow2(localDelta[2]);
+        fixedPoint xzThreshold2 = FP_Pow2(r13->m14_halfAABB[2] + r14->m14_halfAABB[2]);
+
+        if (xzDist2 < xzThreshold2
+            && localDelta[1] < r14->m14_halfAABB[1] + r13->m14_halfAABB[1]
+            && -(r13->m14_halfAABB[1] + r14->m14_halfAABB[1]) < localDelta[1])
+        {
+            if (xzDist2 == 0)
+            {
+                gContactConstraints.m8 = r13->m14_halfAABB[2] + r14->m14_halfAABB[2];
+            }
+            else
+            {
+                fixedPoint ratio = FP_Div(xzThreshold2, xzDist2);
+                fixedPoint scale = sqrt_F(ratio);
+
+                fixedPoint scaledX = MTH_Mul(localDelta[0], scale);
+                fixedPoint pushX = localDelta[0] - scaledX;
+                if (pushX < 1)
+                {
+                    if (pushX < gContactConstraints.m4)
+                        gContactConstraints.m4 = pushX;
+                }
+                else
+                {
+                    if (gContactConstraints.m0 < pushX)
+                        gContactConstraints.m0 = pushX;
+                }
+
+                fixedPoint scaledZ = MTH_Mul(localDelta[2], scale);
+                fixedPoint pushZ = localDelta[2] - scaledZ;
+                if (pushZ < 1)
+                {
+                    if (pushZ < gContactConstraints.mC)
+                        gContactConstraints.mC = pushZ;
+                }
+                else
+                {
+                    if (gContactConstraints.m8 < pushZ)
+                        gContactConstraints.m8 = pushZ;
+                }
+            }
+            return 1;
+        }
     }
 
     return 0;
@@ -1338,13 +1402,59 @@ void computeCollisionSeparation(sCollisionBody* r12)
     //0600854A
     if ((gContactConstraints.m0 != 0) || (gContactConstraints.m4 != 0))
     {
-        assert(0);
+        if (!(r12->m44 & 0x20))
+        {
+            if (!(r12->m44 & 0x10))
+            {
+                if (-gContactConstraints.m4 < gContactConstraints.m0)
+                {
+                    r12->m44 |= 0x20;
+                    var14[0] = gContactConstraints.m0;
+                }
+                else
+                {
+                    r12->m44 |= 0x10;
+                    var14[0] = gContactConstraints.m4;
+                }
+            }
+            else if (gContactConstraints.m4 < var14[0])
+            {
+                var14[0] = gContactConstraints.m4;
+            }
+        }
+        else if (!(r12->m44 & 0x10) && var14[0] < gContactConstraints.m0)
+        {
+            var14[0] = gContactConstraints.m0;
+        }
     }
 
     //060085A4
     if ((gContactConstraints.m8 != 0) || (gContactConstraints.mC != 0))
     {
-        assert(0);
+        if (!(r12->m44 & 0x2))
+        {
+            if (!(r12->m44 & 0x1))
+            {
+                if (-gContactConstraints.mC < gContactConstraints.m8)
+                {
+                    r12->m44 |= 0x2;
+                    var14[2] = gContactConstraints.m8;
+                }
+                else
+                {
+                    r12->m44 |= 0x1;
+                    var14[2] = gContactConstraints.mC;
+                }
+            }
+            else if (gContactConstraints.mC < var14[2])
+            {
+                var14[2] = gContactConstraints.mC;
+            }
+        }
+        else if (!(r12->m44 & 0x1) && var14[2] < gContactConstraints.m8)
+        {
+            var14[2] = gContactConstraints.m8;
+        }
     }
 
     //06008604

@@ -98,6 +98,11 @@ std::vector<s_objectToRender> objectRenderList;
 
 void addObjectToDrawList(sProcessed3dModel* pObjectData)
 {
+    if (pObjectData == nullptr) {
+        PDS_warningOnce("[ERROR] trying to render a null entity!");
+        return;
+    }
+
     s_objectToRender newObject;
     newObject.m_pObject = pObjectData;
     newObject.m_modelMatrix = *pCurrentMatrix;

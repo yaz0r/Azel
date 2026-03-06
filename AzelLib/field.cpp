@@ -31,15 +31,15 @@ void loadCommonFieldResources()
     initFieldVdp1Area(0x25C1C800, 0x5F800);
 }
 
-bool findMandatoryFileOnDisc(const char* fileName)
+int findMandatoryFileOnDisc(const char* fileName)
 {
     FILE* fHandle = fopen(fileName, "rb");
 
     if (fHandle == NULL)
-        return false;
+        return 0;
 
     fclose(fHandle);
-    return true;
+    return -1;
 }
 
 u32 getFileSizeFromFileId(const char* fileName)

@@ -19,7 +19,7 @@ struct sCollisionBody
     sVec3_FP* m34_pRotation;
     p_workArea m38_pOwner;
     sSaturnPtr m3C_scriptEA;
-    u8* m40;
+    sProcessed3dModel* m40;
     s32 m44;
     sCollisionBody* m48;
     sVec3_FP m4C;

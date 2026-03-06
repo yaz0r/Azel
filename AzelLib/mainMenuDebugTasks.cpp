@@ -1048,6 +1048,49 @@ void modelDrawFunction4(s_3dModel* pModel)
         modeDrawFunction4Sub2(r4, pPoseData, var_4, var_0);
     }
 }
+void modeDrawFunction8Sub1(sModelHierarchy* pModelData, std::vector<sPoseData>::iterator& pPoseData)
+{
+    do
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pPoseData->m0_translation);
+        rotateCurrentMatrixZYX(&pPoseData->mC_rotation);
+        scaleCurrentMatrixRow0(pPoseData->m18_scale[0]);
+        scaleCurrentMatrixRow1(pPoseData->m18_scale[1]);
+        scaleCurrentMatrixRow2(pPoseData->m18_scale[2]);
+        if (pModelData->m0_3dModel)
+        {
+            addObjectToDrawList(pModelData->m0_3dModel);
+        }
+        if (pModelData->m4_subNode)
+        {
+            pPoseData++;
+            modeDrawFunction8Sub1(pModelData->m4_subNode, pPoseData);
+        }
+        popMatrix();
+        if (pModelData->m8_nextNode == nullptr)
+        {
+            return;
+        }
+        pPoseData++;
+        pModelData = pModelData->m8_nextNode;
+    } while (1);
+}
+
+void modelDrawFunction7(s_3dModel* pModel)
+{
+    unimplementedDraw(pModel);
+}
+void modelDrawFunction8(s_3dModel* pModel)
+{
+    std::vector<sPoseData>::iterator pPoseData = pModel->m2C_poseData.begin();
+    sModelHierarchy* r4 = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
+
+    if (pModel->m8 & 1)
+    {
+        modeDrawFunction8Sub1(r4, pPoseData);
+    }
+}
 void modelDrawFunction11(s_3dModel* pModel)
 {
     unimplementedDraw(pModel);
@@ -1191,7 +1234,7 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
             {
                 if (pDragonStateData1->m38_pColorAnim)
                 {
-                    assert(0);
+                    pDragonStateData1->m18_drawFunction = modelDrawFunction11;
                 }
                 else
                 {
@@ -1215,10 +1258,10 @@ void initModelDrawFunction(s_3dModel* pDragonStateData1)
             if (pDragonStateData1->mA_animationFlags & 0x20)
             {
                 if (pDragonStateData1->m38_pColorAnim) {
-                    pDragonStateData1->m18_drawFunction = modelDrawFunction11;
+                    pDragonStateData1->m18_drawFunction = modelDrawFunction7;
                 }
                 else {
-                    pDragonStateData1->m18_drawFunction = modelDrawFunction4;
+                    pDragonStateData1->m18_drawFunction = modelDrawFunction8;
                 }
             }
             else

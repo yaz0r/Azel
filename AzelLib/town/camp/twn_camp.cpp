@@ -20,7 +20,7 @@
 void unloadFnt(); // TODO: fix
 int scriptFunction_60541c4(int arg);
 void setupCameraUpdateForCurrentMode(); // todo clean
-sTownObject* createCampEntity(s_workAreaCopy* parent, sSaturnPtr arg); //todo: clean
+sTownObject* createCampFire(s_workAreaCopy* parent, sSaturnPtr arg); //todo: clean
 
 static void cameraUpdate_noop(sMainLogic*)
 {
@@ -165,7 +165,7 @@ struct TWN_CAMP_data : public sTownOverlay
             return createExcaEntity(parent, arg);
         case 0x0607b2c4:
             assert(size == 0xE0);
-            return createCampEntity(parent, arg);
+            return createCampFire(parent, arg);
         default:
             assert(0);
             break;
@@ -254,23 +254,23 @@ static const char* listOfFilesToLoad[] = {
 };
 
 
-struct sCampEntity0 : public s_workAreaTemplateWithArgAndBase<sCampEntity0, sTownObject, sSaturnPtr>
+struct sCampFire : public s_workAreaTemplateWithArgAndBase<sCampFire, sTownObject, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &sCampEntity0::Init, &sCampEntity0::Update, nullptr, nullptr };
+        static TypedTaskDefinition taskDefinition = { &sCampFire::Init, &sCampFire::Update, nullptr, nullptr };
         return &taskDefinition;
     }
 
-    static void Init(sCampEntity0* pThis, sSaturnPtr arg)
+    static void Init(sCampFire* pThis, sSaturnPtr arg)
     {
         pThis->m10 = arg;
         pThis->m14_position = readSaturnVec3(arg + 8);
         pThis->m20_rotation = readSaturnVec3(arg + 0x14);
-        pThis->mD = (bool)(mainGameState.getBit(8));
+        pThis->mD_fireLit = (bool)(mainGameState.getBit(8));
     }
 
-    static void Update(sCampEntity0* pThis)
+    static void Update(sCampFire* pThis)
     {
         if (isDataLoaded(readSaturnS32(pThis->m10))) {
             sModelHierarchy* pHierarchy = pThis->m0_fileBundle->getModelHierarchy(4);
@@ -291,35 +291,105 @@ struct sCampEntity0 : public s_workAreaTemplateWithArgAndBase<sCampEntity0, sTow
         }
     }
 
-    static void Update2(sCampEntity0* pThis) { assert(0); }
-    static void Draw2(sCampEntity0* pThis) {
+    static u16 computeModulatedColor(s8 interpolatedR, s8 interpolatedG, s8 interpolatedB, s8 baseR, s8 baseG, s8 baseB, u32 intensity)
+    {
+        s32 r = ((s32)interpolatedR * (s32)intensity) >> 16;
+        s32 g = ((s32)interpolatedG * (s32)intensity) >> 16;
+        s32 b = ((s32)interpolatedB * (s32)intensity) >> 16;
+        r = ((r + baseR) >> 1) + 8;
+        g = ((g + baseG) >> 1) + 8;
+        b = ((b + baseB) >> 1) + 8;
+        return 0x8000 | (r & 0x1F) | ((g & 0x1F) << 5) | ((b & 0x1F) << 10);
+    }
+
+    static void Update2(sCampFire* pThis)
+    {
+        registerCollisionBody(&pThis->m7C_scriptContext);
+
+        if (!pThis->mD_fireLit) {
+            return;
+        }
+
+        pThis->mC_animCounter++;
+        if (pThis->mC_animCounter > 9) {
+            pThis->mC_animCounter = 0;
+        }
+
+        sSaturnPtr dataA = gTWN_CAMP->getSaturnPtr(0x607b294);
+        sSaturnPtr dataB = gTWN_CAMP->getSaturnPtr(0x607b2a0);
+
+        sSaturnPtr source, target;
+        s32 frame;
+        if (pThis->mC_animCounter < 5) {
+            source = dataA;
+            target = dataB;
+            frame = pThis->mC_animCounter;
+        } else {
+            source = dataB;
+            target = dataA;
+            frame = pThis->mC_animCounter - 5;
+        }
+
+        fixedPoint t = FP_Div(frame, 5);
+
+        s8 srcR = readSaturnS8(source + 0), tgtR = readSaturnS8(target + 0);
+        s8 srcG = readSaturnS8(source + 1), tgtG = readSaturnS8(target + 1);
+        s8 srcB = readSaturnS8(source + 2), tgtB = readSaturnS8(target + 2);
+
+        s32 r = (s16)((((s32)(tgtR - srcR) * (s32)t + 0x8000) >> 16)) + srcR;
+        s32 g = (s16)((((s32)(tgtG - srcG) * (s32)t + 0x8000) >> 16)) + srcG;
+        s32 b = (s16)((((s32)(tgtB - srcB) * (s32)t + 0x8000) >> 16)) + srcB;
+
+        cameraTaskPtr->m10.m0 = (s8)r;
+        cameraTaskPtr->m10.m1 = (s8)g;
+        cameraTaskPtr->m10.m2 = (s8)b;
+
+        s32 srcParam1 = readSaturnS32(source + 4);
+        s32 tgtParam1 = readSaturnS32(target + 4);
+        cameraTaskPtr->m2C = (s32)MTH_Mul(fixedPoint(tgtParam1 - srcParam1), t) + srcParam1;
+
+        s32 srcParam2 = readSaturnS32(source + 8);
+        s32 tgtParam2 = readSaturnS32(target + 8);
+        cameraTaskPtr->m30 = (s32)MTH_Mul(fixedPoint(tgtParam2 - srcParam2), t) + srcParam2;
+
+        if (g_fadeControls.m24_fade1.m20_stopped && cameraTaskPtr->m1) {
+            s8 baseR = readSaturnS8(cameraTaskPtr->m8 + 3);
+            s8 baseG = readSaturnS8(cameraTaskPtr->m8 + 4);
+            s8 baseB = readSaturnS8(cameraTaskPtr->m8 + 5);
+
+            u16 color = computeModulatedColor((s8)r, (s8)g, (s8)b, baseR, baseG, baseB, cameraTaskPtr->m30);
+            fadePalette(&g_fadeControls.m24_fade1, color, color, 1);
+        }
+
+        stepAnimation(&pThis->m2C_model);
+    }
+    static void Draw2(sCampFire* pThis) {
         pushCurrentMatrix();
         translateCurrentMatrix(pThis->m14_position);
         rotateCurrentMatrixZYX(pThis->m20_rotation);
-        if (pThis->mD == 0) {
-            addObjectToDrawList(pThis->mF8);
+        if (pThis->mD_fireLit == 0) {
+            addObjectToDrawList(pThis->m0_fileBundle->get3DModel(0xF8));
         }
         else {
-            addObjectToDrawList(pThis->mF4);
+            addObjectToDrawList(pThis->m0_fileBundle->get3DModel(0xF4));
             pThis->m2C_model.m18_drawFunction(&pThis->m2C_model);
         }
 
         popMatrix();
     }
 
-    bool mD;
+    s8 mC_animCounter;
+    bool mD_fireLit;
     sSaturnPtr m10;
     sVec3_FP m14_position;
     sVec3_FP m20_rotation;
     s_3dModel m2C_model;
     sCollisionBody m7C_scriptContext;
-    sProcessed3dModel* mF4;
-    sProcessed3dModel* mF8;
     //size: 0xE0
 };
 
-sTownObject* createCampEntity(s_workAreaCopy* parent, sSaturnPtr arg) {
-    return createSubTaskWithArgWithCopy<sCampEntity0, sSaturnPtr>(parent, arg);
+sTownObject* createCampFire(s_workAreaCopy* parent, sSaturnPtr arg) {
+    return createSubTaskWithArgWithCopy<sCampFire, sSaturnPtr>(parent, arg);
 }
 
 

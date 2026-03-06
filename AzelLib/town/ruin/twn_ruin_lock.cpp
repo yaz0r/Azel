@@ -29,7 +29,7 @@ void sLockTask::Update(sLockTask* pThis)
 
     if (s16 r4 = readSaturnU16(readSaturnEA(pThis->mC + 0x24) + 2))
     {
-        pThis->m10.m40 = pThis->m0_fileBundle->getRawFileAtOffset(r4);
+        pThis->m10.m40 = pThis->m0_fileBundle->getCollisionModel(r4);
     }
     else
     {

@@ -38,6 +38,9 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     sVec3_FP m5C_rawCameraPosition;
     sVec3_FP m68_cameraRotation;
     sCollisionBody m74_townCamera;
+    s32 mD8;
+    s32 mDC;
+    s32 mE0;
     sVec3_FP mE4_fixedPosition;
     sVec2_FP mF0;
     sVec2_FP mF8;
@@ -55,4 +58,5 @@ extern sMainLogic* twnMainLogicTask;
 p_workArea startMainLogic(p_workArea pParent);
 void initTownProjection();
 int scriptFunction_6057058_sub0();
+s32 scriptFunction_605762A();
 s32 hasLoadingCompleted();

@@ -2,17 +2,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 #include "kernel/debug/trace.h"
-
-struct s_lightSetup
-{
-    fixedPoint m0;
-    fixedPoint m4;
-    fixedPoint m8;
-    fixedPoint mC;
-    u32 m10;
-    u32 m14;
-    u32 m18;
-};
+#include "lightSetup.h"
 
 s_lightSetup lightSetup;
 

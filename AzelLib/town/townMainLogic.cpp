@@ -678,6 +678,40 @@ void cameraUpdate_fixed_updateCameraTargetFromRotation(sMainLogic* pThis) {
     pThis->m44_cameraTarget[2] = pThis->m38_interpolatedCameraPosition[2] - mat.m[2][2];
 }
 
+void cameraUpdate_mode1(sMainLogic* pThis) {
+    if (pThis->mDC == 0) {
+        pThis->m5C_rawCameraPosition = pThis->mE4_fixedPosition;
+    }
+    else {
+        fixedPoint t = FP_Div(pThis->mDC, pThis->mD8);
+        pThis->m5C_rawCameraPosition[0] = MTH_Mul(pThis->m100_deltaPosition[0] - pThis->mE4_fixedPosition[0], t) + pThis->mE4_fixedPosition[0];
+        pThis->m5C_rawCameraPosition[1] = MTH_Mul(pThis->m100_deltaPosition[1] - pThis->mE4_fixedPosition[1], t) + pThis->mE4_fixedPosition[1];
+        pThis->m5C_rawCameraPosition[2] = MTH_Mul(pThis->m100_deltaPosition[2] - pThis->mE4_fixedPosition[2], t) + pThis->mE4_fixedPosition[2];
+        pThis->mDC--;
+    }
+
+    pThis->m38_interpolatedCameraPosition = pThis->m5C_rawCameraPosition;
+
+    cameraUpdate_fixedSub(pThis);
+
+    sVec3_FP direction;
+    direction[0] = pThis->m44_cameraTarget[0] - pThis->m5C_rawCameraPosition[0];
+    direction[1] = pThis->m44_cameraTarget[1] - pThis->m5C_rawCameraPosition[1];
+    direction[2] = pThis->m44_cameraTarget[2] - pThis->m5C_rawCameraPosition[2];
+    pThis->m24_distance = sqrt_F(MTH_Product3d_FP(direction, direction));
+    computeLookAt(direction, pThis->m68_cameraRotation);
+    pThis->m68_cameraRotation[2] = 0;
+
+    cameraUpdate_fixed_updateCameraTargetFromRotation(pThis);
+}
+
+void cameraUpdate_mode1_LCS(sMainLogic* pThis) {
+    moveTownLCSCursor(pThis);
+    pThis->m68_cameraRotation[0] = (pThis->m68_cameraRotation[0] + MTH_Mul(0xE38E3, pThis->mC_inputY)) & 0xfffffff;
+    pThis->m68_cameraRotation[1] = (pThis->m68_cameraRotation[1] + MTH_Mul(0xE38E3, pThis->m8_inputX)) & 0xfffffff;
+    cameraUpdate_fixed_updateCameraTargetFromRotation(pThis);
+}
+
 void cameraUpdate_fixed_LCS(sMainLogic* pThis) {
     moveTownLCSCursor(pThis);
     pThis->m68_cameraRotation[0] = (pThis->m68_cameraRotation[0] + MTH_Mul(0xE38E3, pThis->mC_inputY)) & 0xfffffff;
@@ -702,6 +736,16 @@ void setupCameraUpdateForCurrentMode()
         else
         {
             twnMainLogicTask->m10 = &cameraUpdate_follow;
+        }
+        break;
+    case 1: // Mode 1 (fixed position with target tracking)
+        if (r5_inLcsMode)
+        {
+            twnMainLogicTask->m10 = &cameraUpdate_mode1_LCS;
+        }
+        else
+        {
+            twnMainLogicTask->m10 = &cameraUpdate_mode1;
         }
         break;
     case 3: // Fixed camera (camp)

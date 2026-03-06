@@ -171,6 +171,103 @@ s32 scriptFunction_0609dffe(s32 param_1)
     return 0;
 }
 
+int scriptFunction_06096ac2_disableRBG0()
+{
+    vdp2Controls.m4_pendingVdp2Regs->m20_BGON = vdp2Controls.m4_pendingVdp2Regs->m20_BGON & ~0x10;
+    vdp2Controls.m_isDirty = 1;
+    *(u16*)getVdp2Vram(0x25002) = 0x8000;
+    vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x12801;
+    return 0;
+}
+
+s32 scriptFunction_06098a5c_setupCameraMode1(s32 arg0, s32 arg1, s32 arg2)
+{
+    sSaturnPtr ptr0 = gCurrentTownOverlay->getSaturnPtr(arg0);
+    sSaturnPtr ptr1 = gCurrentTownOverlay->getSaturnPtr(arg1);
+    sSaturnPtr ptr2 = gCurrentTownOverlay->getSaturnPtr(arg2);
+
+    twnMainLogicTask->mE4_fixedPosition = readSaturnVec3(ptr0);
+    twnMainLogicTask->mF0[0] = readSaturnFP(ptr2);
+    twnMainLogicTask->mF0[1] = readSaturnFP(ptr2 + 4);
+    twnMainLogicTask->mF8[0] = readSaturnFP(ptr1);
+    twnMainLogicTask->mF8[1] = readSaturnFP(ptr1 + 4);
+    twnMainLogicTask->mDC = 0;
+    twnMainLogicTask->m2_cameraFollowMode = (sMainLogic::eCameraTrackingMode)1;
+    setupCameraUpdateForCurrentMode();
+    return 0;
+}
+
+static void zoahCamera_setupLight(sCameraTask* pThis, sSaturnPtr lightData)
+{
+    pThis->m8 = lightData;
+
+    sMatrix4x3 mat;
+    initMatrixToIdentity(&mat);
+
+    pThis->m14[0] = mat.m[0][3];
+    pThis->m14[1] = mat.m[1][3];
+    pThis->m14[2] = mat.m[2][3];
+
+    pThis->m10.m0 = readSaturnU8(lightData);
+    pThis->m10.m1 = readSaturnU8(lightData + 1);
+    pThis->m10.m2 = readSaturnU8(lightData + 2);
+    pThis->m30 = 0x8000;
+
+    u32 f0 = (u32)readSaturnU8(lightData + 5) << 16 | (u32)readSaturnU8(lightData + 4) << 8 | (u32)readSaturnU8(lightData + 3);
+    u32 f1 = (u32)readSaturnU8(lightData + 8) << 16 | (u32)readSaturnU8(lightData + 7) << 8 | (u32)readSaturnU8(lightData + 6);
+    u32 f2 = (u32)readSaturnU8(lightData + 11) << 16 | (u32)readSaturnU8(lightData + 10) << 8 | (u32)readSaturnU8(lightData + 9);
+    generateLightFalloffMap(f0, f1, f2);
+}
+
+static void zoahCamera_updateTimeOnly(sCameraTask* pThis)
+{
+    if ((npcData0.mFC & 1) == 0) {
+        pThis->m4++;
+        if (pThis->m4 > 5400) {
+            pThis->m4 = 5400;
+        }
+    }
+}
+
+static void zoahCamera_drawSetupLight(sCameraTask* pThis)
+{
+    sVec3_FP stack16;
+    transformVecByCurrentMatrix(pThis->m14, stack16);
+    setupLight(stack16[0], stack16[1], stack16[2], pThis->m10.toU32());
+}
+
+static void zoahCamera_drawWithPosition(sCameraTask* pThis)
+{
+    sVec3_FP local_14;
+    transformAndAddVecByCurrentMatrix(&pThis->m20_lightPosition, &local_14);
+    dragonFieldTaskDrawSub1Sub1(local_14.m0_X, local_14.m4_Y, local_14.m8_Z);
+    setupLight(0, 0, 0, pThis->m10.toU32());
+}
+
+s32 scriptFunction_0609e080_setupCameraWithPosition(sSaturnPtr arg)
+{
+    sSaturnPtr lightData = arg + 0x14;
+    zoahCamera_setupLight(cameraTaskPtr, lightData);
+
+    cameraTaskPtr->m20_lightPosition = readSaturnVec3(arg);
+    cameraTaskPtr->m2C = readSaturnU32(arg + 0xC);
+    cameraTaskPtr->m30 = readSaturnU32(arg + 0x10);
+
+    cameraTaskPtr->m_UpdateMethod = zoahCamera_updateTimeOnly;
+    cameraTaskPtr->m_DrawMethod = zoahCamera_drawWithPosition;
+
+    if (g_fadeControls.m_4C <= g_fadeControls.m_4D)
+    {
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
+    }
+
+    resetProjectVector();
+    cameraTaskPtr->m2 = 1;
+    cameraTaskPtr->m0 = 2;
+    return 0;
+}
+
 s32 scriptFunction_0609dffe(s32 param_1);
 int scriptFunction_06096a98();
 static sTownObject* createZoahEntity(s_workAreaCopy* parent, sSaturnPtr arg);
@@ -195,10 +292,16 @@ struct TWN_ZOAH_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x060989f8] = &scriptFunction_6057058_sub0;
         overlayScriptFunctions.m_zeroArg[0x06098d2e] = &scriptFunction_06098d2e;
         overlayScriptFunctions.m_zeroArg[0x06098d38] = &scriptFunction_06098d38;
+        overlayScriptFunctions.m_zeroArg[0x06096ac2] = &scriptFunction_06096ac2_disableRBG0;
+        overlayScriptFunctions.m_zeroArg[0x06098fea] = &scriptFunction_605762A;
 
         overlayScriptFunctions.m_oneArg[0x0609e184] = &TwnFadeIn;
         overlayScriptFunctions.m_oneArg[0x0609dffe] = &scriptFunction_0609dffe;
         overlayScriptFunctions.m_oneArg[0x0609e1fc] = &TwnFadeOut;
+
+        overlayScriptFunctions.m_oneArgPtr[0x0609e080] = &scriptFunction_0609e080_setupCameraWithPosition;
+
+        overlayScriptFunctions.m_threeArg[0x06098a5c] = &scriptFunction_06098a5c_setupCameraMode1;
 
         overlayScriptFunctions.m_fourArg[0x0609c8a0] = &setNpcLocation;
         overlayScriptFunctions.m_fourArg[0x0609c8ce] = &setNpcOrientation;
@@ -289,7 +392,7 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
         pThis->m84.m3C_scriptEA = readSaturnEA(arg + 0x38);
         if (u16 offset = readSaturnU16(arg + 0x36))
         {
-            pThis->m84.m40 = pThis->m0_fileBundle->getRawFileAtOffset(offset);
+            pThis->m84.m40 = pThis->m0_fileBundle->getCollisionModel(offset);
         }
         else
         {
@@ -401,7 +504,7 @@ struct sZoahEntity0 : public s_workAreaTemplateWithArgAndBase<sZoahEntity0, sTow
                 if (scriptDataOffset == 0) {
                     pThis->m10_collisionBody.m40 = nullptr;
                 } else {
-                    pThis->m10_collisionBody.m40 = pThis->m0_fileBundle->getRawFileAtOffset(scriptDataOffset);
+                    pThis->m10_collisionBody.m40 = pThis->m0_fileBundle->getCollisionModel(scriptDataOffset);
                 }
 
                 setCollisionSetup(&pThis->m10_collisionBody, readSaturnU8(scriptConfigEA + 0));

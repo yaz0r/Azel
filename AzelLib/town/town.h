@@ -240,6 +240,8 @@ struct sCameraTask : public s_workAreaTemplate<sCameraTask>
     u32 mC;
     s_RGB8 m10;
     sVec3_FP m14;
+    sVec3_FP m20_lightPosition;
+    u32 m2C;
     u32 m30;
     fixedPoint m34_interpolatedLightData[12]; // 0x34-0x64, used by zoahCamera_update
     //size 0x64

@@ -267,6 +267,12 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
             scriptFunction_three_arg pFunction = gKernelScriptFunctions.m_threeArg.find(functionEA.m_offset)->second;
             r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12));
         }
+        else if (gCurrentTownOverlay->overlayScriptFunctions.m_threeArg.count(functionEA.m_offset))
+        {
+            assert(gCurrentTownOverlay == r14.m_file);
+            scriptFunction_three_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_threeArg.find(functionEA.m_offset)->second;
+            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12));
+        }
         else
         {
             Unimplemented();

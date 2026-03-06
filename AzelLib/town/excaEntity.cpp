@@ -58,10 +58,11 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgAndBase<sExcaEntity0, sTow
                 pThis->m60_scriptContext.m3C_scriptEA = readSaturnEA(scriptConfigEA + 4);
 
                 s16 sVar1 = readSaturnS16(scriptConfigEA + 2) >> 0xF;
-                u8* puVar3 = nullptr;
+                sProcessed3dModel* puVar3 = nullptr;
                 if (sVar1)
                 {
-                    puVar3 = pThis->mC.getRawPointer() + sVar1;
+                    //puVar3 = pThis->mC.getRawPointer() + sVar1;
+                    assert(0);
                 }
 
                 pThis->m60_scriptContext.m40 = puVar3;

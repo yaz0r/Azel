@@ -784,5 +784,5 @@ void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6);
 void exitCutsceneTaskUpdateSub0Sub0();
 void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s32 r7);
 
-bool findMandatoryFileOnDisc(const char* fileName);
+int findMandatoryFileOnDisc(const char* fileName);
 u32 getFileSizeFromFileId(const char* fileName);
