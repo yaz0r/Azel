@@ -261,6 +261,7 @@ void drawLcs();
 void updateEdgePosition(sNPC* r4);
 s32 TwnFadeIn(s32 arg0);
 void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5);
+void decreaseNPCRefCount(s32 r5);
 
 npcFileDeleter* loadNPCFile2(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, s32 index);
 void initNPCSub0(npcFileDeleter* buffer, const sGrid* pGrid, u8 gridSizeX, u8 gridSizeY, fixedPoint cellSize);

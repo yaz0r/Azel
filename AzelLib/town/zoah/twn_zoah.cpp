@@ -18,6 +18,8 @@
 #include "3dModels.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
+#include "mainMenuDebugTasks.h"
+#include "audio/systemSounds.h"
 
 void unloadFnt(); // TODO: fix
 
@@ -350,6 +352,216 @@ struct TWN_ZOAH_data : public sTownOverlay
     }
 };
 
+static sAnimationData* getZoahNPCAnimation(sNPC* pThis, s32 animIndex)
+{
+    sSaturnPtr entry = pThis->m30_animationTable + animIndex * 4;
+    u16 fileIndex = readSaturnU16(entry);
+    u16 animOffset = readSaturnU16(entry + 2);
+    if (fileIndex)
+    {
+        return dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset);
+    }
+    else
+    {
+        return pThis->m0_fileBundle->getAnimation(animOffset);
+    }
+}
+
+static void updateZoahNPCSub1(sNPC* pThis)
+{
+    if (pThis->mE_controlState == 0)
+    {
+        pThis->mC &= ~2;
+    }
+}
+
+static void updateZoahNPCSub2(sNPC* pThis)
+{
+    sNPCE8* r13 = &pThis->mE8;
+    if (pThis->mF & 0x2)
+    {
+        fixedPoint maxSpeed = MTH_Mul(0x2D82D8, pThis->m1C);
+        fixedPoint negMaxSpeed = -maxSpeed;
+
+        if (pThis->mF & 0x4)
+        {
+            // look-at rotation towards target (script-triggered)
+            assert(0);
+        }
+        else
+        {
+            // body rotation towards target
+            fixedPoint diff = fixedPoint(pThis->mE8.m48_targetRotation[1] - pThis->mE8.mC_rotation[1]).normalized();
+            fixedPoint speed;
+            if (diff < 0)
+            {
+                speed = negMaxSpeed;
+                if (diff >= negMaxSpeed)
+                {
+                    pThis->mF &= ~2;
+                    speed = diff;
+                }
+                fixedPoint clampedDiff = diff;
+                if (clampedDiff < -0x1C71C71) clampedDiff = -0x1C71C71;
+
+                pThis->m20_lookAtAngle[1] += speed;
+                if (pThis->m20_lookAtAngle[1] < clampedDiff)
+                {
+                    pThis->m20_lookAtAngle[1] = clampedDiff;
+                }
+            }
+            else
+            {
+                speed = maxSpeed;
+                if (diff <= maxSpeed)
+                {
+                    pThis->mF &= ~2;
+                    speed = diff;
+                }
+                fixedPoint clampedDiff = diff;
+                if (clampedDiff > 0x1C71C71) clampedDiff = 0x1C71C71;
+
+                pThis->m20_lookAtAngle[1] += speed;
+                if (pThis->m20_lookAtAngle[1] > clampedDiff)
+                {
+                    pThis->m20_lookAtAngle[1] = clampedDiff;
+                }
+            }
+            pThis->mE8.mC_rotation[1] += speed;
+        }
+    }
+    else
+    {
+        if (pThis->mF & 1)
+        {
+            fixedPoint r8 = FP_Pow2(r13->m30_stepTranslation[2]);
+            if (distanceSquareBetween2Points(r13->m3C_targetPosition, r13->m0_position) <= r8)
+            {
+                r13->m0_position = r13->m3C_targetPosition;
+                pThis->mF &= ~1;
+            }
+            else
+            {
+                fixedPoint angleDiff = atan2_FP(r13->m0_position[0] - r13->m3C_targetPosition[0], r13->m0_position[2] - r13->m3C_targetPosition[2]) - r13->mC_rotation[1];
+                angleDiff = angleDiff.normalized();
+                if (angleDiff >= 0)
+                {
+                    if (angleDiff > 0x2D82D8) angleDiff = 0x2D82D8;
+                }
+                else
+                {
+                    if (angleDiff < -0x2D82D8) angleDiff = -0x2D82D8;
+                }
+                r13->mC_rotation[1] += angleDiff;
+                stepNPCForward(&pThis->mE8);
+            }
+        }
+        else
+        {
+            pThis->mC &= ~4;
+        }
+    }
+}
+
+// Idle animation randomizer for state 4 NPCs (FUN_0609db7c)
+static void updateZoahNPCIdle(sNPC* pThis, s16& m14E)
+{
+    m14E--;
+    if (m14E == 0 || pThis->m2C_currentAnimation < 5 || pThis->m2C_currentAnimation > 8)
+    {
+        s32 newAnim;
+        s16 timer;
+        if (pThis->m2C_currentAnimation == 5 && (npcData0.mFC & 0x11) == 0)
+        {
+            s32 roll = performModulo2(100, randomNumber() & 0x7FFFFFFF);
+            if (roll < 0x42) {
+                newAnim = 6; timer = 60;
+            } else if (roll < 99) {
+                newAnim = 7; timer = 60;
+            } else {
+                newAnim = 8; timer = 30;
+            }
+        }
+        else
+        {
+            newAnim = 5;
+            timer = 200 + performModulo2(0x514, randomNumber() & 0x7FFFFFFF);
+        }
+        m14E = timer;
+        if (pThis->m2C_currentAnimation != newAnim)
+        {
+            s32 interpolation = (pThis->m2C_currentAnimation < 5) ? 5 : 10;
+            pThis->m2C_currentAnimation = newAnim;
+            playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, newAnim), interpolation);
+        }
+    }
+    updateAndInterpolateAnimation(&pThis->m34_3dModel);
+}
+
+// Walk/run control state for state 4 NPCs (FUN_0609dc9a)
+static void updateZoahNPCWalkRun(sNPC* pThis, s16& m14E)
+{
+    sVec3_FP delta = pThis->mE8.m0_position - pThis->mE8.m54_oldPosition;
+    s32 distance = sqrt_I(delta[0] * delta[0] + delta[1] * delta[1] + delta[2] * delta[2]);
+    s32 speed = distance * 0x1E1;
+    s32 accumulator = pThis->m28_animationLeftOver + speed;
+    pThis->m28_animationLeftOver = accumulator & 0xFFFF;
+
+    if (speed > 0x666)
+    {
+        // Moving - switch between walk and run
+        if (pThis->m2C_currentAnimation == 2)
+        {
+            if (speed < 0x28000)
+            {
+                pThis->m2C_currentAnimation = 1;
+                playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 1), 5);
+            }
+        }
+        else if (pThis->m2C_currentAnimation == 1)
+        {
+            if (speed > 0x30000)
+            {
+                pThis->m2C_currentAnimation = 2;
+                playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 2), 5);
+            }
+        }
+        else
+        {
+            pThis->m2C_currentAnimation = 1;
+            playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 1), 5);
+        }
+
+        u32 stepsToAdvance = accumulator >> 16;
+        if (stepsToAdvance != 0)
+        {
+            if (pThis->m2C_currentAnimation == 1)
+            {
+                // Walk footstep sounds
+                do {
+                    s16 frame = stepAnimation(&pThis->m34_3dModel);
+                    if (frame == 8 || frame == 0x1B) playSystemSoundEffect(0x22);
+                } while (--stepsToAdvance);
+            }
+            else
+            {
+                // Run footstep sounds
+                do {
+                    s16 frame = stepAnimation(&pThis->m34_3dModel);
+                    if (frame == 0xB || frame == 0x2B) playSystemSoundEffect(0x23);
+                } while (--stepsToAdvance);
+            }
+        }
+        interpolateAnimation(&pThis->m34_3dModel);
+        m14E = 0;
+    }
+    else
+    {
+        // Idle
+        updateZoahNPCIdle(pThis, m14E);
+    }
+}
+
 struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -432,13 +644,175 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
 
     static void Update2(sZoahNPC* pThis)
     {
-        Unimplemented();
+        // Save old position
+        pThis->mE8.m54_oldPosition = pThis->mE8.m0_position;
+
+        if (pThis->mC == 0)
+        {
+            if (pThis->m14_updateFunction)
+            {
+                pThis->m14_updateFunction(pThis);
+            }
+        }
+        else
+        {
+            // Auto-movement mode
+            if (!(pThis->mF & 2) && !(pThis->mC & 8))
+            {
+                pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
+            }
+            if (pThis->mC & 2)
+            {
+                updateZoahNPCSub1(pThis);
+            }
+            if (pThis->mC & 4)
+            {
+                updateZoahNPCSub2(pThis);
+            }
+        }
+
+        // Animation control state machine
+        switch (pThis->mE_controlState)
+        {
+        case 0:
+            // Process animation schedule
+            if (pThis->m17A)
+            {
+                s8 schedAnim = pThis->m158_animSchedule[pThis->m179 * 2];
+                if (pThis->m2C_currentAnimation != schedAnim)
+                {
+                    if (schedAnim == 0)
+                    {
+                        playAnimationGeneric(&pThis->m34_3dModel, nullptr, 10);
+                        pThis->m2C_currentAnimation = 0;
+                    }
+                    else
+                    {
+                        if (pThis->mD == 4 && pThis->m14E != 0)
+                        {
+                            pThis->m2C_currentAnimation = schedAnim;
+                            initAnimation(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, schedAnim));
+                            pThis->m14E = 0;
+                        }
+                        else
+                        {
+                            pThis->m2C_currentAnimation = schedAnim;
+                            playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, schedAnim), 10);
+                        }
+                        updateAndInterpolateAnimation(&pThis->m34_3dModel);
+                    }
+                }
+                pThis->mE_controlState = pThis->m158_animSchedule[pThis->m179 * 2 + 1];
+                pThis->m179++;
+                if (pThis->m179 > 7) pThis->m179 = 0;
+                pThis->m17A--;
+            }
+            break;
+        case 1:
+        {
+            // Walk/idle based on movement distance
+            sVec3_FP delta = pThis->mE8.m0_position - pThis->mE8.m54_oldPosition;
+            s32 distance = sqrt_I(delta[0] * delta[0] + delta[1] * delta[1] + delta[2] * delta[2]);
+            s32 speed = distance * 0x1E1;
+            u32 accumulator = pThis->m28_animationLeftOver + speed;
+            pThis->m28_animationLeftOver = accumulator & 0xFFFF;
+
+            u32 stepsToAdvance;
+            if (speed == 0)
+            {
+                // Idle
+                if (pThis->m2C_currentAnimation != 0)
+                {
+                    pThis->m2C_currentAnimation = 0;
+                    playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 0), 5);
+                }
+                stepsToAdvance = 1;
+            }
+            else
+            {
+                // Walking
+                if (pThis->m2C_currentAnimation != 1)
+                {
+                    pThis->m2C_currentAnimation = 1;
+                    playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 1), 5);
+                }
+                stepsToAdvance = accumulator >> 16;
+            }
+
+            for (; stepsToAdvance != 0; stepsToAdvance--)
+            {
+                stepAnimation(&pThis->m34_3dModel);
+            }
+            interpolateAnimation(&pThis->m34_3dModel);
+            break;
+        }
+        case 2:
+            if (pThis->m34_3dModel.m30_pCurrentAnimation != nullptr)
+            {
+                s16 frame = updateAndInterpolateAnimation(&pThis->m34_3dModel);
+                s32 numFrames = 0;
+                if (pThis->m34_3dModel.m30_pCurrentAnimation)
+                {
+                    numFrames = pThis->m34_3dModel.m30_pCurrentAnimation->m4_numFrames;
+                }
+                if (frame >= numFrames - 1)
+                {
+                    pThis->mE_controlState = 0;
+                }
+            }
+            else if (pThis->m34_3dModel.m48_poseDataInterpolation.empty())
+            {
+                pThis->mE_controlState = 0;
+            }
+            else
+            {
+                updateAndInterpolateAnimation(&pThis->m34_3dModel);
+            }
+            break;
+        case 3:
+            if (pThis->m34_3dModel.m30_pCurrentAnimation == nullptr)
+            {
+                pThis->mE_controlState = 2;
+            }
+            else
+            {
+                updateAndInterpolateAnimation(&pThis->m34_3dModel);
+            }
+            break;
+        case 4:
+            updateZoahNPCWalkRun(pThis, pThis->m14E);
+            break;
+        default:
+            break;
+        }
+
         registerCollisionBody(&pThis->m84);
     }
 
     static void Draw2(sZoahNPC* pThis)
     {
-        Unimplemented();
+        pushCurrentMatrix();
+        translateCurrentMatrix(pThis->mE8.m0_position);
+        rotateCurrentMatrixShiftedY(pThis->mE8.mC_rotation[1]);
+        rotateCurrentMatrixShiftedX(pThis->mE8.mC_rotation[0]);
+        rotateCurrentMatrixShiftedY(0x8000000);
+
+        // draw shadow
+        if ((pThis->mF & 0x80) == 0)
+        {
+            addObjectToDrawList(dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->get3DModel(readSaturnU16(pThis->m30_animationTable + 2)));
+        }
+
+        if (pThis->m34_3dModel.m48_poseDataInterpolation.size())
+        {
+            applyEdgeAnimation2(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
+        }
+        else
+        {
+            applyEdgeAnimation(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
+        }
+
+        popMatrix();
     }
 
     static void Delete(sZoahNPC* pThis)

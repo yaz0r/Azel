@@ -22,7 +22,21 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
 
     static void Update_TownObject(npcFileDeleter* pThis)
     {
-        Unimplemented();
+        // Check if main file has finished loading
+        if (pThis->m8 >= 0)
+        {
+            pThis->m8 = -1;
+        }
+        // Check if VDP1 file has finished loading
+        if (pThis->mA >= 0)
+        {
+            pThis->mA = -1;
+        }
+        // Once both files are loaded, stop updating
+        if (pThis->m8 < 0 && pThis->mA < 0)
+        {
+            pThis->m_UpdateMethod = nullptr;
+        }
     }
 
     //////////////////////////////

@@ -16,11 +16,13 @@
 #include "town/excaEntity.h"
 #include "town/collisionRegistry.h"
 #include "campVdp2Plane.h"
+#include "kernel/vdp1AnimatedQuad.h"
 
 void unloadFnt(); // TODO: fix
 int scriptFunction_60541c4(int arg);
 void setupCameraUpdateForCurrentMode(); // todo clean
 sTownObject* createCampFire(s_workAreaCopy* parent, sSaturnPtr arg); //todo: clean
+static sTownObject* createCampParticle(s_workAreaCopy* parent, sSaturnPtr arg);
 
 static void cameraUpdate_noop(sMainLogic*)
 {
@@ -115,6 +117,56 @@ int scriptFunction_606c70c(sSaturnPtr arg) {
     return 0;
 }
 
+static void campCamera_drawWithPosition(sCameraTask* pThis)
+{
+    sVec3_FP local_14;
+    transformAndAddVecByCurrentMatrix(&pThis->m20_lightPosition, &local_14);
+    dragonFieldTaskDrawSub1Sub1(local_14.m0_X, local_14.m4_Y, local_14.m8_Z, pThis->m2C);
+    setupLight(0, 0, 0, pThis->m10.toU32());
+}
+
+static void campCameraSetupLight(sCameraTask* pThis, sSaturnPtr lightData)
+{
+    pThis->m8 = lightData;
+
+    pThis->m14[0] = 0;
+    pThis->m14[1] = 0;
+    pThis->m14[2] = 0;
+
+    pThis->m10.m0 = readSaturnU8(lightData);
+    pThis->m10.m1 = readSaturnU8(lightData + 1);
+    pThis->m10.m2 = readSaturnU8(lightData + 2);
+    pThis->m30 = 0x8000;
+
+    u32 f0 = (u32)readSaturnU8(lightData + 5) << 16 | (u32)readSaturnU8(lightData + 4) << 8 | (u32)readSaturnU8(lightData + 3);
+    u32 f1 = (u32)readSaturnU8(lightData + 8) << 16 | (u32)readSaturnU8(lightData + 7) << 8 | (u32)readSaturnU8(lightData + 6);
+    u32 f2 = (u32)readSaturnU8(lightData + 11) << 16 | (u32)readSaturnU8(lightData + 10) << 8 | (u32)readSaturnU8(lightData + 9);
+    generateLightFalloffMap(f0, f1, f2);
+}
+
+static s32 campCameraSetupWithPosition(sSaturnPtr arg)
+{
+    campCameraSetupLight(cameraTaskPtr, arg + 0x14);
+
+    cameraTaskPtr->m_UpdateMethod = townCamera_update;
+    cameraTaskPtr->m_DrawMethod = campCamera_drawWithPosition;
+
+    cameraTaskPtr->m20_lightPosition = readSaturnVec3(arg);
+    cameraTaskPtr->m2C = readSaturnU32(arg + 0xC);
+    cameraTaskPtr->m30 = readSaturnU32(arg + 0x10);
+
+    if (g_fadeControls.m_4C <= g_fadeControls.m_4D)
+    {
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
+    }
+
+    resetProjectVector();
+    cameraTaskPtr->m2 = 1;
+    cameraTaskPtr->m0 = 2;
+    return 0;
+}
+
 struct TWN_CAMP_data* gTWN_CAMP = NULL;
 struct TWN_CAMP_data : public sTownOverlay
 {
@@ -140,6 +192,7 @@ struct TWN_CAMP_data : public sTownOverlay
         overlayScriptFunctions.m_oneArg[0x6056484] = &scriptFunction_6056484;
 
         overlayScriptFunctions.m_oneArgPtr[0x606C70C] = &scriptFunction_606c70c;
+        overlayScriptFunctions.m_oneArgPtr[0x6071ca4] = &campCameraSetupWithPosition;
 
         overlayScriptFunctions.m_twoArg[0x6071b40] = &townCamera_setup;
 
@@ -166,6 +219,9 @@ struct TWN_CAMP_data : public sTownOverlay
         case 0x0607b2c4:
             assert(size == 0xE0);
             return createCampFire(parent, arg);
+        case 0x06080124:
+            assert(size == 0x28);
+            return createCampParticle(parent, arg);
         default:
             assert(0);
             break;
@@ -390,6 +446,78 @@ struct sCampFire : public s_workAreaTemplateWithArgAndBase<sCampFire, sTownObjec
 
 sTownObject* createCampFire(s_workAreaCopy* parent, sSaturnPtr arg) {
     return createSubTaskWithArgWithCopy<sCampFire, sSaturnPtr>(parent, arg);
+}
+
+struct sCampParticle : public s_workAreaTemplateWithArgAndBase<sCampParticle, sTownObject, sSaturnPtr>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sCampParticle::Init, &sCampParticle::Update, nullptr, &sCampParticle::Delete };
+        return &taskDefinition;
+    }
+
+    static void Init(sCampParticle* pThis, sSaturnPtr arg)
+    {
+        pThis->mC = arg;
+        pThis->m18_position[0] = readSaturnFP(arg + 8);
+        pThis->m18_position[1] = readSaturnFP(arg + 0xC);
+        pThis->m18_position[2] = readSaturnFP(arg + 0x10);
+        pThis->m24_mode = readSaturnU8(arg + 0x24);
+
+        s16 npcIndex = readSaturnS16(arg + 0x26);
+        if (npcIndex >= 0) {
+            npcData0.m70_npcPointerArray[npcIndex].workArea = pThis;
+        }
+    }
+
+    static void Update(sCampParticle* pThis)
+    {
+        if (isDataLoaded(readSaturnS32(pThis->mC))) {
+            pThis->m_quadData = initVdp1Quad(readSaturnEA(pThis->mC + 0x20));
+            particleInitSub(&pThis->m10_animQuad, pThis->m4_vd1Allocation->m4_vdp1Memory, &pThis->m_quadData);
+
+            pThis->m_UpdateMethod = Update2;
+            pThis->m_DrawMethod = Draw2;
+        }
+    }
+
+    static void Update2(sCampParticle* pThis)
+    {
+        if (pThis->m24_mode == 0) {
+            sGunShotTask_UpdateSub4(&pThis->m10_animQuad);
+        } else if (pThis->m24_mode == 1) {
+            if (pThis->m8_cellNode && pThis->m8_cellNode->m8 == pThis) {
+                pThis->m8_cellNode->m8 = nullptr;
+            }
+            decreaseNPCRefCount(readSaturnS32(pThis->mC));
+            pThis->getTask()->markFinished();
+        }
+    }
+
+    static void Draw2(sCampParticle* pThis)
+    {
+        drawProjectedParticle(&pThis->m10_animQuad, &pThis->m18_position);
+    }
+
+    static void Delete(sCampParticle* pThis)
+    {
+        s16 npcIndex = readSaturnS16(pThis->mC + 0x26);
+        if (npcIndex >= 0 && npcData0.m70_npcPointerArray[npcIndex].workArea == pThis) {
+            npcData0.m70_npcPointerArray[npcIndex].workArea = nullptr;
+        }
+    }
+
+    sSaturnPtr mC;
+    sAnimatedQuad m10_animQuad;
+    sVec3_FP m18_position;
+    u8 m24_mode;
+    std::vector<sVdp1Quad> m_quadData;
+    // size 0x26
+};
+
+static sTownObject* createCampParticle(s_workAreaCopy* parent, sSaturnPtr arg)
+{
+    return createSubTaskWithArgWithCopy<sCampParticle, sSaturnPtr>(parent, arg);
 }
 
 

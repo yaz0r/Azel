@@ -565,7 +565,14 @@ void sWorldGridCellTask::Draw(sTownCellTask* pThis)
                 r14 = readSaturnEA(pThis->m8_cellPtr + 0x10);
                 if (r14.m_offset)
                 {
-                    Unimplemented();
+                    while (readSaturnS32(r14))
+                    {
+                        pushCurrentMatrix();
+                        translateCurrentMatrix(readSaturnVec3(r14 + 4));
+                        addBillBoardToDrawList(pThis->m0_fileBundle->get3DModel(readSaturnS32(r14)));
+                        popMatrix();
+                        r14 += 0x10;
+                    }
                 }
             }
         }

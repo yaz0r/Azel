@@ -24,6 +24,7 @@ struct sAnimatedQuad {
 };
 
 void particleInitSub(sAnimatedQuad* pThis, u16 vdp1Memory, const std::vector<sVdp1Quad>* param_3);
+std::vector<sVdp1Quad> initVdp1Quad(sSaturnPtr ptr);
 int sGunShotTask_UpdateSub4(sAnimatedQuad* pThis);
 int drawProjectedParticle(sAnimatedQuad* pThis, sVec3_FP* position);
 int vdp1DrawQuadScaled(sAnimatedQuad* pThis, sVec3_FP* position, fixedPoint scale);
