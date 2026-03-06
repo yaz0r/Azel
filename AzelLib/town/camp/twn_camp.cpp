@@ -22,6 +22,37 @@ int scriptFunction_60541c4(int arg);
 void setupCameraUpdateForCurrentMode(); // todo clean
 sTownObject* createCampEntity(s_workAreaCopy* parent, sSaturnPtr arg); //todo: clean
 
+static void cameraUpdate_noop(sMainLogic*)
+{
+}
+
+int scriptFunction_0606c952()
+{
+    twnMainLogicTask->m10 = &cameraUpdate_noop;
+    return 0;
+}
+
+int scriptFunction_0606c95c()
+{
+    setupCameraUpdateForCurrentMode();
+    return 0;
+}
+
+int scriptFunction_06071ade_toggleDayNight()
+{
+    sCameraTask::Init(cameraTaskPtr);
+    if (mainGameState.bitField[0] & 1) {
+        return 0;
+    }
+    if (mainGameState.bitField[1] & 0x80) {
+        mainGameState.bitField[1] &= 0x7f;
+    }
+    else {
+        mainGameState.bitField[1] |= 0x80;
+    }
+    return 1;
+}
+
 int scriptFunction_606cb54() {
     if (twnMainLogicTask->m14_EdgeTask) {
         updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
@@ -99,6 +130,9 @@ struct TWN_CAMP_data : public sTownOverlay
     TWN_CAMP_data() : sTownOverlay("TWN_CAMP.PRG")
     {
         overlayScriptFunctions.m_zeroArg[0x0606cb54] = &scriptFunction_606cb54;
+        overlayScriptFunctions.m_zeroArg[0x0606c952] = &scriptFunction_0606c952;
+        overlayScriptFunctions.m_zeroArg[0x0606c95c] = &scriptFunction_0606c95c;
+        overlayScriptFunctions.m_zeroArg[0x06071ade] = &scriptFunction_06071ade_toggleDayNight;
 
         overlayScriptFunctions.m_oneArg[0x6071e20] = &TwnFadeOut;
         overlayScriptFunctions.m_oneArg[0x6071da8] = &TwnFadeIn;
