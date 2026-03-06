@@ -1,6 +1,6 @@
 #pragma once
 
-struct sEdgeTask : public s_workAreaTemplateWithArgWithCopy<sEdgeTask, sSaturnPtr>, sNPC
+struct sEdgeTask : public s_workAreaTemplateWithArgAndBase<sEdgeTask, sNPC, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {

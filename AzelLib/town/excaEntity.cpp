@@ -5,7 +5,7 @@
 #include "kernel/animation.h"
 #include "town/ruin/twn_ruin.h" // TODO: Cleanup
 
-struct sExcaEntity0 : public s_workAreaTemplateWithArgWithCopy<sExcaEntity0, sSaturnPtr>, sTownObject
+struct sExcaEntity0 : public s_workAreaTemplateWithArgAndBase<sExcaEntity0, sTownObject, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {

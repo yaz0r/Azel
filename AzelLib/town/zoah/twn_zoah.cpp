@@ -247,7 +247,7 @@ struct TWN_ZOAH_data : public sTownOverlay
     }
 };
 
-struct sZoahNPC : public s_workAreaTemplateWithArgWithCopy<sZoahNPC, sSaturnPtr>, sNPC
+struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
@@ -361,13 +361,10 @@ struct sZoahNPC : public s_workAreaTemplateWithArgWithCopy<sZoahNPC, sSaturnPtr>
 };
 
 static sTownObject* createZoahNPC(s_workAreaCopy* parent, sSaturnPtr arg) {
-    sZoahNPC* pNPC = createSubTaskWithArgWithCopy<sZoahNPC, sSaturnPtr>(parent, arg);
-    // On Saturn, sNPC::m8_MCBInDram and sTownObject::m8 share the same offset (0x08).
-    // The factory caller uses m8 for cell linkage, which works for both types.
-    return reinterpret_cast<sTownObject*>(static_cast<sNPC*>(pNPC));
+    return createSubTaskWithArgWithCopy<sZoahNPC, sSaturnPtr>(parent, arg);
 }
 
-struct sZoahEntity0 : public s_workAreaTemplateWithArgWithCopy<sZoahEntity0, sSaturnPtr>, sTownObject
+struct sZoahEntity0 : public s_workAreaTemplateWithArgAndBase<sZoahEntity0, sTownObject, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {

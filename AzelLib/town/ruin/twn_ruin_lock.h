@@ -1,6 +1,6 @@
 #pragma once
 
-struct sLockTask : public s_workAreaTemplateWithArgWithCopy<sLockTask, sSaturnPtr>, sTownObject
+struct sLockTask : public s_workAreaTemplateWithArgAndBase<sLockTask, sTownObject, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
@@ -15,7 +15,7 @@ struct sLockTask : public s_workAreaTemplateWithArgWithCopy<sLockTask, sSaturnPt
     static void Delete(sLockTask* pThis);
 
     //0-4: copy
-    //8 : sTownObject
+    //8 : sTownObject (m8_cellNode)
     sSaturnPtr mC;
     sCollisionBody m10;
     sVec3_FP m74_translation;

@@ -118,15 +118,15 @@ struct s_workAreaCopy : public s_workArea
     struct s_vdp1AllocationNode* m4_vd1Allocation;
 };
 
-template<typename T, typename... argType>
-struct s_workAreaTemplateWithArgWithCopy : public s_workAreaCopy
+template<typename T, typename Base, typename... argType>
+struct s_workAreaTemplateWithArgAndBase : public Base
 {
     static constexpr const char* getTaskName()
     {
         return typeid(T).name();
     }
 
-    s_workAreaTemplateWithArgWithCopy()
+    s_workAreaTemplateWithArgAndBase()
     {
         m_UpdateMethod = NULL;
         m_DrawMethod = NULL;
@@ -167,10 +167,12 @@ struct s_workAreaTemplateWithArgWithCopy : public s_workAreaCopy
     };
 };
 
+// Backward-compatible aliases
+template<typename T, typename... argType>
+using s_workAreaTemplateWithArgWithCopy = s_workAreaTemplateWithArgAndBase<T, s_workAreaCopy, argType...>;
+
 template<typename T>
-struct s_workAreaTemplateWithCopy : public s_workAreaTemplateWithArgWithCopy<T>
-{
-};
+using s_workAreaTemplateWithCopy = s_workAreaTemplateWithArgAndBase<T, s_workAreaCopy>;
 
 #define TASK_FLAGS_FINISHED 1
 #define TASK_FLAGS_PAUSED 2

@@ -5,12 +5,6 @@
 #include "collisionRegistry.h"
 #include "kernel/worldGrid.h"
 
-struct sTownObject
-{
-    // 0-4 are copy
-    struct sCellObjectListNode* m8;
-};
-
 typedef s32(*scriptFunction_zero_arg)();
 typedef s32(*scriptFunction_one_arg)(s32 arg0);
 typedef s32(*scriptFunction_one_arg_ptr)(sSaturnPtr arg0);
@@ -76,9 +70,9 @@ struct sNPCE8
     sVec3_FP m54_oldPosition;
 };
 
-struct sNPC
+struct sNPC : public sTownObject
 {
-    u8* m8_MCBInDram;
+    // m8_MCBInDram / m8_cellNode inherited from sTownObject union
     s8 mC;
     s8 mD;
     s8 mE_controlState;

@@ -155,7 +155,7 @@ void createCellObjects(s32 r4_currentX, s32 r5_currentY)
 
             assert(r0);
             r14->m8 = r0;
-            r0->m8 = r14;
+            r0->m8_cellNode = r14;
         }
         r14 = r14->m0_next;
     }
@@ -223,7 +223,7 @@ static void destroyCellObject(sCellObjectListNode* node)
         }
         if (node->m8 != nullptr)
         {
-            ((s_workArea*)node->m8)->getTask()->markFinished();
+            node->m8->getTask()->markFinished();
         }
         node->m8 = nullptr;
     }
@@ -501,9 +501,9 @@ s32 initNPCFromStruct(sSaturnPtr r4)
 
 void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5)
 {
-    if (pThis->m8 && (pThis->m8->m8 == pThis))
+    if (pThis->m8_cellNode && (pThis->m8_cellNode->m8 == pThis))
     {
-        pThis->m8->m8 = nullptr;
+        pThis->m8_cellNode->m8 = nullptr;
     }
 
     if (!r5.isNull())

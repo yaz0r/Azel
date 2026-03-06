@@ -220,7 +220,7 @@ static const char* listOfFilesToLoad[] = {
 };
 
 
-struct sCampEntity0 : public s_workAreaTemplateWithArgWithCopy<sCampEntity0, sSaturnPtr>, sTownObject
+struct sCampEntity0 : public s_workAreaTemplateWithArgAndBase<sCampEntity0, sTownObject, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {

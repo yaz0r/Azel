@@ -2,9 +2,8 @@
 
 #include "town/town.h"
 
-struct sTownDragon : public s_workAreaTemplateWithArg<sTownDragon, sSaturnPtr>, sTownObject
+struct sTownDragon : public s_workAreaTemplateWithArgAndBase<sTownDragon, sTownObject, sSaturnPtr>
 {
-    //0-C : sTownObject
     s8 mC_dragonType;
     s8 mD_drawExtras;
     s8 mE;

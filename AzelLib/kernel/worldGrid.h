@@ -3,9 +3,16 @@
 #include <array>
 #include <vector>
 
-struct sTownObject;
 struct npcFileDeleter;
 struct sGrid;
+
+struct sTownObject : public s_workAreaCopy
+{
+    union {
+        struct sCellObjectListNode* m8_cellNode; // cell system back-pointer
+        u8* m8_MCBInDram;                        // NPC loading (dual-use on Saturn)
+    };
+};
 
 struct sCellObjectListNode
 {
