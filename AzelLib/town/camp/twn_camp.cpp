@@ -24,7 +24,7 @@ sTownObject* createCampEntity(s_workAreaCopy* parent, sSaturnPtr arg); //todo: c
 
 int scriptFunction_606cb54() {
     if (twnMainLogicTask->m14_EdgeTask) {
-        mainLogicUpdateSub0(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
+        updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
     }
     return fileInfoStruct.m2C_allocatedHead == 0;
 }

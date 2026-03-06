@@ -64,15 +64,6 @@ void townDebugTask2Function::Update(townDebugTask2Function* pThis)
 
 sNpcData npcData0;
 
-sTownGrid gTownGrid;
-
-//TODO:kernel
-s32 MTH_Mul32(fixedPoint a, fixedPoint b)
-{
-    fixedPoint temp(((s64)a.asS32() * (s64)b.asS32()) >> 16);
-    return temp.getInteger();
-}
-
 fixedPoint generateObjectMatrix(sSaturnPtr r4, sSaturnPtr r5)
 {
     pushCurrentMatrix();
@@ -170,7 +161,7 @@ void createCellObjects(s32 r4_currentX, s32 r5_currentY)
     }
 }
 
-void createEnvironmentTask2(s32 r4, sTownGrid* r14)
+static void createGridRow(s32 r4, sWorldGrid* r14)
 {
     if (r4 + r14->m14_currentY < 0)
     {
@@ -188,15 +179,15 @@ void createEnvironmentTask2(s32 r4, sTownGrid* r14)
         if (r14->m10_currentX + r12 >= r14->m0_sizeX)
             continue;
 
-        sSaturnPtr cellData = r14->m38_EnvironmentSetup->cells[r14->m10_currentX+r12][r14->m14_currentY];
-        sTownCellTask* newCellTask = createSubTaskWithArgWithCopy<sTownCellTask>(r14->m34_dataBuffer, cellData);
+        sSaturnPtr cellData = r14->m38_EnvironmentSetup->cells[r14->m10_currentX+r12][r4 + r14->m14_currentY];
+        sWorldGridCellTask* newCellTask = createSubTaskWithArgWithCopy<sWorldGridCellTask>(r14->m34_dataBuffer, cellData);
         r14->m40_cellTasks[(r14->mC + r4) & 7][(r14->m8 + r12) & 7] = newCellTask;
 
         createCellObjects(r14->m10_currentX + r12, r4 + r14->m14_currentY);
     }
 }
 
-void createEnvironmentTask(s32 r4, sTownGrid* r14)
+static void createGridColumn(s32 r4, sWorldGrid* r14)
 {
     s32 currentX = r14->m10_currentX + r4;
     if (currentX < 0)
@@ -213,7 +204,7 @@ void createEnvironmentTask(s32 r4, sTownGrid* r14)
             continue;
 
         sSaturnPtr cellData = r14->m38_EnvironmentSetup->cells[currentX][currentY];
-        sTownCellTask* newCellTask = createSubTaskWithArgWithCopy<sTownCellTask>(r14->m34_dataBuffer, cellData);
+        sWorldGridCellTask* newCellTask = createSubTaskWithArgWithCopy<sWorldGridCellTask>(r14->m34_dataBuffer, cellData);
         r14->m40_cellTasks[(r14->mC + r13) & 7][(r14->m8 + r4) & 7] = newCellTask;
 
         createCellObjects(currentX, currentY);
@@ -222,7 +213,7 @@ void createEnvironmentTask(s32 r4, sTownGrid* r14)
 
 void decreaseNPCRefCount(s32 r5);
 
-void destroyCellObject(sCellObjectListNode* node)
+static void destroyCellObject(sCellObjectListNode* node)
 {
     if (node->m8 != nullptr)
     {
@@ -238,10 +229,10 @@ void destroyCellObject(sCellObjectListNode* node)
     }
 }
 
-void deleteCellObjects(s32 x, s32 y)
+static void deleteCellObjects(s32 x, s32 y)
 {
-    s32 index = y * gTownGrid.m0_sizeX + x;
-    sCellObjectListNode* node = gTownGrid.m140_perCellObjectList[index];
+    s32 index = y * gWorldGrid.m0_sizeX + x;
+    sCellObjectListNode* node = gWorldGrid.m140_perCellObjectList[index];
     while (node)
     {
         destroyCellObject(node);
@@ -249,14 +240,14 @@ void deleteCellObjects(s32 x, s32 y)
     }
 }
 
-void initNPCSub0Sub0(s32 r3, sTownGrid* r14)
+static void deleteGridRow(s32 r3, sWorldGrid* r14)
 {
     s32 r13 = -2;
     s32 var24 = ((r14->mC + r3) & 7);
 
     do
     {
-        sTownCellTask*& cellTask = r14->m40_cellTasks[var24][(r14->m8 + r13) & 7];
+        sWorldGridCellTask*& cellTask = r14->m40_cellTasks[var24][(r14->m8 + r13) & 7];
         if (cellTask)
         {
             deleteCellObjects(r14->m10_currentX + r13, r14->m14_currentY + r3);
@@ -269,14 +260,14 @@ void initNPCSub0Sub0(s32 r3, sTownGrid* r14)
     } while (++r13 <= 2);
 }
 
-void initNPCSub0Sub1(s32 r3, sTownGrid* r14)
+static void deleteGridColumn(s32 r3, sWorldGrid* r14)
 {
     s32 r13 = -2;
     s32 var24 = r14->m8;
 
     do
     {
-        sTownCellTask*& cellTask = r14->m40_cellTasks[(r14->mC + r13) & 7][(var24 + r3) & 7];
+        sWorldGridCellTask*& cellTask = r14->m40_cellTasks[(r14->mC + r13) & 7][(var24 + r3) & 7];
         if (cellTask)
         {
             deleteCellObjects(r14->m10_currentX + r3, r14->m14_currentY + r13);
@@ -289,21 +280,21 @@ void initNPCSub0Sub1(s32 r3, sTownGrid* r14)
     } while (++r13 <= 2);
 }
 
-s32 initNPCSub0Var1 = 0x7FFFFFFF;
+static s32 initTownGridDefaultDepth = 0x7FFFFFFF;
 
 void initTownGrid()
 {
-    gTownGrid.m0_sizeX = 0;
-    gTownGrid.m4_sizeY = 0;
-    gTownGrid.m140_perCellObjectList.clear();
-    gTownGrid.m34_dataBuffer = nullptr;
-    gTownGrid.m18_createCell = createEnvironmentTask2;
-    gTownGrid.m1C_createCellColumn = createEnvironmentTask;
-    gTownGrid.m20_deleteCell = initNPCSub0Sub0;
-    gTownGrid.m24_deleteCellColumn = initNPCSub0Sub1;
-    gTownGrid.m40_cellTasks[0].fill(nullptr);
-    gTownGrid.m40_cellTasks[1].fill(nullptr);
-    gTownGrid.m3C = &initNPCSub0Var1;
+    gWorldGrid.m0_sizeX = 0;
+    gWorldGrid.m4_sizeY = 0;
+    gWorldGrid.m140_perCellObjectList.clear();
+    gWorldGrid.m34_dataBuffer = nullptr;
+    gWorldGrid.m18_createCell = createGridRow;
+    gWorldGrid.m1C_createCellColumn = createGridColumn;
+    gWorldGrid.m20_deleteCell = deleteGridRow;
+    gWorldGrid.m24_deleteCellColumn = deleteGridColumn;
+    gWorldGrid.m40_cellTasks[0].fill(nullptr);
+    gWorldGrid.m40_cellTasks[1].fill(nullptr);
+    gWorldGrid.m3C = &initTownGridDefaultDepth;
 }
 
 void setupDragonForTown(s_fileBundle* pDragonBundle)
@@ -386,95 +377,14 @@ p_workArea loadTown2(p_workArea r4, s32 r5)
     return loadTownSub(r4, r5);
 }
 
-void deleteAllTownCells(sTownGrid* r13)
+void initNPCSub0(npcFileDeleter* buffer, const sGrid* pGrid, u8 gridSizeX, u8 gridSizeY, fixedPoint cellSize)
 {
-    s32 r14 = -2;
+    gWorldGrid.m18_createCell = createGridRow;
+    gWorldGrid.m1C_createCellColumn = createGridColumn;
+    gWorldGrid.m20_deleteCell = deleteGridRow;
+    gWorldGrid.m24_deleteCellColumn = deleteGridColumn;
 
-    do
-    {
-        r13->m20_deleteCell(r14, r13);
-        r14++;
-    }while(r14 <= 2);
-    
-}
-
-void createTownCellsForCoordinates(s32 r4, s32 r5, sTownGrid* r6)
-{
-    r6->mC = 0;
-    r6->m8 = 0;
-    r6->m10_currentX = r4;
-    r6->m14_currentY = r5;
-
-    for (int i = -2; i <= 2; i++)
-    {
-        r6->m18_createCell(i, r6);
-    }
-}
-
-void initNPCSub1()
-{
-    deleteAllTownCells(&gTownGrid);
-
-    if (gTownGrid.m140_perCellObjectList.size())
-    {
-        // TODO: cleanup cells data
-        Unimplemented();
-        //assert(0);
-        //freeVdp1Block(initNPCSub0Var0.m34, initNPCSub0Var0.m140);
-        gTownGrid.m140_perCellObjectList.clear();
-    }
-}
-
-void initNPCSub0Sub2Sub0()
-{
-    s32 r4 = gTownGrid.m0_sizeX;
-    if (r4 <= 0)
-        r4 = 1;
-
-    s32 r5 = gTownGrid.m4_sizeY;
-    if (r5 <= 0)
-        r5 = 1;
-
-    s32 size = r4 * r5;
-
-    gTownGrid.m140_perCellObjectList.resize(size);
-    for (int i = 0; i < size; i++)
-    {
-        gTownGrid.m140_perCellObjectList[i] = nullptr;
-    }
-
-    gTownGrid.m144_nextFreeObjectListNode = &gTownGrid.m148_objectListNodes[0];
-    for (int i = 0; i < 0x40 - 1; i++)
-    {
-        gTownGrid.m148_objectListNodes[i].m0_next = &gTownGrid.m148_objectListNodes[i + 1];
-    }
-    gTownGrid.m148_objectListNodes[0x3F].m0_next = nullptr;
-}
-
-void initNPCSub0Sub2(npcFileDeleter* buffer, const struct sGrid* pGrid, u8 r6_sizeX, u8 r7_sizeY, fixedPoint cellSize)
-{
-    initNPCSub1();
-
-    gTownGrid.m0_sizeX = r6_sizeX;
-    gTownGrid.m4_sizeY = r7_sizeY;
-    gTownGrid.m34_dataBuffer = buffer;
-    gTownGrid.m28_cellSize = cellSize;
-    gTownGrid.m2C = MTH_Mul(0x10A3D, cellSize);
-    gTownGrid.m30_worldToCellIndex = FP_Div(0x10000, cellSize);
-    gTownGrid.m38_EnvironmentSetup = pGrid;
-
-    initNPCSub0Sub2Sub0();
-    createTownCellsForCoordinates(-3, -3, &gTownGrid);
-}
-
-void initNPCSub0(npcFileDeleter* buffer, const struct sGrid* pGrid, u8 gridSizeX, u8 gridSizeY, fixedPoint cellSize)
-{
-    gTownGrid.m18_createCell = createEnvironmentTask2;
-    gTownGrid.m1C_createCellColumn = createEnvironmentTask;
-    gTownGrid.m20_deleteCell = initNPCSub0Sub0;
-    gTownGrid.m24_deleteCellColumn = initNPCSub0Sub1;
-
-    initNPCSub0Sub2(buffer, pGrid, gridSizeX, gridSizeY, cellSize);
+    initWorldGridData(buffer, pGrid, gridSizeX, gridSizeY, cellSize);
 }
 
 struct sNullTask : public s_workAreaTemplate<sNullTask>
@@ -489,8 +399,9 @@ void decreaseNPCRefCount(s32 r5)
     {
         if (--fileEntry.m8_refcount == 0)
         {
-            assert(0);
-            //loadDragonSub1Sub1(fileEntry.mC_buffer);
+            // equivalent of loadDragonSub1Sub1 for npcFileDeleter (frees DRAM/VRAM allocations, both stubbed)
+            fileEntry.mC_fileBundle->m0_fileBundle = nullptr;
+            fileEntry.mC_fileBundle->m4_vd1Allocation = nullptr;
             if (fileEntry.mC_fileBundle)
             {
                 fileEntry.mC_fileBundle->getTask()->markFinished();
@@ -512,7 +423,7 @@ s32 initNPC(s32 arg)
         const sTownSetup* pcVar1 = (*npcData0.m60_townSetup)[npcData0.m5E];
         if (r13->m0 != pcVar1->m0)
         {
-            initNPCSub1();
+            resetWorldGrid();
             decreaseNPCRefCount(pcVar1->m0);
             allocateNPC(currentResTask, r13->m0);
         }
@@ -604,83 +515,8 @@ void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5)
 }
 
 
-void mainLogicUpdateSub0Sub0(s32 r4, sTownGrid* r5)
-{
-    switch (r4)
-    {
-    case -1:
-        r5->m24_deleteCellColumn(2, r5);
-        r5->m8 = (r5->m8 - 1) & 7;
-        r5->m10_currentX--;
-        r5->m1C_createCellColumn(-2, r5);
-        break;
-    case 1:
-        r5->m24_deleteCellColumn(-2, r5);
-        r5->m8 = (r5->m8 + 1) & 7;
-        r5->m10_currentX++;
-        r5->m1C_createCellColumn(2, r5);
-        break;
-    }
-}
 
-void mainLogicUpdateSub0Sub1(s32 r4, sTownGrid* r5)
-{
-    switch (r4)
-    {
-    case -1:
-        r5->m20_deleteCell(2, r5);
-        r5->mC = (r5->mC - 1) & 7;
-        r5->m14_currentY--;
-        r5->m18_createCell(-2, r5);
-        break;
-    case 1:
-        r5->m20_deleteCell(-2, r5);
-        r5->mC = (r5->mC + 1) & 7;
-        r5->m14_currentY++;
-        r5->m18_createCell(2, r5);
-        break;
-    }
-}
-
-//TODO:kernel
-s32 mainLogicUpdateSub0(s32 r4_x, s32 r5_y)
-{
-    // proxy for script
-    mainLogicUpdateSub0(fixedPoint(r4_x), fixedPoint(r5_y));
-    return 0;
-}
-
-//TODO:kernel
-void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y)
-{
-    s32 r12 = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex);
-    s32 r11 = MTH_Mul32(r5_y, gTownGrid.m30_worldToCellIndex);
-
-    s32 diffX = r12 - gTownGrid.m10_currentX;
-    s32 diffY = r11 - gTownGrid.m14_currentY;
-    s32 absDiffX = diffX < 0 ? -diffX : diffX;
-    s32 absDiffY = diffY < 0 ? -diffY : diffY;
-
-    if ((absDiffX > 1) || (absDiffY > 1))
-    {
-        deleteAllTownCells(&gTownGrid);
-        createTownCellsForCoordinates(r12, r11, &gTownGrid);
-    }
-    else
-    {
-        if (absDiffX)
-        {
-            mainLogicUpdateSub0Sub0(diffX, &gTownGrid);
-        }
-
-        if (absDiffY)
-        {
-            mainLogicUpdateSub0Sub1(diffY, &gTownGrid);
-        }
-    }
-}
-
-void sTownCellTask::Init(sTownCellTask* pThis, sSaturnPtr arg)
+void sWorldGridCellTask::Init(sTownCellTask* pThis, sSaturnPtr arg)
 {
     if ((readSaturnS32(arg + 0xC) == 0) && (readSaturnS32(arg + 0x10) == 0) && (readSaturnS32(arg + 0x14) == 0))
     {
@@ -691,16 +527,16 @@ void sTownCellTask::Init(sTownCellTask* pThis, sSaturnPtr arg)
     pThis->mC_position = readSaturnVec3(arg);
 }
 
-void sTownCellTask::Draw(sTownCellTask* pThis)
+void sWorldGridCellTask::Draw(sTownCellTask* pThis)
 {
     pushCurrentMatrix();
     {
         translateCurrentMatrix(pThis->mC_position);
         fixedPoint var0 = pCurrentMatrix->m[2][3];
-        if (var0 < gTownGrid.m2C - graphicEngineStatus.m405C.m10_nearClipDistance)
+        if (var0 >= graphicEngineStatus.m405C.m10_nearClipDistance - gTownGrid.m2C)
         {
             fixedPoint varMinusOne = MTH_Mul(var0, graphicEngineStatus.m405C.m2C_widthRatio);
-            fixedPoint r4 = varMinusOne + MTH_Mul(gTownGrid.m2C, gTownGrid.m28_cellSize);
+            fixedPoint r4 = varMinusOne + MTH_Mul(gTownGrid.m2C, graphicEngineStatus.m405C.m28_widthRatio2);
             if ((pCurrentMatrix->m[0][3] >= -r4) && (pCurrentMatrix->m[0][3] <= r4))
             {
                 sSaturnPtr r14 = readSaturnEA(pThis->m8_cellPtr + 0xC);

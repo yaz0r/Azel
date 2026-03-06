@@ -116,13 +116,31 @@ static void zoahCamera_draw(sCameraTask* pThis)
 int scriptFunction_06098f30()
 {
     if (twnMainLogicTask->m14_EdgeTask) {
-        mainLogicUpdateSub0(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
+        updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
     }
     return fileInfoStruct.m2C_allocatedHead == 0;
 }
 
 // scriptFunction_060989f8 is functionally identical to scriptFunction_6057058_sub0
 // (sets draw method, inits camera from Edge position, sets follow mode 0, calls setupCameraUpdateForCurrentMode)
+
+void setupCameraUpdateForCurrentMode();
+
+static void cameraUpdate_noop(sMainLogic*)
+{
+}
+
+int scriptFunction_06098d2e()
+{
+    twnMainLogicTask->m10 = &cameraUpdate_noop;
+    return 0;
+}
+
+int scriptFunction_06098d38()
+{
+    setupCameraUpdateForCurrentMode();
+    return 0;
+}
 
 int scriptFunction_06096a98()
 {
@@ -175,6 +193,8 @@ struct TWN_ZOAH_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x06098f30] = &scriptFunction_06098f30;
         overlayScriptFunctions.m_zeroArg[0x06096a98] = &scriptFunction_06096a98;
         overlayScriptFunctions.m_zeroArg[0x060989f8] = &scriptFunction_6057058_sub0;
+        overlayScriptFunctions.m_zeroArg[0x06098d2e] = &scriptFunction_06098d2e;
+        overlayScriptFunctions.m_zeroArg[0x06098d38] = &scriptFunction_06098d38;
 
         overlayScriptFunctions.m_oneArg[0x0609e184] = &TwnFadeIn;
         overlayScriptFunctions.m_oneArg[0x0609dffe] = &scriptFunction_0609dffe;

@@ -782,7 +782,7 @@ void sMainLogic::Update(sMainLogic* pThis)
     if (pThis->m14_EdgeTask)
     {
         sEdgeTask* r13 = pThis->m14_EdgeTask;
-        mainLogicUpdateSub0(r13->mE8.m0_position[0], r13->mE8.m0_position[2]);
+        updateWorldGrid(r13->mE8.m0_position[0], r13->mE8.m0_position[2]);
         pThis->m18_position = r13->mE8.m0_position;
         pThis->m18_position[1] += 0x1800;
     }

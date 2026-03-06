@@ -119,7 +119,7 @@ void BTL_A3_2_map_init(s_BTL_A3_Env* pThis)
 
 void BTL_A3_2_map_update(s_BTL_A3_Env* pThis)
 {
-    mainLogicUpdateSub0(gBattleManager->m10_battleOverlay->m8_gridTask->m180_cameraTranslation[0], gBattleManager->m10_battleOverlay->m8_gridTask->m180_cameraTranslation[2]);
+    updateWorldGrid(gBattleManager->m10_battleOverlay->m8_gridTask->m180_cameraTranslation[0], gBattleManager->m10_battleOverlay->m8_gridTask->m180_cameraTranslation[2]);
 }
 
 void BTL_A3_2_createMap(p_workArea parent)

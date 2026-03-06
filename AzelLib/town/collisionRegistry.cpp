@@ -1286,6 +1286,50 @@ void computeCollisionSeparation(sCollisionBody* r12)
     case 8:
         var14[1] = r13[3].mC_distance;
         break;
+    case 0xC:
+    {
+        //06008472
+        fixedPoint absZ = r13[2].m0_position[2] + r13[3].m0_position[2];
+        if (absZ < 0) absZ = -absZ;
+        fixedPoint absX = r13[2].m0_position[0] + r13[3].m0_position[0];
+        if (absX < 0) absX = -absX;
+
+        if (absX < absZ)
+        {
+            //060084AA
+            fixedPoint cross = MTH_Mul(r13[2].m0_position[2], r13[3].m0_position[1]) - MTH_Mul(r13[3].m0_position[2], r13[2].m0_position[1]);
+            fixedPoint t = FP_Div(MTH_Mul_5_6(r13[2].mC_distance - r13[3].mC_distance, r13[2].m0_position[1], r13[3].m0_position[1]), cross);
+
+            if (t.asS32() < 1)
+            {
+                if (t < var14[2]) var14[2] = t;
+            }
+            else
+            {
+                if (var14[2] < t) var14[2] = t;
+            }
+
+            var14[1] = r13[2].mC_distance - MTH_Mul(FP_Div(r13[2].m0_position[2], r13[2].m0_position[1]), var14[2]);
+        }
+        else
+        {
+            //060084F2
+            fixedPoint cross = MTH_Mul(r13[2].m0_position[0], r13[3].m0_position[1]) - MTH_Mul(r13[3].m0_position[0], r13[2].m0_position[1]);
+            fixedPoint t = FP_Div(MTH_Mul_5_6(r13[2].mC_distance - r13[3].mC_distance, r13[2].m0_position[1], r13[3].m0_position[1]), cross);
+
+            if (t.asS32() < 1)
+            {
+                if (t < var14[0]) var14[0] = t;
+            }
+            else
+            {
+                if (var14[0] < t) var14[0] = t;
+            }
+
+            var14[1] = r13[2].mC_distance - MTH_Mul(FP_Div(r13[2].m0_position[0], r13[2].m0_position[1]), var14[0]);
+        }
+        break;
+    }
     default:
         assert(0);
         break;

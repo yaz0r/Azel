@@ -307,7 +307,7 @@ void battleGrid_update(s_battleGrid* pThis)
 
     if ((pThis->m1C8_flags & 0x10) && !(pThis->m1C8_flags & 0x40))
     {
-        mainLogicUpdateSub0(pThis->m180_cameraTranslation[0], pThis->m180_cameraTranslation[2]);
+        updateWorldGrid(pThis->m180_cameraTranslation[0], pThis->m180_cameraTranslation[2]);
     }
 }
 

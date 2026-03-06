@@ -175,7 +175,7 @@ sKernelScriptFunctions gKernelScriptFunctions =
     // two arg
     {
         {0x600CC78, &setSomethingInNpc0},
-        {0x60144c0, &mainLogicUpdateSub0}
+        {0x60144c0, &updateWorldGrid}
     },
     // three arg
     {

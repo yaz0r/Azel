@@ -3,6 +3,7 @@
 #include <map>
 
 #include "collisionRegistry.h"
+#include "kernel/worldGrid.h"
 
 struct sTownObject
 {
@@ -204,60 +205,11 @@ extern p_workArea townVar0;
 
 s32 initNPC(s32 arg);
 s32 initNPCFromStruct(sSaturnPtr);
-s32 mainLogicUpdateSub0(s32 r4_x, s32 r5_y);
-void mainLogicUpdateSub0(fixedPoint r4_x, fixedPoint r5_y);
 
-struct sCellObjectListNode
-{
-    sCellObjectListNode* m0_next;
-    sSaturnPtr m4;
-    sTownObject* m8;
-    //size 0xC
-};
-
-struct sTownCellTask : public s_workAreaTemplateWithArgWithCopy<sTownCellTask, sSaturnPtr>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &sTownCellTask::Init, nullptr, &sTownCellTask::Draw, nullptr };
-        return &taskDefinition;
-    }
-
-    static void Init(sTownCellTask* pThis, sSaturnPtr arg);
-    static void Draw(sTownCellTask* pThis);
-
-    sSaturnPtr m8_cellPtr;
-    sVec3_FP mC_position;
-    //size 0x18
-};
-
-
-struct sTownGrid
-{
-    s32 m0_sizeX;
-    s32 m4_sizeY;
-    s32 m8;
-    s32 mC;
-    s32 m10_currentX;
-    s32 m14_currentY;
-    void(*m18_createCell)(s32, sTownGrid*);
-    void(*m1C_createCellColumn)(s32, sTownGrid*);
-    void(*m20_deleteCell)(s32, sTownGrid*);
-    void(*m24_deleteCellColumn)(s32, sTownGrid*);
-    fixedPoint m28_cellSize;
-    fixedPoint m2C;
-    fixedPoint m30_worldToCellIndex;
-    npcFileDeleter* m34_dataBuffer;
-    const struct sGrid* m38_EnvironmentSetup;
-    s32* m3C;
-    std::array<std::array<sTownCellTask*, 8>, 8> m40_cellTasks;
-    std::vector<sCellObjectListNode*> m140_perCellObjectList;
-    sCellObjectListNode* m144_nextFreeObjectListNode;
-    std::array<sCellObjectListNode, 0x40> m148_objectListNodes;
-
-};
-
-extern sTownGrid gTownGrid;
+// Aliases for backward compatibility
+using sTownCellTask = sWorldGridCellTask;
+using sTownGrid = sWorldGrid;
+#define gTownGrid gWorldGrid
 
 struct sCameraTask : public s_workAreaTemplate<sCameraTask>
 {
@@ -304,9 +256,6 @@ p_workArea startCameraTask(p_workArea pParent);
 
 s32 isDataLoaded(s32 fileIndex);
 
-// todo: kernel
-s32 MTH_Mul32(fixedPoint a, fixedPoint b);
-
 // todo: move out of twn_ruin
 void registerNpcs(const std::vector<const sTownSetup*>& townSetups, sSaturnPtr r5_script, s32 r6);
 p_workArea startCameraTask(p_workArea pParent);
@@ -318,7 +267,7 @@ s32 TwnFadeIn(s32 arg0);
 void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5);
 
 npcFileDeleter* loadNPCFile2(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, s32 index);
-void initNPCSub0Sub2(npcFileDeleter* buffer, const struct sGrid* pGrid, u8 r6_sizeX, u8 r7_sizeY, fixedPoint cellSize);
+void initNPCSub0(npcFileDeleter* buffer, const sGrid* pGrid, u8 gridSizeX, u8 gridSizeY, fixedPoint cellSize);
 fixedPoint generateObjectMatrix(sSaturnPtr r4, sSaturnPtr r5);
 
 void townOverlayDelete(townDebugTask2Function* pThis);

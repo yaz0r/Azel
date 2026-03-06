@@ -404,7 +404,7 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
     pThis->m48 = 0xF5A;
 }
 
-void sBattleEnvironmentGridCell_Init(sTownCellTask* pThis, sSaturnPtr arg)
+void sBattleEnvironmentGridCell_Init(sWorldGridCellTask* pThis, sSaturnPtr arg)
 {
     int iVar1 = readSaturnS32(arg + 0xC);
     if ((readSaturnS32(arg + 0xC) == 0) && (readSaturnS32(arg + 0x10) == 0) && (readSaturnS32(arg + 0x14) == 0)) {
@@ -415,7 +415,7 @@ void sBattleEnvironmentGridCell_Init(sTownCellTask* pThis, sSaturnPtr arg)
     pThis->mC_position = readSaturnVec3(arg + 0x0);
 }
 
-void sBattleEnvironmentGridCell_Draw(sTownCellTask* pThis)
+void sBattleEnvironmentGridCell_Draw(sWorldGridCellTask* pThis)
 {
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->mC_position);
@@ -460,12 +460,12 @@ void sBattleEnvironmentGridCell_Draw(sTownCellTask* pThis)
     popMatrix();
 }
 
-void battleGrid_createCellSub0(sTownCellTask* r4_newCellTask, s32 r5, s32 r6, s32 r7, s32 r8)
+void battleGrid_createCellSub0(sWorldGridCellTask* r4_newCellTask, s32 r5, s32 r6, s32 r7, s32 r8)
 {
     Unimplemented();
 }
 
-void battleGrid_createCell(s32 index, sTownGrid* pGrid)
+void battleGrid_createCell(s32 index, sWorldGrid* pGrid)
 {
     int iVar2 = pGrid->mC;
 
@@ -485,8 +485,8 @@ void battleGrid_createCell(s32 index, sTownGrid* pGrid)
 
         sSaturnPtr cellData = pGrid->m38_EnvironmentSetup->cells[uVar4][uVar5];
 
-        static const sTownCellTask::TypedTaskDefinition definition = { sBattleEnvironmentGridCell_Init , nullptr, sBattleEnvironmentGridCell_Draw, nullptr};
-        sTownCellTask* newCellTask = createSubTaskWithArgWithCopy<sTownCellTask>(pGrid->m34_dataBuffer, cellData, &definition);
+        static const sWorldGridCellTask::TypedTaskDefinition definition = { sBattleEnvironmentGridCell_Init , nullptr, sBattleEnvironmentGridCell_Draw, nullptr};
+        sWorldGridCellTask* newCellTask = createSubTaskWithArgWithCopy<sWorldGridCellTask>(pGrid->m34_dataBuffer, cellData, &definition);
         pGrid->m40_cellTasks[(pGrid->mC + index) & 7][(pGrid->m8 + i) & 7] = newCellTask;
 
         newCellTask->mC_position[0] += offsetX;
@@ -496,21 +496,21 @@ void battleGrid_createCell(s32 index, sTownGrid* pGrid)
     }
 }
 
-void battleGrid_cellFunc1(s32, sTownGrid*)
+void battleGrid_cellFunc1(s32, sWorldGrid*)
 {
     Unimplemented();
 }
 
-void battleGrid_cellFunc2(s32, sTownGrid*)
+void battleGrid_cellFunc2(s32, sWorldGrid*)
 {
     Unimplemented();
 }
 
-void battleGrid_deleteCell(s32 index, sTownGrid* pGrid)
+void battleGrid_deleteCell(s32 index, sWorldGrid* pGrid)
 {
     for (int i = -2; i < 3; i++)
     {
-        sTownCellTask** cellTask = &pGrid->m40_cellTasks[(pGrid->mC + index) & 7][(pGrid->m8 + i) & 7];
+        sWorldGridCellTask** cellTask = &pGrid->m40_cellTasks[(pGrid->mC + index) & 7][(pGrid->m8 + i) & 7];
         if (*cellTask)
         {
             (*cellTask)->getTask()->markFinished();
@@ -526,7 +526,7 @@ void initGridForBattle(npcFileDeleter* pFile, const struct sGrid* pGrid, s32 r6_
     gTownGrid.m20_deleteCell = battleGrid_deleteCell;
     gTownGrid.m24_deleteCellColumn = battleGrid_cellFunc2;
 
-    initNPCSub0Sub2(pFile, pGrid, r6_sizeX, r7_sizeY, r8_cellSize);
+    initWorldGridData(pFile, pGrid, r6_sizeX, r7_sizeY, r8_cellSize);
 }
 
 struct sBTL_A3_map6_sub : public s_workAreaTemplate<sBTL_A3_map6_sub>
