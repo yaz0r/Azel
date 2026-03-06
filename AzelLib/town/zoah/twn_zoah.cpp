@@ -20,6 +20,7 @@
 #include "kernel/animation.h"
 #include "mainMenuDebugTasks.h"
 #include "audio/systemSounds.h"
+#include "town/e006/twn_e006.h"
 
 void unloadFnt(); // TODO: fix
 
@@ -271,6 +272,17 @@ s32 scriptFunction_0609e080_setupCameraWithPosition(sSaturnPtr arg)
 }
 
 s32 scriptFunction_0609dffe(s32 param_1);
+static s32 scriptFunction_0609ccfa(s32 npcIndex);
+static s32 scriptFunction_0609cd22(s32 npcIndex);
+static s32 scriptFunction_0609c574(s32 npcIndex, s32 targetIndex, s32 mode);
+static s32 setupZoahNPCAnimation(s32 npcIndex, s32 animIndex, s32 controlState);
+static s32 scriptFunction_0609991e(s32 arg);
+static s32 scriptFunction_060997f2();
+static s32 scriptFunction_0609995c();
+static s32 scriptFunction_0609c644(s32 npcIndex, s32 mode);
+static s32 scriptFunction_0609ca40(s32 npcIndex, s32 animIndex, s32 controlState);
+static s32 scriptFunction_0609cd0e(s32 npcIndex);
+static s32 scriptFunction_0609cd72();
 int scriptFunction_06096a98();
 static sTownObject* createZoahEntity(s_workAreaCopy* parent, sSaturnPtr arg);
 static sTownObject* createZoahNPC(s_workAreaCopy* parent, sSaturnPtr arg);
@@ -296,14 +308,27 @@ struct TWN_ZOAH_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x06098d38] = &scriptFunction_06098d38;
         overlayScriptFunctions.m_zeroArg[0x06096ac2] = &scriptFunction_06096ac2_disableRBG0;
         overlayScriptFunctions.m_zeroArg[0x06098fea] = &scriptFunction_605762A;
+        overlayScriptFunctions.m_zeroArg[0x060999ce] = &isObjectCloseEnoughToActivate;
+        overlayScriptFunctions.m_zeroArg[0x060997f2] = &scriptFunction_060997f2;
+        overlayScriptFunctions.m_zeroArg[0x0609995c] = &scriptFunction_0609995c;
+        overlayScriptFunctions.m_zeroArg[0x0609cd72] = &scriptFunction_0609cd72;
 
+        overlayScriptFunctions.m_oneArg[0x0609991e] = &scriptFunction_0609991e;
+        overlayScriptFunctions.m_oneArg[0x0609ccfa] = &scriptFunction_0609ccfa;
+        overlayScriptFunctions.m_oneArg[0x0609cd22] = &scriptFunction_0609cd22;
+        overlayScriptFunctions.m_oneArg[0x0609cd0e] = &scriptFunction_0609cd0e;
         overlayScriptFunctions.m_oneArg[0x0609e184] = &TwnFadeIn;
         overlayScriptFunctions.m_oneArg[0x0609dffe] = &scriptFunction_0609dffe;
         overlayScriptFunctions.m_oneArg[0x0609e1fc] = &TwnFadeOut;
 
         overlayScriptFunctions.m_oneArgPtr[0x0609e080] = &scriptFunction_0609e080_setupCameraWithPosition;
 
+        overlayScriptFunctions.m_twoArg[0x0609c644] = &scriptFunction_0609c644;
+
         overlayScriptFunctions.m_threeArg[0x06098a5c] = &scriptFunction_06098a5c_setupCameraMode1;
+        overlayScriptFunctions.m_threeArg[0x0609c574] = &scriptFunction_0609c574;
+        overlayScriptFunctions.m_threeArg[0x0609c93c] = &setupZoahNPCAnimation;
+        overlayScriptFunctions.m_threeArg[0x0609ca40] = &scriptFunction_0609ca40;
 
         overlayScriptFunctions.m_fourArg[0x0609c8a0] = &setNpcLocation;
         overlayScriptFunctions.m_fourArg[0x0609c8ce] = &setNpcOrientation;
@@ -386,7 +411,41 @@ static void updateZoahNPCSub2(sNPC* pThis)
         if (pThis->mF & 0x4)
         {
             // look-at rotation towards target (script-triggered)
-            assert(0);
+            fixedPoint diff = fixedPoint(pThis->mE8.m48_targetRotation[1] - pThis->m20_lookAtAngle[1]).normalized();
+            if (diff < 0)
+            {
+                if (diff < negMaxSpeed)
+                {
+                    pThis->m20_lookAtAngle[1] -= maxSpeed;
+                    fixedPoint total = fixedPoint(pThis->m20_lookAtAngle[1] + pThis->m34_3dModel.m2C_poseData[3].mC_rotation[1]).normalized();
+                    if (total < -0x38E38E3)
+                    {
+                        pThis->mF &= ~2;
+                    }
+                }
+                else
+                {
+                    pThis->m20_lookAtAngle[1] += diff;
+                    pThis->mF &= ~2;
+                }
+            }
+            else
+            {
+                if (diff > maxSpeed)
+                {
+                    pThis->m20_lookAtAngle[1] += maxSpeed;
+                    fixedPoint total = fixedPoint(pThis->m20_lookAtAngle[1] + pThis->m34_3dModel.m2C_poseData[3].mC_rotation[1]).normalized();
+                    if (total >= 0x38E38E4)
+                    {
+                        pThis->mF &= ~2;
+                    }
+                }
+                else
+                {
+                    pThis->m20_lookAtAngle[1] += diff;
+                    pThis->mF &= ~2;
+                }
+            }
         }
         else
         {
@@ -825,6 +884,7 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
         }
     }
 
+    fixedPoint m148_savedAngle;
     s16 m14C;
     s16 m14E;
     s32 m150;
@@ -839,6 +899,198 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
 
 static sTownObject* createZoahNPC(s_workAreaCopy* parent, sSaturnPtr arg) {
     return createSubTaskWithArgWithCopy<sZoahNPC, sSaturnPtr>(parent, arg);
+}
+
+// Set NPC animation and control state
+static s32 setupZoahNPCAnimation(s32 npcIndex, s32 animIndex, s32 controlState)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    sZoahNPC* pZoah = static_cast<sZoahNPC*>(pNPC);
+    pZoah->m179 = 0;
+    pZoah->m178 = 0;
+    pZoah->m17A = 0;
+    if (animIndex == 0)
+    {
+        playAnimationGeneric(&pNPC->m34_3dModel, nullptr, 10);
+        controlState = 2;
+        pNPC->m2C_currentAnimation = 0;
+    }
+    else
+    {
+        pNPC->m2C_currentAnimation = animIndex;
+        playAnimationGeneric(&pNPC->m34_3dModel, getZoahNPCAnimation(pNPC, animIndex), 10);
+    }
+    pNPC->mE_controlState = controlState;
+    return 0;
+}
+
+// Script: disable look-at decay for NPC
+static s32 scriptFunction_0609ccfa(s32 npcIndex)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    pNPC->mC |= 8;
+    return 0;
+}
+
+// Script: turn NPC towards another NPC
+static s32 scriptFunction_0609c574(s32 npcIndex, s32 targetIndex, s32 mode)
+{
+    sNPC* pNPC1 = getNpcDataByIndex(npcIndex);
+    sNPC* pNPC2 = getNpcDataByIndex(targetIndex);
+
+    fixedPoint angle = atan2_FP(pNPC1->mE8.m0_position[0] - pNPC2->mE8.m0_position[0],
+                                pNPC1->mE8.m0_position[2] - pNPC2->mE8.m0_position[2]);
+    if (mode != 0)
+    {
+        angle = angle - pNPC1->mE8.mC_rotation[1];
+    }
+
+    pNPC1 = getNpcDataByIndex(npcIndex);
+    sZoahNPC* pZoah = static_cast<sZoahNPC*>(pNPC1);
+    pNPC1->mE8.m48_targetRotation[1] = angle;
+    if (mode == 0)
+    {
+        pZoah->m148_savedAngle = pNPC1->mE8.mC_rotation[1];
+    }
+    else
+    {
+        pZoah->m148_savedAngle = pNPC1->m20_lookAtAngle[1];
+    }
+    pNPC1->mF &= ~4; // clear bit 0x04
+    if (mode == 0)
+    {
+        pNPC1->mF |= 2;
+        setupZoahNPCAnimation(npcIndex, 3, 2);
+    }
+    else
+    {
+        pNPC1->mF |= 6; // set bits 0x02 and 0x04
+    }
+    pNPC1->mC |= 4;
+    return 0;
+}
+
+// Script: check if NPC is done moving/turning
+static s32 scriptFunction_0609cd22(s32 npcIndex)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    if (pNPC->mC & 6)
+        return 0; // still moving
+    return 1; // done
+}
+
+// Script: create cutscene EPK player
+static s32 scriptFunction_0609991e(s32 arg)
+{
+    if (npcData0.mF0 != 0)
+    {
+        e006Task0 = nullptr;
+        return 0;
+    }
+    e006Task0 = createSubTaskWithArg<sE006Task0>(twnMainLogicTask, arg);
+    scriptFunction_60573d8Sub0(e006Task0->m0);
+    return 0;
+}
+
+// Script: check if cutscene is done
+static s32 scriptFunction_060997f2()
+{
+    if ((e006Task0 != nullptr) && (npcData0.mF0 == 0))
+    {
+        s32 iVar1 = scriptFunction_605861eSub0Sub0(e006Task0->m0);
+        if ((iVar1 != 5) && (iVar1 != -1))
+            return 0;
+    }
+    return 1;
+}
+
+// Script: stop/delete cutscene
+static s32 scriptFunction_0609995c()
+{
+    if (e006Task0 != nullptr)
+    {
+        npcData0.mF4 = 0;
+        updateStreamingFileReadSub0(e006Task0->m0);
+        sE006Task0* temp = e006Task0;
+        e006Task0 = nullptr;
+        temp->getTask()->markFinished();
+    }
+    return 0;
+}
+
+// Script: turn NPC back to saved angle
+static s32 scriptFunction_0609c644(s32 npcIndex, s32 mode)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    sZoahNPC* pZoah = static_cast<sZoahNPC*>(pNPC);
+    fixedPoint savedAngle = pZoah->m148_savedAngle;
+
+    pNPC = getNpcDataByIndex(npcIndex);
+    pZoah = static_cast<sZoahNPC*>(pNPC);
+    pNPC->mE8.m48_targetRotation[1] = savedAngle;
+    if (mode == 0)
+    {
+        pZoah->m148_savedAngle = pNPC->mE8.mC_rotation[1];
+    }
+    else
+    {
+        pZoah->m148_savedAngle = pNPC->m20_lookAtAngle[1];
+    }
+    pNPC->mF &= ~4;
+    if (mode == 0)
+    {
+        pNPC->mF |= 2;
+        setupZoahNPCAnimation(npcIndex, 3, 2);
+    }
+    else
+    {
+        pNPC->mF |= 6;
+    }
+    pNPC->mC |= 4;
+    return 0;
+}
+
+// Script: schedule NPC animation
+static s32 scriptFunction_0609ca40(s32 npcIndex, s32 animIndex, s32 controlState)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    sZoahNPC* pZoah = static_cast<sZoahNPC*>(pNPC);
+    pZoah->m179 = 0;
+    pZoah->m178 = 1;
+    pZoah->m17A = 1;
+    if (pNPC->mE_controlState != 0)
+    {
+        pNPC->mE_controlState = 2;
+    }
+    pZoah->m158_animSchedule[0] = (s8)animIndex;
+    if (animIndex == 0)
+    {
+        pZoah->m158_animSchedule[1] = 0;
+    }
+    else
+    {
+        pZoah->m158_animSchedule[1] = (s8)controlState;
+    }
+    return 0;
+}
+
+// Script: re-enable look-at decay for NPC (clear mC bit 8)
+static s32 scriptFunction_0609cd0e(s32 npcIndex)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    pNPC->mC &= ~8;
+    return 0;
+}
+
+// Script: get distance tier to LCS target (0=near, 1=mid, 2=far)
+static s32 scriptFunction_0609cd72()
+{
+    fixedPoint distance = currentResTask->m10_distanceToLCS;
+    if (distance < 0x2001)
+        return 0;
+    if (distance < 0x5001)
+        return 1;
+    return 2;
 }
 
 struct sZoahEntity0 : public s_workAreaTemplateWithArgAndBase<sZoahEntity0, sTownObject, sSaturnPtr>

@@ -115,6 +115,10 @@ struct sE006Task0 : public s_workAreaTemplateWithArg<sE006Task0, s32>
 
 extern sE006Task0* e006Task0;
 
+void scriptFunction_60573d8Sub0(sStreamingFile* r4);
+s32 scriptFunction_605861eSub0Sub0(sStreamingFile* r4);
+void updateStreamingFileReadSub0(sStreamingFile* iParm1);
+
 s32 getCutsceneFrameIndex(struct sStreamingFile*);
 
 void setupCutsceneModelType2(sStreamingFile* r4, u32 r5, p_workArea r6, s_3dModel* pModel);

@@ -47,7 +47,7 @@ void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_1
 
     r14->m0_scriptPtr = r4;
     r14->m4 = r5;
-    r14->m8_owner.setTask(r6);
+    r14->m8_owner = r6;
     if (r7)
     {
         r14->mC = *r7;
@@ -93,7 +93,7 @@ sNPC* getNpcDataByIndex(s32 r4)
 {
     if (r4 == -1)
     {
-        return npcData0.m104_currentScript.m8_owner.getNPC();
+        return (sNPC*)npcData0.m104_currentScript.m8_owner;
     }
     
     return npcData0.m70_npcPointerArray[r4].pNPC;
@@ -103,7 +103,7 @@ p_workArea getNpcDataByIndexAsTask(s32 r4)
 {
     if (r4 == -1)
     {
-        return npcData0.m104_currentScript.m8_owner.getAsTask();
+        return npcData0.m104_currentScript.m8_owner;
     }
 
     assert(0);
@@ -433,6 +433,11 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
         case 13:
             r14 = getAlignOn2(r14);
             r13_pThis->m118_currentResult = readSaturnS16(r14) >= r13_pThis->m118_currentResult;
+            r14 += 2;
+            break;
+        case 14: // add immediate
+            r14 = getAlignOn2(r14);
+            r13_pThis->m118_currentResult += readSaturnS16(r14);
             r14 += 2;
             break;
         case 15:

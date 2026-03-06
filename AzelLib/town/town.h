@@ -90,47 +90,11 @@ struct sNPC : public sTownObject
     sNPCE8 mE8;
 };
 
-struct sNPCOrTask
-{
-    void reset()
-    {
-        asTask = nullptr;
-        asNPC = nullptr;
-    }
-
-    sNPC* getNPC()
-    {
-        assert(asNPC);
-        return asNPC;
-    }
-
-    p_workArea getAsTask()
-    {
-        assert(asTask);
-        return asTask;
-    }
-
-    void setNPC(sNPC* pNPC)
-    {
-        reset();
-        asNPC = pNPC;
-    }
-
-    void setTask(p_workArea pTask)
-    {
-        reset();
-        asTask = pTask;
-    }
-private:
-    p_workArea asTask;
-    sNPC* asNPC;
-};
-
 struct sRunningScriptContext
 {
     sSaturnPtr m0_scriptPtr;
     s32 m4;
-    sNPCOrTask m8_owner;
+    p_workArea m8_owner;
     sVec3_S16_12_4 mC;
     //size 0x14
 };
@@ -258,6 +222,8 @@ p_workArea startCameraTask(p_workArea pParent);
 extern s32* twnVar1;
 extern s32 twnVar2;
 void drawLcs();
+bool canCurrentResActivate();
+s32 isObjectCloseEnoughToActivate();
 void updateEdgePosition(sNPC* r4);
 s32 TwnFadeIn(s32 arg0);
 void removeNPC(p_workArea pThisAsTask, sTownObject* pThis, sSaturnPtr r5);

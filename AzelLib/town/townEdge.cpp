@@ -311,11 +311,83 @@ void updateEdgeSub2(sEdgeTask* pThis)
 
         if (pThis->mF & 0x4)
         {
-            assert(0);
+            // look-at rotation towards target
+            fixedPoint diff = fixedPoint(pThis->mE8.m48_targetRotation[1] - pThis->m20_lookAtAngle[1]).normalized();
+            if (diff < 0)
+            {
+                if (diff < r6)
+                {
+                    pThis->m20_lookAtAngle[1] -= r4;
+                    fixedPoint total = fixedPoint(pThis->m20_lookAtAngle[1] + pThis->m34_3dModel.m2C_poseData[3].mC_rotation[1]).normalized();
+                    if (total < -0x38E38E3)
+                    {
+                        pThis->mF &= ~2;
+                    }
+                }
+                else
+                {
+                    pThis->m20_lookAtAngle[1] += diff;
+                    pThis->mF &= ~2;
+                }
+            }
+            else
+            {
+                if (diff > r4)
+                {
+                    pThis->m20_lookAtAngle[1] += r4;
+                    fixedPoint total = fixedPoint(pThis->m20_lookAtAngle[1] + pThis->m34_3dModel.m2C_poseData[3].mC_rotation[1]).normalized();
+                    if (total >= 0x38E38E4)
+                    {
+                        pThis->mF &= ~2;
+                    }
+                }
+                else
+                {
+                    pThis->m20_lookAtAngle[1] += diff;
+                    pThis->mF &= ~2;
+                }
+            }
         }
         else
         {
-            assert(0);
+            // body rotation towards target
+            fixedPoint diff = fixedPoint(pThis->mE8.m48_targetRotation[1] - pThis->mE8.mC_rotation[1]).normalized();
+            fixedPoint speed;
+            if (diff < 0)
+            {
+                speed = r6;
+                if (diff >= r6)
+                {
+                    pThis->mF &= ~2;
+                    speed = diff;
+                }
+                fixedPoint clampedDiff = diff;
+                if (clampedDiff < -0x1C71C71) clampedDiff = -0x1C71C71;
+
+                pThis->m20_lookAtAngle[1] += speed;
+                if (pThis->m20_lookAtAngle[1] < clampedDiff)
+                {
+                    pThis->m20_lookAtAngle[1] = clampedDiff;
+                }
+            }
+            else
+            {
+                speed = r4;
+                if (diff <= r4)
+                {
+                    pThis->mF &= ~2;
+                    speed = diff;
+                }
+                fixedPoint clampedDiff = diff;
+                if (clampedDiff > 0x1C71C71) clampedDiff = 0x1C71C71;
+
+                pThis->m20_lookAtAngle[1] += speed;
+                if (pThis->m20_lookAtAngle[1] > clampedDiff)
+                {
+                    pThis->m20_lookAtAngle[1] = clampedDiff;
+                }
+            }
+            pThis->mE8.mC_rotation[1] += speed;
         }
     }
     else
@@ -468,6 +540,29 @@ void sEdgeTask::Update(sEdgeTask* pThis)
 
         break;
     }
+    case 2:
+        if (pThis->m34_3dModel.m30_pCurrentAnimation != nullptr)
+        {
+            s16 frame = updateAndInterpolateAnimation(&pThis->m34_3dModel);
+            s32 numFrames = 0;
+            if (pThis->m34_3dModel.m30_pCurrentAnimation)
+            {
+                numFrames = pThis->m34_3dModel.m30_pCurrentAnimation->m4_numFrames;
+            }
+            if (frame >= numFrames - 1)
+            {
+                pThis->mE_controlState = 0;
+            }
+        }
+        else if (pThis->m34_3dModel.m48_poseDataInterpolation.empty())
+        {
+            pThis->mE_controlState = 0;
+        }
+        else
+        {
+            updateAndInterpolateAnimation(&pThis->m34_3dModel);
+        }
+        break;
     case 4:
         updateEdgeSub3(pThis);
         break;

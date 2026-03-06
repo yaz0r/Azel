@@ -124,6 +124,10 @@ npcFileDeleter* createEnvironmentTask2Sub0Sub0(p_workArea r4_parent, s32 r5)
 
     r14.mC_fileBundle = r12;
     r12->m0_fileBundle = new s_fileBundle(r11_dramAllocation);
+    if (r13_vdp1Allocation)
+    {
+        r12->m0_fileBundle->setPatchFilePointers(r13_vdp1Allocation->m4_vdp1Memory);
+    }
     r12->m4_vd1Allocation = r13_vdp1Allocation;
     r12->m8 = r14.m0_fileID >> 16;
     r12->mA = r10_vdp1File.m0_fileID >> 16;

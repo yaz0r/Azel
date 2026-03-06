@@ -103,7 +103,7 @@ void registerNpcs(const std::vector<const sTownSetup*>& townSetups, sSaturnPtr r
 
     npcData0.m104_currentScript.m0_scriptPtr = r5_script;
     npcData0.m104_currentScript.m4 = 0;
-    npcData0.m104_currentScript.m8_owner.reset();
+    npcData0.m104_currentScript.m8_owner = nullptr;
 
     npcData0.m118_currentResult = r6;
 
@@ -453,7 +453,12 @@ void updateEdgePositionSub1(sEdgeTask* r4)
     r4->m14C_inputFlags &= 1;
     if (r4->m14C_inputFlags)
     {
-        assert(0);
+        s32 collisionFlags = r4->m84.m44 & 4;
+        r4->m84.m44 = collisionFlags;
+        if (collisionFlags && r4->mE8.m30_stepTranslation[1] < 0x358)
+        {
+            r4->mE8.m30_stepTranslation[1] = 0x358;
+        }
     }
 }
 
