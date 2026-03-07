@@ -6,10 +6,10 @@ void townCamera_update(sCameraTask* pThis)
 {
     if ((npcData0.mFC & 1) == 0)
     {
-        pThis->m4++;
-        if (pThis->m4 > 5400)
+        pThis->m4_dayNightTimer++;
+        if (pThis->m4_dayNightTimer > 5400)
         {
-            pThis->m4 = 5400;
+            pThis->m4_dayNightTimer = 5400;
         }
     }
 }
@@ -25,7 +25,7 @@ s32 townCamera_setup(s32 r4, s32 r5)
 {
     sVec3_FP r4Value = readSaturnVec3(sSaturnPtr::createFromRaw(r4, gCurrentTownOverlay)); //todo: that could be a vec2
     sSaturnPtr r5Ptr = sSaturnPtr::createFromRaw(r5, gCurrentTownOverlay);
-    cameraTaskPtr->m8 = r5Ptr;
+    cameraTaskPtr->m8_colorData = r5Ptr;
 
     sMatrix4x3 var4;
     initMatrixToIdentity(&var4);
@@ -37,7 +37,7 @@ s32 townCamera_setup(s32 r4, s32 r5)
     cameraTaskPtr->m14[2] = var4.m[2][3];
 
     cameraTaskPtr->m10 = readSaturnRGB8(r5Ptr);
-    cameraTaskPtr->m30 = 0x8000;
+    cameraTaskPtr->m30_colorIntensity = 0x8000;
 
     generateLightFalloffMap(readSaturnRGB8(r5Ptr + 3).toU32(), readSaturnRGB8(r5Ptr + 6).toU32(), readSaturnRGB8(r5Ptr + 9).toU32());
 
@@ -52,7 +52,7 @@ s32 townCamera_setup(s32 r4, s32 r5)
 
     resetProjectVector();
     cameraTaskPtr->m2 = 0;
-    cameraTaskPtr->m0 = 0;
+    cameraTaskPtr->m0_colorMode = 0;
     return 0;
 }
 
@@ -69,14 +69,14 @@ s32 SetupColorOffset(s32 r4)
 
 s32 TwnFadeOut(s32 arg0)
 {
-    cameraTaskPtr->m1 = 0;
+    cameraTaskPtr->m1_fadeActive = 0;
     fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0x8000, arg0);
     fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), 0x8000, arg0);
     graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
     return 0;
 }
 
-u16 TwnFadeInComputeColor(sSaturnPtr ptr, u32 factor)
+u16 computeLightingColor(sSaturnPtr ptr, u32 factor)
 {
     s32 r = MTH_Mul(fixedPoint((s32)readSaturnS8(ptr + 0)), fixedPoint(factor));
     s8 d3 = readSaturnS8(ptr + 3);
@@ -98,11 +98,11 @@ static s32 clamp5bit(s32 val)
     return val;
 }
 
-u16 TwnFadeInComputeColorInterp(s32 time)
+u16 computeTimeOfDayColor(s32 time)
 {
     sSaturnPtr colorSet0;
     sSaturnPtr colorSet1;
-    u32 baseAddr = cameraTaskPtr->mC;
+    u32 baseAddr = cameraTaskPtr->mC_colorTableBase;
 
     if (!mainGameState.getBit(8)) {
         colorSet0 = sSaturnPtr::createFromRaw(baseAddr, gCurrentTownOverlay);
@@ -113,7 +113,7 @@ u16 TwnFadeInComputeColorInterp(s32 time)
     }
 
     if (time >= 0xe10) {
-        return TwnFadeInComputeColor(colorSet1 + 0x14, cameraTaskPtr->m30);
+        return computeLightingColor(colorSet1 + 0x14, cameraTaskPtr->m30_colorIntensity);
     }
 
     if (time > 0x707) {
@@ -147,14 +147,14 @@ u16 TwnFadeInComputeColorInterp(s32 time)
 s32 TwnFadeIn(s32 arg0)
 {
     u16 fadeColor;
-    switch (cameraTaskPtr->m0)
+    switch (cameraTaskPtr->m0_colorMode)
     {
     case 0:
     case 2:
-        fadeColor = TwnFadeInComputeColor(cameraTaskPtr->m8, cameraTaskPtr->m30);
+        fadeColor = computeLightingColor(cameraTaskPtr->m8_colorData, cameraTaskPtr->m30_colorIntensity);
         break;
     case 1:
-        fadeColor = TwnFadeInComputeColorInterp(cameraTaskPtr->m4 + arg0);
+        fadeColor = computeTimeOfDayColor(cameraTaskPtr->m4_dayNightTimer + arg0);
         break;
     default:
         assert(0);
@@ -164,7 +164,7 @@ s32 TwnFadeIn(s32 arg0)
     fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0xC210, arg0);
     fadePalette(&g_fadeControls.m24_fade1, convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color), fadeColor, arg0);
 
-    cameraTaskPtr->m1 = 1;
+    cameraTaskPtr->m1_fadeActive = 1;
 
     return 0;
 }

@@ -26,20 +26,20 @@ void unloadFnt(); // TODO: fix
 
 static void zoahCamera_update(sCameraTask* pThis)
 {
-    // Step 1: Increment time (same as townCamera_update)
+    // Step 1: Increment day/night timer (same as townCamera_update)
     if ((npcData0.mFC & 1) == 0)
     {
-        pThis->m4++;
-        if (pThis->m4 > 5400)
+        pThis->m4_dayNightTimer++;
+        if (pThis->m4_dayNightTimer > 5400)
         {
-            pThis->m4 = 5400;
+            pThis->m4_dayNightTimer = 5400;
         }
     }
 
-    // Step 2: Select day/night color set from mC data table
+    // Step 2: Select day/night color set from color table
     sSaturnPtr colorSet0;
     sSaturnPtr colorSet1;
-    u32 baseAddr = pThis->mC;
+    u32 baseAddr = pThis->mC_colorTableBase;
     if (!mainGameState.getBit(8)) {
         colorSet0 = sSaturnPtr::createFromRaw(baseAddr, gCurrentTownOverlay);
         colorSet1 = sSaturnPtr::createFromRaw(baseAddr + 0x10, gCurrentTownOverlay);
@@ -49,7 +49,7 @@ static void zoahCamera_update(sCameraTask* pThis)
     }
 
     // Step 3: Clamp time to 3600
-    s32 time = pThis->m4;
+    s32 time = pThis->m4_dayNightTimer;
     if (time > 0xe10) time = 0xe10;
 
     s32 fadeTime = 0x708;
@@ -62,8 +62,8 @@ static void zoahCamera_update(sCameraTask* pThis)
     }
 
     // Step 5: If fading active and time remaining, update fade palette
-    if (pThis->m1 != 0 && g_fadeControls.m24_fade1.m20_stopped != 0 && (0x708 - time) > 0) {
-        u16 fadeColor = TwnFadeInComputeColorInterp(fadeTime);
+    if (pThis->m1_fadeActive != 0 && g_fadeControls.m24_fade1.m20_stopped != 0 && (0x708 - time) > 0) {
+        u16 fadeColor = computeTimeOfDayColor(fadeTime);
         s32 curColor = convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color);
         fadePalette(&g_fadeControls.m24_fade1, curColor, fadeColor, 0x708 - time);
     }
@@ -156,8 +156,8 @@ int scriptFunction_06096a98()
 
 s32 scriptFunction_0609dffe(s32 param_1)
 {
-    cameraTaskPtr->mC = param_1;
-    cameraTaskPtr->m30 = 0x8000;
+    cameraTaskPtr->mC_colorTableBase = param_1;
+    cameraTaskPtr->m30_colorIntensity = 0x8000;
 
     cameraTaskPtr->m_UpdateMethod = zoahCamera_update;
     cameraTaskPtr->m_DrawMethod = zoahCamera_draw;
@@ -170,7 +170,7 @@ s32 scriptFunction_0609dffe(s32 param_1)
 
     resetProjectVector();
     cameraTaskPtr->m2 = 0;
-    cameraTaskPtr->m0 = 1;
+    cameraTaskPtr->m0_colorMode = 1;
     return 0;
 }
 
@@ -181,6 +181,21 @@ int scriptFunction_06096ac2_disableRBG0()
     *(u16*)getVdp2Vram(0x25002) = 0x8000;
     vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x12801;
     return 0;
+}
+
+static s32 scriptFunction_0609deba_toggleDayNight()
+{
+    sCameraTask::Init(cameraTaskPtr);
+    if (mainGameState.bitField[0] & 1) {
+        return 0;
+    }
+    if (mainGameState.bitField[1] & 0x80) {
+        mainGameState.bitField[1] &= 0x7f;
+    }
+    else {
+        mainGameState.bitField[1] |= 0x80;
+    }
+    return 1;
 }
 
 s32 scriptFunction_06098a5c_setupCameraMode1(s32 arg0, s32 arg1, s32 arg2)
@@ -202,7 +217,7 @@ s32 scriptFunction_06098a5c_setupCameraMode1(s32 arg0, s32 arg1, s32 arg2)
 
 static void zoahCamera_setupLight(sCameraTask* pThis, sSaturnPtr lightData)
 {
-    pThis->m8 = lightData;
+    pThis->m8_colorData = lightData;
 
     sMatrix4x3 mat;
     initMatrixToIdentity(&mat);
@@ -214,7 +229,7 @@ static void zoahCamera_setupLight(sCameraTask* pThis, sSaturnPtr lightData)
     pThis->m10.m0 = readSaturnU8(lightData);
     pThis->m10.m1 = readSaturnU8(lightData + 1);
     pThis->m10.m2 = readSaturnU8(lightData + 2);
-    pThis->m30 = 0x8000;
+    pThis->m30_colorIntensity = 0x8000;
 
     u32 f0 = (u32)readSaturnU8(lightData + 5) << 16 | (u32)readSaturnU8(lightData + 4) << 8 | (u32)readSaturnU8(lightData + 3);
     u32 f1 = (u32)readSaturnU8(lightData + 8) << 16 | (u32)readSaturnU8(lightData + 7) << 8 | (u32)readSaturnU8(lightData + 6);
@@ -225,9 +240,9 @@ static void zoahCamera_setupLight(sCameraTask* pThis, sSaturnPtr lightData)
 static void zoahCamera_updateTimeOnly(sCameraTask* pThis)
 {
     if ((npcData0.mFC & 1) == 0) {
-        pThis->m4++;
-        if (pThis->m4 > 5400) {
-            pThis->m4 = 5400;
+        pThis->m4_dayNightTimer++;
+        if (pThis->m4_dayNightTimer > 5400) {
+            pThis->m4_dayNightTimer = 5400;
         }
     }
 }
@@ -254,7 +269,7 @@ s32 scriptFunction_0609e080_setupCameraWithPosition(sSaturnPtr arg)
 
     cameraTaskPtr->m20_lightPosition = readSaturnVec3(arg);
     cameraTaskPtr->m2C = readSaturnU32(arg + 0xC);
-    cameraTaskPtr->m30 = readSaturnU32(arg + 0x10);
+    cameraTaskPtr->m30_colorIntensity = readSaturnU32(arg + 0x10);
 
     cameraTaskPtr->m_UpdateMethod = zoahCamera_updateTimeOnly;
     cameraTaskPtr->m_DrawMethod = zoahCamera_drawWithPosition;
@@ -267,7 +282,7 @@ s32 scriptFunction_0609e080_setupCameraWithPosition(sSaturnPtr arg)
 
     resetProjectVector();
     cameraTaskPtr->m2 = 1;
-    cameraTaskPtr->m0 = 2;
+    cameraTaskPtr->m0_colorMode = 2;
     return 0;
 }
 
@@ -312,6 +327,7 @@ struct TWN_ZOAH_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x060997f2] = &scriptFunction_060997f2;
         overlayScriptFunctions.m_zeroArg[0x0609995c] = &scriptFunction_0609995c;
         overlayScriptFunctions.m_zeroArg[0x0609cd72] = &scriptFunction_0609cd72;
+        overlayScriptFunctions.m_zeroArg[0x0609deba] = &scriptFunction_0609deba_toggleDayNight;
 
         overlayScriptFunctions.m_oneArg[0x0609991e] = &scriptFunction_0609991e;
         overlayScriptFunctions.m_oneArg[0x0609ccfa] = &scriptFunction_0609ccfa;

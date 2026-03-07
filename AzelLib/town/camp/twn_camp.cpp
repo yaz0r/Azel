@@ -127,7 +127,7 @@ static void campCamera_drawWithPosition(sCameraTask* pThis)
 
 static void campCameraSetupLight(sCameraTask* pThis, sSaturnPtr lightData)
 {
-    pThis->m8 = lightData;
+    pThis->m8_colorData = lightData;
 
     pThis->m14[0] = 0;
     pThis->m14[1] = 0;
@@ -136,7 +136,7 @@ static void campCameraSetupLight(sCameraTask* pThis, sSaturnPtr lightData)
     pThis->m10.m0 = readSaturnU8(lightData);
     pThis->m10.m1 = readSaturnU8(lightData + 1);
     pThis->m10.m2 = readSaturnU8(lightData + 2);
-    pThis->m30 = 0x8000;
+    pThis->m30_colorIntensity = 0x8000;
 
     u32 f0 = (u32)readSaturnU8(lightData + 5) << 16 | (u32)readSaturnU8(lightData + 4) << 8 | (u32)readSaturnU8(lightData + 3);
     u32 f1 = (u32)readSaturnU8(lightData + 8) << 16 | (u32)readSaturnU8(lightData + 7) << 8 | (u32)readSaturnU8(lightData + 6);
@@ -153,7 +153,7 @@ static s32 campCameraSetupWithPosition(sSaturnPtr arg)
 
     cameraTaskPtr->m20_lightPosition = readSaturnVec3(arg);
     cameraTaskPtr->m2C = readSaturnU32(arg + 0xC);
-    cameraTaskPtr->m30 = readSaturnU32(arg + 0x10);
+    cameraTaskPtr->m30_colorIntensity = readSaturnU32(arg + 0x10);
 
     if (g_fadeControls.m_4C <= g_fadeControls.m_4D)
     {
@@ -163,7 +163,7 @@ static s32 campCameraSetupWithPosition(sSaturnPtr arg)
 
     resetProjectVector();
     cameraTaskPtr->m2 = 1;
-    cameraTaskPtr->m0 = 2;
+    cameraTaskPtr->m0_colorMode = 2;
     return 0;
 }
 
@@ -406,14 +406,14 @@ struct sCampFire : public s_workAreaTemplateWithArgAndBase<sCampFire, sTownObjec
 
         s32 srcParam2 = readSaturnS32(source + 8);
         s32 tgtParam2 = readSaturnS32(target + 8);
-        cameraTaskPtr->m30 = (s32)MTH_Mul(fixedPoint(tgtParam2 - srcParam2), t) + srcParam2;
+        cameraTaskPtr->m30_colorIntensity = (s32)MTH_Mul(fixedPoint(tgtParam2 - srcParam2), t) + srcParam2;
 
-        if (g_fadeControls.m24_fade1.m20_stopped && cameraTaskPtr->m1) {
-            s8 baseR = readSaturnS8(cameraTaskPtr->m8 + 3);
-            s8 baseG = readSaturnS8(cameraTaskPtr->m8 + 4);
-            s8 baseB = readSaturnS8(cameraTaskPtr->m8 + 5);
+        if (g_fadeControls.m24_fade1.m20_stopped && cameraTaskPtr->m1_fadeActive) {
+            s8 baseR = readSaturnS8(cameraTaskPtr->m8_colorData + 3);
+            s8 baseG = readSaturnS8(cameraTaskPtr->m8_colorData + 4);
+            s8 baseB = readSaturnS8(cameraTaskPtr->m8_colorData + 5);
 
-            u16 color = computeModulatedColor((s8)r, (s8)g, (s8)b, baseR, baseG, baseB, cameraTaskPtr->m30);
+            u16 color = computeModulatedColor((s8)r, (s8)g, (s8)b, baseR, baseG, baseB, cameraTaskPtr->m30_colorIntensity);
             fadePalette(&g_fadeControls.m24_fade1, color, color, 1);
         }
 

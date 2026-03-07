@@ -180,33 +180,33 @@ struct sCameraTask : public s_workAreaTemplate<sCameraTask>
     static void Init(sCameraTask* pThis)
     {
         if (mainGameState.getBit(1)) {
-            pThis->m4 = 5400;
+            pThis->m4_dayNightTimer = 5400;
         }
         else {
-            pThis->m4 = 0;
+            pThis->m4_dayNightTimer = 0;
         }
     }
     static void Update(sCameraTask* pThis)
     {
         if ((npcData0.mFC & 1) == 0) {
-            if (++pThis->m4 > 5400) {
-                pThis->m4 = 5400;
+            if (++pThis->m4_dayNightTimer > 5400) {
+                pThis->m4_dayNightTimer = 5400;
             }
-            
+
         }
     }
 
-    u8 m0;
-    u8 m1;
+    u8 m0_colorMode; // 0=static, 1=time-interpolated, 2=static/camp
+    u8 m1_fadeActive;
     u8 m2;
-    s32 m4;
-    sSaturnPtr m8;
-    u32 mC;
+    s32 m4_dayNightTimer; // 0=day, 5400=night, increments each frame
+    sSaturnPtr m8_colorData;
+    u32 mC_colorTableBase;
     s_RGB8 m10;
     sVec3_FP m14;
     sVec3_FP m20_lightPosition;
     u32 m2C;
-    u32 m30;
+    u32 m30_colorIntensity;
     fixedPoint m34_interpolatedLightData[12]; // 0x34-0x64, used by zoahCamera_update
     //size 0x64
 };

@@ -523,6 +523,21 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             }
             break;
         }
+        case 22: // callScript via switch table
+        {
+            s8 arg = readSaturnS8(r14++);
+            r14 = getAlignOn4(r14);
+            if ((r13_pThis->m118_currentResult < arg) && (r13_pThis->m118_currentResult >= 0))
+            {
+                *(--r13_pThis->m11C_currentStackPointer) = r14 + arg * 4;
+                r14 = readSaturnEA(r14 + r13_pThis->m118_currentResult * 4);
+            }
+            else
+            {
+                r14 += arg * 4;
+            }
+            break;
+        }
         case 24: //setResult
             r13_pThis->m118_currentResult = varC->m4;
             break;

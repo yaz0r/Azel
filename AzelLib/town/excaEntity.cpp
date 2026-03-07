@@ -5,15 +5,15 @@
 #include "kernel/animation.h"
 #include "town/ruin/twn_ruin.h" // TODO: Cleanup
 
-struct sExcaEntity0 : public s_workAreaTemplateWithArgAndBase<sExcaEntity0, sTownObject, sSaturnPtr>
+struct sGenericTownNPC : public s_workAreaTemplateWithArgAndBase<sGenericTownNPC, sTownObject, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static TypedTaskDefinition taskDefinition = { &sExcaEntity0::Init, &sExcaEntity0::Update, nullptr, &sExcaEntity0::Delete };
+        static TypedTaskDefinition taskDefinition = { &sGenericTownNPC::Init, &sGenericTownNPC::Update, nullptr, &sGenericTownNPC::Delete };
         return &taskDefinition;
     }
 
-    static void Init(sExcaEntity0* pThis, sSaturnPtr arg)
+    static void Init(sGenericTownNPC* pThis, sSaturnPtr arg)
     {
         pThis->mC = arg;
         pThis->mC4_position = readSaturnVec3(arg + 8);
@@ -26,7 +26,7 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgAndBase<sExcaEntity0, sTow
         }
     }
 
-    static void Update(sExcaEntity0* pThis)
+    static void Update(sGenericTownNPC* pThis)
     {
         s32 fileIndex = readSaturnU32(pThis->mC);
         if (isDataLoaded(fileIndex))
@@ -71,12 +71,12 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgAndBase<sExcaEntity0, sTow
                 setCollisionBounds(&pThis->m60_scriptContext, readSaturnVec3(scriptConfigEA + 0x8), readSaturnVec3(scriptConfigEA + 0x14));
             }
 
-            pThis->m_UpdateMethod = &sExcaEntity0::Update2;
-            pThis->m_DrawMethod = &sExcaEntity0::Draw2;
+            pThis->m_UpdateMethod = &sGenericTownNPC::Update2;
+            pThis->m_DrawMethod = &sGenericTownNPC::Draw2;
         }
     }
 
-    static void Update2(sExcaEntity0* pThis)
+    static void Update2(sGenericTownNPC* pThis)
     {
         switch (pThis->mDC_status)
         {
@@ -114,7 +114,7 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgAndBase<sExcaEntity0, sTow
         registerCollisionBody(&pThis->m60_scriptContext);
     }
 
-    static void Draw2(sExcaEntity0* pThis)
+    static void Draw2(sGenericTownNPC* pThis)
     {
         pushCurrentMatrix();
         translateCurrentMatrix(pThis->mC4_position);
@@ -123,7 +123,7 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgAndBase<sExcaEntity0, sTow
         popMatrix();
     }
 
-    static void Delete(sExcaEntity0* pThis)
+    static void Delete(sGenericTownNPC* pThis)
     {
         Unimplemented();
     }
@@ -138,5 +138,5 @@ struct sExcaEntity0 : public s_workAreaTemplateWithArgAndBase<sExcaEntity0, sTow
 };
 
 sTownObject* createExcaEntity(s_workAreaCopy* parent, sSaturnPtr arg) {
-    return createSubTaskWithArgWithCopy<sExcaEntity0, sSaturnPtr>(parent, arg);
+    return createSubTaskWithArgWithCopy<sGenericTownNPC, sSaturnPtr>(parent, arg);
 }
