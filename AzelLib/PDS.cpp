@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "debugWindows.h"
 #include "kernel/fileBundle.h"
 #include "kernel/debug/trace.h"
 #include "audio/soundDriver.h"
@@ -1106,14 +1107,17 @@ void loopIteration()
         updateInputs();
 
 #ifndef SHIPPING_BUILD
-        if (ImGui::Begin("InputState"))
+        if (gDebugWindows.inputState)
         {
-            ImGui::Text("Analog X: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX);
-            ImGui::Text("Analog Y: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY);
-            ImGui::Text("m6_buttonDown: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown);
-            ImGui::Text("m8_newButtonDown: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown);
+            if (ImGui::Begin("InputState", &gDebugWindows.inputState))
+            {
+                ImGui::Text("Analog X: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX);
+                ImGui::Text("Analog Y: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY);
+                ImGui::Text("m6_buttonDown: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown);
+                ImGui::Text("m8_newButtonDown: %X", graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown);
+            }
+            ImGui::End();
         }
-        ImGui::End();
 #endif
 
         //updateInputDebug();

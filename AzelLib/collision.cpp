@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "debugWindows.h"
 #include "processModel.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "field/fieldVisibilityGrid.h"
@@ -368,9 +369,9 @@ s32 collisionSub0(sProcessed3dModel* collisionMesh, sCollisionTempStruct& r5, sV
 
 void resolveDragonTerrainCollision()
 {
-    if(!isShipping())
+    if(!isShipping() && gDebugWindows.collisions)
     {
-        if (ImGui::Begin("Collisions"))
+        if (ImGui::Begin("Collisions", &gDebugWindows.collisions))
         {
             ImGui::Checkbox("Draw Collisions", &bDrawCollisions);
         }

@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "debugWindows.h"
 #include "o_fld_a3.h"
 #include "a3_crane_upper.h"
 #include "a3_crane_lower.h"
@@ -6033,11 +6034,14 @@ void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
     }
 
 #ifndef SHIPPING_BUILD
-    if (ImGui::Begin("Field"))
+    if (gDebugWindows.field)
     {
-        Imgui_FP_Angle("Field of view", &pTypedWorkArea->m1CC_fieldOfView);
+        if (ImGui::Begin("Field", &gDebugWindows.field))
+        {
+            Imgui_FP_Angle("Field of view", &pTypedWorkArea->m1CC_fieldOfView);
+        }
+        ImGui::End();
     }
-    ImGui::End();
 #endif
 
     //0607416C
@@ -6235,9 +6239,9 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
         bDirty = 1;
     }
 
-    if(!isShipping())
+    if(!isShipping() && gDebugWindows.camera)
     {
-        if (ImGui::Begin("Camera"))
+        if (ImGui::Begin("Camera", &gDebugWindows.camera))
         {
             ImGui::Text("cell: X: %d, Y:%d", pFieldCameraTask1->m18_cameraGridLocation[0], pFieldCameraTask1->m18_cameraGridLocation[1]);
         }

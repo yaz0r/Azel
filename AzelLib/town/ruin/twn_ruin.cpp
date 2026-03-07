@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "debugWindows.h"
 #include "twn_ruin.h"
 #include "town/town.h"
 #include "town/townScript.h"
@@ -646,9 +647,9 @@ void updateEdgePosition(sNPC* r4)
     }
     //605B9AA
     static bool gGravity = true;
-    if(!isShipping())
+    if(!isShipping() && gDebugWindows.town)
     {
-        ImGui::Begin("Town");
+        ImGui::Begin("Town", &gDebugWindows.town);
         ImGui::Checkbox("Gravity", &gGravity);
         ImGui::End();
     }
@@ -760,18 +761,18 @@ s32 scriptFunction_605B320(s32 arg0, s32 arg1)
 
 TWN_RUIN_data::TWN_RUIN_data() : sTownOverlay("TWN_RUIN.PRG")
 {
-    overlayScriptFunctions.m_zeroArg[0x6057570] = &hasLoadingCompleted;
-    overlayScriptFunctions.m_zeroArg[0x6057058] = &scriptFunction_6057058;
-    overlayScriptFunctions.m_zeroArg[0x605762A] = &scriptFunction_605762A;
-    overlayScriptFunctions.m_zeroArg[0x605800E] = &isObjectCloseEnoughToActivate;
+    overlayScriptFunctions.m_zeroArg[0x6057570] = {&hasLoadingCompleted, "hasLoadingCompleted"};
+    overlayScriptFunctions.m_zeroArg[0x6057058] = {&scriptFunction_6057058, "scriptFunction_6057058"};
+    overlayScriptFunctions.m_zeroArg[0x605762A] = {&scriptFunction_605762A, "scriptFunction_605762A"};
+    overlayScriptFunctions.m_zeroArg[0x605800E] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
 
-    overlayScriptFunctions.m_oneArg[0x605C83C] = &TwnFadeOut;
-    overlayScriptFunctions.m_oneArg[0x605c7c4] = &TwnFadeIn;
-    overlayScriptFunctions.m_oneArg[0x6054364] = &scriptFunction_6054364_waitForLockDisableCompletion;
+    overlayScriptFunctions.m_oneArg[0x605C83C] = {&TwnFadeOut, "TwnFadeOut"};
+    overlayScriptFunctions.m_oneArg[0x605c7c4] = {&TwnFadeIn, "TwnFadeIn"};
+    overlayScriptFunctions.m_oneArg[0x6054364] = {&scriptFunction_6054364_waitForLockDisableCompletion, "scriptFunction_6054364_waitForLockDisableCompletion"};
 
-    overlayScriptFunctions.m_twoArg[0x605C55C] = &townCamera_setup;
-    overlayScriptFunctions.m_twoArg[0x605B320] = &scriptFunction_605B320;
-    overlayScriptFunctions.m_twoArg[0x6054334] = &scriptFunction_6054334_disableLock;
+    overlayScriptFunctions.m_twoArg[0x605C55C] = {&townCamera_setup, "townCamera_setup"};
+    overlayScriptFunctions.m_twoArg[0x605B320] = {&scriptFunction_605B320, "scriptFunction_605B320"};
+    overlayScriptFunctions.m_twoArg[0x6054334] = {&scriptFunction_6054334_disableLock, "scriptFunction_6054334_disableLock"};
 
     mTownSetups.push_back(readTownSetup(getSaturnPtr(0x605E984), 12));
 }

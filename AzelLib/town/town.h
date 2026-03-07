@@ -12,14 +12,32 @@ typedef s32(*scriptFunction_two_arg)(s32 arg0, s32 arg1);
 typedef s32(*scriptFunction_three_arg)(s32 arg0, s32 arg1, s32 arg2);
 typedef s32(*scriptFunction_four_arg)(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 
+template<typename T>
+struct sNamedFunc
+{
+    T func;
+    const char* name;
+};
+
 struct sKernelScriptFunctions
 {
-    std::map<u32, scriptFunction_zero_arg> m_zeroArg;
-    std::map<u32, scriptFunction_one_arg> m_oneArg;
-    std::map<u32, scriptFunction_one_arg_ptr> m_oneArgPtr;
-    std::map<u32, scriptFunction_two_arg> m_twoArg;
-    std::map<u32, scriptFunction_three_arg> m_threeArg;
-    std::map<u32, scriptFunction_four_arg> m_fourArg;
+    std::map<u32, sNamedFunc<scriptFunction_zero_arg>> m_zeroArg;
+    std::map<u32, sNamedFunc<scriptFunction_one_arg>> m_oneArg;
+    std::map<u32, sNamedFunc<scriptFunction_one_arg_ptr>> m_oneArgPtr;
+    std::map<u32, sNamedFunc<scriptFunction_two_arg>> m_twoArg;
+    std::map<u32, sNamedFunc<scriptFunction_three_arg>> m_threeArg;
+    std::map<u32, sNamedFunc<scriptFunction_four_arg>> m_fourArg;
+
+    const char* lookupName(u32 addr) const
+    {
+        auto i0 = m_zeroArg.find(addr); if (i0 != m_zeroArg.end()) return i0->second.name;
+        auto i1 = m_oneArg.find(addr); if (i1 != m_oneArg.end()) return i1->second.name;
+        auto i1p = m_oneArgPtr.find(addr); if (i1p != m_oneArgPtr.end()) return i1p->second.name;
+        auto i2 = m_twoArg.find(addr); if (i2 != m_twoArg.end()) return i2->second.name;
+        auto i3 = m_threeArg.find(addr); if (i3 != m_threeArg.end()) return i3->second.name;
+        auto i4 = m_fourArg.find(addr); if (i4 != m_fourArg.end()) return i4->second.name;
+        return nullptr;
+    }
 };
 
 struct sTownGridSetup

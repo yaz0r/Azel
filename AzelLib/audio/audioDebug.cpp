@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "debugWindows.h"
 
 extern "C" {
 #include "ao.h"
@@ -10,7 +11,9 @@ extern "C" {
 void audioDebug()
 {
 #ifndef SHIPPING_BUILD
-    ImGui::Begin("Sound Debugger");
+    if (!gDebugWindows.soundDebugger)
+        return;
+    ImGui::Begin("Sound Debugger", &gDebugWindows.soundDebugger);
     {
         for (int i=0; i<32; i++)
         {

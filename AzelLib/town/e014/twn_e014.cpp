@@ -154,17 +154,17 @@ TWN_E014_data::TWN_E014_data() : sTownOverlay("TWN_E014.PRG")
 {
     mTownSetups.push_back(readTownSetup(getSaturnPtr(0x0605e114), 1));
 
-    overlayScriptFunctions.m_zeroArg[0x6057724] = &e006_scriptFunction_60573d8;
-    overlayScriptFunctions.m_zeroArg[0x6056c64] = &e006_scriptFunction_6056918;
-    overlayScriptFunctions.m_zeroArg[0x6057746] = &e006_scriptFunction_605861eSub0;
-    overlayScriptFunctions.m_zeroArg[0x6057784] = &e006_scriptFunction_6057438;
+    overlayScriptFunctions.m_zeroArg[0x6057724] = {&e006_scriptFunction_60573d8, "e006_scriptFunction_60573d8"};
+    overlayScriptFunctions.m_zeroArg[0x6056c64] = {&e006_scriptFunction_6056918, "e006_scriptFunction_6056918"};
+    overlayScriptFunctions.m_zeroArg[0x6057746] = {&e006_scriptFunction_605861eSub0, "e006_scriptFunction_605861eSub0"};
+    overlayScriptFunctions.m_zeroArg[0x6057784] = {&e006_scriptFunction_6057438, "e006_scriptFunction_6057438"};
 
-    overlayScriptFunctions.m_oneArg[0x605c0d8] = &TwnFadeIn;
-    overlayScriptFunctions.m_oneArg[0x605C150] = &TwnFadeOut;
-    overlayScriptFunctions.m_oneArg[0x60576FC] = &createEPKPlayer;
-    overlayScriptFunctions.m_oneArg[0x605896a] = &setupDragonEntityForCutscene;
+    overlayScriptFunctions.m_oneArg[0x605c0d8] = {&TwnFadeIn, "TwnFadeIn"};
+    overlayScriptFunctions.m_oneArg[0x605C150] = {&TwnFadeOut, "TwnFadeOut"};
+    overlayScriptFunctions.m_oneArg[0x60576FC] = {&createEPKPlayer, "createEPKPlayer"};
+    overlayScriptFunctions.m_oneArg[0x605896a] = {&setupDragonEntityForCutscene, "setupDragonEntityForCutscene"};
 
-    overlayScriptFunctions.m_twoArg[0x605be70] = &townCamera_setup;
+    overlayScriptFunctions.m_twoArg[0x605be70] = {&townCamera_setup, "townCamera_setup"};
 }
 
 sTownObject* TWN_E014_data::createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg)

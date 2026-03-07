@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "debugWindows.h"
 #include "Arachnoth.h"
 #include "battle/battleManager.h"
 #include "battle/battleOverlay.h"
@@ -1171,9 +1172,9 @@ void arachnothFormation_update(sArachnothFormation* pThis)
 
 void arachnothFormation_draw(sArachnothFormation* pThis)
 {
-    if (!isShipping())
+    if (!isShipping() && gDebugWindows.arachnoth)
     {
-        if (ImGui::Begin("Arachnoth"))
+        if (ImGui::Begin("Arachnoth", &gDebugWindows.arachnoth))
         {
             int life = pThis->m298_life;
             ImGui::InputInt("Life", &life);

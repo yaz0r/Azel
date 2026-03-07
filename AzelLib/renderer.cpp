@@ -11,6 +11,8 @@
 #include "imguiBGFX.h"
 #include "items.h"
 #include "renderer_vdp2.h"
+#include "town/townScriptDecompiler.h"
+#include "debugWindows.h"
 
 bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string& PSFile);
 
@@ -1027,7 +1029,9 @@ bool azelSdl_EndFrame()
 
     if(!isShipping())
     {
-            if (ImGui::Begin("VDP"))
+        if (gDebugWindows.vdp)
+        {
+            if (ImGui::Begin("VDP", &gDebugWindows.vdp))
             {
                 ImGui::PushID("BG0");
                 ImGui::Text("NBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG0_GPU);
@@ -1056,24 +1060,26 @@ bool azelSdl_EndFrame()
                 ImGui::Image(ImGui::toId(NBG_data[4].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
                 ImGui::PopID();
 
-                //ImGui::Text("VDP1");
-                //ImGui::Image((ImTextureID)gVdp1Texture, ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
                 ImGui::Text("VDP1 poly");
                 ImGui::Image(ImGui::toId(bgfx::getTexture(gBGFXVdp1PolyFB), 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
             }
             ImGui::End();
-
-        PrintDebugTasksHierarchy();
-        PrintDebugTasksInfo();
-    }
-
-    if(!isShipping())
-    {
-        if (ImGui::Begin("Config"))
-        {
-            ImGui::InputInt2("Internal Resolution", internalResolution);
         }
-        ImGui::End();
+
+        if (gDebugWindows.tasks)
+        {
+            PrintDebugTasksHierarchy();
+            PrintDebugTasksInfo();
+        }
+
+        if (gDebugWindows.config)
+        {
+            if (ImGui::Begin("Config", &gDebugWindows.config))
+            {
+                ImGui::InputInt2("Internal Resolution", internalResolution);
+            }
+            ImGui::End();
+        }
     }
 
     // render VDP1 frame buffer
@@ -1132,15 +1138,16 @@ bool azelSdl_EndFrame()
 
     if (!isShipping())
     {
-        ImGui::Begin("Final Composition");
+        if (gDebugWindows.finalComposition)
         {
-            ImVec2 textureSize = ImGui::GetWindowSize();
-            textureSize.y = textureSize.x * (224.f / 352.f);
-            //ImGui::Image((ImTextureID)gCompositedTexture, textureSize, ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+            if (ImGui::Begin("Final Composition", &gDebugWindows.finalComposition))
+            {
+                ImVec2 textureSize = ImGui::GetWindowSize();
+                textureSize.y = textureSize.x * (224.f / 352.f);
+                //ImGui::Image((ImTextureID)gCompositedTexture, textureSize, ImVec2(0, 1), ImVec2(1, 0)); ImGui::SameLine();
+            }
+            ImGui::End();
         }
-        ImGui::End();
-
-        static bool bInventoryOpen = false;
 
         if (ImGui::BeginMainMenuBar())
         {
@@ -1148,7 +1155,6 @@ bool azelSdl_EndFrame()
 
             if (ImGui::BeginMenu("Framerate"))
             {
-                bool unlimited = true;
                 if (ImGui::MenuItem("Unlimited", NULL, frameLimit == -1)) frameLimit = -1;
                 if (ImGui::MenuItem("30", NULL, frameLimit == 30)) frameLimit = 30;
                 if (ImGui::MenuItem("5", NULL, frameLimit == 5)) frameLimit = 5;
@@ -1159,11 +1165,7 @@ bool azelSdl_EndFrame()
             ImGui::SliderFloat("Volume", &gVolume, 0, 1);
             ImGui::PopItemWidth();
 
-            if (ImGui::BeginMenu("GameState"))
-            {
-                ImGui::MenuItem("Inventory", NULL, &bInventoryOpen);
-                ImGui::EndMenu();
-            }
+            drawDebugMenu();
 
             extern bool bTraceEnabled;
             ImGui::Checkbox("Trace", &bTraceEnabled);
@@ -1171,9 +1173,11 @@ bool azelSdl_EndFrame()
             ImGui::EndMainMenuBar();
         }
 
-        if (bInventoryOpen)
+        drawScriptDecompilerWindow();
+
+        if (gDebugWindows.inventory)
         {
-            ImGui::Begin("Inventory");
+            ImGui::Begin("Inventory", &gDebugWindows.inventory);
 
             ImGui::Columns(4);
             for (int i = 0; i < 0xB0; i++)
@@ -1223,30 +1227,16 @@ bool azelSdl_EndFrame()
     if(!isShipping())
     {
 #if !defined(SHIPPING_BUILD)
-        for (int i = 0; i < eLogCategories::log_max; i++)
-        {
-            switch (i)
-            {
-            case eLogCategories::log_default:
-                PDS_Logger[i].Draw("Default log");
-                break;
-            case eLogCategories::log_task:
-                PDS_Logger[i].Draw("Task log");
-                break;
-            case eLogCategories::log_unimlemented:
-                PDS_Logger[i].Draw("Unimplemented log");
-                break;
-            case eLogCategories::log_m68k:
-                PDS_Logger[i].Draw("Sound m68k");
-                break;
-            case eLogCategories::log_warning:
-                PDS_Logger[i].Draw("Warning log");
-                break;
-            default:
-                assert(0);
-                break;
-            }
-        }
+        if (gDebugWindows.defaultLog)
+            PDS_Logger[eLogCategories::log_default].Draw("Default log", &gDebugWindows.defaultLog);
+        if (gDebugWindows.taskLog)
+            PDS_Logger[eLogCategories::log_task].Draw("Task log", &gDebugWindows.taskLog);
+        if (gDebugWindows.unimplementedLog)
+            PDS_Logger[eLogCategories::log_unimlemented].Draw("Unimplemented log", &gDebugWindows.unimplementedLog);
+        if (gDebugWindows.soundM68k)
+            PDS_Logger[eLogCategories::log_m68k].Draw("Sound m68k", &gDebugWindows.soundM68k);
+        if (gDebugWindows.warningLog)
+            PDS_Logger[eLogCategories::log_warning].Draw("Warning log", &gDebugWindows.warningLog);
 #endif
     }
     

@@ -118,18 +118,18 @@ s32 e011_scriptFunction_06059b7a(s32 param1)
 
 TWN_E011_data::TWN_E011_data() : sTownOverlay("TWN_E011.PRG")
 {
-    overlayScriptFunctions.m_zeroArg[0x6058484] = &e006_scriptFunction_60573d8;
-    overlayScriptFunctions.m_zeroArg[0x60579c4] = &e006_scriptFunction_6056918;
-    overlayScriptFunctions.m_zeroArg[0x60584a6] = &e006_scriptFunction_605861eSub0;
+    overlayScriptFunctions.m_zeroArg[0x6058484] = {&e006_scriptFunction_60573d8, "e006_scriptFunction_60573d8"};
+    overlayScriptFunctions.m_zeroArg[0x60579c4] = {&e006_scriptFunction_6056918, "e006_scriptFunction_6056918"};
+    overlayScriptFunctions.m_zeroArg[0x60584a6] = {&e006_scriptFunction_605861eSub0, "e006_scriptFunction_605861eSub0"};
 
-    overlayScriptFunctions.m_oneArg[0x605ceb0] = &TwnFadeOut;
-    overlayScriptFunctions.m_oneArg[0x605ce38] = &TwnFadeIn;
-    overlayScriptFunctions.m_oneArg[0x605845c] = &createEPKPlayer;
-    overlayScriptFunctions.m_oneArg[0x6059af0] = &e011_scriptFunction_6059af0;
-    overlayScriptFunctions.m_oneArg[0x60596ca] = &setupDragonEntityForCutscene;
-    overlayScriptFunctions.m_oneArg[0x6059b7a] = &e011_scriptFunction_06059b7a;
+    overlayScriptFunctions.m_oneArg[0x605ceb0] = {&TwnFadeOut, "TwnFadeOut"};
+    overlayScriptFunctions.m_oneArg[0x605ce38] = {&TwnFadeIn, "TwnFadeIn"};
+    overlayScriptFunctions.m_oneArg[0x605845c] = {&createEPKPlayer, "createEPKPlayer"};
+    overlayScriptFunctions.m_oneArg[0x6059af0] = {&e011_scriptFunction_6059af0, "e011_scriptFunction_6059af0"};
+    overlayScriptFunctions.m_oneArg[0x60596ca] = {&setupDragonEntityForCutscene, "setupDragonEntityForCutscene"};
+    overlayScriptFunctions.m_oneArg[0x6059b7a] = {&e011_scriptFunction_06059b7a, "e011_scriptFunction_06059b7a"};
 
-    overlayScriptFunctions.m_twoArg[0x605cbd0] = &townCamera_setup;
+    overlayScriptFunctions.m_twoArg[0x605cbd0] = {&townCamera_setup, "townCamera_setup"};
 
     mTownSetups.push_back(readTownSetup(getSaturnPtr(0x0605ef14), 1));
     mTownSetups.push_back(readTownSetup(getSaturnPtr(0x0605ef20), 1));

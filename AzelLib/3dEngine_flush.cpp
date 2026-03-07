@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "renderer/renderer_gl.h"
 #include "processModel.h"
+#include "debugWindows.h"
 
 #include <bx/math.h>
 
@@ -409,9 +410,9 @@ void flushObjectsToDrawList()
     gVertexArray.resize(1024 * 1024);
 
 
-    if(!isShipping())
+    if(!isShipping() && gDebugWindows.objects)
     {
-        if (ImGui::Begin("Objects"))
+        if (ImGui::Begin("Objects", &gDebugWindows.objects))
         {
             for (int i = 0; i < objectRenderList.size(); i++)
             {

@@ -316,38 +316,38 @@ struct TWN_ZOAH_data : public sTownOverlay
 
     TWN_ZOAH_data() : sTownOverlay("TWN_ZOAH.PRG")
     {
-        overlayScriptFunctions.m_zeroArg[0x06098f30] = &scriptFunction_06098f30;
-        overlayScriptFunctions.m_zeroArg[0x06096a98] = &scriptFunction_06096a98;
-        overlayScriptFunctions.m_zeroArg[0x060989f8] = &scriptFunction_6057058_sub0;
-        overlayScriptFunctions.m_zeroArg[0x06098d2e] = &scriptFunction_06098d2e;
-        overlayScriptFunctions.m_zeroArg[0x06098d38] = &scriptFunction_06098d38;
-        overlayScriptFunctions.m_zeroArg[0x06096ac2] = &scriptFunction_06096ac2_disableRBG0;
-        overlayScriptFunctions.m_zeroArg[0x06098fea] = &scriptFunction_605762A;
-        overlayScriptFunctions.m_zeroArg[0x060999ce] = &isObjectCloseEnoughToActivate;
-        overlayScriptFunctions.m_zeroArg[0x060997f2] = &scriptFunction_060997f2;
-        overlayScriptFunctions.m_zeroArg[0x0609995c] = &scriptFunction_0609995c;
-        overlayScriptFunctions.m_zeroArg[0x0609cd72] = &scriptFunction_0609cd72;
-        overlayScriptFunctions.m_zeroArg[0x0609deba] = &scriptFunction_0609deba_toggleDayNight;
+        overlayScriptFunctions.m_zeroArg[0x06098f30] = {&scriptFunction_06098f30, "scriptFunction_06098f30"};
+        overlayScriptFunctions.m_zeroArg[0x06096a98] = {&scriptFunction_06096a98, "scriptFunction_06096a98"};
+        overlayScriptFunctions.m_zeroArg[0x060989f8] = {&scriptFunction_6057058_sub0, "scriptFunction_6057058_sub0"};
+        overlayScriptFunctions.m_zeroArg[0x06098d2e] = {&scriptFunction_06098d2e, "scriptFunction_06098d2e"};
+        overlayScriptFunctions.m_zeroArg[0x06098d38] = {&scriptFunction_06098d38, "scriptFunction_06098d38"};
+        overlayScriptFunctions.m_zeroArg[0x06096ac2] = {&scriptFunction_06096ac2_disableRBG0, "scriptFunction_06096ac2_disableRBG0"};
+        overlayScriptFunctions.m_zeroArg[0x06098fea] = {&scriptFunction_605762A, "scriptFunction_605762A"};
+        overlayScriptFunctions.m_zeroArg[0x060999ce] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
+        overlayScriptFunctions.m_zeroArg[0x060997f2] = {&scriptFunction_060997f2, "scriptFunction_060997f2"};
+        overlayScriptFunctions.m_zeroArg[0x0609995c] = {&scriptFunction_0609995c, "scriptFunction_0609995c"};
+        overlayScriptFunctions.m_zeroArg[0x0609cd72] = {&scriptFunction_0609cd72, "scriptFunction_0609cd72"};
+        overlayScriptFunctions.m_zeroArg[0x0609deba] = {&scriptFunction_0609deba_toggleDayNight, "scriptFunction_0609deba_toggleDayNight"};
 
-        overlayScriptFunctions.m_oneArg[0x0609991e] = &scriptFunction_0609991e;
-        overlayScriptFunctions.m_oneArg[0x0609ccfa] = &scriptFunction_0609ccfa;
-        overlayScriptFunctions.m_oneArg[0x0609cd22] = &scriptFunction_0609cd22;
-        overlayScriptFunctions.m_oneArg[0x0609cd0e] = &scriptFunction_0609cd0e;
-        overlayScriptFunctions.m_oneArg[0x0609e184] = &TwnFadeIn;
-        overlayScriptFunctions.m_oneArg[0x0609dffe] = &scriptFunction_0609dffe;
-        overlayScriptFunctions.m_oneArg[0x0609e1fc] = &TwnFadeOut;
+        overlayScriptFunctions.m_oneArg[0x0609991e] = {&scriptFunction_0609991e, "scriptFunction_0609991e"};
+        overlayScriptFunctions.m_oneArg[0x0609ccfa] = {&scriptFunction_0609ccfa, "scriptFunction_0609ccfa"};
+        overlayScriptFunctions.m_oneArg[0x0609cd22] = {&scriptFunction_0609cd22, "scriptFunction_0609cd22"};
+        overlayScriptFunctions.m_oneArg[0x0609cd0e] = {&scriptFunction_0609cd0e, "scriptFunction_0609cd0e"};
+        overlayScriptFunctions.m_oneArg[0x0609e184] = {&TwnFadeIn, "TwnFadeIn"};
+        overlayScriptFunctions.m_oneArg[0x0609dffe] = {&scriptFunction_0609dffe, "scriptFunction_0609dffe"};
+        overlayScriptFunctions.m_oneArg[0x0609e1fc] = {&TwnFadeOut, "TwnFadeOut"};
 
-        overlayScriptFunctions.m_oneArgPtr[0x0609e080] = &scriptFunction_0609e080_setupCameraWithPosition;
+        overlayScriptFunctions.m_oneArgPtr[0x0609e080] = {&scriptFunction_0609e080_setupCameraWithPosition, "scriptFunction_0609e080_setupCameraWithPosition"};
 
-        overlayScriptFunctions.m_twoArg[0x0609c644] = &scriptFunction_0609c644;
+        overlayScriptFunctions.m_twoArg[0x0609c644] = {&scriptFunction_0609c644, "scriptFunction_0609c644"};
 
-        overlayScriptFunctions.m_threeArg[0x06098a5c] = &scriptFunction_06098a5c_setupCameraMode1;
-        overlayScriptFunctions.m_threeArg[0x0609c574] = &scriptFunction_0609c574;
-        overlayScriptFunctions.m_threeArg[0x0609c93c] = &setupZoahNPCAnimation;
-        overlayScriptFunctions.m_threeArg[0x0609ca40] = &scriptFunction_0609ca40;
+        overlayScriptFunctions.m_threeArg[0x06098a5c] = {&scriptFunction_06098a5c_setupCameraMode1, "scriptFunction_06098a5c_setupCameraMode1"};
+        overlayScriptFunctions.m_threeArg[0x0609c574] = {&scriptFunction_0609c574, "scriptFunction_0609c574"};
+        overlayScriptFunctions.m_threeArg[0x0609c93c] = {&setupZoahNPCAnimation, "setupZoahNPCAnimation"};
+        overlayScriptFunctions.m_threeArg[0x0609ca40] = {&scriptFunction_0609ca40, "scriptFunction_0609ca40"};
 
-        overlayScriptFunctions.m_fourArg[0x0609c8a0] = &setNpcLocation;
-        overlayScriptFunctions.m_fourArg[0x0609c8ce] = &setNpcOrientation;
+        overlayScriptFunctions.m_fourArg[0x0609c8a0] = {&setNpcLocation, "setNpcLocation"};
+        overlayScriptFunctions.m_fourArg[0x0609c8ce] = {&setNpcOrientation, "setNpcOrientation"};
 
         for (int i = 0; i < 29; i++) {
             sSaturnPtr ptrBase = getSaturnPtr(0x060a0c30) + 0xC * i;
@@ -393,20 +393,7 @@ struct TWN_ZOAH_data : public sTownOverlay
     }
 };
 
-static sAnimationData* getZoahNPCAnimation(sNPC* pThis, s32 animIndex)
-{
-    sSaturnPtr entry = pThis->m30_animationTable + animIndex * 4;
-    u16 fileIndex = readSaturnU16(entry);
-    u16 animOffset = readSaturnU16(entry + 2);
-    if (fileIndex)
-    {
-        return dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset);
-    }
-    else
-    {
-        return pThis->m0_fileBundle->getAnimation(animOffset);
-    }
-}
+// Animation lookup is done inline at each call site, matching original binary structure
 
 static void updateZoahNPCSub1(sNPC* pThis)
 {
@@ -567,7 +554,13 @@ static void updateZoahNPCIdle(sNPC* pThis, s16& m14E)
         {
             s32 interpolation = (pThis->m2C_currentAnimation < 5) ? 5 : 10;
             pThis->m2C_currentAnimation = newAnim;
-            playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, newAnim), interpolation);
+            {
+                sSaturnPtr animEntry = pThis->m30_animationTable + newAnim * 4;
+                u16 animFileIdx = readSaturnU16(animEntry);
+                u16 animOffset = readSaturnU16(animEntry + 2);
+                sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pThis->m0_fileBundle->getAnimation(animOffset);
+                playAnimationGeneric(&pThis->m34_3dModel, pAnim, interpolation);
+            }
         }
     }
     updateAndInterpolateAnimation(&pThis->m34_3dModel);
@@ -590,7 +583,13 @@ static void updateZoahNPCWalkRun(sNPC* pThis, s16& m14E)
             if (speed < 0x28000)
             {
                 pThis->m2C_currentAnimation = 1;
-                playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 1), 5);
+                {
+                    sSaturnPtr animEntry = pThis->m30_animationTable + 1 * 4;
+                    u16 animFileIdx = readSaturnU16(animEntry);
+                    u16 animOffset = readSaturnU16(animEntry + 2);
+                    sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pThis->m0_fileBundle->getAnimation(animOffset);
+                    playAnimationGeneric(&pThis->m34_3dModel, pAnim, 5);
+                }
             }
         }
         else if (pThis->m2C_currentAnimation == 1)
@@ -598,13 +597,25 @@ static void updateZoahNPCWalkRun(sNPC* pThis, s16& m14E)
             if (speed > 0x30000)
             {
                 pThis->m2C_currentAnimation = 2;
-                playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 2), 5);
+                {
+                    sSaturnPtr animEntry = pThis->m30_animationTable + 2 * 4;
+                    u16 animFileIdx = readSaturnU16(animEntry);
+                    u16 animOffset = readSaturnU16(animEntry + 2);
+                    sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pThis->m0_fileBundle->getAnimation(animOffset);
+                    playAnimationGeneric(&pThis->m34_3dModel, pAnim, 5);
+                }
             }
         }
         else
         {
             pThis->m2C_currentAnimation = 1;
-            playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 1), 5);
+            {
+                sSaturnPtr animEntry = pThis->m30_animationTable + 1 * 4;
+                u16 animFileIdx = readSaturnU16(animEntry);
+                u16 animOffset = readSaturnU16(animEntry + 2);
+                sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pThis->m0_fileBundle->getAnimation(animOffset);
+                playAnimationGeneric(&pThis->m34_3dModel, pAnim, 5);
+            }
         }
 
         u32 stepsToAdvance = accumulator >> 16;
@@ -766,13 +777,25 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
                         if (pThis->mD == 4 && pThis->m14E != 0)
                         {
                             pThis->m2C_currentAnimation = schedAnim;
-                            initAnimation(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, schedAnim));
+                            {
+                                sSaturnPtr animEntry = pThis->m30_animationTable + schedAnim * 4;
+                                u16 animFileIdx = readSaturnU16(animEntry);
+                                u16 animOffset = readSaturnU16(animEntry + 2);
+                                sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pThis->m0_fileBundle->getAnimation(animOffset);
+                                initAnimation(&pThis->m34_3dModel, pAnim);
+                            }
                             pThis->m14E = 0;
                         }
                         else
                         {
                             pThis->m2C_currentAnimation = schedAnim;
-                            playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, schedAnim), 10);
+                            {
+                                sSaturnPtr animEntry = pThis->m30_animationTable + schedAnim * 4;
+                                u16 animFileIdx = readSaturnU16(animEntry);
+                                u16 animOffset = readSaturnU16(animEntry + 2);
+                                sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pThis->m0_fileBundle->getAnimation(animOffset);
+                                playAnimationGeneric(&pThis->m34_3dModel, pAnim, 10);
+                            }
                         }
                         updateAndInterpolateAnimation(&pThis->m34_3dModel);
                     }
@@ -799,7 +822,13 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
                 if (pThis->m2C_currentAnimation != 0)
                 {
                     pThis->m2C_currentAnimation = 0;
-                    playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 0), 5);
+                    {
+                        sSaturnPtr animEntry = pThis->m30_animationTable + 0 * 4;
+                        u16 animFileIdx = readSaturnU16(animEntry);
+                        u16 animOffset = readSaturnU16(animEntry + 2);
+                        sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pThis->m0_fileBundle->getAnimation(animOffset);
+                        playAnimationGeneric(&pThis->m34_3dModel, pAnim, 5);
+                    }
                 }
                 stepsToAdvance = 1;
             }
@@ -809,7 +838,13 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
                 if (pThis->m2C_currentAnimation != 1)
                 {
                     pThis->m2C_currentAnimation = 1;
-                    playAnimationGeneric(&pThis->m34_3dModel, getZoahNPCAnimation(pThis, 1), 5);
+                    {
+                        sSaturnPtr animEntry = pThis->m30_animationTable + 1 * 4;
+                        u16 animFileIdx = readSaturnU16(animEntry);
+                        u16 animOffset = readSaturnU16(animEntry + 2);
+                        sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pThis->m0_fileBundle->getAnimation(animOffset);
+                        playAnimationGeneric(&pThis->m34_3dModel, pAnim, 5);
+                    }
                 }
                 stepsToAdvance = accumulator >> 16;
             }
@@ -934,7 +969,13 @@ static s32 setupZoahNPCAnimation(s32 npcIndex, s32 animIndex, s32 controlState)
     else
     {
         pNPC->m2C_currentAnimation = animIndex;
-        playAnimationGeneric(&pNPC->m34_3dModel, getZoahNPCAnimation(pNPC, animIndex), 10);
+        {
+            sSaturnPtr animEntry = pNPC->m30_animationTable + animIndex * 4;
+            u16 animFileIdx = readSaturnU16(animEntry);
+            u16 animOffset = readSaturnU16(animEntry + 2);
+            sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pNPC->m0_fileBundle->getAnimation(animOffset);
+            playAnimationGeneric(&pNPC->m34_3dModel, pAnim, 10);
+        }
     }
     pNPC->mE_controlState = controlState;
     return 0;

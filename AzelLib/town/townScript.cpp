@@ -157,34 +157,33 @@ sKernelScriptFunctions gKernelScriptFunctions =
 {
     // zero arg
     {
-        {0x602C1D0, &fadeOutAllSequences},
-        {0x603011E, &terminateTown},
-        {0x600CDD4, &getNpcData0_5d},
+        {0x602C1D0, {&fadeOutAllSequences, "fadeOutAllSequences"}},
+        {0x603011E, {&terminateTown, "terminateTown"}},
+        {0x600CDD4, {&getNpcData0_5d, "getNpcData0_5d"}},
     },
     // one arg
     {
-        {0x600CCB4, &initNPC},
-        {0x602c2ca, &playSystemSoundEffect},
-        {0x6027110, &setNextGameStatus},
-        {0x602c32a, &playBattleSoundEffect},
+        {0x600CCB4, {&initNPC, "initNPC"}},
+        {0x602c2ca, {&playSystemSoundEffect, "playSystemSoundEffect"}},
+        {0x6027110, {&setNextGameStatus, "setNextGameStatus"}},
+        {0x602c32a, {&playBattleSoundEffect, "playBattleSoundEffect"}},
     },
     // one arg ptr
     {
-        {0x6014DF2, &initNPCFromStruct},
+        {0x6014DF2, {&initNPCFromStruct, "initNPCFromStruct"}},
     },
     // two arg
     {
-        {0x600CC78, &setSomethingInNpc0},
-        {0x60144c0, &updateWorldGrid}
+        {0x600CC78, {&setSomethingInNpc0, "setSomethingInNpc0"}},
+        {0x60144c0, {&updateWorldGrid, "updateWorldGrid"}},
     },
     // three arg
     {
-
     },
     // four arg
     {
-        {0x605AEE0, &setNpcLocation},
-        {0x605AF0E, &setNpcOrientation},
+        {0x605AEE0, {&setNpcLocation, "setNpcLocation"}},
+        {0x605AF0E, {&setNpcOrientation, "setNpcOrientation"}},
     },
 };
 
@@ -202,14 +201,12 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
     case 0:
         if (gKernelScriptFunctions.m_zeroArg.count(functionEA.m_offset))
         {
-            scriptFunction_zero_arg& pFunction = gKernelScriptFunctions.m_zeroArg.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction();
+            r4_pThis->m118_currentResult = gKernelScriptFunctions.m_zeroArg.find(functionEA.m_offset)->second.func();
         }
         else if(gCurrentTownOverlay->overlayScriptFunctions.m_zeroArg.count(functionEA.m_offset))
         {
             assert(gCurrentTownOverlay == r14.m_file);
-            scriptFunction_zero_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_zeroArg.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction();
+            r4_pThis->m118_currentResult = gCurrentTownOverlay->overlayScriptFunctions.m_zeroArg.find(functionEA.m_offset)->second.func();
         }
         else
         {
@@ -219,25 +216,21 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
     case 1:
         if (gKernelScriptFunctions.m_oneArg.count(functionEA.m_offset))
         {
-            scriptFunction_one_arg& pFunction = gKernelScriptFunctions.m_oneArg.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4));
+            r4_pThis->m118_currentResult = gKernelScriptFunctions.m_oneArg.find(functionEA.m_offset)->second.func(readSaturnS32(r14 + 4));
         }
         else if (gKernelScriptFunctions.m_oneArgPtr.count(functionEA.m_offset))
         {
-            scriptFunction_one_arg_ptr pFunction = gKernelScriptFunctions.m_oneArgPtr.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnEA(r14 + 4));
+            r4_pThis->m118_currentResult = gKernelScriptFunctions.m_oneArgPtr.find(functionEA.m_offset)->second.func(readSaturnEA(r14 + 4));
         }
         else if (gCurrentTownOverlay->overlayScriptFunctions.m_oneArg.count(functionEA.m_offset))
         {
             assert(gCurrentTownOverlay == r14.m_file);
-            scriptFunction_one_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_oneArg.find(readSaturnEA(r14).m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4));
+            r4_pThis->m118_currentResult = gCurrentTownOverlay->overlayScriptFunctions.m_oneArg.find(readSaturnEA(r14).m_offset)->second.func(readSaturnS32(r14 + 4));
         }
         else if (gCurrentTownOverlay->overlayScriptFunctions.m_oneArgPtr.count(functionEA.m_offset))
         {
             assert(gCurrentTownOverlay == r14.m_file);
-            scriptFunction_one_arg_ptr& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_oneArgPtr.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnEA(r14 + 4));
+            r4_pThis->m118_currentResult = gCurrentTownOverlay->overlayScriptFunctions.m_oneArgPtr.find(functionEA.m_offset)->second.func(readSaturnEA(r14 + 4));
         }
         else
         {
@@ -247,14 +240,12 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
     case 2:
         if (gKernelScriptFunctions.m_twoArg.count(functionEA.m_offset))
         {
-            scriptFunction_two_arg pFunction = gKernelScriptFunctions.m_twoArg.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8));
+            r4_pThis->m118_currentResult = gKernelScriptFunctions.m_twoArg.find(functionEA.m_offset)->second.func(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8));
         }
         else if (gCurrentTownOverlay->overlayScriptFunctions.m_twoArg.count(functionEA.m_offset))
         {
             assert(gCurrentTownOverlay == r14.m_file);
-            scriptFunction_two_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_twoArg.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8));
+            r4_pThis->m118_currentResult = gCurrentTownOverlay->overlayScriptFunctions.m_twoArg.find(functionEA.m_offset)->second.func(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8));
         }
         else
         {
@@ -264,14 +255,12 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
     case 3:
         if (gKernelScriptFunctions.m_threeArg.count(functionEA.m_offset))
         {
-            scriptFunction_three_arg pFunction = gKernelScriptFunctions.m_threeArg.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12));
+            r4_pThis->m118_currentResult = gKernelScriptFunctions.m_threeArg.find(functionEA.m_offset)->second.func(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12));
         }
         else if (gCurrentTownOverlay->overlayScriptFunctions.m_threeArg.count(functionEA.m_offset))
         {
             assert(gCurrentTownOverlay == r14.m_file);
-            scriptFunction_three_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_threeArg.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12));
+            r4_pThis->m118_currentResult = gCurrentTownOverlay->overlayScriptFunctions.m_threeArg.find(functionEA.m_offset)->second.func(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12));
         }
         else
         {
@@ -281,14 +270,12 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
     case 4:
         if (gKernelScriptFunctions.m_fourArg.count(functionEA.m_offset))
         {
-            scriptFunction_four_arg pFunction = gKernelScriptFunctions.m_fourArg.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12), readSaturnS32(r14 + 16));
+            r4_pThis->m118_currentResult = gKernelScriptFunctions.m_fourArg.find(functionEA.m_offset)->second.func(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12), readSaturnS32(r14 + 16));
         }
         else if (gCurrentTownOverlay->overlayScriptFunctions.m_fourArg.count(functionEA.m_offset))
         {
             assert(gCurrentTownOverlay == r14.m_file);
-            scriptFunction_four_arg& pFunction = gCurrentTownOverlay->overlayScriptFunctions.m_fourArg.find(functionEA.m_offset)->second;
-            r4_pThis->m118_currentResult = pFunction(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12), readSaturnS32(r14 + 16));
+            r4_pThis->m118_currentResult = gCurrentTownOverlay->overlayScriptFunctions.m_fourArg.find(functionEA.m_offset)->second.func(readSaturnS32(r14 + 4), readSaturnS32(r14 + 8), readSaturnS32(r14 + 12), readSaturnS32(r14 + 16));
         }
         else
         {

@@ -1337,19 +1337,19 @@ s32 scriptFunction_6057470()
 
 TWN_E006_data::TWN_E006_data() : sTownOverlay("TWN_E006.PRG")
 {
-    overlayScriptFunctions.m_zeroArg[0x60573d8] = &e006_scriptFunction_60573d8;
-    overlayScriptFunctions.m_zeroArg[0x6056918] = &e006_scriptFunction_6056918;
-    overlayScriptFunctions.m_zeroArg[0x6057438] = &e006_scriptFunction_6057438;
-    overlayScriptFunctions.m_zeroArg[0x6057470] = &scriptFunction_6057470;
-    overlayScriptFunctions.m_zeroArg[0x6056926] = &scriptFunction_6056926;
+    overlayScriptFunctions.m_zeroArg[0x60573d8] = {&e006_scriptFunction_60573d8, "e006_scriptFunction_60573d8"};
+    overlayScriptFunctions.m_zeroArg[0x6056918] = {&e006_scriptFunction_6056918, "e006_scriptFunction_6056918"};
+    overlayScriptFunctions.m_zeroArg[0x6057438] = {&e006_scriptFunction_6057438, "e006_scriptFunction_6057438"};
+    overlayScriptFunctions.m_zeroArg[0x6057470] = {&scriptFunction_6057470, "scriptFunction_6057470"};
+    overlayScriptFunctions.m_zeroArg[0x6056926] = {&scriptFunction_6056926, "scriptFunction_6056926"};
 
-    overlayScriptFunctions.m_oneArg[0x60573b0] = &createEPKPlayer;
-    overlayScriptFunctions.m_oneArg[0x605861e] = &setupDragonEntityForCutscene;
-    overlayScriptFunctions.m_oneArg[0x605838C] = &SetupColorOffset;
-    overlayScriptFunctions.m_oneArg[0x605be04] = &TwnFadeOut;
-    overlayScriptFunctions.m_oneArg[0x605bd8c] = &TwnFadeIn;
+    overlayScriptFunctions.m_oneArg[0x60573b0] = {&createEPKPlayer, "createEPKPlayer"};
+    overlayScriptFunctions.m_oneArg[0x605861e] = {&setupDragonEntityForCutscene, "setupDragonEntityForCutscene"};
+    overlayScriptFunctions.m_oneArg[0x605838C] = {&SetupColorOffset, "SetupColorOffset"};
+    overlayScriptFunctions.m_oneArg[0x605be04] = {&TwnFadeOut, "TwnFadeOut"};
+    overlayScriptFunctions.m_oneArg[0x605bd8c] = {&TwnFadeIn, "TwnFadeIn"};
 
-    overlayScriptFunctions.m_twoArg[0x605bb24] = &townCamera_setup;
+    overlayScriptFunctions.m_twoArg[0x605bb24] = {&townCamera_setup, "townCamera_setup"};
 
     mTownSetups.push_back(readTownSetup(getSaturnPtr(0x605e1c0), 1));
 }

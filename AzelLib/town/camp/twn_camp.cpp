@@ -181,23 +181,23 @@ struct TWN_CAMP_data : public sTownOverlay
 
     TWN_CAMP_data() : sTownOverlay("TWN_CAMP.PRG")
     {
-        overlayScriptFunctions.m_zeroArg[0x0606cb54] = &scriptFunction_606cb54;
-        overlayScriptFunctions.m_zeroArg[0x0606c952] = &scriptFunction_0606c952;
-        overlayScriptFunctions.m_zeroArg[0x0606c95c] = &scriptFunction_0606c95c;
-        overlayScriptFunctions.m_zeroArg[0x06071ade] = &scriptFunction_06071ade_toggleDayNight;
+        overlayScriptFunctions.m_zeroArg[0x0606cb54] = {&scriptFunction_606cb54, "scriptFunction_606cb54"};
+        overlayScriptFunctions.m_zeroArg[0x0606c952] = {&scriptFunction_0606c952, "scriptFunction_0606c952"};
+        overlayScriptFunctions.m_zeroArg[0x0606c95c] = {&scriptFunction_0606c95c, "scriptFunction_0606c95c"};
+        overlayScriptFunctions.m_zeroArg[0x06071ade] = {&scriptFunction_06071ade_toggleDayNight, "scriptFunction_06071ade_toggleDayNight"};
 
-        overlayScriptFunctions.m_oneArg[0x6071e20] = &TwnFadeOut;
-        overlayScriptFunctions.m_oneArg[0x6071da8] = &TwnFadeIn;
-        overlayScriptFunctions.m_oneArg[0x60541c4] = &scriptFunction_60541c4;
-        overlayScriptFunctions.m_oneArg[0x6056484] = &scriptFunction_6056484;
+        overlayScriptFunctions.m_oneArg[0x6071e20] = {&TwnFadeOut, "TwnFadeOut"};
+        overlayScriptFunctions.m_oneArg[0x6071da8] = {&TwnFadeIn, "TwnFadeIn"};
+        overlayScriptFunctions.m_oneArg[0x60541c4] = {&scriptFunction_60541c4, "scriptFunction_60541c4"};
+        overlayScriptFunctions.m_oneArg[0x6056484] = {&scriptFunction_6056484, "scriptFunction_6056484"};
 
-        overlayScriptFunctions.m_oneArgPtr[0x606C70C] = &scriptFunction_606c70c;
-        overlayScriptFunctions.m_oneArgPtr[0x6071ca4] = &campCameraSetupWithPosition;
+        overlayScriptFunctions.m_oneArgPtr[0x606C70C] = {&scriptFunction_606c70c, "scriptFunction_606c70c"};
+        overlayScriptFunctions.m_oneArgPtr[0x6071ca4] = {&campCameraSetupWithPosition, "campCameraSetupWithPosition"};
 
-        overlayScriptFunctions.m_twoArg[0x6071b40] = &townCamera_setup;
+        overlayScriptFunctions.m_twoArg[0x6071b40] = {&townCamera_setup, "townCamera_setup"};
 
-        overlayScriptFunctions.m_fourArg[0x60704c4] = &setNpcLocation;
-        overlayScriptFunctions.m_fourArg[0x60704f2] = &setNpcOrientation;
+        overlayScriptFunctions.m_fourArg[0x60704c4] = {&setNpcLocation, "setNpcLocation"};
+        overlayScriptFunctions.m_fourArg[0x60704f2] = {&setNpcOrientation, "setNpcOrientation"};
 
         for (int i = 0; i < 8; i++) {
             sSaturnPtr ptrBase = getSaturnPtr(0x6074068) + 0xC * i;

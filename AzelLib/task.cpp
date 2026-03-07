@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "debugWindows.h"
 
 s_task* taskListHead;
 int numActiveTask;
@@ -23,7 +24,9 @@ void PrintDebugTaskHierarchy(s_task* pTask)
 
 void PrintDebugTasksHierarchy()
 {
-    ImGui::Begin("Tasks");
+    if (!gDebugWindows.tasks)
+        return;
+    ImGui::Begin("Tasks", &gDebugWindows.tasks);
     if (taskListHead)
     {
         PrintDebugTaskHierarchy(taskListHead);
