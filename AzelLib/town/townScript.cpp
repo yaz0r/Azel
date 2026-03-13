@@ -20,6 +20,20 @@ s32 playBattleSoundEffect(s32 effectIndex); // TODO: cleanup
 
 sScriptTask* currentResTask = nullptr;
 
+s32 canCurrentResActivate()
+{
+    if (currentResTask->m8_currentLCSType == 1) {
+        if (currentResTask->m10_distanceToLCS <= npcData0.m54_activationNear) {
+            return 1;
+        }
+    }
+    else if (currentResTask->m8_currentLCSType == 2) {
+        if (currentResTask->m10_distanceToLCS <= npcData0.m58_activationFar) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_12_4* r7)
 {

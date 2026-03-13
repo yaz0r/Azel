@@ -48,7 +48,7 @@ const s_MCB_CGB fieldFileList[] =
 { "FLD_A3_1.MCB", "FLD_A3_1.CGB" },
 { "FLD_A3_2.MCB", "FLD_A3_2.CGB" },
 { "FLD_A3_3.MCB", "FLD_A3_3.CGB" },
-{ NULL, NULL }
+{ (const char*)-1, NULL }
 };
 
 std::vector<sLCSTaskDrawSub5Sub1_Data1> readLCSTaskDrawSub5Sub1_Data1(sSaturnPtr source)

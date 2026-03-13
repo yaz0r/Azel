@@ -17,6 +17,14 @@ struct s_initialTaskWorkArea : public s_workAreaTemplate<s_initialTaskWorkArea>
 
 s_initialTaskStatus initialTaskStatus;
 
+// 06024b56
+void resetNamesForNewGame() {
+    allocateGlobalStringTable(3);
+    setGlobalStringTableEntry(0, mainGameState.gameStats.m94_playerName);
+    setGlobalStringTableEntry(1, mainGameState.gameStats.mA5_dragonName);
+    setGlobalStringTableEntry(2, "");
+}
+
 void s_initialTaskWorkArea::Init(s_initialTaskWorkArea* pWorkArea)
 {
     pWorkArea->m_state = 0;
@@ -32,8 +40,7 @@ void s_initialTaskWorkArea::Init(s_initialTaskWorkArea* pWorkArea)
         initialTaskStatus.m_pendingTask = createTitleScreenTask;
     }
 
-    PDS_unimplemented("resetNamesForNewGame");
-    //resetNamesForNewGame();
+    resetNamesForNewGame();
 }
 void s_initialTaskWorkArea::Draw(s_initialTaskWorkArea* pWorkArea)
 {

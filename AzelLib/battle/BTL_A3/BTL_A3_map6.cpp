@@ -121,16 +121,16 @@ tCoefficientTable coefficientB1(0x80 * 4);
 
 std::array<std::array<sCoefficientTableData, 2>, 2> gCoefficientTables;
 
-// TODO: figure out why the disassembly of r3 craps out
+// 060323f4
 void setVdp2TableAddress(int p1, u8* vdp2Dest)
 {
     int var5 = (getVdp2VramOffset(vdp2Dest) - 0x25E00000) / 2;
     int bankIndex = performModulo(0x40000, var5 * 2);
 
     int r3 = var5;
-    if (r3 >= 0)
+    if (r3 < 0)
     {
-        r3 += 0x1FFFF;
+        r3 += 0x1FFFF; // rounding correction for negative division
     }
 
     r3 /= 2;
@@ -149,6 +149,9 @@ void setVdp2TableAddress(int p1, u8* vdp2Dest)
         break;
     case 4:
     case 5:
+        vdp2Controls.m4_pendingVdp2Regs->mBC_RPTAU = var5 >> 16;
+        vdp2Controls.m4_pendingVdp2Regs->mBE_RPTAL = var5;
+        vdp2Controls.m_isDirty = 1;
         break;
     case 6: // RAKTAOS Coefficient Table Address Offset A
         vdp2Controls.m4_pendingVdp2Regs->mB6_KTAOF &= 0xFFF8;
@@ -187,8 +190,8 @@ void setupScrollAndRotation(int p1, void* p2, void* p3, u8* coefficientTableAddr
 {
     sVdpVar1& dest = vdpVar1[p1];
     dest.mE_isDoubleBuffered = 1;
-    dest.m0_source[0] = &p2;
-    dest.m0_source[1] = &p3;
+    dest.m0_source[0] = p2;
+    dest.m0_source[1] = p3;
     dest.m8_destination = coefficientTableAddress;
     dest.mC_size = p5;
     dest.m10_nextTransfert = 0;
@@ -213,7 +216,6 @@ void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>
     setupScrollAndRotation(p1, p2.data(), p3.data(), coefficientTableAddress, numCoefficients);
     initCoefficientTable(p2, p3, numCoefficients * 4);
 
-    // TODO: this is super broken in ghidra, why?
     switch (p1)
     {
     case 6:
@@ -267,21 +269,20 @@ void s_BTL_A3_Env_InitVdp2Sub3Sub1(sCoefficientTableData& table)
 
 void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table)
 {
-    if (layerIndex != 4)
-    {
-        if (layerIndex != 5)
-        {
-            return;
-        }
-
+    switch (layerIndex) {
+    case 5:
         s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[1][0]);
         s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[1][1]);
         setupScrollAndRotation(5, &gCoefficientTables[1][0], &gCoefficientTables[1][1], table + 0x80, 6);
+        [[fallthrough]];
+    case 4:
+        s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[0][0]);
+        s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[0][1]);
+        setupScrollAndRotation(4, &gCoefficientTables[0][0], &gCoefficientTables[0][1], table, 6);
+        break;
+    default:
+        assert(0);
     }
-
-    s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[0][0]);
-    s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[0][1]);
-    setupScrollAndRotation(5, &gCoefficientTables[0][0], &gCoefficientTables[0][1], table + 0x80, 6);
 }
 
 void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
@@ -612,11 +613,11 @@ void beginRotationPass(int passIndex, fixedPoint focalLength)
 
     if (gRotationPassState.m0_planeIndex == 0)
     {
-        vdp2Controls.m_8 = fixedPoint::fromInteger(vdp2Controls.m_10);
+        vdp2Controls.m_8 = fixedPoint::fromInteger(vdp2Controls.m_C);
     }
     else
     {
-        vdp2Controls.m_8 = fixedPoint::fromInteger(vdp2Controls.m_C);
+        vdp2Controls.m_8 = fixedPoint::fromInteger(vdp2Controls.m_10);
     }
 }
 

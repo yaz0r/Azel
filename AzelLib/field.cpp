@@ -98,7 +98,7 @@ void setupFileList(const s_MCB_CGB* fileList)
     u32 largestMCB = 0;
     u32 largestCGB = 0;
 
-    while (currentFileList->MCB)
+    while (currentFileList->MCB != (const char*)-1)
     {
         largestMCB = std::max(fieldTaskPtr->m8_pSubFieldData->m34_MCBFilesSizes[currentFileIndex], largestMCB);
         largestCGB = std::max(fieldTaskPtr->m8_pSubFieldData->m1B4_CGBFilesSizes[currentFileIndex], largestCGB);

@@ -80,7 +80,6 @@ void processTasks(s_task** ppTask)
             }
             if (!pauseEngine[0])
             {
-                
                 pTask->getWorkArea()->Update();
             }
 

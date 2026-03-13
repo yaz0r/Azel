@@ -698,6 +698,9 @@ void setupRGB0(const sLayerConfig* setup)
 
         switch (command)
         {
+        case m1_TPEN:
+            vdp2Controls.m4_pendingVdp2Regs->m20_BGON = (vdp2Controls.m4_pendingVdp2Regs->m20_BGON & 0xEFFF) | (arg << 12);
+            break;
         case m2_CHCN:
             vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB = (vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0x8fff) | (arg << 0xC);
             break;
@@ -775,6 +778,9 @@ void setupRotationParams2(const sLayerConfig* setup)
 
         switch (command)
         {
+        case m31_RxKTE:
+            vdp2Controls.m4_pendingVdp2Regs->mB4_KTCTL = (vdp2Controls.m4_pendingVdp2Regs->mB4_KTCTL & 0xFEFF) | ((arg & 1) << 8);
+            break;
         default:
             assert(false);
             break;
@@ -782,6 +788,41 @@ void setupRotationParams2(const sLayerConfig* setup)
     };
 
     vdp2Controls.m_isDirty = true;
+}
+
+// 06034768
+void setupWCTLD(const sLayerConfig* setup)
+{
+    auto* regs = vdp2Controls.m4_pendingVdp2Regs;
+    while (eVdp2LayerConfig command = setup->m_configType)
+    {
+        u32 arg = setup->m_value;
+        setup++;
+
+        switch (command)
+        {
+        case 0x21:
+            regs->mD6_WCTLD = (regs->mD6_WCTLD & 0xFF7F) | (u16)(arg << 7);
+            break;
+        case 0x22:
+            regs->mD6_WCTLD = (regs->mD6_WCTLD & 0xFFFD) | (u16)(arg << 1);
+            break;
+        case 0x23:
+            regs->mD6_WCTLD = (regs->mD6_WCTLD & 0xFFF7) | (u16)(arg << 3);
+            break;
+        case 0x25:
+            regs->mD6_WCTLD = (regs->mD6_WCTLD & 0xFFFE) | (u16)arg;
+            break;
+        case 0x26:
+            regs->mD6_WCTLD = (regs->mD6_WCTLD & 0xFFFB) | (u16)(arg << 2);
+            break;
+        default:
+            assert(false);
+            break;
+        }
+
+        vdp2Controls.m_isDirty = 1;
+    };
 }
 
 u32 rotateRightR0ByR1(u32 r0, u32 r1)
@@ -1234,19 +1275,51 @@ void initVdp2StringControl()
     pVdp2StringControl->pNext = 0;
 }
 
-struct {
-    u32 m0;
+struct sVdp2StringContext2 {
+    s32 m0_numEntries;
     u32 m4; // 4
-    u32 m8; // 8
+    const char** m8_globalStrings; // 8
     u32 mC; // C
 }vdp2StringContext2;
 
 void resetVdp2StringContext2()
 {
-    vdp2StringContext2.m0 = 0;
+    vdp2StringContext2.m0_numEntries = 0;
     vdp2StringContext2.m4 = 0;
-    vdp2StringContext2.m8 = 0;
+    vdp2StringContext2.m8_globalStrings = nullptr;
     vdp2StringContext2.mC = 0;
+}
+
+// 06025648
+void allocateGlobalStringTable(s32 count)
+{
+    if (vdp2StringContext2.m8_globalStrings != nullptr)
+    {
+        free(vdp2StringContext2.m8_globalStrings);
+    }
+    vdp2StringContext2.m0_numEntries = count;
+    if (count < 1)
+    {
+        vdp2StringContext2.m8_globalStrings = nullptr;
+    }
+    else
+    {
+        vdp2StringContext2.m8_globalStrings = (const char**)malloc(count * sizeof(const char*));
+        for (s32 i = count - 1; i >= 0; i--)
+        {
+            vdp2StringContext2.m8_globalStrings[i] = nullptr;
+        }
+    }
+}
+
+// 06025684
+void setGlobalStringTableEntry(s32 index, const char* pString)
+{
+    if (index >= vdp2StringContext2.m0_numEntries)
+    {
+        return;
+    }
+    vdp2StringContext2.m8_globalStrings[index] = pString;
 }
 
 void resetVdp2StringContext()
@@ -1584,17 +1657,30 @@ void printVdp2String(s_stringStatusQuery* vars)
             break;
         case '%':
         {
-            s32 r4 = *(vars->m20_string++);
-            r4 &= 0xFF;
-            switch (r4)
+            u8 fmtChar = *(vars->m20_string++) & 0xFF;
+            if (fmtChar == '%') // '%%' → render literal '%'
             {
-            case 0x61:
-                printVdp2StringSub2(*(vars->m20_string++) - 0x30);
-                break;
-            default:
-                assert(0);
-                break;
+                s16 sVar5 = (s16)r11;
+                setVdp2VramU16(vars->m24_vdp2MemoryOffset, sVar5 + 10);
+                setVdp2VramU16(vars->m24_vdp2MemoryOffset + 0x80, sVar5 + 11);
+                vars->m24_vdp2MemoryOffset += 2;
+                vars->m0_cursorX++;
             }
+            else if (fmtChar == 0x61) // '%a<digit>' → string substitution
+            {
+                printVdp2StringSub2(*(vars->m20_string++) - 0x30);
+            }
+            else if (fmtChar == 0x63) // '%c<digit>' → color change
+            {
+                u8 colorDigit = *(vars->m20_string++) & 0xFF;
+                vars->m28 = (colorDigit - 0x30) & 7;
+                if ((s16)vars->m28 == 9)
+                {
+                    vars->m28 = (u16)(vdp2StringContext.m0 & 0xFFFF);
+                }
+                r11 = (printVdp2StringTable[vars->m28] << 12) + 0x63;
+            }
+            break;
         }
         default:
             setVdp2VramU16(vars->m24_vdp2MemoryOffset, r11 + (r4 - 0x20) * 2);
@@ -1642,9 +1728,40 @@ s32 computeStringLength(const char* pString, s32 r5)
         case 0:
         case 0xA:
             return r14;
-        case 0x25:
-                assert(0);
-        break;
+        case 0x25: // '%'
+        {
+            u8 nextChar = *pString & 0xFF;
+            pString++;
+            if (nextChar == 0x25) // '%%' → literal '%'
+            {
+                // counts as 1 visible char, but we already increment below
+                // net: no adjustment needed
+                break;
+            }
+            else if (nextChar == 0x61) // '%a<digit>' → string substitution
+            {
+                u8 digit = *pString & 0xFF;
+                pString++;
+                if (vdp2StringContext2.m8_globalStrings)
+                {
+                    s32 substLen = computeStringLength(vdp2StringContext2.m8_globalStrings[(s8)digit - 0x30], 999);
+                    r14 = r14 + 1 + substLen - 3;
+                }
+                break;
+            }
+            else if (nextChar == 0x63) // '%c<x>' → color code
+            {
+                pString++; // skip color byte
+                r14 -= 2;
+                break;
+            }
+            else
+            {
+                // unknown format specifier, count as 1 extra char
+                r14++;
+                break;
+            }
+        }
         default:
             break;
         }

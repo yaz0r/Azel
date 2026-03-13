@@ -185,6 +185,7 @@ struct TWN_CAMP_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x0606c952] = {&scriptFunction_0606c952, "scriptFunction_0606c952"};
         overlayScriptFunctions.m_zeroArg[0x0606c95c] = {&scriptFunction_0606c95c, "scriptFunction_0606c95c"};
         overlayScriptFunctions.m_zeroArg[0x06071ade] = {&scriptFunction_06071ade_toggleDayNight, "scriptFunction_06071ade_toggleDayNight"};
+        overlayScriptFunctions.m_zeroArg[0x0606d5bc] = {&canCurrentResActivate, "canCurrentResActivate"};
 
         overlayScriptFunctions.m_oneArg[0x6071e20] = {&TwnFadeOut, "TwnFadeOut"};
         overlayScriptFunctions.m_oneArg[0x6071da8] = {&TwnFadeIn, "TwnFadeIn"};

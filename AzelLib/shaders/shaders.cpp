@@ -13,6 +13,8 @@
 #include "shaders/generated/spirv/VDP2_blit_ps.sc.bin.h"
 #include "shaders/generated/spirv/VDP2_blit_vs.sc.bin.h"
 #include "shaders/generated/spirv/VDP2_ps.sc.bin.h"
+#include "shaders/generated/spirv/VDP2_RBG0_ps.sc.bin.h"
+#include "shaders/generated/spirv/VDP2_RBG0_dual_ps.sc.bin.h"
 #include "shaders/generated/spirv/VDP2_vs.sc.bin.h"
 #endif
 
@@ -28,6 +30,8 @@
 #include "shaders/generated/metal/VDP2_blit_ps.sc.bin.h"
 #include "shaders/generated/metal/VDP2_blit_vs.sc.bin.h"
 #include "shaders/generated/metal/VDP2_ps.sc.bin.h"
+#include "shaders/generated/metal/VDP2_RBG0_ps.sc.bin.h"
+#include "shaders/generated/metal/VDP2_RBG0_dual_ps.sc.bin.h"
 #include "shaders/generated/metal/VDP2_vs.sc.bin.h"
 #endif
 
@@ -43,6 +47,8 @@
 #include "shaders/generated/glsl/VDP2_blit_ps.sc.bin.h"
 #include "shaders/generated/glsl/VDP2_blit_vs.sc.bin.h"
 #include "shaders/generated/glsl/VDP2_ps.sc.bin.h"
+#include "shaders/generated/glsl/VDP2_RBG0_ps.sc.bin.h"
+#include "shaders/generated/glsl/VDP2_RBG0_dual_ps.sc.bin.h"
 #include "shaders/generated/glsl/VDP2_vs.sc.bin.h"
 #endif
 
@@ -58,6 +64,8 @@
 #include "shaders/generated/dx11/VDP2_blit_ps.sc.bin.h"
 #include "shaders/generated/dx11/VDP2_blit_vs.sc.bin.h"
 #include "shaders/generated/dx11/VDP2_ps.sc.bin.h"
+#include "shaders/generated/dx11/VDP2_RBG0_ps.sc.bin.h"
+#include "shaders/generated/dx11/VDP2_RBG0_dual_ps.sc.bin.h"
 #include "shaders/generated/dx11/VDP2_vs.sc.bin.h"
 #endif
 
@@ -74,6 +82,8 @@ static const bgfx::EmbeddedShader s_embeddedShaders[] =
     BGFX_EMBEDDED_SHADER(VDP2_blit_ps),
     BGFX_EMBEDDED_SHADER(VDP2_blit_vs),
     BGFX_EMBEDDED_SHADER(VDP2_ps),
+    BGFX_EMBEDDED_SHADER(VDP2_RBG0_ps),
+    BGFX_EMBEDDED_SHADER(VDP2_RBG0_dual_ps),
     BGFX_EMBEDDED_SHADER(VDP2_vs),
 
     BGFX_EMBEDDED_SHADER_END()

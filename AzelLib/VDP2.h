@@ -246,6 +246,7 @@ void setupNBG3(const sLayerConfig* setup);
 void setupRGB0(const sLayerConfig* setup);
 void setupRotationParams(const sLayerConfig* setup);
 void setupRotationParams2(const sLayerConfig* setup);
+void setupWCTLD(const sLayerConfig* setup);
 
 void setupVDP2StringRendering(s32 x, s32 y, s32 width, s32 height);
 void vdp2DebugPrintSetPosition(s32 x, s32 y);
@@ -376,6 +377,9 @@ void printVdp2String(s_stringStatusQuery* vars);
 void VDP2DrawString(const char*);
 s32 computeStringLength(sSaturnPtr pString, s32 r5);
 s32 computeStringLength(const char*, s32 r5);
+
+void allocateGlobalStringTable(s32 count);
+void setGlobalStringTableEntry(s32 index, const char* pString);
 
 void drawBlueBox(s32 x, s32 y, s32 width, s32 height, u32);
 void clearBlueBox(s32 x, s32 y, s32 width, s32 height);

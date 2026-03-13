@@ -1100,8 +1100,6 @@ void loopIteration()
     }
     else
     {
-        endOfFrame();
-
         //copySMPCOutputStatus();
 
         updateInputs();
@@ -1149,6 +1147,11 @@ void loopIteration()
         flushVdp1();
 
         updateSound();
+
+        // VBlank: DMA VDP2 data to VRAM, swap VDP1 buffers.
+        // Must run after runTasks/flushVdp1 (game fills data) and before
+        // azelSdl_EndFrame (renderer reads VRAM), matching Saturn timing.
+        endOfFrame();
 
         //lastUpdateFunction();
     }

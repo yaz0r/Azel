@@ -240,7 +240,7 @@ p_workArea startCameraTask(p_workArea pParent);
 extern s32* twnVar1;
 extern s32 twnVar2;
 void drawLcs();
-bool canCurrentResActivate();
+s32 canCurrentResActivate();
 s32 isObjectCloseEnoughToActivate();
 void updateEdgePosition(sNPC* r4);
 s32 TwnFadeIn(s32 arg0);

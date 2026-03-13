@@ -155,26 +155,6 @@ void drawLcsSprite(const sVec2_S16& r4, s32 r5_index)
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
-bool canCurrentResActivate()
-{
-    switch (currentResTask->m8_currentLCSType)
-    {
-    case 1:
-        if (currentResTask->m10_distanceToLCS > npcData0.m54_activationNear)
-            return false;
-        else
-            return true;
-    case 2:
-        if (currentResTask->m10_distanceToLCS > npcData0.m58_activationFar)
-            return false;
-        else
-            return true;
-    default:
-        return false;
-        break;
-    }
-}
-
 void drawLcs()
 {
     if ((npcData0.mFC & 0x10) && !(npcData0.mFC & 0x8))

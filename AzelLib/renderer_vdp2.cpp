@@ -836,12 +836,23 @@ static s32 fpMul(s32 a, s32 b)
 //----------------------------------------------------------------------
 // RBG0 CPU renderer
 //----------------------------------------------------------------------
+static s32 readCoefficientFromVRAM(u32 vramAddr, bool& msb)
+{
+    // Read 32-bit coefficient from VDP2 VRAM (mode 0/2, coefdatasize=4)
+    // VRAM data is native little-endian (written by x86 code or memcpy DMA)
+    s32 coefVal = *(s32*)getVdp2Vram(vramAddr & 0x7FFFF);
+    msb = (coefVal >> 31) & 1;
+    // Lower 24 bits with sign extension (Vdp2ReadCoefficientMode0_2FP)
+    s32 kx = (coefVal & 0x00FFFFFF) | ((coefVal & 0x00800000) ? 0xFF000000 : 0);
+    return kx;
+}
+
 static void renderLayerCPU_RBG0(
     const sCoefficientTableData& tA,
-    const std::vector<fixedPoint>* pCoeffsA,
     const sCoefficientTableData* pTB,
     u32 textureWidth, u32 textureHeight,
     const s_layerData& layerDataA, const s_layerData* pLayerDataB,
+    u16 rpmd,
     u32* textureOutput)
 {
     s_tileDimensions dA = computeTileDimensions(layerDataA);
@@ -882,7 +893,20 @@ static void renderLayerCPU_RBG0(
     // dX = A*deltaX + B*deltaY (rotation matrix applied to delta)
     s32 dX_A = fpMul(A_A, deltaX_A) + fpMul(B_A, deltaY_A);
     s32 dY_A = fpMul(D_A, deltaX_A) + fpMul(E_A, deltaY_A);
-    s32 deltaKAst_A = truncFP(tA.m58);
+    s32 deltaKAst_A = truncFP(tA.m58); // per-scanline Y step through coefficient table
+    s32 deltaKAx_A = truncFP(tA.m5C);  // per-pixel X step through coefficient table
+
+    u16 ktctl = vdp2Controls.m4_pendingVdp2Regs->mB4_KTCTL;
+    u16 ktaof = vdp2Controls.m4_pendingVdp2Regs->mB6_KTAOF;
+    bool coefenab_A = (ktctl & 0x01) != 0;
+    u32 coefdatasize_A = (ktctl & 0x02) ? 2 : 4;
+    u32 coeftbladdr_A = 0;
+    if (coefenab_A)
+    {
+        coeftbladdr_A = (u32)(ktaof & 0x7) * coefdatasize_A * 0x10000;
+    }
+    s32 KAst_A = truncFP(tA.m54);
+    bool perPixelCoeff_A = coefenab_A && (deltaKAx_A != 0);
 
     // Coordinate wrapping masks: mapwh * planeDotWidth/Height - 1
     u32 xmask_A = 4 * dA.planeDotWidth - 1;
@@ -893,6 +917,10 @@ static void renderLayerCPU_RBG0(
     u32 xmask_B = 0, ymask_B = 0;
     s32 dX_B = 0, dY_B = 0;
     s32 A_B = 0, B_B = 0, C_B = 0, D_B = 0, E_B = 0, F_B = 0;
+    s32 deltaKAst_B = 0, deltaKAx_B = 0;
+    bool perPixelCoeff_B = false;
+    bool coefenab_B = false;
+    u32 coefdatasize_B = 4, coeftbladdr_B = 0;
     if (pTB)
     {
         A_B = truncFP(pTB->m1C); B_B = truncFP(pTB->m20); C_B = truncFP(pTB->m24);
@@ -916,33 +944,108 @@ static void renderLayerCPU_RBG0(
             xmask_B = 4 * dBtmp.planeDotWidth - 1;
             ymask_B = 4 * dBtmp.planeDotHeight - 1;
         }
+        // Coefficient table B setup
+        deltaKAst_B = truncFP(pTB->m58);
+        deltaKAx_B = truncFP(pTB->m5C);
+        coefenab_B = (ktctl & 0x100) != 0;
+        coefdatasize_B = (ktctl & 0x200) ? 2 : 4;
+        if (coefenab_B)
+        {
+            coeftbladdr_B = (u32)((ktaof >> 8) & 0x7) * coefdatasize_B * 0x10000;
+        }
+        perPixelCoeff_B = coefenab_B && (deltaKAx_B != 0);
     }
 
-    // Coefficient iteration: integer + fractional parts (coefy/rcoefy split)
-    u32 coefy_A = 0, rcoefy_A = 0;
+    // Coefficient accumulator: KAst + deltaKAst per scanline (+ deltaKAx per pixel)
+    s32 coefAccum_A = KAst_A;
+    s32 coefAccum_B = pTB ? truncFP(pTB->m54) : 0;
+
+    // Window setup for RPMD=3 (rotation parameter window switching)
+    // WCTLD controls which window(s) select between param A and B
+    u16 wctld = vdp2Controls.m4_pendingVdp2Regs->mD6_WCTLD;
+    bool useRPWindow = (rpmd == 3);
+    bool rpWnd0Enabled = useRPWindow && (wctld & 0x2);
+    bool rpWnd0Area = (wctld & 0x1); // 0=outside, 1=inside
+    bool rpWnd1Enabled = useRPWindow && (wctld & 0x8);
+    bool rpWnd1Area = (wctld & 0x4); // 0=outside, 1=inside
+
+    // Rectangular window coordinates
+    struct { int xstart, ystart, xend, yend; } rpWnd[2] = {};
+    if (rpWnd0Enabled)
+    {
+        rpWnd[0].xstart = (vdp2Controls.m4_pendingVdp2Regs->mC0_WPSX0 >> 1) & 0x1FF;
+        rpWnd[0].ystart = vdp2Controls.m4_pendingVdp2Regs->mC2_WPSY0 & 0x1FF;
+        rpWnd[0].xend = (vdp2Controls.m4_pendingVdp2Regs->mC4_WPEX0 >> 1) & 0x1FF;
+        rpWnd[0].yend = vdp2Controls.m4_pendingVdp2Regs->mC6_WPEY0 & 0x1FF;
+    }
+    if (rpWnd1Enabled)
+    {
+        rpWnd[1].xstart = (vdp2Controls.m4_pendingVdp2Regs->mC8_WPSX1 >> 1) & 0x1FF;
+        rpWnd[1].ystart = vdp2Controls.m4_pendingVdp2Regs->mCA_WPSY1 & 0x1FF;
+        rpWnd[1].xend = (vdp2Controls.m4_pendingVdp2Regs->mCC_WPEX1 >> 1) & 0x1FF;
+        rpWnd[1].yend = vdp2Controls.m4_pendingVdp2Regs->mCE_WPEY1 & 0x1FF;
+    }
+
+    // Line window support: per-scanline X coordinates from VRAM table
+    bool rpLineWnd0 = rpWnd0Enabled && (vdp2Controls.m4_pendingVdp2Regs->mD8_LWTA0 & 0x80000000);
+    bool rpLineWnd1 = rpWnd1Enabled && (vdp2Controls.m4_pendingVdp2Regs->mDC_LWTA1 & 0x80000000);
+    u32 rpLineWnd0Addr = rpLineWnd0 ? ((vdp2Controls.m4_pendingVdp2Regs->mD8_LWTA0 & 0x7FFFE) << 1) : 0;
+    u32 rpLineWnd1Addr = rpLineWnd1 ? ((vdp2Controls.m4_pendingVdp2Regs->mDC_LWTA1 & 0x7FFFE) << 1) : 0;
 
     for (u32 j = 0; j < textureHeight; j++)
     {
-        // Read per-scanline coefficient (deltaKAx==0 means per-scanline only)
+        // Read per-scanline line window X coordinates from VRAM
+        if (rpLineWnd0)
+        {
+            u16 xs = *(u16*)getVdp2Vram(rpLineWnd0Addr & 0x7FFFF);
+            rpLineWnd0Addr += 2;
+            u16 xe = *(u16*)getVdp2Vram(rpLineWnd0Addr & 0x7FFFF);
+            rpLineWnd0Addr += 2;
+            if (xe == 0xFFFF)
+            {
+                rpWnd[0].xstart = 0;
+                rpWnd[0].xend = 0;
+            }
+            else
+            {
+            rpWnd[0].xstart = (xs >> 1) & 0x1FF;
+            rpWnd[0].xend = (xe >> 1) & 0x1FF;
+        }
+        }
+        if (rpLineWnd1)
+        {
+            u16 xs = *(u16*)getVdp2Vram(rpLineWnd1Addr & 0x7FFFF);
+            rpLineWnd1Addr += 2;
+            u16 xe = *(u16*)getVdp2Vram(rpLineWnd1Addr & 0x7FFFF);
+            rpLineWnd1Addr += 2;
+            if (xe == 0xFFFF)
+            {
+                rpWnd[1].xstart = 0;
+                rpWnd[1].xend = 0;
+            }
+            else
+            {
+            rpWnd[1].xstart = (xs >> 1) & 0x1FF;
+            rpWnd[1].xend = (xe >> 1) & 0x1FF;
+        }
+        }
+
+        // Read per-scanline coefficient A from VRAM
         s32 kx_A = 0x10000;
         bool msb_A = false;
-        if (pCoeffsA && !pCoeffsA->empty())
+        if (!perPixelCoeff_A && coefenab_A)
         {
-            // Read from VRAM at: coeftbladdr + (coefy + touint(rcoefy)) * coefdatasize
-            // Our vector index = coefy + touint(rcoefy) + KAst_integer
-            s32 idx = (s32)(coefy_A + (rcoefy_A >> 16)) + (truncFP(tA.m54) >> 16);
-            if (idx >= 0 && idx < (s32)pCoeffsA->size())
-            {
-                s32 coefVal = (s32)(*pCoeffsA)[idx];
-                msb_A = (coefVal >> 31) & 1;
-                // Coefficient vector stores fixedPoint (16.16), originally 32-bit BE in VRAM,
-                // then reads lower 24 bits with sign extension (Vdp2ReadCoefficientMode0_2FP, coefdatasize==4).
-                // This truncates the top 8 integer bits but preserves the sign.
-                kx_A = (coefVal & 0x00FFFFFF) | ((coefVal & 0x00800000) ? 0xFF000000 : 0);
-            }
-            // Accumulate: coefy += toint(deltaKAst), rcoefy += decipart(deltaKAst)
-            coefy_A += (u32)(deltaKAst_A >> 16);      // integer part
-            rcoefy_A += (u32)(deltaKAst_A & 0xFFFF);   // fractional part (wraps naturally)
+            u32 vramAddr = coeftbladdr_A + ((u32)coefAccum_A >> 16) * coefdatasize_A;
+            kx_A = readCoefficientFromVRAM(vramAddr, msb_A);
+        }
+
+        // Read per-scanline coefficient B from VRAM
+        s32 kx_B = 0x10000;
+        bool msb_B = false;
+        if (!perPixelCoeff_B && coefenab_B)
+        {
+            u32 vramAddr = coeftbladdr_B + ((u32)coefAccum_B >> 16) * coefdatasize_B;
+            kx_B = readCoefficientFromVRAM(vramAddr, msb_B);
         }
 
         // GenerateRotatedXPosFP/YPosFP:
@@ -958,9 +1061,61 @@ static void renderLayerCPU_RBG0(
             Ysp_B = fpMul(D_B, xmul_B) + fpMul(E_B, ymul_B) + F_val_B;
         }
 
+        // Per-pixel coefficient accumulator (KAst + deltaKAst*vcnt + deltaKAx*hcnt)
+        s32 pixelCoefAccum_A = coefAccum_A;
+        s32 pixelCoefAccum_B = coefAccum_B;
+
         for (u32 i = 0; i < textureWidth; i++)
         {
-            bool useB = pTB && msb_A;
+            // Per-pixel coefficient reading from VRAM
+            if (perPixelCoeff_A)
+            {
+                u32 vramAddr = ((u32)pixelCoefAccum_A >> 16) * coefdatasize_A;
+                kx_A = readCoefficientFromVRAM(vramAddr, msb_A);
+                pixelCoefAccum_A += deltaKAx_A;
+            }
+
+            // Per-pixel coefficient reading for B
+            if (perPixelCoeff_B)
+            {
+                u32 vramAddr = ((u32)pixelCoefAccum_B >> 16) * coefdatasize_B;
+                kx_B = readCoefficientFromVRAM(vramAddr, msb_B);
+                pixelCoefAccum_B += deltaKAx_B;
+            }
+
+            // Determine which rotation parameter to use
+            bool useB;
+            if (useRPWindow)
+            {
+                // RPMD=3: window switching — test pixel against rotation parameter window
+                // Inside window → param A, outside window → param B
+                auto testWnd = [](bool enabled, bool areabit, const decltype(rpWnd[0])& w, int x, int y) -> int {
+                    if (!enabled) return 3; // disabled
+                    if (areabit) {
+                        // Area bit=1: draw inside
+                        if (x < w.xstart || x > w.xend || y < w.ystart || y > w.yend) return 0;
+                    } else {
+                        // Area bit=0: draw outside
+                        if (x >= w.xstart && x <= w.xend && y >= w.ystart && y <= w.yend) return 0;
+                    }
+                    return 1;
+                };
+                int w0 = testWnd(rpWnd0Enabled, rpWnd0Area, rpWnd[0], (int)i, (int)j);
+                int w1 = testWnd(rpWnd1Enabled, rpWnd1Area, rpWnd[1], (int)i, (int)j);
+                int wndResult;
+                if (w0 & 2) wndResult = w1 & 1;       // w0 disabled → use w1
+                else if (w1 & 2) wndResult = w0 & 1;   // w1 disabled → use w0
+                else if (wctld & 0x80) wndResult = w0 || w1; // AND logic
+                else wndResult = w0 && w1;               // OR logic
+                useB = pTB && !wndResult;
+            }
+            else
+            {
+                // RPMD=2: coefficient MSB switching
+                useB = pTB && msb_A;
+            }
+
+            //useB = false;
 
             s32 mapX, mapY;
             if (!useB)
@@ -977,9 +1132,8 @@ static void renderLayerCPU_RBG0(
             {
                 s32 Xsp_pixel = Xsp_B + fpMul(dX_B, (s32)i << 16);
                 s32 Ysp_pixel = Ysp_B + fpMul(dY_B, (s32)i << 16);
-                // Param B: kx from param B coefficients (or 1.0 default)
-                s32 rawX = fpMul(0x10000, Xsp_pixel) + Xp_B;
-                s32 rawY = fpMul(0x10000, Ysp_pixel) + Yp_B;
+                s32 rawX = fpMul(kx_B, Xsp_pixel) + Xp_B;
+                s32 rawY = fpMul(kx_B, Ysp_pixel) + Yp_B;
                 mapX = (rawX >> 16) & (s32)xmask_B;
                 mapY = (rawY >> 16) & (s32)ymask_B;
             }
@@ -996,28 +1150,30 @@ static void renderLayerCPU_RBG0(
 
         xmul_A += deltaXst_A;
         ymul_A += deltaYst_A;
+        coefAccum_A += deltaKAst_A;
         if (pTB)
         {
             xmul_B += truncFP(pTB->mC);
             ymul_B += truncFP(pTB->m10);
+            coefAccum_B += deltaKAst_B;
         }
     }
 }
 
 static void renderLayerCPU_RBG0_wrapper(
     const sCoefficientTableData& tA,
-    const std::vector<fixedPoint>* pCoeffsA,
     const sCoefficientTableData* pTB,
     u32 textureWidth, u32 textureHeight,
     const s_layerData& layerDataA, const s_layerData* pLayerDataB,
+    u16 rpmd,
     s_NBG_data& NBGData)
 {
     u32 totalPixels = textureWidth * textureHeight;
     u32* output = new u32[totalPixels];
     memset(output, 0, totalPixels * sizeof(u32));
 
-    renderLayerCPU_RBG0(tA, pCoeffsA, pTB, textureWidth, textureHeight,
-        layerDataA, pLayerDataB, output);
+    renderLayerCPU_RBG0(tA, pTB, textureWidth, textureHeight,
+        layerDataA, pLayerDataB, rpmd, output);
 
     // Upload to bgfx texture
     if (!isValid(NBGData.BGFXTexture) || NBGData.m_currentWidth != (int)textureWidth || NBGData.m_currentHeight != (int)textureHeight)
@@ -1492,14 +1648,13 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
 
         {
             int bufIdx = (s32)vdp2Controls.m0_doubleBufferIndex;
-            std::vector<fixedPoint>* pCoeffTableA = gVdp2CoefficientTables[0][bufIdx];
             u16 rpmd = vdp2Controls.m4_pendingVdp2Regs->mB0_RPMD & 3;
-            sCoefficientTableData& tA = gCoefficientTables[0][bufIdx];
+            sCoefficientTableData& tA = *(sCoefficientTableData*)vdpVar1[4].m8_destination; // TODO: use reg
 
-            if (rpmd == 2)
+            if (rpmd >= 2)
             {
-                // Dual-plane mode: param B uses separate plane registers (MPABRB etc.)
-                sCoefficientTableData& tB = gCoefficientTables[1][bufIdx];
+                // Dual-plane mode (rpmd 2=coef switching, 3=window switching): param B uses separate plane registers
+                sCoefficientTableData& tB = *(sCoefficientTableData*)vdpVar1[5].m8_destination; // TODO: use reg
 
                 s_layerData planeDataB;
                 planeDataB.CHSZ = planeData.CHSZ;
@@ -1535,11 +1690,11 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
                 planeDataB.planeOffsets[14] = (offsetB + (vdp2Controls.m4_pendingVdp2Regs->m6E_MPOPRB & 0x3F)) * pageSizeB;
                 planeDataB.planeOffsets[15] = (offsetB + ((vdp2Controls.m4_pendingVdp2Regs->m6E_MPOPRB >> 8) & 0x3F)) * pageSizeB;
 
-                renderLayerCPU_RBG0_wrapper(tA, pCoeffTableA, &tB, textureWidth, textureHeight, planeData, &planeDataB, NBG_data[4]);
+                renderLayerCPU_RBG0_wrapper(tA, &tB, textureWidth, textureHeight, planeData, &planeDataB, rpmd, NBG_data[4]);
             }
             else
             {
-                renderLayerCPU_RBG0_wrapper(tA, pCoeffTableA, nullptr, textureWidth, textureHeight, planeData, nullptr, NBG_data[4]);
+                renderLayerCPU_RBG0_wrapper(tA, nullptr, textureWidth, textureHeight, planeData, nullptr, rpmd, NBG_data[4]);
             }
         }
     }
