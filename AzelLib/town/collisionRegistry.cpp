@@ -5,8 +5,12 @@
 #include "processModel.h"
 #include "kernel/debug/trace.h"
 #include "kernel/fileBundle.h"
+#include "debugWindows.h"
+#include "3dEngine_flush.h"
+#include <imgui.h>
 
 void processTownMeshCollision(sCollisionBody* r4, const sProcessed3dModel* r5);
+static void drawTownCollisionDebug();
 
 sCollisionBodyRegistry gCollisionRegistry;
 
@@ -1578,6 +1582,77 @@ void processAllCollisions()
                 //06007B4E
                 endBodyCollisionTest(r14);
             }
+        }
+    }
+
+    drawTownCollisionDebug();
+}
+
+static bool bDrawTownCollisions = false;
+
+static void drawDebugAABBWireframe(const sVec3_FP& center, const sVec3_FP& halfExtent, const sFColor& color)
+{
+    // 8 corners of the AABB
+    sVec3_FP corners[8];
+    for (int i = 0; i < 8; i++) {
+        corners[i].m0_X = center.m0_X + ((i & 1) ? halfExtent.m0_X : -halfExtent.m0_X);
+        corners[i].m4_Y = center.m4_Y + ((i & 2) ? halfExtent.m4_Y : -halfExtent.m4_Y);
+        corners[i].m8_Z = center.m8_Z + ((i & 4) ? halfExtent.m8_Z : -halfExtent.m8_Z);
+    }
+    // 12 edges
+    drawDebugLine(corners[0], corners[1], color);
+    drawDebugLine(corners[2], corners[3], color);
+    drawDebugLine(corners[4], corners[5], color);
+    drawDebugLine(corners[6], corners[7], color);
+    drawDebugLine(corners[0], corners[2], color);
+    drawDebugLine(corners[1], corners[3], color);
+    drawDebugLine(corners[4], corners[6], color);
+    drawDebugLine(corners[5], corners[7], color);
+    drawDebugLine(corners[0], corners[4], color);
+    drawDebugLine(corners[1], corners[5], color);
+    drawDebugLine(corners[2], corners[6], color);
+    drawDebugLine(corners[3], corners[7], color);
+}
+
+static void drawTownCollisionDebug()
+{
+    if (isShipping())
+        return;
+
+    if (gDebugWindows.town) {
+        if (ImGui::Begin("Town", &gDebugWindows.town)) {
+            ImGui::Checkbox("Draw Town Collisions", &bDrawTownCollisions);
+        }
+        ImGui::End();
+    }
+
+    if (!bDrawTownCollisions)
+        return;
+
+    static const sFColor colorByType[] = {
+        {0, 1, 0, 1},    // type 0: player (green)
+        {0, 0.5f, 1, 1}, // type 1: NPC (blue)
+        {1, 1, 0, 1},    // type 2: interactable (yellow)
+        {1, 0, 1, 1},    // type 3: dragon (magenta)
+        {1, 1, 1, 1},    // type 4: other (white)
+    };
+
+    for (int list = 0; list < 5; list++) {
+        sCollisionBodyNode* node = gCollisionRegistry.m8_headOfLinkedList[list];
+        while (node) {
+            sCollisionBody* body = node->m4;
+            const sFColor& color = colorByType[std::min(list, 4)];
+
+            sVec3_FP worldCenter = body->m8_position + body->m20_AABBCenter;
+            drawDebugAABBWireframe(worldCenter, body->m14_halfAABB, color);
+
+            // If colliding with another body, draw red
+            if (body->m48) {
+                sFColor red = {1, 0, 0, 1};
+                drawDebugAABBWireframe(worldCenter, body->m14_halfAABB, red);
+            }
+
+            node = node->m0_pNext;
         }
     }
 }
