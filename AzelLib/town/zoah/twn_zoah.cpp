@@ -166,7 +166,7 @@ s32 setupZoahCamera(s32 param_1)
     return 0;
 }
 
-int scriptFunction_06096ac2_disableRBG0()
+int disableRBG0()
 {
     vdp2Controls.m4_pendingVdp2Regs->m20_BGON = vdp2Controls.m4_pendingVdp2Regs->m20_BGON & ~0x10;
     vdp2Controls.m_isDirty = 1;
@@ -175,7 +175,7 @@ int scriptFunction_06096ac2_disableRBG0()
     return 0;
 }
 
-static s32 scriptFunction_0609deba_toggleDayNight()
+static s32 toggleDayNight()
 {
     sCameraTask::Init(cameraTaskPtr);
     if (mainGameState.bitField[0] & 1) {
@@ -190,7 +190,7 @@ static s32 scriptFunction_0609deba_toggleDayNight()
     return 1;
 }
 
-s32 setupCameraMode1(s32 arg0, s32 arg1, s32 arg2)
+s32 setupCameraModeFixed(s32 arg0, s32 arg1, s32 arg2)
 {
     sSaturnPtr ptr0 = gCurrentTownOverlay->getSaturnPtr(arg0);
     sSaturnPtr ptr1 = gCurrentTownOverlay->getSaturnPtr(arg1);
@@ -310,16 +310,16 @@ struct TWN_ZOAH_data : public sTownOverlay
     {
         overlayScriptFunctions.m_zeroArg[0x06098f30] = {&updateWorldGridFromEdgeTask, "updateWorldGridFromEdgeTask"};
         overlayScriptFunctions.m_zeroArg[0x06096a98] = {&enableRBG0, "enableRBG0"};
-        overlayScriptFunctions.m_zeroArg[0x060989f8] = {&scriptFunction_6057058_sub0, "scriptFunction_6057058_sub0"};
+        overlayScriptFunctions.m_zeroArg[0x060989f8] = {&setupCameraFollowMode, "setupCameraFollowMode"};
         overlayScriptFunctions.m_zeroArg[0x06098d2e] = {&disableCameraUpdate, "disableCameraUpdate"};
-        overlayScriptFunctions.m_zeroArg[0x06098d38] = {&setupCameraUpdateForCurrentMode, "setupCameraUpdateForCurrentMode"};
-        overlayScriptFunctions.m_zeroArg[0x06096ac2] = {&scriptFunction_06096ac2_disableRBG0, "scriptFunction_06096ac2_disableRBG0"};
-        overlayScriptFunctions.m_zeroArg[0x06098fea] = {&scriptFunction_605762A, "scriptFunction_605762A"};
+        overlayScriptFunctions.m_zeroArg[0x06098d38] = {&setupCameraUpdateForCurrentMode, "setupCameraUpdateForCurrentMode"}; // this technically jump to a stub that jumps to the actual function
+        overlayScriptFunctions.m_zeroArg[0x06096ac2] = {&disableRBG0, "disableRBG0"};
+        overlayScriptFunctions.m_zeroArg[0x06098fea] = {&setupAutoWalk, "setupAutoWalk"};
         overlayScriptFunctions.m_zeroArg[0x060999ce] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
         overlayScriptFunctions.m_zeroArg[0x060997f2] = {&isCutsceneDone, "isCutsceneDone"};
         overlayScriptFunctions.m_zeroArg[0x0609995c] = {&deleteCutscene, "deleteCutscene"};
         overlayScriptFunctions.m_zeroArg[0x0609cd72] = {&getDistanceToPlayerTier, "getDistanceToPlayerTier"};
-        overlayScriptFunctions.m_zeroArg[0x0609deba] = {&scriptFunction_0609deba_toggleDayNight, "scriptFunction_0609deba_toggleDayNight"};
+        overlayScriptFunctions.m_zeroArg[0x0609deba] = {&toggleDayNight, "toggleDayNight"};
 
         overlayScriptFunctions.m_oneArg[0x0609991e] = {&createCutscene, "createCutscene"};
         overlayScriptFunctions.m_oneArg[0x0609ccfa] = {&disableNpcLookAtDecay, "disableNpcLookAtDecay"};
@@ -333,7 +333,7 @@ struct TWN_ZOAH_data : public sTownOverlay
 
         overlayScriptFunctions.m_twoArg[0x0609c644] = {&turnNpcBackToSavedAngle, "turnNpcBackToSavedAngle"};
 
-        overlayScriptFunctions.m_threeArg[0x06098a5c] = {&setupCameraMode1, "setupCameraMode1"};
+        overlayScriptFunctions.m_threeArg[0x06098a5c] = {&setupCameraModeFixed, "setupCameraModeFixed"};
         overlayScriptFunctions.m_threeArg[0x0609c574] = {&turnNpcTowardsNpc, "turnNpcTowardsNpc"};
         overlayScriptFunctions.m_threeArg[0x0609c93c] = {&setupZoahNPCAnimation, "setupZoahNPCAnimation"};
         overlayScriptFunctions.m_threeArg[0x0609ca40] = {&scheduleNpcAnimation, "scheduleNpcAnimation"};

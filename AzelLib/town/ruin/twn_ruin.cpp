@@ -286,13 +286,13 @@ void setupNPCWalkInZDirection(s32 r4_npcIndex, s32 r5_zDirection, s32 r6_distanc
 
 s32 scriptFunction_6057058()
 {
-    scriptFunction_6057058_sub0();
+    setupCameraFollowMode();
     setupNPCWalkInZDirection(0, 227, 36);
 
     return 0;
 }
 
-s32 scriptFunction_605762A()
+s32 setupAutoWalk()
 {
     if (twnMainLogicTask->m14_EdgeTask == nullptr)
     {
@@ -743,7 +743,7 @@ TWN_RUIN_data::TWN_RUIN_data() : sTownOverlay("TWN_RUIN.PRG")
 {
     overlayScriptFunctions.m_zeroArg[0x6057570] = {&hasLoadingCompleted, "hasLoadingCompleted"};
     overlayScriptFunctions.m_zeroArg[0x6057058] = {&scriptFunction_6057058, "scriptFunction_6057058"};
-    overlayScriptFunctions.m_zeroArg[0x605762A] = {&scriptFunction_605762A, "scriptFunction_605762A"};
+    overlayScriptFunctions.m_zeroArg[0x605762A] = {&setupAutoWalk, "scriptFunction_605762A"};
     overlayScriptFunctions.m_zeroArg[0x605800E] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
 
     overlayScriptFunctions.m_oneArg[0x605C83C] = {&TwnFadeOut, "TwnFadeOut"};

@@ -33,7 +33,7 @@ struct TWN_EXCA_data : public sTownOverlay
 
     TWN_EXCA_data() : sTownOverlay("TWN_EXCA.PRG")
     {
-        overlayScriptFunctions.m_zeroArg[0x06057f7c] = {&scriptFunction_6057058_sub0, "scriptFunction_6057058_sub0"};
+        overlayScriptFunctions.m_zeroArg[0x06057f7c] = {&setupCameraFollowMode, "scriptFunction_6057058_sub0"};
         overlayScriptFunctions.m_zeroArg[0x060584b4] = {&hasLoadingCompleted, "hasLoadingCompleted"};
 
         overlayScriptFunctions.m_oneArg[0x605d780] = {&TwnFadeOut, "TwnFadeOut"};

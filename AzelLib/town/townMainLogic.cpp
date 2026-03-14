@@ -766,7 +766,7 @@ int setupCameraUpdateForCurrentMode()
     return twnMainLogicTask->m2_cameraFollowMode;
 }
 
-int scriptFunction_6057058_sub0()
+int setupCameraFollowMode()
 {
     twnMainLogicTask->m_DrawMethod = sMainLogic::Draw;
     scriptFunction_6057058_sub0Sub0();

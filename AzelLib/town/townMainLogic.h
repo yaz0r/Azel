@@ -58,7 +58,7 @@ extern sMainLogic* twnMainLogicTask;
 
 p_workArea startMainLogic(p_workArea pParent);
 void initTownProjection();
-int scriptFunction_6057058_sub0();
-s32 scriptFunction_605762A();
+int setupCameraFollowMode();
+s32 setupAutoWalk();
 s32 hasLoadingCompleted();
 int setupCameraUpdateForCurrentMode();
