@@ -15,8 +15,9 @@ struct sMainLogic : public s_workAreaTemplate<sMainLogic>
     static void Draw(sMainLogic* pThis);
 
     enum eCameraTrackingMode : s8 {
-        TackingMode_Follow = 0,
-        TackingMode_Fixed = 3,
+        TrackingMode_Follow = 0,
+        TrackingMode_Indoor = 1,
+        TrackingMode_Plane = 3,
     };
 
     s8 m0;

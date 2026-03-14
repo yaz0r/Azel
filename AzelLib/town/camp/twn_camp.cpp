@@ -110,7 +110,7 @@ int scriptFunction_606c70c(sSaturnPtr arg) {
         twnMainLogicTask->m44_cameraTarget = twnMainLogicTask->m14_EdgeTask->mE8.m0_position;
         twnMainLogicTask->m5C_rawCameraPosition = twnMainLogicTask->mE4_fixedPosition;
 
-        twnMainLogicTask->m2_cameraFollowMode = sMainLogic::TackingMode_Fixed;
+        twnMainLogicTask->m2_cameraFollowMode = sMainLogic::TrackingMode_Plane;
 
         setupCameraUpdateForCurrentMode();
     }

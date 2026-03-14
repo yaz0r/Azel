@@ -210,7 +210,7 @@ s32 scriptFunction_06098a5c_setupCameraMode1(s32 arg0, s32 arg1, s32 arg2)
     twnMainLogicTask->mF8[0] = readSaturnFP(ptr1);
     twnMainLogicTask->mF8[1] = readSaturnFP(ptr1 + 4);
     twnMainLogicTask->mDC = 0;
-    twnMainLogicTask->m2_cameraFollowMode = (sMainLogic::eCameraTrackingMode)1;
+    twnMainLogicTask->m2_cameraFollowMode = sMainLogic::TrackingMode_Indoor;
     setupCameraUpdateForCurrentMode();
     return 0;
 }
