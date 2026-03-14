@@ -61,3 +61,4 @@ void initTownProjection();
 int scriptFunction_6057058_sub0();
 s32 scriptFunction_605762A();
 s32 hasLoadingCompleted();
+int setupCameraUpdateForCurrentMode();

@@ -719,10 +719,10 @@ void cameraUpdate_fixed_LCS(sMainLogic* pThis) {
     cameraUpdate_fixed_updateCameraTargetFromRotation(pThis);
 }
 
-void setupCameraUpdateForCurrentMode()
+int setupCameraUpdateForCurrentMode()
 {
     if (twnMainLogicTask->m14_EdgeTask == nullptr)
-        return;
+        return 0;
 
     s32 r5_inLcsMode = npcData0.mFC & 0x10;
 
@@ -762,6 +762,8 @@ void setupCameraUpdateForCurrentMode()
         assert(0);
         break;
     }
+
+    return twnMainLogicTask->m2_cameraFollowMode;
 }
 
 int scriptFunction_6057058_sub0()

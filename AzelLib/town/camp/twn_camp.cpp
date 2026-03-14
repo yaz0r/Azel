@@ -20,7 +20,7 @@
 
 void unloadFnt(); // TODO: fix
 int scriptFunction_60541c4(int arg);
-void setupCameraUpdateForCurrentMode(); // todo clean
+
 sTownObject* createCampFire(s_workAreaCopy* parent, sSaturnPtr arg); //todo: clean
 static sTownObject* createCampParticle(s_workAreaCopy* parent, sSaturnPtr arg);
 
@@ -31,12 +31,6 @@ static void cameraUpdate_noop(sMainLogic*)
 int scriptFunction_0606c952()
 {
     twnMainLogicTask->m10 = &cameraUpdate_noop;
-    return 0;
-}
-
-int scriptFunction_0606c95c()
-{
-    setupCameraUpdateForCurrentMode();
     return 0;
 }
 
@@ -183,7 +177,7 @@ struct TWN_CAMP_data : public sTownOverlay
     {
         overlayScriptFunctions.m_zeroArg[0x0606cb54] = {&scriptFunction_606cb54, "scriptFunction_606cb54"};
         overlayScriptFunctions.m_zeroArg[0x0606c952] = {&scriptFunction_0606c952, "scriptFunction_0606c952"};
-        overlayScriptFunctions.m_zeroArg[0x0606c95c] = {&scriptFunction_0606c95c, "scriptFunction_0606c95c"};
+        overlayScriptFunctions.m_zeroArg[0x0606c95c] = {&setupCameraUpdateForCurrentMode, "setupCameraUpdateForCurrentMode"};
         overlayScriptFunctions.m_zeroArg[0x06071ade] = {&scriptFunction_06071ade_toggleDayNight, "scriptFunction_06071ade_toggleDayNight"};
         overlayScriptFunctions.m_zeroArg[0x0606d5bc] = {&canCurrentResActivate, "canCurrentResActivate"};
 

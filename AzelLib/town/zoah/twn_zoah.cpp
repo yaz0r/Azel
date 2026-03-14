@@ -116,7 +116,7 @@ static void zoahCamera_draw(sCameraTask* pThis)
     generateLightFalloffMap(f0, f1, f2);
 }
 
-int scriptFunction_06098f30()
+int updateWorldGridFromEdgeTask()
 {
     if (twnMainLogicTask->m14_EdgeTask) {
         updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
@@ -127,25 +127,17 @@ int scriptFunction_06098f30()
 // scriptFunction_060989f8 is functionally identical to scriptFunction_6057058_sub0
 // (sets draw method, inits camera from Edge position, sets follow mode 0, calls setupCameraUpdateForCurrentMode)
 
-void setupCameraUpdateForCurrentMode();
-
 static void cameraUpdate_noop(sMainLogic*)
 {
 }
 
-int scriptFunction_06098d2e()
+int disableCameraUpdate()
 {
     twnMainLogicTask->m10 = &cameraUpdate_noop;
     return 0;
 }
 
-int scriptFunction_06098d38()
-{
-    setupCameraUpdateForCurrentMode();
-    return 0;
-}
-
-int scriptFunction_06096a98()
+int enableRBG0()
 {
     vdp2Controls.m4_pendingVdp2Regs->m20_BGON = vdp2Controls.m4_pendingVdp2Regs->m20_BGON | 0x10;
     vdp2Controls.m_isDirty = 1;
@@ -154,7 +146,7 @@ int scriptFunction_06096a98()
     return 0;
 }
 
-s32 scriptFunction_0609dffe(s32 param_1)
+s32 setupZoahCamera(s32 param_1)
 {
     cameraTaskPtr->mC_colorTableBase = param_1;
     cameraTaskPtr->m30_colorIntensity = 0x8000;
@@ -198,7 +190,7 @@ static s32 scriptFunction_0609deba_toggleDayNight()
     return 1;
 }
 
-s32 scriptFunction_06098a5c_setupCameraMode1(s32 arg0, s32 arg1, s32 arg2)
+s32 setupCameraMode1(s32 arg0, s32 arg1, s32 arg2)
 {
     sSaturnPtr ptr0 = gCurrentTownOverlay->getSaturnPtr(arg0);
     sSaturnPtr ptr1 = gCurrentTownOverlay->getSaturnPtr(arg1);
@@ -262,7 +254,7 @@ static void zoahCamera_drawWithPosition(sCameraTask* pThis)
     setupLight(0, 0, 0, pThis->m10.toU32());
 }
 
-s32 scriptFunction_0609e080_setupCameraWithPosition(sSaturnPtr arg)
+s32 setupCameraWithPosition(sSaturnPtr arg)
 {
     sSaturnPtr lightData = arg + 0x14;
     zoahCamera_setupLight(cameraTaskPtr, lightData);
@@ -286,19 +278,19 @@ s32 scriptFunction_0609e080_setupCameraWithPosition(sSaturnPtr arg)
     return 0;
 }
 
-s32 scriptFunction_0609dffe(s32 param_1);
-static s32 scriptFunction_0609ccfa(s32 npcIndex);
-static s32 scriptFunction_0609cd22(s32 npcIndex);
-static s32 scriptFunction_0609c574(s32 npcIndex, s32 targetIndex, s32 mode);
+s32 setupZoahCamera(s32 param_1);
+static s32 disableNpcLookAtDecay(s32 npcIndex);
+static s32 isNpcDoneMoving(s32 npcIndex);
+static s32 turnNpcTowardsNpc(s32 npcIndex, s32 targetIndex, s32 mode);
 static s32 setupZoahNPCAnimation(s32 npcIndex, s32 animIndex, s32 controlState);
-static s32 scriptFunction_0609991e(s32 arg);
-static s32 scriptFunction_060997f2();
-static s32 scriptFunction_0609995c();
-static s32 scriptFunction_0609c644(s32 npcIndex, s32 mode);
-static s32 scriptFunction_0609ca40(s32 npcIndex, s32 animIndex, s32 controlState);
-static s32 scriptFunction_0609cd0e(s32 npcIndex);
-static s32 scriptFunction_0609cd72();
-int scriptFunction_06096a98();
+static s32 createCutscene(s32 arg);
+static s32 isCutsceneDone();
+static s32 deleteCutscene();
+static s32 turnNpcBackToSavedAngle(s32 npcIndex, s32 mode);
+static s32 scheduleNpcAnimation(s32 npcIndex, s32 animIndex, s32 controlState);
+static s32 enableNpcLookAtDecay(s32 npcIndex);
+static s32 getDistanceToPlayerTier();
+int enableRBG0();
 static sTownObject* createZoahEntity(s_workAreaCopy* parent, sSaturnPtr arg);
 static sTownObject* createZoahNPC(s_workAreaCopy* parent, sSaturnPtr arg);
 
@@ -316,35 +308,35 @@ struct TWN_ZOAH_data : public sTownOverlay
 
     TWN_ZOAH_data() : sTownOverlay("TWN_ZOAH.PRG")
     {
-        overlayScriptFunctions.m_zeroArg[0x06098f30] = {&scriptFunction_06098f30, "scriptFunction_06098f30"};
-        overlayScriptFunctions.m_zeroArg[0x06096a98] = {&scriptFunction_06096a98, "scriptFunction_06096a98"};
+        overlayScriptFunctions.m_zeroArg[0x06098f30] = {&updateWorldGridFromEdgeTask, "updateWorldGridFromEdgeTask"};
+        overlayScriptFunctions.m_zeroArg[0x06096a98] = {&enableRBG0, "enableRBG0"};
         overlayScriptFunctions.m_zeroArg[0x060989f8] = {&scriptFunction_6057058_sub0, "scriptFunction_6057058_sub0"};
-        overlayScriptFunctions.m_zeroArg[0x06098d2e] = {&scriptFunction_06098d2e, "scriptFunction_06098d2e"};
-        overlayScriptFunctions.m_zeroArg[0x06098d38] = {&scriptFunction_06098d38, "scriptFunction_06098d38"};
+        overlayScriptFunctions.m_zeroArg[0x06098d2e] = {&disableCameraUpdate, "disableCameraUpdate"};
+        overlayScriptFunctions.m_zeroArg[0x06098d38] = {&setupCameraUpdateForCurrentMode, "setupCameraUpdateForCurrentMode"};
         overlayScriptFunctions.m_zeroArg[0x06096ac2] = {&scriptFunction_06096ac2_disableRBG0, "scriptFunction_06096ac2_disableRBG0"};
         overlayScriptFunctions.m_zeroArg[0x06098fea] = {&scriptFunction_605762A, "scriptFunction_605762A"};
         overlayScriptFunctions.m_zeroArg[0x060999ce] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
-        overlayScriptFunctions.m_zeroArg[0x060997f2] = {&scriptFunction_060997f2, "scriptFunction_060997f2"};
-        overlayScriptFunctions.m_zeroArg[0x0609995c] = {&scriptFunction_0609995c, "scriptFunction_0609995c"};
-        overlayScriptFunctions.m_zeroArg[0x0609cd72] = {&scriptFunction_0609cd72, "scriptFunction_0609cd72"};
+        overlayScriptFunctions.m_zeroArg[0x060997f2] = {&isCutsceneDone, "isCutsceneDone"};
+        overlayScriptFunctions.m_zeroArg[0x0609995c] = {&deleteCutscene, "deleteCutscene"};
+        overlayScriptFunctions.m_zeroArg[0x0609cd72] = {&getDistanceToPlayerTier, "getDistanceToPlayerTier"};
         overlayScriptFunctions.m_zeroArg[0x0609deba] = {&scriptFunction_0609deba_toggleDayNight, "scriptFunction_0609deba_toggleDayNight"};
 
-        overlayScriptFunctions.m_oneArg[0x0609991e] = {&scriptFunction_0609991e, "scriptFunction_0609991e"};
-        overlayScriptFunctions.m_oneArg[0x0609ccfa] = {&scriptFunction_0609ccfa, "scriptFunction_0609ccfa"};
-        overlayScriptFunctions.m_oneArg[0x0609cd22] = {&scriptFunction_0609cd22, "scriptFunction_0609cd22"};
-        overlayScriptFunctions.m_oneArg[0x0609cd0e] = {&scriptFunction_0609cd0e, "scriptFunction_0609cd0e"};
+        overlayScriptFunctions.m_oneArg[0x0609991e] = {&createCutscene, "createCutscene"};
+        overlayScriptFunctions.m_oneArg[0x0609ccfa] = {&disableNpcLookAtDecay, "disableNpcLookAtDecay"};
+        overlayScriptFunctions.m_oneArg[0x0609cd22] = {&isNpcDoneMoving, "isNpcDoneMoving"};
+        overlayScriptFunctions.m_oneArg[0x0609cd0e] = {&enableNpcLookAtDecay, "enableNpcLookAtDecay"};
         overlayScriptFunctions.m_oneArg[0x0609e184] = {&TwnFadeIn, "TwnFadeIn"};
-        overlayScriptFunctions.m_oneArg[0x0609dffe] = {&scriptFunction_0609dffe, "scriptFunction_0609dffe"};
+        overlayScriptFunctions.m_oneArg[0x0609dffe] = {&setupZoahCamera, "setupZoahCamera"};
         overlayScriptFunctions.m_oneArg[0x0609e1fc] = {&TwnFadeOut, "TwnFadeOut"};
 
-        overlayScriptFunctions.m_oneArgPtr[0x0609e080] = {&scriptFunction_0609e080_setupCameraWithPosition, "scriptFunction_0609e080_setupCameraWithPosition"};
+        overlayScriptFunctions.m_oneArgPtr[0x0609e080] = {&setupCameraWithPosition, "setupCameraWithPosition"};
 
-        overlayScriptFunctions.m_twoArg[0x0609c644] = {&scriptFunction_0609c644, "scriptFunction_0609c644"};
+        overlayScriptFunctions.m_twoArg[0x0609c644] = {&turnNpcBackToSavedAngle, "turnNpcBackToSavedAngle"};
 
-        overlayScriptFunctions.m_threeArg[0x06098a5c] = {&scriptFunction_06098a5c_setupCameraMode1, "scriptFunction_06098a5c_setupCameraMode1"};
-        overlayScriptFunctions.m_threeArg[0x0609c574] = {&scriptFunction_0609c574, "scriptFunction_0609c574"};
+        overlayScriptFunctions.m_threeArg[0x06098a5c] = {&setupCameraMode1, "setupCameraMode1"};
+        overlayScriptFunctions.m_threeArg[0x0609c574] = {&turnNpcTowardsNpc, "turnNpcTowardsNpc"};
         overlayScriptFunctions.m_threeArg[0x0609c93c] = {&setupZoahNPCAnimation, "setupZoahNPCAnimation"};
-        overlayScriptFunctions.m_threeArg[0x0609ca40] = {&scriptFunction_0609ca40, "scriptFunction_0609ca40"};
+        overlayScriptFunctions.m_threeArg[0x0609ca40] = {&scheduleNpcAnimation, "scheduleNpcAnimation"};
 
         overlayScriptFunctions.m_fourArg[0x0609c8a0] = {&setNpcLocation, "setNpcLocation"};
         overlayScriptFunctions.m_fourArg[0x0609c8ce] = {&setNpcOrientation, "setNpcOrientation"};
@@ -982,7 +974,7 @@ static s32 setupZoahNPCAnimation(s32 npcIndex, s32 animIndex, s32 controlState)
 }
 
 // Script: disable look-at decay for NPC
-static s32 scriptFunction_0609ccfa(s32 npcIndex)
+static s32 disableNpcLookAtDecay(s32 npcIndex)
 {
     sNPC* pNPC = getNpcDataByIndex(npcIndex);
     pNPC->mC |= 8;
@@ -990,7 +982,7 @@ static s32 scriptFunction_0609ccfa(s32 npcIndex)
 }
 
 // Script: turn NPC towards another NPC
-static s32 scriptFunction_0609c574(s32 npcIndex, s32 targetIndex, s32 mode)
+static s32 turnNpcTowardsNpc(s32 npcIndex, s32 targetIndex, s32 mode)
 {
     sNPC* pNPC1 = getNpcDataByIndex(npcIndex);
     sNPC* pNPC2 = getNpcDataByIndex(targetIndex);
@@ -1028,7 +1020,7 @@ static s32 scriptFunction_0609c574(s32 npcIndex, s32 targetIndex, s32 mode)
 }
 
 // Script: check if NPC is done moving/turning
-static s32 scriptFunction_0609cd22(s32 npcIndex)
+static s32 isNpcDoneMoving(s32 npcIndex)
 {
     sNPC* pNPC = getNpcDataByIndex(npcIndex);
     if (pNPC->mC & 6)
@@ -1037,7 +1029,7 @@ static s32 scriptFunction_0609cd22(s32 npcIndex)
 }
 
 // Script: create cutscene EPK player
-static s32 scriptFunction_0609991e(s32 arg)
+static s32 createCutscene(s32 arg)
 {
     if (npcData0.mF0 != 0)
     {
@@ -1050,7 +1042,7 @@ static s32 scriptFunction_0609991e(s32 arg)
 }
 
 // Script: check if cutscene is done
-static s32 scriptFunction_060997f2()
+static s32 isCutsceneDone()
 {
     if ((e006Task0 != nullptr) && (npcData0.mF0 == 0))
     {
@@ -1062,7 +1054,7 @@ static s32 scriptFunction_060997f2()
 }
 
 // Script: stop/delete cutscene
-static s32 scriptFunction_0609995c()
+static s32 deleteCutscene()
 {
     if (e006Task0 != nullptr)
     {
@@ -1076,7 +1068,7 @@ static s32 scriptFunction_0609995c()
 }
 
 // Script: turn NPC back to saved angle
-static s32 scriptFunction_0609c644(s32 npcIndex, s32 mode)
+static s32 turnNpcBackToSavedAngle(s32 npcIndex, s32 mode)
 {
     sNPC* pNPC = getNpcDataByIndex(npcIndex);
     sZoahNPC* pZoah = static_cast<sZoahNPC*>(pNPC);
@@ -1108,7 +1100,7 @@ static s32 scriptFunction_0609c644(s32 npcIndex, s32 mode)
 }
 
 // Script: schedule NPC animation
-static s32 scriptFunction_0609ca40(s32 npcIndex, s32 animIndex, s32 controlState)
+static s32 scheduleNpcAnimation(s32 npcIndex, s32 animIndex, s32 controlState)
 {
     sNPC* pNPC = getNpcDataByIndex(npcIndex);
     sZoahNPC* pZoah = static_cast<sZoahNPC*>(pNPC);
@@ -1132,7 +1124,7 @@ static s32 scriptFunction_0609ca40(s32 npcIndex, s32 animIndex, s32 controlState
 }
 
 // Script: re-enable look-at decay for NPC (clear mC bit 8)
-static s32 scriptFunction_0609cd0e(s32 npcIndex)
+static s32 enableNpcLookAtDecay(s32 npcIndex)
 {
     sNPC* pNPC = getNpcDataByIndex(npcIndex);
     pNPC->mC &= ~8;
@@ -1140,7 +1132,7 @@ static s32 scriptFunction_0609cd0e(s32 npcIndex)
 }
 
 // Script: get distance tier to LCS target (0=near, 1=mid, 2=far)
-static s32 scriptFunction_0609cd72()
+static s32 getDistanceToPlayerTier()
 {
     fixedPoint distance = currentResTask->m10_distanceToLCS;
     if (distance < 0x2001)
