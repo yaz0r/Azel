@@ -365,7 +365,7 @@ p_workArea loadTownSub(p_workArea r4, s32 r5)
 {
     townDebugTask2 = createSubTaskFromFunction<townDebugTask2Function>(r4, &townDebugTask2Function::Update);
 
-    loadTownPrg(readSaturnS8(gCommonFile->getSaturnPtr(0x2166E4 + r5 * 2 + 0)), readSaturnS8(gCommonFile->getSaturnPtr(0x2166E5 + r5 * 2 + 1)));
+    loadTownPrg(readSaturnS8(gCommonFile->getSaturnPtr(0x2166E4 + r5 * 2 + 0)), readSaturnS8(gCommonFile->getSaturnPtr(0x2166E4 + r5 * 2 + 1)));
 
     return townDebugTask2;
 }

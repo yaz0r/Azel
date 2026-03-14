@@ -146,7 +146,7 @@ s32 fieldA3_1_checkExitsTaskUpdate2Sub0()
 // TODO: move to kernel
 void fieldA3_1_checkExitsTaskUpdate2Sub1(s32 r4)
 {
-    if (getFieldTaskPtr()->m35 && r4)
+    if (getFieldTaskPtr()->m35 && (r4 > -1))
     {
         setNextGameStatus(r4);
     }

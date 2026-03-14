@@ -414,6 +414,7 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
             break;
         }
 
+        assert(gGameStatus.m8_nextGameStatus >= 0);
         gGameStatus.m6_previousGameStatus = gGameStatus.m4_gameStatus;
         gGameStatus.m4_gameStatus = gGameStatus.m8_nextGameStatus;
         gGameStatus.m8_nextGameStatus = 0;
