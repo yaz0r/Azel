@@ -39,7 +39,7 @@ int findMandatoryFileOnDisc(const char* fileName)
         return 0;
 
     fclose(fHandle);
-    return -1;
+    return 1;
 }
 
 u32 getFileSizeFromFileId(const char* fileName)
@@ -61,16 +61,27 @@ void checkFilesExists(const s_MCB_CGB* fileList)
     u32* MCBSizes = fieldTaskPtr->m8_pSubFieldData->m34_MCBFilesSizes;
     u32* CGBSizes = fieldTaskPtr->m8_pSubFieldData->m1B4_CGBFilesSizes;
 
-    while (fileList->MCB || fileList->CGB)
+    while (fileList->MCB != (const char*)-1)
     {
-        assert(findMandatoryFileOnDisc(fileList->MCB));
-        *(MCBSizes++) = getFileSizeFromFileId(fileList->MCB);
+        if (fileList->MCB == nullptr) {
+            *(MCBSizes++) = 0;
+        }
+        else {
+            assert(findMandatoryFileOnDisc(fileList->MCB) >= 0);
+            *(MCBSizes++) = getFileSizeFromFileId(fileList->MCB);
+        }
 
-        assert(findMandatoryFileOnDisc(fileList->CGB));
-        *(CGBSizes++) = getFileSizeFromFileId(fileList->CGB);
+        if (fileList->CGB == nullptr) {
+            *(CGBSizes++) = 0;
+        }
+        else {
+            assert(findMandatoryFileOnDisc(fileList->CGB) >= 0);
+            *(CGBSizes++) = getFileSizeFromFileId(fileList->CGB);
+        }
 
         fileList++;
     }
+    *MCBSizes = 0xFFFFFFFF;
 }
 
 void setupFileList(const s_MCB_CGB* fileList)

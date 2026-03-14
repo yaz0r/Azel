@@ -13,6 +13,7 @@
 #include "town/townCamera.h"
 #include "town/townDragon.h"
 #include "campDragon.h"
+#include "field/field_d5/d5_nameEntry.h"
 #include "town/excaEntity.h"
 #include "town/collisionRegistry.h"
 #include "campVdp2Plane.h"
@@ -54,6 +55,128 @@ int scriptFunction_606cb54() {
         updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
     }
     return fileInfoStruct.m2C_allocatedHead == 0;
+}
+
+// 0606d608
+s32 getGameStat(s32 statIndex) {
+    switch (statIndex) {
+    case 0:  return (s32)(s8)mainGameState.gameStats.m0_level;
+    case 1:  return (s32)mainGameState.gameStats.m10_currentHP;
+    case 2:  return (s32)mainGameState.gameStats.m14_currentBP;
+    case 3:  return mainGameState.gameStats.m20_XP;
+    case 4:  return mainGameState.gameStats.m38_dyne;
+    case 5:  return mainGameState.gameStats.m3C_frameCounter;
+    case 6:  return mainGameState.gameStats.m48;
+    case 7:  return mainGameState.gameStats.m4C;
+    case 8:  return mainGameState.gameStats.m50;
+    case 9:  return mainGameState.gameStats.m54;
+    case 10: return mainGameState.gameStats.m78_exp;
+    case 11: return mainGameState.gameStats.m7C_overallRating;
+    case 12: return (s32)mainGameState.gameStats.mBC_dragonDef;
+    case 13: return (s32)mainGameState.gameStats.mBE_dragonAtt;
+    case 14: return (s32)mainGameState.gameStats.mC0_dragonAgl;
+    case 15: return (s32)mainGameState.gameStats.mC2_dragonSpr;
+    case 16: return (s32)(s8)mainGameState.gameStats.m1_dragonLevel;
+    default: return 0;
+    }
+}
+
+// 06056562
+s32 getDragonAffinityOffset(s32 npcIndex) {
+    sTownDragon* pDragon = (sTownDragon*)getNpcDataByIndex(npcIndex);
+    return (s32)pDragon->mF_affinityLevel - 2;
+}
+
+// 0606d5f2
+s32 isCurrentResInactive() {
+    return canCurrentResActivate() == 0;
+}
+
+// 0605664a
+s32 dragonTurnTowardsPlayer(s32 npcIndex) {
+    sTownDragon* pDragon = (sTownDragon*)getNpcDataByIndex(npcIndex);
+    pDragon->m12_eventFlag = 1;
+    s32 targetAngle = sCampDragon_InitSub1(pDragon);
+    s32 diff = targetAngle - pDragon->m64_rotation.m4_Y.asS32();
+    if ((diff & 0x8000000) == 0) {
+        diff = diff & 0xFFFFFFF;
+    } else {
+        diff = diff | 0xF0000000;
+    }
+    if ((diff > 0xAAAAAA) || (diff < -0xAAAAAA)) {
+        pDragon->m38_savedRotationY = targetAngle & 0xFFFFFFF;
+        pDragon->mE = pDragon->mE | 2;
+    }
+    return 0;
+}
+
+// 06056662
+s32 isDragonDoneTurning(s32 npcIndex) {
+    sTownDragon* pDragon = (sTownDragon*)getNpcDataByIndex(npcIndex);
+    return (pDragon->mE & 2) == 0;
+}
+
+// 06056588
+s32 dragonRespondToPlayer(s32 npcIndex, s32 responseType) {
+    sTownDragon* pDragon = (sTownDragon*)getNpcDataByIndex(npcIndex);
+    assert(gCurrentTownOverlay->m_name == "TWN_CAMP.PRG");
+    if (responseType == 0) {
+        sCampDragon_startAnimSequence(pDragon, gCurrentTownOverlay->getSaturnPtr(0x0607af64));
+    }
+    else if (responseType == 2) {
+        if (pDragon->m14_readyState < 10) {
+            sCampDragon_startAnimSequence(pDragon, gCurrentTownOverlay->getSaturnPtr(0x0607af6e));
+        }
+        else {
+            sCampDragon_startAnimSequence(pDragon, gCurrentTownOverlay->getSaturnPtr(0x0607af78));
+        }
+    }
+    static const s8 ratingDeltas[] = { 3, 1, -2, 0 };
+    increaseGameResource(0xB, (s32)ratingDeltas[responseType]);
+    mainGameState.bitField[0x261] |= 1;
+    mainGameState.bitField[0x263] |= 0x80;
+    pDragon->m10_modeOffset = 1 - (s8)responseType;
+    s32 combined = (s32)pDragon->m10_modeOffset + (s32)pDragon->mF_affinityLevel;
+    if ((combined > 6) || (combined < 1)) {
+        pDragon->m10_modeOffset = 0;
+    }
+    pDragon->m11_subState = 7;
+    s8 result = (s8)0x80;
+    if ((mainGameState.bitField[0x263] & 0x80) == 0) {
+        increaseGameResource(0xB, 2);
+        mainGameState.bitField[0x263] |= 0x80;
+        result = mainGameState.bitField[0x263];
+    }
+    return (s32)result;
+}
+
+// 06057f46
+s32 startNameEntryTask() {
+    preloadNameEntryResources();
+    Unimplemented(); // createSubTask for name entry draw task (0x0607b5fc)
+    return 0;
+}
+
+// 06056544
+s32 dragonInteract(s32 npcIndex) {
+    sTownDragon* pDragon = (sTownDragon*)getNpcDataByIndex(npcIndex);
+    if (pDragon->m11_subState < 9) {
+        pDragon->m11_subState = 5;
+    }
+    s8 result = 1;
+    if ((mainGameState.bitField[0x262] & 1) == 0) {
+        increaseGameResource(0xB, 1);
+        mainGameState.bitField[0x262] |= 1;
+        result = mainGameState.bitField[0x262];
+    }
+    return (s32)result;
+}
+
+// 06056574
+s32 setDragonSubState4(s32 npcIndex) {
+    sTownDragon* pDragon = (sTownDragon*)getNpcDataByIndex(npcIndex);
+    pDragon->m11_subState = 4;
+    return 0;
 }
 
 int recoverAllHP_BP(void)
@@ -180,16 +303,25 @@ struct TWN_CAMP_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x0606c95c] = {&setupCameraUpdateForCurrentMode, "setupCameraUpdateForCurrentMode"};
         overlayScriptFunctions.m_zeroArg[0x06071ade] = {&scriptFunction_06071ade_toggleDayNight, "scriptFunction_06071ade_toggleDayNight"};
         overlayScriptFunctions.m_zeroArg[0x0606d5bc] = {&canCurrentResActivate, "canCurrentResActivate"};
+        overlayScriptFunctions.m_zeroArg[0x0606d5f2] = {&isCurrentResInactive, "isCurrentResInactive"};
+        overlayScriptFunctions.m_zeroArg[0x06057f46] = {&startNameEntryTask, "startNameEntryTask"};
 
         overlayScriptFunctions.m_oneArg[0x6071e20] = {&TwnFadeOut, "TwnFadeOut"};
         overlayScriptFunctions.m_oneArg[0x6071da8] = {&TwnFadeIn, "TwnFadeIn"};
         overlayScriptFunctions.m_oneArg[0x60541c4] = {&scriptFunction_60541c4, "scriptFunction_60541c4"};
         overlayScriptFunctions.m_oneArg[0x6056484] = {&scriptFunction_6056484, "scriptFunction_6056484"};
+        overlayScriptFunctions.m_oneArg[0x0606d608] = {&getGameStat, "getGameStat"};
+        overlayScriptFunctions.m_oneArg[0x06056544] = {&dragonInteract, "dragonInteract"};
+        overlayScriptFunctions.m_oneArg[0x06056562] = {&getDragonAffinityOffset, "getDragonAffinityOffset"};
+        overlayScriptFunctions.m_oneArg[0x06056574] = {&setDragonSubState4, "setDragonSubState4"};
+        overlayScriptFunctions.m_oneArg[0x0605664a] = {&dragonTurnTowardsPlayer, "dragonTurnTowardsPlayer"};
+        overlayScriptFunctions.m_oneArg[0x06056662] = {&isDragonDoneTurning, "isDragonDoneTurning"};
 
         overlayScriptFunctions.m_oneArgPtr[0x606C70C] = {&scriptFunction_606c70c, "scriptFunction_606c70c"};
         overlayScriptFunctions.m_oneArgPtr[0x6071ca4] = {&campCameraSetupWithPosition, "campCameraSetupWithPosition"};
 
         overlayScriptFunctions.m_twoArg[0x6071b40] = {&townCamera_setup, "townCamera_setup"};
+        overlayScriptFunctions.m_twoArg[0x06056588] = {&dragonRespondToPlayer, "dragonRespondToPlayer"};
 
         overlayScriptFunctions.m_fourArg[0x60704c4] = {&setNpcLocation, "setNpcLocation"};
         overlayScriptFunctions.m_fourArg[0x60704f2] = {&setNpcOrientation, "setNpcOrientation"};

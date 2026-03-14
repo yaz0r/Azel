@@ -4,6 +4,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/graphicalObject.h"
 #include "town/ruin/twn_ruin.h" // TODO: cleanup
+#include "town/camp/campDragon.h"
 
 bool reinitModel(s_3dModel* pModel, sHotpointBundle* param2)
 {
@@ -58,7 +59,7 @@ void initDragonForTown(sTownDragon* pThis)
             assert(0);
         }
         
-        Unimplemented();
+        initDragonHotpoints(pThis);
     }
     gDragonState->m88 = 0;
     pThis->mD4_cursorX = mainGameState.gameStats.m1A_dragonCursorX;

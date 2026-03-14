@@ -18,6 +18,7 @@ struct sTownDragon : public s_workAreaTemplateWithArgAndBase<sTownDragon, sTownO
     sSaturnPtr m24;
     u32 m28;
     sSaturnPtr m34;
+    s32 m38_savedRotationY;
     s32 m3C;
     s32 m40;
     sSaturnPtr m48_entityEA;
@@ -28,6 +29,8 @@ struct sTownDragon : public s_workAreaTemplateWithArgAndBase<sTownDragon, sTownO
     s16 mD4_cursorX;
     s16 mD6_cursorY;
     fixedPoint mD8_heightOffset;
+    s32 mDC_hotpointPairCount;
+    struct { u8 m0_boneIndex; u8 m1_hotpointIndex; } mE0_hotpointPairs[4];
     //size: 0xE8
 };
 

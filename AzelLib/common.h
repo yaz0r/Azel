@@ -391,10 +391,16 @@ struct s_gameStats
     u32 m38_dyne; // 38
     u32 m3C_frameCounter; //3C
 
+    s32 m48; // 48
+    s32 m4C; // 4C
+    s32 m50; // 50
+    s32 m54; // 54
+
     s32 m5C_gunShotFired;
     s32 m60_homingLaserFired;
 
     u32 m70; //70
+    u32 m78_exp;
     u32 m7C_overallRating;
     char m94_playerName[17];
     char mA5_dragonName[17];
