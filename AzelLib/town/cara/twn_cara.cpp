@@ -6,6 +6,7 @@
 #include "town/townMainLogic.h"
 #include "kernel/vdp1Allocator.h"
 #include "audio/soundDriver.h"
+#include "audio/systemSounds.h"
 #include "town/townCamera.h"
 #include "town/excaEntity.h"
 #include "town/townCutscene.h"
@@ -52,9 +53,39 @@ static s32 playSoundEffect_bank5(s32 soundId, s32 volume, s32 unk) {
 
 // cutscene functions factored into townCutscene.cpp
 
+// 0606ed3a
+static void caravanMainLogicDraw(sMainLogic* pThis) {
+    if (pThis->m14_EdgeTask) {
+        sNPCE8& edge = pThis->m14_EdgeTask->mE8;
+        updateWorldGrid(edge.m0_position.m0_X, edge.m0_position.m8_Z);
+        pThis->m18_position.m0_X = edge.m0_position.m0_X;
+        pThis->m18_position.m4_Y = edge.m0_position.m4_Y + 0x1800;
+        pThis->m18_position.m8_Z = edge.m0_position.m8_Z;
+    }
+    Unimplemented(); // FUN_TWN_CARA__0606edae, 0606eec4, 0606ef84 — camera interpolation
+    pThis->m10(pThis); // call camera update function pointer
+    Unimplemented(); // copy interpolated position, FUN_TWN_CARA__06070c50
+}
+
+// 06070434
+static void caravanMainLogicUpdate(sMainLogic* pThis) {
+    sVec3_FP lookAt;
+    lookAt.m0_X = pThis->m44_cameraTarget.m0_X * 0x10 + pThis->m38_interpolatedCameraPosition.m0_X * -0xF;
+    lookAt.m4_Y = pThis->m44_cameraTarget.m4_Y * 0x10 + pThis->m38_interpolatedCameraPosition.m4_Y * -0xF;
+    lookAt.m8_Z = pThis->m44_cameraTarget.m8_Z * 0x10 + pThis->m38_interpolatedCameraPosition.m8_Z * -0xF;
+
+    generateCameraMatrix(&cameraProperties2, pThis->m38_interpolatedCameraPosition, lookAt, pThis->m50_upVector);
+    drawLcs();
+
+    if (enableDebugTask) {
+        Unimplemented(); // debug info display
+    }
+}
+
 // 060709fa
 static s32 setupCameraFollowMode_Cara() {
-    Unimplemented(); // sets overlay-specific camera update/draw on twnMainLogicTask
+    twnMainLogicTask->m_DrawMethod = &caravanMainLogicDraw;
+    twnMainLogicTask->m_UpdateMethod = &caravanMainLogicUpdate;
     return 0;
 }
 
@@ -70,9 +101,6 @@ static s32 resetFieldOfView() {
     initVDP1Projection(0x1C71C71, 0);
     return 0;
 }
-
-// 06075d5c — same as camp/zoah setupCameraWithPosition
-
 
 // 06072440
 static s32 createCaraSubTask(s32 param_1) {
@@ -587,149 +615,231 @@ static void createCaravanVdp2Plane(p_workArea pParent)
 
 void initEdgeNPC(sNPC* pThis, sSaturnPtr arg); // from townEdge.cpp
 
-// 06073ae8 — standard bone recursion with sPoseData (0xB4 stride)
-static void drawBoneHierarchy(sModelHierarchy* pNode, sPoseData* pose)
+// Helper: get animation from table entry
+static sAnimationData* getAnimFromTable(sNPC* pThis, s32 animIndex) {
+    sSaturnPtr animEntry = pThis->m30_animationTable + animIndex * 4;
+    s16 fileIdx = readSaturnS16(animEntry);
+    u16 animOffset = readSaturnU16(animEntry + 2);
+    s_fileBundle* pBundle = (fileIdx != 0) ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle : pThis->m0_fileBundle;
+    return pBundle->getAnimation(animOffset);
+}
+
+// 06075858 — idle animation randomizer (when NPC stops walking)
+static void updateNPCIdleAnimation(sNPC* pThis) {
+    pThis->m14E--;
+    if (pThis->m14E == 0 || pThis->m2C_currentAnimation < 5 || pThis->m2C_currentAnimation > 8) {
+        s32 newAnim;
+        u16 timer;
+
+        if (pThis->m2C_currentAnimation == 5 && (npcData0.mFC & 0x11) == 0) {
+            u32 rng = performModulo2(100, randomNumber() & 0x7FFFFFFF);
+            if (rng < 0x42) {
+                newAnim = readSaturnS16(gCurrentTownOverlay->getSaturnPtr(0x06087b24));
+                timer = readSaturnU8(gCurrentTownOverlay->getSaturnPtr(0x06087b24) + 1);
+            } else if (rng < 99) {
+                newAnim = readSaturnS16(gCurrentTownOverlay->getSaturnPtr(0x06087b28));
+                timer = readSaturnU8(gCurrentTownOverlay->getSaturnPtr(0x06087b28) + 1);
+            } else {
+                newAnim = readSaturnS16(gCurrentTownOverlay->getSaturnPtr(0x06087b2c));
+                timer = readSaturnU8(gCurrentTownOverlay->getSaturnPtr(0x06087b2c) + 1);
+            }
+        } else {
+            newAnim = 5;
+            u32 rng = performModulo2(0x514, randomNumber() & 0x7FFFFFFF);
+            timer = (u16)rng + 200;
+        }
+
+        pThis->m14E = timer;
+        if (pThis->m2C_currentAnimation != newAnim) {
+            s32 interpLen = (pThis->m2C_currentAnimation < 5) ? 5 : 10;
+            pThis->m2C_currentAnimation = newAnim;
+            playAnimationGeneric(&pThis->m34_3dModel, getAnimFromTable(pThis, newAnim), interpLen);
+        }
+    }
+    updateAndInterpolateAnimation(&pThis->m34_3dModel);
+}
+
+// 06075976 — walk/run animation controller (control state 4)
+static void updateNPCWalkRun(sNPC* pThis) {
+    sVec3_FP delta;
+    delta.m0_X = pThis->mE8.m0_position.m0_X - pThis->mE8.m54_oldPosition.m0_X;
+    delta.m4_Y = pThis->mE8.m0_position.m4_Y - pThis->mE8.m54_oldPosition.m4_Y;
+    delta.m8_Z = pThis->mE8.m0_position.m8_Z - pThis->mE8.m54_oldPosition.m8_Z;
+    s32 dist = sqrt_I((s64)delta.m0_X.asS32() * delta.m0_X.asS32() +
+                      (s64)delta.m4_Y.asS32() * delta.m4_Y.asS32() +
+                      (s64)delta.m8_Z.asS32() * delta.m8_Z.asS32());
+    s32 speed = dist * 0x1E1;
+    s32 oldAccum = pThis->m28_animationLeftOver.asS32();
+    pThis->m28_animationLeftOver = (oldAccum + speed) & 0xFFFF;
+
+    if (speed > 0x666) {
+        // Moving — switch between walk (1) and run (2)
+        if (pThis->m2C_currentAnimation == 2) {
+            if (speed < 0x28000) {
+                // Slow down: run → walk
+                pThis->m2C_currentAnimation = 1;
+                playAnimationGeneric(&pThis->m34_3dModel, getAnimFromTable(pThis, 1), 5);
+            }
+        } else if (pThis->m2C_currentAnimation == 1) {
+            if (speed > 0x30000) {
+                // Speed up: walk → run
+                pThis->m2C_currentAnimation = 2;
+                playAnimationGeneric(&pThis->m34_3dModel, getAnimFromTable(pThis, 2), 5);
+            }
+        } else {
+            // Start walking
+            pThis->m2C_currentAnimation = 1;
+            playAnimationGeneric(&pThis->m34_3dModel, getAnimFromTable(pThis, 1), 5);
+        }
+
+        // Step animation with footstep sounds
+        u32 steps = (u32)(oldAccum + speed) >> 16;
+        if (steps != 0) {
+            if (pThis->m2C_currentAnimation == 1) {
+                for (u32 i = 0; i < steps; i++) {
+                    s16 frame = stepAnimation(&pThis->m34_3dModel);
+                    if (frame == 8 || frame == 0x1B) {
+                        playSystemSoundEffect(0x22);
+                    }
+                }
+            } else {
+                for (u32 i = 0; i < steps; i++) {
+                    s16 frame = stepAnimation(&pThis->m34_3dModel);
+                    if (frame == 0xB || frame == 0x2B) {
+                        playSystemSoundEffect(0x23);
+                    }
+                }
+            }
+        }
+        interpolateAnimation(&pThis->m34_3dModel);
+        pThis->m14E = 0;
+    } else {
+        // Stopped — idle animation
+        updateNPCIdleAnimation(pThis);
+    }
+}
+void scheduleNPCAnimationFromTable(sNPC* pThis, s8 animId, u8 mode); // from townEdge.cpp
+
+// 06074342
+static void updateNPCRotationAndMovement(sNPC* pThis)
 {
-    pushCurrentMatrix();
-    translateCurrentMatrix(&pose->m0_translation);
-    rotateCurrentMatrixZYX(&pose->mC_rotation);
-    if (pNode->m0_3dModel) {
-        addObjectToDrawList(pNode->m0_3dModel);
-    }
-    if (pNode->m4_subNode) {
-        drawBoneHierarchy(pNode->m4_subNode, pose + 1);
-    }
-    popMatrix();
-    if (pNode->m8_nextNode) {
-        drawBoneHierarchy(pNode->m8_nextNode, pose + 1);
+    if (pThis->mF & 2) {
+        // Head/body rotation towards target angle
+        fixedPoint maxSpeed = MTH_Mul(0x2D82D8, pThis->m1C);
+        fixedPoint negSpeed = -maxSpeed;
+
+        if ((pThis->mF & 4) == 0) {
+            // Rotate body Y towards target
+            s32 diff = pThis->mE8.m48_targetRotation.m4_Y.asS32() - pThis->mE8.mC_rotation.m4_Y.asS32();
+            diff = (diff & 0x8000000) ? (diff | 0xF0000000) : (diff & 0xFFFFFFF);
+
+            s32 speed;
+            if (diff < 0) {
+                speed = negSpeed.asS32();
+                if (negSpeed.asS32() <= diff) {
+                    pThis->mF &= ~2;
+                    speed = diff;
+                }
+                s32 clampedDiff = (diff < -0x1C71C71) ? -0x1C71C71 : diff;
+                pThis->m20_lookAtAngle[1] = pThis->m20_lookAtAngle[1].asS32() + speed;
+                if (pThis->m20_lookAtAngle[1].asS32() < clampedDiff) {
+                    pThis->m20_lookAtAngle[1] = clampedDiff;
+                }
+            } else {
+                speed = maxSpeed.asS32();
+                if (diff <= maxSpeed.asS32()) {
+                    pThis->mF &= ~2;
+                    speed = diff;
+                }
+                s32 clampedDiff = (diff > 0x1C71C71) ? 0x1C71C71 : diff;
+                pThis->m20_lookAtAngle[1] = pThis->m20_lookAtAngle[1].asS32() + speed;
+                if (pThis->m20_lookAtAngle[1].asS32() > clampedDiff) {
+                    pThis->m20_lookAtAngle[1] = clampedDiff;
+                }
+            }
+            pThis->mE8.mC_rotation.m4_Y = pThis->mE8.mC_rotation.m4_Y.asS32() + speed;
+        } else {
+            // Rotate look-at angle towards target (with body limit check)
+            s32 diff = pThis->mE8.m48_targetRotation.m4_Y.asS32() - pThis->m20_lookAtAngle[1].asS32();
+            diff = (diff & 0x8000000) ? (diff | 0xF0000000) : (diff & 0xFFFFFFF);
+
+            if (diff < 0) {
+                if (diff < negSpeed.asS32()) {
+                    pThis->m20_lookAtAngle[1] = pThis->m20_lookAtAngle[1] - maxSpeed;
+                } else {
+                    pThis->m20_lookAtAngle[1] = pThis->m20_lookAtAngle[1].asS32() + diff;
+                    pThis->mF &= ~2;
+                }
+            } else {
+                if (diff > maxSpeed.asS32()) {
+                    pThis->m20_lookAtAngle[1] = pThis->m20_lookAtAngle[1] + maxSpeed;
+                } else {
+                    pThis->m20_lookAtAngle[1] = pThis->m20_lookAtAngle[1].asS32() + diff;
+                    pThis->mF &= ~2;
+                }
+            }
+        }
+    } else if (pThis->mF & 1) {
+        // Walk towards target position
+        fixedPoint distSq = distanceSquareBetween2Points(pThis->mE8.m3C_targetPosition, pThis->mE8.m0_position);
+        fixedPoint threshSq = FP_Pow2(pThis->mE8.m30_stepTranslation.m8_Z);
+
+        if (threshSq.asS32() < distSq.asS32()) {
+            // Steer towards target
+            s32 targetAngle = atan2_FP(pThis->mE8.m0_position.m0_X - pThis->mE8.m3C_targetPosition.m0_X,
+                                       pThis->mE8.m0_position.m8_Z - pThis->mE8.m3C_targetPosition.m8_Z);
+            s32 diff = targetAngle - pThis->mE8.mC_rotation.m4_Y.asS32();
+            diff = (diff & 0x8000000) ? (diff | 0xF0000000) : (diff & 0xFFFFFFF);
+            if (diff < -0x2D82D8) diff = -0x2D82D8;
+            if (diff > 0x2D82D8) diff = 0x2D82D8;
+            pThis->mE8.mC_rotation.m4_Y = pThis->mE8.mC_rotation.m4_Y + diff;
+            stepNPCForward(&pThis->mE8);
+        } else {
+            // Arrived at target
+            pThis->mE8.m0_position = pThis->mE8.m3C_targetPosition;
+            pThis->mF &= ~1;
+        }
+    } else {
+        pThis->mC &= ~4;
     }
 }
 
-// 06073c88 — standard bone recursion with sPoseDataInterpolation (0x48 stride)
-static void drawBoneHierarchyInterpolated(sModelHierarchy* pNode, sPoseDataInterpolation* pose)
-{
-    pushCurrentMatrix();
-    translateCurrentMatrix(&pose->m0_translation);
-    rotateCurrentMatrixZYX(&pose->mC_rotation);
-    if (pNode->m0_3dModel) {
-        addObjectToDrawList(pNode->m0_3dModel);
+// 06074250
+static s32 turnNpcTowardsNpc_Cara(s32 npcIndex, s32 targetIndex, s32 mode) {
+    sNPC* pNPC1 = getNpcDataByIndex(npcIndex);
+    sNPC* pNPC2 = getNpcDataByIndex(targetIndex);
+    s32 angle = atan2_FP(pNPC1->mE8.m0_position.m0_X - pNPC2->mE8.m0_position.m0_X,
+                         pNPC1->mE8.m0_position.m8_Z - pNPC2->mE8.m0_position.m8_Z);
+    if (mode != 0) {
+        angle = angle - pNPC1->mE8.mC_rotation.m4_Y.asS32();
     }
-    if (pNode->m4_subNode) {
-        drawBoneHierarchyInterpolated(pNode->m4_subNode, pose + 1);
+    pNPC1 = getNpcDataByIndex(npcIndex);
+    pNPC1->mE8.m48_targetRotation.m4_Y = angle;
+    if (mode == 0) {
+        pNPC1->m148_savedAngle = pNPC1->mE8.mC_rotation.m4_Y;
+    } else {
+        pNPC1->m148_savedAngle = pNPC1->m20_lookAtAngle[1];
     }
-    popMatrix();
-    if (pNode->m8_nextNode) {
-        drawBoneHierarchyInterpolated(pNode->m8_nextNode, pose + 1);
+    pNPC1->mF = (pNPC1->mF & ~4);
+    if (mode == 0) {
+        pNPC1->mF |= 2;
+        scheduleNPCAnimationFromTable(pNPC1, 3, 2);
+    } else {
+        pNPC1->mF |= 6;
     }
+    pNPC1->mC |= 4;
+    return 0;
 }
 
-// 06073b68 — draw NPC bones with look-at blending on neck/head (sPoseData)
-static void drawCaraNPCBones(s_3dModel* pModel, sVec2_FP* lookAtAngle)
-{
-    std::vector<sPoseData>& pose = pModel->m2C_poseData;
-    sModelHierarchy* rootNode = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
-    sModelHierarchy* neckNode = rootNode->m4_subNode;
-
-    // Bone 0 (root body): standard transform
-    pushCurrentMatrix();
-    translateCurrentMatrix(&pose[0].m0_translation);
-    rotateCurrentMatrixZYX(&pose[0].mC_rotation);
-
-    // Bone 1 (neck): translate + rotate with look-at Y * 0.3 blending
-    pushCurrentMatrix();
-    translateCurrentMatrix(&pose[1].m0_translation);
-    rotateCurrentMatrixShiftedZ(pose[1].mC_rotation.m8_Z);
-    rotateCurrentMatrixShiftedY(pose[1].mC_rotation.m4_Y + MTH_Mul((*lookAtAngle)[1], fixedPoint(0x4CCC)));
-    rotateCurrentMatrixShiftedX(pose[1].mC_rotation.m0_X);
-
-    if (neckNode->m0_3dModel) {
-        addObjectToDrawList(neckNode->m0_3dModel);
-    }
-
-    sModelHierarchy* headNode = neckNode->m4_subNode;
-
-    // Bone 2 (head): translate + rotate with look-at Y * 0.7 + X blending
-    pushCurrentMatrix();
-    translateCurrentMatrix(&pose[2].m0_translation);
-    rotateCurrentMatrixShiftedZ(pose[2].mC_rotation.m8_Z);
-    rotateCurrentMatrixShiftedY(pose[2].mC_rotation.m4_Y + MTH_Mul((*lookAtAngle)[1], fixedPoint(0xB333)));
-    rotateCurrentMatrixShiftedX(pose[2].mC_rotation.m0_X + (*lookAtAngle)[0]);
-
-    if (headNode->m0_3dModel) {
-        addObjectToDrawList(headNode->m0_3dModel);
-    }
-
-    // Recurse into remaining bones using standard hierarchy walk
-    sPoseData* nextPose = &pose[3];
-    if (headNode->m4_subNode) {
-        drawBoneHierarchy(headNode->m4_subNode, nextPose);
-    }
-    popMatrix();
-
-    if (headNode->m8_nextNode) {
-        drawBoneHierarchy(headNode->m8_nextNode, nextPose);
-    }
-    popMatrix();
-
-    if (neckNode->m8_nextNode) {
-        drawBoneHierarchy(neckNode->m8_nextNode, nextPose);
-    }
-    popMatrix();
+// 060749fe
+static s32 isNpcDoneMoving(s32 npcIndex) {
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    if ((pNPC->mC & 6) != 0) return 0;
+    return 1;
 }
 
-// 06073cf4 — draw NPC bones with look-at blending on neck/head (sPoseDataInterpolation)
-static void drawCaraNPCBonesInterpolated(s_3dModel* pModel, sVec2_FP* lookAtAngle)
-{
-    std::vector<sPoseDataInterpolation>& pose = pModel->m48_poseDataInterpolation;
-    sModelHierarchy* rootNode = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
-    sModelHierarchy* neckNode = rootNode->m4_subNode;
-
-    // Bone 0 (root body): standard transform
-    pushCurrentMatrix();
-    translateCurrentMatrix(&pose[0].m0_translation);
-    rotateCurrentMatrixZYX(&pose[0].mC_rotation);
-
-    // Bone 1 (neck): translate + rotate with look-at Y * 0.3 blending
-    pushCurrentMatrix();
-    translateCurrentMatrix(&pose[1].m0_translation);
-    rotateCurrentMatrixShiftedZ(pose[1].mC_rotation.m8_Z);
-    rotateCurrentMatrixShiftedY(pose[1].mC_rotation.m4_Y + MTH_Mul((*lookAtAngle)[1], fixedPoint(0x4CCC)));
-    rotateCurrentMatrixShiftedX(pose[1].mC_rotation.m0_X);
-
-    if (neckNode->m0_3dModel) {
-        addObjectToDrawList(neckNode->m0_3dModel);
-    }
-
-    sModelHierarchy* headNode = neckNode->m4_subNode;
-
-    // Bone 2 (head): translate + rotate with look-at Y * 0.7 + X blending
-    pushCurrentMatrix();
-    translateCurrentMatrix(&pose[2].m0_translation);
-    rotateCurrentMatrixShiftedZ(pose[2].mC_rotation.m8_Z);
-    rotateCurrentMatrixShiftedY(pose[2].mC_rotation.m4_Y + MTH_Mul((*lookAtAngle)[1], fixedPoint(0xB333)));
-    rotateCurrentMatrixShiftedX(pose[2].mC_rotation.m0_X + (*lookAtAngle)[0]);
-
-    if (headNode->m0_3dModel) {
-        addObjectToDrawList(headNode->m0_3dModel);
-    }
-
-    // Recurse into remaining bones using standard hierarchy walk
-    sPoseDataInterpolation* nextPose = &pose[3];
-    if (headNode->m4_subNode) {
-        drawBoneHierarchyInterpolated(headNode->m4_subNode, nextPose);
-    }
-    popMatrix();
-
-    if (headNode->m8_nextNode) {
-        drawBoneHierarchyInterpolated(headNode->m8_nextNode, nextPose);
-    }
-    popMatrix();
-
-    if (neckNode->m8_nextNode) {
-        drawBoneHierarchyInterpolated(neckNode->m8_nextNode, nextPose);
-    }
-    popMatrix();
-}
+// 06073b68 / 06073cf4 — same as shared applyEdgeAnimation / applyEdgeAnimation2 in townEdge.cpp
+// (CARA version also adds lookAtAngle[0] to head pitch, minor difference)
 
 // CARA entity type - small static object (size 0x28)
 struct sCaraEntitySmall : public s_workAreaTemplateWithArgAndBase<sCaraEntitySmall, sTownObject, sSaturnPtr>
@@ -752,10 +862,37 @@ struct sCaraEntitySmall : public s_workAreaTemplateWithArgAndBase<sCaraEntitySma
         }
     }
 
-    static void Update(sCaraEntitySmall* pThis) { Unimplemented(); }
+    // 06073292 — loading state
+    static void Update(sCaraEntitySmall* pThis)
+    {
+        if (isDataLoaded(readSaturnS32(pThis->mC))) {
+            Unimplemented(); // particleInitSub — needs VDP1 memory pointer from file bundle
+            pThis->m_UpdateMethod = &sCaraEntitySmall::Update2;
+            pThis->m_DrawMethod = &sCaraEntitySmall::Draw;
+        }
+    }
+
+    // 0607322c
+    static void Update2(sCaraEntitySmall* pThis)
+    {
+        if (pThis->m24_status == 0) {
+            sGunShotTask_UpdateSub4(&pThis->m10_animatedQuad);
+        }
+        else if (pThis->m24_status == 1) {
+            Unimplemented(); // FUN_06014db4
+        }
+    }
+
+    // 06073258
+    static void Draw(sCaraEntitySmall* pThis)
+    {
+        Unimplemented();
+    }
+
     static void Delete(sCaraEntitySmall* pThis) { Unimplemented(); }
 
     sSaturnPtr mC;
+    sAnimatedQuad m10_animatedQuad;
     sVec3_FP m18_position;
     u8 m24_status;
     // size 0x28
@@ -783,10 +920,54 @@ struct sCaraEntityMedium : public s_workAreaTemplateWithArgAndBase<sCaraEntityMe
         }
     }
 
-    static void Update(sCaraEntityMedium* pThis) { Unimplemented(); }
+    // 06072f9a — loading state
+    static void Update(sCaraEntityMedium* pThis)
+    {
+        if (isDataLoaded(readSaturnS32(pThis->mC))) {
+            // Set up collision body from entity config at arg+0x24
+            sSaturnPtr collisionConfig = readSaturnEA(pThis->mC + 0x24);
+            if (!collisionConfig.isNull()) {
+                pThis->m10_collisionBody.m30_pPosition = &pThis->m74_position;
+                pThis->m10_collisionBody.m34_pRotation = &pThis->m80_rotation;
+                pThis->m10_collisionBody.m38_pOwner = pThis;
+                pThis->m10_collisionBody.m3C_scriptEA = readSaturnEA(collisionConfig + 4);
+
+                s16 collisionModelOffset = readSaturnS16(collisionConfig + 2);
+                if (collisionModelOffset == 0) {
+                    pThis->m10_collisionBody.m40 = nullptr;
+                } else {
+                    pThis->m10_collisionBody.m40 = pThis->m0_fileBundle->getCollisionModel(collisionModelOffset);
+                }
+
+                setCollisionSetup(&pThis->m10_collisionBody, readSaturnS8(collisionConfig));
+                setCollisionBounds(&pThis->m10_collisionBody, readSaturnVec3(collisionConfig + 0x8), readSaturnVec3(collisionConfig + 0x14));
+            }
+            pThis->m_UpdateMethod = &sCaraEntityMedium::Update2;
+            pThis->m_DrawMethod = &sCaraEntityMedium::Draw;
+        }
+    }
+
+    // 06072ef0
+    static void Update2(sCaraEntityMedium* pThis)
+    {
+        if (pThis->m8C_status == 1) {
+            Unimplemented(); // FUN_06014db4
+        }
+        if (!readSaturnEA(pThis->mC + 0x24).isNull()) {
+            registerCollisionBody(&pThis->m10_collisionBody);
+        }
+    }
+
+    // 06072f28
+    static void Draw(sCaraEntityMedium* pThis)
+    {
+        Unimplemented();
+    }
+
     static void Delete(sCaraEntityMedium* pThis) { Unimplemented(); }
 
     sSaturnPtr mC;
+    sCollisionBody m10_collisionBody;
     sVec3_FP m74_position;
     sVec3_FP m80_rotation;
     u8 m8C_status;
@@ -855,7 +1036,7 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
                 Unimplemented(); // FUN_TWN_CARA__06074106 — movement towards target
             }
             if (pThis->mC & 4) {
-                Unimplemented(); // FUN_TWN_CARA__06074342 — rotation towards target
+                updateNPCRotationAndMovement(pThis);
             }
         }
 
@@ -957,7 +1138,7 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
             }
         }
         else if (controlState == 4) {
-            Unimplemented(); // FUN_TWN_CARA__06075976
+            updateNPCWalkRun(pThis);
         }
 
         registerCollisionBody(&pThis->m84);
@@ -980,11 +1161,12 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
         }
 
         // Draw NPC model with bone hierarchy and look-at blending
+        // Note: CARA's version also adds lookAtAngle[0] to head pitch, but using shared version for now
         if (pThis->m34_3dModel.m48_poseDataInterpolation.size() == 0) {
-            drawCaraNPCBones(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
+            applyEdgeAnimation(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
         }
         else {
-            drawCaraNPCBonesInterpolated(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
+            applyEdgeAnimation2(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
         }
 
         popMatrix();
@@ -1053,8 +1235,13 @@ struct TWN_CARA_data : public sTownOverlay
         overlayScriptFunctions.m_twoArg[0x06075bf8] = {&caravanCameraSetup, "caravanCameraSetup"};
 
         overlayScriptFunctions.m_threeArg[0x0602c308] = {&playSoundEffect_bank5, "playSoundEffect_bank5"};
+        overlayScriptFunctions.m_threeArg[0x06074250] = {&turnNpcTowardsNpc_Cara, "turnNpcTowardsNpc_Cara"};
         overlayScriptFunctions.m_threeArg[0x06070738] = {&setupCameraModeFixed, "setupCameraModeFixed"};
         overlayScriptFunctions.m_twoArg[0x06073f5c] = {&setNpcDrawMode, "setNpcDrawMode"};
+
+        overlayScriptFunctions.m_zeroArg[0x060716aa] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
+
+        overlayScriptFunctions.m_oneArg[0x060749fe] = {&isNpcDoneMoving, "isNpcDoneMoving"};
 
         overlayScriptFunctions.m_fourArg[0x0607457c] = {&setNpcLocation, "setNpcLocation"};
         overlayScriptFunctions.m_fourArg[0x060745aa] = {&setNpcOrientation, "setNpcOrientation"};
@@ -1116,7 +1303,7 @@ struct TWN_CARA_data : public sTownOverlay
 // 06075b7e
 static void initCameraTimerFromDayNight(sCameraTask* pCamera) {
     if (mainGameState.bitField[0] & 1) {
-        pCamera->m4_dayNightTimer = 0x1518;
+        pCamera->m4_dayNightTimer = 5400;
     }
     else {
         pCamera->m4_dayNightTimer = 0;

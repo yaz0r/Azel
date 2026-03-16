@@ -108,6 +108,7 @@ struct sNPC : public sTownObject
     sNPCE8 mE8;
 
     // Extended NPC fields (shared by sEdgeTask, sCaraNPC, sZoahNPC — all 0x17C-sized)
+    fixedPoint m148_savedAngle;
     s16 m14C_inputFlags;
     s16 m14E;
     s32 m150_inputX;

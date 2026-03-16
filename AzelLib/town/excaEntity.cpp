@@ -3,7 +3,6 @@
 #include "town/town.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
-#include "town/ruin/twn_ruin.h" // TODO: Cleanup
 
 struct sGenericTownNPC : public s_workAreaTemplateWithArgAndBase<sGenericTownNPC, sTownObject, sSaturnPtr>
 {
@@ -125,7 +124,10 @@ struct sGenericTownNPC : public s_workAreaTemplateWithArgAndBase<sGenericTownNPC
 
     static void Delete(sGenericTownNPC* pThis)
     {
-        Unimplemented();
+        s16 npcIndex = readSaturnS16(pThis->mC + 0x2C);
+        if (npcIndex > -1 && npcData0.m70_npcPointerArray[npcIndex].workArea == pThis) {
+            npcData0.m70_npcPointerArray[npcIndex].workArea = nullptr;
+        }
     }
 
     sSaturnPtr mC;
@@ -137,6 +139,6 @@ struct sGenericTownNPC : public s_workAreaTemplateWithArgAndBase<sGenericTownNPC
     //size: 0xE0
 };
 
-sTownObject* createExcaEntity(s_workAreaCopy* parent, sSaturnPtr arg) {
-    return createSubTaskWithArgWithCopy<sGenericTownNPC, sSaturnPtr>(parent, arg);
+sTownObject* createExcaEntity(npcFileDeleter* parent, sSaturnPtr arg) {
+    return createSubTaskWithArgWithCopy<sGenericTownNPC, sSaturnPtr>((s_workAreaCopy*)parent, arg);
 }

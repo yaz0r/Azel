@@ -262,7 +262,22 @@ static s32 enableNpcLookAtDecay(s32 npcIndex);
 static s32 getDistanceToPlayerTier();
 int enableRBG0();
 static sTownObject* createZoahEntity(s_workAreaCopy* parent, sSaturnPtr arg);
-static sTownObject* createZoahNPC(s_workAreaCopy* parent, sSaturnPtr arg);
+static sTownObject* createZoahNPC(npcFileDeleter* parent, sSaturnPtr arg);
+
+// 06099226
+static s32 createTimerSubTask(s32 param_1) {
+    Unimplemented(); // creates a 0x10-byte sub-task on townVar0
+    return 0;
+}
+
+void setupNPCWalkInZDirection(s32 r4_npcIndex, s32 r5_zDirection, s32 r6_distance); // from twn_ruin.cpp
+
+// 06098a18
+static s32 setupCameraFollowAndWalk() {
+    setupCameraFollowMode();
+    setupNPCWalkInZDirection(0, 227, 36);
+    return 0;
+}
 
 struct TWN_ZOAH_data* gTWN_ZOAH = NULL;
 struct TWN_ZOAH_data : public sTownOverlay
@@ -307,6 +322,10 @@ struct TWN_ZOAH_data : public sTownOverlay
         overlayScriptFunctions.m_threeArg[0x0609c574] = {&turnNpcTowardsNpc, "turnNpcTowardsNpc"};
         overlayScriptFunctions.m_threeArg[0x0609c93c] = {&setupZoahNPCAnimation, "setupZoahNPCAnimation"};
         overlayScriptFunctions.m_threeArg[0x0609ca40] = {&scheduleNpcAnimation, "scheduleNpcAnimation"};
+
+        overlayScriptFunctions.m_zeroArg[0x06098a18] = {&setupCameraFollowAndWalk, "setupCameraFollowAndWalk"};
+
+        overlayScriptFunctions.m_oneArg[0x06099226] = {&createTimerSubTask, "createTimerSubTask"};
 
         overlayScriptFunctions.m_fourArg[0x0609c8a0] = {&setNpcLocation, "setNpcLocation"};
         overlayScriptFunctions.m_fourArg[0x0609c8ce] = {&setNpcOrientation, "setNpcOrientation"};
@@ -726,7 +745,7 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
             // Process animation schedule
             if (pThis->m17A)
             {
-                s8 schedAnim = pThis->m158_animSchedule[pThis->m179 * 2];
+                s8 schedAnim = pThis->m158_animQueue[pThis->m179 * 2];
                 if (pThis->m2C_currentAnimation != schedAnim)
                 {
                     if (schedAnim == 0)
@@ -762,7 +781,7 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
                         updateAndInterpolateAnimation(&pThis->m34_3dModel);
                     }
                 }
-                pThis->mE_controlState = pThis->m158_animSchedule[pThis->m179 * 2 + 1];
+                pThis->mE_controlState = pThis->m158_animQueue[pThis->m179 * 2 + 1];
                 pThis->m179++;
                 if (pThis->m179 > 7) pThis->m179 = 0;
                 pThis->m17A--;
@@ -897,20 +916,10 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
         }
     }
 
-    fixedPoint m148_savedAngle;
-    s16 m14C;
-    s16 m14E;
-    s32 m150;
-    s32 m154;
-    s8 m158_animSchedule[32]; // 0x158-0x177
-    s8 m178;
-    s8 m179;
-    s8 m17A;
-    s8 m17B;
-    // size 0x17C
+    // All fields in sNPC base — size 0x17C
 };
 
-static sTownObject* createZoahNPC(s_workAreaCopy* parent, sSaturnPtr arg) {
+static sTownObject* createZoahNPC(npcFileDeleter* parent, sSaturnPtr arg) {
     return createSubTaskWithArgWithCopy<sZoahNPC, sSaturnPtr>(parent, arg);
 }
 
@@ -1045,14 +1054,14 @@ static s32 scheduleNpcAnimation(s32 npcIndex, s32 animIndex, s32 controlState)
     {
         pNPC->mE_controlState = 2;
     }
-    pZoah->m158_animSchedule[0] = (s8)animIndex;
+    pZoah->m158_animQueue[0] = (s8)animIndex;
     if (animIndex == 0)
     {
-        pZoah->m158_animSchedule[1] = 0;
+        pZoah->m158_animQueue[1] = 0;
     }
     else
     {
-        pZoah->m158_animSchedule[1] = (s8)controlState;
+        pZoah->m158_animQueue[1] = (s8)controlState;
     }
     return 0;
 }
