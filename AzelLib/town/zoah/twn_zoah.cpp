@@ -13,6 +13,7 @@
 #include "battle/BTL_A3/BTL_A3_map6.h"
 #include "town/excaEntity.h"
 #include "town/collisionRegistry.h"
+#include "town/townCutscene.h"
 #include "town/townEdge.h"
 #include "3dEngine.h"
 #include "3dModels.h"
@@ -20,7 +21,7 @@
 #include "kernel/animation.h"
 #include "mainMenuDebugTasks.h"
 #include "audio/systemSounds.h"
-#include "town/e006/twn_e006.h"
+#include "town/townCutscene.h"
 
 void unloadFnt(); // TODO: fix
 
@@ -255,9 +256,6 @@ static s32 disableNpcLookAtDecay(s32 npcIndex);
 static s32 isNpcDoneMoving(s32 npcIndex);
 static s32 turnNpcTowardsNpc(s32 npcIndex, s32 targetIndex, s32 mode);
 static s32 setupZoahNPCAnimation(s32 npcIndex, s32 animIndex, s32 controlState);
-static s32 createCutscene(s32 arg);
-static s32 isCutsceneDone();
-static s32 deleteCutscene();
 static s32 turnNpcBackToSavedAngle(s32 npcIndex, s32 mode);
 static s32 scheduleNpcAnimation(s32 npcIndex, s32 animIndex, s32 controlState);
 static s32 enableNpcLookAtDecay(s32 npcIndex);
@@ -288,12 +286,12 @@ struct TWN_ZOAH_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x06096ac2] = {&disableRBG0, "disableRBG0"};
         overlayScriptFunctions.m_zeroArg[0x06098fea] = {&setupAutoWalk, "setupAutoWalk"};
         overlayScriptFunctions.m_zeroArg[0x060999ce] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
-        overlayScriptFunctions.m_zeroArg[0x060997f2] = {&isCutsceneDone, "isCutsceneDone"};
-        overlayScriptFunctions.m_zeroArg[0x0609995c] = {&deleteCutscene, "deleteCutscene"};
+        overlayScriptFunctions.m_zeroArg[0x060997f2] = {&townIsCutsceneDone, "townIsCutsceneDone"};
+        overlayScriptFunctions.m_zeroArg[0x0609995c] = {&townDeleteCutscene, "townDeleteCutscene"};
         overlayScriptFunctions.m_zeroArg[0x0609cd72] = {&getDistanceToPlayerTier, "getDistanceToPlayerTier"};
         overlayScriptFunctions.m_zeroArg[0x0609deba] = {&toggleDayNight, "toggleDayNight"};
 
-        overlayScriptFunctions.m_oneArg[0x0609991e] = {&createCutscene, "createCutscene"};
+        overlayScriptFunctions.m_oneArg[0x0609991e] = {&townCreateCutscene, "townCreateCutscene"};
         overlayScriptFunctions.m_oneArg[0x0609ccfa] = {&disableNpcLookAtDecay, "disableNpcLookAtDecay"};
         overlayScriptFunctions.m_oneArg[0x0609cd22] = {&isNpcDoneMoving, "isNpcDoneMoving"};
         overlayScriptFunctions.m_oneArg[0x0609cd0e] = {&enableNpcLookAtDecay, "enableNpcLookAtDecay"};
@@ -1001,43 +999,7 @@ static s32 isNpcDoneMoving(s32 npcIndex)
 }
 
 // Script: create cutscene EPK player
-static s32 createCutscene(s32 arg)
-{
-    if (npcData0.mF0 != 0)
-    {
-        e006Task0 = nullptr;
-        return 0;
-    }
-    e006Task0 = createSubTaskWithArg<sE006Task0>(twnMainLogicTask, arg);
-    scriptFunction_60573d8Sub0(e006Task0->m0);
-    return 0;
-}
-
-// Script: check if cutscene is done
-static s32 isCutsceneDone()
-{
-    if ((e006Task0 != nullptr) && (npcData0.mF0 == 0))
-    {
-        s32 iVar1 = scriptFunction_605861eSub0Sub0(e006Task0->m0);
-        if ((iVar1 != 5) && (iVar1 != -1))
-            return 0;
-    }
-    return 1;
-}
-
-// Script: stop/delete cutscene
-static s32 deleteCutscene()
-{
-    if (e006Task0 != nullptr)
-    {
-        npcData0.mF4 = 0;
-        updateStreamingFileReadSub0(e006Task0->m0);
-        sE006Task0* temp = e006Task0;
-        e006Task0 = nullptr;
-        temp->getTask()->markFinished();
-    }
-    return 0;
-}
+// createCutscene / isCutsceneDone / deleteCutscene factored into townCutscene.cpp
 
 // Script: turn NPC back to saved angle
 static s32 turnNpcBackToSavedAngle(s32 npcIndex, s32 mode)

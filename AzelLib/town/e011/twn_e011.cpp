@@ -1,6 +1,6 @@
 #include "PDS.h"
 #include "twn_e011.h"
-#include "town/e006/twn_e006.h" // TODO cleanup
+#include "town/e006/twn_e006.h"
 #include "town/town.h"
 #include "town/townScript.h"
 #include "town/townEdge.h"
@@ -100,7 +100,7 @@ s32 e011_scriptFunction_6059af0(s32 r4)
         init3DModelRawData(pNewSubTask, &pNewSubTask->mC_3dModel, 0, pBundle, hierarchyIndex, nullptr, pPose, nullptr, nullptr);
 
         npcData0.m70_npcPointerArray[readSaturnU8(r4Ptr + 1)].workArea = pNewSubTask;
-        setupCutsceneModelType2(e006Task0->m0, readSaturnU8(r4Ptr + 2), pNewSubTask, &pNewSubTask->mC_3dModel);
+        setupCutsceneModelType2(gCutsceneTask->m0, readSaturnU8(r4Ptr + 2), pNewSubTask, &pNewSubTask->mC_3dModel);
     }
     return 0;
 }

@@ -8,7 +8,7 @@
 #include "audio/soundDriver.h"
 #include "town/townCamera.h"
 #include "town/excaEntity.h"
-#include "town/e006/twn_e006.h"
+#include "town/townCutscene.h"
 #include "battle/BTL_A3/BTL_A3_map6.h"
 #include "field/field_a3/o_fld_a3.h"
 #include "kernel/cinematicBarsTask.h"
@@ -41,19 +41,8 @@ static void cameraUpdate_noop(sMainLogic*)
 {
 }
 
-static s32 isCutsceneDone();
-s32 getPositionInEDK(sStreamingFile* iParm1);
 static s32 caravanCameraSetup(s32 rotationEA, s32 lightData);
 s32 setupCameraModeFixed(s32 arg0, s32 arg1, s32 arg2);
-
-// 0607150c
-static s32 getCutsceneHalfPosition() {
-    if (e006Task0 != nullptr && npcData0.mF0 == 0) {
-        s32 pos = getPositionInEDK(e006Task0->m0);
-        return (pos + (pos < 0 ? 1 : 0)) >> 1;
-    }
-    return 0;
-}
 
 // 0602c308
 static s32 playSoundEffect_bank5(s32 soundId, s32 volume, s32 unk) {
@@ -61,17 +50,7 @@ static s32 playSoundEffect_bank5(s32 soundId, s32 volume, s32 unk) {
     return 0;
 }
 
-// 06071544
-static s32 deleteCutscene_Cara() {
-    if (e006Task0 != nullptr) {
-        npcData0.mF4 = 0;
-        updateStreamingFileReadSub0(e006Task0->m0);
-        sE006Task0* temp = e006Task0;
-        e006Task0 = nullptr;
-        temp->getTask()->markFinished();
-    }
-    return 0;
-}
+// cutscene functions factored into townCutscene.cpp
 
 // 060709fa
 static s32 setupCameraFollowMode_Cara() {
@@ -146,28 +125,8 @@ static s32 enableBackgroundWithTimer(s32 duration) {
 
 // 060710c6
 static s32 createCutsceneWaitTask(s32 param_1) {
-    if (isCutsceneDone() == 0) {
+    if (townIsCutsceneDone() == 0) {
         Unimplemented(); // creates a timer sub-task on townVar0
-    }
-    return 0;
-}
-
-// 060714ce
-static s32 isCutsceneDone() {
-    if ((e006Task0 != nullptr) && (npcData0.mF0 == 0)) {
-        s32 state = scriptFunction_605861eSub0Sub0(e006Task0->m0);
-        if (state != 5 && state != -1) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-// 060714ac
-static s32 startCutscenePlayback() {
-    npcData0.mF0 = 0;
-    if (e006Task0 != nullptr) {
-        scriptFunction_60573d8Sub0(e006Task0->m0);
     }
     return 0;
 }
@@ -239,7 +198,7 @@ static s32 setNpcDrawMode(s32 npcIndex, s32 mode) {
 static s32 createCutscene_Cara(s32 arg) {
     npcData0.mF4 = 1;
     npcData0.mF0 = 0;
-    e006Task0 = createSubTaskWithArg<sE006Task0>(twnMainLogicTask, arg);
+    gCutsceneTask = createSubTaskWithArg<sCutsceneTask>(twnMainLogicTask, arg);
     return 0;
 }
 
@@ -626,7 +585,223 @@ static void createCaravanVdp2Plane(p_workArea pParent)
     gCaraVdp2PlaneTask = createSubTask<sCaraVdp2Plane>(pParent);
 }
 
-void initEdgeNPC(sEdgeTask* pThis, sSaturnPtr arg); // from townEdge.cpp
+void initEdgeNPC(sNPC* pThis, sSaturnPtr arg); // from townEdge.cpp
+
+// 06073ae8 — standard bone recursion with sPoseData (0xB4 stride)
+static void drawBoneHierarchy(sModelHierarchy* pNode, sPoseData* pose)
+{
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pose->m0_translation);
+    rotateCurrentMatrixZYX(&pose->mC_rotation);
+    if (pNode->m0_3dModel) {
+        addObjectToDrawList(pNode->m0_3dModel);
+    }
+    if (pNode->m4_subNode) {
+        drawBoneHierarchy(pNode->m4_subNode, pose + 1);
+    }
+    popMatrix();
+    if (pNode->m8_nextNode) {
+        drawBoneHierarchy(pNode->m8_nextNode, pose + 1);
+    }
+}
+
+// 06073c88 — standard bone recursion with sPoseDataInterpolation (0x48 stride)
+static void drawBoneHierarchyInterpolated(sModelHierarchy* pNode, sPoseDataInterpolation* pose)
+{
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pose->m0_translation);
+    rotateCurrentMatrixZYX(&pose->mC_rotation);
+    if (pNode->m0_3dModel) {
+        addObjectToDrawList(pNode->m0_3dModel);
+    }
+    if (pNode->m4_subNode) {
+        drawBoneHierarchyInterpolated(pNode->m4_subNode, pose + 1);
+    }
+    popMatrix();
+    if (pNode->m8_nextNode) {
+        drawBoneHierarchyInterpolated(pNode->m8_nextNode, pose + 1);
+    }
+}
+
+// 06073b68 — draw NPC bones with look-at blending on neck/head (sPoseData)
+static void drawCaraNPCBones(s_3dModel* pModel, sVec2_FP* lookAtAngle)
+{
+    std::vector<sPoseData>& pose = pModel->m2C_poseData;
+    sModelHierarchy* rootNode = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
+    sModelHierarchy* neckNode = rootNode->m4_subNode;
+
+    // Bone 0 (root body): standard transform
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pose[0].m0_translation);
+    rotateCurrentMatrixZYX(&pose[0].mC_rotation);
+
+    // Bone 1 (neck): translate + rotate with look-at Y * 0.3 blending
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pose[1].m0_translation);
+    rotateCurrentMatrixShiftedZ(pose[1].mC_rotation.m8_Z);
+    rotateCurrentMatrixShiftedY(pose[1].mC_rotation.m4_Y + MTH_Mul((*lookAtAngle)[1], fixedPoint(0x4CCC)));
+    rotateCurrentMatrixShiftedX(pose[1].mC_rotation.m0_X);
+
+    if (neckNode->m0_3dModel) {
+        addObjectToDrawList(neckNode->m0_3dModel);
+    }
+
+    sModelHierarchy* headNode = neckNode->m4_subNode;
+
+    // Bone 2 (head): translate + rotate with look-at Y * 0.7 + X blending
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pose[2].m0_translation);
+    rotateCurrentMatrixShiftedZ(pose[2].mC_rotation.m8_Z);
+    rotateCurrentMatrixShiftedY(pose[2].mC_rotation.m4_Y + MTH_Mul((*lookAtAngle)[1], fixedPoint(0xB333)));
+    rotateCurrentMatrixShiftedX(pose[2].mC_rotation.m0_X + (*lookAtAngle)[0]);
+
+    if (headNode->m0_3dModel) {
+        addObjectToDrawList(headNode->m0_3dModel);
+    }
+
+    // Recurse into remaining bones using standard hierarchy walk
+    sPoseData* nextPose = &pose[3];
+    if (headNode->m4_subNode) {
+        drawBoneHierarchy(headNode->m4_subNode, nextPose);
+    }
+    popMatrix();
+
+    if (headNode->m8_nextNode) {
+        drawBoneHierarchy(headNode->m8_nextNode, nextPose);
+    }
+    popMatrix();
+
+    if (neckNode->m8_nextNode) {
+        drawBoneHierarchy(neckNode->m8_nextNode, nextPose);
+    }
+    popMatrix();
+}
+
+// 06073cf4 — draw NPC bones with look-at blending on neck/head (sPoseDataInterpolation)
+static void drawCaraNPCBonesInterpolated(s_3dModel* pModel, sVec2_FP* lookAtAngle)
+{
+    std::vector<sPoseDataInterpolation>& pose = pModel->m48_poseDataInterpolation;
+    sModelHierarchy* rootNode = pModel->m4_pModelFile->getModelHierarchy(pModel->mC_modelIndexOffset);
+    sModelHierarchy* neckNode = rootNode->m4_subNode;
+
+    // Bone 0 (root body): standard transform
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pose[0].m0_translation);
+    rotateCurrentMatrixZYX(&pose[0].mC_rotation);
+
+    // Bone 1 (neck): translate + rotate with look-at Y * 0.3 blending
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pose[1].m0_translation);
+    rotateCurrentMatrixShiftedZ(pose[1].mC_rotation.m8_Z);
+    rotateCurrentMatrixShiftedY(pose[1].mC_rotation.m4_Y + MTH_Mul((*lookAtAngle)[1], fixedPoint(0x4CCC)));
+    rotateCurrentMatrixShiftedX(pose[1].mC_rotation.m0_X);
+
+    if (neckNode->m0_3dModel) {
+        addObjectToDrawList(neckNode->m0_3dModel);
+    }
+
+    sModelHierarchy* headNode = neckNode->m4_subNode;
+
+    // Bone 2 (head): translate + rotate with look-at Y * 0.7 + X blending
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pose[2].m0_translation);
+    rotateCurrentMatrixShiftedZ(pose[2].mC_rotation.m8_Z);
+    rotateCurrentMatrixShiftedY(pose[2].mC_rotation.m4_Y + MTH_Mul((*lookAtAngle)[1], fixedPoint(0xB333)));
+    rotateCurrentMatrixShiftedX(pose[2].mC_rotation.m0_X + (*lookAtAngle)[0]);
+
+    if (headNode->m0_3dModel) {
+        addObjectToDrawList(headNode->m0_3dModel);
+    }
+
+    // Recurse into remaining bones using standard hierarchy walk
+    sPoseDataInterpolation* nextPose = &pose[3];
+    if (headNode->m4_subNode) {
+        drawBoneHierarchyInterpolated(headNode->m4_subNode, nextPose);
+    }
+    popMatrix();
+
+    if (headNode->m8_nextNode) {
+        drawBoneHierarchyInterpolated(headNode->m8_nextNode, nextPose);
+    }
+    popMatrix();
+
+    if (neckNode->m8_nextNode) {
+        drawBoneHierarchyInterpolated(neckNode->m8_nextNode, nextPose);
+    }
+    popMatrix();
+}
+
+// CARA entity type - small static object (size 0x28)
+struct sCaraEntitySmall : public s_workAreaTemplateWithArgAndBase<sCaraEntitySmall, sTownObject, sSaturnPtr>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sCaraEntitySmall::Init, &sCaraEntitySmall::Update, nullptr, &sCaraEntitySmall::Delete };
+        return &taskDefinition;
+    }
+
+    // 06073268
+    static void Init(sCaraEntitySmall* pThis, sSaturnPtr arg)
+    {
+        pThis->mC = arg;
+        pThis->m18_position = readSaturnVec3(arg + 8);
+        pThis->m24_status = readSaturnU8(arg + 0x24);
+        s16 npcIndex = readSaturnS16(arg + 0x26);
+        if (npcIndex > -1) {
+            npcData0.m70_npcPointerArray[npcIndex].workArea = pThis;
+        }
+    }
+
+    static void Update(sCaraEntitySmall* pThis) { Unimplemented(); }
+    static void Delete(sCaraEntitySmall* pThis) { Unimplemented(); }
+
+    sSaturnPtr mC;
+    sVec3_FP m18_position;
+    u8 m24_status;
+    // size 0x28
+};
+
+// CARA entity type - medium entity with collision (size 0x90)
+struct sCaraEntityMedium : public s_workAreaTemplateWithArgAndBase<sCaraEntityMedium, sTownObject, sSaturnPtr>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &sCaraEntityMedium::Init, &sCaraEntityMedium::Update, nullptr, &sCaraEntityMedium::Delete };
+        return &taskDefinition;
+    }
+
+    // 06072f5a
+    static void Init(sCaraEntityMedium* pThis, sSaturnPtr arg)
+    {
+        pThis->mC = arg;
+        pThis->m74_position = readSaturnVec3(arg + 8);
+        pThis->m80_rotation = readSaturnVec3(arg + 0x14);
+        pThis->m8C_status = readSaturnU8(arg + 0x22);
+        s16 npcIndex = readSaturnS16(arg + 0x28);
+        if (npcIndex > -1) {
+            npcData0.m70_npcPointerArray[npcIndex].workArea = pThis;
+        }
+    }
+
+    static void Update(sCaraEntityMedium* pThis) { Unimplemented(); }
+    static void Delete(sCaraEntityMedium* pThis) { Unimplemented(); }
+
+    sSaturnPtr mC;
+    sVec3_FP m74_position;
+    sVec3_FP m80_rotation;
+    u8 m8C_status;
+    // size 0x90
+};
+
+static sTownObject* createCaraEntitySmall(s_workAreaCopy* parent, sSaturnPtr arg)
+{
+    return createSubTaskWithArgWithCopy<sCaraEntitySmall, sSaturnPtr>(parent, arg);
+}
+
+static sTownObject* createCaraEntityMedium(s_workAreaCopy* parent, sSaturnPtr arg)
+{
+    return createSubTaskWithArgWithCopy<sCaraEntityMedium, sSaturnPtr>(parent, arg);
+}
 
 // 060734a8 is initEdgeNPC — CARA NPCs use the standard sNPC/sEdgeTask layout
 struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSaturnPtr>
@@ -640,18 +815,191 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
     // 060734a8
     static void Init(sCaraNPC* pThis, sSaturnPtr arg)
     {
-        initEdgeNPC((sEdgeTask*)pThis, arg);
+        initEdgeNPC(pThis, arg);
     }
 
+    // 060735e8 — loading state, waits for data then inits model
     static void Update(sCaraNPC* pThis)
     {
-        Unimplemented();
+        sSaturnPtr entityArg = pThis->m10_InitPtr;
+        if (isDataLoaded(readSaturnS32(entityArg))) {
+            s_fileBundle* pBundle = pThis->m0_fileBundle;
+            u16 modelIndex = readSaturnU16(entityArg + 0x22);
+            sStaticPoseData* pPose = pBundle->getStaticPose(readSaturnU16(entityArg + 0x24), pBundle->getModelHierarchy(modelIndex)->countNumberOfBones());
+            init3DModelRawData(pThis, &pThis->m34_3dModel, 0x100, pBundle, modelIndex, nullptr, pPose, nullptr, nullptr);
+
+            if (readSaturnU8(entityArg + 0x21) & 0x40) {
+                Unimplemented(); // FUN_TWN_CARA__0606eca0
+            }
+            pThis->m_UpdateMethod = &sCaraNPC::Update2;
+            pThis->m_DrawMethod = &sCaraNPC::Draw;
+        }
     }
 
+    // 06073652 — main update: handles animation, movement, collision
+    static void Update2(sCaraNPC* pThis)
+    {
+        pThis->mE8.m54_oldPosition = pThis->mE8.m0_position;
+
+        if (pThis->mC == 0) {
+            // call m14_updateFunction
+            if (pThis->m14_updateFunction) {
+                pThis->m14_updateFunction(pThis);
+            }
+        }
+        else {
+            if (((pThis->mF & 2) == 0) && ((pThis->mC & 8) == 0)) {
+                pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
+            }
+            if (pThis->mC & 2) {
+                Unimplemented(); // FUN_TWN_CARA__06074106 — movement towards target
+            }
+            if (pThis->mC & 4) {
+                Unimplemented(); // FUN_TWN_CARA__06074342 — rotation towards target
+            }
+        }
+
+        // Animation state machine
+        s8 controlState = pThis->mE_controlState;
+        if (controlState == 0) {
+            // Process animation ring buffer
+            if (pThis->m17A != 0) {
+                s8 readIdx = pThis->m179;
+                u8* animQueue = pThis->m158_animQueue;
+                s8 animId = (s8)animQueue[readIdx * 2];
+                u8 animMode = animQueue[readIdx * 2 + 1];
+
+                if (pThis->m1C != (s32)animId) {
+                    if (animId == 0) {
+                        playAnimationGeneric(&pThis->m34_3dModel, nullptr, 10);
+                        pThis->m1C = 0;
+                    }
+                    else {
+                        pThis->m1C = (s32)animId;
+                        sSaturnPtr animEntry = pThis->m30_animationTable + animId * 4;
+                        s16 fileIdx = readSaturnS16(animEntry);
+                        u16 animOffset = readSaturnU16(animEntry + 2);
+                        s_fileBundle* pBundle = (fileIdx != 0) ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle : pThis->m0_fileBundle;
+                        sAnimationData* pAnim = pBundle->getAnimation(animOffset);
+                        playAnimationGeneric(&pThis->m34_3dModel, pAnim, 10);
+                        updateAndInterpolateAnimation(&pThis->m34_3dModel);
+                    }
+                }
+
+                pThis->mE_controlState = animMode;
+                readIdx++;
+                if (readIdx > 7) readIdx = 0;
+                pThis->m179 = readIdx;
+                pThis->m17A--;
+            }
+        }
+        else if (controlState == 1) {
+            // Walking — step animation based on distance moved
+            sVec3_FP delta;
+            delta.m0_X = pThis->mE8.m0_position.m0_X - pThis->mE8.m54_oldPosition.m0_X;
+            delta.m4_Y = pThis->mE8.m0_position.m4_Y - pThis->mE8.m54_oldPosition.m4_Y;
+            delta.m8_Z = pThis->mE8.m0_position.m8_Z - pThis->mE8.m54_oldPosition.m8_Z;
+            s32 dist = sqrt_I((s64)delta.m0_X.asS32() * delta.m0_X.asS32() + (s64)delta.m4_Y.asS32() * delta.m4_Y.asS32() + (s64)delta.m8_Z.asS32() * delta.m8_Z.asS32());
+
+            u32 accumulator = pThis->m28_animationLeftOver.asS32() + dist * 0x1E1;
+            pThis->m28_animationLeftOver = accumulator & 0xFFFF;
+
+            u32 steps;
+            if (dist * 0x1E1 == 0) {
+                // Stopped — switch to idle animation
+                if (pThis->m1C != 0) {
+                    pThis->m1C = 0;
+                    sSaturnPtr animEntry = pThis->m30_animationTable;
+                    s16 fileIdx = readSaturnS16(animEntry);
+                    s_fileBundle* pBundle = (fileIdx != 0) ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle : pThis->m0_fileBundle;
+                    playAnimationGeneric(&pThis->m34_3dModel, pBundle->getAnimation(readSaturnS16(animEntry + 2)), 5);
+                }
+                steps = 1;
+            }
+            else {
+                // Moving — switch to walk animation
+                if (pThis->m1C != 1) {
+                    pThis->m1C = 1;
+                    sSaturnPtr animEntry = pThis->m30_animationTable + 4;
+                    s16 fileIdx = readSaturnS16(animEntry);
+                    s_fileBundle* pBundle = (fileIdx != 0) ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle : pThis->m0_fileBundle;
+                    playAnimationGeneric(&pThis->m34_3dModel, pBundle->getAnimation(readSaturnS16(animEntry + 2)), 5);
+                }
+                steps = accumulator >> 16;
+            }
+
+            for (; steps != 0; steps--) {
+                stepAnimation(&pThis->m34_3dModel);
+            }
+            interpolateAnimation(&pThis->m34_3dModel);
+        }
+        else if (controlState == 2) {
+            if (pThis->m34_3dModel.m30_pCurrentAnimation != nullptr) {
+                u32 frame = updateAndInterpolateAnimation(&pThis->m34_3dModel);
+                s32 numFrames = pThis->m34_3dModel.m30_pCurrentAnimation ? pThis->m34_3dModel.m30_pCurrentAnimation->m4_numFrames : 0;
+                if (numFrames - 1 <= (s32)frame) {
+                    pThis->mE_controlState = 0;
+                }
+            }
+            else if (pThis->m34_3dModel.m34_pDefaultPose == nullptr) {
+                pThis->mE_controlState = 0;
+            }
+            else {
+                updateAndInterpolateAnimation(&pThis->m34_3dModel);
+            }
+        }
+        else if (controlState == 3) {
+            if (pThis->m34_3dModel.m30_pCurrentAnimation == nullptr) {
+                pThis->mE_controlState = 2;
+            }
+            else {
+                updateAndInterpolateAnimation(&pThis->m34_3dModel);
+            }
+        }
+        else if (controlState == 4) {
+            Unimplemented(); // FUN_TWN_CARA__06075976
+        }
+
+        registerCollisionBody(&pThis->m84);
+    }
+
+    // 06073e08
+    static void Draw(sCaraNPC* pThis)
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pThis->mE8.m0_position);
+        rotateCurrentMatrixShiftedY(pThis->mE8.mC_rotation.m4_Y);
+        rotateCurrentMatrixShiftedX(pThis->mE8.mC_rotation.m0_X);
+        rotateCurrentMatrixShiftedY(0x8000000);
+
+        if ((pThis->mF & 0x80) == 0) {
+            // Draw shadow model from dramAllocator bundle
+            u16 shadowOffset = readSaturnU16(pThis->m30_animationTable + 2);
+            sProcessed3dModel* pShadowModel = dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getModelHierarchy(shadowOffset)->m0_3dModel;
+            addObjectToDrawList(pShadowModel);
+        }
+
+        // Draw NPC model with bone hierarchy and look-at blending
+        if (pThis->m34_3dModel.m48_poseDataInterpolation.size() == 0) {
+            drawCaraNPCBones(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
+        }
+        else {
+            drawCaraNPCBonesInterpolated(&pThis->m34_3dModel, &pThis->m20_lookAtAngle);
+        }
+
+        popMatrix();
+    }
+
+    // 06073fbc
     static void Delete(sCaraNPC* pThis)
     {
-        Unimplemented();
+        s8 npcIndex = readSaturnS8(pThis->m10_InitPtr + 0x20);
+        if (npcData0.m70_npcPointerArray[npcIndex].workArea == pThis) {
+            npcData0.m70_npcPointerArray[npcIndex].workArea = nullptr;
+        }
     }
+
+    // size 0x17C
 };
 
 static sTownObject* createCaraNPC(s_workAreaCopy* parent, sSaturnPtr arg)
@@ -694,10 +1042,10 @@ struct TWN_CARA_data : public sTownOverlay
 
         overlayScriptFunctions.m_oneArgPtr[0x06075d5c] = {&townCamera_setupWithPosition, "townCamera_setupWithPosition"};
 
-        overlayScriptFunctions.m_zeroArg[0x060714ac] = {&startCutscenePlayback, "startCutscenePlayback"};
-        overlayScriptFunctions.m_zeroArg[0x060714ce] = {&isCutsceneDone, "isCutsceneDone"};
-        overlayScriptFunctions.m_zeroArg[0x0607150c] = {&getCutsceneHalfPosition, "getCutsceneHalfPosition"};
-        overlayScriptFunctions.m_zeroArg[0x06071544] = {&deleteCutscene_Cara, "deleteCutscene_Cara"};
+        overlayScriptFunctions.m_zeroArg[0x060714ac] = {&townStartCutscenePlayback, "townStartCutscenePlayback"};
+        overlayScriptFunctions.m_zeroArg[0x060714ce] = {&townIsCutsceneDone, "townIsCutsceneDone"};
+        overlayScriptFunctions.m_zeroArg[0x0607150c] = {&townGetCutsceneHalfPosition, "townGetCutsceneHalfPosition"};
+        overlayScriptFunctions.m_zeroArg[0x06071544] = {&townDeleteCutscene, "townDeleteCutscene"};
         overlayScriptFunctions.m_zeroArg[0x060709fa] = {&setupCameraFollowMode_Cara, "setupCameraFollowMode_Cara"};
         overlayScriptFunctions.m_zeroArg[0x06070bfc] = {&resetFieldOfView, "resetFieldOfView"};
         overlayScriptFunctions.m_zeroArg[0x060706f4] = {&setupNpcWalkForward, "setupNpcWalkForward"};
@@ -734,11 +1082,21 @@ struct TWN_CARA_data : public sTownOverlay
         }
     }
 
-    sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(struct npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override
+    sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override
     {
         switch (definitionEA.m_offset) {
         case 0x06087ae4:
-            return createCaraNPC((s_workAreaCopy*)parent, arg);
+            assert(size == 0x17C);
+            return createCaraNPC(parent, arg);
+        case 0x06087a98:
+            assert(size == 0x90);
+            return createCaraEntityMedium(parent, arg);
+        case 0x06087ac0:
+            assert(size == 0x28);
+            return createCaraEntitySmall(parent, arg);
+        case 0x06087a84:
+            assert(size == 0xE0);
+            return createExcaEntity(parent, arg);
         default:
             assert(0);
             return nullptr;

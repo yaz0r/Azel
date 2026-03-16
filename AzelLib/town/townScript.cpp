@@ -2,7 +2,7 @@
 #include "town.h"
 #include "townScript.h"
 #include "townLCS.h"
-#include "town/e006/twn_e006.h"
+#include "town/townCutscene.h"
 #include "town/ruin/twn_ruin.h"
 #include "kernel/cinematicBarsTask.h"
 #include "kernel/fileBundle.h"
@@ -690,9 +690,9 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
             r14 += 2;
             if (r13_pThis->mF0 == 0)
             {
-                if (e006Task0)
+                if (gCutsceneTask)
                 {
-                    s32 currentFrame = getCutsceneFrameIndex(e006Task0->m0);
+                    s32 currentFrame = getCutsceneFrameIndex(gCutsceneTask->m0);
                     if (currentFrame <= frame)
                         return startOfOpcode;
                 }

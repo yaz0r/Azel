@@ -106,6 +106,17 @@ struct sNPC : public sTownObject
     s_3dModel m34_3dModel;
     sCollisionBody m84;
     sNPCE8 mE8;
+
+    // Extended NPC fields (shared by sEdgeTask, sCaraNPC, sZoahNPC — all 0x17C-sized)
+    s16 m14C_inputFlags;
+    s16 m14E;
+    s32 m150_inputX;
+    s32 m154_inputY;
+    u8 m158_animQueue[32]; // ring buffer of {animId, mode} pairs (8 entries x 2 bytes, padded)
+    s8 m178; // animation queue write index
+    s8 m179; // animation queue read index
+    s8 m17A; // animation queue count
+    s8 m17B;
 };
 
 struct sRunningScriptContext

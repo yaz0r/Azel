@@ -13,14 +13,7 @@ struct sEdgeTask : public s_workAreaTemplateWithArgAndBase<sEdgeTask, sNPC, sSat
     static void Draw(sEdgeTask* pThis);
     static void Delete(sEdgeTask* pThis);
 
-    s16 m14C_inputFlags;
-    s16 m14E;
-    s32 m150_inputX;
-    s32 m154_inputY;
-    s8 m178;
-    s8 m179;
-    s8 m17A;
-    s8 m17B;
+    // All fields now in sNPC base
     //size 0x17C
 };
 

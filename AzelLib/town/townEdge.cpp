@@ -205,32 +205,29 @@ void stepNPCForward(sNPCE8* pThis)
 // 0607476a
 void scheduleNPCAnimationFromTable(sNPC* pThis, s8 animId, u8 mode)
 {
-    sEdgeTask* pEdge = (sEdgeTask*)pThis;
-    if (pEdge->m17A < 8) {
+    if (pThis->m17A < 8) {
         if (pThis->mE_controlState != 0) {
             pThis->mE_controlState = 2;
         }
-        // Ring buffer of {animId, mode} pairs at offset 0x158
-        u8* animQueue = (u8*)pThis + 0x158;
-        s8 writeIdx = pEdge->m178;
+        u8* animQueue = pThis->m158_animQueue;
+        s8 writeIdx = pThis->m178;
         animQueue[writeIdx * 2] = (u8)animId;
         animQueue[writeIdx * 2 + 1] = (animId == 0) ? 0 : mode;
         writeIdx++;
         if (writeIdx > 7) writeIdx = 0;
-        pEdge->m178 = writeIdx;
-        pEdge->m17A++;
+        pThis->m178 = writeIdx;
+        pThis->m17A++;
     }
 }
 
 // 06073990
 void updateEdgeNPCMode4_Cara(sNPC* pThis)
 {
-    sEdgeTask* pEdge = (sEdgeTask*)pThis;
     sSaturnPtr dataTable = pThis->m18;
     pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
     if (pThis->mE_controlState == 0) {
         u32 rng = randomNumber();
-        s8 tableIndex = *((s8*)&pEdge->m14C_inputFlags + 1); // offset 0x14D
+        s8 tableIndex = *((s8*)&pThis->m14C_inputFlags + 1); // offset 0x14D
         sSaturnPtr entry = dataTable + tableIndex * 0x10;
         u32 modResult = performModulo2(readSaturnU16(entry + 0xC), rng);
         s8 animId;
@@ -244,7 +241,7 @@ void updateEdgeNPCMode4_Cara(sNPC* pThis)
     }
 }
 
-void initEdgeNPCSub0(sEdgeTask* pThis, s32 r5, sSaturnPtr r6)
+void initEdgeNPCSub0(sNPC* pThis, s32 r5, sSaturnPtr r6)
 {
     s32 r3 = 0;
     if (r5 & 0x80)
@@ -282,14 +279,14 @@ void initEdgeNPCSub0(sEdgeTask* pThis, s32 r5, sSaturnPtr r6)
     }
 }
 
-void initEdgeNPCSub1(sEdgeTask* pThis)
+void initEdgeNPCSub1(sNPC* pThis)
 {
     pThis->m179 = 0;
     pThis->m178 = 0;
     pThis->m17A = 0;
 }
 
-void initEdgeNPC(sEdgeTask* pThis, sSaturnPtr arg)
+void initEdgeNPC(sNPC* pThis, sSaturnPtr arg)
 {
     npcData0.m70_npcPointerArray[readSaturnU8(arg + 0x20)].workArea = pThis;
     npcData0.m70_npcPointerArray[readSaturnU8(arg + 0x20)].pNPC = pThis;

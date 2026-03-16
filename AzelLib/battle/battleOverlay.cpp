@@ -23,12 +23,12 @@ static void battleOverlayTask_Init(sBattleOverlayTask* pThis)
     playSystemSoundEffect(0x10);
 }
 
-extern s32 e006Task0Var0;
+extern s32 gCutsceneFlags;
 
 static void battleOverlayTask_Update(sBattleOverlayTask* pThis)
 {
     pThis->m24++;
-    if (readKeyboardToggle(KEY_CODE_F12) && (e006Task0Var0 & 4))
+    if (readKeyboardToggle(KEY_CODE_F12) && (gCutsceneFlags & 4))
     {
         assert(0);
     }
