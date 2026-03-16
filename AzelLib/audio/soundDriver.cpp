@@ -632,6 +632,17 @@ void updateSoundSub(sSoundEngine* pSoundEngine)
                     enqueueSCSPCommand(&command);
                     break;
                 }
+                case 5: // volume command
+                {
+                    sSCSPCommand command = {};
+                    command.m0 = 5;
+                    command.m2_P1 = foundSound;
+                    command.m3_P2 = pSoundCommand.m3_volume;
+                    command.m4_P3 = pSoundCommand.m4;
+                    enqueueSCSPCommand(&command);
+                    pSequence.m0[foundSound].m2_volume = (u8)pSoundCommand.m3_volume;
+                    break;
+                }
                 default:
                     assert(0);
                 }

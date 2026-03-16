@@ -246,37 +246,9 @@ static void zoahCamera_drawSetupLight(sCameraTask* pThis)
     setupLight(stack16[0], stack16[1], stack16[2], pThis->m10.toU32());
 }
 
-static void zoahCamera_drawWithPosition(sCameraTask* pThis)
-{
-    sVec3_FP local_14;
-    transformAndAddVecByCurrentMatrix(&pThis->m20_lightPosition, &local_14);
-    dragonFieldTaskDrawSub1Sub1(local_14.m0_X, local_14.m4_Y, local_14.m8_Z);
-    setupLight(0, 0, 0, pThis->m10.toU32());
-}
-
-s32 setupCameraWithPosition(sSaturnPtr arg)
-{
-    sSaturnPtr lightData = arg + 0x14;
-    zoahCamera_setupLight(cameraTaskPtr, lightData);
-
-    cameraTaskPtr->m20_lightPosition = readSaturnVec3(arg);
-    cameraTaskPtr->m2C = readSaturnU32(arg + 0xC);
-    cameraTaskPtr->m30_colorIntensity = readSaturnU32(arg + 0x10);
-
-    cameraTaskPtr->m_UpdateMethod = zoahCamera_updateTimeOnly;
-    cameraTaskPtr->m_DrawMethod = zoahCamera_drawWithPosition;
-
-    if (g_fadeControls.m_4C <= g_fadeControls.m_4D)
-    {
-        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
-        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
-    }
-
-    resetProjectVector();
-    cameraTaskPtr->m2 = 1;
-    cameraTaskPtr->m0_colorMode = 2;
-    return 0;
-}
+// zoahCamera_drawWithPosition / setupCameraWithPosition
+// factored into shared townCamera_drawWithPosition / townCamera_setupWithPosition
+// (zoah's draw was missing m2C arg — fixed in shared version)
 
 s32 setupZoahCamera(s32 param_1);
 static s32 disableNpcLookAtDecay(s32 npcIndex);
@@ -329,7 +301,7 @@ struct TWN_ZOAH_data : public sTownOverlay
         overlayScriptFunctions.m_oneArg[0x0609dffe] = {&setupZoahCamera, "setupZoahCamera"};
         overlayScriptFunctions.m_oneArg[0x0609e1fc] = {&TwnFadeOut, "TwnFadeOut"};
 
-        overlayScriptFunctions.m_oneArgPtr[0x0609e080] = {&setupCameraWithPosition, "setupCameraWithPosition"};
+        overlayScriptFunctions.m_oneArgPtr[0x0609e080] = {&townCamera_setupWithPosition, "townCamera_setupWithPosition"};
 
         overlayScriptFunctions.m_twoArg[0x0609c644] = {&turnNpcBackToSavedAngle, "turnNpcBackToSavedAngle"};
 

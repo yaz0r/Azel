@@ -234,55 +234,8 @@ int scriptFunction_606c70c(sSaturnPtr arg) {
     return 0;
 }
 
-static void campCamera_drawWithPosition(sCameraTask* pThis)
-{
-    sVec3_FP local_14;
-    transformAndAddVecByCurrentMatrix(&pThis->m20_lightPosition, &local_14);
-    dragonFieldTaskDrawSub1Sub1(local_14.m0_X, local_14.m4_Y, local_14.m8_Z, pThis->m2C);
-    setupLight(0, 0, 0, pThis->m10.toU32());
-}
-
-static void campCameraSetupLight(sCameraTask* pThis, sSaturnPtr lightData)
-{
-    pThis->m8_colorData = lightData;
-
-    pThis->m14[0] = 0;
-    pThis->m14[1] = 0;
-    pThis->m14[2] = 0;
-
-    pThis->m10.m0 = readSaturnU8(lightData);
-    pThis->m10.m1 = readSaturnU8(lightData + 1);
-    pThis->m10.m2 = readSaturnU8(lightData + 2);
-    pThis->m30_colorIntensity = 0x8000;
-
-    u32 f0 = (u32)readSaturnU8(lightData + 5) << 16 | (u32)readSaturnU8(lightData + 4) << 8 | (u32)readSaturnU8(lightData + 3);
-    u32 f1 = (u32)readSaturnU8(lightData + 8) << 16 | (u32)readSaturnU8(lightData + 7) << 8 | (u32)readSaturnU8(lightData + 6);
-    u32 f2 = (u32)readSaturnU8(lightData + 11) << 16 | (u32)readSaturnU8(lightData + 10) << 8 | (u32)readSaturnU8(lightData + 9);
-    generateLightFalloffMap(f0, f1, f2);
-}
-
-static s32 campCameraSetupWithPosition(sSaturnPtr arg)
-{
-    campCameraSetupLight(cameraTaskPtr, arg + 0x14);
-
-    cameraTaskPtr->m_UpdateMethod = townCamera_update;
-    cameraTaskPtr->m_DrawMethod = campCamera_drawWithPosition;
-
-    cameraTaskPtr->m20_lightPosition = readSaturnVec3(arg);
-    cameraTaskPtr->m2C = readSaturnU32(arg + 0xC);
-    cameraTaskPtr->m30_colorIntensity = readSaturnU32(arg + 0x10);
-
-    if (g_fadeControls.m_4C <= g_fadeControls.m_4D)
-    {
-        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
-        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
-    }
-
-    resetProjectVector();
-    cameraTaskPtr->m2 = 1;
-    cameraTaskPtr->m0_colorMode = 2;
-    return 0;
-}
+// campCameraSetupWithPosition / campCameraSetupLight / campCamera_drawWithPosition
+// factored into shared townCamera_setupWithPosition / townCamera_setupLight / townCamera_drawWithPosition
 
 struct TWN_CAMP_data* gTWN_CAMP = NULL;
 struct TWN_CAMP_data : public sTownOverlay
@@ -318,7 +271,7 @@ struct TWN_CAMP_data : public sTownOverlay
         overlayScriptFunctions.m_oneArg[0x06056662] = {&isDragonDoneTurning, "isDragonDoneTurning"};
 
         overlayScriptFunctions.m_oneArgPtr[0x606C70C] = {&scriptFunction_606c70c, "scriptFunction_606c70c"};
-        overlayScriptFunctions.m_oneArgPtr[0x6071ca4] = {&campCameraSetupWithPosition, "campCameraSetupWithPosition"};
+        overlayScriptFunctions.m_oneArgPtr[0x6071ca4] = {&townCamera_setupWithPosition, "townCamera_setupWithPosition"};
 
         overlayScriptFunctions.m_twoArg[0x6071b40] = {&townCamera_setup, "townCamera_setup"};
         overlayScriptFunctions.m_twoArg[0x06056588] = {&dragonRespondToPlayer, "dragonRespondToPlayer"};

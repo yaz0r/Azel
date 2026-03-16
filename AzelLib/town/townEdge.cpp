@@ -202,6 +202,48 @@ void stepNPCForward(sNPCE8* pThis)
     pThis->m0_position += pThis->m18_stepTranslationInWorld;
 }
 
+// 0607476a
+void scheduleNPCAnimationFromTable(sNPC* pThis, s8 animId, u8 mode)
+{
+    sEdgeTask* pEdge = (sEdgeTask*)pThis;
+    if (pEdge->m17A < 8) {
+        if (pThis->mE_controlState != 0) {
+            pThis->mE_controlState = 2;
+        }
+        // Ring buffer of {animId, mode} pairs at offset 0x158
+        u8* animQueue = (u8*)pThis + 0x158;
+        s8 writeIdx = pEdge->m178;
+        animQueue[writeIdx * 2] = (u8)animId;
+        animQueue[writeIdx * 2 + 1] = (animId == 0) ? 0 : mode;
+        writeIdx++;
+        if (writeIdx > 7) writeIdx = 0;
+        pEdge->m178 = writeIdx;
+        pEdge->m17A++;
+    }
+}
+
+// 06073990
+void updateEdgeNPCMode4_Cara(sNPC* pThis)
+{
+    sEdgeTask* pEdge = (sEdgeTask*)pThis;
+    sSaturnPtr dataTable = pThis->m18;
+    pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
+    if (pThis->mE_controlState == 0) {
+        u32 rng = randomNumber();
+        s8 tableIndex = *((s8*)&pEdge->m14C_inputFlags + 1); // offset 0x14D
+        sSaturnPtr entry = dataTable + tableIndex * 0x10;
+        u32 modResult = performModulo2(readSaturnU16(entry + 0xC), rng);
+        s8 animId;
+        if (modResult < (u32)readSaturnS16(entry + 0xA)) {
+            animId = readSaturnS8(readSaturnEA(entry) + modResult);
+        }
+        else {
+            animId = readSaturnS8(entry + 8);
+        }
+        scheduleNPCAnimationFromTable(pThis, animId, 2);
+    }
+}
+
 void initEdgeNPCSub0(sEdgeTask* pThis, s32 r5, sSaturnPtr r6)
 {
     s32 r3 = 0;
@@ -215,19 +257,27 @@ void initEdgeNPCSub0(sEdgeTask* pThis, s32 r5, sSaturnPtr r6)
     pThis->m18 = r6;
     switch (pThis->mD)
     {
+    case 0:
+        assert(0); // overlay-specific update function not yet assigned
+        break;
+    case 1:
+        assert(0); // overlay-specific update function not yet assigned
+        pThis->mE_controlState = 1;
+        break;
+    case 2:
+        assert(0); // overlay-specific update function not yet assigned
+        break;
     case 3:
-        if (r6.m_file != gTWN_RUIN)
-        {
-            PDS_Log("Recheck initEdgeNPCSub0 for other towns than ruin", 0);
-        }
-        else
-        {
-            assert(r6.m_offset == 0x605B8D4);
-        }
+        //assert(gCurrentTownOverlay->m_name == "TWN_RUIN.PRG");
+        //assert(r6.m_offset == 0x605B8D4);
         pThis->m14_updateFunction = &updateEdgePosition;
         break;
+    case 4:
+        //assert(gCurrentTownOverlay->m_name == "TWN_CARA.PRG");
+        pThis->m14_updateFunction = &updateEdgeNPCMode4_Cara;
+        pThis->mE_controlState = 0;
+        break;
     default:
-        assert(0);
         break;
     }
 }

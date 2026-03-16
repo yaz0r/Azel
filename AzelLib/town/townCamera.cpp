@@ -21,6 +21,48 @@ void townCamera_draw(sCameraTask* pThis)
     setupLight(stack16[0], stack16[1], stack16[2], pThis->m10.toU32());
 }
 
+void townCamera_drawWithPosition(sCameraTask* pThis)
+{
+    sVec3_FP local_14;
+    transformAndAddVecByCurrentMatrix(&pThis->m20_lightPosition, &local_14);
+    dragonFieldTaskDrawSub1Sub1(local_14.m0_X, local_14.m4_Y, local_14.m8_Z, pThis->m2C);
+    setupLight(0, 0, 0, pThis->m10.toU32());
+}
+
+void townCamera_setupLight(sCameraTask* pThis, sSaturnPtr lightData)
+{
+    pThis->m8_colorData = lightData;
+    pThis->m14[0] = 0;
+    pThis->m14[1] = 0;
+    pThis->m14[2] = 0;
+    pThis->m10 = readSaturnRGB8(lightData);
+    pThis->m30_colorIntensity = 0x8000;
+    generateLightFalloffMap(readSaturnRGB8(lightData + 3).toU32(), readSaturnRGB8(lightData + 6).toU32(), readSaturnRGB8(lightData + 9).toU32());
+}
+
+s32 townCamera_setupWithPosition(sSaturnPtr arg)
+{
+    townCamera_setupLight(cameraTaskPtr, arg + 0x14);
+
+    cameraTaskPtr->m_UpdateMethod = townCamera_update;
+    cameraTaskPtr->m_DrawMethod = townCamera_drawWithPosition;
+
+    cameraTaskPtr->m20_lightPosition = readSaturnVec3(arg);
+    cameraTaskPtr->m2C = readSaturnU32(arg + 0xC);
+    cameraTaskPtr->m30_colorIntensity = readSaturnU32(arg + 0x10);
+
+    if (g_fadeControls.m_4C <= g_fadeControls.m_4D)
+    {
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
+    }
+
+    resetProjectVector();
+    cameraTaskPtr->m2 = 1;
+    cameraTaskPtr->m0_colorMode = 2;
+    return 0;
+}
+
 s32 townCamera_setup(s32 r4, s32 r5)
 {
     sVec3_FP r4Value = readSaturnVec3(sSaturnPtr::createFromRaw(r4, gCurrentTownOverlay)); //todo: that could be a vec2

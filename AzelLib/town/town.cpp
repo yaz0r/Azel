@@ -8,6 +8,7 @@
 #include "town/e011/twn_e011.h"
 #include "town/e014/twn_e014.h"
 #include "town/zoah/twn_zoah.h"
+#include "town/cara/twn_cara.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
 #include "kernel/grid.h"
@@ -346,6 +347,10 @@ void loadTownPrg(s8 r4, s8 r5)
     else if (overlayFileName == "TWN_ZOAH.PRG")
     {
         gFieldOverlayFunction = overlayStart_TWN_ZOAH;
+    }
+    else if (overlayFileName == "TWN_CARA.PRG")
+    {
+        gFieldOverlayFunction = overlayStart_TWN_CARA;
     }
     else
     {
