@@ -505,6 +505,9 @@ void setupNBG0(const sLayerConfig* setup)
         case m12_PLSZ:
             vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ & 0xFFFC) | (arg << 0);
             break;
+        case m23:
+            vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL = (vdp2Controls.m4_pendingVdp2Regs->m9A_SCRCTL & 0xFFFE) | (arg << 0);
+            break;
         case m34_W0E:
             vdp2Controls.m4_pendingVdp2Regs->mD0_WCTLA = (vdp2Controls.m4_pendingVdp2Regs->mD0_WCTLA & 0xFFFD) | (arg << 1);
             break;

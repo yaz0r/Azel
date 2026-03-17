@@ -214,6 +214,7 @@ enum eVdp2LayerConfig
     m12_PLSZ = 12,
     m13 = 13,
     m21_LCSY = 21,
+    m23 = 23,
     m27_RPMD = 27,
     m31_RxKTE = 31,
     m34_W0E = 34,

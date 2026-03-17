@@ -27,6 +27,7 @@ fixedPoint getCos(u32 value)
     return fixedPoint(CosSinTable[value + 1024]);
 }
 
+// approximation: fixedPoint((s32)(sin(i * 3.14159265 * 2.0 / 4096.0) * 65536.0))
 fixedPoint getSin(u32 value)
 {
     value &= 0xFFF;

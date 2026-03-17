@@ -813,16 +813,6 @@ void sMainLogic::Init(sMainLogic* pThis)
     initTownProjection();
 }
 
-// Ok for camp
-// Ok for cara
-// Ok for exca
-// Ok for jiri
-// Ok for ruin
-// Ok for seek
-// Ok for zoah
-// OK for E011
-// NOK for E006
-// NOK for E014
 void sMainLogic::Update(sMainLogic* pThis)
 {
     if (pThis->m14_EdgeTask)
@@ -843,10 +833,6 @@ void sMainLogic::Update(sMainLogic* pThis)
     }
 
     pThis->m10(pThis);
-
-    if ((gCurrentTownOverlay->m_name == "TWN_E006.PRG") || (gCurrentTownOverlay->m_name == "TWN_E014.PRG")) {
-        assert(0); // this is actually incorrect version for those overlays
-    }
 
     pThis->m50_upVector = pThis->m38_interpolatedCameraPosition;
     pThis->m50_upVector[1] += 0x10000;
