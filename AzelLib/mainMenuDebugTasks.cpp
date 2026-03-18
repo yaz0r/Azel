@@ -12,6 +12,7 @@
 #include "audio/soundDriver.h"
 #include "commonOverlay.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/field_a5/o_fld_a5.h"
 #include "field/field_d5/o_fld_d5.h"
 #include "dragonData.h"
 #include "dragonRider.h"
@@ -1553,6 +1554,10 @@ void s_fieldStartOverlayTask::Init(s_fieldStartOverlayTask* pThis)
         if (!strcmp(pFieldDefinition->m_prg, "FLD_A3.PRG"))
         {
             gFieldOverlayFunction = overlayStart_FLD_A3;
+        }
+        else if (!strcmp(pFieldDefinition->m_prg, "FLD_A5.PRG"))
+        {
+            gFieldOverlayFunction = overlayStart_FLD_A5;
         }
         else if (!strcmp(pFieldDefinition->m_prg, "FLD_D5.PRG"))
         {

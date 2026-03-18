@@ -41,6 +41,8 @@ bool bMakeEverythingVisible = false;
 #endif
 
 FLD_A3_data* gFLD_A3 = NULL;
+sSaturnPtr gFieldCameraConfigEA;
+sSaturnPtr gFieldDragonAnimTableEA;
 
 const s_MCB_CGB fieldFileList[] =
 {
@@ -4149,7 +4151,7 @@ void s_fieldOverlaySubTaskWorkArea::fieldOverlaySubTaskInit(s_fieldOverlaySubTas
 
     fieldOverlaySubTaskInitSub1(0, &fieldOverlaySubTaskInitSub2, 0);
     fieldOverlaySubTaskInitSub3(0);
-    setupFieldCameraConfigs(readCameraConfig({ 0x6092EF0, gFLD_A3 }), 1);
+    setupFieldCameraConfigs(readCameraConfig(gFieldCameraConfigEA), 1);
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 1;
 
@@ -4177,13 +4179,17 @@ struct s_DragonRiderTask : public s_workAreaTemplate<s_DragonRiderTask>
     static void dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea);
 };
 
+// 0607b280
 void s_DragonRiderTask::dragonRidersTaskInit(s_DragonRiderTask* pWorkArea)
 {
     initAnimation(&pRider1State->m18_3dModel, pRider1State->m0_riderBundle->getAnimation(0x30));
     updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
 
-    initAnimation(&pRider2State->m18_3dModel, pRider2State->m0_riderBundle->getAnimation(0x30));
-    updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
+    if (mainGameState.gameStats.m3_rider2 == 7)
+    {
+        initAnimation(&pRider2State->m18_3dModel, pRider2State->m0_riderBundle->getAnimation(0x30));
+        updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
+    }
 }
 
 void s_DragonRiderTask::dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea)
@@ -5808,7 +5814,7 @@ s32 getDragonFieldAnimation(s_dragonTaskWorkArea* pTypedWorkArea)
 
 std::vector<s8> getFieldDragonAnimTable(int type, int subtype)
 {
-    sSaturnPtr EA = readSaturnEA(sSaturnPtr{ 0x06094134 + ((type * 5) + subtype) * 4, gFLD_A3 });
+    sSaturnPtr EA = readSaturnEA(sSaturnPtr{ gFieldDragonAnimTableEA.m_offset + ((type * 5) + subtype) * 4, gFieldDragonAnimTableEA.m_file });
 
     std::vector<s8> result;
 
@@ -6427,7 +6433,15 @@ void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
         //60744E4
         if (mainGameState.gameStats.m3_rider2)
         {
-            assert(0);
+            sVec3_FP rider2_hotSpot;
+            getDragonHotSpot(gDragonState, 1, &rider2_hotSpot);
+
+            pushCurrentMatrix();
+            translateCurrentMatrix(&rider2_hotSpot);
+            rotateCurrentMatrixShiftedY(0x8000000);
+            multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
+            pRider2State->m18_3dModel.m18_drawFunction(&pRider2State->m18_3dModel);
+            popMatrix();
         }
     }
 
@@ -6936,7 +6950,9 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
         LCSTaskDrawSub5Sub1_Data1 = readLCSTaskDrawSub5Sub1_Data1({ 0x06093B28, gFLD_A3 });
     }
 
-    ////
+    gFieldCameraConfigEA = { 0x6092EF0, gFLD_A3 };
+    gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
+
     if (!initField(workArea, fieldFileList, arg))
     {
         return NULL;

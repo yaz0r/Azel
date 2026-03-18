@@ -40,13 +40,13 @@ p_workArea overlayStart_FLD_D5(p_workArea workArea, u32 arg)
         gFLD_D5 = new FLD_D5_data();
     }
 
-    // TODO: cleanup
     // FLD_A3.PRG contains shared field infrastructure data (camera configs, etc.)
-    // that initField/fieldOverlaySubTaskInit depends on
     if (gFLD_A3 == NULL)
     {
         gFLD_A3 = new FLD_A3_data();
     }
+    gFieldCameraConfigEA = { 0x6092EF0, gFLD_A3 };
+    gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
 
     loadSoundBanks(0x35, 0);
     playPCM(workArea, 100);

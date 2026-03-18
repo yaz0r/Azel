@@ -21,6 +21,8 @@ extern FLD_A3_data* gFLD_A3;
 
 p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg);
 bool initField(p_workArea workArea, const s_MCB_CGB* fieldFileList, u32 arg);
+extern sSaturnPtr gFieldCameraConfigEA;
+extern sSaturnPtr gFieldDragonAnimTableEA;
 sSaturnPtr* ReadScripts(sSaturnPtr EA);
 s32 startFieldScript(s32 r4, s32 r5);
 s32 startFieldScriptSkippable(s32 r4, s32 r5);
