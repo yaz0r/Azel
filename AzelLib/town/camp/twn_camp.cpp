@@ -13,6 +13,7 @@
 #include "town/townCamera.h"
 #include "town/townDragon.h"
 #include "campDragon.h"
+#include "campDragonNameEntry.h"
 #include "field/field_d5/d5_nameEntry.h"
 #include "town/excaEntity.h"
 #include "town/collisionRegistry.h"
@@ -150,12 +151,6 @@ s32 dragonRespondToPlayer(s32 npcIndex, s32 responseType) {
     return (s32)result;
 }
 
-// 06057f46
-s32 startNameEntryTask() {
-    preloadNameEntryResources();
-    Unimplemented(); // createSubTask for name entry draw task (0x0607b5fc)
-    return 0;
-}
 
 // 06056544
 s32 dragonInteract(s32 npcIndex) {
@@ -257,7 +252,7 @@ struct TWN_CAMP_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x06071ade] = {&scriptFunction_06071ade_toggleDayNight, "scriptFunction_06071ade_toggleDayNight"};
         overlayScriptFunctions.m_zeroArg[0x0606d5bc] = {&canCurrentResActivate, "canCurrentResActivate"};
         overlayScriptFunctions.m_zeroArg[0x0606d5f2] = {&isCurrentResInactive, "isCurrentResInactive"};
-        overlayScriptFunctions.m_zeroArg[0x06057f46] = {&startNameEntryTask, "startNameEntryTask"};
+        overlayScriptFunctions.m_zeroArg[0x06057f46] = {&startDragonNameEntryTask, "startDragonNameEntryTask"};
 
         overlayScriptFunctions.m_oneArg[0x6071e20] = {&TwnFadeOut, "TwnFadeOut"};
         overlayScriptFunctions.m_oneArg[0x6071da8] = {&TwnFadeIn, "TwnFadeIn"};

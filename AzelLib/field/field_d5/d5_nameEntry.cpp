@@ -624,7 +624,7 @@ static u8 nameEntryPaletteData[] = {
 };
 
 // 06023728
-static s_nameEntryUITask* nameEntry(p_workArea parent, char* destBuffer)
+s_nameEntryUITask* nameEntryInternal(p_workArea parent, char* destBuffer)
 {
     s_nameEntryUITask* pTask = createSiblingTask<s_nameEntryUITask>(parent);
     pTask->m38_destBuffer = destBuffer;
@@ -644,6 +644,16 @@ static s_nameEntryUITask* nameEntry(p_workArea parent, char* destBuffer)
     asyncDmaCopy(nameEntryPaletteData, getVdp2Cram(0x800), 0x40, 0);
     loadFile("NAME_ENT.SCB", getVdp2Vram(0x10000), 0);
     return pTask;
+}
+
+p_workArea nameEntry(p_workArea parent, char* destBuffer)
+{
+    return nameEntryInternal(parent, destBuffer);
+}
+
+bool isNameEntryComplete(p_workArea nameEntryTask)
+{
+    return ((s_nameEntryUITask*)nameEntryTask)->m0_cursorMode != 0;
 }
 
 // 06054ddc
@@ -678,7 +688,7 @@ void s_nameEntryTask::nameEntryInit(s_nameEntryTask* pThis)
     initNBG1Layer();
     preloadNameEntryResourcesInternal();
 
-    pThis->m4_nameEntryTask = nameEntry(pThis, mainGameState.gameStats.m94_playerName);
+    pThis->m4_nameEntryTask = nameEntryInternal(pThis, mainGameState.gameStats.m94_playerName);
     pThis->m8_particleTask = createParticleSystemTask(pThis);
     nameEntryDelete(pThis->m4_nameEntryTask);
 }

@@ -24,7 +24,9 @@ struct s_multiChoiceTask : public s_workAreaTemplate< s_multiChoiceTask>
     void drawMultiChoice();
     void clearMultiChoiceBox()
     {
-        Unimplemented();
+        setupVDP2StringRendering(m14_x + 2, m16_y + 1, m1A_width - 4, m1C_height - 2);
+        clearVdp2TextArea();
+        ::clearBlueBox(m14_x, m16_y, m1A_width, m1C_height);
     }
 
     u8 m0_Status;
