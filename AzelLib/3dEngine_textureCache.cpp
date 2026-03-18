@@ -69,7 +69,7 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
     {
     case 1:
     {
-        // 4 bpp LUT mode
+        // 4 bpp LUT mode (NOTE: case label swapped vs Saturn spec - see note below)
         u16 temp;
         u32 colorLut = quad.CMDCOLR * 8;
         u32 colorOffset = (VDP2Regs_.mE6_CRAOFB & 0x70) << 4;
@@ -202,7 +202,7 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
     }
     case 0:
     {
-        // 4 bpp Bank mode
+        // 4 bpp 16-color Bank mode (NOTE: case label swapped vs Saturn spec - see note below)
         u32 colorLut = quad.CMDCOLR;
         u32 colorOffset = (VDP2Regs_.mE6_CRAOFB & 0x70) << 4;
         assert(colorOffset == 0);

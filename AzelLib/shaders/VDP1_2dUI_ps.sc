@@ -10,7 +10,7 @@ void main()
 {
     vec4 txcol = texture2D(s_texture, v_texcoord0);
     if(txcol.a <= 0.f) discard;
-    gl_FragData[0] = vec4(txcol.rgb, 1.0);
-    gl_FragData[1] = vec4(u_spritePriority.x / 7.0, 0.0, 0.0, 1.0);
+    // Encode priority in alpha: (priority + 1) / 8 so alpha=0 means transparent
+    gl_FragColor = vec4(txcol.rgb, (u_spritePriority.x + 1.0) / 8.0);
     gl_FragDepth = v_depth;
 }

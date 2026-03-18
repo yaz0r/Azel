@@ -6,6 +6,5 @@ uniform vec4 u_spritePriority;
 
 void main()
 {
-    gl_FragData[0] = vec4(v_color0.rgb, 1.0);
-    gl_FragData[1] = vec4(u_spritePriority.x / 7.0, 0.0, 0.0, 1.0);
+    gl_FragColor = vec4(v_color0.rgb, (u_spritePriority.x + 1.0) / 8.0);
 }

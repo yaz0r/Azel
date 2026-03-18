@@ -42,6 +42,7 @@ bgfx::TextureHandle vdp1BufferTexture = BGFX_INVALID_HANDLE;
 bgfx::TextureHandle vdp1PriorityTexture = BGFX_INVALID_HANDLE;
 bgfx::TextureHandle vdp1DepthBufferTexture = BGFX_INVALID_HANDLE;
 bgfx::UniformHandle u_spritePriority = BGFX_INVALID_HANDLE;
+bgfx::TextureHandle vdp2RegsTexture = BGFX_INVALID_HANDLE;
 
 bgfx::FrameBufferHandle gBgfxCompositedFB = BGFX_INVALID_HANDLE;
 
@@ -300,6 +301,11 @@ void azelSdl_StartFrame()
         gBGFXVdp1PolyFB = bgfx::createFrameBuffer(3, &vdp1BufferAt[0], true);
 
         u_spritePriority = bgfx::createUniform("u_spritePriority", bgfx::UniformType::Vec4);
+
+        // 1D texture holding all VDP2 registers: one float per u16 register
+        static constexpr int vdp2RegCount = sizeof(s_VDP2Regs) / sizeof(u16);
+        vdp2RegsTexture = bgfx::createTexture2D(vdp2RegCount, 1, false, 0, bgfx::TextureFormat::R32F,
+            BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP);
     }
 
 #ifndef USE_NULL_RENDERER
@@ -907,28 +913,25 @@ void renderVdp1()
     }
 }
 
-int computeSpritePriority(u16 cmdcolr)
+// Extract priority register index from a 16-bit VDP1 pixel value based on SPCTL sprite type
+static int getSpritePriorityRegister(u16 pixelData)
 {
     u16 spctl = vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL;
     u16 spriteType = spctl & 0xF;
 
-    int prRegister = 0;
     switch (spriteType)
     {
     case 0: case 1:
-        // 1 PR bit at bit 15
-        prRegister = (cmdcolr >> 15) & 1;
-        break;
+        return (pixelData >> 15) & 1;
     case 2:
-        // 1 PR bit at bit 14
-        prRegister = (cmdcolr >> 14) & 1;
-        break;
+        return (pixelData >> 14) & 1;
     default:
-        // Types 3+ use 2 PR bits at bits 14-15
-        prRegister = (cmdcolr >> 14) & 3;
-        break;
+        return (pixelData >> 14) & 3;
     }
+}
 
+static int lookupSpritePriority(int prRegister)
+{
     switch (prRegister)
     {
     case 0: return vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA & 7;
@@ -937,6 +940,31 @@ int computeSpritePriority(u16 cmdcolr)
     case 3: return (vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB >> 8) & 7;
     default: return vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA & 7;
     }
+}
+
+int computeSpritePriority(u16 cmdcolr, u16 cmdpmod)
+{
+    u16 colorMode = (cmdpmod >> 3) & 7;
+
+    if (colorMode == 0)
+    {
+        // Saturn color mode 0 = LUT mode. CMDCOLR is the LUT address in VDP1 VRAM.
+        // LUT entries are big-endian 16-bit RGB555 values with priority bits.
+        u8* lutPtr = getVdp1Pointer(0x25C00000 + (u32)cmdcolr * 8);
+        for (int i = 1; i < 16; i++)
+        {
+            u16 entry = READ_BE_U16(lutPtr + i * 2);
+            if (entry & 0x8000)
+            {
+                return lookupSpritePriority(getSpritePriorityRegister(entry));
+            }
+        }
+        // Fallback if LUT not yet loaded: assume RGB555 (bit 15 set) → register 2
+        return lookupSpritePriority(2);
+    }
+
+    // Color bank modes (1-5): priority bits come from CMDCOLR high bits
+    return lookupSpritePriority(getSpritePriorityRegister(cmdcolr));
 }
 
 void renderTexturedQuadBgfx(bgfx::ViewId outputView, bgfx::TextureHandle sourceTexture)
@@ -1059,6 +1087,96 @@ void renderVdp1WithPriority(bgfx::ViewId outputView, int priorityLevel)
 
     bgfx::setTexture(0, inputTexture, vdp1BufferTexture);
     bgfx::setTexture(1, prioritySampler, vdp1PriorityTexture);
+
+    bgfx::setVertexBuffer(0, quad_vertexbuffer);
+    bgfx::setIndexBuffer(quad_indexbuffer);
+    bgfx::submit(outputView, program);
+}
+
+void renderComposite(bgfx::ViewId outputView, u16 backScreenColor)
+{
+    static bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+    static bgfx::VertexBufferHandle quad_vertexbuffer = BGFX_INVALID_HANDLE;
+    static bgfx::IndexBufferHandle quad_indexbuffer = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle s_vdp1Color = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle s_nbg0 = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle s_nbg1 = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle s_nbg3 = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle s_rbg0 = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle u_vdp2Regs0 = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle u_backColor = BGFX_INVALID_HANDLE;
+    static bgfx::VertexLayout ms_layout;
+
+    static bool initialized = false;
+    if (!initialized)
+    {
+        program = loadBgfxProgram("VDP2_blit_vs", "VDP2_composite_ps");
+
+        ms_layout
+            .begin()
+            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .end();
+
+        static const float g_quad_vertex_buffer_data[] = {
+            -1.0f, -1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            -1.0f,  1.0f, 0.0f,
+            -1.0f,  1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            1.0f,  1.0f, 0.0f,
+        };
+
+        static const short int g_quad_index_buffer_data[] = {
+            0,1,2,3,4,5
+        };
+
+        quad_vertexbuffer = bgfx::createVertexBuffer(bgfx::copy(g_quad_vertex_buffer_data, sizeof(g_quad_vertex_buffer_data)), ms_layout);
+        quad_indexbuffer = bgfx::createIndexBuffer(bgfx::copy(g_quad_index_buffer_data, sizeof(g_quad_index_buffer_data)));
+
+        s_vdp1Color = bgfx::createUniform("s_vdp1Color", bgfx::UniformType::Sampler);
+        s_nbg0 = bgfx::createUniform("s_nbg0", bgfx::UniformType::Sampler);
+        s_nbg1 = bgfx::createUniform("s_nbg1", bgfx::UniformType::Sampler);
+        s_nbg3 = bgfx::createUniform("s_nbg3", bgfx::UniformType::Sampler);
+        s_rbg0 = bgfx::createUniform("s_rbg0", bgfx::UniformType::Sampler);
+        u_vdp2Regs0 = bgfx::createUniform("u_vdp2Regs0", bgfx::UniformType::Vec4);
+        u_backColor = bgfx::createUniform("u_backColor", bgfx::UniformType::Vec4);
+
+        initialized = true;
+    }
+
+    bgfx::setViewRect(outputView, 0, 0, internalResolution[0], internalResolution[1]);
+    bgfx::setViewClear(outputView, BGFX_CLEAR_COLOR, 0);
+
+    // VDP2 registers: BGON, PRINA, PRINB, PRIR
+    float regs0[4] = {
+        (float)vdp2Controls.m4_pendingVdp2Regs->m20_BGON,
+        (float)vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA,
+        (float)vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB,
+        (float)vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR,
+    };
+    bgfx::setUniform(u_vdp2Regs0, regs0);
+
+    // Back screen color (Saturn RGB555)
+    float backColor[4] = {
+        ((backScreenColor & 0x1F) << 3) / 255.0f,
+        (((backScreenColor >> 5) & 0x1F) << 3) / 255.0f,
+        (((backScreenColor >> 10) & 0x1F) << 3) / 255.0f,
+        1.0f,
+    };
+    bgfx::setUniform(u_backColor, backColor);
+
+    // Bind all textures
+    bgfx::setTexture(0, s_vdp1Color, vdp1BufferTexture);
+    bgfx::setTexture(1, s_nbg0, NBG_data[0].BGFXTexture);
+    bgfx::setTexture(2, s_nbg1, NBG_data[1].BGFXTexture);
+    bgfx::setTexture(3, s_nbg3, NBG_data[3].BGFXTexture);
+    bgfx::setTexture(4, s_rbg0, NBG_data[4].BGFXTexture);
+
+    bgfx::setState(0
+        | BGFX_STATE_WRITE_RGB
+        | BGFX_STATE_WRITE_A
+        | BGFX_STATE_DEPTH_TEST_ALWAYS
+    );
 
     bgfx::setVertexBuffer(0, quad_vertexbuffer);
     bgfx::setIndexBuffer(quad_indexbuffer);
@@ -1225,19 +1343,7 @@ bool azelSdl_EndFrame()
 
         // TODOL set the bgfx back color to this color
 
-        for (int priorityIndex = 0; priorityIndex <= 7; priorityIndex++)
-        {
-            // VDP1 sprites first at this priority
-            renderVdp1WithPriority(CompositeView, priorityIndex);
-            // VDP2 scroll layers on top at this priority
-            for (eLayers layerIndex = NBG0; layerIndex < eLayers::MAX; layerIndex = (eLayers)(layerIndex + 1))
-            {
-                if (isBackgroundEnabled(layerIndex) && (getPriorityForLayer(layerIndex) == priorityIndex))
-                {
-                    renderTexturedQuadBgfx(CompositeView, getTextureForLayerBgfx(layerIndex));
-                }
-            }
-        }
+        renderComposite(CompositeView, backScreenColor);
     }
 #endif
 

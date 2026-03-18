@@ -13,12 +13,12 @@ enum bgfxViews
     VDP2_RBG0_PlaneA,   // RBG0 plane A overlay (dual-plane mode)
     VDP2_MAX = VDP2_RBG0_PlaneA,
 
-    CompositeView,
     vdp1_gpuView,
+    CompositeView,
 };
 
 void azelSdl_Init();
 void azelSdl_StartFrame();
 bool azelSdl_EndFrame();
 
-int computeSpritePriority(u16 cmdcolr);
+int computeSpritePriority(u16 cmdcolr, u16 cmdpmod);

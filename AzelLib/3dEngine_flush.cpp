@@ -16,9 +16,9 @@ const char* gGLSLVersion = nullptr;
 
 extern bgfx::UniformHandle u_spritePriority;
 
-static void setSpritePriorityUniform(u16 cmdcolr)
+static void setSpritePriorityUniform(u16 cmdcolr, u16 cmdpmod)
 {
-    float priority[4] = { (float)computeSpritePriority(cmdcolr), 0, 0, 0 };
+    float priority[4] = { (float)computeSpritePriority(cmdcolr, cmdpmod), 0, 0, 0 };
     bgfx::setUniform(u_spritePriority, priority);
 }
 
@@ -340,7 +340,7 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
         | BGFX_STATE_WRITE_Z
         | BGFX_STATE_CULL_CCW
         | BGFX_STATE_MSAA
-        | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
+        | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_ZERO)
         ;
 
     bgfx::setState(state);
@@ -756,7 +756,7 @@ void NormalSpriteDrawGL(s_vdp1Command* vdp1EA)
                         | BGFX_STATE_DEPTH_TEST_LEQUAL
                         | BGFX_STATE_MSAA
                     );
-                    setSpritePriorityUniform(CMDCOLR);
+                    setSpritePriorityUniform(CMDCOLR, CMDPMOD);
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
                 }
             }
@@ -950,7 +950,7 @@ void ScaledSpriteDrawGL(s_vdp1Command* vdp1EA)
                         | BGFX_STATE_DEPTH_TEST_LEQUAL
                         | BGFX_STATE_MSAA
                     );
-                    setSpritePriorityUniform(CMDCOLR);
+                    setSpritePriorityUniform(CMDCOLR, CMDPMOD);
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
                 }
             }
@@ -1201,7 +1201,7 @@ void PolyDrawGL(s_vdp1Command* vdp1EA)
         bgfx::setVertexBuffer(0, &vertexBuffer);
         bgfx::setIndexBuffer(&indexBuffer);
 
-        setSpritePriorityUniform(CMDCOLR);
+        setSpritePriorityUniform(CMDCOLR, CMDPMOD);
         bgfx::submit(vdp1_gpuView, Get2dUIVertexColorShaderBGFX());
     }
 }

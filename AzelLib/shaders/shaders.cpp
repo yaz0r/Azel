@@ -12,6 +12,7 @@
 #include "shaders/generated/spirv/VDP1_vertexColor_vs.sc.bin.h"
 #include "shaders/generated/spirv/VDP2_blit_ps.sc.bin.h"
 #include "shaders/generated/spirv/VDP2_blit_vdp1_ps.sc.bin.h"
+#include "shaders/generated/spirv/VDP2_composite_ps.sc.bin.h"
 #include "shaders/generated/spirv/VDP2_blit_vs.sc.bin.h"
 #include "shaders/generated/spirv/VDP2_ps.sc.bin.h"
 #include "shaders/generated/spirv/VDP2_RBG0_ps.sc.bin.h"
@@ -30,6 +31,7 @@
 #include "shaders/generated/metal/VDP1_vertexColor_vs.sc.bin.h"
 #include "shaders/generated/metal/VDP2_blit_ps.sc.bin.h"
 #include "shaders/generated/metal/VDP2_blit_vdp1_ps.sc.bin.h"
+#include "shaders/generated/metal/VDP2_composite_ps.sc.bin.h"
 #include "shaders/generated/metal/VDP2_blit_vs.sc.bin.h"
 #include "shaders/generated/metal/VDP2_ps.sc.bin.h"
 #include "shaders/generated/metal/VDP2_RBG0_ps.sc.bin.h"
@@ -48,6 +50,7 @@
 #include "shaders/generated/glsl/VDP1_vertexColor_vs.sc.bin.h"
 #include "shaders/generated/glsl/VDP2_blit_ps.sc.bin.h"
 #include "shaders/generated/glsl/VDP2_blit_vdp1_ps.sc.bin.h"
+#include "shaders/generated/glsl/VDP2_composite_ps.sc.bin.h"
 #include "shaders/generated/glsl/VDP2_blit_vs.sc.bin.h"
 #include "shaders/generated/glsl/VDP2_ps.sc.bin.h"
 #include "shaders/generated/glsl/VDP2_RBG0_ps.sc.bin.h"
@@ -66,6 +69,7 @@
 #include "shaders/generated/dx11/VDP1_vertexColor_vs.sc.bin.h"
 #include "shaders/generated/dx11/VDP2_blit_ps.sc.bin.h"
 #include "shaders/generated/dx11/VDP2_blit_vdp1_ps.sc.bin.h"
+#include "shaders/generated/dx11/VDP2_composite_ps.sc.bin.h"
 #include "shaders/generated/dx11/VDP2_blit_vs.sc.bin.h"
 #include "shaders/generated/dx11/VDP2_ps.sc.bin.h"
 #include "shaders/generated/dx11/VDP2_RBG0_ps.sc.bin.h"
@@ -85,6 +89,7 @@ static const bgfx::EmbeddedShader s_embeddedShaders[] =
     BGFX_EMBEDDED_SHADER(VDP1_vertexColor_vs),
     BGFX_EMBEDDED_SHADER(VDP2_blit_ps),
     BGFX_EMBEDDED_SHADER(VDP2_blit_vdp1_ps),
+    BGFX_EMBEDDED_SHADER(VDP2_composite_ps),
     BGFX_EMBEDDED_SHADER(VDP2_blit_vs),
     BGFX_EMBEDDED_SHADER(VDP2_ps),
     BGFX_EMBEDDED_SHADER(VDP2_RBG0_ps),

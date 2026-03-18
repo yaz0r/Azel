@@ -13,6 +13,11 @@
 #include "kernel/debug/trace.h"
 #include "audio/soundDriver.h"
 #include "town/townCamera.h"
+#include "battle/BTL_A3/BTL_A3_map6.h"
+#include "3dEngine.h"
+#include "kernel/cinematicBarsTask.h"
+#include "kernel/loadSavegameScreen.h"
+#include "field/field_a3/o_fld_a3.h"
 
 #include "twn_ruin_lock.h"
 
@@ -47,6 +52,7 @@ const char* listOfFilesToLoad[] = {
     nullptr
 };
 
+// 06054bd8
 struct sRuinBackgroundTask : public s_workAreaTemplate<sRuinBackgroundTask>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -55,24 +61,243 @@ struct sRuinBackgroundTask : public s_workAreaTemplate<sRuinBackgroundTask>
         return &taskDefinition;
     }
 
-    static void Init(sRuinBackgroundTask* pThis)
-    {
-        reinitVdp2();
-        Unimplemented();
-    }
+    // 06054bd8
+    static void Init(sRuinBackgroundTask* pThis);
+    // 06054ea6
+    static void Update(sRuinBackgroundTask* pThis) {}
+    // 06054ee8
+    static void Draw(sRuinBackgroundTask* pThis);
 
-    static void Update(sRuinBackgroundTask* pThis)
-    {
-        Unimplemented();
-    }
-
-    static void Draw(sRuinBackgroundTask* pThis)
-    {
-        Unimplemented();
-    }
-
+    s32 m0_scrollX;
+    s32 m4_scrollY;
+    u8 m8_pad[4];
+    sVec3_FP mC_cameraPosition;
+    sVec3_FP m18_cameraRotation;
+    std::array<s16, 4> m24_vdp1Clipping;
+    std::array<s16, 2> m2C_localCoordinates;
+    s16 m30_projParam0;
+    s16 m32_projParam1;
+    s32 m34_scrollValue;
+    s32 m38_groundY;
+    fixedPoint m3C_scale;
+    s32 m40_waveSpeed;
+    s32 m44_waveFreq;
+    s32 m48_waveAmplitude;
+    s32 m4C_wavePhase;
+    u8 m50_pad[0x20];
+    s8 m70_colorR;
+    s8 m71_colorG;
+    s8 m72_colorB;
+    u8 m73_pad;
+    s8 m74_colorNBG;
+    s8 m75_colorRBG0;
     // size 0x9C
 };
+
+// 060550d4
+static void ruinBgDrawPass0Sub(sRuinBackgroundTask* pThis)
+{
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+
+    fixedPoint rotX = pThis->m18_cameraRotation.m0_X;
+    if ((s32)rotX == 0) rotX = fixedPoint(0xFFF49F4A); // -0xB60B6
+    fixedPoint rotY = pThis->m18_cameraRotation.m4_Y;
+    fixedPoint rotZ = pThis->m18_cameraRotation.m8_Z;
+
+    s32 sumX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
+    t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
+    s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
+    t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
+    t.m38 = pThis->m32_projParam1;
+    t.m3C = t.m34;
+    t.m3E = t.m36;
+    t.m40 = 0;
+
+    buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
+    scaleRotationMatrix(pThis->m3C_scale / 4);
+    writeRotationParams(-rotZ);
+
+    s32 diffX = (s32)t.m34 - (s32)t.m3C;
+    s32 diffY = (s32)t.m36 - (s32)t.m3E;
+    s32 diffZ = (s32)t.m38 - (s32)t.m40;
+
+    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m0_X << 4)
+                    - gVdp2RotationMatrix.m[0][0] * diffX - gVdp2RotationMatrix.m[0][1] * diffY - gVdp2RotationMatrix.m[0][2] * diffZ
+                    + (s32)(s16)t.m3C * -0x10000;
+    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m8_Z << 4)
+                    - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
+                    + (s32)(s16)t.m3E * -0x10000;
+    gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38_groundY) * 0x40)
+                    - gVdp2RotationMatrix.m[2][0] * diffX - gVdp2RotationMatrix.m[2][1] * diffY - gVdp2RotationMatrix.m[2][2] * diffZ
+                    + (s32)(s16)t.m40 * -0x10000;
+}
+
+// 06054b40
+static void ruinBgWaveDistortion(sRuinBackgroundTask* pThis)
+{
+    std::vector<fixedPoint>& coefficients = *gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
+    s32 phase = pThis->m4C_wavePhase;
+    for (int i = 0; i < 0x1A8 && i < (int)coefficients.size(); i++)
+    {
+        s32 sinVal = getSin((u16)((u32)phase >> 16) & 0xFFF);
+        fixedPoint modulated = MTH_Mul(pThis->m48_waveAmplitude, sinVal);
+        coefficients[i] = MTH_Mul(coefficients[i], modulated + 0x10000);
+        phase += pThis->m44_waveFreq;
+    }
+    pThis->m4C_wavePhase += pThis->m40_waveSpeed;
+}
+
+// 06054bd8
+void sRuinBackgroundTask::Init(sRuinBackgroundTask* pThis)
+{
+    reinitVdp2();
+    initNBG1Layer();
+
+    asyncDmaCopy(gTWN_RUIN->getSaturnPtr(0x0605ebf8), vdp2Palette, 0x200, 0);
+
+    static const sLayerConfig rgbSetup[] = {
+        {m2_CHCN, 1}, {m5_CHSZ, 1}, {m6_PNB, 1}, {m7_CNSM, 0},
+        {m27_RPMD, 2}, {m11_SCN, 8}, {m34_W0E, 1}, {m37_W0A, 1},
+        {m0_END},
+    };
+    setupRGB0(rgbSetup);
+
+    static const sLayerConfig rotParams[] = {
+        {m31_RxKTE, 1}, {m13, 1},
+        {m0_END},
+    };
+    setupRotationParams(rotParams);
+
+    static const sLayerConfig rotParams2[] = {
+        {m0_END},
+    };
+    setupRotationParams2(rotParams2);
+
+    loadFile("RUINSCR.SCB", getVdp2Vram(0x40000), 0);
+    loadFile("RUINSCR.PNB", getVdp2Vram(0x60000), 0);
+
+    vdp2Controls.m4_pendingVdp2Regs->mE_RAMCTL = (vdp2Controls.m4_pendingVdp2Regs->mE_RAMCTL & 0xFF00) | 0xB4;
+    vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x310F7544;
+    vdp2Controls.m_isDirty = 1;
+
+    setupRotationMapPlanes(0, gTWN_RUIN->getSaturnPtr(0x0605eae0));
+    setupRotationMapPlanes(1, gTWN_RUIN->getSaturnPtr(0x0605eb20));
+
+    setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
+    setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x24000), 0x80);
+
+    s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x2A000));
+    setVdp2VramU16(0x25E2A400, 0x700);
+
+    vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
+    setVdp2VramU16(0x25E2A600, 0x8000);
+    vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x15300;
+
+    vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA = 0x204;
+    vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB = 0x407;
+    vdp2Controls.m4_pendingVdp2Regs->mF4_PRISC = 0x404;
+    vdp2Controls.m4_pendingVdp2Regs->mF6_PRISD = 0x404;
+    vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA = 0x600;
+    vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 3;
+
+    pThis->m3C_scale = fixedPoint(0x100000);
+    pThis->m38_groundY = 0;
+
+    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF;
+    vdp2Controls.m_isDirty = 1;
+
+    static const std::vector<std::array<s32, 2>> layerDisplay = {
+        {m44_CCEN, 1},
+    };
+    applyLayerDisplayConfig(layerDisplay);
+
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xF8FF) | 0x300;
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xFFF0) | 3;
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xCFFF) | 0x1000;
+
+    pThis->m70_colorR = 0x10;
+    pThis->m71_colorG = 0x12;
+    pThis->m72_colorB = 0x14;
+
+    auto* regs = vdp2Controls.m4_pendingVdp2Regs;
+    regs->m100_CCRSA = (s16)pThis->m70_colorR | ((s16)pThis->m71_colorG << 8);
+    regs->m102_CCRSB = (s16)pThis->m72_colorB;
+    regs->m104_CCRSC = 0;
+    regs->m106_CCRSD = 0;
+
+    pThis->m75_colorRBG0 = 8;
+    regs->m10C_CCRR = (s16)pThis->m75_colorRBG0;
+
+    pThis->m74_colorNBG = 0x14;
+    regs->m108_CCRNA = (regs->m108_CCRNA & 0xFFE0) | (s16)pThis->m74_colorNBG;
+    vdp2Controls.m_isDirty = 1;
+
+    // Fill NBG3 plane with 0x6000 pattern
+    u32* pVram = (u32*)getVdp2Vram(0x61000);
+    for (int i = 0; i < 0x200; i++)
+    {
+        pVram[0] = 0x60006000;
+        pVram[1] = 0x60006000;
+        pVram[2] = 0x60006000;
+        pVram[3] = 0x60006000;
+        pVram += 4;
+    }
+    vdp2Controls.m4_pendingVdp2Regs->mB8_OVPNRA = 0x6000;
+
+    pThis->m4C_wavePhase = 0;
+    pThis->m40_waveSpeed = 0x0021EFCB;
+    pThis->m44_waveFreq = 0x4D5E540;
+    pThis->m48_waveAmplitude = 0xF5A;
+}
+
+// 06054ee8
+void sRuinBackgroundTask::Draw(sRuinBackgroundTask* pThis)
+{
+    pThis->mC_cameraPosition = cameraProperties2.m0_position;
+    pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
+
+    getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
+    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+
+    // Pass 0: ground plane
+    beginRotationPass(0, performDivision(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    ruinBgDrawPass0Sub(pThis);
+    drawCinematicBar(6);
+    commitRotationPass();
+
+    pThis->m34_scrollValue = computeRotationScrollOffset();
+    ruinBgWaveDistortion(pThis);
+
+    // Pass 1: sky scroll
+    pThis->m0_scrollX = ((s32)pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
+    pThis->m4_scrollY = (0x15A - pThis->m34_scrollValue) * 0x10000;
+
+    beginRotationPass(1, performDivision(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+    s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
+    t.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
+    s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
+    t.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
+    t.m38 = pThis->m32_projParam1;
+    t.m3C = t.m34;
+    t.m3E = t.m36;
+    t.m40 = 0;
+
+    buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
+    performDivision(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
+    scaleRotationMatrix(performDivision(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
+    setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
+    commitRotationPass();
+
+    auto* regs = vdp2Controls.m4_pendingVdp2Regs;
+    regs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;
+    regs->mC2_WPSY0 = pThis->m24_vdp1Clipping[1];
+    regs->mC4_WPEX0 = pThis->m24_vdp1Clipping[2] << 1;
+    regs->mC6_WPEY0 = pThis->m24_vdp1Clipping[3];
+}
 
 void startRuinBackgroundTask(p_workArea pThis)
 {
