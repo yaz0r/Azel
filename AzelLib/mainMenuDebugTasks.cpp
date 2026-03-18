@@ -637,23 +637,6 @@ p_workArea createFieldInputTask(p_workArea pTypelessWorkArea)
     return createSubTask<s_fieldDebugListWorkArea>(pTypelessWorkArea);
 }
 
-struct s_dramAllocationNode
-{
-    s_dramAllocationNode* m_pNext;
-    u32 size;
-};
-
-struct s_dramAllocator
-{
-    s_dramAllocationNode* m0_buffer; //0
-    u32 m4_pNext; // 4
-    u8* m8_allocationStart; //0x8
-    u8* mC_allocationEnd; // 0xC
-    s_dramAllocator* m10_nextNode; // 0x10
-    u32 m14;
-}; // size 18
-
-
 s_dramAllocator* dramAllocatorHead = NULL;
 std::vector<s_fileEntry> dramAllocatorEnd;
 

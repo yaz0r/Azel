@@ -89,7 +89,27 @@ struct s_fileEntry
 
 extern std::vector<s_fileEntry> dramAllocatorEnd;
 
+struct s_dramAllocationNode
+{
+    s_dramAllocationNode* m_pNext;
+    u32 size;
+};
+
+struct s_dramAllocator
+{
+    s_dramAllocationNode* m0_buffer;
+    u32 m4_pNext;
+    u8* m8_allocationStart;
+    u8* mC_allocationEnd;
+    s_dramAllocator* m10_nextNode;
+    u32 m14;
+};
+
+extern s_dramAllocator* dramAllocatorHead;
+
 u8* dramAllocate(u32 size);
+void dramFree(u8* ptr);
+void vdp1Free(u8* ptr);
 p_workArea createFieldTask(p_workArea pTypelessWorkArea, u32 arg);
 void updateDragonStatsFromLevel();
 

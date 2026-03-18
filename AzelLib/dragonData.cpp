@@ -3,6 +3,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 #include "commonOverlay.h"
+#include "kernel/vdp1Allocator.h"
 
 sHotpointBundle* readRiderDefinitionSub(sSaturnPtr ptrEA); // TODO cleanup
 
@@ -469,12 +470,73 @@ void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonSt
 
 void dramFree(u8* ptr)
 {
-    PDS_unimplemented("dramFree not implemented");
+    if (!ptr) return;
+
+    // The allocation header (s_dramAllocationNode) is at ptr - 8
+    s_dramAllocationNode* pBlock = ((s_dramAllocationNode*)ptr) - 1;
+
+    // Walk free list to find insertion point (sorted by address)
+    s_dramAllocationNode* pPrev = (s_dramAllocationNode*)dramAllocatorHead;
+    s_dramAllocationNode* pCur = pPrev->m_pNext;
+    while (pCur != nullptr && pCur <= pBlock) {
+        pPrev = pCur;
+        pCur = pCur->m_pNext;
+    }
+
+    // Try to coalesce with next block
+    if ((u8*)pBlock + pBlock->size == (u8*)pCur) {
+        pBlock->m_pNext = pCur->m_pNext;
+        pBlock->size += pCur->size;
+    } else {
+        pBlock->m_pNext = pCur;
+    }
+
+    // Try to coalesce with previous block
+    if ((u8*)pPrev + pPrev->size == (u8*)pBlock) {
+        pPrev->m_pNext = pBlock->m_pNext;
+        pPrev->size += pBlock->size;
+    } else {
+        pPrev->m_pNext = pBlock;
+    }
 }
 
 void vdp1Free(u8* ptr)
 {
-    PDS_unimplemented("vdp1Free not implemented");
+    s_vdp1AllocationNode* pNode = (s_vdp1AllocationNode*)ptr;
+    if (!pNode) return;
+
+    u16 nodeOffset = pNode->m4_vdp1Memory;
+
+    // Walk free list (at vdp1AllocatorHead + 8) to find insertion point sorted by vdp1 offset
+    s_vdp1AllocationNode* pPrev = &vdp1AllocatorHead->m8_freeHead;
+    s_vdp1AllocationNode* pCur = pPrev->m_0;
+    while (pCur != nullptr && pCur->m4_vdp1Memory <= nodeOffset) {
+        pPrev = pCur;
+        pCur = pCur->m_0;
+    }
+
+    // Try to coalesce with next block
+    if (pCur != nullptr && nodeOffset + pNode->m6_size == pCur->m4_vdp1Memory) {
+        // Merge: expand next to cover freed node, return freed node to pool
+        pCur->m4_vdp1Memory = pNode->m4_vdp1Memory;
+        pCur->m6_size += pNode->m6_size;
+        pNode->m_0 = vdp1AllocatorHead->m4_nextNode;
+        vdp1AllocatorHead->m4_nextNode = pNode;
+        pNode = pCur;
+    } else {
+        pNode->m_0 = pCur;
+    }
+
+    // Try to coalesce with prev block
+    if (pPrev->m4_vdp1Memory + pPrev->m6_size == nodeOffset) {
+        // Merge: expand prev to cover freed node, return freed node to pool
+        pPrev->m_0 = pNode->m_0;
+        pPrev->m6_size += pNode->m6_size;
+        pNode->m_0 = vdp1AllocatorHead->m4_nextNode;
+        vdp1AllocatorHead->m4_nextNode = pNode;
+    } else {
+        pPrev->m_0 = pNode;
+    }
 }
 
 void loadDragonSub1Sub1(s_loadDragonWorkArea* pLoadDragonWorkArea)

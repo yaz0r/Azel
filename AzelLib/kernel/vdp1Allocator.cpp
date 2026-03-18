@@ -1,16 +1,6 @@
 #include "PDS.h"
 #include "vdp1Allocator.h"
 
-struct s_vdp1Allocator
-{
-    s_vdp1Allocator* m0_nextAllocator;
-    s_vdp1AllocationNode* m4_nextNode;
-    s_vdp1AllocationNode m8_freeHead;
-    s_vdp1AllocationNode m10_allocatedHead;
-    s_vdp1AllocationNode m18_list[0x40];
-    //size 0x218
-};
-
 s_vdp1Allocator* vdp1AllocatorHead = nullptr;
 
 void initVdp1Ram(s_workArea* pWorkArea, u32 vdp1MemoryEA, u32 bufferSize)

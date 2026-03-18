@@ -303,11 +303,16 @@ void initTownGrid()
     gWorldGrid.m3C = &initTownGridDefaultDepth;
 }
 
-void setupDragonForTown(s_fileBundle* pDragonBundle)
+void setupDragonForTown(s_3dModel* pDragonModel)
 {
-    if (pDragonBundle->getRawFileAtOffset(0x48))
+    // On Saturn, frees VDP1 allocation at m48 (poseDataInterpolation pointer)
+    // and reinitializes the model draw function.
+    // In C++, m48_poseDataInterpolation is a std::vector, not a VDP1 pointer.
+    if (!pDragonModel->m48_poseDataInterpolation.empty())
     {
-        Unimplemented();
+        // freeVdp1Block(pDragonModel->m0_pOwnerTask, pDragonModel->m48_poseDataInterpolation);
+        pDragonModel->m48_poseDataInterpolation.clear();
+        initModelDrawFunction(pDragonModel);
     }
 }
 
@@ -367,7 +372,7 @@ void loadTownPrg(s8 r4, s8 r5)
     reset3dEngine();
     resetTempAllocators();
     initTownGrid();
-    setupDragonForTown(gDragonState->m0_pDragonModelBundle);
+    setupDragonForTown(&gDragonState->m28_dragon3dModel);
     gFieldOverlayFunction(townDebugTask2, r5);
 }
 

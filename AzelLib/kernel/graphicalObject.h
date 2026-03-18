@@ -8,10 +8,7 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
         return &taskDefinition;
     }
 
-    static void Delete(npcFileDeleter* pThis)
-    {
-        Unimplemented();
-    }
+    static void Delete(npcFileDeleter* pThis);
 
     ////////////////////////////
     static TypedTaskDefinition* getTypedTaskDefinition_townObject()

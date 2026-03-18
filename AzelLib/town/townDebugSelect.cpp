@@ -35,6 +35,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
         if ((graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 0xE) && (pThis->m10[pThis->m0_currentSelectedTown]))
         {
             loadTownPrg(pThis->m0_currentSelectedTown, pThis->m4_columnIndex);
+            pThis->m_DrawMethod = nullptr;
             pThis->getTask()->markFinished();
             return;
         }

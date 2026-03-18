@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "graphicalObject.h"
 #include "vdp1Allocator.h"
+#include "fileBundle.h"
 
 npcFileDeleter* loadNPCFile(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, const std::string& vramFileName, s32 vramFileSize, s32 arg)
 {
@@ -84,5 +85,33 @@ npcFileDeleter* allocateNPC(p_workArea r4, s32 r5)
 void freeVdp1Block(npcFileDeleter*, s32)
 {
     assert(0);
+}
+
+void npcFileDeleterCleanup(npcFileDeleter* pThis);
+
+void npcFileDeleter::Delete(npcFileDeleter* pThis)
+{
+    npcFileDeleterCleanup(pThis);
+
+    if (pThis->mC >= 0 && dramAllocatorEnd[pThis->mC].mC_fileBundle == pThis) {
+        dramAllocatorEnd[pThis->mC].m8_refcount = 0;
+        dramAllocatorEnd[pThis->mC].mC_fileBundle = nullptr;
+    }
+}
+
+// equivalent of loadDragonSub1Sub1 for npcFileDeleter
+void npcFileDeleterCleanup(npcFileDeleter* pThis)
+{
+    // On Saturn, pending async file handles (m8, mA) would be cancelled here
+    // Our loading is synchronous so these are always -1
+
+    if (pThis->m0_fileBundle) {
+        dramFree(pThis->m0_fileBundle->getRawBuffer());
+        pThis->m0_fileBundle = nullptr;
+    }
+    if (pThis->m4_vd1Allocation) {
+        vdp1Free((u8*)pThis->m4_vd1Allocation);
+        pThis->m4_vd1Allocation = nullptr;
+    }
 }
 
