@@ -180,6 +180,7 @@ addShaderProgram(VDP2_vs VDP2_ps VDP2_vs.varying.def)
 addShaderProgram(VDP2_vs VDP2_RBG0_ps VDP2_vs.varying.def)
 addShaderProgram(VDP2_vs VDP2_RBG0_dual_ps VDP2_vs.varying.def)
 addShaderProgram(VDP2_blit_vs VDP2_blit_ps VDP2_blit.varying.def)
+addShaderProgram(VDP2_blit_vs VDP2_blit_vdp1_ps VDP2_blit.varying.def)
 
 assign_source_group(${SOURCES})
 

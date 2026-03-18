@@ -20,3 +20,5 @@ enum bgfxViews
 void azelSdl_Init();
 void azelSdl_StartFrame();
 bool azelSdl_EndFrame();
+
+int computeSpritePriority(u16 cmdcolr);

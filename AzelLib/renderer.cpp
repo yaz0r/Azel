@@ -39,7 +39,9 @@ int internalResolution[2] = { 352, 224 };
 
 bgfx::FrameBufferHandle gBGFXVdp1PolyFB = BGFX_INVALID_HANDLE;
 bgfx::TextureHandle vdp1BufferTexture = BGFX_INVALID_HANDLE;
+bgfx::TextureHandle vdp1PriorityTexture = BGFX_INVALID_HANDLE;
 bgfx::TextureHandle vdp1DepthBufferTexture = BGFX_INVALID_HANDLE;
+bgfx::UniformHandle u_spritePriority = BGFX_INVALID_HANDLE;
 
 bgfx::FrameBufferHandle gBgfxCompositedFB = BGFX_INVALID_HANDLE;
 
@@ -289,11 +291,15 @@ void azelSdl_StartFrame()
             ;
 
         vdp1BufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 0, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | tsFlags);
+        vdp1PriorityTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 0, bgfx::TextureFormat::R8, BGFX_TEXTURE_RT | tsFlags);
         vdp1DepthBufferTexture = bgfx::createTexture2D(internalResolution[0], internalResolution[1], false, 0, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | tsFlags);
-        std::array<bgfx::Attachment, 2> vdp1BufferAt;
+        std::array<bgfx::Attachment, 3> vdp1BufferAt;
         vdp1BufferAt[0].init(vdp1BufferTexture);
-        vdp1BufferAt[1].init(vdp1DepthBufferTexture);
-        gBGFXVdp1PolyFB = bgfx::createFrameBuffer(2, &vdp1BufferAt[0], true);
+        vdp1BufferAt[1].init(vdp1PriorityTexture);
+        vdp1BufferAt[2].init(vdp1DepthBufferTexture);
+        gBGFXVdp1PolyFB = bgfx::createFrameBuffer(3, &vdp1BufferAt[0], true);
+
+        u_spritePriority = bgfx::createUniform("u_spritePriority", bgfx::UniformType::Vec4);
     }
 
 #ifndef USE_NULL_RENDERER
@@ -901,6 +907,38 @@ void renderVdp1()
     }
 }
 
+int computeSpritePriority(u16 cmdcolr)
+{
+    u16 spctl = vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL;
+    u16 spriteType = spctl & 0xF;
+
+    int prRegister = 0;
+    switch (spriteType)
+    {
+    case 0: case 1:
+        // 1 PR bit at bit 15
+        prRegister = (cmdcolr >> 15) & 1;
+        break;
+    case 2:
+        // 1 PR bit at bit 14
+        prRegister = (cmdcolr >> 14) & 1;
+        break;
+    default:
+        // Types 3+ use 2 PR bits at bits 14-15
+        prRegister = (cmdcolr >> 14) & 3;
+        break;
+    }
+
+    switch (prRegister)
+    {
+    case 0: return vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA & 7;
+    case 1: return (vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA >> 8) & 7;
+    case 2: return vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB & 7;
+    case 3: return (vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB >> 8) & 7;
+    default: return vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA & 7;
+    }
+}
+
 void renderTexturedQuadBgfx(bgfx::ViewId outputView, bgfx::TextureHandle sourceTexture)
 {
     if (!bgfx::isValid(sourceTexture))
@@ -954,6 +992,73 @@ void renderTexturedQuadBgfx(bgfx::ViewId outputView, bgfx::TextureHandle sourceT
     bgfx::setViewClear(outputView, BGFX_CLEAR_COLOR);
 
     bgfx::setTexture(0, inputTexture, sourceTexture);
+
+    bgfx::setVertexBuffer(0, quad_vertexbuffer);
+    bgfx::setIndexBuffer(quad_indexbuffer);
+    bgfx::submit(outputView, program);
+}
+
+void renderVdp1WithPriority(bgfx::ViewId outputView, int priorityLevel)
+{
+    if (!bgfx::isValid(vdp1BufferTexture) || !bgfx::isValid(vdp1PriorityTexture))
+    {
+        return;
+    }
+
+    static bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+    static bgfx::VertexBufferHandle quad_vertexbuffer = BGFX_INVALID_HANDLE;
+    static bgfx::IndexBufferHandle quad_indexbuffer = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle inputTexture = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle prioritySampler = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle u_priorityLevel = BGFX_INVALID_HANDLE;
+    static bgfx::VertexLayout ms_layout;
+
+    static bool initialized = false;
+    if (!initialized)
+    {
+        program = loadBgfxProgram("VDP2_blit_vs", "VDP2_blit_vdp1_ps");
+
+        ms_layout
+            .begin()
+            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+            .end();
+
+        static const float g_quad_vertex_buffer_data[] = {
+            -1.0f, -1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            -1.0f,  1.0f, 0.0f,
+            -1.0f,  1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f,
+            1.0f,  1.0f, 0.0f,
+        };
+
+        static const short int g_quad_index_buffer_data[] = {
+            0,1,2,3,4,5
+        };
+
+        quad_vertexbuffer = bgfx::createVertexBuffer(bgfx::copy(g_quad_vertex_buffer_data, sizeof(g_quad_vertex_buffer_data)), ms_layout);
+        quad_indexbuffer = bgfx::createIndexBuffer(bgfx::copy(g_quad_index_buffer_data, sizeof(g_quad_index_buffer_data)));
+
+        inputTexture = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
+        prioritySampler = bgfx::createUniform("s_priority", bgfx::UniformType::Sampler);
+        u_priorityLevel = bgfx::createUniform("u_priorityLevel", bgfx::UniformType::Vec4);
+
+        initialized = true;
+    }
+
+    bgfx::setState(0
+        | BGFX_STATE_WRITE_RGB
+        | BGFX_STATE_WRITE_A
+        | BGFX_STATE_DEPTH_TEST_ALWAYS
+    );
+
+    bgfx::setViewRect(outputView, 0, 0, internalResolution[0], internalResolution[1]);
+
+    float priorityVec[4] = { (float)priorityLevel, 0, 0, 0 };
+    bgfx::setUniform(u_priorityLevel, priorityVec);
+
+    bgfx::setTexture(0, inputTexture, vdp1BufferTexture);
+    bgfx::setTexture(1, prioritySampler, vdp1PriorityTexture);
 
     bgfx::setVertexBuffer(0, quad_vertexbuffer);
     bgfx::setIndexBuffer(quad_indexbuffer);
@@ -1122,14 +1227,16 @@ bool azelSdl_EndFrame()
 
         for (int priorityIndex = 0; priorityIndex <= 7; priorityIndex++)
         {
-            for (eLayers layerIndex = SPRITE_POLY; layerIndex < eLayers::MAX; layerIndex = (eLayers)(layerIndex + 1))
+            // VDP1 sprites first at this priority
+            renderVdp1WithPriority(CompositeView, priorityIndex);
+            // VDP2 scroll layers on top at this priority
+            for (eLayers layerIndex = NBG0; layerIndex < eLayers::MAX; layerIndex = (eLayers)(layerIndex + 1))
             {
                 if (isBackgroundEnabled(layerIndex) && (getPriorityForLayer(layerIndex) == priorityIndex))
                 {
                     renderTexturedQuadBgfx(CompositeView, getTextureForLayerBgfx(layerIndex));
                 }
             }
-            
         }
     }
 #endif

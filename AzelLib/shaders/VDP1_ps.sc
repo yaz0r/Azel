@@ -6,6 +6,7 @@ SAMPLER2D(s_texture, 0);
 
 uniform float s_textureInfluence;
 uniform float s_ambientInfluence;
+uniform vec4 u_spritePriority;
 
 void main()
 {
@@ -15,7 +16,6 @@ void main()
     vec2 UV = v_texcoord0 / vec2(textureSize(s_texture, 0));
     vec4 txcol = texture2D(s_texture, UV);
     if(txcol.a <= 0.f) discard;
-    gl_FragColor = (clamp(txcol, 0, 1) * s_textureInfluence) + v_color0;
-    gl_FragColor = txcol;
-    gl_FragColor.w = 1.f;
+    gl_FragData[0] = vec4(txcol.rgb, 1.0);
+    gl_FragData[1] = vec4(u_spritePriority.x / 7.0, 0.0, 0.0, 1.0);
 }

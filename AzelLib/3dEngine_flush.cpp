@@ -14,6 +14,21 @@ extern std::array<sMatrix4x3, 16> matrixStack;
 
 const char* gGLSLVersion = nullptr;
 
+extern bgfx::UniformHandle u_spritePriority;
+
+static void setSpritePriorityUniform(u16 cmdcolr)
+{
+    float priority[4] = { (float)computeSpritePriority(cmdcolr), 0, 0, 0 };
+    bgfx::setUniform(u_spritePriority, priority);
+}
+
+static void setSpritePriorityDefault()
+{
+    // 3D engine objects use priority register 0 (PRISA low)
+    float priority[4] = { (float)(vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA & 7), 0, 0, 0 };
+    bgfx::setUniform(u_spritePriority, priority);
+}
+
 void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color = { 1,0,0,1 });
 
 struct sDebugLines
@@ -333,6 +348,7 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
     bgfx::setTexture(0, vdp1_textureSampler, pObject->m_pObject->m_textureAtlas);
     bgfx::setVertexBuffer(0, pObject->m_pObject->m_vertexBufferHandle);
     bgfx::setIndexBuffer(pObject->m_pObject->m_indexBufferHandle);
+    setSpritePriorityDefault();
     bgfx::submit(vdp1_gpuView, vdp1_program);
 }
 
@@ -740,6 +756,7 @@ void NormalSpriteDrawGL(s_vdp1Command* vdp1EA)
                         | BGFX_STATE_DEPTH_TEST_LEQUAL
                         | BGFX_STATE_MSAA
                     );
+                    setSpritePriorityUniform(CMDCOLR);
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
                 }
             }
@@ -933,6 +950,7 @@ void ScaledSpriteDrawGL(s_vdp1Command* vdp1EA)
                         | BGFX_STATE_DEPTH_TEST_LEQUAL
                         | BGFX_STATE_MSAA
                     );
+                    setSpritePriorityUniform(CMDCOLR);
                     bgfx::submit(vdp1_gpuView, Get2dUIShaderBGFX());
                 }
             }
@@ -983,6 +1001,7 @@ void drawQuadGL(const sDebugQuad& quad)
             | BGFX_STATE_MSAA
         );
 
+        setSpritePriorityDefault();
         bgfx::submit(vdp1_gpuView, Get2dUIVertexColorShaderBGFX());
     }
 }
@@ -1042,6 +1061,7 @@ void drawLineGL(sVec3_FP vertice1, sVec3_FP vertice2, sFColor color)
         bgfx::setVertexBuffer(0, &vertexBuffer);
         bgfx::setIndexBuffer(&indexBuffer);
 
+        setSpritePriorityDefault();
         bgfx::submit(vdp1_gpuView, GetWorldSpaceVertexColorShaderBGFX());
     }
 }
@@ -1091,6 +1111,7 @@ void drawLineGL(s16 X1, s16 Y1, s16 X2, s16 Y2, u32 finalColor)
         bgfx::setVertexBuffer(0, &vertexBuffer);
         bgfx::setIndexBuffer(&indexBuffer);
 
+        setSpritePriorityDefault();
         bgfx::submit(vdp1_gpuView, Get2dUIVertexColorShaderBGFX());
     }
 }
@@ -1180,6 +1201,7 @@ void PolyDrawGL(s_vdp1Command* vdp1EA)
         bgfx::setVertexBuffer(0, &vertexBuffer);
         bgfx::setIndexBuffer(&indexBuffer);
 
+        setSpritePriorityUniform(CMDCOLR);
         bgfx::submit(vdp1_gpuView, Get2dUIVertexColorShaderBGFX());
     }
 }
