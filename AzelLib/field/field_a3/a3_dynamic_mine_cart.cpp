@@ -21,15 +21,15 @@ void A3_0_Obj3Update1Sub2(sVec3_FP& r12)
 {
     sVec3_FP& r13 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
 
-    s32 r9 = abs(r13[0] - getFieldTaskPtr()->mC->m158[0]) + abs(r13[2] - getFieldTaskPtr()->mC->m158[2]);
+    s32 r9 = abs(r13[0] - getFieldSpecificData_A3()->m158[0]) + abs(r13[2] - getFieldSpecificData_A3()->m158[2]);
     s32 r3 = abs(r13[0] - r12[0]) + abs(r13[2] - r12[2]);
 
     if (r9 > r3)
     {
-        getFieldTaskPtr()->mC->m158 = r12;
+        getFieldSpecificData_A3()->m158 = r12;
     }
 
-    getFieldTaskPtr()->mC->m154 = 1;
+    getFieldSpecificData_A3()->m154 = 1;
 }
 
 // moving carts

@@ -696,7 +696,7 @@ struct s_fieldTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldTaskWorkAre
     s_workArea* m0; // 0
     s_workArea* m4_overlayTaskData;//4
     s_FieldSubTaskWorkArea* m8_pSubFieldData; // 0x8
-    struct s_fieldSpecificData_A3* mC; // background task buffer?
+    p_workArea mC; // overlay-specific field data task (cast to overlay's type)
     u32 m28_status; // 0x28 (0x40: a multichoice dialog callback is pending)
     s16 m2C_currentFieldIndex; // 0x2C
     s16 m2E_currentSubFieldIndex; // 0x2E;

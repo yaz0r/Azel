@@ -5,6 +5,7 @@
 #include "d5_gameOver.h"
 #include "field.h"
 #include "field/field_a3/o_fld_a3.h"
+#include "field/fieldRadar.h"
 #include "audio/soundDriver.h"
 
 FLD_D5_data* gFLD_D5 = NULL;
@@ -27,10 +28,27 @@ static void gameOverFieldCallback(p_workArea)
 {
 }
 
+// 0605508c
+static void subfieldD5_initCallback(p_workArea parent)
+{
+    // 060541cc — create field-specific data subtask (4-byte work area stored in mC)
+    Unimplemented(); // creates a minimal subtask and stores in getFieldTaskPtr()->mC
+    // Also creates background atmosphere subtask (createFieldSubTask24)
+}
+
+// 06055170
+static void dragonFieldUpdateD5(s_dragonTaskWorkArea* pDragon)
+{
+    Unimplemented(); // reads from field-specific data at mC, updates dragon position
+}
+
 // 0605414c: D5 subfield init
 static void initSubfield_D5(p_workArea parent)
 {
-    Unimplemented();
+    setupField2(nullptr, subfieldD5_initCallback);
+    createD5StarfieldTask(parent);
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF0 = (void(*)(s_dragonTaskWorkArea*))dragonFieldUpdateD5;
+    fieldRadar_setEncounterDistance(fixedPoint(0x28000));
 }
 
 p_workArea overlayStart_FLD_D5(p_workArea workArea, u32 arg)
@@ -47,6 +65,7 @@ p_workArea overlayStart_FLD_D5(p_workArea workArea, u32 arg)
     }
     gFieldCameraConfigEA = { 0x6092EF0, gFLD_A3 };
     gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
+    gFieldCameraDrawFunc = &fieldOverlaySubTaskInitSub2;
 
     loadSoundBanks(0x35, 0);
     playPCM(workArea, 100);

@@ -16,7 +16,7 @@ void fieldA3_3_createItemBoxes(p_workArea workArea)
 
 void fieldA3_3_exitTaskCallback(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->mA3_conanaNestExit = 1;
+    getFieldSpecificData_A3()->mA3_conanaNestExit = 1;
 }
 
 struct fieldA3_3_exitTask : public s_workAreaTemplate<fieldA3_3_exitTask>
@@ -32,7 +32,7 @@ struct fieldA3_3_exitTask : public s_workAreaTemplate<fieldA3_3_exitTask>
         static const sVec3_FP position = { 0xC0000, -0x10000, -0x66000 };
 
         createLCSTarget(&pThis->m0, pThis, fieldA3_3_exitTaskCallback, &position, NULL, 3, 0, eItems::mMinusOne, 0, 0);
-        getFieldTaskPtr()->mC->mA3_conanaNestExit = 0;
+        getFieldSpecificData_A3()->mA3_conanaNestExit = 0;
     }
 
     static void Update(fieldA3_3_exitTask* pThis)
@@ -58,7 +58,7 @@ struct sfieldA3_3_checkExitsTask : public s_workAreaTemplate<sfieldA3_3_checkExi
 {
     static void Update(sfieldA3_3_checkExitsTask* pThis)
     {
-        if (getFieldTaskPtr()->mC->mA3_conanaNestExit)
+        if (getFieldSpecificData_A3()->mA3_conanaNestExit)
         {
             mainGameState.setBit566(1274);
 

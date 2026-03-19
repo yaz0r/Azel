@@ -127,7 +127,7 @@ void create_A3_2_crashedImperialShip(s_visdibilityCellTask* r4, s_DataTable2Sub0
     createLCSTarget(&pNewTask->m90_LCSTarget, pNewTask, &fieldA3_2_crashedImpertialShip_LCSCallback, &pNewTask->m2C_LCSTargetLocation, nullptr, 0, 0, eItems::m8C_recording, 1, 0);
     pNewTask->m3C_status = 0;
 
-    getFieldTaskPtr()->mC->m164_A3_2_crashedImperialShipTask = pNewTask;
+    getFieldSpecificData_A3()->m164_A3_2_crashedImperialShipTask = pNewTask;
 }
 
 struct fieldA3_2_crashedImpertialShip2 : public s_workAreaTemplate<fieldA3_2_crashedImpertialShip2>
@@ -194,9 +194,9 @@ void create_A3_2_crashedImperialShip2(s_visdibilityCellTask* r4, s_DataTable2Sub
 
 s32 fieldA3_2_crashedImpertialShip_customScriptCall()
 {
-    getFieldTaskPtr()->mC->m164_A3_2_crashedImperialShipTask->m_DrawMethod = nullptr;
-    fieldA3_2_crashedImpertialShip_customScriptCall(getFieldTaskPtr()->mC->m164_A3_2_crashedImperialShipTask);
-    cutsceneTaskInitSub2(getFieldTaskPtr()->mC->m164_A3_2_crashedImperialShipTask, gFLD_A3->m6083244, 0, 0, 0);
+    getFieldSpecificData_A3()->m164_A3_2_crashedImperialShipTask->m_DrawMethod = nullptr;
+    fieldA3_2_crashedImpertialShip_customScriptCall(getFieldSpecificData_A3()->m164_A3_2_crashedImperialShipTask);
+    cutsceneTaskInitSub2(getFieldSpecificData_A3()->m164_A3_2_crashedImperialShipTask, gFLD_A3->m6083244, 0, 0, 0);
 
     return 0;
 }

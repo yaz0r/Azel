@@ -14,17 +14,17 @@
 
 void fieldA3_1_startTasks_sub1Task_InitSub0(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9C_A3_1_exits[0] = 1;
+    getFieldSpecificData_A3()->m9C_A3_1_exits[0] = 1;
 }
 
 void fieldA3_1_startTasks_sub1Task_InitSub1(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9C_A3_1_exits[1] = 1;
+    getFieldSpecificData_A3()->m9C_A3_1_exits[1] = 1;
 }
 
 void fieldA3_1_startTasks_sub1Task_InitSub2(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9C_A3_1_exits[2] = 1;
+    getFieldSpecificData_A3()->m9C_A3_1_exits[2] = 1;
 }
 
 void(*fieldA3_1_startTasks_sub1Task_InitFunctionTable[])(p_workArea, sLCSTarget*) = {
@@ -52,7 +52,7 @@ struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_sta
         for (int i = 2; i >= 0; i--)
         {
             createLCSTarget(&pThis->m0[i], pThis, fieldA3_1_startTasks_sub1Task_InitFunctionTable[i], &fieldA3_1_startTasks_sub1Task_InitPositionTable[i], NULL, 3, 0, eItems::mMinusOne, 0, 0);
-            getFieldTaskPtr()->mC->m9C_A3_1_exits[i] = 0;
+            getFieldSpecificData_A3()->m9C_A3_1_exits[i] = 0;
         }
 
         pThis->m0[0].m18_diableFlags |= 1;
@@ -177,7 +177,7 @@ struct sfieldA3_1_checkExitsTask : public s_workAreaTemplate<sfieldA3_1_checkExi
     {
         for (int i = 0; i < 3; i++)
         {
-            if (getFieldTaskPtr()->mC->m9C_A3_1_exits[i])
+            if (getFieldSpecificData_A3()->m9C_A3_1_exits[i])
             {
                 mainGameState.setBit566(A3_1_exitsVars[i]);
 
@@ -203,7 +203,7 @@ void create_fieldA3_1_checkExitsTask(p_workArea workArea)
 
 void fieldA3_1_startTasks_sub0()
 {
-    getFieldTaskPtr()->mC->m0 = fixedPoint(0x10000);
+    getFieldSpecificData_A3()->m0 = fixedPoint(0x10000);
 }
 
 
@@ -399,13 +399,13 @@ struct sfieldA3_1_startTasks_sub3_func_task : public s_workAreaTemplate<sfieldA3
 void fieldA3_1_startTasks_sub3_func(sfieldA3_1_startTasks_sub3_func_task* pThis)
 {
     /*
-    getFieldTaskPtr()->mC->mC0[7][0] = pThis->m0;
-    getFieldTaskPtr()->mC->mC0[7][1] = pThis->m0;
-    getFieldTaskPtr()->mC->mC0[7][2] = pThis->m0;
+    getFieldSpecificData_A3()->mC0[7][0] = pThis->m0;
+    getFieldSpecificData_A3()->mC0[7][1] = pThis->m0;
+    getFieldSpecificData_A3()->mC0[7][2] = pThis->m0;
 
-    getFieldTaskPtr()->mC->mC0[7][0] = pThis->m0;
-    getFieldTaskPtr()->mC->mC0[7][1] = pThis->m0;
-    getFieldTaskPtr()->mC->mC0[7][2] = pThis->m0;
+    getFieldSpecificData_A3()->mC0[7][0] = pThis->m0;
+    getFieldSpecificData_A3()->mC0[7][1] = pThis->m0;
+    getFieldSpecificData_A3()->mC0[7][2] = pThis->m0;
     */
     Unimplemented();
 }
@@ -426,7 +426,7 @@ void fieldA3_1_startTasks_sub3(p_workArea workArea)
         createSubTaskWithArg<fieldA3_1_startTasks_subTask3>(r14, gFLD_A3->getSaturnPtr(0x6090B74 + i * 0xC));
     }
 
-    getFieldTaskPtr()->mC->m130_conanaNestCutsceneTrigger = 0; 
+    getFieldSpecificData_A3()->m130_conanaNestCutsceneTrigger = 0; 
 }
 
 void fieldA3_1_startTasks(p_workArea workArea)
@@ -459,13 +459,13 @@ void subfieldA3_1Sub0(s_dragonTaskWorkArea* r4)
     switch (r4->m108)
     {
     case 0:
-        if (getFieldTaskPtr()->mC->m130_conanaNestCutsceneTrigger != 1)
+        if (getFieldSpecificData_A3()->m130_conanaNestCutsceneTrigger != 1)
             return;
         subfieldA3_1Sub0Sub0();
         r4->m108++;
     case 1:
         subfieldA3_1Sub0Sub1();
-        if (getFieldTaskPtr()->mC->m130_conanaNestCutsceneTrigger != 2)
+        if (getFieldSpecificData_A3()->m130_conanaNestCutsceneTrigger != 2)
             return;
         subfieldA3_1Sub0Sub2(4, 0x8000);
         r4->m108++;

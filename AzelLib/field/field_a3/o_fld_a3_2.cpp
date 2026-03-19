@@ -10,22 +10,22 @@
 
 void fieldA3_2_exit0(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9F_A3_2_exits[0] = 1;
+    getFieldSpecificData_A3()->m9F_A3_2_exits[0] = 1;
 }
 
 void fieldA3_2_exit1(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9F_A3_2_exits[1] = 1;
+    getFieldSpecificData_A3()->m9F_A3_2_exits[1] = 1;
 }
 
 void fieldA3_2_exit2(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9F_A3_2_exits[2] = 1;
+    getFieldSpecificData_A3()->m9F_A3_2_exits[2] = 1;
 }
 
 void fieldA3_2_exit3(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m9F_A3_2_exits[3] = 1;
+    getFieldSpecificData_A3()->m9F_A3_2_exits[3] = 1;
 }
 
 void(*fieldA3_2_exitFuncTable[])(p_workArea, sLCSTarget*) = {
@@ -55,7 +55,7 @@ struct fieldA3_2_exitLCSTask : public s_workAreaTemplate<fieldA3_2_exitLCSTask>
             exitLocations[r12] = readSaturnVec3(gFLD_A3->getSaturnPtr(0x6081E28 + 4 * 3 * r12));
             createLCSTarget(&pThis->m0[r12], pThis, fieldA3_2_exitFuncTable[r12], &exitLocations[r12], &pThis->mD0[r12], 3, 0, eItems::mMinusOne, 0, 0);
 
-            getFieldTaskPtr()->mC->m9F_A3_2_exits[r12] = 0;
+            getFieldSpecificData_A3()->m9F_A3_2_exits[r12] = 0;
         }
 
         pThis->m0[1].m18_diableFlags |= 1;
@@ -111,7 +111,7 @@ struct sfieldA3_2_checkExitsTask : public s_workAreaTemplate<sfieldA3_2_checkExi
     {
         for (int i = 0; i < 4; i++)
         {
-            if (getFieldTaskPtr()->mC->m9F_A3_2_exits[i])
+            if (getFieldSpecificData_A3()->m9F_A3_2_exits[i])
             {
                 mainGameState.setBit566(A3_2_exitsVars[i]);
 
@@ -223,7 +223,7 @@ void fieldA3_2_startTasks(p_workArea workArea)
 {
     fieldA3_0_createTask0(workArea);
 
-    getFieldTaskPtr()->mC->m168 = fieldA3_0_createTask1(workArea, 4, 0x60);
+    getFieldSpecificData_A3()->m168 = fieldA3_0_createTask1(workArea, 4, 0x60);
 
     fieldA3_2_createExitLCSTask(workArea);
     create_fieldA3_backgroundLayer2(workArea);

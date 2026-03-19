@@ -43,6 +43,7 @@ bool bMakeEverythingVisible = false;
 FLD_A3_data* gFLD_A3 = NULL;
 sSaturnPtr gFieldCameraConfigEA;
 sSaturnPtr gFieldDragonAnimTableEA;
+void(*gFieldCameraDrawFunc)(sFieldCameraStatus*) = nullptr;
 
 const s_MCB_CGB fieldFileList[] =
 {
@@ -441,8 +442,24 @@ void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
 
         if (pFieldCameraTask1->m28 & 1)
         {
-            //06070FE0
-            assert(0);
+            //06070FE0 — vertical grid mode (tower): grid X maps to world Y
+            pFieldCameraTask1->mC[0] = 0;
+            {
+                s32 r3 = r4->m10_gridSize[0] * pFieldCameraTask1->m20_cellDimensions[0];
+                if (r3 < 0)
+                {
+                    r3++;
+                }
+                pFieldCameraTask1->mC[1] = r3 / 2;
+            }
+            {
+                s32 r3 = -(r4->m10_gridSize[1] * pFieldCameraTask1->m20_cellDimensions[1]);
+                if (r3 < 0)
+                {
+                    r3++;
+                }
+                pFieldCameraTask1->mC[2] = r3 / 2;
+            }
         }
         else
         {
@@ -535,7 +552,7 @@ void A3_Obj2_Update(s_A3_Obj2* r14)
     std::vector<fixedPoint>::iterator var8 = r14->m5C_perNodeRotation.begin();
     sSaturnPtr var4 = sSaturnPtr({ 0x6092964, gFLD_A3 });
 
-    if (getFieldTaskPtr()->mC->m8)
+    if (getFieldSpecificData_A3()->m8)
     {
         r14->m60.m18_diableFlags = 0;
     }
@@ -548,7 +565,7 @@ void A3_Obj2_Update(s_A3_Obj2* r14)
 
     r14->m10_position[1] = *r14->mC_verticalOffset + r14->m8->m4_position[1];
 
-    fixedPoint r11 = MTH_Mul(r14->m38, getFieldTaskPtr()->mC->m0);
+    fixedPoint r11 = MTH_Mul(r14->m38, getFieldSpecificData_A3()->m0);
     if (r11 == r14->m40)
     {
         // if dragon is moving fast enough and close enough to the flag
@@ -560,11 +577,11 @@ void A3_Obj2_Update(s_A3_Obj2* r14)
             // is the dragon over or under the flag?
             if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos[1] < r14->m10_position[1])
             {
-                r14->m40 = MTH_Mul(0x38E38E3, getFieldTaskPtr()->mC->m0);
+                r14->m40 = MTH_Mul(0x38E38E3, getFieldSpecificData_A3()->m0);
             }
             else
             {
-                r14->m40 = MTH_Mul(0xE38E38, getFieldTaskPtr()->mC->m0);
+                r14->m40 = MTH_Mul(0xE38E38, getFieldSpecificData_A3()->m0);
             }
 
             if (dragonDeltaMovement[2] > 0)
@@ -714,28 +731,28 @@ void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32
     {
     case 0:
         r11 = sSaturnPtr({ 0x6092984, gFLD_A3 }) + 0x1C * r5.m18;
-        pNewObj->mC_verticalOffset = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x609290E, gFLD_A3 }) + r5.m18)];
+        pNewObj->mC_verticalOffset = &getFieldSpecificData_A3()->m50[readSaturnS8(sSaturnPtr({ 0x609290E, gFLD_A3 }) + r5.m18)];
         pNewObj->m28_numNodes = 8;
         pNewObj->m1C_nodeLength[1] = 0x6000;
         pNewObj->m58 = sSaturnPtr({ 0x609293A, gFLD_A3 });
         break;
     case 1:
         r11 = sSaturnPtr({ 0x6092A48, gFLD_A3 }) + 0x1C * r5.m18;
-        pNewObj->mC_verticalOffset = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x6092915, gFLD_A3 }) + r5.m18)];
+        pNewObj->mC_verticalOffset = &getFieldSpecificData_A3()->m50[readSaturnS8(sSaturnPtr({ 0x6092915, gFLD_A3 }) + r5.m18)];
         pNewObj->m28_numNodes = 4;
         pNewObj->m1C_nodeLength[1] = 0x6000;
         pNewObj->m58 = sSaturnPtr({ 0x609294A, gFLD_A3 });
         break;
     case 2:
         r11 = sSaturnPtr({ 0x6092B28, gFLD_A3 }) + 0x1C * r5.m18;
-        pNewObj->mC_verticalOffset = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x609291D, gFLD_A3 }) + r5.m18)];
+        pNewObj->mC_verticalOffset = &getFieldSpecificData_A3()->m50[readSaturnS8(sSaturnPtr({ 0x609291D, gFLD_A3 }) + r5.m18)];
         pNewObj->m28_numNodes = 4;
         pNewObj->m1C_nodeLength[1] = 0x3000;
         pNewObj->m58 = sSaturnPtr({ 0x6092952, gFLD_A3 });
         break;
     case 3:
         r11 = sSaturnPtr({ 0x6092BEC, gFLD_A3 }) + 0x1C * r5.m18;
-        pNewObj->mC_verticalOffset = &getFieldTaskPtr()->mC->m50[readSaturnS8(sSaturnPtr({ 0x6092924, gFLD_A3 }) + r5.m18)];
+        pNewObj->mC_verticalOffset = &getFieldSpecificData_A3()->m50[readSaturnS8(sSaturnPtr({ 0x6092924, gFLD_A3 }) + r5.m18)];
         pNewObj->m28_numNodes = 4;
         pNewObj->m1C_nodeLength[1] = 0x3000;
         pNewObj->m58 = sSaturnPtr({ 0x609295A, gFLD_A3 });
@@ -747,26 +764,26 @@ void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32
 
     pNewObj->m2C = readSaturnS32(r11);
     pNewObj->m34 = readSaturnS32(r11 + 4);
-    pNewObj->m40 = pNewObj->m3C = pNewObj->m38 = MTH_Mul(readSaturnS32(r11 + 8), getFieldTaskPtr()->mC->m0);
+    pNewObj->m40 = pNewObj->m3C = pNewObj->m38 = MTH_Mul(readSaturnS32(r11 + 8), getFieldSpecificData_A3()->m0);
     pNewObj->m44 = readSaturnS32(r11 + 0xC);
     pNewObj->m4C = readSaturnS32(r11 + 0x10);
 
-    if (getFieldTaskPtr()->mC->m0 >= 0)
+    if (getFieldSpecificData_A3()->m0 >= 0)
     {
-        pNewObj->m50 = MTH_Mul(readSaturnS32(r11 + 0x14), getFieldTaskPtr()->mC->m0);
+        pNewObj->m50 = MTH_Mul(readSaturnS32(r11 + 0x14), getFieldSpecificData_A3()->m0);
     }
     else
     {
-        pNewObj->m50 = MTH_Mul(readSaturnS32(r11 + 0x14), -getFieldTaskPtr()->mC->m0);
+        pNewObj->m50 = MTH_Mul(readSaturnS32(r11 + 0x14), -getFieldSpecificData_A3()->m0);
     }
 
-    if (getFieldTaskPtr()->mC->m0 >= 0)
+    if (getFieldSpecificData_A3()->m0 >= 0)
     {
-        pNewObj->m54 = MTH_Mul(readSaturnS32(r11 + 0x18), getFieldTaskPtr()->mC->m0);
+        pNewObj->m54 = MTH_Mul(readSaturnS32(r11 + 0x18), getFieldSpecificData_A3()->m0);
     }
     else
     {
-        pNewObj->m54 = MTH_Mul(readSaturnS32(r11 + 0x18), -getFieldTaskPtr()->mC->m0);
+        pNewObj->m54 = MTH_Mul(readSaturnS32(r11 + 0x18), -getFieldSpecificData_A3()->m0);
     }
 
     pNewObj->m30 = randomNumber();
@@ -779,7 +796,7 @@ void create_A3_Obj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6, s32
 
     createLCSTarget(&pNewObj->m60, pNewObj, &create_A3_Obj2_Sub1, &pNewObj->m10_position, 0, 0, 0, eItems::mMinusOne, 0, 0);
 
-    getFieldTaskPtr()->mC->m8 = 0;
+    getFieldSpecificData_A3()->m8 = 0;
 }
 
 
@@ -823,19 +840,19 @@ p_workArea create_A3_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r
     case 0:
         pNewTask->m24 = 0x71C71C;
         pNewTask->m2C = 0x147;
-        pNewTask->mC = &getFieldTaskPtr()->mC->m50[r5.m18 + 0];
+        pNewTask->mC = &getFieldSpecificData_A3()->m50[r5.m18 + 0];
         pNewTask->m38_modelOffset = 0x22C;
         break;
     case 1:
         pNewTask->m24 = 0x6C16C1;
         pNewTask->m2C = 0xF5;
-        pNewTask->mC = &getFieldTaskPtr()->mC->m50[r5.m18 + 5];
+        pNewTask->mC = &getFieldSpecificData_A3()->m50[r5.m18 + 5];
         pNewTask->m38_modelOffset = 0x228;
         break;
     case 2:
         pNewTask->m24 = 0x666666;
         pNewTask->m2C = 0xA3;
-        pNewTask->mC = &getFieldTaskPtr()->mC->m50[r5.m18 + 11];
+        pNewTask->mC = &getFieldSpecificData_A3()->m50[r5.m18 + 11];
         pNewTask->m38_modelOffset = 0x224;
         break;
     default:
@@ -869,9 +886,9 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
     static void Update(s_A3_Obj4* pThis)
     {
         pThis->mC += 0xB60B6;
-        fixedPoint var1C = getFieldTaskPtr()->mC->mA4[pThis->m8->m18] = MTH_Mul(fixedPoint(0x71C71C), getSin((pThis->mC >> 16) & 0xFFF)) - fixedPoint(0x71C71C);
+        fixedPoint var1C = getFieldSpecificData_A3()->mA4[pThis->m8->m18] = MTH_Mul(fixedPoint(0x71C71C), getSin((pThis->mC >> 16) & 0xFFF)) - fixedPoint(0x71C71C);
 
-        sVec3_FP& r12 = getFieldTaskPtr()->mC->mC0[pThis->m8->m18];
+        sVec3_FP& r12 = getFieldSpecificData_A3()->mC0[pThis->m8->m18];
         r12[0] = pThis->m8->m4_position[0] - MTH_Mul(fixedPoint(0xE333), getSin((var1C >> 16) & 0xFFF));
         r12[1] = pThis->m8->m4_position[1] + MTH_Mul(fixedPoint(0xE333), getSin((var1C >> 16) & 0xFFF));
 
@@ -885,7 +902,7 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
     {
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m8->m4_position);
-        rotateCurrentMatrixShiftedZ(getFieldTaskPtr()->mC->mA4[pThis->m8->m18]);
+        rotateCurrentMatrixShiftedZ(getFieldSpecificData_A3()->mA4[pThis->m8->m18]);
 
         addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x29C));
 
@@ -930,7 +947,7 @@ void create_A3_Obj4(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     s_A3_Obj4* pNewTask = createSubTask<s_A3_Obj4>(r4);
     getMemoryArea(&pNewTask->m0, r6);
     pNewTask->m8 = &r5;
-    getFieldTaskPtr()->mC->mC0[r5.m18] = r5.m4_position;
+    getFieldSpecificData_A3()->mC0[r5.m18] = r5.m4_position;
     pNewTask->mC = randomNumber();
 }
 
@@ -939,7 +956,7 @@ void create_A3_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     s_A3_Obj3* pNewTask = createSubTask<s_A3_Obj3>(r4);
     getMemoryArea(&pNewTask->m0, r6);
     pNewTask->m8 = &r5;
-    getFieldTaskPtr()->mC->mC0[r5.m18] = r5.m4_position;
+    getFieldSpecificData_A3()->mC0[r5.m18] = r5.m4_position;
     pNewTask->mC = 0x6000;
     pNewTask->m10 = 0;
     pNewTask->m14[0] = 0;
@@ -981,13 +998,13 @@ void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 
         // ropes
     case 0x6060194:
-        getFieldTaskPtr()->mC->mC[r5.m18] = create_A3_Obj0(r4, r5, r6, 0);
+        getFieldSpecificData_A3()->mC[r5.m18] = create_A3_Obj0(r4, r5, r6, 0);
         break;
     case 0x60601C8:
-        getFieldTaskPtr()->mC->mC[r5.m18 + 5] = create_A3_Obj0(r4, r5, r6, 1);
+        getFieldSpecificData_A3()->mC[r5.m18 + 5] = create_A3_Obj0(r4, r5, r6, 1);
         break;
     case 0x6060228:
-        getFieldTaskPtr()->mC->mC[r5.m18 + 11] = create_A3_Obj0(r4, r5, r6, 2);
+        getFieldSpecificData_A3()->mC[r5.m18 + 11] = create_A3_Obj0(r4, r5, r6, 2);
         break;
 
         // dangling flags
@@ -4014,6 +4031,35 @@ void fieldOverlaySubTaskInitSub2(sFieldCameraStatus* r14)
     }
 }
 
+// 06062228 — camera draw mode 2 (tower/vertical)
+void fieldOverlaySubTaskInitSub2_mode2(sFieldCameraStatus* r14)
+{
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    if (pDragonTask == NULL)
+        return;
+
+    switch (r14->m8D)
+    {
+    case 0:
+        r14->m8F = 2;
+        r14->m90 = 2;
+        r14->m7C = 3;
+        r14->m8D = 2;
+        fieldOverlaySubTaskInitSub2Sub2(r14, pDragonTask);
+        return;
+    case 1:
+        r14->m8F = 2;
+        r14->m90 = 2;
+        r14->m7C = 3;
+        r14->m8D = 2;
+    case 2:
+        fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
+        return;
+    default:
+        assert(0);
+    }
+}
+
 void fieldOverlaySubTaskInitSub1Sub0(sFieldCameraStatus* r4)
 {
     r4->m74 = 0;
@@ -4149,7 +4195,7 @@ void s_fieldOverlaySubTaskWorkArea::fieldOverlaySubTaskInit(s_fieldOverlaySubTas
 {
     getFieldTaskPtr()->m8_pSubFieldData->m334 = pTypedWorkArea;
 
-    fieldOverlaySubTaskInitSub1(0, &fieldOverlaySubTaskInitSub2, 0);
+    fieldOverlaySubTaskInitSub1(0, gFieldCameraDrawFunc ? gFieldCameraDrawFunc : &fieldOverlaySubTaskInitSub2, 0);
     fieldOverlaySubTaskInitSub3(0);
     setupFieldCameraConfigs(readCameraConfig(gFieldCameraConfigEA), 1);
 
@@ -5545,15 +5591,15 @@ void dragonFieldTaskUpdateSub5Sub4(sFieldCameraStatus* r4);
 void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4);
 
 void(*updateCameraScriptSub1Table2[10])(sFieldCameraStatus*) = {
-    dragonFieldTaskUpdateSub5Sub3,
-    fieldOverlaySubTaskInitSub2,
-    dummyFunct,
-    dummyFunct,
-    dummyFunct,
-    dummyFunct,
-    dummyFunct,
+    dragonFieldTaskUpdateSub5Sub3,           // [0] 06062900
+    fieldOverlaySubTaskInitSub2,             // [1] 060621C6
+    fieldOverlaySubTaskInitSub2_mode2,       // [2] 06062228
+    dummyFunct,                              // [3] 0606229E — TODO
+    dummyFunct,                              // [4] 06062302 — TODO
+    dummyFunct,                              // [5] 06062370 — TODO
+    dummyFunct,                              // [6] 0606240C — TODO
     0,
-    dragonFieldTaskUpdateSub5Sub4,
+    dragonFieldTaskUpdateSub5Sub4,           // [8] 06062474
     0,
 };
 
@@ -6481,7 +6527,12 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
 
     if (pFieldCameraTask1->m28 & 1)
     {
-        assert(0);
+        //06070FE0 — vertical grid mode (tower): grid X maps to world Y
+        X = performDivision(pFieldCameraTask1->m20_cellDimensions[0], pFieldCameraTask1->m0_position[1]);
+        if (pFieldCameraTask1->m0_position[1] < 0)
+        {
+            X--;
+        }
     }
     else
     {
@@ -6952,6 +7003,7 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
 
     gFieldCameraConfigEA = { 0x6092EF0, gFLD_A3 };
     gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
+    gFieldCameraDrawFunc = &fieldOverlaySubTaskInitSub2;
 
     if (!initField(workArea, fieldFileList, arg))
     {

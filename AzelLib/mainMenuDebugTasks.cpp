@@ -13,6 +13,8 @@
 #include "commonOverlay.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "field/field_a5/o_fld_a5.h"
+#include "field/field_c8/o_fld_c8.h"
+#include "field/field_d3/o_fld_d3.h"
 #include "field/field_d5/o_fld_d5.h"
 #include "dragonData.h"
 #include "dragonRider.h"
@@ -1558,6 +1560,14 @@ void s_fieldStartOverlayTask::Init(s_fieldStartOverlayTask* pThis)
         else if (!strcmp(pFieldDefinition->m_prg, "FLD_A5.PRG"))
         {
             gFieldOverlayFunction = overlayStart_FLD_A5;
+        }
+        else if (!strcmp(pFieldDefinition->m_prg, "FLD_C8.PRG"))
+        {
+            gFieldOverlayFunction = overlayStart_FLD_C8;
+        }
+        else if (!strcmp(pFieldDefinition->m_prg, "FLD_D3.PRG"))
+        {
+            gFieldOverlayFunction = overlayStart_FLD_D3;
         }
         else if (!strcmp(pFieldDefinition->m_prg, "FLD_D5.PRG"))
         {

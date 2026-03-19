@@ -4,17 +4,17 @@
 #include "field/fieldRadar.h"
 #include "audio/soundDriver.h"
 
-static void fieldA5_0_startTasks(p_workArea workArea) { Unimplemented(); }
+static void fieldA5_7_startTasks(p_workArea workArea) { Unimplemented(); }
 
-// 060543A2
-void subfieldA5_0(p_workArea workArea)
+// 06054964
+void subfieldA5_7(p_workArea workArea)
 {
     playPCM(workArea, 0x66);
     loadFileFromFileList(1);
-    s_DataTable3* pDT3 = readDataTable3(gFLD_A5->getSaturnPtr(0x0608E24C));
-    setupField2(pDT3, fieldA5_0_startTasks);
-    mainGameState.bitField[0xA3] &= 0xDF;
-    setupCameraConfig_A5_0();
+    s_DataTable3* pDT3 = readDataTable3(gFLD_A5->getSaturnPtr(0x06094490));
+    setupField2(pDT3, fieldA5_7_startTasks);
+    mainGameState.bitField[0xA3] |= 0x20;
+    setupCameraConfig_A5_7();
     s16 prev = getFieldTaskPtr()->m32_previousSubField;
     switch (prev)
     {

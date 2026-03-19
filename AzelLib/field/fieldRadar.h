@@ -6,3 +6,4 @@ void fieldRadar_enableAltitudeGauge();
 void fieldRadar_disableAltitudeGauge();
 
 void createFieldRadar(s_workArea* pWorkArea);
+void fieldRadar_setEncounterDistance(fixedPoint distance);

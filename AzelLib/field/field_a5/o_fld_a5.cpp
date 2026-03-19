@@ -33,8 +33,16 @@ p_workArea overlayStart_FLD_A5(p_workArea workArea, u32 arg)
         gFLD_A3 = new FLD_A3_data();
     }
 
+    // 06072e36 — override subfield for specific game state
+    if (mainGameState.bitField[0x1B] & 8)
+    {
+        getFieldTaskPtr()->m2E_currentSubFieldIndex = 0xB;
+        getFieldTaskPtr()->m30_fieldEntryPoint = 0;
+    }
+
     gFieldCameraConfigEA = gFLD_A5->getSaturnPtr(0x0609E938);
     gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
+    gFieldCameraDrawFunc = &fieldOverlaySubTaskInitSub2;
 
     if (!initField(workArea, fieldFileList, arg))
     {
@@ -62,11 +70,13 @@ p_workArea overlayStart_FLD_A5(p_workArea workArea, u32 arg)
     graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 1;
-    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts(gFLD_A5->getSaturnPtr(0x06060250));
+    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts(gFLD_A5->getSaturnPtr(0x0609D4A8));
 
     // Per-subfield dispatch
     static void (*subfieldTable[])(p_workArea) = {
-        subfieldA5_0, // 0
+        subfieldA5_0, subfieldA5_1, subfieldA5_2, subfieldA5_3,
+        subfieldA5_4, subfieldA5_5, subfieldA5_6, subfieldA5_7,
+        subfieldA5_8, subfieldA5_9, subfieldA5_A, subfieldA5_B,
     };
 
     s16 subfield = getFieldTaskPtr()->m2E_currentSubFieldIndex;
@@ -79,11 +89,11 @@ p_workArea overlayStart_FLD_A5(p_workArea workArea, u32 arg)
         assert(0); // unimplemented subfield
     }
 
-    getFieldTaskPtr()->m8_pSubFieldData->pUpdateFunction3 = nullptr; // TODO: overlayStart_Sub1 equivalent
+    Unimplemented(); // post-subfield init: collision data table, update functions
 
     if (subfield != 0xB)
     {
-        Unimplemented(); // startFieldScript(subfield + 0x19, -1) — A5 scripts may have opcodes not in A3's interpreter
+        startFieldScript(subfield + 0x19, -1);
     }
 
     return nullptr;

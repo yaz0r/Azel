@@ -31,8 +31,8 @@ struct s_FieldRadar : public s_workAreaTemplate<s_FieldRadar>
     s8 m5B;
     s32 m5C;
     s32 m60;
-    s32 m64;
-    fixedPoint m68;
+    fixedPoint m64_encounterDistance;
+    fixedPoint m68_encounterDistanceSq;
 };
 
 
@@ -59,8 +59,8 @@ void fieldRadar_disableAltitudeGauge()
 void dragonFieldSubTask2InitSub1(s32 r4)
 {
     s_FieldRadar* r14 = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
-    r14->m64 = r4;
-    r14->m68 = MTH_Mul(r4, r4);
+    r14->m64_encounterDistance = r4;
+    r14->m68_encounterDistanceSq = MTH_Mul(r4, r4);
 }
 
 void fieldRadar_init(s_FieldRadar* pTypedWorkArea)
@@ -287,5 +287,13 @@ void createFieldRadar(s_workArea* pWorkArea)
     };
 
     createSubTask<s_FieldRadar>(pWorkArea, &definition);
+}
+
+// 06068f0c
+void fieldRadar_setEncounterDistance(fixedPoint distance)
+{
+    s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
+    pRadar->m64_encounterDistance = distance;
+    pRadar->m68_encounterDistanceSq = MTH_Mul(distance, distance);
 }
 

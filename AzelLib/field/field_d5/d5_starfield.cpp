@@ -426,3 +426,9 @@ void createGameOverParticleTask(p_workArea parent)
 {
     createSubTask<s_d5StarfieldTask>(parent);
 }
+
+// 06054180
+void createD5StarfieldTask(p_workArea parent)
+{
+    createSubTask<s_d5StarfieldTask>(parent);
+}

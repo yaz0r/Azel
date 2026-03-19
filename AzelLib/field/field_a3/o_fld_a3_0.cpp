@@ -107,7 +107,7 @@ struct sfieldA3_0_checkExitsTask : public s_workAreaTemplate<sfieldA3_0_checkExi
     {
         for (int i = 0; i < 8; i++)
         {
-            if (getFieldTaskPtr()->mC->m94_A3_0_exits[i])
+            if (getFieldSpecificData_A3()->m94_A3_0_exits[i])
             {
                 mainGameState.setBit566(A3_0_exitsVars[i]);
 
@@ -164,42 +164,42 @@ void fieldA3_0_createCheckExitTask(p_workArea workArea)
 
 void fieldA3_0_exitFunction_0(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m94_A3_0_exits[0] = 1;
+    getFieldSpecificData_A3()->m94_A3_0_exits[0] = 1;
 }
 
 void fieldA3_0_exitFunction_1(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m94_A3_0_exits[1] = 1;
+    getFieldSpecificData_A3()->m94_A3_0_exits[1] = 1;
 }
 
 void fieldA3_0_exitFunction_2(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m94_A3_0_exits[2] = 1;
+    getFieldSpecificData_A3()->m94_A3_0_exits[2] = 1;
 }
 
 void fieldA3_0_exitFunction_3(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m94_A3_0_exits[3] = 1;
+    getFieldSpecificData_A3()->m94_A3_0_exits[3] = 1;
 }
 
 void fieldA3_0_exitFunction_4(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m94_A3_0_exits[4] = 1;
+    getFieldSpecificData_A3()->m94_A3_0_exits[4] = 1;
 }
 
 void fieldA3_0_exitFunction_5(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m94_A3_0_exits[5] = 1;
+    getFieldSpecificData_A3()->m94_A3_0_exits[5] = 1;
 }
 
 void fieldA3_0_exitFunction_6(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m94_A3_0_exits[6] = 1;
+    getFieldSpecificData_A3()->m94_A3_0_exits[6] = 1;
 }
 
 void fieldA3_0_exitFunction_7(p_workArea, sLCSTarget*)
 {
-    getFieldTaskPtr()->mC->m94_A3_0_exits[7] = 1;
+    getFieldSpecificData_A3()->m94_A3_0_exits[7] = 1;
 }
 
 void(*fieldA3_0_exitFunctionTable[])(p_workArea, sLCSTarget*) = {
@@ -236,7 +236,7 @@ struct sfieldA3_0_createExitTask : public s_workAreaTemplate<sfieldA3_0_createEx
 
             createLCSTarget(&pThis->m0_LCSTargets[r12], pThis, fieldA3_0_exitFunctionTable[r12], &fieldA3_0_exitPosition[r12], &pThis->m1A0_rotation[r12], 3, 0, eItems::mMinusOne, 0, 0);
 
-            getFieldTaskPtr()->mC->m94_A3_0_exits[r12] = 0;
+            getFieldSpecificData_A3()->m94_A3_0_exits[r12] = 0;
         }
     }
 
@@ -262,7 +262,7 @@ void fieldA3_0_startTasks(p_workArea workArea)
 {
     fieldA3_0_createTask0(workArea);
 
-    getFieldTaskPtr()->mC->m168 = fieldA3_0_createTask1(workArea, 2, 0x20);
+    getFieldSpecificData_A3()->m168 = fieldA3_0_createTask1(workArea, 2, 0x20);
 
     create_fieldA3_0_exitTask(workArea);
 
