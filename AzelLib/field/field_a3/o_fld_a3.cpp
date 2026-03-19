@@ -4752,9 +4752,65 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
     r14->m247 = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4;
 }
 
+// 0607e606
+static void updateDragonMovementFromControllerType1Sub3Sub1Sub0(s_dragonTaskWorkArea* r14)
+{
+    r14->m25D = 1;
+    r14->m258 = 0x1E;
+    r14->m23C |= 4;
+    r14->m244 = 4;
+}
+
+// 0607e718
 void updateDragonMovementFromControllerType1Sub3Sub1(s_dragonTaskWorkArea* r14)
 {
-    PDS_unimplemented("updateDragonMovementFromControllerType1Sub3Sub1");
+    s32 timer = (s32)r14->m258 - 1;
+    r14->m258 = timer;
+    if (timer < 1)
+    {
+        r14->m25D = 0;
+        r14->m258 = 0;
+
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0xF])
+        {
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0])
+            {
+                if (gDragonState->mC_dragonType != 8)
+                {
+                    r14->m25D = 2;
+                    r14->m258 = 0x18;
+                    if (r14->m25E == 0)
+                    {
+                        r14->m254 = 0x84BDA1;
+                    }
+                    else
+                    {
+                        r14->m254 = 0xFF7B425F;
+                    }
+                    r14->m23C |= 4;
+                    r14->m244 = 9;
+                }
+                return;
+            }
+
+            if (r14->m235_dragonSpeedIndex == 0)
+            {
+                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7])
+                {
+                    r14->m250 = fixedPoint((s32)r14->m20_angle[1] + (s32)0xF838E38F).normalized();
+                    updateDragonMovementFromControllerType1Sub3Sub1Sub0(r14);
+                    return;
+                }
+
+                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6])
+                {
+                    r14->m250 = fixedPoint((s32)r14->m20_angle[1] + (s32)0x7C71C71).normalized();
+                    updateDragonMovementFromControllerType1Sub3Sub1Sub0(r14);
+                    return;
+                }
+            }
+        }
+    }
 }
 
 void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
@@ -4844,8 +4900,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
 
         if (r14->m25D == 1)
         {
-            assert(0);
-            //updateDragonMovementFromControllerType1Sub3Sub1(r14);
+            updateDragonMovementFromControllerType1Sub3Sub1(r14);
         }
         else
         {
