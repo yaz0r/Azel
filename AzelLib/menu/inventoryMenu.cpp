@@ -590,7 +590,7 @@ void inventoryMenuTaskDraw(s_inventoryMenu* pThis)
             else
             if (!(((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6) != 0) && (useInventoryItem(pThis), pThis->m4_currentPageInItemList < 0)))
             {
-                int iVar2 = inventoryMenuTaskDrawSub3(&pThis->m4_currentPageInItemList, 0, performDivision(5, pThis->m30_numItemsInCurrentCategory - 1));
+                int iVar2 = inventoryMenuTaskDrawSub3(&pThis->m4_currentPageInItemList, 0, intDivide(5, pThis->m30_numItemsInCurrentCategory - 1));
                 if (iVar2)
                 {
                     inventoryMenuTaskDrawSub1(pThis);
@@ -611,7 +611,7 @@ void inventoryMenuTaskDraw(s_inventoryMenu* pThis)
                 pThis->m28_menuCursorItem->m0 = pThis->m24_currentSelectedItemInCurrentItemPage;
 
                 // draw the left/right icons for page change
-                int maxPages = performDivision(5, pThis->m30_numItemsInCurrentCategory - 1);
+                int maxPages = intDivide(5, pThis->m30_numItemsInCurrentCategory - 1);
                 if (pThis->m4_currentPageInItemList > 0)
                 {
                     const sIconDef* pIconDef = nullptr;

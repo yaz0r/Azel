@@ -20,7 +20,7 @@ void battleResultScreen_updateSub8(int value, sVec2_S32* output)
 
     while (local_c[0] >= 10)
     {
-        local_c[0] = performDivision(10, local_c[0]);
+        local_c[0] = intDivide(10, local_c[0]);
         local_c[1]++;
     }
 

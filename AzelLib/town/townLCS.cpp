@@ -88,8 +88,8 @@ void scriptUpdateSub2Sub0(sResCameraProperties* r4, s32 r5)
     var14[2] = pCurrentMatrix->m[2][1];
 
     sVec2_FP var0;
-    var0[0] = performDivision(r4->m2C_projectionWidthScale, r4->m0_LCS_X);
-    var0[1] = performDivision(r4->m30_projectionHeightScale, r4->m4_LCS_Y);
+    var0[0] = intDivide(r4->m2C_projectionWidthScale, r4->m0_LCS_X);
+    var0[1] = intDivide(r4->m30_projectionHeightScale, r4->m4_LCS_Y);
 
     fixedPoint r12 = var14[2] + MulVec2(sVec2_FP({ var14[0], var14[1] }), var0);
     if (r12 >= 0)

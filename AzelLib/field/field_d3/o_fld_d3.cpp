@@ -514,7 +514,7 @@ void sD3Vdp2Task::Draw(sD3Vdp2Task* pThis)
     getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
 
     // Pass 0: ground plane
-    beginRotationPass(0, performDivision(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
     d3VdpRotationPassSub(pThis, 0);
     drawCinematicBar(6);
     commitRotationPass();
@@ -523,7 +523,7 @@ void sD3Vdp2Task::Draw(sD3Vdp2Task* pThis)
     d3VdpWaveDistortion(pThis);
 
     // Pass 1: ceiling/upper plane (offset by -0x80000 in Y)
-    beginRotationPass(1, performDivision(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
     d3VdpRotationPassSub(pThis, (s32)0xFFF80000);
     drawCinematicBar(7);
     commitRotationPass();

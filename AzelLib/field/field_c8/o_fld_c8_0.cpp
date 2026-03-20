@@ -14,27 +14,10 @@ s32 func3dModelSub0(s_3dModel* r4);
 void update3dModelDrawFunctionForVertexAnimation(s_3dModel* r4, u8* pData);
 
 // Forward declarations for shared sub-structures
-struct s_fieldLCSSubStruct
-{
-    p_workArea m0_owner;
-    void* m4_callback;
-    sVec3_FP* m8_positionPtr;
-    sVec3_FP* mC_normalPtr;
-    s16 m10;
-    s16 m12;
-    s32 m14;
-    u8 m16;
-    u8 m17;
-    u8 m18;
-    u8 m19;
-    u8 m1A;
-    u8 m1B;
-    s32 m1C;
-    s32 m20;
-    // size 0x24
-};
+// s_fieldLCSSubStruct is the same as sLCSTarget from LCS.h
+using s_fieldLCSSubStruct = sLCSTarget;
 
-static void initFieldLCSSubStruct(s_fieldLCSSubStruct* pLCS, p_workArea owner, void* callback,
+static void initFieldLCSSubStruct(s_fieldLCSSubStruct* pLCS, p_workArea owner, void(*callback)(p_workArea, sLCSTarget*),
     sVec3_FP* posPtr, sVec3_FP* normalPtr, s16 param6, s16 param7, s16 param8, u8 param9, u8 param10);
 static bool isInCurrentZone0(s_fieldLCSSubStruct* pLCS);
 static bool isInCurrentZone1(s_fieldLCSSubStruct* pLCS);
@@ -1548,7 +1531,7 @@ static s32 checkDialogCondition_C8(s32 param1, u32 param2)
 }
 
 // 0605db7e — LCS callback for tower creature (takes p_workArea, cast internally)
-static void towerCreatureC8_lcsCallback(p_workArea pWorkArea)
+static void towerCreatureC8_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
 {
     struct s_towerCreatureC8; // forward ref for pointer cast
     auto pThis = (s_towerCreatureC8*)pWorkArea;
@@ -1556,7 +1539,7 @@ static void towerCreatureC8_lcsCallback(p_workArea pWorkArea)
 }
 
 // 06059ae0 — LCS callback for B4 entity (takes p_workArea, cast internally)
-static void entityC8_B4_lcsCallback(p_workArea pWorkArea)
+static void entityC8_B4_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
 {
     if ((mainGameState.bitField[0xA6] & 0x10) == 0)
     {
@@ -1579,8 +1562,9 @@ static void entityC8_B4_lcsCallback(p_workArea pWorkArea)
 }
 
 // 0605a140 — LCS callback for interactive entity (opens door/elevator)
-static void interactiveEntityC8_lcsCallback(s_interactiveEntityC8* pThis)
+static void interactiveEntityC8_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
 {
+    auto pThis = (s_interactiveEntityC8*)pWorkArea;
     sSaturnPtr dataPtr = pThis->m90_dataPtr;
     s16 subFieldIndex = getFieldTaskPtr()->m2E_currentSubFieldIndex;
 
@@ -1633,7 +1617,7 @@ void s_interactiveEntityC8::Init(s_interactiveEntityC8* pThis, s_interactiveEnti
     interactiveEntityC8_initModel(pThis);
 
     sVec3_FP entryPos = readSaturnVec3(pThis->m8_entryEA + 4);
-    initFieldLCSSubStruct(&pThis->mC_lcs, pThis, (void*)interactiveEntityC8_lcsCallback,
+    initFieldLCSSubStruct(&pThis->mC_lcs, pThis, interactiveEntityC8_lcsCallback,
         &entryPos, nullptr, 3, 0, -1, -1, 0);
 
     s8 entryPointInData = readSaturnS8(pThis->m90_dataPtr + 0xC);
@@ -2086,10 +2070,10 @@ void s_towerCreatureC8::Init(s_towerCreatureC8* pThis, s_towerCreatureC8_arg* pA
     readSaturnVec3Into(pThis->m8_entryEA + 4, &pThis->m40_position);
 
     // Init LCS sub-structure
-    initFieldLCSSubStruct(&pThis->mC_lcs, pThis, (void*)towerCreatureC8_lcsCallback, &pThis->m40_position,
+    initFieldLCSSubStruct(&pThis->mC_lcs, pThis, towerCreatureC8_lcsCallback, &pThis->m40_position,
         nullptr, 0, 0, -1, -1, 0);
 
-    pThis->mC_lcs.m18 = 0;
+    pThis->mC_lcs.m18_diableFlags = 0;
 
     if ((mainGameState.bitField[0xA6] & 4) != 0)
     {
@@ -2107,7 +2091,7 @@ void s_towerCreatureC8::Init(s_towerCreatureC8* pThis, s_towerCreatureC8_arg* pA
         }
         else
         {
-            pThis->mC_lcs.m18 |= 1;
+            pThis->mC_lcs.m18_diableFlags |= 1;
             pThis->m1D9_state = 10;
         }
     }
@@ -2125,7 +2109,7 @@ static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
         }
         break;
     case 1:
-        pThis->mC_lcs.m18 |= 1;
+        pThis->mC_lcs.m18_diableFlags |= 1;
         towerCreatureC8_initModel(pThis);
         Unimplemented(); // 0605d830 — init animation sub-structures (creates wing subtasks)
         pThis->m1D9_state++;
@@ -2171,7 +2155,7 @@ static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
         }
         break;
     case 5:
-        pThis->mC_lcs.m18 = 0;
+        pThis->mC_lcs.m18_diableFlags = 0;
         // TODO: 060642fc — register effect (needs field effect system)
         pThis->m1CC_xRotation = fixedPoint(0xFC888889);
         pThis->m1D9_state++;
@@ -2180,7 +2164,7 @@ static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
         // TODO: 0605dc7c — spawn particles type 2 (needs field particle system)
         break;
     case 7:
-        pThis->mC_lcs.m18 |= 1;
+        pThis->mC_lcs.m18_diableFlags |= 1;
         pThis->m1DA_yRotSubState = 3;
         pThis->m1DB_xRotSubState = 3;
         pThis->m1D0_velocity = fixedPoint(0x1E573);
@@ -2222,35 +2206,35 @@ static void registerWithLCS(s_fieldLCSSubStruct* pLCS)
 
     pLCS->m19 &= 0xCF;
     pLCS->m1C = 0;
-    pLCS->m18 &= ~4;
+    pLCS->m18_diableFlags &= ~4;
 
-    if ((pLCS->m18 & 1) == 0)
+    if ((pLCS->m18_diableFlags & 1) == 0)
     {
-        if (pLCS->mC_normalPtr != nullptr)
+        if (pLCS->mC_optionalRotation != nullptr)
         {
             sVec3_FP screenPos;
-            if ((pLCS->m10 & 0x100) == 0)
+            if ((pLCS->m10_flags & 0x100) == 0)
             {
-                transformAndAddVecByCurrentMatrix(pLCS->m8_positionPtr, &screenPos);
+                transformAndAddVecByCurrentMatrix(pLCS->m8_LCSWorldCoordinates, &screenPos);
             }
             else
             {
-                screenPos = *pLCS->m8_positionPtr;
+                screenPos = *pLCS->m8_LCSWorldCoordinates;
             }
 
             sVec3_FP screenNormal;
-            if ((pLCS->m10 & 0x200) == 0)
+            if ((pLCS->m10_flags & 0x200) == 0)
             {
-                transformVecByCurrentMatrix(*pLCS->mC_normalPtr, screenNormal);
+                transformVecByCurrentMatrix(*pLCS->mC_optionalRotation, screenNormal);
             }
             else
             {
-                screenNormal = *pLCS->mC_normalPtr;
+                screenNormal = *pLCS->mC_optionalRotation;
             }
 
             if ((s32)dot3_FP(&screenPos, &screenNormal) >= 0)
             {
-                pLCS->m18 |= 4;
+                pLCS->m18_diableFlags |= 4;
             }
         }
 
@@ -2267,13 +2251,12 @@ static void registerWithLCS(s_fieldLCSSubStruct* pLCS)
 // 0605b65e — search zone table 0 for Y position, returns zone index
 static s32 searchZoneTable0(s32 posY)
 {
-    s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
-    s32* pThresholds = *(s32**)pFieldData->mDC_zoneCollision; // first table pointer
+    s_C8_zoneTask* pZoneTask = (s_C8_zoneTask*)((s_fieldSpecificData_C8*)getFieldTaskPtr()->mC)->mDC_zoneCollision;
+    sSaturnPtr tableEA = pZoneTask->m0_table0;
     s32 index = 0;
-    while (*pThresholds <= posY)
+    while (readSaturnS32(tableEA + index * 4) <= posY)
     {
         index++;
-        pThresholds++;
     }
     return index;
 }
@@ -2281,13 +2264,12 @@ static s32 searchZoneTable0(s32 posY)
 // 0605b68a — search zone table 1 for Y position, returns zone index
 static s32 searchZoneTable1(s32 posY)
 {
-    s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
-    s32* pThresholds = *((s32**)pFieldData->mDC_zoneCollision + 1); // second table pointer
+    s_C8_zoneTask* pZoneTask = (s_C8_zoneTask*)((s_fieldSpecificData_C8*)getFieldTaskPtr()->mC)->mDC_zoneCollision;
+    sSaturnPtr tableEA = pZoneTask->m4_table1;
     s32 index = 0;
-    while (*pThresholds <= posY)
+    while (readSaturnS32(tableEA + index * 4) <= posY)
     {
         index++;
-        pThresholds++;
     }
     return index;
 }
@@ -2296,7 +2278,7 @@ static s32 searchZoneTable1(s32 posY)
 static bool isInCurrentZone0(s_fieldLCSSubStruct* pLCS)
 {
     s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
-    s32 posY = pLCS->m8_positionPtr->m4_Y;
+    s32 posY = pLCS->m8_LCSWorldCoordinates->m4_Y;
     return pFieldData->mE0_zoneIndex0 == searchZoneTable0(posY);
 }
 
@@ -2304,7 +2286,7 @@ static bool isInCurrentZone0(s_fieldLCSSubStruct* pLCS)
 static bool isInCurrentZone1(s_fieldLCSSubStruct* pLCS)
 {
     s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
-    s32 posY = pLCS->m8_positionPtr->m4_Y;
+    s32 posY = pLCS->m8_LCSWorldCoordinates->m4_Y;
     return pFieldData->mE4_zoneIndex1 == searchZoneTable1(posY);
 }
 
@@ -2388,11 +2370,11 @@ void s_towerCreatureC8::Draw(s_towerCreatureC8* pThis)
 // 0605e362 — D4 alternate update: wait for bitfield then switch to normal update
 static void towerCreatureC8_UpdateD4(s_towerCreatureC8* pThis)
 {
-    pThis->mC_lcs.m18 |= 2;
+    pThis->mC_lcs.m18_diableFlags |= 2;
     registerWithLCS(&pThis->mC_lcs);
     if ((mainGameState.bitField[0xA6] & 4) != 0)
     {
-        pThis->mC_lcs.m18 = 0;
+        pThis->mC_lcs.m18_diableFlags = 0;
         pThis->m_UpdateMethod = &s_towerCreatureC8::Update;
     }
 }
@@ -2457,22 +2439,22 @@ struct s_entityC8_B4_arg
 };
 
 // 06075b84
-static void initFieldLCSSubStruct(s_fieldLCSSubStruct* pLCS, p_workArea owner, void* callback,
+static void initFieldLCSSubStruct(s_fieldLCSSubStruct* pLCS, p_workArea owner, void(*callback)(p_workArea, sLCSTarget*),
     sVec3_FP* posPtr, sVec3_FP* normalPtr, s16 param6, s16 param7, s16 param8, u8 param9, u8 param10)
 {
-    pLCS->m0_owner = owner;
+    pLCS->m0 = owner;
     pLCS->m4_callback = callback;
-    pLCS->m8_positionPtr = posPtr;
-    pLCS->mC_normalPtr = normalPtr;
+    pLCS->m8_LCSWorldCoordinates = posPtr;
+    pLCS->mC_optionalRotation = normalPtr;
     pLCS->m12 = param7;
-    pLCS->m14 = param8;
+    pLCS->m14_receivedItemId = (eItems)param8;
     if (param8 < 0)
-        pLCS->m16 = 0;
+        pLCS->m16_receivedItemQuantity = 0;
     else
-        pLCS->m16 = param9;
-    pLCS->m10 = param6;
+        pLCS->m16_receivedItemQuantity = param9;
+    pLCS->m10_flags = param6;
     pLCS->m17 = param10;
-    pLCS->m18 = 0;
+    pLCS->m18_diableFlags = 0;
     pLCS->m19 = 0;
     pLCS->m1A = 0;
     pLCS->m1B = 0;
@@ -2594,7 +2576,7 @@ static void entityC8_B4_initNormal(s_entityC8_B4* pThis, s_entityC8_B4_arg* pArg
     transformAndAddVec(offsetVec, pThis->m94_position, mat);
 
     // Init LCS sub-structure
-    initFieldLCSSubStruct(&pThis->m60_lcs, pThis, (void*)entityC8_B4_lcsCallback, &pThis->m94_position,
+    initFieldLCSSubStruct(&pThis->m60_lcs, pThis, entityC8_B4_lcsCallback, &pThis->m94_position,
         nullptr, 0, 0, -1, -1, 0);
     pThis->m78_flags = 0;
 }

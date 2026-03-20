@@ -123,11 +123,11 @@ void computeDragonSprAndAglFromCursor()
     }
 
     // stats based on Y
-    mainGameState.gameStats.mC0_dragonAgl = performDivision(0x2000, (mainGameState.gameStats.m1C_dragonCursorY + 0x800) * statAxisScale);
+    mainGameState.gameStats.mC0_dragonAgl = intDivide(0x2000, (mainGameState.gameStats.m1C_dragonCursorY + 0x800) * statAxisScale);
     mainGameState.gameStats.mBC_dragonDef = (statAxisScale / 2) - mainGameState.gameStats.mC0_dragonAgl;
 
     // stats based on X
-    mainGameState.gameStats.mC2_dragonSpr = performDivision(0x2000, (mainGameState.gameStats.m1A_dragonCursorX + 0x800) * statAxisScale);
+    mainGameState.gameStats.mC2_dragonSpr = intDivide(0x2000, (mainGameState.gameStats.m1A_dragonCursorX + 0x800) * statAxisScale);
     mainGameState.gameStats.mBE_dragonAtt = (statAxisScale / 2) - mainGameState.gameStats.mC2_dragonSpr;
 }
 

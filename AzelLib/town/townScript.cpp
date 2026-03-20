@@ -1018,10 +1018,10 @@ void sScriptTask::Draw(sScriptTask* pThis)
     if (pThis->m18_LCSFocusLineScale)
     {
         s16 var8[8];
-        var8[0] = var8[6] = pThis->m1C_LCS_X + performDivision(8, (-pThis->m1C_LCS_X - 176) * pThis->m18_LCSFocusLineScale); // X1
-        var8[1] = var8[3] = pThis->m1E_LCS_Y + performDivision(8, (-pThis->m1E_LCS_Y - 112) * pThis->m18_LCSFocusLineScale); // Y1
-        var8[2] = var8[4] = pThis->m1C_LCS_X + performDivision(8, (-pThis->m1C_LCS_X + 176) * pThis->m18_LCSFocusLineScale); // X2
-        var8[5] = var8[7] = pThis->m1E_LCS_Y + performDivision(8, (-pThis->m1E_LCS_Y + 112) * pThis->m18_LCSFocusLineScale); // Y2
+        var8[0] = var8[6] = pThis->m1C_LCS_X + intDivide(8, (-pThis->m1C_LCS_X - 176) * pThis->m18_LCSFocusLineScale); // X1
+        var8[1] = var8[3] = pThis->m1E_LCS_Y + intDivide(8, (-pThis->m1E_LCS_Y - 112) * pThis->m18_LCSFocusLineScale); // Y1
+        var8[2] = var8[4] = pThis->m1C_LCS_X + intDivide(8, (-pThis->m1C_LCS_X + 176) * pThis->m18_LCSFocusLineScale); // X2
+        var8[5] = var8[7] = pThis->m1E_LCS_Y + intDivide(8, (-pThis->m1E_LCS_Y + 112) * pThis->m18_LCSFocusLineScale); // Y2
 
         drawLineRectangle(0xC0, var8, (((pThis->m18_LCSFocusLineScale * 3) + 7) << 10) | ((pThis->m18_LCSFocusLineScale + 2) << 5) | (pThis->m18_LCSFocusLineScale + 2) | 0x8000);
     }

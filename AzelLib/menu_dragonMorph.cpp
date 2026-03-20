@@ -682,7 +682,7 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkAr
     gDragonState->m12_cursorY = mainGameState.gameStats.m1C_dragonCursorY;
     gDragonState->m1C_dragonArchetype = mainGameState.gameStats.mB6_dragonArchetype;
 
-    fixedPoint r0 = sqrt_F(FP_Pow2(performDivision(0x880, mainGameState.gameStats.m1A_dragonCursorX << 16)) + FP_Pow2(performDivision(0x880, mainGameState.gameStats.m1C_dragonCursorY << 16)));
+    fixedPoint r0 = sqrt_F(FP_Pow2(intDivide(0x880, mainGameState.gameStats.m1A_dragonCursorX << 16)) + FP_Pow2(intDivide(0x880, mainGameState.gameStats.m1C_dragonCursorY << 16)));
 
     fixedPoint r6;
     s32 r10;

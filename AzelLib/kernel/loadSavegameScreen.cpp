@@ -92,7 +92,7 @@ s32 saveData(int deviceId, const std::string* filename)
 
     char fileDescription[] = "AZEL#_Lv__";
     fileDescription[5] = '1' + mainGameState.readPackedBits(0xD4, 2);
-    fileDescription[8] = '0' + performDivision(10, mainGameState.gameStats.m0_level + 1);
+    fileDescription[8] = '0' + intDivide(10, mainGameState.gameStats.m0_level + 1);
     fileDescription[9] = '0' + performModulo(10, mainGameState.gameStats.m0_level + 1);
     gSaveGameStatus.m4_version = 0x10000;
 
@@ -349,8 +349,8 @@ struct saveMenuSubTask0 : public s_workAreaTemplateWithArg<saveMenuSubTask0, sSa
     static void Init(saveMenuSubTask0* pThis, sSaturnPtr r5)
     {
         pThis->mC = r5;
-        pThis->m20_stringRenderingX = performDivision(8, readSaturnS16(r5));
-        pThis->m22_stringRenderingY = performDivision(8, readSaturnS16(r5 + 2));
+        pThis->m20_stringRenderingX = intDivide(8, readSaturnS16(r5));
+        pThis->m22_stringRenderingY = intDivide(8, readSaturnS16(r5 + 2));
     }
 
     static void Draw(saveMenuSubTask0* pThis)
@@ -407,8 +407,8 @@ struct saveMenuSubTask0 : public s_workAreaTemplateWithArg<saveMenuSubTask0, sSa
         static const s_menuSprite spriteData = { 0x2400, 0x202F, 0, 0 };
 
         drawMenuSprite2(&spriteData, pThis->m1C_posX, pThis->m1E_posY, 0x2500);
-        s32 var1 = performDivision(8, pThis->m1C_posX);
-        s32 var2 = performDivision(8, pThis->m1E_posY);
+        s32 var1 = intDivide(8, pThis->m1C_posX);
+        s32 var2 = intDivide(8, pThis->m1E_posY);
         if ((var1 != pThis->m20_stringRenderingX) || (var2 + 0x20 != pThis->m22_stringRenderingY))
         {
             saveScreenClearSlotData(pThis);

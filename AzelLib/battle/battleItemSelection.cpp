@@ -260,7 +260,7 @@ sBattleItemSelectionTask* createBattleItemSelectionTask(p_workArea parent, sBatt
 
     pNewTask->m24 = &p5;
     pNewTask->m3_currentPageIndex = 0;
-    pNewTask->m4 = performDivision(5, pNewTask->m1 - 1);
+    pNewTask->m4 = intDivide(5, pNewTask->m1 - 1);
     pNewTask->m7 = 0;
     pNewTask->m8 = 0;
     pNewTask->m14_listX = 2;

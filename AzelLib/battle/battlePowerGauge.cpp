@@ -266,7 +266,7 @@ void drawGauge(sVec2_S16& position, s32 maxSize, s32 param3, s32 value, s32 maxV
     }
 
     if (maxValue > 0) {
-        fixedPoint scaledValue = performDivision(maxValue, value * maxSize);
+        fixedPoint scaledValue = intDivide(maxValue, value * maxSize);
         if (scaledValue > maxSize)
         {
             scaledValue = maxSize;

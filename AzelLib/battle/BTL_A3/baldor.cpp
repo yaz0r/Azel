@@ -837,7 +837,7 @@ void Baldor_update(sBaldorBase* pThisBase)
     else
     {
         // With Baldor Queen
-        int position = performDivision(3, pThis->mA_indexInFormation);
+        int position = intDivide(3, pThis->mA_indexInFormation);
         switch (position) {
         case 0:
             pThis->m6C_oscillationPhase[0] += 0x16C16C;

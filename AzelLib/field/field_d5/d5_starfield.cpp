@@ -185,12 +185,12 @@ static void generateStarfieldCoefficientsSub(s_d5StarfieldTask* pThis, s32 X, s3
 
     for (s32 y = 0; y < Y; y++)
     {
-        s32 yTerm = performDivision(0x3100, outerVal * outerVal * 0x10000);
+        s32 yTerm = intDivide(0x3100, outerVal * outerVal * 0x10000);
         s32 innerVal = 0x58;
 
         for (s32 x = 0; x < X; x++)
         {
-            s32 xTerm = performDivision(0x1E40, innerVal * innerVal * 0x10000);
+            s32 xTerm = intDivide(0x1E40, innerVal * innerVal * 0x10000);
             s32 sqrtResult = sqrt_F(yTerm + xTerm);
             s32 divResult = setDividend(pThis->m40_coeffParam0, sqrtResult, pThis->m44_coeffParam1);
             s32 value = divResult + pThis->m48_coeffParam2;
@@ -381,7 +381,7 @@ void s_d5StarfieldTask::Draw(s_d5StarfieldTask* pThis)
         pauseEngine[4] = 4;
     }
 
-    fixedPoint focalLength = performDivision((s32)pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1));
+    fixedPoint focalLength = intDivide((s32)pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1));
 
     // Pass 0: background stars
     setupStarfieldRotationPass(

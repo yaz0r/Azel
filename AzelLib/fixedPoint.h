@@ -183,8 +183,8 @@ fixedPoint MTH_Mul(fixedPoint a, fixedPoint b);
 s64 MUL_FP(const fixedPoint& A, const fixedPoint& B);
 
 s32 FP_GetIntegerPortion(fixedPoint& FP);
-fixedPoint FP_Div(s32 divident, fixedPoint divisor);
-fixedPoint performDivision(fixedPoint r0, fixedPoint r1);
+fixedPoint FP_Div(s32 dividend, fixedPoint divisor);        // (dividend << 16) / divisor — Saturn hardware divider
+fixedPoint intDivide(fixedPoint divisor, fixedPoint dividend); // dividend / divisor — Saturn DIV1 software loop
 s32 atan2_FP(s32 y, s32 x);
 s32 atan2(s32 y, s32 x);
 fixedPoint FP_Pow2(fixedPoint r4);

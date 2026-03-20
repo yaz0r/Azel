@@ -677,13 +677,13 @@ void LCSUpdateCursorFromAnalogInput(s_dragonTaskWorkArea* r4)
 
     if ((r4_y >= 0x30) || (r4_y < -0x30))
     {
-        r4->m1F0.m_8 = performDivision(0x7F, -(r4_y * 0x1C71C7));
+        r4->m1F0.m_8 = intDivide(0x7F, -(r4_y * 0x1C71C7));
     }
 
     s32 r4_x = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
     if ((r4_x >= 0x30) || (r4_x < -0x30))
     {
-        r4->m1F0.m_C = performDivision(0x7F, r4_x * 0x1C71C7);
+        r4->m1F0.m_C = intDivide(0x7F, r4_x * 0x1C71C7);
     }
 
     sVec3_FP var0;
@@ -772,8 +772,8 @@ s32 LCSTaskDrawSub1Sub2Sub2(s_LCSTask* r4)
         sLCSTarget* pLcsTarget = FindClosestLCSTarget(r4);
         if (pLcsTarget)
         {
-            r14->m1F0.m_0 = -FP_Div(performDivision(224, pLcsTarget->m30_screenspaceCoordinates[1] << 17), r14->m214);
-            r14->m1F0.m_4 = -FP_Div(performDivision(352, pLcsTarget->m30_screenspaceCoordinates[0] << 17), r14->m210);
+            r14->m1F0.m_0 = -FP_Div(intDivide(224, pLcsTarget->m30_screenspaceCoordinates[1] << 17), r14->m214);
+            r14->m1F0.m_4 = -FP_Div(intDivide(352, pLcsTarget->m30_screenspaceCoordinates[0] << 17), r14->m210);
 
             LCSTaskDrawSub1Sub2Sub2Sub1(r4, pLcsTarget);
         }
@@ -1610,11 +1610,11 @@ p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5)
 
     s32 r2 = LCSTaskDrawSub5Sub1_Data1[r13].m10_spriteHeight;
     r14->mC_verticalInterpolator.m8_targetValue = r2 / 2;
-    r14->mC_verticalInterpolator.m0_step = performDivision(6, r14->mC_verticalInterpolator.m8_targetValue);
+    r14->mC_verticalInterpolator.m0_step = intDivide(6, r14->mC_verticalInterpolator.m8_targetValue);
 
     s32 r3 = LCSTaskDrawSub5Sub1_Data1[r13+1].m10_spriteHeight;
     r14->m18_secondarySpriteInterpolator.m8_targetValue = r3 / 2;
-    r14->m18_secondarySpriteInterpolator.m0_step = performDivision(6, r14->m18_secondarySpriteInterpolator.m8_targetValue);
+    r14->m18_secondarySpriteInterpolator.m0_step = intDivide(6, r14->m18_secondarySpriteInterpolator.m8_targetValue);
 
     r14->m24_screenLocation = &r5->m30_screenspaceCoordinates;
     r14->m2C = r13;

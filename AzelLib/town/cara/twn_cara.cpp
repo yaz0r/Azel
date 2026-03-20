@@ -551,7 +551,7 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
         getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
         getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
 
-        fixedPoint projScale = performDivision((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+        fixedPoint projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
         beginRotationPass(0, projScale);
         DrawSub0(pThis);
         drawCinematicBar(6);
@@ -561,7 +561,7 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
         pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
         pThis->m4_scrollY = (0x1FF - pThis->m34_groundY) * 0x10000;
 
-        projScale = performDivision((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+        projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
         beginRotationPass(1, projScale);
 
         auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
@@ -574,8 +574,8 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
         coeff.m40 = 0;
 
         buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z.asS32());
-        performDivision((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
-        fixedPoint scaleVal = performDivision((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], 0x1600000);
+        intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
+        fixedPoint scaleVal = intDivide((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], 0x1600000);
         scaleRotationMatrix(scaleVal);
         setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
         commitRotationPass();

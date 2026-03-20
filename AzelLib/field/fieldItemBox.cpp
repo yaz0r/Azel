@@ -189,8 +189,8 @@ p_workArea findParentGridCellTaskForItem(s_itemBoxDefinition* r14)
         (r14->m0_pos[0] < (r4->m20_cellDimensions[0] * r5->m10_gridSize[0])) &&
         (r14->m0_pos[2] >= -(r4->m20_cellDimensions[1] * r5->m10_gridSize[1])))
     {
-        s32 gridX = performDivision(r4->m20_cellDimensions[0], r14->m0_pos[0]);
-        s32 gridY = performDivision(r4->m20_cellDimensions[1], -r14->m0_pos[2]);
+        s32 gridX = intDivide(r4->m20_cellDimensions[0], r14->m0_pos[0]);
+        s32 gridY = intDivide(r4->m20_cellDimensions[1], -r14->m0_pos[2]);
 
         return r4->m3C_cellRenderingTasks[(r5->m10_gridSize[0] * gridY) + gridX];
     }

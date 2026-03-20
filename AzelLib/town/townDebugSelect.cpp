@@ -127,7 +127,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
             break;
         case 1:
         {
-            fixedPoint div = performDivision(20, pThis->m4_columnIndex);
+            fixedPoint div = intDivide(20, pThis->m4_columnIndex);
             fixedPoint x = 15 + 14 * div;
             fixedPoint y = pThis->m4_columnIndex + div * -0x14 + 4;
             vdp2DebugPrintSetPosition(x, y);
@@ -147,7 +147,7 @@ struct townDebugSelect : public s_workAreaTemplate<townDebugSelect>
         {
             int i = 0;
             while (!readSaturnEA(subTownData).isNull()) {
-                auto div = performDivision(0x14, i);
+                auto div = intDivide(0x14, i);
                 vdp2DebugPrintSetPosition(div * 0xe + 0x10, i + div * -0x14 + 4);
                 if (pThis->m4_columnIndex == i) {
                     vdp2PrintStatus.m10_palette = 0x8000;

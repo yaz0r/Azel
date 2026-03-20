@@ -129,7 +129,7 @@ struct E014_groundTask : public s_workAreaTemplate<E014_groundTask> {
         pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
         getVdp1ClippingCoordinates(pThis->m24_clippingCoordinates);
         getVdp1ProjectionParams(&pThis->m30_projWidth, &pThis->m32_projHeight);
-        beginRotationPass(0, performDivision(pThis->m30_projWidth, pThis->m32_projHeight << 0x10));
+        beginRotationPass(0, intDivide(pThis->m30_projWidth, pThis->m32_projHeight << 0x10));
 
         Unimplemented();
     }

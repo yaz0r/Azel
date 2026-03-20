@@ -767,10 +767,10 @@ void dragonDeathTask_init(sDragonDeathTask* pThis) {
 void dragonDeathTask_update(sDragonDeathTask* pThis) {
     switch (pThis->m0_state) {
     case 0:
-        pThis->m2_x0 = pThis->mA_initial_x0 + performDivision(pThis->m1C_transitionDuration, (pThis->m12_target_x0 - pThis->mA_initial_x0) * pThis->m24_currentTick);
-        pThis->m4_y0 = pThis->mC_initial_y0 + performDivision(pThis->m1C_transitionDuration, (pThis->m14_target_y0 - pThis->mC_initial_y0) * pThis->m24_currentTick);
-        pThis->m6_x1 = pThis->mE_initial_x1 + performDivision(pThis->m1C_transitionDuration, (pThis->m16_target_x1 - pThis->mE_initial_x1) * pThis->m24_currentTick);
-        pThis->m8_y1 = pThis->m10_initial_y1 + performDivision(pThis->m1C_transitionDuration, (pThis->m18_target_y1 - pThis->m10_initial_y1) * pThis->m24_currentTick);
+        pThis->m2_x0 = pThis->mA_initial_x0 + intDivide(pThis->m1C_transitionDuration, (pThis->m12_target_x0 - pThis->mA_initial_x0) * pThis->m24_currentTick);
+        pThis->m4_y0 = pThis->mC_initial_y0 + intDivide(pThis->m1C_transitionDuration, (pThis->m14_target_y0 - pThis->mC_initial_y0) * pThis->m24_currentTick);
+        pThis->m6_x1 = pThis->mE_initial_x1 + intDivide(pThis->m1C_transitionDuration, (pThis->m16_target_x1 - pThis->mE_initial_x1) * pThis->m24_currentTick);
+        pThis->m8_y1 = pThis->m10_initial_y1 + intDivide(pThis->m1C_transitionDuration, (pThis->m18_target_y1 - pThis->m10_initial_y1) * pThis->m24_currentTick);
         resetCamera(pThis->m2_x0, pThis->m4_y0, pThis->m6_x1, pThis->m8_y1, (pThis->m2_x0 + pThis->m6_x1) / 2, (pThis->m4_y0 + pThis->m8_y1) / 2);
         if (++pThis->m24_currentTick > pThis->m1C_transitionDuration) {
             pThis->m24_currentTick = 0;

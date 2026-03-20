@@ -190,7 +190,7 @@ void startDialogTask(p_workArea r4_parent, s_multiChoiceTask** r5_outputTask, s3
 
     pMultiChoiceTask->m24_strings = arg0;
     pMultiChoiceTask->m3_quantity = 0;
-    pMultiChoiceTask->m4_quantityMax = performDivision(4, pMultiChoiceTask->m1 - 1);
+    pMultiChoiceTask->m4_quantityMax = intDivide(4, pMultiChoiceTask->m1 - 1);
     pMultiChoiceTask->m7 = 0;
     pMultiChoiceTask->m8 = 0;
     pMultiChoiceTask->m14_x = 2;

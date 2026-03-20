@@ -50,7 +50,7 @@ struct s_exitCutsceneTask : public s_workAreaTemplate<s_exitCutsceneTask>
             r14->m20_angle = pThis->m0_pScript->mC_rotation;
 
             r14->m160_deltaTranslation[0] = MTH_Mul(-pThis->m0_pScript->m1C, getSin(r14->m20_angle[1].getInteger() & 0xFFF));
-            r14->m160_deltaTranslation[1] = performDivision(pThis->m10_length, pThis->m0_pScript->m0_position[1] - r14->m8_pos[1]);
+            r14->m160_deltaTranslation[1] = intDivide(pThis->m10_length, pThis->m0_pScript->m0_position[1] - r14->m8_pos[1]);
             r14->m160_deltaTranslation[2] = MTH_Mul(-pThis->m0_pScript->m1C, getCos(r14->m20_angle[1].getInteger() & 0xFFF));
 
             r14->m8_pos[0] = pThis->m0_pScript->m0_position[0] - ((pThis->m10_length + 5) * r14->m160_deltaTranslation[0]);

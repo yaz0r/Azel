@@ -5,6 +5,9 @@ s32 FP_GetIntegerPortion(fixedPoint& FP)
     return FP.asS32() >> 16;
 }
 
+// FP_Div: fixed-point division using Saturn hardware divider (DVSR/DVDNT registers)
+// Returns (dividend << 16) / divisor — preserves fixed-point precision.
+// Not to be confused with intDivide which does raw integer division.
 fixedPoint FP_Div(s32 divident, fixedPoint divisor)
 {
     /*
@@ -94,9 +97,12 @@ fixedPoint asyncDivEnd()
     return fixedPoint::fromS32(gDivident / gDivisor);
 }
 
-fixedPoint performDivision(fixedPoint r0, fixedPoint r1)
+// intDivide: raw signed integer division (SH-2 DIV1 software loop)
+// Returns dividend / divisor as-is, NO fixed-point shift.
+// Not to be confused with FP_Div which does (dividend << 16) / divisor.
+fixedPoint intDivide(fixedPoint divisor, fixedPoint dividend)
 {
-    return r1 / r0;
+    return dividend / divisor;
 }
 
 s64 MUL_FP(const fixedPoint& A, const fixedPoint& B)

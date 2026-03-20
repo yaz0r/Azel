@@ -41,14 +41,14 @@ void s_cinematicBarTask::cinematicBars_startOpening(s32 r5)
 
 void s_cinematicBarTask::interpolateCinematicBar()
 {
-    fixedPoint r5 = performDivision(fixedPoint(m2), fixedPoint(m1 * 16));
+    fixedPoint r5 = intDivide(fixedPoint(m2), fixedPoint(m1 * 16));
     if (fixedPoint(m3) != r5)
     {
         m3 = r5;
         m11 = 1;
     }
 
-    r5 = performDivision(fixedPoint(m2), fixedPoint(m1 * 32));
+    r5 = intDivide(fixedPoint(m2), fixedPoint(m1 * 32));
     if (fixedPoint(m4) != r5)
     {
         m4 = r5;

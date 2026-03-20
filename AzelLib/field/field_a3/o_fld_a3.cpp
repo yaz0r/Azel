@@ -1728,7 +1728,7 @@ void s_fieldPaletteTaskWorkArea::Draw(s_fieldPaletteTaskWorkArea* pThis)
     }
 
     // Pass 0: ground plane
-    beginRotationPass(0, performDivision(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
     fieldPaletteDrawPass0Sub(pThis);
     drawCinematicBar(6);
     commitRotationPass();
@@ -1748,7 +1748,7 @@ void s_fieldPaletteTaskWorkArea::Draw(s_fieldPaletteTaskWorkArea* pThis)
     pThis->m0_scrollX = ((s32)pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
     pThis->m4_scrollY = (0x200 - pThis->m34_scrollValue) * 0x10000;
 
-    beginRotationPass(1, performDivision(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
 
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
     s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
@@ -1761,8 +1761,8 @@ void s_fieldPaletteTaskWorkArea::Draw(s_fieldPaletteTaskWorkArea* pThis)
     t.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
-    performDivision(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
-    scaleRotationMatrix(performDivision(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
+    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
@@ -1822,15 +1822,15 @@ void dragonCutsceneUpdate(s_dragonTaskWorkArea* r14)
         r14->mF8_Flags |= 0x20000;
         r14->m1E8_cameraScriptDelay = r13->m0_duration;
         r14->m1EA = r13->m10_rotationDuration;
-        r14->m160_deltaTranslation[0] = performDivision(r13->m0_duration, r13->m4_pos[0] - r14->m8_pos[0]);
-        r14->m160_deltaTranslation[1] = performDivision(r13->m0_duration, r13->m4_pos[1] - r14->m8_pos[1]);
-        r14->m160_deltaTranslation[2] = performDivision(r13->m0_duration, r13->m4_pos[2] - r14->m8_pos[2]);
+        r14->m160_deltaTranslation[0] = intDivide(r13->m0_duration, r13->m4_pos[0] - r14->m8_pos[0]);
+        r14->m160_deltaTranslation[1] = intDivide(r13->m0_duration, r13->m4_pos[1] - r14->m8_pos[1]);
+        r14->m160_deltaTranslation[2] = intDivide(r13->m0_duration, r13->m4_pos[2] - r14->m8_pos[2]);
 
         if (r13->m10_rotationDuration)
         {
-            r14->m16C_deltaRotation[0] = performDivision(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[0] - r14->m20_angle[0]).normalized());
-            r14->m16C_deltaRotation[1] = performDivision(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[1] - r14->m20_angle[1]).normalized());
-            r14->m16C_deltaRotation[2] = performDivision(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[2] - r14->m20_angle[2]).normalized());
+            r14->m16C_deltaRotation[0] = intDivide(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[0] - r14->m20_angle[0]).normalized());
+            r14->m16C_deltaRotation[1] = intDivide(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[1] - r14->m20_angle[1]).normalized());
+            r14->m16C_deltaRotation[2] = intDivide(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[2] - r14->m20_angle[2]).normalized());
         }
         else
         {
@@ -1988,15 +1988,15 @@ s32 s_cutsceneTask2::UpdateSub0()
     m44 = m3C->m1C - m3C->m4;
     m50 = m3C->m28 - m3C->m10;
 
-    m44[0] = performDivision(m40, m44[0]);
-    m44[1] = performDivision(m40, m44[1]);
-    m44[2] = performDivision(m40, m44[2]);
+    m44[0] = intDivide(m40, m44[0]);
+    m44[1] = intDivide(m40, m44[1]);
+    m44[2] = intDivide(m40, m44[2]);
 
-    m50[0] = performDivision(m40, m50[0]);
-    m50[1] = performDivision(m40, m50[1]);
-    m50[2] = performDivision(m40, m50[2]);
+    m50[0] = intDivide(m40, m50[0]);
+    m50[1] = intDivide(m40, m50[1]);
+    m50[2] = intDivide(m40, m50[2]);
 
-    m5C = performDivision(m40, fixedPoint(m38 - m34).normalized());
+    m5C = intDivide(m40, fixedPoint(m38 - m34).normalized());
 
     m8 = m3C->m4;
     m28 = m3C->m10;
@@ -2192,10 +2192,10 @@ s32 s_cutsceneTask3::UpdateSub0()
     m3C[2] = fixedPoint(m34->m1C - m34->mC).normalized();
     m48 = m34->m20 - m34->m10;
 
-    m3C[0] = performDivision(m38, m3C[0]);
-    m3C[1] = performDivision(m38, m3C[1]);
-    m3C[2] = performDivision(m38, m3C[2]);
-    m48 = performDivision(m38, m48);
+    m3C[0] = intDivide(m38, m3C[0]);
+    m3C[1] = intDivide(m38, m3C[1]);
+    m3C[2] = intDivide(m38, m3C[2]);
+    m48 = intDivide(m38, m48);
 
     m1C[0] = m34->m4;
     m1C[1] = m34->m8;
@@ -4467,7 +4467,7 @@ void updateDragonMovementNoInput(s_dragonTaskWorkArea* r14)
     // update yaw
     {
         fixedPoint tempRotX = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, tempRotX.normalized() * 15) - r14->m20_angle[0];
+        r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, tempRotX.normalized() * 15) - r14->m20_angle[0];
     }
 
     if (r14->m25D == 2)
@@ -4479,7 +4479,7 @@ void updateDragonMovementNoInput(s_dragonTaskWorkArea* r14)
     {
         // update roll
         fixedPoint tempRotZ = r14->m3C_targetAngles[2] - r14->m20_angle[2];
-        r14->m20_angle[2] += r14->m3C_targetAngles[2] - performDivision(0x10, tempRotZ.normalized() * 15) - r14->m20_angle[2];
+        r14->m20_angle[2] += r14->m3C_targetAngles[2] - intDivide(0x10, tempRotZ.normalized() * 15) - r14->m20_angle[2];
     }
 
     //607EA84
@@ -4566,11 +4566,11 @@ void applyDragonAnimationFromAnalog(s_dragonTaskWorkArea* r11, s_dragonState* r1
     s32 var0 = r11->m246_previousAnalogY - r4_y;
     if (var0 > 0x40)
     {
-        incrementAnimationRootY(&r12->m78_animData, performDivision(0x80, r11->m184_animRate.asS32() * var0));
+        incrementAnimationRootY(&r12->m78_animData, intDivide(0x80, r11->m184_animRate.asS32() * var0));
     }
     else if (var0 < -0x40)
     {
-        incrementAnimationRootY(&r12->m78_animData, performDivision(0x80, r11->m184_animRate.asS32() * var0));
+        incrementAnimationRootY(&r12->m78_animData, intDivide(0x80, r11->m184_animRate.asS32() * var0));
     }
 
     //607F1E8
@@ -4578,13 +4578,13 @@ void applyDragonAnimationFromAnalog(s_dragonTaskWorkArea* r11, s_dragonState* r1
     s32 r10 = r11->m245_previousAnalogX - r4_x;
     if (r10 > 0x40)
     {
-        incrementAnimationRootX(&r12->m78_animData, performDivision(0x80, -(r11->m184_animRate.asS32() * r10)));
-        incrementAnimationRootZ(&r12->m78_animData, performDivision(0x80, r11->m184_animRate.asS32() * r10));
+        incrementAnimationRootX(&r12->m78_animData, intDivide(0x80, -(r11->m184_animRate.asS32() * r10)));
+        incrementAnimationRootZ(&r12->m78_animData, intDivide(0x80, r11->m184_animRate.asS32() * r10));
     }
     else if (r10 < -0x40)
     {
-        incrementAnimationRootX(&r12->m78_animData, performDivision(0x80, -(r11->m184_animRate.asS32() * r10)));
-        incrementAnimationRootZ(&r12->m78_animData, performDivision(0x80, r11->m184_animRate.asS32() * r10));
+        incrementAnimationRootX(&r12->m78_animData, intDivide(0x80, -(r11->m184_animRate.asS32() * r10)));
+        incrementAnimationRootZ(&r12->m78_animData, intDivide(0x80, r11->m184_animRate.asS32() * r10));
     }
 }
 
@@ -4639,7 +4639,7 @@ void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
         if (r9_y > 0)
         {
             // down
-            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178_turnRate.asS32());
+            r14->m1F0.m_8 = intDivide(0x7F, r9_y * r14->m178_turnRate.asS32());
             r14->m20_angle[0] += r14->m1F0.m_8;
             r14->m238 |= 2;
             r14->mFC |= 2;
@@ -4647,7 +4647,7 @@ void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
         else if(r9_y < 0)
         {
             // up
-            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178_turnRate.asS32());
+            r14->m1F0.m_8 = intDivide(0x7F, r9_y * r14->m178_turnRate.asS32());
             r14->m20_angle[0] += r14->m1F0.m_8;
             r14->m238 |= 1;
             r14->mFC |= 1;
@@ -4656,31 +4656,31 @@ void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
         {
             //607F360
             fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-            r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+            r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[0];
         }
     }
     else
     {
         //607F3B4
-        fixedPoint r4 = performDivision(0x7F, -(r9_y << 11));
+        fixedPoint r4 = intDivide(0x7F, -(r9_y << 11));
         if (r9_y > 0)
         {
             r14->m160_deltaTranslation[1] += r4;
             r14->m238 |= 2;
-            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178_turnRate.asS32());
+            r14->m1F0.m_8 = intDivide(0x7F, r9_y * r14->m178_turnRate.asS32());
             r14->mFC |= 2;
         }
         else if (r9_y < 0)
         {
             r14->m160_deltaTranslation[1] += r4;
             r14->m238 |= 1;
-            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178_turnRate.asS32());
+            r14->m1F0.m_8 = intDivide(0x7F, r9_y * r14->m178_turnRate.asS32());
             r14->mFC |= 1;
         }
 
         //607F428
         fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+        r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[0];
     }
 
     //607F45A
@@ -4694,7 +4694,7 @@ void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
     }
 
     //607F49A
-    r14->m1F0.m_C = performDivision(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32());
+    r14->m1F0.m_C = intDivide(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32());
 
     if (r14->m25D == 1)
     {
@@ -4715,14 +4715,14 @@ void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
     }
     else
     {
-        r14->m20_angle[2] += r14->m3C_targetAngles[2] - performDivision(0x10, fixedPoint(r14->m3C_targetAngles[2] - r14->m20_angle[2]).normalized() * 15) - r14->m20_angle[2];
+        r14->m20_angle[2] += r14->m3C_targetAngles[2] - intDivide(0x10, fixedPoint(r14->m3C_targetAngles[2] - r14->m20_angle[2]).normalized() * 15) - r14->m20_angle[2];
         if (r9_y > 0)
         {
             //0607F540
             fixedPoint r2 = r14->m20_angle[1] - r14->m30;
-            if (r2 >= performDivision(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32()))
+            if (r2 >= intDivide(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32()))
             {
-                r14->m20_angle[2] -= performDivision(4, r14->m178_turnRate * 3);
+                r14->m20_angle[2] -= intDivide(4, r14->m178_turnRate * 3);
                 r14->mFC |= 4;
                 r14->m25E = 1;
             }
@@ -4731,7 +4731,7 @@ void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
         {
             //607F57E
             fixedPoint r2 = r14->m20_angle[1] - r14->m30;
-            if (r2 >= performDivision(0x7F, -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32()))
+            if (r2 >= intDivide(0x7F, -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32()))
             {
                 r14->mFC |= 8;
                 r14->m25E = 0;
@@ -4759,11 +4759,11 @@ void interpolateYawWithBanking(s_dragonTaskWorkArea* r14)
     r14->m20_angle[1] = interpolateRotation(r14->m20_angle[1], r14->m250, 0x2000, 0x888889, 0x10);
     if (r14->m178_turnRate <= r14->m30 - r14->m20_angle[1])
     {
-        r14->m20_angle[2] += performDivision(4, r14->m178_turnRate * 3);
+        r14->m20_angle[2] += intDivide(4, r14->m178_turnRate * 3);
     }
     else if (r14->m178_turnRate <= r14->m20_angle[1] - r14->m30)
     {
-        r14->m20_angle[2] -= performDivision(4, r14->m178_turnRate * 3);
+        r14->m20_angle[2] -= intDivide(4, r14->m178_turnRate * 3);
     }
 }
 
@@ -4865,7 +4865,7 @@ void applyDragonPitchYawRoll(s_dragonTaskWorkArea* r14)
         {
             //607EC6C
             fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-            r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+            r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[0];
         }
     }
     else
@@ -4890,7 +4890,7 @@ void applyDragonPitchYawRoll(s_dragonTaskWorkArea* r14)
 
         //607ED32
         fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+        r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[0];
     }
 
     //0607ED68
@@ -4913,7 +4913,7 @@ void applyDragonPitchYawRoll(s_dragonTaskWorkArea* r14)
     else
     {
         fixedPoint r1 = r14->m3C_targetAngles[2] - r14->m20_angle[2];
-        r14->m20_angle[2] += r14->m3C_targetAngles[2] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[2];
+        r14->m20_angle[2] += r14->m3C_targetAngles[2] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[2];
 
         if (r14->m25D == 1)
         {
@@ -4932,7 +4932,7 @@ void applyDragonPitchYawRoll(s_dragonTaskWorkArea* r14)
                 r14->m1F0.m_C = -r14->m178_turnRate;
                 if (r14->m30 - r14->m20_angle[1] >= r14->m178_turnRate)
                 {
-                    r14->m20_angle[2] += performDivision(4, r14->m178_turnRate * 3);
+                    r14->m20_angle[2] += intDivide(4, r14->m178_turnRate * 3);
                 }
 
                 r14->mFC |= 8;
@@ -4949,7 +4949,7 @@ void applyDragonPitchYawRoll(s_dragonTaskWorkArea* r14)
                 r14->m1F0.m_C = r14->m178_turnRate;
                 if (r14->m20_angle[1] - r14->m30 >= r14->m178_turnRate)
                 {
-                    r14->m20_angle[2] -= performDivision(4, r14->m178_turnRate * 3);
+                    r14->m20_angle[2] -= intDivide(4, r14->m178_turnRate * 3);
                 }
 
                 r14->mFC |= 4;
@@ -5470,7 +5470,7 @@ void dragonExitField(s_dragonTaskWorkArea* r14)
         tempRotX &= 0xFFFFFFF;
     }
 
-    r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, (tempRotX << 4) - tempRotX) - r14->m20_angle[0];
+    r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, (tempRotX << 4) - tempRotX) - r14->m20_angle[0];
 
     // update pitch
     r14->m20_angle[1] = interpolateRotation(r14->m20_angle[1], var_8[0], 0x2000, 0x444444, 0x10);
@@ -5485,15 +5485,15 @@ void dragonExitField(s_dragonTaskWorkArea* r14)
     {
         tempRotZ &= 0xFFFFFFF;
     }
-    r14->m20_angle[2] += r14->m3C_targetAngles[2] - performDivision(0x10, (tempRotZ << 4) - tempRotZ) - r14->m20_angle[2];
+    r14->m20_angle[2] += r14->m3C_targetAngles[2] - intDivide(0x10, (tempRotZ << 4) - tempRotZ) - r14->m20_angle[2];
 
     if (r14->m30 - r14->m20_angle[1] < r14->m178_turnRate)
     {
-        r14->m20_angle[2] += performDivision(4, r14->m178_turnRate * 3);
+        r14->m20_angle[2] += intDivide(4, r14->m178_turnRate * 3);
     }
     else if (r14->m20_angle[1] - r14->m30 < r14->m178_turnRate)
     {
-        r14->m20_angle[2] -= performDivision(4, r14->m178_turnRate * 3);
+        r14->m20_angle[2] -= intDivide(4, r14->m178_turnRate * 3);
     }
 
     //607FB2A
@@ -5694,7 +5694,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
         r4->m8_pos = r5->m0_position;
 
         r4->m160_deltaTranslation[0] = MTH_Mul(-r5->m1C, getSin(r4->m20_angle[1].getInteger() & 0xFFF));
-        r4->m160_deltaTranslation[1] = performDivision(r4->m1E8_cameraScriptDelay, r5->m18 - r4->m8_pos[1]);
+        r4->m160_deltaTranslation[1] = intDivide(r4->m1E8_cameraScriptDelay, r5->m18 - r4->m8_pos[1]);
         r4->m160_deltaTranslation[2] = MTH_Mul(-r5->m1C, getCos(r4->m20_angle[1].getInteger() & 0xFFF));
 
         updateDragonCollision(r4);
@@ -6589,7 +6589,7 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
     if (pFieldCameraTask1->m28 & 1)
     {
         //06070FE0 — vertical grid mode (tower): grid X maps to world Y
-        X = performDivision(pFieldCameraTask1->m20_cellDimensions[0], pFieldCameraTask1->m0_position[1]);
+        X = intDivide(pFieldCameraTask1->m20_cellDimensions[0], pFieldCameraTask1->m0_position[1]);
         if (pFieldCameraTask1->m0_position[1] < 0)
         {
             X--;
@@ -6597,14 +6597,14 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
     }
     else
     {
-        X = performDivision(pFieldCameraTask1->m20_cellDimensions[0], pFieldCameraTask1->m0_position[0]);
+        X = intDivide(pFieldCameraTask1->m20_cellDimensions[0], pFieldCameraTask1->m0_position[0]);
         if (pFieldCameraTask1->m0_position[0] < 0)
         {
             X--;
         }
     }
 
-    s32 Z = performDivision(pFieldCameraTask1->m20_cellDimensions[1], -pFieldCameraTask1->m0_position[2]);
+    s32 Z = intDivide(pFieldCameraTask1->m20_cellDimensions[1], -pFieldCameraTask1->m0_position[2]);
     if (pFieldCameraTask1->m0_position[2] >= 0)
     {
         Z--;
@@ -7202,7 +7202,7 @@ static const std::array<fixedPoint, 2> s_LCSTask340Sub_Init3Sub0Data0 = {
 void s_LCSTask340Sub::Laser3Init(s_LCSTask340Sub* pThis)
 {
     pThis->m34 = 0x37000;
-    pThis->m38 = performDivision(pThis->m158, -0x37000);
+    pThis->m38 = intDivide(pThis->m158, -0x37000);
     pThis->m3C = s_LCSTask340Sub_Init3Sub0Data0[(randomNumber() >> 16) & 1];
     pThis->m40 = 0;
 }
@@ -7266,9 +7266,9 @@ void s_LCSTask340Sub::Laser2Update(s_LCSTask340Sub* pThis)
     case 0:
         pThis->m6C[0] = *pThis->m14;
 
-        pThis->m6C[1][0] += performDivision(((pThis->m158 - pThis->m154) / 2) + 1, var0[0] - pThis->m6C[1][0]);
-        pThis->m6C[1][1] += performDivision(((pThis->m158 - pThis->m154) / 2) + 1, var0[1] - pThis->m6C[1][1]);
-        pThis->m6C[1][2] += performDivision(((pThis->m158 - pThis->m154) / 2) + 1, var0[2] - pThis->m6C[1][2]);
+        pThis->m6C[1][0] += intDivide(((pThis->m158 - pThis->m154) / 2) + 1, var0[0] - pThis->m6C[1][0]);
+        pThis->m6C[1][1] += intDivide(((pThis->m158 - pThis->m154) / 2) + 1, var0[1] - pThis->m6C[1][1]);
+        pThis->m6C[1][2] += intDivide(((pThis->m158 - pThis->m154) / 2) + 1, var0[2] - pThis->m6C[1][2]);
 
         if (pThis->m158 == pThis->m154)
         {
@@ -7277,9 +7277,9 @@ void s_LCSTask340Sub::Laser2Update(s_LCSTask340Sub* pThis)
         }
         break;
     case 1:
-        pThis->m6C[0][0] += performDivision(pThis->m158 + 1, var0[0] - pThis->m6C[0][0]);
-        pThis->m6C[0][1] += performDivision(pThis->m158 + 1, var0[1] - pThis->m6C[0][1]);
-        pThis->m6C[0][2] += performDivision(pThis->m158 + 1, var0[2] - pThis->m6C[0][2]);
+        pThis->m6C[0][0] += intDivide(pThis->m158 + 1, var0[0] - pThis->m6C[0][0]);
+        pThis->m6C[0][1] += intDivide(pThis->m158 + 1, var0[1] - pThis->m6C[0][1]);
+        pThis->m6C[0][2] += intDivide(pThis->m158 + 1, var0[2] - pThis->m6C[0][2]);
 
         pThis->m6C[1] = var0;
     default:
@@ -7377,7 +7377,7 @@ void s_LCSTask340Sub::Laser0Update(s_LCSTask340Sub* pThis)
 void s_LCSTask340Sub::Laser1Init(s_LCSTask340Sub* pThis)
 {
     pThis->m34 = 0x37000;
-    pThis->m38 = performDivision(pThis->m158, -0x37000);
+    pThis->m38 = intDivide(pThis->m158, -0x37000);
     pThis->m3C = s_LCSTask340Sub_Init1Sub0Data0[(randomNumber() >> 16) & 7];
     pThis->m40 = 0;
 }
@@ -7518,9 +7518,9 @@ void s_LCSTask340Sub::Laser1Update(s_LCSTask340Sub* pThis)
 
     sVec3_FP var4;
     sVec3_FP& r5 = pThis->m6C[(pThis->m154 - 1) & 0xF];
-    var4[0] = r5[0] + performDivision(pThis->m158 + 1, var10[0] - r5[0]);
-    var4[1] = r5[1] + performDivision(pThis->m158 + 1, var10[1] - r5[1]);
-    var4[2] = r5[2] + performDivision(pThis->m158 + 1, var10[2] - r5[2]);
+    var4[0] = r5[0] + intDivide(pThis->m158 + 1, var10[0] - r5[0]);
+    var4[1] = r5[1] + intDivide(pThis->m158 + 1, var10[1] - r5[1]);
+    var4[2] = r5[2] + intDivide(pThis->m158 + 1, var10[2] - r5[2]);
 
     pThis->m6C[pThis->m154 & 0xF] = var4;
     pThis->m154++;

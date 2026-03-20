@@ -64,7 +64,7 @@ void initDragonHotpoints(sTownDragon* pThisBase) {
                     auto& f8 = pThis->mF8[f8Count];
                     f8.m0_boneIndex = (u8)boneIdx;
                     f8.m1_hotpointIndex = (u8)hpIdx;
-                    fixedPoint size = performDivision(10, entry.m10);
+                    fixedPoint size = intDivide(10, entry.m10);
                     f8.m74 = { -size, -(size + 0x800), -size };
                     f8.m80 = { size, size, size };
                     setCollisionBounds(&f8.m10_collisionBody, f8.m74, f8.m80);
@@ -159,7 +159,7 @@ void sCampDragon_Init(sTownDragon* pThisBase, sSaturnPtr arg) {
         temp = 0x4000000;
     }
     else {
-        temp += performDivision(0x19, mainGameState.gameStats.m7C_overallRating) * 0x2000000;
+        temp += intDivide(0x19, mainGameState.gameStats.m7C_overallRating) * 0x2000000;
     }
     pThis->m64_rotation.m4_Y = sCampDragon_InitSub1(pThis) + temp;
     pThis->m70_collisionBody.m30_pPosition = &pThis->m58_position;
@@ -210,7 +210,7 @@ void sCampDragon_UpdateSub0(sTownDragon* pThis) {
                 if (pThis->m11_subState < 2) {
                     if ((iVar1 < 0x5000) &&
                         (pThis->m11_subState = 2, (mainGameState.getBit(0x263, 0x40) == 0))) {
-                        iVar1 = performDivision(0x19, mainGameState.gameStats.m7C_overallRating);
+                        iVar1 = intDivide(0x19, mainGameState.gameStats.m7C_overallRating);
                         increaseGameResource(10, iVar1);
                         mainGameState.getBit(0x263, 0x40);
                     }
@@ -411,8 +411,8 @@ static s32 signExtend28(s32 value) {
 // 06054554
 void sCampDragon_smoothBoneChain(s_runtimeAnimData* entries, int headIdx, int count) {
     for (int i = headIdx; count > 0; count--, i--) {
-        s32 avgX = performDivision(3, entries[i].m_vec_18.m0_X.asS32() * 2 + entries[i - 2].m_vec_18.m0_X.asS32());
-        s32 avgY = performDivision(3, entries[i].m_vec_18.m4_Y.asS32() * 2 + entries[i - 2].m_vec_18.m4_Y.asS32());
+        s32 avgX = intDivide(3, entries[i].m_vec_18.m0_X.asS32() * 2 + entries[i - 2].m_vec_18.m0_X.asS32());
+        s32 avgY = intDivide(3, entries[i].m_vec_18.m4_Y.asS32() * 2 + entries[i - 2].m_vec_18.m4_Y.asS32());
         s32 smoothedX = MTH_Mul(0xCCCC, entries[i - 1].m_vec_18.m0_X.asS32() - avgX) + avgX;
         s32 smoothedY = MTH_Mul(0xCCCC, entries[i - 1].m_vec_18.m4_Y.asS32() - avgY) + avgY;
         entries[i - 1].m_vec_18.m0_X = smoothedX;

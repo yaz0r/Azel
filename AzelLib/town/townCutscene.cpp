@@ -230,7 +230,7 @@ void updateStreamingFileRead(sStreamingFile* iParm1)
     if (((iParm1->m198).m8_readIsPending == 0) && (getNextStreamingBuffer(iParm1, &buffer, &bufferSize), 0x7ff < bufferSize)) {
         s32 numSectorsToRead;
         if (bufferSize < (iParm1->m198).m4_transfertSectorSize * 0x800) {
-            numSectorsToRead = performDivision(0x800, bufferSize);
+            numSectorsToRead = intDivide(0x800, bufferSize);
         }
         else {
             numSectorsToRead = (iParm1->m198).m4_transfertSectorSize;
