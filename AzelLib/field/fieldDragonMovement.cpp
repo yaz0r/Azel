@@ -18,9 +18,9 @@ void floaterFlightUpdate(s_dragonTaskWorkArea* r14)
     r14->m238 &= 0xFC;
 
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 1)
-        updateDragonMovementFromControllerType1(r14);
+        updateDragonMovementDigital(r14);
     else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2)
-        updateDragonMovementFromAnalogController(r14);
+        updateDragonMovementAnalog(r14);
     else
         assert(0); // keyboard not supported
 

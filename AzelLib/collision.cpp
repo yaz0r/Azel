@@ -522,6 +522,6 @@ void resolveDragonTerrainCollision()
 
     if (gDragonState->mC_dragonType == DR_LEVEL_8_FLOATER)
     {
-        r14_pDragonTask->m3C[0] = 0;
+        r14_pDragonTask->m3C_targetAngles[0] = 0;
     }
 }

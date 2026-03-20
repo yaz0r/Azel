@@ -331,8 +331,11 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     sVec3_FP m8_pos; // 8
     sVec3_FP m14_oldPos; // 14
     sVec3_FP m20_angle; // 20-24-28
-    fixedPoint m30;
-    sVec3_FP m3C;
+    fixedPoint m2C_savedPitch;
+    fixedPoint m30; // saved yaw — updated each frame, used as neutral yaw for roll banking
+    fixedPoint m34_savedRoll;
+    fixedPoint m38_distanceAccum;
+    sVec3_FP m3C_targetAngles; // smoothing targets for pitch[0], yaw[1], roll[2]
 
     s_dragonTaskWorkArea_48 m48;
 
@@ -377,7 +380,10 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
 
     sVec3_FP m160_deltaTranslation;
     sVec3_FP m16C_deltaRotation;
-    fixedPoint m178[4];
+    fixedPoint m178_turnRate;
+    fixedPoint m17C;
+    fixedPoint m180;
+    fixedPoint m184_animRate;
 
     sVec3_FP m188;
 

@@ -13,8 +13,8 @@ void dragonExitField(s_dragonTaskWorkArea*);
 void dragonScriptMovement(s_dragonTaskWorkArea*);
 
 // Input handlers
-void updateDragonMovementFromControllerType1(s_dragonTaskWorkArea*);
-void updateDragonMovementFromAnalogController(s_dragonTaskWorkArea*);
+void updateDragonMovementDigital(s_dragonTaskWorkArea*);
+void updateDragonMovementAnalog(s_dragonTaskWorkArea*);
 
 // Movement integration
 void integrateDragonMovement(s_dragonTaskWorkArea*);

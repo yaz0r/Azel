@@ -1534,6 +1534,50 @@ static void interactiveEntityC8_tickCounter(s_interactiveEntityC8* pThis)
     }
 }
 
+// 0605a140 — LCS callback for interactive entity (opens door/elevator)
+static void interactiveEntityC8_lcsCallback(s_interactiveEntityC8* pThis)
+{
+    sSaturnPtr dataPtr = pThis->m90_dataPtr;
+    s16 subFieldIndex = getFieldTaskPtr()->m2E_currentSubFieldIndex;
+
+    sSaturnPtr tableBase;
+    switch (subFieldIndex)
+    {
+    case 0:  tableBase = { 0x0608a880, gFLD_C8 }; break;
+    case 6:  tableBase = { 0x0608a8d0, gFLD_C8 }; break;
+    case 9:  tableBase = { 0x0608a8f0, gFLD_C8 }; break;
+    case 0x17: tableBase = { 0x0608a970, gFLD_C8 }; break;
+    case 0x1a: tableBase = { 0x0608a990, gFLD_C8 }; break;
+    default: assert(0); return;
+    }
+
+    s8 entryIndex = readSaturnS8(dataPtr + 0xC);
+    sSaturnPtr entryEA = tableBase + entryIndex * 0x10;
+
+    s_C8_cutsceneCameraArg camArg = {};
+    camArg.m0_position = readSaturnVec3(entryEA);
+    camArg.mC_rotation = readSaturnS16(entryEA + 0xC);
+    camArg.m10_distance = 0x3C000;
+    camArg.m14_speed = 0x3C;
+    camArg.m18[0] = (s32)readSaturnS8(dataPtr + 0xD);
+    camArg.m18[1] = (s32)readSaturnS8(dataPtr + 0xE);
+    camArg.m18[2] = 1;
+    camArg.m24_flags = 1;
+    camArg.m28_param = (s16)0x8000;
+
+    FUN_FLD_C8_0605cb58(pThis, &camArg);
+
+    s32 bitIndex = readSaturnS32(dataPtr + 4);
+    if (bitIndex > 0)
+    {
+        mainGameState.setBit566(bitIndex);
+    }
+
+    playSystemSoundEffect(0x65);
+    interactiveEntityC8_initModel(pThis);
+    pThis->m9C_state = 4;
+}
+
 // 0605a270
 void s_interactiveEntityC8::Init(s_interactiveEntityC8* pThis, s_interactiveEntityC8_arg* pArg)
 {
@@ -1545,7 +1589,7 @@ void s_interactiveEntityC8::Init(s_interactiveEntityC8* pThis, s_interactiveEnti
     interactiveEntityC8_initModel(pThis);
 
     sVec3_FP entryPos = readSaturnVec3(pThis->m8_entryEA + 4);
-    initFieldLCSSubStruct(&pThis->mC_lcs, pThis, nullptr /*FUN_0605a140*/,
+    initFieldLCSSubStruct(&pThis->mC_lcs, pThis, (void*)interactiveEntityC8_lcsCallback,
         &entryPos, 0, 3, 0, -1, -1, 0);
 
     s8 entryPointInData = readSaturnS8(pThis->m90_dataPtr + 0xC);
@@ -2772,7 +2816,7 @@ static void dragonTowerPushback(s_dragonTaskWorkArea* pDragon, sSaturnPtr towerC
     pDragon->m160_deltaTranslation[0] = pDragon->m160_deltaTranslation[0] - pushX;
     // m164 unchanged
     pDragon->m160_deltaTranslation[2] = pDragon->m160_deltaTranslation[2] - pushZ;
-    pDragon->m3C = pDragon->m20_angle;
+    pDragon->m3C_targetAngles[0] = pDragon->m20_angle[0]; // only pitch target, NOT yaw/roll
 }
 
 // 0605e7be — tower-specific dragon update

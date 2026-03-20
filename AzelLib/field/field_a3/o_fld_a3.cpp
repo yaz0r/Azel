@@ -4243,12 +4243,12 @@ void s_DragonRiderTask::dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea)
     PDS_unimplemented("dragonRidersTaskUpdate");
 }
 
-void dragonFieldTaskInitSub2Sub2(fixedPoint* m178)
+void dragonFieldTaskInitSub2Sub2(s_dragonTaskWorkArea* pDragon)
 {
-    m178[0] = 0x222222;
-    m178[1] = 0x4CCC;
-    m178[2] = 0x16;
-    m178[3] = 0x111111;
+    pDragon->m178_turnRate = 0x222222;
+    pDragon->m17C = 0x4CCC;
+    pDragon->m180 = 0x16;
+    pDragon->m184_animRate = 0x111111;
 }
 
 void dragonFieldTaskInitSub2Sub3(s_dragonTaskWorkArea* pWorkArea)
@@ -4312,7 +4312,7 @@ void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
 {
     createFieldRadar(pWorkArea);
 
-    dragonFieldTaskInitSub2Sub2(pWorkArea->m178);
+    dragonFieldTaskInitSub2Sub2(pWorkArea);
 
     dragonFieldTaskInitSub2Sub3(pWorkArea);
 
@@ -4447,7 +4447,7 @@ void dragonFieldTaskInitSub4Sub4Sub2()
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags &= ~0x10000;
 }
 
-void updateDragonMovementFromControllerType0Sub1(s_dragonTaskWorkArea* r14)
+void updateDragonMovementNoInputSub1(s_dragonTaskWorkArea* r14)
 {
     r14->m254 = 0;
     r14->m250 = 0;
@@ -4457,17 +4457,17 @@ void updateDragonMovementFromControllerType0Sub1(s_dragonTaskWorkArea* r14)
     r14->m25D = 0;
 }
 
-void updateDragonMovementFromControllerType0(s_dragonTaskWorkArea* r14)
+void updateDragonMovementNoInput(s_dragonTaskWorkArea* r14)
 {
     if (--r14->m25D < 0)
     {
-        updateDragonMovementFromControllerType0Sub1(r14);
+        updateDragonMovementNoInputSub1(r14);
     }
 
     // update yaw
     {
-        fixedPoint tempRotX = r14->m3C[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, tempRotX.normalized() * 15) - r14->m20_angle[0];
+        fixedPoint tempRotX = r14->m3C_targetAngles[0] - r14->m20_angle[0];
+        r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, tempRotX.normalized() * 15) - r14->m20_angle[0];
     }
 
     if (r14->m25D == 2)
@@ -4478,8 +4478,8 @@ void updateDragonMovementFromControllerType0(s_dragonTaskWorkArea* r14)
     else
     {
         // update roll
-        fixedPoint tempRotZ = r14->m3C[2] - r14->m20_angle[2];
-        r14->m20_angle[2] += r14->m3C[2] - performDivision(0x10, tempRotZ.normalized() * 15) - r14->m20_angle[2];
+        fixedPoint tempRotZ = r14->m3C_targetAngles[2] - r14->m20_angle[2];
+        r14->m20_angle[2] += r14->m3C_targetAngles[2] - performDivision(0x10, tempRotZ.normalized() * 15) - r14->m20_angle[2];
     }
 
     //607EA84
@@ -4500,7 +4500,7 @@ void updateDragonMovementFromControllerType0(s_dragonTaskWorkArea* r14)
     r14->m25C &= ~1;
 }
 
-u32 updateDragonMovementFromControllerType1Sub1(s_dragonTaskWorkArea* r4)
+u32 isDragonInputAllowed(s_dragonTaskWorkArea* r4)
 {
     s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
 
@@ -4528,30 +4528,30 @@ u32 updateDragonMovementFromControllerType1Sub1(s_dragonTaskWorkArea* r4)
     return 1;
 }
 
-void updateDragonMovementFromControllerType1Sub2(s_dragonTaskWorkArea* r14, s_dragonState* r12)
+void applyDragonAnimationFromInput(s_dragonTaskWorkArea* r14, s_dragonState* r12)
 {
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // down
     {
-        incrementAnimationRootY(&r12->m78_animData, r14->m178[3]);
+        incrementAnimationRootY(&r12->m78_animData, r14->m184_animRate);
     }
     else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // up
     {
-        incrementAnimationRootY(&r12->m78_animData, -r14->m178[3]);
+        incrementAnimationRootY(&r12->m78_animData, -r14->m184_animRate);
     }
 
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7]) // right
     {
-        incrementAnimationRootX(&r12->m78_animData, r14->m178[3]);
-        incrementAnimationRootZ(&r12->m78_animData, -r14->m178[3]);
+        incrementAnimationRootX(&r12->m78_animData, r14->m184_animRate);
+        incrementAnimationRootZ(&r12->m78_animData, -r14->m184_animRate);
     }
     else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6]) // left
     {
-        incrementAnimationRootX(&r12->m78_animData, -r14->m178[3]);
-        incrementAnimationRootZ(&r12->m78_animData, r14->m178[3]);
+        incrementAnimationRootX(&r12->m78_animData, -r14->m184_animRate);
+        incrementAnimationRootZ(&r12->m78_animData, r14->m184_animRate);
     }
 }
 
-void updateDragonMovementFromControllerType2Sub2(s_dragonTaskWorkArea* r11, s_dragonState* r12)
+void applyDragonAnimationFromAnalog(s_dragonTaskWorkArea* r11, s_dragonState* r12)
 {
     s32 r4_y;
     if (graphicEngineStatus.m4514.m138[1])
@@ -4566,11 +4566,11 @@ void updateDragonMovementFromControllerType2Sub2(s_dragonTaskWorkArea* r11, s_dr
     s32 var0 = r11->m246_previousAnalogY - r4_y;
     if (var0 > 0x40)
     {
-        incrementAnimationRootY(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * var0));
+        incrementAnimationRootY(&r12->m78_animData, performDivision(0x80, r11->m184_animRate.asS32() * var0));
     }
     else if (var0 < -0x40)
     {
-        incrementAnimationRootY(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * var0));
+        incrementAnimationRootY(&r12->m78_animData, performDivision(0x80, r11->m184_animRate.asS32() * var0));
     }
 
     //607F1E8
@@ -4578,17 +4578,17 @@ void updateDragonMovementFromControllerType2Sub2(s_dragonTaskWorkArea* r11, s_dr
     s32 r10 = r11->m245_previousAnalogX - r4_x;
     if (r10 > 0x40)
     {
-        incrementAnimationRootX(&r12->m78_animData, performDivision(0x80, -(r11->m178[3].asS32() * r10)));
-        incrementAnimationRootZ(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * r10));
+        incrementAnimationRootX(&r12->m78_animData, performDivision(0x80, -(r11->m184_animRate.asS32() * r10)));
+        incrementAnimationRootZ(&r12->m78_animData, performDivision(0x80, r11->m184_animRate.asS32() * r10));
     }
     else if (r10 < -0x40)
     {
-        incrementAnimationRootX(&r12->m78_animData, performDivision(0x80, -(r11->m178[3].asS32() * r10)));
-        incrementAnimationRootZ(&r12->m78_animData, performDivision(0x80, r11->m178[3].asS32() * r10));
+        incrementAnimationRootX(&r12->m78_animData, performDivision(0x80, -(r11->m184_animRate.asS32() * r10)));
+        incrementAnimationRootZ(&r12->m78_animData, performDivision(0x80, r11->m184_animRate.asS32() * r10));
     }
 }
 
-void updateDragonMovementFromAnalogControllerSub0(s_dragonTaskWorkArea* r4)
+void handleBarrelRollInputAnalog(s_dragonTaskWorkArea* r4)
 {
     if (r4->m258-- > 0)
     {
@@ -4605,7 +4605,9 @@ void updateDragonMovementFromAnalogControllerSub0(s_dragonTaskWorkArea* r4)
     }
 }
 
-void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
+void interpolateYawWithBanking(s_dragonTaskWorkArea* r14); // forward decl
+
+void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
 {
     s32 r9_y;
     if (graphicEngineStatus.m4514.m138[1])
@@ -4619,7 +4621,7 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
     r9_y = -r9_y;
 
     // TODO: understand the code that tests angle and 0x80000000
-    updateDragonMovementFromAnalogControllerSub0(r14);
+    handleBarrelRollInputAnalog(r14);
 
     fixedPoint r3;
     if (r14->m154_dragonSpeed >= 0)
@@ -4637,7 +4639,7 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
         if (r9_y > 0)
         {
             // down
-            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178[0].asS32());
+            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178_turnRate.asS32());
             r14->m20_angle[0] += r14->m1F0.m_8;
             r14->m238 |= 2;
             r14->mFC |= 2;
@@ -4645,7 +4647,7 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
         else if(r9_y < 0)
         {
             // up
-            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178[0].asS32());
+            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178_turnRate.asS32());
             r14->m20_angle[0] += r14->m1F0.m_8;
             r14->m238 |= 1;
             r14->mFC |= 1;
@@ -4653,8 +4655,8 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
         else
         {
             //607F360
-            fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
-            r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+            fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
+            r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
         }
     }
     else
@@ -4665,20 +4667,20 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
         {
             r14->m160_deltaTranslation[1] += r4;
             r14->m238 |= 2;
-            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178[0].asS32());
+            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178_turnRate.asS32());
             r14->mFC |= 2;
         }
         else if (r9_y < 0)
         {
             r14->m160_deltaTranslation[1] += r4;
             r14->m238 |= 1;
-            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178[0].asS32());
+            r14->m1F0.m_8 = performDivision(0x7F, r9_y * r14->m178_turnRate.asS32());
             r14->mFC |= 1;
         }
 
         //607F428
-        fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+        fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
+        r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
     }
 
     //607F45A
@@ -4692,12 +4694,11 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
     }
 
     //607F49A
-    r14->m1F0.m_C = performDivision(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178[0].asS32());
+    r14->m1F0.m_C = performDivision(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32());
 
     if (r14->m25D == 1)
     {
-        assert(0);
-        //updateDragonMovementFromControllerType1Sub3Sub2(r14);
+        interpolateYawWithBanking(r14);
     }
     else
     {
@@ -4714,14 +4715,14 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
     }
     else
     {
-        r14->m20_angle[2] += r14->m3C[2] - performDivision(0x10, fixedPoint(r14->m3C[2] - r14->m20_angle[2]).normalized() * 15) - r14->m20_angle[2];
+        r14->m20_angle[2] += r14->m3C_targetAngles[2] - performDivision(0x10, fixedPoint(r14->m3C_targetAngles[2] - r14->m20_angle[2]).normalized() * 15) - r14->m20_angle[2];
         if (r9_y > 0)
         {
             //0607F540
             fixedPoint r2 = r14->m20_angle[1] - r14->m30;
-            if (r2 >= performDivision(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178[0].asS32()))
+            if (r2 >= performDivision(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32()))
             {
-                r14->m20_angle[2] -= performDivision(4, r14->m178[0] * 3);
+                r14->m20_angle[2] -= performDivision(4, r14->m178_turnRate * 3);
                 r14->mFC |= 4;
                 r14->m25E = 1;
             }
@@ -4730,7 +4731,7 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
         {
             //607F57E
             fixedPoint r2 = r14->m20_angle[1] - r14->m30;
-            if (r2 >= performDivision(0x7F, -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178[0].asS32()))
+            if (r2 >= performDivision(0x7F, -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32()))
             {
                 r14->mFC |= 8;
                 r14->m25E = 0;
@@ -4752,8 +4753,22 @@ void updateDragonMovementFromControllerType2Sub3(s_dragonTaskWorkArea* r14)
     r14->m247 = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4;
 }
 
+// 0607e638
+void interpolateYawWithBanking(s_dragonTaskWorkArea* r14)
+{
+    r14->m20_angle[1] = interpolateRotation(r14->m20_angle[1], r14->m250, 0x2000, 0x888889, 0x10);
+    if (r14->m178_turnRate <= r14->m30 - r14->m20_angle[1])
+    {
+        r14->m20_angle[2] += performDivision(4, r14->m178_turnRate * 3);
+    }
+    else if (r14->m178_turnRate <= r14->m20_angle[1] - r14->m30)
+    {
+        r14->m20_angle[2] -= performDivision(4, r14->m178_turnRate * 3);
+    }
+}
+
 // 0607e606
-static void updateDragonMovementFromControllerType1Sub3Sub1Sub0(s_dragonTaskWorkArea* r14)
+static void startBarrelRollMode(s_dragonTaskWorkArea* r14)
 {
     r14->m25D = 1;
     r14->m258 = 0x1E;
@@ -4762,7 +4777,7 @@ static void updateDragonMovementFromControllerType1Sub3Sub1Sub0(s_dragonTaskWork
 }
 
 // 0607e718
-void updateDragonMovementFromControllerType1Sub3Sub1(s_dragonTaskWorkArea* r14)
+void handleBarrelRollInput(s_dragonTaskWorkArea* r14)
 {
     s32 timer = (s32)r14->m258 - 1;
     r14->m258 = timer;
@@ -4798,14 +4813,14 @@ void updateDragonMovementFromControllerType1Sub3Sub1(s_dragonTaskWorkArea* r14)
                 if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7])
                 {
                     r14->m250 = fixedPoint((s32)r14->m20_angle[1] + (s32)0xF838E38F).normalized();
-                    updateDragonMovementFromControllerType1Sub3Sub1Sub0(r14);
+                    startBarrelRollMode(r14);
                     return;
                 }
 
                 if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6])
                 {
                     r14->m250 = fixedPoint((s32)r14->m20_angle[1] + (s32)0x7C71C71).normalized();
-                    updateDragonMovementFromControllerType1Sub3Sub1Sub0(r14);
+                    startBarrelRollMode(r14);
                     return;
                 }
             }
@@ -4813,9 +4828,9 @@ void updateDragonMovementFromControllerType1Sub3Sub1(s_dragonTaskWorkArea* r14)
     }
 }
 
-void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
+void applyDragonPitchYawRoll(s_dragonTaskWorkArea* r14)
 {
-    updateDragonMovementFromControllerType1Sub3Sub1(r14);
+    handleBarrelRollInput(r14);
 
     fixedPoint r2;
     if (r14->m154_dragonSpeed >= 0)
@@ -4833,24 +4848,24 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // Go down
         {
             //0607EC12
-            r14->m20_angle[0] += r14->m178[0];
+            r14->m20_angle[0] += r14->m178_turnRate;
             r14->m238 |= 2;
-            r14->m1F0.m_8 = r14->m178[0];
+            r14->m1F0.m_8 = r14->m178_turnRate;
             r14->mFC |= 2;
         }
         else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // Go up
         {
             //0607EC44
-            r14->m20_angle[0] -= r14->m178[0];
+            r14->m20_angle[0] -= r14->m178_turnRate;
             r14->m238 |= 1;
-            r14->m1F0.m_8 = -r14->m178[0];
+            r14->m1F0.m_8 = -r14->m178_turnRate;
             r14->mFC |= 1;
         }
         else
         {
             //607EC6C
-            fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
-            r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+            fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
+            r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
         }
     }
     else
@@ -4861,7 +4876,7 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
             //607ECB0
             r14->m160_deltaTranslation[1] -= 0x800;
             r14->m238 |= 2;
-            r14->m1F0.m_8 = -r14->m178[0];
+            r14->m1F0.m_8 = r14->m178_turnRate;
             r14->mFC |= 2;
         }
         else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // Go up
@@ -4869,13 +4884,13 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
             //607ED00
             r14->m160_deltaTranslation[1] += 0x800;
             r14->m238 |= 1;
-            r14->m1F0.m_8 = -r14->m178[0];
+            r14->m1F0.m_8 = -r14->m178_turnRate;
             r14->mFC |= 1;
         }
 
         //607ED32
-        fixedPoint r1 = r14->m3C[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
+        fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
+        r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[0];
     }
 
     //0607ED68
@@ -4888,6 +4903,8 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
         r14->m20_angle[0] = r14->m148_pitchMin;
     }
 
+
+
     if (r14->m25D == 2)
     {
         //0607EDB0
@@ -4895,12 +4912,12 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
     }
     else
     {
-        fixedPoint r1 = r14->m3C[2] - r14->m20_angle[2];
-        r14->m20_angle[2] += r14->m3C[2] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[2];
+        fixedPoint r1 = r14->m3C_targetAngles[2] - r14->m20_angle[2];
+        r14->m20_angle[2] += r14->m3C_targetAngles[2] - performDivision(0x10, r1.normalized() * 15) - r14->m20_angle[2];
 
         if (r14->m25D == 1)
         {
-            updateDragonMovementFromControllerType1Sub3Sub1(r14);
+            interpolateYawWithBanking(r14);
         }
         else
         {
@@ -4909,13 +4926,13 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
                 //0607EE34
                 if ((r14->mF8_Flags & 0x8000) == 0)
                 {
-                    r14->m20_angle[1] -= r14->m178[0];
+                    r14->m20_angle[1] -= r14->m178_turnRate;
                 }
 
-                r14->m1F0.m_C = -r14->m178[0];
-                if (r14->m30 - r14->m20_angle[1] >= r14->m178[0])
+                r14->m1F0.m_C = -r14->m178_turnRate;
+                if (r14->m30 - r14->m20_angle[1] >= r14->m178_turnRate)
                 {
-                    r14->m20_angle[2] += performDivision(4, r14->m178[0] * 3);
+                    r14->m20_angle[2] += performDivision(4, r14->m178_turnRate * 3);
                 }
 
                 r14->mFC |= 8;
@@ -4926,13 +4943,13 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
                 //0607EE8C
                 if ((r14->mF8_Flags & 0x8000) == 0)
                 {
-                    r14->m20_angle[1] += r14->m178[0];
+                    r14->m20_angle[1] += r14->m178_turnRate;
                 }
 
-                r14->m1F0.m_C = r14->m178[0];
-                if (r14->m20_angle[1] - r14->m30 >= r14->m178[0])
+                r14->m1F0.m_C = r14->m178_turnRate;
+                if (r14->m20_angle[1] - r14->m30 >= r14->m178_turnRate)
                 {
-                    r14->m20_angle[2] -= performDivision(4, r14->m178[0] * 3);
+                    r14->m20_angle[2] -= performDivision(4, r14->m178_turnRate * 3);
                 }
 
                 r14->mFC |= 4;
@@ -4946,29 +4963,29 @@ void updateDragonMovementFromControllerType1Sub3(s_dragonTaskWorkArea* r14)
     r14->m245_previousAnalogX = 0;
 }
 
-void updateDragonMovementFromControllerType1(s_dragonTaskWorkArea* r14)
+void updateDragonMovementDigital(s_dragonTaskWorkArea* r14)
 {
-    if (updateDragonMovementFromControllerType1Sub1(r14))
+    if (isDragonInputAllowed(r14))
     {
-        updateDragonMovementFromControllerType1Sub2(r14, gDragonState);
-        updateDragonMovementFromControllerType1Sub3(r14);
+        applyDragonAnimationFromInput(r14, gDragonState);
+        applyDragonPitchYawRoll(r14);
     }
     else
     {
-        updateDragonMovementFromControllerType0(r14);
+        updateDragonMovementNoInput(r14);
     }
 }
 
-void updateDragonMovementFromAnalogController(s_dragonTaskWorkArea* r14)
+void updateDragonMovementAnalog(s_dragonTaskWorkArea* r14)
 {
-    if (updateDragonMovementFromControllerType1Sub1(r14))
+    if (isDragonInputAllowed(r14))
     {
-        updateDragonMovementFromControllerType2Sub2(r14, gDragonState);
-        updateDragonMovementFromControllerType2Sub3(r14);
+        applyDragonAnimationFromAnalog(r14, gDragonState);
+        applyDragonPitchYawRollAnalog(r14);
     }
     else
     {
-        updateDragonMovementFromControllerType0(r14);
+        updateDragonMovementNoInput(r14);
     }
 }
 
@@ -5071,19 +5088,19 @@ void clearDragonPlayerInputs()
     pDragonTask->m1AC[2] = 0;
 }
 
-u32 integrateDragonMovementSub4Sub3()
+u32 isDragonBoostAvailable()
 {
     u32 T = !mainGameState.getBit(0x2A * 8 + 6);
     return T ^ 1;
 }
 
-u32 integrateDragonMovementSub4Sub2()
+u32 isDragonBoostLocked()
 {
     u32 T = !mainGameState.getBit(0x2A * 8 + 7);
     return T ^ 1;
 }
 
-void integrateDragonMovementSub4Sub1(s_dragonTaskWorkArea* r4)
+void resetDragonSpeedIndex(s_dragonTaskWorkArea* r4)
 {
     if ((r4->m25C & 1) == 0)
     {
@@ -5093,7 +5110,7 @@ void integrateDragonMovementSub4Sub1(s_dragonTaskWorkArea* r4)
     }
 }
 
-void integrateDragonMovementSub4(s_dragonTaskWorkArea* r14)
+void updateDragonSpeed(s_dragonTaskWorkArea* r14)
 {
     if (r14->m25C & 0x1)
     {
@@ -5118,7 +5135,7 @@ void integrateDragonMovementSub4(s_dragonTaskWorkArea* r14)
 
     r14->m25C |= 2;
 
-    if (integrateDragonMovementSub4Sub2())
+    if (isDragonBoostLocked())
     {
         assert(0);
     }
@@ -5147,10 +5164,10 @@ void integrateDragonMovementSub4(s_dragonTaskWorkArea* r14)
     }
     else
     {
-        integrateDragonMovementSub4Sub1(r14);
+        resetDragonSpeedIndex(r14);
     }
 
-    if (integrateDragonMovementSub4Sub3())
+    if (isDragonBoostAvailable())
     {
         //0607E9AE
         assert(0);
@@ -5173,7 +5190,7 @@ void integrateDragonMovement(s_dragonTaskWorkArea* r14)
     {
         if ((r14->mF8_Flags & 0x10000) == 0)
         {
-            integrateDragonMovementSub4(r14);
+            updateDragonSpeed(r14);
         }
 
         if (r14->m235_dragonSpeedIndex < 0)
@@ -5307,61 +5324,42 @@ void integrateDragonMovement(s_dragonTaskWorkArea* r14)
     //608018E
     r14->m160_deltaTranslation = r14->m8_pos - r14->m14_oldPos;
 
-    // Adjust pitch min/max when close to the min/maxY
+    // Adjust pitch min when close to maxY (ceiling)
+    // Early-out when far from boundary to avoid s32 overflow in the multiplication
+    if ((r14->m140_maxY - r14->m8_pos[1]) > 0x200000)
     {
-        fixedPoint r2;
-        fixedPoint r6 = -(r14->m140_maxY - r14->m8_pos[1]) * 0x111;
-        if (r6 >= -0x3555555)
-        {
-            r2 = r6;
-        }
-        else
-        {
-            r2 = -0x3555555;
-        }
-
+        r14->m148_pitchMin = -0x3555555;
+    }
+    else
+    {
+        fixedPoint r6 = (r14->m140_maxY - r14->m8_pos[1]) * -0x111;
+        fixedPoint r2 = (r6 >= -0x3555555) ? r6 : fixedPoint(-0x3555555);
         fixedPoint r3;
         if (r2 >= 0)
-        {
             r3 = 0;
-        }
         else if (r6 >= -0x3555555)
-        {
             r3 = r6;
-        }
         else
-        {
             r3 = -0x3555555;
-        }
         r14->m148_pitchMin = r3;
     }
 
-    // same for min
+    // Adjust pitch max when close to minY (floor)
+    if ((r14->m8_pos[1] - r14->m134_minY) > 0x200000)
     {
-        fixedPoint r2;
+        r14->m14C_pitchMax = 0x3555555;
+    }
+    else
+    {
         fixedPoint r5 = (r14->m8_pos[1] - r14->m134_minY) * 0x111;
-        if (r5 < 0x3555555)
-        {
-            r2 = r5;
-        }
-        else
-        {
-            r2 = 0x3555555;
-        }
-
+        fixedPoint r2 = (r5 < 0x3555555) ? r5 : fixedPoint(0x3555555);
         fixedPoint r3;
         if (r2 < 0)
-        {
             r3 = 0;
-        }
         else if (r5 < 0x3555555)
-        {
             r3 = r5;
-        }
         else
-        {
             r3 = 0x3555555;
-        }
         r14->m14C_pitchMax = r3;
     }
 }
@@ -5397,10 +5395,10 @@ void dragonFlightUpdate(s_dragonTaskWorkArea* r4)
     switch (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType)
     {
     case 1:
-        updateDragonMovementFromControllerType1(r4);
+        updateDragonMovementDigital(r4);
         break;
     case 2:
-        updateDragonMovementFromAnalogController(r4);
+        updateDragonMovementAnalog(r4);
         break;
     default:
         assert(0);
@@ -5462,7 +5460,7 @@ void dragonExitField(s_dragonTaskWorkArea* r14)
     computeLookAt(var_8, var0);
 
     // update yaw
-    s32 tempRotX = r14->m3C[0] - r14->m20_angle[0];
+    s32 tempRotX = r14->m3C_targetAngles[0] - r14->m20_angle[0];
     if (tempRotX & 0x8000000)
     {
         tempRotX |= 0xF0000000;
@@ -5472,13 +5470,13 @@ void dragonExitField(s_dragonTaskWorkArea* r14)
         tempRotX &= 0xFFFFFFF;
     }
 
-    r14->m20_angle[0] += r14->m3C[0] - performDivision(0x10, (tempRotX << 4) - tempRotX) - r14->m20_angle[0];
+    r14->m20_angle[0] += r14->m3C_targetAngles[0] - performDivision(0x10, (tempRotX << 4) - tempRotX) - r14->m20_angle[0];
 
     // update pitch
     r14->m20_angle[1] = interpolateRotation(r14->m20_angle[1], var_8[0], 0x2000, 0x444444, 0x10);
 
     // update roll
-    s32 tempRotZ = r14->m3C[2] - r14->m20_angle[2];
+    s32 tempRotZ = r14->m3C_targetAngles[2] - r14->m20_angle[2];
     if (tempRotZ & 0x8000000)
     {
         tempRotZ |= 0xF0000000;
@@ -5487,15 +5485,15 @@ void dragonExitField(s_dragonTaskWorkArea* r14)
     {
         tempRotZ &= 0xFFFFFFF;
     }
-    r14->m20_angle[2] += r14->m3C[2] - performDivision(0x10, (tempRotZ << 4) - tempRotZ) - r14->m20_angle[2];
+    r14->m20_angle[2] += r14->m3C_targetAngles[2] - performDivision(0x10, (tempRotZ << 4) - tempRotZ) - r14->m20_angle[2];
 
-    if (r14->m30 - r14->m20_angle[1] < r14->m178[0])
+    if (r14->m30 - r14->m20_angle[1] < r14->m178_turnRate)
     {
-        r14->m20_angle[2] += performDivision(4, r14->m178[0] * 3);
+        r14->m20_angle[2] += performDivision(4, r14->m178_turnRate * 3);
     }
-    else if (r14->m20_angle[1] - r14->m30 < r14->m178[0])
+    else if (r14->m20_angle[1] - r14->m30 < r14->m178_turnRate)
     {
-        r14->m20_angle[2] -= performDivision(4, r14->m178[0] * 3);
+        r14->m20_angle[2] -= performDivision(4, r14->m178_turnRate * 3);
     }
 
     //607FB2A
@@ -5533,61 +5531,42 @@ void dragonExitField(s_dragonTaskWorkArea* r14)
 
     r14->m160_deltaTranslation = r14->m8_pos - r14->m14_oldPos;
 
-    // Adjust pitch min/max when close to the min/maxY
+    // Adjust pitch min when close to maxY (ceiling)
+    // Early-out when far from boundary to avoid s32 overflow in the multiplication
+    if ((r14->m140_maxY - r14->m8_pos[1]) > 0x200000)
     {
-        fixedPoint r2;
-        fixedPoint r6 = -(r14->m140_maxY - r14->m8_pos[1]) * 0x111;
-        if (r6 >= -0x3555555)
-        {
-            r2 = r6;
-        }
-        else
-        {
-            r2 = -0x3555555;
-        }
-
+        r14->m148_pitchMin = -0x3555555;
+    }
+    else
+    {
+        fixedPoint r6 = (r14->m140_maxY - r14->m8_pos[1]) * -0x111;
+        fixedPoint r2 = (r6 >= -0x3555555) ? r6 : fixedPoint(-0x3555555);
         fixedPoint r3;
         if (r2 >= 0)
-        {
             r3 = 0;
-        }
         else if (r6 >= -0x3555555)
-        {
             r3 = r6;
-        }
         else
-        {
             r3 = -0x3555555;
-        }
         r14->m148_pitchMin = r3;
     }
 
-    // same for min
+    // Adjust pitch max when close to minY (floor)
+    if ((r14->m8_pos[1] - r14->m134_minY) > 0x200000)
     {
-        fixedPoint r2;
+        r14->m14C_pitchMax = 0x3555555;
+    }
+    else
+    {
         fixedPoint r5 = (r14->m8_pos[1] - r14->m134_minY) * 0x111;
-        if (r5 < 0x3555555)
-        {
-            r2 = r5;
-        }
-        else
-        {
-            r2 = 0x3555555;
-        }
-
+        fixedPoint r2 = (r5 < 0x3555555) ? r5 : fixedPoint(0x3555555);
         fixedPoint r3;
         if (r2 < 0)
-        {
             r3 = 0;
-        }
         else if (r5 < 0x3555555)
-        {
             r3 = r5;
-        }
         else
-        {
             r3 = 0x3555555;
-        }
         r14->m14C_pitchMax = r3;
     }
 }
@@ -5821,7 +5800,8 @@ void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
 void dragonFieldTaskUpdateSub1(s_dragonTaskWorkArea* pTypedWorkArea)
 {
     pTypedWorkArea->mFC = 0;
-    pTypedWorkArea->m100_previousDragonType = 0;
+    pTypedWorkArea->m1F0.m_8 = 0;
+    pTypedWorkArea->m1F0.m_C = 0;
 
     pTypedWorkArea->m14_oldPos = pTypedWorkArea->m8_pos;
 
@@ -6265,9 +6245,47 @@ void updateFieldCameraSlots()
     }
 }
 
-void dragonFieldTaskUpdateSub6(s_dragonTaskWorkArea* pTypedWorkArea)
+// 06012674 — per-field terrain callback
+static void fieldTerrainCallback(s32 subFieldIndex, sVec3_FP* pPos, sVec3_FP* pAngle)
 {
-    PDS_unimplemented("dragonFieldTaskUpdateSub6");
+    // Table at 0x0020a388 indexed by current field index
+    // Many entries are null (e.g., field 8, 0xC, 0xD, 0xE)
+    // When null, this is a no-op
+    Unimplemented();
+}
+
+// 0602f8e4 — read dragon pos and transform for special fields (0xF, 0x12)
+static void readAndTransformDragonPos(sVec3_FP* pOut)
+{
+    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    pOut->m0_X = pDragon->m8_pos[0];
+    pOut->m4_Y = pDragon->m8_pos[1];
+    pOut->m8_Z = pDragon->m8_pos[2];
+    Unimplemented(); // FUN_0602f87c — transform pos based on sub-field offsets
+}
+
+// 06073c7a
+void updateDragonSavedAnglesAndTerrain(s_dragonTaskWorkArea* r14)
+{
+    r14->m2C_savedPitch = r14->m20_angle[0];
+    r14->m30 = r14->m20_angle[1];
+    r14->m34_savedRoll = r14->m20_angle[2];
+
+    fixedPoint speed = r14->m154_dragonSpeed;
+    if (speed < 0) speed = -speed;
+    r14->m38_distanceAccum = r14->m38_distanceAccum + speed;
+
+    auto pFieldTask = getFieldTaskPtr();
+    if (pFieldTask->m2C_currentFieldIndex == 0xF || pFieldTask->m2C_currentFieldIndex == 0x12)
+    {
+        sVec3_FP transformedPos;
+        readAndTransformDragonPos(&transformedPos);
+        fieldTerrainCallback(0, &transformedPos, nullptr);
+    }
+    else
+    {
+        fieldTerrainCallback((s32)pFieldTask->m2E_currentSubFieldIndex, &r14->m8_pos, &r14->m20_angle);
+    }
 }
 
 void s_dragonTaskWorkArea::Update(s_dragonTaskWorkArea* pTypedWorkArea)
@@ -6311,7 +6329,7 @@ void s_dragonTaskWorkArea::Update(s_dragonTaskWorkArea* pTypedWorkArea)
 
     updateFieldCameraSlots();
 
-    dragonFieldTaskUpdateSub6(pTypedWorkArea);
+    updateDragonSavedAnglesAndTerrain(pTypedWorkArea);
 }
 
 s8 isFieldCameraSlotActive(s32 index)
