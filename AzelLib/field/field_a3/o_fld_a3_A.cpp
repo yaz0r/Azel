@@ -24,7 +24,7 @@ struct fieldA3_A_task0 : public s_workAreaTemplate<fieldA3_A_task0>
             }
             else
             {
-                subfieldA3_1Sub0Sub0();
+                initDragonMovementMode();
             }
         }
         else if(dragonPosition[2] < -0x216000)
@@ -37,7 +37,7 @@ struct fieldA3_A_task0 : public s_workAreaTemplate<fieldA3_A_task0>
             }
             else
             {
-                subfieldA3_1Sub0Sub0();
+                initDragonMovementMode();
             }
         }
 

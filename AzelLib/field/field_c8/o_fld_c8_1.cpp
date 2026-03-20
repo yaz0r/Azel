@@ -26,18 +26,20 @@ void subfieldC8_1(p_workArea workArea)
             graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
         }
 
-        Unimplemented(); // FUN_FLD_C8__06055bdc — camera config setup
+        // 06055bdc — camera config
+        setupFieldCameraConfigs(readCameraConfig(gFLD_C8->getSaturnPtr(0x0608B11C)), 1);
         getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 1;
-        Unimplemented(); // fieldRadar_setEncounterDistance with value from literal pool
+        // 0607b4e0
+        fieldRadar_setEncounterDistance(fixedPoint(0x200000));
 
-        // 06079e26 — setupField
-        s_DataTable3* pDT3 = readDataTable3(gFLD_C8->getSaturnPtr(0x06090120));
-        setupField2(pDT3, fieldC8_1_startTasks);
+        // 06079e26 — setupFieldC8 with visibility grid
+        setupFieldC8(gFLD_C8->getSaturnPtr(0x06090120), gFLD_C8->getSaturnPtr(0x0608FEE0), fieldC8_1_startTasks);
 
         // 0607d8ca — adjustVerticalLimits
         adjustVerticalLimits(0, 0);
 
-        Unimplemented(); // 0607baa0 — random battle init (0x37)
+        // 0607baa0 — random battle init
+        fieldRadar_initRandomBattle(0x37);
     }
 
     // 06057f1a — set field-specific data flags

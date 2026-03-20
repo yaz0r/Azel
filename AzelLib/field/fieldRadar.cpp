@@ -10,6 +10,9 @@ struct s_FieldRadar : public s_workAreaTemplate<s_FieldRadar>
     s16 mE_Y;
     s16 m10;
     s16 m12;
+    s32 m14_encounterCount;
+    s32 m18;
+    u32 m1C_encounterList;
     s16 m28;
     s16 m2A;
     s32 m30;
@@ -295,5 +298,81 @@ void fieldRadar_setEncounterDistance(fixedPoint distance)
     s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
     pRadar->m64_encounterDistance = distance;
     pRadar->m68_encounterDistanceSq = MTH_Mul(distance, distance);
+}
+
+// 0607bab4 — clear radar battle state
+static void fieldRadar_clearBattleState()
+{
+    s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
+    if (pRadar->m1C_encounterList != 0)
+    {
+        // freeVdp1Block equivalent — the list was allocated with allocateHeapForTask
+        // on Saturn this frees the VDP1 block; in C++ the task system handles cleanup
+        pRadar->m1C_encounterList = 0;
+    }
+    pRadar->m14_encounterCount = 0;
+    pRadar->m18 = 0;
+}
+
+// 06071e94 — parse random battle encounter list from script data
+static void fieldRadar_parseEncounterList(s32 scriptIndex)
+{
+    s_fieldScriptWorkArea* pScripts = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
+
+    if (pScripts->m0_pScripts == nullptr)
+        return;
+
+    // Count entries in the script data
+    sSaturnPtr pData = pScripts->m0_pScripts[scriptIndex];
+    pRadar->m14_encounterCount = 1;
+    while (readSaturnU8(pData) != 0x01)
+    {
+        if (readSaturnU8(pData) == 0x7F)
+        {
+            pRadar->m14_encounterCount++;
+            pData = sSaturnPtr(((pData.m_offset + 4) & ~3) + 0x14, pData.m_file);
+        }
+        else
+        {
+            pData = pData + 1;
+        }
+    }
+
+    // Allocate and populate entry table
+    u32* pAlloc = (u32*)allocateHeapForTask(pRadar, pRadar->m14_encounterCount * 0x14);
+    pRadar->m1C_encounterList = (u32)(uintptr_t)pAlloc;
+    if (pAlloc)
+    {
+        // First entry: default "deactivate" option
+        pAlloc[0] = 0; // placeholder for string pointer
+        pAlloc += 5;
+
+        pData = pScripts->m0_pScripts[scriptIndex];
+        while (readSaturnU8(pData) != 0x01)
+        {
+            if (readSaturnU8(pData) == 0x7F)
+            {
+                sSaturnPtr pSrc = sSaturnPtr(((pData.m_offset + 4) & ~3), pData.m_file);
+                for (int j = 0; j < 5; j++)
+                {
+                    pAlloc[j] = readSaturnU32(pSrc + j * 4);
+                }
+                pAlloc += 5;
+                pData = pSrc + 0x14;
+            }
+            else
+            {
+                pData = pData + 1;
+            }
+        }
+    }
+}
+
+// 0607baa0
+void fieldRadar_initRandomBattle(s32 scriptIndex)
+{
+    fieldRadar_clearBattleState();
+    fieldRadar_parseEncounterList(scriptIndex);
 }
 

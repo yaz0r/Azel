@@ -7,3 +7,4 @@ void fieldRadar_disableAltitudeGauge();
 
 void createFieldRadar(s_workArea* pWorkArea);
 void fieldRadar_setEncounterDistance(fixedPoint distance);
+void fieldRadar_initRandomBattle(s32 scriptIndex);

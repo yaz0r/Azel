@@ -45,6 +45,10 @@ struct s_fieldOverlaySubTaskWorkArea : public s_workAreaTemplate<s_fieldOverlayS
     s32 m2DC;
     s32 m2E0;
     std::array<s_fieldOverlaySubTaskWorkArea2E4,5> m2E4;
+    sVec3_FP* m370_cameraTargetPtr;
+    sVec3_FP* m374_cameraSourcePtr;
+    s32 m378;
+    s32 m37C;
     sMatrix4x3 m384;
     sMatrix4x3 m3B4;
     std::array<sFieldCameraStatus,2> m3E4;
@@ -794,8 +798,8 @@ static s_fieldTaskWorkArea* getFieldTaskPtr()
 }
 
 void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5);
-void dragonFieldTaskInitSub4Sub5(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
-void dragonFieldTaskInitSub4Sub6(s_dragonTaskWorkArea* r4);
+void buildDragonRotationMatrix(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
+void updateDragonCollision(s_dragonTaskWorkArea* r4);
 void updateCameraScriptSub0Sub2(s_dragonTaskWorkArea* r4);
 void updateCameraScriptSub0(p_workArea r4);
 void dragonFieldTaskInitSub4Sub4();

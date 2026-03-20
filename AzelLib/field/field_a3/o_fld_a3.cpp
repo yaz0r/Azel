@@ -27,9 +27,8 @@
 #include "battle/BTL_A3/BTL_A3_map6.h"
 #include "field/fieldRadar.h"
 #include "field/battleStart.h"
+#include "field/fieldDragonMovement.h"
 
-void updateDragonDefault(s_dragonTaskWorkArea*);
-void updateCutscene(s_dragonTaskWorkArea* r14);
 sMatrix4x3* fieldCameraTask1DrawSub1();
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
 void updateCameraScriptSub1(u32 r4);
@@ -81,7 +80,7 @@ std::vector<sLCSTaskDrawSub5Sub1_Data1> readLCSTaskDrawSub5Sub1_Data1(sSaturnPtr
 
 std::vector<sLCSTaskDrawSub5Sub1_Data1> LCSTaskDrawSub5Sub1_Data1;
 
-void dragonLeaveArea(s_dragonTaskWorkArea* r14);
+void dragonExitField(s_dragonTaskWorkArea* r14);
 s8 updateCameraFromDragonSub1(s32 index);
 
 std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3)
@@ -1107,7 +1106,7 @@ void setupField3(s_DataTable3* r4, void(*r5)(p_workArea workArea), std::vector<s
     setupField2(r4, r5);
 }
 
-void subfieldA3_1Sub0Sub0()
+void initDragonMovementMode()
 {
     s_dragonTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     r14->m154_dragonSpeed = 0;
@@ -1115,15 +1114,15 @@ void subfieldA3_1Sub0Sub0()
 
     if (r14->m1D0_cameraScript)
     {
-        r14->mF0 = dragonAutomaticMovementWhenEnteringNewField;
+        r14->mF0 = dragonScriptMovement;
     }
     else if (r14->m1D4_cutsceneData)
     {
-        r14->mF0 = updateCutscene;
+        r14->mF0 = dragonCutsceneUpdate;
     }
     else
     {
-        r14->mF0 = updateDragonDefault;
+        r14->mF0 = dragonIdleUpdate;
     }
 
     r14->m104_dragonScriptStatus = 0;
@@ -1804,7 +1803,7 @@ u32 cutsceneTaskInitSub0(std::vector<s_scriptData3>& r4, std::vector<s_scriptDat
     return r6;
 }
 
-void updateCutscene(s_dragonTaskWorkArea* r14)
+void dragonCutsceneUpdate(s_dragonTaskWorkArea* r14)
 {
     r14->m24A_runningCameraScript = 4;
     s_scriptData3* r13 = r14->m1E4_cutsceneKeyFrame;
@@ -1840,7 +1839,7 @@ void updateCutscene(s_dragonTaskWorkArea* r14)
             r14->m16C_deltaRotation[2] = 0;
         }
 
-        dragonFieldTaskInitSub4Sub6(r14);
+        updateDragonCollision(r14);
         if (r14->mF8_Flags & 0x40000)
         {
             updateCameraScriptSub0Sub2(r14);
@@ -1879,19 +1878,19 @@ void updateCutscene(s_dragonTaskWorkArea* r14)
         break;
     }
 
-    dragonFieldTaskInitSub4Sub5(&r14->m48, &r14->m20_angle);
+    buildDragonRotationMatrix(&r14->m48, &r14->m20_angle);
     copyMatrix(&r14->m48.m0_matrix, &r14->m88_matrix);
 
     if (--r14->m1EE < 0)
     {
         r14->m1EE = 0;
     }
-    dragonFieldTaskInitSub4Sub6(r14);
+    updateDragonCollision(r14);
 }
 
-void updateDragonDefault(s_dragonTaskWorkArea*)
+void dragonIdleUpdate(s_dragonTaskWorkArea*)
 {
-    PDS_unimplemented("updateDragonDefault");
+    PDS_unimplemented("dragonIdleUpdate");
 }
 
 void cutsceneTaskInitSub1(s_scriptData3* r15)
@@ -1900,7 +1899,7 @@ void cutsceneTaskInitSub1(s_scriptData3* r15)
     r4->m1E4_cutsceneKeyFrame = r15;
     r4->m104_dragonScriptStatus = 0;
 
-    r4->mF0 = updateCutscene;
+    r4->mF0 = dragonCutsceneUpdate;
     r4->mF8_Flags &= ~0x400;
 }
 
@@ -1944,7 +1943,7 @@ void cutsceneTaskInitSub2Sub0(sVec3_FP* r4, sVec3_FP* r5)
     r14->m2E4[4].m14 = 0;
     r14->m2E4[4].m18_maxDistanceSquare = 1;
 
-    subfieldA3_1Sub0Sub0();
+    initDragonMovementMode();
 
     fieldOverlaySubTaskInitSub1(1, NULL, NULL);
     fieldOverlaySubTaskInitSub3(1);
@@ -4405,7 +4404,7 @@ void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDr
     pWorkArea->m23B = 1;
 }
 
-s32 isDragonInValidArea(s_dragonTaskWorkArea* r4)
+s32 isDragonInFieldBounds(s_dragonTaskWorkArea* r4)
 {
     if (r4->m8_pos[0] <= r4->m130_minX + 0x20000)
         return 0;
@@ -4424,7 +4423,7 @@ void startScriptLeaveArea()
     PDS_unimplemented("startScriptLeaveArea");
 }
 
-void dragonFieldTaskInitSub4Sub5(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13)
+void buildDragonRotationMatrix(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13)
 {
     r14->m30 = r13->m0_X;
     r14->m34 = r13->m4_Y;
@@ -5161,7 +5160,7 @@ void integrateDragonMovement(s_dragonTaskWorkArea* r14)
 {
     getFieldTaskPtr()->m28_status &= ~0x10000;
 
-    dragonFieldTaskInitSub4Sub5(&r14->m48, &r14->m20_angle);
+    buildDragonRotationMatrix(&r14->m48, &r14->m20_angle);
     copyMatrix(&r14->m48.m0_matrix, &r14->m88_matrix);
 
     if (isDragonControlledByScripts())
@@ -5366,7 +5365,7 @@ void integrateDragonMovement(s_dragonTaskWorkArea* r14)
     }
 }
 
-void updateDragonMovement(s_dragonTaskWorkArea* r4)
+void dragonFlightUpdate(s_dragonTaskWorkArea* r4)
 {
     r4->m24A_runningCameraScript = 0;
 
@@ -5379,11 +5378,11 @@ void updateDragonMovement(s_dragonTaskWorkArea* r4)
         r4->mF8_Flags &= ~0x20000;
         r4->m104_dragonScriptStatus++;
     case 1:
-        if (!isDragonInValidArea(r4))
+        if (!isDragonInFieldBounds(r4))
         {
-            r4->mF0 = dragonLeaveArea;
+            r4->mF0 = dragonExitField;
             r4->m104_dragonScriptStatus = 0;
-            dragonLeaveArea(r4);
+            dragonExitField(r4);
             return;
         }
     }
@@ -5411,22 +5410,10 @@ void updateDragonMovement(s_dragonTaskWorkArea* r4)
 
 void dragonFieldTaskInitSub4Sub4()
 {
-    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    if (gDragonState->mC_dragonType == DR_LEVEL_8_FLOATER)
-    {
-        assert(0);
-    }
-    else
-    {
-        pDragonTask->mF0 = updateDragonMovement;
-    }
-
-    pDragonTask->m104_dragonScriptStatus = 0;
-
-    dragonFieldTaskInitSub4Sub4Sub2();
+    activateDragonFlight();
 }
 
-void dragonLeaveArea(s_dragonTaskWorkArea* r14)
+void dragonExitField(s_dragonTaskWorkArea* r14)
 {
     s_visibilityGridWorkArea* r12 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
     //r13 = r4->m178
@@ -5523,7 +5510,7 @@ void dragonLeaveArea(s_dragonTaskWorkArea* r14)
     }
 
     //607FB96
-    dragonFieldTaskInitSub4Sub5(&r14->m48, &r14->m20_angle);
+    buildDragonRotationMatrix(&r14->m48, &r14->m20_angle);
     copyMatrix(&r14->m48.m0_matrix, &r14->m88_matrix);
 
     r14->m15C_dragonSpeedIncrement = 0;
@@ -5533,7 +5520,7 @@ void dragonLeaveArea(s_dragonTaskWorkArea* r14)
 
     r14->m8_pos += r14->m160_deltaTranslation;
 
-    // this is all copied from dragonLeaveArea but looks like it's exactly the same
+    // this is all copied from dragonExitField but looks like it's exactly the same
     if ((r14->m134_minY == 0) && (r14->m140_maxY == 0))
         return;
 
@@ -5604,7 +5591,7 @@ void dragonLeaveArea(s_dragonTaskWorkArea* r14)
     }
 }
 
-void dragonFieldTaskInitSub4Sub6(s_dragonTaskWorkArea* r4)
+void updateDragonCollision(s_dragonTaskWorkArea* r4)
 {
     sVec3_FP var;
 
@@ -5730,7 +5717,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
         r4->m160_deltaTranslation[1] = performDivision(r4->m1E8_cameraScriptDelay, r5->m18 - r4->m8_pos[1]);
         r4->m160_deltaTranslation[2] = MTH_Mul(-r5->m1C, getCos(r4->m20_angle[1].getInteger() & 0xFFF));
 
-        dragonFieldTaskInitSub4Sub6(r4);
+        updateDragonCollision(r4);
         updateCameraScriptSub0Sub2(r4);
 
         getFieldCameraStatus()->m0_position = r5->m24_pos2;
@@ -5760,7 +5747,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
     }
 }
 
-void dragonAutomaticMovementWhenEnteringNewField(s_dragonTaskWorkArea* pTypedWorkArea)
+void dragonScriptMovement(s_dragonTaskWorkArea* pTypedWorkArea)
 {
     getFieldTaskPtr()->m28_status |= 0x10000;
 
@@ -5781,7 +5768,7 @@ void dragonAutomaticMovementWhenEnteringNewField(s_dragonTaskWorkArea* pTypedWor
         assert(0);
     }
 
-    dragonFieldTaskInitSub4Sub5(&pTypedWorkArea->m48, &pTypedWorkArea->m20_angle);
+    buildDragonRotationMatrix(&pTypedWorkArea->m48, &pTypedWorkArea->m20_angle);
 
     copyMatrix(&pTypedWorkArea->m48.m0_matrix, &pTypedWorkArea->m88_matrix);
 
@@ -5789,7 +5776,7 @@ void dragonAutomaticMovementWhenEnteringNewField(s_dragonTaskWorkArea* pTypedWor
     pTypedWorkArea->m8_pos[1] += pTypedWorkArea->m160_deltaTranslation[1];
     pTypedWorkArea->m8_pos[2] += pTypedWorkArea->m160_deltaTranslation[2];
 
-    dragonFieldTaskInitSub4Sub6(pTypedWorkArea);
+    updateDragonCollision(pTypedWorkArea);
 }
 
 void dragonFieldTaskInitSub5(s_dragonTaskWorkArea* pTypedWorkArea)
@@ -5813,7 +5800,7 @@ void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
     getMemoryArea(&pThis->m0, 0);
     dragonFieldTaskInitSub2(pThis);
     dragonFieldTaskInitSub3(pThis, gDragonState, 5);
-    pThis->mF0 = dragonAutomaticMovementWhenEnteringNewField;
+    pThis->mF0 = dragonScriptMovement;
 
     createSubTask<s_DragonRiderTask>(pThis);
 

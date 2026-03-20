@@ -513,7 +513,7 @@ void resolveDragonTerrainCollision()
         //06070E80
         r14_pDragonTask->m20_angle[0] = interpolateRotation(r14_pDragonTask->m20_angle[0], var28[0], 0x8000, 0x444444, 0);
         r14_pDragonTask->m20_angle[1] = interpolateRotation(r14_pDragonTask->m20_angle[1], var28[1], 0x2000, 0x444444, 0);
-        dragonFieldTaskInitSub4Sub5(&r14_pDragonTask->m48, &r14_pDragonTask->m20_angle);
+        buildDragonRotationMatrix(&r14_pDragonTask->m48, &r14_pDragonTask->m20_angle);
         return;
     }
 

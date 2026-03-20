@@ -2,7 +2,9 @@
 #include "o_fld_c8.h"
 #include "field/field_a3/o_fld_a3.h"
 #include "field/fieldRadar.h"
+#include "field/fieldDragonMovement.h"
 #include "audio/soundDriver.h"
+
 
 FLD_C8_data* gFLD_C8 = nullptr;
 
@@ -33,7 +35,7 @@ static const s_MCB_CGB fieldFileList_C8[] =
 // 060557e8
 static void createFieldSpecificDataTask_C8()
 {
-    Unimplemented(); // FUN_FLD_C8__0607a516 — creates dummy subtask under overlay task
+    Unimplemented(); // 0607a516 — creates dummy subtask (size 0) under overlay task
 
     s_fieldSpecificData_C8* pFieldData = createSubTaskFromFunction<s_fieldSpecificData_C8>(
         getFieldTaskPtr()->m8_pSubFieldData, nullptr);
@@ -103,7 +105,8 @@ static s32 startCutsceneFromTable_C8(p_workArea workArea)
             s32 result = startFieldScript(scriptId, scriptParam);
             if (result != 0 && readSaturnS32(entry + 12) != 0)
             {
-                Unimplemented(); // FUN_FLD_C8__06073ee8 — additional cutscene setup
+                // 06073ee8
+                getFieldTaskPtr()->m8_pSubFieldData->fieldSubTaskStatus = 1;
             }
             return result;
         }
@@ -169,7 +172,8 @@ p_workArea overlayStart_FLD_C8(p_workArea workArea, u32 arg)
     }
 
     // m360 update function
-    Unimplemented(); // m360 = FLD_C8::06057ab4
+    // m360 = FLD_C8::06057ab4 — debug "MAKING MODE" menu (only active in debug builds)
+    // 0606ecac is a debug menu system, no-op in non-debug
 
     // 06059824 — check cutscene table and start if applicable
     s16 subfield2 = getFieldTaskPtr()->m2E_currentSubFieldIndex;
@@ -184,7 +188,8 @@ p_workArea overlayStart_FLD_C8(p_workArea workArea, u32 arg)
 
     if ((mainGameState.bitField[0xA6] & 0x10) != 0)
     {
-        Unimplemented(); // LAB_FLD_C8__06071646 — additional D4-specific init
+        // 06071646
+        getFieldTaskPtr()->m28_status |= 0x40000;
     }
 
     return nullptr;

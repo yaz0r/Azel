@@ -134,7 +134,8 @@ void sC8Vdp2Task::Init(sC8Vdp2Task* pThis, sSaturnPtr param)
 
     c8Vdp2Setup(pThis);
 
-    Unimplemented(); // 0605f876 — creates small subtask with param
+    // 0605f876 — create fog/fade subtask
+    Unimplemented(); // createSubTaskFromFunction(pThis, 0605f872, 0xC), stores towerData param
 }
 
 // 0605F662

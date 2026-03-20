@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "exitField.h"
 #include "field_a3/o_fld_a3.h"
+#include "field/fieldDragonMovement.h"
 
 // Used when dragon is flying away to change field
 // Example is the waterfall at the end of A3_2
@@ -16,12 +17,12 @@ void DragonUpdateCutscene(s_dragonTaskWorkArea* r4)
         updateCameraScriptSub0(r4->mB8_lightWingEffect);
         r4->mF8_Flags &= ~0x400;
         r4->mF8_Flags |= 0x20000;
-        dragonFieldTaskInitSub4Sub6(r4);
+        updateDragonCollision(r4);
         updateCameraScriptSub0Sub2(r4);
         r4->m104_dragonScriptStatus++;
         [[fallthrough]];
     case 1:
-        dragonFieldTaskInitSub4Sub5(&r4->m48, &r4->m20_angle);
+        buildDragonRotationMatrix(&r4->m48, &r4->m20_angle);
         copyMatrix(&r4->m48.m0_matrix, &r4->m88_matrix);
         r4->m8_pos += r4->m160_deltaTranslation;
         break;
@@ -30,7 +31,7 @@ void DragonUpdateCutscene(s_dragonTaskWorkArea* r4)
         break;
     }
 
-    dragonFieldTaskInitSub4Sub6(r4);
+    updateDragonCollision(r4);
 }
 
 struct s_exitCutsceneTask : public s_workAreaTemplate<s_exitCutsceneTask>

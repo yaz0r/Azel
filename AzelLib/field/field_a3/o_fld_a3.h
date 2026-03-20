@@ -36,7 +36,6 @@ void dragonFieldTaskInitSub4Sub3(u8 r4);
 fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targetValue, fixedPoint stack0, fixedPoint r11, s32 r13);
 
 void initDragonSpeed(u32 arg);
-void dragonAutomaticMovementWhenEnteringNewField(s_dragonTaskWorkArea* pTypedWorkArea);
 void fieldOverlaySubTaskInitSub1(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*));
 u32 fieldOverlaySubTaskInitSub3(u32 r4);
 p_workArea createLCSShootTask(s_LCSTask* r4, sLCSTarget* r5);
@@ -56,7 +55,7 @@ void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea));
 void setupDragonPosition(const sVec3_FP* r4, const sVec3_FP* r5);
 
 p_workArea create_fieldA3_0_task0(p_workArea workArea); // shared subfield 0 and 1
-void subfieldA3_1Sub0Sub0();
+void initDragonMovementMode();
 void subfieldA3_1Sub0Sub2(s32 r4, s32 r5);
 s_cutsceneData* loadCutsceneData(sSaturnPtr EA);
 void loadScriptData1(std::vector<s_scriptData1>& output, const sSaturnPtr& EA);
