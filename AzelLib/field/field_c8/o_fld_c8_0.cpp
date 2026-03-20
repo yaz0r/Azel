@@ -47,6 +47,7 @@ static void FUN_FLD_C8_0607d600(sVec3_FP* pPos, sVec3_FP* pAngle);
 void dragonIdleUpdate(s_dragonTaskWorkArea*);
 void dragonCutsceneUpdate(s_dragonTaskWorkArea*);
 void dragonFlightUpdate(s_dragonTaskWorkArea*);
+void updateCutsceneCameraInterpolation(sFieldCameraManager* r4, sFieldCameraStatus* r5);
 
 // 0608948a = dragonCutsceneUpdate
 // 0608930e = dragonScriptMovement
@@ -288,18 +289,18 @@ static void FUN_FLD_C8_0607df7c(s32 speedIndex)
 
 // 0607d9c2 = initDragonMovementMode (same shared function)
 
-// 0606a488 — check if camera slot is initialized
-static s32 FUN_FLD_C8_0606a488(s16 slotIndex)
+// 0606a488 — check if camera slot is initialized (reads m8C at offset 0x470 per slot)
+static s32 isCameraSlotActive(s16 slotIndex)
 {
-    s_fieldOverlaySubTaskWorkArea* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    return (s32)pOverlay->m3E4[slotIndex].m90;
+    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    return (s32)pOverlay->m3E4_cameraSlots[slotIndex].m8C_isActive;
 }
 
 // 0606a4d4 — clear camera status fields
-static void FUN_FLD_C8_0606a4d4(sFieldCameraStatus* pStatus)
+static void resetCameraStatus(sFieldCameraStatus* pStatus)
 {
-    pStatus->m5C = {};
-    pStatus->m68 = {};
+    pStatus->m5C_rotationSpring = {};
+    pStatus->m68_rotationImpulse = {};
     pStatus->m0_position = {};
     pStatus->mC_rotation = {};
     pStatus->m28 = fixedPoint(0);
@@ -311,52 +312,52 @@ static void FUN_FLD_C8_0606a4d4(sFieldCameraStatus* pStatus)
     pStatus->m40 = fixedPoint(0xF000);
     pStatus->m20 = fixedPoint(0);
     pStatus->m34 = fixedPoint(0);
-    pStatus->m80 = 0;
+    pStatus->m80_frameCounter = 0;
     pStatus->m84 = 0;
-    pStatus->m8D = 0;
-    pStatus->m8E = 0;
+    pStatus->m8D_followState = 0;
+    pStatus->m8E_followSubState = 0;
 }
 
 // 0606a512
-static void FUN_FLD_C8_0606a512(s16 slotIndex, void(*param2)(sFieldCameraStatus*), void(*param3)(sFieldCameraStatus*))
+static void initCameraSlot(s16 slotIndex, void(*param2)(sFieldCameraStatus*), void(*param3)(sFieldCameraStatus*))
 {
-    s_fieldOverlaySubTaskWorkArea* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    sFieldCameraStatus* pStatus = &pOverlay->m3E4[slotIndex];
-    FUN_FLD_C8_0606a4d4(pStatus);
-    pStatus->m74 = param2;
-    pStatus->m78 = param3;
-    pStatus->m8C = 1;
+    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    sFieldCameraStatus* pStatus = &pOverlay->m3E4_cameraSlots[slotIndex];
+    resetCameraStatus(pStatus);
+    pStatus->m74_updateFunc = param2;
+    pStatus->m78_drawFunc = param3;
+    pStatus->m8C_isActive = 1;
 }
 
 // 0606a558
-static void FUN_FLD_C8_0606a558(s16 slotIndex)
+static void deactivateCameraSlot(s16 slotIndex)
 {
-    s_fieldOverlaySubTaskWorkArea* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    sFieldCameraStatus* pStatus = &pOverlay->m3E4[slotIndex];
-    pStatus->m74 = nullptr;
-    pStatus->m78 = nullptr;
-    pStatus->m8C = 0;
+    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    sFieldCameraStatus* pStatus = &pOverlay->m3E4_cameraSlots[slotIndex];
+    pStatus->m74_updateFunc = nullptr;
+    pStatus->m78_drawFunc = nullptr;
+    pStatus->m8C_isActive = 0;
 }
 
 // 0606a3ec
-static s32 FUN_FLD_C8_0606a3ec(s16 slotIndex)
+static s32 selectCameraSlot(s16 slotIndex)
 {
-    s32 check = FUN_FLD_C8_0606a488(slotIndex);
+    s32 check = isCameraSlotActive(slotIndex);
     if (check != 0)
     {
-        s_fieldOverlaySubTaskWorkArea* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-        pOverlay->m50C = (u8)slotIndex;
-        pOverlay->m3E4[slotIndex].m80 = 0;
+        sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
+        pOverlay->m50C_activeCameraSlot = (u8)slotIndex;
+        pOverlay->m3E4_cameraSlots[slotIndex].m80_frameCounter = 0;
         return 1;
     }
     return 0;
 }
 
 // 0606a590 — get current camera status pointer
-static sFieldCameraStatus* FUN_FLD_C8_0606a590()
+static sFieldCameraStatus* getCurrentCameraStatus()
 {
-    s_fieldOverlaySubTaskWorkArea* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    return &pOverlay->m3E4[pOverlay->m50C];
+    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    return &pOverlay->m3E4_cameraSlots[pOverlay->m50C_activeCameraSlot];
 }
 
 // 0606941e — angle smoothing with clamped step (28-bit normalized)
@@ -401,51 +402,8 @@ static s32 FUN_FLD_C8_06069398(s32 current, s32 target, s32 speed, s32 maxStep, 
     return current + step;
 }
 
-// 0606b2cc — camera interpolation (smooths m5C rotation spring + m44 position spring, computes look-at)
-static void FUN_FLD_C8_0606b2cc(s_fieldOverlaySubTaskWorkArea* pOverlay, sFieldCameraStatus* pStatus)
-{
-    pOverlay->m378++;
-
-    // Smooth m5C (rotation spring) toward 0, add m68 impulse
-    pStatus->m5C.m0_X = FUN_FLD_C8_0606941e((s32)pStatus->m5C.m0_X, 0, 0x2000, 0x444444, 0);
-    pStatus->m5C.m4_Y = FUN_FLD_C8_0606941e((s32)pStatus->m5C.m4_Y, 0, 0x2000, 0x444444, 0);
-    pStatus->m5C.m8_Z = FUN_FLD_C8_0606941e((s32)pStatus->m5C.m8_Z, 0, 0x2000, 0x444444, 0);
-    pStatus->m5C.m0_X = fixedPoint((s32)pStatus->m5C.m0_X + (s32)pStatus->m68.m0_X);
-    pStatus->m5C.m4_Y = fixedPoint((s32)pStatus->m5C.m4_Y + (s32)pStatus->m68.m4_Y);
-    pStatus->m5C.m8_Z = fixedPoint((s32)pStatus->m5C.m8_Z + (s32)pStatus->m68.m8_Z);
-    pStatus->m68 = {};
-
-    // Smooth m44 (position spring) toward 0, add m50 impulse
-    pStatus->m44.m0_X = FUN_FLD_C8_06069398((s32)pStatus->m44.m0_X, 0, 0x2000, 0xAAA, 0);
-    pStatus->m44.m4_Y = FUN_FLD_C8_06069398((s32)pStatus->m44.m4_Y, 0, 0x2000, 0xAAA, 0);
-    pStatus->m44.m8_Z = FUN_FLD_C8_06069398((s32)pStatus->m44.m8_Z, 0, 0x2000, 0xAAA, 0);
-    pStatus->m44.m0_X = fixedPoint((s32)pStatus->m44.m0_X + (s32)pStatus->m50.m0_X);
-    pStatus->m44.m4_Y = fixedPoint((s32)pStatus->m44.m4_Y + (s32)pStatus->m50.m4_Y);
-    pStatus->m44.m8_Z = fixedPoint((s32)pStatus->m44.m8_Z + (s32)pStatus->m50.m8_Z);
-    pStatus->m50 = {};
-
-    // Position = target + position spring
-    sVec3_FP* pTarget = pOverlay->m370_cameraTargetPtr;
-    pStatus->m0_position.m0_X = fixedPoint((s32)pTarget->m0_X + (s32)pStatus->m44.m0_X);
-    pStatus->m0_position.m4_Y = fixedPoint((s32)pTarget->m4_Y + (s32)pStatus->m44.m4_Y);
-    pStatus->m0_position.m8_Z = fixedPoint((s32)pTarget->m8_Z + (s32)pStatus->m44.m8_Z);
-
-    // Look-at direction = source - target
-    sVec3_FP* pSource = pOverlay->m374_cameraSourcePtr;
-    sVec3_FP lookDir;
-    lookDir.m0_X = fixedPoint((s32)pSource->m0_X - (s32)pTarget->m0_X);
-    lookDir.m4_Y = fixedPoint((s32)pSource->m4_Y - (s32)pTarget->m4_Y);
-    lookDir.m8_Z = fixedPoint((s32)pSource->m8_Z - (s32)pTarget->m8_Z);
-    computeLookAt(lookDir, pStatus->mC_rotation);
-
-    // Add rotation spring to computed rotation
-    pStatus->mC_rotation.m0_X = fixedPoint((s32)pStatus->mC_rotation.m0_X + (s32)pStatus->m5C.m0_X);
-    pStatus->mC_rotation.m4_Y = fixedPoint((s32)pStatus->mC_rotation.m4_Y + (s32)pStatus->m5C.m4_Y);
-    pStatus->mC_rotation.m8_Z = fixedPoint((s32)pStatus->mC_rotation.m8_Z + (s32)pStatus->m5C.m8_Z);
-
-    // Distance
-    pStatus->m24_distanceToDestination = vecDistance(*pTarget, *pSource);
-}
+// 0606b2cc — same as updateCutsceneCameraInterpolation (060625d8 in A3)
+// Camera interpolation using m370/m374 pointers. Shared across all field overlays.
 
 // 0607da24
 static void FUN_FLD_C8_0607da24()
@@ -456,59 +414,59 @@ static void FUN_FLD_C8_0607da24()
 // 0607d98e = dragonFieldTaskInitSub4Sub4 (same shared function)
 
 // 0606a42e — set camera tracking for slot
-static s32 FUN_FLD_C8_0606a42e(s16 slotIndex, void(*param2)(sFieldCameraStatus*), void(*param3)(sFieldCameraStatus*))
+static s32 setCameraSlotFunctions(s16 slotIndex, void(*param2)(sFieldCameraStatus*), void(*param3)(sFieldCameraStatus*))
 {
-    s32 check = FUN_FLD_C8_0606a488(slotIndex);
+    s32 check = isCameraSlotActive(slotIndex);
     if (check != 0)
     {
-        s_fieldOverlaySubTaskWorkArea* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-        sFieldCameraStatus* pStatus = &pOverlay->m3E4[slotIndex];
-        pStatus->m74 = param2;
-        pStatus->m78 = param3;
-        pStatus->m8D = 0;
-        pStatus->m8E = 0;
+        sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
+        sFieldCameraStatus* pStatus = &pOverlay->m3E4_cameraSlots[slotIndex];
+        pStatus->m74_updateFunc = param2;
+        pStatus->m78_drawFunc = param3;
+        pStatus->m8D_followState = 0;
+        pStatus->m8E_followSubState = 0;
         return 1;
     }
     return 0;
 }
 
-// 0606a608 = updateCameraScriptSub1 (same shared function)
-void updateCameraScriptSub1(u32 r4); // declared in o_fld_a3.cpp
+// 0606a608 = activateCameraFollowMode (same shared function)
+void activateCameraFollowMode(u32 r4); // declared in o_fld_a3.cpp
 
 // 0606b532 — restore camera from cutscene
-static void FUN_FLD_C8_0606b532()
+static void restoreCameraFromCutscene()
 {
-    s_fieldOverlaySubTaskWorkArea* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    pOverlay->m378 = 0;
-    pOverlay->m37C = 0;
+    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    pOverlay->m378_cutsceneFrameCounter = 0;
+    pOverlay->m37C_isCutsceneCameraActive = 0;
     activateDragonFlight();
-    FUN_FLD_C8_0606a558(1);
+    deactivateCameraSlot(1);
     // Copy only position/rotation/params from slot 1 to slot 0 (first 40 bytes, NOT the whole struct)
-    sFieldCameraStatus& dst = pOverlay->m3E4[0];
-    sFieldCameraStatus& src = pOverlay->m3E4[1];
+    sFieldCameraStatus& dst = pOverlay->m3E4_cameraSlots[0];
+    sFieldCameraStatus& src = pOverlay->m3E4_cameraSlots[1];
     dst.m0_position = src.m0_position;
     dst.mC_rotation = src.mC_rotation;
     dst.m18 = src.m18;
     dst.m1C = src.m1C;
     dst.m20 = src.m20;
     dst.m24_distanceToDestination = src.m24_distanceToDestination;
-    FUN_FLD_C8_0606a3ec(0);
-    updateCameraScriptSub1((s32)pOverlay->m50E);
+    selectCameraSlot(0);
+    activateCameraFollowMode((s32)pOverlay->m50E_followModeIndex);
 }
 
 // 0606b4a0 — setup camera parameters on overlay subtask
-static void FUN_FLD_C8_0606b4a0(sVec3_FP* param1, sVec3_FP* param2)
+static void setupCutsceneCamera(sVec3_FP* param1, sVec3_FP* param2)
 {
-    s_fieldOverlaySubTaskWorkArea* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    pOverlay->m370_cameraTargetPtr = param1;
-    pOverlay->m374_cameraSourcePtr = param2;
-    pOverlay->m378 = 0;
-    pOverlay->m37C = 1;
+    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    pOverlay->m370_cutsceneLookAtPtr = param1;
+    pOverlay->m374_cutsceneCameraPos = param2;
+    pOverlay->m378_cutsceneFrameCounter = 0;
+    pOverlay->m37C_isCutsceneCameraActive = 1;
     initDragonMovementMode();
-    FUN_FLD_C8_0606a512(1, nullptr, nullptr);
-    FUN_FLD_C8_0606a3ec(1);
-    sFieldCameraStatus* pCamStatus = FUN_FLD_C8_0606a590();
-    FUN_FLD_C8_0606b2cc(pOverlay, pCamStatus);
+    initCameraSlot(1, nullptr, nullptr);
+    selectCameraSlot(1);
+    sFieldCameraStatus* pCamStatus = getCurrentCameraStatus();
+    updateCutsceneCameraInterpolation(pOverlay, pCamStatus);
 }
 
 // 06073e80
@@ -561,7 +519,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
         FUN_FLD_C8_0605c87c(pThis, (u8*)pArg);
         // 0606b4a0
         s_fieldSpecificData_C8* pFD = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
-        FUN_FLD_C8_0606b4a0(&pFD->m64_cameraTarget, &pFD->m4C_dragonPos);
+        setupCutsceneCamera(&pFD->m64_cameraTarget, &pFD->m4C_dragonPos);
         pThis->m1A_state = 0;
     }
     // 0607e03a
@@ -608,7 +566,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
         {
             if ((pThis->m14_flags & 1) == 0)
             {
-                FUN_FLD_C8_0606b532();
+                restoreCameraFromCutscene();
                 if (pThis)
                     pThis->getTask()->m14_flags |= 1;
             }
@@ -634,7 +592,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
 static void FUN_FLD_C8_0607d600(sVec3_FP* pPos, sVec3_FP* pAngle)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    FUN_FLD_C8_0606a590();
+    getCurrentCameraStatus();
     if (pPos)
         pDragon->m8_pos = *pPos;
     if (pAngle)
@@ -1843,22 +1801,32 @@ struct s_towerCreatureC8 : public s_workAreaTemplateWithArg<s_towerCreatureC8, s
     }
 };
 
-// 0605d772 — recursive hierarchy bone data reader
-static void towerCreatureC8_readBoneData(s_towerCreatureC8* pThis, sSaturnPtr modelOffsetTableEA,
-    sModelHierarchy* pNode, std::vector<sStaticPoseData::sBonePoseData>::const_iterator& pBoneIt, s32* pBoneIndex)
+// 0605d772 — read bone transform data from model hierarchy
+static void towerCreatureC8_readBoneData(s_towerCreatureC8* pThis, s_towerCreatureC8_arg* pArg, sModelHierarchy* pNode, s32* pBoneIndex)
 {
+    sSaturnPtr tablePtr = pArg->mC_tablePtr;
+    sSaturnPtr modelOffsetTableEA = readSaturnEA(tablePtr);
+    u16 poseOffset = readSaturnU16(tablePtr + 6);
+    s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+
     do
     {
         s_towerCreatureBone* pBone = &pThis->m9C_bones[*pBoneIndex];
         pBone->m18_modelOffset = readSaturnU16(modelOffsetTableEA + *pBoneIndex * 2);
-        pBone->m0_position = pBoneIt->m0_translation;
-        pBone->mC_rotation = pBoneIt->mC_rotation;
+
+        // Read position/rotation from raw pose data in bundle (0x24 bytes per bone)
+        u8* pRawPose = pBundle->getRawFileAtOffset(poseOffset) + *pBoneIndex * 0x24;
+        pBone->m0_position.m0_X = READ_BE_S32(pRawPose + 0);
+        pBone->m0_position.m4_Y = READ_BE_S32(pRawPose + 4);
+        pBone->m0_position.m8_Z = READ_BE_S32(pRawPose + 8);
+        pBone->mC_rotation.m0_X = READ_BE_S32(pRawPose + 0xC);
+        pBone->mC_rotation.m4_Y = READ_BE_S32(pRawPose + 0x10);
+        pBone->mC_rotation.m8_Z = READ_BE_S32(pRawPose + 0x14);
         (*pBoneIndex)++;
-        pBoneIt++;
 
         if (pNode->m4_subNode)
         {
-            towerCreatureC8_readBoneData(pThis, modelOffsetTableEA, pNode->m4_subNode, pBoneIt, pBoneIndex);
+            towerCreatureC8_readBoneData(pThis, pArg, pNode->m4_subNode, pBoneIndex);
         }
 
         if (pNode->m8_nextNode == nullptr)
@@ -2016,20 +1984,11 @@ void s_towerCreatureC8::Init(s_towerCreatureC8* pThis, s_towerCreatureC8_arg* pA
     pThis->m1DA_yRotSubState = 0;
     pThis->m1DB_xRotSubState = 0;
 
-    // 0605d772 — read bone transform data from model hierarchy
+    // 0605d772
     {
-        s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
-        sSaturnPtr tablePtr = pThis->m1B8_tablePtr;
-        u16 hierOffset = readSaturnU16(tablePtr + 4);
-        u16 poseOffset = readSaturnU16(tablePtr + 6);
-        sSaturnPtr modelOffsetTableEA = readSaturnEA(tablePtr);
-
-        sModelHierarchy* pHierarchy = pBundle->getModelHierarchy(hierOffset);
-        u32 numBones = pHierarchy->countNumberOfBones();
-        sStaticPoseData* pPose = pBundle->getStaticPose(poseOffset, numBones);
+        sModelHierarchy* pHierarchy = pThis->m0_memoryArea.m0_mainMemoryBundle->getModelHierarchy(readSaturnU16(pArg->mC_tablePtr + 4));
         s32 boneIndex = 0;
-        auto boneIt = pPose->m0_bones.begin();
-        towerCreatureC8_readBoneData(pThis, modelOffsetTableEA, pHierarchy, boneIt, &boneIndex);
+        towerCreatureC8_readBoneData(pThis, pArg, pHierarchy, &boneIndex);
     }
 
     // 0607a55a — read position from entry data
@@ -2703,7 +2662,7 @@ static s32 clipCheck_C8_alwaysVisible(const sVec3_FP* r4, s32 r5)
 // 0606a5c2 — get camera view matrix
 static sMatrix4x3* getFieldCameraMatrix_C8()
 {
-    return &getFieldTaskPtr()->m8_pSubFieldData->m334->m384;
+    return &getFieldTaskPtr()->m8_pSubFieldData->m334->m384_viewMatrix;
 }
 
 // 060788dc — frustum culling check
@@ -2767,7 +2726,7 @@ static void initClipAndOverlay_C8(p_workArea workArea)
     graphicEngineStatus.m405C.m38_oneOverFarClip = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
     graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
     setClipFunction_C8();
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 2;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 2;
     fieldRadar_setEncounterDistance(fixedPoint(0x12C000));
 }
 

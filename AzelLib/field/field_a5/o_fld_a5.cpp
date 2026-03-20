@@ -69,7 +69,7 @@ p_workArea overlayStart_FLD_A5(p_workArea workArea, u32 arg)
 
     graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts(gFLD_A5->getSaturnPtr(0x0609D4A8));
 
     // Per-subfield dispatch

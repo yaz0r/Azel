@@ -53,23 +53,23 @@ struct sFieldCameraStatus
     s32 m30;
     fixedPoint m34;
     fixedPoint m40;
-    sVec3_FP m44;
-    sVec3_FP m50;
-    sVec3_FP m5C;
-    sVec3_FP m68;
-    void(*m74)(sFieldCameraStatus* r4);
-    void(*m78)(sFieldCameraStatus* r4);
+    sVec3_FP m44_positionSpring;
+    sVec3_FP m50_positionImpulse;
+    sVec3_FP m5C_rotationSpring;
+    sVec3_FP m68_rotationImpulse;
+    void(*m74_updateFunc)(sFieldCameraStatus* r4);
+    void(*m78_drawFunc)(sFieldCameraStatus* r4);
     s32 m7C;
-    s32 m80;
+    s32 m80_frameCounter;
     s32 m84;
     s32 m88;
     s8 m89;
     s8 m8A;
-    s8 m8C;
-    s8 m8D;
-    s8 m8E;
-    s8 m8F;
-    s8 m90;
+    s8 m8C_isActive;
+    s8 m8D_followState;
+    s8 m8E_followSubState;
+    s8 m8F_followType;
+    s8 m90_followMode;
 
     //size 94
 };

@@ -11,45 +11,45 @@
 // 06057eb4
 static s32 isFieldCameraActive(s16 cameraIndex)
 {
-    s_fieldOverlaySubTaskWorkArea* pCameraData = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    return (s32)*(s8*)((u8*)&pCameraData->m3E4[cameraIndex] + 0x8C);
+    sFieldCameraManager* pCameraData = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    return (s32)*(s8*)((u8*)&pCameraData->m3E4_cameraSlots[cameraIndex] + 0x8C);
 }
 
 // 06057fbc
 static sFieldCameraStatus* getCurrentFieldCameraStatus()
 {
-    s_fieldOverlaySubTaskWorkArea* pCameraData = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    return &pCameraData->m3E4[pCameraData->m50C];
+    sFieldCameraManager* pCameraData = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    return &pCameraData->m3E4_cameraSlots[pCameraData->m50C_activeCameraSlot];
 }
 
 // 06057db0
 static void updateFieldCamera()
 {
-    s_fieldOverlaySubTaskWorkArea* pCameraData = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    sFieldCameraManager* pCameraData = getFieldTaskPtr()->m8_pSubFieldData->m334;
 
     for (s32 i = 0; i < 2; i++)
     {
         if (isFieldCameraActive(i))
         {
-            sFieldCameraStatus& cam = pCameraData->m3E4[i];
-            if (pCameraData->m2E4[4].m18_maxDistanceSquare == 0)
+            sFieldCameraStatus& cam = pCameraData->m3E4_cameraSlots[i];
+            if (pCameraData->m37C_isCutsceneCameraActive == 0)
             {
-                if (cam.m78)
+                if (cam.m78_drawFunc)
                 {
-                    cam.m78(&cam);
+                    cam.m78_drawFunc(&cam);
                 }
             }
         }
     }
 
-    sFieldCameraStatus* pCurrentCam = &pCameraData->m3E4[pCameraData->m50C];
+    sFieldCameraStatus* pCurrentCam = &pCameraData->m3E4_cameraSlots[pCameraData->m50C_activeCameraSlot];
     sVec3_S16 rotation;
     rotation[0] = (s16)((u32)pCurrentCam->mC_rotation.m0_X >> 16);
     rotation[1] = (s16)((u32)pCurrentCam->mC_rotation.m4_Y >> 16);
     rotation[2] = (s16)((u32)pCurrentCam->mC_rotation.m8_Z >> 16);
     updateEngineCamera(&cameraProperties2, pCurrentCam->m0_position, rotation);
-    copyMatrix(pCurrentMatrix, &pCameraData->m384);
-    copyMatrix(&cameraProperties2.m28[0], &pCameraData->m3B4);
+    copyMatrix(pCurrentMatrix, &pCameraData->m384_viewMatrix);
+    copyMatrix(&cameraProperties2.m28[0], &pCameraData->m3B4_projectionMatrix);
 }
 
 struct s_d5StarfieldTask : public s_workAreaTemplate<s_d5StarfieldTask>

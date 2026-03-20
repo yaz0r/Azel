@@ -18,7 +18,7 @@ void subfieldA5_A(p_workArea workArea)
         setupDragonPosition(&pos, &rot);
     }
     setupCameraConfig_A5_corridor();
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 2;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 2;
     initDragonParams_A5_corridor();
     createA5Vdp2Task(workArea);
     getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;

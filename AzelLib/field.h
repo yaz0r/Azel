@@ -14,47 +14,47 @@ struct s_fieldCameraConfig
 };
 s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA);
 
-struct s_fieldOverlaySubTaskWorkArea2E4
+struct sFieldCameraZone
 {
-    sVec3_FP m0;
+    sVec3_FP m0_center;
     sVec3_FP* mC_pPosition;
     sVec3_FP* m10_pPosition2;
-    s32 m14;
+    s32 m14_triggerRadius;
     s32 m18_maxDistanceSquare;
     // size 0x20?
 };
 
-struct s_fieldOverlaySubTaskWorkArea : public s_workAreaTemplate<s_fieldOverlaySubTaskWorkArea>
+struct sFieldCameraManager : public s_workAreaTemplate<sFieldCameraManager>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { &fieldOverlaySubTaskInit, NULL, NULL, NULL};
+        static const TypedTaskDefinition taskDefinition = { &fieldCameraManagerInit, NULL, NULL, NULL};
         return &taskDefinition;
     }
 
-    static void fieldOverlaySubTaskInit(s_fieldOverlaySubTaskWorkArea*);
+    static void fieldCameraManagerInit(sFieldCameraManager*);
 
     s32 m0_nextCamera;
     s32 m4_currentCamera;
     s32 m8_numFramesOnCurrentCamera;
     s32 mC;
     std::array<s_fieldCameraConfig,8> m10; // unknown size
-    s32 m2D0;
-    s32 m2D4;
-    s32 m2D8;
-    s32 m2DC;
-    s32 m2E0;
-    std::array<s_fieldOverlaySubTaskWorkArea2E4,5> m2E4;
-    sVec3_FP* m370_cameraTargetPtr;
-    sVec3_FP* m374_cameraSourcePtr;
-    s32 m378;
-    s32 m37C;
-    sMatrix4x3 m384;
-    sMatrix4x3 m3B4;
-    std::array<sFieldCameraStatus,2> m3E4;
-    u8 m50C;
-    u8 m50D; // 50D
-    u8 m50E; // 50E
+    s32 m2D0_activeZoneIndex;
+    s32 m2D4_candidateZoneIndex;
+    s32 m2D8_zoneDwellCounter;
+    s32 m2DC_numCameraZones;
+    s32 m2E0_forcedZoneIndex;
+    std::array<sFieldCameraZone,5> m2E4_cameraZones;
+    sVec3_FP* m370_cutsceneLookAtPtr;
+    sVec3_FP* m374_cutsceneCameraPos;
+    s32 m378_cutsceneFrameCounter;
+    s32 m37C_isCutsceneCameraActive;
+    sMatrix4x3 m384_viewMatrix;
+    sMatrix4x3 m3B4_projectionMatrix;
+    std::array<sFieldCameraStatus,2> m3E4_cameraSlots;
+    u8 m50C_activeCameraSlot;
+    u8 m50D_isInitialized; // 50D
+    u8 m50E_followModeIndex; // 50E
 };
 
 struct s_scriptData1
@@ -641,7 +641,7 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     const s_MCB_CGB* m30_fileList; // 30
     u32 m34_MCBFilesSizes[32]; // 34
     u32 m1B4_CGBFilesSizes[32]; // 1B4
-    s_fieldOverlaySubTaskWorkArea* m334;
+    sFieldCameraManager* m334;
     s_dragonTaskWorkArea* m338_pDragonTask; // 338
     struct s_FieldRadar* m33C_fieldRadar;
     s_LCSTask* m340_pLCS;

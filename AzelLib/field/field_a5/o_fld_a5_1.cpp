@@ -12,7 +12,7 @@ void subfieldA5_1(p_workArea workArea)
     s_DataTable3* pDT3 = readDataTable3(gFLD_A5->getSaturnPtr(0x0608F044));
     setupField2(pDT3, fieldA5_1_startTasks);
     setupCameraConfig_A5_corridor();
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 2;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 2;
     // setupDragonPosition with position + rotation from overlay data
     s16 prev = getFieldTaskPtr()->m32_previousSubField;
     sSaturnPtr posData;

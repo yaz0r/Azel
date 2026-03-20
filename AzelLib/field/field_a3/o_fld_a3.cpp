@@ -31,7 +31,7 @@
 
 sMatrix4x3* fieldCameraTask1DrawSub1();
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
-void updateCameraScriptSub1(u32 r4);
+void activateCameraFollowMode(u32 r4);
 void fieldOverlaySubTaskInitSub5(u32 r4);
 s32 checkPositionVisibility(const sVec3_FP* r4, s32 r5);
 
@@ -81,7 +81,7 @@ std::vector<sLCSTaskDrawSub5Sub1_Data1> readLCSTaskDrawSub5Sub1_Data1(sSaturnPtr
 std::vector<sLCSTaskDrawSub5Sub1_Data1> LCSTaskDrawSub5Sub1_Data1;
 
 void dragonExitField(s_dragonTaskWorkArea* r14);
-s8 updateCameraFromDragonSub1(s32 index);
+s8 isFieldCameraSlotActive(s32 index);
 
 std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3)
 {
@@ -1903,52 +1903,53 @@ void cutsceneTaskInitSub1(s_scriptData3* r15)
     r4->mF8_Flags &= ~0x400;
 }
 
-void dragonFieldTaskUpdateSub5Sub2(s_fieldOverlaySubTaskWorkArea* r4, sFieldCameraStatus* r5)
+// 060625d8
+void updateCutsceneCameraInterpolation(sFieldCameraManager* r4, sFieldCameraStatus* r5)
 {
-    r4->m2E4[4].m14++;
-    r5->m5C[0] = interpolateRotation(r5->m5C[0], 0, 0x2000, 0x444444, 0);
-    r5->m5C[1] = interpolateRotation(r5->m5C[1], 0, 0x2000, 0x444444, 0);
-    r5->m5C[2] = interpolateRotation(r5->m5C[2], 0, 0x2000, 0x444444, 0);
+    r4->m378_cutsceneFrameCounter++;
+    r5->m5C_rotationSpring[0] = interpolateRotation(r5->m5C_rotationSpring[0], 0, 0x2000, 0x444444, 0);
+    r5->m5C_rotationSpring[1] = interpolateRotation(r5->m5C_rotationSpring[1], 0, 0x2000, 0x444444, 0);
+    r5->m5C_rotationSpring[2] = interpolateRotation(r5->m5C_rotationSpring[2], 0, 0x2000, 0x444444, 0);
 
-    r5->m5C += r5->m68;
-    r5->m68.zeroize();
+    r5->m5C_rotationSpring += r5->m68_rotationImpulse;
+    r5->m68_rotationImpulse.zeroize();
 
-    r5->m44[0] = interpolateDistance(r5->m44[0], 0, 0x2000, 0xAAA, 0);
-    r5->m44[1] = interpolateDistance(r5->m44[1], 0, 0x2000, 0xAAA, 0);
-    r5->m44[2] = interpolateDistance(r5->m44[2], 0, 0x2000, 0xAAA, 0);
+    r5->m44_positionSpring[0] = interpolateDistance(r5->m44_positionSpring[0], 0, 0x2000, 0xAAA, 0);
+    r5->m44_positionSpring[1] = interpolateDistance(r5->m44_positionSpring[1], 0, 0x2000, 0xAAA, 0);
+    r5->m44_positionSpring[2] = interpolateDistance(r5->m44_positionSpring[2], 0, 0x2000, 0xAAA, 0);
 
-    r5->m44 += r5->m50;
-    r5->m50.zeroize();
+    r5->m44_positionSpring += r5->m50_positionImpulse;
+    r5->m50_positionImpulse.zeroize();
 
-    r5->m0_position = r5->m44 + *r4->m2E4[4].mC_pPosition;
+    r5->m0_position = r5->m44_positionSpring + *r4->m370_cutsceneLookAtPtr;
 
     sVec3_FP var18;
-    var18 = *r4->m2E4[4].m10_pPosition2 - *r4->m2E4[4].mC_pPosition;
+    var18 = *r4->m374_cutsceneCameraPos - *r4->m370_cutsceneLookAtPtr;
 
     sVec2_FP dummy;
     computeLookAt(var18, dummy);
 
-    r5->mC_rotation[0] = r5->m5C[0] + dummy[0];
-    r5->mC_rotation[1] = r5->m5C[1] + dummy[1];
-    r5->mC_rotation[2] += r5->m5C[2];
+    r5->mC_rotation[0] = r5->m5C_rotationSpring[0] + dummy[0];
+    r5->mC_rotation[1] = r5->m5C_rotationSpring[1] + dummy[1];
+    r5->mC_rotation[2] += r5->m5C_rotationSpring[2];
 
-    r5->m24_distanceToDestination = vecDistance(*r4->m2E4[4].mC_pPosition, *r4->m2E4[4].m10_pPosition2);
+    r5->m24_distanceToDestination = vecDistance(*r4->m370_cutsceneLookAtPtr, *r4->m374_cutsceneCameraPos);
 }
 
-void cutsceneTaskInitSub2Sub0(sVec3_FP* r4, sVec3_FP* r5)
+void startCutsceneCameraTracking(sVec3_FP* r4, sVec3_FP* r5)
 {
-    s_fieldOverlaySubTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    r14->m2E4[4].mC_pPosition = r4;
-    r14->m2E4[4].m10_pPosition2 = r5;
-    r14->m2E4[4].m14 = 0;
-    r14->m2E4[4].m18_maxDistanceSquare = 1;
+    sFieldCameraManager* r14 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    r14->m370_cutsceneLookAtPtr = r4;
+    r14->m374_cutsceneCameraPos = r5;
+    r14->m378_cutsceneFrameCounter = 0;
+    r14->m37C_isCutsceneCameraActive = 1;
 
     initDragonMovementMode();
 
-    fieldOverlaySubTaskInitSub1(1, NULL, NULL);
+    initCameraSlotWithFunctions(1, NULL, NULL);
     fieldOverlaySubTaskInitSub3(1);
 
-    dragonFieldTaskUpdateSub5Sub2(r14, getFieldCameraStatus());
+    updateCutsceneCameraInterpolation(r14, getFieldCameraStatus());
 }
 
 void cutsceneTaskInitSub2Sub1(std::vector<s_scriptData1>& r4, std::vector<s_scriptData1>& r5)
@@ -2013,35 +2014,35 @@ s32 s_cutsceneTask2::UpdateSub0()
     return 1;
 }
 
-void UpdateSub1Sub0()
+void endCutsceneCameraWithRestore()
 {
-    s_fieldOverlaySubTaskWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    r13->m2E4[4].m14 = 0;
-    r13->m2E4[4].m18_maxDistanceSquare = 0;
+    sFieldCameraManager* r13 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    r13->m378_cutsceneFrameCounter = 0;
+    r13->m37C_isCutsceneCameraActive = 0;
     dragonFieldTaskInitSub4Sub4();
     fieldOverlaySubTaskInitSub5(1);
 
-    r13->m3E4[0].m0_position = r13->m3E4[1].m0_position;
-    r13->m3E4[0].mC_rotation = r13->m3E4[1].mC_rotation;
-    r13->m3E4[0].m18 = r13->m3E4[1].m18;
-    r13->m3E4[0].m1C = r13->m3E4[1].m1C;
-    r13->m3E4[0].m20 = r13->m3E4[1].m20;
-    r13->m3E4[0].m24_distanceToDestination = r13->m3E4[1].m24_distanceToDestination;
+    r13->m3E4_cameraSlots[0].m0_position = r13->m3E4_cameraSlots[1].m0_position;
+    r13->m3E4_cameraSlots[0].mC_rotation = r13->m3E4_cameraSlots[1].mC_rotation;
+    r13->m3E4_cameraSlots[0].m18 = r13->m3E4_cameraSlots[1].m18;
+    r13->m3E4_cameraSlots[0].m1C = r13->m3E4_cameraSlots[1].m1C;
+    r13->m3E4_cameraSlots[0].m20 = r13->m3E4_cameraSlots[1].m20;
+    r13->m3E4_cameraSlots[0].m24_distanceToDestination = r13->m3E4_cameraSlots[1].m24_distanceToDestination;
 
     fieldOverlaySubTaskInitSub3(0);
 
-    updateCameraScriptSub1(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
+    activateCameraFollowMode(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
 }
 
-void UpdateSub1Sub1()
+void endCutsceneCameraNoRestore()
 {
-    s_fieldOverlaySubTaskWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    r13->m2E4[4].m14 = 0;
-    r13->m2E4[4].m18_maxDistanceSquare = 0;
+    sFieldCameraManager* r13 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    r13->m378_cutsceneFrameCounter = 0;
+    r13->m37C_isCutsceneCameraActive = 0;
     dragonFieldTaskInitSub4Sub4();
     fieldOverlaySubTaskInitSub5(1);
     fieldOverlaySubTaskInitSub3(0);
-    dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
+    dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
 }
 
 void s_cutsceneTask2::UpdateSub1()
@@ -2059,11 +2060,11 @@ void s_cutsceneTask2::UpdateSub1()
 
         if (m0 & 2)
         {
-            UpdateSub1Sub0();
+            endCutsceneCameraWithRestore();
         }
         else
         {
-            UpdateSub1Sub1();
+            endCutsceneCameraNoRestore();
         }
     }
 }
@@ -2074,7 +2075,7 @@ void s_cutsceneTask2::Update(s_cutsceneTask2* pThis)
     {
     case 0:
         pThis->m34 = pThis->UpdateSub0();
-        cutsceneTaskInitSub2Sub0(&pThis->m8, &pThis->m14);
+        startCutsceneCameraTracking(&pThis->m8, &pThis->m14);
         getFieldCameraStatus()->mC_rotation[2] = pThis->m20;
         return;
     case 1:
@@ -2163,11 +2164,11 @@ void s_cutsceneTask3::UpdateSub1()
 
         if (m0 & 2)
         {
-            UpdateSub1Sub0();
+            endCutsceneCameraWithRestore();
         }
         else
         {
-            UpdateSub1Sub1();
+            endCutsceneCameraNoRestore();
         }
     }
 }
@@ -2216,11 +2217,11 @@ void s_cutsceneTask3::Update(s_cutsceneTask3* pThis)
         pThis->m2C = pThis->UpdateSub0();
         if (pThis->m18)
         {
-            cutsceneTaskInitSub2Sub0(&pThis->m8, pThis->m18);
+            startCutsceneCameraTracking(&pThis->m8, pThis->m18);
         }
         else
         {
-            cutsceneTaskInitSub2Sub0(&pThis->m8, pThis->m14);
+            startCutsceneCameraTracking(&pThis->m8, pThis->m14);
         }
         getFieldCameraStatus()->mC_rotation[2] = pThis->m1C[2];
         return;
@@ -2270,7 +2271,7 @@ void cutsceneTaskInitSub2(p_workArea r4, std::vector<s_scriptData1>& r11, s32 r6
 
     if (r14->m78)
     {
-        cutsceneTaskInitSub2Sub0(&r14->m78->m3C, &r14->m78->m48);
+        startCutsceneCameraTracking(&r14->m78->m3C, &r14->m78->m48);
         r14->m48_cutsceneTask = r4;
         return;
     }
@@ -2310,7 +2311,7 @@ void cutsceneTaskInitSub3(p_workArea r4, std::vector<s_scriptData2>& r11, s32 r6
 
     if (r14->m78)
     {
-        cutsceneTaskInitSub2Sub0(&r14->m78->m3C, r7);
+        startCutsceneCameraTracking(&r14->m78->m3C, r7);
         r14->m48_cutsceneTask = r4;
         return;
     }
@@ -2689,9 +2690,9 @@ s32 fieldScriptTaskUpdateSub4()
 
 }
 
-s32 fieldScriptTaskUpdateSub5()
+s32 isNormalCameraMode()
 {
-    return getFieldTaskPtr()->m8_pSubFieldData->m334->m2E4[4].m18_maxDistanceSquare == 0;
+    return getFieldTaskPtr()->m8_pSubFieldData->m334->m37C_isCutsceneCameraActive == 0;
 }
 
 void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub3()
@@ -3642,7 +3643,7 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
         }
     }
 
-    if (((!fieldScriptTaskUpdateSub4()) && (fieldScriptTaskUpdateSub5() != 0)) &&
+    if (((!fieldScriptTaskUpdateSub4()) && (isNormalCameraMode() != 0)) &&
         ((getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m83F_activeLaserCount) == '\0'
             && ((getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000) == 0)))
     {
@@ -3689,7 +3690,7 @@ void createFieldScriptTask(s_workArea* pWorkArea)
 
 void fieldOverlaySubTaskInitSub2Sub1Sub1(sFieldCameraStatus* r11, s_dragonTaskWorkArea* stack_4)
 {
-    s_fieldOverlaySubTaskWorkArea* pCameraData = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    sFieldCameraManager* pCameraData = getFieldTaskPtr()->m8_pSubFieldData->m334;
     s_fieldCameraConfig* r14 = &pCameraData->m10[pCameraData->m0_nextCamera];
 
     fixedPoint r14FP = FP_Div(stack_4->m8_pos[1] - r14->m50, r14->m54 - r14->m50);
@@ -3872,14 +3873,14 @@ fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targe
 
 void fieldOverlaySubTaskInitSub2Sub1Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkArea* r9)
 {
-    r14->m5C[0] = interpolateRotation(r14->m5C[0], 0, 0x2000, 0x444444, 0);
-    r14->m5C[1] = interpolateRotation(r14->m5C[1], 0, 0x2000, 0x444444, 0);
-    r14->m5C[2] = interpolateRotation(r14->m5C[2], 0, 0x2000, 0x444444, 0);
+    r14->m5C_rotationSpring[0] = interpolateRotation(r14->m5C_rotationSpring[0], 0, 0x2000, 0x444444, 0);
+    r14->m5C_rotationSpring[1] = interpolateRotation(r14->m5C_rotationSpring[1], 0, 0x2000, 0x444444, 0);
+    r14->m5C_rotationSpring[2] = interpolateRotation(r14->m5C_rotationSpring[2], 0, 0x2000, 0x444444, 0);
 
-    r14->m5C += r14->m68;
-    r14->mC_rotation += r14->m5C;
+    r14->m5C_rotationSpring += r14->m68_rotationImpulse;
+    r14->mC_rotation += r14->m5C_rotationSpring;
 
-    r14->m68.zeroize();
+    r14->m68_rotationImpulse.zeroize();
 
     r14->mC_rotation[0] = r14->mC_rotation[0].normalized();
     r14->m18 = r14->m18.normalized();
@@ -3904,14 +3905,14 @@ void fieldOverlaySubTaskInitSub2Sub1Sub2(sFieldCameraStatus* r14, s_dragonTaskWo
 
     r14->m0_position = r9->m8_pos - var10;
 
-    r14->m44[0] = interpolateDistance(r14->m44[0], 0, 0x2000, 0xAAA, 0);
-    r14->m44[1] = interpolateDistance(r14->m44[1], 0, 0x2000, 0xAAA, 0);
-    r14->m44[2] = interpolateDistance(r14->m44[2], 0, 0x2000, 0xAAA, 0);
+    r14->m44_positionSpring[0] = interpolateDistance(r14->m44_positionSpring[0], 0, 0x2000, 0xAAA, 0);
+    r14->m44_positionSpring[1] = interpolateDistance(r14->m44_positionSpring[1], 0, 0x2000, 0xAAA, 0);
+    r14->m44_positionSpring[2] = interpolateDistance(r14->m44_positionSpring[2], 0, 0x2000, 0xAAA, 0);
 
-    r14->m44 += r14->m50;
+    r14->m44_positionSpring += r14->m50_positionImpulse;
 
-    r14->m0_position += r14->m44;
-    r14->m50.zeroize();
+    r14->m0_position += r14->m44_positionSpring;
+    r14->m50_positionImpulse.zeroize();
 }
 
 void fieldOverlaySubTaskInitSub2Sub2(sFieldCameraStatus* r14, s_dragonTaskWorkArea* r12)
@@ -4008,20 +4009,20 @@ void fieldOverlaySubTaskInitSub2(sFieldCameraStatus* r14)
     if (pDragonTask == NULL)
         return;
 
-    switch (r14->m8D)
+    switch (r14->m8D_followState)
     {
     case 0:
-        r14->m8F = 1;
-        r14->m90 = 1;
+        r14->m8F_followType = 1;
+        r14->m90_followMode = 1;
         r14->m7C = 2;
-        r14->m8D = 2;
+        r14->m8D_followState = 2;
         fieldOverlaySubTaskInitSub2Sub2(r14, pDragonTask);
         return;
     case 1:
-        r14->m8F = 1;
-        r14->m90 = 1;
+        r14->m8F_followType = 1;
+        r14->m90_followMode = 1;
         r14->m7C = 2;
-        r14->m8D = 2;
+        r14->m8D_followState = 2;
     case 2:
         fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
         return;
@@ -4037,20 +4038,20 @@ void fieldOverlaySubTaskInitSub2_mode2(sFieldCameraStatus* r14)
     if (pDragonTask == NULL)
         return;
 
-    switch (r14->m8D)
+    switch (r14->m8D_followState)
     {
     case 0:
-        r14->m8F = 2;
-        r14->m90 = 2;
+        r14->m8F_followType = 2;
+        r14->m90_followMode = 2;
         r14->m7C = 3;
-        r14->m8D = 2;
+        r14->m8D_followState = 2;
         fieldOverlaySubTaskInitSub2Sub2(r14, pDragonTask);
         return;
     case 1:
-        r14->m8F = 2;
-        r14->m90 = 2;
+        r14->m8F_followType = 2;
+        r14->m90_followMode = 2;
         r14->m7C = 3;
-        r14->m8D = 2;
+        r14->m8D_followState = 2;
     case 2:
         fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
         return;
@@ -4059,10 +4060,10 @@ void fieldOverlaySubTaskInitSub2_mode2(sFieldCameraStatus* r14)
     }
 }
 
-void fieldOverlaySubTaskInitSub1Sub0(sFieldCameraStatus* r4)
+void resetCameraStatus(sFieldCameraStatus* r4)
 {
-    r4->m74 = 0;
-    r4->m78 = 0;
+    r4->m74_updateFunc = 0;
+    r4->m78_drawFunc = 0;
     r4->m0_position[0] = 0;
     r4->m0_position[1] = 0;
     r4->m0_position[2] = 0;
@@ -4076,7 +4077,7 @@ void fieldOverlaySubTaskInitSub1Sub0(sFieldCameraStatus* r4)
     r4->m30 = 0;
     r4->m34 = 0;
     r4->m40 = 0xF000;
-    r4->m80 = 0;
+    r4->m80_frameCounter = 0;
     r4->m84 = 0;
     r4->m88 = 0;
 
@@ -4084,23 +4085,23 @@ void fieldOverlaySubTaskInitSub1Sub0(sFieldCameraStatus* r4)
     r4->m8A = 0;
 }
 
-void fieldOverlaySubTaskInitSub1(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*))
+void initCameraSlotWithFunctions(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*))
 {
-    sFieldCameraStatus* pFieldCameraStatus = &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4[r4];
-    fieldOverlaySubTaskInitSub1Sub0(pFieldCameraStatus);
+    sFieldCameraStatus* pFieldCameraStatus = &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4_cameraSlots[r4];
+    resetCameraStatus(pFieldCameraStatus);
 
-    pFieldCameraStatus->m74 = r5;
-    pFieldCameraStatus->m78 = r6;
-    pFieldCameraStatus->m8C = 1;
+    pFieldCameraStatus->m74_updateFunc = r5;
+    pFieldCameraStatus->m78_drawFunc = r6;
+    pFieldCameraStatus->m8C_isActive = 1;
 }
 
 u32 fieldOverlaySubTaskInitSub3(u32 r4)
 {
-    if (updateCameraFromDragonSub1(r4))
+    if (isFieldCameraSlotActive(r4))
     {
-        s_fieldOverlaySubTaskWorkArea* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
-        p334->m50C = r4;
-        p334->m3E4[r4].m80 = 0;
+        sFieldCameraManager* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+        p334->m50C_activeCameraSlot = r4;
+        p334->m3E4_cameraSlots[r4].m80_frameCounter = 0;
         return 1;
     }
 
@@ -4129,10 +4130,10 @@ void copyFieldCameraConfig(s_fieldCameraConfig* r4, s_fieldCameraConfig* r5)
 
 void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5)
 {
-    s_fieldOverlaySubTaskWorkArea* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    sFieldCameraManager* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
 
     p334->mC = 8;
-    p334->m2DC = 4;
+    p334->m2DC_numCameraZones = 4;
 
     for (int i = 0; i < r5; i++)
     {
@@ -4142,15 +4143,15 @@ void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5)
 
 void fieldOverlaySubTaskInitSub5(u32 r4)
 {
-    s_fieldOverlaySubTaskWorkArea* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    p334->m3E4[r4].m74 = 0;
-    p334->m3E4[r4].m78 = 0;
-    p334->m3E4[r4].m8C = 0;
+    sFieldCameraManager* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    p334->m3E4_cameraSlots[r4].m74_updateFunc = 0;
+    p334->m3E4_cameraSlots[r4].m78_drawFunc = 0;
+    p334->m3E4_cameraSlots[r4].m8C_isActive = 0;
 }
 
-void updateCameraFromDragonSub2(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
+void applyCameraStatusToEngine(sFieldCameraManager* pTypedWorkArea)
 {
-    sFieldCameraStatus* r13 = &pTypedWorkArea->m3E4[pTypedWorkArea->m50C];
+    sFieldCameraStatus* r13 = &pTypedWorkArea->m3E4_cameraSlots[pTypedWorkArea->m50C_activeCameraSlot];
     sVec3_S16 r15;
     r15[0] = r13->mC_rotation[0] >> 16;
     r15[1] = r13->mC_rotation[1] >> 16;
@@ -4158,8 +4159,8 @@ void updateCameraFromDragonSub2(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
 
     updateEngineCamera(&cameraProperties2, r13->m0_position, r15);
 
-    copyMatrix(pCurrentMatrix, &pTypedWorkArea->m384);
-    copyMatrix(&cameraProperties2.m28[0], &pTypedWorkArea->m3B4);
+    copyMatrix(pCurrentMatrix, &pTypedWorkArea->m384_viewMatrix);
+    copyMatrix(&cameraProperties2.m28[0], &pTypedWorkArea->m3B4_projectionMatrix);
 }
 
 s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA)
@@ -4190,26 +4191,26 @@ s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA)
     return pCameraConfig;
 }
 
-void s_fieldOverlaySubTaskWorkArea::fieldOverlaySubTaskInit(s_fieldOverlaySubTaskWorkArea* pTypedWorkArea)
+void sFieldCameraManager::fieldCameraManagerInit(sFieldCameraManager* pTypedWorkArea)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m334 = pTypedWorkArea;
 
-    fieldOverlaySubTaskInitSub1(0, gFieldCameraDrawFunc ? gFieldCameraDrawFunc : &fieldOverlaySubTaskInitSub2, 0);
+    initCameraSlotWithFunctions(0, gFieldCameraDrawFunc ? gFieldCameraDrawFunc : &fieldOverlaySubTaskInitSub2, 0);
     fieldOverlaySubTaskInitSub3(0);
     setupFieldCameraConfigs(readCameraConfig(gFieldCameraConfigEA), 1);
 
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
 
     fieldOverlaySubTaskInitSub5(1);
 
-    updateCameraFromDragonSub2(pTypedWorkArea);
+    applyCameraStatusToEngine(pTypedWorkArea);
 
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50D = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50D_isInitialized = 1;
 }
 
 void createFieldOverlaySubTask(s_workArea* pWorkArea)
 {
-    createSubTask<s_fieldOverlaySubTaskWorkArea>(pWorkArea);
+    createSubTask<sFieldCameraManager>(pWorkArea);
 }
 
 struct s_DragonRiderTask : public s_workAreaTemplate<s_DragonRiderTask>
@@ -4304,7 +4305,7 @@ void initDragonSpeed(u32 arg)
 
 sFieldCameraStatus* getFieldCameraStatus()
 {
-    return &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4[getFieldTaskPtr()->m8_pSubFieldData->m334->m50C];
+    return &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4_cameraSlots[getFieldTaskPtr()->m8_pSubFieldData->m334->m50C_activeCameraSlot];
 }
 
 void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
@@ -5616,7 +5617,7 @@ void dummyFunct(sFieldCameraStatus*)
     assert(0);
 }
 
-void(*updateCameraScriptSub1Table1[10])(sFieldCameraStatus*) = {
+void(*activateCameraFollowModeTable1[10])(sFieldCameraStatus*) = {
     0,
     0,
     0,
@@ -5629,11 +5630,11 @@ void(*updateCameraScriptSub1Table1[10])(sFieldCameraStatus*) = {
     0,
 };
 
-void dragonFieldTaskUpdateSub5Sub4(sFieldCameraStatus* r4);
-void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4);
+void cameraFollowMode_idle(sFieldCameraStatus* r4);
+void cameraFollowMode_scriptTarget(sFieldCameraStatus* r4);
 
-void(*updateCameraScriptSub1Table2[10])(sFieldCameraStatus*) = {
-    dragonFieldTaskUpdateSub5Sub3,           // [0] 06062900
+void(*activateCameraFollowModeTable2[10])(sFieldCameraStatus*) = {
+    cameraFollowMode_scriptTarget,           // [0] 06062900
     fieldOverlaySubTaskInitSub2,             // [1] 060621C6
     fieldOverlaySubTaskInitSub2_mode2,       // [2] 06062228
     dummyFunct,                              // [3] 0606229E — TODO
@@ -5641,29 +5642,29 @@ void(*updateCameraScriptSub1Table2[10])(sFieldCameraStatus*) = {
     dummyFunct,                              // [5] 06062370 — TODO
     dummyFunct,                              // [6] 0606240C — TODO
     0,
-    dragonFieldTaskUpdateSub5Sub4,           // [8] 06062474
+    cameraFollowMode_idle,           // [8] 06062474
     0,
 };
 
-s32 updateCameraScriptSub1Sub(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*))
+s32 setCameraFollowFunctions(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*))
 {
-    if (updateCameraFromDragonSub1(r4))
+    if (isFieldCameraSlotActive(r4))
     {
-        sFieldCameraStatus* pCamera = &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4[r4];
-        pCamera->m74 = r5;
-        pCamera->m78 = r6;
-        pCamera->m8D = 0;
-        pCamera->m8E = 0;
+        sFieldCameraStatus* pCamera = &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4_cameraSlots[r4];
+        pCamera->m74_updateFunc = r5;
+        pCamera->m78_drawFunc = r6;
+        pCamera->m8D_followState = 0;
+        pCamera->m8E_followSubState = 0;
         return 1;
     }
     return 0;
 }
 
-void updateCameraScriptSub1(u32 r4)
+void activateCameraFollowMode(u32 r4)
 {
-    updateCameraScriptSub1Sub(0, updateCameraScriptSub1Table1[r4], updateCameraScriptSub1Table2[r4]);
+    setCameraFollowFunctions(0, activateCameraFollowModeTable1[r4], activateCameraFollowModeTable2[r4]);
 
-    getFieldCameraStatus()->m8D = 1;
+    getFieldCameraStatus()->m8D_followState = 1;
 }
 
 void updateCameraScriptSub0Sub2(s_dragonTaskWorkArea* r4)
@@ -5706,7 +5707,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
     {
     case 0:
         updateCameraScriptSub0(r4->mB8_lightWingEffect);
-        updateCameraScriptSub1(0);
+        activateCameraFollowMode(0);
         r4->mF8_Flags &= 0xFFFFFBFF;
         r4->mF8_Flags |= 0x20000;
         r4->m1E8_cameraScriptDelay = r5->m20_length;
@@ -5731,7 +5732,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
         }
         getFieldCameraStatus()->m88 = 30;
         r4->m1E8_cameraScriptDelay = 30;
-        updateCameraScriptSub1(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
+        activateCameraFollowMode(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
         r4->m104_dragonScriptStatus++;
         break;
     case 2:
@@ -5755,7 +5756,7 @@ void dragonScriptMovement(s_dragonTaskWorkArea* pTypedWorkArea)
     {
         if (pTypedWorkArea->m1D0_cameraScript == nullptr)
         {
-            dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
+            dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
             dragonFieldTaskInitSub4Sub4();
         }
         else
@@ -6041,7 +6042,7 @@ void playDragonSoundEffect(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonState* 
     PDS_unimplemented("playDragonSoundEffect");
 }
 
-void selectCamera(s_fieldOverlaySubTaskWorkArea* r4, s_dragonTaskWorkArea* r5)
+void selectCamera(sFieldCameraManager* r4, s_dragonTaskWorkArea* r5)
 {
     s32 r6 = r4->mC;
 
@@ -6080,44 +6081,44 @@ void selectCamera(s_fieldOverlaySubTaskWorkArea* r4, s_dragonTaskWorkArea* r5)
     }
 }
 
-void dragonFieldTaskUpdateSub5Sub1(s_fieldOverlaySubTaskWorkArea* r4, s_dragonTaskWorkArea* r5)
+void selectCameraZone(sFieldCameraManager* r4, s_dragonTaskWorkArea* r5)
 {
-    if (r4->m2E0)
+    if (r4->m2E0_forcedZoneIndex)
     {
         assert(0);
     }
 
-    s32 r13 = r4->m2DC;
+    s32 r13 = r4->m2DC_numCameraZones;
     s32 var8[3];
 
-    for (s32 r13 = r4->m2DC; r13 >= 0; r13--)
+    for (s32 r13 = r4->m2DC_numCameraZones; r13 >= 0; r13--)
     {
         if (r13)
         {
-            s_fieldOverlaySubTaskWorkArea2E4* r12 = &r4->m2E4[r13];
-            s32 r6 = r5->m8_pos[0] - r12->m0[0];
+            sFieldCameraZone* r12 = &r4->m2E4_cameraZones[r13];
+            s32 r6 = r5->m8_pos[0] - r12->m0_center[0];
             if (r6 >= 0)
             {
                 var8[0] = r6;
             }
             else
             {
-                var8[0] = r12->m0[0] - r5->m8_pos[0];
+                var8[0] = r12->m0_center[0] - r5->m8_pos[0];
             }
 
-            if (var8[0] >= r12->m14)
+            if (var8[0] >= r12->m14_triggerRadius)
                 continue;
 
-            if (r5->m8_pos[2] - r12->m0[2] < 0)
+            if (r5->m8_pos[2] - r12->m0_center[2] < 0)
             {
-                var8[2] = r5->m8_pos[2] - r12->m0[2];
+                var8[2] = r5->m8_pos[2] - r12->m0_center[2];
             }
             else
             {
-                var8[2] = r12->m0[2] - r5->m8_pos[2];
+                var8[2] = r12->m0_center[2] - r5->m8_pos[2];
             }
 
-            if (var8[2] >= r12->m14)
+            if (var8[2] >= r12->m14_triggerRadius)
                 continue;
 
             if (MTH_Mul(var8[0], var8[0]) + MTH_Mul(var8[2], var8[2]) >= r12->m18_maxDistanceSquare)
@@ -6125,36 +6126,36 @@ void dragonFieldTaskUpdateSub5Sub1(s_fieldOverlaySubTaskWorkArea* r4, s_dragonTa
         }
 
         //6061554
-        if ((r4->m2D0 != r13) && (r4->m2D4 == r13))
+        if ((r4->m2D0_activeZoneIndex != r13) && (r4->m2D4_candidateZoneIndex == r13))
         {
-            r4->m2D8++;
+            r4->m2D8_zoneDwellCounter++;
         }
         else
         {
-            r4->m2D4 = r13;
-            r4->m2D8 = 0;
+            r4->m2D4_candidateZoneIndex = r13;
+            r4->m2D8_zoneDwellCounter = 0;
         }
 
-        if (r4->m2D8 >= 30)
+        if (r4->m2D8_zoneDwellCounter >= 30)
         {
-            r4->m2D0 = r13;
-            r4->m2D8 = 0;
+            r4->m2D0_activeZoneIndex = r13;
+            r4->m2D8_zoneDwellCounter = 0;
         }
 
         return;
     }
 }
 
-void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4)
+void cameraFollowMode_scriptTarget(sFieldCameraStatus* r4)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    switch (r4->m8D)
+    switch (r4->m8D_followState)
     {
     case 0:
     case 1:
-        r4->m8F = 0;
-        r4->m90 = 0;
-        r4->m8D = 2;
+        r4->m8F_followType = 0;
+        r4->m90_followMode = 0;
+        r4->m8D_followState = 2;
     case 2:
     default:
         if (pDragonTask->m1D0_cameraScript)
@@ -6193,19 +6194,19 @@ void dragonFieldTaskUpdateSub5Sub3(sFieldCameraStatus* r4)
     }
 }
 
-void dragonFieldTaskUpdateSub5Sub4(sFieldCameraStatus* r4)
+void cameraFollowMode_idle(sFieldCameraStatus* r4)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     if (pDragonTask == nullptr)
         return;
 
-    switch (r4->m8D)
+    switch (r4->m8D_followState)
     {
     case 0:
-        r4->m8F = 8;
-        r4->m90 = 8;
+        r4->m8F_followType = 8;
+        r4->m90_followMode = 8;
         r4->m7C = 0;
-        r4->m8D = 2;
+        r4->m8D_followState = 2;
     case 1:
         fieldOverlaySubTaskInitSub2Sub1Sub2(r4, pDragonTask);
         return;
@@ -6214,52 +6215,52 @@ void dragonFieldTaskUpdateSub5Sub4(sFieldCameraStatus* r4)
     }
 }
 
-void dragonFieldTaskUpdateSub5Sub5(s_fieldOverlaySubTaskWorkArea* r4)
+void updateZoneCameraFollow(sFieldCameraManager* r4)
 {
     assert(0);
 }
 
-void dragonFieldTaskUpdateSub5()
+void updateFieldCameraSlots()
 {
-    s_fieldOverlaySubTaskWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    sFieldCameraManager* r13 = getFieldTaskPtr()->m8_pSubFieldData->m334;
     s_dragonTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
 
     if (r14)
     {
         selectCamera(r13, r14);
-        dragonFieldTaskUpdateSub5Sub1(r13, r14);
+        selectCameraZone(r13, r14);
     }
 
     for (int i = 0; i < 2; i++)
     {
-        if (updateCameraFromDragonSub1(i))
+        if (isFieldCameraSlotActive(i))
         {
-            if (r13->m2E4[4].m18_maxDistanceSquare)
+            if (r13->m37C_isCutsceneCameraActive)
             {
-                dragonFieldTaskUpdateSub5Sub2(r13, &r13->m3E4[i]);
+                updateCutsceneCameraInterpolation(r13, &r13->m3E4_cameraSlots[i]);
             }
             else
             {
-                if ((r13->m3E4[i].m74 == dragonFieldTaskUpdateSub5Sub3) || (r13->m3E4[i].m74 == dragonFieldTaskUpdateSub5Sub4))
+                if ((r13->m3E4_cameraSlots[i].m74_updateFunc == cameraFollowMode_scriptTarget) || (r13->m3E4_cameraSlots[i].m74_updateFunc == cameraFollowMode_idle))
                 {
-                    r13->m3E4[i].m74(&r13->m3E4[i]);
+                    r13->m3E4_cameraSlots[i].m74_updateFunc(&r13->m3E4_cameraSlots[i]);
                 }
                 else
                 {
-                    if ((r13->m2E0 > 0) || (r13->m2D0 > 0))
+                    if ((r13->m2E0_forcedZoneIndex > 0) || (r13->m2D0_activeZoneIndex > 0))
                     {
-                        dragonFieldTaskUpdateSub5Sub5(r13);
+                        updateZoneCameraFollow(r13);
                     }
                     else
                     {
-                        if (r13->m3E4[i].m74)
+                        if (r13->m3E4_cameraSlots[i].m74_updateFunc)
                         {
-                            r13->m3E4[i].m74(&r13->m3E4[i]);
+                            r13->m3E4_cameraSlots[i].m74_updateFunc(&r13->m3E4_cameraSlots[i]);
                         }
                     }
                 }
             }
-            r13->m3E4[i].m84++;
+            r13->m3E4_cameraSlots[i].m84++;
         }
     }
 }
@@ -6308,36 +6309,36 @@ void s_dragonTaskWorkArea::Update(s_dragonTaskWorkArea* pTypedWorkArea)
         getFieldCameraStatus()->m30 = -pTypedWorkArea->m20_angle[2] / 2;
     }
 
-    dragonFieldTaskUpdateSub5();
+    updateFieldCameraSlots();
 
     dragonFieldTaskUpdateSub6(pTypedWorkArea);
 }
 
-s8 updateCameraFromDragonSub1(s32 index)
+s8 isFieldCameraSlotActive(s32 index)
 {
-    return getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4[index].m8C;
+    return getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4_cameraSlots[index].m8C_isActive;
 }
 
-void updateCameraFromDragon()
+void drawFieldCameraSlots()
 {
-    s_fieldOverlaySubTaskWorkArea* r12 = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    sFieldCameraManager* r12 = getFieldTaskPtr()->m8_pSubFieldData->m334;
 
     for (int i = 0; i < 2; i++)
     {
-        if (updateCameraFromDragonSub1(i))
+        if (isFieldCameraSlotActive(i))
         {
-            if (getFieldTaskPtr()->m8_pSubFieldData->m37C_debugMenuStatus1[i] == 0)
+            if (r12->m37C_isCutsceneCameraActive == 0)
             {
-                sFieldCameraStatus* pFieldCameraStatus = &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4[i];
-                if (pFieldCameraStatus->m78)
+                sFieldCameraStatus* pFieldCameraStatus = &r12->m3E4_cameraSlots[i];
+                if (pFieldCameraStatus->m78_drawFunc)
                 {
-                    pFieldCameraStatus->m78(pFieldCameraStatus);
+                    pFieldCameraStatus->m78_drawFunc(pFieldCameraStatus);
                 }
             }
         }
     }
 
-    updateCameraFromDragonSub2(r12);
+    applyCameraStatusToEngine(r12);
 }
 
 void printMainDebugStats(s_dragonTaskWorkArea* pTypedWorkArea)
@@ -6350,7 +6351,7 @@ void printMainDebugStats(s_dragonTaskWorkArea* pTypedWorkArea)
 
 void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
 {
-    updateCameraFromDragon();
+    drawFieldCameraSlots();
 
     if ((pTypedWorkArea->m_EC & 1) == 0)
     {
@@ -6720,7 +6721,7 @@ void s_visibilityGridWorkArea::fieldCameraTask1Update(s_visibilityGridWorkArea* 
 
 sMatrix4x3* fieldCameraTask1DrawSub1()
 {
-    return &getFieldTaskPtr()->m8_pSubFieldData->m334->m384;
+    return &getFieldTaskPtr()->m8_pSubFieldData->m334->m384_viewMatrix;
 }
 
 void s_visibilityGridWorkArea::fieldCameraTask1Draw(s_visibilityGridWorkArea* pTypedWorkArea)
@@ -6821,7 +6822,7 @@ void LCSUpdateCursorFromInputSub0(s32 r4, sVec3_FP* r5)
     }
     if (r5)
     {
-        pCameraStatus->m68 += *r5;
+        pCameraStatus->m68_rotationImpulse += *r5;
     }
 }
 
@@ -6835,13 +6836,13 @@ s8 LCSTaskDrawSub1Sub6()
 // Lock camera in LCS/CutScene
 void LCSTaskDrawSub1Sub3()
 {
-    updateCameraScriptSub1(8);
+    activateCameraFollowMode(8);
 }
 
 // Release camera at the end of LCS/CutScene
 void LCSTaskDrawSub1Sub4()
 {
-    updateCameraScriptSub1(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E);
+    activateCameraFollowMode(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
 }
 
 void LCSTask::LCSTaskDraw(LCSTask*)
@@ -6999,7 +7000,7 @@ bool initField(p_workArea workArea, const s_MCB_CGB* fieldFileList, u32 arg)
     createRandomBattleTask(workArea);
     resetProjectVector();
 
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50D = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50D_isInitialized = 1;
 
     getFieldTaskPtr()->m8_pSubFieldData->pUpdateFunction2 = fieldDebugMenuUpdate2;
     getFieldTaskPtr()->m8_pSubFieldData->m374_pUpdateFunction1 = fieldDebugMenuUpdate1;
@@ -7079,7 +7080,7 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
 
     graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts({ 0x60924FC, gFLD_A3 });
 
     switch (getFieldTaskPtr()->m2C_currentFieldIndex)
@@ -7992,9 +7993,9 @@ s_LCSTask340Sub* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, 
 
 void dragonFieldTaskInitSub4Sub3(u8 r4)
 {
-    updateCameraScriptSub1Sub(0, updateCameraScriptSub1Table1[r4], updateCameraScriptSub1Table2[r4]);
+    setCameraFollowFunctions(0, activateCameraFollowModeTable1[r4], activateCameraFollowModeTable2[r4]);
 
-    getFieldCameraStatus()->m8D = 0;
+    getFieldCameraStatus()->m8D_followState = 0;
 }
 
 void FLD_A3_data::init()

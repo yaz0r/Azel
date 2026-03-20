@@ -28,7 +28,7 @@ void subfieldC8_1(p_workArea workArea)
 
         // 06055bdc — camera config
         setupFieldCameraConfigs(readCameraConfig(gFLD_C8->getSaturnPtr(0x0608B11C)), 1);
-        getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 1;
+        getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
         // 0607b4e0
         fieldRadar_setEncounterDistance(fixedPoint(0x200000));
 

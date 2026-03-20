@@ -12,7 +12,7 @@ void subfieldA5_3(p_workArea workArea)
     s_DataTable3* pDT3 = readDataTable3(gFLD_A5->getSaturnPtr(0x0608F068));
     setupField2(pDT3, fieldA5_3_startTasks);
     setupCameraConfig_A5_corridor();
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E = 2;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 2;
     s16 prev = getFieldTaskPtr()->m32_previousSubField;
     sSaturnPtr posData;
     if (prev == 4 || prev == 9)
