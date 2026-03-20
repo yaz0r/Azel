@@ -22,10 +22,10 @@ static void s_receivedItemTask_DisplayReceivedObject(s_receivedItemTask* pThis)
         }
         else
         {
-            r2 = pThis->m14_x;
+            r2 = vdp2StringContext.m14_Width;
         }
 
-        vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + pThis->m28_itemNameLength +r2 + 1;
+        vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + pThis->m28_itemNameLength + r2 + 1;
         vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y;
 
         drawObjectName("*");
@@ -36,9 +36,9 @@ static void s_receivedItemTask_DisplayReceivedObject(s_receivedItemTask* pThis)
         }
         else
         {
-            r2 = pThis->m14_x;
+            r2 = vdp2StringContext.m14_Width;
         }
-        vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + pThis->m28_itemNameLength +r2 + 2;
+        vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + pThis->m28_itemNameLength + r2 + 2;
         vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y;
 
         printVdp2Number(pThis->m26_receivedItemQuantity);
@@ -144,10 +144,16 @@ s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedIt
 
     pNewTask->m28_itemNameLength = createReceiveItemTaskSub0(getObjectListEntry(r7_receivedItemId)->m4_name.c_str(), 34);
     s32 r4 = pNewTask->m28_itemNameLength + 2;
-    if (arg0_receivedItemQuantity <= 0)
+    if (arg0_receivedItemQuantity > 0)
     {
-        //0601C3CA
-        assert(0);
+        if (arg0_receivedItemQuantity < 10)
+        {
+            r4 = pNewTask->m28_itemNameLength + 4;
+        }
+        else
+        {
+            r4 = pNewTask->m28_itemNameLength + 5;
+        }
     }
 
     pNewTask->m14_x = (((44 - r4) / 2) - 5) & ~1;
