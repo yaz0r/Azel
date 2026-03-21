@@ -48,28 +48,45 @@ void preloadNameEntryResources()
 
 // Keyboard layout tables
 // Mode 0: uppercase (4 cols x 8 rows)
+// Keyboard character data (read from Saturn memory at 0x002106B3, 0x002105B5, 0x0021066A)
 static const char nameEntryKeyboard_upper[] =
-    "AHOVBIPWCJQXDKRYELSZFMT GNU     ";
+    "AHOVBIPWCJQXDKRY"
+    "ELSZFMT GNU     "
+    "ahovbipwcjqxdkry"
+    "elszfmt gnu -.  ";
+static const char nameEntryKeyboard_lower[] =
+    "\x80\x53\x80\x54\x80\x55\x80\x56\x80\x57\x80\x58\x80\x59\x80\x5A"
+    "\x80\x5B\x80\x5C\x80\x5D\x80\x5E\x80\x5F\x80\x60\x80\x61\x80\x62"
+    "\x80\x63\x80\x64\x80\x65\x80\x66\x80\x67\x80\x68\x80\x69\x80\x6A"
+    "\x80\x6B\x80\x6C\x80\x6D\x80\x6E\x80\x6F\x80\x70\x80\x71\x80\x72"
+    "\x80\x73\x80\x74\x80\x75\x80\x76\x80\x01\x80\x77\x80\x01\x80\x78"
+    "\x80\x79\x80\x7A\x80\x7B\x80\x7C\x80\x7D";
+static const char nameEntryKeyboard_katakana[] =
+    "\x80\xBE\x80\xD0\x80\xBF\x80\xD1\x80\xC0\x80\xD2\x80\xC1\x80\xD3"
+    "\x80\xC2\x80\xD4\x80\xC3\x80\xD5\x80\xC4\x80\xD6\x80\xC5\x80\xD7"
+    "\x80\xC6\x80\x47";
 
-// Per-mode layout: {xStart, yStart, cols, rows}
+// Per-mode layout: {xStart, yStart, cols, rows, chars}
+// Saturn struct is 0xC bytes: 4 shorts + 1 pointer. Stride = rows (column-major).
 struct s_nameEntryKeyboardLayout
 {
     s16 m0_xStart;
     s16 m2_yStart;
     s16 m4_cols;
-    s16 m6_rows;
+    s16 m6_rows; // also used as char stride (column-major)
     const char* m8_chars;
-    s16 mC_charStride; // number of chars per row
 };
 
 static const s_nameEntryKeyboardLayout nameEntryKeyboardLayouts[] =
 {
-    { 0x30, 0x28, 0x10, 0x04, nameEntryKeyboard_upper, 4 }, // mode 0
+    { 0x30, 0x28, 0x10, 0x04, nameEntryKeyboard_upper },    // mode 0: uppercase
+    { 0x20, 0x28, 0x12, 0x05, nameEntryKeyboard_lower },    // mode 1: hiragana
+    { 0x20, 0x30, 0x12, 0x02, nameEntryKeyboard_katakana }, // mode 2: katakana
 };
 
-// Action bar layout: {xStart, yStart, cols, rows}
+// Action bar layout
 static const s_nameEntryKeyboardLayout nameEntryActionBarLayout =
-    { 0xB7, 0x6B, 0x03, 0x01, nullptr, 0 };
+    { 0xB7, 0x6B, 0x03, 0x01, nullptr };
 
 // VDP2 scroll positions per keyboard mode (X, Y as fixed-point)
 static const s16 nameEntryScrollPositions[][2] =
@@ -368,7 +385,7 @@ static void nameEntryUI_handleCharInput(s_nameEntryUITask* pThis)
     {
         if (pThis->m34_nameLength < 0xF)
         {
-            char c = layout->m8_chars[pThis->mA_cursorX * layout->mC_charStride + pThis->mC_cursorY];
+            char c = layout->m8_chars[pThis->mA_cursorX * layout->m6_rows + pThis->mC_cursorY];
             pThis->m20_nameBuffer[pThis->m34_nameLength] = c;
             nameEntryUI_addChar(pThis);
         }
