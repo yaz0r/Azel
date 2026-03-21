@@ -3,10 +3,11 @@ $input v_texcoord0, v_color0, v_clipPos, v_quadIndex
 #include "bgfx_shader.sh"
 
 SAMPLER2D(s_texture, 0);
-SAMPLER2D(s_quadCorners, 1);
+SAMPLER2D(s_ndcCorners, 1);
+SAMPLER2D(s_objCorners, 2);
 
 uniform vec4 u_spritePriority;
-uniform vec4 u_quadCornersParams; // x = texture width
+uniform vec4 u_quadCornersParams; // x = texture width (same for both corners textures)
 uniform mat4 u_invModelViewProj;
 
 float cross2d(vec2 a, vec2 b)
@@ -40,7 +41,7 @@ vec2 inverseBilinear(vec2 p, vec2 a, vec2 b, vec2 c, vec2 d)
     if (abs(k2) < 0.0001)
     {
         if (abs(k1) < 0.0001)
-            return vec2(0.5, 0.5);
+            return vec2(-1.0, -1.0);
         v = -k0 / k1;
         u = computeU(h, e, f, g, v);
         return vec2(u, v);
@@ -65,51 +66,63 @@ vec2 inverseBilinear(vec2 p, vec2 a, vec2 b, vec2 c, vec2 d)
     return vec2(u2, v2);
 }
 
-vec4 fetchCorner(float texW, int idx)
+vec4 fetchNdc(float texW, int idx)
 {
-    return texture2D(s_quadCorners, vec2((float(idx) + 0.5) / texW, 0.5));
+    return texture2D(s_ndcCorners, vec2((float(idx) + 0.5) / texW, 0.5));
 }
 
-void main()
+vec4 fetchObj(float texW, int idx)
 {
-    // Reconstruct ray in object space through this fragment
-    vec2 ndc = v_clipPos.xy / v_clipPos.z;
-    vec4 nearClip = vec4(ndc, -1.0, 1.0);
-    vec4 farClip  = vec4(ndc,  1.0, 1.0);
-    vec4 nearObj4 = mul(u_invModelViewProj, nearClip);
-    vec4 farObj4  = mul(u_invModelViewProj, farClip);
-    vec3 nearObj = nearObj4.xyz / nearObj4.w;
-    vec3 farObj  = farObj4.xyz / farObj4.w;
-    vec3 rayOrig = nearObj;
-    vec3 rayDir  = farObj - nearObj;
+    return texture2D(s_objCorners, vec2((float(idx) + 0.5) / texW, 0.5));
+}
 
-    // Fetch quad corners from static texture
-    // Layout: 5 texels per quad
-    //   0-3: (objPos.xyz, atlasU) per corner
-    //   4:   (atlasV0, atlasV1, atlasV2, atlasV3)
-    int quadIdx = int(v_quadIndex + 0.5);
-    float texW = u_quadCornersParams.x;
-    int base = quadIdx * 5;
+// NDC path: perspective-correct bilinear using u/w, v/w, 1/w
+vec2 ndcPath(vec2 fragNDC, float texW, int base)
+{
+    vec4 c0 = fetchNdc(texW, base + 0);
+    vec4 c1 = fetchNdc(texW, base + 1);
+    vec4 c2 = fetchNdc(texW, base + 2);
+    vec4 c3 = fetchNdc(texW, base + 3);
+    vec4 wData = fetchNdc(texW, base + 4);
 
-    vec4 t0 = fetchCorner(texW, base + 0);
-    vec4 t1 = fetchCorner(texW, base + 1);
-    vec4 t2 = fetchCorner(texW, base + 2);
-    vec4 t3 = fetchCorner(texW, base + 3);
-    vec4 tV = fetchCorner(texW, base + 4);
+    vec2 st = inverseBilinear(fragNDC, c0.xy, c1.xy, c2.xy, c3.xy);
+    st = clamp(st, vec2_splat(0.0), vec2_splat(1.0));
+
+    vec2 uvOverW = mix(mix(c0.zw, c1.zw, st.x), mix(c3.zw, c2.zw, st.x), st.y);
+    float oneOverW = mix(mix(wData.x, wData.y, st.x), mix(wData.w, wData.z, st.x), st.y);
+
+    return uvOverW / oneOverW;
+}
+
+// Raytrace path: ray-plane intersection in object space
+vec2 raytracePath(vec2 fragNDC, float texW, int base, vec2 fallbackUV)
+{
+    // Reconstruct ray in object space
+    vec4 nearObj4 = mul(u_invModelViewProj, vec4(fragNDC, -1.0, 1.0));
+    vec4 farObj4  = mul(u_invModelViewProj, vec4(fragNDC,  1.0, 1.0));
+    vec3 rayOrig = nearObj4.xyz / nearObj4.w;
+    vec3 rayDir  = farObj4.xyz / farObj4.w - rayOrig;
+
+    // Fetch object-space corners
+    vec4 t0 = fetchObj(texW, base + 0);
+    vec4 t1 = fetchObj(texW, base + 1);
+    vec4 t2 = fetchObj(texW, base + 2);
+    vec4 t3 = fetchObj(texW, base + 3);
+    vec4 tV = fetchObj(texW, base + 4);
 
     vec3 p0 = t0.xyz, p1 = t1.xyz, p2 = t2.xyz, p3 = t3.xyz;
 
-    // Quad plane: use two edges from corner 0
-    vec3 e1 = p1 - p0;
-    vec3 e2 = p3 - p0;
-    vec3 normal = cross(e1, e2);
-
-    // Ray-plane intersection
+    // Robust normal from diagonals
+    vec3 normal = cross(p2 - p0, p3 - p1);
     float denom = dot(rayDir, normal);
+
+    if (abs(denom) < 0.00001)
+        return fallbackUV; // fallback
+
     float t = dot(p0 - rayOrig, normal) / denom;
     vec3 hitPoint = rayOrig + t * rayDir;
 
-    // Project to 2D: drop the axis where the normal is largest
+    // Project to 2D: drop axis with largest normal component
     vec3 absN = abs(normal);
     vec2 hit2d, q0, q1, q2, q3;
     if (absN.z >= absN.x && absN.z >= absN.y)
@@ -125,18 +138,35 @@ void main()
         hit2d = hitPoint.yz; q0 = p0.yz; q1 = p1.yz; q2 = p2.yz; q3 = p3.yz;
     }
 
-    // Inverse bilinear in the quad's plane
     vec2 st = inverseBilinear(hit2d, q0, q1, q2, q3);
     st = clamp(st, vec2_splat(0.0), vec2_splat(1.0));
 
-    // Bilinearly interpolate atlas UVs
     vec2 uv0 = vec2(t0.w, tV.x);
     vec2 uv1 = vec2(t1.w, tV.y);
     vec2 uv2 = vec2(t2.w, tV.z);
     vec2 uv3 = vec2(t3.w, tV.w);
-    vec2 uv = mix(mix(uv0, uv1, st.x), mix(uv3, uv2, st.x), st.y);
+    return mix(mix(uv0, uv1, st.x), mix(uv3, uv2, st.x), st.y);
+}
 
-    // Sample texture
+void main()
+{
+    vec2 fragNDC = v_clipPos.xy / v_clipPos.z;
+
+    int quadIdx = int(v_quadIndex + 0.5);
+    float texW = u_quadCornersParams.x;
+    int base = quadIdx * 5;
+
+    // Check sentinel: if all 1/w values are zero, this quad crosses near clip
+    vec4 wData = fetchNdc(texW, base + 4);
+    bool nearClip = (wData.x == 0.0 && wData.y == 0.0 && wData.z == 0.0 && wData.w == 0.0);
+
+    vec2 uv;
+    if (nearClip)
+        uv = raytracePath(fragNDC, texW, base, v_texcoord0);
+    else
+        uv = ndcPath(fragNDC, texW, base);
+
+    // Sample texture (UVs in pixel coords)
     vec2 UV = uv / vec2(textureSize(s_texture, 0));
     vec4 txcol = texture2D(s_texture, UV);
 
