@@ -341,13 +341,13 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
     case 2:
     case 4:
     case 9:
-        setupRotationMapPlanes(0, g_BTL_A3->getSaturnPtr(0x60a6d80));
+        setupRotationMapPlanes(0, g_BTL_A3->getSaturnPtr(0x60a6d3c));
         break;
     default:
         assert(0);
     }
 
-    setupRotationMapPlanes(1, g_BTL_A3->getSaturnPtr(0x60a6d3c));
+    setupRotationMapPlanes(1, g_BTL_A3->getSaturnPtr(0x60a6cbc));
 
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80); // setup coefficients table A
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x24000), 0x80); // setup coefficients table B
