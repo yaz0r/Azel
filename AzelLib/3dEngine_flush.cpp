@@ -196,6 +196,7 @@ void multiplyMatrices(float* in1, float* in2, float* out)
 
 bool fillPolys = true;
 bool enableTextures = true;
+bool gSmoothGouraud = true; // per-vertex depth + interpolated falloff curve
 
 // Compute distance-based falloff color from the lightFalloffMap table
 // viewDepth: view-space Z of the vertex (raw fixed-point from model-view matrix)
@@ -217,6 +218,30 @@ void GetDistanceFalloff(s32 falloutColor[3], s32 viewDepth)
     falloutColor[2] = (s32)lightFalloffMap[index][2];
 }
 
+// Smooth variant: fractional index with linear interpolation between table entries
+void GetDistanceFalloffSmooth(float falloutColor[3], s32 viewDepth)
+{
+    s32 depthScale = (s32)graphicEngineStatus.m405C.m34_oneOverFarClip256;
+    s32 scaledDepth = (s32)(((s64)viewDepth * (s64)depthScale) >> 32);
+    if (scaledDepth < 0) scaledDepth = 0;
+
+    // Compute fractional index: same formula as Saturn but keep the fraction
+    float fIndex = (float)((scaledDepth << 1) >> 8) / 8.0f;
+    if (fIndex < 0.0f) fIndex = 0.0f;
+    if (fIndex > 31.0f) fIndex = 31.0f;
+
+    int idx0 = (int)fIndex;
+    int idx1 = idx0 + 1;
+    if (idx1 > 31) idx1 = 31;
+    float frac = fIndex - (float)idx0;
+
+    for (int c = 0; c < 3; c++)
+    {
+        falloutColor[c] = (float)lightFalloffMap[idx0][c] * (1.0f - frac)
+                        + (float)lightFalloffMap[idx1][c] * frac;
+    }
+}
+
 // Matches masterComputeLight3 / masterComputeLightDistanceFalloffAndLight3 from Ghidra
 // Mode 3 (no color): accum = falloff + lightColor * max(dotProduct, 0)
 // Mode 2 (withColor): accum = falloff + fixedColor + lightColor * max(dotProduct, 0)
@@ -224,19 +249,16 @@ void GetDistanceFalloff(s32 falloutColor[3], s32 viewDepth)
 void ComputeColorFromNormal(const sProcessed3dModel::sQuadExtra& extraData, bool withColor,
     s32* lightVectorModelSpace, s16* lightColor, s32* falloutColor, float* perVertexColor)
 {
-    // Dot product: normal · lightVector (fixed-point, result in upper 16 bits)
     s32 dotProduct = 0;
     dotProduct += (s32)extraData.m0_normals[0] * lightVectorModelSpace[0];
     dotProduct += (s32)extraData.m0_normals[1] * lightVectorModelSpace[1];
     dotProduct += (s32)extraData.m0_normals[2] * lightVectorModelSpace[2];
 
-    // Start with falloff color (s16 values from table)
     s32 accum[3];
     accum[0] = falloutColor[0];
     accum[1] = falloutColor[1];
     accum[2] = falloutColor[2];
 
-    // Mode 2: always add per-vertex fixed color (regardless of lighting)
     if (withColor)
     {
         accum[0] += (s16)extraData.m6_colors[0];
@@ -244,7 +266,6 @@ void ComputeColorFromNormal(const sProcessed3dModel::sQuadExtra& extraData, bool
         accum[2] += (s16)extraData.m6_colors[2];
     }
 
-    // If lit (positive dot product), add lightColor * dotProduct
     if (dotProduct > 0)
     {
         s16 dotHi = (s16)((u32)dotProduct >> 16);
@@ -253,15 +274,50 @@ void ComputeColorFromNormal(const sProcessed3dModel::sQuadExtra& extraData, bool
         accum[2] += (s32)lightColor[2] * (s32)dotHi;
     }
 
-    // Clamp to [0, 0x1F00] and extract 5-bit gouraud value from bits [12:8]
     for (int i = 0; i < 3; i++)
     {
         if (accum[i] < 0) accum[i] = 0;
         if (accum[i] > 0x1F00) accum[i] = 0x1F00;
-        int gouraud5bit = (accum[i] >> 8) & 0x1F; // [0, 31]
-
-        // Remap to shader range: Saturn VDP1 gouraud 16 = neutral
+        int gouraud5bit = (accum[i] >> 8) & 0x1F;
         perVertexColor[i] = ((float)gouraud5bit - 16.0f) / 31.0f;
+    }
+}
+
+// Smooth variant: float falloff input, no 5-bit quantization
+void ComputeColorFromNormalSmooth(const sProcessed3dModel::sQuadExtra& extraData, bool withColor,
+    s32* lightVectorModelSpace, s16* lightColor, float* falloutColor, float* perVertexColor)
+{
+    s32 dotProduct = 0;
+    dotProduct += (s32)extraData.m0_normals[0] * lightVectorModelSpace[0];
+    dotProduct += (s32)extraData.m0_normals[1] * lightVectorModelSpace[1];
+    dotProduct += (s32)extraData.m0_normals[2] * lightVectorModelSpace[2];
+
+    float accum[3];
+    accum[0] = falloutColor[0];
+    accum[1] = falloutColor[1];
+    accum[2] = falloutColor[2];
+
+    if (withColor)
+    {
+        accum[0] += (float)(s16)extraData.m6_colors[0];
+        accum[1] += (float)(s16)extraData.m6_colors[1];
+        accum[2] += (float)(s16)extraData.m6_colors[2];
+    }
+
+    if (dotProduct > 0)
+    {
+        float dotHi = (float)((u32)dotProduct >> 16);
+        accum[0] += (float)lightColor[0] * dotHi;
+        accum[1] += (float)lightColor[1] * dotHi;
+        accum[2] += (float)lightColor[2] * dotHi;
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (accum[i] < 0.0f) accum[i] = 0.0f;
+        if (accum[i] > 7936.0f) accum[i] = 7936.0f; // 0x1F00
+        // Smooth remap: no 5-bit quantization, continuous [-16/31, +15/31]
+        perVertexColor[i] = (accum[i] / 256.0f - 16.0f) / 31.0f;
     }
 }
 
@@ -426,46 +482,63 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
 
         if (lightingMode > 0 && quad.m14_extraData.size() > 0)
         {
-            // Compute view-space depth for falloff table lookup
-            // Use first vertex of quad; model matrix includes the view transform
-            const auto& vtx0 = model->m_vertexBuffer[i * 4];
             const sMatrix4x3& modelMat = pObject->m_modelMatrix;
-            // View-space Z = row 2 of model-view matrix dot vertex position (fixed-point)
-            s32 viewDepth = (s32)(
-                ((s64)modelMat.m[2][0] * (s32)(vtx0.position[0] * 65536.0f) +
-                 (s64)modelMat.m[2][1] * (s32)(vtx0.position[1] * 65536.0f) +
-                 (s64)modelMat.m[2][2] * (s32)(vtx0.position[2] * 65536.0f)) >> 16)
-                + (s32)modelMat.m[2][3];
+            bool withColor = (lightingMode == 2);
 
-            // Saturn's transformVertices scales Z translation by <<8, making depth ~256x larger
-            // than raw 16.16 view-space Z. Apply the same scaling to match.
-            // Use absolute value: the model-view Z may be negative depending on camera convention.
-            s32 absDepth = viewDepth < 0 ? -viewDepth : viewDepth;
-            s32 falloutColor[3];
-            GetDistanceFalloff(falloutColor, absDepth << 8);
+            // Helper: compute view-space depth for a vertex
+            auto computeViewDepth = [&](int vertexIndex) -> s32 {
+                const auto& vtx = model->m_vertexBuffer[i * 4 + vertexIndex];
+                s32 viewZ = (s32)(
+                    ((s64)modelMat.m[2][0] * (s32)(vtx.position[0] * 65536.0f) +
+                     (s64)modelMat.m[2][1] * (s32)(vtx.position[1] * 65536.0f) +
+                     (s64)modelMat.m[2][2] * (s32)(vtx.position[2] * 65536.0f)) >> 16)
+                    + (s32)modelMat.m[2][3];
+                s32 absDepth = viewZ < 0 ? -viewZ : viewZ;
+                return absDepth << 8;
+            };
 
-            if (lightingMode == 1)
+            if (gSmoothGouraud)
             {
-                // Single normal for entire quad — same color for all 4 corners
-                float perVertexColor[3];
-                ComputeColorFromNormal(quad.m14_extraData[0], false,
-                    lightVectorModelSpace, pObject->m_lightColor,
-                    falloutColor, perVertexColor);
-                for (int j = 0; j < 4; j++)
-                    for (int c = 0; c < 3; c++)
-                        gouraud[j][c] = perVertexColor[c];
-            }
-            else if (lightingMode == 2 || lightingMode == 3)
-            {
-                // Per-vertex normal (mode 3) or normal + color (mode 2)
-                bool withColor = (lightingMode == 2);
+                // Enhanced: per-vertex depth + interpolated falloff + no quantization
+                int numNormals = (lightingMode == 1) ? 1 : 4;
                 for (int j = 0; j < 4; j++)
                 {
-                    if (j < (int)quad.m14_extraData.size())
+                    int normalIdx = (lightingMode == 1) ? 0 : j;
+                    if (normalIdx >= (int)quad.m14_extraData.size()) continue;
+
+                    float falloutSmooth[3];
+                    GetDistanceFalloffSmooth(falloutSmooth, computeViewDepth(j));
+                    ComputeColorFromNormalSmooth(quad.m14_extraData[normalIdx], withColor,
+                        lightVectorModelSpace, pObject->m_lightColor,
+                        falloutSmooth, gouraud[j]);
+                }
+            }
+            else
+            {
+                // Saturn-accurate: per-quad depth, quantized 5-bit gouraud
+                s32 falloutColor[3];
+                GetDistanceFalloff(falloutColor, computeViewDepth(0));
+
+                if (lightingMode == 1)
+                {
+                    float perVertexColor[3];
+                    ComputeColorFromNormal(quad.m14_extraData[0], false,
+                        lightVectorModelSpace, pObject->m_lightColor,
+                        falloutColor, perVertexColor);
+                    for (int j = 0; j < 4; j++)
+                        for (int c = 0; c < 3; c++)
+                            gouraud[j][c] = perVertexColor[c];
+                }
+                else
+                {
+                    for (int j = 0; j < 4; j++)
                     {
-                        ComputeColorFromNormal(quad.m14_extraData[j], withColor,
-                            lightVectorModelSpace, pObject->m_lightColor,
-                            falloutColor, gouraud[j]);
+                        if (j < (int)quad.m14_extraData.size())
+                        {
+                            ComputeColorFromNormal(quad.m14_extraData[j], withColor,
+                                lightVectorModelSpace, pObject->m_lightColor,
+                                falloutColor, gouraud[j]);
+                        }
                     }
                 }
             }
@@ -592,6 +665,8 @@ void flushObjectsToDrawList()
     {
         if (ImGui::Begin("Objects", &gDebugWindows.objects))
         {
+            ImGui::Checkbox("Smooth Gouraud (per-vertex depth + interpolated falloff)", &gSmoothGouraud);
+            ImGui::Separator();
             for (int i = 0; i < objectRenderList.size(); i++)
             {
                 char buffer[256];
