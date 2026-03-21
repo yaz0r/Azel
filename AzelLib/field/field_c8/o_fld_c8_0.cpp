@@ -19,6 +19,8 @@ using s_fieldLCSSubStruct = sLCSTarget;
 
 static void initFieldLCSSubStruct(s_fieldLCSSubStruct* pLCS, p_workArea owner, void(*callback)(p_workArea, sLCSTarget*),
     sVec3_FP* posPtr, sVec3_FP* normalPtr, s16 param6, s16 param7, s16 param8, u8 param9, u8 param10);
+static s32 searchZoneTable0(s32 posY);
+static s32 searchZoneTable1(s32 posY);
 static bool isInCurrentZone0(s_fieldLCSSubStruct* pLCS);
 static bool isInCurrentZone1(s_fieldLCSSubStruct* pLCS);
 static void registerWithLCS(s_fieldLCSSubStruct* pLCS);
@@ -1457,8 +1459,7 @@ struct s_interactiveEntityC8 : public s_workAreaTemplateWithArg<s_interactiveEnt
 {
     s_memoryAreaOutput m0_memoryArea;
     sSaturnPtr m8_entryEA;
-    s_fieldLCSSubStruct mC_lcs;
-    u8 m24_flags;
+    s_fieldLCSSubStruct mC_lcs; // 0x34 bytes on Saturn — m24_flags is mC_lcs.m18_diableFlags
     s_3dModel m40_3dModel;
     sSaturnPtr m90_dataPtr;
     sSaturnPtr m94_tablePtr;
@@ -1468,6 +1469,7 @@ struct s_interactiveEntityC8 : public s_workAreaTemplateWithArg<s_interactiveEnt
     s8 m9E_counter;
     u8 m9F_modelMode;
     // size 0xA0
+    sVec3_FP mA0_lcsPosition; // persistent copy for LCS pointer (Saturn reads from entryEA+4 directly)
 
     static void Init(s_interactiveEntityC8* pThis, s_interactiveEntityC8_arg* pArg);
     static void Update(s_interactiveEntityC8* pThis);
@@ -1616,9 +1618,9 @@ void s_interactiveEntityC8::Init(s_interactiveEntityC8* pThis, s_interactiveEnti
 
     interactiveEntityC8_initModel(pThis);
 
-    sVec3_FP entryPos = readSaturnVec3(pThis->m8_entryEA + 4);
+    pThis->mA0_lcsPosition = readSaturnVec3(pThis->m8_entryEA + 4);
     initFieldLCSSubStruct(&pThis->mC_lcs, pThis, interactiveEntityC8_lcsCallback,
-        &entryPos, nullptr, 3, 0, -1, -1, 0);
+        &pThis->mA0_lcsPosition, nullptr, 3, 0, -1, -1, 0);
 
     s8 entryPointInData = readSaturnS8(pThis->m90_dataPtr + 0xC);
     s16 fieldEntryPoint = getFieldTaskPtr()->m30_fieldEntryPoint;
@@ -1642,7 +1644,7 @@ void s_interactiveEntityC8::Init(s_interactiveEntityC8* pThis, s_interactiveEnti
         {
             if (!mainGameState.getBit566(bitIndex))
             {
-                pThis->m24_flags |= 1;
+                pThis->mC_lcs.m18_diableFlags |= 1;
                 pThis->m9C_state = 0;
             }
         }
@@ -1671,7 +1673,7 @@ void s_interactiveEntityC8::Update(s_interactiveEntityC8* pThis)
         {
             if (mainGameState.getBit566(bitIndex))
             {
-                pThis->m24_flags &= ~1;
+                pThis->mC_lcs.m18_diableFlags &= ~1;
                 pThis->m9C_state = 1;
             }
         }
