@@ -327,5 +327,40 @@ void sProcessed3dModel::generateVertexBuffer()
 
     m_vertexBufferHandle = bgfx::createVertexBuffer(bgfx::copy(&m_vertexBuffer[0], sizeof(m_vertexBuffer[0]) * m_vertexBuffer.size()), m_vertexLayout);
     m_indexBufferHandle = bgfx::createIndexBuffer(bgfx::copy(&m_indexBuffer[0], sizeof(m_indexBuffer[0]) * m_indexBuffer.size()));
+
+    // Build static quad corners texture: object-space positions + UVs
+    // 5 texels per quad (RGBA32F):
+    //   texel 0-3: (objPos.x, objPos.y, objPos.z, atlasU) per corner
+    //   texel 4:   (atlasV0, atlasV1, atlasV2, atlasV3)
+    if (bgfx::isValid(m_quadCornersTexture))
+    {
+        bgfx::destroy(m_quadCornersTexture);
+    }
+
+    uint16_t cornersTexWidth = (uint16_t)(mC_Quads.size() * 5);
+    std::vector<float> cornersData(cornersTexWidth * 4);
+    for (size_t i = 0; i < mC_Quads.size(); i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            const auto& vtx = m_vertexBuffer[i * 4 + j];
+            size_t idx = (i * 5 + j) * 4;
+            cornersData[idx + 0] = vtx.position[0];
+            cornersData[idx + 1] = vtx.position[1];
+            cornersData[idx + 2] = vtx.position[2];
+            cornersData[idx + 3] = vtx.texcoord0[0]; // u
+        }
+        size_t idx = (i * 5 + 4) * 4;
+        cornersData[idx + 0] = m_vertexBuffer[i * 4 + 0].texcoord0[1]; // v0
+        cornersData[idx + 1] = m_vertexBuffer[i * 4 + 1].texcoord0[1]; // v1
+        cornersData[idx + 2] = m_vertexBuffer[i * 4 + 2].texcoord0[1]; // v2
+        cornersData[idx + 3] = m_vertexBuffer[i * 4 + 3].texcoord0[1]; // v3
+    }
+
+    m_quadCornersTexture = bgfx::createTexture2D(
+        cornersTexWidth, 1, false, 1,
+        bgfx::TextureFormat::RGBA32F,
+        BGFX_SAMPLER_POINT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+        bgfx::copy(cornersData.data(), (uint32_t)(cornersData.size() * sizeof(float))));
 }
 

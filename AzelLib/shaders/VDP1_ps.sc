@@ -7,13 +7,13 @@ SAMPLER2D(s_quadCorners, 1);
 
 uniform vec4 u_spritePriority;
 uniform vec4 u_quadCornersParams; // x = texture width
+uniform mat4 u_invModelViewProj;
 
 float cross2d(vec2 a, vec2 b)
 {
     return a.x * b.y - a.y * b.x;
 }
 
-// Compute u from v using the more numerically stable axis
 float computeU(vec2 h, vec2 e, vec2 f, vec2 g, float v)
 {
     vec2 num = h - f * v;
@@ -72,33 +72,71 @@ vec4 fetchCorner(float texW, int idx)
 
 void main()
 {
-    vec2 fragNDC = v_clipPos.xy / v_clipPos.z;
+    // Reconstruct ray in object space through this fragment
+    vec2 ndc = v_clipPos.xy / v_clipPos.z;
+    vec4 nearClip = vec4(ndc, -1.0, 1.0);
+    vec4 farClip  = vec4(ndc,  1.0, 1.0);
+    vec4 nearObj4 = mul(u_invModelViewProj, nearClip);
+    vec4 farObj4  = mul(u_invModelViewProj, farClip);
+    vec3 nearObj = nearObj4.xyz / nearObj4.w;
+    vec3 farObj  = farObj4.xyz / farObj4.w;
+    vec3 rayOrig = nearObj;
+    vec3 rayDir  = farObj - nearObj;
 
-    // Texture layout: 5 texels per quad
-    //   0-3: (ndcX, ndcY, u/w, v/w) per corner
-    //   4:   (1/w0, 1/w1, 1/w2, 1/w3)
+    // Fetch quad corners from static texture
+    // Layout: 5 texels per quad
+    //   0-3: (objPos.xyz, atlasU) per corner
+    //   4:   (atlasV0, atlasV1, atlasV2, atlasV3)
     int quadIdx = int(v_quadIndex + 0.5);
     float texW = u_quadCornersParams.x;
     int base = quadIdx * 5;
 
-    vec4 c0 = fetchCorner(texW, base + 0);
-    vec4 c1 = fetchCorner(texW, base + 1);
-    vec4 c2 = fetchCorner(texW, base + 2);
-    vec4 c3 = fetchCorner(texW, base + 3);
-    vec4 wData = fetchCorner(texW, base + 4);
+    vec4 t0 = fetchCorner(texW, base + 0);
+    vec4 t1 = fetchCorner(texW, base + 1);
+    vec4 t2 = fetchCorner(texW, base + 2);
+    vec4 t3 = fetchCorner(texW, base + 3);
+    vec4 tV = fetchCorner(texW, base + 4);
 
-    // Inverse bilinear in NDC space to find screen-space (s,t)
-    vec2 st = inverseBilinear(fragNDC, c0.xy, c1.xy, c2.xy, c3.xy);
+    vec3 p0 = t0.xyz, p1 = t1.xyz, p2 = t2.xyz, p3 = t3.xyz;
+
+    // Quad plane: use two edges from corner 0
+    vec3 e1 = p1 - p0;
+    vec3 e2 = p3 - p0;
+    vec3 normal = cross(e1, e2);
+
+    // Ray-plane intersection
+    float denom = dot(rayDir, normal);
+    float t = dot(p0 - rayOrig, normal) / denom;
+    vec3 hitPoint = rayOrig + t * rayDir;
+
+    // Project to 2D: drop the axis where the normal is largest
+    vec3 absN = abs(normal);
+    vec2 hit2d, q0, q1, q2, q3;
+    if (absN.z >= absN.x && absN.z >= absN.y)
+    {
+        hit2d = hitPoint.xy; q0 = p0.xy; q1 = p1.xy; q2 = p2.xy; q3 = p3.xy;
+    }
+    else if (absN.y >= absN.x)
+    {
+        hit2d = hitPoint.xz; q0 = p0.xz; q1 = p1.xz; q2 = p2.xz; q3 = p3.xz;
+    }
+    else
+    {
+        hit2d = hitPoint.yz; q0 = p0.yz; q1 = p1.yz; q2 = p2.yz; q3 = p3.yz;
+    }
+
+    // Inverse bilinear in the quad's plane
+    vec2 st = inverseBilinear(hit2d, q0, q1, q2, q3);
     st = clamp(st, vec2_splat(0.0), vec2_splat(1.0));
 
-    // Perspective-correct UV interpolation:
-    // Bilinearly interpolate u/w, v/w, and 1/w using screen-space (s,t),
-    // then divide to recover perspective-correct UVs
-    vec2 uvOverW = mix(mix(c0.zw, c1.zw, st.x), mix(c3.zw, c2.zw, st.x), st.y);
-    float oneOverW = mix(mix(wData.x, wData.y, st.x), mix(wData.w, wData.z, st.x), st.y);
+    // Bilinearly interpolate atlas UVs
+    vec2 uv0 = vec2(t0.w, tV.x);
+    vec2 uv1 = vec2(t1.w, tV.y);
+    vec2 uv2 = vec2(t2.w, tV.z);
+    vec2 uv3 = vec2(t3.w, tV.w);
+    vec2 uv = mix(mix(uv0, uv1, st.x), mix(uv3, uv2, st.x), st.y);
 
-    vec2 uv = uvOverW / oneOverW;
-
+    // Sample texture
     vec2 UV = uv / vec2(textureSize(s_texture, 0));
     vec4 txcol = texture2D(s_texture, UV);
 

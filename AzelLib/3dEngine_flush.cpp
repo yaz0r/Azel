@@ -315,6 +315,7 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
 
     static bgfx::ProgramHandle vdp1_program = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_modelViewProj = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle vdp1_invModelViewProj = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_textureSampler = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_cornersSampler = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle vdp1_cornersParams = BGFX_INVALID_HANDLE;
@@ -322,60 +323,20 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
     {
         vdp1_program = loadBgfxProgram("VDP1_vs", "VDP1_ps");
         vdp1_modelViewProj = bgfx::createUniform("u_customModelViewProj", bgfx::UniformType::Mat4);
+        vdp1_invModelViewProj = bgfx::createUniform("u_invModelViewProj", bgfx::UniformType::Mat4);
         vdp1_textureSampler = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
         vdp1_cornersSampler = bgfx::createUniform("s_quadCorners", bgfx::UniformType::Sampler);
         vdp1_cornersParams = bgfx::createUniform("u_quadCornersParams", bgfx::UniformType::Vec4);
     }
 
+    sProcessed3dModel* model = pObject->m_pObject;
     glm::mat4 mvpMatrix = projectionMatrix * MatrixToGLM(pObject->m_modelMatrix);
+    glm::mat4 invMvpMatrix = glm::inverse(mvpMatrix);
 
     bgfx::setUniform(vdp1_modelViewProj, &mvpMatrix[0][0]);
+    bgfx::setUniform(vdp1_invModelViewProj, &invMvpMatrix[0][0]);
 
-    // Compute projected NDC corners + perspective-correct UVs for each quad
-    // Layout: 5 texels per quad
-    //   texel 0-3: (ndcX, ndcY, u/w, v/w) per corner
-    //   texel 4:   (1/w0, 1/w1, 1/w2, 1/w3)
-    sProcessed3dModel* model = pObject->m_pObject;
-    size_t numQuads = model->mC_Quads.size();
-    uint16_t texWidth = (uint16_t)(numQuads * 5);
-
-    static std::vector<float> cornersData;
-    cornersData.resize(texWidth * 4);
-    for (size_t i = 0; i < numQuads; i++)
-    {
-        float invW[4];
-        for (int j = 0; j < 4; j++)
-        {
-            const auto& vtx = model->m_vertexBuffer[i * 4 + j];
-            glm::vec4 objPos(vtx.position[0], vtx.position[1], vtx.position[2], 1.0f);
-            glm::vec4 clipPos = mvpMatrix * objPos;
-
-            float w = clipPos.w;
-            invW[j] = 1.0f / w;
-            float ndcX = clipPos.x * invW[j];
-            float ndcY = clipPos.y * invW[j];
-
-            size_t idx = (i * 5 + j) * 4;
-            cornersData[idx + 0] = ndcX;
-            cornersData[idx + 1] = ndcY;
-            cornersData[idx + 2] = vtx.texcoord0[0] * invW[j]; // u/w
-            cornersData[idx + 3] = vtx.texcoord0[1] * invW[j]; // v/w
-        }
-        // texel 4: pack all four 1/w values
-        size_t idx = (i * 5 + 4) * 4;
-        cornersData[idx + 0] = invW[0];
-        cornersData[idx + 1] = invW[1];
-        cornersData[idx + 2] = invW[2];
-        cornersData[idx + 3] = invW[3];
-    }
-
-    bgfx::TextureHandle cornersTex = bgfx::createTexture2D(
-        texWidth, 1, false, 1,
-        bgfx::TextureFormat::RGBA32F,
-        BGFX_SAMPLER_POINT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
-        bgfx::copy(cornersData.data(), (uint32_t)(texWidth * 4 * sizeof(float))));
-
-    float params[4] = { (float)texWidth, 0.0f, 0.0f, 0.0f };
+    float params[4] = { (float)(model->mC_Quads.size() * 5), 0.0f, 0.0f, 0.0f };
     bgfx::setUniform(vdp1_cornersParams, params);
 
     uint64_t state = 0
@@ -391,13 +352,11 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
     bgfx::setState(state);
 
     bgfx::setTexture(0, vdp1_textureSampler, model->m_textureAtlas);
-    bgfx::setTexture(1, vdp1_cornersSampler, cornersTex);
+    bgfx::setTexture(1, vdp1_cornersSampler, model->m_quadCornersTexture);
     bgfx::setVertexBuffer(0, model->m_vertexBufferHandle);
     bgfx::setIndexBuffer(model->m_indexBufferHandle);
     setSpritePriorityDefault();
     bgfx::submit(vdp1_gpuView, vdp1_program);
-
-    bgfx::destroy(cornersTex);
 }
 
 glm::mat4 getViewMatrix()

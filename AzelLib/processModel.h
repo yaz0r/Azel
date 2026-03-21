@@ -63,6 +63,7 @@ struct sProcessed3dModel
     bgfx::VertexBufferHandle m_vertexBufferHandle = BGFX_INVALID_HANDLE;
     bgfx::IndexBufferHandle m_indexBufferHandle = BGFX_INVALID_HANDLE;
     bgfx::TextureHandle m_textureAtlas = BGFX_INVALID_HANDLE;
+    bgfx::TextureHandle m_quadCornersTexture = BGFX_INVALID_HANDLE; // static: object-space corners + UVs
 
     bool m_vertexBuffersDirty = true;
 };
