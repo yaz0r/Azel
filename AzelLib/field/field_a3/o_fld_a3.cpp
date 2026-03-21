@@ -7359,14 +7359,139 @@ void s_LCSTask340Sub::Laser3Init(s_LCSTask340Sub* pThis)
     pThis->m40 = 0;
 }
 
-void s_LCSTask340Sub::Laser3Update(s_LCSTask340Sub* pThis)
+// Trail particle sub-task: animates and draws a single trail sparkle
+struct sTrailParticle : public s_workAreaTemplate<sTrailParticle>
 {
-    Unimplemented();
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { nullptr, Update, Draw, nullptr };
+        return &taskDefinition;
+    }
+
+    // 0607AC16
+    static void Update(sTrailParticle* pThis)
+    {
+        u32 result = sGunShotTask_UpdateSub4(&pThis->m8_animQuad);
+        if (result & 2)
+        {
+            pThis->getTask()->markFinished();
+        }
+    }
+
+    // 0607AC3C
+    static void Draw(sTrailParticle* pThis)
+    {
+        drawProjectedParticleWithGouraud(&pThis->m8_animQuad, &pThis->m10_position);
+    }
+
+    s_memoryAreaOutput m0;
+    sAnimatedQuad m8_animQuad;
+    sVec3_FP m10_position;
+    sSaturnPtr m1C_gouraudData;
+    // size 0x20
+};
+
+// 0607ac58 — spawn a trail particle sub-task at the given position
+static void spawnTrailParticle(const sVec3_FP* position, sSaturnPtr gouraudData)
+{
+    s_LCSTask* pLCSTask = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
+    sTrailParticle* pNewTask = createSubTask<sTrailParticle>(pLCSTask);
+    if (pNewTask)
+    {
+        getMemoryArea(&pNewTask->m0, 0);
+        pNewTask->m10_position = *position;
+        pNewTask->m1C_gouraudData = gouraudData;
+
+        u16 cmdsrca = (u16)((s32)(pNewTask->m0.m4_characterArea + 0xDA400000) >> 3);
+        static std::vector<sVdp1Quad> trailQuadData; // TODO: init from DAT_060954d4
+        if (trailQuadData.empty())
+        {
+            trailQuadData = initVdp1Quad(gFLD_A3->getSaturnPtr(0x060954d4));
+        }
+        particleInitSub(&pNewTask->m8_animQuad, cmdsrca, &trailQuadData);
+    }
 }
 
+// Gouraud data table per laser color (indexed by m27)
+static sSaturnPtr getTrailGouraudData(s8 colorIndex)
+{
+    // PTR_DAT_06094f48 is an array of pointers indexed by colorIndex
+    return sSaturnPtr::createFromRaw(
+        readSaturnU32(gFLD_A3->getSaturnPtr(0x06094f48) + colorIndex * 4),
+        gFLD_A3);
+}
+
+// 0607acbc — spawn a trail particle at the current trail head position
+static void spawnTrailParticleFromLaser(s_LCSTask340Sub* pThis)
+{
+    // Select trail ring buffer index based on build-up state
+    s32 trailIndex;
+    if (pThis->m154 < 0x11)
+    {
+        // During buildup: use sequential index
+        trailIndex = pThis->m154;
+    }
+    else
+    {
+        // After buildup: use wrapped index
+        trailIndex = (pThis->m154 - 1) & 0xF;
+    }
+
+    // Get position from trail ring buffer (simplified — original uses lookup tables for segment selection)
+    const sVec3_FP& trailPos = pThis->m6C[trailIndex & 0xF];
+
+    spawnTrailParticle(&trailPos, getTrailGouraudData(pThis->m27));
+}
+
+// 0607C230
+void s_LCSTask340Sub::Laser3Update(s_LCSTask340Sub* pThis)
+{
+    pThis->m34 += pThis->m38;
+    pThis->m3C += pThis->m40;
+
+    sVec3_FP localPos;
+    localPos[0] = MTH_Mul(pThis->m34, getCos(pThis->m3C.getInteger() & 0xFFF)) + pThis->m60[0];
+    localPos[1] = MTH_Mul(pThis->m34, getSin(pThis->m3C.getInteger() & 0xFFF)) + pThis->m60[1];
+    localPos[2] = pThis->m60[2];
+
+    sVec3_FP cameraPos;
+    transformAndAddVec(localPos, cameraPos, cameraProperties2.m28[0]);
+
+    // Interpolate trail positions in ring buffer
+    s32 prevIndex = (pThis->m154 - 1) & 0xF;
+    sVec3_FP& prevPos = pThis->m6C[prevIndex];
+
+    sVec3_FP newPos;
+    newPos[0] = prevPos[0] + intDivide(pThis->m158 + 1, (s32)(cameraPos[0] - prevPos[0]));
+    newPos[1] = prevPos[1] + intDivide(pThis->m158 + 1, (s32)(cameraPos[1] - prevPos[1]));
+    newPos[2] = prevPos[2] + intDivide(pThis->m158 + 1, (s32)(cameraPos[2] - prevPos[2]));
+
+    pThis->m6C[pThis->m154 & 0xF] = newPos;
+    pThis->m154++;
+
+    pThis->m144 = newPos - prevPos;
+
+    sGunShotTask_UpdateSub4(&pThis->m58);
+
+    spawnTrailParticleFromLaser(pThis);
+}
+
+// 0607AD44
 void s_LCSTask340Sub::Laser3Draw(s_LCSTask340Sub* pThis)
 {
-    Unimplemented();
+    // Select trail position for main laser sprite draw
+    s32 trailIndex;
+    if (pThis->m154 < 0x11)
+    {
+        trailIndex = pThis->m154;
+    }
+    else
+    {
+        trailIndex = (pThis->m154 - 1) & 0xF;
+    }
+
+    sVec3_FP& drawPos = pThis->m6C[trailIndex & 0xF];
+    drawProjectedParticleWithGouraud(&pThis->m58, &drawPos);
 }
 
 void s_LCSTask340Sub::Init2(s_LCSTask340Sub* pThis, sLaserArgs* arg)

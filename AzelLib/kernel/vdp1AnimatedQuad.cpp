@@ -134,6 +134,63 @@ int vdp1DrawQuadScaled(sAnimatedQuad* pThis, sVec3_FP* position, fixedPoint scal
     return 0;
 }
 
+// 0602d0dc
+int drawProjectedParticleWithGouraud(sAnimatedQuad* pQuad, sVec3_FP* position, u16* gouraudColors)
+{
+    const sVdp1Quad& quad = pQuad->m0_quad->at(pQuad->m7_currentFrame);
+
+    sVec3_FP projectedVector;
+    transformAndAddVecByCurrentMatrix(position, &projectedVector);
+
+    if ((graphicEngineStatus.m405C.m10_nearClipDistance < projectedVector[2]) &&
+        (projectedVector[2] < (int)graphicEngineStatus.m405C.m14_farClipDistance))
+    {
+        fixedPoint proj = FP_Div(0x10000, projectedVector[2]);
+
+        std::array<fixedPoint, 4> screenQuad;
+        screenQuad[0] = MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, projectedVector[0] + quad.m14_X, proj);
+        screenQuad[1] = MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, projectedVector[1] + quad.m18_Y, proj);
+        screenQuad[2] = (s16)MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, quad.mC_width, proj).getInteger() + screenQuad[0].getInteger();
+        screenQuad[3] = (s16)MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, quad.m10_height, proj).getInteger() - screenQuad[1].getInteger();
+
+        if (clipQuad(screenQuad) != 2)
+        {
+            s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+            vdp1WriteEA.m0_CMDCTRL = quad.m2_CMDCTRL;
+            vdp1WriteEA.m4_CMDPMOD = quad.m4_CMDPMOD | 0x404;
+            if ((quad.m4_CMDPMOD & 0x38) == 8)
+            {
+                vdp1WriteEA.m6_CMDCOLR = pQuad->m4_vdp1Memory + quad.mA_CMDCOLR;
+            }
+            else
+            {
+                vdp1WriteEA.m6_CMDCOLR = quad.mA_CMDCOLR;
+            }
+
+            vdp1WriteEA.m8_CMDSRCA = pQuad->m4_vdp1Memory + quad.m6_CMDSRCA;
+            vdp1WriteEA.mA_CMDSIZE = quad.m8_CMDSIZE;
+            vdp1WriteEA.mC_CMDXA = screenQuad[0].getInteger();
+            vdp1WriteEA.mE_CMDYA = -screenQuad[1].getInteger();
+            vdp1WriteEA.m14_CMDXC = screenQuad[2];
+            vdp1WriteEA.m16_CMDYC = -screenQuad[3];
+
+            // Gouraud shading table (if provided)
+            // TODO: write gouraudColors[0..3] to VDP1 gouraud VRAM and set CMDGRA
+
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(proj * graphicEngineStatus.m405C.m38_oneOverFarClip).getInteger();
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
+            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
+            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // 0602f610
 int drawImmediateBillboardSprite(const sVec3_FP* points, const sBillboardSpriteParams* params)
 {

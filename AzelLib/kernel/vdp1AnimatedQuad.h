@@ -41,3 +41,6 @@ struct sBillboardSpriteParams
     u16 m10_gouraud[4];
 };
 int drawImmediateBillboardSprite(const sVec3_FP* points, const sBillboardSpriteParams* params);
+
+// 0602d0dc — draw a projected particle with gouraud support
+int drawProjectedParticleWithGouraud(sAnimatedQuad* pQuad, sVec3_FP* position, u16* gouraudColors = nullptr);

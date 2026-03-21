@@ -5,6 +5,10 @@
 #include "field/fieldRadar.h"
 #include "field/exitField.h"
 #include "field/fieldItemBox.h"
+#include "kernel/fileBundle.h"
+#include "kernel/animation.h"
+
+extern void fieldA3_3_createBirdsTask(p_workArea workArea);
 
 // Conana's nest
 
@@ -47,11 +51,6 @@ struct fieldA3_3_exitTask : public s_workAreaTemplate<fieldA3_3_exitTask>
 void fieldA3_3_createExitTask(p_workArea workArea)
 {
     createSubTask<fieldA3_3_exitTask>(workArea);
-}
-
-void fieldA3_3_createBirdsTask(p_workArea workArea)
-{
-    Unimplemented();
 }
 
 struct sfieldA3_3_checkExitsTask : public s_workAreaTemplate<sfieldA3_3_checkExitsTask>
