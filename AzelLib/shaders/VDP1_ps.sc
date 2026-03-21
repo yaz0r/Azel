@@ -7,7 +7,7 @@ SAMPLER2D(s_ndcCorners, 1);
 SAMPLER2D(s_objCorners, 2);
 
 uniform vec4 u_spritePriority;
-uniform vec4 u_quadCornersParams; // x = texture width (same for both corners textures)
+uniform vec4 u_quadCornersParams; // x = NDC texture width (8 texels/quad), y = obj texture width (5 texels/quad)
 uniform mat4 u_invModelViewProj;
 
 float cross2d(vec2 a, vec2 b)
@@ -95,34 +95,29 @@ vec2 ndcPath(vec2 fragNDC, float texW, int base)
 }
 
 // Raytrace path: ray-plane intersection in object space
-vec2 raytracePath(vec2 fragNDC, float texW, int base, vec2 fallbackUV)
+vec2 raytracePath(vec2 fragNDC, float objTexW, int objBase, vec2 fallbackUV)
 {
-    // Reconstruct ray in object space
     vec4 nearObj4 = mul(u_invModelViewProj, vec4(fragNDC, -1.0, 1.0));
     vec4 farObj4  = mul(u_invModelViewProj, vec4(fragNDC,  1.0, 1.0));
     vec3 rayOrig = nearObj4.xyz / nearObj4.w;
     vec3 rayDir  = farObj4.xyz / farObj4.w - rayOrig;
 
-    // Fetch object-space corners
-    vec4 t0 = fetchObj(texW, base + 0);
-    vec4 t1 = fetchObj(texW, base + 1);
-    vec4 t2 = fetchObj(texW, base + 2);
-    vec4 t3 = fetchObj(texW, base + 3);
-    vec4 tV = fetchObj(texW, base + 4);
+    vec4 t0 = fetchObj(objTexW, objBase + 0);
+    vec4 t1 = fetchObj(objTexW, objBase + 1);
+    vec4 t2 = fetchObj(objTexW, objBase + 2);
+    vec4 t3 = fetchObj(objTexW, objBase + 3);
+    vec4 tV = fetchObj(objTexW, objBase + 4);
 
     vec3 p0 = t0.xyz, p1 = t1.xyz, p2 = t2.xyz, p3 = t3.xyz;
-
-    // Robust normal from diagonals
     vec3 normal = cross(p2 - p0, p3 - p1);
     float denom = dot(rayDir, normal);
 
     if (abs(denom) < 0.00001)
-        return fallbackUV; // fallback
+        return fallbackUV;
 
     float t = dot(p0 - rayOrig, normal) / denom;
     vec3 hitPoint = rayOrig + t * rayDir;
 
-    // Project to 2D: drop axis with largest normal component
     vec3 absN = abs(normal);
     vec2 hit2d, q0, q1, q2, q3;
     if (absN.z >= absN.x && absN.z >= absN.y)
@@ -153,23 +148,58 @@ void main()
     vec2 fragNDC = v_clipPos.xy / v_clipPos.z;
 
     int quadIdx = int(v_quadIndex + 0.5);
-    float texW = u_quadCornersParams.x;
-    int base = quadIdx * 5;
+    float ndcTexW = u_quadCornersParams.x;
+    float objTexW = u_quadCornersParams.y;
+    int ndcBase = quadIdx * 8;
+    int objBase = quadIdx * 5;
 
     // Check sentinel: if all 1/w values are zero, this quad crosses near clip
-    vec4 wData = fetchNdc(texW, base + 4);
+    vec4 wData = fetchNdc(ndcTexW, ndcBase + 4);
     bool nearClip = (wData.x == 0.0 && wData.y == 0.0 && wData.z == 0.0 && wData.w == 0.0);
 
     vec2 uv;
+    vec2 st; // for gouraud interpolation
     if (nearClip)
-        uv = raytracePath(fragNDC, texW, base, v_texcoord0);
+    {
+        uv = raytracePath(fragNDC, objTexW, objBase, v_texcoord0);
+        st = vec2_splat(0.5); // approximate center for gouraud on near-clip quads
+    }
     else
-        uv = ndcPath(fragNDC, texW, base);
+    {
+        // Compute st for gouraud interpolation (same as NDC path internally)
+        vec4 c0 = fetchNdc(ndcTexW, ndcBase + 0);
+        vec4 c1 = fetchNdc(ndcTexW, ndcBase + 1);
+        vec4 c2 = fetchNdc(ndcTexW, ndcBase + 2);
+        vec4 c3 = fetchNdc(ndcTexW, ndcBase + 3);
 
-    // Sample texture (UVs in pixel coords)
+        st = inverseBilinear(fragNDC, c0.xy, c1.xy, c2.xy, c3.xy);
+        st = clamp(st, vec2_splat(0.0), vec2_splat(1.0));
+
+        vec2 uvOverW = mix(mix(c0.zw, c1.zw, st.x), mix(c3.zw, c2.zw, st.x), st.y);
+        float oneOverW = mix(mix(wData.x, wData.y, st.x), mix(wData.w, wData.z, st.x), st.y);
+        uv = uvOverW / oneOverW;
+    }
+
+    // Fetch per-vertex gouraud shading from texels 5-7
+    // Texel 5: (gR0, gR1, gR2, gR3), Texel 6: green, Texel 7: blue
+    vec4 gR = fetchNdc(ndcTexW, ndcBase + 5);
+    vec4 gG = fetchNdc(ndcTexW, ndcBase + 6);
+    vec4 gB = fetchNdc(ndcTexW, ndcBase + 7);
+
+    // Bilinearly interpolate gouraud color using (s,t)
+    float gouraudR = mix(mix(gR.x, gR.y, st.x), mix(gR.w, gR.z, st.x), st.y);
+    float gouraudG = mix(mix(gG.x, gG.y, st.x), mix(gG.w, gG.z, st.x), st.y);
+    float gouraudB = mix(mix(gB.x, gB.y, st.x), mix(gB.w, gB.z, st.x), st.y);
+
+    // Sample texture
     vec2 UV = uv / vec2(textureSize(s_texture, 0));
     vec4 txcol = texture2D(s_texture, UV);
 
     if(txcol.a <= 0.f) discard;
-    gl_FragColor = vec4(txcol.rgb, (u_spritePriority.x + 1.0) / 8.0);
+
+    // Apply gouraud shading: additive modulation in [-0.5, 0.5] range
+    vec3 finalColor = txcol.rgb + vec3(gouraudR, gouraudG, gouraudB);
+    finalColor = clamp(finalColor, vec3_splat(0.0), vec3_splat(1.0));
+
+    gl_FragColor = vec4(finalColor, (u_spritePriority.x + 1.0) / 8.0);
 }

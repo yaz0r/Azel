@@ -1,5 +1,13 @@
 #pragma once
 
+struct sCurrentLightVector
+{
+    sVec3_FP m_lightVector;
+    u16 m_color[3];
+};
+extern sCurrentLightVector currentLightVector_M;
+extern s16 lightFalloffMap[32][4];
+
 p_workArea createDragonMenuMorhTask(p_workArea pWorkArea);
 void updateAnimationMatrices(s3DModelAnimData* r4, s_3dModel* r5);
 void computeLookAt(const sVec3_FP& r4, sVec2_FP& r5);

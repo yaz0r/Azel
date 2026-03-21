@@ -106,6 +106,7 @@ struct s_objectToRender
     sProcessed3dModel* m_pObject;
     sMatrix4x3 m_modelMatrix;
     s16 m_lightColor[3];
+    s32 m_lightVector[3]; // light direction in world space (captured at submit time)
     float m_2dOffset[2];
     bool m_isBillboard;
 };
@@ -122,6 +123,12 @@ void addObjectToDrawList(sProcessed3dModel* pObjectData)
     s_objectToRender newObject;
     newObject.m_pObject = pObjectData;
     newObject.m_modelMatrix = *pCurrentMatrix;
+    newObject.m_lightVector[0] = (s32)currentLightVector_M.m_lightVector[0];
+    newObject.m_lightVector[1] = (s32)currentLightVector_M.m_lightVector[1];
+    newObject.m_lightVector[2] = (s32)currentLightVector_M.m_lightVector[2];
+    newObject.m_lightColor[0] = currentLightVector_M.m_color[0];
+    newObject.m_lightColor[1] = currentLightVector_M.m_color[1];
+    newObject.m_lightColor[2] = currentLightVector_M.m_color[2];
     newObject.m_2dOffset[0] = (graphicEngineStatus.m405C.m44_localCoordinatesX - (352.f / 2.f)) / 352.f;
     newObject.m_2dOffset[1] = (graphicEngineStatus.m405C.m46_localCoordinatesY - (224.f / 2.f)) / 224.f;
     newObject.m_isBillboard = 0;
@@ -184,85 +191,66 @@ void multiplyMatrices(float* in1, float* in2, float* out)
 bool fillPolys = true;
 bool enableTextures = true;
 
-void GetDistanceFalloff(float* falloutColor, s_objectToRender* pObject, int vertexId)
+// Compute distance-based falloff color from the lightFalloffMap table
+// viewDepth: view-space Z of the vertex (raw fixed-point from model-view matrix row 2)
+void GetDistanceFalloff(s32 falloutColor[3], s32 viewDepth)
 {
-    float colorIndex = 0;// computeVertexCameraDistance(pObject, vertexId);
+    // Saturn formula: byte_offset = ((depth << 1) >> 8) & ~7, index = byte_offset / 8
+    // Simplified: index = depth >> 10
+    int index = viewDepth >> 10;
+    if (index < 0) index = 0;
+    if (index > 31) index = 31;
 
-    colorIndex /= 128;
-
-    colorIndex -= fmodf(colorIndex, 8);
-    colorIndex /= 6;
-
-    int value = (int)colorIndex;
-    if (value < 0)
-        value = 0;
-    if (value >= 31)
-        value = 31;
-
-    //falloutColor[2] = (s16)MappedMemoryReadWord(0x0601FBDC + 8 * value + 0);
-    //falloutColor[1] = (s16)MappedMemoryReadWord(0x0601FBDC + 8 * value + 2);
-    //falloutColor[0] = (s16)MappedMemoryReadWord(0x0601FBDC + 8 * value + 4);
-
-    falloutColor[0] = 0;
-    falloutColor[1] = 0;
-    falloutColor[2] = 0;
+    falloutColor[0] = (s32)lightFalloffMap[index][0];
+    falloutColor[1] = (s32)lightFalloffMap[index][1];
+    falloutColor[2] = (s32)lightFalloffMap[index][2];
 }
 
-void ComputeColorFromNormal(const sProcessed3dModel::sQuadExtra& extraData, bool withColor, s32* lightVectorModelSpace, s16* lightColor, float* falloutColor, float* perVertexColor, u8* &instanceDataEA)
+// Matches masterComputeLight3 / masterComputeLightDistanceFalloffAndLight3 from Ghidra
+// Mode 3 (no color): accum = falloff + lightColor * max(dotProduct, 0)
+// Mode 2 (withColor): accum = falloff + fixedColor + lightColor * max(dotProduct, 0)
+// perVertexColor[3]: output in [-0.5, 0.5] for shader gouraud modulation
+void ComputeColorFromNormal(const sProcessed3dModel::sQuadExtra& extraData, bool withColor,
+    s32* lightVectorModelSpace, s16* lightColor, s32* falloutColor, float* perVertexColor)
 {
-    s16 fixedNormal[3];
-    fixedNormal[0] = extraData.m0_normals[0];
-    fixedNormal[1] = extraData.m0_normals[1];
-    fixedNormal[2] = extraData.m0_normals[2];
+    // Dot product: normal · lightVector (fixed-point, result in upper 16 bits)
+    s32 dotProduct = 0;
+    dotProduct += (s32)extraData.m0_normals[0] * lightVectorModelSpace[0];
+    dotProduct += (s32)extraData.m0_normals[1] * lightVectorModelSpace[1];
+    dotProduct += (s32)extraData.m0_normals[2] * lightVectorModelSpace[2];
 
-    float fixedColor[3];
-    fixedColor[0] = 0;
-    fixedColor[1] = 0;
-    fixedColor[2] = 0;
+    // Start with falloff color (s16 values from table)
+    s32 accum[3];
+    accum[0] = falloutColor[0];
+    accum[1] = falloutColor[1];
+    accum[2] = falloutColor[2];
 
+    // Mode 2: always add per-vertex fixed color (regardless of lighting)
     if (withColor)
     {
-        fixedColor[0] = extraData.m6_colors[0];
-        fixedColor[1] = extraData.m6_colors[1];
-        fixedColor[2] = extraData.m6_colors[2];
+        accum[0] += (s16)extraData.m6_colors[0];
+        accum[1] += (s16)extraData.m6_colors[1];
+        accum[2] += (s16)extraData.m6_colors[2];
     }
 
-    if (instanceDataEA != 0)
+    // If lit (positive dot product), add lightColor * dotProduct
+    if (dotProduct > 0)
     {
-        fixedColor[0] = ((u8)READ_BE_U16(instanceDataEA)); instanceDataEA += 1;
-        fixedColor[1] = ((u8)READ_BE_U16(instanceDataEA)); instanceDataEA += 1;
-        fixedColor[2] = ((u8)READ_BE_U16(instanceDataEA)); instanceDataEA += 1;
-
-        fixedColor[0] *= 256.f;
-        fixedColor[1] *= 256.f;
-        fixedColor[2] *= 256.f;
+        s16 dotHi = (s16)((u32)dotProduct >> 16);
+        accum[0] += (s32)lightColor[0] * (s32)dotHi;
+        accum[1] += (s32)lightColor[1] * (s32)dotHi;
+        accum[2] += (s32)lightColor[2] * (s32)dotHi;
     }
 
-    float accumulator = 0;
-    accumulator += fixedNormal[0] * lightVectorModelSpace[0];
-    accumulator += fixedNormal[1] * lightVectorModelSpace[1];
-    accumulator += fixedNormal[2] * lightVectorModelSpace[2];
-    accumulator /= (float)0x10000;
-
-    if (accumulator < 0.f)
-        accumulator = 0.f;
-
-    perVertexColor[0] = (lightColor[0] * accumulator + falloutColor[0] + fixedColor[0]) / (256.f);
-    perVertexColor[1] = (lightColor[1] * accumulator + falloutColor[1] + fixedColor[1]) / (256.f);
-    perVertexColor[2] = (lightColor[2] * accumulator + falloutColor[2] + fixedColor[2]) / (256.f);
-
-    //valid range for gouraud should be in the [0,0x1F] range. Clamp everything over that.
-
+    // Clamp to [0, 0x1F00] and extract 5-bit gouraud value from bits [12:8]
     for (int i = 0; i < 3; i++)
     {
-        if (perVertexColor[i] < 0)
-            perVertexColor[i] = 0;
-        if (perVertexColor[i] > 31.f)
-            perVertexColor[i] = 31.f;
+        if (accum[i] < 0) accum[i] = 0;
+        if (accum[i] > 0x1F00) accum[i] = 0x1F00;
+        int gouraud5bit = (accum[i] >> 8) & 0x1F; // [0, 31]
 
-        // remap to [-0.5, 0.5] as this is how gouraud is supposed to work
-        perVertexColor[i] /= 31.f;
-        perVertexColor[i] -= 0.5f;
+        // Remap to shader range: Saturn VDP1 gouraud 16 = neutral
+        perVertexColor[i] = ((float)gouraud5bit - 16.0f) / 31.0f;
     }
 }
 
@@ -338,17 +326,39 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
     bgfx::setUniform(vdp1_modelViewProj, &mvpMatrix[0][0]);
     bgfx::setUniform(vdp1_invModelViewProj, &invMvpMatrix[0][0]);
 
-    // Build per-frame NDC corners texture with perspective correction
-    // Layout: 5 texels per quad
+    // Build per-frame texture with NDC corners + gouraud shading
+    // Layout: 8 texels per quad
     //   texel 0-3: (ndcX, ndcY, u/w, v/w) per corner
     //   texel 4:   (1/w0, 1/w1, 1/w2, 1/w3) — all zeros = near-clip sentinel
+    //   texel 5:   (gR0, gR1, gR2, gR3) — per-corner gouraud red [-0.5, 0.5]
+    //   texel 6:   (gG0, gG1, gG2, gG3) — per-corner gouraud green
+    //   texel 7:   (gB0, gB1, gB2, gB3) — per-corner gouraud blue
     size_t numQuads = model->mC_Quads.size();
-    uint16_t texWidth = (uint16_t)(numQuads * 5);
+    uint16_t texWidth = (uint16_t)(numQuads * 8);
 
     static std::vector<float> cornersData;
     cornersData.resize(texWidth * 4);
 
     const float nearClipThreshold = 0.01f;
+
+    // Transform light vector into model space for gouraud computation
+    // The model matrix transforms from model space to world space,
+    // so we need to inverse-rotate the light vector into model space
+    s32 lightVectorModelSpace[3];
+    {
+        // The model matrix upper 3x3 is the rotation. For an orthonormal rotation,
+        // inverse = transpose. Light vector is already in camera/world space.
+        const sMatrix4x3& modelMat = pObject->m_modelMatrix;
+        for (int axis = 0; axis < 3; axis++)
+        {
+            // Transpose multiply: column 'axis' of modelMat dot lightVector
+            s64 acc = 0;
+            acc += (s64)modelMat.m[0][axis] * pObject->m_lightVector[0];
+            acc += (s64)modelMat.m[1][axis] * pObject->m_lightVector[1];
+            acc += (s64)modelMat.m[2][axis] * pObject->m_lightVector[2];
+            lightVectorModelSpace[axis] = (s32)(acc >> 16);
+        }
+    }
 
     for (size_t i = 0; i < numQuads; i++)
     {
@@ -374,13 +384,13 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
                 glm::vec4 objPos(vtx.position[0], vtx.position[1], vtx.position[2], 1.0f);
                 glm::vec4 clipPos = mvpMatrix * objPos;
 
-                size_t idx = (i * 5 + j) * 4;
+                size_t idx = (i * 8 + j) * 4;
                 cornersData[idx + 0] = clipPos.x * invW;
                 cornersData[idx + 1] = clipPos.y * invW;
                 cornersData[idx + 2] = vtx.texcoord0[0] * invW;
                 cornersData[idx + 3] = vtx.texcoord0[1] * invW;
             }
-            size_t idx = (i * 5 + 4) * 4;
+            size_t idx = (i * 8 + 4) * 4;
             cornersData[idx + 0] = 1.0f / clipW[0];
             cornersData[idx + 1] = 1.0f / clipW[1];
             cornersData[idx + 2] = 1.0f / clipW[2];
@@ -388,20 +398,72 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
         }
         else
         {
-            // Sentinel: all zeros in texel 4 signals raytrace fallback
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < 5; j++)
             {
-                size_t idx = (i * 5 + j) * 4;
+                size_t idx = (i * 8 + j) * 4;
                 cornersData[idx + 0] = 0.0f;
                 cornersData[idx + 1] = 0.0f;
                 cornersData[idx + 2] = 0.0f;
                 cornersData[idx + 3] = 0.0f;
             }
-            size_t idx = (i * 5 + 4) * 4;
-            cornersData[idx + 0] = 0.0f;
-            cornersData[idx + 1] = 0.0f;
-            cornersData[idx + 2] = 0.0f;
-            cornersData[idx + 3] = 0.0f;
+        }
+
+        // Compute per-vertex gouraud colors
+        const auto& quad = model->mC_Quads[i];
+        u8 lightingMode = (quad.m8_lightingControl >> 8) & 3;
+        float gouraud[4][3] = {}; // [corner][RGB], default 0 = no modulation
+
+        if (lightingMode > 0 && quad.m14_extraData.size() > 0)
+        {
+            // Compute view-space depth for falloff table lookup
+            // Use first vertex of quad; model matrix includes the view transform
+            const auto& vtx0 = model->m_vertexBuffer[i * 4];
+            const sMatrix4x3& modelMat = pObject->m_modelMatrix;
+            // View-space Z = row 2 of model-view matrix dot vertex position (fixed-point)
+            s32 viewDepth = (s32)(
+                ((s64)modelMat.m[2][0] * (s32)(vtx0.position[0] * 65536.0f) +
+                 (s64)modelMat.m[2][1] * (s32)(vtx0.position[1] * 65536.0f) +
+                 (s64)modelMat.m[2][2] * (s32)(vtx0.position[2] * 65536.0f)) >> 16)
+                + (s32)modelMat.m[2][3];
+
+            s32 falloutColor[3];
+            GetDistanceFalloff(falloutColor, viewDepth);
+
+            if (lightingMode == 1)
+            {
+                // Single normal for entire quad — same color for all 4 corners
+                float perVertexColor[3];
+                ComputeColorFromNormal(quad.m14_extraData[0], false,
+                    lightVectorModelSpace, pObject->m_lightColor,
+                    falloutColor, perVertexColor);
+                for (int j = 0; j < 4; j++)
+                    for (int c = 0; c < 3; c++)
+                        gouraud[j][c] = perVertexColor[c];
+            }
+            else if (lightingMode == 2 || lightingMode == 3)
+            {
+                // Per-vertex normal (mode 3) or normal + color (mode 2)
+                bool withColor = (lightingMode == 2);
+                for (int j = 0; j < 4; j++)
+                {
+                    if (j < (int)quad.m14_extraData.size())
+                    {
+                        ComputeColorFromNormal(quad.m14_extraData[j], withColor,
+                            lightVectorModelSpace, pObject->m_lightColor,
+                            falloutColor, gouraud[j]);
+                    }
+                }
+            }
+        }
+
+        // Pack gouraud: texel 5 = R, texel 6 = G, texel 7 = B
+        for (int c = 0; c < 3; c++)
+        {
+            size_t idx = (i * 8 + 5 + c) * 4;
+            cornersData[idx + 0] = gouraud[0][c];
+            cornersData[idx + 1] = gouraud[1][c];
+            cornersData[idx + 2] = gouraud[2][c];
+            cornersData[idx + 3] = gouraud[3][c];
         }
     }
 
@@ -411,7 +473,7 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
         BGFX_SAMPLER_POINT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
         bgfx::copy(cornersData.data(), (uint32_t)(texWidth * 4 * sizeof(float))));
 
-    float params[4] = { (float)texWidth, 0.0f, 0.0f, 0.0f };
+    float params[4] = { (float)texWidth, (float)(numQuads * 5), 0.0f, 0.0f };
     bgfx::setUniform(vdp1_cornersParams, params);
 
     uint64_t state = 0

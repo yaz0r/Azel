@@ -126,26 +126,34 @@ void setupVdp1LocalCoordinatesAndClipping()
     }
 }
 
-s32 lightFalloffMap[32][3];
+// 32 entries × 4 s16 words (RGB + padding), matching Saturn layout at 0x0601FBDC
+s16 lightFalloffMap[32][4];
 
+// 0601fb06
 void generateMasterLightFalloffMap(u32 r4, u32 r5, u32 r6)
 {
-    s32 r9t = 0x8421 * ((s8)(r6)-(s8)(r5));
-    s32 r10t = 0x8421 * ((s8)(r6 >> 8) - (s8)(r5 >> 8));
-    s32 r11t = 0x8421 * ((s8)(r6 >> 16) - (s8)(r5 >> 16));
+    // Quadratic interpolation from r4 (near) through r6 (far) with r5 (mid) controlling curvature
+    // Each parameter packs 3 color channels as signed bytes: [R16:8, G8:0, B0:0]... actually [ch2_16, ch1_8, ch0_0]
 
-    s32 r1t = 0x84210 * ((s8)(r4)-(s8)(r6));
+    // Acceleration (second derivative): (mid - far) * 0x8421
+    s32 r9t  = 0x8421 * ((s8)(r5)      - (s8)(r6));
+    s32 r10t = 0x8421 * ((s8)(r5 >> 8)  - (s8)(r6 >> 8));
+    s32 r11t = 0x8421 * ((s8)(r5 >> 16) - (s8)(r6 >> 16));
+
+    // Initial velocity: (far - near) * 0x84210
+    s32 r1t = 0x84210 * ((s8)(r6)      - (s8)(r4));
     s32 r5t = ((s32)(s8)(r4)) << 24;
-    s32 r2t = 0x84210 * ((s8)(r4 >> 8)-(s8)(r6 >> 8));
+    s32 r2t = 0x84210 * ((s8)(r6 >> 8)  - (s8)(r4 >> 8));
     s32 r6t = ((s32)(s8)(r4 >> 8)) << 24;
-    s32 r3t = 0x84210 * ((s8)(r4 >> 16)-(s8)(r6 >> 16));
+    s32 r3t = 0x84210 * ((s8)(r6 >> 16) - (s8)(r4 >> 16));
     s32 r7t = ((s32)(s8)(r4 >> 16)) << 24;
 
     for (int i = 0; i < 32; i++)
     {
-        lightFalloffMap[i][0] = r5t;
-        lightFalloffMap[i][1] = r6t;
-        lightFalloffMap[i][2] = r7t;
+        // Store upper 16 bits as s16 words, matching Saturn format
+        lightFalloffMap[i][0] = (s16)((u32)r5t >> 16);
+        lightFalloffMap[i][1] = (s16)((u32)r6t >> 16);
+        lightFalloffMap[i][2] = (s16)((u32)r7t >> 16);
 
         r1t += r9t;
         r2t += r10t;
@@ -383,12 +391,7 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonInit(s_dragonMenuDragonWorkArea
     generateCameraMatrix(&cameraProperties2, defaultCameraVectors[0], defaultCameraVectors[1], defaultCameraVectors[2]);
 }
 
-struct sCurrentLightVector
-{
-    sVec3_FP m_lightVector;
-
-    u16 m_color[3];
-}currentLightVector_M;
+sCurrentLightVector currentLightVector_M;
 
 void setLightVector_M(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7)
 {
