@@ -54,6 +54,7 @@ struct sProcessed3dModel
     {
         float position[3];
         float texcoord0[2];
+        float quadIndex;
     };
     std::vector<sVertexBufferEntry> m_vertexBuffer;
     std::vector<u16> m_indexBuffer;

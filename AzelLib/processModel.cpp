@@ -237,6 +237,7 @@ void sProcessed3dModel::generateVertexBuffer()
             m_vertexBuffer[i * 4 + j].position[0] = fpVec[0].toFloat();
             m_vertexBuffer[i * 4 + j].position[1] = fpVec[1].toFloat();
             m_vertexBuffer[i * 4 + j].position[2] = fpVec[2].toFloat();
+            m_vertexBuffer[i * 4 + j].quadIndex = (float)i;
         }
 
         m_indexBuffer[i * 6 + 0] = i * 4 + 0;
@@ -311,6 +312,7 @@ void sProcessed3dModel::generateVertexBuffer()
         .begin()
         .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
         .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+        .add(bgfx::Attrib::TexCoord1, 1, bgfx::AttribType::Float)
         .end();
 
     if (bgfx::isValid(m_vertexBufferHandle))
