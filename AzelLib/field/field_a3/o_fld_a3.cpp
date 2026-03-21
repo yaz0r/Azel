@@ -7059,6 +7059,9 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     if (gFLD_A3 == NULL)
     {
         gFLD_A3 = new FLD_A3_data();
+    }
+    if (LCSTaskDrawSub5Sub1_Data1.empty())
+    {
         LCSTaskDrawSub5Sub1_Data1 = readLCSTaskDrawSub5Sub1_Data1({ 0x06093B28, gFLD_A3 });
     }
 

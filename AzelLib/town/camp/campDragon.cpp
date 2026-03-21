@@ -36,9 +36,9 @@ struct sCampDragon : public sTownDragon
     //size: 0x624
 };
 
-// 06054af8
-void initDragonHotpoints(sTownDragon* pThisBase) {
-    sCampDragon* pThis = (sCampDragon*)pThisBase;
+
+// 06054af8 — camp-specific: populate mE0 pairs AND mF8 collision bodies
+void initCampDragonHotpoints(sCampDragon* pThis) {
     s_3dModel& model = gDragonState->m28_dragon3dModel;
     if (!model.m40) return;
 
@@ -51,7 +51,6 @@ void initDragonHotpoints(sTownDragon* pThisBase) {
         for (int hpIdx = 0; hpIdx < (int)def.m0.size(); hpIdx++) {
             s_hotpoinEntry& entry = def.m0[hpIdx];
             if (entry.m10 < 0x1801) {
-                // Small hotpoint -> mE0 height-tracking pair
                 if (e0Count < 4) {
                     pThis->mE0_hotpointPairs[e0Count].m0_boneIndex = (u8)boneIdx;
                     pThis->mE0_hotpointPairs[e0Count].m1_hotpointIndex = (u8)hpIdx;
@@ -59,7 +58,6 @@ void initDragonHotpoints(sTownDragon* pThisBase) {
                 }
             }
             else {
-                // Large hotpoint -> mF8 collision body entry
                 if (f8Count < 9) {
                     auto& f8 = pThis->mF8[f8Count];
                     f8.m0_boneIndex = (u8)boneIdx;
@@ -194,6 +192,7 @@ void sCampDragon_Init(sTownDragon* pThisBase, sSaturnPtr arg) {
         setCollisionBounds(&psVar3->m10_collisionBody, psVar3->m74, psVar3->m80);
     }
     initDragonForTown(pThis);
+    initCampDragonHotpoints(pThis); // camp-specific: also populate mF8 collision bodies
     pThis->m14_readyState = 1;
 
     playAnimation(&gDragonState->m28_dragon3dModel, pThis->m1C->m0_fileBundle->getAnimation(readSaturnU16(pThis->m20_scriptEA + 2)), 0);

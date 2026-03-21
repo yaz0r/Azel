@@ -35,3 +35,4 @@ struct sTownDragon : public s_workAreaTemplateWithArgAndBase<sTownDragon, sTownO
 };
 
 sTownObject* createTownDragon(p_workArea parent, sSaturnPtr arg);
+void initDragonHotpoints(sTownDragon* pThis);

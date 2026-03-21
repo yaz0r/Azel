@@ -468,36 +468,10 @@ void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonSt
     Unimplemented();
 }
 
+// Replace Saturn DRAM free with standard free
 void dramFree(u8* ptr)
 {
-    if (!ptr) return;
-
-    // The allocation header (s_dramAllocationNode) is at ptr - 8
-    s_dramAllocationNode* pBlock = ((s_dramAllocationNode*)ptr) - 1;
-
-    // Walk free list to find insertion point (sorted by address)
-    s_dramAllocationNode* pPrev = (s_dramAllocationNode*)dramAllocatorHead;
-    s_dramAllocationNode* pCur = pPrev->m_pNext;
-    while (pCur != nullptr && pCur <= pBlock) {
-        pPrev = pCur;
-        pCur = pCur->m_pNext;
-    }
-
-    // Try to coalesce with next block
-    if ((u8*)pBlock + pBlock->size == (u8*)pCur) {
-        pBlock->m_pNext = pCur->m_pNext;
-        pBlock->size += pCur->size;
-    } else {
-        pBlock->m_pNext = pCur;
-    }
-
-    // Try to coalesce with previous block
-    if ((u8*)pPrev + pPrev->size == (u8*)pBlock) {
-        pPrev->m_pNext = pBlock->m_pNext;
-        pPrev->size += pBlock->size;
-    } else {
-        pPrev->m_pNext = pBlock;
-    }
+    free(ptr);
 }
 
 void vdp1Free(u8* ptr)

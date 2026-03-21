@@ -6,6 +6,30 @@
 #include "town/ruin/twn_ruin.h" // TODO: cleanup
 #include "town/camp/campDragon.h"
 
+// 060541f2 — populate mE0 hotpoint pairs from dragon model (shared across all town overlays)
+void initDragonHotpoints(sTownDragon* pThis) {
+    s_3dModel& model = gDragonState->m28_dragon3dModel;
+    if (!model.m40) return;
+
+    std::vector<s_hotpointDefinition>& hotpointDefs = *model.m40;
+    int e0Count = 0;
+
+    for (int boneIdx = 0; boneIdx < (int)hotpointDefs.size(); boneIdx++) {
+        s_hotpointDefinition& def = hotpointDefs[boneIdx];
+        for (int hpIdx = 0; hpIdx < (int)def.m0.size(); hpIdx++) {
+            s_hotpoinEntry& entry = def.m0[hpIdx];
+            if (entry.m10 < 0x1801) {
+                if (e0Count < 4) {
+                    pThis->mE0_hotpointPairs[e0Count].m0_boneIndex = (u8)boneIdx;
+                    pThis->mE0_hotpointPairs[e0Count].m1_hotpointIndex = (u8)hpIdx;
+                    e0Count++;
+                }
+            }
+        }
+    }
+    pThis->mDC_hotpointPairCount = e0Count;
+}
+
 bool reinitModel(s_3dModel* pModel, sHotpointBundle* param2)
 {
     if (pModel->m40)

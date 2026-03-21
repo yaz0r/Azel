@@ -9,8 +9,10 @@ struct sResCameraProperties
     s32 m8_LCSWidth;
     fixedPoint mC_LCSHeight;
     s32 m10_activeLCSType; // define the type of m14.
-    s32 m14_activeLCSEnvironmentIndex; // used for LCS type 1 (environment LCS)
-    sCollisionBody* m14_activeLCS; // used for LCS type 2 (npc LCS)
+    union {
+        s32 m14_activeLCSEnvironmentIndex; // used for LCS type 1 (environment LCS)
+        sCollisionBody* m14_activeLCS; // used for LCS type 2 (npc LCS)
+    };
     fixedPoint m18;
     s16 m1C_LCSHeightMin;
     s16 m1E_LCSHeightMax;

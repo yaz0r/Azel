@@ -1,6 +1,8 @@
 #include "PDS.h"
 #include "town.h"
 #include "townScript.h"
+#include "townMainLogic.h"
+#include "townEdge.h"
 #include "town/camp/twn_camp.h"
 #include "town/ruin/twn_ruin.h"
 #include "town/exca/twn_exca.h"
@@ -626,5 +628,30 @@ void townOverlayDelete(townDebugTask2Function* pThis)
         assert(gModuleManager->m8 == pThis);
         gModuleManager->m8 = nullptr;
     }
+}
+
+s32 setupAutoWalk()
+{
+    if (twnMainLogicTask->m14_EdgeTask == nullptr)
+        return 0;
+
+    if (twnMainLogicTask->m118_autoWalkDuration)
+        return 0;
+
+    sNPCE8& r5 = twnMainLogicTask->m14_EdgeTask->mE8;
+
+    twnMainLogicTask->m11C_autoWalkStartPosition = r5.m0_position;
+    twnMainLogicTask->m128_autoWalkStartRotation = r5.mC_rotation;
+
+    sVec3_FP var0 = npcData0.m104_currentScript.mC.toSVec3_FP();
+
+    twnMainLogicTask->m134_autoWalkPositionStep[0] = MTH_Mul(0x199, var0[0]);
+    twnMainLogicTask->m134_autoWalkPositionStep[1] = MTH_Mul(0x199, var0[1]);
+    twnMainLogicTask->m134_autoWalkPositionStep[2] = MTH_Mul(0x199, var0[2]);
+
+    twnMainLogicTask->m118_autoWalkDuration = 5;
+    twnMainLogicTask->m14_EdgeTask->m84.m0_collisionSetup.m0_collisionType = 1;
+
+    return 1;
 }
 

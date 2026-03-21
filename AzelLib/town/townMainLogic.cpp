@@ -198,28 +198,45 @@ const std::array<sVec2_FP, 2> cameraParams = {
     }
 };
 
+// 06055be4
 void cameraUpdate_follow_LCSSub1(sMainLogic* r4)
 {
-    sVec3_FP* r13 = &r4->m18_position;
+    const sVec3_FP* r13 = &r4->m18_position;
     if ((npcData0.mFC & 1) && (currentResTask->m8_currentLCSType))
     {
-        //assert(0);
-        /*
-        if (currentResTask->m8 == 1)
+        if (currentResTask->m8_currentLCSType == 1)
         {
-            r13 = cameraUpdate_follow_LCSSub1Sub0(currentResTask->mC);
+            r13 = getEnvLCSTargetPosition(currentResTask->mC_AsIndex);
         }
         else
         {
-            r13 = currentResTask->mC_AsOffset + 8;
+            r13 = &currentResTask->mC->m8_position;
         }
-        */
-        //6055C48
-        //assert(0);
-        Unimplemented();
+
+        if (r4->m3 == 0)
+        {
+            sVec3_FP diff = r4->m14_EdgeTask->m84.m8_position - *r13;
+
+            s32 angle = atan2_FP((s32)diff[0], (s32)diff[2]);
+            u32 angleDiff = (angle - (s32)r4->m68_cameraRotation[1]) & 0xFFFFFFF;
+
+            fixedPoint dist = sqrt_F(MTH_Product3d_FP(diff, diff));
+            if ((s32)dist < 0x1000) dist = 0x1000;
+
+            s32 threshold = FP_Div(0x2AAAAAA, (s32)dist << 4) + 0x222222;
+
+            if ((s32)angleDiff < threshold)
+            {
+                r4->m30 = angle - threshold;
+            }
+            if ((s32)angleDiff > 0x10000000 - threshold)
+            {
+                r4->m30 = angle + threshold;
+            }
+            r4->m3 = 1;
+        }
     }
 
-    //6055CCA
     r4->m44_cameraTarget[0] = MTH_Mul(r4->m44_cameraTarget[0] - (*r13)[0], 0xF333) + (*r13)[0];
     r4->m44_cameraTarget[1] = MTH_Mul(r4->m44_cameraTarget[1] - (*r13)[1], 0xF333) + (*r13)[1];
     r4->m44_cameraTarget[2] = MTH_Mul(r4->m44_cameraTarget[2] - (*r13)[2], 0xF333) + (*r13)[2];

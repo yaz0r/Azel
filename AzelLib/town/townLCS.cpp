@@ -397,36 +397,31 @@ bool testQuadsForCollisionSub1(s32 r1, sResCameraProperties* r6, bool(*r2Callbac
 
 bool setTBitIfCollisionWithQuadSub0(sResCameraProperties* r6, sTransformedVertice& r8_input, sTransformedVertice& r9_input)
 {
-    s32 r2 = r9_input.m10_clippedX - r8_input.m10_clippedX;
-    s32 r14 = r9_input.m14_clippedY - r8_input.m14_clippedY;
+    // Saturn truncates all values to s16 before cross-product to avoid overflow
+    s16 x0 = (s16)r8_input.m10_clippedX;
+    s16 x1 = (s16)r9_input.m10_clippedX;
+    s16 y0 = (s16)r8_input.m14_clippedY;
+    s16 y1 = (s16)r9_input.m14_clippedY;
 
-    s32 r8 = r6->m1C_LCSHeightMin - r8_input.m14_clippedY;
-    s32 r9 = r6->m1E_LCSHeightMax - r8_input.m14_clippedY;
+    s32 dX = (s32)(s16)(x1 - x0);
+    s32 dY = (s32)(s16)(y1 - y0);
 
-    r8 *= r2;
-    s32 r3 = (r6->m20_LCSWidthMin - r8_input.m10_clippedX) * r14;
-
-    if (r8 > r3)
-    {
-        return false;
-    }
-
-    r9 *= r2;
-    if (r9 > r3)
-    {
-        return false;
-    }
-
-    r3 = (r6->m22_LCSWidthMax - r8_input.m10_clippedX) * r14;
+    s32 r8 = (s32)(s16)(r6->m1C_LCSHeightMin - y0) * dX;
+    s32 r3 = (s32)(s16)(r6->m20_LCSWidthMin - x0) * dY;
 
     if (r8 > r3)
-    {
         return false;
-    }
+
+    s32 r9 = (s32)(s16)(r6->m1E_LCSHeightMax - y0) * dX;
     if (r9 > r3)
-    {
         return false;
-    }
+
+    r3 = (s32)(s16)(r6->m22_LCSWidthMax - x0) * dY;
+
+    if (r8 > r3)
+        return false;
+    if (r9 > r3)
+        return false;
 
     return true;
 }
@@ -621,7 +616,7 @@ void findLCSCollisionInCell(sResCameraProperties* r14, sTownCellTask* r12)
     pushCurrentMatrix();
     translateCurrentMatrix(r12->mC_position);
     if (
-        (pCurrentMatrix->m[2][3] >= r14->m24_LCSDepthMin - gTownGrid.m2C) && (pCurrentMatrix->m[2][3] <= r14->m2C_projectionWidthScale + gTownGrid.m2C) &&
+        (pCurrentMatrix->m[2][3] >= r14->m24_LCSDepthMin - gTownGrid.m2C) && (pCurrentMatrix->m[2][3] <= r14->m28_LCSDepthMax + gTownGrid.m2C) &&
         (pCurrentMatrix->m[0][3] >= MTH_Mul(pCurrentMatrix->m[2][3], r14->m34_boundMinX) - r14->m54) && (pCurrentMatrix->m[0][3] <= MTH_Mul(pCurrentMatrix->m[2][3], r14->m3C_boundMaxX) + r14->m58)
         )
     {

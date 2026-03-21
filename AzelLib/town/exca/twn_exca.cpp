@@ -35,6 +35,8 @@ struct TWN_EXCA_data : public sTownOverlay
     {
         overlayScriptFunctions.m_zeroArg[0x06057f7c] = {&setupCameraFollowMode, "scriptFunction_6057058_sub0"};
         overlayScriptFunctions.m_zeroArg[0x060584b4] = {&hasLoadingCompleted, "hasLoadingCompleted"};
+        overlayScriptFunctions.m_zeroArg[0x0605856e] = {&setupAutoWalk, "setupAutoWalk"};
+        overlayScriptFunctions.m_zeroArg[0x06058f52] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
 
         overlayScriptFunctions.m_oneArg[0x605d780] = {&TwnFadeOut, "TwnFadeOut"};
         overlayScriptFunctions.m_oneArg[0x605d708] = {&TwnFadeIn, "TwnFadeIn"};
@@ -45,7 +47,7 @@ struct TWN_EXCA_data : public sTownOverlay
         overlayScriptFunctions.m_fourArg[0x605be24] = {&setNpcLocation, "setNpcLocation"};
         overlayScriptFunctions.m_fourArg[0x605be52] = {&setNpcOrientation, "setNpcOrientation"};
 
-        mTownSetups.push_back(readTownSetup(getSaturnPtr(0x605fd4c), 1));
+        mTownSetups.push_back(readTownSetup(getSaturnPtr(0x605fd4c), 7));
     }
 
     sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override

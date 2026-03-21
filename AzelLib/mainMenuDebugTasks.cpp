@@ -720,50 +720,14 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
     addToMemoryLayout(dest, 8);
 }
 
+// Replace Saturn DRAM allocator with standard malloc — pointer sizes differ on x64
+// so the original fixed-size pool would run out of space or have alignment issues.
 u8* dramAllocate(u32 size)
 {
     if (size == 0)
         return nullptr;
 
-    // TODO: does the alignment stuff still works in 64bits?
-    u32 paddedSize = (size + sizeof(s_dramAllocationNode) + 0xF) & ~0xF;
-
-    s_dramAllocationNode** r5 = &dramAllocatorHead->m0_buffer;
-
-    while (s_dramAllocationNode* r14 = *r5)
-    {
-        u32 blockSize = r14->size;
-
-        if (blockSize >= paddedSize)
-        {
-            if (paddedSize == blockSize)
-            {
-                *r5 = r14->m_pNext;
-            }
-            else
-            {
-                s_dramAllocationNode* pNewNode = (s_dramAllocationNode*)(((u8*)r14) + paddedSize);
-
-                u32 newNodeSize = blockSize - paddedSize;
-
-                *r5 = pNewNode;
-
-                pNewNode->m_pNext = r14->m_pNext;
-                pNewNode->size = newNodeSize;
-
-                addToMemoryLayout((u8*)pNewNode, 8);
-
-                r14->size = paddedSize;
-            }
-
-            r14->m_pNext = NULL;
-            return (u8*)(r14 + 1);
-        }
-
-        r5 = &r14->m_pNext;
-    }
-
-    return NULL;
+    return (u8*)malloc(size);
 }
 
 void unimplementedUpdate(s_3dModel* pDragonStateData1)

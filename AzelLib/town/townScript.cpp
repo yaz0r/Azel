@@ -830,19 +830,15 @@ sBundleEntry getBundleEntry(u8* pBundleBase, u32 entryOffset)
     return newEntry;
 }
 
-sVec3_FP getEnvLCSTargetPosition(s32 index)
+static sVec3_FP nullVector = {};
+
+const sVec3_FP* getEnvLCSTargetPosition(s32 index)
 {
-    sVec3_FP position;
     if (index >= npcData0.m68_numEnvLCSTargets)
     {
-        position.zeroize();
+        return &nullVector;
     }
-    else
-    {
-        position = (*npcData0.m6C_LCSTargets)[index];
-    }
-
-    return position;
+    return &(*npcData0.m6C_LCSTargets)[index];
 }
 
 void sScriptTask::Update(sScriptTask* pThis)
@@ -897,7 +893,7 @@ void sScriptTask::Update(sScriptTask* pThis)
             break;
         case 1: // environment object
             var0 = pThis;
-            pThis->m10_distanceToLCS = vecDistance(getEnvLCSTargetPosition(pThis->mC_AsIndex), *npcData0.m160_pEdgePosition);
+            pThis->m10_distanceToLCS = vecDistance(*getEnvLCSTargetPosition(pThis->mC_AsIndex), *npcData0.m160_pEdgePosition);
             r13 = (*npcData0.m64_scriptList)[pThis->mC_AsIndex];
             r11 = nullptr;
             break;

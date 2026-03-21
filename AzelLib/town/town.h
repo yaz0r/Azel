@@ -253,6 +253,8 @@ extern s32* twnVar1;
 extern s32 twnVar2;
 void drawLcs();
 s32 canCurrentResActivate();
+s32 setupAutoWalk();
+const sVec3_FP* getEnvLCSTargetPosition(s32 index);
 s32 isObjectCloseEnoughToActivate();
 void updateEdgePosition(sNPC* r4);
 s32 TwnFadeIn(s32 arg0);
