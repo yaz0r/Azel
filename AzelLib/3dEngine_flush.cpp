@@ -439,8 +439,10 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
 
             // Saturn's transformVertices scales Z translation by <<8, making depth ~256x larger
             // than raw 16.16 view-space Z. Apply the same scaling to match.
+            // Use absolute value: the model-view Z may be negative depending on camera convention.
+            s32 absDepth = viewDepth < 0 ? -viewDepth : viewDepth;
             s32 falloutColor[3];
-            GetDistanceFalloff(falloutColor, viewDepth << 8);
+            GetDistanceFalloff(falloutColor, absDepth << 8);
 
             if (lightingMode == 1)
             {
