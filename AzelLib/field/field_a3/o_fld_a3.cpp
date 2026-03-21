@@ -281,7 +281,7 @@ void s_visdibilityCellTask::gridCellDraw_normal(s_visdibilityCellTask* pTypedWor
                     if (readSaturnS16(r14->m0 + 2))
                     {
                         getCameraProperties2Matrix(pCurrentMatrix);
-                        gridCellDraw_normalSub2(pTypedWorkAread, readSaturnS16(r14->m0 + 2), 0x10000);
+                        gridCellDraw_normalSub2(pTypedWorkAread->m0_memoryLayout.m0_mainMemoryBundle, readSaturnS16(r14->m0 + 2), 0x10000);
                     }
                 }
                 popMatrix();
@@ -969,9 +969,158 @@ void create_A3_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     pNewTask->m20[2] = randomNumber();
 }
 
+// Particle pool slot (0x34 bytes per particle)
+struct sParticleSlot
+{
+    sVec3_FP m0_position;           // 0x00
+    sVec3_FP mC_velocity;           // 0x0C
+    fixedPoint m18_velocityScaleX;   // 0x18
+    fixedPoint m1C_velocityScaleY;   // 0x1C
+    void* m20_heapData;              // 0x20
+    s32 m24_param;                   // 0x24
+    void (*m28_drawFunc)(sParticleSlot*); // 0x28 — null = free slot
+    sAnimatedQuad m2C_animQuad;      // 0x2C
+    // size 0x34
+};
+
+// Particle pool manager
+struct sParticlePoolManager
+{
+    s_workArea* m0_parentTask;
+    u32 m4_vdp1Memory;
+    sParticleSlot* m8_slotsBase;
+    sParticleSlot* mC_currentSlot;
+    s32 m10_currentIndex;
+    s32 m14_maxParticles;
+    s32 m18_activeCount;
+};
+
+// Particle spawn config (built on the stack by callers)
+struct sParticleSpawnConfig
+{
+    sVec3_FP* m0_pPosition;
+    sVec3_FP* m4_pVelocity;
+    const std::vector<sVdp1Quad>* m8_pQuadData;
+    fixedPoint mC_velocityScaleX;
+    fixedPoint m10_velocityScaleY;
+    s32 m14_param;
+    s32 m18_heapSize;
+    void* m1C_heapData;
+};
+
+// 06078a1c — simple particle draw (axis-aligned sprite)
+static void particleDrawSimple(sParticleSlot* pSlot)
+{
+    drawProjectedParticle(&pSlot->m2C_animQuad, &pSlot->m0_position);
+}
+
+// 06078a2a — billboard particle draw (oriented sprite)
+static void particleDrawBillboard(sParticleSlot* pSlot)
+{
+    // TODO: writeBillBoardToVDP1 not yet implemented
+    drawProjectedParticle(&pSlot->m2C_animQuad, &pSlot->m0_position);
+}
+
+// 06078a3c — spawn a particle into the pool
+s32 spawnParticleInPool(sParticlePoolManager* pPool, sParticleSpawnConfig* pConfig, s32 useVelocityScale)
+{
+    if (pPool->m18_activeCount >= pPool->m14_maxParticles)
+        return 0;
+
+    // Optionally allocate extra heap
+    void* heapData = nullptr;
+    if (pConfig->m18_heapSize > 0)
+    {
+        heapData = allocateHeapForTask(pPool->m0_parentTask, pConfig->m18_heapSize);
+        if (heapData == nullptr)
+            return 0;
+    }
+
+    // Find a free slot (ring buffer scan)
+    while (pPool->mC_currentSlot->m28_drawFunc != nullptr)
+    {
+        pPool->m10_currentIndex++;
+        pPool->mC_currentSlot++;
+        if (pPool->m10_currentIndex >= pPool->m14_maxParticles)
+        {
+            pPool->m10_currentIndex = 0;
+            pPool->mC_currentSlot = pPool->m8_slotsBase;
+        }
+    }
+
+    sParticleSlot* pSlot = pPool->mC_currentSlot;
+
+    // Init animated quad
+    u16 cmdsrca = (u16)((s32)(pPool->m4_vdp1Memory + 0xDA400000) >> 3);
+    particleInitSub(&pSlot->m2C_animQuad, cmdsrca, pConfig->m8_pQuadData);
+
+    // Copy position and velocity
+    pSlot->m0_position = *pConfig->m0_pPosition;
+    pSlot->mC_velocity = *pConfig->m4_pVelocity;
+
+    // Extra data
+    pSlot->m24_param = pConfig->m14_param;
+    pSlot->m20_heapData = heapData;
+    if (heapData != nullptr)
+    {
+        memcpy(heapData, pConfig->m1C_heapData, pConfig->m18_heapSize);
+    }
+
+    // Set draw function and velocity scales
+    if (useVelocityScale == 0)
+    {
+        pSlot->m28_drawFunc = particleDrawSimple;
+    }
+    else
+    {
+        pSlot->m18_velocityScaleX = pConfig->mC_velocityScaleX;
+        pSlot->m1C_velocityScaleY = pConfig->m10_velocityScaleY;
+        pSlot->m28_drawFunc = particleDrawBillboard;
+    }
+
+    pPool->m18_activeCount++;
+    return 1;
+}
+
+// 0605e818
+struct sSmokePufTask : public s_workAreaTemplate<sSmokePufTask>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { nullptr, Update, nullptr, nullptr };
+        return &taskDefinition;
+    }
+
+    static void Update(sSmokePufTask* pThis)
+    {
+        if (pThis->m14_countdown < 1)
+        {
+            pThis->getTask()->markFinished();
+            return;
+        }
+
+        pThis->m14_countdown--;
+
+        // Spawn a smoke particle every other frame
+        // TODO: wire up to spawnParticleInPool when particle pool manager is available
+        Unimplemented();
+    }
+
+    sVec3_FP m0_position;
+    sVec3_FP* mC_pPositionRef;
+    s32 m10;
+    s32 m14_countdown;
+    // size 0x18
+};
+
+// 0605e928
 void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, s32 r6)
 {
-    Unimplemented();
+    sSmokePufTask* pNewTask = createSubTask<sSmokePufTask>(pThis);
+    pNewTask->m0_position = *r5;
+    pNewTask->mC_pPositionRef = r5;
+    pNewTask->m10 = r6;
+    pNewTask->m14_countdown = 0x20;
 }
 
 void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)

@@ -53,7 +53,7 @@ void A3_3_Obj0_Draw(s_A3_3_Obj0* pThis)
         translateCurrentMatrix(&pThis->mC_position);
         rotateCurrentMatrixZYX_s16(pThis->m30_rotation);
         addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel(0x2C4));
-        callGridCellDraw_normalSub2(pThis, 0x2C8);
+        callGridCellDraw_normalSub2(pThis->m0.m0_mainMemoryBundle, 0x2C8);
         popMatrix();
     }
 }

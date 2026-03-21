@@ -78,7 +78,7 @@ struct fieldA3_2_crashedImpertialShip : public s_workAreaTemplate<fieldA3_2_cras
             translateCurrentMatrix(pThis->mC_position);
             rotateCurrentMatrixZYX_s16(pThis->m24_rotation);
             pThis->m40_3dModel.m18_drawFunction(&pThis->m40_3dModel);
-            callGridCellDraw_normalSub2(pThis, 1164);
+            callGridCellDraw_normalSub2(pThis->m0_memoryArea.m0_mainMemoryBundle, 1164);
             popMatrix();
         }
     }
@@ -152,7 +152,7 @@ struct fieldA3_2_crashedImpertialShip2 : public s_workAreaTemplate<fieldA3_2_cra
             translateCurrentMatrix(pThis->mC_position);
             rotateCurrentMatrixZYX_s16(pThis->m24_rotation);
             pThis->m34_3dModel.m18_drawFunction(&pThis->m34_3dModel);
-            callGridCellDraw_normalSub2(pThis, 1136);
+            callGridCellDraw_normalSub2(pThis->m0_memoryArea.m0_mainMemoryBundle, 1136);
             popMatrix();
         }
     }

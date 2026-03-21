@@ -22,6 +22,7 @@ void battleLoading_Init(sBattleLoadingTask* pThis)
     fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0xFC1F, 0x1E);
 }
 
+// 0606853a
 void battleLoading_Draw(sBattleLoadingTask* pThis)
 {
     switch (pThis->m8_status)
@@ -30,18 +31,22 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
         pThis->m8_status++;
         break;
     case 1:
-        if (readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2) > -1)
+    {
+        s8 soundBank = readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2);
+        if (soundBank > -1)
         {
-            loadSoundBanks(readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2), 0);
+            loadSoundBanks(soundBank, 0);
         }
         pThis->m8_status++;
         break;
+    }
     case 2:
         if (isSoundLoadingFinished())
         {
-            if (readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2) > -1)
+            s8 soundBank = readSaturnS8(gFLD_A3->getSaturnPtr(0x6093889) + getFieldTaskPtr()->m2C_currentFieldIndex * 2);
+            if (soundBank > -1)
             {
-                playPCM(pThis, readSaturnS8(gFLD_A3->getSaturnPtr(0x6093888) + getFieldTaskPtr()->m2C_currentFieldIndex * 2));
+                playPCM(pThis, soundBank);
             }
             pThis->m8_status++;
         }
@@ -49,7 +54,21 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
     case 3:
         if (readKeyboardToggle(0xDA))
         {
-            assert(0);
+            if (pThis->m4 >= 0)
+            {
+                u32 bitIndex = pThis->m4;
+                u32 byteIndex = bitIndex;
+                if (bitIndex > 999)
+                {
+                    byteIndex = bitIndex - 0x236;
+                }
+                if (bitIndex > 999)
+                {
+                    bitIndex = bitIndex - 0x236;
+                }
+                mainGameState.bitField[byteIndex >> 3] |= bitMasks[bitIndex & 7];
+            }
+            pThis->m8_status++;
         }
         if (readKeyboardToggle(0xF6))
         {
@@ -57,7 +76,7 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
         }
         break;
     case 4:
-        Unimplemented();
+        popSoundSequence(1);
         pThis->m8_status++;
         break;
     case 5:
@@ -70,8 +89,7 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
         assert(0);
     }
 
-    Unimplemented();
-    //debugSound(0);
+    // debugSound(); // debug sound status display (not needed for gameplay)
     vdp2DebugPrintSetPosition(3, 0x19);
     vdp2PrintfLargeFont("ENEMY:%2d ", pThis->m0_enemyId);
 }

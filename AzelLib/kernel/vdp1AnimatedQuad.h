@@ -28,3 +28,16 @@ std::vector<sVdp1Quad> initVdp1Quad(sSaturnPtr ptr);
 int sGunShotTask_UpdateSub4(sAnimatedQuad* pThis);
 int drawProjectedParticle(sAnimatedQuad* pThis, sVec3_FP* position);
 int vdp1DrawQuadScaled(sAnimatedQuad* pThis, sVec3_FP* position, fixedPoint scale);
+
+// 0602f610 — draws a rotated billboard sprite between two view-space points
+struct sBillboardSpriteParams
+{
+    fixedPoint m0_halfWidth;
+    fixedPoint m4_halfHeight;
+    u16 m8_CMDPMOD;
+    u16 mA_CMDCOLR;
+    u16 mC_CMDSRCA;
+    u16 mE_CMDSIZE;
+    u16 m10_gouraud[4];
+};
+int drawImmediateBillboardSprite(const sVec3_FP* points, const sBillboardSpriteParams* params);

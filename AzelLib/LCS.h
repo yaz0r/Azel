@@ -59,15 +59,12 @@ struct s_LCSTask340SubSub : public s_workAreaTemplate<s_LCSTask340SubSub>
         return &taskDefinition;
     }
 
-    static void Update(s_LCSTask340SubSub*)
-    {
-        PDS_unimplemented("s_LCSTask340SubSub::Update");
-    }
+    // 0607BD40
+    static void Update(s_LCSTask340SubSub* pThis);
 
-    static void Delete(s_LCSTask340SubSub*)
-    {
-        PDS_unimplemented("s_LCSTask340SubSub::Delete");
-    }
+
+    // 0607BDF4 - clears the special color effect on the dragon
+    static void Delete(s_LCSTask340SubSub*);
 
     s32 m0;
     s32 m4;

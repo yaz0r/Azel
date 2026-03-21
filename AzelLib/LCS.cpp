@@ -1637,3 +1637,166 @@ void allocateLCSEntry(s_visibilityGridWorkArea* r4, sProcessed3dModel* r5, fixed
     r4->m44[0].m34 = r6;
     r4->m44++;
 }
+
+// Sparkle particle config passed to createLCSSparkleParticle
+struct sSparkleParticleConfig
+{
+    sVec3_FP* m0_pPosition;
+    s32 m4_angleX;
+    s32 m8_angleY;
+    s32 mC_baseLifetime;
+    s32 m10_scale;
+    s16 m14_duration;
+    s8 m16_colorIndex;
+};
+
+// Sparkle particle work area
+struct sSparkleParticle : public s_workAreaTemplateWithArg<sSparkleParticle, sSparkleParticleConfig*>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { Init, Update, Draw, nullptr };
+        return &taskDefinition;
+    }
+
+    // 0607BAA8
+    static void Init(sSparkleParticle* pThis, sSparkleParticleConfig* pConfig)
+    {
+        getMemoryArea(&pThis->m0_memoryArea, 0);
+        pThis->m8_pPosition = pConfig->m0_pPosition;
+        pThis->mC_angleX = pConfig->m4_angleX;
+        pThis->m10_angleY = pConfig->m8_angleY;
+        pThis->m14_baseLifetime = pConfig->mC_baseLifetime;
+        pThis->m18_scale = pConfig->m10_scale;
+        pThis->m1C_duration = pConfig->m14_duration;
+        pThis->m1E_colorIndex = pConfig->m16_colorIndex;
+        pThis->m20_initialScale = pConfig->m10_scale;
+        pThis->m48_countdown = pConfig->m14_duration;
+        pThis->m4C_totalDuration = pConfig->m14_duration;
+
+        s32 quarterLifetime = pConfig->mC_baseLifetime >> 2;
+        pThis->m34_randomizedLifetime = pConfig->mC_baseLifetime + (s32)performModulo2(quarterLifetime, randomNumber());
+
+        pThis->m2C_localOffset[0] = 0;
+        pThis->m2C_localOffset[1] = 0;
+        pThis->m2C_localOffset[2] = 0;
+    }
+
+    // 0607BB0E
+    static void Update(sSparkleParticle* pThis)
+    {
+        s32 countdown = pThis->m48_countdown;
+        pThis->m48_countdown = countdown - 1;
+
+        if (countdown < 1)
+        {
+            pThis->getTask()->markFinished();
+        }
+
+        s32 halfDuration = (s32)pThis->m4C_totalDuration >> 1;
+        if (halfDuration < pThis->m48_countdown)
+        {
+            pThis->m44_opacity = setDividend(
+                ((s32)pThis->m4C_totalDuration - pThis->m48_countdown) * 0x10000,
+                0x20000,
+                (s32)pThis->m4C_totalDuration << 16);
+        }
+        else
+        {
+            pThis->m44_opacity = setDividend(
+                pThis->m48_countdown << 16,
+                0x20000,
+                (s32)pThis->m4C_totalDuration << 16);
+        }
+    }
+
+    // 0607BB9E
+    static void Draw(sSparkleParticle* pThis)
+    {
+        fixedPoint scaledOpacity = MTH_Mul(pThis->m20_initialScale, pThis->m44_opacity);
+
+        sVec3_FP worldPos;
+        sVec3_FP cameraSpacePos;
+
+        pushCurrentMatrix();
+        translateCurrentMatrix(pThis->m8_pPosition);
+        rotateCurrentMatrixShiftedY(pThis->m10_angleY);
+        rotateCurrentMatrixShiftedX(pThis->mC_angleX);
+        transformAndAddVecByCurrentMatrix(&pThis->m2C_localOffset, &worldPos);
+        transformAndAddVec(worldPos, cameraSpacePos, cameraProperties2.m28[0]);
+        popMatrix();
+
+        // TODO: FUN_0602f610 — draw billboard sprite at cameraSpacePos with scaledOpacity
+        Unimplemented();
+    }
+
+    s_memoryAreaOutput m0_memoryArea;
+    sVec3_FP* m8_pPosition;
+    s32 mC_angleX;
+    s32 m10_angleY;
+    s32 m14_baseLifetime;
+    s32 m18_scale;
+    s16 m1C_duration;
+    s8 m1E_colorIndex;
+    s32 m20_initialScale;
+    sVec3_FP m2C_localOffset;
+    s32 m34_randomizedLifetime;
+    s32 m44_opacity;
+    s32 m48_countdown;
+    s16 m4C_totalDuration;
+    // size 0x50
+};
+
+// 0607bc60
+void createLCSSparkleParticle(sSparkleParticleConfig* pConfig)
+{
+    s_LCSTask* pLCSTask = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
+    createSubTaskWithArg<sSparkleParticle>(pLCSTask, pConfig);
+}
+
+// 0607BD40
+void s_LCSTask340SubSub::Update(s_LCSTask340SubSub* pThis)
+{
+    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+
+    // Spawn a sparkle particle each frame
+    sSparkleParticleConfig config;
+    config.m0_pPosition = &pDragon->m8_pos;
+    config.m4_angleX = randomNumber();
+    config.m8_angleY = randomNumber();
+    config.mC_baseLifetime = 0x6000;
+    config.m10_scale = 0x333;
+    config.m14_duration = 6;
+    config.m16_colorIndex = (s8)pThis->m4;
+
+    createLCSSparkleParticle(&config);
+
+    // Compute rotation from timer for light position orbit
+    static const sVec3_FP sparkleOffset = { 0x8000, 0, 0 };
+    s32 rotation = intDivide(0x1E, pThis->m0 << 0x1B);
+    pDragon->m_EC = rotation;
+
+    sVec3_FP worldPos;
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pDragon->m8_pos);
+    rotateCurrentMatrixShiftedZ(rotation);
+    transformAndAddVecByCurrentMatrix(&sparkleOffset, &worldPos);
+    transformAndAddVec(worldPos, pDragon->mD8_sparklePosition, cameraProperties2.m28[0]);
+    popMatrix();
+
+    pDragon->mE4_sparkleScale = 0x10000;
+
+    // Count down timer and mark finished when done
+    s32 prev = pThis->m0;
+    pThis->m0 = prev - 1;
+    if (prev - 1 < 1)
+    {
+        pThis->getTask()->markFinished();
+    }
+}
+
+// 0607BDF4
+void s_LCSTask340SubSub::Delete(s_LCSTask340SubSub*)
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m_EB_useSpecialColor = 0;
+}

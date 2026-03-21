@@ -2,6 +2,8 @@
 #include "kernel/vdp1Allocator.h"
 #include "kernel/fileBundle.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldVisibilityGrid.h"
+#include "processModel.h"
 
 s_fieldTaskWorkArea* fieldTaskPtr = NULL;
 
@@ -327,12 +329,58 @@ void initFieldDragonLight()
     pDragonTask->mC0_lightRotationAroundDragon = 0xC000000;
 }
 
-void gridCellDraw_normalSub2(p_workArea r4, s32 r5, s32 r6)
+// 0606f5cc
+void gridCellDraw_normalSub2(s_fileBundle* r4, s32 r5, s32 r6)
 {
-    Unimplemented();
+    if (r5 == 0)
+        return;
+
+    sProcessed3dModel* pModel = r4->get3DModel(r5);
+    if (pModel == nullptr)
+        return;
+
+    fixedPoint radius = pModel->m0_radius + 0x8000;
+    s_visibilityGridWorkArea* pVisGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+
+    sMatrix4x3 savedMatrix;
+    copyMatrix(pCurrentMatrix, &savedMatrix);
+
+    pushCurrentMatrix();
+    copyToCurrentMatrix(&cameraProperties2.m28[0]);
+    multiplyCurrentMatrix(&savedMatrix);
+
+    // Check if the model is within bounding radius of the dragon position
+    fixedPoint dx = pCurrentMatrix->m[0][3] - pDragon->m8_pos[0];
+    if ((s32)dx < 0) dx = -dx;
+    fixedPoint dy = pCurrentMatrix->m[1][3] - pDragon->m8_pos[1];
+    if ((s32)dy < 0) dy = -dy;
+    fixedPoint dz = pCurrentMatrix->m[2][3] - pDragon->m8_pos[2];
+    if ((s32)dz < 0) dz = -dz;
+
+    if ((s32)dx <= (s32)radius && (s32)dy <= (s32)radius && (s32)dz <= (s32)radius)
+    {
+        // Copy transform matrix to the collision entry slot
+        copyMatrix(pCurrentMatrix, &pVisGrid->m44->m4_matrix);
+
+        // Debug collision rendering
+        if (pVisGrid->m12F2_renderMode == 1)
+        {
+            pushCurrentMatrix();
+            sMatrix4x3* debugMatrix = fieldCameraTask1DrawSub1();
+            copyToCurrentMatrix(debugMatrix);
+            multiplyCurrentMatrix(&pVisGrid->m44->m4_matrix);
+            addObjectToDrawList(pModel);
+            popMatrix();
+        }
+
+        allocateLCSEntry(pVisGrid, pModel, r6);
+    }
+
+    popMatrix();
 }
 
-void callGridCellDraw_normalSub2(p_workArea r4, s32 r5)
+void callGridCellDraw_normalSub2(s_fileBundle* r4, s32 r5)
 {
     gridCellDraw_normalSub2(r4, r5, 0x10000);
 }

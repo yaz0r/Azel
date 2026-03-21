@@ -50,3 +50,4 @@ struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWork
 };
 
 u32 gridCellDraw_GetDepthRange(fixedPoint r4);
+sMatrix4x3* fieldCameraTask1DrawSub1();

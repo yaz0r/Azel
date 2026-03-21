@@ -104,7 +104,7 @@ void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
             translateCurrentMatrix(pPose->m0_bones[0].m0_translation);
             rotateCurrentMatrixZYX(pPose->m0_bones[0].mC_rotation);
 
-            gridCellDraw_normalSub2(pThis, 0x138, pThis->m7C);
+            gridCellDraw_normalSub2(pThis->m0.m0_mainMemoryBundle, 0x138, pThis->m7C);
 
             {
                 pushCurrentMatrix();
@@ -113,7 +113,7 @@ void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
                 rotateCurrentMatrixShiftedY(pPose->m0_bones[1].mC_rotation[1] + pThis->m90);
                 rotateCurrentMatrixShiftedX(pPose->m0_bones[1].mC_rotation[0]);
 
-                gridCellDraw_normalSub2(pThis, 0x13C, pThis->m7C);
+                gridCellDraw_normalSub2(pThis->m0.m0_mainMemoryBundle, 0x13C, pThis->m7C);
 
                 popMatrix();
             }

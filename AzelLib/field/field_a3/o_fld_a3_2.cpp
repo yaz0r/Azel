@@ -239,9 +239,17 @@ void fieldA3_2_startTasks(p_workArea workArea)
     fieldA3_2_createItemBoxes(workArea);
 }
 
-void subfieldA3_2Sub0(s_dragonTaskWorkArea*)
+// 06058452 - adjusts dragon min Y height for the water section of A3_2
+void updateDragonHeightLimitForWater_A3_2(s_dragonTaskWorkArea* pThis)
 {
-    PDS_unimplemented("subfieldA3_2Sub0");
+    if ((s32)pThis->m8_pos.m8_Z < (s32)0xFEFF2000) // Z < -256.875 (over water)
+    {
+        pThis->m134_minY = 0x5000; // +0.3125 (stay above water surface)
+    }
+    else
+    {
+        pThis->m134_minY = 0xFFFAC000; // -5.25 (normal height limit over land)
+    }
 }
 
 void subfieldA3_2(p_workArea workArea)
@@ -256,7 +264,7 @@ void subfieldA3_2(p_workArea workArea)
     s_DataTable2* pDataTable2 = readDataTable2({ 0x6088E8C, gFLD_A3 });
     setupField(pDataTable3, pDataTable2, fieldA3_2_startTasks, pVisibility);
 
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = subfieldA3_2Sub0;
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF4 = updateDragonHeightLimitForWater_A3_2;
 
     switch (getFieldTaskPtr()->m32_previousSubField)
     {

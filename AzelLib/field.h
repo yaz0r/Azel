@@ -350,6 +350,9 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     s_RGB8 mCE_falloffColor1;
     s_RGB8 mD1_falloffColor2;
     s_RGB8 mD4;
+    u8 mD7_pad;
+    sVec3_FP mD8_sparklePosition; // D8 — light sparkle position in camera space
+    fixedPoint mE4_sparkleScale; // E4 — light sparkle intensity scale
     s_RGB8 m_E8_specialColor;
     u8 m_EB_useSpecialColor;
     u8 m_EC;
@@ -813,8 +816,8 @@ void dragonFieldTaskInitSub4Sub4();
 void startExitFieldCutscene2(p_workArea parent, s_cutsceneData* pScript, s32 param, s32 exitIndex, s32 arg0);
 void initFieldDragonLight();
 
-void gridCellDraw_normalSub2(p_workArea r4, s32 r5, s32 r6);
-void callGridCellDraw_normalSub2(p_workArea r4, s32 r5);
+void gridCellDraw_normalSub2(s_fileBundle* r4, s32 r5, s32 r6);
+void callGridCellDraw_normalSub2(s_fileBundle* r4, s32 r5);
 void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6);
 void exitCutsceneTaskUpdateSub0Sub0();
 void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s32 r7);

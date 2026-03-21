@@ -262,9 +262,14 @@ void encounterTaskUpdate(sEncouterTask* pThis)
 
 }
 
+// 0600c8c8
 void encounterTaskDraw(sEncouterTask* pThis)
 {
-    Unimplemented();
+    // If the child task is null or finished, mark self as finished
+    if (pThis->m4 == nullptr || pThis->m4->getTask()->isFinished())
+    {
+        pThis->getTask()->markFinished();
+    }
 }
 
 void encounterTaskDelete(sEncouterTask* pThis)

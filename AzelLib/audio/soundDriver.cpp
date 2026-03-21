@@ -806,4 +806,10 @@ void battleLoading_InitSub0()
     soundEngine.m10_sequenceTable[soundEngine.m1B8_numActiveSequence].m33 = 1;
 }
 
+// 0602b506
+void popSoundSequence(s32 param)
+{
+    Unimplemented();
+}
+
 
