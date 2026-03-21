@@ -168,6 +168,12 @@ void addBillBoardToDrawList(sProcessed3dModel* pObjectData)
     s_objectToRender newObject;
     newObject.m_pObject = pObjectData;
     newObject.m_modelMatrix = cameraProperties2.m88_billboardViewMatrix;
+    newObject.m_lightVector[0] = (s32)currentLightVector_M.m_lightVector[0];
+    newObject.m_lightVector[1] = (s32)currentLightVector_M.m_lightVector[1];
+    newObject.m_lightVector[2] = (s32)currentLightVector_M.m_lightVector[2];
+    newObject.m_lightColor[0] = currentLightVector_M.m_color[0];
+    newObject.m_lightColor[1] = currentLightVector_M.m_color[1];
+    newObject.m_lightColor[2] = currentLightVector_M.m_color[2];
     newObject.m_2dOffset[0] = (graphicEngineStatus.m405C.m44_localCoordinatesX - (352.f / 2.f)) / 352.f;
     newObject.m_2dOffset[1] = (graphicEngineStatus.m405C.m46_localCoordinatesY - (224.f / 2.f)) / 224.f;
     newObject.m_isBillboard = 1;
@@ -192,13 +198,18 @@ bool fillPolys = true;
 bool enableTextures = true;
 
 // Compute distance-based falloff color from the lightFalloffMap table
-// viewDepth: view-space Z of the vertex (raw fixed-point from model-view matrix row 2)
+// viewDepth: view-space Z of the vertex (raw fixed-point from model-view matrix)
+// Saturn: scaledDepth = MACH(viewZ * m34_oneOverFarClip256), index from scaledDepth
 void GetDistanceFalloff(s32 falloutColor[3], s32 viewDepth)
 {
-    // Saturn formula: byte_offset = ((depth << 1) >> 8) & ~7, index = byte_offset / 8
-    // Simplified: index = depth >> 10
-    int index = viewDepth >> 10;
-    if (index < 0) index = 0;
+    // Match Saturn: scaledDepth = (viewZ * oneOverFarClip256) >> 32
+    s32 depthScale = (s32)graphicEngineStatus.m405C.m34_oneOverFarClip256;
+    s32 scaledDepth = (s32)(((s64)viewDepth * (s64)depthScale) >> 32);
+    if (scaledDepth < 0) scaledDepth = 0;
+
+    // Saturn: shll r1 (<<1), shlr8 r1 (>>8), and #-8 (&~7) → byte offset, /8 → index
+    int byteOffset = ((scaledDepth << 1) >> 8) & ~7;
+    int index = byteOffset >> 3;
     if (index > 31) index = 31;
 
     falloutColor[0] = (s32)lightFalloffMap[index][0];
@@ -426,8 +437,10 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
                  (s64)modelMat.m[2][2] * (s32)(vtx0.position[2] * 65536.0f)) >> 16)
                 + (s32)modelMat.m[2][3];
 
+            // Saturn's transformVertices scales Z translation by <<8, making depth ~256x larger
+            // than raw 16.16 view-space Z. Apply the same scaling to match.
             s32 falloutColor[3];
-            GetDistanceFalloff(falloutColor, viewDepth);
+            GetDistanceFalloff(falloutColor, viewDepth << 8);
 
             if (lightingMode == 1)
             {
