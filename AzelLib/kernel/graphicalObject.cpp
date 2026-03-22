@@ -87,8 +87,6 @@ void freeVdp1Block(npcFileDeleter*, s32)
     assert(0);
 }
 
-void npcFileDeleterCleanup(npcFileDeleter* pThis);
-
 void npcFileDeleter::Delete(npcFileDeleter* pThis)
 {
     npcFileDeleterCleanup(pThis);

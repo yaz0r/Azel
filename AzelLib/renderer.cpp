@@ -1289,6 +1289,96 @@ bool azelSdl_EndFrame()
             ImGui::End();
         }
 
+        if (gDebugWindows.vdp1Vram)
+        {
+            static bgfx::TextureHandle vdp1VramViewTexture = BGFX_INVALID_HANDLE;
+            static int vdp1ViewMode = 0; // 0=grayscale, 1=16bpp color
+            static int vdp1ViewWidth = 256;
+            static int vdp1ViewOffset = 0; // byte offset into VRAM
+            static float vdp1ViewScale = 1.0f;
+
+            const int vramSize = 0x80000;
+
+            // decode into RGBA for display
+            static std::vector<u32> vdp1ViewPixels;
+
+            int bytesPerPixel = (vdp1ViewMode == 0) ? 1 : 2;
+            int numPixels = (vramSize - vdp1ViewOffset) / bytesPerPixel;
+            int viewHeight = std::max(1, numPixels / std::max(1, vdp1ViewWidth));
+
+            vdp1ViewPixels.resize(vdp1ViewWidth * viewHeight);
+
+            u8* vram = getVdp1Pointer(0x25C00000 + vdp1ViewOffset);
+            int totalPixels = vdp1ViewWidth * viewHeight;
+
+            if (vdp1ViewMode == 0)
+            {
+                for (int i = 0; i < totalPixels; i++)
+                {
+                    u8 v = vram[i];
+                    vdp1ViewPixels[i] = 0xFF000000 | (v << 16) | (v << 8) | v;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < totalPixels; i++)
+                {
+                    u16 pixel = *(u16*)(vram + i * 2);
+                    u8 r = (pixel & 0x1F) << 3;
+                    u8 g = ((pixel >> 5) & 0x1F) << 3;
+                    u8 b = ((pixel >> 10) & 0x1F) << 3;
+                    vdp1ViewPixels[i] = 0xFF000000 | (b << 16) | (g << 8) | r;
+                }
+            }
+
+            static int lastWidth = -1;
+            static int lastHeight = -1;
+            if (lastWidth != vdp1ViewWidth || lastHeight != viewHeight)
+            {
+                if (bgfx::isValid(vdp1VramViewTexture))
+                    bgfx::destroy(vdp1VramViewTexture);
+                vdp1VramViewTexture = bgfx::createTexture2D(vdp1ViewWidth, viewHeight, false, 1, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT);
+                lastWidth = vdp1ViewWidth;
+                lastHeight = viewHeight;
+            }
+
+            bgfx::updateTexture2D(vdp1VramViewTexture, 0, 0, 0, 0, vdp1ViewWidth, viewHeight, bgfx::copy(vdp1ViewPixels.data(), vdp1ViewWidth * viewHeight * 4));
+
+            if (ImGui::Begin("VDP1 VRAM", &gDebugWindows.vdp1Vram))
+            {
+                ImGui::RadioButton("Grayscale (8bpp)", &vdp1ViewMode, 0); ImGui::SameLine();
+                ImGui::RadioButton("RGB555 (16bpp)", &vdp1ViewMode, 1);
+                ImGui::SliderInt("Width", &vdp1ViewWidth, 1, 1024);
+                ImGui::SliderInt("Offset", &vdp1ViewOffset, 0, vramSize - 1024);
+                ImGui::SliderFloat("Scale", &vdp1ViewScale, 0.25f, 4.0f);
+
+                ImVec2 imageSize((float)(vdp1ViewWidth) * vdp1ViewScale, (float)(viewHeight) * vdp1ViewScale);
+                ImGui::Image(ImGui::toId(vdp1VramViewTexture, 0, 0), imageSize);
+
+                // show address on hover
+                if (ImGui::IsItemHovered())
+                {
+                    ImVec2 mousePos = ImGui::GetMousePos();
+                    ImVec2 imagePos = ImGui::GetItemRectMin();
+                    int pixelX = (int)((mousePos.x - imagePos.x) / vdp1ViewScale);
+                    int pixelY = (int)((mousePos.y - imagePos.y) / vdp1ViewScale);
+                    if (pixelX >= 0 && pixelX < vdp1ViewWidth && pixelY >= 0 && pixelY < viewHeight)
+                    {
+                        int byteOffset;
+                        if (vdp1ViewMode == 0)
+                            byteOffset = vdp1ViewOffset + pixelY * vdp1ViewWidth + pixelX;
+                        else
+                            byteOffset = vdp1ViewOffset + (pixelY * vdp1ViewWidth + pixelX) * 2;
+
+                        u32 saturnAddr = 0x25C00000 + byteOffset;
+                        u16 cmdsrca = (u16)(byteOffset >> 3);
+                        ImGui::SetTooltip("Addr: 0x%08X\nOffset: 0x%05X\nCMDSRCA: 0x%04X\nPixel: (%d, %d)", saturnAddr, byteOffset, cmdsrca, pixelX, pixelY);
+                    }
+                }
+            }
+            ImGui::End();
+        }
+
         if (gDebugWindows.tasks)
         {
             PrintDebugTasksHierarchy();

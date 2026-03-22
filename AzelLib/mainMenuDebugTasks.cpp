@@ -1348,19 +1348,48 @@ void loadRider2IfChanged(u32 rider)
     }
 }
 
+// 060315b4
 void freeRamResources(p_workArea)
 {
-    Unimplemented();
+    if (dramAllocatorHead)
+    {
+        s_dramAllocator* prev = dramAllocatorHead;
+        dramAllocatorHead = dramAllocatorHead->m10_nextNode;
+        if (!dramAllocatorHead)
+        {
+            dramAllocatorEnd.clear();
+        }
+        // freeVdp1Block(pWorkArea, prev) — heap node freed by task system on delete
+        freeRamResource();
+    }
 }
 
+// 06031742
 void vdp1FreeLastAllocation(p_workArea)
 {
-    Unimplemented();
+    if (vdp1AllocatorHead)
+    {
+        vdp1AllocatorHead = vdp1AllocatorHead->m0_nextAllocator;
+        // freeVdp1Block(pWorkArea, prev) — heap node freed by task system on delete
+    }
 }
 
+// 06031484
 void freeRamResource()
 {
-    PDS_unimplemented("Unimplemented freeRamResource");
+    if (dramAllocatorHead)
+    {
+        u8* pVar2 = dramAllocatorHead->m8_allocationStart;
+        u8* pEnd = dramAllocatorHead->mC_allocationEnd;
+
+        while (pVar2 < pEnd)
+        {
+            s_dramAllocationNode* pNode = (s_dramAllocationNode*)pVar2;
+            addToMemoryLayout(pVar2, 8);
+            pVar2 += pNode->size;
+        }
+        // freeVdp1Block — heap node freed by task system on delete
+    }
 }
 
 u16 loadFnt(const char* filename)

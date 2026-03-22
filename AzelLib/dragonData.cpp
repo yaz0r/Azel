@@ -479,6 +479,11 @@ void vdp1Free(u8* ptr)
     s_vdp1AllocationNode* pNode = (s_vdp1AllocationNode*)ptr;
     if (!pNode) return;
 
+    // clear the VDP1 VRAM region being freed
+    u32 vramOffset = (u32)pNode->m4_vdp1Memory << 3;
+    u32 vramSize = (u32)pNode->m6_size << 3;
+    memset(getVdp1Pointer(0x25C00000 + vramOffset), 0, vramSize);
+
     u16 nodeOffset = pNode->m4_vdp1Memory;
 
     // Walk free list (at vdp1AllocatorHead + 8) to find insertion point sorted by vdp1 offset

@@ -420,9 +420,7 @@ void decreaseNPCRefCount(s32 r5)
     {
         if (--fileEntry.m8_refcount == 0)
         {
-            // equivalent of loadDragonSub1Sub1 for npcFileDeleter (frees DRAM/VRAM allocations, both stubbed)
-            fileEntry.mC_fileBundle->m0_fileBundle = nullptr;
-            fileEntry.mC_fileBundle->m4_vd1Allocation = nullptr;
+            npcFileDeleterCleanup(fileEntry.mC_fileBundle);
             if (fileEntry.mC_fileBundle)
             {
                 fileEntry.mC_fileBundle->getTask()->markFinished();

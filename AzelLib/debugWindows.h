@@ -22,6 +22,7 @@ struct sDebugWindows
     bool field = false;
     bool arachnoth = false;
     bool camera = false;
+    bool vdp1Vram = false;
 };
 
 extern sDebugWindows gDebugWindows;

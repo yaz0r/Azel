@@ -46,6 +46,7 @@ struct npcFileDeleter : public s_workAreaTemplateWithCopy<npcFileDeleter>
     //size 0x10
 };
 
+void npcFileDeleterCleanup(npcFileDeleter* pThis);
 npcFileDeleter* allocateNPC(p_workArea r4, s32 r5);
 npcFileDeleter* loadNPCFile(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, const std::string& vramFileName, s32 vramFileSize, s32 arg);
 npcFileDeleter* loadNPCFile2(p_workArea r4, const std::string& ramFileName, s32 ramFileSize, s32 index);
