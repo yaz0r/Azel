@@ -1,5 +1,23 @@
 #include "PDS.h"
 #include "vdp1AnimatedQuad.h"
+#include "3dEngine_textureCache.h"
+#include "renderer.h"
+#include <bgfx/bgfx.h>
+#include <glm/glm.hpp>
+
+struct sParticleBillboard
+{
+    float positions[3]; // view-space position
+    float halfWidth;
+    float halfHeight;
+    float color[4];     // gouraud tint (RGBA float)
+    u16 CMDPMOD;
+    u16 CMDCOLR;
+    u16 CMDSRCA;
+    u16 CMDSIZE;
+};
+
+static std::vector<sParticleBillboard> gPendingParticleBillboards;
 
 void particleInitSub(sAnimatedQuad* pThis, u16 vdp1Memory, const std::vector<sVdp1Quad>* param_3) {
     pThis->m6 = 0;
@@ -95,8 +113,8 @@ int vdp1DrawQuadScaled(sAnimatedQuad* pThis, sVec3_FP* position, fixedPoint scal
         std::array<fixedPoint, 4> quad;
         quad[0] = MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, projectedVector[0] + MTH_Mul(pQuad.m14_X, scale), proj);
         quad[1] = MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, projectedVector[1] + MTH_Mul(pQuad.m18_Y, scale), proj);
-        quad[2] = quad[0] + MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, MTH_Mul(pQuad.mC_width, scale), proj);
-        quad[3] = quad[1] + MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, MTH_Mul(pQuad.m10_height, scale), proj);
+        quad[2] = (s16)MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, MTH_Mul(pQuad.mC_width, scale), proj).getInteger() + quad[0].getInteger();
+        quad[3] = quad[1].getInteger() - (s16)MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, MTH_Mul(pQuad.m10_height, scale), proj).getInteger();
 
         if (clipQuad(quad) != 2) {
 
@@ -139,56 +157,153 @@ int drawProjectedParticleWithGouraud(sAnimatedQuad* pQuad, sVec3_FP* position, u
 {
     const sVdp1Quad& quad = pQuad->m0_quad->at(pQuad->m7_currentFrame);
 
-    sVec3_FP projectedVector;
-    transformAndAddVecByCurrentMatrix(position, &projectedVector);
+    sVec3_FP viewPos;
+    transformAndAddVecByCurrentMatrix(position, &viewPos);
 
-    if ((graphicEngineStatus.m405C.m10_nearClipDistance < projectedVector[2]) &&
-        (projectedVector[2] < (int)graphicEngineStatus.m405C.m14_farClipDistance))
+    if ((graphicEngineStatus.m405C.m10_nearClipDistance < viewPos[2]) &&
+        (viewPos[2] < (int)graphicEngineStatus.m405C.m14_farClipDistance))
     {
-        fixedPoint proj = FP_Div(0x10000, projectedVector[2]);
+        sParticleBillboard bb;
+        bb.positions[0] = (float)viewPos[0].asS32() / (float)0x10000;
+        bb.positions[1] = (float)viewPos[1].asS32() / (float)0x10000;
+        bb.positions[2] = (float)viewPos[2].asS32() / (float)0x10000;
+        bb.halfWidth = (float)quad.mC_width.asS32() / (float)0x10000 * 0.5f;
+        bb.halfHeight = (float)quad.m10_height.asS32() / (float)0x10000 * 0.5f;
+        bb.CMDPMOD = quad.m4_CMDPMOD;
+        bb.CMDSRCA = pQuad->m4_vdp1Memory + quad.m6_CMDSRCA;
+        bb.CMDSIZE = quad.m8_CMDSIZE;
+        if ((quad.m4_CMDPMOD & 0x38) == 8)
+            bb.CMDCOLR = pQuad->m4_vdp1Memory + quad.mA_CMDCOLR;
+        else
+            bb.CMDCOLR = quad.mA_CMDCOLR;
 
-        std::array<fixedPoint, 4> screenQuad;
-        screenQuad[0] = MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, projectedVector[0] + quad.m14_X, proj);
-        screenQuad[1] = MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, projectedVector[1] + quad.m18_Y, proj);
-        screenQuad[2] = (s16)MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, quad.mC_width, proj).getInteger() + screenQuad[0].getInteger();
-        screenQuad[3] = (s16)MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, quad.m10_height, proj).getInteger() - screenQuad[1].getInteger();
-
-        if (clipQuad(screenQuad) != 2)
+        if (gouraudColors)
         {
-            s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-            vdp1WriteEA.m0_CMDCTRL = quad.m2_CMDCTRL;
-            vdp1WriteEA.m4_CMDPMOD = quad.m4_CMDPMOD | 0x404;
-            if ((quad.m4_CMDPMOD & 0x38) == 8)
-            {
-                vdp1WriteEA.m6_CMDCOLR = pQuad->m4_vdp1Memory + quad.mA_CMDCOLR;
-            }
-            else
-            {
-                vdp1WriteEA.m6_CMDCOLR = quad.mA_CMDCOLR;
-            }
-
-            vdp1WriteEA.m8_CMDSRCA = pQuad->m4_vdp1Memory + quad.m6_CMDSRCA;
-            vdp1WriteEA.mA_CMDSIZE = quad.m8_CMDSIZE;
-            vdp1WriteEA.mC_CMDXA = screenQuad[0].getInteger();
-            vdp1WriteEA.mE_CMDYA = -screenQuad[1].getInteger();
-            vdp1WriteEA.m14_CMDXC = screenQuad[2];
-            vdp1WriteEA.m16_CMDYC = -screenQuad[3];
-
-            // Gouraud shading table (if provided)
-            // TODO: write gouraudColors[0..3] to VDP1 gouraud VRAM and set CMDGRA
-
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(proj * graphicEngineStatus.m405C.m38_oneOverFarClip).getInteger();
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
-
-            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
-            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
-
-            return 1;
+            // Saturn gouraud: RGB555 as signed offset centered at 16
+            u16 gc = gouraudColors[0];
+            bb.color[0] = ((float)((gc >> 0) & 0x1F) - 16.0f) / 16.0f;
+            bb.color[1] = ((float)((gc >> 5) & 0x1F) - 16.0f) / 16.0f;
+            bb.color[2] = ((float)((gc >> 10) & 0x1F) - 16.0f) / 16.0f;
+            bb.color[3] = 1.0f;
         }
+        else
+        {
+            bb.color[0] = bb.color[1] = bb.color[2] = bb.color[3] = 0.0f;
+        }
+
+        gPendingParticleBillboards.push_back(bb);
+        return 1;
     }
     return 0;
+}
+
+void flushParticleBillboards()
+{
+    if (gPendingParticleBillboards.empty()) return;
+
+    glm::mat4 getProjectionMatrix();
+    bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string& PSFile);
+    bgfx::TextureHandle getTextureForQuadBGFX(s_quad& quad);
+
+    static bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(program))
+    {
+        program = loadBgfxProgram("VDP1_worldTextured_vs", "VDP1_worldTextured_ps");
+    }
+
+    static bgfx::UniformHandle u_mvp = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(u_mvp))
+    {
+        u_mvp = bgfx::createUniform("u_customModelViewProj", bgfx::UniformType::Mat4);
+    }
+
+    static bgfx::UniformHandle u_priority = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(u_priority))
+    {
+        u_priority = bgfx::createUniform("u_spritePriority", bgfx::UniformType::Vec4);
+    }
+
+    static bgfx::UniformHandle u_texture = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(u_texture))
+    {
+        u_texture = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
+    }
+
+    struct BillboardVertex
+    {
+        float pos[3];
+        float uv[2];
+        float color[4];
+    };
+
+    bgfx::VertexLayout layout;
+    layout
+        .begin()
+        .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+        .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+        .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Float)
+        .end();
+
+    glm::mat4 projMatrix = getProjectionMatrix();
+    u16 indices[6] = { 2, 1, 0, 0, 3, 2 };
+
+    for (auto& bb : gPendingParticleBillboards)
+    {
+        bgfx::TransientVertexBuffer vb;
+        bgfx::TransientIndexBuffer ib;
+        if (!bgfx::allocTransientBuffers(&vb, layout, 4, &ib, 6))
+            break;
+
+        float cx = bb.positions[0];
+        float cy = bb.positions[1];
+        float cz = bb.positions[2];
+        float hw = bb.halfWidth;
+        float hh = bb.halfHeight;
+
+        // Camera-facing billboard in view space (camera looks down +Z)
+        float r = bb.color[0], g = bb.color[1], b = bb.color[2], a = bb.color[3];
+        BillboardVertex verts[4] = {
+            { {cx - hw, cy + hh, cz}, {0, 0}, {r, g, b, a} },
+            { {cx + hw, cy + hh, cz}, {1, 0}, {r, g, b, a} },
+            { {cx + hw, cy - hh, cz}, {1, 1}, {r, g, b, a} },
+            { {cx - hw, cy - hh, cz}, {0, 1}, {r, g, b, a} },
+        };
+
+        memcpy(vb.data, verts, sizeof(verts));
+        memcpy(ib.data, indices, sizeof(indices));
+
+        s_quad tempQuad = {};
+        tempQuad.CMDPMOD = bb.CMDPMOD;
+        tempQuad.CMDCOLR = bb.CMDCOLR;
+        tempQuad.CMDSRCA = bb.CMDSRCA;
+        tempQuad.CMDSIZE = bb.CMDSIZE;
+
+        bgfx::TextureHandle tex = getTextureForQuadBGFX(tempQuad);
+        if (!bgfx::isValid(tex))
+            continue;
+
+        bgfx::setUniform(u_mvp, &projMatrix[0][0]);
+
+        float priority[4] = { (float)(vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA & 7), 0, 0, 0 };
+        bgfx::setUniform(u_priority, priority);
+
+        bgfx::setTexture(0, u_texture, tex);
+        bgfx::setVertexBuffer(0, &vb);
+        bgfx::setIndexBuffer(&ib);
+
+        bgfx::setState(0
+            | BGFX_STATE_WRITE_RGB
+            | BGFX_STATE_WRITE_A
+            | BGFX_STATE_WRITE_Z
+            | BGFX_STATE_DEPTH_TEST_LEQUAL
+            | BGFX_STATE_MSAA
+            | BGFX_STATE_BLEND_ALPHA
+        );
+
+        bgfx::submit(vdp1_gpuView, program);
+    }
+
+    gPendingParticleBillboards.clear();
 }
 
 // 0602f610

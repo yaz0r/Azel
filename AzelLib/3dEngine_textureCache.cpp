@@ -213,11 +213,9 @@ u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight)
                         }
                         else if (temp != 0x0000)
                         {
-                            //Vdp1ProcessSpritePixel(Vdp2Regs->SPCTL & 0xF, &temp, &shadow, &priority, &colorcl);
-                            //if( shadow != 0 ) 
-                            {
-                                *texture++ = 0x00;
-                            }
+                            // LUT entry without MSB: treat as CRAM index
+                            u16 cramColor = READ_BE_U16(getVdp2Cram(temp * 2));
+                            *texture++ = SAT2YAB1(alpha, cramColor);
                             /*else
                             {
                             priority = ((u8 *)&Vdp2Regs->PRISA)[priority]&0x7;

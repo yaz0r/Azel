@@ -3,6 +3,7 @@
 #include "processModel.h"
 #include "debugWindows.h"
 #include "kernel/rayDisplay.h"
+#include "kernel/vdp1AnimatedQuad.h"
 
 #include <bx/math.h>
 
@@ -720,6 +721,10 @@ void flushObjectsToDrawList()
     bgfx::setMarker("Start ray quads 3D");
     flushRayQuads3D();
     bgfx::setMarker("Finish ray quads 3D");
+
+    bgfx::setMarker("Start particle billboards");
+    flushParticleBillboards();
+    bgfx::setMarker("Finish particle billboards");
 
     bgfx::setMarker("Start debug quads");
     for (int i = 0; i < debugQuads.size(); i++)

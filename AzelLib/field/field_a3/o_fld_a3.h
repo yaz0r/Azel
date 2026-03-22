@@ -12,10 +12,14 @@ struct FLD_A3_data : public sSaturnMemoryFile
     {
         m_0x0609518C_animatedQuad = initVdp1Quad(getSaturnPtr(0x0609518C));
         m_0x06095330_animatedQuad = initVdp1Quad(getSaturnPtr(0x06095330));
+        m_savePointParticleQuad = initVdp1Quad(getSaturnPtr(0x06095640));
+        m_savePointGouraudColors = getSaturnPtr(0x060957D0);
     }
 
     std::vector<sVdp1Quad> m_0x0609518C_animatedQuad;
     std::vector<sVdp1Quad> m_0x06095330_animatedQuad;
+    std::vector<sVdp1Quad> m_savePointParticleQuad;
+    sSaturnPtr m_savePointGouraudColors;
 };
 
 extern FLD_A3_data* gFLD_A3;

@@ -143,7 +143,7 @@ static void itemBoxType1Init(s_itemBoxType1* pThis, s_itemBoxDefinition* arg)
             pThis->m94 = -0x444444;
         }
     case 2:
-        pThis->mEC_savePointParticlesTask = createSavePointParticles();
+        pThis->mEC_savePointParticlesTask = createSavePointParticles(pThis);
         break;
     default:
         assert(0);

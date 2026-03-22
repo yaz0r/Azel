@@ -652,7 +652,8 @@ sSaturnPtr runScript(sNpcData* r13_pThis)
 
             if (r13_pThis->m16C_displayStringTask)
             {
-                assert(0);
+                r13_pThis->m16C_displayStringTask->getTask()->markFinished();
+                return r14 - 1;
             }
 
             sSaturnPtr var0 = r14 - 1;

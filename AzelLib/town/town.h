@@ -209,7 +209,7 @@ struct sCameraTask : public s_workAreaTemplate<sCameraTask>
 
     static void Init(sCameraTask* pThis)
     {
-        if (mainGameState.getBit(1)) {
+        if (mainGameState.getBit(7)) {
             pThis->m4_dayNightTimer = 5400;
         }
         else {
