@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "3dEngine_textureCache.h"
 
 u8 vdp2Ram[0x80000];
 u8* VDP2_VRamStart = vdp2Ram;
@@ -994,9 +995,20 @@ u8 defaultFontPalettes[16 * 2 * 16] = {
     0x00, 0x00, 0x08, 0x42, 0x63, 0x5A, 0x10, 0x84, 0x4A, 0x94, 0x42, 0x10, 0x31, 0x8C, 0x56, 0xD6, 0x35, 0xAD, 0x29, 0x4A, 0x21, 0x08, 0x54, 0x47, 0x01, 0xC0, 0x02, 0xA3, 0x03, 0xE7, 0x03, 0xF7,
 };
 
+static void checkCramInvalidation(void* target, u32 size)
+{
+    u8* t = (u8*)target;
+    if (t >= vdp2CRam && t < vdp2CRam + 0x1000)
+    {
+        u32 cramOffset = (u32)(t - vdp2CRam);
+        invalidateCramRange(cramOffset, size);
+    }
+}
+
 void asyncDmaCopy(void* source, void* target, u32 size, u32 unk)
 {
     memcpy(target, source, size);
+    checkCramInvalidation(target, size);
 }
 
 void asyncDmaCopy(sSaturnPtr EA, void* target, u32 size, u32 unk)
@@ -1005,6 +1017,7 @@ void asyncDmaCopy(sSaturnPtr EA, void* target, u32 size, u32 unk)
     {
         *((u8*)target+i) = readSaturnU8(EA + i);
     }
+    checkCramInvalidation(target, size);
 }
 
 void copyFontToVdp2()

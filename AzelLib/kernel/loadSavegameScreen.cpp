@@ -1177,6 +1177,7 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
         memcpy(getVdp2Cram(0xA00), backup + 0x1E600, 0x200);
         dramFree(backup);
         invalidateVdp1TextureRange(0x12000, 0x3D00);
+        invalidateCramRange(0xA00, 0x200);
     }
 
     s32 m0;

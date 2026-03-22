@@ -24,6 +24,7 @@ struct s_quad
 
 void clearVdp1TextureCache();
 void invalidateVdp1TextureRange(u32 vdp1Offset, u32 size);
+void invalidateCramRange(u32 cramOffset, u32 size);
 u32* decodeVdp1Quad(s_quad quad, u16& textureWidth, u16& textureHeight);
 unsigned int getTextureForQuad(s_quad& quad);
 bgfx::TextureHandle getTextureForQuadBGFX(s_quad& quad);

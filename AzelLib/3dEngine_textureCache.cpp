@@ -16,24 +16,54 @@ struct s_cachedTexture
     bgfx::TextureHandle m_handle;
     u32 vdp1Start; // byte offset in VDP1 VRAM
     u32 vdp1End;
+    u32 cramStart; // byte offset in VDP2 CRAM
+    u32 cramEnd;
 };
 
 std::unordered_map<u64, s_cachedTexture> textureCache;
 
-static void computeVdp1Range(u16 cmdsrca, u16 cmdsize, u16 cmdpmod, u32& start, u32& end)
+static void computeTextureRanges(u16 cmdsrca, u16 cmdsize, u16 cmdpmod, u16 cmdcolr, u32& vdp1Start, u32& vdp1End, u32& cramStart, u32& cramEnd)
 {
-    start = (u32)cmdsrca << 3;
+    vdp1Start = (u32)cmdsrca << 3;
     u32 width = (cmdsize & 0x3F00) >> 5;
     u32 height = cmdsize & 0xFF;
     int colorMode = (cmdpmod >> 3) & 0x7;
-    u32 size;
+    u32 texSize;
     if (colorMode <= 1)
-        size = (width * height) / 2; // 4bpp
+        texSize = (width * height) / 2; // 4bpp
     else if (colorMode == 5)
-        size = width * height * 2; // 16bpp
+        texSize = width * height * 2; // 16bpp
     else
-        size = width * height; // 8bpp
-    end = start + size;
+        texSize = width * height; // 8bpp
+    vdp1End = vdp1Start + texSize;
+
+    // CRAM palette range (byte offsets into CRAM)
+    switch (colorMode)
+    {
+    case 0: // 4bpp with color LUT in VDP1 — LUT entries reference CRAM, but range is indirect
+    case 1: // 4bpp LUT
+        // LUT at CMDCOLR*8 in VDP1 VRAM, 16 entries of 2 bytes each → 32 bytes
+        // The actual CRAM usage depends on LUT content; approximate with the LUT's VDP1 region
+        cramStart = 0;
+        cramEnd = 0;
+        break;
+    case 2: // 64-color bank mode: CMDCOLR bits[9:6] select bank, 64 colors
+        cramStart = ((u32)cmdcolr & 0xFFC0) * 2;
+        cramEnd = cramStart + 64 * 2;
+        break;
+    case 3: // 128-color bank mode
+        cramStart = ((u32)cmdcolr & 0xFF80) * 2;
+        cramEnd = cramStart + 128 * 2;
+        break;
+    case 4: // 256-color bank mode
+        cramStart = ((u32)cmdcolr & 0xFF00) * 2;
+        cramEnd = cramStart + 256 * 2;
+        break;
+    default: // 16bpp: no palette
+        cramStart = 0;
+        cramEnd = 0;
+        break;
+    }
 }
 
 void clearVdp1TextureCache()
@@ -48,6 +78,22 @@ void clearVdp1TextureCache()
     textureCache.clear();
 }
 
+static void invalidateCacheEntries(std::vector<u64>& toRemove)
+{
+    for (auto key : toRemove)
+    {
+        auto it = textureCache.find(key);
+        if (it != textureCache.end())
+        {
+            if (bgfx::isValid(it->second.m_handle))
+            {
+                bgfx::destroy(it->second.m_handle);
+            }
+            textureCache.erase(it);
+        }
+    }
+}
+
 void invalidateVdp1TextureRange(u32 vdp1Offset, u32 size)
 {
     u32 rangeStart = vdp1Offset;
@@ -58,17 +104,26 @@ void invalidateVdp1TextureRange(u32 vdp1Offset, u32 size)
     {
         if (entry.second.vdp1Start < rangeEnd && entry.second.vdp1End > rangeStart)
         {
-            if (bgfx::isValid(entry.second.m_handle))
-            {
-                bgfx::destroy(entry.second.m_handle);
-            }
             toRemove.push_back(entry.first);
         }
     }
-    for (auto key : toRemove)
+    invalidateCacheEntries(toRemove);
+}
+
+void invalidateCramRange(u32 cramOffset, u32 size)
+{
+    u32 rangeStart = cramOffset;
+    u32 rangeEnd = cramOffset + size;
+
+    std::vector<u64> toRemove;
+    for (auto& entry : textureCache)
     {
-        textureCache.erase(key);
+        if (entry.second.cramEnd > 0 && entry.second.cramStart < rangeEnd && entry.second.cramEnd > rangeStart)
+        {
+            toRemove.push_back(entry.first);
+        }
     }
+    invalidateCacheEntries(toRemove);
 }
 
 #define SAT2YAB1(alpha,temp)      (alpha << 24 | (temp & 0x1F) << 3 | (temp & 0x3E0) << 6 | (temp & 0x7C00) << 9)
@@ -305,7 +360,7 @@ bgfx::TextureHandle getTextureForQuadBGFX(s_quad& quad)
     newTexture.CMDCOLR = quad.CMDCOLR;
     newTexture.CMDSRCA = quad.CMDSRCA;
     newTexture.CMDSIZE = quad.CMDSIZE;
-    computeVdp1Range(quad.CMDSRCA, quad.CMDSIZE, quad.CMDPMOD, newTexture.vdp1Start, newTexture.vdp1End);
+    computeTextureRanges(quad.CMDSRCA, quad.CMDSIZE, quad.CMDPMOD, quad.CMDCOLR, newTexture.vdp1Start, newTexture.vdp1End, newTexture.cramStart, newTexture.cramEnd);
 
     u16 textureWidth;
     u16 textureHeight;
