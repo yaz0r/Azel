@@ -47,7 +47,7 @@ struct TWN_EXCA_data : public sTownOverlay
         overlayScriptFunctions.m_fourArg[0x605be24] = {&setNpcLocation, "setNpcLocation"};
         overlayScriptFunctions.m_fourArg[0x605be52] = {&setNpcOrientation, "setNpcOrientation"};
 
-        mTownSetups.push_back(readTownSetup(getSaturnPtr(0x605fd4c), 7));
+        mTownSetups.push_back(readTownSetup(getSaturnPtr(0x605fd4c), 20));
     }
 
     sTownObject* createObjectTaskFromEA_siblingTaskWithEAArgWithCopy(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override
