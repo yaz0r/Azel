@@ -94,7 +94,7 @@ void Baldor_initSub0Sub1(p_workArea pThis, s_3dModel* pModel, s16* param3, std::
         {
             if (pModel->m44_hotpointData[i].size())
             {
-                for (int j = 0; j < (*pModel->m40)[i].m4_count; j++)
+                for (u32 j = 0; j < (*pModel->m40)[i].m4_count; j++)
                 {
                     param4[currentEntryIndex].m4_pPosition = nullptr;
 

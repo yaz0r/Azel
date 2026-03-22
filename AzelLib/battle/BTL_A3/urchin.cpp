@@ -281,7 +281,7 @@ void urchinUpdateSub1(sUrchin* pThis)
 
 void urchinUpdateSub2(sUrchin* pThis)
 {
-    if ((BattleEngineSub0_UpdateSub0() == 0) && (pThis->mB1 !=  pThis->mD0->m7_attackAnimIndex[pThis->mAF]))
+    if ((battleEngine_isPlayerTurnActive() == 0) && (pThis->mB1 !=  pThis->mD0->m7_attackAnimIndex[pThis->mAF]))
     {
         assert(0);
     }
@@ -301,7 +301,7 @@ void urchinUpdateSub3(s_3dModel* pModel, std::vector<sVec3_FP>& pPosition)
         {
             if (pModel->m44_hotpointData[i].size())
             {
-                for (int j = 0; j < (*pModel->m40)[i].m4_count; j++)
+                for (u32 j = 0; j < (*pModel->m40)[i].m4_count; j++)
                 {
                     pPosition[outputIndex++] = pModel->m44_hotpointData[i][j];
                 }
@@ -480,7 +480,7 @@ void Urchin_update(sUrchin* pThis)
 
         urchinUpdateSub4(pThis);
 
-        if (BattleEngineSub0_UpdateSub0() == 0)
+        if (battleEngine_isPlayerTurnActive() == 0)
         {
             pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x20;
         }

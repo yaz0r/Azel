@@ -348,7 +348,6 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 uVar9 = 0;
                 if ('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) {
                     pThis->m24 = BattleCommandMenu_PopulateSubMenu(pThis);
-                    int iVar8;
                     if ((0 < pThis->m24) && (pThis->m1DC_itemSelectionMenuHead == nullptr)) {
                         pThis->m20 |= 8;
                         pThis->m2_mode = 3;
@@ -363,7 +362,6 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 if (('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) &&
                     (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers) & 1) == 0)) {
                     pThis->m24 = BattleCommandMenu_PopulateSubMenu(pThis);
-                    int iVar8;
                     if ((0 < pThis->m24) &&
                         ((isBattleCommandEnabled(pThis, pThis->m0_selectedBattleCommand) > 0 &&
                         (pThis->m1E0_berserkSelectionMenuHead == nullptr)))) {
@@ -379,7 +377,6 @@ void BattleCommandMenu_Update(sBattleCommandMenu* pThis)
                 uVar9 = 0;
                 if ('\0' < (char)gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo) {
                     pThis->m24 = BattleCommandMenu_PopulateSubMenu(pThis);
-                    int iVar8;
                     if ((0 < pThis->m24) && (pThis->m1E4_weaponSelectionMenuHead == nullptr)) {
                         pThis->m20 |= 8;
                         pThis->m2_mode = 5;

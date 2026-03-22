@@ -79,7 +79,7 @@ void applyDamageToEnnemy(sBattleTargetable* pThis, s16 param_2, sVec3_FP* param_
 void deleteTargetable(sBattleTargetable* pThis)
 {
     pThis->m50_flags |= 0x40000;
-    if (!BattleEngineSub0_UpdateSub0())
+    if (!battleEngine_isPlayerTurnActive())
     {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
     }
@@ -282,7 +282,7 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = readSaturnU16(spriteDef + 2);
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = readSaturnU16(spriteDef + 4);
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = readSaturnU16(spriteDef + 6);
-            vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+            vdp1WriteEA.m1C_CMDGRA = (u16)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
             graphicEngineStatus.m14_vdp1Context[0].m10++;
 
             graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
@@ -323,7 +323,7 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = readSaturnU16(spriteDef + 2);
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = readSaturnU16(spriteDef + 4);
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = readSaturnU16(spriteDef + 6);
-            vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+            vdp1WriteEA.m1C_CMDGRA = (u16)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
             graphicEngineStatus.m14_vdp1Context[0].m10++;
 
             graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
@@ -357,7 +357,7 @@ void sBaldorSubTask0_draw(sBaldorSubTask* pThis)
                 (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = 0xFFFF;
                 (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = 0xFFFF;
                 (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = 0xFFFF;
-                vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+                vdp1WriteEA.m1C_CMDGRA = (u16)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
                 graphicEngineStatus.m14_vdp1Context[0].m10++;
 
                 graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
@@ -580,7 +580,7 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = 0xC3FF;
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = 0xC3FF;
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = 0xC3FF;
-            vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+            vdp1WriteEA.m1C_CMDGRA = (u16)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
             graphicEngineStatus.m14_vdp1Context[0].m10++;
 
             graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
@@ -610,7 +610,7 @@ void sBaldorSubTask1_draw(sBaldorSubTask* pThis)
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = 0xC3FF;
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = 0xC3FF;
             (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = 0xC3FF;
-            vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+            vdp1WriteEA.m1C_CMDGRA = (u16)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
             graphicEngineStatus.m14_vdp1Context[0].m10++;
 
             graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;

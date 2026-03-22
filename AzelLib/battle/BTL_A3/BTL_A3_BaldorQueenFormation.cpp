@@ -115,7 +115,7 @@ void baldorQueenFormation_updateMode0(BTL_A3_BaldorQueenFormation* pThis) {
         return;
     }
 
-    if (BattleEngineSub0_UpdateSub0() != 0) {
+    if (battleEngine_isPlayerTurnActive() != 0) {
         return;
     }
     (gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8) = 0;
@@ -209,7 +209,7 @@ void baldorQueenFormation_updateMode1(BTL_A3_BaldorQueenFormation* pThis) {
 
             battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m4_battleEngine->m3F4_cameraPositionWhileShooting);
             battleEngine_setCurrentCameraPositionPointer(&gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8);
-            createBattleIntroTaskSub0();
+            battleEngine_enableAttackCamera();
             pThis->m1_formationSubState++;
         }
         break;
@@ -284,7 +284,7 @@ void baldorQueenFormation_updateMode1(BTL_A3_BaldorQueenFormation* pThis) {
             return;
 
         // Attack finished, cleanup
-        sEnemyAttackCamera_updateSub2();
+        battleEngine_restoreCameraAfterEnemyAttack();
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
 
         // Reset baldor state
@@ -354,8 +354,8 @@ void baldorQueenFormation_updateMode3(BTL_A3_BaldorQueenFormation* pThis) {
 
         battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m4_battleEngine->m3F4_cameraPositionWhileShooting);
         battleEngine_setCurrentCameraPositionPointer(&gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8);
-        createBattleIntroTaskSub0();
-        battleEngine_InitSub8();
+        battleEngine_enableAttackCamera();
+        battleEngine_resetCameraInterpolation();
         pThis->m1_formationSubState++;
         break;
     case 1:
@@ -427,7 +427,7 @@ void baldorQueenFormation_updateMode3(BTL_A3_BaldorQueenFormation* pThis) {
         pThis->m1_formationSubState = 1;
         break;
     case 10:
-        sEnemyAttackCamera_updateSub2();
+        battleEngine_restoreCameraAfterEnemyAttack();
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
         pThis->m1_formationSubState = 0;
         pThis->m0_formationState = 0;

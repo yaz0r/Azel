@@ -179,13 +179,13 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     // size: 0xaa8
 };
 
-s32 BattleEngineSub0_UpdateSub0();
+s32 battleEngine_isPlayerTurnActive();
 s32 isBattleAutoScroll();
 
 void battleEngine_setCurrentCameraPositionPointer(sVec3_FP* pData);
 void battleEngine_setDesiredCameraPositionPointer(sVec3_FP* pData);
-void battleEngine_InitSub8();
-void battleEngine_UpdateSub7Sub3();
+void battleEngine_resetCameraInterpolation();
+void battleEngine_restoreCameraDefault();
 
 void battleEngine_SetBattleMode(eBattleModes param);
 void battleEngine_SetBattleMode16();
@@ -195,11 +195,11 @@ void battleEngine_FlagQuadrantForDanger(u8 quadrant);
 void battleEngine_FlagQuadrantForAttack(u8 quadrant);
 
 void resetNBG1Map(); // TODO: clean
-void sEnemyAttackCamera_updateSub2();
+void battleEngine_restoreCameraAfterEnemyAttack();
 
 void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4);
 
-bool battleEngine_UpdateSub7Sub0Sub0();
+bool battleEngine_isBattleIntroFinished();
 bool battleEngine_UpdateSub7Sub0Sub2Sub0();
 
 void battleEngine_FlagQuadrantBitForSafety(u16 uParm1);

@@ -38,7 +38,7 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
     local_50[1] = temp[1];
     local_50[2] = 0;
 
-    if (BattleEngineSub0_UpdateSub0())
+    if (battleEngine_isPlayerTurnActive())
     {
         switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode)
         {

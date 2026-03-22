@@ -164,7 +164,7 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub0(BTL_A3_UrchinFormation* pThis)
         pThis->m18.mD[4] = 1;
     }
 
-    if ((pThis->m7_attackMode == 2) && battleEngine_UpdateSub7Sub0Sub0())
+    if ((pThis->m7_attackMode == 2) && battleEngine_isBattleIntroFinished())
     {
         assert(0);
     }
@@ -177,7 +177,7 @@ extern std::array<std::array<s8, 4>, 4> enemyQuadrantsTable; //TODO cleanup
 
 bool BTL_A3_UrchinFormation_Update_Mode1Sub1(BTL_A3_UrchinFormation* pThis)
 {
-    if (battleEngine_UpdateSub7Sub0Sub0())
+    if (battleEngine_isBattleIntroFinished())
     {
         for (int i = 0; i < pThis->m3_formationSize; i++)
         {
@@ -337,7 +337,7 @@ void BTL_A3_UrchinFormation_Update_Mode1(BTL_A3_UrchinFormation* pThis)
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 == 0)
             return;
 
-        if (BattleEngineSub0_UpdateSub0())
+        if (battleEngine_isPlayerTurnActive())
             return;
     }
 
@@ -608,7 +608,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
                 }
                 break;
             case 1:
-                if (battleEngine_UpdateSub7Sub0Sub0())
+                if (battleEngine_isBattleIntroFinished())
                 {
                     battleEngine_SetBattleMode(eBattleModes::m7);
                     pThis->m2_subState++;
@@ -631,7 +631,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
                 }
                 break;
             case '\n':
-                if (BattleEngineSub0_UpdateSub0() && 
+                if (battleEngine_isPlayerTurnActive() && 
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::m1_useItem &&
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::m2 &&
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::m3_shootEnemeyWithHomingLaser &&
@@ -663,7 +663,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
             return;
         }
 
-        if (!BattleEngineSub0_UpdateSub0())
+        if (!battleEngine_isPlayerTurnActive())
         {
             battleEngine_FlagQuadrantBitForSafety(0);
             battleEngine_FlagQuadrantBitForDanger(0);

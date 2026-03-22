@@ -126,7 +126,7 @@ void battlePowerGauge_update(battlePowerGauge* pThis)
             }
             pThis->m14 = pThis->m0->m0_max;
 
-            if (!BattleEngineSub0_UpdateSub0() || gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
+            if (!battleEngine_isPlayerTurnActive() || gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000)
             {
                 if (pThis->m0->m0_max == 0)
                 {
@@ -304,7 +304,7 @@ void battlePowerGauge_drawSub0(battlePowerGauge* pThis)
         (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = 0xC210;
         (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = 0xC210;
         (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = 0xC210;
-        vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        vdp1WriteEA.m1C_CMDGRA = (u16)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         graphicEngineStatus.m14_vdp1Context[0].m10++;
 
 
@@ -345,7 +345,7 @@ void battlePowerGauge_drawSub0(battlePowerGauge* pThis)
         (*graphicEngineStatus.m14_vdp1Context[0].m10)[1] = color;
         (*graphicEngineStatus.m14_vdp1Context[0].m10)[2] = color;
         (*graphicEngineStatus.m14_vdp1Context[0].m10)[3] = color;
-        vdp1WriteEA.m1C_CMDGRA = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        vdp1WriteEA.m1C_CMDGRA = (u16)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         graphicEngineStatus.m14_vdp1Context[0].m10++;
 
 
@@ -379,7 +379,7 @@ void battlePowerGauge_draw(battlePowerGauge* pThis)
         return;
     }
 
-    if (BattleEngineSub0_UpdateSub0())
+    if (battleEngine_isPlayerTurnActive())
     {
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
             return;

@@ -10,7 +10,7 @@ void BattleEngineSub0_Update(s_battleEngineSub0* pThis)
     int iVar2;
     sBattleManager* psVar1 = gBattleManager;
     if ((!psVar1->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen) &&
-        (((iVar2 = BattleEngineSub0_UpdateSub0(), iVar2 == 0 ||
+        (((iVar2 = battleEngine_isPlayerTurnActive(), iVar2 == 0 ||
         (psVar1 = gBattleManager,
             (psVar1->m10_battleOverlay->m4_battleEngine->m188_flags.m1000000_dragonMoving) != 0)) &&
             (pThis->m8 == 0))))

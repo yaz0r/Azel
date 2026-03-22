@@ -23,7 +23,7 @@ void battleHud2_Update(battleHud2* pThis)
     switch (pThis->m12_mode)
     {
     case 0: // hidden
-        if (BattleEngineSub0_UpdateSub0())
+        if (battleEngine_isPlayerTurnActive())
         {
             if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
                 return;
@@ -157,7 +157,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
     if (radarStatus_danger & 1)
     {
         //bottom
-        int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -188,7 +188,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
     if (radarStatus_danger & 2)
     {
         //right
-        int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -219,7 +219,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
     if (radarStatus_danger & 4)
     {
         //top
-        int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -250,7 +250,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
     if (radarStatus_danger & 8)
     {
         //left
-        int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -281,7 +281,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
     if (radarStatus_safe & 1)
     {
         //bottom
-        int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -312,7 +312,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
     if (radarStatus_safe & 2)
     {
         //right
-        int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -343,7 +343,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
     if (radarStatus_safe & 4)
     {
         //top
-        int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -374,7 +374,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
     if (radarStatus_safe & 8)
     {
         //left
-        int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+        s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
         quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -492,7 +492,7 @@ void battleHud2_DrawSub2(battleHud2* pThis)
 void battleHud2_DrawSub3(battleHud2* pThis)
 {
     // this draws the triangle cursor in the middle of the radar
-    int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
+    s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
     quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
 
     s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -547,7 +547,7 @@ void battleHud2_Draw(battleHud2* pThis)
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3A4_prelockMode[1] & 0x10) {
         if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
         {
-            if (BattleEngineSub0_UpdateSub0())
+            if (battleEngine_isPlayerTurnActive())
             {
                 if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
                     return;

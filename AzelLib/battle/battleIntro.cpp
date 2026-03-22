@@ -22,7 +22,7 @@ struct sBattleIntroSubTask : public s_workAreaTemplate<sBattleIntroSubTask>
     // size 0x30
 };
 
-void createBattleIntroTaskSub0()
+void battleEngine_enableAttackCamera()
 {
     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 1;
 }
@@ -139,7 +139,7 @@ static void sBattleIntroSubTask_delete(sBattleIntroSubTask* pThis)
     pThis->m0_frameIndex = 0x95;
     createBattleIntroTaskSub2(pThis);
     createBattleIntroTaskSub3(pThis);
-    battleEngine_UpdateSub7Sub3();
+    battleEngine_restoreCameraDefault();
     g_fadeControls.m_4D = 6;
 
     if (g_fadeControls.m_4C < g_fadeControls.m_4D)
@@ -190,7 +190,7 @@ p_workArea createBattleIntroTask(p_workArea parent)
     sBattleIntroSubTask* pNewTask = createSubTask<sBattleIntroSubTask>(parent, &definition);
 
     pNewTask->m2C = dramAllocatorEnd[4].mC_fileBundle;
-    createBattleIntroTaskSub0();
+    battleEngine_enableAttackCamera();
 
     int randomIntroId = performModulo2(3, randomNumber());
 
@@ -214,7 +214,7 @@ p_workArea createBattleIntroTask(p_workArea parent)
     createBattleIntroTaskSub3(pNewTask);
     battleEngine_setCurrentCameraPositionPointer(&pNewTask->m4_currentCameraPosition);
     battleEngine_setDesiredCameraPositionPointer(&pNewTask->m10_desiredCameraPosition);
-    battleEngine_InitSub8();
+    battleEngine_resetCameraInterpolation();
 
     return pNewTask;
 }

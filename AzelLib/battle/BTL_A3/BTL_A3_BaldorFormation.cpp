@@ -168,7 +168,7 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 == 0)
         return;
 
-    if (BattleEngineSub0_UpdateSub0() != 0)
+    if (battleEngine_isPlayerTurnActive() != 0)
         return;
 
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;

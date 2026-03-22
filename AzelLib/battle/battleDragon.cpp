@@ -729,13 +729,13 @@ void s_battleDragon_UpdateSub6()
 {
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000)
     {
-        battleEngine_UpdateSub7Sub3();
+        battleEngine_restoreCameraDefault();
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 0;
     }
 
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000)
     {
-        sEnemyAttackCamera_updateSub2();
+        battleEngine_restoreCameraAfterEnemyAttack();
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000 = 0;
     }
 }

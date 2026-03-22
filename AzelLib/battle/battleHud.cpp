@@ -19,7 +19,7 @@ void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
     switch (pThis->m10_currentMode)
     {
     case 0: //hidden
-        if (BattleEngineSub0_UpdateSub0())
+        if (battleEngine_isPlayerTurnActive())
         {
             if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
                 return;
@@ -243,7 +243,7 @@ void s_battleOverlay_20_draw(s_battleOverlay_20* pThis)
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
-        if (BattleEngineSub0_UpdateSub0())
+        if (battleEngine_isPlayerTurnActive())
         {
             if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == 2)
                 return;

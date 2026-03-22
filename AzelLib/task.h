@@ -291,7 +291,7 @@ T* createSiblingTaskWithCopy(s_workAreaCopy* parentTask, const typename T::Typed
     pNewTask->getTask()->m_taskName = T::getTaskName();
 
     //copy
-    pNewTask->m0_dramAllocation = parentTask->m0_fileBundle;
+    pNewTask->m0_fileBundle = parentTask->m0_fileBundle;
     pNewTask->m4_vd1Allocation = parentTask->m4_vd1Allocation;
 
     if (pTypeTaskDefinition->m_pInit)

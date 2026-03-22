@@ -81,14 +81,14 @@ void arachnothTentacle_update(sArachnothTentacle* pThis) {
         arachnothTentacle_updateMode3(pThis);
         if (--pThis->m18C < 1)
         {
-            Unimplemented(); // task deletion
+            pThis->getTask()->markFinished();
             return;
         }
         break;
     case 4:
         if (--pThis->m18C < 1)
         {
-            Unimplemented(); // task deletion
+            pThis->getTask()->markFinished();
             return;
         }
         break;
@@ -236,6 +236,20 @@ void arachnothTentacle_setMode1(sArachnothTentacle* pThis) {
 
 void arachnothTentacle_setMode2(sArachnothTentacle* pThis) {
     pThis->m188_currentMode = 2;
+}
+
+// 0605c7a4
+void arachnoth_updateTentacle(sArachnothTentacle* pThis, const sVec3_FP* offset, s16 segmentIndex) {
+    sMatrix4x3 matrix;
+    initMatrixToIdentity(&matrix);
+    rotateMatrixShiftedY(pThis->m178_rotation->m4_Y, &matrix);
+    rotateMatrixShiftedX(pThis->m178_rotation->m0_X, &matrix);
+    rotateMatrixShiftedZ(pThis->m178_rotation->m8_Z, &matrix);
+
+    sVec3_FP transformed;
+    transformAndAddVec(*offset, transformed, matrix);
+
+    pThis->mC_segments[segmentIndex].m0 += transformed;
 }
 
 // 0605c770

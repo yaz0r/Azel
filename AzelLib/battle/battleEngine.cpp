@@ -270,7 +270,7 @@ void battleEngine_setDesiredCameraPositionPointer(sVec3_FP* pData)
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3D8_pDesiredCameraPosition = pData;
 }
 
-void battleEngine_InitSub8Sub0(sVec2_FP& param)
+void battleEngine_resetCameraInterpolationSub0(sVec2_FP& param)
 {
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     s_battleGrid* pBattleGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
@@ -288,7 +288,7 @@ void battleEngine_InitSub8Sub0(sVec2_FP& param)
     pBattleGrid->m64_cameraRotationTarget[1] = param[1];
 }
 
-void battleEngine_InitSub8Sub1(sVec2_FP& param)
+void battleEngine_resetCameraInterpolationSub1(sVec2_FP& param)
 {
     addTraceLog(param, "param");
 
@@ -297,15 +297,15 @@ void battleEngine_InitSub8Sub1(sVec2_FP& param)
     pBattleGrid->mB4_cameraRotation[1] = param[1];
 }
 
-void battleEngine_InitSub8()
+void battleEngine_resetCameraInterpolation()
 {
     s_battleGrid* pBattleGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
     pBattleGrid->m180_cameraTranslation = *pBattleGrid->m1B8_pCameraTranslationSource;
     addTraceLog(pBattleGrid->m180_cameraTranslation, "cameraTranslation");
 
     sVec2_FP auStack16;
-    battleEngine_InitSub8Sub0(auStack16);
-    battleEngine_InitSub8Sub1(auStack16);
+    battleEngine_resetCameraInterpolationSub0(auStack16);
+    battleEngine_resetCameraInterpolationSub1(auStack16);
     pBattleGrid->m18C.zeroize();
     pBattleGrid->mC0_cameraRotationInterpolation.zeroize();
 }
@@ -355,7 +355,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
 {
     gBattleManager->m10_battleOverlay->m4_battleEngine = pThis;
     pThis->m3A8_overlayBattledata = overlayBattleData;
-    pThis->m3B0_subBattleId = gBattleManager->m6_subBattleId;
+    pThis->m3B0_subBattleId = (s8)gBattleManager->m6_subBattleId;
 
     sSaturnPtr battleData_4 = readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 + 4);
     pThis->m3AC = readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 );
@@ -475,7 +475,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     battleEngine_InitSub5(pThis);
     battleEngine_setCurrentCameraPositionPointer(&gBattleManager->m10_battleOverlay->m8_gridTask->m34_cameraPosition);
     battleEngine_setDesiredCameraPositionPointer(&pThis->mC_battleCenter);
-    battleEngine_InitSub8();
+    battleEngine_resetCameraInterpolation();
     battleEngine_InitSub9(pThis);
 
     executeFuncPtr(readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 + 8), pThis);
@@ -653,7 +653,7 @@ void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
     pThis->m240 = pThis->m270_enemyAltitude + pThis->m258 + pThis->m264;
 }
 
-bool battleEngine_UpdateSub7Sub0Sub0() // 0x20 is indicating battle intro is running
+bool battleEngine_isBattleIntroFinished() // 0x20 is indicating battle intro is running
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning)
         return 1;
@@ -687,13 +687,13 @@ void battleEngine_UpdateSub7Sub2()
     gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac484) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
 }
 
-void battleEngine_UpdateSub7Sub3Sub0()
+void battleEngine_restoreCameraDefaultSub0()
 {
     gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = 0;
     gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = 0;
 }
 
-void battleEngine_UpdateSub7Sub3()
+void battleEngine_restoreCameraDefault()
 {
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
@@ -710,7 +710,7 @@ void battleEngine_UpdateSub7Sub3()
         pGrid->m34_cameraPosition = pBattleEngine->m104_dragonPosition + pGrid->m1C + pGrid->m28;
         battleEngine_setCurrentCameraPositionPointer(&pGrid->m34_cameraPosition);
         pBattleEngine->m3D8_pDesiredCameraPosition = &pBattleEngine->mC_battleCenter;
-        battleEngine_UpdateSub7Sub3Sub0();
+        battleEngine_restoreCameraDefaultSub0();
     }
 }
 
@@ -810,7 +810,7 @@ s32 battleEngine_checkBattleCompletion()
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     if (pBattleEngine->m3B2_numBattleFormationRunning < 1)
     {
-        if (battleEngine_UpdateSub7Sub0Sub0() == 0)
+        if (battleEngine_isBattleIntroFinished() == 0)
             return 0;
 
         battleEngine_UpdateSub7Sub1();
@@ -826,7 +826,7 @@ s32 battleEngine_checkBattleCompletion()
         if (mainGameState.gameStats.m10_currentHP > 0)
         {
             battleEngine_UpdateSub7Sub2();
-            battleEngine_UpdateSub7Sub3();
+            battleEngine_restoreCameraDefault();
 
             if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10000)
             {
@@ -859,7 +859,7 @@ s32 battleEngine_checkBattleCompletion()
             pBattleEngine->m3B2_numBattleFormationRunning = 0;
             return 0;
         }
-        if (battleEngine_UpdateSub7Sub0Sub0() != 0) {
+        if (battleEngine_isBattleIntroFinished() != 0) {
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
             pBattleEngine->m18C_status = 4;
             pBattleEngine->m1B8_dragonPitch = 0;
@@ -963,7 +963,7 @@ void triggerIfBattleModeA(s_battleEngine* pThis)
 {
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode != eBattleModes::mA)
     {
-        createBattleIntroTaskSub0();
+        battleEngine_enableAttackCamera();
         sEnemyAttackCamera_updateSub0(2);
     }
 }
@@ -1231,7 +1231,7 @@ void battleEngine_UpdateSub7Sub0Sub1_6(s_battleEngine* pThis)
                 break;
             case 3:
                 stackx40[1] = -0x4000000;
-                stackx28[1] += 0x4000000;
+                stackx28[1] += 0x8000000;
                 pcVar15 = 3;
                 break;
             default:
@@ -1249,12 +1249,12 @@ void battleEngine_UpdateSub7Sub0Sub1_6(s_battleEngine* pThis)
             case 2:
                 stackx40[1] = 0x4000000;
                 stackx28[1] -= 0x4000000;
-                pcVar15 = 0;
+                pcVar15 = 1;
                 break;
             case 3:
-                stackx40[1] = 0x4000000;
+                stackx40[1] = 0;
                 stackx28[1] += 0x8000000;
-                pcVar15 = 1;
+                pcVar15 = 0;
                 break;
             default:
                 assert(0);
@@ -1322,7 +1322,7 @@ void battleEngine_UpdateSub7Sub0Sub1_6(s_battleEngine* pThis)
 
         battleEngine_UpdateSub7Sub0Sub1Sub2(&pThis->m2E8_dragonMovementInterpolator2);
 
-        createBattleIntroTaskSub0();
+        battleEngine_enableAttackCamera();
     }
     break;
     case 1:
@@ -1377,7 +1377,7 @@ void battleEngine_UpdateSub7Sub0Sub1_6(s_battleEngine* pThis)
 
 void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
 {
-    if (!BattleEngineSub0_UpdateSub0()) {
+    if (!battleEngine_isPlayerTurnActive()) {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m190[0]++;
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m200_suppressBattleInputs = 0;
     }
@@ -1449,7 +1449,7 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
     }
     else
     {
-        battleEngine_InitSub8Sub0(aiStack52);
+        battleEngine_resetCameraInterpolationSub0(aiStack52);
     }
     battleEngine_InitSub3Sub0(pThis);
 }
@@ -1927,7 +1927,7 @@ void attackCamera6(sEnemyAttackCamera* pThis)
 
 void sEnemyAttackCamera_init(sEnemyAttackCamera* pThis)
 {
-    createBattleIntroTaskSub0();
+    battleEngine_enableAttackCamera();
     pThis->m4.zeroize();
     pThis->m34.zeroize();
     pThis->m10_rotation1.zeroize();
@@ -1940,7 +1940,7 @@ void sEnemyAttackCamera_init(sEnemyAttackCamera* pThis)
     switch (pThis->m1_cameraIndex)
     {
     case 0:
-        battleEngine_UpdateSub7Sub3();
+        battleEngine_restoreCameraDefault();
         battleEngine_UpdateSub7Sub2();
         pThis->getTask()->markFinished();
         return;
@@ -2020,7 +2020,7 @@ void battleEngineSub1_UpdateSub2(sVec3_FP* pOutput, const sVec3_FP& translation,
     }
 }
 
-void sEnemyAttackCamera_updateSub2()
+void battleEngine_restoreCameraAfterEnemyAttack()
 {
     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 0;
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB] == 0)
@@ -2032,8 +2032,8 @@ void sEnemyAttackCamera_updateSub2()
 
         battleEngine_setCurrentCameraPositionPointer(&gBattleManager->m10_battleOverlay->m8_gridTask->m34_cameraPosition);
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3D8_pDesiredCameraPosition = &gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
-        battleEngine_InitSub8();
-        battleEngine_UpdateSub7Sub3Sub0();
+        battleEngine_resetCameraInterpolation();
+        battleEngine_restoreCameraDefaultSub0();
     }
 }
 
@@ -2125,14 +2125,14 @@ void sEnemyAttackCamera_update(sEnemyAttackCamera* pThis)
             battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m4_battleEngine->m424);
             sEnemyAttackCamera_updateSub0(1);
             sEnemyAttackCamera_updateSub1(0);
-            battleEngine_InitSub8();
+            battleEngine_resetCameraInterpolation();
         }
     }
     else
     {
         battleEngine_UpdateSub7Sub2();
         sEnemyAttackCamera_updateSub1(1);
-        sEnemyAttackCamera_updateSub2();
+        battleEngine_restoreCameraAfterEnemyAttack();
         pThis->getTask()->markFinished();
     }
 }
@@ -2299,7 +2299,7 @@ void battleEngine_updateBattleMode_7_sub0()
         }
     }
 
-    createBattleIntroTaskSub0();
+    battleEngine_enableAttackCamera();
     pBattleEngine->m3E8.zeroize();
     pBattleEngine->m3DC.zeroize();
 
@@ -2314,7 +2314,7 @@ void battleEngine_updateBattleMode_7_sub0()
     battleEngineSub1_UpdateSub2(&pBattleEngine->m3F4_cameraPositionWhileShooting, *pBattleEngine->m3D8_pDesiredCameraPosition, pBattleEngine->m3E8, pBattleEngine->m3DC);
     battleEngine_setCurrentCameraPositionPointer(&pBattleEngine->m3F4_cameraPositionWhileShooting);
     battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-    battleEngine_InitSub8();
+    battleEngine_resetCameraInterpolation();
     pBattleEngine->m432 = 4;
     pBattleEngine->m430 = 0;
 }
@@ -2405,7 +2405,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
     switch (pThis->m38D_battleSubMode)
     {
     case 0:
-        createBattleIntroTaskSub0();
+        battleEngine_enableAttackCamera();
         pThis->m40C_gunTarget = pThis->mC_battleCenter;
         battleEngine_setDesiredCameraPositionPointer(&pThis->m40C_gunTarget);
         if (mainGameState.gameStats.mA_weaponType == 0x40)
@@ -2718,7 +2718,7 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
         {
             pThis->m384_battleModeDelay = 0;
             pThis->m38D_battleSubMode++;
-            createBattleIntroTaskSub0();
+            battleEngine_enableAttackCamera();
 
             gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition[2] = 0;
             gBattleManager->m10_battleOverlay->m8_gridTask->mE4_currentCameraReferenceCenter[2] = 0;
@@ -2733,7 +2733,7 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
             battleEngineSub1_UpdateSub2(&pThis->m3F4_cameraPositionWhileShooting, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->m3E8, pThis->m3DC);
             battleEngine_setCurrentCameraPositionPointer(&pThis->m3F4_cameraPositionWhileShooting);
             battleEngine_setDesiredCameraPositionPointer(&gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-            battleEngine_InitSub8();
+            battleEngine_resetCameraInterpolation();
         }
         break;
     case 3:
@@ -2819,7 +2819,7 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
 
 void updateBattleIntro(s_battleEngine* pThis)
 {
-    if (BattleEngineSub0_UpdateSub0() == 0)
+    if (battleEngine_isPlayerTurnActive() == 0)
         return;
 
     switch (pThis->m38C_battleMode)
@@ -3217,7 +3217,7 @@ void battleEngine_Delete(s_battleEngine* pThis)
     battleEngine_postBattleUpdateHPBP();
 }
 
-s32 BattleEngineSub0_UpdateSub0()
+s32 battleEngine_isPlayerTurnActive()
 {
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80 != 0)
     {

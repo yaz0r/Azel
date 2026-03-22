@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "ArachnothSubPart.h"
+#include "battle/battleDamageNumber.h"
 #include "battle/battleTargetable.h"
 #include "kernel/graphicalObject.h"
 #include "kernel/fileBundle.h"
@@ -40,7 +41,7 @@ void arachnothCreateSubModel(sArachnothSubModel* pThis, s_workAreaCopy* pParent,
         {
             if (pThis->m8_model.m44_hotpointData[i].size())
             {
-                for (int j = 0; j < (*pThis->m8_model.m40)[i].m4_count; j++)
+                for (u32 j = 0; j < (*pThis->m8_model.m40)[i].m4_count; j++)
                 {
                     initTargetable(&pThis->m58_targetables[targetableIndex], pThis->m68, &pThis->m5C_targetablesPosition[targetableIndex], (*pThis->m8_model.m40)[i].m0[j].m10, (*pThis->m8_model.m40)[i].m0[j].m0, param_4, 0, 10);
                     targetableIndex++;
@@ -87,7 +88,7 @@ void arachnothCreateSubModel2(sArachnothSubModel* pThis, s_workAreaCopy* pParent
         {
             if (pThis->m8_model.m44_hotpointData[i].size())
             {
-                for (int j = 0; j < (*pThis->m8_model.m40)[i].m4_count; j++)
+                for (u32 j = 0; j < (*pThis->m8_model.m40)[i].m4_count; j++)
                 {
                     initTargetable(&pThis->m58_targetables[targetableIndex], pThis->m68, &pThis->m5C_targetablesPosition[targetableIndex], (*pThis->m8_model.m40)[i].m0[j].m10, (*pThis->m8_model.m40)[i].m0[j].m0, param_4, 0, 10);
                     targetableIndex++;
@@ -114,7 +115,8 @@ void arachnothInitSubModelAnimation(sArachnothSubModel* pThis, s32 animationInde
     }    
 }
 
-void arachnothInitSubModelFunctions(sArachnothSubModel* pThis, void (*param_2)(sArachnothSubModel*, s32), void (*param_3)(sArachnothSubModel*, s32), void (*param_4)(sArachnothSubModel*, s32), void (*param_5)(sArachnothSubModel*, s32))
+typedef void (*arachnothSubModelCallback)(s_workAreaCopy*, sBattleTargetable*);
+void arachnoth_setSubModelCallbacks(sArachnothSubModel* pThis, arachnothSubModelCallback param_2, arachnothSubModelCallback param_3, arachnothSubModelCallback param_4, arachnothSubModelCallback param_5)
 {
     pThis->m80 = param_2;
     pThis->m84 = param_3;
@@ -122,11 +124,9 @@ void arachnothInitSubModelFunctions(sArachnothSubModel* pThis, void (*param_2)(s
     pThis->m8C = param_5;
 }
 
-void arachnothSubModelFunction0(sArachnothSubModel* pThis, s32) { Unimplemented(); }
-void arachnothSubModelFunction1(sArachnothSubModel* pThis, s32) { Unimplemented(); }
-void arachnothSubModelFunction2(sArachnothSubModel* pThis, s32) { Unimplemented(); }
+// arachnothSubModelFunction0/1/2 are defined in Arachnoth.cpp (needs sArachnothFormation access)
 
-void createArachnothFormationSub0(sArachnothSubModel* pThis, s32 param_2)
+void arachnoth_rotateTargetableFlags(sArachnothSubModel* pThis, s32 param_2)
 {
     sSaturnPtr iVar1 = readSaturnEA(readSaturnEA(pThis->m4) + 4);
     int counter = 0;
@@ -193,15 +193,15 @@ static s32 arachnothSubPart_checkTargetableDamage(sArachnothSubModel* pThis, s32
             pThis->m70_flags |= 0x800000;
         }
 
-        Unimplemented(); // FUN_0605f142 — damage number popup
+        createDamageNumberFromTargetable(pThis->m68, &targetable, 0);
 
         if (damage != 0)
         {
             s8 impactForce = targetable.m5E_impactForce;
-            if (impactForce == 0 && pThis->m80) { pThis->m80(pThis, targetableIndex); }
-            else if (impactForce == 1 && pThis->m84) { pThis->m84(pThis, targetableIndex); }
-            else if (impactForce == 2 && pThis->m88) { pThis->m88(pThis, targetableIndex); }
-            else if (impactForce == 3 && pThis->m8C) { pThis->m8C(pThis, targetableIndex); }
+            if (impactForce == 0 && pThis->m80) { pThis->m80(pThis->m68, &targetable); }
+            else if (impactForce == 1 && pThis->m84) { pThis->m84(pThis->m68, &targetable); }
+            else if (impactForce == 2 && pThis->m88) { pThis->m88(pThis->m68, &targetable); }
+            else if (impactForce == 3 && pThis->m8C) { pThis->m8C(pThis->m68, &targetable); }
         }
     }
 
@@ -220,7 +220,7 @@ s32 arachnothSubPart_getTargetablesDamage(sArachnothSubModel* pThis)
     return totalDamage;
 }
 
-s32 arachnothSubPartGetDamage(sArachnothSubModel* pThis)
+s32 arachnoth_processSubModelDamage(sArachnothSubModel* pThis)
 {
     if (pThis->m64)
     {

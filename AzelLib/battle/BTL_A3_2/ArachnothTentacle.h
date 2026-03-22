@@ -25,3 +25,4 @@ sArachnothTentacle* createArachnothTentacle(s_workAreaCopy* pParent, sVec3_FP* p
 void arachnothTentacle_setMode1(sArachnothTentacle* pThis);
 void arachnothTentacle_setMode2(sArachnothTentacle* pThis);
 void arachnoth_disableTentacle(sArachnothTentacle* pThis);
+void arachnoth_updateTentacle(sArachnothTentacle* pThis, const sVec3_FP* offset, s16 segmentIndex);
