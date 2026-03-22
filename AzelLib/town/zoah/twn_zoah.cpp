@@ -90,9 +90,9 @@ static void zoahCamera_update(sCameraTask* pThis)
     rotateMatrixShiftedY(fixedPoint((s32)rotY_target * (s32)t + (s32)rotY_source * invT), &mat);
     rotateMatrixShiftedX(fixedPoint((s32)rotX_target * (s32)t + (s32)rotX_source * invT), &mat);
 
-    pThis->m14[0] = mat.m[0][3];
-    pThis->m14[1] = mat.m[1][3];
-    pThis->m14[2] = mat.m[2][3];
+    pThis->m14[0] = mat.m[0][2];
+    pThis->m14[1] = mat.m[1][2];
+    pThis->m14[2] = mat.m[2][2];
 
     // Step 8: Compute ambient RGB from first 3 interpolated values
     fixedPoint* d = pThis->m34_interpolatedLightData;
@@ -215,9 +215,9 @@ static void zoahCamera_setupLight(sCameraTask* pThis, sSaturnPtr lightData)
     sMatrix4x3 mat;
     initMatrixToIdentity(&mat);
 
-    pThis->m14[0] = mat.m[0][3];
-    pThis->m14[1] = mat.m[1][3];
-    pThis->m14[2] = mat.m[2][3];
+    pThis->m14[0] = mat.m[0][2];
+    pThis->m14[1] = mat.m[1][2];
+    pThis->m14[2] = mat.m[2][2];
 
     pThis->m10.m0 = readSaturnU8(lightData);
     pThis->m10.m1 = readSaturnU8(lightData + 1);
