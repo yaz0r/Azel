@@ -1,6 +1,10 @@
 #include "PDS.h"
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
+#include "mainMenuDebugTasks.h"
+
+// Saturn hardware divider: returns dividend / divisor
+static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
 
 struct s_dragonMenuSubTask1WorkArea : public s_workAreaTemplate<s_dragonMenuSubTask1WorkArea>
 {
@@ -86,14 +90,14 @@ struct s_dragonMenuWorkArea : public s_workAreaTemplate<s_dragonMenuWorkArea>
     p_workArea mC;
     p_workArea m10;
     s_dragonMenuStatsTask2* m14;
-    p_workArea m18;
-    p_workArea m1C;
+    p_workArea m18_morphCursorTask;
 };
 
 void s_dragonMenuWorkArea::dragonMenuTaskInit(s_dragonMenuWorkArea* pThis)
 {
     graphicEngineStatus.m40AC.m9 = 3;
     pThis->m4 = vblankData.m14_numVsyncPerFrame;
+    vblankData.m14_numVsyncPerFrame = 1;
 
     createSubTask<s_dragonMenuSubTask1WorkArea>(pThis);
 }
@@ -217,7 +221,7 @@ void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDraw(s_drawDragonMenuStat
         drawObjectName("  Floater ");
         break;
     default:
-        drawObjectName(dragonArchetypesNames[mainGameState.gameStats.mB6_dragonArchetype]);
+        drawObjectName(dragonArchetypesNames[gDragonState->m1C_dragonArchetype]);
         break;
     }
 
@@ -260,6 +264,7 @@ void s_drawDragonMenuStatsTask::drawDragonMenuStatsTaskDelete(s_drawDragonMenuSt
 {
     setupVDP2StringRendering(0, 34, 44, 28);
     clearVdp2TextArea();
+    clearVdp2Menu();
 }
 
 struct s_dragonMenuMorphCursorTask : public s_workAreaTemplate<s_dragonMenuMorphCursorTask>
@@ -270,16 +275,162 @@ struct s_dragonMenuMorphCursorTask : public s_workAreaTemplate<s_dragonMenuMorph
         return &taskDefinition;
     }
 
-    static void Init(s_dragonMenuMorphCursorTask*)
+    static void Init(s_dragonMenuMorphCursorTask*);
+    static void Draw(s_dragonMenuMorphCursorTask*);
+
+    // 0601bc58
+    static void drawCursorSprite(s_dragonMenuMorphCursorTask* pThis);
+
+    s16 m0_dirX;
+    s16 m2_dirY;
+};
+
+// 0601bbb0
+void s_dragonMenuMorphCursorTask::Init(s_dragonMenuMorphCursorTask* pThis)
+{
+    s32 cursorX = (s32)mainGameState.gameStats.m1A_dragonCursorX;
+    s32 cursorY = (s32)mainGameState.gameStats.m1C_dragonCursorY;
+    u32 magnitude = sqrt_I(cursorX * cursorX + cursorY * cursorY);
+
+    if (magnitude == 0)
     {
-        PDS_unimplemented("s_dragonMenuMorphCursorTask::Init");
+        pThis->m0_dirX = 0;
+        pThis->m2_dirY = 0;
+        return;
     }
 
-    static void Draw(s_dragonMenuMorphCursorTask*)
+    bool negX = cursorX < 0;
+    bool negY = cursorY < 0;
+    if (negX) cursorX = -cursorX;
+    if (negY) cursorY = -cursorY;
+
+    s16 dirX, dirY;
+    dirY = performDivision(magnitude, cursorX * cursorY);
+    if (cursorX < cursorY)
     {
-        PDS_unimplemented("s_dragonMenuMorphCursorTask::Draw");
+        dirX = dirY;
+        dirY = performDivision(magnitude, cursorY * cursorY);
     }
-};
+    else
+    {
+        dirX = performDivision(magnitude, cursorX * cursorX);
+    }
+
+    if (negX) dirX = -dirX;
+    pThis->m0_dirX = dirX;
+
+    if (negY) dirY = -dirY;
+    pThis->m2_dirY = dirY;
+}
+
+// 0601bc58
+void s_dragonMenuMorphCursorTask::drawCursorSprite(s_dragonMenuMorphCursorTask* pThis)
+{
+    s16 screenX = performDivision(0x800, pThis->m0_dirX * 0x58) - 8;
+    s16 screenY = performDivision(0x800, pThis->m2_dirY * 0x50);
+
+    s_vdp1Command& cmd = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    cmd.m0_CMDCTRL = 0x1000; // normal sprite
+    cmd.m4_CMDPMOD = 0x80;
+    cmd.m6_CMDCOLR = 0x610;
+    cmd.m8_CMDSRCA = 0x236C;
+    cmd.mA_CMDSIZE = 0x20A;
+    cmd.mC_CMDXA = screenX;
+    cmd.mE_CMDYA = screenY - 5;
+
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &cmd;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+}
+
+// 0601bccc
+void s_dragonMenuMorphCursorTask::Draw(s_dragonMenuMorphCursorTask* pThis)
+{
+    // Dragon levels that don't support morphing
+    if (mainGameState.gameStats.m1_dragonLevel == DR_LEVEL_0_BASIC_WING ||
+        mainGameState.gameStats.m1_dragonLevel == DR_LEVEL_6_LIGHT_WING ||
+        mainGameState.gameStats.m1_dragonLevel > DR_LEVEL_7_SOLO_WING)
+    {
+        pThis->m0_dirX = 0;
+        pThis->m2_dirY = 0;
+        mainGameState.gameStats.m1A_dragonCursorX = 0;
+        mainGameState.gameStats.m1C_dragonCursorY = 0;
+        return;
+    }
+
+    s32 inputX = 0;
+    s32 inputY = 0;
+
+    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2)
+    {
+        // Analog input
+        inputX = -(s32)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
+        inputY = -(s32)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+    }
+    else
+    {
+        // Digital input (d-pad)
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x10) inputY = -0x40;
+        else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x20) inputY = 0x40;
+
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x40) inputX = -0x40;
+        else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x80) inputX = 0x40;
+    }
+
+    s32 newX = inputX + pThis->m0_dirX;
+    s32 newY = inputY + pThis->m2_dirY;
+    u32 magnitude = sqrt_I(newX * newX + newY * newY);
+
+    if (magnitude == 0)
+    {
+        pThis->m0_dirX = 0;
+        pThis->m2_dirY = 0;
+        mainGameState.gameStats.m1A_dragonCursorX = 0;
+        mainGameState.gameStats.m1C_dragonCursorY = 0;
+        drawCursorSprite(pThis);
+        return;
+    }
+
+    // Clamp magnitude to 0x800
+    if ((s32)magnitude > 0x800)
+    {
+        newX = performDivision(magnitude, newX * 0x800);
+        newY = performDivision(magnitude, newY * 0x800);
+        magnitude = sqrt_I(newX * newX + newY * newY);
+    }
+
+    pThis->m0_dirX = (s16)newX;
+    pThis->m2_dirY = (s16)newY;
+
+    // Compute cursor position from direction
+    bool negX = newX < 0;
+    bool negY = newY < 0;
+    if (negX) newX = -newX;
+    if (negY) newY = -newY;
+
+    u32 cursorX, cursorY;
+    if (newX < newY)
+    {
+        cursorX = setDividend(magnitude, newX, newY);
+        cursorY = magnitude;
+    }
+    else
+    {
+        cursorY = setDividend(magnitude, newY, newX);
+        cursorX = magnitude;
+    }
+
+    mainGameState.gameStats.m1A_dragonCursorX = (s16)cursorX;
+    mainGameState.gameStats.m1C_dragonCursorY = (s16)cursorY;
+
+    if (negX) mainGameState.gameStats.m1A_dragonCursorX = -mainGameState.gameStats.m1A_dragonCursorX;
+    if (negY) mainGameState.gameStats.m1C_dragonCursorY = -mainGameState.gameStats.m1C_dragonCursorY;
+
+    drawCursorSprite(pThis);
+}
 
 void startVdp2LayerScroll(s32 layerId, s32 x, s32 y, s32 numSteps)
 {
@@ -325,7 +476,7 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
 
         pWorkArea->m10 = createSubTask<s_drawDragonMenuStatsTask>(pWorkArea);
         pWorkArea->m14 = createSubTask<s_dragonMenuStatsTask2>(pWorkArea);
-        pWorkArea->m1C = createSubTask<s_dragonMenuMorphCursorTask>(pWorkArea);
+        pWorkArea->m18_morphCursorTask = createSubTask<s_dragonMenuMorphCursorTask>(pWorkArea);
 
         if (graphicEngineStatus.m40AC.m0_menuId != 1)
         {
@@ -338,14 +489,25 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 7)
         {
             playSystemSoundEffect(0);
-            pWorkArea->m14->m_DrawMethod = NULL;
+            // Null the morph dragon task's draw method
+            if (pWorkArea->mC)
+            {
+                static_cast<s_dragonMenuSubTask1WorkArea*>(pWorkArea->mC)->m_DrawMethod = nullptr;
+            }
+            // Mark stats task finished
             if (pWorkArea->m10)
             {
                 pWorkArea->m10->getTask()->markFinished();
             }
-            if (pWorkArea->m18)
+            // Mark stats task 2 finished
+            if (pWorkArea->m14)
             {
-                pWorkArea->m18->getTask()->markFinished();
+                pWorkArea->m14->getTask()->markFinished();
+            }
+            // Mark morph cursor task finished
+            if (pWorkArea->m18_morphCursorTask)
+            {
+                pWorkArea->m18_morphCursorTask->getTask()->markFinished();
             }
 
             vblankData.m14_numVsyncPerFrame = pWorkArea->m4;
@@ -391,7 +553,7 @@ void s_dragonMenuWorkArea::dragonMenuTaskUpdate(s_dragonMenuWorkArea* pWorkArea)
 
 void s_dragonMenuWorkArea::dragonMenuTaskDelete(s_dragonMenuWorkArea*)
 {
-    PDS_unimplemented("dragonMenuTaskDelete");
+    graphicEngineStatus.m40AC.m5 = 0;
 }
 
 p_workArea createMainDragonMenuTask(p_workArea workArea)

@@ -388,7 +388,12 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
     }
 
     sProcessed3dModel* model = pObject->m_pObject;
-    glm::mat4 mvpMatrix = projectionMatrix * MatrixToGLM(pObject->m_modelMatrix);
+
+    // Apply VDP1 local coordinates offset (shifts rendering on screen)
+    glm::mat4 offsetMatrix = glm::mat4(1.0f);
+    offsetMatrix[3][0] = pObject->m_2dOffset[0] * 2.0f; // NDC range is -1 to 1
+    offsetMatrix[3][1] = -pObject->m_2dOffset[1] * 2.0f;
+    glm::mat4 mvpMatrix = offsetMatrix * projectionMatrix * MatrixToGLM(pObject->m_modelMatrix);
     glm::mat4 invMvpMatrix = glm::inverse(mvpMatrix);
 
     bgfx::setUniform(vdp1_modelViewProj, &mvpMatrix[0][0]);

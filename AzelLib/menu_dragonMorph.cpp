@@ -3,6 +3,10 @@
 #include "kernel/animation.h"
 #include "kernel/debug/trace.h"
 #include "lightSetup.h"
+#include "mainMenuDebugTasks.h"
+
+void loadDragonSub1(s_loadDragonWorkArea* pLoadDragonWorkArea);
+void setupDragonForTown(s_3dModel* pDragonModel);
 
 s_lightSetup lightSetup;
 
@@ -853,9 +857,37 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonDraw(s_dragonMenuDragonWorkArea
     submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pWorkArea->modelTranslation, &pWorkArea->modelRotation, 0);
 }
 
+// 0600b250 — restore saved graphic engine state
+static void restoreGraphicEngineState(s_dragonMenuDragonWorkAreaSub1* pSaved)
+{
+    memcpy_dma(&pSaved->m120, &graphicEngineStatus.m405C, sizeof(s_graphicEngineStatus_405C));
+
+    graphicEngineStatus.m405C.setLocalCoordinatesEA->mC_CMDXA = pSaved->m170[0];
+    graphicEngineStatus.m405C.setClippingCoordinatesEA->mC_CMDXA = pSaved->m170[1];
+    graphicEngineStatus.m405C.setClippingCoordinatesEA->m14_CMDXC = pSaved->m170[2];
+
+    setupLight(pSaved->lightSetup.m0, pSaved->lightSetup.m4, pSaved->lightSetup.m8, pSaved->lightSetup.mC);
+
+    Unimplemented(); // generateLightFalloffMap + dragonFieldTaskDrawSub1Sub1 + dragonFieldTaskDrawSub3Sub1
+}
+
+// 0600bfcc
 void s_dragonMenuDragonWorkArea::dragonMenuDragonDelete(s_dragonMenuDragonWorkArea* pWorkArea)
 {
-    PDS_unimplemented("dragonMenuDragonDelete");
+    loadDragonSub1(pWorkArea->m0);
+    setupDragonForTown(&gDragonState->m28_dragon3dModel);
+    setupModelAnimation(&gDragonState->m28_dragon3dModel, pWorkArea->m28_animation);
+
+    for (u32 i = pWorkArea->m2C; i != 0; i--)
+    {
+        stepAnimation(&gDragonState->m28_dragon3dModel);
+    }
+    updateAnimationMatrices(&gDragonState->m78_animData, &gDragonState->m28_dragon3dModel);
+
+    setVdp2VramU16(0x25002, pWorkArea->m30);
+
+    // Restore graphic engine state (fixes VDP1 offset)
+    restoreGraphicEngineState(&pWorkArea->m34);
 }
 
 p_workArea createDragonMenuMorhTask(p_workArea pWorkArea)
