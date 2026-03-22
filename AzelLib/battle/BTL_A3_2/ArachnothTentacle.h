@@ -15,6 +15,7 @@ struct sArachnothTentacle : public s_workAreaTemplateWithCopy<sArachnothTentacle
     sVec3_FP* m178_rotation;
     sVec3_FP m17C_offset;
     s32 m188_currentMode;
+    s32 m18C;
     fixedPoint m190;
     fixedPoint m194;
     // size 0x198
@@ -23,3 +24,4 @@ struct sArachnothTentacle : public s_workAreaTemplateWithCopy<sArachnothTentacle
 sArachnothTentacle* createArachnothTentacle(s_workAreaCopy* pParent, sVec3_FP* position, sVec3_FP* rotation, sVec3_FP* offset);
 void arachnothTentacle_setMode1(sArachnothTentacle* pThis);
 void arachnothTentacle_setMode2(sArachnothTentacle* pThis);
+void arachnoth_disableTentacle(sArachnothTentacle* pThis);

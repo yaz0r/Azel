@@ -1,5 +1,8 @@
 #include "PDS.h"
 #include "ArachnothTentacle.h"
+#include "battle/battleManager.h"
+#include "battle/battleOverlay.h"
+#include "battle/battleDragon.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/graphicalObject.h"
 #include "kernel/rayDisplay.h"
@@ -12,7 +15,7 @@ void arachnothTentacle_updateMode1(sArachnothTentacle* pThis) {
 
     pThis->mC_segments[0].m0[0] += MTH_Mul((iVar1 + pThis->m174_position->m0_X) - pThis->mC_segments[0].m18[0], 0x28f);
     pThis->mC_segments[0].m0[1] += MTH_Mul((iVar2 + pThis->m174_position->m4_Y) - pThis->mC_segments[0].m18[1], 0x28f);
-    pThis->mC_segments[0].m0[2] += MTH_Mul((iVar2 + pThis->m174_position->m8_Z) - pThis->mC_segments[0].m18[2], 0x28f);
+    pThis->mC_segments[0].m0[2] += MTH_Mul((rot3 + pThis->m174_position->m8_Z) - pThis->mC_segments[0].m18[2], 0x28f);
 
     int segmentIndex = MTH_Mul(randomNumber() >> 0x10, 9);
     pThis->mC_segments[segmentIndex].m0[0] += MTH_Mul(randomNumber() >> 0x10, 0x666) - 0x333;
@@ -20,10 +23,50 @@ void arachnothTentacle_updateMode1(sArachnothTentacle* pThis) {
     pThis->mC_segments[segmentIndex].m0[2] += MTH_Mul(randomNumber() >> 0x10, 0x666) - 0x333;
 }
 
+// 0605c41e
 void arachnothTentacle_updateMode2(sArachnothTentacle* pThis) {
-    Unimplemented();
+    sVec3_FP* dragonPos = &gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+
+    fixedPoint dX = MTH_Mul(dragonPos->m0_X - pThis->mC_segments[0].m18[0], 0xCCC);
+    fixedPoint dY = MTH_Mul(dragonPos->m4_Y - pThis->mC_segments[0].m18[1], 0xCCC);
+    fixedPoint dZ = MTH_Mul(dragonPos->m8_Z - pThis->mC_segments[0].m18[2], 0xCCC);
+
+    pThis->mC_segments[0].m0[0] += dX;
+    pThis->mC_segments[0].m0[1] += dY;
+    pThis->mC_segments[0].m0[2] += dZ;
+
+    if ((randomNumber() & 0x1F) == 0)
+    {
+        int segmentIndex = MTH_Mul(randomNumber() >> 0x10, 9);
+        pThis->mC_segments[segmentIndex].m0[0] += MTH_Mul(randomNumber() >> 0x10, 0x666) - 0x333;
+        pThis->mC_segments[segmentIndex].m0[1] += MTH_Mul(randomNumber() >> 0x10, 0x666) - 0x333;
+        pThis->mC_segments[segmentIndex].m0[2] += MTH_Mul(randomNumber() >> 0x10, 0x666) - 0x333;
+    }
 }
 
+// 0605c58c
+void arachnothTentacle_updateMode3(sArachnothTentacle* pThis) {
+    fixedPoint cosValue = getCos(pThis->m178_rotation->m0_X.toInteger());
+    fixedPoint iVar1 = MTH_Mul_5_6(cosValue, getSin(pThis->m178_rotation->m4_Y.toInteger()), 0xCC);
+    fixedPoint iVar2 = MTH_Mul(-getSin(pThis->m178_rotation->m0_X.toInteger()), 0xCC);
+    fixedPoint iVar3 = MTH_Mul_5_6(cosValue, getCos(pThis->m178_rotation->m4_Y.toInteger()), 0xCC);
+
+    for (int i = 0; i < 10; i++) {
+        pThis->mC_segments[i].m0[0] += iVar1;
+        pThis->mC_segments[i].m0[1] += iVar2;
+        pThis->mC_segments[i].m0[2] += iVar3;
+
+        fixedPoint dX = MTH_Mul(pThis->m174_position->m0_X - pThis->mC_segments[i].m18[0], 0x28f);
+        fixedPoint dY = MTH_Mul(pThis->m174_position->m4_Y - pThis->mC_segments[i].m18[1], 0x28f);
+        fixedPoint dZ = MTH_Mul(pThis->m174_position->m8_Z - pThis->mC_segments[i].m18[2], 0x28f);
+
+        pThis->mC_segments[i].m0[0] += dX;
+        pThis->mC_segments[i].m0[1] += dY;
+        pThis->mC_segments[i].m0[2] += dZ;
+    }
+}
+
+// 0605b608
 void arachnothTentacle_update(sArachnothTentacle* pThis) {
     switch (pThis->m188_currentMode) {
     case 0:
@@ -33,6 +76,21 @@ void arachnothTentacle_update(sArachnothTentacle* pThis) {
         break;
     case 2:
         arachnothTentacle_updateMode2(pThis);
+        break;
+    case 3:
+        arachnothTentacle_updateMode3(pThis);
+        if (--pThis->m18C < 1)
+        {
+            Unimplemented(); // task deletion
+            return;
+        }
+        break;
+    case 4:
+        if (--pThis->m18C < 1)
+        {
+            Unimplemented(); // task deletion
+            return;
+        }
         break;
     default:
         assert(0);
@@ -68,14 +126,40 @@ void arachnothTentacle_update(sArachnothTentacle* pThis) {
         temp[1] = MTH_Mul(temp[1], pThis->m190);
         temp[2] = MTH_Mul(temp[2], pThis->m190);
 
-        pThis->mC_segments[i - 1].m0 += temp;
+        pThis->mC_segments[i].m0 += temp;
     }
 
     if (pThis->m188_currentMode == 3) {
-        Unimplemented();
+        // Mode 3: velocity integration with damping (0x1999)
+        for (int i = 0; i < 10; i++) {
+            pThis->mC_segments[i].mC += pThis->mC_segments[i].m0;
+
+            sVec3_FP drag;
+            drag[0] = MTH_Mul(pThis->mC_segments[i].mC[0], 0x1999);
+            drag[1] = MTH_Mul(pThis->mC_segments[i].mC[1], 0x1999);
+            drag[2] = MTH_Mul(pThis->mC_segments[i].mC[2], 0x1999);
+            pThis->mC_segments[i].mC -= drag;
+
+            pThis->mC_segments[i].m18 += pThis->mC_segments[i].mC;
+            pThis->mC_segments[i].m0.zeroize();
+        }
     }
     else {
-        Unimplemented();
+        // Modes 0,1,2: velocity integration with gravity and damping (m194)
+        for (int i = 0; i < 10; i++) {
+            pThis->mC_segments[i].m0[1] += -0x28; // gravity
+
+            pThis->mC_segments[i].mC += pThis->mC_segments[i].m0;
+
+            sVec3_FP drag;
+            drag[0] = MTH_Mul(pThis->mC_segments[i].mC[0], pThis->m194);
+            drag[1] = MTH_Mul(pThis->mC_segments[i].mC[1], pThis->m194);
+            drag[2] = MTH_Mul(pThis->mC_segments[i].mC[2], pThis->m194);
+            pThis->mC_segments[i].mC -= drag;
+
+            pThis->mC_segments[i].m18 += pThis->mC_segments[i].mC;
+            pThis->mC_segments[i].m0.zeroize();
+        }
     }
 }
 
@@ -140,8 +224,8 @@ sArachnothTentacle* createArachnothTentacle(s_workAreaCopy* pParent, sVec3_FP* p
     }
 
     pNewTask->m188_currentMode = 0;
-    pNewTask->m190 = MTH_Mul(randomNumber() >> 0x10, 0x51F);
-    pNewTask->m194 = MTH_Mul(randomNumber() >> 0x10, 0x51F);
+    pNewTask->m190 = MTH_Mul(randomNumber() >> 0x10, 0x51F) + 0xA3D;
+    pNewTask->m194 = MTH_Mul(randomNumber() >> 0x10, 0x28F) + 0x3D7;
 
     return pNewTask;
 }
@@ -152,4 +236,10 @@ void arachnothTentacle_setMode1(sArachnothTentacle* pThis) {
 
 void arachnothTentacle_setMode2(sArachnothTentacle* pThis) {
     pThis->m188_currentMode = 2;
+}
+
+// 0605c770
+void arachnoth_disableTentacle(sArachnothTentacle* pThis) {
+    pThis->m188_currentMode = 3;
+    pThis->m18C = 0x96;
 }

@@ -175,10 +175,49 @@ void arachnothSubPart_updateTargetablesPosition(sArachnothSubModel* pThis)
     }
 }
 
+// 06054cce
+static s32 arachnothSubPart_checkTargetableDamage(sArachnothSubModel* pThis, s32 targetableIndex)
+{
+    sBattleTargetable& targetable = pThis->m58_targetables[targetableIndex];
+    s32 damage = 0;
+
+    if (targetable.m50_flags & 0x80000)
+    {
+        pThis->m6C = 1;
+        targetable.m50_flags &= ~0x80000;
+        targetable.m50_flags &= ~0x20000;
+        damage = (s32)targetable.m58;
+
+        if (damage != 0)
+        {
+            pThis->m70_flags |= 0x800000;
+        }
+
+        Unimplemented(); // FUN_0605f142 — damage number popup
+
+        if (damage != 0)
+        {
+            s8 impactForce = targetable.m5E_impactForce;
+            if (impactForce == 0 && pThis->m80) { pThis->m80(pThis, targetableIndex); }
+            else if (impactForce == 1 && pThis->m84) { pThis->m84(pThis, targetableIndex); }
+            else if (impactForce == 2 && pThis->m88) { pThis->m88(pThis, targetableIndex); }
+            else if (impactForce == 3 && pThis->m8C) { pThis->m8C(pThis, targetableIndex); }
+        }
+    }
+
+    return damage;
+}
+
+// 06054c9a
 s32 arachnothSubPart_getTargetablesDamage(sArachnothSubModel* pThis)
 {
-    Unimplemented();
-    return 0;
+    pThis->m6C = 0;
+    s32 totalDamage = 0;
+    for (s32 i = 0; i < pThis->m64; i++)
+    {
+        totalDamage += arachnothSubPart_checkTargetableDamage(pThis, i);
+    }
+    return totalDamage;
 }
 
 s32 arachnothSubPartGetDamage(sArachnothSubModel* pThis)

@@ -112,3 +112,4 @@ void setRotationScrollOffset(s32 scrollX, s32 scrollY);
 void buildRotationMatrixPitchYaw(fixedPoint pitchAngle, fixedPoint yawAngle);
 void writeRotationParams(fixedPoint rollAngle);
 s32 computeRotationScrollOffset();
+void buildGroundRotation(s_BTL_A3_Env* pThis);

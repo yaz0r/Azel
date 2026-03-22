@@ -71,6 +71,12 @@ struct sArachnothFormation : public s_workAreaTemplateWithCopy<sArachnothFormati
     sVec3_FP m2D8;
     sVec3_FP m2E4;
     std::array<std::array<sArachnothTentacle*, 3>, 2> m314_tentacles;
+    s32 m32C;
+    s32 m330_idleJitterX;
+    s32 m334_idleJitterY;
+    s32 m338_idleJitterZ;
+    s32 m33C;
+    s32 m340;
     std::array<s32, 2> m344;
     //size 0x34C
 };
@@ -184,9 +190,19 @@ void arachnoth_enterMode6(s16 param1)
     gBattleManager->m10_battleOverlay->m4_battleEngine->m38E = 0;
 }
 
+// 060587d0
 void arachnoth_updateState0_sub6(sArachnothFormation* pThis)
 {
-    Unimplemented();
+    pThis->m278_targetedQuadrant = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
+    pThis->m27C[1] = pThis->m278_targetedQuadrant << 0x1A;
+    pThis->m230 = *pThis->m240;
+    arachnoth_setEnragedIdleAnimation(pThis);
+    Unimplemented(); // FUN_060562c6 — quadrant battle radar reset
+    pThis->m2BC_attackTimer = 0x1FE;
+    pThis->m2B0_arachnothState = 8;
+    pThis->m2C0_currentAttackState = 0;
+    pThis->m2C4_currentAttackDelay = 0;
+    pThis->m2C8 = 0;
 }
 
 void arachnoth_updateState0_sub3(sArachnothFormation* pThis)
@@ -247,7 +263,12 @@ void arachnoth_updateState0_sub3(sArachnothFormation* pThis)
 
     if ((mode != 1) && (mode != 2) && (mode != 3) && pThis->m314_tentacles[0][0])
     {
-        Unimplemented();
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 3; j++) {
+                arachnoth_disableTentacle(pThis->m314_tentacles[i][j]);
+                pThis->m314_tentacles[i][j] = nullptr;
+            }
+        }
     }
 
     switch (mode)
@@ -529,9 +550,27 @@ bool arachnoth_isCurrentAttackDone(sArachnothFormation* pThis)
     return false;
 }
 
+// 06056a1e
 void arachnoth_idle_update(sArachnothFormation* pThis)
 {
-    Unimplemented();
+    if ((randomNumber() & 0x7F) == 0) pThis->m330_idleJitterX = 0xF;
+    if ((randomNumber() & 0x7F) == 0) pThis->m330_idleJitterX = -0xF;
+    if ((randomNumber() & 0x7F) == 0) pThis->m334_idleJitterY = 0xF;
+    if ((randomNumber() & 0x7F) == 0) pThis->m334_idleJitterY = -0xF;
+    if ((randomNumber() & 0x7F) == 0) pThis->m338_idleJitterZ = 0xF;
+    if ((randomNumber() & 0x7F) == 0) pThis->m338_idleJitterZ = -0xF;
+
+    if (pThis->m330_idleJitterX > 0) { pThis->m20C[0] += 0xCC; pThis->m330_idleJitterX--; }
+    if (pThis->m330_idleJitterX < 0) { pThis->m20C[0] -= 0xCC; pThis->m330_idleJitterX++; }
+    if (pThis->m334_idleJitterY > 0) { pThis->m20C[1] += 0xCC; pThis->m334_idleJitterY--; }
+    if (pThis->m334_idleJitterY < 0) { pThis->m20C[1] -= 0xCC; pThis->m334_idleJitterY++; }
+    if (pThis->m338_idleJitterZ > 0) { pThis->m20C[2] += 0xCC; pThis->m338_idleJitterZ--; }
+    if (pThis->m338_idleJitterZ < 0) { pThis->m20C[2] -= 0xCC; pThis->m338_idleJitterZ++; }
+
+    if ((randomNumber() & 0x3F) == 0) pThis->m254[0] += 0xB60B6;
+    if ((randomNumber() & 0x3F) == 0) pThis->m254[0] -= 0xB60B6;
+    if ((randomNumber() & 0x3F) == 0) pThis->m254[2] += 0xB60B6;
+    if ((randomNumber() & 0x3F) == 0) pThis->m254[2] -= 0xB60B6;
 }
 
 void arachnoth_createChargeDebrits(sArachnothFormation* pThis, npcFileDeleter* param_2, s_3dModel* p3dModel, sVec3_FP* position, sVec3_FP* rotation, s32 param6, s32 param7, s32 param8, s32 param9, s32 param10, s32 param11, s32 param12, s32 param13, s32 param14)
@@ -807,7 +846,7 @@ void arachnoth_tentacleAttack_update(sArachnothFormation* pThis)
 
         pThis->m2CC[0] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x3C000);
         pThis->m2CC[1] = MTH_Mul(-getSin(pThis->m2D8[0].getInteger()), 0x3C000);
-        pThis->m2CC[2] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x3C000);
+        pThis->m2CC[2] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getCos(pThis->m2D8[1].getInteger()), 0x3C000);
 
         pThis->m2CC += *pThis->m240;
         break;
@@ -824,7 +863,7 @@ void arachnoth_tentacleAttack_update(sArachnothFormation* pThis)
 
         pThis->m2CC[0] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x3C000);
         pThis->m2CC[1] = MTH_Mul(-getSin(pThis->m2D8[0].getInteger()), 0x3C000);
-        pThis->m2CC[2] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x3C000);
+        pThis->m2CC[2] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getCos(pThis->m2D8[1].getInteger()), 0x3C000);
 
         pThis->m2CC += *pThis->m240;
         break;
@@ -835,7 +874,7 @@ void arachnoth_tentacleAttack_update(sArachnothFormation* pThis)
 
 void arachnothFormation_updateSub10(sArachnothFormation* pThis)
 {
-    Unimplemented();
+    arachnoth_resumeAnimationAfterDamage(pThis);
 }
 
 void arachnoth_enterUnconsciousState(sArachnothFormation* pThis)
@@ -884,7 +923,12 @@ void arachnoth_idle_finish(sArachnothFormation* pThis) {
                 {
                     if (pThis->m314_tentacles[0][0])
                     {
-                        assert(0);
+                        for (int i = 0; i < 2; i++) {
+                            for (int j = 0; j < 3; j++) {
+                                arachnoth_disableTentacle(pThis->m314_tentacles[i][j]);
+                                pThis->m314_tentacles[i][j] = nullptr;
+                            }
+                        }
                     }
                     arachnoth_startEnrage(pThis);
                 }
@@ -932,7 +976,12 @@ void arachnoth_tentacleAttack_finish(sArachnothFormation* pThis) {
     pThis->m2B0_arachnothState = 0;
     if (pThis->m314_tentacles[0][0])
     {
-        Unimplemented();
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 3; j++) {
+                arachnoth_disableTentacle(pThis->m314_tentacles[i][j]);
+                pThis->m314_tentacles[i][j] = nullptr;
+            }
+        }
     }
     pThis->m2B8 = 0;
     arachnothUpdateQuadrants(pThis);
@@ -1017,7 +1066,17 @@ void arachnoth_updateState(sArachnothFormation* pThis)
         }
         break;
     case 7: // unconscious
-        Unimplemented();
+        // 0605a336
+        pThis->m288[0] -= 0x20;
+        if (pThis->m298_life < 1)
+        {
+            pThis->m2BC_attackTimer = 0;
+            arachnoth_updateState0_sub6(pThis);
+        }
+        if (arachnoth_isCurrentAttackDone(pThis))
+        {
+            arachnoth_updateState0_sub3(pThis);
+        }
         break;
     default:
         assert(0);
@@ -1041,12 +1100,94 @@ void arachnothFormation_updateSub9(sArachnothFormation* pThis, sVec3_FP* positio
     Unimplemented();
 }
 
+// 0605680a
+static void arachnoth_setIdleAnimation(sArachnothFormation* pThis)
+{
+    arachnothInitSubModelAnimation(&pThis->m8_normalBody, 0, -1);
+    arachnothInitSubModelAnimation(&pThis->m98_poisonDart, 0, -1);
+    pThis->m1B8_currentActiveModel = &pThis->m8_normalBody;
+}
+
+// 06056834
+static void arachnoth_setEnragedIdleAnimation(sArachnothFormation* pThis)
+{
+    arachnothInitSubModelAnimation(&pThis->m8_normalBody, 1, -1);
+    arachnothInitSubModelAnimation(&pThis->m98_poisonDart, 1, -1);
+    pThis->m1B8_currentActiveModel = &pThis->m8_normalBody;
+}
+
+// 0605685e
+static void arachnoth_damageReactionNormal(sArachnothFormation* pThis)
+{
+    arachnothInitSubModelAnimation(&pThis->m8_normalBody, 2, -1);
+    arachnothInitSubModelAnimation(&pThis->m98_poisonDart, 2, -1);
+    pThis->m1B8_currentActiveModel = &pThis->m8_normalBody;
+    pThis->m2B4 = 0x39;
+}
+
+// 0605693e
+static void arachnoth_damageReactionUnconscious(sArachnothFormation* pThis)
+{
+    arachnothInitSubModelAnimation(&pThis->m8_normalBody, 7, -1);
+    arachnothInitSubModelAnimation(&pThis->m98_poisonDart, 4, -1);
+    pThis->m1B8_currentActiveModel = &pThis->m8_normalBody;
+    pThis->m2B4 = 0x21;
+}
+
+// 06056914
+static void arachnoth_setUnconsciousAnimation(sArachnothFormation* pThis)
+{
+    arachnothInitSubModelAnimation(&pThis->m8_normalBody, 6, -1);
+    arachnothInitSubModelAnimation(&pThis->m98_poisonDart, 3, -1);
+    pThis->m1B8_currentActiveModel = &pThis->m8_normalBody;
+}
+
+// 060569a0
+static void arachnoth_displayText(s16 textIndex, s16 duration)
+{
+    sBattleTextDisplayTask* pDisplayText = gBattleManager->m10_battleOverlay->m14_textDisplay;
+    if (pDisplayText && pDisplayText->m0_texts.m_offset)
+    {
+        pDisplayText->m14 = duration;
+        pDisplayText->m10 = textIndex;
+        createDisplayStringBorromScreenTask(pDisplayText, &pDisplayText->m8, -pDisplayText->m14, readSaturnEA(pDisplayText->m0_texts + pDisplayText->m10 * 4));
+    }
+}
+
+// 06055ddc
+static void arachnoth_resumeAnimationAfterDamage(sArachnothFormation* pThis)
+{
+    if (pThis->m2B0_arachnothState == 7)
+    {
+        arachnoth_setUnconsciousAnimation(pThis);
+    }
+    else if (pThis->m2AC_enrageState == 0)
+    {
+        arachnoth_setIdleAnimation(pThis);
+    }
+    else if (pThis->m2AC_enrageState == 1)
+    {
+        arachnoth_setEnragedIdleAnimation(pThis);
+    }
+}
+
 void arachnothFormation_update(sArachnothFormation* pThis)
 {
     s32 damageTaken = arachnothSubPartGetDamage(&pThis->m8_normalBody) + arachnothSubPartGetDamage(&pThis->m98_poisonDart);
     if (damageTaken > 0)
     {
-        assert(0);
+        playSystemSoundEffect(0x6E);
+        pThis->m298_life -= (s16)damageTaken;
+        pThis->m2A0 = 0x5A;
+        if (pThis->m2B0_arachnothState == 7)
+        {
+            arachnoth_damageReactionUnconscious(pThis);
+        }
+        else
+        {
+            arachnoth_damageReactionNormal(pThis);
+        }
+        pThis->m2A8 += damageTaken;
     }
 
     if (pThis->m2A0)
@@ -1061,7 +1202,16 @@ void arachnothFormation_update(sArachnothFormation* pThis)
 
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 && (pThis->m2A4 == 1))
     {
-        assert(0);
+        if (pThis->m2A8 < 1)
+        {
+            arachnoth_displayText(1, 0x13);
+        }
+        else
+        {
+            Unimplemented(); // FUN_0605f0d8 — damage number popup task
+        }
+        pThis->m2A4 = 0;
+        pThis->m2A8 = 0;
     }
 
     if (pThis->m1B8_currentActiveModel->m74 == 1)
@@ -1087,7 +1237,7 @@ void arachnothFormation_update(sArachnothFormation* pThis)
         pThis->m2B4--;
         if (pThis->m2B4 == 0)
         {
-            assert(0);
+            arachnoth_resumeAnimationAfterDamage(pThis);
         }
     }
 
@@ -1345,6 +1495,12 @@ void createArachnothFormation(s_workAreaCopy* pParent, u32 arg0, u32 arg1)
 
     sArachnothFormation* pThis = createSubTaskWithCopy<sArachnothFormation>(pParent, &definition);
     pThis->m344.fill(0);
+    pThis->m32C = 0;
+    pThis->m330_idleJitterX = 0;
+    pThis->m334_idleJitterY = 0;
+    pThis->m338_idleJitterZ = 0;
+    pThis->m33C = 0;
+    pThis->m340 = 0;
     allocateNPC(pThis, 8);
     pThis->m0_fileBundle = dramAllocatorEnd[8].mC_fileBundle->m0_fileBundle;
 

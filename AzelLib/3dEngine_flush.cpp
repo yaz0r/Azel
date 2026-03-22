@@ -2,6 +2,7 @@
 #include "renderer/renderer_gl.h"
 #include "processModel.h"
 #include "debugWindows.h"
+#include "kernel/rayDisplay.h"
 
 #include <bx/math.h>
 
@@ -666,6 +667,8 @@ void flushObjectsToDrawList()
         if (ImGui::Begin("Objects", &gDebugWindows.objects))
         {
             ImGui::Checkbox("Smooth Gouraud (per-vertex depth + interpolated falloff)", &gSmoothGouraud);
+            extern bool gDirectRayRendering;
+            ImGui::Checkbox("Direct 3D ray rendering (native resolution + depth)", &gDirectRayRendering);
             ImGui::Separator();
             for (int i = 0; i < objectRenderList.size(); i++)
             {
@@ -708,6 +711,10 @@ void flushObjectsToDrawList()
     TracyPlot("ObjectRenderList size", (int64_t)objectRenderList.size());
 
     objectRenderList.clear();
+
+    bgfx::setMarker("Start ray quads 3D");
+    flushRayQuads3D();
+    bgfx::setMarker("Finish ray quads 3D");
 
     bgfx::setMarker("Start debug quads");
     for (int i = 0; i < debugQuads.size(); i++)
