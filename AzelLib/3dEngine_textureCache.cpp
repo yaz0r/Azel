@@ -14,9 +14,62 @@ struct s_cachedTexture
     u16 CMDSRCA;
     u16 CMDSIZE;
     bgfx::TextureHandle m_handle;
+    u32 vdp1Start; // byte offset in VDP1 VRAM
+    u32 vdp1End;
 };
 
 std::unordered_map<u64, s_cachedTexture> textureCache;
+
+static void computeVdp1Range(u16 cmdsrca, u16 cmdsize, u16 cmdpmod, u32& start, u32& end)
+{
+    start = (u32)cmdsrca << 3;
+    u32 width = (cmdsize & 0x3F00) >> 5;
+    u32 height = cmdsize & 0xFF;
+    int colorMode = (cmdpmod >> 3) & 0x7;
+    u32 size;
+    if (colorMode <= 1)
+        size = (width * height) / 2; // 4bpp
+    else if (colorMode == 5)
+        size = width * height * 2; // 16bpp
+    else
+        size = width * height; // 8bpp
+    end = start + size;
+}
+
+void clearVdp1TextureCache()
+{
+    for (auto& entry : textureCache)
+    {
+        if (bgfx::isValid(entry.second.m_handle))
+        {
+            bgfx::destroy(entry.second.m_handle);
+        }
+    }
+    textureCache.clear();
+}
+
+void invalidateVdp1TextureRange(u32 vdp1Offset, u32 size)
+{
+    u32 rangeStart = vdp1Offset;
+    u32 rangeEnd = vdp1Offset + size;
+
+    std::vector<u64> toRemove;
+    for (auto& entry : textureCache)
+    {
+        if (entry.second.vdp1Start < rangeEnd && entry.second.vdp1End > rangeStart)
+        {
+            if (bgfx::isValid(entry.second.m_handle))
+            {
+                bgfx::destroy(entry.second.m_handle);
+            }
+            toRemove.push_back(entry.first);
+        }
+    }
+    for (auto key : toRemove)
+    {
+        textureCache.erase(key);
+    }
+}
 
 #define SAT2YAB1(alpha,temp)      (alpha << 24 | (temp & 0x1F) << 3 | (temp & 0x3E0) << 6 | (temp & 0x7C00) << 9)
 
@@ -252,6 +305,7 @@ bgfx::TextureHandle getTextureForQuadBGFX(s_quad& quad)
     newTexture.CMDCOLR = quad.CMDCOLR;
     newTexture.CMDSRCA = quad.CMDSRCA;
     newTexture.CMDSIZE = quad.CMDSIZE;
+    computeVdp1Range(quad.CMDSRCA, quad.CMDSIZE, quad.CMDPMOD, newTexture.vdp1Start, newTexture.vdp1End);
 
     u16 textureWidth;
     u16 textureHeight;

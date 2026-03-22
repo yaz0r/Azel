@@ -3,6 +3,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 #include "commonOverlay.h"
+#include "3dEngine_textureCache.h"
 #include "kernel/vdp1Allocator.h"
 
 sHotpointBundle* readRiderDefinitionSub(sSaturnPtr ptrEA); // TODO cleanup
@@ -434,6 +435,9 @@ void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, &gDragonModel, 0x2400);
     loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, getVdp1Pointer(0x25C12000), 0);
 
+    // VDP1 VRAM content changed at fixed address — invalidate cached textures in this range
+    invalidateVdp1TextureRange(0x12000, 0x3D00);
+
     createDragon3DModel(pWorkArea, dragonLevel);
 }
 
@@ -479,10 +483,11 @@ void vdp1Free(u8* ptr)
     s_vdp1AllocationNode* pNode = (s_vdp1AllocationNode*)ptr;
     if (!pNode) return;
 
-    // clear the VDP1 VRAM region being freed
+    // clear the VDP1 VRAM region being freed and invalidate cached textures
     u32 vramOffset = (u32)pNode->m4_vdp1Memory << 3;
     u32 vramSize = (u32)pNode->m6_size << 3;
     memset(getVdp1Pointer(0x25C00000 + vramOffset), 0, vramSize);
+    invalidateVdp1TextureRange(vramOffset, vramSize);
 
     u16 nodeOffset = pNode->m4_vdp1Memory;
 

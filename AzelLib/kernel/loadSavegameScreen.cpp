@@ -5,6 +5,7 @@
 #include "loadSavegameScreen.h"
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
+#include "3dEngine_textureCache.h"
 
 struct sSaveProgressTask* createSaveProgressTask(struct sSaveTask* parent);
 
@@ -189,10 +190,15 @@ p_workArea initLoadSavegameScreen(p_workArea parent, s32)
     return createSubTaskWithArg<sLoadSavegameScreen, p_workArea>(parent, parent);
 }
 
+// 06018ba4
 u8* backupMemoryForSaveScreen()
 {
-    Unimplemented();
-    return nullptr;
+    u8* buffer = dramAllocate(0x1E800);
+    addToMemoryLayout(buffer, 0x1E800);
+    memcpy(buffer, getVdp1Pointer(0x25C12000), 0x3D00);
+    memcpy(buffer + 0x3D00, getVdp2Vram(0x20000), 0x1A900);
+    memcpy(buffer + 0x1E600, getVdp2Cram(0xA00), 0x200);
+    return buffer;
 }
 
 void applyLayerDisplayConfig(const std::vector<std::array<s32, 2>> & r4)
@@ -1160,9 +1166,17 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
         Unimplemented();
     }
 
+    // 06019bd4
     static void Delete(sSaveTask* pThis)
     {
-        Unimplemented();
+        //clearSaveText(pThis->m10); // TODO: unload SAVE.FNT
+        vblankData.m14_numVsyncPerFrame = pThis->m0;
+        u8* backup = pThis->mCC;
+        memcpy(getVdp1Pointer(0x25C12000), backup, 0x3D00);
+        memcpy(getVdp2Vram(0x20000), backup + 0x3D00, 0x1A900);
+        memcpy(getVdp2Cram(0xA00), backup + 0x1E600, 0x200);
+        dramFree(backup);
+        invalidateVdp1TextureRange(0x12000, 0x3D00);
     }
 
     s32 m0;
