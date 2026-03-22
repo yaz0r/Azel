@@ -5,6 +5,7 @@
 #include "town/townScript.h"
 #include "town/townEdge.h"
 #include "town/townMainLogic.h"
+#include "town/exca/twn_exca.h"
 #include "kernel/vdp1Allocator.h"
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
@@ -261,12 +262,10 @@ static const char* listOfFilesToLoad[] = {
     nullptr
 };
 
+// 06054292 — identical to startExcaBackgroundTask (same excavation environment)
 static void startE006BackgroundTask(p_workArea pThis)
 {
-    Unimplemented();
-
-    // hack: to remove title screen
-    reinitVdp2();
+    startExcaBackgroundTask(pThis);
 }
 
 void setupVdp1Proj(fixedPoint fov)

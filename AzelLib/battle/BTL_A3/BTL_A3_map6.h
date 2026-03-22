@@ -23,6 +23,7 @@ struct s_BTL_A3_Env : public s_workAreaTemplate<s_BTL_A3_Env>
 };
 
 //TODO: move to kernel
+void setupRotationMapPlanes(int rotationMapIndex, const std::array<u32, 16>& planes);
 void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes);
 void setupScrollAndRotation(int p1, void* p2, void* p3, u8* coefficientTableAddress, u8 p5);
 void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, u8* coefficientTableAddress, u8 p5);

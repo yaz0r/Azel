@@ -960,6 +960,20 @@ static void renderLayerCPU_RBG0(
     s32 coefAccum_A = KAst_A;
     s32 coefAccum_B = pTB ? truncFP(pTB->m54) : 0;
 
+    // Layer window clipping for RBG0 (WCTLC)
+    // When enabled, pixels outside/inside the window rectangle are not drawn
+    u16 wctlc = vdp2Controls.m4_pendingVdp2Regs->mD4_WCTLC;
+    bool layerWnd0Enabled = (wctlc & 0x2) != 0;
+    bool layerWnd0Area = (wctlc & 0x1) != 0; // 0=draw outside, 1=draw inside
+    struct { int xstart, ystart, xend, yend; } layerWnd = {};
+    if (layerWnd0Enabled)
+    {
+        layerWnd.xstart = (vdp2Controls.m4_pendingVdp2Regs->mC0_WPSX0 >> 1) & 0x1FF;
+        layerWnd.ystart = vdp2Controls.m4_pendingVdp2Regs->mC2_WPSY0 & 0x1FF;
+        layerWnd.xend = (vdp2Controls.m4_pendingVdp2Regs->mC4_WPEX0 >> 1) & 0x1FF;
+        layerWnd.yend = vdp2Controls.m4_pendingVdp2Regs->mC6_WPEY0 & 0x1FF;
+    }
+
     // Window setup for RPMD=3 (rotation parameter window switching)
     // WCTLD controls which window(s) select between param A and B
     u16 wctld = vdp2Controls.m4_pendingVdp2Regs->mD6_WCTLD;
@@ -1137,6 +1151,21 @@ static void renderLayerCPU_RBG0(
                 mapX = (rawX >> 16) & (s32)xmask_B;
                 mapY = (rawY >> 16) & (s32)ymask_B;
             }
+
+            // Layer window clipping: skip pixel if outside/inside the window
+            if (layerWnd0Enabled)
+            {
+                bool insideWnd = ((int)i >= layerWnd.xstart && (int)i <= layerWnd.xend &&
+                                  (int)j >= layerWnd.ystart && (int)j <= layerWnd.yend);
+                if (layerWnd0Area && !insideWnd) continue;  // draw inside only, pixel is outside
+                if (!layerWnd0Area && insideWnd) continue;  // draw outside only, pixel is inside
+            }
+
+            // HACK: skip plane A when coef table address is 0 and RPMD=2.
+            // The KTAOF address calculation doesn't match the actual coefficient
+            // VRAM location — needs proper investigation of Saturn VDP2 addressing.
+            if (!useB && rpmd == 2 && coeftbladdr_A == 0)
+                continue;
 
             u32 color;
             if (!useB)

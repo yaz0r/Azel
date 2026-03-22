@@ -40,7 +40,7 @@ void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr param_1)
     grid->m290_lightAngle2Initial = grid->m284_lightAngle2;
 }
 
-void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes)
+void setupRotationMapPlanes(int rotationMapIndex, const std::array<u32, 16>& planes)
 {
     u32 characterSize = vdp2Controls.m4_pendingVdp2Regs->m2A_CHCTLB & 0x100;
     u32 patternNameDataSize = vdp2Controls.m4_pendingVdp2Regs->m38_PNCR & 0x8000;
@@ -48,37 +48,17 @@ void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes)
     u32 shiftValue;
     if (patternNameDataSize)
     {
-        // 1 word
         if (characterSize)
-        {
-            // 2x2
-            shiftValue = 11; // 0x800
-        }
+            shiftValue = 11;
         else
-        {
-            // 1x1
-            shiftValue = 13; // 0x2000
-        }
+            shiftValue = 13;
     }
     else
     {
-        // 2 words
         if (characterSize)
-        {
-            // 2x2
-            shiftValue = 12; // 0x1000
-        }
+            shiftValue = 12;
         else
-        {
-            // 1x1
-            shiftValue = 14; // 0x4000
-        }
-    }
-
-    std::array<u32, 16> planes;
-    for (int i = 0; i < 16; i++)
-    {
-        planes[i] = readSaturnU32(inPlanes + i * 4);
+            shiftValue = 14;
     }
 
     u32 mapOffset = (rotateRightR0ByR1(planes[0] + 0xDA200000, shiftValue + 6)) & 7;
@@ -112,6 +92,16 @@ void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes)
     }
 
     vdp2Controls.m_isDirty = 1;
+}
+
+void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes)
+{
+    std::array<u32, 16> planes;
+    for (int i = 0; i < 16; i++)
+    {
+        planes[i] = readSaturnU32(inPlanes + i * 4);
+    }
+    setupRotationMapPlanes(rotationMapIndex, planes);
 }
 
 tCoefficientTable coefficientA0(0x80 * 4);
