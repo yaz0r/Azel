@@ -200,7 +200,7 @@ void battleEngine_restoreCameraAfterEnemyAttack();
 void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const sVec3_FP& param3, const sVec3_FP& param4);
 
 bool battleEngine_isBattleIntroFinished();
-bool battleEngine_UpdateSub7Sub0Sub2Sub0();
+bool battleEngine_isInputAllowed();
 
 void battleEngine_FlagQuadrantBitForSafety(u16 uParm1);
 void battleEngine_FlagQuadrantBitForDanger(u16 uParm1);

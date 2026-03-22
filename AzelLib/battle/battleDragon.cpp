@@ -910,7 +910,7 @@ static u32 s_battleDragon_UpdateAnimationState(s_battleDragon* pThis)
     return local_24;
 }
 
-void s_battleDragon_getRiderRotation(sVec3_FP& outputRotation, const sMatrix4x3& inMatrix)
+void extractEulerRotationFromMatrix(sVec3_FP& outputRotation, const sMatrix4x3& inMatrix)
 {
     outputRotation[0] = atan_FP(-inMatrix.m[1][2]);
     outputRotation[1] = atan2_FP(inMatrix.m[0][2], inMatrix.m[2][2]);
@@ -1014,7 +1014,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
     }
 
     sVec3_FP riderRotation;
-    s_battleDragon_getRiderRotation(riderRotation, gDragonState->m28_dragon3dModel.m3C_boneMatrices[0]);
+    extractEulerRotationFromMatrix(riderRotation, gDragonState->m28_dragon3dModel.m3C_boneMatrices[0]);
     s_battleDragon_UpdateHotPoints();
 
     if (cVar3)

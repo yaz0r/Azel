@@ -490,7 +490,7 @@ void sBaldorSubTask0_update(sBaldorSubTask* pThis)
                 pThis->m_UpdateMethod = sBaldorSubTask0_update1;
                 pThis->m_DrawMethod = sBaldorSubTask0_draw1;
             }
-            else if (battleEngine_UpdateSub7Sub0Sub2Sub0()
+            else if (battleEngine_isInputAllowed()
                 || (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == m0_shootEnemyWithGun)
                 || (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == m6_dragonMoving)
                 || (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == mB_enemyMovingDragon)

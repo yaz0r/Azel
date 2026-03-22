@@ -29,7 +29,7 @@
 
 // TODO: cleanup
 void BattleEnd_deleteSub0();
-void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
+void battleEngine_updateQuadrantFromAngle(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
 
 struct sBattleCinematicBars : public s_workAreaTemplate<sBattleCinematicBars>
 {
@@ -567,7 +567,7 @@ s32 isBattleAutoScroll()
 }
 
 
-void battleEngine_UpdateSub5()
+void battleEngine_snapDragonFacing()
 {
     s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
 
@@ -580,10 +580,10 @@ void battleEngine_UpdateSub5()
             pDragon->m74_targetRotation[1] -= pDragon->m74_targetRotation[1].normalized();
             break;
         case 1:
-            pDragon->m74_targetRotation[1] += 0x4000000 - pDragon->m74_targetRotation[1] & 0xfffffff;
+            pDragon->m74_targetRotation[1] += 0x4000000 - (pDragon->m74_targetRotation[1] & 0xfffffff);
             break;
         case 2:
-            pDragon->m74_targetRotation[1] += 0x8000000 - pDragon->m74_targetRotation[1] & 0xfffffff;
+            pDragon->m74_targetRotation[1] += 0x8000000 - (pDragon->m74_targetRotation[1] & 0xfffffff);
             break;
         case 3:
             pDragon->m74_targetRotation[1] += -0x4000000 - pDragon->m74_targetRotation[1].normalized();
@@ -596,6 +596,7 @@ void battleEngine_UpdateSub5()
     {
         pDragon->m74_targetRotation[1] -= pDragon->m74_targetRotation[1].normalized();
     }
+
 }
 
 void battleEngine_SetBattleMode(eBattleModes param)
@@ -660,7 +661,7 @@ bool battleEngine_isBattleIntroFinished() // 0x20 is indicating battle intro is 
     return 0;
 }
 
-bool battleEngine_UpdateSub7Sub0Sub2Sub0()
+bool battleEngine_isInputAllowed()
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10)
         return 1;
@@ -991,7 +992,7 @@ void monsterMoveDragonSub0(s_battleEngine* pThis)
     }
 }
 
-void battleEngine_UpdateSub7Sub0Sub1_a(s_battleEngine* pThis)
+void battleEngine_enemyForcedMoveUpdate(s_battleEngine* pThis)
 {
     switch (pThis->m38D_battleSubMode)
     {
@@ -1097,7 +1098,7 @@ void battleEngine_UpdateSub7Sub0Sub1_a(s_battleEngine* pThis)
     case 3:
         if (updateInterpolator(&pThis->m2E8_dragonMovementInterpolator2))
         {
-            battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m448, 1);
+            battleEngine_updateQuadrantFromAngle(pThis, pThis->m448, 1);
             battleEngine_convertBattleQuadrantToBattleDirection(pThis);
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m200000 = 0;
             pThis->m394 = 0;
@@ -1165,7 +1166,7 @@ void battleEngine_UpdateSub7Sub0Sub1_a(s_battleEngine* pThis)
     }
 }
 
-void battleEngine_UpdateSub7Sub0Sub1_6(s_battleEngine* pThis)
+void battleEngine_playerOrbitUpdate(s_battleEngine* pThis)
 {
     switch (pThis->m38D_battleSubMode)
     {
@@ -1329,13 +1330,13 @@ void battleEngine_UpdateSub7Sub0Sub1_6(s_battleEngine* pThis)
         // dragon moving
         if (updateInterpolator(&pThis->m2E8_dragonMovementInterpolator2))
         {
-            battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440_battleDirectionAngle, 0);
+            battleEngine_updateQuadrantFromAngle(pThis, pThis->m440_battleDirectionAngle, 0);
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m800 = 1;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
             pThis->m38D_battleSubMode++; // go to state 2 (finished)
             pThis->m384_battleModeDelay = 0;
+            pThis->m394 = 0;
             pThis->m398_currentSelectedEnemy = 0;
-            pThis->m39C_maxSelectableEnemies = 0;
         }
 
         stepInterpolator(&pThis->m27C_dragonMovementInterpolator1);
@@ -1349,9 +1350,20 @@ void battleEngine_UpdateSub7Sub0Sub1_6(s_battleEngine* pThis)
         {
             gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep.toInteger()), 0xaaaaaa);
         }
-        else
+        else if (pThis->m22E_dragonMoveDirection == 2)
         {
             gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2] = MTH_Mul(getSin(pThis->m2E8_dragonMovementInterpolator2.m60_currentStep.toInteger()), -0xaaaaaa);
+        }
+        else
+        {
+            // direction 3 (jump 2 quadrants): no camera tilt, direct position update
+            gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2];
+            pThis->m270_enemyAltitude[1] = pThis->m2E8_dragonMovementInterpolator2.m0_computedValue[1];
+            updateInterpolator(&pThis->m27C_dragonMovementInterpolator1);
+            pThis->m104_dragonPosition[1] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[1] + pThis->m35C_cameraAltitudeMinMax[1];
+            pThis->m164[0] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[0];
+            pThis->m164[2] = pThis->m27C_dragonMovementInterpolator1.m0_computedValue[2];
+            break;
         }
         gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = gBattleManager->m10_battleOverlay->m8_gridTask->mB4_cameraRotation[2];
 
@@ -1375,7 +1387,7 @@ void battleEngine_UpdateSub7Sub0Sub1_6(s_battleEngine* pThis)
     }
 }
 
-void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
+void battleEngine_processMovementMode(s_battleEngine* pThis)
 {
     if (!battleEngine_isPlayerTurnActive()) {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m190[0]++;
@@ -1386,28 +1398,28 @@ void battleEngine_UpdateSub7Sub0Sub1(s_battleEngine* pThis)
     {
     case eBattleModes::m6_dragonMoving:
         gBattleManager->m10_battleOverlay->m4_battleEngine->m190[0]++;
-        battleEngine_UpdateSub7Sub0Sub1_6(pThis);
+        battleEngine_playerOrbitUpdate(pThis);
         break;
     case eBattleModes::mB_enemyMovingDragon:
         gBattleManager->m10_battleOverlay->m4_battleEngine->m190[0]++;
         // fall through
     case eBattleModes::mA:
-        battleEngine_UpdateSub7Sub0Sub1_a(pThis);
+        battleEngine_enemyForcedMoveUpdate(pThis);
         break;
     default:
         return;
     }
 }
 
-void battleEngine_UpdateSub7Sub0Sub2(s_battleEngine* pThis)
+void battleEngine_staticBattleOrbitUpdate(s_battleEngine* pThis)
 {
-    if ((battleEngine_UpdateSub7Sub0Sub2Sub0() != 0) && !gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000 && gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1F])
+    if ((battleEngine_isInputAllowed() != 0) && !gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000 && gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1F])
     {
         assert(0);
     }
 }
 
-void battleEngine_UpdateSub9(s_battleEngine* pThis)
+void battleEngine_computeDragonPosition(s_battleEngine* pThis)
 {
     sVec2_FP aiStack52;
 
@@ -1454,7 +1466,7 @@ void battleEngine_UpdateSub9(s_battleEngine* pThis)
     battleEngine_InitSub3Sub0(pThis);
 }
 
-void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm2, s32 r6)
+void battleEngine_updateQuadrantFromAngle(s_battleEngine* pThis, fixedPoint uParm2, s32 r6)
 {
     uParm2 = uParm2.normalized();
 
@@ -1465,7 +1477,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
                 if (pThis->m22C_dragonCurrentQuadrant != 0)
                 {
                     gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 0x100;
-                    pThis->m22C_dragonCurrentQuadrant = pThis->m22D_dragonPreviousQuadrant;
+                    pThis->m22D_dragonPreviousQuadrant = pThis->m22C_dragonCurrentQuadrant;
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
                 }
                 if (r6 == 0)
@@ -1482,7 +1494,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
                 if (pThis->m22C_dragonCurrentQuadrant != 3)
                 {
                     gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 0x100;
-                    pThis->m22C_dragonCurrentQuadrant = pThis->m22D_dragonPreviousQuadrant;
+                    pThis->m22D_dragonPreviousQuadrant = pThis->m22C_dragonCurrentQuadrant;
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
                 }
                 if (r6 == 0)
@@ -1500,7 +1512,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
             if (pThis->m22C_dragonCurrentQuadrant != 1)
             {
                 gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 0x100;
-                pThis->m22C_dragonCurrentQuadrant = pThis->m22D_dragonPreviousQuadrant;
+                pThis->m22D_dragonPreviousQuadrant = pThis->m22C_dragonCurrentQuadrant;
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
             }
             if (r6 == 0)
@@ -1519,7 +1531,7 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
         if (pThis->m22C_dragonCurrentQuadrant != 2)
         {
             gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 0x100;
-            pThis->m22C_dragonCurrentQuadrant = pThis->m22D_dragonPreviousQuadrant;
+            pThis->m22D_dragonPreviousQuadrant = pThis->m22C_dragonCurrentQuadrant;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
         }
         if (r6 == 0)
@@ -1533,11 +1545,11 @@ void battleEngine_UpdateSub7Sub0Sub3Sub0(s_battleEngine* pThis, fixedPoint uParm
     }
 }
 
-void battleEngine_UpdateSub7Sub0Sub3(s_battleEngine* pThis)
+void battleEngine_detectQuadrantFromAngle(s_battleEngine* pThis)
 {
-    if (battleEngine_UpdateSub7Sub0Sub2Sub0())
+    if (battleEngine_isInputAllowed())
     {
-        battleEngine_UpdateSub7Sub0Sub3Sub0(pThis, pThis->m440_battleDirectionAngle, 0);
+        battleEngine_updateQuadrantFromAngle(pThis, pThis->m440_battleDirectionAngle, 0);
     }
 }
 
@@ -2873,12 +2885,12 @@ void updateBattleIntro(s_battleEngine* pThis)
     }
 }
 
-void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
+void battleEngine_processCommandMenuInput(s_battleEngine* pThis)
 {
     if ((pThis->m388 & 4) == 0)
     {
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies &&
-            battleEngine_UpdateSub7Sub0Sub2Sub0() &&
+            battleEngine_isInputAllowed() &&
             (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD)
             ) {
             if ((pThis->m3B4.m16_combo > 0) && (graphicEngineStatus.m4514.mD8_buttonConfig[2][1] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown))
@@ -2902,7 +2914,7 @@ void battleEngine_UpdateSub7Sub0Sub5(s_battleEngine* pThis)
     }
 }
 
-void battleEngine_UpdateSub7Sub0Sub6(s_battleEngine* pThis)
+void battleEngine_processLaserInput(s_battleEngine* pThis)
 {
     if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000) && (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m10 & 1))
     {
@@ -2910,7 +2922,7 @@ void battleEngine_UpdateSub7Sub0Sub6(s_battleEngine* pThis)
     }
     if (((pThis->m388 & 2) == 0) &&
         (gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies) &&
-        (battleEngine_UpdateSub7Sub0Sub2Sub0())
+        (battleEngine_isInputAllowed())
         )
     {
         if ((pThis->m3B4.m16_combo > 0) && !gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 && (graphicEngineStatus.m4514.mD8_buttonConfig[2][0] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown))
@@ -2937,12 +2949,12 @@ void battleEngine_UpdateSub7Sub0Sub6(s_battleEngine* pThis)
     }
 }
 
-void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
+void battleEngine_processGunInput(s_battleEngine* pThis)
 {
     if ((pThis->m388 & 1) == 0)
     {
         if ((0 < gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies) &&
-            (battleEngine_UpdateSub7Sub0Sub2Sub0() != 0)) {
+            (battleEngine_isInputAllowed() != 0)) {
             if ((pThis->m3B4.m16_combo < 1) ||
                 (((graphicEngineStatus.m4514.mD8_buttonConfig[2][2] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown) == 0 ||
                 ((gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies) < 1))))
@@ -2962,7 +2974,7 @@ void battleEngine_UpdateSub7Sub0Sub7(s_battleEngine* pThis)
     }
 }
 
-s32 battleEngine_UpdateSub7Sub4()
+s32 battleEngine_isInputNotSuppressed()
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m200_suppressBattleInputs)
         return 1;
@@ -2986,24 +2998,24 @@ void initiateDragonBattleMove(int param1, s16 param2)
     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000000_dragonMoving = 1;
 }
 
-void battleEngine_UpdateSub7(s_battleEngine* pThis)
+void battleEngine_MainUpdate(s_battleEngine* pThis)
 {
     battleEngine_ApplyBattleAutoScrollDelta(pThis);
     if (battleEngine_checkBattleCompletion() == 1)
         return;
-    battleEngine_UpdateSub7Sub0Sub1(pThis);
-    battleEngine_UpdateSub7Sub0Sub2(pThis);
-    battleEngine_UpdateSub9(pThis);
-    battleEngine_UpdateSub7Sub0Sub3(pThis);
+    battleEngine_processMovementMode(pThis);
+    battleEngine_staticBattleOrbitUpdate(pThis);
+    battleEngine_computeDragonPosition(pThis);
+    battleEngine_detectQuadrantFromAngle(pThis);
     updateBattleIntro(pThis);
-    battleEngine_UpdateSub7Sub0Sub5(pThis);
-    battleEngine_UpdateSub7Sub0Sub6(pThis);
-    battleEngine_UpdateSub7Sub0Sub7(pThis);
+    battleEngine_processCommandMenuInput(pThis);
+    battleEngine_processLaserInput(pThis);
+    battleEngine_processGunInput(pThis);
 
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies < 1)
         return;
 
-    if (!battleEngine_UpdateSub7Sub4())
+    if (!battleEngine_isInputNotSuppressed())
     {
         pThis->m1BC_dragonYaw = 0;
         pThis->m1B8_dragonPitch = 0;
@@ -3166,25 +3178,25 @@ void battleEngine_Update(s_battleEngine* pThis)
         battleEngine_UpdateSub2(pThis);
         battleEngine_CreateHud1(dramAllocatorEnd[0].mC_fileBundle);
         battleEngine_CreateRadar(dramAllocatorEnd[0].mC_fileBundle);
-        battleEngine_UpdateSub5();
+        battleEngine_snapDragonFacing();
 
         battleEngine_SetBattleMode(eBattleModes::mE_battleIntro);
         return;
     case 1: // running
-        battleEngine_UpdateSub7(pThis);
-        battleEngine_UpdateSub5();
+        battleEngine_MainUpdate(pThis);
+        battleEngine_snapDragonFacing();
         return;
     case 2:
         battleEngine_ApplyBattleAutoScrollDelta(pThis);
-        battleEngine_UpdateSub9(pThis);
-        battleEngine_UpdateSub5();
+        battleEngine_computeDragonPosition(pThis);
+        battleEngine_snapDragonFacing();
         return;
     case 3:
         return;
     case 4:
         battleEngine_ApplyBattleAutoScrollDelta(pThis);
-        battleEngine_UpdateSub9(pThis);
-        battleEngine_UpdateSub5();
+        battleEngine_computeDragonPosition(pThis);
+        battleEngine_snapDragonFacing();
         return;
     default:
         assert(0);
