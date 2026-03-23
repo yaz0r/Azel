@@ -190,13 +190,13 @@ void fieldA3_8_create_generatorLCSTarget(p_workArea r4, sLCSTarget* r5)
     }
     else
     {
-        if (mainGameState.getBit(0x6D * 8 + 5))
+        if (mainGameState.getBit(0x6D * 8 + 4))
         {
             startFieldScriptSkippable(0xD, 1450);
         }
         else
         {
-            startFieldScript(5, 1441);
+            startFieldScript(5, 1442);
         }
         pThis->m9C_status = 6;
     }

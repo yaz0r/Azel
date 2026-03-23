@@ -685,6 +685,10 @@ struct s_fieldSpecificData_A3 : public s_workAreaTemplate<s_fieldSpecificData_A3
     std::array<sVec3_FP, 18> mC0; // not sure of size
     u8 m130_conanaNestCutsceneTrigger;
 
+    // A3_2 positional sound data
+    s32 m134; // sound 0x6A state
+    s32 m138; // sound 0x6B state
+
     // A3_0 mine carts
     s32 m154;
     sVec3_FP m158;

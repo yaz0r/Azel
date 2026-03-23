@@ -3,8 +3,12 @@
 #include "commonOverlay.h"
 #include "audio/soundDriver.h"
 #include "battle/battleOverlay.h"
+#include "battle/battleManager.h"
+#include "lightSetup.h"
 
 extern s32 battleIndex; // todo: cleanup
+void setupDragonForTown(s_3dModel* pDragonModel); // todo: move to header
+void clearVdp2TextMemory(); // todo: move to header
 
 struct sEncouterTask : public s_workAreaTemplateWithArg<sEncouterTask, s_workArea*>
 {
@@ -190,11 +194,30 @@ s32 evaluateRandomEncounterRate(sEncouterTask* pThis)
     return -1;
 }
 
-void* backupGraphicsToEnterBattle(sEncouterTask* pThis, s32 param_1)
+// 0602849a
+struct sGraphicsBackup
 {
-    Unimplemented();
+    u8 m_graphicEngineStatus[0x50];
+    u8 m_vdp2Controls[0x260];
+    u8 m_lightSetup[0x2c];
+    u8 m_cram[0x1000];
+    u16 m_backScreenColor;
+    u16 m_lineColorScreenColor;
+};
 
-    return nullptr;
+void* backupGraphicsToEnterBattle(sEncouterTask* pThis, s32 param_2)
+{
+    sGraphicsBackup* backup = new sGraphicsBackup();
+
+    memcpy(backup->m_graphicEngineStatus, &graphicEngineStatus.m405C, 0x50);
+    memcpy(backup->m_vdp2Controls, &vdp2Controls, 0x260);
+    memcpy(backup->m_lightSetup, &lightSetup, 0x2c);
+    memcpy(backup->m_cram, getVdp2Cram(0), 0x1000);
+
+    backup->m_backScreenColor = *(u16*)getVdp2Vram((vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0x7FFFF) * 2);
+    backup->m_lineColorScreenColor = *(u16*)getVdp2Vram((vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0x7FFFF) * 2);
+
+    return backup;
 }
 
 void encounterTaskUpdate(sEncouterTask* pThis)
@@ -214,35 +237,35 @@ void encounterTaskUpdate(sEncouterTask* pThis)
         battleIndex = -1;
         encounterTaskVar0 = 0;
         pThis->m0_status = 2;
-        break;
+        [[fallthrough]];
     case 2:
         if (hasEncounterData == 0)
         {
             battleIndex = -1;
             noEncounterData();
+            return;
         }
-        else
+        if (battleIndex < 0)
         {
             battleIndex = evaluateRandomEncounterRate(pThis);
-
             if (battleIndex < 0)
                 return;
-
-            pThis->m1 = graphicEngineStatus.m40AC.m1_isMenuAllowed;
-            graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
-
-            pThis->m4->getTask()->markPaused();
-
-            pThis->m20 = backupGraphicsToEnterBattle(pThis, 0);
-
-            battleLoading_InitSub0();
-
-            pThis->mE = 0;
-            pThis->m10 = pThis->m14;
-            encounterTaskVar0 = 1;
-
-            pThis->m0_status = 3;
         }
+
+        pThis->m1 = graphicEngineStatus.m40AC.m1_isMenuAllowed;
+        graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;
+
+        pThis->m4->getTask()->markPaused();
+
+        pThis->m20 = backupGraphicsToEnterBattle(pThis, 0);
+
+        battleLoading_InitSub0();
+
+        pThis->mE = 0;
+        pThis->m10 = pThis->m14;
+        encounterTaskVar0 = 1;
+
+        pThis->m0_status = 3;
         break;
     case 3:
         pThis->m8_battleOverlay = loadBattleOverlay(pThis->mC, battleIndex);
@@ -253,10 +276,42 @@ void encounterTaskUpdate(sEncouterTask* pThis)
         {
             return;
         }
-        pThis->m0_status = 4;
+        pThis->m0_status = 5;
+        break;
+    case 5: // post-battle cleanup
+    {
+        s8 battleResult = gBattleManager->mE;
+        if (battleResult == 0 || battleResult == 1)
+        {
+            popSoundSequence(1);
+        }
+        else if (battleResult == 2)
+        {
+            popSoundSequence(0);
+            // TODO: restore graphics from backup (FUN_06028668)
+            setNextGameStatus(0x49); // game over
+        }
+        else if (battleResult == 3)
+        {
+            popSoundSequence(1);
+        }
+        // TODO: restore graphics from backup (FUN_06028668)
+        fadePalette(&g_fadeControls.m0_fade0, 0, 0, 1);
+        fadePalette(&g_fadeControls.m24_fade1, 0, 0, 1);
+        pThis->m0_status = 6;
+        break;
+    }
+    case 6: // final cleanup — wait for sound, restore field state
+        if (!isSoundLoadingFinished())
+            return;
+        clearVdp2TextMemory();
+        setupDragonForTown(&gDragonState->m28_dragon3dModel);
+        pThis->m4->getTask()->clearPaused(); // unpause field
+        graphicEngineStatus.m40AC.m1_isMenuAllowed = pThis->m1;
+        encounterTaskVar0 = 2;
+        pThis->m0_status = 1; // reset to idle
         break;
     default:
-        assert(0);
         break;
     }
 

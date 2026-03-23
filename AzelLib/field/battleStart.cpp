@@ -4,10 +4,11 @@
 #include "audio/systemSounds.h"
 #include "field/field_a3/o_fld_a3.h"
 
-void battleLoading_Init(sBattleLoadingTask* pThis)
+// 060684cc
+void battleLoading_Init(sBattleLoadingTask* pThis, s32 enemyId)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m5 = 1;
-    pThis->m0_enemyId = 0; // TODO: figure that out. The original code expects an argument, but never pass one
+    pThis->m0_enemyId = enemyId;
     battleLoading_InitSub0();
     playSystemSoundEffect(0x10); // play "enter battle" sound
 
@@ -52,7 +53,7 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
         }
         break;
     case 3:
-        if (readKeyboardToggle(0xDA))
+        if (readKeyboardToggle(0xDA)) // debug key — not used in normal gameplay
         {
             if (pThis->m4 >= 0)
             {
@@ -70,7 +71,7 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
             }
             pThis->m8_status++;
         }
-        if (readKeyboardToggle(0xF6))
+        if (readKeyboardToggle(0xF6)) // debug key — not used in normal gameplay
         {
             pThis->m8_status++;
         }

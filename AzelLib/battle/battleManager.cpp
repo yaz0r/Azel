@@ -103,6 +103,7 @@ void loadBattleOverlaySub0(sBattleManager* pThis)
                 break;
             }
             uVar4 = 0xf;
+            sVar3 = 0;
         }
         break;
     default:

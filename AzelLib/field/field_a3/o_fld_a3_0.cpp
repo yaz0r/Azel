@@ -3,6 +3,7 @@
 #include "items.h"
 #include "audio/soundDriver.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/field_a3/particlePool.h"
 #include "field/fieldRadar.h"
 #include "field/exitField.h"
 #include "field/fieldItemBox.h"
@@ -50,10 +51,101 @@ p_workArea fieldA3_0_createTask0(p_workArea workArea)
     return newWorkArea;
 }
 
-p_workArea fieldA3_0_createTask1(p_workArea workArea, s32 r5, s32 r6)
+// 060787e4
+static void particlePoolUpdate(sParticlePoolManager* pThis)
 {
-    PDS_unimplemented("create_fieldA3_0_task1");
-    return workArea;
+    sParticleSlot* pSlot = pThis->m8_slotsBase;
+
+    // Debug display
+    if ((getFieldTaskPtr()->m8_pSubFieldData->m370_fieldDebuggerWho & 2) &&
+        (getFieldTaskPtr()->m8_pSubFieldData->m37C_debugMenuStatus1[1] == 0) &&
+        (getFieldTaskPtr()->m8_pSubFieldData->m369 == 0))
+    {
+        if (pThis->m1C_peakActiveCount < pThis->m18_activeCount)
+        {
+            pThis->m1C_peakActiveCount = pThis->m18_activeCount;
+        }
+        vdp2PrintStatus.m10_palette = 0x8000;
+        vdp2DebugPrintSetPosition(1, 0x1A);
+        vdp2PrintfSmallFont("%03d<%03d ", pThis->m18_activeCount, pThis->m1C_peakActiveCount);
+    }
+
+    for (s32 i = 0; i < pThis->m14_maxParticles; i++)
+    {
+        if (pSlot->m28_drawFunc != nullptr)
+        {
+            s32 result = pSlot->m24_updateFunc(pSlot);
+            if (result != 0)
+            {
+                pThis->m18_activeCount--;
+                if (pSlot->m20_heapData != nullptr)
+                {
+                    freeHeapForTask((s_workArea*)pThis, pSlot->m20_heapData);
+                    pSlot->m20_heapData = nullptr;
+                }
+                pSlot->m28_drawFunc = nullptr;
+            }
+        }
+        pSlot++;
+    }
+}
+
+// 06078890
+static void particlePoolDraw(sParticlePoolManager* pThis)
+{
+    sParticleSlot* pSlot = pThis->m8_slotsBase;
+    for (s32 i = 0; i < pThis->m14_maxParticles; i++)
+    {
+        if (pSlot->m28_drawFunc != nullptr)
+        {
+            pSlot->m28_drawFunc(pSlot);
+        }
+        pSlot++;
+    }
+}
+
+// 060788dc
+p_workArea createParticlePoolTask(p_workArea workArea, s32 memAreaIndex, s32 maxParticles)
+{
+    sParticlePoolManager* pPool = createSubTaskFromFunction<sParticlePoolManager>(
+        workArea, (void(*)(sParticlePoolManager*))nullptr);
+    if (!pPool)
+        return nullptr;
+
+    // Fill memory area info
+    s_memoryAreaOutput memArea;
+    getMemoryArea(&memArea, memAreaIndex);
+    pPool->m0_parentTask = (s_workArea*)memArea.m0_mainMemoryBundle;
+    pPool->m4_vdp1Memory = memArea.m4_characterArea;
+
+    pPool->m14_maxParticles = maxParticles;
+
+    // Allocate particle slots via heap
+    sParticleSlot* pSlots = (sParticleSlot*)allocateHeapForTask((s_workArea*)pPool, maxParticles * sizeof(sParticleSlot));
+    pPool->m8_slotsBase = pSlots;
+    if (!pSlots)
+    {
+        // Allocation failed — mark task finished
+        pPool->getTask()->markFinished();
+        return nullptr;
+    }
+
+    // Clear all draw functions (mark inactive)
+    for (s32 i = 0; i < maxParticles; i++)
+    {
+        pSlots[i].m28_drawFunc = nullptr;
+    }
+
+    pPool->mC_currentSlot = pSlots;
+    pPool->m10_currentIndex = 0;
+    pPool->m18_activeCount = 0;
+    pPool->m1C_peakActiveCount = 0;
+
+    // Set the Update/Draw methods
+    pPool->m_UpdateMethod = &particlePoolUpdate;
+    pPool->m_DrawMethod = &particlePoolDraw;
+
+    return (p_workArea)pPool;
 }
 
 struct s_fieldA3_0_tutorialTask : public s_workAreaTemplate<s_fieldA3_0_tutorialTask>
@@ -262,7 +354,7 @@ void fieldA3_0_startTasks(p_workArea workArea)
 {
     fieldA3_0_createTask0(workArea);
 
-    getFieldSpecificData_A3()->m168 = fieldA3_0_createTask1(workArea, 2, 0x20);
+    getFieldSpecificData_A3()->m168 = createParticlePoolTask(workArea, 2, 0x20);
 
     create_fieldA3_0_exitTask(workArea);
 

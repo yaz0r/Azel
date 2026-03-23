@@ -4,20 +4,126 @@
 #include "a3_2_crashedImperialShip.h"
 #include "items.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldDebrisScatter.h"
+#include "kernel/vdp1AnimatedQuad.h"
+#include "audio/systemSounds.h"
 
-void fieldA3_2_createCrashedImpertialShipExplosions(p_workArea)
+#include "particlePool.h"
+s32 playBattleSoundEffect(s32 effectIndex); // TODO: move to header
+
+// 06059584 — random ambient sound at crashed ship position
+struct sCrashedShipAmbientSound : public s_workAreaTemplate<sCrashedShipAmbientSound>
 {
-    Unimplemented();
+    static void Update(sCrashedShipAmbientSound* pThis)
+    {
+        if (!checkPositionVisibilityAgainstFarPlane(&pThis->m0_position))
+        {
+            if ((randomNumber() & 0xF) == 0)
+            {
+                playBattleSoundEffect(0x6D);
+            }
+        }
+    }
+    sVec3_FP m0_position;
+    // size: 0xC
+};
+
+// 060595b4
+void createCrashedShipAmbientSoundTask(p_workArea parent, sVec3_FP* position)
+{
+    sCrashedShipAmbientSound* pTask = createSubTaskFromFunction<sCrashedShipAmbientSound>(
+        parent, &sCrashedShipAmbientSound::Update);
+    if (pTask)
+    {
+        pTask->m0_position = *position;
+    }
 }
 
-void fieldA3_2_crashedImpertialShip_UpdateSub0(p_workArea, sVec3_FP*)
+// 0605A046 — periodic explosion particle spawner on the crashed ship
+struct sCrashedShipExplosionSpawner : public s_workAreaTemplate<sCrashedShipExplosionSpawner>
 {
-    Unimplemented();
+    static void Update(sCrashedShipExplosionSpawner* pThis)
+    {
+        if (pThis->m0_timer == 0)
+        {
+            // Cycle through explosion points
+            pThis->m4_pointIndex++;
+            if (pThis->m4_pointIndex > 6)
+                pThis->m4_pointIndex = 0;
+
+            // Spawn particle at the current explosion point (if under max count)
+            if (pThis->m8_perPointCount[pThis->m4_pointIndex] < 3)
+            {
+                // Read explosion point position from data table
+                sSaturnPtr pointData = gFLD_A3->getSaturnPtr(0x06090644) + pThis->m4_pointIndex * 0xC;
+                sVec3_FP pos;
+                pos.m0_X = readSaturnS32(pointData) + (s32)(randomNumber() & 0x3FFF) - 0x2000;
+                pos.m4_Y = readSaturnS32(pointData + 4);
+                pos.m8_Z = readSaturnS32(pointData + 8) + (s32)(randomNumber() & 0x3FFF) - 0x2000;
+
+                sVec3_FP velocity = { 0, 0, 0 };
+                sParticleSpawnConfig config;
+                config.m0_pPosition = &pos;
+                config.m4_pVelocity = &velocity;
+                config.m8_pQuadData = &gFLD_A3->m_explosionQuad;
+                config.mC_velocityScaleX = 0x8000;
+                config.m10_velocityScaleY = -0x10000;
+                config.m14_updateFunc = &particleUpdateStatic;
+                config.m18_heapSize = 0;
+                config.m1C_heapData = nullptr;
+
+                s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+                if (pFieldData->m168)
+                {
+                    spawnParticleInPool((sParticlePoolManager*)pFieldData->m168, &config, 1);
+                }
+                pThis->m8_perPointCount[pThis->m4_pointIndex]++;
+            }
+
+            pThis->m0_timer = (randomNumber() & 0xF) + 6;
+        }
+        else
+        {
+            pThis->m0_timer--;
+        }
+    }
+    s32 m0_timer;
+    s32 m4_pointIndex;
+    s8 m8_perPointCount[7];
+    // size: 0x10
+};
+
+// 0605a17a
+void createCrashedShipExplosionSpawner(p_workArea parent)
+{
+    sCrashedShipExplosionSpawner* pTask = createSubTaskFromFunction<sCrashedShipExplosionSpawner>(
+        parent, &sCrashedShipExplosionSpawner::Update);
+    if (pTask)
+    {
+        pTask->m0_timer = 0;
+        memset(pTask->m8_perPointCount, 0, 7);
+    }
 }
 
-void fieldA3_2_crashedImpertialShip_customScriptCall(fieldA3_2_crashedImpertialShip* r4)
+// 06059e44 — spawn explosion particles at a position
+static void spawnCrashedShipExplosion(sVec3_FP* position)
 {
-    Unimplemented();
+    sVec3_FP velocity = { 0, 0, 0 };
+    sParticleSpawnConfig config;
+    config.m0_pPosition = position;
+    config.m4_pVelocity = &velocity;
+    config.m8_pQuadData = &gFLD_A3->m_explosionQuad;
+    config.mC_velocityScaleX = 0x10000;
+    config.m10_velocityScaleY = -0x10000;
+    config.m14_updateFunc = &particleUpdateMoving;
+    config.m18_heapSize = 0;
+    config.m1C_heapData = nullptr;
+
+    s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+    if (pFieldData->m168)
+    {
+        spawnParticleInPool((sParticlePoolManager*)pFieldData->m168, &config, 1);
+    }
 }
 
 struct fieldA3_2_crashedImpertialShip : public s_workAreaTemplate<fieldA3_2_crashedImpertialShip>
@@ -49,8 +155,8 @@ struct fieldA3_2_crashedImpertialShip : public s_workAreaTemplate<fieldA3_2_cras
             {
                 startFieldScript(15, 1451);
             }
-            fieldA3_2_createCrashedImpertialShipExplosions(pThis);
-            fieldA3_2_crashedImpertialShip_UpdateSub0(pThis, &pThis->mC_position);
+            createCrashedShipExplosionSpawner(pThis);
+            createCrashedShipAmbientSoundTask(pThis, &pThis->mC_position);
             pThis->m3C_status++;
             //fall
         case 2: // wait for end of script
@@ -94,6 +200,42 @@ struct fieldA3_2_crashedImpertialShip : public s_workAreaTemplate<fieldA3_2_cras
     sLCSTarget m90_LCSTarget;
     // size 0xC4
 };
+
+// 06059712
+void initCrashedShipDestruction(fieldA3_2_crashedImpertialShip* r4)
+{
+    // Set up debris scatter params from Ghidra data
+    sVec3_FP rotation;
+    rotation.m0_X = (s32)r4->m24_rotation[0] << 16;
+    rotation.m4_Y = (s32)r4->m24_rotation[1] << 16;
+    rotation.m8_Z = (s32)r4->m24_rotation[2] << 16;
+
+    sDebrisScatterParams params;
+    memset(&params, 0, sizeof(params));
+    params.m0_gravity = 0x6E;
+    params.m4_bounce = 0x4CCC;
+    params.m8_spread = 0x1FFFFF;
+    params.mC_randomMask = 0;
+    params.m10_pPosition = &r4->mC_position;
+    params.m14_pRotation = &rotation;
+    params.m34_modelOffset = 0xE8;
+    params.m36_poseOffset = 0x574;
+    params.m38_groundY = -0x320000; // 0xFFCE0000
+    params.m3C_scale = 0; // no scale
+    params.m44_soundEffect = 0xFFFF; // no sound on first task
+    params.m_pBundle = r4->m0_memoryArea.m0_mainMemoryBundle;
+
+    createDebrisScatterTask(r4, &params, false);
+
+    // Spawn explosion particles at two positions
+    spawnCrashedShipExplosion(&r4->m2C_LCSTargetLocation);
+
+    static sVec3_FP explosionPos2;
+    explosionPos2 = readSaturnVec3(gFLD_A3->getSaturnPtr(0x060905E4));
+    spawnCrashedShipExplosion(&explosionPos2);
+
+    playSystemSoundEffect(0x6C);
+}
 
 void fieldA3_2_crashedImpertialShip_LCSCallback(p_workArea r4, sLCSTarget*)
 {
@@ -167,9 +309,64 @@ struct fieldA3_2_crashedImpertialShip2 : public s_workAreaTemplate<fieldA3_2_cra
     // size 0x84
 };
 
-void create_A3_2_crashedImperialShip2Sub0(p_workArea)
+// 06059be0 — smoke/steam particle spawner for the second crashed ship piece
+struct sCrashedShip2SmokeSpawner : public s_workAreaTemplate<sCrashedShip2SmokeSpawner>
 {
-    Unimplemented();
+    static void Update(sCrashedShip2SmokeSpawner* pThis)
+    {
+        if ((pThis->m0_counter & 3) == 0)
+        {
+            pThis->m4_pointIndex++;
+            if (pThis->m4_pointIndex > 1)
+                pThis->m4_pointIndex = 0;
+
+            // Read smoke position from data table
+            sSaturnPtr pointData = gFLD_A3->getSaturnPtr(0x06090620) + pThis->m4_pointIndex * 0xC;
+            sVec3_FP pos;
+            pos.m0_X = readSaturnS32(pointData);
+            pos.m4_Y = readSaturnS32(pointData + 4);
+            pos.m8_Z = readSaturnS32(pointData + 8);
+
+            sVec3_FP velocity;
+            velocity.m0_X = (s32)(randomNumber() & 0x1FF) - 0x100;
+            velocity.m4_Y = 0xB33;
+            velocity.m8_Z = (s32)(randomNumber() & 0x1FF) - 0x100;
+
+            sParticleSpawnConfig config;
+            config.m0_pPosition = &pos;
+            config.m4_pVelocity = &velocity;
+            config.m8_pQuadData = &gFLD_A3->m_smokeQuad;
+            // Random scale from table at 0x06090610
+            static const fixedPoint scaleTable[] = { 0x8000, 0xC000, 0x10000, 0x6000 };
+            config.mC_velocityScaleX = scaleTable[randomNumber() & 3];
+            config.m10_velocityScaleY = -0x10000;
+            config.m14_updateFunc = &particleUpdateMoving;
+            config.m18_heapSize = 0;
+            config.m1C_heapData = nullptr;
+
+            s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+            sParticlePoolManager* pPool = (sParticlePoolManager*)pFieldData->m168;
+            if (pPool)
+            {
+                spawnParticleInPool(pPool, &config, 1);
+            }
+        }
+        pThis->m0_counter++;
+    }
+    u32 m0_counter;
+    u32 m4_pointIndex;
+    // size: 8
+};
+
+// 06059ca4
+void createCrashedShip2SmokeSpawner(p_workArea parent)
+{
+    sCrashedShip2SmokeSpawner* pTask = createSubTaskFromFunction<sCrashedShip2SmokeSpawner>(
+        parent, &sCrashedShip2SmokeSpawner::Update);
+    if (pTask)
+    {
+        pTask->m0_counter = 0;
+    }
 }
 
 void create_A3_2_crashedImperialShip2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
@@ -189,13 +386,13 @@ void create_A3_2_crashedImperialShip2(s_visdibilityCellTask* r4, s_DataTable2Sub
 
     pNewTask->m30_status = 0;
 
-    create_A3_2_crashedImperialShip2Sub0(pNewTask);
+    createCrashedShip2SmokeSpawner(pNewTask);
 }
 
-s32 fieldA3_2_crashedImpertialShip_customScriptCall()
+s32 initCrashedShipDestruction()
 {
     getFieldSpecificData_A3()->m164_A3_2_crashedImperialShipTask->m_DrawMethod = nullptr;
-    fieldA3_2_crashedImpertialShip_customScriptCall(getFieldSpecificData_A3()->m164_A3_2_crashedImperialShipTask);
+    initCrashedShipDestruction(getFieldSpecificData_A3()->m164_A3_2_crashedImperialShipTask);
     cutsceneTaskInitSub2(getFieldSpecificData_A3()->m164_A3_2_crashedImperialShipTask, gFLD_A3->m6083244, 0, 0, 0);
 
     return 0;

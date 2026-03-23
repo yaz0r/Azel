@@ -20,10 +20,19 @@ struct sSaveDataRaw
 
 extern std::array<u8, 0x104> battleResults; //TODO: cleanup
 
+// 06026cf8
 u32 computeSaveChecksum(void* buffer, int size)
 {
-    Unimplemented();
-    return 0;
+    u8* data = (u8*)buffer + 4; // skip the checksum field itself
+    int remaining = size - 4;
+    int sum = 0;
+    int weight = 1;
+    for (int i = 0; i < remaining; i++)
+    {
+        sum += weight * data[i];
+        weight++;
+    }
+    return sum;
 }
 
 s32 writeSaveData(s32 deviceId, const std::string* filename, char* description, void* buffer, int size)
@@ -71,7 +80,10 @@ s32 readSave(u32 deviceId, const std::string& fileName)
                 battleResults = saveDataBuffer.m394_battleResults;
                 graphicEngineStatus.m4514.mD8_buttonConfig = saveDataBuffer.m498_buttonConfig;
 
-                Unimplemented(); // restore audio output mode here
+                // Restore audio output mode from save
+                // s32 soundMode = mainGameState.readPackedBits(10, 1) ? 0x80 : 0;
+                // setSoundOutputMode(soundMode);
+                Unimplemented(); // TODO: setSoundOutputMode not yet implemented
             }
             else
             {
@@ -97,8 +109,9 @@ s32 saveData(int deviceId, const std::string* filename)
     fileDescription[9] = '0' + performModulo(10, mainGameState.gameStats.m0_level + 1);
     gSaveGameStatus.m4_version = 0x10000;
 
-    Unimplemented();
-    //mainGameState.setPackedBits(10, 1, soundOutputStatus == 0x80);
+    // Save audio output mode
+    // mainGameState.setPackedBits(10, 1, soundOutputStatus == 0x80);
+    // TODO: soundOutputStatus not yet tracked
 
     saveDataBuffer.m0_saveGameStatus = gSaveGameStatus;
     saveDataBuffer.mC_mainGameState = mainGameState;

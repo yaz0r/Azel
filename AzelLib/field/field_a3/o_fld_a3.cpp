@@ -7,6 +7,7 @@
 #include "a3_dynamic_mine_cart.h"
 #include "a3_fan.h"
 #include "a3_2_crashedImperialShip.h"
+#include "particlePool.h"
 
 #include "audio/systemSounds.h"
 #include "kernel/animation.h"
@@ -969,45 +970,6 @@ void create_A3_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     pNewTask->m20[2] = randomNumber();
 }
 
-// Particle pool slot (0x34 bytes per particle)
-struct sParticleSlot
-{
-    sVec3_FP m0_position;           // 0x00
-    sVec3_FP mC_velocity;           // 0x0C
-    fixedPoint m18_velocityScaleX;   // 0x18
-    fixedPoint m1C_velocityScaleY;   // 0x1C
-    void* m20_heapData;              // 0x20
-    s32 m24_param;                   // 0x24
-    void (*m28_drawFunc)(sParticleSlot*); // 0x28 — null = free slot
-    sAnimatedQuad m2C_animQuad;      // 0x2C
-    // size 0x34
-};
-
-// Particle pool manager
-struct sParticlePoolManager
-{
-    s_workArea* m0_parentTask;
-    u32 m4_vdp1Memory;
-    sParticleSlot* m8_slotsBase;
-    sParticleSlot* mC_currentSlot;
-    s32 m10_currentIndex;
-    s32 m14_maxParticles;
-    s32 m18_activeCount;
-};
-
-// Particle spawn config (built on the stack by callers)
-struct sParticleSpawnConfig
-{
-    sVec3_FP* m0_pPosition;
-    sVec3_FP* m4_pVelocity;
-    const std::vector<sVdp1Quad>* m8_pQuadData;
-    fixedPoint mC_velocityScaleX;
-    fixedPoint m10_velocityScaleY;
-    s32 m14_param;
-    s32 m18_heapSize;
-    void* m1C_heapData;
-};
-
 // 06078a1c — simple particle draw (axis-aligned sprite)
 static void particleDrawSimple(sParticleSlot* pSlot)
 {
@@ -1021,6 +983,22 @@ static void particleDrawBillboard(sParticleSlot* pSlot)
     drawProjectedParticle(&pSlot->m2C_animQuad, &pSlot->m0_position);
 }
 
+// 0607895c — particle update: moves by velocity, expires when animation ends
+s32 particleUpdateMoving(sParticleSlot* pSlot)
+{
+    pSlot->m0_position.m0_X += pSlot->mC_velocity.m0_X;
+    pSlot->m0_position.m4_Y += pSlot->mC_velocity.m4_Y;
+    pSlot->m0_position.m8_Z += pSlot->mC_velocity.m8_Z;
+    return sGunShotTask_UpdateSub4(&pSlot->m2C_animQuad) & 2;
+}
+
+// 0605a032 — particle update: static position, never expires
+s32 particleUpdateStatic(sParticleSlot* pSlot)
+{
+    sGunShotTask_UpdateSub4(&pSlot->m2C_animQuad);
+    return 0;
+}
+
 // 06078a3c — spawn a particle into the pool
 s32 spawnParticleInPool(sParticlePoolManager* pPool, sParticleSpawnConfig* pConfig, s32 useVelocityScale)
 {
@@ -1031,7 +1009,7 @@ s32 spawnParticleInPool(sParticlePoolManager* pPool, sParticleSpawnConfig* pConf
     void* heapData = nullptr;
     if (pConfig->m18_heapSize > 0)
     {
-        heapData = allocateHeapForTask(pPool->m0_parentTask, pConfig->m18_heapSize);
+        heapData = allocateHeapForTask((s_workArea*)pPool, pConfig->m18_heapSize);
         if (heapData == nullptr)
             return 0;
     }
@@ -1059,7 +1037,7 @@ s32 spawnParticleInPool(sParticlePoolManager* pPool, sParticleSpawnConfig* pConf
     pSlot->mC_velocity = *pConfig->m4_pVelocity;
 
     // Extra data
-    pSlot->m24_param = pConfig->m14_param;
+    pSlot->m24_updateFunc = pConfig->m14_updateFunc;
     pSlot->m20_heapData = heapData;
     if (heapData != nullptr)
     {
@@ -2938,8 +2916,8 @@ void startBattleTutorial(int tutorialIndex, int param2)
     }
     else
     {
-        sBattleLoadingTask* pNewTask = createSubTask<sBattleLoadingTask>(getFieldTaskPtr(), &battleStartTaskDefinition);
-        pNewTask->m0_enemyId = tutorialIndex;
+        // Bug in the original code, this wasn't using a createSubTaskWithArg, but createSubTask, and then setting the m0 battle index
+        sBattleLoadingTask* pNewTask = createSubTaskWithArg<sBattleLoadingTask, s32>(getFieldTaskPtr(), tutorialIndex, &battleStartTaskDefinition);
         pNewTask->m4 = param2;
     }
 }
@@ -3273,7 +3251,7 @@ s32 executeNative(sSaturnPtr ptr)
         }
         return 0; // result ignored?
     case 0x0605985c: // used in A2 destroyed ship cutscene
-        return fieldA3_2_crashedImpertialShip_customScriptCall();
+        return initCrashedShipDestruction();
     case 0x606ACB0:
         if (getFieldTaskPtr()->m8_pSubFieldData)
         {
@@ -3497,7 +3475,27 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
             }
             pScript = pScript + 2;
             break;
-        case 12:
+        case 10: // unconditional jump
+        {
+            sSaturnPtr r3 = pScript + 3;
+            r3.m_offset &= ~3;
+            pScript = readSaturnEA(r3);
+            continue;
+        }
+        case 11: // jump if result != 0
+            if (m54_currentResult == 0)
+            {
+                pScript = pScript + 7;
+                pScript.m_offset &= ~3;
+            }
+            else
+            {
+                sSaturnPtr r3 = pScript + 3;
+                r3.m_offset &= ~3;
+                pScript = readSaturnEA(r3);
+            }
+            continue;
+        case 12: // jump if result == 0
             if (m54_currentResult == 0)
             {
                 sSaturnPtr r3 = pScript + 3;

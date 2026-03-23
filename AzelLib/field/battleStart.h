@@ -1,7 +1,7 @@
 #pragma once
 
 
-struct sBattleLoadingTask : public s_workAreaTemplateWithArg<sBattleLoadingTask>
+struct sBattleLoadingTask : public s_workAreaTemplateWithArg<sBattleLoadingTask, s32>
 {
     s32 m0_enemyId;
     s32 m4;
