@@ -342,6 +342,12 @@ void startExcaBackgroundTask(p_workArea pThis)
     createSubTask<sExcaBackgroundTask>(pThis);
 }
 
+sSaturnMemoryFile* getExcaOverlayData()
+{
+    assert(gTWN_EXCA);
+    return gTWN_EXCA;
+}
+
 p_workArea overlayStart_TWN_EXCA(p_workArea pUntypedThis, u32 arg)
 {
     gTWN_EXCA->makeCurrent();

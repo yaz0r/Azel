@@ -5,6 +5,7 @@
 #include "kernel/graphicalObject.h"
 #include "town/ruin/twn_ruin.h" // TODO: cleanup
 #include "town/camp/campDragon.h"
+#include "town/exca/twn_exca.h"
 
 // 060541f2 — populate mE0 hotpoint pairs from dragon model (shared across all town overlays)
 void initDragonHotpoints(sTownDragon* pThis) {
@@ -30,6 +31,7 @@ void initDragonHotpoints(sTownDragon* pThis) {
     pThis->mDC_hotpointPairCount = e0Count;
 }
 
+// 06020262
 bool reinitModel(s_3dModel* pModel, sHotpointBundle* param2)
 {
     if (pModel->m40)
@@ -56,7 +58,7 @@ void initDragonForTown(sTownDragon* pThis)
     {
         int fileIndex = gDragonState->mC_dragonType * 2;
 
-        if (gCurrentTownOverlay->m_name == "TWN_EXCA.PRG") {
+        if (gCurrentTownOverlay->m_name == "TWN_EXCA.PRG" || gCurrentTownOverlay->m_name == "TWN_E006.PRG") {
             fileIndex += 10;
         }
         else if (gCurrentTownOverlay->m_name == "TWN_CAMP.PRG") {
@@ -74,6 +76,13 @@ void initDragonForTown(sTownDragon* pThis)
         if (gCurrentTownOverlay->m_name == "TWN_EXCA.PRG") {
             pThis->m20_scriptEA = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x606471C) + gDragonState->mC_dragonType * 4);
             reinitModel(&gDragonState->m28_dragon3dModel, readRiderDefinitionSub(readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x6064608 + gDragonState->mC_dragonType * 0x1C))));
+        }
+        else if (gCurrentTownOverlay->m_name == "TWN_E006.PRG") {
+            // E006 is a sub-scene of excavation — on Saturn it shared EXCA's memory space.
+            // Use the persisted EXCA overlay data for dragon script/hotpoint addresses.
+            sSaturnMemoryFile* excaData = getExcaOverlayData();
+            pThis->m20_scriptEA = readSaturnEA(excaData->getSaturnPtr(0x606471C) + gDragonState->mC_dragonType * 4);
+            reinitModel(&gDragonState->m28_dragon3dModel, readRiderDefinitionSub(readSaturnEA(excaData->getSaturnPtr(0x6064608 + gDragonState->mC_dragonType * 0x1C))));
         }
         else if (gCurrentTownOverlay->m_name == "TWN_CAMP.PRG") {
             pThis->m20_scriptEA = readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x607af3c) + gDragonState->mC_dragonType * 4);
@@ -161,9 +170,18 @@ static void sTownDragon_Draw(sTownDragon* pThis)
     }
 }
 
+// 0600b476
+static void restoreBaseDragonHotpoints()
+{
+    reinitModel(&gDragonState->m28_dragon3dModel,
+        dragonData3[gDragonState->mC_dragonType].m_m8[0].m_m8);
+}
+
+// 060545AA
 static void sTownDragon_Delete(sTownDragon* pThis)
 {
-    Unimplemented();
+    playAnimation(&gDragonState->m28_dragon3dModel, nullptr, 0);
+    restoreBaseDragonHotpoints();
 }
 
 sTownObject* createTownDragon(p_workArea parent, sSaturnPtr arg)
