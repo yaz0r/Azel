@@ -103,6 +103,7 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
                     {
                         subData1C.m4[k] = new sAttackCommand;
 
+                        subData1C.m4[k]->m0_attackParams = readSaturnEA(attackData + 0);
                         subData1C.m4[k]->m4_cameraList = readSaturnEA(attackData + 4);
                         subData1C.m4[k]->m8_type = readSaturnS8(attackData + 8);
                         subData1C.m4[k]->m9_flags = readSaturnU8(attackData + 9);
@@ -113,12 +114,95 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
                 subData1C.m14_quadrantFlags[1] = readSaturnS8(ptrTo1C + 0x14 + 1);
                 subData1C.m14_quadrantFlags[2] = readSaturnS8(ptrTo1C + 0x14 + 2);
                 subData1C.m14_quadrantFlags[3] = readSaturnS8(ptrTo1C + 0x14 + 3);
+                subData1C.m18_nextAnimIndex[0] = readSaturnS8(ptrTo1C + 0x18 + 0);
+                subData1C.m18_nextAnimIndex[1] = readSaturnS8(ptrTo1C + 0x18 + 1);
+                subData1C.m18_nextAnimIndex[2] = readSaturnS8(ptrTo1C + 0x18 + 2);
+                subData1C.m18_nextAnimIndex[3] = readSaturnS8(ptrTo1C + 0x18 + 3);
                 subData1C.m1C_animationOffset = readSaturnU16(ptrTo1C + 0x1C);
                 subData1C.m1E_quadrantAttackDirections = readSaturnS8(ptrTo1C + 0x1E);
+                subData1C.m20_timerValue = readSaturnU16(ptrTo1C + 0x20);
                 pSubEntry->m1C.push_back(subData1C);
             }
 
-            pSubEntry->m24 = readSaturnU32(subEntry + 0x24);
+            sSaturnPtr ptrTo20 = readSaturnEA(subEntry + 0x20);
+            if (ptrTo20.isNull())
+            {
+                pSubEntry->m20_beamHitCounterData = nullptr;
+            }
+            else
+            {
+                pSubEntry->m20_beamHitCounterData = new sGenericFormationPerTypeDataSub1C;
+                sGenericFormationPerTypeDataSub1C& sub20 = *pSubEntry->m20_beamHitCounterData;
+                sub20.m0 = readSaturnEA(ptrTo20 + 0);
+                for (int k = 0; k < 4; k++)
+                {
+                    sSaturnPtr attackData = readSaturnEA(ptrTo20 + 0x4 + k * 4);
+                    if (attackData.isNull())
+                    {
+                        sub20.m4[k] = nullptr;
+                    }
+                    else
+                    {
+                        sub20.m4[k] = new sAttackCommand;
+                        sub20.m4[k]->m0_attackParams = readSaturnEA(attackData + 0);
+                        sub20.m4[k]->m4_cameraList = readSaturnEA(attackData + 4);
+                        sub20.m4[k]->m8_type = readSaturnS8(attackData + 8);
+                        sub20.m4[k]->m9_flags = readSaturnU8(attackData + 9);
+                        sub20.m4[k]->mA_attackDisplayName = readSaturnS8(attackData + 0xA);
+                    }
+                }
+                sub20.m14_quadrantFlags[0] = readSaturnS8(ptrTo20 + 0x14 + 0);
+                sub20.m14_quadrantFlags[1] = readSaturnS8(ptrTo20 + 0x14 + 1);
+                sub20.m14_quadrantFlags[2] = readSaturnS8(ptrTo20 + 0x14 + 2);
+                sub20.m14_quadrantFlags[3] = readSaturnS8(ptrTo20 + 0x14 + 3);
+                sub20.m18_nextAnimIndex[0] = readSaturnS8(ptrTo20 + 0x18 + 0);
+                sub20.m18_nextAnimIndex[1] = readSaturnS8(ptrTo20 + 0x18 + 1);
+                sub20.m18_nextAnimIndex[2] = readSaturnS8(ptrTo20 + 0x18 + 2);
+                sub20.m18_nextAnimIndex[3] = readSaturnS8(ptrTo20 + 0x18 + 3);
+                sub20.m1C_animationOffset = readSaturnU16(ptrTo20 + 0x1C);
+                sub20.m1E_quadrantAttackDirections = readSaturnS8(ptrTo20 + 0x1E);
+                sub20.m20_timerValue = readSaturnU16(ptrTo20 + 0x20);
+            }
+
+            sSaturnPtr ptrTo24 = readSaturnEA(subEntry + 0x24);
+            if (ptrTo24.isNull())
+            {
+                pSubEntry->m24_beamHitAttackData = nullptr;
+            }
+            else
+            {
+                pSubEntry->m24_beamHitAttackData = new sGenericFormationPerTypeDataSub1C;
+                sGenericFormationPerTypeDataSub1C& sub24 = *pSubEntry->m24_beamHitAttackData;
+                sub24.m0 = readSaturnEA(ptrTo24 + 0);
+                for (int k = 0; k < 4; k++)
+                {
+                    sSaturnPtr attackData = readSaturnEA(ptrTo24 + 0x4 + k * 4);
+                    if (attackData.isNull())
+                    {
+                        sub24.m4[k] = nullptr;
+                    }
+                    else
+                    {
+                        sub24.m4[k] = new sAttackCommand;
+                        sub24.m4[k]->m0_attackParams = readSaturnEA(attackData + 0);
+                        sub24.m4[k]->m4_cameraList = readSaturnEA(attackData + 4);
+                        sub24.m4[k]->m8_type = readSaturnS8(attackData + 8);
+                        sub24.m4[k]->m9_flags = readSaturnU8(attackData + 9);
+                        sub24.m4[k]->mA_attackDisplayName = readSaturnS8(attackData + 0xA);
+                    }
+                }
+                sub24.m14_quadrantFlags[0] = readSaturnS8(ptrTo24 + 0x14 + 0);
+                sub24.m14_quadrantFlags[1] = readSaturnS8(ptrTo24 + 0x14 + 1);
+                sub24.m14_quadrantFlags[2] = readSaturnS8(ptrTo24 + 0x14 + 2);
+                sub24.m14_quadrantFlags[3] = readSaturnS8(ptrTo24 + 0x14 + 3);
+                sub24.m18_nextAnimIndex[0] = readSaturnS8(ptrTo24 + 0x18 + 0);
+                sub24.m18_nextAnimIndex[1] = readSaturnS8(ptrTo24 + 0x18 + 1);
+                sub24.m18_nextAnimIndex[2] = readSaturnS8(ptrTo24 + 0x18 + 2);
+                sub24.m18_nextAnimIndex[3] = readSaturnS8(ptrTo24 + 0x18 + 3);
+                sub24.m1C_animationOffset = readSaturnU16(ptrTo24 + 0x1C);
+                sub24.m1E_quadrantAttackDirections = readSaturnS8(ptrTo24 + 0x1E);
+                sub24.m20_timerValue = readSaturnU16(ptrTo24 + 0x20);
+            }
             pSubEntry->m28[0] = readSaturnS8(subEntry + 0x28 + 0);
             pSubEntry->m28[1] = readSaturnS8(subEntry + 0x28 + 1);
             pSubEntry->m28[2] = readSaturnS8(subEntry + 0x28 + 2);

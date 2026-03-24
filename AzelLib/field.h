@@ -438,7 +438,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     u8 m249_noCollisionAndHideDragon;
     u8 m24A_runningCameraScript; // has camera script
     u32 m250;
-    u32 m254;
+    s32 m254;
     u32 m258;
     u8 m25B;
     u8 m25C;

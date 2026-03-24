@@ -3254,7 +3254,7 @@ s32 executeNative(sSaturnPtr ptr)
             assert(0);
         }
         return 0; // result ignored?
-    case 0x060730bc: // 060730bc — camp destination multichoice dialog
+    case 0x060730bc: // 060730bc — destination multichoice dialog
     {
         s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
         if (pRadar->m1C_encounterList != nullptr)
@@ -3772,7 +3772,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
     return m4_currentScript;
 }
 
-static void openCampScript(); // forward declaration
+static void openDestinationScript(); // forward declaration
 static s32 radarBuildFilteredChoiceList(s_FieldRadar* pRadar);
 static s32 radarFindFilteredIndex(s_FieldRadar* pRadar, s32 selection);
 void createMultiChoice(s32 r4, s32 r5);
@@ -3847,7 +3847,7 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][12])
         {
             //06069AF0
-            openCampScript();
+            openDestinationScript();
             return;
         }
         return;
@@ -3948,19 +3948,19 @@ static s32 radarFindFilteredIndex(s_FieldRadar* pRadar, s32 selection)
     return filteredIndex;
 }
 
-// 06012768 — check if camping is allowed at current field/subfield
-static bool canCampAtCurrentField()
+// 06012768 — check if destination selection is available at current field/subfield
+static bool canSelectDestinationAtCurrentField()
 {
     s16 fieldIndex = getFieldTaskPtr()->m2C_currentFieldIndex;
 
-    // These fields always allow camping
+    // These fields always allow destination selection
     if (fieldIndex == 4 || fieldIndex == 9 || fieldIndex == 0xB ||
         fieldIndex == 0xF || fieldIndex == 0x10 || fieldIndex == 0x11 || fieldIndex == 0x12)
     {
         return true;
     }
 
-    // Per-subfield camping tables (from Saturn RAM at 0x0020A5F4)
+    // Per-subfield destination tables (from Saturn RAM at 0x0020A5F4)
     static const s32 field1_subfields[] = { 1, 1, 0 };
     static const s32 field2_subfields[] = { 1, 1, 1 };
     static const s32 field3_subfields[] = { 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0 };
@@ -3982,11 +3982,11 @@ static bool canCampAtCurrentField()
     return false;
 }
 
-// 06071c34 — open camp script based on whether camping is allowed
-static void openCampScript()
+// 06071c34 — open destination script based on availability
+static void openDestinationScript()
 {
     sSaturnPtr scriptEA;
-    if (canCampAtCurrentField())
+    if (canSelectDestinationAtCurrentField())
     {
         scriptEA = gFLD_A3->getSaturnPtr(0x06080FAD);
     }
@@ -4927,7 +4927,7 @@ void handleBarrelRollInputAnalog(s_dragonTaskWorkArea* r4)
                     }
                     else
                     {
-                        r4->m254 = 0xFF7B425F;
+                        r4->m254 = -0x84BDA1;
                     }
                     r4->m23C |= 4;
                     r4->m244 = 9;
@@ -4935,7 +4935,7 @@ void handleBarrelRollInputAnalog(s_dragonTaskWorkArea* r4)
                 return;
             }
 
-            // Analog stick barrel roll (only when stopped)
+            // Analog stick rotation dash (only at idle speed)
             if (r4->m235_dragonSpeedIndex == 0)
             {
                 s8 analogX = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
@@ -5069,23 +5069,25 @@ void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
     else
     {
         r14->m20_angle[2] += r14->m3C_targetAngles[2] - intDivide(0x10, fixedPoint(r14->m3C_targetAngles[2] - r14->m20_angle[2]).normalized() * 15) - r14->m20_angle[2];
-        if (r9_y > 0)
+        s32 analogX = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
+        if (analogX > 0)
         {
             //0607F540
             fixedPoint r2 = r14->m20_angle[1] - r14->m30;
-            if (r2 >= intDivide(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32()))
+            if (r2 >= intDivide(0x7F, analogX * r14->m178_turnRate.asS32()))
             {
                 r14->m20_angle[2] -= intDivide(4, r14->m178_turnRate * 3);
                 r14->mFC |= 4;
                 r14->m25E = 1;
             }
         }
-        else if(r9_y < 0)
+        else if (analogX < 0)
         {
             //607F57E
             fixedPoint r2 = r14->m20_angle[1] - r14->m30;
-            if (r2 >= intDivide(0x7F, -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32()))
+            if (r2 >= intDivide(0x7F, -analogX * r14->m178_turnRate.asS32()))
             {
+                r14->m20_angle[2] += intDivide(4, r14->m178_turnRate * 3);
                 r14->mFC |= 8;
                 r14->m25E = 0;
             }
@@ -5153,7 +5155,7 @@ void handleBarrelRollInput(s_dragonTaskWorkArea* r14)
                     }
                     else
                     {
-                        r14->m254 = 0xFF7B425F;
+                        r14->m254 = -0x84BDA1;
                     }
                     r14->m23C |= 4;
                     r14->m244 = 9;

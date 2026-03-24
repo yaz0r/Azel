@@ -2,6 +2,7 @@
 
 struct sAttackCommand
 {
+    sSaturnPtr m0_attackParams;
     sSaturnPtr m4_cameraList;
     s8 m8_type;
     u8 m9_flags;
@@ -13,9 +14,11 @@ struct sGenericFormationPerTypeDataSub1C
 {
     sSaturnPtr m0;
     std::array<sAttackCommand*, 4> m4;
-    std::array<s8, 4> m14_quadrantFlags;
+    std::array<s8, 4> m14_quadrantFlags; // per-quadrant counter thresholds (0 = no counter)
+    std::array<s8, 4> m18_nextAnimIndex; // per-quadrant next attack anim index (-1 = keep current)
     u16 m1C_animationOffset;
     s8 m1E_quadrantAttackDirections; // rotated as a bitfield and ORed to compute per-quadrant safety/danger
+    u16 m20_timerValue;
     // size 0x24
 };
 
@@ -30,7 +33,8 @@ struct sGenericFormationPerTypeData
     sHotpointBundle* mC_hotspotDefinitions;
     s8 m18_knockbackStrength;
     std::vector<sGenericFormationPerTypeDataSub1C> m1C;
-    u32 m24;
+    sGenericFormationPerTypeDataSub1C* m20_beamHitCounterData;
+    sGenericFormationPerTypeDataSub1C* m24_beamHitAttackData;
     std::array<s8, 4> m28;
     s8 m38;
 };
@@ -63,7 +67,7 @@ struct sPerEnemySlot
     s8 m18_statusFlags;
     s8 m19_attackFlags;
     s8 m1A_hpRatio;
-    s8 m1C_flags;
+    u16 m1C_flags;
     //size 0x20
 };
 

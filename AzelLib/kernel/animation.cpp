@@ -271,9 +271,33 @@ void modelMode1_rotation(s_3dModel* p3dModel)
     }
 }
 
-void modelMode1_scale(s_3dModel* pDragonStateData1)
+// 0602297c
+void modelMode1_scale(s_3dModel* p3dModel)
 {
-    Unimplemented();
+    std::vector<sAnimationData::sTrackHeader>::const_iterator r8 = p3dModel->m30_pCurrentAnimation->m8_trackHeader.begin();
+
+    if (p3dModel->m10_currentAnimationFrame)
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            sPoseData& r7_poseData = p3dModel->m2C_poseData[i];
+            r7_poseData.m18_scale[0] += stepAnimationTrack(r7_poseData.m48[6], r8->m14_trackData[6], r8->m0_tracksLength[6]);
+            r7_poseData.m18_scale[1] += stepAnimationTrack(r7_poseData.m48[7], r8->m14_trackData[7], r8->m0_tracksLength[7]);
+            r7_poseData.m18_scale[2] += stepAnimationTrack(r7_poseData.m48[8], r8->m14_trackData[8], r8->m0_tracksLength[8]);
+            r8++;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            sPoseData& r7_poseData = p3dModel->m2C_poseData[i];
+            r7_poseData.m18_scale[0] = stepAnimationTrack(r7_poseData.m48[6], r8->m14_trackData[6], r8->m0_tracksLength[6]);
+            r7_poseData.m18_scale[1] = stepAnimationTrack(r7_poseData.m48[7], r8->m14_trackData[7], r8->m0_tracksLength[7]);
+            r7_poseData.m18_scale[2] = stepAnimationTrack(r7_poseData.m48[8], r8->m14_trackData[8], r8->m0_tracksLength[8]);
+            r8++;
+        }
+    }
 }
 
 void modelMode5_position0(s_3dModel* pDragonStateData1)

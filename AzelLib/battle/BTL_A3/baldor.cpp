@@ -68,7 +68,7 @@ s_3dModel* Baldor_create3dModel(sBaldorBase* pThis, sSaturnPtr dataPtr, s32 arg)
     return pOutputModel;
 }
 
-void Baldor_initSub0Sub1(p_workArea pThis, s_3dModel* pModel, s16* param3, std::vector<sBattleTargetable>& param4, std::vector<sVec3_FP>& param5)
+void initBattleTargetables(p_workArea pThis, s_3dModel* pModel, s16* param3, std::vector<sBattleTargetable>& param4, std::vector<sVec3_FP>& param5)
 {
     if(pModel->m40 == nullptr)
     {
@@ -120,7 +120,7 @@ void Baldor_initSub0(sBaldorBase* pThis, sSaturnPtr dataPtr, sFormationData* pFo
     else
     {
         pThis->m38_3dModel = Baldor_create3dModel(pThis, dataPtr, 0);
-        Baldor_initSub0Sub1(pThis, pThis->m38_3dModel, &pThis->mC_numTargetables, pThis->m14_targetable, pThis->m18_position);
+        initBattleTargetables(pThis, pThis->m38_3dModel, &pThis->mC_numTargetables, pThis->m14_targetable, pThis->m18_position);
     }
 
     Baldor_initSub0Sub2(pThis, pFormationEntry);
@@ -359,7 +359,7 @@ void Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormationEntry)
     pThis->m6C_oscillationPhase[2] = randomNumber();
 }
 
-s32 Baldor_updateSub0Sub0(p_workArea pThis, std::vector<sBattleTargetable>& param2, s16 entriesToParse, s16& param4)
+s32 checkTargetablesForDamage(p_workArea pThis, std::vector<sBattleTargetable>& param2, s16 entriesToParse, s16& param4)
 {
     int uVar4 = 0;
     int sVar3 = 0;
@@ -383,7 +383,7 @@ s32 Baldor_updateSub0Sub0(p_workArea pThis, std::vector<sBattleTargetable>& para
     return uVar4;
 }
 
-sVec3_FP* Baldor_updateSub0Sub1Sub0(std::vector<sBattleTargetable>& param1, int param2)
+sVec3_FP* getHitKnockbackDirection(std::vector<sBattleTargetable>& param1, int param2)
 {
     sVec3_FP* iVar3 = nullptr;
     for (int i=0; i<param2; i++)
@@ -403,7 +403,7 @@ void Baldor_updateSub0Sub1(sBaldor* pThis)
     pThis->m5C_rotationDelta[1] += (randomNumber() & 0x3fffff) - 0x1fffff;
     pThis->m5C_rotationDelta[2] += (randomNumber() & 0x7fffff) - 0x3fffff;
 
-    sVec3_FP* piVar2 = Baldor_updateSub0Sub1Sub0(pThis->m14_targetable, pThis->mC_numTargetables);
+    sVec3_FP* piVar2 = getHitKnockbackDirection(pThis->m14_targetable, pThis->mC_numTargetables);
     if (piVar2)
     {
         pThis->m50_translationDelta += *piVar2;
@@ -457,12 +457,12 @@ void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param
     createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60abef4_animatedQuads[iVar2], param1, param2, 0, param3, 0, 0);
 }
 
-void Baldor_updateSub0Sub2Sub0(p_workArea, sBattleTargetable&, int)
+void createHitSparkEffect(p_workArea, sBattleTargetable&, int)
 {
     Unimplemented();
 }
 
-void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param2, int param3, int param4, sEnemyLifeMeterTask* param5)
+void processHitTargetables(p_workArea pThis, std::vector<sBattleTargetable>& param2, int param3, int param4, sEnemyLifeMeterTask* param5)
 {
     for (int i = 0; i < param3; i++)
     {
@@ -471,7 +471,7 @@ void Baldor_updateSub0Sub2(sBaldor* pThis, std::vector<sBattleTargetable>& param
         {
             if (param4)
             {
-                Baldor_updateSub0Sub2Sub0(pThis, value, 0);
+                createHitSparkEffect(pThis, value, 0);
             }
 
             value.m50_flags &= ~0x80000;
@@ -493,7 +493,7 @@ void Baldor_updateSub0(sBaldor* pThis)
 
     if (!(pThis->m34_formationEntry->m48 & 4))
     {
-        if (Baldor_updateSub0Sub0(pThis, pThis->m14_targetable, pThis->mC_numTargetables, damageValue))
+        if (checkTargetablesForDamage(pThis, pThis->m14_targetable, pThis->mC_numTargetables, damageValue))
         {
             pThis->mE_damageValue += damageValue;
             pThis->m12_damagePending = 1;
@@ -502,7 +502,7 @@ void Baldor_updateSub0(sBaldor* pThis)
             pThis->m10_HP -= damageValue;
             if (pThis->m10_HP < 1)
             {
-                Baldor_updateSub0Sub2(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 0, pThis->m40_enemyLifeMeterTask);
+                processHitTargetables(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 0, pThis->m40_enemyLifeMeterTask);
                 pThis->m34_formationEntry->m48 |= 4;
                 createDamageDisplayTask(pThis, pThis->mE_damageValue, pThis->m1C_translation.m0_current, 1);
                 playSystemSoundEffect(0x66);
@@ -511,7 +511,7 @@ void Baldor_updateSub0(sBaldor* pThis)
             }
             else
             {
-                Baldor_updateSub0Sub2(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 1, pThis->m40_enemyLifeMeterTask);
+                processHitTargetables(pThis, pThis->m14_targetable, pThis->mC_numTargetables, 1, pThis->m40_enemyLifeMeterTask);
                 playSystemSoundEffect(0x65);
             }
         }
@@ -525,7 +525,7 @@ void Baldor_updateSub0(sBaldor* pThis)
     }
 }
 
-void Baldor_updateSub1(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s32 pDeltaFactor, s32 pDistanceToTargetFactor, s8 translationOrRotation)
+void springDampedStep(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s32 pDeltaFactor, s32 pDistanceToTargetFactor, s8 translationOrRotation)
 {
     switch(translationOrRotation)
     {
@@ -890,7 +890,7 @@ void Baldor_update(sBaldorBase* pThisBase)
         assert(0);
     }
 
-    Baldor_updateSub1(pThis->m1C_translation.m4_target, &pThis->m50_translationDelta, &pThis->m44_translationTarget, 0x1999, 0x147, 0);
+    springDampedStep(pThis->m1C_translation.m4_target, &pThis->m50_translationDelta, &pThis->m44_translationTarget, 0x1999, 0x147, 0);
 
     sVec2_FP temp;
     computeLookAt(gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta + pThis->m78_movementVector, temp);
@@ -909,7 +909,7 @@ void Baldor_update(sBaldorBase* pThisBase)
     (*pThis->m28_rotation.m4_target)[1] = temp[1] + 0x8000000;
     (*pThis->m28_rotation.m4_target)[2] = 0;
 
-    Baldor_updateSub1(pThis->m28_rotation.m0_current, &pThis->m5C_rotationDelta, pThis->m28_rotation.m4_target, 0x1999, 0x28F, 1);
+    springDampedStep(pThis->m28_rotation.m0_current, &pThis->m5C_rotationDelta, pThis->m28_rotation.m4_target, 0x1999, 0x28F, 1);
 
     if (isTraceEnabled())
     {

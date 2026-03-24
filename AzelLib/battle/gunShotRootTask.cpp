@@ -286,7 +286,7 @@ void sGunShotTask_UpdateSub2(sGunShotTask* pThis, s32 param_2, sVec3_FP* param_3
     }
 }
 
-void Baldor_updateSub0Sub2Sub2(sVec3_FP* param_1, sVec3_FP* param_2, int param_3, u8 param_4) {
+void createExplosionAtPosition(sVec3_FP* param_1, sVec3_FP* param_2, int param_3, u8 param_4) {
     int entryToUse;
     switch (param_4) {
     case 0:
@@ -398,7 +398,7 @@ void sGunShotTask_Update(sGunShotTask* pThis)
             if (pThis->m14[1] <= gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude)
             {
                 pThis->m_DrawMethod = nullptr;
-                Baldor_updateSub0Sub2Sub2(&pThis->m14, 0, 0x10000, 1);
+                createExplosionAtPosition(&pThis->m14, 0, 0x10000, 1);
                 pThis->m68->m50_flags &= ~0x200000;
                 pThis->getTask()->markFinished();
             }
@@ -421,7 +421,7 @@ void sGunShotTask_Update(sGunShotTask* pThis)
             if (pThis->m14[1] <= gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude)
             {
                 pThis->m_DrawMethod = nullptr;
-                Baldor_updateSub0Sub2Sub2(&pThis->m14, 0, 0x10000, 1);
+                createExplosionAtPosition(&pThis->m14, 0, 0x10000, 1);
                 pThis->m68->m50_flags &= ~0x200000;
                 pThis->getTask()->markFinished();
             }

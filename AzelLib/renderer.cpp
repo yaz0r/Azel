@@ -430,11 +430,20 @@ void azelSdl_StartFrame()
         if (SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 8000)
             buttonMask |= 0x1000; // R
 
+        // Analog stick → d-pad for menu navigation
+        // Saturn 3D pad had separate d-pad and stick; modern controllers need stick to work in menus
+        s16 stickX = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX);
+        s16 stickY = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY);
+        if (stickY < -16000) buttonMask |= 0x0010; // Up
+        if (stickY > 16000)  buttonMask |= 0x0020; // Down
+        if (stickX < -16000) buttonMask |= 0x0040; // Left
+        if (stickX > 16000)  buttonMask |= 0x0080; // Right
+
         setButtons(buttonMask);
 
         // Analog sticks
-        pending.m2_analogX = convertAxis(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX));
-        pending.m3_analogY = convertAxis(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY));
+        pending.m2_analogX = convertAxis(stickX);
+        pending.m3_analogY = convertAxis(stickY);
 
         // Analog triggers → m4 (L trigger) / m5 (R trigger), range 0-255
         // Saturn 3D pad reported 0x00=released, 0xFF=fully pressed
