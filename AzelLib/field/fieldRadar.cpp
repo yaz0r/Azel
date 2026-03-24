@@ -1,43 +1,6 @@
 #include "PDS.h"
 #include "fieldRadar.h"
 
-struct s_FieldRadar : public s_workAreaTemplate<s_FieldRadar>
-{
-    s_memoryAreaOutput m0;
-    s16 m8;
-    s16 mA;
-    s16 mC_X;
-    s16 mE_Y;
-    s16 m10;
-    s16 m12;
-    s32 m14_encounterCount;
-    s32 m18;
-    u32 m1C_encounterList;
-    s16 m28;
-    s16 m2A;
-    s32 m30;
-    s32 m34;
-    fixedPoint m38_dragonDirection;
-    u32 m3C;
-    s32 m40_paletteFadeDuration;
-    s8 m44;
-    s8 m48;
-    s8 m49;
-    s8 m4A_newPaletteIndex;
-    s8 m4B;
-    s8 m4C_dangerLevel;
-    s32 m50;
-    s32 m54;
-    s32 m58_altitudeGaugeEnabled;
-    s8 m59;
-    s8 m5A_isHidden;
-    s8 m5B;
-    s32 m5C;
-    s32 m60;
-    fixedPoint m64_encounterDistance;
-    fixedPoint m68_encounterDistanceSq;
-};
-
 
 void fieldRadar_hide()
 {
@@ -304,14 +267,12 @@ void fieldRadar_setEncounterDistance(fixedPoint distance)
 static void fieldRadar_clearBattleState()
 {
     s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
-    if (pRadar->m1C_encounterList != 0)
+    if (pRadar->m1C_encounterList != nullptr)
     {
-        // freeVdp1Block equivalent — the list was allocated with allocateHeapForTask
-        // on Saturn this frees the VDP1 block; in C++ the task system handles cleanup
-        pRadar->m1C_encounterList = 0;
+        pRadar->m1C_encounterList = nullptr;
     }
     pRadar->m14_encounterCount = 0;
-    pRadar->m18 = 0;
+    pRadar->m18_currentSelection = 0;
 }
 
 // 06071e94 — parse random battle encounter list from script data
@@ -341,7 +302,7 @@ static void fieldRadar_parseEncounterList(s32 scriptIndex)
 
     // Allocate and populate entry table
     u32* pAlloc = (u32*)allocateHeapForTask(pRadar, pRadar->m14_encounterCount * 0x14);
-    pRadar->m1C_encounterList = (u32)(uintptr_t)pAlloc;
+    pRadar->m1C_encounterList = (sRadarDestEntry*)pAlloc;
     if (pAlloc)
     {
         // First entry: default "deactivate" option

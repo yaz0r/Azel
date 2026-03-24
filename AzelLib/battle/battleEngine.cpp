@@ -3139,7 +3139,61 @@ void battleEngine_MainUpdate(s_battleEngine* pThis)
             }
             break;
         case 2: // analog
-            assert(0); 
+        {
+            // Analog stick directly controls pitch/yaw
+            pThis->m1BC_dragonYaw = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * -0x200;
+            pThis->m1B8_dragonPitch = (s32)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY << 8;
+
+            // Same orbit rotation logic as digital
+            if (graphicEngineStatus.m4514.mD8_buttonConfig[2][7] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown)
+            {
+                if (pThis->m388 & 0x40)
+                    return;
+
+                if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) == 0)
+                {
+                    int uVar4 = shiftLeft32(1, quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][1]);
+                    if ((uVar4 & gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon) == 0)
+                    {
+                        initiateDragonBattleMove(1, 0x1E);
+                        bVar1 = 0;
+                    }
+                }
+                else
+                {
+                    bVar1 = 0;
+                }
+            }
+            else if (graphicEngineStatus.m4514.mD8_buttonConfig[2][6] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown)
+            {
+                if (pThis->m388 & 0x20)
+                    return;
+
+                if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) == 0)
+                {
+                    int uVar4 = shiftLeft32(1, quadrantRotationTable[gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant][2]);
+                    if ((uVar4 & gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon) == 0)
+                    {
+                        initiateDragonBattleMove(2, 0x1E);
+                        bVar1 = 0;
+                    }
+                }
+                else
+                {
+                    bVar1 = 0;
+                }
+            }
+
+            if (
+                (((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) != 0) | (bVar1)) &&
+                (((graphicEngineStatus.m4514.mD8_buttonConfig[2][7] | graphicEngineStatus.m4514.mD8_buttonConfig[2][6]) & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown) != 0)
+                )
+            {
+                playSystemSoundEffect(5);
+                return;
+            }
+            break;
+        }
         default:
             assert(0);
         }

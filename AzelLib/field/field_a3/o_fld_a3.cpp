@@ -3201,6 +3201,10 @@ s32 playRiderAnim(s32 riderIndex, s_animDataFrame* r5)
     return r0;
 }
 
+static s32 radarBuildFilteredChoiceList(s_FieldRadar* pRadar);
+static s32 radarFindFilteredIndex(s_FieldRadar* pRadar, s32 selection);
+void createMultiChoice(s32 r4, s32 r5);
+
 s32 executeNative(sSaturnPtr ptr)
 {
     assert(ptr.m_file == gFLD_A3);
@@ -3250,6 +3254,21 @@ s32 executeNative(sSaturnPtr ptr)
             assert(0);
         }
         return 0; // result ignored?
+    case 0x060730bc: // 060730bc — camp destination multichoice dialog
+    {
+        s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
+        if (pRadar->m1C_encounterList != nullptr)
+        {
+            s32 numChoices = radarBuildFilteredChoiceList(pRadar);
+            if (numChoices != 0)
+            {
+                s32 defaultChoice = radarFindFilteredIndex(pRadar, pRadar->m18_currentSelection);
+                createMultiChoice(pRadar->m24_filteredChoiceCount, defaultChoice);
+            }
+            return pRadar->m24_filteredChoiceCount;
+        }
+        return 0;
+    }
     case 0x0605985c: // used in A2 destroyed ship cutscene
         return initCrashedShipDestruction();
     case 0x606ACB0:
@@ -3753,6 +3772,10 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
     return m4_currentScript;
 }
 
+static void openCampScript(); // forward declaration
+static s32 radarBuildFilteredChoiceList(s_FieldRadar* pRadar);
+static s32 radarFindFilteredIndex(s_FieldRadar* pRadar, s32 selection);
+void createMultiChoice(s32 r4, s32 r5);
 void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
 {
     fieldScriptTaskUpdateSub1();
@@ -3824,10 +3847,154 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][12])
         {
             //06069AF0
-            assert(0);
+            openCampScript();
+            return;
         }
         return;
     }
+}
+
+// Helper: resolve game state bit index (values >= 1000 are offset by 0x236)
+static bool checkGameStateBit(u32 bitIndex)
+{
+    u32 resolved = bitIndex;
+    if ((s32)bitIndex > 999)
+        resolved = bitIndex - 0x236;
+    u32 byteIndex = resolved >> 3;
+    u32 bitInByte = resolved & 7;
+    return (bitMasks[bitInByte] & mainGameState.bitField[byteIndex]) != 0;
+}
+
+// 06072f8a — build filtered choice list from radar destination entries
+static s32 radarBuildFilteredChoiceList(s_FieldRadar* pRadar)
+{
+    s32 count = pRadar->m14_encounterCount - 1;
+    pRadar->m24_filteredChoiceCount = 0;
+
+    // First pass: count available destinations and validate current selection
+    s32* pEntry = (s32*)pRadar->m1C_encounterList;
+    for (s32 i = count; i > 0; i--)
+    {
+        u32 bitIndex = *(u32*)(((u8*)pEntry) + 0x18);
+        if (!checkGameStateBit(bitIndex))
+        {
+            // Destination not available — if current selection points here, reset it
+            if (pRadar->m18_currentSelection == pRadar->m14_encounterCount - i)
+            {
+                pRadar->m18_currentSelection = 0;
+            }
+        }
+        else
+        {
+            pRadar->m24_filteredChoiceCount++;
+        }
+        pEntry += 5; // advance by 0x14 bytes
+    }
+
+    // Set string table entry 2 to current selection text
+    const char* selText = "";
+    if (pRadar->m18_currentSelection > 0)
+    {
+        pRadar->m24_filteredChoiceCount++;
+        selText = *(const char**)((u8*)pRadar->m1C_encounterList + pRadar->m18_currentSelection * 0x14);
+    }
+    setGlobalStringTableEntry(2, selText);
+
+    // Second pass: allocate and fill choice array
+    if (pRadar->m24_filteredChoiceCount != 0)
+    {
+        pRadar->m20_choiceArray = (s32*)allocateHeapForTask((s_workArea*)pRadar,
+            pRadar->m24_filteredChoiceCount * 4);
+        if (pRadar->m20_choiceArray != nullptr)
+        {
+            s32* pEntry2 = (s32*)pRadar->m1C_encounterList;
+            s32 choiceIdx = 0;
+            for (s32 i = count; i > 0; i--)
+            {
+                u32 bitIndex = *(u32*)(((u8*)pEntry2) + 0x18);
+                if (checkGameStateBit(bitIndex))
+                {
+                    pRadar->m20_choiceArray[choiceIdx] = *(s32*)(((u8*)pEntry2) + 0x14);
+                    choiceIdx++;
+                }
+                pEntry2 += 5;
+            }
+            // Add "back" option if current selection is set
+            if (pRadar->m18_currentSelection > 0)
+            {
+                pRadar->m20_choiceArray[choiceIdx] = *(s32*)pRadar->m1C_encounterList;
+            }
+        }
+    }
+
+    return pRadar->m24_filteredChoiceCount;
+}
+
+// 06072df0 — find the filtered index for the current selection
+static s32 radarFindFilteredIndex(s_FieldRadar* pRadar, s32 selection)
+{
+    s32 filteredIndex = -1;
+    u8* pEntry = (u8*)pRadar->m1C_encounterList + 0x14; // start at entry 1
+
+    for (s32 i = selection - 1; i >= 0; i--)
+    {
+        u32 bitIndex = *(u32*)(pEntry + 4);
+        if (checkGameStateBit(bitIndex))
+        {
+            filteredIndex++;
+        }
+        pEntry += 0x14;
+    }
+    return filteredIndex;
+}
+
+// 06012768 — check if camping is allowed at current field/subfield
+static bool canCampAtCurrentField()
+{
+    s16 fieldIndex = getFieldTaskPtr()->m2C_currentFieldIndex;
+
+    // These fields always allow camping
+    if (fieldIndex == 4 || fieldIndex == 9 || fieldIndex == 0xB ||
+        fieldIndex == 0xF || fieldIndex == 0x10 || fieldIndex == 0x11 || fieldIndex == 0x12)
+    {
+        return true;
+    }
+
+    // Per-subfield camping tables (from Saturn RAM at 0x0020A5F4)
+    static const s32 field1_subfields[] = { 1, 1, 0 };
+    static const s32 field2_subfields[] = { 1, 1, 1 };
+    static const s32 field3_subfields[] = { 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0 };
+
+    const s32* subTable = nullptr;
+    s32 subTableSize = 0;
+    switch (fieldIndex)
+    {
+    case 1: subTable = field1_subfields; subTableSize = 3; break;
+    case 2: subTable = field2_subfields; subTableSize = 3; break;
+    case 3: subTable = field3_subfields; subTableSize = 11; break;
+    default: return false;
+    }
+
+    s16 subFieldIndex = getFieldTaskPtr()->m2E_currentSubFieldIndex;
+    if (subFieldIndex < subTableSize && subTable[subFieldIndex] != 0)
+        return true;
+
+    return false;
+}
+
+// 06071c34 — open camp script based on whether camping is allowed
+static void openCampScript()
+{
+    sSaturnPtr scriptEA;
+    if (canCampAtCurrentField())
+    {
+        scriptEA = gFLD_A3->getSaturnPtr(0x06080FAD);
+    }
+    else
+    {
+        scriptEA = gFLD_A3->getSaturnPtr(0x0608106F);
+    }
+    queueNewFieldScript(scriptEA, -1);
 }
 
 void createFieldScriptTask(s_workArea* pWorkArea)
@@ -4735,20 +4902,59 @@ void applyDragonAnimationFromAnalog(s_dragonTaskWorkArea* r11, s_dragonState* r1
     }
 }
 
+static void startBarrelRollMode(s_dragonTaskWorkArea* r14);
 void handleBarrelRollInputAnalog(s_dragonTaskWorkArea* r4)
 {
-    if (r4->m258-- > 0)
+    s32 timer = (s32)r4->m258 - 1;
+    r4->m258 = timer;
+    if (timer < 1)
     {
-        return;
-    }
+        r4->m25D = 0;
+        r4->m258 = 0;
 
-    r4->m25D = 0;
-    r4->m258 = 0;
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][15])
+        {
+            // 0607E7F8: forward + barrel roll button → reverse barrel roll
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0])
+            {
+                if (gDragonState->mC_dragonType != 8) // not floater
+                {
+                    r4->m25D = 2;
+                    r4->m258 = 0x18;
+                    if (r4->m25E == 0)
+                    {
+                        r4->m254 = 0x84BDA1;
+                    }
+                    else
+                    {
+                        r4->m254 = 0xFF7B425F;
+                    }
+                    r4->m23C |= 4;
+                    r4->m244 = 9;
+                }
+                return;
+            }
 
-    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][15])
-    {
-        //0607E7F8
-        assert(0);
+            // Analog stick barrel roll (only when stopped)
+            if (r4->m235_dragonSpeedIndex == 0)
+            {
+                s8 analogX = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
+                if (analogX < 0)
+                {
+                    // Tilt left → barrel roll left
+                    r4->m250 = fixedPoint((s32)r4->m20_angle[1] + (s32)0xF838E38F).normalized();
+                    startBarrelRollMode(r4);
+                    return;
+                }
+                if (analogX > 0)
+                {
+                    // Tilt right → barrel roll right
+                    r4->m250 = fixedPoint((s32)r4->m20_angle[1] + (s32)0x7C71C71).normalized();
+                    startBarrelRollMode(r4);
+                    return;
+                }
+            }
+        }
     }
 }
 
@@ -5259,65 +5465,68 @@ void resetDragonSpeedIndex(s_dragonTaskWorkArea* r4)
 
 void updateDragonSpeed(s_dragonTaskWorkArea* r14)
 {
-    if (r14->m25C & 0x1)
+    // 0607E8B6: clear boost flag if new button pressed or speed <= 0
+    if ((r14->m25C & 0x1) &&
+        (((graphicEngineStatus.m4514.mD8_buttonConfig[1][0] | graphicEngineStatus.m4514.mD8_buttonConfig[1][11]) &
+          graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown) != 0 ||
+         r14->m235_dragonSpeedIndex < 1))
     {
-        assert(0);
+        r14->m25C &= ~1;
     }
 
-    if ((r14->m25C & 0x2) == 0)
+    // 0607E8E4: brake button check (buttonConfig[1][11] without forward)
+    if ((r14->m25C & 0x2) == 0 &&
+        (graphicEngineStatus.m4514.mD8_buttonConfig[1][11] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown))
     {
-        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][11])
+        if (graphicEngineStatus.m4514.mD8_buttonConfig[1][0] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown)
         {
-            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0])
-            {
-                r14->m235_dragonSpeedIndex = -1;
-            }
-            else
-            {
-                //0607E910
-                assert(0);
-            }
+            // Both brake and forward held → set speed to -1
+            r14->m235_dragonSpeedIndex = -1;
         }
-    }
-
-    r14->m25C |= 2;
-
-    if (isDragonBoostLocked())
-    {
-        assert(0);
-    }
-
-    u8 r5;
-    if (r14->m25C & 4)
-    {
-        r5 = 4;
-    }
-    else
-    {
-        r5 = 3;
-    }
-
-    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0]) // go forward
-    {
-        //0607E960
-        if (++r14->m234 > 4)
+        else
         {
-            if (++r14->m235_dragonSpeedIndex >= r5)
-            {
-                r14->m235_dragonSpeedIndex = r5;
-            }
-            r14->m234 = 0;
+            // 0607E910: brake only → reset speed and return
+            resetDragonSpeedIndex(r14);
+            return;
         }
     }
     else
     {
-        resetDragonSpeedIndex(r14);
-    }
+        // 0607E920: normal speed update path
+        r14->m25C |= 2;
 
-    if (isDragonBoostAvailable())
-    {
-        //0607E9AE
-        assert(0);
+        if (isDragonBoostLocked() &&
+            (graphicEngineStatus.m4514.mD8_buttonConfig[1][15] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown))
+        {
+            r14->m25C |= 4;
+        }
+
+        s8 maxSpeed = (r14->m25C & 4) ? 4 : 3;
+
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0])
+        {
+            // 0607E960: forward held — accelerate
+            if (++r14->m234 > 4)
+            {
+                if (++r14->m235_dragonSpeedIndex >= maxSpeed)
+                {
+                    r14->m235_dragonSpeedIndex = maxSpeed;
+                }
+                r14->m234 = 0;
+            }
+        }
+        else
+        {
+            resetDragonSpeedIndex(r14);
+        }
+
+        // 0607E9AE: boost initiation
+        if (isDragonBoostAvailable() && r14->m235_dragonSpeedIndex > 0 && (s32)r14->m154_dragonSpeed > 0 &&
+            (graphicEngineStatus.m4514.mD8_buttonConfig[1][11] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown))
+        {
+            r14->m25C |= 1;
+            r14->m158 = r14->m154_dragonSpeed;
+        }
     }
 }
 

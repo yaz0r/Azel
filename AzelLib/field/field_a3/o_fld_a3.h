@@ -16,13 +16,21 @@ struct FLD_A3_data : public sSaturnMemoryFile
         m_savePointGouraudColors = getSaturnPtr(0x060957D0);
         m_explosionQuad = initVdp1Quad(getSaturnPtr(0x06082ab8));
         m_smokeQuad = initVdp1Quad(getSaturnPtr(0x06082d58));
+        m_waterfallSprayQuad = initVdp1Quad(getSaturnPtr(0x06082818));
+        m_waterfallSplashQuadA = initVdp1Quad(getSaturnPtr(0x06082700));
+        m_waterfallSplashQuadB = initVdp1Quad(getSaturnPtr(0x060829a0));
+        m_waterfallDropletQuad = initVdp1Quad(getSaturnPtr(0x06082674));
     }
 
     std::vector<sVdp1Quad> m_0x0609518C_animatedQuad;
     std::vector<sVdp1Quad> m_0x06095330_animatedQuad;
     std::vector<sVdp1Quad> m_savePointParticleQuad;
     std::vector<sVdp1Quad> m_explosionQuad;  // 0x06082ab8
-    std::vector<sVdp1Quad> m_smokeQuad;      // 0x06082d58
+    std::vector<sVdp1Quad> m_smokeQuad;           // 0x06082d58
+    std::vector<sVdp1Quad> m_waterfallSprayQuad;   // 0x06082818
+    std::vector<sVdp1Quad> m_waterfallSplashQuadA; // 0x06082700
+    std::vector<sVdp1Quad> m_waterfallSplashQuadB; // 0x060829a0
+    std::vector<sVdp1Quad> m_waterfallDropletQuad; // 0x06082674
     sSaturnPtr m_savePointGouraudColors;
 };
 

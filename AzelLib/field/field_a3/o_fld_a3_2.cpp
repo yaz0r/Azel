@@ -3,10 +3,13 @@
 #include "items.h"
 #include "audio/soundDriver.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/field_a3/particlePool.h"
 #include "field/fieldRadar.h"
 #include "field/exitField.h"
 #include "field/fieldItemBox.h"
 #include "field/battleStart.h"
+#include "kernel/fileBundle.h"
+#include "trigo.h"
 
 extern s32 battleIndex; // TODO: cleanup
 s32 playBattleSoundEffect(s32 effectIndex); // TODO: cleanup
@@ -93,66 +96,285 @@ void fieldA3_2_createExitLCSTask(p_workArea workArea)
     createSubTask<fieldA3_2_exitLCSTask>(workArea);
 }
 
+// 06055a42 — LCS callback: triggers waterfall splash (mode 0 → mode 1)
+static void waterfallLCSCallback(p_workArea pWorkArea, sLCSTarget*);
+
+// Animation frame → model offset lookup table (big-endian shorts at 060834fc)
+static const u16 waterfallModelOffsets[] = { 0x00F0, 0x00F4, 0x00F8, 0x00FC, 0x0100 };
+
+// 06055924 — quadratic bezier interpolation: output = (1-t)²·P0 + 2t(1-t)·P1 + t²·P2
+// Control points are 3 consecutive sVec3_FP in Saturn big-endian format
+static void bezierInterpolateFromSaturn(sVec3_FP* output, sSaturnPtr controlPointsEA, fixedPoint t)
+{
+    fixedPoint oneMinusT = fixedPoint(0x10000) - t;
+    fixedPoint twoTOneMinusT = MTH_Mul(oneMinusT, t) << 1;
+    fixedPoint tSquared = MTH_Mul(t, t);
+    fixedPoint oneMinusTSquared = MTH_Mul(oneMinusT, oneMinusT);
+
+    // Read 3 control points (each 12 bytes = 3 s32)
+    sVec3_FP p0 = readSaturnVec3(controlPointsEA);
+    sVec3_FP p1 = readSaturnVec3(controlPointsEA + 0x0C);
+    sVec3_FP p2 = readSaturnVec3(controlPointsEA + 0x18);
+
+    output->m0_X = MTH_Mul(p0.m0_X, oneMinusTSquared) +
+                   MTH_Mul(p1.m0_X, twoTOneMinusT) +
+                   MTH_Mul(p2.m0_X, tSquared);
+    output->m4_Y = MTH_Mul(p0.m4_Y, oneMinusTSquared) +
+                   MTH_Mul(p1.m4_Y, twoTOneMinusT) +
+                   MTH_Mul(p2.m4_Y, tSquared);
+    output->m8_Z = MTH_Mul(p0.m8_Z, oneMinusTSquared) +
+                   MTH_Mul(p1.m8_Z, twoTOneMinusT) +
+                   MTH_Mul(p2.m8_Z, tSquared);
+}
+
 // Waterfall decoration task — animated 3D models / billboard sprites
 // 06055CC6 (init), 06055B62 (update), 06055AD2 (draw)
 struct sWaterfallTask : public s_workAreaTemplateWithArg<sWaterfallTask, sSaturnPtr>
 {
+    // 06055CC6
     static void Init(sWaterfallTask* pThis, sSaturnPtr arg)
     {
         getMemoryArea(&pThis->m0_memArea, 4);
-        pThis->m8_position = readSaturnVec3(arg);
-        pThis->m24_rotAngle = readSaturnS32(arg + 0x1C);
+        pThis->m8_position.m0_X = readSaturnS32(arg + 0x00);
+        pThis->m8_position.m4_Y = readSaturnS32(arg + 0x04);
+        pThis->m8_position.m8_Z = readSaturnS32(arg + 0x08);
+        pThis->m28_amplitude = readSaturnS32(arg + 0x0C);
+        pThis->m2C_param = readSaturnS32(arg + 0x10);
+        pThis->m30_param2 = readSaturnS32(arg + 0x14);
+        pThis->m34_rotSpeed = readSaturnS32(arg + 0x18);
+        pThis->m20_rotAngle = readSaturnS32(arg + 0x1C);
+        pThis->m14_LCSPosition.m4_Y = pThis->m8_position.m4_Y;
         pThis->m3E_mode = 0;
-        // TODO: full init — createLCSTarget, read remaining params from arg
-        Unimplemented();
+
+        createLCSTarget(&pThis->m40_LCSTarget, pThis, &waterfallLCSCallback,
+            &pThis->m14_LCSPosition, nullptr, 0, 0, eItems::mMinusOne, 0, 0);
     }
+
+    // 06055B62
     static void Update(sWaterfallTask* pThis)
     {
-        // TODO: animation cycling (mode 0) / billboard anim (mode 1)
+        if (pThis->m3E_mode == 0)
+        {
+            // Cycle animation frame (0-9)
+            if (pThis->m3C_animFrame < 9)
+                pThis->m3C_animFrame = pThis->m3C_animFrame + 1;
+            else
+                pThis->m3C_animFrame = 0;
+
+            // Advance rotation angle
+            pThis->m20_rotAngle += pThis->m34_rotSpeed;
+
+            // Compute values using sin/cos tables (results not stored to struct in mode 0,
+            // only used for return value which the task scheduler ignores)
+            u32 angle = ((u32)(s32)pThis->m20_rotAngle >> 16) & 0xFFF;
+            fixedPoint sinResult = MTH_Mul(pThis->m28_amplitude, getSin(angle));
+
+            // MTH_Mul_5_6: m28 * cos(angle) + m2C (result unused in mode 0)
+            fixedPoint cosAngle = getCos(angle);
+            MTH_Mul(pThis->m28_amplitude, cosAngle);
+
+            u32 angle2 = ((u32)(s32)pThis->m30_param2 >> 16) & 0xFFF;
+            MTH_Mul(sinResult, getCos(angle2));
+        }
+        else if (pThis->m3E_mode == 1)
+        {
+            // Splash billboard animation
+            fixedPoint sinVal = MTH_Mul(fixedPoint(0x20000), getSin(((u32)pThis->m38_animProgress >> 16) & 0xFFF));
+            pThis->m14_LCSPosition.m4_Y = sinVal + pThis->m8_position.m4_Y;
+
+            if ((s32)pThis->m38_animProgress < (s32)0x8000000)
+            {
+                sGunShotTask_UpdateSub4(&pThis->m74_animQuad);
+                pThis->m38_animProgress += 0x5B05B0;
+            }
+            else
+            {
+                // Spawn spray particle at LCS position
+                spawnWaterfallSpray(&pThis->m14_LCSPosition);
+                pThis->m14_LCSPosition.m4_Y = pThis->m8_position.m4_Y;
+                pThis->m3E_mode = 0;
+            }
+        }
     }
+
+    // 06055AD2
     static void Draw(sWaterfallTask* pThis)
     {
         if (pThis->m3E_mode == 0)
         {
             pushCurrentMatrix();
-            translateCurrentMatrix(&pThis->m8_position);
-            // TODO: addObjectToDrawList from file bundle
+            translateCurrentMatrix(&pThis->m14_LCSPosition);
+            rotateCurrentMatrixShiftedY(pThis->m24_computedY); // offset 0x24, stays 0 from init
+
+            // Look up model offset from animation frame table
+            u16 modelOffset = waterfallModelOffsets[pThis->m3C_animFrame >> 1];
+            s_fileBundle* pBundle = pThis->m0_memArea.m0_mainMemoryBundle;
+            addObjectToDrawList(pBundle->get3DModel(modelOffset));
+
             popMatrix();
         }
-        // TODO: mode 1 billboard rendering
+        else if (pThis->m3E_mode == 1)
+        {
+            // Billboard splash rendering
+            fixedPoint angle = pThis->m38_animProgress;
+            if ((s32)angle > (s32)0x3FFFFFF)
+            {
+                angle = fixedPoint(0x8000000) - angle;
+            }
+            fixedPoint halfAngle = fixedPoint((s32)angle >> 1);
+            if (pThis->m3F_direction != 0)
+            {
+                halfAngle = -halfAngle;
+            }
+
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pThis->m14_LCSPosition);
+            rotateCurrentMatrixShiftedZ(halfAngle);
+            // Billboard particle rendering via FUN_0602d4d8
+            // TODO: FUN_0602d4d8 is a proper billboard quad renderer, using drawProjectedParticle as substitute
+            drawProjectedParticle(&pThis->m74_animQuad, &pThis->m14_LCSPosition);
+            popMatrix();
+        }
     }
 
-    s_memoryAreaOutput m0_memArea;
-    sVec3_FP m8_position;   // +0x14 in Saturn (offset 5*4)
-    s32 m24_rotAngle;       // +0x24
-    s16 m3C_animFrame;
-    s8 m3E_mode;
-    s8 m3F;
-    // size: 0x7C
+    // Helper: spawn spray particle via particle pool
+    static void spawnWaterfallSpray(sVec3_FP* position)
+    {
+        sVec3_FP velocity = { 0, 0, 0 };
+        sParticleSpawnConfig config;
+        config.m0_pPosition = position;
+        config.m4_pVelocity = &velocity;
+        config.m8_pQuadData = &gFLD_A3->m_waterfallSprayQuad;
+        config.m14_updateFunc = &particleUpdateMoving;
+        config.m18_heapSize = 0;
+        config.m1C_heapData = nullptr;
+
+        s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+        if (pFieldData->m168)
+        {
+            spawnParticleInPool((sParticlePoolManager*)pFieldData->m168, &config, 0);
+        }
+    }
+
+    s_memoryAreaOutput m0_memArea;    // 0x00
+    sVec3_FP m8_position;            // 0x08 — rendering position
+    sVec3_FP m14_LCSPosition;        // 0x14 — LCS target position
+    fixedPoint m20_rotAngle;         // 0x20 — accumulating rotation angle
+    fixedPoint m24_computedY;        // 0x24 — computed rotation for draw
+    fixedPoint m28_amplitude;        // 0x28 — sin amplitude
+    fixedPoint m2C_param;            // 0x2C
+    fixedPoint m30_param2;           // 0x30
+    fixedPoint m34_rotSpeed;         // 0x34 — rotation speed per frame
+    fixedPoint m38_animProgress;     // 0x38 — mode 1 animation progress
+    u16 m3C_animFrame;               // 0x3C — mode 0 frame counter (0-9)
+    s8 m3E_mode;                     // 0x3E — 0=model, 1=splash billboard
+    s8 m3F_direction;                // 0x3F — billboard flip direction
+    sLCSTarget m40_LCSTarget;        // 0x40
+    sAnimatedQuad m74_animQuad;      // 0x74 — mode 1 billboard particle
+    // size 0x7C
 };
 
-// Simpler waterfall element
+// 06055a42
+static void waterfallLCSCallback(p_workArea pWorkArea, sLCSTarget*)
+{
+    sWaterfallTask* pThis = static_cast<sWaterfallTask*>(pWorkArea);
+
+    // Spawn spray particle at LCS position
+    sWaterfallTask::spawnWaterfallSpray(&pThis->m14_LCSPosition);
+
+    // Switch to mode 1 (splash animation)
+    pThis->m3E_mode = 1;
+    pThis->m38_animProgress = 0;
+
+    // Determine direction based on camera-relative angle
+    sVec3_FP dragonAngle = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m20_angle;
+    fixedPoint angleDiff = dragonAngle.m4_Y - pThis->m20_rotAngle;
+    u32 angleIndex = ((u32)(s32)angleDiff >> 16) & 0xFFF;
+    if ((s32)getSin(angleIndex) < 0)
+    {
+        pThis->m3F_direction = 0;
+        particleInitSub(&pThis->m74_animQuad,
+            (u16)((s32)(pThis->m0_memArea.m4_characterArea + 0xDA400000) >> 3),
+            &gFLD_A3->m_waterfallSplashQuadA);
+    }
+    else
+    {
+        pThis->m3F_direction = 1;
+        particleInitSub(&pThis->m74_animQuad,
+            (u16)((s32)(pThis->m0_memArea.m4_characterArea + 0xDA400000) >> 3),
+            &gFLD_A3->m_waterfallSplashQuadB);
+    }
+}
+
+// Simpler waterfall element — follows a bezier curve
 // 06055D82 (init), 06055D4E (update), 06055D3A (draw)
 struct sWaterfallSimpleTask : public s_workAreaTemplateWithArg<sWaterfallSimpleTask, sSaturnPtr>
 {
+    // 06055D82
     static void Init(sWaterfallSimpleTask* pThis, sSaturnPtr arg)
     {
         getMemoryArea(&pThis->m0_memArea, 4);
-        pThis->m8_position = readSaturnVec3(arg);
-        Unimplemented();
-    }
-    static void Update(sWaterfallSimpleTask*) {}
-    static void Draw(sWaterfallSimpleTask* pThis)
-    {
-        pushCurrentMatrix();
-        translateCurrentMatrix(&pThis->m8_position);
-        // TODO: render waterfall billboard
-        popMatrix();
+
+        // arg points to Saturn data: first dword is a pointer to 3 control points (sVec3_FP[3])
+        // second dword is a speed parameter
+        pThis->m14_pControlPoints = readSaturnEA(arg);
+        s32 param = readSaturnS32(arg + 4);
+
+        // Read control points and compute distance between first and last
+        sVec3_FP p0 = readSaturnVec3(pThis->m14_pControlPoints);
+        sVec3_FP p2 = readSaturnVec3(pThis->m14_pControlPoints + 0x18);
+
+        sVec3_FP delta;
+        delta.m0_X = p2.m0_X - p0.m0_X;
+        delta.m4_Y = p2.m4_Y - p0.m4_Y;
+        delta.m8_Z = p2.m8_Z - p0.m8_Z;
+
+        fixedPoint distSquared = MTH_Product3d_FP(delta, delta);
+        fixedPoint dist = sqrt_F(distSquared);
+
+        // Compute interpolation step: 0x10000 / (dist / param)
+        s32 speed = (s32)dist / param;
+        pThis->m1C_stepSize = fixedPoint(0x10000 / speed);
+
+        pThis->m18_t = 0;
+
+        // Init billboard particle
+        u16 cmdsrca = (u16)((s32)(pThis->m0_memArea.m4_characterArea + 0xDA400000) >> 3);
+        particleInitSub(&pThis->m20_animQuad, cmdsrca, &gFLD_A3->m_waterfallDropletQuad);
     }
 
-    s_memoryAreaOutput m0_memArea;
-    sVec3_FP m8_position;
-    // size: 0x28
+    // 06055D4E
+    static void Update(sWaterfallSimpleTask* pThis)
+    {
+        sGunShotTask_UpdateSub4(&pThis->m20_animQuad);
+
+        // Interpolate position along bezier curve
+        bezierInterpolateFromSaturn(&pThis->m8_position, pThis->m14_pControlPoints, pThis->m18_t);
+
+        // Advance t
+        if ((s32)pThis->m18_t < (s32)0x10000)
+        {
+            pThis->m18_t += pThis->m1C_stepSize;
+        }
+        else
+        {
+            pThis->m18_t = 0;
+        }
+    }
+
+    // 06055D3A
+    static void Draw(sWaterfallSimpleTask* pThis)
+    {
+        drawProjectedParticle(&pThis->m20_animQuad, &pThis->m8_position);
+    }
+
+    s_memoryAreaOutput m0_memArea;    // 0x00
+    sVec3_FP m8_position;            // 0x08 — current interpolated position
+    sSaturnPtr m14_pControlPoints;   // 0x14 — Saturn pointer to 3 control points
+    fixedPoint m18_t;                // 0x18 — interpolation parameter (0 to 0x10000)
+    fixedPoint m1C_stepSize;         // 0x1C — step per frame
+    sAnimatedQuad m20_animQuad;      // 0x20 — billboard particle
+    // size 0x28
 };
 
 // 06055e22

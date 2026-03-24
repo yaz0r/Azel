@@ -373,8 +373,19 @@ void azelSdl_StartFrame()
 
 #ifndef USE_NULL_RENDERER
 
+    // Helper: set button bits with proper per-button new-press detection
+    auto& pending = graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending;
+    auto& current = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current;
+    auto setButtons = [&](u16 buttonMask) {
+        pending.m6_buttonDown |= buttonMask;
+        u16 newBits = buttonMask & ~current.m6_buttonDown;
+        pending.m8_newButtonDown |= newBits;
+        pending.mC_newButtonDown2 |= newBits;
+    };
+
+    // --- Gamepad ---
     static SDL_Gamepad* controller = nullptr;
-    if(controller == nullptr)
+    if (controller == nullptr)
     {
         int numGamepads = 0;
         SDL_JoystickID* gamepads = SDL_GetGamepads(&numGamepads);
@@ -393,37 +404,48 @@ void azelSdl_StartFrame()
         }
     }
 
+    bool hasGamepad = false;
     if (controller)
     {
-        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m0_inputType = 2;
-
+        // Saturn button mapping:
+        // 0x0001=A, 0x0002=B, 0x0004=C, 0x0008=Start
+        // 0x0010=Up, 0x0020=Down, 0x0040=Left, 0x0080=Right
+        // 0x0800=X, 0x1000=R, 0x4000=Y, 0x8000=L
         u16 buttonMask = 0;
-        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_SOUTH) << 0;
-        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_EAST) << 1;
-        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_NORTH) << 2;
-        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_START) << 3;
-        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_UP) << 4;
-        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_DOWN) << 5;
-        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_LEFT) << 6;
-        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_RIGHT) << 7;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_SOUTH) ? 0x0001 : 0; // A
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_EAST) ? 0x0002 : 0;  // B
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_NORTH) ? 0x0004 : 0; // C
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_WEST) ? 0x0800 : 0;  // X
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_START) ? 0x0008 : 0; // Start
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER) ? 0x8000 : 0;  // L
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER) ? 0x1000 : 0; // R
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_UP) ? 0x0010 : 0;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_DOWN) ? 0x0020 : 0;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_LEFT) ? 0x0040 : 0;
+        buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_RIGHT) ? 0x0080 : 0;
 
-        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown |= buttonMask;
+        // L/R triggers as digital buttons (threshold > 8000)
+        if (SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 8000)
+            buttonMask |= 0x8000; // L
+        if (SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 8000)
+            buttonMask |= 0x1000; // R
 
-        if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & buttonMask) == 0)
-        {
-            graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m8_newButtonDown |= buttonMask;
-            graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.mC_newButtonDown2 |= buttonMask;
-        }
+        setButtons(buttonMask);
 
-        // analog
-        // need to remap range [-32768 to 32767] to [0 - 255]
-        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m2_analogX = convertAxis(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX));
-        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m3_analogY = convertAxis(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY));
+        // Analog sticks
+        pending.m2_analogX = convertAxis(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX));
+        pending.m3_analogY = convertAxis(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY));
+
+        // Analog triggers → m4 (L trigger) / m5 (R trigger), range 0-255
+        // Saturn 3D pad reported 0x00=released, 0xFF=fully pressed
+        pending.m4 = (s8)(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) >> 7);
+        pending.m5 = (s8)(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) >> 7);
+
+        hasGamepad = true;
     }
-    //else
-    {
-        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m0_inputType = 1;
 
+    // --- Keyboard ---
+    {
         const bool* keyState = SDL_GetKeyboardState(NULL);
 
         for (int i = 0; i < SDL_SCANCODE_COUNT; i++)
@@ -433,47 +455,29 @@ void azelSdl_StartFrame()
                 u16 buttonMask = 0;
                 switch (i)
                 {
-                case SDL_SCANCODE_RETURN:
-                    buttonMask = 8;
-                    break;
-                case SDL_SCANCODE_Z:
-                    buttonMask = 4;
-                    break;
-                case SDL_SCANCODE_X:
-                    buttonMask = 2;
-                    break;
-                case SDL_SCANCODE_C:
-                    buttonMask = 1;
-                    break;
-                case SDL_SCANCODE_UP:
-                    buttonMask = 0x10;
-                    break;
-                case SDL_SCANCODE_DOWN:
-                    buttonMask = 0x20;
-                    break;
-                case SDL_SCANCODE_LEFT:
-                    buttonMask = 0x40;
-                    break;
-                case SDL_SCANCODE_RIGHT:
-                    buttonMask = 0x80;
-                    break;
-                default:
-                    break;
+                case SDL_SCANCODE_RETURN:  buttonMask = 0x0008; break; // Start
+                case SDL_SCANCODE_Z:       buttonMask = 0x0004; break; // C
+                case SDL_SCANCODE_X:       buttonMask = 0x0002; break; // B
+                case SDL_SCANCODE_C:       buttonMask = 0x0001; break; // A
+                case SDL_SCANCODE_A:       buttonMask = 0x0800; break; // X
+                case SDL_SCANCODE_S:       buttonMask = 0x4000; break; // Y
+                case SDL_SCANCODE_Q:       buttonMask = 0x8000; break; // L
+                case SDL_SCANCODE_W:       buttonMask = 0x1000; break; // R
+                case SDL_SCANCODE_UP:      buttonMask = 0x0010; break;
+                case SDL_SCANCODE_DOWN:    buttonMask = 0x0020; break;
+                case SDL_SCANCODE_LEFT:    buttonMask = 0x0040; break;
+                case SDL_SCANCODE_RIGHT:   buttonMask = 0x0080; break;
+                default: break;
                 }
 
                 if (buttonMask)
-                {
-                    graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m6_buttonDown |= buttonMask;
-
-                    if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & buttonMask) == 0)
-                    {
-                        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.m8_newButtonDown |= buttonMask;
-                        graphicEngineStatus.m4514.m0_inputDevices[0].m16_pending.mC_newButtonDown2 |= buttonMask;
-                    }
-                }
+                    setButtons(buttonMask);
             }
         }
     }
+
+    // Set input type: analog (2) if gamepad is active, digital (1) for keyboard-only
+    pending.m0_inputType = hasGamepad ? 2 : 1;
 
     if (!isShipping())
     {
