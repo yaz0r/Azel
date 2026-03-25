@@ -98,7 +98,7 @@ void initBattleTargetables(p_workArea pThis, s_3dModel* pModel, s16* param3, std
                 {
                     param4[currentEntryIndex].m4_pPosition = nullptr;
 
-                    s_hotpoinEntry& puVar1 = (*pModel->m40)[i].m0[i];
+                    s_hotpoinEntry& puVar1 = (*pModel->m40)[i].m0[j];
 
                     initTargetable(&param4[currentEntryIndex], nullptr, &param5[currentEntryIndex], puVar1.m10, puVar1.m0, 0, 0, 10);
 
@@ -563,9 +563,10 @@ struct sBaldorAttack : public s_workAreaTemplate<sBaldorAttack>
     // size: 0x10
 };
 
-void BaldorAttack_createAttackModel(sVec3_FP* partPosition, sVec3_FP* target, sSaturnPtr param3)
+p_workArea BaldorAttack_createAttackModel(sVec3_FP* partPosition, sVec3_FP* target, sSaturnPtr param3)
 {
     Unimplemented();
+    return nullptr;
 }
 
 void BaldorAttack_update(sBaldorAttack* pThis)

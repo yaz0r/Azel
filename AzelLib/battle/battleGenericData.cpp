@@ -6,6 +6,7 @@ const std::vector<quadColor> BTL_GenericData::m60AE42C = { {0x8E1F, 0x8F1F, 0x8F
 const std::vector<quadColor> BTL_GenericData::m60AE434 = { {0x83EE, 0x93EE, 0x93EE, 0x83EE} };
 const std::vector<quadColor> BTL_GenericData::m60AE43C = { {0x83FF, 0x83FF, 0x83FF, 0x83FF} };
 sLaserData BTL_GenericData::mLaserData;
+std::vector<sVdp1Quad> BTL_GenericData::m_0x60a7848_animatedQuad;
 std::vector<sVdp1Quad> BTL_GenericData::m_0x60a8c24_animatedQuad;
 std::vector<sVdp1Quad> BTL_GenericData::m_0x60a8fb4_animatedQuad;
 std::vector<sVdp1Quad> BTL_GenericData::m_0x60b0658_animatedQuad;
@@ -68,6 +69,7 @@ BTL_GenericData::BTL_GenericData() : sSaturnMemoryFile("BTL_A3.PRG")
         mLaserData.m1C_colors[i][3] = readSaturnU16(laserColorsEA + 4 * 2 * i + 6);
     }
 
+    m_0x60a7848_animatedQuad = initVdp1Quad(getSaturnPtr(0x60a7848));
     m_0x60a8c24_animatedQuad = initVdp1Quad(getSaturnPtr(0x60a8c24));
     m_0x60a8fb4_animatedQuad = initVdp1Quad(getSaturnPtr(0x60a8fb4));
     m_0x60b0658_animatedQuad = initVdp1Quad(getSaturnPtr(0x60b0658));

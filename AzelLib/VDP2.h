@@ -342,6 +342,8 @@ u8* getVdp2Cram(u32 offset);
 
 void clearVdp2TextAreaSub1Sub1(u16 r4);
 u32 clearVdp2TextAreaSub1(u16 r4, s32 x, s32 y);
+void vdp2ResetCursor();
+void vdp2ClearRemainingTextArea();
 
 int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer);
 int loadFile2(const char* fileName, u8* destination, u16 vdp1Pointer);

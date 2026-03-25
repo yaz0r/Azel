@@ -963,16 +963,20 @@ int computeSpritePriority(u16 cmdcolr, u16 cmdpmod)
     {
         // Saturn color mode 0 = LUT mode. CMDCOLR is the LUT address in VDP1 VRAM.
         // LUT entries are big-endian 16-bit RGB555 values with priority bits.
-        u8* lutPtr = getVdp1Pointer(0x25C00000 + (u32)cmdcolr * 8);
-        for (int i = 1; i < 16; i++)
+        u32 lutByteOffset = (u32)cmdcolr * 8;
+        if (lutByteOffset + 15 * 2 < 0x80000)
         {
-            u16 entry = READ_BE_U16(lutPtr + i * 2);
-            if (entry & 0x8000)
+            u8* lutPtr = getVdp1Pointer(0x25C00000 + lutByteOffset);
+            for (int i = 1; i < 16; i++)
             {
-                return lookupSpritePriority(getSpritePriorityRegister(entry));
+                u16 entry = READ_BE_U16(lutPtr + i * 2);
+                if (entry & 0x8000)
+                {
+                    return lookupSpritePriority(getSpritePriorityRegister(entry));
+                }
             }
         }
-        // Fallback if LUT not yet loaded: assume RGB555 (bit 15 set) → register 2
+        // Fallback if LUT not yet loaded or out of bounds: assume RGB555 (bit 15 set) → register 2
         return lookupSpritePriority(2);
     }
 

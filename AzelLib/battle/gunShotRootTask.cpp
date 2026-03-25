@@ -61,6 +61,8 @@ struct sGunShotTask : public s_workAreaTemplateWithArgWithCopy<sGunShotTask, sGu
     // size 0xA0
 };
 
+static void sGunShotTask_SetupSpriteData(sGunShotTask* pThis); // forward declaration
+
 void sGunShotTask_Init(sGunShotTask* pThis, sGunArg* arg)
 {
     pThis->m68 = arg->m0;
@@ -109,7 +111,7 @@ void sGunShotTask_Init(sGunShotTask* pThis, sGunArg* arg)
     }
     pThis->m9C = arg->mC;
 
-    Unimplemented();
+    sGunShotTask_SetupSpriteData(pThis);
 }
 
 void sGunShotTask_UpdateSub0Sub0(sVec3_FP* param_1, sVec3_FP* param_2, sVec3_FP* param_3)
@@ -215,13 +217,6 @@ s32 sGunShotTask_UpdateSub1Sub2(sBattleTargetable* pTargetable, s16 param_2, s32
     return fixedPoint::toInteger(MTH_Mul(fixedPoint::fromInteger(param_2), iVar2) + 0x8000);
 }
 
-struct sWeaponData
-{
-    s16 m0_weaponType;
-    s16 m2;
-    fixedPoint m4;
-};
-
 const std::array<sWeaponData, 9> weaponTable = {
     {
         {0x3B, 0, 0x13333},
@@ -265,7 +260,7 @@ void sGunShotTask_UpdateSub2(sGunShotTask* pThis, s32 param_2, sVec3_FP* param_3
     {
         if (pThis->m9C > -1)
         {
-            Unimplemented();// createGunDamageSpriteTask
+            CreateDamageSpriteForCurrentBattleOverlay(&pThis->m14, nullptr, 0x10000, (s8)pThis->m9C);
         }
         pThis->getTask()->markFinished();
     }

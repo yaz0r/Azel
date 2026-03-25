@@ -1,4 +1,6 @@
 #include "PDS.h"
+#include "kernel/graphicalObject.h"
+#include "kernel/vdp1Allocator.h"
 #include "battleEnemyLifeMeter.h"
 #include "battleManager.h"
 #include "battleOverlay.h"
@@ -8,6 +10,7 @@
 #include "commonOverlay.h"
 
 void drawGaugeVdp1(u16 mode, std::array<sVec2_S16, 4>& params, u16 color, fixedPoint depth); // TODO: cleanup
+void drawLifeMeterBorder(s32* param);
 
 void createEnemyLifeMeterTask_update(sEnemyLifeMeterTask* pThis)
 {
@@ -137,6 +140,77 @@ const std::array<u16, 10> enemyLifeGaugeColors = {
     0xFC4F, 0xECD7
 };
 
+// BTL_A3::060620b0
+void drawLifeMeterBorder(s32* param)
+{
+    s_vdp1Context& ctx = graphicEngineStatus.m14_vdp1Context[0];
+    u16 vdp1Base = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
+    s16 depth = (s16)((graphicEngineStatus.m405C.m38_oneOverFarClip.m_value << 12) >> 16);
+
+    s16 x     = (s16)param[0];
+    s16 y     = (s16)param[1];
+    s16 xRight = (s16)param[2];
+    s16 yTop  = (s16)param[3];
+
+    // Command 0: left border indicator
+    {
+        s_vdp1Command& cmd = ctx.m0_currentVdp1WriteEA[0];
+        cmd.m0_CMDCTRL = 0x1001;
+        cmd.m4_CMDPMOD = 0x88;
+        cmd.m6_CMDCOLR = vdp1Base + 0x2ed8;
+        cmd.m8_CMDSRCA = vdp1Base + 0xaf8;
+        cmd.mA_CMDSIZE = 0x108;
+        cmd.mC_CMDXA = x - 3;
+        cmd.mE_CMDYA = -y;
+        cmd.m14_CMDXC = x + 3;
+        cmd.m16_CMDYC = -yTop;
+        ctx.m20_pCurrentVdp1Packet->m4_bucketTypes = depth;
+        ctx.m20_pCurrentVdp1Packet->m6_vdp1EA = &ctx.m0_currentVdp1WriteEA[0];
+        ctx.m20_pCurrentVdp1Packet++;
+        ctx.m1C += 1;
+        ctx.mC += 1;
+    }
+
+    // Command 1: right border indicator
+    {
+        s_vdp1Command& cmd = ctx.m0_currentVdp1WriteEA[1];
+        cmd.m0_CMDCTRL = 0x1001;
+        cmd.m4_CMDPMOD = 0x88;
+        cmd.m6_CMDCOLR = vdp1Base + 0x2ed8;
+        cmd.m8_CMDSRCA = vdp1Base + 0xb00;
+        cmd.mA_CMDSIZE = 0x108;
+        cmd.mC_CMDXA = xRight - 3;
+        cmd.mE_CMDYA = -y;
+        cmd.m14_CMDXC = xRight + 3;
+        cmd.m16_CMDYC = -yTop;
+        ctx.m20_pCurrentVdp1Packet->m4_bucketTypes = depth;
+        ctx.m20_pCurrentVdp1Packet->m6_vdp1EA = &ctx.m0_currentVdp1WriteEA[1];
+        ctx.m20_pCurrentVdp1Packet++;
+        ctx.m1C += 1;
+        ctx.mC += 1;
+    }
+
+    // Command 2: full-width border
+    {
+        s_vdp1Command& cmd = ctx.m0_currentVdp1WriteEA[2];
+        cmd.m0_CMDCTRL = 0x1001;
+        cmd.m4_CMDPMOD = 0x88;
+        cmd.m6_CMDCOLR = vdp1Base + 0x2ed8;
+        cmd.m8_CMDSRCA = vdp1Base + 0xafc;
+        cmd.mA_CMDSIZE = 0x108;
+        cmd.mC_CMDXA = x;
+        cmd.mE_CMDYA = -y;
+        cmd.m14_CMDXC = xRight;
+        cmd.m16_CMDYC = -yTop;
+        ctx.m20_pCurrentVdp1Packet->m4_bucketTypes = depth;
+        ctx.m20_pCurrentVdp1Packet->m6_vdp1EA = &ctx.m0_currentVdp1WriteEA[2];
+        ctx.m20_pCurrentVdp1Packet++;
+        ctx.m1C += 1;
+        ctx.m0_currentVdp1WriteEA += 3;
+        ctx.mC += 1;
+    }
+}
+
 void createEnemyLifeMeterTask_draw(sEnemyLifeMeterTask* pThis)
 {
     if (pThis->m2A > -1)
@@ -242,13 +316,19 @@ void createEnemyLifeMeterTask_draw(sEnemyLifeMeterTask* pThis)
             drawGaugeVdp1(0xC0, gaugeDimensions, enemyLifeGaugeColors[colorIndex], 0x10000);
         }
 
-        Unimplemented();
+        s32 borderParams[4] = {
+            projectedPosition[0].m_value,
+            projectedPosition[1].m_value,
+            (s32)pThis->m2E_width + projectedPosition[0].m_value,
+            projectedPosition[1].m_value - 8
+        };
+        drawLifeMeterBorder(borderParams);
     }
 }
 
+// BTL_A3::06062096
 void createEnemyLifeMeterTask_delete(sEnemyLifeMeterTask* pThis)
 {
-    Unimplemented();
 }
 
 sEnemyLifeMeterTask* createEnemyLifeMeterTask(sVec3_FP* arg0, s32 arg1, s16* arg2, s16 arg3)

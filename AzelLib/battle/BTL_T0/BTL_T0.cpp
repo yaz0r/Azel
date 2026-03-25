@@ -59,6 +59,12 @@ struct BTL_T0_data : public battleOverlay
             break;
         }
     }
+
+    p_workArea invokeCreateEffect(sSaturnPtr Func, s_workAreaCopy* pParent) override
+    {
+        Unimplemented();
+        return nullptr;
+    }
 };
 
 static BTL_T0_data* g_BTL_T0 = nullptr;

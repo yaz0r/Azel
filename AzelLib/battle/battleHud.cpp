@@ -265,9 +265,9 @@ void s_battleOverlay_20_draw(s_battleOverlay_20* pThis)
     }
 }
 
+// BTL_A3::06072806
 void s_battleOverlay_20_delete(s_battleOverlay_20*)
 {
-    Unimplemented();
 }
 
 void battleEngine_CreateHud1(npcFileDeleter* parent)

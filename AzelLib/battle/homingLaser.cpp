@@ -413,7 +413,22 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
         }
         break;
     case 3:
-        Unimplemented();
+        for (int i = 8; i >= 0; i--)
+        {
+            pThis->m64_laserTrajectory[i + 1] = pThis->m64_laserTrajectory[i];
+        }
+        pThis->m64_laserTrajectory[0] += pThis->m34_laserDelta;
+        if (gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude < pThis->m60[0][1])
+        {
+            if (pThis->m6C_numFramesToDestination-- < 0)
+            {
+                pThis->getTask()->markFinished();
+            }
+        }
+        else
+        {
+            pThis->getTask()->markFinished();
+        }
         break;
     default:
         assert(0);
@@ -448,27 +463,9 @@ s32 sGunShotTask_DrawSub1Sub1(sScreenQuad3*, s_graphicEngineStatus_405C&)
     return 1;
 }
 
-bool bDisplayDebugLaser = true;
 void sHomingLaserTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param1, std::array<fixedPoint, 2>& param_2, u16 param_3, s16 param_4, s16 param_5, const quadColor* param_6, s32 param_7)
 {
-    if (bDisplayDebugLaser)
-    {
-        drawDebugLine(param1[0], param1[1]);
-    }
-
-    std::array<sVec3_FP, 2> sStack32;
-    transformAndAddVecByCurrentMatrix(&param1[0], &sStack32[0]);
-    transformAndAddVecByCurrentMatrix(&param1[1], &sStack32[1]);
-
-    sScreenQuad3 sStack80;
-
-    if (rayComputeDisplayMatrix_2Width(sStack32, param_2, graphicEngineStatus.m405C, sStack80))
-    {
-        if (sGunShotTask_DrawSub1Sub1(&sStack80, graphicEngineStatus.m405C))
-        {
-            sendRaySegmentToVdp1(sStack80, sStack32[1][2], param_3, param_4, param_5, param_6, param_7);
-        }
-    }
+    displayRaySegment_2Width(param1, param_2, param_3, param_4, param_5, param_6, param_7);
 }
 
 void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
@@ -559,9 +556,97 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
     }
 }
 
-void sHomingLaserTask_DrawSub0(sHomingLaserTask::sF0* pThis, int, int)
+void sHomingLaserTask_DrawSub0(sHomingLaserTask::sF0* pThis, int param_2, int param_3)
 {
-    Unimplemented();
+    if (pThis->m8 >= pThis->m4_numLaserNodes - 1)
+    {
+        return;
+    }
+
+    auto scaleWidth = [&](fixedPoint w) -> fixedPoint {
+        return fixedPoint{ (int)((s64)w.m_value * param_2 / param_3) };
+    };
+
+    int iVar1 = pThis->m8;
+    int iVar3 = pThis->m4_numLaserNodes;
+
+    {
+        int indexA = iVar3 - 2;
+        int indexB = iVar3 - 1;
+
+        std::array<sVec3_FP, 2> uStack64;
+        uStack64[0] = pThis->m0_laserNodePosition[indexA];
+        uStack64[1] = pThis->m0_laserNodePosition[indexB];
+
+        std::array<fixedPoint, 2> local_28;
+        local_28[0] = scaleWidth(pThis->m10_laserData->m18_vertices[indexA]);
+        local_28[1] = scaleWidth(pThis->m10_laserData->m18_vertices[indexB]);
+
+        const quadColor* iVar4;
+        if (pThis->m18_color.size() == 0)
+        {
+            iVar4 = &pThis->m10_laserData->m1C_colors[indexA];
+        }
+        else
+        {
+            iVar4 = &pThis->m18_color[indexA];
+        }
+        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + pThis->m10_laserData->m8, pThis->m10_laserData->mE, pThis->m14 + pThis->m10_laserData->m14, iVar4, 8);
+    }
+
+    iVar3 = pThis->m4_numLaserNodes - 2;
+    while (iVar3 > pThis->m8 + (pThis->m8 < 1))
+    {
+        int indexA = iVar3 - 1;
+        int indexB = iVar3 - 0;
+
+        std::array<sVec3_FP, 2> uStack64;
+        uStack64[0] = pThis->m0_laserNodePosition[indexA];
+        uStack64[1] = pThis->m0_laserNodePosition[indexB];
+
+        std::array<fixedPoint, 2> local_28;
+        local_28[0] = scaleWidth(pThis->m10_laserData->m18_vertices[indexA]);
+        local_28[1] = scaleWidth(pThis->m10_laserData->m18_vertices[indexB]);
+
+        const quadColor* iVar4;
+        if (pThis->m18_color.size() == 0)
+        {
+            iVar4 = &pThis->m10_laserData->m1C_colors[indexA];
+        }
+        else
+        {
+            iVar4 = &pThis->m18_color[indexA];
+        }
+
+        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + pThis->m10_laserData->m6, pThis->m10_laserData->mC, pThis->m14 + pThis->m10_laserData->m12, iVar4, 8);
+        iVar3--;
+    }
+
+    if (pThis->m8 < 1)
+    {
+        int indexA = iVar3 - 0;
+        int indexB = iVar3 - 1;
+
+        std::array<sVec3_FP, 2> uStack64;
+        uStack64[0] = pThis->m0_laserNodePosition[indexA];
+        uStack64[1] = pThis->m0_laserNodePosition[indexB];
+
+        std::array<fixedPoint, 2> local_28;
+        local_28[0] = scaleWidth(pThis->m10_laserData->m18_vertices[indexA]);
+        local_28[1] = scaleWidth(pThis->m10_laserData->m18_vertices[indexB]);
+
+        const quadColor* iVar4;
+        if (pThis->m18_color.size() == 0)
+        {
+            iVar4 = &pThis->m10_laserData->m1C_colors[indexA];
+        }
+        else
+        {
+            iVar4 = &pThis->m18_color[indexA];
+        }
+
+        sHomingLaserTask_DrawSub1Sub0(uStack64, local_28, pThis->m14 + pThis->m10_laserData->m4, pThis->m10_laserData->mA, pThis->m14 + pThis->m10_laserData->m10, iVar4, 8);
+    }
 }
 
 void sHomingLaserTask_Draw(sHomingLaserTask* pThis)

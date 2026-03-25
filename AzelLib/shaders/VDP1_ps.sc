@@ -2,6 +2,8 @@ $input v_texcoord0, v_color0, v_clipPos, v_quadIndex
 
 #include "bgfx_shader.sh"
 
+#pragma warning(disable : 4000)
+
 SAMPLER2D(s_texture, 0);
 SAMPLER2D(s_ndcCorners, 1);
 SAMPLER2D(s_objCorners, 2);
@@ -36,7 +38,7 @@ vec2 inverseBilinear(vec2 p, vec2 a, vec2 b, vec2 c, vec2 d)
     float k1 = cross2d(e, f) + cross2d(h, g);
     float k0 = cross2d(h, e);
 
-    float u, v;
+    float u = 0.0, v = 0.0;
 
     if (abs(k2) < 0.0001)
     {
@@ -119,7 +121,7 @@ vec2 raytracePath(vec2 fragNDC, float objTexW, int objBase, vec2 fallbackUV)
     vec3 hitPoint = rayOrig + t * rayDir;
 
     vec3 absN = abs(normal);
-    vec2 hit2d, q0, q1, q2, q3;
+    vec2 hit2d = vec2_splat(0.0), q0 = vec2_splat(0.0), q1 = vec2_splat(0.0), q2 = vec2_splat(0.0), q3 = vec2_splat(0.0);
     if (absN.z >= absN.x && absN.z >= absN.y)
     {
         hit2d = hitPoint.xy; q0 = p0.xy; q1 = p1.xy; q2 = p2.xy; q3 = p3.xy;

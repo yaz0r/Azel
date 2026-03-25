@@ -39,6 +39,12 @@ void BTL_A3_2_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent)
     }
 }
 
+p_workArea BTL_A3_2_data::invokeCreateEffect(sSaturnPtr Func, s_workAreaCopy* pParent)
+{
+    Unimplemented();
+    return nullptr;
+}
+
 BTL_A3_2_data::BTL_A3_2_data() : battleOverlay("BTL_A3_2.PRG")
 {
     m_map = readGrid(getSaturnPtr(0x60a86bc), 2, 2);

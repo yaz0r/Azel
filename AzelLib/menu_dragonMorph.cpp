@@ -180,6 +180,12 @@ void generateLightFalloffMap(u32 r4, u32 r5, u32 r6)
     //addSlaveCommand(0,0,0, copyFalloffTableToSlave);
 }
 
+// 0601dfc8
+void setupLightColor(u32 r4)
+{
+    generateLightFalloffMap(r4, r4, r4);
+}
+
 void computeLookAt(const sVec3_FP& r4, sVec3_FP& r5_output)
 {
     sVec2_FP temp;

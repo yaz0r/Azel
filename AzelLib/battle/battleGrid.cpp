@@ -393,9 +393,11 @@ void battleGrid_draw(s_battleGrid* pThis)
     }
 }
 
+// BTL_A3::0607deec
 void battleGrid_delete(s_battleGrid* pThis)
 {
-    Unimplemented();
+    pThis->m218_halfFov = 0x1c71c71;
+    initVDP1Projection(pThis->m218_halfFov, 0);
 }
 
 p_workArea createBattleEnvironmentGridTask(p_workArea parent)

@@ -6,6 +6,7 @@
 #include "kernel/graphicalObject.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
+#include "particleEffect.h"
 
 struct sDebrisBone
 {
@@ -245,6 +246,181 @@ void createBoneDebris(s_workAreaCopy* parent, npcFileDeleter* fileBundle, s_3dMo
 
     pThis->m28_gravity = gravity;
     pThis->m34_rotationRandomMask = velocityRandomMask;
+    pThis->m38_bounceCountMax = bounceCountMax;
+    pThis->m3C_scale = scale;
+
+    if (lifetime < 1)
+        pThis->m40_scaleDecrement = 0;
+    else
+        pThis->m40_scaleDecrement = FP_Div(scale, (s32)lifetime << 16);
+
+    debrisRandomizeVelocities(pThis);
+}
+
+// 0605c27c
+static void debrisInitBonesZeroRotation(sDebrisBone* bones, s_3dModel* model, sModelHierarchy* hierarchy, u16* boneIndex)
+{
+    sModelHierarchy* current = hierarchy;
+    while (true)
+    {
+        pushCurrentMatrix();
+
+        u16 idx = *boneIndex;
+        u32 boneOffset = idx * 0xB4;
+        u8* boneData = (u8*)model->m2C_poseData.data();
+        if (boneData)
+        {
+            translateCurrentMatrix(*(sVec3_FP*)(boneData + boneOffset));
+            rotateCurrentMatrixYXZ(*(sVec3_FP*)(boneData + boneOffset + 0xC));
+        }
+
+        sDebrisBone* bone = &bones[idx];
+        if (current->m0_3dModel == nullptr)
+        {
+            bone->m0_modelData = nullptr;
+        }
+        else
+        {
+            bone->m0_modelData = current->m0_3dModel;
+            bone->m4_position[0] = pCurrentMatrix->m[0][3];
+            bone->m4_position[1] = pCurrentMatrix->m[1][3];
+            bone->m4_position[2] = pCurrentMatrix->m[2][3];
+            extractRotationFromMatrix(&bone->m1C_rotation); // 060364ac — zeroes rotation
+        }
+
+        (*boneIndex)++;
+
+        if (current->m4_subNode != nullptr)
+        {
+            debrisInitBonesZeroRotation(bones, model, current->m4_subNode, boneIndex);
+        }
+
+        popMatrix();
+
+        if (current->m8_nextNode == nullptr) break;
+        current = current->m8_nextNode;
+    }
+}
+
+// 0605c422
+static void boneDebrisExplosion_update(sBoneDebrisTask* pThis)
+{
+    bool anyActive = false;
+
+    for (s32 i = 0; i < pThis->m8_numBones; i++)
+    {
+        sDebrisBone* bone = &pThis->mC_bones[i];
+        if (bone->m0_modelData == nullptr) continue;
+
+        bone->m10_velocity[1] += pThis->m28_gravity;
+        bone->m4_position += bone->m10_velocity;
+        bone->m1C_rotation += bone->m28_angularVelocity;
+
+        s32 groundLevel = *(s32*)((u8*)gBattleManager->m10_battleOverlay->mC_targetSystem + 0x204);
+        if (bone->m4_position[1] < groundLevel)
+        {
+            bone->m4_position[1] = groundLevel;
+            bone->m34_bounceCount--;
+            if (bone->m34_bounceCount < 0)
+            {
+                bone->m0_modelData = nullptr;
+            }
+            else
+            {
+                bone->m10_velocity[1] = -MTH_Mul(0x4CCC, bone->m10_velocity[1]);
+            }
+            if (pThis->m30_particleSpriteData.m_offset != 0)
+            {
+                createParticleEffect(pThis->m2C_fileBundle, nullptr, &bone->m4_position, nullptr, nullptr, 0x10000, 0, 0);
+            }
+        }
+
+        anyActive = true;
+    }
+
+    if (!anyActive)
+    {
+        pThis->getTask()->markFinished();
+    }
+
+    pThis->m3C_scale -= pThis->m40_scaleDecrement;
+    if (pThis->m3C_scale < 1)
+    {
+        pThis->getTask()->markFinished();
+    }
+}
+
+// 0605c544
+static void boneDebrisExplosion_draw(sBoneDebrisTask* pThis)
+{
+    for (s32 i = 0; i < pThis->m8_numBones; i++)
+    {
+        sDebrisBone* bone = &pThis->mC_bones[i];
+        if (bone->m0_modelData == nullptr) continue;
+
+        pushCurrentMatrix();
+        translateCurrentMatrix(bone->m4_position);
+        rotateCurrentMatrixYXZ(bone->m1C_rotation);
+        scaleCurrentMatrixRow0(pThis->m3C_scale);
+        scaleCurrentMatrixRow1(pThis->m3C_scale);
+        scaleCurrentMatrixRow2(pThis->m3C_scale);
+        addObjectToDrawList(bone->m0_modelData);
+        popMatrix();
+    }
+}
+
+// 0605c124
+void createBoneDebrisExplosion(s_workAreaCopy* parent, s_3dModel* model,
+    sVec3_FP* position, sVec3_FP* rotation,
+    sVec3_FP* velBase, sVec3_FP* velRandom,
+    s32 gravity, npcFileDeleter* particleBundle, s32 particleData,
+    s32 angVelRandom, s16 bounceCountMax, s32 scale, s16 lifetime)
+{
+    static const sBoneDebrisTask::TypedTaskDefinition definition = {
+        nullptr, &boneDebrisExplosion_update, &boneDebrisExplosion_draw, nullptr
+    };
+
+    sBoneDebrisTask* pThis = createSubTaskWithCopy<sBoneDebrisTask>(parent, &definition);
+    if (!pThis) return;
+
+    pThis->m8_numBones = model->m12_numBones;
+    pThis->mC_bones = static_cast<sDebrisBone*>(allocateHeapForTask(pThis, pThis->m8_numBones * sizeof(sDebrisBone)));
+    if (!pThis->mC_bones)
+    {
+        pThis->getTask()->markFinished();
+        return;
+    }
+    memset(pThis->mC_bones, 0, pThis->m8_numBones * sizeof(sDebrisBone));
+
+    pushCurrentMatrix();
+    initMatrixToIdentity(pCurrentMatrix);
+    translateCurrentMatrix(*position);
+    rotateCurrentMatrixYXZ(*rotation);
+
+    u16 boneIndex = 0;
+    sModelHierarchy* hierarchy = model->m4_pModelFile->getModelHierarchy(model->mC_modelIndexOffset);
+    if (hierarchy)
+    {
+        debrisInitBonesZeroRotation(pThis->mC_bones, model, hierarchy, &boneIndex);
+    }
+    popMatrix();
+
+    pThis->m2C_fileBundle = particleBundle;
+    pThis->m30_particleSpriteData.m_offset = particleData;
+    pThis->m30_particleSpriteData.m_file = nullptr;
+
+    if (velBase)
+        pThis->m10_baseVelocity = *velBase;
+    else
+        pThis->m10_baseVelocity = sVec3_FP(0, 0, 0);
+
+    if (velRandom)
+        pThis->m1C_velocityRandomMask = *velRandom;
+    else
+        pThis->m1C_velocityRandomMask = sVec3_FP(0xFFF, 0xFFF, 0xFFF);
+
+    pThis->m28_gravity = gravity;
+    pThis->m34_rotationRandomMask = angVelRandom;
     pThis->m38_bounceCountMax = bounceCountMax;
     pThis->m3C_scale = scale;
 

@@ -7,6 +7,7 @@ void resetProjectVector();
 void pushProjectionStack();
 
 void setupLight(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7);
+void setupLightColor(u32 r4);
 void generateLightFalloffMap(u32 r4, u32 r5, u32 r6);
 
 void dragonFieldTaskDrawSub1Sub0();

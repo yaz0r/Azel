@@ -34,6 +34,7 @@ struct s_workArea
     virtual void Update() = 0;
     virtual void Draw() = 0;
     virtual void Delete() = 0;
+    virtual void clearDeleteMethod() {}
 
     template <typename T>
     T* castTo()
@@ -90,6 +91,8 @@ struct s_workAreaTemplateWithArg : public s_workArea
         if (m_DeleteMethod)
             m_DeleteMethod(static_cast<T*>(this));
     }
+
+    virtual void clearDeleteMethod() override { m_DeleteMethod = nullptr; }
 
     typedef void (*FunctionType)(T*);
     typedef void (*InitFunctionType)(T*, argType ...);
@@ -151,6 +154,8 @@ struct s_workAreaTemplateWithArgAndBase : public Base
             m_DeleteMethod(static_cast<T*>(this));
     }
 
+    virtual void clearDeleteMethod() override { m_DeleteMethod = nullptr; }
+
     typedef void (*FunctionType)(T*);
     typedef void (*InitFunctionType)(T*, argType ...);
 
@@ -192,6 +197,8 @@ struct s_task
     }
     s_task* m0_pNextTask;
     s_task* m4_pSubTask;
+    // m8_updateFunc, mC_drawFunc, m10_deleteFunc: Saturn stores function pointers here,
+    // but in C++ they live in s_workAreaTemplateWithArg::m_UpdateMethod/m_DrawMethod/m_DeleteMethod
     u32 m14_flags;
     // size 0x18
     const char* m_taskName;

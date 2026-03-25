@@ -33,9 +33,10 @@ void battleText_update(sBattleTextDisplayTask* pThis)
     }
 }
 
+// BTL_A3::06069c3e
 void battleText_delete(sBattleTextDisplayTask* pThis)
 {
-    Unimplemented();
+    setActiveFont((s32)pThis->m17);
 }
 
 void createBattleTextDisplay(p_workArea parent, sSaturnPtr data)

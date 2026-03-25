@@ -14,6 +14,7 @@
 #include "battleCommandMenu.h"
 #include "battleDebug.h"
 #include "battleTextDisplay.h"
+#include "kernel/receiveItemTask.h"
 #include "battleResultScreen.h"
 #include "gunShotRootTask.h"
 #include "homingLaser.h"
@@ -23,6 +24,11 @@
 #include "audio/systemSounds.h"
 #include "battleGenericData.h"
 #include "kernel/fade.h"
+#include "interpolators/FPInterpolator.h"
+#include "interpolators/vec2FPInterpolator.h"
+
+#include "battleEnd.h"
+#include "kernel/vdp1Allocator.h"
 
 #include "BTL_A3/BTL_A3.h" // TODO: cleanup
 #include "BTL_A3/baldor.h" // TODO: cleanup
@@ -30,6 +36,7 @@
 // TODO: cleanup
 void BattleEnd_deleteSub0();
 void battleEngine_updateQuadrantFromAngle(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
+s32 createBattleCommandMenuSub2(s32 param1);
 
 struct sBattleCinematicBars : public s_workAreaTemplate<sBattleCinematicBars>
 {
@@ -97,18 +104,6 @@ void battleCreateCinematicBars(s_battleEngine* pThis)
 
         pNewTask->m_DeleteMethod = &sBattleCinematicBars_delete;
     }
-}
-
-void sEnemyAttackCamera_updateSub0(int param_1)
-{
-    if (param_1 > 2)
-    {
-        param_1 = 0;
-    }
-
-    gBattleManager->m10_battleOverlay->m8_gridTask->m1 = param_1;
-    gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1);
-    gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x60ac478) + 0x24 * gBattleManager->m10_battleOverlay->m8_gridTask->m1 + 0xC);
 }
 
 void battleEngine_FlagQuadrantBitForSafety(u16 uParm1)
@@ -254,9 +249,180 @@ void battleEngine_InitSub3(s_battleEngine* pThis)
     battleEngine_InitSub3Sub0(pThis);
 }
 
+struct sBattlePassiveAbilitiesTask : public s_workAreaTemplate<sBattlePassiveAbilitiesTask>
+{
+    s8 m0;
+    s8 m1;
+    s8 m2;
+    s8 m3;
+    // size 0x4
+};
+
+// BTL_A3::06064350
+static void battlePassiveAbilities_recoverHP(sBattlePassiveAbilitiesTask* pThis)
+{
+    if (pThis->m0 == 0 && (pThis->m1 & 2))
+    {
+        pThis->m1 &= ~2;
+        s16 recovered = FP_Div((s32)mainGameState.gameStats.mB8_maxHP << 16, 0x120000).getInteger();
+        s16 needed = mainGameState.gameStats.mB8_maxHP - mainGameState.gameStats.m10_currentHP;
+        if (recovered > needed)
+            recovered = needed;
+        mainGameState.gameStats.m10_currentHP += recovered;
+    }
+}
+
+// BTL_A3::060643a4
+static void battlePassiveAbilities_enableCounter(sBattlePassiveAbilitiesTask* pThis)
+{
+    if (!(pThis->m1 & 8))
+    {
+        pThis->m1 |= 8;
+        if (!(gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x20000))
+            pThis->m2 = 1;
+        gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers |= 0x20000;
+    }
+}
+
+// BTL_A3::06064404
+static void battlePassiveAbilities_triggerCounter(sBattlePassiveAbilitiesTask* pThis)
+{
+    if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C4 & 0x10) &&
+        gBattleManager->m10_battleOverlay->m18_dragon->m1D4_damageTaken > -1 &&
+        mainGameState.gameStats.m10_currentHP > 0)
+    {
+        pThis->m3 = 1;
+    }
+    if (pThis->m3 == 1 && battleEngine_isBattleIntroFinished())
+    {
+        if (mainGameState.gameStats.m10_currentHP > 0 &&
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies > 0 &&
+            gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies > 0 &&
+            (randomNumber() & 1) == 0)
+        {
+            Unimplemented(); // BTL_A3::06069d74(0x10)
+            battleEngine_SetBattleMode(m3_shootEnemeyWithHomingLaser);
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m184 = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m390 = -1;
+            pThis->m3 = 0;
+            return;
+        }
+        pThis->m3 = 0;
+    }
+}
+
+// BTL_A3::060644e8
+static void battlePassiveAbilities_resetStatus()
+{
+    s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
+    pDragon->m1C0_statusModifiers &= ~0x7f;
+    *(s16*)((char*)pDragon + 0x1D8) = 0;
+    *(s16*)((char*)pDragon + 0x1DA) = 0;
+    *(s16*)((char*)pDragon + 0x1DC) = 0;
+    *(s16*)((char*)pDragon + 0x1DE) = 0;
+    *(s16*)((char*)pDragon + 0x1E0) = 0;
+    *(s16*)((char*)pDragon + 0x1E2) = 0;
+    s16 val = createBattleCommandMenuSub2(0x3c);
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m0_max = fixedPoint::fromInteger(val);
+}
+
+// BTL_A3::060645e4
+static void battlePassiveAbilities_update(sBattlePassiveAbilitiesTask* pThis)
+{
+    if (mainGameState.gameStats.m1_dragonLevel == 0 || mainGameState.gameStats.m1_dragonLevel == 8)
+        return;
+
+    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo != 3)
+    {
+        pThis->m0 = 0;
+        pThis->m1 &= ~(1 | 2 | 4 | 8 | 0x10);
+        if (pThis->m2 == 1)
+            gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers &= ~0x20000;
+        pThis->m2 = 0;
+        pThis->m3 = 0;
+        return;
+    }
+
+    bool bVar2 = true;
+    if (battleEngine_isPlayerTurnActive() != 0 && !(gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000))
+        bVar2 = false;
+    if (bVar2)
+    {
+        s8 prev = pThis->m0++;
+        if (prev == 0x1e)
+        {
+            pThis->m0 = 0;
+            pThis->m1 |= 1;
+            pThis->m1 |= 2;
+        }
+    }
+
+    if (mainGameState.gameStats.m1_dragonLevel == 0)
+        return;
+
+    s8 dragonLevel = mainGameState.gameStats.m1_dragonLevel;
+    if (dragonLevel >= 1 && dragonLevel <= 5)
+    {
+        switch (gDragonState->m1C_dragonArchetype)
+        {
+        case 0: battlePassiveAbilities_recoverHP(pThis); break;
+        case 1: battlePassiveAbilities_enableCounter(pThis); break;
+        case 2: battlePassiveAbilities_triggerCounter(pThis); break;
+        case 3: battlePassiveAbilities_resetStatus(); break;
+        case 4:
+            // BP regen (LAB_06064564 inline)
+            if (pThis->m0 == 0 && (pThis->m1 & 1))
+            {
+                pThis->m1 &= ~1;
+                s16 recovered = FP_Div((s32)mainGameState.gameStats.mBA_maxBP << 16, 0x240000).getInteger();
+                s16 needed = mainGameState.gameStats.mBA_maxBP - mainGameState.gameStats.m14_currentBP;
+                if (recovered > needed) recovered = needed;
+                mainGameState.gameStats.m14_currentBP += recovered;
+            }
+            break;
+        }
+    }
+    else if (dragonLevel == 6)
+    {
+        battlePassiveAbilities_recoverHP(pThis);
+        battlePassiveAbilities_enableCounter(pThis);
+        battlePassiveAbilities_triggerCounter(pThis);
+        battlePassiveAbilities_resetStatus();
+        // BP regen inline (LAB_06064564)
+        if (pThis->m0 == 0 && (pThis->m1 & 1))
+        {
+            pThis->m1 &= ~1;
+            s16 recovered = FP_Div((s32)mainGameState.gameStats.mBA_maxBP << 16, 0x240000).getInteger();
+            s16 needed = mainGameState.gameStats.mBA_maxBP - mainGameState.gameStats.m14_currentBP;
+            if (recovered > needed) recovered = needed;
+            mainGameState.gameStats.m14_currentBP += recovered;
+        }
+    }
+    else if (dragonLevel == 7)
+    {
+        switch (gDragonState->m1C_dragonArchetype)
+        {
+        case 0: battlePassiveAbilities_recoverHP(pThis); break;
+        case 1: battlePassiveAbilities_enableCounter(pThis); break;
+        case 2: battlePassiveAbilities_triggerCounter(pThis); break;
+        case 3: battlePassiveAbilities_resetStatus(); break;
+        case 4:
+            if (pThis->m0 == 0 && (pThis->m1 & 1))
+            {
+                pThis->m1 &= ~1;
+                s16 recovered = FP_Div((s32)mainGameState.gameStats.mBA_maxBP << 16, 0x240000).getInteger();
+                s16 needed = mainGameState.gameStats.mBA_maxBP - mainGameState.gameStats.m14_currentBP;
+                if (recovered > needed) recovered = needed;
+                mainGameState.gameStats.m14_currentBP += recovered;
+            }
+            break;
+        }
+    }
+}
+
 void battleEngine_InitSub5(p_workArea parent)
 {
-    Unimplemented();
+    createSubTaskFromFunction<sBattlePassiveAbilitiesTask>(parent, battlePassiveAbilities_update);
 }
 
 void battleEngine_setCurrentCameraPositionPointer(sVec3_FP* pData)
@@ -310,9 +476,36 @@ void battleEngine_resetCameraInterpolation()
     pBattleGrid->mC0_cameraRotationInterpolation.zeroize();
 }
 
-void battleEngine_InitSub9(p_workArea parent)
+struct sBattleIntroScrollTask : public s_workAreaTemplate<sBattleIntroScrollTask>
+{
+    char m_data[0x144];
+    // size: 0x144
+};
+
+// BTL_A3::060a28b8
+static void battleIntroScroll_update(sBattleIntroScrollTask* pThis)
 {
     Unimplemented();
+}
+
+// BTL_A3::060a2c72
+static void battleIntroScroll_draw(sBattleIntroScrollTask* pThis)
+{
+    sVec3_FP local;
+    if ((s8)((char*)gBattleManager->m10_battleOverlay->m1C_envTask)[0x1c] & 1)
+        transformAndAddVecByCurrentMatrix(gBattleManager->m10_battleOverlay->m4_battleEngine->m3D8_pDesiredCameraPosition, &local);
+}
+
+static const sBattleIntroScrollTask::TypedTaskDefinition battleIntroScrollTaskDefinition = {
+    nullptr,
+    battleIntroScroll_update,
+    battleIntroScroll_draw,
+    nullptr,
+};
+
+void battleEngine_InitSub9(p_workArea parent)
+{
+    createSubTask<sBattleIntroScrollTask>(parent, &battleIntroScrollTaskDefinition);
 }
 
 void battleEngine_InitSub11()
@@ -364,51 +557,59 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     createBattleTextDisplay(pThis, readSaturnEA(overlayBattleData + pThis->m3B0_subBattleId * 0x20 + 0xC));
     initBattleEngineArray();
 
-    int randomQuadrantOdd = performModulo2(100, randomNumber()) % 0xFF;
-    std::array<int, 3> perQuadrantOdds;
+    // Generate random quadrant (mask to 8 bits, not modulo)
+    u32 randomValue = performModulo2(100, randomNumber()) & 0xff;
 
     sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getEncounterDataTable() + gBattleManager->m4 * 4);
+
+    u8 odds0, odds1, odds2;
     if (pData.isNull())
     {
-        perQuadrantOdds[0] = 100;
-        perQuadrantOdds[1] = 0;
-        perQuadrantOdds[2] = 0;
+        odds0 = 100;
+        odds1 = 0;
+        odds2 = 0;
     }
     else
     {
-        // Rate
-        perQuadrantOdds[0] = readSaturnS8(pData + gBattleManager->m8 * 0x10 + 4);
-        perQuadrantOdds[1] = readSaturnS8(pData + gBattleManager->m8 * 0x10 + 5);
-        perQuadrantOdds[2] = readSaturnS8(pData + gBattleManager->m8 * 0x10 + 6);
+        // Read quadrant probabilities
+        odds0 = (u8)readSaturnS8(pData + gBattleManager->m8 * 0x10 + 4);
+        odds1 = (u8)readSaturnS8(pData + gBattleManager->m8 * 0x10 + 5);
+        odds2 = (u8)readSaturnS8(pData + gBattleManager->m8 * 0x10 + 6);
     }
 
-    if (randomQuadrantOdd < perQuadrantOdds[0])
+    // Select quadrant based on probability accumulation (mask each value before adding)
+    if (randomValue < odds0)
     {
         pThis->m22C_dragonCurrentQuadrant = 0;
     }
-    else if (randomQuadrantOdd < perQuadrantOdds[0] + perQuadrantOdds[1])
-    {
-        pThis->m22C_dragonCurrentQuadrant = 1;
-    }
-    else if (randomQuadrantOdd < perQuadrantOdds[0] + perQuadrantOdds[1] + perQuadrantOdds[2])
-    {
-        pThis->m22C_dragonCurrentQuadrant = 2;
-    }
     else
     {
-        pThis->m22C_dragonCurrentQuadrant = 3;
+        u32 accumulated = (odds1 & 0xff) + odds0;
+        if (randomValue < accumulated)
+        {
+            pThis->m22C_dragonCurrentQuadrant = 1;
+        }
+        else if (randomValue < accumulated + (odds2 & 0xff))
+        {
+            pThis->m22C_dragonCurrentQuadrant = 2;
+        }
+        else
+        {
+            pThis->m22C_dragonCurrentQuadrant = 3;
+        }
     }
 
     pThis->m22D_dragonPreviousQuadrant = pThis->m22C_dragonCurrentQuadrant;
 
+    // Read combo value for current quadrant (m3B4.m16_combo = Saturn offset 0x3CA)
     if (pData.isNull())
     {
         pThis->m3B4.m16_combo = 0;
     }
     else
     {
-        // combo
-        pThis->m3B4.m16_combo = readSaturnS8(pData + gBattleManager->m8 * 0x10 + 0xC);
+        // combo - read from data table using current quadrant as part of offset
+        pThis->m3B4.m16_combo = readSaturnS8(pData + pThis->m22C_dragonCurrentQuadrant + gBattleManager->m8 * 0x10 + 0xC);
     }
 
     pThis->m270_enemyAltitude.zeroize();
@@ -485,10 +686,10 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     setupVdp1LocalCoordinatesAndClipping();
 
     g_fadeControls.m_4D = 6;
-    if (g_fadeControls.m_4C < g_fadeControls.m_4D)
+    if ((s8)g_fadeControls.m_4C < 7)
     {
-        vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
         vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
     }
 
     fadePalette(&g_fadeControls.m24_fade1, 0xC210, 0xC210, 1);
@@ -617,7 +818,7 @@ void battleEngine_SetBattleMode(eBattleModes param)
     battleEngine_RestoreBattleAutoScrollDelta(pBattleEngine);
 }
 
-void battleEngine_SetBattleMode16()
+s32 battleEngine_SetBattleMode16()
 {
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     pBattleEngine->m38C_battleMode = eBattleModes::m10_position;
@@ -625,6 +826,7 @@ void battleEngine_SetBattleMode16()
     pBattleEngine->m188_flags.m100_attackAnimationFinished = 0;
     pBattleEngine->m188_flags.m2000 = 0;
     pBattleEngine->m188_flags.m40 = 0;
+    pBattleEngine->m188_flags.m1000000_dragonMoving = 0;
     pBattleEngine->m188_flags.m400000 = 0;
     pBattleEngine->m188_flags.m80000_hideBattleHUD = 0;
     pBattleEngine->m188_flags.m100000 = 0;
@@ -640,15 +842,20 @@ void battleEngine_SetBattleMode16()
     battleEngine_RestoreBattleAutoScrollDelta(pBattleEngine);
 
     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+
+    return 0;
 }
 
 void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
 {
+    // Debug mode: keyboard-controlled auto-scroll (0605a054-0605a141)
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x16])
     {
-        assert(0);
+        // Requires readKeyboardTable1 implementation for full debug keyboard handling
+        Unimplemented();
     }
 
+    // Apply auto-scroll delta to position vectors
     pThis->m264 += pThis->m1A0_battleAutoScrollDelta;
     pThis->m234 = pThis->m270_enemyAltitude + pThis->m264;
     pThis->m240 = pThis->m270_enemyAltitude + pThis->m258 + pThis->m264;
@@ -668,15 +875,30 @@ bool battleEngine_isInputAllowed()
     return 0;
 }
 
+// BTL_A3::0607c32c
+void battleEngine_UpdateSub7Sub1Sub0(fixedPoint* param_1, sVec3_FP& out)
+{
+    sVec3_FP local;
+    local[0] = -MTH_Mul_5_6(0x10000, getCos(param_1[0].getInteger() & 0xfff), getSin(param_1[1].getInteger() & 0xfff));
+    local[1] = MTH_Mul(0x10000, getSin(param_1[0].getInteger() & 0xfff));
+    local[2] = -MTH_Mul_5_6(0x10000, getCos(param_1[0].getInteger() & 0xfff), getCos(param_1[1].getInteger() & 0xfff));
+    transformVecByCurrentMatrix(local, out);
+}
+
 void battleEngine_UpdateSub7Sub1()
 {
     s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20000)
     {
-        assert(0);
         sVec3_FP local_1c;
-        //battleEngine_UpdateSub7Sub1Sub0(pGrid->m280_lightAngle1, &local_1c);
+        battleEngine_UpdateSub7Sub1Sub0(&pGrid->m280_lightAngle1, local_1c);
         pGrid->m1CC_lightColor = pGrid->m1D8_newLightColor;
+        setupLight(local_1c[0], local_1c[1], local_1c[2],
+            s_RGB8::fromVector(pGrid->m1CC_lightColor).toU32());
+        pGrid->m1E4_lightFalloff0 = pGrid->m1F0;
+        setupLightColor(s_RGB8::fromVector(pGrid->m1E4_lightFalloff0).toU32());
+        resetProjectVector();
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20000 = 0;
     }
 }
 
@@ -777,6 +999,7 @@ void dragonDeathTask_update(sDragonDeathTask* pThis) {
             pThis->m24_currentTick = 0;
             pThis->m0_state++;
         }
+        setupVdp1LocalCoordinatesAndClipping();
         break;
     case 1:
         if ((++pThis->m24_currentTick > 90) && pThis) {
@@ -806,6 +1029,321 @@ static const sDragonDeathTask::TypedTaskDefinition dragonDeathTaskDefinition = {
     dragonDeathTask_delete,
 };
 
+struct sBattleFormationTransitionTask : public s_workAreaTemplate<sBattleFormationTransitionTask>
+{
+    s8 m0_state;
+    u8 m1, m2, m3;
+    u16 m4_newSubBattleId;
+    u16 m6;
+    sVec2FPInterpolator m8_autoScrollInterpolator;
+    // m8 + 0x38 = m40 = m38_interpolationLength; sizeof = 0x3c
+    std::array<sFPInterpolator, 4> m44_dragonSpeedInterpolators;
+    std::array<sFPInterpolator, 4> mb4_enemyAltInterpolators;
+    std::array<sFPInterpolator, 4> m124_dragonAltInterpolators;
+    sFPInterpolator m194_dragonYInterpolator;
+    sFPInterpolator m1b0_enemyAltYInterpolator;
+    // size: 0x1cc
+};
+
+// BTL_A3::060603d0
+static void battleFormationTransition_init(sBattleFormationTransitionTask* pThis)
+{
+    s_battleEngine* psVar7 = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    initBattleEngineArray();
+    resetNBG1Map();
+
+    // Read next subBattleId from current battle data entry
+    sSaturnPtr battleDataEntry = readSaturnEA(psVar7->m3A8_overlayBattledata + (s8)psVar7->m3B0_subBattleId * 0x20 + 4);
+    pThis->m4_newSubBattleId = readSaturnU8(battleDataEntry + 0x59);
+    psVar7->m3B0_subBattleId = (s8)pThis->m4_newSubBattleId;
+
+    sSaturnPtr nextBattleData = readSaturnEA(psVar7->m3A8_overlayBattledata + (s16)pThis->m4_newSubBattleId * 0x20 + 4);
+
+    // Initialize per-quadrant interpolators: copy current values as start, next battle data as target
+    for (int i = 0; i < 4; i++)
+    {
+        pThis->m44_dragonSpeedInterpolators[i].m4_startValue  = (s32)psVar7->m45C_perQuadrantDragonSpeed[i];
+        pThis->mb4_enemyAltInterpolators[i].m4_startValue     = (s32)psVar7->m374_perQuadrantEnemyAltitude[i];
+        pThis->m124_dragonAltInterpolators[i].m4_startValue   = (s32)psVar7->m364_perQuadrantDragonAltitude[i];
+
+        pThis->m44_dragonSpeedInterpolators[i].mC_targetValue  = readSaturnS32(nextBattleData + 0x1c + i * 4);
+        pThis->mb4_enemyAltInterpolators[i].mC_targetValue     = readSaturnS32(nextBattleData + 0x2c + i * 4);
+        pThis->m124_dragonAltInterpolators[i].mC_targetValue   = readSaturnS32(nextBattleData + 0x3c + i * 4);
+    }
+
+    // Store auto-scroll delta as start/target for vec2FPInterpolator
+    pThis->m8_autoScrollInterpolator.mC_startValue  = psVar7->m1A0_battleAutoScrollDelta;
+    pThis->m8_autoScrollInterpolator.m24_targetValue = readSaturnVec3(nextBattleData + 0x4c);
+
+    // Store dragon Y delta and enemy alt as start values for Y interpolators
+    pThis->m194_dragonYInterpolator.m4_startValue =
+        (s32)psVar7->m104_dragonPosition.m4_Y - (s32)gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude;
+    pThis->m1b0_enemyAltYInterpolator.m4_startValue = (s32)psVar7->m270_enemyAltitude.m4_Y;
+
+    // Target values for Y interpolators: per-quadrant altitude at current quadrant
+    pThis->m194_dragonYInterpolator.mC_targetValue =
+        pThis->m124_dragonAltInterpolators[(s8)psVar7->m22C_dragonCurrentQuadrant].mC_targetValue;
+    pThis->m1b0_enemyAltYInterpolator.mC_targetValue =
+        pThis->mb4_enemyAltInterpolators[(s8)psVar7->m22C_dragonCurrentQuadrant].mC_targetValue;
+
+    // Set interpolation lengths and initialize all interpolators
+    pThis->m8_autoScrollInterpolator.m38_interpolationLength = 0x54;
+    vec2FPInterpolator_Init(&pThis->m8_autoScrollInterpolator);
+
+    for (int i = 0; i < 4; i++)
+    {
+        pThis->m44_dragonSpeedInterpolators[i].m18_interpolationLength  = 0x54;
+        pThis->mb4_enemyAltInterpolators[i].m18_interpolationLength     = 0x54;
+        pThis->m124_dragonAltInterpolators[i].m18_interpolationLength   = 0x54;
+
+        FPInterpolator_Init(&pThis->m44_dragonSpeedInterpolators[i]);
+        FPInterpolator_Init(&pThis->mb4_enemyAltInterpolators[i]);
+        FPInterpolator_Init(&pThis->m124_dragonAltInterpolators[i]);
+    }
+
+    pThis->m194_dragonYInterpolator.m18_interpolationLength  = 0x54;
+    pThis->m1b0_enemyAltYInterpolator.m18_interpolationLength = 0x54;
+    FPInterpolator_Init(&pThis->m194_dragonYInterpolator);
+    FPInterpolator_Init(&pThis->m1b0_enemyAltYInterpolator);
+
+    // Update battle engine altitude bounds from next battle data
+    psVar7->m354_dragonAltitudeMinMax[0] = readSaturnS32(nextBattleData + 0xc);
+    psVar7->m354_dragonAltitudeMinMax[1] = readSaturnS32(nextBattleData + 0x10);
+    psVar7->m35C_cameraAltitudeMinMax[0] = readSaturnS32(nextBattleData + 0x14);
+    psVar7->m35C_cameraAltitudeMinMax[1] = readSaturnS32(nextBattleData + 0x18);
+    psVar7->m230 = readSaturnS8(nextBattleData + 0x58);
+
+    psVar7->m3AC = readSaturnEA(psVar7->m3A8_overlayBattledata + (s8)psVar7->m3B0_subBattleId * 0x20);
+
+    battleEngine_UpdateSub1(1);
+
+    if ((s8)g_fadeControls.m_4C < 7)
+    {
+        vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
+        vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+    }
+
+    fadePalette(&g_fadeControls.m0_fade0, convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color), 0xffff, 0xa8);
+    playSystemSoundEffect(0x10);
+}
+
+// BTL_A3::0606073c
+static void battleFormationTransition_update(sBattleFormationTransitionTask* pThis)
+{
+    s_battleEngine* psVar6 = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    if (pThis->m0_state == 0)
+    {
+        s32 done = vec2FPInterpolator_Step(&pThis->m8_autoScrollInterpolator);
+        if (done)
+        {
+            if (fileInfoStruct.m2C_allocatedHead != nullptr)
+                return;
+            psVar6->m18C_status = 1;
+            pThis->m0_state++;
+            battleEngine_SetBattleMode(mE_battleIntro);
+        }
+
+        // Write interpolated auto-scroll delta back to engine
+        psVar6->m1A0_battleAutoScrollDelta = pThis->m8_autoScrollInterpolator.m0_currentValue;
+        psVar6->m1AC_battleAutoScrollDeltaBackup = psVar6->m1A0_battleAutoScrollDelta;
+
+        // Step per-quadrant interpolators and write results back
+        for (int i = 0; i < 4; i++)
+        {
+            FPInterpolator_Step(&pThis->m44_dragonSpeedInterpolators[i]);
+            FPInterpolator_Step(&pThis->mb4_enemyAltInterpolators[i]);
+            FPInterpolator_Step(&pThis->m124_dragonAltInterpolators[i]);
+
+            psVar6->m45C_perQuadrantDragonSpeed[i]    = pThis->m44_dragonSpeedInterpolators[i].m0_currentValue;
+            psVar6->m374_perQuadrantEnemyAltitude[i]  = (s32)pThis->mb4_enemyAltInterpolators[i].m0_currentValue;
+            psVar6->m364_perQuadrantDragonAltitude[i] = (s32)pThis->m124_dragonAltInterpolators[i].m0_currentValue;
+        }
+
+        FPInterpolator_Step(&pThis->m194_dragonYInterpolator);
+        psVar6->m104_dragonPosition.m4_Y =
+            pThis->m194_dragonYInterpolator.m0_currentValue +
+            fixedPoint::fromS32((s32)gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude);
+
+        FPInterpolator_Step(&pThis->m1b0_enemyAltYInterpolator);
+        psVar6->m270_enemyAltitude.m4_Y = pThis->m1b0_enemyAltYInterpolator.m0_currentValue;
+    }
+    else if (pThis->m0_state == 1)
+    {
+        pThis->getTask()->markFinished();
+    }
+}
+
+static const sBattleFormationTransitionTask::TypedTaskDefinition battleFormationTransitionTaskDefinition = {
+    battleFormationTransition_init,
+    battleFormationTransition_update,
+    nullptr,
+    nullptr,
+};
+
+// BTL_A3::0607a8ce
+static void battleEngine_enableAttackCamera()
+{
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    pBattleEngine->m188_flags.m800 = 1;
+}
+
+// BTL_A3::0607a900
+static void sEnemyAttackCamera_updateSub0(int param_1)
+{
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    if (param_1 > 2)
+        param_1 = 0;
+    pGrid->m1 = (s8)param_1;
+    s8 offset = pGrid->m1 * 0x24;
+    pGrid->m134_desiredCameraPosition = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x060ac478) + offset);
+    pGrid->m140_desiredCameraTarget = readSaturnVec3(g_BTL_GenericData->getSaturnPtr(0x060ac478) + offset + 0xC);
+}
+
+// BTL_A3::0607b5cc
+static void battleGrid_initSub0(int param_1)
+{
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    pGrid->m218_halfFov = param_1 >> 1;
+    pGrid->m1C8_flags |= 0x20;
+}
+
+struct sBattleVictoryCameraTask : public s_workAreaTemplate<sBattleVictoryCameraTask>
+{
+    sVec3_FP m0;      // enemy/target camera position (from per-quadrant data table)
+    sVec3_FP mC;      // second position (m10 = 0x5000)
+    sVec3_FP m18;     // third position
+    s16 m24_counter;
+    u8 m26_state;
+    u8 m27;
+    // size: 0x28
+};
+
+// BTL_A3::06061534
+static void battleVictoryCameraTask_update(sBattleVictoryCameraTask* pThis)
+{
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+
+    switch (pThis->m26_state)
+    {
+    case 0:
+        pThis->m24_counter++;
+        if (pThis->m24_counter == 0x19)
+        {
+            g_fadeControls.m_4D = 6;
+            if ((char)g_fadeControls.m_4C < 7)
+            {
+                vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
+                vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+            }
+            fadePalette(&g_fadeControls.m0_fade0, 0xc210, 0xeb5a, 0x28);
+            g_fadeControls.m_4D = 5;
+            pThis->m26_state++;
+            pThis->m24_counter = 0;
+            if (pBattleEngine->m3D0 != nullptr)
+                pBattleEngine->m3D0->clearDeleteMethod();
+        }
+        break;
+
+    case 1:
+        pThis->m24_counter++;
+        if (pThis->m24_counter == 0x26)
+        {
+            battleGrid_initSub0(0x238e38e);
+            if (pBattleEngine->m3D0 != nullptr)
+            {
+                pBattleEngine->m3D0->getTask()->markFinished();
+                pBattleEngine->m3D0 = nullptr;
+            }
+            battleEngine_enableAttackCamera();
+            sEnemyAttackCamera_updateSub0(1);
+            battleEngineSub1_UpdateSub2(&pBattleEngine->m418, pBattleEngine->m104_dragonPosition, pThis->m0, pThis->m18);
+            battleEngineSub1_UpdateSub2(&pBattleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->mC, pThis->m18);
+            battleEngine_setCurrentCameraPositionPointer(&pBattleEngine->m418);
+            battleEngine_setDesiredCameraPositionPointer(&pBattleEngine->m424);
+            sVec2_FP sStack_28;
+            battleEngine_resetCameraInterpolationSub0(sStack_28);
+            battleEngine_resetCameraInterpolationSub1(sStack_28);
+            pGrid->m18C = {};
+            pGrid->mC0_cameraRotationInterpolation = {};
+            pThis->m26_state++;
+            pThis->m24_counter = 0;
+            if (gBattleManager->m10_battleOverlay->m1C_envTask != nullptr)
+            {
+                p_workArea envChild = *(p_workArea*)((char*)gBattleManager->m10_battleOverlay->m1C_envTask + 0x58);
+                if (envChild != nullptr)
+                    envChild->getTask()->markPaused();
+            }
+        }
+        break;
+
+    case 2:
+        pThis->m24_counter++;
+        if (pThis->m24_counter == 10)
+            pThis->m26_state++;
+        pBattleEngine->m164.m4_Y += fixedPoint::fromS32(0x999);
+        {
+            sVec2_FP sStack_28;
+            battleEngine_resetCameraInterpolationSub0(sStack_28);
+            battleEngine_resetCameraInterpolationSub1(sStack_28);
+        }
+        pGrid->m18C = {};
+        pGrid->mC0_cameraRotationInterpolation = {};
+        battleEngineSub1_UpdateSub2(&pBattleEngine->m418, pBattleEngine->m104_dragonPosition, pThis->m0, pThis->m18);
+        battleEngineSub1_UpdateSub2(&pBattleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->mC, pThis->m18);
+        {
+            s8 q = pBattleEngine->m22C_dragonCurrentQuadrant;
+            pThis->m0.m0_X += fixedPoint::fromS32(readSaturnS32(g_BTL_GenericData->getSaturnPtr(0x060a96d8 + q * 12)) >> 3);
+            pThis->m0.m8_Z += fixedPoint::fromS32(readSaturnS32(g_BTL_GenericData->getSaturnPtr(0x060a96e0 + q * 12)) >> 3);
+        }
+        break;
+
+    case 3:
+        pThis->m24_counter++;
+        if (pThis->m24_counter == 0x3c)
+            createBattleEndTask(pThis, 1);
+        pBattleEngine->m164.m4_Y += fixedPoint::fromS32(0x999);
+        {
+            sVec2_FP sStack_28;
+            battleEngine_resetCameraInterpolationSub0(sStack_28);
+            battleEngine_resetCameraInterpolationSub1(sStack_28);
+        }
+        pGrid->m18C = {};
+        pGrid->mC0_cameraRotationInterpolation = {};
+        battleEngineSub1_UpdateSub2(&pBattleEngine->m418, pBattleEngine->m104_dragonPosition, pThis->m0, pThis->m18);
+        battleEngineSub1_UpdateSub2(&pBattleEngine->m424, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, pThis->mC, pThis->m18);
+        graphicEngineStatus.m5_isTildeDown = 1;
+        {
+            s8 q = pBattleEngine->m22C_dragonCurrentQuadrant;
+            pThis->m0.m0_X += fixedPoint::fromS32(readSaturnS32(g_BTL_GenericData->getSaturnPtr(0x060a96d8 + q * 12)) >> 3);
+            pThis->m0.m8_Z += fixedPoint::fromS32(readSaturnS32(g_BTL_GenericData->getSaturnPtr(0x060a96e0 + q * 12)) >> 3);
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
+// BTL_A3::06061a24
+static void battleVictoryCamera_create(p_workArea parent)
+{
+    sBattleVictoryCameraTask* pThis = createSiblingTaskFromFunction<sBattleVictoryCameraTask>(parent, battleVictoryCameraTask_update);
+
+    s8 q = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
+    pThis->m0.m0_X = readSaturnFP(g_BTL_GenericData->getSaturnPtr(0x060a96d8 + q * 12));
+    pThis->m0.m4_Y = readSaturnFP(g_BTL_GenericData->getSaturnPtr(0x060a96dc + q * 12));
+    pThis->m0.m8_Z = readSaturnFP(g_BTL_GenericData->getSaturnPtr(0x060a96e0 + q * 12));
+    pThis->mC = {};
+    pThis->mC.m4_Y = fixedPoint::fromS32(0x5000);
+    pThis->m18 = {};
+    pThis->m24_counter = 0;
+    pThis->m26_state = 0;
+    playSystemSoundEffect(0x10);
+}
+
 s32 battleEngine_checkBattleCompletion()
 {
     s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -824,12 +1362,13 @@ s32 battleEngine_checkBattleCompletion()
 
         pBattleEngine->m18C_status = 4;
         pBattleEngine->m188_flags.m80000_hideBattleHUD = 0;
+
         if (mainGameState.gameStats.m10_currentHP > 0)
         {
             battleEngine_UpdateSub7Sub2();
             battleEngine_restoreCameraDefault();
 
-            if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10000)
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10000 == 0)
             {
                 gBattleManager->mE = 0;
             }
@@ -838,22 +1377,38 @@ s32 battleEngine_checkBattleCompletion()
                 gBattleManager->mE = 3;
             }
 
-            if ((((pBattleEngine->m230 != 1) && (pBattleEngine->m230 != 3)) && (pBattleEngine->m230 != 5)) && ((pBattleEngine->m230 != 7 && (pBattleEngine->m230 != 8))))
+            u8 battleFormation = pBattleEngine->m230;
+            if ((((battleFormation != 1) && (battleFormation != 3)) && (battleFormation != 5)) && ((battleFormation != 7 && (battleFormation != 8))))
             {
+                // Battle won - not in special formation: show result screen
                 pBattleEngine->m188_flags.m8_showingBattleResultScreen = 1;
                 createBattleResultScreen(pBattleEngine);
                 return 1;
             }
 
-            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10000)
+            // Special formation - check m10000 flag for alternative path
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10000 != 0)
             {
-                assert(0);
+                // m10000 flag set - create result screen with mE=0
+                pBattleEngine->m188_flags.m8_showingBattleResultScreen = 1;
+                createBattleResultScreen(pBattleEngine);
+                gBattleManager->mE = 0;
+                return 1;
             }
-            assert(0);
+
+            // m10000 not set - transition to next sub-battle formation
+            createSubTask<sBattleFormationTransitionTask>(pBattleEngine, &battleFormationTransitionTaskDefinition);
+            return 1;
         }
-        assert(0);
+
+        // Dragon HP <= 0 while formation running - dragon death path
+        pBattleEngine->m188_flags.m8_showingBattleResultScreen = 1;
+        createSubTask<sDragonDeathTask>(pBattleEngine, &dragonDeathTaskDefinition);
+        gBattleManager->mE = 2;
+        return 1;
     }
 
+    // Check dragon death path (HP dropped mid-battle)
     if (mainGameState.gameStats.m10_currentHP < 1)
     {
         if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x17] != 0) {
@@ -861,7 +1416,7 @@ s32 battleEngine_checkBattleCompletion()
             return 0;
         }
         if (battleEngine_isBattleIntroFinished() != 0) {
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+            pBattleEngine->m188_flags.m8_showingBattleResultScreen = 1;
             pBattleEngine->m18C_status = 4;
             pBattleEngine->m1B8_dragonPitch = 0;
             pBattleEngine->m1BC_dragonYaw = 0;
@@ -873,9 +1428,17 @@ s32 battleEngine_checkBattleCompletion()
             return 1;
         }
     }
-    else if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4)
+    else if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4 != 0)
     {
-        assert(0);
+        // Flag m4 set - call battleVictoryCamera_create and perform state transition
+        battleVictoryCamera_create(pBattleEngine);
+        pBattleEngine->m188_flags.m8_showingBattleResultScreen = 1;
+        pBattleEngine->m18C_status = 2;
+        pBattleEngine->m1B8_dragonPitch = 0;
+        pBattleEngine->m1BC_dragonYaw = 0;
+        pBattleEngine->m3B2_numBattleFormationRunning = 0;
+        gBattleManager->mE = 1;
+        return 1;
     }
 
     pBattleEngine->m3B2_numBattleFormationRunning = 0;
@@ -1901,7 +2464,7 @@ void attackCamera6(sEnemyAttackCamera* pThis)
     {
         gBattleManager->m10_battleOverlay->m8_gridTask->m64_cameraRotationTarget[2] = 0xAAAAAA;
         pThis->m10_rotation1[1] = 0xAAAAAA;
-        pThis->m1C_rotation1Step[1] = 0xb60b6;
+        pThis->m1C_rotation1Step[1] = -0xb60b6;
     }
 
     if ((gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter[1] - gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1]) < 0)
@@ -2586,48 +3149,378 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
     }
 }
 
-p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
+struct sItemResourceTask : public s_workAreaTemplateWithCopy<sItemResourceTask>
+{
+    char m_data[0x128];
+    // size: 0x128
+};
+
+// BTL_A3::06091940
+static void itemResourceTask_draw(sItemResourceTask* pThis)
+{
+    // no-op
+}
+
+// BTL_A3::06091944
+static void itemResourceTask_delete(sItemResourceTask* pThis)
+{
+    dramFree((u8*)gBattleManager->m10_battleOverlay->m4_battleEngine->mA9C);
+    vdp1Free((u8*)gBattleManager->m10_battleOverlay->m4_battleEngine->mAA0);
+}
+
+static const sItemResourceTask::TypedTaskDefinition itemResourceTaskDefinition = {
+    nullptr,
+    nullptr,
+    itemResourceTask_draw,
+    itemResourceTask_delete,
+};
+
+// BTL_A3::06067698
+static void useItemApplyEffect(s_battleEngine* pThis)
 {
     Unimplemented();
+}
 
-    return nullptr;
+// BTL_A3::06064272
+static void battleEngine_restoreCameraPostItem()
+{
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    pGrid->mE4_currentCameraReferenceCenter = pGrid->m134_desiredCameraPosition;
+    pGrid->mF0_currentCameraReferenceForward = pGrid->m140_desiredCameraTarget;
+    pGrid->m108_deltaCameraPosition = {};
+    pGrid->m114_deltaCameraTarget = {};
+    if (pEngine->m3D0 != nullptr)
+    {
+        pEngine->m3D0->getTask()->markFinished();
+        pEngine->m3D0 = nullptr;
+    }
+}
+
+// BTL_A3::06069dc0
+static void battleEngine_showReceiveItemText(eItems itemId)
+{
+    sBattleTextDisplayTask* pDisplay = gBattleManager->m10_battleOverlay->m14_textDisplay;
+    if (pDisplay != nullptr)
+    {
+        pDisplay->m14 = (s16)0xffe2;
+        createReceiveItemTask(pDisplay, (s_receivedItemTask**)&pDisplay->m8, (s32)pDisplay->m14, itemId, 0);
+    }
+}
+
+static void findAndLoadTownFile(const char* filename, void* dstDram, u16 vdp1Offset)
+{
+    Unimplemented();
+}
+
+static void useItemSub0(s8 param1, u32 param2)
+{
+    Unimplemented();
+}
+
+// 0601e0b4
+static void FUN_0601e0b4()
+{
+    Unimplemented();
+}
+
+// BTL_A3::06066c54
+static void FUN_BTL_A3__06066c54(s_battleEngine* pThis)
+{
+    Unimplemented();
+}
+
+// BTL_A3::06091720
+p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
+{
+    sItemResourceTask* psVar1 = createSubTaskWithCopy<sItemResourceTask>(pThis, &itemResourceTaskDefinition);
+    if (psVar1 == nullptr)
+        return nullptr;
+
+    pThis->mA9C = nullptr;
+    pThis->mAA0 = nullptr;
+
+    s16 category;
+    s16 itemId16 = (s16)itemId;
+
+    if (itemId16 == 1 || itemId16 == 0xa1)
+    {
+        // dragonY > envHeight+0x23000 → category 0, else category 1
+        if (*(s32*)((u8*)gBattleManager->m10_battleOverlay->mC_targetSystem + 0x204) + 0x23000 <
+            pThis->mC_battleCenter.m4_Y)
+            category = 0;
+        else
+            category = 1;
+    }
+    else if (itemId16 == 2 || itemId16 == 3 || itemId16 == 0x95 || itemId16 == 0x96)
+    {
+        if (pThis->mC_battleCenter.m4_Y <=
+            *(s32*)((u8*)gBattleManager->m10_battleOverlay->mC_targetSystem + 0x204) + 0x23000)
+            category = 3;
+        else
+            category = 2;
+    }
+    else if (itemId16 == 0x2d || itemId16 == 0x2e || itemId16 == 0x2f ||
+             itemId16 == 0x34 || itemId16 == 0x35 || itemId16 == 0x36 ||
+             itemId16 == 0x37 || itemId16 == 0xad)
+    {
+        category = 5;
+    }
+    else if (itemId16 == 0x91 || itemId16 == 0x92 || itemId16 == 0x93)
+    {
+        category = 4;
+    }
+    else if (itemId16 == 0x97)
+    {
+        category = 9;
+    }
+    else if (itemId16 == 0x98)
+    {
+        category = 10;
+    }
+    else if (itemId16 == 0x9b)
+    {
+        category = 7;
+    }
+    else if (itemId16 == 0xa2)
+    {
+        category = 8;
+    }
+    else
+    {
+        // unsupported item — mark task finished, return null
+        if (psVar1 != nullptr)
+            psVar1->getTask()->markFinished();
+        return nullptr;
+    }
+
+    // Write category into psVar1 work area at offset 0xEA (= task offset 0x1d*8+2 in Ghidra notation)
+    *(s16*)((char*)psVar1 + 0xEA) = category;
+
+    // Allocate dram and vdp1 buffers
+    pThis->mA9C = (p_workArea)dramAllocate(0xe000);
+    pThis->mAA0 = (p_workArea)vdp1Allocate(0xe000);
+
+    Unimplemented(); // findAndLoadTownFile calls (category-indexed MCB/CGB file table at 060ad5e8)
+
+    return psVar1;
 }
 
 void battleEngine_updateBattleMode_1_useItem(s_battleEngine* pThis)
 {
-    /*
     switch (pThis->m38D_battleSubMode)
     {
     case 0:
         battleCreateCinematicBars(pThis);
         pThis->m38D_battleSubMode++;
-        pThis->mAA4 = 
+        pThis->mAA4 = loadItemResources(pThis, pThis->m39E_selectedItem);
+        break;
+    case 1:
+    {
+        s16 cnt = pThis->m390++;
+        if (cnt < 5)
+            break;
+        pThis->m390 = 0;
+        gBattleManager->m10_battleOverlay->m18_dragon->m88 |= 0x2000;
+        u8 itemCategory = *(u8*)((char*)pThis->mAA4 + 0xEA + 1); // upper byte = category from loadItemResources
+        if (itemCategory == 6)
+        {
+            pThis->m38D_battleSubMode++;
+        }
+        else if (itemCategory == 7 || itemCategory == 8)
+        {
+            pThis->m38D_battleSubMode++;
+            u32 rnd = randomNumber();
+            useItemSub0('\x01', (rnd & 1) == 0 ? 2 : 1);
+        }
+        else
+        {
+            resetProjectVector();
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m200000 = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
+            pThis->m38D_battleSubMode = 8;
+        }
+        battleEngine_showReceiveItemText(pThis->m39E_selectedItem);
+        break;
     }
-    */
-    Unimplemented();
+    case 2:
+        if (pThis->m390++ < 0x1f)
+            break;
+        useItemApplyEffect(pThis);
+        pThis->m390 = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 3:
+        if (!(gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished))
+            break;
+        pThis->m390 = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 4:
+        if (pThis->m390++ < 0xb)
+            break;
+        pThis->m390 = 0;
+        pThis->m38D_battleSubMode++;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 1;
+        if (pThis->mAA4 != nullptr)
+            pThis->mAA4->getTask()->markFinished();
+        pThis->mAA4 = nullptr;
+        break;
+    case 5:
+        if (pThis->m390++ < 0x29)
+            break;
+        resetProjectVector();
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m200000 = 0;
+        battleEngine_restoreCameraPostItem();
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000000 = 1;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
+        pThis->m390 = 0;
+        pThis->m38D_battleSubMode++;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+        break;
+    case 6:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10 = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 7:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 8:
+        if (pThis->m390++ < 5)
+            break;
+        battleEngine_SetBattleMode16();
+        break;
+    default:
+        assert(0);
+    }
 }
 
+// BTL_A3::06067180
 void battleEngine_updateBattleMode_4_useBerserk(s_battleEngine* pThis)
 {
+    s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     switch (pThis->m38D_battleSubMode)
     {
     case 0:
         battleCreateCinematicBars(pThis);
         pThis->mAA4 = loadItemResources(pThis, pThis->m3A2_selectedBerserk);
         if ((pThis->m3A2_selectedBerserk == 0x99) || (pThis->m3A2_selectedBerserk == 0xA0))
-        {
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1 = 1;
-        }
+            pEngine->m188_flags.m1 = 1;
         pThis->m38D_battleSubMode++;
         break;
     case 1:
         if (pThis->m384_battleModeDelay++ < 5)
             break;
-        assert(0);
+        {
+            s8 bVar1 = getObjectListEntry(pThis->m3A2_selectedBerserk)->m1_type;
+            if (bVar1 == 0) {
+                pDragon->m88 |= 2;
+                useItemSub0(0, 4);
+            } else {
+                if (bVar1 != 1 && bVar1 != 2) {
+                    pEngine->m188_flags.m80000_hideBattleHUD = 0;
+                    pThis->m384_battleModeDelay = 0;
+                    pThis->m38D_battleSubMode = 9;
+                    break;
+                }
+                pDragon->m88 |= 4;
+                useItemSub0(1, 4);
+            }
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
+            battleEngine_showReceiveItemText(pThis->m3A2_selectedBerserk);
+        }
+        break;
+    case 2:
+        {
+            s8 bVar1 = getObjectListEntry(pThis->m3A2_selectedBerserk)->m1_type;
+            if (bVar1 == 0) {
+                if (pDragon->m1CC_currentAnimation != 0x10)
+                    return;
+                pEngine->m188_flags.m20000 = 1;
+                FUN_0601e0b4();
+                sVec3_FP sVar3;
+                battleResultScreen_updateSub0('n', 'n', 'n', &sVar3);
+                battleGrid_setupLightInterpolation(0x26, pGrid->m1CC_lightColor, sVar3);
+                sVec3_FP sVar4;
+                battleResultScreen_updateSub0('\b', '\b', '\b', &sVar4);
+                battleGrid_setupLightInterpolation2(0x26, pGrid->m1E4_lightFalloff0, sVar4);
+                sVec3_FP local_24;
+                transformAndAddVecByCurrentMatrix(&pDragon->mFC_hotpoints[2], &local_24);
+                return;
+            } else if (bVar1 == 1 || bVar1 == 2) {
+                if (pDragon->m1CC_currentAnimation != 0x11)
+                    return;
+                pThis->m384_battleModeDelay = 0;
+                pThis->m38D_battleSubMode++;
+                return;
+            }
+            pEngine->m188_flags.m80000_hideBattleHUD = 0;
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode = 9;
+        }
+        break;
+    case 3:
+        FUN_BTL_A3__06066c54(pThis);
+        if (pEngine->m188_flags.m20000) {
+            sVec3_FP local_24;
+            transformAndAddVecByCurrentMatrix(&pDragon->mFC_hotpoints[2], &local_24);
+            return;
+        }
+        break;
+    case 4:
+        if (pEngine->m188_flags.m100_attackAnimationFinished) {
+            if (pEngine->m188_flags.m20000) {
+                battleGrid_setupLightInterpolation(10, pGrid->m1CC_lightColor, pGrid->m1D8_newLightColor);
+                battleGrid_setupLightInterpolation2(10, pGrid->m1E4_lightFalloff0, pGrid->m1F0);
+            }
+            pThis->m38D_battleSubMode++;
+        }
+        break;
+    case 5:
+        if (pThis->m384_battleModeDelay++ < 10)
+            break;
+        pThis->m394 = 0;
+        battleEngine_UpdateSub7Sub1();
+        battleEngine_restoreCameraPostItem();
+        pThis->m384_battleModeDelay = 0;
+        pThis->m38D_battleSubMode++;
+        pEngine->m188_flags.m1000 = 1;
+        if (pThis->mAA4 != nullptr) {
+            pThis->mAA4->getTask()->markFinished();
+            pThis->mAA4 = nullptr;
+        }
+        break;
+    case 6:
+        if (pThis->m384_battleModeDelay++ < 15)
+            break;
+        pThis->m384_battleModeDelay = 0;
+        pThis->m38D_battleSubMode++;
+        pEngine->m188_flags.m1000 = 0;
+        pEngine->m188_flags.m20_battleIntroRunning = 0;
+        pEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+        break;
+    case 7:
+        pEngine->m188_flags.m10 = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 8:
+        pEngine->m188_flags.m80000_hideBattleHUD = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 9:
+        if (pThis->m384_battleModeDelay++ < 4)
+            break;
+        battleEngine_SetBattleMode16();
+        break;
     default:
         assert(0);
     }
-    Unimplemented();
 }
 
 void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaserSub0(s_battleEngine* pThis, sVec3_FP* param_2)
@@ -3003,6 +3896,7 @@ void battleEngine_MainUpdate(s_battleEngine* pThis)
     battleEngine_ApplyBattleAutoScrollDelta(pThis);
     if (battleEngine_checkBattleCompletion() == 1)
         return;
+    pThis->m47C_exp = pThis->m47C_exp + 1;
     battleEngine_processMovementMode(pThis);
     battleEngine_staticBattleOrbitUpdate(pThis);
     battleEngine_computeDragonPosition(pThis);
@@ -3200,7 +4094,248 @@ void battleEngine_MainUpdate(s_battleEngine* pThis)
     }
     else
     {
-        assert(0);
+        // Debug mode input handling - alternate input configuration for development
+        // 06059d48 (digital) and 06059fc4 (analog)
+
+        // Check input type
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType != 1) // not digital
+        {
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType != 2) // not analog either
+                return;
+
+            // Analog input in debug mode
+            pThis->m1B8_dragonPitch = (s32)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY << 8;
+            pThis->m1BC_dragonYaw = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * -0x100;
+
+            // Check control flags (0x78 = 0x08 | 0x10 | 0x20 | 0x40)
+            if ((pThis->m388 & 0x78) == 0)
+            {
+                // No special control flags set
+                if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) == 0)
+                    return;
+
+                // Dragon has special status - zero out controls and check for button press
+                pThis->m1B8_dragonPitch = 0;
+                pThis->m1BC_dragonYaw = 0;
+
+                if (((graphicEngineStatus.m4514.mD8_buttonConfig[2][4] |
+                      graphicEngineStatus.m4514.mD8_buttonConfig[2][5] |
+                      graphicEngineStatus.m4514.mD8_buttonConfig[2][7] |
+                      graphicEngineStatus.m4514.mD8_buttonConfig[2][6]) &
+                     graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown) == 0)
+                {
+                    return;
+                }
+                playSystemSoundEffect(5);
+                return;
+            }
+
+            // Control flags are set - clear pitch, handle yaw with more complex logic
+            pThis->m1B8_dragonPitch = 0;
+            // Yaw adjustment will be handled in the yaw-specific section below
+        }
+        else
+        {
+            // Digital input in debug mode
+
+            // Pitch adjustment (buttons 4 and 5)
+            if ((graphicEngineStatus.m4514.mD8_buttonConfig[2][4] &
+                 graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown) == 0)
+            {
+                // Button 4 not pressed, check button 5 (down)
+                if ((graphicEngineStatus.m4514.mD8_buttonConfig[2][5] &
+                     graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown) == 0)
+                {
+                    // Neither button 4 nor 5 pressed
+                    if ((pThis->m388 & 0x78) != 0)
+                    {
+                        // Control flag is set, zero pitch
+                        pThis->m1B8_dragonPitch = 0;
+                        pThis->m1BC_dragonYaw = 0;
+                        return;
+                    }
+
+                    // Auto-center pitch when idle
+                    if (pThis->m1B8_dragonPitch - 0x1333 < 1)
+                    {
+                        if (-1 < pThis->m1B8_dragonPitch + 0x1333)
+                        {
+                            pThis->m1B8_dragonPitch = 0;
+                        }
+                        else
+                        {
+                            pThis->m1B8_dragonPitch += 0x1333;
+                        }
+                    }
+                    else
+                    {
+                        pThis->m1B8_dragonPitch -= 0x1333;
+                    }
+                }
+                else
+                {
+                    // Button 5 (down) is pressed
+                    if ((pThis->m388 & 0x10) != 0)
+                    {
+                        pThis->m1B8_dragonPitch = 0;
+                        return;
+                    }
+
+                    if (pThis->m1B8_dragonPitch - 0x51E < -0xFFFF)
+                    {
+                        if (-0x10001 < pThis->m1B8_dragonPitch + 0x1478)
+                        {
+                            pThis->m1B8_dragonPitch = -0x10000;
+                        }
+                        else
+                        {
+                            pThis->m1B8_dragonPitch += 0x1478;
+                        }
+                    }
+                    else
+                    {
+                        pThis->m1B8_dragonPitch -= 0x51E;
+                    }
+                }
+            }
+            else
+            {
+                // Button 4 (up) is pressed
+                if ((pThis->m388 & 0x08) != 0)
+                {
+                    pThis->m1B8_dragonPitch = 0;
+                    return;
+                }
+
+                if (pThis->m1B8_dragonPitch + 0x51E < 0x10000)
+                {
+                    pThis->m1B8_dragonPitch += 0x51E;
+                }
+                else
+                {
+                    if (pThis->m1B8_dragonPitch - 0x1478 < 0x10001)
+                    {
+                        pThis->m1B8_dragonPitch = 0x10000;
+                    }
+                    else
+                    {
+                        pThis->m1B8_dragonPitch -= 0x1478;
+                    }
+                }
+            }
+        }
+
+        // Yaw adjustment (buttons 7 and 6) - applies to both digital and analog debug modes
+        if ((graphicEngineStatus.m4514.mD8_buttonConfig[2][7] &
+             graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown) == 0)
+        {
+            if ((graphicEngineStatus.m4514.mD8_buttonConfig[2][6] &
+                 graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown) == 0)
+            {
+                // Neither button 7 nor 6 pressed
+                if ((pThis->m388 & 0x78) != 0)
+                {
+                    pThis->m1B8_dragonPitch = 0;
+                    pThis->m1BC_dragonYaw = 0;
+                    return;
+                }
+
+                // Auto-center yaw when idle
+                if (pThis->m1BC_dragonYaw - 0x1333 < 1)
+                {
+                    if (-1 < pThis->m1BC_dragonYaw + 0x1333)
+                    {
+                        pThis->m1BC_dragonYaw = 0;
+                    }
+                    else
+                    {
+                        pThis->m1BC_dragonYaw += 0x1333;
+                    }
+                }
+                else
+                {
+                    pThis->m1BC_dragonYaw -= 0x1333;
+                }
+            }
+            else
+            {
+                // Button 6 (right) is pressed
+                if ((pThis->m388 & 0x20) != 0)
+                {
+                    pThis->m1BC_dragonYaw = 0;
+                    return;
+                }
+
+                if (pThis->m1BC_dragonYaw < 0)
+                {
+                    pThis->m1BC_dragonYaw = 0;
+                }
+                else
+                {
+                    if (pThis->m1BC_dragonYaw - 0x51E < -0xFFFF)
+                    {
+                        if (-0x10001 < pThis->m1BC_dragonYaw + 0x1478)
+                        {
+                            pThis->m1BC_dragonYaw = -0x10000;
+                        }
+                        else
+                        {
+                            pThis->m1BC_dragonYaw += 0x1478;
+                        }
+                    }
+                    else
+                    {
+                        pThis->m1BC_dragonYaw -= 0x51E;
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Button 7 (left) is pressed
+            if ((pThis->m388 & 0x40) != 0)
+            {
+                pThis->m1BC_dragonYaw = 0;
+                return;
+            }
+
+            if (pThis->m1BC_dragonYaw < 0)
+            {
+                pThis->m1BC_dragonYaw = 0;
+            }
+            else if (pThis->m1BC_dragonYaw + 0x51E < 0x10000)
+            {
+                pThis->m1BC_dragonYaw += 0x51E;
+            }
+            else
+            {
+                if (pThis->m1BC_dragonYaw - 0x1478 < 0x10001)
+                {
+                    pThis->m1BC_dragonYaw = 0x10000;
+                }
+                else
+                {
+                    pThis->m1BC_dragonYaw -= 0x1478;
+                }
+            }
+        }
+
+        // Final check: if dragon has special status, zero controls and check for button
+        if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8) == 0)
+            return;
+
+        pThis->m1B8_dragonPitch = 0;
+        pThis->m1BC_dragonYaw = 0;
+
+        if (((graphicEngineStatus.m4514.mD8_buttonConfig[2][4] |
+              graphicEngineStatus.m4514.mD8_buttonConfig[2][5] |
+              graphicEngineStatus.m4514.mD8_buttonConfig[2][7] |
+              graphicEngineStatus.m4514.mD8_buttonConfig[2][6]) &
+             graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown) == 0)
+        {
+            return;
+        }
+        playSystemSoundEffect(5);
     }
 }
 

@@ -20,6 +20,7 @@ struct sBattleCommandMenu : public s_workAreaTemplate<sBattleCommandMenu>
     s32 m24;
     s32 m28_selectedItem;
     s32 m2C_selectedBerserk;
+    s32 m30_selectedWeapon;
     struct sSubMenuEntry
     {
         eItems m0_itemIndex;
@@ -36,3 +37,4 @@ struct sBattleCommandMenu : public s_workAreaTemplate<sBattleCommandMenu>
 };
 
 void createBattleCommandMenu(p_workArea parent);
+s16 computeBerserkBPCost(s16 baseCost);

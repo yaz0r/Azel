@@ -220,6 +220,74 @@ static void enqueueRaySegment3D(std::array<sVec3_FP, 2>& viewSpacePoints, s32 wi
     gPendingRayQuads.push_back(quad);
 }
 
+static void enqueueRaySegment3D_2Width(std::array<sVec3_FP, 2>& viewSpacePoints, std::array<fixedPoint, 2>& widths, u16 characterAddress, s16 characterSize, u16 characterColor, const quadColor* pQuadColor, s32 colorMode)
+{
+    glm::vec3 p0(viewSpacePoints[0][0].toFloat(), viewSpacePoints[0][1].toFloat(), viewSpacePoints[0][2].toFloat());
+    glm::vec3 p1(viewSpacePoints[1][0].toFloat(), viewSpacePoints[1][1].toFloat(), viewSpacePoints[1][2].toFloat());
+
+    glm::vec3 dir = p1 - p0;
+    float len = glm::length(dir);
+    if (len < 0.001f) return;
+    dir /= len;
+
+    glm::vec3 viewDir(0.0f, 0.0f, -1.0f);
+    glm::vec3 perp = glm::cross(dir, viewDir);
+    float perpLen = glm::length(perp);
+    if (perpLen < 0.0001f) {
+        perp = glm::cross(dir, glm::vec3(0.0f, 1.0f, 0.0f));
+        perpLen = glm::length(perp);
+        if (perpLen < 0.0001f) return;
+    }
+    perp /= perpLen;
+
+    float halfWidth0 = widths[0].m_value / (float)0x10000;
+    float halfWidth1 = widths[1].m_value / (float)0x10000;
+
+    glm::vec3 v0 = p0 - perp * halfWidth0;
+    glm::vec3 v1 = p1 - perp * halfWidth1;
+    glm::vec3 v2 = p1 + perp * halfWidth1;
+    glm::vec3 v3 = p0 + perp * halfWidth0;
+
+    sRayQuad3D quad;
+    float c0[4], c1[4], c2[4], c3[4];
+    computeRayVertexColor((*pQuadColor)[0], c0);
+    computeRayVertexColor((*pQuadColor)[1], c1);
+    computeRayVertexColor((*pQuadColor)[2], c2);
+    computeRayVertexColor((*pQuadColor)[3], c3);
+
+    quad.vertices[0] = { {v0.x, v0.y, v0.z}, {0,0}, {c0[0], c0[1], c0[2], c0[3]} };
+    quad.vertices[1] = { {v1.x, v1.y, v1.z}, {1,0}, {c1[0], c1[1], c1[2], c1[3]} };
+    quad.vertices[2] = { {v2.x, v2.y, v2.z}, {1,1}, {c2[0], c2[1], c2[2], c2[3]} };
+    quad.vertices[3] = { {v3.x, v3.y, v3.z}, {0,1}, {c3[0], c3[1], c3[2], c3[3]} };
+
+    quad.CMDCTRL = 0x1002;
+    quad.CMDPMOD = 0x484 | colorMode;
+    quad.CMDCOLR = characterColor;
+    quad.CMDSRCA = characterAddress;
+    quad.CMDSIZE = characterSize;
+
+    gPendingRayQuads.push_back(quad);
+}
+
+void displayRaySegment_2Width(std::array<sVec3_FP, 2>& param_1, std::array<fixedPoint, 2>& param_2, u16 characterAddress, s16 characterSize, u16 characterColor, const quadColor* pQuadColor, s32 colorMode)
+{
+    std::array<sVec3_FP, 2> transformedPoints;
+    transformAndAddVecByCurrentMatrix(&param_1[0], &transformedPoints[0]);
+    transformAndAddVecByCurrentMatrix(&param_1[1], &transformedPoints[1]);
+
+    if (gDirectRayRendering)
+    {
+        enqueueRaySegment3D_2Width(transformedPoints, param_2, characterAddress, characterSize, characterColor, pQuadColor, colorMode);
+        return;
+    }
+
+    sScreenQuad3 screenQuad;
+    if (rayComputeDisplayMatrix_2Width(transformedPoints, param_2, graphicEngineStatus.m405C, screenQuad))
+    {
+        sendRaySegmentToVdp1(screenQuad, transformedPoints[1][2], characterAddress, characterSize, characterColor, pQuadColor, colorMode);
+    }
+}
+
 void displayRaySegment(std::array<sVec3_FP, 2>& param_1, s32 param_2, u16 characterAddress, s16 characterSize, u16 characterColor, const quadColor* pQuadColor, s32 colorMode)
 {
     std::array<sVec3_FP, 2> transformedPoints;

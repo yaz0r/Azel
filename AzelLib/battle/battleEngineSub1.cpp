@@ -131,9 +131,9 @@ void battleEngineSub1_Update(sBattleEngineSub1* pThis)
     }
 }
 
+// BTL_A3::06062e70
 void battleEngineSub1_Draw(sBattleEngineSub1* pThis)
 {
-    Unimplemented();
 }
 
 void createBattleEngineSub1(p_workArea parent)

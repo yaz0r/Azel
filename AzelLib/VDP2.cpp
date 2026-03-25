@@ -2046,6 +2046,26 @@ u32 clearVdp2TextAreaSub1(u16 r4, s32 x, s32 y)
     return 1;
 }
 
+// 060253dc
+void vdp2ResetCursor()
+{
+    vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X;
+    vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y;
+}
+
+// 060253e8
+void vdp2ClearRemainingTextArea()
+{
+    for (s32 x = vdp2StringContext.m4_cursorX; x < vdp2StringContext.mC_X + vdp2StringContext.m14_Width; x++)
+    {
+        for (s32 y = vdp2StringContext.m8_cursorY; y < vdp2StringContext.m8_cursorY + 2; y++)
+        {
+            clearVdp2TextAreaSub1(0, x, y);
+        }
+    }
+    vdp2ResetCursor();
+}
+
 s32 clearExtendedCharacter(u32 param_1, s_stringStatusQuery* vars)
 {
     if (clearVdp2TextAreaSub1(param_1, vars->m0_cursorX, vars->m4_cursorY))

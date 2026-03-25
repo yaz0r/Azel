@@ -27,6 +27,98 @@ void BattleEnd_deleteSub0()
     }
 }
 
+// BTL_A3::0605fc74
+static void FUN_BTL_A3__0605fc74()
+{
+    if (isCurrentBattleID(0, 8)) {
+        mainGameState.setBit(0x11, 4);
+    } else if (isCurrentBattleID(0, 9)) {
+        mainGameState.setBit(0x11, 2);
+    } else if (isCurrentBattleID(0x10, 0)) {
+        mainGameState.setBit(0x11, 1);
+    } else if (isCurrentBattleID(0x12, 0)) {
+        mainGameState.setBit(0x12, 0x80);
+    } else if (isCurrentBattleID(0x11, 0)) {
+        mainGameState.setBit(0x12, 0x40);
+    } else if (isCurrentBattleID(0x13, 0)) {
+        mainGameState.setBit(0x12, 0x20);
+    } else if (isCurrentBattleID(0xe, 0)) {
+        mainGameState.setBit(0x12, 0x10);
+    } else if (isCurrentBattleID(4, 0)) {
+        mainGameState.setBit(0x12, 8);
+        mainGameState.setBit(0x12, 4);
+    } else if (isCurrentBattleID(5, 4)) {
+        mainGameState.setBit(0x12, 2);
+    } else if (isCurrentBattleID(5, 0)) {
+        mainGameState.setBit(0x12, 1);
+    } else if (isCurrentBattleID(5, 8)) {
+        mainGameState.setBit(0x13, 0x80);
+    } else if (isCurrentBattleID(0x14, 0)) {
+        mainGameState.setBit(0x13, 0x40);
+    } else if (isCurrentBattleID(0xe, 1)) {
+        mainGameState.setBit(0x13, 0x20);
+        gBattleManager->m10_battleOverlay->m3 = 0;
+        return;
+    } else if (isCurrentBattleID(6, 0xc)) {
+        mainGameState.setBit(0x13, 0x10);
+    } else if (isCurrentBattleID(0x16, 0)) {
+        mainGameState.setBit(0x13, 8);
+    } else if (isCurrentBattleID(7, 5)) {
+        mainGameState.setBit(0x13, 4);
+    } else if (isCurrentBattleID(0x17, 0)) {
+        mainGameState.setBit(0x13, 2);
+    } else if (isCurrentBattleID(8, 5)) {
+        mainGameState.setBit(0x13, 1);
+    } else if (isCurrentBattleID(0xe, 2)) {
+        mainGameState.setBit(0x14, 0x80);
+    } else if (isCurrentBattleID(0x18, 0)) {
+        mainGameState.setBit(0x14, 0x40);
+    } else if (isCurrentBattleID(9, 4)) {
+        mainGameState.setBit(0x14, 0x20);
+        gBattleManager->m10_battleOverlay->m3 = 1;
+        return;
+    } else if (isCurrentBattleID(0x19, 0)) {
+        mainGameState.setBit(0x14, 0x10);
+    } else if (isCurrentBattleID(0xb, 0)) {
+        mainGameState.setBit(0x14, 8);
+    } else if (isCurrentBattleID(0xb, 1)) {
+        mainGameState.setBit(0x14, 4);
+    } else if (isCurrentBattleID(0xb, 2)) {
+        mainGameState.setBit(0x14, 2);
+    } else if (isCurrentBattleID(0xb, 3)) {
+        mainGameState.setBit(0x14, 1);
+    } else if (isCurrentBattleID(0xb, 4)) {
+        mainGameState.setBit(0x15, 0x80);
+    } else if (isCurrentBattleID(0xb, 5)) {
+        mainGameState.setBit(0x15, 0x40);
+    } else if (isCurrentBattleID(0xb, 6)) {
+        mainGameState.setBit(0x15, 0x20);
+    } else if (isCurrentBattleID(0xb, 7)) {
+        mainGameState.setBit(0x15, 0x10);
+    } else if (isCurrentBattleID(0x1a, 0)) {
+        mainGameState.setBit(0x15, 8);
+    } else if (isCurrentBattleID(6, 0xd)) {
+        mainGameState.setBit(0x15, 4);
+    } else if (isCurrentBattleID(0xc, 6)) {
+        mainGameState.setBit(0x15, 2);
+    } else if (isCurrentBattleID(0xc, 7)) {
+        mainGameState.setBit(0x15, 1);
+    } else if (isCurrentBattleID(0xd, 0)) {
+        mainGameState.setBit(0x16, 0x80);
+    } else if (isCurrentBattleID(0xd, 1)) {
+        mainGameState.setBit(0x16, 0x40);
+    } else if (isCurrentBattleID(0xd, 2)) {
+        mainGameState.setBit(0x16, 0x20);
+    } else if (isCurrentBattleID(0xd, 3)) {
+        mainGameState.setBit(0x16, 0x10);
+    } else if (isCurrentBattleID(0xd, 4)) {
+        mainGameState.setBit(0x16, 8);
+    } else if (isCurrentBattleID(0xd, 5)) {
+        mainGameState.setBit(0x16, 4);
+        mainGameState.setBit(0x16, 2);
+    }
+}
+
 void BattleEnd_delete(sBattleEnd* pThis)
 {
     if (!isCurrentBattleID(9, 0))
@@ -39,170 +131,9 @@ void BattleEnd_delete(sBattleEnd* pThis)
     BattleEnd_deleteSub0();
 
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10000)
-    {
         return;
-    }
 
-    if (isCurrentBattleID(0, 8))
-    {
-        mainGameState.setBit(0x11 * 8 + 4); // Baldor queen mini boss
-    }
-    else if (isCurrentBattleID(0, 9))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x10, 0)) // Arachnoth boss fight
-    {
-        mainGameState.setBit(0x11 * 8 + 6);
-    }
-    else if (isCurrentBattleID(0x12, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x11, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x13, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xe, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(4, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(5, 4))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(5, 5))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(5, 8))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x14, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xe, 1))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(6, 0xc))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x16, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(7, 5))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x17, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(8, 5))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xe, 2))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x18, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(9, 4))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x19, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xb, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xb, 1))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xb, 2))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xb, 3))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xb, 4))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xb, 5))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xb, 6))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xb, 7))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x1A, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0x6, 0xD))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xC, 6))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xC, 7))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xD, 0))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xD, 1))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xD, 2))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xD, 3))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xD, 4))
-    {
-        assert(0);
-    }
-    else if (isCurrentBattleID(0xD, 5))
-    {
-        assert(0);
-    }
+    FUN_BTL_A3__0605fc74();
 }
 
 void createBattleEndTask(p_workArea parent, int param)

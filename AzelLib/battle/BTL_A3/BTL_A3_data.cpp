@@ -1,5 +1,8 @@
 #include "PDS.h"
 #include "BTL_A3_data.h"
+p_workArea createPattergoHealerParticleEffect(s_workAreaCopy* pParent);
+p_workArea createPattergoMultiParticleEffect(s_workAreaCopy* pParent);
+p_workArea urchinAttack_spawnProjectile(s_workAreaCopy* pParent);
 #include "BTL_A3_map3.h"
 #include "BTL_A3_map4.h"
 #include "BTL_A3_map6.h"
@@ -255,6 +258,22 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
     }
 
     return pNewData;
+}
+
+p_workArea BTL_A3_data::invokeCreateEffect(sSaturnPtr Func, s_workAreaCopy* pParent)
+{
+    switch (Func.m_offset)
+    {
+    case 0x06054db0:
+        return createPattergoHealerParticleEffect(pParent);
+    case 0x0605699c:
+        return createPattergoMultiParticleEffect(pParent);
+    case 0x06054dce:
+        return urchinAttack_spawnProjectile(pParent);
+    default:
+        Unimplemented();
+        return nullptr;
+    }
 }
 
 BTL_A3_data::BTL_A3_data() : battleOverlay("BTL_A3.PRG")

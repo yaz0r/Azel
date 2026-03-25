@@ -1,5 +1,14 @@
 #pragma once
 
+struct sWeaponData
+{
+    s16 m0_weaponType;
+    s16 m2;
+    fixedPoint m4;
+};
+
+extern const std::array<sWeaponData, 9> weaponTable;
+
 void createGunShotRootTask(s_workAreaCopy* parent);
 
 s32 sGunShotTask_UpdateSub1Sub2(struct sBattleTargetable* pTargetable, s16 param_2, s32 param_3);

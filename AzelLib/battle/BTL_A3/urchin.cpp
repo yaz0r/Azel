@@ -15,6 +15,8 @@
 #include "BTL_A3_data.h"
 #include "kernel/graphicalObject.h"
 #include "audio/systemSounds.h"
+#include "battle/battleDebris.h"
+#include "mainMenuDebugTasks.h"
 
 void springDampedStep(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s32 pDeltaFactor, s32 pDistanceToTargetFactor, s8 translationOrRotation); // TODO: cleanup
 s32 checkTargetablesForDamage(p_workArea pThis, std::vector<sBattleTargetable>& param2, s16 entriesToParse, s16& param4); // TODO: cleanup
@@ -107,7 +109,7 @@ void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)
 
     if (!pConfig->m1C[0].m0.isNull())
     {
-        Unimplemented();
+        pThis->mD8 = gCurrentBattleOverlay->invokeCreateEffect(pConfig->m1C[0].m0, pThis);
     }
 
     if ((gBattleManager->m4 == 8) && (gBattleManager->m6_subBattleId == 4)) {
@@ -144,7 +146,7 @@ std::array<std::array<s8,4>, 4> enemyQuadrantsTable = {
     }
 };
 
-void urchinUpdateSub0(sUrchin* pThis)
+void urchin_updateGunHit(sUrchin* pThis)
 {
     s8 cVar1 = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
 
@@ -182,7 +184,6 @@ void urchinUpdateSub0(sUrchin* pThis)
     }
     else
     {
-        assert(0); // untested
         if (pThis->mB8_delay-- < 0)
         {
             s32 stack40;
@@ -220,12 +221,13 @@ void urchinUpdateSub0(sUrchin* pThis)
                 }
                 break;
             default:
-                assert(0);
+                stack40 = 0;
+                stack36 = 0;
                 break;
             }
-            pThis->m2C_positionDelta[1] += MTH_Mul(pThis->mCC->m18_knockbackStrength * 0x10000, getSin(stack40));
-            pThis->m2C_positionDelta[0] += MTH_Mul(MTH_Mul(pThis->mCC->m18_knockbackStrength * 0x10000, getCos(stack40)), getSin(stack36));
-            pThis->m2C_positionDelta[2] += MTH_Mul(MTH_Mul(pThis->mCC->m18_knockbackStrength * 0x10000, getCos(stack40)), getCos(stack36));
+            pThis->m2C_positionDelta[1] += MTH_Mul((u32)pThis->mCC->m18_knockbackStrength << 12, getSin(stack40));
+            pThis->m2C_positionDelta[0] += MTH_Mul(MTH_Mul((u32)pThis->mCC->m18_knockbackStrength << 12, getCos(stack40)), getSin(stack36));
+            pThis->m2C_positionDelta[2] += MTH_Mul(MTH_Mul((u32)pThis->mCC->m18_knockbackStrength << 12, getCos(stack40)), getCos(stack36));
 
             for (int i = 0; i < pThis->mB6_numTargetables; i++)
             {
@@ -240,7 +242,7 @@ void urchinUpdateSub0(sUrchin* pThis)
     }
 }
 
-void urchinUpdateSub1(sUrchin* pThis)
+void urchin_updateHomingLaserHit(sUrchin* pThis)
 {
     s8 cVar1 = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
 
@@ -254,7 +256,7 @@ void urchinUpdateSub1(sUrchin* pThis)
                 {
                     if ((pThis->mC0_targetable[i].m5A <= gBattleManager->m10_battleOverlay->m4_battleEngine->m394) && (pThis->mC0_targetable[i].m5A != 0))
                     {
-                        pThis->mB8_delay = gBattleManager->m10_battleOverlay->m4_battleEngine->m394 * 4 + 0xF;
+                        pThis->mB8_delay = gBattleManager->m10_battleOverlay->m4_battleEngine->m394 * 2 + 0xF;
                         pThis->mB0_flags |= 8;
                         return;
                     }
@@ -277,7 +279,37 @@ void urchinUpdateSub1(sUrchin* pThis)
     }
     else
     {
-        assert(0);
+        if (pThis->mB8_delay-- < 0)
+        {
+            s32 stack40 = 0;
+            s32 stack36 = 0;
+            switch (cVar1)
+            {
+            case 1:
+                if ((randomNumber() & 0x8000000) == 0) stack40 = randomNumber() & 0xFFF;
+                else stack40 = randomNumber() | 0xF000;
+                if ((randomNumber() & 0x8000000) == 0) stack36 = randomNumber() & 0xFFF;
+                else stack36 = randomNumber() | 0xF000;
+                break;
+            case 2:
+                stack40 = 0;
+                if ((randomNumber() & 0x8000000) == 0) stack36 = randomNumber() & 0xFFF;
+                else stack36 = randomNumber() | 0xF000;
+                break;
+            default: stack40 = 0; stack36 = 0; break;
+            }
+            pThis->m2C_positionDelta[1] += MTH_Mul((u32)pThis->mCC->m18_knockbackStrength << 12, getSin(stack40));
+            pThis->m2C_positionDelta[0] += MTH_Mul(MTH_Mul((u32)pThis->mCC->m18_knockbackStrength << 12, getCos(stack40)), getSin(stack36));
+            pThis->m2C_positionDelta[2] += MTH_Mul(MTH_Mul((u32)pThis->mCC->m18_knockbackStrength << 12, getCos(stack40)), getCos(stack36));
+
+            for (int i = 0; i < pThis->mB6_numTargetables; i++)
+            {
+                pThis->mC0_targetable[i].m50_flags |= 0x100000;
+            }
+
+            pThis->mB8_delay = gBattleManager->m10_battleOverlay->m4_battleEngine->m394 * 2 + 0x19;
+            pThis->mB0_flags = (pThis->mB0_flags & ~0x08) | 0x10;
+        }
     }
 }
 
@@ -299,7 +331,7 @@ s8 urchinUpdateSub2(sUrchin* pThis)
         }
         if (!pThis->mCC->m1C[newAnimIndex].m0.isNull())
         {
-            Unimplemented(); // calls m0 function pointer from sub1C to create effect task
+            pThis->mD8 = gCurrentBattleOverlay->invokeCreateEffect(pThis->mCC->m1C[newAnimIndex].m0, pThis);
         }
         pThis->mB1 = newAnimIndex;
     }
@@ -389,7 +421,7 @@ void Urchin_updateSub0(sUrchin* pThis)
         iVar3 = 2;
         break;
     default:
-        assert(0);
+        break;
     }
 
     pThis->m44_rotationTarget[1] = pThis->mD0->mD[pThis->mAF] << 26;
@@ -423,7 +455,7 @@ void Urchin_updateSub0(sUrchin* pThis)
 
                 if (targetableFlag & readSaturnU32(puVar5 + 12))
                 {
-                    pThis->mC0_targetable[i].m50_flags |= readSaturnU32(puVar6 + 10);
+                    pThis->mC0_targetable[i].m50_flags |= readSaturnU32(puVar6 + 12);
                 }
 
                 puVar5 += 0x10;
@@ -590,7 +622,7 @@ mode1_epilogue:
     // Check for sound/effect trigger
     if (pThis->mB8_delay == readSaturnU16(attackParams + 0x0C) && !readSaturnEA(attackParams + 0x08).isNull())
     {
-        Unimplemented(); // calls function pointer at attackParams+0x08
+        gCurrentBattleOverlay->invokeCreateEffect(readSaturnEA(attackParams + 0x08), pThis);
     }
 }
 
@@ -646,7 +678,7 @@ static void urchinUpdateMode2(sUrchin* pThis)
             pThis->mB8_delay--;
             if (pThis->mB8_delay == 0 && !readSaturnEA(attackParams + 0x08).isNull())
             {
-                Unimplemented(); // calls function pointer at attackParams+0x08
+                pThis->mD4 = gCurrentBattleOverlay->invokeCreateEffect(readSaturnEA(attackParams + 0x08), pThis);
             }
         }
         if ((pThis->mB0_flags & 0x20) &&
@@ -824,44 +856,50 @@ static void urchinUpdateMode6(sUrchin* pThis)
         return;
     }
 
-    // Death behavior based on mCC->m28[0] (stored at offset 0x2C from perTypeData start... actually m28[i] at i=m28[0])
-    // The m28 array holds per-type death behavior params
     s8 deathMode = pThis->mCC->m28[0];
-    if (deathMode == 0 || deathMode == 2)
+    if (deathMode == '\0')
     {
         createExplosionAtPosition(&pThis->m8, &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, 0x50000, 0);
-        // Clear attack flag, set dead
         pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x10;
         pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 4;
         pThis->getTask()->markFinished();
     }
-    else if (deathMode == 1 || deathMode == 3)
+    else if (deathMode != '\x01')
     {
-        // Same as 0/2 — clear and die
+        if (deathMode == '\x02')
+        {
+            createExplosionAtPosition(&pThis->m8, &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, 0x50000, 0);
+        }
+        else if (deathMode != '\x03')
+        {
+            if (deathMode == '\x04')
+            {
+                pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x10;
+                pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 4;
+                pThis->mAD = 3;
+            }
+            else
+            {
+                if (deathMode != '\x05') goto LAB_06076d1c;
+                pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x10;
+                pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 4;
+                pThis->mAD++;
+            }
+            return;
+        }
+LAB_06076d1c:
         pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x10;
         pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 4;
+        createBoneDebrisExplosion(
+            (s_workAreaCopy*)dramAllocatorEnd[(u8)pThis->mCC->m1_fileBundleIndex].mC_fileBundle,
+            &pThis->m5C_model, &pThis->m8, &pThis->m38_rotationCurrent,
+            nullptr, nullptr, -44, nullptr, 0, 0, 0, 0x10000, 0);
         pThis->getTask()->markFinished();
+        return;
     }
-    else if (deathMode == 4)
-    {
-        pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x10;
-        pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 4;
-        pThis->mAD = 3;
-    }
-    else if (deathMode == 5)
-    {
-        pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x10;
-        pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 4;
-        pThis->mAD++;
-    }
-    else
-    {
-        // Default: debris death
-        pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x10;
-        pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 4;
-        Unimplemented(); // FUN_BTL_A3__0605c124 — creates debris/explosion task
-        pThis->getTask()->markFinished();
-    }
+    pThis->mD0->m14[pThis->mAE].m18_statusFlags &= ~0x10;
+    pThis->mD0->m14[pThis->mAE].m18_statusFlags |= 4;
+    pThis->getTask()->markFinished();
 }
 
 // 060770f0
@@ -970,8 +1008,8 @@ void Urchin_update(sUrchin* pThis)
             }
 
             springDampedStep(&pThis->m38_rotationCurrent, &pThis->m50_rotationDelta, &pThis->m44_rotationTarget, rotDeltaFactor, rotDistFactor, 1);
-            urchinUpdateSub0(pThis);
-            urchinUpdateSub1(pThis);
+            urchin_updateGunHit(pThis);
+            urchin_updateHomingLaserHit(pThis);
             urchinUpdateSub2(pThis);
             break;
         }

@@ -32,6 +32,7 @@ struct BTL_GenericData : public sSaturnMemoryFile
     // laser data
     static sLaserData mLaserData;
 
+    static std::vector<sVdp1Quad> m_0x60a7848_animatedQuad;
     static std::vector<sVdp1Quad> m_0x60a8c24_animatedQuad;
     static std::vector<sVdp1Quad> m_0x60a8fb4_animatedQuad;
     static std::vector<sVdp1Quad> m_0x60b0658_animatedQuad;

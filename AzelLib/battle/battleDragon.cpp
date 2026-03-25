@@ -12,6 +12,11 @@
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
 #include "battleGenericData.h"
+#include "kernel/graphicalObject.h"
+#include "kernel/vdp1Allocator.h"
+
+void createGunAndLaserDamage3dModel(s_workAreaCopy* pParent, sVec3_FP*, sVec3_FP*, fixedPoint);
+void update3dModelDrawFunctionForVertexAnimation(s_3dModel* r4, u8* pData);
 
 void s_battleDragon_InitSub4Sub0()
 {
@@ -56,6 +61,18 @@ void s_battleDragon_InitSub1(s_loadRiderWorkArea* pRider, s16 param2, s32 param3
     updateAndInterpolateAnimation(&pRider->m18_3dModel);
 }
 
+void s_battleDragon_InitSub2(s_loadRiderWorkArea* pRider, s16 param2)
+{
+    initAnimation(&pRider->m18_3dModel, pRider->m0_riderBundle->getAnimation(param2));
+    stepAnimation(&pRider->m18_3dModel);
+}
+
+static p_workArea createLightWingEffect(s_battleDragon* pThis, s16 p1, s16 p2, s16 p3, s16 p4, s16 p5, s16 p6)
+{
+    Unimplemented();
+    return nullptr;
+}
+
 static void s_battleDragon_Init(s_battleDragon* pThis)
 {
     gBattleManager->m10_battleOverlay->m18_dragon = pThis;
@@ -70,20 +87,24 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
 
         if (gDragonState->mC_dragonType == 8)
         {
-            assert(0);
+            s_battleDragon_InitSub1(pRider1State, 0x114, 0);
+            s_battleDragon_InitSub2(pRider2State, 0x124);
+            pThis->m1CC_currentAnimation = 0;
         }
         else
         {
             s_battleDragon_InitSub3(pRider1State, 0x5C, 0);
             s_battleDragon_InitSub3(pRider2State, 0x50, 0);
-            pThis->m1CC_currentAnimation = 2;
+            pThis->m1CC_currentAnimation = 5;
         }
     }
     else
     {
         if (gDragonState->mC_dragonType == 8)
         {
-            assert(0);
+            s_battleDragon_InitSub1(pRider1State, readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60ae378) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
+            s_battleDragon_InitSub2(pRider2State, 0x124);
+            pThis->m1CC_currentAnimation = 0;
         }
         else
         {
@@ -99,7 +120,8 @@ static void s_battleDragon_Init(s_battleDragon* pThis)
 
     if ((mainGameState.gameStats.m1_dragonLevel == 6) && (pThis->m24C_lightWingEffectTask == 0))
     {
-        Unimplemented();
+        s16 sVar1 = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
+        pThis->m24C_lightWingEffectTask = createLightWingEffect(pThis, sVar1 + 0x10d4, sVar1 + 0x2f10, 0x20c, sVar1 + 0x10e0, sVar1 + 0x2f10, 0x20c);
     }
     else
     {
@@ -116,7 +138,10 @@ void s_battleDragon_UpdateSub0(s_battleDragon* pThis)
         battleEngine_InitSub11();
         if (mainGameState.gameStats.m1_dragonLevel == 8)
         {
-            assert(0);
+            loadRiderIfChanged(6);
+            loadRider2IfChanged(7);
+            s_battleDragon_InitSub1(pRider1State, readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60ae378) + gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant * 2), 0);
+            s_battleDragon_InitSub2(pRider2State, 0x124);
         }
         else
         {
@@ -130,7 +155,8 @@ void s_battleDragon_UpdateSub0(s_battleDragon* pThis)
             }
             if (mainGameState.gameStats.m1_dragonLevel == 6)
             {
-                Unimplemented();
+                s16 sVar1 = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
+                pThis->m24C_lightWingEffectTask = createLightWingEffect(pThis, sVar1 + 0x10d4, sVar1 + 0x2f10, 0x20c, sVar1 + 0x10e0, sVar1 + 0x2f10, 0x20c);
             }
             else
             {
@@ -141,6 +167,7 @@ void s_battleDragon_UpdateSub0(s_battleDragon* pThis)
                 }
             }
         }
+        gDragonState->m88 = 0;
     }
 }
 
@@ -603,11 +630,9 @@ int computeDragonDamage(int damageValue)
     return finalComputedDamage;
 }
 
-void createDamageDisplayNumber(p_workArea parent, int damageTaken, sVec2_FP* offset, int param4)
-{
-    Unimplemented();
-}
+// BTL_A3::0605bb9a createDamageDisplayNumber — implemented in battleDamageDisplay.cpp
 
+// BTL_A3::0609ff48
 void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
 {
     if ((pThis->m1C4 & 8) == 0)
@@ -618,7 +643,19 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
             pThis->m8C.m50_flags &= ~0x80000;
             if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x400)
             {
-                assert(0);
+                // reflect/counter damage: discard damage, show visual effect
+                computeDragonDamage(pThis->m8C.m58);
+                pThis->m1D4_damageTaken = 0;
+                pThis->m1D6 = 0;
+                sVec2_FP lookAt;
+                computeLookAt(pThis->m8C.m34_impactVector, lookAt);
+                sVec3_FP stackVec;
+                sVec3_FP param3 = sVec3_FP(0x6000, 0, 0);
+                sVec3_FP param4 = sVec3_FP(lookAt[0], lookAt[1], fixedPoint(0));
+                battleEngineSub1_UpdateSub2(&stackVec, pThis->m8_position, param3, param4);
+                createGunAndLaserDamage3dModel(pThis, &stackVec, &param4, 0x6666);
+                playSystemSoundEffect(0x16);
+                return;
             }
             int damage = computeDragonDamage(pThis->m8C.m58);
             pThis->m1D6 = 0;
@@ -632,7 +669,12 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
                 {
                     // Dragon is dead!
                     playSystemSoundEffect(0xF);
-                    Unimplemented();
+                    sVec3_FP damageOffset = sVec3_FP(0, 0, fixedPoint::fromS32(0x1000));
+                    createDamageDisplayNumber(pThis, pThis->m1D4_damageTaken, &damageOffset, 1);
+                    pThis->m1D4_damageTaken = 0;
+                    pThis->m1C4 &= ~0x10;
+                    pThis->m1C4 |= 8;
+                    return;
                 }
             }
             else
@@ -666,51 +708,32 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
                 playSystemSoundEffect(0xE);
                 impactForce = 0x20000;
                 break;
-            default:
-                assert(0);
             }
-            
-            // TODO: recheck this, this is pretty suspicious
-            sVec3_FP impactVector = MTH_Mul(impactForce, pThis->m8C.m34_impactVector);
-            sVec3_FP impactVector2;
-            impactVector2[0] = MTH_Mul(impactForce, setDividend(impactVector[0], impactVector[0], pThis->m8C.m34_impactVector[0]));
-            impactVector2[1] = MTH_Mul(impactForce, setDividend(impactVector[1], impactVector[1], pThis->m8C.m34_impactVector[1]));
-            impactVector2[2] = MTH_Mul(impactForce, setDividend(impactVector[2], impactVector[2], pThis->m8C.m34_impactVector[2]));
-
-            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m38C_battleMode == m8_playAttackCamera)
-            {
-                Unimplemented();
-            }
-            else
-            {
-                Unimplemented();
-            }
-            Unimplemented();
-            incrementAnimationRootY(&gDragonState->m78_animData, impactVector[1]);
-            incrementAnimationRootX(&gDragonState->m78_animData, impactVector[0]);
-            incrementAnimationRootZ(&gDragonState->m78_animData, impactVector[2]);
+            MTH_Mul(impactForce, pThis->m8C.m34_impactVector.m0_X);
+            return;
         }
-
-        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000)
+        else
         {
-            if (!(pThis->m1C4 & 0x10))
+            // no new damage this frame
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000)
             {
-                if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x400)
+                if (!(pThis->m1C4 & 0x10))
                 {
-                    pThis->m1D4_damageTaken = 0;
+                    if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x400)
+                    {
+                        pThis->m1D4_damageTaken = 0;
+                    }
                 }
-            }
-            else if (pThis->m1D4_damageTaken > -1)
-            {
-                pThis->m1C4 &= 0x10;
-                sVec2_FP temp;
-                temp[0] = 0;
-                temp[1] = 0;
-                createDamageDisplayNumber(pThis, pThis->m1D4_damageTaken, &temp, 1);
-                pThis->m1D4_damageTaken = 0;
-                if (mainGameState.gameStats.m10_currentHP < 1)
+                else if (pThis->m1D4_damageTaken > -1)
                 {
-                    playSystemSoundEffect(0xE);
+                    pThis->m1C4 &= ~0x10;
+                    sVec3_FP damageOffset = sVec3_FP(0, 0, fixedPoint::fromS32(0x1000));
+                    createDamageDisplayNumber(pThis, pThis->m1D4_damageTaken, &damageOffset, 1);
+                    pThis->m1D4_damageTaken = 0;
+                    if (mainGameState.gameStats.m10_currentHP < 1)
+                    {
+                        playSystemSoundEffect(0xF);
+                    }
                 }
             }
         }
@@ -983,18 +1006,43 @@ static void s_battleDragon_DrawRiderWeapon(s_battleDragon* pThis)
     popMatrix();
 }
 
+// BTL_A3::0609f258
+static void s_battleDragon_UpdateLight()
+{
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    if ((gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen) == 0)
+    {
+        setupLightColor(s_RGB8::fromVector(pGrid->m1E4_lightFalloff0).toU32());
+    }
+    else
+    {
+        generateLightFalloffMap(
+            s_RGB8::fromVector(pGrid->m1F0).toU32(),
+            s_RGB8::fromVector(pGrid->m1FC_lightFalloff1).toU32(),
+            s_RGB8::fromVector(pGrid->m208_lightFalloff2).toU32());
+        sVec3_FP lightVec;
+        battleEngine_UpdateSub7Sub1Sub0(&pGrid->m280_lightAngle1, lightVec);
+        setupLight(lightVec[0], lightVec[1], lightVec[2],
+            s_RGB8::fromVector(pGrid->m1D8_newLightColor).toU32());
+    }
+}
+
+// BTL_A3::0609f900
 static void s_battleDragon_Draw(s_battleDragon* pThis)
 {
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    sVec3_FP lightVec;
+
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
-        // This setup lights
-        //setupLightColor(s_RGB8::fromVector(gBattleManager->m10_battleOverlay->m8_gridTask->m1F0).toU32());
-        //battleEngine_UpdateSub7Sub1Sub0()
-        Unimplemented();
+        setupLightColor(s_RGB8::fromVector(pGrid->m1F0).toU32());
+        battleEngine_UpdateSub7Sub1Sub0(&pGrid->m280_lightAngle1, lightVec);
+        setupLight(lightVec[0], lightVec[1], lightVec[2],
+            s_RGB8::fromVector(pGrid->m1D8_newLightColor).toU32());
     }
 
     u32 cVar3 = s_battleDragon_UpdateAnimationState(pThis);
-    
+
     sVec3_FP rotation = pThis->m14_rotation + sVec3_FP(0, 0x8000000, 0);
 
     if ((gBattleManager->m2_currentBattleOverlayId == 0) || (gBattleManager->m2_currentBattleOverlayId == 0x10))
@@ -1019,7 +1067,7 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
 
     if (cVar3)
     {
-        assert(0);
+        s_battleDragon_UpdateLight();
     }
 
     riderRotation += pThis->m14_rotation + sVec3_FP(0, 0x8000000, 0);
@@ -1045,7 +1093,10 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
 
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
-        Unimplemented();
+        setupLightColor(s_RGB8::fromVector(pGrid->m1E4_lightFalloff0).toU32());
+        battleEngine_UpdateSub7Sub1Sub0(&pGrid->m280_lightAngle1, lightVec);
+        setupLight(lightVec[0], lightVec[1], lightVec[2],
+            s_RGB8::fromVector(pGrid->m1CC_lightColor).toU32());
     }
 
     transformAndAddVecByCurrentMatrix(&pThis->m8_position, &pThis->m1A4);
@@ -1053,9 +1104,24 @@ static void s_battleDragon_Draw(s_battleDragon* pThis)
     pThis->m8C.m10_position = pThis->m8_position;
 }
 
+// BTL_A3::0609fc5a
 static void s_battleDragon_Delete(s_battleDragon* pThis)
 {
-    Unimplemented();
+    update3dModelDrawFunctionForVertexAnimation(&pRider1State->m18_3dModel, nullptr);
+    update3dModelDrawFunctionForVertexAnimation(&pRider2State->m18_3dModel, nullptr);
+    if (gDragonState->mC_dragonType == 8)
+    {
+        s_battleDragon_InitSub2(pRider1State, 0x108);
+        s_battleDragon_InitSub2(pRider2State, 0x14c);
+    }
+    else
+    {
+        s_battleDragon_InitSub3(pRider1State, 0x30, 0);
+        s_battleDragon_InitSub3(pRider2State, 0x30, 0);
+    }
+    pThis->m1CC_currentAnimation = 0;
+    playAnimation(&gDragonState->m28_dragon3dModel, gDragonState->m0_pDragonModelBundle->getAnimation(gDragonState->m20_dragonAnimOffsets[pThis->m1CC_currentAnimation]), 0);
+    update3dModelDrawFunctionForVertexAnimation(&gDragonState->m28_dragon3dModel, nullptr);
 }
 
 void battleEngine_createDragonTask(s_workAreaCopy* parent)

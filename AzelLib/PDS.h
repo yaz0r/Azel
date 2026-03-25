@@ -277,6 +277,7 @@ u32 getFileSize(const char* fileName);
 
 void initVDP1Projection(fixedPoint r4, u32 mode);
 void getVdp1ProjectionParams(s16* r4, s16* r5);
+void getVdp1ScreenResolution(s16(&screenResolution)[4]);
 
 s32 setDividend(s32 r4, s32 r5, s32 divisor);
 

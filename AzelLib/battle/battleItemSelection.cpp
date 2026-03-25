@@ -97,10 +97,17 @@ void updateBattleItemMenuList(sBattleItemSelectionTask* pThis)
 
             printVdp2Number(mainGameState.getItemCount(entry.m0_itemIndex));
         }
-        else
+        else if (entry.m0_itemIndex != eItems::mA6_unlearned)
         {
-            //assert(0);
-            Unimplemented();
+            vdp2StringContext.m4_cursorX = vdp2StringContext.mC_X + 0x11;
+            int yPosition = i * 2;
+            s32 dVar1 = vdp2StringContext.m18_Height;
+            if (yPosition >= 0)
+                dVar1 = 0;
+            vdp2StringContext.m8_cursorY = vdp2StringContext.m10_Y + yPosition + dVar1;
+            s16 baseCost = readSaturnS16(gCommonFile->getSaturnPtr(0x20C3F4) + (s32)(s16)entry.m0_itemIndex * 12 + 2);
+            s16 cost = computeBerserkBPCost(baseCost);
+            printVdp2Number(cost);
         }
     }
 }
@@ -217,15 +224,21 @@ void sBattleItemSelectionTask_Draw(sBattleItemSelectionTask* pThis)
     }
 }
 
-// TODO: kernel
-void clearItemSelectionVdp2()
+void clearItemSelectionVdp2(sBattleItemSelectionTask* pThis)
 {
-    Unimplemented();
+    setupVDP2StringRendering(pThis->m14_listX + 6, pThis->m16_listY + 1, pThis->m1A_listWidth - 8, pThis->m1C_listHeight - 2);
+    clearVdp2TextArea();
+    for (int i = 0; i < pThis->m6_numEntriesInPage; i++)
+    {
+        vdp2DebugPrintSetPosition(pThis->m14_listX + 4, i * 2 + pThis->m16_listY + 1);
+        clearVdp2TextLargeFont();
+    }
+    clearBlueBox(pThis->m14_listX, pThis->m16_listY, pThis->m1A_listWidth, pThis->m1C_listHeight);
 }
 
 void sBattleItemSelectionTask_Delete(sBattleItemSelectionTask* pThis)
 {
-    clearItemSelectionVdp2();
+    clearItemSelectionVdp2(pThis);
     if (pThis->m10_previousMenu)
     {
         *pThis->m10_previousMenu = nullptr;

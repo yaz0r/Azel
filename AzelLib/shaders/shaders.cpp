@@ -43,27 +43,6 @@
 #include "shaders/generated/metal/VDP2_vs.sc.bin.h"
 #endif
 
-#if BGFX_PLATFORM_SUPPORTS_GLSL
-#include "shaders/generated/glsl/VDP1_2dUI_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP1_2dUI_vs.sc.bin.h"
-#include "shaders/generated/glsl/VDP1_2dUIVertexColor_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP1_2dUIVertexColor_vs.sc.bin.h"
-#include "shaders/generated/glsl/VDP1_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP1_vs.sc.bin.h"
-#include "shaders/generated/glsl/VDP1_vertexColor_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP1_vertexColor_vs.sc.bin.h"
-#include "shaders/generated/glsl/VDP1_worldTextured_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP1_worldTextured_vs.sc.bin.h"
-#include "shaders/generated/glsl/VDP2_blit_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP2_blit_vdp1_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP2_composite_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP2_blit_vs.sc.bin.h"
-#include "shaders/generated/glsl/VDP2_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP2_RBG0_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP2_RBG0_dual_ps.sc.bin.h"
-#include "shaders/generated/glsl/VDP2_vs.sc.bin.h"
-#endif
-
 #if BGFX_PLATFORM_SUPPORTS_DXBC
 #include "shaders/generated/dx11/VDP1_2dUI_ps.sc.bin.h"
 #include "shaders/generated/dx11/VDP1_2dUI_vs.sc.bin.h"

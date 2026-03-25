@@ -6,14 +6,20 @@
 #include "battleDragon.h"
 #include "battleDebug.h"
 
-void sBattleOverlayTask_C_Init(sBattleOverlayTask_C* pThis)
+// 0605ceac
+void sBattleOverlayTask_C_InitTargetablesArray(sBattleOverlayTask_C* pThis)
 {
-    gBattleManager->m10_battleOverlay->mC_targetSystem = pThis;
-
     for (int i = 0; i < 0x80; i++)
     {
         pThis->m0_enemyTargetables[i] = &gBattleManager->m10_battleOverlay->m4_battleEngine->m49C_enemies[i];
     }
+}
+
+// 0605ce86
+void sBattleOverlayTask_C_Init(sBattleOverlayTask_C* pThis)
+{
+    gBattleManager->m10_battleOverlay->mC_targetSystem = pThis;
+    sBattleOverlayTask_C_InitTargetablesArray(pThis);
 }
 
 // is targetable for gun
@@ -35,11 +41,38 @@ bool sBattleOverlayTask_C_IsTargetableForGun(sBattleTargetable* pThis)
         isVisible = position[2] <= clippingPlaneFar;
         if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1F] == 0)
         {
-            isVisible = 1;
+            isVisible = true;
         }
         else
         {
-            assert(0);
+            // Debug flag set: perform full projection + viewport checks
+            getVdp1ClippingPlanes(clippingPlaneNear, clippingPlaneFar);
+            if ((position[2] < clippingPlaneNear) || (clippingPlaneFar < position[2]))
+            {
+                isVisible = false;
+            }
+            else
+            {
+                s16 widthScale, heightScale;
+                getVdp1ProjectionParams(&widthScale, &heightScale);
+
+                s16 projX = (s16)setDividend(widthScale, position[0], position[2]);
+                s16 projY = (s16)setDividend(heightScale, position[1], position[2]);
+
+                s16 screenResolution[4];  // [left, bottom, right, top]
+                getVdp1ScreenResolution(screenResolution);
+
+                // Viewport bounds check
+                if ((screenResolution[0] <= projX) && (screenResolution[1] <= projY) &&
+                    (projY <= screenResolution[3]) && (projX <= screenResolution[2]))
+                {
+                    isVisible = true;
+                }
+                else
+                {
+                    isVisible = false;
+                }
+            }
         }
 
     }
@@ -85,147 +118,190 @@ void sortEnemyByDistanceToDragon(s32 start, s32 end)
     
 }
 
+// 0605cfac
 void sBattleOverlayTask_C_Update(sBattleOverlayTask_C* pThis)
 {
-    pThis->m200_cameraMinAltitude = gBattleManager->m10_battleOverlay->m4_battleEngine->m35C_cameraAltitudeMinMax[0];
-    pThis->m204_cameraMaxAltitude = gBattleManager->m10_battleOverlay->m4_battleEngine->m35C_cameraAltitudeMinMax[1];
+    s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
 
-    std::array<s_battleEnemy, 0x80>::iterator psVar8 = gBattleManager->m10_battleOverlay->m4_battleEngine->m49C_enemies.begin();
+    // Update camera altitude bounds
+    pThis->m200_cameraMinAltitude = pEngine->m35C_cameraAltitudeMinMax[0];
+    pThis->m204_cameraMaxAltitude = pEngine->m35C_cameraAltitudeMinMax[1];
+
+    // Process enemy activity state
     for (int i = 0; i < 0x80; i++)
     {
-        if (psVar8->m0_isActive > -1)
+        s_battleEnemy* pEnemy = &pEngine->m49C_enemies[i];
+        if (pEnemy->m0_isActive > -1)
         {
-            if ((psVar8->m4_targetable->m50_flags & 0x40000) == 0) {
-                psVar8->m4_targetable->m40 = *psVar8->m4_targetable->m4_pPosition;
-                battleTargetable_updatePosition(psVar8->m4_targetable);
+            if ((pEnemy->m4_targetable->m50_flags & 0x40000) == 0)
+            {
+                // Update position for active enemy
+                pEnemy->m4_targetable->m40 = *pEnemy->m4_targetable->m4_pPosition;
+                battleTargetable_updatePosition(pEnemy->m4_targetable);
             }
             else
             {
-                if ((psVar8->m4_targetable->m50_flags & 1) == 0)
+                // Deactivate enemy
+                if ((pEnemy->m4_targetable->m50_flags & 1) == 0)
                 {
-                    gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies--;
+                    pEngine->m498_numEnemies--;
                 }
-                psVar8->m0_isActive = -1;
-                psVar8->m8_distanceToDragonSquare = 0x7fffffff;
-                psVar8->m4_targetable = nullptr;
+                pEnemy->m0_isActive = -1;
+                pEnemy->m8_distanceToDragonSquare = 0x7fffffff;
+                pEnemy->m4_targetable = nullptr;
             }
         }
-        psVar8++;
     }
-    
-    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80)
+
+    // Check if we should process targeting
+    if (pEngine->m188_flags.m80)
     {
-        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1)
+        if (!pEngine->m188_flags.m1)
         {
-            if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon)
+            if (!pEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon)
             {
                 return;
             }
         }
         else
         {
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+            pEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
         }
     }
 
     pThis->m20A_numSelectableEnemies = 0;
 
-    psVar8 = gBattleManager->m10_battleOverlay->m4_battleEngine->m49C_enemies.begin();
+    // Select targetable enemies based on quadrant
     for (int i = 0; i < 0x80; i++)
     {
-        psVar8->m8_distanceToDragonSquare = 0x7fffffff;
-        if (psVar8->m0_isActive != -1)
+        s_battleEnemy* pEnemy = &pEngine->m49C_enemies[i];
+        pEnemy->m8_distanceToDragonSquare = 0x7fffffff;
+
+        if (pEnemy->m0_isActive != -1)
         {
-            psVar8->m8_distanceToDragonSquare = 0x7ffffffe;
-            psVar8->m0_isActive = 0;
-            switch (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant)
+            pEnemy->m8_distanceToDragonSquare = 0x7ffffffe;
+            pEnemy->m0_isActive = 0;
+            u8 quadrant = pEngine->m22C_dragonCurrentQuadrant;
+            u32 quadrantMask = 0;
+
+            switch (quadrant)
             {
-            case 0:
-                psVar8->m4_targetable->m5A = 0;
-                if ((psVar8->m4_targetable->m50_flags & 0x80000000) && sBattleOverlayTask_C_IsTargetableForGun(psVar8->m4_targetable))
-                {
-                    psVar8->m0_isActive = 1;
-                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-                    pThis->m20A_numSelectableEnemies++;
-                }
-                break;
-            case 1:
-                psVar8->m4_targetable->m5A = 0;
-                if ((psVar8->m4_targetable->m50_flags & 0x40000000) && sBattleOverlayTask_C_IsTargetableForGun(psVar8->m4_targetable))
-                {
-                    psVar8->m0_isActive = 1;
-                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-                    pThis->m20A_numSelectableEnemies++;
-                }
-                break;
-            case 2:
-                psVar8->m4_targetable->m5A = 0;
-                if ((psVar8->m4_targetable->m50_flags & 0x20000000) && sBattleOverlayTask_C_IsTargetableForGun(psVar8->m4_targetable))
-                {
-                    psVar8->m0_isActive = 1;
-                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-                    pThis->m20A_numSelectableEnemies++;
-                }
-                break;
-            case 3:
-                psVar8->m4_targetable->m5A = 0;
-                if ((psVar8->m4_targetable->m50_flags & 0x10000000) && sBattleOverlayTask_C_IsTargetableForGun(psVar8->m4_targetable))
-                {
-                    psVar8->m0_isActive = 1;
-                    psVar8->m8_distanceToDragonSquare = distanceSquareBetween2Points(psVar8->m4_targetable->m10_position, gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
-                    pThis->m20A_numSelectableEnemies++;
-                }
-                break;
-            default:
-                assert(0);
+            case 0: quadrantMask = 0x80000000; break;
+            case 1: quadrantMask = 0x40000000; break;
+            case 2: quadrantMask = 0x20000000; break;
+            case 3: quadrantMask = 0x10000000; break;
+            default: assert(0);
+            }
+
+            pEnemy->m4_targetable->m5A = 0;
+            if ((pEnemy->m4_targetable->m50_flags & quadrantMask) &&
+                sBattleOverlayTask_C_IsTargetableForGun(pEnemy->m4_targetable))
+            {
+                pEnemy->m0_isActive = 1;
+                pEnemy->m8_distanceToDragonSquare = distanceSquareBetween2Points(
+                    pEnemy->m4_targetable->m10_position,
+                    gBattleManager->m10_battleOverlay->m18_dragon->m8_position);
+                pThis->m20A_numSelectableEnemies++;
             }
         }
-        psVar8++;
     }
 
-    if ((pThis->m20A_numSelectableEnemies > 0) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon))
+    // Sort enemies by distance if needed
+    if ((pThis->m20A_numSelectableEnemies > 0) &&
+        (pEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon))
     {
         sortEnemyByDistanceToDragon(0, 0x7F);
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 0;
+        pEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 0;
     }
 
-    for (int i=0; i<pThis->m20A_numSelectableEnemies; i++)
+    // Set selected enemy indices
+    for (int i = 0; i < pThis->m20A_numSelectableEnemies; i++)
     {
         pThis->m0_enemyTargetables[i]->m0_isActive = i + 1;
         pThis->m0_enemyTargetables[i]->m4_targetable->m5A = i + 1;
     }
 
-    if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1)
+    // Clear flag on selected enemies if needed
+    if (pEngine->m188_flags.m1)
     {
-        for (int i=0; i<gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies; i++)
+        for (int i = 0; i < pThis->m20A_numSelectableEnemies; i++)
         {
-            gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50_flags &= ~0x20000;
+            pThis->m0_enemyTargetables[i]->m4_targetable->m50_flags &= ~0x20000;
         }
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1 = 0;
+        pEngine->m188_flags.m1 = 0;
     }
 }
 
 void sBattleOverlayTask_C_Draw(sBattleOverlayTask_C* pThis)
 {
+    // Debug flag 9: Draw enemy count info
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[9])
     {
-        assert(0);
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xc000;
+        vdp2DebugPrintSetPosition(1, 9);
+
+        s32 numActive = battleEngine_getNumActiveEnemies();
+        s32 maxEnemies = (s32)gBattleManager->m10_battleOverlay->m4_battleEngine->m498_numEnemies;
+        vdp2PrintfSmallFont("COL#=%2d,MAX=%2d", numActive, maxEnemies);
+
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
     }
 
+    // Debug flag 0x13: Draw target crosshairs (positions for each selectable enemy)
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x13])
     {
-        assert(0);
+        for (int i = 0; i < pThis->m20A_numSelectableEnemies; i++)
+        {
+            if (pThis->m0_enemyTargetables[i]->m0_isActive > 0)
+            {
+                battleTargetable_updatePosition(pThis->m0_enemyTargetables[i]->m4_targetable);
+
+                // Get position data to draw crosshair
+                sVec3_FP posData;
+                posData.m0_X = pThis->m0_enemyTargetables[i]->m4_targetable->m10_position[0];
+                posData.m4_Y = pThis->m0_enemyTargetables[i]->m4_targetable->m10_position[1];
+                posData.m8_Z = pThis->m0_enemyTargetables[i]->m4_targetable->m10_position[2];
+                s32 pal = pThis->m0_enemyTargetables[i]->m4_targetable->m4C;
+
+                // 0605ca34: Draw crosshair/marker at target position
+                Unimplemented(); // FUN_BTL_A3__0605ca34(&posData);
+            }
+        }
     }
 
+    // Debug flag 0x14: Print selectable enemy list (up to 10 entries with positions)
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x14])
     {
-        assert(0);
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xc000;
+
+        int numToPrint = pThis->m20A_numSelectableEnemies;
+        if (numToPrint > 10)
+            numToPrint = 10;
+
+        int screenY = 4;
+        for (int i = 0; i < numToPrint; i++)
+        {
+            vdp2DebugPrintSetPosition(10, screenY);
+
+            if (pThis->m0_enemyTargetables[i]->m0_isActive > 0)
+            {
+                sBattleTargetable* pTargetable = pThis->m0_enemyTargetables[i]->m4_targetable;
+                s32 x = pTargetable->m10_position[0] >> 12;
+                s32 y = pTargetable->m10_position[1] >> 12;
+                vdp2PrintfSmallFont("%3d,%3d,%3d", x, y, 0);
+            }
+            screenY++;
+        }
+
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
     }
 }
 
 void sBattleOverlayTask_C_Delete(sBattleOverlayTask_C* pThis)
 {
-    Unimplemented();
+    // No cleanup needed
 }
 
 

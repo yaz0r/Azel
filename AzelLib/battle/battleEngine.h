@@ -175,6 +175,8 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     std::array<s16, 10> m484;
     s16 m498_numEnemies;
     std::array<s_battleEnemy, 0x80> m49C_enemies;
+    p_workArea mA9C;
+    p_workArea mAA0;
     p_workArea mAA4;
     // size: 0xaa8
 };
@@ -188,7 +190,7 @@ void battleEngine_resetCameraInterpolation();
 void battleEngine_restoreCameraDefault();
 
 void battleEngine_SetBattleMode(eBattleModes param);
-void battleEngine_SetBattleMode16();
+s32 battleEngine_SetBattleMode16();
 
 void battleEngine_FlagQuadrantForSafety(u8 quadrant);
 void battleEngine_FlagQuadrantForDanger(u8 quadrant);
@@ -201,10 +203,12 @@ void battleEngineSub1_UpdateSub2(sVec3_FP* pVec, const sVec3_FP& param2, const s
 
 bool battleEngine_isBattleIntroFinished();
 bool battleEngine_isInputAllowed();
+s32 battleEngine_getNumActiveEnemies();
 
 void battleEngine_FlagQuadrantBitForSafety(u16 uParm1);
 void battleEngine_FlagQuadrantBitForDanger(u16 uParm1);
 
+void battleEngine_UpdateSub7Sub1Sub0(fixedPoint* param_1, sVec3_FP& out);
 void battleEngine_InitSub2(s_battleEngine* pThis);
 void battleEngine_UpdateSub7Sub2();
 
