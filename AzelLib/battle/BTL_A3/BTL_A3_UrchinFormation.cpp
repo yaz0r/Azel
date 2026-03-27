@@ -25,30 +25,6 @@ s32 playBattleSoundEffect(s32 effectIndex) // TODO cleanup
     return 0;
 }
 
-struct BTL_A3_UrchinFormation : public s_workAreaTemplateWithArg<BTL_A3_UrchinFormation, const sGenericFormationData*>
-{
-    s8 m1_state;
-    s8 m2_subState;
-    s8 m3_formationSize;
-    s8 m4_formationPhase;
-    s8 m6_attackFlag;
-    s8 m7_attackMode;
-    std::array<std::array<s8, 4>, 3> m8_quadrantAttackCounters; // 0x08: per-type, per-quadrant attack counters
-    s16 m14_timer;
-    sSharedFormationState m18;
-    const sGenericFormationData* m30_config;
-    s8 m34_attackingTypeIndex;
-    s16 m36_meleeAttackTimer;
-    s8 m38_attackOrderReversed;
-    s8 m39_sourceEnemyIndex;
-    s8 m3A_weakestEnemyIndex;
-    s16 m3C_rangedAttackTimer;
-    p_workArea m40_pendingTask;
-    std::array<s8, 3> m44_prevSoundEffects;
-    std::array<s8, 3> m47_beamHitHandled; // size unknown, should be formation size
-    // size 0x4C
-};
-
 void formationCopyParams(sSharedFormationState* pDest, const std::vector<sVec3_FP>& pSource, int count)
 {
     for (int i = 0; i < 3; i++)

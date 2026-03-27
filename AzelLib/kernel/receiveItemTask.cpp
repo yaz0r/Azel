@@ -74,17 +74,26 @@ void s_receivedItemTask::Update(s_receivedItemTask* pThis)
                 pThis->m0++;
                 return;
             }
-            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xF)
+            if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xF) == 0
+                && !readKeyboardToggle(KEY_CODE_F12))
             {
-                if (!readKeyboardToggle(KEY_CODE_F12))
-                {
-                    return;
-                }
-                pThis->m0++;
+                return;
             }
+            pThis->m0++;
+            break;
+        case 1:
+            if (--pThis->mA > 0)
+                return;
+            pThis->m0++;
             break;
         default:
-            assert(0);
+            if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xF) == 0
+                && !readKeyboardToggle(KEY_CODE_F12))
+            {
+                return;
+            }
+            pThis->m0++;
+            break;
         }
         break;
     case 3:
@@ -126,16 +135,21 @@ s_receivedItemTask* createReceiveItemTask(p_workArea r4_parentTask, s_receivedIt
 {
     s_receivedItemTask* pNewTask = createSubTask<s_receivedItemTask>(r4_parentTask);
 
+    pNewTask->m0 = 0;
     if (r6 > 0)
     {
-        pNewTask->m0 = 0;
-        pNewTask->mA = r6;
+        pNewTask->mA = (s16)r6;
         pNewTask->m2_subMode = 0;
+    }
+    else if (r6 < 0)
+    {
+        pNewTask->mA = (s16)-r6;
+        pNewTask->m2_subMode = 1;
     }
     else
     {
-        //601C38A
-        assert(0);
+        pNewTask->mA = 0;
+        pNewTask->m2_subMode = 2;
     }
 
     //601C39E

@@ -116,7 +116,7 @@ void createBattleIntroTaskSub3(sBattleIntroSubTask* pThis)
             );
         break;
     case 1:
-        pThis->m10_desiredCameraPosition = deltaPosition + MTH_Mul(FP_Div(pThis->m0_frameIndex * 512, 0x960000), gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - deltaPosition);
+        pThis->m10_desiredCameraPosition = deltaPosition + MTH_Mul(FP_Div(pThis->m0_frameIndex << 16, 0x960000), gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - deltaPosition);
         break;
     case 2:
         pThis->m10_desiredCameraPosition = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter;
@@ -142,7 +142,7 @@ static void sBattleIntroSubTask_delete(sBattleIntroSubTask* pThis)
     battleEngine_restoreCameraDefault();
     g_fadeControls.m_4D = 6;
 
-    if (g_fadeControls.m_4C < g_fadeControls.m_4D)
+    if (g_fadeControls.m_4C < 7)
     {
         vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
         vdp2Controls.m20_registers[1].m112_CLOFSL = 0;

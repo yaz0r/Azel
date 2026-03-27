@@ -35,6 +35,7 @@ enum eBattleModes
     mB_enemyMovingDragon = 0xB,
     mC_commandMenuOpen = 0xC,
     mE_battleIntro = 0xE,
+    mF_tutorialTextInput = 0xF,
     m10_position = 0x10,
 };
 
@@ -56,6 +57,7 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
         u32 m80 : 1;
         u32 m100_attackAnimationFinished : 1;
         u32 m200_suppressBattleInputs : 1;
+        u32 m400 : 1;
         u32 m800 : 1;
         u32 m1000 : 1;
         u32 m2000 : 1;
@@ -63,10 +65,12 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
         u32 m8000 : 1;
         u32 m10000 : 1;
         u32 m20000 : 1;
+        u32 m40000 : 1;
         u32 m80000_hideBattleHUD : 1;
         u32 m100000 : 1;
         u32 m200000 : 1;
         u32 m400000 : 1;
+        u32 m800000 : 1;
         u32 m1000000_dragonMoving : 1;
         u32 m2000000 : 1;
         u32 m4000000 : 1;
@@ -207,6 +211,7 @@ s32 battleEngine_getNumActiveEnemies();
 
 void battleEngine_FlagQuadrantBitForSafety(u16 uParm1);
 void battleEngine_FlagQuadrantBitForDanger(u16 uParm1);
+void battleEngine_FlagQuadrantBitForAttack(u16 uParm1);
 
 void battleEngine_UpdateSub7Sub1Sub0(fixedPoint* param_1, sVec3_FP& out);
 void battleEngine_InitSub2(s_battleEngine* pThis);

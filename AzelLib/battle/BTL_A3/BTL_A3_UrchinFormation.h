@@ -31,6 +31,8 @@ struct sGenericFormationPerTypeData
     u16 m8_modelOffset;
     u16 mA_poseOffset;
     sHotpointBundle* mC_hotspotDefinitions;
+    std::array<s8, 4> m10_laserHitQuadrantFlags; // per-quadrant laser hit vulnerability (Saturn offset 0x10)
+    std::array<s8, 4> m14_gunHitQuadrantFlags;   // per-quadrant gun hit vulnerability (Saturn offset 0x14)
     s8 m18_knockbackStrength;
     std::vector<sGenericFormationPerTypeDataSub1C> m1C;
     sGenericFormationPerTypeDataSub1C* m20_beamHitCounterData;
@@ -81,5 +83,30 @@ struct sSharedFormationState
     std::vector<sPerEnemySlot> m14;
 };
 
+struct BTL_A3_UrchinFormation : public s_workAreaTemplateWithArg<BTL_A3_UrchinFormation, const sGenericFormationData*>
+{
+    s8 m1_state;
+    s8 m2_subState;
+    s8 m3_formationSize;
+    s8 m4_formationPhase;
+    s8 m6_attackFlag;
+    s8 m7_attackMode;
+    std::array<std::array<s8, 4>, 3> m8_quadrantAttackCounters; // 0x08: per-type, per-quadrant attack counters
+    s16 m14_timer;
+    sSharedFormationState m18;
+    const sGenericFormationData* m30_config;
+    s8 m34_attackingTypeIndex;
+    s16 m36_meleeAttackTimer;
+    s8 m38_attackOrderReversed;
+    s8 m39_sourceEnemyIndex;
+    s8 m3A_weakestEnemyIndex;
+    s16 m3C_rangedAttackTimer;
+    p_workArea m40_pendingTask;
+    std::array<s8, 3> m44_prevSoundEffects;
+    std::array<s8, 5> m47_beamHitHandled; // up to 5 entries (0x47..0x4B within Saturn size 0x4C)
+    // size 0x4C
+};
+
+p_workArea Create_BTL_A3_UrchinFormation(p_workArea parent, const sGenericFormationData* config);
 p_workArea Create_BTL_A3_UrchinFormationConfig(p_workArea parent, u32 arg);
 

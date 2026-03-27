@@ -382,6 +382,7 @@ sVec3_FP readSaturnVec3(sSaturnPtr ptr)
     return newVec;
 }
 
+/*
 u8* sSaturnPtr::getRawPointer()
 {
     sSaturnMemoryFile* pFile = m_file;
@@ -390,6 +391,7 @@ u8* sSaturnPtr::getRawPointer()
 
     return pFile->m_data + offsetInFile;
 }
+*/
 
 // TODO: move to kernel
 void getVdp1ClippingCoordinates(std::array<s16, 4>& r4)

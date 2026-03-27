@@ -53,7 +53,7 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
         }
         break;
     case 3:
-        if (readKeyboardToggle(0xDA)) // debug key — not used in normal gameplay
+        if (readKeyboardToggle(0xDA)) // debug key — set game bit and advance
         {
             if (pThis->m4 >= 0)
             {
@@ -71,7 +71,7 @@ void battleLoading_Draw(sBattleLoadingTask* pThis)
             }
             pThis->m8_status++;
         }
-        if (readKeyboardToggle(0xF6)) // debug key — not used in normal gameplay
+        if (readKeyboardToggle(0xF6)) // debug key — skip and advance
         {
             pThis->m8_status++;
         }

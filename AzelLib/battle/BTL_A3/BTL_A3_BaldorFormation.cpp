@@ -14,17 +14,6 @@
 
 // internal name: Hebi (snake)
 
-struct BTL_A3_BaldorFormation : public s_workAreaTemplateWithArg<BTL_A3_BaldorFormation, u32>
-{
-    s8 m0_formationState;
-    s8 m1_formationSubState;
-    std::vector<sFormationData> m4_formationData;
-    s16 m8;
-    s16 m10;
-    s8 m12_formationSize;
-    // size 0x14
-};
-
 void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
 {
     allocateNPC(pThis, 10);
@@ -58,7 +47,7 @@ void BTL_A3_BaldorFormation_Init(BTL_A3_BaldorFormation* pThis, u32 formationID)
 
     battleEngine_FlagQuadrantForSafety(2);
     battleEngine_FlagQuadrantForDanger(0);
-    pThis->m8 = 0x3C;
+    pThis->m8= 0x3C;
     displayFormationName(0, 1, 9);
     pThis->m0_formationState = 0;
     pThis->m1_formationSubState = 0;
@@ -99,7 +88,7 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
         switch (pThis->m1_formationSubState)
         {
         case 0:
-            if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000) {
+            if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000) {
                 pThis->m10 = 18;
                 pThis->m1_formationSubState++;
             }
@@ -159,7 +148,7 @@ void BTL_A3_BaldorFormation_Update(BTL_A3_BaldorFormation* pThis)
 
     if (!bFormationDefeated)
     {
-        if (--pThis->m8 < 0)
+        if (--pThis->m8< 0)
         {
             pThis->getTask()->markFinished();
         }

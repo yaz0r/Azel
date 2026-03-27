@@ -798,7 +798,8 @@ int m68k_instructionCallback()
 
 bool isSoundLoadingFinished()
 {
-    return (u32)(-1 < soundEngine.m68A_currentSoundLoadingState) ^ 1;
+    return true; // HACK: sounds are immediately loaded
+    //return (u32)(-1 < soundEngine.m68A_currentSoundLoadingState) ^ 1;
 }
 
 void battleLoading_InitSub0()

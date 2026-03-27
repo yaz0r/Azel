@@ -23,3 +23,6 @@ struct BTL_A3_data : public battleOverlay
 
 extern BTL_A3_data* g_BTL_A3;
 
+struct sGenericFormationData;
+sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA);
+

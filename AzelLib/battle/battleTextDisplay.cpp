@@ -60,7 +60,7 @@ void createBattleTextDisplay(p_workArea parent, sSaturnPtr data)
 void displayFormationName(short uParm1, char uParm2, char uParm3)
 {
     sBattleTextDisplayTask* pDisplayTextTask = gBattleManager->m10_battleOverlay->m14_textDisplay;
-    if (pDisplayTextTask)
+    if (pDisplayTextTask && pDisplayTextTask->m0_texts.m_offset != 0)
     {
         pDisplayTextTask->m12_textIndex = uParm1;
         pDisplayTextTask->m14 = -90;

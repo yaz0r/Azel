@@ -3,6 +3,7 @@
 #include "battle/battleFormation.h"
 #include "battle/battleManager.h"
 #include "battle/battleOverlay.h"
+#include "battle/battleOverlay_C.h"
 #include "battle/battleEngine.h"
 #include "battle/battleDebug.h"
 #include "battle/battleDamageDisplay.h"
@@ -20,6 +21,9 @@
 #include "mainMenuDebugTasks.h"
 #include "kernel/graphicalObject.h"
 #include "battle/particleEffect.h"
+#include "battle/battleGrid.h"
+#include "battle/battleDebris.h"
+#include "field.h" // for s_RGB8
 
 void Baldor_initSub0Sub2(sBaldorBase* pThis, sFormationData* pFormationEntry)
 {
@@ -213,7 +217,7 @@ void baldorPart_delete()
     assert(0);
 }
 
-void Baldor_initSub2Sub0(sBaldorBody* pData)
+void Baldor_createBodySub0(sBaldorBody* pData)
 {
     pData->m0_translation.zeroize();
     pData->mC_rotation.zeroize();
@@ -224,7 +228,7 @@ void Baldor_initSub2Sub0(sBaldorBody* pData)
     pData->m30_parts.resize(0);
 }
 
-void Baldor_initSub2Sub1(sBaldorBodyPart* pEntry, sBaldorBodyPart* pNextEntry)
+void Baldor_createBodySub1(sBaldorBodyPart* pEntry, sBaldorBodyPart* pNextEntry)
 {
     pEntry->m0_child = pNextEntry;
     pEntry->m4_worldPosition.zeroize();
@@ -237,32 +241,32 @@ void Baldor_initSub2Sub1(sBaldorBodyPart* pEntry, sBaldorBodyPart* pNextEntry)
     pEntry->m50_damping = 0;
 }
 
-sBaldorBody* Baldor_initSub2(p_workArea parent, int numEntries)
+sBaldorBody* Baldor_createBody(p_workArea parent, int numEntries)
 {
     sBaldorBody* pNewData = new sBaldorBody;
-    Baldor_initSub2Sub0(pNewData);
+    Baldor_createBodySub0(pNewData);
 
     pNewData->m30_parts.resize(numEntries);
 
-    Baldor_initSub2Sub1(&pNewData->m30_parts[numEntries - 1], nullptr);
+    Baldor_createBodySub1(&pNewData->m30_parts[numEntries - 1], nullptr);
     int iVar1 = numEntries - 1;
     while (iVar1 != 0)
     {
-        Baldor_initSub2Sub1(&pNewData->m30_parts[iVar1 - 1], &pNewData->m30_parts[iVar1]);
+        Baldor_createBodySub1(&pNewData->m30_parts[iVar1 - 1], &pNewData->m30_parts[iVar1]);
         iVar1--;
     }
 
     return pNewData;
 }
 
-void Baldor_initSub3Sub0(sBaldorBodyPart* dest, sSaturnPtr source)
+void Baldor_loadBodyPartDataSub0(sBaldorBodyPart* dest, sSaturnPtr source)
 {
     dest->m40_modelIndex = readSaturnS16(source);
     dest->m44_springStiffness = readSaturnVec3(source + 4);
     dest->m50_damping = readSaturnS32(source + 0x10);
 }
 
-void Baldor_initSub3(sBaldorBody* pThis, int arg2, sSaturnPtr arg3)
+void Baldor_loadBodyPartData(sBaldorBody* pThis, int arg2, sSaturnPtr arg3)
 {
     if (arg2 == 1)
     {
@@ -276,7 +280,7 @@ void Baldor_initSub3(sBaldorBody* pThis, int arg2, sSaturnPtr arg3)
         sBaldorBodyPart* piVar1 = &pThis->m30_parts[0];
         do
         {
-            Baldor_initSub3Sub0(piVar1, arg3);
+            Baldor_loadBodyPartDataSub0(piVar1, arg3);
             piVar1 = piVar1->m0_child;
             arg3 += 0x14;
         } while (piVar1);
@@ -322,12 +326,12 @@ void Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormationEntry)
 
     *pThis->m28_rotation.m0_current = *pThis->m28_rotation.m4_target;
 
-    pThis->m68_body = Baldor_initSub2(pThis, 6);
+    pThis->m68_body = Baldor_createBody(pThis, 6);
 
     if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9))
     {
         // During the Queen baldor fight
-        Baldor_initSub3(pThis->m68_body, 1, g_BTL_A3->getSaturnPtr(0x60a7ed4));
+        Baldor_loadBodyPartData(pThis->m68_body, 1, g_BTL_A3->getSaturnPtr(0x60a7ed4));
         sSaturnPtr pDataSource = g_BTL_A3->getSaturnPtr(0x60a7f94);
 
         for (int i = 0; i < 6; i++)
@@ -342,7 +346,7 @@ void Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormationEntry)
     }
     else
     {
-        Baldor_initSub3(pThis->m68_body, 1, g_BTL_A3->getSaturnPtr(0x60a7e5c));
+        Baldor_loadBodyPartData(pThis->m68_body, 1, g_BTL_A3->getSaturnPtr(0x60a7e5c));
         sSaturnPtr pDataSource = g_BTL_A3->getSaturnPtr(0x60a7f4c);
 
         for (int i = 0; i < 6; i++)
@@ -432,7 +436,7 @@ void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param
         }
         break;
     case 1:
-    case 2:
+    default:
         if (gBattleManager->m2_currentBattleOverlayId == 1)
         {
             iVar2 = 5;
@@ -442,7 +446,7 @@ void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param
             iVar2 = 4;
         }
         break;
-    default:
+    case 2:
         if (gBattleManager->m2_currentBattleOverlayId == 1)
         {
             iVar2 = 8;
@@ -457,10 +461,7 @@ void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param
     createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60abef4_animatedQuads[iVar2], param1, param2, 0, param3, 0, 0);
 }
 
-void createHitSparkEffect(p_workArea, sBattleTargetable&, int)
-{
-    Unimplemented();
-}
+// 0605bae8 — implemented in battleDamageDisplay.cpp
 
 void processHitTargetables(p_workArea pThis, std::vector<sBattleTargetable>& param2, int param3, int param4, sEnemyLifeMeterTask* param5)
 {
@@ -530,16 +531,16 @@ void springDampedStep(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s
     switch(translationOrRotation)
     {
     case 0:
-        if (pDelta == nullptr)
-        {
-            assert(0);
-        }
-        else
+        if (pDelta != nullptr)
         {
             *pDelta -= MTH_Mul(pDeltaFactor, *pDelta);
             *pDelta += MTH_Mul(pDistanceToTargetFactor, *pTarget - *pCurrent);
+            *pCurrent += *pDelta;
         }
-        *pCurrent += *pDelta;
+        else
+        {
+            *pCurrent += MTH_Mul(pDistanceToTargetFactor, *pTarget - *pCurrent);
+        }
         break;
     case 1:
         *pDelta = (*pDelta - MTH_Mul(pDeltaFactor, *pDelta)).normalized();
@@ -563,10 +564,288 @@ struct sBaldorAttack : public s_workAreaTemplate<sBaldorAttack>
     // size: 0x10
 };
 
+// 060a4428
+struct sBaldorProjectile : public s_workAreaTemplateWithCopy<sBaldorProjectile>
+{
+    sVec3_FP m8_position;
+    sVec3_FP m14_velocity;
+    sVec3_FP m20_acceleration;
+    void* m2C_visual; // sAnimatedQuad* or s_3dModel* depending on m30
+    u8 m30_isModelType;
+    s16 m32_timer;
+    s16 m34_damageValue;
+    u8 m36_damageType;
+    sSaturnPtr m38_trailQuadData;   // Saturn 0x38: quad data for trail particles
+    u8 m3C_trailFileBundleIdx;     // Saturn 0x3C: file bundle index for trail
+    sSaturnPtr m40_hitQuadData;     // Saturn 0x40: quad data for hit particles
+    u8 m44_hitFileBundleIdx;        // Saturn 0x44: file bundle index for hit
+    s16 m46_trailFrequencyMask;     // Saturn 0x46: random mask for trail spawn frequency
+    u8 m48_hitSoundId;              // Saturn 0x48: sound effect ID on expiry (0xFF = none)
+    // size 0x4C
+};
+
+static void BaldorProjectile_update(sBaldorProjectile* pThis);
+static void BaldorProjectile_drawParticle(sBaldorProjectile* pThis);
+static void BaldorProjectile_drawModel(sBaldorProjectile* pThis);
+
+s32 sGunShotTask_UpdateSub0(sVec3_FP* param1, sVec3_FP* param2, sVec3_FP* param3); // from gunShotRootTask.cpp
+
+// 060a44de
+static void BaldorProjectile_update(sBaldorProjectile* pThis)
+{
+    // move: position += velocity, velocity += acceleration
+    pThis->m8_position += pThis->m14_velocity;
+    pThis->m14_velocity += pThis->m20_acceleration;
+
+    // advance visual animation
+    if (pThis->m30_isModelType == 0)
+        sGunShotTask_UpdateSub4((sAnimatedQuad*)pThis->m2C_visual);
+    else
+        stepAnimation((s_3dModel*)pThis->m2C_visual);
+
+    // optional trail particle (spawns randomly based on m46 mask)
+    if (!pThis->m38_trailQuadData.isNull())
+    {
+        u32 rnd = randomNumber();
+        if (((s32)pThis->m46_trailFrequencyMask & rnd) == 0)
+        {
+            createParticleEffect(
+                dramAllocatorEnd[pThis->m3C_trailFileBundleIdx].mC_fileBundle,
+                &g_BTL_GenericData->m_0x60a8c24_animatedQuad, // TODO: resolve quad from m38_trailQuadData
+                &pThis->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+        }
+    }
+
+    // collision check against dragon
+    struct { sVec3_FP pos; s32 radius; } projView = {}, dragonView = {};
+    transformAndAddVecByCurrentMatrix(&pThis->m8_position, &projView.pos);
+    projView.radius = 0;
+    sVec3_FP dragonPos = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+    transformAndAddVecByCurrentMatrix(&dragonPos, &dragonView.pos);
+    dragonView.radius = 0x5000;
+
+    sVec3_FP hitInfo = {};
+    s32 hitResult = sGunShotTask_UpdateSub0(&projView.pos, &dragonView.pos, &hitInfo);
+    if (hitResult > 0)
+    {
+        // hit the dragon — apply damage
+        applyDamageToDragon(
+            gBattleManager->m10_battleOverlay->m18_dragon->m8C,
+            pThis->m34_damageValue,
+            gBattleManager->m10_battleOverlay->m18_dragon->m8_position,
+            3,
+            pThis->m14_velocity,
+            pThis->m36_damageType);
+
+        // spawn hit particle effect
+        if (!pThis->m40_hitQuadData.isNull())
+        {
+            createParticleEffect(
+                dramAllocatorEnd[pThis->m44_hitFileBundleIdx].mC_fileBundle,
+                &g_BTL_GenericData->m_0x60a8c24_animatedQuad, // TODO: resolve quad from m40_hitQuadData
+                &pThis->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+        }
+        pThis->m32_timer = 0;
+    }
+
+    // timer countdown — destroy when expired
+    if (--pThis->m32_timer < 0)
+    {
+        // spawn expiry particle effect
+        if (!pThis->m40_hitQuadData.isNull())
+        {
+            createParticleEffect(
+                dramAllocatorEnd[pThis->m44_hitFileBundleIdx].mC_fileBundle,
+                &g_BTL_GenericData->m_0x60a8c24_animatedQuad, // TODO: resolve quad from m40_hitQuadData
+                &pThis->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+        }
+        // play expiry sound
+        if ((s8)pThis->m48_hitSoundId >= 0)
+        {
+            playSystemSoundEffect((s8)pThis->m48_hitSoundId);
+        }
+        pThis->getTask()->markFinished();
+    }
+}
+
+// 060a4720
+static void BaldorProjectile_drawParticle(sBaldorProjectile* pThis)
+{
+    if (pThis->m32_timer >= 0)
+    {
+        drawProjectedParticle((sAnimatedQuad*)pThis->m2C_visual, &pThis->m8_position);
+    }
+}
+
+// 060a46c8
+static void BaldorProjectile_drawModel(sBaldorProjectile* pThis)
+{
+    if (pThis->m32_timer >= 0)
+    {
+        sVec2_FP angles;
+        computeLookAt(pThis->m14_velocity, angles);
+        sVec3_FP rotation;
+        rotation[0] = -angles[0];
+        rotation[1] = angles[1] + fixedPoint(0x8000000);
+        rotation[2] = 0;
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pThis->m8_position);
+        rotateCurrentMatrixYXZ(&rotation);
+        ((s_3dModel*)pThis->m2C_visual)->m18_drawFunction((s_3dModel*)pThis->m2C_visual);
+        popMatrix();
+    }
+}
+
+// 060a473c — compute projectile velocity from source to target with acceleration
+static void BaldorProjectile_computeVelocity(sBaldorProjectile* pThis, sVec3_FP* source, sVec3_FP* target, sSaturnPtr param3)
+{
+    s16 travelTime = readSaturnS16(param3 + 0xC);
+    sVec3_FP delta = *target - *source;
+    sVec2_FP angles;
+    computeLookAt(delta, angles);
+
+    fixedPoint speed = readSaturnS32(param3 + 0x10);
+    pThis->m20_acceleration[0] = MTH_Mul(speed, getCos(angles[1].getInteger()));
+    pThis->m20_acceleration[1].m_value = readSaturnS32(param3 + 0x14);
+    pThis->m20_acceleration[2] = MTH_Mul(speed, getSin(angles[1].getInteger()));
+
+    fixedPoint timeFixed = fixedPoint((s32)travelTime << 16);
+    pThis->m14_velocity[0] = FP_Div(delta[0], timeFixed) - fixedPoint((pThis->m20_acceleration[0].m_value >> 1) * (s32)travelTime);
+    pThis->m14_velocity[1] = FP_Div(delta[1], timeFixed) - fixedPoint((pThis->m20_acceleration[1].m_value >> 1) * (s32)travelTime);
+    pThis->m14_velocity[2] = FP_Div(delta[2], timeFixed) - fixedPoint((pThis->m20_acceleration[2].m_value >> 1) * (s32)travelTime);
+
+    pThis->m14_velocity += gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
+}
+
+// 060a4428
 p_workArea BaldorAttack_createAttackModel(sVec3_FP* partPosition, sVec3_FP* target, sSaturnPtr param3)
 {
-    Unimplemented();
-    return nullptr;
+    u8 fileBundleIdx = readSaturnU8(param3);
+    npcFileDeleter* pFileBundle = dramAllocatorEnd[fileBundleIdx].mC_fileBundle;
+
+    sBaldorProjectile* pProj = nullptr;
+    if (readSaturnS16(param3 + 2) == 0)
+    {
+        // particle-based projectile
+        static const sBaldorProjectile::TypedTaskDefinition def0 = {
+            nullptr, BaldorProjectile_update, BaldorProjectile_drawParticle, nullptr
+        };
+        pProj = createSubTaskWithCopy<sBaldorProjectile>(gBattleManager->m10_battleOverlay->m18_dragon, &def0);
+        pProj->m0_fileBundle = pFileBundle->m0_fileBundle;
+        pProj->m4_vd1Allocation = pFileBundle->m4_vd1Allocation;
+        pProj->m30_isModelType = 0;
+
+        sAnimatedQuad* pAnim = (sAnimatedQuad*)allocateHeapForTask(pProj, sizeof(sAnimatedQuad));
+        pProj->m2C_visual = pAnim;
+        sSaturnPtr quadData = readSaturnEA(param3 + 8);
+        particleInitSub(pAnim, pFileBundle->m4_vd1Allocation->m4_vdp1Memory, &g_BTL_GenericData->m_0x60a8c24_animatedQuad); // TODO: use proper quad from param3+8
+        u32 rndFrames = randomNumber() & 0xF;
+        for (u32 i = 0; i < rndFrames; i++)
+            sGunShotTask_UpdateSub4(pAnim);
+    }
+    else
+    {
+        // 3D model-based projectile
+        static const sBaldorProjectile::TypedTaskDefinition def1 = {
+            nullptr, BaldorProjectile_update, BaldorProjectile_drawModel, nullptr
+        };
+        pProj = createSubTaskWithCopy<sBaldorProjectile>(gBattleManager->m10_battleOverlay->m18_dragon, &def1);
+        pProj->m0_fileBundle = pFileBundle->m0_fileBundle;
+        pProj->m4_vd1Allocation = pFileBundle->m4_vd1Allocation;
+        pProj->m30_isModelType = 1;
+
+        s_3dModel* pModel = (s_3dModel*)allocateHeapForTask(pProj, sizeof(s_3dModel));
+        pProj->m2C_visual = pModel;
+        u16 modelOffset = readSaturnU16(param3 + 2);
+        u16 animOffset = readSaturnU16(param3 + 6);
+        sAnimationData* pAnim = nullptr;
+        if (animOffset != 0)
+            pAnim = pFileBundle->m0_fileBundle->getAnimation(animOffset);
+        sModelHierarchy* pHierarchy = pFileBundle->m0_fileBundle->getModelHierarchy(modelOffset);
+        sStaticPoseData* pPose = pFileBundle->m0_fileBundle->getStaticPose(readSaturnU16(param3 + 4), pHierarchy->countNumberOfBones());
+        init3DModelRawData(pProj, pModel, 0, pFileBundle->m0_fileBundle, modelOffset, pAnim, pPose, nullptr, nullptr);
+    }
+
+    pProj->m8_position = *partPosition;
+    BaldorProjectile_computeVelocity(pProj, partPosition, target, param3);
+    pProj->m32_timer = readSaturnS16(param3 + 0xE);
+    pProj->m34_damageValue = readSaturnS16(param3 + 0x18);
+    pProj->m36_damageType = readSaturnU8(param3 + 0x1A);
+
+    if (!readSaturnEA(param3 + 0x1C).isNull())
+    {
+        createParticleEffect(
+            dramAllocatorEnd[readSaturnU8(param3 + 0x2A)].mC_fileBundle,
+            &g_BTL_GenericData->m_0x60a8c24_animatedQuad, // TODO: use proper quad from param3+0x1C
+            partPosition, nullptr, nullptr, 0x10000, 0, 0);
+    }
+
+    pProj->m38_trailQuadData = readSaturnEA(param3 + 0x20);
+    if (!pProj->m38_trailQuadData.isNull())
+    {
+        pProj->m3C_trailFileBundleIdx = readSaturnU8(param3 + 0x2B);
+        pProj->m46_trailFrequencyMask = readSaturnS16(param3 + 0x28);
+    }
+
+    pProj->m40_hitQuadData = readSaturnEA(param3 + 0x24);
+    if (!pProj->m40_hitQuadData.isNull())
+    {
+        pProj->m44_hitFileBundleIdx = readSaturnU8(param3 + 0x2C);
+    }
+
+    pProj->m48_hitSoundId = 0xFF;
+    return pProj;
+}
+
+// Queen acid spray — builds attack params inline instead of from Saturn data
+p_workArea BaldorAttack_createQueenAcidProjectile(sVec3_FP* partPosition, sVec3_FP* target, u8 fileBundleIdx, s16 timer, s16 lifetime)
+{
+    npcFileDeleter* pFileBundle = dramAllocatorEnd[fileBundleIdx].mC_fileBundle;
+
+    static const sBaldorProjectile::TypedTaskDefinition def0 = {
+        nullptr, BaldorProjectile_update, BaldorProjectile_drawParticle, nullptr
+    };
+    sBaldorProjectile* pProj = createSubTaskWithCopy<sBaldorProjectile>(gBattleManager->m10_battleOverlay->m18_dragon, &def0);
+    if (!pProj) return nullptr;
+
+    pProj->m0_fileBundle = pFileBundle->m0_fileBundle;
+    pProj->m4_vd1Allocation = pFileBundle->m4_vd1Allocation;
+    pProj->m30_isModelType = 0;
+
+    sAnimatedQuad* pAnim = (sAnimatedQuad*)allocateHeapForTask(pProj, sizeof(sAnimatedQuad));
+    pProj->m2C_visual = pAnim;
+    particleInitSub(pAnim, pFileBundle->m4_vd1Allocation->m4_vdp1Memory, &g_BTL_GenericData->m_0x60a8c24_animatedQuad);
+    u32 rndFrames = randomNumber() & 0xF;
+    for (u32 i = 0; i < rndFrames; i++)
+        sGunShotTask_UpdateSub4(pAnim);
+
+    pProj->m8_position = *partPosition;
+
+    // Compute velocity: direction from source to target with no horizontal speed, gravity pulling down
+    sVec3_FP delta = *target - *partPosition;
+    sVec2_FP angles;
+    computeLookAt(delta, angles);
+    pProj->m20_acceleration[0] = 0;
+    pProj->m20_acceleration[1].m_value = -0x160; // gravity
+    pProj->m20_acceleration[2] = 0;
+
+    // No horizontal speed (speed param = 0), just arc from source to target
+    fixedPoint timeFixed = fixedPoint((s32)timer << 16);
+    if (timer > 0) {
+        pProj->m14_velocity[0] = FP_Div(delta[0], timeFixed);
+        pProj->m14_velocity[1] = FP_Div(delta[1], timeFixed) - fixedPoint((pProj->m20_acceleration[1].m_value >> 1) * (s32)timer);
+        pProj->m14_velocity[2] = FP_Div(delta[2], timeFixed);
+    }
+    pProj->m14_velocity += gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta;
+
+    pProj->m32_timer = lifetime; // display lifetime (param3 offset 0x0E)
+    pProj->m34_damageValue = 3;  // damage (param3 offset 0x18)
+    pProj->m36_damageType = 0;
+    pProj->m38_trailQuadData = {};
+    pProj->m40_hitQuadData = {};
+    pProj->m46_trailFrequencyMask = 0;
+    pProj->m48_hitSoundId = 0xFF;
+    return pProj;
 }
 
 void BaldorAttack_update(sBaldorAttack* pThis)
@@ -765,15 +1044,91 @@ void Baldor_update_mode0(sBaldor* pThis)
         pThis->m34_formationEntry->m48 |= 1;
         pThis->m34_formationEntry->m49 = 0;
         break;
+    case 4: // death trigger from formation
+        pThis->m8_mode = 0xB;
+        pThis->m34_formationEntry->m49 = 0;
+        break;
     default:
         assert(0);
         break;
     }
 }
 
+// 060556e4 — body part debris task
+struct sBaldorPartDebris : public s_workAreaTemplateWithCopy<sBaldorPartDebris>
+{
+    sVec3_FP m8_position;
+    sVec3_FP m14_velocity;
+    sVec3_FP m20_rotation;
+    sVec3_FP m2C_angularVelocity;
+    u16 m38_modelIndex;
+    // size 0x3C
+};
+
+// 06055650
+static void baldorPartDebris_update(sBaldorPartDebris* pThis)
+{
+    pThis->m14_velocity[1].m_value += -0x2C; // gravity
+    pThis->m8_position += pThis->m14_velocity;
+    pThis->m20_rotation += pThis->m2C_angularVelocity;
+    // kill when below ground
+    if (pThis->m8_position[1] <= gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude)
+    {
+        pThis->getTask()->markFinished();
+    }
+}
+
+// 060556b2
+static void baldorPartDebris_draw(sBaldorPartDebris* pThis)
+{
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pThis->m8_position);
+    rotateCurrentMatrixYXZ(&pThis->m20_rotation);
+    addObjectToDrawList(pThis->m0_fileBundle->get3DModel(pThis->m38_modelIndex));
+    popMatrix();
+}
+
+// 060556e4
+static void createBaldorPartDebris(sVec3_FP* position, sVec3_FP* rotation, u16 modelIndex)
+{
+    s16 fileBundleIdx = ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9)) ? 0x10 : 0xA;
+    npcFileDeleter* pFileBundle = dramAllocatorEnd[fileBundleIdx].mC_fileBundle;
+
+    static const sBaldorPartDebris::TypedTaskDefinition def = {
+        nullptr, baldorPartDebris_update, baldorPartDebris_draw, nullptr
+    };
+    sBaldorPartDebris* pThis = createSubTaskWithCopy<sBaldorPartDebris>(pFileBundle, &def);
+    if (!pThis) return;
+
+    pThis->m8_position = *position;
+    pThis->m20_rotation = *rotation;
+    pThis->m14_velocity[0].m_value = (s32)((randomNumber() & 0xFFF) - 0x7FF);
+    pThis->m14_velocity[1].m_value = (s32)((randomNumber() & 0xFFF) - 0x7FF);
+    pThis->m14_velocity[2].m_value = (s32)((randomNumber() & 0xFFF) - 0x7FF);
+    pThis->m2C_angularVelocity[0].m_value = (s32)(((randomNumber() & 0x1F) - 0xF)) * 0xB60B6;
+    pThis->m2C_angularVelocity[1].m_value = (s32)(((randomNumber() & 0x1F) - 0xF)) * 0xB60B6;
+    pThis->m2C_angularVelocity[2].m_value = (s32)(((randomNumber() & 0x1F) - 0xF)) * 0xB60B6;
+    pThis->m38_modelIndex = modelIndex;
+}
+
+// 06055698
 void createBaldorDeathEffect(sBaldor* pThis)
 {
-    Unimplemented();
+    u8 fileBundleIdx = readSaturnU8(pThis->m3C_dataPtr);
+    createBoneDebrisExplosion(
+        pThis,
+        pThis->m38_3dModel,
+        pThis->m1C_translation.m0_current,
+        pThis->m28_rotation.m0_current,
+        nullptr, nullptr,
+        -0x2C, nullptr, 0, 0, 0, 0x10000, 0);
+
+    // 060556e4 — individual body part debris (each tentacle segment flies off separately)
+    for (int i = 0; i < 6; i++)
+    {
+        sBaldorBodyPart& part = pThis->m68_body->m30_parts[i];
+        createBaldorPartDebris(&part.m4_worldPosition, &part.m1C_rotation, part.m40_modelIndex);
+    }
 }
 
 // Taking damage
@@ -838,7 +1193,7 @@ void Baldor_update(sBaldorBase* pThisBase)
     else
     {
         // With Baldor Queen
-        int position = intDivide(3, pThis->mA_indexInFormation);
+        int position = performModulo(3, pThis->mA_indexInFormation);
         switch (position) {
         case 0:
             pThis->m6C_oscillationPhase[0] += 0x16C16C;
@@ -920,14 +1275,32 @@ void Baldor_update(sBaldorBase* pThisBase)
     }
 }
 
-void setupConditionalLightColor(int )
+// 0607e946
+static const u32 conditionalLightColorTable[4] = { 0x00181818, 0x00E1E110, 0x00E1E11F, 0x00E1E11F };
+
+void setupConditionalLightColor(int param_1)
 {
-    Unimplemented();
+    int idx;
+    if (param_1 >= 0x1F)
+        idx = 3;
+    else if (param_1 >= 0x15)
+        idx = 2;
+    else if (param_1 >= 0x0B)
+        idx = 1;
+    else
+        idx = 0;
+    setupLightColor(conditionalLightColorTable[idx]);
 }
 
+// 0607e976
 void clearLightColor()
 {
-    Unimplemented();
+    auto* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    generateLightFalloffMap(
+        s_RGB8::fromVector(pGrid->m1E4_lightFalloff0).toU32(),
+        s_RGB8::fromVector(pGrid->m1FC_lightFalloff1).toU32(),
+        s_RGB8::fromVector(pGrid->m208_lightFalloff2).toU32()
+    );
 }
 
 void Baldor_draw(sBaldorBase* pThisBase)

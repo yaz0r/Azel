@@ -1635,9 +1635,19 @@ u32 printVdp2StringTable[10] = {
     12, 13, 7, 8, 9, 10, 11, 13, 7, 14
 };
 
+void printVdp2StringSub1(s_stringStatusQuery* vars); // forward declaration
+
+// 0601c2e4
 void printVdp2StringNewLine(s_stringStatusQuery* vars)
 {
-    PDS_unimplemented("printVdp2StringNewLine");
+    vars->m0_cursorX = vars->m10_windowX1;
+    vars->m4_cursorY = vars->m4_cursorY + 2;
+    if (*vars->m20_string == '\n')
+    {
+        vars->m20_string++;
+    }
+    printVdp2StringSub1(vars);
+    vars->m24_vdp2MemoryOffset = vdp2TextMemoryOffset + (vars->m4_cursorY * 0x40 + vars->m0_cursorX) * 2;
 }
 
 void printVdp2StringSub2(s32 r4)

@@ -468,6 +468,10 @@ void arachnoth_chooseNextAttack(sArachnothFormation* pThis)
             pThis->m2C0_currentAttackState = 0;
         }
         break;
+    case 5: // eat dragon attack
+        Unimplemented(); // setup eat dragon attack (camera, movement, animation)
+        pThis->m2B0_arachnothState = 5;
+        break;
     case 8:
         arachnoth_enterDeathState(pThis);
         break;
@@ -758,13 +762,14 @@ void arachnoth_chargeAttack_update(sArachnothFormation* pThis)
         {
             if (pThis->m23C_chargeDirection == 0)
             {
-                pThis->m230 = sVec3_FP(0x201000, 0x1D000, -0x2488F0);
+                pThis->m230 = sVec3_FP(0x201000, 0x1D000, -0x246000);
+                pThis->m230[2] -= 0x32000;
             }
             else
             {
                 pThis->m230 = sVec3_FP(0x201000, 0x1D000, -0x1BC000);
+                pThis->m230[2] += 0x32000;
             }
-            pThis->m230[2] -= 0x32000;
             pThis->m254[0] += 0x2D82D8;
 
             sVec3_FP temp;
@@ -1429,14 +1434,6 @@ void arachnoth_updateState(sArachnothFormation* pThis)
             arachnoth_isCurrentAttackDone(pThis))
         {
             // 0605a354 — unconscious end cleanup
-            // 060689b0
-            {
-                s32 param = 0x1E;
-                if (param > 100) param = 100;
-                if (param < 0) param = 0;
-                auto* pCC = gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC;
-                pCC->m0 = (s16)(setDividend((s32)pCC->m2 << 16, param << 16, 0x640000) >> 16);
-            }
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
             pThis->m2B0_arachnothState = 0;
@@ -1448,6 +1445,12 @@ void arachnoth_updateState(sArachnothFormation* pThis)
             arachnoth_spawnSmokeAndDebris(pThis);
             arachnoth_snapToFaceDragon(pThis);
         }
+        break;
+    case 8: // death animation
+        Unimplemented(); // arachnoth_updateState8_sub0 (0605883e)
+        break;
+    case 9: // death cinematic/reward
+        Unimplemented(); // arachnoth_updateState9_sub0 (06059074)
         break;
     default:
         assert(0);
@@ -1852,8 +1855,7 @@ static void arachnothFormation_setHitFlash(s32 direction)
         colorIndex = 3;
     }
     static const u32 hitFlashColors[] = { 0x181818, 0xE1E110, 0xE1E11F, 0xE1E11F };
-    u32 color = hitFlashColors[colorIndex];
-    generateLightFalloffMap(color, color, color);
+    setupLightColor(hitFlashColors[colorIndex]);
 }
 
 // 0607f7fe

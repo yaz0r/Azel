@@ -63,4 +63,9 @@ struct sBaldor : public sBaldorBase
 };
 
 sBaldor* createBaldor(s_workAreaCopy* parent, struct sFormationData* pFormationEntry);
+sBaldorBody* Baldor_createBody(p_workArea parent, int numEntries);
+void Baldor_loadBodyPartData(sBaldorBody* pThis, int arg2, sSaturnPtr arg3);
+void Baldor_initSub0(sBaldorBase* pThis, sSaturnPtr dataPtr, struct sFormationData* pFormationEntry, s32 arg);
+void Baldor_update(sBaldorBase* pThisBase);
+void Baldor_draw(sBaldorBase* pThisBase);
 

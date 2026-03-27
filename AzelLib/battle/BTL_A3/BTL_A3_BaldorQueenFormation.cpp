@@ -23,11 +23,12 @@ struct BTL_A3_BaldorQueenFormation : public s_workAreaTemplateWithArg<BTL_A3_Bal
 {
     u8 m0_formationState;
     u8 m1_formationSubState;
-    std::vector<sFormationData> m4;
-    s16 m8;
-    u8 mB_baldorsQuadrant;
-    std::array<u8, 6> mC;
-    u8 mA;
+    std::vector<sFormationData> m4;  // Saturn: 4-byte pointer at 0x04
+    s16 m8;                          // 0x08
+    u8 mA;                           // 0x0A
+    u8 mB_baldorsQuadrant;           // 0x0B
+    std::array<u8, 6> mC;           // 0x0C-0x11
+    s16 m12_shuffleTimer;            // 0x12
     s16 m14;
     p_workArea m18;
     fixedPoint m1C;
@@ -182,6 +183,18 @@ void baldorQueenFormation_updateMode0(BTL_A3_BaldorQueenFormation* pThis) {
     case 1:
         baldorQueenFormation_goToMode1(pThis);
         break;
+    case 2:
+    {
+        // 06057500 — reposition all baldors to dragon's quadrant (sets m18 target position only)
+        pThis->mB_baldorsQuadrant = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
+        sSaturnPtr posTable = g_BTL_A3->getSaturnPtr(0x060a8d78);
+        for (int i = 0; i < 6; i++)
+        {
+            sVec3_FP pos = readSaturnVec3(posTable + (s32)pThis->mB_baldorsQuadrant * 0x48 + (s32)pThis->mC[i] * 0xC);
+            pThis->m4[i + 1].m0_translation.m18 = pos;
+        }
+        break;
+    }
     default:
         assert(0);
     }
@@ -196,7 +209,7 @@ void baldorQueenFormation_updateMode1(BTL_A3_BaldorQueenFormation* pThis) {
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8 = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
             pThis->m1C += 0x222222;
 
-            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C).getInteger());
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C.getInteger()));
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[1] += -0x5000;
             if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant == 0) {
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += 0xA000;
@@ -217,7 +230,7 @@ void baldorQueenFormation_updateMode1(BTL_A3_BaldorQueenFormation* pThis) {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8 = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
         pThis->m1C += 0x222222;
 
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C).getInteger());
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C.getInteger()));
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[1] += -0x5000;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant == 0) {
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += 0xA000;
@@ -243,7 +256,7 @@ void baldorQueenFormation_updateMode1(BTL_A3_BaldorQueenFormation* pThis) {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8 = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
         pThis->m1C += 0x222222;
 
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C).getInteger());
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C.getInteger()));
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[1] += -0x5000;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant == 0) {
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += 0xA000;
@@ -267,7 +280,7 @@ void baldorQueenFormation_updateMode1(BTL_A3_BaldorQueenFormation* pThis) {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8 = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
         pThis->m1C += 0x222222;
 
-        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C).getInteger());
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[0] += MTH_Mul(0x5000, getSin(pThis->m1C.getInteger()));
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[1] += -0x5000;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant == 0) {
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3E8[2] += 0xA000;
@@ -438,6 +451,38 @@ void baldorQueenFormation_updateMode3(BTL_A3_BaldorQueenFormation* pThis) {
 
 }
 
+// 06058998
+static void baldorQueenFormation_updateMode4(BTL_A3_BaldorQueenFormation* pThis)
+{
+    s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    switch (pThis->m1_formationSubState)
+    {
+    case 0:
+        if (battleEngine_isBattleIntroFinished())
+        {
+            battleEngine_SetBattleMode((eBattleModes)9);
+            pThis->m1C.m_value = randomNumber();
+            pEngine->m3E8 = pEngine->mC_battleCenter;
+            pThis->m1C.m_value += 0x91A2B;
+            pEngine->m3E8[1] += 0x50000;
+            pEngine->m3E8[0] += MTH_Mul(0x32000, getSin(pThis->m1C.getInteger()));
+        }
+        break;
+    case 1:
+        pEngine->m3E8 = pEngine->mC_battleCenter;
+        pThis->m1C.m_value += 0x91A2B;
+        pEngine->m3E8[1] += 0x50000;
+        pEngine->m3E8[0] += MTH_Mul(0x32000, getSin(pThis->m1C.getInteger()));
+        break;
+    case 2:
+        pEngine->m3E8 = pEngine->mC_battleCenter;
+        pThis->m1C.m_value += 0x91A2B;
+        pEngine->m3E8[1] += 0x50000;
+        pEngine->m3E8[0] += MTH_Mul(0x32000, getSin(pThis->m1C.getInteger()));
+        break;
+    }
+}
+
 void BTL_A3_BaldorQueenFormation_Update(BTL_A3_BaldorQueenFormation* pThis) {
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B]) {
         assert(0);
@@ -446,7 +491,22 @@ void BTL_A3_BaldorQueenFormation_Update(BTL_A3_BaldorQueenFormation* pThis) {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3B2_numBattleFormationRunning++;
     }
     
-    Unimplemented();
+    // 06058ab8 — periodic baldor position shuffle
+    if (--pThis->m12_shuffleTimer < 0)
+    {
+        int idx1 = performModulo2(6, randomNumber());
+        int idx2 = performModulo2(5, randomNumber());
+        idx2 = performModulo2(6, idx1 + idx2 + 1);
+        // swap mC entries
+        u8 temp = pThis->mC[idx1];
+        pThis->mC[idx1] = pThis->mC[idx2];
+        pThis->mC[idx2] = temp;
+        // update target positions from position table
+        sSaturnPtr posTable = g_BTL_A3->getSaturnPtr(0x060a8d78);
+        pThis->m4[idx1 + 1].m0_translation.m18 = readSaturnVec3(posTable + (s32)pThis->mB_baldorsQuadrant * 0x48 + (s32)pThis->mC[idx1] * 0xC);
+        pThis->m4[idx2 + 1].m0_translation.m18 = readSaturnVec3(posTable + (s32)pThis->mB_baldorsQuadrant * 0x48 + (s32)pThis->mC[idx2] * 0xC);
+        pThis->m12_shuffleTimer = 0x96;
+    }
 
     switch (pThis->m0_formationState) {
     case 0:
@@ -460,6 +520,9 @@ void BTL_A3_BaldorQueenFormation_Update(BTL_A3_BaldorQueenFormation* pThis) {
         break;
     case 3:
         baldorQueenFormation_updateMode3(pThis); // Vile brood (spawn new baldors)
+        break;
+    case 4: // death/completion — 06058998
+        baldorQueenFormation_updateMode4(pThis);
         break;
     default:
         assert(0);

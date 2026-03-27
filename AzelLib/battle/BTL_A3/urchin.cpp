@@ -148,7 +148,8 @@ std::array<std::array<s8,4>, 4> enemyQuadrantsTable = {
 
 void urchin_updateGunHit(sUrchin* pThis)
 {
-    s8 cVar1 = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
+    s8 quadrant = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
+    s8 cVar1 = pThis->mCC->m14_gunHitQuadrantFlags[quadrant];
 
     if ((pThis->mB0_flags & 8) == 0)
     {
@@ -244,7 +245,8 @@ void urchin_updateGunHit(sUrchin* pThis)
 
 void urchin_updateHomingLaserHit(sUrchin* pThis)
 {
-    s8 cVar1 = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
+    s8 quadrant = enemyQuadrantsTable[pThis->mD0->mD[pThis->mAF]][gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant];
+    s8 cVar1 = pThis->mCC->m10_laserHitQuadrantFlags[quadrant];
 
     if ((pThis->mB0_flags & 8) == 0)
     {
@@ -919,11 +921,11 @@ void Urchin_update(sUrchin* pThis)
         if ((gBattleManager->m4 == 7) &&
             (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B0_subBattleId == 6))
         {
-            pThis->m8[1] = pThis->m8[1] + fixedPoint(-0x199);
+            pThis->m14_positionCurrent[1] = pThis->m14_positionCurrent[1] + fixedPoint(-0x199);
         }
         else
         {
-            pThis->m8[1] = pThis->m8[1] + fixedPoint(-0x1000);
+            pThis->m14_positionCurrent[1] = pThis->m14_positionCurrent[1] + fixedPoint(-0x1000);
         }
         if ((randomNumber() & 3) != 0)
         {

@@ -51,103 +51,37 @@ int clipQuad(std::array<fixedPoint, 4>& quad) {
 }
 
 int drawProjectedParticle(sAnimatedQuad* pThis, sVec3_FP* position) {
-    const sVdp1Quad& pQuad = pThis->m0_quad->at(pThis->m7_currentFrame);
-
-    sVec3_FP projectedVector;
-    transformAndAddVecByCurrentMatrix(position, &projectedVector);
-
-    if ((graphicEngineStatus.m405C.m10_nearClipDistance < projectedVector[2]) && (projectedVector[2] < (int)graphicEngineStatus.m405C.m14_farClipDistance)) {
-        fixedPoint proj = FP_Div(0x10000, projectedVector[2]);
-
-        std::array<fixedPoint, 4> quad;
-        quad[0] = MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, projectedVector[0] + pQuad.m14_X, proj);
-        quad[1] = MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, projectedVector[1] + pQuad.m18_Y, proj);
-        quad[2] = quad[0] + MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, pQuad.mC_width, proj);
-        quad[3] = quad[1] + MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, pQuad.m10_height, proj);
-
-        if (clipQuad(quad) != 2) {
-
-            s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-            vdp1WriteEA.m0_CMDCTRL = pQuad.m2_CMDCTRL;
-            vdp1WriteEA.m4_CMDPMOD = pQuad.m4_CMDPMOD | 0x400;
-            if ((pQuad.m4_CMDPMOD & 0x38) == 8) {
-                vdp1WriteEA.m6_CMDCOLR = pThis->m4_vdp1Memory + pQuad.mA_CMDCOLR;
-            }
-            else {
-                vdp1WriteEA.m6_CMDCOLR = pQuad.mA_CMDCOLR;
-            }
-
-            vdp1WriteEA.m8_CMDSRCA = pThis->m4_vdp1Memory + pQuad.m6_CMDSRCA;
-            vdp1WriteEA.mA_CMDSIZE = pQuad.m8_CMDSIZE;
-            vdp1WriteEA.mC_CMDXA = quad[0];
-            vdp1WriteEA.mE_CMDYA = -quad[1];
-            vdp1WriteEA.m14_CMDXC = quad[2];
-            vdp1WriteEA.m16_CMDYC = -quad[3];
-
-            //s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
-            //pExtendedCommand->depth = (float)proj.asS32() / (float)graphicEngineStatus.m405C.m14_farClipDistance.asS32();
-
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(proj * graphicEngineStatus.m405C.m38_oneOverFarClip).getInteger();
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
-
-            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
-            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
-
-            return 1;
-        }
-    }
-    return 0;
+    return drawProjectedParticleWithGouraud(pThis, position, nullptr);
 }
 
 int vdp1DrawQuadScaled(sAnimatedQuad* pThis, sVec3_FP* position, fixedPoint scale) {
-    const sVdp1Quad& pQuad = pThis->m0_quad->at(pThis->m7_currentFrame);
+    const sVdp1Quad& quad = pThis->m0_quad->at(pThis->m7_currentFrame);
 
-    sVec3_FP projectedVector;
-    transformAndAddVecByCurrentMatrix(position, &projectedVector);
+    sVec3_FP viewPos;
+    transformAndAddVecByCurrentMatrix(position, &viewPos);
 
-    if ((graphicEngineStatus.m405C.m10_nearClipDistance < projectedVector[2]) && (projectedVector[2] < (int)graphicEngineStatus.m405C.m14_farClipDistance)) {
-        fixedPoint proj = FP_Div(0x10000, projectedVector[2]);
+    if ((graphicEngineStatus.m405C.m10_nearClipDistance < viewPos[2]) &&
+        (viewPos[2] < (int)graphicEngineStatus.m405C.m14_farClipDistance))
+    {
+        sParticleBillboard bb;
+        bb.positions[0] = (float)viewPos[0].asS32() / (float)0x10000;
+        bb.positions[1] = (float)viewPos[1].asS32() / (float)0x10000;
+        bb.positions[2] = (float)viewPos[2].asS32() / (float)0x10000;
+        float fScale = (float)scale.asS32() / (float)0x10000;
+        bb.halfWidth = (float)quad.mC_width.asS32() / (float)0x10000 * 0.5f * fScale;
+        bb.halfHeight = (float)quad.m10_height.asS32() / (float)0x10000 * 0.5f * fScale;
+        bb.CMDPMOD = quad.m4_CMDPMOD;
+        bb.CMDSRCA = pThis->m4_vdp1Memory + quad.m6_CMDSRCA;
+        bb.CMDSIZE = quad.m8_CMDSIZE;
+        if ((quad.m4_CMDPMOD & 0x38) == 8)
+            bb.CMDCOLR = pThis->m4_vdp1Memory + quad.mA_CMDCOLR;
+        else
+            bb.CMDCOLR = quad.mA_CMDCOLR;
+        bb.color[0] = bb.color[1] = bb.color[2] = 0.0f;
+        bb.color[3] = 1.0f;
 
-        std::array<fixedPoint, 4> quad;
-        quad[0] = MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, projectedVector[0] + MTH_Mul(pQuad.m14_X, scale), proj);
-        quad[1] = MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, projectedVector[1] + MTH_Mul(pQuad.m18_Y, scale), proj);
-        quad[2] = (s16)MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale, MTH_Mul(pQuad.mC_width, scale), proj).getInteger() + quad[0].getInteger();
-        quad[3] = quad[1].getInteger() - (s16)MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, MTH_Mul(pQuad.m10_height, scale), proj).getInteger();
-
-        if (clipQuad(quad) != 2) {
-
-            s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-            vdp1WriteEA.m0_CMDCTRL = pQuad.m2_CMDCTRL;
-            vdp1WriteEA.m4_CMDPMOD = pQuad.m4_CMDPMOD | 0x400;
-            if ((pQuad.m4_CMDPMOD & 0x38) == 8) {
-                vdp1WriteEA.m6_CMDCOLR = pThis->m4_vdp1Memory + pQuad.mA_CMDCOLR;
-            }
-            else {
-                vdp1WriteEA.m6_CMDCOLR = pQuad.mA_CMDCOLR;
-            }
-
-            vdp1WriteEA.m8_CMDSRCA = pThis->m4_vdp1Memory + pQuad.m6_CMDSRCA;
-            vdp1WriteEA.mA_CMDSIZE = pQuad.m8_CMDSIZE;
-            vdp1WriteEA.mC_CMDXA = quad[0];
-            vdp1WriteEA.mE_CMDYA = -quad[1];
-            vdp1WriteEA.m14_CMDXC = quad[2];
-            vdp1WriteEA.m16_CMDYC = -quad[3];
-
-            //s_vd1ExtendedCommand* pExtendedCommand = createVdp1ExtendedCommand(vdp1WriteEA);
-            //pExtendedCommand->depth = (float)proj.asS32() / (float)graphicEngineStatus.m405C.m14_farClipDistance.asS32();
-
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = fixedPoint(proj * graphicEngineStatus.m405C.m38_oneOverFarClip).getInteger();
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
-            graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
-
-            graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-            graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
-            graphicEngineStatus.m14_vdp1Context[0].mC += 1;
-
-            return 1;
-        }
+        gPendingParticleBillboards.push_back(bb);
+        return 1;
     }
     return 0;
 }
@@ -188,7 +122,8 @@ int drawProjectedParticleWithGouraud(sAnimatedQuad* pQuad, sVec3_FP* position, u
         }
         else
         {
-            bb.color[0] = bb.color[1] = bb.color[2] = bb.color[3] = 0.0f;
+            bb.color[0] = bb.color[1] = bb.color[2] = 0.0f; // no gouraud tint
+            bb.color[3] = 1.0f; // fully opaque
         }
 
         gPendingParticleBillboards.push_back(bb);

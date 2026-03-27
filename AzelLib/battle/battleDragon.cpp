@@ -494,7 +494,7 @@ void s_battleDragon_UpdateSub2Sub1(s_battleDragon* pThis)
         }
         else
         {
-            assert(0);
+            pThis->m1D0--;
         }
     }
     else
@@ -740,11 +740,19 @@ void s_battleDragon_UpdateSub4(s_battleDragon* pThis)
     }
 }
 
-void s_battleDragon_UpdateSub5(s_battleDragon* pThis)
+// BTL_A3::060a0fc4
+void s_battleDragon_updateDeathTumble(s_battleDragon* pThis)
 {
-    if (pThis->m1C4 & 8)
+    if ((pThis->m1C4 & 8) && // 8 = dragon HP <= 0 (dead)
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
-        assert(0);
+        // tilt forward (X rotation), cap at ~90 degrees
+        if (pThis->m74_targetRotation[0] < 0x4000001)
+        {
+            pThis->m74_targetRotation[0] += 0xB60B6;
+        }
+        // spin around Z axis
+        pThis->m74_targetRotation[2] += 0x71C71C;
     }
 }
 
@@ -777,7 +785,7 @@ static void s_battleDragon_Update(s_battleDragon* pThis)
         assert(0);
     }
     s_battleDragon_UpdateSub4(pThis);
-    s_battleDragon_UpdateSub5(pThis);
+    s_battleDragon_updateDeathTumble(pThis);
     s_battleDragon_UpdateSub6();
 }
 

@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "battleDamageDisplay.h"
+#include "battleTargetable.h"
 
 // Task for displaying enemy/dragon damage numbers.
 // Separate from sDamageNumber (battleDamageNumber.cpp) — uses different font/color VDP1 tables.
@@ -201,4 +202,38 @@ void createDamageDisplayNumber(s_workAreaCopy* pParent, s16 param2_damageValue, 
 
     pThis->m10_position = *param3;
     damageDisplay_formatAndPosition(pThis, param4);
+}
+
+// 0605bae8
+void createHitSparkEffect(p_workArea pParent, sBattleTargetable& targetable, s32 animMode)
+{
+    static const sDamageDisplayTask::TypedTaskDefinition definition = {
+        nullptr, &damageDisplay_update, &damageDisplay_draw, nullptr
+    };
+
+    sDamageDisplayTask* pThis = createSiblingTaskWithCopy<sDamageDisplayTask>((s_workAreaCopy*)pParent, &definition);
+    if (!pThis) return;
+
+    pThis->m22_damageValue = targetable.m58;
+    if (pThis->m22_damageValue < 0)
+    {
+        pThis->m42_colorType = 1;
+        pThis->m22_damageValue = -pThis->m22_damageValue;
+    }
+    else if (pThis->m22_damageValue == 0)
+    {
+        pThis->m42_colorType = 3;
+        pThis->m22_damageValue = 3;
+    }
+    else
+    {
+        pThis->m42_colorType = 0;
+        if ((targetable.m5E_impactForce == 1 || targetable.m5E_impactForce == 2) && targetable.m60 > 10)
+        {
+            pThis->m42_colorType = 2;
+        }
+    }
+
+    pThis->m10_position = *targetable.m4_pPosition;
+    damageDisplay_formatAndPosition(pThis, animMode);
 }

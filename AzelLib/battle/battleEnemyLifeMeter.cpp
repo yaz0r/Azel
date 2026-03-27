@@ -106,7 +106,7 @@ void createEnemyLifeMeterTask_update(sEnemyLifeMeterTask* pThis)
                     pThis->m2E_width -= 3;
                     if (pThis->m2E_width < 2)
                     {
-                        pThis->m2C_entryIndex = 1;
+                        pThis->m2E_width = 1;
                         pThis->getTask()->markFinished();
                     }
                 }
@@ -289,21 +289,22 @@ void createEnemyLifeMeterTask_draw(sEnemyLifeMeterTask* pThis)
             gaugeDimensions[3][0] = gaugeDimensions[0][0];
             gaugeDimensions[3][1] = gaugeDimensions[2][1];
 
-            int colorIndex = std::max<int>(numGaugeCount - 1, 8);
+            int colorIndex = std::min<int>(numGaugeCount - 1, 8);
 
-            drawGaugeVdp1(0xC0, gaugeDimensions, enemyLifeGaugeColors[colorIndex], 0x10000);
+            drawGaugeVdp1(0xC0, gaugeDimensions, enemyLifeGaugeColors[colorIndex], 0x1000);
         }
 
         if (tempValue > 0)
         {
             // draw the current gauge
             std::array<sVec2_S16, 4> gaugeDimensions;
-            gaugeDimensions[1][0] = fixedPoint::toInteger(FP_Div(fixedPoint::fromInteger(tempValue), fixedPoint::fromInteger(500)) * 50);
-            if (pThis->m2E_width < gaugeDimensions[1][0])
+            s16 scaledWidth = (s16)fixedPoint::toInteger(FP_Div(fixedPoint::fromInteger(tempValue), fixedPoint::fromInteger(500)) * 50);
+            if (pThis->m2E_width < scaledWidth)
             {
-                gaugeDimensions[1][0] = pThis->m2E_width;
+                scaledWidth = pThis->m2E_width;
             }
             gaugeDimensions[0][0] = projectedPosition[0];
+            gaugeDimensions[1][0] = gaugeDimensions[0][0] + scaledWidth;
             gaugeDimensions[0][1] = projectedPosition[1];
             gaugeDimensions[2][1] = projectedPosition[1] - 8;
             gaugeDimensions[1][1] = gaugeDimensions[0][1];
@@ -311,9 +312,9 @@ void createEnemyLifeMeterTask_draw(sEnemyLifeMeterTask* pThis)
             gaugeDimensions[3][0] = gaugeDimensions[0][0];
             gaugeDimensions[3][1] = gaugeDimensions[2][1];
 
-            int colorIndex = std::max<int>(numGaugeCount, 9);
+            int colorIndex = std::min<int>(numGaugeCount, 9);
 
-            drawGaugeVdp1(0xC0, gaugeDimensions, enemyLifeGaugeColors[colorIndex], 0x10000);
+            drawGaugeVdp1(0xC0, gaugeDimensions, enemyLifeGaugeColors[colorIndex], 0x1000);
         }
 
         s32 borderParams[4] = {

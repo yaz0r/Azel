@@ -403,7 +403,7 @@ void addObjectToList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
 // 06072e9c
 void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
 {
-    s16 baseCost = readSaturnS16(gCommonFile->getSaturnPtr(0x20C3F4) + (s32)index * 12);
+    s16 baseCost = readSaturnS16(gCommonFile->getSaturnPtr(0x20C3F4) + (s32)index * 12 + 2);
     s16 cost = computeBerserkBPCost(baseCost);
     bool bVar1 = mainGameState.gameStats.m14_currentBP < cost;
 

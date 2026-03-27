@@ -18,7 +18,7 @@ struct s_battleDragon : public s_workAreaTemplateWithCopy<s_battleDragon>
     sVec3_FP m144; // not sure of type yet
     sVec3_FP m1A4;
     u32 m1C0_statusModifiers;
-    u32 m1C4;
+    u32 m1C4; // 0x01=animUpdatePending, 0x02=riderIdleAnim, 0x04=riderReactAnim, 0x08=dead, 0x10=takingDamage, 0x40=forceAnimRefresh, 0x80=rider1AnimDelay, 0x100=rider2AnimDelay, 0x200=rider1SpecialAnim
     s32 m1C8;
     s16 m1CC_currentAnimation;
     s16 m1CE_positionInAnimList;

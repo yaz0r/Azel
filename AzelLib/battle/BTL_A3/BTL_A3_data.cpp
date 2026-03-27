@@ -87,6 +87,11 @@ sGenericFormationData* readUrchinFormation(sSaturnPtr ptrEA)
             pSubEntry->m8_modelOffset = readSaturnU16(subEntry + 8);
             pSubEntry->mA_poseOffset = readSaturnU16(subEntry + 0xA);
             pSubEntry->mC_hotspotDefinitions = readRiderDefinitionSub(readSaturnEA(subEntry + 0xC));
+            for (int k = 0; k < 4; k++)
+            {
+                pSubEntry->m10_laserHitQuadrantFlags[k] = readSaturnS8(subEntry + 0x10 + k);
+                pSubEntry->m14_gunHitQuadrantFlags[k] = readSaturnS8(subEntry + 0x14 + k);
+            }
             pSubEntry->m18_knockbackStrength = readSaturnS8(subEntry + 0x18);
 
             sSaturnPtr ptrTo1C = readSaturnEA(subEntry + 0x1C);
