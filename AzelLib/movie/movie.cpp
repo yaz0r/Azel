@@ -911,11 +911,14 @@ struct s_movieMainWorkArea : public s_workAreaTemplateWithArg<s_movieMainWorkAre
         case 3:
             if (!fileInfoStruct.mC_gfsHandle)
             {
-                killTask(pThis->mC_subtask);
-                pThis->mC_subtask = nullptr;
-                pThis->m3_countdown = 1;
-                pThis->m0_state = 4;
-                break;
+                // Movie stream finished — kill subtitle task and advance to state 4
+                if (pThis->mC_subtask)
+                {
+                    if (!(pThis->mC_subtask->getTask()->m14_flags & 1))
+                        pThis->mC_subtask->getTask()->markFinished();
+                }
+                // Note: do NOT reset m3_countdown here — the table value is used
+                // by state 4 to determine how many sequential CPKs to play
             }
             else
             {
@@ -941,41 +944,43 @@ struct s_movieMainWorkArea : public s_workAreaTemplateWithArg<s_movieMainWorkAre
                     fadePalette(&g_fadeControls.m0_fade0, fromColor,
                                 (s32)(s16)pThis->m8_fadePalTarget, 0x1E);
                     closeMovieStream();
-                    pThis->m0_state = 2;
-                    break;
                 }
-
-                if (!pThis->m1_debugMode)
-                    break;
-
-                // Debug: left/right cycle CPK; F3 opens editor
-                if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 7) == 0)
+                else
                 {
-                    if (readKeyboardToggle(0x86) != 0)
+                    if (!pThis->m1_debugMode)
+                        break;
+
+                    // Debug: left/right cycle CPK; F3 opens editor
+                    if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 7) == 0)
                     {
-                        killTask(pThis->mC_subtask);
-                        closeMovieStream();
-                        pThis->mC_subtask = createSubTaskWithArg<s_movieEditorWorkArea>(
-                            pThis, (s32)pThis->m2_cpkIndex);
-                        pThis->m0_state = 7;
-                        return;
+                        if (readKeyboardToggle(0x86) != 0)
+                        {
+                            killTask(pThis->mC_subtask);
+                            closeMovieStream();
+                            pThis->mC_subtask = createSubTaskWithArg<s_movieEditorWorkArea>(
+                                pThis, (s32)pThis->m2_cpkIndex);
+                            pThis->m0_state = 7;
+                            return;
+                        }
+                        break;
                     }
-                    break;
+
+                    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 4)
+                        pThis->m2_cpkIndex -= 2;
+                    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1)
+                        pThis->m2_cpkIndex -= 1;
+
+                    killTask(pThis->mC_subtask);
+                    pThis->mC_subtask = nullptr;
+                    closeMovieStream();
                 }
-
-                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 4)
-                    pThis->m2_cpkIndex -= 2;
-                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1)
-                    pThis->m2_cpkIndex -= 1;
-
-                killTask(pThis->mC_subtask);
-                pThis->mC_subtask = nullptr;
-                closeMovieStream();
             }
-            pThis->m0_state = 2;
+            // Increment state (state 2→3, 3→4)
+            pThis->m0_state++;
             break;
 
         case 4:
+            // Countdown check: decrement and if done, fade out
             if (!pThis->m1_debugMode)
             {
                 u8 cd = pThis->m3_countdown;
@@ -986,11 +991,11 @@ struct s_movieMainWorkArea : public s_workAreaTemplateWithArg<s_movieMainWorkAre
                     fadePalette(&g_fadeControls.m0_fade0, fromColor,
                                 (s32)(s16)pThis->m8_fadePalTarget, 0x1E);
                     pThis->m0_state = 5;
+                    break;
                 }
-                break;
             }
 
-            // Debug: cycle to next CPK that exists on disc
+            // Cycle to next CPK file on disc (used for multi-CPK sequences and debug)
             {
                 u8 cpkIdx = pThis->m2_cpkIndex;
                 if (cpkIdx == 0 || cpkIdx == 1 || cpkIdx == 0x2D)

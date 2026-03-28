@@ -12,6 +12,43 @@ extern "C" {
 
 #include "SCSP_wavStream.h"
 
+// OGG music streaming via SoLoud
+static SoLoud::WavStream gMusicStream;
+static SoLoud::handle gMusicHandle = 0;
+static bool gMusicPlaying = false;
+
+static bool tryPlayOggMusic(s32 trackNumber)
+{
+    char path[256];
+    snprintf(path, sizeof(path), "%d.OGG", trackNumber);
+
+    // Try to load directly — SoLoud will fail if file doesn't exist
+
+    // Stop any currently playing OGG music
+    if (gMusicPlaying)
+    {
+        gSoloud.stop(gMusicHandle);
+        gMusicPlaying = false;
+    }
+
+    if (gMusicStream.load(path) != SoLoud::SO_NO_ERROR)
+        return false;
+
+    gMusicStream.setLooping(true);
+    gMusicHandle = gSoloud.play(gMusicStream);
+    gMusicPlaying = true;
+    return true;
+}
+
+static void stopOggMusic()
+{
+    if (gMusicPlaying)
+    {
+        gSoloud.stop(gMusicHandle);
+        gMusicPlaying = false;
+    }
+}
+
 #define soundCounter_2msec (m68k_read_memory_8(0x8827))
 #define timmingFlag (m68k_read_memory_8(0x4E0))
 
@@ -284,6 +321,17 @@ void loadSoundBanksSub0(s8 musicNumber, s8 unk1)
 
 void loadSoundBanks(s8 musicNumber, s8 unk1)
 {
+    if (musicNumber >= 0 && tryPlayOggMusic(musicNumber))
+    {
+        // OGG file found and playing — skip M68K sound loading
+        return;
+    }
+
+    if (musicNumber < 0)
+    {
+        stopOggMusic();
+    }
+
     if (soundEngine.m10_sequenceTable[soundEngine.m1B8_numActiveSequence].m33 == 0)
     {
         if (musicNumber < 0)
@@ -305,7 +353,7 @@ void loadSoundBanks(s8 musicNumber, s8 unk1)
 
 s32 fadeOutAllSequences()
 {
-    //gSoloud.stopAll();
+    stopOggMusic();
     return 0;
 }
 
