@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "movie/movie.h"
 #include "town/town.h"
 #include "town/townDebugSelect.h"
 #include "kernel/animation.h"
@@ -1878,11 +1879,7 @@ p_workArea createSoundDebugTask(p_workArea)
     assert(0);
     return NULL;
 }
-p_workArea createMovieDebugTask(p_workArea)
-{
-    assert(0);
-    return NULL;
-}
+// createMovieDebugTask is implemented in movie/movie.cpp
 
 struct s_menuGraphicsTask : public s_workAreaTemplateWithArg<s_menuGraphicsTask, p_workArea>
 {

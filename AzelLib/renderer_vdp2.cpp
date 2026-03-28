@@ -44,7 +44,7 @@ struct s_layerData
     s32 lineScrollEA;
 };
 
-// Packed struct matching the VDP2_ps.sc shader layout (14 u32s)
+// Packed struct matching the VDP2_ps.sc shader layout
 struct s_layerDataGPU
 {
     u32 CHSZ;           // 0
@@ -58,6 +58,12 @@ struct s_layerDataGPU
     s32 scrollX;        // 11
     s32 scrollY;        // 12
     s32 lineScrollEA;   // 13
+    u32 wnd0Enabled;    // 14  (0=disabled, 1=enabled)
+    u32 wnd0Area;       // 15  (0=outside window is visible, 1=inside window is visible)
+    u32 wnd0XStart;     // 16
+    u32 wnd0YStart;     // 17
+    u32 wnd0XEnd;       // 18
+    u32 wnd0YEnd;       // 19
 };
 
 static s_layerDataGPU packForGPU(const s_layerData& ld)
@@ -77,10 +83,36 @@ static s_layerDataGPU packForGPU(const s_layerData& ld)
     g.scrollX = ld.scrollX;
     g.scrollY = ld.scrollY;
     g.lineScrollEA = ld.lineScrollEA;
+    g.wnd0Enabled = 0;
+    g.wnd0Area = 0;
+    g.wnd0XStart = 0;
+    g.wnd0YStart = 0;
+    g.wnd0XEnd = 0;
+    g.wnd0YEnd = 0;
     return g;
 }
 
-void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData)
+// Fill window 0 data for a GPU layer from VDP2 window registers.
+// wctlReg: the relevant WCTLx register value for this layer.
+// bitOffset: bit position of W0E within wctlReg (W0A is bitOffset-1).
+//   NBG0: WCTLA bit 1 (W0E), bit 0 (W0A)
+//   NBG1: WCTLA bit 9 (W0E), bit 8 (W0A)
+//   NBG2: WCTLB bit 1 (W0E), bit 0 (W0A)
+//   NBG3: WCTLB bit 9 (W0E), bit 8 (W0A)
+static void fillWindowData(s_layerDataGPU& g, u16 wctlReg, u32 w0eBit, u32 w0aBit)
+{
+    g.wnd0Enabled = (wctlReg >> w0eBit) & 1;
+    if (g.wnd0Enabled)
+    {
+        g.wnd0Area = (wctlReg >> w0aBit) & 1;
+        g.wnd0XStart = (vdp2Controls.m4_pendingVdp2Regs->mC0_WPSX0 >> 1) & 0x1FF;
+        g.wnd0YStart = vdp2Controls.m4_pendingVdp2Regs->mC2_WPSY0 & 0x1FF;
+        g.wnd0XEnd = (vdp2Controls.m4_pendingVdp2Regs->mC4_WPEX0 >> 1) & 0x1FF;
+        g.wnd0YEnd = vdp2Controls.m4_pendingVdp2Regs->mC6_WPEY0 & 0x1FF;
+    }
+}
+
+void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight, s_NBG_data& NBGData, u16 wctlReg = 0, u32 w0eBit = 0, u32 w0aBit = 0)
 {
     // BGFX update texture size if needed
     if ((NBGData.m_currentWidth != textureWidth) || (NBGData.m_currentHeight != textureHeight))
@@ -163,6 +195,7 @@ void renderLayerGPU(s_layerData& layerData, u32 textureWidth, u32 textureHeight,
         bgfx::setViewClear(NBGData.viewId, BGFX_CLEAR_COLOR);
 
         s_layerDataGPU gpuData = packForGPU(layerData);
+        fillWindowData(gpuData, wctlReg, w0eBit, w0aBit);
         bgfx::updateTexture2D(NBGData.bgfx_vdp2_planeDataBuffer, 0, 0, 0, 0, sizeof(gpuData)/4, 1, bgfx::copy(&gpuData, sizeof(gpuData)));
 
         bgfx::setTexture(0, texID_VDP2_RAM, bgfx_vdp2_ram_texture);
@@ -1459,38 +1492,65 @@ void renderBG0(u32 width, u32 height, bool bGPU)
         s_layerData planeData;
         planeData.CHSZ = vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 1;
         planeData.CHCN = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA >> 4) & 7;
-        planeData.PNB = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 >> 15) & 0x1;
-        planeData.CNSM = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 >> 14) & 0x1;
-        planeData.CAOS = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA) & 0x7;
-        planeData.PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ) & 3;
-        planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0) & 0x1F;
         planeData.scrollX = vdp2Controls.m4_pendingVdp2Regs->m70_SCXN0 >> 16;
         planeData.scrollY = vdp2Controls.m4_pendingVdp2Regs->m74_SCYN0 >> 16;
 
-        u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
-        u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
+        bool isBitmapMode = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA >> 2) & 1;
 
-        u32 pageSize = pageDimension * pageDimension * patternSize;
-
-        u32 offset = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 7) << 6;
-
-        planeData.planeOffsets[0] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m40_MPABN0 & 0x3F)) * pageSize;
-        planeData.planeOffsets[1] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m40_MPABN0 >> 8) & 0x3F)) * pageSize;
-        planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 & 0x3F)) * pageSize;
-        planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 >> 8) & 0x3F)) * pageSize;
-
-        if (!bGPU)
+        if (isBitmapMode)
         {
-            u32* textureOutput = new u32[textureWidth * textureHeight];
-            renderLayer(planeData, textureWidth, textureHeight, textureOutput);
+            // Bitmap mode: VRAM base from map offset, no tile indirection
+            u32 mapOffset = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 7) << 17;
+            planeData.planeOffsets[0] = mapOffset;
+            planeData.planeOffsets[1] = 0;
+            planeData.planeOffsets[2] = 0;
+            planeData.planeOffsets[3] = 0;
+            planeData.PNB = 0;
+            planeData.CNSM = 0;
+            planeData.CAOS = 0;
+            planeData.PLSZ = 0;
+            planeData.SCN = 0;
 
-            assert(0); // need to update the texture in bgfx
-
-            delete[] textureOutput;
+            // NBG0: WCTLA bit 1 = W0E, bit 0 = W0A
+            u16 wctla = vdp2Controls.m4_pendingVdp2Regs->mD0_WCTLA;
+            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[0], wctla, 1, 0);
         }
         else
         {
-            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[0]);
+            // Tile/cell mode
+            planeData.PNB = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 >> 15) & 0x1;
+            planeData.CNSM = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 >> 14) & 0x1;
+            planeData.CAOS = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA) & 0x7;
+            planeData.PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ) & 3;
+            planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0) & 0x1F;
+
+            u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
+            u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
+
+            u32 pageSize = pageDimension * pageDimension * patternSize;
+
+            u32 offset = (vdp2Controls.m4_pendingVdp2Regs->m3C_MPOFN & 7) << 6;
+
+            planeData.planeOffsets[0] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m40_MPABN0 & 0x3F)) * pageSize;
+            planeData.planeOffsets[1] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m40_MPABN0 >> 8) & 0x3F)) * pageSize;
+            planeData.planeOffsets[2] = (offset + (vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 & 0x3F)) * pageSize;
+            planeData.planeOffsets[3] = (offset + ((vdp2Controls.m4_pendingVdp2Regs->m42_MPCDN0 >> 8) & 0x3F)) * pageSize;
+
+            if (!bGPU)
+            {
+                u32* textureOutput = new u32[textureWidth * textureHeight];
+                renderLayer(planeData, textureWidth, textureHeight, textureOutput);
+
+                assert(0); // need to update the texture in bgfx
+
+                delete[] textureOutput;
+            }
+            else
+            {
+                // NBG0: WCTLA bit 1 = W0E, bit 0 = W0A
+                u16 wctla = vdp2Controls.m4_pendingVdp2Regs->mD0_WCTLA;
+                renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[0], wctla, 1, 0);
+            }
         }
     }
 }
@@ -1542,7 +1602,9 @@ void renderBG1(u32 width, u32 height, bool bGPU)
         }
         else
         {
-            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[1]);
+            // NBG1: WCTLA bit 9 = W0E, bit 8 = W0A
+            u16 wctla = vdp2Controls.m4_pendingVdp2Regs->mD0_WCTLA;
+            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[1], wctla, 9, 8);
         }
     }
 }
@@ -1625,7 +1687,9 @@ void renderBG3(u32 width, u32 height, bool bGPU)
         }
         else
         {
-            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[3]);
+            // NBG3: WCTLB bit 9 = W0E, bit 8 = W0A
+            u16 wctlb = vdp2Controls.m4_pendingVdp2Regs->mD2_WCTLB;
+            renderLayerGPU(planeData, textureWidth, textureHeight, NBG_data[3], wctlb, 9, 8);
         }
     }
 

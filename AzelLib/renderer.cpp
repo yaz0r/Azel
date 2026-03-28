@@ -1275,33 +1275,33 @@ bool azelSdl_EndFrame()
             {
                 ImGui::PushID("BG0");
                 ImGui::Text("NBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG0_GPU);
-                ImGui::Image(ImGui::toId(NBG_data[0].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::Image(ImGui::toId(NBG_data[0].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
                 ImGui::PopID();
 
                 ImGui::PushID("BG1");
                 ImGui::Text("NBG1"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG1_GPU);
-                ImGui::Image(ImGui::toId(NBG_data[1].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::Image(ImGui::toId(NBG_data[1].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
                 ImGui::PopID();
 
                 ImGui::PushID("BG2");
                 ImGui::Text("NBG2"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG2_GPU);
-                ImGui::Image(ImGui::toId(NBG_data[2].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::Image(ImGui::toId(NBG_data[2].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
                 ImGui::PopID();
 
                 ImGui::PushID("BG3");
                 ImGui::Text("NBG3"); ImGui::SameLine(); ImGui::Checkbox("GPU", &BG3_GPU);
-                ImGui::Image(ImGui::toId(NBG_data[3].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::Image(ImGui::toId(NBG_data[3].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
                 ImGui::PopID();
 
                 ImGui::PushID("RBG0");
                 ImGui::Text("RBG0"); ImGui::SameLine(); ImGui::Checkbox("GPU", &RBG0_GPU);
                 ImGui::SameLine(); ImGui::Checkbox("Combined dual", &useCombinedDualPlane);
                 ImGui::SameLine(); ImGui::Checkbox("Flat A", &debugFlatPlaneA);
-                ImGui::Image(ImGui::toId(NBG_data[4].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::Image(ImGui::toId(NBG_data[4].BGFXTexture, 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
                 ImGui::PopID();
 
                 ImGui::Text("VDP1 poly");
-                ImGui::Image(ImGui::toId(bgfx::getTexture(gBGFXVdp1PolyFB), 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight), ImVec2(0, 1), ImVec2(1, 0));
+                ImGui::Image(ImGui::toId(bgfx::getTexture(gBGFXVdp1PolyFB), 0, 0), ImVec2(vdp2ResolutionWidth, vdp2ResolutionHeight));
             }
             ImGui::End();
         }
@@ -1420,6 +1420,7 @@ bool azelSdl_EndFrame()
         bgfx::setViewRect(vdp1_gpuView, 0, 0, internalResolution[0], internalResolution[1]);
 
         bgfx::setViewClear(vdp1_gpuView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0);
+        bgfx::touch(vdp1_gpuView);
 
         float scaleX = internalResolution[0] / 352.f;
         float scaleY = internalResolution[1] / 224.f;

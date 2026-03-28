@@ -6,6 +6,7 @@
 #include "audio/audioDebug.h"
 #include "commonOverlay.h"
 #include "battle/battleGenericData.h"
+#include "movie/movie.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "Winmm.lib")
@@ -646,6 +647,10 @@ int loadFile(const char* fileName, u8* destination, u16 vdp1Pointer)
 
     freeFileInfoStruct(pFileHandle);
 
+    // On Saturn, m0=1 signals "load in progress" and GFS polling resets it.
+    // On PC, loading is synchronous, so reset immediately.
+    fileInfoStruct.m0 = 0;
+
     if (enableDebugTask)
     {
         assert(0);
@@ -690,6 +695,10 @@ int loadFile(const char* fileName, s_fileBundle** destination, u16 vdp1Pointer)
     fclose(pFileHandle->fHandle);
 
     freeFileInfoStruct(pFileHandle);
+
+    // On Saturn, m0=1 signals "load in progress" and GFS polling resets it.
+    // On PC, loading is synchronous, so reset immediately.
+    fileInfoStruct.m0 = 0;
 
     if (enableDebugTask)
     {
@@ -1153,7 +1162,7 @@ void loopIteration()
         // azelSdl_EndFrame (renderer reads VRAM), matching Saturn timing.
         endOfFrame();
 
-        //lastUpdateFunction();
+        lastUpdateFunction();
     }
 
     audioDebug();

@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "audio/systemSounds.h"
+#include "movie/movie.h"
 #include "o_title.h"
 
 p_workArea createBattleDebugTask(p_workArea);
@@ -539,13 +540,11 @@ struct s_loadWarningWorkArea : public s_workAreaTemplate<s_loadWarningWorkArea>
             }
         }
 
-        PDS_warningOnce("Skipping over cd 0 intro");
-        /*
         if (azelCdNumber == 0)
         {
-        initialTaskStatus.m_pendingTask = startTitleScreenVideo;
+            initialTaskStatus.m_pendingTask = startTitleScreenVideo;
         }
-        else*/
+        else
         {
             initialTaskStatus.m_pendingTask = createTitleScreenTask;
         }

@@ -488,6 +488,9 @@ void setupNBG0(const sLayerConfig* setup)
         case m2_CHCN:
             vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 0xFF8F) | (arg << 4);
             break;
+        case m4_BMEN:
+            vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 0xFFFB) | (arg << 2);
+            break;
         case m5_CHSZ:
             vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA = (vdp2Controls.m4_pendingVdp2Regs->m28_CHCTLA & 0xFFFE) | (arg << 0);
             break;

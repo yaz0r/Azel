@@ -31,4 +31,5 @@ void closeAllOpenFiles();
 #define KEY_CODE_PRINT_SCREEN 0x104
 
 bool readKeyboardToggle(u16 keyIndex);
+u32 readKeyboardTable1(u16 keyIndex);
 

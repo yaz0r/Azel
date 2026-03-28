@@ -63,6 +63,10 @@ bool readKeyboardToggle(u16 keyIndex)
 {
     return false;
 }
+u32 readKeyboardTable1(u16 keyIndex)
+{
+    return 0;
+}
 
 void closeAllOpenFiles()
 {

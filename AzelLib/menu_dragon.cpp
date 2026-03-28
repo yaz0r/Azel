@@ -138,6 +138,7 @@ void clearVdp2TextArea()
             clearVdp2TextAreaSub1(0, x, y);
         }
     }
+    vdp2ResetCursor();
 }
 
 void initVdp2ForDragonMenu(u32 r4)

@@ -243,9 +243,21 @@ struct sFileInfoSub
 struct sFileInfo
 {
     u8 m0; //0
+    u8 m1; //1
+    u8 m2; //2
     u8 m3; //3
+    u8 m4; //4
     u8 displayMemoryLayout; //5
     u16 m8; //8
+
+    struct GfsHn* mC_gfsHandle;  // C - GFS file handle (null = no stream open)
+    void* m10_movieDecoder;      // 10 - CPK decoder context
+    u32 m14_frameCount;          // 14 - current decoded frame count
+    void* m18_decodeBuffer;      // 18 - decode ring buffer
+    u32 m1C_vramDest;            // 1C - VRAM destination address for video frame
+    u32 m20_videoWidth;          // 20 - video frame width in pixels
+    u32 m24_videoHeight;         // 24 - video frame height in pixels
+    u32 m28_countdown;           // 28 - per-frame countdown timer
 
     sFileInfoSub* m2C_allocatedHead; //2C
     sFileInfoSub* freeHead; //30

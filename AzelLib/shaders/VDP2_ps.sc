@@ -24,6 +24,12 @@ USAMPLER2D(s_planeConfig, 2);
 #define in_scrollX readFromPanelConfig(11)
 #define in_scrollY readFromPanelConfig(12)
 #define in_outputHeight readFromPanelConfig(13)
+#define in_wnd0Enabled readFromPanelConfig(14)
+#define in_wnd0Area readFromPanelConfig(15)
+#define in_wnd0XStart readFromPanelConfig(16)
+#define in_wnd0YStart readFromPanelConfig(17)
+#define in_wnd0XEnd readFromPanelConfig(18)
+#define in_wnd0YEnd readFromPanelConfig(19)
 
 struct s_layerData
 {
@@ -123,6 +129,20 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
 
     s32 outputX = rawOutputX + layerData.scrollX;
     s32 outputY = rawOutputY + layerData.scrollY;
+
+    // 16.7M-color XRGB8888 bitmap mode (CHCN=4, BMEN=1)
+    // Bitmap stride = 512 pixels * 4 bytes = 2048 bytes
+    // Data is written as u32 0xFFRRGGBB on little-endian, so bytes are: BB, GG, RR, FF
+    if (layerData.CHCN == 4)
+    {
+        if (outputX < 0 || outputY < 0)
+            return vec4(0, 0, 0, 0);
+        s32 pixelAddr = layerData.planeOffsets[0] + outputY * 2048 + outputX * 4;
+        float B = float(getVdp2VramU8(pixelAddr)) / 255.0;
+        float G = float(getVdp2VramU8(pixelAddr + 1)) / 255.0;
+        float R = float(getVdp2VramU8(pixelAddr + 2)) / 255.0;
+        return vec4(R, G, B, 1.0);
+    }
 
     if (outputX < 0)
         return vec4(1,0,0,1);
@@ -288,6 +308,34 @@ void main()
     inputLayerData.planeOffsets[3] = in_planeOffsets_3;
     inputLayerData.scrollX = in_scrollX;
     inputLayerData.scrollY = in_scrollY;
+
+    // Window 0 clipping
+    if (in_wnd0Enabled != 0)
+    {
+        int pixelX = int(gl_FragCoord.x);
+        int pixelY = int(gl_FragCoord.y);
+        bool insideWindow = (pixelX >= in_wnd0XStart && pixelX <= in_wnd0XEnd &&
+                             pixelY >= in_wnd0YStart && pixelY <= in_wnd0YEnd);
+        // wnd0Area: 0 = outside window is visible (clip inside), 1 = inside window is visible (clip outside)
+        if (in_wnd0Area != 0)
+        {
+            // Inside visible: discard if outside
+            if (!insideWindow)
+            {
+                gl_FragColor = vec4(0, 0, 0, 0);
+                return;
+            }
+        }
+        else
+        {
+            // Outside visible: discard if inside
+            if (insideWindow)
+            {
+                gl_FragColor = vec4(0, 0, 0, 0);
+                return;
+            }
+        }
+    }
 
     gl_FragColor = sampleLayer(int(gl_FragCoord.x), int(gl_FragCoord.y), inputLayerData);
 }

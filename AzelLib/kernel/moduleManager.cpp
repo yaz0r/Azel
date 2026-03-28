@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "moduleManager.h"
+#include "movie/movie.h"
 #include "town/town.h"
 #include "loadSavegameScreen.h"
 #include "battle/battleManager.h"
@@ -18,7 +19,7 @@ s_gameStatus gGameStatus;
 sSaveGameStatus gSaveGameStatus;
 
 p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
-    NULL,
+    loadMovieOverlay,
     loadTown,
     loadTown2,
     loadField,

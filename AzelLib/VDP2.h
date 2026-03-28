@@ -205,6 +205,7 @@ enum eVdp2LayerConfig
     m0_END = 0,
     m1_TPEN = 1,
     m2_CHCN = 2,
+    m4_BMEN = 4,
     m5_CHSZ = 5,
     m6_PNB = 6,
     m7_CNSM = 7,
