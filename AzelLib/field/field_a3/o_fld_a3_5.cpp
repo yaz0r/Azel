@@ -8,7 +8,7 @@ struct fieldA3_5_exitTask : public s_workAreaTemplate<fieldA3_5_exitTask>
 {
     static void Update(fieldA3_5_exitTask* pThis)
     {
-        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos[2] >= -0x3E000)
+        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos[2] > -0x3E000)
         {
             mainGameState.setBit566(A3_0_exitsVars[2]);
             exitCutsceneTaskUpdateSub0(0, 0, -1);
@@ -63,9 +63,9 @@ void subfieldA3_5(p_workArea workArea)
         setupDragonPosition(&position, &rotation);
     }
 
-    subfieldA3_4_sub0();
+    setupDragonCaveLighting();
 
-    setupFieldCameraConfig_A3_4();
+    setupCaveCameraConfig();
 
     createVDP2FieldTask(workArea);
 }

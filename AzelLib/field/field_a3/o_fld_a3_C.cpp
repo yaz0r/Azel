@@ -108,9 +108,9 @@ void subfieldA3_C(p_workArea workArea)
         }
     }
 
-    subfieldA3_4_sub0();
+    setupDragonCaveLighting();
 
-    setupFieldCameraConfig_A3_4();
+    setupCaveCameraConfig();
 
     createVDP2FieldTask(workArea);
 }

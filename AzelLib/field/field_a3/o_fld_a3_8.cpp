@@ -313,9 +313,9 @@ void subfieldA3_8(p_workArea workArea)
     sVec3_FP rotation = readSaturnVec3({ 0x6081BD8, gFLD_A3 });
     setupDragonPosition(&position, &rotation);
 
-    subfieldA3_4_sub0();
+    setupDragonCaveLighting();
 
-    setupFieldCameraConfig_A3_4();
+    setupCaveCameraConfig();
 
     createVDP2FieldTask(workArea);
 }

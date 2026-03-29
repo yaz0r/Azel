@@ -2668,10 +2668,6 @@ void nullBattle()
     // intentionally empty
 }
 
-void subfieldA3_6(p_workArea workArea) { PDS_unimplemented("subfieldA3_6"); assert(false); }
-void subfieldA3_7(p_workArea workArea) { PDS_unimplemented("subfieldA3_7"); assert(false); }
-void subfieldA3_9(p_workArea workArea) { PDS_unimplemented("subfieldA3_9"); assert(false); }
-void subfieldA3_B(p_workArea workArea) { PDS_unimplemented("subfieldA3_B"); assert(false); }
 
 void(*subfieldTable1[])(p_workArea workArea) =
 {

@@ -3,7 +3,7 @@
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "field/fieldItemBox.h"
 
-void subfieldA3_4_sub0()
+void setupDragonCaveLighting()
 {
     Unimplemented();
 }
@@ -48,7 +48,7 @@ void createVDP2FieldTask(p_workArea workArea)
     createSubTask<s_fieldPaletteTaskWorkArea>(workArea, &definition);
 }
 
-void setupFieldCameraConfig_A3_4()
+void setupCaveCameraConfig()
 {
     setupFieldCameraConfigs(readCameraConfig({ 0x60822B4, gFLD_A3 }), 1);
 }
@@ -112,9 +112,9 @@ void subfieldA3_4(p_workArea workArea)
         setupDragonPosition(&position, &rotation);
     }
 
-    subfieldA3_4_sub0();
+    setupDragonCaveLighting();
 
-    setupFieldCameraConfig_A3_4();
+    setupCaveCameraConfig();
 
     createVDP2FieldTask(workArea);
 }
