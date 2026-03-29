@@ -8,21 +8,24 @@ struct fieldA3_5_exitTask : public s_workAreaTemplate<fieldA3_5_exitTask>
 {
     static void Update(fieldA3_5_exitTask* pThis)
     {
-        if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos[2] > -0x3E000)
+        s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        if (pDragonTask->m8_pos[2] < -0x3DFFF)
+        {
+            if (pDragonTask->m8_pos[0] < 0x48000)
+            {
+                mainGameState.setBit566(A3_0_exitsVars[3]);
+                exitCutsceneTaskUpdateSub0(0, 1, -1);
+                pThis->m_UpdateMethod = nullptr;
+            }
+        }
+        else
         {
             mainGameState.setBit566(A3_0_exitsVars[2]);
             exitCutsceneTaskUpdateSub0(0, 0, -1);
-            pThis->m8 = 0;
-        }
-        else if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos[0] < 0x48000)
-        {
-            mainGameState.setBit566(A3_0_exitsVars[3]);
-            exitCutsceneTaskUpdateSub0(0, 1, -1);
-            pThis->m8 = 0;
+            pThis->m_UpdateMethod = nullptr;
         }
     }
 
-    s32 m8;
     //size C
 };
 

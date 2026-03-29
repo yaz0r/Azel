@@ -61,17 +61,16 @@ struct fieldA3_4_exitTask : public s_workAreaTemplate<fieldA3_4_exitTask>
         {
             mainGameState.setBit566(A3_0_exitsVars[0]);
             exitCutsceneTaskUpdateSub0(0, 0, -1);
-            pThis->m8 = 0;
+            pThis->m_UpdateMethod = nullptr;
         }
         else if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos[2] < -0x1A2000)
         {
             mainGameState.setBit566(A3_0_exitsVars[1]);
             exitCutsceneTaskUpdateSub0(0, 1, -1);
-            pThis->m8 = 0;
+            pThis->m_UpdateMethod = nullptr;
         }
     }
 
-    s32 m8;
     //size C
 };
 
