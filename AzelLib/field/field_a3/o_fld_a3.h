@@ -81,7 +81,7 @@ void createFieldPaletteTask(p_workArea parent);
 void adjustVerticalLimits(fixedPoint r4, fixedPoint r5);
 void nullBattle();
 void getFieldDragonPosition(sVec3_FP* r4);
-void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4);
+void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSLaser* r4);
 void setupField3(s_DataTable3* r4, void(*r5)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r6);
 s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* r4);
 void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, s32 r6);
@@ -102,7 +102,7 @@ struct sLaserArgs
     s8 m1F;
 };
 
-s_LCSTask340Sub* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, s8 r6);
+s_LCSLaser* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, s8 r6);
 
 s_cameraScript* readCameraScript(sSaturnPtr EA);
 void dispatchTutorialMultiChoiceSub2();

@@ -29,6 +29,8 @@
 #include "field/fieldRadar.h"
 #include "field/battleStart.h"
 #include "field/fieldDragonMovement.h"
+#include "kernel/rayDisplay.h"
+#include "battle/gunShotRootTask.h"
 
 sMatrix4x3* fieldCameraTask1DrawSub1();
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
@@ -7480,7 +7482,7 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     return NULL;
 }
 
-void s_LCSTask340Sub::Init0(s_LCSTask340Sub* pThis, sLaserArgs* arg)
+void s_LCSLaser::InitHoming(s_LCSLaser* pThis, sLaserArgs* arg)
 {
     getMemoryArea(&pThis->m0, 0);
     pThis->m8 = arg->m0;
@@ -7502,9 +7504,9 @@ void s_LCSTask340Sub::Init0(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m20 = arg->m18;
     pThis->m27 = arg->m1F;
 
-    pThis->m28_laserInit = &s_LCSTask340Sub::Laser0Init;
-    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Laser0Update;
-    pThis->m30_laserDraw = &s_LCSTask340Sub::Laser0Draw;
+    pThis->m28_laserInit = &s_LCSLaser::LaserHomingInit;
+    pThis->m2C_laserUpdate = &s_LCSLaser::LaserHomingUpdate;
+    pThis->m30_laserDraw = &s_LCSLaser::LaserHomingDraw;
 
     pThis->m158 = 0x12;
     pThis->m6C[pThis->m154 & 0xF] = (*pThis->mC);
@@ -7519,7 +7521,7 @@ void s_LCSTask340Sub::Init0(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     particleInitSub(&pThis->m58, (pThis->m0.m4_characterArea - (0x25C00000)) >> 3, &gFLD_A3->m_0x0609518C_animatedQuad);
 }
 
-void s_LCSTask340Sub::Init1(s_LCSTask340Sub* pThis, sLaserArgs* arg)
+void s_LCSLaser::InitBeam(s_LCSLaser* pThis, sLaserArgs* arg)
 {
     getMemoryArea(&pThis->m0, 0);
     pThis->m8 = arg->m0;
@@ -7541,9 +7543,9 @@ void s_LCSTask340Sub::Init1(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m20 = arg->m18;
     pThis->m27 = arg->m1F;
 
-    pThis->m28_laserInit = &s_LCSTask340Sub::Laser1Init;
-    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Laser1Update;
-    pThis->m30_laserDraw = &s_LCSTask340Sub::Laser1Draw;
+    pThis->m28_laserInit = &s_LCSLaser::LaserBeamInit;
+    pThis->m2C_laserUpdate = &s_LCSLaser::LaserBeamUpdate;
+    pThis->m30_laserDraw = &s_LCSLaser::LaserBeamDraw;
 
     pThis->m158 = 0x12;
     pThis->m6C[pThis->m154&0xF] = (*pThis->mC);
@@ -7555,16 +7557,16 @@ void s_LCSTask340Sub::Init1(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m154++;
 }
 
-static const std::array<fixedPoint, 2> s_LCSTask340Sub_Init3Sub0Data0 = {
+static const std::array<fixedPoint, 2> s_LCSLaser_InitTrailSub0Data0 = {
     0x2000000,
     0x6000000,
 };
 
-void s_LCSTask340Sub::Laser3Init(s_LCSTask340Sub* pThis)
+void s_LCSLaser::LaserTrailInit(s_LCSLaser* pThis)
 {
     pThis->m34 = 0x37000;
     pThis->m38 = intDivide(pThis->m158, -0x37000);
-    pThis->m3C = s_LCSTask340Sub_Init3Sub0Data0[(randomNumber() >> 16) & 1];
+    pThis->m3C = s_LCSLaser_InitTrailSub0Data0[(randomNumber() >> 16) & 1];
     pThis->m40 = 0;
 }
 
@@ -7631,7 +7633,7 @@ static sSaturnPtr getTrailGouraudData(s8 colorIndex)
 }
 
 // 0607acbc — spawn a trail particle at the current trail head position
-static void spawnTrailParticleFromLaser(s_LCSTask340Sub* pThis)
+static void spawnTrailParticleFromLaser(s_LCSLaser* pThis)
 {
     // Select trail ring buffer index based on build-up state
     s32 trailIndex;
@@ -7653,7 +7655,7 @@ static void spawnTrailParticleFromLaser(s_LCSTask340Sub* pThis)
 }
 
 // 0607C230
-void s_LCSTask340Sub::Laser3Update(s_LCSTask340Sub* pThis)
+void s_LCSLaser::LaserTrailUpdate(s_LCSLaser* pThis)
 {
     pThis->m34 += pThis->m38;
     pThis->m3C += pThis->m40;
@@ -7686,7 +7688,7 @@ void s_LCSTask340Sub::Laser3Update(s_LCSTask340Sub* pThis)
 }
 
 // 0607AD44
-void s_LCSTask340Sub::Laser3Draw(s_LCSTask340Sub* pThis)
+void s_LCSLaser::LaserTrailDraw(s_LCSLaser* pThis)
 {
     // Select trail position for main laser sprite draw
     s32 trailIndex;
@@ -7703,7 +7705,7 @@ void s_LCSTask340Sub::Laser3Draw(s_LCSTask340Sub* pThis)
     drawProjectedParticleWithGouraud(&pThis->m58, &drawPos);
 }
 
-void s_LCSTask340Sub::Init2(s_LCSTask340Sub* pThis, sLaserArgs* arg)
+void s_LCSLaser::InitWingRay(s_LCSLaser* pThis, sLaserArgs* arg)
 {
     getMemoryArea(&pThis->m0, 0);
     pThis->m8 = arg->m0;
@@ -7725,9 +7727,9 @@ void s_LCSTask340Sub::Init2(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m20 = arg->m18;
     pThis->m27 = arg->m1F;
 
-    pThis->m28_laserInit = &s_LCSTask340Sub::Laser2Init;
-    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Laser2Update;
-    pThis->m30_laserDraw = &s_LCSTask340Sub::Laser2Draw;
+    pThis->m28_laserInit = &s_LCSLaser::LaserWingRayInit;
+    pThis->m2C_laserUpdate = &s_LCSLaser::LaserWingRayUpdate;
+    pThis->m30_laserDraw = &s_LCSLaser::LaserWingRayDraw;
 
     pThis->m158 = 0x1E;
 
@@ -7737,12 +7739,12 @@ void s_LCSTask340Sub::Init2(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m6C[1] = (*pThis->mC);
 }
 
-void s_LCSTask340Sub::Laser2Init(s_LCSTask340Sub*)
+void s_LCSLaser::LaserWingRayInit(s_LCSLaser*)
 {
     // nothing on purpose
 }
 
-void s_LCSTask340Sub::Laser2Update(s_LCSTask340Sub* pThis)
+void s_LCSLaser::LaserWingRayUpdate(s_LCSLaser* pThis)
 {
     sVec3_FP var0;
     transformAndAddVec(pThis->m60, var0, cameraProperties2.m28[0]);
@@ -7775,12 +7777,62 @@ void s_LCSTask340Sub::Laser2Update(s_LCSTask340Sub* pThis)
     pThis->m154++;
 }
 
-void s_LCSTask340Sub::Laser2Draw(s_LCSTask340Sub*)
+// 0607AA3C
+void s_LCSLaser::LaserWingRayDraw(s_LCSLaser* pThis)
 {
-    Unimplemented();
+    sVec3_FP viewStart, viewEnd;
+    transformAndAddVecByCurrentMatrix(&pThis->m6C[0], &viewStart);
+    transformAndAddVecByCurrentMatrix(&pThis->m6C[1], &viewEnd);
+
+    if (viewEnd.m8_Z <= viewStart.m8_Z)
+    {
+        return;
+    }
+
+    fixedPoint ratio = FP_Div(0x4000, viewEnd.m8_Z - viewStart.m8_Z);
+    fixedPoint deltaX = MTH_Mul(ratio, viewEnd.m0_X - viewStart.m0_X);
+    fixedPoint deltaY = MTH_Mul(ratio, viewEnd.m4_Y - viewStart.m4_Y);
+    fixedPoint deltaZ = MTH_Mul(ratio, viewEnd.m8_Z - viewStart.m8_Z);
+
+    u16 vdp1Base = (pThis->m0.m4_characterArea - 0x25C00000) >> 3;
+
+    sVec3_FP current = viewStart;
+    sSaturnPtr gouraudTablePtr = gFLD_A3->getSaturnPtr(0x06094d60);
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        sVec3_FP segEnd;
+        segEnd.m0_X = current.m0_X + deltaX + deltaX;
+        segEnd.m4_Y = current.m4_Y + deltaY + deltaY;
+        segEnd.m8_Z = current.m8_Z + deltaZ + deltaZ;
+
+        if (viewEnd.m8_Z < segEnd.m8_Z)
+        {
+            break;
+        }
+
+        std::array<sVec3_FP, 2> segment = {current, segEnd};
+
+        if (isGunShotVisible(segment, graphicEngineStatus.m405C))
+        {
+            // Read gouraud data (sliding window of 4 u16 from table at 06094d60)
+            sSaturnPtr gouraudPtr = gouraudTablePtr + i * 2;
+            quadColor gouraud;
+            gouraud[0] = readSaturnU16(gouraudPtr);
+            gouraud[1] = readSaturnU16(gouraudPtr + 2);
+            gouraud[2] = readSaturnU16(gouraudPtr + 4);
+            gouraud[3] = readSaturnU16(gouraudPtr + 6);
+
+            displayRaySegmentFromViewSpace(segment, 0x333, vdp1Base + 0xF8, 0x210, vdp1Base + 0x173C, &gouraud, 8);
+        }
+
+        current.m0_X = segEnd.m0_X + deltaX;
+        current.m4_Y = segEnd.m4_Y + deltaY;
+        current.m8_Z = segEnd.m8_Z + deltaZ;
+    }
 }
 
-void s_LCSTask340Sub::Init3(s_LCSTask340Sub* pThis, sLaserArgs* arg)
+void s_LCSLaser::InitTrail(s_LCSLaser* pThis, sLaserArgs* arg)
 {
     getMemoryArea(&pThis->m0, 0);
 
@@ -7804,9 +7856,9 @@ void s_LCSTask340Sub::Init3(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     pThis->m26_receivedItemQuantity = arg->m1E_receivedItemQuantity;
     pThis->m27 = arg->m1F;
 
-    pThis->m28_laserInit = &s_LCSTask340Sub::Laser3Init;
-    pThis->m2C_laserUpdate = &s_LCSTask340Sub::Laser3Update;
-    pThis->m30_laserDraw = &s_LCSTask340Sub::Laser3Draw;
+    pThis->m28_laserInit = &s_LCSLaser::LaserTrailInit;
+    pThis->m2C_laserUpdate = &s_LCSLaser::LaserTrailUpdate;
+    pThis->m30_laserDraw = &s_LCSLaser::LaserTrailDraw;
     pThis->m158 = 0x1E;
 
     if (arg->m8 & 0x100)
@@ -7827,7 +7879,7 @@ void s_LCSTask340Sub::Init3(s_LCSTask340Sub* pThis, sLaserArgs* arg)
     particleInitSub(&pThis->m58, (pThis->m0.m4_characterArea - (0x25C00000)) >> 3, &gFLD_A3->m_0x06095330_animatedQuad);
 }
 
-static const std::array<fixedPoint, 16> s_LCSTask340Sub_Init1Sub0Data0 = {
+static const std::array<fixedPoint, 16> s_LCSLaser_InitBeamSub0Data0 = {
     0xE38E38,
     0x5555555,
     0x71C71C7,
@@ -7838,37 +7890,91 @@ static const std::array<fixedPoint, 16> s_LCSTask340Sub_Init1Sub0Data0 = {
     0x471C71C,
 };
 
-void s_LCSTask340Sub::Laser0Init(s_LCSTask340Sub* pThis)
+void s_LCSLaser::LaserHomingInit(s_LCSLaser* pThis)
 {
-    Laser1Init(pThis);
+    LaserBeamInit(pThis);
 }
 
-void s_LCSTask340Sub::Laser0Draw(s_LCSTask340Sub* pThis)
+// Static gradient data for Laser0 beam (from Saturn data at 0x06094D9A, all 0xE280)
+static s_LCSTask_gradientData LaserHomingGradientData = {{
+    {0xE280, 0xE280, 0xE280, 0xE280},
+    {0xE280, 0xE280, 0xE280, 0xE280},
+    {0xE280, 0xE280, 0xE280, 0xE280},
+    {0xE280, 0xE280, 0xE280, 0xE280},
+    {0xE280, 0xE280, 0xE280, 0xE280},
+    {0xE280, 0xE280, 0xE280, 0xE280},
+    {0xE280, 0xE280, 0xE280, 0xE280},
+    {0xE280, 0xE280, 0xE280, 0xE280},
+}};
+
+static u16 LaserHomingGouraudColors[] = {0xE280, 0xE280, 0xE280, 0xE280};
+
+// 0607a798
+void s_LCSLaser::LaserHomingDraw(s_LCSLaser* pThis)
 {
-    Unimplemented();
+    s32 stack0 = 6;
+    std::array<sVec3_FP, 8> r11;
+    s32 r13 = 0;
+
+    if (pThis->m154 <= 16)
+    {
+        auto r5 = r11.begin();
+        sSaturnPtr r4 = gFLD_A3->getSaturnPtr(0x06094C38) + pThis->m154 * 8;
+        sSaturnPtr r7 = r4 + 6;
+
+        while (r4.m_offset < r7.m_offset)
+        {
+            s8 value = readSaturnS8(r4);
+            if (value < 0)
+            {
+                break;
+            }
+            *r5 = pThis->m6C[value];
+            r13++;
+            r5++;
+            r4++;
+        }
+        pThis->LaserBeamDrawSub0(r11, r13, gFLD_A3->getSaturnPtr(0x06094D40) + (stack0 - r13) * 4, &LaserHomingGradientData);
+    }
+    else
+    {
+        sSaturnPtr r5 = gFLD_A3->getSaturnPtr(0x06094CC0) + ((pThis->m154 - 1) & 0xF) * 8;
+        auto r4 = r11.begin();
+        for (int i = 0; i < 6; i++)
+        {
+            s8 value = readSaturnS8(r5);
+            *r4 = pThis->m6C[value];
+            r4++;
+            r5++;
+        }
+        pThis->LaserBeamDrawSub0(r11, 6, gFLD_A3->getSaturnPtr(0x06094D40), &LaserHomingGradientData);
+    }
+
+    drawProjectedParticleWithGouraud(&pThis->m58, &r11[0], LaserHomingGouraudColors);
 }
 
-void s_LCSTask340Sub_Laser0Update(s_LCSTask340Sub* pThis)
+// 0607becc
+void s_LCSLaser_LaserHomingUpdate(s_LCSLaser* pThis)
 {
-    Unimplemented();
+    sGunShotTask_UpdateSub4(&pThis->m58);
 }
 
-void s_LCSTask340Sub::Laser0Update(s_LCSTask340Sub* pThis)
+void s_LCSLaser::LaserHomingUpdate(s_LCSLaser* pThis)
 {
-    Laser1Update(pThis);
+    LaserBeamUpdate(pThis);
 
-    s_LCSTask340Sub_Laser0Update(pThis);
+    s_LCSLaser_LaserHomingUpdate(pThis);
 }
 
-void s_LCSTask340Sub::Laser1Init(s_LCSTask340Sub* pThis)
+void s_LCSLaser::LaserBeamInit(s_LCSLaser* pThis)
 {
     pThis->m34 = 0x37000;
     pThis->m38 = intDivide(pThis->m158, -0x37000);
-    pThis->m3C = s_LCSTask340Sub_Init1Sub0Data0[(randomNumber() >> 16) & 7];
+    pThis->m3C = s_LCSLaser_InitBeamSub0Data0[(randomNumber() >> 16) & 7];
     pThis->m40 = 0;
 }
 
-void s_LCSTask340Sub::Update0(s_LCSTask340Sub* pThis)
+void s_LCSLaser::UpdateHomingBeamWingRay(s_LCSLaser* pThis)
 {
     if ((pThis->m8 == nullptr) || (pThis->m8->getTask()->isFinished()))
     {
@@ -7896,7 +8002,7 @@ void s_LCSTask340Sub::Update0(s_LCSTask340Sub* pThis)
     pThis->m158--;
 }
 
-void s_LCSTask340Sub::Update3(s_LCSTask340Sub* pThis)
+void s_LCSLaser::UpdateTrail(s_LCSLaser* pThis)
 {
     if (pThis->m158 < 0)
     {
@@ -7910,7 +8016,7 @@ void s_LCSTask340Sub::Update3(s_LCSTask340Sub* pThis)
     }
 }
 
-static const std::array<s_RGB8, 7> s_LCSTask340Sub_Delete3Sub0Data0 =
+static const std::array<s_RGB8, 7> s_LCSLaser_DeleteTrailSub0Data0 =
 {
     {
         {0x17, 0x14, 6},
@@ -7923,9 +8029,9 @@ static const std::array<s_RGB8, 7> s_LCSTask340Sub_Delete3Sub0Data0 =
     }
 };
 
-void s_LCSTask340Sub_Delete3Sub0(s32 r4)
+void s_LCSLaser_DeleteTrailSub0(s32 r4)
 {
-    s_LCSTask340SubSub* r14 = createSubTask<s_LCSTask340SubSub>(getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS);
+    s_LCSLaserSparkle* r14 = createSubTask<s_LCSLaserSparkle>(getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS);
 
     r14->m0 = 30;
     r14->m4 = r4;
@@ -7933,12 +8039,12 @@ void s_LCSTask340Sub_Delete3Sub0(s32 r4)
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     pDragonTask->m_EB_useSpecialColor = 1;
 
-    pDragonTask->m_E8_specialColor = s_LCSTask340Sub_Delete3Sub0Data0[r4];
+    pDragonTask->m_E8_specialColor = s_LCSLaser_DeleteTrailSub0Data0[r4];
 }
 
-void s_LCSTask340Sub::Delete3(s_LCSTask340Sub* pThis)
+void s_LCSLaser::DeleteTrail(s_LCSLaser* pThis)
 {
-    s_LCSTask340Sub_Delete3Sub0(pThis->m27);
+    s_LCSLaser_DeleteTrailSub0(pThis->m27);
     playSystemSoundEffect(17);
 
     if (pThis->m24_receivedItemId >= 0)
@@ -7963,7 +8069,7 @@ void s_LCSTask340Sub::Delete3(s_LCSTask340Sub* pThis)
     }
 }
 
-void s_LCSTask340Sub::Init1Sub1Sub0()
+void s_LCSLaser::InitBeamSub1Sub0()
 {
     if (m18 == nullptr)
         return;
@@ -7986,7 +8092,7 @@ void s_LCSTask340Sub::Init1Sub1Sub0()
     }
 }
 
-void s_LCSTask340Sub::Laser1Update(s_LCSTask340Sub* pThis)
+void s_LCSLaser::LaserBeamUpdate(s_LCSLaser* pThis)
 {
     sMatrix4x3* var0 = cameraProperties2.m28;
     pThis->m34 += pThis->m38;
@@ -8000,7 +8106,7 @@ void s_LCSTask340Sub::Laser1Update(s_LCSTask340Sub* pThis)
     sVec3_FP var10;
     transformAndAddVec(var1C, var10, *var0);
 
-    pThis->Init1Sub1Sub0();
+    pThis->InitBeamSub1Sub0();
 
     sVec3_FP var4;
     sVec3_FP& r5 = pThis->m6C[(pThis->m154 - 1) & 0xF];
@@ -8014,7 +8120,7 @@ void s_LCSTask340Sub::Laser1Update(s_LCSTask340Sub* pThis)
     pThis->m144 = var4 - r5;
 }
 
-void Laser1DrawSub0Sub0(std::array<sVec3_FP, 2>&r4, s32 r5, sVec2_S16& r6, sVec2_S16& r7, fixedPoint maxDistance)
+void LaserBeamDrawSub0Sub0(std::array<sVec3_FP, 2>&r4, s32 r5, sVec2_S16& r6, sVec2_S16& r7, fixedPoint maxDistance)
 {
     const s_graphicEngineStatus_405C& r12 = graphicEngineStatus.m405C;
     auto var_28 = r5;
@@ -8044,7 +8150,7 @@ void Laser1DrawSub0Sub0(std::array<sVec3_FP, 2>&r4, s32 r5, sVec2_S16& r6, sVec2
     }
 }
 
-s32 Laser1DrawSub0Sub1(std::array<sVec2_S16,2>& r4)
+s32 LaserBeamDrawSub0Sub1(std::array<sVec2_S16,2>& r4)
 {
     s32 r5 = 0;
     if (r4[0][0] - r4[1][0] >= 0)
@@ -8058,7 +8164,7 @@ s32 Laser1DrawSub0Sub1(std::array<sVec2_S16,2>& r4)
     return r5;
 }
 
-void Laser1DrawSub0Sub2(std::array<sVec2_S16, 2>& r4, std::array<sVec2_S16, 2>&r5, s32 r6, std::array<sVec3_FP, 4>& r7)
+void LaserBeamDrawSub0Sub2(std::array<sVec2_S16, 2>& r4, std::array<sVec2_S16, 2>&r5, s32 r6, std::array<sVec3_FP, 4>& r7)
 {
     switch (r6)
     {
@@ -8107,29 +8213,29 @@ void Laser1DrawSub0Sub2(std::array<sVec2_S16, 2>& r4, std::array<sVec2_S16, 2>&r
     }
 }
 
-struct sLaser1DrawSub4Data1
+struct sLaserBeamDrawSub4Data1
 {
     s32 m0;
     s32 m4;
     s32 m8;
 };
 
-static const std::array< sLaser1DrawSub4Data1, 2> Laser1DrawSub4Data1 = {
+static const std::array< sLaserBeamDrawSub4Data1, 2> LaserBeamDrawSub4Data1 = {
     {
         {0x1734, 0x98, 0x610},
         {0x1730, 0x88, 0x210}
     }
 };
 
-static const sLaser1DrawSub4Data1 Laser1DrawSub3Data0 = {
+static const sLaserBeamDrawSub4Data1 LaserBeamDrawSub3Data0 = {
         0x173C, 0xF8, 0x210
 };
 
-static const std::array<s32, 16> Laser1DrawSub4Data0 = {
+static const std::array<s32, 16> LaserBeamDrawSub4Data0 = {
     0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 };
 
-void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint r6, s32 r7, s_LCSTask_gradientData* arg0)
+void LaserBeamDrawSub4(s_LCSLaser* r4, std::array<sVec3_FP, 4>&r5, fixedPoint r6, s32 r7, s_LCSTask_gradientData* arg0)
 {
     auto& r11 = graphicEngineStatus;
     auto& r13 = graphicEngineStatus.m14_vdp1Context[0];
@@ -8138,9 +8244,9 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     int gradiantIndex = r11.m14_vdp1Context[0].m10 - r11.m14_vdp1Context[0].m14->begin();
     quadColor& r12 = *(r11.m14_vdp1Context[0].m10 - 1);
 
-    u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
-    u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
-    u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
+    u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + LaserBeamDrawSub4Data1[LaserBeamDrawSub4Data0[0]].m0;
+    u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + LaserBeamDrawSub4Data1[LaserBeamDrawSub4Data0[0]].m4;
+    u16 CMDSIZE = LaserBeamDrawSub4Data1[0].m8;
 
     s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
     vdp1WriteEA.m0_CMDCTRL = 0x1002; // CMDCTRL distorted sprite
@@ -8170,7 +8276,7 @@ void Laser1DrawSub4(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
-void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint r6, s32 r7, sVec2_S16& arg0, sVec2_S16& arg4, s_LCSTask_gradientData* arg8, fixedPoint argC)
+void LaserBeamDrawSub3(s_LCSLaser* r4, std::array<sVec3_FP, 4>&r5, fixedPoint r6, s32 r7, sVec2_S16& arg0, sVec2_S16& arg4, s_LCSTask_gradientData* arg8, fixedPoint argC)
 {
     if (argC >= r6)
     {
@@ -8179,9 +8285,9 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
         int gradiantIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
         quadColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
 
-        u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub3Data0.m0;
-        u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + Laser1DrawSub3Data0.m4;
-        u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
+        u16 CMDCOLR = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + LaserBeamDrawSub3Data0.m0;
+        u16 CMDSRCA = ((r4->m0.m4_characterArea - (0x25C00000)) >> 3) + LaserBeamDrawSub3Data0.m4;
+        u16 CMDSIZE = LaserBeamDrawSub4Data1[0].m8;
 
         s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
         vdp1WriteEA.m0_CMDCTRL = 0x1002; // CMDCTRL distorted sprite
@@ -8217,9 +8323,9 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     int gradiantIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
     quadColor& r9 = *(graphicEngineStatus.m14_vdp1Context[0].m10 - 1);
 
-    u16 CMDCOLR = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m0;
-    u16 CMDSRCA = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + Laser1DrawSub4Data1[Laser1DrawSub4Data0[0]].m4;
-    u16 CMDSIZE = Laser1DrawSub4Data1[0].m8;
+    u16 CMDCOLR = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + LaserBeamDrawSub4Data1[LaserBeamDrawSub4Data0[0]].m0;
+    u16 CMDSRCA = ((r4->m0.m4_characterArea - 0x25C00000) >> 3) + LaserBeamDrawSub4Data1[LaserBeamDrawSub4Data0[0]].m4;
+    u16 CMDSIZE = LaserBeamDrawSub4Data1[0].m8;
 
     s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
     vdp1WriteEA.m0_CMDCTRL = 0x1002; // CMDCTRL distorted sprite
@@ -8249,8 +8355,42 @@ void Laser1DrawSub3(s_LCSTask340Sub* r4, std::array<sVec3_FP, 4>&r5, fixedPoint 
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
-void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, sSaturnPtr r7, s_LCSTask_gradientData* arg0)
+void s_LCSLaser::LaserBeamDrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, sSaturnPtr r7, s_LCSTask_gradientData* arg0)
 {
+    if (gDirectRayRendering)
+    {
+        u16 vdp1Base = (this->m0.m4_characterArea - 0x25C00000) >> 3;
+
+        for (s32 i = 0; i < r6 - 1; i++)
+        {
+            std::array<sVec3_FP, 2> segment;
+            transformAndAddVecByCurrentMatrix(&input_r5[i], &segment[0]);
+            transformAndAddVecByCurrentMatrix(&input_r5[i + 1], &segment[1]);
+
+            s32 width = readSaturnS32(r7 + i * 4);
+
+            u16 characterAddress;
+            u16 characterColor;
+            s16 characterSize;
+            if (i == r6 - 2)
+            {
+                // Last segment uses different (larger) texture
+                characterColor = vdp1Base + LaserBeamDrawSub4Data1[LaserBeamDrawSub4Data0[0]].m0;
+                characterAddress = vdp1Base + LaserBeamDrawSub4Data1[LaserBeamDrawSub4Data0[0]].m4;
+                characterSize = LaserBeamDrawSub4Data1[0].m8;
+            }
+            else
+            {
+                characterColor = vdp1Base + LaserBeamDrawSub3Data0.m0;
+                characterAddress = vdp1Base + LaserBeamDrawSub3Data0.m4;
+                characterSize = LaserBeamDrawSub4Data1[0].m8;
+            }
+
+            displayRaySegmentFromViewSpace(segment, width, characterAddress, characterSize, characterColor, &(*arg0)[i], 8);
+        }
+        return;
+    }
+
 #if 0
     input_r5[0][0] = 0x00353A19;
     input_r5[0][1] = 0x00016C99;
@@ -8362,25 +8502,25 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
             if (stack4[0] == 1)
             {
                 //0607B51A
-                Laser1DrawSub0Sub0(stack70, readSaturnS32(stack18), stackC, stack8, 0x3000);
+                LaserBeamDrawSub0Sub0(stack70, readSaturnS32(stack18), stackC, stack8, 0x3000);
             }
             else if (stack4[0] == 2)
             {
-                Laser1DrawSub0Sub0(stack70, readSaturnS32(stack18), stackC, stack8, r14.m14_farClipDistance);
+                LaserBeamDrawSub0Sub0(stack70, readSaturnS32(stack18), stackC, stack8, r14.m14_farClipDistance);
             }
 
             //0607B54C
             if (*r8 == 1)
             {
-                Laser1DrawSub0Sub0(stack70, readSaturnS32(stack0), r9, r10, 0x3000);
+                LaserBeamDrawSub0Sub0(stack70, readSaturnS32(stack0), r9, r10, 0x3000);
             }
             else if (*r8 == 2)
             {
-                Laser1DrawSub0Sub0(stack70, readSaturnS32(stack0), r9, r10, r14.m14_farClipDistance);
+                LaserBeamDrawSub0Sub0(stack70, readSaturnS32(stack0), r9, r10, r14.m14_farClipDistance);
             }
 
             //607B586
-            Laser1DrawSub0Sub2(stack5C, stack68, Laser1DrawSub0Sub1(stack5C), stack28);
+            LaserBeamDrawSub0Sub2(stack5C, stack68, LaserBeamDrawSub0Sub1(stack5C), stack28);
 
             //0607B5A2
             {
@@ -8418,12 +8558,12 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
                 //0607BA00
                 if (stack20 != r11)
                 {
-                    Laser1DrawSub3(stack14, stack28, stack70[1][2], r11, r9, r10, arg0, stack70[0][2]);
+                    LaserBeamDrawSub3(stack14, stack28, stack70[1][2], r11, r9, r10, arg0, stack70[0][2]);
                 }
                 else
                 {
                     //607BA32
-                    Laser1DrawSub4(stack14, stack28, stack70[1][2], r11, arg0);
+                    LaserBeamDrawSub4(stack14, stack28, stack70[1][2], r11, arg0);
                 }
             }
         }
@@ -8437,7 +8577,7 @@ void s_LCSTask340Sub::Laser1DrawSub0(std::array<sVec3_FP, 8>& input_r5, s32 r6, 
     } 
 }
 
-void s_LCSTask340Sub::Laser1Draw(s_LCSTask340Sub* pThis)
+void s_LCSLaser::LaserBeamDraw(s_LCSLaser* pThis)
 {
     s_LCSTask_gradientData* r6 = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m9C0;
     s32 stack0 = 8;
@@ -8463,7 +8603,7 @@ void s_LCSTask340Sub::Laser1Draw(s_LCSTask340Sub* pThis)
             r5++;
             r4++;
         }
-        return pThis->Laser1DrawSub0(r11, r13, gFLD_A3->getSaturnPtr(0x06094D40) + (stack0 - r13) * 4, r6);
+        return pThis->LaserBeamDrawSub0(r11, r13, gFLD_A3->getSaturnPtr(0x06094D40) + (stack0 - r13) * 4, r6);
     }
     else
     {
@@ -8476,23 +8616,23 @@ void s_LCSTask340Sub::Laser1Draw(s_LCSTask340Sub* pThis)
             r4++;
             r5++;
         }
-        return pThis->Laser1DrawSub0(r11, 8, gFLD_A3->getSaturnPtr(0x06094D40), r6);
+        return pThis->LaserBeamDrawSub0(r11, 8, gFLD_A3->getSaturnPtr(0x06094D40), r6);
     }
 }
 
-void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSTask340Sub* r4)
+void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSLaser* r4)
 {
     if (r4)
     {
-        r4->m_UpdateMethod = &s_LCSTask340Sub::fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub;
+        r4->m_UpdateMethod = &s_LCSLaser::fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub;
         r4->m_DrawMethod = nullptr;
         r4->m15C = 0;
     }
 }
 
-s_LCSTask340Sub* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, s8 r6)
+s_LCSLaser* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, s8 r6)
 {
-    return createSiblingTaskWithArg<s_LCSTask340Sub>(r4, r5, &s_LCSTask340Sub::constructionTable[r6]);
+    return createSiblingTaskWithArg<s_LCSLaser>(r4, r5, &s_LCSLaser::constructionTable[r6]);
 }
 
 void dragonFieldTaskInitSub4Sub3(u8 r4)

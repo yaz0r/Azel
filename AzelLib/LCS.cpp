@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "items.h"
 #include "audio/systemSounds.h"
+#include "battle/homingLaser.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "field/fieldVisibilityGrid.h"
 
@@ -18,17 +19,53 @@ const std::array<s32, 4> LCS_AccessSoundTable =
     20, 8, 20, 21
 };
 
-const std::array<s_LCSTask340Sub::TypedTaskDefinition, 4> s_LCSTask340Sub::constructionTable =
+const std::array<s_LCSLaser::TypedTaskDefinition, 4> s_LCSLaser::constructionTable =
 { {
-        { &s_LCSTask340Sub::Init0, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr}, // Access (blue sphere)
-        { &s_LCSTask340Sub::Init1, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr}, // Laser (destroy)
-        { &s_LCSTask340Sub::Init2, &s_LCSTask340Sub::Update0, &s_LCSTask340Sub::Draw, nullptr}, // Access (2 small lasers from wings)
-        { &s_LCSTask340Sub::Init3, &s_LCSTask340Sub::Update3, &s_LCSTask340Sub::Draw, &s_LCSTask340Sub::Delete3},
+        { &s_LCSLaser::InitHoming, &s_LCSLaser::UpdateHomingBeamWingRay, &s_LCSLaser::Draw, nullptr}, // Homing (sphere + trail from head)
+        { &s_LCSLaser::InitBeam, &s_LCSLaser::UpdateHomingBeamWingRay, &s_LCSLaser::Draw, nullptr}, // Beam (straight beam from head)
+        { &s_LCSLaser::InitWingRay, &s_LCSLaser::UpdateHomingBeamWingRay, &s_LCSLaser::Draw, nullptr}, // WingRay (twin rays from wings)
+        { &s_LCSLaser::InitTrail, &s_LCSLaser::UpdateTrail, &s_LCSLaser::Draw, &s_LCSLaser::DeleteTrail}, // Trail (particle trail)
 }};
 
-void LCSTaskDrawSub1Sub2Sub6(void*)
+// 0606cd94
+void computeLCSLaserGradient(s_LCSTask_gradientData* pGradient)
 {
-    PDS_unimplemented("LCSTaskDrawSub1Sub2Sub6");
+    sVec3_FP startColor, endColor;
+    updateDragonStats(0, &startColor);
+    updateDragonStats(1, &endColor);
+
+    u16* output = (u16*)pGradient;
+
+    // Convert start color to VDP1 gouraud RGB555: 1BBBBBGGGGGRRRRR (X=R, Y=G, Z=B)
+    u16 startRGB = ((u16)((u32)startColor.m8_Z.m_value >> 16) << 10) |
+                   ((u16)((u32)startColor.m4_Y.m_value >> 16) << 5) |
+                   ((u16)((u32)startColor.m0_X.m_value >> 16)) | 0x8000;
+    output[0] = startRGB;
+    output[1] = startRGB;
+
+    // Interpolate 7 intermediate steps (i=1..7, divide by 8)
+    for (s32 i = 1; i < 8; i++)
+    {
+        s32 interpX = startColor.m0_X.m_value + (endColor.m0_X.m_value - startColor.m0_X.m_value) * i / 8;
+        s32 interpY = startColor.m4_Y.m_value + (endColor.m4_Y.m_value - startColor.m4_Y.m_value) * i / 8;
+        s32 interpZ = startColor.m8_Z.m_value + (endColor.m8_Z.m_value - startColor.m8_Z.m_value) * i / 8;
+
+        u16 rgb = ((u16)((u32)interpZ >> 16) << 10) |
+                  ((u16)((u32)interpY >> 16) << 5) |
+                  ((u16)((u32)interpX >> 16)) | 0x8000;
+
+        output[(i - 1) * 4 + 2] = rgb;
+        output[(i - 1) * 4 + 3] = rgb;
+        output[(i - 1) * 4 + 4] = rgb;
+        output[(i - 1) * 4 + 5] = rgb;
+    }
+
+    // End color
+    u16 endRGB = ((u16)((u32)endColor.m8_Z.m_value >> 16) << 10) |
+                 ((u16)((u32)endColor.m4_Y.m_value >> 16) << 5) |
+                 ((u16)((u32)endColor.m0_X.m_value >> 16)) | 0x8000;
+    output[30] = endRGB;
+    output[31] = endRGB;
 }
 
 void createLCSTarget(sLCSTarget* r4, s_workArea* r5, void (*r6)(p_workArea, sLCSTarget*), const sVec3_FP* r7, const sVec3_FP* optionalRotation, s16 flags, s16 argA, eItems receivedItemId, s32 receivedItemQuantity, s32 arg14)
@@ -1133,7 +1170,7 @@ void LCSTaskDrawSub1Sub2(s_LCSTask* r4)
 
         if (r13 == 1)
         {
-            LCSTaskDrawSub1Sub2Sub6(r4->m9C0);
+            computeLCSLaserGradient(r4->m9C0);
         }
     }
 }
@@ -1755,7 +1792,7 @@ void createLCSSparkleParticle(sSparkleParticleConfig* pConfig)
 }
 
 // 0607BD40
-void s_LCSTask340SubSub::Update(s_LCSTask340SubSub* pThis)
+void s_LCSLaserSparkle::Update(s_LCSLaserSparkle* pThis)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
 
@@ -1796,7 +1833,7 @@ void s_LCSTask340SubSub::Update(s_LCSTask340SubSub* pThis)
 }
 
 // 0607BDF4
-void s_LCSTask340SubSub::Delete(s_LCSTask340SubSub*)
+void s_LCSLaserSparkle::Delete(s_LCSLaserSparkle*)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m_EB_useSpecialColor = 0;
 }

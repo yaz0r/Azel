@@ -51,68 +51,75 @@ struct sLCSTarget
     // size 34
 };
 
-struct s_LCSTask340SubSub : public s_workAreaTemplate<s_LCSTask340SubSub>
+struct s_LCSLaserSparkle : public s_workAreaTemplate<s_LCSLaserSparkle>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
-        static const TypedTaskDefinition taskDefinition = { nullptr, &s_LCSTask340SubSub::Update, nullptr, &s_LCSTask340SubSub::Delete};
+        static const TypedTaskDefinition taskDefinition = { nullptr, &s_LCSLaserSparkle::Update, nullptr, &s_LCSLaserSparkle::Delete};
         return &taskDefinition;
     }
 
     // 0607BD40
-    static void Update(s_LCSTask340SubSub* pThis);
+    static void Update(s_LCSLaserSparkle* pThis);
 
 
     // 0607BDF4 - clears the special color effect on the dragon
-    static void Delete(s_LCSTask340SubSub*);
+    static void Delete(s_LCSLaserSparkle*);
 
     s32 m0;
     s32 m4;
+};
+
+enum eLCSLaserType : s8 {
+    eLCSLaserType_Homing = 0,    // sphere + trail from head
+    eLCSLaserType_Beam = 1,      // straight beam from head
+    eLCSLaserType_WingRay = 2,   // twin rays from wings
+    eLCSLaserType_Trail = 3,     // particle trail
 };
 
 struct sLaserArgs;
 
 typedef std::array<quadColor, 8> s_LCSTask_gradientData; // size 0x40
 
-struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLaserArgs*>
+struct s_LCSLaser : public s_workAreaTemplateWithArg<s_LCSLaser, sLaserArgs*>
 {
     static const std::array<TypedTaskDefinition, 4> constructionTable;
 
-    static void Init0(s_LCSTask340Sub*, sLaserArgs*);
-    static void Laser0Init(s_LCSTask340Sub*);
-    static void Laser0Update(s_LCSTask340Sub*);
-    static void Laser0Draw(s_LCSTask340Sub*);
+    static void InitHoming(s_LCSLaser*, sLaserArgs*);
+    static void LaserHomingInit(s_LCSLaser*);
+    static void LaserHomingUpdate(s_LCSLaser*);
+    static void LaserHomingDraw(s_LCSLaser*);
 
-    static void Init1(s_LCSTask340Sub*, sLaserArgs*);
-    static void Laser1Init(s_LCSTask340Sub*);
-    static void Laser1Update(s_LCSTask340Sub*);
-    void Init1Sub1Sub0();
-    static void Laser1Draw(s_LCSTask340Sub*);
-    void Laser1DrawSub0(std::array<sVec3_FP, 8>& r5, s32 r6, sSaturnPtr r7, s_LCSTask_gradientData* arg0);
+    static void InitBeam(s_LCSLaser*, sLaserArgs*);
+    static void LaserBeamInit(s_LCSLaser*);
+    static void LaserBeamUpdate(s_LCSLaser*);
+    void InitBeamSub1Sub0();
+    static void LaserBeamDraw(s_LCSLaser*);
+    void LaserBeamDrawSub0(std::array<sVec3_FP, 8>& r5, s32 r6, sSaturnPtr r7, s_LCSTask_gradientData* arg0);
 
-    static void Init2(s_LCSTask340Sub*, sLaserArgs*);
-    static void Laser2Init(s_LCSTask340Sub*);
-    static void Laser2Update(s_LCSTask340Sub*);
-    static void Laser2Draw(s_LCSTask340Sub*);
+    static void InitWingRay(s_LCSLaser*, sLaserArgs*);
+    static void LaserWingRayInit(s_LCSLaser*);
+    static void LaserWingRayUpdate(s_LCSLaser*);
+    static void LaserWingRayDraw(s_LCSLaser*);
 
-    static void Init3(s_LCSTask340Sub*, sLaserArgs*);
+    static void InitTrail(s_LCSLaser*, sLaserArgs*);
 
-    static void Laser3Init(s_LCSTask340Sub*);
-    static void Laser3Update(s_LCSTask340Sub*);
-    static void Laser3Draw(s_LCSTask340Sub*);
+    static void LaserTrailInit(s_LCSLaser*);
+    static void LaserTrailUpdate(s_LCSLaser*);
+    static void LaserTrailDraw(s_LCSLaser*);
 
-    static void Update0(s_LCSTask340Sub*);
+    static void UpdateHomingBeamWingRay(s_LCSLaser*);
 
-    static void Update3(s_LCSTask340Sub*);
+    static void UpdateTrail(s_LCSLaser*);
 
-    static void Delete3(s_LCSTask340Sub*);
+    static void DeleteTrail(s_LCSLaser*);
 
-    static void Draw(s_LCSTask340Sub* pThis)
+    static void Draw(s_LCSLaser* pThis)
     {
         pThis->m30_laserDraw(pThis);
     }
 
-    static void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub(s_LCSTask340Sub* pThis)
+    static void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2Sub(s_LCSLaser* pThis)
     {
         switch (pThis->m15C)
         {
@@ -136,9 +143,9 @@ struct s_LCSTask340Sub : public s_workAreaTemplateWithArg<s_LCSTask340Sub, sLase
     eItems m24_receivedItemId;
     s8 m26_receivedItemQuantity;
     s8 m27;
-    void (*m28_laserInit)(s_LCSTask340Sub*);
-    void (*m2C_laserUpdate)(s_LCSTask340Sub*);
-    void (*m30_laserDraw)(s_LCSTask340Sub*);
+    void (*m28_laserInit)(s_LCSLaser*);
+    void (*m2C_laserUpdate)(s_LCSLaser*);
+    void (*m30_laserDraw)(s_LCSLaser*);
     fixedPoint m34;
     fixedPoint m38;
     fixedPoint m3C;
@@ -159,8 +166,8 @@ struct s_LCSTask340
     s32 m0_index;
     s_LCSTask340* m4_next;
     sLCSTarget* m8;
-    s_LCSTask340Sub* mC;
-    s_LCSTask340Sub* m10;
+    s_LCSLaser* mC;
+    s_LCSLaser* m10;
     s32 m14;
     // size 0x18
 };

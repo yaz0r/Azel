@@ -11,11 +11,11 @@ bool gDirectRayRendering = true;
 struct sRayVertex3D {
     float positions[3];
     float textures[2];
-    float color[4];
 };
 
 struct sRayQuad3D {
     sRayVertex3D vertices[4];
+    float gouraud[4]; // average gouraud tint (r, g, b, a)
     u16 CMDCTRL;
     u16 CMDPMOD;
     u16 CMDCOLR;
@@ -160,13 +160,28 @@ static void computeRayVertexColor(u16 gouraud, float out[4])
     // Each channel is 5 bits, 16 = neutral (no offset)
     // Offset range: -16 to +15, applied to RGB555 pixel values (0-31)
     // Normalize to 0-1 range for the shader
-    float r = (float)((s32)((gouraud >> 10) & 0x1F) - 16) / 31.0f;
+    // Saturn VDP1 gouraud RGB555: 1BBBBBGGGGGRRRRR
+    float r = (float)((s32)((gouraud >> 0) & 0x1F) - 16) / 31.0f;
     float g = (float)((s32)((gouraud >> 5) & 0x1F) - 16) / 31.0f;
-    float b = (float)((s32)((gouraud >> 0) & 0x1F) - 16) / 31.0f;
+    float b = (float)((s32)((gouraud >> 10) & 0x1F) - 16) / 31.0f;
 
     out[0] = r;
     out[1] = g;
     out[2] = b;
+    out[3] = 1.0f;
+}
+
+static void computeAverageGouraud(const quadColor* pQuadColor, float out[4])
+{
+    float c0[4], c1[4], c2[4], c3[4];
+    computeRayVertexColor((*pQuadColor)[0], c0);
+    computeRayVertexColor((*pQuadColor)[1], c1);
+    computeRayVertexColor((*pQuadColor)[2], c2);
+    computeRayVertexColor((*pQuadColor)[3], c3);
+
+    out[0] = (c0[0] + c1[0] + c2[0] + c3[0]) * 0.25f;
+    out[1] = (c0[1] + c1[1] + c2[1] + c3[1]) * 0.25f;
+    out[2] = (c0[2] + c1[2] + c2[2] + c3[2]) * 0.25f;
     out[3] = 1.0f;
 }
 
@@ -200,16 +215,12 @@ static void enqueueRaySegment3D(std::array<sVec3_FP, 2>& viewSpacePoints, s32 wi
     glm::vec3 v3 = p0 + perp * halfWidth;
 
     sRayQuad3D quad;
-    float c0[4], c1[4], c2[4], c3[4];
-    computeRayVertexColor((*pQuadColor)[0], c0);
-    computeRayVertexColor((*pQuadColor)[1], c1);
-    computeRayVertexColor((*pQuadColor)[2], c2);
-    computeRayVertexColor((*pQuadColor)[3], c3);
+    quad.vertices[0] = { {v0.x, v0.y, v0.z}, {0,0} };
+    quad.vertices[1] = { {v1.x, v1.y, v1.z}, {1,0} };
+    quad.vertices[2] = { {v2.x, v2.y, v2.z}, {1,1} };
+    quad.vertices[3] = { {v3.x, v3.y, v3.z}, {0,1} };
 
-    quad.vertices[0] = { {v0.x, v0.y, v0.z}, {0,0}, {c0[0], c0[1], c0[2], c0[3]} };
-    quad.vertices[1] = { {v1.x, v1.y, v1.z}, {1,0}, {c1[0], c1[1], c1[2], c1[3]} };
-    quad.vertices[2] = { {v2.x, v2.y, v2.z}, {1,1}, {c2[0], c2[1], c2[2], c2[3]} };
-    quad.vertices[3] = { {v3.x, v3.y, v3.z}, {0,1}, {c3[0], c3[1], c3[2], c3[3]} };
+    computeAverageGouraud(pQuadColor, quad.gouraud);
 
     quad.CMDCTRL = 0x1002;
     quad.CMDPMOD = 0x484 | colorMode;
@@ -249,16 +260,12 @@ static void enqueueRaySegment3D_2Width(std::array<sVec3_FP, 2>& viewSpacePoints,
     glm::vec3 v3 = p0 + perp * halfWidth0;
 
     sRayQuad3D quad;
-    float c0[4], c1[4], c2[4], c3[4];
-    computeRayVertexColor((*pQuadColor)[0], c0);
-    computeRayVertexColor((*pQuadColor)[1], c1);
-    computeRayVertexColor((*pQuadColor)[2], c2);
-    computeRayVertexColor((*pQuadColor)[3], c3);
+    quad.vertices[0] = { {v0.x, v0.y, v0.z}, {0,0} };
+    quad.vertices[1] = { {v1.x, v1.y, v1.z}, {1,0} };
+    quad.vertices[2] = { {v2.x, v2.y, v2.z}, {1,1} };
+    quad.vertices[3] = { {v3.x, v3.y, v3.z}, {0,1} };
 
-    quad.vertices[0] = { {v0.x, v0.y, v0.z}, {0,0}, {c0[0], c0[1], c0[2], c0[3]} };
-    quad.vertices[1] = { {v1.x, v1.y, v1.z}, {1,0}, {c1[0], c1[1], c1[2], c1[3]} };
-    quad.vertices[2] = { {v2.x, v2.y, v2.z}, {1,1}, {c2[0], c2[1], c2[2], c2[3]} };
-    quad.vertices[3] = { {v3.x, v3.y, v3.z}, {0,1}, {c3[0], c3[1], c3[2], c3[3]} };
+    computeAverageGouraud(pQuadColor, quad.gouraud);
 
     quad.CMDCTRL = 0x1002;
     quad.CMDPMOD = 0x484 | colorMode;
@@ -285,6 +292,21 @@ void displayRaySegment_2Width(std::array<sVec3_FP, 2>& param_1, std::array<fixed
     if (rayComputeDisplayMatrix_2Width(transformedPoints, param_2, graphicEngineStatus.m405C, screenQuad))
     {
         sendRaySegmentToVdp1(screenQuad, transformedPoints[1][2], characterAddress, characterSize, characterColor, pQuadColor, colorMode);
+    }
+}
+
+void displayRaySegmentFromViewSpace(std::array<sVec3_FP, 2>& viewSpacePoints, s32 width, u16 characterAddress, s16 characterSize, u16 characterColor, const quadColor* pQuadColor, s32 colorMode)
+{
+    if (gDirectRayRendering)
+    {
+        enqueueRaySegment3D(viewSpacePoints, width, characterAddress, characterSize, characterColor, pQuadColor, colorMode);
+        return;
+    }
+
+    sScreenQuad3 screenQuad;
+    if (rayComputeDisplayMatrix_fixedWidth(viewSpacePoints, width, graphicEngineStatus.m405C, screenQuad))
+    {
+        sendRaySegmentToVdp1(screenQuad, viewSpacePoints[1][2], characterAddress, characterSize, characterColor, pQuadColor, colorMode);
     }
 }
 
@@ -346,12 +368,17 @@ void flushRayQuads3D()
         textureUniform = bgfx::createUniform("s_texture", bgfx::UniformType::Sampler);
     }
 
+    static bgfx::UniformHandle u_gouraudTint = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(u_gouraudTint))
+    {
+        u_gouraudTint = bgfx::createUniform("u_gouraudTint", bgfx::UniformType::Vec4);
+    }
+
     bgfx::VertexLayout layout;
     layout
         .begin()
         .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
         .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
-        .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Float)
         .end();
 
     glm::mat4 projectionMatrix = getProjectionMatrix();
@@ -380,6 +407,8 @@ void flushRayQuads3D()
 
         float priority[4] = { (float)(vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA & 7), 0, 0, 0 };
         bgfx::setUniform(u_spritePriority, priority);
+
+        bgfx::setUniform(u_gouraudTint, rayQuad.gouraud);
 
         bgfx::setTexture(0, textureUniform, getTextureForQuadBGFX(tempQuad));
         bgfx::setVertexBuffer(0, &vertexBuffer);
