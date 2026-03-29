@@ -1182,13 +1182,6 @@ static const sBattleFormationTransitionTask::TypedTaskDefinition battleFormation
     nullptr,
 };
 
-// BTL_A3::0607a8ce
-static void battleEngine_enableAttackCamera()
-{
-    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
-    pBattleEngine->m188_flags.m800 = 1;
-}
-
 // BTL_A3::0607a900
 static void sEnemyAttackCamera_updateSub0(int param_1)
 {
