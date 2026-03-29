@@ -839,6 +839,11 @@ struct sSaveTask : public s_workAreaTemplate<sSaveTask>
             {
                 return;
             }
+            // Divergence from original: null the pointer after the task finishes.
+            // On Saturn, accessing freed memory was harmless (stale flags persisted),
+            // but on PC this is a use-after-free once the task system reclaims it.
+            pThis->m34_pSaveProgressTask = nullptr;
+
             switch (pThis->m38_operationResult)
             {
             case 0:
