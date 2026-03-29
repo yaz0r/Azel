@@ -40,7 +40,7 @@ bool SDL_ES3_backend::init()
 
     int resolution[2] = { 1280, 960 };
 
-    gWindowBGFX = SDL_CreateWindow("BGFX", resolution[0], resolution[1], flags);
+    gWindowBGFX = SDL_CreateWindow("Panzer Dragoon Saga", resolution[0], resolution[1], flags);
 
     SDL_PropertiesID props = SDL_GetWindowProperties(gWindowBGFX);
 
