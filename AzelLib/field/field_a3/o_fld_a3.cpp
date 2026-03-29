@@ -4889,7 +4889,7 @@ void applyDragonAnimationFromAnalog(s_dragonTaskWorkArea* r11, s_dragonState* r1
 
     //607F1E8
     s32 r4_x = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
-    s32 r10 = r11->m245_previousAnalogX - r4_x;
+    s32 r10 = r4_x - r11->m245_previousAnalogX;
     if (r10 > 0x40)
     {
         incrementAnimationRootX(&r12->m78_animData, intDivide(0x80, -(r11->m184_animRate.asS32() * r10)));
@@ -5084,7 +5084,7 @@ void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
         else if (analogX < 0)
         {
             //607F57E
-            fixedPoint r2 = r14->m20_angle[1] - r14->m30;
+            fixedPoint r2 = r14->m30 - r14->m20_angle[1];
             if (r2 >= intDivide(0x7F, -analogX * r14->m178_turnRate.asS32()))
             {
                 r14->m20_angle[2] += intDivide(4, r14->m178_turnRate * 3);

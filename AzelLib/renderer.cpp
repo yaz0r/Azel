@@ -404,7 +404,11 @@ void azelSdl_StartFrame()
         }
     }
 
-    bool hasGamepad = false;
+    // Track which input source is active: switch on actual input activity
+    static bool useGamepad = false;
+
+    // --- Gamepad ---
+    bool gamepadHasInput = false;
     if (controller)
     {
         // Saturn button mapping:
@@ -425,37 +429,45 @@ void azelSdl_StartFrame()
         buttonMask |= SDL_GetGamepadButton(controller, SDL_GAMEPAD_BUTTON_DPAD_RIGHT) ? 0x0080 : 0;
 
         // L/R triggers as digital buttons (threshold > 8000)
-        if (SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 8000)
+        s16 leftTrigger = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
+        s16 rightTrigger = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
+        if (leftTrigger > 8000)
             buttonMask |= 0x8000; // L
-        if (SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 8000)
+        if (rightTrigger > 8000)
             buttonMask |= 0x1000; // R
 
-        // Analog stick → d-pad for menu navigation
-        // Saturn 3D pad had separate d-pad and stick; modern controllers need stick to work in menus
+        // Analog sticks
         s16 stickX = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX);
         s16 stickY = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY);
+
+        // Analog stick → d-pad for menu navigation
         if (stickY < -16000) buttonMask |= 0x0010; // Up
         if (stickY > 16000)  buttonMask |= 0x0020; // Down
         if (stickX < -16000) buttonMask |= 0x0040; // Left
         if (stickX > 16000)  buttonMask |= 0x0080; // Right
 
+        // Detect gamepad activity: any button, stick movement past deadzone, or trigger
+        bool stickActive = (stickX < -4000 || stickX > 4000 || stickY < -4000 || stickY > 4000);
+        bool triggerActive = (leftTrigger > 4000 || rightTrigger > 4000);
+        gamepadHasInput = (buttonMask != 0 || stickActive || triggerActive);
+
+        if (gamepadHasInput)
+            useGamepad = true;
+
         setButtons(buttonMask);
 
-        // Analog sticks
         pending.m2_analogX = convertAxis(stickX);
         pending.m3_analogY = convertAxis(stickY);
 
         // Analog triggers → m4 (L trigger) / m5 (R trigger), range 0-255
-        // Saturn 3D pad reported 0x00=released, 0xFF=fully pressed
-        pending.m4 = (s8)(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) >> 7);
-        pending.m5 = (s8)(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) >> 7);
-
-        hasGamepad = true;
+        pending.m4 = (s8)(leftTrigger >> 7);
+        pending.m5 = (s8)(rightTrigger >> 7);
     }
 
     // --- Keyboard ---
     {
         const bool* keyState = SDL_GetKeyboardState(NULL);
+        bool keyboardHasInput = false;
 
         for (int i = 0; i < SDL_SCANCODE_COUNT; i++)
         {
@@ -480,13 +492,20 @@ void azelSdl_StartFrame()
                 }
 
                 if (buttonMask)
+                {
                     setButtons(buttonMask);
+                    keyboardHasInput = true;
+                }
             }
         }
+
+        if (keyboardHasInput)
+            useGamepad = false;
     }
 
-    // Set input type: analog (2) if gamepad is active, digital (1) for keyboard-only
-    pending.m0_inputType = hasGamepad ? 2 : 1;
+    // Input type: digital (1) for keyboard, analog (2) for gamepad
+    // Switches based on last active input source
+    pending.m0_inputType = useGamepad ? 2 : 1;
 
     if (!isShipping())
     {
