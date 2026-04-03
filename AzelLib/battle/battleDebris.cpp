@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "battleOverlay_C.h"
 #include "battleDebris.h"
 #include "battleManager.h"
 #include "battleOverlay.h"
@@ -136,7 +137,7 @@ static void boneDebris_update(sBoneDebrisTask* pThis)
 
         // Ground collision
         // Ground level at offset 0x204 in the target system
-        s32 groundLevel = *(s32*)((u8*)gBattleManager->m10_battleOverlay->mC_targetSystem + 0x204);
+        s32 groundLevel = gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude;
         if (bone->m4_position[1] < groundLevel)
         {
             bone->m4_position[1] = groundLevel;
@@ -316,7 +317,7 @@ static void boneDebrisExplosion_update(sBoneDebrisTask* pThis)
         bone->m4_position += bone->m10_velocity;
         bone->m1C_rotation += bone->m28_angularVelocity;
 
-        s32 groundLevel = *(s32*)((u8*)gBattleManager->m10_battleOverlay->mC_targetSystem + 0x204);
+        s32 groundLevel = gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude;
         if (bone->m4_position[1] < groundLevel)
         {
             bone->m4_position[1] = groundLevel;

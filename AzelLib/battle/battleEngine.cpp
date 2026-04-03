@@ -23,6 +23,10 @@
 #include "items.h"
 #include "audio/systemSounds.h"
 #include "battleGenericData.h"
+#include "kernel/graphicalObject.h"
+#include "kernel/fileBundle.h"
+#include "itemVisualEffect.h"
+#include "battleDamageDisplay.h"
 #include "kernel/fade.h"
 #include "interpolators/FPInterpolator.h"
 #include "interpolators/vec2FPInterpolator.h"
@@ -316,12 +320,12 @@ static void battlePassiveAbilities_resetStatus()
 {
     s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
     pDragon->m1C0_statusModifiers &= ~0x7f;
-    *(s16*)((char*)pDragon + 0x1D8) = 0;
-    *(s16*)((char*)pDragon + 0x1DA) = 0;
-    *(s16*)((char*)pDragon + 0x1DC) = 0;
-    *(s16*)((char*)pDragon + 0x1DE) = 0;
-    *(s16*)((char*)pDragon + 0x1E0) = 0;
-    *(s16*)((char*)pDragon + 0x1E2) = 0;
+    pDragon->m1D8 = 0;
+    pDragon->m1DA = 0;
+    pDragon->m1DC_poisonTimer = 0;
+    pDragon->m1DE = 0;
+    pDragon->m1E0 = 0;
+    pDragon->m1E2 = 0;
     s16 val = createBattleCommandMenuSub2(0x3c);
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m0_max = fixedPoint::fromInteger(val);
 }
@@ -902,7 +906,7 @@ void battleEngine_UpdateSub7Sub1()
     }
 }
 
-void battleEngine_UpdateSub7Sub2()
+void battleEngine_resetBattleCameraPreset()
 {
     gBattleManager->m10_battleOverlay->m8_gridTask->m1 = 0;
 
@@ -1183,7 +1187,7 @@ static const sBattleFormationTransitionTask::TypedTaskDefinition battleFormation
 };
 
 // BTL_A3::0607a900
-static void sEnemyAttackCamera_updateSub0(int param_1)
+void sEnemyAttackCamera_updateSub0(int param_1)
 {
     s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
     if (param_1 > 2)
@@ -1195,7 +1199,7 @@ static void sEnemyAttackCamera_updateSub0(int param_1)
 }
 
 // BTL_A3::0607b5cc
-static void battleGrid_initSub0(int param_1)
+void battleGrid_setCameraFov(int param_1)
 {
     s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
     pGrid->m218_halfFov = param_1 >> 1;
@@ -1244,7 +1248,7 @@ static void battleVictoryCameraTask_update(sBattleVictoryCameraTask* pThis)
         pThis->m24_counter++;
         if (pThis->m24_counter == 0x26)
         {
-            battleGrid_initSub0(0x238e38e);
+            battleGrid_setCameraFov(0x238e38e);
             if (pBattleEngine->m3D0 != nullptr)
             {
                 pBattleEngine->m3D0->getTask()->markFinished();
@@ -1358,7 +1362,7 @@ s32 battleEngine_checkBattleCompletion()
 
         if (mainGameState.gameStats.m10_currentHP > 0)
         {
-            battleEngine_UpdateSub7Sub2();
+            battleEngine_resetBattleCameraPreset();
             battleEngine_restoreCameraDefault();
 
             if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10000 == 0)
@@ -1667,7 +1671,7 @@ void battleEngine_enemyForcedMoveUpdate(s_battleEngine* pThis)
             else
             {
                 pThis->m38D_battleSubMode = 0x8;
-                battleEngine_UpdateSub7Sub2();
+                battleEngine_resetBattleCameraPreset();
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m400000 = 0;
@@ -1718,6 +1722,38 @@ void battleEngine_enemyForcedMoveUpdate(s_battleEngine* pThis)
                 battleEngineSub1_UpdateSub2(&pThis->m400, gBattleManager->m10_battleOverlay->m8_gridTask->m34_cameraPosition, pThis->m3E8, pThis->m3DC);
             }
         }
+        break;
+    case 4:
+        // Wait for attack animation to finish (m100)
+        if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
+            break;
+        battleEngine_resetBattleCameraPreset();
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
+        pThis->m38D_battleSubMode++;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 1;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 1;
+        break;
+    case 5:
+        if (pThis->m384_battleModeDelay++ < 0x10)
+            break;
+        pThis->m384_battleModeDelay = 0;
+        pThis->m38D_battleSubMode++;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
+        break;
+    case 6:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10 = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 7:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 8:
+        if (pThis->m384_battleModeDelay++ < 5)
+            break;
+        battleEngine_SetBattleMode16();
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
         break;
     }
 }
@@ -2509,7 +2545,7 @@ void sEnemyAttackCamera_init(sEnemyAttackCamera* pThis)
     {
     case 0:
         battleEngine_restoreCameraDefault();
-        battleEngine_UpdateSub7Sub2();
+        battleEngine_resetBattleCameraPreset();
         pThis->getTask()->markFinished();
         return;
     case 1:
@@ -2698,7 +2734,7 @@ void sEnemyAttackCamera_update(sEnemyAttackCamera* pThis)
     }
     else
     {
-        battleEngine_UpdateSub7Sub2();
+        battleEngine_resetBattleCameraPreset();
         sEnemyAttackCamera_updateSub1(1);
         battleEngine_restoreCameraAfterEnemyAttack();
         pThis->getTask()->markFinished();
@@ -2960,11 +2996,17 @@ void increaseStatsCount(int statIndex)
 {
     switch (statIndex)
     {
+    case 0:
+        mainGameState.gameStats.m58_itemsUsed++;
+        break;
     case 1:
         mainGameState.gameStats.m5C_gunShotFired++;
         break;
     case 2:
         mainGameState.gameStats.m60_homingLaserFired++;
+        break;
+    case 3:
+        mainGameState.gameStats.m64++;
         break;
     default:
         assert(0);
@@ -3051,7 +3093,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
                     gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[i]->m4_targetable->m50_flags &= ~0x200000;
                 }
 
-                battleEngine_UpdateSub7Sub2();
+                battleEngine_resetBattleCameraPreset();
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
                 battleEngine_SetBattleMode16();
                 playSystemSoundEffect(1);
@@ -3118,7 +3160,7 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
         pThis->m40C_gunTarget = pThis->mC_battleCenter + pThis->m3E8;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
         {
-            battleEngine_UpdateSub7Sub2();
+            battleEngine_resetBattleCameraPreset();
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000000 = 1;
             gBattleManager->m10_battleOverlay->m8_gridTask->m1BC_cameraRotationStep.zeroize();
             pThis->m384_battleModeDelay = 0;
@@ -3160,7 +3202,8 @@ void battleEngine_updateBattleMode_0_shootEnemyWithGun(s_battleEngine* pThis)
 
 struct sItemResourceTask : public s_workAreaTemplateWithCopy<sItemResourceTask>
 {
-    char m_data[0x128];
+    char m_data[0xEA];
+    s16 mEA_category;
     // size: 0x128
 };
 
@@ -3173,7 +3216,7 @@ static void itemResourceTask_draw(sItemResourceTask* pThis)
 // BTL_A3::06091944
 static void itemResourceTask_delete(sItemResourceTask* pThis)
 {
-    dramFree((u8*)gBattleManager->m10_battleOverlay->m4_battleEngine->mA9C);
+    dramFree(gBattleManager->m10_battleOverlay->m4_battleEngine->mA9C);
     vdp1Free((u8*)gBattleManager->m10_battleOverlay->m4_battleEngine->mAA0);
 }
 
@@ -3184,10 +3227,521 @@ static const sItemResourceTask::TypedTaskDefinition itemResourceTaskDefinition =
     itemResourceTask_delete,
 };
 
-// BTL_A3::06067698
-static void useItemApplyEffect(s_battleEngine* pThis)
+// 0600fab8
+static s32 applyItemHealEffect(s32 itemId)
+{
+    static const struct { s16 itemId; s16 hpHeal; s16 bpHeal; } healTable[] = {
+        { m5_elixirMinor,  200,    0 },
+        { m6_berserkMicro,   0,   50 },
+        { m26_elixirMedis, 500,    0 },
+        { m27_elixirMaxis, 1000,   0 },
+        { m28_fullElixir,  9999,   0 },
+        { m29_berserkMinor,  0,  100 },
+        { m2A_berserkMedis,  0,  250 },
+        { m2B_berserkMaxis,  0,  500 },
+        { m2C_ambrosia,    9999, 999 },
+    };
+
+    // Find item in heal table
+    s16 hpHeal = 0;
+    s16 bpHeal = 0;
+    bool found = false;
+    for (int i = 0; i < 9; i++)
+    {
+        if (healTable[i].itemId == itemId)
+        {
+            hpHeal = healTable[i].hpHeal;
+            bpHeal = healTable[i].bpHeal;
+            found = true;
+            break;
+        }
+    }
+    if (!found)
+    {
+        return 0;
+    }
+
+    // Check item is in inventory
+    if (mainGameState.consumables[itemId] == 0)
+    {
+        return 0;
+    }
+
+    // Check if healing is needed
+    if (hpHeal == 0 || mainGameState.gameStats.m10_currentHP >= mainGameState.gameStats.mB8_maxHP)
+    {
+        if (bpHeal == 0 || mainGameState.gameStats.m14_currentBP >= mainGameState.gameStats.mBA_maxBP)
+        {
+            return 0;
+        }
+    }
+
+    // Consume item
+    mainGameState.consumables[itemId]--;
+
+    // Apply HP heal (capped)
+    s32 newHP = (s32)mainGameState.gameStats.m10_currentHP + (s32)hpHeal;
+    if (newHP > (s32)mainGameState.gameStats.mB8_maxHP)
+    {
+        newHP = mainGameState.gameStats.mB8_maxHP;
+    }
+
+    // Apply BP heal (capped)
+    s32 newBP = (s32)mainGameState.gameStats.m14_currentBP + (s32)bpHeal;
+    if (newBP > (s32)mainGameState.gameStats.mBA_maxBP)
+    {
+        newBP = mainGameState.gameStats.mBA_maxBP;
+    }
+
+    mainGameState.gameStats.m10_currentHP = (s16)newHP;
+    mainGameState.gameStats.m14_currentBP = (s16)newBP;
+    return 1;
+}
+
+// BTL_A3::06065394
+static void refreshBattleGaugeAfterHeal()
+{
+    if (mainGameState.gameStats.m1_dragonLevel == DR_LEVEL_8_FLOATER)
+    {
+        playSystemSoundEffect(0x21);
+    }
+    else
+    {
+        playSystemSoundEffect(0x1A);
+    }
+}
+
+// BTL_A3::0608ca18
+struct sHealVisualEffectTask : public s_workAreaTemplateWithCopy<sHealVisualEffectTask>
+{
+    s16 m2C_frameCounter;
+    s32 m34_setM100;
+    // size 0x38
+};
+
+// BTL_A3::0608cd6c (simplified — particle movement and rendering stubbed)
+static void sHealVisualEffectTask_Update(sHealVisualEffectTask* pThis)
+{
+    pThis->m2C_frameCounter++;
+    if (pThis->m2C_frameCounter >= 0x46)
+    {
+        pThis->getTask()->markFinished();
+        return;
+    }
+
+    // Original consumes 6 randomNumber() calls per frame (every 0x1F frames per particle)
+    // Approximation: consume a few per frame to keep RNG roughly in sync
+    if ((pThis->m2C_frameCounter & 0x1F) == 0)
+    {
+        randomNumber(); randomNumber(); randomNumber();
+        randomNumber(); randomNumber(); randomNumber();
+    }
+
+    if (pThis->m34_setM100 == 1 && pThis->m2C_frameCounter == 0x3C)
+    {
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+    }
+}
+
+// BTL_A3::0608d4c8 (draw — particle rendering)
+static void sHealVisualEffectTask_Draw(sHealVisualEffectTask* pThis)
 {
     Unimplemented();
+}
+
+// BTL_A3::0608ca18
+static void createHealVisualEffect(s_battleEngine* pEngine, sSaturnPtr effectData, sVec3_FP* pPosition, s32 param4, s32 numParticleTypes, s32 numParticlesPerType, s32 param7, s32 param8)
+{
+    static const sHealVisualEffectTask::TypedTaskDefinition definition = {
+        nullptr,
+        &sHealVisualEffectTask_Update,
+        &sHealVisualEffectTask_Draw,
+        nullptr,
+    };
+
+    sHealVisualEffectTask* pNewTask = createSubTaskWithCopy<sHealVisualEffectTask>(pEngine, &definition);
+    if (pNewTask == nullptr)
+    {
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        return;
+    }
+
+    pNewTask->m2C_frameCounter = 0;
+    pNewTask->m34_setM100 = param8;
+
+    // Consume randomNumber() calls from particle initialization to keep RNG in sync
+    // Original: numParticlesPerType * (numParticleTypes * 10 + 3) calls
+    for (s32 i = 0; i < numParticlesPerType; i++)
+    {
+        for (s32 j = 0; j < numParticleTypes; j++)
+        {
+            randomNumber(); randomNumber(); randomNumber(); randomNumber(); randomNumber();
+            randomNumber(); randomNumber(); randomNumber(); randomNumber(); randomNumber();
+        }
+        randomNumber(); randomNumber(); randomNumber();
+    }
+}
+
+struct sStatusCureEffectTask : public s_workAreaTemplateWithCopy<sStatusCureEffectTask>
+{
+    s16 m8_frameCounter;
+    // size 0x100
+};
+
+// BTL_A3::06099540 (simplified)
+static void sStatusCureEffectTask_Update(sStatusCureEffectTask* pThis)
+{
+    pThis->m8_frameCounter++;
+    // Original runs 3D model animations for ~40 frames then finishes
+    if (pThis->m8_frameCounter >= 0x28)
+    {
+        s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+        battleGrid_setupLightInterpolation(10, pGrid->m1CC_lightColor, pGrid->m1D8_newLightColor);
+        battleGrid_setupLightInterpolation2(10, pGrid->m1E4_lightFalloff0, pGrid->m1F0);
+        gBattleManager->m10_battleOverlay->m18_dragon->m1C4 &= ~0x40;
+        pThis->getTask()->markFinished();
+    }
+}
+
+// BTL_A3::06099a38
+static void sStatusCureEffectTask_Delete(sStatusCureEffectTask*)
+{
+    resetProjectVector();
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+}
+
+// BTL_A3::06065754
+static void createStatusCureVisualEffect(s_battleEngine* pEngine, u8 effectId)
+{
+    static const sStatusCureEffectTask::TypedTaskDefinition definition = {
+        nullptr,
+        &sStatusCureEffectTask_Update,
+        nullptr,
+        &sStatusCureEffectTask_Delete,
+    };
+
+    sStatusCureEffectTask* pNewTask = createSubTaskWithCopy<sStatusCureEffectTask>(pEngine, &definition);
+    if (pNewTask != nullptr)
+    {
+        pNewTask->m8_frameCounter = 0;
+        gBattleManager->m10_battleOverlay->m18_dragon->m1C4 |= 0x40;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20000 = 1;
+
+        // TODO: FUN_06099aa0 — creates secondary sparkle particle effect task
+    }
+
+    refreshBattleGaugeAfterHeal();
+}
+
+// BTL_A3::0607f7e4
+struct sBlastChipEffectTask : public s_workAreaTemplateWithCopy<sBlastChipEffectTask>
+{
+    s16 m2C_frameCounter;
+    s16 m34_state;
+    // size 0x44
+};
+
+// BTL_A3::0607fe8c (simplified — full particle/light animation stubbed)
+static void sBlastChipEffectTask_Update(sBlastChipEffectTask* pThis)
+{
+    pThis->m2C_frameCounter++;
+
+    // Original has complex state machine (states 0,1,2) with particle animation
+    // State 2 sets m100 when the effect finishes
+    if (pThis->m2C_frameCounter >= 0x3C)
+    {
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        pThis->getTask()->markFinished();
+    }
+}
+
+// BTL_A3::0607f7e4
+static p_workArea useItem_applyHealing(s_battleEngine* pThis, u8 healType)
+{
+    static const sBlastChipEffectTask::TypedTaskDefinition definition = {
+        nullptr,
+        &sBlastChipEffectTask_Update,
+        nullptr,
+        nullptr,
+    };
+
+    sBlastChipEffectTask* pNewTask = createSubTaskWithCopy<sBlastChipEffectTask>(pThis, &definition);
+    if (pNewTask == nullptr)
+    {
+        return nullptr;
+    }
+
+    pNewTask->m2C_frameCounter = 0;
+    pNewTask->m34_state = 0;
+
+    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20000 = 1;
+
+    // TODO: full particle array allocation, position randomization, lighting setup
+    // Original allocates particle arrays, randomizes positions using sin/cos, and sets up
+    // battleGrid light interpolation. The task update animates particles toward the target.
+
+    sVec3_FP lightColor;
+    battleResultScreen_updateSub0(0x1F, -0x1F, -0x1F, &lightColor);
+    battleGrid_setupLightInterpolation(10,
+        gBattleManager->m10_battleOverlay->m8_gridTask->m1CC_lightColor, lightColor);
+
+    sVec3_FP lightFalloff;
+    battleResultScreen_updateSub0(0x08, 0x08, 0x0A, &lightFalloff);
+    battleGrid_setupLightInterpolation2(10,
+        gBattleManager->m10_battleOverlay->m8_gridTask->m1E4_lightFalloff0, lightFalloff);
+
+    return pNewTask;
+}
+
+// BTL_A3::0606556e
+static void useItem_applyStatusEffect(s16 itemId)
+{
+    s16 prevBP = mainGameState.gameStats.m14_currentBP;
+    s16 prevHP = mainGameState.gameStats.m10_currentHP;
+
+    if (!applyItemHealEffect((s32)itemId))
+    {
+        return;
+    }
+
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x15] == 0)
+    {
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo--;
+    }
+    increaseStatsCount(0);
+    refreshBattleGaugeAfterHeal();
+
+    s16 hpDelta = mainGameState.gameStats.m10_currentHP - prevHP;
+    s16 bpDelta = mainGameState.gameStats.m14_currentBP - prevBP;
+
+    sSaturnPtr hpEffectData = g_BTL_GenericData->getSaturnPtr(0x060ab2bc);
+    sSaturnPtr bpEffectData = g_BTL_GenericData->getSaturnPtr(0x060ab2c4);
+    sVec3_FP* pDragonPos = &gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
+    s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    s16 effectDuration;
+    s16 effectSize;
+    sSaturnPtr effectData;
+
+    switch (itemId)
+    {
+    case m5_elixirMinor:
+        effectData = hpEffectData;
+        effectSize = 4;
+        effectDuration = 0x28;
+        break;
+    case m6_berserkMicro:
+        effectData = bpEffectData;
+        effectSize = 4;
+        effectDuration = 0x28;
+        break;
+    case m26_elixirMedis:
+        effectData = hpEffectData;
+        effectSize = 6;
+        effectDuration = 0x32;
+        break;
+    case m27_elixirMaxis:
+    case m28_fullElixir:
+        effectData = hpEffectData;
+        effectSize = 8;
+        effectDuration = 0x3C;
+        break;
+    case m29_berserkMinor:
+        effectData = bpEffectData;
+        effectSize = 6;
+        effectDuration = 0x32;
+        break;
+    case m2A_berserkMedis:
+    case m2B_berserkMaxis:
+        effectData = bpEffectData;
+        effectSize = 8;
+        effectDuration = 0x3C;
+        break;
+    case m2C_ambrosia:
+        effectData = hpEffectData;
+        effectSize = 8;
+        effectDuration = 0x3C;
+        createHealVisualEffect(pEngine, bpEffectData, pDragonPos, 0x1800, 8, 0x3C, 0x8000, 0);
+        break;
+    default:
+        // show damage number and return without main effect
+        goto showDamageNumber;
+    }
+
+    createHealVisualEffect(pEngine, effectData, pDragonPos, 0x1800, (s32)effectSize, (s32)effectDuration, 0x8000, 1);
+
+showDamageNumber:
+    sVec3_FP offset(0, 0, 0x1000);
+    if (hpDelta > 0)
+    {
+        createDamageDisplayNumber(pEngine, -hpDelta, &offset, 1);
+    }
+    else if (bpDelta > 0)
+    {
+        createDamageDisplayNumber(pEngine, -bpDelta, &offset, 1);
+    }
+}
+
+// BTL_A3::06065834
+static p_workArea useItem_applyWeaponEffect(s16 itemId)
+{
+    s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
+    u8 effectId;
+
+    switch (itemId)
+    {
+    case m2D_revive:
+        pDragon->m1C0_statusModifiers &= ~0x1;
+        pDragon->m1D8 = 0;
+        effectId = 0xF;
+        break;
+    case m2E_antidote:
+        pDragon->m1C0_statusModifiers &= ~0x2;
+        pDragon->m1DA = 0;
+        effectId = 0xC;
+        break;
+    case m2F_recover:
+        pDragon->m1C0_statusModifiers &= ~0x7F;
+        pDragon->m1D8 = 0;
+        pDragon->m1DA = 0;
+        pDragon->m1DC_poisonTimer = 0;
+        pDragon->m1DE = 0;
+        pDragon->m1E0 = 0;
+        pDragon->m1E2 = 0;
+        {
+            s16 val = createBattleCommandMenuSub2(0x3C);
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m0_max = (s32)val << 16;
+        }
+        effectId = 0xA;
+        break;
+    case m34_restoreSpeed:
+        pDragon->m1C0_statusModifiers &= ~0x4;
+        pDragon->m1DC_poisonTimer = 0;
+        {
+            s16 val = createBattleCommandMenuSub2(0x3C);
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m0_max = (s32)val << 16;
+        }
+        effectId = 0xD;
+        break;
+    case m35_freeAction:
+        pDragon->m1C0_statusModifiers &= ~0x8;
+        pDragon->m1DE = 0;
+        effectId = 0xE;
+        break;
+    case m36_anesthetic:
+        pDragon->m1C0_statusModifiers &= ~0x10;
+        pDragon->m1E0 = 0;
+        effectId = 0x10;
+        break;
+    case m37_unbind:
+        pDragon->m1C0_statusModifiers &= ~0x20;
+        pDragon->m1E2 = 0;
+        effectId = 0xB;
+        break;
+    default:
+        return nullptr;
+    }
+
+    createStatusCureVisualEffect(pEngine, effectId);
+    return (p_workArea)1; // non-null signals success
+}
+
+// BTL_A3::060852fc
+static void useItem_applyShieldEffect(s_battleEngine* pThis, sVec3_FP* pPosition)
+{
+    // Creates a shield barrier visual effect around the dragon.
+    // TODO: full 3D shield sphere rendering task (FUN_06031184 creates a 0x128-byte task
+    // with update at LAB_060853a4 that renders the shield sphere for 0x3C frames)
+    playSystemSoundEffect(0x11);
+}
+
+// BTL_A3::060676b8
+static void useItemApplyEffect(s_battleEngine* pThis)
+{
+    bool consumeItem = true;
+    s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
+
+    switch (pThis->m39E_selectedItem)
+    {
+    case m1_blastChip:
+        useItem_applyHealing(pThis, 0);
+        break;
+    case m2_dualBlastChip:
+        useItem_applyHealing(pThis, 1);
+        break;
+    case m3_triBlastChip:
+        useItem_applyHealing(pThis, 2);
+        break;
+    case m4_flashChip:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4 = 1;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        break;
+    case m5_elixirMinor:
+    case m6_berserkMicro:
+    case m26_elixirMedis:
+    case m27_elixirMaxis:
+    case m28_fullElixir:
+    case m29_berserkMinor:
+    case m2A_berserkMedis:
+    case m2B_berserkMaxis:
+    case m2C_ambrosia:
+        useItem_applyStatusEffect((s16)pThis->m39E_selectedItem);
+        consumeItem = false;
+        break;
+    case m2D_revive:
+    case m2E_antidote:
+    case m2F_recover:
+    case m34_restoreSpeed:
+    case m35_freeAction:
+    case m36_anesthetic:
+    case m37_unbind:
+        useItem_applyWeaponEffect((s16)pThis->m39E_selectedItem);
+        consumeItem = true;
+        break;
+    case m30_shieldChip:
+        useItem_applyShieldEffect(pThis, &pDragon->m8_position);
+        pDragon->m1C0_statusModifiers |= 0x400;
+        pDragon->m1EC_shieldDuration = 0xF0;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        break;
+    case m31_powerChip:
+        pDragon->m1C0_statusModifiers |= 0x80;
+        pDragon->m1E6_attackBuffTimer = -1;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        break;
+    case m32_armorChip:
+        pDragon->m1C0_statusModifiers |= 0x100;
+        pDragon->m1E8_defenseBuffTimer = -1;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        break;
+    case m33_speedChip:
+    {
+        pDragon->m1EA_agilityBuffTimer = -1;
+        pDragon->m1DC_poisonTimer = 0;
+        pDragon->m1C0_statusModifiers &= ~0x4;
+        pDragon->m1C0_statusModifiers |= 0x200;
+        s16 val = createBattleCommandMenuSub2(0x3C);
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m0_max = (s32)val << 16;
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        break;
+    }
+    default:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+        consumeItem = false;
+        break;
+    }
+
+    if (consumeItem)
+    {
+        eItems itemId = pThis->m39E_selectedItem;
+        if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x15] == 0)
+        {
+            pThis->m3B4.m16_combo--;
+        }
+        increaseStatsCount(0);
+        mainGameState.addItemCount(itemId, -1);
+    }
 }
 
 // BTL_A3::06064272
@@ -3217,24 +3771,50 @@ static void battleEngine_showReceiveItemText(eItems itemId)
     }
 }
 
-static void findAndLoadTownFile(const char* filename, void* dstDram, u16 vdp1Offset)
+static void findAndLoadTownFile(const char* filename, u8* destination, u16 relocation)
 {
-    Unimplemented();
+    findMandatoryFileOnDisc(filename);
+    loadFile(filename, destination, relocation);
 }
 
+
+// BTL_A3::06068ec0
 static void useItemSub0(s8 param1, u32 param2)
 {
-    Unimplemented();
+    static const u16 effectTable[] = { 0xA8, 0xAC, 0xB0, 0xB4, 0xB8, 0xBC, 0xC0, 0xC4 };
+
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    if (param1 == 0)
+    {
+        if ((param2 & 0xFF) > 3)
+        {
+            param2 = randomNumber() & 3;
+        }
+    }
+    else
+    {
+        if ((param2 & 0xFF) > 3)
+        {
+            param2 = randomNumber() & 3;
+        }
+        param2 = param2 + 4;
+    }
+
+    u8 effectIndex = (u8)(effectTable[param2 & 0xFF] & 0xFF);
+    battleGrid_setCameraFov(0x38e38e3);
+    pBattleEngine->m3D0 = createItemVisualEffect(dramAllocatorEnd[0].mC_fileBundle, effectIndex, &pBattleEngine->m104_dragonPosition, &pBattleEngine->m104_dragonPosition, 1, 1);
 }
 
-// 0601e0b4
-static void FUN_0601e0b4()
+// 0601e0b4 — triggers M68K sound CPU sync for visual effect lighting
+static void syncM68KSoundCPU()
 {
-    Unimplemented();
+    // Original: FUN_0601fdd0() + waits for M68K flag + addSlaveCommand(0,0,0,FUN_0601f04c)
+    // This synchronizes the SH-2 with the M68K sound CPU for palette/lighting changes.
+    // Not needed in the reimplementation as we don't have dual-CPU sync.
 }
 
 // BTL_A3::06066c54
-static void FUN_BTL_A3__06066c54(s_battleEngine* pThis)
+static void battleEngine_useBerserkApplyEffect(s_battleEngine* pThis)
 {
     Unimplemented();
 }
@@ -3255,7 +3835,7 @@ p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
     if (itemId16 == 1 || itemId16 == 0xa1)
     {
         // dragonY > envHeight+0x23000 → category 0, else category 1
-        if (*(s32*)((u8*)gBattleManager->m10_battleOverlay->mC_targetSystem + 0x204) + 0x23000 <
+        if (gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude + 0x23000 <
             pThis->mC_battleCenter.m4_Y)
             category = 0;
         else
@@ -3264,7 +3844,7 @@ p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
     else if (itemId16 == 2 || itemId16 == 3 || itemId16 == 0x95 || itemId16 == 0x96)
     {
         if (pThis->mC_battleCenter.m4_Y <=
-            *(s32*)((u8*)gBattleManager->m10_battleOverlay->mC_targetSystem + 0x204) + 0x23000)
+            gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude + 0x23000)
             category = 3;
         else
             category = 2;
@@ -3304,13 +3884,41 @@ p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
     }
 
     // Write category into psVar1 work area at offset 0xEA (= task offset 0x1d*8+2 in Ghidra notation)
-    *(s16*)((char*)psVar1 + 0xEA) = category;
+    psVar1->mEA_category = category;
 
-    // Allocate dram and vdp1 buffers
-    pThis->mA9C = (p_workArea)dramAllocate(0xe000);
-    pThis->mAA0 = (p_workArea)vdp1Allocate(0xe000);
+    // Allocate dram and vdp1 buffers for item effect 3D model/sprite assets
+    pThis->mA9C = dramAllocate(0xe000);
+    pThis->mAA0 = vdp1Allocate(0xe000);
 
-    Unimplemented(); // findAndLoadTownFile calls (category-indexed MCB/CGB file table at 060ad5e8)
+    // File table at BTL_A3::060ad5e8: pairs of {MCB, CGB} filename pointers per category
+    struct sItemEffectFiles { const char* mcb; const char* cgb; };
+    static const std::array<sItemEffectFiles, 11> itemEffectFileTable = {{
+        { "AIRBOMB.MCB", "AIRBOMB.CGB" },  // cat 0: blast chip (below)
+        { "GRDBOMB.MCB", "GRDBOMB.CGB" },  // cat 1: blast chip (above)
+        { "ABOMB2.MCB",  "ABOMB2.CGB"  },  // cat 2: dual/tri blast (below)
+        { "GBOMB2.MCB",  "GBOMB2.CGB"  },  // cat 3: dual/tri blast (above)
+        { "NEW_BUM.MCB", "NEW_BUM.CGB" },  // cat 4: phantom slashers
+        { "UZU.MCB",     "UZU.CGB"     },  // cat 5: status cure
+        { "BOMBLV3.MCB", "BOMBLV3.CGB" },  // cat 6: flash chip
+        { nullptr,       "BM.CGB"      },  // cat 7: plasma vortex
+        { "BUM.MCB",     "BUM.CGB"     },  // cat 8: hunting scythe
+        { "WAVE.MCB",    "WAVE.CGB"    },  // cat 9: cleansing wave
+        { "FINAL.MCB",   "FINAL.CGB"   },  // cat 10: dragon phoenix
+    }};
+
+    s16 cat = psVar1->mEA_category;
+    if (cat >= 0 && cat < (s16)itemEffectFileTable.size())
+    {
+        if (itemEffectFileTable[cat].mcb != nullptr)
+        {
+            findAndLoadTownFile(itemEffectFileTable[cat].mcb, pThis->mA9C, pThis->mAA0->m4_vdp1Memory);
+        }
+        if (itemEffectFileTable[cat].cgb != nullptr)
+        {
+            findAndLoadTownFile(itemEffectFileTable[cat].cgb,
+                getVdp1Pointer(0x25C00000 + (u32)pThis->mAA0->m4_vdp1Memory * 8), 0);
+        }
+    }
 
     return psVar1;
 }
@@ -3452,7 +4060,7 @@ void battleEngine_updateBattleMode_4_useBerserk(s_battleEngine* pThis)
                 if (pDragon->m1CC_currentAnimation != 0x10)
                     return;
                 pEngine->m188_flags.m20000 = 1;
-                FUN_0601e0b4();
+                syncM68KSoundCPU();
                 sVec3_FP sVar3;
                 battleResultScreen_updateSub0('n', 'n', 'n', &sVar3);
                 battleGrid_setupLightInterpolation(0x26, pGrid->m1CC_lightColor, sVar3);
@@ -3475,7 +4083,7 @@ void battleEngine_updateBattleMode_4_useBerserk(s_battleEngine* pThis)
         }
         break;
     case 3:
-        FUN_BTL_A3__06066c54(pThis);
+        battleEngine_useBerserkApplyEffect(pThis);
         if (pEngine->m188_flags.m20000) {
             sVec3_FP local_24;
             transformAndAddVecByCurrentMatrix(&pDragon->mFC_hotpoints[2], &local_24);
@@ -3689,7 +4297,7 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
         {
             pThis->m394 = 0;
-            battleEngine_UpdateSub7Sub2();
+            battleEngine_resetBattleCameraPreset();
             gBattleManager->m10_battleOverlay->m8_gridTask->mE4_currentCameraReferenceCenter = gBattleManager->m10_battleOverlay->m8_gridTask->m134_desiredCameraPosition;
             gBattleManager->m10_battleOverlay->m8_gridTask->mF0_currentCameraReferenceForward = gBattleManager->m10_battleOverlay->m8_gridTask->m140_desiredCameraTarget;
             gBattleManager->m10_battleOverlay->m8_gridTask->m108_deltaCameraPosition.zeroize();

@@ -321,10 +321,9 @@ void loadSoundBanksSub0(s8 musicNumber, s8 unk1)
 
 void loadSoundBanks(s8 musicNumber, s8 unk1)
 {
-    if (musicNumber >= 0 && tryPlayOggMusic(musicNumber))
+    if (musicNumber >= 0)
     {
-        // OGG file found and playing — skip M68K sound loading
-        return;
+        tryPlayOggMusic(musicNumber);
     }
 
     if (musicNumber < 0)
@@ -351,9 +350,35 @@ void loadSoundBanks(s8 musicNumber, s8 unk1)
     }
 }
 
+void enqueueSCSPCommand(sSCSPCommand* pCommand); // forward decl
+
+// 0602b718
+static void sendCommandToAllSequences(s8 commandType)
+{
+    for (int i = 0; i < 8; i++)
+    {
+        sSCSPCommand command = {};
+        command.m0 = commandType;
+        command.m2_P1 = i;
+        enqueueSCSPCommand(&command);
+    }
+}
+
+// 0602b670
 s32 fadeOutAllSequences()
 {
     stopOggMusic();
+    sendCommandToAllSequences(2); // stop all sequences
+    s16 activeSequence = soundEngine.m1B8_numActiveSequence + soundEngine.m1BA;
+    for (int i = 7; i >= 0; i--)
+    {
+        sSCSPCommand command = {};
+        command.m0 = 5; // sequence volume
+        command.m2_P1 = i;
+        command.m3_P2 = 0x7F;
+        enqueueSCSPCommand(&command);
+        soundEngine.m10_sequenceTable[activeSequence].m0[i].m2_volume = 0x7F;
+    }
     return 0;
 }
 

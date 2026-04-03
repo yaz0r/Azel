@@ -3,9 +3,16 @@
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "field/fieldItemBox.h"
 
+// 060541aa
 void setupDragonCaveLighting()
 {
-    Unimplemented();
+    s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    p->mC8_normalLightColor = { 0xB, 0xB, 0x8 };
+    p->mCB_falloffColor0 = { 0xA, 0xA, 0xA };
+    p->mCE_falloffColor1 = { -3, -3, -3 };
+    p->mD1_falloffColor2 = { -3, -3, -3 };
+    p->mC0_lightRotationAroundDragon = fixedPoint(0xD555555);
+    p->mC4 = fixedPoint(0xD555555);
 }
 
 void vdp2FieldTask_init(s_fieldPaletteTaskWorkArea* pThis)

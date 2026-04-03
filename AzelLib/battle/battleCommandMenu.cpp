@@ -338,55 +338,55 @@ void addObjectToList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems index)
         }
         break;
     case eItems::m5_elixirMinor:
-    case (eItems)0x26: case (eItems)0x27: case (eItems)0x28:
+    case eItems::m26_elixirMedis: case eItems::m27_elixirMaxis: case eItems::m28_fullElixir:
         if (mainGameState.gameStats.m10_currentHP == mainGameState.gameStats.mB8_maxHP)
         {
             itemDisabled = true;
         }
         break;
     case eItems::m6_berserkMicro:
-    case (eItems)0x29: case (eItems)0x2a: case (eItems)0x2b:
+    case eItems::m29_berserkMinor: case eItems::m2A_berserkMedis: case eItems::m2B_berserkMaxis:
         if (mainGameState.gameStats.m14_currentBP == mainGameState.gameStats.mBA_maxBP)
         {
             itemDisabled = true;
         }
         break;
-    case (eItems)0x2c:
+    case eItems::m2C_ambrosia:
         if (mainGameState.gameStats.m10_currentHP == mainGameState.gameStats.mB8_maxHP &&
             mainGameState.gameStats.m14_currentBP == mainGameState.gameStats.mBA_maxBP)
             itemDisabled = true;
         break;
-    case (eItems)0x2d:
+    case eItems::m2D_revive:
         if (!(gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 1)) itemDisabled = true;
         break;
-    case (eItems)0x2e:
+    case eItems::m2E_antidote:
         if (!(gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 2)) itemDisabled = true;
         break;
-    case (eItems)0x2f:
+    case eItems::m2F_recover:
         if (!(gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x7f)) itemDisabled = true;
         break;
-    case (eItems)0x30:
+    case eItems::m30_shieldChip:
         if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x400) itemDisabled = true;
         break;
-    case (eItems)0x31:
+    case eItems::m31_powerChip:
         if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x80) itemDisabled = true;
         break;
-    case (eItems)0x32:
+    case eItems::m32_armorChip:
         if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x100) itemDisabled = true;
         break;
-    case (eItems)0x33:
+    case eItems::m33_speedChip:
         if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x200) itemDisabled = true;
         break;
-    case (eItems)0x34:
+    case eItems::m34_restoreSpeed:
         if (!(gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 4)) itemDisabled = true;
         break;
-    case (eItems)0x35:
+    case eItems::m35_freeAction:
         if (!(gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 8)) itemDisabled = true;
         break;
-    case (eItems)0x36:
+    case eItems::m36_anesthetic:
         if (!(gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x10)) itemDisabled = true;
         break;
-    case (eItems)0x37:
+    case eItems::m37_unbind:
         if (!(gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x20)) itemDisabled = true;
         break;
     default:
@@ -411,13 +411,13 @@ void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems in
 
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo < 2)
     {
-        if (index == (eItems)0xaa || index == (eItems)0xab || index == (eItems)0xac)
+        if (index == mAA_healMaxis || index == mAB_genesis || index == mAC_berserkerWing)
         {
             bVar1 = gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo == 0 || bVar1;
             if (mainGameState.gameStats.mB8_maxHP == mainGameState.gameStats.m10_currentHP)
                 bVar1 = true;
         }
-        else if (index == (eItems)0xad)
+        else if (index == mAD_recover)
         {
             bVar1 = gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo == 0 || bVar1;
             if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x7f) == 0)
@@ -431,9 +431,9 @@ void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems in
 
     switch (index)
     {
-    case (eItems)0x94:
-    case (eItems)0xa3:
-    case (eItems)0xa5:
+    case m94_vengeanceOrbs:
+    case mA3_astralPhantoms:
+    case mA5_shield:
         if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x400)
             bVar1 = true;
         break;
@@ -441,7 +441,7 @@ void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems in
         if (gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies == 0)
             bVar1 = true;
         break;
-    case (eItems)0x9a:
+    case m9A_assaultWing:
         if (mainGameState.gameStats.m1_dragonLevel != 6 && pDragon->m1C_dragonArchetype != 2)
             bVar1 = true;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo != 3)
@@ -449,17 +449,17 @@ void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems in
         if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x80)
             bVar1 = true;
         break;
-    case (eItems)0xaa:
-    case (eItems)0xab:
-    case (eItems)0xac:
+    case mAA_healMaxis:
+    case mAB_genesis:
+    case mAC_berserkerWing:
         if (mainGameState.gameStats.mB8_maxHP == mainGameState.gameStats.m10_currentHP)
             bVar1 = true;
         break;
-    case (eItems)0xad:
+    case mAD_recover:
         if ((gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x7f) == 0)
             bVar1 = true;
         break;
-    case (eItems)0xae:
+    case mAE_protectionWing:
         if (mainGameState.gameStats.m1_dragonLevel != 6 && pDragon->m1C_dragonArchetype != 4)
             bVar1 = true;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo != 3)
@@ -467,7 +467,7 @@ void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems in
         if (mainGameState.gameStats.mBA_maxBP == mainGameState.gameStats.m14_currentBP)
             bVar1 = true;
         break;
-    case (eItems)0xaf:
+    case mAF_swiftWing:
         if (mainGameState.gameStats.m1_dragonLevel != 6 && pDragon->m1C_dragonArchetype != 1)
             bVar1 = true;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo != 3)
@@ -475,7 +475,7 @@ void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems in
         if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x100)
             bVar1 = true;
         break;
-    case (eItems)0xb0:
+    case mB0_escape:
         if (mainGameState.gameStats.m1_dragonLevel != 6 && pDragon->m1C_dragonArchetype != 3)
             bVar1 = true;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo != 3)
@@ -483,11 +483,11 @@ void addBerserkToActiveList(sBattleCommandMenu::sSubMenuEntry* pEntry, eItems in
         if (gBattleManager->m10_battleOverlay->m18_dragon->m1C0_statusModifiers & 0x200)
             bVar1 = true;
         break;
-    case (eItems)0xb1:
+    case mB1_healingWing:
         if (isFlashChipDisabledInBattle())
             bVar1 = true;
         break;
-    case (eItems)0xb2:
+    case mB2_fieldMap:
         if (mainGameState.gameStats.m1_dragonLevel != 6 && pDragon->m1C_dragonArchetype != 0)
             bVar1 = true;
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B4.m16_combo != 3)

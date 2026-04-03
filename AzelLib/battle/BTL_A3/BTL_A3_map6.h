@@ -10,9 +10,9 @@ struct s_BTL_A3_Env : public s_workAreaTemplate<s_BTL_A3_Env>
     s32 m34;
     s32 m38;
     s32 m3C;
-    sSaturnPtr m40;
-    u32 m44;
-    u32 m48;
+    s32 m40;
+    s32 m44;
+    s32 m48;
     s32 m4C;
     s8 m50;
     s8 m51;

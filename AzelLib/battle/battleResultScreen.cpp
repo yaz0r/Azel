@@ -170,7 +170,7 @@ void battleResultScreen_updateSub17(sBattleResultScreen* pThis)
     if (!isCurrentBattleID(0x1A, 0) && !isCurrentBattleID(0xe, 2) && !isCurrentBattleID(0x16, 0) && !isCurrentBattleID(4, 0) && !isCurrentBattleID(0x11, 0))
     {
         createBattleEndTask(pThis, 0);
-        battleEngine_UpdateSub7Sub2();
+        battleEngine_resetBattleCameraPreset();
         return;
     }
     assert(0);

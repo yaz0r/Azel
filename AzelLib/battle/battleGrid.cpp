@@ -9,7 +9,7 @@
 #include "kernel/debug/trace.h"
 #include "battleGenericData.h"
 
-void battleGrid_initSub0(fixedPoint fov)
+void battleGrid_setCameraFov(fixedPoint fov)
 {
     gBattleManager->m10_battleOverlay->m8_gridTask->m218_halfFov = fov / 2;
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x20;
@@ -18,7 +18,7 @@ void battleGrid_initSub0(fixedPoint fov)
 void battleGrid_initSub1(s_battleGrid* pThis)
 {
     pThis->m214 = 0;
-    battleGrid_initSub0(DEG_50); // 50 deg
+    battleGrid_setCameraFov(DEG_50); // 50 deg
 }
 
 void battleGrid_init(s_battleGrid* pThis)

@@ -1095,8 +1095,8 @@ static void tutorialPhase4(sTutorialControllerTask* pThis)
         pThis->m10_timer = 10;
         break;
     case 0xb:
-        if (*(s16*)((u8*)gBattleManager->m10_battleOverlay->m18_dragon + 0x1d8) == 2)
-            *(u16*)((u8*)gBattleManager->m10_battleOverlay->m18_dragon + 0x1d8) = 0xb4;
+        if (gBattleManager->m10_battleOverlay->m18_dragon->m1D8 == 2)
+            gBattleManager->m10_battleOverlay->m18_dragon->m1D8 = 0xb4;
         {
             u32 m38C = (u32)pEngine->m38C_battleMode;
             if (m38C != 1) break;

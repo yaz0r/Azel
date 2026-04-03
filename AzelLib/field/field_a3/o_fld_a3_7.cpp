@@ -6,6 +6,10 @@
 // 060572e8
 struct fieldA3_7_exitTask : public s_workAreaTemplate<fieldA3_7_exitTask>
 {
+    s32 m0_sectionLoadState;
+    s32 m4_upperTrigger;
+    s32 m8_lowerTrigger;
+
     static void Update(fieldA3_7_exitTask* pThis)
     {
         s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -35,7 +39,7 @@ struct fieldA3_7_exitTask : public s_workAreaTemplate<fieldA3_7_exitTask>
         }
         pThis->m_UpdateMethod = nullptr;
     end:
-        fieldA3_A_task0Sub0();
+        fieldA3_A_task0Sub0(&pThis->m0_sectionLoadState, {0x0608f2b4, gFLD_A3}, pDragonTask->m8_pos);
     }
 
     //size C

@@ -179,8 +179,8 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     std::array<s16, 10> m484;
     s16 m498_numEnemies;
     std::array<s_battleEnemy, 0x80> m49C_enemies;
-    p_workArea mA9C;
-    p_workArea mAA0;
+    u8* mA9C;
+    struct s_vdp1AllocationNode* mAA0;
     p_workArea mAA4;
     // size: 0xaa8
 };
@@ -215,7 +215,10 @@ void battleEngine_FlagQuadrantBitForAttack(u16 uParm1);
 
 void battleEngine_UpdateSub7Sub1Sub0(fixedPoint* param_1, sVec3_FP& out);
 void battleEngine_InitSub2(s_battleEngine* pThis);
-void battleEngine_UpdateSub7Sub2();
+void battleEngine_resetBattleCameraPreset();
+void battleEngine_restoreCameraDefaultSub0();
+void battleGrid_setCameraFov(int fov);
+void sEnemyAttackCamera_updateSub0(int param_1);
 
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);
 

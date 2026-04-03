@@ -3,16 +3,68 @@
 #include "o_fld_a3_4.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 
-void fieldA3_A_task0Sub0()
+// 06056918
+void fieldA3_A_task0Sub0(s32* pState, sSaturnPtr dataBounds, const sVec3_FP& dragonPos)
 {
-    Unimplemented();
+    s32 state = pState[0];
+    switch (state)
+    {
+    case 0:
+    {
+        s32 bound0 = readSaturnS32(dataBounds);
+        s32 bound1 = readSaturnS32(dataBounds + 4);
+        s32 midpoint = (bound0 + bound1 + (s32)((u32)(bound0 + bound1) >> 31)) >> 1;
+        s32 range = bound0 - bound1;
+        if (range < 0) range += 0xF;
+        pState[1] = midpoint + (range >> 4);
+        pState[2] = midpoint - (range >> 4);
+        if (dragonPos.m8_Z.m_value < midpoint)
+        {
+            pState[0] = 2;
+        }
+        else
+        {
+            pState[0] = 4;
+        }
+        break;
+    }
+    case 1:
+        Unimplemented(); // unloadFieldFileGroup(readSaturnS32(dataBounds + 8))
+        Unimplemented(); // loadFieldFileGroup(readSaturnS32(dataBounds + 0xC))
+        pState[0] = 2;
+        break;
+    case 2:
+        if (dragonPos.m8_Z.m_value > pState[1])
+        {
+            pState[0] = 3;
+        }
+        break;
+    case 3:
+        Unimplemented(); // unloadFieldFileGroup(readSaturnS32(dataBounds + 0xC))
+        Unimplemented(); // loadFieldFileGroup(readSaturnS32(dataBounds + 8))
+        pState[0] = 4;
+        break;
+    case 4:
+        if (dragonPos.m8_Z.m_value < pState[2])
+        {
+            pState[0] = 1;
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 struct fieldA3_A_task0 : public s_workAreaTemplate<fieldA3_A_task0>
 {
+    s32 m0_sectionLoadState;
+    s32 m4_upperTrigger;
+    s32 m8_lowerTrigger;
+
     static void Update(fieldA3_A_task0* pThis)
     {
-        const sVec3_FP& dragonPosition = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m8_pos;
+        s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        const sVec3_FP& dragonPosition = pDragonTask->m8_pos;
 
         if (dragonPosition[0] < 0x56000)
         {
@@ -42,7 +94,7 @@ struct fieldA3_A_task0 : public s_workAreaTemplate<fieldA3_A_task0>
         }
 
         //60575CA
-        fieldA3_A_task0Sub0();
+        fieldA3_A_task0Sub0(&pThis->m0_sectionLoadState, {0x0608f2b4, gFLD_A3}, pDragonTask->m8_pos);
     }
 
     //size C

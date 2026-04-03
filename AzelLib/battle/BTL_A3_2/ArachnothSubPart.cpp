@@ -140,14 +140,17 @@ void arachnoth_rotateTargetableFlags(sArachnothSubModel* pThis, s32 param_2)
                 u32 uVar3 = readSaturnU32(readSaturnEA(data) + j * 0x14) >> 0x1C;
                 switch (param_2)
                 {
+                case 0:
+                    pThis->m58_targetables[counter].m50_flags = readSaturnU32(readSaturnEA(data) + j * 0x14);
+                    break;
                 case 1:
                     pThis->m58_targetables[counter].m50_flags = (((uVar3 >> 1) | ((uVar3 & 1) << 3)) << 0x1C) | (readSaturnU32(readSaturnEA(data) + j * 0x14) & 0x0fffffff);
                     break;
                 case 2:
-                    pThis->m58_targetables[counter].m50_flags = (((uVar3 >> 2) | ((uVar3 & 1) << 2)) << 0x1C) | (readSaturnU32(readSaturnEA(data) + j * 0x14) & 0x0fffffff);
+                    pThis->m58_targetables[counter].m50_flags = (((uVar3 >> 2) | ((uVar3 & 3) << 2)) << 0x1C) | (readSaturnU32(readSaturnEA(data) + j * 0x14) & 0x0fffffff);
                     break;
                 case 3:
-                    pThis->m58_targetables[counter].m50_flags = (((uVar3 << 1) | ((uVar3 & 1) >> 3)) << 0x1C) | (readSaturnU32(readSaturnEA(data) + j * 0x14) & 0x0fffffff);
+                    pThis->m58_targetables[counter].m50_flags = (((uVar3 << 1) | ((uVar3 & 8) >> 3)) << 0x1C) | (readSaturnU32(readSaturnEA(data) + j * 0x14) & 0x0fffffff);
                     break;
                 default:
                     assert(0);

@@ -395,9 +395,10 @@ struct s_gameStats
     s32 m4C; // 4C
     s32 m50; // 50
     s32 m54; // 54
-
+    s32 m58_itemsUsed; // 58
     s32 m5C_gunShotFired;
     s32 m60_homingLaserFired;
+    s32 m64; // 64
 
     u32 m70; //70
     u32 m78_exp;

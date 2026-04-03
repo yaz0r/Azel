@@ -754,7 +754,7 @@ p_workArea BaldorAttack_createAttackModel(sVec3_FP* partPosition, sVec3_FP* targ
         pProj->m4_vd1Allocation = pFileBundle->m4_vd1Allocation;
         pProj->m30_isModelType = 1;
 
-        s_3dModel* pModel = (s_3dModel*)allocateHeapForTask(pProj, sizeof(s_3dModel));
+        s_3dModel* pModel = new (allocateHeapForTask(pProj, sizeof(s_3dModel))) s_3dModel();
         pProj->m2C_visual = pModel;
         u16 modelOffset = readSaturnU16(param3 + 2);
         u16 animOffset = readSaturnU16(param3 + 6);

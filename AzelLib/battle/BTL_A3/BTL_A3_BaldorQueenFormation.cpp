@@ -451,7 +451,7 @@ void baldorQueenFormation_updateMode3(BTL_A3_BaldorQueenFormation* pThis) {
 
 }
 
-// 06058998
+// 060586d4
 static void baldorQueenFormation_updateMode4(BTL_A3_BaldorQueenFormation* pThis)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -466,6 +466,13 @@ static void baldorQueenFormation_updateMode4(BTL_A3_BaldorQueenFormation* pThis)
             pThis->m1C.m_value += 0x91A2B;
             pEngine->m3E8[1] += 0x50000;
             pEngine->m3E8[0] += MTH_Mul(0x32000, getSin(pThis->m1C.getInteger()));
+            pEngine->m3E8[2] += MTH_Mul(0xBE000, getCos(pThis->m1C.getInteger()));
+            pEngine->m3F4_cameraPositionWhileShooting = pEngine->mC_battleCenter;
+            battleEngine_setDesiredCameraPositionPointer(&pEngine->m3F4_cameraPositionWhileShooting);
+            battleEngine_setCurrentCameraPositionPointer(&pEngine->m3E8);
+            battleEngine_enableAttackCamera();
+            battleEngine_resetCameraInterpolation();
+            pThis->m1_formationSubState++;
         }
         break;
     case 1:
@@ -473,12 +480,30 @@ static void baldorQueenFormation_updateMode4(BTL_A3_BaldorQueenFormation* pThis)
         pThis->m1C.m_value += 0x91A2B;
         pEngine->m3E8[1] += 0x50000;
         pEngine->m3E8[0] += MTH_Mul(0x32000, getSin(pThis->m1C.getInteger()));
+        pEngine->m3E8[2] += MTH_Mul(0xBE000, getCos(pThis->m1C.getInteger()));
+        pEngine->m3F4_cameraPositionWhileShooting = pEngine->mC_battleCenter;
+        pThis->m4[0].m49 = 1;
+        for (int i = 0; i < 6; i++)
+        {
+            pThis->m4[i + 1].m49 = 4;
+        }
+        pThis->m1_formationSubState++;
         break;
     case 2:
         pEngine->m3E8 = pEngine->mC_battleCenter;
         pThis->m1C.m_value += 0x91A2B;
         pEngine->m3E8[1] += 0x50000;
         pEngine->m3E8[0] += MTH_Mul(0x32000, getSin(pThis->m1C.getInteger()));
+        pEngine->m3E8[2] += MTH_Mul(0xBE000, getCos(pThis->m1C.getInteger()));
+        pEngine->m3F4_cameraPositionWhileShooting = pEngine->mC_battleCenter;
+        if (--pThis->m8 < 0)
+        {
+            pEngine->m188_flags.m100_attackAnimationFinished = 1;
+            battleEngine_restoreCameraAfterEnemyAttack();
+            pThis->m1_formationSubState++;
+        }
+        break;
+    case 3:
         break;
     }
 }
@@ -506,6 +531,13 @@ void BTL_A3_BaldorQueenFormation_Update(BTL_A3_BaldorQueenFormation* pThis) {
         pThis->m4[idx1 + 1].m0_translation.m18 = readSaturnVec3(posTable + (s32)pThis->mB_baldorsQuadrant * 0x48 + (s32)pThis->mC[idx1] * 0xC);
         pThis->m4[idx2 + 1].m0_translation.m18 = readSaturnVec3(posTable + (s32)pThis->mB_baldorsQuadrant * 0x48 + (s32)pThis->mC[idx2] * 0xC);
         pThis->m12_shuffleTimer = 0x96;
+    }
+
+    // If the queen died during an attack (modes 1-3), transition to death mode immediately
+    if ((pThis->m4[0].m48 & 4) && pThis->m0_formationState != 0 && pThis->m0_formationState != 4)
+    {
+        pThis->m0_formationState = 4;
+        pThis->m1_formationSubState = 0;
     }
 
     switch (pThis->m0_formationState) {

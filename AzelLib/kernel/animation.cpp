@@ -715,9 +715,46 @@ void modelMode0_scale(s_3dModel*)
 }
 
 
-void modelMode4_scale(s_3dModel*)
+void modelMode4_scale(s_3dModel* p3dModel)
 {
-    PDS_unimplemented("modelMode4_scale");
+    std::vector<sPoseData>& pPoseData = p3dModel->m2C_poseData;
+    if (p3dModel->m10_currentAnimationFrame & 1)
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            pPoseData[i].m18_scale += pPoseData[i].m3C_halfScale;
+        }
+        return;
+    }
+
+    if (p3dModel->m10_currentAnimationFrame)
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            pPoseData[i].m18_scale += pPoseData[i].m3C_halfScale;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
+            pPoseData[i].m18_scale[0] = stepAnimationTrack(pPoseData[i].m48[6], r13.m14_trackData[6], r13.m0_tracksLength[6]);
+            pPoseData[i].m18_scale[1] = stepAnimationTrack(pPoseData[i].m48[7], r13.m14_trackData[7], r13.m0_tracksLength[7]);
+            pPoseData[i].m18_scale[2] = stepAnimationTrack(pPoseData[i].m48[8], r13.m14_trackData[8], r13.m0_tracksLength[8]);
+        }
+    }
+
+    if (p3dModel->m30_pCurrentAnimation->m4_numFrames - 1 > p3dModel->m10_currentAnimationFrame)
+    {
+        for (int i = 0; i < p3dModel->m12_numBones; i++)
+        {
+            const sAnimationData::sTrackHeader& r13 = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
+            pPoseData[i].m3C_halfScale[0] = stepAnimationTrack(pPoseData[i].m48[6], r13.m14_trackData[6], r13.m0_tracksLength[6]) / 2;
+            pPoseData[i].m3C_halfScale[1] = stepAnimationTrack(pPoseData[i].m48[7], r13.m14_trackData[7], r13.m0_tracksLength[7]) / 2;
+            pPoseData[i].m3C_halfScale[2] = stepAnimationTrack(pPoseData[i].m48[8], r13.m14_trackData[8], r13.m0_tracksLength[8]) / 2;
+        }
+    }
 }
 
 u32 createDragonStateSubData1Sub1Sub1(s_3dModel* p3dModel, sAnimationData* pModelData)

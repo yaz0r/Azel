@@ -390,9 +390,9 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
 
     pThis->m4C = 0;
 
-    pThis->m40 = g_BTL_A3->getSaturnPtr(0x60A6DD8);
-    pThis->m44 = 0x4D5E540;
-    pThis->m48 = 0xF5A;
+    pThis->m40 = readSaturnS32(g_BTL_A3->getSaturnPtr(0x60A6DD8)); // wave phase increment per frame
+    pThis->m44 = 0x4D5E540; // wave phase increment per coefficient entry
+    pThis->m48 = 0xF5A; // wave amplitude
 }
 
 void sBattleEnvironmentGridCell_Init(sWorldGridCellTask* pThis, sSaturnPtr arg)
@@ -869,13 +869,17 @@ s32 computeRotationScrollOffset()
     return FP_Div(pivotX + pivotY + depthTerm, gVdp2RotationMatrix.m[2][1]).getInteger();
 }
 
+// 060549c0
 static void BTL_A3_Env_DrawSub4(s_BTL_A3_Env* pThis)
 {
     auto& table = *gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
-    for (int i = 0; i < 424; i++) {
-        table[1] = MTH_Mul(table[1], MTH_Mul(pThis->m48, getSin(pThis->m4C)) + 0x10000);
+    s32 phase = pThis->m4C;
+    for (int i = 0; i < 0x1A8; i++) {
+        fixedPoint wave = MTH_Mul(pThis->m48, getSin(phase >> 16));
+        table[i] = MTH_Mul(table[i], wave + 0x10000);
+        phase += pThis->m44;
     }
-    pThis->m4C += pThis->m40.m_offset; // TODO: this doesn't really make sense!
+    pThis->m4C += pThis->m40;
 }
 
 void BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)

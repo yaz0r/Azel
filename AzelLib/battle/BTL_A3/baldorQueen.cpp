@@ -31,7 +31,7 @@ void BaldorQueen_init(sBaldorBase* pThisBase, sFormationData* pFormationData) {
     Baldor_initSub0(pThis, g_BTL_A3->getSaturnPtr(0x60A75CC), pFormationData, 0);
 }
 
-// 06057108
+// 06057076
 void BaldorQueen_processDamage(sBaldorQueen* pThis) {
     if (pThis->m34_formationEntry->m48 & 4)
         return;
@@ -127,7 +127,7 @@ void BaldorQueen_updateMode0(sBaldorQueen* pThis) {
 p_workArea BaldorAttack_createAttackModel(sVec3_FP* partPosition, sVec3_FP* target, sSaturnPtr param3); // from baldor.cpp
 p_workArea BaldorAttack_createQueenAcidProjectile(sVec3_FP* partPosition, sVec3_FP* target, u8 fileBundleIdx, s16 timer, s16 lifetime); // from baldor.cpp
 
-// 06054e88
+// 06056c8c
 void BaldorQueen_updateMode1(sBaldorQueen* pThis) {
     stepAnimation(pThis->m38_3dModel);
     if (pThis->m10_HP < 415) {
@@ -171,7 +171,7 @@ void BaldorQueen_updateMode1(sBaldorQueen* pThis) {
     }
 }
 
-// 06055088
+// 06056e4c
 void BaldorQueen_updateMode11(sBaldorQueen* pThis) {
     switch (pThis->m9_attackStatus) {
     case 0:

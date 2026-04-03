@@ -14,6 +14,7 @@
 #include "kernel/rayDisplay.h"
 #include "BTL_A3/BTL_A3_data.h"
 #include "battle/particleEffect.h"
+#include "items.h"
 
 void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param2, s32 param3, s8 param4); // TODO: clean
 
@@ -558,16 +559,112 @@ void sGunShotRootTask_Update(sGunShotRootTask* pThis)
         nullptr
     };
 
+    auto& targets = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables;
+    s_battleEnemy* selectedTarget = targets[pThis->mD4_currentSelectedEnemy];
+    s_battleEngine* pBattleEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    sVec3_FP* pDragonF0 = &gBattleManager->m10_battleOverlay->m18_dragon->mF0;
+
     switch(mainGameState.gameStats.mA_weaponType)
     {
-    case 0:
-        args.m0 = gBattleManager->m10_battleOverlay->mC_targetSystem->m0_enemyTargetables[pThis->mD4_currentSelectedEnemy]->m4_targetable;
-        args.m4 = &gBattleManager->m10_battleOverlay->m18_dragon->mF0;
-        args.mE = 6;
-        createSubTaskWithArgWithCopy<sGunShotTask>(gBattleManager->m10_battleOverlay->m4_battleEngine, &args, &gunShotDefinition);
+    case m3A_highVulcan:
+        if (selectedTarget->m0_isActive > 0)
+        {
+            args.m0 = selectedTarget->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE = 7;
+            args.m8 = 0x19;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
+        break;
+    case m3C_pulverizer:
+        if (selectedTarget->m0_isActive > 0)
+        {
+            args.m0 = selectedTarget->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE = 7;
+            args.m8 = 0x1a;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
+        break;
+    case m3D_berserkVampire:
+        if (selectedTarget->m0_isActive > 0)
+        {
+            args.m0 = selectedTarget->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE = 0xf;
+            args.m8 = 0x17;
+            args.mA = 0x18;
+            args.mC = 0x18;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
+        break;
+    case m3E_berserkLeech:
+        if (selectedTarget->m0_isActive > 0)
+        {
+            args.m0 = selectedTarget->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE = 0xf;
+            args.m8 = 0x16;
+            args.mA = 0x18;
+            args.mC = 0x18;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
+        break;
+    case m3F_sniper:
+        if (selectedTarget->m0_isActive > 0)
+        {
+            args.m0 = selectedTarget->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE = 2;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
+        break;
+    case m40_triBurst:
+        // Triple shot — fires at 3 consecutive enemy targets
+        if (selectedTarget->m0_isActive > 0)
+        {
+            args.m0 = selectedTarget->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE = 6;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
+        if (targets[pThis->mD4_currentSelectedEnemy + 1]->m0_isActive > 0)
+        {
+            args.m0 = targets[pThis->mD4_currentSelectedEnemy + 1]->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE |= 6;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
+        if (targets[pThis->mD4_currentSelectedEnemy + 2]->m0_isActive > 0)
+        {
+            args.m0 = targets[pThis->mD4_currentSelectedEnemy + 2]->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE |= 6;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
+        break;
+    case m41_assassin:
+        if (selectedTarget->m0_isActive > 0)
+        {
+            args.m0 = selectedTarget->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE = 0xd;
+            args.m8 = 0x12;
+            args.mA = 0x15;
+            args.mC = 0x15;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
         break;
     default:
-        assert(0);
+        // 0x39, 0x3b, and all other weapons (including 0)
+        if (selectedTarget->m0_isActive > 0)
+        {
+            args.m0 = selectedTarget->m4_targetable;
+            args.m4 = pDragonF0;
+            args.mE = 6;
+            createSubTaskWithArgWithCopy<sGunShotTask>(pBattleEngine, &args, &gunShotDefinition);
+        }
+        break;
     }
 
     pThis->mD6_shotDelay = 2;
@@ -575,13 +672,18 @@ void sGunShotRootTask_Update(sGunShotRootTask* pThis)
 
 void createGunShotRootTask(s_workAreaCopy* parent)
 {
-    switch (mainGameState.gameStats.mA_weaponType)
+    eItems weapon = mainGameState.gameStats.mA_weaponType;
+    if (weapon == m3B_mauler)
     {
-    case 0:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3A6_numGunShots = 6;
+    }
+    else if (weapon == m41_assassin)
+    {
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3A6_numGunShots = 1;
+    }
+    else
+    {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3A6_numGunShots = 5;
-        break;
-    default:
-        assert(0);
     }
 
     sGunShotRootTask* pNewTask = createSubTaskFromFunctionWithCopy<sGunShotRootTask>(parent, &sGunShotRootTask_Update);
@@ -591,6 +693,8 @@ void createGunShotRootTask(s_workAreaCopy* parent)
         pNewTask->mD6_shotDelay = 0;
         pNewTask->mD8_numShotFired = 0;
     }
-
-    gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+    else
+    {
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
+    }
 }

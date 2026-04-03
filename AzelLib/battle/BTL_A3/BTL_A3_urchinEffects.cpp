@@ -131,6 +131,6 @@ p_workArea urchinAttack_spawnProjectile(s_workAreaCopy* pParent)
     playSystemSoundEffect(0x69);
     return BaldorAttack_createAttackModel(
         (sVec3_FP*)((u8*)pParent + 8),
-        (sVec3_FP*)((u8*)gBattleManager->m10_battleOverlay->m18_dragon + 8),
+        &gBattleManager->m10_battleOverlay->m18_dragon->m8_position,
         g_BTL_A3->getSaturnPtr(0x060a7b90));
 }

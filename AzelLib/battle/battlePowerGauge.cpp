@@ -46,16 +46,98 @@ struct sGaugeIncreaseEffect : public s_workAreaTemplate<sGaugeIncreaseEffect>
         s16 m16;
     };
 
+    s32 m10_decayRate;
+    s32 m28_rotationSpeedX;
+    s32 m2C_rotationSpeedY;
+    s32 m40_remainingFrames;
+    s16 m46_totalLifetime;
+    s32 m4C_colorSetIndex;
+    sVec3_FP* m50_pPosition;
+    s32 m54_baseSize;
+    s32 m58_rotationX;
+    s32 m5C_rotationY;
+    s32 m60_alpha;
+    sVec3_FP m64_offset;
     // size 0x7C
 };
 
-void sGaugeIncreaseEffect_createEffect(sGaugeIncreaseEffectRoot* pThis, sGaugeIncreaseEffect::sInitParams* param_2)
+// 06085188
+static void sGaugeIncreaseEffect_Update(sGaugeIncreaseEffect* pThis)
+{
+    s32 remaining = pThis->m40_remainingFrames--;
+    if (remaining < 1)
+    {
+        pThis->getTask()->markFinished();
+    }
+
+    s32 halfLife = (s32)pThis->m46_totalLifetime >> 1;
+    if (halfLife < pThis->m40_remainingFrames)
+    {
+        pThis->m60_alpha = setDividend(((s32)pThis->m46_totalLifetime - pThis->m40_remainingFrames) << 16, 0x20000, (s32)pThis->m46_totalLifetime << 16);
+    }
+    else
+    {
+        pThis->m60_alpha = setDividend(pThis->m40_remainingFrames << 16, 0x20000, (s32)pThis->m46_totalLifetime << 16);
+    }
+
+    pThis->m58_rotationX += pThis->m28_rotationSpeedX;
+    pThis->m5C_rotationY += pThis->m2C_rotationSpeedY;
+}
+
+// 0608523c
+static void sGaugeIncreaseEffect_Draw(sGaugeIncreaseEffect* pThis)
 {
     Unimplemented();
+}
 
-    randomNumber();
-    randomNumber();
-    randomNumber();
+static const sGaugeIncreaseEffect::TypedTaskDefinition sGaugeIncreaseEffect_definition =
+{
+    nullptr,
+    &sGaugeIncreaseEffect_Update,
+    &sGaugeIncreaseEffect_Draw,
+    nullptr,
+};
+
+// 06085080
+void sGaugeIncreaseEffect_createEffect(sGaugeIncreaseEffectRoot* pThis, sGaugeIncreaseEffect::sInitParams* param_2)
+{
+    sGaugeIncreaseEffect* pNewTask = createSiblingTask<sGaugeIncreaseEffect>(pThis, &sGaugeIncreaseEffect_definition);
+    if (pNewTask == nullptr)
+    {
+        return;
+    }
+
+    pNewTask->m4C_colorSetIndex = (u8)param_2->m16;
+    pNewTask->m54_baseSize = param_2->mC;
+    pNewTask->m50_pPosition = param_2->m0;
+    pNewTask->m58_rotationX = param_2->m4;
+    pNewTask->m5C_rotationY = param_2->m8;
+    pNewTask->m40_remainingFrames = (s32)param_2->m14;
+    pNewTask->m46_totalLifetime = param_2->m14;
+
+    s32 randomSize = performModulo2(pNewTask->m54_baseSize >> 2, randomNumber());
+    pNewTask->m64_offset.m8_Z = randomSize + pNewTask->m54_baseSize;
+    pNewTask->m10_decayRate = param_2->m10;
+
+    switch (pNewTask->m4C_colorSetIndex)
+    {
+    case 0:
+        pNewTask->m28_rotationSpeedX = performModulo2(0x16C16C, randomNumber());
+        pNewTask->m2C_rotationSpeedY = performModulo2(0x2D82D8, randomNumber());
+        break;
+    case 1:
+        pNewTask->m28_rotationSpeedX = performModulo2(0x2D82D8, randomNumber());
+        pNewTask->m2C_rotationSpeedY = performModulo2(0x444444, randomNumber());
+        break;
+    case 2:
+        pNewTask->m28_rotationSpeedX = performModulo2(0x444444, randomNumber());
+        pNewTask->m2C_rotationSpeedY = performModulo2(0x5B05B0, randomNumber());
+        break;
+    case 3:
+        pNewTask->m28_rotationSpeedX = performModulo2(0xB60B6, randomNumber());
+        pNewTask->m2C_rotationSpeedY = performModulo2(0x16C16C, randomNumber());
+        break;
+    }
 }
 
 void sGaugeIncreaseEffectRoot_Update(sGaugeIncreaseEffectRoot* pThis)

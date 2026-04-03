@@ -5,6 +5,8 @@
 #include "commonOverlay.h"
 
 sBattleManager* gBattleManager = NULL;
+
+void computeDragonSprAndAglFromCursor(); // from mainMenuDebugTasks.cpp
 /*
 sBattleManager* gBattleManager
 {
@@ -177,6 +179,32 @@ void startDebugBattle(s32 battleOverlayId)
 {
     if (gBattleManager->m0_status == 1)
     {
+        // Max out dragon stats for debug battles
+        s_gameStats& gs = mainGameState.gameStats;
+        gs.m0_level = 50;
+        gs.m1_dragonLevel = DR_LEVEL_7_SOLO_WING;
+        gs.m18_statAxisScale = 100;
+        gs.m12_classMaxHP = 600;
+        gs.m16_classMaxBP = 200;
+        gs.mB8_maxHP = gs.m12_classMaxHP + dragonPerLevelMaxHPBP[gs.m1_dragonLevel].maxHP;
+        gs.mBA_maxBP = gs.m16_classMaxBP + dragonPerLevelMaxHPBP[gs.m1_dragonLevel].maxBP;
+        gs.m10_currentHP = gs.mB8_maxHP;
+        gs.m14_currentBP = gs.mBA_maxBP;
+        gs.mA_weaponType = (eItems)0xB; // bone slasher
+        gs.mC_laserPower = 100;
+        gs.mE_gunPower = 100;
+        computeDragonSprAndAglFromCursor();
+
+        // Give healing items
+        mainGameState.consumables[5] = 99; // elixir minor
+        mainGameState.consumables[6] = 99; // berserk micro
+
+        // Unlock all berserks (items 0x91 through 0xB3)
+        for (s16 i = 0x91; i <= 0xB3; i++)
+        {
+            mainGameState.setItemCount((eItems)i, 1);
+        }
+
         gBattleManager->m0_status = 2;
         gBattleManager->mA_pendingBattleOverlayId = battleOverlayId;
     }
