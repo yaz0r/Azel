@@ -6,6 +6,8 @@ const std::vector<quadColor> BTL_GenericData::m60AE42C = { {0x8E1F, 0x8F1F, 0x8F
 const std::vector<quadColor> BTL_GenericData::m60AE434 = { {0x83EE, 0x93EE, 0x93EE, 0x83EE} };
 const std::vector<quadColor> BTL_GenericData::m60AE43C = { {0x83FF, 0x83FF, 0x83FF, 0x83FF} };
 sLaserData BTL_GenericData::mLaserData;
+sLaserData BTL_GenericData::mBoltLaserData0;
+sLaserData BTL_GenericData::mBoltLaserData1;
 std::vector<sVdp1Quad> BTL_GenericData::m_0x60a7848_animatedQuad;
 std::vector<sVdp1Quad> BTL_GenericData::m_0x60a8b0c_animatedQuad;
 std::vector<sVdp1Quad> BTL_GenericData::m_0x60a8c24_animatedQuad;
@@ -41,34 +43,40 @@ std::vector<sVdp1Quad> initVdp1Quad(sSaturnPtr ptr) {
     return value;
 }
 
+// Parse a sLaserData from Saturn overlay address
+void BTL_GenericData::parseLaserData(sLaserData& out, sSaturnPtr ea)
+{
+    out.m4 = readSaturnS16(ea + 0x4);
+    out.m6 = readSaturnS16(ea + 0x6);
+    out.m8 = readSaturnS16(ea + 0x8);
+    out.mA = readSaturnS16(ea + 0xA);
+    out.mC = readSaturnS16(ea + 0xC);
+    out.mE = readSaturnS16(ea + 0xE);
+    out.m10 = readSaturnS16(ea + 0x10);
+    out.m12 = readSaturnS16(ea + 0x12);
+    out.m14 = readSaturnS16(ea + 0x14);
+    sSaturnPtr verticesEA = readSaturnEA(ea + 0x18);
+    sSaturnPtr colorsEA = readSaturnEA(ea + 0x1C);
+    out.m20_numLaserNodes = readSaturnU32(ea + 0x20);
+
+    out.m18_vertices.resize(out.m20_numLaserNodes);
+    out.m1C_colors.resize(out.m20_numLaserNodes);
+
+    for (int i = 0; i < out.m20_numLaserNodes; i++)
+    {
+        out.m18_vertices[i] = readSaturnFP(verticesEA + 4 * i);
+        out.m1C_colors[i][0] = readSaturnU16(colorsEA + 4 * 2 * i + 0);
+        out.m1C_colors[i][1] = readSaturnU16(colorsEA + 4 * 2 * i + 2);
+        out.m1C_colors[i][2] = readSaturnU16(colorsEA + 4 * 2 * i + 4);
+        out.m1C_colors[i][3] = readSaturnU16(colorsEA + 4 * 2 * i + 6);
+    }
+}
+
 BTL_GenericData::BTL_GenericData() : sSaturnMemoryFile("BTL_A3.PRG")
 {
-    sSaturnPtr laserDataEA = getSaturnPtr(0x60adce4);
-
-    mLaserData.m4 = readSaturnS16(laserDataEA + 0x4);
-    mLaserData.m6 = readSaturnS16(laserDataEA + 0x6);
-    mLaserData.m8 = readSaturnS16(laserDataEA + 0x8);
-    mLaserData.mA = readSaturnS16(laserDataEA + 0xA);
-    mLaserData.mC = readSaturnS16(laserDataEA + 0xC);
-    mLaserData.mE = readSaturnS16(laserDataEA + 0xE);
-    mLaserData.m10 = readSaturnS16(laserDataEA + 0x10);
-    mLaserData.m12 = readSaturnS16(laserDataEA + 0x12);
-    mLaserData.m14 = readSaturnS16(laserDataEA + 0x14);
-    sSaturnPtr laserVerticesEA = readSaturnEA(laserDataEA + 0x18);
-    sSaturnPtr laserColorsEA = readSaturnEA(laserDataEA + 0x1C);
-    mLaserData.m20_numLaserNodes = readSaturnU32(laserDataEA + 0x20);
-
-    mLaserData.m18_vertices.resize(mLaserData.m20_numLaserNodes);
-    mLaserData.m1C_colors.resize(mLaserData.m20_numLaserNodes);
-
-    for (int i = 0; i < mLaserData.m20_numLaserNodes; i++)
-    {
-        mLaserData.m18_vertices[i] = readSaturnFP(laserVerticesEA + 4 * i);
-        mLaserData.m1C_colors[i][0] = readSaturnU16(laserColorsEA + 4 * 2 * i + 0);
-        mLaserData.m1C_colors[i][1] = readSaturnU16(laserColorsEA + 4 * 2 * i + 2);
-        mLaserData.m1C_colors[i][2] = readSaturnU16(laserColorsEA + 4 * 2 * i + 4);
-        mLaserData.m1C_colors[i][3] = readSaturnU16(laserColorsEA + 4 * 2 * i + 6);
-    }
+    parseLaserData(mLaserData, getSaturnPtr(0x60adce4));
+    parseLaserData(mBoltLaserData0, getSaturnPtr(0x060acb74));
+    parseLaserData(mBoltLaserData1, getSaturnPtr(0x060acb98));
 
     m_0x60a7848_animatedQuad = initVdp1Quad(getSaturnPtr(0x60a7848));
     m_0x60a8b0c_animatedQuad = initVdp1Quad(getSaturnPtr(0x60a8b0c));

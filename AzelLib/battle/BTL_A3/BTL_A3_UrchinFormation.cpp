@@ -882,7 +882,8 @@ static void sFadeSubTask_Update(sFadeSubTask* pThis)
 }
 
 // 0605b61c
-static void urchinFormation_createFadeTask(p_workArea pParent, u16 color1, u16 color2, u16 duration, u16 color3, u16 color4, s16 duration2)
+// 0605b61c
+void urchinFormation_createFadeTask(p_workArea pParent, u16 color1, u16 color2, u16 duration, u16 color3, u16 color4, s16 duration2)
 {
     static const sFadeSubTask::TypedTaskDefinition definition = {
         nullptr,

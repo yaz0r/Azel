@@ -210,6 +210,16 @@ s32 sGunShotTask_UpdateSub1Sub2(sBattleTargetable* pTargetable, s16 param_2, s32
             }
         }
         break;
+    case 2:
+        if (!(pTargetable->m50_flags & 0x4000))
+        {
+            iVar2 = 0x10000;
+            if (pTargetable->m50_flags & 0x2000)
+            {
+                iVar2 = 0x8000;
+            }
+        }
+        break;
     default:
         assert(0);
         break;

@@ -163,13 +163,13 @@ void sBattleItemSelectionTask_Update(sBattleItemSelectionTask* pThis)
 
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x6)
         {
-            if ((*pThis->m24)[pThis->m3_currentPageIndex * 5 + pThis->m4].m2 &1)
+            if ((*pThis->m24)[pThis->m3_currentPageIndex * 5 + pThis->m5_currentSelectionInPage].m2 &1)
             {
                 playSystemSoundEffect(5);
             }
             else
             {
-                *pThis->mC_selectedEntry = pThis->m3_currentPageIndex * 5 + pThis->m4;
+                *pThis->mC_selectedEntry = pThis->m3_currentPageIndex * 5 + pThis->m5_currentSelectionInPage;
                 playSystemSoundEffect(0);
                 pThis->m0_state++;
             }

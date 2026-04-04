@@ -110,3 +110,6 @@ struct BTL_A3_UrchinFormation : public s_workAreaTemplateWithArg<BTL_A3_UrchinFo
 p_workArea Create_BTL_A3_UrchinFormation(p_workArea parent, const sGenericFormationData* config);
 p_workArea Create_BTL_A3_UrchinFormationConfig(p_workArea parent, u32 arg);
 
+// 0605b61c
+void urchinFormation_createFadeTask(p_workArea pParent, u16 color1, u16 color2, u16 duration, u16 color3, u16 color4, s16 duration2);
+

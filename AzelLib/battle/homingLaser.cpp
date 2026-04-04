@@ -56,21 +56,11 @@ struct sHomingLaserTask : public s_workAreaTemplateWithArgWithCopy<sHomingLaserT
     sVec3_FP* m8C_laserSource;
     sVec3_FP* m90_dragonPosition;
     sVec2_FP m94;
-    struct sF0
-    {
-        std::vector<sVec3_FP> m0_laserNodePosition;
-        s32 m4_numLaserNodes;
-        s32 m8;
-        s32 mC;
-        const sLaserData* m10_laserData;
-        u16 m14;
-
-        std::vector<quadColor> m18_color;
-    }mF0;
+    sHomingLaserTrailData mF0;
     // size 0x10C
 };
 
-void sHomingLaserTask_InitSub0(sHomingLaserTask::sF0* pThis, sHomingLaserTask* param_2, sVec3_FP* param_3, u16 param_4, const sLaserData* pLaserData)
+void sHomingLaserTask_InitSub0(sHomingLaserTrailData* pThis, p_workArea param_2, sVec3_FP* param_3, u16 param_4, const sLaserData* pLaserData)
 {
     pThis->m14 = param_4;
     pThis->m10_laserData = pLaserData;
@@ -85,7 +75,7 @@ void sHomingLaserTask_InitSub0(sHomingLaserTask::sF0* pThis, sHomingLaserTask* p
     pThis->mC = 0;
 }
 
-void sHomingLaserTask_InitSub1(sHomingLaserTask::sF0* pThis, sHomingLaserTask* param_2, sVec3_FP* param_3, u16 param_4, sVec3_FP* param_5, sVec3_FP* param_6)
+void sHomingLaserTask_InitSub1(sHomingLaserTrailData* pThis, p_workArea param_2, sVec3_FP* param_3, u16 param_4, sVec3_FP* param_5, sVec3_FP* param_6)
 {
     pThis->m18_color.resize(pThis->m4_numLaserNodes);
     sVec3_FP local_28 = FP_Div(*param_5 - *param_6, fixedPoint::fromInteger(pThis->m4_numLaserNodes - 1));
@@ -113,6 +103,25 @@ s16 dragonMorphVar2;
 s16 dragonMorphVar3;
 
 std::array<s32, 3> morphDragonAccumulator;
+
+// BTL_A3::0609dc3a
+void sHomingLaserTask_shiftTrailSegments(sHomingLaserTrailData* pTrail, sVec3_FP* pNewPos, sVec3_FP* pAutoScroll)
+{
+    s32 count = pTrail->m4_numLaserNodes;
+    while (count - 1 > pTrail->m8)
+    {
+        pTrail->m0_laserNodePosition[count - 1] = pTrail->m0_laserNodePosition[count - 2];
+        pTrail->m0_laserNodePosition[count - 1] += *pAutoScroll;
+        count--;
+    }
+
+    pTrail->m0_laserNodePosition[0] = *pNewPos;
+
+    if (pTrail->m8 <= pTrail->m4_numLaserNodes - 1)
+    {
+        pTrail->m8 += pTrail->mC;
+    }
+}
 
 void morphDragonSub1Sub0(s32 param_1, s32 param_2, s32 param_3)
 {
@@ -468,7 +477,7 @@ void sHomingLaserTask_DrawSub1Sub0(std::array<sVec3_FP, 2>& param1, std::array<f
     displayRaySegment_2Width(param1, param_2, param_3, param_4, param_5, param_6, param_7);
 }
 
-void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
+void sHomingLaserTask_DrawSub1(sHomingLaserTrailData* pThis)
 {
     if (pThis->m8 >= pThis->m4_numLaserNodes - 1)
     {
@@ -556,7 +565,7 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTask::sF0* pThis)
     }
 }
 
-void sHomingLaserTask_DrawSub0(sHomingLaserTask::sF0* pThis, int param_2, int param_3)
+void sHomingLaserTask_DrawSub0(sHomingLaserTrailData* pThis, int param_2, int param_3)
 {
     if (pThis->m8 >= pThis->m4_numLaserNodes - 1)
     {

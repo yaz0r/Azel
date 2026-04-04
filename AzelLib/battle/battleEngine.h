@@ -219,6 +219,7 @@ void battleEngine_resetBattleCameraPreset();
 void battleEngine_restoreCameraDefaultSub0();
 void battleGrid_setCameraFov(int fov);
 void sEnemyAttackCamera_updateSub0(int param_1);
+void syncM68KSoundCPU();
 
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);
 

@@ -26,6 +26,7 @@
 #include "kernel/graphicalObject.h"
 #include "kernel/fileBundle.h"
 #include "itemVisualEffect.h"
+#include "berserkEffects.h"
 #include "battleDamageDisplay.h"
 #include "kernel/fade.h"
 #include "interpolators/FPInterpolator.h"
@@ -41,6 +42,9 @@
 void BattleEnd_deleteSub0();
 void battleEngine_updateQuadrantFromAngle(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
 s32 createBattleCommandMenuSub2(s32 param1);
+
+// BTL_A3::06096048 — particle effect for certain berserks (laser storm, etc.)
+void FUN_06096048(s_battleEngine* pThis);
 
 struct sBattleCinematicBars : public s_workAreaTemplate<sBattleCinematicBars>
 {
@@ -3806,17 +3810,317 @@ static void useItemSub0(s8 param1, u32 param2)
 }
 
 // 0601e0b4 — triggers M68K sound CPU sync for visual effect lighting
-static void syncM68KSoundCPU()
+void syncM68KSoundCPU()
 {
     // Original: FUN_0601fdd0() + waits for M68K flag + addSlaveCommand(0,0,0,FUN_0601f04c)
     // This synchronizes the SH-2 with the M68K sound CPU for palette/lighting changes.
     // Not needed in the reimplementation as we don't have dual-CPU sync.
 }
 
+// 06007378
+static s16 computeBPCost(s16 baseCost)
+{
+    fixedPoint spiritFactor = FP_Div((s32)mainGameState.gameStats.mC2_dragonSpr, 200);
+    fixedPoint discountFactor = MTH_Mul(0x6666, spiritFactor);
+    fixedPoint actualCost = MTH_Mul((s32)baseCost << 16, fixedPoint(0x13333) - discountFactor);
+    return (s16)((u32)(actualCost + 0x8000) >> 16);
+}
+
+// BTL_A3::06066aa2 — deduct BP cost and decrement combo counter
+static void berserkConsumeBP(s_battleEngine* pThis, s8 comboCount)
+{
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x15] == 0)
+    {
+        const sObjectListEntry* entry = getObjectListEntry(pThis->m3A2_selectedBerserk);
+        s16 baseCost = (s16)(((u8)entry->m2 << 8) | (u8)entry->m3);
+        s16 bpCost = computeBPCost(baseCost);
+        mainGameState.gameStats.m14_currentBP -= bpCost;
+        pThis->m3B4.m16_combo -= comboCount;
+    }
+    increaseStatsCount(3);
+}
+
+// BTL_A3::06066af6 — frame counter for berserk attack startup
+static s32 berserkBeginAttack(s_battleEngine* pThis, s32 attackType)
+{
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    if (attackType == 0)
+    {
+        s16 frame = pThis->m384_battleModeDelay++;
+        if (frame > 0x27)
+        {
+            battleEngine_UpdateSub7Sub1();
+            pThis->m384_battleModeDelay = 0;
+            pGrid->m1BC_cameraRotationStep[0] = 0;
+            pGrid->m1BC_cameraRotationStep[1] = 0;
+            pThis->m38D_battleSubMode++;
+            return 1;
+        }
+    }
+    else if (attackType == 1)
+    {
+        s16 frame = pThis->m384_battleModeDelay++;
+        if (frame > 0x28)
+        {
+            pThis->m384_battleModeDelay = 0;
+            pGrid->m1BC_cameraRotationStep[0] = 0;
+            pGrid->m1BC_cameraRotationStep[1] = 0;
+            pThis->m38D_battleSubMode++;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// BTL_A3::060653a8 — apply HP or BP heal with visual effect
+static void berserkApplyHealEffect(s_battleEngine* pThis, s32 healAmount, s8 healType)
+{
+    s16 amount = (s16)healAmount;
+    s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
+    s32 actualHeal = 0;
+
+    if (healType == 0)
+    {
+        // HP heal
+        s16 needed = mainGameState.gameStats.mB8_maxHP - mainGameState.gameStats.m10_currentHP;
+        actualHeal = (amount <= needed) ? healAmount : (s32)needed;
+        mainGameState.gameStats.m10_currentHP += (s16)actualHeal;
+
+        sSaturnPtr hpEffectData = g_BTL_GenericData->getSaturnPtr(0x060ab2bc);
+        if (amount < 0x65)
+            createHealVisualEffect(pThis, hpEffectData, &pDragon->m8_position, 0x1800, 4, 0x28, 0x8000, 1);
+        else if (amount < 0xC9)
+            createHealVisualEffect(pThis, hpEffectData, &pDragon->m8_position, 0x1800, 6, 0x32, 0x8000, 1);
+        else
+            createHealVisualEffect(pThis, hpEffectData, &pDragon->m8_position, 0x1800, 8, 0x3C, 0x8000, 1);
+    }
+    else if (healType == 1)
+    {
+        // BP heal
+        s16 needed = mainGameState.gameStats.mBA_maxBP - mainGameState.gameStats.m14_currentBP;
+        actualHeal = (amount <= needed) ? healAmount : (s32)needed;
+        mainGameState.gameStats.m14_currentBP += (s16)actualHeal;
+
+        sSaturnPtr bpEffectData = g_BTL_GenericData->getSaturnPtr(0x060ab2c4);
+        if (amount < 0x65)
+            createHealVisualEffect(pThis, bpEffectData, &pDragon->m8_position, 0x1800, 4, 0x28, 0x8000, 1);
+        else if (amount < 0xC9)
+            createHealVisualEffect(pThis, bpEffectData, &pDragon->m8_position, 0x1800, 6, 0x32, 0x8000, 1);
+        else
+            createHealVisualEffect(pThis, bpEffectData, &pDragon->m8_position, 0x1800, 8, 0x3C, 0x8000, 1);
+    }
+
+    if (healType == 0 || healType == 1)
+    {
+        sVec3_FP offset(0, 0, 0x1000);
+        createDamageDisplayNumber(pThis, -(s16)actualHeal, &offset, 1);
+    }
+    refreshBattleGaugeAfterHeal();
+}
+
 // BTL_A3::06066c54
 static void battleEngine_useBerserkApplyEffect(s_battleEngine* pThis)
 {
-    Unimplemented();
+    s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    eItems berserkId = pThis->m3A2_selectedBerserk;
+    s8 berserkType = getObjectListEntry(berserkId)->m1_type;
+
+    if (berserkType == 0)
+    {
+        // Direct attack berserk
+        if (!berserkBeginAttack(pThis, 0))
+            return;
+
+        // Switch on berserk ID to create specific attack
+        switch (berserkId)
+        {
+        case m91_phantomSlashers:
+            berserk_createPhantomSlashers(pThis, 0);
+            break;
+        case m92_wraithSlashers:
+            berserk_createPhantomSlashers(pThis, 1);
+            break;
+        case m93_onslaught:
+            berserk_createPhantomSlashers(pThis, 2);
+            break;
+        case m97_cleansingWave:
+            berserk_createCleansingWave(pThis);
+            break;
+        case m98_dragonPhoenix:
+            berserk_createDragonPhoenix(pThis);
+            break;
+        case m99_prismLaser:
+            berserk_createLaser(pThis, 1);
+            break;
+        case m9B_plasmaVortex:
+            berserk_createPlasmaVortex(pThis);
+            break;
+        case m9C_lightningStorm:
+            berserk_createLightningStorm(pThis);
+            break;
+        case m9D_plasmaSwarm:
+            berserk_createPlasmaSwarm(pThis);
+            break;
+        case m9E_berserkerRage:
+            berserk_createBerserkerRage(pThis, 0, &pDragon->mFC_hotpoints[2]);
+            break;
+        case m9F_laserStorm:
+            berserk_createLaserStorm(pThis);
+            break;
+        case mA0_chainLaser:
+            berserk_createLaser(pThis, 0);
+            break;
+        case mA2_huntingScythe:
+            berserk_createHuntingScythe(pThis);
+            break;
+        case mA4_energyPrism:
+            berserk_createEnergyPrism(pThis);
+            break;
+        case m95_judgementDay:
+            useItem_applyHealing(pThis, 1);
+            break;
+        case m96_armageddon:
+            useItem_applyHealing(pThis, 2);
+            break;
+        case mA1_holySphere:
+            useItem_applyHealing(pThis, 0);
+            break;
+        default:
+            break;
+        }
+
+        // After attack: check if frame counter reached end
+        if (pThis->m384_battleModeDelay != 0x27)
+            return;
+
+        pGrid->m64_cameraRotationTarget[0] -= pGrid->m1BC_cameraRotationStep[0];
+        pGrid->m64_cameraRotationTarget[1] -= pGrid->m1BC_cameraRotationStep[1];
+        pGrid->mB4_cameraRotation = pGrid->m64_cameraRotationTarget;
+        pGrid->mB4_cameraRotation.m8_Z = pGrid->m64_cameraRotationTarget.m8_Z;
+        battleEngine_restoreCameraPostItem();
+        berserkConsumeBP(pThis, 2);
+    }
+    else if (berserkType == 1 || berserkType == 2)
+    {
+        // Buff/heal berserk
+        if (berserkId == mB1_healingWing)
+        {
+            // Special case: healing wing sets m4 flag
+            pThis->m188_flags.m4 = 1;
+            pThis->m384_battleModeDelay = 0;
+            pGrid->m1BC_cameraRotationStep[0] = 0;
+            pGrid->m1BC_cameraRotationStep[1] = 0;
+            pThis->m38D_battleSubMode++;
+            berserkConsumeBP(pThis, 2);
+            return;
+        }
+
+        if (!berserkBeginAttack(pThis, 1))
+            return;
+
+        // Switch on (berserkId - 0x94)
+        s32 berserkIndex = (s32)berserkId - 0x94;
+        switch (berserkIndex)
+        {
+        case 0: // 0x94 vengeance orbs — shield
+            pDragon->m1C0_statusModifiers |= 0x400;
+            berserk_createVengeanceOrbsShield(pThis);
+            berserkConsumeBP(pThis, 2);
+            return;
+        case 6: // 0x9A assault wing — attack buff
+            pDragon->m1C0_statusModifiers |= 0x80;
+            pDragon->m1E6_attackBuffTimer = -1;
+            pThis->m188_flags.m100_attackAnimationFinished = 1;
+            berserkConsumeBP(pThis, 3);
+            return;
+        case 0xF: // 0xA3 astral phantoms — shield
+            pDragon->m1C0_statusModifiers |= 0x400;
+            berserk_createAstralPhantomsShield(pThis);
+            berserkConsumeBP(pThis, 2);
+            return;
+        case 0x11: // 0xA5 shield
+            useItem_applyShieldEffect(pThis, &pDragon->m8_position);
+            pDragon->m1C0_statusModifiers |= 0x400;
+            pDragon->m1EC_shieldDuration = 0xF0;
+            berserkConsumeBP(pThis, 2);
+            return;
+        case 0x16: // 0xAA heal maxis
+        case 0x17: // 0xAB genesis
+        case 0x18: // 0xAC berserker wing
+        {
+            // HP heal — amount from lookup table
+            s32 healAmount = setDividend((s32)mainGameState.gameStats.mB8_maxHP << 16, 0x20000, 0x30000);
+            healAmount = (s16)((u32)(healAmount + 0x8000) >> 16);
+            berserkApplyHealEffect(pThis, healAmount, 0);
+            if (berserkId == mAA_healMaxis || berserkId == mAB_genesis || berserkId == mAC_berserkerWing)
+                berserkConsumeBP(pThis, 1);
+            else
+                berserkConsumeBP(pThis, 3);
+            return;
+        }
+        case 0x19: // 0xAD recover — cure all status
+        {
+            berserkConsumeBP(pThis, 1);
+            pDragon->m1C0_statusModifiers &= ~0x7F;
+            pDragon->m1D8 = 0;
+            pDragon->m1DA = 0;
+            pDragon->m1DC_poisonTimer = 0;
+            pDragon->m1DE = 0;
+            pDragon->m1E0 = 0;
+            pDragon->m1E2 = 0;
+            s16 val = createBattleCommandMenuSub2(0x3C);
+            pThis->m3B4.m0_max = (s32)val << 16;
+            createStatusCureVisualEffect(pThis, 10);
+            return;
+        }
+        case 0x1A: // 0xAE protection wing — BP restore
+        {
+            s32 healAmount = FP_Div((s32)mainGameState.gameStats.mBA_maxBP << 16, 0x50000);
+            healAmount = (s16)((u32)(healAmount + 0x8000) >> 16);
+            berserkApplyHealEffect(pThis, healAmount, 1);
+            berserkConsumeBP(pThis, 1);
+            return;
+        }
+        case 0x1B: // 0xAF swift wing — defense buff
+            pDragon->m1C0_statusModifiers |= 0x100;
+            pDragon->m1E8_defenseBuffTimer = -1;
+            pThis->m188_flags.m100_attackAnimationFinished = 1;
+            berserkConsumeBP(pThis, 3);
+            return;
+        case 0x1C: // 0xB0 escape — agility buff + cure poison
+            pDragon->m1EA_agilityBuffTimer = -1;
+            pDragon->m1DC_poisonTimer = 0;
+            pDragon->m1C0_statusModifiers &= ~0x4;
+            pDragon->m1C0_statusModifiers |= 0x200;
+            {
+                s16 val = createBattleCommandMenuSub2(0x3C);
+                pThis->m3B4.m0_max = (s32)val << 16;
+            }
+            pThis->m188_flags.m100_attackAnimationFinished = 1;
+            berserkConsumeBP(pThis, 3);
+            return;
+        case 0x1E: // 0xB2 field map — HP restore
+        {
+            s32 healAmount = setDividend((s32)mainGameState.gameStats.mB8_maxHP << 16, 0x20000, 0x30000);
+            healAmount = (s16)((u32)(healAmount + 0x8000) >> 16);
+            berserkApplyHealEffect(pThis, healAmount, 0);
+            if (berserkId == mAE_protectionWing || berserkId == mB2_fieldMap)
+                berserkConsumeBP(pThis, 3);
+            else
+                berserkConsumeBP(pThis, 1);
+            return;
+        }
+        default:
+            pThis->m188_flags.m100_attackAnimationFinished = 1;
+            return;
+        }
+    }
+    else
+    {
+        // Unknown type — just set m100
+        pThis->m188_flags.m100_attackAnimationFinished = 1;
+    }
 }
 
 // BTL_A3::06091720
@@ -4069,6 +4373,13 @@ void battleEngine_updateBattleMode_4_useBerserk(s_battleEngine* pThis)
                 battleGrid_setupLightInterpolation2(0x26, pGrid->m1E4_lightFalloff0, sVar4);
                 sVec3_FP local_24;
                 transformAndAddVecByCurrentMatrix(&pDragon->mFC_hotpoints[2], &local_24);
+                dragonFieldTaskDrawSub1Sub1(local_24.m0_X, local_24.m4_Y, local_24.m8_Z, 0x7000);
+                s16 selectedBerserk = pThis->m3A2_selectedBerserk;
+                if (selectedBerserk == 0x95 || selectedBerserk == 0x96 || selectedBerserk == 0xA1) {
+                    FUN_06096048(pThis);
+                }
+                pThis->m384_battleModeDelay = 0;
+                pThis->m38D_battleSubMode++;
                 return;
             } else if (bVar1 == 1 || bVar1 == 2) {
                 if (pDragon->m1CC_currentAnimation != 0x11)
@@ -4087,6 +4398,8 @@ void battleEngine_updateBattleMode_4_useBerserk(s_battleEngine* pThis)
         if (pEngine->m188_flags.m20000) {
             sVec3_FP local_24;
             transformAndAddVecByCurrentMatrix(&pDragon->mFC_hotpoints[2], &local_24);
+            s32 flareSize = setDividend(0x2000, (0x27 - pThis->m384_battleModeDelay) * 0x10000, 0x270000);
+            dragonFieldTaskDrawSub1Sub1(local_24.m0_X, local_24.m4_Y, local_24.m8_Z, flareSize);
             return;
         }
         break;
