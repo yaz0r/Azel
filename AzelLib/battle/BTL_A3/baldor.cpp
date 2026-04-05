@@ -458,7 +458,7 @@ void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param
         break;
     }
 
-    createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60abef4_animatedQuads[iVar2], param1, param2, 0, param3, 0, 0);
+    createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60abef4_animatedQuads[iVar2], param1, param2, 0, param3, nullptr, 0);
 }
 
 // 0605bae8 — implemented in battleDamageDisplay.cpp
@@ -612,7 +612,7 @@ static void BaldorProjectile_update(sBaldorProjectile* pThis)
             createParticleEffect(
                 dramAllocatorEnd[pThis->m3C_trailFileBundleIdx].mC_fileBundle,
                 &g_BTL_GenericData->m_0x60a8c24_animatedQuad, // TODO: resolve quad from m38_trailQuadData
-                &pThis->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+                &pThis->m8_position, nullptr, nullptr, 0x10000, {}, 0);
         }
     }
 
@@ -643,7 +643,7 @@ static void BaldorProjectile_update(sBaldorProjectile* pThis)
             createParticleEffect(
                 dramAllocatorEnd[pThis->m44_hitFileBundleIdx].mC_fileBundle,
                 &g_BTL_GenericData->m_0x60a8c24_animatedQuad, // TODO: resolve quad from m40_hitQuadData
-                &pThis->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+                &pThis->m8_position, nullptr, nullptr, 0x10000, {}, 0);
         }
         pThis->m32_timer = 0;
     }
@@ -657,7 +657,7 @@ static void BaldorProjectile_update(sBaldorProjectile* pThis)
             createParticleEffect(
                 dramAllocatorEnd[pThis->m44_hitFileBundleIdx].mC_fileBundle,
                 &g_BTL_GenericData->m_0x60a8c24_animatedQuad, // TODO: resolve quad from m40_hitQuadData
-                &pThis->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+                &pThis->m8_position, nullptr, nullptr, 0x10000, {}, 0);
         }
         // play expiry sound
         if ((s8)pThis->m48_hitSoundId >= 0)
@@ -777,7 +777,7 @@ p_workArea BaldorAttack_createAttackModel(sVec3_FP* partPosition, sVec3_FP* targ
         createParticleEffect(
             dramAllocatorEnd[readSaturnU8(param3 + 0x2A)].mC_fileBundle,
             &g_BTL_GenericData->m_0x60a8c24_animatedQuad, // TODO: use proper quad from param3+0x1C
-            partPosition, nullptr, nullptr, 0x10000, 0, 0);
+            partPosition, nullptr, nullptr, 0x10000, {}, 0);
     }
 
     pProj->m38_trailQuadData = readSaturnEA(param3 + 0x20);
@@ -954,7 +954,7 @@ void Baldor_update_mode1(sBaldor* pThis)
             return;
 
         applyDamageToDragon(gBattleManager->m10_battleOverlay->m18_dragon->m8C, 27, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 3, gBattleManager->m10_battleOverlay->m18_dragon->m8_position - *pThis->m1C_translation.m0_current, 0);
-        createParticleEffect(dramAllocatorEnd[6].mC_fileBundle, &g_BTL_GenericData->m_0x60a9120_animatedQuad, &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, 0, 0);
+        createParticleEffect(dramAllocatorEnd[6].mC_fileBundle, &g_BTL_GenericData->m_0x60a9120_animatedQuad, &gBattleManager->m10_battleOverlay->m18_dragon->m8_position, nullptr, nullptr, 0x10000, nullptr, 0);
         playSystemSoundEffect(0x67);
         pThis->m9_attackStatus = 3;
         break;

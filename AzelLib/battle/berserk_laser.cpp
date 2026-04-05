@@ -22,6 +22,8 @@
 #include "kernel/graphicalObject.h"
 #include "kernel/vdp1Allocator.h"
 #include "BTL_A3/BTL_A3_UrchinFormation.h"
+#include "kernel/rayDisplay.h"
+#include "battle/particleEffect.h"
 
 struct sLaserBerserkTask : public s_workAreaTemplateWithCopy<sLaserBerserkTask>
 {
@@ -187,6 +189,89 @@ static void laserBerserk_initTrailBuffer(sLaserBerserkTask::sBeamTrail* pTrail, 
     pTrail->mC_growthStep = 0;
 }
 
+// BTL_A3::060a32b2 — hit spark periodic particle spawner
+struct sHitSparkTask : public s_workAreaTemplateWithCopy<sHitSparkTask>
+{
+    npcFileDeleter* m8_fileBundle;
+    const std::vector<sVdp1Quad>* mC_vdp1Quad;
+    sVec3_FP m10_position;
+    s32 m40_spawnInterval;
+    s16 m46_timer;
+    s16 m48_countdown;
+    s32 m58_radius;
+    s32 m64_scale;
+    const quadColor* m80_pGouraudColors;
+    // size 0x84
+};
+
+// BTL_A3::060a3338
+static void sHitSparkTask_Update(sHitSparkTask* pThis)
+{
+    pThis->m46_timer++;
+    if (pThis->m46_timer > pThis->m40_spawnInterval)
+    {
+        sVec3_FP randomAngles;
+        randomAngles[0] = randomNumber();
+        randomAngles[1] = randomNumber();
+        randomAngles[2] = randomNumber();
+
+        sVec3_FP offset = {};
+        offset[2] = fixedPoint(pThis->m58_radius);
+
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pThis->m10_position);
+        rotateCurrentMatrixYXZ(&randomAngles);
+        sVec3_FP transformed;
+        transformAndAddVecByCurrentMatrix(&offset, &transformed);
+        sVec3_FP worldPos;
+        transformAndAddVec(transformed, worldPos, cameraProperties2.m28[0]);
+        popMatrix();
+
+        pThis->m46_timer = 0;
+        createParticleEffect(
+            pThis->m8_fileBundle,
+            pThis->mC_vdp1Quad,
+            &worldPos,
+            &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta,
+            nullptr,
+            pThis->m64_scale,
+            pThis->m80_pGouraudColors,
+            0);
+    }
+
+    pThis->m48_countdown--;
+    if (pThis->m48_countdown < 0)
+    {
+        pThis->getTask()->markFinished();
+    }
+}
+
+// BTL_A3::060a32b2
+static sHitSparkTask* createHitSparkTask(s_workAreaCopy* pParent, npcFileDeleter* pFileBundle, const std::vector<sVdp1Quad>* pVdp1Quad, sVec3_FP* pPos, s32 radius, s16 spawnInterval, u16 countdown, const quadColor* pGouraudColors)
+{
+    static const sHitSparkTask::TypedTaskDefinition definition = {
+        nullptr,
+        sHitSparkTask_Update,
+        nullptr,
+        nullptr,
+    };
+
+    sHitSparkTask* pNewTask = createSiblingTaskWithCopy<sHitSparkTask>(pParent, &definition);
+    if (pNewTask == nullptr)
+        return nullptr;
+
+    pNewTask->m8_fileBundle = pFileBundle;
+    pNewTask->mC_vdp1Quad = pVdp1Quad;
+    pNewTask->m10_position = *pPos;
+    pNewTask->m58_radius = radius;
+    pNewTask->m40_spawnInterval = (s32)spawnInterval;
+    pNewTask->m46_timer = spawnInterval;
+    pNewTask->m48_countdown = (s16)countdown;
+    pNewTask->m64_scale = 0x10000;
+    pNewTask->m80_pGouraudColors = pGouraudColors;
+    return pNewTask;
+}
+
 // BTL_A3::060968b0
 static void sLaserBerserkTask_Update(sLaserBerserkTask* pThis)
 {
@@ -232,8 +317,10 @@ static void sLaserBerserkTask_Update(sLaserBerserkTask* pThis)
 
             if (hitResult > 0)
             {
-                // FUN_060a32b2 — creates hit spark VDP1 visual sub-task (0x84 bytes, visual only)
-                // FUN_060a32b2(pThis, vdp1Data, &sVdp1Quad_060ae454, targetPos, 0x5000, 2, 0x28, 0x060ad80a)
+                sVec3_FP* sparkPos = getBattleTargetablePosition(*pThis->m4C_pTargetable);
+                createHitSparkTask(pThis, dramAllocatorEnd[0].mC_fileBundle,
+                    &BTL_GenericData::m_0x60ae454_animatedQuad,
+                    sparkPos, 0x5000, 2, 0x28, &BTL_GenericData::m_0x60ad80a_gouraudColors);
 
                 // Apply SPR-scaled damage to target
                 s16 baseDmg = phantomSlasher_getBaseDamage(pThis->mE2_baseDamage);
@@ -318,13 +405,45 @@ static void sLaserBerserkTask_Update(sLaserBerserkTask* pThis)
     }
 }
 
+// BTL_A3::0609d9ac
+static void renderBeamTrailSegments(sLaserBerserkTask::sBeamTrail* pTrail, s32 frameCount, s32 maxFrames)
+{
+    sSaturnPtr config = pTrail->m10_config;
+    u16 charAddr = pTrail->m14_vdp1Param + readSaturnU16(config + 0x04);
+    s16 charSize = readSaturnS16(config + 0x06);
+    u16 charColor = readSaturnU16(config + 0x08);
+    sSaturnPtr widthArray = readSaturnEA(config + 0x0C);
+    sSaturnPtr colorArray = readSaturnEA(config + 0x10);
+
+    s32 count = pTrail->m4_numSegments;
+    while (count - 1 > pTrail->m8_activeCount)
+    {
+        std::array<sVec3_FP, 2> points;
+        points[0] = pTrail->m0_pSegments[count - 1];
+        points[1] = pTrail->m0_pSegments[count - 2];
+
+        s32 width = setDividend(readSaturnS32(widthArray + (count - 2) * 4), frameCount, maxFrames);
+
+        // Read per-segment quad color from config color array (4 u16s per entry)
+        s32 colorOff = (count - 2) * 8;
+        quadColor qc;
+        qc[0] = readSaturnU16(colorArray + colorOff + 0);
+        qc[1] = readSaturnU16(colorArray + colorOff + 2);
+        qc[2] = readSaturnU16(colorArray + colorOff + 4);
+        qc[3] = readSaturnU16(colorArray + colorOff + 6);
+
+        displayRaySegment(points, width, charAddr, charSize, charColor, &qc, 8);
+        count--;
+    }
+}
+
 // BTL_A3::06096ca0
 static void sLaserBerserkTask_Draw(sLaserBerserkTask* pThis)
 {
     // Ghidra: transformAndAddVecByCurrentMatrix(*(sVec3_FP**)(param_1+0x58), ...)
     // m58 is the trail struct; *(s32*)m58 = pointer to trail data; first entry = beam source pos
     sVec3_FP screenPos;
-    sVec3_FP* pBeamSource = (sVec3_FP*)(pThis->m58_trails[0].m0_pSegments);
+    sVec3_FP* pBeamSource = pThis->m58_trails[0].m0_pSegments;
     if (pBeamSource)
     {
         transformAndAddVecByCurrentMatrix(pBeamSource, &screenPos);
@@ -335,12 +454,12 @@ static void sLaserBerserkTask_Draw(sLaserBerserkTask* pThis)
     }
     dragonFieldTaskDrawSub1Sub1(screenPos.m0_X, screenPos.m4_Y, screenPos.m8_Z, 0xA000);
 
-    // TODO: renderBeamTrailSegments(&m58_trails[0], m50, 0x1E)
-    // renderBeamTrailSegments(&pThis->m58_trails[0], pThis->m50_frameCounter, 0x1E);
+    renderBeamTrailSegments(&pThis->m58_trails[0], pThis->m50_frameCounter, 0x1E);
 
-    // TODO: dual-beam trail render
-    // if (pThis->mDF_dualBeam != 0)
-    //     renderBeamTrailSegments(&pThis->m58_trails[1], pThis->m50_frameCounter, 0x1E);
+    if (pThis->mDF_dualBeam != 0)
+    {
+        renderBeamTrailSegments(&pThis->m58_trails[1], pThis->m50_frameCounter, 0x1E);
+    }
 }
 
 // BTL_A3::06096530

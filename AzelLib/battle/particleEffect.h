@@ -1,4 +1,4 @@
 #pragma once
 
 #include "kernel/vdp1AnimatedQuad.h"
-void createParticleEffect(npcFileDeleter* param1, const std::vector<sVdp1Quad>* param2, const sVec3_FP* param3, sVec3_FP* param4, sVec3_FP* param5, s32 param6, s32 param7, s16 param8);
+void createParticleEffect(npcFileDeleter* pParent, const std::vector<sVdp1Quad>* pVdp1Quad, const sVec3_FP* pPosition, sVec3_FP* pVelocity, sVec3_FP* pAcceleration, s32 scale, const quadColor* gouraudColors, s16 lifetime);

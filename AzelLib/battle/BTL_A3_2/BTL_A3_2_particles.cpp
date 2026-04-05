@@ -56,7 +56,7 @@ static void battleParticle_drawWithScale(sBattleParticle* pThis)
 // 06074676
 static void battleParticle_drawWithGouraud(sBattleParticle* pThis)
 {
-    drawProjectedParticleWithGouraud(&pThis->m8_quad, &pThis->m10_position, pThis->m38_gouraud.data());
+    drawProjectedParticleWithGouraud(&pThis->m8_quad, &pThis->m10_position, &pThis->m38_gouraud);
 }
 
 // 060746f4

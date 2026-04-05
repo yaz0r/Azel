@@ -19,6 +19,9 @@ struct s_BTL_A3_Env : public s_workAreaTemplate<s_BTL_A3_Env>
     s8 m52;
     s8 m55;
     npcFileDeleter* m58;
+    s8 m5C;
+    s8 m5D_pad[0x13];
+    u32 m70_flags;
     // 0x9C
 };
 

@@ -281,7 +281,7 @@ static void sCleansingWaveTask_Update(sCleansingWaveTask* pThis)
             goto animationUpdate;
 
         // Init model from mA9C file data
-        pThis->m8_rawModelData = pEngine->mA9C;
+        pThis->m8_rawModelData = pEngine->mA9C_berzerkCustomModel;
         s_fileBundle* pBundle = (s_fileBundle*)pThis->m8_rawModelData;
         u32 poseFileOffset = pBundle->getRawFileOffset(0x4C);
         s32 initResult = init3DModelRawData(pThis, &pThis->mC_model, 0, pBundle, 4,

@@ -37,7 +37,7 @@ static void PattergoHealerParticleEffect_update(sPattergoHealerEffectTask* pThis
         pThis->m0_positionPtr,
         (sVec3_FP*)local_1c,
         nullptr,
-        0x10000, 0,
+        0x10000, {},
         (s16)(((u16)iVar2 & 0x1f) + 0xf));
 }
 

@@ -1696,7 +1696,7 @@ static p_workArea Create_BTL_T0_Formation(p_workArea parent, u32 existingFormati
 // 06057f34
 static void BTL_T0_env_InitVdp2(s_BTL_A3_Env* pThis)
 {
-    gBattleManager->m10_battleOverlay->m1C_envTask = (p_workArea)pThis;
+    gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
     initNBG1Layer();
     asyncDmaCopy(g_BTL_T0->getSaturnPtr(0x060aa76c), getVdp2Cram(0x400), 0x200, 0);

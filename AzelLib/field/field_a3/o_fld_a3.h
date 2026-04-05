@@ -13,7 +13,6 @@ struct FLD_A3_data : public sSaturnMemoryFile
         m_0x0609518C_animatedQuad = initVdp1Quad(getSaturnPtr(0x0609518C));
         m_0x06095330_animatedQuad = initVdp1Quad(getSaturnPtr(0x06095330));
         m_savePointParticleQuad = initVdp1Quad(getSaturnPtr(0x06095640));
-        m_savePointGouraudColors = getSaturnPtr(0x060957D0);
         m_explosionQuad = initVdp1Quad(getSaturnPtr(0x06082ab8));
         m_smokeQuad = initVdp1Quad(getSaturnPtr(0x06082d58));
         m_waterfallSprayQuad = initVdp1Quad(getSaturnPtr(0x06082818));
@@ -31,7 +30,6 @@ struct FLD_A3_data : public sSaturnMemoryFile
     std::vector<sVdp1Quad> m_waterfallSplashQuadA; // 0x06082700
     std::vector<sVdp1Quad> m_waterfallSplashQuadB; // 0x060829a0
     std::vector<sVdp1Quad> m_waterfallDropletQuad; // 0x06082674
-    sSaturnPtr m_savePointGouraudColors;
 };
 
 extern FLD_A3_data* gFLD_A3;

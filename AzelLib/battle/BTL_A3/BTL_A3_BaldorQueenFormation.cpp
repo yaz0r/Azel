@@ -411,7 +411,7 @@ void baldorQueenFormation_updateMode3(BTL_A3_BaldorQueenFormation* pThis) {
                     if (pThis->mB_baldorsQuadrant == 2) {
                         randPosition[2] = -randPosition[2];
                     }
-                    createParticleEffect(dramAllocatorEnd[0x10].mC_fileBundle, &g_BTL_GenericData->m_0x60a8fb4_animatedQuad, &temp, &randPosition, nullptr, 0x10000, 0, (randomNumber() & 0xF) + 8);
+                    createParticleEffect(dramAllocatorEnd[0x10].mC_fileBundle, &g_BTL_GenericData->m_0x60a8fb4_animatedQuad, &temp, &randPosition, nullptr, 0x10000, nullptr, (randomNumber() & 0xF) + 8);
                     playSystemSoundEffect(0x66);
                     pThis->m1_formationSubState = pThis->m1_formationSubState + 1;
                     pThis->m14 = 0x1b;

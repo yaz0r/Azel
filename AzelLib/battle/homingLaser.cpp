@@ -280,7 +280,7 @@ void sHomingLaserTask_UpdateSub0(sHomingLaserTask* pThis)
         local_20[1] = performModulo2(0x111, randomNumber()) - 0x88;
         local_20[2] = performModulo2(0x111, randomNumber()) - 0x88;
 
-        createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60b0658_animatedQuad, &pThis->m60[0], &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, &local_20, 0x10000, 0, 0);
+        createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60b0658_animatedQuad, &pThis->m60[0], &gBattleManager->m10_battleOverlay->m4_battleEngine->m1A0_battleAutoScrollDelta, &local_20, 0x10000, nullptr, 0);
     }
 }
 

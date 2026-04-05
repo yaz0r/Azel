@@ -323,7 +323,7 @@ void createExplosionAtPosition(sVec3_FP* param_1, sVec3_FP* param_2, int param_3
         assert(0);
     }
 
-    createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60abef4_animatedQuads[entryToUse], param_1, param_2, nullptr, param_3, 0, 0);
+    createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60abef4_animatedQuads[entryToUse], param_1, param_2, nullptr, param_3, nullptr, 0);
 }
 
 void sGunShotTask_Update(sGunShotTask* pThis)

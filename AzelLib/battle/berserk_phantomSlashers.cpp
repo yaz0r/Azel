@@ -269,7 +269,7 @@ static void phantomSlasherProjectile_flyToTarget(sPhantomSlasherProjectileTask* 
         pThis->m2C_rotAccel[2] += sinCos;
 
         // Init main model
-        pThis->m0_rawModelData = pEngine->mA9C;
+        pThis->m0_rawModelData = pEngine->mA9C_berzerkCustomModel;
         u8 level = pParent->m57_level;
         s_fileBundle* pBundle = (s_fileBundle*)pThis->m0_rawModelData;
         s32 initResult = init3DModelRawData(pThis, &pThis->m58_mainModel, 0, pBundle,

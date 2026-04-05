@@ -58,7 +58,7 @@ void BaldorQueen_processDamage(sBaldorQueen* pThis) {
                     velocity[0] = -pThis->m14_targetable[i].m34_impactVector[0] + fixedPoint((s32)((randomNumber() & 0x1FFF) - 0xFFF));
                     velocity[1] = -pThis->m14_targetable[i].m34_impactVector[1] + fixedPoint((s32)((randomNumber() & 0x1FFF) - 0xFFF));
                     velocity[2] = -pThis->m14_targetable[i].m34_impactVector[2] + fixedPoint((s32)((randomNumber() & 0x1FFF) - 0xFFF));
-                    createParticleEffect(dramAllocatorEnd[0x10].mC_fileBundle, &g_BTL_GenericData->m_0x60a8b0c_animatedQuad, &worldPos, &velocity, nullptr, 0x10000, 0, 0);
+                    createParticleEffect(dramAllocatorEnd[0x10].mC_fileBundle, &g_BTL_GenericData->m_0x60a8b0c_animatedQuad, &worldPos, &velocity, nullptr, 0x10000, nullptr, 0);
                 }
             }
         }
@@ -114,7 +114,7 @@ void BaldorQueen_updateMode0(sBaldorQueen* pThis) {
             spawnLocation[2] = (randomNumber() & 0xFFF) - 0x7FF;
 
             sVec3_FP tempVector2 = {0, -0x2C, 0};
-            createParticleEffect(dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_fileBundle, &g_BTL_GenericData->m_0x60a8c24_animatedQuad, &tempVec, &spawnLocation, &tempVector2, 0x10000, 0, (randomNumber() & 0x1F) + 0x18);
+            createParticleEffect(dramAllocatorEnd[readSaturnU8(pThis->m3C_dataPtr)].mC_fileBundle, &g_BTL_GenericData->m_0x60a8c24_animatedQuad, &tempVec, &spawnLocation, &tempVector2, 0x10000, nullptr, (randomNumber() & 0x1F) + 0x18);
         }
     }
     if (pThis->m34_formationEntry->m49 == 2) {

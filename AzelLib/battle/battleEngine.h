@@ -179,8 +179,8 @@ struct s_battleEngine : public s_workAreaTemplateWithArgWithCopy<s_battleEngine,
     std::array<s16, 10> m484;
     s16 m498_numEnemies;
     std::array<s_battleEnemy, 0x80> m49C_enemies;
-    u8* mA9C;
-    struct s_vdp1AllocationNode* mAA0;
+    u8* mA9C_berzerkCustomModel;
+    struct s_vdp1AllocationNode* mAA0_berzerkCustomTexture;
     p_workArea mAA4;
     // size: 0xaa8
 };

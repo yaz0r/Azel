@@ -14,6 +14,8 @@ std::vector<sVdp1Quad> BTL_GenericData::m_0x60a8c24_animatedQuad;
 std::vector<sVdp1Quad> BTL_GenericData::m_0x60a8fb4_animatedQuad;
 std::vector<sVdp1Quad> BTL_GenericData::m_0x60b0658_animatedQuad;
 std::vector<sVdp1Quad> BTL_GenericData::m_0x60a9120_animatedQuad;
+std::vector<sVdp1Quad> BTL_GenericData::m_0x60ae454_animatedQuad;
+quadColor BTL_GenericData::m_0x60ad80a_gouraudColors;
 std::vector<std::vector<sVdp1Quad>> BTL_GenericData::m_0x60abef4_animatedQuads;
 
 BTL_GenericData* g_BTL_GenericData = nullptr;
@@ -84,6 +86,12 @@ BTL_GenericData::BTL_GenericData() : sSaturnMemoryFile("BTL_A3.PRG")
     m_0x60a8fb4_animatedQuad = initVdp1Quad(getSaturnPtr(0x60a8fb4));
     m_0x60b0658_animatedQuad = initVdp1Quad(getSaturnPtr(0x60b0658));
     m_0x60a9120_animatedQuad = initVdp1Quad(getSaturnPtr(0x60a9120));
+    m_0x60ae454_animatedQuad = initVdp1Quad(getSaturnPtr(0x60ae454));
+    {
+        sSaturnPtr colorPtr = getSaturnPtr(0x060ad80a);
+        for (int i = 0; i < 4; i++)
+            m_0x60ad80a_gouraudColors[i] = readSaturnU16(colorPtr + i * 2);
+    }
 
     // TODO: figure out how many there are (at least 9)
     for (int i = 0; i < 9; i++) {

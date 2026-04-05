@@ -10,7 +10,7 @@ struct sParticleBillboard
     float positions[3]; // view-space position
     float halfWidth;
     float halfHeight;
-    float color[4];     // gouraud tint (RGBA float)
+    float color[4][4];  // per-vertex gouraud tint (4 vertices × RGBA float)
     u16 CMDPMOD;
     u16 CMDCOLR;
     u16 CMDSRCA;
@@ -77,8 +77,11 @@ int vdp1DrawQuadScaled(sAnimatedQuad* pThis, sVec3_FP* position, fixedPoint scal
             bb.CMDCOLR = pThis->m4_vdp1Memory + quad.mA_CMDCOLR;
         else
             bb.CMDCOLR = quad.mA_CMDCOLR;
-        bb.color[0] = bb.color[1] = bb.color[2] = 0.0f;
-        bb.color[3] = 1.0f;
+        for (int i = 0; i < 4; i++)
+        {
+            bb.color[i][0] = bb.color[i][1] = bb.color[i][2] = 0.0f;
+            bb.color[i][3] = 1.0f;
+        }
 
         gPendingParticleBillboards.push_back(bb);
         return 1;
@@ -87,7 +90,7 @@ int vdp1DrawQuadScaled(sAnimatedQuad* pThis, sVec3_FP* position, fixedPoint scal
 }
 
 // 0602d0dc
-int drawProjectedParticleWithGouraud(sAnimatedQuad* pQuad, sVec3_FP* position, u16* gouraudColors)
+int drawProjectedParticleWithGouraud(sAnimatedQuad* pQuad, sVec3_FP* position, const quadColor* gouraudColors)
 {
     const sVdp1Quad& quad = pQuad->m0_quad->at(pQuad->m7_currentFrame);
 
@@ -113,17 +116,22 @@ int drawProjectedParticleWithGouraud(sAnimatedQuad* pQuad, sVec3_FP* position, u
 
         if (gouraudColors)
         {
-            // Saturn gouraud: RGB555 as signed offset centered at 16
-            u16 gc = gouraudColors[0];
-            bb.color[0] = ((float)((gc >> 0) & 0x1F) - 16.0f) / 16.0f;
-            bb.color[1] = ((float)((gc >> 5) & 0x1F) - 16.0f) / 16.0f;
-            bb.color[2] = ((float)((gc >> 10) & 0x1F) - 16.0f) / 16.0f;
-            bb.color[3] = 1.0f;
+            for (int i = 0; i < 4; i++)
+            {
+                u16 gc = (*gouraudColors)[i];
+                bb.color[i][0] = ((float)((gc >> 0) & 0x1F) - 16.0f) / 16.0f;
+                bb.color[i][1] = ((float)((gc >> 5) & 0x1F) - 16.0f) / 16.0f;
+                bb.color[i][2] = ((float)((gc >> 10) & 0x1F) - 16.0f) / 16.0f;
+                bb.color[i][3] = 1.0f;
+            }
         }
         else
         {
-            bb.color[0] = bb.color[1] = bb.color[2] = 0.0f; // no gouraud tint
-            bb.color[3] = 1.0f; // fully opaque
+            for (int i = 0; i < 4; i++)
+            {
+                bb.color[i][0] = bb.color[i][1] = bb.color[i][2] = 0.0f;
+                bb.color[i][3] = 1.0f;
+            }
         }
 
         gPendingParticleBillboards.push_back(bb);
@@ -196,12 +204,11 @@ void flushParticleBillboards()
         float hh = bb.halfHeight;
 
         // Camera-facing billboard in view space (camera looks down +Z)
-        float r = bb.color[0], g = bb.color[1], b = bb.color[2], a = bb.color[3];
         BillboardVertex verts[4] = {
-            { {cx - hw, cy + hh, cz}, {0, 0}, {r, g, b, a} },
-            { {cx + hw, cy + hh, cz}, {1, 0}, {r, g, b, a} },
-            { {cx + hw, cy - hh, cz}, {1, 1}, {r, g, b, a} },
-            { {cx - hw, cy - hh, cz}, {0, 1}, {r, g, b, a} },
+            { {cx - hw, cy + hh, cz}, {0, 0}, {bb.color[0][0], bb.color[0][1], bb.color[0][2], bb.color[0][3]} },
+            { {cx + hw, cy + hh, cz}, {1, 0}, {bb.color[1][0], bb.color[1][1], bb.color[1][2], bb.color[1][3]} },
+            { {cx + hw, cy - hh, cz}, {1, 1}, {bb.color[2][0], bb.color[2][1], bb.color[2][2], bb.color[2][3]} },
+            { {cx - hw, cy - hh, cz}, {0, 1}, {bb.color[3][0], bb.color[3][1], bb.color[3][2], bb.color[3][3]} },
         };
 
         memcpy(vb.data, verts, sizeof(verts));

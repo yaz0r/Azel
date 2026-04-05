@@ -18,6 +18,8 @@
 #include "battleResultScreen.h"
 #include "gunShotRootTask.h"
 #include "homingLaser.h"
+#include "BTL_A3/BTL_A3_map6.h"
+#include "battleBerserkScrollEffect.h"
 #include "kernel/debug/trace.h"
 #include "kernel/cinematicBarsTask.h"
 #include "items.h"
@@ -484,36 +486,9 @@ void battleEngine_resetCameraInterpolation()
     pBattleGrid->mC0_cameraRotationInterpolation.zeroize();
 }
 
-struct sBattleIntroScrollTask : public s_workAreaTemplate<sBattleIntroScrollTask>
-{
-    char m_data[0x144];
-    // size: 0x144
-};
-
-// BTL_A3::060a28b8
-static void battleIntroScroll_update(sBattleIntroScrollTask* pThis)
-{
-    Unimplemented();
-}
-
-// BTL_A3::060a2c72
-static void battleIntroScroll_draw(sBattleIntroScrollTask* pThis)
-{
-    sVec3_FP local;
-    if ((s8)((char*)gBattleManager->m10_battleOverlay->m1C_envTask)[0x1c] & 1)
-        transformAndAddVecByCurrentMatrix(gBattleManager->m10_battleOverlay->m4_battleEngine->m3D8_pDesiredCameraPosition, &local);
-}
-
-static const sBattleIntroScrollTask::TypedTaskDefinition battleIntroScrollTaskDefinition = {
-    nullptr,
-    battleIntroScroll_update,
-    battleIntroScroll_draw,
-    nullptr,
-};
-
 void battleEngine_InitSub9(p_workArea parent)
 {
-    createSubTask<sBattleIntroScrollTask>(parent, &battleIntroScrollTaskDefinition);
+    createBattleBerserkScrollEffect(parent);
 }
 
 void battleEngine_InitSub11()
@@ -1273,7 +1248,7 @@ static void battleVictoryCameraTask_update(sBattleVictoryCameraTask* pThis)
             pThis->m24_counter = 0;
             if (gBattleManager->m10_battleOverlay->m1C_envTask != nullptr)
             {
-                p_workArea envChild = *(p_workArea*)((char*)gBattleManager->m10_battleOverlay->m1C_envTask + 0x58);
+                p_workArea envChild = (p_workArea)gBattleManager->m10_battleOverlay->m1C_envTask->m58;
                 if (envChild != nullptr)
                     envChild->getTask()->markPaused();
             }
@@ -3220,8 +3195,8 @@ static void itemResourceTask_draw(sItemResourceTask* pThis)
 // BTL_A3::06091944
 static void itemResourceTask_delete(sItemResourceTask* pThis)
 {
-    dramFree(gBattleManager->m10_battleOverlay->m4_battleEngine->mA9C);
-    vdp1Free((u8*)gBattleManager->m10_battleOverlay->m4_battleEngine->mAA0);
+    dramFree(gBattleManager->m10_battleOverlay->m4_battleEngine->mA9C_berzerkCustomModel);
+    vdp1Free((u8*)gBattleManager->m10_battleOverlay->m4_battleEngine->mAA0_berzerkCustomTexture);
 }
 
 static const sItemResourceTask::TypedTaskDefinition itemResourceTaskDefinition = {
@@ -3775,10 +3750,10 @@ static void battleEngine_showReceiveItemText(eItems itemId)
     }
 }
 
-static void findAndLoadTownFile(const char* filename, u8* destination, u16 relocation)
+static void findAndLoadTownFile(const char* filename, u8* destination, u16 vdp1TextureLocation)
 {
     findMandatoryFileOnDisc(filename);
-    loadFile(filename, destination, relocation);
+    loadFile(filename, destination, vdp1TextureLocation);
 }
 
 
@@ -4130,8 +4105,8 @@ p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
     if (psVar1 == nullptr)
         return nullptr;
 
-    pThis->mA9C = nullptr;
-    pThis->mAA0 = nullptr;
+    pThis->mA9C_berzerkCustomModel = nullptr;
+    pThis->mAA0_berzerkCustomTexture = nullptr;
 
     s16 category;
     s16 itemId16 = (s16)itemId;
@@ -4191,8 +4166,8 @@ p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
     psVar1->mEA_category = category;
 
     // Allocate dram and vdp1 buffers for item effect 3D model/sprite assets
-    pThis->mA9C = dramAllocate(0xe000);
-    pThis->mAA0 = vdp1Allocate(0xe000);
+    pThis->mA9C_berzerkCustomModel = dramAllocate(0xe000);
+    pThis->mAA0_berzerkCustomTexture = vdp1Allocate(0xe000);
 
     // File table at BTL_A3::060ad5e8: pairs of {MCB, CGB} filename pointers per category
     struct sItemEffectFiles { const char* mcb; const char* cgb; };
@@ -4215,12 +4190,11 @@ p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
     {
         if (itemEffectFileTable[cat].mcb != nullptr)
         {
-            findAndLoadTownFile(itemEffectFileTable[cat].mcb, pThis->mA9C, pThis->mAA0->m4_vdp1Memory);
+            findAndLoadTownFile(itemEffectFileTable[cat].mcb, pThis->mA9C_berzerkCustomModel, pThis->mAA0_berzerkCustomTexture->m4_vdp1Memory);
         }
         if (itemEffectFileTable[cat].cgb != nullptr)
         {
-            findAndLoadTownFile(itemEffectFileTable[cat].cgb,
-                getVdp1Pointer(0x25C00000 + (u32)pThis->mAA0->m4_vdp1Memory * 8), 0);
+            findAndLoadTownFile(itemEffectFileTable[cat].cgb, getVdp1Pointer(0x25C00000 + (u32)pThis->mAA0_berzerkCustomTexture->m4_vdp1Memory * 8), 0);
         }
     }
 

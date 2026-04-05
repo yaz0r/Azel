@@ -42,6 +42,8 @@ struct BTL_GenericData : public sSaturnMemoryFile
     static std::vector<sVdp1Quad> m_0x60a8fb4_animatedQuad;
     static std::vector<sVdp1Quad> m_0x60b0658_animatedQuad;
     static std::vector<sVdp1Quad> m_0x60a9120_animatedQuad;
+    static std::vector<sVdp1Quad> m_0x60ae454_animatedQuad;
+    static quadColor m_0x60ad80a_gouraudColors;
     static std::vector<std::vector<sVdp1Quad>> m_0x60abef4_animatedQuads;
 
 private:

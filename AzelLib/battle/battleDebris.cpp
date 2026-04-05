@@ -332,7 +332,7 @@ static void boneDebrisExplosion_update(sBoneDebrisTask* pThis)
             }
             if (pThis->m30_particleSpriteData.m_offset != 0)
             {
-                createParticleEffect(pThis->m2C_fileBundle, nullptr, &bone->m4_position, nullptr, nullptr, 0x10000, 0, 0);
+                createParticleEffect(pThis->m2C_fileBundle, nullptr, &bone->m4_position, nullptr, nullptr, 0x10000, nullptr, 0);
             }
         }
 

@@ -74,7 +74,13 @@ struct sSavePointParticleTask : public s_workAreaTemplate<sSavePointParticleTask
 
         for (s32 i = 0; i < count; i++)
         {
-            drawProjectedParticleWithGouraud(&pThis->m1C_quads[i], &pThis->m7C_positions[i], pThis->m11C_gouraudColors);
+            static quadColor colors = {
+                0xD325,
+                0xD325,
+                0xD325,
+                0xD325
+            };
+            drawProjectedParticleWithGouraud(&pThis->m1C_quads[i], &pThis->m7C_positions[i], &colors);
         }
     }
 
@@ -88,8 +94,7 @@ struct sSavePointParticleTask : public s_workAreaTemplate<sSavePointParticleTask
     sVec3_FP m7C_positions[12];     // +0x7C, 12 * 12 = 0x90
     sVec3_FP m10C_lastPosition;     // +0x10C
     s32 m118_frameCounter;          // +0x118
-    u16* m11C_gouraudColors;        // gouraud tint colors (4 x RGB555)
-    // size 0x120
+    // size 0x11C
 };
 
 // 0607C5A8
@@ -99,52 +104,19 @@ static p_workArea createSavePointParticleInstance(s_itemBoxType1* parent, fixedP
     if (!pTask)
         return nullptr;
 
-    if (!gFLD_A3)
-    {
-        gFLD_A3 = new FLD_A3_data();
-    }
-
     getMemoryArea(&pTask->m0_memArea, 0);
 
-    u16 vdp1Memory = 0;
-    if (pTask->m0_memArea.m4_characterArea)
-    {
-        vdp1Memory = (u16)((pTask->m0_memArea.m4_characterArea - 0x25C00000) >> 3);
-    }
-
     pTask->m8_parent = parent;
-    pTask->m10_angleY = initialAngleY;
-    pTask->m14_angleX = initialAngleX;
-    pTask->m18_rotationSpeed = 0x666666;
-    pTask->m118_frameCounter = 0;
 
-    static u16 gouraudColors[4] = { 0 };
-    if (gouraudColors[0] == 0)
+    for (s32 i = 0; i < 12; i++)
     {
-        sSaturnPtr gouraudPtr = gFLD_A3->m_savePointGouraudColors;
-        for (int i = 0; i < 4; i++)
-        {
-            gouraudColors[i] = readSaturnU16(gouraudPtr + i * 2);
-        }
-    }
-    pTask->m11C_gouraudColors = gouraudColors;
-
-    u8 frameCounter = 11;
-    for (s32 i = 0; i < 12; i += 3)
-    {
+        u16 vdp1Memory = (u16)((s32)(pTask->m0_memArea.m4_characterArea + 0xDA400000u) >> 3);
         particleInitSub(&pTask->m1C_quads[i], vdp1Memory, &gFLD_A3->m_savePointParticleQuad);
-        pTask->m1C_quads[i].m7_currentFrame = frameCounter;
+        pTask->m1C_quads[i].m7_currentFrame = 11 - i;
         pTask->mC_radius = MTH_Mul(0x20000, parent->m78_scale);
-
-        particleInitSub(&pTask->m1C_quads[i + 1], vdp1Memory, &gFLD_A3->m_savePointParticleQuad);
-        pTask->m1C_quads[i + 1].m7_currentFrame = frameCounter - 1;
-        pTask->mC_radius = MTH_Mul(0x20000, parent->m78_scale);
-
-        particleInitSub(&pTask->m1C_quads[i + 2], vdp1Memory, &gFLD_A3->m_savePointParticleQuad);
-        pTask->m1C_quads[i + 2].m7_currentFrame = frameCounter - 2;
-        pTask->mC_radius = MTH_Mul(0x20000, parent->m78_scale);
-
-        frameCounter -= 3;
+        pTask->m10_angleY = initialAngleY;
+        pTask->m14_angleX = initialAngleX;
+        pTask->m18_rotationSpeed = 0x666666;
     }
 
     return pTask;

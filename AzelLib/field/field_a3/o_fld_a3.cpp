@@ -7903,7 +7903,7 @@ static s_LCSTask_gradientData LaserHomingGradientData = {{
     {0xE280, 0xE280, 0xE280, 0xE280},
 }};
 
-static u16 LaserHomingGouraudColors[] = {0xE280, 0xE280, 0xE280, 0xE280};
+static quadColor LaserHomingGouraudColors = {0xE280, 0xE280, 0xE280, 0xE280};
 
 // 0607a798
 void s_LCSLaser::LaserHomingDraw(s_LCSLaser* pThis)
@@ -7946,7 +7946,7 @@ void s_LCSLaser::LaserHomingDraw(s_LCSLaser* pThis)
         pThis->LaserBeamDrawSub0(r11, 6, gFLD_A3->getSaturnPtr(0x06094D40), &LaserHomingGradientData);
     }
 
-    drawProjectedParticleWithGouraud(&pThis->m58, &r11[0], LaserHomingGouraudColors);
+    drawProjectedParticleWithGouraud(&pThis->m58, &r11[0], &LaserHomingGouraudColors);
 }
 
 // 0607becc
