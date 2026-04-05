@@ -63,6 +63,13 @@ void pushProjectionStack()
     //addSlaveCommand(0, 0, 0, MenuEnTaskInitSub1Sub1_Slave);
 }
 
+// 0601e1c8
+void dragonFieldTaskDrawSub3Sub1()
+{
+    // popProjectionStack + Saturn VDP slave sync (not applicable on PC)
+    Unimplemented();
+}
+
 void initProjectionStack_Master()
 {
     projectionStackTop = &projectionStack[8];

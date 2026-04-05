@@ -458,37 +458,49 @@ static void dragonPhoenix_computeRandomTargetPos(s8 quadrant, sVec3_FP* pOut)
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     sVec3_FP camOffset = readOverlayCameraOffset(pEngine, quadrant);
 
-    s32 dx = 0, dy = 0, dz = 0;
-    if (quadrant == 0)
+    // Each quadrant scatters the camera target differently.
+    // dx/dz map to camOffset.Z/X respectively (swapped axes).
+    switch (quadrant)
     {
-        dx = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x19000)) + 0x5000;
-        dy = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x2D000));
-        dz = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x3C000)) - 0x1E000;
-    }
-    else if (quadrant == 1)
+    case 0:
     {
-        dx = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x3C000)) - 0x1E000;
-        dy = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x2D000));
-        dz = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x19000)) + 0x5000;
-    }
-    else if (quadrant == 2)
-    {
-        dx = -(MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x19000)) + 0x5000);
-        dy = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x2D000));
-        dz = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x3C000)) - 0x1E000;
-    }
-    else if (quadrant == 3)
-    {
-        dz = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x3C000)) - 0x1E000;
-        dy = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x2D000)) + 0x5000;
-        dx = -(MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0)) + 0x1E000);
-    }
-
-    if (quadrant != 3)
-    {
+        s32 dx = (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x19000)) + 0x5000;
+        s32 dy = (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x2D000));
+        s32 dz = (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x3C000)) - 0x1E000;
         camOffset.m8_Z = (s32)camOffset.m8_Z + dx;
         camOffset.m4_Y = (s32)camOffset.m4_Y + dy + 0x5000;
         camOffset.m0_X = (s32)camOffset.m0_X + dz;
+        break;
+    }
+    case 1:
+    {
+        s32 dx = (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x3C000)) - 0x1E000;
+        s32 dy = (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x2D000));
+        s32 dz = (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x19000)) + 0x5000;
+        camOffset.m8_Z = (s32)camOffset.m8_Z + dx;
+        camOffset.m4_Y = (s32)camOffset.m4_Y + dy + 0x5000;
+        camOffset.m0_X = (s32)camOffset.m0_X + dz;
+        break;
+    }
+    case 2:
+    {
+        s32 dx = -((s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x19000)) + 0x5000);
+        s32 dy = (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x2D000));
+        s32 dz = (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x3C000)) - 0x1E000;
+        camOffset.m8_Z = (s32)camOffset.m8_Z + dx;
+        camOffset.m4_Y = (s32)camOffset.m4_Y + dy + 0x5000;
+        camOffset.m0_X = (s32)camOffset.m0_X + dz;
+        break;
+    }
+    case 3:
+    {
+        camOffset.m8_Z = (s32)camOffset.m8_Z + (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x3C000)) - 0x1E000;
+        camOffset.m4_Y = (s32)camOffset.m4_Y + (s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x2D000)) + 0x5000;
+        camOffset.m0_X = (s32)camOffset.m0_X - ((s32)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0)) + 0x1E000);
+        break;
+    }
+    default:
+        break;
     }
 
     // Clamp Y to camera max altitude
@@ -498,9 +510,7 @@ static void dragonPhoenix_computeRandomTargetPos(s8 quadrant, sVec3_FP* pOut)
         camOffset.m4_Y = (pTargetSystem->m204_cameraMaxAltitude - (s32)pEngine->mC_battleCenter.m4_Y) - 0x5000;
     }
 
-    pOut->m0_X = camOffset.m0_X;
-    pOut->m4_Y = camOffset.m4_Y;
-    pOut->m8_Z = camOffset.m8_Z;
+    *pOut = camOffset;
 }
 
 // 0608a700 — create wing fire particle sub-task (0x60C WithCopy, 0x23 particles)
@@ -627,6 +637,64 @@ static void dragonPhoenix_restoreLighting(s32 mode, s32 duration)
     g_fadeControls.m_4D = 5;
 }
 
+// 06086a58 — Draw model 2 (aura/explosion sphere) at battle center with secondary scale + custom lighting
+static void sDragonPhoenixTask_Draw2(sDragonPhoenixTask* pThis)
+{
+    s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
+    s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+
+    sVec3_FP savedLight;
+    if (pThis->mF0_hasLight != 0)
+    {
+        pushProjectionStack();
+        battleEngine_UpdateSub7Sub1Sub0(&pGrid->m280_lightAngle1, savedLight);
+        setupLight(savedLight.m0_X, savedLight.m4_Y, savedLight.m8_Z, 0);
+        generateLightFalloffMap(0x101010, 0, 0);
+    }
+
+    pushCurrentMatrix();
+    translateCurrentMatrix(&pEngine->mC_battleCenter);
+    scaleCurrentMatrixRow0(pThis->m10C_secondaryScale);
+    scaleCurrentMatrixRow1(pThis->m10C_secondaryScale);
+    scaleCurrentMatrixRow2(pThis->m10C_secondaryScale);
+    pThis->m5C_model2.m18_drawFunction(&pThis->m5C_model2);
+    popMatrix();
+
+    if (pThis->mF0_hasLight != 0)
+    {
+        // Restore lighting from grid light colors (extract integer part as RGB bytes)
+        u32 lightColor = ((u32)(u8)pGrid->m1CC_lightColor.m8_Z.getInteger() << 16) |
+                         ((u32)(u8)pGrid->m1CC_lightColor.m4_Y.getInteger() << 8) |
+                         ((u32)(u8)pGrid->m1CC_lightColor.m0_X.getInteger());
+        setupLight(savedLight.m0_X, savedLight.m4_Y, savedLight.m8_Z, lightColor);
+
+        u32 falloff1 = ((u32)(u8)pGrid->m1E4_lightFalloff0.m8_Z.getInteger() << 16) |
+                       ((u32)(u8)pGrid->m1E4_lightFalloff0.m4_Y.getInteger() << 8) |
+                       ((u32)(u8)pGrid->m1E4_lightFalloff0.m0_X.getInteger());
+        u32 falloff2 = ((u32)(u8)pGrid->m1FC_lightFalloff1.m8_Z.getInteger() << 16) |
+                       ((u32)(u8)pGrid->m1FC_lightFalloff1.m4_Y.getInteger() << 8) |
+                       ((u32)(u8)pGrid->m1FC_lightFalloff1.m0_X.getInteger());
+        u32 falloff3 = ((u32)(u8)pGrid->m208_lightFalloff2.m8_Z.getInteger() << 16) |
+                       ((u32)(u8)pGrid->m208_lightFalloff2.m4_Y.getInteger() << 8) |
+                       ((u32)(u8)pGrid->m208_lightFalloff2.m0_X.getInteger());
+        generateLightFalloffMap(falloff1, falloff2, falloff3);
+
+        dragonFieldTaskDrawSub3Sub1();
+
+        // Compute light position from rotation angle
+        sVec3_FP lightPos;
+        lightPos.m0_X = MTH_Mul(getSin(((u32)pThis->mB14_rotation >> 16) & 0xFFF), fixedPoint(0x14000));
+        lightPos.m8_Z = MTH_Mul(getCos(((u32)pThis->mB14_rotation >> 16) & 0xFFF), fixedPoint(0x14000));
+        lightPos.m0_X = (s32)lightPos.m0_X + (s32)pEngine->mC_battleCenter.m0_X;
+        lightPos.m4_Y = pEngine->mC_battleCenter.m4_Y;
+        lightPos.m8_Z = (s32)lightPos.m8_Z + (s32)pEngine->mC_battleCenter.m8_Z;
+
+        sVec3_FP viewPos;
+        transformAndAddVecByCurrentMatrix(&lightPos, &viewPos);
+        dragonFieldTaskDrawSub1Sub1(viewPos.m0_X, viewPos.m4_Y, viewPos.m8_Z, 0x1E000);
+    }
+}
+
 // 06086836
 static void sDragonPhoenixTask_Draw(sDragonPhoenixTask* pThis)
 {
@@ -731,6 +799,10 @@ static void dragonPhoenix_stateApproach(sDragonPhoenixTask* pThis)
         s_fileBundle* pBundle = pThis->m0_fileBundle;
 
         // Init model 1 (phoenix body) with hotpoint data for trail vertex extraction
+        if (g_BTL_A3 == NULL)
+        {
+            g_BTL_A3 = new BTL_A3_data();
+        }
         pThis->m_hotpointBundle = new sHotpointBundle(g_BTL_A3->getSaturnPtr(0x060acf2c));
         bool model1OK = init3DModelRawData(pThis, &pThis->m0C_model1, 0, pBundle, 4,
             pBundle->getAnimation(0xA8),
@@ -1402,6 +1474,7 @@ static void dragonPhoenix_stateRetreat(sDragonPhoenixTask* pThis)
         if (pThis->mB2_subTimer == 3)
         {
             dragonPhoenix_computeSecondaryScale(pThis);
+            pThis->m_DrawMethod = sDragonPhoenixTask_Draw2;
             pThis->mEC_hasSecondaryAnim = 1;
         }
         if (pThis->mB2_subTimer == 0xF)
@@ -1427,7 +1500,9 @@ static void dragonPhoenix_stateRetreat(sDragonPhoenixTask* pThis)
             pThis->mB2_subTimer == 0x23 || pThis->mB2_subTimer == 0x26 ||
             pThis->mB2_subTimer == 0x2D || pThis->mB2_subTimer == 0x30 ||
             pThis->mB2_subTimer == 0x34 || pThis->mB2_subTimer == 0x37 ||
-            pThis->mB2_subTimer == 0x3D || pThis->mB2_subTimer == 0x41)
+            pThis->mB2_subTimer == 0x3D || pThis->mB2_subTimer == 0x41 ||
+            pThis->mB2_subTimer == 0x48 || pThis->mB2_subTimer == 0x49 ||
+            pThis->mB2_subTimer == 0x4B)
         {
             for (s32 i = 0; i < numEnemies; i++)
             {
