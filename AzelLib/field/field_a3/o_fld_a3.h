@@ -19,6 +19,7 @@ struct FLD_A3_data : public sSaturnMemoryFile
         m_waterfallSplashQuadA = initVdp1Quad(getSaturnPtr(0x06082700));
         m_waterfallSplashQuadB = initVdp1Quad(getSaturnPtr(0x060829a0));
         m_waterfallDropletQuad = initVdp1Quad(getSaturnPtr(0x06082674));
+        m_mineCartDustQuad = initVdp1Quad(getSaturnPtr(0x06092734));
     }
 
     std::vector<sVdp1Quad> m_0x0609518C_animatedQuad;
@@ -30,6 +31,7 @@ struct FLD_A3_data : public sSaturnMemoryFile
     std::vector<sVdp1Quad> m_waterfallSplashQuadA; // 0x06082700
     std::vector<sVdp1Quad> m_waterfallSplashQuadB; // 0x060829a0
     std::vector<sVdp1Quad> m_waterfallDropletQuad; // 0x06082674
+    std::vector<sVdp1Quad> m_mineCartDustQuad;     // 0x06092734
 };
 
 extern FLD_A3_data* gFLD_A3;
@@ -72,6 +74,7 @@ void setupDragonPosition(const sVec3_FP* r4, const sVec3_FP* r5);
 p_workArea create_fieldA3_0_task0(p_workArea workArea); // shared subfield 0 and 1
 void initDragonMovementMode();
 void subfieldA3_1Sub0Sub2(s32 r4, s32 r5);
+void fieldRadar_initDestinations(s32 scriptIndex);
 s_cutsceneData* loadCutsceneData(sSaturnPtr EA);
 void loadScriptData1(std::vector<s_scriptData1>& output, const sSaturnPtr& EA);
 void startCutscene(s_cutsceneData* r4);
@@ -82,7 +85,7 @@ void getFieldDragonPosition(sVec3_FP* r4);
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSLaser* r4);
 void setupField3(s_DataTable3* r4, void(*r5)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r6);
 s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* r4);
-void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, s32 r6);
+void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, sVec3_FP* r6);
 
 struct s_itemType0* fieldA3_1_createItemBoxes_Sub0(p_workArea workArea, struct s_itemBoxDefinition* r5);
 

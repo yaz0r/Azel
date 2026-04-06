@@ -134,6 +134,14 @@ s32 getFieldCharacterAreaRemain()
     return fieldTaskPtr->m8_pSubFieldData->m2C_characterArea_top - fieldTaskPtr->m8_pSubFieldData->m1C_characterArea_edge;
 }
 
+// 0601233c
+void unloadFileFromFileList(u32 index)
+{
+    // On Saturn, this closes the GFS file handles for the MCB/CGB at the given index.
+    // On PC, files are loaded synchronously and handles are freed immediately in loadFile(),
+    // so there is nothing to close here.
+}
+
 void loadFileFromFileList(u32 index)
 {
     const s_MCB_CGB* pFileData = &fieldTaskPtr->m8_pSubFieldData->m30_fileList[index];

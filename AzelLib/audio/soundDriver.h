@@ -13,4 +13,8 @@ s32 findSound(s32 soundIndex);
 bool isSoundLoadingFinished();
 void popSoundSequence(s32 param); // 0602b506
 
+s32 computePositionalSoundVolume(sVec3_FP* pPos);
+void startPositionalSound(s32 soundIndex, sVec3_FP* pPos);
+void updatePositionalSound(s32 soundIndex, sVec3_FP* pPos);
+
 void battleLoading_InitSub0();

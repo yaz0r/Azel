@@ -798,6 +798,33 @@ s32 findSound(s32 soundIndex)
     return -1;
 }
 
+// 0602c354
+s32 computePositionalSoundVolume(sVec3_FP* pPos)
+{
+    fixedPoint distSq = MTH_Product3d_FP(*pPos, *pPos);
+    s32 dist = (s32)sqrt_F(distSq);
+    s32 result = (soundEngine.m688 + -0x7f) * dist / soundEngine.m684 + 0x7f;
+    if (result < 0)
+        return 0;
+    if (result > 0x7f)
+        return 0x7f;
+    return result;
+}
+
+// 0602c3aa
+void startPositionalSound(s32 soundIndex, sVec3_FP* pPos)
+{
+    s32 volume = computePositionalSoundVolume(pPos);
+    enqueuePlaySoundEffect(soundIndex, 1, volume, 0);
+}
+
+// 0602c3ee
+void updatePositionalSound(s32 soundIndex, sVec3_FP* pPos)
+{
+    s32 volume = computePositionalSoundVolume(pPos);
+    enqueuePlaySoundEffect(soundIndex, 5, volume, 0);
+}
+
 extern "C" {
     int m68k_instructionCallback();
 }

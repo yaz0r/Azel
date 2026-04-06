@@ -1,6 +1,38 @@
 #include "PDS.h"
 #include "a3_0_task4.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "audio/soundDriver.h"
+
+s32 playBattleSoundEffect(s32 effectIndex); // TODO: cleanup
+
+// 0602c2d4
+static void startSoundWithVolume(s32 soundIndex, s32 volume)
+{
+    enqueuePlaySoundEffect(soundIndex, 1, volume, 0);
+}
+
+// 0602c2e4
+static void updateSoundVolume(s32 soundIndex, s32 volume)
+{
+    enqueuePlaySoundEffect(soundIndex, 5, volume, 0);
+}
+
+// 0605849a
+static s32 fieldA3_0_task4_computeSoundVolume(sVec3_FP* pPos)
+{
+    (*pPos)[0] = (*pPos)[0] >> 2;
+    (*pPos)[1] = (*pPos)[1] >> 2;
+    (*pPos)[2] = (*pPos)[2] >> 2;
+
+    fixedPoint distSq = MTH_Product3d_FP(*pPos, *pPos);
+    s32 dist = (s32)sqrt_F(distSq);
+    s32 result = dist * -0x1b;
+    if (result < 0)
+    {
+        result = result + 0x7ffff;
+    }
+    return (s16)(result >> 0x13) + 0x7f;
+}
 
 void fieldA3_0_task4_updateSub0(s_dragonTaskWorkArea* pDragon)
 {
@@ -92,11 +124,31 @@ struct s_A3_0_task4 : public s_workAreaTemplate<s_A3_0_task4>
     {
         if (mainGameState.getBit(0xA2 * 8 + 3) || mainGameState.getBit(0x91 * 8 + 3))
         {
-            soundFunc(0x67);
+            playBattleSoundEffect(0x67);
         }
         else
         {
-            Unimplemented();
+            // 06058510: 3D positional sound attenuation
+            static const sVec3_FP refPos = { fixedPoint(0x39D000), fixedPoint(0), fixedPoint((s32)0xFED80000) };
+            sVec3_FP transformedPos;
+            transformAndAddVecByCurrentMatrix(&refPos, &transformedPos);
+            s32 volume = fieldA3_0_task4_computeSoundVolume(&transformedPos);
+            if (volume < 0x51)
+            {
+                playBattleSoundEffect(0x67);
+            }
+            else
+            {
+                s32 found = findSound(0x67);
+                if ((s8)found < 0)
+                {
+                    startSoundWithVolume(0x67, volume);
+                }
+                else
+                {
+                    updateSoundVolume(0x67, volume);
+                }
+            }
         }
 
         //6058552

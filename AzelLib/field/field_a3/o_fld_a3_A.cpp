@@ -29,8 +29,8 @@ void fieldA3_A_task0Sub0(s32* pState, sSaturnPtr dataBounds, const sVec3_FP& dra
         break;
     }
     case 1:
-        Unimplemented(); // unloadFieldFileGroup(readSaturnS32(dataBounds + 8))
-        Unimplemented(); // loadFieldFileGroup(readSaturnS32(dataBounds + 0xC))
+        unloadFileFromFileList(readSaturnS32(dataBounds + 8));
+        loadFileFromFileList(readSaturnS32(dataBounds + 0xC));
         pState[0] = 2;
         break;
     case 2:
@@ -40,8 +40,8 @@ void fieldA3_A_task0Sub0(s32* pState, sSaturnPtr dataBounds, const sVec3_FP& dra
         }
         break;
     case 3:
-        Unimplemented(); // unloadFieldFileGroup(readSaturnS32(dataBounds + 0xC))
-        Unimplemented(); // loadFieldFileGroup(readSaturnS32(dataBounds + 8))
+        unloadFileFromFileList(readSaturnS32(dataBounds + 0xC));
+        loadFileFromFileList(readSaturnS32(dataBounds + 8));
         pState[0] = 4;
         break;
     case 4:

@@ -73,9 +73,9 @@ struct sCrashedShipExplosionSpawner : public s_workAreaTemplate<sCrashedShipExpl
                 config.m1C_heapData = nullptr;
 
                 s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
-                if (pFieldData->m168)
+                if (pFieldData->m168_particlePool)
                 {
-                    spawnParticleInPool((sParticlePoolManager*)pFieldData->m168, &config, 1);
+                    spawnParticleInPool(pFieldData->m168_particlePool, &config, 1);
                 }
                 pThis->m8_perPointCount[pThis->m4_pointIndex]++;
             }
@@ -120,9 +120,9 @@ static void spawnCrashedShipExplosion(sVec3_FP* position)
     config.m1C_heapData = nullptr;
 
     s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
-    if (pFieldData->m168)
+    if (pFieldData->m168_particlePool)
     {
-        spawnParticleInPool((sParticlePoolManager*)pFieldData->m168, &config, 1);
+        spawnParticleInPool(pFieldData->m168_particlePool, &config, 1);
     }
 }
 
@@ -345,7 +345,7 @@ struct sCrashedShip2SmokeSpawner : public s_workAreaTemplate<sCrashedShip2SmokeS
             config.m1C_heapData = nullptr;
 
             s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
-            sParticlePoolManager* pPool = (sParticlePoolManager*)pFieldData->m168;
+            sParticlePoolManager* pPool = pFieldData->m168_particlePool;
             if (pPool)
             {
                 spawnParticleInPool(pPool, &config, 1);

@@ -5,6 +5,7 @@
 #include "items.h"
 #include "audio/systemSounds.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/field_a3/particlePool.h"
 
 struct s_A3_3_Obj0 : public s_workAreaTemplate<s_A3_3_Obj0>
 {
@@ -70,9 +71,95 @@ void A3_3_Obj0_Draw2(s_A3_3_Obj0* pThis)
     }
 }
 
+// 0605e990
+struct s_A3_3_Obj0_DustEmitter : public s_workAreaTemplate<s_A3_3_Obj0_DustEmitter>
+{
+    sVec3_FP* m0_pPosition;
+    s32 m4_counter;
+    // size 0x8
+};
+
+void A3_3_Obj0_DustEmitterUpdate(s_A3_3_Obj0_DustEmitter* pThis)
+{
+    if (pThis->m4_counter < 1)
+    {
+        pThis->getTask()->markFinished();
+    }
+    else
+    {
+        pThis->m4_counter--;
+
+        sVec3_FP position;
+        position[0] = (*pThis->m0_pPosition)[0];
+        position[1] = (*pThis->m0_pPosition)[1];
+        position[2] = (*pThis->m0_pPosition)[2];
+
+        sVec3_FP velocity;
+        u32 r0 = randomNumber();
+        velocity[0] = (r0 & 0xFFF) - 0x800;
+        r0 = randomNumber();
+        velocity[2] = (r0 & 0xFFF) - 0x800;
+        velocity[1] = 0;
+
+        sParticleSpawnConfig config;
+        config.m0_pPosition = &position;
+        config.m4_pVelocity = &velocity;
+        config.m8_pQuadData = &gFLD_A3->m_mineCartDustQuad;
+        config.mC_velocityScaleX = 0x8000;
+        config.m10_velocityScaleY = 0;
+        config.m14_updateFunc = &particleUpdateMoving;
+        config.m18_heapSize = 0;
+        config.m1C_heapData = nullptr;
+
+        s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+        if (pFieldData->m168_particlePool)
+        {
+            spawnParticleInPool(pFieldData->m168_particlePool, &config, 1);
+        }
+    }
+}
+
+// 0605ea5c
 void A3_3_Obj0_Update1Sub1(s_A3_3_Obj0* pThis, sVec3_FP* pVec)
 {
-    Unimplemented();
+    s_A3_3_Obj0_DustEmitter* pEmitter = createSubTaskFromFunction<s_A3_3_Obj0_DustEmitter>(pThis, &A3_3_Obj0_DustEmitterUpdate);
+    if (pEmitter == nullptr)
+    {
+        return;
+    }
+    pEmitter->m0_pPosition = pVec;
+    pEmitter->m4_counter = 0x10;
+
+    u32 r0 = randomNumber();
+    s32 angle = (r0 >> 16) & 0xFFF;
+    fixedPoint sinVal = getSin(angle);
+    fixedPoint cosVal = getCos(angle);
+
+    sVec3_FP position;
+    position[0] = (*pVec)[0] + MTH_Mul(0x4000, sinVal);
+    position[1] = (*pVec)[1];
+    position[2] = (*pVec)[2] + MTH_Mul(0x4000, cosVal);
+
+    sVec3_FP velocity;
+    velocity[0] = MTH_Mul(0x400, sinVal);
+    velocity[2] = MTH_Mul(0x400, cosVal);
+    velocity[1] = 0;
+
+    sParticleSpawnConfig config;
+    config.m0_pPosition = &position;
+    config.m4_pVelocity = &velocity;
+    config.m8_pQuadData = &gFLD_A3->m_mineCartDustQuad;
+    config.mC_velocityScaleX = 0xCCCC;
+    config.m10_velocityScaleY = 0;
+    config.m14_updateFunc = &particleUpdateMoving;
+    config.m18_heapSize = 0;
+    config.m1C_heapData = nullptr;
+
+    s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+    if (pFieldData->m168_particlePool)
+    {
+        spawnParticleInPool(pFieldData->m168_particlePool, &config, 1);
+    }
 }
 
 void A3_3_Obj0_Update1(s_A3_3_Obj0* pThis)

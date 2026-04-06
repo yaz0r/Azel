@@ -7,7 +7,10 @@
 #include "a3_dynamic_mine_cart.h"
 #include "a3_fan.h"
 #include "a3_2_crashedImperialShip.h"
+#include "field/dragonLightWingEvolution.h"
 #include "particlePool.h"
+
+// createLightWingEffect — moved to field/fieldDragon.cpp
 
 #include "audio/systemSounds.h"
 #include "kernel/animation.h"
@@ -26,6 +29,7 @@
 #include "kernel/textDisplay.h"
 #include "kernel/loadSavegameScreen.h"
 #include "battle/BTL_A3/BTL_A3_map6.h"
+#include "field/fieldDialog.h"
 #include "field/fieldRadar.h"
 #include "field/battleStart.h"
 #include "field/fieldDragonMovement.h"
@@ -83,7 +87,6 @@ std::vector<sLCSTaskDrawSub5Sub1_Data1> readLCSTaskDrawSub5Sub1_Data1(sSaturnPtr
 
 std::vector<sLCSTaskDrawSub5Sub1_Data1> LCSTaskDrawSub5Sub1_Data1;
 
-void dragonExitField(s_dragonTaskWorkArea* r14);
 s8 isFieldCameraSlotActive(s32 index);
 
 std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3)
@@ -917,6 +920,12 @@ struct s_A3_Obj4 : public s_workAreaTemplate<s_A3_Obj4>
     s32 m10;
 };
 
+// 06090698
+static const s16 A3_Obj3_modelOffsets[] = { 0x028C, 0x0290, 0x0294, 0x0298 };
+
+// 060906a0
+static const fixedPoint A3_Obj3_segmentScales[] = { 0x4CCC, 0xCCCC, 0x10000, 0x10000 };
+
 struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
@@ -925,14 +934,141 @@ struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
         return &taskDefinition;
     }
 
-    static void Update(s_A3_Obj3*)
+    // 0605A664
+    static void Update(s_A3_Obj3* pThis)
     {
-        Unimplemented();
+        fixedPoint prevValue = 0;
+        fixedPoint iVar10 = pThis->m14[2];
+
+        pThis->m14[2] = pThis->m14[2] - pThis->m20[0];
+        pThis->m20[2] = pThis->m20[2] + pThis->m2C[0];
+
+        s16 sVar1 = pThis->m8->m10_rotation[1];
+        fixedPoint iVar2 = MTH_Mul(pThis->m2C[1], getSin(((s32)pThis->m20[2] >> 16) & 0xFFF));
+        iVar2 = fixedPoint((s32)iVar2 + (s32)sVar1);
+
+        s32 scaleIdx = 0;
+        s32 rotIdx = 0;
+        for (s32 i = 4; i != 0; i -= 2)
+        {
+            fixedPoint uVar3 = MTH_Mul_5_6(getSin(((s32)iVar10 >> 16) & 0xFFF), pThis->m2C[2], A3_Obj3_segmentScales[scaleIdx]);
+            iVar10 = iVar10 + pThis->m14[1];
+            pThis->m38[rotIdx] = fixedPoint(atan2_FP((s32)(uVar3 - prevValue), 0x6000)) + iVar2;
+
+            prevValue = MTH_Mul_5_6(getSin(((s32)iVar10 >> 16) & 0xFFF), pThis->m2C[2], A3_Obj3_segmentScales[scaleIdx + 1]);
+            iVar10 = iVar10 + pThis->m14[1];
+            pThis->m38[rotIdx + 1] = fixedPoint(atan2_FP((s32)(prevValue - uVar3), 0x6000)) + iVar2;
+
+            scaleIdx += 2;
+            rotIdx += 2;
+        }
+
+        s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+        s32 visResult = checkPositionVisibilityAgainstFarPlane(&pFieldData->mC0[(s8)pThis->m8->m18]);
+        pThis->m48 = (visResult == 0);
     }
 
-    static void Draw(s_A3_Obj3*)
+    // 0605A1D8
+    static void Draw(s_A3_Obj3* pThis)
     {
-        Unimplemented();
+        if (pThis->m48 == 0)
+        {
+            return;
+        }
+
+        s_DataTable2Sub0* pData = pThis->m8;
+        s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+
+        sVec3_FP pos = pFieldData->mC0[(s8)pData->m18];
+
+        fixedPoint uVar4 = pFieldData->mA4[pData->m18];
+        const s16* pwVar3 = A3_Obj3_modelOffsets;
+        sVec3_FP segmentDir = *(sVec3_FP*)&pThis->mC;
+
+        s32 iVar5 = 0;
+        do
+        {
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pos);
+            rotateCurrentMatrixShiftedZ(uVar4);
+            rotateCurrentMatrixZ((s32)pData->m10_rotation[2]);
+            rotateCurrentMatrixShiftedY(pThis->m38[iVar5 / 4]);
+            rotateCurrentMatrixX((s32)pData->m10_rotation[0]);
+            addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel((s32)(s16)pwVar3[0]));
+            popMatrix();
+
+            sMatrix4x3 mat;
+            initMatrixToIdentity(&mat);
+            rotateMatrixShiftedZ(uVar4, &mat);
+            rotateMatrixZ((s32)pData->m10_rotation[2], &mat);
+            rotateMatrixShiftedY(pThis->m38[iVar5 / 4], &mat);
+            rotateMatrixX((s32)pData->m10_rotation[0], &mat);
+            sVec3_FP local_2c;
+            transformAndAddVec(segmentDir, local_2c, mat);
+            pos[0] = pos[0] + local_2c.m0_X;
+            pos[1] = pos[1] + local_2c.m4_Y;
+            pos[2] = pos[2] + local_2c.m8_Z;
+
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pos);
+            rotateCurrentMatrixShiftedZ(uVar4);
+            rotateCurrentMatrixZ((s32)pData->m10_rotation[2]);
+            rotateCurrentMatrixShiftedY(pThis->m38[iVar5 / 4 + 1]);
+            rotateCurrentMatrixX((s32)pData->m10_rotation[0]);
+            addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel((s32)(s16)pwVar3[1]));
+            popMatrix();
+
+            initMatrixToIdentity(&mat);
+            rotateMatrixShiftedZ(uVar4, &mat);
+            rotateMatrixZ((s32)pData->m10_rotation[2], &mat);
+            rotateMatrixShiftedY(pThis->m38[iVar5 / 4 + 1], &mat);
+            rotateMatrixX((s32)pData->m10_rotation[0], &mat);
+            transformAndAddVec(segmentDir, local_2c, mat);
+            pos[0] = pos[0] + local_2c.m0_X;
+            pos[1] = pos[1] + local_2c.m4_Y;
+            pos[2] = pos[2] + local_2c.m8_Z;
+
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pos);
+            rotateCurrentMatrixShiftedZ(uVar4);
+            rotateCurrentMatrixZ((s32)pData->m10_rotation[2]);
+            rotateCurrentMatrixShiftedY(pThis->m38[iVar5 / 4 + 2]);
+            rotateCurrentMatrixX((s32)pData->m10_rotation[0]);
+            addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel((s32)(s16)pwVar3[2]));
+            popMatrix();
+
+            initMatrixToIdentity(&mat);
+            rotateMatrixShiftedZ(uVar4, &mat);
+            rotateMatrixZ((s32)pData->m10_rotation[2], &mat);
+            rotateMatrixShiftedY(pThis->m38[iVar5 / 4 + 2], &mat);
+            rotateMatrixX((s32)pData->m10_rotation[0], &mat);
+            transformAndAddVec(segmentDir, local_2c, mat);
+            pos[0] = pos[0] + local_2c.m0_X;
+            pos[1] = pos[1] + local_2c.m4_Y;
+            pos[2] = pos[2] + local_2c.m8_Z;
+
+            pushCurrentMatrix();
+            translateCurrentMatrix(&pos);
+            rotateCurrentMatrixShiftedZ(uVar4);
+            rotateCurrentMatrixZ((s32)pData->m10_rotation[2]);
+            rotateCurrentMatrixShiftedY(pThis->m38[iVar5 / 4 + 3]);
+            rotateCurrentMatrixX((s32)pData->m10_rotation[0]);
+            addObjectToDrawList(pThis->m0.m0_mainMemoryBundle->get3DModel((s32)(s16)pwVar3[3]));
+            popMatrix();
+
+            initMatrixToIdentity(&mat);
+            rotateMatrixShiftedZ(uVar4, &mat);
+            rotateMatrixZ((s32)pData->m10_rotation[2], &mat);
+            rotateMatrixShiftedY(pThis->m38[iVar5 / 4 + 3], &mat);
+            rotateMatrixX((s32)pData->m10_rotation[0], &mat);
+            transformAndAddVec(segmentDir, local_2c, mat);
+            pos[0] = pos[0] + local_2c.m0_X;
+            pos[1] = pos[1] + local_2c.m4_Y;
+            pos[2] = pos[2] + local_2c.m8_Z;
+
+            pwVar3 = pwVar3 + 4;
+            iVar5 = iVar5 + 0x10;
+        } while (pwVar3 <= &A3_Obj3_modelOffsets[3]);
     }
 
     s_memoryAreaOutput m0;
@@ -942,6 +1078,9 @@ struct s_A3_Obj3 : public s_workAreaTemplate<s_A3_Obj3>
     sVec3_FP m14;
     sVec3_FP m20;
     sVec3_FP m2C;
+    fixedPoint m38[4];
+    s32 m48;
+    // size 0x4C
 };
 
 void create_A3_Obj4(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
@@ -1081,25 +1220,81 @@ struct sSmokePufTask : public s_workAreaTemplate<sSmokePufTask>
 
         pThis->m14_countdown--;
 
-        // Spawn a smoke particle every other frame
-        // TODO: wire up to spawnParticleInPool when particle pool manager is available
-        Unimplemented();
+        // 0605e818: Spawn a smoke particle every other frame
+        if ((pThis->m14_countdown & 1) == 0)
+        {
+            // Even frames: random position
+            sVec3_FP velocity;
+            u32 r0;
+            r0 = randomNumber();
+            velocity[0] = (r0 & 0xFFF) - 0x800;
+            r0 = randomNumber();
+            velocity[1] = (r0 & 0xFFF) - 0x333;
+            r0 = randomNumber();
+            velocity[2] = (r0 & 0xFFF) - 0x800;
+
+            sParticleSpawnConfig config;
+            config.m0_pPosition = (sVec3_FP*)pThis; // uses m0_position at offset 0
+            config.m4_pVelocity = &velocity;
+            config.m8_pQuadData = &gFLD_A3->m_mineCartDustQuad;
+            config.mC_velocityScaleX = 0x10000;
+            config.m10_velocityScaleY = (s32)0xFFFB0000;
+            config.m14_updateFunc = &particleUpdateMoving;
+            config.m18_heapSize = 0;
+            config.m1C_heapData = nullptr;
+
+            sParticlePoolManager* pPool = getFieldSpecificData_A3()->m168_particlePool;
+            if (pPool)
+            {
+                spawnParticleInPool(pPool, &config, 1);
+            }
+        }
+        else
+        {
+            // Odd frames: velocity base from m10_pVelocityRef, position from mC_pPositionRef
+            sVec3_FP velocity;
+            u32 r0;
+            s32 baseX = (*pThis->m10_pVelocityRef)[0];
+            r0 = randomNumber();
+            velocity[0] = baseX + (r0 & 0x7FF) - 0x400;
+            r0 = randomNumber();
+            velocity[1] = (r0 & 0xFFF) - 0x333;
+            s32 baseZ = (*pThis->m10_pVelocityRef)[2];
+            r0 = randomNumber();
+            velocity[2] = baseZ + (r0 & 0x7FF) - 0x400;
+
+            sParticleSpawnConfig config;
+            config.m0_pPosition = pThis->mC_pPositionRef;
+            config.m4_pVelocity = &velocity;
+            config.m8_pQuadData = &gFLD_A3->m_mineCartDustQuad;
+            config.mC_velocityScaleX = 0x10000;
+            config.m10_velocityScaleY = (s32)0xFFFB0000;
+            config.m14_updateFunc = &particleUpdateMoving;
+            config.m18_heapSize = 0;
+            config.m1C_heapData = nullptr;
+
+            sParticlePoolManager* pPool = getFieldSpecificData_A3()->m168_particlePool;
+            if (pPool)
+            {
+                spawnParticleInPool(pPool, &config, 1);
+            }
+        }
     }
 
     sVec3_FP m0_position;
     sVec3_FP* mC_pPositionRef;
-    s32 m10;
+    sVec3_FP* m10_pVelocityRef; // points to velocity data in the caller (e.g. mine cart m1C_velocity)
     s32 m14_countdown;
     // size 0x18
 };
 
 // 0605e928
-void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, s32 r6)
+void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, sVec3_FP* r6)
 {
     sSmokePufTask* pNewTask = createSubTask<sSmokePufTask>(pThis);
     pNewTask->m0_position = *r5;
     pNewTask->mC_pPositionRef = r5;
-    pNewTask->m10 = r6;
+    pNewTask->m10_pVelocityRef = r6;
     pNewTask->m14_countdown = 0x20;
 }
 
@@ -1265,6 +1460,80 @@ void subfieldA3_1Sub0Sub2(s32 r4, s32 r5)
     exitCutsceneTaskUpdateSub0Sub1(getFieldTaskPtr()->m2C_currentFieldIndex, r4, 0, r5);
 }
 
+// 06072dc0
+void fieldRadar_clearDestinations()
+{
+    s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
+    if (pRadar->m1C_encounterList != nullptr)
+    {
+        freeHeapForTask(pRadar, pRadar->m1C_encounterList);
+        pRadar->m1C_encounterList = nullptr;
+    }
+    pRadar->m14_encounterCount = 0;
+    pRadar->m18_currentSelection = 0;
+}
+
+// 060691a0
+void fieldRadar_parseDestinations(s32 scriptIndex)
+{
+    s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
+
+    if (pScript->m0_pScripts == nullptr)
+        return;
+
+    // Count entries in the script data
+    sSaturnPtr pData = pScript->m0_pScripts[scriptIndex];
+    pRadar->m14_encounterCount = 1;
+    while (readSaturnU8(pData) != 0x01)
+    {
+        if (readSaturnU8(pData) == 0x7F)
+        {
+            pRadar->m14_encounterCount++;
+            pData = sSaturnPtr(((pData.m_offset + 4) & ~3) + 0x14, pData.m_file);
+        }
+        else
+        {
+            pData = pData + 1;
+        }
+    }
+
+    // Allocate and populate entry table
+    u32* pAlloc = (u32*)allocateHeapForTask(pRadar, pRadar->m14_encounterCount * 0x14);
+    pRadar->m1C_encounterList = (sRadarDestEntry*)pAlloc;
+    if (pAlloc)
+    {
+        // First entry: default "Deactivate Navigator" option
+        pAlloc[0] = 0; // placeholder for string pointer
+        pAlloc += 5;
+
+        pData = pScript->m0_pScripts[scriptIndex];
+        while (readSaturnU8(pData) != 0x01)
+        {
+            if (readSaturnU8(pData) == 0x7F)
+            {
+                sSaturnPtr pSrc = sSaturnPtr(((pData.m_offset + 4) & ~3), pData.m_file);
+                for (int j = 0; j < 5; j++)
+                {
+                    pAlloc[j] = readSaturnU32(pSrc + j * 4);
+                }
+                pAlloc += 5;
+                pData = pSrc + 0x14;
+            }
+            else
+            {
+                pData = pData + 1;
+            }
+        }
+    }
+}
+
+// 06072dac
+void fieldRadar_initDestinations(s32 scriptIndex)
+{
+    fieldRadar_clearDestinations();
+    fieldRadar_parseDestinations(scriptIndex);
+}
 
 void setupDragonPositionSub0(const sVec3_FP* r4, const sVec3_FP* r5)
 {
@@ -1932,95 +2201,9 @@ u32 cutsceneTaskInitSub0(std::vector<s_scriptData3>& r4, std::vector<s_scriptDat
     return r6;
 }
 
-void dragonCutsceneUpdate(s_dragonTaskWorkArea* r14)
-{
-    r14->m24A_runningCameraScript = 4;
-    s_scriptData3* r13 = r14->m1E4_cutsceneKeyFrame;
-    if (r13 == NULL)
-    {
-        r14->m104_dragonScriptStatus = 3;
-    }
+// dragonCutsceneUpdate — moved to field/fieldDragon.cpp
 
-    getFieldTaskPtr()->m28_status |= 0x10000;
-    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 |= 1;
-
-    switch (r14->m104_dragonScriptStatus)
-    {
-    case 0:
-        r14->mF8_Flags &= ~0x400;
-        r14->mF8_Flags |= 0x20000;
-        r14->m1E8_cameraScriptDelay = r13->m0_duration;
-        r14->m1EA = r13->m10_rotationDuration;
-        r14->m160_deltaTranslation[0] = intDivide(r13->m0_duration, r13->m4_pos[0] - r14->m8_pos[0]);
-        r14->m160_deltaTranslation[1] = intDivide(r13->m0_duration, r13->m4_pos[1] - r14->m8_pos[1]);
-        r14->m160_deltaTranslation[2] = intDivide(r13->m0_duration, r13->m4_pos[2] - r14->m8_pos[2]);
-
-        if (r13->m10_rotationDuration)
-        {
-            r14->m16C_deltaRotation[0] = intDivide(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[0] - r14->m20_angle[0]).normalized());
-            r14->m16C_deltaRotation[1] = intDivide(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[1] - r14->m20_angle[1]).normalized());
-            r14->m16C_deltaRotation[2] = intDivide(r13->m10_rotationDuration, fixedPoint(r13->m14_rot[2] - r14->m20_angle[2]).normalized());
-        }
-        else
-        {
-            r14->m16C_deltaRotation[0] = 0;
-            r14->m16C_deltaRotation[1] = 0;
-            r14->m16C_deltaRotation[2] = 0;
-        }
-
-        updateDragonCollision(r14);
-        if (r14->mF8_Flags & 0x40000)
-        {
-            updateCameraScriptSub0Sub2(r14);
-            updateCameraScriptSub0(r14->mB8_lightWingEffect);
-            r14->mF8_Flags &= ~0x40000;
-        }
-        r14->m104_dragonScriptStatus++;
-    case 1:
-
-        r14->m20_angle += r14->m16C_deltaRotation;
-        r14->m8_pos += r14->m160_deltaTranslation;
-
-        if (--r14->m1EA <= 0)
-        {
-            r14->m104_dragonScriptStatus++;
-        }
-
-        if (--r14->m1E8_cameraScriptDelay <= 0)
-        {
-            r14->m104_dragonScriptStatus = 3;
-            r14->m1E4_cutsceneKeyFrame = NULL;
-        }
-        break;
-    case 2:
-        r14->m8_pos += r14->m160_deltaTranslation;
-        if (--r14->m1E8_cameraScriptDelay <= 0)
-        {
-            r14->m104_dragonScriptStatus = 3;
-            r14->m1E4_cutsceneKeyFrame = NULL;
-        }
-        break;
-    case 3:
-        break;
-    default:
-        assert(0);
-        break;
-    }
-
-    buildDragonRotationMatrix(&r14->m48, &r14->m20_angle);
-    copyMatrix(&r14->m48.m0_matrix, &r14->m88_matrix);
-
-    if (--r14->m1EE < 0)
-    {
-        r14->m1EE = 0;
-    }
-    updateDragonCollision(r14);
-}
-
-void dragonIdleUpdate(s_dragonTaskWorkArea*)
-{
-    PDS_unimplemented("dragonIdleUpdate");
-}
+// dragonIdleUpdate — moved to field/fieldDragon.cpp
 
 void cutsceneTaskInitSub1(s_scriptData3* r15)
 {
@@ -2385,9 +2568,41 @@ void s_cutsceneTask3::Update(s_cutsceneTask3* pThis)
     }
 }
 
-void s_cutsceneTask3::Draw(s_cutsceneTask3*)
+// 0606A8A4
+void s_cutsceneTask3::Draw(s_cutsceneTask3* pThis)
 {
-    Unimplemented();
+    s_scriptData2* pData = &(*pThis->m4)[pThis->m30];
+    s_FieldSubTaskWorkArea* pSubFieldData = getFieldTaskPtr()->m8_pSubFieldData;
+
+    if (!(pSubFieldData->m370_fieldDebuggerWho & 1))
+        return;
+    if (pSubFieldData->m37C_debugMenuStatus1[1] != 0)
+        return;
+    if (pSubFieldData->m369 != 0)
+        return;
+
+    vdp2PrintStatus.m10_palette = 0x7000;
+    vdp2DebugPrintSetPosition(3, 0xF);
+    vdp2PrintfSmallFont("NODE NO:%4d         ", pThis->m30);
+    vdp2DebugPrintSetPosition(3, 0x10);
+    vdp2PrintfSmallFont("FRAME  :%4d         ", pData->m0);
+    vdp2DebugPrintSetPosition(3, 0x11);
+    vdp2PrintfSmallFont("ANG S  :%4d %4d %4d ",
+        (s16)((u16)(pData->m4 >> 16) & 0xFFF) * 0x168 >> 0xC,
+        (s16)((u16)(pData->m8 >> 16) & 0xFFF) * 0x168 >> 0xC,
+        (s16)((u16)(pData->mC >> 16) & 0xFFF) * 0x168 >> 0xC);
+    vdp2DebugPrintSetPosition(3, 0x12);
+    vdp2PrintfSmallFont("DST S  :%4d         ", (s32)pData->m10 >> 0xC);
+    vdp2DebugPrintSetPosition(3, 0x13);
+    vdp2PrintfSmallFont("ANG E  :%4d %4d %4d ",
+        (s16)((u16)(pData->m14 >> 16) & 0xFFF) * 0x168 >> 0xC,
+        (s16)((u16)(pData->m18 >> 16) & 0xFFF) * 0x168 >> 0xC,
+        (s16)((u16)(pData->m1C >> 16) & 0xFFF) * 0x168 >> 0xC);
+    vdp2DebugPrintSetPosition(3, 0x14);
+    vdp2PrintfSmallFont("DST E  :%4d         ", (s32)pData->m20 >> 0xC);
+    vdp2PrintStatus.m10_palette = 0xD000;
+    vdp2DebugPrintSetPosition(3, 0x16);
+    vdp2PrintfSmallFont("count (%3d) ", pThis->m4C);
 }
 
 void cutsceneTaskInitSub2(p_workArea r4, std::vector<s_scriptData1>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
@@ -2800,9 +3015,31 @@ void s_fieldScriptWorkArea::Init(s_fieldScriptWorkArea* pFieldScriptWorkArea)
     pFieldScriptWorkArea->m70 = 1;
 }
 
+// 060683c0
 void fieldScriptTaskUpdateSub1()
 {
-    PDS_unimplemented("fieldScriptTaskUpdateSub1");
+    s_randomBattleWorkArea* pRandomBattleTask = getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask;
+
+    if (pRandomBattleTask->m5 == 3)
+    {
+        pRandomBattleTask->m5 = 0;
+    }
+
+    if ((encounterTaskVar0 == 2) || (pRandomBattleTask->m5 == 2))
+    {
+        pRandomBattleTask->m5 = 3;
+        pRandomBattleTask->m4 = 0;
+
+        if (pRandomBattleTask->m0)
+        {
+            pRandomBattleTask->m0();
+        }
+
+        s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
+        pLCS->m8 |= 0x20;
+
+        pauseEngine[2] = 1;
+    }
 }
 
 s32 fieldScriptTaskUpdateSub4()
@@ -2875,9 +3112,18 @@ s32 FLD_A3_Script_21_Sub0()
     return 0;
 }
 
+// 0607933e
 void dispatchTutorialMultiChoiceSub1()
 {
-    PDS_unimplemented("dispatchTutorialMultiChoiceSub1();");
+    s_fieldScriptWorkArea* pFieldScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    s_multiChoice* pMultiChoice = pFieldScript->m44_multiChoiceData;
+    if (pMultiChoice)
+    {
+        freeHeapForTask(pFieldScript, pMultiChoice->m0_choiceTable);
+        freeHeapForTask(pFieldScript, pMultiChoice);
+        pFieldScript->m44_multiChoiceData = nullptr;
+        fieldPaletteTaskInitSub0Sub0();
+    }
 }
 
 void dispatchTutorialMultiChoiceSub2()
@@ -2898,9 +3144,110 @@ void markMultiChoiceEntrySeen(s32 result)
     }
 }
 
+// 0605f3c4 — reads next string EA from script, advances script pointer
+static s32 tutorialScriptTask_readNextString(sSaturnPtr& script)
+{
+    u8 opcode = readSaturnU8(script);
+    script = script + 1;
+    s32 result = 0;
+    if (opcode != 0x01 && opcode == 0x15)
+    {
+        // align to 4 bytes
+        sSaturnPtr aligned = { (script.m_offset + 3) & ~3u, script.m_file };
+        result = readSaturnS32(aligned);
+        script = aligned + 4;
+    }
+    return result;
+}
+
+// 0605f440
+static void tutorialScriptTask_setupTextArea()
+{
+    setupVDP2StringRendering(6, 5, 0x20, 0xE);
+    clearVdp2TextArea();
+}
+
+// 0605f408
+static bool tutorialScriptTask_drawText(s32 stringEA, sSaturnMemoryFile* pFile)
+{
+    vdp2StringContext.m1C = vdp2StringContext.m0;
+    vdp2StringContext.m0 = 0;
+    tutorialScriptTask_setupTextArea();
+    bool hasText = stringEA != 0;
+    if (hasText)
+    {
+        drawObjectName((char*)getSaturnPtr(pFile->getSaturnPtr(stringEA)));
+    }
+    vdp2StringContext.m0 = vdp2StringContext.m1C;
+    return hasText;
+}
+
+struct s_tutorialScriptTask : public s_workAreaTemplate<s_tutorialScriptTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { NULL, &s_tutorialScriptTask::Update, &s_tutorialScriptTask::Draw, &s_tutorialScriptTask::Delete };
+        return &taskDefinition;
+    }
+
+    // 0605f2ec
+    static void Update(s_tutorialScriptTask* pThis)
+    {
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 6)
+        {
+            pThis->m8_stringEA = tutorialScriptTask_readNextString(pThis->m4_script);
+            pThis->mC_state = 1;
+            playSystemSoundEffect(6);
+        }
+    }
+
+    // 0605f314
+    static void Draw(s_tutorialScriptTask* pThis)
+    {
+        switch (pThis->mC_state)
+        {
+        case 0:
+            pThis->m8_stringEA = tutorialScriptTask_readNextString(pThis->m4_script);
+            pThis->mC_state++;
+            break;
+        case 1:
+            drawBlueBox(3, 4, 0x28, 0x10, 0x1000);
+            tutorialScriptTask_drawText(pThis->m8_stringEA, pThis->m4_script.m_file);
+            if (pThis->m8_stringEA == 0)
+            {
+                pThis->m0_pFieldScript->getTask()->m14_flags &= ~2u;
+                pThis->getTask()->markFinished();
+            }
+            else
+            {
+                pThis->mC_state++;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    // 0605f380
+    static void Delete(s_tutorialScriptTask* pThis)
+    {
+        clearBlueBox(3, 4, 0x28, 0x10);
+    }
+
+    s_fieldScriptWorkArea* m0_pFieldScript;
+    sSaturnPtr m4_script;
+    s32 m8_stringEA;
+    u8 mC_state;
+    // size 0x10
+};
+
+// 0605f38c
 void dispatchTutorialMultiChoiceSub3(s_fieldScriptWorkArea* pThis, int result)
 {
-    Unimplemented();
+    s_tutorialScriptTask* pNewTask = createSiblingTask<s_tutorialScriptTask>(pThis);
+    pNewTask->m4_script = pThis->m0_pScripts[result + 0x11];
+    pNewTask->m0_pFieldScript = pThis;
+    pThis->getTask()->m14_flags |= 2;
 }
 
 s32 battleIndex;
@@ -4525,64 +4872,7 @@ void createFieldOverlaySubTask(s_workArea* pWorkArea)
     createSubTask<sFieldCameraManager>(pWorkArea);
 }
 
-struct s_DragonRiderTask : public s_workAreaTemplate<s_DragonRiderTask>
-{
-    static const TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static const TypedTaskDefinition taskDefinition = { &dragonRidersTaskInit, &dragonRidersTaskUpdate, NULL, NULL };
-        return &taskDefinition;
-    }
-    
-    static void dragonRidersTaskInit(s_DragonRiderTask* pWorkArea);
-    static void dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea);
-};
-
-// 0607b280
-void s_DragonRiderTask::dragonRidersTaskInit(s_DragonRiderTask* pWorkArea)
-{
-    initAnimation(&pRider1State->m18_3dModel, pRider1State->m0_riderBundle->getAnimation(0x30));
-    updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
-
-    if (mainGameState.gameStats.m3_rider2 == 7)
-    {
-        initAnimation(&pRider2State->m18_3dModel, pRider2State->m0_riderBundle->getAnimation(0x30));
-        updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
-    }
-}
-
-void s_DragonRiderTask::dragonRidersTaskUpdate(s_DragonRiderTask* pWorkArea)
-{
-    PDS_unimplemented("dragonRidersTaskUpdate");
-}
-
-void dragonFieldTaskInitSub2Sub2(s_dragonTaskWorkArea* pDragon)
-{
-    pDragon->m178_turnRate = 0x222222;
-    pDragon->m17C = 0x4CCC;
-    pDragon->m180 = 0x16;
-    pDragon->m184_animRate = 0x111111;
-}
-
-void dragonFieldTaskInitSub2Sub3(s_dragonTaskWorkArea* pWorkArea)
-{
-    pWorkArea->m1F0.m_0 = 0;
-    pWorkArea->m1F0.m_4 = 0;
-    pWorkArea->m1F0.m_8 = 0;
-    pWorkArea->m1F0.m_C = 0;
-    pWorkArea->m1F0.m_E = 0;
-    pWorkArea->m1F0.m_10 = 0;
-}
-
-void dragonFieldTaskInitSub2Sub4(s_dragonTaskWorkArea_48* m48)
-{
-    initMatrixToIdentity(&m48->m0_matrix);
-
-    m48->m30 = 0;
-    m48->m34 = 0;
-    m48->m38 = 0;
-
-    m48->m3C = 1;
-}
+// s_DragonRiderTask, createDragonRiderTask, initDragonFieldStateSub2/3/4 — moved to field/fieldDragon.cpp
 
 void initDragonSpeed(u32 arg)
 {
@@ -4620,120 +4910,16 @@ sFieldCameraStatus* getFieldCameraStatus()
     return &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4_cameraSlots[getFieldTaskPtr()->m8_pSubFieldData->m334->m50C_activeCameraSlot];
 }
 
-void dragonFieldTaskInitSub2(s_dragonTaskWorkArea* pWorkArea)
-{
-    createFieldRadar(pWorkArea);
+// initDragonFieldState, initDragonFieldAnimation, isDragonInFieldBounds — moved to field/fieldDragon.cpp
 
-    dragonFieldTaskInitSub2Sub2(pWorkArea);
-
-    dragonFieldTaskInitSub2Sub3(pWorkArea);
-
-    pWorkArea->m208 = 0x960000;
-    pWorkArea->m20C = 0x960000;
-    pWorkArea->m210 = 0xB333;
-    pWorkArea->m214 = 0xB333;
-    pWorkArea->m150 = 0x10000;
-
-    pWorkArea->m8_pos[0] = 0;
-    pWorkArea->m8_pos[1] = 0x1E000;
-    pWorkArea->m8_pos[2] = 0;
-
-    pWorkArea->m20_angle[0] = 0;
-    pWorkArea->m20_angle[1] = 0;
-    pWorkArea->m20_angle[2] = 0;
-
-    pWorkArea->m154_dragonSpeed = 0;
-
-    pWorkArea->m1B8 = 0xB333;
-    pWorkArea->m1BC = 0x200000;
-
-    initMatrixToIdentity(&pWorkArea->m88_matrix);
-
-    dragonFieldTaskInitSub2Sub4(&pWorkArea->m48);
-
-    pWorkArea->m1CC_fieldOfView = DEG_80; // field of view
-    pWorkArea->m234 = 0;
-
-    pWorkArea->m21C_DragonSpeedValues[0] = 0;
-    pWorkArea->m21C_DragonSpeedValues[1] = 0x1284;
-    pWorkArea->m21C_DragonSpeedValues[2] = 0x2509;
-    pWorkArea->m21C_DragonSpeedValues[3] = 0x3B42;
-    pWorkArea->m21C_DragonSpeedValues[4] = 0x58E3;
-
-    initDragonSpeed(0);
-
-    pWorkArea->m230 = 0x1999;
-
-    //060738C0
-
-    pWorkArea->m154_dragonSpeed = pWorkArea->m21C_DragonSpeedValues[pWorkArea->m235_dragonSpeedIndex];
-
-    pWorkArea->m238 = 0;
-    pWorkArea->m237 = 0;
-    pWorkArea->mC0_lightRotationAroundDragon = 0xC000000;
-    pWorkArea->mC4 = 0;
-
-    pWorkArea->mC8_normalLightColor.m0 = 0x10;
-    pWorkArea->mC8_normalLightColor.m1 = 0x10;
-    pWorkArea->mC8_normalLightColor.m2 = 0x10;
-
-    pWorkArea->mCB_falloffColor0.m0 = 0x8;
-    pWorkArea->mCB_falloffColor0.m1 = 0x8;
-    pWorkArea->mCB_falloffColor0.m2 = 0x8;
-
-    pWorkArea->mCE_falloffColor1.m0 = 0x14;
-    pWorkArea->mCE_falloffColor1.m1 = 0x14;
-    pWorkArea->mCE_falloffColor1.m2 = 0x14;
-
-    pWorkArea->mD1_falloffColor2.m0 = 0xC;
-    pWorkArea->mD1_falloffColor2.m1 = 0xC;
-    pWorkArea->mD1_falloffColor2.m2 = 0xC;
-
-    pWorkArea->mD4.m0 = 0x10;
-    pWorkArea->mD4.m1 = 0x10;
-    pWorkArea->mD4.m2 = 0x10;
-
-    sFieldCameraStatus* pFieldCameraStatus = getFieldCameraStatus();
-
-    pFieldCameraStatus->mC_rotation[0] = pWorkArea->m20_angle[1];
-
-    pWorkArea->m14C_pitchMax = 0x2AAAAAA;
-    pWorkArea->m148_pitchMin = -0x2AAAAAA;
-    pWorkArea->m140_maxY = 0x300000;
-    pWorkArea->m134_minY = -0x300000;
-    pWorkArea->m130_minX = 0x80000000;
-    pWorkArea->m13C_maxX = 0x7FFFFFFF;
-    pWorkArea->m138_minZ = 0x80000000;
-    pWorkArea->m144_maxZ = 0x7FFFFFFF;
-}
-
-void dragonFieldTaskInitSub3(s_dragonTaskWorkArea* pWorkArea, s_dragonState* pDragonState, int param2)
-{
-    setupModelAnimation(&pDragonState->m28_dragon3dModel, pDragonState->m0_pDragonModelBundle->getAnimation(pDragonState->m20_dragonAnimOffsets[param2]));
-    updateAndInterpolateAnimation(&pDragonState->m28_dragon3dModel);
-
-    pWorkArea->m23A_dragonAnimation = param2;
-    pWorkArea->m237 = pWorkArea->m238;
-    pWorkArea->m23B = 1;
-}
-
-s32 isDragonInFieldBounds(s_dragonTaskWorkArea* r4)
-{
-    if (r4->m8_pos[0] <= r4->m130_minX + 0x20000)
-        return 0;
-    if (r4->m8_pos[0] >= r4->m13C_maxX - 0x20000)
-        return 0;
-    if (r4->m8_pos[2] <= r4->m138_minZ + 0x20000)
-        return 0;
-    if (r4->m8_pos[2] >= r4->m144_maxZ - 0x20000)
-        return 0;
-
-    return 1;
-}
-
+// 06071bec
 void startScriptLeaveArea()
 {
-    PDS_unimplemented("startScriptLeaveArea");
+    sSaturnPtr scriptLeaveArea = gFLD_A3->getSaturnPtr(0x06080EB8);
+    if (queueNewFieldScript(scriptLeaveArea, -1) != 0)
+    {
+        registerCallbackForDialog(nullptr, (tDialogCallback)dispatchTutorialMultiChoiceSub2, 0);
+    }
 }
 
 void buildDragonRotationMatrix(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13)
@@ -4749,597 +4935,9 @@ void buildDragonRotationMatrix(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13)
     rotateMatrixShiftedZ(r13->m8_Z, &r14->m0_matrix);
 }
 
-void computeDragonDeltaTranslation(s_dragonTaskWorkArea* r14)
-{
-    PDS_unimplemented("updateDragonRotationSub1");
-}
-
 void dragonFieldTaskInitSub4Sub4Sub2()
 {
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags &= ~0x10000;
-}
-
-void updateDragonMovementNoInputSub1(s_dragonTaskWorkArea* r14)
-{
-    r14->m254 = 0;
-    r14->m250 = 0;
-    r14->m24A_runningCameraScript = 0;
-    r14->m258 = 0;
-    r14->m25C = 0;
-    r14->m25D = 0;
-}
-
-void updateDragonMovementNoInput(s_dragonTaskWorkArea* r14)
-{
-    if (--r14->m25D < 0)
-    {
-        updateDragonMovementNoInputSub1(r14);
-    }
-
-    // update yaw
-    {
-        fixedPoint tempRotX = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, tempRotX.normalized() * 15) - r14->m20_angle[0];
-    }
-
-    if (r14->m25D == 2)
-    {
-        //0607EA3E
-        r14->m20_angle[2] += r14->m254;
-    }
-    else
-    {
-        // update roll
-        fixedPoint tempRotZ = r14->m3C_targetAngles[2] - r14->m20_angle[2];
-        r14->m20_angle[2] += r14->m3C_targetAngles[2] - intDivide(0x10, tempRotZ.normalized() * 15) - r14->m20_angle[2];
-    }
-
-    //607EA84
-    // clamp angle.x to valid range
-    if (r14->m20_angle[0].normalized() > r14->m14C_pitchMax)
-    {
-        r14->m20_angle[0] = r14->m14C_pitchMax;
-    }
-    if (r14->m20_angle[0].normalized() < r14->m148_pitchMin)
-    {
-        r14->m20_angle[0] = r14->m148_pitchMin;
-    }
-
-    r14->m247 = 0;
-    r14->m246_previousAnalogY = 0;
-    r14->m245_previousAnalogX = 0;
-
-    r14->m25C &= ~1;
-}
-
-u32 isDragonInputAllowed(s_dragonTaskWorkArea* r4)
-{
-    s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-
-    if (getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x10000)
-        return 0;
-
-    if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8)
-        return 0;
-
-    if (r14->m4_currentScript.m_offset)
-        return 0;
-
-    if (r14->m30_cinematicBarTask)
-        return 0;
-
-    if (r14->m34)
-        return 0;
-
-    if (r14->m38_dialogStringTask)
-        return 0;
-
-    if (r14->m3C_multichoiceTask)
-        return 0;
-
-    return 1;
-}
-
-void applyDragonAnimationFromInput(s_dragonTaskWorkArea* r14, s_dragonState* r12)
-{
-    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // down
-    {
-        incrementAnimationRootY(&r12->m78_animData, r14->m184_animRate);
-    }
-    else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // up
-    {
-        incrementAnimationRootY(&r12->m78_animData, -r14->m184_animRate);
-    }
-
-    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7]) // right
-    {
-        incrementAnimationRootX(&r12->m78_animData, r14->m184_animRate);
-        incrementAnimationRootZ(&r12->m78_animData, -r14->m184_animRate);
-    }
-    else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6]) // left
-    {
-        incrementAnimationRootX(&r12->m78_animData, -r14->m184_animRate);
-        incrementAnimationRootZ(&r12->m78_animData, r14->m184_animRate);
-    }
-}
-
-void applyDragonAnimationFromAnalog(s_dragonTaskWorkArea* r11, s_dragonState* r12)
-{
-    s32 r4_y;
-    if (graphicEngineStatus.m4514.m138[1])
-    {
-        r4_y = -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
-    }
-    else
-    {
-        r4_y = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
-    }
-
-    s32 var0 = r11->m246_previousAnalogY - r4_y;
-    if (var0 > 0x40)
-    {
-        incrementAnimationRootY(&r12->m78_animData, intDivide(0x80, r11->m184_animRate.asS32() * var0));
-    }
-    else if (var0 < -0x40)
-    {
-        incrementAnimationRootY(&r12->m78_animData, intDivide(0x80, r11->m184_animRate.asS32() * var0));
-    }
-
-    //607F1E8
-    s32 r4_x = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
-    s32 r10 = r4_x - r11->m245_previousAnalogX;
-    if (r10 > 0x40)
-    {
-        incrementAnimationRootX(&r12->m78_animData, intDivide(0x80, -(r11->m184_animRate.asS32() * r10)));
-        incrementAnimationRootZ(&r12->m78_animData, intDivide(0x80, r11->m184_animRate.asS32() * r10));
-    }
-    else if (r10 < -0x40)
-    {
-        incrementAnimationRootX(&r12->m78_animData, intDivide(0x80, -(r11->m184_animRate.asS32() * r10)));
-        incrementAnimationRootZ(&r12->m78_animData, intDivide(0x80, r11->m184_animRate.asS32() * r10));
-    }
-}
-
-static void startBarrelRollMode(s_dragonTaskWorkArea* r14);
-void handleBarrelRollInputAnalog(s_dragonTaskWorkArea* r4)
-{
-    s32 timer = (s32)r4->m258 - 1;
-    r4->m258 = timer;
-    if (timer < 1)
-    {
-        r4->m25D = 0;
-        r4->m258 = 0;
-
-        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][15])
-        {
-            // 0607E7F8: forward + barrel roll button → reverse barrel roll
-            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0])
-            {
-                if (gDragonState->mC_dragonType != 8) // not floater
-                {
-                    r4->m25D = 2;
-                    r4->m258 = 0x18;
-                    if (r4->m25E == 0)
-                    {
-                        r4->m254 = 0x84BDA1;
-                    }
-                    else
-                    {
-                        r4->m254 = -0x84BDA1;
-                    }
-                    r4->m23C |= 4;
-                    r4->m244 = 9;
-                }
-                return;
-            }
-
-            // Analog stick rotation dash (only at idle speed)
-            if (r4->m235_dragonSpeedIndex == 0)
-            {
-                s8 analogX = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
-                if (analogX < 0)
-                {
-                    // Tilt left → barrel roll left
-                    r4->m250 = fixedPoint((s32)r4->m20_angle[1] + (s32)0xF838E38F).normalized();
-                    startBarrelRollMode(r4);
-                    return;
-                }
-                if (analogX > 0)
-                {
-                    // Tilt right → barrel roll right
-                    r4->m250 = fixedPoint((s32)r4->m20_angle[1] + (s32)0x7C71C71).normalized();
-                    startBarrelRollMode(r4);
-                    return;
-                }
-            }
-        }
-    }
-}
-
-void interpolateYawWithBanking(s_dragonTaskWorkArea* r14); // forward decl
-
-void applyDragonPitchYawRollAnalog(s_dragonTaskWorkArea* r14)
-{
-    s32 r9_y;
-    if (graphicEngineStatus.m4514.m138[1])
-    {
-        r9_y = -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
-    }
-    else
-    {
-        r9_y = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
-    }
-    r9_y = -r9_y;
-
-    // TODO: understand the code that tests angle and 0x80000000
-    handleBarrelRollInputAnalog(r14);
-
-    fixedPoint r3;
-    if (r14->m154_dragonSpeed >= 0)
-    {
-        r3 = r14->m154_dragonSpeed;
-    }
-    else
-    {
-        r3 = -r14->m154_dragonSpeed;
-    }
-
-    //607F2F8
-    if (r3 >= 0x100)
-    {
-        if (r9_y > 0)
-        {
-            // down
-            r14->m1F0.m_8 = intDivide(0x7F, r9_y * r14->m178_turnRate.asS32());
-            r14->m20_angle[0] += r14->m1F0.m_8;
-            r14->m238 |= 2;
-            r14->mFC |= 2;
-        }
-        else if(r9_y < 0)
-        {
-            // up
-            r14->m1F0.m_8 = intDivide(0x7F, r9_y * r14->m178_turnRate.asS32());
-            r14->m20_angle[0] += r14->m1F0.m_8;
-            r14->m238 |= 1;
-            r14->mFC |= 1;
-        }
-        else
-        {
-            //607F360
-            fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-            r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[0];
-        }
-    }
-    else
-    {
-        //607F3B4
-        fixedPoint r4 = intDivide(0x7F, -(r9_y << 11));
-        if (r9_y > 0)
-        {
-            r14->m160_deltaTranslation[1] += r4;
-            r14->m238 |= 2;
-            r14->m1F0.m_8 = intDivide(0x7F, r9_y * r14->m178_turnRate.asS32());
-            r14->mFC |= 2;
-        }
-        else if (r9_y < 0)
-        {
-            r14->m160_deltaTranslation[1] += r4;
-            r14->m238 |= 1;
-            r14->m1F0.m_8 = intDivide(0x7F, r9_y * r14->m178_turnRate.asS32());
-            r14->mFC |= 1;
-        }
-
-        //607F428
-        fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[0];
-    }
-
-    //607F45A
-    if (r14->m20_angle[0].normalized() > r14->m14C_pitchMax)
-    {
-        r14->m20_angle[0] = r14->m14C_pitchMax;
-    }
-    if (r14->m20_angle[0].normalized() < r14->m148_pitchMin)
-    {
-        r14->m20_angle[0] = r14->m148_pitchMin;
-    }
-
-    //607F49A
-    r14->m1F0.m_C = intDivide(0x7F, graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX * r14->m178_turnRate.asS32());
-
-    if (r14->m25D == 1)
-    {
-        interpolateYawWithBanking(r14);
-    }
-    else
-    {
-        if ((r14->mF8_Flags & 0x8000) == 0)
-        {
-            r14->m20_angle[1] += r14->m1F0.m_C;
-        }
-    }
-
-    //0607F4F0
-    if (r14->m25D == 2)
-    {
-        r14->m20_angle[2] += r14->m254;
-    }
-    else
-    {
-        r14->m20_angle[2] += r14->m3C_targetAngles[2] - intDivide(0x10, fixedPoint(r14->m3C_targetAngles[2] - r14->m20_angle[2]).normalized() * 15) - r14->m20_angle[2];
-        s32 analogX = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
-        if (analogX > 0)
-        {
-            //0607F540
-            fixedPoint r2 = r14->m20_angle[1] - r14->m30;
-            if (r2 >= intDivide(0x7F, analogX * r14->m178_turnRate.asS32()))
-            {
-                r14->m20_angle[2] -= intDivide(4, r14->m178_turnRate * 3);
-                r14->mFC |= 4;
-                r14->m25E = 1;
-            }
-        }
-        else if (analogX < 0)
-        {
-            //607F57E
-            fixedPoint r2 = r14->m30 - r14->m20_angle[1];
-            if (r2 >= intDivide(0x7F, -analogX * r14->m178_turnRate.asS32()))
-            {
-                r14->m20_angle[2] += intDivide(4, r14->m178_turnRate * 3);
-                r14->mFC |= 8;
-                r14->m25E = 0;
-            }
-        }
-    }
-
-    //607F5BA
-    r14->m245_previousAnalogX = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
-    if (graphicEngineStatus.m4514.m138[1])
-    {
-        r14->m246_previousAnalogY = -graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
-    }
-    else
-    {
-        r14->m246_previousAnalogY = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
-    }
-
-    r14->m247 = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4;
-}
-
-// 0607e638
-void interpolateYawWithBanking(s_dragonTaskWorkArea* r14)
-{
-    r14->m20_angle[1] = interpolateRotation(r14->m20_angle[1], r14->m250, 0x2000, 0x888889, 0x10);
-    if (r14->m178_turnRate <= r14->m30 - r14->m20_angle[1])
-    {
-        r14->m20_angle[2] += intDivide(4, r14->m178_turnRate * 3);
-    }
-    else if (r14->m178_turnRate <= r14->m20_angle[1] - r14->m30)
-    {
-        r14->m20_angle[2] -= intDivide(4, r14->m178_turnRate * 3);
-    }
-}
-
-// 0607e606
-static void startBarrelRollMode(s_dragonTaskWorkArea* r14)
-{
-    r14->m25D = 1;
-    r14->m258 = 0x1E;
-    r14->m23C |= 4;
-    r14->m244 = 4;
-}
-
-// 0607e718
-void handleBarrelRollInput(s_dragonTaskWorkArea* r14)
-{
-    s32 timer = (s32)r14->m258 - 1;
-    r14->m258 = timer;
-    if (timer < 1)
-    {
-        r14->m25D = 0;
-        r14->m258 = 0;
-
-        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0xF])
-        {
-            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0])
-            {
-                if (gDragonState->mC_dragonType != 8)
-                {
-                    r14->m25D = 2;
-                    r14->m258 = 0x18;
-                    if (r14->m25E == 0)
-                    {
-                        r14->m254 = 0x84BDA1;
-                    }
-                    else
-                    {
-                        r14->m254 = -0x84BDA1;
-                    }
-                    r14->m23C |= 4;
-                    r14->m244 = 9;
-                }
-                return;
-            }
-
-            if (r14->m235_dragonSpeedIndex == 0)
-            {
-                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7])
-                {
-                    r14->m250 = fixedPoint((s32)r14->m20_angle[1] + (s32)0xF838E38F).normalized();
-                    startBarrelRollMode(r14);
-                    return;
-                }
-
-                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6])
-                {
-                    r14->m250 = fixedPoint((s32)r14->m20_angle[1] + (s32)0x7C71C71).normalized();
-                    startBarrelRollMode(r14);
-                    return;
-                }
-            }
-        }
-    }
-}
-
-void applyDragonPitchYawRoll(s_dragonTaskWorkArea* r14)
-{
-    handleBarrelRollInput(r14);
-
-    fixedPoint r2;
-    if (r14->m154_dragonSpeed >= 0)
-    {
-        r2 = r14->m154_dragonSpeed;
-    }
-    else
-    {
-        r2 = -r14->m154_dragonSpeed;
-    }
-
-    if (r2 >= 0x100)
-    {
-        //0607EC06
-        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // Go down
-        {
-            //0607EC12
-            r14->m20_angle[0] += r14->m178_turnRate;
-            r14->m238 |= 2;
-            r14->m1F0.m_8 = r14->m178_turnRate;
-            r14->mFC |= 2;
-        }
-        else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // Go up
-        {
-            //0607EC44
-            r14->m20_angle[0] -= r14->m178_turnRate;
-            r14->m238 |= 1;
-            r14->m1F0.m_8 = -r14->m178_turnRate;
-            r14->mFC |= 1;
-        }
-        else
-        {
-            //607EC6C
-            fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-            r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[0];
-        }
-    }
-    else
-    {
-        //0607ECA4
-        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][5]) // Go down
-        {
-            //607ECB0
-            r14->m160_deltaTranslation[1] -= 0x800;
-            r14->m238 |= 2;
-            r14->m1F0.m_8 = r14->m178_turnRate;
-            r14->mFC |= 2;
-        }
-        else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][4]) // Go up
-        {
-            //607ED00
-            r14->m160_deltaTranslation[1] += 0x800;
-            r14->m238 |= 1;
-            r14->m1F0.m_8 = -r14->m178_turnRate;
-            r14->mFC |= 1;
-        }
-
-        //607ED32
-        fixedPoint r1 = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-        r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[0];
-    }
-
-    //0607ED68
-    if (r14->m20_angle[0].normalized() > r14->m14C_pitchMax)
-    {
-        r14->m20_angle[0] = r14->m14C_pitchMax;
-    }
-    if (r14->m20_angle[0].normalized() < r14->m148_pitchMin)
-    {
-        r14->m20_angle[0] = r14->m148_pitchMin;
-    }
-
-
-
-    if (r14->m25D == 2)
-    {
-        //0607EDB0
-        r14->m20_angle[2] += r14->m254;
-    }
-    else
-    {
-        fixedPoint r1 = r14->m3C_targetAngles[2] - r14->m20_angle[2];
-        r14->m20_angle[2] += r14->m3C_targetAngles[2] - intDivide(0x10, r1.normalized() * 15) - r14->m20_angle[2];
-
-        if (r14->m25D == 1)
-        {
-            interpolateYawWithBanking(r14);
-        }
-        else
-        {
-            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][7]) // right
-            {
-                //0607EE34
-                if ((r14->mF8_Flags & 0x8000) == 0)
-                {
-                    r14->m20_angle[1] -= r14->m178_turnRate;
-                }
-
-                r14->m1F0.m_C = -r14->m178_turnRate;
-                if (r14->m30 - r14->m20_angle[1] >= r14->m178_turnRate)
-                {
-                    r14->m20_angle[2] += intDivide(4, r14->m178_turnRate * 3);
-                }
-
-                r14->mFC |= 8;
-                r14->m25E = 0;
-            }
-            else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][6]) // left
-            {
-                //0607EE8C
-                if ((r14->mF8_Flags & 0x8000) == 0)
-                {
-                    r14->m20_angle[1] += r14->m178_turnRate;
-                }
-
-                r14->m1F0.m_C = r14->m178_turnRate;
-                if (r14->m20_angle[1] - r14->m30 >= r14->m178_turnRate)
-                {
-                    r14->m20_angle[2] -= intDivide(4, r14->m178_turnRate * 3);
-                }
-
-                r14->mFC |= 4;
-                r14->m25E = 1;
-            }
-        }
-    }
-
-    r14->m247 = 0;
-    r14->m246_previousAnalogY = 0;
-    r14->m245_previousAnalogX = 0;
-}
-
-void updateDragonMovementDigital(s_dragonTaskWorkArea* r14)
-{
-    if (isDragonInputAllowed(r14))
-    {
-        applyDragonAnimationFromInput(r14, gDragonState);
-        applyDragonPitchYawRoll(r14);
-    }
-    else
-    {
-        updateDragonMovementNoInput(r14);
-    }
-}
-
-void updateDragonMovementAnalog(s_dragonTaskWorkArea* r14)
-{
-    if (isDragonInputAllowed(r14))
-    {
-        applyDragonAnimationFromAnalog(r14, gDragonState);
-        applyDragonPitchYawRollAnalog(r14);
-    }
-    else
-    {
-        updateDragonMovementNoInput(r14);
-    }
 }
 
 u32 isDragonControlledByScripts()
@@ -5453,498 +5051,9 @@ u32 isDragonBoostLocked()
     return T ^ 1;
 }
 
-void resetDragonSpeedIndex(s_dragonTaskWorkArea* r4)
-{
-    if ((r4->m25C & 1) == 0)
-    {
-        r4->m235_dragonSpeedIndex = 0;
-        r4->m234 = 0;
-        r4->m25C = 0;
-    }
-}
-
-void updateDragonSpeed(s_dragonTaskWorkArea* r14)
-{
-    // 0607E8B6: clear boost flag if new button pressed or speed <= 0
-    if ((r14->m25C & 0x1) &&
-        (((graphicEngineStatus.m4514.mD8_buttonConfig[1][0] | graphicEngineStatus.m4514.mD8_buttonConfig[1][11]) &
-          graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown) != 0 ||
-         r14->m235_dragonSpeedIndex < 1))
-    {
-        r14->m25C &= ~1;
-    }
-
-    // 0607E8E4: brake button check (buttonConfig[1][11] without forward)
-    if ((r14->m25C & 0x2) == 0 &&
-        (graphicEngineStatus.m4514.mD8_buttonConfig[1][11] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown))
-    {
-        if (graphicEngineStatus.m4514.mD8_buttonConfig[1][0] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown)
-        {
-            // Both brake and forward held → set speed to -1
-            r14->m235_dragonSpeedIndex = -1;
-        }
-        else
-        {
-            // 0607E910: brake only → reset speed and return
-            resetDragonSpeedIndex(r14);
-            return;
-        }
-    }
-    else
-    {
-        // 0607E920: normal speed update path
-        r14->m25C |= 2;
-
-        if (isDragonBoostLocked() &&
-            (graphicEngineStatus.m4514.mD8_buttonConfig[1][15] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown))
-        {
-            r14->m25C |= 4;
-        }
-
-        s8 maxSpeed = (r14->m25C & 4) ? 4 : 3;
-
-        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[1][0])
-        {
-            // 0607E960: forward held — accelerate
-            if (++r14->m234 > 4)
-            {
-                if (++r14->m235_dragonSpeedIndex >= maxSpeed)
-                {
-                    r14->m235_dragonSpeedIndex = maxSpeed;
-                }
-                r14->m234 = 0;
-            }
-        }
-        else
-        {
-            resetDragonSpeedIndex(r14);
-        }
-
-        // 0607E9AE: boost initiation
-        if (isDragonBoostAvailable() && r14->m235_dragonSpeedIndex > 0 && (s32)r14->m154_dragonSpeed > 0 &&
-            (graphicEngineStatus.m4514.mD8_buttonConfig[1][11] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown))
-        {
-            r14->m25C |= 1;
-            r14->m158 = r14->m154_dragonSpeed;
-        }
-    }
-}
-
-void integrateDragonMovement(s_dragonTaskWorkArea* r14)
-{
-    getFieldTaskPtr()->m28_status &= ~0x10000;
-
-    buildDragonRotationMatrix(&r14->m48, &r14->m20_angle);
-    copyMatrix(&r14->m48.m0_matrix, &r14->m88_matrix);
-
-    if (isDragonControlledByScripts())
-    {
-        clearDragonPlayerInputs();
-    }
-
-    if (isDragonPlayerControlAllowed())
-    {
-        if ((r14->mF8_Flags & 0x10000) == 0)
-        {
-            updateDragonSpeed(r14);
-        }
-
-        if (r14->m235_dragonSpeedIndex < 0)
-        {
-            //0607FE38
-            r14->m15C_dragonSpeedIncrement = MTH_Mul(-r14->m154_dragonSpeed - 0x1284, r14->m230);
-        }
-        else
-        {
-            //607FE50
-            fixedPoint r3;
-            if (r14->m25C & 1)
-            {
-                r3 = r14->m158;
-            }
-            else
-            {
-                r3 = r14->m21C_DragonSpeedValues[r14->m235_dragonSpeedIndex];
-            }
-
-            fixedPoint r12 = r14->m154_dragonSpeed - r3;
-            if (r12 < 0)
-            {
-                r14->m15C_dragonSpeedIncrement = -MTH_Mul(r12, r14->m230);
-            }
-            else
-            {
-                r14->m15C_dragonSpeedIncrement = MTH_Mul(-r12, r14->m230);
-            }
-        }
-    }
-    else
-    {
-        //607FE98
-        if (r14->m154_dragonSpeed < 0)
-        {
-            r14->m15C_dragonSpeedIncrement = -MTH_Mul(r14->m154_dragonSpeed, r14->m230);
-        }
-        else
-        {
-            r14->m15C_dragonSpeedIncrement = MTH_Mul(-r14->m154_dragonSpeed, r14->m230);
-        }
-    }
-
-    // 607FF02
-    r14->m154_dragonSpeed += r14->m15C_dragonSpeedIncrement;
-
-    // speed up?
-    if (keyboardIsKeyDown(0xA9))
-    {
-        r14->m154_dragonSpeed.m_value *= 4;
-    }
-
-    // Clamp dragon speed
-    fixedPoint r2 = r14->m154_dragonSpeed;
-    if (r14->m154_dragonSpeed >= 0)
-    {
-        if (r14->m154_dragonSpeed < 0x7000)
-        {
-            r2 = r14->m154_dragonSpeed;
-        }
-        else
-        {
-            r2 = 0x7000;
-        }
-    }
-    else
-    {
-        if (r14->m154_dragonSpeed >= -0x7000)
-        {
-            r2 = r14->m154_dragonSpeed;
-        }
-        else
-        {
-            r2 = -0x7000;
-        }
-    }
-    r14->m154_dragonSpeed = r2;
-
-    r14->m1AC[0] = interpolateRotation(r14->m1AC[0], 0, 0x2000, 0x444444, 0x10);
-    r14->m1AC[1] = interpolateRotation(r14->m1AC[1], 0, 0x2000, 0x444444, 0x10);
-    r14->m1AC[2] = interpolateRotation(r14->m1AC[2], 0, 0x2000, 0x444444, 0x10);
-
-    r14->m1AC += r14->m1A0;
-
-    r14->m20_angle += r14->m1AC;
-
-    r14->m1A0.zeroize();
-
-    // ~0607FFEC 
-    r14->m194[0] = interpolateDistance(r14->m194[0], 0, 0x2000, 0xAAA, 0x10);
-    r14->m194[1] = interpolateDistance(r14->m194[1], 0, 0x2000, 0xAAA, 0x10);
-    r14->m194[2] = interpolateDistance(r14->m194[2], 0, 0x2000, 0xAAA, 0x10);
-
-    r14->m194 += r14->m188;
-
-    if (r14->m154_dragonSpeed < 0)
-    {
-        //06080066
-        r14->m160_deltaTranslation[0] += r14->m194[0] - MTH_Mul(r14->m88_matrix.m[0][2], r14->m154_dragonSpeed);
-        r14->m160_deltaTranslation[1] += r14->m194[1];
-    }
-    else
-    {
-        r14->m160_deltaTranslation[0] += r14->m194[0] - MTH_Mul(r14->m88_matrix.m[0][2], r14->m154_dragonSpeed);
-        r14->m160_deltaTranslation[1] += r14->m194[1] + MTH_Mul(r14->m88_matrix.m[1][2], r14->m154_dragonSpeed);
-    }
-    r14->m160_deltaTranslation[2] += r14->m194[2] - MTH_Mul(r14->m88_matrix.m[2][2], r14->m154_dragonSpeed);
-
-    r14->m188.zeroize();
-
-    if (r14->mF4)
-    {
-        r14->mF4(r14);
-    }
-
-    //6080140
-    r14->m8_pos += r14->m160_deltaTranslation;
-
-    if ((r14->m134_minY == 0) && (r14->m140_maxY == 0))
-    {
-        return;
-    }
-
-    if (r14->m8_pos[1] < r14->m134_minY)
-        r14->m8_pos[1] = r14->m134_minY;
-
-    if (r14->m8_pos[1] > r14->m140_maxY)
-        r14->m8_pos[1] = r14->m140_maxY;
-
-    //608018E
-    r14->m160_deltaTranslation = r14->m8_pos - r14->m14_oldPos;
-
-    // Adjust pitch min when close to maxY (ceiling)
-    // Early-out when far from boundary to avoid s32 overflow in the multiplication
-    if ((r14->m140_maxY - r14->m8_pos[1]) > 0x200000)
-    {
-        r14->m148_pitchMin = -0x3555555;
-    }
-    else
-    {
-        fixedPoint r6 = (r14->m140_maxY - r14->m8_pos[1]) * -0x111;
-        fixedPoint r2 = (r6 >= -0x3555555) ? r6 : fixedPoint(-0x3555555);
-        fixedPoint r3;
-        if (r2 >= 0)
-            r3 = 0;
-        else if (r6 >= -0x3555555)
-            r3 = r6;
-        else
-            r3 = -0x3555555;
-        r14->m148_pitchMin = r3;
-    }
-
-    // Adjust pitch max when close to minY (floor)
-    if ((r14->m8_pos[1] - r14->m134_minY) > 0x200000)
-    {
-        r14->m14C_pitchMax = 0x3555555;
-    }
-    else
-    {
-        fixedPoint r5 = (r14->m8_pos[1] - r14->m134_minY) * 0x111;
-        fixedPoint r2 = (r5 < 0x3555555) ? r5 : fixedPoint(0x3555555);
-        fixedPoint r3;
-        if (r2 < 0)
-            r3 = 0;
-        else if (r5 < 0x3555555)
-            r3 = r5;
-        else
-            r3 = 0x3555555;
-        r14->m14C_pitchMax = r3;
-    }
-}
-
-void dragonFlightUpdate(s_dragonTaskWorkArea* r4)
-{
-    r4->m24A_runningCameraScript = 0;
-
-    switch (r4->m104_dragonScriptStatus)
-    {
-    case 0:
-        r4->m154_dragonSpeed = 0;
-        getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 &= ~1;
-        r4->mF8_Flags |= 0x400;
-        r4->mF8_Flags &= ~0x20000;
-        r4->m104_dragonScriptStatus++;
-    case 1:
-        if (!isDragonInFieldBounds(r4))
-        {
-            r4->mF0 = dragonExitField;
-            r4->m104_dragonScriptStatus = 0;
-            dragonExitField(r4);
-            return;
-        }
-    }
-
-    r4->m160_deltaTranslation[0] = 0;
-    r4->m160_deltaTranslation[1] = 0;
-    r4->m160_deltaTranslation[2] = 0;
-
-    r4->m238 &= ~3;
-
-    switch (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType)
-    {
-    case 1:
-        updateDragonMovementDigital(r4);
-        break;
-    case 2:
-        updateDragonMovementAnalog(r4);
-        break;
-    default:
-        assert(0);
-    }
-
-    integrateDragonMovement(r4);
-}
-
 void dragonFieldTaskInitSub4Sub4()
 {
     activateDragonFlight();
-}
-
-void dragonExitField(s_dragonTaskWorkArea* r14)
-{
-    s_visibilityGridWorkArea* r12 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
-    //r13 = r4->m178
-
-    r14->m24A_runningCameraScript = 6;
-    getFieldTaskPtr()->m28_status |= 0x200;
-    getFieldTaskPtr()->m28_status |= 0x10000;
-    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 |= 1;
-
-    switch (r14->m104_dragonScriptStatus)
-    {
-    case 0:
-        startScriptLeaveArea();
-        initDragonSpeed(0);
-        r14->m_1C4 = 45;
-        r14->m104_dragonScriptStatus++;
-    case 1:
-        if (r14->m_1C4--)
-            break;
-        r14->m_1C4 = 1;
-        r14->m104_dragonScriptStatus++;
-        break;
-    case 2:
-        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m3C_multichoiceTask == 0)
-        {
-            dragonFieldTaskInitSub4Sub4();
-            r14->mF0(r14);
-            getFieldTaskPtr()->m28_status &= 0xFFFFFDFF;
-            return;
-        }
-        break;
-    default:
-        assert(0);
-        break;
-    }
-
-    //607FA40
-    r14->m238 &= 0xFFFFFFFC;
-    sVec3_FP var_8;
-    var_8[0] = r12->mC[0] - r14->m8_pos[0];
-    var_8[1] = 0;
-    var_8[2] = r12->mC[2] - r14->m8_pos[2];
-
-    sVec2_FP var0;
-    computeLookAt(var_8, var0);
-
-    // update yaw
-    s32 tempRotX = r14->m3C_targetAngles[0] - r14->m20_angle[0];
-    if (tempRotX & 0x8000000)
-    {
-        tempRotX |= 0xF0000000;
-    }
-    else
-    {
-        tempRotX &= 0xFFFFFFF;
-    }
-
-    r14->m20_angle[0] += r14->m3C_targetAngles[0] - intDivide(0x10, (tempRotX << 4) - tempRotX) - r14->m20_angle[0];
-
-    // update pitch
-    r14->m20_angle[1] = interpolateRotation(r14->m20_angle[1], var_8[0], 0x2000, 0x444444, 0x10);
-
-    // update roll
-    s32 tempRotZ = r14->m3C_targetAngles[2] - r14->m20_angle[2];
-    if (tempRotZ & 0x8000000)
-    {
-        tempRotZ |= 0xF0000000;
-    }
-    else
-    {
-        tempRotZ &= 0xFFFFFFF;
-    }
-    r14->m20_angle[2] += r14->m3C_targetAngles[2] - intDivide(0x10, (tempRotZ << 4) - tempRotZ) - r14->m20_angle[2];
-
-    if (r14->m30 - r14->m20_angle[1] < r14->m178_turnRate)
-    {
-        r14->m20_angle[2] += intDivide(4, r14->m178_turnRate * 3);
-    }
-    else if (r14->m20_angle[1] - r14->m30 < r14->m178_turnRate)
-    {
-        r14->m20_angle[2] -= intDivide(4, r14->m178_turnRate * 3);
-    }
-
-    //607FB2A
-    // clamp angle.x to valid range
-    if (r14->m20_angle[0].normalized() > r14->m14C_pitchMax)
-    {
-        r14->m20_angle[0] = r14->m14C_pitchMax;
-    }
-
-    if (r14->m20_angle[0].normalized() < r14->m148_pitchMin)
-    {
-        r14->m20_angle[0] = r14->m148_pitchMin;
-    }
-
-    //607FB96
-    buildDragonRotationMatrix(&r14->m48, &r14->m20_angle);
-    copyMatrix(&r14->m48.m0_matrix, &r14->m88_matrix);
-
-    r14->m15C_dragonSpeedIncrement = 0;
-    r14->m154_dragonSpeed = 0;
-
-    computeDragonDeltaTranslation(r14);
-
-    r14->m8_pos += r14->m160_deltaTranslation;
-
-    // this is all copied from dragonExitField but looks like it's exactly the same
-    if ((r14->m134_minY == 0) && (r14->m140_maxY == 0))
-        return;
-
-    if (r14->m8_pos[1] < r14->m134_minY)
-        r14->m8_pos[1] = r14->m134_minY;
-
-    if (r14->m8_pos[1] > r14->m140_maxY)
-        r14->m8_pos[1] = r14->m140_maxY;
-
-    r14->m160_deltaTranslation = r14->m8_pos - r14->m14_oldPos;
-
-    // Adjust pitch min when close to maxY (ceiling)
-    // Early-out when far from boundary to avoid s32 overflow in the multiplication
-    if ((r14->m140_maxY - r14->m8_pos[1]) > 0x200000)
-    {
-        r14->m148_pitchMin = -0x3555555;
-    }
-    else
-    {
-        fixedPoint r6 = (r14->m140_maxY - r14->m8_pos[1]) * -0x111;
-        fixedPoint r2 = (r6 >= -0x3555555) ? r6 : fixedPoint(-0x3555555);
-        fixedPoint r3;
-        if (r2 >= 0)
-            r3 = 0;
-        else if (r6 >= -0x3555555)
-            r3 = r6;
-        else
-            r3 = -0x3555555;
-        r14->m148_pitchMin = r3;
-    }
-
-    // Adjust pitch max when close to minY (floor)
-    if ((r14->m8_pos[1] - r14->m134_minY) > 0x200000)
-    {
-        r14->m14C_pitchMax = 0x3555555;
-    }
-    else
-    {
-        fixedPoint r5 = (r14->m8_pos[1] - r14->m134_minY) * 0x111;
-        fixedPoint r2 = (r5 < 0x3555555) ? r5 : fixedPoint(0x3555555);
-        fixedPoint r3;
-        if (r2 < 0)
-            r3 = 0;
-        else if (r5 < 0x3555555)
-            r3 = r5;
-        else
-            r3 = 0x3555555;
-        r14->m14C_pitchMax = r3;
-    }
-}
-
-void updateDragonCollision(s_dragonTaskWorkArea* r4)
-{
-    sVec3_FP var;
-
-    var[0] = r4->m160_deltaTranslation[0] * 0x100;
-    var[1] = r4->m160_deltaTranslation[1] * 0x100;
-    var[2] = r4->m160_deltaTranslation[2] * 0x100;
-
-    s32 r0 = dot3_FP(&var, &var);
-    r4->m154_dragonSpeed = sqrt_F(r0) >> 8;
-}
-
-void updateCameraScriptSub0(p_workArea r4)
-{
-    if (r4)
-    {
-        assert(0); // r4 should be a pointer to something
-    }
 }
 
 void dummyFunct(sFieldCameraStatus*)
@@ -6002,241 +5111,6 @@ void activateCameraFollowMode(u32 r4)
     getFieldCameraStatus()->m8D_followState = 1;
 }
 
-void updateCameraScriptSub0Sub2(s_dragonTaskWorkArea* r4)
-{
-    s32 r2 = r4->m21C_DragonSpeedValues[0] + r4->m21C_DragonSpeedValues[1];
-
-    if (0 > r2)
-        r2++;
-    r2 >>= 1;
-    if (r4->m154_dragonSpeed > r2)
-    {
-        if (r4->m23A_dragonAnimation == 0)
-            return;
-        if (r4->m23A_dragonAnimation == 2)
-            return;
-
-        r4->m238 = 4;
-        r4->m237 = 4;
-        r4->m244 = 0;
-    }
-    else
-    {
-        if (r4->m23A_dragonAnimation == 5)
-            return;
-
-        r4->m238 = 0;
-        r4->m237 = 0;
-        r4->m244 = 5;
-    }
-
-    r4->m23C |= 5;
-}
-
-void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
-{
-    r4->m24A_runningCameraScript = 1;
-    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 |= 1; // Disable LCS?
-
-    switch (r4->m104_dragonScriptStatus)
-    {
-    case 0:
-        updateCameraScriptSub0(r4->mB8_lightWingEffect);
-        activateCameraFollowMode(0);
-        r4->mF8_Flags &= 0xFFFFFBFF;
-        r4->mF8_Flags |= 0x20000;
-        r4->m1E8_cameraScriptDelay = r5->m20_length;
-        r4->m20_angle = r5->mC_rotation;
-        r4->m8_pos = r5->m0_position;
-
-        r4->m160_deltaTranslation[0] = MTH_Mul(-r5->m1C, getSin(r4->m20_angle[1].getInteger() & 0xFFF));
-        r4->m160_deltaTranslation[1] = intDivide(r4->m1E8_cameraScriptDelay, r5->m18 - r4->m8_pos[1]);
-        r4->m160_deltaTranslation[2] = MTH_Mul(-r5->m1C, getCos(r4->m20_angle[1].getInteger() & 0xFFF));
-
-        updateDragonCollision(r4);
-        updateCameraScriptSub0Sub2(r4);
-
-        getFieldCameraStatus()->m0_position = r5->m24_pos2;
-        getFieldCameraStatus()->m88 = r4->m1E8_cameraScriptDelay;
-        r4->m104_dragonScriptStatus++;
-        break;
-    case 1:
-        if (--r4->m1E8_cameraScriptDelay)
-        {
-            return;
-        }
-        getFieldCameraStatus()->m88 = 30;
-        r4->m1E8_cameraScriptDelay = 30;
-        activateCameraFollowMode(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
-        r4->m104_dragonScriptStatus++;
-        break;
-    case 2:
-        if (--r4->m1E8_cameraScriptDelay)
-        {
-            return;
-        }
-        r4->m1D0_cameraScript = NULL;
-        dragonFieldTaskInitSub4Sub4();
-        break;
-    default:
-        assert(0);
-    }
-}
-
-void dragonScriptMovement(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    getFieldTaskPtr()->m28_status |= 0x10000;
-
-    if (pTypedWorkArea->m1D4_cutsceneData == nullptr)
-    {
-        if (pTypedWorkArea->m1D0_cameraScript == nullptr)
-        {
-            dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
-            dragonFieldTaskInitSub4Sub4();
-        }
-        else
-        {
-            updateCameraScript(pTypedWorkArea, pTypedWorkArea->m1D0_cameraScript);
-        }
-    }
-    else
-    {
-        assert(0);
-    }
-
-    buildDragonRotationMatrix(&pTypedWorkArea->m48, &pTypedWorkArea->m20_angle);
-
-    copyMatrix(&pTypedWorkArea->m48.m0_matrix, &pTypedWorkArea->m88_matrix);
-
-    pTypedWorkArea->m8_pos[0] += pTypedWorkArea->m160_deltaTranslation[0];
-    pTypedWorkArea->m8_pos[1] += pTypedWorkArea->m160_deltaTranslation[1];
-    pTypedWorkArea->m8_pos[2] += pTypedWorkArea->m160_deltaTranslation[2];
-
-    updateDragonCollision(pTypedWorkArea);
-}
-
-void dragonFieldTaskInitSub5(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    PDS_unimplemented("dragonFieldTaskInitSub5");
-}
-
-bool shouldLoadPup()
-{
-    if (mainGameState.getBit(0x29 * 8 + 0))
-    {
-        assert(0);
-    }
-    return false;
-}
-
-void s_dragonTaskWorkArea::Init(s_dragonTaskWorkArea* pThis, s32 arg)
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask = pThis;
-
-    getMemoryArea(&pThis->m0, 0);
-    dragonFieldTaskInitSub2(pThis);
-    dragonFieldTaskInitSub3(pThis, gDragonState, 5);
-    pThis->mF0 = dragonScriptMovement;
-
-    createSubTask<s_DragonRiderTask>(pThis);
-
-    if ((gDragonState->mC_dragonType == DR_LEVEL_6_LIGHT_WING) && (pThis->mB8_lightWingEffect == nullptr))
-    {
-        Unimplemented();
-    }
-
-    dragonFieldTaskInitSub5(pThis);
-
-    if (shouldLoadPup())
-    {
-        assert(0);
-    }
-}
-
-void dragonFieldTaskUpdateSub1(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    pTypedWorkArea->mFC = 0;
-    pTypedWorkArea->m1F0.m_8 = 0;
-    pTypedWorkArea->m1F0.m_C = 0;
-
-    pTypedWorkArea->m14_oldPos = pTypedWorkArea->m8_pos;
-
-    pTypedWorkArea->mF0(pTypedWorkArea);
-
-    resolveDragonTerrainCollision();
-}
-
-s32 getDragonSpeedIndex(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    if (pTypedWorkArea->mF8_Flags & 0x20000)
-    {
-        s32 r1 = pTypedWorkArea->m21C_DragonSpeedValues[0] + pTypedWorkArea->m21C_DragonSpeedValues[1];
-
-        //Average speeds
-        if (0 > r1)
-            r1++;
-        r1 >>= 1;
-
-        if (pTypedWorkArea->m154_dragonSpeed >= r1)
-        {
-            return 1;
-        }
-        return 0;
-    }
-    else
-    {
-        return pTypedWorkArea->m235_dragonSpeedIndex;
-    }
-}
-
-void dragonFieldPlayAnimation(s_dragonTaskWorkArea* r14, s_dragonState* r13, u8 r12)
-{
-    if (r14->m23A_dragonAnimation == r12)
-        return;
-
-    u8 r4 = r14->m23A_dragonAnimation;
-    if (r4 == 0)
-    {
-        r4 = 2;
-    }
-
-    u8 r5;
-    if (r12)
-    {
-        r5 = r12;
-    }
-    else
-    {
-        r5 = 2;
-    }
-
-    if (r5 == r4)
-    {
-        setupModelAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelBundle->getAnimation(r13->m20_dragonAnimOffsets[r12]));
-        r14->m23B = 1;
-    }
-    else
-    {
-        playAnimation(&r13->m28_dragon3dModel, r13->m0_pDragonModelBundle->getAnimation(r13->m20_dragonAnimOffsets[r12]), 10);
-        r14->m23B = 0;
-    }
-
-    updateAndInterpolateAnimation(&r13->m28_dragon3dModel);
-
-    r14->m23A_dragonAnimation = r12;
-    r14->m237 = r14->m238;
-}
-
-s8 dragonFieldAnimation[] = {
-    5,7,8,11,9,9,9,10,
-    4,4,4,11,0,0,2,10,
-};
-
-s32 getDragonFieldAnimation(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    return dragonFieldAnimation[(pTypedWorkArea->m238 >> 2) * 8 + pTypedWorkArea->m238];
-}
-
 std::vector<s8> getFieldDragonAnimTable(int type, int subtype)
 {
     sSaturnPtr EA = readSaturnEA(sSaturnPtr{ gFieldDragonAnimTableEA.m_offset + ((type * 5) + subtype) * 4, gFieldDragonAnimTableEA.m_file });
@@ -6253,129 +5127,6 @@ std::vector<s8> getFieldDragonAnimTable(int type, int subtype)
     result.push_back(-1);
 
     return result;
-}
-
-void dragonFieldAnimationUpdate(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonState* r5)
-{
-    u8 var = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m235_dragonSpeedIndex;
-
-    if (pTypedWorkArea->m23C & 4)
-    {
-        switch (pTypedWorkArea->m23C & 3)
-        {
-        case 1:
-            dragonFieldPlayAnimation(pTypedWorkArea, r5, pTypedWorkArea->m244);
-            pTypedWorkArea->m23C &= ~1;
-            break;
-        case 2:
-            assert(0);
-        default:
-            break;
-        }
-
-        pTypedWorkArea->m23C &= ~4;
-    }
-    else
-    {
-        // when activating LCS
-        if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 & 0x10)
-        {
-            pTypedWorkArea->m238 |= 3;
-            dragonFieldPlayAnimation(pTypedWorkArea, r5, getDragonFieldAnimation(pTypedWorkArea));
-            return;
-        }
-        else
-        {
-            if (pTypedWorkArea->m238 & 4)
-            {
-                if (getDragonSpeedIndex(pTypedWorkArea) <= 0)
-                {
-                    pTypedWorkArea->m238 &= ~4;
-                    if (pTypedWorkArea->m154_dragonSpeed > 0xDDD)
-                    {
-                        //060734B6
-                        dragonFieldPlayAnimation(pTypedWorkArea, r5, getDragonFieldAnimation(pTypedWorkArea));
-                        return;
-                    }
-                }
-            }
-            //6073508
-            else if (getDragonSpeedIndex(pTypedWorkArea) > 0)
-            {
-                pTypedWorkArea->m238 |= 4;
-                if (pTypedWorkArea->m154_dragonSpeed < 0x555)
-                {
-                    dragonFieldPlayAnimation(pTypedWorkArea, r5, getDragonFieldAnimation(pTypedWorkArea));
-                    return;
-                }
-            }
-
-            //6073524
-            if (r5->m28_dragon3dModel.m16_previousAnimationFrame)
-            {
-                return;
-            }
-
-            //6073530
-            if (pTypedWorkArea->m23C)
-            {
-                switch (pTypedWorkArea->m23C)
-                {
-                case 1:
-                    dragonFieldPlayAnimation(pTypedWorkArea, r5, pTypedWorkArea->m244);
-                    pTypedWorkArea->m23C &= ~1;
-                    break;
-                case 2:
-                    assert(0);
-                default:
-                    break;
-                }
-
-                return;
-            }
-
-            //06073588
-            if (var >= 0)
-            {
-                s32 r6 = getDragonFieldAnimation(pTypedWorkArea);
-                if (r6 == 0)
-                {
-                    std::vector<s8> r3 = getFieldDragonAnimTable(r5->mC_dragonType, r5->m1C_dragonArchetype);
-
-                    pTypedWorkArea->m239++;
-                    r6 = r3[pTypedWorkArea->m239];
-
-                    if (r6 < 0)
-                    {
-                        pTypedWorkArea->m239 = 0;
-                        dragonFieldPlayAnimation(pTypedWorkArea, r5, r3[pTypedWorkArea->m239]);
-                    }
-                    else
-                    {
-                        dragonFieldPlayAnimation(pTypedWorkArea, r5, r6);
-                    }
-                }
-                if (r6 > 0)
-                {
-                    dragonFieldPlayAnimation(pTypedWorkArea, r5, r6);
-                }
-                return;
-            }
-            else
-            {
-                dragonFieldPlayAnimation(pTypedWorkArea, r5, 5);
-                return;
-            }
-
-            assert(0);
-        }
-    }
-    PDS_unimplemented("dragonFieldAnimationUpdate");
-}
-
-void playDragonSoundEffect(s_dragonTaskWorkArea* pTypedWorkArea, s_dragonState* r5)
-{
-    PDS_unimplemented("playDragonSoundEffect");
 }
 
 void selectCamera(sFieldCameraManager* r4, s_dragonTaskWorkArea* r5)
@@ -6620,74 +5371,6 @@ static void readAndTransformDragonPos(sVec3_FP* pOut)
     Unimplemented(); // FUN_0602f87c — transform pos based on sub-field offsets
 }
 
-// 06073c7a
-void updateDragonSavedAnglesAndTerrain(s_dragonTaskWorkArea* r14)
-{
-    r14->m2C_savedPitch = r14->m20_angle[0];
-    r14->m30 = r14->m20_angle[1];
-    r14->m34_savedRoll = r14->m20_angle[2];
-
-    fixedPoint speed = r14->m154_dragonSpeed;
-    if (speed < 0) speed = -speed;
-    r14->m38_distanceAccum = r14->m38_distanceAccum + speed;
-
-    auto pFieldTask = getFieldTaskPtr();
-    if (pFieldTask->m2C_currentFieldIndex == 0xF || pFieldTask->m2C_currentFieldIndex == 0x12)
-    {
-        sVec3_FP transformedPos;
-        readAndTransformDragonPos(&transformedPos);
-        fieldTerrainCallback(0, &transformedPos, nullptr);
-    }
-    else
-    {
-        fieldTerrainCallback((s32)pFieldTask->m2E_currentSubFieldIndex, &r14->m8_pos, &r14->m20_angle);
-    }
-}
-
-void s_dragonTaskWorkArea::Update(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    dragonFieldTaskUpdateSub1(pTypedWorkArea);
-
-    fieldTaskVar2 = gDragonState->mC_dragonType;
-
-    if (pTypedWorkArea->mB8_lightWingEffect)
-    {
-        assert(0);
-    }
-
-    if (gDragonState->mC_dragonType != pTypedWorkArea->m100_previousDragonType)
-    {
-        pTypedWorkArea->m100_previousDragonType = gDragonState->mC_dragonType;
-        dragonFieldTaskUpdateSub2(gDragonState->mC_dragonType + 1);
-
-        if (gDragonState->mC_dragonType == DR_LEVEL_8_FLOATER)
-        {
-            assert(0);
-        }
-    }
-
-    updateAndInterpolateAnimation(&gDragonState->m28_dragon3dModel);
-    updateAndInterpolateAnimation(&pRider1State->m18_3dModel);
-    if (mainGameState.gameStats.m3_rider2)
-    {
-        updateAndInterpolateAnimation(&pRider2State->m18_3dModel);
-    }
-
-    dragonFieldAnimationUpdate(pTypedWorkArea, gDragonState);
-    playDragonSoundEffect(pTypedWorkArea, gDragonState);
-
-    updateAnimationMatrices(&gDragonState->m78_animData, &gDragonState->m28_dragon3dModel);
-
-    if (pTypedWorkArea->m25D != 2)
-    {
-        getFieldCameraStatus()->m30 = -pTypedWorkArea->m20_angle[2] / 2;
-    }
-
-    updateFieldCameraSlots();
-
-    updateDragonSavedAnglesAndTerrain(pTypedWorkArea);
-}
-
 s8 isFieldCameraSlotActive(s32 index)
 {
     return getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4_cameraSlots[index].m8C_isActive;
@@ -6715,94 +5398,6 @@ void drawFieldCameraSlots()
     applyCameraStatusToEngine(r12);
 }
 
-void printMainDebugStats(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    if (enableDebugTask)
-    {
-        assert(0);
-    }
-}
-
-void dragonFieldTaskDrawSub1(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    drawFieldCameraSlots();
-
-    if ((pTypedWorkArea->m_EC & 1) == 0)
-    {
-        s_RGB8* pColor;
-        sVec3_FP lightLocation;
-        if (pTypedWorkArea->m_EB_useSpecialColor)
-        {
-            dragonFieldTaskDrawSub1Sub0();
-
-            sVec3_FP varC;
-            varC[0] = pTypedWorkArea->m8_pos[0];
-            varC[1] = pTypedWorkArea->m8_pos[1] + 0xA000;
-            varC[2] = pTypedWorkArea->m8_pos[2];
-            
-            transformVecByCurrentMatrix(varC, lightLocation);
-
-            dragonFieldTaskDrawSub1Sub1(lightLocation[0], lightLocation[1], lightLocation[2]);
-            pColor = &pTypedWorkArea->m_E8_specialColor;
-        }
-        else
-        {
-            sVec3_FP varC;
-            varC[0] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger()), getSin(pTypedWorkArea->mC4.getInteger()));
-            varC[1] = MTH_Mul(fixedPoint(0x10000), getSin(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger()));
-            varC[2] = -MTH_Mul_5_6(fixedPoint(0x10000), getCos(pTypedWorkArea->mC0_lightRotationAroundDragon.getInteger()), getCos(pTypedWorkArea->mC4.getInteger()));
-            transformVecByCurrentMatrix(varC, lightLocation);
-            pColor = &pTypedWorkArea->mC8_normalLightColor;
-        }
-        //060740F6
-        setupLight(lightLocation[0], lightLocation[1], lightLocation[2], pColor->toU32());
-        generateLightFalloffMap(pTypedWorkArea->mCB_falloffColor0.toU32(), pTypedWorkArea->mCE_falloffColor1.toU32(), pTypedWorkArea->mD1_falloffColor2.toU32());
-    }
-
-#ifndef SHIPPING_BUILD
-    if (gDebugWindows.field)
-    {
-        if (ImGui::Begin("Field", &gDebugWindows.field))
-        {
-            Imgui_FP_Angle("Field of view", &pTypedWorkArea->m1CC_fieldOfView);
-        }
-        ImGui::End();
-    }
-#endif
-
-    //0607416C
-    initVDP1Projection(pTypedWorkArea->m1CC_fieldOfView / 2, 0);
-    printMainDebugStats(pTypedWorkArea);
-}
-
-struct s_dragonHotspotPerDragonType
-{
-    u32 m0;
-    u32 m4;
-};
-
-s_dragonHotspotPerDragonType dragonHotspotPerDragonType[DR_LEVEL_MAX][5] = {
-    { {0, 0},{0,1},{17,1}, {9, 0}, {12,0} },
-    { {15, 0},{15,1}, {20, 1}, {9, 0}, {26, 0} },
-    { {12, 0},{12,1}, {16, 0}, {23, 0}, {26, 0} },
-    { {1, 0}, {1,1}, {4,1}, {12,0}, {15,0} },
-    { {1, 0}, {1,1}, {5,1}, {12,0}, {31,0} },
-    { {10, 0}, {10,1}, {13,0}, {25,0}, {28,0}},
-    { {1,0}, {1,1}, {2,1}, {23,0}, {25,0} },
-    { {1,0}, {0,0}, {3,1}, {7,0}, {22,0} },
-    { {0,3}, {0,4}, {0,0}, {0,1}, {0,0} },
-};
-
-void getDragonHotSpot(s_dragonState* r4, u32 r5, sVec3_FP* r6)
-{
-    s_dragonHotspotPerDragonType* pHotSpotData = &dragonHotspotPerDragonType[r4->mC_dragonType][r5];
-    if (pHotSpotData->m0 < 0) // don't think that can ever happen
-        return;
-
-    sVec3_FP* pVec = &r4->m28_dragon3dModel.m44_hotpointData[pHotSpotData->m0][pHotSpotData->m4];
-    transformAndAddVec(*pVec, *r6, cameraProperties2.m28[0]);
-}
-
 void dragonFieldTaskDrawSub3Sub0()
 {
     s_visibilityGridWorkArea* r4 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
@@ -6820,97 +5415,7 @@ void dragonFieldTaskDrawSub3Sub0()
     r4->m44 = r4->m68.begin();
 }
 
-void dragonFieldTaskDrawSub3(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    if (((pTypedWorkArea->m_EC & 1) == 0) && (pTypedWorkArea->m_EB_useSpecialColor))
-    {
-        PDS_unimplemented("dragonFieldTaskDrawSub3 for setup light during dragon rendering");
-    }
-
-    dragonFieldTaskDrawSub3Sub0();
-}
-
-void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
-{
-    dragonFieldTaskDrawSub1(pTypedWorkArea);
-
-    // if we need to draw the dragon shadow (and dragon Y >= 0)
-    if (!pTypedWorkArea->m249_noCollisionAndHideDragon && pTypedWorkArea->m248 && (pTypedWorkArea->m8_pos[1] >= 0))
-    {
-        assert(0);
-    }
-
-    if (pTypedWorkArea->m249_noCollisionAndHideDragon)
-    {
-        WRITE_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30) & ~1);
-    }
-    else
-    {
-        WRITE_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30, READ_BE_U16(gDragonState->m0_pDragonModelBundle->getRawBuffer() + 0x30) | 1);
-    }
-
-    pushCurrentMatrix();
-    translateCurrentMatrix(&pTypedWorkArea->m8_pos);
-    rotateCurrentMatrixShiftedY(0x8000000);
-    multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
-    scaleCurrentMatrixRow0(pTypedWorkArea->m150);
-    scaleCurrentMatrixRow1(pTypedWorkArea->m150);
-    scaleCurrentMatrixRow2(pTypedWorkArea->m150);
-
-    gDragonState->m28_dragon3dModel.mC_modelIndexOffset = gDragonState->m14_modelIndex;
-    gDragonState->m28_dragon3dModel.m18_drawFunction(&gDragonState->m28_dragon3dModel);
-    popMatrix();
-
-    //06074438
-    getDragonHotSpot(gDragonState, 2, &pTypedWorkArea->m10C_hotSpot2);
-    getDragonHotSpot(gDragonState, 3, &pTypedWorkArea->m118_hotSpot3);
-    getDragonHotSpot(gDragonState, 4, &pTypedWorkArea->m124_hotSpot4);
-
-    if (pTypedWorkArea->m249_noCollisionAndHideDragon == 0)
-    {
-        if (mainGameState.gameStats.m2_rider1)
-        {
-            sVec3_FP rider1_hotSpot;
-            getDragonHotSpot(gDragonState, 0, &rider1_hotSpot);
-
-            pushCurrentMatrix();
-            translateCurrentMatrix(&rider1_hotSpot);
-            rotateCurrentMatrixShiftedY(0x8000000);
-            multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
-            pRider1State->m18_3dModel.m18_drawFunction(&pRider1State->m18_3dModel);
-            popMatrix();
-
-            // draw rider's gun
-            if (pRider1State->m18_3dModel.m44_hotpointData[5].size())
-            {
-                //060744AA
-                transformAndAddVec(pRider1State->m18_3dModel.m44_hotpointData[5][0], rider1_hotSpot, cameraProperties2.m28[0]);
-                pushCurrentMatrix();
-                translateCurrentMatrix(&rider1_hotSpot);
-                rotateCurrentMatrixShiftedY(0x8000000);
-                multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
-                addObjectToDrawList(pRider1State->m0_riderBundle->get3DModel(pRider1State->m14_weaponModelIndex));
-                popMatrix();
-            }
-        }
-        //60744E4
-        if (mainGameState.gameStats.m3_rider2)
-        {
-            sVec3_FP rider2_hotSpot;
-            getDragonHotSpot(gDragonState, 1, &rider2_hotSpot);
-
-            pushCurrentMatrix();
-            translateCurrentMatrix(&rider2_hotSpot);
-            rotateCurrentMatrixShiftedY(0x8000000);
-            multiplyCurrentMatrixSaveStack(&pTypedWorkArea->m48.m0_matrix);
-            pRider2State->m18_3dModel.m18_drawFunction(&pRider2State->m18_3dModel);
-            popMatrix();
-        }
-    }
-
-    //06074520
-    dragonFieldTaskDrawSub3(pTypedWorkArea);
-}
+// s_dragonTaskWorkArea::Draw — moved to field/fieldDragon.cpp
 
 void initFieldDragon(s_workArea* pWorkArea, u32 param)
 {
@@ -7175,10 +5680,85 @@ void LCSTask::LCSTaskInit(LCSTask*)
     r4->m68[0].m0_model = 0;
 }
 
+struct s_LCSShootTask;
+// 0607a5e8
+static void LCSShootTaskDrawSub0(s_LCSShootTask* pThis, sVec3_FP* pScreenPos, s32 param)
+{
+    if (((s32)graphicEngineStatus.m405C.m10_nearClipDistance <= (s32)pScreenPos->m8_Z) &&
+        ((s32)pScreenPos->m8_Z <= (s32)graphicEngineStatus.m405C.m14_farClipDistance))
+    {
+        s16 projX[2];
+        s16 projY[2];
+        getVdp1ProjectionParams(projX, projY);
+        s16 screenX = (s16)setDividend(projX[0], (s32)pScreenPos->m0_X, (s32)pScreenPos->m8_Z);
+        s16 screenY = (s16)setDividend(projY[0], (s32)pScreenPos->m4_Y, (s32)pScreenPos->m8_Z);
+
+        // 0607a55c — VDP1 shoot cursor rendering
+        Unimplemented(); // TODO: VDP1 packet writes for LCS shoot cursor
+    }
+}
+
+// 0607a66c
+struct s_LCSShootTask : public s_workAreaTemplateWithArg<s_LCSShootTask, sLCSTarget*>
+{
+    static const TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static const TypedTaskDefinition taskDefinition = { &Init, &Update, &Draw, NULL };
+        return &taskDefinition;
+    }
+
+    static void Init(s_LCSShootTask* pThis, sLCSTarget* arg)
+    {
+        getMemoryArea(&pThis->m0_memoryArea, 0);
+        pThis->mC_countdown = 0x3C;
+        pThis->m8_pTarget = arg;
+        playSystemSoundEffect(0x16);
+    }
+
+    // 0607a6c8
+    static void Update(s_LCSShootTask* pThis)
+    {
+        if (pThis->m8_pTarget->m0 == nullptr || (pThis->m8_pTarget->m0->getTask()->m14_flags & 1))
+        {
+            pThis->getTask()->markFinished();
+        }
+        else
+        {
+            s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
+            if (pLCS->m8 == 0)
+            {
+                pThis->m8_pTarget->m19 = 0;
+                pThis->getTask()->markFinished();
+            }
+        }
+    }
+
+    // 0607a71e
+    static void Draw(s_LCSShootTask* pThis)
+    {
+        if ((pThis->m8_pTarget->m10_flags & sLCSTarget::e_locationIsWorld) == 0)
+        {
+            s8 param = pThis->m8_pTarget->m17;
+            sVec3_FP screenPos;
+            transformAndAddVecByCurrentMatrix(pThis->m8_pTarget->m8_LCSWorldCoordinates, &screenPos);
+            LCSShootTaskDrawSub0(pThis, &screenPos, param);
+        }
+        else
+        {
+            LCSShootTaskDrawSub0(pThis, (sVec3_FP*)pThis->m8_pTarget->m8_LCSWorldCoordinates, pThis->m8_pTarget->m17);
+        }
+    }
+
+    s_memoryAreaOutput m0_memoryArea;
+    sLCSTarget* m8_pTarget;
+    s32 mC_countdown;
+    // size 0x10
+};
+
+// 0607a772
 p_workArea createLCSShootTask(s_LCSTask* r4, sLCSTarget* r5)
 {
-    Unimplemented();
-    return NULL;
+    return createSubTaskWithArg<s_LCSShootTask>(r4, r5);
 }
 
 void startScript_cantDestroy()
@@ -7384,9 +5964,16 @@ bool initField(p_workArea workArea, const s_MCB_CGB* fieldFileList, u32 arg)
     return true;
 }
 
+// 06065fb8
+void fieldDebugMakingMode(sSaturnPtr functionTable, sSaturnPtr stringTable, s32 numEntries)
+{
+    Unimplemented();
+}
+
+// 06055888
 void overlayStart_Sub1()
 {
-    PDS_unimplemented("overlayStart_Sub1");
+    fieldDebugMakingMode({0x06083068, gFLD_A3}, {0x06083070, gFLD_A3}, 2);
 }
 
 sSaturnPtr* ReadScripts(sSaturnPtr EA)
@@ -8625,6 +7212,15 @@ void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSLaser* r4)
         r4->m15C = 0;
     }
 }
+
+void updateCameraScriptSub0(p_workArea r4)
+{
+    if (r4)
+    {
+        assert(0); // r4 should be a pointer to something
+    }
+}
+
 
 s_LCSLaser* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, s8 r6)
 {

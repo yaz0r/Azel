@@ -3,10 +3,13 @@
 #include "items.h"
 #include "audio/soundDriver.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/field_a3/a3_background_layer.h"
 #include "field/field_a3/particlePool.h"
 #include "field/fieldRadar.h"
 #include "field/exitField.h"
 #include "field/fieldItemBox.h"
+
+s32 playBattleSoundEffect(s32 effectIndex); // TODO: move to header
 
 void pushDragonInvisibleWall(s_dragonTaskWorkArea* pDragon, sVec3_FP& dragonPosition)
 {
@@ -350,21 +353,113 @@ void create_fieldA3_0_exitTask(p_workArea workArea)
     createSubTask<sfieldA3_0_createExitTask>(workArea);
 }
 
+// 0605795a
+struct s_fieldA3_0_task6 : public s_workAreaTemplate<s_fieldA3_0_task6>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_fieldA3_0_task6::Init, &s_fieldA3_0_task6::Update, NULL, NULL };
+        return &taskDefinition;
+    }
+    static void Init(s_fieldA3_0_task6* pThis)
+    {
+        if ((mainGameState.bitField[0xa2] & 0x10) == 0)
+        {
+            pThis->m0_position[0] = 0x183000;
+            pThis->m0_position[1] = 0xFFFF0000;
+            pThis->m0_position[2] = 0xFE9BC000;
+        }
+        else
+        {
+            pThis->m0_position[0] = 0x70B000;
+            pThis->m0_position[1] = 0xFFFF0000;
+            pThis->m0_position[2] = 0xFED98000;
+        }
+    }
+    static void Update(s_fieldA3_0_task6*) {}
+
+    sVec3_FP m0_position;
+    // size 0xC
+};
+
+// 06057aa6
+void create_fieldA3_0_task6(p_workArea workArea)
+{
+    createSubTask<s_fieldA3_0_task6>(workArea);
+}
+
+// 0605ee54
+struct s_fieldA3_0_task8 : public s_workAreaTemplate<s_fieldA3_0_task8>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &s_fieldA3_0_task8::Init, &s_fieldA3_0_task8::Update, NULL, &s_fieldA3_0_task8::Delete };
+        return &taskDefinition;
+    }
+    static void Init(s_fieldA3_0_task8*)
+    {
+        s_fieldSpecificData_A3* pData = getFieldSpecificData_A3();
+        pData->m158[0] = 0;
+        pData->m158[1] = 0;
+        pData->m158[2] = 0;
+        pData->m154 = 0;
+    }
+    static void Update(s_fieldA3_0_task8*)
+    {
+        s_fieldSpecificData_A3* pData = getFieldSpecificData_A3();
+        if (pData->m154 == 0)
+        {
+            playBattleSoundEffect(0x66);
+        }
+        else
+        {
+            sVec3_FP transformedPos;
+            transformAndAddVecByCurrentMatrix(&pData->m158, &transformedPos);
+            s32 found = findSound(0x66);
+            if ((s8)found < 0)
+            {
+                startPositionalSound(0x66, &transformedPos);
+            }
+            else
+            {
+                updatePositionalSound(0x66, &transformedPos);
+            }
+            pData->m158[0] = 0;
+            pData->m158[2] = 0;
+            pData->m154 = 0;
+        }
+    }
+    static void Delete(s_fieldA3_0_task8*)
+    {
+        playBattleSoundEffect(0x66);
+    }
+};
+
+// 0605ee86
+void create_fieldA3_0_task8(p_workArea workArea)
+{
+    createSubTask<s_fieldA3_0_task8>(workArea);
+}
+
 void fieldA3_0_startTasks(p_workArea workArea)
 {
     fieldA3_0_createTask0(workArea);
 
-    getFieldSpecificData_A3()->m168 = createParticlePoolTask(workArea, 2, 0x20);
+    getFieldSpecificData_A3()->m168_particlePool = (sParticlePoolManager*)createParticlePoolTask(workArea, 2, 0x20);
 
     create_fieldA3_0_exitTask(workArea);
 
-    PDS_unimplemented("fieldA3_0_startTasks");
+    create_fieldA3_backgroundLayer(workArea);
 
     create_fieldA3_0_task4(workArea);
 
     fieldA3_0_createCheckExitTask(workArea);
 
+    create_fieldA3_0_task6(workArea);
+
     fieldA3_0_createItemBoxes(workArea);
+
+    create_fieldA3_0_task8(workArea);
 
     create_fieldA3_0_tutorialTask(workArea);
 }
@@ -469,6 +564,5 @@ void subfieldA3_0(p_workArea workArea)
 
     getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
 
-    Unimplemented();
-    //subfieldA3_1_Sub1();
+    fieldRadar_initDestinations(0x1a);
 }

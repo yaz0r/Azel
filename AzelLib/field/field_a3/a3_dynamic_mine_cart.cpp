@@ -91,15 +91,15 @@ struct s_A3_0_Obj3 : public s_workAreaTemplateWithCopy<s_A3_0_Obj3>
             {
                 sSaturnPtr var0 = pThis->mC + pThis->m6D_currentWaypoint * 8;
                 pThis->m32_targetAngle = atan2(readSaturnS32(var0 + 0) - pThis->m10_position[0], readSaturnS32(var0 + 4) - pThis->m10_position[2]);
-                pThis->m1C = getSin(pThis->m32_targetAngle & 0xFFF) >> 5;
-                pThis->m24 = getCos(pThis->m32_targetAngle & 0xFFF) >> 5;
+                pThis->m1C_velocity[0] = getSin(pThis->m32_targetAngle & 0xFFF) >> 5;
+                pThis->m1C_velocity[2] = getCos(pThis->m32_targetAngle & 0xFFF) >> 5;
                 pThis->m32_targetAngle = 0x800 - pThis->m32_targetAngle;
                 if (pThis->m6D_currentWaypoint > 1)
                 {
                     //0605E38C
                     if (readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8 + 8) == 0)
                     {
-                        createSmokePufTask(pThis, &pThis->m10_position, pThis->m1C);
+                        createSmokePufTask(pThis, &pThis->m10_position, &pThis->m1C_velocity);
                     }
                     if (pThis->m32_targetAngle >= pThis->m2C_rotation[1])
                     {
@@ -113,7 +113,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplateWithCopy<s_A3_0_Obj3>
                 else
                 {
                     //605E3C4
-                    createSmokePufTask(pThis, &pThis->m10_position, pThis->m1C);
+                    createSmokePufTask(pThis, &pThis->m10_position, &pThis->m1C_velocity);
                     pThis->m2C_rotation[1] = pThis->m32_targetAngle;
                     pThis->m34_deltaAngle = 0;
                 }
@@ -127,14 +127,14 @@ struct s_A3_0_Obj3 : public s_workAreaTemplateWithCopy<s_A3_0_Obj3>
             {
                 pThis->m34_deltaAngle = 0;
             }
-            pThis->m10_position[0] += pThis->m1C;
-            pThis->m10_position[2] += pThis->m24;
+            pThis->m10_position[0] += pThis->m1C_velocity[0];
+            pThis->m10_position[2] += pThis->m1C_velocity[2];
             //Are we there yet?
-            if (((pThis->m1C >= 0) && (pThis->m10_position[0] < readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8)))
-                || ((pThis->m1C < 0) && (pThis->m10_position[0] >= readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8))))
+            if (((pThis->m1C_velocity[0] >= 0) && (pThis->m10_position[0] < readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8)))
+                || ((pThis->m1C_velocity[0] < 0) && (pThis->m10_position[0] >= readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8))))
                 break;
-            if (((pThis->m24 >= 0) && (pThis->m10_position[0] < readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8 + 4)))
-                || ((pThis->m24 < 0) && (pThis->m10_position[2] >= readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8 + 4))))
+            if (((pThis->m1C_velocity[2] >= 0) && (pThis->m10_position[0] < readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8 + 4)))
+                || ((pThis->m1C_velocity[2] < 0) && (pThis->m10_position[2] >= readSaturnS32(pThis->mC + pThis->m6D_currentWaypoint * 8 + 4))))
                 break;
             pThis->m6C = 2;
             break;
@@ -159,9 +159,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplateWithCopy<s_A3_0_Obj3>
         pNewTask->m8 = r5;
         pNewTask->m10_position = r5->m4_position;
         pNewTask->m2C_rotation = r5->m10_rotation;
-        pNewTask->m1C = 0;
-        pNewTask->m20 = 0;
-        pNewTask->m24 = 0;
+        pNewTask->m1C_velocity.zeroize();
 
         s8 r6 = readSaturnS8(sSaturnPtr({ 0x60925F7, gFLD_A3 }) + r5->m18);
         pNewTask->mC = readSaturnEA(sSaturnPtr({ 0x609270C, gFLD_A3 }) + (r6-1) * 4);
@@ -204,9 +202,7 @@ struct s_A3_0_Obj3 : public s_workAreaTemplateWithCopy<s_A3_0_Obj3>
     s_DataTable2Sub0* m8;
     sSaturnPtr mC;
     sVec3_FP m10_position;
-    s32 m1C;
-    s32 m20;
-    s32 m24;
+    sVec3_FP m1C_velocity;
     s32 m28_visibilityDelay;
     sVec3_S16_12_4 m2C_rotation;
     s16 m32_targetAngle;
@@ -237,8 +233,7 @@ void create_A3_0_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     pNewTask->m_DrawMethod = &s_A3_0_Obj3::Draw;
     pNewTask->m10_position = r5.m4_position;
     pNewTask->m2C_rotation = r5.m10_rotation;
-    pNewTask->m1C = 0;
-    pNewTask->m20 = 0;
+    pNewTask->m1C_velocity.zeroize();
 
     s8 r12 = readSaturnS8(sSaturnPtr({ 0x60925F7, gFLD_A3 }) + r5.m18);
     switch (r12)
@@ -256,8 +251,8 @@ void create_A3_0_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         else
         {
             pNewTask->m_UpdateMethod = &s_A3_0_Obj3::Update2;
-            pNewTask->m1C = readSaturnS32(sSaturnPtr({ 0x6092714, gFLD_A3 }) + (r12 - 3) * 8);
-            pNewTask->m24 = readSaturnS32(sSaturnPtr({ 0x6092714, gFLD_A3 }) + (r12 - 3) * 8 + 4);
+            pNewTask->m1C_velocity[0] = readSaturnS32(sSaturnPtr({0x6092714, gFLD_A3}) + (r12 - 3) * 8);
+            pNewTask->m1C_velocity[2] = readSaturnS32(sSaturnPtr({ 0x6092714, gFLD_A3 }) + (r12 - 3) * 8 + 4);
             pNewTask->mC = sSaturnPtr({ 0x609271C, gFLD_A3 }) + (r12 - 3) * 4;
             createLCSTarget(&pNewTask->m38_LCSTarget, pNewTask, &A3_0_Obj3_LCSCallback, &pNewTask->m10_position, 0, 0, 0, eItems::mMinusOne, 0, 0);
         }

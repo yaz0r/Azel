@@ -250,9 +250,9 @@ struct sWaterfallTask : public s_workAreaTemplateWithArg<sWaterfallTask, sSaturn
         config.m1C_heapData = nullptr;
 
         s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
-        if (pFieldData->m168)
+        if (pFieldData->m168_particlePool)
         {
-            spawnParticleInPool((sParticlePoolManager*)pFieldData->m168, &config, 0);
+            spawnParticleInPool((sParticlePoolManager*)pFieldData->m168_particlePool, &config, 0);
         }
     }
 
@@ -758,22 +758,39 @@ struct sFieldA3_2_soundTask : public s_workAreaTemplate<sFieldA3_2_soundTask> {
             playBattleSoundEffect(0x6A);
         }
         else {
-            // TODO: positional sound update for sound 0x6A
-            Unimplemented();
+            sVec3_FP transformedPos;
+            transformAndAddVecByCurrentMatrix(&getFieldSpecificData_A3()->m13C_sound6APos, &transformedPos);
+            s32 found = findSound(0x6A);
+            if ((s8)found < 0) {
+                startPositionalSound(0x6A, &transformedPos);
+            }
+            else {
+                updatePositionalSound(0x6A, &transformedPos);
+            }
+            getFieldSpecificData_A3()->m13C_sound6APos = {};
             getFieldSpecificData_A3()->m134 = 0;
         }
         if (getFieldSpecificData_A3()->m138 == 0) {
             playBattleSoundEffect(0x6B);
         }
         else {
-            // TODO: positional sound update for sound 0x6B
-            Unimplemented();
+            sVec3_FP transformedPos;
+            transformAndAddVecByCurrentMatrix(&getFieldSpecificData_A3()->m148_sound6BPos, &transformedPos);
+            s32 found = findSound(0x6B);
+            if ((s8)found < 0) {
+                startPositionalSound(0x6B, &transformedPos);
+            }
+            else {
+                updatePositionalSound(0x6B, &transformedPos);
+            }
+            getFieldSpecificData_A3()->m148_sound6BPos = {};
             getFieldSpecificData_A3()->m138 = 0;
         }
     }
     // 0605C286
     static void Delete(sFieldA3_2_soundTask*) {
-        Unimplemented();
+        playBattleSoundEffect(0x6A);
+        playBattleSoundEffect(0x6B);
     }
 };
 
@@ -792,7 +809,7 @@ void fieldA3_2_startTasks(p_workArea workArea)
 {
     fieldA3_0_createTask0(workArea);
 
-    getFieldSpecificData_A3()->m168 = createParticlePoolTask(workArea, 4, 0x50);
+    getFieldSpecificData_A3()->m168_particlePool = (sParticlePoolManager*)createParticlePoolTask(workArea, 4, 0x50);
 
     fieldA3_2_createExitLCSTask(workArea);
     create_fieldA3_backgroundLayer2(workArea);
@@ -868,7 +885,7 @@ void subfieldA3_2(p_workArea workArea)
 
     fieldRadar_enableAltitudeGauge();
 
-    //subfieldA3_1_Sub1();
+    fieldRadar_initDestinations(0x1b);
 
     PDS_unimplemented("subfieldA3_2");
 }
