@@ -4,6 +4,7 @@ void flushObjectsToDrawList();
 
 void NormalSpriteDrawGL(s_vdp1Command* vdp1EA);
 void ScaledSpriteDrawGL(s_vdp1Command* vdp1EA);
+void LineDrawGL(s_vdp1Command* vdp1EA);
 void PolyLineDrawGL(s_vdp1Command* vdp1EA);
 void PolyDrawGL(s_vdp1Command* vdp1EA);
 

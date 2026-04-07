@@ -36,7 +36,7 @@ struct s_FieldRadar : public s_workAreaTemplate<s_FieldRadar>
     fixedPoint m38_dragonDirection;
     u32 m3C;
     s32 m40_paletteFadeDuration;
-    s8 m44;
+    s32 m44;
     s8 m48;
     s8 m49;
     s8 m4A_newPaletteIndex;

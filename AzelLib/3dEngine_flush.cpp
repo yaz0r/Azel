@@ -1460,9 +1460,29 @@ void PolyDrawGL(s_vdp1Command* vdp1EA)
     }
 }
 
+void LineDrawGL(s_vdp1Command* vdp1EA)
+{
+    u16 CMDCOLR = vdp1EA->m6_CMDCOLR;
+    s16 CMDXA = vdp1EA->mC_CMDXA;
+    s16 CMDYA = vdp1EA->mE_CMDYA;
+    s16 CMDXB = vdp1EA->m10_CMDXB;
+    s16 CMDYB = vdp1EA->m12_CMDYB;
+
+    u32 finalColor;
+    if (CMDCOLR & 0x8000)
+    {
+        finalColor = 0xFF000000 | (((CMDCOLR & 0x1F) << 3) | ((CMDCOLR & 0x03E0) << 6) | ((CMDCOLR & 0x7C00) << 9));
+    }
+    else
+    {
+        finalColor = 0xFF0000FF;
+    }
+
+    drawLineGL(CMDXA + localCoordiantesX, CMDYA + localCoordiantesY, CMDXB + localCoordiantesX, CMDYB + localCoordiantesY, finalColor);
+}
+
 void PolyLineDrawGL(s_vdp1Command* vdp1EA)
 {
-    u16 CMDPMOD = vdp1EA->m4_CMDPMOD;
     u16 CMDCOLR = vdp1EA->m6_CMDCOLR;
     s16 CMDXA = vdp1EA->mC_CMDXA;
     s16 CMDYA = vdp1EA->mE_CMDYA;
@@ -1472,7 +1492,6 @@ void PolyLineDrawGL(s_vdp1Command* vdp1EA)
     s16 CMDYC = vdp1EA->m16_CMDYC;
     s16 CMDXD = vdp1EA->m18_CMDXD;
     s16 CMDYD = vdp1EA->m1A_CMDYD;
-    u16 CMDGRDA = vdp1EA->m1C_CMDGRA;
 
     u32 finalColor;
     if (CMDCOLR & 0x8000)
