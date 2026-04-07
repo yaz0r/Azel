@@ -59,7 +59,7 @@ struct s_exitCutsceneTask : public s_workAreaTemplate<s_exitCutsceneTask>
 
             r14->mF0 = DragonUpdateCutscene;
             r14->m108 = 0;
-            r14->mF4(r14);
+            r14->mF0(r14);
 
             pThis->m16_state++;
             break;
