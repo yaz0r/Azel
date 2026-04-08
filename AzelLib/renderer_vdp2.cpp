@@ -1194,11 +1194,8 @@ static void renderLayerCPU_RBG0(
                 if (!layerWnd0Area && insideWnd) continue;  // draw outside only, pixel is inside
             }
 
-            // HACK: skip plane A when coef table address is 0 and RPMD=2.
-            // The KTAOF address calculation doesn't match the actual coefficient
-            // VRAM location — needs proper investigation of Saturn VDP2 addressing.
-            if (!useB && rpmd == 2 && coeftbladdr_A == 0)
-                continue;
+            // HACK removed: was skipping plane A when coef table address is 0 and RPMD=2,
+            // but this broke camp and A5 ground rendering.
 
             u32 color;
             if (!useB)
