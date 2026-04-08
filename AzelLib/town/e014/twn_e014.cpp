@@ -15,7 +15,7 @@ extern tCoefficientTable coefficientA0; // TODO cleanup
 extern tCoefficientTable coefficientA1; // TODO cleanup
 extern tCoefficientTable coefficientB0; // TODO cleanup
 extern tCoefficientTable coefficientB1; // TODO cleanup
-void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table); // TODO cleanup
+void initRotationCoefficientTables(int layerIndex, u8* table); // TODO cleanup
 void beginRotationPass(int passIndex, fixedPoint focalLength); // TODO cleanup
 
 // https://www.youtube.com/watch?v=Txks9hG21qs&feature=youtu.be&t=3345
@@ -98,7 +98,7 @@ struct E014_groundTask : public s_workAreaTemplate<E014_groundTask> {
         setupRotationMapPlanes(1, gTWN_E014->getSaturnPtr(0x605E5B0));
 
         setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
-        s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x24000));
+        initRotationCoefficientTables(5, getVdp2Vram(0x24000));
 
         *(u16*)getVdp2Vram(0x2A502) = 0xbce5;
         vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x12801;

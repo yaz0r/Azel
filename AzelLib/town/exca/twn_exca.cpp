@@ -204,7 +204,7 @@ struct sExcaBackgroundTask : public s_workAreaTemplate<sExcaBackgroundTask>
         // Sky plane (B) uses EXCA_SCR.PNB at 0x25E60000
         setupRotationMapPlanes(1, rotationMapPlanes);
         setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
-        s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x24000));
+        initRotationCoefficientTables(5, getVdp2Vram(0x24000));
 
         // setup line color screen
         regs->mA8_LCTA = (regs->mA8_LCTA & 0xFFF80000) | 0x12800;

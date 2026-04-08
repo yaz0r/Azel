@@ -283,7 +283,7 @@ void s_d5StarfieldTask::Init(s_d5StarfieldTask* pThis)
     setupRotationMapPlanes(1, gFLD_D5->getSaturnPtr(0x0607938C));
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x46800), 0x80);
-    s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x3D000));
+    initRotationCoefficientTables(5, getVdp2Vram(0x3D000));
 
     // Line color screen: dark blue
     *(u16*)getVdp2Vram(0x3D400) = 0x700;

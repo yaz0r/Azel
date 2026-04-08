@@ -221,7 +221,7 @@ void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>
     }
 }
 
-void s_BTL_A3_Env_InitVdp2Sub3Sub1(sCoefficientTableData& table)
+void initRotationCoefficientTablesSub1(sCoefficientTableData& table)
 {
     table.m0 = 0;
     table.m4 = 0;
@@ -257,17 +257,17 @@ void s_BTL_A3_Env_InitVdp2Sub3Sub1(sCoefficientTableData& table)
     table.m6C = 0x10000;
 }
 
-void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table)
+void initRotationCoefficientTables(int layerIndex, u8* table)
 {
     switch (layerIndex) {
     case 5:
-        s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[1][0]);
-        s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[1][1]);
+        initRotationCoefficientTablesSub1(gCoefficientTables[1][0]);
+        initRotationCoefficientTablesSub1(gCoefficientTables[1][1]);
         setupScrollAndRotation(5, &gCoefficientTables[1][0], &gCoefficientTables[1][1], table + 0x80, 6);
         [[fallthrough]];
     case 4:
-        s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[0][0]);
-        s_BTL_A3_Env_InitVdp2Sub3Sub1(gCoefficientTables[0][1]);
+        initRotationCoefficientTablesSub1(gCoefficientTables[0][0]);
+        initRotationCoefficientTablesSub1(gCoefficientTables[0][1]);
         setupScrollAndRotation(4, &gCoefficientTables[0][0], &gCoefficientTables[0][1], table, 6);
         break;
     default:
@@ -341,7 +341,7 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
 
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80); // setup coefficients table A
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x24000), 0x80); // setup coefficients table B
-    s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x2A000));
+    initRotationCoefficientTables(5, getVdp2Vram(0x2A000));
 
     // setup line color screen
     *(u16*)getVdp2Vram(0x2A400) = 0x700;

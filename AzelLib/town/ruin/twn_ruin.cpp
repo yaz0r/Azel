@@ -138,7 +138,7 @@ static void ruinBgInit(sVdp2PlaneTask* pThis)
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x24000), 0x80);
 
-    s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x2A000));
+    initRotationCoefficientTables(5, getVdp2Vram(0x2A000));
     setVdp2VramU16(0x25E2A400, 0x700);
 
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;

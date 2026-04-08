@@ -1346,7 +1346,7 @@ void sZoahVdp2Plane::Init(sZoahVdp2Plane* pThis)
     initLayerMap(0, 0x1f000, 0x1f000, 0x1f000, 0x1f000);
 
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
-    s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x24000));
+    initRotationCoefficientTables(5, getVdp2Vram(0x24000));
 
     // line color screen
     *(u16*)getVdp2Vram(0x25000) = 0x700;

@@ -30,7 +30,7 @@ void setupRotationMapPlanes(int rotationMapIndex, const std::array<u32, 16>& pla
 void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes);
 void setupScrollAndRotation(int p1, void* p2, void* p3, u8* coefficientTableAddress, u8 p5);
 void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, u8* coefficientTableAddress, u8 p5);
-void s_BTL_A3_Env_InitVdp2Sub3(int layerIndex, u8* table);
+void initRotationCoefficientTables(int layerIndex, u8* table);
 void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr);
 extern tCoefficientTable coefficientA0;
 extern tCoefficientTable coefficientA1;

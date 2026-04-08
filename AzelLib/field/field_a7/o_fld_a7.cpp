@@ -7,6 +7,7 @@
 #include "battle/BTL_A3/BTL_A3_map6.h"
 #include "trigo.h"
 #include "kernel/cinematicBarsTask.h"
+#include "kernel/loadSavegameScreen.h"
 
 void setupCinematicBarData(int param1, std::array<u32, 256>& dataArray, u32 vdpOffset, int numEntries);
 
@@ -86,19 +87,166 @@ static void initDragonParams_A7_2()
         0x10, 0x10, 0x10);
 }
 
+// 06055266 — set/clear game state bit from table at 060843d0
+static void setGameStateBitFromTable(s32 index, s32 setOrClear)
+{
+    s16 bitIndex = readSaturnS16(gFLD_A7->getSaturnPtr(0x060843d0) + index * 2);
+    u32 adjustedIndex = (bitIndex < 1000) ? (u32)bitIndex : (u32)(bitIndex - 0x236);
+    if (setOrClear == 0)
+    {
+        mainGameState.bitField[adjustedIndex >> 3] &= ~(1 << (adjustedIndex & 7));
+    }
+    else
+    {
+        mainGameState.bitField[adjustedIndex >> 3] |= (1 << (adjustedIndex & 7));
+    }
+}
+
+// 0605600a — set game flags for subfield 0 objects
+static void setGameFlagsA7_0()
+{
+    for (s32 i = 0; i < 8; i++)
+    {
+        setGameStateBitFromTable(i, 1);
+    }
+    s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
+    *((u8*)pFieldData + 0x279) = 8;
+}
+
+// 0605c650 — read game state bit from table at 06086260
+static s32 readGameStateBitFromTable(s32 index)
+{
+    u32 bitIndex = (u32)readSaturnS16(gFLD_A7->getSaturnPtr(0x06086260) + index * 2);
+    u32 adjustedIndex = (bitIndex < 1000) ? bitIndex : (bitIndex - 0x236);
+    return (s32)(s8)(mainGameState.bitField[adjustedIndex >> 3] & (1 << (adjustedIndex & 7)));
+}
+
+// 0605c75c — count active environment objects
+static void countActiveObjectsA7()
+{
+    s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
+    *((u8*)pFieldData + 0x276) = 0;
+    *((u8*)pFieldData + 0x277) = 0;
+    for (s32 i = 0; i < 8; i += 4)
+    {
+        for (s32 j = 0; j < 4; j++)
+        {
+            if (readGameStateBitFromTable(i + j) != 0)
+            {
+                (*((u8*)pFieldData + 0x276))++;
+                (*((u8*)pFieldData + 0x277))++;
+            }
+        }
+    }
+    *((u8*)pFieldData + 0x278) = 0;
+}
+
+// 06054536 — create simple subtask (conditional)
+static void createA7_simpleSubtask(p_workArea parent)
+{
+    if (getFieldTaskPtr()->m2C_currentFieldIndex != 0x16)
+    {
+        Unimplemented(); // createSubTaskFromFunction with LAB_FLD_A7__060544e8, size 4, sets m0 = 0x5E
+    }
+}
+
+// 06059eb8 — create 10 sound/environment objects
+static void createA7_soundObjects(p_workArea parent)
+{
+    Unimplemented(); // calls FUN_FLD_A7__0607b7ba 10 times with data from 06085d20..06085fa8
+}
+
+// 0605e8ba — field script subtask init
+static void fieldScriptSubtaskInit_A7(s_workArea* pThis)
+{
+    s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
+    if (pFieldTask->m2C_currentFieldIndex == 4 && (mainGameState.bitField[0x74] & 0x80) == 0)
+    {
+        return;
+    }
+    s32 result = startFieldScript(0x20, -1);
+    if (result != 0 && pThis != nullptr)
+    {
+        // self-destruct this task
+        pThis->getTask()->m0_pNextTask = (s_task*)((u32)pThis->getTask()->m0_pNextTask | 1);
+    }
+}
+
+// 0605e930 — create field script environment subtask
+static void createA7_fieldScriptSubtask(p_workArea parent)
+{
+    if (getFieldTaskPtr()->m2C_currentFieldIndex == 4 && (mainGameState.bitField[0xa3] & 0x10) != 0)
+    {
+        return;
+    }
+    // Creates a zero-size subtask whose init calls startFieldScript(0x20, -1)
+    Unimplemented();
+}
+
+// 060545ac — proximity check update (random battle trigger)
+struct sA7ProximityTask : public s_workAreaTemplate<sA7ProximityTask>
+{
+    sVec3_FP m0_lastDragonPos;
+    s32 mC_counter;
+    // size 0x10
+};
+
+// 060545ac
+static void proximityCheckUpdate(sA7ProximityTask* pThis)
+{
+    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    s32 dist = vecDistance(pDragon->m8_pos, pThis->m0_lastDragonPos);
+
+    pThis->m0_lastDragonPos.m0_X = pDragon->m8_pos.m0_X;
+    pThis->m0_lastDragonPos.m4_Y = pDragon->m8_pos.m4_Y;
+    pThis->m0_lastDragonPos.m8_Z = pDragon->m8_pos.m8_Z;
+
+    s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
+    if (*((s8*)pDragon + 0x235) == 0 && dist > 0x2c71
+        /* && additional checks for FUN_FLD_A7__0606b5d4, 060682c4, 060692e8 would go here */)
+    {
+        pThis->mC_counter++;
+        if (pThis->mC_counter > 0x96 && *((s8*)pFieldData + 0x277) == 8)
+        {
+            startFieldScript(0, 0x5c8);
+        }
+        if (pThis->mC_counter > 0x24 && *((s8*)pFieldData + 0x277) < 8)
+        {
+            startFieldScript(1, 0x5c9);
+            return;
+        }
+    }
+    else
+    {
+        pThis->mC_counter = 0;
+    }
+}
+
+// 06054684 — create proximity check subtask
+static void createA7_proximityCheck(p_workArea parent)
+{
+    sA7ProximityTask* pTask = createSubTaskFromFunction<sA7ProximityTask>(parent, (void(*)(sA7ProximityTask*))nullptr);
+    if (pTask != nullptr)
+    {
+        pTask->mC_counter = 0;
+        // set update function
+        pTask->getTask()->m4_pSubTask = (s_task*)&proximityCheckUpdate;
+    }
+}
+
 // 06056bb0 — start tasks for subfield 0
 static void startTasksA7_0(p_workArea parent)
 {
     createFieldSpecificDataTask_A7(parent);
     Unimplemented(); // FUN_FLD_A7__06076ea8 — create 3D scene subtask
-    Unimplemented(); // FUN_FLD_A7__06054536 — create environment objects
-    Unimplemented(); // FUN_FLD_A7__0605600a — create environment objects
-    Unimplemented(); // FUN_FLD_A7__060565a6 — create environment objects
-    Unimplemented(); // FUN_FLD_A7__0606a65c — create save point
-    Unimplemented(); // FUN_FLD_A7__06059eb8 — create environment objects
-    Unimplemented(); // FUN_FLD_A7__0605c75c — create environment objects
-    Unimplemented(); // FUN_FLD_A7__0605e930 — create environment objects
-    Unimplemented(); // FUN_FLD_A7__06054684 — create environment objects
+    createA7_simpleSubtask(parent);
+    setGameFlagsA7_0();
+    // 060565a6 — empty
+    // 0606a65c — empty
+    createA7_soundObjects(parent);
+    countActiveObjectsA7();
+    createA7_fieldScriptSubtask(parent);
+    Unimplemented(); // FUN_FLD_A7__06054684 — proximity check (needs sub-functions 0606b5d4, 060682c4, 060692e8)
 }
 
 // 06056c0a — start tasks for subfield 1
@@ -186,62 +334,79 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
 
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
-    s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x2a000));
+    initRotationCoefficientTables(5, getVdp2Vram(0x2a000));
     setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollBuffer, 0x25e24000, 0xc0);
-}
 
-// 06057c22 — set up rotation scroll for pass 0 (ground plane)
-static void drawVdp2Sub_setupRotationPass0(sVdp2PlaneTask* pThis)
-{
-    auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+    setVdp2VramU16(0x25e2a400, 0x700);
+    vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
 
-    fixedPoint camRotX = pThis->m18_cameraRotation.m0_X;
-    if (camRotX == 0)
+    setVdp2VramU16(0x25e2a600, 0xdef4);
+    vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x15300;
+
+    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF;
+
+    vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA = 0x405;
+    vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB = 0x507;
+    vdp2Controls.m4_pendingVdp2Regs->mF4_PRISC = 0x505;
+    vdp2Controls.m4_pendingVdp2Regs->mF6_PRISD = 0x505;
+    vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA = 0x604;
+    vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 3;
+    vdp2Controls.m_isDirty = 1;
+
+    pThis->m3C_scale = fixedPoint(0x10000);
+
+    static const std::vector<std::array<s32, 2>> layerDisplay = {
+        {m44_CCEN, 1},
+    };
+    applyLayerDisplayConfig(layerDisplay);
+
+    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF;
+
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xF8FF) | 0x400;
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xFFF0) | 3;
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xCFFF) | 0x1000;
+
+    pThis->m74_colorNBG = 0;
+    pThis->m70_colorR = 0x0D;
+    pThis->m71_colorG = 0x18;
+
+    auto* regs = vdp2Controls.m4_pendingVdp2Regs;
+    regs->m100_CCRSA = (s16)pThis->m70_colorR | ((s16)pThis->m71_colorG << 8);
+    regs->m102_CCRSB = 0;
+    regs->m104_CCRSC = 0;
+    regs->m106_CCRSD = 0;
+    vdp2Controls.m_isDirty = 1;
+
+    // Wave distortion params
+    pThis->m4C_wavePhase = 0;
+    pThis->m40_waveSpeed = 0x5c390;
+    pThis->m44_waveFreq = (s32)0xfe147bb8;
+    pThis->m48_waveAmplitude = (s32)0xfffff333;
+
+    // Line scroll params
+    pThis->m54_lsPhaseSpeed = 0x1ef27;
+    pThis->m58_lsFreqPerLine = (s32)0xfffa4fcf;
+    pThis->m5C_lsZoomAmplitude = 0x7fec;
+    pThis->m60_lsScrollBaseSpeed = 0x20000;
+    pThis->m64_lsScrollIncPerLine = (s32)0xfff8d7d0;
+
+    // Initialize line scroll buffer with parabolic zoom
+    s32* buf = (s32*)pThis->m50_lineScrollBuffer;
+    s32 lineIdx = -0x70;
+    s32 scrollAccum = 0;
+    for (s32 i = 0; i < 224; i++)
     {
-        camRotX = fixedPoint(0xFFF49F4A); // -0xB60B6
+        buf[i * 3 + 1] = scrollAccum;
+        s32 zoom = FP_Div(0x3100, fixedPoint(lineIdx * lineIdx * 0x8000)).asS32() + 0x10000;
+        buf[i * 3 + 2] = zoom;
+        buf[i * 3 + 0] = (0x10000 - zoom) * 0xB0;
+        lineIdx++;
+        scrollAccum += 0x10000;
     }
-    fixedPoint camRotY = pThis->m18_cameraRotation.m4_Y;
-    fixedPoint camRotZ = pThis->m18_cameraRotation.m8_Z;
-
-    s32 pxSum = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
-    coeff.m34 = (s16)((pxSum + (pxSum < 0 ? 1 : 0)) >> 1);
-    s32 pySum = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
-    coeff.m36 = (s16)((pySum + (pySum < 0 ? 1 : 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
-    coeff.m3C = coeff.m34;
-    coeff.m3E = coeff.m36;
-    coeff.m40 = 0;
-
-    buildRotationMatrixPitchYaw(fixedPoint(0xFC000000) - camRotX, -camRotY);
-    scaleRotationMatrix(pThis->m3C_scale);
-    writeRotationParams(-camRotZ);
-
-    // Compute Mx, My, Mz from camera position, scale, and rotation matrix
-    s32 dPx = coeff.m34 - coeff.m3C;
-    s32 dPy = coeff.m36 - coeff.m3E;
-    s32 dPz = coeff.m38 - coeff.m40;
-
-    s32 scaledX = MTH_Mul(pThis->m3C_scale, fixedPoint(pThis->mC_cameraPosition.m0_X.asS32() << 4)).asS32();
-    gVdp2RotationMatrix.Mx = fixedPoint(scaledX
-        - gVdp2RotationMatrix.m[0][0].asS32() * dPx
-        - gVdp2RotationMatrix.m[0][1].asS32() * dPy
-        - gVdp2RotationMatrix.m[0][2].asS32() * dPz
-        + coeff.m3C * -0x10000);
-
-    s32 scaledY = MTH_Mul(pThis->m3C_scale, fixedPoint(pThis->mC_cameraPosition.m4_Y.asS32() << 4)).asS32();
-    gVdp2RotationMatrix.My = fixedPoint(scaledY
-        - gVdp2RotationMatrix.m[1][0].asS32() * dPx
-        - gVdp2RotationMatrix.m[1][1].asS32() * dPy
-        - gVdp2RotationMatrix.m[1][2].asS32() * dPz
-        + coeff.m3E * -0x10000);
-
-    s32 scaledZ = (pThis->mC_cameraPosition.m8_Z.asS32() - pThis->m38_groundY) * 0x10;
-    gVdp2RotationMatrix.Mz = fixedPoint(scaledZ
-        - gVdp2RotationMatrix.m[2][0].asS32() * dPx
-        - gVdp2RotationMatrix.m[2][1].asS32() * dPy
-        - gVdp2RotationMatrix.m[2][2].asS32() * dPz
-        + coeff.m40 * -0x10000);
 }
+
+// 06057c22 — identical to shared vdp2SetupRotationPass
 
 
 // 06057420 — moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
@@ -305,7 +470,7 @@ static void drawVdp2_A7_0(sVdp2PlaneTask* pThis)
 
     fixedPoint projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
     beginRotationPass(0, projScale);
-    drawVdp2Sub_setupRotationPass0(pThis);
+    vdp2SetupRotationPass(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
@@ -399,7 +564,41 @@ static void initVdp2_A7_1(sVdp2PlaneTask* pThis)
 
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
-    s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x2a000));
+    initRotationCoefficientTables(5, getVdp2Vram(0x2a000));
+    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollBuffer, 0x25e24000, 0xc0);
+
+    setVdp2VramU16(0x25e2a400, 0x700);
+    vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
+
+    setVdp2VramU16(0x25e2a600, 0xb4e2);
+    vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x15300;
+
+    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF;
+
+    vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA = 0x404;
+    vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB = 0x407;
+    vdp2Controls.m4_pendingVdp2Regs->mF4_PRISC = 0x404;
+    vdp2Controls.m4_pendingVdp2Regs->mF6_PRISD = 0x404;
+    vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA = 0x605;
+    vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 3;
+    vdp2Controls.m_isDirty = 1;
+
+    pThis->m3C_scale = fixedPoint(0x6666);
+
+    static const std::vector<std::array<s32, 2>> layerDisplay = {
+        {m44_CCEN, 1},
+    };
+    applyLayerDisplayConfig(layerDisplay);
+
+    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF;
+
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xF8FF) | 0x400;
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xFFF0) | 3;
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xCFFF) | 0x1000;
+
+    pThis->m74_colorNBG = 0x17;
+    pThis->m70_colorR = 0x0D;
 }
 
 // 06058392
@@ -467,14 +666,14 @@ static void drawVdp2Sub_setupRotationPass0_A7_1(sVdp2PlaneTask* pThis)
         - gVdp2RotationMatrix.m[0][2].asS32() * dPz
         + coeff.m3C * -0x10000);
 
-    s32 scaledY = MTH_Mul(pThis->m3C_scale, fixedPoint(pThis->mC_cameraPosition.m4_Y.asS32() << 4)).asS32();
+    s32 scaledY = MTH_Mul(pThis->m3C_scale, fixedPoint(pThis->mC_cameraPosition.m8_Z.asS32() << 4)).asS32();
     gVdp2RotationMatrix.My = fixedPoint(scaledY
         - gVdp2RotationMatrix.m[1][0].asS32() * dPx
         - gVdp2RotationMatrix.m[1][1].asS32() * dPy
         - gVdp2RotationMatrix.m[1][2].asS32() * dPz
         + coeff.m3E * -0x10000);
 
-    s32 scaledZ = (pThis->mC_cameraPosition.m8_Z.asS32() - pThis->m38_groundY) * 0x10;
+    s32 scaledZ = (pThis->mC_cameraPosition.m4_Y.asS32() - pThis->m38_groundY) * 0x10;
     gVdp2RotationMatrix.Mz = fixedPoint(scaledZ
         - gVdp2RotationMatrix.m[2][0].asS32() * dPx
         - gVdp2RotationMatrix.m[2][1].asS32() * dPy
@@ -587,8 +786,43 @@ static void initVdp2_A7_2(sVdp2PlaneTask* pThis)
 
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
-    s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x2a000));
+    initRotationCoefficientTables(5, getVdp2Vram(0x2a000));
     setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollBuffer, 0x25e24000, 0xc0);
+
+    setVdp2VramU16(0x25e2a400, 0x700);
+    vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
+
+    setVdp2VramU16(0x25e2a600, 0x5e92);
+    vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x15300;
+
+    vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA = 0x405;
+    vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB = 0x507;
+    vdp2Controls.m4_pendingVdp2Regs->mF4_PRISC = 0x505;
+    vdp2Controls.m4_pendingVdp2Regs->mF6_PRISD = 0x505;
+    vdp2Controls.m4_pendingVdp2Regs->mF8_PRINA = 0x605;
+    vdp2Controls.m4_pendingVdp2Regs->mFA_PRINB = 0x700;
+    vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 3;
+    vdp2Controls.m_isDirty = 1;
+
+    pThis->m3C_scale = fixedPoint(0x10000);
+
+    static const std::vector<std::array<s32, 2>> layerDisplay = {
+        {m44_CCEN, 1},
+    };
+    applyLayerDisplayConfig(layerDisplay);
+
+    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF | 0x100;
+
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xF8FF) | 0x400;
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xFFF0) | 3;
+    vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xCFFF) | 0x1000;
+
+    pThis->m74_colorNBG = 0x17;
+    pThis->m70_colorR = 0x0D;
+    pThis->m71_colorG = 0x18;
+
+    auto* regs = vdp2Controls.m4_pendingVdp2Regs;
+    regs->m100_CCRSA = (s16)pThis->m70_colorR | ((s16)pThis->m71_colorG << 8);
 }
 
 // 06058fc2
@@ -638,14 +872,14 @@ static void drawVdp2Sub_setupRotationPass0_A7_2(sVdp2PlaneTask* pThis)
         - gVdp2RotationMatrix.m[0][2].asS32() * dPz
         + coeff.m3C * -0x10000);
 
-    s32 scaledY = MTH_Mul(pThis->m3C_scale, fixedPoint(pThis->mC_cameraPosition.m4_Y.asS32() << 4)).asS32();
+    s32 scaledY = MTH_Mul(pThis->m3C_scale, fixedPoint(pThis->mC_cameraPosition.m8_Z.asS32() << 4)).asS32();
     gVdp2RotationMatrix.My = fixedPoint(scaledY
         - gVdp2RotationMatrix.m[1][0].asS32() * dPx
         - gVdp2RotationMatrix.m[1][1].asS32() * dPy
         - gVdp2RotationMatrix.m[1][2].asS32() * dPz
         + coeff.m3E * -0x10000);
 
-    s32 scaledZ = (pThis->mC_cameraPosition.m8_Z.asS32() - pThis->m38_groundY) * 0x10;
+    s32 scaledZ = (pThis->mC_cameraPosition.m4_Y.asS32() - pThis->m38_groundY) * 0x10;
     gVdp2RotationMatrix.Mz = fixedPoint(scaledZ
         - gVdp2RotationMatrix.m[2][0].asS32() * dPx
         - gVdp2RotationMatrix.m[2][1].asS32() * dPy

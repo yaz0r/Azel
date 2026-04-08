@@ -1724,7 +1724,7 @@ static void BTL_T0_env_InitVdp2(s_BTL_A3_Env* pThis)
     setupRotationMapPlanes(1, g_BTL_T0->getSaturnPtr(0x060aab6c));
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x24000), 0x80);
-    s_BTL_A3_Env_InitVdp2Sub3(5, getVdp2Vram(0x2A000));
+    initRotationCoefficientTables(5, getVdp2Vram(0x2A000));
 
     regs->mA8_LCTA = (regs->mA8_LCTA & 0xFFF80000) | 0x15200;
     *(u16*)getVdp2Vram(0x2A400) = 0x0700;
