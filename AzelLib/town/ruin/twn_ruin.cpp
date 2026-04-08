@@ -53,49 +53,14 @@ const char* listOfFilesToLoad[] = {
 };
 
 // 06054bd8
-struct sRuinBackgroundTask : public s_workAreaTemplate<sRuinBackgroundTask>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &sRuinBackgroundTask::Init, &sRuinBackgroundTask::Update, &sRuinBackgroundTask::Draw, nullptr };
-        return &taskDefinition;
-    }
-
-    // 06054bd8
-    static void Init(sRuinBackgroundTask* pThis);
-    // 06054ea6
-    static void Update(sRuinBackgroundTask* pThis) {}
-    // 06054ee8
-    static void Draw(sRuinBackgroundTask* pThis);
-
-    s32 m0_scrollX;
-    s32 m4_scrollY;
-    u8 m8_pad[4];
-    sVec3_FP mC_cameraPosition;
-    sVec3_FP m18_cameraRotation;
-    std::array<s16, 4> m24_vdp1Clipping;
-    std::array<s16, 2> m2C_localCoordinates;
-    s16 m30_projParam0;
-    s16 m32_projParam1;
-    s32 m34_scrollValue;
-    s32 m38_groundY;
-    fixedPoint m3C_scale;
-    s32 m40_waveSpeed;
-    s32 m44_waveFreq;
-    s32 m48_waveAmplitude;
-    s32 m4C_wavePhase;
-    u8 m50_pad[0x20];
-    s8 m70_colorR;
-    s8 m71_colorG;
-    s8 m72_colorB;
-    u8 m73_pad;
-    s8 m74_colorNBG;
-    s8 m75_colorRBG0;
-    // size 0x9C
-};
+static void ruinBgInit(sVdp2PlaneTask* pThis);
+// 06054ea6
+static void ruinBgUpdate(sVdp2PlaneTask* pThis) {}
+// 06054ee8
+static void ruinBgDraw(sVdp2PlaneTask* pThis);
 
 // 060550d4
-static void ruinBgDrawPass0Sub(sRuinBackgroundTask* pThis)
+static void ruinBgDrawPass0Sub(sVdp2PlaneTask* pThis)
 {
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
 
@@ -132,23 +97,10 @@ static void ruinBgDrawPass0Sub(sRuinBackgroundTask* pThis)
                     + (s32)(s16)t.m40 * -0x10000;
 }
 
-// 06054b40
-static void ruinBgWaveDistortion(sRuinBackgroundTask* pThis)
-{
-    std::vector<fixedPoint>& coefficients = *gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
-    s32 phase = pThis->m4C_wavePhase;
-    for (int i = 0; i < 0x1A8 && i < (int)coefficients.size(); i++)
-    {
-        s32 sinVal = getSin((u16)((u32)phase >> 16) & 0xFFF);
-        fixedPoint modulated = MTH_Mul(pThis->m48_waveAmplitude, sinVal);
-        coefficients[i] = MTH_Mul(coefficients[i], modulated + 0x10000);
-        phase += pThis->m44_waveFreq;
-    }
-    pThis->m4C_wavePhase += pThis->m40_waveSpeed;
-}
+// 06054b40 — moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
 
 // 06054bd8
-void sRuinBackgroundTask::Init(sRuinBackgroundTask* pThis)
+static void ruinBgInit(sVdp2PlaneTask* pThis)
 {
     reinitVdp2();
     initNBG1Layer();
@@ -252,7 +204,7 @@ void sRuinBackgroundTask::Init(sRuinBackgroundTask* pThis)
 }
 
 // 06054ee8
-void sRuinBackgroundTask::Draw(sRuinBackgroundTask* pThis)
+static void ruinBgDraw(sVdp2PlaneTask* pThis)
 {
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
@@ -268,7 +220,7 @@ void sRuinBackgroundTask::Draw(sRuinBackgroundTask* pThis)
     commitRotationPass();
 
     pThis->m34_scrollValue = computeRotationScrollOffset();
-    ruinBgWaveDistortion(pThis);
+    vdp2ApplyWaveDistortion(pThis);
 
     // Pass 1: sky scroll
     pThis->m0_scrollX = ((s32)pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
@@ -301,7 +253,8 @@ void sRuinBackgroundTask::Draw(sRuinBackgroundTask* pThis)
 
 void startRuinBackgroundTask(p_workArea pThis)
 {
-    createSubTask<sRuinBackgroundTask>(pThis);
+    static sVdp2PlaneTask::TypedTaskDefinition td = { &ruinBgInit, &ruinBgUpdate, &ruinBgDraw, nullptr };
+    createSubTask<sVdp2PlaneTask>(pThis, &td);
 }
 
 void registerNpcs(const std::vector<const sTownSetup*>& townSetups, sSaturnPtr r5_script, s32 r6)

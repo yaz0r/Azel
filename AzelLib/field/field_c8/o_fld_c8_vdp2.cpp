@@ -6,46 +6,10 @@
 #include "kernel/cinematicBarsTask.h"
 #include "kernel/loadSavegameScreen.h"
 
-struct sC8Vdp2Task : public s_workAreaTemplateWithArg<sC8Vdp2Task, sSaturnPtr>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition td = { &sC8Vdp2Task::Init, &sC8Vdp2Task::Update, &sC8Vdp2Task::Draw, nullptr };
-        return &td;
-    }
-
-    static void Init(sC8Vdp2Task* pThis, sSaturnPtr param);
-    static void Update(sC8Vdp2Task* pThis);
-    static void Draw(sC8Vdp2Task* pThis);
-
-    s32 m0_scrollX;
-    s32 m4_scrollY;
-    u8 m8_pad[4];
-    sVec3_FP mC_cameraPosition;
-    sVec3_FP m18_cameraRotation;
-    std::array<s16, 4> m24_vdp1Clipping;
-    std::array<s16, 2> m2C_localCoordinates;
-    s16 m30_projParam0;
-    s16 m32_projParam1;
-    s32 m34_scrollValue;
-    s32 m38_groundY;
-    fixedPoint m3C_scale;
-    s32 m40_waveSpeed;
-    s32 m44_waveFreq;
-    s32 m48_waveAmplitude;
-    s32 m4C_wavePhase;
-    u8 m50_pad[0x20];
-    s8 m70_colorR;
-    s8 m71_colorG;
-    u8 m72_pad[3];
-    s8 m75_colorRBG0;
-    u8 m76_pad[2];
-    sSaturnPtr m78_towerDataPtr;
-    // size 0x9C
-};
+static sSaturnPtr g_c8TowerDataArg;
 
 // 0605f07c — VDP2 register setup
-static void c8Vdp2Setup(sC8Vdp2Task* pThis)
+static void c8Vdp2Setup(sVdp2PlaneTask* pThis)
 {
     static const sLayerConfig rgbSetup[] = {
         {m2_CHCN, 1}, {m5_CHSZ, 1}, {m6_PNB, 1}, {m7_CNSM, 0},
@@ -118,13 +82,11 @@ static void c8Vdp2Setup(sC8Vdp2Task* pThis)
 }
 
 // 0605F5F8
-void sC8Vdp2Task::Init(sC8Vdp2Task* pThis, sSaturnPtr param)
+static void c8VdpInitWithArg(sVdp2PlaneTask* pThis, sSaturnPtr param)
 {
-    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = (s_fieldPaletteTaskWorkArea*)pThis;
+    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
     reinitVdp2();
     initNBG1Layer();
-
-    pThis->m78_towerDataPtr = param;
 
     asyncDmaCopy(gFLD_C8->getSaturnPtr(0x060B2B74), vdp2Palette, 0x200, 0);
     loadFile("FRS_T0_0.SCB", getVdp2Vram(0x40000), 0);
@@ -138,14 +100,19 @@ void sC8Vdp2Task::Init(sC8Vdp2Task* pThis, sSaturnPtr param)
     Unimplemented(); // createSubTaskFromFunction(pThis, 0605f872, 0xC), stores towerData param
 }
 
+static void c8VdpInit(sVdp2PlaneTask* pThis)
+{
+    c8VdpInitWithArg(pThis, g_c8TowerDataArg);
+}
+
 // 0605F662
-void sC8Vdp2Task::Update(sC8Vdp2Task* pThis)
+static void c8VdpUpdate(sVdp2PlaneTask* pThis)
 {
     // empty
 }
 
 // 0605f46c — standard rotation pass sub (takes rotation as separate param)
-static void c8RotationMatrixSetup(sC8Vdp2Task* pThis, sVec3_FP* pRotation)
+static void c8RotationMatrixSetup(sVdp2PlaneTask* pThis, sVec3_FP* pRotation)
 {
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
 
@@ -176,7 +143,7 @@ static void c8RotationMatrixSetup(sC8Vdp2Task* pThis, sVec3_FP* pRotation)
 }
 
 // 0605f6b0 — C8-specific rotation pass (adjusts camera relative to tower center, then calls 0605f46c)
-static void c8RotationPassSub(sC8Vdp2Task* pThis)
+static void c8RotationPassSub(sVdp2PlaneTask* pThis)
 {
     sVec3_FP rotation;
     if ((s32)pThis->m18_cameraRotation.m0_X == 0)
@@ -186,29 +153,29 @@ static void c8RotationPassSub(sC8Vdp2Task* pThis)
     rotation.m4_Y = pThis->m18_cameraRotation.m4_Y;
     rotation.m8_Z = pThis->m18_cameraRotation.m8_Z;
 
-    // Read tower data from Saturn overlay data via m78_towerDataPtr
-    s32 towerX = readSaturnS32(pThis->m78_towerDataPtr);
-    s32 towerZ = readSaturnS32(pThis->m78_towerDataPtr + 8);
+    // Read tower data from Saturn overlay data via g_c8TowerDataArg
+    s32 towerX = readSaturnS32(g_c8TowerDataArg);
+    s32 towerZ = readSaturnS32(g_c8TowerDataArg + 8);
 
     pThis->m3C_scale = fixedPoint(0x17333);
     pThis->mC_cameraPosition.m0_X = (s32)pThis->mC_cameraPosition.m0_X - (towerX - 0x2C234F);
     pThis->mC_cameraPosition.m8_Z = (s32)pThis->mC_cameraPosition.m8_Z + (0x2C234F - towerZ);
 
-    s32 towerThresholdY = readSaturnS32(pThis->m78_towerDataPtr + 4);
+    s32 towerThresholdY = readSaturnS32(g_c8TowerDataArg + 4);
     if ((s32)pThis->mC_cameraPosition.m4_Y < towerThresholdY)
     {
-        pThis->m38_groundY = readSaturnS32(pThis->m78_towerDataPtr + 0x10);
+        pThis->m38_groundY = readSaturnS32(g_c8TowerDataArg + 0x10);
     }
     else
     {
-        pThis->m38_groundY = readSaturnS32(pThis->m78_towerDataPtr + 0x0C);
+        pThis->m38_groundY = readSaturnS32(g_c8TowerDataArg + 0x0C);
     }
 
     c8RotationMatrixSetup(pThis, &rotation);
 }
 
 // 0605F666
-void sC8Vdp2Task::Draw(sC8Vdp2Task* pThis)
+static void c8VdpDraw(sVdp2PlaneTask* pThis)
 {
     // 0605f2a0 — copy camera state
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
@@ -260,5 +227,7 @@ void sC8Vdp2Task::Draw(sC8Vdp2Task* pThis)
 // 0605f794 — create C8 VDP2 task for subfield 0
 void createC8Vdp2Task(p_workArea parent, sSaturnPtr towerData)
 {
-    createSubTaskWithArg<sC8Vdp2Task>(parent, towerData);
+    g_c8TowerDataArg = towerData;
+    static sVdp2PlaneTask::TypedTaskDefinition td = { &c8VdpInit, &c8VdpUpdate, &c8VdpDraw, nullptr };
+    createSubTask<sVdp2PlaneTask>(parent, &td);
 }

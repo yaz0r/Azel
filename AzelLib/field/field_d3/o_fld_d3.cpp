@@ -65,46 +65,15 @@ static void initDragonParams_D3()
     p->mC4 = fixedPoint(0xD555555);
 }
 
-// D3 VDP2 palette task
-struct sD3Vdp2Task : public s_workAreaTemplate<sD3Vdp2Task>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition td = { &sD3Vdp2Task::Init, &sD3Vdp2Task::Update, &sD3Vdp2Task::Draw, nullptr };
-        return &td;
-    }
-
-    static void Init(sD3Vdp2Task* pThis);
-    static void Update(sD3Vdp2Task* pThis);
-    static void Draw(sD3Vdp2Task* pThis);
-
-    s32 m0_scrollX;
-    s32 m4_scrollY;
-    u8 m8_pad[4];
-    sVec3_FP mC_cameraPosition;
-    sVec3_FP m18_cameraRotation;
-    std::array<s16, 4> m24_vdp1Clipping;
-    std::array<s16, 2> m2C_localCoordinates;
-    s16 m30_projParam0;
-    s16 m32_projParam1;
-    s32 m34_scrollValue;
-    s32 m38_groundY;
-    fixedPoint m3C_scale;
-    s32 m40_waveSpeed;
-    s32 m44_waveFreq;
-    s32 m48_waveAmplitude;
-    s32 m4C_wavePhase;
-    u8 m50_pad[0x24];
-    s8 m74_colorNBG;
-    u8 m75_pad[3];
-    u8* m78_lineScrollBuffer; // 0xA00: [0x000] coeff buf 0, [0x400] coeff buf 1, [0x800] work buf
-    // size 0x9C
-};
+// D3 VDP2 palette task — forward declarations for free functions using shared sVdp2PlaneTask
+static void d3VdpInit(sVdp2PlaneTask* pThis);
+static void d3VdpUpdate(sVdp2PlaneTask* pThis);
+static void d3VdpDraw(sVdp2PlaneTask* pThis);
 
 // 06058468
 static void d3InitWaveParams()
 {
-    s_fieldPaletteTaskWorkArea* pVdp2Task = getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
+    sVdp2PlaneTask* pVdp2Task = getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
     if ((mainGameState.bitField[0xAC] & 0x20) == 0)
     {
         pVdp2Task->m4C_wavePhase = 0;
@@ -122,13 +91,13 @@ static void d3InitWaveParams()
 }
 
 // 060572a8
-void sD3Vdp2Task::Init(sD3Vdp2Task* pThis)
+static void d3VdpInit(sVdp2PlaneTask* pThis)
 {
-    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = (s_fieldPaletteTaskWorkArea*)pThis;
+    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
     reinitVdp2();
     initNBG1Layer();
 
-    pThis->m78_lineScrollBuffer = (u8*)allocateHeapForTask(pThis, 0xA00);
+    pThis->m78_auxBuffer = (u8*)allocateHeapForTask(pThis, 0xA00);
 
     asyncDmaCopy(gFLD_D3->getSaturnPtr(0x06087C1C), getVdp2Cram(0x400), 0x200, 0);
     asyncDmaCopy(gFLD_D3->getSaturnPtr(0x06087E1C), getVdp2Cram(0x600), 0x200, 0);
@@ -207,13 +176,13 @@ void sD3Vdp2Task::Init(sD3Vdp2Task* pThis)
 
     d3InitWaveParams();
     // NBG3 line scroll setup
-    setupScrollAndRotation(0xB, pThis->m78_lineScrollBuffer, pThis->m78_lineScrollBuffer + 0x400, getVdp2Vram(0x3F000), 0x40);
+    setupScrollAndRotation(0xB, pThis->m78_auxBuffer, pThis->m78_auxBuffer + 0x400, getVdp2Vram(0x3F000), 0x40);
 
     // Enable line scroll
     vdp2Controls.m4_pendingVdp2Regs->mDC_LWTA1 = (vdp2Controls.m4_pendingVdp2Regs->mDC_LWTA1 & 0x7FFFFFFF) | 0x80000000;
 
     // Clear line scroll buffer
-    u8* lineScrollBuf = pThis->m78_lineScrollBuffer + 0x800;
+    u8* lineScrollBuf = pThis->m78_auxBuffer + 0x800;
     for (int i = 0; i < 0x80; i++)
     {
         *(u16*)(lineScrollBuf + i * 4) = 0;
@@ -244,7 +213,7 @@ static fixedPoint d3LineScrollStep(fixedPoint angle)
 // 060579dc — compute starting line offset (variant 1, for 06057af2)
 static fixedPoint d3LineScrollStart1(s32 param_1, fixedPoint angle, s32 scrollValue)
 {
-    sD3Vdp2Task* pVdp2 = (sD3Vdp2Task*)getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
+    sVdp2PlaneTask* pVdp2 = getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
     u16 idx = ((u32)angle >> 16) & 0xFFF;
     s32 localY = (s32)pVdp2->m2C_localCoordinates[1];
     s32 localX = (s32)pVdp2->m2C_localCoordinates[0];
@@ -257,7 +226,7 @@ static fixedPoint d3LineScrollStart1(s32 param_1, fixedPoint angle, s32 scrollVa
 // 06057974 — compute starting line offset (variant 2, for 06057c9a)
 static fixedPoint d3LineScrollStart2(s32 param_1, fixedPoint angle, s32 scrollValue)
 {
-    sD3Vdp2Task* pVdp2 = (sD3Vdp2Task*)getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
+    sVdp2PlaneTask* pVdp2 = getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
     u16 idx = ((u32)angle >> 16) & 0xFFF;
     s32 localY = (s32)pVdp2->m2C_localCoordinates[1];
     s32 localX = (s32)pVdp2->m2C_localCoordinates[0];
@@ -389,10 +358,10 @@ static void d3LineScrollCompute2(s16* buf, fixedPoint angle, fixedPoint scrollVa
 }
 
 // 06057d88 — main line scroll dispatch based on camera rotation (standalone function)
-static void d3LineScrollEffect(sD3Vdp2Task* pThis, s16* coeffBuf, u32 rotZ, s32 scrollValue)
+static void d3LineScrollEffect(sVdp2PlaneTask* pThis, s16* coeffBuf, u32 rotZ, s32 scrollValue)
 {
     u32 angle = rotZ & 0x0FFFFFFF;
-    s16* lineBuf = (s16*)(pThis->m78_lineScrollBuffer + 0x800);
+    s16* lineBuf = (s16*)(pThis->m78_auxBuffer + 0x800);
     s16* pass1Buf = coeffBuf + 1; // coeffBuf + 2 bytes
 
     if (angle < 0x2000001)
@@ -446,7 +415,7 @@ static void d3LineScrollEffect(sD3Vdp2Task* pThis, s16* coeffBuf, u32 rotZ, s32 
 }
 
 // 060577c0 — rotation pass sub (shared between pass 0 and 1 with Y offset)
-static void d3VdpRotationPassSub(sD3Vdp2Task* pThis, s32 yOffset)
+static void d3VdpRotationPassSub(sVdp2PlaneTask* pThis, s32 yOffset)
 {
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
 
@@ -481,30 +450,17 @@ static void d3VdpRotationPassSub(sD3Vdp2Task* pThis, s32 yOffset)
         + (s32)(s16)t.m40 * -0x10000;
 }
 
-// 06057210 — wave distortion on coefficient table
-static void d3VdpWaveDistortion(sD3Vdp2Task* pThis)
-{
-    std::vector<fixedPoint>& coefficients = *gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
-    s32 phase = pThis->m4C_wavePhase;
-    for (int i = 0; i < 0x1A8 && i < (int)coefficients.size(); i++)
-    {
-        s32 sinVal = getSin((u16)((u32)phase >> 16) & 0xFFF);
-        fixedPoint modulated = MTH_Mul(pThis->m48_waveAmplitude, sinVal);
-        coefficients[i] = MTH_Mul(coefficients[i], modulated + 0x10000);
-        phase += pThis->m44_waveFreq;
-    }
-    pThis->m4C_wavePhase += pThis->m40_waveSpeed;
-}
+// 06057210 — moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
 
 // 06057590
-void sD3Vdp2Task::Update(sD3Vdp2Task* pThis)
+static void d3VdpUpdate(sVdp2PlaneTask* pThis)
 {
     vdp2Controls.m20_registers[0].m108_CCRNA = (vdp2Controls.m4_pendingVdp2Regs->m108_CCRNA & 0xFFE0) | (s16)pThis->m74_colorNBG;
     vdp2Controls.m20_registers[1].m108_CCRNA = vdp2Controls.m20_registers[0].m108_CCRNA;
 }
 
 // 06057628
-void sD3Vdp2Task::Draw(sD3Vdp2Task* pThis)
+static void d3VdpDraw(sVdp2PlaneTask* pThis)
 {
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
@@ -520,7 +476,7 @@ void sD3Vdp2Task::Draw(sD3Vdp2Task* pThis)
     commitRotationPass();
 
     pThis->m34_scrollValue = computeRotationScrollOffset();
-    d3VdpWaveDistortion(pThis);
+    vdp2ApplyWaveDistortion(pThis);
 
     // Pass 1: ceiling/upper plane (offset by -0x80000 in Y)
     beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
@@ -530,7 +486,7 @@ void sD3Vdp2Task::Draw(sD3Vdp2Task* pThis)
 
     // 06057d88 — line scroll effect (standalone function)
     d3LineScrollEffect(pThis,
-        (s16*)(pThis->m78_lineScrollBuffer + (s32)vdp2Controls.m0_doubleBufferIndex * 0x400),
+        (s16*)(pThis->m78_auxBuffer + (s32)vdp2Controls.m0_doubleBufferIndex * 0x400),
         (u32)pThis->m18_cameraRotation.m8_Z,
         pThis->m34_scrollValue);
 
@@ -558,7 +514,8 @@ void sD3Vdp2Task::Draw(sD3Vdp2Task* pThis)
 
 static void createD3Vdp2Task(p_workArea parent)
 {
-    createSubTask<sD3Vdp2Task>(parent);
+    static sVdp2PlaneTask::TypedTaskDefinition td = { &d3VdpInit, &d3VdpUpdate, &d3VdpDraw, nullptr };
+    createSubTask<sVdp2PlaneTask>(parent, &td);
 }
 
 // 0605404A

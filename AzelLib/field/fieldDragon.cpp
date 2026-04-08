@@ -2245,7 +2245,27 @@ void s_dragonTaskWorkArea::Draw(s_dragonTaskWorkArea* pTypedWorkArea)
     // if we need to draw the dragon shadow (and dragon Y >= 0)
     if (!pTypedWorkArea->m249_noCollisionAndHideDragon && pTypedWorkArea->m248 && (pTypedWorkArea->m8_pos[1] >= 0))
     {
-        assert(0);
+        // Build the dragon's world transform, then flatten Y row to project shadow onto ground
+        sMatrix4x3 shadowMatrix;
+        initMatrixToIdentity(&shadowMatrix);
+        translateMatrix(&pTypedWorkArea->m8_pos, &shadowMatrix);
+        rotateMatrixShiftedY(0x8000000, &shadowMatrix);
+        multiplyMatrix(&pTypedWorkArea->m48.m0_matrix, &shadowMatrix);
+        scaleMatrixRow0(pTypedWorkArea->m150, &shadowMatrix);
+        scaleMatrixRow1(pTypedWorkArea->m150, &shadowMatrix);
+        scaleMatrixRow2(pTypedWorkArea->m150, &shadowMatrix);
+
+        // Zero out Y row to flatten the shadow onto the XZ ground plane
+        shadowMatrix.m[1][0] = 0;
+        shadowMatrix.m[1][1] = 0;
+        shadowMatrix.m[1][2] = 0;
+        shadowMatrix.m[1][3] = 0;
+
+        pushCurrentMatrix();
+        multiplyCurrentMatrix(&shadowMatrix);
+        gDragonState->m28_dragon3dModel.mC_modelIndexOffset = gDragonState->m18_shadowModelIndex;
+        gDragonState->m28_dragon3dModel.m18_drawFunction(&gDragonState->m28_dragon3dModel);
+        popMatrix();
     }
 
     if (pTypedWorkArea->m249_noCollisionAndHideDragon)

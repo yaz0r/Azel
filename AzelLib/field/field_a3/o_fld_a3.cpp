@@ -1885,20 +1885,20 @@ void initNBG1Layer()
 }
 
 // 06058978
-void s_fieldPaletteTaskWorkArea::Init(s_fieldPaletteTaskWorkArea* pThis)
+static void fieldPaletteInit(sVdp2PlaneTask* pThis)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
 
     reinitVdp2();
     initNBG1Layer();
 
-    pThis->m78 = (s_fieldPaletteTaskWorkSub*)allocateHeapForTask(pThis, sizeof(s_fieldPaletteTaskWorkSub));
-    pThis->m78->m0 = 1;
-    pThis->m78->m4 = 0;
-    pThis->m78->m8 = -0xF78000;
-    pThis->m78->mC = -0x1194000;
-    pThis->m78->m10 = -0xEC4000;
-    pThis->m78->m14 = -0x1054000;
+    pThis->m78_paletteWorkSub = (s_fieldPaletteTaskWorkSub*)allocateHeapForTask(pThis, sizeof(s_fieldPaletteTaskWorkSub));
+    pThis->m78_paletteWorkSub->m0 = 1;
+    pThis->m78_paletteWorkSub->m4 = 0;
+    pThis->m78_paletteWorkSub->m8 = -0xF78000;
+    pThis->m78_paletteWorkSub->mC = -0x1194000;
+    pThis->m78_paletteWorkSub->m10 = -0xEC4000;
+    pThis->m78_paletteWorkSub->m14 = -0x1054000;
 
     asyncDmaCopy({ 0x060900A4, gFLD_A3 }, getVdp2Cram(0), 0x80, 0);
     asyncDmaCopy({ 0x06090124, gFLD_A3 }, getVdp2Cram(0x80), 0x80, 0);
@@ -2004,58 +2004,9 @@ void s_fieldPaletteTaskWorkArea::Init(s_fieldPaletteTaskWorkArea* pThis)
     pThis->m48_waveAmplitude = 0xF5A;
 }
 
-// 060590ae
-static void fieldPaletteDrawPass0Sub(s_fieldPaletteTaskWorkArea* pThis)
-{
-    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+// 060590ae — moved to shared/vdp2PlaneTask.cpp as vdp2SetupRotationPass
 
-    fixedPoint rotX = pThis->m18_cameraRotation.m0_X;
-    if ((s32)rotX == 0) rotX = fixedPoint(0xFFF49F4A);
-    fixedPoint rotY = pThis->m18_cameraRotation.m4_Y;
-    fixedPoint rotZ = pThis->m18_cameraRotation.m8_Z;
-
-    s32 sumX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
-    t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
-    s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
-    t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
-    t.m3C = t.m34;
-    t.m3E = t.m36;
-    t.m40 = 0;
-
-    buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C_scale);
-    writeRotationParams(-rotZ);
-
-    s32 diffX = (s32)t.m34 - (s32)t.m3C;
-    s32 diffY = (s32)t.m36 - (s32)t.m3E;
-    s32 diffZ = (s32)t.m38 - (s32)t.m40;
-
-    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m0_X << 4)
-                    - gVdp2RotationMatrix.m[0][0] * diffX - gVdp2RotationMatrix.m[0][1] * diffY - gVdp2RotationMatrix.m[0][2] * diffZ
-                    + (s32)(s16)t.m3C * -0x10000;
-    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m8_Z << 4)
-                    - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
-                    + (s32)(s16)t.m3E * -0x10000;
-    gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38_groundY) * 0x10)
-                    - gVdp2RotationMatrix.m[2][0] * diffX - gVdp2RotationMatrix.m[2][1] * diffY - gVdp2RotationMatrix.m[2][2] * diffZ
-                    + (s32)(s16)t.m40 * -0x10000;
-}
-
-// 060588e0
-static void fieldPaletteWaveDistortion(s_fieldPaletteTaskWorkArea* pThis)
-{
-    std::vector<fixedPoint>& coefficients = *gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
-    s32 phase = pThis->m4C_wavePhase;
-    for (int i = 0; i < 0x1A8 && i < (int)coefficients.size(); i++)
-    {
-        s32 sinVal = getSin((u16)((u32)phase >> 16) & 0xFFF);
-        fixedPoint modulated = MTH_Mul(pThis->m48_waveAmplitude, sinVal);
-        coefficients[i] = MTH_Mul(coefficients[i], modulated + 0x10000);
-        phase += pThis->m44_waveFreq;
-    }
-    pThis->m4C_wavePhase += pThis->m40_waveSpeed;
-}
+// 060588e0 — moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
 
 // 06058d94
 static void fieldPaletteNegateCoefficients()
@@ -2068,9 +2019,9 @@ static void fieldPaletteNegateCoefficients()
 }
 
 // 06058dba
-void s_fieldPaletteTaskWorkArea::Draw(s_fieldPaletteTaskWorkArea* pThis)
+static void fieldPaletteDraw(sVdp2PlaneTask* pThis)
 {
-    s_fieldPaletteTaskWorkSub* pSub = pThis->m78;
+    s_fieldPaletteTaskWorkSub* pSub = pThis->m78_paletteWorkSub;
 
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
@@ -2127,15 +2078,15 @@ void s_fieldPaletteTaskWorkArea::Draw(s_fieldPaletteTaskWorkArea* pThis)
 
     // Pass 0: ground plane
     beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
-    fieldPaletteDrawPass0Sub(pThis);
+    vdp2SetupRotationPass(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
     pThis->m34_scrollValue = computeRotationScrollOffset();
 
-    if (pThis->m78->m0 == 0)
+    if (pThis->m78_paletteWorkSub->m0 == 0)
     {
-        fieldPaletteWaveDistortion(pThis);
+        vdp2ApplyWaveDistortion(pThis);
     }
     else
     {
@@ -2173,13 +2124,29 @@ void s_fieldPaletteTaskWorkArea::Draw(s_fieldPaletteTaskWorkArea* pThis)
 
 void createFieldPaletteTask(p_workArea parent)
 {
-    createSubTask<s_fieldPaletteTaskWorkArea>(parent);
+    static sVdp2PlaneTask::TypedTaskDefinition td = { &fieldPaletteInit, nullptr, &fieldPaletteDraw, nullptr };
+    createSubTask<sVdp2PlaneTask>(parent, &td);
 }
 
 void adjustVerticalLimits(fixedPoint r4, fixedPoint r5)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m134_minY = r4;
     getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m140_maxY = r5;
+}
+
+void adjustHorizontalLimits(fixedPoint minX, fixedPoint maxX, fixedPoint minZ, fixedPoint maxZ)
+{
+    s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    p->m130_minX = minX;
+    p->m13C_maxX = maxX;
+    p->m138_minZ = minZ;
+    p->m144_maxZ = maxZ;
+}
+
+// 06072fc8
+void enableDragonShadow()
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m248 = 1;
 }
 
 u32 cutsceneTaskInitSub0(std::vector<s_scriptData3>& r4, std::vector<s_scriptData3>& r5)

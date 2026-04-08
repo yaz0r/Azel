@@ -398,54 +398,7 @@ struct s_randomBattleWorkArea : public s_workAreaTemplate<s_randomBattleWorkArea
     // size 8
 };
 
-struct s_fieldPaletteTaskWorkSub
-{
-    s32 m0;
-    s32 m4;
-    s32 m8;
-    s32 mC;
-    s32 m10;
-    s32 m14;
-};
-
-struct s_fieldPaletteTaskWorkArea : public s_workAreaTemplate<s_fieldPaletteTaskWorkArea>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &s_fieldPaletteTaskWorkArea::Init, nullptr, &s_fieldPaletteTaskWorkArea::Draw, nullptr};
-        return &taskDefinition;
-    }
-
-    static void Init(s_fieldPaletteTaskWorkArea*);
-    static void Draw(s_fieldPaletteTaskWorkArea*);
-
-    s32 m0_scrollX;
-    s32 m4_scrollY;
-    u8 m8_pad[4];
-    sVec3_FP mC_cameraPosition;
-    sVec3_FP m18_cameraRotation;
-    std::array<s16, 4> m24_vdp1Clipping;
-    std::array<s16, 2> m2C_localCoordinates;
-    s16 m30_projParam0;
-    s16 m32_projParam1;
-    s32 m34_scrollValue;
-    s32 m38_groundY;
-    fixedPoint m3C_scale;
-    s32 m40_waveSpeed;
-    s32 m44_waveFreq;
-    s32 m48_waveAmplitude;
-    s32 m4C_wavePhase;
-    u8 m50_pad[0x20];
-    s8 m70_colorR;
-    s8 m71_colorG;
-    s8 m72_colorB;
-    u8 m73_pad;
-    s8 m74_colorNBG;
-    s8 m75_colorRBG0;
-    u8 m76_pad[2];
-    s_fieldPaletteTaskWorkSub* m78;
-    // size 0x9C
-};
+#include "shared/vdp2PlaneTask.h"
 
 struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea>
 {
@@ -478,7 +431,7 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     s_randomBattleWorkArea* m344_randomBattleTask;
     struct s_visibilityGridWorkArea* m348_pFieldCameraTask1; // 348
     s_fieldScriptWorkArea* m34C_ptrToE; // 34C
-    s_fieldPaletteTaskWorkArea* m350_fieldPaletteTask;
+    sVdp2PlaneTask* m350_fieldPaletteTask;
     u16 m354; // 354
     u16 fieldSubTaskStatus; // 358
     void (*pUpdateFunction2)(); // 35C

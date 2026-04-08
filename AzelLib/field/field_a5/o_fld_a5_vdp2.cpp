@@ -6,91 +6,21 @@
 #include "kernel/cinematicBarsTask.h"
 #include "kernel/loadSavegameScreen.h"
 
-struct sA5Vdp2Task : public s_workAreaTemplate<sA5Vdp2Task>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition td = { &sA5Vdp2Task::Init, &sA5Vdp2Task::Update, &sA5Vdp2Task::Draw, nullptr };
-        return &td;
-    }
+// Forward declarations for free functions using shared sVdp2PlaneTask
+static void a5VdpInit(sVdp2PlaneTask* pThis);
+static void a5VdpUpdate(sVdp2PlaneTask* pThis);
+static void a5VdpDraw(sVdp2PlaneTask* pThis);
 
-    // 0605CB34
-    static void Init(sA5Vdp2Task* pThis);
-    // 0605CF7A
-    static void Update(sA5Vdp2Task* pThis);
-    // 0605D018
-    static void Draw(sA5Vdp2Task* pThis);
-
-    s32 m0_scrollX;
-    s32 m4_scrollY;
-    u8 m8_pad[4];
-    sVec3_FP mC_cameraPosition;
-    sVec3_FP m18_cameraRotation;
-    std::array<s16, 4> m24_vdp1Clipping;
-    std::array<s16, 2> m2C_localCoordinates;
-    s16 m30_projParam0;
-    s16 m32_projParam1;
-    s32 m34_scrollValue;
-    s32 m38_groundY;
-    fixedPoint m3C_scale;
-    u8 m40_pad[0x30];
-    s8 m70_colorR;
-    s8 m71_colorG;
-    u8 m72_pad[2];
-    s8 m74_colorNBG;
-    s8 m75_colorRBG0;
-    s8 m76_animPhase;
-    s8 m77_animSpeed;
-    u8* m78_paletteBuffer; // 0x60 bytes, same layout as Saturn data at 0x0609A5C4
-    // size 0x9C
-};
-
-// 0605D228
-static void a5Vdp2DrawPass0Sub(sA5Vdp2Task* pThis)
-{
-    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
-
-    fixedPoint rotX = pThis->m18_cameraRotation.m0_X;
-    if ((s32)rotX == 0) rotX = fixedPoint(0xFFF49F4A);
-    fixedPoint rotY = pThis->m18_cameraRotation.m4_Y;
-    fixedPoint rotZ = pThis->m18_cameraRotation.m8_Z;
-
-    s32 sumX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
-    t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
-    s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
-    t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
-    t.m3C = t.m34;
-    t.m3E = t.m36;
-    t.m40 = 0;
-
-    buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C_scale);
-    writeRotationParams(-rotZ);
-
-    s32 diffX = (s32)t.m34 - (s32)t.m3C;
-    s32 diffY = (s32)t.m36 - (s32)t.m3E;
-    s32 diffZ = (s32)t.m38 - (s32)t.m40;
-
-    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m0_X << 4)
-                    - gVdp2RotationMatrix.m[0][0] * diffX - gVdp2RotationMatrix.m[0][1] * diffY - gVdp2RotationMatrix.m[0][2] * diffZ
-                    + (s32)(s16)t.m3C * -0x10000;
-    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m8_Z << 4)
-                    - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
-                    + (s32)(s16)t.m3E * -0x10000;
-    gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38_groundY) * 0x10)
-                    - gVdp2RotationMatrix.m[2][0] * diffX - gVdp2RotationMatrix.m[2][1] * diffY - gVdp2RotationMatrix.m[2][2] * diffZ
-                    + (s32)(s16)t.m40 * -0x10000;
-}
+// 0605D228 — moved to shared/vdp2PlaneTask.cpp as vdp2SetupRotationPass
 
 // 0605CB34
-void sA5Vdp2Task::Init(sA5Vdp2Task* pThis)
+static void a5VdpInit(sVdp2PlaneTask* pThis)
 {
-    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = (s_fieldPaletteTaskWorkArea*)pThis;
+    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
     reinitVdp2();
     initNBG1Layer();
 
-    pThis->m78_paletteBuffer = (u8*)allocateHeapForTask(pThis, 0x60);
+    pThis->m78_auxBuffer = (u8*)allocateHeapForTask(pThis, 0x60);
 
     // 0605c87e — load palettes per subfield
     {
@@ -232,13 +162,13 @@ void sA5Vdp2Task::Init(sA5Vdp2Task* pThis)
 
     // 0605ca44 — init palette animation buffer as copy of source data
     {
-        memcpy(pThis->m78_paletteBuffer, getSaturnPtr(gFLD_A5->getSaturnPtr(0x0609A5C4)), 0x60);
+        memcpy(pThis->m78_auxBuffer, getSaturnPtr(gFLD_A5->getSaturnPtr(0x0609A5C4)), 0x60);
         pThis->m77_animSpeed = 1;
     }
 }
 
 // 0605CF7A
-void sA5Vdp2Task::Update(sA5Vdp2Task* pThis)
+static void a5VdpUpdate(sVdp2PlaneTask* pThis)
 {
     // Adjust animation speed based on field background data
     s_fieldSpecificData_A3* pFieldBg = (s_fieldSpecificData_A3*)getFieldTaskPtr()->mC;
@@ -257,12 +187,12 @@ void sA5Vdp2Task::Update(sA5Vdp2Task* pThis)
         pThis->m76_animPhase -= 6;
     }
 
-    // Source data in Saturn memory (same layout as m78_paletteBuffer)
+    // Source data in Saturn memory (same layout as m78_auxBuffer)
     const u8* src = getSaturnPtr(gFLD_A5->getSaturnPtr(0x0609A5C4));
     // Animation index LUT
     const u8* lut = getSaturnPtr(gFLD_A5->getSaturnPtr(0x0609BBC4));
 
-    u8* dst = pThis->m78_paletteBuffer;
+    u8* dst = pThis->m78_auxBuffer;
     s32 phase = pThis->m76_animPhase;
     s32 i = 0;
 
@@ -289,7 +219,7 @@ void sA5Vdp2Task::Update(sA5Vdp2Task* pThis)
 }
 
 // 0605D018
-void sA5Vdp2Task::Draw(sA5Vdp2Task* pThis)
+static void a5VdpDraw(sVdp2PlaneTask* pThis)
 {
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
@@ -300,7 +230,7 @@ void sA5Vdp2Task::Draw(sA5Vdp2Task* pThis)
 
     // Pass 0: ground plane
     beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
-    a5Vdp2DrawPass0Sub(pThis);
+    vdp2SetupRotationPass(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
@@ -352,5 +282,6 @@ void sA5Vdp2Task::Draw(sA5Vdp2Task* pThis)
 // 0605D492
 void createA5Vdp2Task(p_workArea parent)
 {
-    createSubTask<sA5Vdp2Task>(parent);
+    static sVdp2PlaneTask::TypedTaskDefinition td = { &a5VdpInit, &a5VdpUpdate, &a5VdpDraw, nullptr };
+    createSubTask<sVdp2PlaneTask>(parent, &td);
 }

@@ -80,6 +80,8 @@ void loadScriptData1(std::vector<s_scriptData1>& output, const sSaturnPtr& EA);
 void startCutscene(s_cutsceneData* r4);
 void createFieldPaletteTask(p_workArea parent);
 void adjustVerticalLimits(fixedPoint r4, fixedPoint r5);
+void adjustHorizontalLimits(fixedPoint minX, fixedPoint maxX, fixedPoint minZ, fixedPoint maxZ);
+void enableDragonShadow();
 void nullBattle();
 void getFieldDragonPosition(sVec3_FP* r4);
 void fieldScriptTaskUpdateSub2Sub1Sub1Sub1Sub2(s_LCSLaser* r4);

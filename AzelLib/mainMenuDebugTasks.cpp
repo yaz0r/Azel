@@ -17,6 +17,7 @@
 #include "field/field_c8/o_fld_c8.h"
 #include "field/field_d3/o_fld_d3.h"
 #include "field/field_d5/o_fld_d5.h"
+#include "field/field_a7/o_fld_a7.h"
 #include "dragonData.h"
 #include "dragonRider.h"
 #include "menu/inventoryMenu.h"
@@ -1566,6 +1567,10 @@ void s_fieldStartOverlayTask::Init(s_fieldStartOverlayTask* pThis)
         else if (!strcmp(pFieldDefinition->m_prg, "FLD_D5.PRG"))
         {
             gFieldOverlayFunction = overlayStart_FLD_D5;
+        }
+        else if (!strcmp(pFieldDefinition->m_prg, "FLD_A7.PRG"))
+        {
+            gFieldOverlayFunction = overlayStart_FLD_A7;
         }
         else
         {

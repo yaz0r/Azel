@@ -15,7 +15,7 @@ void setupDragonCaveLighting()
     p->mC4 = fixedPoint(0xD555555);
 }
 
-void vdp2FieldTask_init(s_fieldPaletteTaskWorkArea* pThis)
+void vdp2FieldTask_init(sVdp2PlaneTask* pThis)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
     reinitVdp2();
@@ -43,16 +43,16 @@ void vdp2FieldTask_init(s_fieldPaletteTaskWorkArea* pThis)
     vdp2Controls.m_isDirty = 1;
 }
 
-void vdp2FieldTask_update(s_fieldPaletteTaskWorkArea* pThis)
+void vdp2FieldTask_update(sVdp2PlaneTask* pThis)
 {
     // Nothing
 }
 
 void createVDP2FieldTask(p_workArea workArea)
 {
-    s_fieldPaletteTaskWorkArea::TypedTaskDefinition definition = {&vdp2FieldTask_init, &vdp2FieldTask_update, nullptr, nullptr};
+    sVdp2PlaneTask::TypedTaskDefinition definition = {&vdp2FieldTask_init, &vdp2FieldTask_update, nullptr, nullptr};
 
-    createSubTask<s_fieldPaletteTaskWorkArea>(workArea, &definition);
+    createSubTask<sVdp2PlaneTask>(workArea, &definition);
 }
 
 void setupCaveCameraConfig()
