@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "o_fld_a3_0.h"
+#include "field/fieldCutsceneTask2.h"
 #include "o_fld_a3_4.h"
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"

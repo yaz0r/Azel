@@ -21,7 +21,8 @@ struct sFieldCameraZone
     sVec3_FP* m10_pPosition2;
     s32 m14_triggerRadius;
     s32 m18_maxDistanceSquare;
-    // size 0x20?
+    s32 m1C;
+    // size 0x20
 };
 
 struct sFieldCameraManager : public s_workAreaTemplate<sFieldCameraManager>
@@ -128,9 +129,6 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
     const s32* m1C;
 };
 
-void cutsceneTaskInitSub2(p_workArea r4, std::vector<s_scriptData1>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
-void cutsceneTaskInitSub3(p_workArea r4, std::vector<s_scriptData2>& r5, s32 r6, sVec3_FP* r7, u32 arg0);
-
 struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct s_cutsceneData*>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -150,41 +148,6 @@ struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct 
     u32 m18_frameCount;
 
     //size = 0x1C
-};
-
-struct s_cutsceneTask2 : public s_workAreaTemplateWithArg<s_cutsceneTask2, std::vector<s_scriptData1>*>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &s_cutsceneTask2::Init, &s_cutsceneTask2::Update, &s_cutsceneTask2::Draw, NULL};
-        return &taskDefinition;
-    }
-    static void Init(s_cutsceneTask2*, std::vector<s_scriptData1>* argument);
-    static void Update(s_cutsceneTask2*);
-    static void Draw(s_cutsceneTask2*)
-    {
-        PDS_unimplemented("s_cutsceneTask2::Draw");
-    }
-
-    u32 m0;
-    std::vector<s_scriptData1>* m4;
-    sVec3_FP m8;
-    sVec3_FP m14;
-    s32 m20;
-    sVec3_FP* m24;
-    sVec3_FP m28;
-    fixedPoint m34;
-    s32 m38;
-    s_scriptData1* m3C;
-    s32 m40;
-    sVec3_FP m44;
-    sVec3_FP m50;
-    fixedPoint m5C;
-    s32 m60;
-    //size = 0x64
-
-    s32 UpdateSub0();
-    void UpdateSub1();
 };
 
 struct s_fieldScriptWorkArea78
@@ -343,11 +306,40 @@ struct s_visdibilityCellTask : public s_workAreaTemplate<s_visdibilityCellTask>
     u32 m14_index; // 14
 }; // size is 0x18
 
+struct sFieldOverlay : public sSaturnMemoryFile
+{
+    sFieldOverlay(const char* fileName) : sSaturnMemoryFile(fileName) {}
+
+    virtual void dispatchCellObjectCreation(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+    {
+        assert(0); // must be overridden by overlays that use cell objects
+    }
+
+    virtual s32 executeNative(sSaturnPtr ptr)
+    {
+        assert(0);
+        return 0;
+    }
+
+    virtual s32 executeNative(sSaturnPtr ptr, s32 arg0)
+    {
+        assert(0);
+        return 0;
+    }
+};
+
+extern sFieldOverlay* gCurrentFieldOverlay;
+
+void createCellObjects(s_visdibilityCellTask* r4, std::vector<s_DataTable2Sub0>& r5, s32 r6);
+void setupFieldWithCellObjects(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea));
+
 struct sCameraVisibility
 {
     s8 m0;
     u8 m1;
 };
+
+void setupField(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r7);
 
 struct s_visibilityGridWorkArea_68
 {
@@ -440,6 +432,7 @@ struct s_FieldSubTaskWorkArea : public s_workAreaTemplate<s_FieldSubTaskWorkArea
     u8 m36C;
     u32 m370_fieldDebuggerWho; // 370
     void(*m374_pUpdateFunction1)(); // 374
+    void(*m378_pUpdateFunction4)(); // 378
     u8 m37C_debugMenuStatus1[2]; // 37C
     u8 m37E_debugMenuStatus2_a; // 37E
     u8 m380_debugMenuStatus3; //380
@@ -605,3 +598,18 @@ void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s
 
 int findMandatoryFileOnDisc(const char* fileName);
 u32 getFileSizeFromFileId(const char* fileName);
+
+// Shared field script/cutscene queries
+bool isNoCutsceneActive();
+s32 isScriptActive();
+void enableFieldScriptSkipping();
+
+// Shared dragon getters
+void getDragonPosition(sVec3_FP* pOut);
+void getDragonAngle(sVec3_FP* pOut);
+void triggerSubfieldChange(s32 destSubfield, s16 param);
+
+// Shared grid/visibility helpers
+p_workArea findGridParentForEntity(sSaturnPtr pData);
+bool isPointOnScreen(sVec3_FP* pViewPos, s32 maxDepth);
+bool isWorldPositionOnScreen(sSaturnPtr posEA);

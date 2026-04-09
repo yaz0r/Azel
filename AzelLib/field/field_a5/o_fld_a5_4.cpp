@@ -4,7 +4,22 @@
 #include "field/fieldRadar.h"
 #include "audio/soundDriver.h"
 
-static void fieldA5_4_startTasks(p_workArea workArea) { Unimplemented(); }
+// 0605a816
+static void fieldA5_4_startTasks(p_workArea workArea)
+{
+    createFieldSpecificDataTask_A5(workArea);
+    createA5_3dSceneManager(workArea);
+    createA5_envObjects_sub4_particle(workArea);
+    createA5_envObjects_sub4_light(workArea);
+    initA5_wormColorTables_day();
+    createA5_envObjects_sub4_wormSegments(workArea);
+    // 06059768 — empty
+    createA5_wormObjectTask(workArea);
+    createA5_wormDustTask(workArea);
+    createA5_exitEntityTask(workArea);
+    createA5_decorObjects_night_4();
+    createA5_encounterConfig(workArea, 4, 0, 0x081F, 0x200, 0xA0, 0x40, 0x1F);
+}
 
 // 06054744
 void subfieldA5_4(p_workArea workArea)
@@ -29,6 +44,6 @@ void subfieldA5_4(p_workArea workArea)
     fieldRadar_enableAltitudeGauge();
     initDragonParams_A5_open();
     createA5Vdp2Task(workArea);
-    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
-    Unimplemented(); // random battle init 0x18
+    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = (void(*)())&postBattleSound_A5_nightB;
+    fieldRadar_initRandomBattle(0x18);
 }

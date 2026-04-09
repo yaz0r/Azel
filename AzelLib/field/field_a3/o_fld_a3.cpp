@@ -7,6 +7,9 @@
 #include "a3_dynamic_mine_cart.h"
 #include "a3_fan.h"
 #include "a3_2_crashedImperialShip.h"
+#include "field/fieldCutsceneTask2.h"
+#include "field/fieldCutsceneTask3.h"
+#include "a3_waterfall.h"
 #include "field/dragonLightWingEvolution.h"
 #include "particlePool.h"
 
@@ -1298,7 +1301,7 @@ void createSmokePufTask(p_workArea pThis, sVec3_FP* r5, sVec3_FP* r6)
     pNewTask->m14_countdown = 0x20;
 }
 
-void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+void FLD_A3_data::dispatchCellObjectCreation(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 {
     switch (r5.m0_function.m_offset)
     {
@@ -1353,8 +1356,9 @@ void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         create_A3_Obj3(r4, r5, r6);
         break;
 
+        // shootable environmental object
     case 0x0606053e:
-        //create_A3_Obj1(r4, r5, r6); ?
+        create_A3_Obj1(r4, r5, r6);
         break;
 
     case 0x06059674: // A2
@@ -1363,65 +1367,30 @@ void dispatchFunction(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     case 0x06059A2C: // A2 imperial ship
         create_A3_2_crashedImperialShip(r4, r5, r6);
         break;
-    case 0x0605C274: // A2
+
+        // waterfalls
+    case 0x0605bfea:
+        create_A3_Waterfall0(r4, r5, r6);
         break;
-    case 0x0605c27a: // A2
+    case 0x0605c0ae:
+        create_A3_Waterfall1(r4, r5, r6);
         break;
-    case 0x0605c280: // A2
+    case 0x0605C274:
+        create_A3_Waterfall2(r4, r5, r6);
         break;
-    case 0x0605bfea: // A2
+    case 0x0605c27a:
+        create_A3_Waterfall3(r4, r5, r6);
         break;
-    case 0x0605c0ae: // A2
+    case 0x0605c280:
+        create_A3_Waterfall4(r4, r5, r6);
         break;
     default:
-        PDS_unimplemented("dispatchFunction");
+        PDS_unimplemented("FLD_A3_data::dispatchCellObjectCreation");
         break;
         //assert(0);
     }
 }
 
-void setupFieldSub1Sub0(s_visdibilityCellTask* r4, std::vector<s_DataTable2Sub0>& r5, s32 r6)
-{
-    for (int i = 0; i < r5.size(); i++)
-    {
-        dispatchFunction(r4, r5[i], r6);
-    }
-}
-
-void setupFieldSub1(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea))
-{
-    s_visibilityGridWorkArea* pFieldCameraTask1 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
-
-    setupField2(r4, r6);
-
-    if (r5)
-    {
-        s_visdibilityCellTask** r12 = pFieldCameraTask1->m3C_cellRenderingTasks;
-        if (r12)
-        {
-            s32 r11 = r5->m8.m0 * r5->m8.m4;
-            std::vector<std::vector<s_DataTable2Sub0>>::iterator r14 = r5->m0.begin();
-
-            do
-            {
-                if (r14->size())
-                {
-                    setupFieldSub1Sub0(*r12, *r14, r5->m4);
-                }
-
-                r14++;
-                r12++;
-            } while (--r11);
-        }
-    }
-}
-
-void setupField(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r7)
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1->m34_cameraVisibilityTable = r7;
-
-    setupFieldSub1(r4, r5, r6);
-}
 
 void setupField3(s_DataTable3* r4, void(*r5)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r6)
 {
@@ -2231,67 +2200,9 @@ void startCutsceneCameraTracking(sVec3_FP* r4, sVec3_FP* r5)
     updateCutsceneCameraInterpolation(r14, getFieldCameraStatus());
 }
 
-void cutsceneTaskInitSub2Sub1(std::vector<s_scriptData1>& r4, std::vector<s_scriptData1>& r5)
-{
-    r5 = r4;
-}
+// cutsceneTaskInitSub2Sub1, cutsceneTaskInitSub2Sub2 moved to fieldCutsceneTask2.cpp
 
-void cutsceneTaskInitSub2Sub2(s_workArea* r4)
-{
-    if (r4)
-    {
-        r4->getTask()->markFinished();
-    }
-
-    if (getFieldTaskPtr()->m8_pSubFieldData)
-    {
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = NULL;
-    }
-}
-
-void s_cutsceneTask2::Init(s_cutsceneTask2* pThis, std::vector<s_scriptData1>* argument)
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = pThis;
-    pThis->m4 = argument;
-}
-
-s32 s_cutsceneTask2::UpdateSub0()
-{
-    m3C = &(*m4)[m38];
-    m40 = m3C->m0;
-    if (m40 == 0)
-    {
-        return -1;
-    }
-
-    m44 = m3C->m1C - m3C->m4;
-    m50 = m3C->m28 - m3C->m10;
-
-    m44[0] = intDivide(m40, m44[0]);
-    m44[1] = intDivide(m40, m44[1]);
-    m44[2] = intDivide(m40, m44[2]);
-
-    m50[0] = intDivide(m40, m50[0]);
-    m50[1] = intDivide(m40, m50[1]);
-    m50[2] = intDivide(m40, m50[2]);
-
-    m5C = intDivide(m40, fixedPoint(m38 - m34).normalized());
-
-    m8 = m3C->m4;
-    m28 = m3C->m10;
-    m20 = m3C->m34;
-
-    if (m24)
-    {
-        m14 = m28 + *m24;
-    }
-    else
-    {
-        m14 = m28;
-    }
-
-    return 1;
-}
+// s_cutsceneTask2 methods moved to fieldCutsceneTask2.cpp
 
 void endCutsceneCameraWithRestore()
 {
@@ -2324,330 +2235,13 @@ void endCutsceneCameraNoRestore()
     dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
 }
 
-void s_cutsceneTask2::UpdateSub1()
-{
-    getTask()->markFinished();
+// s_cutsceneTask2::UpdateSub1, Update moved to fieldCutsceneTask2.cpp
 
-    if (getFieldTaskPtr()->m8_pSubFieldData)
-    {
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = NULL;
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 0;
-        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m78)
-        {
-            return;
-        }
+// s_cutsceneTask3 moved to field/fieldCutsceneTask3.cpp
 
-        if (m0 & 2)
-        {
-            endCutsceneCameraWithRestore();
-        }
-        else
-        {
-            endCutsceneCameraNoRestore();
-        }
-    }
-}
+// cutsceneTaskInitSub2 moved to fieldCutsceneTask2.cpp
 
-void s_cutsceneTask2::Update(s_cutsceneTask2* pThis)
-{
-    switch (pThis->m34)
-    {
-    case 0:
-        pThis->m34 = pThis->UpdateSub0();
-        startCutsceneCameraTracking(&pThis->m8, &pThis->m14);
-        getFieldCameraStatus()->mC_rotation[2] = pThis->m20;
-        return;
-    case 1:
-        pThis->m8 += pThis->m44;
-        pThis->m28 += pThis->m50;
-        pThis->m20 += pThis->m5C;
-
-        getFieldCameraStatus()->mC_rotation[1] = pThis->m20;
-        pThis->m60++;
-
-        if (pThis->m24)
-        {
-            //0606A12C
-            assert(0);
-        }
-        else
-        {
-            pThis->m14 = pThis->m28;
-        }
-
-        if (--pThis->m40)
-        {
-            return;
-        }
-
-        if (++pThis->m38 < 0x10)
-        {
-            pThis->m34 = pThis->UpdateSub0();
-        }
-        else
-        {
-            pThis->m34 = -1;
-        }
-        break;
-    default:
-        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C)
-            return;
-        pThis->UpdateSub1();
-        break;
-    }
-}
-
-struct s_cutsceneTask3 : public s_workAreaTemplate<s_cutsceneTask3>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &s_cutsceneTask3::Init, &s_cutsceneTask3::Update, &s_cutsceneTask3::Draw, NULL };
-        return &taskDefinition;
-    }
-    static void Init(s_cutsceneTask3*);
-    s32 UpdateSub0();
-    void UpdateSub1();
-    static void Update(s_cutsceneTask3*);
-    static void Draw(s_cutsceneTask3*);
-
-    s32 m0;
-    std::vector<s_scriptData2>* m4;
-    sVec3_FP m8;
-    sVec3_FP* m14;
-    sVec3_FP* m18;
-    sVec3_FP m1C;
-    s32 m28;
-    s32 m2C;
-    s32 m30;
-    s_scriptData2* m34;
-    s32 m38;
-    sVec3_FP m3C;
-    fixedPoint m48;
-    s32 m4C;
-    //size = 0x50
-};
-
-// TODO: this is shared between s_cutsceneTask2 and 3
-void s_cutsceneTask3::UpdateSub1()
-{
-    getTask()->markFinished();
-
-    if (getFieldTaskPtr()->m8_pSubFieldData)
-    {
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = NULL;
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 0;
-        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m78)
-        {
-            return;
-        }
-
-        if (m0 & 2)
-        {
-            endCutsceneCameraWithRestore();
-        }
-        else
-        {
-            endCutsceneCameraNoRestore();
-        }
-    }
-}
-
-void s_cutsceneTask3::Init(s_cutsceneTask3* pThis)
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = pThis;
-}
-
-s32 s_cutsceneTask3::UpdateSub0()
-{
-    m34 = &(*m4)[m30];
-    m38 = m34->m0;
-    if (m38 == 0)
-    {
-        return -1;
-    }
-
-    m3C[0] = fixedPoint(m34->m14 - m34->m4).normalized();
-    m3C[1] = fixedPoint(m34->m18 - m34->m8).normalized();
-    m3C[2] = fixedPoint(m34->m1C - m34->mC).normalized();
-    m48 = m34->m20 - m34->m10;
-
-    m3C[0] = intDivide(m38, m3C[0]);
-    m3C[1] = intDivide(m38, m3C[1]);
-    m3C[2] = intDivide(m38, m3C[2]);
-    m48 = intDivide(m38, m48);
-
-    m1C[0] = m34->m4;
-    m1C[1] = m34->m8;
-    m1C[2] = m34->mC;
-    m28 = m34->m10;
-
-    m8[0] = (*m14)[0] + MTH_Mul_5_6(m28, getCos(m1C[0].getInteger() & 0xFFF), getSin(m1C[1].getInteger() & 0xFFF));
-    m8[1] = (*m14)[1] - MTH_Mul(m28, getSin(m1C[0].getInteger() & 0xFFF));
-    m8[2] = (*m14)[2] + MTH_Mul_5_6(m28, getCos(m1C[0].getInteger() & 0xFFF), getCos(m1C[1].getInteger() & 0xFFF));
-
-    return 1;
-}
-
-void s_cutsceneTask3::Update(s_cutsceneTask3* pThis)
-{
-    switch (pThis->m2C)
-    {
-    case 0:
-        pThis->m2C = pThis->UpdateSub0();
-        if (pThis->m18)
-        {
-            startCutsceneCameraTracking(&pThis->m8, pThis->m18);
-        }
-        else
-        {
-            startCutsceneCameraTracking(&pThis->m8, pThis->m14);
-        }
-        getFieldCameraStatus()->mC_rotation[2] = pThis->m1C[2];
-        return;
-    case 1:
-        pThis->m1C += pThis->m3C;
-        getFieldCameraStatus()->mC_rotation[2] = pThis->m1C[2];
-        pThis->m8[0] = (* pThis->m14)[0] + MTH_Mul_5_6(pThis->m28, getCos(pThis->m1C[0].getInteger() & 0xFFF), getSin(pThis->m1C[1].getInteger() & 0xFFF));
-        pThis->m8[1] = (* pThis->m14)[1] - MTH_Mul(pThis->m28, getSin(pThis->m1C[0].getInteger() & 0xFFF));
-        pThis->m8[2] = (* pThis->m14)[2] + MTH_Mul_5_6(pThis->m28, getCos(pThis->m1C[0].getInteger() & 0xFFF), getCos(pThis->m1C[1].getInteger() & 0xFFF));
-        pThis->m4C++;
-        // end of key frame?
-        if (--pThis->m38 != 0)
-        {
-            return;
-        }
-        // change key frame
-        if (++pThis->m30 >= 0x10)
-        {
-            pThis->m2C = -1;
-        }
-        else
-        {
-            pThis->m2C = pThis->UpdateSub0();
-        }
-        break;
-    default:
-        if (!getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C)
-        {
-            pThis->UpdateSub1();
-        }
-        break;
-    }
-}
-
-// 0606A8A4
-void s_cutsceneTask3::Draw(s_cutsceneTask3* pThis)
-{
-    s_scriptData2* pData = &(*pThis->m4)[pThis->m30];
-    s_FieldSubTaskWorkArea* pSubFieldData = getFieldTaskPtr()->m8_pSubFieldData;
-
-    if (!(pSubFieldData->m370_fieldDebuggerWho & 1))
-        return;
-    if (pSubFieldData->m37C_debugMenuStatus1[1] != 0)
-        return;
-    if (pSubFieldData->m369 != 0)
-        return;
-
-    vdp2PrintStatus.m10_palette = 0x7000;
-    vdp2DebugPrintSetPosition(3, 0xF);
-    vdp2PrintfSmallFont("NODE NO:%4d         ", pThis->m30);
-    vdp2DebugPrintSetPosition(3, 0x10);
-    vdp2PrintfSmallFont("FRAME  :%4d         ", pData->m0);
-    vdp2DebugPrintSetPosition(3, 0x11);
-    vdp2PrintfSmallFont("ANG S  :%4d %4d %4d ",
-        (s16)((u16)(pData->m4 >> 16) & 0xFFF) * 0x168 >> 0xC,
-        (s16)((u16)(pData->m8 >> 16) & 0xFFF) * 0x168 >> 0xC,
-        (s16)((u16)(pData->mC >> 16) & 0xFFF) * 0x168 >> 0xC);
-    vdp2DebugPrintSetPosition(3, 0x12);
-    vdp2PrintfSmallFont("DST S  :%4d         ", (s32)pData->m10 >> 0xC);
-    vdp2DebugPrintSetPosition(3, 0x13);
-    vdp2PrintfSmallFont("ANG E  :%4d %4d %4d ",
-        (s16)((u16)(pData->m14 >> 16) & 0xFFF) * 0x168 >> 0xC,
-        (s16)((u16)(pData->m18 >> 16) & 0xFFF) * 0x168 >> 0xC,
-        (s16)((u16)(pData->m1C >> 16) & 0xFFF) * 0x168 >> 0xC);
-    vdp2DebugPrintSetPosition(3, 0x14);
-    vdp2PrintfSmallFont("DST E  :%4d         ", (s32)pData->m20 >> 0xC);
-    vdp2PrintStatus.m10_palette = 0xD000;
-    vdp2DebugPrintSetPosition(3, 0x16);
-    vdp2PrintfSmallFont("count (%3d) ", pThis->m4C);
-}
-
-void cutsceneTaskInitSub2(p_workArea r4, std::vector<s_scriptData1>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
-{
-    s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-
-    r14->m80 = r4;
-    r14->m7C = r6;
-    r14->m84 = r7;
-
-    if (r14->m78)
-    {
-        startCutsceneCameraTracking(&r14->m78->m3C, &r14->m78->m48);
-        r14->m48_cutsceneTask = r4;
-        return;
-    }
-
-    if (r11.size() == 0)
-        return;
-
-    cutsceneTaskInitSub2Sub1(r11, *r14->m88);
-
-    if (r14->m48_cutsceneTask)
-    {
-        cutsceneTaskInitSub2Sub2(r14->m48_cutsceneTask);
-    }
-
-    s_cutsceneTask2* pNewTask = createSiblingTaskWithArg<s_cutsceneTask2>(r4, &r11);
-
-    pNewTask->m0 = arg0;
-    if (arg0 & 1)
-    {
-        pNewTask->m24 = r7;
-    }
-
-    pNewTask->Update(pNewTask);
-}
-
-void cutsceneTaskInitSub3Sub0(std::vector<s_scriptData2>& r4, std::vector<s_scriptData2>& r5)
-{
-    r5 = r4;
-}
-
-void cutsceneTaskInitSub3(p_workArea r4, std::vector<s_scriptData2>& r11, s32 r6, sVec3_FP* r7, u32 arg0)
-{
-    s_fieldScriptWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-    r14->m80 = r4;
-    r14->m7C = r6;
-    r14->m84 = r7;
-
-    if (r14->m78)
-    {
-        startCutsceneCameraTracking(&r14->m78->m3C, r7);
-        r14->m48_cutsceneTask = r4;
-        return;
-    }
-
-    if (r11.size() == 0)
-        return;
-
-    cutsceneTaskInitSub3Sub0(r11, *r14->m8C);
-
-    if (r7 == NULL)
-        return;
-
-    if (r14->m48_cutsceneTask)
-    {
-        cutsceneTaskInitSub2Sub2(r14->m48_cutsceneTask);
-    }
-
-    s_cutsceneTask3* pNewTask = createSiblingTask<s_cutsceneTask3>(r4);
-
-    pNewTask->m4 = &r11;
-    pNewTask->m14 = r7;
-    pNewTask->m0 = arg0;
-
-    pNewTask->Update(pNewTask);
-}
+// cutsceneTaskInitSub3 moved to field/fieldCutsceneTask3.cpp
 
 void s_cutsceneTask::Init(s_cutsceneTask* pThis, s_cutsceneData* pCutsceneData)
 {
@@ -3517,9 +3111,8 @@ static s32 radarBuildFilteredChoiceList(s_FieldRadar* pRadar);
 static s32 radarFindFilteredIndex(s_FieldRadar* pRadar, s32 selection);
 void createMultiChoice(s32 r4, s32 r5);
 
-s32 executeNative(sSaturnPtr ptr)
+s32 FLD_A3_data::executeNative(sSaturnPtr ptr)
 {
-    assert(ptr.m_file == gFLD_A3);
 
     switch (ptr.m_offset)
     {
@@ -3631,9 +3224,8 @@ void scriptFunction_6067ec0_fadeIn(s32 arg0)
 
 }
 
-s32 executeNative(sSaturnPtr ptr, s32 arg0)
+s32 FLD_A3_data::executeNative(sSaturnPtr ptr, s32 arg0)
 {
-    assert(ptr.m_file == gFLD_A3);
 
     switch (ptr.m_offset)
     {
@@ -3660,10 +3252,10 @@ sSaturnPtr s_fieldScriptWorkArea::callNative(sSaturnPtr r5)
     switch (numArguments)
     {
     case 0:
-        m54_currentResult = executeNative(readSaturnEA(r14));
+        m54_currentResult = gCurrentFieldOverlay->executeNative(readSaturnEA(r14));
         break;
     case 1:
-        m54_currentResult = executeNative(readSaturnEA(r14), readSaturnS32(r14 + 4));
+        m54_currentResult = gCurrentFieldOverlay->executeNative(readSaturnEA(r14), readSaturnS32(r14 + 4));
         break;
     default:
         assert(0);
@@ -5978,6 +5570,7 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     gFieldCameraConfigEA = { 0x6092EF0, gFLD_A3 };
     gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
     gFieldCameraDrawFunc = &fieldOverlaySubTaskInitSub2;
+    gCurrentFieldOverlay = gFLD_A3;
 
     if (!initField(workArea, fieldFileList, arg))
     {

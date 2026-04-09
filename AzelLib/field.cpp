@@ -6,6 +6,7 @@
 #include "processModel.h"
 
 s_fieldTaskWorkArea* fieldTaskPtr = NULL;
+sFieldOverlay* gCurrentFieldOverlay = nullptr;
 
 u8 fieldMainBuffer[0x68000];
 
@@ -393,6 +394,86 @@ void callGridCellDraw_normalSub2(s_fileBundle* r4, s32 r5)
     gridCellDraw_normalSub2(r4, r5, 0x10000);
 }
 
+// --- Shared field script/cutscene queries ---
+
+bool isNoCutsceneActive()
+{
+    return getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask == nullptr;
+}
+
+s32 isScriptActive()
+{
+    s_fieldScriptWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    if (p->m4_currentScript.m_offset == 0 && p->m30_cinematicBarTask == nullptr && p->m34 == 0
+        && p->m38_dialogStringTask == nullptr && p->m3C_multichoiceTask == nullptr && p->m40_receivedItemTask == nullptr)
+        return 0;
+    return 1;
+}
+
+void enableFieldScriptSkipping()
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m64 = 1;
+}
+
+// --- Shared dragon getters ---
+
+void getDragonPosition(sVec3_FP* pOut)
+{
+    s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    pOut->m0_X = p->m8_pos.m0_X;
+    pOut->m4_Y = p->m8_pos.m4_Y;
+    pOut->m8_Z = p->m8_pos.m8_Z;
+}
+
+void getDragonAngle(sVec3_FP* pOut)
+{
+    s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    pOut->m0_X = p->m20_angle.m0_X;
+    pOut->m4_Y = p->m20_angle.m4_Y;
+    pOut->m8_Z = p->m20_angle.m8_Z;
+}
+
+void triggerSubfieldChange(s32 destSubfield, s16 param)
+{
+    enableFieldScriptSkipping();
+    exitCutsceneTaskUpdateSub0Sub1(getFieldTaskPtr()->m2C_currentFieldIndex, destSubfield, 0, param);
+}
+
+// --- Shared grid/visibility helpers ---
+
+p_workArea findGridParentForEntity(sSaturnPtr pData)
+{
+    // Simplified: use grid work area as fallback parent
+    return (p_workArea)getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+}
+
+bool isPointOnScreen(sVec3_FP* pViewPos, s32 maxDepth)
+{
+    if (pViewPos->m8_Z.asS32() < 0 || pViewPos->m8_Z.asS32() > maxDepth)
+    {
+        return false;
+    }
+    s16 projParamX, projParamY;
+    getVdp1ProjectionParams(&projParamX, &projParamY);
+    s32 screenX = setDividend(projParamX, pViewPos->m0_X.asS32(), pViewPos->m8_Z.asS32());
+    s32 absX = (s16)screenX < 0 ? -(s16)screenX : (s16)screenX;
+    if (absX >= 0xC1)
+    {
+        return false;
+    }
+    s32 screenY = setDividend(projParamY, pViewPos->m4_Y.asS32(), pViewPos->m8_Z.asS32());
+    s32 absY = (s16)screenY < 0 ? -(s16)screenY : (s16)screenY;
+    return absY < 0x81;
+}
+
+bool isWorldPositionOnScreen(sSaturnPtr posEA)
+{
+    sVec3_FP worldPos = readSaturnVec3(posEA);
+    sVec3_FP viewPos;
+    transformAndAddVecByCurrentMatrix(&worldPos, &viewPos);
+    return isPointOnScreen(&viewPos, graphicEngineStatus.m405C.m14_farClipDistance);
+}
+
 s_RGB8 readSaturnRGB8(const sSaturnPtr& ptr)
 {
     s_RGB8 newValue;
@@ -401,4 +482,48 @@ s_RGB8 readSaturnRGB8(const sSaturnPtr& ptr)
     newValue.m2 = readSaturnU8(ptr + 2);
 
     return newValue;
+}
+
+void createCellObjects(s_visdibilityCellTask* r4, std::vector<s_DataTable2Sub0>& r5, s32 r6)
+{
+    assert(gCurrentFieldOverlay);
+    for (int i = 0; i < r5.size(); i++)
+    {
+        gCurrentFieldOverlay->dispatchCellObjectCreation(r4, r5[i], r6);
+    }
+}
+
+void setupFieldWithCellObjects(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea))
+{
+    s_visibilityGridWorkArea* pFieldCameraTask1 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+
+    setupField2(r4, r6);
+
+    if (r5)
+    {
+        s_visdibilityCellTask** r12 = pFieldCameraTask1->m3C_cellRenderingTasks;
+        if (r12)
+        {
+            s32 r11 = r5->m8.m0 * r5->m8.m4;
+            std::vector<std::vector<s_DataTable2Sub0>>::iterator r14 = r5->m0.begin();
+
+            do
+            {
+                if (r14->size())
+                {
+                    createCellObjects(*r12, *r14, r5->m4);
+                }
+
+                r14++;
+                r12++;
+            } while (--r11);
+        }
+    }
+}
+
+void setupField(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r7)
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1->m34_cameraVisibilityTable = r7;
+
+    setupFieldWithCellObjects(r4, r5, r6);
 }

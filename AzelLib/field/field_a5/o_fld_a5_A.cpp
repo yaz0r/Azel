@@ -3,7 +3,17 @@
 #include "field/field_a3/o_fld_a3.h"
 #include "audio/soundDriver.h"
 
-static void fieldA5_A_startTasks(p_workArea workArea) { Unimplemented(); }
+// 0605aad2
+static void fieldA5_A_startTasks(p_workArea workArea)
+{
+    createFieldSpecificDataTask_A5(workArea);
+    createA5_corridorWorm_A(workArea);
+    createA5_envObject_A();
+    createA5_wormObjectTask(workArea);
+    createA5_exitEntityTask(workArea);
+    static s32 exitParams[] = { 0xE6000, (s32)0xFFFCE000 };
+    setFieldExitConfig_A5(3, exitParams);
+}
 
 // 06054C68
 void subfieldA5_A(p_workArea workArea)

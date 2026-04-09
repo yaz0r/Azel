@@ -66,6 +66,7 @@ p_workArea overlayStart_FLD_D5(p_workArea workArea, u32 arg)
     gFieldCameraConfigEA = { 0x6092EF0, gFLD_A3 };
     gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
     gFieldCameraDrawFunc = &fieldOverlaySubTaskInitSub2;
+    gCurrentFieldOverlay = gFLD_A3;
 
     loadSoundBanks(0x35, 0);
     playPCM(workArea, 100);

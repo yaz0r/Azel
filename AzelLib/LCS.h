@@ -207,6 +207,7 @@ struct s_LCSTask : public s_workAreaTemplate<s_LCSTask>
     s_LCSTask_14* m9C8;
     s_LCSTask_14* m9CC;
     s32 m9D0_mode;
+    void(*m9D4_customDrawFunc)();
 
     enum : s8 {
         LCSPhase_0_init = 0,

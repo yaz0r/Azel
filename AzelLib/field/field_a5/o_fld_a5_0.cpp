@@ -4,7 +4,23 @@
 #include "field/fieldRadar.h"
 #include "audio/soundDriver.h"
 
-static void fieldA5_0_startTasks(p_workArea workArea) { Unimplemented(); }
+// 0605a6c8
+static void fieldA5_0_startTasks(p_workArea workArea)
+{
+    createFieldSpecificDataTask_A5(workArea);
+    createA5_3dSceneManager(workArea);
+    createA5_envObjects_sub0(workArea);
+    createA5_proximityAlert_day(workArea);
+    createA5_wormSegments_day(workArea);
+    // 0605971c — empty
+    createA5_wormObjectTask(workArea);
+    createA5_wormDustTask(workArea);
+    createA5_exitEntityTask(workArea);
+    createA5_envObjects_sub0_exits(workArea);
+    createA5_decorObjects_day();
+    createA5_fieldEventCheck(workArea);
+    createA5_encounterConfig(workArea, 2, 0x4B0, 0x081F, 0x200, 0xA0, 0x40, 0x1F);
+}
 
 // 060543A2
 void subfieldA5_0(p_workArea workArea)
@@ -20,7 +36,7 @@ void subfieldA5_0(p_workArea workArea)
     {
     case 1: getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x0608974C)); break;
     case 5: getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x06089780)); break;
-    case 10: Unimplemented(); break; // startCutscene
+    case 10: startCutscene(loadCutsceneData(gFLD_A5->getSaturnPtr(0x06098814))); break;
     default: getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x06089718)); break;
     }
     initFieldDragonLight();
@@ -28,6 +44,6 @@ void subfieldA5_0(p_workArea workArea)
     fieldRadar_enableAltitudeGauge();
     initDragonParams_A5_open();
     createA5Vdp2Task(workArea);
-    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
-    Unimplemented(); // random battle init 0x16
+    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = (void(*)())&postBattleSound_A5_day;
+    fieldRadar_initRandomBattle(0x16);
 }

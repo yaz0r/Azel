@@ -2,13 +2,13 @@
 
 #include "kernel/vdp1AnimatedQuad.h"
 
-struct FLD_A3_data : public sSaturnMemoryFile
+struct FLD_A3_data : public sFieldOverlay
 {
     void init();
 
     std::vector<s_scriptData1> m6083244;
 
-    FLD_A3_data() : sSaturnMemoryFile("FLD_A3.PRG")
+    FLD_A3_data() : sFieldOverlay("FLD_A3.PRG")
     {
         m_0x0609518C_animatedQuad = initVdp1Quad(getSaturnPtr(0x0609518C));
         m_0x06095330_animatedQuad = initVdp1Quad(getSaturnPtr(0x06095330));
@@ -32,6 +32,10 @@ struct FLD_A3_data : public sSaturnMemoryFile
     std::vector<sVdp1Quad> m_waterfallSplashQuadB; // 0x060829a0
     std::vector<sVdp1Quad> m_waterfallDropletQuad; // 0x06082674
     std::vector<sVdp1Quad> m_mineCartDustQuad;     // 0x06092734
+
+    void dispatchCellObjectCreation(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6) override;
+    s32 executeNative(sSaturnPtr ptr) override;
+    s32 executeNative(sSaturnPtr ptr, s32 arg0) override;
 };
 
 extern FLD_A3_data* gFLD_A3;
@@ -67,7 +71,6 @@ void LCSTaskDrawSub1Sub4();
 s_DataTable3* readDataTable3(sSaturnPtr EA);
 std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3);
 s_DataTable2* readDataTable2(sSaturnPtr EA);
-void setupField(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workArea), std::vector<std::vector<sCameraVisibility>>* r7);
 void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea));
 void setupDragonPosition(const sVec3_FP* r4, const sVec3_FP* r5);
 
@@ -78,6 +81,10 @@ void fieldRadar_initDestinations(s32 scriptIndex);
 s_cutsceneData* loadCutsceneData(sSaturnPtr EA);
 void loadScriptData1(std::vector<s_scriptData1>& output, const sSaturnPtr& EA);
 void startCutscene(s_cutsceneData* r4);
+void startCutsceneCameraTracking(sVec3_FP* r4, sVec3_FP* r5);
+void cutsceneTaskInitSub2Sub2(s_workArea* r4);
+void endCutsceneCameraWithRestore();
+void endCutsceneCameraNoRestore();
 void createFieldPaletteTask(p_workArea parent);
 void adjustVerticalLimits(fixedPoint r4, fixedPoint r5);
 void adjustHorizontalLimits(fixedPoint minX, fixedPoint maxX, fixedPoint minZ, fixedPoint maxZ);

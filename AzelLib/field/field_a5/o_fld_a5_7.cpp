@@ -4,7 +4,22 @@
 #include "field/fieldRadar.h"
 #include "audio/soundDriver.h"
 
-static void fieldA5_7_startTasks(p_workArea workArea) { Unimplemented(); }
+// 0605a9ac
+static void fieldA5_7_startTasks(p_workArea workArea)
+{
+    createFieldSpecificDataTask_A5(workArea);
+    createA5_3dSceneManager(workArea);
+    createA5_proximityAlert_day(workArea);
+    createA5_wormSegments_day(workArea);
+    // 0605971c — empty
+    createA5_wormObjectTask(workArea);
+    createA5_wormDustTask(workArea);
+    createA5_exitEntityTask(workArea);
+    Unimplemented(); // FUN_FLD_A5__060569ac — exit trigger entity via FUN_06056870 with {5,4,0x160,0xC0,8,0x164,0xC4}
+    createA5_decorObjects_day();
+    createA5_fieldEventCheck(workArea);
+    createA5_encounterConfig(workArea, 5, 0, 0x081F, 0x200, 0xA0, 0x40, 0x1F);
+}
 
 // 06054964
 void subfieldA5_7(p_workArea workArea)
@@ -20,14 +35,14 @@ void subfieldA5_7(p_workArea workArea)
     {
     case 1: getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x0608974C)); break;
     case 5: getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x06089780)); break;
-    case 10: Unimplemented(); break; // startCutscene
+    case 10: startCutscene(loadCutsceneData(gFLD_A5->getSaturnPtr(0x06098814))); break;
     default: getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x06089718)); break;
     }
     initFieldDragonLight();
     adjustVerticalLimits(0x5000, 0x82000);
     fieldRadar_enableAltitudeGauge();
-    initDragonParams_A5_open();
-    createA5Vdp2Task(workArea);
-    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
-    Unimplemented(); // random battle init 0x16
+    initDragonParams_A5_B();
+    createA5NightVdp2Task(workArea);
+    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = (void(*)())&postBattleSound_A5_day;
+    fieldRadar_initRandomBattle(0x16);
 }

@@ -286,7 +286,7 @@ static void sCleansingWaveTask_Update(sCleansingWaveTask* pThis)
         u32 poseFileOffset = pBundle->getRawFileOffset(0x4C);
         s32 initResult = init3DModelRawData(pThis, &pThis->mC_model, 0, pBundle, 4,
             pBundle->getAnimation(0x50),
-            pBundle->getStaticPose(poseFileOffset, 0),
+            pBundle->getStaticPose(poseFileOffset, pBundle->getModelHierarchy(4)->countNumberOfBones()),
             nullptr, nullptr);
         if (initResult == 0)
         {

@@ -590,6 +590,7 @@ p_workArea overlayStart_FLD_D3(p_workArea workArea, u32 arg)
     gFieldCameraConfigEA = gFLD_D3->getSaturnPtr(0x0607AEBC);
     gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
     gFieldCameraDrawFunc = &fieldOverlaySubTaskInitSub2;
+    gCurrentFieldOverlay = gFLD_A3;
 
     if (!initField(workArea, fieldFileList_D3, arg))
     {

@@ -2,6 +2,7 @@
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
 #include "a3_2_crashedImperialShip.h"
+#include "field/fieldCutsceneTask2.h"
 #include "items.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "field/fieldDebrisScatter.h"
