@@ -408,11 +408,11 @@ static s32 seekBgMode1ComputeGroundY() {
 // 06028986
 static void setVdp2ScrollPosition(s32 scrollX, s32 scrollY) {
     s_VDP2Regs* regs = vdp2Controls.m4_pendingVdp2Regs;
-    if (pauseEngine[4] == 0) {
+    if (gCurrentVDP2ScrollLayer == 0) {
         regs->m70_SCXN0 = scrollX;
         regs->m74_SCYN0 = scrollY;
     }
-    else if (pauseEngine[4] == 1) {
+    else if (gCurrentVDP2ScrollLayer == 1) {
         regs->m80_SCXN1 = scrollX;
         regs->m84_SCYN1 = scrollY;
     }
@@ -485,9 +485,9 @@ static void seekBgMode1_Draw(sSeekVdp2Plane* pThis) {
     } else {
         nbg0ScrollY = pThis->m34_groundY * -0x10000;
     }
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     setVdp2ScrollPosition(pThis->m0_scrollX, nbg0ScrollY - 0x10000);
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
 }
 
 // 0600cddc

@@ -491,13 +491,13 @@ static void d3VdpDraw(sVdp2PlaneTask* pThis)
         pThis->m34_scrollValue);
 
     // NBG0 scroll from field-specific data
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     s_fieldSpecificData_D3* pFieldBg = (s_fieldSpecificData_D3*)getFieldTaskPtr()->mC;
     if (pFieldBg)
     {
         setupVDP2CoordinatesIncrement2(pFieldBg->mBC_scrollX, pFieldBg->mC0_scrollAddX + pFieldBg->mC4_scrollAddY);
     }
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
 
     auto* regs = vdp2Controls.m4_pendingVdp2Regs;
     regs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;

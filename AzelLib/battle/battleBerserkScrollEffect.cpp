@@ -294,10 +294,10 @@ static void battleBerserkScrollEffect_draw(sBattleBerserkScrollTask* pThis)
     pThis->m10_scrollY = (s32)MTH_Mul(fixedPoint(tempScrollY), fixedPoint(pThis->m18_scaleY));
 
     // Apply to VDP2 scroll registers
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     updateVDP2CoordinatesIncrement(pThis->m14_scaleX, pThis->m18_scaleY);
     setupVDP2CoordinatesIncrement2(pThis->mC_scrollX, pThis->m10_scrollY);
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
 }
 
 static const sBattleBerserkScrollTask::TypedTaskDefinition battleBerserkScrollTaskDefinition = {

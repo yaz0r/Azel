@@ -724,12 +724,12 @@ struct sFieldA3_2_waterEffect : public s_workAreaTemplate<sFieldA3_2_waterEffect
         }
 
         // VDP2 scroll update
-        pauseEngine[4] = 0;
+        gCurrentVDP2ScrollLayer = 0;
         s_visibilityGridWorkArea* pFieldCamera = fieldTaskPtr->m8_pSubFieldData->m348_pFieldCameraTask1;
         setupVDP2CoordinatesIncrement2(
             pDragon->m8_pos[2] << 4,
             (0x2AA - *(s32*)((u8*)pFieldCamera + 0x34)) * 0x10000);
-        pauseEngine[4] = 4;
+        gCurrentVDP2ScrollLayer = 4;
     }
 
     s8 m4_state = 0;

@@ -528,9 +528,9 @@ void s_nameEntryUITask::Draw(s_nameEntryUITask* pThis)
         break;
     }
 
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(scrollX, scrollY);
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
 }
 
 // 060236be

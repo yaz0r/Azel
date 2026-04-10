@@ -355,7 +355,7 @@ void setupMovieVdp2()
     vdp2Controls.m_isDirty = 1;
     setupNBG0(g_movieNBG0Config);
     setNBG0MapOffset(0, 0x25E00000);
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     if ((VDP2Regs_.m4_TVSTAT & 1) == 0)
     {
         setupVDP2CoordinatesIncrement2(0, 0x100000);
@@ -365,7 +365,7 @@ void setupMovieVdp2()
         setupVDP2CoordinatesIncrement2(0, 0x200000);
         updateVDP2CoordinatesIncrement(0x10000, 0xE000);
     }
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
     vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA = 0x0707;
     vdp2Controls.m4_pendingVdp2Regs->mF2_PRISB = 0x0707;
     vdp2Controls.m4_pendingVdp2Regs->mF4_PRISC = 0x0707;

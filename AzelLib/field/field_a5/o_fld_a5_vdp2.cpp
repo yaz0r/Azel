@@ -316,9 +316,9 @@ static void a5VdpDraw(sVdp2PlaneTask* pThis)
     {
         nbg0ScrollY = pThis->m34_scrollValue * -0x10000;
     }
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(pThis->m0_scrollX, nbg0ScrollY);
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
 
     auto* regs = vdp2Controls.m4_pendingVdp2Regs;
     regs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;
@@ -575,9 +575,9 @@ static void a5NightVdpDraw(sVdp2PlaneTask* pThis)
     {
         nbg0ScrollY = (pThis->m34_scrollValue + 0x100) * -0x10000;
     }
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(pThis->m0_scrollX, nbg0ScrollY);
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
 
     auto* regs = vdp2Controls.m4_pendingVdp2Regs;
     regs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;

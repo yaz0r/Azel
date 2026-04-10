@@ -144,15 +144,13 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
         return vec4(R, G, B, 1.0);
     }
 
-    if (outputX < 0)
-        return vec4(1,0,0,1);
-    if (outputY < 0)
-        return vec4(1,0,0,1);
+    outputX = ((outputX % mapDotWidth) + mapDotWidth) % mapDotWidth;
+    outputY = ((outputY % mapDotHeight) + mapDotHeight) % mapDotHeight;
 
     int planeX = outputX / planeDotWidth;
     int planeY = outputY / planeDotHeight;
     int dotInPlaneX = outputX % planeDotWidth;
-    int dotInPlaneY = outputY % planeDotWidth;
+    int dotInPlaneY = outputY % planeDotHeight;
 
     int pageX = dotInPlaneX / pageDotDimension;
     int pageY = dotInPlaneY / pageDotDimension;

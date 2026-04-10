@@ -268,7 +268,8 @@ extern sFileInfo fileInfoStruct;
 
 extern bool debugEnabled;
 extern int enableDebugTask;
-extern u8 pauseEngine[8];
+extern std::array<u8, 3> pauseEngine;
+extern u8 gCurrentVDP2ScrollLayer;
 extern u32 azelCdNumber;
 
 void WRITE_BE_U16(const void* ptr, u16 value);

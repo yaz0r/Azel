@@ -136,17 +136,17 @@ void loadTitleScreenGraphics()
 
     if (VDP2Regs_.m4_TVSTAT & 1)
     {
-        pauseEngine[4] = 0;
+        gCurrentVDP2ScrollLayer = 0;
         updateVDP2CoordinatesIncrement(0x10000, 0xE000);
-        pauseEngine[4] = 2;
+        gCurrentVDP2ScrollLayer = 2;
     }
 
     setupNBG1(titleNBG1Setup);
     initLayerMap(1, vdp2TextMemoryOffset, vdp2TextMemoryOffset, vdp2TextMemoryOffset, vdp2TextMemoryOffset);
 
-    pauseEngine[4] = 1;
+    gCurrentVDP2ScrollLayer = 1;
     updateVDP2CoordinatesIncrement(0x8000, 0x8000);
-    pauseEngine[4] = 2;
+    gCurrentVDP2ScrollLayer = 2;
 }
 
 void s_titleOverlayWorkArea::titleOverlay_Update(s_titleOverlayWorkArea* pWorkArea)

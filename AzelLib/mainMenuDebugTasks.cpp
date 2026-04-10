@@ -2980,19 +2980,19 @@ void scrollMenu()
         }
     }
 
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(graphicEngineStatus.m40BC_layersConfig[0].scrollX << 16, graphicEngineStatus.m40BC_layersConfig[0].scrollY << 16);
 
-    pauseEngine[4] = 1;
+    gCurrentVDP2ScrollLayer = 1;
     setupVDP2CoordinatesIncrement2(graphicEngineStatus.m40BC_layersConfig[1].scrollX << 16, graphicEngineStatus.m40BC_layersConfig[1].scrollY << 16);
 
-    pauseEngine[4] = 2;
+    gCurrentVDP2ScrollLayer = 2;
     setupVDP2CoordinatesIncrement2(graphicEngineStatus.m40BC_layersConfig[2].scrollX, graphicEngineStatus.m40BC_layersConfig[2].scrollY);
 
-    pauseEngine[4] = 3;
+    gCurrentVDP2ScrollLayer = 3;
     setupVDP2CoordinatesIncrement2(graphicEngineStatus.m40BC_layersConfig[3].scrollX, graphicEngineStatus.m40BC_layersConfig[3].scrollY);
 
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
 }
 
 void menuGraphicsTaskDrawSub3()

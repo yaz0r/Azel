@@ -379,11 +379,11 @@ static const char* listOfFilesToLoad[] = {
 // 06028986
 static void setVdp2ScrollPosition(s32 scrollX, s32 scrollY) {
     s_VDP2Regs* regs = vdp2Controls.m4_pendingVdp2Regs;
-    if (pauseEngine[4] == 0) {
+    if (gCurrentVDP2ScrollLayer == 0) {
         regs->m70_SCXN0 = scrollX;
         regs->m74_SCYN0 = scrollY;
     }
-    else if (pauseEngine[4] == 1) {
+    else if (gCurrentVDP2ScrollLayer == 1) {
         regs->m80_SCXN1 = scrollX;
         regs->m84_SCYN1 = scrollY;
     }
@@ -580,11 +580,11 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
         setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
         commitRotationPass();
 
-        pauseEngine[4] = 0;
+        gCurrentVDP2ScrollLayer = 0;
         setVdp2ScrollPosition(0, 0);
 
         s_VDP2Regs* regs = vdp2Controls.m4_pendingVdp2Regs;
-        pauseEngine[4] = 4;
+        gCurrentVDP2ScrollLayer = 4;
         regs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;
         regs->mC2_WPSY0 = pThis->m24_vdp1Clipping[1];
         regs->mC4_WPEX0 = pThis->m24_vdp1Clipping[2] << 1;

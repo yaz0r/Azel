@@ -1117,21 +1117,21 @@ void reinitVdp2()
     setFontDefaultColors();
 }
 
-void updateVDP2CoordinatesIncrement(u32 unk0, u32 unk1)
+void updateVDP2CoordinatesIncrement(u32 X, u32 Y)
 {
-    switch (pauseEngine[4])
+    switch (gCurrentVDP2ScrollLayer)
     {
     case 0:
-        vdp2Controls.m20_registers[0].m78_ZMXN0 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->m78_ZMXN0 = unk0;
-        vdp2Controls.m20_registers[0].m7C_ZMYN0 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->m7C_ZMYN0 = unk1;
+        vdp2Controls.m20_registers[0].m78_ZMXN0 = X;
+        vdp2Controls.m4_pendingVdp2Regs->m78_ZMXN0 = X;
+        vdp2Controls.m20_registers[0].m7C_ZMYN0 = Y;
+        vdp2Controls.m4_pendingVdp2Regs->m7C_ZMYN0 = Y;
         break;
     case 1:
-        vdp2Controls.m20_registers[0].m88_ZMXN1 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->m88_ZMXN1 = unk0;
-        vdp2Controls.m20_registers[0].m8C_ZMYN1 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->m8C_ZMYN1 = unk1;
+        vdp2Controls.m20_registers[0].m88_ZMXN1 = X;
+        vdp2Controls.m4_pendingVdp2Regs->m88_ZMXN1 = X;
+        vdp2Controls.m20_registers[0].m8C_ZMYN1 = Y;
+        vdp2Controls.m4_pendingVdp2Regs->m8C_ZMYN1 = Y;
         break;
     default:
         assert(0);
@@ -1139,33 +1139,33 @@ void updateVDP2CoordinatesIncrement(u32 unk0, u32 unk1)
     }
 }
 
-void setupVDP2CoordinatesIncrement2(u32 unk0, u32 unk1)
+void setupVDP2CoordinatesIncrement2(u32 X, u32 Y)
 {
-    switch (pauseEngine[4])
+    switch (gCurrentVDP2ScrollLayer)
     {
     case 0:
-        vdp2Controls.m20_registers[0].m70_SCXN0 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->m70_SCXN0 = unk0;
-        vdp2Controls.m20_registers[0].m74_SCYN0 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->m74_SCYN0 = unk1;
+        vdp2Controls.m20_registers[0].m70_SCXN0 = X;
+        vdp2Controls.m4_pendingVdp2Regs->m70_SCXN0 = X;
+        vdp2Controls.m20_registers[0].m74_SCYN0 = Y;
+        vdp2Controls.m4_pendingVdp2Regs->m74_SCYN0 = Y;
         break;
     case 1:
-        vdp2Controls.m20_registers[0].m80_SCXN1 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->m80_SCXN1 = unk0;
-        vdp2Controls.m20_registers[0].m84_SCYN1 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->m84_SCYN1 = unk1;
+        vdp2Controls.m20_registers[0].m80_SCXN1 = X;
+        vdp2Controls.m4_pendingVdp2Regs->m80_SCXN1 = X;
+        vdp2Controls.m20_registers[0].m84_SCYN1 = Y;
+        vdp2Controls.m4_pendingVdp2Regs->m84_SCYN1 = Y;
         break;
     case 2:
-        vdp2Controls.m20_registers[0].m90_SCXN2 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->m90_SCXN2 = unk0;
-        vdp2Controls.m20_registers[0].m92_SCYN2 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->m92_SCYN2 = unk1;
+        vdp2Controls.m20_registers[0].m90_SCXN2 = X;
+        vdp2Controls.m4_pendingVdp2Regs->m90_SCXN2 = X;
+        vdp2Controls.m20_registers[0].m92_SCYN2 = Y;
+        vdp2Controls.m4_pendingVdp2Regs->m92_SCYN2 = Y;
         break;
     case 3:
-        vdp2Controls.m20_registers[0].m94_SCXN3 = unk0;
-        vdp2Controls.m4_pendingVdp2Regs->m94_SCXN3 = unk0;
-        vdp2Controls.m20_registers[0].m96_SCYN3 = unk1;
-        vdp2Controls.m4_pendingVdp2Regs->m96_SCYN3 = unk1;
+        vdp2Controls.m20_registers[0].m94_SCXN3 = X;
+        vdp2Controls.m4_pendingVdp2Regs->m94_SCXN3 = X;
+        vdp2Controls.m20_registers[0].m96_SCYN3 = Y;
+        vdp2Controls.m4_pendingVdp2Regs->m96_SCYN3 = Y;
         break;
     default:
         assert(0);

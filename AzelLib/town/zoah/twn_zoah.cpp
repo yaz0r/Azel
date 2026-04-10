@@ -1373,9 +1373,9 @@ void sZoahVdp2Plane::Init(sZoahVdp2Plane* pThis)
 
     regs->mB8_OVPNRA = 0x6000;
 
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(0, 0);
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
 
     regs->m20_BGON = regs->m20_BGON & 0xfffe;
     vdp2Controls.m_isDirty = 1;

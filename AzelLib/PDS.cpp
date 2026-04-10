@@ -35,7 +35,8 @@ bool debugEnabled = false; // watchdog bit 1
 
 int enableDebugTask;
 
-u8 pauseEngine[8];
+std::array<u8, 3> pauseEngine;
+u8 gCurrentVDP2ScrollLayer = -1;
 
 u32 azelCdNumber = 0;
 

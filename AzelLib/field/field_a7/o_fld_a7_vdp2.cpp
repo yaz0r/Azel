@@ -246,10 +246,10 @@ static void drawVdp2_A7_0(sVdp2PlaneTask* pThis)
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(pThis->m0_scrollX, 0);
     s_VDP2Regs* pRegs = vdp2Controls.m4_pendingVdp2Regs;
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
     pRegs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;
     pRegs->mC2_WPSY0 = pThis->m24_vdp1Clipping[1];
     pRegs->mC4_WPEX0 = pThis->m24_vdp1Clipping[2] << 1;
@@ -625,10 +625,10 @@ static void drawVdp2_A7_1(sVdp2PlaneTask* pThis)
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(pThis->m0_scrollX, 0);
     s_VDP2Regs* pRegs = vdp2Controls.m4_pendingVdp2Regs;
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
     pRegs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;
     pRegs->mC2_WPSY0 = pThis->m24_vdp1Clipping[1];
     pRegs->mC4_WPEX0 = pThis->m24_vdp1Clipping[2] << 1;

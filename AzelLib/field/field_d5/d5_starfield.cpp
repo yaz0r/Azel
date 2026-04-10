@@ -376,9 +376,9 @@ void s_d5StarfieldTask::Draw(s_d5StarfieldTask* pThis)
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
     if (pFieldTask->m2C_currentFieldIndex != 0)
     {
-        pauseEngine[4] = 0;
+        gCurrentVDP2ScrollLayer = 0;
         updateVDP2CoordinatesIncrement(0x10000, 0x12492);
-        pauseEngine[4] = 4;
+        gCurrentVDP2ScrollLayer = 4;
     }
 
     fixedPoint focalLength = intDivide((s32)pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1));

@@ -478,9 +478,9 @@ void loadWarningFile(u32 index)
 
     if (VDP2Regs_.m4_TVSTAT & 1)
     {
-        pauseEngine[4] = 0;
+        gCurrentVDP2ScrollLayer = 0;
         setupVDP2CoordinatesIncrement2(0x0, 0x100000);
-        pauseEngine[4] = 4;
+        gCurrentVDP2ScrollLayer = 4;
     }
 }
 

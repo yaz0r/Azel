@@ -919,9 +919,9 @@ void BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)
     setRotationScrollOffset(scrollX, scrollY);
     commitRotationPass();
 
-    pauseEngine[4] = 0;
+    gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(scrollX, 0);
-    pauseEngine[4] = 4;
+    gCurrentVDP2ScrollLayer = 4;
 
     auto* regs = vdp2Controls.m4_pendingVdp2Regs;
     regs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;
