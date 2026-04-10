@@ -1203,8 +1203,9 @@ static void renderLayerCPU_RBG0(
             else
                 color = sampleTileAtCoordinate((u32)mapX, (u32)mapY, *pLayerDataB, dB);
 
-            if (color)
+            if (color) {
                 textureOutput[j * textureWidth + i] = color;
+            }
         }
 
         xmul_A += deltaXst_A;

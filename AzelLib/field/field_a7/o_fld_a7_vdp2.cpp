@@ -30,17 +30,32 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
     asyncDmaCopy(gFLD_A7->getSaturnPtr(0x06084e94), getVdp2Cram(0x180), 0x80, 0);
 
     static const sLayerConfig nbg0Setup[] = {
-        {m2_CHCN, 0}, {m5_CHSZ, 1}, {m6_PNB, 1}, {m7_CNSM, 0},
-        {m34_W0E, 1}, {m37_W0A, 1}, {m44_CCEN, 1}, {m10_SPN, 4},
-        {m22_N0LSCX, 1}, {m21_LCSY, 1}, {m20_N0LSS, 1},
+        {m2_CHCN, 0},
+        {m5_CHSZ, 1},
+        {m6_PNB, 1},
+        {m7_CNSM, 0},
+        {m34_W0E, 1},
+        {m37_W0A, 1},
+        {m44_CCEN, 1},
+        {m10_SPN, 4},
+        {m22_N0LSCX, 1},
+        {m21_LCSY, 1},
+        {m20_N0LSS, 1},
         {m0_END},
     };
     setupNBG0(nbg0Setup);
 
     static const sLayerConfig rgbSetup[] = {
-        {m2_CHCN, 1}, {m5_CHSZ, 1}, {m6_PNB, 1}, {m7_CNSM, 0},
-        {m27_RPMD, 2}, {m11_SCN, 8}, {m34_W0E, 1}, {m37_W0A, 1},
-        {m44_CCEN, 1}, {m45_COEN, 0},
+        {m2_CHCN, 1},
+        {m5_CHSZ, 1},
+        {m6_PNB, 1},
+        {m7_CNSM, 0},
+        {m27_RPMD, 2},
+        {m11_SCN, 8},
+        {m34_W0E, 1},
+        {m37_W0A, 1},
+        {m44_CCEN, 1},
+        {m45_COEN, 0},
         {m0_END},
     };
     setupRGB0(rgbSetup);
@@ -96,7 +111,7 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
     };
     applyLayerDisplayConfig(layerDisplay);
 
-    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF;
+    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF; // Clear CCMD (use color calculation register value)
 
     vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xF8FF) | 0x400;
     vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xFFF0) | 3;
@@ -140,11 +155,6 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
         scrollAccum += 0x10000;
     }
 }
-
-// 06057c22 — identical to shared vdp2SetupRotationPass
-
-
-// 06057420 — moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
 
 // 06014274 — update line scroll table with wave distortion
 static void updateLineScrollTable(sVdp2PlaneTask* pThis)
@@ -714,7 +724,7 @@ static void initVdp2_A7_2(sVdp2PlaneTask* pThis)
     };
     applyLayerDisplayConfig(layerDisplay);
 
-    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF | 0x100;
+    vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF | 0x100; // CCMD to 1, don't do color calculation
 
     vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xF8FF) | 0x400;
     vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL = (vdp2Controls.m4_pendingVdp2Regs->mE0_SPCTL & 0xFFF0) | 3;

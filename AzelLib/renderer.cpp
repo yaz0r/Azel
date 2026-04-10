@@ -1167,6 +1167,8 @@ void renderComposite(bgfx::ViewId outputView, u16 backScreenColor)
     static bgfx::UniformHandle s_nbg3 = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle s_rbg0 = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle u_vdp2Regs0 = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle u_vdp2Regs1 = BGFX_INVALID_HANDLE;
+    static bgfx::UniformHandle u_vdp2Regs2 = BGFX_INVALID_HANDLE;
     static bgfx::UniformHandle u_backColor = BGFX_INVALID_HANDLE;
     static bgfx::VertexLayout ms_layout;
 
@@ -1202,6 +1204,8 @@ void renderComposite(bgfx::ViewId outputView, u16 backScreenColor)
         s_nbg3 = bgfx::createUniform("s_nbg3", bgfx::UniformType::Sampler);
         s_rbg0 = bgfx::createUniform("s_rbg0", bgfx::UniformType::Sampler);
         u_vdp2Regs0 = bgfx::createUniform("u_vdp2Regs0", bgfx::UniformType::Vec4);
+        u_vdp2Regs1 = bgfx::createUniform("u_vdp2Regs1", bgfx::UniformType::Vec4);
+        u_vdp2Regs2 = bgfx::createUniform("u_vdp2Regs2", bgfx::UniformType::Vec4);
         u_backColor = bgfx::createUniform("u_backColor", bgfx::UniformType::Vec4);
 
         initialized = true;
@@ -1218,6 +1222,25 @@ void renderComposite(bgfx::ViewId outputView, u16 backScreenColor)
         (float)vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR,
     };
     bgfx::setUniform(u_vdp2Regs0, regs0);
+
+    // VDP2 color calculation registers: CCCTL, CCRNA, SFCCMD, SFCODE
+    // CCRNA/SFCODE are written per-frame to m20_registers by update tasks
+    float regs1[4] = {
+        (float)vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL,
+        (float)vdp2Controls.m20_registers[0].m108_CCRNA,
+        (float)vdp2Controls.m4_pendingVdp2Regs->mEE_SFCCMD,
+        (float)vdp2Controls.m20_registers[0].m26_SFCODE,
+    };
+    bgfx::setUniform(u_vdp2Regs1, regs1);
+
+    // VDP2 color calculation registers: CCRNB
+    float regs2[4] = {
+        (float)vdp2Controls.m20_registers[0].m10A_CCRNB,
+        (float)vdp2Controls.m20_registers[0].m10C_CCRR,
+        0.0f,
+        0.0f,
+    };
+    bgfx::setUniform(u_vdp2Regs2, regs2);
 
     // Back screen color (Saturn RGB555)
     float backColor[4] = {
