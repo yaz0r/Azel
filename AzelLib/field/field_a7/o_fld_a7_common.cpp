@@ -8,6 +8,14 @@
 #include "field/fieldCutsceneTask2.h"
 #include "audio/systemSounds.h"
 #include "trigo.h"
+#include "a7_effectEntity60.h"
+#include "a7_sceneParticle.h"
+#include "a7_envEntity54Particles.h"
+#include "a7_beam.h"
+#include "a7_spawnedEntityChild.h"
+#include "a7_envEntity2C.h"
+#include "kernel/vdp1AnimatedQuad.h"
+#include <vector>
 
 s32 playBattleSoundEffect(s32 effectIndex);
 
@@ -179,45 +187,6 @@ void createA7_simpleSubtask(p_workArea parent)
     }
 }
 
-// Sound emitter task struct (size 0xF0, init-only)
-struct sA7SoundEmitter : public s_workAreaTemplateWithArg<sA7SoundEmitter, sSaturnPtr>
-{
-    u8 m0_data[0xF0];
-    // size 0xF0
-};
-
-// 0607AD10
-static void a7SoundEmitter_Init(sA7SoundEmitter* pThis, sSaturnPtr arg) { Unimplemented(); }
-
-// 0606fd64 — find grid cell parent task for position
-static p_workArea a7FindGridParent(sSaturnPtr pSoundData)
-{
-    // Simplified: use fallback parent (m348->m38 grid root)
-    s_visibilityGridWorkArea* pGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
-    return (p_workArea)pGrid;
-}
-
-// 0607b7ba — create one positional sound emitter
-static void a7CreateSoundEmitter(sSaturnPtr pSoundData)
-{
-    static sA7SoundEmitter::TypedTaskDefinition td = { &a7SoundEmitter_Init, nullptr, nullptr, nullptr };
-    p_workArea parent = a7FindGridParent(pSoundData);
-    createSubTaskWithArg<sA7SoundEmitter>(parent, pSoundData, &td);
-}
-
-// 06059eb8 — create 10 sound/environment objects
-void createA7_soundObjects(p_workArea parent)
-{
-    static const u32 soundDataAddrs[] = {
-        0x06085d20, 0x06085d68, 0x06085db0, 0x06085df8, 0x06085e40,
-        0x06085e88, 0x06085ed0, 0x06085f18, 0x06085f60, 0x06085fa8,
-    };
-    for (int i = 0; i < 10; i++)
-    {
-        a7CreateSoundEmitter(gFLD_A7->getSaturnPtr(soundDataAddrs[i]));
-    }
-}
-
 // Field script subtask struct — 0 bytes extra
 struct sA7FieldScriptSubtask : public s_workAreaTemplate<sA7FieldScriptSubtask>
 {
@@ -317,7 +286,7 @@ void startTasksA7_0(p_workArea parent)
     setGameFlagsA7_0();
     // 060565a6 — empty
     // 0606a65c — empty
-    createA7_soundObjects(parent);
+    createA7_itemBoxes_0(parent);
     countActiveObjectsA7();
     createA7_fieldScriptSubtask(parent);
     createA7_proximityCheck(parent);
@@ -376,7 +345,7 @@ static void a7EncounterNotificationUpdate(sA7EncounterNotification* pThis)
     u8 state = pThis->mC;
     if (state == 0)
     {
-        Unimplemented(); // FUN_FLD_A7__06068a9e(pThis, &DAT_FLD_A7__06081528, 0, 0, 1) — visual alert setup
+        a7CutsceneCameraInit(pThis, gFLD_A7->getSaturnPtr(0x06081528), 0, nullptr, 1);
         pThis->mC = 1;
         return;
     }
@@ -528,35 +497,11 @@ void createA7_envEntity_a456(p_workArea parent)
     createSubTask<sA7EnvEntity50>(parent, &td);
 }
 
-// Environment entity 0x2C (positional sound emitter)
-struct sA7EnvEntity2C : public s_workAreaTemplateWithArg<sA7EnvEntity2C, sSaturnPtr>
-{
-    u8 m0_data[0x2C];
-    // size 0x2C
-};
-
-// 06059B8C
-static void a7EnvEntity2C_Init(sA7EnvEntity2C* pThis, sSaturnPtr arg) { Unimplemented(); }
-// 06059CD4
-static void a7EnvEntity2C_Update(sA7EnvEntity2C* pThis) { Unimplemented(); }
-
 // 06059e6e
 void createA7_envEntity_9e6e(p_workArea parent, sSaturnPtr arg)
 {
     static sA7EnvEntity2C::TypedTaskDefinition td = { &a7EnvEntity2C_Init, &a7EnvEntity2C_Update, nullptr, nullptr };
     createSubTaskWithArg<sA7EnvEntity2C>(parent, arg, &td);
-}
-
-// 06059f00 — create 4 sound objects for subfield 1
-void createA7_soundObjects_1(void)
-{
-    static const u32 soundDataAddrs[] = {
-        0x06085ff0, 0x06086038, 0x06086080, 0x060860c8,
-    };
-    for (int i = 0; i < 4; i++)
-    {
-        a7CreateSoundEmitter(gFLD_A7->getSaturnPtr(soundDataAddrs[i]));
-    }
 }
 
 // Environment entity 0x20 (tower/pillar scenery)
@@ -693,26 +638,28 @@ struct sA7EntitySpawnerTask : public s_workAreaTemplate<sA7EntitySpawnerTask>
     // Saturn size 0xC
 };
 
-// Spawned entity (size 0x208)
+// Spawned entity (size 0x208). Offsets 0x08..0x1E7 form a 40-slot sVec3_FP
+// trail buffer; m8_position aliases slot[0] and the update regenerates the
+// entire trail from the angle/radius accumulators each frame.
 struct sA7SpawnedEntity : public s_workAreaTemplateWithArg<sA7SpawnedEntity, sSaturnPtr>
 {
     s_memoryAreaOutput m0_memoryArea;
-    sVec3_FP m8_position;
-    u8 m14_pad[0x1D4];
-    s32 m1E8_angleToTower;
-    u8 m1EC_pad[4];
-    s32 m1F0_distToTower;
-    s32 m1F4_param4;
-    s32 m1F8_param3;
-    s32 m1FC_velocityConst0;
-    s32 m200_velocityConst1;
+    sVec3_FP m8_position;        // trail slot[0]
+    u8 m14_trail[0x1D4];         // trail slots[1..39] (39 x sVec3_FP)
+    s32 m1E8_angleToTower;       // angle accumulator (init: atan2 toward tower)
+    p_workArea m1EC_pChildTask;  // spawned sibling reference task, nullable
+    s32 m1F0_distToTower;        // radius (init: sqrt distance to tower)
+    s32 m1F4_param4;             // per-frame angle bump
+    s32 m1F8_param3;             // per-frame Y gravity
+    s32 m1FC_velocityConst0;     // per-slot angle step (-0x7107C)
+    s32 m200_velocityConst1;     // per-slot Y step (-0x3555)
     u16 m204_animIndex;
     u8 m206_pad[2];
     // Saturn size 0x208
 };
 
 // 0607c104 — centered random: (random() & mask) - mask/2
-static s32 a7CenteredRandom(u32 mask)
+s32 a7CenteredRandom(u32 mask)
 {
     return (s32)(randomNumber() & mask) - (s32)(mask >> 1);
 }
@@ -753,11 +700,29 @@ static void a7SpawnedEntity_Init(sA7SpawnedEntity* pThis, sSaturnPtr arg)
     spawnDir.m4_Y = 0;
     spawnDir.m8_Z = MTH_Mul(fixedPoint(0x4000), getSin(dirIdx));
 
-    // Spawn 8 particles via scene manager
+    // Spawn 8 particles via scene manager (4 outer iterations, 2 inlined spawns each)
     s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
-    for (s32 i = 0; i < 8; i += 2)
+    static std::vector<sVdp1Quad> s_spawnedQuadList;
+    if (s_spawnedQuadList.empty())
     {
-        Unimplemented(); // FUN_FLD_A7__060770e2 — spawn 2 particles per iteration via scene manager
+        s_spawnedQuadList = initVdp1Quad(gFLD_A7->getSaturnPtr(0x060804e4));
+    }
+
+    sA7SceneParticleDesc desc = {};
+    desc.m8_pQuadList = &s_spawnedQuadList;
+
+    sVec3_FP spawnPos;
+    spawnPos.m4_Y = fixedPoint(0);
+
+    for (s32 i = 8; i != 0; i -= 2)
+    {
+        spawnPos.m0_X = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
+        spawnPos.m8_Z = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
+        a7SceneParticle_spawnProjected((sFieldSceneManager*)pFieldData->m280, &desc, &spawnPos, &spawnDir);
+
+        spawnPos.m0_X = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
+        spawnPos.m8_Z = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
+        a7SceneParticle_spawnProjected((sFieldSceneManager*)pFieldData->m280, &desc, &spawnPos, &spawnDir);
     }
 
     // Play sound if visible on screen
@@ -772,15 +737,125 @@ static void a7SpawnedEntity_Init(sA7SpawnedEntity* pThis, sSaturnPtr arg)
 // 06054E18
 static void a7SpawnedEntity_Update(sA7SpawnedEntity* pThis)
 {
-    Unimplemented(); // Complex: generates spiral trail positions (40 iterations),
-                     // applies angular velocity, proximity-based dragon interaction,
-                     // distance shrinking when encounter flag set
+    // Regenerate the full 40-slot trail each frame from the angle+radius accumulators,
+    // pivoting around (+0x600000, y, -0x600000) in world space.
+    sVec3_FP* slots = &pThis->m8_position;
+    s32 angle = pThis->m1E8_angleToTower;
+    s32 y = pThis->m8_position.m4_Y.m_value;
+    fixedPoint radius(pThis->m1F0_distToTower);
+
+    for (s32 i = 0; i < 20; i++)
+    {
+        u16 idxA = (u16)((u32)angle >> 16) & 0xFFF;
+        slots[i * 2 + 0].m0_X = fixedPoint(MTH_Mul(radius, getCos(idxA)).m_value + 0x600000);
+        slots[i * 2 + 0].m4_Y = fixedPoint(y);
+        slots[i * 2 + 0].m8_Z = fixedPoint(MTH_Mul(radius, getSin(idxA)).m_value - 0x600000);
+
+        s32 dAngle = pThis->m1FC_velocityConst0;
+        s32 dY     = pThis->m200_velocityConst1;
+        u16 idxB = (u16)((u32)(angle + dAngle) >> 16) & 0xFFF;
+        slots[i * 2 + 1].m0_X = fixedPoint(MTH_Mul(radius, getCos(idxB)).m_value + 0x600000);
+        slots[i * 2 + 1].m4_Y = fixedPoint(y + dY);
+        slots[i * 2 + 1].m8_Z = fixedPoint(MTH_Mul(radius, getSin(idxB)).m_value - 0x600000);
+
+        angle += dAngle + pThis->m1FC_velocityConst0;
+        y     += dY     + pThis->m200_velocityConst1;
+    }
+
+    pThis->m1E8_angleToTower += pThis->m1F4_param4;
+    s32 newY = pThis->m8_position.m4_Y.m_value + pThis->m1F8_param3;
+    if (newY >= 0x190001)
+    {
+        pThis->getTask()->markFinished();
+        return;
+    }
+    pThis->m8_position.m4_Y = fixedPoint(newY);
+
+    if ((mainGameState.bitField[0x97] & 0x80) != 0)
+    {
+        s32 r = pThis->m1F0_distToTower - 0x4000;
+        pThis->m1F0_distToTower = (r < 0) ? 0 : r;
+        return;
+    }
+
+    if (isScriptActive() != 0 || !isNoCutsceneActive())
+    {
+        return;
+    }
+
+    // Dragon proximity check: the threshold is a bundle-relative s32 looked up
+    // via the s16 offset stored at m204_animIndex (+ 0x4000 padding).
+    sSaturnPtr tablePtr = (sSaturnPtr&)pThis->m0_memoryArea.m0_mainMemoryBundle;
+    (void)tablePtr;
+    s32 threshold = 0x4000; // TODO: proper file-relative lookup, see FUN_06054E18
+
+    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+
+    if (pThis->m1EC_pChildTask == nullptr)
+    {
+        s32 dx = pThis->m8_position.m0_X.m_value - pDragon->m8_pos.m0_X.m_value;
+        if (dx < 0) dx = -dx;
+        if (dx > threshold) return;
+
+        s32 dy = pThis->m8_position.m4_Y.m_value - pDragon->m8_pos.m4_Y.m_value;
+        if (dy < 0) dy = -dy;
+        if (dy > threshold) return;
+
+        s32 dz = pThis->m8_position.m8_Z.m_value - pDragon->m8_pos.m8_Z.m_value;
+        if (dz < 0) dz = -dz;
+        if (dz > threshold) return;
+
+        pThis->m1EC_pChildTask = (p_workArea)createSiblingTask<sA7SpawnedEntityChild>((p_workArea)pThis);
+        playSystemSoundEffect(0x6A);
+    }
+    else
+    {
+        if (pThis->m1EC_pChildTask->getTask()->isFinished())
+        {
+            pThis->m1EC_pChildTask = nullptr;
+        }
+    }
 }
 
 // 06055068
 static void a7SpawnedEntity_Draw(sA7SpawnedEntity* pThis)
 {
-    Unimplemented(); // Draws model at position + trail of line segments via FUN_0602e136
+    if (checkPositionVisibilityAgainstFarPlane(&pThis->m8_position) == 0)
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pThis->m8_position);
+        s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+        s16 modelOffset = (s16)pThis->m204_animIndex;
+        addObjectToDrawList(pBundle->get3DModel((u32)modelOffset));
+        popMatrix();
+    }
+
+    // Saturn constants (pool @ FLD_A7::060551a2):
+    //   width      = 0x2800
+    //   cmdcolr    = 0x2050
+    //   cmdsize    = 0x0210
+    //   colorMode  = 0
+    //   cmdsrca body base   = 0x1168 (added to VDP1 char area offset)
+    //   cmdsrca final base  = 0x1178
+    const s32 width     = 0x2800;
+    const u16 cmdcolr   = 0x2050;
+    const u16 cmdsize   = 0x0210;
+    const u16 colorMode = 0;
+    const u16 vdp1Base  = (u16)((pThis->m0_memoryArea.m4_characterArea - 0x25C00000) >> 3);
+    const u16 cmdsrcaBody  = (u16)(vdp1Base + 0x1168);
+    const u16 cmdsrcaFinal = (u16)(vdp1Base + 0x1178);
+
+    sVec3_FP* trail = &pThis->m8_position;
+    for (s32 i = 0; i < 0x26; i++)
+    {
+        // Sentinel on trail[i+1].Y < 0 — early-terminates the trail
+        if (trail[i + 1].m4_Y.m_value < 0)
+        {
+            return;
+        }
+        vdp1EmitRayVertex_0602e136(&trail[i], width, cmdsrcaBody, cmdsize, cmdcolr, colorMode);
+    }
+    vdp1EmitRayVertex_0602e136(&trail[38], width, cmdsrcaFinal, cmdsize, cmdcolr, colorMode);
 }
 
 // 0605513c — spawner active update: creates entities from table
@@ -869,22 +944,6 @@ static void a7EnvEntity60_Init(sA7EnvEntity60* pThis)
     pThis->m5C_state = 0;
 }
 
-// Explosion/effect sibling task (size 0x60)
-struct sA7EffectEntity60 : public s_workAreaTemplate<sA7EffectEntity60>
-{
-    u8 m0_data[0x3C];
-    s32 m3C_progress;
-    u8 m40_data[0x20];
-    // size 0x60
-};
-
-// 0605E0F6
-static void a7EffectEntity60_Init(sA7EffectEntity60* p) { Unimplemented(); }
-// 0605E126
-static void a7EffectEntity60_Update(sA7EffectEntity60* p) { Unimplemented(); }
-// 0605E4C4
-static void a7EffectEntity60_Draw(sA7EffectEntity60* p) { Unimplemented(); }
-
 // 0605E682
 static void a7EnvEntity60_Update(sA7EnvEntity60* pThis)
 {
@@ -958,7 +1017,13 @@ static void a7EnvEntity54_Init(sA7EnvEntity54* pThis)
     pThis->m8_position.m4_Y = 0;
     pThis->m8_position.m8_Z = 0;
     pThis->m14_scale = 0;
-    Unimplemented(); // FUN_FLD_A7__0605d45a — loads additional model data
+
+    sA7EnvEntity54ParticlesArg particlesArg;
+    particlesArg.m0_pPosition = &pThis->m8_position;
+    particlesArg.m4_count = 0x80;
+    particlesArg.m6_val = 0xC;
+    a7EnvEntity54Particles_create((p_workArea)pThis, &particlesArg);
+
     initFieldModelRenderContext(&pThis->m20_modelCtx, pThis, (void*)0x0605DBB8,
         &pThis->m8_position, nullptr, 3, -1, -1, 0, 0);
     mainGameState.bitField[0xA3] |= 8;
@@ -1042,7 +1107,7 @@ void startTasksA7_1(p_workArea parent)
     }
     createA7_envEntity_a456(parent);
     createA7_envEntity_9e6e(parent, gFLD_A7->getSaturnPtr(0x06085aec));
-    createA7_soundObjects_1();
+    createA7_itemBoxes_1();
     createA7_envEntity_a2fe(parent);
     createA7_encounterCheckSubtask(parent);
     createA7_soundCleanup_0x6f(parent);

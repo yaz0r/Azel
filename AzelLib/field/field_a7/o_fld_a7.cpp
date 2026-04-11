@@ -4,22 +4,16 @@
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
 #include "a7_cellObj0.h"
+#include "a7_cellObj1.h"
+#include "a7_beamEmitter.h"
 #include "a7_cellObj3.h"
+#include "a7_dialogChoiceTask.h"
 #include "kernel/loadSavegameScreen.h"
 
 FLD_A7_data* gFLD_A7 = nullptr;
 
-// 0605ccd0
-static void create_A7_CellObj1(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
-{
-    Unimplemented();
-}
-
-// 06055da6
-static void create_A7_CellObj2(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
-{
-    Unimplemented();
-}
+void freeVdp1Block(npcFileDeleter* parent, void* dataToFree);
+void fieldPaletteTaskInitSub0Sub0();
 
 void FLD_A7_data::dispatchCellObjectCreation(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 {
@@ -54,6 +48,16 @@ static s32 isDragonCameraScriptInactive()
     return 0;
 }
 
+// 060778dc — mark the selected choice entry in the choice table
+static void a7MarkMultiChoiceSelected(s32 choice)
+{
+    s_multiChoice* pChoice = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData;
+    if (pChoice != nullptr)
+    {
+        pChoice->m0_choiceTable[choice] = 9;
+    }
+}
+
 // 0605e7f4
 static s32 getMultiChoiceResult_A7()
 {
@@ -66,6 +70,20 @@ static s32 getMultiChoiceResult_A7()
     return result;
 }
 
+// 0607790a
+static void a7ReleaseMultiChoiceBlocks()
+{
+    s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    s_multiChoice* pChoice = pScript->m44_multiChoiceData;
+    if (pChoice != nullptr)
+    {
+        freeVdp1Block((npcFileDeleter*)pScript, pChoice->m0_choiceTable);
+        freeVdp1Block((npcFileDeleter*)pScript, pChoice);
+        pScript->m44_multiChoiceData = nullptr;
+        fieldPaletteTaskInitSub0Sub0();
+    }
+}
+
 // 0605e81e
 static s32 handleMultiChoiceResult_A7()
 {
@@ -76,7 +94,7 @@ static s32 handleMultiChoiceResult_A7()
         if (getFieldTaskPtr()->m2C_currentFieldIndex == 4)
         {
             mainGameState.bitField[0xa3] |= 0x10;
-            Unimplemented(); // FUN_0607790a — special field 4 exit
+            a7ReleaseMultiChoiceBlocks();
         }
         else
         {
@@ -87,8 +105,9 @@ static s32 handleMultiChoiceResult_A7()
     else
     {
         pChoice->mC = 0;
-        Unimplemented(); // FUN_0605ea52 — start dialog for choice, FUN_060778dc — handle choice
+        a7DialogChoice_spawn_0605ea52((p_workArea)getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE, result);
         playSystemSoundEffect(3);
+        a7MarkMultiChoiceSelected(result);
     }
     return result;
 }

@@ -427,3 +427,176 @@ void flushRayQuads3D()
 
     gPendingRayQuads.clear();
 }
+
+// ---------------------------------------------------------------------------
+// Colored 3D lines (per-pixel depth) used by shared VDP1 line submitters.
+// ---------------------------------------------------------------------------
+
+struct sRayLine3D
+{
+    float p0[3];     // view-space endpoint 0
+    float c0[4];     // RGBA at endpoint 0
+    float p1[3];     // view-space endpoint 1
+    float c1[4];     // RGBA at endpoint 1
+};
+
+static std::vector<sRayLine3D> gPendingRayLines;
+
+// Extract the direct-colour RGB555 base out of CMDCOLR when bit 15 is set.
+// Palette-indexed CMDCOLR (bit 15 clear) falls back to white because the
+// 3D path has no backing VDP1 CLUT to look up.
+static void saturnDirectColorToRGB(u16 cmdcolr, float baseRGB[3])
+{
+    if (cmdcolr & 0x8000)
+    {
+        baseRGB[0] = (float)((cmdcolr >>  0) & 0x1F) / 31.0f;
+        baseRGB[1] = (float)((cmdcolr >>  5) & 0x1F) / 31.0f;
+        baseRGB[2] = (float)((cmdcolr >> 10) & 0x1F) / 31.0f;
+    }
+    else
+    {
+        baseRGB[0] = 1.0f;
+        baseRGB[1] = 1.0f;
+        baseRGB[2] = 1.0f;
+    }
+}
+
+// Apply a Saturn VDP1 gouraud colour (RGB555: 1BBBBBGGGGGRRRRR, with each
+// 5-bit channel representing a signed +/-16 offset around neutral = 16) as
+// an additive offset on top of a direct-colour base. Output clamped to
+// [0, 1] per channel so we never feed negative values through the shader.
+static void applyGouraudToBase(const float baseRGB[3], u16 gouraud, float out[4])
+{
+    float rOffset = (float)((s32)((gouraud >>  0) & 0x1F) - 16) / 31.0f;
+    float gOffset = (float)((s32)((gouraud >>  5) & 0x1F) - 16) / 31.0f;
+    float bOffset = (float)((s32)((gouraud >> 10) & 0x1F) - 16) / 31.0f;
+
+    float r = baseRGB[0] + rOffset;
+    float g = baseRGB[1] + gOffset;
+    float b = baseRGB[2] + bOffset;
+    if (r < 0.0f) r = 0.0f; else if (r > 1.0f) r = 1.0f;
+    if (g < 0.0f) g = 0.0f; else if (g > 1.0f) g = 1.0f;
+    if (b < 0.0f) b = 0.0f; else if (b > 1.0f) b = 1.0f;
+
+    out[0] = r;
+    out[1] = g;
+    out[2] = b;
+    out[3] = 1.0f;
+}
+
+void enqueueRayLine3D(const sVec3_FP& viewSpaceP0, const sVec3_FP& viewSpaceP1,
+                      u16 cmdcolr, u16 gouraud0, u16 gouraud1)
+{
+    float baseRGB[3];
+    saturnDirectColorToRGB(cmdcolr, baseRGB);
+
+    sRayLine3D line;
+    line.p0[0] = viewSpaceP0.m0_X.toFloat();
+    line.p0[1] = viewSpaceP0.m4_Y.toFloat();
+    line.p0[2] = viewSpaceP0.m8_Z.toFloat();
+    line.p1[0] = viewSpaceP1.m0_X.toFloat();
+    line.p1[1] = viewSpaceP1.m4_Y.toFloat();
+    line.p1[2] = viewSpaceP1.m8_Z.toFloat();
+    applyGouraudToBase(baseRGB, gouraud0, line.c0);
+    applyGouraudToBase(baseRGB, gouraud1, line.c1);
+    gPendingRayLines.push_back(line);
+}
+
+void flushRayLines3D()
+{
+    if (gPendingRayLines.empty()) return;
+
+    // Forward declarations from 3dEngine_flush.cpp — same pattern as
+    // flushRayQuads3D.
+    glm::mat4 getProjectionMatrix();
+    bgfx::ProgramHandle GetWorldSpaceVertexColorShaderBGFX();
+
+    static bgfx::UniformHandle vdp1_modelViewProj = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(vdp1_modelViewProj))
+    {
+        vdp1_modelViewProj = bgfx::createUniform("u_customModelViewProj", bgfx::UniformType::Mat4);
+    }
+
+    static bgfx::UniformHandle u_spritePriority = BGFX_INVALID_HANDLE;
+    if (!bgfx::isValid(u_spritePriority))
+    {
+        u_spritePriority = bgfx::createUniform("u_spritePriority", bgfx::UniformType::Vec4);
+    }
+
+    bgfx::VertexLayout layout;
+    layout
+        .begin()
+        .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+        .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+        .add(bgfx::Attrib::Color0,    4, bgfx::AttribType::Float)
+        .end();
+
+    struct LineVert
+    {
+        float pos[3];
+        float tex[2];
+        float color[4];
+    };
+
+    const u32 numLines = (u32)gPendingRayLines.size();
+    const u32 numVerts = numLines * 2;
+
+    if (bgfx::getAvailTransientVertexBuffer(numVerts, layout) < numVerts)
+    {
+        gPendingRayLines.clear();
+        return;
+    }
+
+    bgfx::TransientVertexBuffer vertexBuffer;
+    bgfx::allocTransientVertexBuffer(&vertexBuffer, numVerts, layout);
+
+    LineVert* pOut = (LineVert*)vertexBuffer.data;
+    for (u32 i = 0; i < numLines; i++)
+    {
+        const sRayLine3D& line = gPendingRayLines[i];
+
+        pOut[0].pos[0] = line.p0[0];
+        pOut[0].pos[1] = line.p0[1];
+        pOut[0].pos[2] = line.p0[2];
+        pOut[0].tex[0] = 0.f;
+        pOut[0].tex[1] = 0.f;
+        pOut[0].color[0] = line.c0[0];
+        pOut[0].color[1] = line.c0[1];
+        pOut[0].color[2] = line.c0[2];
+        pOut[0].color[3] = line.c0[3];
+
+        pOut[1].pos[0] = line.p1[0];
+        pOut[1].pos[1] = line.p1[1];
+        pOut[1].pos[2] = line.p1[2];
+        pOut[1].tex[0] = 1.f;
+        pOut[1].tex[1] = 0.f;
+        pOut[1].color[0] = line.c1[0];
+        pOut[1].color[1] = line.c1[1];
+        pOut[1].color[2] = line.c1[2];
+        pOut[1].color[3] = line.c1[3];
+
+        pOut += 2;
+    }
+
+    glm::mat4 projectionMatrix = getProjectionMatrix();
+    bgfx::setUniform(vdp1_modelViewProj, &projectionMatrix[0][0]);
+
+    // Match the 3D engine's "regular object" priority bucket so these lines
+    // are depth-sorted against the main 3D scene via the VDP1 GPU view.
+    float priority[4] = { (float)(vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA & 7), 0, 0, 0 };
+    bgfx::setUniform(u_spritePriority, priority);
+
+    bgfx::setVertexBuffer(0, &vertexBuffer);
+    bgfx::setState(0
+        | BGFX_STATE_WRITE_RGB
+        | BGFX_STATE_WRITE_A
+        | BGFX_STATE_WRITE_Z
+        | BGFX_STATE_DEPTH_TEST_LEQUAL
+        | BGFX_STATE_MSAA
+        | BGFX_STATE_PT_LINES
+    );
+
+    bgfx::submit(vdp1_gpuView, GetWorldSpaceVertexColorShaderBGFX());
+
+    gPendingRayLines.clear();
+}

@@ -82,9 +82,9 @@ npcFileDeleter* allocateNPC(p_workArea r4, s32 r5)
     return r14.mC_fileBundle;
 }
 
-void freeVdp1Block(npcFileDeleter*, s32)
+void freeVdp1Block(npcFileDeleter* parent, void* dataToFree)
 {
-    assert(0);
+    Unimplemented();
 }
 
 void npcFileDeleter::Delete(npcFileDeleter* pThis)

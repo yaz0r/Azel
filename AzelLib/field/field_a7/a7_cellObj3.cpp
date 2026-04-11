@@ -6,7 +6,7 @@
 #include "3dModels.h"
 
 // 06055230 — check if game state bit is set for object at given index
-static bool isObjectDestroyedA7(s32 index)
+bool isObjectDestroyedA7(s32 index)
 {
     s16 bitIndex = readSaturnS16(gFLD_A7->getSaturnPtr(0x060843d0) + index * 2);
     u32 adjustedIndex = (bitIndex < 1000) ? (u32)bitIndex : (u32)(bitIndex - 0x236);

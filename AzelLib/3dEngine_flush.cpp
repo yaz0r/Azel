@@ -722,6 +722,10 @@ void flushObjectsToDrawList()
     flushRayQuads3D();
     bgfx::setMarker("Finish ray quads 3D");
 
+    bgfx::setMarker("Start ray lines 3D");
+    flushRayLines3D();
+    bgfx::setMarker("Finish ray lines 3D");
+
     bgfx::setMarker("Start particle billboards");
     flushParticleBillboards();
     bgfx::setMarker("Finish particle billboards");

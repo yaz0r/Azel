@@ -1,14 +1,18 @@
 #pragma once
 
 #include "field.h"
+#include "kernel/vdp1AnimatedQuad.h"
 
 struct sFieldSceneManagerEntry
 {
-    u8 m0_data[0x20];
-    void* m20_vdp1Block;
+    sVec3_FP m0_position;   // 0x00
+    sVec3_FP mC_velocity;   // 0x0C
+    s32 m18_paramA;         // 0x18
+    s32 m1C_paramB;         // 0x1C
+    void* m20_vdp1Block;    // 0x20 — also used as payload ptr
     s32(*m24_updateFunc)(sFieldSceneManagerEntry*);
     void(*m28_drawFunc)(sFieldSceneManagerEntry*);
-    u8 m2C_pad[8];
+    sAnimatedQuad m2C_quad; // 0x2C — size 8
     // size 0x34
 };
 

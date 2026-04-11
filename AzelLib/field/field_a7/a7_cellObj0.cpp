@@ -1,19 +1,15 @@
 #include "PDS.h"
 #include "o_fld_a7.h"
 #include "a7_cellObj0.h"
+#include "a7_delayedExitTrigger.h"
+#include "a7_cameraScriptSubtask.h"
+#include "a7_effectTask.h"
 #include "field/field_a3/o_fld_a3.h"
 #include "field/fieldModelRender.h"
 #include "kernel/fileBundle.h"
 #include "3dModels.h"
 #include "field/fieldVisibilityGrid.h"
 #include "audio/systemSounds.h"
-
-// 060573c6 — create particle/effect sibling task at a position
-static p_workArea a7CreateEffectTask(p_workArea parent, sVec3_FP* position, const sSaturnPtr& configEA, s32 param)
-{
-    Unimplemented(); // particle spawner (FUN_06057296)
-    return nullptr;
-}
 
 // 060613ca — add camera impulse
 static void addCameraImpulse(sVec3_FP* positionImpulse, sVec3_FP* rotationImpulse)
@@ -72,21 +68,6 @@ static s32 startFieldScriptWithFlagCheck(s32 scriptIndex, u32 flagBit)
     pScript->m58 = 0;
     pScript->m50_scriptDelay = 0;
     return 1;
-}
-
-// 06073500 — create camera script subtask
-static void a7StartCameraScript(p_workArea parent, const sSaturnPtr& scriptDataEA, s32 countdown, s32 param3, s16 param4)
-{
-    Unimplemented(); // creates subtask with update FUN_060733a6 that plays camera animation
-    // Also sets: pDragon->m1D0_cameraScript = scriptDataEA, pDragon->mF8_Flags &= ~0x400
-    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    pDragon->mF8_Flags &= ~0x400;
-}
-
-// 0605eb88 — create delayed exit trigger subtask
-static void a7CreateDelayedExitTrigger(p_workArea parent)
-{
-    Unimplemented(); // creates 4-byte subtask: counts to 0x52 frames then calls fieldA3_1_checkExitsTaskUpdate2Sub1(0xe)
 }
 
 struct s_A7_CellObj0;
