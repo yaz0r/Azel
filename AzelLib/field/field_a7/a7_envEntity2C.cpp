@@ -6,6 +6,7 @@
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
 #include "field/field_a3/o_fld_a3.h"
+#include "field/fieldItemBox.h"
 #include "kernel/animation.h"
 #include "kernel/fileBundle.h"
 #include "kernel/vdp1AnimatedQuad.h"
@@ -168,10 +169,104 @@ static s32 a7IsWorldPositionOnScreen(sVec3_FP* pWorldPos)
 }
 
 // 06056748 — alternate update installed when the initial countdown expires.
-// Body not yet reimplemented.
-static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sA7EnvEntity2CEffectTask* /*pThis*/)
+// While m1C2 == 0, each tick grows the reverse ring trail by advancing
+// m198_pPosition one slot backward (wrapping from &m8_trail[0] to [31]) and
+// writing head + m1B4_offset at the new slot. When the wrap lands back on
+// [0], the value is mirrored into the 0xC-byte pad immediately after the
+// ring so the Draw wrap logic can read a contiguous "+1" slot. Once the
+// newly-written head.Y drops below zero the termination sequence begins:
+// m1C2 is incremented and 4 scene particles are spawned at the head
+// position with random X/Z jitter. While m1C2 != 0 the function ticks down
+// m194_trailLength and marks the task finished when it reaches zero.
+static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sA7EnvEntity2CEffectTask* pThis)
 {
-    Unimplemented();
+    if (pThis->m1C2 != 0)
+    {
+        if (pThis->m194_trailLength < 1)
+        {
+            if (pThis != nullptr)
+            {
+                pThis->getTask()->markFinished();
+            }
+        }
+        else
+        {
+            pThis->m194_trailLength--;
+        }
+        return;
+    }
+
+    if (pThis->m194_trailLength < 0x1F)
+    {
+        pThis->m194_trailLength++;
+    }
+
+    const s32 newX = pThis->m198_pPosition->m0_X.m_value + pThis->m1B4_offset.m0_X.m_value;
+    const s32 newY = pThis->m198_pPosition->m4_Y.m_value + pThis->m1B4_offset.m4_Y.m_value;
+    const s32 newZ = pThis->m198_pPosition->m8_Z.m_value + pThis->m1B4_offset.m8_Z.m_value;
+
+    if (pThis->m198_pPosition == &pThis->m8_trail[0])
+    {
+        pThis->m198_pPosition = &pThis->m8_trail[31];
+        pThis->m198_pPosition->m0_X = fixedPoint(newX);
+        pThis->m198_pPosition->m4_Y = fixedPoint(newY);
+        pThis->m198_pPosition->m8_Z = fixedPoint(newZ);
+    }
+    else
+    {
+        pThis->m198_pPosition = pThis->m198_pPosition - 1;
+        pThis->m198_pPosition->m0_X = fixedPoint(newX);
+        pThis->m198_pPosition->m4_Y = fixedPoint(newY);
+        pThis->m198_pPosition->m8_Z = fixedPoint(newZ);
+        if (pThis->m198_pPosition == &pThis->m8_trail[0])
+        {
+            sVec3_FP* pMirror = reinterpret_cast<sVec3_FP*>(&pThis->m188_pad0[0]);
+            pMirror->m0_X = fixedPoint(newX);
+            pMirror->m4_Y = fixedPoint(newY);
+            pMirror->m8_Z = fixedPoint(newZ);
+        }
+    }
+
+    if (pThis->m198_pPosition->m4_Y.m_value < 0)
+    {
+        pThis->m1C2++;
+
+        static std::vector<sVdp1Quad> s_deathSparkQuads;
+        if (s_deathSparkQuads.empty())
+        {
+            s_deathSparkQuads = initVdp1Quad(gFLD_A7->getSaturnPtr(0x060804e4));
+        }
+
+        sA7SceneParticleDesc desc = {};
+        desc.m8_pQuadList = &s_deathSparkQuads;
+
+        sVec3_FP zeroVelocity;
+        zeroVelocity.m0_X = fixedPoint(0);
+        zeroVelocity.m4_Y = fixedPoint(0);
+        zeroVelocity.m8_Z = fixedPoint(0);
+
+        sVec3_FP spawnPos;
+        spawnPos.m4_Y = fixedPoint(0);
+
+        for (s32 i = 4; i != 0; i -= 2)
+        {
+            spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + a7CenteredRandom(0xFFFF));
+            spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + a7CenteredRandom(0xFFFF));
+            a7SceneParticle_spawnProjected(
+                (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
+                &desc,
+                &spawnPos,
+                &zeroVelocity);
+
+            spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + a7CenteredRandom(0xFFFF));
+            spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + a7CenteredRandom(0xFFFF));
+            a7SceneParticle_spawnProjected(
+                (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
+                &desc,
+                &spawnPos,
+                &zeroVelocity);
+        }
+    }
 }
 
 // 060569a0
@@ -664,20 +759,6 @@ static void a7EnvEntity2CChild_Update(sA7EnvEntity2CChild* pThis)
     pThis->mDC_visible = (vis == 0);
 }
 
-// 0606dffe — fetches pose offset `bundle[param3]`, switches to the camera
-// matrix with the current world transform stacked on top, and tail-calls
-// FUN_0606dea4 (the VDP1 submission helper) with the saved descriptor. The
-// submission helper itself isn't reimplemented yet.
-static void a7EnvEntity2CChild_drawAux2_0606dffe(sA7EnvEntity2CChild* /*pThis*/, s16 /*param2*/, s16 /*param3*/, u32 /*scale*/)
-{
-    Unimplemented();
-}
-
-// 0606e056 — thin wrapper: tail-calls FUN_0606dffe with scale = 0x10000.
-static void a7EnvEntity2CChild_drawAux_0606e056(sA7EnvEntity2CChild* pThis, s16 param2, s16 param3)
-{
-    a7EnvEntity2CChild_drawAux2_0606dffe(pThis, param2, param3, 0x10000);
-}
 
 // 06059ab0
 static void a7EnvEntity2CChild_Draw(sA7EnvEntity2CChild* pThis)
@@ -704,7 +785,7 @@ static void a7EnvEntity2CChild_Draw(sA7EnvEntity2CChild* pThis)
     scaleCurrentMatrixRow2(fixedPoint(sz));
 
     pThis->m58_model.m18_drawFunction(&pThis->m58_model);
-    a7EnvEntity2CChild_drawAux_0606e056(pThis, 8, 0x24c);
+    LCSItemBox_UpdateType0Sub0(pThis->m0_memoryArea.m0_mainMemoryBundle, 8, 0x24c, fixedPoint(0x10000));
 
     popMatrix();
 }

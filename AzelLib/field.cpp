@@ -433,6 +433,33 @@ void getDragonAngle(sVec3_FP* pOut)
     pOut->m8_Z = p->m20_angle.m8_Z;
 }
 
+// 0607ce7c — set dragon speed to the given index (0..4) from the speed table.
+// Shared across overlays (A5, C8, etc.).
+void setDragonSpeedIndex(s32 speedIndex)
+{
+    if (speedIndex < 0 || speedIndex >= 5)
+        return;
+
+    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    pDragon->m235_dragonSpeedIndex = (s8)speedIndex;
+    pDragon->m154_dragonSpeed = pDragon->m21C_DragonSpeedValues[pDragon->m235_dragonSpeedIndex];
+
+    s32 midSpeed = (s32)((u32)(pDragon->m21C_DragonSpeedValues[0].m_value
+                              + pDragon->m21C_DragonSpeedValues[1].m_value
+                              + (u32)(pDragon->m21C_DragonSpeedValues[0].m_value
+                                    + pDragon->m21C_DragonSpeedValues[1].m_value < 0)) >> 1);
+    if (pDragon->m154_dragonSpeed.m_value > midSpeed)
+    {
+        pDragon->m238 = 4;
+        pDragon->m237 = 4;
+    }
+    else
+    {
+        pDragon->m238 = 0;
+        pDragon->m237 = 0;
+    }
+}
+
 void triggerSubfieldChange(s32 destSubfield, s16 param)
 {
     enableFieldScriptSkipping();

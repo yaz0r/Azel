@@ -1533,7 +1533,7 @@ void sLCSSelected::Update(sLCSSelected* pThis)
     pThis->m28++;
 }
 
-void sLCSSelected::DrawSub0(sLCSTaskDrawSub5Sub1_Data1* r5, const sInterpolator_FP& r6_interpolator)
+void sLCSSelected::DrawSub0(const sLCSTaskDrawSub5Sub1_Data1* r5, const sInterpolator_FP& r6_interpolator)
 {
     s32 CMDSRCA = ((m0.m4_characterArea - (0x25C00000)) >> 3) + r5->m6_CMDSRCA;
     s32 CMDCOLR = ((m0.m4_characterArea - (0x25C00000)) >> 3) + r5->mA_CMDCOLR;
@@ -1663,16 +1663,12 @@ p_workArea createLCSSelectedTask(s_LCSTask* r4, sLCSTarget* r5)
 void allocateLCSEntry(s_visibilityGridWorkArea* r4, sProcessed3dModel* r5, fixedPoint r6)
 {
     r4->m12E4_numCollisionGeometries++;
-
-    if (r4->m12E4_numCollisionGeometries >= 24)
+    if (r4->m12E4_numCollisionGeometries < 0x18)
     {
-        assert(0);
-        return;
+        r4->m44->m0_model = r5;
+        r4->m44->m34 = r6;
+        r4->m44++;
     }
-
-    r4->m44[0].m0_model = r5;
-    r4->m44[0].m34 = r6;
-    r4->m44++;
 }
 
 // Sparkle particle config passed to createLCSSparkleParticle

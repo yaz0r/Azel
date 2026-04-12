@@ -8,7 +8,7 @@
 void LCSItemBox_Callback1(p_workArea r4, sLCSTarget*)
 {
     s_itemBoxType1* pThis = (s_itemBoxType1*)r4;
-    pThis->mEA_wasRendered++;
+    pThis->mEA_state++;
 }
 
 void LCSItemBox_DrawType1(s_itemBoxType1* pThis)
@@ -59,7 +59,7 @@ void LCSItemBox_DrawType1(s_itemBoxType1* pThis)
 
 void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
 {
-    switch (pThis->mEA_wasRendered)
+    switch (pThis->mEA_state)
     {
     case 0:
         if (LCSItemBox_shouldSpin(pThis))
@@ -76,7 +76,7 @@ void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
         if (((pThis->m90 + pThis->m94) & 0xFFFFFFF) > pThis->m90)
         {
             pThis->m90 = 0;
-            pThis->mEA_wasRendered++;
+            pThis->mEA_state++;
         }
         else
         {
@@ -95,7 +95,7 @@ void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
         scaleCurrentMatrixRow1(pThis->m78_scale);
         scaleCurrentMatrixRow2(pThis->m78_scale);
 
-        transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60);
+        transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60_renderPosition);
 
         sStaticPoseData* pPose = pThis->m0.m0_mainMemoryBundle->getStaticPose(0x190, 2);
 
@@ -104,7 +104,7 @@ void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
             translateCurrentMatrix(pPose->m0_bones[0].m0_translation);
             rotateCurrentMatrixZYX(pPose->m0_bones[0].mC_rotation);
 
-            gridCellDraw_normalSub2(pThis->m0.m0_mainMemoryBundle, 0x138, pThis->m7C);
+            gridCellDraw_normalSub2(pThis->m0.m0_mainMemoryBundle, 0x138, pThis->m7C_invScale);
 
             {
                 pushCurrentMatrix();
@@ -113,7 +113,7 @@ void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
                 rotateCurrentMatrixShiftedY(pPose->m0_bones[1].mC_rotation[1] + pThis->m90);
                 rotateCurrentMatrixShiftedX(pPose->m0_bones[1].mC_rotation[0]);
 
-                gridCellDraw_normalSub2(pThis->m0.m0_mainMemoryBundle, 0x13C, pThis->m7C);
+                gridCellDraw_normalSub2(pThis->m0.m0_mainMemoryBundle, 0x13C, pThis->m7C_invScale);
 
                 popMatrix();
             }
@@ -122,7 +122,7 @@ void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
         popMatrix();
     }
 
-    if ((pThis->m88_receivedItemId == 0) || mainGameState.getBit(pThis->m88_receivedItemId + 243))
+    if ((pThis->m88_poseIdx == 0) || mainGameState.getBit(pThis->m88_poseIdx + 243))
     {
         pThis->m20 |= 1;
     }

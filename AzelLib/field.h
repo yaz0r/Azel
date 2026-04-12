@@ -607,6 +607,7 @@ void enableFieldScriptSkipping();
 // Shared dragon getters
 void getDragonPosition(sVec3_FP* pOut);
 void getDragonAngle(sVec3_FP* pOut);
+void setDragonSpeedIndex(s32 speedIndex);
 void triggerSubfieldChange(s32 destSubfield, s16 param);
 
 // Shared grid/visibility helpers

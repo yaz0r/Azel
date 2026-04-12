@@ -92,6 +92,15 @@ void createA5_encounterConfig(p_workArea parent, s32 subfieldId, s16 param1, s16
 void createA5_triggerZones_day(p_workArea parent);
 void createA5_triggerZones_night(p_workArea parent);
 
+// Scenery entity (subfield 9)
+p_workArea createA5_sceneryEntity(p_workArea parent);
+
+// Exit trigger entity
+struct sA5ExitTriggerArg;
+struct sA5ExitTriggerEntity;
+sA5ExitTriggerEntity* a5_createExitTriggerEntity_06056870(p_workArea parent, const sA5ExitTriggerArg* arg);
+void createA5_envObjects_sub7_exits(p_workArea parent);
+
 // Per-subfield environment objects
 void createA5_envObjects_sub0(p_workArea parent);
 void createA5_envObjects_sub4_particle(p_workArea parent);
@@ -114,6 +123,9 @@ void postBattleSound_A5_nightA();
 void postBattleSound_A5_nightB();
 
 // Shared gameplay helpers (getDragonPosition, getDragonAngle, triggerSubfieldChange) are in field.h
+
+// Follow mode setup (060694D8)
+void a5_wormSegmentEntity_startFollowMode_060694D8(s32 followMode);
 
 // Shared helpers
 void setupCameraConfig_A5_0();

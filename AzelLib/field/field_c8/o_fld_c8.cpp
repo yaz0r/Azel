@@ -4,7 +4,6 @@
 #include "field/fieldRadar.h"
 #include "field/fieldDragonMovement.h"
 
-std::vector<sLCSTaskDrawSub5Sub1_Data1> readLCSTaskDrawSub5Sub1_Data1(sSaturnPtr source);
 #include "audio/soundDriver.h"
 
 
@@ -134,11 +133,6 @@ p_workArea overlayStart_FLD_C8(p_workArea workArea, u32 arg)
     gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
     gFieldCameraDrawFunc = &fieldOverlaySubTaskInitSub2;
     gCurrentFieldOverlay = gFLD_A3;
-
-    if (LCSTaskDrawSub5Sub1_Data1.empty())
-    {
-        LCSTaskDrawSub5Sub1_Data1 = readLCSTaskDrawSub5Sub1_Data1({ 0x06093B28, gFLD_A3 });
-    }
 
     if (!initField(workArea, fieldFileList_C8, arg))
     {

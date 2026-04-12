@@ -20,7 +20,7 @@ struct sSavePointParticleTask : public s_workAreaTemplate<sSavePointParticleTask
     static void Update(sSavePointParticleTask* pThis)
     {
         s_itemBoxType1* pParent = pThis->m8_parent;
-        if (pParent->mEA_wasRendered == 0)
+        if (pParent->mEA_state == 0)
             return;
 
         // Advance animation frames for all active particles
@@ -65,7 +65,7 @@ struct sSavePointParticleTask : public s_workAreaTemplate<sSavePointParticleTask
     static void Draw(sSavePointParticleTask* pThis)
     {
         s_itemBoxType1* pParent = pThis->m8_parent;
-        if (pParent->mEA_wasRendered == 0)
+        if (pParent->mEA_state == 0)
             return;
 
         s32 count = pThis->m118_frameCounter;
@@ -150,12 +150,12 @@ void LCSItemBox_UpdateType2(s_itemBoxType1* pThis)
         scaleCurrentMatrixRow1(pThis->m78_scale);
         scaleCurrentMatrixRow2(pThis->m78_scale);
 
-        transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60);
-        LCSItemBox_UpdateType0Sub0(pThis, 0x54, 0x198, 0x7C);
+        transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60_renderPosition);
+        LCSItemBox_UpdateType0Sub0(pThis->m0.m0_mainMemoryBundle, 0x54, 0x198, pThis->m7C_invScale);
         popMatrix();
     }
 
-    if (pThis->m8D)
+    if (pThis->m8D_visibilityFlag)
     {
         pThis->m20 |= 1;
     }
@@ -179,11 +179,11 @@ void LCSItemBox_DrawType2(s_itemBoxType1* pThis)
     if (depthRangeIndex <= pGridTask->m1300)
     {
         LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemoryBundle, 8, 0x14C);
-        pThis->mEA_wasRendered = 1;
+        pThis->mEA_state = 1;
     }
     else
     {
-        pThis->mEA_wasRendered = 0;
+        pThis->mEA_state = 0;
     }
 
     popMatrix();

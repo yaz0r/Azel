@@ -48,15 +48,6 @@ static s32 isDragonCameraScriptInactive()
     return 0;
 }
 
-// 060778dc — mark the selected choice entry in the choice table
-static void a7MarkMultiChoiceSelected(s32 choice)
-{
-    s_multiChoice* pChoice = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m44_multiChoiceData;
-    if (pChoice != nullptr)
-    {
-        pChoice->m0_choiceTable[choice] = 9;
-    }
-}
 
 // 0605e7f4
 static s32 getMultiChoiceResult_A7()
@@ -107,7 +98,7 @@ static s32 handleMultiChoiceResult_A7()
         pChoice->mC = 0;
         a7DialogChoice_spawn_0605ea52((p_workArea)getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE, result);
         playSystemSoundEffect(3);
-        a7MarkMultiChoiceSelected(result);
+        markMultiChoiceEntrySeen(result);
     }
     return result;
 }

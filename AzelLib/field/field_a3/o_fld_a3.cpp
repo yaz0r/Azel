@@ -65,31 +65,6 @@ const s_MCB_CGB fieldFileList[] =
 { (const char*)-1, NULL }
 };
 
-std::vector<sLCSTaskDrawSub5Sub1_Data1> readLCSTaskDrawSub5Sub1_Data1(sSaturnPtr source)
-{
-    std::vector<sLCSTaskDrawSub5Sub1_Data1> deserializedArray(0x15);
-
-    for (int i = 0; i < deserializedArray.size(); i++)
-    {
-        sLCSTaskDrawSub5Sub1_Data1& entry = deserializedArray[i];
-
-        entry.m2 = readSaturnS16(source + 0x2);
-        entry.m4 = readSaturnS16(source + 0x4);
-        entry.m6_CMDSRCA = readSaturnS16(source + 0x6);
-        entry.m8 = readSaturnS16(source + 0x8);
-        entry.mA_CMDCOLR = readSaturnS16(source + 0xA);
-        entry.mC_spriteWidth = readSaturnS32(source + 0xC);
-        entry.m10_spriteHeight = readSaturnS32(source + 0x10);
-        entry.m14_offsetX = readSaturnS32(source + 0x14);
-        entry.m18_offsetY = readSaturnS32(source + 0x18);
-        source += 0x1C;
-    }
-
-    return deserializedArray;
-}
-
-std::vector<sLCSTaskDrawSub5Sub1_Data1> LCSTaskDrawSub5Sub1_Data1;
-
 s8 isFieldCameraSlotActive(s32 index);
 
 std::vector<std::vector<sCameraVisibility>>* readCameraVisbility(sSaturnPtr EA, s_DataTable3* pDataTable3)
@@ -5562,11 +5537,6 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
     {
         gFLD_A3 = new FLD_A3_data();
     }
-    if (LCSTaskDrawSub5Sub1_Data1.empty())
-    {
-        LCSTaskDrawSub5Sub1_Data1 = readLCSTaskDrawSub5Sub1_Data1({ 0x06093B28, gFLD_A3 });
-    }
-
     gFieldCameraConfigEA = { 0x6092EF0, gFLD_A3 };
     gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
     gFieldCameraDrawFunc = &fieldOverlaySubTaskInitSub2;

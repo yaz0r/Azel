@@ -11,23 +11,23 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, struct 
     sVec3_FP m3C_pos;
     sVec3_FP m48_boundingMin;
     sVec3_FP m54_boundingMax;
-    sVec3_FP m60;
+    sVec3_FP m60_renderPosition;
     sVec3_FP m6C_rotation;
     fixedPoint m78_scale;
-    fixedPoint m7C;
+    fixedPoint m7C_invScale;
     s32 m80_bitIndex;
-    s16 m84_savePointIndex;
+    s16 m84_modelIdx;
     s16 m86;
-    s16 m88_receivedItemId;
-    s8 m8A_receivedItemQuantity;
+    s16 m88_poseIdx;
+    s8 m8A_param9;
     s8 m8B_LCSType;
-    s8 m8C;
-    s8 m8D;
+    s8 m8C_param10;
+    s8 m8D_visibilityFlag;
     s32 m90;
     s32 m94;
     s_3dModel m98_3dModel;
-    s16 mE8;
-    s16 mEA_wasRendered;
+    s16 mE8_animCountdown;
+    s16 mEA_state;
     p_workArea mEC_savePointParticlesTask;
     //size: F0
 };
@@ -35,7 +35,7 @@ struct s_itemBoxType1 : public s_workAreaTemplateWithArg<s_itemBoxType1, struct 
 extern sVec3_FP LCSItemBox_Table6[];
 
 s8 LCSItemBox_shouldSpin(s_itemBoxType1* pThis);
-void LCSItemBox_UpdateType0Sub0(s_itemBoxType1* pThis, s32 r5, s32 r6, fixedPoint r7);
+void LCSItemBox_UpdateType0Sub0(s_fileBundle* pBundle, s32 hierarchyKey, s32 poseKey, fixedPoint scale);
 
 p_workArea fieldA3_1_createItemBoxes_Sub1(struct s_itemBoxDefinition* r4);
 

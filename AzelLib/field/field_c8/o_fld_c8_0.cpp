@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "o_fld_c8.h"
 #include "field/field_a3/o_fld_a3.h"
+#include "field/fieldItemBox.h"
 #include "field/fieldRadar.h"
 #include "field/fieldVisibilityGrid.h"
 #include "kernel/fileBundle.h"
@@ -1066,96 +1067,6 @@ void s_envObjectC8::Update(s_envObjectC8* pThis)
     }
 }
 
-// 06078044 — queue model for deferred rendering in visibility grid
-static void envObjectC8_QueueModel(s_visibilityGridWorkArea* pGrid, sProcessed3dModel* pModel, fixedPoint param)
-{
-    s16 count = pGrid->m12E4_numCollisionGeometries + 1;
-    pGrid->m12E4_numCollisionGeometries = count;
-    if (count < 0x18)
-    {
-        pGrid->m44->m0_model = pModel;
-        pGrid->m44->m34 = param;
-        pGrid->m44++;
-    }
-}
-
-// 0607840a — distance-culled per-node rendering
-// 06078044 — queue model for deferred collision in visibility grid (pCurrentMatrix is already world-space)
-static void envObjectC8_DrawNode(sProcessed3dModel* pModel, fixedPoint param)
-{
-    if (pModel != nullptr)
-    {
-        fixedPoint radius = pModel->m0_radius + fixedPoint(0x8000);
-        s_visibilityGridWorkArea* pGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
-        s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-
-        fixedPoint dx = pCurrentMatrix->m[0][3] - pDragon->m8_pos.m0_X;
-        if ((s32)dx < 0) dx = -dx;
-        fixedPoint dy = pCurrentMatrix->m[1][3] - pDragon->m8_pos.m4_Y;
-        if ((s32)dy < 0) dy = -dy;
-        fixedPoint dz = pCurrentMatrix->m[2][3] - pDragon->m8_pos.m8_Z;
-        if ((s32)dz < 0) dz = -dz;
-
-        if ((s32)dx <= (s32)radius && (s32)dy <= (s32)radius && (s32)dz <= (s32)radius)
-        {
-            copyMatrix(pCurrentMatrix, &pGrid->m44->m4_matrix);
-            envObjectC8_QueueModel(pGrid, pModel, param);
-        }
-    }
-}
-
-// 060785cc — recursive model hierarchy tree walker
-static void envObjectC8_DrawHierarchy(sModelHierarchy* pNode, std::vector<sStaticPoseData::sBonePoseData>::const_iterator& pBone, fixedPoint param)
-{
-    do
-    {
-        pushCurrentMatrix();
-        translateCurrentMatrix(&pBone->m0_translation);
-        rotateCurrentMatrixZYX(&pBone->mC_rotation);
-
-        if (pNode->m0_3dModel)
-        {
-            envObjectC8_DrawNode(pNode->m0_3dModel, param);
-        }
-        if (pNode->m4_subNode)
-        {
-            pBone++;
-            envObjectC8_DrawHierarchy(pNode->m4_subNode, pBone, param);
-        }
-
-        popMatrix();
-
-        if (pNode->m8_nextNode == nullptr)
-            break;
-
-        pBone++;
-        pNode = pNode->m8_nextNode;
-    } while (true);
-}
-
-// 06078726 — draw model hierarchy with billboard matrix
-static void envObjectC8_DrawWithBillboard(s_fileBundle* pBundle, s16 hierarchyOffset, s16 poseOffset)
-{
-    sModelHierarchy* pHierarchy = pBundle->getModelHierarchy(hierarchyOffset);
-    sStaticPoseData* pPose = pBundle->getStaticPose(poseOffset, pHierarchy->countNumberOfBones());
-
-    sMatrix4x3 savedMatrix;
-    copyMatrix(pCurrentMatrix, &savedMatrix);
-    pushCurrentMatrix();
-    copyToCurrentMatrix(&cameraProperties2.m28[0]);
-    multiplyCurrentMatrix(&savedMatrix);
-
-    std::vector<sStaticPoseData::sBonePoseData>::const_iterator bones = pPose->m0_bones.begin();
-    envObjectC8_DrawHierarchy(pHierarchy, bones, fixedPoint(0x10000));
-
-    popMatrix();
-}
-
-// 0607877e
-static void envObjectC8_DrawSub(s_memoryAreaOutput* pMemArea, s16 param1, s16 param2)
-{
-    envObjectC8_DrawWithBillboard(pMemArea->m0_mainMemoryBundle, param1, param2);
-}
 
 // 0605b898
 void s_envObjectC8::Draw(s_envObjectC8* pThis)
@@ -1180,7 +1091,7 @@ void s_envObjectC8::Draw(s_envObjectC8* pThis)
     s16 extraParam1 = readSaturnS16(pThis->mC_modelFrameDataEA + 4);
     if (extraParam1 != 0)
     {
-        envObjectC8_DrawSub(&pThis->m0_memoryArea, extraParam1, readSaturnS16(pThis->mC_modelFrameDataEA + 6));
+        LCSItemBox_UpdateType0Sub0(pThis->m0_memoryArea.m0_mainMemoryBundle, extraParam1, readSaturnS16(pThis->mC_modelFrameDataEA + 6), fixedPoint(0x10000));
     }
 
     popMatrix();
@@ -1320,7 +1231,7 @@ void s_staticDrawC8::Draw(s_staticDrawC8* pThis)
         readSaturnS16(modelDataEA),
         readSaturnS16(modelDataEA + 2));
 
-    envObjectC8_DrawSub(&pThis->m0_memoryArea, pThis->mC_drawParam1, pThis->mE_drawParam2);
+    LCSItemBox_UpdateType0Sub0(pThis->m0_memoryArea.m0_mainMemoryBundle, pThis->mC_drawParam1, pThis->mE_drawParam2, fixedPoint(0x10000));
 
     popMatrix();
 }
@@ -2333,9 +2244,9 @@ void s_towerCreatureC8::Draw(s_towerCreatureC8* pThis)
         readSaturnS16(modelDataEA + 2));
 
     // Billboard sub
-    envObjectC8_DrawSub(&pThis->m0_memoryArea,
+    LCSItemBox_UpdateType0Sub0(pThis->m0_memoryArea.m0_mainMemoryBundle,
         readSaturnS16(tablePtr + 10),
-        readSaturnS16(tablePtr + 0xC));
+        readSaturnS16(tablePtr + 0xC), fixedPoint(0x10000));
 
     // 3 appendages
     static const sSaturnPtr appendageDataEA = gFLD_C8->getSaturnPtr(0x060B28A8);
@@ -2359,9 +2270,9 @@ void s_towerCreatureC8::Draw(s_towerCreatureC8* pThis)
         }
         popMatrix();
 
-        envObjectC8_DrawSub(&pThis->m0_memoryArea,
+        LCSItemBox_UpdateType0Sub0(pThis->m0_memoryArea.m0_mainMemoryBundle,
             readSaturnS16(tablePtr + 0xE),
-            readSaturnS16(tablePtr + 0x10));
+            readSaturnS16(tablePtr + 0x10), fixedPoint(0x10000));
 
         popMatrix();
     }
@@ -2689,9 +2600,9 @@ void s_entityC8_B4::Draw(s_entityC8_B4* pThis)
 
     pThis->mAC_depth = pCurrentMatrix->m[2][3];
     pThis->mC_3dModel.m18_drawFunction(&pThis->mC_3dModel);
-    envObjectC8_DrawSub(&pThis->m0_memoryArea,
+    LCSItemBox_UpdateType0Sub0(pThis->m0_memoryArea.m0_mainMemoryBundle,
         readSaturnS16(extraPtr + 0xE),
-        readSaturnS16(extraPtr + 0x10));
+        readSaturnS16(extraPtr + 0x10), fixedPoint(0x10000));
 
     popMatrix();
 }

@@ -80,6 +80,7 @@ extern sMatrix4x3* pCurrentMatrix;
 
 void addObjectToDrawList(struct sProcessed3dModel* pObjectData);
 void addBillBoardToDrawList(struct sProcessed3dModel* pObjectData);
+struct sProcessed3dModel* drawCurrentObjectInstanced(struct sProcessed3dModel* pModel, struct sProcessed3dModel* pInstanceData);
 
 void updateEngineCamera(s_cameraProperties2* r4, const sVec3_FP& r5_position, const sVec3_S16& r6_rotation);
 
@@ -109,6 +110,7 @@ void translateMatrix(const sVec3_FP* translation, sMatrix4x3* pMatrix);
 void translateCurrentMatrix(const sVec3_FP* translation);
 void translateCurrentMatrix(const sVec3_FP& translation);
 void rotateMatrixYXZ(sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
+void rotateMatrixYXZ(const sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
 void rotateMatrixZYX(const sVec3_FP* rotationVec, sMatrix4x3* pMatrix);
 void rotateCurrentMatrixZYX(const sVec3_FP* rotationVec);
 void rotateCurrentMatrixZYX(const sVec3_FP& rotationVec);

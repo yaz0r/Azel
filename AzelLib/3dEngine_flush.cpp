@@ -115,6 +115,13 @@ struct s_objectToRender
 
 std::vector<s_objectToRender> objectRenderList;
 
+// 0601e3c6
+sProcessed3dModel* drawCurrentObjectInstanced(sProcessed3dModel* pModel, sProcessed3dModel* pInstanceData)
+{
+    Unimplemented();
+    return nullptr;
+}
+
 void addObjectToDrawList(sProcessed3dModel* pObjectData)
 {
     if (pObjectData == nullptr) {

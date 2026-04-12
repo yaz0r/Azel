@@ -25,7 +25,7 @@ void startScript_savePoint(s32 index)
 void LCSItemBox_CallbackSavePoint(p_workArea r4, sLCSTarget*)
 {
     s_itemBoxType1* pThis = (s_itemBoxType1*)r4;
-    startScript_savePoint(pThis->m84_savePointIndex - 1);
+    startScript_savePoint(pThis->m84_modelIdx - 1);
     if (pThis->m80_bitIndex > 999)
     {
         mainGameState.setBit566(pThis->m80_bitIndex);

@@ -2,32 +2,7 @@
 
 #include "battle/battleDragon.h" // todo: clean
 #include "battle/battleFormation.h"
-
-struct sBaldorBodyPart
-{
-    sBaldorBodyPart* m0_child;
-    sVec3_FP m4_worldPosition;
-    sVec3_FP m10_translation;
-    sVec3_FP m1C_rotation;
-    sVec3_FP m28_rotationVelocity;
-    sVec3_FP m34_rotationAcceleration;
-    s16 m40_modelIndex;
-    sVec3_FP m44_springStiffness;
-    fixedPoint m50_damping;
-    //size 0x54
-};
-
-struct sBaldorBody
-{
-    sVec3_FP m0_translation;
-    sVec3_FP mC_rotation;
-    sVec3_FP m18_rotationTarget;
-    void (*m24_update)(sBaldorBodyPart*, const sVec3_FP*, const sVec3_FP*, const sVec3_FP*);
-    void (*m28_draw)(struct sBaldor*, sBaldorBodyPart*);
-    void (*m2C_delete)();
-    std::vector<sBaldorBodyPart> m30_parts;
-    //size 0x34
-};
+#include "kernel/monsterPart.h"
 
 // This is shared with other battle models
 struct sBaldorBase : public s_workAreaTemplateWithArgWithCopy<sBaldorBase, struct sFormationData*>
@@ -55,7 +30,7 @@ struct sBaldor : public sBaldorBase
     sVec3_FP m44_translationTarget;
     sVec3_FP m50_translationDelta;
     sVec3_FP m5C_rotationDelta;
-    sBaldorBody* m68_body;
+    sMonsterBody* m68_body;
     sVec3_FP m6C_oscillationPhase;
     sVec3_FP m78_movementVector;
     p_workArea m90_attackTask;
@@ -63,9 +38,14 @@ struct sBaldor : public sBaldorBase
 };
 
 sBaldor* createBaldor(s_workAreaCopy* parent, struct sFormationData* pFormationEntry);
-sBaldorBody* Baldor_createBody(p_workArea parent, int numEntries);
-void Baldor_loadBodyPartData(sBaldorBody* pThis, int arg2, sSaturnPtr arg3);
 void Baldor_initSub0(sBaldorBase* pThis, sSaturnPtr dataPtr, struct sFormationData* pFormationEntry, s32 arg);
 void Baldor_update(sBaldorBase* pThisBase);
 void Baldor_draw(sBaldorBase* pThisBase);
+
+// baldor-specific segmented-body physics callbacks — installed by
+// monsterBody_loadPartData(body, 1, ...). Kept here because they're only
+// used by BTL_A3 Baldor (and they live in baldor.cpp).
+void baldorPart_update(sMonsterBodyPart* pThis, const sVec3_FP* pTranslation, const sVec3_FP* pRotation, const sVec3_FP* param4);
+void baldorPart_draw(struct s_fileBundle* pBundle, sMonsterBodyPart* pBodyPart);
+void baldorPart_drawPart(struct s_fileBundle* pBundle, sMonsterBodyPart* pBodyPart);
 

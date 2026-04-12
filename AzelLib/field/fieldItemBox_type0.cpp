@@ -24,13 +24,13 @@ void LCSItemBox_UpdateType0(s_itemBoxType1* pThis)
     scaleCurrentMatrixRow1(pThis->m78_scale);
     scaleCurrentMatrixRow2(pThis->m78_scale);
 
-    transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60);
+    transformAndAddVecByCurrentMatrix(&LCSItemBox_Table6[pThis->m8B_LCSType], &pThis->m60_renderPosition);
 
-    LCSItemBox_UpdateType0Sub0(pThis, 0x58, 0x19C, pThis->m7C);
+    LCSItemBox_UpdateType0Sub0(pThis->m0.m0_mainMemoryBundle, 0x58, 0x19C, pThis->m7C_invScale);
 
     popMatrix();
 
-    if (pThis->m8D)
+    if (pThis->m8D_visibilityFlag)
     {
         pThis->m8_LCSTarget.m18_diableFlags |= 1;
     }
@@ -40,24 +40,24 @@ void LCSItemBox_UpdateType0(s_itemBoxType1* pThis)
 
 static void LCSItemBox_OpenedBoxUpdate(s_itemBoxType1* pThis)
 {
-    switch (pThis->mEA_wasRendered)
+    switch (pThis->mEA_state)
     {
     case 0:
         pThis->m20 |= 1;
-        pThis->mE8 = 0x15;
-        pThis->mEA_wasRendered++;
+        pThis->mE8_animCountdown= 0x15;
+        pThis->mEA_state++;
         // fall
     case 1:
         stepAnimation(&pThis->m98_3dModel);
-        pThis->mEA_wasRendered++;
-        pThis->mE8--;
-        if (pThis->mE8 <= 0)
+        pThis->mEA_state++;
+        pThis->mE8_animCountdown--;
+        if (pThis->mE8_animCountdown<= 0)
         {
-            pThis->mEA_wasRendered = 3;
+            pThis->mEA_state = 3;
         }
         return;
     case 2:
-        pThis->mEA_wasRendered--;
+        pThis->mEA_state--;
         break;
     case 3:
         break;
@@ -135,7 +135,7 @@ void LCSItemBox_DrawType0(s_itemBoxType1* pThis)
 
     if (depthRangeIndex <= pGridTask->m1300)
     {
-        LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemoryBundle, LCSItemBox_Table5[pThis->m8C], LCSItemBox_Table4[pThis->m8C]);
+        LCSItemBox_DrawType0Sub0(pThis->m0.m0_mainMemoryBundle, LCSItemBox_Table5[pThis->m8C_param10], LCSItemBox_Table4[pThis->m8C_param10]);
     }
 
     popMatrix();

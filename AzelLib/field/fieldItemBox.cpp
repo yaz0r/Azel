@@ -2,6 +2,7 @@
 #include "fieldItemBox.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
+#include "processModel.h"
 #include "fieldVisibilityGrid.h"
 #include "fieldItemBoxDefinition.h"
 #include "fieldItemBox_type0.h"
@@ -97,17 +98,17 @@ static void itemBoxType1Init(s_itemBoxType1* pThis, s_itemBoxDefinition* arg)
     pThis->m54_boundingMax = r13->m18_boundingMax;
     pThis->m6C_rotation = r13->m24_rotation;
     pThis->m78_scale = r13->m30_scale;
-    pThis->m7C = FP_Div(0x10000, r13->m30_scale);
+    pThis->m7C_invScale= FP_Div(0x10000, r13->m30_scale);
     pThis->m80_bitIndex = r13->m34_bitIndex;
-    pThis->m84_savePointIndex = r13->m38;
+    pThis->m84_modelIdx = r13->m38;
     pThis->m8B_LCSType = r13->m41_LCSType;
-    pThis->m88_receivedItemId = r13->m3C_receivedItemId;
-    pThis->m8A_receivedItemQuantity = r13->m40_receivedItemQuantity;
-    pThis->m8C = r13->m42;
+    pThis->m88_poseIdx = r13->m3C_receivedItemId;
+    pThis->m8A_param9 = r13->m40_receivedItemQuantity;
+    pThis->m8C_param10= r13->m42;
     pThis->m86 = r13->m43;
-    pThis->m8D = r13->m44;
+    pThis->m8D_visibilityFlag = r13->m44;
 
-    createLCSTarget(&pThis->m8_LCSTarget, pThis, LCSItemBox_CallbackTable[r13->m41_LCSType], &pThis->m60, NULL, LCSItemBox_TableFlags[r13->m41_LCSType] | LCSItemBox_Table0[r13->m41_LCSType] | 0x100, r13->m38, r13->m3C_receivedItemId, r13->m40_receivedItemQuantity, r13->m42);
+    createLCSTarget(&pThis->m8_LCSTarget, pThis, LCSItemBox_CallbackTable[r13->m41_LCSType], &pThis->m60_renderPosition, NULL, LCSItemBox_TableFlags[r13->m41_LCSType] | LCSItemBox_Table0[r13->m41_LCSType] | 0x100, r13->m38, r13->m3C_receivedItemId, r13->m40_receivedItemQuantity, r13->m42);
 
     switch (r13->m41_LCSType)
     {
@@ -124,7 +125,7 @@ static void itemBoxType1Init(s_itemBoxType1* pThis, s_itemBoxDefinition* arg)
             if (mainGameState.getBit566(pThis->m80_bitIndex))
             {
                 pThis->m_DrawMethod = LCSItemBox_OpenedBoxDraw;
-                pThis->mEA_wasRendered = 3;
+                pThis->mEA_state = 3;
 
                 itemBoxType1InitSub0(&pThis->m98_3dModel, 20);
                 return;
@@ -133,10 +134,10 @@ static void itemBoxType1Init(s_itemBoxType1* pThis, s_itemBoxDefinition* arg)
         break;
     }
     case 1:
-        if (mainGameState.getBit(pThis->m88_receivedItemId + 243))
+        if (mainGameState.getBit(pThis->m88_poseIdx + 243))
         {
             pThis->m94 = 0;
-            pThis->mEA_wasRendered = 2;
+            pThis->mEA_state = 2;
         }
         else
         {
@@ -171,9 +172,81 @@ s8 LCSItemBox_shouldSpin(s_itemBoxType1* pThis)
     return 1;
 }
 
-void LCSItemBox_UpdateType0Sub0(s_itemBoxType1* pThis, s32 r5, s32 r6, fixedPoint r7)
+// 0607730a — per-node draw: cull against dragon, copy matrix, queue entry.
+// Assumes caller already switched to camera space.
+static void LCSItemBox_UpdateType0Sub0_drawNode(sProcessed3dModel* pModel, fixedPoint scale)
 {
-    PDS_unimplemented("LCSItemBox_UpdateType0Sub0");
+    if (pModel == nullptr)
+        return;
+
+    s32 boundingRadius = pModel->m0_radius.m_value + 0x8000;
+    s_visibilityGridWorkArea* pGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+
+    s32 dx = pCurrentMatrix->m[0][3].m_value - pDragon->m8_pos.m0_X.m_value;
+    if (dx < 0) dx = -dx;
+    s32 dy = pCurrentMatrix->m[1][3].m_value - pDragon->m8_pos.m4_Y.m_value;
+    if (dy < 0) dy = -dy;
+    s32 dz = pCurrentMatrix->m[2][3].m_value - pDragon->m8_pos.m8_Z.m_value;
+    if (dz < 0) dz = -dz;
+
+    if (dx <= boundingRadius && dy <= boundingRadius && dz <= boundingRadius)
+    {
+        copyMatrix(pCurrentMatrix, &pGrid->m44->m4_matrix);
+        allocateLCSEntry(pGrid, pModel, scale);
+    }
+}
+
+// 060774cc — recursive model hierarchy walker.
+static void LCSItemBox_UpdateType0Sub0_drawHierarchy(sModelHierarchy* pHierarchy,
+    std::vector<sStaticPoseData::sBonePoseData>::const_iterator& pBone, fixedPoint scale)
+{
+    while (true)
+    {
+        pushCurrentMatrix();
+        translateCurrentMatrix(&pBone->m0_translation);
+        rotateCurrentMatrixZYX(&pBone->mC_rotation);
+
+        if (pHierarchy->m0_3dModel != nullptr)
+        {
+            LCSItemBox_UpdateType0Sub0_drawNode(pHierarchy->m0_3dModel, scale);
+        }
+
+        if (pHierarchy->m4_subNode != nullptr)
+        {
+            pBone++;
+            LCSItemBox_UpdateType0Sub0_drawHierarchy(pHierarchy->m4_subNode, pBone, scale);
+        }
+
+        popMatrix();
+
+        if (pHierarchy->m8_nextNode == nullptr)
+            break;
+
+        pBone++;
+        pHierarchy = pHierarchy->m8_nextNode;
+    }
+}
+
+// 0606fa32 / 06077626 — deferred draw for model hierarchies. Switches to
+// camera space, multiplies the current world matrix, and recursively walks
+// the hierarchy submitting each visible node to the collision/LCS queue.
+void LCSItemBox_UpdateType0Sub0(s_fileBundle* pBundle, s32 r5, s32 r6, fixedPoint r7)
+{
+    sModelHierarchy* pHierarchy = pBundle->getModelHierarchy(r5);
+    sStaticPoseData* pPose = pBundle->getStaticPose(r6, pHierarchy->countNumberOfBones());
+
+    sMatrix4x3 savedWorldMatrix;
+    copyMatrix(pCurrentMatrix, &savedWorldMatrix);
+
+    pushCurrentMatrix();
+    copyToCurrentMatrix(&cameraProperties2.m28[0]);
+    multiplyCurrentMatrix(&savedWorldMatrix);
+
+    auto boneIter = pPose->m0_bones.cbegin();
+    LCSItemBox_UpdateType0Sub0_drawHierarchy(pHierarchy, boneIter, r7);
+
+    popMatrix();
 }
 
 p_workArea findParentGridCellTaskForItem(s_itemBoxDefinition* r14)

@@ -1833,13 +1833,13 @@ static void BTL_T0_Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormatio
 
     *pThis->m28_rotation.m0_current = *pThis->m28_rotation.m4_target;
 
-    pThis->m68_body = Baldor_createBody(pThis, 6);
-    Baldor_loadBodyPartData(pThis->m68_body, 1, g_BTL_T0->getSaturnPtr(0x060a9c68));
+    pThis->m68_body = monsterBody_create(pThis, 6);
+    monsterBody_loadPartData(pThis->m68_body, 1, g_BTL_T0->getSaturnPtr(0x060a9c68));
 
     sSaturnPtr pDataSource = g_BTL_T0->getSaturnPtr(0x060a9ce0);
     for (int i = 0; i < 6; i++)
     {
-        sBaldorBodyPart& dest = pThis->m68_body->m30_parts[i];
+        sMonsterBodyPart& dest = pThis->m68_body->m30_parts[i];
         dest.m10_translation = readSaturnVec3(pDataSource + 0xC * i);
         dest.m1C_rotation[1] = (*pThis->m28_rotation.m4_target)[1];
     }

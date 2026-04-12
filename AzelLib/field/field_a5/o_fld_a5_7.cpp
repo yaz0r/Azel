@@ -15,7 +15,7 @@ static void fieldA5_7_startTasks(p_workArea workArea)
     createA5_wormObjectTask(workArea);
     createA5_wormDustTask(workArea);
     createA5_exitEntityTask(workArea);
-    Unimplemented(); // FUN_FLD_A5__060569ac — exit trigger entity via FUN_06056870 with {5,4,0x160,0xC0,8,0x164,0xC4}
+    createA5_envObjects_sub7_exits(workArea);
     createA5_decorObjects_day();
     createA5_fieldEventCheck(workArea);
     createA5_encounterConfig(workArea, 5, 0, 0x081F, 0x200, 0xA0, 0x40, 0x1F);

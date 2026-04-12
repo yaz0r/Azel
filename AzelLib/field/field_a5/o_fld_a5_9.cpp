@@ -9,7 +9,7 @@ static void fieldA5_9_startTasks(p_workArea workArea)
 {
     createFieldSpecificDataTask_A5(workArea);
     createA5_3dSceneManager(workArea);
-    Unimplemented(); // FUN_FLD_A5__0605ec60 — 3D scenery entity (size 0x58, getMemoryArea(7), pos {0x480000, 0x5000, -0xA00000})
+    createA5_sceneryEntity(workArea);
     // 0605f00e — init worm color tables for subfield 9
     {
         s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;

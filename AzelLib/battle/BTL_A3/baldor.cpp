@@ -147,22 +147,7 @@ void Baldor_initSub0(sBaldorBase* pThis, sSaturnPtr dataPtr, sFormationData* pFo
     }
 }
 
-void monsterPart_defaultUpdate(sBaldorBodyPart*, const sVec3_FP*, const sVec3_FP*, const sVec3_FP*)
-{
-    assert(0);
-}
-
-void monsterPart_defaultDraw(sBaldor*, sBaldorBodyPart*)
-{
-    assert(0);
-}
-
-void monsterPart_defaultDelete()
-{
-    assert(0);
-}
-
-void baldorPart_update(sBaldorBodyPart* pThis, const sVec3_FP* pTranslation, const sVec3_FP* pRotation, const sVec3_FP* param4)
+void baldorPart_update(sMonsterBodyPart* pThis, const sVec3_FP* pTranslation, const sVec3_FP* pRotation, const sVec3_FP* param4)
 {
     pThis->m34_rotationAcceleration += MTH_Mul((*param4 - pThis->m1C_rotation).normalized(), pThis->m44_springStiffness);
 
@@ -194,96 +179,35 @@ void baldorPart_update(sBaldorBodyPart* pThis, const sVec3_FP* pTranslation, con
     }
 }
 
-void baldorPart_draw(sBaldor* pBaltor, sBaldorBodyPart* pBaltorPart)
+void baldorPart_draw(s_fileBundle* pBundle, sMonsterBodyPart* pBodyPart)
 {
     while (1)
     {
-        if (pBaltorPart->m40_modelIndex > 0)
+        if (pBodyPart->m40_modelIndex > 0)
         {
             pushCurrentMatrix();
-            translateCurrentMatrix(pBaltorPart->m4_worldPosition);
-            rotateCurrentMatrixZYX(pBaltorPart->m1C_rotation);
-            addObjectToDrawList(pBaltor->m0_fileBundle->get3DModel(pBaltorPart->m40_modelIndex));
+            translateCurrentMatrix(pBodyPart->m4_worldPosition);
+            rotateCurrentMatrixZYX(pBodyPart->m1C_rotation);
+            addObjectToDrawList(pBundle->get3DModel(pBodyPart->m40_modelIndex));
             popMatrix();
         }
-        if (pBaltorPart->m0_child == nullptr)
+        if (pBodyPart->m0_child == nullptr)
             break;
-        pBaltorPart = pBaltorPart->m0_child;
+        pBodyPart = pBodyPart->m0_child;
     }
 }
 
-void baldorPart_delete()
+// ZYX-order single-part drawer — the baldor variant of
+// monsterPart_defaultDrawPart.
+void baldorPart_drawPart(s_fileBundle* pBundle, sMonsterBodyPart* pBodyPart)
 {
-    assert(0);
-}
-
-void Baldor_createBodySub0(sBaldorBody* pData)
-{
-    pData->m0_translation.zeroize();
-    pData->mC_rotation.zeroize();
-    pData->m18_rotationTarget.zeroize();
-    pData->m24_update = monsterPart_defaultUpdate;
-    pData->m28_draw = monsterPart_defaultDraw;
-    pData->m2C_delete = monsterPart_defaultDelete;
-    pData->m30_parts.resize(0);
-}
-
-void Baldor_createBodySub1(sBaldorBodyPart* pEntry, sBaldorBodyPart* pNextEntry)
-{
-    pEntry->m0_child = pNextEntry;
-    pEntry->m4_worldPosition.zeroize();
-    pEntry->m10_translation.zeroize();
-    pEntry->m1C_rotation.zeroize();
-    pEntry->m28_rotationVelocity.zeroize();
-    pEntry->m34_rotationAcceleration.zeroize();
-    pEntry->m40_modelIndex = 0;
-    pEntry->m44_springStiffness.zeroize();
-    pEntry->m50_damping = 0;
-}
-
-sBaldorBody* Baldor_createBody(p_workArea parent, int numEntries)
-{
-    sBaldorBody* pNewData = new sBaldorBody;
-    Baldor_createBodySub0(pNewData);
-
-    pNewData->m30_parts.resize(numEntries);
-
-    Baldor_createBodySub1(&pNewData->m30_parts[numEntries - 1], nullptr);
-    int iVar1 = numEntries - 1;
-    while (iVar1 != 0)
+    if (pBodyPart->m40_modelIndex > 0)
     {
-        Baldor_createBodySub1(&pNewData->m30_parts[iVar1 - 1], &pNewData->m30_parts[iVar1]);
-        iVar1--;
-    }
-
-    return pNewData;
-}
-
-void Baldor_loadBodyPartDataSub0(sBaldorBodyPart* dest, sSaturnPtr source)
-{
-    dest->m40_modelIndex = readSaturnS16(source);
-    dest->m44_springStiffness = readSaturnVec3(source + 4);
-    dest->m50_damping = readSaturnS32(source + 0x10);
-}
-
-void Baldor_loadBodyPartData(sBaldorBody* pThis, int arg2, sSaturnPtr arg3)
-{
-    if (arg2 == 1)
-    {
-        pThis->m24_update = baldorPart_update;
-        pThis->m28_draw = baldorPart_draw;
-        pThis->m2C_delete = baldorPart_delete;
-    }
-
-    if (!arg3.isNull())
-    {
-        sBaldorBodyPart* piVar1 = &pThis->m30_parts[0];
-        do
-        {
-            Baldor_loadBodyPartDataSub0(piVar1, arg3);
-            piVar1 = piVar1->m0_child;
-            arg3 += 0x14;
-        } while (piVar1);
+        pushCurrentMatrix();
+        translateCurrentMatrix(pBodyPart->m4_worldPosition);
+        rotateCurrentMatrixZYX(pBodyPart->m1C_rotation);
+        addObjectToDrawList(pBundle->get3DModel(pBodyPart->m40_modelIndex));
+        popMatrix();
     }
 }
 
@@ -326,17 +250,17 @@ void Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormationEntry)
 
     *pThis->m28_rotation.m0_current = *pThis->m28_rotation.m4_target;
 
-    pThis->m68_body = Baldor_createBody(pThis, 6);
+    pThis->m68_body = monsterBody_create(pThis, 6);
 
     if ((gBattleManager->m6_subBattleId == 8) || (gBattleManager->m6_subBattleId == 9))
     {
         // During the Queen baldor fight
-        Baldor_loadBodyPartData(pThis->m68_body, 1, g_BTL_A3->getSaturnPtr(0x60a7ed4));
+        monsterBody_loadPartData(pThis->m68_body, 1, g_BTL_A3->getSaturnPtr(0x60a7ed4));
         sSaturnPtr pDataSource = g_BTL_A3->getSaturnPtr(0x60a7f94);
 
         for (int i = 0; i < 6; i++)
         {
-            sBaldorBodyPart& dest = pThis->m68_body->m30_parts[i];
+            sMonsterBodyPart& dest = pThis->m68_body->m30_parts[i];
 
             dest.m10_translation = readSaturnVec3(pDataSource + 0xC * i);
             dest.m1C_rotation[1] = MTH_Mul(0x1c71c71, (randomNumber() & 0x1ffff) - 0xffff) + pThis->m28_rotation.m4_target->m4_Y;
@@ -346,12 +270,12 @@ void Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormationEntry)
     }
     else
     {
-        Baldor_loadBodyPartData(pThis->m68_body, 1, g_BTL_A3->getSaturnPtr(0x60a7e5c));
+        monsterBody_loadPartData(pThis->m68_body, 1, g_BTL_A3->getSaturnPtr(0x60a7e5c));
         sSaturnPtr pDataSource = g_BTL_A3->getSaturnPtr(0x60a7f4c);
 
         for (int i = 0; i < 6; i++)
         {
-            sBaldorBodyPart& dest = pThis->m68_body->m30_parts[i];
+            sMonsterBodyPart& dest = pThis->m68_body->m30_parts[i];
 
             dest.m10_translation = readSaturnVec3(pDataSource + 0xC * i);
             dest.m1C_rotation[1] = (*pThis->m28_rotation.m4_target)[1];
@@ -554,7 +478,7 @@ void springDampedStep(sVec3_FP* pCurrent, sVec3_FP* pDelta, sVec3_FP* pTarget, s
 
 struct sBaldorAttack : public s_workAreaTemplate<sBaldorAttack>
 {
-    sBaldorBody* m0;
+    sMonsterBody* m0;
     s16 m4_delay;
     s16 m6_baldorPartEmittingAttack;
     s16 m8_numAttackRotation;
@@ -1126,7 +1050,7 @@ void createBaldorDeathEffect(sBaldor* pThis)
     // 060556e4 — individual body part debris (each tentacle segment flies off separately)
     for (int i = 0; i < 6; i++)
     {
-        sBaldorBodyPart& part = pThis->m68_body->m30_parts[i];
+        sMonsterBodyPart& part = pThis->m68_body->m30_parts[i];
         createBaldorPartDebris(&part.m4_worldPosition, &part.m1C_rotation, part.m40_modelIndex);
     }
 }
@@ -1221,7 +1145,7 @@ void Baldor_update(sBaldorBase* pThisBase)
     pThis->m68_body->mC_rotation = *pThis->m28_rotation.m0_current;
     pThis->m68_body->m18_rotationTarget = *pThis->m28_rotation.m0_current;
 
-    sBaldorBody* pData = pThis->m68_body;
+    sMonsterBody* pData = pThis->m68_body;
     pData->m24_update(&pData->m30_parts[0], &pData->m0_translation, &pData->mC_rotation, &pData->m18_rotationTarget);
 
     pThis->m78_movementVector = pThis->m50_translationDelta;
@@ -1322,8 +1246,8 @@ void Baldor_draw(sBaldorBase* pThisBase)
     pThis->m38_3dModel->m18_drawFunction(pThis->m38_3dModel);
     popMatrix();
 
-    sBaldorBody* pBaldorPart = pThis->m68_body;
-    pBaldorPart->m28_draw(pThis, &pBaldorPart->m30_parts[0]);
+    sMonsterBody* pBaldorPart = pThis->m68_body;
+    pBaldorPart->m28_draw(pThis->m0_fileBundle, &pBaldorPart->m30_parts[0]);
 
     if (pThis->mB_flags & 8)
     {
