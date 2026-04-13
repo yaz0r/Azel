@@ -42,8 +42,12 @@ static void a5BossEntity0_Update(sA5BossEntity0* pThis)
     pThis->m8_scrollX = performModulo(0x50, scrollX) - 0x50;
 }
 
-// 06055822
-static void a5BossEntity0_Draw(sA5BossEntity0* pThis) { Unimplemented(); }
+// 06055822 — draw boss background: tiles VDP1 normal sprites across the screen.
+// Uses raw VDP1 command submission (0x06055678) which needs bgfx adaptation.
+static void a5BossEntity0_Draw(sA5BossEntity0* pThis)
+{
+    Unimplemented(); // VDP1 normal sprite tiling — needs bgfx rendering path
+}
 
 // 060558d8 — create subfield B entity (boss controller)
 static void createA5_B_entity0(p_workArea parent)

@@ -1,6 +1,6 @@
 #include "PDS.h"
 #include "o_fld_a7.h"
-#include "a7_cellObj0.h"
+#include "a7_skyTransporter.h"
 #include "a7_delayedExitTrigger.h"
 #include "a7_cameraScriptSubtask.h"
 #include "a7_effectTask.h"
@@ -10,8 +10,6 @@
 #include "3dModels.h"
 #include "field/fieldVisibilityGrid.h"
 #include "audio/systemSounds.h"
-
-// 060613ca — addCameraImpulse, moved to shared field.cpp
 
 // Camera shake rotation impulse table (06084228) — 4 entries of sVec3_FP, cycled per frame
 static const sVec3_FP cameraShakeRotations[] = {
@@ -28,12 +26,10 @@ static const struct { s16 scriptIndex; s16 scriptParam; } a7ScriptLookup[] = {
     { 0x0C, 0x05D4 },
 };
 
-// 0606818c — startFieldScriptWithFlagCheck, moved to shared field.cpp
+struct s_skyTransporter;
+static void skyTransporter_RenderCallback(p_workArea pWorkArea, sFieldModelRenderContext* pCtx);
 
-struct s_A7_CellObj0;
-static void A7_CellObj0_RenderCallback(p_workArea pWorkArea, sFieldModelRenderContext* pCtx);
-
-struct s_A7_CellObj0 : public s_workAreaTemplate<s_A7_CellObj0>
+struct s_skyTransporter : public s_workAreaTemplate<s_skyTransporter>
 {
     static const TypedTaskDefinition* getTypedTaskDefinition()
     {
@@ -42,7 +38,7 @@ struct s_A7_CellObj0 : public s_workAreaTemplate<s_A7_CellObj0>
     }
 
     // 060547d0
-    static void Update(s_A7_CellObj0* pThis)
+    static void Update(s_skyTransporter* pThis)
     {
         s_DataTable2Sub0* pData = pThis->m8;
         s_fieldSpecificData_A7* pFieldData = getFieldSpecificData_A7();
@@ -81,7 +77,7 @@ struct s_A7_CellObj0 : public s_workAreaTemplate<s_A7_CellObj0>
             }
             break;
         case 2:
-            if (pFieldData->m277 == 8)
+            if (pFieldData->m277_segmentsReturned == 8)
             {
                 a7CreateEffectTask(pThis, &pData->m4_position, gFLD_A7->getSaturnPtr(0x06084258), 0);
                 playSystemSoundEffect(0x71);
@@ -136,12 +132,12 @@ struct s_A7_CellObj0 : public s_workAreaTemplate<s_A7_CellObj0>
         {
             a7CreateEffectTask(pThis, &pData->m4_position, gFLD_A7->getSaturnPtr(0x06084258), 0);
             pFieldData->m276 = 8;
-            pFieldData->m277 = 8;
+            pFieldData->m277_segmentsReturned = 8;
         }
     }
 
     // 060546cc
-    static void Draw(s_A7_CellObj0* pThis)
+    static void Draw(s_skyTransporter* pThis)
     {
         if (!pThis->m51_visible)
             return;
@@ -172,10 +168,10 @@ struct s_A7_CellObj0 : public s_workAreaTemplate<s_A7_CellObj0>
 };
 
 // 06054724 — model render context callback (interaction handler)
-static void A7_CellObj0_RenderCallback(p_workArea pWorkArea, sFieldModelRenderContext* pCtx)
+static void skyTransporter_RenderCallback(p_workArea pWorkArea, sFieldModelRenderContext* pCtx)
 {
     s_fieldSpecificData_A7* pFieldData = getFieldSpecificData_A7();
-    s32 index = pFieldData->m277;
+    s32 index = pFieldData->m277_segmentsReturned;
     s32 scriptIndex = a7ScriptLookup[index].scriptIndex;
     s32 scriptParam = a7ScriptLookup[index].scriptParam;
 
@@ -188,9 +184,9 @@ static void A7_CellObj0_RenderCallback(p_workArea pWorkArea, sFieldModelRenderCo
         startFieldScriptWithFlagCheck(scriptIndex, scriptParam);
     }
 
-    if (pFieldData->m277 == 8)
+    if (pFieldData->m277_segmentsReturned == 8)
     {
-        s_A7_CellObj0* pThis = (s_A7_CellObj0*)pWorkArea;
+        s_skyTransporter* pThis = (s_skyTransporter*)pWorkArea;
         if ((mainGameState.bitField[0xa3] & 4) == 0)
         {
             pThis->m50_state = 4;
@@ -205,12 +201,12 @@ static void A7_CellObj0_RenderCallback(p_workArea pWorkArea, sFieldModelRenderCo
 }
 
 // 06054a8c
-void create_A7_CellObj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
+void create_skyTransporter(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 {
     s_fieldSpecificData_A7* pFieldData = getFieldSpecificData_A7();
 
     s_visibilityGridWorkArea* pVisGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
-    s_A7_CellObj0* pTask = createSubTask<s_A7_CellObj0>((p_workArea)pVisGrid->m38);
+    s_skyTransporter* pTask = createSubTask<s_skyTransporter>((p_workArea)pVisGrid->m38);
     if (pTask)
     {
         getMemoryArea(&pTask->m0, r6);
@@ -223,13 +219,13 @@ void create_A7_CellObj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
         pTask->m18_revolutions = 0;
 
         initFieldModelRenderContext(&pTask->m1C_renderCtx, pTask,
-            (void*)&A7_CellObj0_RenderCallback,
+            (void*)&skyTransporter_RenderCallback,
             &r5.m4_position, nullptr, 0, 0, -1, 0, 0);
 
         if (getFieldTaskPtr()->m2C_currentFieldIndex == 0x16)
         {
             pTask->m50_state = 2;
-            pFieldData->m277 = 8;
+            pFieldData->m277_segmentsReturned = 8;
         }
         else
         {

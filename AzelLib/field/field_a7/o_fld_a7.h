@@ -20,7 +20,7 @@ struct s_fieldSpecificData_A7 : public s_workAreaTemplate<s_fieldSpecificData_A7
     u8 m0_pad[0x274];
     s16 m274;
     u8 m276;
-    u8 m277;
+    u8 m277_segmentsReturned;
     u8 m278;
     u8 m279;
     u8 m27A;

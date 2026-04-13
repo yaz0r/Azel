@@ -141,8 +141,3 @@ void initDragonParams_A5_open();
 void initDragonParams_A5_corridor();
 void initDragonParams_A5_B();
 
-// Dragon cutscene helpers (used by scenery entity effect)
-struct s_scriptData3;
-// a5_dragonTransitionToNormal — moved to shared dragonTransitionToNormal() in fieldDragonInput.h
-// a5_setCutsceneKeyFrame, a5_clearCutsceneKeyFrame, a5_enableScriptSkippingAndExit
-// — moved to shared fieldDragonInput.h as setCutsceneKeyFrame, clearCutsceneKeyFrame, enableScriptSkippingAndExit

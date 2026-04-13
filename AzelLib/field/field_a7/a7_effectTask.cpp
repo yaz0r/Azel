@@ -46,8 +46,6 @@ struct sA7EffectSpawnDesc
     s32 m1C_param4;
 };
 
-// 0606fe10 — signedRandom (shared field.cpp)
-
 // Forward declaration — defined after the phase update functions
 static s32 a7EffectTask_particleStep_06057054(sA7Particle* pParticle, u32* pArrayA, u32 arrayBLifetime);
 

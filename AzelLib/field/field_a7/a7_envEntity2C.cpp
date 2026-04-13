@@ -14,13 +14,14 @@
 #include "field/fieldDragonInput.h"
 #include "field/fieldScriptWaitTask.h"
 #include "field/fieldAnimRingSubTask.h"
+#include "field/fieldDebrisScatter.h"
 #include "mainMenuDebugTasks.h"
 #include "field/fieldVisibilityGrid.h"
 
 s32 playBattleSoundEffect(s32 effectIndex);
 
-// 06070ca4 — empty function (Ghidra: a7CellObj0_noop). Faithfully called.
-static void a7CellObj0_noop(s32* /*pScratch*/)
+// 06070ca4 — empty function (Ghidra: skyTransporter_noop). Faithfully called.
+static void skyTransporter_noop(s32* /*pScratch*/)
 {
 }
 
@@ -136,8 +137,6 @@ struct sA7EnvEntity2CEffectTask : public s_workAreaTemplateWithArg<sA7EnvEntity2
     s16                m1C2;              // 0x1C2 — non-zero disables the per-segment width table
     // Saturn size 0x1c4
 };
-
-// 0606fa42 / 0606fade — isPointOnScreen / isWorldPositionOnScreen (shared field.cpp)
 
 // 06056748 — alternate update installed when the initial countdown expires.
 // While m1C2 == 0, each tick grows the reverse ring trail by advancing
@@ -481,13 +480,37 @@ static void a7EnvEntity2CChild_spawnEffect_06056b90(p_workArea parent,
 // quad-list pointer and tail-calls a7SceneParticle_spawnProjected. The
 // descriptor slot layout beyond m8_pQuadList isn't yet mapped, so the
 // preparation is stubbed.
-static void a7EnvEntity2CChild_setupTerminalSpawn_060595a2(sA7EnvEntity2CChild* /*pThis*/,
+static void a7EnvEntity2CChild_setupTerminalSpawn_060595a2(sA7EnvEntity2CChild* pThis,
                                                            sA7SceneParticleDesc* /*pDesc*/)
 {
-    Unimplemented();
+    sDebrisScatterParams params;
+    initDebrisScatterConfig(&params, 4, 0x248);
+
+    s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+    u8* pRaw = pBundle->getRawBuffer();
+    u32 treeRootOffset = READ_BE_U32(pRaw + 4);
+    params.m8_spread = fixedPoint(readMaxScalarFromBundleTree(pRaw, treeRootOffset));
+
+    params.m10_pPosition = &pThis->m14_currentPos;
+    params.m14_pRotation = &pThis->m38_rotation;
+    params.m0_gravity = fixedPoint(0xdc);
+    params.m4_bounce = fixedPoint((s32)0xffffffff);
+    params.mC_randomMask = fixedPoint(0x7fffff);
+    params.m8_spread = MTH_Mul(params.m8_spread, fixedPoint(0x48000));
+
+    // Compute directional velocity toward tower anchor (0x600000, _, -0x600000)
+    s32 angle = atan2_FP(-0x600000 - pThis->m14_currentPos.m8_Z.m_value,
+                          0x600000 - pThis->m14_currentPos.m0_X.m_value);
+    u16 idx = (u16)((u32)(angle + 0xC000000) >> 16) & 0xFFF;
+    params.m18_velX = MTH_Mul(fixedPoint(0x4000), getCos(idx));
+    params.m1C_velY = fixedPoint(0x555);
+    params.m20_velZ = MTH_Mul(fixedPoint(0x4000), getSin(idx));
+
+    params.m_pBundle = pBundle;
+
+    createDebrisScatterTask((p_workArea)pThis, &params, false);
 }
 
-// AnimRingSubTask + arg struct + all functions moved to shared fieldAnimRingSubTask.h/cpp
 // sA7EnvEntity2CChild_AnimArg is now sAnimRingArg
 #define sA7EnvEntity2CChild_AnimArg sAnimRingArg
 
@@ -606,7 +629,6 @@ static void a7EnvEntity2CChild_Update(sA7EnvEntity2CChild* pThis)
     pThis->mDC_visible = (vis == 0);
 }
 
-
 // 06059ab0
 static void a7EnvEntity2CChild_Draw(sA7EnvEntity2CChild* pThis)
 {
@@ -651,26 +673,11 @@ static p_workArea spawnA7EnvEntity2CChild(p_workArea parent, sSaturnPtr entry, u
     return (p_workArea)createSiblingTaskWithArg<sA7EnvEntity2CChild>(parent, &arg, &td);
 }
 
-// interpolateAngle28 — moved to shared fieldDragonInput.cpp
-
 static inline s32 a7_performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
-
-// checkDragonTransition � moved to shared fieldDragonInput.cpp
-
-// computeBoundsPushback � moved to shared fieldDragonInput.cpp
-
-
-
-// ScriptWaitTask — moved to shared fieldScriptWaitTask.cpp
 
 extern void dispatchTutorialMultiChoiceSub2();
 
-// a7DragonUpdate_0607e848 � moved to shared fieldDragonInput.cpp
-
-// a7DragonUpdate_0607e924 � moved to shared fieldDragonInput.cpp
-
 // 060732fc, 06073266 — clearDragonScriptFlag, dragonTransitionToNormal
-// moved to shared fieldDragonInput.cpp
 
 // 06059b8c
 void a7EnvEntity2C_Init(sA7EnvEntity2C* pThis, sSaturnPtr arg)
@@ -769,7 +776,7 @@ void a7EnvEntity2C_Update(sA7EnvEntity2C* pThis)
     {
         if (pThis->m8_iter < aliveCount)
         {
-            a7CellObj0_noop(scratch);
+            skyTransporter_noop(scratch);
         }
         u32 next = (u32)(pThis->mC_phaseCounter + 1) & 3;
         pThis->mC_phaseCounter = (s32)next;

@@ -16,6 +16,7 @@
 #include "field/fieldDragonInput.h"
 #include "a7_spawnedEntityChild.h"
 #include "a7_envEntity2C.h"
+#include "a7_beamChargeWobble.h"
 #include "kernel/vdp1AnimatedQuad.h"
 #include <vector>
 
@@ -124,7 +125,7 @@ void countActiveObjectsA7()
 {
     s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
     pFieldData->m276 = 0;
-    pFieldData->m277 = 0;
+    pFieldData->m277_segmentsReturned = 0;
     for (s32 i = 0; i < 8; i += 4)
     {
         for (s32 j = 0; j < 4; j++)
@@ -132,7 +133,7 @@ void countActiveObjectsA7()
             if (readGameStateBitFromTable(i + j) != 0)
             {
                 pFieldData->m276++;
-                pFieldData->m277++;
+                pFieldData->m277_segmentsReturned++;
             }
         }
     }
@@ -244,11 +245,11 @@ static void proximityCheckUpdate(sA7ProximityTask* pThis)
         /* && additional checks for FUN_FLD_A7__0606b5d4, 060682c4, 060692e8 would go here */)
     {
         pThis->mC_counter++;
-        if (pThis->mC_counter > 0x96 && pFieldData->m277 == 8)
+        if (pThis->mC_counter > 0x96 && pFieldData->m277_segmentsReturned == 8)
         {
             startFieldScript(0, 0x5c8);
         }
-        if (pThis->mC_counter > 0x24 && pFieldData->m277 < 8)
+        if (pThis->mC_counter > 0x24 && pFieldData->m277_segmentsReturned < 8)
         {
             startFieldScript(1, 0x5c9);
             return;
@@ -272,7 +273,6 @@ void createA7_proximityCheck(p_workArea parent)
 
 // --- Model render context (0606b45c / 0606b4b0) --- moved to field/fieldModelRender.cpp
 
-// 06076ea8 — create 3D scene manager subtask (uses shared fieldSceneManager)
 static sFieldSceneManager* createA7_3dSceneManager(p_workArea parent, s32 areaIndex, s32 count)
 {
     return createFieldSceneManager(parent, areaIndex, count);
@@ -315,8 +315,6 @@ void createA7_emptySubtask(p_workArea parent)
     createSubTaskFromFunction<sA7EmptySubtask>(parent, &a7EmptySubtaskUpdate);
 }
 
-// 060692e8 / 060682c4 / 06069758 — moved to shared field.cpp as isNoCutsceneActive / isScriptActive / enableFieldScriptSkipping
-
 // Encounter check subtask (4 bytes)
 struct sA7EncounterCheckSubtask : public s_workAreaTemplate<sA7EncounterCheckSubtask>
 {
@@ -333,8 +331,6 @@ struct sA7EncounterNotification : public s_workAreaTemplate<sA7EncounterNotifica
     u8 mC;
     // size 0x10
 };
-
-// 0606fa1c — enableScriptSkippingAndExit (shared fieldDragonInput.cpp)
 
 // 06056498
 static void a7EncounterNotificationUpdate(sA7EncounterNotification* pThis)
@@ -655,7 +651,6 @@ struct sA7SpawnedEntity : public s_workAreaTemplateWithArg<sA7SpawnedEntity, sSa
     // Saturn size 0x208
 };
 
-// 0607c104 — centeredRandom (shared fieldDebrisScatter.cpp)
 s32 a7CenteredRandom(u32 mask)
 {
     return centeredRandom(mask);
@@ -913,7 +908,6 @@ void createA7_envEntity_51ee(p_workArea parent, sSaturnPtr arg, u8 param3)
 }
 
 // 0607c18e, 0607c120 — initDebrisScatterConfig, readMaxScalarFromBundleTree
-// moved to shared fieldDebrisScatter.cpp
 
 // Forward declarations
 struct sA7EnvEntity60;
@@ -956,10 +950,22 @@ static void a7EnvEntity60_SpawnExplosion(sA7EnvEntity60* pThis)
     createDebrisScatterTask((p_workArea)pThis, &params, false);
 }
 
-// 0605e0ec — debris draw callback
-static void a7EnvEntity60_debrisDrawCallback(p_workArea /*pDebrisTask*/, sVec3_FP* /*pPosition*/)
+// 0605e0ec — debris draw callback: spawn a projected scene particle at randomized position
+static void a7EnvEntity60_debrisDrawCallback(p_workArea /*pDebrisTask*/, sVec3_FP* pPosition)
 {
-    Unimplemented();
+    sVec3_FP vel = {};
+    sVec3_FP pos;
+    pos.m0_X = fixedPoint(pPosition->m0_X.m_value + centeredRandom(0x1FFFF));
+    pos.m4_Y = 0;
+    pos.m8_Z = fixedPoint(pPosition->m8_Z.m_value + centeredRandom(0x1FFFF));
+
+    s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
+    sFieldSceneManager* pManager = (sFieldSceneManager*)pFieldData->m280;
+
+    sSceneParticleDesc desc = {};
+    desc.m8_pQuadList = a7GetOrParseQuadList(gFLD_A7->getSaturnPtr(0x060804E4));
+
+    sceneParticle_spawnProjected(pManager, &desc, &pos, &vel);
 }
 
 // 0605E768
@@ -1188,8 +1194,6 @@ static void dragonPushFromPoint_A7(s_dragonTaskWorkArea* pDragon, sVec3_FP* pTar
     // m164 (Y) unchanged
     pDragon->m160_deltaTranslation.m8_Z = fixedPoint(pDragon->m160_deltaTranslation.m8_Z.asS32() + pushZ);
 }
-
-// 06060118 — clearCameraZoneTargets (shared field.cpp)
 
 // 06056dbc — dragon mF4 callback for subfield 1
 void dragonCallback_A7_1(s_dragonTaskWorkArea* pDragon)

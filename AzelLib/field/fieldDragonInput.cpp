@@ -1,6 +1,8 @@
 #include "PDS.h"
 #include "fieldDragonInput.h"
 #include "field/field_a3/o_fld_a3.h"
+#include "field/fieldScriptWaitTask.h"
+#include "field/fieldVisibilityGrid.h"
 
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
 
@@ -851,16 +853,123 @@ void dragonUpdate_normal_type8(s_dragonTaskWorkArea* pDragon)
     dragonUpdate_normalTail(pDragon);
 }
 
-// 06088008 (A5) / 06080414 (A3) — process camera script waypoints
-void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
+// 0608604a (A5) — set dragon animation state based on current speed vs mid-speed threshold
+void setDragonAnimationFromSpeed(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented();
+    // Compute mid-speed as average of first two speed values
+    s32 midSpeed = (s32)((u32)(pDragon->m21C_DragonSpeedValues[0].m_value
+                              + pDragon->m21C_DragonSpeedValues[1].m_value
+                              + (u32)(pDragon->m21C_DragonSpeedValues[0].m_value
+                                    + pDragon->m21C_DragonSpeedValues[1].m_value < 0)) >> 1);
+
+    if (pDragon->m154_dragonSpeed.m_value > midSpeed)
+    {
+        // Fast: set animation to "fast flight" unless already in that state
+        if (pDragon->m23A_dragonAnimation == 0 || pDragon->m23A_dragonAnimation == 2)
+            return;
+        pDragon->m238 = 4;
+        pDragon->m237 = 4;
+        pDragon->m244 = 0;
+    }
+    else
+    {
+        // Slow: set animation to "slow flight" unless already there
+        if (pDragon->m23A_dragonAnimation == 5)
+            return;
+        pDragon->m238 = 0;
+        pDragon->m237 = 0;
+        pDragon->m244 = 5;
+    }
+    pDragon->m23C |= 5;
 }
 
-// 060881b2 (A5) / 060805be (A3) — process cutscene movement data
+// 06088008 (A5) / 06080414 (A3) — process camera script waypoints (3-state machine)
+void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
+{
+    pDragon->m24A_runningCameraScript = 1;
+
+    s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
+    pLCS->m8 |= 1;
+
+    s32 state = pDragon->m104_dragonScriptStatus;
+    if (state == 0)
+    {
+        // State 0: initialize from script data
+        updateCameraScriptSub0((p_workArea)pDragon->mB8_lightWingEffect);
+        activateCameraFollowMode(0);
+        pDragon->mF8_Flags &= ~0x400;
+        pDragon->mF8_Flags |= 0x20000;
+
+        pDragon->m1E8_cameraScriptDelay = (s16)pScript->m20_length;
+
+        // Set dragon angles from script rotation
+        pDragon->m20_angle = pScript->mC_rotation;
+
+        // Set dragon position from script position
+        pDragon->m8_pos = pScript->m0_position;
+
+        // Compute delta translation from script speed + yaw angle
+        u16 yawIdx = (u16)((u32)pDragon->m20_angle.m4_Y.m_value >> 16) & 0xFFF;
+        pDragon->m160_deltaTranslation.m0_X = MTH_Mul(fixedPoint(-pScript->m1C), getSin(yawIdx));
+        pDragon->m160_deltaTranslation.m4_Y = fixedPoint(performDivision(
+            (s32)pDragon->m1E8_cameraScriptDelay, pScript->m18.m_value - pDragon->m8_pos.m4_Y.m_value));
+        pDragon->m160_deltaTranslation.m8_Z = MTH_Mul(fixedPoint(-pScript->m1C), getCos(yawIdx));
+
+        computeDragonSpeed(pDragon);
+        setDragonAnimationFromSpeed(pDragon);
+
+        // Set camera position from script's secondary position
+        sFieldCameraStatus* pCamSlot = getActiveCameraSlot();
+        pCamSlot->m0_position = pScript->m24_pos2;
+        pCamSlot->m88 = (s32)pDragon->m1E8_cameraScriptDelay;
+
+        pDragon->m104_dragonScriptStatus++;
+    }
+    else if (state == 1)
+    {
+        // State 1: count down, then switch to follow mode
+        pDragon->m1E8_cameraScriptDelay--;
+        if (pDragon->m1E8_cameraScriptDelay < 1)
+        {
+            sFieldCameraStatus* pCamSlot = getActiveCameraSlot();
+            pCamSlot->m88 = 0x1E;
+            pDragon->m1E8_cameraScriptDelay = 0x1E;
+
+            sFieldCameraManager* pCam = getFieldTaskPtr()->m8_pSubFieldData->m334;
+            activateCameraFollowMode((u32)(s8)pCam->m50E_followModeIndex);
+
+            pDragon->m104_dragonScriptStatus++;
+        }
+    }
+    else if (state == 2)
+    {
+        // State 2: count down remaining, then clear script and transition
+        pDragon->m1E8_cameraScriptDelay--;
+        if (pDragon->m1E8_cameraScriptDelay < 1)
+        {
+            pDragon->m1D0_cameraScript = nullptr;
+            dragonTransitionFromScript();
+        }
+    }
+}
+
+// 060881b2 (A5) / 060805be (A3) — process cutscene movement data (init only)
 void processCutscene(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented();
+    pDragon->m24A_runningCameraScript = 2;
+
+    s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
+    pLCS->m8 |= 1;
+
+    if (pDragon->m104_dragonScriptStatus == 0)
+    {
+        updateCameraScriptSub0((p_workArea)pDragon->mB8_lightWingEffect);
+        pDragon->mF8_Flags &= ~0x400;
+        pDragon->mF8_Flags |= 0x20000;
+        computeDragonSpeed(pDragon);
+        setDragonAnimationFromSpeed(pDragon);
+        pDragon->m104_dragonScriptStatus++;
+    }
 }
 
 // 0608820e (A5) / 0608061a (A3) — dragon update: camera script active
@@ -897,10 +1006,132 @@ void dragonUpdate_cameraScript(s_dragonTaskWorkArea* pDragon)
     computeDragonSpeed(pDragon);
 }
 
-// 0608838a (A5) / 06080796 (A3) — dragon update: cutscene active (keyframe interpolation)
+// Helper: sign-extend 28-bit angle difference
+static inline s32 signExtend28(s32 val)
+{
+    return (val & 0x8000000) ? (val | (s32)0xF0000000) : (val & 0x0FFFFFFF);
+}
+
+// 0608838a (A5) / 06080796 (A3) — dragon update: cutscene keyframe interpolation
 void dragonUpdate_cutscene(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented();
+    s_scriptData3* pKeyFrame = pDragon->m1E4_cutsceneKeyFrame;
+
+    pDragon->m24A_runningCameraScript = 4;
+
+    // If no keyframe, skip to state 3 (idle)
+    if (pKeyFrame == nullptr)
+    {
+        pDragon->m104_dragonScriptStatus = 3;
+    }
+
+    getFieldTaskPtr()->m28_status |= 0x10000;
+    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 |= 1;
+
+    s32 state = pDragon->m104_dragonScriptStatus;
+
+    if (state == 0)
+    {
+        // State 0: compute position and rotation velocities from keyframe
+        pDragon->mF8_Flags &= ~0x400;
+        pDragon->mF8_Flags |= 0x20000;
+
+        s32 posDuration = pKeyFrame->m0_duration.m_value;
+        s32 rotDuration = pKeyFrame->m10_rotationDuration.m_value;
+
+        pDragon->m1E8_cameraScriptDelay = (s16)posDuration;
+        pDragon->m1EA = (s16)rotDuration;
+
+        // Position velocity = (target - current) / duration
+        pDragon->m160_deltaTranslation.m0_X = fixedPoint(performDivision(posDuration,
+            pKeyFrame->m4_pos.m0_X.m_value - pDragon->m8_pos.m0_X.m_value));
+        pDragon->m160_deltaTranslation.m4_Y = fixedPoint(performDivision(posDuration,
+            pKeyFrame->m4_pos.m4_Y.m_value - pDragon->m8_pos.m4_Y.m_value));
+        pDragon->m160_deltaTranslation.m8_Z = fixedPoint(performDivision(posDuration,
+            pKeyFrame->m4_pos.m8_Z.m_value - pDragon->m8_pos.m8_Z.m_value));
+
+        // Rotation velocity = sign-extended 28-bit (target - current) / rotDuration
+        if (rotDuration == 0)
+        {
+            pDragon->m16C_deltaRotation = {};
+        }
+        else
+        {
+            pDragon->m16C_deltaRotation.m0_X = fixedPoint(performDivision(rotDuration,
+                signExtend28(pKeyFrame->m14_rot.m0_X.m_value - pDragon->m20_angle.m0_X.m_value)));
+            pDragon->m16C_deltaRotation.m4_Y = fixedPoint(performDivision(rotDuration,
+                signExtend28(pKeyFrame->m14_rot.m4_Y.m_value - pDragon->m20_angle.m4_Y.m_value)));
+            pDragon->m16C_deltaRotation.m8_Z = fixedPoint(performDivision(rotDuration,
+                signExtend28(pKeyFrame->m14_rot.m8_Z.m_value - pDragon->m20_angle.m8_Z.m_value)));
+        }
+
+        computeDragonSpeed(pDragon);
+
+        if ((pDragon->mF8_Flags & 0x40000) != 0)
+        {
+            setDragonAnimationFromSpeed(pDragon);
+            updateCameraScriptSub0((p_workArea)pDragon->mB8_lightWingEffect);
+            pDragon->mF8_Flags &= ~0x40000;
+        }
+
+        pDragon->m104_dragonScriptStatus++;
+        // Fall through to state 1
+    }
+    else if (state == 2)
+    {
+        // State 2: position-only interpolation (rotation done)
+        pDragon->m8_pos.m0_X = fixedPoint(pDragon->m8_pos.m0_X.m_value + pDragon->m160_deltaTranslation.m0_X.m_value);
+        pDragon->m8_pos.m4_Y = fixedPoint(pDragon->m8_pos.m4_Y.m_value + pDragon->m160_deltaTranslation.m4_Y.m_value);
+        pDragon->m8_pos.m8_Z = fixedPoint(pDragon->m8_pos.m8_Z.m_value + pDragon->m160_deltaTranslation.m8_Z.m_value);
+
+        pDragon->m1E8_cameraScriptDelay--;
+        if (pDragon->m1E8_cameraScriptDelay < 1)
+        {
+            pDragon->m104_dragonScriptStatus = 3;
+            pDragon->m1E4_cutsceneKeyFrame = nullptr;
+        }
+        goto buildMatrix;
+    }
+    else if (state != 1)
+    {
+        goto buildMatrix;
+    }
+
+    // States 0 (after init) and 1: both position and rotation interpolation
+    pDragon->m20_angle.m0_X = fixedPoint(pDragon->m20_angle.m0_X.m_value + pDragon->m16C_deltaRotation.m0_X.m_value);
+    pDragon->m20_angle.m4_Y = fixedPoint(pDragon->m20_angle.m4_Y.m_value + pDragon->m16C_deltaRotation.m4_Y.m_value);
+    pDragon->m20_angle.m8_Z = fixedPoint(pDragon->m20_angle.m8_Z.m_value + pDragon->m16C_deltaRotation.m8_Z.m_value);
+
+    pDragon->m8_pos.m0_X = fixedPoint(pDragon->m8_pos.m0_X.m_value + pDragon->m160_deltaTranslation.m0_X.m_value);
+    pDragon->m8_pos.m4_Y = fixedPoint(pDragon->m8_pos.m4_Y.m_value + pDragon->m160_deltaTranslation.m4_Y.m_value);
+    pDragon->m8_pos.m8_Z = fixedPoint(pDragon->m8_pos.m8_Z.m_value + pDragon->m160_deltaTranslation.m8_Z.m_value);
+
+    // Count down rotation duration
+    pDragon->m1EA--;
+    if (pDragon->m1EA < 1)
+    {
+        pDragon->m104_dragonScriptStatus++;
+    }
+
+    // Count down position duration
+    pDragon->m1E8_cameraScriptDelay--;
+    if (pDragon->m1E8_cameraScriptDelay < 1)
+    {
+        pDragon->m104_dragonScriptStatus = 3;
+        pDragon->m1E4_cutsceneKeyFrame = nullptr;
+    }
+
+buildMatrix:
+    buildDragonRotationMatrix(&pDragon->m48, &pDragon->m20_angle);
+    copyMatrix(&pDragon->m48.m0_matrix, &pDragon->m88_matrix);
+
+    pDragon->m1EE--;
+    if (pDragon->m1EE < 0)
+    {
+        pDragon->m1EE = 0;
+    }
+
+    computeDragonSpeed(pDragon);
 }
 
 // 06088454 (A5) / 06080860 (A3) — transition dragon to normal flight update
@@ -916,9 +1147,10 @@ void dragonTransitionToNormal()
 }
 
 // 0607c88e (A5) / 06074c9a (A3) — transition dragon from script/cutscene
+// Byte-identical to dragonTransitionToNormal (same Saturn function at different address)
 void dragonTransitionFromScript()
 {
-    Unimplemented();
+    dragonTransitionToNormal();
 }
 
 // 0608746e (A5) / 0607f87a (A3) — check if dragon is within safe bounds
@@ -965,10 +1197,145 @@ void computeBoundsPushback(s_dragonTaskWorkArea* pDragon)
     }
 }
 
-// 06087544 (A5) / 0607f950 (A3) — corridor autopilot dragon update
+// 06087544 (A5) / 0607f950 (A3) — corridor autopilot dragon update.
+// Steers the dragon toward the visibility grid target, pushes back inside bounds.
+// 3-state: 0=trigger script+countdown, 1=countdown, 2=wait for multichoice close.
 void dragonUpdate_corridorAutopilot(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented();
+    s_visibilityGridWorkArea* pGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
+    fixedPoint turnRate = pDragon->m178_turnRate;
+
+    pDragon->m24A_runningCameraScript = 6;
+    getFieldTaskPtr()->m28_status |= 0x200;
+    getFieldTaskPtr()->m28_status |= 0x10000;
+    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 |= 1;
+
+    s32 state = pDragon->m104_dragonScriptStatus;
+    if (state == 0)
+    {
+        corridorEntryScript();
+        setDragonSpeedIndex(0);
+        pDragon->m_1C4 = 0x2D;
+        pDragon->m104_dragonScriptStatus++;
+    }
+    else if (state == 1)
+    {
+        // Count down
+    }
+    else if (state == 2)
+    {
+        // Wait for multichoice to clear
+        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m3C_multichoiceTask == nullptr)
+        {
+            dragonTransitionFromScript();
+            pDragon->mF0(pDragon);
+            getFieldTaskPtr()->m28_status &= ~0x200;
+            return;
+        }
+        goto steering;
+    }
+    else
+    {
+        goto steering;
+    }
+
+    // States 0 and 1: decrement timer
+    pDragon->m_1C4--;
+    if ((s32)pDragon->m_1C4 < 1)
+    {
+        pDragon->m_1C4 = 1;
+        pDragon->m104_dragonScriptStatus++;
+    }
+
+steering:
+    pDragon->m238 &= 0xFC;
+
+    // Compute direction to grid target
+    sVec3_FP toTarget;
+    toTarget.m0_X = fixedPoint(pGrid->m1294.mC - pDragon->m8_pos.m0_X.m_value);
+    toTarget.m4_Y = 0;
+    toTarget.m8_Z = fixedPoint(pGrid->m1294.m14 - pDragon->m8_pos.m8_Z.m_value);
+
+    sVec2_FP lookAt;
+    computeLookAt(toTarget, lookAt);
+
+    // Interpolate pitch toward target (15/16 damping)
+    pDragon->m20_angle.m0_X = interpolateAngle28(pDragon->m20_angle.m0_X, pDragon->m3C_targetAngles.m0_X);
+
+    // Interpolate yaw toward look-at direction
+    pDragon->m20_angle.m4_Y = interpolateRotation(pDragon->m20_angle.m4_Y, lookAt[1], fixedPoint(0x2000), fixedPoint(0x444444), 0);
+
+    // Interpolate roll toward target
+    pDragon->m20_angle.m8_Z = interpolateAngle28(pDragon->m20_angle.m8_Z, pDragon->m3C_targetAngles.m8_Z);
+
+    // Roll banking from yaw delta
+    s32 yawDelta = pDragon->m30.m_value - pDragon->m20_angle.m4_Y.m_value;
+    if (yawDelta < turnRate.m_value)
+    {
+        if (turnRate.m_value <= pDragon->m20_angle.m4_Y.m_value - pDragon->m30.m_value)
+        {
+            s32 bankAmount = performDivision(4, turnRate.m_value * 3);
+            pDragon->m20_angle.m8_Z = fixedPoint(pDragon->m20_angle.m8_Z.m_value - bankAmount);
+        }
+    }
+    else
+    {
+        s32 bankAmount = performDivision(4, turnRate.m_value * 3);
+        pDragon->m20_angle.m8_Z = fixedPoint(pDragon->m20_angle.m8_Z.m_value + bankAmount);
+    }
+
+    // Clamp pitch
+    s32 pitch = pDragon->m20_angle.m0_X.m_value;
+    pitch = signExtend28(pitch);
+    if (pitch > pDragon->m14C_pitchMax.m_value)
+        pDragon->m20_angle.m0_X = pDragon->m14C_pitchMax;
+    pitch = pDragon->m20_angle.m0_X.m_value;
+    pitch = signExtend28(pitch);
+    if (pitch < pDragon->m148_pitchMin.m_value)
+        pDragon->m20_angle.m0_X = pDragon->m148_pitchMin;
+
+    buildDragonRotationMatrix(&pDragon->m48, &pDragon->m20_angle);
+    copyMatrix(&pDragon->m48.m0_matrix, &pDragon->m88_matrix);
+
+    // Zero speed
+    pDragon->m15C_dragonSpeedIncrement = 0;
+    pDragon->m154_dragonSpeed = 0;
+
+    // Compute bounds pushback and integrate position
+    computeBoundsPushback(pDragon);
+
+    pDragon->m8_pos.m0_X = fixedPoint(pDragon->m8_pos.m0_X.m_value + pDragon->m160_deltaTranslation.m0_X.m_value);
+    pDragon->m8_pos.m4_Y = fixedPoint(pDragon->m8_pos.m4_Y.m_value + pDragon->m160_deltaTranslation.m4_Y.m_value);
+    pDragon->m8_pos.m8_Z = fixedPoint(pDragon->m8_pos.m8_Z.m_value + pDragon->m160_deltaTranslation.m8_Z.m_value);
+
+    // Y clamp and dynamic pitch limits
+    if (pDragon->m134_minY.m_value != 0 || pDragon->m140_maxY.m_value != 0)
+    {
+        if (pDragon->m8_pos.m4_Y.m_value < pDragon->m134_minY.m_value)
+            pDragon->m8_pos.m4_Y = pDragon->m134_minY;
+        if (pDragon->m140_maxY.m_value < pDragon->m8_pos.m4_Y.m_value)
+            pDragon->m8_pos.m4_Y = pDragon->m140_maxY;
+
+        pDragon->m160_deltaTranslation.m0_X = fixedPoint(pDragon->m8_pos.m0_X.m_value - pDragon->m14_oldPos.m0_X.m_value);
+        pDragon->m160_deltaTranslation.m4_Y = fixedPoint(pDragon->m8_pos.m4_Y.m_value - pDragon->m14_oldPos.m4_Y.m_value);
+        pDragon->m160_deltaTranslation.m8_Z = fixedPoint(pDragon->m8_pos.m8_Z.m_value - pDragon->m14_oldPos.m8_Z.m_value);
+
+        // Dynamic pitch min from distance to maxY ceiling
+        s32 distToCeiling = (pDragon->m140_maxY.m_value - pDragon->m8_pos.m4_Y.m_value) * -0x111;
+        s32 pitchMin = -0x3555555;
+        if (distToCeiling > -0x3555555) pitchMin = distToCeiling;
+        if (pitchMin >= 1) pitchMin = 0;
+        else if (distToCeiling <= -0x3555555) pitchMin = -0x3555555;
+        pDragon->m148_pitchMin = fixedPoint(pitchMin);
+
+        // Dynamic pitch max from distance to minY floor
+        s32 distToFloor = (pDragon->m8_pos.m4_Y.m_value - pDragon->m134_minY.m_value) * 0x111;
+        s32 pitchMax = 0x3555555;
+        if (distToFloor < 0x3555555) pitchMax = distToFloor;
+        if (pitchMax < 1) pitchMax = 0;
+        else if (distToFloor >= 0x3555555) pitchMax = 0x3555555;
+        pDragon->m14C_pitchMax = fixedPoint(pitchMax);
+    }
 }
 
 // 06086cfe (A5) / 0607f10a (A3) — dragon input: digital pad
@@ -999,22 +1366,61 @@ void dragonInput_analog(s_dragonTaskWorkArea* pDragon)
     }
 }
 
+// 06086ade (A5) / 0607eeea (A3) — type 8 floater d-pad pitch/roll
+static void dragonDPadPitchRoll_type8(s_dragonTaskWorkArea* pDragon)
+{
+    Unimplemented(); // complex pitch/roll with floater-specific physics
+}
+
+// 0608720c (A5) / 0607f618 (A3) — type 8 floater analog pitch/roll
+static void dragonAnalogPitchRoll_type8(s_dragonTaskWorkArea* pDragon)
+{
+    Unimplemented(); // complex pitch/roll with floater-specific physics
+}
+
 // 06086d22 (A5) / 0607f12e (A3) — dragon input: digital pad (type 8 floater)
 void dragonInput_digital_type8(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented();
+    if (canAcceptDragonInput() != 0)
+    {
+        dragonDPadPitchRoll_type8(pDragon);
+    }
+    else
+    {
+        dragonInput_default(pDragon);
+    }
 }
 
 // 0608744e (A5) / 0607f85a (A3) — dragon input: analog stick (type 8 floater)
 void dragonInput_analog_type8(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented();
+    if (canAcceptDragonInput() != 0)
+    {
+        dragonAnalogPitchRoll_type8(pDragon);
+    }
+    else
+    {
+        dragonInput_default(pDragon);
+    }
 }
 
-// 060797e0 (A5) / 06071bec (A3) — trigger corridor entry script
+// 060797e0 (A5) / 06071bec (A3) — trigger corridor entry script.
+// On Saturn the script address is a PC-relative constant. In C++ we use
+// gCorridorEntryScriptEA which each overlay sets during init.
+sSaturnPtr gCorridorEntryScriptEA = {};
+
 void corridorEntryScript()
 {
-    Unimplemented();
+    if (gCorridorEntryScriptEA.m_offset == 0)
+    {
+        Unimplemented();
+        return;
+    }
+
+    if (queueNewFieldScript(gCorridorEntryScriptEA, -1) != 0)
+    {
+        createScriptWaitTask(0, &dispatchTutorialMultiChoiceSub2, 0);
+    }
 }
 
 // 0607c8c2 (A5) / 06074cce (A3) — initDragonMovementMode

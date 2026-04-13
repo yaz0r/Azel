@@ -12,6 +12,7 @@
 #include "audio/systemSounds.h"
 #include "trigo.h"
 #include "field/fieldDragonInput.h"
+#include "field/fieldCutsceneTask2.h"
 #include "menu_dragonMorph.h"
 
 s32 playBattleSoundEffect(s32 effectIndex);
@@ -105,15 +106,11 @@ struct sA5CorridorWormSubtask : public s_workAreaTemplate<sA5CorridorWormSubtask
     // size 0xC
 };
 
-// Dragon update functions moved to shared fieldDragonInput.cpp:
 // computeDragonSpeed, dragonUpdate_idle, dragonUpdate_normal,
 // dragonUpdate_normal_type8, clearDragonScriptFlag, dragonTransitionToNormal,
 // processCameraScript, processCutscene, dragonUpdate_cameraScript, dragonUpdate_cutscene
 
-// 0607cf3a, 0607cf70, 06079044 — moved to shared fieldDragonInput.cpp
 // as setCutsceneKeyFrame, clearCutsceneKeyFrame, enableScriptSkippingAndExit
-
-// 0607c8c2 — initDragonMovementMode, moved to shared fieldDragonInput.cpp
 
 // 060591fc — corridor worm file-load/animation state machine. Manages
 // progressive loading of the worm segment models as the dragon travels
@@ -348,7 +345,6 @@ void createA5_envObject_A()
 }
 
 // --- Shared A5 gameplay helpers ---
-// getDragonPosition_A5, getDragonAngle_A5, triggerSubfieldChange_A5 moved to shared field.cpp
 // as getDragonPosition, getDragonAngle, triggerSubfieldChange
 
 // --- Shared open-area environment/entity creation functions ---
@@ -357,11 +353,9 @@ void createA5_envObject_A()
 
 // sA5WormSegmentEntity is implemented in a5_wormSegmentEntity.cpp
 
-
 // sA5ProximityAlertTask is implemented in a5_proximityAlertTask.cpp
 
 // sA5FieldEventCheckTask is implemented in a5_fieldEventCheck.cpp
-
 
 // 06057c0c — create Baldor worm body (complex 3D entity, subfields 2, 8)
 void createA5_baldorWormBody(p_workArea parent)
@@ -420,6 +414,26 @@ static void a5LightEntity_Init(sA5LightEntity* p)
     p->m0 = 0;
 }
 
+// 0x4C-byte light wing evolution effect subtask
+// Task def at 0609d488 = {init=0605FF00, update=0605FF5C, draw=06060114, delete=null}
+struct sA5LightEffectSubtask : public s_workAreaTemplate<sA5LightEffectSubtask>
+{
+    u8 m0_data[0x4C];
+    // size 0x4C
+};
+static void a5LightEffectSubtask_Init(sA5LightEffectSubtask*) { Unimplemented(); }  // 0605FF00
+static void a5LightEffectSubtask_Update(sA5LightEffectSubtask*) { Unimplemented(); } // 0605FF5C
+static void a5LightEffectSubtask_Draw(sA5LightEffectSubtask*) { Unimplemented(); }   // 06060114
+
+// Static buffer for cutscene camera script data (like A7's a7CutsceneScriptData)
+static std::vector<s_scriptData1> a5CutsceneScriptData;
+
+static void a5CutsceneCameraInit(p_workArea parent, const sSaturnPtr& scriptDataEA, s32 r6, sVec3_FP* r7, u32 flags)
+{
+    loadScriptData1(a5CutsceneScriptData, scriptDataEA);
+    cutsceneTaskInitSub2(parent, a5CutsceneScriptData, r6, r7, flags);
+}
+
 // 060601B2
 static void a5LightEntity_Update(sA5LightEntity* p)
 {
@@ -429,7 +443,15 @@ static void a5LightEntity_Update(sA5LightEntity* p)
         && (mainGameState.bitField[0x96] & 4) != 0)
     {
         startFieldScript(10, 0x5BF);
-        Unimplemented(); // creates subtask (task def at 0609d488, size 0x4C) + FUN_FLD_A5__060720c6
+
+        static sA5LightEffectSubtask::TypedTaskDefinition td = {
+            &a5LightEffectSubtask_Init, &a5LightEffectSubtask_Update, &a5LightEffectSubtask_Draw, nullptr
+        };
+        sA5LightEffectSubtask* pEffect = createSubTask<sA5LightEffectSubtask>((p_workArea)p, &td);
+
+        sVec3_FP* pEffectPos = (pEffect != nullptr) ? (sVec3_FP*)&pEffect->m0_data[8] : nullptr;
+        a5CutsceneCameraInit((p_workArea)p, gFLD_A5->getSaturnPtr(0x0608CD5C), 0, pEffectPos, 0);
+
         p->m0++;
     }
 }
@@ -565,8 +587,6 @@ struct sA5ScriptCheckTask : public s_workAreaTemplate<sA5ScriptCheckTask>
     // size 0x0
 };
 
-// 0607906a / 060790e4 — moved to shared field.cpp as isPointOnScreen / isWorldPositionOnScreen
-
 // 06054e34 — script check: proximity sound for trigger zones
 static void a5ScriptCheckUpdate(sA5ScriptCheckTask* pThis)
 {
@@ -692,6 +712,8 @@ p_workArea overlayStart_FLD_A5(p_workArea workArea, u32 arg)
     {
         gFLD_A3 = new FLD_A3_data();
     }
+
+    gCorridorEntryScriptEA = gFLD_A5->getSaturnPtr(0x06088AAC);
 
     // 06072e36 — override subfield for specific game state
     if (mainGameState.bitField[0x1B] & 8)

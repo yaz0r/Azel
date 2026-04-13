@@ -1,6 +1,22 @@
 #include "PDS.h"
 #include "o_fld_a5.h"
+#include "a5_wormObjectSystem.h"
 #include "audio/systemSounds.h"
+#include "kernel/vdp1AnimatedQuad.h"
+#include <map>
+
+// Lazy-parse VDP1 quad list from Saturn data
+static const std::vector<sVdp1Quad>* a5GetOrParseQuadList(const sSaturnPtr& ea)
+{
+    static std::map<u32, std::vector<sVdp1Quad>> s_cache;
+    auto it = s_cache.find(ea.m_offset);
+    if (it == s_cache.end())
+    {
+        s_cache[ea.m_offset] = initVdp1Quad(ea);
+        it = s_cache.find(ea.m_offset);
+    }
+    return &it->second;
+}
 
 // sA5ExitEntity is declared in o_fld_a5.h — this file owns its implementation.
 // The entity is created by createA5_exitEntityTask (shared) for every A5 subfield
@@ -89,28 +105,109 @@ static void a5ExitEntity_WindStateMachine(sA5ExitEntity* p)
     }
 }
 
+// Quad list table at 060992b4 (4 entries, Saturn EAs)
+static const u32 s_windQuadListAddrs[] = { 0x06099804, 0x06099820, 0x0609983C, 0x06099858 };
+
+// 06058cb4 — spawn a worm sand particle at the given position with quad/lifetime params.
+// pArgs layout: [0..2]=position, [5]=lifetime(s8), [6]=quadListPtr
+static void a5ExitEntity_spawnWormParticle(sVec3_FP* pPos, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
+{
+    sA5WormObjectSystem* pSystem = getWormObjectSystem();
+    if (pSystem->m3728_drawCount >= 0xC4)
+        return;
+
+    s32 idx = pSystem->m3728_drawCount;
+    pSystem->m190_sortedIndices[idx] = pSystem->m8_freeIndices[idx];
+    sA5WormParticle* pParticle = &pSystem->m318_particles[pSystem->m190_sortedIndices[idx]];
+
+    pParticle->m8_position = *pPos;
+    pParticle->m40_lifetime = 0x51;
+    pParticle->m14_velocityX = 0;
+    pParticle->m18_velocityY = 0;
+    pParticle->m1C_velocityZ = 0;
+
+    particleInitSub(&pParticle->m0_quad, 0, pQuadList);
+    pParticle->m40_lifetime = (s8)lifetime;
+    pParticle->m41_type = 0;
+
+    pSystem->m3728_drawCount++;
+}
+
 // 060587A8 — exit mode 0: wind particles near camera
 static void a5ExitEntity_Mode0(sA5ExitEntity* p)
 {
     a5ExitEntity_WindStateMachine(p);
-    Unimplemented(); // particle spawning near camera position based on wind speed
+
+    if (p->m18 > 0xAA9)
+    {
+        p->m34++;
+        s32 spawnRate = 10 - (p->m18 * 0x1E >> 0xE);
+        if (p->m34 >= spawnRate)
+        {
+            p->m34 = 0;
+            u32 rng = randomNumber();
+            const std::vector<sVdp1Quad>* pQuadList =
+                a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(s_windQuadListAddrs[rng & 3]));
+
+            sVec3_FP pos;
+            pos.m0_X = fixedPoint(cameraProperties2.m0_position.m0_X.m_value +
+                performModulo2(0x15E000, randomNumber()) - 0xAF000);
+            pos.m4_Y = 0;
+            pos.m8_Z = fixedPoint(cameraProperties2.m0_position.m8_Z.m_value +
+                performModulo2(0x15E000, randomNumber()) - 0xAF000);
+
+            a5ExitEntity_spawnWormParticle(&pos, 10, pQuadList);
+        }
+    }
 }
 
-// 0605887C — exit mode 1: directional particles near exit position
+// 0605887C — exit mode 1: directional particles near exit target
 static void a5ExitEntity_Mode1(sA5ExitEntity* p)
 {
     a5ExitEntity_WindStateMachine(p);
-    Unimplemented(); // particle spawning near exit target position
+
+    if (p->m18 > 0xAA9)
+    {
+        p->m34++;
+        s32 spawnRate = 10 - (p->m18 * 0x1E >> 0xE);
+        if (p->m34 >= spawnRate)
+        {
+            p->m34 = 0;
+            u32 rng = randomNumber();
+            const std::vector<sVdp1Quad>* pQuadList =
+                a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(s_windQuadListAddrs[rng & 3]));
+
+            sVec3_FP pos;
+            pos.m0_X = fixedPoint(p->m1C_exitTargetX_mode1 +
+                performModulo2(0x15E000, randomNumber()) - 0xAF000);
+            pos.m4_Y = 0;
+            pos.m8_Z = fixedPoint(p->m20_exitTargetZ_mode1 +
+                performModulo2(0x15E000, randomNumber()) - 0xAF000);
+
+            a5ExitEntity_spawnWormParticle(&pos, 10, pQuadList);
+        }
+    }
 }
 
-// 06058944 — exit mode 3: periodic particle spawning
+// 06058944 — exit mode 3: periodic particle spawning near camera
 static void a5ExitEntity_Mode3(sA5ExitEntity* p)
 {
     p->m34++;
     if (p->m34 > 8)
     {
         p->m34 = 0;
-        Unimplemented(); // spawn particle near camera with height from m24_exitTargetX_mode3
+        u32 rng = randomNumber();
+        const std::vector<sVdp1Quad>* pQuadList =
+            a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(s_windQuadListAddrs[rng & 3]));
+
+        sVec3_FP pos;
+        pos.m0_X = fixedPoint(cameraProperties2.m0_position.m0_X.m_value +
+            performModulo2(0x15E000, randomNumber()) - 0xAF000);
+        pos.m4_Y = fixedPoint(p->m24_exitTargetX_mode3);
+        pos.m8_Z = fixedPoint(cameraProperties2.m0_position.m8_Z.m_value +
+            performModulo2(0x15E000, randomNumber()) - 0xAF000);
+
+        a5ExitEntity_spawnWormParticle(&pos, 10, pQuadList);
     }
 }
 

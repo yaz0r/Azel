@@ -489,8 +489,6 @@ static void drawVdp2Sub_setupRotationPass0_A7_1(sVdp2PlaneTask* pThis)
 
 void drawGaugeVdp1(u16 mode, std::array<sVec2_S16, 4>& params, u16 color, fixedPoint depth);
 
-// 0607653c, 060764f8, 06076584 — horizon gauge functions moved to shared fieldHorizonGauge.cpp
-
 // 06058410
 static void drawVdp2_A7_1(sVdp2PlaneTask* pThis)
 {

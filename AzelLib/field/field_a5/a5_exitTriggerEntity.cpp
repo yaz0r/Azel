@@ -4,6 +4,11 @@
 #include "field/fieldModelRender.h"
 #include "field/fieldCutsceneTask.h"
 #include "field/exitField.h"
+#include "field/fieldDebrisScatter.h"
+#include "field/fieldSceneManager.h"
+#include "field/fieldAnimRingSubTask.h"
+#include "kernel/vdp1AnimatedQuad.h"
+#include <map>
 #include "kernel/fileBundle.h"
 #include "audio/systemSounds.h"
 
@@ -43,6 +48,19 @@ struct sA5ExitTriggerArg
     s16 mE_entryB;
 };
 
+// Lazy-parse a VDP1 quad list from Saturn data (A5 version)
+static const std::vector<sVdp1Quad>* a5GetOrParseQuadList(const sSaturnPtr& ea)
+{
+    static std::map<u32, std::vector<sVdp1Quad>> s_cache;
+    auto it = s_cache.find(ea.m_offset);
+    if (it == s_cache.end())
+    {
+        s_cache[ea.m_offset] = initVdp1Quad(ea);
+        it = s_cache.find(ea.m_offset);
+    }
+    return &it->second;
+}
+
 // Static render-context position from Saturn ROM at FLD_A5::06098740
 static const sVec3_FP s_exitTriggerModelPosition = {
     fixedPoint(0x401000), fixedPoint(0), fixedPoint(-0x40F000)
@@ -51,34 +69,115 @@ static const sVec3_FP s_exitTriggerModelPosition = {
 // Random offset table at FLD_A5::06098ac4 (4 entries)
 static const s32 s_randomOffsetTable[] = { 0x600, 0xC00, 0, -0x600 };
 
-// 060563d8 — particle effect setup. Depends on A5 particle pool system.
-static void a5ExitTrigger_setupParticles(sA5ExitTriggerEntity* /*pThis*/)
+// 060563d8 — debris scatter setup at init (reverse mode — particles converge inward)
+static void a5ExitTrigger_setupParticles(sA5ExitTriggerEntity* pThis)
 {
-    Unimplemented();
+    sDebrisScatterParams params;
+    initDebrisScatterConfig(&params, (u16)pThis->m8_modelA, (u16)pThis->mA_poseA);
+
+    s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+    u8* pRaw = pBundle->getRawBuffer();
+    u32 treeRootOffset = READ_BE_U32(pRaw + pThis->m8_modelA);
+    params.m8_spread = fixedPoint(readMaxScalarFromBundleTree(pRaw, treeRootOffset));
+    params.m8_spread = MTH_Mul(params.m8_spread, fixedPoint(0x20000));
+
+    params.m10_pPosition = &pThis->m14_position;
+    params.m14_pRotation = &pThis->m20_rotation;
+    params.m_pBundle = pBundle;
+
+    createDebrisScatterTask((p_workArea)pThis, &params, true); // reverse mode
 }
 
-// 06056324 — spawn particle effect using decor emitter config. Depends on
-// the unimplemented particle emitter spawner (06085e46).
-static void a5ExitTrigger_spawnEffect_06056324(sA5ExitTriggerEntity* /*pThis*/)
+// 06056324 — spawn debris scatter effect when the exit trigger is discovered
+static void a5ExitTrigger_spawnEffect_06056324(sA5ExitTriggerEntity* pThis)
 {
-    Unimplemented();
+    sDebrisScatterParams params;
+    initDebrisScatterConfig(&params, (u16)pThis->m8_modelA, (u16)pThis->mA_poseA);
+
+    s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+    u8* pRaw = pBundle->getRawBuffer();
+    u32 treeRootOffset = READ_BE_U32(pRaw + pThis->m8_modelA);
+    params.m8_spread = fixedPoint(readMaxScalarFromBundleTree(pRaw, treeRootOffset));
+    params.m8_spread = MTH_Mul(params.m8_spread, fixedPoint(0x28000));
+
+    params.m10_pPosition = &pThis->m14_position;
+    params.m14_pRotation = &pThis->m20_rotation;
+    params.m44_soundEffect = 0x73;
+    params.m_pBundle = pBundle;
+
+    createDebrisScatterTask((p_workArea)pThis, &params, false);
+    playSystemSoundEffect(0x72);
 }
 
-// 0605642e — spawn directional particle burst near the entity.
-static void a5ExitTrigger_spawnBurst_0605642e(sA5ExitTriggerEntity* /*pThis*/)
+// 0605642e — spawn directional particle burst near the entity using AnimRingSubTask
+static void a5ExitTrigger_spawnBurst_0605642e(sA5ExitTriggerEntity* pThis)
 {
-    Unimplemented();
+    u32 rng = randomNumber();
+    u16 angleIdx = (u16)((rng >> 16) & 0xFFF);
+    fixedPoint sinVal = getSin(angleIdx);
+    fixedPoint cosVal = getCos(angleIdx);
+
+    sAnimRingArg arg;
+    arg.m00_center.m0_X = fixedPoint(pThis->m14_position.m0_X.m_value + MTH_Mul(fixedPoint(0x5000), sinVal).m_value);
+    arg.m00_center.m4_Y = fixedPoint(pThis->m14_position.m4_Y.m_value + 0x14000);
+    arg.m00_center.m8_Z = fixedPoint(pThis->m14_position.m8_Z.m_value + MTH_Mul(fixedPoint(0x5000), cosVal).m_value);
+
+    arg.m0C_ring0.m0_X = fixedPoint(pThis->m14_position.m0_X.m_value + MTH_Mul(fixedPoint(0x5000), sinVal).m_value);
+    arg.m0C_ring0.m4_Y = 0;
+    arg.m0C_ring0.m8_Z = fixedPoint(pThis->m14_position.m8_Z.m_value + MTH_Mul(fixedPoint(0x5000), cosVal).m_value);
+
+    arg.m18_ring1.m0_X = fixedPoint(pThis->m14_position.m0_X.m_value + MTH_Mul(fixedPoint(0xF000), sinVal).m_value);
+    arg.m18_ring1.m4_Y = 0;
+    arg.m18_ring1.m8_Z = fixedPoint(pThis->m14_position.m8_Z.m_value + MTH_Mul(fixedPoint(0xF000), cosVal).m_value);
+
+    arg.m24_direction.m0_X = MTH_Mul(fixedPoint(0xF000), sinVal);
+    arg.m24_direction.m4_Y = fixedPoint(0x1E000);
+    arg.m24_direction.m8_Z = MTH_Mul(fixedPoint(0xF000), cosVal);
+
+    arg.m30_lifetime = 3;
+    arg.m34_mode = 0;
+
+    spawnAnimRingSubTask((p_workArea)pThis, &arg);
 }
 
-// 0605623c — spawn scattered particle effect near the entity.
-static void a5ExitTrigger_spawnScatter_0605623c(sA5ExitTriggerEntity* /*pThis*/)
+// 0605623c — spawn scattered billboard particle near the entity
+static void a5ExitTrigger_spawnScatter_0605623c(sA5ExitTriggerEntity* pThis)
 {
-    Unimplemented();
+    u32 rng1 = randomNumber();
+    u32 rng2 = randomNumber();
+    u16 angleIdx = (u16)((rng1 >> 16) & 0xFFF);
+    fixedPoint cosVal = getCos(angleIdx);
+    fixedPoint sinVal = getSin(angleIdx);
+
+    // Velocity
+    sVec3_FP vel;
+    vel.m0_X = MTH_Mul(cosVal, fixedPoint(rng2 & 0x3FFF));
+    vel.m4_Y = fixedPoint(0x4CC);
+    vel.m8_Z = MTH_Mul(sinVal, fixedPoint(rng2 & 0x3FFF));
+
+    // Position: entity position + random offset along angle
+    sVec3_FP pos;
+    pos.m0_X = fixedPoint(pThis->m14_position.m0_X.m_value + MTH_Mul(cosVal, fixedPoint(rng1 & 0x1FFFF)).m_value);
+    pos.m4_Y = fixedPoint(pThis->m14_position.m4_Y.m_value + 0xF000);
+    pos.m8_Z = fixedPoint(pThis->m14_position.m8_Z.m_value + MTH_Mul(sinVal, fixedPoint(rng1 & 0x1FFFF)).m_value);
+
+    // Random paramA from table at 06098ab4 (4 entries)
+    static const s32 scatterParamTable[] = { 0x2108, 0x4210, 0x6318, 0x18C6 };
+    u32 rng3 = randomNumber();
+
+    sSceneParticleDesc desc = {};
+    desc.m0_pPosition = &pos;
+    desc.m4_pVelocity = &vel;
+    desc.m8_pQuadList = a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(0x060988F4));
+    desc.mC_paramA = scatterParamTable[rng3 & 3];
+    desc.m10_paramB = 0;
+    desc.m14_updateFunc = &sceneParticle_updatePhysics;
+    desc.m18_payloadSize = 0;
+
+    s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
+    sFieldSceneManager* pManager = (sFieldSceneManager*)pFieldData->m54;
+    sceneParticle_allocate(pManager, &desc, 1);
 }
-
-// 060718ec — isScriptActive (shared field.cpp)
-
-// 0607ce18 — startExitCutsceneForCurrentField (shared exitField.cpp)
 
 // 06056510 — render context callback. Sets visibility and bumps mode.
 static void a5ExitTrigger_contextCallback(sA5ExitTriggerEntity* pThis)
@@ -100,8 +199,6 @@ struct sA5ExitTriggerVibrationTask : public s_workAreaTemplate<sA5ExitTriggerVib
     // size 0x18 (last field is s32 but included in the 0x18)
     // Note: actual Saturn struct packs m10/m14/m18 as the last 3 dwords
 };
-
-// 0606a9f2 — addCameraImpulse, moved to shared field.cpp
 
 // 060561b0 — vibration update: cycles through 4 phases applying
 // positive/negative/half-positive/half-negative rotation impulse

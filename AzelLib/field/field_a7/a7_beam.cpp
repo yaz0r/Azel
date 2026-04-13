@@ -6,8 +6,6 @@
 #include "o_fld_a7.h"
 #include "kernel/rayDisplay.h"
 
-// Spline code moved to shared fieldSpline.h/cpp
-
 struct sA7Beam : public s_workAreaTemplateWithArg<sA7Beam, sA7BeamArg*>
 {
     s_memoryAreaOutput   m0_memoryArea;      // 0x00..0x07 — bundle + VDP1 character area
@@ -26,8 +24,6 @@ struct sA7Beam : public s_workAreaTemplateWithArg<sA7Beam, sA7BeamArg*>
     u8                   m141_pad[3];        // 0x141..0x143
     // size 0x144
 };
-
-// Spline code moved to shared fieldSpline.h/cpp
 
 // 060553bc — state-init: populates the 6-entry srcX/Y/Z keyframe arrays
 static void a7Beam_stateInit_060553bc(sA7Beam* pThis, s8 stateIndex)
@@ -60,14 +56,6 @@ static void a7Beam_stateInit_060553bc(sA7Beam* pThis, s8 stateIndex)
         pX[5] = 0;               pY[5] = 0x19000;    pZ[5] = 0;
     }
 }
-
-// Spline code moved to shared fieldSpline.h/cpp
-
-// Spline code moved to shared fieldSpline.h/cpp
-
-// Spline code moved to shared fieldSpline.h/cpp
-
-// Spline code moved to shared fieldSpline.h/cpp
 
 // 060557e8 — beam wind-down: advance tail until it catches head, then kill the task
 static void a7Beam_UpdateFade_060557e8(sA7Beam* pThis)

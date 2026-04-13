@@ -3,8 +3,8 @@
 #include "field/field_a3/o_fld_a3.h"
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
-#include "a7_cellObj0.h"
-#include "a7_cellObj1.h"
+#include "a7_skyTransporter.h"
+#include "a7_skyTransporterSegment.h"
 #include "a7_beamEmitter.h"
 #include "a7_cellObj3.h"
 #include "a7_dialogChoiceTask.h"
@@ -17,10 +17,10 @@ void FLD_A7_data::dispatchCellObjectCreation(s_visdibilityCellTask* r4, s_DataTa
     switch (r5.m0_function.m_offset)
     {
     case 0x06054a8c:
-        create_A7_CellObj0(r4, r5, r6);
+        create_skyTransporter(r4, r5, r6);
         break;
     case 0x0605ccd0:
-        create_A7_CellObj1(r4, r5, r6);
+        create_skyTransporterSegment(r4, r5, r6);
         break;
     case 0x06055da6:
         create_A7_CellObj2(r4, r5, r6);
@@ -34,9 +34,6 @@ void FLD_A7_data::dispatchCellObjectCreation(s_visdibilityCellTask* r4, s_DataTa
     }
 }
 
-// 06073566 — isDragonCameraScriptInactive (shared field.cpp)
-
-
 // 0605e7f4
 static s32 getMultiChoiceResult_A7()
 {
@@ -48,8 +45,6 @@ static s32 getMultiChoiceResult_A7()
     }
     return result;
 }
-
-// 0607790a — releaseMultiChoiceBlocks (shared field.cpp)
 
 // 0605e81e
 static s32 handleMultiChoiceResult_A7()

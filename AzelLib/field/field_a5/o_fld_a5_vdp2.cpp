@@ -11,8 +11,6 @@ static void a5VdpInit(sVdp2PlaneTask* pThis);
 static void a5VdpUpdate(sVdp2PlaneTask* pThis);
 static void a5VdpDraw(sVdp2PlaneTask* pThis);
 
-// 0605D228 — moved to shared/vdp2PlaneTask.cpp as vdp2SetupRotationPass
-
 // 0605C87E — shared palette loading for all A5 subfields
 static void a5LoadPalettes()
 {

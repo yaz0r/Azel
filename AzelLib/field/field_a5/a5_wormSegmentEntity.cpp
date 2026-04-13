@@ -4,9 +4,11 @@
 #include "field/fieldModelRender.h"
 #include "field/fieldDragonInput.h"
 #include "field/fieldVisibilityGrid.h"
+#include "field/fieldDebrisScatter.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 #include "audio/soundDriver.h"
+#include "audio/systemSounds.h"
 #include "3dEngine.h"
 #include "3dModels.h"
 #include "a5_gridDeferredDraw.h"
@@ -76,11 +78,44 @@ static void a5WormSegmentEntity_Draw(sA5WormSegmentEntity* pThis)
     popMatrix();
 }
 
-// 06056a22 — "unlock" transition helper fired by DrawWithModel the first
-// frame the game-state bit trips from 0 → 1. Not yet reimplemented.
-static void a5WormSegmentEntity_runUnlockTransition_06056A22(sA5WormSegmentEntity* /*pThis*/)
+// 06056a22 — "unlock" transition: spawn debris scatter + play sound when segment unlocks
+static void a5WormSegmentEntity_runUnlockTransition_06056A22(sA5WormSegmentEntity* pThis)
 {
-    Unimplemented();
+    sSaturnPtr data = pThis->m8_dataPtr;
+
+    // Read model/pose offsets from Saturn data at +0x5A and +0x5C
+    u16 bundleOffset = readSaturnU16(data + 0x5A);
+    u16 poseOffset = readSaturnU16(data + 0x5C);
+
+    sDebrisScatterParams params;
+    initDebrisScatterConfig(&params, bundleOffset, poseOffset);
+
+    // Read max scalar from the bundle tree
+    s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+    u8* pRaw = pBundle->getRawBuffer();
+    u32 treeRootOffset = READ_BE_U32(pRaw + bundleOffset);
+    params.m8_spread = fixedPoint(readMaxScalarFromBundleTree(pRaw, treeRootOffset));
+
+    params.m0_gravity = fixedPoint(0x14a);
+    params.m4_bounce = fixedPoint((s32)0xFFFFE667);
+    params.mC_randomMask = fixedPoint(0x3FFFFF);
+
+    // Position from Saturn data at +0xC (the entity's world position)
+    sVec3_FP pos = readSaturnVec3(data + 0xC);
+    params.m10_pPosition = &pos;
+    params.m14_pRotation = nullptr;
+
+    params.m18_velX = 0;
+    params.m1C_velY = 0;
+    params.m20_velZ = fixedPoint((s32)0xFFFFF800);
+
+    params.m_pBundle = pBundle;
+
+    createDebrisScatterTask((p_workArea)pThis, &params, false);
+
+    // Play the unlock sound effect from Saturn data at +0x54
+    s16 soundId = readSaturnS16(data + 0x54);
+    playSystemSoundEffect((s32)soundId);
 }
 
 // 06069490 — shared: getActiveCameraSlot. A5 wrapper kept for external callers.
@@ -89,8 +124,93 @@ sFieldCameraStatus* a5_wormSegmentEntity_getActiveCameraSlot_06069490()
     return getActiveCameraSlot();
 }
 
-// Camera follow mode draw — only mode 7 has a draw function (A5-specific)
-static void a5_cameraFollowMode7_Draw(sFieldCameraStatus*) { Unimplemented(); } // 0606A984
+// 0606a6b4 — debug free camera: reads player-2 controller to move/rotate camera
+static void a5_debugFreeCamera_0606a6b4()
+{
+    sFieldCameraStatus* pCam = getActiveCameraSlot();
+    auto& input = graphicEngineStatus.m4514.m0_inputDevices[1].m0_current;
+
+    // Rotation: d-pad slow, d-pad+held fast
+    if (input.m6_buttonDown & 0x2000) pCam->mC_rotation.m0_X.m_value += 0xB60B6;
+    if (input.m6_buttonDown & 0x0001) pCam->mC_rotation.m0_X.m_value -= 0xB60B6;
+    if (input.m6_buttonDown & 0x8000) pCam->mC_rotation.m4_Y.m_value -= 0xB60B6;
+    if (input.m6_buttonDown & 0x0800) pCam->mC_rotation.m4_Y.m_value += 0xB60B6;
+
+    if (input.mE & 0x2000) pCam->mC_rotation.m0_X.m_value += 0x2D82D8;
+    if (input.mE & 0x0001) pCam->mC_rotation.m0_X.m_value -= 0x2D82D8;
+    if (input.mE & 0x8000) pCam->mC_rotation.m4_Y.m_value -= 0x2D82D8;
+    if (input.mE & 0x0800) pCam->mC_rotation.m4_Y.m_value += 0x2D82D8;
+
+    u16 yawIdx = (u16)((u32)pCam->mC_rotation.m4_Y.m_value >> 16) & 0xFFF;
+
+    // Movement: forward/back/strafe slow
+    if (input.m6_buttonDown & 0x10)
+    {
+        pCam->m0_position.m0_X.m_value -= MTH_Mul(fixedPoint(0x1000), getSin(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value -= MTH_Mul(fixedPoint(0x1000), getCos(yawIdx)).m_value;
+    }
+    if (input.m6_buttonDown & 0x20)
+    {
+        pCam->m0_position.m0_X.m_value += MTH_Mul(fixedPoint(0x1000), getSin(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value += MTH_Mul(fixedPoint(0x1000), getCos(yawIdx)).m_value;
+    }
+    if (input.m6_buttonDown & 0x80)
+    {
+        pCam->m0_position.m0_X.m_value += MTH_Mul(fixedPoint(0x1000), getCos(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value -= MTH_Mul(fixedPoint(0x1000), getSin(yawIdx)).m_value;
+    }
+    if (input.m6_buttonDown & 0x40)
+    {
+        pCam->m0_position.m0_X.m_value -= MTH_Mul(fixedPoint(0x1000), getCos(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value += MTH_Mul(fixedPoint(0x1000), getSin(yawIdx)).m_value;
+    }
+
+    // Up/down slow
+    if (input.m6_buttonDown & 0x4000) pCam->m0_position.m4_Y.m_value += 0x1000;
+    if (input.m6_buttonDown & 0x0004) pCam->m0_position.m4_Y.m_value -= 0x1000;
+
+    // Movement: forward/back/strafe fast (held buttons)
+    if (input.mE & 0x10)
+    {
+        pCam->m0_position.m0_X.m_value -= MTH_Mul(fixedPoint(0x4000), getSin(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value -= MTH_Mul(fixedPoint(0x4000), getCos(yawIdx)).m_value;
+    }
+    if (input.mE & 0x20)
+    {
+        pCam->m0_position.m0_X.m_value += MTH_Mul(fixedPoint(0x4000), getSin(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value += MTH_Mul(fixedPoint(0x4000), getCos(yawIdx)).m_value;
+    }
+    if (input.mE & 0x80)
+    {
+        pCam->m0_position.m0_X.m_value += MTH_Mul(fixedPoint(0x4000), getCos(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value -= MTH_Mul(fixedPoint(0x4000), getSin(yawIdx)).m_value;
+    }
+    if (input.mE & 0x40)
+    {
+        pCam->m0_position.m0_X.m_value -= MTH_Mul(fixedPoint(0x4000), getCos(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value += MTH_Mul(fixedPoint(0x4000), getSin(yawIdx)).m_value;
+    }
+
+    // Up/down fast
+    if (input.mE & 0x4000) pCam->m0_position.m4_Y.m_value += 0x4000;
+    if (input.mE & 0x0004) pCam->m0_position.m4_Y.m_value -= 0x4000;
+}
+
+// 0606A984 — camera follow mode 7 draw: debug free-camera mode
+static void a5_cameraFollowMode7_Draw(sFieldCameraStatus*)
+{
+    s_FieldSubTaskWorkArea* pSub = getFieldTaskPtr()->m8_pSubFieldData;
+    if (pSub->m380_debugMenuStatus3 != 0 && pSub->m37E_debugMenuStatus2_a == 1)
+    {
+        a5_debugFreeCamera_0606a6b4();
+    }
+
+    if (pSub->m37C_debugMenuStatus1[0] == 0)
+    {
+        sFieldCameraManager* pCam = pSub->m334;
+        activateCameraFollowMode((u32)(s8)pCam->m50E_followModeIndex);
+    }
+}
 
 // Camera follow modes 3-6 are not yet implemented in C++ (exist in binary).
 // They assert in A3 and byte-match across all overlays.
@@ -142,13 +262,38 @@ void a5_wormSegmentEntity_startFollowMode_060694D8(s32 followMode)
     getActiveCameraSlot()->m8D_followState = 0;
 }
 
-// 060882e4 — dragon task update function pointer installed when the
-// worm segment autopilot starts. Drives the scripted camera/dragon
-// motion through the tunnel. Not reimplemented yet.
-extern "C" void FUN_FLD_A5__060882e4(s_dragonTaskWorkArea*);
-static void a5_wormSegmentEntity_dragonAutopilotUpdate_060882E4(s_dragonTaskWorkArea* /*pDragon*/)
+// 060882e4 — dragon task update for worm segment autopilot.
+// 2-state: init (update camera, clear collision, compute speed), then integrate position.
+static void a5_wormSegmentEntity_dragonAutopilotUpdate_060882E4(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented();
+    pDragon->m24A_runningCameraScript = 3;
+    getFieldTaskPtr()->m28_status |= 0x10000;
+    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 |= 1;
+
+    if (pDragon->m104_dragonScriptStatus == 0)
+    {
+        updateCameraScriptSub0((p_workArea)pDragon->mB8_lightWingEffect);
+        pDragon->mF8_Flags &= ~0x400;
+        pDragon->mF8_Flags |= 0x20000;
+        computeDragonSpeed(pDragon);
+        setDragonAnimationFromSpeed(pDragon);
+        pDragon->m104_dragonScriptStatus++;
+    }
+    else if (pDragon->m104_dragonScriptStatus != 1)
+    {
+        goto done;
+    }
+
+    // States 0 (after init) and 1: integrate position from delta translation
+    buildDragonRotationMatrix(&pDragon->m48, &pDragon->m20_angle);
+    copyMatrix(&pDragon->m48.m0_matrix, &pDragon->m88_matrix);
+
+    pDragon->m8_pos.m0_X = fixedPoint(pDragon->m8_pos.m0_X.m_value + pDragon->m160_deltaTranslation.m0_X.m_value);
+    pDragon->m8_pos.m4_Y = fixedPoint(pDragon->m8_pos.m4_Y.m_value + pDragon->m160_deltaTranslation.m4_Y.m_value);
+    pDragon->m8_pos.m8_Z = fixedPoint(pDragon->m8_pos.m8_Z.m_value + pDragon->m160_deltaTranslation.m8_Z.m_value);
+
+done:
+    computeDragonSpeed(pDragon);
 }
 
 // 06056F6A — worm segment draw installed by Init when a 3D model was

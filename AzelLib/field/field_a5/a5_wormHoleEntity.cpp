@@ -7,6 +7,22 @@
 #include "kernel/monsterPart.h"
 #include "audio/systemSounds.h"
 #include "menu_dragonMorph.h" // computeLookAt
+#include "field/fieldSceneManager.h"
+#include "field/fieldDebrisScatter.h"
+#include "kernel/vdp1AnimatedQuad.h"
+#include <map>
+
+static const std::vector<sVdp1Quad>* a5GetOrParseQuadList(const sSaturnPtr& ea)
+{
+    static std::map<u32, std::vector<sVdp1Quad>> s_cache;
+    auto it = s_cache.find(ea.m_offset);
+    if (it == s_cache.end())
+    {
+        s_cache[ea.m_offset] = initVdp1Quad(ea);
+        it = s_cache.find(ea.m_offset);
+    }
+    return &it->second;
+}
 
 // Local file-scope performDivision matching the inline in movie.cpp /
 // menu_dragon.cpp: returns dividend / divisor, args ordered (divisor, dividend).
@@ -85,8 +101,6 @@ static void a5_dispatchWormCollisionWithTransform_06077074(sA5WormHoleEntity* pT
     a5GridDraw_cullAndEnqueueWithTransform_06077074(
         pThis->m0_memoryArea.m0_mainMemoryBundle, entryKey, pPos, pRot);
 }
-
-// 06079106 — isWorldPositionOnScreen(sVec3_FP*) (shared field.cpp)
 
 // 06059ae0 — picks a random step direction from a 12x5 permutation table at
 // FLD_A5::06099CF8, applies the matching (X, Z) offset from the state-2
@@ -315,12 +329,32 @@ static void a5_wormHoleEntity_bodyUpdate_060597a0(sMonsterBody* pBody, sVec3_FP*
     pBody->m24_update(&pBody->m30_parts[0], &pBody->m0_translation, &pBody->mC_rotation, &pBody->m18_rotationTarget);
 }
 
-// 0605f734 — spawn dust/debris particles at the worm-hole position when it
-// crosses the ground plane (apex detection). Deep sub-call chain into the
-// A5 particle pool system.
-static void a5_wormHoleEntity_spawnDust_0605f734(sA5WormHoleEntity* /*pThis*/, sVec3_FP* /*pPos*/)
+// 0605f734 — spawn 8 dust particles at the worm-hole position (apex detection)
+static void a5_wormHoleEntity_spawnDust_0605f734(sA5WormHoleEntity* /*pThis*/, sVec3_FP* pPos)
 {
-    Unimplemented();
+    static const std::vector<sVdp1Quad>* s_dustQuadList = nullptr;
+    if (!s_dustQuadList)
+        s_dustQuadList = a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(0x0608C508));
+
+    for (s32 i = 1; i < 9; i++)
+    {
+        sVec3_FP vel;
+        vel.m0_X = fixedPoint(centeredRandom(0x7FF));
+        vel.m4_Y = fixedPoint(randomNumber() & 0x7FF);
+        vel.m8_Z = fixedPoint(centeredRandom(0x7FF));
+
+        sSceneParticleDesc desc = {};
+        desc.m0_pPosition = pPos;
+        desc.m4_pVelocity = &vel;
+        desc.m8_pQuadList = s_dustQuadList;
+        desc.m14_updateFunc = &sceneParticle_updatePhysics;
+        desc.m18_payloadSize = 4;
+        desc.m1C_pPayloadSrc = &i;
+
+        s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
+        sFieldSceneManager* pManager = (sFieldSceneManager*)pFieldData->m54;
+        sceneParticle_allocate(pManager, &desc, 0);
+    }
 }
 
 // 06059c20 — 4-state swing/reset update cycle. Each update decrements the

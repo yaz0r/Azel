@@ -2,7 +2,6 @@
 #include "a7_beamSpark.h"
 #include "field/fieldBeamSpark.h"
 
-// Beam spark core (init/update/draw/spawn) moved to shared fieldBeamSpark.cpp.
 // This file only contains the A7-specific spawn wrapper.
 
 // 06055aea — A7 beam emitter spark spawner (overlay-specific arg setup)

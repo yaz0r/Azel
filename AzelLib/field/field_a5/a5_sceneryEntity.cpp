@@ -19,8 +19,6 @@ struct sA5SceneryEntity : public s_workAreaTemplate<sA5SceneryEntity>
     // Saturn size 0x58
 };
 
-// 0607cc10 — cached cutscene data, now in shared exitField.cpp
-
 // Config struct passed to a5_spawnParticleEmitter (06085e46).
 // Built on the stack by a5DecorEmitter_loadUnlockEffectConfig + setupParticlesSub.
 struct sParticleEmitterConfig
@@ -135,8 +133,6 @@ static void a5SceneryEntity_setupParticles(sA5SceneryEntity* pThis)
     a5SceneryEntity_setupParticlesSub(pThis, gFLD_A5->getSaturnPtr(0x06098fd4));
     a5SceneryEntity_setupParticlesSub(pThis, gFLD_A5->getSaturnPtr(0x06098ff0));
 }
-
-// 0607cdcc — startExitCutsceneCached (shared exitField.cpp)
 
 // 0605ec0a — render context callback. Sets visibility and triggers
 // the effect on the next update frame.
