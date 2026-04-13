@@ -129,26 +129,7 @@ struct s_riderAnimTask : public s_workAreaTemplate<s_riderAnimTask>
     const s32* m1C;
 };
 
-struct s_cutsceneTask : public s_workAreaTemplateWithArg<s_cutsceneTask, struct s_cutsceneData*>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &s_cutsceneTask::Init, &s_cutsceneTask::Update, NULL, NULL};
-        return &taskDefinition;
-    }
-    static void Init(s_cutsceneTask*, struct s_cutsceneData* argument);
-    static void Update(s_cutsceneTask*);
-
-    u32 m0;
-    u32 m4_changeField;
-    s32 m8_fieldIndex;
-    s32 mC_fieldParam;
-    s32 m10_fieldExitIndex;
-    s16 m14;
-    u32 m18_frameCount;
-
-    //size = 0x1C
-};
+#include "field/fieldCutsceneTask.h"
 
 struct s_fieldScriptWorkArea78
 {
@@ -220,14 +201,6 @@ struct s_cameraScript
     s32 m20_length;
     sVec3_FP m24_pos2;
     s32 m30_thresholdDistance;
-};
-
-struct s_cutsceneData
-{
-    std::vector<s_scriptData3> m0;
-    std::vector<s_scriptData1> m4;
-    std::vector<s_scriptData2> m4bis;
-    u8 m8;
 };
 
 #include "field/fieldDragon.h"
@@ -587,7 +560,6 @@ void updateCameraScriptSub0Sub2(s_dragonTaskWorkArea* r4);
 void updateCameraScriptSub0(p_workArea r4);
 void dragonFieldTaskInitSub4Sub4();
 
-void startExitFieldCutscene2(p_workArea parent, s_cutsceneData* pScript, s32 param, s32 exitIndex, s32 arg0);
 void initFieldDragonLight();
 
 void gridCellDraw_normalSub2(s_fileBundle* r4, s32 r5, s32 r6);
@@ -598,6 +570,17 @@ void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s
 
 int findMandatoryFileOnDisc(const char* fileName);
 u32 getFileSizeFromFileId(const char* fileName);
+
+// Shared camera follow mode functions (duplicated in every field overlay)
+void cameraFollowMode_scriptTarget(sFieldCameraStatus* r4);
+void cameraFollowMode_idle(sFieldCameraStatus* r4);
+
+// Shared camera follow mode dispatch (duplicated in every field overlay)
+s32 setCameraFollowFunctions(u32 slotIndex, void(*updateFunc)(sFieldCameraStatus*), void(*drawFunc)(sFieldCameraStatus*));
+void activateCameraFollowMode(u32 followMode);
+s8 isFieldCameraSlotActive(s32 slotIndex);
+sFieldCameraStatus* getActiveCameraSlot();
+void startCameraFollowModeByIndex(s32 followMode);
 
 // Shared field script/cutscene queries
 bool isNoCutsceneActive();
@@ -613,4 +596,21 @@ void triggerSubfieldChange(s32 destSubfield, s16 param);
 // Shared grid/visibility helpers
 p_workArea findGridParentForEntity(sSaturnPtr pData);
 bool isPointOnScreen(sVec3_FP* pViewPos, s32 maxDepth);
+bool isWorldPositionOnScreen(sVec3_FP* pWorldPos);
 bool isWorldPositionOnScreen(sSaturnPtr posEA);
+
+// Shared random utilities
+s32 signedRandom(s32 range);
+
+// Shared camera impulse
+void addCameraImpulse(sVec3_FP* positionImpulse, sVec3_FP* rotationImpulse);
+
+// Shared field script with flag check
+s32 startFieldScriptWithFlagCheck(s32 scriptIndex, u32 flagBit);
+
+// Clear camera zone targets (1-based index)
+s32 clearCameraZoneTargets(s32 zoneIndex);
+
+// Dragon camera/script state queries
+s32 isDragonCameraScriptInactive();
+void releaseMultiChoiceBlocks();

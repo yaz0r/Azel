@@ -11,7 +11,11 @@
 #include "kernel/fileBundle.h"
 #include "kernel/vdp1AnimatedQuad.h"
 #include "trigo.h"
+#include "field/fieldDragonInput.h"
+#include "field/fieldScriptWaitTask.h"
+#include "field/fieldAnimRingSubTask.h"
 #include "mainMenuDebugTasks.h"
+#include "field/fieldVisibilityGrid.h"
 
 s32 playBattleSoundEffect(s32 effectIndex);
 
@@ -133,40 +137,7 @@ struct sA7EnvEntity2CEffectTask : public s_workAreaTemplateWithArg<sA7EnvEntity2
     // Saturn size 0x1c4
 };
 
-// 0606fa42 — view-space frustum test: vertex is on-screen iff (0 <= viewZ <= farClip)
-// AND |widthScale * viewX / viewZ| < 0xC1 AND |heightScale * viewY / viewZ| < 0x81.
-static bool a7IsViewPositionOnScreen_0606fa42(sVec3_FP* pViewPos, s32 farClip)
-{
-    if (pViewPos->m8_Z.m_value < 0 || pViewPos->m8_Z.m_value > farClip)
-    {
-        return false;
-    }
-    s16 widthScale;
-    s16 heightScale;
-    getVdp1ProjectionParams(&widthScale, &heightScale);
-
-    s32 projX = setDividend(widthScale, pViewPos->m0_X.m_value, pViewPos->m8_Z.m_value);
-    s16 absProjX = (s16)projX;
-    if (absProjX < 0) absProjX = (s16)-absProjX;
-    if (absProjX >= 0xC1)
-    {
-        return false;
-    }
-
-    s32 projY = setDividend(heightScale, pViewPos->m4_Y.m_value, pViewPos->m8_Z.m_value);
-    s16 absProjY = (s16)projY;
-    if (absProjY < 0) absProjY = (s16)-absProjY;
-    return absProjY < 0x81;
-}
-
-// 0606fade — transforms a world-space vertex and tail-calls 0606fa42 with the
-// current far-clip distance.
-static s32 a7IsWorldPositionOnScreen(sVec3_FP* pWorldPos)
-{
-    sVec3_FP viewPos;
-    transformAndAddVecByCurrentMatrix(pWorldPos, &viewPos);
-    return a7IsViewPositionOnScreen_0606fa42(&viewPos, graphicEngineStatus.m405C.m14_farClipDistance.m_value) ? 1 : 0;
-}
+// 0606fa42 / 0606fade — isPointOnScreen / isWorldPositionOnScreen (shared field.cpp)
 
 // 06056748 — alternate update installed when the initial countdown expires.
 // While m1C2 == 0, each tick grows the reverse ring trail by advancing
@@ -301,25 +272,10 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sA7EnvEntity2CEffectTask* pThi
     const fixedPoint magnitude(pArg->m18);
 
     // offset.X = mag * cos(atan2(dZ, dX))
-    {
-        s32 angleZX = atan2_FP(pThis->m19C_srcPos.m8_Z.m_value, pThis->m19C_srcPos.m0_X.m_value);
-        u16 idx     = (u16)((u32)angleZX >> 16) & 0xFFF;
-        pThis->m1B4_offset.m0_X = MTH_Mul(magnitude, getCos(idx));
-    }
 
     // offset.Y = mag * sin(atan2(dY, dX))
-    {
-        s32 angleYX = atan2_FP(pThis->m19C_srcPos.m4_Y.m_value, pThis->m19C_srcPos.m0_X.m_value);
-        u16 idx     = (u16)((u32)angleYX >> 16) & 0xFFF;
-        pThis->m1B4_offset.m4_Y = MTH_Mul(magnitude, getSin(idx));
-    }
 
     // offset.Z = mag * sin(atan2(dZ, dX)) — same angle as offset.X but sin
-    {
-        s32 angleZX = atan2_FP(pThis->m19C_srcPos.m8_Z.m_value, pThis->m19C_srcPos.m0_X.m_value);
-        u16 idx     = (u16)((u32)angleZX >> 16) & 0xFFF;
-        pThis->m1B4_offset.m8_Z = MTH_Mul(magnitude, getSin(idx));
-    }
 
     pThis->m1C2 = 0;
 
@@ -352,7 +308,7 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sA7EnvEntity2CEffectTask* pThi
     // Lifetime / countdown for the Update's m1C0-branch.
     pThis->m1C0_counter = 0x2A;
 
-    if (a7IsWorldPositionOnScreen(&spawnPos))
+    if (isWorldPositionOnScreen(&spawnPos))
     {
         playSystemSoundEffect(0x67);
     }
@@ -375,7 +331,7 @@ static void a7EnvEntity2CEffectTask_Update_06056938(sA7EnvEntity2CEffectTask* pT
 {
     if (pThis->m1C0_counter == 0)
     {
-        if (a7IsWorldPositionOnScreen(pThis->m198_pPosition) != 0)
+        if (isWorldPositionOnScreen(pThis->m198_pPosition) != 0)
         {
             playSystemSoundEffect(0x68);
         }
@@ -531,122 +487,13 @@ static void a7EnvEntity2CChild_setupTerminalSpawn_060595a2(sA7EnvEntity2CChild* 
     Unimplemented();
 }
 
-// 14-dword arg built on-stack by animTick and handed to the 0x4c-byte
-// sub-task at FLD_A7::0608921c (init=0607f824). Layout: three (X, Y, Z)
-// sample points around the current position at a random angle, then a
-// direction vector (sin, 0x1e000, cos), then constants (3, 0).
-struct sA7EnvEntity2CChild_AnimArg
-{
-    sVec3_FP m00_center;          // current position
-    sVec3_FP m0C_ring0;            // center + (sin*0x5000, 0, cos*0x5000)
-    sVec3_FP m18_ring1;            // center + (sin*0xc000, 0, cos*0xc000)
-    sVec3_FP m24_direction;        // (sin*0xf000, 0x1e000, cos*0xf000)
-    s32      m30_lifetime;         // 3 — arg[0xc], used as division denominator in Init
-    s32      m34_mode;             // 0 — arg[0xd], selects default (0) or alternate (1) update/draw
-};
+// AnimRingSubTask + arg struct + all functions moved to shared fieldAnimRingSubTask.h/cpp
+// sA7EnvEntity2CChild_AnimArg is now sAnimRingArg
+#define sA7EnvEntity2CChild_AnimArg sAnimRingArg
 
 static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
 
-// 0x4c-byte sub-task spawned by a7EnvEntity2CChild_animTick.
-// Task definition at FLD_A7::0608921c = {init=0607f824, update=0607f8ae,
-// draw=0607f904, delete=null}.
-struct sA7AnimRingSubTask : public s_workAreaTemplateWithArg<sA7AnimRingSubTask, sA7EnvEntity2CChild_AnimArg*>
-{
-    s32      m0_pad0;             // 0x00 — task scratch / unused from our POV
-    s32      m4_pad1;             // 0x04
-    sVec3_FP m8_center;           // 0x08 — from arg.m00_center
-    sVec3_FP m14_current;         // 0x14 — from arg.m0C_ring0
-    sVec3_FP m20_target;          // 0x20 — from arg.m18_ring1
-    sVec3_FP m2C_stepPerFrame;    // 0x2C — only set in mode 0: (target - current) / lifetime
-    sVec3_FP m38_direction;       // 0x38 — from arg.m24_direction
-    s32      m44;                 // 0x44 — 0 at init
-    s32      m48_lifetime;        // 0x48 — from arg.m30_mode (the original reads arg[0xc])
-    // Saturn size 0x4c
-};
-
-// 0607fafc — alternate update (mode-1): only ticks the frame counter and
-// marks the task finished once the lifetime expires. No position lerp.
-static void a7AnimRingSubTask_UpdateAlt_0607fafc(sA7AnimRingSubTask* pThis)
-{
-    pThis->m44++;
-    if (pThis->m48_lifetime <= pThis->m44)
-    {
-        pThis->getTask()->markFinished();
-    }
-}
-// 0607fb28 — alternate draw installed by mode-1 init.
-static void a7AnimRingSubTask_DrawAlt_0607fb28(sA7AnimRingSubTask* /*pThis*/)
-{
-    Unimplemented();
-}
-// 0607f8ae — default update: advance the lerp frame counter; while still
-// within lifetime add the per-frame step to m14_current, otherwise snap to
-// m20_target and mark the task finished.
-static void a7AnimRingSubTask_Update_0607f8ae(sA7AnimRingSubTask* pThis)
-{
-    pThis->m44++;
-    if (pThis->m44 < pThis->m48_lifetime)
-    {
-        pThis->m14_current.m0_X = fixedPoint(pThis->m14_current.m0_X.m_value + pThis->m2C_stepPerFrame.m0_X.m_value);
-        pThis->m14_current.m4_Y = fixedPoint(pThis->m14_current.m4_Y.m_value + pThis->m2C_stepPerFrame.m4_Y.m_value);
-        pThis->m14_current.m8_Z = fixedPoint(pThis->m14_current.m8_Z.m_value + pThis->m2C_stepPerFrame.m8_Z.m_value);
-    }
-    else
-    {
-        pThis->m14_current = pThis->m20_target;
-        pThis->getTask()->markFinished();
-    }
-}
-// 0607f904 — default draw. Not reimplemented yet.
-static void a7AnimRingSubTask_Draw_0607f904(sA7AnimRingSubTask* /*pThis*/)
-{
-    Unimplemented();
-}
-
-// 0607f824 — init: unpack the 14-dword arg, optionally compute a step
-// velocity (mode 0) or swap in alternate update/draw pointers (mode 1).
-static void a7AnimRingSubTask_Init_0607f824(sA7AnimRingSubTask* pThis,
-                                             sA7EnvEntity2CChild_AnimArg* pArg)
-{
-    pThis->m8_center  = pArg->m00_center;
-    pThis->m14_current = pArg->m0C_ring0;
-    pThis->m20_target  = pArg->m18_ring1;
-    pThis->m38_direction = pArg->m24_direction;
-
-    if (pArg->m34_mode == 0)
-    {
-        pThis->m2C_stepPerFrame.m0_X =
-            fixedPoint(performDivision(pArg->m30_lifetime,
-                                       pThis->m20_target.m0_X.m_value - pThis->m14_current.m0_X.m_value));
-        pThis->m2C_stepPerFrame.m4_Y =
-            fixedPoint(performDivision(pArg->m30_lifetime,
-                                       pThis->m20_target.m4_Y.m_value - pThis->m14_current.m4_Y.m_value));
-        pThis->m2C_stepPerFrame.m8_Z =
-            fixedPoint(performDivision(pArg->m30_lifetime,
-                                       pThis->m20_target.m8_Z.m_value - pThis->m14_current.m8_Z.m_value));
-    }
-    else if (pArg->m34_mode == 1)
-    {
-        pThis->m_UpdateMethod = &a7AnimRingSubTask_UpdateAlt_0607fafc;
-        pThis->m_DrawMethod   = &a7AnimRingSubTask_DrawAlt_0607fb28;
-    }
-
-    pThis->m44          = 0;
-    pThis->m48_lifetime = pArg->m30_lifetime;
-}
-
-// 0607fe24 — wraps createSubTaskWithArg(&0608921c, 0x4c, arg) faithfully.
-static void a7EnvEntity2CChild_spawnAnimSubTask_0607fe24(p_workArea parent,
-                                                         sA7EnvEntity2CChild_AnimArg* pArg)
-{
-    static sA7AnimRingSubTask::TypedTaskDefinition td = {
-        &a7AnimRingSubTask_Init_0607f824,
-        &a7AnimRingSubTask_Update_0607f8ae,
-        &a7AnimRingSubTask_Draw_0607f904,
-        nullptr,
-    };
-    createSubTaskWithArg<sA7AnimRingSubTask>(parent, pArg, &td);
-}
+// a7EnvEntity2CChild_spawnAnimSubTask -> spawnAnimRingSubTask (shared)
 
 // 060596a0 — late-tick anim helper: samples a random angle, builds the arg
 // struct, and tail-calls spawnAnimSubTask_0607fe24.
@@ -678,7 +525,7 @@ static void a7EnvEntity2CChild_animTick_060596a0(sA7EnvEntity2CChild* pThis)
     arg.m30_lifetime = 3;
     arg.m34_mode     = 0;
 
-    a7EnvEntity2CChild_spawnAnimSubTask_0607fe24((p_workArea)pThis, &arg);
+    spawnAnimRingSubTask((p_workArea)pThis, &arg);
 }
 
 // 06059930
@@ -804,40 +651,26 @@ static p_workArea spawnA7EnvEntity2CChild(p_workArea parent, sSaturnPtr entry, u
     return (p_workArea)createSiblingTaskWithArg<sA7EnvEntity2CChild>(parent, &arg, &td);
 }
 
-// 0607e848 — FLD_A7 dragon update (default morph). Not yet reimplemented.
-static void a7DragonUpdate_0607e848(s_dragonTaskWorkArea* pDragon)
-{
-    Unimplemented();
-}
+// interpolateAngle28 — moved to shared fieldDragonInput.cpp
 
-// 0607e924 — FLD_A7 dragon update (dragonType == 8 morph). Not yet reimplemented.
-static void a7DragonUpdate_0607e924(s_dragonTaskWorkArea* pDragon)
-{
-    Unimplemented();
-}
+static inline s32 a7_performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
 
-// 060732fc — clear bit 0x10000 of dragon mF8_Flags.
-static void a7Sub_clearDragonFlag10000()
-{
-    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    pDragon->mF8_Flags &= ~0x10000u;
-}
+// checkDragonTransition � moved to shared fieldDragonInput.cpp
 
-// 06073266 — re-arms the dragon update function pointer for FLD_A7.
-static void a7Sub_armDragonUpdate()
-{
-    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    if (gDragonState->mC_dragonType == 8)
-    {
-        pDragon->mF0 = &a7DragonUpdate_0607e924;
-    }
-    else
-    {
-        pDragon->mF0 = &a7DragonUpdate_0607e848;
-    }
-    pDragon->m104_dragonScriptStatus = 0;
-    a7Sub_clearDragonFlag10000();
-}
+// computeBoundsPushback � moved to shared fieldDragonInput.cpp
+
+
+
+// ScriptWaitTask — moved to shared fieldScriptWaitTask.cpp
+
+extern void dispatchTutorialMultiChoiceSub2();
+
+// a7DragonUpdate_0607e848 � moved to shared fieldDragonInput.cpp
+
+// a7DragonUpdate_0607e924 � moved to shared fieldDragonInput.cpp
+
+// 060732fc, 06073266 — clearDragonScriptFlag, dragonTransitionToNormal
+// moved to shared fieldDragonInput.cpp
 
 // 06059b8c
 void a7EnvEntity2C_Init(sA7EnvEntity2C* pThis, sSaturnPtr arg)
@@ -907,7 +740,7 @@ void a7EnvEntity2C_Update(sA7EnvEntity2C* pThis)
                     pThis->m4_count++;
                 }
                 startFieldScript(0x10, 0x5d8);
-                a7Sub_armDragonUpdate();
+                dragonTransitionToNormal();
             }
         }
         else

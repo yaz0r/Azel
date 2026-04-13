@@ -301,21 +301,6 @@ void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6)
     exitCutsceneTaskUpdateSub0Sub1(getFieldTaskPtr()->m2C_currentFieldIndex, param, exitNumber, r6);
 }
 
-void startExitFieldCutscene2Sub0(p_workArea parent, s_cutsceneData* pScript, s32 fieldIndex, s32 param, s32 exitIndex, s32 arg0)
-{
-    s_cutsceneTask* pCutsceneTask = createSubTaskWithArg<s_cutsceneTask>(getFieldTaskPtr()->m8_pSubFieldData, pScript);
-    pCutsceneTask->m4_changeField = 1;
-    pCutsceneTask->m8_fieldIndex = fieldIndex;
-    pCutsceneTask->mC_fieldParam = param;
-    pCutsceneTask->m10_fieldExitIndex = exitIndex;
-    pCutsceneTask->m14 = arg0;
-}
-
-void startExitFieldCutscene2(p_workArea parent, s_cutsceneData* pScript, s32 param, s32 exitIndex, s32 arg0)
-{
-    startExitFieldCutscene2Sub0(parent, pScript, getFieldTaskPtr()->m2C_currentFieldIndex, param, exitIndex, arg0);
-}
-
 void initFieldDragonLight()
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -493,12 +478,19 @@ bool isPointOnScreen(sVec3_FP* pViewPos, s32 maxDepth)
     return absY < 0x81;
 }
 
+// 0606fade (A7) — world position on-screen test taking sVec3_FP*
+bool isWorldPositionOnScreen(sVec3_FP* pWorldPos)
+{
+    sVec3_FP viewPos;
+    transformAndAddVecByCurrentMatrix(pWorldPos, &viewPos);
+    return isPointOnScreen(&viewPos, graphicEngineStatus.m405C.m14_farClipDistance);
+}
+
+// Wrapper taking sSaturnPtr (reads position from Saturn memory)
 bool isWorldPositionOnScreen(sSaturnPtr posEA)
 {
     sVec3_FP worldPos = readSaturnVec3(posEA);
-    sVec3_FP viewPos;
-    transformAndAddVecByCurrentMatrix(&worldPos, &viewPos);
-    return isPointOnScreen(&viewPos, graphicEngineStatus.m405C.m14_farClipDistance);
+    return isWorldPositionOnScreen(&worldPos);
 }
 
 s_RGB8 readSaturnRGB8(const sSaturnPtr& ptr)
@@ -509,6 +501,97 @@ s_RGB8 readSaturnRGB8(const sSaturnPtr& ptr)
     newValue.m2 = readSaturnU8(ptr + 2);
 
     return newValue;
+}
+
+// 0606818c (A7) / 06069bc0 (A3) — start field script with game-state flag check
+s32 startFieldScriptWithFlagCheck(s32 scriptIndex, u32 flagBit)
+{
+    s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    if (pScript->m0_pScripts == nullptr)
+        return 0;
+
+    if (pScript->m4_currentScript.m_offset != 0)
+        return 0;
+
+    if ((s32)flagBit >= 0)
+    {
+        u32 adjusted = (flagBit < 1000) ? flagBit : (flagBit - 0x236);
+        if ((mainGameState.bitField[adjusted >> 3] & bitMasks[adjusted & 7]) != 0)
+            pScript->m60_canSkipScript = 1;
+        else
+            pScript->m60_canSkipScript = 0;
+    }
+
+    pScript->m4_currentScript = pScript->m0_pScripts[scriptIndex];
+    pScript->m2C_bitToSet = flagBit;
+    pScript->m58 = 0;
+    pScript->m50_scriptDelay = 0;
+    return 1;
+}
+
+void freeVdp1Block(npcFileDeleter* parent, void* dataToFree);
+void fieldPaletteTaskInitSub0Sub0();
+
+// 0606fe10 (A7) / 06071844 (A3) — signed random in [-range/2, range/2)
+s32 signedRandom(s32 range)
+{
+    s32 r = randomNumber();
+    r = performModulo2(range, r);
+    return r - (range >> 1);
+}
+
+// 06073566 (A7) / 06074f9a (A3) — check if dragon has no active camera script/cutscene
+s32 isDragonCameraScriptInactive()
+{
+    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    if (pDragon->m1D0_cameraScript == nullptr && pDragon->m1D4_cutsceneData == nullptr)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+// 0607790a (A7) / 0607933e (A3) — release multichoice memory blocks
+void releaseMultiChoiceBlocks()
+{
+    s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    s_multiChoice* pChoice = pScript->m44_multiChoiceData;
+    if (pChoice != nullptr)
+    {
+        freeVdp1Block((npcFileDeleter*)pScript, pChoice->m0_choiceTable);
+        freeVdp1Block((npcFileDeleter*)pScript, pChoice);
+        pScript->m44_multiChoiceData = nullptr;
+        fieldPaletteTaskInitSub0Sub0();
+    }
+}
+
+// 06060118 (A7) / 06061b4c (A3) — clear camera zone targets
+s32 clearCameraZoneTargets(s32 zoneIndex)
+{
+    sFieldCameraManager* pCameraManager = getFieldTaskPtr()->m8_pSubFieldData->m334;
+    sFieldCameraZone& zone = pCameraManager->m2E4_cameraZones[zoneIndex - 1];
+    zone.m14_triggerRadius = 0;
+    zone.m18_maxDistanceSquare = 0;
+    zone.m1C = 0;
+    return 0x334;
+}
+
+// 060613ca (A7) / 0606a9f2 (A5) / 06062dfe (A3) — add camera impulse
+void addCameraImpulse(sVec3_FP* positionImpulse, sVec3_FP* rotationImpulse)
+{
+    sFieldCameraStatus* pCam = getFieldCameraStatus();
+    if (positionImpulse)
+    {
+        pCam->m50_positionImpulse.m0_X = fixedPoint(pCam->m50_positionImpulse.m0_X.m_value + positionImpulse->m0_X.m_value);
+        pCam->m50_positionImpulse.m4_Y = fixedPoint(pCam->m50_positionImpulse.m4_Y.m_value + positionImpulse->m4_Y.m_value);
+        pCam->m50_positionImpulse.m8_Z = fixedPoint(pCam->m50_positionImpulse.m8_Z.m_value + positionImpulse->m8_Z.m_value);
+    }
+    if (rotationImpulse)
+    {
+        pCam->m68_rotationImpulse.m0_X = fixedPoint(pCam->m68_rotationImpulse.m0_X.m_value + rotationImpulse->m0_X.m_value);
+        pCam->m68_rotationImpulse.m4_Y = fixedPoint(pCam->m68_rotationImpulse.m4_Y.m_value + rotationImpulse->m4_Y.m_value);
+        pCam->m68_rotationImpulse.m8_Z = fixedPoint(pCam->m68_rotationImpulse.m8_Z.m_value + rotationImpulse->m8_Z.m_value);
+    }
 }
 
 void createCellObjects(s_visdibilityCellTask* r4, std::vector<s_DataTable2Sub0>& r5, s32 r6)

@@ -46,13 +46,7 @@ struct sA7EffectSpawnDesc
     s32 m1C_param4;
 };
 
-// 0606fe10 — signed random in [-range/2, range/2)
-static s32 a7SignedRandom_0606fe10(s32 range)
-{
-    s32 r = randomNumber();
-    r = performModulo2(range, r);
-    return r - (range >> 1);
-}
+// 0606fe10 — signedRandom (shared field.cpp)
 
 // Forward declaration — defined after the phase update functions
 static s32 a7EffectTask_particleStep_06057054(sA7Particle* pParticle, u32* pArrayA, u32 arrayBLifetime);
@@ -111,14 +105,14 @@ static void a7EffectTask_UpdatePhase1_0605725c(sA7EffectTask* pThis)
         else
         {
             s32 baseX = pThis->mC_pPos->m0_X.m_value;
-            s32 jitterX = a7SignedRandom_0606fe10(pThis->m10_jitter);
+            s32 jitterX = signedRandom(pThis->m10_jitter);
             pParticle->mC_current.m0_X = fixedPoint(baseX + jitterX);
             pParticle->m0_base.m0_X    = fixedPoint(baseX + jitterX);
             pParticle->mC_current.m4_Y = fixedPoint(0);
             pParticle->m0_base.m4_Y    = fixedPoint(0);
 
             s32 baseZ = pThis->mC_pPos->m8_Z.m_value;
-            s32 jitterZ = a7SignedRandom_0606fe10(pThis->m10_jitter);
+            s32 jitterZ = signedRandom(pThis->m10_jitter);
             pParticle->mC_current.m8_Z = fixedPoint(baseZ + jitterZ);
             pParticle->m0_base.m8_Z    = fixedPoint(baseZ + jitterZ);
 
@@ -185,14 +179,14 @@ static void a7EffectTask_Update_06057270(sA7EffectTask* pThis)
         else
         {
             s32 baseX = pThis->mC_pPos->m0_X.m_value;
-            s32 jitterX = a7SignedRandom_0606fe10(pThis->m10_jitter);
+            s32 jitterX = signedRandom(pThis->m10_jitter);
             pParticle->mC_current.m0_X = fixedPoint(baseX + jitterX);
             pParticle->m0_base.m0_X    = fixedPoint(baseX + jitterX);
             pParticle->mC_current.m4_Y = fixedPoint(0);
             pParticle->m0_base.m4_Y    = fixedPoint(0);
 
             s32 baseZ = pThis->mC_pPos->m8_Z.m_value;
-            s32 jitterZ = a7SignedRandom_0606fe10(pThis->m10_jitter);
+            s32 jitterZ = signedRandom(pThis->m10_jitter);
             pParticle->mC_current.m8_Z = fixedPoint(baseZ + jitterZ);
             pParticle->m0_base.m8_Z    = fixedPoint(baseZ + jitterZ);
 
@@ -271,13 +265,13 @@ static sA7EffectTask* a7EffectTask_spawnerCore_06057296(p_workArea parent, sA7Ef
 
         for (s32 n = pTask->m0_count; n > 0; n--)
         {
-            s32 jitterX = a7SignedRandom_0606fe10(pTask->m10_jitter);
+            s32 jitterX = signedRandom(pTask->m10_jitter);
             pParticle->m0_base.m0_X    = fixedPoint(desc->m4_pPos->m0_X.m_value + jitterX);
             pParticle->mC_current.m0_X = fixedPoint(desc->m4_pPos->m0_X.m_value + jitterX);
             pParticle->m0_base.m4_Y    = fixedPoint(0);
             pParticle->mC_current.m4_Y = fixedPoint(0);
 
-            s32 jitterZ = a7SignedRandom_0606fe10(pTask->m10_jitter);
+            s32 jitterZ = signedRandom(pTask->m10_jitter);
             pParticle->m0_base.m8_Z    = fixedPoint(desc->m4_pPos->m8_Z.m_value + jitterZ);
             pParticle->mC_current.m8_Z = fixedPoint(desc->m4_pPos->m8_Z.m_value + jitterZ);
 

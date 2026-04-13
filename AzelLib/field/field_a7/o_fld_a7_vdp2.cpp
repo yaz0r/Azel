@@ -5,6 +5,7 @@
 #include "field/fieldVisibilityGrid.h"
 #include "battle/BTL_A3/BTL_A3_map6.h"
 #include "trigo.h"
+#include "field/fieldHorizon.h"
 #include "kernel/cinematicBarsTask.h"
 #include "kernel/loadSavegameScreen.h"
 
@@ -488,97 +489,7 @@ static void drawVdp2Sub_setupRotationPass0_A7_1(sVdp2PlaneTask* pThis)
 
 void drawGaugeVdp1(u16 mode, std::array<sVec2_S16, 4>& params, u16 color, fixedPoint depth);
 
-// 0607653c — compute horizon Y position from X coordinate
-static s32 horizonScreenY(sCoefficientTableData& coeff, s32 screenHeight, s32 xPos, s32 scrollValue)
-{
-    s32 numerator = ((scrollValue + 100) * 0x10000 - (coeff.m54 & 0x7FFFFFFF)) - coeff.m5C * xPos;
-    return screenHeight - FP_Div(numerator, fixedPoint(coeff.m58)).getInteger();
-}
-
-// 060764f8 — compute horizon X position from Y coordinate
-static s32 horizonScreenX(sCoefficientTableData& coeff, s32 yPos, s32 scrollValue)
-{
-    s32 numerator = ((scrollValue + 100) * 0x10000 - (coeff.m54 & 0x7FFFFFFF)) - coeff.m58 * yPos;
-    return FP_Div(numerator, fixedPoint(coeff.m5C)).getInteger() - 0xB0;
-}
-
-// 06076584 — draw horizon gauge line on VDP1
-static void drawHorizonGauge_A7(s32 scrollValue, u16 color)
-{
-    s32 screenHeight = (VDP2Regs_.m4_TVSTAT & 1) == 0 ? 0x70 : 0x80;
-
-    s8 coeffIdx = (s8)(gRotationPassState.m0_planeIndex * 2 + (s32)vdp2Controls.m0_doubleBufferIndex);
-    sCoefficientTableData& coeff = gCoefficientTables[0][coeffIdx];
-
-    s32 adjustedScroll = scrollValue;
-    if ((VDP2Regs_.m4_TVSTAT & 1) != 0)
-    {
-        adjustedScroll = scrollValue + 0x10;
-    }
-
-    s32 maxDist = screenHeight + 8;
-
-    // Try to find horizon at left edge (X = -8)
-    s32 leftY = horizonScreenY(coeff, screenHeight, -8, adjustedScroll);
-    s32 absLeftY = leftY < 0 ? -leftY : leftY;
-
-    std::array<sVec2_S16, 4> gaugeQuad;
-    u32 pointsNeeded = (u32)(maxDist < absLeftY);
-
-    if (maxDist >= absLeftY)
-    {
-        gaugeQuad[2][0] = -0xB8;
-        gaugeQuad[0][0] = -0xB8;
-        gaugeQuad[0][1] = (s16)leftY + 2;
-        gaugeQuad[2][1] = (s16)leftY - 2;
-    }
-
-    // Try to find horizon at right edge (X = 0x168)
-    s32 rightY = horizonScreenY(coeff, screenHeight, 0x168, adjustedScroll);
-    s32 absRightY = rightY < 0 ? -rightY : rightY;
-
-    u32 remaining = pointsNeeded;
-    if (absRightY <= maxDist)
-    {
-        remaining = pointsNeeded - 1;
-        gaugeQuad[pointsNeeded * 2 + 4 > 7 ? 3 : pointsNeeded] = { 0xB8, (s16)(rightY - 2) };
-        gaugeQuad[(1 - pointsNeeded)] = { 0xB8, (s16)(rightY + 2) };
-    }
-
-    // Try to find horizon at top edge (Y = -8)
-    if ((s32)remaining >= 0)
-    {
-        s32 topX = horizonScreenX(coeff, -8, adjustedScroll);
-        s32 absTopX = topX < 0 ? -topX : topX;
-        if (absTopX < 0xB9)
-        {
-            s16 edgeY = (s16)screenHeight + 8;
-            gaugeQuad[(1 - remaining)] = { (s16)(topX - 2), edgeY };
-            gaugeQuad[remaining == 0 ? 2 : 3] = { (s16)(topX + 2), edgeY };
-            remaining--;
-        }
-    }
-
-    // Try to find horizon at bottom edge (Y = screenHeight*2 + 8)
-    if ((s32)remaining >= 0)
-    {
-        s32 botX = horizonScreenX(coeff, screenHeight * 2 + 8, adjustedScroll);
-        s32 absBotX = botX < 0 ? -botX : botX;
-        if (absBotX < 0xB9)
-        {
-            s16 edgeY = -8 - (s16)screenHeight;
-            gaugeQuad[(1 - remaining)] = { (s16)(botX - 2), edgeY };
-            gaugeQuad[remaining == 0 ? 2 : 3] = { (s16)(botX + 2), edgeY };
-            remaining--;
-        }
-    }
-
-    // If all 4 corners found, draw the gauge
-    if ((s32)remaining < 0)
-    {
-        drawGaugeVdp1(0xC0, gaugeQuad, color, graphicEngineStatus.m405C.m14_farClipDistance - 1);
-    }
-}
+// 0607653c, 060764f8, 06076584 — horizon gauge functions moved to shared fieldHorizonGauge.cpp
 
 // 06058410
 static void drawVdp2_A7_1(sVdp2PlaneTask* pThis)
@@ -598,7 +509,7 @@ static void drawVdp2_A7_1(sVdp2PlaneTask* pThis)
     commitRotationPass();
 
     pThis->m34_scrollValue = computeRotationScrollOffset();
-    drawHorizonGauge_A7(pThis->m34_scrollValue, 0x9020);
+    drawHorizon(pThis->m34_scrollValue, 0x9020);
     vdp2ApplyWaveDistortion(pThis);
 
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;

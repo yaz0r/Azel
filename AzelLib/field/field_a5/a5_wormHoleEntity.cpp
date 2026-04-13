@@ -21,14 +21,14 @@ static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend /
 // The update drives a 4-state swing/reset cycle and the draw walks the
 // ring of parts submitting the head model, per-segment drawables and the
 // tail model.
-struct sA5WormHoleEntity : public s_workAreaTemplateWithArg<sA5WormHoleEntity, sSaturnPtr>
+struct sA5WormHoleEntity : public s_workAreaTemplate<sA5WormHoleEntity>
 {
     s_memoryAreaOutput m0_memoryArea;       // 0x00..0x07
     s32*                m8_perPartInts;      // 0x08 — partCount s32 entries (heap)
     u8*                 mC_perPartBytes;     // 0x0C — partCount bytes (heap)
     sVec3_FP            m10_pos;             // 0x10..0x1B — base position (copy of arg)
     s32                 m1C_radius;          // 0x1C
-    s32                 m20_param8;          // 0x20 — per-frame m60 step
+    s32                 m20_param8;          // 0x20 — per-frame m5C_velocity.Y step
     s32                 m24;                 // 0x24 — zero
     s32                 m28_param10;         // 0x28
     s32                 m2C_param2C;         // 0x2C
@@ -39,9 +39,7 @@ struct sA5WormHoleEntity : public s_workAreaTemplateWithArg<sA5WormHoleEntity, s
     sVec3_FP            m40_renderPosition;  // 0x40..0x4B — second pos copy (render)
     sVec3_FP            m4C_rotationTarget;  // 0x4C..0x57
     sMonsterBody*        m58_body;            // 0x58 — Baldor body pointer
-    s32                 m5C;                 // 0x5C — used by FUN_06059a86 as a sVec3_FP lane
-    s32                 m60;                 // 0x60 — oscillation phase
-    s32                 m64;                 // 0x64
+    sVec3_FP            m5C_velocity;        // 0x5C — velocity / oscillation vector
     s32                 m68_partCount;       // 0x68
     s_3dModel           m6C_model1;          // 0x6C..0xBB — head model (0x50 bytes)
     s_3dModel           mBC_model2;          // 0xBC..0x10B — tail model (0x50 bytes)
@@ -88,16 +86,7 @@ static void a5_dispatchWormCollisionWithTransform_06077074(sA5WormHoleEntity* pT
         pThis->m0_memoryArea.m0_mainMemoryBundle, entryKey, pPos, pRot);
 }
 
-// 06079106 — transforms a world position into view space and tail-calls the
-// A5 on-screen test. Matches the existing field_a7 / field_a5 inlining of
-// (transformAndAddVecByCurrentMatrix, isPointOnScreen) used in lieu of a
-// dedicated shared helper.
-static s32 a5_isPointVisible_06079106(sVec3_FP* pPos)
-{
-    sVec3_FP viewPos;
-    transformAndAddVecByCurrentMatrix(pPos, &viewPos);
-    return isPointOnScreen(&viewPos, graphicEngineStatus.m405C.m14_farClipDistance.m_value) ? 1 : 0;
-}
+// 06079106 — isWorldPositionOnScreen(sVec3_FP*) (shared field.cpp)
 
 // 06059ae0 — picks a random step direction from a 12x5 permutation table at
 // FLD_A5::06099CF8, applies the matching (X, Z) offset from the state-2
@@ -149,7 +138,7 @@ static void a5_wormHoleEntity_updateEntry_06059ae0(sVec3_FP* pPos, u8* pArgFlag)
         switch (*pArgFlag)
         {
         case 1:
-            if (pPos->m0_X.m_value >= 0x675000 && pPos->m8_Z.m_value >= -0x680000)
+            if (pPos->m0_X.m_value >= 0x675000 && pPos->m8_Z.m_value <= -0x680000)
                 bad = true;
             break;
         case 3:
@@ -161,7 +150,7 @@ static void a5_wormHoleEntity_updateEntry_06059ae0(sVec3_FP* pPos, u8* pArgFlag)
                 bad = true;
             break;
         case 7:
-            if (pPos->m0_X.m_value <= 0x575000 && pPos->m8_Z.m_value < -0x680000)
+            if (pPos->m0_X.m_value <= 0x575000 && pPos->m8_Z.m_value <= -0x680000)
                 bad = true;
             break;
         default:
@@ -184,9 +173,9 @@ static void a5_wormHoleEntity_updateEntry_06059ae0(sVec3_FP* pPos, u8* pArgFlag)
 // projects it onto the XZ plane so the swing update can integrate it.
 //
 // Layout of the scratch velocity lane:
-//   m5C = speed * cos(atan2(dZ, dX))   — X velocity per frame
-//   m60 = (radius * 0x40000) / timer   — Y rotation step per frame
-//   m64 = speed * sin(atan2(dZ, dX))   — Z velocity per frame
+//   m5C_velocity.X = speed * cos(atan2(dZ, dX))   — X velocity per frame
+//   m5C_velocity.Y = (radius * 0x40000) / timer   — Y rotation step per frame
+//   m5C_velocity.Z = speed * sin(atan2(dZ, dX))   — Z velocity per frame
 //
 // Where `speed = |delta| / timer` and `timer` is m2C_param2C scaled by
 // 1.5 when (argFlag & 1) is set.
@@ -204,14 +193,14 @@ static void a5_wormHoleEntity_commitPose_060599a8(sA5WormHoleEntity* pThis)
     }
     pThis->m30_timer = timer;
 
-    // delta = m10_pos - m40_renderPosition, stored in the m5C/m60/m64 lane.
+    // delta = m10_pos - m40_renderPosition, stored in m5C_velocity.
     sVec3_FP delta;
     delta.m0_X = fixedPoint(pThis->m10_pos.m0_X.m_value - pThis->m40_renderPosition.m0_X.m_value);
     delta.m4_Y = fixedPoint(pThis->m10_pos.m4_Y.m_value - pThis->m40_renderPosition.m4_Y.m_value);
     delta.m8_Z = fixedPoint(pThis->m10_pos.m8_Z.m_value - pThis->m40_renderPosition.m8_Z.m_value);
-    pThis->m5C = delta.m0_X.m_value;
-    pThis->m60 = delta.m4_Y.m_value;
-    pThis->m64 = delta.m8_Z.m_value;
+    pThis->m5C_velocity.m0_X = delta.m0_X;
+    pThis->m5C_velocity.m4_Y = delta.m4_Y;
+    pThis->m5C_velocity.m8_Z = delta.m8_Z;
 
     fixedPoint lengthSq = MTH_Product3d_FP(delta, delta);
     fixedPoint length   = sqrt_F(lengthSq);
@@ -219,25 +208,25 @@ static void a5_wormHoleEntity_commitPose_060599a8(sA5WormHoleEntity* pThis)
 
     // Y rotation step: constant based on radius/timer.
     s32 radiusScaled = MTH_Mul(fixedPoint(radius), fixedPoint(0x40000)).m_value;
-    pThis->m60 = performDivision(pThis->m30_timer, radiusScaled);
+    pThis->m5C_velocity.m4_Y = performDivision(pThis->m30_timer, radiusScaled);
 
     // Project speed onto the XZ plane using atan2(dZ, dX).
     s32 angle = atan2_FP(delta.m8_Z.m_value, delta.m0_X.m_value);
     u16 idx = (u16)((u32)angle >> 16) & 0xFFF;
 
-    pThis->m5C = MTH_Mul(fixedPoint(speed), getCos(idx)).m_value;
-    pThis->m64 = MTH_Mul(fixedPoint(speed), getSin(idx)).m_value;
+    pThis->m5C_velocity.m0_X = MTH_Mul(fixedPoint(speed), getCos(idx));
+    pThis->m5C_velocity.m8_Z = MTH_Mul(fixedPoint(speed), getSin(idx));
 }
 
 // 06059a86 — takes a world-space direction vector, runs computeLookAt to
 // produce (yaw, pitch), then writes the swapped/offset pair to the caller's
 // s32[2] target (pitch = -yaw, yaw = pitch + 0x8000000).
-static void a5_wormHoleEntity_stepRotation_06059a86(sVec3_FP* pVec, s32* pTarget)
+static void a5_wormHoleEntity_stepRotation_06059a86(sVec3_FP* pVec, sVec3_FP* pTarget)
 {
     sVec2_FP lookAt;
     computeLookAt(*pVec, lookAt);
-    pTarget[0] = -lookAt[0].m_value;
-    pTarget[1] = lookAt[1].m_value + 0x8000000;
+    pTarget->m0_X = -lookAt[0].m_value;
+    pTarget->m4_Y = lookAt[1].m_value + 0x8000000;
 }
 
 // 060597da — dragon-entered-zone trigger hook. Installed as the
@@ -267,10 +256,6 @@ static void a5_wormHoleEntity_renderContextHook_060597da(sA5WormHoleEntity* pThi
 // model (depending on the tail part's rotation sign).
 static void a5WormHoleEntity_Draw(sA5WormHoleEntity* pThis)
 {
-    PDS_Log("a5WormHoleEntity_Draw fired, head.Y = 0x%x, partCount = %d\n",
-        pThis->m58_body->m30_parts[0].m4_worldPosition.m4_Y.m_value,
-        pThis->m68_partCount);
-
     sMonsterBody* pBody = pThis->m58_body;
     sMonsterBodyPart* pHead = &pBody->m30_parts[0];
 
@@ -296,13 +281,12 @@ static void a5WormHoleEntity_Draw(sA5WormHoleEntity* pThis)
         pBody->m2C_drawPart(pThis->m0_memoryArea.m0_mainMemoryBundle, pPart);
         a5_dispatchWormCollisionWithTransform_06077074(pThis, 0x144, &pPart->m4_worldPosition, &pPart->m1C_rotation);
 
-        // Scratch copy: m34 = worldPos.X, m3C = worldPos.Z.
+        // Scratch copy: {m34, m38, m3C} used as a position with Y=0 for the ring model.
         pThis->m34 = pPart->m4_worldPosition.m0_X.m_value;
         pThis->m3C = pPart->m4_worldPosition.m8_Z.m_value;
 
         pushCurrentMatrix();
-        // translate to (m34, worldPos.Y, m3C) — same as part worldPos.
-        translateCurrentMatrix(&pPart->m4_worldPosition);
+        translateCurrentMatrix(reinterpret_cast<sVec3_FP*>(&pThis->m34));
         rotateCurrentMatrixShiftedX(fixedPoint(0x4000000));
         addObjectToDrawList(pThis->m0_memoryArea.m0_mainMemoryBundle->get3DModel(0xB0));
         popMatrix();
@@ -322,22 +306,34 @@ static void a5WormHoleEntity_Draw(sA5WormHoleEntity* pThis)
     }
 }
 
+// 060597a0 — copy position/rotation into the body and run its update callback.
+static void a5_wormHoleEntity_bodyUpdate_060597a0(sMonsterBody* pBody, sVec3_FP* pPos, sVec3_FP* pRot)
+{
+    pBody->m0_translation = *pPos;
+    pBody->mC_rotation = *pRot;
+    pBody->m18_rotationTarget = *pRot;
+    pBody->m24_update(&pBody->m30_parts[0], &pBody->m0_translation, &pBody->mC_rotation, &pBody->m18_rotationTarget);
+}
+
+// 0605f734 — spawn dust/debris particles at the worm-hole position when it
+// crosses the ground plane (apex detection). Deep sub-call chain into the
+// A5 particle pool system.
+static void a5_wormHoleEntity_spawnDust_0605f734(sA5WormHoleEntity* /*pThis*/, sVec3_FP* /*pPos*/)
+{
+    Unimplemented();
+}
+
 // 06059c20 — 4-state swing/reset update cycle. Each update decrements the
 // timer, advances the render context, dispatches to the active state's
-// transition-on-entry code, steps the rotation, and finally rolls a random
-// sound effect near the entity.
+// transition-on-entry code, steps the rotation, integrates velocity,
+// updates the monster body, and rolls a random sound effect.
 static void a5WormHoleEntity_Update(sA5WormHoleEntity* pThis)
 {
-    static int s_updateCount = 0;
-    if (s_updateCount < 3) {
-        PDS_Log("a5WormHoleEntity_Update fired, state=%d\n", pThis->m140_state);
-        s_updateCount++;
-    }
     pThis->m30_timer--;
     updateFieldModelRenderContext(&pThis->m10C_modelCtx);
 
     s8 state = (s8)pThis->m140_state;
-    bool inPositiveLane = false; // true for states 0/1 (m60 -= step), false for 2/3 (m60 += step)
+    bool inPositiveLane = false;
     bool runStep = true;
 
     if (state == 0)
@@ -359,7 +355,7 @@ static void a5WormHoleEntity_Update(sA5WormHoleEntity* pThis)
         pThis->m10_pos.m8_Z = fixedPoint(pThis->m10_pos.m8_Z.m_value
             + (s32)readSaturnU32(gFLD_A5->getSaturnPtr(kWormHoleTable_StateOffsetZ + pThis->m141_argFlag * 4)));
         a5_wormHoleEntity_commitPose_060599a8(pThis);
-        pThis->m60 = -pThis->m60;
+        pThis->m5C_velocity.m4_Y = fixedPoint(-pThis->m5C_velocity.m4_Y.m_value);
         pThis->m140_state++;
         inPositiveLane = false;
     }
@@ -376,15 +372,15 @@ static void a5WormHoleEntity_Update(sA5WormHoleEntity* pThis)
     {
         if (inPositiveLane)
         {
-            pThis->m60 -= pThis->m20_param8;
-            a5_wormHoleEntity_stepRotation_06059a86(reinterpret_cast<sVec3_FP*>(&pThis->m5C), &pThis->m4C_rotationTarget.m0_X.m_value);
+            pThis->m5C_velocity.m4_Y = fixedPoint(pThis->m5C_velocity.m4_Y.m_value - pThis->m20_param8);
+            a5_wormHoleEntity_stepRotation_06059a86(&pThis->m5C_velocity, &pThis->m4C_rotationTarget);
             if (pThis->m30_timer < 1)
                 pThis->m140_state++;
         }
         else
         {
-            pThis->m60 += pThis->m20_param8;
-            a5_wormHoleEntity_stepRotation_06059a86(reinterpret_cast<sVec3_FP*>(&pThis->m5C), &pThis->m4C_rotationTarget.m0_X.m_value);
+            pThis->m5C_velocity.m4_Y = fixedPoint(pThis->m5C_velocity.m4_Y.m_value + pThis->m20_param8);
+            a5_wormHoleEntity_stepRotation_06059a86(&pThis->m5C_velocity, &pThis->m4C_rotationTarget);
             if (pThis->m30_timer < 1)
                 pThis->m140_state = 0;
         }
@@ -392,10 +388,84 @@ static void a5WormHoleEntity_Update(sA5WormHoleEntity* pThis)
 
     // Random sound-effect roll (~1/256 chance when the position is visible).
     u32 r = randomNumber();
-    if ((r & 0xFF) == 0 && a5_isPointVisible_06079106(&pThis->m40_renderPosition) != 0)
+    if ((r & 0xFF) == 0 && isWorldPositionOnScreen(&pThis->m40_renderPosition) != 0)
     {
-        playSystemSoundEffect((r & 2) == 0 ? 0x6D : 0x6E);
+        playSystemSoundEffect((r & 2) == 0 ? 0x6D : 0x6C);
     }
+
+    // Rotation target Y accumulation
+    pThis->m4C_rotationTarget.m8_Z = fixedPoint(pThis->m4C_rotationTarget.m8_Z.m_value + pThis->m28_param10);
+
+    // Sub-state machine (m142) — controls emergence/submergence visibility
+    u8 subState = pThis->m142_subState;
+    if (subState == 0)
+    {
+        // Underground: visible only when renderPosition.Y < 0
+        if (pThis->m40_renderPosition.m4_Y.m_value < 0)
+            pThis->m10C_modelCtx.m18_visibilityFlags |= 1;
+        else
+            pThis->m10C_modelCtx.m18_visibilityFlags = 0;
+    }
+    else if (subState == 1)
+    {
+        // Emerging: ramp up m24
+        pThis->m24 += 0x800000;
+        if (pThis->m24 > 0x1FFFFFF)
+            pThis->m142_subState++;
+    }
+    else if (subState == 0x30)
+    {
+        // Submerging: ramp down m24
+        pThis->m24 -= 0x800000;
+        if (pThis->m24 < 1)
+        {
+            pThis->m142_subState = 0;
+            pThis->m24 = 0;
+            pThis->m10C_modelCtx.m18_visibilityFlags = 0;
+        }
+    }
+    else
+    {
+        // Intermediate states: just advance
+        pThis->m142_subState++;
+    }
+
+    // Accumulate m24 into rotationTarget.Y
+    pThis->m4C_rotationTarget.m4_Y = fixedPoint(pThis->m4C_rotationTarget.m4_Y.m_value + pThis->m24);
+
+    // Save old renderPosition.Y for apex detection
+    s32 oldY = pThis->m40_renderPosition.m4_Y.m_value;
+
+    // Integrate velocity into render position
+    pThis->m40_renderPosition.m0_X = fixedPoint(pThis->m40_renderPosition.m0_X.m_value + pThis->m5C_velocity.m0_X.m_value);
+    pThis->m40_renderPosition.m4_Y = fixedPoint(pThis->m40_renderPosition.m4_Y.m_value + pThis->m5C_velocity.m4_Y.m_value);
+    pThis->m40_renderPosition.m8_Z = fixedPoint(pThis->m40_renderPosition.m8_Z.m_value + pThis->m5C_velocity.m8_Z.m_value);
+
+    // Apex detection: when Y crosses zero (sign change), play sound + spawn dust
+    if (MTH_Mul(fixedPoint(oldY), pThis->m40_renderPosition.m4_Y).m_value < 1)
+    {
+        if (isWorldPositionOnScreen(&pThis->m40_renderPosition) != 0)
+        {
+            playSystemSoundEffect(0x6E);
+        }
+        a5_wormHoleEntity_spawnDust_0605f734(pThis, &pThis->m40_renderPosition);
+    }
+
+    // Update per-part spring stiffness based on sub-state, and save Y positions
+    s16 stiffness = (pThis->m142_subState == 0) ? 0xE00 : 0x1C00;
+    for (s32 i = 0; i < pThis->m68_partCount; i++)
+    {
+        sMonsterBodyPart* pPart = &pThis->m58_body->m30_parts[i];
+        pPart->m44_springStiffness.m4_Y = fixedPoint(stiffness);
+        pThis->m8_perPartInts[i] = pPart->m4_worldPosition.m4_Y.m_value;
+    }
+
+    // Update monster body physics
+    a5_wormHoleEntity_bodyUpdate_060597a0(pThis->m58_body, &pThis->m40_renderPosition, &pThis->m4C_rotationTarget);
+
+    // Step head/tail model animations
+    stepAnimation(&pThis->m6C_model1);
+    stepAnimation(&pThis->mBC_model2);
 }
 
 // 06059f1c — creates one worm-hole entity from a 0x24-byte Saturn arg record.
@@ -409,12 +479,13 @@ static void a5WormHoleEntity_Update(sA5WormHoleEntity* pThis)
 //   +20  s32 param10
 //   +24  s32 param2C
 //   +32  u8  argFlag
+// 06059f1c
 static void a5_createWormHoleEntity_06059f1c(p_workArea parent, sSaturnPtr arg)
 {
-    PDS_Log("a5_createWormHoleEntity_06059f1c called%s\n", "");
-
-    sA5WormHoleEntity* pThis =
-        createSubTaskFromFunction<sA5WormHoleEntity>(parent, &a5WormHoleEntity_Update);
+    static sA5WormHoleEntity::TypedTaskDefinition td = {
+        nullptr, &a5WormHoleEntity_Update, &a5WormHoleEntity_Draw, nullptr
+    };
+    sA5WormHoleEntity* pThis = createSubTask<sA5WormHoleEntity>(parent, &td);
     if (pThis == nullptr)
         return;
 
@@ -512,7 +583,9 @@ static void a5_createWormHoleEntity_06059f1c(p_workArea parent, sSaturnPtr arg)
     pThis->m141_argFlag = readSaturnU8 (arg + 32);
     pThis->m140_state   = 0;
     pThis->m28_param10  = readSaturnS32(arg + 20);
-    pThis->m5C          = 0;
+    pThis->m5C_velocity.m0_X = 0;
+    pThis->m5C_velocity.m4_Y = 0;
+    pThis->m5C_velocity.m8_Z = 0;
     pThis->m24          = 0;
     pThis->m142_subState = 0;
     pThis->m38          = 0;
@@ -524,9 +597,6 @@ static void a5_createWormHoleEntity_06059f1c(p_workArea parent, sSaturnPtr arg)
         &pThis->m40_renderPosition,
         nullptr,
         1, 0, -1, 0, 0);
-
-    pThis->m_UpdateMethod = &a5WormHoleEntity_Update;
-    pThis->m_DrawMethod   = &a5WormHoleEntity_Draw;
 }
 
 // 0605a190 — create 4 worm-hole environment objects (subfield 0).

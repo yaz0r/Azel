@@ -101,3 +101,40 @@ void startExitFieldCutscene(p_workArea parent, s_cameraScript* pScript, s32 para
     pDragonTask->m1D0_cameraScript = pScript;
     pDragonTask->mF8_Flags &= ~0x400;
 }
+
+// 0607cdcc (A5) / 060751d8 (A3) — start exit cutscene with cached cutscene data
+static s_cutsceneData* s_cachedCutsceneData = nullptr;
+
+void startExitCutsceneCached(sSaturnPtr pEffectData, s32 fieldIndex, s32 fieldParam, s32 exitIndex, s16 arg0)
+{
+    if (!s_cachedCutsceneData)
+    {
+        s_cachedCutsceneData = loadCutsceneData(pEffectData);
+    }
+    startExitFieldCutscene2Sub0(nullptr, s_cachedCutsceneData, fieldIndex, fieldParam, exitIndex, arg0);
+}
+
+// 0607ce18 (A5) / 06075224 (A3) — start exit cutscene using current field index
+void startExitCutsceneForCurrentField(sSaturnPtr pEffectData, s32 param3, s32 param4, s16 param5)
+{
+    s_cutsceneData* pData = loadCutsceneData(pEffectData);
+    startExitFieldCutscene2Sub0(nullptr, pData, getFieldTaskPtr()->m2C_currentFieldIndex, param3, param4, param5);
+}
+
+// 06073500 (A7) / 06074f34 (A3) — camera script cutscene variant (reads from sSaturnPtr)
+void startCameraScriptCutscene(p_workArea parent, const sSaturnPtr& scriptDataEA,
+                                s32 param3, s32 param4, s16 param5)
+{
+    s_exitCutsceneTask* pTask = createSubTaskFromFunction<s_exitCutsceneTask>(parent, &s_exitCutsceneTask::Update);
+    if (pTask != nullptr)
+    {
+        s_cameraScript* pScript = readCameraScript(scriptDataEA);
+        s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+        pTask->m0_pScript = pScript;
+        pTask->m8_param = param3;
+        pTask->mC_exitNumber = param4;
+        pTask->m14 = param5;
+        pDragon->m1D0_cameraScript = pScript;
+        pDragon->mF8_Flags &= ~0x400;
+    }
+}

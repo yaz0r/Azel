@@ -29,3 +29,22 @@ struct sFieldSceneManager : public s_workAreaTemplate<sFieldSceneManager>
 };
 
 sFieldSceneManager* createFieldSceneManager(p_workArea parent, s32 areaIndex, s32 count);
+
+// Scene particle spawn descriptor (shared across all field overlays)
+struct sSceneParticleDesc
+{
+    sVec3_FP* m0_pPosition;
+    sVec3_FP* m4_pVelocity;
+    const std::vector<sVdp1Quad>* m8_pQuadList;
+    s32 mC_paramA;
+    s32 m10_paramB;
+    s32 (*m14_updateFunc)(sFieldSceneManagerEntry*);
+    s32 m18_payloadSize;
+    void* m1C_pPayloadSrc;
+};
+
+// Scene particle system functions (shared across all field overlays)
+s32 sceneParticle_updatePhysics(sFieldSceneManagerEntry* pEntry);
+s32 sceneParticle_allocate(sFieldSceneManager* pManager, sSceneParticleDesc* pDesc, s32 mode);
+void sceneParticle_spawnProjected(sFieldSceneManager* pManager, sSceneParticleDesc* pDesc,
+                                   sVec3_FP* pPosition, sVec3_FP* pVelocity);

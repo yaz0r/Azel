@@ -11,19 +11,7 @@
 #include "field/fieldVisibilityGrid.h"
 #include "audio/systemSounds.h"
 
-// 060613ca — add camera impulse
-static void addCameraImpulse(sVec3_FP* positionImpulse, sVec3_FP* rotationImpulse)
-{
-    sFieldCameraStatus* pCam = getFieldCameraStatus();
-    if (positionImpulse)
-    {
-        pCam->m50_positionImpulse += *positionImpulse;
-    }
-    if (rotationImpulse)
-    {
-        pCam->m68_rotationImpulse += *rotationImpulse;
-    }
-}
+// 060613ca — addCameraImpulse, moved to shared field.cpp
 
 // Camera shake rotation impulse table (06084228) — 4 entries of sVec3_FP, cycled per frame
 static const sVec3_FP cameraShakeRotations[] = {
@@ -40,35 +28,7 @@ static const struct { s16 scriptIndex; s16 scriptParam; } a7ScriptLookup[] = {
     { 0x0C, 0x05D4 },
 };
 
-// 0606818c — start field script with game flag check
-static s32 startFieldScriptWithFlagCheck(s32 scriptIndex, u32 flagBit)
-{
-    s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-    if (pScript->m0_pScripts == nullptr)
-        return 0;
-
-    if (pScript->m4_currentScript.m_offset != 0)
-        return 0;
-
-    if ((s32)flagBit >= 0)
-    {
-        u32 adjusted = (flagBit < 1000) ? flagBit : (flagBit - 0x236);
-        if ((mainGameState.bitField[adjusted >> 3] & bitMasks[adjusted & 7]) != 0)
-        {
-            pScript->m60_canSkipScript = 1;
-        }
-        else
-        {
-            pScript->m60_canSkipScript = 0;
-        }
-    }
-
-    pScript->m4_currentScript = pScript->m0_pScripts[scriptIndex];
-    pScript->m2C_bitToSet = flagBit;
-    pScript->m58 = 0;
-    pScript->m50_scriptDelay = 0;
-    return 1;
-}
+// 0606818c — startFieldScriptWithFlagCheck, moved to shared field.cpp
 
 struct s_A7_CellObj0;
 static void A7_CellObj0_RenderCallback(p_workArea pWorkArea, sFieldModelRenderContext* pCtx);

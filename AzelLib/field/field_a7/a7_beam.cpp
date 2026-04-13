@@ -1,29 +1,12 @@
 #include "PDS.h"
 #include "a7_beam.h"
+#include "field/fieldSpline.h"
 #include "a7_beamChargeWobble.h"
 #include "a7_sceneParticle.h"
 #include "o_fld_a7.h"
 #include "kernel/rayDisplay.h"
 
-// 0x144-byte trail sibling task spawned by a7CellObj2 state 0. Holds a 21-slot
-// ring buffer of sVec3_FP positions starting at m8 (which aliases the initial
-// trail position). Task definition at FLD_A7::060843e0.
-
-// 8-int alloc descriptor returned by alloc_7buffers: {count, arcLen,
-// 3 source-position arrays, 3 natural-cubic-spline second-derivative tables}.
-// The "y2" tables are populated by a7Beam_resamplePrecompute_06077488
-// and consumed by the runtime spline evaluator a7Beam_evalAxis_060776e0.
-struct sA7BeamSplineAlloc
-{
-    s32  m0_count;
-    s32* m4_arcLen;   // cumulative arc-length (normalized)
-    s32* m8_srcX;
-    s32* mC_srcY;
-    s32* m10_srcZ;
-    s32* m14_y2X;
-    s32* m18_y2Y;
-    s32* m1C_y2Z;
-};
+// Spline code moved to shared fieldSpline.h/cpp
 
 struct sA7Beam : public s_workAreaTemplateWithArg<sA7Beam, sA7BeamArg*>
 {
@@ -35,7 +18,7 @@ struct sA7Beam : public s_workAreaTemplateWithArg<sA7Beam, sA7BeamArg*>
     u32                  m110_paramB;        // 0x110
     u32                  m114_paramC;        // 0x114 — Saturn EA: u16 sprite char table
     u32                  m118_paramD;        // 0x118 — Saturn EA: u16 sprite size table
-    sA7BeamSplineAlloc m11C_alloc;          // 0x11C — 32 bytes
+    sFieldSplineAlloc m11C_alloc;          // 0x11C — 32 bytes
     u16                  m13C_frameCounter;  // 0x13C
     u8                   m13E_head;          // 0x13E
     u8                   m13F_tail;          // 0x13F
@@ -44,24 +27,7 @@ struct sA7Beam : public s_workAreaTemplateWithArg<sA7Beam, sA7BeamArg*>
     // size 0x144
 };
 
-// 0607712c — allocate 7 parallel int arrays of `count` entries into pDesc
-static bool a7Beam_allocSpline_0607712c(p_workArea pTask, sA7BeamSplineAlloc* pDesc, s32 count)
-{
-    pDesc->m0_count = count;
-    s32* pHeap = (s32*)allocateHeapForTask(pTask, (u32)count * 7 * sizeof(s32));
-    if (pHeap == nullptr)
-    {
-        return false;
-    }
-    pDesc->m4_arcLen = pHeap;
-    pDesc->m8_srcX   = pHeap + count;
-    pDesc->mC_srcY   = pHeap + count * 2;
-    pDesc->m10_srcZ  = pHeap + count * 3;
-    pDesc->m14_y2X   = pHeap + count * 4;
-    pDesc->m18_y2Y   = pHeap + count * 5;
-    pDesc->m1C_y2Z   = pHeap + count * 6;
-    return true;
-}
+// Spline code moved to shared fieldSpline.h/cpp
 
 // 060553bc — state-init: populates the 6-entry srcX/Y/Z keyframe arrays
 static void a7Beam_stateInit_060553bc(sA7Beam* pThis, s8 stateIndex)
@@ -95,138 +61,13 @@ static void a7Beam_stateInit_060553bc(sA7Beam* pThis, s8 stateIndex)
     }
 }
 
-// 06077488 — natural cubic spline second-derivative precompute (Thomas algorithm).
-// Companion to the splint evaluator a7Beam_evalAxis_060776e0. Uses natural
-// boundaries y2[0] = y2[n-1] = 0 and the Saturn-specific factor-of-2 + <<4
-// scaling so the resulting y2[] feed directly into the splint formula.
-static void a7Beam_resamplePrecompute_06077488(s32 count, s32* arcLen, s32* src, s32* y2)
-{
-    // Two parallel scratch arrays of `count` entries: d[] then h[].
-    s32* scratch = (s32*)allocateHeap((u32)count * 2 * sizeof(s32));
-    if (scratch == nullptr)
-    {
-        return;
-    }
-    s32* d = scratch;
-    s32* h = scratch + count;
+// Spline code moved to shared fieldSpline.h/cpp
 
-    // Natural boundary conditions
-    y2[0] = 0;
-    y2[count - 1] = 0;
+// Spline code moved to shared fieldSpline.h/cpp
 
-    // Pass 1: compute h[i] and the fixed-point slopes d[i]
-    for (s32 i = 0; i < count - 1; i++)
-    {
-        h[i] = arcLen[i + 1] - arcLen[i];
-        d[i] = FP_Div(src[i + 1] - src[i], fixedPoint(h[i] << 4)).m_value;
-    }
+// Spline code moved to shared fieldSpline.h/cpp
 
-    // Forward sweep init
-    y2[1] = h[1] - d[0];
-    d[0]  = (arcLen[2] - arcLen[0]) * 2;
-
-    // Forward sweep (Thomas elimination)
-    for (s32 i = 1; i < count - 2; i++)
-    {
-        s32 t = FP_Div(h[i], fixedPoint(d[i - 1])).m_value;
-        y2[i + 1] = (h[i + 1] - h[i]) - MTH_Mul(fixedPoint(y2[i]), fixedPoint(t)).m_value;
-        d[i]      = (arcLen[i + 2] - arcLen[i]) * 2 - MTH_Mul(fixedPoint(h[i]), fixedPoint(t)).m_value;
-    }
-
-    // Tail: y2[n-2] -= h[n-2]*16 * y2[n-1] (y2[n-1] is zero, but preserved for fidelity)
-    s32 tail = MTH_Mul(fixedPoint(h[count - 2]), fixedPoint(y2[count - 1] << 4)).m_value;
-    y2[count - 2] -= tail;
-
-    // Back-substitution: y2[k] -= d[k]*16 * y2[k+1] for k = n-2 .. 1
-    for (s32 k = count - 2; k > 0; k--)
-    {
-        s32 backTmp = MTH_Mul(fixedPoint(d[k] << 4), fixedPoint(y2[k + 1])).m_value;
-        y2[k] -= backTmp;
-    }
-
-    freeHeap(scratch);
-}
-
-// 060772a8 — build cumulative arc-length table then resample each axis
-static void a7Beam_finalizeSpline_060772a8(sA7BeamSplineAlloc* pAlloc)
-{
-    s32 count = pAlloc->m0_count;
-    s32* arcLen = pAlloc->m4_arcLen;
-    s32* srcX = pAlloc->m8_srcX;
-    s32* srcY = pAlloc->mC_srcY;
-    s32* srcZ = pAlloc->m10_srcZ;
-
-    arcLen[0] = 0;
-    for (s32 i = 1; i < count; i++)
-    {
-        sVec3_FP prev;
-        prev.m0_X = fixedPoint(srcX[i - 1]);
-        prev.m4_Y = fixedPoint(srcY[i - 1]);
-        prev.m8_Z = fixedPoint(srcZ[i - 1]);
-        sVec3_FP cur;
-        cur.m0_X = fixedPoint(srcX[i]);
-        cur.m4_Y = fixedPoint(srcY[i]);
-        cur.m8_Z = fixedPoint(srcZ[i]);
-        arcLen[i] = arcLen[i - 1] + vecDistance(prev, cur).asS32();
-    }
-
-    fixedPoint total = fixedPoint(arcLen[count - 1]);
-    for (s32 i = 0; i < count; i++)
-    {
-        arcLen[i] = FP_Div(arcLen[i], total).m_value;
-    }
-
-    a7Beam_resamplePrecompute_06077488(count, arcLen, srcX, pAlloc->m14_y2X);
-    a7Beam_resamplePrecompute_06077488(count, arcLen, srcY, pAlloc->m18_y2Y);
-    a7Beam_resamplePrecompute_06077488(count, arcLen, srcZ, pAlloc->m1C_y2Z);
-}
-
-// 060776e0 — natural cubic spline evaluator (Numerical Recipes "splint"), per axis.
-// y2[] holds second derivatives pre-divided by 6 (precomputed by 06077488).
-static s32 a7Beam_evalAxis_060776e0(s32 t, s32 count, s32* arcLen, s32* src, s32* y2)
-{
-    // 1. Linear interval search: smallest i such that arcLen[i+1] > t
-    s32 i = 0;
-    s32 last = count - 1;
-    if (last > 0)
-    {
-        do
-        {
-            if (t < arcLen[i + 1]) break;
-            i++;
-        } while (i < last);
-    }
-
-    // 2. Scale h and (t - arcLen[i]) by 16 for fixed-point precision headroom
-    s32 h16 = (arcLen[i + 1] - arcLen[i]) * 16;
-    s32 t16 = (t - arcLen[i]) * 16;
-
-    s32* pY2  = &y2[i];
-    s32* pSrc = &src[i];
-
-    // 3. Cubic correction accumulator (r8 in the Saturn asm):
-    //    T1 = ((y2[i+1]-y2[i]) * t16 / h16 + 3*y2[i]) * t16
-    s32 A  = setDividend(pY2[1] - pY2[0], t16, h16);
-    s32 T1 = MTH_Mul(fixedPoint(A + 3 * pY2[0]), fixedPoint(t16)).m_value;
-
-    // 4. Linear slope: T1 += (src[i+1] - src[i]) / h16
-    T1 += FP_Div(pSrc[1] - pSrc[0], fixedPoint(h16)).m_value;
-
-    // 5. Curvature offset: T3 = (2*y2[i] + y2[i+1]) * h16
-    s32 T3 = MTH_Mul(fixedPoint(2 * pY2[0] + pY2[1]), fixedPoint(h16)).m_value;
-
-    // 6. y(t) = src[i] + (T1 - T3) * t16
-    s32 T4 = MTH_Mul(fixedPoint(T1 - T3), fixedPoint(t16)).m_value;
-    return pSrc[0] + T4;
-}
-
-// 06077638 — spline evaluator fanout: writes outX/outY/outZ at progress t
-static void a7Beam_evalSpline_06077638(s32 t, s32* pOutX, s32* pOutY, s32* pOutZ, sA7BeamSplineAlloc* pAlloc)
-{
-    *pOutX = a7Beam_evalAxis_060776e0(t, pAlloc->m0_count, pAlloc->m4_arcLen, pAlloc->m8_srcX,  pAlloc->m14_y2X);
-    *pOutY = a7Beam_evalAxis_060776e0(t, pAlloc->m0_count, pAlloc->m4_arcLen, pAlloc->mC_srcY,  pAlloc->m18_y2Y);
-    *pOutZ = a7Beam_evalAxis_060776e0(t, pAlloc->m0_count, pAlloc->m4_arcLen, pAlloc->m10_srcZ, pAlloc->m1C_y2Z);
-}
+// Spline code moved to shared fieldSpline.h/cpp
 
 // 060557e8 — beam wind-down: advance tail until it catches head, then kill the task
 static void a7Beam_UpdateFade_060557e8(sA7Beam* pThis)
@@ -273,7 +114,7 @@ static void a7Beam_Update_06055704(sA7Beam* pThis)
     }
 
     sVec3_FP* pHeadSlot = &pThis->m8_ring[pThis->m13E_head];
-    a7Beam_evalSpline_06077638(pThis->m104_progress,
+    fieldSpline_eval(pThis->m104_progress,
         &pHeadSlot->m0_X.m_value, &pHeadSlot->m4_Y.m_value, &pHeadSlot->m8_Z.m_value,
         &pThis->m11C_alloc);
 
@@ -464,14 +305,14 @@ static void a7Beam_Init_0605565c(sA7Beam* pThis, sA7BeamArg* pArg)
     pThis->m114_paramC = pArg->m14_paramC;
     pThis->m118_paramD = pArg->m18_paramD;
 
-    if (!a7Beam_allocSpline_0607712c(pThis, &pThis->m11C_alloc, 6))
+    if (!fieldSpline_alloc(pThis, &pThis->m11C_alloc, 6))
     {
         pThis->getTask()->markFinished();
         return;
     }
 
     a7Beam_stateInit_060553bc(pThis, (s8)pArg->m1C_shape);
-    a7Beam_finalizeSpline_060772a8(&pThis->m11C_alloc);
+    fieldSpline_finalize(&pThis->m11C_alloc);
 }
 
 // 06055a38 — creator wrapper: task definition @ 060843e0, size 0x144

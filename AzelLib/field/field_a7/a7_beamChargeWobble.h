@@ -2,10 +2,10 @@
 
 #include "task.h"
 #include "common.h"
+#include "a7_sceneParticle.h"
 #include <vector>
 
 struct sVdp1Quad;
-struct sA7SceneParticleDesc;
 
 // Arg struct passed to the 0x1C charge-wobble subtask from the beam emitter.
 struct sA7BeamChargeWobbleArg

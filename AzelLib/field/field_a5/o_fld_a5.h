@@ -124,8 +124,10 @@ void postBattleSound_A5_nightB();
 
 // Shared gameplay helpers (getDragonPosition, getDragonAngle, triggerSubfieldChange) are in field.h
 
-// Follow mode setup (060694D8)
+// Follow mode setup
 void a5_wormSegmentEntity_startFollowMode_060694D8(s32 followMode);
+void a5_activateFollowMode_06069508(s32 followMode);
+sFieldCameraStatus* a5_wormSegmentEntity_getActiveCameraSlot_06069490();
 
 // Shared helpers
 void setupCameraConfig_A5_0();
@@ -138,3 +140,9 @@ void setupCameraConfig_A5_corridor();
 void initDragonParams_A5_open();
 void initDragonParams_A5_corridor();
 void initDragonParams_A5_B();
+
+// Dragon cutscene helpers (used by scenery entity effect)
+struct s_scriptData3;
+// a5_dragonTransitionToNormal — moved to shared dragonTransitionToNormal() in fieldDragonInput.h
+// a5_setCutsceneKeyFrame, a5_clearCutsceneKeyFrame, a5_enableScriptSkippingAndExit
+// — moved to shared fieldDragonInput.h as setCutsceneKeyFrame, clearCutsceneKeyFrame, enableScriptSkippingAndExit

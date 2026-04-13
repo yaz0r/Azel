@@ -1,13 +1,13 @@
 #include "PDS.h"
 #include "a7_spawnedEntityChild.h"
 #include "kernel/fade.h"
+#include "field/battleStart.h"
 
 extern s32 battleIndex; // todo: cleanup
 
-// 06066e4e — battle trigger helper used by spawnedEntityChild state 3.
-// Two-arm dispatch: if encounters are disabled (m28_status & 1 == 0) it stamps
-// battleIndex once encounter data is available; otherwise it kicks a sub-task at
-// FLD_A7::060870a4 (init=06066a98, draw=06066b06, delete=06066c90).
+// 06066e4e — battle trigger helper. Two-arm dispatch:
+// If encounters are disabled (m28_status & 1 == 0), stamps battleIndex.
+// Otherwise creates a shared sBattleLoadingTask (same as A3's battleStart).
 static void a7TriggerBattle_06066e4e(s32 enemyId, s32 param2)
 {
     s_fieldTaskWorkArea* pField = getFieldTaskPtr();
@@ -20,8 +20,12 @@ static void a7TriggerBattle_06066e4e(s32 enemyId, s32 param2)
     }
     else if ((pField->m28_status & 0xFFFE) == 0)
     {
-        Unimplemented();
-        (void)param2;
+        sBattleLoadingTask* pTask = createSubTaskWithArg<sBattleLoadingTask, s32>(
+            getFieldTaskPtr(), enemyId, &battleStartTaskDefinition);
+        if (pTask)
+        {
+            pTask->m4 = param2;
+        }
     }
 }
 

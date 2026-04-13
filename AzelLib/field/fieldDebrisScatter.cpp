@@ -258,3 +258,50 @@ p_workArea createDebrisScatterTask(p_workArea parent, sDebrisScatterParams* para
 
     return pTask;
 }
+
+// 0607c18e (A7) / 0607dbc2 (A3) — initialize debris scatter config with defaults
+void initDebrisScatterConfig(sDebrisScatterParams* pConfig, u16 modelOffset, u16 poseOffset)
+{
+    memset(pConfig, 0, sizeof(*pConfig));
+    pConfig->m0_gravity = fixedPoint(0x6e);
+    pConfig->m4_bounce = fixedPoint(0x4ccc);
+    pConfig->mC_randomMask = fixedPoint(0x1fffff);
+    pConfig->m34_modelOffset = modelOffset;
+    pConfig->m36_poseOffset = poseOffset;
+    pConfig->m44_soundEffect = 0xffff;
+}
+
+// 0607c120 (A7) / 0607db54 (A3) — recursively find max scalar in bundle tree
+s32 readMaxScalarFromBundleTree(u8* pRawBundle, u32 nodeOffset)
+{
+    s32 result;
+    u32 valueOffset = READ_BE_U32(pRawBundle + nodeOffset);
+    if (valueOffset == 0)
+        result = 0;
+    else
+        result = READ_BE_S32(pRawBundle + valueOffset);
+
+    u32 leftOffset = READ_BE_U32(pRawBundle + nodeOffset + 4);
+    if (leftOffset != 0)
+    {
+        s32 leftVal = readMaxScalarFromBundleTree(pRawBundle, leftOffset);
+        if (result < leftVal)
+            result = leftVal;
+    }
+
+    u32 rightOffset = READ_BE_U32(pRawBundle + nodeOffset + 8);
+    if (rightOffset != 0)
+    {
+        s32 rightVal = readMaxScalarFromBundleTree(pRawBundle, rightOffset);
+        if (result < rightVal)
+            result = rightVal;
+    }
+
+    return result;
+}
+
+// 0607c104 (A7) / 0607db38 (A3) — centered random: (random() & mask) - mask/2
+s32 centeredRandom(u32 mask)
+{
+    return (s32)(randomNumber() & mask) - (s32)(mask >> 1);
+}

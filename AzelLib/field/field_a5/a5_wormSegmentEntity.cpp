@@ -1,6 +1,8 @@
 #include "PDS.h"
 #include "o_fld_a5.h"
+#include "field/field_a3/o_fld_a3.h"
 #include "field/fieldModelRender.h"
+#include "field/fieldDragonInput.h"
 #include "field/fieldVisibilityGrid.h"
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
@@ -81,23 +83,63 @@ static void a5WormSegmentEntity_runUnlockTransition_06056A22(sA5WormSegmentEntit
     Unimplemented();
 }
 
-// 06069490 — returns a pointer to the currently-active sFieldCameraStatus
-// slot (`&m3E4_cameraSlots[m50C_activeCameraSlot]`). Each slot is 0x94
-// bytes so the Ghidra arithmetic `m334 + 0x3E4 + m50C * 0x94` picks the
-// right element.
-static sFieldCameraStatus* a5_wormSegmentEntity_getActiveCameraSlot_06069490()
+// 06069490 — shared: getActiveCameraSlot. A5 wrapper kept for external callers.
+sFieldCameraStatus* a5_wormSegmentEntity_getActiveCameraSlot_06069490()
 {
-    sFieldCameraManager* pCam = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    return &pCam->m3E4_cameraSlots[pCam->m50C_activeCameraSlot];
+    return getActiveCameraSlot();
 }
 
-// 060694d8 — tail-calls FUN_FLD_A5__0606932e(0, tableA[i], tableB[i])
-// and then clears byte 0x8d of the follow-mode config returned by
-// 06069490. Used to kick the "autopilot" follow mode. Not yet
-// reimplemented.
-void a5_wormSegmentEntity_startFollowMode_060694D8(s32 /*followMode*/)
+// Camera follow mode draw — only mode 7 has a draw function (A5-specific)
+static void a5_cameraFollowMode7_Draw(sFieldCameraStatus*) { Unimplemented(); } // 0606A984
+
+// Camera follow modes 3-6 are not yet implemented in C++ (exist in binary).
+// They assert in A3 and byte-match across all overlays.
+void cameraFollowMode3(sFieldCameraStatus*);
+void cameraFollowMode4(sFieldCameraStatus*);
+void cameraFollowMode5(sFieldCameraStatus*);
+void cameraFollowMode6(sFieldCameraStatus*);
+
+// Saturn table at FLD_A5::0609e8e8 — per-follow-mode update function pointers
+// All entries are shared functions duplicated across every field overlay.
+static void (*s_a5FollowModeUpdateTable[10])(sFieldCameraStatus*) = {
+    &cameraFollowMode_scriptTarget,     // [0] 0606A4F4
+    &fieldOverlaySubTaskInitSub2,       // [1] 06069DBA
+    &fieldOverlaySubTaskInitSub2_mode2, // [2] 06069E1C
+    &cameraFollowMode3,                 // [3] 06069E92
+    &cameraFollowMode4,                 // [4] 06069EF6
+    &cameraFollowMode5,                 // [5] 06069F64
+    &cameraFollowMode6,                 // [6] 0606A000
+    nullptr,
+    &cameraFollowMode_idle,             // [8] 0606A068
+    nullptr,
+};
+
+// Saturn table at FLD_A5::0609e910 — per-follow-mode draw function pointers
+static void (*s_a5FollowModeDrawTable[10])(sFieldCameraStatus*) = {
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+    &a5_cameraFollowMode7_Draw,
+    nullptr, nullptr,
+};
+
+// 0606932e — shared: setCameraFollowFunctions
+// 06069508 — shared: activateCameraFollowMode (calls setCameraFollowFunctions + sets followState=1)
+// 060694d8 — shared: startCameraFollowMode (calls setCameraFollowFunctions + sets followState=0)
+// A5 wrappers use the overlay-local follow mode tables (which differ only
+// in the mode 7 draw slot — all update entries point to shared functions).
+void a5_activateFollowMode_06069508(s32 followMode)
 {
-    Unimplemented();
+    setCameraFollowFunctions(0,
+        s_a5FollowModeUpdateTable[followMode],
+        s_a5FollowModeDrawTable[followMode]);
+    getActiveCameraSlot()->m8D_followState = 1;
+}
+
+void a5_wormSegmentEntity_startFollowMode_060694D8(s32 followMode)
+{
+    setCameraFollowFunctions(0,
+        s_a5FollowModeUpdateTable[followMode],
+        s_a5FollowModeDrawTable[followMode]);
+    getActiveCameraSlot()->m8D_followState = 0;
 }
 
 // 060882e4 — dragon task update function pointer installed when the

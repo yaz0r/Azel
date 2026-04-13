@@ -29,3 +29,10 @@ struct sDebrisScatterParams
 };
 
 p_workArea createDebrisScatterTask(p_workArea parent, sDebrisScatterParams* params, bool reverseMode);
+
+// Shared debris config helpers (used by explosion spawners across overlays)
+void initDebrisScatterConfig(sDebrisScatterParams* pConfig, u16 modelOffset, u16 poseOffset);
+s32 readMaxScalarFromBundleTree(u8* pRawBundle, u32 nodeOffset);
+
+// Shared random utility
+s32 centeredRandom(u32 mask);

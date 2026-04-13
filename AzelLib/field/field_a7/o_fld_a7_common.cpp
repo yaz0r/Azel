@@ -12,6 +12,8 @@
 #include "a7_sceneParticle.h"
 #include "a7_envEntity54Particles.h"
 #include "a7_beam.h"
+#include "field/fieldDebrisScatter.h"
+#include "field/fieldDragonInput.h"
 #include "a7_spawnedEntityChild.h"
 #include "a7_envEntity2C.h"
 #include "kernel/vdp1AnimatedQuad.h"
@@ -332,12 +334,7 @@ struct sA7EncounterNotification : public s_workAreaTemplate<sA7EncounterNotifica
     // size 0x10
 };
 
-// 0606fa1c — start random battle transition
-static void startBattleTransition_A7(s32 fieldIndex, s32 param, s32 exitNumber, s16 r7)
-{
-    enableFieldScriptSkipping();
-    exitCutsceneTaskUpdateSub0Sub1(fieldIndex, param, exitNumber, r7);
-}
+// 0606fa1c — enableScriptSkippingAndExit (shared fieldDragonInput.cpp)
 
 // 06056498
 static void a7EncounterNotificationUpdate(sA7EncounterNotification* pThis)
@@ -370,7 +367,7 @@ static void a7EncounterNotificationUpdate(sA7EncounterNotification* pThis)
     if (isNoCutsceneActive())
     {
         graphicEngineStatus.m40AC.m1_isMenuAllowed = 1;
-        startBattleTransition_A7(6, 0, 0, -1);
+        enableScriptSkippingAndExit(6, 0, 0, -1);
         pThis->getTask()->markFinished();
     }
 }
@@ -658,10 +655,10 @@ struct sA7SpawnedEntity : public s_workAreaTemplateWithArg<sA7SpawnedEntity, sSa
     // Saturn size 0x208
 };
 
-// 0607c104 — centered random: (random() & mask) - mask/2
+// 0607c104 — centeredRandom (shared fieldDebrisScatter.cpp)
 s32 a7CenteredRandom(u32 mask)
 {
-    return (s32)(randomNumber() & mask) - (s32)(mask >> 1);
+    return centeredRandom(mask);
 }
 
 // 06054C34
@@ -915,6 +912,14 @@ void createA7_envEntity_51ee(p_workArea parent, sSaturnPtr arg, u8 param3)
     }
 }
 
+// 0607c18e, 0607c120 — initDebrisScatterConfig, readMaxScalarFromBundleTree
+// moved to shared fieldDebrisScatter.cpp
+
+// Forward declarations
+struct sA7EnvEntity60;
+static void a7EnvEntity60_debrisDrawCallback(p_workArea pDebrisTask, sVec3_FP* pPosition);
+static void a7EnvEntity60_SpawnExplosion(sA7EnvEntity60* pThis);
+
 // Environment entity 0x60 (interactive scenery — fossil/crystal)
 struct sA7EnvEntity60 : public s_workAreaTemplate<sA7EnvEntity60>
 {
@@ -927,6 +932,35 @@ struct sA7EnvEntity60 : public s_workAreaTemplate<sA7EnvEntity60>
     u8 m5C_state;
     // size 0x60
 };
+
+// 0605e594 — spawn explosion debris scatter when the crystal breaks
+static void a7EnvEntity60_SpawnExplosion(sA7EnvEntity60* pThis)
+{
+    sDebrisScatterParams params;
+    initDebrisScatterConfig(&params, 4, 0x248);
+
+    s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
+    u8* pRaw = pBundle->getRawBuffer();
+    u32 treeRootOffset = READ_BE_U32(pRaw + 4);
+    params.m8_spread = fixedPoint(readMaxScalarFromBundleTree(pRaw, treeRootOffset));
+
+    params.m10_pPosition = &pThis->m8_position;
+    params.m14_pRotation = &pThis->m14_rotation;
+    params.m0_gravity = fixedPoint(0x14a);
+    params.m4_bounce = fixedPoint((s32)0xffffffff);
+    params.mC_randomMask = fixedPoint(0xffffff);
+    params.m8_spread = MTH_Mul(params.m8_spread, fixedPoint(0x40000));
+    params.m3C_scale = fixedPoint(pThis->m20_scale);
+    params.m_pBundle = pBundle;
+
+    createDebrisScatterTask((p_workArea)pThis, &params, false);
+}
+
+// 0605e0ec — debris draw callback
+static void a7EnvEntity60_debrisDrawCallback(p_workArea /*pDebrisTask*/, sVec3_FP* /*pPosition*/)
+{
+    Unimplemented();
+}
 
 // 0605E768
 static void a7EnvEntity60_Init(sA7EnvEntity60* pThis)
@@ -965,7 +999,7 @@ static void a7EnvEntity60_Update(sA7EnvEntity60* pThis)
             pThis->m_DrawMethod = nullptr;
             pThis->m28_modelCtx.m18_visibilityFlags |= 1;
             playSystemSoundEffect(0x6D);
-            Unimplemented(); // FUN_FLD_A7__0605e594 — spawn explosion particles
+            a7EnvEntity60_SpawnExplosion(pThis);
             pThis->m5C_state = 2;
         }
     }
@@ -1155,16 +1189,7 @@ static void dragonPushFromPoint_A7(s_dragonTaskWorkArea* pDragon, sVec3_FP* pTar
     pDragon->m160_deltaTranslation.m8_Z = fixedPoint(pDragon->m160_deltaTranslation.m8_Z.asS32() + pushZ);
 }
 
-// 06060118 — clear camera zone targets for a given zone index (1-based)
-static s32 clearCameraZoneTargets_A7(s32 zoneIndex)
-{
-    sFieldCameraManager* pCameraManager = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    sFieldCameraZone& zone = pCameraManager->m2E4_cameraZones[zoneIndex - 1];
-    zone.m14_triggerRadius = 0;
-    zone.m18_maxDistanceSquare = 0;
-    zone.m1C = 0;
-    return 0x334;
-}
+// 06060118 — clearCameraZoneTargets (shared field.cpp)
 
 // 06056dbc — dragon mF4 callback for subfield 1
 void dragonCallback_A7_1(s_dragonTaskWorkArea* pDragon)
@@ -1172,7 +1197,7 @@ void dragonCallback_A7_1(s_dragonTaskWorkArea* pDragon)
     static const sVec3_FP pushTarget = { fixedPoint(0x600000), fixedPoint(0x40000), fixedPoint(-0x600000) };
     dragonPushFromPoint_A7(pDragon, const_cast<sVec3_FP*>(&pushTarget));
     mainGameState.bitField[0xA3] |= 2;
-    clearCameraZoneTargets_A7(1);
+    clearCameraZoneTargets(1);
 }
 
 // 06056dec — dragon mF4 callback for subfield 2

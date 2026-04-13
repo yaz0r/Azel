@@ -11,6 +11,7 @@
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
 #include "trigo.h"
+#include "field/fieldDragonInput.h"
 #include "menu_dragonMorph.h"
 
 s32 playBattleSoundEffect(s32 effectIndex);
@@ -104,182 +105,15 @@ struct sA5CorridorWormSubtask : public s_workAreaTemplate<sA5CorridorWormSubtask
     // size 0xC
 };
 
-// 06085ffc — compute dragon speed from delta translation magnitude.
-static void a5_computeDragonSpeed(s_dragonTaskWorkArea* pDragon)
-{
-    sVec3_FP scaledDelta;
-    scaledDelta.m0_X = fixedPoint(pDragon->m160_deltaTranslation.m0_X.m_value << 8);
-    scaledDelta.m4_Y = fixedPoint(pDragon->m160_deltaTranslation.m4_Y.m_value << 8);
-    scaledDelta.m8_Z = fixedPoint(pDragon->m160_deltaTranslation.m8_Z.m_value << 8);
-    fixedPoint mag = sqrt_F(dot3_FP(&scaledDelta, &scaledDelta));
-    pDragon->m154_dragonSpeed = fixedPoint(mag.m_value >> 8);
-}
+// Dragon update functions moved to shared fieldDragonInput.cpp:
+// computeDragonSpeed, dragonUpdate_idle, dragonUpdate_normal,
+// dragonUpdate_normal_type8, clearDragonScriptFlag, dragonTransitionToNormal,
+// processCameraScript, processCutscene, dragonUpdate_cameraScript, dragonUpdate_cutscene
 
-// Helper: 28-bit angle interpolation (15/16 smoothing toward target)
-static fixedPoint a5_interpolateAngle28(fixedPoint current, fixedPoint target)
-{
-    s32 diff = target.m_value - current.m_value;
-    // Sign-extend 28-bit angle difference
-    if ((diff & 0x8000000) == 0)
-        diff &= 0xFFFFFFF;
-    else
-        diff |= (s32)0xF0000000;
-    s32 step = (diff * 0xF) / 0x10;
-    return fixedPoint(current.m_value + (target.m_value - step - current.m_value));
-}
+// 0607cf3a, 0607cf70, 06079044 — moved to shared fieldDragonInput.cpp
+// as setCutsceneKeyFrame, clearCutsceneKeyFrame, enableScriptSkippingAndExit
 
-// 060878ac — dragon update: idle (no camera script, no cutscene).
-// Smoothly interpolates pitch/roll toward target angles, rebuilds
-// the rotation matrix, and computes dragon speed.
-static void a5_dragonUpdate_idle(s_dragonTaskWorkArea* pDragon)
-{
-    pDragon->m24A_runningCameraScript = 5;
-
-    s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
-    pLCS->m8 |= 1;
-
-    getFieldTaskPtr()->m28_status |= 0x10000;
-
-    pDragon->m160_deltaTranslation.m0_X = 0;
-    pDragon->m160_deltaTranslation.m4_Y = 0;
-    pDragon->m160_deltaTranslation.m8_Z = 0;
-
-    if (pDragon->mF4 != nullptr)
-    {
-        pDragon->mF4(pDragon);
-    }
-
-    // Interpolate pitch (m20_angle.X toward m3C_targetAngles.X)
-    pDragon->m20_angle.m0_X = a5_interpolateAngle28(pDragon->m20_angle.m0_X, pDragon->m3C_targetAngles.m0_X);
-    // Interpolate roll (m20_angle.Z toward m3C_targetAngles.Z)
-    pDragon->m20_angle.m8_Z = a5_interpolateAngle28(pDragon->m20_angle.m8_Z, pDragon->m3C_targetAngles.m8_Z);
-
-    buildDragonRotationMatrix(&pDragon->m48, &pDragon->m20_angle);
-    copyMatrix(&pDragon->m48.m0_matrix, &pDragon->m88_matrix);
-
-    a5_computeDragonSpeed(pDragon);
-}
-
-// 06087e70 — dragon update: normal gameplay (default morph)
-static void a5_dragonUpdate_normal(s_dragonTaskWorkArea*)
-{
-    Unimplemented();
-}
-
-// 06087f4c — dragon update: normal gameplay (dragonType == 8)
-static void a5_dragonUpdate_normal_type8(s_dragonTaskWorkArea*)
-{
-    Unimplemented();
-}
-
-// 0607c924 — clear the 0x10000 flag in dragon mF8_Flags
-static void a5_clearDragonScriptFlag()
-{
-    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    pDragon->mF8_Flags &= ~0x10000u;
-}
-
-// 0607c88e — transition dragon from script/cutscene mode back to normal update.
-// Picks the right normal update function based on dragon type, resets
-// script status, and clears the script flag.
-static void a5_dragonTransitionToNormal()
-{
-    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    if (gDragonState->mC_dragonType == 8)
-    {
-        pDragon->mF0 = &a5_dragonUpdate_normal_type8;
-    }
-    else
-    {
-        pDragon->mF0 = &a5_dragonUpdate_normal;
-    }
-    pDragon->m104_dragonScriptStatus = 0;
-    a5_clearDragonScriptFlag();
-}
-
-// 06088008 — process camera script: reads waypoints from the camera
-// script data, sets up dragon velocity, and counts down frames.
-static void a5_processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
-{
-    Unimplemented();
-}
-
-// 060881b2 — process cutscene movement data
-static void a5_processCutscene(s_dragonTaskWorkArea* pDragon)
-{
-    Unimplemented();
-}
-
-// 0608820e — dragon update: camera script active.
-// Dispatches to script/cutscene processing, applies delta translation,
-// rebuilds rotation matrix, and computes speed.
-static void a5_dragonUpdate_cameraScript(s_dragonTaskWorkArea* pDragon)
-{
-    getFieldTaskPtr()->m28_status |= 0x10000;
-
-    if (pDragon->m1D4_cutsceneData != nullptr)
-    {
-        a5_processCutscene(pDragon);
-    }
-    else if (pDragon->m1D0_cameraScript != nullptr)
-    {
-        a5_processCameraScript(pDragon, pDragon->m1D0_cameraScript);
-    }
-    else
-    {
-        // No script or cutscene — transition back to normal
-        sFieldCameraManager* pCam = getFieldTaskPtr()->m8_pSubFieldData->m334;
-        a5_wormSegmentEntity_startFollowMode_060694D8((s32)pCam->m50E_followModeIndex);
-        a5_dragonTransitionToNormal();
-    }
-
-    buildDragonRotationMatrix(&pDragon->m48, &pDragon->m20_angle);
-    copyMatrix(&pDragon->m48.m0_matrix, &pDragon->m88_matrix);
-
-    pDragon->m8_pos.m0_X = fixedPoint(pDragon->m8_pos.m0_X.m_value + pDragon->m160_deltaTranslation.m0_X.m_value);
-    pDragon->m8_pos.m4_Y = fixedPoint(pDragon->m8_pos.m4_Y.m_value + pDragon->m160_deltaTranslation.m4_Y.m_value);
-    pDragon->m8_pos.m8_Z = fixedPoint(pDragon->m8_pos.m8_Z.m_value + pDragon->m160_deltaTranslation.m8_Z.m_value);
-
-    a5_computeDragonSpeed(pDragon);
-}
-
-// 0608838a — dragon update: cutscene active
-static void a5_dragonUpdate_cutscene(s_dragonTaskWorkArea*)
-{
-    Unimplemented();
-}
-
-// 0607c8c2 — halt dragon and swap its update function when a corridor
-// transition is requested but files are still loading.
-static void a5_corridorWormDragonStop()
-{
-    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    pDragon->m154_dragonSpeed = 0;
-
-    setDragonSpeedIndex(0);
-
-    if (pDragon->m1D0_cameraScript == nullptr)
-    {
-        if (pDragon->m1D4_cutsceneData == nullptr)
-        {
-            pDragon->mF0 = &a5_dragonUpdate_idle;
-        }
-        else
-        {
-            pDragon->mF0 = &a5_dragonUpdate_cutscene;
-        }
-    }
-    else
-    {
-        pDragon->mF0 = &a5_dragonUpdate_cameraScript;
-    }
-
-    pDragon->m104_dragonScriptStatus = 0;
-
-    // Re-read dragon pointer (matches Ghidra which calls getFieldTaskPtr again)
-    pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    pDragon->mF8_Flags |= 0x10000;
-}
+// 0607c8c2 — initDragonMovementMode, moved to shared fieldDragonInput.cpp
 
 // 060591fc — corridor worm file-load/animation state machine. Manages
 // progressive loading of the worm segment models as the dragon travels
@@ -376,7 +210,7 @@ static void a5_corridorTryTransition(sA5CorridorWormSubtask* pThis, s32 dayDest,
 {
     if (checkFileLoading && fileInfoStruct.m2C_allocatedHead != nullptr)
     {
-        a5_corridorWormDragonStop();
+        initDragonMovementMode();
         return;
     }
     s32 dest = (mainGameState.bitField[0xA3] & 0x20) ? nightDest : dayDest;

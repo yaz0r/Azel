@@ -1,27 +1,58 @@
 #include "PDS.h"
 #include "o_fld_a5.h"
 #include "a5_wormObjectSystem.h"
-#include "kernel/fileBundle.h"
 
-// Saturn table at FLD_A5::060997F4 — 4 pointers into the quad-data pool used
-// as particle sources. The init picks one at random per slot.
-//   [0] 0x06099014
-//   [1] 0x060990F4
-//   [2] 0x060990F4 (duplicate on purpose — weighted 2/4)
-//   [3] 0x060991D4
-static constexpr u32 kWormParticleQuadTableAddr = 0x060997F4;
+// Saturn table at FLD_A5::060997F4 — 4 pointers into the quad-data pool.
+// All entries share the same geometry; only CMDCOLR differs:
+//   [0] 0x06099014 — CMDCOLR 0x0120
+//   [1] 0x060990F4 — CMDCOLR 0x0180
+//   [2] 0x060990F4 — CMDCOLR 0x0180 (duplicate on purpose — weighted 2/4)
+//   [3] 0x060991D4 — CMDCOLR 0x0190
+static const std::vector<sVdp1Quad> s_wormParticleQuadTable0 = {
+    {0, 1, 0x1001, 0x0080, 0x0570, 0x0528, 0x0120, 0x4000, 0x4000, -0x1B33, 0x1E66},
+    {0, 1, 0x1001, 0x0080, 0x05D4, 0x0525, 0x0120, 0x4000, 0x3B33, -0x1E66, 0x1999},
+    {0, 1, 0x1001, 0x0080, 0x0634, 0x0525, 0x0120, 0x4000, 0x3B33, -0x1B33, 0x1999},
+    {0, 1, 0x1001, 0x0080, 0x0694, 0x0528, 0x0120, 0x4000, 0x4000, -0x1CCC, 0x1E66},
+    {0, 1, 0x1001, 0x0080, 0x06F8, 0x0526, 0x0120, 0x4000, 0x3CCC, -0x1B33, 0x1B33},
+    {0, 1, 0x1001, 0x0080, 0x0758, 0x052A, 0x0120, 0x4000, 0x4333, -0x1B33, 0x2199},
+    {0, 1, 0x1001, 0x0080, 0x07C4, 0x0527, 0x0120, 0x4000, 0x3E66, -0x1B33, 0x1CCC},
+    {1, 1, 0x1001, 0x0080, 0x0828, 0x0524, 0x0120, 0x4000, 0x3999, -0x2000, 0x1B33},
+};
 
-// Cached quad vectors corresponding to the four Saturn entries above.
-static std::vector<sVdp1Quad> s_wormParticleQuads[4];
+static const std::vector<sVdp1Quad> s_wormParticleQuadTable1 = {
+    {0, 1, 0x1001, 0x0080, 0x0570, 0x0528, 0x0180, 0x4000, 0x4000, -0x1B33, 0x1E66},
+    {0, 1, 0x1001, 0x0080, 0x05D4, 0x0525, 0x0180, 0x4000, 0x3B33, -0x1E66, 0x1999},
+    {0, 1, 0x1001, 0x0080, 0x0634, 0x0525, 0x0180, 0x4000, 0x3B33, -0x1B33, 0x1999},
+    {0, 1, 0x1001, 0x0080, 0x0694, 0x0528, 0x0180, 0x4000, 0x4000, -0x1CCC, 0x1E66},
+    {0, 1, 0x1001, 0x0080, 0x06F8, 0x0526, 0x0180, 0x4000, 0x3CCC, -0x1B33, 0x1B33},
+    {0, 1, 0x1001, 0x0080, 0x0758, 0x052A, 0x0180, 0x4000, 0x4333, -0x1B33, 0x2199},
+    {0, 1, 0x1001, 0x0080, 0x07C4, 0x0527, 0x0180, 0x4000, 0x3E66, -0x1B33, 0x1CCC},
+    {1, 1, 0x1001, 0x0080, 0x0828, 0x0524, 0x0180, 0x4000, 0x3999, -0x2000, 0x1B33},
+};
+
+static const std::vector<sVdp1Quad> s_wormParticleQuadTable2 = {
+    {0, 1, 0x1001, 0x0080, 0x0570, 0x0528, 0x0190, 0x4000, 0x4000, -0x1B33, 0x1E66},
+    {0, 1, 0x1001, 0x0080, 0x05D4, 0x0525, 0x0190, 0x4000, 0x3B33, -0x1E66, 0x1999},
+    {0, 1, 0x1001, 0x0080, 0x0634, 0x0525, 0x0190, 0x4000, 0x3B33, -0x1B33, 0x1999},
+    {0, 1, 0x1001, 0x0080, 0x0694, 0x0528, 0x0190, 0x4000, 0x4000, -0x1CCC, 0x1E66},
+    {0, 1, 0x1001, 0x0080, 0x06F8, 0x0526, 0x0190, 0x4000, 0x3CCC, -0x1B33, 0x1B33},
+    {0, 1, 0x1001, 0x0080, 0x0758, 0x052A, 0x0190, 0x4000, 0x4333, -0x1B33, 0x2199},
+    {0, 1, 0x1001, 0x0080, 0x07C4, 0x0527, 0x0190, 0x4000, 0x3E66, -0x1B33, 0x1CCC},
+    {1, 1, 0x1001, 0x0080, 0x0828, 0x0524, 0x0190, 0x4000, 0x3999, -0x2000, 0x1B33},
+};
+
+// Pointer table mirrors Saturn layout at 060997F4:
+//   [0] -> table0, [1] -> table1, [2] -> table1 (duplicate), [3] -> table2
+static const std::vector<sVdp1Quad>* s_wormParticleQuads[4] = {
+    &s_wormParticleQuadTable0,
+    &s_wormParticleQuadTable1,
+    &s_wormParticleQuadTable1,
+    &s_wormParticleQuadTable2,
+};
 
 static const std::vector<sVdp1Quad>* a5WormParticleSystem_getQuadList(u32 index)
 {
-    if (s_wormParticleQuads[index].empty())
-    {
-        u32 ea = readSaturnU32(gFLD_A5->getSaturnPtr(kWormParticleQuadTableAddr + index * 4));
-        s_wormParticleQuads[index] = initVdp1Quad(gFLD_A5->getSaturnPtr(ea));
-    }
-    return &s_wormParticleQuads[index];
+    return s_wormParticleQuads[index];
 }
 
 // 06058E8E
@@ -58,6 +89,12 @@ static void a5WormParticle_Clamp_Mode0(sVec3_FP* pPos)
     pPos->m8_Z = fixedPoint(pPos->m8_Z.asS32() + pExit->mC_direction.m8_Z.asS32());
 }
 
+// 06058466 — mode 2: empty
+static void a5WormParticle_Clamp_Mode2(sVec3_FP*) {}
+
+// 0605846a — mode 3: empty
+static void a5WormParticle_Clamp_Mode3(sVec3_FP*) {}
+
 // 0605841c — mode 1: spiral drift around exit target
 static void a5WormParticle_Clamp_Mode1(sVec3_FP* pPos)
 {
@@ -76,8 +113,8 @@ static void a5WormParticle_ClampPosition(sVec3_FP* pPos)
     {
     case 0: a5WormParticle_Clamp_Mode0(pPos); break;
     case 1: a5WormParticle_Clamp_Mode1(pPos); break;
-    case 2: break; // 06058466 — empty
-    case 3: break; // 0605846a — empty
+    case 2: a5WormParticle_Clamp_Mode2(pPos); break;
+    case 3: a5WormParticle_Clamp_Mode3(pPos); break;
     default: break;
     }
 }

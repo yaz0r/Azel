@@ -12,9 +12,6 @@
 
 FLD_A7_data* gFLD_A7 = nullptr;
 
-void freeVdp1Block(npcFileDeleter* parent, void* dataToFree);
-void fieldPaletteTaskInitSub0Sub0();
-
 void FLD_A7_data::dispatchCellObjectCreation(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
 {
     switch (r5.m0_function.m_offset)
@@ -37,16 +34,7 @@ void FLD_A7_data::dispatchCellObjectCreation(s_visdibilityCellTask* r4, s_DataTa
     }
 }
 
-// 06073566
-static s32 isDragonCameraScriptInactive()
-{
-    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    if (pDragon->m1D0_cameraScript == nullptr && pDragon->m1D4_cutsceneData == nullptr)
-    {
-        return 1;
-    }
-    return 0;
-}
+// 06073566 — isDragonCameraScriptInactive (shared field.cpp)
 
 
 // 0605e7f4
@@ -61,19 +49,7 @@ static s32 getMultiChoiceResult_A7()
     return result;
 }
 
-// 0607790a
-static void a7ReleaseMultiChoiceBlocks()
-{
-    s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-    s_multiChoice* pChoice = pScript->m44_multiChoiceData;
-    if (pChoice != nullptr)
-    {
-        freeVdp1Block((npcFileDeleter*)pScript, pChoice->m0_choiceTable);
-        freeVdp1Block((npcFileDeleter*)pScript, pChoice);
-        pScript->m44_multiChoiceData = nullptr;
-        fieldPaletteTaskInitSub0Sub0();
-    }
-}
+// 0607790a — releaseMultiChoiceBlocks (shared field.cpp)
 
 // 0605e81e
 static s32 handleMultiChoiceResult_A7()
@@ -85,7 +61,7 @@ static s32 handleMultiChoiceResult_A7()
         if (getFieldTaskPtr()->m2C_currentFieldIndex == 4)
         {
             mainGameState.bitField[0xa3] |= 0x10;
-            a7ReleaseMultiChoiceBlocks();
+            releaseMultiChoiceBlocks();
         }
         else
         {
