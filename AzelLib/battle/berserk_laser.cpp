@@ -324,7 +324,7 @@ static void sLaserBerserkTask_Update(sLaserBerserkTask* pThis)
 
                 // Apply SPR-scaled damage to target
                 s16 baseDmg = phantomSlasher_getBaseDamage(pThis->mE2_baseDamage);
-                s16 damage = sGunShotTask_UpdateSub1Sub2(pThis->m4C_pTargetable, baseDmg, 2);
+                s16 damage = computeResistanceDamage(pThis->m4C_pTargetable, baseDmg, 2);
                 applyDamageToEnnemy(pThis->m4C_pTargetable, damage, &hitPos, 3,
                     pThis->m3C_cameraVelocity, fixedPoint(0x2000));
 

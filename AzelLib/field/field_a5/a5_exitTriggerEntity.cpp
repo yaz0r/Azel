@@ -48,6 +48,19 @@ struct sA5ExitTriggerArg
     s16 mE_entryB;
 };
 
+// 0605652e — render context callback for mode 5: set visibility and advance mode past 6
+static int a5ExitTrigger_contextCallback_0605652e(sA5ExitTriggerEntity* pThis)
+{
+    pThis->m34_modelCtx.m18_visibilityFlags |= 1;
+    s32 mode = (s32)(s8)pThis->m32_mode;
+    if (mode == 6)
+    {
+        pThis->m32_mode++;
+        return 0x32;
+    }
+    return mode;
+}
+
 // Lazy-parse a VDP1 quad list from Saturn data (A5 version)
 static const std::vector<sVdp1Quad>* a5GetOrParseQuadList(const sSaturnPtr& ea)
 {
@@ -361,7 +374,7 @@ static void a5ExitTrigger_Update(sA5ExitTriggerEntity* pThis)
         // Wait for field script system to become idle
         if (isScriptActive() == 0)
         {
-            pThis->m34_modelCtx.m4_initCallback = (void*)0x0605652e; // placeholder — contextCallback variant
+            pThis->m34_modelCtx.m4_initCallback = (void*)&a5ExitTrigger_contextCallback_0605652e;
             pThis->m34_modelCtx.m10_flags = 3;
             pThis->m34_modelCtx.m18_visibilityFlags = 0;
             mainGameState.bitField[0x95] |= 4;

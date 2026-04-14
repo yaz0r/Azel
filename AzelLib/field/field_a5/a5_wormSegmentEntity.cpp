@@ -364,7 +364,7 @@ static void a5WormSegmentEntity_Init(sA5WormSegmentEntity* pThis, sSaturnPtr arg
         // Check game state bit from data
         u32 bitIdx = (u32)readSaturnS16(arg + 0x5E);
         u32 adjIdx = (bitIdx < 1000) ? bitIdx : (bitIdx - 0x236);
-        if ((mainGameState.bitField[adjIdx >> 3] & (1 << (bitIdx & 7))) == 0)
+        if ((mainGameState.bitField[adjIdx >> 3] & bitMasks[bitIdx & 7]) == 0)
         {
             pThis->mA8_modelIdx = readSaturnS16(arg + 0x18);
             pThis->mAA_poseIdx = readSaturnS16(arg + 0x1A);
@@ -407,8 +407,7 @@ static void a5WormSegmentEntity_Update(sA5WormSegmentEntity* pThis)
     {
         if (readSaturnS16(data + 0x24) == 0)
             return;
-        // FUN_FLD_A5__0607a2cc — empty stub in the Saturn binary (proximity
-        // check placeholder that the original code never wrote).
+        // FUN_FLD_A5__0607a2cc — empty in the Saturn binary
         return;
     }
     if (state == 0)
@@ -419,7 +418,7 @@ static void a5WormSegmentEntity_Update(sA5WormSegmentEntity* pThis)
         if (bit1 != 0)
         {
             u32 adj1 = (bit1 < 1000) ? (u32)bit1 : (u32)(bit1 - 0x236);
-            if ((mainGameState.bitField[adj1 >> 3] & (1 << (bit1 & 7))) == 0)
+            if ((mainGameState.bitField[adj1 >> 3] & bitMasks[bit1 & 7]) == 0)
                 activated = false;
         }
         if (activated)
@@ -428,20 +427,20 @@ static void a5WormSegmentEntity_Update(sA5WormSegmentEntity* pThis)
             if (bit2 != 0)
             {
                 u32 adj2 = (bit2 < 1000) ? (u32)bit2 : (u32)(bit2 - 0x236);
-                if ((mainGameState.bitField[adj2 >> 3] & (1 << (bit2 & 7))) == 0)
+                if ((mainGameState.bitField[adj2 >> 3] & bitMasks[bit2 & 7]) == 0)
                     activated = false;
             }
         }
         if (activated)
             pThis->m9C_config++;
 
-        // FUN_FLD_A5__0607a2cc — empty stub in the Saturn binary.
+        // Fall through to FUN_FLD_A5__0607a2cc (empty in Saturn binary)
         return;
     }
     if (state == 1)
     {
         updateFieldModelRenderContext(&pThis->mC_modelCtx);
-        // FUN_FLD_A5__0607a2cc — empty stub in the Saturn binary.
+        // Fall through to FUN_FLD_A5__0607a2cc (empty in Saturn binary)
         return;
     }
     if (state == 2)

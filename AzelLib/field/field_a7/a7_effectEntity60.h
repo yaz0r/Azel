@@ -17,7 +17,9 @@ struct sA7EffectEntity60 : public s_workAreaTemplate<sA7EffectEntity60>
     s32                m3C_progress;   // 0x3C — rotation phase A (kill trigger at 0x38E38E3)
     s32                m40_fade;       // 0x40 — ramps up then down
     s32                m44_scaleY;     // 0x44 — Y-axis row scale (init 0x10000)
-    s32                m48;            // 0x48
+    u8                 m48_particleCounter; // 0x48
+    u8                 m49_pad[2];     // 0x49
+    u8                 m4B_particleSlot; // 0x4B — &3 selects which position slot to spawn at
     s32                m4C_animIdx0;   // 0x4C — iterates 0..0x16
     s32                m50_animIdx1;   // 0x50
     s32                m54_animIdx2;   // 0x54

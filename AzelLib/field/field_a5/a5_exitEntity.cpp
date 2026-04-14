@@ -108,6 +108,65 @@ static void a5ExitEntity_WindStateMachine(sA5ExitEntity* p)
 // Quad list table at 060992b4 (4 entries, Saturn EAs)
 static const u32 s_windQuadListAddrs[] = { 0x06099804, 0x06099820, 0x0609983C, 0x06099858 };
 
+// 06058c10 — spawn a type-2 falling particle (gravity = 0xFFFFF334 on Y axis)
+static void a5ExitEntity_spawnFallingParticle(sVec3_FP* pPos, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
+{
+    sA5WormObjectSystem* pSystem = getWormObjectSystem();
+    if (pSystem->m3728_drawCount >= 0xC4)
+        return;
+
+    s32 idx = pSystem->m3728_drawCount;
+    pSystem->m190_sortedIndices[idx] = pSystem->m8_freeIndices[idx];
+    sA5WormParticle* pParticle = &pSystem->m318_particles[pSystem->m190_sortedIndices[idx]];
+
+    pParticle->m8_position = *pPos;
+    pParticle->m14_velocityX = 0;
+    pParticle->m18_velocityY = (s32)0xFFFFF334;
+    pParticle->m1C_velocityZ = 0;
+    pParticle->m24_gravityY = 0;
+
+    particleInitSub(&pParticle->m0_quad, 0, pQuadList);
+    pParticle->m40_lifetime = (s8)lifetime;
+    pParticle->m41_type = 2;
+
+    pSystem->m3728_drawCount++;
+}
+
+// 06058d32 — spawn a type-1 directional particle (velocity from angle, position offset from exit)
+static void a5ExitEntity_spawnDirectionalParticle(s32 speed, s32 angle, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
+{
+    sA5WormObjectSystem* pSystem = getWormObjectSystem();
+    s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
+    sA5ExitEntity* pExit = pFieldData->m4_pExitEntity;
+    if (pSystem->m3728_drawCount >= 0xC4)
+        return;
+
+    s32 idx = pSystem->m3728_drawCount;
+    pSystem->m190_sortedIndices[idx] = pSystem->m8_freeIndices[idx];
+    sA5WormParticle* pParticle = &pSystem->m318_particles[pSystem->m190_sortedIndices[idx]];
+
+    pParticle->m2C_orbitAngle = angle;
+    pParticle->m30_orbitAngleSpeed = 0x2D82D8;
+    pParticle->m34_pad2 = (s32)0xFFFFE2E0;
+    pParticle->m38_orbitRadius = speed;
+    pParticle->m3C_orbitRadiusSpeed = 0xB33;
+
+    u32 rng2 = randomNumber();
+    pParticle->m24_gravityY = (s32)(-(s32)(rng2 & 1) * 0x14) - 0x51;
+    pParticle->m18_velocityY = 0x2000;
+    pParticle->m8_position.m4_Y = fixedPoint(0);
+
+    u16 angleIdx = (u16)((u32)angle >> 16) & 0xFFF;
+    pParticle->m8_position.m0_X = fixedPoint(MTH_Mul(fixedPoint(speed), getSin(angleIdx)).m_value + pExit->m1C_exitTargetX_mode1);
+    pParticle->m8_position.m8_Z = fixedPoint(MTH_Mul(fixedPoint(speed), getCos(angleIdx)).m_value + pExit->m20_exitTargetZ_mode1);
+
+    particleInitSub(&pParticle->m0_quad, 0, pQuadList);
+    pParticle->m40_lifetime = (s8)lifetime;
+    pParticle->m41_type = 1;
+
+    pSystem->m3728_drawCount++;
+}
+
 // 06058cb4 — spawn a worm sand particle at the given position with quad/lifetime params.
 // pArgs layout: [0..2]=position, [5]=lifetime(s8), [6]=quadListPtr
 static void a5ExitEntity_spawnWormParticle(sVec3_FP* pPos, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
@@ -166,48 +225,62 @@ static void a5ExitEntity_Mode1(sA5ExitEntity* p)
 {
     a5ExitEntity_WindStateMachine(p);
 
-    if (p->m18 > 0xAA9)
+    // Fixed quad list for main spawns
+    const std::vector<sVdp1Quad>* pQuadList =
+        a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(0x06099714));
+
+    // Spawn 4 particles (2 iterations × 2 per iteration) near exit target
+    for (s32 i = 2; i != 0; i -= 2)
     {
-        p->m34++;
-        s32 spawnRate = 10 - (p->m18 * 0x1E >> 0xE);
-        if (p->m34 >= spawnRate)
-        {
-            p->m34 = 0;
-            u32 rng = randomNumber();
-            const std::vector<sVdp1Quad>* pQuadList =
-                a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(s_windQuadListAddrs[rng & 3]));
+        sVec3_FP pos;
+        pos.m0_X = fixedPoint((s32)(randomNumber() & 0x1FFFFF) + p->m1C_exitTargetX_mode1 - 0x100000);
+        pos.m4_Y = fixedPoint(0);
+        pos.m8_Z = fixedPoint((s32)(randomNumber() & 0x1FFFFF) + p->m20_exitTargetZ_mode1 - 0x100000);
+        a5ExitEntity_spawnWormParticle(&pos, 6, pQuadList);
 
-            sVec3_FP pos;
-            pos.m0_X = fixedPoint(p->m1C_exitTargetX_mode1 +
-                performModulo2(0x15E000, randomNumber()) - 0xAF000);
-            pos.m4_Y = 0;
-            pos.m8_Z = fixedPoint(p->m20_exitTargetZ_mode1 +
-                performModulo2(0x15E000, randomNumber()) - 0xAF000);
+        pos.m0_X = fixedPoint((s32)(randomNumber() & 0x1FFFFF) + p->m1C_exitTargetX_mode1 - 0x100000);
+        pos.m8_Z = fixedPoint((s32)(randomNumber() & 0x1FFFFF) + p->m20_exitTargetZ_mode1 - 0x100000);
+        a5ExitEntity_spawnWormParticle(&pos, 6, pQuadList);
+    }
 
-            a5ExitEntity_spawnWormParticle(&pos, 10, pQuadList);
-        }
+    // Secondary spawn: every 3 frames, spawn a directional type-1 particle
+    static const u32 s_mode1SecondaryQuadAddrs[] = { 0x06099554, 0x06099634 };
+    u32 rng = randomNumber();
+    const std::vector<sVdp1Quad>* pSecondaryQuad =
+        a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(s_mode1SecondaryQuadAddrs[rng & 1]));
+
+    p->m34++;
+    if (p->m34 > 2)
+    {
+        p->m34 = 0;
+        s32 speed = (s32)(randomNumber() & 0xFFFF);
+        s32 angle = (s32)(randomNumber() & 0xFFFFFFF);
+        a5ExitEntity_spawnDirectionalParticle(speed, angle, 8, pSecondaryQuad);
     }
 }
 
-// 06058944 — exit mode 3: periodic particle spawning near camera
+// 06058944 — exit mode 3: periodic falling particle spawning near camera
 static void a5ExitEntity_Mode3(sA5ExitEntity* p)
 {
     p->m34++;
     if (p->m34 > 8)
     {
         p->m34 = 0;
+
+        // Quad list table at 06099804 (4 pointer entries)
+        static const u32 s_mode3QuadAddrs[] = { 0x060992B4, 0x06099394, 0x06099394, 0x06099474 };
         u32 rng = randomNumber();
         const std::vector<sVdp1Quad>* pQuadList =
-            a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(s_windQuadListAddrs[rng & 3]));
+            a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(s_mode3QuadAddrs[rng & 3]));
 
         sVec3_FP pos;
         pos.m0_X = fixedPoint(cameraProperties2.m0_position.m0_X.m_value +
-            performModulo2(0x15E000, randomNumber()) - 0xAF000);
+            (s32)(randomNumber() & 0x1FFFFF) - 0x100000);
         pos.m4_Y = fixedPoint(p->m24_exitTargetX_mode3);
         pos.m8_Z = fixedPoint(cameraProperties2.m0_position.m8_Z.m_value +
-            performModulo2(0x15E000, randomNumber()) - 0xAF000);
+            (s32)(randomNumber() & 0x1FFFFF) - 0x100000);
 
-        a5ExitEntity_spawnWormParticle(&pos, 10, pQuadList);
+        a5ExitEntity_spawnFallingParticle(&pos, 0x50, pQuadList);
     }
 }
 

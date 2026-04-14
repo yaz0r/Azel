@@ -10,7 +10,7 @@ static void fieldA5_1_startTasks(p_workArea workArea)
     createA5_corridorWorm_1(workArea);
     createA5_wormObjectTask(workArea);
     createA5_exitEntityTask(workArea);
-    static s32 exitParams[] = { 0x32000, 0, (s32)0xFFFCE000 };
+    static s32 exitParams[] = { 0x32000, (s32)0xFFFCE000 };
     setFieldExitConfig_A5(3, exitParams);
 }
 
@@ -22,19 +22,14 @@ void subfieldA5_1(p_workArea workArea)
     setupField2(pDT3, fieldA5_1_startTasks);
     setupCameraConfig_A5_corridor();
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 2;
-    // setupDragonPosition with position + rotation from overlay data
     s16 prev = getFieldTaskPtr()->m32_previousSubField;
-    sSaturnPtr posData;
+    sSaturnPtr rotEA;
     if (prev == 2 || prev == 8)
-        posData = gFLD_A5->getSaturnPtr(0x060897CC);
+        rotEA = gFLD_A5->getSaturnPtr(0x060897D8);
     else
-        posData = gFLD_A5->getSaturnPtr(0x060897B4);
-    {
-        sVec3_FP pos = { readSaturnS32(posData), readSaturnS32(posData + 4), readSaturnS32(posData + 8) };
-        sVec3_FP rot = { readSaturnS32(posData + 0xC), readSaturnS32(posData + 0x10), readSaturnS32(posData + 0x14) };
-        setupDragonPosition(&pos, &rot);
-    }
+        rotEA = gFLD_A5->getSaturnPtr(0x060897C0);
+    setupDragonPositionAndCamera_A5(rotEA - 0xC, rotEA);
     initDragonParams_A5_corridor();
-    createA5Vdp2Task(workArea);
-    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
+    createA5CorridorVdp2Task(workArea);
+    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = (void(*)())&postBattleSound_A5_corridor;
 }

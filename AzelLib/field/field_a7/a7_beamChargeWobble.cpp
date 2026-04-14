@@ -1,6 +1,5 @@
 #include "PDS.h"
 #include "a7_beamChargeWobble.h"
-#include "a7_sceneParticle.h"
 #include "o_fld_a7.h"
 #include "trigo.h"
 #include "kernel/vdp1AnimatedQuad.h"
@@ -21,7 +20,7 @@ struct sA7BeamChargeWobble : public s_workAreaTemplateWithArg<sA7BeamChargeWobbl
 // 0605533c — spawn a single billboard scene particle with jittered origin.
 // Shared with the beam ring-buffer update (same Saturn address).
 void a7BeamChargeWobble_spawn_0605533c(p_workArea /*parent*/, sVec3_FP* pPos,
-                                       fixedPoint sinValue, sA7SceneParticleDesc* pOutDesc)
+                                       fixedPoint sinValue, sSceneParticleDesc* pOutDesc)
 {
     sVec3_FP pos;
     pos.m0_X = fixedPoint((s32)(randomNumber() & 0xFFFF) + pPos->m0_X.m_value - 0x8000);
@@ -33,7 +32,7 @@ void a7BeamChargeWobble_spawn_0605533c(p_workArea /*parent*/, sVec3_FP* pPos,
     rot.m4_Y = fixedPoint(0);
     rot.m8_Z = fixedPoint(0);
 
-    pOutDesc->m14_updateFunc = &a7SceneParticle_UpdatePhysics_06076f28;
+    pOutDesc->m14_updateFunc = &sceneParticle_updatePhysics;
     pOutDesc->m0_pPosition = &pos;
     pOutDesc->m4_pVelocity = &rot;
     pOutDesc->m18_payloadSize = 0;
@@ -41,7 +40,7 @@ void a7BeamChargeWobble_spawn_0605533c(p_workArea /*parent*/, sVec3_FP* pPos,
     pOutDesc->m10_paramB = 0;
 
     sFieldSceneManager* pManager = (sFieldSceneManager*)getFieldSpecificData_A7()->m280;
-    a7SceneParticle_allocate(pManager, pOutDesc, 1);
+    sceneParticle_allocate(pManager, pOutDesc, 1);
 }
 
 // 06055a48
@@ -77,7 +76,7 @@ static void a7BeamChargeWobble_Update_06055a64(sA7BeamChargeWobble* pThis)
         pThis->m18_frame++;
         if ((pThis->m18_frame & 7) == 0)
         {
-            sA7SceneParticleDesc desc = {};
+            sSceneParticleDesc desc = {};
             desc.m8_pQuadList = a7GetOrParseQuadList(pThis->m14_templateEA);
             a7BeamChargeWobble_spawn_0605533c((p_workArea)pThis, &pThis->m0_pos, pThis->m10_sinValue, &desc);
         }

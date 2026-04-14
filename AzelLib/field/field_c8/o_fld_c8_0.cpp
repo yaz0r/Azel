@@ -10,6 +10,7 @@
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
 #include "field/fieldDragonMovement.h"
+#include "field/fieldDragonInput.h"
 
 s32 func3dModelSub0(s_3dModel* r4);
 void update3dModelDrawFunctionForVertexAnimation(s_3dModel* r4, u8* pData);
@@ -27,31 +28,6 @@ static bool isInCurrentZone1(s_fieldLCSSubStruct* pLCS);
 static void registerWithLCS(s_fieldLCSSubStruct* pLCS);
 static s32 clipCheck_C8_frustum(const sVec3_FP* pPos, s32 farClip);
 static void readSaturnVec3Into(sSaturnPtr src, sVec3_FP* dst);
-static void FUN_FLD_C8_0607d81a(sVec3_FP* pOut);
-struct s_C8_cutsceneCameraTask;
-static void FUN_FLD_C8_0605c87c(s_C8_cutsceneCameraTask* pTask, u8* pArgData);
-static void FUN_FLD_C8_0607d600(sVec3_FP* pPos, sVec3_FP* pAngle);
-
-// Shared dragon update functions (declared in o_fld_a3.cpp)
-void dragonIdleUpdate(s_dragonTaskWorkArea*);
-void dragonCutsceneUpdate(s_dragonTaskWorkArea*);
-void dragonFlightUpdate(s_dragonTaskWorkArea*);
-void updateCutsceneCameraInterpolation(sFieldCameraManager* r4, sFieldCameraStatus* r5);
-
-// 0608948a = dragonCutsceneUpdate
-// 0608930e = dragonScriptMovement
-
-// 060876d8 — keyboard input handler (C8-specific, A3 asserts on keyboard)
-static void FUN_FLD_C8_060876d8(s_dragonTaskWorkArea*);  // forward decl
-
-// 06088f70 = dragonFlightUpdate (shared, with keyboard fallback in C8)
-// Used directly via dragonFlightUpdate function pointer
-
-// 0608904c = floaterFlightUpdate (shared, in fieldDragonMovement.cpp)
-
-
-// 060876d8 — keyboard input (C8-specific, A3 asserts on keyboard)
-static void FUN_FLD_C8_060876d8(s_dragonTaskWorkArea* r14) { Unimplemented(); }
 
 // --- Minimal task structs for field infrastructure ---
 
@@ -254,36 +230,7 @@ struct s_C8_effectManagerTask : public s_workAreaTemplateWithArg<s_C8_effectMana
     }
 };
 
-// 0607df7c — set dragon speed index and speed from table
-static void FUN_FLD_C8_0607df7c(s32 speedIndex)
-{
-    if (speedIndex >= 0 && speedIndex < 5)
-    {
-        s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-        pDragon->m235_dragonSpeedIndex = (s8)speedIndex;
-        pDragon->m154_dragonSpeed = pDragon->m21C_DragonSpeedValues[pDragon->m235_dragonSpeedIndex];
-        s32 midSpeed = ((s32)pDragon->m21C_DragonSpeedValues[0] + (s32)pDragon->m21C_DragonSpeedValues[1] + 1) >> 1;
-        if ((s32)pDragon->m154_dragonSpeed < midSpeed)
-        {
-            pDragon->m238 = 4;
-            pDragon->m237 = 4;
-        }
-        else
-        {
-            pDragon->m238 = 0;
-            pDragon->m237 = 0;
-        }
-    }
-}
 
-// 0607d9c2 = initDragonMovementMode (same shared function)
-
-// 0606a488 — check if camera slot is initialized (reads m8C at offset 0x470 per slot)
-static s32 isCameraSlotActive(s16 slotIndex)
-{
-    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    return (s32)pOverlay->m3E4_cameraSlots[slotIndex].m8C_isActive;
-}
 
 // 0606a4d4 — clear camera status fields
 static void resetCameraStatus(sFieldCameraStatus* pStatus)
@@ -331,96 +278,11 @@ static void deactivateCameraSlot(s16 slotIndex)
 // 0606a3ec
 static s32 selectCameraSlot(s16 slotIndex)
 {
-    s32 check = isCameraSlotActive(slotIndex);
-    if (check != 0)
-    {
-        sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-        pOverlay->m50C_activeCameraSlot = (u8)slotIndex;
-        pOverlay->m3E4_cameraSlots[slotIndex].m80_frameCounter = 0;
-        return 1;
-    }
     return 0;
 }
 
-// 0606a590 — get current camera status pointer
-static sFieldCameraStatus* getCurrentCameraStatus()
-{
-    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    return &pOverlay->m3E4_cameraSlots[pOverlay->m50C_activeCameraSlot];
-}
 
-// 0606941e — angle smoothing with clamped step (28-bit normalized)
-static s32 FUN_FLD_C8_0606941e(s32 current, s32 target, s32 speed, s32 maxStep, s32 minStep)
-{
-    s32 diff = fixedPoint(target - current).normalized();
-    s32 step = (s32)MTH_Mul(fixedPoint(speed), fixedPoint(diff));
-    if (diff < 0) {
-        minStep = -minStep; maxStep = -maxStep;
-        s32 clamped = (step < minStep) ? step : minStep;
-        if (maxStep < clamped) { step = (minStep <= step) ? minStep : step; }
-        else { step = maxStep; }
-        diff = fixedPoint(diff - step).normalized();
-        if (diff >= 0) target = current + step;
-    } else {
-        s32 clamped = (minStep <= step) ? step : minStep;
-        if (clamped <= maxStep) { step = (step < minStep) ? minStep : step; }
-        else { step = minStep; }
-        diff = fixedPoint(diff - step).normalized();
-        if (diff < 0) target = current + step;
-    }
-    return target;
-}
 
-// 06069398 — linear smoothing with clamped step
-static s32 FUN_FLD_C8_06069398(s32 current, s32 target, s32 speed, s32 maxStep, s32 minStep)
-{
-    s32 diff = target - current;
-    s32 step = (s32)MTH_Mul(fixedPoint(speed), fixedPoint(diff));
-    if (diff < 0) {
-        minStep = -minStep; maxStep = -maxStep;
-        s32 clamped = (step < minStep) ? step : minStep;
-        if (maxStep < clamped) { step = (minStep <= step) ? minStep : step; }
-        else { step = maxStep; }
-        if (diff - step > 0) return target;
-    } else {
-        s32 clamped = (minStep <= step) ? step : minStep;
-        if (clamped <= maxStep) { step = (step < minStep) ? minStep : step; }
-        else { step = minStep; }
-        if (diff - step < 0) return target;
-    }
-    return current + step;
-}
-
-// 0606b2cc — same as updateCutsceneCameraInterpolation (060625d8 in A3)
-// Camera interpolation using m370/m374 pointers. Shared across all field overlays.
-
-// 0607da24
-static void FUN_FLD_C8_0607da24()
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags &= ~0x10000;
-}
-
-// 0607d98e = dragonFieldTaskInitSub4Sub4 (same shared function)
-
-// 0606a42e — set camera tracking for slot
-static s32 setCameraSlotFunctions(s16 slotIndex, void(*param2)(sFieldCameraStatus*), void(*param3)(sFieldCameraStatus*))
-{
-    s32 check = isCameraSlotActive(slotIndex);
-    if (check != 0)
-    {
-        sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-        sFieldCameraStatus* pStatus = &pOverlay->m3E4_cameraSlots[slotIndex];
-        pStatus->m74_updateFunc = param2;
-        pStatus->m78_drawFunc = param3;
-        pStatus->m8D_followState = 0;
-        pStatus->m8E_followSubState = 0;
-        return 1;
-    }
-    return 0;
-}
-
-// 0606a608 = activateCameraFollowMode (same shared function)
-void activateCameraFollowMode(u32 r4); // declared in o_fld_a3.cpp
 
 // 0606b532 — restore camera from cutscene
 static void restoreCameraFromCutscene()
@@ -454,23 +316,21 @@ static void setupCutsceneCamera(sVec3_FP* param1, sVec3_FP* param2)
     initDragonMovementMode();
     initCameraSlot(1, nullptr, nullptr);
     selectCameraSlot(1);
-    sFieldCameraStatus* pCamStatus = getCurrentCameraStatus();
+    sFieldCameraStatus* pCamStatus = getActiveCameraSlot();
     updateCutsceneCameraInterpolation(pOverlay, pCamStatus);
 }
 
-// 06073e80
-static void FUN_FLD_C8_06073e80()
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m64 = 1;
-}
 
 // 0607a118
 static void FUN_FLD_C8_0607a118(s32 param1, s32 param2, s16 param3)
 {
-    FUN_FLD_C8_06073e80();
+    enableFieldScriptSkipping();
     exitCutsceneTaskUpdateSub0Sub1(
         getFieldTaskPtr()->m2C_currentFieldIndex, param1, param2, (s32)param3);
 }
+
+struct s_C8_cutsceneCameraTask;
+static void FUN_FLD_C8_0605c87c(s_C8_cutsceneCameraTask* pTask, u8* pArgData);
 
 struct s_C8_cutsceneCameraArg
 {
@@ -511,17 +371,9 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
         setupCutsceneCamera(&pFD->m64_cameraTarget, &pFD->m4C_dragonPos);
         pThis->m1A_state = 0;
     }
-    // 0607e03a
-    static void FUN_FLD_C8_0607e03a(s_scriptData3* pData) {
-        s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-        pDragon->m1E4_cutsceneKeyFrame = pData;
-        pDragon->m104_dragonScriptStatus = 0;
-        pDragon->mF0 = dragonCutsceneUpdate;
-        pDragon->mF8_Flags &= ~0x400;
-    }
 
     // 0607e088
-    static bool FUN_FLD_C8_0607e088() {
+    static bool isKeyFrameNull() {
         return getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1E4_cutsceneKeyFrame == nullptr;
     }
 
@@ -529,7 +381,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
     static void Update(s_C8_cutsceneCameraTask* pThis) {
         s32 state = pThis->m1A_state;
         if (state == 0) {
-            FUN_FLD_C8_0607e03a(pThis->m0_pathData);
+            setCutsceneKeyFrame(pThis->m0_pathData);
             pThis->m1A_state++;
         }
         else if (state != 1) {
@@ -538,7 +390,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
 
         // 0607d81a — read dragon position into field_C + 0x4C
         s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
-        FUN_FLD_C8_0607d81a(&pFieldData->m4C_dragonPos);
+        getDragonPosition(&pFieldData->m4C_dragonPos);
 
         bool done = false;
         if ((pThis->m14_flags & 1) != 0)
@@ -548,7 +400,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
                 done = true;
         }
 
-        if (FUN_FLD_C8_0607e088())
+        if (isKeyFrameNull())
             done = true;
 
         if (done)
@@ -581,7 +433,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
 static void FUN_FLD_C8_0607d600(sVec3_FP* pPos, sVec3_FP* pAngle)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    getCurrentCameraStatus();
+    getActiveCameraSlot();
     if (pPos)
         pDragon->m8_pos = *pPos;
     if (pAngle)
@@ -826,14 +678,6 @@ static p_workArea FUN_FLD_C8_0608120a(p_workArea workArea, s32 param)
     return createSubTaskWithArg<s_C8_effectManagerTask>(workArea, param);
 }
 
-// 0607d81a — read dragon position
-static void FUN_FLD_C8_0607d81a(sVec3_FP* pOut)
-{
-    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    pOut->m0_X = pDragon->m8_pos.m0_X;
-    pOut->m4_Y = pDragon->m8_pos.m4_Y;
-    pOut->m8_Z = pDragon->m8_pos.m8_Z;
-}
 
 // 0605b0a0 — vertical bounds check update
 static void FUN_FLD_C8_0605b0a0(s_C8_boundsCheckTask* pThis)
@@ -843,7 +687,7 @@ static void FUN_FLD_C8_0605b0a0(s_C8_boundsCheckTask* pThis)
 
     // Read dragon position
     sVec3_FP dragonPos;
-    FUN_FLD_C8_0607d81a(&dragonPos);
+    getDragonPosition(&dragonPos);
 
     // Scan table: entries are {bitIndex, minY, maxY} triplets (12 bytes each)
     // Find upper bound based on dragon Y
@@ -1430,11 +1274,6 @@ static void interactiveEntityC8_tickCounter(s_interactiveEntityC8* pThis)
     }
 }
 
-// 060728b4 — trigger dialog/script (TODO: needs Ghidra fix)
-static void triggerFieldDialog_C8(s32 dialogGroup, s32 dialogId)
-{
-    Unimplemented();
-}
 
 // 06072808 — check dialog condition
 static s32 checkDialogCondition_C8(s32 param1, u32 param2)
@@ -1456,7 +1295,7 @@ static void entityC8_B4_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
 {
     if ((mainGameState.bitField[0xA6] & 0x10) == 0)
     {
-        triggerFieldDialog_C8(5, 0x663);
+        startFieldScriptWithFlagCheck(5, 0x663);
         return;
     }
 
@@ -1471,7 +1310,7 @@ static void entityC8_B4_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
         return;
     }
 
-    triggerFieldDialog_C8(0xB, 0x669);
+    startFieldScriptWithFlagCheck(0xB, 0x669);
 }
 
 // 0605a140 — LCS callback for interactive entity (opens door/elevator)

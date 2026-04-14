@@ -40,7 +40,7 @@ void subfieldA5_8(p_workArea workArea)
     s16 entryPoint = getFieldTaskPtr()->m30_fieldEntryPoint;
     if (entryPoint < 0)
     {
-        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x060899EC));
+        setupDragonPositionAndCamera_A5(gFLD_A5->getSaturnPtr(0x060899F8), gFLD_A5->getSaturnPtr(0x06089A04));
     }
     else
     {
@@ -53,10 +53,10 @@ void subfieldA5_8(p_workArea workArea)
             getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x060897E4));
     }
     initFieldDragonLight();
-    adjustVerticalLimits(0x5000, 0x82000);
+    adjustVerticalLimits(0x14000, 0x82000);
     fieldRadar_enableAltitudeGauge();
-    initDragonParams_A5_open();
-    createA5Vdp2Task(workArea);
+    initDragonParams_A5_B();
+    createA5NightVdp2Task(workArea);
     getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = (void(*)())&postBattleSound_A5_nightA;
     fieldRadar_initRandomBattle(0x17);
 }

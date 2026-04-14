@@ -11,7 +11,7 @@ extern bool gDirectRayRendering;
 void flushRayQuads3D();
 
 // 3D colored-line primitive used by shared VDP1 line submitters (e.g.
-// vdp1EmitRayVertex_0602e136) when gDirectRayRendering is enabled. The
+// displayRaySegmentFromWorldSpace) when gDirectRayRendering is enabled. The
 // endpoints are in VIEW space (post current-matrix transform). Colour for
 // each endpoint is derived from the VDP1 CMDCOLR base (direct-colour RGB555
 // when bit 15 is set) modulated by a per-vertex VDP1 gouraud offset
@@ -21,3 +21,12 @@ void flushRayQuads3D();
 void enqueueRayLine3D(const sVec3_FP& viewSpaceP0, const sVec3_FP& viewSpaceP1,
                       u16 cmdcolr, u16 gouraud0, u16 gouraud1);
 void flushRayLines3D();
+
+// 0602e136 — transform two world-space vertices and emit a textured ray
+// segment (when cmdsrca != 0) or a colour-only line (when cmdsrca == 0).
+void displayRaySegmentFromWorldSpace(sVec3_FP* pVerts,
+                                     s32 width     = 0,
+                                     u16 cmdsrca   = 0,
+                                     u16 cmdsize   = 0,
+                                     u16 cmdcolr   = 0xFFFF,
+                                     u16 colorMode = 8);

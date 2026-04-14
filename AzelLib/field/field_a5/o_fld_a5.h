@@ -62,6 +62,7 @@ void subfieldA5_9(p_workArea workArea);
 void subfieldA5_A(p_workArea workArea);
 void subfieldA5_B(p_workArea workArea);
 void createA5Vdp2Task(p_workArea parent);
+void createA5CorridorVdp2Task(p_workArea parent);
 void createA5NightVdp2Task(p_workArea parent);
 void createA5_B_Vdp2Task(p_workArea parent);
 
@@ -121,6 +122,13 @@ void initA5_wormColorTables_night();
 void postBattleSound_A5_day();
 void postBattleSound_A5_nightA();
 void postBattleSound_A5_nightB();
+void postBattleSound_A5_corridor();
+
+// 0607c584 — set dragon position + rotation from Saturn data, build rotation matrix, update camera
+void setupDragonPositionAndCamera_A5(sSaturnPtr posEA, sSaturnPtr rotEA);
+
+// Cutscene camera init (loads script data and kicks cutscene)
+void a5CutsceneCameraInit(p_workArea parent, const sSaturnPtr& scriptDataEA, s32 r6, sVec3_FP* r7, u32 flags);
 
 // Shared gameplay helpers (getDragonPosition, getDragonAngle, triggerSubfieldChange) are in field.h
 

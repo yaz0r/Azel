@@ -1,8 +1,8 @@
 #include "PDS.h"
-#include "a7_envEntity2C.h"
+#include "a7_repairBit.h"
 #include "o_fld_a7.h"
-#include "a7_beam.h"
-#include "a7_sceneParticle.h"
+#include "kernel/rayDisplay.h"
+#include "field/fieldSceneManager.h"
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
 #include "field/field_a3/o_fld_a3.h"
@@ -12,31 +12,32 @@
 #include "kernel/vdp1AnimatedQuad.h"
 #include "trigo.h"
 #include "field/fieldDragonInput.h"
-#include "field/fieldScriptWaitTask.h"
 #include "field/fieldAnimRingSubTask.h"
 #include "field/fieldDebrisScatter.h"
 #include "mainMenuDebugTasks.h"
 #include "field/fieldVisibilityGrid.h"
 
+#include "field/fieldVisibilityGrid.h"
+
 s32 playBattleSoundEffect(s32 effectIndex);
 
 // 06070ca4 — empty function (Ghidra: skyTransporter_noop). Faithfully called.
-static void skyTransporter_noop(s32* /*pScratch*/)
+void skyTransporter_noop(s32* /*pScratch*/)
 {
 }
 
 // Stack-built arg passed to the 0xE0 child task.
 // Saturn lays this out as {sSaturnPtr entry; u8* aliveFlag}.
-struct sA7EnvEntity2CChildArg
+struct sRepairBitArg
 {
     sSaturnPtr m0_entry;       // per-encounter 0x1C-byte table row
     u8*        m4_aliveFlag;   // pointer back into parent->m24_alive[i]
 };
 
-// 0xE0-byte child task spawned by sA7EnvEntity2C.
+// 0xE0-byte child task spawned by sRepairBitFormation.
 // Task definition at FLD_A7::06085cf0 = {init=06059844, update=06059930,
 // draw=06059ab0, delete=null}.
-struct sA7EnvEntity2CChild : public s_workAreaTemplateWithArg<sA7EnvEntity2CChild, sA7EnvEntity2CChildArg*>
+struct sRepairBit : public s_workAreaTemplateWithArg<sRepairBit, sRepairBitArg*>
 {
     s_memoryAreaOutput          m0_memoryArea;        // 0x00 — file bundle / character area
     sVec3_FP                    m8_targetPos;         // 0x08 — entry[0..8]
@@ -58,7 +59,7 @@ struct sA7EnvEntity2CChild : public s_workAreaTemplateWithArg<sA7EnvEntity2CChil
 };
 
 // 06059844
-static void a7EnvEntity2CChild_Init(sA7EnvEntity2CChild* pThis, sA7EnvEntity2CChildArg* pArg)
+static void repairBit_Init(sRepairBit* pThis, sRepairBitArg* pArg)
 {
     getMemoryArea(&pThis->m0_memoryArea, 3);
 
@@ -103,8 +104,8 @@ static void a7EnvEntity2CChild_Init(sA7EnvEntity2CChild* pThis, sA7EnvEntity2CCh
                                 &pThis->m14_currentPos, nullptr, 2, 0, (s16)0xffff, 0, 0);
 }
 // Stack-built arg for FUN_06056b90 (spawns a 0x1c4-byte child effect task).
-// Layout pulled from the state-0 branch of a7EnvEntity2CChild_Update.
-struct sA7EnvEntity2CChild_EffectArg
+// Layout pulled from the state-0 branch of repairBit_Update.
+struct sRepairBitEffectArg
 {
     s32 m0_X;      // child->m14_currentPos.X
     s32 m4_Y;      // child->m14_currentPos.Y
@@ -118,7 +119,7 @@ struct sA7EnvEntity2CChild_EffectArg
 // 0x1c4-byte effect sub-task spawned every `m48_countdownInitial` frames
 // while `m54_state == 0`. Task definition at FLD_A7::060848b0 = {init=060569a0,
 // update=06056938, draw=0605660c, delete=null}.
-struct sA7EnvEntity2CEffectTask : public s_workAreaTemplateWithArg<sA7EnvEntity2CEffectTask, sA7EnvEntity2CChild_EffectArg*>
+struct sRepairBitFormationEffectTask : public s_workAreaTemplateWithArg<sRepairBitFormationEffectTask, sRepairBitEffectArg*>
 {
     s_memoryAreaOutput m0_memoryArea;    // 0x00..0x07
     // 0x08..0x193 — a 32-slot ring of sVec3_FP trail positions (0x180 bytes).
@@ -148,7 +149,7 @@ struct sA7EnvEntity2CEffectTask : public s_workAreaTemplateWithArg<sA7EnvEntity2
 // m1C2 is incremented and 4 scene particles are spawned at the head
 // position with random X/Z jitter. While m1C2 != 0 the function ticks down
 // m194_trailLength and marks the task finished when it reaches zero.
-static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sA7EnvEntity2CEffectTask* pThis)
+static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sRepairBitFormationEffectTask* pThis)
 {
     if (pThis->m1C2 != 0)
     {
@@ -207,7 +208,7 @@ static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sA7EnvEntity2CEffectTask*
             s_deathSparkQuads = initVdp1Quad(gFLD_A7->getSaturnPtr(0x060804e4));
         }
 
-        sA7SceneParticleDesc desc = {};
+        sSceneParticleDesc desc = {};
         desc.m8_pQuadList = &s_deathSparkQuads;
 
         sVec3_FP zeroVelocity;
@@ -222,7 +223,7 @@ static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sA7EnvEntity2CEffectTask*
         {
             spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + a7CenteredRandom(0xFFFF));
             spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + a7CenteredRandom(0xFFFF));
-            a7SceneParticle_spawnProjected(
+            sceneParticle_spawnProjected(
                 (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
                 &desc,
                 &spawnPos,
@@ -230,7 +231,7 @@ static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sA7EnvEntity2CEffectTask*
 
             spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + a7CenteredRandom(0xFFFF));
             spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + a7CenteredRandom(0xFFFF));
-            a7SceneParticle_spawnProjected(
+            sceneParticle_spawnProjected(
                 (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
                 &desc,
                 &spawnPos,
@@ -240,8 +241,8 @@ static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sA7EnvEntity2CEffectTask*
 }
 
 // 060569a0
-static void a7EnvEntity2CEffectTask_Init_060569a0(sA7EnvEntity2CEffectTask* pThis,
-                                                  sA7EnvEntity2CChild_EffectArg* pArg)
+static void a7EnvEntity2CEffectTask_Init_060569a0(sRepairBitFormationEffectTask* pThis,
+                                                  sRepairBitEffectArg* pArg)
 {
     getMemoryArea(&pThis->m0_memoryArea, 3);
 
@@ -271,16 +272,23 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sA7EnvEntity2CEffectTask* pThi
     const fixedPoint magnitude(pArg->m18);
 
     // offset.X = mag * cos(atan2(dZ, dX))
+    s32 angleXZ = atan2_FP(pThis->m19C_srcPos.m8_Z.m_value, pThis->m19C_srcPos.m0_X.m_value);
+    u16 idxXZ = (u16)((u32)angleXZ >> 16) & 0xFFF;
+    pThis->m1B4_offset.m0_X = MTH_Mul(magnitude, getCos(idxXZ));
 
     // offset.Y = mag * sin(atan2(dY, dX))
+    s32 angleYX = atan2_FP(pThis->m19C_srcPos.m4_Y.m_value, pThis->m19C_srcPos.m0_X.m_value);
+    u16 idxYX = (u16)((u32)angleYX >> 16) & 0xFFF;
+    pThis->m1B4_offset.m4_Y = MTH_Mul(magnitude, getSin(idxYX));
 
     // offset.Z = mag * sin(atan2(dZ, dX)) — same angle as offset.X but sin
+    pThis->m1B4_offset.m8_Z = MTH_Mul(magnitude, getSin(idxXZ));
 
     pThis->m1C2 = 0;
 
     // Spawn a scene particle at (source + offset) with zero velocity, using
     // quad data at FLD_A7::060806a4. Matches the Saturn pattern where the
-    // caller of a7SceneParticle_spawnProjected only has to set m8_pQuadList
+    // caller of sceneParticle_spawnProjected only has to set m8_pQuadList
     // — the wrapper fills in m0/m4/m14/m18.
     sVec3_FP spawnPos;
     spawnPos.m0_X = fixedPoint(pArg->m0_X + pThis->m1B4_offset.m0_X.m_value);
@@ -291,14 +299,14 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sA7EnvEntity2CEffectTask* pThi
     zeroVelocity.m4_Y = fixedPoint(0);
     zeroVelocity.m8_Z = fixedPoint(0);
 
-    sA7SceneParticleDesc desc = {};
+    sSceneParticleDesc desc = {};
     static std::vector<sVdp1Quad> s_sparkQuads;
     if (s_sparkQuads.empty())
     {
         s_sparkQuads = initVdp1Quad(gFLD_A7->getSaturnPtr(0x060806a4));
     }
     desc.m8_pQuadList = &s_sparkQuads;
-    a7SceneParticle_spawnProjected(
+    sceneParticle_spawnProjected(
         (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
         &desc,
         &spawnPos,
@@ -326,7 +334,7 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sA7EnvEntity2CEffectTask* pThi
 // 06056938 — while m1C0_counter > 0, tick it down; when it hits 0, play
 // sound 0x68 if the current position is on-screen and swap the update
 // method to the 06056748 alternate.
-static void a7EnvEntity2CEffectTask_Update_06056938(sA7EnvEntity2CEffectTask* pThis)
+static void a7EnvEntity2CEffectTask_Update_06056938(sRepairBitFormationEffectTask* pThis)
 {
     if (pThis->m1C0_counter == 0)
     {
@@ -349,7 +357,7 @@ static void a7EnvEntity2CEffectTask_Update_06056938(sA7EnvEntity2CEffectTask* pT
 //
 // Saturn constants (pool @ FLD_A7::060566ee / 060567ea):
 //   default width = 0x1E66, cmdsize = 0x0210, cmdcolr = 0x2040, colorMode = 0
-static void a7EnvEntity2CEffectTask_Draw_0605660c(sA7EnvEntity2CEffectTask* pThis)
+static void a7EnvEntity2CEffectTask_Draw_0605660c(sRepairBitFormationEffectTask* pThis)
 {
     sVec3_FP* psVar3 = pThis->m198_pPosition;
     s32       iVar4  = pThis->m194_trailLength - 1;
@@ -367,7 +375,7 @@ static void a7EnvEntity2CEffectTask_Draw_0605660c(sA7EnvEntity2CEffectTask* pThi
     sVec3_FP* const trailFirst = &pThis->m8_trail[0];  // offset 0x08
 
     // --- Head segment --------------------------------------------------
-    vdp1EmitRayVertex_0602e136(
+    displayRaySegmentFromWorldSpace(
         psVar3,
         0x1E66,
         (u16)(vdp1Base + 0x1158),
@@ -384,14 +392,12 @@ static void a7EnvEntity2CEffectTask_Draw_0605660c(sA7EnvEntity2CEffectTask* pThi
         psVar3 += 1;
     }
 
-    // --- Width-table row selector, locked to the initial iVar4 --------
-    // The Saturn table at FLD_A7::06084870 has 4 rows of 4 s32 entries
-    // each (stride 0x10). `iVar2` picks the row based on where the
-    // initial count-1 falls:
-    //     iVar4 < 4 || iVar4 > 0x15 : 0
-    //     iVar4 ∈ {5, 0x14}         : 2
-    //     iVar4 ∈ {4, 0x15}         : 1
-    //     else (6..0x13)            : 3
+    static const s32 widthTable[4][4] = {
+        { 0x1E66, 0x1E66, 0x1E66, 0x1E66 },
+        { 0x1E66, 0x2E66, 0x2E66, 0x1E66 },
+        { 0x2E66, 0x4199, 0x4199, 0x2E66 },
+        { 0x2E66, 0x4199, 0x54CC, 0x4199 },
+    };
     s32 iVar2;
     if (iVar4 < 4 || iVar4 > 0x15)
     {
@@ -411,26 +417,20 @@ static void a7EnvEntity2CEffectTask_Draw_0605660c(sA7EnvEntity2CEffectTask* pThi
     }
 
     // --- Middle loop ---------------------------------------------------
-    // Saturn's Ghidra form: `while (iVar5 = iVar4 - 1, 1 < iVar5) { ... iVar4 = iVar5; }`
-    // i.e. iVar4 walks down from the initial count-1 to 3 (inclusive); the
-    // tail segment below then covers the iVar4 == 2 iteration.
     s32 iVar5;
     while ((iVar5 = iVar4 - 1) > 1)
     {
         s32 width;
         if (iVar5 < 6 && pThis->m1C2 == 0)
         {
-            // table[iVar2][iVar4 - 3] : 4 rows (stride 0x10) × 4 columns (stride 4)
-            sSaturnPtr tableEntry =
-                gFLD_A7->getSaturnPtr(0x06084870 + iVar2 * 0x10 + (iVar4 - 3) * 4);
-            width = readSaturnS32(tableEntry);
+            width = widthTable[iVar2][iVar4 - 3];
         }
         else
         {
             width = 0x1E66;
         }
 
-        vdp1EmitRayVertex_0602e136(
+        displayRaySegmentFromWorldSpace(
             psVar3,
             width,
             (u16)(vdp1Base + 0x1168),
@@ -452,7 +452,7 @@ static void a7EnvEntity2CEffectTask_Draw_0605660c(sA7EnvEntity2CEffectTask* pThi
     // --- Tail segment --------------------------------------------------
     if (iVar5 > 0)
     {
-        vdp1EmitRayVertex_0602e136(
+        displayRaySegmentFromWorldSpace(
             psVar3,
             0x1E66,
             (u16)(vdp1Base + 0x1178),
@@ -463,25 +463,25 @@ static void a7EnvEntity2CEffectTask_Draw_0605660c(sA7EnvEntity2CEffectTask* pThi
 }
 
 // 06056b90 — tail-calls createSiblingTaskWithArg(&060848b0, 0x1c4, arg).
-static void a7EnvEntity2CChild_spawnEffect_06056b90(p_workArea parent,
-                                                    sA7EnvEntity2CChild_EffectArg* pArg)
+static void repairBit_spawnEffect_06056b90(p_workArea parent,
+                                                    sRepairBitEffectArg* pArg)
 {
-    static sA7EnvEntity2CEffectTask::TypedTaskDefinition td = {
+    static sRepairBitFormationEffectTask::TypedTaskDefinition td = {
         &a7EnvEntity2CEffectTask_Init_060569a0,
         &a7EnvEntity2CEffectTask_Update_06056938,
         &a7EnvEntity2CEffectTask_Draw_0605660c,
         nullptr,
     };
-    createSiblingTaskWithArg<sA7EnvEntity2CEffectTask>(parent, pArg, &td);
+    createSiblingTaskWithArg<sRepairBitFormationEffectTask>(parent, pArg, &td);
 }
 
 // 060595a2 — sets up a terminal scene-particle descriptor from a palette
 // snapshot (calls FUN_0607c18e / FUN_0607c120), then the caller adds the
-// quad-list pointer and tail-calls a7SceneParticle_spawnProjected. The
+// quad-list pointer and tail-calls sceneParticle_spawnProjected. The
 // descriptor slot layout beyond m8_pQuadList isn't yet mapped, so the
 // preparation is stubbed.
-static void a7EnvEntity2CChild_setupTerminalSpawn_060595a2(sA7EnvEntity2CChild* pThis,
-                                                           sA7SceneParticleDesc* /*pDesc*/)
+static void repairBit_setupTerminalSpawn_060595a2(sRepairBit* pThis,
+                                                           sSceneParticleDesc* /*pDesc*/)
 {
     sDebrisScatterParams params;
     initDebrisScatterConfig(&params, 4, 0x248);
@@ -511,23 +511,23 @@ static void a7EnvEntity2CChild_setupTerminalSpawn_060595a2(sA7EnvEntity2CChild* 
     createDebrisScatterTask((p_workArea)pThis, &params, false);
 }
 
-// sA7EnvEntity2CChild_AnimArg is now sAnimRingArg
-#define sA7EnvEntity2CChild_AnimArg sAnimRingArg
+// sRepairBitAnimArg is now sAnimRingArg
+#define sRepairBitAnimArg sAnimRingArg
 
 static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
 
-// a7EnvEntity2CChild_spawnAnimSubTask -> spawnAnimRingSubTask (shared)
+// repairBit_spawnAnimSubTask -> spawnAnimRingSubTask (shared)
 
 // 060596a0 — late-tick anim helper: samples a random angle, builds the arg
 // struct, and tail-calls spawnAnimSubTask_0607fe24.
-static void a7EnvEntity2CChild_animTick_060596a0(sA7EnvEntity2CChild* pThis)
+static void repairBit_animTick_060596a0(sRepairBit* pThis)
 {
     u32 r = (u32)randomNumber();
     u32 angleIdx = (r >> 16) & 0xFFF;
     fixedPoint sinA = getSin(angleIdx);
     fixedPoint cosA = getCos(angleIdx);
 
-    sA7EnvEntity2CChild_AnimArg arg;
+    sRepairBitAnimArg arg;
 
     // Three position samples rooted at the current position.
     arg.m00_center = pThis->m14_currentPos;
@@ -552,7 +552,7 @@ static void a7EnvEntity2CChild_animTick_060596a0(sA7EnvEntity2CChild* pThis)
 }
 
 // 06059930
-static void a7EnvEntity2CChild_Update(sA7EnvEntity2CChild* pThis)
+static void repairBit_Update(sRepairBit* pThis)
 {
     stepAnimation(&pThis->m58_model);
 
@@ -580,7 +580,7 @@ static void a7EnvEntity2CChild_Update(sA7EnvEntity2CChild* pThis)
     {
         if (pThis->m54_state == 0)
         {
-            sA7EnvEntity2CChild_EffectArg arg;
+            sRepairBitEffectArg arg;
             arg.m0_X = pThis->m14_currentPos.m0_X.m_value;
             arg.m4_Y = pThis->m14_currentPos.m4_Y.m_value;
             arg.m8_Z = pThis->m14_currentPos.m8_Z.m_value;
@@ -588,20 +588,20 @@ static void a7EnvEntity2CChild_Update(sA7EnvEntity2CChild* pThis)
             arg.m10  = 0;
             arg.m14  = (s32)0xffa00000;
             arg.m18  = 0xf000;
-            a7EnvEntity2CChild_spawnEffect_06056b90((p_workArea)pThis, &arg);
+            repairBit_spawnEffect_06056b90((p_workArea)pThis, &arg);
             pThis->m4C_countdown = pThis->m48_countdownInitial;
         }
         else
         {
-            sA7SceneParticleDesc desc = {};
-            a7EnvEntity2CChild_setupTerminalSpawn_060595a2(pThis, &desc);
+            sSceneParticleDesc desc = {};
+            repairBit_setupTerminalSpawn_060595a2(pThis, &desc);
             static std::vector<sVdp1Quad> s_terminalQuads;
             if (s_terminalQuads.empty())
             {
                 s_terminalQuads = initVdp1Quad(gFLD_A7->getSaturnPtr(0x06080324));
             }
             desc.m8_pQuadList = &s_terminalQuads;
-            a7SceneParticle_spawnProjected(
+            sceneParticle_spawnProjected(
                 (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
                 &desc,
                 &pThis->m14_currentPos,
@@ -620,7 +620,7 @@ static void a7EnvEntity2CChild_Update(sA7EnvEntity2CChild* pThis)
         }
         else if (pThis->m54_state != 0)
         {
-            a7EnvEntity2CChild_animTick_060596a0(pThis);
+            repairBit_animTick_060596a0(pThis);
         }
     }
 
@@ -630,7 +630,7 @@ static void a7EnvEntity2CChild_Update(sA7EnvEntity2CChild* pThis)
 }
 
 // 06059ab0
-static void a7EnvEntity2CChild_Draw(sA7EnvEntity2CChild* pThis)
+static void repairBit_Draw(sRepairBit* pThis)
 {
     if (!pThis->mDC_visible)
     {
@@ -661,140 +661,14 @@ static void a7EnvEntity2CChild_Draw(sA7EnvEntity2CChild* pThis)
 
 // Mirrors `createSiblingTaskWithArg(parent, &06085cf0, 0xe0, &iStack_2c)` —
 // the Saturn caller stacks {entry, &aliveFlag} and passes its address.
-static p_workArea spawnA7EnvEntity2CChild(p_workArea parent, sSaturnPtr entry, u8* aliveFlag)
+p_workArea repairBit_spawn(p_workArea parent, sSaturnPtr entry, u8* aliveFlag)
 {
-    static sA7EnvEntity2CChild::TypedTaskDefinition td = {
-        &a7EnvEntity2CChild_Init,
-        &a7EnvEntity2CChild_Update,
-        &a7EnvEntity2CChild_Draw,
+    static sRepairBit::TypedTaskDefinition td = {
+        &repairBit_Init,
+        &repairBit_Update,
+        &repairBit_Draw,
         nullptr,
     };
-    sA7EnvEntity2CChildArg arg = { entry, aliveFlag };
-    return (p_workArea)createSiblingTaskWithArg<sA7EnvEntity2CChild>(parent, &arg, &td);
-}
-
-static inline s32 a7_performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
-
-extern void dispatchTutorialMultiChoiceSub2();
-
-// 060732fc, 06073266 — clearDragonScriptFlag, dragonTransitionToNormal
-
-// 06059b8c
-void a7EnvEntity2C_Init(sA7EnvEntity2C* pThis, sSaturnPtr arg)
-{
-    s_FieldSubTaskWorkArea* pSub = getFieldTaskPtr()->m8_pSubFieldData;
-    s16 entryPoint = getFieldTaskPtr()->m30_fieldEntryPoint;
-    if ((pSub->m370_fieldDebuggerWho & 2) != 0
-        && pSub->m37C_debugMenuStatus1[1] == 0
-        && pSub->m369 == 0
-        && entryPoint != (s16)0xffff)
-    {
-        if (entryPoint != 0)
-        {
-            mainGameState.bitField[0x74] |= 0x20;
-        }
-        mainGameState.setPackedBits(0x599, 5, (u32)entryPoint);
-    }
-
-    playPCM((p_workArea)pThis, 0x66);
-
-    pThis->m0_arg = arg;
-    pThis->m4_count = (s32)mainGameState.readPackedBits(0x599, 5);
-    getFieldSpecificData_A7()->m27C_pad[0] = (u8)pThis->m4_count;
-
-    for (s32 i = 0; i < 5; i++)
-    {
-        pThis->m24_alive[i] = 0;
-    }
-
-    for (s32 i = 0; i < 5 && pThis->m4_count < 0xF; i++)
-    {
-        sSaturnPtr entry = arg + (u32)pThis->m4_count * 0x1C;
-        p_workArea pChild = spawnA7EnvEntity2CChild((p_workArea)pThis, entry, &pThis->m24_alive[i]);
-        pThis->m10_children[i] = pChild;
-        if (pChild == nullptr)
-        {
-            pThis->m24_alive[i] = 0;
-        }
-        else
-        {
-            pThis->m24_alive[i] = 1;
-            pThis->m4_count++;
-        }
-    }
-    pThis->m8_iter = 0;
-}
-
-// 06059cd4
-void a7EnvEntity2C_Update(sA7EnvEntity2C* pThis)
-{
-    s32 aliveCount = 0;
-    s32 iter = pThis->m8_iter;
-    s32 scratch[3] = { 0, 0, 0 }; // mirrors uStack_24/uStack_20/uStack_1c
-
-    for (s32 i = 0; i < 5; i++)
-    {
-        if (pThis->m24_alive[i] == 0)
-        {
-            if (pThis->m4_count < 0xF)
-            {
-                sSaturnPtr entry = pThis->m0_arg + (u32)pThis->m4_count * 0x1C;
-                p_workArea pChild = spawnA7EnvEntity2CChild((p_workArea)pThis, entry, &pThis->m24_alive[i]);
-                pThis->m10_children[i] = pChild;
-                if (pChild != nullptr)
-                {
-                    pThis->m24_alive[i] = 1;
-                    pThis->m4_count++;
-                }
-                startFieldScript(0x10, 0x5d8);
-                dragonTransitionToNormal();
-            }
-        }
-        else
-        {
-            aliveCount++;
-            if (iter == 0)
-            {
-                // Saturn copies child[i]->m14..m1C (current X/Y/Z) into the
-                // scratch buffer.
-                sA7EnvEntity2CChild* pChild = (sA7EnvEntity2CChild*)pThis->m10_children[i];
-                scratch[0] = pChild->m14_currentPos.m0_X.m_value;
-                scratch[1] = pChild->m14_currentPos.m4_Y.m_value;
-                scratch[2] = pChild->m14_currentPos.m8_Z.m_value;
-            }
-            iter--;
-        }
-    }
-
-    if (aliveCount == 0)
-    {
-        playBattleSoundEffect(0x66);
-        mainGameState.bitField[0x97] |= 0x80;
-        pThis->getTask()->markFinished();
-    }
-    else
-    {
-        if (pThis->m8_iter < aliveCount)
-        {
-            skyTransporter_noop(scratch);
-        }
-        u32 next = (u32)(pThis->mC_phaseCounter + 1) & 3;
-        pThis->mC_phaseCounter = (s32)next;
-        if (next == 0)
-        {
-            pThis->m8_iter = (s32)performModulo(aliveCount, pThis->m8_iter + 1);
-        }
-    }
-
-    // Field-debugger debug overlay status line.
-    s_FieldSubTaskWorkArea* pSub = getFieldTaskPtr()->m8_pSubFieldData;
-    if ((pSub->m370_fieldDebuggerWho & 2) != 0
-        && pSub->m37C_debugMenuStatus1[1] == 0
-        && pSub->m369 == 0)
-    {
-        vdp2PrintStatus.m10_palette = 0x8000;
-        vdp2DebugPrintSetPosition(1, 0x17);
-        u32 packed = mainGameState.readPackedBits(0x599, 5);
-        vdp2PrintfSmallFont("%02d %02d %01d ", pThis->m4_count, packed);
-    }
+    sRepairBitArg arg = { entry, aliveFlag };
+    return (p_workArea)createSiblingTaskWithArg<sRepairBit>(parent, &arg, &td);
 }

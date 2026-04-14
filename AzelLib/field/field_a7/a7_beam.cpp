@@ -2,7 +2,6 @@
 #include "a7_beam.h"
 #include "field/fieldSpline.h"
 #include "a7_beamChargeWobble.h"
-#include "a7_sceneParticle.h"
 #include "o_fld_a7.h"
 #include "kernel/rayDisplay.h"
 
@@ -73,7 +72,7 @@ static void a7Beam_UpdateFade_060557e8(sA7Beam* pThis)
 // address 0605533c is shared between the charge wobble and the beam ring update).
 static void a7Beam_spawnParticle_trampoline(sA7Beam* pThis, sVec3_FP* pSlot, u16 rndSeed)
 {
-    sA7SceneParticleDesc desc = {};
+    sSceneParticleDesc desc = {};
     desc.m8_pQuadList = a7GetOrParseQuadList(gFLD_A7->getSaturnPtr(pThis->m110_paramB));
     a7BeamChargeWobble_spawn_0605533c((p_workArea)pThis, pSlot, fixedPoint((s32)rndSeed), &desc);
 }
@@ -113,97 +112,6 @@ static void a7Beam_Update_06055704(sA7Beam* pThis)
     }
 }
 
-// 0602e136 — see a7_beam.h for the full signature comment.
-//
-// This mirrors the Saturn function exactly when the caller supplies a sprite
-// (cmdsrca != 0): it's essentially `displayRaySegment(line, width, cmdsrca,
-// cmdsize, cmdcolr, &neutralGouraud, colorMode)`, and so benefits from the
-// existing 3D path (enqueueRaySegment3D) when `gDirectRayRendering` is set.
-//
-// Legacy C++ callers that still only pass the vertex pair (and therefore
-// carry no sprite/width state) go through a colour-only fallback: transform
-// both endpoints, reject behind-camera, then either push a BGFX line prim
-// via enqueueRayLine3D (direct path) or emit a VDP1 distorted-line command
-// bucket-sorted by average view-space Z (Saturn path).
-void vdp1EmitRayVertex_0602e136(sVec3_FP* pVerts,
-                                s32 width,
-                                u16 cmdsrca,
-                                u16 cmdsize,
-                                u16 cmdcolr,
-                                u16 colorMode)
-{
-    if (cmdsrca != 0)
-    {
-        // Real Saturn path: textured ray quad via the shared rayDisplay
-        // infrastructure. The 6-arg Saturn original has no per-vertex
-        // gouraud (CMDGRA is never written), so we hand in a neutral
-        // gouraud quadColor to get the same visual result on both the
-        // direct-3D and VDP1 branches of displayRaySegment.
-        static const quadColor neutralGouraud = { 0x4210, 0x4210, 0x4210, 0x4210 };
-        std::array<sVec3_FP, 2> line = { pVerts[0], pVerts[1] };
-        displayRaySegment(line, width, cmdsrca, cmdsize, cmdcolr, &neutralGouraud, colorMode);
-        return;
-    }
-
-    // --- Colour-only fallback (no sprite state available) -----------------
-
-    // World-space → view-space transform for the two endpoints.
-    sVec3_FP viewA;
-    sVec3_FP viewB;
-    transformAndAddVecByCurrentMatrix(&pVerts[0], &viewA);
-    transformAndAddVecByCurrentMatrix(&pVerts[1], &viewB);
-
-    // Behind-camera rejection — if either vertex sits at or behind the near
-    // plane, drop the whole segment rather than producing garbage coordinates.
-    if (viewA.m8_Z.m_value <= 0 || viewB.m8_Z.m_value <= 0)
-    {
-        return;
-    }
-
-    if (gDirectRayRendering)
-    {
-        // Per-pixel-depth BGFX line primitive with solid cmdcolr at both
-        // endpoints (neutral gouraud = no tint offset).
-        enqueueRayLine3D(viewA, viewB, cmdcolr, 0x4210, 0x4210);
-        return;
-    }
-
-    // Perspective divide, matches the pattern used by battleEnemyLifeMeter.
-    fixedPoint invZA = FP_Div(0x10000, viewA.m8_Z);
-    fixedPoint invZB = FP_Div(0x10000, viewB.m8_Z);
-    fixedPoint projAX = MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale,  viewA.m0_X, invZA);
-    fixedPoint projAY = MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, viewA.m4_Y, invZA);
-    fixedPoint projBX = MTH_Mul_5_6(graphicEngineStatus.m405C.m18_widthScale,  viewB.m0_X, invZB);
-    fixedPoint projBY = MTH_Mul_5_6(graphicEngineStatus.m405C.m1C_heightScale, viewB.m4_Y, invZB);
-
-    // Average view-space Z for the bucket-sort key.
-    fixedPoint avgZ(
-        (viewA.m8_Z.m_value + viewB.m8_Z.m_value) / 2);
-    fixedPoint depth = avgZ * graphicEngineStatus.m405C.m38_oneOverFarClip;
-
-    s_vdp1Context& ctx = graphicEngineStatus.m14_vdp1Context[0];
-    s_vdp1Command& cmd = *ctx.m0_currentVdp1WriteEA;
-    cmd.m0_CMDCTRL = 0x1006; // distorted line
-    cmd.m4_CMDPMOD = (u16)(colorMode | 0x480); // match FUN_0602d9bc: colorMode | 0x480
-    cmd.m6_CMDCOLR = cmdcolr;
-    cmd.mC_CMDXA  =  (s16)projAX.getInteger();
-    cmd.mE_CMDYA  = -(s16)projAY.getInteger();
-    cmd.m10_CMDXB =  (s16)projBX.getInteger();
-    cmd.m12_CMDYB = -(s16)projBY.getInteger();
-    cmd.m14_CMDXC =  (s16)projBX.getInteger();
-    cmd.m16_CMDYC = -(s16)projBY.getInteger();
-    cmd.m18_CMDXD =  (s16)projAX.getInteger();
-    cmd.m1A_CMDYD = -(s16)projAY.getInteger();
-    cmd.m1C_CMDGRA = 0;
-
-    ctx.m20_pCurrentVdp1Packet->m4_bucketTypes = depth.getInteger();
-    ctx.m20_pCurrentVdp1Packet->m6_vdp1EA = &cmd;
-    ctx.m20_pCurrentVdp1Packet++;
-    ctx.m0_currentVdp1WriteEA++;
-    ctx.m1C += 1;
-    ctx.mC  += 1;
-}
-
 // 06055848 — trail draw: walks the ring backward from head to tail.
 //
 // Saturn constants (pool @ FLD_A7::0605590a):
@@ -235,7 +143,7 @@ static void a7Beam_Draw_06055848(sA7Beam* pThis)
         cmdsize = readSaturnU16(pSize);
     };
 
-    // vdp1EmitRayVertex_0602e136 reads TWO consecutive vec3s from its argument,
+    // displayRaySegmentFromWorldSpace reads TWO consecutive vec3s from its argument,
     // so we keep the (prev, curr) pair adjacent in a 2-element local array.
     sVec3_FP segment[2];
     segment[0] = ring[pThis->m13E_head];
@@ -245,7 +153,7 @@ static void a7Beam_Draw_06055848(sA7Beam* pThis)
     {
         u16 cmdsrca, cmdsize;
         fetchSpriteParams(0, cmdsrca, cmdsize);
-        vdp1EmitRayVertex_0602e136(segment, width, cmdsrca, cmdsize, cmdcolr, colorMode);
+        displayRaySegmentFromWorldSpace(segment, width, cmdsrca, cmdsize, cmdcolr, colorMode);
     }
 
     if (idx != (s8)pThis->m13F_tail)
@@ -258,7 +166,7 @@ static void a7Beam_Draw_06055848(sA7Beam* pThis)
             segment[1] = ring[idx];
             u16 cmdsrca, cmdsize;
             fetchSpriteParams(2, cmdsrca, cmdsize);
-            vdp1EmitRayVertex_0602e136(segment, width, cmdsrca, cmdsize, cmdcolr, colorMode);
+            displayRaySegmentFromWorldSpace(segment, width, cmdsrca, cmdsize, cmdcolr, colorMode);
             idx--;
             if (idx < 0) idx += 21;
         }
@@ -266,7 +174,7 @@ static void a7Beam_Draw_06055848(sA7Beam* pThis)
         segment[1] = ring[idx]; // ring[tail] — final reload, matches Saturn
         u16 cmdsrca, cmdsize;
         fetchSpriteParams((pThis->m140_flags & 1) ? 4 : 2, cmdsrca, cmdsize);
-        vdp1EmitRayVertex_0602e136(segment, width, cmdsrca, cmdsize, cmdcolr, colorMode);
+        displayRaySegmentFromWorldSpace(segment, width, cmdsrca, cmdsize, cmdcolr, colorMode);
     }
 }
 

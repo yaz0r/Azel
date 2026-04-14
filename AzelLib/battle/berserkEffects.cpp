@@ -571,7 +571,7 @@ static void sPlasmaVortexTask_Update(sPlasmaVortexTask* pThis)
                         dir[2] = (*enemyPos)[2] - (*pThis->m1E4_pSourcePos)[2];
 
                         s16 dmg = phantomSlasher_getBaseDamage(plasmaVortexDamageTable[0]);
-                        dmg = sGunShotTask_UpdateSub1Sub2(enemy->m4_targetable, dmg, 2);
+                        dmg = computeResistanceDamage(enemy->m4_targetable, dmg, 2);
                         applyDamageToEnnemy(enemy->m4_targetable, dmg, enemyPos, 3,
                             dir, fixedPoint(0x2000));
                     }
@@ -979,7 +979,7 @@ static void sHuntingScytheTask_Update(sHuntingScytheTask* pThis)
                 {
                     // Valid target — scythe homes toward it
                     // TODO: homing physics, collision detection
-                    // On hit: phantomSlasher_getBaseDamage + sGunShotTask_UpdateSub1Sub2 + applyDamageToEnnemy
+                    // On hit: phantomSlasher_getBaseDamage + computeResistanceDamage + applyDamageToEnnemy
                     break;
                 }
                 pThis->m7A6_targetIndex++;
@@ -1128,7 +1128,7 @@ static void energyPrism_applyDamage(sEnergyPrismTask* pThis)
         enemy->m0_isActive > 0)
     {
         s16 dmg = computeSprScaledDamage(0x50); // NOTE: exact base damage needs r4 trace
-        dmg = sGunShotTask_UpdateSub1Sub2(enemy->m4_targetable, dmg, 2);
+        dmg = computeResistanceDamage(enemy->m4_targetable, dmg, 2);
         sVec3_FP* targetPos = getBattleTargetablePosition(*enemy->m4_targetable);
         sVec3_FP dir;
         dir[0] = pThis->m94_targetPosition[0] - pThis->m88_beamSource[0];

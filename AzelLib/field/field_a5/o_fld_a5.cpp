@@ -16,6 +16,8 @@
 #include "menu_dragonMorph.h"
 
 s32 playBattleSoundEffect(s32 effectIndex);
+// 0606CFF0 — checks worm segment visibility in grid + debug worm editor controls
+static bool auto_0x0606CFF0() { Unimplemented(); return true; }
 
 FLD_A5_data* gFLD_A5 = nullptr;
 
@@ -428,7 +430,7 @@ static void a5LightEffectSubtask_Draw(sA5LightEffectSubtask*) { Unimplemented();
 // Static buffer for cutscene camera script data (like A7's a7CutsceneScriptData)
 static std::vector<s_scriptData1> a5CutsceneScriptData;
 
-static void a5CutsceneCameraInit(p_workArea parent, const sSaturnPtr& scriptDataEA, s32 r6, sVec3_FP* r7, u32 flags)
+void a5CutsceneCameraInit(p_workArea parent, const sSaturnPtr& scriptDataEA, s32 r6, sVec3_FP* r7, u32 flags)
 {
     loadScriptData1(a5CutsceneScriptData, scriptDataEA);
     cutsceneTaskInitSub2(parent, a5CutsceneScriptData, r6, r7, flags);
@@ -465,10 +467,22 @@ void createA5_envObjects_sub4_light(p_workArea parent)
 
 // createA5_envObjects_sub4_wormSegments is implemented in a5_wormSegmentEntity.cpp
 
+// 06059430 — corridor worm update for subfield 2/8: checks bitfields and triggers cutscene
+static void corridorWormUpdate_2(sA5CorridorWormSubtask* pThis)
+{
+    if ((mainGameState.bitField[0x96] & 0x10) != 0 &&
+        (mainGameState.bitField[0x96] & 0x20) == 0 &&
+        auto_0x0606CFF0() &&
+        startFieldScript(3, 0x5b8) != 0)
+    {
+        a5CutsceneCameraInit((p_workArea)pThis, gFLD_A5->getSaturnPtr(0x0608CEC4), 0, nullptr, 0);
+    }
+}
+
 // 06059758 — create corridor worm subtask for subfield 2/8
 void createA5_corridorWorm_2(p_workArea parent)
 {
-    createSubTaskFromFunction<sA5CorridorWormSubtask>(parent, &corridorWormUpdate_3); // uses shared update stub
+    createSubTaskFromFunction<sA5CorridorWormSubtask>(parent, &corridorWormUpdate_2);
 }
 
 // 06059768 reuse for sub 4 — empty, already handled

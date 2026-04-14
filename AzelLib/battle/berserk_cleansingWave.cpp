@@ -410,7 +410,7 @@ state0_1_shared:
 
                     // FUN_0608d7f0 -- SPR-scaled damage. Base is mCA_speed (decays with time)
                     s16 baseDmg = phantomSlasher_getBaseDamage(pThis->mCA_speed);
-                    s16 damage = sGunShotTask_UpdateSub1Sub2(enemy->m4_targetable, baseDmg, 2);
+                    s16 damage = computeResistanceDamage(enemy->m4_targetable, baseDmg, 2);
                     applyDamageToEnnemy(enemy->m4_targetable, damage,
                         &pThis->mCC_targets[i].m4_position, 3, dir, fixedPoint(0x2000));
 

@@ -352,7 +352,7 @@ void sHomingLaserTask_Update(sHomingLaserTask* pThis)
                 }
 
                 int uVar3 = sHomingLaserTask_UpdateSub1(fixedPoint::toInteger(FP_Div(iVar8, fixedPoint::fromInteger(readSaturnS16(g_BTL_GenericData->getSaturnPtr(0x60AD4E4) + gDragonState->mC_dragonType * 2))) + 0x8000));
-                applyDamageToEnnemy(pThis->m84_targetable, sGunShotTask_UpdateSub1Sub2(pThis->m84_targetable, uVar3, 1), pThis->m88_targetablePosition, 2, pThis->m34_laserDelta, 0x1000);
+                applyDamageToEnnemy(pThis->m84_targetable, computeResistanceDamage(pThis->m84_targetable, uVar3, 1), pThis->m88_targetablePosition, 2, pThis->m34_laserDelta, 0x1000);
 
                 if ((pThis->m84_targetable->m60 == 0) || (pThis->m84_targetable->m50_flags & 0x400))
                 {

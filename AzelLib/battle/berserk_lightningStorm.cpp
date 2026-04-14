@@ -198,7 +198,7 @@ static void sLightningBoltTask_Update(sLightningBoltTask* pThis)
                         enemy->m0_isActive > 0)
                     {
                         pThis->m128_intensity = phantomSlasher_getBaseDamage(pThis->m128_intensity);
-                        pThis->m128_intensity = sGunShotTask_UpdateSub1Sub2(enemy->m4_targetable, pThis->m128_intensity, 2);
+                        pThis->m128_intensity = computeResistanceDamage(enemy->m4_targetable, pThis->m128_intensity, 2);
                         applyDamageToEnnemy(enemy->m4_targetable, pThis->m128_intensity, &pThis->mB8_position, 3,
                             pThis->mDC_boltDirection, fixedPoint(0x2000));
                     }

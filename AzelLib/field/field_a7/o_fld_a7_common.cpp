@@ -9,13 +9,12 @@
 #include "audio/systemSounds.h"
 #include "trigo.h"
 #include "a7_effectEntity60.h"
-#include "a7_sceneParticle.h"
 #include "a7_envEntity54Particles.h"
-#include "a7_beam.h"
+#include "kernel/rayDisplay.h"
 #include "field/fieldDebrisScatter.h"
 #include "field/fieldDragonInput.h"
 #include "a7_spawnedEntityChild.h"
-#include "a7_envEntity2C.h"
+#include "a7_repairBit.h"
 #include "a7_beamChargeWobble.h"
 #include "kernel/vdp1AnimatedQuad.h"
 #include <vector>
@@ -493,8 +492,8 @@ void createA7_envEntity_a456(p_workArea parent)
 // 06059e6e
 void createA7_envEntity_9e6e(p_workArea parent, sSaturnPtr arg)
 {
-    static sA7EnvEntity2C::TypedTaskDefinition td = { &a7EnvEntity2C_Init, &a7EnvEntity2C_Update, nullptr, nullptr };
-    createSubTaskWithArg<sA7EnvEntity2C>(parent, arg, &td);
+    static sRepairBitFormation::TypedTaskDefinition td = { &repairBitFormation_Init, &repairBitFormation_Update, nullptr, nullptr };
+    createSubTaskWithArg<sRepairBitFormation>(parent, arg, &td);
 }
 
 // Environment entity 0x20 (tower/pillar scenery)
@@ -700,7 +699,7 @@ static void a7SpawnedEntity_Init(sA7SpawnedEntity* pThis, sSaturnPtr arg)
         s_spawnedQuadList = initVdp1Quad(gFLD_A7->getSaturnPtr(0x060804e4));
     }
 
-    sA7SceneParticleDesc desc = {};
+    sSceneParticleDesc desc = {};
     desc.m8_pQuadList = &s_spawnedQuadList;
 
     sVec3_FP spawnPos;
@@ -710,11 +709,11 @@ static void a7SpawnedEntity_Init(sA7SpawnedEntity* pThis, sSaturnPtr arg)
     {
         spawnPos.m0_X = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
         spawnPos.m8_Z = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
-        a7SceneParticle_spawnProjected((sFieldSceneManager*)pFieldData->m280, &desc, &spawnPos, &spawnDir);
+        sceneParticle_spawnProjected((sFieldSceneManager*)pFieldData->m280, &desc, &spawnPos, &spawnDir);
 
         spawnPos.m0_X = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
         spawnPos.m8_Z = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
-        a7SceneParticle_spawnProjected((sFieldSceneManager*)pFieldData->m280, &desc, &spawnPos, &spawnDir);
+        sceneParticle_spawnProjected((sFieldSceneManager*)pFieldData->m280, &desc, &spawnPos, &spawnDir);
     }
 
     // Play sound if visible on screen
@@ -845,9 +844,9 @@ static void a7SpawnedEntity_Draw(sA7SpawnedEntity* pThis)
         {
             return;
         }
-        vdp1EmitRayVertex_0602e136(&trail[i], width, cmdsrcaBody, cmdsize, cmdcolr, colorMode);
+        displayRaySegmentFromWorldSpace(&trail[i], width, cmdsrcaBody, cmdsize, cmdcolr, colorMode);
     }
-    vdp1EmitRayVertex_0602e136(&trail[38], width, cmdsrcaFinal, cmdsize, cmdcolr, colorMode);
+    displayRaySegmentFromWorldSpace(&trail[38], width, cmdsrcaFinal, cmdsize, cmdcolr, colorMode);
 }
 
 // 0605513c — spawner active update: creates entities from table
@@ -1145,13 +1144,13 @@ void startTasksA7_1(p_workArea parent)
         s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
         pFieldData->m280 = createA7_3dSceneManager(parent, 3, 0x20);
     }
-    createA7_envEntity_a456(parent);
-    createA7_envEntity_9e6e(parent, gFLD_A7->getSaturnPtr(0x06085aec));
+    createA7_envEntity_a456(parent); // Shelcoof
+    createA7_envEntity_9e6e(parent, gFLD_A7->getSaturnPtr(0x06085aec)); // repair bits
     createA7_itemBoxes_1();
-    createA7_envEntity_a2fe(parent);
+    createA7_envEntity_a2fe(parent); // tornado
     createA7_encounterCheckSubtask(parent);
     createA7_soundCleanup_0x6f(parent);
-    createA7_envEntity_51ee(parent, gFLD_A7->getSaturnPtr(0x060842d0), 0);
+    createA7_envEntity_51ee(parent, gFLD_A7->getSaturnPtr(0x060842d0), 0); // spinning debris
     createA7_envEntity_e7c2(parent);
 }
 

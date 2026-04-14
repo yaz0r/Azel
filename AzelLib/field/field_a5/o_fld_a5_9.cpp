@@ -39,7 +39,7 @@ void subfieldA5_9(p_workArea workArea)
     s16 entryPoint = getFieldTaskPtr()->m30_fieldEntryPoint;
     if (entryPoint == -1)
     {
-        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x06089A04));
+        setupDragonPositionAndCamera_A5(gFLD_A5->getSaturnPtr(0x06089A10), gFLD_A5->getSaturnPtr(0x06089A1C));
     }
     else if (entryPoint == 8)
     {

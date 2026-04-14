@@ -169,7 +169,7 @@ static void sBerserkerRageBoltTask_Update(sBerserkerRageBoltTask* pThis)
                     else
                     {
                         pThis->mA6_damage = phantomSlasher_getBaseDamage(pThis->mA6_damage);
-                        pThis->mA6_damage = sGunShotTask_UpdateSub1Sub2(enemy->m4_targetable, pThis->mA6_damage, 2);
+                        pThis->mA6_damage = computeResistanceDamage(enemy->m4_targetable, pThis->mA6_damage, 2);
                         applyDamageToEnnemy(enemy->m4_targetable, pThis->mA6_damage, &pThis->mC8_sourcePosition, 3,
                             diff, fixedPoint(0x2000));
                         pThis->mE0_missFlag = 0;

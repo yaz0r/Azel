@@ -410,6 +410,14 @@ static void a5WormHoleEntity_Update(sA5WormHoleEntity* pThis)
             a5_wormHoleEntity_stepRotation_06059a86(&pThis->m5C_velocity, &pThis->m4C_rotationTarget);
             if (pThis->m30_timer < 1)
                 pThis->m140_state++;
+
+            // Random sound-effect roll (~1/256 chance when the position is visible).
+            // Only for positive lane (states 0 and 1).
+            u32 r = randomNumber();
+            if ((r & 0xFF) == 0 && isWorldPositionOnScreen(&pThis->m40_renderPosition) != 0)
+            {
+                playSystemSoundEffect((r & 2) == 0 ? 0x6D : 0x6C);
+            }
         }
         else
         {
@@ -418,13 +426,6 @@ static void a5WormHoleEntity_Update(sA5WormHoleEntity* pThis)
             if (pThis->m30_timer < 1)
                 pThis->m140_state = 0;
         }
-    }
-
-    // Random sound-effect roll (~1/256 chance when the position is visible).
-    u32 r = randomNumber();
-    if ((r & 0xFF) == 0 && isWorldPositionOnScreen(&pThis->m40_renderPosition) != 0)
-    {
-        playSystemSoundEffect((r & 2) == 0 ? 0x6D : 0x6C);
     }
 
     // Rotation target Y accumulation
@@ -497,7 +498,30 @@ static void a5WormHoleEntity_Update(sA5WormHoleEntity* pThis)
     // Update monster body physics
     a5_wormHoleEntity_bodyUpdate_060597a0(pThis->m58_body, &pThis->m40_renderPosition, &pThis->m4C_rotationTarget);
 
-    // Step head/tail model animations
+    // Per-body-part dust/splash effects
+    s32 yThreshold = MTH_Mul(fixedPoint(pThis->m1C_radius), fixedPoint((s32)0xFFFF8000)).m_value;
+    for (u32 i = 0; i < (u32)pThis->m68_partCount; i++)
+    {
+        sMonsterBodyPart* pPart = &pThis->m58_body->m30_parts[i];
+        s32 crossProduct = MTH_Mul(fixedPoint(pPart->m4_worldPosition.m4_Y.m_value),
+                                   fixedPoint(pThis->m8_perPartInts[i])).m_value;
+        if (crossProduct < 1)
+        {
+            // 0605f86c — part crossed Y=0: spawn 4 dust puffs at part position
+            Unimplemented(); // a5_wormHoleEntity_spawnPartDust(pThis, &pPart->m4_worldPosition)
+            pThis->mC_perPartBytes[i] = 0;
+            break;
+        }
+        if (((i & 1) != 0) && (pThis->mC_perPartBytes[i] == 0) &&
+            (pPart->m4_worldPosition.m4_Y.m_value < yThreshold))
+        {
+            // 0605f804 — odd-indexed part below threshold: spawn debris effect
+            Unimplemented(); // a5_wormHoleEntity_spawnPartDebris(pThis, &pPart->m4_worldPosition)
+            pThis->mC_perPartBytes[i] = 1;
+            break;
+        }
+    }
+
     stepAnimation(&pThis->m6C_model1);
     stepAnimation(&pThis->mBC_model2);
 }

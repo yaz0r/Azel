@@ -1271,7 +1271,7 @@ updateEnd:
                     {
                         s16 baseDmg = (s16)(damageTable[(u8)pThis->m57_level] * pThis->m4_targets[i].m0_hitFlag);
                         s16 scaledDmg = phantomSlasher_getBaseDamage(baseDmg);
-                        s16 damage = sGunShotTask_UpdateSub1Sub2(
+                        s16 damage = computeResistanceDamage(
                             enemy->m4_targetable, scaledDmg, 2);
                         sVec3_FP* enemyPos = getBattleTargetablePosition(*enemy->m4_targetable);
                         applyDamageToEnnemy(

@@ -23,17 +23,13 @@ void subfieldA5_3(p_workArea workArea)
     setupCameraConfig_A5_corridor();
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 2;
     s16 prev = getFieldTaskPtr()->m32_previousSubField;
-    sSaturnPtr posData;
+    sSaturnPtr rotEA;
     if (prev == 4 || prev == 9)
-        posData = gFLD_A5->getSaturnPtr(0x06089898);
+        rotEA = gFLD_A5->getSaturnPtr(0x060898A4);
     else
-        posData = gFLD_A5->getSaturnPtr(0x06089880);
-    {
-        sVec3_FP pos = { readSaturnS32(posData), readSaturnS32(posData + 4), readSaturnS32(posData + 8) };
-        sVec3_FP rot = { readSaturnS32(posData + 0xC), readSaturnS32(posData + 0x10), readSaturnS32(posData + 0x14) };
-        setupDragonPosition(&pos, &rot);
-    }
+        rotEA = gFLD_A5->getSaturnPtr(0x0608988C);
+    setupDragonPositionAndCamera_A5(rotEA - 0xC, rotEA);
     initDragonParams_A5_corridor();
-    createA5Vdp2Task(workArea);
-    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
+    createA5CorridorVdp2Task(workArea);
+    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = (void(*)())&postBattleSound_A5_corridor;
 }

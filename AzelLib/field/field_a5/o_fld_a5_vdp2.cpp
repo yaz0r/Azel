@@ -332,6 +332,44 @@ void createA5Vdp2Task(p_workArea parent)
     createSubTask<sVdp2PlaneTask>(parent, &td);
 }
 
+// --- Corridor VDP2 task (subfields 1, 3, 5, 6, A) ---
+
+// 0605D3EC
+static void a5CorridorVdpInit(sVdp2PlaneTask* pThis)
+{
+    getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
+    reinitVdp2();
+    initNBG1Layer();
+    a5LoadPalettes();
+
+    auto* regs = vdp2Controls.m4_pendingVdp2Regs;
+    regs->m10_CYCA0 = 0x31ff75ff;
+    // TODO: Saturn writes 0x700 to VDP2 VRAM 0x25E2A400 and 0 to 0x25E2A600 (pattern name table entries)
+    regs->mA8_LCTA = (regs->mA8_LCTA & 0xFFF80000) | 0x15200;
+    regs->mAC_BKTA = (regs->mAC_BKTA & 0xFFF80000) | 0x15300;
+    regs->mF0_PRISA = 0x405;
+    regs->mF2_PRISB = 0x507;
+    regs->mF4_PRISC = 0x505;
+    regs->mF6_PRISD = 0x505;
+    regs->mF8_PRINA = 0x600;
+    regs->mFA_PRINB = 0x700;
+    regs->mFC_PRIR = 0;
+    vdp2Controls.m_isDirty = 1;
+}
+
+// 0605D48E
+static void a5CorridorVdpUpdate(sVdp2PlaneTask* /*pThis*/)
+{
+    // empty in original
+}
+
+// 0605D49C
+void createA5CorridorVdp2Task(p_workArea parent)
+{
+    static sVdp2PlaneTask::TypedTaskDefinition td = { &a5CorridorVdpInit, &a5CorridorVdpUpdate, nullptr, nullptr };
+    createSubTask<sVdp2PlaneTask>(parent, &td);
+}
+
 // --- Night VDP2 task (subfields 7, 9) ---
 
 // 0605D568

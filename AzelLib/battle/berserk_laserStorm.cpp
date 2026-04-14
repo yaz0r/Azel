@@ -149,7 +149,7 @@ static void sLaserStormBeamTask_Update(sLaserStormBeamTask* pThis)
             // Compute damage with per-target scaling
             // NOTE: original uses setDividend for per-target damage reduction
             s16 dmg = computeSprScaledDamage(0xB4); // base damage 0xB4 (=180)
-            dmg = sGunShotTask_UpdateSub1Sub2(pThis->m84_pTargetable, dmg, 2);
+            dmg = computeResistanceDamage(pThis->m84_pTargetable, dmg, 2);
             applyDamageToEnnemy(pThis->m84_pTargetable, dmg, targetPos, 3, dir, fixedPoint(0x2000));
 
             pThis->m6C_approachCounter = 10;

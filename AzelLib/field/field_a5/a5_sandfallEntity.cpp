@@ -1,11 +1,13 @@
 #include "PDS.h"
 #include "o_fld_a5.h"
+#include "field/field_a3/o_fld_a3.h"
 #include "field/fieldModelRender.h"
 #include "field/fieldVisibilityGrid.h"
 #include "kernel/fileBundle.h"
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
 #include "3dEngine.h"
+#include "field/fieldCutsceneTask2.h"
 
 // Sandfall entity (Saturn size 0x70)
 struct sA5SandfallEntity : public s_workAreaTemplate<sA5SandfallEntity>
@@ -35,17 +37,23 @@ struct sA5SandfallSubtask : public s_workAreaTemplate<sA5SandfallSubtask>
     // size 0xC
 };
 
+// 0605A236 — sandfall discovery callback: sets visibility, game state, starts script + cutscene camera
+static void a5SandfallEntity_discoveryCallback(sA5SandfallEntity* pThis, sFieldModelRenderContext* pCtx)
+{
+    pCtx->m18_visibilityFlags |= 1;
+    pThis->m6E_state = 1;
+    mainGameState.bitField[0x96] |= 0x40;
+    startFieldScript(4, 0x5B9);
+    a5CutsceneCameraInit((p_workArea)pThis, gFLD_A5->getSaturnPtr(0x0608CFB4), 0,
+                         (sVec3_FP*)getSaturnPtr(gFLD_A5->getSaturnPtr(0x06099FD4)), 0);
+}
+
 // 0605A1D8
 static void a5SandfallSubtask_Update(sA5SandfallSubtask* p)
 {
     if ((mainGameState.bitField[0x96] & 0x10) == 0)
     {
-        getFieldTaskPtr();
-        // a5IsNearPosition @ FLD_A5::060790e4 — transform world pos to view and
-        // test against screen bounds. Inlined to match the field_a7 pattern.
-        sVec3_FP viewPos;
-        transformAndAddVecByCurrentMatrix(p->m8_pPosition, &viewPos);
-        if (isPointOnScreen(&viewPos, graphicEngineStatus.m405C.m14_farClipDistance))
+        if (isWorldPositionOnScreen(p->m8_pPosition))
         {
             mainGameState.bitField[0x96] |= 0x10;
         }
@@ -153,7 +161,7 @@ static void a5SandfallEntity_Init(sA5SandfallEntity* p)
     }
 
     p->m48_renderPosition = p->m8_position;
-    initFieldModelRenderContext(&p->m14_modelCtx, p, nullptr,
+    initFieldModelRenderContext(&p->m14_modelCtx, p, (void*)&a5SandfallEntity_discoveryCallback,
         &p->m48_renderPosition, nullptr, 0, 0, -1, 0xFF, 0);
     p->m14_modelCtx.m18_visibilityFlags |= 1;
 

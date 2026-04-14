@@ -204,10 +204,9 @@ static void a5WormObjectSystem_Update(sA5WormObjectSystem* p)
         {
             a5WormParticle_Remove(p, i);
             i--;
-            continue;
         }
 
-        // Advance animation
+        // Advance animation — always runs, even after type-update removal
         s32 animResult = sGunShotTask_UpdateSub4(&particle.m0_quad);
         if ((animResult & 2) != 0)
         {

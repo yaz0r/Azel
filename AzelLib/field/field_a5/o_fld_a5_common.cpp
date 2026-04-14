@@ -1,6 +1,10 @@
 #include "PDS.h"
 #include "o_fld_a5.h"
 #include "field/field_a3/o_fld_a3.h"
+#include "audio/soundDriver.h"
+
+void buildDragonRotationMatrix(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
+void updateCameraScriptSub0(p_workArea r4);
 
 // Camera config functions — each calls setupFieldCameraConfigs with overlay-specific data
 // 060558E8
@@ -17,6 +21,49 @@ void setupCameraConfig_A5_8() { setupFieldCameraConfigs(readCameraConfig(gFLD_A5
 void setupCameraConfig_A5_9() { setupFieldCameraConfigs(readCameraConfig(gFLD_A5->getSaturnPtr(0x06089EF4)), 1); }
 // 06055920
 void setupCameraConfig_A5_corridor() { setupFieldCameraConfigs(readCameraConfig(gFLD_A5->getSaturnPtr(0x06089DEC)), 1); }
+
+// 0607c584 — set dragon position + rotation, build rotation matrix, update camera
+void setupDragonPositionAndCamera_A5(sSaturnPtr posEA, sSaturnPtr rotEA)
+{
+    s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    sFieldCameraStatus* pCam = getFieldCameraStatus();
+
+    if (posEA.m_file != nullptr)
+    {
+        pDragon->m8_pos[0] = fixedPoint(readSaturnS32(posEA));
+        pDragon->m8_pos[1] = fixedPoint(readSaturnS32(posEA + 4));
+        pDragon->m8_pos[2] = fixedPoint(readSaturnS32(posEA + 8));
+    }
+
+    if (rotEA.m_file != nullptr)
+    {
+        pDragon->m20_angle[0] = fixedPoint(readSaturnS32(rotEA));
+        pDragon->m20_angle[1] = fixedPoint(readSaturnS32(rotEA + 4));
+        pDragon->m20_angle[2] = fixedPoint(readSaturnS32(rotEA + 8));
+
+        // 0607fb0c — copy rotation to mBC sub-struct at +0x18
+        if (pDragon->mBC != nullptr)
+        {
+            u8* pBC = (u8*)pDragon->mBC;
+            *(s32*)(pBC + 0x18) = readSaturnS32(rotEA);
+            *(s32*)(pBC + 0x1C) = readSaturnS32(rotEA + 4);
+            *(s32*)(pBC + 0x20) = readSaturnS32(rotEA + 8);
+        }
+    }
+
+    buildDragonRotationMatrix(&pDragon->m48, &pDragon->m20_angle);
+
+    // Set camera Y rotation from dragon yaw
+    pCam->mC_rotation[1] = pDragon->m20_angle[1];
+
+    updateCameraScriptSub0(pDragon->mB8_lightWingEffect);
+}
+
+// 06055996 / 06055a1e / 06055a30 — post-battle sound for corridor subfields
+void postBattleSound_A5_corridor()
+{
+    playPCM(getFieldTaskPtr()->m8_pSubFieldData, 0x71);
+}
 
 // 06054188 — open field dragon light/speed
 void initDragonParams_A5_open()

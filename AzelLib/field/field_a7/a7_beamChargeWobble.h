@@ -2,7 +2,7 @@
 
 #include "task.h"
 #include "common.h"
-#include "a7_sceneParticle.h"
+#include "field/fieldSceneManager.h"
 #include <vector>
 
 struct sVdp1Quad;
@@ -20,7 +20,7 @@ void a7BeamEmitter_spawnChargeWobble_06055ada(p_workArea parent, sA7BeamChargeWo
 // 0605533c — spawn a jittered billboard scene particle. Shared by the charge
 // wobble subtask and the beam ring-buffer update.
 void a7BeamChargeWobble_spawn_0605533c(p_workArea parent, sVec3_FP* pPos,
-                                       fixedPoint sinValue, sA7SceneParticleDesc* pOutDesc);
+                                       fixedPoint sinValue, sSceneParticleDesc* pOutDesc);
 
 // Lazy-parses and caches a VDP1 quad list keyed by Saturn EA.
 const std::vector<sVdp1Quad>* a7GetOrParseQuadList(const sSaturnPtr& ea);

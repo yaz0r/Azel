@@ -32,7 +32,7 @@ void subfieldA5_4(p_workArea workArea)
     setupCameraConfig_A5_4();
     if (getFieldTaskPtr()->m30_fieldEntryPoint < 0)
     {
-        getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->m1D0_cameraScript = readCameraScript(gFLD_A5->getSaturnPtr(0x06089A04));
+        setupDragonPositionAndCamera_A5(gFLD_A5->getSaturnPtr(0x06089A10), gFLD_A5->getSaturnPtr(0x06089A1C));
     }
     else
     {

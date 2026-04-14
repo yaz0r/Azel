@@ -23,13 +23,8 @@ void subfieldA5_5(p_workArea workArea)
     setupField2(pDT3, fieldA5_5_startTasks);
     setupCameraConfig_A5_corridor();
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 2;
-    {
-        sSaturnPtr posData = gFLD_A5->getSaturnPtr(0x060898D8);
-        sVec3_FP pos = { readSaturnS32(posData), readSaturnS32(posData + 4), readSaturnS32(posData + 8) };
-        sVec3_FP rot = { readSaturnS32(posData + 0xC), readSaturnS32(posData + 0x10), readSaturnS32(posData + 0x14) };
-        setupDragonPosition(&pos, &rot);
-    }
+    setupDragonPositionAndCamera_A5(gFLD_A5->getSaturnPtr(0x060898E4), gFLD_A5->getSaturnPtr(0x060898F0));
     initDragonParams_A5_corridor();
-    createA5Vdp2Task(workArea);
-    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = nullBattle;
+    createA5CorridorVdp2Task(workArea);
+    getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = (void(*)())&postBattleSound_A5_corridor;
 }

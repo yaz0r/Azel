@@ -34,11 +34,11 @@ static void a5BossEntity0_Update(sA5BossEntity0* pThis)
     u16 angleIdx = ((u16)cameraProperties2.mC_rotation[0] + (s16)pitchAngle) & 0xFFF;
 
     s32 tanVal = FP_Div(getSin(angleIdx), getCos(angleIdx)).asS32();
-    s32 horizonOffset = MTH_Mul(graphicEngineStatus.m405C.m10_nearClipDistance, fixedPoint(tanVal)).asS32();
+    s32 horizonOffset = MTH_Mul(graphicEngineStatus.m405C.m1C_heightScale, fixedPoint(tanVal)).asS32();
     pThis->mC_horizonY = pThis->m10_baseOffset - horizonOffset;
 
     s32 yawVal = MTH_Mul(fixedPoint((s32)(s16)cameraProperties2.mC_rotation[1]), fixedPoint(0x3243F)).asS32();
-    s32 scrollX = MTH_Mul(graphicEngineStatus.m405C.m14_farClipDistance, fixedPoint(yawVal << 5)).asS32();
+    s32 scrollX = MTH_Mul(graphicEngineStatus.m405C.m18_widthScale, fixedPoint(yawVal << 5)).asS32();
     pThis->m8_scrollX = performModulo(0x50, scrollX) - 0x50;
 }
 

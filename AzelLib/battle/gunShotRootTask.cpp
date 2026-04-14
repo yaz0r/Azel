@@ -184,7 +184,7 @@ s32 sGunShotTask_UpdateSub1Sub0(sBattleTargetable* pTargetable, s32 param_2)
     return param_2;
 }
 
-s32 sGunShotTask_UpdateSub1Sub2(sBattleTargetable* pTargetable, s16 param_2, s32 param_3)
+s32 computeResistanceDamage(sBattleTargetable* pTargetable, s16 param_2, s32 param_3)
 {
     s32 iVar2 = 0;
 
@@ -258,7 +258,7 @@ s32 getCurrentGunPower()
 s32 sGunShotTask_UpdateSub1(sGunShotTask* pThis)
 {
     fixedPoint ratio = FP_Div(fixedPoint::fromInteger(getCurrentGunPower()), fixedPoint::fromInteger(gBattleManager->m10_battleOverlay->m4_battleEngine->m3A6_numGunShots));
-    return sGunShotTask_UpdateSub1Sub2(pThis->m68, sGunShotTask_UpdateSub1Sub0(pThis->m68, fixedPoint::toInteger(ratio + 0x8000)), 0);
+    return computeResistanceDamage(pThis->m68, sGunShotTask_UpdateSub1Sub0(pThis->m68, fixedPoint::toInteger(ratio + 0x8000)), 0);
 }
 
 void createGunAndLaserDamage3dModel(s_workAreaCopy* pParent, sVec3_FP*, sVec3_FP*, fixedPoint); // TODO: cleanup

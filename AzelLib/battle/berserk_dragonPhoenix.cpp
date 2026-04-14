@@ -558,7 +558,7 @@ static void dragonPhoenix_applyDamage(u16 enemyIndex, s16 baseDamage, sVec3_FP* 
     sBattleOverlayTask_C* pTargetSystem = gBattleManager->m10_battleOverlay->mC_targetSystem;
     s_battleEnemy* pEnemy = pTargetSystem->m0_enemyTargetables[enemyIndex];
     s16 damage = phantomSlasher_getBaseDamage(baseDamage);
-    damage = (s16)sGunShotTask_UpdateSub1Sub2(pEnemy->m4_targetable, damage, 2);
+    damage = (s16)computeResistanceDamage(pEnemy->m4_targetable, damage, 2);
     applyDamageToEnnemy(pEnemy->m4_targetable, damage, pHitPos, 3, *pHitPos, fixedPoint(0x2000));
 }
 
