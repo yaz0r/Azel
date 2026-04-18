@@ -157,42 +157,7 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
     }
 }
 
-// 06014274 — update line scroll table with wave distortion
-static void updateLineScrollTable(sVdp2PlaneTask* pThis)
-{
-    s32 phase = pThis->m68_lsPhaseAccum;
-    pThis->m68_lsPhaseAccum = pThis->m54_lsPhaseSpeed + phase;
-    s32 scrollBase = pThis->m6C_lsScrollBaseAccum + pThis->m60_lsScrollBaseSpeed;
-    pThis->m6C_lsScrollBaseAccum = scrollBase;
-
-    s32 amplitude = pThis->m5C_lsZoomAmplitude;
-    s32 freq = pThis->m58_lsFreqPerLine;
-    s32 scrollInc = pThis->m64_lsScrollIncPerLine;
-    s32* buf = (s32*)pThis->m50_lineScrollBuffer;
-
-    // Each line has 3 entries: {position, scroll, zoomCoeff}
-    // Total lines: 0xDE (222) in loop + 2 post-loop = 224
-    u32 phaseIdx = (u32)phase;
-
-    for (s32 i = 0; i < 0xDE + 2; i++)
-    {
-        phaseIdx += (u32)freq;
-
-        // Look up sine value and compute zoom coefficient
-        fixedPoint sinVal = getSin((phaseIdx >> 16) & 0xFFF);
-        s32 divisor = amplitude + 0x10000 + MTH_Mul(fixedPoint(amplitude), sinVal).asS32();
-        s32 quotient = (s32)(0x100000000LL / (s64)divisor);
-
-        // Update per-line scroll (accumulated, masked to 24 bits)
-        buf[i * 3 + 1] = (buf[i * 3 + 1] + scrollInc) & 0xFFFFFF;
-
-        // Zoom coefficient
-        buf[i * 3 + 2] = quotient;
-
-        // Horizontal position from zoom
-        buf[i * 3 + 0] = (0x10000 - quotient) * 0xB0 + scrollBase;
-    }
-}
+// 06014274 — moved to shared/vdp2PlaneTask.cpp as updateLineScrollTable
 
 // 0605798c
 static void updateVdp2_A7_0(sVdp2PlaneTask* pThis)

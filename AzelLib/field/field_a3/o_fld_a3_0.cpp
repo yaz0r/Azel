@@ -178,12 +178,12 @@ void fieldA3_0_createItemBoxes(p_workArea workArea)
 {
     fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x6091DF4, gFLD_A3 }));
     fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x6091E3C, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6091E84, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x6091E84, gFLD_A3 }));
     fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x6091ECC, gFLD_A3 }));
     fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x6091F14, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6091F5C, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6091FA4, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6091FEC, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x6091F5C, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x6091FA4, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x6091FEC, gFLD_A3 }));
 }
 
 const std::array<s16, 8> A3_0_exitsVars =

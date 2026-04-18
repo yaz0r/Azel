@@ -273,7 +273,7 @@ p_workArea findParentGridCellTaskForItem(s_itemBoxDefinition* r14)
     }
 }
 
-p_workArea fieldA3_1_createItemBoxes_Sub1(s_itemBoxDefinition* r4)
+p_workArea createFieldItemBox(s_itemBoxDefinition* r4)
 {
     static const s_itemBoxType1::TypedTaskDefinition definition = {
         &itemBoxType1Init,
@@ -308,7 +308,7 @@ s_itemType0* fieldA3_1_createItemBoxes_Sub0(p_workArea workArea, s_itemBoxDefini
     s_itemType0* r0 = createSubTaskFromFunction<s_itemType0>(workArea, &s_itemType0::Update);
     if (r0)
     {
-        r0->m0 = fieldA3_1_createItemBoxes_Sub1(r5);
+        r0->m0 = createFieldItemBox(r5);
         r0->m4 = r5;
     }
 

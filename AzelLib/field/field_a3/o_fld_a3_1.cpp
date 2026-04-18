@@ -215,9 +215,9 @@ void fieldA3_1_createItemBoxes(p_workArea workArea)
     fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x6092034, gFLD_A3 }));
     fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x609207C, gFLD_A3 }));
 
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x60920C4, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6092154, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x609210C, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x60920C4, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x6092154, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x609210C, gFLD_A3 }));
 }
 
 void fieldA3_1_task4_init(s_fieldA3_1_task4* pThis)

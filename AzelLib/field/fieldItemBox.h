@@ -37,5 +37,5 @@ extern sVec3_FP LCSItemBox_Table6[];
 s8 LCSItemBox_shouldSpin(s_itemBoxType1* pThis);
 void LCSItemBox_UpdateType0Sub0(s_fileBundle* pBundle, s32 hierarchyKey, s32 poseKey, fixedPoint scale);
 
-p_workArea fieldA3_1_createItemBoxes_Sub1(struct s_itemBoxDefinition* r4);
+p_workArea createFieldItemBox(struct s_itemBoxDefinition* r4);
 

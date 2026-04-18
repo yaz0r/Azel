@@ -68,7 +68,7 @@ void fieldA3_C_createTask1(p_workArea workArea)
 
 void fieldA3_C_createItemBox(p_workArea workArea)
 {
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x60924B4, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x60924B4, gFLD_A3 }));
 }
 
 void fieldA3_C_startTasks(p_workArea workArea)

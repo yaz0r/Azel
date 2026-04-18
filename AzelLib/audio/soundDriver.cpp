@@ -175,6 +175,13 @@ void resetSoundEngine(sSoundEngine* pThis)
     soundEngine.m688 = 100;
 }
 
+// 0602c348
+void setSoundDistanceParams(s32 maxDistance, s16 baseVolume)
+{
+    soundEngine.m684 = maxDistance;
+    soundEngine.m688 = baseVolume;
+}
+
 void initSoundDriver()
 {
     resetSoundEngine(&soundEngine);

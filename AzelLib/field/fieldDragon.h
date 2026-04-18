@@ -186,3 +186,5 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
 
     //size 0x260?
 };
+
+void dragonScriptMovement(s_dragonTaskWorkArea* pTypedWorkArea);

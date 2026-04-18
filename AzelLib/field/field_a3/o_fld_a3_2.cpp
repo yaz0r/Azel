@@ -447,8 +447,8 @@ void fieldA3_2_createCheckExitTask(p_workArea workArea)
 void fieldA3_2_createItemBoxes(p_workArea workArea)
 {
     fieldA3_1_createItemBoxes_Sub0(workArea, readItemBoxDefinition({ 0x609219C, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x60921E4, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x609222C, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x60921E4, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x609222C, gFLD_A3 }));
 }
 
 // 0606848a — waits for hasEncounterData, then sets battleIndex

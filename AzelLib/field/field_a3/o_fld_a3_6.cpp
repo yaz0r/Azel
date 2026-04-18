@@ -39,7 +39,7 @@ void fieldA3_6_createExitTask(p_workArea workArea)
 // 0605c618
 void fieldA3_6_createItemBoxes()
 {
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6092394, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x6092394, gFLD_A3 }));
 }
 
 // 06057d3c

@@ -307,7 +307,7 @@ void createA5_corridorWorm_6(p_workArea parent)
 // s_itemBoxType1, so we use the shared infrastructure directly.
 static void a5CreateDecorEmitter(sSaturnPtr pData)
 {
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition(pData));
+    createFieldItemBox(readItemBoxDefinition(pData));
 }
 
 // 0605fe7e — create subfield 5 environment object

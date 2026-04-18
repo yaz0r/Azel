@@ -17,4 +17,5 @@ s32 computePositionalSoundVolume(sVec3_FP* pPos);
 void startPositionalSound(s32 soundIndex, sVec3_FP* pPos);
 void updatePositionalSound(s32 soundIndex, sVec3_FP* pPos);
 
+void setSoundDistanceParams(s32 maxDistance, s16 baseVolume); // 0602c348
 void battleLoading_InitSub0();

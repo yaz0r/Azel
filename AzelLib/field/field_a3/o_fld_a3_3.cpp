@@ -14,8 +14,8 @@ extern void fieldA3_3_createBirdsTask(p_workArea workArea);
 
 void fieldA3_3_createItemBoxes(p_workArea workArea)
 {
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x6092274, gFLD_A3 }));
-    fieldA3_1_createItemBoxes_Sub1(readItemBoxDefinition({ 0x60922BC, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x6092274, gFLD_A3 }));
+    createFieldItemBox(readItemBoxDefinition({ 0x60922BC, gFLD_A3 }));
 }
 
 void fieldA3_3_exitTaskCallback(p_workArea, sLCSTarget*)
