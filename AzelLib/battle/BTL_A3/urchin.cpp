@@ -112,7 +112,7 @@ void Urchin_init(sUrchin* pThis, sGenericFormationPerTypeData* pConfig)
         pThis->mD8 = gCurrentBattleOverlay->invokeCreateEffect(pConfig->m1C[0].m0, pThis);
     }
 
-    if ((gBattleManager->m4 == 8) && (gBattleManager->m6_subBattleId == 4)) {
+    if ((gBattleManager->m4_previousBattleOverlayId == 8) && (gBattleManager->m6_subBattleId == 4)) {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m22F_battleRadarLockIcon =  0xB;
     }
 }
@@ -801,7 +801,7 @@ static void urchinUpdateMode5(sUrchin* pThis)
         pThis->mB8_delay--;
         if (pThis->mB8_delay < 0)
         {
-            if ((gBattleManager->m4 == 7) &&
+            if ((gBattleManager->m4_previousBattleOverlayId == 7) &&
                 (gBattleManager->m6_subBattleId == 4 || gBattleManager->m6_subBattleId == 8 || gBattleManager->m6_subBattleId == 9))
             {
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10000 = 0;
@@ -918,7 +918,7 @@ void Urchin_update(sUrchin* pThis)
     // Falling death animation (mAC==6, mAD==3)
     if ((pThis->mAC == 6) && (pThis->mAD == 3))
     {
-        if ((gBattleManager->m4 == 7) &&
+        if ((gBattleManager->m4_previousBattleOverlayId == 7) &&
             (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B0_subBattleId == 6))
         {
             pThis->m14_positionCurrent[1] = pThis->m14_positionCurrent[1] + fixedPoint(-0x199);
@@ -929,7 +929,7 @@ void Urchin_update(sUrchin* pThis)
         }
         if ((randomNumber() & 3) != 0)
         {
-            if ((gBattleManager->m4 == 7) &&
+            if ((gBattleManager->m4_previousBattleOverlayId == 7) &&
                 (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B0_subBattleId == 6))
             {
                 pThis->m8[1] = pThis->m8[1] + fixedPoint(-0x199);
@@ -986,7 +986,7 @@ void Urchin_update(sUrchin* pThis)
             s32 rotDistFactor = 0x28F;
             springDampedStep(&pThis->m14_positionCurrent, &pThis->m2C_positionDelta, &pThis->m20_positionTarget, 0x1999, 0x28F, 0);
 
-            if (gBattleManager->m4 == 5)
+            if (gBattleManager->m4_previousBattleOverlayId == 5)
             {
                 s8 subBattleId = gBattleManager->m10_battleOverlay->m4_battleEngine->m3B0_subBattleId;
                 if (subBattleId == 4 || subBattleId == 5 || subBattleId == 8 || subBattleId == 9 || subBattleId == 10)
@@ -994,7 +994,7 @@ void Urchin_update(sUrchin* pThis)
                     rotDeltaFactor = 0x2666;
                 }
             }
-            else if (gBattleManager->m4 == 8)
+            else if (gBattleManager->m4_previousBattleOverlayId == 8)
             {
                 s8 subBattleId = gBattleManager->m10_battleOverlay->m4_battleEngine->m3B0_subBattleId;
                 if (subBattleId == 1 || subBattleId == 2 || subBattleId == 3)

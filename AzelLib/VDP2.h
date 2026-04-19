@@ -224,6 +224,8 @@ enum eVdp2LayerConfig
     m37_W0A = 37,
     m40_CAOS = 40,
     m41 = 41,
+    m28_RxKDE = 28,
+    m43_BKEN = 43,
     m44_CCEN = 44,
     m45_COEN = 45,
     m46_SCCM = 46,

@@ -22,7 +22,6 @@
 #include "menu_dragonMorph.h"
 #include "kernel/fileBundle.h"
 
-extern void itemBoxType1InitSub0(s_3dModel* r4, s32 r5);
 
 //=============================================================================
 // FIXME LIST (Ghidra comparison audit 2026-04-03)
@@ -40,9 +39,9 @@ extern void itemBoxType1InitSub0(s_3dModel* r4, s32 r5);
 //    trajectories.
 //
 // 3. [HIGH] phantomSlasherProjectile_updateTrails (06083a10): Second arg to
-//    itemBoxType1InitSub0 reads wrong offset. Ghidra uses *(short*)(param_1+0x6E)
+//    setAnimationFrame reads wrong offset. Ghidra uses *(short*)(param_1+0x6E)
 //    which is offset 0x16 into m58_mainModel (a model-internal field). C++ reads
-//    *(s16*)&pThis->m1F4_pad2[0] (offset 0x1F4). Completely wrong source data.
+//    m1F4_animTimer (offset 0x1F4). Completely wrong source data.
 //
 // 4. [HIGH] berserk_createPhantomSlashers (06080b5c): Camera angle Z for side
 //    quadrants (1/3) with battleType!=6 should use cameraAngleSide.Z (0xFFFF6000
@@ -192,7 +191,7 @@ struct sPhantomSlasherProjectileTask : public s_workAreaTemplate<sPhantomSlasher
     sVec3_FP m1E4_targetPosition;        // 0x1E4
     s16 m1F0_timer;                      // 0x1F0
     s16 m1F2_frameCounter;               // 0x1F2
-    u8 m1F4_pad2[2];                     // 0x1F4
+    u16 m1F4_animTimer;                   // 0x1F4
     u8 m1F6_projectileIndex;             // 0x1F6
     u8 m1F7_subState;                    // 0x1F7
     u8 m1F8_prevDamageState;             // 0x1F8
@@ -302,7 +301,7 @@ static void phantomSlasherProjectile_flyToTarget(sPhantomSlasherProjectileTask* 
         // Set draw method
         pThis->m_DrawMethod = (void(*)(sPhantomSlasherProjectileTask*))&sPhantomSlasherProjectileTask_Draw;
         playSystemSoundEffect(0x11);
-        *(u16*)&pThis->m1F4_pad2[0] = 0; // m1F4 timer
+        pThis->m1F4_animTimer = 0; // m1F4 timer
         pThis->m1F7_subState++;
     }
     else if (subState == 2)
@@ -340,8 +339,8 @@ static void phantomSlasherProjectile_flyToTarget(sPhantomSlasherProjectileTask* 
 
     // State 1 (and fallthrough from state 0): animate and advance
     {
-        u16 animTimer = *(u16*)&pThis->m1F4_pad2[0];
-        *(u16*)&pThis->m1F4_pad2[0] = animTimer + 1;
+        u16 animTimer = pThis->m1F4_animTimer;
+        pThis->m1F4_animTimer = animTimer + 1;
 
         pThis->m20_position += pEngine->m1A0_battleAutoScrollDelta;
 
@@ -371,7 +370,7 @@ static void phantomSlasherProjectile_flyToTarget(sPhantomSlasherProjectileTask* 
         {
             totalFrames = (s32)*(s16*)((u8*)pThis->m58_mainModel.m30_pCurrentAnimation + 4);
         }
-        if (totalFrames <= (s32)(u32)*(u16*)&pThis->m1F4_pad2[0])
+        if (totalFrames <= (s32)(u32)pThis->m1F4_animTimer)
         {
             // Re-init animation and mark projectile as hit (m0_state = 1)
             u8 level = pParent->m57_level;
@@ -693,7 +692,7 @@ static void phantomSlasherProjectile_updateTrails(sPhantomSlasherProjectileTask*
             // Trail catches up to current position
             pThis->mA8_trails[i].m0_position = pThis->m20_position;
             pThis->mA8_trails[i].mC_rotation = pThis->m44_rotation;
-            itemBoxType1InitSub0(&pThis->mA8_trails[i].m18_model, (s32)*(s16*)&pThis->m1F4_pad2[0] /* 0x6E offset from trail */);
+            setAnimationFrame(&pThis->mA8_trails[i].m18_model, (s32)pThis->m1F4_animTimer);
         }
         else
         {

@@ -543,7 +543,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     // Generate random quadrant (mask to 8 bits, not modulo)
     u32 randomValue = performModulo2(100, randomNumber()) & 0xff;
 
-    sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getEncounterDataTable() + gBattleManager->m4 * 4);
+    sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getEncounterDataTable() + gBattleManager->m4_previousBattleOverlayId * 4);
 
     u8 odds0, odds1, odds2;
     if (pData.isNull())
@@ -555,9 +555,9 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     else
     {
         // Read quadrant probabilities
-        odds0 = (u8)readSaturnS8(pData + gBattleManager->m8 * 0x10 + 4);
-        odds1 = (u8)readSaturnS8(pData + gBattleManager->m8 * 0x10 + 5);
-        odds2 = (u8)readSaturnS8(pData + gBattleManager->m8 * 0x10 + 6);
+        odds0 = (u8)readSaturnS8(pData + gBattleManager->m8_previousSubBattleId * 0x10 + 4);
+        odds1 = (u8)readSaturnS8(pData + gBattleManager->m8_previousSubBattleId * 0x10 + 5);
+        odds2 = (u8)readSaturnS8(pData + gBattleManager->m8_previousSubBattleId * 0x10 + 6);
     }
 
     // Select quadrant based on probability accumulation (mask each value before adding)
@@ -592,7 +592,7 @@ void battleEngine_Init(s_battleEngine* pThis, sSaturnPtr overlayBattleData)
     else
     {
         // combo - read from data table using current quadrant as part of offset
-        pThis->m3B4.m16_combo = readSaturnS8(pData + pThis->m22C_dragonCurrentQuadrant + gBattleManager->m8 * 0x10 + 0xC);
+        pThis->m3B4.m16_combo = readSaturnS8(pData + pThis->m22C_dragonCurrentQuadrant + gBattleManager->m8_previousSubBattleId * 0x10 + 0xC);
     }
 
     pThis->m270_enemyAltitude.zeroize();
@@ -723,7 +723,7 @@ void battleEngine_UpdateSub1(int bitMask)
             gCurrentBattleOverlay->invoke(functionPointer, gBattleManager->m10_battleOverlay->m18_dragon, readSaturnU32(pBattleEngine->m3AC + iVar7 * 0xC + 4), iVar7);
             pBattleEngine->m3B1++;
 
-            sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getEncounterDataTable() + gBattleManager->m4 * 4);
+            sSaturnPtr pData = readSaturnEA(gCurrentBattleOverlay->getEncounterDataTable() + gBattleManager->m4_previousBattleOverlayId * 4);
             if (readSaturnU32(pData) == 0)
             {
                 gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m2 = 150;
@@ -731,8 +731,8 @@ void battleEngine_UpdateSub1(int bitMask)
             }
             else
             {
-                gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m2 = readSaturnS16(pData + gBattleManager->m8 * 0x10 + 2);
-                battleEngine_UpdateSub1Sub0(readSaturnS8(pData + gBattleManager->m8 * 0x10 + 8 + gBattleManager->m10_battleOverlay->m4_battleEngine->m27C_dragonMovementInterpolator1.m50));
+                gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m2 = readSaturnS16(pData + gBattleManager->m8_previousSubBattleId * 0x10 + 2);
+                battleEngine_UpdateSub1Sub0(readSaturnS8(pData + gBattleManager->m8_previousSubBattleId * 0x10 + 8 + gBattleManager->m10_battleOverlay->m4_battleEngine->m27C_dragonMovementInterpolator1.m50));
             }
         }
         iVar7++;

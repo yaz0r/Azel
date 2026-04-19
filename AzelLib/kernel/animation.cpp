@@ -957,6 +957,44 @@ u32 setupModelAnimation(s_3dModel* pModel, sAnimationData* pAnimation)
     assert(0);
 }
 
+void setAnimationFrame(s_3dModel* r4, s32 r5)
+{
+    if (!(r4->mA_animationFlags & 0x38))
+        return;
+
+    u16 type = r4->m30_pCurrentAnimation->m0_flags & 7;
+    u16 frame = (u16)r5;
+    u32 uFrame = (u32)(s16)frame;
+
+    if (type == 0)
+    {
+        r4->m10_currentAnimationFrame = frame;
+        stepAnimation(r4);
+        return;
+    }
+    if (type == 2)
+    {
+        r4->m10_currentAnimationFrame = frame & 0xfffe;
+        for (int i = 0; i <= (int)(uFrame & 1); i++)
+            stepAnimation(r4);
+        return;
+    }
+    if (type == 3)
+    {
+        r4->m10_currentAnimationFrame = frame & 0xfffc;
+        for (int i = 0; i <= (int)(uFrame & 3); i++)
+            stepAnimation(r4);
+        return;
+    }
+    if (type == 1 || type == 4 || type == 5)
+    {
+        resetAnimation(r4);
+        for (int i = 0; i < (int)uFrame; i++)
+            stepAnimation(r4);
+        return;
+    }
+}
+
 u32 stepAnimation(s_3dModel* p3DModel)
 {
     if ((p3DModel->mA_animationFlags & 0x38) == 0)

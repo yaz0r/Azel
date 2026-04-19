@@ -581,16 +581,16 @@ void berserk_createCleansingWave(s_battleEngine* pThis)
     // Check if we should use overlay camera data
     s8 battleType = getBattleTypeId();
     bool useOverlayCamera = false;
-    if (gBattleManager->m4 == 0 &&
-        (gBattleManager->m8 == 0 || gBattleManager->m8 == 1 ||
-         gBattleManager->m8 == 2 || gBattleManager->m8 == 6 || gBattleManager->m8 == 7))
+    if (gBattleManager->m4_previousBattleOverlayId == 0 &&
+        (gBattleManager->m8_previousSubBattleId == 0 || gBattleManager->m8_previousSubBattleId == 1 ||
+         gBattleManager->m8_previousSubBattleId == 2 || gBattleManager->m8_previousSubBattleId == 6 || gBattleManager->m8_previousSubBattleId == 7))
     {
         useOverlayCamera = true;
     }
 
     if (((battleType == 5 || battleType == 6 || useOverlayCamera ||
          (randomNumber() & 3) == 0) &&
-        battleType != 1 && gBattleManager->m4 != 7) &&
+        battleType != 1 && gBattleManager->m4_previousBattleOverlayId != 7) &&
         getOverlayCameraData(pThis).m_offset != 0)
     {
         // Use overlay camera data

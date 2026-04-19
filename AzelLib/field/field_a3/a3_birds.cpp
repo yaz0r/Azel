@@ -3,7 +3,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 
-extern void itemBoxType1InitSub0(s_3dModel* r4, s32 r5);
+extern void setAnimationFrame(s_3dModel* r4, s32 r5);
 
 // Bird init data from Saturn table at 0x06090cf4 (0x18 bytes per bird, 16 birds)
 struct sBirdInitData
@@ -36,7 +36,7 @@ struct sBirdTask : public s_workAreaTemplateWithArg<sBirdTask, sBirdInitData*>
             nullptr, nullptr);
 
         stepAnimation(&pThis->m38_model);
-        itemBoxType1InitSub0(&pThis->m38_model, randomNumber() & 7);
+        setAnimationFrame(&pThis->m38_model, randomNumber() & 7);
 
         pThis->m20_center[0] = pArg->m0;  // center X
         pThis->m20_center[1] = pArg->m4;  // center Y

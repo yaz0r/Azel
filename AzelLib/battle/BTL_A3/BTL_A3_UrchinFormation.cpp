@@ -131,7 +131,7 @@ void BTL_A3_UrchinFormation_Init(BTL_A3_UrchinFormation* pThis, const sGenericFo
     }
 
     displayFormationName(config->m15_formationNameIndex, config->m16, config->m17);
-    if ((gBattleManager->m4 == 7) &&
+    if ((gBattleManager->m4_previousBattleOverlayId == 7) &&
         (((gBattleManager->m6_subBattleId == 4 || (gBattleManager->m6_subBattleId == 8)) ||
             (gBattleManager->m6_subBattleId == 9))))
     {
@@ -517,7 +517,7 @@ void BTL_A3_UrchinFormation_Update_Mode1Sub4(BTL_A3_UrchinFormation* pThis, sAtt
     }
 
     // Play formation-specific sound effect
-    s16 battleType = gBattleManager->m4;
+    s16 battleType = gBattleManager->m4_previousBattleOverlayId;
     s8 subBattleId = gBattleManager->m10_battleOverlay->m4_battleEngine->m3B0_subBattleId;
     if (battleType == 5)
     {
@@ -1589,7 +1589,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
                 {
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
                 }
-                if ((gBattleManager->m4 == 9) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B0_subBattleId == 4))
+                if ((gBattleManager->m4_previousBattleOverlayId == 9) && (gBattleManager->m10_battleOverlay->m4_battleEngine->m3B0_subBattleId == 4))
                 {
                     gBattleManager->m10_battleOverlay->m4_battleEngine->m3B2_numBattleFormationRunning = 0;
                 }

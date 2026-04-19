@@ -730,7 +730,12 @@ struct s_3dModel
     u16 m4C_interpolationStep; //4C
     u16 m4E_interpolationLength; //4E
 
-    //size 0x4C
+    u16 m50_targetBoneCount; //50
+    u16 m52_targetableCount; //52
+    struct sBattleTargetable* m54_targetables; //54
+    sVec3_FP* m58_targetablePositions; //58
+
+    //size 0x5C
 
     std::vector<sHotpointBundle> m_hotpointBundles; // the data for field m40 that was deserialized from the prg memory
 };

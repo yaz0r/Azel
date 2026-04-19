@@ -59,14 +59,46 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
 
     if (s_battlePrgTask_var0 == 0)
     {
-        // Select battle module
+        // Select battle module (next)
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20)
         {
-            Unimplemented();
+            // 06006da4 — clear sub-battle list, advance to next active battle overlay
+            int numSubBattle = gCommonFile->battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles;
+            for (int i = 0; i < numSubBattle; i++)
+            {
+                vdp2DebugPrintSetPosition(0x12, i + 4);
+                vdp2DebugPrintNewLine("                ");
+            }
+            pBattleManager->m6_subBattleId = 0;
+            playSystemSoundEffect(10);
+            do
+            {
+                pBattleManager->mA_pendingBattleOverlayId++;
+                if (pBattleManager->mA_pendingBattleOverlayId > 0x1A)
+                {
+                    pBattleManager->mA_pendingBattleOverlayId = 0;
+                }
+            } while (gCommonFile->battleActivationList[pBattleManager->mA_pendingBattleOverlayId] == 0);
         }
-        if(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10)
+        // Select battle module (previous)
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10)
         {
-            Unimplemented();
+            int numSubBattle = gCommonFile->battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles;
+            for (int i = 0; i < numSubBattle; i++)
+            {
+                vdp2DebugPrintSetPosition(0x12, i + 4);
+                vdp2DebugPrintNewLine("                ");
+            }
+            pBattleManager->m6_subBattleId = 0;
+            playSystemSoundEffect(10);
+            do
+            {
+                pBattleManager->mA_pendingBattleOverlayId--;
+                if (pBattleManager->mA_pendingBattleOverlayId < 0)
+                {
+                    pBattleManager->mA_pendingBattleOverlayId = 0x1A;
+                }
+            } while (gCommonFile->battleActivationList[pBattleManager->mA_pendingBattleOverlayId] == 0);
         }
     }
     else

@@ -227,7 +227,7 @@ s16 phantomSlasher_getBaseDamage(s16 baseDamage)
 // BTL_A3::060a2e78
 s32 battleTypeId_match(u16 battleId, u8 category)
 {
-    if (gBattleManager->m4 == (s16)category && (s32)(s16)gBattleManager->m8 == (u32)battleId)
+    if (gBattleManager->m4_previousBattleOverlayId == (s16)category && (s32)(s16)gBattleManager->m8_previousSubBattleId == (u32)battleId)
     {
         return 1;
     }
@@ -963,7 +963,7 @@ static void sHuntingScytheTask_Update(sHuntingScytheTask* pThis)
         // TODO: stepAnimation(&pThis->model)
 
         // Update 16 trail entries (stride 0x6C each)
-        // Each trail: position, rotation, sub-model (itemBoxType1InitSub0)
+        // Each trail: position, rotation, sub-model (setAnimationFrame)
         // TODO: per-trail update loop
 
         // Sequential enemy targeting

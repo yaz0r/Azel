@@ -3,6 +3,11 @@
 #include "battleManager.h"
 #include "BTL_A3/BTL_A3.h"
 #include "BTL_A3_2/BTL_A3_2.h"
+#include "BTL_A5/BTL_A5.h"
+#include "BTL_A5/BTL_A5_2.h"
+#include "BTL_A5/BTL_A5_3.h"
+#include "BTL_A7/BTL_A7.h"
+#include "BTL_A7/BTL_A7_2.h"
 #include "BTL_T0/BTL_T0.h"
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
@@ -58,6 +63,26 @@ static void battleOverlayTask_Draw(sBattleOverlayTask* pThis)
             else if (sBattleOverlayName == std::string("BTL_A3_2.PRG"))
             {
                 overlayStart_BTL_A3_2(pThis);
+            }
+            else if (sBattleOverlayName == std::string("BTL_A5.PRG"))
+            {
+                overlayStart_BTL_A5(pThis);
+            }
+            else if (sBattleOverlayName == std::string("BTL_A5_2.PRG"))
+            {
+                overlayStart_BTL_A5_2(pThis);
+            }
+            else if (sBattleOverlayName == std::string("BTL_A5_3.PRG"))
+            {
+                overlayStart_BTL_A5_3(pThis);
+            }
+            else if (sBattleOverlayName == std::string("BTL_A7.PRG"))
+            {
+                overlayStart_BTL_A7(pThis);
+            }
+            else if (sBattleOverlayName == std::string("BTL_A7_2.PRG"))
+            {
+                overlayStart_BTL_A7_2(pThis);
             }
             else if (sBattleOverlayName == std::string("BTL_T0.PRG"))
             {
@@ -119,7 +144,7 @@ p_workArea loadBattleOverlay(s32 battleId, s32 subBattleId)
 {
     gBattleManager->m2_currentBattleOverlayId = battleId;
     gBattleManager->m6_subBattleId = subBattleId;
-    loadBattleOverlaySub0(gBattleManager);
+    remapBattleOverlayId(gBattleManager);
     if (gCommonFile->battleOverlaySetup[gBattleManager->m2_currentBattleOverlayId].m4_prg == "")
     {
         return nullptr;

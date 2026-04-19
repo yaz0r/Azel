@@ -1272,7 +1272,7 @@ static void BTL_T0_Baldor_init(sBaldorBase* pThisBase, sFormationData* pFormatio
 // 0606d698
 static void* BTL_T0_allocFormationSlots(p_workArea pTask, u8 numEntries)
 {
-    sFormationData* psVar1 = (sFormationData*)allocateHeapForTask(pTask, numEntries * 0x4C);
+    sFormationData* psVar1 = (sFormationData*)allocateHeapForTask(pTask, numEntries * sizeof(sFormationData));
     for (int iVar5 = 0; iVar5 < numEntries; iVar5++)
     {
         sFormationData& s = psVar1[iVar5];

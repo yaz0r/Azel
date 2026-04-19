@@ -19,9 +19,9 @@ void battleManager_Init(sBattleManager* pThis, s8 arg)
 
     pThis->m0_status = 0;
     pThis->m2_currentBattleOverlayId = -1;
-    pThis->m4 = -1;
+    pThis->m4_previousBattleOverlayId = -1;
     pThis->m6_subBattleId = 0;
-    pThis->m8 = 0;
+    pThis->m8_previousSubBattleId = 0;
     pThis->mA_pendingBattleOverlayId = 0;
     pThis->mC = arg;
 
@@ -49,8 +49,8 @@ void loadingTaskUpdateSub0(sBattleManager* pThis)
 {
     if (pThis->mC == 0)
     {
-        pThis->mA_pendingBattleOverlayId = pThis->m4;
-        pThis->m6_subBattleId = pThis->m8;
+        pThis->mA_pendingBattleOverlayId = pThis->m4_previousBattleOverlayId;
+        pThis->m6_subBattleId = pThis->m8_previousSubBattleId;
         pThis->m2_currentBattleOverlayId = -1;
 
         terminateCurrentBattle(pThis->m10_subTask_debugList);
@@ -58,62 +58,150 @@ void loadingTaskUpdateSub0(sBattleManager* pThis)
     }
 }
 
-void loadBattleOverlaySub0(sBattleManager* pThis)
+void remapBattleOverlayId(sBattleManager* pThis)
 {
-    pThis->m4 = pThis->m2_currentBattleOverlayId;
-    pThis->m8 = pThis->m6_subBattleId;
+    pThis->m4_previousBattleOverlayId = pThis->m2_currentBattleOverlayId;
+    pThis->m8_previousSubBattleId = pThis->m6_subBattleId;
 
-    int uVar1;
-    int iVar2 = pThis->m6_subBattleId;
-    int uVar4 = pThis->m2_currentBattleOverlayId;
-    int sVar3 = pThis->m6_subBattleId;
-
-    switch (pThis->m4)
+    switch (pThis->m4_previousBattleOverlayId)
     {
     case 0:
-        if (iVar2 == 10) {
-            uVar4 = 0x10;
-            sVar3 = 0;
-        }
-        else {
-            if (iVar2 != 0xb) {
-                if (iVar2 == 0xc) {
-                    uVar4 = 0xf;
-                    sVar3 = 1;
-                    break;
-                }
-                if (iVar2 == 0xd) {
-                    uVar4 = 0xf;
-                    sVar3 = 2;
-                    break;
-                }
-                uVar1 = 0xf;
-                if (iVar2 == 0xe) {
-                    uVar4 = uVar1;
-                    sVar3 = 3;
-                    break;
-                }
-                if (iVar2 != 0xf) {
-                    if (iVar2 == 0x10) {
-                        uVar4 = 0xf;
-                        sVar3 = 5;
-                    }
-                    break;
-                }
-                uVar4 = 0xf;
-                sVar3 = 4;
-                break;
-            }
-            uVar4 = 0xf;
-            sVar3 = 0;
+        switch (pThis->m6_subBattleId) {
+        case 0xa:
+            pThis->m2_currentBattleOverlayId = 0x10;
+            pThis->m6_subBattleId = 0;
+            break;
+        case 0xb:
+            pThis->m2_currentBattleOverlayId = 0xf;
+            pThis->m6_subBattleId = 0;
+            break;
+        case 0xc:
+            pThis->m2_currentBattleOverlayId = 0xf;
+            pThis->m6_subBattleId = 1;
+            break;
+        case 0xd:
+            pThis->m2_currentBattleOverlayId = 0xf;
+            pThis->m6_subBattleId = 2;
+            break;
+        case 0xe:
+            pThis->m2_currentBattleOverlayId = 0xf;
+            pThis->m6_subBattleId = 3;
+            break;
+        case 0xf:
+            pThis->m2_currentBattleOverlayId = 0xf;
+            pThis->m6_subBattleId = 4;
+            break;
+        case 0x10:
+            pThis->m2_currentBattleOverlayId = 0xf;
+            pThis->m6_subBattleId = 5;
+            break;
         }
         break;
-    default:
-        assert(0);
+    case 1:
+        switch (pThis->m6_subBattleId) {
+        case 0x10:
+            pThis->m2_currentBattleOverlayId = 0x12;
+            pThis->m6_subBattleId = 0;
+            break;
+        case 0x11:
+            pThis->m2_currentBattleOverlayId = 0x11;
+            pThis->m6_subBattleId = 0;
+            break;
+        }
+        break;
+    case 2:
+        switch (pThis->m6_subBattleId) {
+        case 7:
+            pThis->m2_currentBattleOverlayId = 0x13;
+            pThis->m6_subBattleId = 0;
+            break;
+        case 8:
+            pThis->m2_currentBattleOverlayId = 0xe;
+            pThis->m6_subBattleId = 0;
+            break;
+        }
+        break;
+    case 5:
+        switch (pThis->m6_subBattleId) {
+        case 0xd:
+            pThis->m2_currentBattleOverlayId = 0x15;
+            pThis->m6_subBattleId = 0;
+            break;
+        case 0xe:
+            pThis->m2_currentBattleOverlayId = 0x15;
+            pThis->m6_subBattleId = 1;
+            break;
+        case 0xf:
+            pThis->m2_currentBattleOverlayId = 0x15;
+            pThis->m6_subBattleId = 2;
+            break;
+        case 0x10:
+            pThis->m2_currentBattleOverlayId = 0x15;
+            pThis->m6_subBattleId = 3;
+            break;
+        case 0x11:
+            pThis->m2_currentBattleOverlayId = 0x15;
+            pThis->m6_subBattleId = 4;
+            break;
+        case 0x12:
+            pThis->m2_currentBattleOverlayId = 0x15;
+            pThis->m6_subBattleId = 5;
+            break;
+        case 0x13:
+            pThis->m2_currentBattleOverlayId = 0x15;
+            pThis->m6_subBattleId = 6;
+            break;
+        case 0x14:
+            pThis->m2_currentBattleOverlayId = 0x15;
+            pThis->m6_subBattleId = 7;
+            break;
+        case 0x15:
+            pThis->m2_currentBattleOverlayId = 0x14;
+            pThis->m6_subBattleId = 0;
+            break;
+        case 0x16:
+            pThis->m2_currentBattleOverlayId = 0xe;
+            pThis->m6_subBattleId = 1;
+            break;
+        }
+        break;
+    case 6:
+        if (pThis->m6_subBattleId ==0xe) {
+            pThis->m2_currentBattleOverlayId = 0x16;
+            pThis->m6_subBattleId = 0;
+        }
+        break;
+    case 7:
+        if (pThis->m6_subBattleId ==0xe) {
+            pThis->m2_currentBattleOverlayId = 0x17;
+            pThis->m6_subBattleId = 0;
+        }
+        break;
+    case 8:
+        if (pThis->m6_subBattleId ==0xe) {
+            pThis->m2_currentBattleOverlayId = 0xe;
+            pThis->m6_subBattleId = 2;
+        }
+        break;
+    case 9:
+        if (pThis->m6_subBattleId ==5) {
+            pThis->m2_currentBattleOverlayId = 0x18;
+            pThis->m6_subBattleId = 0;
+        }
+        break;
+    case 10:
+        if (pThis->m6_subBattleId ==0xf) {
+            pThis->m2_currentBattleOverlayId = 0x19;
+            pThis->m6_subBattleId = 0;
+        }
+        break;
+    case 0xb:
+        if (pThis->m6_subBattleId ==0xf) {
+            pThis->m2_currentBattleOverlayId = 0x1a;
+            pThis->m6_subBattleId = 0;
+        }
+        break;
     }
-
-    pThis->m2_currentBattleOverlayId = uVar4;
-    pThis->m6_subBattleId = sVar3;
 }
 
 static int loadBattleOverlay_debug(sBattleManager* pThis)
@@ -123,7 +211,7 @@ static int loadBattleOverlay_debug(sBattleManager* pThis)
     drawLineLargeFont("LOADING...");
     pThis->m2_currentBattleOverlayId = pThis->mA_pendingBattleOverlayId;
     pThis->mA_pendingBattleOverlayId = -1;
-    loadBattleOverlaySub0(pThis);
+    remapBattleOverlayId(pThis);
 
     if (gCommonFile->battleOverlaySetup[pThis->m2_currentBattleOverlayId].m4_prg.length() == 0)
     {

@@ -67,26 +67,6 @@ static s16 LCSItemBox_Table2[] = {
 
 //init box in already opened state
 // TODO: move to model functions
-void itemBoxType1InitSub0(s_3dModel* r4, s32 r5)
-{
-    if (r4->mA_animationFlags & 0x38)
-    {
-        s16 type = r4->m30_pCurrentAnimation->m0_flags & 7;
-        switch (type)
-        {
-        case 4:
-            resetAnimation(r4);
-            for (int i = 0; i < r5; i++)
-            {
-                stepAnimation(r4);
-            }
-            break;
-        default:
-            assert(0);
-            break;
-        }
-    }
-}
 
 static void itemBoxType1Init(s_itemBoxType1* pThis, s_itemBoxDefinition* arg)
 {
@@ -127,7 +107,7 @@ static void itemBoxType1Init(s_itemBoxType1* pThis, s_itemBoxDefinition* arg)
                 pThis->m_DrawMethod = LCSItemBox_OpenedBoxDraw;
                 pThis->mEA_state = 3;
 
-                itemBoxType1InitSub0(&pThis->m98_3dModel, 20);
+                setAnimationFrame(&pThis->m98_3dModel, 20);
                 return;
             }
         }

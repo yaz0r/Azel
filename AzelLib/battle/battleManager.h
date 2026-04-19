@@ -4,9 +4,9 @@ struct sBattleManager : public s_workAreaTemplateWithArg<sBattleManager, s8>
 {
     s16 m0_status;
     s16 m2_currentBattleOverlayId;
-    s16 m4; // D
+    s16 m4_previousBattleOverlayId;
     s16 m6_subBattleId;
-    s16 m8; // E
+    s16 m8_previousSubBattleId;
     s16 mA_pendingBattleOverlayId;
     s8 mC;
     s8 mD;
@@ -23,4 +23,4 @@ struct sBattleManager : public s_workAreaTemplateWithArg<sBattleManager, s8>
 extern sBattleManager* gBattleManager;
 sBattleManager* createBattleManager(p_workArea parentTask, s8 arg);
 void startDebugBattle(s32 battleOverlayId);
-void  loadBattleOverlaySub0(sBattleManager* pThis);
+void  remapBattleOverlayId(sBattleManager* pThis);
