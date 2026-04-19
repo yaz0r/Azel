@@ -431,58 +431,59 @@ void BTL_A5_env_Draw(s_BTL_A3_Env* pThis)
     regs->mC6_WPEY0 = pThis->m24_vdp1Clipping[3];
 }
 
+static const u16 s_paletteData[48] = {
+    0xFFFF, 0xC2B7, 0xC296, 0xBE96, 0xBE75, 0xBA75, 0xBE75, 0xBA54,
+    0xB654, 0xB633, 0xB233, 0xB633, 0xB233, 0xFFFF, 0xFFFF, 0xFFFF,
+    0xFFFF, 0xC296, 0xBE96, 0xBE75, 0xBA75, 0xBA54, 0xBA75, 0xCED8,
+    0xCAD8, 0xC6D8, 0xC6B7, 0xC2B7, 0xC6B7, 0xFFFF, 0xFFFF, 0xFFFF,
+    0xFFFF, 0xBE75, 0xBA75, 0xBA54, 0xB654, 0xB633, 0xB654, 0xC6D8,
+    0xC6B7, 0xC2B7, 0xC296, 0xBE96, 0xC296, 0xFFFF, 0xFFFF, 0xFFFF,
+};
+
+static const s32 s_paletteIndexTable[12] = {
+    1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+};
+
 struct sBTL_A5_PaletteAnim : public s_workAreaTemplate<sBTL_A5_PaletteAnim>
 {
-    u8 m0_palette[0x60];
+    u16 m0_palette[48];
     s8 m60_frameCounter;
     s8 m61_state;
-    // size 0x62 on Saturn; C++ adds:
-    u32 m_paletteDataAddr;
-    u32 m_indexTableAddr;
+    // size 0x62
 };
 
 static void BTL_A5_paletteAnimUpdate(sBTL_A5_PaletteAnim* pThis)
 {
-    sSaturnPtr paletteData = gCurrentBattleOverlay->getSaturnPtr(pThis->m_paletteDataAddr);
-    sSaturnPtr indexTable = gCurrentBattleOverlay->getSaturnPtr(pThis->m_indexTableAddr);
-
     if (pThis->m61_state == 0)
     {
-        for (int i = 0; i < 0x60; i++)
-            pThis->m0_palette[i] = readSaturnU8(paletteData + i);
+        for (int i = 0; i < 48; i++)
+            pThis->m0_palette[i] = s_paletteData[i];
         pThis->m61_state++;
     }
     else if (pThis->m61_state == 1)
     {
         s8 frame = pThis->m60_frameCounter++;
         if (frame >= 6)
-        {
             pThis->m60_frameCounter -= 6;
-        }
 
-        u8* pal = pThis->m0_palette;
         for (int i = 0; i < 6; i++)
         {
-            s32 dst = i * 2;
-            s32 src = readSaturnS32(indexTable + (pThis->m60_frameCounter + i) * 4) * 2;
-            pal[dst + 2]     = readSaturnU8(paletteData + src);
-            pal[dst + 3]     = readSaturnU8(paletteData + src + 1);
-            pal[dst + 0xE]   = readSaturnU8(paletteData + src + 0xC);
-            pal[dst + 0xF]   = readSaturnU8(paletteData + src + 0xD);
-            pal[dst + 0x22]  = readSaturnU8(paletteData + src + 0x20);
-            pal[dst + 0x23]  = readSaturnU8(paletteData + src + 0x21);
-            pal[dst + 0x2E]  = readSaturnU8(paletteData + src + 0x2C);
-            pal[dst + 0x2F]  = readSaturnU8(paletteData + src + 0x2D);
-            pal[dst + 0x42]  = readSaturnU8(paletteData + src + 0x40);
-            pal[dst + 0x43]  = readSaturnU8(paletteData + src + 0x41);
-            pal[dst + 0x4E]  = readSaturnU8(paletteData + src + 0x4C);
-            pal[dst + 0x4F]  = readSaturnU8(paletteData + src + 0x4D);
+            s32 dst = i;
+            s32 src = s_paletteIndexTable[pThis->m60_frameCounter + i];
+            pThis->m0_palette[dst + 1]  = s_paletteData[src];
+            pThis->m0_palette[dst + 7]  = s_paletteData[src + 6];
+            pThis->m0_palette[dst + 17] = s_paletteData[src + 16];
+            pThis->m0_palette[dst + 23] = s_paletteData[src + 22];
+            pThis->m0_palette[dst + 33] = s_paletteData[src + 32];
+            pThis->m0_palette[dst + 39] = s_paletteData[src + 38];
         }
-        asyncDmaCopy(pThis->m0_palette, getVdp2Cram(0xC00), 0x60, 2);
+        u8* cram = getVdp2Cram(0xC00);
+        for (int i = 0; i < 48; i++)
+            WRITE_BE_U16(cram + i * 2, pThis->m0_palette[i]);
     }
 }
 
-sBTL_A5_PaletteAnim* createPaletteAnimTask(p_workArea parent, u32 paletteDataAddr, u32 indexTableAddr)
+sBTL_A5_PaletteAnim* createPaletteAnimTask(p_workArea parent)
 {
     static const sBTL_A5_PaletteAnim::TypedTaskDefinition paletteDef = {
         nullptr,
@@ -490,13 +491,7 @@ sBTL_A5_PaletteAnim* createPaletteAnimTask(p_workArea parent, u32 paletteDataAdd
         nullptr,
         nullptr,
     };
-    sBTL_A5_PaletteAnim* pTask = createSubTask<sBTL_A5_PaletteAnim>(parent, &paletteDef);
-    if (pTask)
-    {
-        pTask->m_paletteDataAddr = paletteDataAddr;
-        pTask->m_indexTableAddr = indexTableAddr;
-    }
-    return pTask;
+    return createSubTask<sBTL_A5_PaletteAnim>(parent, &paletteDef);
 }
 
 // 06059d40
@@ -589,7 +584,7 @@ static void BTL_A5_env_InitVdp2(s_BTL_A3_Env* pThis)
     vdp2Controls.m4_pendingVdp2Regs->m10C_CCRR = pThis->m55;
     vdp2Controls.m_isDirty = 1;
 
-    createPaletteAnimTask(pThis, 0x060adffc, 0x060af5c4);
+    createPaletteAnimTask(pThis);
 
     s_BTL_A3_Env_InitVdp2Sub4(g_BTL_A5->getSaturnPtr(0x060af6fc));
 

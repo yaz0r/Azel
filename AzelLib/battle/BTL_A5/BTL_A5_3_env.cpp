@@ -98,7 +98,7 @@ static void BTL_A5_3_env_Init(s_BTL_A3_Env* pThis)
     vdp2Controls.m4_pendingVdp2Regs->m10C_CCRR = pThis->m55;
     vdp2Controls.m_isDirty = 1;
 
-    createPaletteAnimTask(pThis, 0x060a40f0, 0x060a45b0);
+    createPaletteAnimTask(pThis);
 
     s_BTL_A3_Env_InitVdp2Sub4(g_BTL_A5_3->getSaturnPtr(0x060a46f0));
 }

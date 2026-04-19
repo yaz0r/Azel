@@ -7,4 +7,4 @@ void BTL_A5_buildGroundRotation(struct s_BTL_A3_Env* pThis);
 void BTL_A5_env_Draw(struct s_BTL_A3_Env* pThis);
 
 struct sBTL_A5_PaletteAnim;
-sBTL_A5_PaletteAnim* createPaletteAnimTask(p_workArea parent, u32 paletteDataAddr, u32 indexTableAddr);
+sBTL_A5_PaletteAnim* createPaletteAnimTask(p_workArea parent);
