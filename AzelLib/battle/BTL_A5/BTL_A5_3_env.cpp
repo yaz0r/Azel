@@ -9,7 +9,7 @@
 #include "field/field_a3/o_fld_a3.h"
 
 // 0605794c
-static void BTL_A5_3_env_Init(s_BTL_A3_Env* pThis)
+static void BTL_A5_3_env_Init(sVdp2PlaneTask* pThis)
 {
     gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
@@ -75,7 +75,7 @@ static void BTL_A5_3_env_Init(s_BTL_A3_Env* pThis)
     vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0x3;
     vdp2Controls.m_isDirty = 1;
 
-    pThis->m3C = 0x40000;
+    pThis->m3C_scale = 0x40000;
 
     static const std::vector<std::array<s32, 2>> layerDisplayConfig = {
         { {0x2C, 0x1} }
@@ -100,18 +100,18 @@ static void BTL_A5_3_env_Init(s_BTL_A3_Env* pThis)
 
     createPaletteAnimTask(pThis);
 
-    s_BTL_A3_Env_InitVdp2Sub4(g_BTL_A5_3->getSaturnPtr(0x060a46f0));
+    sVdp2PlaneTask_InitVdp2Sub4(g_BTL_A5_3->getSaturnPtr(0x060a46f0));
 }
 
 // 06057d10
 p_workArea Create_BTL_A5_3_env(p_workArea parent)
 {
-    static const s_BTL_A3_Env::TypedTaskDefinition definition = {
+    static const sVdp2PlaneTask::TypedTaskDefinition definition = {
         &BTL_A5_3_env_Init,
         &BTL_A3_Env_Update,
         &BTL_A5_env_Draw,
         nullptr,
     };
 
-    return createSubTask<s_BTL_A3_Env>(parent, &definition);
+    return createSubTask<sVdp2PlaneTask>(parent, &definition);
 }

@@ -1911,7 +1911,7 @@ static void fieldPaletteInit(sVdp2PlaneTask* pThis)
     vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 3;
 
     pThis->m3C_scale = fixedPoint(0x10000);
-    pThis->m38_groundY = fixedPoint(0xFFFF8000);
+    pThis->m38 = fixedPoint(0xFFFF8000);
 
     vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL = vdp2Controls.m4_pendingVdp2Regs->mEC_CCCTL & 0xFEFF;
     vdp2Controls.m_isDirty = 1;
@@ -1945,7 +1945,7 @@ static void fieldPaletteInit(sVdp2PlaneTask* pThis)
     pThis->m4C_wavePhase = 0;
     pThis->m40_waveSpeed = 0x0021EFCB;
     pThis->m44_waveFreq = 0x4D5E540;
-    pThis->m48_waveAmplitude = 0xF5A;
+    pThis->m48 = 0xF5A;
 }
 
 // 060590ae — moved to shared/vdp2PlaneTask.cpp as vdp2SetupRotationPass
@@ -1971,8 +1971,8 @@ static void fieldPaletteDraw(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     // Subfield 2: dynamic rotation map plane switching based on camera
     if (getFieldTaskPtr()->m2E_currentSubFieldIndex == 2)
@@ -2021,12 +2021,12 @@ static void fieldPaletteDraw(sVdp2PlaneTask* pThis)
     }
 
     // Pass 0: ground plane
-    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     vdp2SetupRotationPass(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
 
     if (pThis->m78_paletteWorkSub->m0 == 0)
     {
@@ -2039,16 +2039,16 @@ static void fieldPaletteDraw(sVdp2PlaneTask* pThis)
 
     // Pass 1: sky scroll
     pThis->m0_scrollX = ((s32)pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
-    pThis->m4_scrollY = (0x200 - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0x200 - pThis->m34) * 0x10000;
 
-    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
     s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
     t.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
     s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34;
     t.m3E = t.m36;
     t.m40 = 0;

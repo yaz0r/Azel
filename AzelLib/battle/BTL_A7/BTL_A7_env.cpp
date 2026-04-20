@@ -9,7 +9,7 @@
 // 06056d8c
 static void BTL_A7_env0_Init(sVdp2PlaneTask* pThis)
 {
-    gBattleManager->m10_battleOverlay->m1C_envTask = (s_BTL_A3_Env*)pThis;
+    gBattleManager->m10_battleOverlay->m1C_envTask = (sVdp2PlaneTask*)pThis;
     Unimplemented();
 }
 
@@ -40,7 +40,7 @@ void Create_BTL_A7_env0(s_workAreaCopy* parent)
 // 060565b0
 static void BTL_A7_env1_Init(sVdp2PlaneTask* pThis)
 {
-    gBattleManager->m10_battleOverlay->m1C_envTask = (s_BTL_A3_Env*)pThis;
+    gBattleManager->m10_battleOverlay->m1C_envTask = (sVdp2PlaneTask*)pThis;
     Unimplemented();
 }
 
@@ -71,7 +71,7 @@ void Create_BTL_A7_env1(s_workAreaCopy* parent)
 // 06055d00
 static void BTL_A7_env2_Init(sVdp2PlaneTask* pThis)
 {
-    gBattleManager->m10_battleOverlay->m1C_envTask = (s_BTL_A3_Env*)pThis;
+    gBattleManager->m10_battleOverlay->m1C_envTask = (sVdp2PlaneTask*)pThis;
     Unimplemented();
 }
 

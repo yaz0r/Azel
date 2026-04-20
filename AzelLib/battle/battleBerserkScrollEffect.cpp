@@ -65,7 +65,7 @@ static sBerserkScrollConfig readScrollConfig(sSaturnPtr tableBase, int index)
 // BTL_A3::060a28b8
 static void battleBerserkScrollEffect_update(sBattleBerserkScrollTask* pThis)
 {
-    s_BTL_A3_Env* envTask = gBattleManager->m10_battleOverlay->m1C_envTask;
+    sVdp2PlaneTask* envTask = gBattleManager->m10_battleOverlay->m1C_envTask;
     s8 envScrollCount = envTask->m5C;
 
     sBerserkScrollConfig cfg = {};
@@ -73,7 +73,7 @@ static void battleBerserkScrollEffect_update(sBattleBerserkScrollTask* pThis)
     if (envScrollCount > 0)
     {
         pThis->m6_scrollId = envScrollCount - 1;
-        cfg = readScrollConfig(overlayFile->getSaturnPtr(0x060b15d0), pThis->m6_scrollId);
+        cfg = readScrollConfig(gCurrentBattleOverlay->getBerserkScrollConfigTable(), pThis->m6_scrollId);
     }
 
     switch ((u8)pThis->m0_state)
@@ -250,7 +250,7 @@ static void battleBerserkScrollEffect_update(sBattleBerserkScrollTask* pThis)
 // BTL_A3::060a2c72
 static void battleBerserkScrollEffect_draw(sBattleBerserkScrollTask* pThis)
 {
-    s_BTL_A3_Env* envTask = gBattleManager->m10_battleOverlay->m1C_envTask;
+    sVdp2PlaneTask* envTask = gBattleManager->m10_battleOverlay->m1C_envTask;
     if ((envTask->m70_flags & 1) == 0)
         return;
 
@@ -273,7 +273,7 @@ static void battleBerserkScrollEffect_draw(sBattleBerserkScrollTask* pThis)
 
     // Determine texture size from config
     sSaturnMemoryFile* overlayFile = gBattleManager->m10_battleOverlay->m4_battleEngine->m3A8_overlayBattledata.m_file;
-    sBerserkScrollConfig cfg = readScrollConfig(overlayFile->getSaturnPtr(0x060b15d0), pThis->m6_scrollId);
+    sBerserkScrollConfig cfg = readScrollConfig(gCurrentBattleOverlay->getBerserkScrollConfigTable(), pThis->m6_scrollId);
     s32 texSize;
     if (cfg.m1E_texSizeMode == 0)
         texSize = 0x200000;

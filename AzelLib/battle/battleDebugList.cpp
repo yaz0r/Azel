@@ -67,7 +67,7 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
             for (int i = 0; i < numSubBattle; i++)
             {
                 vdp2DebugPrintSetPosition(0x12, i + 4);
-                vdp2DebugPrintNewLine("                ");
+                clearVdp2TextSmallFont();
             }
             pBattleManager->m6_subBattleId = 0;
             playSystemSoundEffect(10);
@@ -87,7 +87,7 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
             for (int i = 0; i < numSubBattle; i++)
             {
                 vdp2DebugPrintSetPosition(0x12, i + 4);
-                vdp2DebugPrintNewLine("                ");
+                clearVdp2TextSmallFont();
             }
             pBattleManager->m6_subBattleId = 0;
             playSystemSoundEffect(10);

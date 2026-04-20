@@ -165,7 +165,7 @@ p_workArea createDebrisScatterTask(p_workArea parent, sDebrisScatterParams* para
 
     pTask->m0_gravity = params->m0_gravity;
     pTask->m4_bounce = params->m4_bounce;
-    pTask->m8_groundY = params->m38_groundY;
+    pTask->m8_groundY = params->m38;
     pTask->mC_spread = params->mC_randomMask;
     pTask->m10_callback = 0;
     pTask->m14_soundEffect = params->m44_soundEffect;

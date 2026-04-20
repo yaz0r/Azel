@@ -1,5 +1,7 @@
 #include "PDS.h"
 #include "BTL_A7_2_data.h"
+#include "BTL_A7_2_formation.h"
+#include "BTL_A7_2_env.h"
 
 BTL_A7_2_data* g_BTL_A7_2 = nullptr;
 
@@ -8,10 +10,18 @@ sSaturnPtr BTL_A7_2_data::getEncounterDataTable()
     return getSaturnPtr(0x060a767c);
 }
 
+sSaturnPtr BTL_A7_2_data::getBerserkScrollConfigTable()
+{
+    return getSaturnPtr(0x060adcac);
+}
+
 void BTL_A7_2_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32 arg1)
 {
     switch (Func.m_offset)
     {
+    case 0x060545e0:
+        BTL_A7_2_createFormation(pParent, arg0);
+        break;
     default:
         assert(0);
         break;
@@ -23,7 +33,7 @@ void BTL_A7_2_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent)
     switch (Func.m_offset)
     {
     case 0x0605830a:
-        Unimplemented();
+        Create_BTL_A7_2_env(pParent);
         break;
     default:
         assert(0);

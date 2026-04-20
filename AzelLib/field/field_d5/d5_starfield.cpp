@@ -71,8 +71,8 @@ struct s_d5StarfieldTask : public s_workAreaTemplate<s_d5StarfieldTask>
     sVec3_FP m18_cameraRotation;    // 0x18: stored as rotation << 16
     std::array<s16, 4> m24_vdp1Clipping;  // 0x24
     std::array<s16, 2> m2C_vdp1LocalCoords; // 0x2C
-    s16 m30_projParam0;             // 0x30
-    s16 m32_projParam1;             // 0x32
+    ;             // 0x30
+    s16 m30_vdp1ProjectionParam[1];             // 0x32
     s32 m34;                        // 0x34
     s32 m38;                        // 0x38
     fixedPoint m3C_focalScale;      // 0x3C
@@ -101,7 +101,7 @@ static void setupStarfieldRotationPass(s_d5StarfieldTask* pThis, fixedPoint foca
     t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
     s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34;
     t.m3E = t.m36;
     t.m40 = 0;
@@ -371,7 +371,7 @@ void s_d5StarfieldTask::Draw(s_d5StarfieldTask* pThis)
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
     getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoords);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
     if (pFieldTask->m2C_currentFieldIndex != 0)
@@ -381,7 +381,7 @@ void s_d5StarfieldTask::Draw(s_d5StarfieldTask* pThis)
         gCurrentVDP2ScrollLayer = 4;
     }
 
-    fixedPoint focalLength = intDivide((s32)pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1));
+    fixedPoint focalLength = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1]));
 
     // Pass 0: background stars
     setupStarfieldRotationPass(

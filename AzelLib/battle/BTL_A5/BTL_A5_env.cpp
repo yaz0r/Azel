@@ -347,7 +347,7 @@ static void BTL_A5_windTask_Delete(sBTL_A5_WindTask*)
 }
 
 // 0605a4cc
-void BTL_A5_buildGroundRotation(s_BTL_A3_Env* pThis)
+void BTL_A5_buildGroundRotation(sVdp2PlaneTask* pThis)
 {
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
 
@@ -369,17 +369,17 @@ void BTL_A5_buildGroundRotation(s_BTL_A3_Env* pThis)
     t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C);
+    scaleRotationMatrix(pThis->m3C_scale);
     writeRotationParams(-rotZ);
 
     s32 diffX = (s32)t.m34 - (s32)t.m3C;
     s32 diffY = (s32)t.m36 - (s32)t.m3E;
     s32 diffZ = (s32)t.m38 - (s32)t.m40;
 
-    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C, (s32)pThis->mC_cameraPosition.m0_X << 4)
+    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m0_X << 4)
                     - gVdp2RotationMatrix.m[0][0] * diffX - gVdp2RotationMatrix.m[0][1] * diffY - gVdp2RotationMatrix.m[0][2] * diffZ
                     + (s32)(s16)t.m3C * -0x10000;
-    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C, (s32)pThis->mC_cameraPosition.m8_Z << 4)
+    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m8_Z << 4)
                     - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
                     + (s32)(s16)t.m3E * -0x10000;
     gVdp2RotationMatrix.Mz = (pThis->mC_cameraPosition.m4_Y - pThis->m38) * 0x10
@@ -388,7 +388,7 @@ void BTL_A5_buildGroundRotation(s_BTL_A3_Env* pThis)
 }
 
 // 0605a2e8
-void BTL_A5_env_Draw(s_BTL_A3_Env* pThis)
+void BTL_A5_env_Draw(sVdp2PlaneTask* pThis)
 {
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
@@ -495,7 +495,7 @@ sBTL_A5_PaletteAnim* createPaletteAnimTask(p_workArea parent)
 }
 
 // 06059d40
-static void BTL_A5_env_InitVdp2(s_BTL_A3_Env* pThis)
+static void BTL_A5_env_InitVdp2(sVdp2PlaneTask* pThis)
 {
     gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
@@ -560,7 +560,7 @@ static void BTL_A5_env_InitVdp2(s_BTL_A3_Env* pThis)
     vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0x3;
     vdp2Controls.m_isDirty = 1;
 
-    pThis->m3C = 0x40000;
+    pThis->m3C_scale = 0x40000;
 
     static const std::vector<std::array<s32, 2>> layerDisplayConfig = {
         { {0x2C, 0x1} }
@@ -586,7 +586,7 @@ static void BTL_A5_env_InitVdp2(s_BTL_A3_Env* pThis)
 
     createPaletteAnimTask(pThis);
 
-    s_BTL_A3_Env_InitVdp2Sub4(g_BTL_A5->getSaturnPtr(0x060af6fc));
+    sVdp2PlaneTask_InitVdp2Sub4(g_BTL_A5->getSaturnPtr(0x060af6fc));
 
     {
         static const sBTL_A5_WindTask::TypedTaskDefinition windDef = {
@@ -680,7 +680,7 @@ static void BTL_A5_createCorridorParticle(npcFileDeleter* pFileBundle, sVec3_FP*
 }
 
 // 0605a954
-static void BTL_A5_corridorTask_Init(s_BTL_A3_Env* pThis)
+static void BTL_A5_corridorTask_Init(sVdp2PlaneTask* pThis)
 {
     allocateNPC(pThis, 0x16);
 
@@ -709,7 +709,7 @@ static void BTL_A5_corridorTask_Init(s_BTL_A3_Env* pThis)
 }
 
 // 0605ac48
-static void BTL_A5_corridorTask_Update(s_BTL_A3_Env* pThis)
+static void BTL_A5_corridorTask_Update(sVdp2PlaneTask* pThis)
 {
     if (gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags & 0x40)
     {
@@ -748,27 +748,27 @@ static void BTL_A5_corridorTask_Update(s_BTL_A3_Env* pThis)
 }
 
 // 0605ae0a
-static void BTL_A5_corridorTask_Delete(s_BTL_A3_Env*)
+static void BTL_A5_corridorTask_Delete(sVdp2PlaneTask*)
 {
     decreaseNPCRefCount(0x16);
 }
 
 // 0605a168
-static void BTL_A5_env_Init(s_BTL_A3_Env* pThis)
+static void BTL_A5_env_Init(sVdp2PlaneTask* pThis)
 {
     BTL_A5_env_InitVdp2(pThis);
 
-    static const s_BTL_A3_Env::TypedTaskDefinition corridorDef = {
-        (void(*)(s_BTL_A3_Env*))&BTL_A5_corridorTask_Init,
-        (void(*)(s_BTL_A3_Env*))&BTL_A5_corridorTask_Update,
+    static const sVdp2PlaneTask::TypedTaskDefinition corridorDef = {
+        (void(*)(sVdp2PlaneTask*))&BTL_A5_corridorTask_Init,
+        (void(*)(sVdp2PlaneTask*))&BTL_A5_corridorTask_Update,
         nullptr,
         &BTL_A5_corridorTask_Delete,
     };
-    createSubTask<s_BTL_A3_Env>(pThis, &corridorDef);
+    createSubTask<sVdp2PlaneTask>(pThis, &corridorDef);
 }
 
 // 0605a014
-static void BTL_A5_env_Init_grid(s_BTL_A3_Env* pThis)
+static void BTL_A5_env_Init_grid(sVdp2PlaneTask* pThis)
 {
     BTL_A5_env_InitVdp2(pThis);
 
@@ -780,25 +780,25 @@ static void BTL_A5_env_Init_grid(s_BTL_A3_Env* pThis)
 // 0605a738
 p_workArea Create_BTL_A5_env(p_workArea parent)
 {
-    static const s_BTL_A3_Env::TypedTaskDefinition definition = {
+    static const sVdp2PlaneTask::TypedTaskDefinition definition = {
         &BTL_A5_env_Init,
         &BTL_A3_Env_Update,
         &BTL_A5_env_Draw,
         nullptr,
     };
 
-    return createSubTask<s_BTL_A3_Env>(parent, &definition);
+    return createSubTask<sVdp2PlaneTask>(parent, &definition);
 }
 
 // 0605a71a
 p_workArea Create_BTL_A5_env_grid(p_workArea parent)
 {
-    static const s_BTL_A3_Env::TypedTaskDefinition definition = {
+    static const sVdp2PlaneTask::TypedTaskDefinition definition = {
         &BTL_A5_env_Init_grid,
         &BTL_A3_Env_Update,
         &BTL_A5_env_Draw,
         nullptr,
     };
 
-    return createSubTask<s_BTL_A3_Env>(parent, &definition);
+    return createSubTask<sVdp2PlaneTask>(parent, &definition);
 }

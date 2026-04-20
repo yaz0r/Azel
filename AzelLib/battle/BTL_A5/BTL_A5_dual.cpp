@@ -17,12 +17,7 @@ void battleEngine_UpdateSub1Sub0(s32 param_1);
 
 struct sBTL_A5_DualFormation : public s_workAreaTemplateWithArgAndBase<sBTL_A5_DualFormation, sBTL_A5_FormationTask>
 {
-    p_workArea* m1D0_entityArray2;
-    s32 m1D4;
-    sSaturnPtr m1D8;
-    s16 m1DC;
-    s8 m1DE_numEntities2;
-    s8 m1DF_deadCount2;
+    sEntityGroup m1D0_entityGroup2;
     u8 m1E0_pad5[3];
     u8 m1E3_flag2;
     u8 m1E4_pad6[0x27C - 0x1E4];
@@ -40,24 +35,24 @@ static void BTL_A5_dualFormation_Update(sBTL_A5_DualFormation* pThis)
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     pEngine->m3B2_numBattleFormationRunning++;
 
-    for (int i = 0; i < pThis->mEE_numEntities; i++)
+    for (int i = 0; i < pThis->mE0_entityGroup.mE_numEntities; i++)
     {
-        p_workArea e = pThis->mE0_entityArray[i];
+        p_workArea e = pThis->mE0_entityGroup.m0_entityArray[i];
         if (e && e->getTask()->m14_flags & TASK_FLAGS_FINISHED)
-            pThis->mE0_entityArray[i] = nullptr;
+            pThis->mE0_entityGroup.m0_entityArray[i] = nullptr;
     }
-    for (int i = 0; i < pThis->m1DE_numEntities2; i++)
+    for (int i = 0; i < pThis->m1D0_entityGroup2.mE_numEntities; i++)
     {
-        p_workArea e = pThis->m1D0_entityArray2[i];
+        p_workArea e = pThis->m1D0_entityGroup2.m0_entityArray[i];
         if (e && e->getTask()->m14_flags & TASK_FLAGS_FINISHED)
-            pThis->m1D0_entityArray2[i] = nullptr;
+            pThis->m1D0_entityGroup2.m0_entityArray[i] = nullptr;
     }
 
     // check if swarm group all dead
     bool swarmAllDead = true;
-    for (int i = 0; i < pThis->mEE_numEntities; i++)
-        if (pThis->mE0_entityArray[i]) { swarmAllDead = false; break; }
-    if (swarmAllDead && pThis->mEF_deadCount >= pThis->mEE_numEntities)
+    for (int i = 0; i < pThis->mE0_entityGroup.mE_numEntities; i++)
+        if (pThis->mE0_entityGroup.m0_entityArray[i]) { swarmAllDead = false; break; }
+    if (swarmAllDead && pThis->mE0_entityGroup.mF_deadCount >= pThis->mE0_entityGroup.mE_numEntities)
     {
         pThis->m284_allSwarmDead = 1;
         battleEngine_FlagQuadrantBitForSafety(0);
@@ -67,9 +62,9 @@ static void BTL_A5_dualFormation_Update(sBTL_A5_DualFormation* pThis)
 
     // check if single group all dead
     bool singleAllDead = true;
-    for (int i = 0; i < pThis->m1DE_numEntities2; i++)
-        if (pThis->m1D0_entityArray2[i]) { singleAllDead = false; break; }
-    if (singleAllDead && pThis->m1DF_deadCount2 >= pThis->m1DE_numEntities2)
+    for (int i = 0; i < pThis->m1D0_entityGroup2.mE_numEntities; i++)
+        if (pThis->m1D0_entityGroup2.m0_entityArray[i]) { singleAllDead = false; break; }
+    if (singleAllDead && pThis->m1D0_entityGroup2.mF_deadCount >= pThis->m1D0_entityGroup2.mE_numEntities)
     {
         pThis->m288_allSingleDead = 1;
         battleEngine_FlagQuadrantBitForSafety(0);
@@ -138,37 +133,37 @@ static void BTL_A5_dualFormation_Init(sBTL_A5_DualFormation* pThis)
     battleEngine_UpdateSub1Sub0(0);
     displayFormationName(0xD, 1, 9);
 
-    pThis->mE8_dataTable = g_BTL_A5->getSaturnPtr(0x060b11c8);
+    pThis->mE0_entityGroup.m8_dataTable = g_BTL_A5->getSaturnPtr(0x060b11c8);
     pThis->m1CC_dataTable2 = g_BTL_A5->getSaturnPtr(0x060b13a8);
 
     // swarm group: 10 enemies
-    pThis->mEE_numEntities = 10;
-    pThis->mEF_deadCount = 0;
-    pThis->mE0_entityArray = (p_workArea*)allocateHeapForTask(pThis, pThis->mEE_numEntities * sizeof(p_workArea));
+    pThis->mE0_entityGroup.mE_numEntities = 10;
+    pThis->mE0_entityGroup.mF_deadCount = 0;
+    pThis->mE0_entityGroup.m0_entityArray = (p_workArea*)allocateHeapForTask(pThis, pThis->mE0_entityGroup.mE_numEntities * sizeof(p_workArea));
 
-    for (int i = 0; i < pThis->mEE_numEntities; i++)
+    for (int i = 0; i < pThis->mE0_entityGroup.mE_numEntities; i++)
     {
-        pThis->mE0_entityArray[i] = BTL_A5_createEnemy(pThis, 0x060b11c8, i, 0);
-        if (pThis->mE0_entityArray[i] == nullptr)
-            pThis->mEF_deadCount++;
+        pThis->mE0_entityGroup.m0_entityArray[i] = BTL_A5_createEnemy(pThis, 0x060b11c8, i, 0);
+        if (pThis->mE0_entityGroup.m0_entityArray[i] == nullptr)
+            pThis->mE0_entityGroup.mF_deadCount++;
     }
 
     pThis->m284_allSwarmDead = 0;
     pThis->m280_phase = 0;
 
     // single group: 3 lead enemies
-    pThis->m1DE_numEntities2 = 3;
-    pThis->m1DF_deadCount2 = 0;
-    pThis->m1D0_entityArray2 = (p_workArea*)allocateHeapForTask(pThis, pThis->m1DE_numEntities2 * sizeof(p_workArea));
+    pThis->m1D0_entityGroup2.mE_numEntities = 3;
+    pThis->m1D0_entityGroup2.mF_deadCount = 0;
+    pThis->m1D0_entityGroup2.m0_entityArray = (p_workArea*)allocateHeapForTask(pThis, pThis->m1D0_entityGroup2.mE_numEntities * sizeof(p_workArea));
 
-    pThis->m1D8 = g_BTL_A5->getSaturnPtr(0x060b13b4 + (variant ? 0x24 : 0));
+    pThis->m1D0_entityGroup2.m8_dataTable = g_BTL_A5->getSaturnPtr(0x060b13b4 + (variant ? 0x24 : 0));
     pThis->m1E3_flag2 = 0;
 
-    for (int i = 0; i < pThis->m1DE_numEntities2; i++)
+    for (int i = 0; i < pThis->m1D0_entityGroup2.mE_numEntities; i++)
     {
-        pThis->m1D0_entityArray2[i] = BTL_A5_createEnemy(pThis, 0x060b13b4, i, 1);
-        if (pThis->m1D0_entityArray2[i] == nullptr)
-            pThis->m1DF_deadCount2++;
+        pThis->m1D0_entityGroup2.m0_entityArray[i] = BTL_A5_createEnemy(pThis, 0x060b13b4, i, 1);
+        if (pThis->m1D0_entityGroup2.m0_entityArray[i] == nullptr)
+            pThis->m1D0_entityGroup2.mF_deadCount++;
     }
 
     pThis->m288_allSingleDead = 0;
@@ -190,6 +185,6 @@ void BTL_A5_createFormation_dual(s_workAreaCopy* pParent, u32 arg0)
     BTL_A5_dualFormation_Init(pTask);
 
     battleEngine_FlagQuadrantBitForSafety(5);
-    pTask->mA4_soundEffectId = 0xA3D;
+    pTask->m2C_posBlock.m78_interpRate = 0xA3D;
     pTask->m28_state = 0;
 }

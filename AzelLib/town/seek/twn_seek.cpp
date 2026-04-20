@@ -28,8 +28,7 @@ struct sSeekVdp2Plane : public s_workAreaTemplate<sSeekVdp2Plane> {
     sVec3_FP m18_cameraRotation;
     std::array<s16, 4> m24_vdp1Clipping;
     std::array<s16, 2> m2C_vdp1LocalCoords;
-    s16 m30_projParam0;
-    s16 m32_projParam1;
+    s16 m30_vdp1ProjectionParam[1];
     s32 m34_groundY;
     s32 m38_scale;
     s32 m3C;
@@ -172,7 +171,7 @@ static void seekBgDrawSub0(sSeekVdp2Plane* pThis) {
 
     coeff.m34 = (s16)((pThis->m24_vdp1Clipping[0] + pThis->m24_vdp1Clipping[2] + (pThis->m24_vdp1Clipping[0] + pThis->m24_vdp1Clipping[2] < 0 ? 1 : 0)) >> 1);
     coeff.m36 = (s16)((pThis->m24_vdp1Clipping[1] + pThis->m24_vdp1Clipping[3] + (pThis->m24_vdp1Clipping[1] + pThis->m24_vdp1Clipping[3] < 0 ? 1 : 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
+    coeff.m38 = pThis->m30_vdp1ProjectionParam[1];
     coeff.m3C = coeff.m34;
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;
@@ -216,9 +215,9 @@ static void seekBgMode0_Draw(sSeekVdp2Plane* pThis) {
     pThis->m18_cameraRotation.m4_Y = (s32)(s16)cameraProperties2.mC_rotation[1] << 16;
     pThis->m18_cameraRotation.m8_Z = (s32)(s16)cameraProperties2.mC_rotation[2] << 16;
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
-    fixedPoint projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    fixedPoint projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(0, projScale);
     seekBgDrawSub0(pThis);
     drawCinematicBar(6);
@@ -232,13 +231,13 @@ static void seekBgMode0_Draw(sSeekVdp2Plane* pThis) {
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
     pThis->m4_scrollY = (0x15A - pThis->m34_groundY) * 0x10000;
 
-    projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(1, projScale);
 
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
     coeff.m34 = (s16)((pThis->m24_vdp1Clipping[0] + pThis->m24_vdp1Clipping[2] + (pThis->m24_vdp1Clipping[0] + pThis->m24_vdp1Clipping[2] < 0 ? 1 : 0)) >> 1);
     coeff.m36 = (s16)((pThis->m24_vdp1Clipping[1] + pThis->m24_vdp1Clipping[3] + (pThis->m24_vdp1Clipping[1] + pThis->m24_vdp1Clipping[3] < 0 ? 1 : 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
+    coeff.m38 = pThis->m30_vdp1ProjectionParam[1];
     coeff.m3C = coeff.m34;
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;
@@ -368,7 +367,7 @@ static void seekBgMode1DrawSub0(sSeekVdp2Plane* pThis) {
 
     coeff.m34 = (s16)((pThis->m24_vdp1Clipping[0] + pThis->m24_vdp1Clipping[2] + (pThis->m24_vdp1Clipping[0] + pThis->m24_vdp1Clipping[2] < 0 ? 1 : 0)) >> 1);
     coeff.m36 = (s16)((pThis->m24_vdp1Clipping[1] + pThis->m24_vdp1Clipping[3] + (pThis->m24_vdp1Clipping[1] + pThis->m24_vdp1Clipping[3] < 0 ? 1 : 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
+    coeff.m38 = pThis->m30_vdp1ProjectionParam[1];
     coeff.m3C = coeff.m34;
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;
@@ -438,9 +437,9 @@ static void seekBgMode1_Draw(sSeekVdp2Plane* pThis) {
     pThis->mC_cameraPosition.m4_Y = 0xA000;
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
     getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoords);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
-    fixedPoint projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    fixedPoint projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(0, projScale);
     seekBgMode1DrawSub0(pThis);
     drawCinematicBar(6);
@@ -454,13 +453,13 @@ static void seekBgMode1_Draw(sSeekVdp2Plane* pThis) {
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
     pThis->m4_scrollY = (0xFF - pThis->m34_groundY) * 0x10000;
 
-    projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(1, projScale);
 
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
     coeff.m34 = (s16)((pThis->m24_vdp1Clipping[0] + pThis->m24_vdp1Clipping[2] + (pThis->m24_vdp1Clipping[0] + pThis->m24_vdp1Clipping[2] < 0 ? 1 : 0)) >> 1);
     coeff.m36 = (s16)((pThis->m24_vdp1Clipping[1] + pThis->m24_vdp1Clipping[3] + (pThis->m24_vdp1Clipping[1] + pThis->m24_vdp1Clipping[3] < 0 ? 1 : 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
+    coeff.m38 = pThis->m30_vdp1ProjectionParam[1];
     coeff.m3C = coeff.m34;
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;

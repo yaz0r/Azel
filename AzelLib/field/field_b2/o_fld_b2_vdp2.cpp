@@ -108,7 +108,7 @@ static void b2Vdp0Init(sVdp2PlaneTask* pThis)
 
     pThis->m4C_wavePhase = 0;
     pThis->m40_waveSpeed = 0xD5A6;
-    pThis->m48_waveAmplitude = 0xA3A;
+    pThis->m48 = 0xA3A;
     pThis->m44_waveFreq = 0x6E5D4D;
 
     regs->mB8_OVPNRA = 0x5002;
@@ -136,30 +136,30 @@ static void b2Vdp0Draw(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     // Pass 0: ground plane
-    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     vdp2SetupRotationPass(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
     vdp2ApplyWaveDistortion(pThis);
 
     // Pass 1: sky plane
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
-    pThis->m4_scrollY = (0xFF - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0xFF - pThis->m34) * 0x10000;
 
-    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
     s32 sumX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
     t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
     s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34;
     t.m3E = t.m36;
     t.m40 = 0;
@@ -302,16 +302,16 @@ static void b2Vdp2Draw(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     // Single rotation pass: ground plane
-    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     vdp2SetupRotationPass(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
 
     auto* regs = vdp2Controls.m4_pendingVdp2Regs;
     regs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;
@@ -344,7 +344,7 @@ static void b2Vdp3Init(sVdp2PlaneTask* pThis)
     initNBG1Layer();
 
     pThis->m78_auxBuffer = (u8*)allocateHeapForTask(pThis, 8);
-    pThis->m50_lineScrollBuffer = allocateHeapForTask(pThis, 0xC00);
+    pThis->m50_lineScrollParams.m0_buffer = allocateHeapForTask(pThis, 0xC00);
 
     asyncDmaCopy(gFLD_B2->getSaturnPtr(0x0608b71c), getVdp2Cram(0x800), 0x200, 0);
     asyncDmaCopy(gFLD_B2->getSaturnPtr(0x0608b91c), getVdp2Cram(0xA00), 0x200, 0);
@@ -396,7 +396,7 @@ static void b2Vdp3Init(sVdp2PlaneTask* pThis)
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
 
     initRotationCoefficientTables(5, getVdp2Vram(0x2A000));
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollBuffer, 0x25E24000, 0xC0);
+    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollParams.m0_buffer, 0x25E24000, 0xC0);
 
     setVdp2VramU16(0x25E2A400, 0x700);
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
@@ -412,12 +412,12 @@ static void b2Vdp3Init(sVdp2PlaneTask* pThis)
     vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 2;
     vdp2Controls.m_isDirty = 1;
 
-    pThis->m68_lsPhaseAccum = 0;
-    pThis->m54_lsPhaseSpeed = 0x2D81F;
-    pThis->m58_lsFreqPerLine = 0x9ABCD0;
-    pThis->m5C_lsZoomAmplitude = 0xF58;
-    pThis->m60_lsScrollBaseSpeed = 0;
-    pThis->m64_lsScrollIncPerLine = 0xB6628;
+    pThis->m50_lineScrollParams.m18_phaseAccum = 0;
+    pThis->m50_lineScrollParams.m4_phaseSpeed = 0x2D81F;
+    pThis->m50_lineScrollParams.m8_freqPerLine = 0x9ABCD0;
+    pThis->m50_lineScrollParams.mC_zoomAmplitude = 0xF58;
+    pThis->m50_lineScrollParams.m10_scrollBaseSpeed = 0;
+    pThis->m50_lineScrollParams.m14_scrollIncPerLine = 0xB6628;
     pThis->m3C_scale = fixedPoint(0x6666);
 
     static const std::vector<std::array<s32, 2>> layerDisplay = {
@@ -442,7 +442,7 @@ static void b2Vdp3Init(sVdp2PlaneTask* pThis)
 
     pThis->m4C_wavePhase = 0;
     pThis->m40_waveSpeed = 0xD5A6;
-    pThis->m48_waveAmplitude = 0xA3A;
+    pThis->m48 = 0xA3A;
     pThis->m44_waveFreq = 0x6E5D4D;
 
     regs->mB8_OVPNRA = 0x5002;
@@ -476,30 +476,30 @@ static void b2Vdp3Draw(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     // Pass 0: ground plane
-    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     vdp2SetupRotationPass(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
     vdp2ApplyWaveDistortion(pThis);
 
     // Pass 1: sky plane
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
-    pThis->m4_scrollY = (0xFF - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0xFF - pThis->m34) * 0x10000;
 
-    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
     s32 sumX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
     t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
     s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34;
     t.m3E = t.m36;
     t.m40 = 0;

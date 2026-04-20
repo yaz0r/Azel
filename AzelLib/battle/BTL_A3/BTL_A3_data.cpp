@@ -20,6 +20,11 @@ sSaturnPtr BTL_A3_data::getEncounterDataTable()
     return getSaturnPtr(0x60AAFA0);
 }
 
+sSaturnPtr BTL_A3_data::getBerserkScrollConfigTable()
+{
+    return getSaturnPtr(0x060b15d0);
+}
+
 void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32 arg1)
 {
     switch (Func.m_offset)

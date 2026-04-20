@@ -16,20 +16,20 @@ void battleEngine_UpdateSub1Sub0(s32 param_1);
 static void BTL_A5_initFormation_20(sBTL_A5_FormationTask* pThis)
 {
     allocateNPC(pThis, 2);
-    pThis->mEC_formationNameIndex = 0xF;
+    pThis->mE0_entityGroup.mC_formationNameIndex = 0xF;
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m2 = 0x78;
     battleEngine_UpdateSub1Sub0(0);
     displayFormationName(0, 1, 9);
 
-    pThis->mE8_dataTable = g_BTL_A5->getSaturnPtr(0x060b0d24);
+    pThis->mE0_entityGroup.m8_dataTable = g_BTL_A5->getSaturnPtr(0x060b0d24);
     pThis->m1CC_dataTable2 = g_BTL_A5->getSaturnPtr(0x060b0f04);
 
     pThis->mF0_flag = 0;
     pThis->m1D4_flag = 0;
-    pThis->mE4_positionPtr = (s32)(intptr_t)&pThis->m2C_basePosition;
-    pThis->mEE_numEntities = 0x14;
-    pThis->mEF_deadCount = 0;
-    pThis->mE0_entityArray = (p_workArea*)allocateHeapForTask(pThis, pThis->mEE_numEntities * sizeof(p_workArea));
+    pThis->mE0_entityGroup.m4_positionBlock = &pThis->m2C_posBlock;
+    pThis->mE0_entityGroup.mE_numEntities = 0x14;
+    pThis->mE0_entityGroup.mF_deadCount = 0;
+    pThis->mE0_entityGroup.m0_entityArray = (p_workArea*)allocateHeapForTask(pThis, pThis->mE0_entityGroup.mE_numEntities * sizeof(p_workArea));
 
     s8 quadrant = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
     s32 leadIdx;
@@ -38,12 +38,12 @@ static void BTL_A5_initFormation_20(sBTL_A5_FormationTask* pThis)
     else if (quadrant == 3) leadIdx = 6;
     else leadIdx = 5;
 
-    for (int i = 0; i < pThis->mEE_numEntities; i++)
+    for (int i = 0; i < pThis->mE0_entityGroup.mE_numEntities; i++)
     {
-        pThis->mE0_entityArray[i] = BTL_A5_createEnemy(pThis, 0x060b0d24, i, (leadIdx == i) ? 1 : 0);
-        if (pThis->mE0_entityArray[i] == nullptr)
+        pThis->mE0_entityGroup.m0_entityArray[i] = BTL_A5_createEnemy(pThis, 0x060b0d24, i, (leadIdx == i) ? 1 : 0);
+        if (pThis->mE0_entityGroup.m0_entityArray[i] == nullptr)
         {
-            pThis->mEF_deadCount++;
+            pThis->mE0_entityGroup.mF_deadCount++;
         }
     }
 }
@@ -52,27 +52,27 @@ static void BTL_A5_initFormation_20(sBTL_A5_FormationTask* pThis)
 static void BTL_A5_initFormation_10(sBTL_A5_FormationTask* pThis)
 {
     allocateNPC(pThis, 2);
-    pThis->mEC_formationNameIndex = 0xF;
+    pThis->mE0_entityGroup.mC_formationNameIndex = 0xF;
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m2 = 0x78;
     battleEngine_UpdateSub1Sub0(0);
     displayFormationName(0, 1, 9);
 
-    pThis->mE8_dataTable = g_BTL_A5->getSaturnPtr(0x060b0f18);
+    pThis->mE0_entityGroup.m8_dataTable = g_BTL_A5->getSaturnPtr(0x060b0f18);
     pThis->m1CC_dataTable2 = g_BTL_A5->getSaturnPtr(0x060b0f04);
 
     pThis->mF0_flag = 0;
     pThis->m1D4_flag = 1;
-    pThis->mE4_positionPtr = (s32)(intptr_t)&pThis->m2C_basePosition;
-    pThis->mEE_numEntities = 10;
-    pThis->mEF_deadCount = 0;
-    pThis->mE0_entityArray = (p_workArea*)allocateHeapForTask(pThis, pThis->mEE_numEntities * sizeof(p_workArea));
+    pThis->mE0_entityGroup.m4_positionBlock = &pThis->m2C_posBlock;
+    pThis->mE0_entityGroup.mE_numEntities = 10;
+    pThis->mE0_entityGroup.mF_deadCount = 0;
+    pThis->mE0_entityGroup.m0_entityArray = (p_workArea*)allocateHeapForTask(pThis, pThis->mE0_entityGroup.mE_numEntities * sizeof(p_workArea));
 
-    for (int i = 0; i < pThis->mEE_numEntities; i++)
+    for (int i = 0; i < pThis->mE0_entityGroup.mE_numEntities; i++)
     {
-        pThis->mE0_entityArray[i] = BTL_A5_createEnemy(pThis, 0x060b0f18, i, 1);
-        if (pThis->mE0_entityArray[i] == nullptr)
+        pThis->mE0_entityGroup.m0_entityArray[i] = BTL_A5_createEnemy(pThis, 0x060b0f18, i, 1);
+        if (pThis->mE0_entityGroup.m0_entityArray[i] == nullptr)
         {
-            pThis->mEF_deadCount++;
+            pThis->mE0_entityGroup.mF_deadCount++;
         }
     }
 }
@@ -84,18 +84,18 @@ static void BTL_A5_formationTask_Update(sBTL_A5_FormationTask* pThis)
     pEngine->m3B2_numBattleFormationRunning++;
 
     // clean up dead entity pointers
-    for (int i = 0; i < pThis->mEE_numEntities; i++)
+    for (int i = 0; i < pThis->mE0_entityGroup.mE_numEntities; i++)
     {
-        p_workArea entity = pThis->mE0_entityArray[i];
+        p_workArea entity = pThis->mE0_entityGroup.m0_entityArray[i];
         if (entity == nullptr) continue;
         if (entity->getTask()->m14_flags & TASK_FLAGS_FINISHED)
         {
-            pThis->mE0_entityArray[i] = nullptr;
+            pThis->mE0_entityGroup.m0_entityArray[i] = nullptr;
         }
     }
 
     // check if all enemies dead
-    if (pThis->mEF_deadCount >= pThis->mEE_numEntities)
+    if (pThis->mE0_entityGroup.mF_deadCount >= pThis->mE0_entityGroup.mE_numEntities)
     {
         pThis->m28_state = 0xB;
         pEngine->m3CC->m8 = 0;
@@ -199,5 +199,5 @@ void BTL_A5_createFormation(s_workAreaCopy* pParent, u32 arg0)
 
     battleEngine_FlagQuadrantBitForSafety(4);
     battleEngine_FlagQuadrantBitForDanger(1);
-    pTask->mA4_soundEffectId = 0xA3D;
+    pTask->m2C_posBlock.m78_interpRate = 0xA3D;
 }

@@ -9,7 +9,7 @@
 #include "BTL_A3_data.h"
 #include "town/town.h" // TODO: cleanup
 
-static void BTL_A3_map3_Init(s_BTL_A3_Env* pThis)
+static void BTL_A3_map3_Init(sVdp2PlaneTask* pThis)
 {
     loadFile("SCBTLA31.SCB", getVdp2Vram(0x40000), 0);
     loadFile("SCBTL_A3.PNB", getVdp2Vram(0x62800), 0);
@@ -42,12 +42,12 @@ static void BTL_A3_map3_Init(s_BTL_A3_Env* pThis)
 
 p_workArea Create_BTL_A3_map3(p_workArea parent)
 {
-    static const s_BTL_A3_Env::TypedTaskDefinition definition = {
+    static const sVdp2PlaneTask::TypedTaskDefinition definition = {
         &BTL_A3_map3_Init,
         &BTL_A3_Env_Update,
         &BTL_A3_Env_Draw,
         nullptr,
     };
 
-    return createSubTask<s_BTL_A3_Env>(parent, &definition);
+    return createSubTask<sVdp2PlaneTask>(parent, &definition);
 }

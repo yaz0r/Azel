@@ -113,8 +113,7 @@ struct sExcaBackgroundTask : public s_workAreaTemplate<sExcaBackgroundTask>
     sVec3_FP m18_cameraRotation;
     std::array<s16, 4> m24_vdp1Clipping;
     s32 m2C_scrollValue;
-    s16 m30_projParam0;
-    s16 m32_projParam1;
+    s16 m30_vdp1ProjectionParam[1];
     s32 m34;
     s32 m38;
 
@@ -259,7 +258,7 @@ struct sExcaBackgroundTask : public s_workAreaTemplate<sExcaBackgroundTask>
         t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
         s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
         t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
-        t.m38 = pThis->m32_projParam1;
+        t.m38 = pThis->m30_vdp1ProjectionParam[1];
         t.m3C = t.m34;
         t.m3E = t.m36;
         t.m40 = 0;
@@ -294,10 +293,10 @@ struct sExcaBackgroundTask : public s_workAreaTemplate<sExcaBackgroundTask>
         pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
         getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-        getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+        getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
         // Pass 0: ground plane with pitch/yaw rotation
-        beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+        beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
         setupExcaRotationAndScroll(pThis);
         drawCinematicBar(6);
         commitRotationPass();
@@ -308,14 +307,14 @@ struct sExcaBackgroundTask : public s_workAreaTemplate<sExcaBackgroundTask>
         s32 scrollY = (0x1E0 - pThis->m2C_scrollValue) * 0x10000;
 
         // Pass 1: sky plane with roll rotation
-        beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+        beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
         sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
         s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
         t.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
         s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
         t.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
-        t.m38 = pThis->m32_projParam1;
+        t.m38 = pThis->m30_vdp1ProjectionParam[1];
         t.m3C = t.m34;
         t.m3E = t.m36;
         t.m40 = 0;

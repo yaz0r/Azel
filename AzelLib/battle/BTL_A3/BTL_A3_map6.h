@@ -1,31 +1,6 @@
 #pragma once
 
-struct s_BTL_A3_Env : public s_workAreaTemplate<s_BTL_A3_Env>
-{
-    sVec3_FP mC_cameraPosition;
-    sVec3_FP m18_cameraRotation;
-    std::array<s16, 4> m24_vdp1Clipping;
-    std::array<s16, 2> m2C_vdp1LocalCoordinates;
-    std::array<s16, 2> m30_vdp1ProjectionParam;
-    s32 m34;
-    s32 m38;
-    s32 m3C;
-    s32 m40;
-    s32 m44;
-    s32 m48;
-    s32 m4C;
-    s8 m50;
-    s8 m51;
-    s8 m52;
-    s8 m53;
-    s8 m54;
-    s8 m55;
-    npcFileDeleter* m58;
-    s8 m5C;
-    s8 m5D_pad[0x13];
-    u32 m70_flags;
-    // 0x9C
-};
+#include "shared/vdp2PlaneTask.h"
 
 //TODO: move to kernel
 void setupRotationMapPlanes(int rotationMapIndex, const std::array<u32, 16>& planes);
@@ -33,16 +8,16 @@ void setupRotationMapPlanes(int rotationMapIndex, sSaturnPtr inPlanes);
 void setupScrollAndRotation(int p1, void* p2, void* p3, u8* coefficientTableAddress, u8 p5);
 void setupVdp2Table(int p1, std::vector<fixedPoint>& p2, std::vector<fixedPoint>& p3, u8* coefficientTableAddress, u8 p5);
 void initRotationCoefficientTables(int layerIndex, u8* table);
-void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr);
+void sVdp2PlaneTask_InitVdp2Sub4(sSaturnPtr);
 extern tCoefficientTable coefficientA0;
 extern tCoefficientTable coefficientA1;
 extern tCoefficientTable coefficientB0;
 extern tCoefficientTable coefficientB1;
 
 void initGridForBattle(npcFileDeleter* pFile, const struct sGrid* pGrid, s32 r6_sizeX, s32 r7_sizeY, s32 r8_cellSize);
-void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis);
-void BTL_A3_Env_Update(s_BTL_A3_Env* pThis);
-void BTL_A3_Env_Draw(s_BTL_A3_Env* pThis);
+void BTL_A3_Env_InitVdp2(sVdp2PlaneTask* pThis);
+void BTL_A3_Env_Update(sVdp2PlaneTask* pThis);
+void BTL_A3_Env_Draw(sVdp2PlaneTask* pThis);
 
 p_workArea Create_BTL_A3_map6(p_workArea);
 
@@ -118,4 +93,4 @@ void setRotationScrollOffset(s32 scrollX, s32 scrollY);
 void buildRotationMatrixPitchYaw(fixedPoint pitchAngle, fixedPoint yawAngle);
 void writeRotationParams(fixedPoint rollAngle);
 s32 computeRotationScrollOffset();
-void buildGroundRotation(s_BTL_A3_Env* pThis);
+void buildGroundRotation(sVdp2PlaneTask* pThis);

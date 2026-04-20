@@ -391,7 +391,7 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub2(BTL_A3_UrchinFormation* pThis)
 }
 
 // 0605ab04
-static void battleEngine_initiateEnemyMoveDragon(s8 direction, s16 agility)
+void battleEngine_initiateEnemyMoveDragon(s8 direction, s16 agility)
 {
     s_battleEngine* pBE = gBattleManager->m10_battleOverlay->m4_battleEngine;
     pBE->m22E_dragonMoveDirection = direction;

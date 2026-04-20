@@ -271,29 +271,29 @@ static void a5VdpDraw(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     // Pass 0: ground plane
-    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     vdp2SetupRotationPass(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
 
     // Pass 1: sky scroll
     pThis->m0_scrollX = ((s32)pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
-    pThis->m4_scrollY = (0x100 - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0x100 - pThis->m34) * 0x10000;
 
-    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
     s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
     t.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
     s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34;
     t.m3E = t.m36;
     t.m40 = 0;
@@ -306,13 +306,13 @@ static void a5VdpDraw(sVdp2PlaneTask* pThis)
 
     // NBG0 scroll based on horizon
     s32 nbg0ScrollY;
-    if (pThis->m34_scrollValue < -0x14)
+    if (pThis->m34 < -0x14)
     {
         nbg0ScrollY = 0x140000;
     }
     else
     {
-        nbg0ScrollY = pThis->m34_scrollValue * -0x10000;
+        nbg0ScrollY = pThis->m34 * -0x10000;
     }
     gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(pThis->m0_scrollX, nbg0ScrollY);
@@ -513,7 +513,7 @@ static void a5NightSetupRotationPass0(sVdp2PlaneTask* pThis)
     coeff.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
     s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     coeff.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
+    coeff.m38 = pThis->m30_vdp1ProjectionParam[1];
     coeff.m3C = coeff.m34;
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;
@@ -541,7 +541,7 @@ static void a5NightSetupRotationPass0(sVdp2PlaneTask* pThis)
         - gVdp2RotationMatrix.m[1][2].asS32() * dPz
         + coeff.m3E * -0x10000);
 
-    s32 heightDelta = (pThis->mC_cameraPosition.m4_Y.asS32() - pThis->m38_groundY) * 0x10;
+    s32 heightDelta = (pThis->mC_cameraPosition.m4_Y.asS32() - pThis->m38) * 0x10;
     gVdp2RotationMatrix.Mz = fixedPoint(heightDelta
         - gVdp2RotationMatrix.m[2][0].asS32() * dPx
         - gVdp2RotationMatrix.m[2][1].asS32() * dPy
@@ -568,29 +568,29 @@ static void a5NightVdpDraw(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     // Pass 0: ground plane
-    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     a5NightSetupRotationPass0(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = a5NightComputeScrollOffset();
+    pThis->m34 = a5NightComputeScrollOffset();
 
     // Pass 1: sky scroll
     pThis->m0_scrollX = ((s32)pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
-    pThis->m4_scrollY = (0xFF - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0xFF - pThis->m34) * 0x10000;
 
-    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
     s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
     t.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
     s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34;
     t.m3E = t.m36;
     t.m40 = 0;
@@ -603,13 +603,13 @@ static void a5NightVdpDraw(sVdp2PlaneTask* pThis)
 
     // NBG0 scroll based on horizon (offset by 0x100 for night)
     s32 nbg0ScrollY;
-    if (pThis->m34_scrollValue + 0x100 < -0x14)
+    if (pThis->m34 + 0x100 < -0x14)
     {
         nbg0ScrollY = 0x140000;
     }
     else
     {
-        nbg0ScrollY = (pThis->m34_scrollValue + 0x100) * -0x10000;
+        nbg0ScrollY = (pThis->m34 + 0x100) * -0x10000;
     }
     gCurrentVDP2ScrollLayer = 0;
     setupVDP2CoordinatesIncrement2(pThis->m0_scrollX, nbg0ScrollY);
@@ -709,7 +709,7 @@ static void a5BossVdpInit(sVdp2PlaneTask* pThis)
     vdp2Controls.m_isDirty = 1;
 
     pThis->m3C_scale = fixedPoint(0x10000);
-    pThis->m38_groundY = (s32)0xFFFF8000;
+    pThis->m38 = (s32)0xFFFF8000;
 }
 
 // 0605E1B4 — boss ground plane rotation setup (same as night version)
@@ -736,30 +736,30 @@ static void a5BossVdpDraw(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     // Pass 0: ground plane
-    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     a5BossSetupRotationPass0(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
     a5BossInvalidateCoefficients();
 
     // Pass 1: sky scroll
     pThis->m0_scrollX = ((s32)pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
-    pThis->m4_scrollY = (0x200 - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0x200 - pThis->m34) * 0x10000;
 
-    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
     s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
     t.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
     s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34;
     t.m3E = t.m36;
     t.m40 = 0;

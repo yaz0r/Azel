@@ -14,7 +14,7 @@
 #include "town/town.h"
 
 // 060627b0
-static void BTL_A5_2_buildGroundRotation(s_BTL_A3_Env* pThis, s32 yOffset)
+static void BTL_A5_2_buildGroundRotation(sVdp2PlaneTask* pThis, s32 yOffset)
 {
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
 
@@ -32,17 +32,17 @@ static void BTL_A5_2_buildGroundRotation(s_BTL_A3_Env* pThis, s32 yOffset)
     t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C);
+    scaleRotationMatrix(pThis->m3C_scale);
     writeRotationParams(-rotZ);
 
     s32 diffX = (s32)t.m34 - (s32)t.m3C;
     s32 diffY = (s32)t.m36 - (s32)t.m3E;
     s32 diffZ = (s32)t.m38 - (s32)t.m40;
 
-    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C, (s32)pThis->mC_cameraPosition.m0_X << 4)
+    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m0_X << 4)
                     - gVdp2RotationMatrix.m[0][0] * diffX - gVdp2RotationMatrix.m[0][1] * diffY - gVdp2RotationMatrix.m[0][2] * diffZ
                     + (s32)(s16)t.m3C * -0x10000;
-    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C, (s32)pThis->mC_cameraPosition.m8_Z << 4)
+    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m8_Z << 4)
                     - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
                     + (s32)(s16)t.m3E * -0x10000;
     gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38 + yOffset) * 0x10)
@@ -94,7 +94,7 @@ static void BTL_A5_2_applyAlphaBelowHorizon(sSaturnPtr alphaTable)
 }
 
 // 060625e8
-static void BTL_A5_2_env_Update(s_BTL_A3_Env* pThis)
+static void BTL_A5_2_env_Update(sVdp2PlaneTask* pThis)
 {
     vdp2Controls.m20_registers[0].m108_CCRNA = (vdp2Controls.m4_pendingVdp2Regs->m108_CCRNA & 0xFFE0) | pThis->m5D_pad[0];
     vdp2Controls.m20_registers[1].m108_CCRNA = vdp2Controls.m20_registers[0].m108_CCRNA;
@@ -102,7 +102,7 @@ static void BTL_A5_2_env_Update(s_BTL_A3_Env* pThis)
 }
 
 // 06062678
-static void BTL_A5_2_env_Draw(s_BTL_A3_Env* pThis)
+static void BTL_A5_2_env_Draw(sVdp2PlaneTask* pThis)
 {
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
@@ -190,7 +190,7 @@ static void BTL_A5_2_createDebrisParticle(npcFileDeleter* pFileBundle, sVec3_FP*
 }
 
 // 06062be0
-static void BTL_A5_2_debrisTask_Init(s_BTL_A3_Env* pThis)
+static void BTL_A5_2_debrisTask_Init(sVdp2PlaneTask* pThis)
 {
     allocateNPC(pThis, 6);
 
@@ -229,7 +229,7 @@ static void BTL_A5_2_debrisTask_Init(s_BTL_A3_Env* pThis)
 }
 
 // 06062d50
-static void BTL_A5_2_debrisTask_Update(s_BTL_A3_Env* pThis)
+static void BTL_A5_2_debrisTask_Update(sVdp2PlaneTask* pThis)
 {
     if (gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags & 0x40)
         return;
@@ -256,13 +256,13 @@ static void BTL_A5_2_debrisTask_Update(s_BTL_A3_Env* pThis)
     }
 }
 
-static void BTL_A5_2_debrisTask_Delete(s_BTL_A3_Env*)
+static void BTL_A5_2_debrisTask_Delete(sVdp2PlaneTask*)
 {
     decreaseNPCRefCount(6);
 }
 
 // 060622e4
-static void BTL_A5_2_env_Init(s_BTL_A3_Env* pThis)
+static void BTL_A5_2_env_Init(sVdp2PlaneTask* pThis)
 {
     gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
@@ -334,7 +334,7 @@ static void BTL_A5_2_env_Init(s_BTL_A3_Env* pThis)
     vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0x3;
     vdp2Controls.m_isDirty = 1;
 
-    pThis->m3C = 0x40000;
+    pThis->m3C_scale = 0x40000;
 
     static const std::vector<std::array<s32, 2>> layerDisplayConfig = {
         { {0x2C, 0x1} }
@@ -353,7 +353,7 @@ static void BTL_A5_2_env_Init(s_BTL_A3_Env* pThis)
     vdp2Controls.m4_pendingVdp2Regs->m106_CCRSD = 0;
     vdp2Controls.m_isDirty = 1;
 
-    s_BTL_A3_Env_InitVdp2Sub4(g_BTL_A5_2->getSaturnPtr(0x060b1794));
+    sVdp2PlaneTask_InitVdp2Sub4(g_BTL_A5_2->getSaturnPtr(0x060b1794));
 
     allocateNPC(pThis, 10);
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
@@ -362,25 +362,25 @@ static void BTL_A5_2_env_Init(s_BTL_A3_Env* pThis)
 
     // debris particle spawner task
     {
-        static const s_BTL_A3_Env::TypedTaskDefinition debrisDef = {
-            (void(*)(s_BTL_A3_Env*))&BTL_A5_2_debrisTask_Init,
-            (void(*)(s_BTL_A3_Env*))&BTL_A5_2_debrisTask_Update,
+        static const sVdp2PlaneTask::TypedTaskDefinition debrisDef = {
+            (void(*)(sVdp2PlaneTask*))&BTL_A5_2_debrisTask_Init,
+            (void(*)(sVdp2PlaneTask*))&BTL_A5_2_debrisTask_Update,
             nullptr,
             &BTL_A5_2_debrisTask_Delete,
         };
-        createSubTask<s_BTL_A3_Env>(pThis, &debrisDef);
+        createSubTask<sVdp2PlaneTask>(pThis, &debrisDef);
     }
 }
 
 // 060629fc
 p_workArea Create_BTL_A5_2_env(p_workArea parent)
 {
-    static const s_BTL_A3_Env::TypedTaskDefinition definition = {
+    static const sVdp2PlaneTask::TypedTaskDefinition definition = {
         &BTL_A5_2_env_Init,
         &BTL_A5_2_env_Update,
         &BTL_A5_2_env_Draw,
         nullptr,
     };
 
-    return createSubTask<s_BTL_A3_Env>(parent, &definition);
+    return createSubTask<sVdp2PlaneTask>(parent, &definition);
 }

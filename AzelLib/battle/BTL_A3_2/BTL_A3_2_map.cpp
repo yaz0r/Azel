@@ -12,7 +12,7 @@
 #include "kernel/loadSavegameScreen.h"
 #include "kernel/cinematicBarsTask.h"
 
-void BTL_A3_2_Env_InitVdp2(s_BTL_A3_Env* pThis)
+void BTL_A3_2_Env_InitVdp2(sVdp2PlaneTask* pThis)
 {
     gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
@@ -79,7 +79,7 @@ void BTL_A3_2_Env_InitVdp2(s_BTL_A3_Env* pThis)
     vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0x3;
     vdp2Controls.m_isDirty = 1;
 
-    pThis->m3C = 0x10000;
+    pThis->m3C_scale = 0x10000;
     pThis->m38 = -0x6C000;
 
     static const std::vector<std::array<s32, 2>> config = {
@@ -106,10 +106,10 @@ void BTL_A3_2_Env_InitVdp2(s_BTL_A3_Env* pThis)
     vdp2Controls.m4_pendingVdp2Regs->m10C_CCRR = pThis->m55;
     vdp2Controls.m_isDirty = 1;
 
-    s_BTL_A3_Env_InitVdp2Sub4(g_BTL_A3_2->getSaturnPtr(0x60a8db4));
+    sVdp2PlaneTask_InitVdp2Sub4(g_BTL_A3_2->getSaturnPtr(0x60a8db4));
 }
 
-void BTL_A3_2_map_init(s_BTL_A3_Env* pThis)
+void BTL_A3_2_map_init(sVdp2PlaneTask* pThis)
 {
     BTL_A3_2_Env_InitVdp2(pThis);
     allocateNPC(pThis, 10);
@@ -118,13 +118,13 @@ void BTL_A3_2_map_init(s_BTL_A3_Env* pThis)
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
 }
 
-void BTL_A3_2_map_update(s_BTL_A3_Env* pThis)
+void BTL_A3_2_map_update(sVdp2PlaneTask* pThis)
 {
     updateWorldGrid(gBattleManager->m10_battleOverlay->m8_gridTask->m180_cameraTranslation[0], gBattleManager->m10_battleOverlay->m8_gridTask->m180_cameraTranslation[2]);
 }
 
 // 0605445c
-void BTL_A3_2_Env_Draw(s_BTL_A3_Env* pThis)
+void BTL_A3_2_Env_Draw(sVdp2PlaneTask* pThis)
 {
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
@@ -169,11 +169,11 @@ void BTL_A3_2_Env_Draw(s_BTL_A3_Env* pThis)
 
 void BTL_A3_2_createMap(p_workArea parent)
 {
-    s_BTL_A3_Env::TypedTaskDefinition definition = {
+    sVdp2PlaneTask::TypedTaskDefinition definition = {
         BTL_A3_2_map_init,
         BTL_A3_2_map_update,
         BTL_A3_2_Env_Draw,
         nullptr,
     };
-    createSubTask<s_BTL_A3_Env>(parent, &definition);
+    createSubTask<sVdp2PlaneTask>(parent, &definition);
 }

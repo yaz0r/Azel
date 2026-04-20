@@ -19,7 +19,7 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
     reinitVdp2();
     initNBG1Layer();
-    pThis->m50_lineScrollBuffer = allocateHeapForTask(pThis, 0xc00);
+    pThis->m50_lineScrollParams.m0_buffer = allocateHeapForTask(pThis, 0xc00);
 
     asyncDmaCopy(gFLD_A7->getSaturnPtr(0x060848f4), getVdp2Cram(0x800), 0x20, 0);
     asyncDmaCopy(gFLD_A7->getSaturnPtr(0x06084914), getVdp2Cram(0x820), 0x20, 0);
@@ -86,7 +86,7 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
     initRotationCoefficientTables(5, getVdp2Vram(0x2a000));
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollBuffer, 0x25e24000, 0xc0);
+    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollParams.m0_buffer, 0x25e24000, 0xc0);
 
     setVdp2VramU16(0x25e2a400, 0x700);
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
@@ -133,17 +133,17 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
     pThis->m4C_wavePhase = 0;
     pThis->m40_waveSpeed = 0x5c390;
     pThis->m44_waveFreq = (s32)0xfe147bb8;
-    pThis->m48_waveAmplitude = (s32)0xfffff333;
+    pThis->m48 = (s32)0xfffff333;
 
     // Line scroll params
-    pThis->m54_lsPhaseSpeed = 0x1ef27;
-    pThis->m58_lsFreqPerLine = (s32)0xfffa4fcf;
-    pThis->m5C_lsZoomAmplitude = 0x7fec;
-    pThis->m60_lsScrollBaseSpeed = 0x20000;
-    pThis->m64_lsScrollIncPerLine = (s32)0xfff8d7d0;
+    pThis->m50_lineScrollParams.m4_phaseSpeed = 0x1ef27;
+    pThis->m50_lineScrollParams.m8_freqPerLine = (s32)0xfffa4fcf;
+    pThis->m50_lineScrollParams.mC_zoomAmplitude = 0x7fec;
+    pThis->m50_lineScrollParams.m10_scrollBaseSpeed = 0x20000;
+    pThis->m50_lineScrollParams.m14_scrollIncPerLine = (s32)0xfff8d7d0;
 
     // Initialize line scroll buffer with parabolic zoom
-    s32* buf = (s32*)pThis->m50_lineScrollBuffer;
+    s32* buf = (s32*)pThis->m50_lineScrollParams.m0_buffer;
     s32 lineIdx = -0x70;
     s32 scrollAccum = 0;
     for (s32 i = 0; i < 224; i++)
@@ -164,7 +164,7 @@ static void updateVdp2_A7_0(sVdp2PlaneTask* pThis)
 {
     vdp2Controls.m20_registers[0].m108_CCRNA = (vdp2Controls.m4_pendingVdp2Regs->m108_CCRNA & 0xFFE0) | (u16)(u8)pThis->m74_colorNBG;
     vdp2Controls.m20_registers[1].m108_CCRNA = vdp2Controls.m20_registers[0].m108_CCRNA;
-    updateLineScrollTable(pThis);
+    updateWaveDistortionParams(&pThis->m50_lineScrollParams);
     drawCinematicBar(1);
 }
 
@@ -176,22 +176,22 @@ static void drawVdp2_A7_0(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation.m4_Y = (s32)(s16)cameraProperties2.mC_rotation[1] << 16;
     pThis->m18_cameraRotation.m8_Z = (s32)(s16)cameraProperties2.mC_rotation[2] << 16;
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
-    fixedPoint projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    fixedPoint projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(0, projScale);
     vdp2SetupRotationPass(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
     vdp2ApplyWaveDistortion(pThis);
 
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
-    pThis->m4_scrollY = (0xFE - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0xFE - pThis->m34) * 0x10000;
 
-    projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(1, projScale);
 
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
@@ -200,7 +200,7 @@ static void drawVdp2_A7_0(sVdp2PlaneTask* pThis)
     coeff.m34 = (s16)((pxSum + (pxSum < 0 ? 1 : 0)) >> 1);
     s32 pySum = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     coeff.m36 = (s16)((pySum + (pySum < 0 ? 1 : 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
+    coeff.m38 = pThis->m30_vdp1ProjectionParam[1];
     coeff.m3C = coeff.m34;
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;
@@ -239,7 +239,7 @@ static void initVdp2_A7_1(sVdp2PlaneTask* pThis)
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
     reinitVdp2();
     initNBG1Layer();
-    pThis->m50_lineScrollBuffer = allocateHeapForTask(pThis, 0xc00);
+    pThis->m50_lineScrollParams.m0_buffer = allocateHeapForTask(pThis, 0xc00);
     pThis->m78_skyRotationBuffer = (s32*)allocateHeapForTask(pThis, 8);
 
     asyncDmaCopy(gFLD_A7->getSaturnPtr(0x060854d0), getVdp2Cram(0x200), 0x20, 0);
@@ -290,7 +290,7 @@ static void initVdp2_A7_1(sVdp2PlaneTask* pThis)
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
     initRotationCoefficientTables(5, getVdp2Vram(0x2a000));
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollBuffer, 0x25e24000, 0xc0);
+    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollParams.m0_buffer, 0x25e24000, 0xc0);
 
     setVdp2VramU16(0x25e2a400, 0x700);
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
@@ -335,18 +335,18 @@ static void initVdp2_A7_1(sVdp2PlaneTask* pThis)
 
     pThis->m4C_wavePhase = 0;
     pThis->m40_waveSpeed = 0xd5a6;
-    pThis->m48_waveAmplitude = 0xa3a;
+    pThis->m48 = 0xa3a;
     pThis->m44_waveFreq = 0x6e5d4d;
-    pThis->m68_lsPhaseAccum = 0;
-    pThis->m54_lsPhaseSpeed = 0x2d81f;
-    pThis->m58_lsFreqPerLine = 0x9abcd0;
-    pThis->m5C_lsZoomAmplitude = 0xf58;
-    pThis->m60_lsScrollBaseSpeed = 0;
-    pThis->m64_lsScrollIncPerLine = 0xb6628;
+    pThis->m50_lineScrollParams.m18_phaseAccum = 0;
+    pThis->m50_lineScrollParams.m4_phaseSpeed = 0x2d81f;
+    pThis->m50_lineScrollParams.m8_freqPerLine = 0x9abcd0;
+    pThis->m50_lineScrollParams.mC_zoomAmplitude = 0xf58;
+    pThis->m50_lineScrollParams.m10_scrollBaseSpeed = 0;
+    pThis->m50_lineScrollParams.m14_scrollIncPerLine = 0xb6628;
 
     // Initialize line scroll table
     {
-        s32* pLineScroll = (s32*)pThis->m50_lineScrollBuffer;
+        s32* pLineScroll = (s32*)pThis->m50_lineScrollParams.m0_buffer;
         s32 scrollAccum = 0;
         s32 lineY = -0x70;
         for (s32 i = 0; scrollAccum < 0xe00000; i += 0xC)
@@ -380,7 +380,7 @@ static void updateVdp2_A7_1(sVdp2PlaneTask* pThis)
 
     vdp2Controls.m20_registers[0].m108_CCRNA = (vdp2Controls.m4_pendingVdp2Regs->m108_CCRNA & 0xFFE0) | (u16)(u8)pThis->m74_colorNBG;
     vdp2Controls.m20_registers[1].m108_CCRNA = vdp2Controls.m20_registers[0].m108_CCRNA;
-    updateLineScrollTable(pThis);
+    updateWaveDistortionParams(&pThis->m50_lineScrollParams);
     drawCinematicBar(1);
 }
 
@@ -416,7 +416,7 @@ static void drawVdp2Sub_setupRotationPass0_A7_1(sVdp2PlaneTask* pThis)
     coeff.m34 = (s16)((pxSum + (pxSum < 0 ? 1 : 0)) >> 1);
     s32 pySum = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     coeff.m36 = (s16)((pySum + (pySum < 0 ? 1 : 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
+    coeff.m38 = pThis->m30_vdp1ProjectionParam[1];
     coeff.m3C = coeff.m34;
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;
@@ -444,7 +444,7 @@ static void drawVdp2Sub_setupRotationPass0_A7_1(sVdp2PlaneTask* pThis)
         - gVdp2RotationMatrix.m[1][2].asS32() * dPz
         + coeff.m3E * -0x10000);
 
-    s32 scaledZ = (pThis->mC_cameraPosition.m4_Y.asS32() - pThis->m38_groundY) * 0x10;
+    s32 scaledZ = (pThis->mC_cameraPosition.m4_Y.asS32() - pThis->m38) * 0x10;
     gVdp2RotationMatrix.Mz = fixedPoint(scaledZ
         - gVdp2RotationMatrix.m[2][0].asS32() * dPx
         - gVdp2RotationMatrix.m[2][1].asS32() * dPy
@@ -462,23 +462,23 @@ static void drawVdp2_A7_1(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation.m4_Y = (s32)(s16)cameraProperties2.mC_rotation[1] << 16;
     pThis->m18_cameraRotation.m8_Z = (s32)(s16)cameraProperties2.mC_rotation[2] << 16;
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
-    fixedPoint projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    fixedPoint projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(0, projScale);
     drawVdp2Sub_setupRotationPass0_A7_1(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
-    drawHorizon(pThis->m34_scrollValue, 0x9020);
+    pThis->m34 = computeRotationScrollOffset();
+    drawHorizon(pThis->m34, 0x9020);
     vdp2ApplyWaveDistortion(pThis);
 
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
-    pThis->m4_scrollY = (0xFF - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0xFF - pThis->m34) * 0x10000;
 
-    projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(1, projScale);
 
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
@@ -487,7 +487,7 @@ static void drawVdp2_A7_1(sVdp2PlaneTask* pThis)
     coeff.m34 = (s16)((pxSum + (pxSum < 0 ? 1 : 0)) >> 1);
     s32 pySum = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     coeff.m36 = (s16)((pySum + (pySum < 0 ? 1 : 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
+    coeff.m38 = pThis->m30_vdp1ProjectionParam[1];
     coeff.m3C = coeff.m34;
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;
@@ -526,7 +526,7 @@ static void initVdp2_A7_2(sVdp2PlaneTask* pThis)
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
     reinitVdp2();
     initNBG1Layer();
-    pThis->m50_lineScrollBuffer = allocateHeapForTask(pThis, 0xc00);
+    pThis->m50_lineScrollParams.m0_buffer = allocateHeapForTask(pThis, 0xc00);
 
     asyncDmaCopy(gFLD_A7->getSaturnPtr(0x060856a0), getVdp2Cram(0xa00), 0x20, 0);
     asyncDmaCopy(gFLD_A7->getSaturnPtr(0x060856c0), vdp2Palette, 0x200, 0);
@@ -574,7 +574,7 @@ static void initVdp2_A7_2(sVdp2PlaneTask* pThis)
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
     initRotationCoefficientTables(5, getVdp2Vram(0x2a000));
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollBuffer, 0x25e24000, 0xc0);
+    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollParams.m0_buffer, 0x25e24000, 0xc0);
 
     setVdp2VramU16(0x25e2a400, 0x700);
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
@@ -617,10 +617,10 @@ static void initVdp2_A7_2(sVdp2PlaneTask* pThis)
 
     pThis->m4C_wavePhase = 0;
     pThis->m40_waveSpeed = 0xd5a6;
-    pThis->m48_waveAmplitude = 0xa3a;
+    pThis->m48 = 0xa3a;
     pThis->m44_waveFreq = 0x6e5d4d;
-    pThis->m54_lsPhaseSpeed = 0x1e572;
-    pThis->m58_lsFreqPerLine = 0xda764;
+    pThis->m50_lineScrollParams.m4_phaseSpeed = 0x1e572;
+    pThis->m50_lineScrollParams.m8_freqPerLine = 0xda764;
 }
 
 // 06058fc2
@@ -628,7 +628,7 @@ static void updateVdp2_A7_2(sVdp2PlaneTask* pThis)
 {
     vdp2Controls.m20_registers[0].m108_CCRNA = (vdp2Controls.m4_pendingVdp2Regs->m108_CCRNA & 0xFFE0) | (u16)(u8)pThis->m74_colorNBG;
     vdp2Controls.m20_registers[1].m108_CCRNA = vdp2Controls.m20_registers[0].m108_CCRNA;
-    updateLineScrollTable(pThis);
+    updateWaveDistortionParams(&pThis->m50_lineScrollParams);
     drawCinematicBar(1);
 }
 
@@ -649,7 +649,7 @@ static void drawVdp2Sub_setupRotationPass0_A7_2(sVdp2PlaneTask* pThis)
     coeff.m34 = (s16)((pxSum + (pxSum < 0 ? 1 : 0)) >> 1);
     s32 pySum = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     coeff.m36 = (s16)((pySum + (pySum < 0 ? 1 : 0)) >> 1);
-    coeff.m38 = pThis->m32_projParam1;
+    coeff.m38 = pThis->m30_vdp1ProjectionParam[1];
     coeff.m3C = coeff.m34;
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;
@@ -677,7 +677,7 @@ static void drawVdp2Sub_setupRotationPass0_A7_2(sVdp2PlaneTask* pThis)
         - gVdp2RotationMatrix.m[1][2].asS32() * dPz
         + coeff.m3E * -0x10000);
 
-    s32 scaledZ = (pThis->mC_cameraPosition.m4_Y.asS32() - pThis->m38_groundY) * 0x10;
+    s32 scaledZ = (pThis->mC_cameraPosition.m4_Y.asS32() - pThis->m38) * 0x10;
     gVdp2RotationMatrix.Mz = fixedPoint(scaledZ
         - gVdp2RotationMatrix.m[2][0].asS32() * dPx
         - gVdp2RotationMatrix.m[2][1].asS32() * dPy
@@ -700,21 +700,21 @@ static void drawVdp2_A7_2(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation.m4_Y = (s32)(s16)cameraProperties2.mC_rotation[1] << 16;
     pThis->m18_cameraRotation.m8_Z = (s32)(s16)cameraProperties2.mC_rotation[2] << 16;
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
-    fixedPoint projScale = intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    fixedPoint projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(0, projScale);
     drawVdp2Sub_setupRotationPass0_A7_2(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeGroundY_A7_2();
+    pThis->m34 = computeGroundY_A7_2();
 
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
-    pThis->m4_scrollY = (0xFE - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0xFE - pThis->m34) * 0x10000;
 
-    intDivide((s32)pThis->m30_projParam0, (s32)pThis->m32_projParam1 << 16);
+    intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
 }
 
 // 060593f0 — create subfield 2 VDP2 task

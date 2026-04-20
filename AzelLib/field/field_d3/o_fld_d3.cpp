@@ -79,14 +79,14 @@ static void d3InitWaveParams()
         pVdp2Task->m4C_wavePhase = 0;
         pVdp2Task->m40_waveSpeed = 0;
         pVdp2Task->m44_waveFreq = 0;
-        pVdp2Task->m48_waveAmplitude = 0;
+        pVdp2Task->m48 = 0;
     }
     else
     {
         pVdp2Task->m4C_wavePhase = 0;
         pVdp2Task->m40_waveSpeed = 0x5C390;
         pVdp2Task->m44_waveFreq = (s32)0xFE147BB8;
-        pVdp2Task->m48_waveAmplitude = (s32)0xFFFFFD6F;
+        pVdp2Task->m48 = (s32)0xFFFFFD6F;
     }
 }
 
@@ -172,7 +172,7 @@ static void d3VdpInit(sVdp2PlaneTask* pThis)
 
     pThis->m3C_scale = fixedPoint(0x10000);
 
-    pThis->m38_groundY = 0;
+    pThis->m38 = 0;
 
     d3InitWaveParams();
     // NBG3 line scroll setup
@@ -215,8 +215,8 @@ static fixedPoint d3LineScrollStart1(s32 param_1, fixedPoint angle, s32 scrollVa
 {
     sVdp2PlaneTask* pVdp2 = getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
     u16 idx = ((u32)angle >> 16) & 0xFFF;
-    s32 localY = (s32)pVdp2->m2C_localCoordinates[1];
-    s32 localX = (s32)pVdp2->m2C_localCoordinates[0];
+    s32 localY = (s32)pVdp2->m2C_vdp1LocalCoordinates[1];
+    s32 localX = (s32)pVdp2->m2C_vdp1LocalCoordinates[0];
 
     return FP_Div(
         (getSin(idx) * param_1 - localX * getSin(idx)) + localY * getCos(idx) + (scrollValue - localY) * 0x10000,
@@ -228,8 +228,8 @@ static fixedPoint d3LineScrollStart2(s32 param_1, fixedPoint angle, s32 scrollVa
 {
     sVdp2PlaneTask* pVdp2 = getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
     u16 idx = ((u32)angle >> 16) & 0xFFF;
-    s32 localY = (s32)pVdp2->m2C_localCoordinates[1];
-    s32 localX = (s32)pVdp2->m2C_localCoordinates[0];
+    s32 localY = (s32)pVdp2->m2C_vdp1LocalCoordinates[1];
+    s32 localX = (s32)pVdp2->m2C_vdp1LocalCoordinates[0];
 
     return FP_Div(
         (getCos(idx) * param_1 + localX * getSin(idx)) - localY * getCos(idx) + (scrollValue - localY) * -0x10000,
@@ -428,7 +428,7 @@ static void d3VdpRotationPassSub(sVdp2PlaneTask* pThis, s32 yOffset)
     t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
     s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34; t.m3E = t.m36; t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
@@ -445,7 +445,7 @@ static void d3VdpRotationPassSub(sVdp2PlaneTask* pThis, s32 yOffset)
     gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m8_Z << 4)
         - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
         + (s32)(s16)t.m3E * -0x10000;
-    gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38_groundY + yOffset) * 0x10)
+    gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38 + yOffset) * 0x10)
         - gVdp2RotationMatrix.m[2][0] * diffX - gVdp2RotationMatrix.m[2][1] * diffY - gVdp2RotationMatrix.m[2][2] * diffZ
         + (s32)(s16)t.m40 * -0x10000;
 }
@@ -466,20 +466,20 @@ static void d3VdpDraw(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     // Pass 0: ground plane
-    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     d3VdpRotationPassSub(pThis, 0);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
     vdp2ApplyWaveDistortion(pThis);
 
     // Pass 1: ceiling/upper plane (offset by -0x80000 in Y)
-    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     d3VdpRotationPassSub(pThis, (s32)0xFFF80000);
     drawCinematicBar(7);
     commitRotationPass();
@@ -488,7 +488,7 @@ static void d3VdpDraw(sVdp2PlaneTask* pThis)
     d3LineScrollEffect(pThis,
         (s16*)(pThis->m78_auxBuffer + (s32)vdp2Controls.m0_doubleBufferIndex * 0x400),
         (u32)pThis->m18_cameraRotation.m8_Z,
-        pThis->m34_scrollValue);
+        pThis->m34);
 
     // NBG0 scroll from field-specific data
     gCurrentVDP2ScrollLayer = 0;

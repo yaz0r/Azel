@@ -37,49 +37,11 @@ static const char* assetList[] = {
     nullptr,
 };
 
-struct sAtolmBossTask : public s_workAreaTemplateWithArgWithCopy<sAtolmBossTask, sSaturnPtr>
-{
-    // First 0x490 bytes are s_battleEngine
-    // Boss-specific data follows
-    u8 m_data[0xAA8 - 0x490];
-    // size 0xAA8
-};
-
-// 06058acc
-static void atolmBossTask_Init(sAtolmBossTask* pThis, sSaturnPtr battleData)
-{
-    Unimplemented();
-}
-
-// 060590a0
-static void atolmBossTask_Update(sAtolmBossTask* pThis)
-{
-    Unimplemented();
-}
-
-// 060591dc
-static void atolmBossTask_Draw(sAtolmBossTask* pThis)
-{
-    Unimplemented();
-}
-
-// 060591fe
-static void atolmBossTask_Delete(sAtolmBossTask* pThis)
-{
-    Unimplemented();
-}
-
-// 06058abc
-static void createAtolmBossTask(p_workArea parent, sSaturnPtr battleData)
-{
-    static const sAtolmBossTask::TypedTaskDefinition def = {
-        &atolmBossTask_Init,
-        &atolmBossTask_Update,
-        &atolmBossTask_Draw,
-        &atolmBossTask_Delete,
-    };
-    createSubTaskWithArgWithCopy<sAtolmBossTask>((s_workAreaCopy*)parent, battleData, &def);
-}
+// 06058acc = battleEngine_Init
+// 060590a0 = battleEngine_Update
+// 060591dc = battleEngine_Draw
+// 060591fe = battleEngine_Delete
+// 06058abc = createBattleEngineTask
 
 // 06054034
 static void battle_A7_2_func0(p_workArea pThis)
@@ -87,7 +49,7 @@ static void battle_A7_2_func0(p_workArea pThis)
     initMemoryForBattle(pThis, assetList);
 
     sSaturnPtr BTL_A7_2_Data = g_BTL_A7_2->getSaturnPtr(0x060a51bc);
-    createAtolmBossTask(pThis, BTL_A7_2_Data);
+    createBattleEngineTask(pThis, BTL_A7_2_Data);
 }
 
 // 06054000

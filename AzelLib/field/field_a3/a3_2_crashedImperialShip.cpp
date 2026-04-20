@@ -221,7 +221,7 @@ void initCrashedShipDestruction(fieldA3_2_crashedImpertialShip* r4)
     params.m14_pRotation = &rotation;
     params.m34_modelOffset = 0xE8;
     params.m36_poseOffset = 0x574;
-    params.m38_groundY = -0x320000; // 0xFFCE0000
+    params.m38 = -0x320000; // 0xFFCE0000
     params.m3C_scale = 0; // no scale
     params.m44_soundEffect = 0xFFFF; // no sound on first task
     params.m_pBundle = r4->m0_memoryArea.m0_mainMemoryBundle;

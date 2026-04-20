@@ -597,7 +597,7 @@ static void dragonPhoenix_restoreLighting(s32 mode, s32 duration)
         // Pause env task if present (grid flag 0x10 = has env task)
         if ((pGrid->m1C8_flags & 0x10) != 0)
         {
-            s_BTL_A3_Env* envTask = gBattleManager->m10_battleOverlay->m1C_envTask;
+            sVdp2PlaneTask* envTask = gBattleManager->m10_battleOverlay->m1C_envTask;
             p_workArea envSubTask = (p_workArea)envTask->m58;
             if (envSubTask != nullptr)
             {
@@ -616,7 +616,7 @@ static void dragonPhoenix_restoreLighting(s32 mode, s32 duration)
         // Unpause env task if present
         if ((pGrid->m1C8_flags & 0x10) != 0)
         {
-            s_BTL_A3_Env* envTask = gBattleManager->m10_battleOverlay->m1C_envTask;
+            sVdp2PlaneTask* envTask = gBattleManager->m10_battleOverlay->m1C_envTask;
             p_workArea envSubTask = (p_workArea)envTask->m58;
             if (envSubTask != nullptr)
             {

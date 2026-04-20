@@ -38,6 +38,7 @@ struct battleOverlay : public sSaturnMemoryFile
     }
 
     virtual sSaturnPtr getEncounterDataTable() = 0;
+    virtual sSaturnPtr getBerserkScrollConfigTable() { return sSaturnPtr(); }
     virtual void invoke(sSaturnPtr Func, s_workAreaCopy* pParent) = 0;
     virtual void invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32, u32) = 0;
     virtual p_workArea invokeCreateEffect(sSaturnPtr Func, s_workAreaCopy* pParent) = 0;
@@ -56,7 +57,7 @@ struct sBattleOverlayTask : public s_workAreaTemplate<sBattleOverlayTask>
     struct s_battleDebug* m10_inBattleDebug;
     struct sBattleTextDisplayTask* m14_textDisplay;
     struct s_battleDragon* m18_dragon;
-    struct s_BTL_A3_Env* m1C_envTask;
+    struct sVdp2PlaneTask* m1C_envTask;
     struct s_battleOverlay_20* m20_battleHud;
     s32 m24;
     //size 0x28

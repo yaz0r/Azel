@@ -21,7 +21,7 @@ struct sDebrisScatterParams
     fixedPoint m30_angleOffset; // initial angle offset
     u16 m34_modelOffset;        // model hierarchy offset in file bundle
     u16 m36_poseOffset;         // pose data offset in file bundle
-    fixedPoint m38_groundY;     // ground plane Y (bounce height)
+    fixedPoint m38;     // ground plane Y (bounce height)
     fixedPoint m3C_scale;       // scale (0 or 0x10000 = no scale)
     fixedPoint m40_param;       // additional param
     u16 m44_soundEffect;        // sound to play on ground hit

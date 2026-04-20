@@ -1,6 +1,7 @@
 #include "PDS.h"
 #include "BTL_A7_data.h"
 #include "BTL_A7_env.h"
+#include "BTL_A7_formation.h"
 
 BTL_A7_data* g_BTL_A7 = nullptr;
 
@@ -13,6 +14,9 @@ void BTL_A7_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32
 {
     switch (Func.m_offset)
     {
+    case 0x06057a2a:
+        BTL_A7_createFormation(pParent, arg0);
+        break;
     default:
         assert(0);
         break;

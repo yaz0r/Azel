@@ -216,7 +216,7 @@ static void BTL_A5_enemy_Update(sBTL_A5_Enemy* pThis)
             {
                 pThis->m8_formation->mF0_flag++;
             }
-            pThis->m8_formation->mEF_deadCount++;
+            pThis->m8_formation->mE0_entityGroup.mF_deadCount++;
             return;
         }
     }
@@ -334,7 +334,7 @@ p_workArea BTL_A5_createEnemy(sBTL_A5_FormationTask* pParent, s32 dataTableAddr,
             pEntity->m17E_hitFlashColor = 2;
     }
 
-    s16 enemyTypeId = readSaturnS16(pParent->mE8_dataTable + 0xC) + iVar6;
+    s16 enemyTypeId = readSaturnS16(pParent->mE0_entityGroup.m8_dataTable + 0xC) + iVar6;
     pEntity->mAC_lifeMeter = createEnemyLifeMeterTask(
         &pEntity->m30_position, 0, &pEntity->mB2_health, enemyTypeId);
 
@@ -384,7 +384,7 @@ p_workArea BTL_A5_createEnemy(sBTL_A5_FormationTask* pParent, s32 dataTableAddr,
  
     BTL_A5_enemy_updateMovement(pEntity);
 
-    pEntity->m90_initialPosition = readSaturnVec3(pParent->mE8_dataTable + entityIndex * 0xC);
+    pEntity->m90_initialPosition = readSaturnVec3(pParent->mE0_entityGroup.m8_dataTable + entityIndex * 0xC);
     pEntity->m60_targetPosition = pEntity->m90_initialPosition;
 
     pEntity->mA8_soundEffectId = 0xA3D;

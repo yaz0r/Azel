@@ -12,7 +12,7 @@
 #include "kernel/cinematicBarsTask.h"
 #include "town/town.h" // TODO: cleanup
 
-void s_BTL_A3_Env_InitVdp2Sub4(sSaturnPtr param_1)
+void sVdp2PlaneTask_InitVdp2Sub4(sSaturnPtr param_1)
 {
     // Setup clip distances from Saturn data
     auto& clip = graphicEngineStatus.m405C;
@@ -275,7 +275,7 @@ void initRotationCoefficientTables(int layerIndex, u8* table)
     }
 }
 
-void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
+void BTL_A3_Env_InitVdp2(sVdp2PlaneTask* pThis)
 {
     gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
@@ -360,7 +360,7 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
     vdp2Controls.m4_pendingVdp2Regs->mFC_PRIR = 0x3;
     vdp2Controls.m_isDirty = 1;
 
-    pThis->m3C = 0x10000;
+    pThis->m3C_scale = 0x10000;
 
     static const std::vector<std::array<s32, 2>> config = {
         {
@@ -386,12 +386,12 @@ void BTL_A3_Env_InitVdp2(s_BTL_A3_Env* pThis)
 
     vdp2Controls.m_isDirty = 1;
 
-    s_BTL_A3_Env_InitVdp2Sub4(g_BTL_A3->getSaturnPtr(0x60a6dd8));
+    sVdp2PlaneTask_InitVdp2Sub4(g_BTL_A3->getSaturnPtr(0x60a6dd8));
 
-    pThis->m4C = 0;
+    pThis->m4C_wavePhase = 0;
 
-    pThis->m40 = readSaturnS32(g_BTL_A3->getSaturnPtr(0x60A6DD8)); // wave phase increment per frame
-    pThis->m44 = 0x4D5E540; // wave phase increment per coefficient entry
+    pThis->m40_waveSpeed = readSaturnS32(g_BTL_A3->getSaturnPtr(0x60A6DD8)); // wave phase increment per frame
+    pThis->m44_waveFreq = 0x4D5E540; // wave phase increment per coefficient entry
     pThis->m48 = 0xF5A; // wave amplitude
 }
 
@@ -540,7 +540,7 @@ void sBTL_A3_map6_sub_Draw(sBTL_A3_map6_sub* pThis)
     Unimplemented();
 }
 
-static void BTL_A3_map6_Init(s_BTL_A3_Env* pThis)
+static void BTL_A3_map6_Init(sVdp2PlaneTask* pThis)
 {
     loadFile("SCBTLA31.SCB", getVdp2Vram(0x40000), 0);
     loadFile("SCBTL_A3.PNB", getVdp2Vram(0x62800), 0);
@@ -563,10 +563,10 @@ static void BTL_A3_map6_Init(s_BTL_A3_Env* pThis)
         nullptr,
     };
 
-    createSubTask<sBTL_A3_map6_sub>(pThis->m58, &definition);
+    createSubTask<sBTL_A3_map6_sub>((npcFileDeleter*)pThis->m58, &definition);
 }
 
-void BTL_A3_Env_Update(s_BTL_A3_Env* pThis)
+void BTL_A3_Env_Update(sVdp2PlaneTask* pThis)
 {
     // Empty
 }
@@ -819,7 +819,7 @@ void scaleRotationMatrix(fixedPoint scale)
     gVdp2RotationMatrix.m[1][2] = MTH_Mul(gVdp2RotationMatrix.m[1][2], scale);
 }
 
-void buildGroundRotation(s_BTL_A3_Env* pThis)
+void buildGroundRotation(sVdp2PlaneTask* pThis)
 {
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
 
@@ -840,17 +840,17 @@ void buildGroundRotation(s_BTL_A3_Env* pThis)
     t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C);
+    scaleRotationMatrix(pThis->m3C_scale);
     writeRotationParams(-rotZ);
 
     s32 diffX = (s32)t.m34 - (s32)t.m3C;
     s32 diffY = (s32)t.m36 - (s32)t.m3E;
     s32 diffZ = (s32)t.m38 - (s32)t.m40;
 
-    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C, (s32)pThis->mC_cameraPosition.m0_X << 4)
+    gVdp2RotationMatrix.Mx = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m0_X << 4)
                     - gVdp2RotationMatrix.m[0][0] * diffX - gVdp2RotationMatrix.m[0][1] * diffY - gVdp2RotationMatrix.m[0][2] * diffZ
                     + (s32)(s16)t.m3C * -0x10000;
-    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C, (s32)pThis->mC_cameraPosition.m8_Z << 4)
+    gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m8_Z << 4)
                     - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
                     + (s32)(s16)t.m3E * -0x10000;
     gVdp2RotationMatrix.Mz = (pThis->mC_cameraPosition.m4_Y - pThis->m38) * 0x10
@@ -870,19 +870,19 @@ s32 computeRotationScrollOffset()
 }
 
 // 060549c0
-static void BTL_A3_Env_DrawSub4(s_BTL_A3_Env* pThis)
+static void BTL_A3_Env_DrawSub4(sVdp2PlaneTask* pThis)
 {
     auto& table = *gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
-    s32 phase = pThis->m4C;
+    s32 phase = pThis->m4C_wavePhase;
     for (int i = 0; i < 0x1A8; i++) {
         fixedPoint wave = MTH_Mul(pThis->m48, getSin(phase >> 16));
         table[i] = MTH_Mul(table[i], wave + 0x10000);
-        phase += pThis->m44;
+        phase += pThis->m44_waveFreq;
     }
-    pThis->m4C += pThis->m40;
+    pThis->m4C_wavePhase += pThis->m40_waveSpeed;
 }
 
-void BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)
+void BTL_A3_Env_Draw(sVdp2PlaneTask* pThis)
 {
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
@@ -932,12 +932,12 @@ void BTL_A3_Env_Draw(s_BTL_A3_Env* pThis)
 
 p_workArea Create_BTL_A3_map6(p_workArea parent)
 {
-    static const s_BTL_A3_Env::TypedTaskDefinition definition = {
+    static const sVdp2PlaneTask::TypedTaskDefinition definition = {
         &BTL_A3_map6_Init,
         &BTL_A3_Env_Update,
         &BTL_A3_Env_Draw,
         nullptr,
     };
 
-    return createSubTask<s_BTL_A3_Env>(parent, &definition);
+    return createSubTask<sVdp2PlaneTask>(parent, &definition);
 }

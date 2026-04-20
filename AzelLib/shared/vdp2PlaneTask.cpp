@@ -11,25 +11,25 @@ void vdp2ApplyWaveDistortion(sVdp2PlaneTask* pThis)
     for (int i = 0; i < 0x1A8 && i < (int)coefficients.size(); i++)
     {
         s32 sinVal = getSin((u16)((u32)phase >> 16) & 0xFFF);
-        fixedPoint modulated = MTH_Mul(pThis->m48_waveAmplitude, sinVal);
+        fixedPoint modulated = MTH_Mul(pThis->m48, sinVal);
         coefficients[i] = MTH_Mul(coefficients[i], modulated + 0x10000);
         phase += pThis->m44_waveFreq;
     }
     pThis->m4C_wavePhase += pThis->m40_waveSpeed;
 }
 
-// 06014274 — update line scroll table with wave distortion (shared across A7, B2)
-void updateLineScrollTable(sVdp2PlaneTask* pThis)
+// 06014274 — wave distortion on a raw params struct (used by battle envs via pThis+0x7C)
+void updateWaveDistortionParams(sVdp2PlaneTask::sLineScrollParams* p)
 {
-    s32 phase = pThis->m68_lsPhaseAccum;
-    pThis->m68_lsPhaseAccum = pThis->m54_lsPhaseSpeed + phase;
-    s32 scrollBase = pThis->m6C_lsScrollBaseAccum + pThis->m60_lsScrollBaseSpeed;
-    pThis->m6C_lsScrollBaseAccum = scrollBase;
+    s32 phase = p->m18_phaseAccum;
+    p->m18_phaseAccum = p->m4_phaseSpeed + phase;
+    s32 scrollBase = p->m1C_scrollBaseAccum + p->m10_scrollBaseSpeed;
+    p->m1C_scrollBaseAccum = scrollBase;
 
-    s32 amplitude = pThis->m5C_lsZoomAmplitude;
-    s32 freq = pThis->m58_lsFreqPerLine;
-    s32 scrollInc = pThis->m64_lsScrollIncPerLine;
-    s32* buf = (s32*)pThis->m50_lineScrollBuffer;
+    s32 amplitude = p->mC_zoomAmplitude;
+    s32 freq = p->m8_freqPerLine;
+    s32 scrollInc = p->m14_scrollIncPerLine;
+    s32* buf = (s32*)p->m0_buffer;
 
     u32 phaseIdx = (u32)phase;
 
@@ -47,6 +47,34 @@ void updateLineScrollTable(sVdp2PlaneTask* pThis)
     }
 }
 
+// 0605b3d0 (FLD_B2) — line scroll update using sVdp2PlaneTask m50 line scroll params
+void updateLineScrollTable(sVdp2PlaneTask* pThis)
+{
+    auto& ls = pThis->m50_lineScrollParams;
+    s32 phase = ls.m18_phaseAccum;
+    ls.m18_phaseAccum = ls.m4_phaseSpeed + phase;
+
+    s32 amplitude = ls.mC_zoomAmplitude;
+    s32 freq = ls.m8_freqPerLine;
+    s32 scrollInc = ls.m14_scrollIncPerLine;
+    s32* buf = (s32*)ls.m0_buffer;
+
+    u32 phaseIdx = (u32)phase;
+
+    for (s32 i = 0; i < 0xE0; i++)
+    {
+        phaseIdx += (u32)freq;
+
+        fixedPoint sinVal = getSin((phaseIdx >> 16) & 0xFFF);
+        s32 divisor = amplitude + 0x10000 + MTH_Mul(fixedPoint(amplitude), sinVal).asS32();
+        s32 quotient = FP_Div(0x10000, fixedPoint(divisor)).asS32();
+
+        buf[i * 3 + 1] = (buf[i * 3 + 1] + scrollInc) & 0xFFFFFF;
+        buf[i * 3 + 2] = quotient;
+        buf[i * 3 + 0] = (0x10000 - quotient) * 0xB0;
+    }
+}
+
 // 060590ae
 void vdp2SetupRotationPass(sVdp2PlaneTask* pThis)
 {
@@ -61,7 +89,7 @@ void vdp2SetupRotationPass(sVdp2PlaneTask* pThis)
     t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
     s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34;
     t.m3E = t.m36;
     t.m40 = 0;
@@ -80,7 +108,7 @@ void vdp2SetupRotationPass(sVdp2PlaneTask* pThis)
     gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m8_Z << 4)
                     - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
                     + (s32)(s16)t.m3E * -0x10000;
-    gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38_groundY) * 0x10)
+    gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38) * 0x10)
                     - gVdp2RotationMatrix.m[2][0] * diffX - gVdp2RotationMatrix.m[2][1] * diffY - gVdp2RotationMatrix.m[2][2] * diffZ
                     + (s32)(s16)t.m40 * -0x10000;
 }

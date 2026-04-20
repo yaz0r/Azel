@@ -9,6 +9,7 @@
 #include "BTL_A7/BTL_A7.h"
 #include "BTL_A7/BTL_A7_2.h"
 #include "BTL_T0/BTL_T0.h"
+#include "BTL_X0/BTL_X0.h"
 #include "audio/systemSounds.h"
 #include "commonOverlay.h"
 
@@ -87,6 +88,10 @@ static void battleOverlayTask_Draw(sBattleOverlayTask* pThis)
             else if (sBattleOverlayName == std::string("BTL_T0.PRG"))
             {
                 overlayStart_BTL_T0(pThis);
+            }
+            else if (sBattleOverlayName == std::string("BTL_X0.PRG"))
+            {
+                overlayStart_BTL_X0(pThis);
             }
             else
             {

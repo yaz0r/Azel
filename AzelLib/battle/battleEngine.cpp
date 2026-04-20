@@ -4628,6 +4628,66 @@ void battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(s_battleEngine* p
 
 static void battleEngine_updateBattleMode_9(s_battleEngine* pThis); // forward decl
 
+// 0605d498
+static void battleEngine_updateBattleMode_2(s_battleEngine* pThis)
+{
+    switch (pThis->m38D_battleSubMode)
+    {
+    case 0:
+        battleCreateCinematicBars(pThis);
+        pThis->m38D_battleSubMode++;
+        break;
+    case 1:
+        if (pThis->m384_battleModeDelay++ > 4)
+        {
+            pThis->m384_battleModeDelay = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2000 = 1;
+            pThis->m38D_battleSubMode++;
+        }
+        break;
+    case 2:
+        if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
+        {
+            pThis->m38D_battleSubMode++;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m40 = 1;
+        }
+        break;
+    case 3:
+        if (pThis->m384_battleModeDelay++ > 0xF)
+        {
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 1;
+        }
+        break;
+    case 4:
+        if (pThis->m384_battleModeDelay++ > 0xF)
+        {
+            pThis->m384_battleModeDelay = 0;
+            pThis->m38D_battleSubMode++;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m1000 = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20_battleIntroRunning = 0;
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m2_needToSortEnemiesByDistanceFromDragon = 1;
+        }
+        break;
+    case 5:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m10 = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 6:
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m80000_hideBattleHUD = 0;
+        pThis->m38D_battleSubMode++;
+        break;
+    case 7:
+        if (pThis->m384_battleModeDelay++ > 4)
+        {
+            battleEngine_SetBattleMode16();
+            gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m4000 = 0;
+        }
+        break;
+    }
+}
+
 void updateBattleIntro(s_battleEngine* pThis)
 {
     if (battleEngine_isPlayerTurnActive() == 0)
@@ -4641,8 +4701,13 @@ void updateBattleIntro(s_battleEngine* pThis)
     case eBattleModes::m1_useItem:
         battleEngine_updateBattleMode_1_useItem(pThis);
         break;
+    case eBattleModes::m2:
+        battleEngine_updateBattleMode_2(pThis);
+        break;
     case eBattleModes::m3_shootEnemeyWithHomingLaser:
         battleEngine_updateBattleMode_3_shootEnemyWithHomingLaser(pThis);
+        break;
+    case eBattleModes::m5:
         break;
     case eBattleModes::m4_useBerserk:
         battleEngine_updateBattleMode_4_useBerserk(pThis);
@@ -5401,6 +5466,49 @@ s32 battleEngine_isPlayerTurnActive()
         return 1;
     }
     return 0;
+}
+
+// 0605b198
+void battleEngine_setupAttackCamera(sVec3_FP* pPos, s32 distance, u8 mode, s16 duration)
+{
+    s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+    battleEngine_enableAttackCamera();
+    pEngine->m3E8.zeroize();
+    pEngine->m3DC.zeroize();
+    pEngine->m3E8.m8_Z = distance;
+
+    s8 quadrant = pEngine->m22C_dragonCurrentQuadrant;
+    if (quadrant == 0)
+    {
+        pEngine->m3DC.m4_Y = -0x2000000;
+    }
+    else if (quadrant == 1)
+    {
+        pEngine->m3DC.m4_Y = 0x2000000;
+    }
+    else if (quadrant == 2)
+    {
+        pEngine->m3DC.m4_Y = 0x6000000;
+    }
+    else if (quadrant == 3)
+    {
+        pEngine->m3DC.m4_Y = 0xA000000;
+    }
+
+    battleEngineSub1_UpdateSub2(&pEngine->m3F4_cameraPositionWhileShooting, *pPos, pEngine->m3E8, pEngine->m3DC);
+    battleEngine_setCurrentCameraPositionPointer(&pEngine->m3F4_cameraPositionWhileShooting);
+    battleEngine_setDesiredCameraPositionPointer(pPos);
+    battleEngine_resetCameraInterpolation();
+
+    pEngine->m432 = mode;
+    if (pEngine->m432 == 0)
+    {
+        pEngine->m430 = 0x3C;
+    }
+    else
+    {
+        pEngine->m430 = duration;
+    }
 }
 
 p_workArea createBattleEngineTask(p_workArea parent, sSaturnPtr battleData)

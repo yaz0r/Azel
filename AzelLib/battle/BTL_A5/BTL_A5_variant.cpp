@@ -255,7 +255,7 @@ static void BTL_A5_enemyVariant_Update(sBTL_A5_VariantEnemy* pThis)
             &pThis->m30_position, &pThis->m3C_rotation, nullptr, nullptr,
             -44, dramAllocatorEnd[6].mC_fileBundle, 0, 0x1FFFFF, 0, 0x10000, 0);
         pThis->m158_formation->mF4_entityPositions[pThis->m1C_entityIndex] = 4;
-        pThis->m158_formation->mEF_deadCount++;
+        pThis->m158_formation->mE0_entityGroup.mF_deadCount++;
         pThis->getTask()->markFinished();
         break;
     }
@@ -282,13 +282,13 @@ static p_workArea BTL_A5_createEnemyVariant(sBTL_A5_FormationTask* pParent, s32 
     pEntity->m1C_entityIndex = entityIndex;
 
     sSaturnPtr modelData = g_BTL_A5->getSaturnPtr(0x060ad5c0);
-    s16 enemyTypeId = readSaturnS16(pParent->mE8_dataTable + 0xC);
+    s16 enemyTypeId = readSaturnS16(pParent->mE0_entityGroup.m8_dataTable + 0xC);
 
     pEntity->mAC_lifeMeter = createEnemyLifeMeterTask(
         &pEntity->m30_position, 0, &pEntity->mB2_health, enemyTypeId);
 
     // read direction from formation data table
-    sSaturnPtr formationEA = pParent->mE8_dataTable;
+    sSaturnPtr formationEA = pParent->mE0_entityGroup.m8_dataTable;
     u8 dirBase = readSaturnU8(formationEA + 0x11);
     sSaturnPtr dirTable = g_BTL_A5->getSaturnPtr(0x060ad5b8);
     u8 dir = readSaturnU8(dirTable + entityIndex + dirBase * 3);
@@ -360,7 +360,7 @@ static p_workArea BTL_A5_createEnemyVariant(sBTL_A5_FormationTask* pParent, s32 
 static void BTL_A5_formationVariant_Init(sBTL_A5_FormationTask* pThis)
 {
     allocateNPC(pThis, 0xE);
-    pThis->mEC_formationNameIndex = 0x13;
+    pThis->mE0_entityGroup.mC_formationNameIndex = 0x13;
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m2 = 0x78;
     battleEngine_UpdateSub1Sub0(0);
     displayFormationName(0xE, 1, 9);
@@ -368,22 +368,22 @@ static void BTL_A5_formationVariant_Init(sBTL_A5_FormationTask* pThis)
     u32 r = randomNumber();
     if ((r & 1) == 0)
     {
-        pThis->mE8_dataTable = g_BTL_A5->getSaturnPtr(0x060ad13c);
+        pThis->mE0_entityGroup.m8_dataTable = g_BTL_A5->getSaturnPtr(0x060ad13c);
     }
     else
     {
-        pThis->mE8_dataTable = g_BTL_A5->getSaturnPtr(0x060ad160);
+        pThis->mE0_entityGroup.m8_dataTable = g_BTL_A5->getSaturnPtr(0x060ad160);
     }
 
-    pThis->mEE_numEntities = 3;
-    pThis->mEF_deadCount = 0;
-    pThis->mE0_entityArray = (p_workArea*)allocateHeapForTask(pThis, pThis->mEE_numEntities * sizeof(p_workArea));
+    pThis->mE0_entityGroup.mE_numEntities = 3;
+    pThis->mE0_entityGroup.mF_deadCount = 0;
+    pThis->mE0_entityGroup.m0_entityArray = (p_workArea*)allocateHeapForTask(pThis, pThis->mE0_entityGroup.mE_numEntities * sizeof(p_workArea));
 
-    for (int i = 0; i < pThis->mEE_numEntities; i++)
+    for (int i = 0; i < pThis->mE0_entityGroup.mE_numEntities; i++)
     {
-        pThis->mE0_entityArray[i] = BTL_A5_createEnemyVariant(pThis, i);
-        if (pThis->mE0_entityArray[i] == nullptr)
-            pThis->mEF_deadCount++;
+        pThis->mE0_entityGroup.m0_entityArray[i] = BTL_A5_createEnemyVariant(pThis, i);
+        if (pThis->mE0_entityGroup.m0_entityArray[i] == nullptr)
+            pThis->mE0_entityGroup.mF_deadCount++;
     }
 }
 
@@ -393,15 +393,15 @@ static void BTL_A5_formationVariant_Update(sBTL_A5_FormationTask* pThis)
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
     pEngine->m3B2_numBattleFormationRunning++;
 
-    for (int i = 0; i < pThis->mEE_numEntities; i++)
+    for (int i = 0; i < pThis->mE0_entityGroup.mE_numEntities; i++)
     {
-        p_workArea entity = pThis->mE0_entityArray[i];
+        p_workArea entity = pThis->mE0_entityGroup.m0_entityArray[i];
         if (entity == nullptr) continue;
         if (entity->getTask()->m14_flags & TASK_FLAGS_FINISHED)
-            pThis->mE0_entityArray[i] = nullptr;
+            pThis->mE0_entityGroup.m0_entityArray[i] = nullptr;
     }
 
-    if (pThis->mEF_deadCount >= pThis->mEE_numEntities)
+    if (pThis->mE0_entityGroup.mF_deadCount >= pThis->mE0_entityGroup.mE_numEntities)
     {
         pThis->m28_state = 0xB;
         pEngine->m3CC->m8 = 0;
@@ -482,5 +482,5 @@ void BTL_A5_createFormation_variant(s_workAreaCopy* pParent, u32 arg0)
         pTask->m28_state = 3;
 
     BTL_A5_formationVariant_Init(pTask);
-    pTask->mA4_soundEffectId = 0xA3D;
+    pTask->m2C_posBlock.m78_interpRate = 0xA3D;
 }

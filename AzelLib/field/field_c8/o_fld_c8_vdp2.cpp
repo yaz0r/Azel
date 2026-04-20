@@ -75,8 +75,8 @@ static void c8Vdp2Setup(sVdp2PlaneTask* pThis)
     pThis->m4C_wavePhase = 0;
     pThis->m40_waveSpeed = 0;
     pThis->m44_waveFreq = 0;
-    pThis->m48_waveAmplitude = 0;
-    pThis->m38_groundY = 0;
+    pThis->m48 = 0;
+    pThis->m38 = 0;
 
     vdp2Controls.m4_pendingVdp2Regs->mB8_OVPNRA = 0x5000;
 }
@@ -120,7 +120,7 @@ static void c8RotationMatrixSetup(sVdp2PlaneTask* pThis, sVec3_FP* pRotation)
     t.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
     s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34; t.m3E = t.m36; t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - pRotation->m0_X, -pRotation->m4_Y);
@@ -137,7 +137,7 @@ static void c8RotationMatrixSetup(sVdp2PlaneTask* pThis, sVec3_FP* pRotation)
     gVdp2RotationMatrix.My = MTH_Mul(pThis->m3C_scale, (s32)pThis->mC_cameraPosition.m8_Z << 4)
         - gVdp2RotationMatrix.m[1][0] * diffX - gVdp2RotationMatrix.m[1][1] * diffY - gVdp2RotationMatrix.m[1][2] * diffZ
         + (s32)(s16)t.m3E * -0x10000;
-    gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38_groundY) * 0x10)
+    gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38) * 0x10)
         - gVdp2RotationMatrix.m[2][0] * diffX - gVdp2RotationMatrix.m[2][1] * diffY - gVdp2RotationMatrix.m[2][2] * diffZ
         + (s32)(s16)t.m40 * -0x10000;
 }
@@ -164,11 +164,11 @@ static void c8RotationPassSub(sVdp2PlaneTask* pThis)
     s32 towerThresholdY = readSaturnS32(g_c8TowerDataArg + 4);
     if ((s32)pThis->mC_cameraPosition.m4_Y < towerThresholdY)
     {
-        pThis->m38_groundY = readSaturnS32(g_c8TowerDataArg + 0x10);
+        pThis->m38 = readSaturnS32(g_c8TowerDataArg + 0x10);
     }
     else
     {
-        pThis->m38_groundY = readSaturnS32(g_c8TowerDataArg + 0x0C);
+        pThis->m38 = readSaturnS32(g_c8TowerDataArg + 0x0C);
     }
 
     c8RotationMatrixSetup(pThis, &rotation);
@@ -182,33 +182,33 @@ static void c8VdpDraw(sVdp2PlaneTask* pThis)
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
     getVdp1ClippingCoordinates(pThis->m24_vdp1Clipping);
-    getVdp1LocalCoordinates(pThis->m2C_localCoordinates);
-    getVdp1ProjectionParams(&pThis->m30_projParam0, &pThis->m32_projParam1);
+    getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
+    getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
     // Pass 0: ground plane with tower-specific camera adjustment
-    beginRotationPass(0, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(0, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
     c8RotationPassSub(pThis);
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
 
     Unimplemented(); // 06080cac — horizon gauge VDP1 overlay (complex, calls sub-functions)
 
-    pThis->m34_scrollValue = computeRotationScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
 
     // Pass 1: sky scroll
     pThis->m0_scrollX = ((s32)pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
-    pThis->m4_scrollY = (0xFF - pThis->m34_scrollValue) * 0x10000;
+    pThis->m4_scrollY = (0xFF - pThis->m34) * 0x10000;
 
-    beginRotationPass(1, intDivide(pThis->m30_projParam0, fixedPoint::fromInteger(pThis->m32_projParam1)));
+    beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
     s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
     t.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
     s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
     t.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
-    t.m38 = pThis->m32_projParam1;
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
     t.m3C = t.m34; t.m3E = t.m36; t.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);

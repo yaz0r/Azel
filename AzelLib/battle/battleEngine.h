@@ -221,5 +221,8 @@ void battleGrid_setCameraFov(int fov);
 void sEnemyAttackCamera_updateSub0(int param_1);
 void syncM68KSoundCPU();
 
+void battleEngine_setupAttackCamera(sVec3_FP* pPos, s32 distance, u8 mode, s16 duration = 0);
+void battleEngine_initiateEnemyMoveDragon(s8 direction, s16 agility);
+
 p_workArea createBattleEngineTask(p_workArea, sSaturnPtr battleData);
 

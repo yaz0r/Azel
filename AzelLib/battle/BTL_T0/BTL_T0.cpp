@@ -1694,7 +1694,7 @@ static p_workArea Create_BTL_T0_Formation(p_workArea parent, u32 existingFormati
 }
 
 // 06057f34
-static void BTL_T0_env_InitVdp2(s_BTL_A3_Env* pThis)
+static void BTL_T0_env_InitVdp2(sVdp2PlaneTask* pThis)
 {
     gBattleManager->m10_battleOverlay->m1C_envTask = pThis;
     reinitVdp2();
@@ -1739,7 +1739,7 @@ static void BTL_T0_env_InitVdp2(s_BTL_A3_Env* pThis)
     regs->mFC_PRIR = 3;
     vdp2Controls.m_isDirty = 1;
 
-    pThis->m3C = 0x10000;
+    pThis->m3C_scale = 0x10000;
 
     static const std::vector<std::array<s32, 2>> layerDisplayConfig = { { 0x2C, 0x1 } };
     applyLayerDisplayConfig(layerDisplayConfig);
@@ -1759,11 +1759,11 @@ static void BTL_T0_env_InitVdp2(s_BTL_A3_Env* pThis)
     regs->m10C_CCRR = pThis->m55;
     vdp2Controls.m_isDirty = 1;
 
-    s_BTL_A3_Env_InitVdp2Sub4(g_BTL_T0->getSaturnPtr(0x060aac40));
+    sVdp2PlaneTask_InitVdp2Sub4(g_BTL_T0->getSaturnPtr(0x060aac40));
 }
 
 // 06058580
-static void BTL_T0_env_Init(s_BTL_A3_Env* pThis)
+static void BTL_T0_env_Init(sVdp2PlaneTask* pThis)
 {
     loadFile("SCBTLA31.SCB", getVdp2Vram(0x40000), 0);
     loadFile("SCBTL_A3.PNB", getVdp2Vram(0x62800), 0);
@@ -1787,14 +1787,14 @@ static void BTL_T0_env_Init(s_BTL_A3_Env* pThis)
 // 060585f0
 static p_workArea Create_BTL_T0_env(p_workArea parent)
 {
-    static const s_BTL_A3_Env::TypedTaskDefinition definition = {
+    static const sVdp2PlaneTask::TypedTaskDefinition definition = {
         &BTL_T0_env_Init,
         &BTL_A3_Env_Update,
         &BTL_A3_Env_Draw,
         nullptr,
     };
 
-    return createSubTask<s_BTL_A3_Env>(parent, &definition);
+    return createSubTask<sVdp2PlaneTask>(parent, &definition);
 }
 
 // 06054000
