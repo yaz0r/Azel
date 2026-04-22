@@ -34,6 +34,7 @@ struct s_layerData
     u32 CAOS;
     u32 PLSZ;
     u32 SCN;
+    u32 SPN;  // Supplementary Palette Number — PNCNx bits 7:5 (3 bits). Saturn concatenates as Palette[6:4]=SPN, Palette[3:0]=Pattern[15:12] for 1-word 16-color.
 
     u32 planeOffsets[16];
     u32 mapwh; // 0 = use PLSZ-based addressing (NBG), 4 = 4x4 rotation scroll (RBG0)
@@ -64,6 +65,8 @@ struct s_layerDataGPU
     u32 wnd0YStart;     // 17
     u32 wnd0XEnd;       // 18
     u32 wnd0YEnd;       // 19
+    u32 SPN;            // 20 — supplementary palette number (PNCNx[7:5])
+    u32 _pad[3];        // 21-23 — keep vec4 alignment
 };
 
 static s_layerDataGPU packForGPU(const s_layerData& ld)
@@ -89,6 +92,10 @@ static s_layerDataGPU packForGPU(const s_layerData& ld)
     g.wnd0YStart = 0;
     g.wnd0XEnd = 0;
     g.wnd0YEnd = 0;
+    g.SPN = ld.SPN;
+    g._pad[0] = 0;
+    g._pad[1] = 0;
+    g._pad[2] = 0;
     return g;
 }
 
@@ -247,6 +254,8 @@ struct s_layerDataRBG0
     s32 E;          // 29 (t.m2C)
     s32 Px;         // 30 (t.m34, pivot X)
     s32 Py;         // 31 (t.m36, pivot Y)
+    u32 SPN;        // 32 — supplementary palette number (PNCR[7:5])
+    u32 _pad[3];    // 33-35 — keep vec4 alignment
 };
 
 void renderLayerGPU_RBG0(s_layerDataRBG0& layerData, u32 textureWidth, u32 textureHeight,
@@ -433,6 +442,9 @@ struct s_layerDataRBG0_dual
     s32 A_E;        // 56 (t.m2C)
     s32 A_Px;       // 57 (t.m34, pivot X)
     s32 A_Py;       // 58 (t.m36, pivot Y)
+    u32 SPN;        // 59 — supplementary palette number for plane A (PNCR[7:5])
+    u32 B_SPN;      // 60 — supplementary palette number for plane B
+    u32 _pad[2];    // 61-62 — keep vec4 alignment
 };
 
 void renderLayerGPU_RBG0_dual(s_layerDataRBG0_dual& layerData, u32 textureWidth, u32 textureHeight,
@@ -1357,8 +1369,8 @@ void renderLayer(s_layerData& layerData, u32 textureWidth, u32 textureHeight, u3
                 switch (layerData.CHCN)
                 {
                 case 0:
-                    // assuming supplement mode 0 with no data
-                    paletteNumber = (patternName & 0xF000) >> 12;
+                    // 16-color: palette[3:0]=pattern[15:12], palette[6:4]=SPN
+                    paletteNumber = ((patternName & 0xF000) >> 12) | ((layerData.SPN & 0x7) << 4);
                     break;
                 case 1:
                     paletteNumber = (patternName & 0x7000) >> 8;
@@ -1521,6 +1533,7 @@ void renderBG0(u32 width, u32 height, bool bGPU)
             planeData.CAOS = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA) & 0x7;
             planeData.PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ) & 3;
             planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0) & 0x1F;
+            planeData.SPN = (vdp2Controls.m4_pendingVdp2Regs->m30_PNCN0 >> 5) & 0x7;
 
             u32 pageDimension = (planeData.CHSZ == 0) ? 64 : 32;
             u32 patternSize = (planeData.PNB == 0) ? 4 : 2;
@@ -1569,6 +1582,7 @@ void renderBG1(u32 width, u32 height, bool bGPU)
         planeData.CAOS = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA >> 4) & 0x7;
         planeData.PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ >> 2) & 3;
         planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1) & 0x1F;
+        planeData.SPN = (vdp2Controls.m4_pendingVdp2Regs->m32_PNCN1 >> 5) & 0x7;
         planeData.scrollX = vdp2Controls.m4_pendingVdp2Regs->m80_SCXN1 >> 16;
         planeData.scrollY = vdp2Controls.m4_pendingVdp2Regs->m84_SCYN1 >> 16;
 
@@ -1659,6 +1673,7 @@ void renderBG3(u32 width, u32 height, bool bGPU)
         planeData.CAOS = (vdp2Controls.m4_pendingVdp2Regs->mE4_CRAOFA >> 12) & 0x7;
         planeData.PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ >> 6) & 3;
         planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m36_PNCN3) & 0x1F;
+        planeData.SPN = (vdp2Controls.m4_pendingVdp2Regs->m36_PNCN3 >> 5) & 0x7;
         planeData.scrollX = vdp2Controls.m4_pendingVdp2Regs->m94_SCXN3;
         planeData.scrollY = vdp2Controls.m4_pendingVdp2Regs->m96_SCYN3;
 
@@ -1709,6 +1724,7 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
         planeData.CAOS = (vdp2Controls.m4_pendingVdp2Regs->mE6_CRAOFB >> 0) & 0x7;
         planeData.PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ >> 8) & 3;
         planeData.SCN = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR) & 0x3FF;
+        planeData.SPN = (vdp2Controls.m4_pendingVdp2Regs->m38_PNCR >> 5) & 0x7;
         planeData.scrollX = 0;
         planeData.scrollY = 0;
 
@@ -1755,6 +1771,7 @@ void renderRBG0(u32 width, u32 height, bool bGPU)
                 planeDataB.CAOS = planeData.CAOS;
                 planeDataB.PLSZ = (vdp2Controls.m4_pendingVdp2Regs->m3A_PLSZ >> 12) & 3;
                 planeDataB.SCN = planeData.SCN;
+                planeDataB.SPN = planeData.SPN;
                 planeDataB.scrollX = 0;
                 planeDataB.scrollY = 0;
 

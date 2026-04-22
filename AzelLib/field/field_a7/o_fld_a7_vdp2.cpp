@@ -149,7 +149,7 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
     for (s32 i = 0; i < 224; i++)
     {
         buf[i * 3 + 1] = scrollAccum;
-        s32 zoom = FP_Div(0x3100, fixedPoint(lineIdx * lineIdx * 0x8000)).asS32() + 0x10000;
+        s32 zoom = intDivide(0x3100, lineIdx * lineIdx * 0x8000) + 0x10000;
         buf[i * 3 + 2] = zoom;
         buf[i * 3 + 0] = (0x10000 - zoom) * 0xB0;
         lineIdx++;

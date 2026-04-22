@@ -156,56 +156,48 @@ static void BTL_X0_env_Update(sVdp2PlaneTask* pThis)
 // 060547dc
 static void BTL_X0_env_DrawRotationPass0(sVdp2PlaneTask* pThis)
 {
-    s32 coeffIdx = (s16)((gRotationPassState.m0_planeIndex * 2 + (s16)vdp2Controls.m0_doubleBufferIndex) * 0x70);
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
 
     s32 rotX = pThis->m18_cameraRotation.m0_X;
     s32 rotY = pThis->m18_cameraRotation.m4_Y;
     s32 rotZ = pThis->m18_cameraRotation.m8_Z;
 
-    s16 midX = (s16)(((s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2]) / 2);
-    s16 midY = (s16)(((s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3]) / 2);
-
-    *(s16*)((u8*)&gCoefficientTables[0][0].m34 + coeffIdx) = midX;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m36 + coeffIdx) = midY;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m38 + coeffIdx) = pThis->m30_vdp1ProjectionParam[1];
-    *(s16*)((u8*)&gCoefficientTables[0][0].m3C + coeffIdx) = midX;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m3E + coeffIdx) = midY;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m40 + coeffIdx) = 0;
+    s32 iX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
+    t.m34 = (s16)((iX + (int)(iX < 0)) >> 1);
+    s32 iY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
+    t.m36 = (s16)((iY + (int)(iY < 0)) >> 1);
+    t.m38 = pThis->m30_vdp1ProjectionParam[1];
+    t.m3C = t.m34;
+    t.m3E = t.m36;
+    t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
     scaleRotationMatrix(pThis->m3C_scale);
     writeRotationParams(-rotZ);
 
-    s16 Px = *(s16*)((u8*)&gCoefficientTables[0][0].m34 + coeffIdx);
-    s16 Py = *(s16*)((u8*)&gCoefficientTables[0][0].m36 + coeffIdx);
-    s16 Pz = *(s16*)((u8*)&gCoefficientTables[0][0].m38 + coeffIdx);
-    s16 Cx = *(s16*)((u8*)&gCoefficientTables[0][0].m3C + coeffIdx);
-    s16 Cy = *(s16*)((u8*)&gCoefficientTables[0][0].m3E + coeffIdx);
-    s16 Cz = *(s16*)((u8*)&gCoefficientTables[0][0].m40 + coeffIdx);
-
-    s32 dX = Px - Cx;
-    s32 dY = Py - Cy;
-    s32 dZ = Pz - Cz;
+    s32 dX = (s32)t.m34 - (s32)t.m3C;
+    s32 dY = (s32)t.m36 - (s32)t.m3E;
+    s32 dZ = (s32)t.m38 - (s32)t.m40;
 
     s32 camX = MTH_Mul(pThis->m3C_scale, pThis->mC_cameraPosition.m0_X << 4);
     gVdp2RotationMatrix.Mx = camX
         - gVdp2RotationMatrix.m[0][0] * dX
         - gVdp2RotationMatrix.m[0][1] * dY
         - gVdp2RotationMatrix.m[0][2] * dZ
-        + Cx * -0x10000;
+        + (s32)t.m3C * -0x10000;
 
     s32 camZ = MTH_Mul(pThis->m3C_scale, pThis->mC_cameraPosition.m8_Z << 4);
     gVdp2RotationMatrix.My = camZ
         - gVdp2RotationMatrix.m[1][0] * dX
         - gVdp2RotationMatrix.m[1][1] * dY
         - gVdp2RotationMatrix.m[1][2] * dZ
-        + Cy * -0x10000;
+        + (s32)t.m3E * -0x10000;
 
     gVdp2RotationMatrix.Mz = (pThis->mC_cameraPosition.m4_Y - pThis->m38) * 0x10
         - gVdp2RotationMatrix.m[2][0] * dX
         - gVdp2RotationMatrix.m[2][1] * dY
         - gVdp2RotationMatrix.m[2][2] * dZ
-        + Cz * -0x10000;
+        + (s32)t.m40 * -0x10000;
 }
 
 // 060545ac
@@ -220,7 +212,7 @@ static void BTL_X0_env_Draw(sVdp2PlaneTask* pThis)
     getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
     getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
-    fixedPoint fov = FP_Div(pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
+    fixedPoint fov = intDivide(pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
 
     beginRotationPass(0, fov);
     BTL_X0_env_DrawRotationPass0(pThis);
@@ -231,19 +223,20 @@ static void BTL_X0_env_Draw(sVdp2PlaneTask* pThis)
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
     pThis->m4_scrollY = (0xFE - pThis->m34) * 0x10000;
 
-    fov = FP_Div(pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
+    fov = intDivide(pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(1, fov);
 
-    s32 coeffIdx = (s16)((gRotationPassState.m0_planeIndex * 2 + (s16)vdp2Controls.m0_doubleBufferIndex) * 0x70);
-    s16 midX = (s16)(((s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2]) / 2);
-    s16 midY = (s16)(((s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3]) / 2);
-
-    *(s16*)((u8*)&gCoefficientTables[0][0].m34 + coeffIdx) = midX;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m36 + coeffIdx) = midY;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m38 + coeffIdx) = pThis->m30_vdp1ProjectionParam[1];
-    *(s16*)((u8*)&gCoefficientTables[0][0].m3C + coeffIdx) = midX;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m3E + coeffIdx) = midY;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m40 + coeffIdx) = 0;
+    {
+    sCoefficientTableData& ct = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+    s32 sumX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
+    ct.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
+    s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
+    ct.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
+    ct.m38 = pThis->m30_vdp1ProjectionParam[1];
+    ct.m3C = ct.m34;
+    ct.m3E = ct.m36;
+    ct.m40 = 0;
+    }
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
 
@@ -256,7 +249,7 @@ static void BTL_X0_env_Draw(sVdp2PlaneTask* pThis)
     if (!BTL_X0_env_checkFlag())
     {
         gCurrentVDP2ScrollLayer = 0;
-        setupVDP2CoordinatesIncrement2(pThis->m0_scrollX, 0);
+        setupVDP2CoordinatesIncrement2(pThis->m0_scrollX + pThis->m7C_lineScrollParams.m1C_scrollBaseAccum, 0);
         gCurrentVDP2ScrollLayer = 4;
     }
 
@@ -476,7 +469,7 @@ static void BTL_X0_env2_Draw(sVdp2PlaneTask* pThis)
     getVdp1LocalCoordinates(pThis->m2C_vdp1LocalCoordinates);
     getVdp1ProjectionParams(&pThis->m30_vdp1ProjectionParam[0], &pThis->m30_vdp1ProjectionParam[1]);
 
-    fixedPoint fov = FP_Div(pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
+    fixedPoint fov = intDivide(pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
 
     beginRotationPass(0, fov);
     buildGroundRotation(pThis);
@@ -489,22 +482,34 @@ static void BTL_X0_env2_Draw(sVdp2PlaneTask* pThis)
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
     pThis->m4_scrollY = (0xFF - pThis->m34) * 0x10000;
 
-    fov = FP_Div(pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
+    fov = intDivide(pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(1, fov);
 
-    s32 coeffIdx = (s16)((gRotationPassState.m0_planeIndex * 2 + (s16)vdp2Controls.m0_doubleBufferIndex) * 0x70);
-    s16 midX = (s16)(((s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2]) / 2);
-    s16 midY = (s16)(((s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3]) / 2);
-
-    *(s16*)((u8*)&gCoefficientTables[0][0].m34 + coeffIdx) = midX;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m36 + coeffIdx) = midY;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m38 + coeffIdx) = pThis->m30_vdp1ProjectionParam[1];
-    *(s16*)((u8*)&gCoefficientTables[0][0].m3C + coeffIdx) = midX;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m3E + coeffIdx) = midY;
-    *(s16*)((u8*)&gCoefficientTables[0][0].m40 + coeffIdx) = 0;
+    {
+    sCoefficientTableData& ct = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+    s32 sumX = (s32)pThis->m24_vdp1Clipping[0] + (s32)pThis->m24_vdp1Clipping[2];
+    ct.m34 = (s16)((sumX + (int)(sumX < 0)) >> 1);
+    s32 sumY = (s32)pThis->m24_vdp1Clipping[1] + (s32)pThis->m24_vdp1Clipping[3];
+    ct.m36 = (s16)((sumY + (int)(sumY < 0)) >> 1);
+    ct.m38 = pThis->m30_vdp1ProjectionParam[1];
+    ct.m3C = ct.m34;
+    ct.m3E = ct.m36;
+    ct.m40 = 0;
+    }
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
+
     intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0xE00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x1600000));
+
+    setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
+    commitRotationPass();
+
+    auto* pRegs = vdp2Controls.m4_pendingVdp2Regs;
+    pRegs->mC0_WPSX0 = pThis->m24_vdp1Clipping[0] << 1;
+    pRegs->mC2_WPSY0 = pThis->m24_vdp1Clipping[1];
+    pRegs->mC4_WPEX0 = pThis->m24_vdp1Clipping[2] << 1;
+    pRegs->mC6_WPEY0 = pThis->m24_vdp1Clipping[3];
 }
 
 // 0605535c

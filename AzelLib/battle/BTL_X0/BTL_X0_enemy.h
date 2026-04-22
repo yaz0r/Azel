@@ -10,12 +10,16 @@ struct sBTL_X0_EnemyModel : public s_workAreaTemplateWithCopy<sBTL_X0_EnemyModel
     p_workArea m8_parentFormation;
     u8 mC_pad[4];
     p_workArea m10_lifeMeterTask;
-    u8 m14_pad[8];
+    u32 m14_flags;  // bit 0 = skip animation step; bit 23 (0x800000) = apply conditional light color
+    u8 m18_pad[4];
     sVec3_FP m1C_lifeMeterPosition;
     sVec3_FP m28_rotation;
     u8 m34_pad[0x48];
     sVec3_FP m7C_position;
     u8 m88_pad[0x10];
+    // m98_models[0] = Atolm body (main enemy dragon) — has hotpoint bundle for targeting
+    // m98_models[1] = Atolm debug/alternate model — drawn in place of [0] when m30D_flag1 is set (debug toggle 0xC5)
+    // m98_models[2] = Azel (rider) — drawn at a world-space position anchored to body bone 10's hotpoint 0 (Atolm's head)
     std::vector<s_3dModel> m98_models;
     u8 mAA_modelCount;
     u8 mAB_pad[0x41];
@@ -24,21 +28,20 @@ struct sBTL_X0_EnemyModel : public s_workAreaTemplateWithCopy<sBTL_X0_EnemyModel
     u8 mF0_pad[0xC];
     s8 mFC_idleState;
     u8 mFD_pad[0xAF];
+    // sVec2FPInterpolator: 0x3A bytes covering 0x1AC-0x1E5. Saturn reuses its fields under aliases:
+    //   m1B8_targetPosition   = m1AC_interpolator.mC_startValue       (0x1B8 = 0x1AC + 0x0C)
+    //   m1D0_randomOffset     = m1AC_interpolator.m24_targetValue     (0x1D0 = 0x1AC + 0x24)
+    //   m1E4_timer            = m1AC_interpolator.m38_interpolationLength (0x1E4 = 0x1AC + 0x38)
     sVec2FPInterpolator m1AC_interpolator;
-    u8 m1E6_pad2[2];
-    sVec3_FP m1B8_targetPosition;
-    u8 m1C4_pad[0xC];
-    sVec3_FP m1D0_randomOffset;
-    u8 m1DC_pad[8];
-    u16 m1E4_timer;
-    u8 m1E6_pad3[0x1C];
+    u8 m1E6_pad2[0x22];  // 0x1E6-0x207
     s16 mF8_targetableCount;
     u8 mFA_pad2[0xA6];
     void* m1A0_targetableArray;
     void* m1A4_targetablePositionData;
-    u8 m1A8_pad3[0xC0];
-    sVec3_FP m268_scale;
-    u8 m274_pad[0x90];
+    void* m1A8_attackDataBuffer;  // 0x1A8 — heap buffer: 0x54 bytes for variants 0/1/3, 0xB4 bytes for variant 2
+    u8 m1AC_padAfterAttackBuf[0xC0];
+    sVec3_FP m26C_scale;  // 0x26C - Ghidra Draw reads scale rows at 0x26C/0x270/0x274
+    u8 m278_pad[0x8C];
     s8 m304_state;
     u8 m305_pad;
     s8 m306_dangerQuadrant;

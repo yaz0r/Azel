@@ -30,6 +30,7 @@ USAMPLER2D(s_planeConfig, 2);
 #define in_wnd0YStart readFromPanelConfig(17)
 #define in_wnd0XEnd readFromPanelConfig(18)
 #define in_wnd0YEnd readFromPanelConfig(19)
+#define in_SPN readFromPanelConfig(20)
 
 struct s_layerData
 {
@@ -40,6 +41,7 @@ struct s_layerData
     s32 CAOS;
     s32 PLSZ;
     s32 SCN;
+    s32 SPN;
 
     s32 planeOffsets[4];
 
@@ -188,7 +190,8 @@ vec4 sampleLayer(int rawOutputX, int rawOutputY, s_layerData layerData)
         // assuming supplement mode 0 with no data
         if(layerData.CHCN == 0)
         {
-            paletteNumber = (patternName >> 12) & 0xF;
+            // 16-color: palette[3:0]=pattern[15:12], palette[6:4]=SPN
+            paletteNumber = ((patternName >> 12) & 0xF) | ((int(layerData.SPN) & 0x7) << 4);
         }
         else
         {
@@ -300,6 +303,7 @@ void main()
     inputLayerData.CAOS = in_CAOS;
     inputLayerData.PLSZ = in_PLSZ;
     inputLayerData.SCN = in_SCN;
+    inputLayerData.SPN = in_SPN;
     inputLayerData.planeOffsets[0] = in_planeOffsets_0;
     inputLayerData.planeOffsets[1] = in_planeOffsets_1;
     inputLayerData.planeOffsets[2] = in_planeOffsets_2;

@@ -91,11 +91,9 @@ void formationTriggerAttackFollowup(sEntityGroup* pGroup, s8 attackType)
 }
 
 // 060698e6
-p_workArea formationCreateIntroEffect(sFormationTaskBase* pThis, sSaturnPtr data)
-{
-    Unimplemented();
-    return nullptr;
-}
+// formationCreateIntroEffect is defined in battleFormationIntroEffect.cpp
+// (shared across BTL_X0 / BTL_A7_2 etc.) — delegates to
+// formationCreateIntroEffectImpl with flag = 0, matching every known call site.
 
 // 0609b9a0
 void formationCreateTransitionTask(sFormationTaskBase* pThis, sSaturnPtr data)

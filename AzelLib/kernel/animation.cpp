@@ -852,7 +852,7 @@ u32 createDragonStateSubData1Sub1(s_3dModel* pDragonStateData1, sAnimationData* 
     pDragonStateData1->m30_pCurrentAnimation = pAnimation;
     pDragonStateData1->m10_currentAnimationFrame = 0;
 
-    u16 flags = READ_BE_U16(pAnimation);
+    u16 flags = pAnimation->m0_flags;
 
     if ((flags & 8) || (pDragonStateData1->mA_animationFlags & 0x100))
     {

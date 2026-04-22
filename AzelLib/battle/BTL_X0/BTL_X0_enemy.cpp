@@ -14,6 +14,7 @@
 #include "audio/soundDriver.h"
 
 #include "battle/battleTextDisplay.h"
+#include "battle/battleDebug.h"
 
 // 06063544
 static void BTL_X0_updateBodyAnimation(sBTL_X0_EnemyModel* pThis)
@@ -34,30 +35,30 @@ static void BTL_X0_cmd_idle(sBTL_X0_EnemyModel* pThis)
     s32 done = vec2FPInterpolator_Step(&pThis->m1AC_interpolator);
     if (done != 0)
     {
-        pThis->m1B8_targetPosition = pThis->m7C_position;
+        pThis->m1AC_interpolator.mC_startValue = pThis->m7C_position;
 
         if (pThis->m30E_flag2 == 1)
         {
-            pThis->m1D0_randomOffset.m0_X = (randomNumber() % 0x14000) - 0xA000;
-            pThis->m1D0_randomOffset.m4_Y = (randomNumber() % 0x14000) - 0xA000;
+            pThis->m1AC_interpolator.m24_targetValue.m0_X = (randomNumber() % 0x14000) - 0xA000;
+            pThis->m1AC_interpolator.m24_targetValue.m4_Y = (randomNumber() % 0x14000) - 0xA000;
             if (pThis->m308_variantIndex == 2)
-                pThis->m1D0_randomOffset.m8_Z = (randomNumber() % 0x14000) - 0x19000;
+                pThis->m1AC_interpolator.m24_targetValue.m8_Z = (randomNumber() % 0x14000) - 0x19000;
             else
-                pThis->m1D0_randomOffset.m8_Z = (randomNumber() % 0x14000) - 0xA000;
-            pThis->m1E4_timer = 0x5A;
+                pThis->m1AC_interpolator.m24_targetValue.m8_Z = (randomNumber() % 0x14000) - 0xA000;
+            pThis->m1AC_interpolator.m38_interpolationLength = 0x5A;
         }
         else
         {
-            pThis->m1D0_randomOffset.m0_X = 0;
-            pThis->m1D0_randomOffset.m4_Y = 0;
-            pThis->m1D0_randomOffset.m8_Z = 0;
-            pThis->m1E4_timer = 0x3C;
+            pThis->m1AC_interpolator.m24_targetValue.m0_X = 0;
+            pThis->m1AC_interpolator.m24_targetValue.m4_Y = 0;
+            pThis->m1AC_interpolator.m24_targetValue.m8_Z = 0;
+            pThis->m1AC_interpolator.m38_interpolationLength = 0x3C;
         }
 
         sSaturnPtr baseTable = g_BTL_X0->getSaturnPtr(0x060b7f18) + (s8)(pThis->m308_variantIndex * 0xC);
-        pThis->m1D0_randomOffset.m0_X += readSaturnS32(baseTable);
-        pThis->m1D0_randomOffset.m4_Y += readSaturnS32(baseTable + 4);
-        pThis->m1D0_randomOffset.m8_Z += readSaturnS32(baseTable + 8);
+        pThis->m1AC_interpolator.m24_targetValue.m0_X += readSaturnS32(baseTable);
+        pThis->m1AC_interpolator.m24_targetValue.m4_Y += readSaturnS32(baseTable + 4);
+        pThis->m1AC_interpolator.m24_targetValue.m8_Z += readSaturnS32(baseTable + 8);
 
         vec2FPInterpolator_Init(&pThis->m1AC_interpolator);
     }
@@ -223,6 +224,93 @@ static void BTL_X0_updateTargetableQuadrants(sBTL_X0_EnemyModel* pThis, s32 para
     Unimplemented();
 }
 
+// 06063566 — transforms 7 selected hotpoints of model[0] by cameraProperties2.m28[0]
+// and writes them into the 0x54-byte buffer at m1A8_attackDataBuffer.
+static void BTL_X0_transformTargetablePositions(sBTL_X0_EnemyModel* pThis)
+{
+    if (pThis->m1A8_attackDataBuffer == nullptr || pThis->m98_models.empty())
+        return;
+
+    s_3dModel& model0 = pThis->m98_models[0];
+    sVec3_FP* dst = (sVec3_FP*)pThis->m1A8_attackDataBuffer;
+    const sMatrix4x3& cam = cameraProperties2.m28[0];
+
+    auto get = [&](u32 bone, u32 hp) -> const sVec3_FP* {
+        if (bone < model0.m44_hotpointData.size() && hp < model0.m44_hotpointData[bone].size())
+            return &model0.m44_hotpointData[bone][hp];
+        return nullptr;
+    };
+
+    // Ghidra: src offset encodes bone (byte/4) and hotpoint (byte/12 within bone's vec3 array).
+    struct Entry { u32 bone; u32 hp; };
+    static const Entry entries[7] = {
+        {10, 5}, // (m44 + 0x28) + 0x3c → m44[10], hotpoint 5
+        {26, 0}, // *(sVec3_FP**)(m44 + 0x68) → m44[26], hotpoint 0
+        {33, 0}, // *(sVec3_FP**)(m44 + 0x84) → m44[33], hotpoint 0
+        {10, 1}, // (m44 + 0x28) + 0x0c → m44[10], hotpoint 1
+        {10, 2}, // + 0x18 → hotpoint 2
+        {10, 3}, // + 0x24 → hotpoint 3
+        {10, 4}, // + 0x30 → hotpoint 4
+    };
+    for (int i = 0; i < 7; i++)
+    {
+        const sVec3_FP* src = get(entries[i].bone, entries[i].hp);
+        if (src)
+            transformAndAddVec(*src, dst[i], cam);
+    }
+}
+
+// 06062966 — copies raw hotpoint positions of model[0] into the m1A4 targetable-position buffer,
+// in order (skipping bones with no hotpoint pointer). Iterates model[0].m12_numBones.
+static void BTL_X0_copyTargetablePositions(sBTL_X0_EnemyModel* pThis)
+{
+    if (pThis->m1A4_targetablePositionData == nullptr || pThis->m98_models.empty())
+        return;
+
+    s_3dModel& model0 = pThis->m98_models[0];
+    if (model0.m40 == nullptr)
+        return;
+
+    sVec3_FP* dst = (sVec3_FP*)pThis->m1A4_targetablePositionData;
+    s32 dstIdx = 0;
+    std::vector<s_hotpointDefinition>& defs = *model0.m40;
+
+    for (u32 bone = 0; bone < model0.m12_numBones && bone < defs.size() && bone < model0.m44_hotpointData.size(); bone++)
+    {
+        if (model0.m44_hotpointData[bone].empty())
+            continue;
+        s32 count = (s32)defs[bone].m4_count;
+        for (s32 h = 0; h < count && h < (s32)model0.m44_hotpointData[bone].size(); h++)
+        {
+            dst[dstIdx++] = model0.m44_hotpointData[bone][h];
+        }
+    }
+}
+
+// 06064714
+static void BTL_X0_enemyDebugDraw(sBTL_X0_EnemyModel* pThis)
+{
+    Unimplemented();
+}
+
+void setupConditionalLightColor(int param_1);
+void clearLightColor();
+
+// Light-color lookup table at BTL_X0::060b7e98 — indexed by quadrant + flag3*4
+static u8 BTL_X0_lightColorTable_cache(int idx)
+{
+    static u8 cached[32] = {0};
+    static bool loaded = false;
+    if (!loaded)
+    {
+        sSaturnPtr base = g_BTL_X0->getSaturnPtr(0x060b7e98);
+        for (int i = 0; i < 32; i++)
+            cached[i] = (u8)readSaturnU8(base + i);
+        loaded = true;
+    }
+    return cached[idx];
+}
+
 // 06062a8e
 static void BTL_X0_processDamage(sBTL_X0_EnemyModel* pThis, s16 param)
 {
@@ -239,11 +327,11 @@ static void BTL_X0_enemyModel_Update(sBTL_X0_EnemyModel* pThis)
 
     if (pThis->mFC_idleState == 0)
     {
-        pThis->m1B8_targetPosition = pThis->m7C_position;
-        pThis->m1D0_randomOffset.m0_X = (randomNumber() % 0x14000) - 0xA000;
-        pThis->m1D0_randomOffset.m4_Y = (randomNumber() % 0x14000) - 0xA000;
-        pThis->m1D0_randomOffset.m8_Z = (randomNumber() % 0x14000) - 0xA000;
-        pThis->m1E4_timer = 0x5A;
+        pThis->m1AC_interpolator.mC_startValue = pThis->m7C_position;
+        pThis->m1AC_interpolator.m24_targetValue.m0_X = (randomNumber() % 0x14000) - 0xA000;
+        pThis->m1AC_interpolator.m24_targetValue.m4_Y = (randomNumber() % 0x14000) - 0xA000;
+        pThis->m1AC_interpolator.m24_targetValue.m8_Z = (randomNumber() % 0x14000) - 0xA000;
+        pThis->m1AC_interpolator.m38_interpolationLength = 0x5A;
         vec2FPInterpolator_Init(&pThis->m1AC_interpolator);
         pThis->mFC_idleState++;
     }
@@ -275,11 +363,14 @@ static void BTL_X0_enemyModel_Update(sBTL_X0_EnemyModel* pThis)
         }
     }
 
-    BTL_X0_updateBodyAnimation(pThis);
-    if (pThis->m98_models.size() > 1)
-        stepAnimation(&pThis->m98_models[1]);
-    if (pThis->m98_models.size() > 2)
-        stepAnimation(&pThis->m98_models[2]);
+    if ((pThis->m14_flags & 1) == 0)
+    {
+        BTL_X0_updateBodyAnimation(pThis);
+        if (pThis->m98_models.size() > 1)
+            stepAnimation(&pThis->m98_models[1]);
+        if (pThis->m98_models.size() > 2)
+            stepAnimation(&pThis->m98_models[2]);
+    }
 
     BTL_X0_checkCollisionAndDamage(pThis);
     s32 flag3 = (s32)pThis->m30F_flag3;
@@ -295,27 +386,69 @@ static void BTL_X0_enemyModel_Update(sBTL_X0_EnemyModel* pThis)
 // 0606279a
 static void BTL_X0_enemyModel_Draw(sBTL_X0_EnemyModel* pThis)
 {
+    // Debug keyboard toggle: swap between model[0] and model[1]
+    if (readKeyboardToggle(0xC5) != 0)
+    {
+        pThis->m30D_flag1 = (pThis->m30D_flag1 == 0) ? 1 : 0;
+    }
+
+    // Conditional light color — table indexed by dragonCurrentQuadrant + m30F_flag3 * 4
+    if ((pThis->m14_flags & 0x800000) != 0)
+    {
+        s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+        int idx = (u8)pEngine->m22C_dragonCurrentQuadrant + (s8)pThis->m30F_flag3 * 4;
+        setupConditionalLightColor((u32)BTL_X0_lightColorTable_cache(idx));
+    }
+
     pushCurrentMatrix();
     translateCurrentMatrix(&pThis->m1C_lifeMeterPosition);
-    scaleCurrentMatrixRow0(pThis->m268_scale.m0_X);
-    scaleCurrentMatrixRow1(pThis->m268_scale.m4_Y);
-    scaleCurrentMatrixRow2(pThis->m268_scale.m8_Z);
+    scaleCurrentMatrixRow0(pThis->m26C_scale.m0_X);
+    scaleCurrentMatrixRow1(pThis->m26C_scale.m4_Y);
+    scaleCurrentMatrixRow2(pThis->m26C_scale.m8_Z);
+    rotateCurrentMatrixYXZ(pThis->m28_rotation);
 
-    if (pThis->m98_models.size() > 0 && pThis->m98_models[0].m18_drawFunction)
     {
-        pThis->m98_models[0].m18_drawFunction(&pThis->m98_models[0]);
+        // flag1 selects model[0] or model[1] for the primary draw
+        s_3dModel* pPrimary = (pThis->m30D_flag1 == 0) ? &pThis->m98_models[0] : &pThis->m98_models[1];
+        if (pPrimary->m18_drawFunction)
+            pPrimary->m18_drawFunction(pPrimary);
     }
     popMatrix();
 
-    if (pThis->m98_models.size() > 2 && pThis->m98_models[2].m18_drawFunction)
+    // Second pass: draw Azel (m98_models[2]) at world-space position computed from
+    // Atolm's head attach point (model[0].m44_hotpointData[10][0]) — Ghidra m44 + 0x28 = bone 10.
+    if (pThis->m30D_flag1 == 0 && pThis->m98_models.size() > 2 && pThis->m98_models[2].m18_drawFunction)
     {
+        sVec3_FP local;
+        auto& hp = pThis->m98_models[0].m44_hotpointData;
+        if (hp.size() > 10 && !hp[10].empty())
+            transformAndAddVec(hp[10][0], local, cameraProperties2.m28[0]);
+        else
+            local = pThis->m1C_lifeMeterPosition;
+
         pushCurrentMatrix();
-        translateCurrentMatrix(&pThis->m1C_lifeMeterPosition);
-        scaleCurrentMatrixRow0(pThis->m268_scale.m0_X);
-        scaleCurrentMatrixRow1(pThis->m268_scale.m4_Y);
-        scaleCurrentMatrixRow2(pThis->m268_scale.m8_Z);
+        translateCurrentMatrix(&local);
+        scaleCurrentMatrixRow0(pThis->m26C_scale.m0_X);
+        scaleCurrentMatrixRow1(pThis->m26C_scale.m4_Y);
+        scaleCurrentMatrixRow2(pThis->m26C_scale.m8_Z);
+        rotateCurrentMatrixYXZ(pThis->m28_rotation);
         pThis->m98_models[2].m18_drawFunction(&pThis->m98_models[2]);
         popMatrix();
+    }
+
+    // Clear conditional light color (also clears the flag bit)
+    if ((pThis->m14_flags & 0x800000) != 0)
+    {
+        pThis->m14_flags &= ~0x800000;
+        clearLightColor();
+    }
+
+    BTL_X0_transformTargetablePositions(pThis);
+    BTL_X0_copyTargetablePositions(pThis);
+
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x19] != 0)
+    {
+        BTL_X0_enemyDebugDraw(pThis);
     }
 }
 
@@ -333,6 +466,13 @@ static void BTL_X0_enemyModel_Delete(sBTL_X0_EnemyModel* pThis)
             }
         }
     }
+}
+
+// 06057d30
+static p_workArea BTL_X0_createAttackSubTask(sBTL_X0_EnemyModel* pThis, void* attackDataBuffer)
+{
+    Unimplemented();
+    return nullptr;
 }
 
 // 0606237c
@@ -354,6 +494,7 @@ p_workArea BTL_X0_createEnemyModels(s_workArea* pFormation, s8 variant)
 
     pThis->m98_models.resize(3);
 
+    // Model 0: Atolm body — uses hotpoint bundle at 060b7d20 (per-bone targeting points, including bone 10 = head attach)
     sModelHierarchy* pHierarchy0 = pBundle->getModelHierarchy(4);
     u32 numBones0 = pHierarchy0->countNumberOfBones();
     {
@@ -367,21 +508,28 @@ p_workArea BTL_X0_createEnemyModels(s_workArea* pFormation, s8 variant)
             pHotspots = pThis->m98_models[0].m_hotpointBundles.data();
         }
         init3DModelRawData(pThis, &pThis->m98_models[0], 0, pBundle, 4,
-            nullptr, pBundle->getStaticPose(0x1F4, numBones0), nullptr, pHotspots);
+            pBundle->getAnimation(0x20C), pBundle->getStaticPose(0x1F4, numBones0), nullptr, pHotspots);
     }
     stepAnimation(&pThis->m98_models[0]);
 
+    // Model 1: Atolm debug/alternate — swapped in for model[0] when m30D_flag1 is toggled (debug key 0xC5)
     sModelHierarchy* pHierarchy1 = pBundle->getModelHierarchy(0xC);
     u32 numBones1 = pHierarchy1->countNumberOfBones();
     init3DModelRawData(pThis, &pThis->m98_models[1], 0, pBundle, 0xC,
-        nullptr, pBundle->getStaticPose(0x1FC, numBones1), nullptr, nullptr);
+        pBundle->getAnimation(0x224), pBundle->getStaticPose(0x1FC, numBones1), nullptr, nullptr);
     stepAnimation(&pThis->m98_models[1]);
 
+    // Model 2: Azel (rider) — drawn at world-space position derived from Atolm's head hotpoint
     sModelHierarchy* pHierarchy2 = pBundle->getModelHierarchy(8);
     u32 numBones2 = pHierarchy2->countNumberOfBones();
     init3DModelRawData(pThis, &pThis->m98_models[2], 0, pBundle, 8,
-        nullptr, pBundle->getStaticPose(0x1F8, numBones2), nullptr, nullptr);
+        pBundle->getAnimation(0x22C), pBundle->getStaticPose(0x1F8, numBones2), nullptr, nullptr);
     stepAnimation(&pThis->m98_models[2]);
+
+    // Allocate 0x54-byte attack-data buffer and zero-init
+    pThis->m1A8_attackDataBuffer = allocateHeapForTask(pThis, 0x54);
+    if (pThis->m1A8_attackDataBuffer)
+        memset(pThis->m1A8_attackDataBuffer, 0, 0x54);
 
     if (variant == 0)
     {
@@ -392,27 +540,34 @@ p_workArea BTL_X0_createEnemyModels(s_workArea* pFormation, s8 variant)
         displayFormationName(0, 0, 0xB);
         pThis->m304_state = 5;
     }
-    else if (variant == 1)
+    else
     {
-        pThis->mEC_hpMax = 6000;
-        pThis->mEE_hpCurrent = 6000;
-        pThis->m10_lifeMeterTask = createEnemyLifeMeterTask(&pThis->m1C_lifeMeterPosition, 0, &pThis->mEE_hpCurrent, 0x33);
-        pThis->m308_variantIndex = 1;
-        displayFormationName(0, 0, 0xB);
-        pThis->m304_state = 0xF;
-    }
-    else if (variant == 3)
-    {
-        pThis->mEC_hpMax = 8000;
-        pThis->mEE_hpCurrent = 8000;
-        pThis->m10_lifeMeterTask = createEnemyLifeMeterTask(&pThis->m1C_lifeMeterPosition, 0, &pThis->mEE_hpCurrent, 0x60);
-        pThis->m308_variantIndex = 3;
-        pThis->m304_state = 0xF;
+        if (variant == 1)
+        {
+            pThis->mEC_hpMax = 6000;
+            pThis->mEE_hpCurrent = 6000;
+            pThis->m10_lifeMeterTask = createEnemyLifeMeterTask(&pThis->m1C_lifeMeterPosition, 0, &pThis->mEE_hpCurrent, 0x33);
+            pThis->m308_variantIndex = 1;
+            displayFormationName(0, 0, 0xB);
+        }
+        else if (variant == 3)
+        {
+            pThis->mEC_hpMax = 8000;
+            pThis->mEE_hpCurrent = 8000;
+            pThis->m10_lifeMeterTask = createEnemyLifeMeterTask(&pThis->m1C_lifeMeterPosition, 0, &pThis->mEE_hpCurrent, 0x60);
+            pThis->m308_variantIndex = 3;
+        }
+        // Variants 1 and 3 create an attack sub-task; variant 0 and other values skip it
+        if (variant == 1 || variant == 3)
+        {
+            pThis->m314_attackSubTask = BTL_X0_createAttackSubTask(pThis, pThis->m1A8_attackDataBuffer);
+            pThis->m304_state = 0xF;
+        }
     }
 
-    pThis->m268_scale.m0_X = 0x10000;
-    pThis->m268_scale.m4_Y = 0x10000;
-    pThis->m268_scale.m8_Z = 0x10000;
+    pThis->m26C_scale.m0_X = 0x10000;
+    pThis->m26C_scale.m4_Y = 0x10000;
+    pThis->m26C_scale.m8_Z = 0x10000;
     pThis->m30C_flag0 = 0;
     pThis->m30D_flag1 = 0;
     pThis->m30E_flag2 = 1;
@@ -420,10 +575,6 @@ p_workArea BTL_X0_createEnemyModels(s_workArea* pFormation, s8 variant)
     pThis->m310_attackActive = 0;
 
     initBattleEnemyTargetables(pThis, 3, pThis->m98_models);
-
-    pThis->m7C_position.m0_X = 0;
-    pThis->m7C_position.m4_Y = 0;
-    pThis->m7C_position.m8_Z = 0;
 
     return pThis;
 }
@@ -447,9 +598,9 @@ static void BTL_X0_enemyModel2_Draw(sBTL_X0_EnemyModel* pThis)
 {
     pushCurrentMatrix();
     translateCurrentMatrix(&pThis->m1C_lifeMeterPosition);
-    scaleCurrentMatrixRow0(pThis->m268_scale.m0_X);
-    scaleCurrentMatrixRow1(pThis->m268_scale.m4_Y);
-    scaleCurrentMatrixRow2(pThis->m268_scale.m8_Z);
+    scaleCurrentMatrixRow0(pThis->m26C_scale.m0_X);
+    scaleCurrentMatrixRow1(pThis->m26C_scale.m4_Y);
+    scaleCurrentMatrixRow2(pThis->m26C_scale.m8_Z);
 
     if (pThis->m98_models.size() > 0 && pThis->m98_models[0].m18_drawFunction)
     {
@@ -461,9 +612,9 @@ static void BTL_X0_enemyModel2_Draw(sBTL_X0_EnemyModel* pThis)
     {
         pushCurrentMatrix();
         translateCurrentMatrix(&pThis->m1C_lifeMeterPosition);
-        scaleCurrentMatrixRow0(pThis->m268_scale.m0_X);
-        scaleCurrentMatrixRow1(pThis->m268_scale.m4_Y);
-        scaleCurrentMatrixRow2(pThis->m268_scale.m8_Z);
+        scaleCurrentMatrixRow0(pThis->m26C_scale.m0_X);
+        scaleCurrentMatrixRow1(pThis->m26C_scale.m4_Y);
+        scaleCurrentMatrixRow2(pThis->m26C_scale.m8_Z);
         pThis->m98_models[1].m18_drawFunction(&pThis->m98_models[1]);
         popMatrix();
     }
@@ -485,11 +636,12 @@ p_workArea BTL_X0_createEnemyModels2(s_workArea* pFormation)
     s_fileBundle* pBundle = dramAllocatorEnd[8].mC_fileBundle->m0_fileBundle;
     pThis->m0_fileBundle = pBundle;
     pThis->m8_parentFormation = pFormation;
-    pThis->m30F_flag3 = 0;
-    pThis->m310_attackActive = 0;
+    pThis->m30B_subCommand = 0;    // byte at 0x30B
+    pThis->m310_attackActive = 0;  // byte at 0x310
 
     pThis->m98_models.resize(2);
 
+    // Variant 2 uses a different creature (2-model setup) — body with hotpoints + secondary sub-model
     sModelHierarchy* pHierarchy0 = pBundle->getModelHierarchy(4);
     u32 numBones0 = pHierarchy0->countNumberOfBones();
     {
@@ -497,38 +649,44 @@ p_workArea BTL_X0_createEnemyModels2(s_workArea* pFormation)
         pThis->m98_models[0].m_hotpointBundles.reserve(numBones0);
         for (u32 b = 0; b < numBones0; b++)
             pThis->m98_models[0].m_hotpointBundles.emplace_back(hotspotEA + b * 8);
+
+        // Model 0 animation selected from short table at 060b6cd8 indexed by m308_variantIndex (0 at this point)
+        u16 anim0Offset = readSaturnU16(g_BTL_X0->getSaturnPtr(0x060b6cd8) + (s8)pThis->m308_variantIndex * 2);
         init3DModelRawData(pThis, &pThis->m98_models[0], 0, pBundle, 4,
-            nullptr, pBundle->getStaticPose(0xD8, numBones0), nullptr,
+            pBundle->getAnimation(anim0Offset), pBundle->getStaticPose(0xD8, numBones0), nullptr,
             pThis->m98_models[0].m_hotpointBundles.data());
     }
     stepAnimation(&pThis->m98_models[0]);
 
+    // Model 1: secondary sub-model for this variant (unused by the flag1 swap in variant-2 draw)
     sModelHierarchy* pHierarchy1 = pBundle->getModelHierarchy(8);
     u32 numBones1 = pHierarchy1->countNumberOfBones();
     init3DModelRawData(pThis, &pThis->m98_models[1], 0, pBundle, 8,
-        nullptr, pBundle->getStaticPose(0xDC, numBones1), nullptr, nullptr);
+        pBundle->getAnimation(0xF4), pBundle->getStaticPose(0xDC, numBones1), nullptr, nullptr);
     stepAnimation(&pThis->m98_models[1]);
+
+    BTL_X0_updateTargetableQuadrants(pThis, 1);
 
     pThis->mEC_hpMax = 0x1964;
     pThis->mEE_hpCurrent = 0x1964;
     pThis->m10_lifeMeterTask = createEnemyLifeMeterTask(&pThis->m1C_lifeMeterPosition, 0, &pThis->mEE_hpCurrent, 0x5F);
     pThis->m308_variantIndex = 2;
 
-    pThis->m268_scale.m0_X = 0x10000;
-    pThis->m268_scale.m4_Y = 0x10000;
-    pThis->m268_scale.m8_Z = 0x10000;
+    pThis->m26C_scale.m0_X = 0x10000;
+    pThis->m26C_scale.m4_Y = 0x10000;
+    pThis->m26C_scale.m8_Z = 0x10000;
 
     displayFormationName(0x1F, 0, 0xB);
 
+    // Allocate 0xB4-byte attack-data buffer and zero-init
+    pThis->m1A8_attackDataBuffer = allocateHeapForTask(pThis, 0xB4);
+    if (pThis->m1A8_attackDataBuffer)
+        memset(pThis->m1A8_attackDataBuffer, 0, 0xB4);
+
     pThis->m304_state = 0;
-    pThis->m30E_flag2 = 4;
+    pThis->m306_dangerQuadrant = 4;
+
     pThis->m30F_flag3 = 1;
-
-    initBattleEnemyTargetables(pThis, 2, pThis->m98_models);
-
-    pThis->m7C_position.m0_X = 0;
-    pThis->m7C_position.m4_Y = 0;
-    pThis->m7C_position.m8_Z = 0;
 
     playPCM(pThis, 0x6C);
 
