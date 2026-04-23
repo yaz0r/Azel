@@ -22,10 +22,8 @@ p_workArea formationCreateIntroEffectImpl(sFormationTaskBase* pParent, sSaturnPt
     if (pThis == nullptr)
         return nullptr;
 
-    pThis->m2_flag = flag;
-    // Saturn sets update to LAB_BTL_X0__06077410 when flag < 0. None of the current call
-    // sites exercise that branch (all pass flag = 0), so we leave the default update.
-    (void)flag;
+    // Saturn sets update to LAB_BTL_X0__06077410 when flag < 0. No known call site uses this.
+    // m2_flag is set inside Init (matching original order: flag first, then SetupString overrides).
 
     return pThis;
 }
@@ -82,10 +80,54 @@ static void formationIntroEffect_ResetFrameCounters(sFormationIntroEffectTask* p
     pThis->mC_remainingFrames = 0;
 }
 
+// 06077214
+void sAtolmBattleIntroTask::Init(sAtolmBattleIntroTask* pThis, u32 filenameRaw)
+{
+    pThis->m1D4_buffer = dramAllocate(0x8000);
+    pThis->m1D8_state = 0;
+
+    sSaturnPtr filenamePtr = sSaturnPtr::createFromRaw(filenameRaw, gCurrentBattleOverlay);
+    const char* filename = (const char*)getSaturnPtr(filenamePtr);
+
+    s32 sampleRate = (azelCdNumber == 3) ? 18000 : 22050;
+
+    sStreamingFile* psVar1 = openPCMFileForStreaming(&pThis->m4, pThis->m1D4_buffer, 0x8000, &pThis->m1BC_metadata, filename, sampleRate);
+    pThis->m0 = psVar1;
+}
+
+// 0607728e
+void sAtolmBattleIntroTask::Draw(sAtolmBattleIntroTask* pThis)
+{
+    drawPCMDebugDisplay(pThis->m0);
+
+    s32 state = pThis->m1D8_state;
+    if (state == 0)
+    {
+        scriptFunction_60573d8Sub0(pThis->m0);
+        s32 streamState = scriptFunction_605861eSub0Sub0(pThis->m0);
+        if (streamState > 1)
+        {
+            pThis->m1D8_state++;
+        }
+    }
+    else if (state == 1)
+    {
+        s32 streamState = scriptFunction_605861eSub0Sub0(pThis->m0);
+        if (streamState == 5)
+        {
+            pThis->getTask()->markFinished();
+        }
+    }
+}
+
+// 060772e4
+void sAtolmBattleIntroTask::Delete(sAtolmBattleIntroTask* pThis)
+{
+    stopPCMStreaming(pThis->m0);
+    dramFree(pThis->m1D4_buffer);
+}
+
 // 0607750c  formationIntroEffect_SetupString
-// Renders the current entry's string and, if the entry references a cutscene
-// file (and the debug-skip flag isn't set), spawns a child cutscene task and
-// transitions the main flag to 2 so Update will wait on cutscene progress.
 static void formationIntroEffect_SetupString(sFormationIntroEffectTask* pThis)
 {
     // vdp2StringContext.field_0 = 0 in Saturn; not needed for our renderer.
@@ -102,15 +144,13 @@ static void formationIntroEffect_SetupString(sFormationIntroEffectTask* pThis)
     }
     else
     {
-        // On Saturn this spawns a 0x1dc-byte cutscene subtask using the
-        // battle-overlay task definition at BTL_X0::060ba1d0. Our C++
-        // cutscene task plumbing assumes the town overlay. Full video
-        // playback is not yet wired through; stub the subtask handle and
-        // keep the state machine driven by the display-duration counter.
-        Unimplemented();
-        pThis->m20_cutsceneTask = nullptr;
-        pThis->m2_flag = 1;
-        formationIntroEffect_ResetFrameCounters(pThis);
+        sAtolmBattleIntroTask* pSubTask = createSubTaskWithArg<sAtolmBattleIntroTask>(
+            (p_workArea)pThis, pThis->m14_cutsceneFilenameRaw);
+        pThis->m20_cutsceneTask = pSubTask;
+        pThis->m2_flag = 2;
+        pThis->m4_totalFrames = pSubTask->m1BC_metadata.m10_totalFrames;
+        pThis->m8_currentFrame = 0;
+        pThis->mC_remainingFrames = 0;
     }
 }
 
@@ -205,6 +245,7 @@ void sFormationIntroEffectTask::Update(sFormationIntroEffectTask* pThis)
 
         if (!cutsceneReady)
         {
+            pThis->m20_cutsceneTask = nullptr;
             pThis->m0_state = 1;
             pThis->m12_displayCounter = pThis->m24_savedCounter;
             formationIntroEffect_ResetFrameCounters(pThis);
@@ -278,7 +319,7 @@ void sFormationIntroEffectTask::Update(sFormationIntroEffectTask* pThis)
     }
 }
 
-// 06077214  (Saturn cutscene subtask init; not used in the stubbed flow)
+// part of 06077384
 void sFormationIntroEffectTask::Init(sFormationIntroEffectTask* pThis, sSaturnPtr data)
 {
     pThis->m0_state = 0;

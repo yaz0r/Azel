@@ -65,6 +65,21 @@ struct sStreamingFile_198
     //size 0x20?
 };
 
+// FUN_0600e4ce writes this metadata after the sStreamingFile for PCM-only streams.
+// In cutscene streams, the same layout exists at the start of the disc data buffer.
+struct sPCMStreamMetadata
+{
+    u32 m0_headerSize;
+    u8 m4_channels;
+    u8 m5_bitDepth;
+    u8 m6_pad;
+    u8 m7_pad;
+    u32 m8_sampleRateFP;
+    u32 mC_frameRate;
+    u32 m10_totalFrames;
+    u32 m14_pad;
+}; // size 0x18
+
 struct sStreamingFile
 {
     u8* m0_buffer;
@@ -81,9 +96,15 @@ struct sStreamingFile
     u32 m188_camera; // probably in m28
     u32 m18C;
     u32 m190_emptyBytes;
-    u8* m194;
+    sPCMStreamMetadata* m194;
     sStreamingFile_198 m198;
     //size 0x1B8?
+
+    // C++ only: SoLoud playback state (replaces Saturn SCSP streaming)
+    SoLoud::Wav* m_pWav = nullptr;
+    SoLoud::handle m_soloudHandle = 0;
+    u64 m_startTime = 0;
+    double m_durationSeconds = 0.0;
 };
 
 struct sCutsceneTask : public s_workAreaTemplateWithArg<sCutsceneTask, s32>
@@ -107,6 +128,10 @@ struct sCutsceneTask : public s_workAreaTemplateWithArg<sCutsceneTask, s32>
 
 extern sCutsceneTask* gCutsceneTask;
 extern s32 gCutsceneFlags;
+
+sStreamingFile* openPCMFileForStreaming(sStreamingFile* pStreamingFile, u8* pBuffer, s32 bufferSize, sPCMStreamMetadata* pMetadata, const std::string& filename, s32 sampleRate);
+void drawPCMDebugDisplay(sStreamingFile* param_1);
+void stopPCMStreaming(sStreamingFile* pStreamingFile);
 
 void scriptFunction_60573d8Sub0(sStreamingFile* r4);
 s32 scriptFunction_605861eSub0Sub0(sStreamingFile* r4);

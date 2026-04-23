@@ -18,6 +18,8 @@ struct sStreamingParams
     s32 m14_audioBufferSize;
 };
 
+void updateStreamingFileRead(sStreamingFile* iParm1);
+
 GfsHn GFS_Open(const std::string& name)
 {
     GfsHn temp;
@@ -79,7 +81,7 @@ sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 buf
     param_1->m1C_audioBufferSize = audioBufferSize;
     param_1->m20 = 0;
     param_1->m24 = 7;
-    param_1->m194 = param_1->m0_buffer;
+    param_1->m194 = reinterpret_cast<sPCMStreamMetadata*>(param_1->m0_buffer);
     (param_1->m28).m0 = 0;
     (param_1->m28).m4 = 0;
     (param_1->m28).m8 = 0;
@@ -168,6 +170,106 @@ sStreamingFile* openFileForStreaming(sStreamingParams* param_1, const std::strin
         }
     }
     return psVar2;
+}
+
+// 0600e4ce
+sStreamingFile* openPCMFileForStreaming(sStreamingFile* pStreamingFile, u8* pBuffer, s32 bufferSize, sPCMStreamMetadata* pMetadata, const std::string& filename, s32 sampleRate)
+{
+    sStreamingParams streamingParams;
+    streamingParams.m0_streamingFile = pStreamingFile;
+    streamingParams.m4_streamingFileSize = 0x1B8;
+    streamingParams.m8_buffer = pBuffer;
+    streamingParams.mC_bufferSize = bufferSize;
+    streamingParams.m10_audioBuffer = nullptr;
+    streamingParams.m14_audioBufferSize = 0x8000;
+
+    findMandatoryFileOnDisc(filename.c_str());
+    sStreamingFile* psVar1 = openFileForStreaming(&streamingParams, filename);
+    if (psVar1 != nullptr)
+    {
+        psVar1->m194 = pMetadata;
+        pMetadata->m0_headerSize = 0x18;
+        pMetadata->m4_channels = 1;
+        pMetadata->m5_bitDepth = 0x10;
+        pMetadata->m6_pad = 0;
+        pMetadata->m7_pad = 0;
+        pMetadata->m8_sampleRateFP = sampleRate << 16;
+        pMetadata->mC_frameRate = 0x3C;
+
+        u32 totalSamples = psVar1->m198.m18_fileSize >> 1;
+        u32 totalFrames = (u32)((u64)totalSamples * 0x3C / sampleRate);
+        pMetadata->m10_totalFrames = totalFrames;
+        pMetadata->m14_pad = 0;
+
+        psVar1->m28.m70 = totalSamples;
+        psVar1->m28.m60 = sampleRate;
+
+        // SoLoud playback (replaces Saturn SCSP streaming via PcmS/FUN_0600dedc/FUN_0600df52)
+        FILE* fHandle = fopen(filename.c_str(), "rb");
+        if (fHandle)
+        {
+            fseek(fHandle, 0, SEEK_END);
+            int fileSize = ftell(fHandle);
+            int numSamples = fileSize / 2;
+            fseek(fHandle, 0, SEEK_SET);
+            s16* audioBuffer = new s16[numSamples];
+            fread(audioBuffer, 2, numSamples, fHandle);
+            fclose(fHandle);
+
+            for (int i = 0; i < numSamples; i++)
+            {
+                audioBuffer[i] = READ_BE_S16(audioBuffer + i);
+            }
+
+            psVar1->m_pWav = new SoLoud::Wav();
+            psVar1->m_pWav->loadRawWave16(audioBuffer, numSamples, (float)sampleRate, 1);
+            psVar1->m_soloudHandle = gSoloud.play(*psVar1->m_pWav);
+            psVar1->m_startTime = SDL_GetPerformanceCounter();
+            psVar1->m_durationSeconds = (numSamples > 0) ? (double)numSamples / sampleRate : 0.0;
+        }
+    }
+    return psVar1;
+}
+
+// 0600f308
+void drawPCMDebugDisplay(sStreamingFile* param_1)
+{
+    updateStreamingFileRead(param_1);
+
+    // FUN_0600f3b6 state machine (replaces Saturn CPU timer + SCSP streaming with SoLoud elapsed time)
+    param_1->m18C++;
+    s32 state = param_1->m28.m0;
+    if (state == 2)
+    {
+        param_1->m28.m0 = 3;
+    }
+    else if (state == 3 || state == 4)
+    {
+        if (param_1->m_startTime != 0)
+        {
+            double elapsed = (double)(SDL_GetPerformanceCounter() - param_1->m_startTime) / SDL_GetPerformanceFrequency();
+            param_1->m28.m84_frameIndex = (u32)(elapsed * param_1->m194->mC_frameRate);
+            if (elapsed >= param_1->m_durationSeconds)
+            {
+                param_1->m28.m84_frameIndex = param_1->m194->m10_totalFrames;
+                param_1->m28.m0 = 5;
+            }
+        }
+    }
+}
+
+void stopPCMStreaming(sStreamingFile* pStreamingFile)
+{
+    if (pStreamingFile->m_soloudHandle != 0 && gSoloud.isValidVoiceHandle(pStreamingFile->m_soloudHandle))
+    {
+        gSoloud.stop(pStreamingFile->m_soloudHandle);
+        pStreamingFile->m_soloudHandle = 0;
+    }
+    if (pStreamingFile->m_pWav != nullptr)
+    {
+        delete pStreamingFile->m_pWav;
+        pStreamingFile->m_pWav = nullptr;
+    }
 }
 
 s32 gCutsceneFlags = 0;
@@ -291,7 +393,13 @@ s32 executeCutsceneCommandsSub0(sStreamingFile* pThis)
     {
         return -1;
     }
-    pThis->m28.m44_headerSize = READ_BE_U32(pThis->m194);
+    // Byte-swap the big-endian header fields in place so all later accesses are host-endian
+    pThis->m194->m0_headerSize = READ_BE_U32(&pThis->m194->m0_headerSize);
+    pThis->m194->m8_sampleRateFP = READ_BE_U32(&pThis->m194->m8_sampleRateFP);
+    pThis->m194->mC_frameRate = READ_BE_U32(&pThis->m194->mC_frameRate);
+    pThis->m194->m10_totalFrames = READ_BE_U32(&pThis->m194->m10_totalFrames);
+
+    pThis->m28.m44_headerSize = pThis->m194->m0_headerSize;
     if (pThis->m4_bufferSize < pThis->m28.m44_headerSize + 0x1000) {
         return -1;
     }
@@ -303,16 +411,16 @@ s32 executeCutsceneCommandsSub0(sStreamingFile* pThis)
     u8* puVar1 = pThis->m0_buffer;
     (pThis->m28).m3C = puVar1 + (pThis->m28).m44_headerSize;
     (pThis->m28).m40 = puVar1 + (pThis->m28).m44_headerSize + (pThis->m28).m48;
-    (pThis->m28).m60 = READ_BE_U32(pThis->m194 + 8) >> 0x10;
-    if (pThis->m194[5] == 8) {
-        if (pThis->m194[4] != 2) {
+    (pThis->m28).m60 = pThis->m194->m8_sampleRateFP >> 0x10;
+    if (pThis->m194->m5_bitDepth == 8) {
+        if (pThis->m194->m4_channels != 2) {
             uVar2 = pThis->m1C_audioBufferSize;
             goto LAB_0600ecca;
         }
         uVar2 = pThis->m1C_audioBufferSize;
     }
     else {
-        if (pThis->m194[4] == 2) {
+        if (pThis->m194->m4_channels == 2) {
             uVar2 = pThis->m1C_audioBufferSize >> 1;
         }
         else {
@@ -326,13 +434,13 @@ LAB_0600ecca:
     if (uVar2 >> 0xc < 2) {
         return -1;
     }
-    if (pThis->m194[5] != 8) {
+    if (pThis->m194->m5_bitDepth != 8) {
         uVar2 = uVar2 << 1;
     }
     (pThis->m28).m54 = uVar2;
     (pThis->m28).m58 = pThis->m18_audioBuffer + uVar2;
     (pThis->m28).m0 = 3;
-    executeCutsceneCommandsSub0Sub0(pThis, READ_BE_U32(pThis->m194));
+    executeCutsceneCommandsSub0Sub0(pThis, pThis->m194->m0_headerSize);
     return 0;
 }
 
@@ -877,7 +985,7 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
         }
     }
 
-    if (((psParm1->m28).m88 != 0) && (READ_BE_U32(psParm1->m194 + 0x10) <= (psParm1->m28).m84_frameIndex)) {
+    if (((psParm1->m28).m88 != 0) && (psParm1->m194->m10_totalFrames <= (psParm1->m28).m84_frameIndex)) {
         updateStreamingFileReadSub0(psParm1);
         return;
     }
@@ -1113,7 +1221,7 @@ s32 getPositionInEDKSub0(sStreamingFile* iParm1)
     else {
         iVar2 = 50;
     }
-    return udivsi3(READ_BE_U32(iParm1->m194 + 0xc), (READ_BE_U32(iParm1->m194 + 0x10) - (iParm1->m28).m84_frameIndex) * iVar2);
+    return udivsi3(iParm1->m194->mC_frameRate, (iParm1->m194->m10_totalFrames - (iParm1->m28).m84_frameIndex) * iVar2);
 }
 
 s32 getPositionInEDK(sStreamingFile* iParm1)
