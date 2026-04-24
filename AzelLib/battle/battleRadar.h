@@ -3,7 +3,7 @@
 #include "battleHud.h"
 #include "battle/interpolators/FPInterpolator.h"
 
-struct battleHud2 : public s_workAreaTemplate<battleHud2>
+struct sBattleRadarTask : public s_workAreaTemplate<sBattleRadarTask>
 {
     u32 m0_vdp1Memory;
     u32 m4;

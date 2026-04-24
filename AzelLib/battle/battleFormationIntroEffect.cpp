@@ -81,7 +81,7 @@ static void formationIntroEffect_ResetFrameCounters(sFormationIntroEffectTask* p
 }
 
 // 06077214
-void sAtolmBattleIntroTask::Init(sAtolmBattleIntroTask* pThis, u32 filenameRaw)
+void sBattleVoiceOverTask::Init(sBattleVoiceOverTask* pThis, u32 filenameRaw)
 {
     pThis->m1D4_buffer = dramAllocate(0x8000);
     pThis->m1D8_state = 0;
@@ -96,7 +96,7 @@ void sAtolmBattleIntroTask::Init(sAtolmBattleIntroTask* pThis, u32 filenameRaw)
 }
 
 // 0607728e
-void sAtolmBattleIntroTask::Draw(sAtolmBattleIntroTask* pThis)
+void sBattleVoiceOverTask::Draw(sBattleVoiceOverTask* pThis)
 {
     drawPCMDebugDisplay(pThis->m0);
 
@@ -121,7 +121,7 @@ void sAtolmBattleIntroTask::Draw(sAtolmBattleIntroTask* pThis)
 }
 
 // 060772e4
-void sAtolmBattleIntroTask::Delete(sAtolmBattleIntroTask* pThis)
+void sBattleVoiceOverTask::Delete(sBattleVoiceOverTask* pThis)
 {
     stopPCMStreaming(pThis->m0);
     dramFree(pThis->m1D4_buffer);
@@ -144,7 +144,7 @@ static void formationIntroEffect_SetupString(sFormationIntroEffectTask* pThis)
     }
     else
     {
-        sAtolmBattleIntroTask* pSubTask = createSubTaskWithArg<sAtolmBattleIntroTask>(
+        sBattleVoiceOverTask* pSubTask = createSubTaskWithArg<sBattleVoiceOverTask>(
             (p_workArea)pThis, pThis->m14_cutsceneFilenameRaw);
         pThis->m20_cutsceneTask = pSubTask;
         pThis->m2_flag = 2;

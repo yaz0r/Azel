@@ -62,5 +62,67 @@ struct sBTL_X0_EnemyModel : public s_workAreaTemplateWithCopy<sBTL_X0_EnemyModel
     // size 0x324
 };
 
+// 060b71e8 task definition: {null, 06057e04, null, 060586d0}
+struct sBTL_X0_AttackSubTask : public s_workAreaTemplate<sBTL_X0_AttackSubTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { nullptr, &Update, nullptr, &Delete };
+        return &taskDefinition;
+    }
+
+    static void Update(sBTL_X0_AttackSubTask* pThis);
+    static void Delete(sBTL_X0_AttackSubTask* pThis);
+
+    sBTL_X0_EnemyModel* m0_parentEnemy;
+    void* m4_attackDataBuffer;
+    sVec3_FP m8_positions[6];
+    fixedPoint m50_rotX;
+    fixedPoint m54_rotY;
+    fixedPoint m58_rotZ;
+    u16 m5C_timer;
+    u16 m5E_partCmd[4];
+    u8 m66_partOrder[4];
+    u8 m6A_targetPart;
+    u8 m6B_lastCommand;
+    u8 m6C_variant;
+    u8 m6D_pad[3];
+    s32 m70_partAlive[4];
+    s32 m80_partError[4];
+    s32 m90_partComplete[4];
+    s32 mA0_partState[4];
+    s32 mB0_value;
+    s32 mB4_trigger;
+    s32 mB8_pass;
+    // Saturn size 0xBC
+};
+
+// 060b73d8 task definition: {null, 06059444, 06059b12, 06059b8e}
+// Per-part sub-task for attack sub-parts (appendages). Saturn size 0x308.
+// Minimal definition — will be expanded when per-part logic is implemented.
+struct sBTL_X0_AttackSubPart : public s_workAreaTemplateWithCopy<sBTL_X0_AttackSubPart>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { nullptr, &Update, &Draw, &Delete };
+        return &taskDefinition;
+    }
+
+    static void Update(sBTL_X0_AttackSubPart* pThis);
+    static void Draw(sBTL_X0_AttackSubPart* pThis);
+    static void Delete(sBTL_X0_AttackSubPart* pThis);
+
+    u32 m14_flags;
+    u8 mFC_state;
+    sBTL_X0_AttackSubTask* m154_parentAttackTask;
+    s32 m208_value;
+    s32 m29C_value;
+    s32 m2A0_value;
+    u8 m300_partIndex;
+    u8 m301_flag;
+    s32 m304_state;
+    // Saturn size 0x308
+};
+
 p_workArea BTL_X0_createEnemyModels(s_workArea* pFormation, s8 variant);
 p_workArea BTL_X0_createEnemyModels2(s_workArea* pFormation);

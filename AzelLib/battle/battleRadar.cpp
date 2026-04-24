@@ -10,14 +10,14 @@
 #include "kernel/vdp1Allocator.h"
 #include "battleGenericData.h"
 
-void battleHud2_Init(battleHud2* pThis)
+void battleRadar_Init(sBattleRadarTask* pThis)
 {
     pThis->m4 = 0;
     pThis->mC = 0;
     pThis->mE_offsetY = 0x47;
 }
 
-void battleHud2_Update(battleHud2* pThis)
+void battleRadar_Update(sBattleRadarTask* pThis)
 {
     pThis->m4++;
     switch (pThis->m12_mode)
@@ -113,7 +113,7 @@ void battleHud2_Update(battleHud2* pThis)
     }
 }
 
-void battleRadar_UpdateDragonPosition(battleHud2* pThis)
+void battleRadar_UpdateDragonPosition(sBattleRadarTask* pThis)
 {
     sVec3_FP local_20 = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter - gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
     sVec2_FP local_28;
@@ -127,7 +127,7 @@ void battleRadar_UpdateDragonPosition(battleHud2* pThis)
 }
 
 // This draw the radar ring
-void battleHud2_DrawSub1(battleHud2* pThis)
+void battleRadar_DrawRadarBase(sBattleRadarTask* pThis)
 {
     s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
     vdp1WriteEA.m0_CMDCTRL = 0x1000; // command 0
@@ -147,7 +147,7 @@ void battleHud2_DrawSub1(battleHud2* pThis)
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
-void battleHud2_DrawSub2(battleHud2* pThis)
+void battleRadar_DrawRadarQuadrants(sBattleRadarTask* pThis)
 {
     // this draws the radar quadrant
 
@@ -485,11 +485,9 @@ void battleHud2_DrawSub2(battleHud2* pThis)
         graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
     }
-
-    Unimplemented();
 }
 
-void battleHud2_DrawSub3(battleHud2* pThis)
+void battleRadar_DrawRadarCenter(sBattleRadarTask* pThis)
 {
     // this draws the triangle cursor in the middle of the radar
     s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
@@ -520,7 +518,7 @@ void battleHud2_DrawSub3(battleHud2* pThis)
     graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
-void battleHud2_DrawSub4(battleHud2* pThis)
+void battleRadar_DrawRadarDragonPosition(sBattleRadarTask* pThis)
 {
     // this draw the dragon icon on radar
     s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
@@ -542,7 +540,7 @@ void battleHud2_DrawSub4(battleHud2* pThis)
 }
 
 
-void battleHud2_Draw(battleHud2* pThis)
+void battleRadar_Draw(sBattleRadarTask* pThis)
 {
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3A4_prelockMode[1] & 0x10) {
         if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
@@ -556,10 +554,10 @@ void battleHud2_Draw(battleHud2* pThis)
             }
 
             battleRadar_UpdateDragonPosition(pThis);
-            battleHud2_DrawSub1(pThis);
-            battleHud2_DrawSub2(pThis);
-            battleHud2_DrawSub3(pThis);
-            battleHud2_DrawSub4(pThis);
+            battleRadar_DrawRadarBase(pThis);
+            battleRadar_DrawRadarQuadrants(pThis);
+            battleRadar_DrawRadarCenter(pThis);
+            battleRadar_DrawRadarDragonPosition(pThis);
 
             if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x18])
             {
@@ -572,13 +570,13 @@ void battleHud2_Draw(battleHud2* pThis)
 
 void battleEngine_CreateRadar(npcFileDeleter* parent)
 {
-    static const battleHud2::TypedTaskDefinition definition = {
-        &battleHud2_Init,
-        &battleHud2_Update,
-        &battleHud2_Draw,
+    static const sBattleRadarTask::TypedTaskDefinition definition = {
+        &battleRadar_Init,
+        &battleRadar_Update,
+        &battleRadar_Draw,
         nullptr,
     };
 
-    battleHud2* pNewTask = createSubTask<battleHud2>(parent, &definition);
+    sBattleRadarTask* pNewTask = createSubTask<sBattleRadarTask>(parent, &definition);
     pNewTask->m0_vdp1Memory = parent->m4_vd1Allocation->m4_vdp1Memory;
 }

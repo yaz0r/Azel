@@ -468,11 +468,298 @@ static void BTL_X0_enemyModel_Delete(sBTL_X0_EnemyModel* pThis)
     }
 }
 
+// 060593b8
+static sBTL_X0_AttackSubPart* BTL_X0_createAttackSubPart(sBTL_X0_AttackSubTask* pParent, u8 partIndex)
+{
+    sBTL_X0_AttackSubPart* pPart = createSubTask<sBTL_X0_AttackSubPart>((p_workArea)pParent);
+    if (pPart == nullptr)
+        return nullptr;
+
+    pPart->m0_fileBundle = pParent->m0_parentEnemy->m0_fileBundle;
+    pPart->m4_vd1Allocation = pParent->m0_parentEnemy->m4_vd1Allocation;
+
+    pPart->mFC_state = 0;
+    pPart->m154_parentAttackTask = pParent;
+    pPart->m300_partIndex = partIndex;
+    pPart->m208_value = 0;
+    pPart->m304_state = 0;
+    pPart->m301_flag = 0;
+    pPart->m29C_value = 0x28F;
+    pPart->m2A0_value = 0x28F;
+    pPart->m14_flags |= 0x80000000;
+    pPart->m14_flags |= 0x10000000;
+
+    return pPart;
+}
+
+// 06059444
+void sBTL_X0_AttackSubPart::Update(sBTL_X0_AttackSubPart* pThis)
+{
+    Unimplemented();
+}
+
+// 06059b12
+void sBTL_X0_AttackSubPart::Draw(sBTL_X0_AttackSubPart* pThis)
+{
+    Unimplemented();
+}
+
+// 06059b8e
+void sBTL_X0_AttackSubPart::Delete(sBTL_X0_AttackSubPart* pThis)
+{
+}
+
+static const sVec3_FP BTL_X0_attackPositions[6] = {
+    { fixedPoint(0x00000000), fixedPoint(0x0001E000), fixedPoint(0x00000000) },
+    { fixedPoint(0x0001E000), fixedPoint(0x00000000), fixedPoint(0x00000000) },
+    { fixedPoint(0x00000000), fixedPoint(0x0001E000), fixedPoint((s32)0xFFFE2000) },
+    { fixedPoint(0x00000000), fixedPoint(0x00000000), fixedPoint((s32)0xFFFE2000) },
+    { fixedPoint(0x00000000), fixedPoint((s32)0xFFFE2000), fixedPoint(0x00000000) },
+    { fixedPoint((s32)0xFFFE2000), fixedPoint(0x00000000), fixedPoint(0x00000000) },
+};
+
+// 06057e04
+void sBTL_X0_AttackSubTask::Update(sBTL_X0_AttackSubTask* pThis)
+{
+    sBTL_X0_EnemyModel* pEnemy = pThis->m0_parentEnemy;
+    s8 currentCmd = pEnemy->m30A_commandIndex;
+
+    if (currentCmd != pThis->m6B_lastCommand)
+    {
+        if (currentCmd != 0x13 && pThis->mB8_pass == 0)
+        {
+            // no-op: skip command dispatch unless it's 0x13 or pass > 0
+        }
+        else if (currentCmd == 0x09)
+        {
+            for (int i = 0; i < 4; i++)
+                pThis->m5E_partCmd[i] = 6;
+        }
+        else if (currentCmd == 0x11)
+        {
+            u32 rng = randomNumber();
+            pThis->m6A_targetPart = ((rng & 1) == 0) ? 3 : 0;
+            if (pThis->m70_partAlive[pThis->m6A_targetPart] == 0)
+                pThis->m6A_targetPart = (pThis->m6A_targetPart == 3) ? 0 : 3;
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (pThis->m70_partAlive[i] == 1)
+                    pThis->m5E_partCmd[i] = (pThis->m6A_targetPart == i) ? 4 : 3;
+                else
+                    pThis->m5E_partCmd[i] = 8;
+            }
+        }
+        else if (currentCmd == 0x12)
+        {
+            u32 rng = randomNumber();
+            pThis->m6A_targetPart = ((rng & 1) == 0) ? 1 : 2;
+            if (pThis->m70_partAlive[pThis->m6A_targetPart] == 0)
+                pThis->m6A_targetPart = (pThis->m6A_targetPart == 1) ? 2 : 1;
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (pThis->m70_partAlive[i] == 1)
+                    pThis->m5E_partCmd[i] = (pThis->m6A_targetPart == i) ? 4 : 3;
+                else
+                    pThis->m5E_partCmd[i] = 8;
+            }
+        }
+        else if (currentCmd == 0x13)
+        {
+            if (pThis->mB8_pass == 0)
+            {
+                for (int i = 0; i < 4; i++)
+                    pThis->m5E_partCmd[i] = 1;
+                pThis->m6A_targetPart = (u8)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(4)).getInteger();
+                pThis->mB8_pass = 1;
+            }
+            else
+            {
+                s32 deadCount = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (pThis->m70_partAlive[i] == 1)
+                    {
+                        pThis->m5E_partCmd[i] = 3;
+                        pThis->m90_partComplete[i] = 0;
+                    }
+                    else
+                    {
+                        if (deadCount == 0 || (randomNumber() & 1) == 0)
+                            pThis->m6A_targetPart = (u8)i;
+                        pThis->m5E_partCmd[i] = 9;
+                        deadCount++;
+                    }
+                }
+            }
+        }
+        else if (currentCmd == 0x15)
+        {
+            pThis->m6A_targetPart = (u8)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(4)).getInteger();
+
+            fixedPoint randA = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x10000000));
+            fixedPoint randB = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x10000000));
+            pThis->m54_rotY = MTH_Mul(getSin(randB.getInteger()), randA);
+
+            fixedPoint randC = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x10000000));
+            fixedPoint randD = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x10000000));
+            fixedPoint cosD_C = MTH_Mul(getCos(randD.getInteger()), randC);
+
+            fixedPoint randE = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x10000000));
+            pThis->m58_rotZ = MTH_Mul(getSin(randE.getInteger()), cosD_C);
+
+            fixedPoint randF = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x10000000));
+            pThis->m50_rotX = MTH_Mul(getCos(randF.getInteger()), cosD_C);
+
+            for (int i = 0; i < 6; i++)
+            {
+                sMatrix4x3 mat;
+                initMatrixToIdentity(&mat);
+                rotateMatrixShiftedY(pThis->m54_rotY, &mat);
+                rotateMatrixShiftedX(pThis->m50_rotX, &mat);
+                rotateMatrixShiftedZ(pThis->m58_rotZ, &mat);
+                transformAndAddVec(BTL_X0_attackPositions[i], pThis->m8_positions[i], mat);
+            }
+
+            // Fisher-Yates shuffle of partOrder
+            for (int pair = 0; pair < 2; pair++)
+            {
+                s32 remaining0 = 4 - pair * 2;
+                s32 idx0 = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(remaining0)).getInteger();
+                u8 tmp0 = pThis->m66_partOrder[idx0];
+                pThis->m66_partOrder[idx0] = pThis->m66_partOrder[3 - pair * 2];
+                pThis->m66_partOrder[3 - pair * 2] = tmp0;
+                pThis->m5E_partCmd[pair * 2] = 7;
+
+                s32 remaining1 = remaining0 - 1;
+                s32 idx1 = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(remaining1)).getInteger();
+                u8 tmp1 = pThis->m66_partOrder[idx1];
+                pThis->m66_partOrder[idx1] = pThis->m66_partOrder[3 - pair * 2 - 1];
+                pThis->m66_partOrder[3 - pair * 2 - 1] = tmp1;
+                pThis->m5E_partCmd[pair * 2 + 1] = 7;
+            }
+
+            pThis->mB0_value = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(2)).getInteger();
+        }
+        else
+        {
+            // Default: reset m90 and set part cmds based on alive state
+            for (int i = 0; i < 4; i++)
+                pThis->m90_partComplete[i] = 1;
+
+            for (int i = 0; i < 4; i++)
+                pThis->m5E_partCmd[i] = (pThis->m70_partAlive[i] == 1) ? 2 : 8;
+        }
+    }
+
+    pThis->m6B_lastCommand = (u8)pEnemy->m30A_commandIndex;
+
+    // Variant 3: timer-based part visibility cycling
+    if (pThis->m6C_variant == 3)
+    {
+        if (battleEngine_isPlayerTurnActive() == 0)
+        {
+            if (pThis->m5C_timer < 300)
+                pThis->m5C_timer++;
+            else
+                pThis->m5C_timer = 0;
+        }
+
+        if (pThis->m5C_timer < 0x4B || pThis->m5C_timer > 0xE0)
+        {
+            pThis->mA0_partState[1] = 0;
+            pThis->mA0_partState[2] = 0;
+        }
+        else
+        {
+            pThis->mA0_partState[1] = 1;
+            pThis->mA0_partState[2] = 1;
+        }
+
+        if (pThis->m5C_timer < 0x96)
+        {
+            pThis->mA0_partState[3] = 1;
+            pThis->mA0_partState[0] = 1;
+        }
+        else
+        {
+            pThis->mA0_partState[3] = 0;
+            pThis->mA0_partState[0] = 0;
+        }
+
+        if (pThis->m5C_timer == 0x95 || pThis->m5C_timer == 0xE0)
+            pThis->mB4_trigger = 1;
+        else
+            pThis->mB4_trigger = 0;
+    }
+
+    // Check if all parts completed for command 0x13
+    s32 completedCount = 0;
+    if (pEnemy->m30A_commandIndex == 0x13)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            if (pThis->m90_partComplete[i] == 0)
+                completedCount++;
+        }
+    }
+    if (completedCount == 4)
+    {
+        s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
+        pEngine->m188_flags.m100_attackAnimationFinished = 1;
+    }
+
+    // Check for per-part error signals
+    for (int i = 0; i < 4; i++)
+    {
+        if (pThis->m80_partError[i] != 0)
+        {
+            pThis->getTask()->markFinished();
+        }
+    }
+}
+
+// 060586d0
+void sBTL_X0_AttackSubTask::Delete(sBTL_X0_AttackSubTask* pThis)
+{
+}
+
 // 06057d30
 static p_workArea BTL_X0_createAttackSubTask(sBTL_X0_EnemyModel* pThis, void* attackDataBuffer)
 {
-    Unimplemented();
-    return nullptr;
+    sBTL_X0_AttackSubTask* pTask = createSubTask<sBTL_X0_AttackSubTask>((p_workArea)pThis);
+    if (pTask == nullptr)
+        return nullptr;
+
+    pTask->m0_parentEnemy = pThis;
+    pTask->m6C_variant = (u8)pThis->m308_variantIndex;
+    pTask->m6B_lastCommand = 0;
+    pTask->m4_attackDataBuffer = attackDataBuffer;
+    pTask->mB8_pass = 0;
+    pTask->m5C_timer = 0;
+
+    for (int i = 0; i < 4; i++)
+    {
+        pTask->m66_partOrder[i] = (u8)i;
+        pTask->m5E_partCmd[i] = 0;
+        pTask->m70_partAlive[i] = 0;
+        pTask->m80_partError[i] = 0;
+        pTask->m90_partComplete[i] = 1;
+        pTask->mA0_partState[i] = 0;
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        sBTL_X0_AttackSubPart* pPart = BTL_X0_createAttackSubPart(pTask, (u8)i);
+        if (pPart == nullptr)
+        {
+            pTask->getTask()->markFinished();
+            return pTask;
+        }
+    }
+
+    return pTask;
 }
 
 // 0606237c

@@ -18,7 +18,7 @@ struct sFormationTaskBase;
 #include "town/townCutscene.h"
 
 // 060ba1d0 task definition: {06077214, 00000000, 0607728e, 060772e4}
-struct sAtolmBattleIntroTask : public s_workAreaTemplateWithArg<sAtolmBattleIntroTask, u32>
+struct sBattleVoiceOverTask : public s_workAreaTemplateWithArg<sBattleVoiceOverTask, u32>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
     {
@@ -26,9 +26,9 @@ struct sAtolmBattleIntroTask : public s_workAreaTemplateWithArg<sAtolmBattleIntr
         return &taskDefinition;
     }
 
-    static void Init(sAtolmBattleIntroTask* pThis, u32 filenameRaw);
-    static void Draw(sAtolmBattleIntroTask* pThis);
-    static void Delete(sAtolmBattleIntroTask* pThis);
+    static void Init(sBattleVoiceOverTask* pThis, u32 filenameRaw);
+    static void Draw(sBattleVoiceOverTask* pThis);
+    static void Delete(sBattleVoiceOverTask* pThis);
 
     sStreamingFile* m0;              // 0x00
     sStreamingFile m4;               // 0x04 (0x1B8 bytes on Saturn)
@@ -82,7 +82,7 @@ struct sFormationIntroEffectTask : public s_workAreaTemplateWithArg<sFormationIn
     // task+0x1C
     sSaturnPtr m1C_dataPtr;
     // task+0x20 (PCM streaming subtask)
-    sAtolmBattleIntroTask* m20_cutsceneTask;
+    sBattleVoiceOverTask* m20_cutsceneTask;
     // task+0x24
     s16 m24_savedCounter;
     // task+0x26 (pad)
