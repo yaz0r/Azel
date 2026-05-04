@@ -1572,9 +1572,10 @@ void battleEngine_enemyForcedMoveUpdate(s_battleEngine* pThis)
                 stackx40_1 = 0x4000000;
                 break;
             case 2:
+                iVar3 = 1;
                 pThis->m270_enemyAltitude[0] -= pThis->m45C_perQuadrantDragonSpeed[1];
                 pThis->m270_enemyAltitude[2] += pThis->m45C_perQuadrantDragonSpeed[0];
-                pThis->m258[0] = -pThis->m45C_perQuadrantDragonSpeed[1];
+                pThis->m258[0] = pThis->m45C_perQuadrantDragonSpeed[1];
                 pThis->m258[2] = 0;
                 stackx40_1 = 0xc000000;
                 break;
@@ -1595,16 +1596,114 @@ void battleEngine_enemyForcedMoveUpdate(s_battleEngine* pThis)
                 assert(0);
             }
             break;
-        case 2:
-            //:0606cdc6
+        case 1:
+            dStack72 = (s32)0xFC000000;
             switch (pThis->m22E_dragonMoveDirection)
             {
-            case 3:
-                (pThis->m270_enemyAltitude)[2] = (pThis->m270_enemyAltitude)[2] - (pThis->m45C_perQuadrantDragonSpeed[2] + pThis->m45C_perQuadrantDragonSpeed[0]);
-                (pThis->m258)[0] = 0;
-                (pThis->m258)[2] = pThis->m45C_perQuadrantDragonSpeed[0];
-                stackx40_1 = 0;
+            case 1:
+                iVar3 = 0;
+                pThis->m270_enemyAltitude[0] += pThis->m45C_perQuadrantDragonSpeed[1];
+                pThis->m270_enemyAltitude[2] -= pThis->m45C_perQuadrantDragonSpeed[0];
+                pThis->m258[0] = 0;
+                pThis->m258[2] = pThis->m45C_perQuadrantDragonSpeed[0];
+                stackx40_1 = (s32)0xF8000000;
+                break;
+            case 2:
+                pThis->m270_enemyAltitude[0] += pThis->m45C_perQuadrantDragonSpeed[1];
+                pThis->m270_enemyAltitude[2] += pThis->m45C_perQuadrantDragonSpeed[2];
+                pThis->m258[0] = 0;
+                pThis->m258[2] = -pThis->m45C_perQuadrantDragonSpeed[2];
                 iVar3 = 2;
+                stackx40_1 = 0;
+                break;
+            case 3:
+            case 4:
+                pThis->m270_enemyAltitude[0] += pThis->m45C_perQuadrantDragonSpeed[1] + pThis->m45C_perQuadrantDragonSpeed[3];
+                pThis->m258[0] = -pThis->m45C_perQuadrantDragonSpeed[3];
+                pThis->m258[2] = 0;
+                stackx40_1 = (s32)0xF4000000;
+                break;
+            case 5:
+                pThis->m270_enemyAltitude[0] += pThis->m45C_perQuadrantDragonSpeed[1] + pThis->m45C_perQuadrantDragonSpeed[3];
+                pThis->m258[0] = -pThis->m45C_perQuadrantDragonSpeed[3];
+                pThis->m258[2] = 0;
+                stackx40_1 = 0x4000000;
+                break;
+            default:
+                assert(0);
+            }
+            break;
+        case 2:
+            switch (pThis->m22E_dragonMoveDirection)
+            {
+            case 1:
+                iVar3 = 1;
+                pThis->m270_enemyAltitude[0] -= pThis->m45C_perQuadrantDragonSpeed[1];
+                pThis->m270_enemyAltitude[2] -= pThis->m45C_perQuadrantDragonSpeed[2];
+                pThis->m258[0] = pThis->m45C_perQuadrantDragonSpeed[1];
+                pThis->m258[2] = 0;
+                stackx40_1 = (s32)0xFC000000;
+                break;
+            case 2:
+                pThis->m270_enemyAltitude[0] += pThis->m45C_perQuadrantDragonSpeed[3];
+                pThis->m270_enemyAltitude[2] -= pThis->m45C_perQuadrantDragonSpeed[2];
+                pThis->m258[0] = -pThis->m45C_perQuadrantDragonSpeed[3];
+                pThis->m258[2] = 0;
+                stackx40_1 = 0x4000000;
+                break;
+            case 3:
+            case 5:
+                pThis->m270_enemyAltitude[2] -= pThis->m45C_perQuadrantDragonSpeed[2] + pThis->m45C_perQuadrantDragonSpeed[0];
+                pThis->m258[0] = 0;
+                pThis->m258[2] = pThis->m45C_perQuadrantDragonSpeed[0];
+                iVar3 = 0;
+                stackx40_1 = 0x8000000;
+                break;
+            case 4:
+                iVar3 = 0;
+                pThis->m270_enemyAltitude[2] -= pThis->m45C_perQuadrantDragonSpeed[2] + pThis->m45C_perQuadrantDragonSpeed[0];
+                pThis->m258[0] = 0;
+                pThis->m258[2] = pThis->m45C_perQuadrantDragonSpeed[0];
+                stackx40_1 = (s32)0xF8000000;
+                break;
+            default:
+                assert(0);
+            }
+            break;
+        case 3:
+            dStack72 = 0x4000000;
+            switch (pThis->m22E_dragonMoveDirection)
+            {
+            case 1:
+                pThis->m270_enemyAltitude[0] -= pThis->m45C_perQuadrantDragonSpeed[3];
+                pThis->m270_enemyAltitude[2] += pThis->m45C_perQuadrantDragonSpeed[2];
+                pThis->m258[0] = 0;
+                pThis->m258[2] = -pThis->m45C_perQuadrantDragonSpeed[2];
+                iVar3 = 2;
+                stackx40_1 = 0;
+                break;
+            case 2:
+                pThis->m270_enemyAltitude[0] -= pThis->m45C_perQuadrantDragonSpeed[3];
+                pThis->m270_enemyAltitude[2] -= pThis->m45C_perQuadrantDragonSpeed[0];
+                pThis->m258[0] = 0;
+                pThis->m258[2] = pThis->m45C_perQuadrantDragonSpeed[0];
+                iVar3 = 0;
+                stackx40_1 = 0x8000000;
+                break;
+            case 3:
+            case 4:
+                iVar3 = 1;
+                pThis->m270_enemyAltitude[0] -= pThis->m45C_perQuadrantDragonSpeed[3] + pThis->m45C_perQuadrantDragonSpeed[1];
+                pThis->m258[0] = pThis->m45C_perQuadrantDragonSpeed[1];
+                pThis->m258[2] = 0;
+                stackx40_1 = (s32)0xFC000000;
+                break;
+            case 5:
+                iVar3 = 1;
+                pThis->m270_enemyAltitude[0] -= pThis->m45C_perQuadrantDragonSpeed[3] + pThis->m45C_perQuadrantDragonSpeed[1];
+                pThis->m258[0] = pThis->m45C_perQuadrantDragonSpeed[1];
+                pThis->m258[2] = 0;
+                stackx40_1 = 0xc000000;
                 break;
             default:
                 assert(0);

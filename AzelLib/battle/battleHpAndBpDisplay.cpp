@@ -21,19 +21,19 @@ struct sBattleHpOrBpDisplay : s_workAreaTemplateWithCopy<sBattleHpOrBpDisplay>
     // size 0x20
 };
 
-const quadColor HpOrBpDisplay_table0 = {
+extern const quadColor HpOrBpDisplay_table0 = {
     0xC210, 0xC210, 0xC210, 0xC210
 };
 
-const quadColor HpOrBpDisplay_table1 = {
+extern const quadColor HpOrBpDisplay_table1 = {
     0x83E0, 0x83E0, 0x83E0, 0x83E0
 };
 
-const quadColor HpOrBpDisplay_table2 = {
+extern const quadColor HpOrBpDisplay_table2 = {
     0x801F, 0x801F, 0x801F, 0x801F
 };
 
-const quadColor HpOrBpDisplay_table3 = {
+extern const quadColor HpOrBpDisplay_table3 = {
     0x83FF, 0x83FF, 0x83FF, 0x83FF
 };
 

@@ -292,7 +292,18 @@ void s_battleDragon_UpdateSub2Sub0(s_battleDragon* pThis)
             }
             if(pThis->m84 & 0x8)
             {
-                assert(0);
+                if (uVar7 == 0)
+                {
+                    pThis->m1CC_currentAnimation = 0xC;
+                }
+                else
+                {
+                    pThis->m1CC_currentAnimation = 0xD;
+                }
+                incrementAnimationRootY(&gDragonState->m78_animData, -pThis->m1C8);
+                pThis->m1CE_positionInAnimList = 0;
+                s_battleDragon_InitSub4(pThis->m1CC_currentAnimation, 0);
+                return;
             }
         }
         else

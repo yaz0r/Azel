@@ -12,6 +12,7 @@
 #include "battleCommandMenu.h"
 #include "battleHpAndBpDisplay.h"
 #include "battleGenericData.h"
+#include "battleDragon.h"
 
 void s_battleOverlay_20_update(s_battleOverlay_20* pThis)
 {
@@ -210,32 +211,118 @@ void s_battleOverlay_20_drawSub0(s_battleOverlay_20* pThis)
 
 }
 
+extern const quadColor HpOrBpDisplay_table0;
+extern const quadColor HpOrBpDisplay_table2;
+
+// 0607242e
 void battleHud_drawStatusString(s_battleOverlay_20* pThis)
 {
-    Unimplemented();
-    /*
+    s32 spriteEntryIndex = 0;
+    u32 activeCount = 0;
+    bool blinkPhase = performModulo(0x1E, pThis->m2C) > 0xE;
+    bool shouldBlink = false;
+    bool criticalHP = false;
+    const quadColor* colorTable = &HpOrBpDisplay_table0;
+
+    s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
+    u32 statusBits = pDragon->m1C0_statusModifiers;
+
+    for (s32 i = 5; i >= 0; i--)
     {
-        int outputColorIndex = graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin();
-        sPerQuadDynamicColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
-
-        u32 vdp1WriteEA = graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
-        setVdp1VramU16(vdp1WriteEA + 0x00, 0x1000); // command 0
-        setVdp1VramU16(vdp1WriteEA + 0x04, 0x88); // CMDPMOD
-        setVdp1VramU16(vdp1WriteEA + 0x06, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0x2EB8); // CMDCOLR
-        setVdp1VramU16(vdp1WriteEA + 0x08, dramAllocatorEnd[0].mC_buffer->m4_vd1Allocation->m4_vdp1Memory + 0xAE4); // CMDSRCA
-        setVdp1VramU16(vdp1WriteEA + 0x0A, 0x40A); // CMDSIZE
-        setVdp1VramU16(vdp1WriteEA + 0x0C, pThis->m16_part1X + 0x50); // CMDXA
-        setVdp1VramU16(vdp1WriteEA + 0x0E, -(pThis->m18_part1Y - 0x43)); // CMDYA
-
-        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
-        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = vdp1WriteEA >> 3;
-        graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
-
-        graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
-        graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA = vdp1WriteEA + 0x20;
-        graphicEngineStatus.m14_vdp1Context[0].mC += 1;
+        if (statusBits & (1 << i))
+        {
+            spriteEntryIndex = i + 1;
+            pThis->m1_statusActive[i] = 1;
+            activeCount++;
+        }
+        else
+        {
+            pThis->m1_statusActive[i] = 0;
+        }
     }
-    */
+
+    if (activeCount != 0)
+    {
+        if (activeCount == 1)
+        {
+            pThis->mD_statusCycleIndex = (u8)(spriteEntryIndex - 1);
+            u32 statusTimerIndex = pThis->mD_statusCycleIndex * 2;
+            shouldBlink = blinkPhase;
+            s16 statusTimer = *(s16*)((u8*)pDragon + 0x1D8 + statusTimerIndex);
+            if (statusTimer > 0x78)
+                criticalHP = true;
+        }
+        else
+        {
+            while (pThis->m1_statusActive[pThis->mD_statusCycleIndex] == 0)
+            {
+                pThis->mD_statusCycleIndex++;
+                if (pThis->mD_statusCycleIndex > 5)
+                    pThis->mD_statusCycleIndex -= 6;
+            }
+            if (pThis->m1_statusActive[pThis->mD_statusCycleIndex] == 1)
+            {
+                pThis->mE_statusDisplayIndex = pThis->mD_statusCycleIndex;
+                s32 nextIdx = pThis->mD_statusCycleIndex + 1;
+                s32 framePhase = performModulo(0x1E, pThis->m2C);
+                if (framePhase == 0x1D)
+                {
+                    pThis->mD_statusCycleIndex = (u8)nextIdx;
+                    if (pThis->mD_statusCycleIndex > 5)
+                        pThis->mD_statusCycleIndex -= 6;
+                }
+            }
+            u32 statusTimerIndex = pThis->mE_statusDisplayIndex * 2;
+            shouldBlink = blinkPhase;
+            s16 statusTimer = *(s16*)((u8*)pDragon + 0x1D8 + statusTimerIndex);
+            if (statusTimer > 0x78)
+                criticalHP = true;
+            spriteEntryIndex = pThis->mE_statusDisplayIndex + 1;
+        }
+    }
+
+    if (shouldBlink)
+        return;
+
+    if (criticalHP && performModulo(2, pThis->m2C) != 0)
+        colorTable = &HpOrBpDisplay_table2;
+
+    sSaturnPtr spriteTablePtr = g_BTL_GenericData->getSaturnPtr(0x060b1aa4);
+    sSaturnPtr spriteDescPtr = readSaturnEA(spriteTablePtr + spriteEntryIndex * 4);
+
+    s16 cmdsrca_offset = readSaturnS16(spriteDescPtr + 2);
+    s16 cmdcolr_offset = readSaturnS16(spriteDescPtr + 6);
+    u16 cmdsize = readSaturnU16(spriteDescPtr + 8);
+    u16 cmdpmod = readSaturnU16(spriteDescPtr + 10) | 4;
+
+    u16 vdp1Base = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
+
+    s32 outputColorIndex = (s32)(graphicEngineStatus.m14_vdp1Context[0].m10 - graphicEngineStatus.m14_vdp1Context[0].m14->begin());
+    quadColor& outputColor = *(graphicEngineStatus.m14_vdp1Context[0].m10++);
+
+    s_vdp1Command& vdp1WriteEA = *graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA;
+    vdp1WriteEA.m0_CMDCTRL = 0x1000;
+    vdp1WriteEA.m4_CMDPMOD = cmdpmod;
+    vdp1WriteEA.m6_CMDCOLR = vdp1Base + cmdcolr_offset;
+    vdp1WriteEA.m8_CMDSRCA = vdp1Base + cmdsrca_offset;
+    vdp1WriteEA.mA_CMDSIZE = cmdsize;
+    vdp1WriteEA.mC_CMDXA = pThis->m16_part1X + 0x50;
+    vdp1WriteEA.mE_CMDYA = -((s16)pThis->m18_part1Y - 0x43);
+
+    outputColor[0] = (*colorTable)[0];
+    outputColor[1] = (*colorTable)[1];
+    outputColor[2] = (*colorTable)[2];
+    outputColor[3] = (*colorTable)[3];
+
+    vdp1WriteEA.m1C_CMDGRA = outputColorIndex;
+
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m4_bucketTypes = 0;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet->m6_vdp1EA = &vdp1WriteEA;
+    graphicEngineStatus.m14_vdp1Context[0].m20_pCurrentVdp1Packet++;
+
+    graphicEngineStatus.m14_vdp1Context[0].m1C += 1;
+    graphicEngineStatus.m14_vdp1Context[0].m0_currentVdp1WriteEA++;
+    graphicEngineStatus.m14_vdp1Context[0].mC += 1;
 }
 
 

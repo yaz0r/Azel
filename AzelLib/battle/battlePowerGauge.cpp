@@ -9,6 +9,7 @@
 #include "kernel/graphicalObject.h"
 #include "audio/systemSounds.h"
 #include "kernel/vdp1Allocator.h"
+#include "kernel/vdp1AnimatedQuad.h"
 
 struct battlePowerGauge : public s_workAreaTemplate<battlePowerGauge>
 {
@@ -87,7 +88,46 @@ static void sGaugeIncreaseEffect_Update(sGaugeIncreaseEffect* pThis)
 // 0608523c
 static void sGaugeIncreaseEffect_Draw(sGaugeIncreaseEffect* pThis)
 {
-    Unimplemented();
+    fixedPoint scaledSize = MTH_Mul(fixedPoint(pThis->m10_decayRate), fixedPoint(pThis->m60_alpha));
+
+    sVec3_FP positionCopy = *pThis->m50_pPosition;
+
+    pushCurrentMatrix();
+    translateCurrentMatrix(pThis->m50_pPosition);
+    rotateCurrentMatrixShiftedY(fixedPoint(pThis->m5C_rotationY));
+    rotateCurrentMatrixShiftedX(fixedPoint(pThis->m58_rotationX));
+
+    sVec3_FP transformedOffset;
+    transformAndAddVecByCurrentMatrix(&pThis->m64_offset, &transformedOffset);
+
+    sVec3_FP viewSpacePos;
+    transformAndAddVec(transformedOffset, viewSpacePos, cameraProperties2.m28[0]);
+
+    popMatrix();
+
+    sBillboardSpriteParams params;
+    params.m0_halfWidth = scaledSize;
+    params.m4_halfHeight = scaledSize;
+    params.m8_CMDPMOD = 0x8C;
+    u16 vdp1Base = dramAllocatorEnd[0].mC_fileBundle->m4_vd1Allocation->m4_vdp1Memory;
+    params.mA_CMDCOLR = vdp1Base;
+    params.mC_CMDSRCA = vdp1Base;
+    params.mE_CMDSIZE = 0x0808;
+
+    static const u16 colorTable[3][4] = {
+        { 0xC3E0, 0xC3E0, 0xC3E0, 0xC3E0 },
+        { 0xE3E0, 0xE3E0, 0xE3E0, 0xE3E0 },
+        { 0xFFE8, 0xFFE8, 0xFFE8, 0xFFE8 },
+    };
+    s32 colorIdx = pThis->m4C_colorSetIndex;
+    if (colorIdx < 0) colorIdx = 0;
+    if (colorIdx > 2) colorIdx = 2;
+    params.m10_gouraud[0] = colorTable[colorIdx][0];
+    params.m10_gouraud[1] = colorTable[colorIdx][1];
+    params.m10_gouraud[2] = colorTable[colorIdx][2];
+    params.m10_gouraud[3] = colorTable[colorIdx][3];
+
+    drawImmediateBillboardSprite(&positionCopy, &params);
 }
 
 static const sGaugeIncreaseEffect::TypedTaskDefinition sGaugeIncreaseEffect_definition =

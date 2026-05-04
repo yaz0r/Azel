@@ -5,6 +5,11 @@
 struct s_battleOverlay_20 : public s_workAreaTemplate<s_battleOverlay_20>
 {
     s8 m0;
+    u8 m1_statusActive[6];
+    u8 m7_pad[6];
+    u8 mD_statusCycleIndex;
+    u8 mE_statusDisplayIndex;
+    u8 mF_pad;
     s16 m10_currentMode;
     s16 m12_nextMode;
     u16 m14_vdp1Memory;
