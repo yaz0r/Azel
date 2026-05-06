@@ -451,9 +451,10 @@ void sBattleEnvironmentGridCell_Draw(sWorldGridCellTask* pThis)
     popMatrix();
 }
 
+// 06014d14
 void battleGrid_createCellSub0(sWorldGridCellTask* r4_newCellTask, s32 r5, s32 r6, s32 r7, s32 r8)
 {
-    Unimplemented();
+    Unimplemented(); // iterates cell object list, creates entity sub-tasks via createSubTaskWithArgWithCopy
 }
 
 void battleGrid_createCell(s32 index, sWorldGrid* pGrid)
@@ -525,19 +526,42 @@ struct sBTL_A3_map6_sub : public s_workAreaTemplate<sBTL_A3_map6_sub>
     // size 0x20
 };
 
+// 06058dbc
 void sBTL_A3_map6_sub_Init(sBTL_A3_map6_sub* pThis)
 {
-    Unimplemented();
+    allocateNPC(pThis, 0x12);
+    // Set water surface rendering params
+    u8* p = (u8*)pThis;
+    *(u16*)(p + 0x10) = *(u16*)(dramAllocatorEnd[0x12].mC_fileBundle->m0_fileBundle->getRawBuffer() + 4);
+    *(u16*)(p + 0x12) = 0x0A37;
+    *(u16*)(p + 0x14) = 0x0200;
+    *(u16*)(p + 0x16) = 0x00A0;
+    *(u16*)(p + 0x18) = 0x00A0;
+    *(u16*)(p + 0x1A) = 0x0050;
+    *(u8*)(p + 0x1C) = 1;
+
+    s16 offset;
+    switch (gBattleManager->m6_subBattleId)
+    {
+    case 0: offset = (s16)0xFFF0; break;
+    case 1: case 2: case 3: case 4: case 5:
+    case 6: case 7: case 8: case 9:
+        offset = (s16)0xFFF8; break;
+    default: return;
+    }
+    *(s16*)(p + 0x1E) = offset;
 }
 
+// 06058e42
 void sBTL_A3_map6_sub_Update(sBTL_A3_map6_sub* pThis)
 {
-    Unimplemented();
+    Unimplemented(); // water surface offset computation from camera angle + trig
 }
 
+// 06058f98
 void sBTL_A3_map6_sub_Draw(sBTL_A3_map6_sub* pThis)
 {
-    Unimplemented();
+    Unimplemented(); // water surface cosine-based rendering
 }
 
 static void BTL_A3_map6_Init(sVdp2PlaneTask* pThis)

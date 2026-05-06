@@ -8,6 +8,10 @@
 #include "battle/battleEngineSub0.h"
 #include "battle/battleTextDisplay.h"
 #include "battle/battleDebug.h"
+#include "battle/battleFormationBase.h"
+#include "battle/itemVisualEffect.h"
+
+void battleEngine_enableAttackCamera();
 #include "battle/battleDragon.h"
 #include "kernel/graphicalObject.h"
 #include "town/town.h"
@@ -24,14 +28,19 @@ static void BTL_A7_2_formationStartBattleIntro(sBTL_A7_2_FormationTask* pThis)
     battleEngine_SetBattleMode(eBattleModes::m9);
     if (gBattleManager->m10_battleOverlay->m4_battleEngine->m3D0 == nullptr)
     {
-        Unimplemented(); // createItemVisualEffect
+        gBattleManager->m10_battleOverlay->m4_battleEngine->m3D0 =
+            createItemVisualEffect(dramAllocatorEnd[6].mC_fileBundle, 0x1A8,
+                &pThis->m190_targetPosition, &pThis->m190_targetPosition, 1, 1);
     }
 }
 
-// 0609b2b8 - unknown init sub
+// 0609b2b8
 static void formationInitSub(sBTL_A7_2_FormationTask* pThis)
 {
-    Unimplemented();
+    battleEngine_enableAttackCamera();
+    battleEngine_setDesiredCameraPositionPointer(&pThis->mC0_position2);
+    battleEngine_setCurrentCameraPositionPointer(&pThis->mA8_position);
+    battleEngine_resetCameraInterpolation();
 }
 
 // 06054C82 - main enemy turn callback (quadrant-based attack selection)
@@ -286,7 +295,7 @@ static s32 BTL_A7_2_mainBodyIntroSequence(sBTL_A7_2_FormationTask* pThis)
             pThis->mA8_position.m0_X = *(s32*)(gBattleManager->m10_battleOverlay->m18_dragon + 8);
             pThis->mA8_position.m4_Y = *(s32*)(gBattleManager->m10_battleOverlay->m18_dragon + 0xC);
             pThis->mA8_position.m8_Z = *(s32*)(gBattleManager->m10_battleOverlay->m18_dragon + 0x10);
-            Unimplemented(); // 0609b2b8 - init sub
+            formationInitSub(pThis);
             formationTriggerAttack(&pThis->mE0_entityGroup, 0xF);
             pThis->m185_stateStep++;
         }

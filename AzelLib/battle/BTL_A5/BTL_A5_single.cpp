@@ -184,7 +184,13 @@ static void BTL_A5_singleEnemy_createGroundEffect(npcFileDeleter* param1, sVec3_
 // 060a411c
 static void BTL_A5_enemy_debugDisplay(sBTL_A5_SingleEnemy* pThis, const char** nameTable, s32 row)
 {
-    Unimplemented();
+    vdp2DebugPrintSetPosition(1, row);
+    vdp2PrintfSmallFont("%2d:", pThis->m1C_entityIndex);
+    vdp2DebugPrintSetPosition(4, row);
+    vdp2PrintfSmallFont("%s", nameTable[pThis->m28_state]);
+    vdp2DebugPrintSetPosition(8, row);
+    vdp2PrintfSmallFont("%4d", (s32)pThis->mB2_health);
+    Unimplemented(); // FUN_060a3d58 — per-targetable debug display
 }
 
 // 06061cf0

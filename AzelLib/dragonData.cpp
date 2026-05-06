@@ -398,9 +398,12 @@ sDragonAnimData* getDragonDataByIndex(e_dragonLevel dragonLevel)
     return &dragonAnimData[dragonLevel];
 }
 
+// 0600c430
 void loadDragonSoundBank(e_dragonLevel dragonLevel)
 {
-    Unimplemented();
+    // Saturn: loads DRG_SE.SEQ + DRG1SE.BIN (or KOGATA.SEQ for Light Wing)
+    // to M68K sound RAM at 0x25A0D000. On PC, dragon sound effects are
+    // handled by SoLoud — this Saturn-specific sound bank loading is a no-op.
 }
 
 void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
@@ -459,17 +462,272 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
     return pLoadDragonWorkArea;
 }
 
+static fixedPoint morphDragonAccumulator[3];
+static s16 morphDragonWeightS16[3];
+
+// 060136c0
+static void morphDragonSub1Sub0(fixedPoint w0, fixedPoint w1, fixedPoint w2)
+{
+    morphDragonAccumulator[0] = w0;
+    morphDragonAccumulator[1] = w1;
+    morphDragonAccumulator[2] = w2;
+    morphDragonWeightS16[0] = (s16)((s32)w0 >> 2);
+    morphDragonWeightS16[1] = (s16)((s32)w1 >> 2);
+    morphDragonWeightS16[2] = (s16)((s32)w2 >> 2);
+}
+
+// 0600c050
+static void morphDragonSub1(s32 cursorX, s32 cursorY)
+{
+    fixedPoint w0, w1, w2;
+    if (cursorX == 0 && cursorY == 0)
+    {
+        w0 = 0x10000;
+        w1 = fixedPoint(0);
+        w2 = fixedPoint(0);
+    }
+    else
+    {
+        fixedPoint invTotal = FP_Div(0x10000, fixedPoint((cursorX + cursorY) * 0x800));
+        w0 = MTH_Mul(fixedPoint((0x800 - cursorX) * cursorX + (0x800 - cursorY) * cursorY), invTotal);
+        w1 = MTH_Mul(fixedPoint(cursorX * cursorX), invTotal);
+        w2 = MTH_Mul(fixedPoint(cursorY * cursorY), invTotal);
+    }
+    morphDragonSub1Sub0(w0, w1, w2);
+}
+
+// 06013510
+static void morphDragonVertice(fixedPoint* pDst, const fixedPoint* pA, const fixedPoint* pB, const fixedPoint* pC)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        pDst[i] = MTH_Mul(morphDragonAccumulator[0], pA[i])
+                + MTH_Mul(morphDragonAccumulator[1], pB[i])
+                + MTH_Mul(morphDragonAccumulator[2], pC[i]);
+    }
+}
+
+// 060134cc — morph normals (s16 weighted blend)
+static void morphDragonNormals(s16* pDst, const s16* pA, const s16* pB, const s16* pC, s32 count)
+{
+    for (s32 i = 0; i < count; i++)
+    {
+        s32 result = (s32)morphDragonWeightS16[0] * (s32)pA[i]
+                   + (s32)morphDragonWeightS16[1] * (s32)pB[i]
+                   + (s32)morphDragonWeightS16[2] * (s32)pC[i];
+        pDst[i] = (s16)(result >> 14);
+    }
+}
+
+// 0601344e — morph a single 3D model node (vertices + normals + polygon data)
+static void morphDragonSub2_processNode(u32* pDst, u32* pA, u32* pB, u32* pC)
+{
+    if (pDst[1] == 0) // m4_vertexCount
+        return;
+
+    // Morph the first vertex (scale)
+    fixedPoint blendedScale = MTH_Mul(morphDragonAccumulator[0], fixedPoint((s32)pA[0]))
+                            + MTH_Mul(morphDragonAccumulator[1], fixedPoint((s32)pB[0]))
+                            + MTH_Mul(morphDragonAccumulator[2], fixedPoint((s32)pC[0]));
+    pDst[0] = (u32)(s32)blendedScale;
+
+    // Morph normal data
+    morphDragonNormals((s16*)pDst[2], (const s16*)pA[2], (const s16*)pB[2], (const s16*)pC[2],
+                       pDst[1] * 3);
+
+    // Morph polygon vertex coordinates — iterate VDP1 polygon commands
+    // Layout: [header 5 u32s][vertex data...] per polygon, terminated by sentinel
+    u32* pCmdDst = pDst + 3;
+    u32* pCmdA = pA + 3;
+    u32* pCmdB = pB + 3;
+    u32* pCmdC = pC + 3;
+    while (pCmdDst[0] != pCmdDst[1])
+    {
+        u8 polyType = *((u8*)(pCmdDst + 2)) & 3;
+        pCmdDst += 5;
+        pCmdA += 5;
+        pCmdB += 5;
+        pCmdC += 5;
+        if (polyType != 0)
+        {
+            // FUN_060134cc — blend per-polygon normal/vertex data
+            // Each polygon has vertex normals as s16 triplets (X,Y,Z)
+            // polyType 2 = triangle (3 vertices), 3 = quad (4 vertices), 1 = untextured
+            s32 numVerts = (polyType == 2) ? 3 : 4;
+            s16* pNormDst = (s16*)pCmdDst;
+            const s16* pNormA = (const s16*)pCmdA;
+            const s16* pNormB = (const s16*)pCmdB;
+            const s16* pNormC = (const s16*)pCmdC;
+            for (s32 v = 0; v < numVerts; v++)
+            {
+                for (s32 c = 0; c < 3; c++)
+                {
+                    s32 blended = (s32)morphDragonWeightS16[0] * (s32)pNormA[v * 3 + c]
+                                + (s32)morphDragonWeightS16[1] * (s32)pNormB[v * 3 + c]
+                                + (s32)morphDragonWeightS16[2] * (s32)pNormC[v * 3 + c];
+                    pNormDst[v * 3 + c] = (s16)((blended << 2) >> 16);
+                }
+            }
+
+            if (polyType == 1)
+            {
+                pCmdDst = (u32*)((u8*)pCmdDst + 2);
+                pCmdA = (u32*)((u8*)pCmdA + 2);
+                pCmdB = (u32*)((u8*)pCmdB + 2);
+                pCmdC = (u32*)((u8*)pCmdC + 2);
+            }
+        }
+    }
+}
+
+// 0600c0c4
+static void morphDragonSub2(sModelHierarchy* pDst, sModelHierarchy* pA, sModelHierarchy* pB, sModelHierarchy* pC)
+{
+    while (true)
+    {
+        if (pDst->m0_3dModel)
+            morphDragonSub2_processNode((u32*)pDst->m0_3dModel, (u32*)pA->m0_3dModel, (u32*)pB->m0_3dModel, (u32*)pC->m0_3dModel);
+        if (pDst->m4_subNode)
+            morphDragonSub2(pDst->m4_subNode, pA->m4_subNode, pB->m4_subNode, pC->m4_subNode);
+        if (!pDst->m8_nextNode)
+            break;
+        pDst = pDst->m8_nextNode;
+        pA = pA->m8_nextNode;
+        pB = pB->m8_nextNode;
+        pC = pC->m8_nextNode;
+    }
+}
+
+// 0600c138
+static void morphDragonSub3(s_3dModel* pModel, fixedPoint* pA, fixedPoint* pB, fixedPoint* pC)
+{
+    s32 numBones = pModel->m12_numBones;
+    sPoseData* pPose = &pModel->m2C_poseData[0];
+    for (s32 i = 1; i < numBones; i++)
+    {
+        pA += 9;
+        pPose++;
+        pB += 9;
+        pC += 9;
+        morphDragonVertice(&pPose->m0_translation[0], pA, pB, pC);
+    }
+}
+
+// 060136a8
+static fixedPoint morphDragonBlendColor(fixedPoint a, fixedPoint b, fixedPoint c)
+{
+    return MTH_Mul(morphDragonAccumulator[0], a)
+         + MTH_Mul(morphDragonAccumulator[1], b)
+         + MTH_Mul(morphDragonAccumulator[2], c);
+}
+
+// 0600c180
+static void morphDragonSub4(s32* pDstPairs, s32* pAPairs, s32* pBPairs, s32* pCPairs, s32 count)
+{
+    for (s32 i = 0; i < count; i++)
+    {
+        s32 numEntries = pDstPairs[1];
+        if (numEntries != 0)
+        {
+            s32* pDst = (s32*)pDstPairs[0];
+            s32* pA = (s32*)pAPairs[0];
+            s32* pB = (s32*)pBPairs[0];
+            s32* pC = (s32*)pCPairs[0];
+            for (s32 j = 0; j < numEntries; j++)
+            {
+                morphDragonVertice((fixedPoint*)(pDst + 1), (fixedPoint*)(pA + 1), (fixedPoint*)(pB + 1), (fixedPoint*)(pC + 1));
+                fixedPoint blended = morphDragonBlendColor(fixedPoint(pA[4]), fixedPoint(pB[4]), fixedPoint(pC[4]));
+                pDst[4] = (s32)blended;
+                pDst += 5; pA += 5; pB += 5; pC += 5;
+            }
+        }
+        pDstPairs += 2; pAPairs += 2; pBPairs += 2; pCPairs += 2;
+    }
+}
+
 void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u8* pMCB, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY)
 {
     if (pDragonData3->m_m0 == 0)
-    {
         return;
+
+    const sDragonData3Sub* pCenter = &pDragonData3->m_m8[1];
+    const sDragonData3Sub* pRight  = &pDragonData3->m_m8[5];
+    const sDragonData3Sub* pLeft   = &pDragonData3->m_m8[3];
+    const sDragonData3Sub* pUp     = &pDragonData3->m_m8[4];
+    const sDragonData3Sub* pDown   = &pDragonData3->m_m8[2];
+
+    const sDragonData3Sub* pX = pRight;
+    const sDragonData3Sub* pY = pUp;
+
+    s32 absX = cursorX;
+    s32 absY = cursorY;
+
+    if (cursorX < 0) { absX = -cursorX; pX = pLeft; }
+    if (cursorY < 0) { absY = -cursorY; pY = pDown; }
+
+    morphDragonSub1(absX, absY);
+
+    morphDragonSub1(absX, absY);
+
+    // m_m8 layout: [0]=output, [1]=center, [2]=down, [3]=left, [4]=up, [5]=right
+    const sDragonData3Sub* pOutput = &pDragonData3->m_m8[0];
+    const sDragonData3Sub* pCenterSub = &pDragonData3->m_m8[1];
+    s_fileBundle* pBundle = (s_fileBundle*)pLoadDragonWorkArea->m8_dramAllocation;
+    s_fileBundle* pModelBundle = pDragonStateSubData1->m4_pModelFile;
+
+    // Morph model hierarchy vertices (first call — sub-models)
+    morphDragonSub2(
+        pModelBundle->getModelHierarchy(pOutput->m0_modelIndex),
+        pBundle->getModelHierarchy(pCenterSub->m0_modelIndex),
+        pBundle->getModelHierarchy(pX->m0_modelIndex),
+        pBundle->getModelHierarchy(pY->m0_modelIndex)
+    );
+
+    // Morph model hierarchy vertices (second call — shadow models)
+    morphDragonSub2(
+        pModelBundle->getModelHierarchy(pOutput->m2_shadowModelIndex),
+        pBundle->getModelHierarchy(pCenterSub->m2_shadowModelIndex),
+        pBundle->getModelHierarchy(pX->m2_shadowModelIndex),
+        pBundle->getModelHierarchy(pY->m2_shadowModelIndex)
+    );
+
+    // Morph bone pose data — reads raw pose offsets from bundle
+    u8* pBundleRaw = (u8*)pBundle;
+    morphDragonSub3(
+        pDragonStateSubData1,
+        (fixedPoint*)(pBundleRaw + pCenterSub->m4_poseModelIndex),
+        (fixedPoint*)(pBundleRaw + pX->m4_poseModelIndex),
+        (fixedPoint*)(pBundleRaw + pY->m4_poseModelIndex)
+    );
+
+    // Morph VDP1 palette colors
+    {
+        s32 numColors = pDragonData3->m_m0 << 4; // each entry = 16 colors
+        u16* pDstPal = (u16*)(getVdp1Pointer(0x25C00000) + pOutput->m6 * 8);
+        u16* pCenterPal = (u16*)(pMCB + pCenterSub->m6 * 8);
+        u16* pXPal = (u16*)(pMCB + pX->m6 * 8);
+        u16* pYPal = (u16*)(pMCB + pY->m6 * 8);
+        for (s32 i = 0; i < numColors; i++)
+        {
+            u16 cA = pCenterPal[i], cB = pXPal[i], cC = pYPal[i];
+            s32 r = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint(cA & 0x1F))
+                  + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint(cB & 0x1F))
+                  + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint(cC & 0x1F));
+            s32 g = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((cA >> 5) & 0x1F))
+                  + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((cB >> 5) & 0x1F))
+                  + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((cC >> 5) & 0x1F));
+            s32 b = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((cA >> 10) & 0x1F))
+                  + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((cB >> 10) & 0x1F))
+                  + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((cC >> 10) & 0x1F));
+            pDstPal[i] = 0x8000 | ((b >> 16) & 0x1F) << 10 | ((g >> 16) & 0x1F) << 5 | ((r >> 16) & 0x1F);
+        }
     }
 
-    const sDragonData3Sub* r13 = &pDragonData3->m_m8[1];
-    const sDragonData3Sub* r11 = &pDragonData3->m_m8[5];
-
-    Unimplemented();
+    // Morph hotpoint data
+    if (pOutput->m_m8 && pCenterSub->m_m8 && pX->m_m8 && pY->m_m8)
+    {
+        morphDragonSub4((s32*)pOutput->m_m8, (s32*)pCenterSub->m_m8, (s32*)pX->m_m8, (s32*)pY->m_m8, pDragonData3->m_m4);
+    }
 }
 
 // Replace Saturn DRAM free with standard free
