@@ -3,6 +3,8 @@
 struct s_moduleManager : public s_workAreaTemplateWithArg<s_moduleManager, s32>
 {
     u32 state; // 0
+    s16 m4;
+    s16 m6_debugGameStatus; // 6 — debug status selector (shown on screen with Win keys)
     p_workArea m8;
     u32 mC;
 };

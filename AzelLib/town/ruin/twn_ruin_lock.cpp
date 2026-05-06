@@ -79,7 +79,11 @@ void sLockTask::Draw(sLockTask* pThis)
 
 void sLockTask::Delete(sLockTask* pThis)
 {
-    Unimplemented();
+    u16 npcIndex = readSaturnU16(pThis->mC + 0x28);
+    if (npcData0.m70_npcPointerArray[npcIndex].workArea == pThis)
+    {
+        npcData0.m70_npcPointerArray[npcIndex].workArea = nullptr;
+    }
 }
 
 s32 scriptFunction_6054334_disableLock(s32 arg0, s32 arg1)

@@ -45,6 +45,8 @@ inline s_fieldSpecificData_B2* getFieldSpecificData_B2() { return (s_fieldSpecif
 // Shared field data/scene creation
 void createFieldSpecificDataTask_B2(p_workArea parent);
 
+void createB2AmbientSoundTask(p_workArea parent);
+
 // VDP2 plane task creation (per-subfield)
 void createB2Vdp2Task_0(p_workArea parent);
 void createB2Vdp2Task_1(p_workArea parent);

@@ -460,12 +460,12 @@ void sGunShotTask_Update(sGunShotTask* pThis)
     }
     else
     {
-        assert(0);
+        transformAndAddVec(pThis->m14, pThis->m20_transformedVector, cameraProperties2.m28[0]);
     }
 
     if (pThis->m65 & 8)
     {
-        assert(0);
+        Unimplemented(); // alternate gunshot position adjustment (rarely used variant)
     }
 }
 
@@ -501,7 +501,15 @@ void sGunShotTask_Draw(sGunShotTask* pThis)
 
         if (!(pThis->m65 & 4))
         {
-            assert(0);
+            displayRaySegment(
+                local_24,
+                readSaturnS32(pThis->m94 + 0xC),
+                readSaturnU16(pThis->m94 + 0x4) + pThis->m90_vdp1Memory,
+                readSaturnS16(pThis->m94 + 0x6),
+                readSaturnU16(pThis->m94 + 0x8) + pThis->m90_vdp1Memory,
+                &(*pThis->m10_colorSetup)[0],
+                8
+            );
         }
         else
         {
@@ -518,7 +526,7 @@ void sGunShotTask_Draw(sGunShotTask* pThis)
     }
     else
     {
-        assert(0);
+        drawProjectedParticle(&pThis->m8, &pThis->m14);
     }
 }
 

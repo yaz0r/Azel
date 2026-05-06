@@ -28,18 +28,47 @@ static void gameOverFieldCallback(p_workArea)
 {
 }
 
+struct sFieldSpecificData_D5 : public s_workAreaTemplate<sFieldSpecificData_D5>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, nullptr, nullptr };
+        return &taskDefinition;
+    }
+    // size 0x04
+};
+
+// 060541cc
+static void createFieldSpecificDataTask_D5(p_workArea parent)
+{
+    sFieldSpecificData_D5* p = createSubTask<sFieldSpecificData_D5>(parent);
+    if (p)
+    {
+        getFieldTaskPtr()->mC = (p_workArea)p;
+    }
+}
+
 // 0605508c
 static void subfieldD5_initCallback(p_workArea parent)
 {
-    // 060541cc — create field-specific data subtask (4-byte work area stored in mC)
-    Unimplemented(); // creates a minimal subtask and stores in getFieldTaskPtr()->mC
-    // Also creates background atmosphere subtask (createFieldSubTask24)
+    createFieldSpecificDataTask_D5(parent);
+    Unimplemented(); // createFieldSubTask24 — creates 0x24-byte game-over sequence task
 }
 
 // 06055170
 static void dragonFieldUpdateD5(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented(); // reads from field-specific data at mC, updates dragon position
+    s32* pFieldData = (s32*)getFieldTaskPtr()->mC;
+    pDragon->m8_pos.m4_Y = fixedPoint(0);
+    pDragon->m8_pos.m0_X = fixedPoint(0);
+    if (pFieldData[1] == 0)
+    {
+        pDragon->m160_deltaTranslation.m8_Z = fixedPoint(0);
+    }
+    else
+    {
+        pDragon->m160_deltaTranslation.m8_Z = fixedPoint((s32)0xFFFFA778);
+    }
 }
 
 // 0605414c: D5 subfield init

@@ -310,7 +310,16 @@ static void battlePassiveAbilities_triggerCounter(sBattlePassiveAbilitiesTask* p
             gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies > 0 &&
             (randomNumber() & 1) == 0)
         {
-            Unimplemented(); // BTL_A3::06069d74(0x10)
+            // 06069d74 — display attack name text on HUD
+            {
+                sBattleTextDisplayTask* pText = gBattleManager->m10_battleOverlay->m14_textDisplay;
+                if (pText && !pText->m0_texts.isNull())
+                {
+                    pText->m12_textIndex = 0x10;
+                    pText->m14 = -0x1E;
+                    createDisplayStringBorromScreenTask(pText, &pText->m8, pText->m14, readSaturnEA(pText->m0_texts + pText->m12_textIndex * 4));
+                }
+            }
             battleEngine_SetBattleMode(m3_shootEnemeyWithHomingLaser);
             gBattleManager->m10_battleOverlay->m4_battleEngine->m184 = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m390 = -1;
@@ -834,8 +843,43 @@ void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
     // Debug mode: keyboard-controlled auto-scroll (0605a054-0605a141)
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x16])
     {
-        // Requires readKeyboardTable1 implementation for full debug keyboard handling
-        Unimplemented();
+        bool changed = false;
+        if (readKeyboardTable1(0x10B)) // page up — large speed increase
+        {
+            if (pThis->m1A0_battleAutoScrollDelta[2] < 0)
+                pThis->m1A0_battleAutoScrollDelta[2] += 0x17B;
+            else
+                pThis->m1A0_battleAutoScrollDelta[2] = 0;
+            changed = true;
+        }
+        else if (readKeyboardTable1(0x10C)) // page down — large speed decrease
+        {
+            if (pThis->m1A0_battleAutoScrollDelta[2] < -0x4A11)
+                pThis->m1A0_battleAutoScrollDelta[2] = -0x4A12 + 1;
+            else
+                pThis->m1A0_battleAutoScrollDelta[2] -= 0x17B;
+            changed = true;
+        }
+        else if (readKeyboardTable1(0x109)) // up — small speed increase
+        {
+            if (pThis->m1A0_battleAutoScrollDelta[2] < -0x4A11)
+                pThis->m1A0_battleAutoScrollDelta[2] = -0x4A12 + 1;
+            else
+                pThis->m1A0_battleAutoScrollDelta[2] -= 0x25;
+            changed = true;
+        }
+        else if (readKeyboardTable1(0x10A)) // down — small speed decrease
+        {
+            if (pThis->m1A0_battleAutoScrollDelta[2] < 0)
+                pThis->m1A0_battleAutoScrollDelta[2] += 0x25;
+            else
+                pThis->m1A0_battleAutoScrollDelta[2] = 0;
+            changed = true;
+        }
+        if (changed)
+        {
+            pThis->m1AC_battleAutoScrollDeltaBackup = pThis->m1A0_battleAutoScrollDelta;
+        }
     }
 
     // Apply auto-scroll delta to position vectors
@@ -5533,10 +5577,121 @@ void battleEngine_Update(s_battleEngine* pThis)
     }
 }
 
+// BTL_A3::0605a48c
+static void battleEngine_drawDisplayDebug(s_battleEngine* pThis)
+{
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xF])
+    {
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xC000;
+        vdp2DebugPrintSetPosition(1, 0xF);
+        vdp2PrintfSmallFont("VEC X,Y,Z:%4d,%4d,%4d",
+            (s16)((u32)pThis->m220_battleVector[0] >> 16) * 0x168 >> 12,
+            (s16)((u32)pThis->m220_battleVector[1] >> 16) * 0x168 >> 12);
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
+    }
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x17])
+    {
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xC000;
+        vdp2DebugPrintSetPosition(1, 0x1B);
+        vdp2PrintfSmallFont("TIME %d", pThis->m47C_exp);
+        vdp2DebugPrintSetPosition(0x1E, 0x1B);
+        vdp2PrintfSmallFont("EXP %d", gBattleManager->m10_battleOverlay->m4_battleEngine->m474_XPReceivedFromBattle);
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
+    }
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x16])
+    {
+        Unimplemented(); // encounter data display — needs encounter data table pointer
+    }
+}
+
+// BTL_A3::0606b408
+static void battleEngine_controlDebug(s_battleEngine* pThis)
+{
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xE])
+    {
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x80)
+        {
+            pThis->m1D0 = fixedPoint((s32)pThis->m1D0 + 0x1D20);
+            if ((s32)pThis->m1D0 > 0x71C71C) pThis->m1D0 = fixedPoint(0x71C71C);
+        }
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x40)
+        {
+            pThis->m1D0 = fixedPoint((s32)pThis->m1D0 - 0x1D20);
+            if ((s32)pThis->m1D0 < 0) pThis->m1D0 = fixedPoint(0);
+        }
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x10)
+        {
+            pThis->m1D4 = fixedPoint((s32)pThis->m1D4 + 0x1D20);
+            if ((s32)pThis->m1D4 > 0x71C71C) pThis->m1D4 = fixedPoint(0x71C71C);
+        }
+        if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20)
+        {
+            pThis->m1D4 = fixedPoint((s32)pThis->m1D4 - 0x1D20);
+            if ((s32)pThis->m1D4 < 0) pThis->m1D4 = fixedPoint(0);
+        }
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xC000;
+        vdp2DebugPrintSetPosition(1, 0xE);
+        vdp2PrintfSmallFont("SPD:%3dkm/h", intDivide(0x1D21, fixedPoint((s32)pThis->m1D0 + (s32)pThis->m1D4)).getInteger());
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
+    }
+}
+
+// BTL_A3::0606b510
+static void battleEngine_controlDebug2(s_battleEngine* pThis)
+{
+    if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x18])
+    {
+        u8 quadrant = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
+        if (readKeyboardTable1(0x10B))
+        {
+            if (pThis->m45C_perQuadrantDragonSpeed[quadrant] < 0xC8000)
+                pThis->m45C_perQuadrantDragonSpeed[quadrant] += 0x1000;
+            else
+                pThis->m45C_perQuadrantDragonSpeed[quadrant] = 0xC8000;
+        }
+        if (readKeyboardTable1(0x10C))
+        {
+            if (pThis->m45C_perQuadrantDragonSpeed[quadrant] < 0xA001)
+                pThis->m45C_perQuadrantDragonSpeed[quadrant] = 0xA000;
+            else
+                pThis->m45C_perQuadrantDragonSpeed[quadrant] -= 0x1000;
+        }
+    }
+}
+
+// BTL_A3::06059910
 void battleEngine_Draw(s_battleEngine* pThis)
 {
-    // seems to be all debug input related
-    Unimplemented();
+    battleEngine_drawDisplayDebug(pThis);
+    Unimplemented(); // battleEngine_drawLines — VDP1 debug line rendering
+    battleEngine_controlDebug(pThis);
+    battleEngine_controlDebug2(pThis);
+    // 0606226c — debug cheats (F3=open menu, F4=heal, etc.)
+    {
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xC000;
+        if (readKeyboardToggle(0x86)) // F3 — open battle debug menu
+        {
+            graphicEngineStatus.m40AC.m0_menuId = 3;
+        }
+        if (readKeyboardToggle(0x83)) // F4 — heal HP/BP
+        {
+            if (keyboardIsKeyDown(0xDB)) // shift held = half heal
+            {
+                mainGameState.gameStats.m10_currentHP = (s16)mainGameState.gameStats.mB8_maxHP >> 1;
+                mainGameState.gameStats.m14_currentBP = (s16)mainGameState.gameStats.mBA_maxBP >> 1;
+            }
+            else
+            {
+                mainGameState.gameStats.m10_currentHP = mainGameState.gameStats.mB8_maxHP;
+                mainGameState.gameStats.m14_currentBP = mainGameState.gameStats.mBA_maxBP;
+            }
+        }
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
+    }
 }
 
 void battleEngine_postBattleUpdateHPBP()

@@ -224,7 +224,8 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            Unimplemented();
+            PDS_Log("Unregistered 0-arg town script function: 0x%x", functionEA.m_offset);
+            assert(0);
         }
         break;
     case 1:
@@ -248,7 +249,8 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            Unimplemented();
+            PDS_Log("Unregistered 1-arg town script function: 0x%x", functionEA.m_offset);
+            assert(0);
         }
         break;
     case 2:
@@ -263,7 +265,8 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            Unimplemented();
+            PDS_Log("Unregistered 2-arg town script function: 0x%x", functionEA.m_offset);
+            assert(0);
         }
         break;
     case 3:
@@ -278,7 +281,8 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            Unimplemented();
+            PDS_Log("Unregistered 3-arg town script function: 0x%x", functionEA.m_offset);
+            assert(0);
         }
         break;
     case 4:
@@ -293,7 +297,8 @@ sSaturnPtr callNativeWithArguments(sNpcData* r4_pThis, sSaturnPtr r5)
         }
         else
         {
-            Unimplemented();
+            PDS_Log("Unregistered 4-arg town script function: 0x%x", functionEA.m_offset);
+            assert(0);
         }
         break;
     default:

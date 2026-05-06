@@ -78,10 +78,10 @@ void sBattleHpOrBpDisplay_update(sBattleHpOrBpDisplay* pThis)
         {
             if (*pThis->m0_current <= *pThis->m8_max / 4)
             {
-                if (performModulo(2, pThis->m18))
-                {
-                    pThis->m14 = &HpOrBpDisplay_table2;
-                }
+                if (performModulo(2, pThis->m18) == 0)
+                    return;
+                pThis->m14 = &HpOrBpDisplay_table2;
+                return;
             }
             else if (*pThis->m8_max / 2 < *pThis->m0_current)
             {
@@ -131,9 +131,9 @@ void drawNumber(s16 value, sVec2_S16* positon, const quadColor* colors, s32 maxV
     sVec2_S16 tempPosition = *positon;
     bool bVar3 = false;
 
-    if (maxValue <= value)
+    if (maxValue <= (u16)value)
     {
-        assert(0);
+        value = (s16)(maxValue - 1);
     }
     int count = udivsi3(10, maxValue);
 

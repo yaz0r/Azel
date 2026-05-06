@@ -874,7 +874,9 @@ static void restoreGraphicEngineState(s_dragonMenuDragonWorkAreaSub1* pSaved)
 
     setupLight(pSaved->lightSetup.m0, pSaved->lightSetup.m4, pSaved->lightSetup.m8, pSaved->lightSetup.mC);
 
-    Unimplemented(); // generateLightFalloffMap + dragonFieldTaskDrawSub1Sub1 + dragonFieldTaskDrawSub3Sub1
+    generateLightFalloffMap(pSaved->lightSetup.m10, pSaved->lightSetup.m14, pSaved->lightSetup.m18);
+    dragonFieldTaskDrawSub1Sub1(pSaved->lightSetup.m1C_pointLightX, pSaved->lightSetup.m20_pointLightY, pSaved->lightSetup.m24_pointLightZ, pSaved->lightSetup.m28_pointLightParam);
+    dragonFieldTaskDrawSub3Sub1();
 }
 
 // 0600bfcc

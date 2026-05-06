@@ -1,5 +1,8 @@
 #include "PDS.h"
 #include "battleOverlay.h"
+#include "audio/soundDriver.h"
+
+void BattleEnd_deleteSub0();
 #include "battleManager.h"
 #include "BTL_A3/BTL_A3.h"
 #include "BTL_A3_2/BTL_A3_2.h"
@@ -37,7 +40,8 @@ static void battleOverlayTask_Update(sBattleOverlayTask* pThis)
     pThis->m24++;
     if (readKeyboardToggle(KEY_CODE_F12) && (gCutsceneFlags & 4))
     {
-        assert(0);
+        BattleEnd_deleteSub0();
+        fadeOutAllSequences();
     }
 }
 

@@ -39,7 +39,7 @@ void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32
         Create_BTL_A3_BaldorQueenFormation(pParent, arg0);
         break;
     default:
-        Unimplemented();
+        assert(0);
         break;
     }
 }
@@ -64,7 +64,7 @@ void BTL_A3_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent)
         Create_BTL_A3_wtr(pParent);
         break;
     default:
-        Unimplemented();
+        assert(0);
         break;
     }
 }
@@ -281,7 +281,7 @@ p_workArea BTL_A3_data::invokeCreateEffect(sSaturnPtr Func, s_workAreaCopy* pPar
     case 0x06054dce:
         return urchinAttack_spawnProjectile(pParent);
     default:
-        Unimplemented();
+        assert(0);
         return nullptr;
     }
 }

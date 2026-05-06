@@ -20,7 +20,7 @@ static void b2_startTasks_2(p_workArea workArea)
 
     createB2ItemBoxes_2();
     Unimplemented(); // FUN_FLD_B2__060594a0 — create env object (0x40 underground task)
-    Unimplemented(); // FUN_FLD_B2__0605e2d2 — create ambient sound task (0x64)
+    createB2AmbientSoundTask(workArea);
 
     setSoundDistanceParams(0x200000, 0x6E);
 }

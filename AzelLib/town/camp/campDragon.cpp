@@ -7,9 +7,12 @@
 #include "kernel/animation.h"
 #include "town/collisionRegistry.h"
 #include "audio/systemSounds.h"
+#include "lightSetup.h"
+#include "town/townMainLogic.h"
 
 void initDragonForTown(sTownDragon* pThis); // TODO: Cleanup
 void updateTownDragon(sTownDragon* pThis); // TODO: cleanup
+bool reinitModel(s_3dModel* pModel, struct sHotpointBundle* param2); // TODO: cleanup
 
 struct sDragonAnimDataSub
 {
@@ -33,6 +36,15 @@ struct sCampDragon : public sTownDragon
     sVec3_FP mE8;
     s32 mF4 = 0; // count of F8
     std::array<sCampDragon_F8, 9> mF8;
+    // 0x5E4: saved state for petting/feeding interaction
+    sVec3_FP m5E4_savedCameraPosition;
+    sVec3_FP m5F0_savedCameraTarget;
+    sVec3_FP m5FC_savedCameraRotation;
+    sVec3_FP m608_savedLightColor;
+    s32 m614;
+    s32 m618;
+    s32 m61C;
+    s32 m620;
     //size: 0x624
 };
 
@@ -84,23 +96,7 @@ s32 sCampDragon_InitSub1(sTownDragon* pThis) {
                     edgePos.m8_Z - pThis->m58_position.m8_Z);
 }
 
-void increaseGameResource(int param_1, int param_2) {
-    switch (param_1)
-    {
-    case 0xB:
-        mainGameState.gameStats.m7C_overallRating = mainGameState.gameStats.m7C_overallRating + param_2;
-        if ((int)mainGameState.gameStats.m7C_overallRating < 0) {
-            mainGameState.gameStats.m7C_overallRating = 0;
-        }
-        if (0x7c < (int)mainGameState.gameStats.m7C_overallRating) {
-            mainGameState.gameStats.m7C_overallRating = 0x7c;
-        }
-        break;
-    default:
-        assert(0);
-        break;
-    }
-}
+void increaseGameResource(s32 resourceType, s32 amount);
 
 s32 getDragonAffinityLevel() {
     s32 uVar1;
@@ -359,19 +355,287 @@ void sCampDragon_UpdateModeE2(sCampDragon* pThis) {
     }
 }
 
+// 06054f8e
+static s32 sCampDragon_randomAnimAndWait(sCampDragon* pThis, sSaturnPtr animParams) {
+    if (pThis->m16_timer != 0)
+    {
+        pThis->m16_timer--;
+        sCampDragon_UpdateMode4Mode9(pThis, readSaturnS16(animParams + 4));
+        return 0;
+    }
+
+    u32 rng = randomNumber();
+    s32 waitTime = performModulo2(readSaturnS16(animParams), rng & 0x7FFFFFFF);
+    pThis->m16_timer = readSaturnS16(animParams + 2) + (s16)waitTime;
+
+    rng = randomNumber();
+    s32 roll = performModulo2(readSaturnS16(animParams + 6), rng & 0x7FFFFFFF);
+
+    if (roll < readSaturnS32(animParams + 8))
+        sCampDragon_startAnimSequence(pThis, readSaturnEA(animParams + 0xC));
+    else if (roll < readSaturnS32(animParams + 0x10))
+        sCampDragon_startAnimSequence(pThis, readSaturnEA(animParams + 0x14));
+    else
+        sCampDragon_startAnimSequence(pThis, readSaturnEA(animParams + 0x1C));
+
+    sCampDragon_InitSub2(pThis);
+    return 0;
+}
+
+// 06055144
+static s32 sCampDragon_turnTowardsPlayer(sCampDragon* pThis, s32 param2, s32 param3) {
+    s32 targetAngle = sCampDragon_InitSub1(pThis);
+    s32 diff = (param2 + targetAngle) - pThis->m64_rotation.m4_Y;
+    if (diff & 0x8000000)
+        diff |= 0xF0000000;
+    else
+        diff &= 0xFFFFFFF;
+
+    if (diff < param3 && -param3 < diff)
+        return 1;
+
+    pThis->m38_savedRotationY = (param2 + targetAngle) & 0xFFFFFFF;
+    sCampDragon_UpdateModeE2(pThis);
+    return 0;
+}
+
+// 060550d2
+static s32 sCampDragon_turnToAngle(sCampDragon* pThis, s32 targetAngle) {
+    s32 playerAngle = sCampDragon_InitSub1(pThis);
+    s32 diff = (targetAngle + playerAngle) - pThis->m64_rotation.m4_Y;
+    if (diff & 0x8000000)
+        diff |= 0xF0000000;
+    else
+        diff &= 0xFFFFFFF;
+
+    if (diff > 0xAAAAAA || diff < -0xAAAAAA)
+    {
+        pThis->m38_savedRotationY = (targetAngle + playerAngle) & 0xFFFFFFF;
+        pThis->mE |= 2;
+    }
+    return 0;
+}
+
+// 060555cc
+static void sCampDragon_idleOrReact(sCampDragon* pThis) {
+    pThis->m12_eventFlag = 1;
+    if (pThis->m14_readyState < 10) {
+        sCampDragon_UpdateMode4Mode9(pThis, 1);
+    } else {
+        sCampDragon_UpdateMode4Mode9(pThis, 10);
+    }
+}
+
+// 06055734
+static s32 sCampDragon_handlePettingStart(sCampDragon* pThis) {
+    pThis->m12_eventFlag = 0;
+    pThis->m28 = 0x28;
+    pThis->m3C = 0;
+    pThis->m5E4_savedCameraPosition = pThis->m58_position;
+    pThis->m5F0_savedCameraTarget = twnMainLogicTask->m44_cameraTarget;
+    pThis->m608_savedLightColor[0] = lightSetup.m10;
+    pThis->m608_savedLightColor[1] = lightSetup.m14;
+    pThis->m608_savedLightColor[2] = lightSetup.m18;
+    pThis->m11_subState = 0xB;
+    return 0;
+}
+
+// 060557bc
+static s32 sCampDragon_handlePetting(sCampDragon* pThis) {
+    Unimplemented(); // petting interaction continue
+    return 0;
+}
+
+// 06055980
+static s32 sCampDragon_handleFeedingStart(sCampDragon* pThis) {
+    pThis->m12_eventFlag = 0;
+    pThis->m3C = 0;
+    pThis->m608_savedLightColor[0] = lightSetup.m10;
+    pThis->m608_savedLightColor[1] = lightSetup.m14;
+    pThis->m608_savedLightColor[2] = lightSetup.m18;
+    pThis->m11_subState = 0xD;
+    return 0;
+}
+
+// 060559a4
+static s32 sCampDragon_handleFeeding(sCampDragon* pThis) {
+    Unimplemented(); // feeding interaction continue
+    return 0;
+}
+
 // 06055a6c
 void sCampDragon_UpdateMode1(sCampDragon* pThis) {
-    Unimplemented();
+    switch (pThis->m11_subState) {
+    case 7:
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607af82));
+        pThis->m12_eventFlag = 1;
+        pThis->m16_timer = 0;
+        pThis->m28 = 300;
+        pThis->m11_subState = 8;
+        break;
+    case 8:
+    {
+        s32 r = sCampDragon_turnTowardsPlayer(pThis, 0, 0x11C71C7);
+        if (r != 0) {
+            sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b05c));
+        }
+        pThis->m28--;
+        if ((s32)pThis->m28 == 0) {
+            pThis->m11_subState = 0;
+        }
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 // 06055b36
 void sCampDragon_UpdateMode2(sCampDragon* pThis) {
-    Unimplemented();
+    switch (pThis->m11_subState) {
+    case 0:
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 1;
+        break;
+    case 1:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b07c));
+        return;
+    case 2:
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afa0));
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 3;
+        break;
+    case 3:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b09c));
+        return;
+    case 4:
+        sCampDragon_idleOrReact(pThis);
+        return;
+    case 5:
+        pThis->m12_eventFlag = 1;
+        pThis->m28 = 0x1E;
+        pThis->m3C = 0;
+        pThis->m11_subState = 6;
+        break;
+    case 6:
+        if (pThis->m3C == 0) {
+            pThis->m28--;
+            if ((s32)pThis->m28 == 0) {
+                pThis->m12_eventFlag = 0;
+                pThis->m3C = 1;
+                sCampDragon_turnToAngle(pThis, 0x8000000);
+                return;
+            }
+            sCampDragon_UpdateMode4Mode9(pThis, 10);
+            return;
+        }
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607af9c));
+        pThis->m11_subState = 0;
+        break;
+    case 7:
+        pThis->m12_eventFlag = 1;
+        pThis->m28 = 0x5A;
+        pThis->m11_subState = 8;
+        break;
+    case 8:
+        sCampDragon_UpdateMode4Mode9(pThis, 1);
+        pThis->m28--;
+        if ((s32)pThis->m28 == 0) {
+            sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afa4));
+            pThis->m12_eventFlag = 0;
+            pThis->m11_subState = 0;
+        }
+        break;
+    case 9:
+        pThis->m12_eventFlag = 0;
+        sCampDragon_UpdateMode4Mode9(pThis, 0);
+        break;
+    case 10:
+        sCampDragon_handlePettingStart(pThis);
+        return;
+    case 11:
+        sCampDragon_handlePetting(pThis);
+        return;
+    case 12:
+        sCampDragon_handleFeedingStart(pThis);
+        return;
+    case 13:
+        sCampDragon_handleFeeding(pThis);
+        return;
+    }
 }
 
 // 06055c2a
 void sCampDragon_UpdateMode3(sCampDragon* pThis) {
-    Unimplemented();
+    switch (pThis->m11_subState) {
+    case 0:
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 1;
+        break;
+    case 1:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0bc));
+        return;
+    case 2:
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 3;
+        break;
+    case 3:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0bc));
+        return;
+    case 4:
+        sCampDragon_idleOrReact(pThis);
+        return;
+    case 5:
+        pThis->m12_eventFlag = 1;
+        if (sCampDragon_turnTowardsPlayer(pThis, 0, 0x38E38E) != 0) {
+            pThis->m28 = 0x96;
+            pThis->m11_subState = 6;
+        }
+        break;
+    case 6:
+        pThis->m28--;
+        if ((s32)pThis->m28 != 0) {
+            sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0dc));
+            return;
+        }
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afb8));
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 0;
+        break;
+    case 7:
+        pThis->m12_eventFlag = 1;
+        if (sCampDragon_turnTowardsPlayer(pThis, 0, 0x38E38E) != 0) {
+            pThis->m28 = 0xB4;
+            pThis->m11_subState = 8;
+        }
+        break;
+    case 8:
+        pThis->m28--;
+        if ((s32)pThis->m28 != 0) {
+            sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0dc));
+            return;
+        }
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afb8));
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 0;
+        break;
+    case 9:
+        pThis->m12_eventFlag = 0;
+        sCampDragon_UpdateMode4Mode9(pThis, 0);
+        break;
+    case 10:
+        sCampDragon_handlePettingStart(pThis);
+        return;
+    case 11:
+        sCampDragon_handlePetting(pThis);
+        return;
+    case 12:
+        sCampDragon_handleFeedingStart(pThis);
+        return;
+    case 13:
+        sCampDragon_handleFeeding(pThis);
+        return;
+    }
 }
 
 void sCampDragon_UpdateMode4(sCampDragon* pThis) {
@@ -380,24 +644,216 @@ void sCampDragon_UpdateMode4(sCampDragon* pThis) {
         pThis->m12_eventFlag = 1;
         pThis->m11_subState = 1;
         break;
+    case 1:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0fc));
+        return;
+    case 2:
+        pThis->m12_eventFlag = 1;
+        pThis->m11_subState = 3;
+        break;
+    case 3:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b11c));
+        return;
+    case 4:
+        sCampDragon_idleOrReact(pThis);
+        return;
+    case 5:
+        pThis->m12_eventFlag = 1;
+        if (sCampDragon_turnTowardsPlayer(pThis, 0, 0x38E38E) != 0) {
+            pThis->m28 = 0xF0;
+            pThis->m11_subState = 6;
+        }
+        break;
+    case 6:
+        pThis->m28--;
+        if ((s32)pThis->m28 != 0) {
+            sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b13c));
+            return;
+        }
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afe2));
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 0;
+        break;
+    case 7:
+        pThis->m12_eventFlag = 1;
+        if (sCampDragon_turnTowardsPlayer(pThis, 0, 0x38E38E) != 0) {
+            pThis->m28 = 0xF0;
+            pThis->m11_subState = 8;
+        }
+        break;
+    case 8:
+        pThis->m28--;
+        if ((s32)pThis->m28 != 0) {
+            sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b15c));
+            return;
+        }
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afe2));
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 0;
+        break;
     case 9:
         pThis->m12_eventFlag = 0;
         sCampDragon_UpdateMode4Mode9(pThis, 0);
         break;
-    default:
-        assert(0);
-        break;
+    case 10:
+        sCampDragon_handlePettingStart(pThis);
+        return;
+    case 11:
+        sCampDragon_handlePetting(pThis);
+        return;
+    case 12:
+        sCampDragon_handleFeedingStart(pThis);
+        return;
+    case 13:
+        sCampDragon_handleFeeding(pThis);
+        return;
     }
 }
 
 // 06055ce8
 void sCampDragon_UpdateMode5(sCampDragon* pThis) {
-    Unimplemented();
+    switch (pThis->m11_subState) {
+    case 0:
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 1;
+        break;
+    case 1:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0bc));
+        return;
+    case 2:
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 3;
+        break;
+    case 3:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0bc));
+        return;
+    case 4:
+        sCampDragon_idleOrReact(pThis);
+        return;
+    case 5:
+        pThis->m12_eventFlag = 1;
+        if (sCampDragon_turnTowardsPlayer(pThis, 0, 0x38E38E) != 0) {
+            pThis->m28 = 0x96;
+            pThis->m11_subState = 6;
+        }
+        break;
+    case 6:
+        pThis->m28--;
+        if ((s32)pThis->m28 != 0) {
+            sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0dc));
+            return;
+        }
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afb8));
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 0;
+        break;
+    case 7:
+        pThis->m12_eventFlag = 1;
+        if (sCampDragon_turnTowardsPlayer(pThis, 0, 0x38E38E) != 0) {
+            pThis->m28 = 0xB4;
+            pThis->m11_subState = 8;
+        }
+        break;
+    case 8:
+        pThis->m28--;
+        if ((s32)pThis->m28 != 0) {
+            sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0dc));
+            return;
+        }
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afb8));
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 0;
+        break;
+    case 9:
+        pThis->m12_eventFlag = 0;
+        sCampDragon_UpdateMode4Mode9(pThis, 0);
+        break;
+    case 10:
+        sCampDragon_handlePettingStart(pThis);
+        return;
+    case 11:
+        sCampDragon_handlePetting(pThis);
+        return;
+    case 12:
+        sCampDragon_handleFeedingStart(pThis);
+        return;
+    case 13:
+        sCampDragon_handleFeeding(pThis);
+        return;
+    }
 }
 
 // 06055d50
 void sCampDragon_UpdateMode6(sCampDragon* pThis) {
-    Unimplemented();
+    switch (pThis->m11_subState) {
+    case 0:
+        pThis->m12_eventFlag = 1;
+        pThis->m11_subState = 1;
+        break;
+    case 1:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b0fc));
+        return;
+    case 2:
+        pThis->m12_eventFlag = 1;
+        pThis->m11_subState = 3;
+        break;
+    case 3:
+        sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b11c));
+        return;
+    case 4:
+        sCampDragon_idleOrReact(pThis);
+        return;
+    case 5:
+        pThis->m12_eventFlag = 1;
+        if (sCampDragon_turnTowardsPlayer(pThis, 0, 0x38E38E) != 0) {
+            pThis->m28 = 0xF0;
+            pThis->m11_subState = 6;
+        }
+        break;
+    case 6:
+        pThis->m28--;
+        if ((s32)pThis->m28 != 0) {
+            sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b13c));
+            return;
+        }
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afe2));
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 0;
+        break;
+    case 7:
+        pThis->m12_eventFlag = 1;
+        if (sCampDragon_turnTowardsPlayer(pThis, 0, 0x38E38E) != 0) {
+            pThis->m28 = 0xF0;
+            pThis->m11_subState = 8;
+        }
+        break;
+    case 8:
+        pThis->m28--;
+        if ((s32)pThis->m28 != 0) {
+            sCampDragon_randomAnimAndWait(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607b15c));
+            return;
+        }
+        sCampDragon_startAnimSequence(pThis, gCurrentTownOverlay->getSaturnPtr(0x0607afe2));
+        pThis->m12_eventFlag = 0;
+        pThis->m11_subState = 0;
+        break;
+    case 9:
+        pThis->m12_eventFlag = 0;
+        sCampDragon_UpdateMode4Mode9(pThis, 0);
+        break;
+    case 10:
+        sCampDragon_handlePettingStart(pThis);
+        return;
+    case 11:
+        sCampDragon_handlePetting(pThis);
+        return;
+    case 12:
+        sCampDragon_handleFeedingStart(pThis);
+        return;
+    case 13:
+        sCampDragon_handleFeeding(pThis);
+        return;
+    }
 }
 
 static s32 signExtend28(s32 value) {
@@ -886,8 +1342,11 @@ void sCampDragon_Draw(sTownDragon* pThisBase) {
     }
 }
 
+// 060563f2
 void sCampDragon_Delete(sTownDragon* pThis) {
-    Unimplemented();
+    playAnimation(&gDragonState->m28_dragon3dModel, nullptr, 0);
+    reinitModel(&gDragonState->m28_dragon3dModel,
+        dragonData3[gDragonState->mC_dragonType].m_m8[0].m_m8);
 }
 
 sTownObject* createCampDragon(p_workArea parent, sSaturnPtr arg) {

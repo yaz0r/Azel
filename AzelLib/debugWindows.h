@@ -23,6 +23,8 @@ struct sDebugWindows
     bool arachnoth = false;
     bool camera = false;
     bool vdp1Vram = false;
+    bool gameStatus = false;
+    bool flagEditor = false;
 };
 
 extern sDebugWindows gDebugWindows;

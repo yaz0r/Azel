@@ -8,6 +8,7 @@
 #include "kernel/graphicalObject.h"
 #include "town/ruin/twn_ruin.h" //TODO: cleanup
 #include "audio/systemSounds.h"
+#include "mainMenuDebugTasks.h"
 
 void updateEdgeSub3(sEdgeTask* pThis);
 
@@ -241,6 +242,35 @@ void updateEdgeNPCMode4_Cara(sNPC* pThis)
     }
 }
 
+// 06073972
+static void updateEdgeNPCMode0(sNPC* pThis)
+{
+    pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
+}
+
+// 06073a2c
+static void updateEdgeNPCMode1(sNPC* pThis)
+{
+    sSaturnPtr dataTable = pThis->m18;
+    pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
+
+    s32 count = readSaturnS32(dataTable);
+    if (count <= pThis->m150_inputX)
+    {
+        pThis->m150_inputX = 0;
+    }
+
+    sSaturnPtr entries = readSaturnEA(dataTable + 4);
+    s32 entryOffset = pThis->m150_inputX * 0xC;
+    pThis->mE8.m0_position[0] = (s32)readSaturnS16(entries + entryOffset + 0) << 4;
+    pThis->mE8.m0_position[1] = (s32)readSaturnS16(entries + entryOffset + 2) << 4;
+    pThis->mE8.m0_position[2] = (s32)readSaturnS16(entries + entryOffset + 4) << 4;
+    pThis->mE8.mC_rotation[0] = (s32)readSaturnS16(entries + entryOffset + 6) << 16;
+    pThis->mE8.mC_rotation[1] = (s32)readSaturnS16(entries + entryOffset + 8) << 16;
+    pThis->mE8.mC_rotation[2] = (s32)readSaturnS16(entries + entryOffset + 10) << 16;
+    pThis->m150_inputX++;
+}
+
 void initEdgeNPCSub0(sNPC* pThis, s32 r5, sSaturnPtr r6)
 {
     s32 r3 = 0;
@@ -255,14 +285,14 @@ void initEdgeNPCSub0(sNPC* pThis, s32 r5, sSaturnPtr r6)
     switch (pThis->mD)
     {
     case 0:
-        assert(0); // overlay-specific update function not yet assigned
+        pThis->m14_updateFunction = &updateEdgeNPCMode0;
         break;
     case 1:
-        assert(0); // overlay-specific update function not yet assigned
+        pThis->m14_updateFunction = &updateEdgeNPCMode1;
         pThis->mE_controlState = 1;
         break;
     case 2:
-        assert(0); // overlay-specific update function not yet assigned
+        Unimplemented(); // complex wandering/patrol AI — needs full decompilation
         break;
     case 3:
         //assert(gCurrentTownOverlay->m_name == "TWN_RUIN.PRG");
@@ -335,7 +365,7 @@ void sEdgeTask::Init(sEdgeTask* pThis, sSaturnPtr arg)
 
     if (readSaturnU8(arg + 0x21) & 0x40)
     {
-        assert(0);
+        Unimplemented(); // creates edge body chain sub-task (cape/clothing physics)
     }
 }
 
@@ -515,7 +545,47 @@ void sEdgeTask::Update(sEdgeTask* pThis)
         if (pThis->m17A)
         {
             //605A07C
-            assert(0);
+            s8 animId = (s8)pThis->m158_animQueue[pThis->m179 * 2];
+            if (pThis->m2C_currentAnimation != animId)
+            {
+                if (animId == 0)
+                {
+                    playAnimationGeneric(&pThis->m34_3dModel, nullptr, 10);
+                    pThis->m2C_currentAnimation = 0;
+                }
+                else
+                {
+                    if ((pThis->mC == 4) && (pThis->m14E != 0))
+                    {
+                        pThis->m2C_currentAnimation = animId;
+                        sSaturnPtr entry = pThis->m30_animationTable + animId * 4;
+                        sAnimationData* buffer;
+                        if (readSaturnU16(entry))
+                            buffer = dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(readSaturnU16(entry + 2));
+                        else
+                            buffer = pThis->m0_fileBundle->getAnimation(readSaturnU16(entry + 2));
+                        initAnimation(&pThis->m34_3dModel, buffer);
+                        pThis->m14E = 0;
+                    }
+                    else
+                    {
+                        pThis->m2C_currentAnimation = animId;
+                        sSaturnPtr entry = pThis->m30_animationTable + animId * 4;
+                        sAnimationData* buffer;
+                        if (readSaturnU16(entry))
+                            buffer = dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(readSaturnU16(entry + 2));
+                        else
+                            buffer = pThis->m0_fileBundle->getAnimation(readSaturnU16(entry + 2));
+                        playAnimationGeneric(&pThis->m34_3dModel, buffer, 10);
+                    }
+                    updateAndInterpolateAnimation(&pThis->m34_3dModel);
+                }
+            }
+            pThis->mE_controlState = (s8)pThis->m158_animQueue[pThis->m179 * 2 + 1];
+            pThis->m179++;
+            if (pThis->m179 > 7)
+                pThis->m179 = 0;
+            pThis->m17A--;
         }
         break;
     case 1:
@@ -834,5 +904,9 @@ void sEdgeTask::Draw(sEdgeTask* pThis)
 
 void sEdgeTask::Delete(sEdgeTask* pThis)
 {
-    Unimplemented();
+    s8 npcIndex = readSaturnS8(pThis->m10_InitPtr + 0x20);
+    if (npcData0.m70_npcPointerArray[npcIndex].workArea == pThis)
+    {
+        npcData0.m70_npcPointerArray[npcIndex].workArea = nullptr;
+    }
 }

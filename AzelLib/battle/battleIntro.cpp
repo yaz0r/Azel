@@ -7,6 +7,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/debug/trace.h"
 #include "kernel/graphicalObject.h"
+#include "battleTextDisplay.h"
 
 struct sBattleIntroSubTask : public s_workAreaTemplate<sBattleIntroSubTask>
 {
@@ -158,15 +159,20 @@ static void sBattleIntroSubTask_update(sBattleIntroSubTask* pThis)
 {
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x1000)
     {
-        // skip
-        assert(0);
+        sBattleTextDisplayTask* pText = gBattleManager->m10_battleOverlay->m14_textDisplay;
+        if (pText->m8)
+        {
+            ((p_workArea)pText->m8)->getTask()->markFinished();
+            pText->m8 = nullptr;
+        }
+        pThis->m0_frameIndex = 0x95;
     }
 
     createBattleIntroTaskSub2(pThis);
     createBattleIntroTaskSub3(pThis);
     if (keyboardIsKeyDown(0xBA))
     {
-        assert(0);
+        battleEngine_resetCameraInterpolation();
     }
 
     pThis->m0_frameIndex++;

@@ -36,3 +36,7 @@ void setupFieldC8(sSaturnPtr dataTable3EA, sSaturnPtr visibilityEA, void(*create
 
 void subfieldC8_0(p_workArea workArea);
 void subfieldC8_1(p_workArea workArea);
+void subfieldC8_2(p_workArea workArea);
+void subfieldC8_3(p_workArea workArea);
+void subfieldC8_4(p_workArea workArea);
+void subfieldC8_5(p_workArea workArea);

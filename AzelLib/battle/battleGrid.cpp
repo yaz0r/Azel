@@ -17,7 +17,7 @@ void battleGrid_setCameraFov(fixedPoint fov)
 
 void battleGrid_initSub1(s_battleGrid* pThis)
 {
-    pThis->m214 = 0;
+    pThis->m214_debugCameraMode = 0;
     battleGrid_setCameraFov(DEG_50); // 50 deg
 }
 
@@ -161,7 +161,26 @@ void battleGrid_updateSub1Sub2(s_battleGrid* pThis)
     }
     else
     {
-        assert(0);
+        s32 k = pThis->m198[0];
+        s32 m = pThis->m1A4[0];
+        if ((graphicEngineStatus.m4514.mD8_buttonConfig[0][4] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2) && (k += 0x28F, k > 0xFFFF))
+            k = 0xFD70;
+        if ((graphicEngineStatus.m4514.mD8_buttonConfig[0][5] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2) && (k -= 0x28F, k < 0))
+            k = 0;
+        if ((graphicEngineStatus.m4514.mD8_buttonConfig[0][7] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2) && (m += 0x28F, m > 0xFFFF))
+            m = 0xFD70;
+        if ((graphicEngineStatus.m4514.mD8_buttonConfig[0][6] & graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2) && (m -= 0x28F, m < 0))
+            m = 0;
+        pThis->m198[0] = k; pThis->m198[1] = k; pThis->m198[2] = k;
+        pThis->m1A4[0] = m; pThis->m1A4[1] = m; pThis->m1A4[2] = m;
+
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xC000;
+        vdp2DebugPrintSetPosition(1, 10);
+        vdp2PrintfSmallFont("K=0.%2d:U/D", (s16)((u32)(pThis->m198[0] * 100) >> 16));
+        vdp2DebugPrintSetPosition(1, 11);
+        vdp2PrintfSmallFont("M=0.%2d:R/L", (s16)((u32)(pThis->m1A4[0] * 100) >> 16));
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
     }
 
     if (isTraceEnabled())
@@ -254,8 +273,7 @@ void battleGrid_updateSub1(s_battleGrid* pThis)
         }
         else
         {
-            assert(0);
-            //battleGrid_updateSub1Sub4(iParm1);
+            Unimplemented(); // battleGrid_updateSub1Sub4 — alternate camera mode (flags & 2)
         }
         rotateMatrixYXZ(&pThis->mB4_cameraRotation, &pThis->m150_cameraMatrix);
 
@@ -323,11 +341,36 @@ void battleGrid_draw(s_battleGrid* pThis)
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xB])
     {
-        assert(0);
+        battleGrid_updateSub1Sub1(pThis);
+        initMatrixToIdentity(&pThis->m150_cameraMatrix);
+        Unimplemented(); // battleGrid_debugCamera — controller 2 camera adjustment
+        translateMatrix(&pThis->m180_cameraTranslation, &pThis->m150_cameraMatrix);
+        Unimplemented(); // battleGrid_debugCamera2 — controller 2 camera orbit
+        rotateMatrixYXZ(&pThis->mB4_cameraRotation, &pThis->m150_cameraMatrix);
+        Unimplemented(); // battleGrid_debugCamera3 — debug camera display text
+
+        if (readKeyboardToggle(0xA1))
+            pThis->m1C8_flags ^= 0x800; // toggle debug draw
+        if (readKeyboardToggle(0xA3))
+            pThis->m1C8_flags |= 0x1000; // reset debug state
     }
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xC])
     {
-        assert(0);
+        if (readKeyboardTable1(0x109))
+            pThis->m134_desiredCameraPosition[2] += 0x1000;
+        else if (readKeyboardTable1(0x10A))
+            pThis->m134_desiredCameraPosition[2] -= 0x1000;
+
+        if (readKeyboardToggle(0x107))
+        {
+            Unimplemented(); // reset m13C from data table by subfield index
+        }
+
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xC000;
+        vdp2DebugPrintSetPosition(1, 0xC);
+        vdp2PrintfSmallFont("EYE=%03dm:U/D", pThis->m134_desiredCameraPosition[2] >> 12);
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
     }
 
     sVec3_FP transformedCameraUp;
@@ -354,7 +397,35 @@ void battleGrid_draw(s_battleGrid* pThis)
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x12])
     {
-        assert(0);
+        // 0607c93c — cycle debug camera mode (0-4) with controller 2 L/R
+        if (graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.m8_newButtonDown & 0x800)
+        {
+            pThis->m214_debugCameraMode--;
+            if ((u8)pThis->m214_debugCameraMode > 4) pThis->m214_debugCameraMode = 4;
+        }
+        if ((u16)graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.m8_newButtonDown & 0x8000)
+        {
+            pThis->m214_debugCameraMode++;
+            if ((u8)pThis->m214_debugCameraMode > 4) pThis->m214_debugCameraMode = 0;
+        }
+
+        // 0607c9b8 — display debug camera info (mode-dependent)
+        Unimplemented(); // VDP2 text display of camera parameters per debug mode
+
+        // 0607cb64 — adjust light angles in mode 4
+        if (pThis->m214_debugCameraMode == 4)
+        {
+            if (graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.mC_newButtonDown2 & 0x4000)
+                pThis->m280_lightAngle1 = fixedPoint((s32)pThis->m280_lightAngle1 + 0xB60B6);
+            if (graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.mC_newButtonDown2 & 4)
+                pThis->m280_lightAngle1 = fixedPoint((s32)pThis->m280_lightAngle1 - 0xB60B6);
+            if (graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.mC_newButtonDown2 & 0x2000)
+                pThis->m284_lightAngle2 = fixedPoint((s32)pThis->m284_lightAngle2 + 0xB60B6);
+            if (graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.mC_newButtonDown2 & 1)
+                pThis->m284_lightAngle2 = fixedPoint((s32)pThis->m284_lightAngle2 - 0xB60B6);
+        }
+        pThis->m280_lightAngle1 = fixedPoint((u32)pThis->m280_lightAngle1 & 0xFFFFFFF);
+        pThis->m284_lightAngle2 = fixedPoint((u32)pThis->m284_lightAngle2 & 0xFFFFFFF);
     }
 
     sVec3_FP lightVector;
@@ -373,7 +444,13 @@ void battleGrid_draw(s_battleGrid* pThis)
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0xD])
     {
-        assert(0);
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xC000;
+        vdp2DebugPrintSetPosition(1, 0x13);
+        vdp2PrintfSmallFont("LGT A1:%3d A2:%3d",
+            pThis->m280_lightAngle1.getInteger() * 0x168 >> 12,
+            pThis->m284_lightAngle2.getInteger() * 0x168 >> 12);
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
     }
 
     if (pThis->m1C8_flags & 0x20)
@@ -384,12 +461,16 @@ void battleGrid_draw(s_battleGrid* pThis)
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x12])
     {
-        assert(0);
+        // light angle display already handled above (flag 0x12 block)
     }
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x11])
     {
-        assert(0);
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xC000;
+        vdp2DebugPrintSetPosition(1, 0x14);
+        vdp2PrintfSmallFont("FOV:%5d", (s32)pThis->m218_halfFov);
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
     }
 }
 

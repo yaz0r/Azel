@@ -4,6 +4,7 @@
 #include "battle/battleManager.h"
 #include "battle/battleOverlay.h"
 #include "battle/battleEngine.h"
+#include "battle/battleFormationBase.h"
 #include "battle/battleEngineSub0.h"
 #include "battle/battleTextDisplay.h"
 #include "kernel/graphicalObject.h"
@@ -71,7 +72,7 @@ static void BTL_A7_handleEnemyTurn(sBTL_A7_FormationTask* pThis)
         else
         {
             pThis->mF6_attackCounter = 0;
-            Unimplemented(); // 0609eaf2 - trigger enemy attack animation
+            formationTriggerAttack(&pThis->mE0_entityGroup, 3);
             battleEngine_SetBattleMode(eBattleModes::m7);
             pThis->m28_state = 7;
         }
@@ -107,10 +108,10 @@ static void BTL_A7_formationTask_Update(sBTL_A7_FormationTask* pThis)
     pEngine->m3B2_numBattleFormationRunning++;
 
     // 0609ec28 - check entity array for finished tasks
-    Unimplemented();
+    formationCleanupEntityArray(&pThis->mE0_entityGroup);
 
     // 0609e414 - update entity positions relative to battle center
-    Unimplemented();
+    Unimplemented(); // formationUpdateEntityPositions — position interpolation relative to battle center
 
     switch (pThis->m28_state)
     {
@@ -166,7 +167,7 @@ static void BTL_A7_formationTask_Update(sBTL_A7_FormationTask* pThis)
         if (pEngine->m188_flags.m2000)
         {
             battleEngine_displayAttackName(0x10, 0x1E, 0);
-            Unimplemented(); // 0609eaf2 - trigger enemy attack with param 3
+            formationTriggerAttack(&pThis->mE0_entityGroup, 3);
             pThis->m28_state = 5;
         }
         break;

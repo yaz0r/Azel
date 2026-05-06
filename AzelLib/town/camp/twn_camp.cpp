@@ -189,10 +189,12 @@ int recoverAllHP_BP(void)
 }
 
 
+// 06056484
 int scriptFunction_6056484(int arg) {
     auto data = getNpcDataByIndex(arg);
     if (recoverAllHP_BP()) {
-        assert(0);
+        sTownDragon* pDragon = (sTownDragon*)data;
+        pDragon->m11_subState = 10;
         return 1;
     }
     return 0;
@@ -204,7 +206,7 @@ int scriptFunction_606c70c(sSaturnPtr arg) {
     sVec3_FP vector2 = readSaturnVec3(arg + 0xC);
 
     if ((vector2[0] == vector1[0]) && (vector2[2] == vector1[2])) {
-        assert(0);
+        Unimplemented(); // setupCameraModeFixed — degenerate case when camera start/end have same XZ
     }
     else {
         twnMainLogicTask->mE4_fixedPosition = vector1;
@@ -330,7 +332,7 @@ int scriptFunction_60541c4(int arg) {
     loadFile(readSaturnString(readSaturnEA(gTWN_CAMP->getSaturnPtr(0x60760d8) + arg * 4 * 4)).c_str(), getVdp2Vram(0x60000), 0);
 
     if (arg == 7) {
-        assert(0);
+        loadFile("SPACE.PNB", getVdp2Vram(0x64000), 0);
     }
 
     return arg;
@@ -596,9 +598,57 @@ static sTownObject* createCampParticle(s_workAreaCopy* parent, sSaturnPtr arg)
 }
 
 
+// 0606d702
+void increaseGameResource(s32 resourceType, s32 amount)
+{
+    if (resourceType == 3)
+    {
+        mainGameState.gameStats.m20_XP += amount;
+        if ((s32)mainGameState.gameStats.m20_XP > 99999999)
+            mainGameState.gameStats.m20_XP = 99999999;
+    }
+    else if (resourceType == 4)
+    {
+        mainGameState.gameStats.m38_dyne += amount;
+        if ((s32)mainGameState.gameStats.m38_dyne > 9999999)
+            mainGameState.gameStats.m38_dyne = 9999999;
+    }
+    else if (resourceType == 10)
+    {
+        mainGameState.gameStats.m78_exp += amount;
+        if (mainGameState.gameStats.m78_exp > 100)
+            mainGameState.gameStats.m78_exp = 100;
+    }
+    else if (resourceType == 0xB)
+    {
+        s32 val = (s32)mainGameState.gameStats.m7C_overallRating + amount;
+        if (val < 0) val = 0;
+        if (val > 0x7C) val = 0x7C;
+        mainGameState.gameStats.m7C_overallRating = (u32)val;
+    }
+}
+
+// 06071ade
+static s32 toggleDayNight()
+{
+    sCameraTask::Init(cameraTaskPtr);
+    if (mainGameState.bitField[0] & 1)
+        return 0;
+    if ((mainGameState.bitField[1] & 0x80) == 0)
+        mainGameState.bitField[1] |= 0x80;
+    else
+        mainGameState.bitField[1] &= 0x7F;
+    return 1;
+}
+
+// 06054180
 void townOverlayDelete_TwnCamp(townDebugTask2Function* pThis)
 {
-    Unimplemented();
+    if (((mainGameState.bitField[0x262] & 1) == 0) && ((mainGameState.bitField[0x263] & 0x80) == 0))
+    {
+        increaseGameResource(0xB, -3);
+    }
+    toggleDayNight();
 
     freeRamResources(pThis);
     vdp1FreeLastAllocation(pThis);

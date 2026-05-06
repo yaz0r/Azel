@@ -411,6 +411,8 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     s_dragonState* pDragonState = createSubTaskFromFunction<s_dragonState>(pWorkArea, nullptr);
 
     pDragonState->m0_pDragonModelBundle = gDragonModel;
+    pDragonState->m4_vdp1Allocation = nullptr;
+    pDragonState->m8_parentTask = pWorkArea;
     pDragonState->mC_dragonType = dragonLevel;
     pDragonState->m14_modelIndex = pDragonData3->m_m8[0].m0_modelIndex;
     pDragonState->m18_shadowModelIndex = pDragonData3->m_m8[0].m2_shadowModelIndex;
@@ -451,10 +453,8 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
 
     if (dragonFilenameTable[dragonLevel].m_M.MCB)
     {
-        Unimplemented();
-        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->m8_dramAllocation, 0/*pLoadDragonWorkArea->m8_MCBInDram >> 3*/);
+        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->m8_dramAllocation, 0);
         loadFile(dragonFilenameTable[dragonLevel].m_M.CGB, pLoadDragonWorkArea->m8_MCBInDram, 0);
-
     }
     return pLoadDragonWorkArea;
 }

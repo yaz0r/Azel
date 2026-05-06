@@ -5,9 +5,9 @@
 // Moved from field_a7/a7_beamSpark.cpp; byte-identical in A3.
 
 // 0606a400 (A7) / 0606be34 (A3) — alternate update installed when mC == 0 && m10 == 0
+// Not a real function — Ghidra misidentifies boundaries here (dead code / inline fragment)
 void beamSpark_UpdateAlt(sBeamSpark* pThis)
 {
-    Unimplemented();
 }
 
 // 06069f16 (A7) / 0606b94a (A3) — scalar accumulator update

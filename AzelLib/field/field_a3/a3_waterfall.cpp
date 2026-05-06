@@ -4,6 +4,173 @@
 #include "kernel/fileBundle.h"
 #include "items.h"
 #include "3dModels.h"
+#include "particlePool.h"
+
+s32 a7CenteredRandom(u32 mask);
+
+// 06091d34
+static const s32 waterfallVelocityScaleTable0[] = {
+    0x6666, 0x8000, 0xCCCC, 0x10000, 0x4CCC, 0x9999, 0xB333, 0xE666
+};
+
+// 06091d54
+static const s32 waterfallVelocityScaleTable1[] = {
+    0xB333, 0xCCCC, 0x10000, 0x11999, 0xC000, 0xE666, 0xF333, 0x10CCC
+};
+
+// 06091d74
+static const s32 waterfallPositionOffsets[][2] = {
+    { -0x1A000, 0x14000 }, { -0x14000, 0x14000 }, { -0xC000, 0x16000 }, { -0x4000, 0x16000 },
+    {  0x4000, 0x15000 }, {  0xA000, 0x15000 }, {  0x12000, 0x14000 }, {  0x1C000, 0x14000 },
+};
+
+// 0605baea — spawn mist particle (type A)
+static void waterfallSpawnMistA(s_workArea* pThis, sVec3_FP* pPos, sVec3_FP* pVel, s32 velScale)
+{
+    s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+    if (pFieldData->m168_particlePool)
+    {
+        sParticleSpawnConfig config;
+        config.m0_pPosition = pPos;
+        config.m4_pVelocity = pVel;
+        config.m8_pQuadData = &gFLD_A3->m_waterfallMistQuadA;
+        config.mC_velocityScaleX = fixedPoint(velScale);
+        config.m10_velocityScaleY = fixedPoint(0);
+        config.m14_updateFunc = &particleUpdateMoving;
+        config.m18_heapSize = 0;
+        config.m1C_heapData = nullptr;
+        spawnParticleInPool(pFieldData->m168_particlePool, &config, 1);
+    }
+}
+
+// 0605bbca — spawn mist particle (type B)
+static void waterfallSpawnMistB(s_workArea* pThis, sVec3_FP* pPos, sVec3_FP* pVel, s32 velScale)
+{
+    s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+    if (pFieldData->m168_particlePool)
+    {
+        sParticleSpawnConfig config;
+        config.m0_pPosition = pPos;
+        config.m4_pVelocity = pVel;
+        config.m8_pQuadData = &gFLD_A3->m_waterfallMistQuadB;
+        config.mC_velocityScaleX = fixedPoint(velScale);
+        config.m10_velocityScaleY = fixedPoint(0);
+        config.m14_updateFunc = &particleUpdateMoving;
+        config.m18_heapSize = 0;
+        config.m1C_heapData = nullptr;
+        spawnParticleInPool(pFieldData->m168_particlePool, &config, 1);
+    }
+}
+
+// 0605bb64 — spawn falling waterfall particle
+static void waterfallSpawnFalling(s_workArea* pThis, sVec3_FP* pPos, s32 velScale)
+{
+    s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
+    if (pFieldData->m168_particlePool)
+    {
+        sVec3_FP zeroVel = { 0, 0, 0 };
+        sParticleSpawnConfig config;
+        config.m0_pPosition = pPos;
+        config.m4_pVelocity = &zeroVel;
+        config.m8_pQuadData = &gFLD_A3->m_waterfallFallingQuad;
+        config.mC_velocityScaleX = fixedPoint(velScale);
+        config.m10_velocityScaleY = fixedPoint((s32)0xFFFE2000);
+        config.m14_updateFunc = &particleUpdateMoving;
+        config.m18_heapSize = 0;
+        config.m1C_heapData = nullptr;
+        spawnParticleInPool(pFieldData->m168_particlePool, &config, 1);
+    }
+}
+
+// 0605bc28 — waterfall type 0: spawn rising mist particle
+static void waterfallSpawnRisingMist(s_workArea* pThis)
+{
+    s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
+    sVec3_FP pos;
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + a7CenteredRandom(0x3FFFF));
+    pos.m4_Y = fixedPoint(0x4000);
+    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value - (s32)(randomNumber() & 0x1FFFF));
+    sVec3_FP vel = { 0, 0, 0 };
+    s32 velScale = waterfallVelocityScaleTable0[randomNumber() & 7];
+    waterfallSpawnMistA(pThis, &pos, &vel, velScale);
+}
+
+// 0605bd8a — waterfall type 0: spawn splash mist particle
+static void waterfallSpawnSplashMist(s_workArea* pThis)
+{
+    s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
+    sVec3_FP pos;
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + a7CenteredRandom(0x3FFFF));
+    pos.m4_Y = fixedPoint((s32)0xFFFF0000 - (s32)(randomNumber() & 0x1FFFF));
+    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + 0x10000);
+    sVec3_FP vel;
+    vel.m0_X = fixedPoint(a7CenteredRandom(0x3FF));
+    vel.m4_Y = fixedPoint(0x280 - (s32)(randomNumber() & 0x7FF));
+    vel.m8_Z = fixedPoint(0x100);
+    s32 velScale = waterfallVelocityScaleTable0[randomNumber() & 7];
+    waterfallSpawnMistB(pThis, &pos, &vel, velScale);
+}
+
+// 0605be38 — waterfall type 1: spawn rising mist particle variant
+static void waterfallSpawnRisingMistVariant(s_workArea* pThis)
+{
+    s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
+    sVec3_FP pos;
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + a7CenteredRandom(0x1FFFF));
+    pos.m4_Y = fixedPoint((s32)(randomNumber() & 0x1FFFF) + 0x8000);
+    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + 0x8000);
+    sVec3_FP vel;
+    vel.m0_X = fixedPoint(a7CenteredRandom(0x3FF));
+    vel.m4_Y = fixedPoint(0x280 - (s32)(randomNumber() & 0x7FF));
+    vel.m8_Z = fixedPoint(0x100);
+    s32 velScale = waterfallVelocityScaleTable0[randomNumber() & 7];
+    waterfallSpawnMistB(pThis, &pos, &vel, velScale);
+}
+
+// 0605bcc4 — waterfall type 1: spawn frame-indexed droplet particle
+static void waterfallSpawnDroplet(s_workArea* pThis)
+{
+    s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
+    u8 frameCounter = *((u8*)pThis + 0xC);
+    s32 tableIndex = (frameCounter & 7) * 2;
+    sVec3_FP pos;
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + waterfallPositionOffsets[frameCounter & 7][0] + a7CenteredRandom(0x7FFF));
+    pos.m4_Y = fixedPoint(0);
+    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + waterfallPositionOffsets[frameCounter & 7][1] + (s32)(randomNumber() & 0x3FFF));
+    s32 velScale = waterfallVelocityScaleTable1[randomNumber() & 7];
+    waterfallSpawnFalling(pThis, &pos, velScale);
+}
+
+// 0605bd2e — waterfall type 2 (large): spawn periodic falling particle
+static void waterfallLargeSpawnFalling(s_workArea* pThis)
+{
+    s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
+    sVec3_FP pos;
+    s32 xOffset = (s32)(randomNumber() & 0xFFFF) + 0xD000;
+    if ((s16)pData->m10_rotation[1] < 1)
+        xOffset = -xOffset;
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + xOffset);
+    pos.m4_Y = fixedPoint(0);
+    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + a7CenteredRandom(0xFFFF));
+    s32 velScale = waterfallVelocityScaleTable1[randomNumber() & 7];
+    waterfallSpawnFalling(pThis, &pos, velScale);
+}
+
+// 0605beaa — waterfall type 2 (large): spawn random splash particle
+static void waterfallLargeSpawnSplash(s_workArea* pThis, s32 spreadParam)
+{
+    s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
+    sVec3_FP pos;
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + a7CenteredRandom(0x1FFFF));
+    pos.m4_Y = fixedPoint(a7CenteredRandom(spreadParam - 1) + 0x10000);
+    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + a7CenteredRandom(0x7FFF));
+    sVec3_FP vel;
+    vel.m0_X = fixedPoint(a7CenteredRandom(0x3FF));
+    vel.m4_Y = fixedPoint(0x280 - (s32)(randomNumber() & 0x7FF));
+    vel.m8_Z = fixedPoint(a7CenteredRandom(0x1FF));
+    s32 velScale = waterfallVelocityScaleTable0[randomNumber() & 7];
+    waterfallSpawnMistB(pThis, &pos, &vel, velScale);
+}
 
 // ============================================================
 // Waterfall type 0 (task def at 06091db4, size 0x10)
@@ -35,7 +202,8 @@ struct s_A3_Waterfall0 : public s_workAreaTemplate<s_A3_Waterfall0>
         else
             pThis->mC_frameCounter = 0;
 
-        Unimplemented(); // FUN_0605bc28, FUN_0605bd8a — waterfall particle spawning
+        waterfallSpawnRisingMist(pThis);
+        waterfallSpawnSplashMist(pThis);
         // FUN_0605b9e8 — update nearest waterfall sound 0x6B position
         s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
         sVec3_FP* waterfallPos = &pThis->m8->m4_position;
@@ -118,7 +286,8 @@ struct s_A3_Waterfall1 : public s_workAreaTemplate<s_A3_Waterfall1>
         else
             pThis->mC_frameCounter = 0;
 
-        Unimplemented(); // randomNumber-based particle spawning (FUN_0605be38 / FUN_0605bcc4)
+        waterfallSpawnRisingMistVariant(pThis);
+        waterfallSpawnDroplet(pThis);
         // FUN_0605b9e8 — update nearest waterfall sound 0x6B position
         s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
         sVec3_FP* waterfallPos = &pThis->m8->m4_position;
@@ -211,13 +380,13 @@ struct s_A3_WaterfallLarge : public s_workAreaTemplate<s_A3_WaterfallLarge>
 
         if ((pThis->m10_frameCounter & 7) == 0)
         {
-            Unimplemented(); // func_0x0605bd2e — periodic particle spawning
+            waterfallLargeSpawnFalling(pThis);
         }
 
         u32 rnd = randomNumber();
         if ((rnd & 3) == 0)
         {
-            Unimplemented(); // FUN_0605beaa — random splash particle with 0x40000 param
+            waterfallLargeSpawnSplash(pThis, 0x40000);
         }
 
         // Update nearest waterfall sound 0x6A position

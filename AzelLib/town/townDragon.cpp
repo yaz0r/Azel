@@ -158,6 +158,30 @@ static void sTownDragon_Update(sTownDragon* pThis)
     }
 }
 
+static s32 transformVecGetY(const sVec3_FP& vec, const sMatrix4x3& mat) {
+    s64 mac = 0;
+    mac += (s64)mat.m[1][0].asS32() * (s64)vec[0].asS32();
+    mac += (s64)mat.m[1][1].asS32() * (s64)vec[1].asS32();
+    mac += (s64)mat.m[1][2].asS32() * (s64)vec[2].asS32();
+    return (s32)(mac >> 16) + mat.m[1][3].asS32();
+}
+
+static s32 computeNearestHotpointDistance(sTownDragon* pThis)
+{
+    if (gDragonState->mC_dragonType < 0 || gDragonState->mC_dragonType > 7)
+        return 0;
+
+    s32 nearest = 0x7FFFFFFF;
+    for (s32 i = 0; i < pThis->mDC_hotpointPairCount; i++)
+    {
+        auto& pair = pThis->mE0_hotpointPairs[i];
+        sVec3_FP& hotpoint = gDragonState->m28_dragon3dModel.m44_hotpointData[pair.m0_boneIndex][pair.m1_hotpointIndex];
+        s32 y = transformVecGetY(hotpoint, cameraProperties2.m28[0]);
+        if (y < nearest) nearest = y;
+    }
+    return nearest;
+}
+
 static void sTownDragon_Draw(sTownDragon* pThis)
 {
     if ((-1 < gDragonState->mC_dragonType) && (gDragonState->mC_dragonType < 8))
@@ -165,7 +189,9 @@ static void sTownDragon_Draw(sTownDragon* pThis)
         submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pThis->m58_position, &pThis->m64_rotation, 0);
         if (pThis->mD_drawExtras)
         {
-            Unimplemented();
+            pThis->mD_drawExtras = 0;
+            s32 nearestDist = computeNearestHotpointDistance(pThis);
+            pThis->mD8_heightOffset = fixedPoint(pThis->mD8_heightOffset.m_value - (nearestDist - pThis->m4C_basePosition.m4_Y.m_value));
         }
     }
 }

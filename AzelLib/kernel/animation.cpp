@@ -224,9 +224,27 @@ void modelMode1_position0(s_3dModel* p3dModel)
     }
 }
 
+// 06022820
 void modelMode1_position1(s_3dModel* p3dModel)
 {
-    Unimplemented();
+    for (s32 i = 0; i < p3dModel->m12_numBones; i++)
+    {
+        sPoseData& pose = p3dModel->m2C_poseData[i];
+        const sAnimationData::sTrackHeader& track = p3dModel->m30_pCurrentAnimation->m8_trackHeader[i];
+
+        if (p3dModel->m10_currentAnimationFrame == 0)
+        {
+            pose.m0_translation[0] = stepAnimationTrack(pose.m48[0], track.m14_trackData[0], track.m0_tracksLength[0]);
+            pose.m0_translation[1] = stepAnimationTrack(pose.m48[1], track.m14_trackData[1], track.m0_tracksLength[1]);
+            pose.m0_translation[2] = stepAnimationTrack(pose.m48[2], track.m14_trackData[2], track.m0_tracksLength[2]);
+        }
+        else
+        {
+            pose.m0_translation[0] += stepAnimationTrack(pose.m48[0], track.m14_trackData[0], track.m0_tracksLength[0]);
+            pose.m0_translation[1] += stepAnimationTrack(pose.m48[1], track.m14_trackData[1], track.m0_tracksLength[1]);
+            pose.m0_translation[2] += stepAnimationTrack(pose.m48[2], track.m14_trackData[2], track.m0_tracksLength[2]);
+        }
+    }
 }
 
 #if 0

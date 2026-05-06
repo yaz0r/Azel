@@ -39,7 +39,7 @@ static void b2_startTasks_0(p_workArea workArea)
     // 0606de6c — encounter config (empty function)
     Unimplemented(); // FUN_FLD_B2__0605d92a — create env object (0x4014 desert ruins task)
     createB2ItemBoxes_0();
-    Unimplemented(); // FUN_FLD_B2__0605e2d2 — create ambient sound task (0x64)
+    createB2AmbientSoundTask(workArea);
 
     setSoundDistanceParams(0x200000, 0x6E);
 }

@@ -170,7 +170,11 @@ p_workArea overlayStart_FLD_C8(p_workArea workArea, u32 arg)
     {
     case 0: subfieldC8_0(workArea); break;
     case 1: subfieldC8_1(workArea); break;
-    default: Unimplemented(); break; // subfields 2-5
+    case 2: subfieldC8_2(workArea); break;
+    case 3: subfieldC8_3(workArea); break;
+    case 4: subfieldC8_4(workArea); break;
+    case 5: subfieldC8_5(workArea); break;
+    default: break;
     }
 
     // m360 update function
@@ -195,4 +199,43 @@ p_workArea overlayStart_FLD_C8(p_workArea workArea, u32 arg)
     }
 
     return nullptr;
+}
+
+// 060545B4
+void subfieldC8_2(p_workArea workArea)
+{
+    Unimplemented(); // FUN_0605f026 — VDP2 task
+    Unimplemented(); // FUN_06054522 — field setup + grid + camera
+    Unimplemented(); // setFieldDataFlags_C8
+    Unimplemented(); // FUN_0605cc68 — per-subfield init
+}
+
+// 060545F6
+void subfieldC8_3(p_workArea workArea)
+{
+    Unimplemented(); // FUN_0605f026 — VDP2 task
+    Unimplemented(); // FUN_060545d4 — field setup
+    Unimplemented(); // FUN_06061494 — creature/entity init
+    Unimplemented(); // setFieldDataFlags_C8
+    Unimplemented(); // FUN_0605cc9a — per-subfield init
+}
+
+// 0605463A
+void subfieldC8_4(p_workArea workArea)
+{
+    Unimplemented(); // FUN_0605f026 — VDP2 task
+    Unimplemented(); // FUN_06054618 — field setup
+    Unimplemented(); // FUN_06061494 — creature/entity init
+    Unimplemented(); // setFieldDataFlags_C8
+    Unimplemented(); // FUN_0605cd38 — per-subfield init
+}
+
+// 0605467E
+void subfieldC8_5(p_workArea workArea)
+{
+    Unimplemented(); // FUN_0605f026 — VDP2 task
+    Unimplemented(); // FUN_0605465c — field setup
+    Unimplemented(); // FUN_06061494 — creature/entity init
+    Unimplemented(); // setFieldDataFlags_C8
+    Unimplemented(); // FUN_0605cd82 — per-subfield init
 }

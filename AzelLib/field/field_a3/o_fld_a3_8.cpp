@@ -34,7 +34,16 @@ void fieldA3_8_createExitTask(p_workArea workArea)
 // kernel
 void update3dModelDrawFunctionForVertexAnimation(s_3dModel* r4, u8* pData)
 {
-    Unimplemented();
+    if (r4->m38_pColorAnim == nullptr || pData == nullptr)
+    {
+        r4->m38_pColorAnim = pData;
+        initModelDrawFunction(r4);
+    }
+    else
+    {
+        r4->m38_pColorAnim = pData;
+    }
+    r4->m14 = 0;
 }
 
 // kernel

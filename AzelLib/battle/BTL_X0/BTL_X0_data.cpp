@@ -50,7 +50,7 @@ p_workArea BTL_X0_data::invokeCreateEffect(sSaturnPtr Func, s_workAreaCopy* pPar
     switch (Func.m_offset)
     {
     default:
-        Unimplemented();
+        assert(0);
         return nullptr;
     }
 }

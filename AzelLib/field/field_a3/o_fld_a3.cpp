@@ -4251,11 +4251,105 @@ void dummyFunct(sFieldCameraStatus*)
     assert(0);
 }
 
-// Camera follow modes 3-6 — real functions in the binary, not yet implemented
-void cameraFollowMode3(sFieldCameraStatus* r4) { Unimplemented(); }
-void cameraFollowMode4(sFieldCameraStatus* r4) { Unimplemented(); }
-void cameraFollowMode5(sFieldCameraStatus* r4) { Unimplemented(); }
-void cameraFollowMode6(sFieldCameraStatus* r4) { Unimplemented(); }
+// 06069E92 (A5) — camera follow mode 3
+void cameraFollowMode3(sFieldCameraStatus* r14)
+{
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    if (pDragonTask == NULL)
+        return;
+
+    switch (r14->m8D_followState)
+    {
+    case 0:
+        r14->m8F_followType = 3;
+        r14->m90_followMode = 3;
+        r14->m7C = 6;
+        r14->m8D_followState = 2;
+        fieldOverlaySubTaskInitSub2Sub2(r14, pDragonTask);
+        return;
+    case 1:
+        r14->m8F_followType = 3;
+        r14->m90_followMode = 3;
+        r14->m7C = 6;
+        r14->m8D_followState = 2;
+    case 2:
+        fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
+        return;
+    default:
+        assert(0);
+    }
+}
+
+// 06069EF6 (A5) — camera follow mode 4
+void cameraFollowMode4(sFieldCameraStatus* r14)
+{
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    if (pDragonTask == NULL)
+        return;
+
+    switch (r14->m8D_followState)
+    {
+    case 0:
+        r14->m8F_followType = 4;
+        r14->m90_followMode = 4;
+        r14->m7C = 7;
+        r14->m8D_followState = 2;
+        fieldOverlaySubTaskInitSub2Sub2(r14, pDragonTask);
+        return;
+    case 1:
+        r14->m8F_followType = 4;
+        r14->m90_followMode = 4;
+        r14->m7C = 7;
+        r14->m8D_followState = 2;
+    case 2:
+        fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
+        return;
+    default:
+        assert(0);
+    }
+}
+
+// 06069F64 (A5) — camera follow mode 5
+void cameraFollowMode5(sFieldCameraStatus* r14)
+{
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    if (pDragonTask == NULL)
+        return;
+
+    if (r14->m8D_followState == 0 || r14->m8D_followState == 1)
+    {
+        r14->m8F_followType = 5;
+        r14->m90_followMode = 5;
+        r14->m7C = 0;
+        r14->m8D_followState = 2;
+    }
+
+    sVec3_FP delta;
+    delta.m0_X = fixedPoint(pDragonTask->m8_pos.m0_X.m_value - r14->m0_position.m0_X.m_value);
+    delta.m4_Y = fixedPoint(pDragonTask->m8_pos.m4_Y.m_value - r14->m0_position.m4_Y.m_value);
+    delta.m8_Z = fixedPoint(pDragonTask->m8_pos.m8_Z.m_value - r14->m0_position.m8_Z.m_value);
+    sVec2_FP lookAt;
+    computeLookAt(delta, lookAt);
+    r14->mC_rotation.m0_X = lookAt[0];
+    r14->mC_rotation.m4_Y = lookAt[1];
+    r14->m24_distanceToDestination = vecDistance(r14->m0_position, pDragonTask->m8_pos).m_value;
+}
+
+// 0606A000 (A5) — camera follow mode 6
+void cameraFollowMode6(sFieldCameraStatus* r14)
+{
+    s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
+    if (pDragonTask == NULL)
+        return;
+
+    if (r14->m8D_followState == 0 || r14->m8D_followState == 1)
+    {
+        r14->m8F_followType = 6;
+        r14->m90_followMode = 6;
+        r14->m7C = 0;
+        r14->m8D_followState = 2;
+    }
+}
 
 void(*activateCameraFollowModeTable1[10])(sFieldCameraStatus*) = {
     0,

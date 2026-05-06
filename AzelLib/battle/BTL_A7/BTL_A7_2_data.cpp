@@ -46,7 +46,7 @@ p_workArea BTL_A7_2_data::invokeCreateEffect(sSaturnPtr Func, s_workAreaCopy* pP
     switch (Func.m_offset)
     {
     default:
-        Unimplemented();
+        assert(0);
         return nullptr;
     }
 }

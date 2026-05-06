@@ -8,6 +8,7 @@
 #include "kernel/loadSavegameScreen.h"
 #include "kernel/menuCursor.h"
 #include "kernel/menuSprite.h"
+#include "kernel/flagEditor.h"
 #include "battle/battleManager.h"
 #include "audio/systemSounds.h"
 #include "audio/soundDriver.h"
@@ -54,7 +55,7 @@ struct s_flagEditTaskWorkArea : public s_workAreaTemplateWithArg<s_flagEditTaskW
         case 0:
             if (readKeyboardToggle(KEY_CODE_F1))
             {
-                Unimplemented();
+                createFlagEditorTask(pThis);
             }
             break;
         default:
@@ -1330,9 +1331,30 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animatio
     return true;
 }
 
+// 0600b32a
+static void changeDragonStateTaskFlag()
+{
+    if (gDragonState != nullptr)
+    {
+        ((p_workArea)gDragonState)->getTask()->markFinished();
+        gDragonState = nullptr;
+    }
+}
+
+// 0600b3c6
 void updateDragonIfCursorChanged(u32 level)
 {
-    Unimplemented();
+    if (gDragonState->mC_dragonType == (s32)level &&
+        mainGameState.gameStats.m1A_dragonCursorX == gDragonState->m10_cursorX &&
+        mainGameState.gameStats.m1C_dragonCursorY == gDragonState->m12_cursorY)
+    {
+        updateDragonStatsFromLevel();
+        return;
+    }
+    p_workArea parentTask = gDragonState->m8_parentTask;
+    changeDragonStateTaskFlag();
+    mainGameState.gameStats.m1_dragonLevel = (e_dragonLevel)level;
+    loadDragon(parentTask);
 }
 
 void loadRiderIfChanged(u32 rider)
@@ -1860,9 +1882,11 @@ struct s_fieldDebugTaskWorkArea : public s_workAreaTemplateWithArg<s_fieldDebugT
         }
     }
 
+    // 0602a2ae
     static void genericOptionMenuDelete(s_fieldDebugTaskWorkArea* pThis)
     {
-        Unimplemented();
+        pauseEngine[2] = 0;
+        isInMenu2 = 0;
     }
 
     p_workArea m8; // 8
@@ -3152,9 +3176,11 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
     }
 }
 
+// 0601579a
 void s_menuGraphicsTask::Delete(s_menuGraphicsTask*)
 {
-    Unimplemented();
+    graphicEngineStatus.m40AC.mC = nullptr;
+    // clearSaveText(graphicEngineStatus.m40AC.fontIndex) — unloads menu font
 }
 
 p_workArea createMenuTask(p_workArea parentTask)

@@ -13,6 +13,7 @@
 #include "renderer_vdp2.h"
 #include "town/townScriptDecompiler.h"
 #include "debugWindows.h"
+#include "kernel/flagEditor.h"
 
 bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string& PSFile);
 
@@ -1564,6 +1565,8 @@ bool azelSdl_EndFrame()
         }
 
         drawScriptDecompilerWindow();
+        drawDebugGameStatusMenu();
+        drawFlagEditorWindow();
 
         if (gDebugWindows.inventory)
         {

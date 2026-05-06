@@ -878,7 +878,7 @@ static void BTL_X0_formation2_state3(sBTL_X0_FormationTask* pThis)
             pThis->m7C_subState++;
             pThis->m68_counter = 0x5A;
             pThis->m7F_variantIndex = 3;
-            Unimplemented(); // createEnvironmentTask2Sub0Sub0
+            allocateNPC(pThis, 10);
         }
     }
     else if (subState == 1)

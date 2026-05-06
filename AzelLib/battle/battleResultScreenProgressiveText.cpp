@@ -34,6 +34,7 @@ void battleResultScreenProgressiveText_printString(sSaturnPtr config)
     vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
 }
 
+// BTL_A3::060709c2
 void battleResultScreenProgressiveText_update(sBattleResultProgressiveText* pThis)
 {
     if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 6) == 0)
@@ -44,19 +45,19 @@ void battleResultScreenProgressiveText_update(sBattleResultProgressiveText* pThi
             pThis->m4_currentCounter = 0;
             if (pThis->m11)
             {
-                // spawn particles
-                Unimplemented();
+                Unimplemented(); // battleResultScreen_createParticles — sparkle on character reveal
             }
             battleResultScreenProgressiveText_printCharacter(pThis);
             pThis->mD_positionInString++;
 
-            // if next character is null terminator
             if (readSaturnS8(readSaturnEA(pThis->m0_configEA + 0xC) + pThis->mD_positionInString) == 0)
             {
                 if (pThis->m11 > 1)
                 {
-                    // spawn particles
-                    Unimplemented();
+                    for (s32 i = 0; i < (s32)((u8)pThis->m11 - 1); i++)
+                    {
+                        Unimplemented(); // battleResultScreen_createParticles2 — burst on text complete
+                    }
                 }
                 pThis->getTask()->markFinished();
             }

@@ -8,6 +8,7 @@
 #include "commonOverlay.h"
 #include "dragonData.h"
 #include "dragonRider.h"
+#include "worldmap/worldmap.h"
 
 std::array<u8, 0x104> battleResults;
 u8 array_250000[0x20000];
@@ -19,16 +20,16 @@ s_gameStatus gGameStatus;
 sSaveGameStatus gSaveGameStatus;
 
 p_workArea(*overlayDispatchTable[])(p_workArea, s32) = {
-    loadMovieOverlay,
-    loadTown,
-    loadTown2,
-    loadField,
-    loadBattle,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    initLoadSavegameScreen,
+    loadMovieOverlay,   // 0: movie
+    loadTown,           // 1: town
+    loadTown2,          // 2: town (alt entry)
+    loadField,          // 3: field
+    loadBattle,         // 4: battle
+    loadWorldOverlay,   // 5: worldmap
+    NULL,               // 6: unused
+    NULL,               // 7: unused
+    NULL,               // 8: unused
+    initLoadSavegameScreen, // 9: save/load screen
     NULL,
 };
 
@@ -293,7 +294,19 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
     case 0:
         if (keyboardIsKeyDown(0xE7) || keyboardIsKeyDown(0xE4))
         {
-            assert(0);
+            if (readKeyboardTable1(0xE7))
+                pWorkArea->m6_debugGameStatus--;
+            if (readKeyboardTable1(0xE4))
+                pWorkArea->m6_debugGameStatus++;
+
+            vdp2DebugPrintSetPosition(0x15, 1);
+            vdp2PrintStatus.m10_palette = 0xC000;
+            vdp2PrintfSmallFont("%02x", (s32)pWorkArea->m6_debugGameStatus);
+
+            if (keyboardIsKeyDown(0xE7) && readKeyboardToggle(0xE4))
+                setNextGameStatus(pWorkArea->m6_debugGameStatus);
+            if (readKeyboardToggle(0xE7) && keyboardIsKeyDown(0xE4))
+                setNextGameStatus(pWorkArea->m6_debugGameStatus);
         }
 
         // 602739A
@@ -422,8 +435,136 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
 
         PDS_Log("Switching to Game Satus %d\n", gGameStatus.m4_gameStatus);
 
-        gGameStatus.m0_gameMode = readSaturnS8(gCommonFile->getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2));
-        gGameStatus.m1 = readSaturnS8(gCommonFile->getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2) + 1);
+        { static const s8 gameStatusTable[][2] = {
+            {0, 0x00}, // 0x00 movie
+            {0, 0x00}, // 0x01 movie
+            {3, 0x00}, // 0x02 FLD_D5 (Name Entry)
+            {0, 0x01}, // 0x03 movie
+            {1, 0x10}, // 0x04 TWN_ZOAH
+            {0, 0x02}, // 0x05 movie
+            {1, 0x13}, // 0x06 TWN_E006
+            {0, 0x03}, // 0x07 movie
+            {1, 0x14}, // 0x08 TWN_E011
+            {4, 0x00}, // 0x09 battle
+            {1, 0x15}, // 0x0A TWN_E014
+            {4, 0x01}, // 0x0B battle
+            {1, 0x16}, // 0x0C town
+            {1, 0x17}, // 0x0D town
+            {4, 0x02}, // 0x0E battle
+            {0, 0x05}, // 0x0F movie
+            {4, 0x03}, // 0x10 battle
+            {5, 0x04}, // 0x11 worldmap
+            {0, 0x06}, // 0x12 movie
+            {0, 0x07}, // 0x13 movie
+            {0, 0x08}, // 0x14 movie
+            {4, 0x04}, // 0x15 battle
+            {3, 0x08}, // 0x16 FLD_B5
+            {0, 0x09}, // 0x17 movie
+            {4, 0x05}, // 0x18 battle
+            {1, 0x18}, // 0x19 town
+            {4, 0x06}, // 0x1A battle
+            {1, 0x19}, // 0x1B town
+            {0, 0x0A}, // 0x1C movie
+            {0, 0x0B}, // 0x1D movie
+            {0, 0x0C}, // 0x1E movie
+            {4, 0x07}, // 0x1F battle
+            {0, 0x0D}, // 0x20 movie
+            {5, 0x05}, // 0x21 worldmap
+            {4, 0x08}, // 0x22 battle
+            {4, 0x09}, // 0x23 battle
+            {0, 0x0E}, // 0x24 movie
+            {3, 0x0C}, // 0x25 FLD_C4
+            {4, 0x0A}, // 0x26 battle
+            {0, 0x0F}, // 0x27 movie
+            {4, 0x0C}, // 0x28 battle
+            {1, 0x1A}, // 0x29 town
+            {4, 0x0D}, // 0x2A battle
+            {1, 0x1B}, // 0x2B town
+            {0, 0x10}, // 0x2C movie
+            {4, 0x0E}, // 0x2D battle
+            {0, 0x11}, // 0x2E movie
+            {1, 0x1C}, // 0x2F town
+            {5, 0x06}, // 0x30 worldmap
+            {0, 0x12}, // 0x31 movie
+            {0, 0x13}, // 0x32 movie
+            {0, 0x14}, // 0x33 movie
+            {4, 0x0F}, // 0x34 battle
+            {4, 0x10}, // 0x35 battle
+            {0, 0x15}, // 0x36 movie
+            {0, 0x16}, // 0x37 movie
+            {0, 0x17}, // 0x38 movie
+            {4, 0x11}, // 0x39 battle
+            {4, 0x12}, // 0x3A battle
+            {4, 0x13}, // 0x3B battle
+            {4, 0x14}, // 0x3C battle
+            {4, 0x15}, // 0x3D battle
+            {4, 0x16}, // 0x3E battle
+            {0, 0x18}, // 0x3F movie
+            {0, 0x19}, // 0x40 movie
+            {0, 0x1A}, // 0x41 movie
+            {0, 0x1B}, // 0x42 movie
+            {0, 0x1C}, // 0x43 movie
+            {0, 0x1D}, // 0x44 movie
+            {0, 0x1E}, // 0x45 movie
+            {7, 0x00}, // 0x46
+            {0, 0x1F}, // 0x47 movie
+            {8, 0x00}, // 0x48
+            {3, 0x14}, // 0x49 FLD_D5 (Game Over alt)
+            {9, 0x00}, // 0x4A save/load screen
+            {5, 0x00}, // 0x4B worldmap
+            {5, 0x01}, // 0x4C worldmap
+            {5, 0x02}, // 0x4D worldmap
+            {5, 0x03}, // 0x4E worldmap
+            {6, 0x00}, // 0x4F return to title
+            {3, 0x01}, // 0x50 FLD_A3 (Excavation A2)
+            {2, 0x0F}, // 0x51 TWN_EXCA
+            {2, 0x07}, // 0x52 TWN_CAMP sub=7
+            {3, 0x02}, // 0x53 FLD_A3 (Excavation A3)
+            {0, 0x04}, // 0x54 movie
+            {2, 0x01}, // 0x55 TWN_CAMP sub=1
+            {3, 0x03}, // 0x56 FLD_A5 (Desert)
+            {2, 0x09}, // 0x57 TWN_RUIN sub=0
+            {2, 0x02}, // 0x58 TWN_CAMP sub=2
+            {2, 0x0A}, // 0x59 TWN_RUIN sub=1
+            {2, 0x03}, // 0x5A TWN_CAMP sub=3
+            {2, 0x0B}, // 0x5B TWN_RUIN sub=2
+            {2, 0x04}, // 0x5C TWN_CAMP sub=4
+            {2, 0x0C}, // 0x5D TWN_RUIN sub=3
+            {2, 0x0D}, // 0x5E TWN_RUIN sub=4
+            {2, 0x05}, // 0x5F TWN_CAMP sub=5
+            {2, 0x0E}, // 0x60 TWN_RUIN sub=5
+            {3, 0x04}, // 0x61 FLD_A7 (Tower)
+            {3, 0x05}, // 0x62 FLD_B1
+            {3, 0x06}, // 0x63 FLD_B2 (B3 area)
+            {3, 0x07}, // 0x64 FLD_B2 (Oasis)
+            {2, 0x12}, // 0x65 TWN_SEEK
+            {4, 0x0B}, // 0x66 battle
+            {3, 0x0B}, // 0x67 FLD_C2
+            {3, 0x0D}, // 0x68 FLD_C4
+            {3, 0x0F}, // 0x69 FLD_C8 (Tower)
+            {3, 0x12}, // 0x6A FLD_C8 (Tower D4)
+            {3, 0x09}, // 0x6B FLD_B5 (Forest)
+            {3, 0x0A}, // 0x6C FLD_B6
+            {3, 0x10}, // 0x6D FLD_D2
+            {2, 0x11}, // 0x6E TWN_CARA
+            {2, 0x06}, // 0x6F TWN_CAMP sub=6
+            {3, 0x13}, // 0x70 FLD_D5 (Game Over)
+            {3, 0x15}, // 0x71 FLD_A3 (Tutorial BT0)
+            {3, 0x16}, // 0x72 FLD_A7 (Tutorial BT1)
+            {2, 0x08}, // 0x73 TWN_CAMP sub=8
+            {10, 0x00}, // 0x74
+        };
+
+        if (gGameStatus.m4_gameStatus < (sizeof(gameStatusTable) / sizeof(gameStatusTable[0])))
+        {
+            gGameStatus.m0_gameMode = gameStatusTable[gGameStatus.m4_gameStatus][0];
+            gGameStatus.m1 = gameStatusTable[gGameStatus.m4_gameStatus][1];
+        }
+        else
+        {
+            gGameStatus.m0_gameMode = readSaturnS8(gCommonFile->getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2));
+            gGameStatus.m1 = readSaturnS8(gCommonFile->getSaturnPtr(0x212EAC + gGameStatus.m4_gameStatus * 2) + 1);
+        }
 
         if (gGameStatus.m6_previousGameStatus == 74)
         {
@@ -444,7 +585,7 @@ void moduleManager_Draw(s_moduleManager* pWorkArea)
             PDS_Log("Unimplemented entry in overlayDispatchTable[%d]. Skipping!\n", gGameStatus.m0_gameMode);
         }
         pWorkArea->state = 0;
-
+        }
         break;
     default:
         assert(0);

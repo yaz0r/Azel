@@ -55,21 +55,39 @@ void battleResultScreenProgressiveText_printNumber(const std::array<s32, 4>& dat
     vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
 }
 
+// BTL_A3::06070d46
 void battleResultScreenProgressiveTextNumber_update(sBattleResultProgressiveTextNumber* pThis)
 {
-    Unimplemented();
-    /*if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 6) == 0)
+    if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 6) == 0)
     {
-
+        if ((u8)pThis->m6 < (u8)pThis->m4)
+        {
+            pThis->m5++;
+            if ((u8)pThis->m5 > 2)
+            {
+                Unimplemented(); // FUN_06070788 — digit reveal sound/visual effect
+                pThis->m6++;
+                pThis->m5 = 0;
+            }
+        }
+        else
+        {
+            std::array<s32, 4> data;
+            data[0] = readSaturnS32(pThis->m8_config + 0);
+            data[1] = readSaturnS32(pThis->m8_config + 4);
+            data[2] = readSaturnS32(pThis->m8_config + 8);
+            data[3] = readSaturnS32(pThis->m8_config + 12);
+            battleResultScreenProgressiveText_printNumber(data, pThis->m0_value);
+            pThis->getTask()->markFinished();
+        }
     }
-    else*/
+    else
     {
         std::array<s32, 4> data;
         data[0] = readSaturnS32(pThis->m8_config + 0);
         data[1] = readSaturnS32(pThis->m8_config + 4);
         data[2] = readSaturnS32(pThis->m8_config + 8);
         data[3] = readSaturnS32(pThis->m8_config + 12);
-
         battleResultScreenProgressiveText_printNumber(data, pThis->m0_value);
         pThis->getTask()->markFinished();
     }

@@ -15,6 +15,51 @@
 
 void unloadFnt(); // TODO: fix
 
+// 060297f0
+static void applySkyColorGradient(s32 scrollOffset, const s8* gradientTable)
+{
+    s32 count = 0x1A8;
+    u32* pCoeff = (u32*)(*gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex]).data();
+    s32 offset = 0x19B - scrollOffset;
+
+    if (offset < -0x1A7)
+    {
+        for (s32 i = 0; i < count; i++)
+            pCoeff[i] = ((s32)gradientTable[0] << 24) | (pCoeff[i] & 0x80FFFFFF);
+    }
+    else if (offset < 0)
+    {
+        s32 clampCount = -offset;
+        for (s32 i = 0; i < clampCount && i < count; i++)
+            pCoeff[i] = ((s32)gradientTable[0] << 24) | (pCoeff[i] & 0x80FFFFFF);
+        for (s32 i = clampCount; i < count; i++)
+            pCoeff[i] = ((s32)gradientTable[i - clampCount] << 24) | (pCoeff[i] & 0x80FFFFFF);
+    }
+    else if (offset < 0x259)
+    {
+        const s8* pGrad = gradientTable + offset;
+        for (s32 i = 0; i < count; i++)
+            pCoeff[i] = ((s32)pGrad[i] << 24) | (pCoeff[i] & 0x80FFFFFF);
+    }
+    else if (offset < 0x400)
+    {
+        s32 remaining = 0x400 - offset;
+        const s8* pGrad = gradientTable + offset;
+        s32 i = 0;
+        for (; i < remaining && i < count; i++)
+            pCoeff[i] = ((s32)pGrad[i] << 24) | (pCoeff[i] & 0x80FFFFFF);
+        s8 lastVal = pGrad[remaining - 1];
+        for (; i < count; i++)
+            pCoeff[i] = ((s32)lastVal << 24) | (pCoeff[i] & 0x80FFFFFF);
+    }
+    else
+    {
+        s8 lastVal = gradientTable[0x3FF];
+        for (s32 i = 0; i < count; i++)
+            pCoeff[i] = ((s32)lastVal << 24) | (pCoeff[i] & 0x80FFFFFF);
+    }
+}
+
 struct sSeekVdp2Plane : public s_workAreaTemplate<sSeekVdp2Plane> {
     static const TypedTaskDefinition* getTypedTaskDefinition() {
         static const TypedTaskDefinition td = { nullptr, nullptr, nullptr, nullptr };
@@ -93,8 +138,31 @@ static s32 setupSeekerBackground(s32 param_1) {
         reinitVdp2PlaneTask(gSeekVdp2PlaneTask, &seekBgMode1_Init, &seekBgMode1_Update, &seekBgMode1_Draw);
         break;
     default:
-        Unimplemented(); // variant background (init only, no update/draw)
+    {
+        // 0606e484 — simple VDP2 init with no update/draw (used for interior scenes)
+        reinitVdp2();
+        initNBG1Layer();
+        auto* regs = vdp2Controls.m4_pendingVdp2Regs;
+        regs->m10_CYCA0 = 0x13FF57FF;
+        *(u16*)getVdp2Vram(0x25000) = 0;
+        regs->mA8_LCTA = (regs->mA8_LCTA & 0xFFF80000) | 0x12800;
+        *(u16*)getVdp2Vram(0x25002) = 0x8000;
+        regs->mAC_BKTA = (regs->mAC_BKTA & 0xFFF80000) | 0x12801;
+        regs->mE0_SPCTL = (regs->mE0_SPCTL & 0xFFF0) | 3;
+        regs->mE0_SPCTL = (regs->mE0_SPCTL & 0xF8FF) | 0x200;
+        regs->mE0_SPCTL = (regs->mE0_SPCTL & 0xCFFF) | 0x1000;
+        regs->mF0_PRISA = 0x204;
+        regs->mF2_PRISB = 0x407;
+        regs->mF4_PRISC = 0x404;
+        regs->mF6_PRISD = 0x404;
+        regs->mF8_PRINA = 0x600;
+        regs->mFA_PRINB = 0x700;
+        regs->mFC_PRIR = 0;
+        vdp2Controls.m_isDirty = 1;
+        gSeekVdp2PlaneTask->m_UpdateMethod = nullptr;
+        gSeekVdp2PlaneTask->m_DrawMethod = nullptr;
         break;
+    }
     }
     return 0;
 }
@@ -226,7 +294,8 @@ static void seekBgMode0_Draw(sSeekVdp2Plane* pThis) {
     pThis->m34_groundY = seekComputeGroundY();
 
     // Sky gradient update
-    Unimplemented(); // FUN_060297f0 — sky color gradient based on camera height + ground Y
+    applySkyColorGradient(((pThis->mC_cameraPosition.m4_Y.asS32() - 0xCCC) >> 6) + pThis->m34_groundY,
+        (const s8*)getSaturnPtr(gCurrentTownOverlay->getSaturnPtr(0x06080b60)));
 
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
     pThis->m4_scrollY = (0x15A - pThis->m34_groundY) * 0x10000;

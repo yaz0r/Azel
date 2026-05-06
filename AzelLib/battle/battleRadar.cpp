@@ -561,7 +561,21 @@ void battleRadar_Draw(sBattleRadarTask* pThis)
 
             if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x18])
             {
-                assert(0);
+                vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+                vdp2PrintStatus.m10_palette = 0xC000;
+                vdp2DebugPrintSetPosition(0x17, 0x14);
+                vdp2PrintfSmallFont("%03d", gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[2] >> 12);
+                vdp2DebugPrintSetPosition(0x17, 0x16);
+                vdp2PrintfSmallFont("%03d", gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[1] >> 12);
+                vdp2DebugPrintSetPosition(0x14, 0x18);
+                vdp2PrintfSmallFont("%03d", gBattleManager->m10_battleOverlay->m4_battleEngine->m45C_perQuadrantDragonSpeed[0] >> 12);
+                vdp2DebugPrintSetPosition(0x14, 0xF);
+                vdp2PrintfSmallFont("MODE:%1d", (u32)pThis->m12_mode);
+                vdp2DebugPrintSetPosition(0x14, 0x10);
+                vdp2PrintfSmallFont("OFFY:%2d", (s32)(s16)pThis->mE_offsetY);
+                vdp2DebugPrintSetPosition(0x14, 0x11);
+                vdp2PrintfSmallFont("SPD :%2d", (s32)(s16)pThis->mC);
+                vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
             }
         }
         

@@ -36,7 +36,7 @@ static void b2_startTasks_3(p_workArea workArea)
     Unimplemented(); // FUN_FLD_B2__0605f2a2 — create env object (0x98C scenery task)
     // 0606de6c — encounter config (empty function)
     createB2ItemBoxes_3();
-    Unimplemented(); // FUN_FLD_B2__0605e2d2 — create ambient sound task (0x64)
+    createB2AmbientSoundTask(workArea);
 
     setSoundDistanceParams(0x200000, 0x6E);
 }

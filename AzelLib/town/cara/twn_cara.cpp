@@ -10,6 +10,7 @@
 #include "town/townCamera.h"
 #include "town/excaEntity.h"
 #include "town/townCutscene.h"
+#include "town/e006/twn_e006.h"
 #include "battle/BTL_A3/BTL_A3_map6.h"
 #include "field/field_a3/o_fld_a3.h"
 #include "kernel/cinematicBarsTask.h"
@@ -102,9 +103,34 @@ static s32 resetFieldOfView() {
     return 0;
 }
 
+struct sCaraAtmosphereTask : public s_workAreaTemplate<sCaraAtmosphereTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { nullptr, &sCaraAtmosphereTask::Update, nullptr, nullptr };
+        return &taskDefinition;
+    }
+
+    // 0607232c
+    static void Update(sCaraAtmosphereTask* pThis)
+    {
+        Unimplemented(); // camera color modulation + position oscillation with sin table
+    }
+
+    sSaturnPtr m0_config;
+    s32 m4;
+    s32 m8_colorPhase;
+    s32 mC_colorPhaseStep;
+    s32 m10_posPhase;
+    s32 m14_posPhaseStep;
+    s32 m18_posAmplitude;
+    // size 0x1C
+};
+
 // 06072440
 static s32 createCaraSubTask(s32 param_1) {
-    Unimplemented(); // creates sub-task on townVar0 with definition 0x06087930
+    sCaraAtmosphereTask* pTask = createSubTask<sCaraAtmosphereTask>(townVar0);
+    pTask->m0_config = sSaturnPtr::createFromRaw(param_1, gCurrentTownOverlay);
     return 0;
 }
 
@@ -307,9 +333,9 @@ static void caravanCamera_update(sCameraTask* pThis)
     rotateMatrixShiftedY(fixedPoint((s32)rotY_target * (s32)t + (s32)rotY_source * invT), &mat);
     rotateMatrixShiftedX(fixedPoint((s32)rotX_target * (s32)t + (s32)rotX_source * invT), &mat);
 
-    pThis->m14[0] = mat.m[0][3];
-    pThis->m14[1] = mat.m[1][3];
-    pThis->m14[2] = mat.m[2][3];
+    pThis->m14[0] = mat.m[0][2];
+    pThis->m14[1] = mat.m[1][2];
+    pThis->m14[2] = mat.m[2][2];
 
     fixedPoint* d = pThis->m34_interpolatedLightData;
     pThis->m10.m0 = (s8)(((u32)((s32)d[0] + 0x8000) >> 16) & 0xFF);
@@ -493,8 +519,15 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
     static void Update(sCaraVdp2Plane* pThis)
     {
         if (pThis->m40_timer > 0) {
-            Unimplemented(); // timer-based fade logic
-            pThis->m40_timer--;
+            s32 iVar1;
+            if (townIsCutsceneDone() == 0) {
+                s32 curPos = e006_scriptFunction_6057438();
+                iVar1 = pThis->m44 - curPos;
+                pThis->m44 = e006_scriptFunction_6057438();
+            } else {
+                iVar1 = 1;
+            }
+            pThis->m40_timer -= iVar1;
             if (pThis->m40_timer < 1) {
                 vdp2Controls.m4_pendingVdp2Regs->m20_BGON = vdp2Controls.m4_pendingVdp2Regs->m20_BGON & ~1;
                 vdp2Controls.m_isDirty = 1;
@@ -878,17 +911,22 @@ struct sCaraEntitySmall : public s_workAreaTemplateWithArgAndBase<sCaraEntitySma
             sGunShotTask_UpdateSub4(&pThis->m10_animatedQuad);
         }
         else if (pThis->m24_status == 1) {
-            Unimplemented(); // FUN_06014db4
+            removeNPC(pThis, pThis, pThis->mC);
         }
     }
 
     // 06073258
     static void Draw(sCaraEntitySmall* pThis)
     {
-        Unimplemented();
+        drawProjectedParticle(&pThis->m10_animatedQuad, &pThis->m18_position);
     }
 
-    static void Delete(sCaraEntitySmall* pThis) { Unimplemented(); }
+    static void Delete(sCaraEntitySmall* pThis)
+    {
+        s16 npcIndex = readSaturnS16(pThis->mC + 0x26);
+        if (npcIndex > -1 && npcData0.m70_npcPointerArray[npcIndex].workArea == pThis)
+            npcData0.m70_npcPointerArray[npcIndex].workArea = nullptr;
+    }
 
     sSaturnPtr mC;
     sAnimatedQuad m10_animatedQuad;
@@ -950,7 +988,7 @@ struct sCaraEntityMedium : public s_workAreaTemplateWithArgAndBase<sCaraEntityMe
     static void Update2(sCaraEntityMedium* pThis)
     {
         if (pThis->m8C_status == 1) {
-            Unimplemented(); // FUN_06014db4
+            removeNPC(pThis, pThis, pThis->mC);
         }
         if (!readSaturnEA(pThis->mC + 0x24).isNull()) {
             registerCollisionBody(&pThis->m10_collisionBody);
@@ -960,10 +998,19 @@ struct sCaraEntityMedium : public s_workAreaTemplateWithArgAndBase<sCaraEntityMe
     // 06072f28
     static void Draw(sCaraEntityMedium* pThis)
     {
-        Unimplemented();
+        pushCurrentMatrix();
+        translateCurrentMatrix(pThis->m74_position);
+        rotateCurrentMatrixYXZ(pThis->m80_rotation);
+        addObjectToDrawList(pThis->m0_fileBundle->get3DModel(readSaturnU16(pThis->mC + 0x20)));
+        popMatrix();
     }
 
-    static void Delete(sCaraEntityMedium* pThis) { Unimplemented(); }
+    static void Delete(sCaraEntityMedium* pThis)
+    {
+        s16 npcIndex = readSaturnS16(pThis->mC + 0x28);
+        if (npcIndex > -1 && npcData0.m70_npcPointerArray[npcIndex].workArea == pThis)
+            npcData0.m70_npcPointerArray[npcIndex].workArea = nullptr;
+    }
 
     sSaturnPtr mC;
     sCollisionBody m10_collisionBody;

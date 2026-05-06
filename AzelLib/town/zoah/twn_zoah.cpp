@@ -264,9 +264,34 @@ int enableRBG0();
 static sTownObject* createZoahEntity(s_workAreaCopy* parent, sSaturnPtr arg);
 static sTownObject* createZoahNPC(npcFileDeleter* parent, sSaturnPtr arg);
 
+struct sZoahPaletteAnimTask : public s_workAreaTemplate<sZoahPaletteAnimTask>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { nullptr, nullptr, &sZoahPaletteAnimTask::Draw, nullptr };
+        return &taskDefinition;
+    }
+
+    // 060990dc
+    static void Draw(sZoahPaletteAnimTask* pThis)
+    {
+        Unimplemented(); // palette animation cycling via DMA
+    }
+
+    sSaturnPtr m0_config;
+    s32 m8_pad;
+    s32 mC_timer;
+    s32 m10_frameIndex;
+    // size 0x10
+};
+
 // 06099226
 static s32 createTimerSubTask(s32 param_1) {
-    Unimplemented(); // creates a 0x10-byte sub-task on townVar0
+    sZoahPaletteAnimTask* pTask = createSubTask<sZoahPaletteAnimTask>(townVar0);
+    pTask->m0_config = sSaturnPtr::createFromRaw(param_1, gCurrentTownOverlay);
+    pTask->m8_pad = 0;
+    pTask->mC_timer = 0;
+    pTask->m10_frameIndex = 0;
     return 0;
 }
 
@@ -1474,9 +1499,19 @@ static void startZoahBackgroundTask(p_workArea pParent)
     createSubTask<sZoahVdp2Plane>(pParent, &definition);
 }
 
+// 060540d2
 static void townOverlayDelete_TwnZoah(townDebugTask2Function* pThis)
 {
-    Unimplemented();
+    // toggleDayNight (0609deba)
+    sCameraTask::Init(cameraTaskPtr);
+    if ((mainGameState.bitField[0] & 1) == 0)
+    {
+        if ((mainGameState.bitField[1] & 0x80) == 0)
+            mainGameState.bitField[1] |= 0x80;
+        else
+            mainGameState.bitField[1] &= 0x7F;
+    }
+
     freeRamResources(pThis);
     vdp1FreeLastAllocation(pThis);
     unloadFnt();

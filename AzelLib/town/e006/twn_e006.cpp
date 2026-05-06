@@ -148,7 +148,12 @@ struct sE006Task1 : public s_workAreaTemplate<sE006Task1>
 
     static void Delete(sE006Task1* pThis)
     {
-        Unimplemented();
+        s8 npcIndex = readSaturnS8(pThis->m0);
+        if (npcData0.m70_npcPointerArray[npcIndex].workArea == pThis)
+        {
+            npcData0.m70_npcPointerArray[npcIndex].workArea = nullptr;
+        }
+        playAnimation(&gDragonState->m28_dragon3dModel, nullptr, 0);
     }
 
     sSaturnPtr m0;
@@ -210,9 +215,15 @@ s32 e006_scriptFunction_6057438()
     return 0;
 }
 
+// 06057470
 s32 scriptFunction_6057470()
 {
-    Unimplemented();
+    if (gCutsceneTask != nullptr)
+    {
+        npcData0.mF4 = 0;
+        gCutsceneTask->getTask()->markFinished();
+        gCutsceneTask = nullptr;
+    }
     return 0;
 }
 

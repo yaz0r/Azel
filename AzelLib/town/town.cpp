@@ -618,8 +618,10 @@ p_workArea startCameraTask(p_workArea pParent)
 
 void townOverlayDelete(townDebugTask2Function* pThis)
 {
-    Unimplemented();
-    
+    freeRamResources(pThis);
+    vdp1FreeLastAllocation(pThis);
+    initVDP1Projection(fixedPoint(0x1C71C71), 0);
+
     //FIX:
     if(gModuleManager && gModuleManager->m8)
     {

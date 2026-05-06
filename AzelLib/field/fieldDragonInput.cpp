@@ -1369,13 +1369,162 @@ void dragonInput_analog(s_dragonTaskWorkArea* pDragon)
 // 06086ade (A5) / 0607eeea (A3) — type 8 floater d-pad pitch/roll
 static void dragonDPadPitchRoll_type8(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented(); // complex pitch/roll with floater-specific physics
+    auto& input = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current;
+    auto& config = graphicEngineStatus.m4514.mD8_buttonConfig[1];
+    s32 turnRate = pDragon->m178_turnRate.m_value;
+
+    dragonSpecialInput(pDragon);
+
+    s32 absSpeed = pDragon->m154_dragonSpeed.m_value;
+    if (absSpeed < 0) absSpeed = -absSpeed;
+
+    if (absSpeed > 0xFF)
+    {
+        if ((config[5] & input.m6_buttonDown) != 0)
+        {
+            pDragon->m1F0.m_8 = turnRate;
+        }
+        else if ((config[4] & input.m6_buttonDown) != 0)
+        {
+            pDragon->m1F0.m_8 = -turnRate;
+        }
+        else
+        {
+            pDragon->m20_angle.m0_X = interpolateAngle28(pDragon->m20_angle.m0_X, pDragon->m3C_targetAngles.m0_X);
+        }
+    }
+
+    // Clamp pitch
+    s32 pitch = pDragon->m20_angle.m0_X.m_value;
+    pitch = signExtend28(pitch);
+    if (pitch > pDragon->m14C_pitchMax.m_value)
+        pDragon->m20_angle.m0_X = pDragon->m14C_pitchMax;
+    pitch = pDragon->m20_angle.m0_X.m_value;
+    pitch = signExtend28(pitch);
+    if (pitch < pDragon->m148_pitchMin.m_value)
+        pDragon->m20_angle.m0_X = pDragon->m148_pitchMin;
+
+    // Interpolate pitch toward target
+    pDragon->m20_angle.m0_X = interpolateAngle28(pDragon->m20_angle.m0_X, pDragon->m3C_targetAngles.m0_X);
+
+    // Interpolate roll toward target
+    pDragon->m20_angle.m8_Z = interpolateAngle28(pDragon->m20_angle.m8_Z, pDragon->m3C_targetAngles.m8_Z);
+
+    // Yaw
+    if (pDragon->m25D == 1)
+    {
+        interpYawWithBanking(pDragon);
+    }
+    else if ((config[7] & input.m6_buttonDown) != 0)
+    {
+        if ((pDragon->mF8_Flags & 0x8000) == 0)
+            pDragon->m20_angle.m4_Y = fixedPoint(pDragon->m20_angle.m4_Y.m_value - turnRate);
+        pDragon->m1F0.m_C = -turnRate;
+        if (turnRate <= pDragon->m30.m_value - pDragon->m20_angle.m4_Y.m_value)
+        {
+            pDragon->m20_angle.m8_Z = fixedPoint(pDragon->m20_angle.m8_Z.m_value + turnRate);
+        }
+        pDragon->m25E = 0;
+    }
+    else if ((config[6] & input.m6_buttonDown) != 0)
+    {
+        if ((pDragon->mF8_Flags & 0x8000) == 0)
+            pDragon->m20_angle.m4_Y = fixedPoint(pDragon->m20_angle.m4_Y.m_value + turnRate);
+        pDragon->m1F0.m_C = turnRate;
+        if (turnRate <= pDragon->m20_angle.m4_Y.m_value - pDragon->m30.m_value)
+        {
+            pDragon->m20_angle.m8_Z = fixedPoint(pDragon->m20_angle.m8_Z.m_value - turnRate);
+        }
+        pDragon->m25E = 1;
+    }
+
+    pDragon->m247 = 0;
+    pDragon->m246_previousAnalogY = 0;
+    pDragon->m245_previousAnalogX = 0;
 }
 
 // 0608720c (A5) / 0607f618 (A3) — type 8 floater analog pitch/roll
 static void dragonAnalogPitchRoll_type8(s_dragonTaskWorkArea* pDragon)
 {
-    Unimplemented(); // complex pitch/roll with floater-specific physics
+    auto& input = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current;
+    s32 turnRate = pDragon->m178_turnRate.m_value;
+
+    s32 analogY;
+    if (graphicEngineStatus.m4514.m138[1] == 0)
+        analogY = (s32)input.m3_analogY;
+    else
+        analogY = -(s32)input.m3_analogY;
+    s32 negAnalogY = -analogY;
+
+    dragonAnalogSpecialInput(pDragon);
+
+    // Pitch
+    if (negAnalogY > 0)
+    {
+        pDragon->m1F0.m_8 = performDivision(0x7F, turnRate * negAnalogY);
+    }
+    else if (negAnalogY < 0)
+    {
+        pDragon->m1F0.m_8 = performDivision(0x7F, turnRate * negAnalogY);
+    }
+    else
+    {
+        // No analog input: interpolate pitch toward target
+        pDragon->m20_angle.m0_X = interpolateAngle28(pDragon->m20_angle.m0_X, pDragon->m3C_targetAngles.m0_X);
+    }
+
+    // Clamp pitch
+    s32 pitch = pDragon->m20_angle.m0_X.m_value;
+    pitch = signExtend28(pitch);
+    if (pitch > pDragon->m14C_pitchMax.m_value)
+        pDragon->m20_angle.m0_X = pDragon->m14C_pitchMax;
+    pitch = pDragon->m20_angle.m0_X.m_value;
+    pitch = signExtend28(pitch);
+    if (pitch < pDragon->m148_pitchMin.m_value)
+        pDragon->m20_angle.m0_X = pDragon->m148_pitchMin;
+
+    // Yaw
+    s32 analogX = (s32)input.m2_analogX;
+    pDragon->m1F0.m_C = performDivision(0x7F, turnRate * analogX);
+
+    if (pDragon->m25D == 1)
+    {
+        interpYawWithBanking(pDragon);
+    }
+    else if ((pDragon->mF8_Flags & 0x8000) == 0)
+    {
+        pDragon->m20_angle.m4_Y = fixedPoint(pDragon->m20_angle.m4_Y.m_value + pDragon->m1F0.m_C);
+    }
+
+    // Roll: interpolate toward target
+    pDragon->m20_angle.m8_Z = interpolateAngle28(pDragon->m20_angle.m8_Z, pDragon->m3C_targetAngles.m8_Z);
+
+    // Banking from analogX
+    if (analogX > 0)
+    {
+        s32 scaledX = performDivision(0x7F, turnRate * analogX);
+        if (scaledX <= pDragon->m20_angle.m4_Y.m_value - pDragon->m30.m_value)
+        {
+            pDragon->m20_angle.m8_Z = fixedPoint(pDragon->m20_angle.m8_Z.m_value - turnRate);
+        }
+        pDragon->m25E = 1;
+    }
+    else if (analogX < 0)
+    {
+        s32 scaledX = performDivision(0x7F, -(turnRate * analogX));
+        if (scaledX <= pDragon->m30.m_value - pDragon->m20_angle.m4_Y.m_value)
+        {
+            pDragon->m20_angle.m8_Z = fixedPoint(pDragon->m20_angle.m8_Z.m_value + turnRate);
+        }
+        pDragon->m25E = 0;
+    }
+
+    pDragon->m245_previousAnalogX = input.m2_analogX;
+    s8 storedY = input.m3_analogY;
+    if (graphicEngineStatus.m4514.m138[1] != 0)
+        storedY = -input.m3_analogY;
+    pDragon->m246_previousAnalogY = storedY;
+    pDragon->m247 = input.m4;
 }
 
 // 06086d22 (A5) / 0607f12e (A3) — dragon input: digital pad (type 8 floater)

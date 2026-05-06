@@ -21,7 +21,7 @@ void BTL_A3_2_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u
         createArachnothFormation(pParent, arg0, arg1);
         break;
     default:
-        Unimplemented();
+        assert(0);
         break;
     }
 }
@@ -34,14 +34,14 @@ void BTL_A3_2_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent)
         BTL_A3_2_createMap(pParent);
         break;
     default:
-        Unimplemented();
+        assert(0);
         break;
     }
 }
 
 p_workArea BTL_A3_2_data::invokeCreateEffect(sSaturnPtr Func, s_workAreaCopy* pParent)
 {
-    Unimplemented();
+    assert(0);
     return nullptr;
 }
 

@@ -20,6 +20,9 @@ struct FLD_A3_data : public sFieldOverlay
         m_waterfallSplashQuadB = initVdp1Quad(getSaturnPtr(0x060829a0));
         m_waterfallDropletQuad = initVdp1Quad(getSaturnPtr(0x06082674));
         m_mineCartDustQuad = initVdp1Quad(getSaturnPtr(0x06092734));
+        m_waterfallMistQuadA = initVdp1Quad(getSaturnPtr(0x06082594));
+        m_waterfallMistQuadB = initVdp1Quad(getSaturnPtr(0x060824b4));
+        m_waterfallFallingQuad = initVdp1Quad(getSaturnPtr(0x0608232c));
     }
 
     std::vector<sVdp1Quad> m_0x0609518C_animatedQuad;
@@ -32,6 +35,9 @@ struct FLD_A3_data : public sFieldOverlay
     std::vector<sVdp1Quad> m_waterfallSplashQuadB; // 0x060829a0
     std::vector<sVdp1Quad> m_waterfallDropletQuad; // 0x06082674
     std::vector<sVdp1Quad> m_mineCartDustQuad;     // 0x06092734
+    std::vector<sVdp1Quad> m_waterfallMistQuadA;   // 0x06082594
+    std::vector<sVdp1Quad> m_waterfallMistQuadB;   // 0x060824b4
+    std::vector<sVdp1Quad> m_waterfallFallingQuad; // 0x0608232c
 
     void dispatchCellObjectCreation(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6) override;
     s32 executeNative(sSaturnPtr ptr) override;

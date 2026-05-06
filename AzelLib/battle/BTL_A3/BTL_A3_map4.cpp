@@ -9,6 +9,14 @@
 #include "BTL_A3_data.h"
 #include "town/town.h" // TODO: cleanup
 
+struct sBTL_A3_map6_sub : public s_workAreaTemplate<sBTL_A3_map6_sub>
+{
+    // size 0x20
+};
+void sBTL_A3_map6_sub_Init(sBTL_A3_map6_sub* pThis);
+void sBTL_A3_map6_sub_Update(sBTL_A3_map6_sub* pThis);
+void sBTL_A3_map6_sub_Draw(sBTL_A3_map6_sub* pThis);
+
 static void BTL_A3_map4_Init(sVdp2PlaneTask* pThis)
 {
     loadFile("SCBTLA32.SCB", getVdp2Vram(0x40000), 0);
@@ -25,7 +33,16 @@ static void BTL_A3_map4_Init(sVdp2PlaneTask* pThis)
 
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
 
-    Unimplemented();
+    // 060591da — create water effect sub-task (same as map6/map3)
+    {
+        static const sBTL_A3_map6_sub::TypedTaskDefinition definition = {
+            &sBTL_A3_map6_sub_Init,
+            &sBTL_A3_map6_sub_Update,
+            &sBTL_A3_map6_sub_Draw,
+            nullptr,
+        };
+        createSubTask<sBTL_A3_map6_sub>((npcFileDeleter*)pThis->m58, &definition);
+    }
 
     allocateNPC(pThis, 0x14);
 

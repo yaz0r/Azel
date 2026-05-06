@@ -165,16 +165,16 @@ bool isCurrentBattleID(s8 param1, s8 param2)
     return false;
 }
 
+// BTL_A3::06061318
 void battleResultScreen_updateSub17(sBattleResultScreen* pThis)
 {
-    if (!isCurrentBattleID(0x1A, 0) && !isCurrentBattleID(0xe, 2) && !isCurrentBattleID(0x16, 0) && !isCurrentBattleID(4, 0) && !isCurrentBattleID(0x11, 0))
+    if (isCurrentBattleID(0x1A, 0) || isCurrentBattleID(0xe, 2) || isCurrentBattleID(0x16, 0) || isCurrentBattleID(4, 0) || isCurrentBattleID(0x11, 0))
     {
-        createBattleEndTask(pThis, 0);
-        battleEngine_resetBattleCameraPreset();
+        Unimplemented(); // boss victory: create story progression task, set dragon level, write game flags
         return;
     }
-    assert(0);
-    Unimplemented();
+    createBattleEndTask(pThis, 0);
+    battleEngine_resetBattleCameraPreset();
 }
 
 void battleResultScreen_update(sBattleResultScreen* pThis)
@@ -343,7 +343,7 @@ void battleResultScreen_update(sBattleResultScreen* pThis)
             }
             else
             {
-                assert(0);
+                Unimplemented(); // level-up display: applies HP/BP stat increases, shows level-up text
             }
         }
         break;
@@ -370,7 +370,23 @@ void battleResultScreen_update(sBattleResultScreen* pThis)
     pGrid->m1BC_cameraRotationStep[1] += 0x5B05B;
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x17])
     {
-        assert(0);
+        u8* gs = (u8*)&mainGameState.gameStats;
+        vdp2DebugPrintSetPosition(1, 5);
+        vdp2PrintfSmallFont("phase %1d", (u32)(u8)pThis->m72);
+        vdp2DebugPrintSetPosition(1, 7);
+        vdp2PrintfSmallFont("level :%2d", (s8)mainGameState.gameStats.m0_level + 1);
+        vdp2DebugPrintSetPosition(1, 8);
+        vdp2PrintfSmallFont("Atk lv:%2d", (s8)gs[5] + 1);
+        vdp2DebugPrintSetPosition(1, 9);
+        vdp2PrintfSmallFont("Tec lv:%2d", (s8)gs[6] + 1);
+        vdp2DebugPrintSetPosition(1, 10);
+        vdp2PrintfSmallFont("Def lv:%2d", (s8)gs[7] + 1);
+        vdp2DebugPrintSetPosition(1, 11);
+        vdp2PrintfSmallFont("Mob lv:%2d", (s8)gs[8] + 1);
+        vdp2DebugPrintSetPosition(1, 12);
+        vdp2PrintfSmallFont("LPOW:%3d", (s32)(s16)mainGameState.gameStats.mC_laserPower);
+        vdp2DebugPrintSetPosition(1, 13);
+        vdp2PrintfSmallFont("GPOW:%3d", (s32)(s16)mainGameState.gameStats.mE_gunPower);
     }
 }
 

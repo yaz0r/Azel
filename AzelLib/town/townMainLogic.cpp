@@ -795,8 +795,11 @@ int setupCameraFollowMode()
 
 s32 hasLoadingCompleted()
 {
-    Unimplemented();
-    return 1;
+    if (twnMainLogicTask->m14_EdgeTask)
+    {
+        updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
+    }
+    return fileInfoStruct.m2C_allocatedHead == nullptr;
 }
 
 void sMainLogic::Init(sMainLogic* pThis)

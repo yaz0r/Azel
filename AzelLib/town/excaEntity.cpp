@@ -56,12 +56,11 @@ struct sGenericTownNPC : public s_workAreaTemplateWithArgAndBase<sGenericTownNPC
                 pThis->m60_scriptContext.m38_pOwner = pThis;
                 pThis->m60_scriptContext.m3C_scriptEA = readSaturnEA(scriptConfigEA + 4);
 
-                s16 sVar1 = readSaturnS16(scriptConfigEA + 2) >> 0xF;
+                s16 sVar1 = readSaturnS16(scriptConfigEA + 2);
                 sProcessed3dModel* puVar3 = nullptr;
                 if (sVar1)
                 {
-                    //puVar3 = pThis->mC.getRawPointer() + sVar1;
-                    assert(0);
+                    puVar3 = (sProcessed3dModel*)((u8*)pThis->m0_fileBundle + sVar1);
                 }
 
                 pThis->m60_scriptContext.m40 = puVar3;
@@ -99,7 +98,7 @@ struct sGenericTownNPC : public s_workAreaTemplateWithArgAndBase<sGenericTownNPC
             stepAnimation(&pThis->m10_3dModel);
             break;
         case 3:
-            assert(0); //delete
+            removeNPC(pThis, pThis, pThis->mC);
             break;
         default:
             assert(0);

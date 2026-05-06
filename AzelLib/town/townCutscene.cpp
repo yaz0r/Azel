@@ -7,6 +7,7 @@
 #include "kernel/fileBundle.h"
 #include "kernel/graphicalObject.h"
 #include "kernel/animation.h"
+#include "mainMenuDebugTasks.h"
 
 struct sStreamingParams
 {
@@ -53,7 +54,7 @@ s32 GFS_NwExecOne(GfsHn hanle)
 void GFS_NwGetStat(GfsHn handle, s32* stat, s32* nbytes)
 {
     *nbytes = numReadBytes;
-    Unimplemented();
+    *stat = 2; // GFS_SVR_COMPLETED on Saturn; reads are synchronous on PC
 }
 
 s32 GFS_NwFread(GfsHn handle, s32 numSectors, u8* buffer, s32 bufferSize)
@@ -66,7 +67,7 @@ s32 GFS_NwFread(GfsHn handle, s32 numSectors, u8* buffer, s32 bufferSize)
 
 void GFS_NwCdRead(GfsHn handle)
 {
-    Unimplemented();
+    // no-op on PC — reads are synchronous via fread in GFS_NwFread
 }
 
 sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 bufferSize, u8* audioBuffer, u32 audioBufferSize)
@@ -131,7 +132,7 @@ sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 buf
 
 void GFS_SetTransPara(GfsHn hanfle, s32 numSectors)
 {
-    Unimplemented();
+    // no-op on PC — Saturn CD transfer parameter setup
 }
 
 void prereadStreamingData(sStreamingFile* param_1)
@@ -479,9 +480,17 @@ struct sCutsceneCommandDefaultTask : public s_workAreaTemplate<sCutsceneCommandD
         popMatrix();
     }
 
+    // 0600ee56
     static void Delete(sCutsceneCommandDefaultTask* pThis)
     {
-        Unimplemented();
+        if (pThis->m0)
+        {
+            dramFree((u8*)pThis->m0);
+        }
+        if (pThis->m4)
+        {
+            vdp1Free((u8*)pThis->m4);
+        }
     }
 
     s_fileBundle* m0;
@@ -1181,9 +1190,16 @@ void sCutsceneTask::Draw(sCutsceneTask* pThis)
     }
 }
 
+// 06057336
 void sCutsceneTask::Delete(sCutsceneTask* pThis)
 {
-    Unimplemented();
+    updateStreamingFileReadSub0(pThis->m0);
+    if (pThis->m1D4)
+    {
+        dramFree(pThis->m1D4);
+        pThis->m1D4 = nullptr;
+    }
+    gCutsceneTask = nullptr;
 }
 
 sCutsceneTask* gCutsceneTask = nullptr;

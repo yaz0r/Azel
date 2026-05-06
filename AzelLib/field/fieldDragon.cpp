@@ -2002,6 +2002,66 @@ static void fieldTerrainCallback(s32 subFieldIndex, sVec3_FP* pPos, sVec3_FP* pA
     Unimplemented();
 }
 
+// 002161f4 — zone lookup table: maps subfield index to zone ID
+static const u8 subfieldZoneLookup[] = {
+    0x0F, 0x00, 0x00, 0x01, 0x02, 0x03, 0x10, 0x04,
+    0x05, 0x11, 0x06, 0x06, 0x06, 0x07, 0x07, 0x07,
+};
+
+// 00216218 — zone position offsets (X, Z) indexed by zone
+static const s32 zonePositionOffsets[][2] = {
+    { (s32)0xFFFC4800, (s32)0xFFE3799A }, // zone 0
+    { (s32)0x005B4999, (s32)0xFF98A800 }, // zone 1
+    { (s32)0x001BD800, (s32)0xFFE36CCD }, // zone 2
+    { (s32)0x00113666, (s32)0xFFB9C4CD }, // zone 3
+    { (s32)0xFFE88667, (s32)0xFF9DD19A }, // zone 4
+    { (s32)0xFFF9E800, (s32)0xFFBD7B34 }, // zone 5
+    { (s32)0x00061000, (s32)0xFFA1C334 }, // zone 6
+    { (s32)0x00470CCC, (s32)0xFF978B34 }, // zone 7
+    { (s32)0x00155666, (s32)0xFFBEA667 }, // zone 8
+};
+
+// 00216290 — subfield position offsets (X, Z) indexed by subfield
+static const s32 subfieldPositionOffsets[][2] = {
+    { (s32)0x0004A000, (s32)0x00000000 }, // subfield 0
+    { (s32)0x00410000, (s32)0xFFE10000 }, // subfield 1
+    { (s32)0x00798000, (s32)0xFFBD0000 }, // subfield 2
+    { (s32)0x00000000, (s32)0x00000000 }, // subfield 3
+    { (s32)0x00000000, (s32)0x00000000 }, // subfield 4
+    { (s32)0x00000000, (s32)0x00000000 }, // subfield 5
+    { (s32)0x0008EB33, (s32)0x01050000 }, // subfield 6
+    { (s32)0x00290000, (s32)0x001B8000 }, // subfield 7
+    { (s32)0x00798000, (s32)0xFFBD0000 }, // subfield 8
+    { (s32)0x0003F333, (s32)0x0121C4CC }, // subfield 9
+    { (s32)0x00030000, (s32)0xFFFD8000 }, // subfield 10
+    { (s32)0xFFEC8000, (s32)0x004C8000 }, // subfield 11
+    { (s32)0x00E98000, (s32)0x005E0000 }, // subfield 12
+    { (s32)0x00000000, (s32)0x00000000 }, // subfield 13
+    { (s32)0x00000000, (s32)0x00000000 }, // subfield 14
+    { (s32)0x00000000, (s32)0x00000000 }, // subfield 15
+};
+
+// 0602f87c — transform position based on subfield offsets
+static u32 transformPositionBySubfield(sVec3_FP* pPos)
+{
+    s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
+    u32 zone = subfieldZoneLookup[(s16)pFieldTask->m2E_currentSubFieldIndex];
+    s32 subfieldIdx = (s16)pFieldTask->m2E_currentSubFieldIndex;
+
+    if (zone < 0xF)
+    {
+        pPos->m0_X = fixedPoint(pPos->m0_X.m_value + subfieldPositionOffsets[subfieldIdx][0] + zonePositionOffsets[zone][0]);
+        pPos->m8_Z = fixedPoint(pPos->m8_Z.m_value + subfieldPositionOffsets[subfieldIdx][1] + zonePositionOffsets[zone][1]);
+    }
+    else
+    {
+        pPos->m0_X = fixedPoint(pPos->m0_X.m_value + subfieldPositionOffsets[subfieldIdx][0]);
+        pPos->m8_Z = fixedPoint(-subfieldPositionOffsets[subfieldIdx][1] - pPos->m4_Y.m_value);
+        zone = 0xF;
+    }
+    return zone;
+}
+
 // 0602f8e4 -- read dragon pos and transform for special fields (0xF, 0x12)
 static void readAndTransformDragonPos(sVec3_FP* pOut)
 {
@@ -2009,7 +2069,7 @@ static void readAndTransformDragonPos(sVec3_FP* pOut)
     pOut->m0_X = pDragon->m8_pos[0];
     pOut->m4_Y = pDragon->m8_pos[1];
     pOut->m8_Z = pDragon->m8_pos[2];
-    Unimplemented(); // FUN_0602f87c -- transform pos based on sub-field offsets
+    transformPositionBySubfield(pOut);
 }
 
 // 06073c7a

@@ -35,13 +35,14 @@ void BattleEngineSub0_Update(s_battleEngineSub0* pThis)
     }
 }
 
+// BTL_A3::06065298
 void BattleEngineSub0_Draw(s_battleEngineSub0* pThis)
 {
     if (!gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m8_showingBattleResultScreen)
     {
         if (gBattleManager->m10_battleOverlay->m20_battleHud->m0 == 1)
         {
-            assert(0);
+            Unimplemented(); // drawGauge + vdp2 debug text for battle timer display
         }
     }
 }

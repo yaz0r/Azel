@@ -329,7 +329,7 @@ void encounterTaskDraw(sEncouterTask* pThis)
 
 void encounterTaskDelete(sEncouterTask* pThis)
 {
-    Unimplemented();
+    encounterTaskVar0 = 0;
 }
 
 void createEncounterTask(s_workArea* pWorkArea)

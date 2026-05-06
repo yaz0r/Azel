@@ -779,6 +779,8 @@ struct s_dragonState : public s_workAreaTemplate<s_dragonState>
     }
 
     struct s_fileBundle* m0_pDragonModelBundle;
+    void* m4_vdp1Allocation; // 4
+    p_workArea m8_parentTask; // 8
     s32 mC_dragonType;//C
     s16 m10_cursorX;//10
     s16 m12_cursorY;//12

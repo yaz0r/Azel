@@ -25,6 +25,8 @@ void drawDebugMenu()
         ImGui::MenuItem("Camera", nullptr, &gDebugWindows.camera);
         ImGui::MenuItem("Arachnoth", nullptr, &gDebugWindows.arachnoth);
         ImGui::MenuItem("VDP1 VRAM", nullptr, &gDebugWindows.vdp1Vram);
+        ImGui::MenuItem("Game Status", nullptr, &gDebugWindows.gameStatus);
+        ImGui::MenuItem("Flag Editor", nullptr, &gDebugWindows.flagEditor);
         ImGui::Separator();
         ImGui::MenuItem("Default Log", nullptr, &gDebugWindows.defaultLog);
         ImGui::MenuItem("Task Log", nullptr, &gDebugWindows.taskLog);

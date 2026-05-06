@@ -81,13 +81,37 @@ void formationApplyAutoScroll(sFormationTaskBase* pThis)
 // 0609b60a
 void formationTriggerAttack(sEntityGroup* pGroup, s8 attackType)
 {
-    Unimplemented();
+    u32 attackBit = 1 << ((u8)attackType);
+    for (s32 i = 0; i < pGroup->mE_numEntities; i++)
+    {
+        p_workArea pEntity = pGroup->m0_entityArray[i];
+        if (pEntity == nullptr || pEntity->getTask()->isFinished())
+        {
+            pGroup->m0_entityArray[i] = nullptr;
+        }
+        else
+        {
+            Unimplemented(); // entity->m14_attackFlags |= attackBit — needs common battle entity base struct
+        }
+    }
 }
 
 // 0609b65e
 void formationTriggerAttackFollowup(sEntityGroup* pGroup, s8 attackType)
 {
-    Unimplemented();
+    u32 attackBit = 1 << ((u8)attackType);
+    for (s32 i = 0; i < pGroup->mE_numEntities; i++)
+    {
+        p_workArea pEntity = pGroup->m0_entityArray[i];
+        if (pEntity == nullptr || pEntity->getTask()->isFinished())
+        {
+            pGroup->m0_entityArray[i] = nullptr;
+        }
+        else
+        {
+            Unimplemented(); // entity->m14_attackFlags &= ~attackBit — needs common battle entity base struct
+        }
+    }
 }
 
 // 060698e6
@@ -208,6 +232,12 @@ void formationSubStateMachine(sFormationTaskBase* pThis, sEntityGroup* pGroup)
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1A] != 0)
     {
-        Unimplemented(); // debug display
+        vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
+        vdp2PrintStatus.m10_palette = 0xC000;
+        vdp2DebugPrintSetPosition(1, 2);
+        vdp2PrintfSmallFont("FRM ST:%1d", pThis->m28_state);
+        vdp2DebugPrintSetPosition(1, 3);
+        vdp2PrintfSmallFont("FRM CT:%3d", pThis->m26_counter2);
+        vdp2PrintStatus.m10_palette = vdp2PrintStatus.m14_oldPalette;
     }
 }

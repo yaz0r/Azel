@@ -7,6 +7,75 @@
 #include "audio/soundDriver.h"
 #include "3dEngine.h"
 
+// 0605e238
+struct sB2AmbientSoundEntry
+{
+    sVec3_FP* m0_pWorldPos;
+    sVec3_FP m4_viewPos;
+    s16 m10_soundId;
+    s8 m12_isPlaying;
+    // size 0x14
+};
+
+struct sB2AmbientSoundTask : public s_workAreaTemplate<sB2AmbientSoundTask>
+{
+    sB2AmbientSoundEntry m0_entries[5];
+    // size 0x64
+};
+
+// 0605e238
+static void b2AmbientSoundInit(sB2AmbientSoundTask* pThis)
+{
+    getFieldSpecificData_B2()->m54_ambientSoundTask = pThis;
+}
+
+// 0605e254
+static void b2AmbientSoundUpdate(sB2AmbientSoundTask* pThis)
+{
+    for (s32 i = 0; i < 5; i++)
+    {
+        sB2AmbientSoundEntry* pEntry = &pThis->m0_entries[i];
+        if (pEntry->m10_soundId != 0)
+        {
+            if (pEntry->m12_isPlaying == 0)
+            {
+                s32 result = findSound(pEntry->m10_soundId);
+                if (result >= 0)
+                {
+                    pEntry->m12_isPlaying = 1;
+                }
+            }
+            else
+            {
+                s32 result = findSound(pEntry->m10_soundId);
+                if (result < 0)
+                {
+                    pEntry->m0_pWorldPos = nullptr;
+                    pEntry->m10_soundId = 0;
+                }
+                else
+                {
+                    transformAndAddVecByCurrentMatrix(pEntry->m0_pWorldPos, &pEntry->m4_viewPos);
+                    updatePositionalSound(pEntry->m10_soundId, &pEntry->m4_viewPos);
+                }
+            }
+        }
+    }
+}
+
+// 0605e2d2
+// 0605e2d2
+void createB2AmbientSoundTask(p_workArea parent)
+{
+    static const sB2AmbientSoundTask::TypedTaskDefinition definition = {
+        &b2AmbientSoundInit,
+        &b2AmbientSoundUpdate,
+        nullptr,
+        nullptr,
+    };
+    createSubTask<sB2AmbientSoundTask>(parent, &definition);
+}
+
 // 0605fb5a — create item boxes for subfield 1 (oasis)
 static void createB2ItemBoxes_1()
 {
@@ -24,7 +93,7 @@ static void b2_startTasks_1(p_workArea workArea)
 
     Unimplemented(); // FUN_FLD_B2__060559ea — create env object (0x12C oasis plants task)
     createB2ItemBoxes_1();
-    Unimplemented(); // FUN_FLD_B2__0605e2d2 — create ambient sound task (0x64)
+    createB2AmbientSoundTask(workArea);
 
     setSoundDistanceParams(0x200000, 0x6E);
 }
