@@ -498,14 +498,11 @@ static void morphDragonSetupWeights(s32 cursorX, s32 cursorY)
 }
 
 // 06013510
-static void morphDragonVertice(sVec3_FP* pDst, const sVec3_FP* pA, const sVec3_FP* pB, const sVec3_FP* pC)
+static void morphDragonVertice(sVec3_FP& pDst, const sVec3_FP& pA, const sVec3_FP& pB, const sVec3_FP& pC)
 {
-    for (int i = 0; i < 3; i++)
-    {
-        pDst[i] = MTH_Mul(morphDragonAccumulator[0], pA[i])
-                + MTH_Mul(morphDragonAccumulator[1], pB[i])
-                + MTH_Mul(morphDragonAccumulator[2], pC[i]);
-    }
+    pDst = MTH_Mul(morphDragonAccumulator[0], pA)
+        + MTH_Mul(morphDragonAccumulator[1], pB)
+        + MTH_Mul(morphDragonAccumulator[2], pC);
 }
 
 // 060134cc — morph normals (s16 weighted blend)
@@ -625,7 +622,7 @@ static void morphDragonBonePoses(s_3dModel* pModel, struct sStaticPoseData* pA, 
         auto& pPoseB = pB->m0_bones.at(i);
         auto& pPoseC = pC->m0_bones.at(i);
 
-        morphDragonVertice(&pPose.m0_translation, &pPoseA.m0_translation, &pPoseB.m0_translation, &pPoseC.m0_translation);
+        morphDragonVertice(pPose.m0_translation, pPoseA.m0_translation, pPoseB.m0_translation, pPoseC.m0_translation);
     }
 }
 
@@ -651,7 +648,7 @@ static void morphDragonHotpoints(std::vector<s_hotpointDefinition>* pDstPairs, s
             auto pC = pCPairs->at(i).m0.begin();
             for (s32 j = 0; j < numEntries; j++)
             {
-                morphDragonVertice(&pDst->m4, &pA->m4, &pB->m4, &pC->m4);
+                morphDragonVertice(pDst->m4, pA->m4, pB->m4, pC->m4);
                 pDst->m10 = morphDragonBlendColor(pA->m10, pB->m10, pC->m10);
             }
         }
