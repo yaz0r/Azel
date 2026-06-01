@@ -20,4 +20,3 @@ void sHomingLaserTask_DrawSub1(sHomingLaserTrailData* pThis);
 void sHomingLaserTask_shiftTrailSegments(sHomingLaserTrailData* pTrail, sVec3_FP* pNewPos, sVec3_FP* pAutoScroll);
 
 void battleEngine_createHomingLaserRootTask(s_workAreaCopy* pThis, s32 param_2);
-void updateDragonStats(int type, sVec3_FP* pOutput);

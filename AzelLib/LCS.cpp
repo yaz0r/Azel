@@ -2,6 +2,7 @@
 #include "items.h"
 #include "audio/systemSounds.h"
 #include "battle/homingLaser.h"
+#include "dragonData.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "field/fieldVisibilityGrid.h"
 

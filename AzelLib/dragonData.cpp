@@ -5,6 +5,7 @@
 #include "commonOverlay.h"
 #include "3dEngine_textureCache.h"
 #include "kernel/vdp1Allocator.h"
+#include "processModel.h"
 
 sHotpointBundle* readRiderDefinitionSub(sSaturnPtr ptrEA); // TODO cleanup
 
@@ -426,7 +427,7 @@ void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     sAnimationData* pDefaultAnimationData = pDragonState->m0_pDragonModelBundle->getAnimation(pDragonState->m20_dragonAnimOffsets[0]);
     sStaticPoseData* defaultPose = pDragonState->m0_pDragonModelBundle->getStaticPose(pDragonData3->m_m8[0].m4_poseModelIndex, pDefaultAnimationData->m2_numBones);
 
-    init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonState->m0_pDragonModelBundle, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m_m8);
+    init3DModelRawData(pDragonState, &pDragonState->m28_dragon3dModel, 0x300, pDragonState->m0_pDragonModelBundle, pDragonState->m14_modelIndex, pDefaultAnimationData, defaultPose, 0, pDragonData3->m_m8[0].m8_hotPoints);
 
     init3DModelAnims(pDragonState, &pDragonState->m28_dragon3dModel, &pDragonState->m78_animData, getDragonDataByIndex(dragonLevel));
 
@@ -450,13 +451,13 @@ s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel drago
 {
     s_loadDragonWorkArea* pLoadDragonWorkArea = createSubTaskFromFunction<s_loadDragonWorkArea>(pWorkArea, nullptr);
 
-    pLoadDragonWorkArea->m8_dramAllocation = dramAllocate(0x1F600);
+    pLoadDragonWorkArea->m0_dramAllocation = (sDragonBuffer*)dramAllocate(sizeof(sDragonBuffer));
     pLoadDragonWorkArea->m4_vramAllocation = NULL;
-    pLoadDragonWorkArea->m8_MCBInDram = pLoadDragonWorkArea->m8_dramAllocation + 0x18E00;
+    pLoadDragonWorkArea->m8_MCBInDram = pLoadDragonWorkArea->m0_dramAllocation->m18E00_MCBInDram.data();
 
     if (dragonFilenameTable[dragonLevel].m_M.MCB)
     {
-        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, pLoadDragonWorkArea->m8_dramAllocation, 0);
+        loadFile(dragonFilenameTable[dragonLevel].m_M.MCB, &pLoadDragonWorkArea->m0_dramAllocation->m0_dramData, 0);
         loadFile(dragonFilenameTable[dragonLevel].m_M.CGB, pLoadDragonWorkArea->m8_MCBInDram, 0);
     }
     return pLoadDragonWorkArea;
@@ -466,7 +467,7 @@ static fixedPoint morphDragonAccumulator[3];
 static s16 morphDragonWeightS16[3];
 
 // 060136c0
-static void morphDragonSub1Sub0(fixedPoint w0, fixedPoint w1, fixedPoint w2)
+static void morphDragonStoreWeights(fixedPoint w0, fixedPoint w1, fixedPoint w2)
 {
     morphDragonAccumulator[0] = w0;
     morphDragonAccumulator[1] = w1;
@@ -477,7 +478,7 @@ static void morphDragonSub1Sub0(fixedPoint w0, fixedPoint w1, fixedPoint w2)
 }
 
 // 0600c050
-static void morphDragonSub1(s32 cursorX, s32 cursorY)
+static void morphDragonSetupWeights(s32 cursorX, s32 cursorY)
 {
     fixedPoint w0, w1, w2;
     if (cursorX == 0 && cursorY == 0)
@@ -493,11 +494,11 @@ static void morphDragonSub1(s32 cursorX, s32 cursorY)
         w1 = MTH_Mul(fixedPoint(cursorX * cursorX), invTotal);
         w2 = MTH_Mul(fixedPoint(cursorY * cursorY), invTotal);
     }
-    morphDragonSub1Sub0(w0, w1, w2);
+    morphDragonStoreWeights(w0, w1, w2);
 }
 
 // 06013510
-static void morphDragonVertice(fixedPoint* pDst, const fixedPoint* pA, const fixedPoint* pB, const fixedPoint* pC)
+static void morphDragonVertice(sVec3_FP* pDst, const sVec3_FP* pA, const sVec3_FP* pB, const sVec3_FP* pC)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -508,53 +509,66 @@ static void morphDragonVertice(fixedPoint* pDst, const fixedPoint* pA, const fix
 }
 
 // 060134cc — morph normals (s16 weighted blend)
-static void morphDragonNormals(s16* pDst, const s16* pA, const s16* pB, const s16* pC, s32 count)
+static void morphDragonNormals(std::vector<sVec3_S16_12_4>& pDst, const std::vector<sVec3_S16_12_4>& pA, const std::vector<sVec3_S16_12_4>& pB, const std::vector<sVec3_S16_12_4>& pC, s32 count)
 {
-    for (s32 i = 0; i < count; i++)
+    assert((count % 3) == 0);
+    for (s32 i = 0; i < count/3; i++)
     {
-        s32 result = (s32)morphDragonWeightS16[0] * (s32)pA[i]
-                   + (s32)morphDragonWeightS16[1] * (s32)pB[i]
-                   + (s32)morphDragonWeightS16[2] * (s32)pC[i];
-        pDst[i] = (s16)(result >> 14);
+        for(s32 j=0; j<3; j++)
+        {
+            s32 result = (s32)morphDragonWeightS16[0] * (s32)pA[i][j]
+                + (s32)morphDragonWeightS16[1] * (s32)pB[i][j]
+                + (s32)morphDragonWeightS16[2] * (s32)pC[i][j];
+            pDst[i][j] = (s16)(result >> 14);
+        }
     }
 }
 
 // 0601344e — morph a single 3D model node (vertices + normals + polygon data)
-static void morphDragonSub2_processNode(u32* pDst, u32* pA, u32* pB, u32* pC)
+static void morphDragonProcessNode(sProcessed3dModel* pDst, sProcessed3dModel* pA, sProcessed3dModel* pB, sProcessed3dModel* pC)
 {
-    if (pDst[1] == 0) // m4_vertexCount
+    if (pDst->m4_numVertices == 0) // m4_vertexCount
         return;
 
+    pDst->m_vertexBuffersDirty = true;
+
     // Morph the first vertex (scale)
-    fixedPoint blendedScale = MTH_Mul(morphDragonAccumulator[0], fixedPoint((s32)pA[0]))
-                            + MTH_Mul(morphDragonAccumulator[1], fixedPoint((s32)pB[0]))
-                            + MTH_Mul(morphDragonAccumulator[2], fixedPoint((s32)pC[0]));
-    pDst[0] = (u32)(s32)blendedScale;
+    fixedPoint blendedScale = MTH_Mul(morphDragonAccumulator[0], pA->m0_radius)
+                            + MTH_Mul(morphDragonAccumulator[1], pB->m0_radius)
+                            + MTH_Mul(morphDragonAccumulator[2], pC->m0_radius);
+    pDst->m0_radius = (u32)(s32)blendedScale;
 
     // Morph normal data
-    morphDragonNormals((s16*)pDst[2], (const s16*)pA[2], (const s16*)pB[2], (const s16*)pC[2],
-                       pDst[1] * 3);
+    morphDragonNormals(pDst->m8_vertices, pA->m8_vertices, pB->m8_vertices, pC->m8_vertices, pDst->m4_numVertices * 3);
 
     // Morph polygon vertex coordinates — iterate VDP1 polygon commands
     // Layout: [header 5 u32s][vertex data...] per polygon, terminated by sentinel
-    u32* pCmdDst = pDst + 3;
-    u32* pCmdA = pA + 3;
-    u32* pCmdB = pB + 3;
-    u32* pCmdC = pC + 3;
-    while (pCmdDst[0] != pCmdDst[1])
+    auto pCmdDst = pDst->mC_Quads.begin();
+    auto pCmdA = pA->mC_Quads.begin();
+    auto pCmdB = pB->mC_Quads.begin();
+    auto pCmdC = pC->mC_Quads.begin();
+
+    while (pCmdDst != pDst->mC_Quads.end())
     {
-        u8 polyType = *((u8*)(pCmdDst + 2)) & 3;
-        pCmdDst += 5;
-        pCmdA += 5;
-        pCmdB += 5;
-        pCmdC += 5;
+        u8 polyType = pCmdDst->m8_lightingControl & 3;
+        switch (polyType) {
+        case 3:
+            Unimplemented();
+            break;
+        case 2:
+            Unimplemented();
+            break;
+        case 1:
+            Unimplemented();
+            break;
+        }
         if (polyType != 0)
         {
             // FUN_060134cc — blend per-polygon normal/vertex data
             // Each polygon has vertex normals as s16 triplets (X,Y,Z)
             // polyType 2 = triangle (3 vertices), 3 = quad (4 vertices), 1 = untextured
-            s32 numVerts = (polyType == 2) ? 3 : 4;
-            s16* pNormDst = (s16*)pCmdDst;
+            /*s32 numVerts = (polyType == 2) ? 3 : 4;
+            auto pNormDst = pCmdDst->m0_indices.data();
             const s16* pNormA = (const s16*)pCmdA;
             const s16* pNormB = (const s16*)pCmdB;
             const s16* pNormC = (const s16*)pCmdC;
@@ -568,27 +582,29 @@ static void morphDragonSub2_processNode(u32* pDst, u32* pA, u32* pB, u32* pC)
                     pNormDst[v * 3 + c] = (s16)((blended << 2) >> 16);
                 }
             }
+            */
 
             if (polyType == 1)
             {
-                pCmdDst = (u32*)((u8*)pCmdDst + 2);
-                pCmdA = (u32*)((u8*)pCmdA + 2);
-                pCmdB = (u32*)((u8*)pCmdB + 2);
-                pCmdC = (u32*)((u8*)pCmdC + 2);
+                //this would increase the quad data differently
             }
         }
+        pCmdDst++;
+        pCmdA++;
+        pCmdB++;
+        pCmdC++;
     }
 }
 
 // 0600c0c4
-static void morphDragonSub2(sModelHierarchy* pDst, sModelHierarchy* pA, sModelHierarchy* pB, sModelHierarchy* pC)
+static void morphDragonTraverseHierarchy(sModelHierarchy* pDst, sModelHierarchy* pA, sModelHierarchy* pB, sModelHierarchy* pC)
 {
     while (true)
     {
         if (pDst->m0_3dModel)
-            morphDragonSub2_processNode((u32*)pDst->m0_3dModel, (u32*)pA->m0_3dModel, (u32*)pB->m0_3dModel, (u32*)pC->m0_3dModel);
+            morphDragonProcessNode(pDst->m0_3dModel, pA->m0_3dModel, pB->m0_3dModel, pC->m0_3dModel);
         if (pDst->m4_subNode)
-            morphDragonSub2(pDst->m4_subNode, pA->m4_subNode, pB->m4_subNode, pC->m4_subNode);
+            morphDragonTraverseHierarchy(pDst->m4_subNode, pA->m4_subNode, pB->m4_subNode, pC->m4_subNode);
         if (!pDst->m8_nextNode)
             break;
         pDst = pDst->m8_nextNode;
@@ -599,22 +615,22 @@ static void morphDragonSub2(sModelHierarchy* pDst, sModelHierarchy* pA, sModelHi
 }
 
 // 0600c138
-static void morphDragonSub3(s_3dModel* pModel, fixedPoint* pA, fixedPoint* pB, fixedPoint* pC)
+static void morphDragonBonePoses(s_3dModel* pModel, struct sStaticPoseData* pA, struct sStaticPoseData* pB, struct sStaticPoseData* pC)
 {
     s32 numBones = pModel->m12_numBones;
-    sPoseData* pPose = &pModel->m2C_poseData[0];
     for (s32 i = 1; i < numBones; i++)
     {
-        pA += 9;
-        pPose++;
-        pB += 9;
-        pC += 9;
-        morphDragonVertice(&pPose->m0_translation[0], pA, pB, pC);
+        auto& pPose = pModel->m2C_poseData.at(i);
+        auto& pPoseA = pA->m0_bones.at(i);
+        auto& pPoseB = pB->m0_bones.at(i);
+        auto& pPoseC = pC->m0_bones.at(i);
+
+        morphDragonVertice(&pPose.m0_translation, &pPoseA.m0_translation, &pPoseB.m0_translation, &pPoseC.m0_translation);
     }
 }
 
 // 060136a8
-static fixedPoint morphDragonBlendColor(fixedPoint a, fixedPoint b, fixedPoint c)
+static s32 morphDragonBlendColor(s32 a, s32 b, s32 c)
 {
     return MTH_Mul(morphDragonAccumulator[0], a)
          + MTH_Mul(morphDragonAccumulator[1], b)
@@ -622,32 +638,55 @@ static fixedPoint morphDragonBlendColor(fixedPoint a, fixedPoint b, fixedPoint c
 }
 
 // 0600c180
-static void morphDragonSub4(s32* pDstPairs, s32* pAPairs, s32* pBPairs, s32* pCPairs, s32 count)
+static void morphDragonHotpoints(std::vector<s_hotpointDefinition>* pDstPairs, std::vector<s_hotpointDefinition>* pAPairs, std::vector<s_hotpointDefinition>* pBPairs, std::vector<s_hotpointDefinition>* pCPairs, s32 count)
 {
     for (s32 i = 0; i < count; i++)
     {
-        s32 numEntries = pDstPairs[1];
+        s32 numEntries = pDstPairs->at(i).m4_count;
         if (numEntries != 0)
         {
-            s32* pDst = (s32*)pDstPairs[0];
-            s32* pA = (s32*)pAPairs[0];
-            s32* pB = (s32*)pBPairs[0];
-            s32* pC = (s32*)pCPairs[0];
+            auto pDst = pDstPairs->at(i).m0.begin();
+            auto pA = pAPairs->at(i).m0.begin();
+            auto pB = pBPairs->at(i).m0.begin();
+            auto pC = pCPairs->at(i).m0.begin();
             for (s32 j = 0; j < numEntries; j++)
             {
-                morphDragonVertice((fixedPoint*)(pDst + 1), (fixedPoint*)(pA + 1), (fixedPoint*)(pB + 1), (fixedPoint*)(pC + 1));
-                fixedPoint blended = morphDragonBlendColor(fixedPoint(pA[4]), fixedPoint(pB[4]), fixedPoint(pC[4]));
-                pDst[4] = (s32)blended;
-                pDst += 5; pA += 5; pB += 5; pC += 5;
+                morphDragonVertice(&pDst->m4, &pA->m4, &pB->m4, &pC->m4);
+                pDst->m10 = morphDragonBlendColor(pA->m10, pB->m10, pC->m10);
             }
         }
-        pDstPairs += 2; pAPairs += 2; pBPairs += 2; pCPairs += 2;
     }
 }
 
-void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u8* pMCB, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY)
+// 060133a8 — blend three RGB555 palettes by the morph weights (each channel blended in place)
+void morphDragonTexture(u16* dest, u16* pA, u16* pB, u16* pC, s32 count)
 {
-    if (pDragonData3->m_m0 == 0)
+    s32 numColors = count << 4; // each entry = 16 colors
+    do
+    {
+        u16 cC = *pC++;
+        u16 cB = *pB++;
+        u16 cA = *pA++;
+
+        // Each channel is weighted in its native bit position (R: 0x1f, G: 0x3e0, B: 0x7c00)
+        s32 red = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((s32)(cA & 0x1f)))
+                + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((s32)(cB & 0x1f)))
+                + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((s32)(cC & 0x1f)));
+        s32 green = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((s32)(cA & 0x3e0)))
+                  + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((s32)(cB & 0x3e0)))
+                  + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((s32)(cC & 0x3e0)));
+        s32 blue = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((s32)(cA & 0x7c00)))
+                 + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((s32)(cB & 0x7c00)))
+                 + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((s32)(cC & 0x7c00)));
+
+        *dest++ = ((blue >> 16) & 0x7c00) | ((green >> 16) & 0x3e0) | ((red >> 16) & 0x1f) | 0x8000;
+        numColors--;
+    } while (numColors != 0);
+}
+
+void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pOutputDragonModel, u8* pMCB, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY)
+{
+    if (pDragonData3->m0_numMCBEntries == 0)
         return;
 
     const sDragonData3Sub* pCenter = &pDragonData3->m_m8[1];
@@ -656,78 +695,109 @@ void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonSt
     const sDragonData3Sub* pUp     = &pDragonData3->m_m8[4];
     const sDragonData3Sub* pDown   = &pDragonData3->m_m8[2];
 
-    const sDragonData3Sub* pX = pRight;
-    const sDragonData3Sub* pY = pUp;
+    const sDragonData3Sub* pB = pRight;
+    const sDragonData3Sub* pC = pUp;
 
     s32 absX = cursorX;
     s32 absY = cursorY;
 
-    if (cursorX < 0) { absX = -cursorX; pX = pLeft; }
-    if (cursorY < 0) { absY = -cursorY; pY = pDown; }
+    if (cursorX < 0) { absX = -cursorX; pB = pLeft; }
+    if (cursorY < 0) { absY = -cursorY; pC = pDown; }
 
-    morphDragonSub1(absX, absY);
-
-    morphDragonSub1(absX, absY);
+    morphDragonSetupWeights(absX, absY);
 
     // m_m8 layout: [0]=output, [1]=center, [2]=down, [3]=left, [4]=up, [5]=right
     const sDragonData3Sub* pOutput = &pDragonData3->m_m8[0];
-    const sDragonData3Sub* pCenterSub = &pDragonData3->m_m8[1];
-    s_fileBundle* pBundle = (s_fileBundle*)pLoadDragonWorkArea->m8_dramAllocation;
-    s_fileBundle* pModelBundle = pDragonStateSubData1->m4_pModelFile;
+    const sDragonData3Sub* pA = pCenter;
+    s_fileBundle* pBundle = pLoadDragonWorkArea->m0_dramAllocation->m0_dramData;
 
     // Morph model hierarchy vertices (first call — sub-models)
-    morphDragonSub2(
-        pModelBundle->getModelHierarchy(pOutput->m0_modelIndex),
-        pBundle->getModelHierarchy(pCenterSub->m0_modelIndex),
-        pBundle->getModelHierarchy(pX->m0_modelIndex),
-        pBundle->getModelHierarchy(pY->m0_modelIndex)
+    morphDragonTraverseHierarchy(
+        pOutputDragonModel->m4_pModelFile->getModelHierarchy(pOutput->m0_modelIndex),
+        pBundle->getModelHierarchy(pA->m0_modelIndex),
+        pBundle->getModelHierarchy(pB->m0_modelIndex),
+        pBundle->getModelHierarchy(pC->m0_modelIndex)
     );
 
     // Morph model hierarchy vertices (second call — shadow models)
-    morphDragonSub2(
-        pModelBundle->getModelHierarchy(pOutput->m2_shadowModelIndex),
-        pBundle->getModelHierarchy(pCenterSub->m2_shadowModelIndex),
-        pBundle->getModelHierarchy(pX->m2_shadowModelIndex),
-        pBundle->getModelHierarchy(pY->m2_shadowModelIndex)
+    morphDragonTraverseHierarchy(
+        pOutputDragonModel->m4_pModelFile->getModelHierarchy(pOutput->m2_shadowModelIndex),
+        pBundle->getModelHierarchy(pA->m2_shadowModelIndex),
+        pBundle->getModelHierarchy(pB->m2_shadowModelIndex),
+        pBundle->getModelHierarchy(pC->m2_shadowModelIndex)
     );
 
     // Morph bone pose data — reads raw pose offsets from bundle
-    u8* pBundleRaw = (u8*)pBundle;
-    morphDragonSub3(
-        pDragonStateSubData1,
-        (fixedPoint*)(pBundleRaw + pCenterSub->m4_poseModelIndex),
-        (fixedPoint*)(pBundleRaw + pX->m4_poseModelIndex),
-        (fixedPoint*)(pBundleRaw + pY->m4_poseModelIndex)
+    int numBones = pOutputDragonModel->m4_pModelFile->getModelHierarchy(pOutput->m2_shadowModelIndex)->countNumberOfBones();
+    morphDragonBonePoses(
+        pOutputDragonModel,
+        pBundle->getStaticPose(pA->m4_poseModelIndex, numBones),
+        pBundle->getStaticPose(pB->m4_poseModelIndex, numBones),
+        pBundle->getStaticPose(pC->m4_poseModelIndex, numBones)
     );
 
     // Morph VDP1 palette colors
+    morphDragonTexture(
+        (u16*)(getVdp1Pointer(0x25C00000) + pOutput->m6_mcbEntry * 8),
+        (u16*)(pMCB + pA->m6_mcbEntry * 8),
+        (u16*)(pMCB + pB->m6_mcbEntry * 8),
+        (u16*)(pMCB + pC->m6_mcbEntry * 8),
+        pDragonData3->m0_numMCBEntries);
+    invalidateVdp1TextureRange(0x25C00000 + pOutput->m6_mcbEntry * 8, 8*8*2);
+
+    // Morph hotpoint data
+    morphDragonHotpoints(
+        pOutput->m8_hotPoints->getData(numBones),
+        pA->m8_hotPoints->getData(numBones),
+        pB->m8_hotPoints->getData(numBones),
+        pC->m8_hotPoints->getData(numBones),
+        pDragonData3->m4_numHotPoints);
+}
+
+// 0600c324
+void updateDragonStats(int type, sVec3_FP* pOutput)
+{
+    auto& pDragonLevelStats = gCommonFile->dragonLevelStats[mainGameState.gameStats.m1_dragonLevel];
+
+    auto pcVar4 = pDragonLevelStats.m18.begin();
+    auto pcVar5 = pDragonLevelStats.m12.begin();
+    auto pcVar6 = pDragonLevelStats.m0.begin();
+
+    if (type)
     {
-        s32 numColors = pDragonData3->m_m0 << 4; // each entry = 16 colors
-        u16* pDstPal = (u16*)(getVdp1Pointer(0x25C00000) + pOutput->m6 * 8);
-        u16* pCenterPal = (u16*)(pMCB + pCenterSub->m6 * 8);
-        u16* pXPal = (u16*)(pMCB + pX->m6 * 8);
-        u16* pYPal = (u16*)(pMCB + pY->m6 * 8);
-        for (s32 i = 0; i < numColors; i++)
+        pcVar4 = pDragonLevelStats.m1B.begin();
+        pcVar5 = pDragonLevelStats.m15.begin();
+        pcVar6 = pDragonLevelStats.m3.begin();
+    }
+
+    s16 iVar1 = mainGameState.gameStats.m1A_dragonCursorX;
+    s16 iVar2 = mainGameState.gameStats.m1C_dragonCursorY;
+
+    if (iVar1 < 0)
+    {
+        iVar1 = -iVar1;
+        pcVar4 = pDragonLevelStats.mC.begin();
+        if (type)
         {
-            u16 cA = pCenterPal[i], cB = pXPal[i], cC = pYPal[i];
-            s32 r = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint(cA & 0x1F))
-                  + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint(cB & 0x1F))
-                  + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint(cC & 0x1F));
-            s32 g = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((cA >> 5) & 0x1F))
-                  + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((cB >> 5) & 0x1F))
-                  + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((cC >> 5) & 0x1F));
-            s32 b = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((cA >> 10) & 0x1F))
-                  + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((cB >> 10) & 0x1F))
-                  + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((cC >> 10) & 0x1F));
-            pDstPal[i] = 0x8000 | ((b >> 16) & 0x1F) << 10 | ((g >> 16) & 0x1F) << 5 | ((r >> 16) & 0x1F);
+            pcVar4 = pDragonLevelStats.mF.begin();
         }
     }
 
-    // Morph hotpoint data
-    if (pOutput->m_m8 && pCenterSub->m_m8 && pX->m_m8 && pY->m_m8)
+    if (iVar2 < 0)
     {
-        morphDragonSub4((s32*)pOutput->m_m8, (s32*)pCenterSub->m_m8, (s32*)pX->m_m8, (s32*)pY->m_m8, pDragonData3->m_m4);
+        iVar2 = -iVar2;
+        pcVar5 = pDragonLevelStats.m6.begin();
+        if (type)
+        {
+            pcVar5 = pDragonLevelStats.m9.begin();
+        }
     }
+
+    morphDragonSetupWeights(iVar1, iVar2);
+
+    (*pOutput)[0] = pcVar6[0] * (s32)morphDragonAccumulator[0] + pcVar4[0] * (s32)morphDragonAccumulator[1] + pcVar5[0] * (s32)morphDragonAccumulator[2];
+    (*pOutput)[1] = pcVar6[1] * (s32)morphDragonAccumulator[0] + pcVar4[1] * (s32)morphDragonAccumulator[1] + pcVar5[1] * (s32)morphDragonAccumulator[2];
+    (*pOutput)[2] = pcVar6[2] * (s32)morphDragonAccumulator[0] + pcVar4[2] * (s32)morphDragonAccumulator[1] + pcVar5[2] * (s32)morphDragonAccumulator[2];
 }
 
 // Replace Saturn DRAM free with standard free
@@ -796,10 +866,11 @@ void loadDragonSub1Sub1(s_loadDragonWorkArea* pLoadDragonWorkArea)
         CGBOffsetInDram->MCBOffsetInDram = -1;
     }
     */
-    if (pLoadDragonWorkArea->m8_dramAllocation)
+    if (pLoadDragonWorkArea->m0_dramAllocation)
     {
-        dramFree(pLoadDragonWorkArea->m8_dramAllocation);
-        pLoadDragonWorkArea->m8_dramAllocation = NULL;
+        PDS_unimplemented("Deallocate dragon data");
+        //dramFree(pLoadDragonWorkArea->m0_dramAllocation);
+        pLoadDragonWorkArea->m0_dramAllocation = NULL;
     }
 
     if (pLoadDragonWorkArea->m4_vramAllocation)
@@ -848,8 +919,8 @@ void loadDragonDataFromCommon()
             loadFile(dragonFilenameTable[i].m_base.MCB, &pDragonModel, 0x2400);
 
             sDragonData3& entry = dragonData3[i];
-            entry.m_m0 = readSaturnU32(ptr + 0); ptr += 4;
-            entry.m_m4 = readSaturnU16(ptr + 2); ptr += 2;
+            entry.m0_numMCBEntries = readSaturnU32(ptr + 0); ptr += 4;
+            entry.m4_numHotPoints = readSaturnU16(ptr + 2); ptr += 2;
             entry.m_m6 = readSaturnU16(ptr + 2); ptr += 2;
             for (int j = 0; j < 7; j++)
             {
@@ -858,14 +929,14 @@ void loadDragonDataFromCommon()
                 subEntry.m0_modelIndex = readSaturnU16(ptr); ptr += 2;
                 subEntry.m2_shadowModelIndex = readSaturnU16(ptr); ptr += 2;
                 subEntry.m4_poseModelIndex = readSaturnU16(ptr); ptr += 2;
-                subEntry.m6 = readSaturnU16(ptr); ptr += 2;
-                subEntry.m_m8 = nullptr;
+                subEntry.m6_mcbEntry = readSaturnU16(ptr); ptr += 2;
+                subEntry.m8_hotPoints = nullptr;
 
                 sSaturnPtr hotpointsPtr = readSaturnEA(ptr); ptr += 4;
 
-                if (!hotpointsPtr.isNull() && (j == 0))
+                if (!hotpointsPtr.isNull())
                 {
-                    subEntry.m_m8 = readRiderDefinitionSub(hotpointsPtr);
+                    subEntry.m8_hotPoints = readRiderDefinitionSub(hotpointsPtr);
                 }
             }
         }

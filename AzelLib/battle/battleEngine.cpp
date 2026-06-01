@@ -294,6 +294,18 @@ static void battlePassiveAbilities_enableCounter(sBattlePassiveAbilitiesTask* pT
     }
 }
 
+// BTL_A3::06069d74
+static void displayBattleHudText(s16 textIndex)
+{
+    sBattleTextDisplayTask* pText = gBattleManager->m10_battleOverlay->m14_textDisplay;
+    if (pText && !pText->m0_texts.isNull())
+    {
+        pText->m12_textIndex = textIndex;
+        pText->m14 = -0x1E;
+        createDisplayStringBorromScreenTask(pText, &pText->m8, pText->m14, readSaturnEA(pText->m0_texts + pText->m12_textIndex * 4));
+    }
+}
+
 // BTL_A3::06064404
 static void battlePassiveAbilities_triggerCounter(sBattlePassiveAbilitiesTask* pThis)
 {
@@ -310,16 +322,7 @@ static void battlePassiveAbilities_triggerCounter(sBattlePassiveAbilitiesTask* p
             gBattleManager->m10_battleOverlay->mC_targetSystem->m20A_numSelectableEnemies > 0 &&
             (randomNumber() & 1) == 0)
         {
-            // 06069d74 — display attack name text on HUD
-            {
-                sBattleTextDisplayTask* pText = gBattleManager->m10_battleOverlay->m14_textDisplay;
-                if (pText && !pText->m0_texts.isNull())
-                {
-                    pText->m12_textIndex = 0x10;
-                    pText->m14 = -0x1E;
-                    createDisplayStringBorromScreenTask(pText, &pText->m8, pText->m14, readSaturnEA(pText->m0_texts + pText->m12_textIndex * 4));
-                }
-            }
+            displayBattleHudText(0x10);
             battleEngine_SetBattleMode(m3_shootEnemeyWithHomingLaser);
             gBattleManager->m10_battleOverlay->m4_battleEngine->m184 = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m390 = -1;

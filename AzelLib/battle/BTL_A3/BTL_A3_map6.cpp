@@ -531,6 +531,8 @@ void sBTL_A3_map6_sub_Init(sBTL_A3_map6_sub* pThis)
 {
     allocateNPC(pThis, 0x12);
     // Set water surface rendering params
+    Unimplemented();
+    /*
     u8* p = (u8*)pThis;
     *(u16*)(p + 0x10) = *(u16*)(dramAllocatorEnd[0x12].mC_fileBundle->m0_fileBundle->getRawBuffer() + 4);
     *(u16*)(p + 0x12) = 0x0A37;
@@ -550,6 +552,7 @@ void sBTL_A3_map6_sub_Init(sBTL_A3_map6_sub* pThis)
     default: return;
     }
     *(s16*)(p + 0x1E) = offset;
+    * */
 }
 
 // 06058e42

@@ -17,6 +17,7 @@
 #include "kernel/rayDisplay.h"
 #include "battle/particleEffect.h"
 #include "battle/BTL_A3/BTL_A3_data.h"
+#include "dragonData.h"
 
 struct sHomingLaserRootTask : public s_workAreaTemplateWithCopy<sHomingLaserRootTask>
 {
@@ -97,13 +98,6 @@ void sHomingLaserTask_InitSub1(sHomingLaserTrailData* pThis, p_workArea param_2,
     }
 }
 
-s16 dragonMorphVar0;
-s16 dragonMorphVar1;
-s16 dragonMorphVar2;
-s16 dragonMorphVar3;
-
-std::array<s32, 3> morphDragonAccumulator;
-
 // BTL_A3::0609dc3a
 void sHomingLaserTask_shiftTrailSegments(sHomingLaserTrailData* pTrail, sVec3_FP* pNewPos, sVec3_FP* pAutoScroll)
 {
@@ -121,86 +115,6 @@ void sHomingLaserTask_shiftTrailSegments(sHomingLaserTrailData* pTrail, sVec3_FP
     {
         pTrail->m8 += pTrail->mC;
     }
-}
-
-void morphDragonSub1Sub0(s32 param_1, s32 param_2, s32 param_3)
-{
-    dragonMorphVar0 = param_3 / 4;
-    dragonMorphVar1 = param_2 / 4;
-    dragonMorphVar2 = param_1 >> 0x12;
-    dragonMorphVar3 = param_1 / 4;
-
-    morphDragonAccumulator[0] = param_1;
-    morphDragonAccumulator[1] = param_2;
-    morphDragonAccumulator[2] = param_3;
-}
-
-void morphDragonSub1(s32 param_1, s32 param_2)
-{
-    s32 dVar2;
-    s32 iVar1;
-    s32 iVar3;
-
-    if ((param_1 == 0) && (param_2 == 0))
-    {
-        dVar2 = 0x10000;
-        iVar1 = 0;
-        iVar3 = 0;
-    }
-    else
-    {
-        iVar1 = FP_Div(0x10000, (param_1 + param_2) * 0x800);
-        dVar2 = MTH_Mul((0x800 - param_1) * param_1 + (0x800 - param_2) * param_2, iVar1);
-        iVar3 = MTH_Mul(param_1 * param_1, iVar1);
-        iVar1 = MTH_Mul(param_2 * param_2, iVar1);
-    }
-
-    morphDragonSub1Sub0(dVar2, iVar3, iVar1);
-}
-
-void updateDragonStats(int type, sVec3_FP* pOutput)
-{
-    auto& pDragonLevelStats = gCommonFile->dragonLevelStats[mainGameState.gameStats.m1_dragonLevel];
-
-    std::array<s8, 3>::iterator pcVar4 = pDragonLevelStats.m18.begin();
-    std::array<s8, 3>::iterator pcVar5 = pDragonLevelStats.m12.begin();
-    std::array<s8, 3>::iterator pcVar6 = pDragonLevelStats.m0.begin();
-
-    if (type)
-    {
-        pcVar4 = pDragonLevelStats.m1B.begin();
-        pcVar5 = pDragonLevelStats.m15.begin();
-        pcVar6 = pDragonLevelStats.m3.begin();
-    }
-
-    s16 iVar1 = mainGameState.gameStats.m1A_dragonCursorX;
-    s16 iVar2 = mainGameState.gameStats.m1C_dragonCursorY;
-
-    if (iVar1 < 0)
-    {
-        iVar1 = -iVar1;
-        pcVar4 = pDragonLevelStats.mC.begin();
-        if (type)
-        {
-            pcVar4 = pDragonLevelStats.mF.begin();
-        }
-    }
-
-    if (iVar2 < 0)
-    {
-        iVar2 = -iVar2;
-        pcVar5 = pDragonLevelStats.m6.begin();
-        if (type)
-        {
-            pcVar5 = pDragonLevelStats.m9.begin();
-        }
-    }
-
-    morphDragonSub1(iVar1, iVar2);
-
-    (*pOutput)[0] = pcVar6[0] * morphDragonAccumulator[0] + pcVar4[0] * morphDragonAccumulator[1] + pcVar5[0] * morphDragonAccumulator[2];
-    (*pOutput)[1] = pcVar6[1] * morphDragonAccumulator[0] + pcVar4[1] * morphDragonAccumulator[1] + pcVar5[1] * morphDragonAccumulator[2];
-    (*pOutput)[2] = pcVar6[2] * morphDragonAccumulator[0] + pcVar4[2] * morphDragonAccumulator[1] + pcVar5[2] * morphDragonAccumulator[2];
 }
 
 void sHomingLaserTask_Init(sHomingLaserTask* pThis, sHomingLaserRootTask::sHomingLaserRootTask_sub* arg)

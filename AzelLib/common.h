@@ -632,7 +632,7 @@ public:
     {
 
     }
-    std::vector<s_hotpointDefinition>* getData(struct s_3dModel* pModel);
+    std::vector<s_hotpointDefinition>* getData(s32 numBones);
 private:
     sSaturnPtr m_EA;
     std::vector<s_hotpointDefinition> m_cachedData;
@@ -643,14 +643,14 @@ struct sDragonData3Sub
     u16 m0_modelIndex;
     u16 m2_shadowModelIndex;
     u16 m4_poseModelIndex;
-    u16 m6;
-    sHotpointBundle* m_m8;
+    u16 m6_mcbEntry;
+    sHotpointBundle* m8_hotPoints;
 };
 
 struct sDragonData3
 {
-    u32 m_m0;
-    u16 m_m4;
+    u32 m0_numMCBEntries;
+    u16 m4_numHotPoints;
     u16 m_m6;
     sDragonData3Sub m_m8[7];
 };

@@ -1332,29 +1332,30 @@ bool init3DModelRawData(s_workArea* pWorkArea, s_3dModel* p3dModel, u32 animatio
 }
 
 // 0600b32a
-static void changeDragonStateTaskFlag()
+static void deleteDragonState()
 {
     if (gDragonState != nullptr)
     {
-        ((p_workArea)gDragonState)->getTask()->markFinished();
+        gDragonState->getTask()->markFinished();
         gDragonState = nullptr;
     }
 }
 
 // 0600b3c6
-void updateDragonIfCursorChanged(u32 level)
+void updateDragonIfCursorChanged(s32 level)
 {
-    if (gDragonState->mC_dragonType == (s32)level &&
-        mainGameState.gameStats.m1A_dragonCursorX == gDragonState->m10_cursorX &&
-        mainGameState.gameStats.m1C_dragonCursorY == gDragonState->m12_cursorY)
+    if ((gDragonState->mC_dragonType == (s32)level) &&
+        (mainGameState.gameStats.m1A_dragonCursorX == gDragonState->m10_cursorX) &&
+        (mainGameState.gameStats.m1C_dragonCursorY == gDragonState->m12_cursorY))
     {
         updateDragonStatsFromLevel();
-        return;
     }
-    p_workArea parentTask = gDragonState->m8_parentTask;
-    changeDragonStateTaskFlag();
-    mainGameState.gameStats.m1_dragonLevel = (e_dragonLevel)level;
-    loadDragon(parentTask);
+    else {
+        p_workArea dragonStateParent = gDragonState->m8_parentTask; // save the parent before deleting the state
+        deleteDragonState();
+        mainGameState.gameStats.m1_dragonLevel = (e_dragonLevel)level;
+        loadDragon(dragonStateParent);
+    }
 }
 
 void loadRiderIfChanged(u32 rider)

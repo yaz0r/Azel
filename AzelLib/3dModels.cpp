@@ -77,7 +77,7 @@ void LCSItemBox_DrawType0Sub0(s_fileBundle* r4, s16 r5, s16 r6)
 
 bool model_initHotpointBundle(s_3dModel* pDragonStateData1, sHotpointBundle* unkArg)
 {
-    pDragonStateData1->m40 = unkArg->getData(pDragonStateData1);
+    pDragonStateData1->m40 = unkArg->getData(pDragonStateData1->m12_numBones);
 
     pDragonStateData1->m44_hotpointData.resize(pDragonStateData1->m12_numBones);
 

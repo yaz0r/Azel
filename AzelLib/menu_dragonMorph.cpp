@@ -703,7 +703,7 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkAr
 
     if (r0)
     {
-        assert(0);
+        Unimplemented();
     }
     else
     {

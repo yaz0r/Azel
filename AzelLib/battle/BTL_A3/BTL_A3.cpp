@@ -97,7 +97,7 @@ void initMemoryForBattle(p_workArea pThis, const char** assetList)
             loadCurrentRider(gBattleManager);
             loadCurrentRider2(gBattleManager);
             gBattleManager->mD = 1;
-            updateDragonIfCursorChanged(0);
+            updateDragonIfCursorChanged(1);
         }
     }
     initDramAllocator(gBattleManager->m10_battleOverlay, townBuffer, sizeof(townBuffer), assetList);

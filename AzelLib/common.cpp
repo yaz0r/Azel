@@ -408,7 +408,7 @@ void getVdp1LocalCoordinates(std::array<s16, 2>& r4)
     r4[1] = graphicEngineStatus.m405C.m46_localCoordinatesY;
 }
 
-std::vector<s_hotpointDefinition>* sHotpointBundle::getData(struct s_3dModel* pModel)
+std::vector<s_hotpointDefinition>* sHotpointBundle::getData(s32 numBones)
 {
     if(m_EA.isNull())
     {
@@ -417,11 +417,11 @@ std::vector<s_hotpointDefinition>* sHotpointBundle::getData(struct s_3dModel* pM
 
     if (m_cachedData.size())
     {
-        assert(m_cachedData.size() == pModel->m12_numBones);
+        assert(m_cachedData.size() == numBones);
         return &m_cachedData;
     }
 
-    for (int i = 0; i < pModel->m12_numBones; i++)
+    for (int i = 0; i < numBones; i++)
     {
         s_hotpointDefinition newValue;
         sSaturnPtr ptr = readSaturnEA(m_EA + 8 * i);

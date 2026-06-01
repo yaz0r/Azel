@@ -37,6 +37,13 @@ struct s_loadRiderWorkArea : public s_workAreaTemplate<s_loadRiderWorkArea>
 extern s_loadRiderWorkArea* pRider1State;
 extern s_loadRiderWorkArea* pRider2State;
 
+struct sDragonBuffer {
+    s_fileBundle* m0_dramData;
+    std::array<u8, 0x6800> m18E00_MCBInDram;
+    // size 0x1F600;
+};
+
+
 struct s_loadDragonWorkArea : public s_workAreaTemplate<s_loadDragonWorkArea>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -45,7 +52,7 @@ struct s_loadDragonWorkArea : public s_workAreaTemplate<s_loadDragonWorkArea>
         return &taskDefinition;
     }
 
-    u8* m8_dramAllocation; //0
+    sDragonBuffer* m0_dramAllocation; //0
     u8* m4_vramAllocation;//4
     u8* m8_MCBInDram;//8
 };
@@ -119,7 +126,7 @@ void vdp1FreeLastAllocation(p_workArea);
 p_workArea loadField(p_workArea r4, s32 r5);
 void setOpenMenu7();
 
-void updateDragonIfCursorChanged(u32 level);
+void updateDragonIfCursorChanged(s32 level);
 void loadRiderIfChanged(u32 rider);
 void loadRider2IfChanged(u32 rider);
 

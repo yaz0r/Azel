@@ -268,9 +268,10 @@ void startDebugBattle(s32 battleOverlayId)
     if (gBattleManager->m0_status == 1)
     {
         // Max out dragon stats for debug battles
+        /*
         s_gameStats& gs = mainGameState.gameStats;
         gs.m0_level = 50;
-        gs.m1_dragonLevel = DR_LEVEL_7_SOLO_WING;
+        gs.m1_dragonLevel = DR_LEVEL_0_BASIC_WING;
         gs.m18_statAxisScale = 100;
         gs.m12_classMaxHP = 600;
         gs.m16_classMaxBP = 200;
@@ -292,7 +293,7 @@ void startDebugBattle(s32 battleOverlayId)
         {
             mainGameState.setItemCount((eItems)i, 1);
         }
-
+        */
         gBattleManager->m0_status = 2;
         gBattleManager->mA_pendingBattleOverlayId = battleOverlayId;
     }
