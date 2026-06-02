@@ -2369,7 +2369,7 @@ static s32 tutorialScriptTask_readNextString(sSaturnPtr& script)
     if (opcode != 0x01 && opcode == 0x15)
     {
         // align to 4 bytes
-        sSaturnPtr aligned = { (script.m_offset + 3) & ~3u, script.m_file };
+        sSaturnPtr aligned = { (script.m_offset + 3) & ~3, script.m_file };
         result = readSaturnS32(aligned);
         script = aligned + 4;
     }
