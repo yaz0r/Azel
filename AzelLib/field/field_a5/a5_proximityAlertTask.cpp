@@ -55,7 +55,8 @@ static void a5ProximityAlertUpdate_day(sA5ProximityAlertTask* pThis)
         p_workArea pNpc = a5_createNpcEntity_060666e8(pThis, 0x0609E790);
         a5_createNpcTracker_06067ee2(pNpc, 0x0609DBC6, -0x1DE000, 0x74B);
         mainGameState.bitField[0x95] |= 0x20;
-        a5_startProximityCamera_0606f9e4(pThis, 0x0608C9D8, 0x06067F12, (u32)((u8*)pNpc + 0x14));
+        Unimplemented();
+        //a5_startProximityCamera_0606f9e4(pThis, 0x0608C9D8, 0x06067F12, (u32)((u8*)pNpc + 0x14));
         startFieldScript(2, 0x5B7);
     }
 
@@ -65,7 +66,8 @@ static void a5ProximityAlertUpdate_day(sA5ProximityAlertTask* pThis)
         p_workArea pNpc = a5_createNpcEntity_060666e8(pThis, 0x0609E7AC);
         a5_createNpcTracker_06067ee2(pNpc, 0x0609E090, -0x11E000, 0x74C);
         mainGameState.bitField[0x95] |= 0x10;
-        a5_startProximityCamera_0606f9e4(pThis, 0x0608CB04, 0x06067F7C, (u32)((u8*)pNpc + 0x14));
+        Unimplemented();
+        //a5_startProximityCamera_0606f9e4(pThis, 0x0608CB04, 0x06067F7C, (u32)((u8*)pNpc + 0x14));
 
         if ((mainGameState.bitField[0xB] & 0x80) == 0)
             startFieldScript(0xB, 0x5C0);
@@ -87,7 +89,8 @@ static void a5ProximityAlertUpdate_night(sA5ProximityAlertTask* pThis)
     p_workArea pNpc = a5_createNpcEntity_060666e8(pThis, 0x0609E7C8);
     a5_createNpcTracker_06067ee2(pNpc, 0x0609D7DC, -0x21E000, 0x74D);
     mainGameState.bitField[0x96] |= 0x80;
-    a5_startProximityCamera_0606f9e4(pThis, 0x0608CC30, 0x06067FAC, (u32)((u8*)pNpc + 0x14));
+    Unimplemented();
+    //a5_startProximityCamera_0606f9e4(pThis, 0x0608CC30, 0x06067FAC, (u32)((u8*)pNpc + 0x14));
 }
 
 // 06068182 — create proximity alert task for day subfields (0, 7)
