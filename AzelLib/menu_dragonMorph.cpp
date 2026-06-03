@@ -691,6 +691,7 @@ s_animLoop* dragonAnimLoop[DR_LEVEL_MAX][DR_ARCHETYPE_MAX] =
 
 void s_dragonMenuDragonWorkArea::dragonMenuDragonUpdate(s_dragonMenuDragonWorkArea* pWorkArea)
 {
+    updateDragonStatsFromLevel();
     gDragonState->m10_cursorX = mainGameState.gameStats.m1A_dragonCursorX;
     gDragonState->m12_cursorY = mainGameState.gameStats.m1C_dragonCursorY;
     gDragonState->m1C_dragonArchetype = mainGameState.gameStats.mB6_dragonArchetype;

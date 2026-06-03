@@ -216,27 +216,28 @@ static void morphDragonHotpoints(std::vector<s_hotpointDefinition>* pDstPairs, s
 // 060133a8 — blend three RGB555 palettes by the morph weights (each channel blended in place)
 void morphDragonTexture(u16* dest, u16* pA, u16* pB, u16* pC, s32 count)
 {
-    s32 numColors = count << 4; // each entry = 16 colors
-    do
-    {
-        u16 cC = *pC++;
-        u16 cB = *pB++;
-        u16 cA = *pA++;
+    for (int i = 0; i < count * 16; i++) {
+        u16 cC = READ_BE_U16(&pC[i]);
+        u16 cB = READ_BE_U16(&pB[i]);
+        u16 cA = READ_BE_U16(&pA[i]);
 
-        // Each channel is weighted in its native bit position (R: 0x1f, G: 0x3e0, B: 0x7c00)
-        s32 red = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((s32)(cA & 0x1f)))
-            + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((s32)(cB & 0x1f)))
-            + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((s32)(cC & 0x1f)));
-        s32 green = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((s32)(cA & 0x3e0)))
-            + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((s32)(cB & 0x3e0)))
-            + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((s32)(cC & 0x3e0)));
-        s32 blue = (s32)MTH_Mul(morphDragonAccumulator[0], fixedPoint((s32)(cA & 0x7c00)))
-            + (s32)MTH_Mul(morphDragonAccumulator[1], fixedPoint((s32)(cB & 0x7c00)))
-            + (s32)MTH_Mul(morphDragonAccumulator[2], fixedPoint((s32)(cC & 0x7c00)));
+        // Each channel is weighted in its native bit position (R: 0x1f, G: 0x3e0, B: 0x7c00).
+        // The Saturn code accumulates raw (channel * weight) products in 16.16 and shifts
+        // right by 16 once at the end, so multiply by the raw accumulator value directly.
+        // (Do NOT use MTH_Mul/fixedPoint here: fixedPoint(int) stores the value raw and
+        // MTH_Mul already shifts right by 16, which would shift a second time.)
+        s32 red = morphDragonAccumulator[0].asS32() * (s32)(cA & 0x1f)
+            + morphDragonAccumulator[1].asS32() * (s32)(cB & 0x1f)
+            + morphDragonAccumulator[2].asS32() * (s32)(cC & 0x1f);
+        s32 green = morphDragonAccumulator[0].asS32() * (s32)(cA & 0x3e0)
+            + morphDragonAccumulator[1].asS32() * (s32)(cB & 0x3e0)
+            + morphDragonAccumulator[2].asS32() * (s32)(cC & 0x3e0);
+        s32 blue = morphDragonAccumulator[0].asS32() * (s32)(cA & 0x7c00)
+            + morphDragonAccumulator[1].asS32() * (s32)(cB & 0x7c00)
+            + morphDragonAccumulator[2].asS32() * (s32)(cC & 0x7c00);
 
-        *dest++ = ((blue >> 16) & 0x7c00) | ((green >> 16) & 0x3e0) | ((red >> 16) & 0x1f) | 0x8000;
-        numColors--;
-    } while (numColors != 0);
+        WRITE_BE_U16(&dest[i], ((blue >> 16) & 0x7c00) | ((green >> 16) & 0x3e0) | ((red >> 16) & 0x1f) | 0x8000);
+    }
 }
 
 void morphDragon(sDragonMorphData* pLoadDragonWorkArea, s_3dModel* pOutputDragonModel, u8* pMCB, const sDragonMorphDataPerLevel* pDragonData3, s16 cursorX, s16 cursorY)
@@ -293,12 +294,12 @@ void morphDragon(sDragonMorphData* pLoadDragonWorkArea, s_3dModel* pOutputDragon
 
     // Morph VDP1 palette colors
     morphDragonTexture(
-        (u16*)(getVdp1Pointer(0x25C00000) + pOutput->m6_textureOffset * 8),
+        (u16*)(getVdp1Pointer(0x25C12000) + pOutput->m6_textureOffset * 8),
         (u16*)(pMCB + pA->m6_textureOffset * 8),
         (u16*)(pMCB + pB->m6_textureOffset * 8),
         (u16*)(pMCB + pC->m6_textureOffset * 8),
         pDragonData3->m0_numMCBEntries);
-    invalidateVdp1TextureRange(0x25C00000 + pOutput->m6_textureOffset * 8, 8 * 8 * 2);
+    invalidateVdp1TextureRange(0x25C12000 + pOutput->m6_textureOffset * 8, pDragonData3->m0_numMCBEntries * 16);
 
     // Morph hotpoint data
     morphDragonHotpoints(
