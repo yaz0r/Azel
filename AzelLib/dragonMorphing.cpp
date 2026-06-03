@@ -64,6 +64,48 @@ static void morphDragonNormals(std::vector<sVec3_S16_12_4>& pDst, const std::vec
     }
 }
 
+// variants for type-safety
+static void morphDragonNormals(std::vector<sProcessed3dModel::sQuadExtra>& pDst, const std::vector<sProcessed3dModel::sQuadExtra>& pA, const std::vector<sProcessed3dModel::sQuadExtra>& pB, const std::vector<sProcessed3dModel::sQuadExtra>& pC, s32 count) {
+    if (count >= 4) {
+        assert(pDst.size() == 4);
+        for (int i = 0; i < 4; i++) {
+            for(int j=0; j< 3; j++) {
+                s32 result = (s32)morphDragonWeightS16[0] * (s32)pA[i].m0_normals[j]
+                    + (s32)morphDragonWeightS16[1] * (s32)pB[i].m0_normals[j]
+                    + (s32)morphDragonWeightS16[2] * (s32)pC[i].m0_normals[j];
+                pDst[i].m0_normals[j] = (s16)(result >> 14);
+            }
+        }
+        if (count == 8) {
+            assert(0); // untested
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 3; j++) {
+                    u32 result = (u32)morphDragonWeightS16[0] * (u32)pA[i].m6_colors[j]
+                        + (u32)morphDragonWeightS16[1] * (u32)pB[i].m6_colors[j]
+                        + (u32)morphDragonWeightS16[2] * (u32)pC[i].m6_colors[j];
+                    pDst[i].m6_colors[j] = (s16)(result >> 14);
+                }
+            }
+        }
+        else
+        {
+            assert(count == 4);
+        }
+    }
+    else {
+        assert(count == 1);
+        s32 i = 0;
+        assert(pDst.size() == 1);
+        for (int j = 0; j < 3; j++) {
+            s32 result = (s32)morphDragonWeightS16[0] * (s32)pA[i].m0_normals[j];
+            +(s32)morphDragonWeightS16[1] * (s32)pB[i].m0_normals[j]
+                + (s32)morphDragonWeightS16[2] * (s32)pC[i].m0_normals[j];
+            pDst[i].m0_normals[j] = (s16)(result >> 14);
+        }
+    }
+}
+
+
 // 0601344e — morph a single 3D model node (vertices + normals + polygon data)
 static void morphDragonProcessNode(sProcessed3dModel* pDst, sProcessed3dModel* pA, sProcessed3dModel* pB, sProcessed3dModel* pC)
 {
@@ -90,44 +132,17 @@ static void morphDragonProcessNode(sProcessed3dModel* pDst, sProcessed3dModel* p
 
     while (pCmdDst != pDst->mC_Quads.end())
     {
-        u8 polyType = pCmdDst->m8_lightingControl & 3;
+        u8 polyType = (pCmdDst->m8_lightingControl >> 8) & 3;
         switch (polyType) {
         case 3:
-            Unimplemented();
+            morphDragonNormals(pCmdDst->m14_extraData, pCmdA->m14_extraData, pCmdB->m14_extraData, pCmdC->m14_extraData, 4);
             break;
         case 2:
-            Unimplemented();
+            morphDragonNormals(pCmdDst->m14_extraData, pCmdA->m14_extraData, pCmdB->m14_extraData, pCmdC->m14_extraData, 8);
             break;
         case 1:
-            Unimplemented();
+            morphDragonNormals(pCmdDst->m14_extraData, pCmdA->m14_extraData, pCmdB->m14_extraData, pCmdC->m14_extraData, 1);
             break;
-        }
-        if (polyType != 0)
-        {
-            // FUN_060134cc — blend per-polygon normal/vertex data
-            // Each polygon has vertex normals as s16 triplets (X,Y,Z)
-            // polyType 2 = triangle (3 vertices), 3 = quad (4 vertices), 1 = untextured
-            /*s32 numVerts = (polyType == 2) ? 3 : 4;
-            auto pNormDst = pCmdDst->m0_indices.data();
-            const s16* pNormA = (const s16*)pCmdA;
-            const s16* pNormB = (const s16*)pCmdB;
-            const s16* pNormC = (const s16*)pCmdC;
-            for (s32 v = 0; v < numVerts; v++)
-            {
-                for (s32 c = 0; c < 3; c++)
-                {
-                    s32 blended = (s32)morphDragonWeightS16[0] * (s32)pNormA[v * 3 + c]
-                                + (s32)morphDragonWeightS16[1] * (s32)pNormB[v * 3 + c]
-                                + (s32)morphDragonWeightS16[2] * (s32)pNormC[v * 3 + c];
-                    pNormDst[v * 3 + c] = (s16)((blended << 2) >> 16);
-                }
-            }
-            */
-
-            if (polyType == 1)
-            {
-                //this would increase the quad data differently
-            }
         }
         pCmdDst++;
         pCmdA++;
