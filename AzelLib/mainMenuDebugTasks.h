@@ -37,29 +37,6 @@ struct s_loadRiderWorkArea : public s_workAreaTemplate<s_loadRiderWorkArea>
 extern s_loadRiderWorkArea* pRider1State;
 extern s_loadRiderWorkArea* pRider2State;
 
-struct sDragonBuffer {
-    s_fileBundle* m0_dramData;
-    std::array<u8, 0x6800> m18E00_MCBInDram;
-    // size 0x1F600;
-};
-
-
-struct s_loadDragonWorkArea : public s_workAreaTemplate<s_loadDragonWorkArea>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { NULL, NULL, NULL, NULL};
-        return &taskDefinition;
-    }
-
-    sDragonBuffer* m0_dramAllocation; //0
-    u8* m4_vramAllocation;//4
-    u8* m8_MCBInDram;//8
-};
-
-s_loadDragonWorkArea* loadDragonModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel);
-void morphDragon(s_loadDragonWorkArea* pLoadDragonWorkArea, s_3dModel* pDragonStateSubData1, u8* pMCB, const sDragonData3* pDragonData3, s16 cursorX, s16 cursorY);
-
 struct s_vblankData {
     u32 m0_frameReadyToPresent;
     u32 m4_wasFrameOutDisplayed;

@@ -604,7 +604,7 @@ struct s_MCB_CGB {
 
 struct s_dragonFileConfig {
     s_MCB_CGB m_base;
-    s_MCB_CGB m_M;
+    s_MCB_CGB m_morph;
     s_MCB_CGB m_C;
 };
 
@@ -638,24 +638,24 @@ private:
     std::vector<s_hotpointDefinition> m_cachedData;
 };
 
-struct sDragonData3Sub
+struct sDragonMorphModels
 {
     u16 m0_modelIndex;
     u16 m2_shadowModelIndex;
     u16 m4_poseModelIndex;
-    u16 m6_mcbEntry;
+    u16 m6_textureOffset;
     sHotpointBundle* m8_hotPoints;
 };
 
-struct sDragonData3
+struct sDragonMorphDataPerLevel
 {
     u32 m0_numMCBEntries;
     u16 m4_numHotPoints;
     u16 m_m6;
-    sDragonData3Sub m_m8[7];
+    sDragonMorphModels m_m8[7];
 };
 
-extern std::array<sDragonData3, DR_LEVEL_MAX> dragonData3;
+extern std::array<sDragonMorphDataPerLevel, DR_LEVEL_MAX> gDragonMorphDataPerLevel;
 
 struct s_dragonData2
 {

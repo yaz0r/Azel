@@ -1346,7 +1346,7 @@ void sCampDragon_Draw(sTownDragon* pThisBase) {
 void sCampDragon_Delete(sTownDragon* pThis) {
     playAnimation(&gDragonState->m28_dragon3dModel, nullptr, 0);
     reinitModel(&gDragonState->m28_dragon3dModel,
-        dragonData3[gDragonState->mC_dragonType].m_m8[0].m8_hotPoints);
+        gDragonMorphDataPerLevel[gDragonState->mC_dragonType].m_m8[0].m8_hotPoints);
 }
 
 sTownObject* createCampDragon(p_workArea parent, sSaturnPtr arg) {

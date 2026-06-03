@@ -200,7 +200,7 @@ static void sTownDragon_Draw(sTownDragon* pThis)
 static void restoreBaseDragonHotpoints()
 {
     reinitModel(&gDragonState->m28_dragon3dModel,
-        dragonData3[gDragonState->mC_dragonType].m_m8[0].m8_hotPoints);
+        gDragonMorphDataPerLevel[gDragonState->mC_dragonType].m_m8[0].m8_hotPoints);
 }
 
 // 060545AA

@@ -4,8 +4,8 @@
 #include "kernel/debug/trace.h"
 #include "lightSetup.h"
 #include "mainMenuDebugTasks.h"
+#include "dragonMorphing.h"
 
-void loadDragonSub1(s_loadDragonWorkArea* pLoadDragonWorkArea);
 void setupDragonForTown(s_3dModel* pDragonModel);
 
 s_lightSetup lightSetup;
@@ -30,8 +30,8 @@ struct s_dragonMenuDragonWorkArea : public s_workAreaTemplate<s_dragonMenuDragon
     static void dragonMenuDragonDraw(s_dragonMenuDragonWorkArea*);
     static void dragonMenuDragonDelete(s_dragonMenuDragonWorkArea*);
 
-    s_loadDragonWorkArea* m0; //0
-    const sDragonData3* m4; //4
+    sDragonMorphData* m0; //0
+    const sDragonMorphDataPerLevel* m4; //4
     u16 m8; //8
     u32 mC; //C
     sVec3_FP modelTranslation; //10
@@ -366,9 +366,9 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonInit(s_dragonMenuDragonWorkArea
     pWorkArea->m28_animation = gDragonState->m28_dragon3dModel.m30_pCurrentAnimation;
     pWorkArea->m2C = gDragonState->m28_dragon3dModel.m16_previousAnimationFrame;
 
-    pWorkArea->m0 = loadDragonModel(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
+    pWorkArea->m0 = createDragonMorphData(pWorkArea, mainGameState.gameStats.m1_dragonLevel);
 
-    pWorkArea->m4 = &dragonData3[mainGameState.gameStats.m1_dragonLevel];
+    pWorkArea->m4 = &gDragonMorphDataPerLevel[mainGameState.gameStats.m1_dragonLevel];
     pWorkArea->modelTranslation[1] = 0x4000;
     pWorkArea->modelTranslation[2] = 0xA000;
     pWorkArea->modelRotation[0] = fixedPoint(0xE38E38);
@@ -882,7 +882,7 @@ static void restoreGraphicEngineState(s_dragonMenuDragonWorkAreaSub1* pSaved)
 // 0600bfcc
 void s_dragonMenuDragonWorkArea::dragonMenuDragonDelete(s_dragonMenuDragonWorkArea* pWorkArea)
 {
-    loadDragonSub1(pWorkArea->m0);
+    deleteDragonMorphData(pWorkArea->m0);
     setupDragonForTown(&gDragonState->m28_dragon3dModel);
     setupModelAnimation(&gDragonState->m28_dragon3dModel, pWorkArea->m28_animation);
 
