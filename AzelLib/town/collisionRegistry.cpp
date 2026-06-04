@@ -1050,7 +1050,14 @@ void testBodyAgainstCell(sCollisionBody* r12, sTownCellTask* r13)
         {
             sProcessed3dModel* mesh = r13->m0_fileBundle->getCollisionModel(readSaturnU32(r14));
             sVec3_FP meshPositionInCell = readSaturnVec3(r14 + 4);
-            if (distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(mesh->m0_radius + r12->m4_sphereRadius))
+            bool bWithinBroadPhase = distanceSquareBetween2Points(var0_positionInCell, meshPositionInCell) < FP_Pow2(mesh->m0_radius + r12->m4_sphereRadius);
+            if (!isShipping() && isDrawTownCollisionsEnabled())
+            {
+                // green = candidate mesh in this cell, yellow = passes the sphere broad-phase (actually tested)
+                const sFColor meshColor = bWithinBroadPhase ? sFColor{ 1, 1, 0, 1 } : sFColor{ 0, 1, 0, 1 };
+                drawCollisionMeshWireframe(r13->mC_position + meshPositionInCell, *mesh, meshColor);
+            }
+            if (bWithinBroadPhase)
             {
                 pushCurrentMatrix();
                 translateCurrentMatrix(meshPositionInCell);
@@ -1589,8 +1596,35 @@ void processAllCollisions()
 }
 
 static bool bDrawTownCollisions = false;
+static bool bDrawLCSCollisions = false;
 
-static void drawDebugAABBWireframe(const sVec3_FP& center, const sVec3_FP& halfExtent, const sFColor& color)
+bool isDrawTownCollisionsEnabled()
+{
+    return bDrawTownCollisions;
+}
+
+bool isDrawLCSCollisionsEnabled()
+{
+    return bDrawLCSCollisions;
+}
+
+void drawCollisionMeshWireframe(const sVec3_FP& worldBase, const sProcessed3dModel& model, const sFColor& color)
+{
+    for (const sProcessed3dModel::sQuad& quad : model.mC_Quads)
+    {
+        const sVec3_FP v0 = worldBase + model.m8_vertices[quad.m0_indices[0]].toSVec3_FP();
+        const sVec3_FP v1 = worldBase + model.m8_vertices[quad.m0_indices[1]].toSVec3_FP();
+        const sVec3_FP v2 = worldBase + model.m8_vertices[quad.m0_indices[2]].toSVec3_FP();
+        const sVec3_FP v3 = worldBase + model.m8_vertices[quad.m0_indices[3]].toSVec3_FP();
+
+        drawDebugLine(v0, v1, color);
+        drawDebugLine(v1, v2, color);
+        drawDebugLine(v2, v3, color);
+        drawDebugLine(v3, v0, color);
+    }
+}
+
+void drawDebugAABBWireframe(const sVec3_FP& center, const sVec3_FP& halfExtent, const sFColor& color)
 {
     // 8 corners of the AABB
     sVec3_FP corners[8];
@@ -1622,6 +1656,7 @@ static void drawTownCollisionDebug()
     if (gDebugWindows.town) {
         if (ImGui::Begin("Town", &gDebugWindows.town)) {
             ImGui::Checkbox("Draw Town Collisions", &bDrawTownCollisions);
+            ImGui::Checkbox("Draw LCS Collisions", &bDrawLCSCollisions);
         }
         ImGui::End();
     }

@@ -3,6 +3,8 @@
 #include "townLCS.h"
 #include "kernel/fileBundle.h"
 #include "processModel.h"
+#include "collisionRegistry.h"
+#include "3dEngine_flush.h"
 
 sResCameraProperties LCSCollisionData;
 
@@ -200,7 +202,7 @@ void transformVerticesClipped(const sProcessed3dModel& r4, const sMatrix4x3& r5,
         s32 r3 = r7->m4_fullPrecisionZ >= (r6->m28_LCSDepthMax << 8);
         r3 <<= 1;
 
-        s32 depthClipped = r7->m4_fullPrecisionZ <= (r6->m24_LCSDepthMin << 8);
+        s32 depthClipped = r7->m4_fullPrecisionZ < (r6->m24_LCSDepthMin << 8);
         r3 |= depthClipped;
 
         if (!depthClipped)
@@ -245,8 +247,8 @@ bool testQuadsForCollisionSub2(sResCameraProperties* r6, sTransformedVertice& r8
     s32 r3 = mac >> 16;
     r3 += r8.mC_fullPrecisionY;
 
-    r8.m14_clippedY = r6->m18 * r3;
-    r8.m10_clippedX = r6->m18 * r2;
+    r8.m14_clippedY = (s32)(((s64)r6->m18.asS32() * (s64)r3) >> 32);
+    r8.m10_clippedX = (s32)(((s64)r6->m18.asS32() * (s64)r2) >> 32);
     return false;
 }
 
@@ -455,8 +457,9 @@ bool setTBitIfCollisionWithQuad(sResCameraProperties* r6, sTransformedVertice& r
 
     if (!testQuadsForCollisionSub1(0x10, r6, testQuadsForCollisionSub2, r10, r11, r12, r13))
     {
-        s32 r0 = (r13.m14_clippedY - r11.m14_clippedY) * (r12.m10_clippedX - r10.m10_clippedX);
-        s32 r2 = (r12.m14_clippedY - r10.m14_clippedY) * (r13.m10_clippedX - r11.m10_clippedX);
+        // Saturn uses muls.w (signed 16x16), so each delta is truncated to s16 before the multiply
+        s32 r0 = (s32)(s16)(r13.m14_clippedY - r11.m14_clippedY) * (s32)(s16)(r12.m10_clippedX - r10.m10_clippedX);
+        s32 r2 = (s32)(s16)(r12.m14_clippedY - r10.m14_clippedY) * (s32)(s16)(r13.m10_clippedX - r11.m10_clippedX);
 
         if (r2 > r0)
         {
@@ -532,7 +535,7 @@ void testQuadsForCollisionSub0(const sProcessed3dModel::sQuad& r4, s32& r5_resul
 
     //601E65A
     r1 *= 0x100;
-    if (r1 <= r6->m28_LCSDepthMax)
+    if (r1 < r6->m28_LCSDepthMax)
     {
         r6->m28_LCSDepthMax = r1;
         r5_result = r4.m12_onCollisionScriptIndex;
@@ -627,6 +630,12 @@ void findLCSCollisionInCell(sResCameraProperties* r14, sTownCellTask* r12)
             translateCurrentMatrix(readSaturnVec3(r13 + 4));
             sProcessed3dModel* model = r12->m0_fileBundle->getCollisionModel(readSaturnU32(r13));
             s32 r0 = testMeshVisibility(r14, *model);
+            if (!isShipping() && isDrawLCSCollisionsEnabled())
+            {
+                // red = the cell mesh the LCS resolves to, green = a candidate mesh it walked
+                const sFColor meshColor = (r0 != -1) ? sFColor{ 1, 0, 0, 1 } : sFColor{ 0, 1, 0, 1 };
+                drawCollisionMeshWireframe(r12->mC_position + readSaturnVec3(r13 + 4), *model, meshColor);
+            }
             if (r0 != -1)
             {
                 if (r0)
@@ -682,45 +691,37 @@ void findLCSCollision()
 
     // find LCS collision with NPC objects
     sCollisionBodyRegistry* var10 = &gCollisionRegistry;
-    sProcessed3dModel& var4 = townLCSVisibilityTestMesh;
-
-    sVec3_S16_12_4& r10 = townLCSVisibilityTestMesh.m8_vertices[0];
-    sVec3_S16_12_4& r8 = townLCSVisibilityTestMesh.m8_vertices[1];
-    sVec3_S16_12_4& var0 = townLCSVisibilityTestMesh.m8_vertices[2];
-    sVec3_S16_12_4& r9 = townLCSVisibilityTestMesh.m8_vertices[3];
+    sProcessed3dModel& billboardMesh = townLCSVisibilityTestMesh;
 
     for (int i = 0; i < 5; i++)
     {
-        sCollisionBodyNode* r12 = var10->m8_headOfLinkedList[i];
-        while (r12)
+        sCollisionBodyNode* pCollisionNode = var10->m8_headOfLinkedList[i];
+        while (pCollisionNode)
         {
-            sCollisionBody* r14 = r12->m4;
-            r12 = r12->m0_pNext;
-            if (r14->m0_collisionSetup.m1)
+            sCollisionBody* pCollisionBody = pCollisionNode->m4;
+            if (pCollisionBody->m0_collisionSetup.m1_isLCS)
             {
-                var4.m0_radius = r14->m4_sphereRadius;
+                billboardMesh.m0_radius = pCollisionBody->m4_sphereRadius;
 
-                s16 r4 = r14->m14_halfAABB[0] >> 4;
-                r10[0] = r4;
-                r9[0] = r4;
+                s16 halfX = pCollisionBody->m14_halfAABB[0] >> 4;
+                billboardMesh.m8_vertices[0][0] = halfX;
+                billboardMesh.m8_vertices[3][0] = halfX;
+                billboardMesh.m8_vertices[2][0] = -halfX;
+                billboardMesh.m8_vertices[1][0] = -halfX;
 
-                var0[0] = -r4;
-                r8[0] = -r4;
+                s16 halfY = pCollisionBody->m14_halfAABB[1] >> 4;
+                billboardMesh.m8_vertices[1][1] = halfY;
+                billboardMesh.m8_vertices[0][1] = halfY;
+                billboardMesh.m8_vertices[3][1] = -halfY;
+                billboardMesh.m8_vertices[2][1] = -halfY;
 
-                r4 = r14->m14_halfAABB[1] >> 4;
-                r8[1] = r4;
-                r10[1] = r4;
-
-                r9[1] = -r4;
-                var0[1] = -r4;
-
-                var0[2] = 0;
-                r9[2] = 0;
-                r8[2] = 0;
-                r10[2] = 0;
+                billboardMesh.m8_vertices[2][2] = 0;
+                billboardMesh.m8_vertices[3][2] = 0;
+                billboardMesh.m8_vertices[1][2] = 0;
+                billboardMesh.m8_vertices[0][2] = 0;
 
                 pushCurrentMatrix();
-                translateCurrentMatrix(r14->m8_position);
+                translateCurrentMatrix(pCollisionBody->m8_position);
                 sMatrix4x3& r5 = cameraProperties2.m88_billboardViewMatrix;
 
                 pCurrentMatrix->m[0][0] = r5.m[0][0];
@@ -733,12 +734,21 @@ void findLCSCollision()
                 pCurrentMatrix->m[2][1] = r5.m[2][1];
                 pCurrentMatrix->m[2][2] = r5.m[2][2];
 
-                if (testMeshVisibility(&LCSCollisionData, var4) == 0)
+                s32 lcsHit = testMeshVisibility(&LCSCollisionData, billboardMesh);
+                if (!isShipping() && isDrawLCSCollisionsEnabled())
                 {
-                    if (!r14->m3C_scriptEA.isNull())
+                    // NPC LCS targets have no collision mesh; the LCS tests a billboard quad
+                    // sized from the body AABB, so visualise the body AABB here.
+                    // red = resolved hit this frame, green = candidate body tested.
+                    const sFColor color = (lcsHit == 0) ? sFColor{ 1, 0, 0, 1 } : sFColor{ 0, 1, 0, 1 };
+                    drawDebugAABBWireframe(pCollisionBody->m8_position + pCollisionBody->m20_AABBCenter, pCollisionBody->m14_halfAABB, color);
+                }
+                if (lcsHit == 0)
+                {
+                    if (!pCollisionBody->m3C_scriptEA.isNull())
                     {
                         LCSCollisionData.m10_activeLCSType = 2;
-                        LCSCollisionData.m14_activeLCS = r14;
+                        LCSCollisionData.m14_activeLCS = pCollisionBody;
                     }
                     else
                     {
@@ -747,6 +757,7 @@ void findLCSCollision()
                 }
                 popMatrix();
             }
+            pCollisionNode = pCollisionNode->m0_pNext;
         }
     }
 }

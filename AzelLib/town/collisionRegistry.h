@@ -3,7 +3,7 @@
 struct sCollisionSetup
 {
     s8 m0_collisionType;
-    s8 m1;
+    s8 m1_isLCS;
     s16 m2_collisionLayersBitField;
 };
 
@@ -62,3 +62,18 @@ void processAllCollisions();
 // Resets the per-frame collision registry (clears linked list heads, resets node counter)
 // and toggles the gCollisionPositionBias oscillator used by AABB positioning.
 void resetCollisionFrame();
+
+struct sProcessed3dModel;
+struct sFColor;
+
+// Draws a collision model's quads as a world-space wireframe (debug overlay).
+// worldBase is the model's world-space origin (cell position + per-mesh offset).
+void drawCollisionMeshWireframe(const sVec3_FP& worldBase, const sProcessed3dModel& model, const sFColor& color);
+
+// Draws an axis-aligned bounding box as a world-space wireframe (debug overlay).
+void drawDebugAABBWireframe(const sVec3_FP& center, const sVec3_FP& halfExtent, const sFColor& color);
+
+// Debug-overlay toggles from the Town debug window. Exposed so other systems can draw
+// their own candidate geometry under the matching toggle (e.g. the LCS cell-mesh walk).
+bool isDrawTownCollisionsEnabled();
+bool isDrawLCSCollisionsEnabled();
