@@ -44,6 +44,10 @@ constexpr std::uint32_t kNpcE8_position = 0x0;
 constexpr std::uint32_t kNpcE8_rotation = 0xC;
 constexpr std::uint32_t kNpcE8_stepRotation = 0x24; // feeds the m44 camera-target rotation (varC)
 
+constexpr std::uint32_t kEdge_m14C_inputFlags = 0x14C;
+constexpr std::uint32_t kEdge_m150_inputX = 0x150;
+constexpr std::uint32_t kEdge_m154_inputY = 0x154;
+
 constexpr std::uint32_t kNpcE8_stepTranslationInWorld = 0x18;
 constexpr std::uint32_t kNpcE8_oldPosition = 0x54;
 constexpr std::uint32_t kNpcE8_stepTranslation = 0x30;
@@ -197,10 +201,56 @@ void scriptFunction_6057058_sub0Sub0_detour() {
     }
 }
 
+// --- TWN_RUIN updateEdgePositionSub1 (before/after stepRotation + inputX/inputY) ------------------------------------
+// 0605bcc4 entry; returns to updateEdgePosition at 0605b8f6 (instruction after the bsr's delay slot).
+namespace {
+constexpr std::uint32_t kUpdateEdgePositionSub1Entry = 0x0605bcc4;
+constexpr std::uint32_t kUpdateEdgePositionSub1Return = 0x0605b8f6;
+} // namespace
+
+DECLARE_HOOK(updateEdgePositionSub1, kUpdateEdgePositionSub1Entry, void, sEdgeTask *)
+
+void updateEdgePositionSub1_detour(sEdgeTask *r4) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town)) {
+        updateEdgePositionSub1_intercept.callUndetoured(r4);
+        return;
+    }
+
+    // BEFORE: drive the guest to the function entry and compare the inputs it reads.
+    g_validationConnection->executeUntilAddress(kUpdateEdgePositionSub1Entry);
+    const std::uint32_t edge = g_validationConnection->getRegister(azelval::REG_R0 + 4); // R4 = sEdgeTask*
+
+    // The branch selector: both the rotation and translation blocks switch on twnMainLogicTask->m0. If it diverges
+    // the guest skips the writes entirely (m0 >= 2 leaves stepRotation/stepTranslation untouched), which is exactly
+    // the leftover-value symptom seen on stepTranslation[2].
+    const std::uint32_t mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
+    if (mainLogic != 0 && twnMainLogicTask != nullptr) {
+        validate(mainLogic + 0x0, (std::int8_t)twnMainLogicTask->m0);
+        validate(mainLogic + 0x2, (std::int8_t)twnMainLogicTask->m2_cameraFollowMode);
+    }
+
+    validate(edge + kEdge_mE8 + kNpcE8_stepRotation, r4->mE8.m24_stepRotation);
+    validate(edge + kEdge_mE8 + kNpcE8_stepTranslation, r4->mE8.m30_stepTranslation);
+    validate(edge + kEdge_m14C_inputFlags, r4->m14C_inputFlags);
+    validate(edge + kEdge_m150_inputX, r4->m150_inputX);
+    validate(edge + kEdge_m154_inputY, r4->m154_inputY);
+
+    updateEdgePositionSub1_intercept.callUndetoured(r4);
+
+    // AFTER: drive the guest through the function (RTS lands back in updateEdgePosition) and compare the results.
+    // The function rewrites stepRotation[1] / stepTranslation[0]/[2], masks inputFlags to &= 1, and may clamp
+    // stepTranslation[1]; inputX/inputY are left untouched.
+    g_validationConnection->executeUntilAddress(kUpdateEdgePositionSub1Return);
+    validate(edge + kEdge_mE8 + kNpcE8_stepRotation, r4->mE8.m24_stepRotation);
+    validate(edge + kEdge_mE8 + kNpcE8_stepTranslation, r4->mE8.m30_stepTranslation);
+    validate(edge + kEdge_m14C_inputFlags, r4->m14C_inputFlags);
+}
+
 void enableTownHooks() {
     resetCollisionFrame_intercept.enable();
     getCellAtWorldPos_intercept.enable();
     processTownMeshCollision_intercept.enable();
     handleCollisionWithTownEnv_intercept.enable();
     scriptFunction_6057058_sub0Sub0_intercept.enable();
+    updateEdgePositionSub1_intercept.enable();
 }
