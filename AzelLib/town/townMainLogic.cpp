@@ -814,7 +814,7 @@ void sMainLogic::Init(sMainLogic* pThis)
     {
         pThis->m1_cameraParamsIndex = 0;
     }
-    pThis->m0 = 0;
+    pThis->m0 = 1;
     pThis->m10 = &mainLogicDummy;
 
     resetMatrixStack();

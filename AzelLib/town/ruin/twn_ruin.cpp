@@ -472,8 +472,6 @@ s32 scriptFunction_6057058()
 
 void updateEdgeControls(sEdgeTask* r4)
 {
-    s32 r5 = 0;
-    s32 r6 = 0;
     if (npcData0.mFC & 2)
     {
         r4->m14C_inputFlags |= 0xC0;
@@ -482,34 +480,35 @@ void updateEdgeControls(sEdgeTask* r4)
     {
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2)
         {
+            // Analog
             //0605BC5E
-            r5 = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
-            r6 = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+            r4->m150_inputX = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
+            r4->m154_inputY = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
         }
         else
         {
+            // Digital pad
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x10)
             {
-                r6 = 0x10000;
+                // up
+                r4->m154_inputY = 0x10000;
             }
             else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x20)
             {
-                r6 = -0x10000;
+                // down
+                r4->m154_inputY = -0x10000;
             }
 
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x40)
             {
-                r5 = 0x10000;
+                r4->m150_inputX = 0x10000;
             }
             else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x80)
             {
-                r5 = -0x10000;
+                r4->m150_inputX = -0x10000;
             }
         }
     }
-
-    r4->m150_inputX = r5;
-    r4->m154_inputY = r6;
 
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][0])
     {
@@ -522,6 +521,7 @@ void updateEdgeControls(sEdgeTask* r4)
     }
 }
 
+// 0605bcc4
 void updateEdgePositionSub1(sEdgeTask* r4)
 {
     if (!(r4->m14C_inputFlags & 0x40))
@@ -538,7 +538,47 @@ void updateEdgePositionSub1(sEdgeTask* r4)
                 r4->mE8.m24_stepRotation[1] = MTH_Mul(0x38E38E, r4->m150_inputX);
             }
             break;
+        case 1:
+            if (!(r4->m14C_inputFlags & 4))
+            {
+                s32 r6 = 0;
+                if (r4->m150_inputX != 0 || r4->m154_inputY != 0)
+                {
+                    s32 angle = atan2_FP(r4->m150_inputX, r4->m154_inputY);
+                    r6 = fixedPoint((angle + twnMainLogicTask->m68_cameraRotation[1]) - r4->mE8.mC_rotation[1]).normalized();
+
+                    s32 r5;
+                    if (twnMainLogicTask->m2_cameraFollowMode == 0)
+                    {
+                        r5 = setDividend(0x4FA4FA, twnMainLogicTask->m24_distance - 0xA8F, 0x1000);
+                        if (r5 < 0xE38E3)
+                        {
+                            r5 = 0xE38E3;
+                        }
+                    }
+                    else
+                    {
+                        r5 = 0x71C71C;
+                    }
+
+                    if (r5 < r6)
+                    {
+                        r6 = r5;
+                    }
+                    if (r6 < -r5)
+                    {
+                        r6 = -r5;
+                    }
+                }
+                r4->mE8.m24_stepRotation[1] = r6;
+            }
+            else
+            {
+                r4->mE8.m24_stepRotation[1] = 0;
+            }
+            break;
         default:
+            // m0 >= 2: Ghidra leaves stepRotation[1] unchanged; m0 is only ever 0/1 in practice
             assert(0);
             break;
         }
@@ -573,7 +613,35 @@ void updateEdgePositionSub1(sEdgeTask* r4)
             r4->mE8.m30_stepTranslation[2] = MTH_Mul(r4->m154_inputY, r10);
             r4->mE8.m30_stepTranslation[0] = 0;
             break;
+        case 1:
+            if (!(r4->m14C_inputFlags & 4))
+            {
+                s32 step = 0;
+                if (r4->m150_inputX != 0 || r4->m154_inputY != 0)
+                {
+                    step = sqrt_F(FP_Pow2(r4->m150_inputX) + FP_Pow2(r4->m154_inputY));
+                    if (0x10000 < step)
+                    {
+                        step = 0x10000;
+                    }
+                    step = MTH_Mul(step, r10);
+
+                    s32 damped = MTH_Mul(r4->mE8.m30_stepTranslation[2],
+                                         getCos(((u32)(s32)r4->mE8.m24_stepRotation[1] >> 16) & 0xFFF));
+                    damped = MTH_Mul(damped - step, 0xE666);
+                    step = step + damped;
+                }
+                r4->mE8.m30_stepTranslation[2] = step;
+                r4->mE8.m30_stepTranslation[0] = 0;
+            }
+            else
+            {
+                r4->mE8.m30_stepTranslation[2] = MTH_Mul(r4->m154_inputY, r10);
+                r4->mE8.m30_stepTranslation[0] = MTH_Mul(r4->m150_inputX, r10);
+            }
+            break;
         default:
+            // m0 >= 2: Ghidra leaves stepTranslation unchanged; m0 is only ever 0/1 in practice
             assert(0);
             break;
         }
