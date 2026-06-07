@@ -619,7 +619,7 @@ void updateEdgePositionSub1(sEdgeTask* r4)
                 s32 step = 0;
                 if (r4->m150_inputX != 0 || r4->m154_inputY != 0)
                 {
-                    step = sqrt_F(FP_Pow2(r4->m150_inputX) + FP_Pow2(r4->m154_inputY));
+                    step = sqrt_F(FP_Pow2(r4->m154_inputY) + FP_Pow2(r4->m150_inputX));
                     if (0x10000 < step)
                     {
                         step = 0x10000;

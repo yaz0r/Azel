@@ -655,7 +655,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
 
     fixedPoint var0 = MTH_Product3d_FP(varC, r13_vertice0.vertice) - var18[0] - var18[1] - var18[2];
 
-    if (FP_Pow2(var18[2]) > FP_Pow2(var0))
+    if (FP_Pow2(var0) < FP_Pow2(var18[2]))
     {
         //6008D50
         if (var0 > var18[2])
@@ -759,7 +759,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
     }
 
     //6008F32
-    if (FP_Pow2(var18[0]) > FP_Pow2(var0))
+    if (FP_Pow2(var0) < FP_Pow2(var18[0]))
     {
         //6008F4E
         if (var0 > var18[0])
@@ -863,7 +863,7 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
     }
 
     //6009122
-    if (FP_Pow2(var18[1]) > FP_Pow2(var0))
+    if (FP_Pow2(var0) < FP_Pow2(var18[1]))
     {
         //600913E
         if (var0 > var18[1])
