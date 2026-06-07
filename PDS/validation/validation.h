@@ -21,6 +21,7 @@ void validateAssert(bool result);
 enum validationContext {
     VCTX_Base = 0,
     VCTX_Town,
+    VCTX_Math,
     VCTX_Count,
 };
 

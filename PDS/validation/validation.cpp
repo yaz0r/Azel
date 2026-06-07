@@ -139,6 +139,7 @@ void validationInit() {
     g_validationConnection->resetTarget();
 
     enableValidationContext(VCTX_Town);
+    enableValidationContext(VCTX_Math);
     enableValidationHooks();
     std::printf("[validation] enabled\n");
 }
