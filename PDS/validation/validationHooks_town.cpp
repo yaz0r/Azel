@@ -43,6 +43,10 @@ constexpr u32 kNpcE8_position = 0x0;
 constexpr u32 kNpcE8_rotation = 0xC;
 constexpr u32 kNpcE8_stepRotation = 0x24; // feeds the m44 camera-target rotation (varC)
 
+constexpr u32 kEdge_m14C_inputFlags = 0x14C;
+constexpr u32 kEdge_m150_inputX = 0x150;
+constexpr u32 kEdge_m154_inputY = 0x154;
+
 constexpr u32 kNpcE8_stepTranslationInWorld = 0x18;
 constexpr u32 kNpcE8_oldPosition = 0x54;
 constexpr u32 kNpcE8_stepTranslation = 0x30;
@@ -188,10 +192,47 @@ void scriptFunction_6057058_sub0Sub0_detour() {
     }
 }
 
+// TWN_RUIN updateEdgePositionSub1; the return is the instruction after the bsr's delay slot
+constexpr u32 kUpdateEdgePositionSub1Entry = 0x0605bcc4;
+constexpr u32 kUpdateEdgePositionSub1Return = 0x0605b8f6;
+
+DECLARE_HOOK(updateEdgePositionSub1, kUpdateEdgePositionSub1Entry, void, sEdgeTask *)
+
+void updateEdgePositionSub1_detour(sEdgeTask *r4) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town)) {
+        updateEdgePositionSub1_intercept.callUndetoured(r4);
+        return;
+    }
+
+    g_validationConnection->executeUntilAddress(kUpdateEdgePositionSub1Entry);
+    const u32 edge = g_validationConnection->getRegister(azelval::REG_R0 + 4); // R4 = sEdgeTask*
+
+    // Branch selector: m0 >= 2 leaves stepRotation/stepTranslation untouched
+    const u32 mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
+    if (mainLogic != 0 && twnMainLogicTask != nullptr) {
+        validate(mainLogic + 0x0, (s8)twnMainLogicTask->m0);
+        validate(mainLogic + 0x2, (s8)twnMainLogicTask->m2_cameraFollowMode);
+    }
+
+    validate(edge + kEdge_mE8 + kNpcE8_stepRotation, r4->mE8.m24_stepRotation);
+    validate(edge + kEdge_mE8 + kNpcE8_stepTranslation, r4->mE8.m30_stepTranslation);
+    validate(edge + kEdge_m14C_inputFlags, r4->m14C_inputFlags);
+    validate(edge + kEdge_m150_inputX, r4->m150_inputX);
+    validate(edge + kEdge_m154_inputY, r4->m154_inputY);
+
+    updateEdgePositionSub1_intercept.callUndetoured(r4);
+
+    g_validationConnection->executeUntilAddress(kUpdateEdgePositionSub1Return);
+    validate(edge + kEdge_mE8 + kNpcE8_stepRotation, r4->mE8.m24_stepRotation);
+    validate(edge + kEdge_mE8 + kNpcE8_stepTranslation, r4->mE8.m30_stepTranslation);
+    validate(edge + kEdge_m14C_inputFlags, r4->m14C_inputFlags);
+}
+
 void enableTownHooks() {
     resetCollisionFrame_intercept.enable();
     getCellAtWorldPos_intercept.enable();
     processTownMeshCollision_intercept.enable();
     handleCollisionWithTownEnv_intercept.enable();
     scriptFunction_6057058_sub0Sub0_intercept.enable();
+    updateEdgePositionSub1_intercept.enable();
 }
