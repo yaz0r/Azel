@@ -814,8 +814,8 @@ void sMainLogic::Init(sMainLogic* pThis)
     {
         pThis->m1_cameraParamsIndex = 0;
     }
-    pThis->m0 = 0;
-    pThis->m10 = &mainLogicDummy;
+    pThis->m0 = 1;
+    pThis->m10 = &mainLogicDummy; // TODO: guest installs the handler at 0x06055db2 here, not the dummy
 
     resetMatrixStack();
 
