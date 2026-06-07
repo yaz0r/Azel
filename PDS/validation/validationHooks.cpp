@@ -4,6 +4,7 @@
 
 #include "validation/validation.h"
 #include "validation/validationHooks_town.h"
+#include "validation/validationHooks_math.h"
 
 #include "movie/movie.h"
 
@@ -70,9 +71,11 @@ void s_titleScreenWorkArea_Draw_detour(s_titleScreenWorkArea* pWorkArea) {
 
 void enableValidationHooks() {
     updateInputs_intercept.enable();
+    enableTownHooks();
+    enableMathHooks();
+
     //runTasks_intercept.enable();
     //s_movieMainWorkArea_Init_intercept.enable();
     //s_movieMainWorkArea_Draw_intercept.enable();
     //s_titleScreenWorkArea_Draw_intercept.enable();
-    enableTownHooks();
 }

@@ -144,8 +144,9 @@ void validationInit() {
     g_validationConnection->resetTarget();
 
     enableValidationContext(VCTX_Town);
+    enableValidationContext(VCTX_Math);
     enableValidationHooks();
-    std::printf("[validation] PoC hook armed (initVBlankData)\n");
+    std::printf("[validation] town + math hooks armed\n");
 }
 
 void validationShutdown() {
