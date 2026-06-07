@@ -25,7 +25,7 @@ s_titleMenuEntry mainMenuDebug[] = {
 bool hasSaveGame()
 {
     PDS_unimplemented("hasSaveGame");
-    return false;
+    return true;
 }
 
 struct s_titleMenuWorkArea : public s_workAreaTemplate<s_titleMenuWorkArea>
@@ -291,44 +291,34 @@ struct s_pressStartButtonTaskWorkArea : public s_workAreaTemplate<s_pressStartBu
     s32 m_timming;
 };
 
-struct s_titleScreenWorkArea : public s_workAreaTemplate<s_titleScreenWorkArea>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &s_titleScreenWorkArea::Init, NULL, &s_titleScreenWorkArea::Draw, NULL };
-        return &taskDefinition;
-    }
-
-    static void Init(s_titleScreenWorkArea*);
-    static void Draw(s_titleScreenWorkArea*);
-
-    u32 m0_status;
-    u32 m4_delay;
-    p_workArea m8_overlayTask;
-};
 
 void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
 {
     switch (pWorkArea->m0_status)
     {
-    case 0:
+    case 0: // init
         if (pWorkArea->m8_overlayTask)
         {
-#ifdef SHIPPING_BUILD
             if (!pWorkArea->m8_overlayTask->getTask()->isFinished())
             {
                 return;
             }
-#endif
         }
         pWorkArea->m0_status++;
-    case 1:
-        // ? not sure what this does
+        [[fallthrough]];
+    case 1: // wait for fade
+        if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) == 0) {
+            if (g_fadeControls.m0_fade0.m20_stopped == 0) {
+                return;
+            }
+        }
         pWorkArea->m0_status++;
-    case 2:
+        [[fallthrough]];
+    case 2: // start chrono
         pWorkArea->m4_delay = 60; // start chrono?
         pWorkArea->m0_status++;
-    case 3:
+        [[fallthrough]];
+    case 3: // wait before displaying "Press start"
         if (debugEnabled)
         {
             assert(0);
@@ -339,7 +329,7 @@ void s_titleScreenWorkArea::Draw(s_titleScreenWorkArea* pWorkArea)
                 return;
         }
         pWorkArea->m0_status++;
-    case 4:
+    case 4: // create "press start" and wait
         createSubTask<s_pressStartButtonTaskWorkArea>(pWorkArea);
 
         pWorkArea->m4_delay = 44 * 60;

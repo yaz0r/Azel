@@ -1087,6 +1087,38 @@ void endOfFrame()
     vblankData.m18 = 0;
 }
 
+void updateInputDebug(void)
+{
+    u32 uVar1;
+
+    uVar1 = readKeyboardToggle(0x102);
+    if (uVar1 == 0) {
+        if (pauseEngine[0] == 0) {
+            if (pauseEngine[1] != 0) {
+                pauseEngine[1] = 0;
+                pauseEngine[0] = 1;
+            }
+        }
+        else {
+            uVar1 = readKeyboardTable1(0x94);
+            if ((uVar1 != 0) || (uVar1 = readKeyboardTable1(0x98), uVar1 != 0)) {
+                pauseEngine[1] = 1;
+                pauseEngine[0] = 0;
+            }
+        }
+    }
+    else if (pauseEngine[0] == 0) {
+        if (pauseEngine[2] != 0) {
+            pauseEngine[0] = 1;
+            pauseEngine[1] = 0;
+        }
+    }
+    else {
+        pauseEngine[0] = 0;
+    }
+    return;
+}
+
 u32 frameIndex = 0;
 
 bool delayTrace = true;
@@ -1110,6 +1142,11 @@ void loopIteration()
     }
     else
     {
+        // VBlank: DMA VDP2 data to VRAM, swap VDP1 buffers.
+        // Must run after runTasks/flushVdp1 (game fills data) and before
+        // azelSdl_EndFrame (renderer reads VRAM), matching Saturn timing.
+        endOfFrame();
+
         //copySMPCOutputStatus();
 
         updateInputs();
@@ -1128,27 +1165,7 @@ void loopIteration()
         }
 #endif
 
-        //updateInputDebug();
-
-        if (isTraceEnabled())
-        {
-            if(!delayTrace)
-            {
-                readTraceLogU8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType, "input_m0");
-                readTraceLogS8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX, "input_m2");
-                readTraceLogS8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY, "input_m3");
-                readTraceLogS8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4, "input_m4");
-                readTraceLogS8(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5, "input_m5");
-                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown, "input_m6");
-                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown, "input_m8");
-                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mA, "input_mA");
-                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2, "input_mC");
-                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mE, "input_mE");
-                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m10, "input_m10");
-                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m12, "input_m12");
-                readTraceLogU16(graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m14, "input_m14");
-            }
-        }
+        updateInputDebug();
 
         runTasks();
 
@@ -1158,10 +1175,7 @@ void loopIteration()
 
         updateSound();
 
-        // VBlank: DMA VDP2 data to VRAM, swap VDP1 buffers.
-        // Must run after runTasks/flushVdp1 (game fills data) and before
-        // azelSdl_EndFrame (renderer reads VRAM), matching Saturn timing.
-        endOfFrame();
+
 
         lastUpdateFunction();
     }

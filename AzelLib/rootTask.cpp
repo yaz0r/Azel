@@ -49,7 +49,7 @@ void s_initialTaskWorkArea::Draw(s_initialTaskWorkArea* pWorkArea)
     case 0: // init state
             // Some sound init code here
         pWorkArea->m_state++;
-        // fall through
+        [[fallthrough]];
     case 1: // wait for new task
         if (!initialTaskStatus.m_pendingTask)
             return;
@@ -63,13 +63,13 @@ void s_initialTaskWorkArea::Draw(s_initialTaskWorkArea* pWorkArea)
 
             initialTaskStatus.m_previousTask = initialTaskStatus.m_currentTask;
             initialTaskStatus.m_currentTask = initialTaskStatus.m_pendingTask;
-            pWorkArea->m_state++;
+            pWorkArea->m_state = 2;
         }
         initialTaskStatus.m_pendingTask = NULL;
         break;
     case 2: // start new task
         pWorkArea->m_4 = initialTaskStatus.m_currentTask(pWorkArea);
-        pWorkArea->m_state--;
+        pWorkArea->m_state = 1;
         break;
     default:
         assert(0);

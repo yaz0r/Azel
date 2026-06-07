@@ -1,5 +1,9 @@
 #include "PDS.h"
 
+#ifdef _WIN32
+#include "validation/validation.h"
+#endif
+
 #if (defined(__APPLE__) && (TARGET_OS_OSX))
 #include <unistd.h> // for chdir
 #include <libgen.h> // for dirname
@@ -13,6 +17,7 @@ void readInputsFromSMPC();
 void updateInputs();
 void loopIteration();
 void azelSdl_Init();
+void endOfFrame();
 
 extern bool bContinue;
 
@@ -33,9 +38,18 @@ int main(int argc, char* argv[])
     azelSdl_Init();
 
     azelInit();
-    resetEngine();
 
-    //...
+#ifdef _WIN32
+    // Must run before resetEngine() so the validation hooks are armed when resetEngine() calls them.
+    if (enableValidation) {
+        extern float gVolume;
+        gVolume = 0.f;
+        validationInit();
+    }
+#endif
+
+    resetEngine();
+    endOfFrame();
     readInputsFromSMPC();
     updateInputs();
     readInputsFromSMPC();
@@ -44,10 +58,13 @@ int main(int argc, char* argv[])
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loopIteration, 0, 1);
 #else
-    do
+    while ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0x100) == 0)
     {
         loopIteration();
-    } while (bContinue);
+
+        if (!bContinue)
+            break;
+    };
 #endif
     return 0;
 }

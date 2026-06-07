@@ -20,12 +20,12 @@ bgfx::ProgramHandle loadBgfxProgram(const std::string& VSFile, const std::string
 extern SDL_Window* gWindowBGFX;
 
 #if defined(__EMSCRIPTEN__) || defined(TARGET_OS_IOS) || defined(TARGET_OS_TV)
-static float gVolume = 1.f;
+float gVolume = 1.f;
 #else
 #ifdef SHIPPING_BUILD
-static float gVolume = 1.f;
+float gVolume = 1.f;
 #else
-static float gVolume = 1.f;
+float gVolume = 1.f;
 #endif
 #endif
 
