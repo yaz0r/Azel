@@ -308,7 +308,7 @@ void updateCameraTarget(sMainLogic* r4, const sVec3_FP& r14_pose)
     sVec3_FP var8;
     var8[0] = transformByMatrixRow0(r14_pose);
     var8[1] = transformByMatrixRow1(r14_pose);
-    var8[2] = transformByMatrixRow2(r14_pose);
+    var8[2] = transformByMatrixRow2(r4->m18_position); // original projects m18_position for Z, not r14_pose
 
     sVec2_FP var0;
     var0[0] = FP_Div(var8[0], var8[2]);
@@ -362,7 +362,7 @@ void updateFollowCameraTarget(sMainLogic* r4)
     initMatrixToIdentity(&varC);
     rotateMatrixShiftedY(r13.m24_stepRotation[1] + r13.mC_rotation[1], &varC);
     rotateMatrixShiftedX(r13.m24_stepRotation[0] + r13.mC_rotation[0], &varC);
-    scaleMatrixRow2(-r4->m24_distance / 2, &varC);
+    scaleMatrixRow2((-r4->m24_distance).asS32() >> 1, &varC); // original: -m24_distance >> 1 (arithmetic floor, not /2 trunc)
 
     sVec3_FP var0;
     var0[0] = varC.m[0][2] + r4->m18_position[0];

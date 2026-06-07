@@ -127,7 +127,11 @@ void processTasks(s_task** ppTask)
 
                 *ppTask = pTask->m0_pNextTask;
                 delete pTask;
-//                pTask = *ppTask;
+
+                pTask = *ppTask;
+                if (pTask == NULL)
+                    return;
+                continue;
             }
         }
         else

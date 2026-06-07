@@ -36,11 +36,22 @@ file(GLOB_RECURSE SRC_FIELD_A3
     "field/field_a3/*.h"
 )
 
+# Validation driver (Windows-only side-by-side comparison against Ymir). The sources compile to no-ops elsewhere.
+if(WIN32)
+    file(GLOB_RECURSE SRC_VALIDATION
+        "validation/*.cpp"
+        "validation/*.h"
+    )
+else()
+    set(SRC_VALIDATION "")
+endif()
+
 set(SOURCES
  ${SOURCES}
  ${SRC_KERNEL}
  ${SRC_ROOT}
  ${SRC_FIELD_A3}
+ ${SRC_VALIDATION}
  "${THIRD_PARTY}/tracy/public/TracyClient.cpp"
 )
 
@@ -53,6 +64,7 @@ set_source_files_properties("${THIRD_PARTY}/tracy/public/TracyClient.cpp" PROPER
 source_group("src" FILES ${SRC_ROOT})
 source_group("src\\kernel" FILES ${SRC_KERNEL})
 source_group("src\\field\\field_a3" FILES ${SRC_FIELD_A3})
+source_group("src\\validation" FILES ${SRC_VALIDATION})
 
 if( MSVC )
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_SDL -D_HAS_EXCEPTIONS=0 /GR-")

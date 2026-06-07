@@ -38,7 +38,10 @@ void setCollisionSetup(sCollisionBody* pBody, s32 presetIndex)
 // then computes the bounding sphere radius as the half-diagonal of the box.
 void setCollisionBounds(sCollisionBody* r4, const sVec3_FP& r5, const sVec3_FP& r6)
 {
-    r4->m20_AABBCenter = (r5 + r6) / 2;
+    // original: (r5 + r6) >> 1 per component (arithmetic floor, not /2 which truncates toward zero on negatives)
+    r4->m20_AABBCenter[0] = (r5[0] + r6[0]) >> 1;
+    r4->m20_AABBCenter[1] = (r5[1] + r6[1]) >> 1;
+    r4->m20_AABBCenter[2] = (r5[2] + r6[2]) >> 1;
 
     r4->m14_halfAABB[0] = r4->m20_AABBCenter[0] - std::min(r5[0], r6[0]);
     r4->m14_halfAABB[1] = r4->m20_AABBCenter[1] - std::min(r5[1], r6[1]);
@@ -450,11 +453,6 @@ s32 getSubCellQuadrant(fixedPoint r4_x, fixedPoint r5_z)
 // Returns the sTownCellTask covering world position (r4_x, r5_z), or nullptr if out of range.
 sTownCellTask* getCellAtWorldPos(fixedPoint r4_x, fixedPoint r5_z)
 {
-    if (isTraceEnabled())
-    {
-        addTraceLog("getCellAtWorldPos testing cell: 0x%04X 0x%04X\n", r4_x.asS32(), r5_z.asS32());
-    }
-
     s32 r13_cellX = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex);
     s32 r5_cellY = MTH_Mul32(r5_z, gTownGrid.m30_worldToCellIndex);
 
@@ -484,11 +482,6 @@ sTownCellTask* getCellAtWorldPos(fixedPoint r4_x, fixedPoint r5_z)
 
     if (r5_cellY > 3)
         return nullptr;
-
-    if (isTraceEnabled())
-    {
-        addTraceLog("getCellAtWorldPos found cell. GridSize: %d %d\n", gTownGrid.m0_sizeX, gTownGrid.m4_sizeY);
-    }
 
     return gTownGrid.m40_cellTasks[(gTownGrid.mC + r5_cellY) & 7][(gTownGrid.m8 + r13_cellX) & 7];
 }
@@ -977,14 +970,6 @@ void testTownMeshQuadForCollision(sCollisionBody* r14, const sProcessed3dModel::
 // Transforms all mesh vertices into r4's AABB-local space and runs per-quad collision tests.
 void processTownMeshCollision(sCollisionBody* r4, const sProcessed3dModel* r5)
 {
-    if (isTraceEnabled())
-    {
-        addTraceLog("processTownMeshCollision: current matrix: ");
-        for (int row = 0; row < 3; row++)
-            for (int col = 0; col < 4; col++)
-                addTraceLog("0x%08X ", pCurrentMatrix->m[row][col]);
-        addTraceLog("\n");
-    }
     std::array<sProcessedVertice, 255> transformedVertices;
     u32 clipFlag = transformTownMeshVertices(r5->m8_vertices, transformedVertices, r5->m4_numVertices, r4->m14_halfAABB);
 
@@ -1696,10 +1681,6 @@ static void drawTownCollisionDebug()
 // and toggles the gCollisionPositionBias oscillator used by AABB positioning.
 void resetCollisionFrame()
 {
-    if (isTraceEnabled())
-    {
-        addTraceLog("InitResTable: gCollisionPositionBias=%d\n", gCollisionPositionBias);
-    }
     gCollisionRegistry.m8_headOfLinkedList.fill(0);
     gCollisionRegistry.m4 = 0;
 

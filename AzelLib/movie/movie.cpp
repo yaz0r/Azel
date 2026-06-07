@@ -794,324 +794,305 @@ struct s_movieEditorWorkArea : public s_workAreaTemplateWithArg<s_movieEditorWor
 // Main movie task  –  06054e7c / 06054010 / 060540fa / 06054514
 // ============================================================================
 
-struct s_movieMainWorkArea : public s_workAreaTemplateWithArg<s_movieMainWorkArea, s32>
+s_movieMainWorkArea::TypedTaskDefinition* s_movieMainWorkArea::getTypedTaskDefinition()
 {
-    static TypedTaskDefinition* getTypedTaskDefinition()
+    static TypedTaskDefinition taskDefinition = {&s_movieMainWorkArea::Init, nullptr, &s_movieMainWorkArea::Draw, &s_movieMainWorkArea::Delete};
+    return &taskDefinition;
+}
+
+// 06054010
+void s_movieMainWorkArea::Init(s_movieMainWorkArea* pThis, s32 movieIndex)
+{
+    pThis->m0_state = 0;
+    pThis->mC_subtask = nullptr;
+
+    if (movieIndex < 0)
     {
-        static TypedTaskDefinition taskDefinition = {&Init, nullptr, &Draw, &Delete};
-        return &taskDefinition;
+        // Debug mode: find first available CPK
+        s32 cpkIndex = 0;
+        while (!findFileOnDisc(g_cpkFileNames[cpkIndex]))
+            cpkIndex++;
+        pThis->m1_debugMode   = 1;
+        pThis->m2_cpkIndex    = (u8)cpkIndex;
+        pThis->m8_fadePalTarget = 0xC210;
+    }
+    else
+    {
+        const s_movieTimingEntry& e = g_movieTimingTable[movieIndex];
+        pThis->m2_cpkIndex      = e.m0_cpkIndex;
+        pThis->m3_countdown     = e.m1_countdown;
+        pThis->m8_fadePalTarget = e.m2_fadePalTarget;
     }
 
-    u8         m0_state;
-    u8         m1_debugMode;
-    u8         m2_cpkIndex;
-    u8         m3_countdown;
-    u8         m4_savedVblank;
-    u8         m5;
-    s16        m6_lastPitch;
-    u16        m8_fadePalTarget;
-    s16        mA_timer;
-    p_workArea mC_subtask;
-    void*      m10_movieDatBuffer;
-    u32        m14_movieDatSize;
-    void*      m18_vdp1Buffer;
+    s32 datSize = (s32)getFileSize("MOVIE.DAT");
+    pThis->m14_movieDatSize = (u32)datSize;
 
-    // 06054010
-    static void Init(s_movieMainWorkArea* pThis, s32 movieIndex)
+    void* pDatBuf = allocateHeapForTask(pThis, (u32)datSize);
+    pThis->m10_movieDatBuffer = pDatBuf;
+    if (!pDatBuf)
     {
-        pThis->m0_state = 0;
-        pThis->mC_subtask = nullptr;
+        pThis->getTask()->m14_flags |= 1;
+        return;
+    }
 
-        if (movieIndex < 0)
+    memcpy_dma(townBuffer, (u8*)pThis->m10_movieDatBuffer, pThis->m14_movieDatSize);
+    loadFile("MOVIE.DAT", townBuffer, 0);
+    addToMemoryLayout(townBuffer, 1);
+
+    void* pVdp1Buf = allocateHeapForTask(pThis, 0x8000);
+    pThis->m18_vdp1Buffer = pVdp1Buf;
+    if (!pVdp1Buf)
+    {
+        pThis->getTask()->m14_flags |= 1;
+        return;
+    }
+
+    memcpy_dma(getVdp2Vram(0x70000), (u8*)pThis->m18_vdp1Buffer, 0x8000);
+    pThis->m4_savedVblank = (u8)vblankData.m14_numVsyncPerFrame;
+    vblankData.m14_numVsyncPerFrame = 1;
+    createSubTask<s_videoDecoderNotifyWorkArea>(pThis);
+    setupMovieVdp2();
+}
+
+// 060540fa
+void s_movieMainWorkArea::Draw(s_movieMainWorkArea* pThis)
+{
+    switch (pThis->m0_state)
+    {
+    case 0:
+        pThis->mC_subtask = createSubTaskWithArg<s_subtitleDataWorkArea>(
+            pThis, (s32)pThis->m2_cpkIndex);
+        // If subtitle task immediately killed itself (no subtitle data), clear the pointer
+        if (pThis->mC_subtask && (pThis->mC_subtask->getTask()->m14_flags & 1))
+            pThis->mC_subtask = nullptr;
+        if (pThis->m2_cpkIndex == 0x2E) // debug-only overlay
         {
-            // Debug mode: find first available CPK
-            s32 cpkIndex = 0;
-            while (!findFileOnDisc(g_cpkFileNames[cpkIndex]))
-                cpkIndex++;
-            pThis->m1_debugMode   = 1;
-            pThis->m2_cpkIndex    = (u8)cpkIndex;
-            pThis->m8_fadePalTarget = 0xC210;
+            createSubTask<s_subtitleOverlayWorkArea>(pThis);
+        }
+        openMovieStream(g_cpkFileNames[pThis->m2_cpkIndex]);
+        if (g_fadeControls.m_4C <= g_fadeControls.m_4D)
+        {
+            vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
+            vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
+        }
+        pThis->m6_lastPitch = -1;
+        pThis->mA_timer     = -1;
+        pThis->m0_state     = 1;
+        return;
+
+    case 1:
+        pThis->m0_state = 2;
+        return;
+
+    case 2:
+    {
+        u32 fromColor = convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color);
+        fadePalette(&g_fadeControls.m0_fade0, fromColor,
+                    (s32)(s16)g_fadeControls.m_48, 0x1E);
+        pThis->m0_state = 3;
+        [[fallthrough]];
+    }
+    case 3:
+        if (!fileInfoStruct.mC_gfsHandle)
+        {
+            // Movie stream finished — kill subtitle task and advance to state 4
+            if (pThis->mC_subtask)
+            {
+                if (!(pThis->mC_subtask->getTask()->m14_flags & 1))
+                    pThis->mC_subtask->getTask()->markFinished();
+            }
+            // Note: do NOT reset m3_countdown here — the table value is used
+            // by state 4 to determine how many sequential CPKs to play
         }
         else
         {
-            const s_movieTimingEntry& e = g_movieTimingTable[movieIndex];
-            pThis->m2_cpkIndex      = e.m0_cpkIndex;
-            pThis->m3_countdown     = e.m1_countdown;
-            pThis->m8_fadePalTarget = e.m2_fadePalTarget;
-        }
-
-        s32 datSize = (s32)getFileSize("MOVIE.DAT");
-        pThis->m14_movieDatSize = (u32)datSize;
-
-        void* pDatBuf = allocateHeapForTask(pThis, (u32)datSize);
-        pThis->m10_movieDatBuffer = pDatBuf;
-        if (!pDatBuf)
-        {
-            pThis->getTask()->m14_flags |= 1;
-            return;
-        }
-
-        memcpy_dma(townBuffer, (u8*)pThis->m10_movieDatBuffer, pThis->m14_movieDatSize);
-        loadFile("MOVIE.DAT", townBuffer, 0);
-        addToMemoryLayout(townBuffer, 1);
-
-        void* pVdp1Buf = allocateHeapForTask(pThis, 0x8000);
-        pThis->m18_vdp1Buffer = pVdp1Buf;
-        if (!pVdp1Buf)
-        {
-            pThis->getTask()->m14_flags |= 1;
-            return;
-        }
-
-        memcpy_dma(getVdp2Vram(0x70000), (u8*)pThis->m18_vdp1Buffer, 0x8000);
-        pThis->m4_savedVblank = (u8)vblankData.m14_numVsyncPerFrame;
-        vblankData.m14_numVsyncPerFrame = 1;
-        createSubTask<s_videoDecoderNotifyWorkArea>(pThis);
-        setupMovieVdp2();
-    }
-
-    // 060540fa
-    static void Draw(s_movieMainWorkArea* pThis)
-    {
-        switch (pThis->m0_state)
-        {
-        case 0:
-            pThis->mC_subtask = createSubTaskWithArg<s_subtitleDataWorkArea>(
-                pThis, (s32)pThis->m2_cpkIndex);
-            // If subtitle task immediately killed itself (no subtitle data), clear the pointer
-            if (pThis->mC_subtask && (pThis->mC_subtask->getTask()->m14_flags & 1))
-                pThis->mC_subtask = nullptr;
-            if (pThis->m2_cpkIndex == 0x2E) // debug-only overlay
+            // Analog pitch control (if analog pad connected)
+            if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2)
             {
-                createSubTask<s_subtitleOverlayWorkArea>(pThis);
-            }
-            openMovieStream(g_cpkFileNames[pThis->m2_cpkIndex]);
-            if (g_fadeControls.m_4C <= g_fadeControls.m_4D)
-            {
-                vdp2Controls.m20_registers[1].m112_CLOFSL = 0;
-                vdp2Controls.m20_registers[0].m112_CLOFSL = 0;
-            }
-            pThis->m6_lastPitch = -1;
-            pThis->mA_timer     = -1;
-            pThis->m0_state     = 1;
-            return;
-
-        case 1:
-            pThis->m0_state = 2;
-            return;
-
-        case 2:
-        {
-            u32 fromColor = convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color);
-            fadePalette(&g_fadeControls.m0_fade0, fromColor,
-                        (s32)(s16)g_fadeControls.m_48, 0x1E);
-            pThis->m0_state = 3;
-            [[fallthrough]];
-        }
-        case 3:
-            if (!fileInfoStruct.mC_gfsHandle)
-            {
-                // Movie stream finished — kill subtitle task and advance to state 4
-                if (pThis->mC_subtask)
+                s32 pitch = ((s32)(u8)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4 -
+                                (s32)(u8)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5)
+                            * 4 + 0x400;
+                if (pThis->m6_lastPitch != (s16)pitch)
                 {
-                    if (!(pThis->mC_subtask->getTask()->m14_flags & 1))
-                        pThis->mC_subtask->getTask()->markFinished();
+                    pThis->m6_lastPitch = (s16)pitch;
+                    Unimplemented(); // FUN_0603763c(fileInfoStruct.m10_movieDecoder, pitch, 1)
                 }
-                // Note: do NOT reset m3_countdown here — the table value is used
-                // by state 4 to determine how many sequential CPKs to play
+            }
+
+            // B button or F7: skip / fade out
+            if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) != 0
+                || readKeyboardToggle(0x87) != 0)
+            {
+                pThis->m3_countdown = 1;
+                u32 fromColor = convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color);
+                fadePalette(&g_fadeControls.m0_fade0, fromColor, pThis->m8_fadePalTarget, 30);
+                closeMovieStream();
             }
             else
             {
-                // Analog pitch control (if analog pad connected)
-                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType == 2)
+                if (!pThis->m1_debugMode)
+                    break;
+
+                // Debug: left/right cycle CPK; F3 opens editor
+                if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 7) == 0)
                 {
-                    s32 pitch = ((s32)(u8)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m4 -
-                                 (s32)(u8)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m5)
-                                * 4 + 0x400;
-                    if (pThis->m6_lastPitch != (s16)pitch)
+                    if (readKeyboardToggle(0x86) != 0)
                     {
-                        pThis->m6_lastPitch = (s16)pitch;
-                        Unimplemented(); // FUN_0603763c(fileInfoStruct.m10_movieDecoder, pitch, 1)
+                        killTask(pThis->mC_subtask);
+                        closeMovieStream();
+                        pThis->mC_subtask = createSubTaskWithArg<s_movieEditorWorkArea>(
+                            pThis, (s32)pThis->m2_cpkIndex);
+                        pThis->m0_state = 7;
+                        return;
                     }
+                    break;
                 }
 
-                // B button or F7: skip / fade out
-                if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 8) != 0
-                    || readKeyboardToggle(0x87) != 0)
+                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 4)
+                    pThis->m2_cpkIndex -= 2;
+                if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1)
+                    pThis->m2_cpkIndex -= 1;
+
+                killTask(pThis->mC_subtask);
+                pThis->mC_subtask = nullptr;
+                closeMovieStream();
+            }
+        }
+        // Increment state (state 2→3, 3→4)
+        pThis->m0_state++;
+        break;
+
+    case 4:
+        // Countdown check: decrement and if done, fade out
+        if (!pThis->m1_debugMode)
+        {
+            pThis->m3_countdown--;
+            if (pThis->m3_countdown < 1)
+            {
+                u32 fromColor = convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color);
+                fadePalette(&g_fadeControls.m0_fade0, fromColor, pThis->m8_fadePalTarget, 30);
+                pThis->m0_state = 5;
+                break;
+            }
+        }
+
+        // Cycle to next CPK file on disc (used for multi-CPK sequences and debug)
+        {
+            u8 cpkIdx = pThis->m2_cpkIndex;
+            if (cpkIdx == 0 || cpkIdx == 1 || cpkIdx == 0x2D)
+            {
+                VDP2Regs_.m114_COAR = 0x100;
+                VDP2Regs_.m116_COAG = 0x100;
+                VDP2Regs_.m118_COAB = 0x100;
+                clearMovieVdp2Vram();
+                VDP2Regs_.m114_COAR = 0;
+                VDP2Regs_.m116_COAG = 0;
+                VDP2Regs_.m118_COAB = 0;
+            }
+            do
+            {
+                cpkIdx = pThis->m2_cpkIndex;
+                pThis->m2_cpkIndex = cpkIdx + 1;
+                if ((s8)(cpkIdx + 1) < 0x32)
                 {
-                    pThis->m3_countdown = 1;
-                    u32 fromColor = convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color);
-                    fadePalette(&g_fadeControls.m0_fade0, fromColor,
-                                (s32)(s16)pThis->m8_fadePalTarget, 0x1E);
-                    closeMovieStream();
+                    if ((s8)pThis->m2_cpkIndex < 0)
+                        pThis->m2_cpkIndex = 0x31;
                 }
                 else
                 {
-                    if (!pThis->m1_debugMode)
-                        break;
-
-                    // Debug: left/right cycle CPK; F3 opens editor
-                    if ((graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 7) == 0)
-                    {
-                        if (readKeyboardToggle(0x86) != 0)
-                        {
-                            killTask(pThis->mC_subtask);
-                            closeMovieStream();
-                            pThis->mC_subtask = createSubTaskWithArg<s_movieEditorWorkArea>(
-                                pThis, (s32)pThis->m2_cpkIndex);
-                            pThis->m0_state = 7;
-                            return;
-                        }
-                        break;
-                    }
-
-                    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 4)
-                        pThis->m2_cpkIndex -= 2;
-                    if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 1)
-                        pThis->m2_cpkIndex -= 1;
-
-                    killTask(pThis->mC_subtask);
-                    pThis->mC_subtask = nullptr;
-                    closeMovieStream();
+                    pThis->m2_cpkIndex = 0;
                 }
-            }
-            // Increment state (state 2→3, 3→4)
-            pThis->m0_state++;
-            break;
+            } while (!findFileOnDisc(g_cpkFileNames[pThis->m2_cpkIndex]));
 
-        case 4:
-            // Countdown check: decrement and if done, fade out
-            if (!pThis->m1_debugMode)
+            if (pThis->m2_cpkIndex != 0x2E)
             {
-                u8 cd = pThis->m3_countdown;
-                pThis->m3_countdown = cd - 1;
-                if ((s8)(cd - 1) < 1)
-                {
-                    u32 fromColor = convertColorToU32ForFade(g_fadeControls.m0_fade0.m0_color);
-                    fadePalette(&g_fadeControls.m0_fade0, fromColor,
-                                (s32)(s16)pThis->m8_fadePalTarget, 0x1E);
-                    pThis->m0_state = 5;
-                    break;
-                }
-            }
-
-            // Cycle to next CPK file on disc (used for multi-CPK sequences and debug)
-            {
-                u8 cpkIdx = pThis->m2_cpkIndex;
-                if (cpkIdx == 0 || cpkIdx == 1 || cpkIdx == 0x2D)
-                {
-                    VDP2Regs_.m114_COAR = 0x100;
-                    VDP2Regs_.m116_COAG = 0x100;
-                    VDP2Regs_.m118_COAB = 0x100;
-                    clearMovieVdp2Vram();
-                    VDP2Regs_.m114_COAR = 0;
-                    VDP2Regs_.m116_COAG = 0;
-                    VDP2Regs_.m118_COAB = 0;
-                }
-                do
-                {
-                    cpkIdx = pThis->m2_cpkIndex;
-                    pThis->m2_cpkIndex = cpkIdx + 1;
-                    if ((s8)(cpkIdx + 1) < 0x32)
-                    {
-                        if ((s8)pThis->m2_cpkIndex < 0)
-                            pThis->m2_cpkIndex = 0x31;
-                    }
-                    else
-                    {
-                        pThis->m2_cpkIndex = 0;
-                    }
-                } while (!findFileOnDisc(g_cpkFileNames[pThis->m2_cpkIndex]));
-
-                if (pThis->m2_cpkIndex != 0x2E)
-                {
-                    pThis->m0_state = 0;
-                    break;
-                }
-                pThis->mA_timer = 3;
-                pThis->m0_state = 8;
-            }
-            break;
-
-        case 5:
-            if (g_fadeControls.m0_fade0.m20_stopped == 0)
+                pThis->m0_state = 0;
                 break;
-
-            if (pThis->m2_cpkIndex == 0x2E)
-            {
-                pThis->mA_timer = 0;
-                pThis->m0_state = (u8)0x78; // 120 frames (sentinel for "done")
             }
-            else
-            {
-                pThis->mA_timer = (pThis->m2_cpkIndex == 0x2F) ? 0x3C : 0;
-                pThis->m0_state = 6;
-            }
+            pThis->mA_timer = 3;
+            pThis->m0_state = 8;
+        }
+        break;
+
+    case 5:
+        if (g_fadeControls.m0_fade0.m20_stopped == 0)
             break;
 
-        case 6:
+        if (pThis->m2_cpkIndex == 0x2E)
         {
-            s16 timer = pThis->mA_timer;
-            pThis->mA_timer = timer - 1;
-            if (timer - 1 < 0)
-                pThis->getTask()->m14_flags |= 1;
-            break;
+            pThis->mA_timer = 0;
+            pThis->m0_state = 120; // 120 frames (sentinel for "done")
         }
-
-        case 7:
-            if (!pThis->mC_subtask
-                || (pThis->mC_subtask->getTask()->m14_flags & 1))
-            {
-                setupMovieVdp2();
-                pThis->m0_state = 0;
-            }
-            break;
-
-        case 8:
+        else
         {
-            s16 timer = pThis->mA_timer;
-            pThis->mA_timer = timer - 1;
-            if (timer - 1 < 1)
-                pThis->m0_state = 0;
-            if ((s32)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xF807)
-                pThis->m0_state = 0;
-            break;
+            pThis->mA_timer = (pThis->m2_cpkIndex == 0x2F) ? 0x3C : 0;
+            pThis->m0_state = 6;
         }
+        break;
 
-        default:
-            break;
-        }
-        // Update VDP2 window from current video dimensions
-        {
-            u32 w = fileInfoStruct.m20_videoWidth;
-            u32 h = fileInfoStruct.m24_videoHeight;
-            s_VDP2Regs* pRegs = vdp2Controls.m4_pendingVdp2Regs;
-            pRegs->mC0_WPSX0 = (s16)(((s32)((0x160 - w) + (u32)(0x160 - w < 0)) >> 1) << 1);
-            pRegs->mC2_WPSY0 = (s16)((s32)((0xE0 - h)  + (u32)(0xE0 - h < 0))  >> 1);
-            pRegs->mC4_WPEX0 = (s16)(((s32)((w + 0x15F) + (u32)(w + 0x15F < 0)) >> 1) << 1);
-            pRegs->mC6_WPEY0 = (s16)((s32)((h + 0xDF)  + (u32)(h + 0xDF < 0))  >> 1);
-        }
-    }
-
-    // 06054514
-    static void Delete(s_movieMainWorkArea* pThis)
+    case 6:
     {
-        if (fileInfoStruct.mC_gfsHandle)
-            closeMovieStream();
-
-        if (pThis->m10_movieDatBuffer)
-        {
-            memcpy_dma((u8*)pThis->m10_movieDatBuffer, townBuffer, pThis->m14_movieDatSize);
-            freeHeapForTask(pThis, pThis->m10_movieDatBuffer);
-        }
-        if (pThis->m18_vdp1Buffer)
-        {
-            memcpy_dma((u8*)pThis->m18_vdp1Buffer, getVdp2Vram(0x70000), 0x8000);
-            freeHeapForTask(pThis, pThis->m18_vdp1Buffer);
-        }
-        vblankData.m14_numVsyncPerFrame = (u32)pThis->m4_savedVblank;
+        s16 timer = pThis->mA_timer;
+        pThis->mA_timer = timer - 1;
+        if (timer - 1 < 0)
+            pThis->getTask()->m14_flags |= 1;
+        break;
     }
-};
+
+    case 7:
+        if (!pThis->mC_subtask
+            || (pThis->mC_subtask->getTask()->m14_flags & 1))
+        {
+            setupMovieVdp2();
+            pThis->m0_state = 0;
+        }
+        break;
+
+    case 8:
+    {
+        s16 timer = pThis->mA_timer;
+        pThis->mA_timer = timer - 1;
+        if (timer - 1 < 1)
+            pThis->m0_state = 0;
+        if ((s32)graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown & 0xF807)
+            pThis->m0_state = 0;
+        break;
+    }
+
+    default:
+        break;
+    }
+    // Update VDP2 window from current video dimensions
+    {
+        u32 w = fileInfoStruct.m20_videoWidth;
+        u32 h = fileInfoStruct.m24_videoHeight;
+        s_VDP2Regs* pRegs = vdp2Controls.m4_pendingVdp2Regs;
+        pRegs->mC0_WPSX0 = (s16)(((s32)((0x160 - w) + (u32)(0x160 - w < 0)) >> 1) << 1);
+        pRegs->mC2_WPSY0 = (s16)((s32)((0xE0 - h)  + (u32)(0xE0 - h < 0))  >> 1);
+        pRegs->mC4_WPEX0 = (s16)(((s32)((w + 0x15F) + (u32)(w + 0x15F < 0)) >> 1) << 1);
+        pRegs->mC6_WPEY0 = (s16)((s32)((h + 0xDF)  + (u32)(h + 0xDF < 0))  >> 1);
+    }
+}
+
+// 06054514
+void s_movieMainWorkArea::Delete(s_movieMainWorkArea* pThis)
+{
+    if (fileInfoStruct.mC_gfsHandle)
+        closeMovieStream();
+
+    if (pThis->m10_movieDatBuffer)
+    {
+        memcpy_dma((u8*)pThis->m10_movieDatBuffer, townBuffer, pThis->m14_movieDatSize);
+        freeHeapForTask(pThis, pThis->m10_movieDatBuffer);
+    }
+    if (pThis->m18_vdp1Buffer)
+    {
+        memcpy_dma((u8*)pThis->m18_vdp1Buffer, getVdp2Vram(0x70000), 0x8000);
+        freeHeapForTask(pThis, pThis->m18_vdp1Buffer);
+    }
+    vblankData.m14_numVsyncPerFrame = (u32)pThis->m4_savedVblank;
+}
+
 
 // ============================================================================
 // overlayStart_MOVIE  –  MOVIE::06054000
