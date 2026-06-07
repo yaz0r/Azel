@@ -82,10 +82,10 @@ s32 MTH_Product2d(s32 (&r4)[2], s32 (&r5)[2])
 
 fixedPoint sqrt_F(fixedPoint r4fp)
 {
-    s32 r1 = 0x40000000;
+    u32 r1 = 0x40000000;
     int r3 = 16;
 
-    s32 r4 = r4fp.asS32();
+    u32 r4 = (u32)r4fp.asS32();
 
     for (int i = 16; i >= 0;)
     {
@@ -94,16 +94,16 @@ fixedPoint sqrt_F(fixedPoint r4fp)
         {
             return fixedPoint::fromS32(0);
         }
-        if (r1 < r4)
+        if (r1 <= r4) // cmp/hi + bf: unsigned, equal case included
         {
             r4 -= r1;
 
-            s32 r0 = r1;
+            u32 r0 = r1;
 
             do
             {
                 r1 >>= 2;
-                s32 r2 = r0 + r1;
+                u32 r2 = r0 + r1;
 
                 r0 >>= 1;
 
