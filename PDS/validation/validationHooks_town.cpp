@@ -41,6 +41,9 @@ constexpr std::uint32_t kMainLogic_m50_upVector = 0x50;
 
 constexpr std::uint32_t kMainLogic_camera_m8_position = 0x74 + 0x8;
 constexpr std::uint32_t kMainLogic_camera_m20_AABBCenter = 0x74 + 0x20;
+constexpr std::uint32_t kMainLogic_camera_m44 = 0x74 + 0x44;
+constexpr std::uint32_t kMainLogic_camera_m4C = 0x74 + 0x4C;
+constexpr std::uint32_t kMainLogic_camera_m58_collisionSolveTranslation = 0x74 + 0x58;
 
 constexpr std::uint32_t kEdge_mE8 = 0xE8;
 constexpr std::uint32_t kNpcE8_position = 0x0;
@@ -89,6 +92,8 @@ static void validateTownEdgeAndCamera() {
     // Camera collision
     validate(mainLogic + kMainLogic_camera_m20_AABBCenter, twnMainLogicTask->m74_townCamera.m20_AABBCenter);
     validate(mainLogic + kMainLogic_camera_m8_position, twnMainLogicTask->m74_townCamera.m8_position);
+    validate(mainLogic + kMainLogic_camera_m4C, twnMainLogicTask->m74_townCamera.m4C);
+    validate(mainLogic + kMainLogic_camera_m58_collisionSolveTranslation, twnMainLogicTask->m74_townCamera.m58_collisionSolveTranslation);
 
     // Edge position/rotation
     const std::uint32_t edge = g_validationConnection->readU32(mainLogic + kMainLogic_m14_EdgeTask);
@@ -193,26 +198,33 @@ DECLARE_HOOK(computeCollisionSeparation, kComputeCollisionSeparationEntry, void,
 void computeCollisionSeparation_detour(sCollisionBody *r4) {
     if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
         g_validationConnection->executeUntilAddress(kComputeCollisionSeparationEntry);
-        const bool isEdge = twnMainLogicTask != nullptr && twnMainLogicTask->m14_EdgeTask != nullptr &&
-                            r4 == &twnMainLogicTask->m14_EdgeTask->m84;
-        if (isEdge) {
-            const std::uint32_t emuBody = g_validationConnection->getRegister(azelval::REG_R0 + 4);
-            for (std::uint32_t i = 0; i < 12; i++) {
-                const std::uint32_t base = kGContactFaces + i * 0x14;
+        const std::uint32_t emuBody = g_validationConnection->getRegister(azelval::REG_R0 + 4);
+
+        // Body identity first: if PDS r4 and the emu body have desynced (a different body at this Nth call),
+        // these diverge before any contact data is compared.
+        validate(emuBody + 0x8, r4->m8_position);
+        validate(emuBody + 0x20, r4->m20_AABBCenter);
+        validate(emuBody + 0x14, r4->m14_halfAABB);
+        validate(emuBody + 0x44, (std::int32_t)r4->m44);
+        // beginBodyCollisionTest only resets mC_distance; m0_position/m10_y stay stale for un-recorded faces,
+        // so only compare those when the face's recorded bit is set (gCF[i] <-> these m44 bits).
+        static const std::int32_t kFaceBit[12] = {0x20, 0x10, 0x4, 0x8, 0x2, 0x1,
+                                                  0x2000, 0x1000, 0x400, 0x800, 0x200, 0x100};
+        for (std::uint32_t i = 0; i < 12; i++) {
+            const std::uint32_t base = kGContactFaces + i * 0x14;
+            validate(base + 0xC, (std::int32_t)gContactFaces[i].mC_distance);
+            if (r4->m44 & kFaceBit[i]) {
                 validate(base + 0x0, gContactFaces[i].m0_position);
-                validate(base + 0xC, (std::int32_t)gContactFaces[i].mC_distance);
                 validate(base + 0x10, gContactFaces[i].m10_y);
             }
-            validate(kGContactConstraints + 0x0, (std::int32_t)gContactConstraints.m0);
-            validate(kGContactConstraints + 0x4, (std::int32_t)gContactConstraints.m4);
-            validate(kGContactConstraints + 0x8, (std::int32_t)gContactConstraints.m8);
-            validate(kGContactConstraints + 0xC, (std::int32_t)gContactConstraints.mC);
-            validate(emuBody + 0x44, (std::int32_t)r4->m44);
-            validate(emuBody + 0x14, r4->m14_halfAABB);
-            const std::uint32_t emuRot = g_validationConnection->readU32(emuBody + 0x34); // m34_pRotation (Saturn 4-byte ptr)
-            if (emuRot != 0 && r4->m34_pRotation != nullptr)
-                validate(emuRot, *r4->m34_pRotation);
         }
+        validate(kGContactConstraints + 0x0, (std::int32_t)gContactConstraints.m0);
+        validate(kGContactConstraints + 0x4, (std::int32_t)gContactConstraints.m4);
+        validate(kGContactConstraints + 0x8, (std::int32_t)gContactConstraints.m8);
+        validate(kGContactConstraints + 0xC, (std::int32_t)gContactConstraints.mC);
+        const std::uint32_t emuRot = g_validationConnection->readU32(emuBody + 0x34); // m34_pRotation (Saturn 4-byte ptr)
+        if (emuRot != 0 && r4->m34_pRotation != nullptr)
+            validate(emuRot, *r4->m34_pRotation);
     }
     computeCollisionSeparation_intercept.callUndetoured(r4);
 }
@@ -331,6 +343,15 @@ void cameraUpdate_follow_detour(sMainLogic *r4) {
         if (mainLogic != 0) {
             validate(mainLogic + kMainLogic_m18_position, r4->m18_position);
             validate(mainLogic + kMainLogic_m5C_rawCameraPosition, r4->m5C_rawCameraPosition);
+            // This runs after processAllCollisions, so the camera body holds THIS frame's collision solve --
+            // the m58 that lines 408-412 add into the camera position before var4 = m18 - m5C at line 416.
+            validate(mainLogic + kMainLogic_m24_distance, r4->m24_distance);
+            validate(mainLogic + kMainLogic_camera_m44, (std::int32_t)r4->m74_townCamera.m44);
+            validate(mainLogic + kMainLogic_camera_m4C, r4->m74_townCamera.m4C);
+            validate(mainLogic + kMainLogic_camera_m58_collisionSolveTranslation, r4->m74_townCamera.m58_collisionSolveTranslation);
+            const std::uint32_t emuCamPos = g_validationConnection->readU32(mainLogic + 0x74 + 0x30); // camera m30_pPosition
+            if (emuCamPos != 0 && r4->m74_townCamera.m30_pPosition != nullptr)
+                validate(emuCamPos, *r4->m74_townCamera.m30_pPosition);
         }
     }
     cameraUpdate_follow_intercept.callUndetoured(r4);
