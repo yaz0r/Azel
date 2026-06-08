@@ -17,6 +17,9 @@ constexpr std::uint32_t kResetCollisionFrameEntry = 0x060079f0;
 constexpr std::uint32_t kGetCellAtWorldPosEntry = 0x06014f70;       // R4 = x, R5 = z at entry
 constexpr std::uint32_t kProcessTownMeshCollisionEntry = 0x06009324;
 constexpr std::uint32_t kHandleCollisionWithTownEnvEntry = 0x0600887c;
+constexpr std::uint32_t kComputeCollisionSeparationEntry = 0x06007c50;
+constexpr std::uint32_t kGContactFaces = 0x0604a188;       // std::array<sContactFace,12>, 0x14 stride
+constexpr std::uint32_t kGContactConstraints = 0x0604a170; // s32 m0/m4/m8/mC
 
 constexpr std::uint32_t kGCollisionPositionBias = 0x0604a180;
 constexpr std::uint32_t kGTownGrid = 0x060526dc; // m0_sizeX @ +0, m4_sizeY @ +4
@@ -54,6 +57,9 @@ constexpr std::uint32_t kNpcE8_stepTranslation = 0x30;
 
 constexpr std::uint32_t kEdge_m84_m20_AABBCenter = 0x84 + 0x20;
 constexpr std::uint32_t kEdge_m84_m8_position = 0x84 + 0x8;
+constexpr std::uint32_t kEdge_m84_m44_contactFlags = 0x84 + 0x44;
+constexpr std::uint32_t kEdge_m84_m4C = 0x84 + 0x4C;
+constexpr std::uint32_t kEdge_m84_m58_collisionSolveTranslation = 0x84 + 0x58;
 } // namespace
 
 static void validateTownEdgeAndCamera() {
@@ -179,6 +185,38 @@ void handleCollisionWithTownEnv_detour(sCollisionBody *r4) {
     handleCollisionWithTownEnv_intercept.callUndetoured(r4);
 }
 
+// 06007c50 computeCollisionSeparation -- validate the contact-table INPUTS at entry (before the m44 resolution
+// block runs) for the edge body. If these all match but m58 still diverges, the bug is the X/Z solve arithmetic;
+// if one differs, the bug is upstream in recordContact*/testTownMeshQuadForCollision.
+DECLARE_HOOK(computeCollisionSeparation, kComputeCollisionSeparationEntry, void, sCollisionBody *)
+
+void computeCollisionSeparation_detour(sCollisionBody *r4) {
+    if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
+        g_validationConnection->executeUntilAddress(kComputeCollisionSeparationEntry);
+        const bool isEdge = twnMainLogicTask != nullptr && twnMainLogicTask->m14_EdgeTask != nullptr &&
+                            r4 == &twnMainLogicTask->m14_EdgeTask->m84;
+        if (isEdge) {
+            const std::uint32_t emuBody = g_validationConnection->getRegister(azelval::REG_R0 + 4);
+            for (std::uint32_t i = 0; i < 12; i++) {
+                const std::uint32_t base = kGContactFaces + i * 0x14;
+                validate(base + 0x0, gContactFaces[i].m0_position);
+                validate(base + 0xC, (std::int32_t)gContactFaces[i].mC_distance);
+                validate(base + 0x10, gContactFaces[i].m10_y);
+            }
+            validate(kGContactConstraints + 0x0, (std::int32_t)gContactConstraints.m0);
+            validate(kGContactConstraints + 0x4, (std::int32_t)gContactConstraints.m4);
+            validate(kGContactConstraints + 0x8, (std::int32_t)gContactConstraints.m8);
+            validate(kGContactConstraints + 0xC, (std::int32_t)gContactConstraints.mC);
+            validate(emuBody + 0x44, (std::int32_t)r4->m44);
+            validate(emuBody + 0x14, r4->m14_halfAABB);
+            const std::uint32_t emuRot = g_validationConnection->readU32(emuBody + 0x34); // m34_pRotation (Saturn 4-byte ptr)
+            if (emuRot != 0 && r4->m34_pRotation != nullptr)
+                validate(emuRot, *r4->m34_pRotation);
+        }
+    }
+    computeCollisionSeparation_intercept.callUndetoured(r4);
+}
+
 
 namespace {
 constexpr std::uint32_t kCameraSetupReturn = 0x0605704c;
@@ -246,11 +284,66 @@ void updateEdgePositionSub1_detour(sEdgeTask *r4) {
     validate(edge + kEdge_m14C_inputFlags, r4->m14C_inputFlags);
 }
 
+// 0605b8d4 (TWN_RUIN) updateEdgePosition -- entry unarmed (wraps nested hooks). Validate m0_position at entry (before
+// the line-796 collision-solve add) and at the rts (after 796 + the line-946 movement) to split the two contributions.
+DECLARE_HOOK(updateEdgePosition, 0, void, sNPC *)
+
+void updateEdgePosition_detour(sNPC *r4) {
+    const bool active = g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town) &&
+                        twnMainLogicTask != nullptr && twnMainLogicTask->m14_EdgeTask != nullptr;
+    if (active) {
+        g_validationConnection->executeUntilAddress(0x0605b8d4);
+        const std::uint32_t mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
+        const std::uint32_t edge = mainLogic ? g_validationConnection->readU32(mainLogic + kMainLogic_m14_EdgeTask) : 0;
+        if (edge != 0) {
+            validate(edge + kEdge_mE8 + kNpcE8_position, twnMainLogicTask->m14_EdgeTask->mE8.m0_position);
+            // processAllCollisions runs before updateEdgePosition, so m84's collision-solve outputs hold this
+            // frame's final values here -- before line-796 adds m58 into position. Validating them at entry
+            // isolates a ground-collision-solve divergence from the later gravity/movement contribution.
+            // Order: branch selectors first (m44 contact/resolution flags, m4C ground contact), then the
+            // result (m58). The first break then tells whether divergence is upstream (face detection picks a
+            // different solve branch) or only in the X-axis math that produces m58.
+            const sCollisionBody &body = twnMainLogicTask->m14_EdgeTask->m84;
+            validate(edge + kEdge_m84_m44_contactFlags, (std::int32_t)body.m44);
+            validate(edge + kEdge_m84_m4C, body.m4C);
+            validate(edge + kEdge_m84_m58_collisionSolveTranslation, body.m58_collisionSolveTranslation);
+        }
+    }
+    updateEdgePosition_intercept.callUndetoured(r4);
+    if (!active)
+        return;
+    g_validationConnection->executeUntilAddress(0x0605bc38);
+    const std::uint32_t mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
+    const std::uint32_t edge = mainLogic ? g_validationConnection->readU32(mainLogic + kMainLogic_m14_EdgeTask) : 0;
+    if (edge != 0) {
+        validate(edge + kEdge_mE8 + kNpcE8_stepTranslationInWorld, twnMainLogicTask->m14_EdgeTask->mE8.m18_stepTranslationInWorld);
+        validate(edge + kEdge_mE8 + kNpcE8_position, twnMainLogicTask->m14_EdgeTask->mE8.m0_position);
+    }
+}
+
+// 06055db6 (TWN_RUIN) -- validate m18/m5C at entry, before the 408-412 collision-solve add into m5C
+DECLARE_HOOK(cameraUpdate_follow, 0x06055db6, void, sMainLogic *)
+
+void cameraUpdate_follow_detour(sMainLogic *r4) {
+    if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
+        g_validationConnection->executeUntilAddress(0x06055db6);
+        const std::uint32_t mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
+        if (mainLogic != 0) {
+            validate(mainLogic + kMainLogic_m18_position, r4->m18_position);
+            validate(mainLogic + kMainLogic_m5C_rawCameraPosition, r4->m5C_rawCameraPosition);
+        }
+    }
+    cameraUpdate_follow_intercept.callUndetoured(r4);
+}
+
 void enableTownHooks() {
     resetCollisionFrame_intercept.enable();
+    updateEdgePosition_intercept.enable();
+    cameraUpdate_follow_intercept.enable();
     getCellAtWorldPos_intercept.enable();
     processTownMeshCollision_intercept.enable();
     handleCollisionWithTownEnv_intercept.enable();
+    computeCollisionSeparation_intercept.enable();
     scriptFunction_6057058_sub0Sub0_intercept.enable();
     updateEdgePositionSub1_intercept.enable();
 }

@@ -6,6 +6,7 @@
 namespace {
 constexpr std::uint32_t kFPPow2Entry = 0x060359a4;
 constexpr std::uint32_t kSqrtFEntry = 0x060359ae;
+constexpr std::uint32_t kProduct3dEntry = 0x0603570e;
 } // namespace
 
 // 060359a4
@@ -46,7 +47,28 @@ fixedPoint sqrt_F_detour(fixedPoint r4) {
     return result;
 }
 
+// 0603570e
+DECLARE_HOOK(MTH_Product3d_FP, kProduct3dEntry, fixedPoint, const sVec3_FP &, const sVec3_FP &)
+
+fixedPoint MTH_Product3d_FP_detour(const sVec3_FP &r4, const sVec3_FP &r5) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Math)) {
+        return MTH_Product3d_FP_intercept.callUndetoured(r4, r5);
+    }
+
+    g_validationConnection->executeUntilAddress(kProduct3dEntry);
+    validate(g_validationConnection->getRegister(azelval::REG_R0 + 4), r4);
+    validate(g_validationConnection->getRegister(azelval::REG_R0 + 5), r5);
+    const std::uint32_t returnAddr = g_validationConnection->getRegister(azelval::REG_PR);
+
+    const fixedPoint result = MTH_Product3d_FP_intercept.callUndetoured(r4, r5);
+
+    g_validationConnection->executeUntilAddress(returnAddr);
+    validateRegister(azelval::REG_R0 + 0, (std::uint32_t)result.asS32());
+    return result;
+}
+
 void enableMathHooks() {
     FP_Pow2_intercept.enable();
     sqrt_F_intercept.enable();
+    MTH_Product3d_FP_intercept.enable();
 }
