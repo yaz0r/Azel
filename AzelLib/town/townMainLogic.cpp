@@ -400,7 +400,7 @@ void cameraUpdate_follow(sMainLogic* r14_townTask)
 
     //6055E90
     const sVec2_FP& cameraParam = cameraParams[r14_townTask->m1_cameraParamsIndex];
-    if ((MTH_Mul(0x151EB, cameraParam[0]) < r14_townTask->m24_distance) && !(r14_townTask->m4_flags & 0x10000))
+    if ((r14_townTask->m24_distance < MTH_Mul(0x151EB, cameraParam[0])) && !(r14_townTask->m4_flags & 0x10000))
     {
         if (!(r4_edge->mC & 4))
         {

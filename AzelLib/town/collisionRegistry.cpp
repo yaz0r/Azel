@@ -224,7 +224,7 @@ void recordContactNegZ(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_
         r13->m44 |= 0x100;
     }
 
-    if (r4->mC_distance < r5)
+    if (r4->mC_distance > r5)
     {
         r4->m0_position = *r14;
         r4->mC_distance = r5;
@@ -299,7 +299,7 @@ void recordContactPosX(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_
         r13->m44 |= 0x2000;
     }
 
-    if (r4->mC_distance > r5)
+    if (r4->mC_distance < r5)
     {
         r4->m0_position = *r14;
         r4->mC_distance = r5;
