@@ -1,5 +1,7 @@
 #include "PDS.h"
 
+#include <cstring>
+
 #ifdef _WIN32
 #include "validation/validation.h"
 #endif
@@ -40,6 +42,15 @@ int main(int argc, char* argv[])
     azelInit();
 
 #ifdef _WIN32
+    // Validation is opt-in: only enabled when --validation is passed on the command line.
+    {
+        bool validationRequested = false;
+        for (int i = 1; i < argc; i++) {
+            if (strcmp(argv[i], "--validation") == 0)
+                validationRequested = true;
+        }
+        enableValidation = enableValidation && validationRequested;
+    }
     // Must run before resetEngine() so the validation hooks are armed when resetEngine() calls them.
     if (enableValidation) {
         extern float gVolume;
