@@ -5,6 +5,7 @@
 
 constexpr u32 kFPPow2Entry = 0x060359a4;
 constexpr u32 kSqrtFEntry = 0x060359ae;
+constexpr u32 kProduct3dEntry = 0x0603570e;
 
 DECLARE_HOOK(FP_Pow2, kFPPow2Entry, fixedPoint, fixedPoint)
 
@@ -42,7 +43,27 @@ fixedPoint sqrt_F_detour(fixedPoint r4) {
     return result;
 }
 
+DECLARE_HOOK(MTH_Product3d_FP, kProduct3dEntry, fixedPoint, const sVec3_FP &, const sVec3_FP &)
+
+fixedPoint MTH_Product3d_FP_detour(const sVec3_FP &r4, const sVec3_FP &r5) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Math)) {
+        return MTH_Product3d_FP_intercept.callUndetoured(r4, r5);
+    }
+
+    g_validationConnection->executeUntilAddress(kProduct3dEntry);
+    validate(g_validationConnection->getRegister(azelval::REG_R0 + 4), r4);
+    validate(g_validationConnection->getRegister(azelval::REG_R0 + 5), r5);
+    const u32 returnAddr = g_validationConnection->getRegister(azelval::REG_PR);
+
+    const fixedPoint result = MTH_Product3d_FP_intercept.callUndetoured(r4, r5);
+
+    g_validationConnection->executeUntilAddress(returnAddr);
+    validateRegister(azelval::REG_R0 + 0, (u32)result.asS32());
+    return result;
+}
+
 void enableMathHooks() {
     FP_Pow2_intercept.enable();
     sqrt_F_intercept.enable();
+    MTH_Product3d_FP_intercept.enable();
 }

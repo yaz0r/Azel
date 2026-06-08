@@ -16,6 +16,9 @@ constexpr u32 kResetCollisionFrameEntry = 0x060079f0;
 constexpr u32 kGetCellAtWorldPosEntry = 0x06014f70;       // R4 = x, R5 = z at entry
 constexpr u32 kProcessTownMeshCollisionEntry = 0x06009324;
 constexpr u32 kHandleCollisionWithTownEnvEntry = 0x0600887c;
+constexpr u32 kComputeCollisionSeparationEntry = 0x06007c50;
+constexpr u32 kGContactFaces = 0x0604a188;       // std::array<sContactFace,12>, 0x14 stride
+constexpr u32 kGContactConstraints = 0x0604a170; // s32 m0/m4/m8/mC
 
 constexpr u32 kGCollisionPositionBias = 0x0604a180;
 constexpr u32 kGTownGrid = 0x060526dc; // m0_sizeX @ +0, m4_sizeY @ +4
@@ -53,6 +56,9 @@ constexpr u32 kNpcE8_stepTranslation = 0x30;
 
 constexpr u32 kEdge_m84_m20_AABBCenter = 0x84 + 0x20;
 constexpr u32 kEdge_m84_m8_position = 0x84 + 0x8;
+constexpr u32 kEdge_m84_m44_contactFlags = 0x84 + 0x44;
+constexpr u32 kEdge_m84_m4C = 0x84 + 0x4C;
+constexpr u32 kEdge_m84_m58_collisionSolveTranslation = 0x84 + 0x58;
 
 static void validateTownEdgeAndCamera() {
     if (kTwnMainLogicTask == 0 || twnMainLogicTask == nullptr) {
@@ -172,6 +178,36 @@ void handleCollisionWithTownEnv_detour(sCollisionBody *r4) {
     handleCollisionWithTownEnv_intercept.callUndetoured(r4);
 }
 
+// Contact-table inputs at entry, before the m44 resolution block runs
+DECLARE_HOOK(computeCollisionSeparation, kComputeCollisionSeparationEntry, void, sCollisionBody *)
+
+void computeCollisionSeparation_detour(sCollisionBody *r4) {
+    if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
+        g_validationConnection->executeUntilAddress(kComputeCollisionSeparationEntry);
+        const bool isEdge = twnMainLogicTask != nullptr && twnMainLogicTask->m14_EdgeTask != nullptr &&
+                            r4 == &twnMainLogicTask->m14_EdgeTask->m84;
+        if (isEdge) {
+            const u32 emuBody = g_validationConnection->getRegister(azelval::REG_R0 + 4);
+            for (u32 i = 0; i < 12; i++) {
+                const u32 base = kGContactFaces + i * 0x14;
+                validate(base + 0x0, gContactFaces[i].m0_position);
+                validate(base + 0xC, (s32)gContactFaces[i].mC_distance);
+                validate(base + 0x10, gContactFaces[i].m10_y);
+            }
+            validate(kGContactConstraints + 0x0, (s32)gContactConstraints.m0);
+            validate(kGContactConstraints + 0x4, (s32)gContactConstraints.m4);
+            validate(kGContactConstraints + 0x8, (s32)gContactConstraints.m8);
+            validate(kGContactConstraints + 0xC, (s32)gContactConstraints.mC);
+            validate(emuBody + 0x44, (s32)r4->m44);
+            validate(emuBody + 0x14, r4->m14_halfAABB);
+            const u32 emuRot = g_validationConnection->readU32(emuBody + 0x34); // m34_pRotation (Saturn 4-byte ptr)
+            if (emuRot != 0 && r4->m34_pRotation != nullptr)
+                validate(emuRot, *r4->m34_pRotation);
+        }
+    }
+    computeCollisionSeparation_intercept.callUndetoured(r4);
+}
+
 
 constexpr u32 kCameraSetupReturn = 0x0605704c;
 
@@ -228,11 +264,59 @@ void updateEdgePositionSub1_detour(sEdgeTask *r4) {
     validate(edge + kEdge_m14C_inputFlags, r4->m14C_inputFlags);
 }
 
+DECLARE_HOOK(updateEdgePosition, 0, void, sNPC *)
+
+void updateEdgePosition_detour(sNPC *r4) {
+    const bool active = g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town) &&
+                        twnMainLogicTask != nullptr && twnMainLogicTask->m14_EdgeTask != nullptr;
+    if (active) {
+        g_validationConnection->executeUntilAddress(0x0605b8d4);
+        const u32 mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
+        const u32 edge = mainLogic ? g_validationConnection->readU32(mainLogic + kMainLogic_m14_EdgeTask) : 0;
+        if (edge != 0) {
+            validate(edge + kEdge_mE8 + kNpcE8_position, twnMainLogicTask->m14_EdgeTask->mE8.m0_position);
+            // Branch selectors (m44, m4C) before the result (m58)
+            const sCollisionBody &body = twnMainLogicTask->m14_EdgeTask->m84;
+            validate(edge + kEdge_m84_m44_contactFlags, (s32)body.m44);
+            validate(edge + kEdge_m84_m4C, body.m4C);
+            validate(edge + kEdge_m84_m58_collisionSolveTranslation, body.m58_collisionSolveTranslation);
+        }
+    }
+    updateEdgePosition_intercept.callUndetoured(r4);
+    if (!active)
+        return;
+    g_validationConnection->executeUntilAddress(0x0605bc38);
+    const u32 mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
+    const u32 edge = mainLogic ? g_validationConnection->readU32(mainLogic + kMainLogic_m14_EdgeTask) : 0;
+    if (edge != 0) {
+        validate(edge + kEdge_mE8 + kNpcE8_stepTranslationInWorld, twnMainLogicTask->m14_EdgeTask->mE8.m18_stepTranslationInWorld);
+        validate(edge + kEdge_mE8 + kNpcE8_position, twnMainLogicTask->m14_EdgeTask->mE8.m0_position);
+    }
+}
+
+// Entry is before the collision-solve add into m5C
+DECLARE_HOOK(cameraUpdate_follow, 0x06055db6, void, sMainLogic *)
+
+void cameraUpdate_follow_detour(sMainLogic *r4) {
+    if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
+        g_validationConnection->executeUntilAddress(0x06055db6);
+        const u32 mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
+        if (mainLogic != 0) {
+            validate(mainLogic + kMainLogic_m18_position, r4->m18_position);
+            validate(mainLogic + kMainLogic_m5C_rawCameraPosition, r4->m5C_rawCameraPosition);
+        }
+    }
+    cameraUpdate_follow_intercept.callUndetoured(r4);
+}
+
 void enableTownHooks() {
     resetCollisionFrame_intercept.enable();
+    updateEdgePosition_intercept.enable();
+    cameraUpdate_follow_intercept.enable();
     getCellAtWorldPos_intercept.enable();
     processTownMeshCollision_intercept.enable();
     handleCollisionWithTownEnv_intercept.enable();
+    computeCollisionSeparation_intercept.enable();
     scriptFunction_6057058_sub0Sub0_intercept.enable();
     updateEdgePositionSub1_intercept.enable();
 }
