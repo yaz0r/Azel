@@ -40,6 +40,9 @@ constexpr u32 kMainLogic_m50_upVector = 0x50;
 
 constexpr u32 kMainLogic_camera_m8_position = 0x74 + 0x8;
 constexpr u32 kMainLogic_camera_m20_AABBCenter = 0x74 + 0x20;
+constexpr u32 kMainLogic_camera_m44 = 0x74 + 0x44;
+constexpr u32 kMainLogic_camera_m4C = 0x74 + 0x4C;
+constexpr u32 kMainLogic_camera_m58_collisionSolveTranslation = 0x74 + 0x58;
 
 constexpr u32 kEdge_mE8 = 0xE8;
 constexpr u32 kNpcE8_position = 0x0;
@@ -87,6 +90,8 @@ static void validateTownEdgeAndCamera() {
     // Camera collision
     validate(mainLogic + kMainLogic_camera_m20_AABBCenter, twnMainLogicTask->m74_townCamera.m20_AABBCenter);
     validate(mainLogic + kMainLogic_camera_m8_position, twnMainLogicTask->m74_townCamera.m8_position);
+    validate(mainLogic + kMainLogic_camera_m4C, twnMainLogicTask->m74_townCamera.m4C);
+    validate(mainLogic + kMainLogic_camera_m58_collisionSolveTranslation, twnMainLogicTask->m74_townCamera.m58_collisionSolveTranslation);
 
     // Edge position/rotation
     const u32 edge = g_validationConnection->readU32(mainLogic + kMainLogic_m14_EdgeTask);
@@ -184,26 +189,30 @@ DECLARE_HOOK(computeCollisionSeparation, kComputeCollisionSeparationEntry, void,
 void computeCollisionSeparation_detour(sCollisionBody *r4) {
     if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
         g_validationConnection->executeUntilAddress(kComputeCollisionSeparationEntry);
-        const bool isEdge = twnMainLogicTask != nullptr && twnMainLogicTask->m14_EdgeTask != nullptr &&
-                            r4 == &twnMainLogicTask->m14_EdgeTask->m84;
-        if (isEdge) {
-            const u32 emuBody = g_validationConnection->getRegister(azelval::REG_R0 + 4);
-            for (u32 i = 0; i < 12; i++) {
-                const u32 base = kGContactFaces + i * 0x14;
+        const u32 emuBody = g_validationConnection->getRegister(azelval::REG_R0 + 4);
+
+        validate(emuBody + 0x8, r4->m8_position);
+        validate(emuBody + 0x20, r4->m20_AABBCenter);
+        validate(emuBody + 0x14, r4->m14_halfAABB);
+        validate(emuBody + 0x44, (s32)r4->m44);
+        // m0_position/m10_y stay stale for un-recorded faces; compare them only when the recorded bit is set
+        static const s32 kFaceBit[12] = {0x20, 0x10, 0x4, 0x8, 0x2, 0x1,
+                                         0x2000, 0x1000, 0x400, 0x800, 0x200, 0x100};
+        for (u32 i = 0; i < 12; i++) {
+            const u32 base = kGContactFaces + i * 0x14;
+            validate(base + 0xC, (s32)gContactFaces[i].mC_distance);
+            if (r4->m44 & kFaceBit[i]) {
                 validate(base + 0x0, gContactFaces[i].m0_position);
-                validate(base + 0xC, (s32)gContactFaces[i].mC_distance);
                 validate(base + 0x10, gContactFaces[i].m10_y);
             }
-            validate(kGContactConstraints + 0x0, (s32)gContactConstraints.m0);
-            validate(kGContactConstraints + 0x4, (s32)gContactConstraints.m4);
-            validate(kGContactConstraints + 0x8, (s32)gContactConstraints.m8);
-            validate(kGContactConstraints + 0xC, (s32)gContactConstraints.mC);
-            validate(emuBody + 0x44, (s32)r4->m44);
-            validate(emuBody + 0x14, r4->m14_halfAABB);
-            const u32 emuRot = g_validationConnection->readU32(emuBody + 0x34); // m34_pRotation (Saturn 4-byte ptr)
-            if (emuRot != 0 && r4->m34_pRotation != nullptr)
-                validate(emuRot, *r4->m34_pRotation);
         }
+        validate(kGContactConstraints + 0x0, (s32)gContactConstraints.m0);
+        validate(kGContactConstraints + 0x4, (s32)gContactConstraints.m4);
+        validate(kGContactConstraints + 0x8, (s32)gContactConstraints.m8);
+        validate(kGContactConstraints + 0xC, (s32)gContactConstraints.mC);
+        const u32 emuRot = g_validationConnection->readU32(emuBody + 0x34); // m34_pRotation (Saturn 4-byte ptr)
+        if (emuRot != 0 && r4->m34_pRotation != nullptr)
+            validate(emuRot, *r4->m34_pRotation);
     }
     computeCollisionSeparation_intercept.callUndetoured(r4);
 }
@@ -304,6 +313,14 @@ void cameraUpdate_follow_detour(sMainLogic *r4) {
         if (mainLogic != 0) {
             validate(mainLogic + kMainLogic_m18_position, r4->m18_position);
             validate(mainLogic + kMainLogic_m5C_rawCameraPosition, r4->m5C_rawCameraPosition);
+            // Camera body holds this frame's collision solve (m58 is added into the camera position)
+            validate(mainLogic + kMainLogic_m24_distance, r4->m24_distance);
+            validate(mainLogic + kMainLogic_camera_m44, (s32)r4->m74_townCamera.m44);
+            validate(mainLogic + kMainLogic_camera_m4C, r4->m74_townCamera.m4C);
+            validate(mainLogic + kMainLogic_camera_m58_collisionSolveTranslation, r4->m74_townCamera.m58_collisionSolveTranslation);
+            const u32 emuCamPos = g_validationConnection->readU32(mainLogic + 0x74 + 0x30); // camera m30_pPosition
+            if (emuCamPos != 0 && r4->m74_townCamera.m30_pPosition != nullptr)
+                validate(emuCamPos, *r4->m74_townCamera.m30_pPosition);
         }
     }
     cameraUpdate_follow_intercept.callUndetoured(r4);
