@@ -472,6 +472,8 @@ s32 scriptFunction_6057058()
 
 void updateEdgeControls(sEdgeTask* r4)
 {
+    s32 inputX = 0;
+    s32 inputY = 0;
     if (npcData0.mFC & 2)
     {
         r4->m14C_inputFlags |= 0xC0;
@@ -482,8 +484,8 @@ void updateEdgeControls(sEdgeTask* r4)
         {
             // Analog
             //0605BC5E
-            r4->m150_inputX = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
-            r4->m154_inputY = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
+            inputX = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m2_analogX;
+            inputY = 512 * graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m3_analogY;
         }
         else
         {
@@ -491,24 +493,27 @@ void updateEdgeControls(sEdgeTask* r4)
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x10)
             {
                 // up
-                r4->m154_inputY = 0x10000;
+                inputY = 0x10000;
             }
             else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x20)
             {
                 // down
-                r4->m154_inputY = -0x10000;
+                inputY = -0x10000;
             }
 
             if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x40)
             {
-                r4->m150_inputX = 0x10000;
+                inputX = 0x10000;
             }
             else if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & 0x80)
             {
-                r4->m150_inputX = -0x10000;
+                inputX = -0x10000;
             }
         }
     }
+
+    r4->m150_inputX = inputX;
+    r4->m154_inputY = inputY;
 
     if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown & graphicEngineStatus.m4514.mD8_buttonConfig[0][0])
     {
