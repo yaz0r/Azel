@@ -54,24 +54,8 @@ void setCollisionBounds(sCollisionBody* r4, const sVec3_FP& r5, const sVec3_FP& 
 s32 gCollisionPositionBias = 0;
 s32 gWallCollisionOccurred = 0;
 
-struct sContactFace
-{
-    sVec3_FP m0_position;
-    s32 mC_distance;
-    fixedPoint m10_y;
-    //size 0x14
-};
-
 std::array<sContactFace, 12> gContactFaces;
-
-struct sContactConstraints
-{
-    s32 m0;
-    s32 m4;
-    s32 m8;
-    s32 mC;
-    //size 0x10?
-}gContactConstraints;
+sContactConstraints gContactConstraints;
 
 
 // Inserts the collision body into the per-type linked list for this frame and
@@ -331,7 +315,7 @@ void recordContactNegY(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_
     sContactFace* r4;
     if(r12 < 0)
     {
-        r4 = &gContactFaces[4];
+        r4 = &gContactFaces[3];
         r13->m44 |= 0x8;
     }
     else
@@ -628,7 +612,7 @@ static s32 testTownMeshQuadForCollisionSub1(const fixedPoint& r4, const fixedPoi
     s64 mac = (s64)r4.asS32() * (s64)r5.asS32();
     mac -= (s64)r6.asS32() * (s64)r7.asS32();
 
-    return mac >> 32;
+    return mac >> 16;
 }
 
 // Tests one quad of a town mesh against r14's AABB. When the AABB centre lies inside the
@@ -1151,7 +1135,7 @@ void computeCollisionSeparation(sCollisionBody* r12)
     {
     case 0:
         break;
-    case 1: //
+    case 1:
     {
         //6007F24
         fixedPoint r10 = FP_Div(gContactFaces[5].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[5].m0_position[1])));
@@ -1159,7 +1143,7 @@ void computeCollisionSeparation(sCollisionBody* r12)
         var14[2] = MTH_Mul(gContactFaces[5].m0_position[2], r10);
         break;
     }
-    case 2: // Y-
+    case 2:
     {
         //6007EFA
         fixedPoint r10 = FP_Div(gContactFaces[4].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[4].m0_position[1])));
@@ -1167,6 +1151,12 @@ void computeCollisionSeparation(sCollisionBody* r12)
         var14[2] = MTH_Mul(gContactFaces[4].m0_position[2], r10);
         break;
     }
+    case 3:
+        var14[0] = FP_Div(
+            MTH_Mul_5_6(gContactFaces[4].mC_distance - gContactFaces[5].mC_distance, gContactFaces[4].m0_position[2], gContactFaces[5].m0_position[2]),
+            MTH_Mul(gContactFaces[4].m0_position[0], gContactFaces[5].m0_position[2]) - MTH_Mul(gContactFaces[5].m0_position[0], gContactFaces[4].m0_position[2]));
+        var14[2] = gContactFaces[4].mC_distance - MTH_Mul(FP_Div(gContactFaces[4].m0_position[0], gContactFaces[4].m0_position[2]), var14[0]);
+        break;
     case 0x10:
     {
         //6007ED4
@@ -1175,22 +1165,14 @@ void computeCollisionSeparation(sCollisionBody* r12)
         var14[2] = MTH_Mul(gContactFaces[1].m0_position[2], r10);
         break;
     }
-    case 0x20: // X+
-    {
-        //6007E94
-        fixedPoint r10 = FP_Div(gContactFaces[0].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[0].m0_position[1])));
-        var14[0] = MTH_Mul(gContactFaces[0].m0_position[0], r10);
-        var14[2] = MTH_Mul(gContactFaces[0].m0_position[2], r10);
-        break;
-    }
     case 0x11:
         //600814C
-        if ((gContactFaces[0].m0_position[2] <= 0) && (gContactFaces[5].m0_position[0] <= 0))
+        if ((gContactFaces[1].m0_position[2] <= 0) && (gContactFaces[5].m0_position[0] <= 0))
         {
             //0600815A
-            fixedPoint r8 = FP_Div(gContactFaces[0].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[0].m0_position[1])));
-            var14[0] = MTH_Mul(gContactFaces[0].m0_position[0], r8);
-            var14[2] = MTH_Mul(gContactFaces[0].m0_position[2], r8);
+            fixedPoint r8 = FP_Div(gContactFaces[1].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[1].m0_position[1])));
+            var14[0] = MTH_Mul(gContactFaces[1].m0_position[0], r8);
+            var14[2] = MTH_Mul(gContactFaces[1].m0_position[2], r8);
 
             //06008182
             {
@@ -1199,31 +1181,28 @@ void computeCollisionSeparation(sCollisionBody* r12)
                 r9[2] = MTH_Mul(gContactFaces[5].m0_position[2], r8);
             }
 
-            if (var14[0] <= r9[0])
-            {
-                var14[0] = r9[0];
-            }
-
-            if (var14[2] > r9[2])
-            {
-                var14[2] = r9[2];
-            }
+            if (r9[0] < var14[0]) var14[0] = r9[0];
+            if (var14[2] > r9[2]) var14[2] = r9[2];
         }
         else
         {
-            //600807A
-            var14[2] = gContactFaces[4].mC_distance;
+            var14[2] = gContactFaces[5].mC_distance;
             var14[0] = gContactFaces[1].mC_distance - MTH_Mul(FP_Div(gContactFaces[1].m0_position[2], gContactFaces[1].m0_position[0]), var14[2]);
         }
         break;
     case 0x12:
         //6007FF8
-        if ((gContactFaces[0].m0_position[2] >= 0) && (gContactFaces[4].m0_position[0] <= 0))
+        if ((gContactFaces[1].m0_position[2] < 0) || (gContactFaces[4].m0_position[0] > 0))
+        {
+            var14[2] = gContactFaces[4].mC_distance;
+            var14[0] = gContactFaces[1].mC_distance - MTH_Mul(FP_Div(gContactFaces[1].m0_position[2], gContactFaces[1].m0_position[0]), var14[2]);
+        }
+        else
         {
             //06008006
-            fixedPoint r8 = FP_Div(gContactFaces[0].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[0].m0_position[1])));
-            var14[0] = MTH_Mul(gContactFaces[0].m0_position[0], r8);
-            var14[2] = MTH_Mul(gContactFaces[0].m0_position[2], r8);
+            fixedPoint r8 = FP_Div(gContactFaces[1].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[1].m0_position[1])));
+            var14[0] = MTH_Mul(gContactFaces[1].m0_position[0], r8);
+            var14[2] = MTH_Mul(gContactFaces[1].m0_position[2], r8);
 
             //0600802E
             {
@@ -1232,23 +1211,26 @@ void computeCollisionSeparation(sCollisionBody* r12)
                 r9[2] = MTH_Mul(gContactFaces[4].m0_position[2], r8);
             }
 
-            if (var14[0] > r9[0])
-            {
-                var14[0] = r9[0];
-            }
-
-            if (var14[2] < r9[2])
-            {
-                var14[2] = r9[2];
-            }
-        }
-        else
-        {
-            //600807A
-            var14[2] = gContactFaces[4].mC_distance;
-            var14[0] = gContactFaces[1].mC_distance - MTH_Mul(FP_Div(gContactFaces[1].m0_position[2], gContactFaces[1].m0_position[0]), var14[2]);
+            if (r9[0] < var14[0]) var14[0] = r9[0];
+            if (var14[2] < r9[2]) var14[2] = r9[2];
         }
         break;
+    case 0x13:
+        var14[0] = FP_Div(
+            MTH_Mul_5_6(gContactFaces[4].mC_distance - gContactFaces[5].mC_distance, gContactFaces[4].m0_position[2], gContactFaces[5].m0_position[2]),
+            MTH_Mul(gContactFaces[4].m0_position[0], gContactFaces[5].m0_position[2]) - MTH_Mul(gContactFaces[5].m0_position[0], gContactFaces[4].m0_position[2]));
+        if (gContactFaces[1].mC_distance < var14[0])
+            var14[0] = gContactFaces[1].mC_distance;
+        var14[2] = gContactFaces[4].mC_distance - MTH_Mul(FP_Div(gContactFaces[4].m0_position[0], gContactFaces[4].m0_position[2]), var14[0]);
+        break;
+    case 0x20:
+    {
+        //6007E94
+        fixedPoint r10 = FP_Div(gContactFaces[0].m10_y, sqrt_F(0x10000 - FP_Pow2(gContactFaces[0].m0_position[1])));
+        var14[0] = MTH_Mul(gContactFaces[0].m0_position[0], r10);
+        var14[2] = MTH_Mul(gContactFaces[0].m0_position[2], r10);
+        break;
+    }
     case 0x21:
         //0600809C
         if ((gContactFaces[0].m0_position[2] >= 0) && (gContactFaces[5].m0_position[0] <= 0))
@@ -1265,20 +1247,14 @@ void computeCollisionSeparation(sCollisionBody* r12)
                 r9[2] = MTH_Mul(gContactFaces[5].m0_position[2], r8);
             }
 
-            if (var14[0] < r9[0])
-            {
-                var14[0] = r9[0];
-            }
-
-            if (var14[2] > r9[2])
-            {
-                var14[2] = r9[2];
-            }
+            if (var14[0] < r9[0]) var14[0] = r9[0];
+            if (var14[2] > r9[2]) var14[2] = r9[2];
         }
         else
         {
             //600811E
-            assert(0);
+            var14[2] = gContactFaces[5].mC_distance;
+            var14[0] = gContactFaces[0].mC_distance - MTH_Mul(FP_Div(gContactFaces[0].m0_position[2], gContactFaces[0].m0_position[0]), var14[2]);
         }
         break;
     case 0x22:
@@ -1297,15 +1273,8 @@ void computeCollisionSeparation(sCollisionBody* r12)
                 r9[2] = MTH_Mul(gContactFaces[4].m0_position[2], r8);
             }
 
-            if (var14[0] < r9[0])
-            {
-                var14[0] = r9[0];
-            }
-
-            if (var14[2] < r9[2])
-            {
-                var14[2] = r9[2];
-            }
+            if (var14[0] < r9[0]) var14[0] = r9[0];
+            if (var14[2] < r9[2]) var14[2] = r9[2];
         }
         else
         {
@@ -1313,6 +1282,28 @@ void computeCollisionSeparation(sCollisionBody* r12)
             var14[2] = gContactFaces[4].mC_distance;
             var14[0] = gContactFaces[0].mC_distance - MTH_Mul(FP_Div(gContactFaces[0].m0_position[2], gContactFaces[0].m0_position[0]), var14[2]);
         }
+        break;
+    case 0x23:
+        var14[0] = FP_Div(
+            MTH_Mul_5_6(gContactFaces[4].mC_distance - gContactFaces[5].mC_distance, gContactFaces[4].m0_position[2], gContactFaces[5].m0_position[2]),
+            MTH_Mul(gContactFaces[4].m0_position[0], gContactFaces[5].m0_position[2]) - MTH_Mul(gContactFaces[5].m0_position[0], gContactFaces[4].m0_position[2]));
+        if (var14[0] < gContactFaces[0].mC_distance)
+            var14[0] = gContactFaces[0].mC_distance;
+        var14[2] = gContactFaces[4].mC_distance - MTH_Mul(FP_Div(gContactFaces[4].m0_position[0], gContactFaces[4].m0_position[2]), var14[0]);
+        break;
+    case 0x30:
+        var14[2] = FP_Div(
+            MTH_Mul_5_6(gContactFaces[0].mC_distance - gContactFaces[1].mC_distance, gContactFaces[0].m0_position[0], gContactFaces[1].m0_position[0]),
+            MTH_Mul(gContactFaces[0].m0_position[2], gContactFaces[1].m0_position[0]) - MTH_Mul(gContactFaces[1].m0_position[2], gContactFaces[0].m0_position[0]));
+        var14[0] = gContactFaces[0].mC_distance - MTH_Mul(FP_Div(gContactFaces[0].m0_position[2], gContactFaces[0].m0_position[0]), var14[2]);
+        break;
+    case 0x31:
+        var14[2] = FP_Div(
+            MTH_Mul_5_6(gContactFaces[0].mC_distance - gContactFaces[1].mC_distance, gContactFaces[0].m0_position[0], gContactFaces[1].m0_position[0]),
+            MTH_Mul(gContactFaces[0].m0_position[2], gContactFaces[1].m0_position[0]) - MTH_Mul(gContactFaces[1].m0_position[2], gContactFaces[0].m0_position[0]));
+        if (gContactFaces[5].mC_distance < var14[2])
+            var14[2] = gContactFaces[5].mC_distance;
+        var14[0] = gContactFaces[0].mC_distance - MTH_Mul(FP_Div(gContactFaces[0].m0_position[2], gContactFaces[0].m0_position[0]), var14[2]);
         break;
     case 0x32:
         //0600821E
@@ -1328,9 +1319,36 @@ void computeCollisionSeparation(sCollisionBody* r12)
         //600829A
         var14[0] = gContactFaces[0].mC_distance - MTH_Mul(FP_Div(gContactFaces[0].m0_position[2], gContactFaces[0].m0_position[0]), var14[2]);
         break;
+    case 0x33:
+    {
+        fixedPoint absXY = gContactFaces[0].m0_position[1] + gContactFaces[1].m0_position[1];
+        if (absXY < 0) absXY = -absXY;
+        fixedPoint absZY = gContactFaces[4].m0_position[1] + gContactFaces[5].m0_position[1];
+        if (absZY < 0) absZY = -absZY;
+
+        fixedPoint num, denom, a, b;
+        if (absXY < absZY)
+        {
+            denom = MTH_Mul(gContactFaces[0].m0_position[1], gContactFaces[1].m0_position[0]) - MTH_Mul(gContactFaces[1].m0_position[1], gContactFaces[0].m0_position[0]);
+            num = gContactFaces[0].mC_distance - gContactFaces[1].mC_distance;
+            a = gContactFaces[0].m0_position[0];
+            b = gContactFaces[1].m0_position[0];
+        }
+        else
+        {
+            denom = MTH_Mul(gContactFaces[4].m0_position[1], gContactFaces[5].m0_position[2]) - MTH_Mul(gContactFaces[5].m0_position[1], gContactFaces[4].m0_position[2]);
+            num = gContactFaces[4].mC_distance - gContactFaces[5].mC_distance;
+            a = gContactFaces[4].m0_position[2];
+            b = gContactFaces[5].m0_position[2];
+        }
+        var14[1] = FP_Div(MTH_Mul_5_6(num, a, b), denom);
+        var14[0] = gContactFaces[0].mC_distance - MTH_Mul(FP_Div(gContactFaces[0].m0_position[1], gContactFaces[0].m0_position[0]), var14[1]);
+        var14[2] = gContactFaces[4].mC_distance - MTH_Mul(FP_Div(gContactFaces[4].m0_position[1], gContactFaces[4].m0_position[2]), var14[1]);
+        r12->m44 &= 0xC;
+        break;
+    }
     default:
-        //assert(0);
-        PDS_Log("Unhandled collision case 0x%X!", r12->m44 & 0x33)
+        assert(0);
         break;
     }
 

@@ -26,6 +26,25 @@ struct sCollisionBody
     sVec3_FP m58_collisionSolveTranslation;
 };
 
+struct sContactFace
+{
+    sVec3_FP m0_position;
+    s32 mC_distance;
+    fixedPoint m10_y;
+    //size 0x14
+};
+extern std::array<sContactFace, 12> gContactFaces;
+
+struct sContactConstraints
+{
+    s32 m0;
+    s32 m4;
+    s32 m8;
+    s32 mC;
+    //size 0x10
+};
+extern sContactConstraints gContactConstraints;
+
 // Initialises a collision body's type/layer from the preset table at index presetIndex.
 void setCollisionSetup(sCollisionBody* pBody, s32 presetIndex);
 
