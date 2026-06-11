@@ -624,7 +624,8 @@ void updateEdgePositionSub1(sEdgeTask* r4)
                 s32 step = 0;
                 if (r4->m150_inputX != 0 || r4->m154_inputY != 0)
                 {
-                    step = sqrt_F(FP_Pow2(r4->m154_inputY) + FP_Pow2(r4->m150_inputX));
+                    fixedPoint r6 = FP_Pow2(r4->m150_inputX);
+                    step = sqrt_F(r6 + FP_Pow2(r4->m154_inputY));
                     if (0x10000 < step)
                     {
                         step = 0x10000;
@@ -684,20 +685,23 @@ void updateEdgePositionSub3Sub1(const sVec3_FP& r4, sVec2_FP* r5)
             (*r5)[0] = -0x4000000;
         }
     }
-
-    //6036342
-    fixedPoint r0 = sqrt_F(FP_Pow2(r4[0]) + FP_Pow2(r4[2]));
-
-    if (r4[1] >= 0)
-    {
-        (*r5)[0] = atan2_FP(r4[1], r0);
-    }
     else
     {
-        (*r5)[0] = -atan2_FP(-r4[1], r0);
-    }
+        //6036342
+        fixedPoint r8 = FP_Pow2(r4[0]);
+        fixedPoint r0 = sqrt_F(r8 + FP_Pow2(r4[2]));
 
-    (*r5)[1] = atan2_FP(r4[0], r4[2]);
+        if (r4[1] >= 0)
+        {
+            (*r5)[0] = atan2_FP(r4[1], r0);
+        }
+        else
+        {
+            (*r5)[0] = -atan2_FP(-r4[1], r0);
+        }
+
+        (*r5)[1] = atan2_FP(r4[0], r4[2]);
+    }
 }
 
 void updateEdgeLookAt(sEdgeTask* r4)

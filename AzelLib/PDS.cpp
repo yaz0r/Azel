@@ -80,47 +80,42 @@ s32 MTH_Product2d(s32 (&r4)[2], s32 (&r5)[2])
     return mac;
 }
 
+// 060359ae
 fixedPoint sqrt_F(fixedPoint r4fp)
 {
     u32 r1 = 0x40000000;
-    int r3 = 16;
+    s32 r3 = 16;
 
     u32 r4 = (u32)r4fp.asS32();
 
-    for (int i = 16; i >= 0;)
+    while (r1 > r4) // cmp/hi r4,r1 ; bf/s exits when r1 <= r4 (unsigned, equal included)
     {
-        i--;
-        if (i == 0)
-        {
+        r3--;       // dt r3 (delay slot)
+        if (r3 == 0) // r3 hit 0 with r1 still > r4 -> no root, return 0
             return fixedPoint::fromS32(0);
-        }
-        if (r1 <= r4) // cmp/hi + bf: unsigned, equal case included
-        {
-            r4 -= r1;
+        r1 >>= 2;   // shlr2 r1
+    }
+    r3--; // dt r3 in the delay slot of the exit branch; r1 reaches 1 on the 16th check
 
-            u32 r0 = r1;
+    r4 -= r1;
+    u32 r0 = r1;
 
-            do
-            {
-                r1 >>= 2;
-                u32 r2 = r0 + r1;
-
-                r0 >>= 1;
-
-                if (r4 >= r2)
-                {
-                    r4 -= r2;
-                    r0 += r1;
-                }
-            } while (--i);
-
-            return fixedPoint::fromS32(r0 << 8);
-        }
-
+    while (r3 != 0) // bt/s skips the refinement loop entirely when r3 == 0
+    {
         r1 >>= 2;
+        u32 r2 = r0 + r1;
+
+        r0 >>= 1;
+
+        if (r2 <= r4) // cmp/hi r4,r2 + bt: unsigned, equal included
+        {
+            r4 -= r2;
+            r0 += r1;
+        }
+        r3--;
     }
 
-    return fixedPoint::fromS32(0);
+    return fixedPoint::fromS32(r0 << 8);
 }
 
 s32 sqrt_I(s32 r4)

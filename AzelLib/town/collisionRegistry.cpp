@@ -158,7 +158,8 @@ s32 sphereOverlapTest(sCollisionBody* r13, sCollisionBody* r14)
         sVec3_FP localDelta;
         transformVecByCurrentMatrix(delta, localDelta);
 
-        fixedPoint xzDist2 = FP_Pow2(localDelta[0]) + FP_Pow2(localDelta[2]);
+        fixedPoint xzDistX2 = FP_Pow2(localDelta[0]);
+        fixedPoint xzDist2 = xzDistX2 + FP_Pow2(localDelta[2]);
         fixedPoint xzThreshold2 = FP_Pow2(r13->m14_halfAABB[2] + r14->m14_halfAABB[2]);
 
         if (xzDist2 < xzThreshold2

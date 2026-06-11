@@ -35,6 +35,20 @@ struct sResCameraProperties
 };
 extern sResCameraProperties LCSCollisionData;
 
+struct sTransformedVertice
+{
+    s16 m0_X;
+    s16 m2_Y;
+    s32 m4_fullPrecisionZ;
+    s32 m8_fullPrecisionX;
+    s32 mC_fullPrecisionY;
+    s32 m10_clippedX;
+    s32 m14_clippedY;
+    u32 m18_clipFlags;
+    u32 m1C_clipFlags2;
+    // size 0x20
+};
+
 void setupDataForLCSCollision();
 void findLCSCollision();
 void copyCameraPropertiesToRes();

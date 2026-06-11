@@ -113,20 +113,6 @@ void scriptUpdateSub2Sub0(sResCameraProperties* r4, s32 r5)
     }
 }
 
-struct sTransformedVertice
-{
-    s16 m0_X;
-    s16 m2_Y;
-    s32 m4_fullPrecisionZ;
-    s32 m8_fullPrecisionX;
-    s32 mC_fullPrecisionY;
-    s32 m10_clippedX;
-    s32 m14_clippedY;
-    u32 m18_clipFlags;
-    u32 m1C_clipFlags2;
-    // size 0x20
-};
-
 void computeFinalProjectionMatrix(const sProcessed3dModel& r4, const sMatrix4x3& r5, sResCameraProperties* r6, std::array<s16, 9> & outputMatrix, s32& r8_outputTranslationX, s32& r9_outputTranslationY, s32& r10_outputTranslationZ, s16*& r11, std::vector<sVec3_S16_12_4>::const_iterator& r12_pVertices, u32& r13_numVertices)
 {
     //r6 is off by 0x14 compared to asm
@@ -490,7 +476,7 @@ void testQuadsForCollisionSub0(const sProcessed3dModel::sQuad& r4, s32& r5_resul
     s32 r3 = r12.m4_fullPrecisionZ >> 16;
     s32 r8 = r13.m4_fullPrecisionZ >> 16;
 
-    u8 r0 = r4.m8_lightingControl & 0xF0;
+    u8 r0 = (r4.m8_lightingControl >> 8) & 0xF0; // Saturn reads the high byte (mov.b @quad+8)
     switch (r0)
     {
     case 0:
@@ -547,7 +533,7 @@ void testQuadsForCollision(const std::vector<sProcessed3dModel::sQuad>& r4_vecto
     std::vector<sProcessed3dModel::sQuad>::const_iterator r4 = r4_vector.begin();
     do
     {
-        if ((r4->m8_lightingControl & 0xF0) == 0)
+        if ((r4->m10_CMDSRCA & 0xF0) == 0) // Saturn gates collision on the word at quad+0x10, not lightingControl
         {
             sTransformedVertice& r10 = r7_transformeVertices[r4->m0_indices[0]];
             sTransformedVertice& r11 = r7_transformeVertices[r4->m0_indices[1]];
