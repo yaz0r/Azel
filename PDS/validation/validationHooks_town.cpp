@@ -76,18 +76,15 @@ static void validateTownEdgeAndCamera() {
 
     validate(kGTownGrid + 0x28, gTownGrid.m28_cellSize);
 
-    // Camera
     validate(mainLogic + kMainLogic_m18_position, twnMainLogicTask->m18_position);
-    validate(mainLogic + kMainLogic_m24_distance, twnMainLogicTask->m24_distance);
-    validate(mainLogic + kMainLogic_m2C, twnMainLogicTask->m2C);
+    validate(mainLogic + kMainLogic_m68_cameraRotation, twnMainLogicTask->m68_cameraRotation);
     validate(mainLogic + kMainLogic_m30, twnMainLogicTask->m30);
-
-    // Camera position/rotation
+    validate(mainLogic + kMainLogic_m24_distance, twnMainLogicTask->m24_distance);
+    validate(mainLogic + kMainLogic_m5C_rawCameraPosition, twnMainLogicTask->m5C_rawCameraPosition);
     validate(mainLogic + kMainLogic_m38_interpolatedCameraPosition, twnMainLogicTask->m38_interpolatedCameraPosition);
     validate(mainLogic + kMainLogic_m44_cameraTarget, twnMainLogicTask->m44_cameraTarget);
     validate(mainLogic + kMainLogic_m50_upVector, twnMainLogicTask->m50_upVector);
-    validate(mainLogic + kMainLogic_m5C_rawCameraPosition, twnMainLogicTask->m5C_rawCameraPosition);
-    validate(mainLogic + kMainLogic_m68_cameraRotation, twnMainLogicTask->m68_cameraRotation);
+    validate(mainLogic + kMainLogic_m2C, twnMainLogicTask->m2C);
 
     // Camera collision
     validate(mainLogic + kMainLogic_camera_m20_AABBCenter, twnMainLogicTask->m74_townCamera.m20_AABBCenter);
@@ -112,6 +109,15 @@ static void validateTownEdgeAndCamera() {
     // Edge collision
     validate(edge + kEdge_m84_m20_AABBCenter, twnMainLogicTask->m14_EdgeTask->m84.m20_AABBCenter);
     validate(edge + kEdge_m84_m8_position, twnMainLogicTask->m14_EdgeTask->m84.m8_position);
+
+    // Edge animation state; m14E is the idle re-roll countdown
+    const sEdgeTask* edgeTask = twnMainLogicTask->m14_EdgeTask;
+    validate(edge + 0xE, (s8)edgeTask->mE_controlState);
+    validate(edge + 0x28, edgeTask->m28_animationLeftOver);
+    validate(edge + 0x2C, edgeTask->m2C_currentAnimation);
+    validate(edge + 0x14E, (s16)edgeTask->m14E);
+    validate(edge + 0x179, (s8)edgeTask->m179);
+    validate(edge + 0x17A, (s8)edgeTask->m17A);
 }
 
 DECLARE_HOOK_VOID(resetCollisionFrame, kResetCollisionFrameEntry, void)
@@ -476,6 +482,35 @@ void cameraUpdate_follow_detour(sMainLogic *r4) {
     cameraUpdate_follow_intercept.callUndetoured(r4);
 }
 
+// Returns into updateEdgePosition
+constexpr u32 kUpdateEdgeLookAtEntry = 0x0605beb8;
+constexpr u32 kUpdateEdgeLookAtReturn = 0x0605bc02;
+constexpr u32 kEdge_m20_lookAtAngle = 0x20; // sVec2_FP: [0] head pitch, [1] head yaw
+constexpr u32 kNpcE8_targetRotation = 0x48;
+
+DECLARE_HOOK(updateEdgeLookAt, kUpdateEdgeLookAtEntry, void, sEdgeTask *)
+
+void updateEdgeLookAt_detour(sEdgeTask *r4) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town)) {
+        updateEdgeLookAt_intercept.callUndetoured(r4);
+        return;
+    }
+    g_validationConnection->executeUntilAddress(kUpdateEdgeLookAtEntry);
+    const u32 edge = g_validationConnection->getRegister(azelval::REG_R0 + 4); // R4 = sEdgeTask*
+    validate(edge + kEdge_mE8 + kNpcE8_position, r4->mE8.m0_position);
+    validate(edge + kEdge_mE8 + kNpcE8_rotation, r4->mE8.mC_rotation);
+    validate(edge + kEdge_mE8 + kNpcE8_targetRotation, r4->mE8.m48_targetRotation);
+    validate(edge + kEdge_mE8 + kNpcE8_stepRotation, r4->mE8.m24_stepRotation);
+    validate(edge + kEdge_m20_lookAtAngle + 0x0, r4->m20_lookAtAngle[0]);
+    validate(edge + kEdge_m20_lookAtAngle + 0x4, r4->m20_lookAtAngle[1]);
+
+    updateEdgeLookAt_intercept.callUndetoured(r4);
+
+    g_validationConnection->executeUntilAddress(kUpdateEdgeLookAtReturn);
+    validate(edge + kEdge_m20_lookAtAngle + 0x0, r4->m20_lookAtAngle[0]);
+    validate(edge + kEdge_m20_lookAtAngle + 0x4, r4->m20_lookAtAngle[1]);
+}
+
 void enableTownHooks() {
     resetCollisionFrame_intercept.enable();
     updateEdgePosition_intercept.enable();
@@ -491,4 +526,5 @@ void enableTownHooks() {
     // transformVerticesClipped_intercept.enable();
     scriptFunction_6057058_sub0Sub0_intercept.enable();
     updateEdgePositionSub1_intercept.enable();
+    updateEdgeLookAt_intercept.enable();
 }

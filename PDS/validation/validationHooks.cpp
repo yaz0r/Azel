@@ -1,6 +1,7 @@
 #include "PDS.h"
 
 #include "mainMenuDebugTasks.h"
+#include "inputRecorder.h"
 
 #include "validation/validation.h"
 #include "validation/validationHooks_town.h"
@@ -14,6 +15,27 @@
 
 constexpr u32 kUpdateInputsReturn = 0x0602392a;
 constexpr u32 kUpdateInputsAddr = 0x060238ba;
+constexpr u32 kInputDevice0 = 0x60501B8; // emu m0_inputDevices[0].m0_current
+
+// Saturn offsets: analog X/Y are at +2/+3, unlike the packed C++ struct
+static void pushInputToEmu() {
+    if (g_validationConnection == nullptr)
+        return;
+    const auto& cur = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current;
+    g_validationConnection->writeU8(kInputDevice0 + 0x0, cur.m0_inputType);
+    g_validationConnection->writeU8(kInputDevice0 + 0x2, (u8)cur.m2_analogX);
+    g_validationConnection->writeU8(kInputDevice0 + 0x3, (u8)cur.m3_analogY);
+    g_validationConnection->writeU8(kInputDevice0 + 0x4, (u8)cur.m4);
+    g_validationConnection->writeU8(kInputDevice0 + 0x5, (u8)cur.m5);
+    g_validationConnection->writeU16(kInputDevice0 + 0x6, cur.m6_buttonDown);
+    g_validationConnection->writeU16(kInputDevice0 + 0x8, cur.m8_newButtonDown);
+    g_validationConnection->writeU16(kInputDevice0 + 0xA, cur.mA);
+    g_validationConnection->writeU16(kInputDevice0 + 0xC, cur.mC_newButtonDown2);
+    g_validationConnection->writeU16(kInputDevice0 + 0xE, cur.mE);
+    g_validationConnection->writeU16(kInputDevice0 + 0x10, cur.m10);
+    g_validationConnection->writeU16(kInputDevice0 + 0x12, cur.m12);
+    g_validationConnection->writeU16(kInputDevice0 + 0x14, cur.m14);
+}
 
 // 06012e48
 DECLARE_HOOK_VOID(updateInputs, kUpdateInputsReturn, void)
@@ -24,13 +46,6 @@ void updateInputs_detour() {
     updateInputs_intercept.callUndetoured();
 
     g_validationConnection->executeUntilAddress(kUpdateInputsReturn);
-
-    constexpr u32 kInputDevice0 = 0x60501B8;
-    graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m0_inputType = g_validationConnection->readU8(kInputDevice0 + 0);
-    graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m6_buttonDown = g_validationConnection->readU16(kInputDevice0 + 6);
-    graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.m8_newButtonDown = g_validationConnection->readU16(kInputDevice0 + 8);
-    graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mA = g_validationConnection->readU16(kInputDevice0 + 0xA);
-    graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 = g_validationConnection->readU16(kInputDevice0 + 0xC);
 
     DEBUG_setRandomSeed(g_validationConnection->readU32(0x604b02c));
 }
@@ -69,6 +84,7 @@ void s_titleScreenWorkArea_Draw_detour(s_titleScreenWorkArea* pWorkArea) {
 
 void enableValidationHooks() {
     updateInputs_intercept.enable();
+    gOnInputFinalized = &pushInputToEmu;
     enableTownHooks();
     enableMathHooks();
 

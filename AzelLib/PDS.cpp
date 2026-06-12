@@ -1,5 +1,6 @@
 #include "PDS.h"
 #include "debugWindows.h"
+#include "inputRecorder.h"
 #include "kernel/fileBundle.h"
 #include "kernel/debug/trace.h"
 #include "audio/soundDriver.h"
@@ -1161,6 +1162,8 @@ void loopIteration()
 #endif
 
         updateInputDebug();
+
+        updateInputRecorder();
 
         runTasks();
 
