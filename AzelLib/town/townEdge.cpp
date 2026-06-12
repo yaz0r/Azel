@@ -96,7 +96,7 @@ void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5)
                 translateCurrentMatrix(&r14_pose->m0_translation);
                 rotateCurrentMatrixShiftedZ(r14_pose->mC_rotation[2]);
                 rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0xB333));
-                rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
+                rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0] + r5->m_value[0]); // head pitch (look-at)
 
                 if (r13->m0_3dModel)
                 {
@@ -159,7 +159,7 @@ void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5)
                 translateCurrentMatrix(&r14_pose->m0_translation);
                 rotateCurrentMatrixShiftedZ(r14_pose->mC_rotation[2]);
                 rotateCurrentMatrixShiftedY(r14_pose->mC_rotation[1] + MTH_Mul(r5->m_value[1], 0xB333));
-                rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0]);
+                rotateCurrentMatrixShiftedX(r14_pose->mC_rotation[0] + r5->m_value[0]); // head pitch (look-at)
 
                 if (r13->m0_3dModel)
                 {
@@ -701,7 +701,7 @@ void updateEdgeSub3Sub0(sEdgeTask* pThis)
         {
             //0605C1FE
             r12 = readSaturnS16(r13 + 4);
-            pThis->m14E = readSaturnS16(r13 + 2) + performModulo2(readSaturnU16(r13 + 2), randomNumber() & 0x7FFFFFFF);
+            pThis->m14E = readSaturnS16(r13 + 2) + performModulo2(readSaturnU16(r13 + 0), randomNumber() & 0x7FFFFFFF);
         }
         else
         {

@@ -711,8 +711,48 @@ void updateEdgeLookAt(sEdgeTask* r4)
     if ((currentResTask->m8_currentLCSType) && (npcData0.mFC & 1))
     {
         //605BEEA
-        //assert(0);
-        Unimplemented();
+        // LCS target locked: aim the head at the active LCS target.
+        const sVec3_FP* pTargetPos;
+        sVec3_FP targetDelta;
+        targetDelta.m4_Y = 0;
+        if (currentResTask->m8_currentLCSType == 1)
+        {
+            pTargetPos = getEnvLCSTargetPosition(currentResTask->mC_AsIndex);
+        }
+        else
+        {
+            pTargetPos = reinterpret_cast<const sVec3_FP*>(r4);
+            if (currentResTask->m8_currentLCSType == 2)
+            {
+                sCollisionBody* pBody = currentResTask->mC;
+                pTargetPos = &pBody->m8_position;
+                if (pBody->m2C_collisionSetupIndex == 3)
+                {
+                    targetDelta.m4_Y = pBody->m14_halfAABB[1] - fixedPoint(0x199);
+                }
+            }
+        }
+
+        targetDelta.m0_X = (*pTargetPos)[0] - r13_npcE8->m0_position[0];
+        targetDelta.m4_Y = targetDelta.m4_Y + ((*pTargetPos)[1] - r13_npcE8->m0_position[1]) - fixedPoint(0x1800);
+        targetDelta.m8_Z = (*pTargetPos)[2] - r13_npcE8->m0_position[2];
+
+        sVec2_FP lookAngles;
+        computeLookAt(targetDelta, lookAngles);
+
+        lookAngles[1] = fixedPoint(lookAngles[1] - r13_npcE8->mC_rotation[1]).normalized();
+        lookAngles[0] = fixedPoint(-(lookAngles[0] - r13_npcE8->mC_rotation[0])).normalized();
+        if (lookAngles[0] > 0x18E38E3)
+            lookAngles[0] = 0x18E38E3;
+        if (lookAngles[0] < -0x18E38E3)
+            lookAngles[0] = -0x18E38E3;
+        if (lookAngles[1] > 0x38E38E3)
+            lookAngles[1] = 0x38E38E3;
+        if (lookAngles[1] < -0x38E38E3)
+            lookAngles[1] = -0x38E38E3;
+
+        r4->m20_lookAtAngle[0] += MTH_Mul(lookAngles[0] - r4->m20_lookAtAngle[0], 0xB333);
+        r4->m20_lookAtAngle[1] += MTH_Mul(lookAngles[1] - r4->m20_lookAtAngle[1], 0xB333);
     }
     //605C018
     else if ((npcData0.mFC & 0x10) && !(npcData0.mFC & 0x8))
