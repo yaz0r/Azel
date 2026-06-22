@@ -12,6 +12,9 @@
 #include "validation/validation.h"
 #include "validation/validationHooks_town.h"
 
+#include <string>
+#include <unordered_map>
+
 extern s32 gCollisionPositionBias;
 
 constexpr u32 kResetCollisionFrameEntry = 0x060079f0;
@@ -27,6 +30,7 @@ constexpr u32 kGTownGrid = 0x060526dc; // m0_sizeX @ +0, m4_sizeY @ +4
 constexpr u32 kPCurrentMatrixPtr = 0x0604aea8; // pointer global -> the current sMatrix4x3
 
 constexpr u32 kTwnMainLogicTask = 0x06052658;
+constexpr u32 kIsDataLoadedEntry = 0x06032140;
 
 constexpr u32 kMainLogic_m14_EdgeTask = 0x14;
 constexpr u32 kMainLogic_m38_interpolatedCameraPosition = 0x38;
@@ -64,6 +68,28 @@ constexpr u32 kEdge_m84_m8_position = 0x84 + 0x8;
 constexpr u32 kEdge_m84_m44_contactFlags = 0x84 + 0x44;
 constexpr u32 kEdge_m84_m4C = 0x84 + 0x4C;
 constexpr u32 kEdge_m84_m58_collisionSolveTranslation = 0x84 + 0x58;
+
+// Per-town overlay breakpoint PCs; 0 means that hook stays un-armed for the town
+struct sTownValidationAddresses {
+    u32 cameraSetupReturn;            // scriptFunction_6057058_sub0Sub0 return/stop
+    u32 updateEdgePositionSub1Entry;
+    u32 updateEdgePositionSub1Return;
+    u32 updateEdgePositionEntry;
+    u32 updateEdgePositionReturn;
+    u32 cameraUpdateFollowEntry;
+    u32 updateEdgeLookAtEntry;
+    u32 updateEdgeLookAtReturn;
+};
+
+static const std::unordered_map<std::string, sTownValidationAddresses> kTownValidationAddresses = {
+    {"TWN_RUIN.PRG", {0x0605704c, 0x0605bcc4, 0x0605b8f6, 0x0605b8d4, 0x0605bc38, 0x06055db6, 0x0605beb8, 0x0605bc02}},
+    {"TWN_ZOAH.PRG", {0x06098a0c, 0,          0,          0,          0,          0x06097776, 0,          0}},
+};
+
+static const sTownValidationAddresses* gActiveTownValidationAddrs = nullptr;
+
+// Returns true on the frame the town changed
+static bool refreshTownValidationAddresses();
 
 static void validateTownEdgeAndCamera() {
     if (kTwnMainLogicTask == 0 || twnMainLogicTask == nullptr) {
@@ -120,11 +146,32 @@ static void validateTownEdgeAndCamera() {
     validate(edge + 0x17A, (s8)edgeTask->m17A);
 }
 
+DECLARE_HOOK(isDataLoaded, kIsDataLoadedEntry, s32, s32)
+
+s32 isDataLoaded_detour(s32 fileIndex) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town)) {
+        return isDataLoaded_intercept.callUndetoured(fileIndex);
+    }
+    g_validationConnection->executeUntilAddress(kIsDataLoadedEntry);
+    const u32 returnAddr = g_validationConnection->getRegister(azelval::REG_PR);
+    g_validationConnection->executeUntilAddress(returnAddr);
+    return (s32)g_validationConnection->getRegister(azelval::REG_R0 + 0);
+}
+
 DECLARE_HOOK_VOID(resetCollisionFrame, kResetCollisionFrameEntry, void)
 
 void resetCollisionFrame_detour() {
     if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
+        // The first resetCollisionFrame after a town change is the init-time one; drop the per-frame
+        // breakpoints so the drive can run the guest through the original's async load frames
+        const bool townChanged = refreshTownValidationAddresses();
+        if (townChanged) {
+            setFrameSyncBreakpointsEnabled(false);
+        }
         g_validationConnection->executeUntilAddress(kResetCollisionFrameEntry);
+        if (townChanged) {
+            setFrameSyncBreakpointsEnabled(true);
+        }
         validate(kGCollisionPositionBias, (s32)gCollisionPositionBias);
         validateTownEdgeAndCamera();
     }
@@ -374,16 +421,15 @@ void transformVerticesClipped_detour(const sProcessed3dModel &r4, const sMatrix4
 }
 
 
-constexpr u32 kCameraSetupReturn = 0x0605704c;
-
-DECLARE_HOOK_VOID(scriptFunction_6057058_sub0Sub0, kCameraSetupReturn, void)
+DECLARE_HOOK_VOID(scriptFunction_6057058_sub0Sub0, 0, void)
 
 void scriptFunction_6057058_sub0Sub0_detour() {
     scriptFunction_6057058_sub0Sub0_intercept.callUndetoured();
-    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town)) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town) ||
+        gActiveTownValidationAddrs == nullptr || gActiveTownValidationAddrs->cameraSetupReturn == 0) {
         return;
     }
-    g_validationConnection->executeUntilAddress(kCameraSetupReturn);
+    g_validationConnection->executeUntilAddress(gActiveTownValidationAddrs->cameraSetupReturn);
     const u32 mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
     if (mainLogic != 0) {
         validate(mainLogic + kMainLogic_m5C_rawCameraPosition, twnMainLogicTask->m5C_rawCameraPosition);
@@ -393,19 +439,16 @@ void scriptFunction_6057058_sub0Sub0_detour() {
     }
 }
 
-// TWN_RUIN updateEdgePositionSub1; the return is the instruction after the bsr's delay slot
-constexpr u32 kUpdateEdgePositionSub1Entry = 0x0605bcc4;
-constexpr u32 kUpdateEdgePositionSub1Return = 0x0605b8f6;
-
-DECLARE_HOOK(updateEdgePositionSub1, kUpdateEdgePositionSub1Entry, void, sEdgeTask *)
+DECLARE_HOOK(updateEdgePositionSub1, 0, void, sEdgeTask *)
 
 void updateEdgePositionSub1_detour(sEdgeTask *r4) {
-    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town)) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town) ||
+        gActiveTownValidationAddrs == nullptr || gActiveTownValidationAddrs->updateEdgePositionSub1Entry == 0) {
         updateEdgePositionSub1_intercept.callUndetoured(r4);
         return;
     }
 
-    g_validationConnection->executeUntilAddress(kUpdateEdgePositionSub1Entry);
+    g_validationConnection->executeUntilAddress(gActiveTownValidationAddrs->updateEdgePositionSub1Entry);
     const u32 edge = g_validationConnection->getRegister(azelval::REG_R0 + 4); // R4 = sEdgeTask*
 
     // Branch selector: m0 >= 2 leaves stepRotation/stepTranslation untouched
@@ -423,7 +466,7 @@ void updateEdgePositionSub1_detour(sEdgeTask *r4) {
 
     updateEdgePositionSub1_intercept.callUndetoured(r4);
 
-    g_validationConnection->executeUntilAddress(kUpdateEdgePositionSub1Return);
+    g_validationConnection->executeUntilAddress(gActiveTownValidationAddrs->updateEdgePositionSub1Return);
     validate(edge + kEdge_mE8 + kNpcE8_stepRotation, r4->mE8.m24_stepRotation);
     validate(edge + kEdge_mE8 + kNpcE8_stepTranslation, r4->mE8.m30_stepTranslation);
     validate(edge + kEdge_m14C_inputFlags, r4->m14C_inputFlags);
@@ -433,9 +476,11 @@ DECLARE_HOOK(updateEdgePosition, 0, void, sNPC *)
 
 void updateEdgePosition_detour(sNPC *r4) {
     const bool active = g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town) &&
+                        gActiveTownValidationAddrs != nullptr &&
+                        gActiveTownValidationAddrs->updateEdgePositionEntry != 0 &&
                         twnMainLogicTask != nullptr && twnMainLogicTask->m14_EdgeTask != nullptr;
     if (active) {
-        g_validationConnection->executeUntilAddress(0x0605b8d4);
+        g_validationConnection->executeUntilAddress(gActiveTownValidationAddrs->updateEdgePositionEntry);
         const u32 mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
         const u32 edge = mainLogic ? g_validationConnection->readU32(mainLogic + kMainLogic_m14_EdgeTask) : 0;
         if (edge != 0) {
@@ -450,7 +495,7 @@ void updateEdgePosition_detour(sNPC *r4) {
     updateEdgePosition_intercept.callUndetoured(r4);
     if (!active)
         return;
-    g_validationConnection->executeUntilAddress(0x0605bc38);
+    g_validationConnection->executeUntilAddress(gActiveTownValidationAddrs->updateEdgePositionReturn);
     const u32 mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
     const u32 edge = mainLogic ? g_validationConnection->readU32(mainLogic + kMainLogic_m14_EdgeTask) : 0;
     if (edge != 0) {
@@ -459,12 +504,12 @@ void updateEdgePosition_detour(sNPC *r4) {
     }
 }
 
-// Entry is before the collision-solve add into m5C
-DECLARE_HOOK(cameraUpdate_follow, 0x06055db6, void, sMainLogic *)
+DECLARE_HOOK(cameraUpdate_follow, 0, void, sMainLogic *)
 
 void cameraUpdate_follow_detour(sMainLogic *r4) {
-    if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
-        g_validationConnection->executeUntilAddress(0x06055db6);
+    if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town) &&
+        gActiveTownValidationAddrs != nullptr && gActiveTownValidationAddrs->cameraUpdateFollowEntry != 0) {
+        g_validationConnection->executeUntilAddress(gActiveTownValidationAddrs->cameraUpdateFollowEntry);
         const u32 mainLogic = g_validationConnection->readU32(kTwnMainLogicTask);
         if (mainLogic != 0) {
             validate(mainLogic + kMainLogic_m18_position, r4->m18_position);
@@ -482,20 +527,18 @@ void cameraUpdate_follow_detour(sMainLogic *r4) {
     cameraUpdate_follow_intercept.callUndetoured(r4);
 }
 
-// Returns into updateEdgePosition
-constexpr u32 kUpdateEdgeLookAtEntry = 0x0605beb8;
-constexpr u32 kUpdateEdgeLookAtReturn = 0x0605bc02;
 constexpr u32 kEdge_m20_lookAtAngle = 0x20; // sVec2_FP: [0] head pitch, [1] head yaw
 constexpr u32 kNpcE8_targetRotation = 0x48;
 
-DECLARE_HOOK(updateEdgeLookAt, kUpdateEdgeLookAtEntry, void, sEdgeTask *)
+DECLARE_HOOK(updateEdgeLookAt, 0, void, sEdgeTask *)
 
 void updateEdgeLookAt_detour(sEdgeTask *r4) {
-    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town)) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town) ||
+        gActiveTownValidationAddrs == nullptr || gActiveTownValidationAddrs->updateEdgeLookAtEntry == 0) {
         updateEdgeLookAt_intercept.callUndetoured(r4);
         return;
     }
-    g_validationConnection->executeUntilAddress(kUpdateEdgeLookAtEntry);
+    g_validationConnection->executeUntilAddress(gActiveTownValidationAddrs->updateEdgeLookAtEntry);
     const u32 edge = g_validationConnection->getRegister(azelval::REG_R0 + 4); // R4 = sEdgeTask*
     validate(edge + kEdge_mE8 + kNpcE8_position, r4->mE8.m0_position);
     validate(edge + kEdge_mE8 + kNpcE8_rotation, r4->mE8.mC_rotation);
@@ -506,12 +549,38 @@ void updateEdgeLookAt_detour(sEdgeTask *r4) {
 
     updateEdgeLookAt_intercept.callUndetoured(r4);
 
-    g_validationConnection->executeUntilAddress(kUpdateEdgeLookAtReturn);
+    g_validationConnection->executeUntilAddress(gActiveTownValidationAddrs->updateEdgeLookAtReturn);
     validate(edge + kEdge_m20_lookAtAngle + 0x0, r4->m20_lookAtAngle[0]);
     validate(edge + kEdge_m20_lookAtAngle + 0x4, r4->m20_lookAtAngle[1]);
 }
 
+// One-shot per town transition; the base hooks are armed once in enableTownHooks and never change
+static bool refreshTownValidationAddresses() {
+    static const sTownOverlay* sLastOverlay = nullptr;
+    if (gCurrentTownOverlay == sLastOverlay) {
+        return false;
+    }
+    sLastOverlay = gCurrentTownOverlay;
+
+    gActiveTownValidationAddrs = nullptr;
+    if (gCurrentTownOverlay != nullptr) {
+        auto it = kTownValidationAddresses.find(gCurrentTownOverlay->m_name);
+        if (it != kTownValidationAddresses.end()) {
+            gActiveTownValidationAddrs = &it->second;
+        }
+    }
+
+    const sTownValidationAddresses* a = gActiveTownValidationAddrs;
+    scriptFunction_6057058_sub0Sub0_intercept.setSaturnBreakpoint(a ? a->cameraSetupReturn : 0);
+    updateEdgePositionSub1_intercept.setSaturnBreakpoint(a ? a->updateEdgePositionSub1Entry : 0);
+    updateEdgePosition_intercept.setSaturnBreakpoint(a ? a->updateEdgePositionEntry : 0);
+    cameraUpdate_follow_intercept.setSaturnBreakpoint(a ? a->cameraUpdateFollowEntry : 0);
+    updateEdgeLookAt_intercept.setSaturnBreakpoint(a ? a->updateEdgeLookAtEntry : 0);
+    return true;
+}
+
 void enableTownHooks() {
+    isDataLoaded_intercept.enable();
     resetCollisionFrame_intercept.enable();
     updateEdgePosition_intercept.enable();
     cameraUpdate_follow_intercept.enable();

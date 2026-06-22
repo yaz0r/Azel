@@ -16,6 +16,9 @@ void validationShutdown();
 
 void enableValidationHooks();
 
+// Removed during a town load, so the guest can run the original's async multi-frame load
+void setFrameSyncBreakpointsEnabled(bool enabled);
+
 void validateAssert(bool result);
 
 enum validationContext {

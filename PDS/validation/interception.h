@@ -74,6 +74,22 @@ public:
         }
     }
 
+    // Removes the old breakpoint first, so stale overlay PCs can't fire after a town transition
+    void setSaturnBreakpoint(u32 addr) {
+        if (m_saturnBreakpoint == addr) {
+            return;
+        }
+        if (m_breakpointArmed && m_saturnBreakpoint != 0 && g_validationConnection != nullptr) {
+            g_validationConnection->removeBreakpoint(m_saturnBreakpoint);
+        }
+        m_saturnBreakpoint = addr;
+        m_breakpointArmed = false;
+        if (m_enabled && addr != 0 && g_validationConnection != nullptr) {
+            g_validationConnection->setBreakpoint(addr);
+            m_breakpointArmed = true;
+        }
+    }
+
     void disable() {
         if (!m_enabled) {
             return;

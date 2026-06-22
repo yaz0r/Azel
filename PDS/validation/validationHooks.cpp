@@ -37,6 +37,20 @@ static void pushInputToEmu() {
     g_validationConnection->writeU16(kInputDevice0 + 0x14, cur.m14);
 }
 
+// Fire once per main-loop frame; removed during a town load
+void setFrameSyncBreakpointsEnabled(bool enabled) {
+    if (g_validationConnection == nullptr) {
+        return;
+    }
+    if (enabled) {
+        g_validationConnection->setBreakpoint(kUpdateInputsAddr);
+        g_validationConnection->setBreakpoint(kUpdateInputsReturn);
+    } else {
+        g_validationConnection->removeBreakpoint(kUpdateInputsAddr);
+        g_validationConnection->removeBreakpoint(kUpdateInputsReturn);
+    }
+}
+
 // 06012e48
 DECLARE_HOOK_VOID(updateInputs, kUpdateInputsReturn, void)
 void updateInputs_detour() {
