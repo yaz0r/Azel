@@ -133,7 +133,7 @@ s32 sphereOverlapTest(sCollisionBody* r13, sCollisionBody* r14)
     {
         gWallCollisionOccurred = 0;
         fixedPoint dist2 = distanceSquareBetween2Points(r13->m8_position, *r14->m30_pPosition);
-        fixedPoint meshRadius = *(s32*)r14->m40;
+        fixedPoint meshRadius = r14->m40->m0_radius;
         fixedPoint threshold2 = FP_Pow2(meshRadius + r13->m4_sphereRadius);
         if (dist2 < threshold2)
         {
