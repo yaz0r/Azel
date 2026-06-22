@@ -1513,7 +1513,7 @@ bool azelSdl_EndFrame()
 
         //get clear color of back screen
         u32 backscreenColorAddress = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0x7FFFF) * 2;
-        u16 backScreenColor = *(u16*)getVdp2Vram(backscreenColorAddress);
+        u16 backScreenColor = getVdp2VramU16(backscreenColorAddress);
 
         float R = ((backScreenColor & 0x1F) << 3) >> 0;
         float G = ((backScreenColor & 0x03E0) << 6) >> 8;
