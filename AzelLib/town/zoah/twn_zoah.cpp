@@ -25,7 +25,7 @@
 
 void unloadFnt(); // TODO: fix
 
-static void zoahCamera_update(sCameraTask* pThis)
+void zoahCamera_update(sCameraTask* pThis)
 {
     // Step 1: Increment day/night timer (same as townCamera_update)
     if ((npcData0.mFC & 1) == 0)
@@ -142,7 +142,7 @@ int enableRBG0()
 {
     vdp2Controls.m4_pendingVdp2Regs->m20_BGON = vdp2Controls.m4_pendingVdp2Regs->m20_BGON | 0x10;
     vdp2Controls.m_isDirty = 1;
-    *(u16*)getVdp2Vram(0x25002) = 0x7756;
+    setVdp2VramU16(0x25002, 0x7756);
     vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x12801;
     return 0;
 }
@@ -171,7 +171,7 @@ int disableRBG0()
 {
     vdp2Controls.m4_pendingVdp2Regs->m20_BGON = vdp2Controls.m4_pendingVdp2Regs->m20_BGON & ~0x10;
     vdp2Controls.m_isDirty = 1;
-    *(u16*)getVdp2Vram(0x25002) = 0x8000;
+    setVdp2VramU16(0x25002, 0x8000);
     vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x12801;
     return 0;
 }
@@ -262,6 +262,8 @@ static s32 enableNpcLookAtDecay(s32 npcIndex);
 static s32 getDistanceToPlayerTier();
 int enableRBG0();
 static sTownObject* createZoahEntity(s_workAreaCopy* parent, sSaturnPtr arg);
+
+void initEdgeNPC(sNPC* pThis, sSaturnPtr arg); // from townEdge.cpp
 static sTownObject* createZoahNPC(npcFileDeleter* parent, sSaturnPtr arg);
 
 struct sZoahPaletteAnimTask : public s_workAreaTemplate<sZoahPaletteAnimTask>
@@ -662,54 +664,10 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
         return &taskDefinition;
     }
 
+    // 0609B7CC — same code as initEdgeNPC? TODO: recheck
     static void Init(sZoahNPC* pThis, sSaturnPtr arg)
     {
-        // Same logic as initEdgeNPC but with Zoah-specific behavior setup
-        u8 npcIndex = readSaturnU8(arg + 0x20);
-        npcData0.m70_npcPointerArray[npcIndex].workArea = pThis;
-        npcData0.m70_npcPointerArray[npcIndex].pNPC = pThis;
-        pThis->mC = 0;
-        pThis->m10_InitPtr = arg;
-        pThis->m1C = readSaturnS32(arg + 0x28);
-        pThis->m30_animationTable = readSaturnEA(arg + 0x2C);
-        pThis->mE8.m0_position = readSaturnVec3(arg + 0x8);
-        pThis->mE8.mC_rotation = readSaturnVec3(arg + 0x14);
-
-        // Zoah-specific behavior setup (equivalent of initEdgeNPCSub0)
-        u8 behaviorByte = readSaturnU8(arg + 0x21);
-        if (behaviorByte & 0x80) {
-            pThis->mF |= 0x80;
-        }
-        pThis->mD = behaviorByte & 0x3F;
-        pThis->m18 = readSaturnEA(arg + 0x30);
-
-        // m14_updateFunction is set based on mD type — stub for now
-        pThis->m14_updateFunction = nullptr;
-
-        if (pThis->mD == 4) {
-            pThis->m14E = 1;
-        }
-
-        pThis->m84.m30_pPosition = &pThis->mE8.m0_position;
-        pThis->m84.m34_pRotation = &pThis->mE8.mC_rotation;
-        pThis->m84.m38_pOwner = pThis;
-        pThis->m84.m3C_scriptEA = readSaturnEA(arg + 0x38);
-        if (u16 offset = readSaturnU16(arg + 0x36))
-        {
-            pThis->m84.m40 = pThis->m0_fileBundle->getCollisionModel(offset);
-        }
-        else
-        {
-            pThis->m84.m40 = 0;
-        }
-
-        setCollisionSetup(&pThis->m84, readSaturnU8(arg + 0x34));
-        setCollisionBounds(&pThis->m84, readSaturnVec3(arg + 0x3C), readSaturnVec3(arg + 0x48));
-
-        pThis->m178 = 0;
-        pThis->m179 = 0;
-        pThis->m17A = 0;
-        pThis->m17B = 0;
+        initEdgeNPC(pThis, arg);
     }
 
     static void Update(sZoahNPC* pThis)
@@ -1373,11 +1331,11 @@ void sZoahVdp2Plane::Init(sZoahVdp2Plane* pThis)
     initRotationCoefficientTables(5, getVdp2Vram(0x24000));
 
     // line color screen
-    *(u16*)getVdp2Vram(0x25000) = 0x700;
+    setVdp2VramU16(0x25000, 0x700);
     regs->mA8_LCTA = (regs->mA8_LCTA & 0xFFF80000) | 0x12800;
 
     // back screen
-    *(u16*)getVdp2Vram(0x25002) = 0x7756;
+    setVdp2VramU16(0x25002, 0x7756);
     regs->mAC_BKTA = (regs->mAC_BKTA & 0xFFF80000) | 0x12801;
 
     regs->mE0_SPCTL = (regs->mE0_SPCTL & 0xfff0) | 3;
