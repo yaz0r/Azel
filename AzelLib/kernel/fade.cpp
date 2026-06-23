@@ -107,4 +107,10 @@ void updateFadeInterrupt()
             fadeControl.m20_stopped = 1;
         }
     }
+
+    if ((g_fadeControls.m0_fade0.m20_stopped == 1) && (g_fadeControls.m24_fade1.m20_stopped == 1))
+    {
+        g_fadeControls.m_4D = 5;
+        g_fadeControls.m_4C = 0;
+    }
 }
