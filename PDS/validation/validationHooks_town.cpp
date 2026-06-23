@@ -1,17 +1,21 @@
 #include "PDS.h"
 
 #include "3dEngine.h"
+#include "kernel/fade.h"
 #include "kernel/worldGrid.h"
 #include "town/town.h"
 #include "town/townMainLogic.h"
 #include "town/townEdge.h"
 #include "town/collisionRegistry.h"
 #include "town/townLCS.h"
+#include "town/townScript.h"
 #include "processModel.h"
 
 #include "validation/validation.h"
 #include "validation/validationHooks_town.h"
+#include "town/zoah/twn_zoah.h"
 
+#include <cstdio>
 #include <string>
 #include <unordered_map>
 
@@ -26,11 +30,17 @@ constexpr u32 kGContactFaces = 0x0604a188;       // std::array<sContactFace,12>,
 constexpr u32 kGContactConstraints = 0x0604a170; // s32 m0/m4/m8/mC
 
 constexpr u32 kGCollisionPositionBias = 0x0604a180;
+constexpr u32 kNpcData0 = 0x0604a284;     // npcData0 (sNpcData) base (mFC literal 0x0604a380 - 0xFC)
+constexpr u32 kNpcData0_mFC = 0x0604a380; // npcData0 + 0xFC: bit0 gates the day/night timer increment
+constexpr u32 kFileInfoStruct_allocatedHead = 0x0604bad8; // fileInfoStruct.m2C_allocatedHead: 0 == load done
+constexpr u32 kGFadeControls = 0x0604b484;
 constexpr u32 kGTownGrid = 0x060526dc; // m0_sizeX @ +0, m4_sizeY @ +4
 constexpr u32 kPCurrentMatrixPtr = 0x0604aea8; // pointer global -> the current sMatrix4x3
 
 constexpr u32 kTwnMainLogicTask = 0x06052658;
 constexpr u32 kIsDataLoadedEntry = 0x06032140;
+constexpr u32 kAddBackgroundScriptEntry = 0x0600ce58; // R4 = script start EA, R5 = script type
+constexpr u32 kRunScriptEntry = 0x0600d008;           // R4 = &npcData0; returns the advanced script IP in R0
 
 constexpr u32 kMainLogic_m14_EdgeTask = 0x14;
 constexpr u32 kMainLogic_m38_interpolatedCameraPosition = 0x38;
@@ -79,17 +89,21 @@ struct sTownValidationAddresses {
     u32 cameraUpdateFollowEntry;
     u32 updateEdgeLookAtEntry;
     u32 updateEdgeLookAtReturn;
+    u32 zoahCameraUpdateEntry;        // zoahCamera_update entry (Zoah only)
 };
 
 static const std::unordered_map<std::string, sTownValidationAddresses> kTownValidationAddresses = {
-    {"TWN_RUIN.PRG", {0x0605704c, 0x0605bcc4, 0x0605b8f6, 0x0605b8d4, 0x0605bc38, 0x06055db6, 0x0605beb8, 0x0605bc02}},
-    {"TWN_ZOAH.PRG", {0x06098a0c, 0,          0,          0,          0,          0x06097776, 0,          0}},
+    {"TWN_RUIN.PRG", {0x0605704c, 0x0605bcc4, 0x0605b8f6, 0x0605b8d4, 0x0605bc38, 0x06055db6, 0x0605beb8, 0x0605bc02, 0}},
+    {"TWN_ZOAH.PRG", {0x06098a0c, 0,          0,          0,          0,          0x06097776, 0,          0,          0x0609e3fe}},
 };
 
 static const sTownValidationAddresses* gActiveTownValidationAddrs = nullptr;
+static u32 gSatCameraTaskAddr = 0;
 
 // Returns true on the frame the town changed
 static bool refreshTownValidationAddresses();
+
+static void syncFadeControlsFromGuest();
 
 static void validateTownEdgeAndCamera() {
     if (kTwnMainLogicTask == 0 || twnMainLogicTask == nullptr) {
@@ -101,6 +115,12 @@ static void validateTownEdgeAndCamera() {
     }
 
     validate(kGTownGrid + 0x28, gTownGrid.m28_cellSize);
+
+    // Script-run state; mFC bit0 gates the day/night timer
+    validate(kNpcData0 + 0x0, (s32)npcData0.m0_numBackgroundScripts);
+    validate(kNpcData0 + 0x100, (s32)npcData0.m100);
+    validate(kNpcData0 + 0x104, (s32)npcData0.m104_currentScript.m0_scriptPtr.m_offset);
+    validate(kNpcData0_mFC, (s32)npcData0.mFC);
 
     validate(mainLogic + kMainLogic_m18_position, twnMainLogicTask->m18_position);
     validate(mainLogic + kMainLogic_m68_cameraRotation, twnMainLogicTask->m68_cameraRotation);
@@ -144,6 +164,14 @@ static void validateTownEdgeAndCamera() {
     validate(edge + 0x14E, (s16)edgeTask->m14E);
     validate(edge + 0x179, (s8)edgeTask->m179);
     validate(edge + 0x17A, (s8)edgeTask->m17A);
+
+    // Zoah camera outputs
+    if (gSatCameraTaskAddr != 0 && cameraTaskPtr != nullptr) {
+        validate(gSatCameraTaskAddr + 0x4, (s32)cameraTaskPtr->m4_dayNightTimer);
+        for (int i = 0; i < 12; ++i)
+            validate(gSatCameraTaskAddr + 0x34 + i * 4, cameraTaskPtr->m34_interpolatedLightData[i]);
+        validate(gSatCameraTaskAddr + 0x10, (u32)cameraTaskPtr->m10.toU32());
+    }
 }
 
 DECLARE_HOOK(isDataLoaded, kIsDataLoadedEntry, s32, s32)
@@ -172,10 +200,81 @@ void resetCollisionFrame_detour() {
         if (townChanged) {
             setFrameSyncBreakpointsEnabled(true);
         }
+        syncFadeControlsFromGuest();
         validate(kGCollisionPositionBias, (s32)gCollisionPositionBias);
         validateTownEdgeAndCamera();
     }
     resetCollisionFrame_intercept.callUndetoured();
+}
+
+DECLARE_HOOK(addBackgroundScript, kAddBackgroundScriptEntry, void, sSaturnPtr, s32, p_workArea, const sVec3_S16_12_4 *)
+
+void addBackgroundScript_detour(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_12_4 *r7) {
+    if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
+        g_validationConnection->executeUntilAddress(kAddBackgroundScriptEntry);
+        validateRegister(azelval::REG_R0 + 4, (u32)r4.m_offset); // script start EA
+        validateRegister(azelval::REG_R0 + 5, (u32)r5);          // script type
+    }
+    addBackgroundScript_intercept.callUndetoured(r4, r5, r6, r7);
+}
+
+DECLARE_HOOK(runScript, kRunScriptEntry, sSaturnPtr, sNpcData *)
+
+sSaturnPtr runScript_detour(sNpcData *r4) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town)) {
+        return runScript_intercept.callUndetoured(r4);
+    }
+    g_validationConnection->executeUntilAddress(kRunScriptEntry);
+    const u32 entryIP = (u32)r4->m104_currentScript.m0_scriptPtr.m_offset;
+    validate(kNpcData0 + 0x104, (s32)entryIP);
+    const u32 returnAddr = g_validationConnection->getRegister(azelval::REG_PR);
+
+    const sSaturnPtr result = runScript_intercept.callUndetoured(r4);
+
+    g_validationConnection->executeUntilAddress(returnAddr);
+    const u32 emuExit = g_validationConnection->getRegister(azelval::REG_R0 + 0);
+    if ((u32)result.m_offset != emuExit) {
+        std::printf("[validation] runScript diverged: entryIP=%08X  PDS_exit=%08X  emu_exit=%08X\n", entryIP,
+                    (u32)result.m_offset, emuExit);
+    }
+    validateRegister(azelval::REG_R0 + 0, (u32)result.m_offset); // advanced IP
+    return result;
+}
+
+s32 updateWorldGridFromEdgeTask();
+s32 updateWorldGridFromEdgeTask_detour();
+interceptor<s32> updateWorldGridFromEdgeTask_intercept(updateWorldGridFromEdgeTask, updateWorldGridFromEdgeTask_detour, 0);
+
+s32 updateWorldGridFromEdgeTask_detour() {
+    const s32 pdsResult = updateWorldGridFromEdgeTask_intercept.callUndetoured();
+    if (g_validationConnection != nullptr && isValidationContextEnabled(VCTX_Town)) {
+        return (s32)(g_validationConnection->readU32(kFileInfoStruct_allocatedHead) == 0); // guest's load gate
+    }
+    return pdsResult;
+}
+
+static void syncFadeChannelFromGuest(u32 guestBase, sFadeControlsChannel &dst) {
+    MailboxConnection *c = g_validationConnection;
+    dst.m0_color.m0_X = fixedPoint((s32)c->readU32(guestBase + 0x00));
+    dst.m0_color.m4_Y = fixedPoint((s32)c->readU32(guestBase + 0x04));
+    dst.m0_color.m8_Z = fixedPoint((s32)c->readU32(guestBase + 0x08));
+    dst.mC_colorStep.m0_X = fixedPoint((s32)c->readU32(guestBase + 0x0C));
+    dst.mC_colorStep.m4_Y = fixedPoint((s32)c->readU32(guestBase + 0x10));
+    dst.mC_colorStep.m8_Z = fixedPoint((s32)c->readU32(guestBase + 0x14));
+    dst.m18_targetColor[0] = fp16(c->readS16(guestBase + 0x18));
+    dst.m18_targetColor[1] = fp16(c->readS16(guestBase + 0x1A));
+    dst.m18_targetColor[2] = fp16(c->readS16(guestBase + 0x1C));
+    dst.m1E_counter = c->readS16(guestBase + 0x1E);
+    dst.m20_stopped = c->readU8(guestBase + 0x20);
+}
+
+static void syncFadeControlsFromGuest() {
+    syncFadeChannelFromGuest(kGFadeControls + 0x00, g_fadeControls.m0_fade0);
+    syncFadeChannelFromGuest(kGFadeControls + 0x24, g_fadeControls.m24_fade1);
+    g_fadeControls.m_48 = g_validationConnection->readU16(kGFadeControls + 0x48);
+    g_fadeControls.m_4A = g_validationConnection->readU16(kGFadeControls + 0x4A);
+    g_fadeControls.m_4C = g_validationConnection->readU8(kGFadeControls + 0x4C);
+    g_fadeControls.m_4D = g_validationConnection->readU8(kGFadeControls + 0x4D);
 }
 
 DECLARE_HOOK(getCellAtWorldPos, kGetCellAtWorldPosEntry, sTownCellTask *, fixedPoint, fixedPoint)
@@ -554,6 +653,29 @@ void updateEdgeLookAt_detour(sEdgeTask *r4) {
     validate(edge + kEdge_m20_lookAtAngle + 0x4, r4->m20_lookAtAngle[1]);
 }
 
+DECLARE_HOOK(zoahCamera_update, 0, void, sCameraTask*)
+
+void zoahCamera_update_detour(sCameraTask* pThis) {
+    if (g_validationConnection == nullptr || !isValidationContextEnabled(VCTX_Town) ||
+        gActiveTownValidationAddrs == nullptr || gActiveTownValidationAddrs->zoahCameraUpdateEntry == 0) {
+        zoahCamera_update_intercept.callUndetoured(pThis);
+        return;
+    }
+    g_validationConnection->executeUntilAddress(gActiveTownValidationAddrs->zoahCameraUpdateEntry);
+    gSatCameraTaskAddr = g_validationConnection->getRegister(azelval::REG_R0 + 4);
+
+    // The script pointer first, so the underlying divergence asserts before the derived mFC bit
+    validate(kNpcData0 + 0x104, (s32)npcData0.m104_currentScript.m0_scriptPtr.m_offset);
+    validate(kNpcData0 + 0x0, (s32)npcData0.m0_numBackgroundScripts);
+    validate(kNpcData0 + 0x100, (s32)npcData0.m100);
+
+    // Gate for the timer increment: if ((npcData0.mFC & 1) == 0) ++m4_dayNightTimer
+    validate(kNpcData0_mFC, (s32)npcData0.mFC);
+    validate(gSatCameraTaskAddr + 0x4, (s32)pThis->m4_dayNightTimer);
+
+    zoahCamera_update_intercept.callUndetoured(pThis);
+}
+
 // One-shot per town transition; the base hooks are armed once in enableTownHooks and never change
 static bool refreshTownValidationAddresses() {
     static const sTownOverlay* sLastOverlay = nullptr;
@@ -561,6 +683,7 @@ static bool refreshTownValidationAddresses() {
         return false;
     }
     sLastOverlay = gCurrentTownOverlay;
+    gSatCameraTaskAddr = 0;
 
     gActiveTownValidationAddrs = nullptr;
     if (gCurrentTownOverlay != nullptr) {
@@ -576,12 +699,17 @@ static bool refreshTownValidationAddresses() {
     updateEdgePosition_intercept.setSaturnBreakpoint(a ? a->updateEdgePositionEntry : 0);
     cameraUpdate_follow_intercept.setSaturnBreakpoint(a ? a->cameraUpdateFollowEntry : 0);
     updateEdgeLookAt_intercept.setSaturnBreakpoint(a ? a->updateEdgeLookAtEntry : 0);
+    zoahCamera_update_intercept.setSaturnBreakpoint(a ? a->zoahCameraUpdateEntry : 0);
     return true;
 }
 
 void enableTownHooks() {
     isDataLoaded_intercept.enable();
     resetCollisionFrame_intercept.enable();
+    // These drives pass through other hooked natives; each has its own hook to advance the guest past it
+    addBackgroundScript_intercept.enable();
+    runScript_intercept.enable();
+    updateWorldGridFromEdgeTask_intercept.enable();
     updateEdgePosition_intercept.enable();
     cameraUpdate_follow_intercept.enable();
     getCellAtWorldPos_intercept.enable();
@@ -596,4 +724,5 @@ void enableTownHooks() {
     scriptFunction_6057058_sub0Sub0_intercept.enable();
     updateEdgePositionSub1_intercept.enable();
     updateEdgeLookAt_intercept.enable();
+    zoahCamera_update_intercept.enable();
 }
