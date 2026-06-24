@@ -277,10 +277,12 @@ void ComputeColorFromNormal(const sProcessed3dModel::sQuadExtra& extraData, bool
 
     if (dotProduct > 0)
     {
+        // Original stores lightColor reversed (setLightVector_M): m_color[0]=ch2..m_color[2]=ch0.
+        // RED accumulator uses ch0 (m_color[2]), BLUE uses ch2 (m_color[0]). Falloff stays natural order.
         s16 dotHi = (s16)((u32)dotProduct >> 16);
-        accum[0] += (s32)lightColor[0] * (s32)dotHi;
+        accum[0] += (s32)lightColor[2] * (s32)dotHi;
         accum[1] += (s32)lightColor[1] * (s32)dotHi;
-        accum[2] += (s32)lightColor[2] * (s32)dotHi;
+        accum[2] += (s32)lightColor[0] * (s32)dotHi;
     }
 
     for (int i = 0; i < 3; i++)
@@ -315,10 +317,11 @@ void ComputeColorFromNormalSmooth(const sProcessed3dModel::sQuadExtra& extraData
 
     if (dotProduct > 0)
     {
+        // Light color stored reversed (see ComputeColorFromNormal): RED uses ch0=m_color[2], BLUE uses ch2=m_color[0].
         float dotHi = (float)((u32)dotProduct >> 16);
-        accum[0] += (float)lightColor[0] * dotHi;
+        accum[0] += (float)lightColor[2] * dotHi;
         accum[1] += (float)lightColor[1] * dotHi;
-        accum[2] += (float)lightColor[2] * dotHi;
+        accum[2] += (float)lightColor[0] * dotHi;
     }
 
     for (int i = 0; i < 3; i++)
