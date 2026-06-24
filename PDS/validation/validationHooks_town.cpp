@@ -94,7 +94,7 @@ struct sTownValidationAddresses {
 
 static const std::unordered_map<std::string, sTownValidationAddresses> kTownValidationAddresses = {
     {"TWN_RUIN.PRG", {0x0605704c, 0x0605bcc4, 0x0605b8f6, 0x0605b8d4, 0x0605bc38, 0x06055db6, 0x0605beb8, 0x0605bc02, 0}},
-    {"TWN_ZOAH.PRG", {0x06098a0c, 0,          0,          0,          0,          0x06097776, 0,          0,          0x0609e3fe}},
+    {"TWN_ZOAH.PRG", {0x06098a0c, 0,          0,          0x0609d294, 0x0609d5f8, 0x06097776, 0,          0,          0x0609e3fe}},
 };
 
 static const sTownValidationAddresses* gActiveTownValidationAddrs = nullptr;
@@ -156,14 +156,26 @@ static void validateTownEdgeAndCamera() {
     validate(edge + kEdge_m84_m20_AABBCenter, twnMainLogicTask->m14_EdgeTask->m84.m20_AABBCenter);
     validate(edge + kEdge_m84_m8_position, twnMainLogicTask->m14_EdgeTask->m84.m8_position);
 
+    // Ground contact; Zoah's per-frame edge hooks are un-armed, so m44 is only checked here
+    validate(edge + kEdge_m84_m44_contactFlags, (s32)twnMainLogicTask->m14_EdgeTask->m84.m44);
+    validate(edge + kEdge_m84_m4C, twnMainLogicTask->m14_EdgeTask->m84.m4C);
+    validate(edge + kEdge_m84_m58_collisionSolveTranslation, twnMainLogicTask->m14_EdgeTask->m84.m58_collisionSolveTranslation);
+
     // Edge animation state; m14E is the idle re-roll countdown
     const sEdgeTask* edgeTask = twnMainLogicTask->m14_EdgeTask;
+
+    // Anim identity before playback position; the model sits at edge+0x34
+    validate(edge + 0x2C, edgeTask->m2C_currentAnimation);
+    validate(edge + 0x34 + 0x10, (u16)edgeTask->m34_3dModel.m10_currentAnimationFrame);
+    validate(edge + 0x34 + 0x16, (u16)edgeTask->m34_3dModel.m16_previousAnimationFrame);
+    validate(edge + 0x178, (s8)edgeTask->m178); // write index
+    for (int i = 0; i < 16; i++) // queued {animId, mode} pairs
+        validate(edge + 0x158 + i, (s8)edgeTask->m158_animQueue[i]);
+    validate(edge + 0x179, (s8)edgeTask->m179); // read index
+    validate(edge + 0x17A, (s8)edgeTask->m17A); // pending count
     validate(edge + 0xE, (s8)edgeTask->mE_controlState);
     validate(edge + 0x28, edgeTask->m28_animationLeftOver);
-    validate(edge + 0x2C, edgeTask->m2C_currentAnimation);
     validate(edge + 0x14E, (s16)edgeTask->m14E);
-    validate(edge + 0x179, (s8)edgeTask->m179);
-    validate(edge + 0x17A, (s8)edgeTask->m17A);
 
     // Zoah camera outputs
     if (gSatCameraTaskAddr != 0 && cameraTaskPtr != nullptr) {
@@ -589,6 +601,10 @@ void updateEdgePosition_detour(sNPC *r4) {
             validate(edge + kEdge_m84_m44_contactFlags, (s32)body.m44);
             validate(edge + kEdge_m84_m4C, body.m4C);
             validate(edge + kEdge_m84_m58_collisionSolveTranslation, body.m58_collisionSolveTranslation);
+            // m30_stepTranslation is pre-gravity here
+            validate(edge + 0x2C, twnMainLogicTask->m14_EdgeTask->m2C_currentAnimation);
+            validate(edge + kEdge_mE8 + kNpcE8_stepTranslation, twnMainLogicTask->m14_EdgeTask->mE8.m30_stepTranslation);
+            validate(edge + 0xE, (s8)twnMainLogicTask->m14_EdgeTask->mE_controlState);
         }
     }
     updateEdgePosition_intercept.callUndetoured(r4);
@@ -600,6 +616,10 @@ void updateEdgePosition_detour(sNPC *r4) {
     if (edge != 0) {
         validate(edge + kEdge_mE8 + kNpcE8_stepTranslationInWorld, twnMainLogicTask->m14_EdgeTask->mE8.m18_stepTranslationInWorld);
         validate(edge + kEdge_mE8 + kNpcE8_position, twnMainLogicTask->m14_EdgeTask->mE8.m0_position);
+        // m30_stepTranslation is post-gravity here
+        validate(edge + 0x2C, twnMainLogicTask->m14_EdgeTask->m2C_currentAnimation);
+        validate(edge + kEdge_mE8 + kNpcE8_stepTranslation, twnMainLogicTask->m14_EdgeTask->mE8.m30_stepTranslation);
+        validate(edge + 0xE, (s8)twnMainLogicTask->m14_EdgeTask->mE_controlState);
     }
 }
 
