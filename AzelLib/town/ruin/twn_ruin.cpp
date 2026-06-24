@@ -888,6 +888,7 @@ void updateEdgePosition(sNPC* r4)
 
                 // play falling animation
                 playAnimationGeneric(&r12->m34_3dModel, buffer, 5);
+                r12->mE_controlState = 2;
             }
         }
     }
