@@ -3,10 +3,6 @@
 
 #include <cstring>
 
-#ifdef _WIN32
-#include "validation/validation.h"
-#endif
-
 #if (defined(__APPLE__) && (TARGET_OS_OSX))
 #include <unistd.h> // for chdir
 #include <libgen.h> // for dirname
@@ -41,24 +37,6 @@ int main(int argc, char* argv[])
     azelSdl_Init();
 
     azelInit();
-
-#ifdef _WIN32
-    // Validation is opt-in: only enabled when --validation is passed on the command line.
-    {
-        bool validationRequested = false;
-        for (int i = 1; i < argc; i++) {
-            if (strcmp(argv[i], "--validation") == 0)
-                validationRequested = true;
-        }
-        enableValidation = enableValidation && validationRequested;
-    }
-    // Must run before resetEngine() so the validation hooks are armed when resetEngine() calls them.
-    if (enableValidation) {
-        extern float gVolume;
-        gVolume = 0.f;
-        validationInit();
-    }
-#endif
 
     resetEngine();
     endOfFrame();
