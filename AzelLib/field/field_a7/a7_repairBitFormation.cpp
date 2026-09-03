@@ -17,7 +17,6 @@ struct sRepairBit : public s_workAreaTemplateWithArg<sRepairBit, void*>
     // ... (remaining fields defined in a7_repairBitChild.cpp)
 };
 
-extern s32 playBattleSoundEffect(s32 effectIndex);
 void skyTransporter_noop(s32* pScratch);
 
 static inline s32 a7_performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }

@@ -3,8 +3,6 @@
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
 #include "audio/soundDriver.h"
 
-s32 playBattleSoundEffect(s32 effectIndex); // TODO: cleanup
-
 // 0602c2d4
 static void startSoundWithVolume(s32 soundIndex, s32 volume)
 {

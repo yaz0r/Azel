@@ -719,8 +719,6 @@ static void BTL_X0_formation1_Delete(sBTL_X0_FormationTask* pThis)
 {
 }
 
-s32 playBattleSoundEffect(s32 effectIndex);
-
 // 06060904
 static void BTL_X0_updatePartFlags(sBTL_X0_FormationTask* pThis);
 

@@ -19,8 +19,6 @@
 #include "kernel/vdp1AnimatedQuad.h"
 #include <vector>
 
-s32 playBattleSoundEffect(s32 effectIndex);
-
 // 06054474
 void createFieldSpecificDataTask_A7(p_workArea parent)
 {

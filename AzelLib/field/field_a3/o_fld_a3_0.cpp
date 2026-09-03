@@ -9,8 +9,6 @@
 #include "field/exitField.h"
 #include "field/fieldItemBox.h"
 
-s32 playBattleSoundEffect(s32 effectIndex); // TODO: move to header
-
 void pushDragonInvisibleWall(s_dragonTaskWorkArea* pDragon, sVec3_FP& dragonPosition)
 {
     fixedPoint pushAmount;

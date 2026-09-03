@@ -405,6 +405,13 @@ void playPCMFunction(sPlayPCM* pThis)
     }
 }
 
+s32 playBattleSoundEffect(s32 effectIndex) // TODO not battle only
+{
+    enqueuePlaySoundEffect(effectIndex, 2, 0, 0);
+    return 0;
+}
+
+
 void playPCM(p_workArea parent, u32 id)
 {
     sPlayPCM* pNewTask = createSubTaskFromFunction<sPlayPCM>(parent, &playPCMFunction);

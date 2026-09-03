@@ -7,6 +7,7 @@ void updateSound();
 void loadSoundBanks(s8 unk0, s8 unk1);
 void playPCM(p_workArea, u32);
 void enqueuePlaySoundEffect(s32 soundIndex, s32 bankIndex, s32 volume, s32 unk);
+s32 playBattleSoundEffect(s32 effectIndex);
 
 s32 fadeOutAllSequences();
 s32 findSound(s32 soundIndex);

@@ -10,9 +10,8 @@
 #include "trigo.h"
 #include "field/fieldSceneManager.h"
 #include "kernel/vdp1AnimatedQuad.h"
+#include "audio/soundDriver.h"
 #include <vector>
-
-extern s32 playBattleSoundEffect(s32 effectIndex);
 
 // Lazy-parsed VDP1 quad template used by cellObj1's trail spawn helper.
 static const std::vector<sVdp1Quad>* skyTransporterSegment_getTrailQuadList()

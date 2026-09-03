@@ -15,7 +15,6 @@
 #include "field/fieldCutsceneTask2.h"
 #include "menu_dragonMorph.h"
 
-s32 playBattleSoundEffect(s32 effectIndex);
 // 0606CFF0 — checks worm segment visibility in grid + debug worm editor controls
 static bool auto_0x0606CFF0() { Unimplemented(); return true; }
 

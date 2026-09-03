@@ -8,9 +8,9 @@
 #include "field/fieldDebrisScatter.h"
 #include "kernel/vdp1AnimatedQuad.h"
 #include "audio/systemSounds.h"
+#include "audio/soundDriver.h"
 
 #include "particlePool.h"
-s32 playBattleSoundEffect(s32 effectIndex); // TODO: move to header
 
 // 06059584 — random ambient sound at crashed ship position
 struct sCrashedShipAmbientSound : public s_workAreaTemplate<sCrashedShipAmbientSound>

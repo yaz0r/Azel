@@ -10,6 +10,7 @@
 #include "battle/battleDebug.h"
 #include "battle/battleFormationBase.h"
 #include "battle/itemVisualEffect.h"
+#include "audio/soundDriver.h"
 
 void battleEngine_enableAttackCamera();
 #include "battle/battleDragon.h"
@@ -20,7 +21,6 @@ void battleEngine_enableAttackCamera();
 void battleEngine_UpdateSub1Sub0(s32 param_1);
 void battleEngine_displayAttackName(int param1, int param2, int param3);
 void battleEngine_PlayAttackCamera(int param1);
-s32 playBattleSoundEffect(s32 effectIndex);
 
 // 06055868
 static void BTL_A7_2_formationStartBattleIntro(sBTL_A7_2_FormationTask* pThis)

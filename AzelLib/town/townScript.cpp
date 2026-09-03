@@ -16,8 +16,6 @@
 
 #include <map>
 
-s32 playBattleSoundEffect(s32 effectIndex); // TODO: cleanup
-
 sScriptTask* currentResTask = nullptr;
 
 s32 canCurrentResActivate()

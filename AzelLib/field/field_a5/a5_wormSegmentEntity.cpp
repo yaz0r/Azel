@@ -18,8 +18,6 @@ extern void dispatchTutorialMultiChoiceSub2();
 
 static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
 
-s32 playBattleSoundEffect(s32 effectIndex);
-
 // Worm segment entity (Saturn size 0xAC). Spawned per Saturn data record
 // describing position/rotation and optional loaded 3D model. Handles the
 // state machine that reveals/activates a worm segment and triggers

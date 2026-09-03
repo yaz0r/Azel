@@ -19,8 +19,6 @@
 
 #include "field/fieldVisibilityGrid.h"
 
-s32 playBattleSoundEffect(s32 effectIndex);
-
 // 06070ca4 — empty function (Ghidra: skyTransporter_noop). Faithfully called.
 void skyTransporter_noop(s32* /*pScratch*/)
 {

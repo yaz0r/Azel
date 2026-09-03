@@ -12,7 +12,6 @@
 #include "trigo.h"
 
 extern s32 battleIndex; // TODO: cleanup
-s32 playBattleSoundEffect(s32 effectIndex); // TODO: cleanup
 
 void fieldA3_2_exit0(p_workArea, sLCSTarget*)
 {
