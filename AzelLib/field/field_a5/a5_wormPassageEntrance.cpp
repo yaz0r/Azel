@@ -294,7 +294,7 @@ static void a5WormPassageEntrance_Update(sA5WormPassageEntrance* pThis)
         break;
     case 2: // autopilot in tunnel
         {
-            sFieldCameraStatus* pActiveSlot = getActiveCameraSlot();
+            sFieldCameraStatus* pActiveSlot = getFieldCameraStatus();
             pActiveSlot->m0_position.m0_X = fixedPoint(readSaturnS32(data + 0x2C));
             pActiveSlot->m0_position.m4_Y = fixedPoint(readSaturnS32(data + 0x30));
             pActiveSlot->m0_position.m8_Z = fixedPoint(readSaturnS32(data + 0x34));

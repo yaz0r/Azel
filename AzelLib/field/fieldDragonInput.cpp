@@ -919,7 +919,7 @@ void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
         setDragonAnimationFromSpeed(pDragon);
 
         // Set camera position from script's secondary position
-        sFieldCameraStatus* pCamSlot = getActiveCameraSlot();
+        sFieldCameraStatus* pCamSlot = getFieldCameraStatus();
         pCamSlot->m0_position = pScript->m24_pos2;
         pCamSlot->m88 = (s32)pDragon->m1E8_cameraScriptDelay;
 
@@ -931,7 +931,7 @@ void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
         pDragon->m1E8_cameraScriptDelay--;
         if (pDragon->m1E8_cameraScriptDelay < 1)
         {
-            sFieldCameraStatus* pCamSlot = getActiveCameraSlot();
+            sFieldCameraStatus* pCamSlot = getFieldCameraStatus();
             pCamSlot->m88 = 0x1E;
             pDragon->m1E8_cameraScriptDelay = 0x1E;
 

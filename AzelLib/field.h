@@ -1,5 +1,7 @@
 #pragma once
 
+#include "field/fieldCamera.h"
+
 #include "kernel/moduleManager.h"
 
 struct s_fieldCameraConfig
@@ -12,7 +14,6 @@ struct s_fieldCameraConfig
     fixedPoint m54;
     // size: 0x58
 };
-s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA);
 
 struct sFieldCameraZone
 {
@@ -553,7 +554,6 @@ static s_fieldTaskWorkArea* getFieldTaskPtr()
     return fieldTaskPtr;
 }
 
-void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5);
 void buildDragonRotationMatrix(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
 void updateDragonCollision(s_dragonTaskWorkArea* r4);
 void updateCameraScriptSub0Sub2(s_dragonTaskWorkArea* r4);
@@ -572,17 +572,7 @@ int findMandatoryFileOnDisc(const char* fileName);
 u32 getFileSizeFromFileId(const char* fileName);
 
 // Shared camera follow mode functions (duplicated in every field overlay)
-void cameraFollowMode_scriptTarget(sFieldCameraStatus* r4);
-void cameraFollowMode_idle(sFieldCameraStatus* r4);
 
-// Shared camera follow mode dispatch (duplicated in every field overlay)
-s32 setCameraFollowFunctions(u32 slotIndex, void(*updateFunc)(sFieldCameraStatus*), void(*drawFunc)(sFieldCameraStatus*));
-void setCameraFollowMode_blend(u32 followMode);
-s8 isFieldCameraSlotActive(s32 slotIndex);
-sFieldCameraStatus* getActiveCameraSlot();
-void setCameraFollowMode_cut(s32 followMode);
-void deactivateCameraSlot(u32 slotIndex);
-u32 selectCameraSlot(u32 slotIndex);
 
 // Shared field script/cutscene queries
 bool isNoCutsceneActive();

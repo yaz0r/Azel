@@ -296,6 +296,8 @@ struct sInterpolator_FP
 
 fixedPoint dot3_FP(const sVec3_FP* r4, const sVec3_FP* r5);
 fixedPoint MTH_Product3d_FP(const sVec3_FP& r4, const sVec3_FP& r5);
+fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
+fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targetValue, fixedPoint stack0, fixedPoint r11, s32 r13);
 
 u8* getSaturnPtr(sSaturnPtr ptr);
 s8 readSaturnS8(sSaturnPtr ptr);

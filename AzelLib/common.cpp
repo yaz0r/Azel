@@ -493,3 +493,159 @@ void InspectTask(const char* className, void* pBase, const std::vector<s_memberD
     ImGui::End();
 }
 #endif
+
+// 060606a4
+fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14)
+{
+    fixedPoint r13 = r12 - r11;
+    fixedPoint r4 = MTH_Mul(stack0, r13);
+
+    if (r13 < 0)
+    {
+        fixedPoint r5 = -r14;
+        fixedPoint r6 = -r10;
+        fixedPoint r3;
+        if (r4 < r5)
+        {
+            r3 = r4;
+        }
+        else
+        {
+            r3 = r5;
+        }
+
+        if (r6 >= r3)
+        {
+            r4 = r6;
+        }
+        else if (r4 >= r5)
+        {
+            r4 = r5;
+        }
+
+        r13 -= r4;
+
+        if (r13 > 0)
+        {
+            return r12;
+        }
+        else
+        {
+            return r11 + r4;
+        }
+    }
+    else
+    {
+        //60606F4
+        fixedPoint r2;
+        if (r4 >= r14)
+        {
+            r2 = r4;
+        }
+        else
+        {
+            r2 = r14;
+        }
+
+        if (r10 < r2)
+        {
+            r4 = r10;
+        }
+        else if (r4 < r14)
+        {
+            r4 = r14;
+        }
+
+        r13 -= r4;
+        if (r13 > 0)
+        {
+            return r12;
+        }
+        else
+        {
+            return r11 + r4;
+        }
+    }
+}
+
+// 0606072a
+fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targetValue, fixedPoint stack0, fixedPoint r11, s32 r13)
+{
+    fixedPoint r14 = r12_targetValue - r10_currentValue;
+    r14 = r14.normalized();
+    fixedPoint r4 = MTH_Mul(stack0, r14);
+
+    if (r14 < 0)
+    {
+        fixedPoint r5 = -r13;
+        fixedPoint r6 = -r11;
+        fixedPoint r3;
+        if (r4 < r5)
+        {
+            r3 = r4;
+        }
+        else
+        {
+            r3 = r5;
+        }
+
+        if (r6 >= r3)
+        {
+            r4 = r6;
+        }
+        else if (r4 >= r5)
+        {
+            r4 = r5;
+        }
+
+        r5 = r14 - r4;
+        r3 = r5.normalized();
+
+        if (r3 > 0)
+        {
+            return r12_targetValue;
+        }
+        else
+        {
+            return r10_currentValue + r4;
+        }
+    }
+    else
+    {
+        //60607A0
+        fixedPoint r5;
+        if (r4 >= r13)
+        {
+            r5 = r4;
+        }
+        else
+        {
+            r5 = r13;
+        }
+
+        if (r11 < r5)
+        {
+            r5 = r11;
+        }
+        else if (r4 >= r13)
+        {
+            r5 = r4;
+        }
+        else
+        {
+            r5 = r13;
+        }
+
+        r4 = r14 - r5;
+        fixedPoint r3 = r4.normalized();
+
+        if (r3 >= 0)
+        {
+            return r10_currentValue + r5;
+        }
+        else
+        {
+            return r12_targetValue;
+        }
+    }
+}

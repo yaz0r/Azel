@@ -132,7 +132,7 @@ p_workArea overlayStart_FLD_B2(p_workArea workArea, u32 arg)
     // Set field globals (shared infrastructure from A3)
     gFieldCameraConfigEA = { 0x6092EF0, gFLD_A3 };
     gFieldDragonAnimTableEA = { 0x06094134, gFLD_A3 };
-    gFieldCameraDrawFunc = &fieldOverlaySubTaskInitSub2;
+    gFieldCameraDrawFunc = &cameraFollowMode_default;
     gCurrentFieldOverlay = gFLD_A3;
 
     // 0606cfe4 — check if coming from field 6, subfield 0, entry 0, previous -1

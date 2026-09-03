@@ -343,7 +343,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
 static void FUN_FLD_C8_0607d600(sVec3_FP* pPos, sVec3_FP* pAngle)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    getActiveCameraSlot();
+    getFieldCameraStatus();
     if (pPos)
         pDragon->m8_pos = *pPos;
     if (pAngle)

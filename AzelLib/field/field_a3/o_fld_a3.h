@@ -52,19 +52,13 @@ bool initField(p_workArea workArea, const s_MCB_CGB* fieldFileList, u32 arg);
 extern sSaturnPtr gFieldCameraConfigEA;
 extern sSaturnPtr gFieldDragonAnimTableEA;
 extern void(*gFieldCameraDrawFunc)(sFieldCameraStatus*);
-void fieldOverlaySubTaskInitSub2(sFieldCameraStatus* r4);
-void fieldOverlaySubTaskInitSub2_mode2(sFieldCameraStatus* r4);
 sSaturnPtr* ReadScripts(sSaturnPtr EA);
 s32 startFieldScript(s32 r4, s32 r5);
 s32 startFieldScriptSkippable(s32 r4, s32 r5);
 
-sFieldCameraStatus* getFieldCameraStatus();
 
-fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targetValue, fixedPoint stack0, fixedPoint r11, s32 r13);
 
 void initDragonSpeed(u32 arg);
-void initCameraSlotWithFunctions(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*));
-u32 selectCameraSlot(u32 r4);
 p_workArea createLCSShootTask(s_LCSTask* r4, sLCSTarget* r5);
 void startScript_cantDestroy();
 void LCSUpdateCursorFromInputSub0(s32 r4, sVec3_FP* r5);
