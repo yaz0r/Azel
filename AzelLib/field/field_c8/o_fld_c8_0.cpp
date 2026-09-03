@@ -2,6 +2,7 @@
 #include "o_fld_c8.h"
 #include "field/field_a3/o_fld_a3.h"
 #include "field/fieldItemBox.h"
+#include "field/fieldCutsceneTask.h"
 #include "field/fieldRadar.h"
 #include "field/fieldVisibilityGrid.h"
 #include "kernel/fileBundle.h"
@@ -230,97 +231,6 @@ struct s_C8_effectManagerTask : public s_workAreaTemplateWithArg<s_C8_effectMana
     }
 };
 
-
-
-// 0606a4d4 — clear camera status fields
-static void resetCameraStatus(sFieldCameraStatus* pStatus)
-{
-    pStatus->m5C_rotationSpring = {};
-    pStatus->m68_rotationImpulse = {};
-    pStatus->m0_position = {};
-    pStatus->mC_rotation = {};
-    pStatus->m28 = fixedPoint(0);
-    pStatus->m18 = fixedPoint(0);
-    pStatus->m2C = 0;
-    pStatus->m1C = fixedPoint(0);
-    pStatus->m30 = 0;
-    pStatus->m24_distanceToDestination = 0xF000;
-    pStatus->m40 = fixedPoint(0xF000);
-    pStatus->m20 = fixedPoint(0);
-    pStatus->m34 = fixedPoint(0);
-    pStatus->m80_frameCounter = 0;
-    pStatus->m84 = 0;
-    pStatus->m8D_followState = 0;
-    pStatus->m8E_followSubState = 0;
-}
-
-// 0606a512
-static void initCameraSlot(s16 slotIndex, void(*param2)(sFieldCameraStatus*), void(*param3)(sFieldCameraStatus*))
-{
-    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    sFieldCameraStatus* pStatus = &pOverlay->m3E4_cameraSlots[slotIndex];
-    resetCameraStatus(pStatus);
-    pStatus->m74_updateFunc = param2;
-    pStatus->m78_drawFunc = param3;
-    pStatus->m8C_isActive = 1;
-}
-
-// 0606a558
-static void deactivateCameraSlot(s16 slotIndex)
-{
-    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    sFieldCameraStatus* pStatus = &pOverlay->m3E4_cameraSlots[slotIndex];
-    pStatus->m74_updateFunc = nullptr;
-    pStatus->m78_drawFunc = nullptr;
-    pStatus->m8C_isActive = 0;
-}
-
-// 0606a3ec
-static s32 selectCameraSlot(s16 slotIndex)
-{
-    return 0;
-}
-
-
-
-
-// 0606b532 — restore camera from cutscene
-static void restoreCameraFromCutscene()
-{
-    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    pOverlay->m378_cutsceneFrameCounter = 0;
-    pOverlay->m37C_isCutsceneCameraActive = 0;
-    activateDragonFlight();
-    deactivateCameraSlot(1);
-    // Copy only position/rotation/params from slot 1 to slot 0 (first 40 bytes, NOT the whole struct)
-    sFieldCameraStatus& dst = pOverlay->m3E4_cameraSlots[0];
-    sFieldCameraStatus& src = pOverlay->m3E4_cameraSlots[1];
-    dst.m0_position = src.m0_position;
-    dst.mC_rotation = src.mC_rotation;
-    dst.m18 = src.m18;
-    dst.m1C = src.m1C;
-    dst.m20 = src.m20;
-    dst.m24_distanceToDestination = src.m24_distanceToDestination;
-    selectCameraSlot(0);
-    activateCameraFollowMode((s32)pOverlay->m50E_followModeIndex);
-}
-
-// 0606b4a0 — setup camera parameters on overlay subtask
-static void setupCutsceneCamera(sVec3_FP* param1, sVec3_FP* param2)
-{
-    sFieldCameraManager* pOverlay = getFieldTaskPtr()->m8_pSubFieldData->m334;
-    pOverlay->m370_cutsceneLookAtPtr = param1;
-    pOverlay->m374_cutsceneCameraPos = param2;
-    pOverlay->m378_cutsceneFrameCounter = 0;
-    pOverlay->m37C_isCutsceneCameraActive = 1;
-    initDragonMovementMode();
-    initCameraSlot(1, nullptr, nullptr);
-    selectCameraSlot(1);
-    sFieldCameraStatus* pCamStatus = getActiveCameraSlot();
-    updateCutsceneCameraInterpolation(pOverlay, pCamStatus);
-}
-
-
 // 0607a118
 static void FUN_FLD_C8_0607a118(s32 param1, s32 param2, s16 param3)
 {
@@ -368,7 +278,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
         FUN_FLD_C8_0605c87c(pThis, (u8*)pArg);
         // 0606b4a0
         s_fieldSpecificData_C8* pFD = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
-        setupCutsceneCamera(&pFD->m64_cameraTarget, &pFD->m4C_dragonPos);
+        startCutsceneCameraTracking(&pFD->m64_cameraTarget, &pFD->m4C_dragonPos);
         pThis->m1A_state = 0;
     }
 
@@ -407,7 +317,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
         {
             if ((pThis->m14_flags & 1) == 0)
             {
-                restoreCameraFromCutscene();
+                endCutsceneCameraWithRestore();
                 if (pThis)
                     pThis->getTask()->m14_flags |= 1;
             }

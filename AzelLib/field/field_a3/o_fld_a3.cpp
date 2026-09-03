@@ -42,8 +42,8 @@
 
 sMatrix4x3* fieldCameraTask1DrawSub1();
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
-void activateCameraFollowMode(u32 r4);
-void fieldOverlaySubTaskInitSub5(u32 r4);
+void setCameraFollowMode_blend(u32 r4);
+void deactivateCameraSlot(u32 r4);
 s32 checkPositionVisibility(const sVec3_FP* r4, s32 r5);
 
 #ifdef PDS_TOOL
@@ -3858,20 +3858,20 @@ void fieldOverlaySubTaskInitSub2(sFieldCameraStatus* r14)
     if (pDragonTask == NULL)
         return;
 
-    switch (r14->m8D_followState)
+    switch (r14->m8D_reinitMode)
     {
     case 0:
         r14->m8F_followType = 1;
         r14->m90_followMode = 1;
         r14->m7C = 2;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
         fieldOverlaySubTaskInitSub2Sub2(r14, pDragonTask);
         return;
     case 1:
         r14->m8F_followType = 1;
         r14->m90_followMode = 1;
         r14->m7C = 2;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
     case 2:
         fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
         return;
@@ -3887,20 +3887,20 @@ void fieldOverlaySubTaskInitSub2_mode2(sFieldCameraStatus* r14)
     if (pDragonTask == NULL)
         return;
 
-    switch (r14->m8D_followState)
+    switch (r14->m8D_reinitMode)
     {
     case 0:
         r14->m8F_followType = 2;
         r14->m90_followMode = 2;
         r14->m7C = 3;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
         fieldOverlaySubTaskInitSub2Sub2(r14, pDragonTask);
         return;
     case 1:
         r14->m8F_followType = 2;
         r14->m90_followMode = 2;
         r14->m7C = 3;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
     case 2:
         fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
         return;
@@ -3909,6 +3909,7 @@ void fieldOverlaySubTaskInitSub2_mode2(sFieldCameraStatus* r14)
     }
 }
 
+// 060617e0
 void resetCameraStatus(sFieldCameraStatus* r4)
 {
     r4->m74_updateFunc = 0;
@@ -3928,12 +3929,12 @@ void resetCameraStatus(sFieldCameraStatus* r4)
     r4->m40 = 0xF000;
     r4->m80_frameCounter = 0;
     r4->m84 = 0;
-    r4->m88 = 0;
-
-    r4->m89 = 0;
-    r4->m8A = 0;
+    r4->m8C_isActive = 0;
+    r4->m8D_reinitMode = 0;
+    r4->m8E_followSubState = 0;
 }
 
+// 0606181e
 void initCameraSlotWithFunctions(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*))
 {
     sFieldCameraStatus* pFieldCameraStatus = &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4_cameraSlots[r4];
@@ -3944,7 +3945,8 @@ void initCameraSlotWithFunctions(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r
     pFieldCameraStatus->m8C_isActive = 1;
 }
 
-u32 fieldOverlaySubTaskInitSub3(u32 r4)
+// 060616f8
+u32 selectCameraSlot(u32 r4)
 {
     if (isFieldCameraSlotActive(r4))
     {
@@ -3990,7 +3992,8 @@ void setupFieldCameraConfigs(s_fieldCameraConfig* r4, u32 r5)
     }
 }
 
-void fieldOverlaySubTaskInitSub5(u32 r4)
+// 06061864
+void deactivateCameraSlot(u32 r4)
 {
     sFieldCameraManager* p334 = getFieldTaskPtr()->m8_pSubFieldData->m334;
     p334->m3E4_cameraSlots[r4].m74_updateFunc = 0;
@@ -4045,12 +4048,12 @@ void sFieldCameraManager::fieldCameraManagerInit(sFieldCameraManager* pTypedWork
     getFieldTaskPtr()->m8_pSubFieldData->m334 = pTypedWorkArea;
 
     initCameraSlotWithFunctions(0, gFieldCameraDrawFunc ? gFieldCameraDrawFunc : &fieldOverlaySubTaskInitSub2, 0);
-    fieldOverlaySubTaskInitSub3(0);
+    selectCameraSlot(0);
     setupFieldCameraConfigs(readCameraConfig(gFieldCameraConfigEA), 1);
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
 
-    fieldOverlaySubTaskInitSub5(1);
+    deactivateCameraSlot(1);
 
     applyCameraStatusToEngine(pTypedWorkArea);
 
@@ -4246,11 +4249,6 @@ void dragonFieldTaskInitSub4Sub4()
     activateDragonFlight();
 }
 
-void dummyFunct(sFieldCameraStatus*)
-{
-    assert(0);
-}
-
 // 06069E92 (A5) — camera follow mode 3
 void cameraFollowMode3(sFieldCameraStatus* r14)
 {
@@ -4258,20 +4256,20 @@ void cameraFollowMode3(sFieldCameraStatus* r14)
     if (pDragonTask == NULL)
         return;
 
-    switch (r14->m8D_followState)
+    switch (r14->m8D_reinitMode)
     {
     case 0:
         r14->m8F_followType = 3;
         r14->m90_followMode = 3;
         r14->m7C = 6;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
         fieldOverlaySubTaskInitSub2Sub2(r14, pDragonTask);
         return;
     case 1:
         r14->m8F_followType = 3;
         r14->m90_followMode = 3;
         r14->m7C = 6;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
     case 2:
         fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
         return;
@@ -4287,20 +4285,20 @@ void cameraFollowMode4(sFieldCameraStatus* r14)
     if (pDragonTask == NULL)
         return;
 
-    switch (r14->m8D_followState)
+    switch (r14->m8D_reinitMode)
     {
     case 0:
         r14->m8F_followType = 4;
         r14->m90_followMode = 4;
         r14->m7C = 7;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
         fieldOverlaySubTaskInitSub2Sub2(r14, pDragonTask);
         return;
     case 1:
         r14->m8F_followType = 4;
         r14->m90_followMode = 4;
         r14->m7C = 7;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
     case 2:
         fieldOverlaySubTaskInitSub2Sub1(r14, pDragonTask);
         return;
@@ -4316,12 +4314,12 @@ void cameraFollowMode5(sFieldCameraStatus* r14)
     if (pDragonTask == NULL)
         return;
 
-    if (r14->m8D_followState == 0 || r14->m8D_followState == 1)
+    if (r14->m8D_reinitMode == 0 || r14->m8D_reinitMode == 1)
     {
         r14->m8F_followType = 5;
         r14->m90_followMode = 5;
         r14->m7C = 0;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
     }
 
     sVec3_FP delta;
@@ -4342,12 +4340,12 @@ void cameraFollowMode6(sFieldCameraStatus* r14)
     if (pDragonTask == NULL)
         return;
 
-    if (r14->m8D_followState == 0 || r14->m8D_followState == 1)
+    if (r14->m8D_reinitMode == 0 || r14->m8D_reinitMode == 1)
     {
         r14->m8F_followType = 6;
         r14->m90_followMode = 6;
         r14->m7C = 0;
-        r14->m8D_followState = 2;
+        r14->m8D_reinitMode = 2;
     }
 }
 
@@ -4435,11 +4433,12 @@ static void cameraFollowMode7_Draw(sFieldCameraStatus*)
     if (pSub->m37C_debugMenuStatus1[0] == 0)
     {
         sFieldCameraManager* pCam = pSub->m334;
-        activateCameraFollowMode((u32)(s8)pCam->m50E_followModeIndex);
+        setCameraFollowMode_blend((u32)(s8)pCam->m50E_followModeIndex);
     }
 }
 
-void(*activateCameraFollowModeTable1[10])(sFieldCameraStatus*) = {
+// 06092ec8 — drawFieldCameraSlots slot (+0x78); only mode 7 has one
+void(*cameraFollowModeDrawTable[10])(sFieldCameraStatus*) = {
     0,
     0,
     0,
@@ -4455,7 +4454,8 @@ void(*activateCameraFollowModeTable1[10])(sFieldCameraStatus*) = {
 void cameraFollowMode_idle(sFieldCameraStatus* r4);
 void cameraFollowMode_scriptTarget(sFieldCameraStatus* r4);
 
-void(*activateCameraFollowModeTable2[10])(sFieldCameraStatus*) = {
+// 06092ea0 — updateFieldCameraSlots slot (+0x74)
+void(*cameraFollowModeUpdateTable[10])(sFieldCameraStatus*) = {
     cameraFollowMode_scriptTarget,           // [0] 06062900
     fieldOverlaySubTaskInitSub2,             // [1] 060621C6
     fieldOverlaySubTaskInitSub2_mode2,       // [2] 06062228
@@ -4475,18 +4475,19 @@ s32 setCameraFollowFunctions(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(s
         sFieldCameraStatus* pCamera = &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4_cameraSlots[r4];
         pCamera->m74_updateFunc = r5;
         pCamera->m78_drawFunc = r6;
-        pCamera->m8D_followState = 0;
+        pCamera->m8D_reinitMode = 0;
         pCamera->m8E_followSubState = 0;
         return 1;
     }
     return 0;
 }
 
-void activateCameraFollowMode(u32 r4)
+// 06061914 — m8D_reinitMode = 1: mode params re-applied, camera blends in
+void setCameraFollowMode_blend(u32 r4)
 {
-    setCameraFollowFunctions(0, activateCameraFollowModeTable1[r4], activateCameraFollowModeTable2[r4]);
+    setCameraFollowFunctions(0, cameraFollowModeUpdateTable[r4], cameraFollowModeDrawTable[r4]);
 
-    getFieldCameraStatus()->m8D_followState = 1;
+    getFieldCameraStatus()->m8D_reinitMode = 1;
 }
 
 sFieldCameraStatus* getActiveCameraSlot()
@@ -4494,11 +4495,11 @@ sFieldCameraStatus* getActiveCameraSlot()
     return getFieldCameraStatus();
 }
 
-// 060618e4 — start camera follow mode (followState = 0)
-void startCameraFollowModeByIndex(s32 followMode)
+// 060618e4 — m8D_reinitMode = 0: mode params re-applied, camera cuts
+void setCameraFollowMode_cut(s32 followMode)
 {
-    setCameraFollowFunctions(0, activateCameraFollowModeTable1[followMode], activateCameraFollowModeTable2[followMode]);
-    getFieldCameraStatus()->m8D_followState = 0;
+    setCameraFollowFunctions(0, cameraFollowModeUpdateTable[followMode], cameraFollowModeDrawTable[followMode]);
+    getFieldCameraStatus()->m8D_reinitMode = 0;
 }
 
 std::vector<s8> getFieldDragonAnimTable(int type, int subtype)
@@ -4626,13 +4627,13 @@ void selectCameraZone(sFieldCameraManager* r4, s_dragonTaskWorkArea* r5)
 void cameraFollowMode_scriptTarget(sFieldCameraStatus* r4)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-    switch (r4->m8D_followState)
+    switch (r4->m8D_reinitMode)
     {
     case 0:
     case 1:
         r4->m8F_followType = 0;
         r4->m90_followMode = 0;
-        r4->m8D_followState = 2;
+        r4->m8D_reinitMode = 2;
     case 2:
     default:
         if (pDragonTask->m1D0_cameraScript)
@@ -4677,13 +4678,13 @@ void cameraFollowMode_idle(sFieldCameraStatus* r4)
     if (pDragonTask == nullptr)
         return;
 
-    switch (r4->m8D_followState)
+    switch (r4->m8D_reinitMode)
     {
     case 0:
         r4->m8F_followType = 8;
         r4->m90_followMode = 8;
         r4->m7C = 0;
-        r4->m8D_followState = 2;
+        r4->m8D_reinitMode = 2;
     case 1:
         fieldOverlaySubTaskInitSub2Sub1Sub2(r4, pDragonTask);
         return;
@@ -5180,13 +5181,13 @@ s8 LCSTaskDrawSub1Sub6()
 // Lock camera in LCS/CutScene
 void LCSTaskDrawSub1Sub3()
 {
-    activateCameraFollowMode(8);
+    setCameraFollowMode_blend(8);
 }
 
 // Release camera at the end of LCS/CutScene
 void LCSTaskDrawSub1Sub4()
 {
-    activateCameraFollowMode(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
+    setCameraFollowMode_blend(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
 }
 
 void LCSTask::LCSTaskDraw(LCSTask*)
@@ -6611,13 +6612,6 @@ void updateCameraScriptSub0(p_workArea r4)
 s_LCSLaser* LCSTaskDrawSub1Sub2Sub0Sub2Sub0(s_LCSTask* r4, sLaserArgs* r5, s8 r6)
 {
     return createSiblingTaskWithArg<s_LCSLaser>(r4, r5, &s_LCSLaser::constructionTable[r6]);
-}
-
-void dragonFieldTaskInitSub4Sub3(u8 r4)
-{
-    setCameraFollowFunctions(0, activateCameraFollowModeTable1[r4], activateCameraFollowModeTable2[r4]);
-
-    getFieldCameraStatus()->m8D_followState = 0;
 }
 
 void FLD_A3_data::init()

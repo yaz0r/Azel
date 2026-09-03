@@ -5,8 +5,8 @@
 #include "field/fieldCutsceneTask3.h"
 
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
-void fieldOverlaySubTaskInitSub5(u32 r4);
-void activateCameraFollowMode(u32 r4);
+void deactivateCameraSlot(u32 r4);
+void setCameraFollowMode_blend(u32 r4);
 
 // 06072fce
 u32 cutsceneTaskInitSub0(std::vector<s_scriptData3>& r4, std::vector<s_scriptData3>& r5)
@@ -83,7 +83,7 @@ void startCutsceneCameraTracking(sVec3_FP* r4, sVec3_FP* r5)
     initDragonMovementMode();
 
     initCameraSlotWithFunctions(1, NULL, NULL);
-    fieldOverlaySubTaskInitSub3(1);
+    selectCameraSlot(1);
 
     updateCutsceneCameraInterpolation(r14, getFieldCameraStatus());
 }
@@ -94,7 +94,7 @@ void endCutsceneCameraWithRestore()
     r13->m378_cutsceneFrameCounter = 0;
     r13->m37C_isCutsceneCameraActive = 0;
     dragonFieldTaskInitSub4Sub4();
-    fieldOverlaySubTaskInitSub5(1);
+    deactivateCameraSlot(1);
 
     r13->m3E4_cameraSlots[0].m0_position = r13->m3E4_cameraSlots[1].m0_position;
     r13->m3E4_cameraSlots[0].mC_rotation = r13->m3E4_cameraSlots[1].mC_rotation;
@@ -103,9 +103,9 @@ void endCutsceneCameraWithRestore()
     r13->m3E4_cameraSlots[0].m20 = r13->m3E4_cameraSlots[1].m20;
     r13->m3E4_cameraSlots[0].m24_distanceToDestination = r13->m3E4_cameraSlots[1].m24_distanceToDestination;
 
-    fieldOverlaySubTaskInitSub3(0);
+    selectCameraSlot(0);
 
-    activateCameraFollowMode(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
+    setCameraFollowMode_blend(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
 }
 
 void endCutsceneCameraNoRestore()
@@ -114,9 +114,9 @@ void endCutsceneCameraNoRestore()
     r13->m378_cutsceneFrameCounter = 0;
     r13->m37C_isCutsceneCameraActive = 0;
     dragonFieldTaskInitSub4Sub4();
-    fieldOverlaySubTaskInitSub5(1);
-    fieldOverlaySubTaskInitSub3(0);
-    dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
+    deactivateCameraSlot(1);
+    selectCameraSlot(0);
+    setCameraFollowMode_cut(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
 }
 
 void s_cutsceneTask::Init(s_cutsceneTask* pThis, s_cutsceneData* pCutsceneData)

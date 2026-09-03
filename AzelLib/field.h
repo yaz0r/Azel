@@ -577,10 +577,12 @@ void cameraFollowMode_idle(sFieldCameraStatus* r4);
 
 // Shared camera follow mode dispatch (duplicated in every field overlay)
 s32 setCameraFollowFunctions(u32 slotIndex, void(*updateFunc)(sFieldCameraStatus*), void(*drawFunc)(sFieldCameraStatus*));
-void activateCameraFollowMode(u32 followMode);
+void setCameraFollowMode_blend(u32 followMode);
 s8 isFieldCameraSlotActive(s32 slotIndex);
 sFieldCameraStatus* getActiveCameraSlot();
-void startCameraFollowModeByIndex(s32 followMode);
+void setCameraFollowMode_cut(s32 followMode);
+void deactivateCameraSlot(u32 slotIndex);
+u32 selectCameraSlot(u32 slotIndex);
 
 // Shared field script/cutscene queries
 bool isNoCutsceneActive();

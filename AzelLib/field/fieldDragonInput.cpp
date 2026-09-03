@@ -896,7 +896,7 @@ void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
     {
         // State 0: initialize from script data
         updateCameraScriptSub0((p_workArea)pDragon->mB8_lightWingEffect);
-        activateCameraFollowMode(0);
+        setCameraFollowMode_blend(0);
         pDragon->mF8_Flags &= ~0x400;
         pDragon->mF8_Flags |= 0x20000;
 
@@ -936,7 +936,7 @@ void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
             pDragon->m1E8_cameraScriptDelay = 0x1E;
 
             sFieldCameraManager* pCam = getFieldTaskPtr()->m8_pSubFieldData->m334;
-            activateCameraFollowMode((u32)(s8)pCam->m50E_followModeIndex);
+            setCameraFollowMode_blend((u32)(s8)pCam->m50E_followModeIndex);
 
             pDragon->m104_dragonScriptStatus++;
         }
@@ -988,11 +988,7 @@ void dragonUpdate_cameraScript(s_dragonTaskWorkArea* pDragon)
     else
     {
         sFieldCameraManager* pCam = getFieldTaskPtr()->m8_pSubFieldData->m334;
-        // On Saturn, calls overlay-local startCameraFollowMode which dispatches
-        // through the follow mode tables. In C++, we call the A3 implementation
-        // which uses activateCameraFollowModeTable1/2 (identical across overlays).
-        extern void startCameraFollowModeByIndex(s32 followMode);
-        startCameraFollowModeByIndex((s32)pCam->m50E_followModeIndex);
+        setCameraFollowMode_cut((s32)pCam->m50E_followModeIndex);
         dragonTransitionFromScript();
     }
 

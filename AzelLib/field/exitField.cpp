@@ -44,7 +44,7 @@ struct s_exitCutsceneTask : public s_workAreaTemplate<s_exitCutsceneTask>
         {
         case 0:
             getFieldCameraStatus()->m0_position = pThis->m0_pScript->m0_position;
-            dragonFieldTaskInitSub4Sub3(0);
+            setCameraFollowMode_cut(0);
             pThis->m10_length = pThis->m0_pScript->m20_length;
             r14->m8_pos[1] = pThis->m0_pScript->m18;
             r14->m20_angle = pThis->m0_pScript->mC_rotation;

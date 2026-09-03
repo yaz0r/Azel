@@ -18,7 +18,7 @@ void drawFieldCameraSlots();
 void startScriptLeaveArea();
 void dragonFieldTaskInitSub4Sub4();
 void updateCameraScriptSub0(p_workArea r4);
-void activateCameraFollowMode(u32 r4);
+void setCameraFollowMode_blend(u32 r4);
 void buildDragonRotationMatrix(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
 
@@ -1650,7 +1650,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
     {
     case 0:
         updateCameraScriptSub0(r4->mB8_lightWingEffect);
-        activateCameraFollowMode(0);
+        setCameraFollowMode_blend(0);
         r4->mF8_Flags &= 0xFFFFFBFF;
         r4->mF8_Flags |= 0x20000;
         r4->m1E8_cameraScriptDelay = r5->m20_length;
@@ -1675,7 +1675,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
         }
         getFieldCameraStatus()->m88 = 30;
         r4->m1E8_cameraScriptDelay = 30;
-        activateCameraFollowMode(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
+        setCameraFollowMode_blend(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
         r4->m104_dragonScriptStatus++;
         break;
     case 2:
@@ -1699,7 +1699,7 @@ void dragonScriptMovement(s_dragonTaskWorkArea* pTypedWorkArea)
     {
         if (pTypedWorkArea->m1D0_cameraScript == nullptr)
         {
-            dragonFieldTaskInitSub4Sub3(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
+            setCameraFollowMode_cut(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
             dragonFieldTaskInitSub4Sub4();
         }
         else

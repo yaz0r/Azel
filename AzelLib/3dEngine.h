@@ -68,7 +68,7 @@ struct sFieldCameraStatus
     s8 m89;
     s8 m8A;
     s8 m8C_isActive;
-    s8 m8D_followState;
+    s8 m8D_reinitMode;   // 0 = cut, 1 = blend, 2 = keep running without re-init
     s8 m8E_followSubState;
     s8 m8F_followType;
     s8 m90_followMode;
