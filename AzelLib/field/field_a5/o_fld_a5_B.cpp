@@ -58,9 +58,9 @@ static void createA5_B_entity0(p_workArea parent)
 
 // 06057154 — create worm segment entity for B
 // 06057154
-static void createA5_B_wormSegment(p_workArea parent)
+static void createA5_B_wormPassageEntrance(p_workArea parent)
 {
-    createA5_wormSegment(parent, gFLD_A5->getSaturnPtr(0x06098D90));
+    createA5_wormPassageEntrance(parent, gFLD_A5->getSaturnPtr(0x06098D90));
 }
 
 // B entity 1 (size 0x2C, boss arena entity)
@@ -96,7 +96,7 @@ static void fieldA5_B_startTasks(p_workArea workArea)
 {
     createFieldSpecificDataTask_A5(workArea);
     createA5_B_entity0(workArea);
-    createA5_B_wormSegment(workArea);
+    createA5_B_wormPassageEntrance(workArea);
     createA5_B_entity1(workArea);
     a5_B_setFieldScale();
 }

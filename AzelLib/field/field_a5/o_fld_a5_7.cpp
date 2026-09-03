@@ -10,7 +10,7 @@ static void fieldA5_7_startTasks(p_workArea workArea)
     createFieldSpecificDataTask_A5(workArea);
     createA5_3dSceneManager(workArea);
     createA5_proximityAlert_day(workArea);
-    createA5_wormSegments_day(workArea);
+    createA5_wormPassageEntrances_day(workArea);
     // 0605971c — empty
     createA5_wormObjectTask(workArea);
     createA5_wormDustTask(workArea);

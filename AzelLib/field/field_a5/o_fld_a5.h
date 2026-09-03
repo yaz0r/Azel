@@ -81,9 +81,9 @@ void createA5_envObject_5();
 void createA5_envObject_6();
 void createA5_envObject_A();
 void createA5_wormDustTask(p_workArea parent);
-void createA5_wormSegment(p_workArea parent, sSaturnPtr data);
-void createA5_wormSegments_day(p_workArea parent);
-void createA5_wormSegments_night(p_workArea parent);
+void createA5_wormPassageEntrance(p_workArea parent, sSaturnPtr data);
+void createA5_wormPassageEntrances_day(p_workArea parent);
+void createA5_wormPassageEntrances_night(p_workArea parent);
 void createA5_proximityAlert_day(p_workArea parent);
 void createA5_proximityAlert_night(p_workArea parent);
 void createA5_fieldEventCheck(p_workArea parent);
@@ -106,7 +106,7 @@ void createA5_envObjects_sub7_exits(p_workArea parent);
 void createA5_envObjects_sub0(p_workArea parent);
 void createA5_envObjects_sub4_particle(p_workArea parent);
 void createA5_envObjects_sub4_light(p_workArea parent);
-void createA5_envObjects_sub4_wormSegments(p_workArea parent);
+void createA5_envObjects_sub4_wormPassageEntrances(p_workArea parent);
 void createA5_envObjects_sub2_sandfall(p_workArea parent);
 void createA5_envObjects_sub2_skyEntity(p_workArea parent, sSaturnPtr arg);
 void createA5_envObjects_sub2_weatherTask(p_workArea parent);
@@ -129,13 +129,6 @@ void setupDragonPositionAndCamera_A5(sSaturnPtr posEA, sSaturnPtr rotEA);
 
 // Cutscene camera init (loads script data and kicks cutscene)
 void a5CutsceneCameraInit(p_workArea parent, const sSaturnPtr& scriptDataEA, s32 r6, sVec3_FP* r7, u32 flags);
-
-// Shared gameplay helpers (getDragonPosition, getDragonAngle, triggerSubfieldChange) are in field.h
-
-// Follow mode setup
-void a5_wormSegmentEntity_startFollowMode_060694D8(s32 followMode);
-void a5_activateFollowMode_06069508(s32 followMode);
-sFieldCameraStatus* a5_wormSegmentEntity_getActiveCameraSlot_06069490();
 
 // Shared helpers
 void setupCameraConfig_A5_0();

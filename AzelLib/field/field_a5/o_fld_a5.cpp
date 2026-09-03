@@ -352,7 +352,7 @@ void createA5_envObject_A()
 
 // sA5WormDustTask is implemented in a5_wormDustTask.cpp
 
-// sA5WormSegmentEntity is implemented in a5_wormSegmentEntity.cpp
+// sA5WormPassageEntrance is implemented in a5_wormPassageEntrance.cpp
 
 // sA5ProximityAlertTask is implemented in a5_proximityAlertTask.cpp
 
@@ -464,7 +464,7 @@ void createA5_envObjects_sub4_light(p_workArea parent)
     createSubTask<sA5LightEntity>(parent, &td);
 }
 
-// createA5_envObjects_sub4_wormSegments is implemented in a5_wormSegmentEntity.cpp
+// createA5_envObjects_sub4_wormPassageEntrances is implemented in a5_wormPassageEntrance.cpp
 
 // 06059430 — corridor worm update for subfield 2/8: checks bitfields and triggers cutscene
 static void corridorWormUpdate_2(sA5CorridorWormSubtask* pThis)

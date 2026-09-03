@@ -22,7 +22,7 @@ static void fieldA5_8_startTasks(p_workArea workArea)
         pFieldData->m18_wormColorState1 = 0;
     }
     createA5_proximityAlert_night(workArea);
-    createA5_wormSegments_night(workArea);
+    createA5_wormPassageEntrances_night(workArea);
     createA5_corridorWorm_2(workArea);
     createA5_decorObjects_night_2();
     createA5_encounterConfig(workArea, 6, 0, 0x081F, 0x200, 0xA0, 0x40, 0x1F);

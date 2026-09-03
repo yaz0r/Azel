@@ -18,7 +18,7 @@ static void fieldA5_2_startTasks(p_workArea workArea)
     createA5_envObjects_sub2_weatherTask(workArea);
     initA5_wormColorTables_night();
     createA5_proximityAlert_night(workArea);
-    createA5_wormSegments_night(workArea);
+    createA5_wormPassageEntrances_night(workArea);
     createA5_corridorWorm_2(workArea);
     createA5_decorObjects_night_2();
     createA5_encounterConfig(workArea, 3, 0, 0x081F, 0x200, 0xA0, 0x40, 0x1F);

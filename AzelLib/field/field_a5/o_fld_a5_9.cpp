@@ -18,7 +18,7 @@ static void fieldA5_9_startTasks(p_workArea workArea)
         pFieldData->m14_wormColorState0 = 0;
         pFieldData->m18_wormColorState1 = 0;
     }
-    createA5_envObjects_sub4_wormSegments(workArea); // 060570ea — same worm segments as sub4 (data 06098CD0)
+    createA5_envObjects_sub4_wormPassageEntrances(workArea); // 060570ea
     // 06059768 — empty
     createA5_wormObjectTask(workArea);
     createA5_wormDustTask(workArea);

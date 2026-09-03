@@ -4351,6 +4351,94 @@ void cameraFollowMode6(sFieldCameraStatus* r14)
     }
 }
 
+// A5_0 0606a6b4 — debug free camera: reads player-2 controller to move/rotate camera
+static void debugFreeCamera()
+{
+    sFieldCameraStatus* pCam = getActiveCameraSlot();
+    auto& input = graphicEngineStatus.m4514.m0_inputDevices[1].m0_current;
+
+    // Rotation: d-pad slow, d-pad+held fast
+    if (input.m6_buttonDown & 0x2000) pCam->mC_rotation.m0_X.m_value += 0xB60B6;
+    if (input.m6_buttonDown & 0x0001) pCam->mC_rotation.m0_X.m_value -= 0xB60B6;
+    if (input.m6_buttonDown & 0x8000) pCam->mC_rotation.m4_Y.m_value -= 0xB60B6;
+    if (input.m6_buttonDown & 0x0800) pCam->mC_rotation.m4_Y.m_value += 0xB60B6;
+
+    if (input.mE & 0x2000) pCam->mC_rotation.m0_X.m_value += 0x2D82D8;
+    if (input.mE & 0x0001) pCam->mC_rotation.m0_X.m_value -= 0x2D82D8;
+    if (input.mE & 0x8000) pCam->mC_rotation.m4_Y.m_value -= 0x2D82D8;
+    if (input.mE & 0x0800) pCam->mC_rotation.m4_Y.m_value += 0x2D82D8;
+
+    u16 yawIdx = (u16)((u32)pCam->mC_rotation.m4_Y.m_value >> 16) & 0xFFF;
+
+    // Movement: forward/back/strafe slow
+    if (input.m6_buttonDown & 0x10)
+    {
+        pCam->m0_position.m0_X.m_value -= MTH_Mul(fixedPoint(0x1000), getSin(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value -= MTH_Mul(fixedPoint(0x1000), getCos(yawIdx)).m_value;
+    }
+    if (input.m6_buttonDown & 0x20)
+    {
+        pCam->m0_position.m0_X.m_value += MTH_Mul(fixedPoint(0x1000), getSin(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value += MTH_Mul(fixedPoint(0x1000), getCos(yawIdx)).m_value;
+    }
+    if (input.m6_buttonDown & 0x80)
+    {
+        pCam->m0_position.m0_X.m_value += MTH_Mul(fixedPoint(0x1000), getCos(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value -= MTH_Mul(fixedPoint(0x1000), getSin(yawIdx)).m_value;
+    }
+    if (input.m6_buttonDown & 0x40)
+    {
+        pCam->m0_position.m0_X.m_value -= MTH_Mul(fixedPoint(0x1000), getCos(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value += MTH_Mul(fixedPoint(0x1000), getSin(yawIdx)).m_value;
+    }
+
+    // Up/down slow
+    if (input.m6_buttonDown & 0x4000) pCam->m0_position.m4_Y.m_value += 0x1000;
+    if (input.m6_buttonDown & 0x0004) pCam->m0_position.m4_Y.m_value -= 0x1000;
+
+    // Movement: forward/back/strafe fast (held buttons)
+    if (input.mE & 0x10)
+    {
+        pCam->m0_position.m0_X.m_value -= MTH_Mul(fixedPoint(0x4000), getSin(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value -= MTH_Mul(fixedPoint(0x4000), getCos(yawIdx)).m_value;
+    }
+    if (input.mE & 0x20)
+    {
+        pCam->m0_position.m0_X.m_value += MTH_Mul(fixedPoint(0x4000), getSin(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value += MTH_Mul(fixedPoint(0x4000), getCos(yawIdx)).m_value;
+    }
+    if (input.mE & 0x80)
+    {
+        pCam->m0_position.m0_X.m_value += MTH_Mul(fixedPoint(0x4000), getCos(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value -= MTH_Mul(fixedPoint(0x4000), getSin(yawIdx)).m_value;
+    }
+    if (input.mE & 0x40)
+    {
+        pCam->m0_position.m0_X.m_value -= MTH_Mul(fixedPoint(0x4000), getCos(yawIdx)).m_value;
+        pCam->m0_position.m8_Z.m_value += MTH_Mul(fixedPoint(0x4000), getSin(yawIdx)).m_value;
+    }
+
+    // Up/down fast
+    if (input.mE & 0x4000) pCam->m0_position.m4_Y.m_value += 0x4000;
+    if (input.mE & 0x0004) pCam->m0_position.m4_Y.m_value -= 0x4000;
+}
+
+// A5_0 0606A984 — camera follow mode 7 draw: debug free-camera mode
+static void cameraFollowMode7_Draw(sFieldCameraStatus*)
+{
+    s_FieldSubTaskWorkArea* pSub = getFieldTaskPtr()->m8_pSubFieldData;
+    if (pSub->m380_debugMenuStatus3 != 0 && pSub->m37E_debugMenuStatus2_a == 1)
+    {
+        debugFreeCamera();
+    }
+
+    if (pSub->m37C_debugMenuStatus1[0] == 0)
+    {
+        sFieldCameraManager* pCam = pSub->m334;
+        activateCameraFollowMode((u32)(s8)pCam->m50E_followModeIndex);
+    }
+}
+
 void(*activateCameraFollowModeTable1[10])(sFieldCameraStatus*) = {
     0,
     0,
@@ -4359,7 +4447,7 @@ void(*activateCameraFollowModeTable1[10])(sFieldCameraStatus*) = {
     0,
     0,
     0,
-    dummyFunct,
+    cameraFollowMode7_Draw,
     0,
     0,
 };
@@ -4371,13 +4459,13 @@ void(*activateCameraFollowModeTable2[10])(sFieldCameraStatus*) = {
     cameraFollowMode_scriptTarget,           // [0] 06062900
     fieldOverlaySubTaskInitSub2,             // [1] 060621C6
     fieldOverlaySubTaskInitSub2_mode2,       // [2] 06062228
-    dummyFunct,                              // [3] 0606229E — TODO
-    dummyFunct,                              // [4] 06062302 — TODO
-    dummyFunct,                              // [5] 06062370 — TODO
-    dummyFunct,                              // [6] 0606240C — TODO
-    0,
+    cameraFollowMode3,                       // [3] 0606229E
+    cameraFollowMode4,                       // [4] 06062302
+    cameraFollowMode5,                       // [5] 06062370
+    cameraFollowMode6,                       // [6] 0606240C
+    nullptr,
     cameraFollowMode_idle,           // [8] 06062474
-    0,
+    nullptr,
 };
 
 s32 setCameraFollowFunctions(u32 r4, void(*r5)(sFieldCameraStatus*), void(*r6)(sFieldCameraStatus*))
