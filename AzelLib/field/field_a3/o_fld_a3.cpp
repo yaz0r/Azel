@@ -40,10 +40,8 @@
 #include "kernel/rayDisplay.h"
 #include "battle/gunShotRootTask.h"
 
-sMatrix4x3* fieldCameraTask1DrawSub1();
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
 void deactivateCameraSlot(u32 r4);
-s32 checkPositionVisibility(const sVec3_FP* r4, s32 r5);
 
 #ifdef PDS_TOOL
 bool bMakeEverythingVisible = false;
@@ -178,7 +176,6 @@ u8 gridCellDraw_normalSub0(sProcessed3dModel* r4, const sVec3_FP& r5)
 
     return 1;
 }
-
 void getCameraProperties2Matrix(sMatrix4x3* pOutput)
 {
     *pOutput = cameraProperties2.m88_billboardViewMatrix;
@@ -685,11 +682,6 @@ void A3_Obj2_Draw(s_A3_Obj2* r14)
 void create_A3_Obj2_Sub1(p_workArea, sLCSTarget*)
 {
     assert(0);
-}
-
-s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* r4)
-{
-    return checkPositionVisibility(r4, graphicEngineStatus.m405C.m14_farClipDistance);
 }
 
 void getFieldDragonPosition(sVec3_FP* r4)
@@ -3772,79 +3764,6 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
     return bDirty;
 }
 
-s32 checkPositionVisibility(const sVec3_FP* r4, s32 r5)
-{
-#ifdef PDS_TOOL
-    if (bMakeEverythingVisible)
-    {
-        return 0;
-    }
-#endif
-    s_visibilityGridWorkArea* r13 = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
-    sVec3_FP var18 = cameraProperties2.m0_position;
-
-    {
-        fixedPoint r3 = (*r4)[0] - var18[0];
-        if (r3 < 0)
-        {
-            r3 = var18[0] - (*r4)[0];
-        }
-        if (r3 > r5)
-            return 1;
-    }
-
-    {
-        fixedPoint r2 = (*r4)[1] - var18[1];
-        if (r2 < 0)
-        {
-            r2 = var18[1] - (*r4)[1];
-        }
-        if (r2 > r5)
-            return 1;
-    }
-
-    {
-        fixedPoint r2 = (*r4)[2] - var18[2];
-        if (r2 < 0)
-        {
-            r2 = var18[2] - (*r4)[2];
-        }
-        if (r2 > r5)
-            return 1;
-    }
-
-    {
-        sMatrix4x3* r5 = fieldCameraTask1DrawSub1();
-        sVec3_FP varC;
-        varC[0] = r5->m[0][2];
-        varC[1] = r5->m[1][2];
-        varC[2] = r5->m[2][2];
-
-        var18[0] -= varC[0] * 32;
-        var18[1] -= varC[1] * 32;
-        var18[2] -= varC[2] * 32;
-
-        sVec3_FP var0;
-
-        var0[0] = (*r4)[0] - var18[0];
-        var0[1] = (*r4)[1] - var18[1];
-        var0[2] = (*r4)[2] - var18[2];
-
-        if (dot3_FP(&r13->m12AC, &var0) <= 0)
-            return 1;
-        if (dot3_FP(&r13->m12B8, &var0) <= 0)
-            return 1;
-        if (dot3_FP(&r13->m12C4, &var0) <= 0)
-            return 1;
-        if (dot3_FP(&r13->m12D0, &var0) <= 0)
-            return 1;
-
-        return 0;
-    }
-
-    return 1;
-}
-
 std::vector<fixedPoint> fieldCameraTask1InitData1_depthRangeTable =
 {
     fixedPoint(0x80000),
@@ -3875,14 +3794,9 @@ void s_visibilityGridWorkArea::fieldCameraTask1Update(s_visibilityGridWorkArea* 
     pTypedWorkArea->m12F8_convertCameraPositionToGrid(pTypedWorkArea);
 }
 
-sMatrix4x3* fieldCameraTask1DrawSub1()
-{
-    return &getFieldTaskPtr()->m8_pSubFieldData->m334->m384_viewMatrix;
-}
-
 void s_visibilityGridWorkArea::fieldCameraTask1Draw(s_visibilityGridWorkArea* pTypedWorkArea)
 {
-    sMatrix4x3* r13 = fieldCameraTask1DrawSub1();
+    sMatrix4x3* r13 = getFieldCameraMatrix();
 
     asyncDivStart(graphicEngineStatus.m405C.m14_farClipDistance, fixedPoint(0xC422));
 

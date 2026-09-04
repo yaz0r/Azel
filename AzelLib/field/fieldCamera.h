@@ -53,6 +53,7 @@ void cameraFollowMode_default(sFieldCameraStatus* r4);
 
 s8 isFieldCameraSlotActive(s32 slotIndex);
 sFieldCameraStatus* getFieldCameraStatus();
+sMatrix4x3* getFieldCameraMatrix();
 void initCameraSlotWithFunctions(u32 slotIndex, void(*updateFunc)(sFieldCameraStatus*), void(*drawFunc)(sFieldCameraStatus*));
 u32 selectCameraSlot(u32 slotIndex);
 void deactivateCameraSlot(u32 slotIndex);

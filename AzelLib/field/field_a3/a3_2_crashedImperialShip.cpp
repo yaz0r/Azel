@@ -11,6 +11,7 @@
 #include "audio/soundDriver.h"
 
 #include "field/fieldParticlePool.h"
+#include "field/fieldVisibilityGrid.h"
 
 // 06059584 — random ambient sound at crashed ship position
 struct sCrashedShipAmbientSound : public s_workAreaTemplate<sCrashedShipAmbientSound>

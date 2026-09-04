@@ -3,6 +3,7 @@
 #include "kernel/fileBundle.h"
 #include "items.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
+#include "field/fieldVisibilityGrid.h"
 
 struct s_A3_0_Obj4 : public s_workAreaTemplate<s_A3_0_Obj4>
 {

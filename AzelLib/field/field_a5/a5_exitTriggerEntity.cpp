@@ -11,6 +11,7 @@
 #include <map>
 #include "kernel/fileBundle.h"
 #include "audio/systemSounds.h"
+#include "field/fieldVisibilityGrid.h"
 
 // Exit-trigger entity (Saturn size 0x6C). Task definition at FLD_A5::06098ad4
 // is {init=null, update=0605661C, draw=060565C2, delete=null}. The creator

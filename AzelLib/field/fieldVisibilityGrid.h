@@ -50,4 +50,5 @@ struct s_visibilityGridWorkArea : public s_workAreaTemplate<s_visibilityGridWork
 };
 
 u32 gridCellDraw_GetDepthRange(fixedPoint r4);
-sMatrix4x3* fieldCameraTask1DrawSub1();
+s32 checkPositionVisibility(const sVec3_FP* pPosition, s32 farClip);
+s32 checkPositionVisibilityAgainstFarPlane(sVec3_FP* pPosition);

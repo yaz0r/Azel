@@ -5,6 +5,7 @@
 #include "items.h"
 #include "3dModels.h"
 #include "field/fieldParticlePool.h"
+#include "field/fieldVisibilityGrid.h"
 
 s32 a7CenteredRandom(u32 mask);
 

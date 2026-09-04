@@ -333,6 +333,12 @@ sFieldCameraStatus* getFieldCameraStatus()
     return &getFieldTaskPtr()->m8_pSubFieldData->m334->m3E4_cameraSlots[getFieldTaskPtr()->m8_pSubFieldData->m334->m50C_activeCameraSlot];
 }
 
+// 060618ce
+sMatrix4x3* getFieldCameraMatrix()
+{
+    return &getFieldTaskPtr()->m8_pSubFieldData->m334->m384_viewMatrix;
+}
+
 // 060618e4
 void setCameraFollowMode_cut(eCameraFollowMode followMode)
 {

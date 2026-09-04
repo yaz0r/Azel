@@ -4,6 +4,7 @@
 #include "field/field_a3/o_fld_a3.h"
 #include "kernel/fileBundle.h"
 #include "3dModels.h"
+#include "field/fieldVisibilityGrid.h"
 
 // 06055230 — check if game state bit is set for object at given index
 bool isObjectDestroyedA7(s32 index)

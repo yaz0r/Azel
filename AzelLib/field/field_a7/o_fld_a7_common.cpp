@@ -18,6 +18,7 @@
 #include "a7_beamChargeWobble.h"
 #include "kernel/vdp1AnimatedQuad.h"
 #include <vector>
+#include "field/fieldVisibilityGrid.h"
 
 // 06054474
 void createFieldSpecificDataTask_A7(p_workArea parent)

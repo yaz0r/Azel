@@ -27,7 +27,6 @@ static s32 searchZoneTable1(s32 posY);
 static bool isInCurrentZone0(s_fieldLCSSubStruct* pLCS);
 static bool isInCurrentZone1(s_fieldLCSSubStruct* pLCS);
 static void registerWithLCS(s_fieldLCSSubStruct* pLCS);
-static s32 clipCheck_C8_frustum(const sVec3_FP* pPos, s32 farClip);
 static void readSaturnVec3Into(sSaturnPtr src, sVec3_FP* dst);
 
 // --- Minimal task structs for field infrastructure ---
@@ -1389,7 +1388,7 @@ void s_interactiveEntityC8::Draw(s_interactiveEntityC8* pThis)
     sSaturnPtr entryEA = pThis->m8_entryEA;
 
     sVec3_FP pos = readSaturnVec3(entryEA + 4);
-    if (clipCheck_C8_frustum(&pos, graphicEngineStatus.m405C.m14_farClipDistance) != 0)
+    if (checkPositionVisibility(&pos, graphicEngineStatus.m405C.m14_farClipDistance) != 0)
     {
         pThis->m98_depth = fixedPoint(0x270F000);
         return;
@@ -2478,57 +2477,6 @@ static s32 clipCheck_C8_alwaysVisible(const sVec3_FP* r4, s32 r5)
 }
 
 // 0606a5c2 — get camera view matrix
-static sMatrix4x3* getFieldCameraMatrix_C8()
-{
-    return &getFieldTaskPtr()->m8_pSubFieldData->m334->m384_viewMatrix;
-}
-
-// 060788dc — frustum culling check
-static s32 clipCheck_C8_frustum(const sVec3_FP* pPos, s32 farClip)
-{
-    s_visibilityGridWorkArea* pGrid = getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1;
-
-    // Manhattan distance check against camera
-    fixedPoint dx = pPos->m0_X - cameraProperties2.m0_position.m0_X;
-    if ((s32)dx < 0) dx = -dx;
-    if ((s32)dx > farClip) return 1;
-
-    fixedPoint dy = pPos->m4_Y - cameraProperties2.m0_position.m4_Y;
-    if ((s32)dy < 0) dy = -dy;
-    if ((s32)dy > farClip) return 1;
-
-    fixedPoint dz = pPos->m8_Z - cameraProperties2.m0_position.m8_Z;
-    if ((s32)dz < 0) dz = -dz;
-    if ((s32)dz > farClip) return 1;
-
-    // Offset camera position along view direction
-    sMatrix4x3* pViewMat = getFieldCameraMatrix_C8();
-    sVec3_FP camPos;
-    camPos.m0_X = cameraProperties2.m0_position.m0_X + pViewMat->m[0][2] * -0x20;
-    camPos.m4_Y = cameraProperties2.m0_position.m4_Y + pViewMat->m[1][2] * -0x20;
-    camPos.m8_Z = cameraProperties2.m0_position.m8_Z + pViewMat->m[2][2] * -0x20;
-
-    // Delta from offset camera to object
-    sVec3_FP delta;
-    delta.m0_X = pPos->m0_X - camPos.m0_X;
-    delta.m4_Y = pPos->m4_Y - camPos.m4_Y;
-    delta.m8_Z = pPos->m8_Z - camPos.m8_Z;
-
-    // Check 4 frustum planes
-    if (dot3_FP(&pGrid->m12AC, &delta) <= 0) return 1;
-    if (dot3_FP(&pGrid->m12B8, &delta) <= 0) return 1;
-    if (dot3_FP(&pGrid->m12C4, &delta) <= 0) return 1;
-    if (dot3_FP(&pGrid->m12D0, &delta) <= 0) return 1;
-
-    return 0;
-}
-
-// 06078a1c — frustum clip check wrapper
-static s32 clipCheck_C8_wrapper(const sVec3_FP* pPos)
-{
-    return clipCheck_C8_frustum(pPos, graphicEngineStatus.m405C.m14_farClipDistance);
-}
-
 // 06078a26 — set clipping function on visibility grid
 static void setClipFunction_C8()
 {

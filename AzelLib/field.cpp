@@ -361,7 +361,7 @@ void gridCellDraw_normalSub2(s_fileBundle* r4, s32 r5, s32 r6)
         if (pVisGrid->m12F2_renderMode == 1)
         {
             pushCurrentMatrix();
-            sMatrix4x3* debugMatrix = fieldCameraTask1DrawSub1();
+            sMatrix4x3* debugMatrix = getFieldCameraMatrix();
             copyToCurrentMatrix(debugMatrix);
             multiplyCurrentMatrix(&pVisGrid->m44->m4_matrix);
             addObjectToDrawList(pModel);
