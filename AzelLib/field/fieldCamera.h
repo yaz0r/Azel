@@ -2,6 +2,19 @@
 
 struct s_fieldCameraConfig;
 
+enum eCameraFollowMode : u8
+{
+    eCameraFollowMode_scriptTarget = 0,
+    eCameraFollowMode_default = 1,
+    eCameraFollowMode_dragonYaw = 2,
+    eCameraFollowMode_banked = 3,
+    eCameraFollowMode_dragonYawBanked = 4,
+    eCameraFollowMode_watchDragon = 5,
+    eCameraFollowMode_hold = 6,
+    eCameraFollowMode_debugFreeCamera = 7,
+    eCameraFollowMode_idle = 8,
+};
+
 struct sFieldCameraStatus
 {
     sVec3_FP m0_position;
@@ -46,8 +59,8 @@ void deactivateCameraSlot(u32 slotIndex);
 void updateFieldCameraSlots();
 void drawFieldCameraSlots();
 
-void setCameraFollowMode_cut(s32 followMode);
-void setCameraFollowMode_blend(u32 followMode);
+void setCameraFollowMode_cut(eCameraFollowMode followMode);
+void setCameraFollowMode_blend(eCameraFollowMode followMode);
 
 s_fieldCameraConfig* readCameraConfig(sSaturnPtr EA);
 void setupFieldCameraConfigs(s_fieldCameraConfig* pConfigs, u32 count);

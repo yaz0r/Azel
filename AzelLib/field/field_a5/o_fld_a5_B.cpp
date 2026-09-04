@@ -118,7 +118,7 @@ void subfieldA5_B(p_workArea workArea)
 {
     Unimplemented(); // FUN_FLD_A5__06078dc0 — setupField variant with data tables and visibility
 
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = eCameraFollowMode_default;
     Unimplemented(); // FUN_FLD_A5__060558f0 — camera config (calls 06069620 with data 06089c8c, count 2)
     initDragonLight_A5_B();
     createA5_B_Vdp2Task(workArea);

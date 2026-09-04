@@ -141,7 +141,7 @@ p_workArea overlayStart_FLD_A7(p_workArea workArea, u32 arg)
     graphicEngineStatus.m405C.m38_oneOverFarClip = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
     graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = eCameraFollowMode_default;
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts(gFLD_A7->getSaturnPtr(0x060861b0));
 
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();

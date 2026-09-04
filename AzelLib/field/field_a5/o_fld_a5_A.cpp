@@ -23,7 +23,7 @@ void subfieldA5_A(p_workArea workArea)
     setupField2(pDT3, fieldA5_A_startTasks);
     setupDragonPositionAndCamera_A5(gFLD_A5->getSaturnPtr(0x060898E4), gFLD_A5->getSaturnPtr(0x060898F0));
     setupCameraConfig_A5_corridor();
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 2;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = eCameraFollowMode_dragonYaw;
     initDragonParams_A5_corridor();
     createA5CorridorVdp2Task(workArea);
     getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask->m0 = (void(*)())&postBattleSound_A5_corridor;

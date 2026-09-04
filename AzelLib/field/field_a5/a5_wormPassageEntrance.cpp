@@ -298,7 +298,7 @@ static void a5WormPassageEntrance_Update(sA5WormPassageEntrance* pThis)
             pActiveSlot->m0_position.m0_X = fixedPoint(readSaturnS32(data + 0x2C));
             pActiveSlot->m0_position.m4_Y = fixedPoint(readSaturnS32(data + 0x30));
             pActiveSlot->m0_position.m8_Z = fixedPoint(readSaturnS32(data + 0x34));
-            setCameraFollowMode_cut(0);
+            setCameraFollowMode_cut(eCameraFollowMode_scriptTarget);
 
             pThis->mA4_delay = 90;
 

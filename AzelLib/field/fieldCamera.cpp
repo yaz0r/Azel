@@ -3,26 +3,26 @@
 #include "field/fieldCutsceneTask.h"
 #include "field/field_a3/o_fld_a3.h"
 
-static void cameraFollowMode_vertical(sFieldCameraStatus* r4);
-static void cameraFollowMode3(sFieldCameraStatus* r4);
-static void cameraFollowMode4(sFieldCameraStatus* r4);
-static void cameraFollowMode5(sFieldCameraStatus* r4);
-static void cameraFollowMode6(sFieldCameraStatus* r4);
+static void cameraFollowMode_dragonYaw(sFieldCameraStatus* r4);
+static void cameraFollowMode_banked(sFieldCameraStatus* r4);
+static void cameraFollowMode_dragonYawBanked(sFieldCameraStatus* r4);
+static void cameraFollowMode_watchDragon(sFieldCameraStatus* r4);
+static void cameraFollowMode_hold(sFieldCameraStatus* r4);
 static void cameraFollowMode7_Draw(sFieldCameraStatus* r4);
 static void cameraFollowMode_idle(sFieldCameraStatus* r4);
 static void cameraFollowMode_scriptTarget(sFieldCameraStatus* r4);
 static void updateZoneCameraFollow(sFieldCameraManager* r4);
 
 static void(*cameraFollowModeUpdateTable[10])(sFieldCameraStatus*) = {
-    cameraFollowMode_scriptTarget,           // [0] 06062900
-    cameraFollowMode_default,             // [1] 060621C6
-    cameraFollowMode_vertical,       // [2] 06062228
-    cameraFollowMode3,                       // [3] 0606229E
-    cameraFollowMode4,                       // [4] 06062302
-    cameraFollowMode5,                       // [5] 06062370
-    cameraFollowMode6,                       // [6] 0606240C
+    cameraFollowMode_scriptTarget,
+    cameraFollowMode_default,
+    cameraFollowMode_dragonYaw,
+    cameraFollowMode_banked,
+    cameraFollowMode_dragonYawBanked,
+    cameraFollowMode_watchDragon,
+    cameraFollowMode_hold,
     nullptr,
-    cameraFollowMode_idle,           // [8] 06062474
+    cameraFollowMode_idle,
     nullptr,
 };
 
@@ -63,7 +63,7 @@ void sFieldCameraManager::fieldCameraManagerInit(sFieldCameraManager* pTypedWork
     selectCameraSlot(0);
     setupFieldCameraConfigs(readCameraConfig(gFieldCameraConfigEA), 1);
 
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = eCameraFollowMode_default;
 
     deactivateCameraSlot(1);
 
@@ -334,16 +334,16 @@ sFieldCameraStatus* getFieldCameraStatus()
 }
 
 // 060618e4
-void setCameraFollowMode_cut(s32 followMode)
+void setCameraFollowMode_cut(eCameraFollowMode followMode)
 {
     setCameraFollowFunctions(0, cameraFollowModeUpdateTable[followMode], cameraFollowModeDrawTable[followMode]);
     getFieldCameraStatus()->m8D_reinitMode = 0;
 }
 
 // 06061914
-void setCameraFollowMode_blend(u32 r4)
+void setCameraFollowMode_blend(eCameraFollowMode followMode)
 {
-    setCameraFollowFunctions(0, cameraFollowModeUpdateTable[r4], cameraFollowModeDrawTable[r4]);
+    setCameraFollowFunctions(0, cameraFollowModeUpdateTable[followMode], cameraFollowModeDrawTable[followMode]);
 
     getFieldCameraStatus()->m8D_reinitMode = 1;
 }
@@ -579,7 +579,7 @@ void cameraFollowMode_default(sFieldCameraStatus* r14)
 }
 
 // 06062228
-static void cameraFollowMode_vertical(sFieldCameraStatus* r14)
+static void cameraFollowMode_dragonYaw(sFieldCameraStatus* r14)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     if (pDragonTask == NULL)
@@ -608,7 +608,7 @@ static void cameraFollowMode_vertical(sFieldCameraStatus* r14)
 }
 
 // 0606229e
-static void cameraFollowMode3(sFieldCameraStatus* r14)
+static void cameraFollowMode_banked(sFieldCameraStatus* r14)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     if (pDragonTask == NULL)
@@ -637,7 +637,7 @@ static void cameraFollowMode3(sFieldCameraStatus* r14)
 }
 
 // 06062302
-static void cameraFollowMode4(sFieldCameraStatus* r14)
+static void cameraFollowMode_dragonYawBanked(sFieldCameraStatus* r14)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     if (pDragonTask == NULL)
@@ -666,7 +666,7 @@ static void cameraFollowMode4(sFieldCameraStatus* r14)
 }
 
 // 06062370
-static void cameraFollowMode5(sFieldCameraStatus* r14)
+static void cameraFollowMode_watchDragon(sFieldCameraStatus* r14)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     if (pDragonTask == NULL)
@@ -692,7 +692,7 @@ static void cameraFollowMode5(sFieldCameraStatus* r14)
 }
 
 // 0606240c
-static void cameraFollowMode6(sFieldCameraStatus* r14)
+static void cameraFollowMode_hold(sFieldCameraStatus* r14)
 {
     s_dragonTaskWorkArea* pDragonTask = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     if (pDragonTask == NULL)
@@ -868,7 +868,7 @@ static void cameraFollowMode7_Draw(sFieldCameraStatus*)
     if (pSub->m37C_debugMenuStatus1[0] == 0)
     {
         sFieldCameraManager* pCam = pSub->m334;
-        setCameraFollowMode_blend((u32)(s8)pCam->m50E_followModeIndex);
+        setCameraFollowMode_blend(pCam->m50E_followModeIndex);
     }
 }
 

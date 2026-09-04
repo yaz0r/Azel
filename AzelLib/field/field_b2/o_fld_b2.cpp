@@ -167,7 +167,7 @@ p_workArea overlayStart_FLD_B2(p_workArea workArea, u32 arg)
     graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
     // Set camera follow mode index
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = eCameraFollowMode_default;
 
     // Load scripts
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts(gFLD_B2->getSaturnPtr(0x0608CE90));

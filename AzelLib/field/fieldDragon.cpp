@@ -18,7 +18,6 @@ void drawFieldCameraSlots();
 void startScriptLeaveArea();
 void dragonFieldTaskInitSub4Sub4();
 void updateCameraScriptSub0(p_workArea r4);
-void setCameraFollowMode_blend(u32 r4);
 void buildDragonRotationMatrix(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
 
@@ -1650,7 +1649,7 @@ void updateCameraScript(s_dragonTaskWorkArea* r4, s_cameraScript* r5)
     {
     case 0:
         updateCameraScriptSub0(r4->mB8_lightWingEffect);
-        setCameraFollowMode_blend(0);
+        setCameraFollowMode_blend(eCameraFollowMode_scriptTarget);
         r4->mF8_Flags &= 0xFFFFFBFF;
         r4->mF8_Flags |= 0x20000;
         r4->m1E8_cameraScriptDelay = r5->m20_length;

@@ -42,7 +42,6 @@
 
 sMatrix4x3* fieldCameraTask1DrawSub1();
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
-void setCameraFollowMode_blend(u32 r4);
 void deactivateCameraSlot(u32 r4);
 s32 checkPositionVisibility(const sVec3_FP* r4, s32 r5);
 
@@ -4151,7 +4150,7 @@ s8 LCSTaskDrawSub1Sub6()
 // Lock camera in LCS/CutScene
 void LCSTaskDrawSub1Sub3()
 {
-    setCameraFollowMode_blend(8);
+    setCameraFollowMode_blend(eCameraFollowMode_idle);
 }
 
 // Release camera at the end of LCS/CutScene
@@ -4401,7 +4400,7 @@ p_workArea overlayStart_FLD_A3(p_workArea workArea, u32 arg)
 
     graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = eCameraFollowMode_default;
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts({ 0x60924FC, gFLD_A3 });
 
     switch (getFieldTaskPtr()->m2C_currentFieldIndex)

@@ -2544,7 +2544,7 @@ static void initClipAndOverlay_C8(p_workArea workArea)
     graphicEngineStatus.m405C.m38_oneOverFarClip = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
     graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
     setClipFunction_C8();
-    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = 2;
+    getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = eCameraFollowMode_dragonYaw;
     fieldRadar_setEncounterDistance(fixedPoint(0x12C000));
 }
 

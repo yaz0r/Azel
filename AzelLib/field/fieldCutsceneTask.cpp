@@ -6,7 +6,6 @@
 
 fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0, fixedPoint r10, s32 r14);
 void deactivateCameraSlot(u32 r4);
-void setCameraFollowMode_blend(u32 r4);
 
 // 06072fce
 u32 cutsceneTaskInitSub0(std::vector<s_scriptData3>& r4, std::vector<s_scriptData3>& r5)

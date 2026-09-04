@@ -896,7 +896,7 @@ void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
     {
         // State 0: initialize from script data
         updateCameraScriptSub0((p_workArea)pDragon->mB8_lightWingEffect);
-        setCameraFollowMode_blend(0);
+        setCameraFollowMode_blend(eCameraFollowMode_scriptTarget);
         pDragon->mF8_Flags &= ~0x400;
         pDragon->mF8_Flags |= 0x20000;
 
@@ -936,7 +936,7 @@ void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
             pDragon->m1E8_cameraScriptDelay = 0x1E;
 
             sFieldCameraManager* pCam = getFieldTaskPtr()->m8_pSubFieldData->m334;
-            setCameraFollowMode_blend((u32)(s8)pCam->m50E_followModeIndex);
+            setCameraFollowMode_blend(pCam->m50E_followModeIndex);
 
             pDragon->m104_dragonScriptStatus++;
         }
@@ -988,7 +988,7 @@ void dragonUpdate_cameraScript(s_dragonTaskWorkArea* pDragon)
     else
     {
         sFieldCameraManager* pCam = getFieldTaskPtr()->m8_pSubFieldData->m334;
-        setCameraFollowMode_cut((s32)pCam->m50E_followModeIndex);
+        setCameraFollowMode_cut(pCam->m50E_followModeIndex);
         dragonTransitionFromScript();
     }
 

@@ -56,7 +56,7 @@ struct sFieldCameraManager : public s_workAreaTemplate<sFieldCameraManager>
     std::array<sFieldCameraStatus,2> m3E4_cameraSlots;
     u8 m50C_activeCameraSlot;
     u8 m50D_isInitialized; // 50D
-    u8 m50E_followModeIndex; // 50E
+    eCameraFollowMode m50E_followModeIndex; // 50E
 };
 
 struct s_scriptData1
