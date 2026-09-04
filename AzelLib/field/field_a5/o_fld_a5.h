@@ -1,5 +1,7 @@
 #pragma once
 
+#include "field/fieldParticlePool.h"
+
 struct FLD_A5_data : public sSaturnMemoryFile
 {
     FLD_A5_data() : sSaturnMemoryFile("FLD_A5.PRG")
@@ -40,7 +42,7 @@ struct s_fieldSpecificData_A5 : public s_workAreaTemplate<s_fieldSpecificData_A5
     s32 m14_wormColorState0;
     s32 m18_wormColorState1;
     u8 m1C_pad[0x38];
-    void* m54;
+    sParticlePoolManager* m54_particlePool;
     u8 m58_pad[4];
     fixedPoint m5C_scale;
     u8 m60_pad[8];
@@ -68,7 +70,6 @@ void createA5_B_Vdp2Task(p_workArea parent);
 
 // Shared startTasks helpers
 void createFieldSpecificDataTask_A5(p_workArea parent);
-void createA5_3dSceneManager(p_workArea parent);
 void createA5_wormObjectTask(p_workArea parent);
 void createA5_exitEntityTask(p_workArea parent);
 void setFieldExitConfig_A5(s32 mode, s32* pParams);

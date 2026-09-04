@@ -2,7 +2,7 @@
 #include "a7_repairBit.h"
 #include "o_fld_a7.h"
 #include "kernel/rayDisplay.h"
-#include "field/fieldSceneManager.h"
+#include "field/fieldParticlePool.h"
 #include "audio/soundDriver.h"
 #include "audio/systemSounds.h"
 #include "field/field_a3/o_fld_a3.h"
@@ -206,8 +206,8 @@ static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sRepairBitFormationEffect
             s_deathSparkQuads = initVdp1Quad(gFLD_A7->getSaturnPtr(0x060804e4));
         }
 
-        sSceneParticleDesc desc = {};
-        desc.m8_pQuadList = &s_deathSparkQuads;
+        sParticleSpawnConfig desc = {};
+        desc.m8_pQuadData = &s_deathSparkQuads;
 
         sVec3_FP zeroVelocity;
         zeroVelocity.m0_X = fixedPoint(0);
@@ -221,16 +221,16 @@ static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sRepairBitFormationEffect
         {
             spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + a7CenteredRandom(0xFFFF));
             spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + a7CenteredRandom(0xFFFF));
-            sceneParticle_spawnProjected(
-                (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
+            spawnParticleProjected(
+                getFieldSpecificData_A7()->m280_particlePool,
                 &desc,
                 &spawnPos,
                 &zeroVelocity);
 
             spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + a7CenteredRandom(0xFFFF));
             spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + a7CenteredRandom(0xFFFF));
-            sceneParticle_spawnProjected(
-                (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
+            spawnParticleProjected(
+                getFieldSpecificData_A7()->m280_particlePool,
                 &desc,
                 &spawnPos,
                 &zeroVelocity);
@@ -286,7 +286,7 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sRepairBitFormationEffectTask*
 
     // Spawn a scene particle at (source + offset) with zero velocity, using
     // quad data at FLD_A7::060806a4. Matches the Saturn pattern where the
-    // caller of sceneParticle_spawnProjected only has to set m8_pQuadList
+    // caller of spawnParticleProjected only has to set m8_pQuadData
     // — the wrapper fills in m0/m4/m14/m18.
     sVec3_FP spawnPos;
     spawnPos.m0_X = fixedPoint(pArg->m0_X + pThis->m1B4_offset.m0_X.m_value);
@@ -297,15 +297,15 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sRepairBitFormationEffectTask*
     zeroVelocity.m4_Y = fixedPoint(0);
     zeroVelocity.m8_Z = fixedPoint(0);
 
-    sSceneParticleDesc desc = {};
+    sParticleSpawnConfig desc = {};
     static std::vector<sVdp1Quad> s_sparkQuads;
     if (s_sparkQuads.empty())
     {
         s_sparkQuads = initVdp1Quad(gFLD_A7->getSaturnPtr(0x060806a4));
     }
-    desc.m8_pQuadList = &s_sparkQuads;
-    sceneParticle_spawnProjected(
-        (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
+    desc.m8_pQuadData = &s_sparkQuads;
+    spawnParticleProjected(
+        getFieldSpecificData_A7()->m280_particlePool,
         &desc,
         &spawnPos,
         &zeroVelocity);
@@ -475,11 +475,11 @@ static void repairBit_spawnEffect_06056b90(p_workArea parent,
 
 // 060595a2 — sets up a terminal scene-particle descriptor from a palette
 // snapshot (calls FUN_0607c18e / FUN_0607c120), then the caller adds the
-// quad-list pointer and tail-calls sceneParticle_spawnProjected. The
-// descriptor slot layout beyond m8_pQuadList isn't yet mapped, so the
+// quad-list pointer and tail-calls spawnParticleProjected. The
+// descriptor slot layout beyond m8_pQuadData isn't yet mapped, so the
 // preparation is stubbed.
 static void repairBit_setupTerminalSpawn_060595a2(sRepairBit* pThis,
-                                                           sSceneParticleDesc* /*pDesc*/)
+                                                           sParticleSpawnConfig* /*pDesc*/)
 {
     sDebrisScatterParams params;
     initDebrisScatterConfig(&params, 4, 0x248);
@@ -591,16 +591,16 @@ static void repairBit_Update(sRepairBit* pThis)
         }
         else
         {
-            sSceneParticleDesc desc = {};
+            sParticleSpawnConfig desc = {};
             repairBit_setupTerminalSpawn_060595a2(pThis, &desc);
             static std::vector<sVdp1Quad> s_terminalQuads;
             if (s_terminalQuads.empty())
             {
                 s_terminalQuads = initVdp1Quad(gFLD_A7->getSaturnPtr(0x06080324));
             }
-            desc.m8_pQuadList = &s_terminalQuads;
-            sceneParticle_spawnProjected(
-                (sFieldSceneManager*)getFieldSpecificData_A7()->m280,
+            desc.m8_pQuadData = &s_terminalQuads;
+            spawnParticleProjected(
+                getFieldSpecificData_A7()->m280_particlePool,
                 &desc,
                 &pThis->m14_currentPos,
                 &pThis->m20_velocity);

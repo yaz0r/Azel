@@ -2,7 +2,7 @@
 #include "o_fld_a5.h"
 #include "field/field_a3/o_fld_a3.h"
 #include "field/fieldVisibilityGrid.h"
-#include "field/fieldSceneManager.h"
+#include "field/fieldParticlePool.h"
 #include "field/fieldModelRender.h"
 #include "field/fieldItemBox.h"
 #include "field/fieldItemBoxDefinition.h"
@@ -69,13 +69,6 @@ void postBattleSound_A5_nightB(void)
     {
         playPCM(pSubFieldData, 0x65);
     }
-}
-
-// 060804d0 — create 3D scene manager task, store in field data m54
-void createA5_3dSceneManager(p_workArea parent)
-{
-    s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
-    pFieldData->m54 = createFieldSceneManager(parent, 1, 0x40);
 }
 
 // 060552c0 — empty update (data task has no per-frame logic)

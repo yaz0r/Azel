@@ -14,6 +14,7 @@ struct FLD_A7_data : public sFieldOverlay
 extern FLD_A7_data* gFLD_A7;
 
 #include "field/fieldModelRender.h"
+#include "field/fieldParticlePool.h"
 
 struct s_fieldSpecificData_A7 : public s_workAreaTemplate<s_fieldSpecificData_A7>
 {
@@ -26,7 +27,7 @@ struct s_fieldSpecificData_A7 : public s_workAreaTemplate<s_fieldSpecificData_A7
     u8 m27A;
     u8 m27B;
     u8 m27C_pad[4];
-    void* m280;
+    sParticlePoolManager* m280_particlePool;
     // size 0x284
 };
 

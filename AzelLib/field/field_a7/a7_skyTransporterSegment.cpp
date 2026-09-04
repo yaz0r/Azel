@@ -8,7 +8,7 @@
 #include "3dModels.h"
 #include "audio/systemSounds.h"
 #include "trigo.h"
-#include "field/fieldSceneManager.h"
+#include "field/fieldParticlePool.h"
 #include "kernel/vdp1AnimatedQuad.h"
 #include "audio/soundDriver.h"
 #include <vector>
@@ -115,11 +115,11 @@ static void skyTransporterSegment_spawnTrail_0605cdcc(s_skyTransporterSegment* /
     vel.m4_Y = fixedPoint(pVel->m4_Y.m_value >> 2);
     vel.m8_Z = fixedPoint(pVel->m8_Z.m_value >> 2);
 
-    sSceneParticleDesc desc = {};
-    desc.m8_pQuadList = skyTransporterSegment_getTrailQuadList();
+    sParticleSpawnConfig desc = {};
+    desc.m8_pQuadData = skyTransporterSegment_getTrailQuadList();
 
-    sFieldSceneManager* pManager = (sFieldSceneManager*)getFieldSpecificData_A7()->m280;
-    sceneParticle_spawnProjected(pManager, &desc, &pos, &vel);
+    sParticlePoolManager* pManager = getFieldSpecificData_A7()->m280_particlePool;
+    spawnParticleProjected(pManager, &desc, &pos, &vel);
 }
 
 // 0605c686 — set or clear a mainGameState bit for the classification-table

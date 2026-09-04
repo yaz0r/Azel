@@ -135,3 +135,6 @@ struct s_fieldA3_1_task4 : public s_workAreaTemplate<s_fieldA3_1_task4>
 #include "o_fld_a3_A.h"
 #include "o_fld_a3_B.h"
 #include "o_fld_a3_C.h"
+
+// 0605a032
+s32 particleUpdateStatic(struct sParticleSlot* pSlot);

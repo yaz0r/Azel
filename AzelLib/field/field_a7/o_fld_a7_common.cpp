@@ -4,7 +4,7 @@
 #include "field/field_a3/o_fld_a3.h"
 #include "audio/soundDriver.h"
 #include "kernel/fileBundle.h"
-#include "field/fieldSceneManager.h"
+#include "field/fieldParticlePool.h"
 #include "field/fieldCutsceneTask2.h"
 #include "audio/systemSounds.h"
 #include "trigo.h"
@@ -270,17 +270,12 @@ void createA7_proximityCheck(p_workArea parent)
 
 // --- Model render context (0606b45c / 0606b4b0) --- moved to field/fieldModelRender.cpp
 
-static sFieldSceneManager* createA7_3dSceneManager(p_workArea parent, s32 areaIndex, s32 count)
-{
-    return createFieldSceneManager(parent, areaIndex, count);
-}
-
 // 06056bb0 — start tasks for subfield 0
 void startTasksA7_0(p_workArea parent)
 {
     createFieldSpecificDataTask_A7(parent);
     s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
-    pFieldData->m280 = createA7_3dSceneManager(parent, 1, 0x40);
+    pFieldData->m280_particlePool = createParticlePoolTask(parent, 1, 0x40);
     createA7_simpleSubtask(parent);
     setGameFlagsA7_0();
     // 060565a6 — empty
@@ -697,8 +692,8 @@ static void a7SpawnedEntity_Init(sA7SpawnedEntity* pThis, sSaturnPtr arg)
         s_spawnedQuadList = initVdp1Quad(gFLD_A7->getSaturnPtr(0x060804e4));
     }
 
-    sSceneParticleDesc desc = {};
-    desc.m8_pQuadList = &s_spawnedQuadList;
+    sParticleSpawnConfig desc = {};
+    desc.m8_pQuadData = &s_spawnedQuadList;
 
     sVec3_FP spawnPos;
     spawnPos.m4_Y = fixedPoint(0);
@@ -707,11 +702,11 @@ static void a7SpawnedEntity_Init(sA7SpawnedEntity* pThis, sSaturnPtr arg)
     {
         spawnPos.m0_X = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
         spawnPos.m8_Z = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
-        sceneParticle_spawnProjected((sFieldSceneManager*)pFieldData->m280, &desc, &spawnPos, &spawnDir);
+        spawnParticleProjected(pFieldData->m280_particlePool, &desc, &spawnPos, &spawnDir);
 
         spawnPos.m0_X = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
         spawnPos.m8_Z = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
-        sceneParticle_spawnProjected((sFieldSceneManager*)pFieldData->m280, &desc, &spawnPos, &spawnDir);
+        spawnParticleProjected(pFieldData->m280_particlePool, &desc, &spawnPos, &spawnDir);
     }
 
     // Play sound if visible on screen
@@ -957,12 +952,12 @@ static void a7EnvEntity60_debrisDrawCallback(p_workArea /*pDebrisTask*/, sVec3_F
     pos.m8_Z = fixedPoint(pPosition->m8_Z.m_value + centeredRandom(0x1FFFF));
 
     s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
-    sFieldSceneManager* pManager = (sFieldSceneManager*)pFieldData->m280;
+    sParticlePoolManager* pManager = pFieldData->m280_particlePool;
 
-    sSceneParticleDesc desc = {};
-    desc.m8_pQuadList = a7GetOrParseQuadList(gFLD_A7->getSaturnPtr(0x060804E4));
+    sParticleSpawnConfig desc = {};
+    desc.m8_pQuadData = a7GetOrParseQuadList(gFLD_A7->getSaturnPtr(0x060804E4));
 
-    sceneParticle_spawnProjected(pManager, &desc, &pos, &vel);
+    spawnParticleProjected(pManager, &desc, &pos, &vel);
 }
 
 // 0605E768
@@ -1140,7 +1135,7 @@ void startTasksA7_1(p_workArea parent)
     createFieldSpecificDataTask_A7(parent);
     {
         s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
-        pFieldData->m280 = createA7_3dSceneManager(parent, 3, 0x20);
+        pFieldData->m280_particlePool = createParticlePoolTask(parent, 3, 0x20);
     }
     createA7_envEntity_a456(parent); // Shelcoof
     createA7_envEntity_9e6e(parent, gFLD_A7->getSaturnPtr(0x06085aec)); // repair bits
@@ -1158,7 +1153,7 @@ void startTasksA7_2(p_workArea parent)
     createFieldSpecificDataTask_A7(parent);
     {
         s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
-        pFieldData->m280 = createA7_3dSceneManager(parent, 4, 0x20);
+        pFieldData->m280_particlePool = createParticlePoolTask(parent, 4, 0x20);
     }
     createA7_visibilityObjects();
     createA7_emptySubtask(parent);

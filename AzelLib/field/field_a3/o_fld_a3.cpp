@@ -11,7 +11,7 @@
 #include "field/fieldCutsceneTask3.h"
 #include "a3_waterfall.h"
 #include "field/dragonLightWingEvolution.h"
-#include "particlePool.h"
+#include "field/fieldParticlePool.h"
 
 // createLightWingEffect — moved to field/fieldDragon.cpp
 
@@ -1089,94 +1089,11 @@ void create_A3_Obj3(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r6)
     pNewTask->m20[2] = randomNumber();
 }
 
-// 06078a1c — simple particle draw (axis-aligned sprite)
-static void particleDrawSimple(sParticleSlot* pSlot)
-{
-    drawProjectedParticle(&pSlot->m2C_animQuad, &pSlot->m0_position);
-}
-
-// 06078a2a — billboard particle draw (oriented sprite)
-static void particleDrawBillboard(sParticleSlot* pSlot)
-{
-    // TODO: writeBillBoardToVDP1 not yet implemented
-    drawProjectedParticle(&pSlot->m2C_animQuad, &pSlot->m0_position);
-}
-
-// 0607895c — particle update: moves by velocity, expires when animation ends
-s32 particleUpdateMoving(sParticleSlot* pSlot)
-{
-    pSlot->m0_position.m0_X += pSlot->mC_velocity.m0_X;
-    pSlot->m0_position.m4_Y += pSlot->mC_velocity.m4_Y;
-    pSlot->m0_position.m8_Z += pSlot->mC_velocity.m8_Z;
-    return sGunShotTask_UpdateSub4(&pSlot->m2C_animQuad) & 2;
-}
-
 // 0605a032 — particle update: static position, never expires
 s32 particleUpdateStatic(sParticleSlot* pSlot)
 {
     sGunShotTask_UpdateSub4(&pSlot->m2C_animQuad);
     return 0;
-}
-
-// 06078a3c — spawn a particle into the pool
-s32 spawnParticleInPool(sParticlePoolManager* pPool, sParticleSpawnConfig* pConfig, s32 useVelocityScale)
-{
-    if (pPool->m18_activeCount >= pPool->m14_maxParticles)
-        return 0;
-
-    // Optionally allocate extra heap
-    void* heapData = nullptr;
-    if (pConfig->m18_heapSize > 0)
-    {
-        heapData = allocateHeapForTask((s_workArea*)pPool, pConfig->m18_heapSize);
-        if (heapData == nullptr)
-            return 0;
-    }
-
-    // Find a free slot (ring buffer scan)
-    while (pPool->mC_currentSlot->m28_drawFunc != nullptr)
-    {
-        pPool->m10_currentIndex++;
-        pPool->mC_currentSlot++;
-        if (pPool->m10_currentIndex >= pPool->m14_maxParticles)
-        {
-            pPool->m10_currentIndex = 0;
-            pPool->mC_currentSlot = pPool->m8_slotsBase;
-        }
-    }
-
-    sParticleSlot* pSlot = pPool->mC_currentSlot;
-
-    // Init animated quad
-    u16 cmdsrca = (u16)((s32)(pPool->m4_vdp1Memory + 0xDA400000) >> 3);
-    particleInitSub(&pSlot->m2C_animQuad, cmdsrca, pConfig->m8_pQuadData);
-
-    // Copy position and velocity
-    pSlot->m0_position = *pConfig->m0_pPosition;
-    pSlot->mC_velocity = *pConfig->m4_pVelocity;
-
-    // Extra data
-    pSlot->m24_updateFunc = pConfig->m14_updateFunc;
-    pSlot->m20_heapData = heapData;
-    if (heapData != nullptr)
-    {
-        memcpy(heapData, pConfig->m1C_heapData, pConfig->m18_heapSize);
-    }
-
-    // Set draw function and velocity scales
-    if (useVelocityScale == 0)
-    {
-        pSlot->m28_drawFunc = particleDrawSimple;
-    }
-    else
-    {
-        pSlot->m18_velocityScaleX = pConfig->mC_velocityScaleX;
-        pSlot->m1C_velocityScaleY = pConfig->m10_velocityScaleY;
-        pSlot->m28_drawFunc = particleDrawBillboard;
-    }
-
-    pPool->m18_activeCount++;
-    return 1;
 }
 
 // 0605e818

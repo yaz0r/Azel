@@ -10,7 +10,7 @@
 #include "audio/systemSounds.h"
 #include "audio/soundDriver.h"
 
-#include "particlePool.h"
+#include "field/fieldParticlePool.h"
 
 // 06059584 — random ambient sound at crashed ship position
 struct sCrashedShipAmbientSound : public s_workAreaTemplate<sCrashedShipAmbientSound>

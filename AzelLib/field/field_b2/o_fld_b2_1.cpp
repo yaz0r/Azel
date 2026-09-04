@@ -1,7 +1,7 @@
 #include "PDS.h"
 #include "o_fld_b2.h"
 #include "field/field_a3/o_fld_a3.h"
-#include "field/fieldSceneManager.h"
+#include "field/fieldParticlePool.h"
 #include "field/fieldItemBox.h"
 #include "field/fieldItemBoxDefinition.h"
 #include "audio/soundDriver.h"
@@ -89,7 +89,7 @@ static void b2_startTasks_1(p_workArea workArea)
     createFieldSpecificDataTask_B2(workArea);
 
     s_fieldSpecificData_B2* pFieldData = getFieldSpecificData_B2();
-    pFieldData->m3C_sceneManager = createFieldSceneManager(workArea, 3, 0x40);
+    pFieldData->m3C_particlePool = createParticlePoolTask(workArea, 3, 0x40);
 
     Unimplemented(); // FUN_FLD_B2__060559ea — create env object (0x12C oasis plants task)
     createB2ItemBoxes_1();

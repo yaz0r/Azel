@@ -2,6 +2,8 @@
 
 #include "field/fieldCamera.h"
 
+struct sParticlePoolManager;
+
 #include "kernel/moduleManager.h"
 
 struct s_fieldCameraConfig
@@ -437,7 +439,7 @@ struct s_fieldSpecificData_A3 : public s_workAreaTemplate<s_fieldSpecificData_A3
     sVec3_FP m158;
 
     struct fieldA3_2_crashedImpertialShip* m164_A3_2_crashedImperialShipTask;
-    struct sParticlePoolManager* m168_particlePool;
+    sParticlePoolManager* m168_particlePool;
     // size 16C?
 };
 

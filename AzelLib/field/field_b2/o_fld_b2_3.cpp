@@ -1,7 +1,7 @@
 #include "PDS.h"
 #include "o_fld_b2.h"
 #include "field/field_a3/o_fld_a3.h"
-#include "field/fieldSceneManager.h"
+#include "field/fieldParticlePool.h"
 #include "field/fieldItemBox.h"
 #include "field/fieldItemBoxDefinition.h"
 #include "audio/soundDriver.h"
@@ -28,7 +28,7 @@ static void b2_startTasks_3(p_workArea workArea)
     createFieldSpecificDataTask_B2(workArea);
 
     s_fieldSpecificData_B2* pFieldData = getFieldSpecificData_B2();
-    pFieldData->m3C_sceneManager = createFieldSceneManager(workArea, 2, 0x40);
+    pFieldData->m3C_particlePool = createParticlePoolTask(workArea, 2, 0x40);
     pFieldData->mA0_flag = 1;
 
     Unimplemented(); // FUN_FLD_B2__06056a96 — create item box manager task (0xB8C)

@@ -119,11 +119,11 @@ void a7EffectEntity60_Update(sA7EffectEntity60* pThis)
     pos.m8_Z = fixedPoint(pSpawnPos->m8_Z.m_value + centeredRandom(0x1FFFF));
 
     s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
-    sFieldSceneManager* pManager = (sFieldSceneManager*)pFieldData->m280;
+    sParticlePoolManager* pManager = pFieldData->m280_particlePool;
 
-    sSceneParticleDesc desc = {};
-    desc.m8_pQuadList = a7GetOrParseQuadList(gFLD_A7->getSaturnPtr(0x060804E4));
-    sceneParticle_spawnProjected(pManager, &desc, &pos, &vel);
+    sParticleSpawnConfig desc = {};
+    desc.m8_pQuadData = a7GetOrParseQuadList(gFLD_A7->getSaturnPtr(0x060804E4));
+    spawnParticleProjected(pManager, &desc, &pos, &vel);
 }
 
 // 0605E4C4

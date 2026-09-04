@@ -4,7 +4,7 @@
 #include "kernel/fileBundle.h"
 #include "items.h"
 #include "3dModels.h"
-#include "particlePool.h"
+#include "field/fieldParticlePool.h"
 
 s32 a7CenteredRandom(u32 mask);
 

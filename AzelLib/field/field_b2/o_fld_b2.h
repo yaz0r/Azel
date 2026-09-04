@@ -1,5 +1,7 @@
 #pragma once
 
+#include "field/fieldParticlePool.h"
+
 struct FLD_B2_data : public sSaturnMemoryFile
 {
     FLD_B2_data() : sSaturnMemoryFile("FLD_B2.PRG")
@@ -31,7 +33,7 @@ void postBattleSound_B2_empty();
 struct s_fieldSpecificData_B2 : public s_workAreaTemplate<s_fieldSpecificData_B2>
 {
     u8 m0_pad[0x3C];
-    p_workArea m3C_sceneManager;
+    sParticlePoolManager* m3C_particlePool;
     p_workArea m40;
     u8 m44_pad[0x10];
     p_workArea m54_ambientSoundTask;

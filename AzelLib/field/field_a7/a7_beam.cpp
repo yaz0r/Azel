@@ -72,8 +72,8 @@ static void a7Beam_UpdateFade_060557e8(sA7Beam* pThis)
 // address 0605533c is shared between the charge wobble and the beam ring update).
 static void a7Beam_spawnParticle_trampoline(sA7Beam* pThis, sVec3_FP* pSlot, u16 rndSeed)
 {
-    sSceneParticleDesc desc = {};
-    desc.m8_pQuadList = a7GetOrParseQuadList(gFLD_A7->getSaturnPtr(pThis->m110_paramB));
+    sParticleSpawnConfig desc = {};
+    desc.m8_pQuadData = a7GetOrParseQuadList(gFLD_A7->getSaturnPtr(pThis->m110_paramB));
     a7BeamChargeWobble_spawn_0605533c((p_workArea)pThis, pSlot, fixedPoint((s32)rndSeed), &desc);
 }
 

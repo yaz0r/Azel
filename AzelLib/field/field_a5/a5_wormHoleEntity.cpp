@@ -7,7 +7,7 @@
 #include "kernel/monsterPart.h"
 #include "audio/systemSounds.h"
 #include "menu_dragonMorph.h" // computeLookAt
-#include "field/fieldSceneManager.h"
+#include "field/fieldParticlePool.h"
 #include "field/fieldDebrisScatter.h"
 #include "kernel/vdp1AnimatedQuad.h"
 #include <map>
@@ -343,17 +343,17 @@ static void a5_wormHoleEntity_spawnDust_0605f734(sA5WormHoleEntity* /*pThis*/, s
         vel.m4_Y = fixedPoint(randomNumber() & 0x7FF);
         vel.m8_Z = fixedPoint(centeredRandom(0x7FF));
 
-        sSceneParticleDesc desc = {};
+        sParticleSpawnConfig desc = {};
         desc.m0_pPosition = pPos;
         desc.m4_pVelocity = &vel;
-        desc.m8_pQuadList = s_dustQuadList;
-        desc.m14_updateFunc = &sceneParticle_updatePhysics;
-        desc.m18_payloadSize = 4;
-        desc.m1C_pPayloadSrc = &i;
+        desc.m8_pQuadData = s_dustQuadList;
+        desc.m14_updateFunc = &particleUpdateMoving;
+        desc.m18_heapSize = 4;
+        desc.m1C_heapData = &i;
 
         s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
-        sFieldSceneManager* pManager = (sFieldSceneManager*)pFieldData->m54;
-        sceneParticle_allocate(pManager, &desc, 0);
+        sParticlePoolManager* pManager = pFieldData->m54_particlePool;
+        spawnParticleInPool(pManager, &desc, 0);
     }
 }
 

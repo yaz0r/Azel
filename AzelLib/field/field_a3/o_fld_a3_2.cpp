@@ -3,7 +3,7 @@
 #include "items.h"
 #include "audio/soundDriver.h"
 #include "field/field_a3/o_fld_a3.h" //TODO: cleanup
-#include "field/field_a3/particlePool.h"
+#include "field/fieldParticlePool.h"
 #include "field/fieldRadar.h"
 #include "field/exitField.h"
 #include "field/fieldItemBox.h"
@@ -251,7 +251,7 @@ struct sWaterfallTask : public s_workAreaTemplateWithArg<sWaterfallTask, sSaturn
         s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
         if (pFieldData->m168_particlePool)
         {
-            spawnParticleInPool((sParticlePoolManager*)pFieldData->m168_particlePool, &config, 0);
+            spawnParticleInPool(pFieldData->m168_particlePool, &config, 0);
         }
     }
 
@@ -808,7 +808,7 @@ void fieldA3_2_startTasks(p_workArea workArea)
 {
     fieldA3_0_createTask0(workArea);
 
-    getFieldSpecificData_A3()->m168_particlePool = (sParticlePoolManager*)createParticlePoolTask(workArea, 4, 0x50);
+    getFieldSpecificData_A3()->m168_particlePool = createParticlePoolTask(workArea, 4, 0x50);
 
     fieldA3_2_createExitLCSTask(workArea);
     create_fieldA3_backgroundLayer2(workArea);

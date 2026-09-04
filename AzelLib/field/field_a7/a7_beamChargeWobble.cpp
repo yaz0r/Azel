@@ -20,7 +20,7 @@ struct sA7BeamChargeWobble : public s_workAreaTemplateWithArg<sA7BeamChargeWobbl
 // 0605533c — spawn a single billboard scene particle with jittered origin.
 // Shared with the beam ring-buffer update (same Saturn address).
 void a7BeamChargeWobble_spawn_0605533c(p_workArea /*parent*/, sVec3_FP* pPos,
-                                       fixedPoint sinValue, sSceneParticleDesc* pOutDesc)
+                                       fixedPoint sinValue, sParticleSpawnConfig* pOutDesc)
 {
     sVec3_FP pos;
     pos.m0_X = fixedPoint((s32)(randomNumber() & 0xFFFF) + pPos->m0_X.m_value - 0x8000);
@@ -32,15 +32,15 @@ void a7BeamChargeWobble_spawn_0605533c(p_workArea /*parent*/, sVec3_FP* pPos,
     rot.m4_Y = fixedPoint(0);
     rot.m8_Z = fixedPoint(0);
 
-    pOutDesc->m14_updateFunc = &sceneParticle_updatePhysics;
+    pOutDesc->m14_updateFunc = &particleUpdateMoving;
     pOutDesc->m0_pPosition = &pos;
     pOutDesc->m4_pVelocity = &rot;
-    pOutDesc->m18_payloadSize = 0;
-    pOutDesc->mC_paramA = sinValue.m_value;
-    pOutDesc->m10_paramB = 0;
+    pOutDesc->m18_heapSize = 0;
+    pOutDesc->mC_velocityScaleX = sinValue.m_value;
+    pOutDesc->m10_velocityScaleY = 0;
 
-    sFieldSceneManager* pManager = (sFieldSceneManager*)getFieldSpecificData_A7()->m280;
-    sceneParticle_allocate(pManager, pOutDesc, 1);
+    sParticlePoolManager* pManager = getFieldSpecificData_A7()->m280_particlePool;
+    spawnParticleInPool(pManager, pOutDesc, 1);
 }
 
 // 06055a48
@@ -76,8 +76,8 @@ static void a7BeamChargeWobble_Update_06055a64(sA7BeamChargeWobble* pThis)
         pThis->m18_frame++;
         if ((pThis->m18_frame & 7) == 0)
         {
-            sSceneParticleDesc desc = {};
-            desc.m8_pQuadList = a7GetOrParseQuadList(pThis->m14_templateEA);
+            sParticleSpawnConfig desc = {};
+            desc.m8_pQuadData = a7GetOrParseQuadList(pThis->m14_templateEA);
             a7BeamChargeWobble_spawn_0605533c((p_workArea)pThis, &pThis->m0_pos, pThis->m10_sinValue, &desc);
         }
         else

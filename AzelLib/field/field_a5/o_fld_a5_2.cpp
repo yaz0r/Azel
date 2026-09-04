@@ -3,12 +3,13 @@
 #include "field/field_a3/o_fld_a3.h"
 #include "field/fieldRadar.h"
 #include "audio/soundDriver.h"
+#include "field/fieldParticlePool.h"
 
 // 0605a768
 static void fieldA5_2_startTasks(p_workArea workArea)
 {
     createFieldSpecificDataTask_A5(workArea);
-    createA5_3dSceneManager(workArea);
+    ((s_fieldSpecificData_A5*)getFieldTaskPtr()->mC)->m54_particlePool = createParticlePoolTask(workArea, 1, 0x40);
     createA5_baldorWormBody(workArea);
     createA5_wormObjectTask(workArea);
     createA5_exitEntityTask(workArea);

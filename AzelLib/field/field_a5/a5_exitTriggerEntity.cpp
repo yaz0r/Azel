@@ -5,7 +5,7 @@
 #include "field/fieldCutsceneTask.h"
 #include "field/exitField.h"
 #include "field/fieldDebrisScatter.h"
-#include "field/fieldSceneManager.h"
+#include "field/fieldParticlePool.h"
 #include "field/fieldAnimRingSubTask.h"
 #include "kernel/vdp1AnimatedQuad.h"
 #include <map>
@@ -178,18 +178,18 @@ static void a5ExitTrigger_spawnScatter_0605623c(sA5ExitTriggerEntity* pThis)
     static const s32 scatterParamTable[] = { 0x2108, 0x4210, 0x6318, 0x18C6 };
     u32 rng3 = randomNumber();
 
-    sSceneParticleDesc desc = {};
+    sParticleSpawnConfig desc = {};
     desc.m0_pPosition = &pos;
     desc.m4_pVelocity = &vel;
-    desc.m8_pQuadList = a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(0x060988F4));
-    desc.mC_paramA = scatterParamTable[rng3 & 3];
-    desc.m10_paramB = 0;
-    desc.m14_updateFunc = &sceneParticle_updatePhysics;
-    desc.m18_payloadSize = 0;
+    desc.m8_pQuadData = a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(0x060988F4));
+    desc.mC_velocityScaleX = scatterParamTable[rng3 & 3];
+    desc.m10_velocityScaleY = 0;
+    desc.m14_updateFunc = &particleUpdateMoving;
+    desc.m18_heapSize = 0;
 
     s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
-    sFieldSceneManager* pManager = (sFieldSceneManager*)pFieldData->m54;
-    sceneParticle_allocate(pManager, &desc, 1);
+    sParticlePoolManager* pManager = pFieldData->m54_particlePool;
+    spawnParticleInPool(pManager, &desc, 1);
 }
 
 // 06056510 — render context callback. Sets visibility and bumps mode.
