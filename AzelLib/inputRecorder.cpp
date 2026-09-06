@@ -85,6 +85,7 @@ void updateInputRecorder()
         {
             fwrite(&dev0, sizeof(sInput), 1, gFile);
             fwrite(&dev1, sizeof(sInput), 1, gFile);
+            fflush(gFile);
             gFrame++;
         }
         else // Playback overwrites live input
