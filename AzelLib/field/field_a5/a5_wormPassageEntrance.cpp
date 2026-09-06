@@ -13,6 +13,7 @@
 #include "3dModels.h"
 #include "a5_gridDeferredDraw.h"
 #include "field/field_a3/o_fld_a3_1.h"
+#include "field/fieldDragonMovement.h"
 
 extern void dispatchTutorialMultiChoiceSub2();
 
@@ -108,38 +109,6 @@ static void a5WormPassageEntrance_runUnlockTransition(sA5WormPassageEntrance* pT
     // Play the unlock sound effect from Saturn data at +0x54
     s16 soundId = readSaturnS16(data + 0x54);
     playSystemSoundEffect((s32)soundId);
-}
-
-static void a5_wormPassageEntranceDragonAutopilotUpdate(s_dragonTaskWorkArea* pDragon)
-{
-    pDragon->m24A_runningCameraScript = 3;
-    getFieldTaskPtr()->m28_status |= 0x10000;
-    getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 |= 1;
-
-    if (pDragon->m104_dragonScriptStatus == 0)
-    {
-        updateCameraScriptSub0((p_workArea)pDragon->mB8_lightWingEffect);
-        pDragon->mF8_Flags &= ~0x400;
-        pDragon->mF8_Flags |= 0x20000;
-        computeDragonSpeed(pDragon);
-        setDragonAnimationFromSpeed(pDragon);
-        pDragon->m104_dragonScriptStatus++;
-    }
-    else if (pDragon->m104_dragonScriptStatus != 1)
-    {
-        goto done;
-    }
-
-    // States 0 (after init) and 1: integrate position from delta translation
-    buildDragonRotationMatrix(&pDragon->m48, &pDragon->m20_angle);
-    copyMatrix(&pDragon->m48.m0_matrix, &pDragon->m88_matrix);
-
-    pDragon->m8_pos.m0_X = fixedPoint(pDragon->m8_pos.m0_X.m_value + pDragon->m160_deltaTranslation.m0_X.m_value);
-    pDragon->m8_pos.m4_Y = fixedPoint(pDragon->m8_pos.m4_Y.m_value + pDragon->m160_deltaTranslation.m4_Y.m_value);
-    pDragon->m8_pos.m8_Z = fixedPoint(pDragon->m8_pos.m8_Z.m_value + pDragon->m160_deltaTranslation.m8_Z.m_value);
-
-done:
-    computeDragonSpeed(pDragon);
 }
 
 // 06056F6A
@@ -239,12 +208,6 @@ static void a5WormPassageEntrance_Init(sA5WormPassageEntrance* pThis, sSaturnPtr
     }
 }
 
-// 0607a2cc
-void a5WormPassageEntrance_UpdateNullFunction()
-{
-    // Nothing, must have been some debugging function
-}
-
 // 06056C16
 static void a5WormPassageEntrance_Update(sA5WormPassageEntrance* pThis)
 {
@@ -254,7 +217,7 @@ static void a5WormPassageEntrance_Update(sA5WormPassageEntrance* pThis)
     switch (pThis->m9C_config) {
     case -1:
         if (readSaturnS16(data + 0x24)) {
-            a5WormPassageEntrance_UpdateNullFunction();
+            fieldNoop();
         }
         break;
     case 0:
@@ -283,13 +246,13 @@ static void a5WormPassageEntrance_Update(sA5WormPassageEntrance* pThis)
         }
 
         if (readSaturnS16(data + 0x24)) {
-            a5WormPassageEntrance_UpdateNullFunction();
+            fieldNoop();
         }
         break;
     case 1:
         updateFieldModelRenderContext(&pThis->mC_modelCtx);
         if (readSaturnS16(data + 0x24)) {
-            a5WormPassageEntrance_UpdateNullFunction();
+            fieldNoop();
         }
         break;
     case 2: // autopilot in tunnel
@@ -303,7 +266,7 @@ static void a5WormPassageEntrance_Update(sA5WormPassageEntrance* pThis)
             pThis->mA4_delay = 90;
 
             s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
-            pDragon->mF0 = &a5_wormPassageEntranceDragonAutopilotUpdate;
+            pDragon->mF0 = &DragonUpdateCutscene;
             pDragon->m104_dragonScriptStatus = 0;
             pDragon->mF8_Flags &= ~0x400;
             pDragon->m8_pos.m4_Y = fixedPoint(0x14000);

@@ -6,8 +6,8 @@
 #include "3dModels.h"
 #include "field/fieldParticlePool.h"
 #include "field/fieldVisibilityGrid.h"
+#include "field/fieldDebrisScatter.h"
 
-s32 a7CenteredRandom(u32 mask);
 
 // 06091d34
 static const s32 waterfallVelocityScaleTable0[] = {
@@ -88,7 +88,7 @@ static void waterfallSpawnRisingMist(s_workArea* pThis)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
     sVec3_FP pos;
-    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + a7CenteredRandom(0x3FFFF));
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + centeredRandom(0x3FFFF));
     pos.m4_Y = fixedPoint(0x4000);
     pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value - (s32)(randomNumber() & 0x1FFFF));
     sVec3_FP vel = { 0, 0, 0 };
@@ -101,11 +101,11 @@ static void waterfallSpawnSplashMist(s_workArea* pThis)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
     sVec3_FP pos;
-    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + a7CenteredRandom(0x3FFFF));
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + centeredRandom(0x3FFFF));
     pos.m4_Y = fixedPoint((s32)0xFFFF0000 - (s32)(randomNumber() & 0x1FFFF));
     pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + 0x10000);
     sVec3_FP vel;
-    vel.m0_X = fixedPoint(a7CenteredRandom(0x3FF));
+    vel.m0_X = fixedPoint(centeredRandom(0x3FF));
     vel.m4_Y = fixedPoint(0x280 - (s32)(randomNumber() & 0x7FF));
     vel.m8_Z = fixedPoint(0x100);
     s32 velScale = waterfallVelocityScaleTable0[randomNumber() & 7];
@@ -117,11 +117,11 @@ static void waterfallSpawnRisingMistVariant(s_workArea* pThis)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
     sVec3_FP pos;
-    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + a7CenteredRandom(0x1FFFF));
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + centeredRandom(0x1FFFF));
     pos.m4_Y = fixedPoint((s32)(randomNumber() & 0x1FFFF) + 0x8000);
     pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + 0x8000);
     sVec3_FP vel;
-    vel.m0_X = fixedPoint(a7CenteredRandom(0x3FF));
+    vel.m0_X = fixedPoint(centeredRandom(0x3FF));
     vel.m4_Y = fixedPoint(0x280 - (s32)(randomNumber() & 0x7FF));
     vel.m8_Z = fixedPoint(0x100);
     s32 velScale = waterfallVelocityScaleTable0[randomNumber() & 7];
@@ -135,7 +135,7 @@ static void waterfallSpawnDroplet(s_workArea* pThis)
     u8 frameCounter = *((u8*)pThis + 0xC);
     s32 tableIndex = (frameCounter & 7) * 2;
     sVec3_FP pos;
-    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + waterfallPositionOffsets[frameCounter & 7][0] + a7CenteredRandom(0x7FFF));
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + waterfallPositionOffsets[frameCounter & 7][0] + centeredRandom(0x7FFF));
     pos.m4_Y = fixedPoint(0);
     pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + waterfallPositionOffsets[frameCounter & 7][1] + (s32)(randomNumber() & 0x3FFF));
     s32 velScale = waterfallVelocityScaleTable1[randomNumber() & 7];
@@ -152,7 +152,7 @@ static void waterfallLargeSpawnFalling(s_workArea* pThis)
         xOffset = -xOffset;
     pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + xOffset);
     pos.m4_Y = fixedPoint(0);
-    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + a7CenteredRandom(0xFFFF));
+    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + centeredRandom(0xFFFF));
     s32 velScale = waterfallVelocityScaleTable1[randomNumber() & 7];
     waterfallSpawnFalling(pThis, &pos, velScale);
 }
@@ -162,13 +162,13 @@ static void waterfallLargeSpawnSplash(s_workArea* pThis, s32 spreadParam)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
     sVec3_FP pos;
-    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + a7CenteredRandom(0x1FFFF));
-    pos.m4_Y = fixedPoint(a7CenteredRandom(spreadParam - 1) + 0x10000);
-    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + a7CenteredRandom(0x7FFF));
+    pos.m0_X = fixedPoint(pData->m4_position.m0_X.m_value + centeredRandom(0x1FFFF));
+    pos.m4_Y = fixedPoint(centeredRandom(spreadParam - 1) + 0x10000);
+    pos.m8_Z = fixedPoint(pData->m4_position.m8_Z.m_value + centeredRandom(0x7FFF));
     sVec3_FP vel;
-    vel.m0_X = fixedPoint(a7CenteredRandom(0x3FF));
+    vel.m0_X = fixedPoint(centeredRandom(0x3FF));
     vel.m4_Y = fixedPoint(0x280 - (s32)(randomNumber() & 0x7FF));
-    vel.m8_Z = fixedPoint(a7CenteredRandom(0x1FF));
+    vel.m8_Z = fixedPoint(centeredRandom(0x1FF));
     s32 velScale = waterfallVelocityScaleTable0[randomNumber() & 7];
     waterfallSpawnMistB(pThis, &pos, &vel, velScale);
 }

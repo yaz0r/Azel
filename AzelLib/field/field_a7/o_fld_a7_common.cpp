@@ -644,11 +644,6 @@ struct sA7SpawnedEntity : public s_workAreaTemplateWithArg<sA7SpawnedEntity, sSa
     // Saturn size 0x208
 };
 
-s32 a7CenteredRandom(u32 mask)
-{
-    return centeredRandom(mask);
-}
-
 // 06054C34
 static void a7SpawnedEntity_Init(sA7SpawnedEntity* pThis, sSaturnPtr arg)
 {
@@ -701,12 +696,12 @@ static void a7SpawnedEntity_Init(sA7SpawnedEntity* pThis, sSaturnPtr arg)
 
     for (s32 i = 8; i != 0; i -= 2)
     {
-        spawnPos.m0_X = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
-        spawnPos.m8_Z = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
+        spawnPos.m0_X = fixedPoint(centeredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
+        spawnPos.m8_Z = fixedPoint(centeredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
         spawnParticleProjected(pFieldData->m280_particlePool, &desc, &spawnPos, &spawnDir);
 
-        spawnPos.m0_X = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
-        spawnPos.m8_Z = fixedPoint(a7CenteredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
+        spawnPos.m0_X = fixedPoint(centeredRandom(0x3FFFF) + pThis->m8_position.m0_X.m_value);
+        spawnPos.m8_Z = fixedPoint(centeredRandom(0x3FFFF) + pThis->m8_position.m8_Z.m_value);
         spawnParticleProjected(pFieldData->m280_particlePool, &desc, &spawnPos, &spawnDir);
     }
 

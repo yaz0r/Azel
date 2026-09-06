@@ -147,7 +147,8 @@ void s_cutsceneTask3::Draw(s_cutsceneTask3* pThis)
     vdp2PrintfSmallFont("count (%3d) ", pThis->m4C);
 }
 
-static void cutsceneTaskInitSub3Sub0(std::vector<s_scriptData2>& r4, std::vector<s_scriptData2>& r5)
+// 060672fa
+static void copyCameraWaypoints(std::vector<s_scriptData2>& r4, std::vector<s_scriptData2>& r5)
 {
     r5 = r4;
 }
@@ -169,7 +170,7 @@ void cutsceneTaskInitSub3(p_workArea r4, std::vector<s_scriptData2>& r11, s32 r6
     if (r11.size() == 0)
         return;
 
-    cutsceneTaskInitSub3Sub0(r11, *r14->m8C);
+    copyCameraWaypoints(r11, *r14->m8C);
 
     if (r7 == NULL)
         return;

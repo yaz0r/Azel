@@ -219,16 +219,16 @@ static void a7EnvEntity2CEffectTask_UpdateAlt_06056748(sRepairBitFormationEffect
 
         for (s32 i = 4; i != 0; i -= 2)
         {
-            spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + a7CenteredRandom(0xFFFF));
-            spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + a7CenteredRandom(0xFFFF));
+            spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + centeredRandom(0xFFFF));
+            spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + centeredRandom(0xFFFF));
             spawnParticleProjected(
                 getFieldSpecificData_A7()->m280_particlePool,
                 &desc,
                 &spawnPos,
                 &zeroVelocity);
 
-            spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + a7CenteredRandom(0xFFFF));
-            spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + a7CenteredRandom(0xFFFF));
+            spawnPos.m0_X = fixedPoint(pThis->m198_pPosition->m0_X.m_value + centeredRandom(0xFFFF));
+            spawnPos.m8_Z = fixedPoint(pThis->m198_pPosition->m8_Z.m_value + centeredRandom(0xFFFF));
             spawnParticleProjected(
                 getFieldSpecificData_A7()->m280_particlePool,
                 &desc,

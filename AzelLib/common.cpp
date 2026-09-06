@@ -649,3 +649,11 @@ fixedPoint interpolateRotation(fixedPoint r10_currentValue, fixedPoint r12_targe
         }
     }
 }
+
+// 0607a55a
+void readSaturnVec3Into(sSaturnPtr src, sVec3_FP* dst)
+{
+    dst->m0_X = readSaturnS32(src);
+    dst->m4_Y = readSaturnS32(src + 4);
+    dst->m8_Z = readSaturnS32(src + 8);
+}

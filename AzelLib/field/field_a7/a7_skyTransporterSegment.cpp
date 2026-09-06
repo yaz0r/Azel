@@ -12,6 +12,7 @@
 #include "kernel/vdp1AnimatedQuad.h"
 #include "audio/soundDriver.h"
 #include <vector>
+#include "field/fieldDebrisScatter.h"
 
 // Lazy-parsed VDP1 quad template used by cellObj1's trail spawn helper.
 static const std::vector<sVdp1Quad>* skyTransporterSegment_getTrailQuadList()
@@ -106,9 +107,9 @@ static void skyTransporterSegment_spawnTrail_0605cdcc(s_skyTransporterSegment* /
     s32 dz = MTH_Mul(fixedPoint(radius), getCos(idx)).m_value;
 
     sVec3_FP pos;
-    pos.m0_X = fixedPoint(dx + pPos->m0_X.m_value + a7CenteredRandom((u32)(radius >> 1)));
+    pos.m0_X = fixedPoint(dx + pPos->m0_X.m_value + centeredRandom((u32)(radius >> 1)));
     pos.m4_Y = pPos->m4_Y;
-    pos.m8_Z = fixedPoint(dz + pPos->m8_Z.m_value + a7CenteredRandom((u32)(radius >> 1)));
+    pos.m8_Z = fixedPoint(dz + pPos->m8_Z.m_value + centeredRandom((u32)(radius >> 1)));
 
     sVec3_FP vel;
     vel.m0_X = fixedPoint(pVel->m0_X.m_value >> 2);

@@ -27,7 +27,6 @@ static s32 searchZoneTable1(s32 posY);
 static bool isInCurrentZone0(s_fieldLCSSubStruct* pLCS);
 static bool isInCurrentZone1(s_fieldLCSSubStruct* pLCS);
 static void registerWithLCS(s_fieldLCSSubStruct* pLCS);
-static void readSaturnVec3Into(sSaturnPtr src, sVec3_FP* dst);
 
 // --- Minimal task structs for field infrastructure ---
 
@@ -230,14 +229,6 @@ struct s_C8_effectManagerTask : public s_workAreaTemplateWithArg<s_C8_effectMana
     }
 };
 
-// 0607a118
-static void FUN_FLD_C8_0607a118(s32 param1, s32 param2, s16 param3)
-{
-    enableFieldScriptSkipping();
-    exitCutsceneTaskUpdateSub0Sub1(
-        getFieldTaskPtr()->m2C_currentFieldIndex, param1, param2, (s32)param3);
-}
-
 struct s_C8_cutsceneCameraTask;
 static void FUN_FLD_C8_0605c87c(s_C8_cutsceneCameraTask* pTask, u8* pArgData);
 
@@ -324,7 +315,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
             {
                 playSystemSoundEffect(0x6A);
                 playSystemSoundEffect(0x72);
-                FUN_FLD_C8_0607a118(pThis->mC_exitParam1, pThis->m10_exitParam2, pThis->m18_exitParam3);
+                exitCutsceneTaskUpdateSub0(pThis->mC_exitParam1, pThis->m10_exitParam2, pThis->m18_exitParam3);
                 pThis->m1A_state++;
             }
         }
@@ -2554,14 +2545,6 @@ static void setupDragonPositionFromSaturn(sSaturnPtr posEA, sSaturnPtr rotEA)
     sVec3_FP pos = { readSaturnS32(posEA), readSaturnS32(posEA + 4), readSaturnS32(posEA + 8) };
     sVec3_FP rot = { readSaturnS32(rotEA), readSaturnS32(rotEA + 4), readSaturnS32(rotEA + 8) };
     setupDragonPosition(&pos, &rot);
-}
-
-// 0607a55a — copy vec3 from Saturn data
-static void readSaturnVec3Into(sSaturnPtr src, sVec3_FP* dst)
-{
-    dst->m0_X = readSaturnS32(src);
-    dst->m4_Y = readSaturnS32(src + 4);
-    dst->m8_Z = readSaturnS32(src + 8);
 }
 
 // 060542e6 — cutscene start based on entry point

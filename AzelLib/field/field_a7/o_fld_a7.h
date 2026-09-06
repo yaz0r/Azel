@@ -47,7 +47,6 @@ void initDragonParams_A7_2();
 void setGameFlagsA7_0();
 void countActiveObjectsA7();
 void createA7_simpleSubtask(p_workArea parent);
-s32 a7CenteredRandom(u32 mask);
 void createA7_itemBoxes_0(p_workArea parent);
 void createA7_fieldScriptSubtask(p_workArea parent);
 void createA7_proximityCheck(p_workArea parent);

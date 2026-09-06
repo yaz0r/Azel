@@ -637,3 +637,8 @@ void setupField(s_DataTable3* r4, s_DataTable2* r5, void(*r6)(p_workArea workAre
 
     setupFieldWithCellObjects(r4, r5, r6);
 }
+
+// 060726d8
+void fieldNoop()
+{
+}

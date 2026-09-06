@@ -567,6 +567,7 @@ void initFieldDragonLight();
 void gridCellDraw_normalSub2(s_fileBundle* r4, s32 r5, s32 r6);
 void callGridCellDraw_normalSub2(s_fileBundle* r4, s32 r5);
 void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6);
+void fieldNoop();
 void exitCutsceneTaskUpdateSub0Sub0();
 void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s32 r7);
 
