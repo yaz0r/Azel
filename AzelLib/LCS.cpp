@@ -1256,12 +1256,9 @@ void LCSTaskDrawSub1(s_LCSTask* r4)
     //606E6BC
     if (r4->m8 & 0x80)
     {
-        // This is called when LCS is canceled/finished
-        // TODO: reevaluate the logic of the test
-        bool test0 = r4->m83F_activeLaserCount || getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m38_dialogStringTask;
-        bool test1 = fieldScriptTaskUpdateSub4();
-        bool test2 = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask != nullptr;
-        if ((test0 && test2) || (!test0 && test1 && test2) || (!test1))
+        s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+        const bool busy = r4->m83F_activeLaserCount || pScript->m38_dialogStringTask || fieldScriptTaskUpdateSub4();
+        if (!busy || pScript->m48_cutsceneTask != nullptr)
         {
             r4->m8 = (r4->m8 & ~0x80) | 0x100;
         }
