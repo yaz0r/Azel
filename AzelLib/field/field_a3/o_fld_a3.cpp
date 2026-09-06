@@ -3029,7 +3029,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
             {
                 if (m30_cinematicBarTask->m0_status == 1)
                 {
-                    m30_cinematicBarTask->cinematicBars_startOpening(5);
+                    m30_cinematicBarTask->cinematicBars_startOpening(4);
                     pScript = pScript - 1;
                     return pScript;
                 }
