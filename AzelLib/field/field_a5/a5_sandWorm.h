@@ -10,7 +10,7 @@ struct sA5SandWorm : public s_workAreaTemplate<sA5SandWorm>
     u8* mC_perPartBytes;
     sVec3_FP m10_pos;
     s32 m1C_radius;
-    s32 m20_param8;
+    s32 m20_verticalAccel;
     s32 m24;
     s32 m28_param10;
     s32 m2C_param2C;

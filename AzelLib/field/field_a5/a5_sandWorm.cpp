@@ -164,6 +164,9 @@ static void a5_sandWorm_commitPose(sA5SandWorm* pThis)
 
     pThis->m5C_velocity.m0_X = MTH_Mul(fixedPoint(speed), getCos(idx));
     pThis->m5C_velocity.m8_Z = MTH_Mul(fixedPoint(speed), getSin(idx));
+
+    s32 radiusScaled2 = MTH_Mul(fixedPoint(radius), fixedPoint(0x80000)).m_value;
+    pThis->m20_verticalAccel = performDivision(pThis->m30_timer * pThis->m30_timer, radiusScaled2);
 }
 
 // 06059a86
@@ -323,7 +326,7 @@ void a5SandWorm_Update(sA5SandWorm* pThis)
     {
         if (inPositiveLane)
         {
-            pThis->m5C_velocity.m4_Y = fixedPoint(pThis->m5C_velocity.m4_Y.m_value - pThis->m20_param8);
+            pThis->m5C_velocity.m4_Y = fixedPoint(pThis->m5C_velocity.m4_Y.m_value - pThis->m20_verticalAccel);
             a5_sandWorm_stepRotation(&pThis->m5C_velocity, &pThis->m4C_rotationTarget);
             if (pThis->m30_timer < 1)
                 pThis->m140_state++;
@@ -336,7 +339,7 @@ void a5SandWorm_Update(sA5SandWorm* pThis)
         }
         else
         {
-            pThis->m5C_velocity.m4_Y = fixedPoint(pThis->m5C_velocity.m4_Y.m_value + pThis->m20_param8);
+            pThis->m5C_velocity.m4_Y = fixedPoint(pThis->m5C_velocity.m4_Y.m_value + pThis->m20_verticalAccel);
             a5_sandWorm_stepRotation(&pThis->m5C_velocity, &pThis->m4C_rotationTarget);
             if (pThis->m30_timer < 1)
                 pThis->m140_state = 0;
