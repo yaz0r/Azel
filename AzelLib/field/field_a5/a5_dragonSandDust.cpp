@@ -1,6 +1,6 @@
 #include "PDS.h"
 #include "o_fld_a5.h"
-#include "a5_wormObjectSystem.h"
+#include "a5_sandParticlePool.h"
 #include "field/fieldDragon.h"
 #include "trigo.h"
 
@@ -40,7 +40,7 @@ static const std::vector<sVdp1Quad>* getDustQuadList(u32 index)
 // 06058ae0
 static void dragonSandDust_spawnParticle(sDragonSandDustSpawnDesc* param_1)
 {
-    sA5WormObjectSystem* pSystem = getWormObjectSystem();
+    sA5SandParticlePool* pSystem = getSandParticlePool();
 
     param_1->m10_remainingCount++;
     while (param_1->m10_remainingCount != 0 && pSystem->m3728_drawCount < 0xC4)
@@ -51,7 +51,7 @@ static void dragonSandDust_spawnParticle(sDragonSandDustSpawnDesc* param_1)
         pSystem->m190_sortedIndices[drawCount] = pSystem->m8_freeIndices[drawCount];
 
         // Get particle slot
-        sA5WormParticle& particle = pSystem->m318_particles[pSystem->m190_sortedIndices[drawCount]];
+        sA5SandParticle& particle = pSystem->m318_particles[pSystem->m190_sortedIndices[drawCount]];
 
         particle.m8_position.m0_X = fixedPoint(param_1->m0_posX);
         particle.m8_position.m4_Y = fixedPoint(param_1->m4_posY);
@@ -124,7 +124,7 @@ static void dragonSandDustUpdate(sDragonSandDustTask* pThis)
 }
 
 // 06058ad8
-void createA5_wormDustTask(p_workArea parent)
+void createA5_dragonSandDustTask(p_workArea parent)
 {
     createSubTaskFromFunction<sDragonSandDustTask>(parent, &dragonSandDustUpdate);
 }

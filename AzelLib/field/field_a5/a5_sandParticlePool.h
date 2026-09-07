@@ -2,8 +2,7 @@
 
 #include "kernel/vdp1AnimatedQuad.h"
 
-// Per-particle record used by the sand/worm particle system.
-struct sA5WormParticle
+struct sA5SandParticle
 {
     sAnimatedQuad m0_quad;
     sVec3_FP m8_position;
@@ -24,21 +23,18 @@ struct sA5WormParticle
     // size 0x44
 };
 
-// Worm sand particle pool (Saturn size 0x372C).
-struct sA5WormObjectSystem : public s_workAreaTemplate<sA5WormObjectSystem>
+struct sA5SandParticlePool : public s_workAreaTemplate<sA5SandParticlePool>
 {
     s_memoryAreaOutput m0_memoryArea;
     s16 m8_freeIndices[0xC4];
     s16 m190_sortedIndices[0xC4];
-    sA5WormParticle m318_particles[0xC4];
+    sA5SandParticle m318_particles[0xC4];
     s16 m3728_drawCount;
     // Saturn size 0x372C
 };
 
-// Get the worm object system from field-specific data.
-// m8_pWormData points to &system.m8_freeIndices[0] (offset 8 into struct).
-inline sA5WormObjectSystem* getWormObjectSystem()
+inline sA5SandParticlePool* getSandParticlePool()
 {
     s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
-    return reinterpret_cast<sA5WormObjectSystem*>((u8*)pFieldData->m8_pWormData - offsetof(sA5WormObjectSystem, m8_freeIndices));
+    return reinterpret_cast<sA5SandParticlePool*>((u8*)pFieldData->m8_pSandParticlePool - offsetof(sA5SandParticlePool, m8_freeIndices));
 }

@@ -21,8 +21,8 @@ static void fieldA5_9_startTasks(p_workArea workArea)
     }
     createA5_envObjects_sub4_wormPassageEntrances(workArea); // 060570ea
     // 06059768 — empty
-    createA5_wormObjectTask(workArea);
-    createA5_wormDustTask(workArea);
+    createA5_sandParticlePoolTask(workArea);
+    createA5_dragonSandDustTask(workArea);
     createA5_exitEntityTask(workArea);
     createA5_decorObjects_night_4();
     createA5_encounterConfig(workArea, 7, 0, 0x081F, 0x200, 0xA0, 0x40, 0x1F);

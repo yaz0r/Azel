@@ -4,8 +4,6 @@
 // Animated ring lerp subtask — shared across all field overlays.
 // Moved from field_a7/a7_envEntity2C.cpp; byte-identical in A3.
 
-static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
-
 struct sAnimRingSubTask : public s_workAreaTemplateWithArg<sAnimRingSubTask, sAnimRingArg*>
 {
     s32      m0_pad0;

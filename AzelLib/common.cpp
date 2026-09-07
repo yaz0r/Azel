@@ -557,6 +557,7 @@ fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0
         }
 
         r13 -= r4;
+        // 6060716
         if (r13 < 0)
         {
             return r12;

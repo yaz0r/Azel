@@ -87,7 +87,7 @@ void createFieldSpecificDataTask_A5(p_workArea parent)
     }
 }
 
-// sA5WormObjectSystem (and sA5WormParticle) are implemented in a5_wormObjectSystem.cpp
+// sA5SandParticlePool (and sA5SandParticle) are implemented in a5_wormObjectSystem.cpp
 
 // sA5ExitEntity + setFieldExitConfig_A5 are implemented in a5_exitEntity.cpp
 

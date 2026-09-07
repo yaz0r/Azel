@@ -512,8 +512,6 @@ static void repairBit_setupTerminalSpawn_060595a2(sRepairBit* pThis,
 // sRepairBitAnimArg is now sAnimRingArg
 #define sRepairBitAnimArg sAnimRingArg
 
-static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
-
 // repairBit_spawnAnimSubTask -> spawnAnimRingSubTask (shared)
 
 // 060596a0 — late-tick anim helper: samples a random angle, builds the arg

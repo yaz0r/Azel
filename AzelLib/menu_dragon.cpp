@@ -4,7 +4,6 @@
 #include "mainMenuDebugTasks.h"
 
 // Saturn hardware divider: returns dividend / divisor
-static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
 
 struct s_dragonMenuSubTask1WorkArea : public s_workAreaTemplate<s_dragonMenuSubTask1WorkArea>
 {

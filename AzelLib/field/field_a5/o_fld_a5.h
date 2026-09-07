@@ -36,7 +36,7 @@ struct s_fieldSpecificData_A5 : public s_workAreaTemplate<s_fieldSpecificData_A5
 {
     void* m0_pEncounterConfig;
     sA5ExitEntity* m4_pExitEntity;
-    void* m8_pWormData;
+    void* m8_pSandParticlePool;
     void* mC_wormColorTable0;
     void* m10_wormColorTable1;
     s32 m14_wormColorState0;
@@ -70,7 +70,7 @@ void createA5_B_Vdp2Task(p_workArea parent);
 
 // Shared startTasks helpers
 void createFieldSpecificDataTask_A5(p_workArea parent);
-void createA5_wormObjectTask(p_workArea parent);
+void createA5_sandParticlePoolTask(p_workArea parent);
 void createA5_exitEntityTask(p_workArea parent);
 void setFieldExitConfig_A5(s32 mode, s32* pParams);
 void createA5_corridorWorm_1(p_workArea parent);
@@ -81,7 +81,7 @@ void createA5_corridorWorm_A(p_workArea parent);
 void createA5_envObject_5();
 void createA5_envObject_6();
 void createA5_envObject_A();
-void createA5_wormDustTask(p_workArea parent);
+void createA5_dragonSandDustTask(p_workArea parent);
 void createA5_wormPassageEntrance(p_workArea parent, sSaturnPtr data);
 void createA5_wormPassageEntrances_day(p_workArea parent);
 void createA5_wormPassageEntrances_night(p_workArea parent);

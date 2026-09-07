@@ -8,7 +8,7 @@ static void fieldA5_1_startTasks(p_workArea workArea)
 {
     createFieldSpecificDataTask_A5(workArea);
     createA5_corridorWorm_1(workArea);
-    createA5_wormObjectTask(workArea);
+    createA5_sandParticlePoolTask(workArea);
     createA5_exitEntityTask(workArea);
     static s32 exitParams[] = { 0x32000, (s32)0xFFFCE000 };
     setFieldExitConfig_A5(3, exitParams);

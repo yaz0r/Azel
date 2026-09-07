@@ -17,8 +17,6 @@
 
 extern void dispatchTutorialMultiChoiceSub2();
 
-static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
-
 struct sA5WormPassageEntrance : public s_workAreaTemplateWithArg<sA5WormPassageEntrance, sSaturnPtr>
 {
     s_memoryAreaOutput m0_memoryArea;

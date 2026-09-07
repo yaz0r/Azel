@@ -1,6 +1,6 @@
 #include "PDS.h"
 #include "o_fld_a5.h"
-#include "a5_wormObjectSystem.h"
+#include "a5_sandParticlePool.h"
 #include "audio/systemSounds.h"
 #include "kernel/vdp1AnimatedQuad.h"
 #include <map>
@@ -111,13 +111,13 @@ static const u32 s_windQuadListAddrs[] = { 0x06099804, 0x06099820, 0x0609983C, 0
 // 06058c10 — spawn a type-2 falling particle (gravity = 0xFFFFF334 on Y axis)
 static void a5ExitEntity_spawnFallingParticle(sVec3_FP* pPos, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
 {
-    sA5WormObjectSystem* pSystem = getWormObjectSystem();
+    sA5SandParticlePool* pSystem = getSandParticlePool();
     if (pSystem->m3728_drawCount >= 0xC4)
         return;
 
     s32 idx = pSystem->m3728_drawCount;
     pSystem->m190_sortedIndices[idx] = pSystem->m8_freeIndices[idx];
-    sA5WormParticle* pParticle = &pSystem->m318_particles[pSystem->m190_sortedIndices[idx]];
+    sA5SandParticle* pParticle = &pSystem->m318_particles[pSystem->m190_sortedIndices[idx]];
 
     pParticle->m8_position = *pPos;
     pParticle->m14_velocityX = 0;
@@ -135,7 +135,7 @@ static void a5ExitEntity_spawnFallingParticle(sVec3_FP* pPos, s32 lifetime, cons
 // 06058d32 — spawn a type-1 directional particle (velocity from angle, position offset from exit)
 static void a5ExitEntity_spawnDirectionalParticle(s32 speed, s32 angle, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
 {
-    sA5WormObjectSystem* pSystem = getWormObjectSystem();
+    sA5SandParticlePool* pSystem = getSandParticlePool();
     s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
     sA5ExitEntity* pExit = pFieldData->m4_pExitEntity;
     if (pSystem->m3728_drawCount >= 0xC4)
@@ -143,7 +143,7 @@ static void a5ExitEntity_spawnDirectionalParticle(s32 speed, s32 angle, s32 life
 
     s32 idx = pSystem->m3728_drawCount;
     pSystem->m190_sortedIndices[idx] = pSystem->m8_freeIndices[idx];
-    sA5WormParticle* pParticle = &pSystem->m318_particles[pSystem->m190_sortedIndices[idx]];
+    sA5SandParticle* pParticle = &pSystem->m318_particles[pSystem->m190_sortedIndices[idx]];
 
     pParticle->m2C_orbitAngle = angle;
     pParticle->m30_orbitAngleSpeed = 0x2D82D8;
@@ -171,13 +171,13 @@ static void a5ExitEntity_spawnDirectionalParticle(s32 speed, s32 angle, s32 life
 // pArgs layout: [0..2]=position, [5]=lifetime(s8), [6]=quadListPtr
 static void a5ExitEntity_spawnWormParticle(sVec3_FP* pPos, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
 {
-    sA5WormObjectSystem* pSystem = getWormObjectSystem();
+    sA5SandParticlePool* pSystem = getSandParticlePool();
     if (pSystem->m3728_drawCount >= 0xC4)
         return;
 
     s32 idx = pSystem->m3728_drawCount;
     pSystem->m190_sortedIndices[idx] = pSystem->m8_freeIndices[idx];
-    sA5WormParticle* pParticle = &pSystem->m318_particles[pSystem->m190_sortedIndices[idx]];
+    sA5SandParticle* pParticle = &pSystem->m318_particles[pSystem->m190_sortedIndices[idx]];
 
     pParticle->m8_position = *pPos;
     pParticle->m40_lifetime = 0x51;

@@ -10,8 +10,6 @@ fixedPoint interpolateDistance(fixedPoint r11, fixedPoint r12, fixedPoint stack0
 // Compiled identically into every field overlay. Extracted from
 // o_fld_a5.cpp and a7_envEntity2C.cpp to eliminate duplication.
 
-static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
-
 // 06085ffc (A5) / 0607e408 (A3) / 0607c9d4 (A7)
 void computeDragonSpeed(s_dragonTaskWorkArea* pDragon)
 {

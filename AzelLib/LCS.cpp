@@ -1256,6 +1256,7 @@ void LCSTaskDrawSub1(s_LCSTask* r4)
     //606E6BC
     if (r4->m8 & 0x80)
     {
+        // 606e6bc
         s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
         const bool busy = r4->m83F_activeLaserCount || pScript->m38_dialogStringTask || fieldScriptTaskUpdateSub4();
         if (!busy || pScript->m48_cutsceneTask != nullptr)

@@ -12,7 +12,6 @@
 void unloadFnt(); // defined in mainMenuDebugTasks.cpp
 void clearVdp2VRam(u32 offset, u32 size); // defined in VDP2.cpp
 void displayMemoryLayout(); // defined in PDS.cpp
-static inline s32 performDivision(s32 divisor, s32 dividend) { return dividend / divisor; }
 
 // ============================================================================
 // CPK file name table (50 entries, indexed 0x00–0x31)
@@ -1092,7 +1091,6 @@ void s_movieMainWorkArea::Delete(s_movieMainWorkArea* pThis)
     }
     vblankData.m14_numVsyncPerFrame = (u32)pThis->m4_savedVblank;
 }
-
 
 // ============================================================================
 // overlayStart_MOVIE  –  MOVIE::06054000

@@ -11,7 +11,7 @@ static void fieldA5_8_startTasks(p_workArea workArea)
     createFieldSpecificDataTask_A5(workArea);
     ((s_fieldSpecificData_A5*)getFieldTaskPtr()->mC)->m54_particlePool = createParticlePoolTask(workArea, 1, 0x40);
     createA5_baldorWormBody(workArea);
-    createA5_wormObjectTask(workArea);
+    createA5_sandParticlePoolTask(workArea);
     createA5_exitEntityTask(workArea);
     createA5_triggerZones_night(workArea);
     // 0605efe0 — init worm color tables for subfield 8
