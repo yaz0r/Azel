@@ -11,7 +11,7 @@
 #include "battle/battleDragon.h"
 
 void applyLayerDisplayConfig(const std::vector<std::array<s32, 2>>& r4);
-void setupCinematicBarData(int param1, std::array<u32, 256>& dataArray, u32 vdpOffset, int numEntries);
+void setupCinematicBarData(int param1, void* dataArray, u32 vdpOffset, int numEntries);
 
 // 060b01e6
 static bool BTL_X0_env_checkFlag()
@@ -78,7 +78,7 @@ static void BTL_X0_env_Init(sVdp2PlaneTask* pThis)
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
     initRotationCoefficientTables(5, getVdp2Vram(0x2A000));
 
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m7C_lineScrollParams.m0_buffer, 0x25E24000, 0xC0);
+    setupCinematicBarData(1, pThis->m7C_lineScrollParams.m0_buffer, 0x25E24000, 0xC0);
 
     *(u16*)getVdp2Vram(0x2A400) = 0x700;
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
