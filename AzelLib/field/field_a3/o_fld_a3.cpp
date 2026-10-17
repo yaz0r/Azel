@@ -2196,12 +2196,58 @@ void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub3()
     m50_scriptDelay = 0;
 }
 
+// 06093960 (A3) task definition: {0606afbc, 00000000, 0606b044, 0606b09a}
+// The voice a field script plays (opcode 34). The Saturn streams it from the CD
+// like sBattleVoiceOverTask does; here SoLoud plays it.
+struct sFieldPCMTask : public s_workAreaTemplateWithArg<sFieldPCMTask, sSaturnPtr>
+{
+    static TypedTaskDefinition* getTypedTaskDefinition()
+    {
+        static TypedTaskDefinition taskDefinition = { &Init, nullptr, &Draw, &Delete };
+        return &taskDefinition;
+    }
+
+    // 0606afbc (A3)
+    static void Init(sFieldPCMTask* pThis, sSaturnPtr pPcmNameEA)
+    {
+        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m4C_PCMTask = pThis;
+        pThis->m_soloudHandle = playPCMFile((const char*)getSaturnPtr(pPcmNameEA));
+    }
+
+    // 0606b044 (A3)
+    static void Draw(sFieldPCMTask* pThis)
+    {
+        if (!gSoloud.isValidVoiceHandle(pThis->m_soloudHandle))
+        {
+            pThis->getTask()->markFinished();
+        }
+    }
+
+    // 0606b09a (A3)
+    static void Delete(sFieldPCMTask* pThis)
+    {
+        if (gSoloud.isValidVoiceHandle(pThis->m_soloudHandle))
+        {
+            gSoloud.stop(pThis->m_soloudHandle);
+        }
+
+        if (getFieldTaskPtr()->m8_pSubFieldData)
+        {
+            getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m4C_PCMTask = nullptr;
+        }
+    }
+
+    // C++ only: replaces the Saturn's PCM stream (Saturn size 0x1DC)
+    SoLoud::handle m_soloudHandle;
+};
+
+// 0606b162 (A3)
 void endScript()
 {
     s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-    if (pScript->m4C_PCMPlaying)
+    if (pScript->m4C_PCMTask)
     {
-        pScript->getTask()->markFinished();
+        pScript->m4C_PCMTask->getTask()->markFinished();
     }
 }
 
@@ -2868,10 +2914,14 @@ void createMultiChoiceDefault(s32 r4)
     createMultiChoice(r4, -1);
 }
 
+// 0606b114 (A3)
 s32 fieldPlayPCM(sSaturnPtr pPcmNameEA)
 {
-    const char* pPcmName = (const char*)getSaturnPtr(pPcmNameEA);
-    playPCMFile(pPcmName);
+    s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+    if (findMandatoryFileOnDisc((const char*)getSaturnPtr(pPcmNameEA)) && (pScript->m4C_PCMTask == nullptr))
+    {
+        createSubTaskWithArg<sFieldPCMTask>(pScript, pPcmNameEA);
+    }
     return 0;
 }
 
@@ -3169,7 +3219,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
                 }
             }
         case 34: // play PCM
-            if (!m4C_PCMPlaying)
+            if (!m4C_PCMTask)
             {
                 pScript = pScript + 3;
                 pScript.m_offset &= ~3;
