@@ -2205,6 +2205,7 @@ void endScript()
     }
 }
 
+// 06069804 (A3)
 void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub2()
 {
     fieldScriptTaskUpdateSub2Sub1();
@@ -2219,8 +2220,8 @@ void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub2()
         if (m60_canSkipScript)
         {
             endScript();
+            m50_scriptDelay = 0;
         }
-        m50_scriptDelay = 0;
     }
 }
 
