@@ -125,7 +125,7 @@ void postBattleSound_A5_nightA();
 void postBattleSound_A5_nightB();
 void postBattleSound_A5_corridor();
 
-// 0607c584 — set dragon position + rotation from Saturn data, build rotation matrix, update camera
+// 0607c584 - set dragon position + rotation from Saturn data, build rotation matrix, update camera
 void setupDragonPositionAndCamera_A5(sSaturnPtr posEA, sSaturnPtr rotEA);
 
 // Cutscene camera init (loads script data and kicks cutscene)

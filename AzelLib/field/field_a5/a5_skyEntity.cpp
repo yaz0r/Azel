@@ -75,7 +75,7 @@ static void a5SkyEntity_Init(sA5SkyEntity* p, sSaturnPtr arg)
         &p->m3C_renderPosition, nullptr, 2, 0, -1, 0, 0);
 }
 
-// 0605b32c — sky entity rotation animation state machine. Manages a
+// 0605b32c - sky entity rotation animation state machine. Manages a
 // random acceleration/deceleration cycle for the floating sky object's
 // Y rotation. Three states: 0 = accelerate from stop, 1 = direction
 // switch, 2 = cruise/decelerate.

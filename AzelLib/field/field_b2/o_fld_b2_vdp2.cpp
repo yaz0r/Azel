@@ -188,7 +188,7 @@ void createB2Vdp2Task_0(p_workArea parent)
 }
 
 // ============================================================
-// Subfield 1 VDP2 task (oasis — minimal, no rotation planes)
+// Subfield 1 VDP2 task (oasis - minimal, no rotation planes)
 // ============================================================
 
 // 0605A458
@@ -222,7 +222,7 @@ static void b2Vdp1Init(sVdp2PlaneTask* pThis)
 // 0605A516
 static void b2Vdp1Update(sVdp2PlaneTask* pThis)
 {
-    // empty — confirmed from Ghidra
+    // empty - confirmed from Ghidra
 }
 
 void createB2Vdp2Task_1(p_workArea parent)
@@ -232,7 +232,7 @@ void createB2Vdp2Task_1(p_workArea parent)
 }
 
 // ============================================================
-// Subfield 2 VDP2 task (underground — single rotation pass)
+// Subfield 2 VDP2 task (underground - single rotation pass)
 // ============================================================
 
 // 0605AF1C
@@ -291,7 +291,7 @@ static void b2Vdp2Init(sVdp2PlaneTask* pThis)
 // 0605B04A
 static void b2Vdp2Update(sVdp2PlaneTask* pThis)
 {
-    // empty — confirmed from Ghidra
+    // empty - confirmed from Ghidra
 }
 
 // 0605B0EC
@@ -330,10 +330,10 @@ void createB2Vdp2Task_2(p_workArea parent)
 }
 
 // ============================================================
-// Subfield 3 VDP2 task (return desert — night, with line scroll)
+// Subfield 3 VDP2 task (return desert - night, with line scroll)
 // ============================================================
 
-// 0605b3d0 — line scroll update for subfield 3 (uses shared updateLineScrollTable)
+// 0605b3d0 - line scroll update for subfield 3 (uses shared updateLineScrollTable)
 
 // 0605B724
 static void b2Vdp3Init(sVdp2PlaneTask* pThis)

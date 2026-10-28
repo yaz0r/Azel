@@ -10,5 +10,5 @@ struct sA7EnvEntity54ParticlesArg
     u16 m6_val;
 };
 
-// 0605d45a — create the 0x38-byte particle sub-task owned by sA7EnvEntity54.
+// 0605d45a - create the 0x38-byte particle sub-task owned by sA7EnvEntity54.
 void a7EnvEntity54Particles_create(p_workArea parent, sA7EnvEntity54ParticlesArg* pArg);

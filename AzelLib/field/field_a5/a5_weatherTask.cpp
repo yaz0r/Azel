@@ -16,11 +16,11 @@ struct sA5WeatherTask : public s_workAreaTemplate<sA5WeatherTask>
     // Saturn size 0xD0
 };
 
-// Saturn quad definition source at FLD_A5::0609A25C — loaded once into this
+// Saturn quad definition source at FLD_A5::0609A25C - loaded once into this
 // static vector so particleInitSub can reference it.
 static std::vector<sVdp1Quad> s_weatherQuadData;
 
-// Saturn vec3 table at FLD_A5::0608B5FC — null-terminated list of pointers
+// Saturn vec3 table at FLD_A5::0608B5FC - null-terminated list of pointers
 // to 47 sVec3_FP-equivalent records each 20 bytes apart starting at 0608B250.
 static constexpr u32 kWeatherPositionTableAddr = 0x0608B5FC;
 static constexpr u32 kWeatherCenterPositionAddr = 0x0608B250;

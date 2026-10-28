@@ -641,7 +641,7 @@ int computeDragonDamage(int damageValue)
     return finalComputedDamage;
 }
 
-// BTL_A3::0605bb9a createDamageDisplayNumber — implemented in battleDamageDisplay.cpp
+// BTL_A3::0605bb9a createDamageDisplayNumber - implemented in battleDamageDisplay.cpp
 
 // BTL_A3::0609ff48
 void s_battleDragon_UpdateSub4(s_battleDragon* pThis)

@@ -6,7 +6,7 @@
 #include "kernel/fileBundle.h"
 #include "mainMenuDebugTasks.h"
 
-// 060a33a2 (BTL_A5) / 0609c5b2 (BTL_A3) — shared across all battle overlays
+// 060a33a2 (BTL_A5) / 0609c5b2 (BTL_A3) - shared across all battle overlays
 s32 createBattleEnemyModels(s_workArea* pOwner, s_fileBundle* pBundle, u8& modelCount, std::vector<s_3dModel>& models, sSaturnPtr dataTable, u8 count)
 {
     modelCount = count;
@@ -45,7 +45,7 @@ s32 createBattleEnemyModels(s_workArea* pOwner, s_fileBundle* pBundle, u8& model
     return 1;
 }
 
-// 060a35bc (BTL_A5) — shared across all battle overlays
+// 060a35bc (BTL_A5) - shared across all battle overlays
 static void initModelTargetables(s_workArea* pOwner, s_3dModel* pModel)
 {
     pModel->m50_targetBoneCount = pModel->m12_numBones;
@@ -75,7 +75,7 @@ static void initModelTargetables(s_workArea* pOwner, s_3dModel* pModel)
     }
 }
 
-// 060a344e (BTL_A5) — shared across all battle overlays
+// 060a344e (BTL_A5) - shared across all battle overlays
 void initBattleEnemyTargetableData(u8* pEnemy)
 {
     *(u16*)(pEnemy + 0xB4) = 0;
@@ -91,7 +91,7 @@ void initBattleEnemyTargetableData(u8* pEnemy)
     *(u32*)(pEnemy + 0x154) = 0;
 }
 
-// 060a3488 (BTL_A5) — shared across all battle overlays
+// 060a3488 (BTL_A5) - shared across all battle overlays
 void initBattleEnemyTargetables(s_workArea* pEnemy, u8 modelCount, std::vector<s_3dModel>& models)
 {
     initBattleEnemyTargetableData((u8*)pEnemy);

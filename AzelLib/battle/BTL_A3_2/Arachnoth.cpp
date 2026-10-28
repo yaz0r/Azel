@@ -250,7 +250,7 @@ void arachnoth_enterDeathState(sArachnothFormation* pThis)
     pThis->m27C[1] = pThis->m278_targetedQuadrant << 0x1A;
     pThis->m230 = *pThis->m240;
     arachnoth_setEnragedIdleAnimation(pThis);
-    // 060562c6 — reset quadrant radar for death transition
+    // 060562c6 - reset quadrant radar for death transition
     battleEngine_FlagQuadrantBitForDanger(0);
     for (u32 q = 0; q < 4; q++)
     {
@@ -919,7 +919,7 @@ void arachnoth_chargeAttack_update(sArachnothFormation* pThis)
             arachnoth_createChargeImpact(pThis);
         }
         MTH_Mul(-pThis->m288[2], 0x28F); // result discarded in original
-        return; // early return — case 3 loops until outer timer expires, skips common tail
+        return; // early return - case 3 loops until outer timer expires, skips common tail
     }
     case 4: // Unconscious
         if (pThis->m2BC_attackTimer == 0x1E)
@@ -1119,7 +1119,7 @@ static void arachnoth_eatDragonAttack_update(sArachnothFormation* pThis)
     {
         // Compute diff (return value unused by caller)
         MTH_Mul(gBattleManager->m10_battleOverlay->m18_dragon->m8_position[0] - pThis->m308_eatDragonPosition[0], 0x28F);
-        return; // early return — skip m2C4 increment
+        return; // early return - skip m2C4 increment
     }
     case 2:
     {
@@ -1159,7 +1159,7 @@ static void arachnoth_eatDragonAttack_update(sArachnothFormation* pThis)
     case 3:
         if (pThis->m2C4_currentAttackDelay == 0x4F)
         {
-            // Set up camera on dragon — return early (no m2C4 increment)
+            // Set up camera on dragon - return early (no m2C4 increment)
             pThis->m2CC = gBattleManager->m10_battleOverlay->m18_dragon->m8_position;
             pThis->m2CC[1] += 0xA000;
             pThis->m2CC[0] += MTH_Mul(0x4000, getSin((pThis->m278_targetedQuadrant << 0x1A) >> 16));
@@ -1180,7 +1180,7 @@ static void arachnoth_eatDragonAttack_update(sArachnothFormation* pThis)
         break;
     case 4:
     {
-        // Damage phase — random angular jitter, apply damage at frame 0x71
+        // Damage phase - random angular jitter, apply damage at frame 0x71
         if ((randomNumber() & 7) == 0) pThis->m254[2] += 0x16C16C;
         if ((randomNumber() & 7) == 0) pThis->m254[2] -= 0x16C16C;
 
@@ -1210,7 +1210,7 @@ static void arachnoth_eatDragonAttack_update(sArachnothFormation* pThis)
     }
     case 5:
     {
-        // Release phase — camera descends, smoke puffs
+        // Release phase - camera descends, smoke puffs
         pThis->m2CC[1] -= 0x280;
         if (pThis->m2C4_currentAttackDelay < 0x8C && (randomNumber() & 1) == 0)
         {
@@ -1378,7 +1378,7 @@ static void arachnoth_restoreCameraCommon()
     }
 }
 
-// 0607e030 — camera restore after attack (used by most finish functions)
+// 0607e030 - camera restore after attack (used by most finish functions)
 static void arachnoth_restoreCameraAfterAttack()
 {
     arachnoth_restoreCameraCommon();
@@ -1392,7 +1392,7 @@ static void arachnoth_restoreCameraAfterAttack()
     }
 }
 
-// 0607e14c — camera restore (used by state 5 finish / unconscious end)
+// 0607e14c - camera restore (used by state 5 finish / unconscious end)
 static void arachnoth_restoreCamera()
 {
     arachnoth_restoreCameraCommon();
@@ -1405,7 +1405,7 @@ static void arachnoth_restoreCamera()
     }
 }
 
-// 28-bit angle sign extension — matches Saturn SH-2 behavior
+// 28-bit angle sign extension - matches Saturn SH-2 behavior
 static fixedPoint signExtend28(s32 value)
 {
     if (value & 0x8000000)
@@ -1483,7 +1483,7 @@ static void arachnoth_updateState8(sArachnothFormation* pThis)
         {
             if (pThis->m2C4_currentAttackDelay == 0xD2)
             {
-                // 0605c796 — kill tentacles immediately (mode 4, no retraction)
+                // 0605c796 - kill tentacles immediately (mode 4, no retraction)
                 for (int i = 0; i < 2; i++) {
                     for (int j = 0; j < 3; j++) {
                         pThis->m314_tentacles[i][j]->m188_currentMode = 4;
@@ -1531,8 +1531,8 @@ static void arachnoth_updateState8(sArachnothFormation* pThis)
 
             if (!(randomNumber() & 1))
             {
-                // Spawn bile projectile during death — visual effect
-                Unimplemented(); // FUN_0605a4ec — death bile projectile
+                // Spawn bile projectile during death - visual effect
+                Unimplemented(); // FUN_0605a4ec - death bile projectile
                 playSystemSoundEffect(0x71);
             }
         }
@@ -1611,7 +1611,7 @@ static void arachnoth_updateState9(sArachnothFormation* pThis)
 
         s16 textIndex = (s16)readSaturnS32(tableBase + entryOffset);
         s32 duration = readSaturnS32(tableBase + entryOffset + 8);
-        // FUN_0606d68a — display battle reward text with PCM
+        // FUN_0606d68a - display battle reward text with PCM
         // The function creates a text display task showing reward items
         arachnoth_showBattleText(textIndex, (s16)duration);
 
@@ -1652,7 +1652,7 @@ static void arachnoth_disableAllTargetables(sArachnothFormation* pThis)
     arachnoth_disableSubModelTargetables(&pThis->m128_eatDragonBody);
 }
 
-// 06058f2e — transition from state 8 to state 9
+// 06058f2e - transition from state 8 to state 9
 static void arachnoth_transitionToState9(sArachnothFormation* pThis)
 {
     pThis->m2D8.zeroize();
@@ -1676,7 +1676,7 @@ static void arachnoth_transitionToState9(sArachnothFormation* pThis)
     pThis->m2C0_currentAttackState = 0;
 }
 
-// 06058f10 — state 8 finish
+// 06058f10 - state 8 finish
 static void arachnoth_deathAnimation_finish(sArachnothFormation* pThis)
 {
     if (pThis->m344[1] != 0)
@@ -1686,7 +1686,7 @@ static void arachnoth_deathAnimation_finish(sArachnothFormation* pThis)
     }
 }
 
-// 060591d4 — state 9 finish
+// 060591d4 - state 9 finish
 static void arachnoth_deathCinematic_finish(sArachnothFormation* pThis)
 {
     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
@@ -1769,7 +1769,7 @@ void arachnoth_updateState(sArachnothFormation* pThis)
         if ((!battleEngine_isPlayerTurnActive() || battleEngine_isBattleIntroFinished()) &&
             arachnoth_isCurrentAttackDone(pThis))
         {
-            // 0605a354 — unconscious end cleanup
+            // 0605a354 - unconscious end cleanup
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m8 = 0;
             gBattleManager->m10_battleOverlay->m4_battleEngine->m3CC->m0 = 0;
             pThis->m2B0_arachnothState = ARACHNOTH_IDLE;
@@ -1903,7 +1903,7 @@ static void smokePuff_draw(sSmokePuffTask* pThis)
     pushCurrentMatrix();
     translateCurrentMatrix(pThis->m28_position);
     rotateCurrentMatrixYXZ(*pThis->mC_rotationPtr);
-    // Draw using the model's draw function — but we don't have a model
+    // Draw using the model's draw function - but we don't have a model
     // The smoke puff is a visual-only effect; skip for now
     popMatrix();
 }
@@ -2170,8 +2170,8 @@ void arachnothFormation_update(sArachnothFormation* pThis)
     pThis->m288[2] += pThis->m288[1];
     pThis->m288[0] = 0;
 
-    // TODO: arachnothFormation_updateSub8 — applies m288[2] jaw rotation to sub-model bones
-    // TODO: arachnoth_spawnSmokePuff — random smoke puff particles around boss
+    // TODO: arachnothFormation_updateSub8 - applies m288[2] jaw rotation to sub-model bones
+    // TODO: arachnoth_spawnSmokePuff - random smoke puff particles around boss
 }
 
 // 06054f2c

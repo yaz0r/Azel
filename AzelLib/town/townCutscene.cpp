@@ -75,7 +75,7 @@ s32 GFS_NwFread(GfsHn handle, s32 numSectors, u8* buffer, s32 bufferSize)
 
 void GFS_NwCdRead(GfsHn handle)
 {
-    // no-op on PC — reads are synchronous via fread in GFS_NwFread
+    // no-op on PC - reads are synchronous via fread in GFS_NwFread
 }
 
 sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 bufferSize, u8* audioBuffer, u32 audioBufferSize)
@@ -140,7 +140,7 @@ sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 buf
 
 void GFS_SetTransPara(GfsHn hanfle, s32 numSectors)
 {
-    // no-op on PC — Saturn CD transfer parameter setup
+    // no-op on PC - Saturn CD transfer parameter setup
 }
 
 void prereadStreamingData(sStreamingFile* param_1)

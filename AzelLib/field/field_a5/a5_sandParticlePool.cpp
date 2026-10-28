@@ -149,7 +149,7 @@ static s32 a5SandParticle_Update_Type2(sA5SandParticle* p)
 
     if (p->m8_position.m4_Y.asS32() <= pExit->m28_exitTargetZ_mode3)
     {
-        return 1; // below threshold — remove
+        return 1; // below threshold - remove
     }
     return 0;
 }

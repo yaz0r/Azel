@@ -72,7 +72,7 @@ static void BTL_A5_dualFormation_Update(sBTL_A5_DualFormation* pThis)
         battleEngine_FlagQuadrantBitForDanger(1);
     }
 
-    // both groups dead → battle complete
+    // both groups dead -> battle complete
     if (pThis->m284_allSwarmDead == 1 && pThis->m288_allSingleDead == 1)
     {
         pThis->m28_state = 10;

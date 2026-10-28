@@ -11,7 +11,7 @@ static void a5VdpInit(sVdp2PlaneTask* pThis);
 static void a5VdpUpdate(sVdp2PlaneTask* pThis);
 static void a5VdpDraw(sVdp2PlaneTask* pThis);
 
-// 0605C87E — shared palette loading for all A5 subfields
+// 0605C87E - shared palette loading for all A5 subfields
 static void a5LoadPalettes()
 {
     asyncDmaCopy(gFLD_A5->getSaturnPtr(0x0609B644), getVdp2Cram(0x2A0), 0x20, 0);
@@ -63,7 +63,7 @@ static void a5LoadPalettes()
     }
 }
 
-// 0605CA44 — init palette animation buffer
+// 0605CA44 - init palette animation buffer
 static void a5InitPaletteAnimation(sVdp2PlaneTask* pThis)
 {
     memcpy(pThis->m78_auxBuffer, getSaturnPtr(gFLD_A5->getSaturnPtr(0x0609A5C4)), 0x60);
@@ -170,7 +170,7 @@ static void a5VdpInit(sVdp2PlaneTask* pThis)
     a5InitPaletteAnimation(pThis);
 }
 
-// 0605CE28 — shared palette animation update + DMA
+// 0605CE28 - shared palette animation update + DMA
 static void a5PaletteAnimUpdate(sVdp2PlaneTask* pThis)
 {
     const u8* src = getSaturnPtr(gFLD_A5->getSaturnPtr(0x0609A5C4));
@@ -201,7 +201,7 @@ static void a5PaletteAnimUpdate(sVdp2PlaneTask* pThis)
     asyncDmaCopy(dst, vdp2Palette, 0x60, 2);
 }
 
-// 0605CF22 — night-only secondary palette animation (star/sky colors)
+// 0605CF22 - night-only secondary palette animation (star/sky colors)
 static void a5NightPaletteAnimUpdate()
 {
     static const u32 animTableAddrs[] = {
@@ -495,7 +495,7 @@ static void a5NightVdpUpdate(sVdp2PlaneTask* pThis)
     a5NightPaletteAnimUpdate();
 }
 
-// 0605DB14 — night ground plane rotation setup
+// 0605DB14 - night ground plane rotation setup
 static void a5NightSetupRotationPass0(sVdp2PlaneTask* pThis)
 {
     sCoefficientTableData& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
@@ -549,7 +549,7 @@ static void a5NightSetupRotationPass0(sVdp2PlaneTask* pThis)
         + coeff.m40 * -0x10000);
 }
 
-// 0605D4EC — night scroll offset computation
+// 0605D4EC - night scroll offset computation
 static s32 a5NightComputeScrollOffset()
 {
     sCoefficientTableData& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
@@ -712,14 +712,14 @@ static void a5BossVdpInit(sVdp2PlaneTask* pThis)
     pThis->m38 = (s32)0xFFFF8000;
 }
 
-// 0605E1B4 — boss ground plane rotation setup (same as night version)
+// 0605E1B4 - boss ground plane rotation setup (same as night version)
 static void a5BossSetupRotationPass0(sVdp2PlaneTask* pThis)
 {
     // Identical to a5NightSetupRotationPass0
     a5NightSetupRotationPass0(pThis);
 }
 
-// 0605DF68 — set sign bit on all coefficient entries (hides sky layer)
+// 0605DF68 - set sign bit on all coefficient entries (hides sky layer)
 static void a5BossInvalidateCoefficients()
 {
     u32* pCoeff = (u32*)(*gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex]).data();

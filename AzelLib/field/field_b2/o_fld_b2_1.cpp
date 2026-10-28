@@ -76,14 +76,14 @@ void createB2AmbientSoundTask(p_workArea parent)
     createSubTask<sB2AmbientSoundTask>(parent, &definition);
 }
 
-// 0605fb5a — create item boxes for subfield 1 (oasis)
+// 0605fb5a - create item boxes for subfield 1 (oasis)
 static void createB2ItemBoxes_1()
 {
     createFieldItemBox(readItemBoxDefinition(gFLD_B2->getSaturnPtr(0x0608cd30)));
     createFieldItemBox(readItemBoxDefinition(gFLD_B2->getSaturnPtr(0x0608cd78)));
 }
 
-// 06059eaa — subfield 1 startTasks callback
+// 06059eaa - subfield 1 startTasks callback
 static void b2_startTasks_1(p_workArea workArea)
 {
     createFieldSpecificDataTask_B2(workArea);
@@ -91,14 +91,14 @@ static void b2_startTasks_1(p_workArea workArea)
     s_fieldSpecificData_B2* pFieldData = getFieldSpecificData_B2();
     pFieldData->m3C_particlePool = createParticlePoolTask(workArea, 3, 0x40);
 
-    Unimplemented(); // FUN_FLD_B2__060559ea — create env object (0x12C oasis plants task)
+    Unimplemented(); // FUN_FLD_B2__060559ea - create env object (0x12C oasis plants task)
     createB2ItemBoxes_1();
     createB2AmbientSoundTask(workArea);
 
     setSoundDistanceParams(0x200000, 0x6E);
 }
 
-// 06054412 — subfield 1 (oasis)
+// 06054412 - subfield 1 (oasis)
 void subfieldB2_1(p_workArea workArea)
 {
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
@@ -157,6 +157,6 @@ void subfieldB2_1(p_workArea workArea)
     // 06056e84 is empty
     startFieldScript(0x11, -1);
 
-    // 0x360 in subFieldData — debug making mode function (no member in C++ struct)
+    // 0x360 in subFieldData - debug making mode function (no member in C++ struct)
     // pFieldTask->m8_pSubFieldData->m360 = &b2_debugMakingMode;
 }

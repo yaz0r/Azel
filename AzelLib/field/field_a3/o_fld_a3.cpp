@@ -14,7 +14,7 @@
 #include "field/dragonLightWingEvolution.h"
 #include "field/fieldParticlePool.h"
 
-// createLightWingEffect — moved to field/fieldDragon.cpp
+// createLightWingEffect - moved to field/fieldDragon.cpp
 
 #include "audio/systemSounds.h"
 #include "kernel/animation.h"
@@ -424,7 +424,7 @@ void setupField2(s_DataTable3* r4, void(*r5)(p_workArea workArea))
 
         if (pFieldCameraTask1->m28 & 1)
         {
-            //06070FE0 — vertical grid mode (tower): grid X maps to world Y
+            //06070FE0 - vertical grid mode (tower): grid X maps to world Y
             pFieldCameraTask1->mC[0] = 0;
             {
                 s32 r3 = r4->m10_gridSize[0] * pFieldCameraTask1->m20_cellDimensions[0];
@@ -852,7 +852,7 @@ p_workArea create_A3_Obj0(s_visdibilityCellTask* r4, s_DataTable2Sub0& r5, s32 r
     return pNewTask;
 }
 
-// 0605a032 — particle update: static position, never expires
+// 0605a032 - particle update: static position, never expires
 s32 particleUpdateStatic(sParticleSlot* pSlot)
 {
     sGunShotTask_UpdateSub4(&pSlot->m2C_animQuad);
@@ -1628,9 +1628,9 @@ static void fieldPaletteInit(sVdp2PlaneTask* pThis)
     pThis->m48 = 0xF5A;
 }
 
-// 060590ae — moved to shared/vdp2PlaneTask.cpp as vdp2SetupRotationPass
+// 060590ae - moved to shared/vdp2PlaneTask.cpp as vdp2SetupRotationPass
 
-// 060588e0 — moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
+// 060588e0 - moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
 
 // 06058d94
 static void fieldPaletteNegateCoefficients()
@@ -2041,7 +2041,7 @@ void markMultiChoiceEntrySeen(s32 result)
     }
 }
 
-// 0605f3c4 — reads next string EA from script, advances script pointer
+// 0605f3c4 - reads next string EA from script, advances script pointer
 static s32 tutorialScriptTask_readNextString(sSaturnPtr& script)
 {
     u8 opcode = readSaturnU8(script);
@@ -2495,7 +2495,7 @@ s32 FLD_A3_data::executeNative(sSaturnPtr ptr)
             assert(0);
         }
         return 0; // result ignored?
-    case 0x060730bc: // 060730bc — destination multichoice dialog
+    case 0x060730bc: // 060730bc - destination multichoice dialog
     {
         s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
         if (pRadar->m1C_encounterList != nullptr)
@@ -3080,7 +3080,7 @@ static bool checkGameStateBit(u32 bitIndex)
     return (bitMasks[bitInByte] & mainGameState.bitField[byteIndex]) != 0;
 }
 
-// 06072f8a — build filtered choice list from radar destination entries
+// 06072f8a - build filtered choice list from radar destination entries
 static s32 radarBuildFilteredChoiceList(s_FieldRadar* pRadar)
 {
     s32 count = pRadar->m14_encounterCount - 1;
@@ -3093,7 +3093,7 @@ static s32 radarBuildFilteredChoiceList(s_FieldRadar* pRadar)
         u32 bitIndex = *(u32*)(((u8*)pEntry) + 0x18);
         if (!checkGameStateBit(bitIndex))
         {
-            // Destination not available — if current selection points here, reset it
+            // Destination not available - if current selection points here, reset it
             if (pRadar->m18_currentSelection == pRadar->m14_encounterCount - i)
             {
                 pRadar->m18_currentSelection = 0;
@@ -3145,7 +3145,7 @@ static s32 radarBuildFilteredChoiceList(s_FieldRadar* pRadar)
     return pRadar->m24_filteredChoiceCount;
 }
 
-// 06072df0 — find the filtered index for the current selection
+// 06072df0 - find the filtered index for the current selection
 static s32 radarFindFilteredIndex(s_FieldRadar* pRadar, s32 selection)
 {
     s32 filteredIndex = -1;
@@ -3163,7 +3163,7 @@ static s32 radarFindFilteredIndex(s_FieldRadar* pRadar, s32 selection)
     return filteredIndex;
 }
 
-// 06012768 — check if destination selection is available at current field/subfield
+// 06012768 - check if destination selection is available at current field/subfield
 static bool canSelectDestinationAtCurrentField()
 {
     s16 fieldIndex = getFieldTaskPtr()->m2C_currentFieldIndex;
@@ -3197,7 +3197,7 @@ static bool canSelectDestinationAtCurrentField()
     return false;
 }
 
-// 06071c34 — open destination script based on availability
+// 06071c34 - open destination script based on availability
 static void openDestinationScript()
 {
     sSaturnPtr scriptEA;
@@ -3222,7 +3222,7 @@ void createFieldOverlaySubTask(s_workArea* pWorkArea)
     createSubTask<sFieldCameraManager>(pWorkArea);
 }
 
-// s_DragonRiderTask, createDragonRiderTask, initDragonFieldStateSub2/3/4 — moved to field/fieldDragon.cpp
+// s_DragonRiderTask, createDragonRiderTask, initDragonFieldStateSub2/3/4 - moved to field/fieldDragon.cpp
 
 void initDragonSpeed(u32 arg)
 {
@@ -3255,7 +3255,7 @@ void initDragonSpeed(u32 arg)
     }
 }
 
-// initDragonFieldState, initDragonFieldAnimation, isDragonInFieldBounds — moved to field/fieldDragon.cpp
+// initDragonFieldState, initDragonFieldAnimation, isDragonInFieldBounds - moved to field/fieldDragon.cpp
 
 // 06071bec
 void startScriptLeaveArea()
@@ -3420,7 +3420,7 @@ std::vector<s8> getFieldDragonAnimTable(int type, int subtype)
     return result;
 }
 
-// 06012674 — per-field terrain callback
+// 06012674 - per-field terrain callback
 static void fieldTerrainCallback(s32 subFieldIndex, sVec3_FP* pPos, sVec3_FP* pAngle)
 {
     // Table at 0x0020a388 indexed by current field index
@@ -3429,14 +3429,14 @@ static void fieldTerrainCallback(s32 subFieldIndex, sVec3_FP* pPos, sVec3_FP* pA
     Unimplemented();
 }
 
-// 0602f8e4 — read dragon pos and transform for special fields (0xF, 0x12)
+// 0602f8e4 - read dragon pos and transform for special fields (0xF, 0x12)
 static void readAndTransformDragonPos(sVec3_FP* pOut)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     pOut->m0_X = pDragon->m8_pos[0];
     pOut->m4_Y = pDragon->m8_pos[1];
     pOut->m8_Z = pDragon->m8_pos[2];
-    Unimplemented(); // FUN_0602f87c — transform pos based on sub-field offsets
+    Unimplemented(); // FUN_0602f87c - transform pos based on sub-field offsets
 }
 
 void dragonFieldTaskDrawSub3Sub0()
@@ -3456,7 +3456,7 @@ void dragonFieldTaskDrawSub3Sub0()
     r4->m44 = r4->m68.begin();
 }
 
-// s_dragonTaskWorkArea::Draw — moved to field/fieldDragon.cpp
+// s_dragonTaskWorkArea::Draw - moved to field/fieldDragon.cpp
 
 void initFieldDragon(s_workArea* pWorkArea, u32 param)
 {
@@ -3490,7 +3490,7 @@ u8 convertCameraPositionTo2dGrid(s_visibilityGridWorkArea* pFieldCameraTask1)
 
     if (pFieldCameraTask1->m28 & 1)
     {
-        //06070FE0 — vertical grid mode (tower): grid X maps to world Y
+        //06070FE0 - vertical grid mode (tower): grid X maps to world Y
         X = intDivide(pFieldCameraTask1->m20_cellDimensions[0], pFieldCameraTask1->m0_position[1]);
         if (pFieldCameraTask1->m0_position[1] < 0)
         {
@@ -3656,7 +3656,7 @@ static void LCSShootTaskDrawSub0(s_LCSShootTask* pThis, sVec3_FP* pScreenPos, s3
         s16 screenX = (s16)setDividend(projX[0], (s32)pScreenPos->m0_X, (s32)pScreenPos->m8_Z);
         s16 screenY = (s16)setDividend(projY[0], (s32)pScreenPos->m4_Y, (s32)pScreenPos->m8_Z);
 
-        // 0607a55c — VDP1 shoot cursor rendering
+        // 0607a55c - VDP1 shoot cursor rendering
         Unimplemented(); // TODO: VDP1 packet writes for LCS shoot cursor
     }
 }
@@ -4144,7 +4144,7 @@ struct sTrailParticle : public s_workAreaTemplate<sTrailParticle>
     // size 0x20
 };
 
-// 0607ac58 — spawn a trail particle sub-task at the given position
+// 0607ac58 - spawn a trail particle sub-task at the given position
 static void spawnTrailParticle(const sVec3_FP* position, sSaturnPtr gouraudData)
 {
     s_LCSTask* pLCSTask = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
@@ -4174,7 +4174,7 @@ static sSaturnPtr getTrailGouraudData(s8 colorIndex)
         gFLD_A3);
 }
 
-// 0607acbc — spawn a trail particle at the current trail head position
+// 0607acbc - spawn a trail particle at the current trail head position
 static void spawnTrailParticleFromLaser(s_LCSLaser* pThis)
 {
     // Select trail ring buffer index based on build-up state
@@ -4190,7 +4190,7 @@ static void spawnTrailParticleFromLaser(s_LCSLaser* pThis)
         trailIndex = (pThis->m154 - 1) & 0xF;
     }
 
-    // Get position from trail ring buffer (simplified — original uses lookup tables for segment selection)
+    // Get position from trail ring buffer (simplified - original uses lookup tables for segment selection)
     const sVec3_FP& trailPos = pThis->m6C[trailIndex & 0xF];
 
     spawnTrailParticle(&trailPos, getTrailGouraudData(pThis->m27));

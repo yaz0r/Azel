@@ -757,7 +757,7 @@ void dragonUpdate_normalTail(s_dragonTaskWorkArea* pDragon)
 // Dragon update state machine
 // ============================================================================
 
-// 060878ac (A5) / 0607fcb8 (A3) — dragon update: idle (no camera script, no cutscene)
+// 060878ac (A5) / 0607fcb8 (A3) - dragon update: idle (no camera script, no cutscene)
 void dragonUpdate_idle(s_dragonTaskWorkArea* pDragon)
 {
     pDragon->m24A_runningCameraScript = 5;
@@ -785,7 +785,7 @@ void dragonUpdate_idle(s_dragonTaskWorkArea* pDragon)
     computeDragonSpeed(pDragon);
 }
 
-// 06087e70 (A5) / 0608027c (A3) — dragon update: normal gameplay (default morph)
+// 06087e70 (A5) / 0608027c (A3) - dragon update: normal gameplay (default morph)
 void dragonUpdate_normal(s_dragonTaskWorkArea* pDragon)
 {
     pDragon->m24A_runningCameraScript = 0;
@@ -825,7 +825,7 @@ inputPhase:
     dragonUpdate_normalTail(pDragon);
 }
 
-// 06087f4c (A5) / 06080358 (A3) — dragon update: normal gameplay (dragonType == 8)
+// 06087f4c (A5) / 06080358 (A3) - dragon update: normal gameplay (dragonType == 8)
 void dragonUpdate_normal_type8(s_dragonTaskWorkArea* pDragon)
 {
     pDragon->m24A_runningCameraScript = 0;
@@ -851,7 +851,7 @@ void dragonUpdate_normal_type8(s_dragonTaskWorkArea* pDragon)
     dragonUpdate_normalTail(pDragon);
 }
 
-// 0608604a (A5) — set dragon animation state based on current speed vs mid-speed threshold
+// 0608604a (A5) - set dragon animation state based on current speed vs mid-speed threshold
 void setDragonAnimationFromSpeed(s_dragonTaskWorkArea* pDragon)
 {
     // Compute mid-speed as average of first two speed values
@@ -881,7 +881,7 @@ void setDragonAnimationFromSpeed(s_dragonTaskWorkArea* pDragon)
     pDragon->m23C |= 5;
 }
 
-// 06088008 (A5) / 06080414 (A3) — process camera script waypoints (3-state machine)
+// 06088008 (A5) / 06080414 (A3) - process camera script waypoints (3-state machine)
 void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
 {
     pDragon->m24A_runningCameraScript = 1;
@@ -951,7 +951,7 @@ void processCameraScript(s_dragonTaskWorkArea* pDragon, s_cameraScript* pScript)
     }
 }
 
-// 060881b2 (A5) / 060805be (A3) — process cutscene movement data (init only)
+// 060881b2 (A5) / 060805be (A3) - process cutscene movement data (init only)
 void processCutscene(s_dragonTaskWorkArea* pDragon)
 {
     pDragon->m24A_runningCameraScript = 2;
@@ -970,7 +970,7 @@ void processCutscene(s_dragonTaskWorkArea* pDragon)
     }
 }
 
-// 0608820e (A5) / 0608061a (A3) — dragon update: camera script active
+// 0608820e (A5) / 0608061a (A3) - dragon update: camera script active
 void dragonUpdate_cameraScript(s_dragonTaskWorkArea* pDragon)
 {
     getFieldTaskPtr()->m28_status |= 0x10000;
@@ -1006,7 +1006,7 @@ static inline s32 signExtend28(s32 val)
     return (val & 0x8000000) ? (val | (s32)0xF0000000) : (val & 0x0FFFFFFF);
 }
 
-// 0608838a (A5) / 06080796 (A3) — dragon update: cutscene keyframe interpolation
+// 0608838a (A5) / 06080796 (A3) - dragon update: cutscene keyframe interpolation
 void dragonUpdate_cutscene(s_dragonTaskWorkArea* pDragon)
 {
     s_scriptData3* pKeyFrame = pDragon->m1E4_cutsceneKeyFrame;
@@ -1128,7 +1128,7 @@ buildMatrix:
     computeDragonSpeed(pDragon);
 }
 
-// 06088454 (A5) / 06080860 (A3) — transition dragon to normal flight update
+// 06088454 (A5) / 06080860 (A3) - transition dragon to normal flight update
 void dragonTransitionToNormal()
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -1140,14 +1140,14 @@ void dragonTransitionToNormal()
     clearDragonScriptFlag();
 }
 
-// 0607c88e (A5) / 06074c9a (A3) — transition dragon from script/cutscene
+// 0607c88e (A5) / 06074c9a (A3) - transition dragon from script/cutscene
 // Byte-identical to dragonTransitionToNormal (same Saturn function at different address)
 void dragonTransitionFromScript()
 {
     dragonTransitionToNormal();
 }
 
-// 0608746e (A5) / 0607f87a (A3) — check if dragon is within safe bounds
+// 0608746e (A5) / 0607f87a (A3) - check if dragon is within safe bounds
 s32 checkDragonTransition(s_dragonTaskWorkArea* pDragon)
 {
     s32 posX = pDragon->m8_pos.m0_X.m_value;
@@ -1163,7 +1163,7 @@ s32 checkDragonTransition(s_dragonTaskWorkArea* pDragon)
     return 0;
 }
 
-// 060874c8 (A5) / 0607f8d4 (A3) — compute delta translation to push dragon inside bounds
+// 060874c8 (A5) / 0607f8d4 (A3) - compute delta translation to push dragon inside bounds
 void computeBoundsPushback(s_dragonTaskWorkArea* pDragon)
 {
     pDragon->m160_deltaTranslation.m0_X = 0;
@@ -1191,7 +1191,7 @@ void computeBoundsPushback(s_dragonTaskWorkArea* pDragon)
     }
 }
 
-// 06087544 (A5) / 0607f950 (A3) — corridor autopilot dragon update.
+// 06087544 (A5) / 0607f950 (A3) - corridor autopilot dragon update.
 // Steers the dragon toward the visibility grid target, pushes back inside bounds.
 // 3-state: 0=trigger script+countdown, 1=countdown, 2=wait for multichoice close.
 void dragonUpdate_corridorAutopilot(s_dragonTaskWorkArea* pDragon)
@@ -1332,7 +1332,7 @@ steering:
     }
 }
 
-// 06086cfe (A5) / 0607f10a (A3) — dragon input: digital pad
+// 06086cfe (A5) / 0607f10a (A3) - dragon input: digital pad
 void dragonInput_digital(s_dragonTaskWorkArea* pDragon)
 {
     if (canAcceptDragonInput() != 0)
@@ -1346,7 +1346,7 @@ void dragonInput_digital(s_dragonTaskWorkArea* pDragon)
     }
 }
 
-// 06087428 (A5) / 0607f834 (A3) — dragon input: analog stick
+// 06087428 (A5) / 0607f834 (A3) - dragon input: analog stick
 void dragonInput_analog(s_dragonTaskWorkArea* pDragon)
 {
     if (canAcceptDragonInput() != 0)
@@ -1360,7 +1360,7 @@ void dragonInput_analog(s_dragonTaskWorkArea* pDragon)
     }
 }
 
-// 06086ade (A5) / 0607eeea (A3) — type 8 floater d-pad pitch/roll
+// 06086ade (A5) / 0607eeea (A3) - type 8 floater d-pad pitch/roll
 static void dragonDPadPitchRoll_type8(s_dragonTaskWorkArea* pDragon)
 {
     auto& input = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current;
@@ -1437,7 +1437,7 @@ static void dragonDPadPitchRoll_type8(s_dragonTaskWorkArea* pDragon)
     pDragon->m245_previousAnalogX = 0;
 }
 
-// 0608720c (A5) / 0607f618 (A3) — type 8 floater analog pitch/roll
+// 0608720c (A5) / 0607f618 (A3) - type 8 floater analog pitch/roll
 static void dragonAnalogPitchRoll_type8(s_dragonTaskWorkArea* pDragon)
 {
     auto& input = graphicEngineStatus.m4514.m0_inputDevices[0].m0_current;
@@ -1521,7 +1521,7 @@ static void dragonAnalogPitchRoll_type8(s_dragonTaskWorkArea* pDragon)
     pDragon->m247 = input.m4;
 }
 
-// 06086d22 (A5) / 0607f12e (A3) — dragon input: digital pad (type 8 floater)
+// 06086d22 (A5) / 0607f12e (A3) - dragon input: digital pad (type 8 floater)
 void dragonInput_digital_type8(s_dragonTaskWorkArea* pDragon)
 {
     if (canAcceptDragonInput() != 0)
@@ -1534,7 +1534,7 @@ void dragonInput_digital_type8(s_dragonTaskWorkArea* pDragon)
     }
 }
 
-// 0608744e (A5) / 0607f85a (A3) — dragon input: analog stick (type 8 floater)
+// 0608744e (A5) / 0607f85a (A3) - dragon input: analog stick (type 8 floater)
 void dragonInput_analog_type8(s_dragonTaskWorkArea* pDragon)
 {
     if (canAcceptDragonInput() != 0)
@@ -1547,7 +1547,7 @@ void dragonInput_analog_type8(s_dragonTaskWorkArea* pDragon)
     }
 }
 
-// 060797e0 (A5) / 06071bec (A3) — trigger corridor entry script.
+// 060797e0 (A5) / 06071bec (A3) - trigger corridor entry script.
 // On Saturn the script address is a PC-relative constant. In C++ we use
 // gCorridorEntryScriptEA which each overlay sets during init.
 sSaturnPtr gCorridorEntryScriptEA = {};
@@ -1566,10 +1566,10 @@ void corridorEntryScript()
     }
 }
 
-// 0607c8c2 (A5) / 06074cce (A3) — initDragonMovementMode
+// 0607c8c2 (A5) / 06074cce (A3) - initDragonMovementMode
 // Already implemented in o_fld_a3.cpp, declared in o_fld_a3.h
 
-// 0607cf3a (A5) / 06075346 (A3) — set cutscene keyframe on dragon
+// 0607cf3a (A5) / 06075346 (A3) - set cutscene keyframe on dragon
 void setCutsceneKeyFrame(s_scriptData3* pKeyFrame)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -1579,14 +1579,14 @@ void setCutsceneKeyFrame(s_scriptData3* pKeyFrame)
     pDragon->mF8_Flags &= ~0x400;
 }
 
-// 0607cf70 (A5) / 0607537c (A3) — clear cutscene keyframe
+// 0607cf70 (A5) / 0607537c (A3) - clear cutscene keyframe
 void clearCutsceneKeyFrame()
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     pDragon->m1E4_cutsceneKeyFrame = nullptr;
 }
 
-// 06079044 (A5) / 06071450 (A3) — enable script skipping and trigger field exit
+// 06079044 (A5) / 06071450 (A3) - enable script skipping and trigger field exit
 void enableScriptSkippingAndExit(s32 fieldIndex, s32 param, s32 exitNumber, s16 r7)
 {
     setFieldExiting();

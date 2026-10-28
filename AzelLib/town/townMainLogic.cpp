@@ -844,6 +844,7 @@ s32 enableMainLogic()
     return 0;
 }
 
+// 06057570 (RUIN), 060584b4 (EXCA), 0606cb54 (CAMP), 06070c0c (CARA), 06070c80 (SEEK), 06098f30 (ZOAH)
 s32 hasLoadingCompleted()
 {
     if (twnMainLogicTask->m14_EdgeTask)

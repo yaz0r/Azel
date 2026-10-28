@@ -217,7 +217,7 @@ void GetDistanceFalloff(s32 falloutColor[3], s32 viewDepth)
     s32 scaledDepth = (s32)(((s64)viewDepth * (s64)depthScale) >> 32);
     if (scaledDepth < 0) scaledDepth = 0;
 
-    // Saturn: shll r1 (<<1), shlr8 r1 (>>8), and #-8 (&~7) → byte offset, /8 → index
+    // Saturn: shll r1 (<<1), shlr8 r1 (>>8), and #-8 (&~7) -> byte offset, /8 -> index
     int byteOffset = ((scaledDepth << 1) >> 8) & ~7;
     int index = byteOffset >> 3;
     if (index > 31) index = 31;
@@ -413,10 +413,10 @@ void drawObject(s_objectToRender* pObject, const glm::mat4& projectionMatrix)
     // Build per-frame texture with NDC corners + gouraud shading
     // Layout: 8 texels per quad
     //   texel 0-3: (ndcX, ndcY, u/w, v/w) per corner
-    //   texel 4:   (1/w0, 1/w1, 1/w2, 1/w3) — all zeros = near-clip sentinel
-    //   texel 5:   (gR0, gR1, gR2, gR3) — per-corner gouraud red [-0.5, 0.5]
-    //   texel 6:   (gG0, gG1, gG2, gG3) — per-corner gouraud green
-    //   texel 7:   (gB0, gB1, gB2, gB3) — per-corner gouraud blue
+    //   texel 4:   (1/w0, 1/w1, 1/w2, 1/w3) - all zeros = near-clip sentinel
+    //   texel 5:   (gR0, gR1, gR2, gR3) - per-corner gouraud red [-0.5, 0.5]
+    //   texel 6:   (gG0, gG1, gG2, gG3) - per-corner gouraud green
+    //   texel 7:   (gB0, gB1, gB2, gB3) - per-corner gouraud blue
     size_t numQuads = model->mC_Quads.size();
     uint16_t texWidth = (uint16_t)(numQuads * 8);
 

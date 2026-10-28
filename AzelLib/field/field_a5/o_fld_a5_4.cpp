@@ -14,7 +14,7 @@ static void fieldA5_4_startTasks(p_workArea workArea)
     createA5_envObjects_sub4_light(workArea);
     initA5_wormColorTables_day();
     createA5_envObjects_sub4_wormPassageEntrances(workArea);
-    // 06059768 — empty
+    // 06059768 - empty
     createA5_sandParticlePoolTask(workArea);
     createA5_dragonSandDustTask(workArea);
     createA5_exitEntityTask(workArea);

@@ -17,7 +17,7 @@ struct sA7BeamChargeWobble : public s_workAreaTemplateWithArg<sA7BeamChargeWobbl
     // size 0x1C
 };
 
-// 0605533c — spawn a single billboard scene particle with jittered origin.
+// 0605533c - spawn a single billboard scene particle with jittered origin.
 // Shared with the beam ring-buffer update (same Saturn address).
 void a7BeamChargeWobble_spawn_0605533c(p_workArea /*parent*/, sVec3_FP* pPos,
                                        fixedPoint sinValue, sParticleSpawnConfig* pOutDesc)

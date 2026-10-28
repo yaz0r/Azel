@@ -668,7 +668,7 @@ static void emitStructuredBlock(const DecompiledFunction& func, TextBuf& out, u3
         if (isEmitted(inst.addr)) break;
         markEmitted(inst.addr);
 
-        // Pattern: condition producer + IF_FALSE → if { } else { }
+        // Pattern: condition producer + IF_FALSE -> if { } else { }
         if (inst.hasCondition && idx + 1 < (int)func.instructions.size())
         {
             auto& ifInst = func.instructions[idx + 1];
@@ -706,7 +706,7 @@ static void emitStructuredBlock(const DecompiledFunction& func, TextBuf& out, u3
             }
         }
 
-        // Pattern: standalone IF_FALSE (no preceding condition) → if (result) { ... }
+        // Pattern: standalone IF_FALSE (no preceding condition) -> if (result) { ... }
         if (inst.opcode == 5)
         {
             u32 falseTarget = inst.branchTargets[0];
@@ -737,7 +737,7 @@ static void emitStructuredBlock(const DecompiledFunction& func, TextBuf& out, u3
             continue;
         }
 
-        // Pattern: SWITCH_JUMP → switch (result) { case N: ... }
+        // Pattern: SWITCH_JUMP -> switch (result) { case N: ... }
         if (inst.opcode == 21 && inst.numBranchTargets > 0)
         {
             // Collect and sort targets with their case indices
@@ -775,7 +775,7 @@ static void emitStructuredBlock(const DecompiledFunction& func, TextBuf& out, u3
             emitIndent(out, indent);
             out.append("switch (result) { // @%08X\n", inst.addr);
 
-            // Deduplicate targets (multiple cases → same address)
+            // Deduplicate targets (multiple cases -> same address)
             std::vector<u32> uniqueTargets;
             for (auto& c : cases)
             {

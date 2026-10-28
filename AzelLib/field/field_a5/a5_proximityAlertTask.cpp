@@ -2,7 +2,7 @@
 #include "o_fld_a5.h"
 #include "field/field_a3/o_fld_a3.h"
 
-// Proximity alert task (Saturn size 0x8). Two variants — day and night —
+// Proximity alert task (Saturn size 0x8). Two variants - day and night -
 // detect game-state bit transitions and trigger NPC encounters + cutscene
 // cameras + field scripts.
 struct sA5ProximityAlertTask : public s_workAreaTemplate<sA5ProximityAlertTask>
@@ -12,7 +12,7 @@ struct sA5ProximityAlertTask : public s_workAreaTemplate<sA5ProximityAlertTask>
     // Saturn size 0x8
 };
 
-// 060666e8 — create a 0x114-byte NPC entity sub-task from Saturn data.
+// 060666e8 - create a 0x114-byte NPC entity sub-task from Saturn data.
 // The entity has its own init/update/draw chain (task def at 0609d7bc).
 static p_workArea a5_createNpcEntity_060666e8(sA5ProximityAlertTask* pParent, u32 dataAddr)
 {
@@ -21,7 +21,7 @@ static p_workArea a5_createNpcEntity_060666e8(sA5ProximityAlertTask* pParent, u3
     return nullptr;
 }
 
-// 06067ee2 — create a 0x14-byte NPC tracking sub-task that waits for
+// 06067ee2 - create a 0x14-byte NPC tracking sub-task that waits for
 // the NPC to reach a Y threshold, then sets the matching game-state bit.
 static void a5_createNpcTracker_06067ee2(p_workArea pNpc, u32 nameTableAddr, s32 yThreshold, s16 bitIndex)
 {
@@ -29,14 +29,14 @@ static void a5_createNpcTracker_06067ee2(p_workArea pNpc, u32 nameTableAddr, s32
     (void)pNpc; (void)nameTableAddr; (void)yThreshold; (void)bitIndex;
 }
 
-// 0606f9e4 — wrapper around a5_startCutsceneCameraType1 with flags=0
+// 0606f9e4 - wrapper around a5_startCutsceneCameraType1 with flags=0
 static void a5_startProximityCamera_0606f9e4(sA5ProximityAlertTask* pTask, u32 cameraDataAddr, u32 callbackAddr, u32 arg)
 {
     Unimplemented();
     (void)pTask; (void)cameraDataAddr; (void)callbackAddr; (void)arg;
 }
 
-// 06067FDC — day proximity alert update. Checks game-state bits and
+// 06067FDC - day proximity alert update. Checks game-state bits and
 // triggers NPC encounters when conditions are met.
 static void a5ProximityAlertUpdate_day(sA5ProximityAlertTask* pThis)
 {
@@ -76,7 +76,7 @@ static void a5ProximityAlertUpdate_day(sA5ProximityAlertTask* pThis)
     }
 }
 
-// 0606811E — night proximity alert update. Triggers NPC encounter
+// 0606811E - night proximity alert update. Triggers NPC encounter
 // when specific story progression bits are set.
 static void a5ProximityAlertUpdate_night(sA5ProximityAlertTask* pThis)
 {
@@ -93,14 +93,14 @@ static void a5ProximityAlertUpdate_night(sA5ProximityAlertTask* pThis)
     //a5_startProximityCamera_0606f9e4(pThis, 0x0608CC30, 0x06067FAC, (u32)((u8*)pNpc + 0x14));
 }
 
-// 06068182 — create proximity alert task for day subfields (0, 7)
+// 06068182 - create proximity alert task for day subfields (0, 7)
 void createA5_proximityAlert_day(p_workArea parent)
 {
     static sA5ProximityAlertTask::TypedTaskDefinition td = { nullptr, &a5ProximityAlertUpdate_day, nullptr, nullptr };
     createSubTask<sA5ProximityAlertTask>(parent, &td);
 }
 
-// 0606818a — create proximity alert task for night subfields (2, 8)
+// 0606818a - create proximity alert task for night subfields (2, 8)
 void createA5_proximityAlert_night(p_workArea parent)
 {
     static sA5ProximityAlertTask::TypedTaskDefinition td = { nullptr, &a5ProximityAlertUpdate_night, nullptr, nullptr };

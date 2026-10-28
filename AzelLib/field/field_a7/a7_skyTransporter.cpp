@@ -11,7 +11,7 @@
 #include "field/fieldVisibilityGrid.h"
 #include "audio/systemSounds.h"
 
-// Camera shake rotation impulse table (06084228) — 4 entries of sVec3_FP, cycled per frame
+// Camera shake rotation impulse table (06084228) - 4 entries of sVec3_FP, cycled per frame
 static const sVec3_FP cameraShakeRotations[] = {
     { fixedPoint(0xFFEEEEEF), fixedPoint(0), fixedPoint(0) },
     { fixedPoint(0x00111111), fixedPoint(0), fixedPoint(0) },
@@ -19,7 +19,7 @@ static const sVec3_FP cameraShakeRotations[] = {
     { fixedPoint(0x00091A2B), fixedPoint(0), fixedPoint(0) },
 };
 
-// Script index/param lookup table (06084294) — 9 entries
+// Script index/param lookup table (06084294) - 9 entries
 static const struct { s16 scriptIndex; s16 scriptParam; } a7ScriptLookup[] = {
     { 0x04, 0x05CC }, { 0x05, 0x05CD }, { 0x06, 0x05CE }, { 0x07, 0x05CF },
     { 0x08, 0x05D0 }, { 0x09, 0x05D1 }, { 0x0A, 0x05D2 }, { 0x0B, 0x05D3 },
@@ -43,11 +43,11 @@ struct s_skyTransporter : public s_workAreaTemplate<s_skyTransporter>
         s_DataTable2Sub0* pData = pThis->m8;
         s_fieldSpecificData_A7* pFieldData = getFieldSpecificData_A7();
 
-        // 0606e2f4 — visibility check
+        // 0606e2f4 - visibility check
         s32 vis = checkPositionVisibilityAgainstFarPlane(&pData->m4_position);
         pThis->m51_visible = (vis == 0);
 
-        // 06070ca4 — empty function (no-op)
+        // 06070ca4 - empty function (no-op)
 
         switch (pThis->m50_state)
         {
@@ -114,7 +114,7 @@ struct s_skyTransporter : public s_workAreaTemplate<s_skyTransporter>
             pThis->m50_state = 7;
             break;
         case 7:
-            // idle — only model render context update below
+            // idle - only model render context update below
             break;
         default:
             assert(0);
@@ -167,7 +167,7 @@ struct s_skyTransporter : public s_workAreaTemplate<s_skyTransporter>
     // size 0x54
 };
 
-// 06054724 — model render context callback (interaction handler)
+// 06054724 - model render context callback (interaction handler)
 static void skyTransporter_RenderCallback(p_workArea pWorkArea, sFieldModelRenderContext* pCtx)
 {
     s_fieldSpecificData_A7* pFieldData = getFieldSpecificData_A7();

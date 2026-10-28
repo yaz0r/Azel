@@ -12,7 +12,7 @@ static void fieldA5_7_startTasks(p_workArea workArea)
     ((s_fieldSpecificData_A5*)getFieldTaskPtr()->mC)->m54_particlePool = createParticlePoolTask(workArea, 1, 0x40);
     createA5_proximityAlert_day(workArea);
     createA5_wormPassageEntrances_day(workArea);
-    // 0605971c — empty
+    // 0605971c - empty
     createA5_sandParticlePoolTask(workArea);
     createA5_dragonSandDustTask(workArea);
     createA5_exitEntityTask(workArea);

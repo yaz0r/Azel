@@ -2,7 +2,7 @@
 
 struct sModelHierarchy;
 
-// 0607e252 — creates a cutscene debris scatter task
+// 0607e252 - creates a cutscene debris scatter task
 // Takes a model hierarchy and scatters its bones outward with physics
 struct sDebrisScatterParams
 {
@@ -25,7 +25,7 @@ struct sDebrisScatterParams
     fixedPoint m3C_scale;       // scale (0 or 0x10000 = no scale)
     fixedPoint m40_param;       // additional param
     u16 m44_soundEffect;        // sound to play on ground hit
-    struct s_fileBundle* m_pBundle; // file bundle for model data (C++ only — on Saturn, read from parent task offset 0)
+    struct s_fileBundle* m_pBundle; // file bundle for model data (C++ only - on Saturn, read from parent task offset 0)
 };
 
 p_workArea createDebrisScatterTask(p_workArea parent, sDebrisScatterParams* params, bool reverseMode);

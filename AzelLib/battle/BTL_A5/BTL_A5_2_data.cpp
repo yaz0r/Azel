@@ -14,7 +14,7 @@ void BTL_A5_2_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u
     switch (Func.m_offset)
     {
     case 0x06054078:
-        Unimplemented(); // BTL_A5_2_createFormation — creates 0x100 formation task + palette + enemy/env sub-tasks
+        Unimplemented(); // BTL_A5_2_createFormation - creates 0x100 formation task + palette + enemy/env sub-tasks
         break;
     default:
         assert(0);

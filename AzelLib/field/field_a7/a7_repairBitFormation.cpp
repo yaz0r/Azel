@@ -23,7 +23,7 @@ static inline s32 a7_performDivision(s32 divisor, s32 dividend) { return dividen
 
 extern void dispatchTutorialMultiChoiceSub2();
 
-// 060732fc, 06073266 — clearDragonScriptFlag, dragonTransitionToNormal
+// 060732fc, 06073266 - clearDragonScriptFlag, dragonTransitionToNormal
 
 // 06059b8c
 void repairBitFormation_Init(sRepairBitFormation* pThis, sSaturnPtr arg)

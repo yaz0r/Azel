@@ -33,7 +33,7 @@ static void BTL_A3_map3_Init(sVdp2PlaneTask* pThis)
 
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
 
-    // 060591da — create water effect sub-task (same as map6)
+    // 060591da - create water effect sub-task (same as map6)
     {
         static const sBTL_A3_map6_sub::TypedTaskDefinition definition = {
             &sBTL_A3_map6_sub_Init,

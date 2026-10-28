@@ -22,7 +22,7 @@ static bool tryPlayOggMusic(s32 trackNumber)
     char path[256];
     snprintf(path, sizeof(path), "%d.OGG", trackNumber);
 
-    // Try to load directly — SoLoud will fail if file doesn't exist
+    // Try to load directly - SoLoud will fail if file doesn't exist
 
     // Stop any currently playing OGG music
     if (gMusicPlaying)

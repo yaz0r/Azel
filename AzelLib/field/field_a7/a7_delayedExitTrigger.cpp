@@ -2,7 +2,7 @@
 #include "a7_delayedExitTrigger.h"
 #include "field/field_a3/o_fld_a3.h"
 
-// 0605eb88 — a 4-byte counter subtask that fires a field exit after 0x52 frames
+// 0605eb88 - a 4-byte counter subtask that fires a field exit after 0x52 frames
 
 struct sA7DelayedExitTrigger : public s_workAreaTemplate<sA7DelayedExitTrigger>
 {

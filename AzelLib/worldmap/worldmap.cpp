@@ -259,7 +259,7 @@ struct sWorldMapRootTask : public s_workAreaTemplate<sWorldMapRootTask>
             pThis->m0_mapDisplayTask = createWorldMapDisplay(pNpcParent, pThis);
             pThis->m10_envTask = createWorldMapEnv(pThis);
             pThis->m4_dragonControlTask = createWorldMapDragon(pNpcParent, pThis);
-            Unimplemented(); // createBattleEngineTask — battle encounter support
+            Unimplemented(); // createBattleEngineTask - battle encounter support
         }
 
         if (gDragonState == nullptr)
@@ -563,11 +563,11 @@ void sWorldMapCamera::Draw(sWorldMapCamera* pThis)
             {
                 if (destType == 0)
                 {
-                    Unimplemented(); // FUN_06011e0a — load field overlay
+                    Unimplemented(); // FUN_06011e0a - load field overlay
                 }
                 else if (destType == 1 || destType == 2 || destType == 3)
                 {
-                    Unimplemented(); // FUN_06030100 — load town overlay
+                    Unimplemented(); // FUN_06030100 - load town overlay
                 }
             }
         }

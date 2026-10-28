@@ -41,10 +41,10 @@ void subfieldA7_0(p_workArea workArea)
     s_DataTable2* pDT2 = readDataTable2(gFLD_A7->getSaturnPtr(0x060824e8));
     setupField(pDT3, pDT2, startTasksA7_0, nullptr);
 
-    // 06072fc8 — enable dragon ground shadow
+    // 06072fc8 - enable dragon ground shadow
     enableDragonShadow();
 
-    // 060544a0 — camera config from 06080274
+    // 060544a0 - camera config from 06080274
     setupFieldCameraConfigs(readCameraConfig(gFLD_A7->getSaturnPtr(0x06080274)), 1);
 
     fieldRadar_enableAltitudeGauge();

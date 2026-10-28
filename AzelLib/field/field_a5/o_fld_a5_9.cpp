@@ -11,7 +11,7 @@ static void fieldA5_9_startTasks(p_workArea workArea)
     createFieldSpecificDataTask_A5(workArea);
     ((s_fieldSpecificData_A5*)getFieldTaskPtr()->mC)->m54_particlePool = createParticlePoolTask(workArea, 1, 0x40);
     createA5_sceneryEntity(workArea);
-    // 0605f00e — init worm color tables for subfield 9
+    // 0605f00e - init worm color tables for subfield 9
     {
         s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
         pFieldData->mC_wormColorTable0 = getSaturnPtr(gFLD_A5->getSaturnPtr(0x0609C658));
@@ -20,7 +20,7 @@ static void fieldA5_9_startTasks(p_workArea workArea)
         pFieldData->m18_wormColorState1 = 0;
     }
     createA5_envObjects_sub4_wormPassageEntrances(workArea); // 060570ea
-    // 06059768 — empty
+    // 06059768 - empty
     createA5_sandParticlePoolTask(workArea);
     createA5_dragonSandDustTask(workArea);
     createA5_exitEntityTask(workArea);

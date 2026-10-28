@@ -909,7 +909,7 @@ void Urchin_update(sUrchin* pThis)
 {
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
     {
-        // Debug display — not critical
+        // Debug display - not critical
     }
 
     pThis->m8 = gBattleManager->m10_battleOverlay->m4_battleEngine->mC_battleCenter + pThis->m14_positionCurrent;

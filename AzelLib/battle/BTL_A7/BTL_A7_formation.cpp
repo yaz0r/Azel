@@ -111,7 +111,7 @@ static void BTL_A7_formationTask_Update(sBTL_A7_FormationTask* pThis)
     formationCleanupEntityArray(&pThis->mE0_entityGroup);
 
     // 0609e414 - update entity positions relative to battle center
-    Unimplemented(); // formationUpdateEntityPositions — position interpolation relative to battle center
+    Unimplemented(); // formationUpdateEntityPositions - position interpolation relative to battle center
 
     switch (pThis->m28_state)
     {
@@ -267,7 +267,7 @@ static void BTL_A7_formationTask_Init(sBTL_A7_FormationTask* pThis)
 
     for (int i = 0; i < pThis->mE0_entityGroup.mE_numEntities; i++)
     {
-        // 06058090 — create tower enemy entity (0x174 bytes)
+        // 06058090 - create tower enemy entity (0x174 bytes)
         Unimplemented(); // creates enemy with model, life meter, and targeting from BTL_A7 overlay data
         pThis->mE0_entityGroup.m0_entityArray[i] = nullptr;
     }

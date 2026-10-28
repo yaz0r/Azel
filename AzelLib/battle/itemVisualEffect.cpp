@@ -57,7 +57,7 @@ static void readAnimKeyframe(u8* animData, s16 frame, u8 dataType, sVec3_FP& out
     }
 }
 
-// BTL_A3::0605f630 — delete handler for item visual effect task
+// BTL_A3::0605f630 - delete handler for item visual effect task
 static void sItemVisualEffectTask_Delete(s_workAreaTemplate<s_workArea>*)
 {
     s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;

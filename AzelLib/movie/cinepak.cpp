@@ -215,7 +215,7 @@ void sCinepakDecoder::destroy()
     delete[] m_strips;
     m_strips = nullptr;
 
-    // Note: we don't close m_file — the caller (openMovieStream) owns it
+    // Note: we don't close m_file - the caller (openMovieStream) owns it
     m_file = nullptr;
 
     delete this;
@@ -276,7 +276,7 @@ bool sCinepakDecoder::decodeNextFrame()
                 {
                     if (m_audioBitDepth == 16)
                     {
-                        // Big-endian signed 16-bit PCM — convert to native s16
+                        // Big-endian signed 16-bit PCM - convert to native s16
                         u32 numSamples = sample.length / 2;
                         u32 canWrite = m_audioBuffer->writeAvailable();
                         u32 toWrite = (numSamples < canWrite) ? numSamples : canWrite;
@@ -290,7 +290,7 @@ bool sCinepakDecoder::decodeNextFrame()
                     }
                     else if (m_audioBitDepth == 8)
                     {
-                        // Unsigned 8-bit PCM — convert to s16
+                        // Unsigned 8-bit PCM - convert to s16
                         u32 numSamples = sample.length;
                         u32 canWrite = m_audioBuffer->writeAvailable();
                         u32 toWrite = (numSamples < canWrite) ? numSamples : canWrite;
@@ -423,7 +423,7 @@ bool sCinepakDecoder::decodeCinepakFrame(const u8* data, u32 size)
 }
 
 // ============================================================================
-// Strip decoder — processes chunks within a strip
+// Strip decoder - processes chunks within a strip
 // ============================================================================
 
 void sCinepakDecoder::decodeStrip(sCinepakStrip* strip, const u8* data, u32 size,
@@ -548,7 +548,7 @@ void sCinepakDecoder::drawCodebookEntry(const sCinepakCodebook* entry, u32 x, u3
 }
 
 // ============================================================================
-// Vector decoder — decodes image data using codebook entries
+// Vector decoder - decodes image data using codebook entries
 // ============================================================================
 
 void sCinepakDecoder::decodeVectors(sCinepakStrip* strip, const u8* data, u32 size,
@@ -556,8 +556,8 @@ void sCinepakDecoder::decodeVectors(sCinepakStrip* strip, const u8* data, u32 si
 {
     // Unified vector decoder matching FFmpeg's cinepak_decode_vectors.
     // Chunk ID bit meanings (for 1-byte Sega FILM IDs):
-    //   bit 0 (0x01): inter-frame — has "skip" bitmask (unset blocks keep previous data)
-    //   bit 1 (0x02): V1-only — if set, all blocks use V1; if clear, V1/V4 selection bitmask
+    //   bit 0 (0x01): inter-frame - has "skip" bitmask (unset blocks keep previous data)
+    //   bit 1 (0x02): V1-only - if set, all blocks use V1; if clear, V1/V4 selection bitmask
     //
     // 0x30: intra, V1/V4 mixed (selection bitmask)
     // 0x31: inter (skip bitmask), V1/V4 mixed (selection bitmask)

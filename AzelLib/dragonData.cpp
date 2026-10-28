@@ -405,7 +405,7 @@ void loadDragonSoundBank(e_dragonLevel dragonLevel)
 {
     // Saturn: loads DRG_SE.SEQ + DRG1SE.BIN (or KOGATA.SEQ for Light Wing)
     // to M68K sound RAM at 0x25A0D000. On PC, dragon sound effects are
-    // handled by SoLoud — this Saturn-specific sound bank loading is a no-op.
+    // handled by SoLoud - this Saturn-specific sound bank loading is a no-op.
 }
 
 void createDragon3DModel(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
@@ -442,7 +442,7 @@ void loadDragonFiles(s_workArea* pWorkArea, e_dragonLevel dragonLevel)
     loadFile(dragonFilenameTable[dragonLevel].m_base.MCB, &gDragonModel, 0x2400);
     loadFile(dragonFilenameTable[dragonLevel].m_base.CGB, getVdp1Pointer(0x25C12000), 0);
 
-    // VDP1 VRAM content changed at fixed address — invalidate cached textures in this range
+    // VDP1 VRAM content changed at fixed address - invalidate cached textures in this range
     invalidateVdp1TextureRange(0x12000, 0x3D00);
 
     createDragon3DModel(pWorkArea, dragonLevel);

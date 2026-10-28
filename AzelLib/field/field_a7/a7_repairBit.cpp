@@ -19,7 +19,7 @@
 
 #include "field/fieldVisibilityGrid.h"
 
-// 06070ca4 — empty function (Ghidra: skyTransporter_noop). Faithfully called.
+// 06070ca4 - empty function (Ghidra: skyTransporter_noop). Faithfully called.
 void skyTransporter_noop(s32* /*pScratch*/)
 {
 }
@@ -37,20 +37,20 @@ struct sRepairBitArg
 // draw=06059ab0, delete=null}.
 struct sRepairBit : public s_workAreaTemplateWithArg<sRepairBit, sRepairBitArg*>
 {
-    s_memoryAreaOutput          m0_memoryArea;        // 0x00 — file bundle / character area
-    sVec3_FP                    m8_targetPos;         // 0x08 — entry[0..8]
-    sVec3_FP                    m14_currentPos;       // 0x14 — drifts from m20
-    sVec3_FP                    m20_velocity;         // 0x20 — integrated from m2C
-    sVec3_FP                    m2C_accel;            // 0x2C — proportional to (target - current)
-    sVec3_FP                    m38_rotation;         // 0x38 — (X,Y,Z) Euler, seeded from entry[0xC..0x14]; used by rotateCurrentMatrixYXZ
-    s32                         m44_rotZVelocity;     // 0x44 — per-frame m38_rotation.Z delta (init 0)
-    s32                         m48_countdownInitial; // 0x48 — entry[0x18], reload value
-    s32                         m4C_countdown;        // 0x4C — counts down each frame
-    u8*                         m50_aliveFlag;        // 0x50 — parent alive-slot pointer
+    s_memoryAreaOutput          m0_memoryArea;        // 0x00 - file bundle / character area
+    sVec3_FP                    m8_targetPos;         // 0x08 - entry[0..8]
+    sVec3_FP                    m14_currentPos;       // 0x14 - drifts from m20
+    sVec3_FP                    m20_velocity;         // 0x20 - integrated from m2C
+    sVec3_FP                    m2C_accel;            // 0x2C - proportional to (target - current)
+    sVec3_FP                    m38_rotation;         // 0x38 - (X,Y,Z) Euler, seeded from entry[0xC..0x14]; used by rotateCurrentMatrixYXZ
+    s32                         m44_rotZVelocity;     // 0x44 - per-frame m38_rotation.Z delta (init 0)
+    s32                         m48_countdownInitial; // 0x48 - entry[0x18], reload value
+    s32                         m4C_countdown;        // 0x4C - counts down each frame
+    u8*                         m50_aliveFlag;        // 0x50 - parent alive-slot pointer
     s16                         m54_state;            // 0x54
     s16                         m56_animCounter;      // 0x56
-    s_3dModel                   m58_model;            // 0x58 — Saturn size 0x4C
-    sFieldModelRenderContext    mA8_renderCtx;        // 0xA8 — size 0x34
+    s_3dModel                   m58_model;            // 0x58 - Saturn size 0x4C
+    sFieldModelRenderContext    mA8_renderCtx;        // 0xA8 - size 0x34
     bool                        mDC_visible;          // 0xDC
     u8                          mDD_pad[3];           // 0xDD..0xDF
     // Saturn size 0xE0
@@ -120,24 +120,24 @@ struct sRepairBitEffectArg
 struct sRepairBitFormationEffectTask : public s_workAreaTemplateWithArg<sRepairBitFormationEffectTask, sRepairBitEffectArg*>
 {
     s_memoryAreaOutput m0_memoryArea;    // 0x00..0x07
-    // 0x08..0x193 — a 32-slot ring of sVec3_FP trail positions (0x180 bytes).
+    // 0x08..0x193 - a 32-slot ring of sVec3_FP trail positions (0x180 bytes).
     // m8_trail[0] is the Init-time source position. Entries 0..31 start at
     // byte offsets 0x08, 0x14, ..., 0x17C; the draw wraps back to entry 0
     // after visiting entry 31. The init zeroes the m4_Y component of every
     // slot so the Draw's sentinel check can distinguish populated entries.
     sVec3_FP           m8_trail[32];      // 0x08..0x187
     u8                 m188_pad0[0xC];    // 0x188..0x193
-    s32                m194_trailLength;  // 0x194 — number of valid trail entries
-    sVec3_FP*          m198_pPosition;    // 0x198 — newest-trail pointer, wraps to &m8_trail[0]
-    sVec3_FP           m19C_srcPos;       // 0x19C — arg[0..2] source position copy
-    sVec3_FP           m1A8_tgtPos;       // 0x1A8 — arg[3..5] target position copy
-    sVec3_FP           m1B4_offset;       // 0x1B4 — arg[6] * (cos(atan2(dZ,dX)), sin(atan2(dY,dX)), sin(atan2(dZ,dX)))
-    s16                m1C0_counter;      // 0x1C0 — Update countdown (init = 0x2A)
-    s16                m1C2;              // 0x1C2 — non-zero disables the per-segment width table
+    s32                m194_trailLength;  // 0x194 - number of valid trail entries
+    sVec3_FP*          m198_pPosition;    // 0x198 - newest-trail pointer, wraps to &m8_trail[0]
+    sVec3_FP           m19C_srcPos;       // 0x19C - arg[0..2] source position copy
+    sVec3_FP           m1A8_tgtPos;       // 0x1A8 - arg[3..5] target position copy
+    sVec3_FP           m1B4_offset;       // 0x1B4 - arg[6] * (cos(atan2(dZ,dX)), sin(atan2(dY,dX)), sin(atan2(dZ,dX)))
+    s16                m1C0_counter;      // 0x1C0 - Update countdown (init = 0x2A)
+    s16                m1C2;              // 0x1C2 - non-zero disables the per-segment width table
     // Saturn size 0x1c4
 };
 
-// 06056748 — alternate update installed when the initial countdown expires.
+// 06056748 - alternate update installed when the initial countdown expires.
 // While m1C2 == 0, each tick grows the reverse ring trail by advancing
 // m198_pPosition one slot backward (wrapping from &m8_trail[0] to [31]) and
 // writing head + m1B4_offset at the new slot. When the wrap lands back on
@@ -247,8 +247,8 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sRepairBitFormationEffectTask*
     pThis->m194_trailLength = 0;
     pThis->m198_pPosition   = &pThis->m8_trail[0];
 
-    // Zero the m4_Y component of all 32 trail slots — this is the Saturn
-    // sentinel loop (16 iters × 2 writes, stride 0xC) so Draw can detect
+    // Zero the m4_Y component of all 32 trail slots - this is the Saturn
+    // sentinel loop (16 iters x 2 writes, stride 0xC) so Draw can detect
     // unpopulated slots via the negative-Y check.
     for (s32 i = 0; i < 32; i++)
     {
@@ -279,7 +279,7 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sRepairBitFormationEffectTask*
     u16 idxYX = (u16)((u32)angleYX >> 16) & 0xFFF;
     pThis->m1B4_offset.m4_Y = MTH_Mul(magnitude, getSin(idxYX));
 
-    // offset.Z = mag * sin(atan2(dZ, dX)) — same angle as offset.X but sin
+    // offset.Z = mag * sin(atan2(dZ, dX)) - same angle as offset.X but sin
     pThis->m1B4_offset.m8_Z = MTH_Mul(magnitude, getSin(idxXZ));
 
     pThis->m1C2 = 0;
@@ -287,7 +287,7 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sRepairBitFormationEffectTask*
     // Spawn a scene particle at (source + offset) with zero velocity, using
     // quad data at FLD_A7::060806a4. Matches the Saturn pattern where the
     // caller of spawnParticleProjected only has to set m8_pQuadData
-    // — the wrapper fills in m0/m4/m14/m18.
+    // - the wrapper fills in m0/m4/m14/m18.
     sVec3_FP spawnPos;
     spawnPos.m0_X = fixedPoint(pArg->m0_X + pThis->m1B4_offset.m0_X.m_value);
     spawnPos.m4_Y = fixedPoint(pArg->m4_Y + pThis->m1B4_offset.m4_Y.m_value);
@@ -320,7 +320,7 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sRepairBitFormationEffectTask*
 
     // Overwrite the transient delta storage with the raw source + target
     // positions as the Ghidra tail does. From here on, m19C_srcPos holds
-    // the source position and m1A8_tgtPos holds the target — this is the
+    // the source position and m1A8_tgtPos holds the target - this is the
     // layout the alt-update (06056748) and subsequent Update ticks assume.
     pThis->m19C_srcPos.m0_X = fixedPoint(pArg->m0_X);
     pThis->m19C_srcPos.m4_Y = fixedPoint(pArg->m4_Y);
@@ -329,7 +329,7 @@ static void a7EnvEntity2CEffectTask_Init_060569a0(sRepairBitFormationEffectTask*
     pThis->m1A8_tgtPos.m4_Y = fixedPoint(pArg->m10);
     pThis->m1A8_tgtPos.m8_Z = fixedPoint(pArg->m14);
 }
-// 06056938 — while m1C0_counter > 0, tick it down; when it hits 0, play
+// 06056938 - while m1C0_counter > 0, tick it down; when it hits 0, play
 // sound 0x68 if the current position is on-screen and swap the update
 // method to the 06056748 alternate.
 static void a7EnvEntity2CEffectTask_Update_06056938(sRepairBitFormationEffectTask* pThis)
@@ -347,7 +347,7 @@ static void a7EnvEntity2CEffectTask_Update_06056938(sRepairBitFormationEffectTas
         pThis->m1C0_counter--;
     }
 }
-// 0605660c — walks the ring trail of `m194_trailLength - 1` segments. The
+// 0605660c - walks the ring trail of `m194_trailLength - 1` segments. The
 // first (head) segment uses sprite @ +0x1158, the middle segments use
 // +0x1168 (with a per-segment width override driven by a 4x4 table at
 // FLD_A7::06084870 indexed by the initial segment count and the current
@@ -460,7 +460,7 @@ static void a7EnvEntity2CEffectTask_Draw_0605660c(sRepairBitFormationEffectTask*
     }
 }
 
-// 06056b90 — tail-calls createSiblingTaskWithArg(&060848b0, 0x1c4, arg).
+// 06056b90 - tail-calls createSiblingTaskWithArg(&060848b0, 0x1c4, arg).
 static void repairBit_spawnEffect_06056b90(p_workArea parent,
                                                     sRepairBitEffectArg* pArg)
 {
@@ -473,7 +473,7 @@ static void repairBit_spawnEffect_06056b90(p_workArea parent,
     createSiblingTaskWithArg<sRepairBitFormationEffectTask>(parent, pArg, &td);
 }
 
-// 060595a2 — sets up a terminal scene-particle descriptor from a palette
+// 060595a2 - sets up a terminal scene-particle descriptor from a palette
 // snapshot (calls FUN_0607c18e / FUN_0607c120), then the caller adds the
 // quad-list pointer and tail-calls spawnParticleProjected. The
 // descriptor slot layout beyond m8_pQuadData isn't yet mapped, so the
@@ -514,7 +514,7 @@ static void repairBit_setupTerminalSpawn_060595a2(sRepairBit* pThis,
 
 // repairBit_spawnAnimSubTask -> spawnAnimRingSubTask (shared)
 
-// 060596a0 — late-tick anim helper: samples a random angle, builds the arg
+// 060596a0 - late-tick anim helper: samples a random angle, builds the arg
 // struct, and tail-calls spawnAnimSubTask_0607fe24.
 static void repairBit_animTick_060596a0(sRepairBit* pThis)
 {
@@ -655,7 +655,7 @@ static void repairBit_Draw(sRepairBit* pThis)
     popMatrix();
 }
 
-// Mirrors `createSiblingTaskWithArg(parent, &06085cf0, 0xe0, &iStack_2c)` —
+// Mirrors `createSiblingTaskWithArg(parent, &06085cf0, 0xe0, &iStack_2c)` -
 // the Saturn caller stacks {entry, &aliveFlag} and passes its address.
 p_workArea repairBit_spawn(p_workArea parent, sSaturnPtr entry, u8* aliveFlag)
 {

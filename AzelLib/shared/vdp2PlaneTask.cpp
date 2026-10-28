@@ -18,7 +18,7 @@ void vdp2ApplyWaveDistortion(sVdp2PlaneTask* pThis)
     pThis->m4C_wavePhase += pThis->m40_waveSpeed;
 }
 
-// 06014274 — wave distortion on a raw params struct (used by battle envs via pThis+0x7C)
+// 06014274 - wave distortion on a raw params struct (used by battle envs via pThis+0x7C)
 void updateWaveDistortionParams(sVdp2PlaneTask::sLineScrollParams* p)
 {
     s32 phase = p->m18_phaseAccum;
@@ -47,7 +47,7 @@ void updateWaveDistortionParams(sVdp2PlaneTask::sLineScrollParams* p)
     }
 }
 
-// 0605b3d0 (FLD_B2) — line scroll update using sVdp2PlaneTask m50 line scroll params
+// 0605b3d0 (FLD_B2) - line scroll update using sVdp2PlaneTask m50 line scroll params
 void updateLineScrollTable(sVdp2PlaneTask* pThis)
 {
     auto& ls = pThis->m50_lineScrollParams;

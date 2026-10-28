@@ -15,7 +15,7 @@
 #include "field/fieldCutsceneTask2.h"
 #include "menu_dragonMorph.h"
 
-// 0606CFF0 — checks worm segment visibility in grid + debug worm editor controls
+// 0606CFF0 - checks worm segment visibility in grid + debug worm editor controls
 static bool auto_0x0606CFF0() { Unimplemented(); return true; }
 
 FLD_A5_data* gFLD_A5 = nullptr;
@@ -29,13 +29,13 @@ static std::vector<fixedPoint> a5_depthRangeTable =
     fixedPoint(0x7FFFFFFF),
 };
 
-// 0605595c — A5 update function 3 (debug: collision/worm object data viewer)
+// 0605595c - A5 update function 3 (debug: collision/worm object data viewer)
 static void a5_updateFunction3()
 {
     Unimplemented(); // FUN_FLD_A5__0606dbac with data from 0608c890/0608c894
 }
 
-// 06055952 — A5 update function 4 (debug: message/dialog data viewer)
+// 06055952 - A5 update function 4 (debug: message/dialog data viewer)
 static void a5_updateFunction4()
 {
     Unimplemented(); // FUN_FLD_A5__0606d8c0 with data from 0608c888/0608c88c
@@ -43,13 +43,13 @@ static void a5_updateFunction4()
 
 // --- Post-battle sound functions (set as m344->m0 callback) ---
 
-// 06055984 — post-battle sound for subfields 0, 7 (day open areas)
+// 06055984 - post-battle sound for subfields 0, 7 (day open areas)
 void postBattleSound_A5_day(void)
 {
     playPCM(getFieldTaskPtr()->m8_pSubFieldData, 0x66);
 }
 
-// 060559a8 — post-battle sound for subfields 2, 8 (night open areas, variant A)
+// 060559a8 - post-battle sound for subfields 2, 8 (night open areas, variant A)
 void postBattleSound_A5_nightA(void)
 {
     p_workArea pSubFieldData = (p_workArea)getFieldTaskPtr()->m8_pSubFieldData;
@@ -60,7 +60,7 @@ void postBattleSound_A5_nightA(void)
     }
 }
 
-// 060559ec — post-battle sound for subfields 4, 9 (night open areas, variant B)
+// 060559ec - post-battle sound for subfields 4, 9 (night open areas, variant B)
 void postBattleSound_A5_nightB(void)
 {
     p_workArea pSubFieldData = (p_workArea)getFieldTaskPtr()->m8_pSubFieldData;
@@ -71,13 +71,13 @@ void postBattleSound_A5_nightB(void)
     }
 }
 
-// 060552c0 — empty update (data task has no per-frame logic)
+// 060552c0 - empty update (data task has no per-frame logic)
 static void fieldSpecificDataUpdate_A5(s_fieldSpecificData_A5* pThis)
 {
-    // empty — confirmed from Ghidra
+    // empty - confirmed from Ghidra
 }
 
-// 060552c4 — create field-specific data task for A5
+// 060552c4 - create field-specific data task for A5
 void createFieldSpecificDataTask_A5(p_workArea parent)
 {
     s_fieldSpecificData_A5* p = createSubTaskFromFunction<s_fieldSpecificData_A5>(parent, &fieldSpecificDataUpdate_A5);
@@ -106,7 +106,7 @@ struct sA5CorridorWormSubtask : public s_workAreaTemplate<sA5CorridorWormSubtask
 
 // as setCutsceneKeyFrame, clearCutsceneKeyFrame, enableScriptSkippingAndExit
 
-// 060591fc — corridor worm file-load/animation state machine. Manages
+// 060591fc - corridor worm file-load/animation state machine. Manages
 // progressive loading of the worm segment models as the dragon travels
 // through a corridor. Called every frame from corridorWormUpdate_1/_3.
 //
@@ -141,7 +141,7 @@ static void a5_corridorWormAnimUpdate(sA5CorridorWormSubtask* pThis, sSaturnPtr 
 
     if (state == 1)
     {
-        // Load file pair (direction A→B)
+        // Load file pair (direction A->B)
         s32 fileOff = ((mainGameState.bitField[0xA3] & 0x20) != 0) ? 16 : 8;
         unloadFileFromFileList(readSaturnS32(pData + fileOff + 4));
         loadFileFromFileList(readSaturnS32(pData + fileOff));
@@ -151,7 +151,7 @@ static void a5_corridorWormAnimUpdate(sA5CorridorWormSubtask* pThis, sSaturnPtr 
 
     if (state == 1 || state == 2)
     {
-        // Check if dragon crossed center + threshold → switch to state 3
+        // Check if dragon crossed center + threshold -> switch to state 3
         if (pThis->m4 + pThis->m8 < dragonZ)
         {
             pThis->m0 = 3;
@@ -161,7 +161,7 @@ static void a5_corridorWormAnimUpdate(sA5CorridorWormSubtask* pThis, sSaturnPtr 
 
     if (state == 3)
     {
-        // Load file pair (direction B→A)
+        // Load file pair (direction B->A)
         s32 fileOff = ((mainGameState.bitField[0xA3] & 0x20) != 0) ? 16 : 8;
         unloadFileFromFileList(readSaturnS32(pData + fileOff));
         loadFileFromFileList(readSaturnS32(pData + fileOff + 4));
@@ -212,7 +212,7 @@ static void a5_corridorTryTransition(sA5CorridorWormSubtask* pThis, s32 dayDest,
     }
 }
 
-// 0605930c — corridor 1 worm update
+// 0605930c - corridor 1 worm update
 static void corridorWormUpdate_1(sA5CorridorWormSubtask* pThis)
 {
     sVec3_FP dragonPos;
@@ -229,7 +229,7 @@ static void corridorWormUpdate_1(sA5CorridorWormSubtask* pThis)
     a5_corridorWormAnimUpdate(pThis, gFLD_A5->getSaturnPtr(0x060999A4), &dragonPos);
 }
 
-// 0605947a — corridor 3 worm update
+// 0605947a - corridor 3 worm update
 static void corridorWormUpdate_3(sA5CorridorWormSubtask* pThis)
 {
     sVec3_FP dragonPos;
@@ -246,7 +246,7 @@ static void corridorWormUpdate_3(sA5CorridorWormSubtask* pThis)
     a5_corridorWormAnimUpdate(pThis, gFLD_A5->getSaturnPtr(0x060999BC), &dragonPos);
 }
 
-// 060595b4 — corridor 5 worm update
+// 060595b4 - corridor 5 worm update
 static void corridorWormUpdate_5(sA5CorridorWormSubtask* pThis)
 {
     sVec3_FP dragonPos;
@@ -258,7 +258,7 @@ static void corridorWormUpdate_5(sA5CorridorWormSubtask* pThis)
     }
 }
 
-// 0605962c — corridor 6 worm update
+// 0605962c - corridor 6 worm update
 static void corridorWormUpdate_6(sA5CorridorWormSubtask* pThis)
 {
     sVec3_FP dragonPos;
@@ -270,31 +270,31 @@ static void corridorWormUpdate_6(sA5CorridorWormSubtask* pThis)
     }
 }
 
-// 06059750 — create corridor 1 worm subtask
+// 06059750 - create corridor 1 worm subtask
 void createA5_corridorWorm_1(p_workArea parent)
 {
     createSubTaskFromFunction<sA5CorridorWormSubtask>(parent, &corridorWormUpdate_1);
 }
 
-// 06059760 — create corridor 3 worm subtask
+// 06059760 - create corridor 3 worm subtask
 void createA5_corridorWorm_3(p_workArea parent)
 {
     createSubTaskFromFunction<sA5CorridorWormSubtask>(parent, &corridorWormUpdate_3);
 }
 
-// 0605976c — create corridor 5 worm subtask
+// 0605976c - create corridor 5 worm subtask
 void createA5_corridorWorm_5(p_workArea parent)
 {
     createSubTaskFromFunction<sA5CorridorWormSubtask>(parent, &corridorWormUpdate_5);
 }
 
-// 06059774 — create corridor 6 worm subtask
+// 06059774 - create corridor 6 worm subtask
 void createA5_corridorWorm_6(p_workArea parent)
 {
     createSubTaskFromFunction<sA5CorridorWormSubtask>(parent, &corridorWormUpdate_6);
 }
 
-// a5CreateDecorEmitter — A5 overlay-local copy of the shared item box
+// a5CreateDecorEmitter - A5 overlay-local copy of the shared item box
 // creation path. The decor emitter struct is binary-identical to
 // s_itemBoxType1, so we use the shared infrastructure directly.
 static void a5CreateDecorEmitter(sSaturnPtr pData)
@@ -302,19 +302,19 @@ static void a5CreateDecorEmitter(sSaturnPtr pData)
     createFieldItemBox(readItemBoxDefinition(pData));
 }
 
-// 0605fe7e — create subfield 5 environment object
+// 0605fe7e - create subfield 5 environment object
 void createA5_envObject_5()
 {
     a5CreateDecorEmitter(gFLD_A5->getSaturnPtr(0x0609D380));
 }
 
-// 0605fe86 — create subfield 6 environment object
+// 0605fe86 - create subfield 6 environment object
 void createA5_envObject_6()
 {
     a5CreateDecorEmitter(gFLD_A5->getSaturnPtr(0x0609D3C8));
 }
 
-// 060596a4 — corridor A worm update (same bounds as corridor 5)
+// 060596a4 - corridor A worm update (same bounds as corridor 5)
 static void corridorWormUpdate_A(sA5CorridorWormSubtask* pThis)
 {
     sVec3_FP dragonPos;
@@ -326,13 +326,13 @@ static void corridorWormUpdate_A(sA5CorridorWormSubtask* pThis)
     }
 }
 
-// 0605977c — create corridor A worm subtask
+// 0605977c - create corridor A worm subtask
 void createA5_corridorWorm_A(p_workArea parent)
 {
     createSubTaskFromFunction<sA5CorridorWormSubtask>(parent, &corridorWormUpdate_A);
 }
 
-// 0605fe8e — create subfield A environment object
+// 0605fe8e - create subfield A environment object
 void createA5_envObject_A()
 {
     a5CreateDecorEmitter(gFLD_A5->getSaturnPtr(0x0609D410));
@@ -351,13 +351,13 @@ void createA5_envObject_A()
 
 // sA5FieldEventCheckTask is implemented in a5_fieldEventCheck.cpp
 
-// 06057c0c — create Baldor worm body (complex 3D entity, subfields 2, 8)
+// 06057c0c - create Baldor worm body (complex 3D entity, subfields 2, 8)
 void createA5_baldorWormBody(p_workArea parent)
 {
     Unimplemented(); // createSubTaskFromFunction size 0x138, loads Baldor body with 3D models/animation
 }
 
-// 0605fdb8 — create environment decor objects for day subfields (0, 7)
+// 0605fdb8 - create environment decor objects for day subfields (0, 7)
 // 0605f6f0
 static void a5DecorDrawCallback() { Unimplemented(); }
 
@@ -371,10 +371,10 @@ void createA5_decorObjects_day()
 
 // --- Per-subfield environment objects ---
 
-// 0605971c — empty (subfield 0 placeholder)
+// 0605971c - empty (subfield 0 placeholder)
 void createA5_envObjects_empty_0971c() {}
 
-// 06059768 — empty (subfield 4/9 placeholder)
+// 06059768 - empty (subfield 4/9 placeholder)
 void createA5_envObjects_empty_09768() {}
 
 // createA5_envObjects_sub0 is implemented in a5_wormHoleEntity.cpp
@@ -397,7 +397,7 @@ void createA5_envObjects_sub4_particle(p_workArea parent)
     createSubTask<sA5ParticleEntity>(parent, &td);
 }
 
-// Light entity (size 1 — minimal)
+// Light entity (size 1 - minimal)
 struct sA5LightEntity : public s_workAreaTemplate<sA5LightEntity>
 {
     u8 m0; // size 0x1
@@ -459,7 +459,7 @@ void createA5_envObjects_sub4_light(p_workArea parent)
 
 // createA5_envObjects_sub4_wormPassageEntrances is implemented in a5_wormPassageEntrance.cpp
 
-// 06059430 — corridor worm update for subfield 2/8: checks bitfields and triggers cutscene
+// 06059430 - corridor worm update for subfield 2/8: checks bitfields and triggers cutscene
 static void corridorWormUpdate_2(sA5CorridorWormSubtask* pThis)
 {
     if ((mainGameState.bitField[0x96] & 0x10) != 0 &&
@@ -471,15 +471,15 @@ static void corridorWormUpdate_2(sA5CorridorWormSubtask* pThis)
     }
 }
 
-// 06059758 — create corridor worm subtask for subfield 2/8
+// 06059758 - create corridor worm subtask for subfield 2/8
 void createA5_corridorWorm_2(p_workArea parent)
 {
     createSubTaskFromFunction<sA5CorridorWormSubtask>(parent, &corridorWormUpdate_2);
 }
 
-// 06059768 reuse for sub 4 — empty, already handled
+// 06059768 reuse for sub 4 - empty, already handled
 
-// 0605efb2 — init worm color tables for day subfields (4)
+// 0605efb2 - init worm color tables for day subfields (4)
 void initA5_wormColorTables_day()
 {
     s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
@@ -489,7 +489,7 @@ void initA5_wormColorTables_day()
     pFieldData->m18_wormColorState1 = 0;
 }
 
-// 0605ef84 — init worm color tables for night subfields (2)
+// 0605ef84 - init worm color tables for night subfields (2)
 void initA5_wormColorTables_night()
 {
     s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
@@ -499,7 +499,7 @@ void initA5_wormColorTables_night()
     pFieldData->m18_wormColorState1 = 0;
 }
 
-// 0605fe38 — create decor objects for night subfield 4/9
+// 0605fe38 - create decor objects for night subfield 4/9
 void createA5_decorObjects_night_4()
 {
     getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m9D4_customDrawFunc = &a5DecorDrawCallback;
@@ -508,7 +508,7 @@ void createA5_decorObjects_night_4()
         a5CreateDecorEmitter(gFLD_A5->getSaturnPtr(addrs[i]));
 }
 
-// 0605fdf8 — create decor objects for night subfield 2/8
+// 0605fdf8 - create decor objects for night subfield 2/8
 void createA5_decorObjects_night_2()
 {
     getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m9D4_customDrawFunc = &a5DecorDrawCallback;
@@ -564,14 +564,14 @@ static void a5EncounterConfigInit(sA5EncounterConfigTask* pThis, sA5EncounterCon
     ((s_fieldSpecificData_A5*)getFieldTaskPtr()->mC)->m0_pEncounterConfig = pThis;
 }
 
-// 060554f8 — shared: create encounter config task
+// 060554f8 - shared: create encounter config task
 static void createA5_encounterConfigInner(p_workArea parent, sA5EncounterConfig* pConfig)
 {
     static sA5EncounterConfigTask::TypedTaskDefinition td = { &a5EncounterConfigInit, nullptr, nullptr, nullptr };
     createSubTaskWithArg<sA5EncounterConfigTask>(parent, pConfig, &td);
 }
 
-// 06055510/0605554c/06055588/060555c4/06055600/0605563c — per-subfield encounter config wrappers
+// 06055510/0605554c/06055588/060555c4/06055600/0605563c - per-subfield encounter config wrappers
 void createA5_encounterConfig(p_workArea parent, s32 subfieldId, s16 param1, s16 colorMask, s16 param3, s16 param4, s16 param5, s16 param6)
 {
     sA5EncounterConfig config;
@@ -593,7 +593,7 @@ struct sA5ScriptCheckTask : public s_workAreaTemplate<sA5ScriptCheckTask>
     // size 0x0
 };
 
-// 06054e34 — script check: proximity sound for trigger zones
+// 06054e34 - script check: proximity sound for trigger zones
 static void a5ScriptCheckUpdate(sA5ScriptCheckTask* pThis)
 {
     static const u32 posAddrs[] = { 0x06089B98, 0x06089BA4, 0x06089BB0, 0x06089BBC };
@@ -627,7 +627,7 @@ struct sA5TriggerZoneEntity : public s_workAreaTemplateWithArg<sA5TriggerZoneEnt
 
 // Day variants (task def at 06089bc8)
 // Trigger zone entity struct with named members (size 0x40)
-// The arg is sA5TriggerZoneArgs* — {sSaturnPtr data, s32 index}
+// The arg is sA5TriggerZoneArgs* - {sSaturnPtr data, s32 index}
 
 struct sA5TriggerZoneArgs
 {
@@ -635,7 +635,7 @@ struct sA5TriggerZoneArgs
     s32 m4_index;
 };
 
-// 06054EA0 — day trigger zone init
+// 06054EA0 - day trigger zone init
 static void a5TriggerZoneDay_Init(sA5TriggerZoneEntity* pThis, void* arg)
 {
     sA5TriggerZoneArgs* pArgs = (sA5TriggerZoneArgs*)arg;
@@ -647,7 +647,7 @@ static void a5TriggerZoneDay_Init(sA5TriggerZoneEntity* pThis, void* arg)
     pThis->m3A_param1 = (s16)0xADF1;
 }
 
-// 060550BC — night trigger zone init
+// 060550BC - night trigger zone init
 static void a5TriggerZoneNight_Init(sA5TriggerZoneEntity* pThis, void* arg)
 {
     sA5TriggerZoneArgs* pArgs = (sA5TriggerZoneArgs*)arg;
@@ -659,7 +659,7 @@ static void a5TriggerZoneNight_Init(sA5TriggerZoneEntity* pThis, void* arg)
     pThis->m3A_param1 = 0xC42;
 }
 
-// 06055020 — create trigger zones for day subfield 2
+// 06055020 - create trigger zones for day subfield 2
 void createA5_triggerZones_day(p_workArea parent)
 {
     createSubTaskFromFunction<sA5ScriptCheckTask>(parent, &a5ScriptCheckUpdate);
@@ -675,7 +675,7 @@ void createA5_triggerZones_day(p_workArea parent)
     }
 }
 
-// 06055224 — create trigger zones for night subfield 8
+// 06055224 - create trigger zones for night subfield 8
 void createA5_triggerZones_night(p_workArea parent)
 {
     createSubTaskFromFunction<sA5ScriptCheckTask>(parent, &a5ScriptCheckUpdate);
@@ -721,7 +721,7 @@ p_workArea overlayStart_FLD_A5(p_workArea workArea, u32 arg)
 
     gCorridorEntryScriptEA = gFLD_A5->getSaturnPtr(0x06088AAC);
 
-    // 06072e36 — override subfield for specific game state
+    // 06072e36 - override subfield for specific game state
     if (mainGameState.bitField[0x1B] & 8)
     {
         getFieldTaskPtr()->m2E_currentSubFieldIndex = 0xB;

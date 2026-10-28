@@ -48,7 +48,7 @@ static void initDragonLightParams(fixedPoint lightRotation, fixedPoint lightPara
     p->mD4 = { f3_0, f3_1, f3_2 };
 }
 
-// 06059538 — dragon light params for subfield 0
+// 06059538 - dragon light params for subfield 0
 void initDragonParams_A7_0()
 {
     // Data at 06085aa4
@@ -60,7 +60,7 @@ void initDragonParams_A7_0()
         0x10, 0x10, 0x10);
 }
 
-// 0605953e — dragon light params for subfield 1
+// 0605953e - dragon light params for subfield 1
 void initDragonParams_A7_1()
 {
     // Data at 06085abc
@@ -72,7 +72,7 @@ void initDragonParams_A7_1()
         0x10, 0x10, 0x10);
 }
 
-// 06059544 — dragon light params for subfield 2
+// 06059544 - dragon light params for subfield 2
 void initDragonParams_A7_2()
 {
     // Data at 06085ad4
@@ -84,7 +84,7 @@ void initDragonParams_A7_2()
         0x10, 0x10, 0x10);
 }
 
-// 06055266 — set/clear game state bit from table at 060843d0
+// 06055266 - set/clear game state bit from table at 060843d0
 static void setGameStateBitFromTable(s32 index, s32 setOrClear)
 {
     s16 bitIndex = readSaturnS16(gFLD_A7->getSaturnPtr(0x060843d0) + index * 2);
@@ -99,7 +99,7 @@ static void setGameStateBitFromTable(s32 index, s32 setOrClear)
     }
 }
 
-// 0605600a — set game flags for subfield 0 objects
+// 0605600a - set game flags for subfield 0 objects
 void setGameFlagsA7_0()
 {
     for (s32 i = 0; i < 8; i++)
@@ -110,7 +110,7 @@ void setGameFlagsA7_0()
     pFieldData->m279 = 8;
 }
 
-// 0605c650 — read game state bit from table at 06086260
+// 0605c650 - read game state bit from table at 06086260
 static s32 readGameStateBitFromTable(s32 index)
 {
     u32 bitIndex = (u32)readSaturnS16(gFLD_A7->getSaturnPtr(0x06086260) + index * 2);
@@ -118,7 +118,7 @@ static s32 readGameStateBitFromTable(s32 index)
     return (s32)(s8)(mainGameState.bitField[adjustedIndex >> 3] & (1 << (adjustedIndex & 7)));
 }
 
-// 0605c75c — count active environment objects
+// 0605c75c - count active environment objects
 void countActiveObjectsA7()
 {
     s_fieldSpecificData_A7* pFieldData = (s_fieldSpecificData_A7*)getFieldTaskPtr()->mC;
@@ -138,7 +138,7 @@ void countActiveObjectsA7()
     pFieldData->m278 = 0;
 }
 
-// 06068a9e — A7 cutscene camera init (local copy of cutsceneTaskInitSub2)
+// 06068a9e - A7 cutscene camera init (local copy of cutsceneTaskInitSub2)
 static std::vector<s_scriptData1> a7CutsceneScriptData;
 
 static void a7CutsceneCameraInit(p_workArea parent, const sSaturnPtr& scriptDataEA, s32 r6, sVec3_FP* r7, u32 flags)
@@ -147,7 +147,7 @@ static void a7CutsceneCameraInit(p_workArea parent, const sSaturnPtr& scriptData
     cutsceneTaskInitSub2(parent, a7CutsceneScriptData, r6, r7, flags);
 }
 
-// Simple subtask struct — 4 bytes extra (one s32 counter)
+// Simple subtask struct - 4 bytes extra (one s32 counter)
 struct sA7SimpleSubtask : public s_workAreaTemplate<sA7SimpleSubtask>
 {
     s32 m0_counter;
@@ -175,7 +175,7 @@ static void a7SimpleSubtaskUpdate(sA7SimpleSubtask* pThis)
     }
 }
 
-// 06054536 — create simple subtask (conditional)
+// 06054536 - create simple subtask (conditional)
 void createA7_simpleSubtask(p_workArea parent)
 {
     if (getFieldTaskPtr()->m2C_currentFieldIndex != 0x16)
@@ -188,13 +188,13 @@ void createA7_simpleSubtask(p_workArea parent)
     }
 }
 
-// Field script subtask struct — 0 bytes extra
+// Field script subtask struct - 0 bytes extra
 struct sA7FieldScriptSubtask : public s_workAreaTemplate<sA7FieldScriptSubtask>
 {
     // size 0x0
 };
 
-// 0605e8ba — field script subtask update (runs once then self-destructs)
+// 0605e8ba - field script subtask update (runs once then self-destructs)
 static void fieldScriptSubtaskUpdate_A7(sA7FieldScriptSubtask* pThis)
 {
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
@@ -210,7 +210,7 @@ static void fieldScriptSubtaskUpdate_A7(sA7FieldScriptSubtask* pThis)
     }
 }
 
-// 0605e930 — create field script environment subtask
+// 0605e930 - create field script environment subtask
 void createA7_fieldScriptSubtask(p_workArea parent)
 {
     if (getFieldTaskPtr()->m2C_currentFieldIndex == 4 && (mainGameState.bitField[0xa3] & 0x10) != 0)
@@ -220,7 +220,7 @@ void createA7_fieldScriptSubtask(p_workArea parent)
     createSubTaskFromFunction<sA7FieldScriptSubtask>(parent, &fieldScriptSubtaskUpdate_A7);
 }
 
-// 060545ac — proximity check update (random battle trigger)
+// 060545ac - proximity check update (random battle trigger)
 struct sA7ProximityTask : public s_workAreaTemplate<sA7ProximityTask>
 {
     sVec3_FP m0_lastDragonPos;
@@ -259,7 +259,7 @@ static void proximityCheckUpdate(sA7ProximityTask* pThis)
     }
 }
 
-// 06054684 — create proximity check subtask
+// 06054684 - create proximity check subtask
 void createA7_proximityCheck(p_workArea parent)
 {
     sA7ProximityTask* pTask = createSubTaskFromFunction<sA7ProximityTask>(parent, &proximityCheckUpdate);
@@ -271,7 +271,7 @@ void createA7_proximityCheck(p_workArea parent)
 
 // --- Model render context (0606b45c / 0606b4b0) --- moved to field/fieldModelRender.cpp
 
-// 06056bb0 — start tasks for subfield 0
+// 06056bb0 - start tasks for subfield 0
 void startTasksA7_0(p_workArea parent)
 {
     createFieldSpecificDataTask_A7(parent);
@@ -279,8 +279,8 @@ void startTasksA7_0(p_workArea parent)
     pFieldData->m280_particlePool = createParticlePoolTask(parent, 1, 0x40);
     createA7_simpleSubtask(parent);
     setGameFlagsA7_0();
-    // 060565a6 — empty
-    // 0606a65c — empty
+    // 060565a6 - empty
+    // 0606a65c - empty
     createA7_itemBoxes_0(parent);
     countActiveObjectsA7();
     createA7_fieldScriptSubtask(parent);
@@ -302,7 +302,7 @@ static void a7EmptySubtaskUpdate(sA7EmptySubtask* pThis)
     // empty
 }
 
-// 060565b2 — create empty update subtask
+// 060565b2 - create empty update subtask
 void createA7_emptySubtask(p_workArea parent)
 {
     createSubTaskFromFunction<sA7EmptySubtask>(parent, &a7EmptySubtaskUpdate);
@@ -361,7 +361,7 @@ static void a7EncounterNotificationUpdate(sA7EncounterNotification* pThis)
     }
 }
 
-// 06056522 — create encounter notification sibling task
+// 06056522 - create encounter notification sibling task
 static void a7CreateEncounterNotification(sA7EncounterCheckSubtask* pThis, s32* pParams)
 {
     sA7EncounterNotification* pNotif = createSiblingTaskFromFunction<sA7EncounterNotification>(pThis, &a7EncounterNotificationUpdate);
@@ -390,39 +390,39 @@ static void a7EncounterCheckUpdate(sA7EncounterCheckSubtask* pThis)
     }
 }
 
-// 060565aa — create encounter check subtask
+// 060565aa - create encounter check subtask
 void createA7_encounterCheckSubtask(p_workArea parent)
 {
     createSubTaskFromFunction<sA7EncounterCheckSubtask>(parent, &a7EncounterCheckUpdate);
 }
 
-// Sound cleanup tasks — size 0, only have delete handlers
+// Sound cleanup tasks - size 0, only have delete handlers
 
 struct sA7SoundCleanupTask : public s_workAreaTemplate<sA7SoundCleanupTask>
 {
     // size 0x0
 };
 
-// 0605eb90 — delete handler: play sound 0x65
+// 0605eb90 - delete handler: play sound 0x65
 static void a7SoundCleanup_delete_0x65(sA7SoundCleanupTask* pThis)
 {
     playBattleSoundEffect(0x65);
 }
 
-// 0605eb9e — delete handler: play sound 0x6f
+// 0605eb9e - delete handler: play sound 0x6f
 static void a7SoundCleanup_delete_0x6f(sA7SoundCleanupTask* pThis)
 {
     playBattleSoundEffect(0x6f);
 }
 
-// 0605eb96 — create sound cleanup subtask (sound 0x65)
+// 0605eb96 - create sound cleanup subtask (sound 0x65)
 void createA7_soundCleanup_0x65(p_workArea parent)
 {
     static sA7SoundCleanupTask::TypedTaskDefinition td = { nullptr, nullptr, nullptr, &a7SoundCleanup_delete_0x65 };
     createSubTask<sA7SoundCleanupTask>(parent, &td);
 }
 
-// 0605eba4 — create sound cleanup subtask (sound 0x6f)
+// 0605eba4 - create sound cleanup subtask (sound 0x6f)
 void createA7_soundCleanup_0x6f(p_workArea parent)
 {
     static sA7SoundCleanupTask::TypedTaskDefinition td = { nullptr, nullptr, nullptr, &a7SoundCleanup_delete_0x6f };
@@ -513,7 +513,7 @@ static void a7EnvEntity20_Init(sA7EnvEntity20* pThis)
     pThis->m8_position.m8_Z = fixedPoint(-0x600000);
 }
 
-// 0605A12A — encounter approach state: fade fog to zero while rotating
+// 0605A12A - encounter approach state: fade fog to zero while rotating
 static void a7EnvEntity20_EncounterUpdate(sA7EnvEntity20* pThis)
 {
     pThis->m14_rotationY -= 0x888888;
@@ -547,7 +547,7 @@ static void a7EnvEntity20_Update(sA7EnvEntity20* pThis)
 
     if ((pThis->m1C_animCounter & 7) == 0)
     {
-        Unimplemented(); // FUN_FLD_A7__0605a002 — periodic visual update
+        Unimplemented(); // FUN_FLD_A7__0605a002 - periodic visual update
     }
 
     // Compute distance to tower for fog level
@@ -560,7 +560,7 @@ static void a7EnvEntity20_Update(sA7EnvEntity20* pThis)
     fixedPoint distSq = MulVec2(delta, delta);
     s32 dist = sqrt_F(distSq).asS32();
 
-    // Fog table lookup — distance >> 0x13 gives index (0-17)
+    // Fog table lookup - distance >> 0x13 gives index (0-17)
     static const u8 fogTable[] = {
         0x1B, 0x1A, 0x19, 0x18, 0x18, 0x17, 0x17, 0x17,
         0x16, 0x16, 0x16, 0x15, 0x15, 0x14, 0x13, 0x12,
@@ -828,7 +828,7 @@ static void a7SpawnedEntity_Draw(sA7SpawnedEntity* pThis)
     sVec3_FP* trail = &pThis->m8_position;
     for (s32 i = 0; i < 0x26; i++)
     {
-        // Sentinel on trail[i+1].Y < 0 — early-terminates the trail
+        // Sentinel on trail[i+1].Y < 0 - early-terminates the trail
         if (trail[i + 1].m4_Y.m_value < 0)
         {
             return;
@@ -838,7 +838,7 @@ static void a7SpawnedEntity_Draw(sA7SpawnedEntity* pThis)
     displayRaySegmentFromWorldSpace(&trail[38], width, cmdsrcaFinal, cmdsize, cmdcolr, colorMode);
 }
 
-// 0605513c — spawner active update: creates entities from table
+// 0605513c - spawner active update: creates entities from table
 static void a7EntitySpawnerActiveUpdate(sA7EntitySpawnerTask* pThis)
 {
     if (pThis->m6_delay == 0)
@@ -873,7 +873,7 @@ static void a7EntitySpawnerActiveUpdate(sA7EntitySpawnerTask* pThis)
     }
 }
 
-// 060551d8 — spawner initial update: waits for game flag then activates
+// 060551d8 - spawner initial update: waits for game flag then activates
 static void a7EntitySpawnerWaitUpdate(sA7EntitySpawnerTask* pThis)
 {
     if ((mainGameState.bitField[0xA3] & 2) != 0)
@@ -882,7 +882,7 @@ static void a7EntitySpawnerWaitUpdate(sA7EntitySpawnerTask* pThis)
     }
 }
 
-// 060551ee — create entity spawner subtask
+// 060551ee - create entity spawner subtask
 void createA7_envEntity_51ee(p_workArea parent, sSaturnPtr arg, u8 param3)
 {
     sA7EntitySpawnerTask* pTask = createSubTaskFromFunction<sA7EntitySpawnerTask>(parent, &a7EntitySpawnerWaitUpdate);
@@ -895,14 +895,14 @@ void createA7_envEntity_51ee(p_workArea parent, sSaturnPtr arg, u8 param3)
     }
 }
 
-// 0607c18e, 0607c120 — initDebrisScatterConfig, readMaxScalarFromBundleTree
+// 0607c18e, 0607c120 - initDebrisScatterConfig, readMaxScalarFromBundleTree
 
 // Forward declarations
 struct sA7EnvEntity60;
 static void a7EnvEntity60_debrisDrawCallback(p_workArea pDebrisTask, sVec3_FP* pPosition);
 static void a7EnvEntity60_SpawnExplosion(sA7EnvEntity60* pThis);
 
-// Environment entity 0x60 (interactive scenery — fossil/crystal)
+// Environment entity 0x60 (interactive scenery - fossil/crystal)
 struct sA7EnvEntity60 : public s_workAreaTemplate<sA7EnvEntity60>
 {
     s_memoryAreaOutput m0_memoryArea;
@@ -915,7 +915,7 @@ struct sA7EnvEntity60 : public s_workAreaTemplate<sA7EnvEntity60>
     // size 0x60
 };
 
-// 0605e594 — spawn explosion debris scatter when the crystal breaks
+// 0605e594 - spawn explosion debris scatter when the crystal breaks
 static void a7EnvEntity60_SpawnExplosion(sA7EnvEntity60* pThis)
 {
     sDebrisScatterParams params;
@@ -938,7 +938,7 @@ static void a7EnvEntity60_SpawnExplosion(sA7EnvEntity60* pThis)
     createDebrisScatterTask((p_workArea)pThis, &params, false);
 }
 
-// 0605e0ec — debris draw callback: spawn a projected scene particle at randomized position
+// 0605e0ec - debris draw callback: spawn a projected scene particle at randomized position
 static void a7EnvEntity60_debrisDrawCallback(p_workArea /*pDebrisTask*/, sVec3_FP* pPosition)
 {
     sVec3_FP vel = {};
@@ -1025,7 +1025,7 @@ void createA7_envEntity_e7c2(p_workArea parent)
     createSubTask<sA7EnvEntity60>(parent, &td);
 }
 
-// Environment entity 0x54 (sibling — growing crystal/plant)
+// Environment entity 0x54 (sibling - growing crystal/plant)
 struct sA7EnvEntity54 : public s_workAreaTemplate<sA7EnvEntity54>
 {
     s_memoryAreaOutput m0_memoryArea;
@@ -1060,7 +1060,7 @@ static void a7EnvEntity54_Init(sA7EnvEntity54* pThis)
 // 0605DAD8
 static void a7EnvEntity54_Update(sA7EnvEntity54* pThis)
 {
-    // Distance check — hide if dragon is too close
+    // Distance check - hide if dragon is too close
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
     s32 dx = pDragon->m8_pos.m0_X.asS32() - pThis->m8_position.m0_X.asS32();
     if (dx < 0) dx = -dx;
@@ -1119,13 +1119,13 @@ void createA7_envEntity_e034(p_workArea parent)
     createSiblingTask<sA7EnvEntity54>(parent, &td);
 }
 
-// 0605600a — same function as setGameFlagsA7_0, called from both startTasks 0 and 2
+// 0605600a - same function as setGameFlagsA7_0, called from both startTasks 0 and 2
 void createA7_visibilityObjects(void)
 {
     setGameFlagsA7_0();
 }
 
-// 06056c0a — start tasks for subfield 1
+// 06056c0a - start tasks for subfield 1
 void startTasksA7_1(p_workArea parent)
 {
     createFieldSpecificDataTask_A7(parent);
@@ -1143,7 +1143,7 @@ void startTasksA7_1(p_workArea parent)
     createA7_envEntity_e7c2(parent);
 }
 
-// 06056c6a — start tasks for subfield 2
+// 06056c6a - start tasks for subfield 2
 void startTasksA7_2(p_workArea parent)
 {
     createFieldSpecificDataTask_A7(parent);
@@ -1157,7 +1157,7 @@ void startTasksA7_2(p_workArea parent)
     createA7_soundCleanup_0x65(parent);
 }
 
-// 06056d0c — push dragon away from a point based on proximity
+// 06056d0c - push dragon away from a point based on proximity
 static void dragonPushFromPoint_A7(s_dragonTaskWorkArea* pDragon, sVec3_FP* pTarget)
 {
     sVec3_FP target;
@@ -1183,7 +1183,7 @@ static void dragonPushFromPoint_A7(s_dragonTaskWorkArea* pDragon, sVec3_FP* pTar
     pDragon->m160_deltaTranslation.m8_Z = fixedPoint(pDragon->m160_deltaTranslation.m8_Z.asS32() + pushZ);
 }
 
-// 06056dbc — dragon mF4 callback for subfield 1
+// 06056dbc - dragon mF4 callback for subfield 1
 void dragonCallback_A7_1(s_dragonTaskWorkArea* pDragon)
 {
     static const sVec3_FP pushTarget = { fixedPoint(0x600000), fixedPoint(0x40000), fixedPoint(-0x600000) };
@@ -1192,7 +1192,7 @@ void dragonCallback_A7_1(s_dragonTaskWorkArea* pDragon)
     clearCameraZoneTargets(1);
 }
 
-// 06056dec — dragon mF4 callback for subfield 2
+// 06056dec - dragon mF4 callback for subfield 2
 void dragonCallback_A7_2(s_dragonTaskWorkArea* pDragon)
 {
     if ((mainGameState.bitField[0xA3] & 8) != 0)

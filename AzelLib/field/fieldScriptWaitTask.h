@@ -1,6 +1,6 @@
 #pragma once
 
-// Script-wait task (Saturn size 0x14) — shared across all field overlays.
+// Script-wait task (Saturn size 0x14) - shared across all field overlays.
 // Waits for a multichoice dialog to appear then close, dispatches callback on delete.
 struct sScriptWaitTask : public s_workAreaTemplate<sScriptWaitTask>
 {

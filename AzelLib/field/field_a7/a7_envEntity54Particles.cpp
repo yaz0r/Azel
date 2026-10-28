@@ -15,22 +15,22 @@ static const std::vector<sVdp1Quad>* a7Entity54_getSpriteQuadList()
     return &s_quadList;
 }
 
-// Per-particle state — 0x44 bytes.
+// Per-particle state - 0x44 bytes.
 struct sA7EnvEntity54Particle
 {
-    sVec3_FP m0_position;    // 0x00 — x/y/z fixed point
+    sVec3_FP m0_position;    // 0x00 - x/y/z fixed point
     sVec3_FP mC_velocity;    // 0x0C
     s32 m18;                 // 0x18
-    s32 m1C_gravity;         // 0x1C — added to velocity Y each frame (mode 1)
+    s32 m1C_gravity;         // 0x1C - added to velocity Y each frame (mode 1)
     s32 m20;                 // 0x20
-    s32 m24_angle;           // 0x24 — orbital angle (mode 1)
-    s32 m28_angVel;          // 0x28 — angular velocity accumulator
-    s32 m2C_angAccel;        // 0x2C — angular acceleration
+    s32 m24_angle;           // 0x24 - orbital angle (mode 1)
+    s32 m28_angVel;          // 0x28 - angular velocity accumulator
+    s32 m2C_angAccel;        // 0x2C - angular acceleration
     s32 m30_radius;          // 0x30
     s32 m34_radiusDelta;     // 0x34
     u16 m38_lifetime;        // 0x38
-    u16 m3A_mode;            // 0x3A — 0 = swirl, 1 = orbital
-    sAnimatedQuad m3C_quad;  // 0x3C — particleInitSub state
+    u16 m3A_mode;            // 0x3A - 0 = swirl, 1 = orbital
+    sAnimatedQuad m3C_quad;  // 0x3C - particleInitSub state
     // size 0x44
 };
 
@@ -62,19 +62,19 @@ struct sA7EnvEntity54Particles : public s_workAreaTemplate<sA7EnvEntity54Particl
 
 // Stack-local spawn descriptor passed from the spawner to cfcc/d0ac. Layout
 // mirrors the Saturn stack frame {local_30[0..2], puStack_24, uStack_20,
-// pad, uStack_18} — 28 bytes.
+// pad, uStack_18} - 28 bytes.
 struct sA7Entity54SpawnArg
 {
-    s32 m0;                                     // 0x00 — pos.X or angle seed
-    s32 m4;                                     // 0x04 — pos.Y (always 0)
-    s32 m8;                                     // 0x08 — pos.Z (reused as angle by d0ac)
-    const std::vector<sVdp1Quad>* mC_pSprite;   // 0x0C — sprite quad list
+    s32 m0;                                     // 0x00 - pos.X or angle seed
+    s32 m4;                                     // 0x04 - pos.Y (always 0)
+    s32 m8;                                     // 0x08 - pos.Z (reused as angle by d0ac)
+    const std::vector<sVdp1Quad>* mC_pSprite;   // 0x0C - sprite quad list
     s32 m10_distance;                           // 0x10
-    s32 m14_pad;                                // 0x14 — gap
+    s32 m14_pad;                                // 0x14 - gap
     u16 m18_lifetime;                           // 0x18
 };
 
-// 0605cfcc — spawn a particle at an absolute position with random XZ velocity
+// 0605cfcc - spawn a particle at an absolute position with random XZ velocity
 static void a7EnvEntity54Particles_spawnAtPos_0605cfcc(sA7EnvEntity54Particles* pThis, sA7Entity54SpawnArg* arg)
 {
     if (pThis->m14_freeCount < (s32)(s16)pThis->m18_count)
@@ -100,7 +100,7 @@ static void a7EnvEntity54Particles_spawnAtPos_0605cfcc(sA7EnvEntity54Particles* 
     }
 }
 
-// 0605d0ac — spawn a particle at a polar offset from the center
+// 0605d0ac - spawn a particle at a polar offset from the center
 static void a7EnvEntity54Particles_spawnPolar_0605d0ac(sA7EnvEntity54Particles* pThis, sA7Entity54SpawnArg* arg)
 {
     if (pThis->m14_freeCount < (s32)(s16)pThis->m18_count)
@@ -119,7 +119,7 @@ static void a7EnvEntity54Particles_spawnPolar_0605d0ac(sA7EnvEntity54Particles* 
         p->mC_velocity.m4_Y = fixedPoint(0x2000);
         p->m0_position.m4_Y = fixedPoint(0);
 
-        // Angle source is arg->m8 — stale stack data in practice, preserved
+        // Angle source is arg->m8 - stale stack data in practice, preserved
         // literally to match the Saturn binary.
         u16 ang = (u16)((u32)arg->m8 >> 16) & 0xFFF;
         p->m0_position.m0_X = fixedPoint(pThis->m34_pCenterPos->m0_X.m_value
@@ -133,7 +133,7 @@ static void a7EnvEntity54Particles_spawnPolar_0605d0ac(sA7EnvEntity54Particles* 
     }
 }
 
-// 0605d1a4 — round-robin spawner: states 1,2 spawn absolute-position particles;
+// 0605d1a4 - round-robin spawner: states 1,2 spawn absolute-position particles;
 // states 3,4 spawn polar particles; state 4 resets the counter to 0.
 static void a7EnvEntity54Particles_spawner_0605d1a4(sA7EnvEntity54Particles* pThis)
 {
@@ -173,7 +173,7 @@ static void a7EnvEntity54Particles_spawner_0605d1a4(sA7EnvEntity54Particles* pTh
     }
 }
 
-// 0605d2b4 — particle system update
+// 0605d2b4 - particle system update
 static void a7EnvEntity54Particles_Update_0605d2b4(sA7EnvEntity54Particles* pThis)
 {
     sA7EnvEntity54Particle* p = pThis->mC_particles;
@@ -229,7 +229,7 @@ static void a7EnvEntity54Particles_Update_0605d2b4(sA7EnvEntity54Particles* pThi
     pThis->m30_cosScaled = MTH_Mul(fixedPoint(pThis->m8_windCurrentX), getCos(windAng)).m_value;
 }
 
-// 0605d27e — particle system draw
+// 0605d27e - particle system draw
 static void a7EnvEntity54Particles_Draw_0605d27e(sA7EnvEntity54Particles* pThis)
 {
     sA7EnvEntity54Particle* p = pThis->mC_particles;

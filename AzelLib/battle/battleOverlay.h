@@ -7,7 +7,7 @@ struct sOverlayBattleEntry
 {
     sSaturnPtr m0_formationTable;       // +0x00: {funcPtr, arg, flags}[] terminated by funcPtr==0
     sSaturnPtr m4_positionData;         // +0x04: camera/position/speed data (0x5A bytes)
-    sSaturnPtr m8_mapFunction;          // +0x08: dispatched via executeFuncPtr → invoke(func, parent)
+    sSaturnPtr m8_mapFunction;          // +0x08: dispatched via executeFuncPtr -> invoke(func, parent)
     sSaturnPtr mC_textDisplayData;      // +0x0C: passed to createBattleTextDisplay
     sSaturnPtr m10;                     // +0x10:
     sSaturnPtr m14;                     // +0x14:

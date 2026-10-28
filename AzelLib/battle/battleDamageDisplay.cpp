@@ -3,7 +3,7 @@
 #include "battleTargetable.h"
 
 // Task for displaying enemy/dragon damage numbers.
-// Separate from sDamageNumber (battleDamageNumber.cpp) — uses different font/color VDP1 tables.
+// Separate from sDamageNumber (battleDamageNumber.cpp) - uses different font/color VDP1 tables.
 // Font data at BTL_A3::060b1f7c (mode 0) and BTL_A3::060b1f04 (mode 1)
 // Color data at BTL_A3::060b1ff4 (8 bytes per colorType)
 struct sDamageDisplayTask : public s_workAreaTemplateWithCopy<sDamageDisplayTask>

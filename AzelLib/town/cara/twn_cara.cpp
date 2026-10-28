@@ -26,14 +26,6 @@ void unloadFnt(); // TODO: fix
 struct sCaraVdp2Plane;
 static p_workArea gCaraVdp2PlaneTask;
 
-// 06070c0c
-static s32 updateWorldGridFromEdgeTask() {
-    if (twnMainLogicTask->m14_EdgeTask) {
-        updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
-    }
-    return fileInfoStruct.m2C_allocatedHead == 0;
-}
-
 // 060540f8
 static s32 returnZero() {
     return 0;
@@ -1120,7 +1112,7 @@ struct TWN_CARA_data : public sTownOverlay
     {
         // Script functions
         overlayScriptFunctions.m_zeroArg[0x060540f8] = {&returnZero, "returnZero"};
-        overlayScriptFunctions.m_zeroArg[0x06070c0c] = {&updateWorldGridFromEdgeTask, "updateWorldGridFromEdgeTask"};
+        overlayScriptFunctions.m_zeroArg[0x06070c0c] = {&hasLoadingCompleted, "hasLoadingCompleted"};
         overlayScriptFunctions.m_zeroArg[0x060706d4] = {&setupCameraFollowMode, "setupCameraFollowMode"};
         overlayScriptFunctions.m_zeroArg[0x060709ec] = {&disableMainLogic, "disableMainLogic"};
         overlayScriptFunctions.m_zeroArg[0x06070a0a] = {&disableCameraUpdate_Cara, "disableCameraUpdate_Cara"};

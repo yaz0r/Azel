@@ -638,7 +638,7 @@ void sGunShotRootTask_Update(sGunShotRootTask* pThis)
         }
         break;
     case m40_triBurst:
-        // Triple shot — fires at 3 consecutive enemy targets
+        // Triple shot - fires at 3 consecutive enemy targets
         if (selectedTarget->m0_isActive > 0)
         {
             args.m0 = selectedTarget->m4_targetable;

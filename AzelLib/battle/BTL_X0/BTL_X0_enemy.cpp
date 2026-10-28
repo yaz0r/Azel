@@ -628,7 +628,7 @@ static void BTL_X0_beamAttackEffect(sBTL_X0_EnemyModel* pThis, void* p1, void* p
     Unimplemented();
 }
 
-// 0605f200 — quadrant to base rotation
+// 0605f200 - quadrant to base rotation
 static s32 BTL_X0_quadrantToRotation(s8 quadrant)
 {
     if (quadrant == 1) return 0x4000000;
@@ -1575,7 +1575,7 @@ static void BTL_X0_updateTargetableQuadrants(sBTL_X0_EnemyModel* pThis, s32 para
     }
 }
 
-// 06063566 — transforms 7 selected hotpoints of model[0] by cameraProperties2.m28[0]
+// 06063566 - transforms 7 selected hotpoints of model[0] by cameraProperties2.m28[0]
 // and writes them into the 0x54-byte buffer at m1A8_attackDataBuffer.
 static void BTL_X0_transformTargetablePositions(sBTL_X0_EnemyModel* pThis)
 {
@@ -1595,13 +1595,13 @@ static void BTL_X0_transformTargetablePositions(sBTL_X0_EnemyModel* pThis)
     // Ghidra: src offset encodes bone (byte/4) and hotpoint (byte/12 within bone's vec3 array).
     struct Entry { u32 bone; u32 hp; };
     static const Entry entries[7] = {
-        {10, 5}, // (m44 + 0x28) + 0x3c → m44[10], hotpoint 5
-        {26, 0}, // *(sVec3_FP**)(m44 + 0x68) → m44[26], hotpoint 0
-        {33, 0}, // *(sVec3_FP**)(m44 + 0x84) → m44[33], hotpoint 0
-        {10, 1}, // (m44 + 0x28) + 0x0c → m44[10], hotpoint 1
-        {10, 2}, // + 0x18 → hotpoint 2
-        {10, 3}, // + 0x24 → hotpoint 3
-        {10, 4}, // + 0x30 → hotpoint 4
+        {10, 5}, // (m44 + 0x28) + 0x3c -> m44[10], hotpoint 5
+        {26, 0}, // *(sVec3_FP**)(m44 + 0x68) -> m44[26], hotpoint 0
+        {33, 0}, // *(sVec3_FP**)(m44 + 0x84) -> m44[33], hotpoint 0
+        {10, 1}, // (m44 + 0x28) + 0x0c -> m44[10], hotpoint 1
+        {10, 2}, // + 0x18 -> hotpoint 2
+        {10, 3}, // + 0x24 -> hotpoint 3
+        {10, 4}, // + 0x30 -> hotpoint 4
     };
     for (int i = 0; i < 7; i++)
     {
@@ -1611,7 +1611,7 @@ static void BTL_X0_transformTargetablePositions(sBTL_X0_EnemyModel* pThis)
     }
 }
 
-// 06062966 — copies raw hotpoint positions of model[0] into the m1A4 targetable-position buffer,
+// 06062966 - copies raw hotpoint positions of model[0] into the m1A4 targetable-position buffer,
 // in order (skipping bones with no hotpoint pointer). Iterates model[0].m12_numBones.
 static void BTL_X0_copyTargetablePositions(sBTL_X0_EnemyModel* pThis)
 {
@@ -1653,7 +1653,7 @@ static void BTL_X0_enemyDebugDraw(sBTL_X0_EnemyModel* pThis)
 void setupConditionalLightColor(int param_1);
 void clearLightColor();
 
-// Light-color lookup table at BTL_X0::060b7e98 — indexed by quadrant + flag3*4
+// Light-color lookup table at BTL_X0::060b7e98 - indexed by quadrant + flag3*4
 static u8 BTL_X0_lightColorTable_cache(int idx)
 {
     static u8 cached[32] = {0};
@@ -1802,7 +1802,7 @@ static void BTL_X0_enemyModel_Draw(sBTL_X0_EnemyModel* pThis)
         pThis->m30D_flag1 = (pThis->m30D_flag1 == 0) ? 1 : 0;
     }
 
-    // Conditional light color — table indexed by dragonCurrentQuadrant + m30F_flag3 * 4
+    // Conditional light color - table indexed by dragonCurrentQuadrant + m30F_flag3 * 4
     if ((pThis->m14_flags & 0x800000) != 0)
     {
         s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -1826,7 +1826,7 @@ static void BTL_X0_enemyModel_Draw(sBTL_X0_EnemyModel* pThis)
     popMatrix();
 
     // Second pass: draw Azel (m98_models[2]) at world-space position computed from
-    // Atolm's head attach point (model[0].m44_hotpointData[10][0]) — Ghidra m44 + 0x28 = bone 10.
+    // Atolm's head attach point (model[0].m44_hotpointData[10][0]) - Ghidra m44 + 0x28 = bone 10.
     if (pThis->m30D_flag1 == 0 && pThis->m98_models.size() > 2 && pThis->m98_models[2].m18_drawFunction)
     {
         sVec3_FP local;
@@ -2191,7 +2191,7 @@ p_workArea BTL_X0_createEnemyModels(s_workArea* pFormation, s8 variant)
 
     pThis->m98_models.resize(3);
 
-    // Model 0: Atolm body — uses hotpoint bundle at 060b7d20 (per-bone targeting points, including bone 10 = head attach)
+    // Model 0: Atolm body - uses hotpoint bundle at 060b7d20 (per-bone targeting points, including bone 10 = head attach)
     sModelHierarchy* pHierarchy0 = pBundle->getModelHierarchy(4);
     u32 numBones0 = pHierarchy0->countNumberOfBones();
     {
@@ -2209,14 +2209,14 @@ p_workArea BTL_X0_createEnemyModels(s_workArea* pFormation, s8 variant)
     }
     stepAnimation(&pThis->m98_models[0]);
 
-    // Model 1: Atolm debug/alternate — swapped in for model[0] when m30D_flag1 is toggled (debug key 0xC5)
+    // Model 1: Atolm debug/alternate - swapped in for model[0] when m30D_flag1 is toggled (debug key 0xC5)
     sModelHierarchy* pHierarchy1 = pBundle->getModelHierarchy(0xC);
     u32 numBones1 = pHierarchy1->countNumberOfBones();
     init3DModelRawData(pThis, &pThis->m98_models[1], 0, pBundle, 0xC,
         pBundle->getAnimation(0x224), pBundle->getStaticPose(0x1FC, numBones1), nullptr, nullptr);
     stepAnimation(&pThis->m98_models[1]);
 
-    // Model 2: Azel (rider) — drawn at world-space position derived from Atolm's head hotpoint
+    // Model 2: Azel (rider) - drawn at world-space position derived from Atolm's head hotpoint
     sModelHierarchy* pHierarchy2 = pBundle->getModelHierarchy(8);
     u32 numBones2 = pHierarchy2->countNumberOfBones();
     init3DModelRawData(pThis, &pThis->m98_models[2], 0, pBundle, 8,
@@ -2395,7 +2395,7 @@ p_workArea BTL_X0_createEnemyModels2(s_workArea* pFormation)
 
     pThis->m98_models.resize(2);
 
-    // Variant 2 uses a different creature (2-model setup) — body with hotpoints + secondary sub-model
+    // Variant 2 uses a different creature (2-model setup) - body with hotpoints + secondary sub-model
     sModelHierarchy* pHierarchy0 = pBundle->getModelHierarchy(4);
     u32 numBones0 = pHierarchy0->countNumberOfBones();
     {

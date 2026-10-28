@@ -119,14 +119,6 @@ static void reinitVdp2PlaneTask(sSeekVdp2Plane* pTask,
     }
 }
 
-// 06070c80
-static s32 updateWorldGridFromEdgeTask() {
-    if (twnMainLogicTask->m14_EdgeTask) {
-        updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
-    }
-    return fileInfoStruct.m2C_allocatedHead == 0;
-}
-
 // 0606e5a4
 static s32 setupSeekerBackground(s32 param_1) {
     if (!gSeekVdp2PlaneTask) return 0;
@@ -139,7 +131,7 @@ static s32 setupSeekerBackground(s32 param_1) {
         break;
     default:
     {
-        // 0606e484 — simple VDP2 init with no update/draw (used for interior scenes)
+        // 0606e484 - simple VDP2 init with no update/draw (used for interior scenes)
         reinitVdp2();
         initNBG1Layer();
         auto* regs = vdp2Controls.m4_pendingVdp2Regs;
@@ -172,7 +164,7 @@ static void createSeekerVdp2Plane(p_workArea pParent) {
     gSeekVdp2PlaneTask = createSubTask<sSeekVdp2Plane>(pParent);
 }
 
-// 0606d600 — outdoor background init
+// 0606d600 - outdoor background init
 static void seekBgMode0_Init(sSeekVdp2Plane* pThis) {
     reinitVdp2();
     initNBG1Layer();
@@ -233,7 +225,7 @@ static void seekBgMode0_Update(sSeekVdp2Plane* pThis) {
     pThis->m34_groundY = 0;
 }
 
-// 0606da6c — rotation pass 0 sub (same pattern as CARA's DrawSub0)
+// 0606da6c - rotation pass 0 sub (same pattern as CARA's DrawSub0)
 static void seekBgDrawSub0(sSeekVdp2Plane* pThis) {
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
 
@@ -267,7 +259,7 @@ static void seekBgDrawSub0(sSeekVdp2Plane* pThis) {
         gVdp2RotationMatrix.m[2][2].asS32() * dz) + coeff.m40 * -0x10000;
 }
 
-// 0606d584 — compute ground Y (same pattern as CARA)
+// 0606d584 - compute ground Y (same pattern as CARA)
 static s32 seekComputeGroundY() {
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
     s32 iVar2 = gVdp2RotationMatrix.m[2][0].asS32() * coeff.m34;
@@ -325,7 +317,7 @@ static void seekBgMode0_Draw(sSeekVdp2Plane* pThis) {
     regs->mC6_WPEY0 = pThis->m24_vdp1Clipping[3];
 }
 
-// 0606dd18 — indoor background init
+// 0606dd18 - indoor background init
 static void seekBgMode1_Init(sSeekVdp2Plane* pThis) {
     reinitVdp2();
     initNBG1Layer();
@@ -418,7 +410,7 @@ static void seekBgMode1_Init(sSeekVdp2Plane* pThis) {
     pThis->m48 = 0xB6E;
 }
 
-// 0606e050 — indoor background update: fire/light flicker effect
+// 0606e050 - indoor background update: fire/light flicker effect
 static void seekBgMode1_Update(sSeekVdp2Plane* pThis) {
     pThis->m58 += pThis->m60;
     s32* flickerBuffer = (s32*)&pThis->m_pad[0x74 - 0x6C]; // offset 0x74 in work area
@@ -429,7 +421,7 @@ static void seekBgMode1_Update(sSeekVdp2Plane* pThis) {
     asyncDmaCopy(flickerBuffer, (void*)getVdp2Vram(0x1FF00), 0xB4, 0);
 }
 
-// 0606e2c6 — indoor rotation pass 0 sub (different from mode 0 — uses fixed pitch/yaw)
+// 0606e2c6 - indoor rotation pass 0 sub (different from mode 0 - uses fixed pitch/yaw)
 static void seekBgMode1DrawSub0(sSeekVdp2Plane* pThis) {
     s32 rotZ = pThis->m18_cameraRotation.m8_Z.asS32();
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
@@ -441,7 +433,7 @@ static void seekBgMode1DrawSub0(sSeekVdp2Plane* pThis) {
     coeff.m3E = coeff.m36;
     coeff.m40 = 0;
 
-    buildRotationMatrixPitchYaw(0, 0x4000000); // fixed: pitch=0, yaw=90°
+    buildRotationMatrixPitchYaw(0, 0x4000000); // fixed: pitch=0, yaw=90 deg
     scaleRotationMatrix(pThis->m3C);
     writeRotationParams(-rotZ);
 
@@ -464,7 +456,7 @@ static void seekBgMode1DrawSub0(sSeekVdp2Plane* pThis) {
         gVdp2RotationMatrix.m[2][2].asS32() * dz) + coeff.m40 * -0x10000;
 }
 
-// 0606dc8a — indoor compute ground Y
+// 0606dc8a - indoor compute ground Y
 static s32 seekBgMode1ComputeGroundY() {
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
     s32 iVar2 = gVdp2RotationMatrix.m[2][0].asS32() * coeff.m34;
@@ -486,7 +478,7 @@ static void setVdp2ScrollPosition(s32 scrollX, s32 scrollY) {
     }
 }
 
-// 0606dc10 — apply sinusoidal distortion to rotation coefficient table
+// 0606dc10 - apply sinusoidal distortion to rotation coefficient table
 static void seekBgMode1DistortCoefficients(sSeekVdp2Plane* pThis) {
     std::vector<fixedPoint>* pTable = gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
     if (!pTable) return;
@@ -500,7 +492,7 @@ static void seekBgMode1DistortCoefficients(sSeekVdp2Plane* pThis) {
     pThis->m4C += pThis->m40;
 }
 
-// 0606e0bc — indoor background draw
+// 0606e0bc - indoor background draw
 static void seekBgMode1_Draw(sSeekVdp2Plane* pThis) {
     pThis->mC_cameraPosition.m0_X = pThis->mC_cameraPosition.m0_X + 0x1000;
     pThis->mC_cameraPosition.m4_Y = 0xA000;
@@ -570,7 +562,7 @@ static s32 updateWorldGridFromNpc0() {
     return 0;
 }
 
-// 060707e8 — extended camera mode setup (reads 11 params from pointer, sets mode 1)
+// 060707e8 - extended camera mode setup (reads 11 params from pointer, sets mode 1)
 static s32 setupCameraModeFixedExtended(sSaturnPtr arg) {
     twnMainLogicTask->m100_deltaPosition = readSaturnVec3(arg);
     twnMainLogicTask->mE4_fixedPosition = readSaturnVec3(arg + 0xC);
@@ -707,7 +699,7 @@ struct TWN_SEEK_data : public sTownOverlay
     TWN_SEEK_data() : sTownOverlay("TWN_SEEK.PRG")
     {
         // Script functions
-        overlayScriptFunctions.m_zeroArg[0x06070c80] = {&updateWorldGridFromEdgeTask, "updateWorldGridFromEdgeTask"};
+        overlayScriptFunctions.m_zeroArg[0x06070c80] = {&hasLoadingCompleted, "hasLoadingCompleted"};
 
         overlayScriptFunctions.m_oneArg[0x06075ed4] = {&TwnFadeIn, "TwnFadeIn"};
         overlayScriptFunctions.m_oneArg[0x06075f4c] = {&TwnFadeOut, "TwnFadeOut"};

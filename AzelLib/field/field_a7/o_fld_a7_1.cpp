@@ -19,7 +19,7 @@ void subfieldA7_1(p_workArea workArea)
     // m360 = null function (060544bc)
     getFieldTaskPtr()->m8_pSubFieldData->pUpdateFunction3 = nullptr;
 
-    // 060544a8 — camera config from 060802cc
+    // 060544a8 - camera config from 060802cc
     setupFieldCameraConfigs(readCameraConfig(gFLD_A7->getSaturnPtr(0x060802cc)), 1);
 
     fieldRadar_enableAltitudeGauge();

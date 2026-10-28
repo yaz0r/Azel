@@ -1,6 +1,6 @@
 #pragma once
 
-// Animated ring lerp subtask — shared across all field overlays.
+// Animated ring lerp subtask - shared across all field overlays.
 // A short-lived task that lerps a position from ring0 to ring1 over a lifetime,
 // with optional alternate mode that just counts frames.
 

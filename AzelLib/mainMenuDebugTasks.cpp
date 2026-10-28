@@ -724,7 +724,7 @@ void initDramAllocator(s_workArea* pWorkArea, u8* dest, u32 size, const char** a
     addToMemoryLayout(dest, 8);
 }
 
-// Replace Saturn DRAM allocator with standard malloc — pointer sizes differ on x64
+// Replace Saturn DRAM allocator with standard malloc - pointer sizes differ on x64
 // so the original fixed-size pool would run out of space or have alignment issues.
 u8* dramAllocate(u32 size)
 {
@@ -1385,7 +1385,7 @@ void freeRamResources(p_workArea)
         {
             dramAllocatorEnd.clear();
         }
-        // freeVdp1Block(pWorkArea, prev) — heap node freed by task system on delete
+        // freeVdp1Block(pWorkArea, prev) - heap node freed by task system on delete
         freeRamResource();
     }
 }
@@ -1396,7 +1396,7 @@ void vdp1FreeLastAllocation(p_workArea)
     if (vdp1AllocatorHead)
     {
         vdp1AllocatorHead = vdp1AllocatorHead->m0_nextAllocator;
-        // freeVdp1Block(pWorkArea, prev) — heap node freed by task system on delete
+        // freeVdp1Block(pWorkArea, prev) - heap node freed by task system on delete
     }
 }
 
@@ -1414,7 +1414,7 @@ void freeRamResource()
             addToMemoryLayout(pVar2, 8);
             pVar2 += pNode->size;
         }
-        // freeVdp1Block — heap node freed by task system on delete
+        // freeVdp1Block - heap node freed by task system on delete
     }
 }
 
@@ -3216,7 +3216,7 @@ void s_menuGraphicsTask::Draw(s_menuGraphicsTask* pWorkArea)
 void s_menuGraphicsTask::Delete(s_menuGraphicsTask*)
 {
     graphicEngineStatus.m40AC.mC = nullptr;
-    // clearSaveText(graphicEngineStatus.m40AC.fontIndex) — unloads menu font
+    // clearSaveText(graphicEngineStatus.m40AC.fontIndex) - unloads menu font
 }
 
 p_workArea createMenuTask(p_workArea parentTask)

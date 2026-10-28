@@ -537,14 +537,14 @@ struct sNativeFlagEditor : public s_workAreaTemplate<sNativeFlagEditor>
             pThis->m_cursor += pThis->m_scrollTop - oldTop;
         }
 
-        // Right arrow (0x10d) — increment value
+        // Right arrow (0x10d) - increment value
         if (readKeyboardTable1(0x10d))
         {
             pThis->m_dirty = 1;
             incrementFlag(pThis, 1);
         }
 
-        // Left arrow (0x106) — decrement value
+        // Left arrow (0x106) - decrement value
         if (readKeyboardTable1(0x106))
         {
             pThis->m_dirty = 1;

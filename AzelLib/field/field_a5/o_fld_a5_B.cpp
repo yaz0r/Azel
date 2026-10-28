@@ -42,21 +42,21 @@ static void a5BossEntity0_Update(sA5BossEntity0* pThis)
     pThis->m8_scrollX = performModulo(0x50, scrollX) - 0x50;
 }
 
-// 06055822 — draw boss background: tiles VDP1 normal sprites across the screen.
+// 06055822 - draw boss background: tiles VDP1 normal sprites across the screen.
 // Uses raw VDP1 command submission (0x06055678) which needs bgfx adaptation.
 static void a5BossEntity0_Draw(sA5BossEntity0* pThis)
 {
-    Unimplemented(); // VDP1 normal sprite tiling — needs bgfx rendering path
+    Unimplemented(); // VDP1 normal sprite tiling - needs bgfx rendering path
 }
 
-// 060558d8 — create subfield B entity (boss controller)
+// 060558d8 - create subfield B entity (boss controller)
 static void createA5_B_entity0(p_workArea parent)
 {
     static sA5BossEntity0::TypedTaskDefinition td = { &a5BossEntity0_Init, &a5BossEntity0_Update, &a5BossEntity0_Draw, nullptr };
     createSubTask<sA5BossEntity0>(parent, &td);
 }
 
-// 06057154 — create worm segment entity for B
+// 06057154 - create worm segment entity for B
 // 06057154
 static void createA5_B_wormPassageEntrance(p_workArea parent)
 {
@@ -77,14 +77,14 @@ static void a5BossEntity1_Update(sA5BossEntity1* pThis) { Unimplemented(); }
 // 0605C7C0
 static void a5BossEntity1_Draw(sA5BossEntity1* pThis) { Unimplemented(); }
 
-// 0605c7e0 — create subfield B entity
+// 0605c7e0 - create subfield B entity
 static void createA5_B_entity1(p_workArea parent)
 {
     static sA5BossEntity1::TypedTaskDefinition td = { &a5BossEntity1_Init, &a5BossEntity1_Update, &a5BossEntity1_Draw, nullptr };
     createSubTask<sA5BossEntity1>(parent, &td);
 }
 
-// 06065904 — set field data scale
+// 06065904 - set field data scale
 static void a5_B_setFieldScale()
 {
     s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
@@ -101,7 +101,7 @@ static void fieldA5_B_startTasks(p_workArea workArea)
     a5_B_setFieldScale();
 }
 
-// 0605434c — init dragon light params for subfield B
+// 0605434c - init dragon light params for subfield B
 static void initDragonLight_A5_B()
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -116,10 +116,10 @@ static void initDragonLight_A5_B()
 // 06054D44
 void subfieldA5_B(p_workArea workArea)
 {
-    Unimplemented(); // FUN_FLD_A5__06078dc0 — setupField variant with data tables and visibility
+    Unimplemented(); // FUN_FLD_A5__06078dc0 - setupField variant with data tables and visibility
 
     getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = eCameraFollowMode_default;
-    Unimplemented(); // FUN_FLD_A5__060558f0 — camera config (calls 06069620 with data 06089c8c, count 2)
+    Unimplemented(); // FUN_FLD_A5__060558f0 - camera config (calls 06069620 with data 06089c8c, count 2)
     initDragonLight_A5_B();
     createA5_B_Vdp2Task(workArea);
     startFieldScript(0x13, -1);

@@ -40,9 +40,9 @@ static void computeTextureRanges(u16 cmdsrca, u16 cmdsize, u16 cmdpmod, u16 cmdc
     // CRAM palette range (byte offsets into CRAM)
     switch (colorMode)
     {
-    case 0: // 4bpp with color LUT in VDP1 — LUT entries reference CRAM, but range is indirect
+    case 0: // 4bpp with color LUT in VDP1 - LUT entries reference CRAM, but range is indirect
     case 1: // 4bpp LUT
-        // LUT at CMDCOLR*8 in VDP1 VRAM, 16 entries of 2 bytes each → 32 bytes
+        // LUT at CMDCOLR*8 in VDP1 VRAM, 16 entries of 2 bytes each -> 32 bytes
         // The actual CRAM usage depends on LUT content; approximate with the LUT's VDP1 region
         cramStart = 0;
         cramEnd = 0;

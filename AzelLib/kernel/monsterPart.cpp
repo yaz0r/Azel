@@ -4,7 +4,7 @@
 #include "3dEngine.h"
 #include "3dModels.h"
 
-// 06013E58 — recursive spring/damping rotation update. Identical to
+// 06013E58 - recursive spring/damping rotation update. Identical to
 // baldorPart_update except the local-space rotation is applied with
 // rotateMatrixYXZ instead of rotateMatrixZYX. Walks the part chain via
 // m0_child, passing each child its parent's worldPosition/rotation as
@@ -33,7 +33,7 @@ void monsterPart_defaultUpdate(sMonsterBodyPart* pThis, const sVec3_FP* pTransla
     }
 }
 
-// 06013F24 — walks the part linked list, drawing each part with a
+// 06013F24 - walks the part linked list, drawing each part with a
 // YXZ-order rotation via `bundle->get3DModel(part.m40_modelIndex)`.
 void monsterPart_defaultDraw(s_fileBundle* pBundle, sMonsterBodyPart* pPart)
 {
@@ -53,7 +53,7 @@ void monsterPart_defaultDraw(s_fileBundle* pBundle, sMonsterBodyPart* pPart)
     }
 }
 
-// 06013FA8 — draws a single part (no chain walk) with a YXZ-order
+// 06013FA8 - draws a single part (no chain walk) with a YXZ-order
 // rotation. Despite the Saturn labeling the slot `m2C_delete`, the
 // default implementation is a one-shot per-part drawer.
 void monsterPart_defaultDrawPart(s_fileBundle* pBundle, sMonsterBodyPart* pPart)
@@ -68,7 +68,7 @@ void monsterPart_defaultDrawPart(s_fileBundle* pBundle, sMonsterBodyPart* pPart)
     }
 }
 
-// 06013D50 / 06013D70 — default head/mid/tail part zero-init helpers.
+// 06013D50 / 06013D70 - default head/mid/tail part zero-init helpers.
 static void monsterBody_clearBody(sMonsterBody* pData)
 {
     pData->m0_translation.zeroize();
@@ -121,7 +121,7 @@ void monsterBodyPart_loadTemplate(sMonsterBodyPart* dest, sSaturnPtr source)
 }
 
 // Forward-declarations of the baldor-specific physics variants provided
-// by battle/BTL_A3/baldor.cpp — loaded when arg2 == 1.
+// by battle/BTL_A3/baldor.cpp - loaded when arg2 == 1.
 extern void baldorPart_update(sMonsterBodyPart* pThis, const sVec3_FP* pTranslation, const sVec3_FP* pRotation, const sVec3_FP* param4);
 extern void baldorPart_draw(s_fileBundle* pBundle, sMonsterBodyPart* pBodyPart);
 extern void baldorPart_drawPart(s_fileBundle* pBundle, sMonsterBodyPart* pBodyPart);

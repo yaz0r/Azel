@@ -95,7 +95,7 @@ struct sDebrisScatterTask : public s_workAreaTemplate<sDebrisScatterTask>
     std::vector<sDebrisBoneData> m_bones;
 };
 
-// 0607e136 — extract Euler rotation from matrix
+// 0607e136 - extract Euler rotation from matrix
 static void extractRotationFromMatrix(sVec3_FP& outRotation, const sMatrix4x3& mat)
 {
     outRotation.m0_X = atan_FP(MTH_Mul(mat.m[2][0], -0x10000));
@@ -103,7 +103,7 @@ static void extractRotationFromMatrix(sVec3_FP& outRotation, const sMatrix4x3& m
     outRotation.m8_Z = atan2_FP(mat.m[1][0], mat.m[1][1]);
 }
 
-// 0607e190 — recursively initialize bones from model hierarchy
+// 0607e190 - recursively initialize bones from model hierarchy
 static void initBonesFromHierarchy(
     sDebrisScatterTask* pTask,
     sModelHierarchy* pNode,
@@ -175,7 +175,7 @@ p_workArea createDebrisScatterTask(p_workArea parent, sDebrisScatterParams* para
 
     // Get pose data for initial bone positions
     s_3dModel* pModel = nullptr;
-    // The parent task should have a s_3dModel — find it
+    // The parent task should have a s_3dModel - find it
     // For the crashed ship, the model is at offset 0x40 in the parent struct
     // We pass it through the params indirectly via position/rotation
 
@@ -201,13 +201,13 @@ p_workArea createDebrisScatterTask(p_workArea parent, sDebrisScatterParams* para
 
     // Initialize bone positions from hierarchy
     u16 boneIdx = 0;
-    // We need the parent's s_3dModel for pose data — try to get it
+    // We need the parent's s_3dModel for pose data - try to get it
     // For now, init bones without pose (positions will be at origin)
     initBonesFromHierarchy(pTask, pHierarchy, boneIdx, rootMatrix, nullptr);
 
     if (!reverseMode)
     {
-        // Explosion mode — set random outward velocities per bone
+        // Explosion mode - set random outward velocities per bone
         for (s32 i = 0; i < numBones; i++)
         {
             sDebrisBoneData& bone = pTask->m_bones[i];
@@ -259,7 +259,7 @@ p_workArea createDebrisScatterTask(p_workArea parent, sDebrisScatterParams* para
     return pTask;
 }
 
-// 0607c18e (A7) / 0607dbc2 (A3) — initialize debris scatter config with defaults
+// 0607c18e (A7) / 0607dbc2 (A3) - initialize debris scatter config with defaults
 void initDebrisScatterConfig(sDebrisScatterParams* pConfig, u16 modelOffset, u16 poseOffset)
 {
     memset(pConfig, 0, sizeof(*pConfig));
@@ -271,7 +271,7 @@ void initDebrisScatterConfig(sDebrisScatterParams* pConfig, u16 modelOffset, u16
     pConfig->m44_soundEffect = 0xffff;
 }
 
-// 0607c120 (A7) / 0607db54 (A3) — recursively find max scalar in bundle tree
+// 0607c120 (A7) / 0607db54 (A3) - recursively find max scalar in bundle tree
 s32 readMaxScalarFromBundleTree(u8* pRawBundle, u32 nodeOffset)
 {
     s32 result;
@@ -300,7 +300,7 @@ s32 readMaxScalarFromBundleTree(u8* pRawBundle, u32 nodeOffset)
     return result;
 }
 
-// 0607c104 (A7) / 0607db38 (A3) — centered random: (random() & mask) - mask/2
+// 0607c104 (A7) / 0607db38 (A3) - centered random: (random() & mask) - mask/2
 s32 centeredRandom(u32 mask)
 {
     return (s32)(randomNumber() & mask) - (s32)(mask >> 1);

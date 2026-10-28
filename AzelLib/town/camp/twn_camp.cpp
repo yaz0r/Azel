@@ -51,13 +51,6 @@ int scriptFunction_06071ade_toggleDayNight()
     return 1;
 }
 
-int scriptFunction_606cb54() {
-    if (twnMainLogicTask->m14_EdgeTask) {
-        updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
-    }
-    return fileInfoStruct.m2C_allocatedHead == 0;
-}
-
 // 0606d608
 s32 getGameStat(s32 statIndex) {
     switch (statIndex) {
@@ -206,7 +199,7 @@ int scriptFunction_606c70c(sSaturnPtr arg) {
     sVec3_FP vector2 = readSaturnVec3(arg + 0xC);
 
     if ((vector2[0] == vector1[0]) && (vector2[2] == vector1[2])) {
-        Unimplemented(); // setupCameraModeFixed — degenerate case when camera start/end have same XZ
+        Unimplemented(); // setupCameraModeFixed - degenerate case when camera start/end have same XZ
     }
     else {
         twnMainLogicTask->mE4_fixedPosition = vector1;
@@ -248,7 +241,7 @@ struct TWN_CAMP_data : public sTownOverlay
 
     TWN_CAMP_data() : sTownOverlay("TWN_CAMP.PRG")
     {
-        overlayScriptFunctions.m_zeroArg[0x0606cb54] = {&scriptFunction_606cb54, "scriptFunction_606cb54"};
+        overlayScriptFunctions.m_zeroArg[0x0606cb54] = {&hasLoadingCompleted, "hasLoadingCompleted"};
         overlayScriptFunctions.m_zeroArg[0x0606c952] = {&scriptFunction_0606c952, "scriptFunction_0606c952"};
         overlayScriptFunctions.m_zeroArg[0x0606c95c] = {&setupCameraUpdateForCurrentMode, "setupCameraUpdateForCurrentMode"};
         overlayScriptFunctions.m_zeroArg[0x06071ade] = {&scriptFunction_06071ade_toggleDayNight, "scriptFunction_06071ade_toggleDayNight"};

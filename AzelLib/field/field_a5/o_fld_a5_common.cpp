@@ -6,7 +6,7 @@
 void buildDragonRotationMatrix(s_dragonTaskWorkArea_48* r14, sVec3_FP* r13);
 void updateCameraScriptSub0(p_workArea r4);
 
-// Camera config functions — each calls setupFieldCameraConfigs with overlay-specific data
+// Camera config functions - each calls setupFieldCameraConfigs with overlay-specific data
 // 060558E8
 void setupCameraConfig_A5_0() { setupFieldCameraConfigs(readCameraConfig(gFLD_A5->getSaturnPtr(0x06089C34)), 1); }
 // 060558F0
@@ -22,7 +22,7 @@ void setupCameraConfig_A5_9() { setupFieldCameraConfigs(readCameraConfig(gFLD_A5
 // 06055920
 void setupCameraConfig_A5_corridor() { setupFieldCameraConfigs(readCameraConfig(gFLD_A5->getSaturnPtr(0x06089DEC)), 1); }
 
-// 0607c584 — set dragon position + rotation, build rotation matrix, update camera
+// 0607c584 - set dragon position + rotation, build rotation matrix, update camera
 void setupDragonPositionAndCamera_A5(sSaturnPtr posEA, sSaturnPtr rotEA)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -41,7 +41,7 @@ void setupDragonPositionAndCamera_A5(sSaturnPtr posEA, sSaturnPtr rotEA)
         pDragon->m20_angle[1] = fixedPoint(readSaturnS32(rotEA + 4));
         pDragon->m20_angle[2] = fixedPoint(readSaturnS32(rotEA + 8));
 
-        // 0607fb0c — copy rotation to mBC sub-struct at +0x18
+        // 0607fb0c - copy rotation to mBC sub-struct at +0x18
         if (pDragon->mBC != nullptr)
         {
             u8* pBC = (u8*)pDragon->mBC;
@@ -59,13 +59,13 @@ void setupDragonPositionAndCamera_A5(sSaturnPtr posEA, sSaturnPtr rotEA)
     updateCameraScriptSub0(pDragon->mB8_lightWingEffect);
 }
 
-// 06055996 / 06055a1e / 06055a30 — post-battle sound for corridor subfields
+// 06055996 / 06055a1e / 06055a30 - post-battle sound for corridor subfields
 void postBattleSound_A5_corridor()
 {
     playPCM(getFieldTaskPtr()->m8_pSubFieldData, 0x71);
 }
 
-// 06054188 — open field dragon light/speed
+// 06054188 - open field dragon light/speed
 void initDragonParams_A5_open()
 {
     s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -78,7 +78,7 @@ void initDragonParams_A5_open()
     p->mC4 = 0;
 }
 
-// 060541F0 — corridor dragon light/speed (depends on bitfield)
+// 060541F0 - corridor dragon light/speed (depends on bitfield)
 void initDragonParams_A5_corridor()
 {
     s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -102,7 +102,7 @@ void initDragonParams_A5_corridor()
     }
 }
 
-// 060542BC — subfield B dragon params
+// 060542BC - subfield B dragon params
 void initDragonParams_A5_B()
 {
     s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;

@@ -143,7 +143,7 @@ static void BTL_A5_enemy_updateMovement(sBTL_A5_Enemy* pThis)
     pThis->m18C_movementAngleZ += pThis->m190_movementZ;
 }
 
-// 060a36d6 — simplified damage check
+// 060a36d6 - simplified damage check
 static bool BTL_A5_enemy_checkDamage(sBTL_A5_Enemy* pThis)
 {
     if (pThis->m14_flags & 0x10000000)

@@ -4,7 +4,7 @@
 #include "town/townCamera.h"
 #include "field/field_d5/d5_nameEntry.h"
 
-// 06057d52 — darken light data by subtracting a value, clamped to -31
+// 06057d52 - darken light data by subtracting a value, clamped to -31
 static void darkenLightData(s8* output, s32 amount) {
     for (int i = 0; i < 12; i++) {
         s32 val = (s8)readSaturnU8(cameraTaskPtr->m8_colorData + i) - amount;
@@ -13,7 +13,7 @@ static void darkenLightData(s8* output, s32 amount) {
     }
 }
 
-// computeModulatedColor — takes 12-byte light data + intensity, returns VDP2 color
+// computeModulatedColor - takes 12-byte light data + intensity, returns VDP2 color
 static u16 computeModulatedColor(s8* lightData, u32 intensity) {
     s32 r = MTH_Mul((s32)lightData[0], intensity);
     s32 g = MTH_Mul((s32)lightData[1], intensity);
@@ -24,7 +24,7 @@ static u16 computeModulatedColor(s8* lightData, u32 intensity) {
     return 0x8000 | (((r + baseR) >> 1) + 8) | ((((g + baseG) >> 1) + 8) << 5) | ((((b + baseB) >> 1) + 8) << 10);
 }
 
-// 06057d74 — darken and apply light
+// 06057d74 - darken and apply light
 static void darkenAndApplyLight(s32 amount) {
     s8 darkened[12];
     darkenLightData(darkened, amount);
@@ -37,7 +37,7 @@ static void darkenAndApplyLight(s32 amount) {
     generateLightFalloffMap(f0, f1, f2);
 }
 
-// 06057d08 — set VDP2 priorities for name entry screen
+// 06057d08 - set VDP2 priorities for name entry screen
 static void setupNameEntryVdp2Priorities() {
     vdp2Controls.m4_pendingVdp2Regs->m10_CYCA0 = 0x23F467F;
     vdp2Controls.m4_pendingVdp2Regs->mF0_PRISA = 0x204;
@@ -134,7 +134,7 @@ struct sCampDragonNameEntryTask : public s_workAreaTemplate<sCampDragonNameEntry
         }
         case 6:
         {
-            // Done — clean up
+            // Done - clean up
             pauseEngine[0] = 0;
             pThis->getTask()->markFinished();
             break;

@@ -1,10 +1,10 @@
 #include "PDS.h"
 #include "fieldSpline.h"
 
-// Natural cubic spline system — shared across all field overlays.
+// Natural cubic spline system - shared across all field overlays.
 // Moved from field_a7/a7_beam.cpp; byte-identical in A3, A5, B2, C8, etc.
 
-// 0607712c (A7) / 06078b60 (A3) — allocate 7 parallel int arrays
+// 0607712c (A7) / 06078b60 (A3) - allocate 7 parallel int arrays
 bool fieldSpline_alloc(p_workArea pTask, sFieldSplineAlloc* pDesc, s32 count)
 {
     pDesc->m0_count = count;
@@ -23,7 +23,7 @@ bool fieldSpline_alloc(p_workArea pTask, sFieldSplineAlloc* pDesc, s32 count)
     return true;
 }
 
-// 06077488 (A7) / 06078ebc (A3) — natural cubic spline second-derivative precompute
+// 06077488 (A7) / 06078ebc (A3) - natural cubic spline second-derivative precompute
 // (Thomas algorithm). Natural boundaries y2[0] = y2[n-1] = 0.
 static void fieldSpline_precompute(s32 count, s32* arcLen, s32* src, s32* y2)
 {
@@ -66,7 +66,7 @@ static void fieldSpline_precompute(s32 count, s32* arcLen, s32* src, s32* y2)
     freeHeap(scratch);
 }
 
-// 060772a8 (A7) / 06078cdc (A3) — build arc-length table then precompute each axis
+// 060772a8 (A7) / 06078cdc (A3) - build arc-length table then precompute each axis
 void fieldSpline_finalize(sFieldSplineAlloc* pAlloc)
 {
     s32 count = pAlloc->m0_count;
@@ -100,7 +100,7 @@ void fieldSpline_finalize(sFieldSplineAlloc* pAlloc)
     fieldSpline_precompute(count, arcLen, srcZ, pAlloc->m1C_y2Z);
 }
 
-// 060776e0 (A7) / 06079114 (A3) — natural cubic spline evaluator per axis
+// 060776e0 (A7) / 06079114 (A3) - natural cubic spline evaluator per axis
 s32 fieldSpline_evalAxis(s32 t, s32 count, s32* arcLen, s32* src, s32* y2)
 {
     s32 i = 0;
@@ -131,7 +131,7 @@ s32 fieldSpline_evalAxis(s32 t, s32 count, s32* arcLen, s32* src, s32* y2)
     return pSrc[0] + T4;
 }
 
-// 06077638 (A7) / 0607906c (A3) — evaluate all 3 axes
+// 06077638 (A7) / 0607906c (A3) - evaluate all 3 axes
 void fieldSpline_eval(s32 t, s32* pOutX, s32* pOutY, s32* pOutZ, sFieldSplineAlloc* pAlloc)
 {
     *pOutX = fieldSpline_evalAxis(t, pAlloc->m0_count, pAlloc->m4_arcLen, pAlloc->m8_srcX,  pAlloc->m14_y2X);

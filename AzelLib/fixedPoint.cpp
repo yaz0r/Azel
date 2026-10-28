@@ -6,7 +6,7 @@ s32 FP_GetIntegerPortion(fixedPoint& FP)
 }
 
 // FP_Div: fixed-point division using Saturn hardware divider (DVSR/DVDNT registers)
-// Returns (dividend << 16) / divisor — preserves fixed-point precision.
+// Returns (dividend << 16) / divisor - preserves fixed-point precision.
 // Not to be confused with intDivide which does raw integer division.
 fixedPoint FP_Div(s32 divident, fixedPoint divisor)
 {

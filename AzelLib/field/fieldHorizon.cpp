@@ -7,21 +7,21 @@
 // Forward declare VDP1 gauge draw function
 void drawGaugeVdp1(u16 mode, std::array<sVec2_S16, 4>& params, u16 color, fixedPoint depth);
 
-// 0607653c (A7) / 06077f70 (A3) — compute horizon Y from X
+// 0607653c (A7) / 06077f70 (A3) - compute horizon Y from X
 static s32 horizonScreenY(sCoefficientTableData& coeff, s32 screenHeight, s32 xPos, s32 scrollValue)
 {
     s32 numerator = ((scrollValue + 100) * 0x10000 - (coeff.m54 & 0x7FFFFFFF)) - coeff.m5C * xPos;
     return screenHeight - FP_Div(numerator, fixedPoint(coeff.m58)).getInteger();
 }
 
-// 060764f8 (A7) / 06077f2c (A3) — compute horizon X from Y
+// 060764f8 (A7) / 06077f2c (A3) - compute horizon X from Y
 static s32 horizonScreenX(sCoefficientTableData& coeff, s32 yPos, s32 scrollValue)
 {
     s32 numerator = ((scrollValue + 100) * 0x10000 - (coeff.m54 & 0x7FFFFFFF)) - coeff.m58 * yPos;
     return FP_Div(numerator, fixedPoint(coeff.m5C)).getInteger() - 0xB0;
 }
 
-// 06076584 (A7) / 06077fb8 (A3) — draw horizon gauge line on VDP1
+// 06076584 (A7) / 06077fb8 (A3) - draw horizon gauge line on VDP1
 void drawHorizon(s32 scrollValue, u16 color)
 {
     s32 screenHeight = (VDP2Regs_.m4_TVSTAT & 1) == 0 ? 0x70 : 0x80;

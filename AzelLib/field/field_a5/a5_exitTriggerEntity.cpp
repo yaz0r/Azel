@@ -33,7 +33,7 @@ struct sA5ExitTriggerEntity : public s_workAreaTemplate<sA5ExitTriggerEntity>
     u8  m32_mode;                          // 0x32
     u8  m33;                               // 0x33
     sFieldModelRenderContext m34_modelCtx; // 0x34
-    u8  m68_isVisible;                     // 0x68 — set by checkPositionVisibility
+    u8  m68_isVisible;                     // 0x68 - set by checkPositionVisibility
     // Saturn size 0x6C
 };
 
@@ -49,7 +49,7 @@ struct sA5ExitTriggerArg
     s16 mE_entryB;
 };
 
-// 0605652e — render context callback for mode 5: set visibility and advance mode past 6
+// 0605652e - render context callback for mode 5: set visibility and advance mode past 6
 static int a5ExitTrigger_contextCallback_0605652e(sA5ExitTriggerEntity* pThis)
 {
     pThis->m34_modelCtx.m18_visibilityFlags |= 1;
@@ -83,7 +83,7 @@ static const sVec3_FP s_exitTriggerModelPosition = {
 // Random offset table at FLD_A5::06098ac4 (4 entries)
 static const s32 s_randomOffsetTable[] = { 0x600, 0xC00, 0, -0x600 };
 
-// 060563d8 — debris scatter setup at init (reverse mode — particles converge inward)
+// 060563d8 - debris scatter setup at init (reverse mode - particles converge inward)
 static void a5ExitTrigger_setupParticles(sA5ExitTriggerEntity* pThis)
 {
     sDebrisScatterParams params;
@@ -102,7 +102,7 @@ static void a5ExitTrigger_setupParticles(sA5ExitTriggerEntity* pThis)
     createDebrisScatterTask((p_workArea)pThis, &params, true); // reverse mode
 }
 
-// 06056324 — spawn debris scatter effect when the exit trigger is discovered
+// 06056324 - spawn debris scatter effect when the exit trigger is discovered
 static void a5ExitTrigger_spawnEffect_06056324(sA5ExitTriggerEntity* pThis)
 {
     sDebrisScatterParams params;
@@ -123,7 +123,7 @@ static void a5ExitTrigger_spawnEffect_06056324(sA5ExitTriggerEntity* pThis)
     playSystemSoundEffect(0x72);
 }
 
-// 0605642e — spawn directional particle burst near the entity using AnimRingSubTask
+// 0605642e - spawn directional particle burst near the entity using AnimRingSubTask
 static void a5ExitTrigger_spawnBurst_0605642e(sA5ExitTriggerEntity* pThis)
 {
     u32 rng = randomNumber();
@@ -154,7 +154,7 @@ static void a5ExitTrigger_spawnBurst_0605642e(sA5ExitTriggerEntity* pThis)
     spawnAnimRingSubTask((p_workArea)pThis, &arg);
 }
 
-// 0605623c — spawn scattered billboard particle near the entity
+// 0605623c - spawn scattered billboard particle near the entity
 static void a5ExitTrigger_spawnScatter_0605623c(sA5ExitTriggerEntity* pThis)
 {
     u32 rng1 = randomNumber();
@@ -193,7 +193,7 @@ static void a5ExitTrigger_spawnScatter_0605623c(sA5ExitTriggerEntity* pThis)
     spawnParticleInPool(pManager, &desc, 1);
 }
 
-// 06056510 — render context callback. Sets visibility and bumps mode.
+// 06056510 - render context callback. Sets visibility and bumps mode.
 static void a5ExitTrigger_contextCallback(sA5ExitTriggerEntity* pThis)
 {
     pThis->m34_modelCtx.m18_visibilityFlags |= 1;
@@ -206,15 +206,15 @@ static void a5ExitTrigger_contextCallback(sA5ExitTriggerEntity* pThis)
 // Vibration child task (Saturn size 0x18)
 struct sA5ExitTriggerVibrationTask : public s_workAreaTemplate<sA5ExitTriggerVibrationTask>
 {
-    sVec3_FP m0_rotationImpulse; // 0x00 — current impulse (written by update)
-    s32 m10_intensity;            // 0x10 — set externally to drive vibration
-    s32 m14_storedIntensity;      // 0x14 — copied from m10 at phase 0
-    s32 m18_phase;                // 0x18 — cycles 0..3
+    sVec3_FP m0_rotationImpulse; // 0x00 - current impulse (written by update)
+    s32 m10_intensity;            // 0x10 - set externally to drive vibration
+    s32 m14_storedIntensity;      // 0x14 - copied from m10 at phase 0
+    s32 m18_phase;                // 0x18 - cycles 0..3
     // size 0x18 (last field is s32 but included in the 0x18)
     // Note: actual Saturn struct packs m10/m14/m18 as the last 3 dwords
 };
 
-// 060561b0 — vibration update: cycles through 4 phases applying
+// 060561b0 - vibration update: cycles through 4 phases applying
 // positive/negative/half-positive/half-negative rotation impulse
 static void a5ExitTriggerVibration_Update(sA5ExitTriggerVibrationTask* pThis)
 {
@@ -240,7 +240,7 @@ static void a5ExitTriggerVibration_Update(sA5ExitTriggerVibrationTask* pThis)
     }
 }
 
-// 0605620c — create vibration child subtask
+// 0605620c - create vibration child subtask
 static void* a5ExitTrigger_createChildTask(sA5ExitTriggerEntity* pThis)
 {
     sA5ExitTriggerVibrationTask* pChild =
@@ -255,7 +255,7 @@ static void* a5ExitTrigger_createChildTask(sA5ExitTriggerEntity* pThis)
     return pChild;
 }
 
-// 060565C2 — normal draw: renders both model pairs when visible.
+// 060565C2 - normal draw: renders both model pairs when visible.
 static void a5ExitTrigger_Draw(sA5ExitTriggerEntity* pThis)
 {
     if (pThis->m68_isVisible == 0)
@@ -270,7 +270,7 @@ static void a5ExitTrigger_Draw(sA5ExitTriggerEntity* pThis)
     popMatrix();
 }
 
-// 06056580 — alt draw: renders only the second model pair (post-discovery).
+// 06056580 - alt draw: renders only the second model pair (post-discovery).
 static void a5ExitTrigger_DrawAlt(sA5ExitTriggerEntity* pThis)
 {
     if (pThis->m68_isVisible == 0)
@@ -283,7 +283,7 @@ static void a5ExitTrigger_DrawAlt(sA5ExitTriggerEntity* pThis)
     popMatrix();
 }
 
-// 0605661C — update: 8-state machine driving discovery sequence.
+// 0605661C - update: 8-state machine driving discovery sequence.
 static void a5ExitTrigger_Update(sA5ExitTriggerEntity* pThis)
 {
     u8 mode = pThis->m32_mode;
@@ -472,7 +472,7 @@ sA5ExitTriggerEntity* a5_createExitTriggerEntity_06056870(p_workArea parent, con
     return pThis;
 }
 
-// 06056970 — create the subfield-0 exit trigger entity
+// 06056970 - create the subfield-0 exit trigger entity
 void createA5_envObjects_sub0_exits(p_workArea parent)
 {
     sA5ExitTriggerArg arg;
@@ -486,7 +486,7 @@ void createA5_envObjects_sub0_exits(p_workArea parent)
     a5_createExitTriggerEntity_06056870(parent, &arg);
 }
 
-// 060569ac — create the subfield-7 exit trigger entity
+// 060569ac - create the subfield-7 exit trigger entity
 void createA5_envObjects_sub7_exits(p_workArea parent)
 {
     sA5ExitTriggerArg arg;

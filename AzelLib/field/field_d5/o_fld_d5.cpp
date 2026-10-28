@@ -52,7 +52,7 @@ static void createFieldSpecificDataTask_D5(p_workArea parent)
 static void subfieldD5_initCallback(p_workArea parent)
 {
     createFieldSpecificDataTask_D5(parent);
-    Unimplemented(); // createFieldSubTask24 — creates 0x24-byte game-over sequence task
+    Unimplemented(); // createFieldSubTask24 - creates 0x24-byte game-over sequence task
 }
 
 // 06055170

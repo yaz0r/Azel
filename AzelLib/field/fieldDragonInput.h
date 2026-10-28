@@ -75,7 +75,7 @@ void computeBoundsPushback(s_dragonTaskWorkArea* pDragon);
 void dragonUpdate_corridorAutopilot(s_dragonTaskWorkArea* pDragon);
 void corridorEntryScript();
 extern sSaturnPtr gCorridorEntryScriptEA; // set by each overlay during init
-// initDragonMovementMode — declared in o_fld_a3.h
+// initDragonMovementMode - declared in o_fld_a3.h
 
 // Cutscene keyframe management
 void setCutsceneKeyFrame(s_scriptData3* pKeyFrame);

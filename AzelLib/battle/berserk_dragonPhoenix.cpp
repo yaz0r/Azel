@@ -30,7 +30,7 @@
 // Dragon Phoenix
 //=============================================================================
 
-// BTL_A3::06085c3c — Dragon Phoenix
+// BTL_A3::06085c3c - Dragon Phoenix
 // Largest berserk task (0xBE0 WithCopy) with multi-phase phoenix animation.
 
 struct sTrailEntry
@@ -59,7 +59,7 @@ struct sDragonPhoenixTask : public s_workAreaTemplateWithCopy<sDragonPhoenixTask
     u8 m58_pad[4];                      // 0x58
     s_3dModel m5C_model2;               // 0x5C (phoenix aura, Saturn size 0x4C)
     u8 mA8_pad[4];                      // 0xA8
-    s8 mAC_state;                       // 0xAC — main state (0=approach, 1=attack, 2=retreat)
+    s8 mAC_state;                       // 0xAC - main state (0=approach, 1=attack, 2=retreat)
     s8 mAD_cameraQuadrant;              // 0xAD
     s8 mAE_prevState;                   // 0xAE
     s8 mAF_subState;                    // 0xAF
@@ -102,25 +102,25 @@ struct sDragonPhoenixTask : public s_workAreaTemplateWithCopy<sDragonPhoenixTask
     s32 m12C_damageBase;                // 0x12C
     sVec3_FP m130_cameraVelocity;       // 0x130
     sVec3_FP m13C_cameraAccel;          // 0x13C
-    sVec3_FP m148_currentPos;           // 0x148 — model draw position / camera look-at
+    sVec3_FP m148_currentPos;           // 0x148 - model draw position / camera look-at
     sVec3_FP m154_retreatVelocity;      // 0x154
     sVec3_FP m160_retreatAccel;         // 0x160
     sVec3_FP m16C_retreatPos;           // 0x16C
     sVec3_FP m178_rotVelocity;          // 0x178
     sVec3_FP m184_rotAccel;             // 0x184
     sVec3_FP m190_currentRotation;      // 0x190 (28-bit angles)
-    sVec3_FP m19C_cameraPosition;       // 0x19C — passed to engine as current cam pos
+    sVec3_FP m19C_cameraPosition;       // 0x19C - passed to engine as current cam pos
     sVec3_FP m1A8_attackBasePos;        // 0x1A8
-    sVec3_FP m1B4_cameraTarget;         // 0x1B4 — camera look-at target
-    sTrailEntry m1C0_trailA[2][16];     // 0x1C0 (2 sides × 16 slots × 0x24 = 0x480)
-    sTrailEntry m640_trailB[2][16];     // 0x640 (2 sides × 16 slots × 0x24 = 0x480)
-    sVec3_FP mAC0_vertexPos[2];         // 0xAC0 — bone 2 vertex 0, bone 4 vertex 0
-    sVec3_FP mAD8_vertexPos2[2];        // 0xAD8 — bone 2 vertex 1, bone 4 vertex 1
-    sVec3_FP mAF0_vertexCenter[2];      // 0xAF0 — bone 0 vertex 0, bone 0 vertex 1
+    sVec3_FP m1B4_cameraTarget;         // 0x1B4 - camera look-at target
+    sTrailEntry m1C0_trailA[2][16];     // 0x1C0 (2 sides x 16 slots x 0x24 = 0x480)
+    sTrailEntry m640_trailB[2][16];     // 0x640 (2 sides x 16 slots x 0x24 = 0x480)
+    sVec3_FP mAC0_vertexPos[2];         // 0xAC0 - bone 2 vertex 0, bone 4 vertex 0
+    sVec3_FP mAD8_vertexPos2[2];        // 0xAD8 - bone 2 vertex 1, bone 4 vertex 1
+    sVec3_FP mAF0_vertexCenter[2];      // 0xAF0 - bone 0 vertex 0, bone 0 vertex 1
     sVec3_FP mB08_lookAngle;            // 0xB08 (X=yaw, Y=pitch, Z=0)
     s32 mB14_rotation;                  // 0xB14
     s32 mB18_rotationAngle;             // 0xB18
-    sPhoenixParticle mB1C_particles[8]; // 0xB1C (8 × 0x18 = 0xC0)
+    sPhoenixParticle mB1C_particles[8]; // 0xB1C (8 x 0x18 = 0xC0)
     s32 mBDC_secondaryTask;             // 0xBDC
     // size 0xBE0
 
@@ -341,7 +341,7 @@ static void ensurePhoenixQuadData()
         s_phoenixHitQuad = initVdp1Quad(g_BTL_A3->getSaturnPtr(0x060ae7f0));
 }
 
-// 0608a6cc — extract vertex position from model bone hotpoint
+// 0608a6cc - extract vertex position from model bone hotpoint
 static void dragonPhoenix_getModelVertexPos(s_3dModel* pModel, u32 boneIndex, u32 vertexIndex, sVec3_FP* pOut)
 {
     if (pModel->m44_hotpointData.size() > boneIndex && pModel->m44_hotpointData[boneIndex].size() > vertexIndex)
@@ -350,7 +350,7 @@ static void dragonPhoenix_getModelVertexPos(s_3dModel* pModel, u32 boneIndex, u3
     }
 }
 
-// 06089b6e — check animation state for model1
+// 06089b6e - check animation state for model1
 static s32 dragonPhoenix_checkAnimState(sDragonPhoenixTask* pThis)
 {
     s16 frame = pThis->m0C_model1.m16_previousAnimationFrame;
@@ -368,7 +368,7 @@ static s32 dragonPhoenix_checkAnimState(sDragonPhoenixTask* pThis)
     return 1;
 }
 
-// 0608a198 — update camera look-at angles from current position vs camera target
+// 0608a198 - update camera look-at angles from current position vs camera target
 static void dragonPhoenix_updateLookAt(sDragonPhoenixTask* pThis)
 {
     sVec3_FP delta;
@@ -392,7 +392,7 @@ static void dragonPhoenix_updateLookAt(sDragonPhoenixTask* pThis)
     }
 }
 
-// 060894c4 — camera look-at update with timer-based state transition
+// 060894c4 - camera look-at update with timer-based state transition
 static void dragonPhoenix_updateLookAtWithTransition(sDragonPhoenixTask* pThis, u16 startTime, u16 endTime, s8 nextSubState)
 {
     if (startTime < pThis->mB2_subTimer)
@@ -418,7 +418,7 @@ static void dragonPhoenix_updateLookAtWithTransition(sDragonPhoenixTask* pThis, 
     }
 }
 
-// 0608a26a — reset animation and reinit from file bundle
+// 0608a26a - reset animation and reinit from file bundle
 static void dragonPhoenix_resetAndInitAnim(sDragonPhoenixTask* pThis, s16 animOffset)
 {
     if (animOffset == 0xA4)
@@ -452,7 +452,7 @@ static void dragonPhoenix_resetAndInitAnim(sDragonPhoenixTask* pThis, s16 animOf
     initAnimation(pModel, pBundle->getAnimation(animOffset));
 }
 
-// 0608a2c8 — compute random target position relative to camera offset quadrant
+// 0608a2c8 - compute random target position relative to camera offset quadrant
 static void dragonPhoenix_computeRandomTargetPos(s8 quadrant, sVec3_FP* pOut)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -513,14 +513,14 @@ static void dragonPhoenix_computeRandomTargetPos(s8 quadrant, sVec3_FP* pOut)
     *pOut = camOffset;
 }
 
-// 0608a700 — create wing fire particle sub-task (0x60C WithCopy, 0x23 particles)
+// 0608a700 - create wing fire particle sub-task (0x60C WithCopy, 0x23 particles)
 static p_workArea dragonPhoenix_createFireSubTask(sDragonPhoenixTask* pThis)
 {
     Unimplemented(); // TODO: implement wing fire subtask creation
     return nullptr;
 }
 
-// 0608ac7c — compute secondary scale from camera distance
+// 0608ac7c - compute secondary scale from camera distance
 static void dragonPhoenix_computeSecondaryScale(sDragonPhoenixTask* pThis)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -534,7 +534,7 @@ static void dragonPhoenix_computeSecondaryScale(sDragonPhoenixTask* pThis)
         pThis->m10C_secondaryScale = 0x30000;
 }
 
-// 0608ab94 — compute direction vector between two points, scaled by 0x5000
+// 0608ab94 - compute direction vector between two points, scaled by 0x5000
 static void dragonPhoenix_computeScaledDirection(sVec3_FP* pOut, sVec3_FP* pFrom, sVec3_FP* pTo)
 {
     sVec3_FP dir;
@@ -552,7 +552,7 @@ static void dragonPhoenix_computeScaledDirection(sVec3_FP* pOut, sVec3_FP* pFrom
     pOut->m8_Z = MTH_Mul_5_6(fixedPoint(cosX), fixedPoint(cosY), fixedPoint(0x5000));
 }
 
-// 06089ba4 — apply phoenix damage to an enemy
+// 06089ba4 - apply phoenix damage to an enemy
 static void dragonPhoenix_applyDamage(u16 enemyIndex, s16 baseDamage, sVec3_FP* pHitPos)
 {
     sBattleOverlayTask_C* pTargetSystem = gBattleManager->m10_battleOverlay->mC_targetSystem;
@@ -573,7 +573,7 @@ static bool dragonPhoenix_isEnemyTargetable(s32 index)
     return true;
 }
 
-// BTL_A3::0608a58c — VDP2 background toggle + palette fade (used by Dragon Phoenix)
+// BTL_A3::0608a58c - VDP2 background toggle + palette fade (used by Dragon Phoenix)
 // param_1: 0=disable background (darken), 1=enable background (restore)
 // param_2: fade duration
 static void dragonPhoenix_restoreLighting(s32 mode, s32 duration)
@@ -637,7 +637,7 @@ static void dragonPhoenix_restoreLighting(s32 mode, s32 duration)
     g_fadeControls.m_4D = 5;
 }
 
-// 06086a58 — Draw model 2 (aura/explosion sphere) at battle center with secondary scale + custom lighting
+// 06086a58 - Draw model 2 (aura/explosion sphere) at battle center with secondary scale + custom lighting
 static void sDragonPhoenixTask_Draw2(sDragonPhoenixTask* pThis)
 {
     s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
@@ -766,18 +766,18 @@ static void sDragonPhoenixTask_Delete(sDragonPhoenixTask* pThis)
     }
     if (pThis->mCC_hasLightEffect != 0)
     {
-        // BTL_A3::0608a58c — restore VDP2 background + palette
+        // BTL_A3::0608a58c - restore VDP2 background + palette
         dragonPhoenix_restoreLighting(1, 3);
     }
     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
 }
 
-// 06086d9c — State 0: Approach
+// 06086d9c - State 0: Approach
 // Phoenix rises from the player dragon and flies toward the enemy side.
 //   substate 0: Wait for file load, init models + camera + target list
-//   substate 1: Rise animation — camera follows phoenix, wait for anim frame 0x3B
-//   substate 2: Fly toward enemies — orbit camera, wait for anim loop, reset anim
-//   substate 3: Face enemies — look-at enemy center, init lighting/trails/particles at timer 0x1E,
+//   substate 1: Rise animation - camera follows phoenix, wait for anim frame 0x3B
+//   substate 2: Fly toward enemies - orbit camera, wait for anim loop, reset anim
+//   substate 3: Face enemies - look-at enemy center, init lighting/trails/particles at timer 0x1E,
 //               transition to attack state at timer 0x44
 static void dragonPhoenix_stateApproach(sDragonPhoenixTask* pThis)
 {
@@ -915,7 +915,7 @@ static void dragonPhoenix_stateApproach(sDragonPhoenixTask* pThis)
     {
         if (pThis->mC4_hasNoTargets != 0)
         {
-            // No targets — shrink and die
+            // No targets - shrink and die
             pThis->m108_scale -= 0x666;
             if (pThis->m108_scale < 0x1999)
             {
@@ -1117,12 +1117,12 @@ static void dragonPhoenix_stateApproach(sDragonPhoenixTask* pThis)
     }
 }
 
-// 06087ce8 — State 1: Attack
+// 06087ce8 - State 1: Attack
 // Phoenix lunges at each enemy in turn, dealing damage on each pass.
-//   substate 0: Init attack — set up retreat velocity, disable camera interp
+//   substate 0: Init attack - set up retreat velocity, disable camera interp
 //   substate 1: Find next valid target, fly toward it with spring physics
-//   substate 2: Reached target — apply damage, set up random camera position
-//   substate 3: Timer-based transition — apply more damage, create explosion/hit effects,
+//   substate 2: Reached target - apply damage, set up random camera position
+//   substate 3: Timer-based transition - apply more damage, create explosion/hit effects,
 //               handle palette fade, then loop back to substate 1 for next target
 //               or transition to retreat state when all targets hit
 static void dragonPhoenix_stateAttack(sDragonPhoenixTask* pThis)
@@ -1133,7 +1133,7 @@ static void dragonPhoenix_stateAttack(sDragonPhoenixTask* pThis)
 
     switch (pThis->mAF_subState)
     {
-    case 0: // Init attack — set up retreat velocity, disable camera interp
+    case 0: // Init attack - set up retreat velocity, disable camera interp
     {
         pThis->mB2_subTimer = 0;
         pThis->mDC_hasCameraInterp = 0;
@@ -1189,7 +1189,7 @@ static void dragonPhoenix_stateAttack(sDragonPhoenixTask* pThis)
         break;
     }
 
-    case 2: // Reached target — apply damage, random camera position
+    case 2: // Reached target - apply damage, random camera position
     {
         pThis->mDC_hasCameraInterp = 1;
         pThis->m124_cameraDamping = 0x28F;
@@ -1206,7 +1206,7 @@ static void dragonPhoenix_stateAttack(sDragonPhoenixTask* pThis)
     }
     [[fallthrough]];
 
-    case 3: // Timer — more damage, explosions, palette fade, loop or retreat
+    case 3: // Timer - more damage, explosions, palette fade, loop or retreat
     {
         pThis->mB2_subTimer++;
         dragonPhoenix_updateLookAtWithTransition(pThis, 0x14, 0x4B, 0);
@@ -1308,7 +1308,7 @@ attack_movement:
     pThis->mB8_targetIndex++;
     if (pThis->mB8_targetIndex >= numEnemies)
     {
-        // All targets hit — transition to retreat
+        // All targets hit - transition to retreat
         pThis->mAF_subState = 0;
         pThis->mAC_state++; // -> retreat
         return;
@@ -1340,16 +1340,16 @@ attack_movement:
     }
 }
 
-// 06088760 — phoenix retreat + restore
-// 060888c8 — State 2: Retreat
+// 06088760 - phoenix retreat + restore
+// 060888c8 - State 2: Retreat
 // Phoenix flies up and away, crashes into the ground with an explosion.
-//   substate 0: Init — choose retreat path (normal fly-up or fast fly-away if no enemies)
-//   substate 1: Fly upward — interpolate toward high altitude, disable particles at peak
-//   substate 2: Init crash — set up downward interpolation toward battle center
-//   substate 3: Crash down — interpolate toward ground, apply damage on impact,
+//   substate 0: Init - choose retreat path (normal fly-up or fast fly-away if no enemies)
+//   substate 1: Fly upward - interpolate toward high altitude, disable particles at peak
+//   substate 2: Init crash - set up downward interpolation toward battle center
+//   substate 3: Crash down - interpolate toward ground, apply damage on impact,
 //               create expanding explosion sphere, trigger palette fade to white
 //   substate 4: (unused)
-//   substate 5: Fast fly-away — interpolate and shrink when no enemies remain
+//   substate 5: Fast fly-away - interpolate and shrink when no enemies remain
 //   substate 6: Restore lighting
 //   substate 7: Wait timer then mark task finished
 static void dragonPhoenix_stateRetreat(sDragonPhoenixTask* pThis)
@@ -1360,7 +1360,7 @@ static void dragonPhoenix_stateRetreat(sDragonPhoenixTask* pThis)
 
     switch (pThis->mAF_subState)
     {
-    case 0: // Choose path — fly-up if enemies remain, fast fly-away if none
+    case 0: // Choose path - fly-up if enemies remain, fast fly-away if none
     {
         // Check if any enemies are still targetable
         bool hasTarget = false;
@@ -1375,7 +1375,7 @@ static void dragonPhoenix_stateRetreat(sDragonPhoenixTask* pThis)
 
         if (hasTarget)
         {
-            // Normal retreat — fly up toward camera target
+            // Normal retreat - fly up toward camera target
             pThis->mDC_hasCameraInterp = 1;
             pThis->m124_cameraDamping = 0x28F;
             pThis->m11C_posDamping = 0x3333;
@@ -1387,7 +1387,7 @@ static void dragonPhoenix_stateRetreat(sDragonPhoenixTask* pThis)
         }
         else
         {
-            // No enemies left — fly away quickly
+            // No enemies left - fly away quickly
             pThis->mDC_hasCameraInterp = 0;
             pThis->mAF_subState = 5;
             pThis->m118_interpSpeed = 0x11EB;
@@ -1577,7 +1577,7 @@ static void dragonPhoenix_stateRetreat(sDragonPhoenixTask* pThis)
     case 4: // Unused/skipped
         break;
 
-    case 5: // Fast fly-away (no enemies) — interpolate and fade
+    case 5: // Fast fly-away (no enemies) - interpolate and fade
     {
         pThis->m110_interpProgress += pThis->m118_interpSpeed;
 
@@ -1725,7 +1725,7 @@ static void sDragonPhoenixTask_Update(sDragonPhoenixTask* pThis)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
 
-    // Verify overlay camera data exists — if not, finish immediately
+    // Verify overlay camera data exists - if not, finish immediately
     sSaturnPtr camData = getOverlayCameraData(pEngine);
     if (camData.m_offset == 0)
     {
@@ -1918,7 +1918,7 @@ void berserk_createDragonPhoenix(s_battleEngine* pThis)
         return;
     }
 
-    // Zero flags block (0xC0..0xF7) — 14 s32 fields
+    // Zero flags block (0xC0..0xF7) - 14 s32 fields
     pNewTask->mC0_hasInitModel = 0;
     pNewTask->mC4_hasNoTargets = 0;
     pNewTask->mC8_doOrbitCamera = 0;

@@ -1,16 +1,16 @@
 #include "PDS.h"
 #include "fieldBeamSpark.h"
 
-// Beam spark effect — shared across all field overlays.
+// Beam spark effect - shared across all field overlays.
 // Moved from field_a7/a7_beamSpark.cpp; byte-identical in A3.
 
-// 0606a400 (A7) / 0606be34 (A3) — alternate update installed when mC == 0 && m10 == 0
-// Not a real function — Ghidra misidentifies boundaries here (dead code / inline fragment)
+// 0606a400 (A7) / 0606be34 (A3) - alternate update installed when mC == 0 && m10 == 0
+// Not a real function - Ghidra misidentifies boundaries here (dead code / inline fragment)
 void beamSpark_UpdateAlt(sBeamSpark* pThis)
 {
 }
 
-// 06069f16 (A7) / 0606b94a (A3) — scalar accumulator update
+// 06069f16 (A7) / 0606b94a (A3) - scalar accumulator update
 void beamSpark_Update(sBeamSpark* pThis)
 {
     pThis->m24 += pThis->m28;
@@ -23,13 +23,13 @@ void beamSpark_Update(sBeamSpark* pThis)
     }
 }
 
-// 06069f58 (A7) / 0606b98c (A3) — draw
+// 06069f58 (A7) / 0606b98c (A3) - draw
 void beamSpark_Draw(sBeamSpark* pThis)
 {
     Unimplemented();
 }
 
-// 06069ec4 (A7) / 0606b8f8 (A3) — init
+// 06069ec4 (A7) / 0606b8f8 (A3) - init
 void beamSpark_Init(sBeamSpark* pThis, sBeamSparkArg* pArg)
 {
     pThis->m0_pos = pArg->m0_pos;
@@ -50,7 +50,7 @@ void beamSpark_Init(sBeamSpark* pThis, sBeamSparkArg* pArg)
     }
 }
 
-// 0606a64c (A7) — spawn beam spark sibling task
+// 0606a64c (A7) - spawn beam spark sibling task
 void beamSpark_spawn(p_workArea parent, sBeamSparkArg* pArg)
 {
     static const sBeamSpark::TypedTaskDefinition definition = {

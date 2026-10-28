@@ -27,7 +27,7 @@ struct s_fieldSpecificData_D3 : public s_workAreaTemplate<s_fieldSpecificData_D3
     // size 0x104
 };
 
-// 060541cc — create field-specific data task
+// 060541cc - create field-specific data task
 static void createFieldSpecificDataTask_D3(p_workArea parent)
 {
     s_fieldSpecificData_D3* pFieldData = createSubTaskFromFunction<s_fieldSpecificData_D3>(parent, nullptr);
@@ -43,17 +43,17 @@ static void fieldD3_0_startTasks(p_workArea workArea)
 {
     createFieldSpecificDataTask_D3(workArea);
 
-    Unimplemented(); // FUN_FLD_D3__06071ca4 — create background atmosphere subtask
-    Unimplemented(); // FUN_FLD_D3__06054460 — create display/rendering subtask
-    Unimplemented(); // FUN_FLD_D3__060546c4 — create environment object
-    Unimplemented(); // FUN_FLD_D3__06055684 — create environment object
-    Unimplemented(); // FUN_FLD_D3__0605826c — create environment object
-    Unimplemented(); // FUN_FLD_D3__060583dc — create environment object
-    Unimplemented(); // FUN_FLD_D3__06058c0c — create environment object
-    Unimplemented(); // FUN_FLD_D3__06058110 — create environment object
+    Unimplemented(); // FUN_FLD_D3__06071ca4 - create background atmosphere subtask
+    Unimplemented(); // FUN_FLD_D3__06054460 - create display/rendering subtask
+    Unimplemented(); // FUN_FLD_D3__060546c4 - create environment object
+    Unimplemented(); // FUN_FLD_D3__06055684 - create environment object
+    Unimplemented(); // FUN_FLD_D3__0605826c - create environment object
+    Unimplemented(); // FUN_FLD_D3__060583dc - create environment object
+    Unimplemented(); // FUN_FLD_D3__06058c0c - create environment object
+    Unimplemented(); // FUN_FLD_D3__06058110 - create environment object
 }
 
-// 06058216 — dragon light params for D3
+// 06058216 - dragon light params for D3
 static void initDragonParams_D3()
 {
     s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -65,7 +65,7 @@ static void initDragonParams_D3()
     p->mC4 = fixedPoint(0xD555555);
 }
 
-// D3 VDP2 palette task — forward declarations for free functions using shared sVdp2PlaneTask
+// D3 VDP2 palette task - forward declarations for free functions using shared sVdp2PlaneTask
 static void d3VdpInit(sVdp2PlaneTask* pThis);
 static void d3VdpUpdate(sVdp2PlaneTask* pThis);
 static void d3VdpDraw(sVdp2PlaneTask* pThis);
@@ -195,7 +195,7 @@ static void d3VdpInit(sVdp2PlaneTask* pThis)
     pThis->m74_colorNBG = 0x1F;
 }
 
-// 06057a7c — compute line scroll gradient from rotation angle
+// 06057a7c - compute line scroll gradient from rotation angle
 static fixedPoint d3LineScrollStep(fixedPoint angle)
 {
     u16 idx = ((u32)angle >> 16) & 0xFFF;
@@ -210,7 +210,7 @@ static fixedPoint d3LineScrollStep(fixedPoint angle)
         return FP_Div(getCos(idx), getSin(idx));
 }
 
-// 060579dc — compute starting line offset (variant 1, for 06057af2)
+// 060579dc - compute starting line offset (variant 1, for 06057af2)
 static fixedPoint d3LineScrollStart1(s32 param_1, fixedPoint angle, s32 scrollValue)
 {
     sVdp2PlaneTask* pVdp2 = getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
@@ -223,7 +223,7 @@ static fixedPoint d3LineScrollStart1(s32 param_1, fixedPoint angle, s32 scrollVa
         getCos(idx));
 }
 
-// 06057974 — compute starting line offset (variant 2, for 06057c9a)
+// 06057974 - compute starting line offset (variant 2, for 06057c9a)
 static fixedPoint d3LineScrollStart2(s32 param_1, fixedPoint angle, s32 scrollValue)
 {
     sVdp2PlaneTask* pVdp2 = getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask;
@@ -236,7 +236,7 @@ static fixedPoint d3LineScrollStart2(s32 param_1, fixedPoint angle, s32 scrollVa
         getSin(idx));
 }
 
-// 06057a44 — fill line scroll coefficient buffer with constant
+// 06057a44 - fill line scroll coefficient buffer with constant
 static void d3LineScrollFillConst(s16* buf, s16 value)
 {
     s32 count = 0x100;
@@ -248,7 +248,7 @@ static void d3LineScrollFillConst(s16* buf, s16 value)
     } while (count != 0);
 }
 
-// 06057a5c — copy from internal line buffer to VDP2 coefficient buffer
+// 06057a5c - copy from internal line buffer to VDP2 coefficient buffer
 static void d3LineScrollCopyToCoeff(s16* src, s16* dst)
 {
     s32 count = 0x100;
@@ -261,7 +261,7 @@ static void d3LineScrollCopyToCoeff(s16* src, s16* dst)
     } while (count != 0);
 }
 
-// 06057af2 — compute line scroll mapping (variant 1)
+// 06057af2 - compute line scroll mapping (variant 1)
 static void d3LineScrollCompute1(s16* buf, fixedPoint angle, fixedPoint scrollValue)
 {
     fixedPoint step = d3LineScrollStep(angle);
@@ -335,7 +335,7 @@ static void d3LineScrollCompute1(s16* buf, fixedPoint angle, fixedPoint scrollVa
     }
 }
 
-// 06057c9a — compute line scroll mapping (variant 2)
+// 06057c9a - compute line scroll mapping (variant 2)
 static void d3LineScrollCompute2(s16* buf, fixedPoint angle, fixedPoint scrollValue)
 {
     fixedPoint step = d3LineScrollStep(angle);
@@ -357,7 +357,7 @@ static void d3LineScrollCompute2(s16* buf, fixedPoint angle, fixedPoint scrollVa
     }
 }
 
-// 06057d88 — main line scroll dispatch based on camera rotation (standalone function)
+// 06057d88 - main line scroll dispatch based on camera rotation (standalone function)
 static void d3LineScrollEffect(sVdp2PlaneTask* pThis, s16* coeffBuf, u32 rotZ, s32 scrollValue)
 {
     u32 angle = rotZ & 0x0FFFFFFF;
@@ -414,7 +414,7 @@ static void d3LineScrollEffect(sVdp2PlaneTask* pThis, s16* coeffBuf, u32 rotZ, s
     drawCinematicBar(0xB);
 }
 
-// 060577c0 — rotation pass sub (shared between pass 0 and 1 with Y offset)
+// 060577c0 - rotation pass sub (shared between pass 0 and 1 with Y offset)
 static void d3VdpRotationPassSub(sVdp2PlaneTask* pThis, s32 yOffset)
 {
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
@@ -450,7 +450,7 @@ static void d3VdpRotationPassSub(sVdp2PlaneTask* pThis, s32 yOffset)
         + (s32)(s16)t.m40 * -0x10000;
 }
 
-// 06057210 — moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
+// 06057210 - moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
 
 // 06057590
 static void d3VdpUpdate(sVdp2PlaneTask* pThis)
@@ -484,7 +484,7 @@ static void d3VdpDraw(sVdp2PlaneTask* pThis)
     drawCinematicBar(7);
     commitRotationPass();
 
-    // 06057d88 — line scroll effect (standalone function)
+    // 06057d88 - line scroll effect (standalone function)
     d3LineScrollEffect(pThis,
         (s16*)(pThis->m78_auxBuffer + (s32)vdp2Controls.m0_doubleBufferIndex * 0x400),
         (u32)pThis->m18_cameraRotation.m8_Z,
@@ -558,7 +558,7 @@ static void subfieldD3_0(p_workArea workArea)
     initDragonParams_D3();
     createD3Vdp2Task(workArea);
 
-    // 060544b0 — setup 3 camera configs from overlay data
+    // 060544b0 - setup 3 camera configs from overlay data
     {
         static s_fieldCameraConfig configs[3];
         for (int i = 0; i < 3; i++)
@@ -571,7 +571,7 @@ static void subfieldD3_0(p_workArea workArea)
     }
 
     startFieldScript(8, -1);
-    Unimplemented(); // 0606c174 — random battle encounter init (script 9)
+    Unimplemented(); // 0606c174 - random battle encounter init (script 9)
 }
 
 // 06054000

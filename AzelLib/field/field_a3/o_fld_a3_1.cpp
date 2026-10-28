@@ -68,7 +68,7 @@ struct sfieldA3_1_startTasks_sub1Task : public s_workAreaTemplate<sfieldA3_1_sta
         static const sVec2_FP zoneMin = { 0x280000 , -0x1720000 };
         static const sVec2_FP zoneMax = { 0x3E0000 , -0x1400000 };
 
-        // Conana�s Nest check
+        // Conana's Nest check
         if (mainGameState.getBit(0x91 * 8 + 4) && (r4_dragonPos[0] >= zoneMin[0]) && (r4_dragonPos[0] < zoneMax[0]) && (r4_dragonPos[2] >= zoneMin[1]) && (r4_dragonPos[2] < zoneMax[1]))
         {
             pThis->m0[1].m18_diableFlags = 0;

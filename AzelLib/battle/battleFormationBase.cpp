@@ -91,7 +91,7 @@ void formationTriggerAttack(sEntityGroup* pGroup, s8 attackType)
         }
         else
         {
-            Unimplemented(); // entity->m14_attackFlags |= attackBit — needs common battle entity base struct
+            Unimplemented(); // entity->m14_attackFlags |= attackBit - needs common battle entity base struct
         }
     }
 }
@@ -109,14 +109,14 @@ void formationTriggerAttackFollowup(sEntityGroup* pGroup, s8 attackType)
         }
         else
         {
-            Unimplemented(); // entity->m14_attackFlags &= ~attackBit — needs common battle entity base struct
+            Unimplemented(); // entity->m14_attackFlags &= ~attackBit - needs common battle entity base struct
         }
     }
 }
 
 // 060698e6
 // formationCreateIntroEffect is defined in battleFormationIntroEffect.cpp
-// (shared across BTL_X0 / BTL_A7_2 etc.) — delegates to
+// (shared across BTL_X0 / BTL_A7_2 etc.) - delegates to
 // formationCreateIntroEffectImpl with flag = 0, matching every known call site.
 
 // 0609b9a0

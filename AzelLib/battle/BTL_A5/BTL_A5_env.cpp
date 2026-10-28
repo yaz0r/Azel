@@ -75,7 +75,7 @@ static void BTL_A5_windParticle_Update(sBTL_A5_WindParticle* pThis)
         pThis->m34_timer = 0;
     }
 
-    // 060595b8 — wind movement per type
+    // 060595b8 - wind movement per type
     {
         s32 dX = 0, dY = 0, dZ = 0;
         s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;

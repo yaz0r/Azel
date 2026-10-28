@@ -1758,7 +1758,7 @@ struct sSparkleParticle : public s_workAreaTemplateWithArg<sSparkleParticle, sSp
         transformAndAddVec(worldPos, cameraSpacePos, cameraProperties2.m28[0]);
         popMatrix();
 
-        // TODO: FUN_0602f610 — draw billboard sprite at cameraSpacePos with scaledOpacity
+        // TODO: FUN_0602f610 - draw billboard sprite at cameraSpacePos with scaledOpacity
         Unimplemented();
     }
 

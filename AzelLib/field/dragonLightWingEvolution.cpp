@@ -225,7 +225,7 @@ void createDragonLightWingEvolutionTask(u32 param)
     createSubTaskWithArg<s_dragonLightWingEvolutionTask>(getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask, (u8)param);
 }
 
-// Polling task — checks each frame if all D-units have been collected
+// Polling task - checks each frame if all D-units have been collected
 struct s_dragonLightWingEvolutionCheckTask : public s_workAreaTemplate<s_dragonLightWingEvolutionCheckTask>
 {
 };

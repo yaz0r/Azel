@@ -14,10 +14,10 @@ struct sA7BeamChargeWobbleArg
     sSaturnPtr mC_templateEA;
 };
 
-// 06055ada — wrap createSubTaskWithArg for the 0x1C beam-charge-wobble subtask
+// 06055ada - wrap createSubTaskWithArg for the 0x1C beam-charge-wobble subtask
 void a7BeamEmitter_spawnChargeWobble_06055ada(p_workArea parent, sA7BeamChargeWobbleArg* pArg);
 
-// 0605533c — spawn a jittered billboard scene particle. Shared by the charge
+// 0605533c - spawn a jittered billboard scene particle. Shared by the charge
 // wobble subtask and the beam ring-buffer update.
 void a7BeamChargeWobble_spawn_0605533c(p_workArea parent, sVec3_FP* pPos,
                                        fixedPoint sinValue, sParticleSpawnConfig* pOutDesc);

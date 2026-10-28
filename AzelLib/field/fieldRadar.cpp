@@ -54,7 +54,7 @@ void fieldRadar_init(s_FieldRadar* pTypedWorkArea)
     dragonFieldSubTask2InitSub1(0x200000);
 }
 
-// FLD_A3::06093e98 — radar danger level palettes (VDP1 color data, 16 RGB555 entries each)
+// FLD_A3::06093e98 - radar danger level palettes (VDP1 color data, 16 RGB555 entries each)
 u8 fieldPalettes[3][0x20] =
 {
     { // 0: safe (green)
@@ -118,14 +118,14 @@ struct sSpeedDotParams {
     s16 m_cmdcolr;
 };
 
-// FLD_A3::06093f0c — normal speed dots
+// FLD_A3::06093f0c - normal speed dots
 static const sSpeedDotParams speedDotParamsNormal = { 0x0418, 0x0108, 0x174C };
-// FLD_A3::06093f18 — boost active speed dots
+// FLD_A3::06093f18 - boost active speed dots
 static const sSpeedDotParams speedDotParamsBoostActive = { 0x041C, 0x0103, 0x172C };
-// FLD_A3::06093f24 — boost locked speed dots
+// FLD_A3::06093f24 - boost locked speed dots
 static const sSpeedDotParams speedDotParamsBoostLocked = { 0x0420, 0x0103, 0x1750 };
 
-// FLD_A3::06093f3c — speed dot positions (X, Y offsets from radar center)
+// FLD_A3::06093f3c - speed dot positions (X, Y offsets from radar center)
 static const s16 speedDotPositions[4][2] = {
     { 0x30, -0x33 },
     { 0x2A, -0x37 },
@@ -148,7 +148,7 @@ static const sSpeedDotParams* getSpeedDotParams()
     return &speedDotParamsNormal;
 }
 
-// 06071ec4 — draw destination indicator on radar
+// 06071ec4 - draw destination indicator on radar
 static void fieldRadar_drawDestinationIndicator(s_FieldRadar* pThis, s32* pDestPosition)
 {
     Unimplemented();
@@ -316,7 +316,7 @@ void fieldRadar_draw(s_FieldRadar* pThis)
         graphicEngineStatus.m14_vdp1Context[0].mC += 1;
     }
 
-    // Speed dot count — how many speed thresholds has the dragon exceeded?
+    // Speed dot count - how many speed thresholds has the dragon exceeded?
     s32 numSpeedDot = 0;
     do {
         s32 sum = (s32)pDragon->m21C_DragonSpeedValues[numSpeedDot] + (s32)pDragon->m21C_DragonSpeedValues[numSpeedDot + 1];
@@ -441,7 +441,7 @@ void fieldRadar_setEncounterDistance(fixedPoint distance)
     pRadar->m68_encounterDistanceSq = MTH_Mul(distance, distance);
 }
 
-// 0607bab4 — clear radar battle state
+// 0607bab4 - clear radar battle state
 static void fieldRadar_clearBattleState()
 {
     s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;
@@ -453,7 +453,7 @@ static void fieldRadar_clearBattleState()
     pRadar->m18_currentSelection = 0;
 }
 
-// 06071e94 — parse random battle encounter list from script data
+// 06071e94 - parse random battle encounter list from script data
 static void fieldRadar_parseEncounterList(s32 scriptIndex)
 {
     s_fieldScriptWorkArea* pScripts = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;

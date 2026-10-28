@@ -36,7 +36,7 @@ static const s_MCB_CGB fieldFileList_C8[] =
 // 060557e8
 static void createFieldSpecificDataTask_C8()
 {
-    Unimplemented(); // 0607a516 — creates dummy subtask (size 0) under overlay task
+    Unimplemented(); // 0607a516 - creates dummy subtask (size 0) under overlay task
 
     s_fieldSpecificData_C8* pFieldData = createSubTaskFromFunction<s_fieldSpecificData_C8>(
         getFieldTaskPtr()->m8_pSubFieldData, nullptr);
@@ -46,7 +46,7 @@ static void createFieldSpecificDataTask_C8()
     }
 }
 
-// 06060f9c — set dragon light colors from per-subfield table
+// 06060f9c - set dragon light colors from per-subfield table
 static void initDragonLightColors_C8(s32 subfieldIndex)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -59,7 +59,7 @@ static void initDragonLightColors_C8(s32 subfieldIndex)
     pDragon->mD1_falloffColor2 = { (s8)readSaturnU8(colorData + 9), (s8)readSaturnU8(colorData + 10), (s8)readSaturnU8(colorData + 11) };
 }
 
-// 06061014 — set dragon light rotation from per-subfield table
+// 06061014 - set dragon light rotation from per-subfield table
 static void initDragonLightRotation_C8(s32 subfieldIndex)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -70,14 +70,14 @@ static void initDragonLightRotation_C8(s32 subfieldIndex)
     pDragon->mC4 = readSaturnS32(rotData + 4);
 }
 
-// 06061048 — per-subfield dragon light init
+// 06061048 - per-subfield dragon light init
 static void initPerSubfieldDragonLight_C8(s32 subfieldIndex)
 {
     initDragonLightColors_C8(subfieldIndex);
     initDragonLightRotation_C8(subfieldIndex);
 }
 
-// 06059824 — check cutscene table for current subfield and start script if found
+// 06059824 - check cutscene table for current subfield and start script if found
 static s32 startCutsceneFromTable_C8(p_workArea workArea)
 {
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
@@ -161,7 +161,7 @@ p_workArea overlayStart_FLD_C8(p_workArea workArea, u32 arg)
 
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m0_pScripts = ReadScripts(gFLD_C8->getSaturnPtr(0x060B5170));
 
-    // 06061048 — per-subfield dragon light init
+    // 06061048 - per-subfield dragon light init
     initPerSubfieldDragonLight_C8(getFieldTaskPtr()->m2E_currentSubFieldIndex);
 
     // Subfield dispatch
@@ -178,10 +178,10 @@ p_workArea overlayStart_FLD_C8(p_workArea workArea, u32 arg)
     }
 
     // m360 update function
-    // m360 = FLD_C8::06057ab4 — debug "MAKING MODE" menu (only active in debug builds)
+    // m360 = FLD_C8::06057ab4 - debug "MAKING MODE" menu (only active in debug builds)
     // 0606ecac is a debug menu system, no-op in non-debug
 
-    // 06059824 — check cutscene table and start if applicable
+    // 06059824 - check cutscene table and start if applicable
     s16 subfield2 = getFieldTaskPtr()->m2E_currentSubFieldIndex;
     if (subfield2 != 1 || getFieldTaskPtr()->m30_fieldEntryPoint != 1)
     {
@@ -204,38 +204,38 @@ p_workArea overlayStart_FLD_C8(p_workArea workArea, u32 arg)
 // 060545B4
 void subfieldC8_2(p_workArea workArea)
 {
-    Unimplemented(); // FUN_0605f026 — VDP2 task
-    Unimplemented(); // FUN_06054522 — field setup + grid + camera
+    Unimplemented(); // FUN_0605f026 - VDP2 task
+    Unimplemented(); // FUN_06054522 - field setup + grid + camera
     Unimplemented(); // setFieldDataFlags_C8
-    Unimplemented(); // FUN_0605cc68 — per-subfield init
+    Unimplemented(); // FUN_0605cc68 - per-subfield init
 }
 
 // 060545F6
 void subfieldC8_3(p_workArea workArea)
 {
-    Unimplemented(); // FUN_0605f026 — VDP2 task
-    Unimplemented(); // FUN_060545d4 — field setup
-    Unimplemented(); // FUN_06061494 — creature/entity init
+    Unimplemented(); // FUN_0605f026 - VDP2 task
+    Unimplemented(); // FUN_060545d4 - field setup
+    Unimplemented(); // FUN_06061494 - creature/entity init
     Unimplemented(); // setFieldDataFlags_C8
-    Unimplemented(); // FUN_0605cc9a — per-subfield init
+    Unimplemented(); // FUN_0605cc9a - per-subfield init
 }
 
 // 0605463A
 void subfieldC8_4(p_workArea workArea)
 {
-    Unimplemented(); // FUN_0605f026 — VDP2 task
-    Unimplemented(); // FUN_06054618 — field setup
-    Unimplemented(); // FUN_06061494 — creature/entity init
+    Unimplemented(); // FUN_0605f026 - VDP2 task
+    Unimplemented(); // FUN_06054618 - field setup
+    Unimplemented(); // FUN_06061494 - creature/entity init
     Unimplemented(); // setFieldDataFlags_C8
-    Unimplemented(); // FUN_0605cd38 — per-subfield init
+    Unimplemented(); // FUN_0605cd38 - per-subfield init
 }
 
 // 0605467E
 void subfieldC8_5(p_workArea workArea)
 {
-    Unimplemented(); // FUN_0605f026 — VDP2 task
-    Unimplemented(); // FUN_0605465c — field setup
-    Unimplemented(); // FUN_06061494 — creature/entity init
+    Unimplemented(); // FUN_0605f026 - VDP2 task
+    Unimplemented(); // FUN_0605465c - field setup
+    Unimplemented(); // FUN_06061494 - creature/entity init
     Unimplemented(); // setFieldDataFlags_C8
-    Unimplemented(); // FUN_0605cd82 — per-subfield init
+    Unimplemented(); // FUN_0605cd82 - per-subfield init
 }

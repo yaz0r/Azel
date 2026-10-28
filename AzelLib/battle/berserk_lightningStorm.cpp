@@ -24,12 +24,12 @@
 // 1. [CRITICAL] lightningStorm_createBolt missing 3 stack params: targetPosition, targetIndex, attackType
 // 2. [CRITICAL] Missing sHomingLaserTask_InitSub0 call (trail/beam visual init)
 // 3. [CRITICAL] State 2 caller sites missing target params for bolt creation
-// 4. [CRITICAL] Init: decoy target loop incomplete — only inits index 0, missing timer per decoy
+// 4. [CRITICAL] Init: decoy target loop incomplete - only inits index 0, missing timer per decoy
 // 5. [CRITICAL] Init: enemy target loop only inits index 0, should loop all enemies
 // 6. [HIGH] Missing trail segment init loop after sHomingLaserTask_InitSub0
-// 7. [HIGH] Empty bolt Draw function — missing sHomingLaserTask_DrawSub1 call
+// 7. [HIGH] Empty bolt Draw function - missing sHomingLaserTask_DrawSub1 call
 // 8. [HIGH] State 3 hit: missing FUN_060a32b2 hit spark visual
-// 9. [MEDIUM] Trail update section stubbed — missing jitter-offset position write
+// 9. [MEDIUM] Trail update section stubbed - missing jitter-offset position write
 // 10. [MEDIUM] Camera auto-scroll ordering differs from Ghidra
 
 //=============================================================================

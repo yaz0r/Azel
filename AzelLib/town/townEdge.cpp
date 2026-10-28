@@ -292,7 +292,7 @@ void initEdgeNPCSub0(sNPC* pThis, s32 r5, sSaturnPtr r6)
         pThis->mE_controlState = 1;
         break;
     case 2:
-        Unimplemented(); // complex wandering/patrol AI — needs full decompilation
+        Unimplemented(); // complex wandering/patrol AI - needs full decompilation
         break;
     case 3:
         //assert(gCurrentTownOverlay->m_name == "TWN_RUIN.PRG");

@@ -197,7 +197,7 @@ void baldorPart_draw(s_fileBundle* pBundle, sMonsterBodyPart* pBodyPart)
     }
 }
 
-// ZYX-order single-part drawer — the baldor variant of
+// ZYX-order single-part drawer - the baldor variant of
 // monsterPart_defaultDrawPart.
 void baldorPart_drawPart(s_fileBundle* pBundle, sMonsterBodyPart* pBodyPart)
 {
@@ -385,7 +385,7 @@ void CreateDamageSpriteForCurrentBattleOverlay(sVec3_FP* param1, sVec3_FP* param
     createParticleEffect(dramAllocatorEnd[0].mC_fileBundle, &g_BTL_GenericData->m_0x60abef4_animatedQuads[iVar2], param1, param2, 0, param3, nullptr, 0);
 }
 
-// 0605bae8 — implemented in battleDamageDisplay.cpp
+// 0605bae8 - implemented in battleDamageDisplay.cpp
 
 void processHitTargetables(p_workArea pThis, std::vector<sBattleTargetable>& param2, int param3, int param4, sEnemyLifeMeterTask* param5)
 {
@@ -552,7 +552,7 @@ static void BaldorProjectile_update(sBaldorProjectile* pThis)
     s32 hitResult = sGunShotTask_UpdateSub0(&projView.pos, &dragonView.pos, &hitInfo);
     if (hitResult > 0)
     {
-        // hit the dragon — apply damage
+        // hit the dragon - apply damage
         applyDamageToDragon(
             gBattleManager->m10_battleOverlay->m18_dragon->m8C,
             pThis->m34_damageValue,
@@ -572,7 +572,7 @@ static void BaldorProjectile_update(sBaldorProjectile* pThis)
         pThis->m32_timer = 0;
     }
 
-    // timer countdown — destroy when expired
+    // timer countdown - destroy when expired
     if (--pThis->m32_timer < 0)
     {
         // spawn expiry particle effect
@@ -620,7 +620,7 @@ static void BaldorProjectile_drawModel(sBaldorProjectile* pThis)
     }
 }
 
-// 060a473c — compute projectile velocity from source to target with acceleration
+// 060a473c - compute projectile velocity from source to target with acceleration
 static void BaldorProjectile_computeVelocity(sBaldorProjectile* pThis, sVec3_FP* source, sVec3_FP* target, sSaturnPtr param3)
 {
     s16 travelTime = readSaturnS16(param3 + 0xC);
@@ -721,7 +721,7 @@ p_workArea BaldorAttack_createAttackModel(sVec3_FP* partPosition, sVec3_FP* targ
     return pProj;
 }
 
-// Queen acid spray — builds attack params inline instead of from Saturn data
+// Queen acid spray - builds attack params inline instead of from Saturn data
 p_workArea BaldorAttack_createQueenAcidProjectile(sVec3_FP* partPosition, sVec3_FP* target, u8 fileBundleIdx, s16 timer, s16 lifetime)
 {
     npcFileDeleter* pFileBundle = dramAllocatorEnd[fileBundleIdx].mC_fileBundle;
@@ -978,7 +978,7 @@ void Baldor_update_mode0(sBaldor* pThis)
     }
 }
 
-// 060556e4 — body part debris task
+// 060556e4 - body part debris task
 struct sBaldorPartDebris : public s_workAreaTemplateWithCopy<sBaldorPartDebris>
 {
     sVec3_FP m8_position;
@@ -1047,7 +1047,7 @@ void createBaldorDeathEffect(sBaldor* pThis)
         nullptr, nullptr,
         -0x2C, nullptr, 0, 0, 0, 0x10000, 0);
 
-    // 060556e4 — individual body part debris (each tentacle segment flies off separately)
+    // 060556e4 - individual body part debris (each tentacle segment flies off separately)
     for (int i = 0; i < 6; i++)
     {
         sMonsterBodyPart& part = pThis->m68_body->m30_parts[i];

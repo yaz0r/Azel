@@ -16,7 +16,7 @@
 #include "trigo.h"
 
 // =========================================================================
-// FIXME LIST — Ghidra comparison audit
+// FIXME LIST - Ghidra comparison audit
 //
 // STRUCT: [DONE] Rebuilt with correct offsets (m85 not m86, s16 m80, m82 counter,
 //   m8C/m90 heap ptrs, m94/mA0/mA4 flags, sPhantomSubData sub-struct)
@@ -51,14 +51,14 @@
 
 struct sPhantomSubData
 {
-    s32 m0;                    // 0x00 — loaded/model flag (zeroed by FUN_06097a18)
+    s32 m0;                    // 0x00 - loaded/model flag (zeroed by FUN_06097a18)
     s32 m4;                    // 0x04
     s32 m8;                    // 0x08
-    s32 mC_completionFlag;     // 0x0C — set when phantom finishes its attack
-    s32 m10_modelPtr;          // 0x10 — model pointer (checked in epilogue)
-    sVec3_FP m14_targetPos;    // 0x14 — target position for attack
-    u16 m20_targetIndex;       // 0x20 — target enemy index
-    u8 m22_subState;           // 0x22 — 0=idle, 1=ready, 2=attack, 3=fade
+    s32 mC_completionFlag;     // 0x0C - set when phantom finishes its attack
+    s32 m10_modelPtr;          // 0x10 - model pointer (checked in epilogue)
+    sVec3_FP m14_targetPos;    // 0x14 - target position for attack
+    u16 m20_targetIndex;       // 0x20 - target enemy index
+    u8 m22_subState;           // 0x22 - 0=idle, 1=ready, 2=attack, 3=fade
     u8 m23_pad;
     // size 0x24
 };
@@ -66,21 +66,21 @@ struct sPhantomSubData
 struct sAstralPhantomsTask : public s_workAreaTemplate<sAstralPhantomsTask>
 {
     sPhantomSubData m0_phantoms[3];  // 0x00..0x6B: 3 phantom sub-structs (3 * 0x24)
-    u8 m6C_phantomVariant;           // 0x6C — phantom model variant (0-2)
+    u8 m6C_phantomVariant;           // 0x6C - phantom model variant (0-2)
     u8 m6D_pad[0x13];               // 0x6D..0x7F
-    s16 m80_orbitAngle;              // 0x80 — phantom orbit angle (s16, incremented by 3)
-    s16 m82_frameCounter;            // 0x82 — global frame counter
+    s16 m80_orbitAngle;              // 0x80 - phantom orbit angle (s16, incremented by 3)
+    s16 m82_frameCounter;            // 0x82 - global frame counter
     u8 m84_pad;                      // 0x84
-    s8 m85_subState;                 // 0x85 — state machine (NOT 0x86!)
+    s8 m85_subState;                 // 0x85 - state machine (NOT 0x86!)
     u8 m86_pad[2];                   // 0x86..0x87
-    s32 m88_rotationSpeed;           // 0x88 — init 0x1999, ramps to 0x14000
-    s32 m8C_targetIndexArray;        // 0x8C — heap ptr to target index array (state 3)
-    s32 m90_hitTrackingArray;        // 0x90 — heap ptr to hit tracking array (state 3)
-    s32 m94_attackDetected;          // 0x94 — latch: set when dragon DC flag 0x80000 detected
-    s32 m98_shouldSetM100;           // 0x98 — init 1, cleared after m100 set
+    s32 m88_rotationSpeed;           // 0x88 - init 0x1999, ramps to 0x14000
+    s32 m8C_targetIndexArray;        // 0x8C - heap ptr to target index array (state 3)
+    s32 m90_hitTrackingArray;        // 0x90 - heap ptr to hit tracking array (state 3)
+    s32 m94_attackDetected;          // 0x94 - latch: set when dragon DC flag 0x80000 detected
+    s32 m98_shouldSetM100;           // 0x98 - init 1, cleared after m100 set
     s32 m9C_hasCamera;               // 0x9C
-    s32 mA0_destroyFlag;             // 0xA0 — if set, mark task finished
-    s32 mA4_fullSpeedFlag;           // 0xA4 — set when rotation reaches max speed
+    s32 mA0_destroyFlag;             // 0xA0 - if set, mark task finished
+    s32 mA4_fullSpeedFlag;           // 0xA4 - set when rotation reaches max speed
     // size 0xA8
 };
 
@@ -161,10 +161,10 @@ static void sAstralPhantomsTask_Update(sAstralPhantomsTask* pThis)
     }
     case 2:
     {
-        // State 2: shield active — monitor for incoming attack
+        // State 2: shield active - monitor for incoming attack
         if ((pDragon->m1C0_statusModifiers & 0x400) == 0)
         {
-            // FIXME 15: shield removed — set ALL phantoms to fade state (3)
+            // FIXME 15: shield removed - set ALL phantoms to fade state (3)
             for (s32 i = 0; i < 3; i++)
             {
                 pThis->m0_phantoms[i].m22_subState = 3;
@@ -204,7 +204,7 @@ static void sAstralPhantomsTask_Update(sAstralPhantomsTask* pThis)
     }
     case 3:
     {
-        // State 3: begin attack — allocate targets and assign to phantoms
+        // State 3: begin attack - allocate targets and assign to phantoms
         // FIXME 16: target allocation (Fisher-Yates shuffle, heap arrays)
         // TODO: allocate m8C (numEnemies*4) and m90 (numEnemies) arrays
         // TODO: Fisher-Yates shuffle of valid target indices
@@ -220,7 +220,7 @@ static void sAstralPhantomsTask_Update(sAstralPhantomsTask* pThis)
     }
     case 4:
     {
-        // State 4: attack in progress — apply damage per phantom hit
+        // State 4: attack in progress - apply damage per phantom hit
         // FIXME 17: damage/tracking loop (stubbed)
         // TODO: iterate m90 hit array, apply phantomSlasher_getBaseDamage
         // TODO: damage power = m80 >> 1, unless mA4 set (then full m80)
@@ -263,7 +263,7 @@ static void sAstralPhantomsTask_Update(sAstralPhantomsTask* pThis)
         break;
     }
 
-    // FIXME 20: post-switch epilogue — check all phantom model ptrs
+    // FIXME 20: post-switch epilogue - check all phantom model ptrs
     // If all 3 phantoms have non-zero m10_modelPtr, mark task finished (safety net)
     s32 modelCount = 0;
     for (s32 i = 0; i < 3; i++)
@@ -278,7 +278,7 @@ static void sAstralPhantomsTask_Update(sAstralPhantomsTask* pThis)
 // BTL_A3::06097984 -- astral phantoms draw (empty in original)
 static void sAstralPhantomsTask_Draw(sAstralPhantomsTask* pThis)
 {
-    // Ghidra decompilation shows this is an empty function — phantoms are rendered
+    // Ghidra decompilation shows this is an empty function - phantoms are rendered
     // by their individual sub-tasks, not by the parent draw method.
 }
 
@@ -299,7 +299,7 @@ void berserk_createAstralPhantomsShield(s_battleEngine* pThis)
         return;
     }
 
-    // Init state — matches Ghidra byte-level writes
+    // Init state - matches Ghidra byte-level writes
     pNewTask->m85_subState = 0;
     pNewTask->m80_orbitAngle = 0;
     pNewTask->m88_rotationSpeed = 0x1999;
@@ -318,14 +318,14 @@ void berserk_createAstralPhantomsShield(s_battleEngine* pThis)
     // FIXME 7: per-phantom init (zero sub-struct + create sub-task)
     for (s32 i = 0; i < 3; i++)
     {
-        // FUN_06097a18 — zero phantom sub-struct fields
+        // FUN_06097a18 - zero phantom sub-struct fields
         pNewTask->m0_phantoms[i].m0 = 0;
         pNewTask->m0_phantoms[i].m4 = 0;
         pNewTask->m0_phantoms[i].m8 = 0;
         pNewTask->m0_phantoms[i].mC_completionFlag = 0;
         pNewTask->m0_phantoms[i].m10_modelPtr = 0;
 
-        // FUN_06097a34 — creates 0x130-size child task via createSubTaskWithCopy
+        // FUN_06097a34 - creates 0x130-size child task via createSubTaskWithCopy
         // TODO: implement phantom sub-task creation (visual model + orbit animation)
         // Each phantom gets its own Update/Draw sub-task for rendering
     }

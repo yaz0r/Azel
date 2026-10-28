@@ -441,7 +441,7 @@ void azelSdl_StartFrame()
         s16 stickX = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX);
         s16 stickY = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY);
 
-        // Analog stick → d-pad for menu navigation
+        // Analog stick -> d-pad for menu navigation
         if (stickY < -16000) buttonMask |= 0x0010; // Up
         if (stickY > 16000)  buttonMask |= 0x0020; // Down
         if (stickX < -16000) buttonMask |= 0x0040; // Left
@@ -460,7 +460,7 @@ void azelSdl_StartFrame()
         pending.m2_analogX = convertAxis(stickX);
         pending.m3_analogY = convertAxis(stickY);
 
-        // Analog triggers → m4 (L trigger) / m5 (R trigger), range 0-255
+        // Analog triggers -> m4 (L trigger) / m5 (R trigger), range 0-255
         pending.m4 = (s8)(leftTrigger >> 7);
         pending.m5 = (s8)(rightTrigger >> 7);
     }
@@ -1023,7 +1023,7 @@ int computeSpritePriority(u16 cmdcolr, u16 cmdpmod)
                 }
             }
         }
-        // Fallback if LUT not yet loaded or out of bounds: assume RGB555 (bit 15 set) → register 2
+        // Fallback if LUT not yet loaded or out of bounds: assume RGB555 (bit 15 set) -> register 2
         return lookupSpritePriority(2);
     }
 

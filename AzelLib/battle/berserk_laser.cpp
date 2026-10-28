@@ -98,7 +98,7 @@ static s32 laserBerserk_initTarget(sLaserBerserkTask* pThis)
     }
 }
 
-// BTL_A3::06096d1c — beam tracking spring-damper (interpolates laser origin toward target)
+// BTL_A3::06096d1c - beam tracking spring-damper (interpolates laser origin toward target)
 static void laserBerserk_updateBeamTracking(sLaserBerserkTask* pThis, s8 param_2)
 {
     s32 springK = 0x3333;
@@ -132,7 +132,7 @@ static void laserBerserk_updateBeamTracking(sLaserBerserkTask* pThis, s8 param_2
     pThis->m18_laserOrigin += pThis->m3C_cameraVelocity;
 }
 
-// BTL_A3::06096e1a — dual-beam secondary beam angle update
+// BTL_A3::06096e1a - dual-beam secondary beam angle update
 static void laserBerserk_updateDualBeamAngle(sLaserBerserkTask* pThis)
 {
     pThis->mB0_dualBeamAngle.m8_Z += fixedPoint(0x31C71C7);
@@ -150,7 +150,7 @@ static void laserBerserk_updateDualBeamAngle(sLaserBerserkTask* pThis)
     }
 }
 
-// BTL_A3::0609d57c — shift beam trail segments and insert new head position
+// BTL_A3::0609d57c - shift beam trail segments and insert new head position
 static void laserBerserk_shiftTrailSegments(sLaserBerserkTask::sBeamTrail* pTrail, sVec3_FP* pNewPos, sVec3_FP* pAutoScroll)
 {
     s32 count = pTrail->m4_numSegments;
@@ -171,7 +171,7 @@ static void laserBerserk_shiftTrailSegments(sLaserBerserkTask::sBeamTrail* pTrai
     }
 }
 
-// BTL_A3::0609d4dc — initialize beam trail buffer
+// BTL_A3::0609d4dc - initialize beam trail buffer
 static void laserBerserk_initTrailBuffer(sLaserBerserkTask::sBeamTrail* pTrail, p_workArea pParent, sVec3_FP* pInitPos, u16 vdp1Param, sSaturnPtr config)
 {
     pTrail->m14_vdp1Param = vdp1Param;
@@ -189,7 +189,7 @@ static void laserBerserk_initTrailBuffer(sLaserBerserkTask::sBeamTrail* pTrail, 
     pTrail->mC_growthStep = 0;
 }
 
-// BTL_A3::060a32b2 — hit spark periodic particle spawner
+// BTL_A3::060a32b2 - hit spark periodic particle spawner
 struct sHitSparkTask : public s_workAreaTemplateWithCopy<sHitSparkTask>
 {
     npcFileDeleter* m8_fileBundle;
@@ -511,7 +511,7 @@ s32 berserk_createLaser(s_battleEngine* pThis, u8 type)
     pNewTask->m24_laserEnd = pNewTask->m18_laserOrigin;
     pNewTask->m24_laserEnd.m4_Y += fixedPoint(0x3000);
 
-    static const s16 laserBaseDamage[] = { 0x78, 0x10E }; // BTL_A3::060ad804 — chain=120, prism=270
+    static const s16 laserBaseDamage[] = { 0x78, 0x10E }; // BTL_A3::060ad804 - chain=120, prism=270
     pNewTask->mE2_baseDamage = laserBaseDamage[type];
 
     // Init per-quadrant camera altitude

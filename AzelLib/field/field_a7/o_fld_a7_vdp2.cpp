@@ -10,9 +10,9 @@
 #include "kernel/loadSavegameScreen.h"
 
 
-// VDP2 background task for field A7 — uses shared sVdp2PlaneTask from field.h
+// VDP2 background task for field A7 - uses shared sVdp2PlaneTask from field.h
 
-// 06057528 — VDP2 init for subfield 0
+// 06057528 - VDP2 init for subfield 0
 static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
@@ -156,7 +156,7 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
     }
 }
 
-// 06014274 — moved to shared/vdp2PlaneTask.cpp as updateLineScrollTable
+// 06014274 - moved to shared/vdp2PlaneTask.cpp as updateLineScrollTable
 
 // 0605798c
 static void updateVdp2_A7_0(sVdp2PlaneTask* pThis)
@@ -225,14 +225,14 @@ static void drawVdp2_A7_0(sVdp2PlaneTask* pThis)
     pRegs->mCE_WPEY1 = pThis->m24_vdp1Clipping[3];
 }
 
-// 06057dd4 — create subfield 0 VDP2 task
+// 06057dd4 - create subfield 0 VDP2 task
 void createA7_0_envTask(p_workArea parent)
 {
     static sVdp2PlaneTask::TypedTaskDefinition td = { &initVdp2_A7_0, &updateVdp2_A7_0, &drawVdp2_A7_0, nullptr };
     createSubTask<sVdp2PlaneTask>(parent, &td);
 }
 
-// 06057f04 — VDP2 init for subfield 1
+// 06057f04 - VDP2 init for subfield 1
 static void initVdp2_A7_1(sVdp2PlaneTask* pThis)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
@@ -383,7 +383,7 @@ static void updateVdp2_A7_1(sVdp2PlaneTask* pThis)
     drawCinematicBar(1);
 }
 
-// 060587f4 — set up rotation scroll for pass 0 (subfield 1 with sky rotation)
+// 060587f4 - set up rotation scroll for pass 0 (subfield 1 with sky rotation)
 static void drawVdp2Sub_setupRotationPass0_A7_1(sVdp2PlaneTask* pThis)
 {
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
@@ -512,14 +512,14 @@ static void drawVdp2_A7_1(sVdp2PlaneTask* pThis)
     pRegs->mCE_WPEY1 = pThis->m24_vdp1Clipping[3];
 }
 
-// 06058a74 — create subfield 1 VDP2 task
+// 06058a74 - create subfield 1 VDP2 task
 void createA7_1_envTask(p_workArea parent)
 {
     static sVdp2PlaneTask::TypedTaskDefinition td = { &initVdp2_A7_1, &updateVdp2_A7_1, &drawVdp2_A7_1, nullptr };
     createSubTask<sVdp2PlaneTask>(parent, &td);
 }
 
-// 06058b90 — VDP2 init for subfield 2
+// 06058b90 - VDP2 init for subfield 2
 static void initVdp2_A7_2(sVdp2PlaneTask* pThis)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m350_fieldPaletteTask = pThis;
@@ -631,7 +631,7 @@ static void updateVdp2_A7_2(sVdp2PlaneTask* pThis)
     drawCinematicBar(1);
 }
 
-// 0605923e — set up rotation scroll for pass 0 (subfield 2, simplified)
+// 0605923e - set up rotation scroll for pass 0 (subfield 2, simplified)
 static void drawVdp2Sub_setupRotationPass0_A7_2(sVdp2PlaneTask* pThis)
 {
     auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
@@ -684,7 +684,7 @@ static void drawVdp2Sub_setupRotationPass0_A7_2(sVdp2PlaneTask* pThis)
         + coeff.m40 * -0x10000);
 }
 
-// 06058b02 — simplified scroll offset for A7 subfield 2 (depth term only, no pivot)
+// 06058b02 - simplified scroll offset for A7 subfield 2 (depth term only, no pivot)
 static s32 computeGroundY_A7_2()
 {
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
@@ -716,7 +716,7 @@ static void drawVdp2_A7_2(sVdp2PlaneTask* pThis)
     intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
 }
 
-// 060593f0 — create subfield 2 VDP2 task
+// 060593f0 - create subfield 2 VDP2 task
 void createA7_2_envTask(p_workArea parent)
 {
     static sVdp2PlaneTask::TypedTaskDefinition td = { &initVdp2_A7_2, &updateVdp2_A7_2, &drawVdp2_A7_2, nullptr };

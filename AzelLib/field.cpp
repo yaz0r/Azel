@@ -414,7 +414,7 @@ void getDragonAngle(sVec3_FP* pOut)
     pOut->m8_Z = p->m20_angle.m8_Z;
 }
 
-// 0607ce7c — set dragon speed to the given index (0..4) from the speed table.
+// 0607ce7c - set dragon speed to the given index (0..4) from the speed table.
 // Shared across overlays (A5, C8, etc.).
 void setDragonSpeedIndex(s32 speedIndex)
 {
@@ -474,7 +474,7 @@ bool isPointOnScreen(sVec3_FP* pViewPos, s32 maxDepth)
     return absY < 0x81;
 }
 
-// 0606fade (A7) — world position on-screen test taking sVec3_FP*
+// 0606fade (A7) - world position on-screen test taking sVec3_FP*
 bool isWorldPositionOnScreen(sVec3_FP* pWorldPos)
 {
     sVec3_FP viewPos;
@@ -499,7 +499,7 @@ s_RGB8 readSaturnRGB8(const sSaturnPtr& ptr)
     return newValue;
 }
 
-// 0606818c (A7) / 06069bc0 (A3) — start field script with game-state flag check
+// 0606818c (A7) / 06069bc0 (A3) - start field script with game-state flag check
 s32 startFieldScriptWithFlagCheck(s32 scriptIndex, u32 flagBit)
 {
     s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
@@ -528,7 +528,7 @@ s32 startFieldScriptWithFlagCheck(s32 scriptIndex, u32 flagBit)
 void freeVdp1Block(npcFileDeleter* parent, void* dataToFree);
 void fieldPaletteTaskInitSub0Sub0();
 
-// 0606fe10 (A7) / 06071844 (A3) — signed random in [-range/2, range/2)
+// 0606fe10 (A7) / 06071844 (A3) - signed random in [-range/2, range/2)
 s32 signedRandom(s32 range)
 {
     s32 r = randomNumber();
@@ -536,7 +536,7 @@ s32 signedRandom(s32 range)
     return r - (range >> 1);
 }
 
-// 06073566 (A7) / 06074f9a (A3) — check if dragon has no active camera script/cutscene
+// 06073566 (A7) / 06074f9a (A3) - check if dragon has no active camera script/cutscene
 s32 isDragonCameraScriptInactive()
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -547,7 +547,7 @@ s32 isDragonCameraScriptInactive()
     return 0;
 }
 
-// 0607790a (A7) / 0607933e (A3) — release multichoice memory blocks
+// 0607790a (A7) / 0607933e (A3) - release multichoice memory blocks
 void releaseMultiChoiceBlocks()
 {
     s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
@@ -561,7 +561,7 @@ void releaseMultiChoiceBlocks()
     }
 }
 
-// 06060118 (A7) / 06061b4c (A3) — clear camera zone targets
+// 06060118 (A7) / 06061b4c (A3) - clear camera zone targets
 s32 clearCameraZoneTargets(s32 zoneIndex)
 {
     sFieldCameraManager* pCameraManager = getFieldTaskPtr()->m8_pSubFieldData->m334;
@@ -572,7 +572,7 @@ s32 clearCameraZoneTargets(s32 zoneIndex)
     return 0x334;
 }
 
-// 060613ca (A7) / 0606a9f2 (A5) / 06062dfe (A3) — add camera impulse
+// 060613ca (A7) / 0606a9f2 (A5) / 06062dfe (A3) - add camera impulse
 void addCameraImpulse(sVec3_FP* positionImpulse, sVec3_FP* rotationImpulse)
 {
     sFieldCameraStatus* pCam = getFieldCameraStatus();

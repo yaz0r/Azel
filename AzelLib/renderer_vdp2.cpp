@@ -34,7 +34,7 @@ struct s_layerData
     u32 CAOS;
     u32 PLSZ;
     u32 SCN;
-    u32 SPN;  // Supplementary Palette Number — PNCNx bits 7:5 (3 bits). Saturn concatenates as Palette[6:4]=SPN, Palette[3:0]=Pattern[15:12] for 1-word 16-color.
+    u32 SPN;  // Supplementary Palette Number - PNCNx bits 7:5 (3 bits). Saturn concatenates as Palette[6:4]=SPN, Palette[3:0]=Pattern[15:12] for 1-word 16-color.
 
     u32 planeOffsets[16];
     u32 mapwh; // 0 = use PLSZ-based addressing (NBG), 4 = 4x4 rotation scroll (RBG0)
@@ -65,8 +65,8 @@ struct s_layerDataGPU
     u32 wnd0YStart;     // 17
     u32 wnd0XEnd;       // 18
     u32 wnd0YEnd;       // 19
-    u32 SPN;            // 20 — supplementary palette number (PNCNx[7:5])
-    u32 _pad[3];        // 21-23 — keep vec4 alignment
+    u32 SPN;            // 20 - supplementary palette number (PNCNx[7:5])
+    u32 _pad[3];        // 21-23 - keep vec4 alignment
 };
 
 static s_layerDataGPU packForGPU(const s_layerData& ld)
@@ -254,8 +254,8 @@ struct s_layerDataRBG0
     s32 E;          // 29 (t.m2C)
     s32 Px;         // 30 (t.m34, pivot X)
     s32 Py;         // 31 (t.m36, pivot Y)
-    u32 SPN;        // 32 — supplementary palette number (PNCR[7:5])
-    u32 _pad[3];    // 33-35 — keep vec4 alignment
+    u32 SPN;        // 32 - supplementary palette number (PNCR[7:5])
+    u32 _pad[3];    // 33-35 - keep vec4 alignment
 };
 
 void renderLayerGPU_RBG0(s_layerDataRBG0& layerData, u32 textureWidth, u32 textureHeight,
@@ -442,9 +442,9 @@ struct s_layerDataRBG0_dual
     s32 A_E;        // 56 (t.m2C)
     s32 A_Px;       // 57 (t.m34, pivot X)
     s32 A_Py;       // 58 (t.m36, pivot Y)
-    u32 SPN;        // 59 — supplementary palette number for plane A (PNCR[7:5])
-    u32 B_SPN;      // 60 — supplementary palette number for plane B
-    u32 _pad[2];    // 61-62 — keep vec4 alignment
+    u32 SPN;        // 59 - supplementary palette number for plane A (PNCR[7:5])
+    u32 B_SPN;      // 60 - supplementary palette number for plane B
+    u32 _pad[2];    // 61-62 - keep vec4 alignment
 };
 
 void renderLayerGPU_RBG0_dual(s_layerDataRBG0_dual& layerData, u32 textureWidth, u32 textureHeight,
@@ -1146,8 +1146,8 @@ static void renderLayerCPU_RBG0(
             bool useB;
             if (useRPWindow)
             {
-                // RPMD=3: window switching — test pixel against rotation parameter window
-                // Inside window → param A, outside window → param B
+                // RPMD=3: window switching - test pixel against rotation parameter window
+                // Inside window -> param A, outside window -> param B
                 auto testWnd = [](bool enabled, bool areabit, const decltype(rpWnd[0])& w, int x, int y) -> int {
                     if (!enabled) return 3; // disabled
                     if (areabit) {
@@ -1162,8 +1162,8 @@ static void renderLayerCPU_RBG0(
                 int w0 = testWnd(rpWnd0Enabled, rpWnd0Area, rpWnd[0], (int)i, (int)j);
                 int w1 = testWnd(rpWnd1Enabled, rpWnd1Area, rpWnd[1], (int)i, (int)j);
                 int wndResult;
-                if (w0 & 2) wndResult = w1 & 1;       // w0 disabled → use w1
-                else if (w1 & 2) wndResult = w0 & 1;   // w1 disabled → use w0
+                if (w0 & 2) wndResult = w1 & 1;       // w0 disabled -> use w1
+                else if (w1 & 2) wndResult = w0 & 1;   // w1 disabled -> use w0
                 else if (wctld & 0x80) wndResult = w0 || w1; // AND logic
                 else wndResult = w0 && w1;               // OR logic
                 useB = pTB && !wndResult;

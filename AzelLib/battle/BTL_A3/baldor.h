@@ -42,7 +42,7 @@ void Baldor_initSub0(sBaldorBase* pThis, sSaturnPtr dataPtr, struct sFormationDa
 void Baldor_update(sBaldorBase* pThisBase);
 void Baldor_draw(sBaldorBase* pThisBase);
 
-// baldor-specific segmented-body physics callbacks — installed by
+// baldor-specific segmented-body physics callbacks - installed by
 // monsterBody_loadPartData(body, 1, ...). Kept here because they're only
 // used by BTL_A3 Baldor (and they live in baldor.cpp).
 void baldorPart_update(sMonsterBodyPart* pThis, const sVec3_FP* pTranslation, const sVec3_FP* pRotation, const sVec3_FP* param4);

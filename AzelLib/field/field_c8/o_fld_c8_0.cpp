@@ -69,7 +69,7 @@ struct s_C8_lightTask : public s_workAreaTemplate<s_C8_lightTask>
         }
         mainGameState.setPackedBits(0x591, 4, (u32)pThis->m0_phase);
     }
-    // 06060e7c — debug text only
+    // 06060e7c - debug text only
     static void Draw(s_C8_lightTask*) {}
 
     static const TypedTaskDefinition* getTypedTaskDefinition() {
@@ -88,7 +88,7 @@ struct s_C8_paletteAnimTask : public s_workAreaTemplate<s_C8_paletteAnimTask>
     s8 m2A_currentIndex;
     // size 0x2C
 
-    // 0605d59a — read 16 colors from table starting at current index
+    // 0605d59a - read 16 colors from table starting at current index
     static void readPaletteColors(s_C8_paletteAnimTask* pThis)
     {
         s32 idx = pThis->m2A_currentIndex;
@@ -148,7 +148,7 @@ struct s_C8_soundEmitterTask : public s_workAreaTemplateWithArg<s_C8_soundEmitte
     static void Update(s_C8_soundEmitterTask*) {
         Unimplemented(); // complex 3D sound positioning with findSound/playBattleSoundEffect
     }
-    // 060642a2 — empty
+    // 060642a2 - empty
     static void Draw(s_C8_soundEmitterTask*) {}
     // 060642a6
     static void Delete(s_C8_soundEmitterTask* pThis) {
@@ -183,7 +183,7 @@ struct s_C8_effectManagerTask : public s_workAreaTemplateWithArg<s_C8_effectMana
             *(s32*)(pThis->m8_effectPool + i * 0x30 + 0x28) = 0;
         }
     }
-    // 060810ea — per-particle update: position += velocity, velocity decays, gravity, lifetime
+    // 060810ea - per-particle update: position += velocity, velocity decays, gravity, lifetime
     static bool updateParticle(s32* p) {
         p[0] += p[6]; p[1] += p[7]; p[2] += p[8];
         p[3] = p[0]; p[4] = p[1]; p[5] = p[2];
@@ -197,7 +197,7 @@ struct s_C8_effectManagerTask : public s_workAreaTemplateWithArg<s_C8_effectMana
         p[10] = life - 1;
         return (life - 1) == 0;
     }
-    // 06080f7a — remove particle from active list
+    // 06080f7a - remove particle from active list
     static void removeParticle(s_C8_effectManagerTask* pThis, s32 index) {
         if (pThis->mC_activeCount > 0) {
             pThis->mC_activeCount--;
@@ -288,7 +288,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
             return;
         }
 
-        // 0607d81a — read dragon position into field_C + 0x4C
+        // 0607d81a - read dragon position into field_C + 0x4C
         s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
         getDragonPosition(&pFieldData->m4C_dragonPos);
 
@@ -320,7 +320,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
             }
         }
     }
-    // 0605cb44 — empty
+    // 0605cb44 - empty
     static void Draw(s_C8_cutsceneCameraTask*) {}
 
     static const TypedTaskDefinition* getTypedTaskDefinition() {
@@ -329,7 +329,7 @@ struct s_C8_cutsceneCameraTask : public s_workAreaTemplateWithArg<s_C8_cutsceneC
     }
 };
 
-// 0607d600 — set dragon position and angle
+// 0607d600 - set dragon position and angle
 static void FUN_FLD_C8_0607d600(sVec3_FP* pPos, sVec3_FP* pAngle)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -339,13 +339,13 @@ static void FUN_FLD_C8_0607d600(sVec3_FP* pPos, sVec3_FP* pAngle)
     if (pAngle)
     {
         pDragon->m20_angle = *pAngle;
-        Unimplemented(); // 06080c0c — blocked
+        Unimplemented(); // 06080c0c - blocked
     }
-    Unimplemented(); // 060899dc — blocked
+    Unimplemented(); // 060899dc - blocked
     updateCameraScriptSub0(pDragon->mB8_lightWingEffect);
 }
 
-// 0605c87c — camera movement setup
+// 0605c87c - camera movement setup
 static void FUN_FLD_C8_0605c87c(s_C8_cutsceneCameraTask* pTask, u8* pArgData)
 {
     sVec3_FP offset = { fixedPoint(0), fixedPoint(0), fixedPoint(*(s32*)(pArgData + 0x10)) };
@@ -439,7 +439,7 @@ static void FUN_FLD_C8_06056510()
     pFieldData->m2C = 0;
 }
 
-// 0605f030 — empty function
+// 0605f030 - empty function
 static void FUN_FLD_C8_0605f030() {}
 
 // --- Minimal task structs for createSubTaskFromFunction ---
@@ -476,7 +476,7 @@ struct s_C8_zoneTask : public s_workAreaTemplate<s_C8_zoneTask>
     // size 8
 };
 
-// 060815d0 — create particle/effect pool (size 0x20)
+// 060815d0 - create particle/effect pool (size 0x20)
 static p_workArea FUN_FLD_C8_060815d0(p_workArea workArea, s32 param2, s32 param3)
 {
     s_C8_poolTask* pTask = createSubTaskFromFunction<s_C8_poolTask>(workArea, nullptr);
@@ -502,14 +502,14 @@ static p_workArea FUN_FLD_C8_060815d0(p_workArea workArea, s32 param2, s32 param
     return pTask;
 }
 
-// 0605960c — event trigger update
+// 0605960c - event trigger update
 static void FUN_FLD_C8_0605960c(s_C8_eventTriggerTask* pThis)
 {
     // Check if dragon is within trigger bounds, call callback, kill task
     Unimplemented(); // needs FUN_FLD_C8_0607d81a + bounds check + callback dispatch
 }
 
-// 06059666 — create event trigger subtask per subfield
+// 06059666 - create event trigger subtask per subfield
 static void FUN_FLD_C8_06059666(p_workArea workArea)
 {
     if ((mainGameState.bitField[0xA6] & 0x10) == 0)
@@ -528,7 +528,7 @@ static void FUN_FLD_C8_06059666(p_workArea workArea)
                 pTask->getTask()->m14_flags |= 1;
             }
 
-            // Check game state bit — if already triggered, kill task
+            // Check game state bit - if already triggered, kill task
             if (!pTask->m0_data.isNull())
             {
                 s32 bitIndex = readSaturnS32(pTask->m0_data + 0x1C);
@@ -541,7 +541,7 @@ static void FUN_FLD_C8_06059666(p_workArea workArea)
     }
     else
     {
-        // D4 variant — different subfield mapping
+        // D4 variant - different subfield mapping
         Unimplemented();
     }
 }
@@ -579,7 +579,7 @@ static p_workArea FUN_FLD_C8_0608120a(p_workArea workArea, s32 param)
 }
 
 
-// 0605b0a0 — vertical bounds check update
+// 0605b0a0 - vertical bounds check update
 static void FUN_FLD_C8_0605b0a0(s_C8_boundsCheckTask* pThis)
 {
     if ((mainGameState.bitField[0xA6] & 4) == 0)
@@ -624,7 +624,7 @@ static void FUN_FLD_C8_0605b0a0(s_C8_boundsCheckTask* pThis)
     adjustVerticalLimits(readSaturnS32(upper + 4), readSaturnS32(prev - 4));
 }
 
-// 0605b17c — create per-subfield vertical bounds check subtask
+// 0605b17c - create per-subfield vertical bounds check subtask
 static void FUN_FLD_C8_0605b17c(p_workArea workArea)
 {
     s_C8_boundsCheckTask* pTask = createSubTaskFromFunction<s_C8_boundsCheckTask>(workArea, &FUN_FLD_C8_0605b0a0);
@@ -642,10 +642,10 @@ static void FUN_FLD_C8_0605b17c(p_workArea workArea)
     }
 }
 
-// 06085ee2 — create 0xF0 subtask under grid cell
+// 06085ee2 - create 0xF0 subtask under grid cell
 static void FUN_FLD_C8_06085ee2(sSaturnPtr dataEA)
 {
-    // 0607a48c — find grid cell for current position
+    // 0607a48c - find grid cell for current position
     Unimplemented(); // needs grid cell lookup + createSubTaskWithArg with task def at 060b7eac
 }
 
@@ -655,20 +655,20 @@ static void FUN_FLD_C8_06064d8c()
     FUN_FLD_C8_06085ee2(gFLD_C8->getSaturnPtr(0x060B4788));
 }
 
-// 0605b70a — zone collision update
+// 0605b70a - zone collision update
 static void FUN_FLD_C8_0605b70a(s_C8_zoneTask* pThis)
 {
     s32 cameraY = (s32)cameraProperties2.m0_position.m4_Y;
     s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
 
-    // 0605b65e — search zone table 0
+    // 0605b65e - search zone table 0
     {
         s32 idx = 0;
         while (readSaturnS32(pThis->m0_table0 + idx * 4) <= cameraY)
             idx++;
         pFieldData->mE0_zoneIndex0 = idx;
     }
-    // 0605b68a — search zone table 1
+    // 0605b68a - search zone table 1
     {
         s32 idx = 0;
         while (readSaturnS32(pThis->m4_table1 + idx * 4) <= cameraY)
@@ -677,7 +677,7 @@ static void FUN_FLD_C8_0605b70a(s_C8_zoneTask* pThis)
     }
 }
 
-// 0605b75c — create zone collision subtask
+// 0605b75c - create zone collision subtask
 static void FUN_FLD_C8_0605b75c(p_workArea workArea)
 {
     s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
@@ -730,7 +730,7 @@ static void fieldC8_0_startTasks(p_workArea workArea)
     FUN_FLD_C8_0605b75c(workArea);
 }
 
-// 0605f794 — create VDP2 task
+// 0605f794 - create VDP2 task
 static void createVdp2Task_C8_0(p_workArea workArea)
 {
     createC8Vdp2Task(workArea, gFLD_C8->getSaturnPtr(0x060b2d74));
@@ -841,7 +841,7 @@ void s_envObjectC8::Draw(s_envObjectC8* pThis)
     popMatrix();
 }
 
-// 0605b8fe — create environment object task from entry data
+// 0605b8fe - create environment object task from entry data
 static void createEnvObjectTask_C8(p_workArea gridCell, s_envObjectC8_arg* pArg)
 {
     createSubTaskWithArg<s_envObjectC8>(gridCell, pArg);
@@ -1114,7 +1114,7 @@ struct s_interactiveEntityC8 : public s_workAreaTemplateWithArg<s_interactiveEnt
 {
     s_memoryAreaOutput m0_memoryArea;
     sSaturnPtr m8_entryEA;
-    s_fieldLCSSubStruct mC_lcs; // 0x34 bytes on Saturn — m24_flags is mC_lcs.m18_diableFlags
+    s_fieldLCSSubStruct mC_lcs; // 0x34 bytes on Saturn - m24_flags is mC_lcs.m18_diableFlags
     s_3dModel m40_3dModel;
     sSaturnPtr m90_dataPtr;
     sSaturnPtr m94_tablePtr;
@@ -1137,7 +1137,7 @@ struct s_interactiveEntityC8 : public s_workAreaTemplateWithArg<s_interactiveEnt
     }
 };
 
-// 0605a0e4 — init 3D model with animation from entry data
+// 0605a0e4 - init 3D model with animation from entry data
 static void interactiveEntityC8_initModel(s_interactiveEntityC8* pThis)
 {
     s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
@@ -1159,7 +1159,7 @@ static void interactiveEntityC8_initModel(s_interactiveEntityC8* pThis)
     pThis->m9F_modelMode = 1;
 }
 
-// 0605a3a4 — increment animation counter
+// 0605a3a4 - increment animation counter
 static void interactiveEntityC8_tickCounter(s_interactiveEntityC8* pThis)
 {
     pThis->m9E_counter++;
@@ -1175,14 +1175,14 @@ static void interactiveEntityC8_tickCounter(s_interactiveEntityC8* pThis)
 }
 
 
-// 06072808 — check dialog condition
+// 06072808 - check dialog condition
 static s32 checkDialogCondition_C8(s32 param1, u32 param2)
 {
     Unimplemented();
     return 0;
 }
 
-// 0605db7e — LCS callback for tower creature (takes p_workArea, cast internally)
+// 0605db7e - LCS callback for tower creature (takes p_workArea, cast internally)
 static void towerCreatureC8_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
 {
     struct s_towerCreatureC8; // forward ref for pointer cast
@@ -1190,7 +1190,7 @@ static void towerCreatureC8_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
     Unimplemented(); // depends on triggerFieldDialog_C8 and creature data
 }
 
-// 06059ae0 — LCS callback for B4 entity (takes p_workArea, cast internally)
+// 06059ae0 - LCS callback for B4 entity (takes p_workArea, cast internally)
 static void entityC8_B4_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
 {
     if ((mainGameState.bitField[0xA6] & 0x10) == 0)
@@ -1213,7 +1213,7 @@ static void entityC8_B4_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
     startFieldScriptWithFlagCheck(0xB, 0x669);
 }
 
-// 0605a140 — LCS callback for interactive entity (opens door/elevator)
+// 0605a140 - LCS callback for interactive entity (opens door/elevator)
 static void interactiveEntityC8_lcsCallback(p_workArea pWorkArea, sLCSTarget*)
 {
     auto pThis = (s_interactiveEntityC8*)pWorkArea;
@@ -1353,7 +1353,7 @@ void s_interactiveEntityC8::Update(s_interactiveEntityC8* pThis)
             pThis->m40_3dModel.m30_pCurrentAnimation->m4_numFrames : 0;
         if (frame == numFrames - 1)
         {
-            // FUN_06020024 — frees VDP1 blocks for 3D model (no-op in C++, handled by destructors)
+            // FUN_06020024 - frees VDP1 blocks for 3D model (no-op in C++, handled by destructors)
             pThis->m9F_modelMode = 0;
             pThis->m9C_state = 1;
         }
@@ -1448,7 +1448,7 @@ static void createCellEntity_C8_0605a6e0(p_workArea gridCell, sSaturnPtr entryEA
     createInteractiveEntityC8(gridCell, &arg);
 }
 
-// 0605d6fc — linear search in array of 0x14-byte entries
+// 0605d6fc - linear search in array of 0x14-byte entries
 static s32 searchEntryArray(sSaturnPtr arrayEA, s32 key, s32 count)
 {
     for (s32 i = 0; i < count; i++)
@@ -1528,7 +1528,7 @@ struct s_towerCreatureC8 : public s_workAreaTemplateWithArg<s_towerCreatureC8, s
     }
 };
 
-// 0605d772 — read bone transform data from model hierarchy
+// 0605d772 - read bone transform data from model hierarchy
 static void towerCreatureC8_readBoneData(s_towerCreatureC8* pThis, s_towerCreatureC8_arg* pArg, sModelHierarchy* pNode, s32* pBoneIndex)
 {
     sSaturnPtr tablePtr = pArg->mC_tablePtr;
@@ -1563,7 +1563,7 @@ static void towerCreatureC8_readBoneData(s_towerCreatureC8* pThis, s_towerCreatu
     } while (true);
 }
 
-// 0605de64 — init 3D model with animation for tower creature
+// 0605de64 - init 3D model with animation for tower creature
 static void towerCreatureC8_initModel(s_towerCreatureC8* pThis)
 {
     s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
@@ -1583,7 +1583,7 @@ static void towerCreatureC8_initModel(s_towerCreatureC8* pThis)
     pThis->m1DC_flags |= 1;
 }
 
-// 0605e118 — Y rotation state machine
+// 0605e118 - Y rotation state machine
 static void towerCreatureC8_updateYRotation(s_towerCreatureC8* pThis)
 {
     pThis->m1BC_yRotation = fixedPoint((s32)pThis->m1BC_yRotation + (s32)pThis->m1C0_yRotSpeed);
@@ -1627,7 +1627,7 @@ static void towerCreatureC8_updateYRotation(s_towerCreatureC8* pThis)
     }
 }
 
-// 0605e222 — X rotation state machine
+// 0605e222 - X rotation state machine
 static void towerCreatureC8_updateXRotation(s_towerCreatureC8* pThis)
 {
     pThis->m1C4 = fixedPoint((s32)pThis->m1C4 + (s32)pThis->m1C8_xRotSpeed);
@@ -1671,7 +1671,7 @@ static void towerCreatureC8_updateXRotation(s_towerCreatureC8* pThis)
     }
 }
 
-// 0605e3c4 — draw sub-element bones (4 bones with individual transforms)
+// 0605e3c4 - draw sub-element bones (4 bones with individual transforms)
 static void towerCreatureC8_drawBones(s_towerCreatureC8* pThis)
 {
     s_fileBundle* pBundle = pThis->m0_memoryArea.m0_mainMemoryBundle;
@@ -1718,7 +1718,7 @@ void s_towerCreatureC8::Init(s_towerCreatureC8* pThis, s_towerCreatureC8_arg* pA
         towerCreatureC8_readBoneData(pThis, pArg, pHierarchy, &boneIndex);
     }
 
-    // 0607a55a — read position from entry data
+    // 0607a55a - read position from entry data
     readSaturnVec3Into(pThis->m8_entryEA + 4, &pThis->m40_position);
 
     // Init LCS sub-structure
@@ -1733,7 +1733,7 @@ void s_towerCreatureC8::Init(s_towerCreatureC8* pThis, s_towerCreatureC8_arg* pA
         u32 idx = (bitIndex > 999) ? bitIndex - 566 : (u32)bitIndex;
         if (!mainGameState.getBit566(idx))
         {
-            // 0605d830 — init animation sub-structures for wings
+            // 0605d830 - init animation sub-structures for wings
             Unimplemented(); // creates 9 trail subtasks via 0608a74e
             pThis->m1C8_xRotSpeed = fixedPoint(0xFFBBBBBC);
             pThis->m1DB_xRotSubState = 0;
@@ -1749,7 +1749,7 @@ void s_towerCreatureC8::Init(s_towerCreatureC8* pThis, s_towerCreatureC8_arg* pA
     }
 }
 
-// 0605dee8 — main 10-state machine
+// 0605dee8 - main 10-state machine
 static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
 {
     switch (pThis->m1D9_state)
@@ -1763,7 +1763,7 @@ static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
     case 1:
         pThis->mC_lcs.m18_diableFlags |= 1;
         towerCreatureC8_initModel(pThis);
-        Unimplemented(); // 0605d830 — init animation sub-structures (creates wing subtasks)
+        Unimplemented(); // 0605d830 - init animation sub-structures (creates wing subtasks)
         pThis->m1D9_state++;
         break;
     case 2:
@@ -1771,7 +1771,7 @@ static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
         s16 result = func3dModelSub0(&pThis->m4C_3dModel);
         if (result == 0)
         {
-            // FUN_06020024 — frees VDP1 blocks for 3D model (no-op in C++, handled by destructors)
+            // FUN_06020024 - frees VDP1 blocks for 3D model (no-op in C++, handled by destructors)
             pThis->m1DC_flags &= ~1;
             pThis->m1DB_xRotSubState = 1;
             pThis->m1D9_state++;
@@ -1779,7 +1779,7 @@ static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
         break;
     }
     case 3:
-        // 0606436e/06064444 — sound effect registration (needs field sound system at field_C + 0xD8)
+        // 0606436e/06064444 - sound effect registration (needs field sound system at field_C + 0xD8)
         pThis->m1DC_flags &= ~4;
         pThis->m1D0_velocity = fixedPoint(0);
         pThis->m1D9_state++;
@@ -1793,9 +1793,9 @@ static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
             break;
         if ((pThis->m1DC_flags & 4) == 0)
         {
-            // TODO: 0606436e/06064444 — sound effects (needs field sound system)
+            // TODO: 0606436e/06064444 - sound effects (needs field sound system)
             pThis->m1DC_flags |= 4;
-            // TODO: 0605dc7c — spawn particles (needs field particle system)
+            // TODO: 0605dc7c - spawn particles (needs field particle system)
             pThis->m1DA_yRotSubState = 1;
             pThis->m1D0_velocity = -pThis->m1D0_velocity;
             pThis->m1D0_velocity = fixedPoint((s32)pThis->m1D0_velocity - ((s32)pThis->m1D0_velocity >> 1));
@@ -1808,19 +1808,19 @@ static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
         break;
     case 5:
         pThis->mC_lcs.m18_diableFlags = 0;
-        // TODO: 060642fc — register effect (needs field effect system)
+        // TODO: 060642fc - register effect (needs field effect system)
         pThis->m1CC_xRotation = fixedPoint(0xFC888889);
         pThis->m1D9_state++;
         break;
     case 6:
-        // TODO: 0605dc7c — spawn particles type 2 (needs field particle system)
+        // TODO: 0605dc7c - spawn particles type 2 (needs field particle system)
         break;
     case 7:
         pThis->mC_lcs.m18_diableFlags |= 1;
         pThis->m1DA_yRotSubState = 3;
         pThis->m1DB_xRotSubState = 3;
         pThis->m1D0_velocity = fixedPoint(0x1E573);
-        // 0605d8ea — set animation flags on sub-structures
+        // 0605d8ea - set animation flags on sub-structures
         {
             u8* pAnimSub = pThis->m10C_animSubData;
             pAnimSub[0x19] |= 2;
@@ -1847,11 +1847,11 @@ static void towerCreatureC8_mainStateMachine(s_towerCreatureC8* pThis)
 
     if (pThis->m1D9_state > 2 && pThis->m1D9_state < 7)
     {
-        // TODO: 0605d916 — particle animation update (needs field particle system)
+        // TODO: 0605d916 - particle animation update (needs field particle system)
     }
 }
 
-// 06075bd8 — register entity with LCS targeting system
+// 06075bd8 - register entity with LCS targeting system
 static void registerWithLCS(s_fieldLCSSubStruct* pLCS)
 {
     s_LCSTask* pLCSTask = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
@@ -1900,7 +1900,7 @@ static void registerWithLCS(s_fieldLCSSubStruct* pLCS)
     }
 }
 
-// 0605b65e — search zone table 0 for Y position, returns zone index
+// 0605b65e - search zone table 0 for Y position, returns zone index
 static s32 searchZoneTable0(s32 posY)
 {
     s_C8_zoneTask* pZoneTask = (s_C8_zoneTask*)((s_fieldSpecificData_C8*)getFieldTaskPtr()->mC)->mDC_zoneCollision;
@@ -1913,7 +1913,7 @@ static s32 searchZoneTable0(s32 posY)
     return index;
 }
 
-// 0605b68a — search zone table 1 for Y position, returns zone index
+// 0605b68a - search zone table 1 for Y position, returns zone index
 static s32 searchZoneTable1(s32 posY)
 {
     s_C8_zoneTask* pZoneTask = (s_C8_zoneTask*)((s_fieldSpecificData_C8*)getFieldTaskPtr()->mC)->mDC_zoneCollision;
@@ -1926,7 +1926,7 @@ static s32 searchZoneTable1(s32 posY)
     return index;
 }
 
-// 0605b6b6 — check if entity is in same zone as current (table 0)
+// 0605b6b6 - check if entity is in same zone as current (table 0)
 static bool isInCurrentZone0(s_fieldLCSSubStruct* pLCS)
 {
     s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
@@ -1934,7 +1934,7 @@ static bool isInCurrentZone0(s_fieldLCSSubStruct* pLCS)
     return pFieldData->mE0_zoneIndex0 == searchZoneTable0(posY);
 }
 
-// 0605b6e0 — check if entity is in same zone as current (table 1)
+// 0605b6e0 - check if entity is in same zone as current (table 1)
 static bool isInCurrentZone1(s_fieldLCSSubStruct* pLCS)
 {
     s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
@@ -2019,7 +2019,7 @@ void s_towerCreatureC8::Draw(s_towerCreatureC8* pThis)
     popMatrix();
 }
 
-// 0605e362 — D4 alternate update: wait for bitfield then switch to normal update
+// 0605e362 - D4 alternate update: wait for bitfield then switch to normal update
 static void towerCreatureC8_UpdateD4(s_towerCreatureC8* pThis)
 {
     pThis->mC_lcs.m18_diableFlags |= 2;
@@ -2031,7 +2031,7 @@ static void towerCreatureC8_UpdateD4(s_towerCreatureC8* pThis)
     }
 }
 
-// 0605e550 — create tower creature task
+// 0605e550 - create tower creature task
 static void createTowerCreatureC8(p_workArea gridCell, s_towerCreatureC8_arg* pArg)
 {
     s_towerCreatureC8* pTask = createSubTaskWithArg<s_towerCreatureC8>(gridCell, pArg);
@@ -2066,7 +2066,7 @@ static void createCellEntity_C8_06055cd4(p_workArea gridCell, sSaturnPtr entryEA
     createSubTaskWithArg<s_staticDrawC8>(gridCell, &arg);
 }
 
-// 06059a9c — linear search in 0x10-stride entry array
+// 06059a9c - linear search in 0x10-stride entry array
 static s32 searchEntryArray16(s32 key, sSaturnPtr arrayEA, s32 count)
 {
     for (s32 i = 0; i < count; i++)
@@ -2141,7 +2141,7 @@ struct s_entityC8_B4 : public s_workAreaTemplateWithArg<s_entityC8_B4, s_entityC
     }
 };
 
-// 06059c38 — kill child env object task
+// 06059c38 - kill child env object task
 static void entityC8_B4_killChild(s_entityC8_B4* pThis)
 {
     if (pThis->m5C_childTask != nullptr)
@@ -2154,7 +2154,7 @@ static void entityC8_B4_killChild(s_entityC8_B4* pThis)
     }
 }
 
-// 06059d20 — init 3D model in idle/static state
+// 06059d20 - init 3D model in idle/static state
 static void entityC8_B4_initIdle(s_entityC8_B4* pThis)
 {
     entityC8_B4_killChild(pThis);
@@ -2175,7 +2175,7 @@ static void entityC8_B4_initIdle(s_entityC8_B4* pThis)
     func3dModelSub0(&pThis->mC_3dModel);
 }
 
-// 06059d74 — activate entity (start animation)
+// 06059d74 - activate entity (start animation)
 static void entityC8_B4_activate(s_entityC8_B4* pThis)
 {
     entityC8_B4_killChild(pThis);
@@ -2200,7 +2200,7 @@ static void entityC8_B4_activate(s_entityC8_B4* pThis)
     pThis->m78_flags |= 1;
 }
 
-// 06059c88 — normal mode init (creates child env object + LCS collision)
+// 06059c88 - normal mode init (creates child env object + LCS collision)
 static void entityC8_B4_initNormal(s_entityC8_B4* pThis, s_entityC8_B4_arg* pArg)
 {
     entityC8_B4_killChild(pThis);
@@ -2233,7 +2233,7 @@ static void entityC8_B4_initNormal(s_entityC8_B4* pThis, s_entityC8_B4_arg* pArg
     pThis->m78_flags = 0;
 }
 
-// 06059f60 — alternate update (idle animation only)
+// 06059f60 - alternate update (idle animation only)
 static void entityC8_B4_updateAlt(s_entityC8_B4* pThis)
 {
     func3dModelSub0(&pThis->mC_3dModel);
@@ -2389,7 +2389,7 @@ static void createCellEntity_C8_0605a720(p_workArea gridCell, sSaturnPtr entryEA
     createInteractiveEntityC8(gridCell, &arg);
 }
 
-// 06079dfe — dispatch per-cell entity creation from function pointer list
+// 06079dfe - dispatch per-cell entity creation from function pointer list
 static void dispatchCellEntities_C8(p_workArea gridCell, sSaturnPtr cellDataEA, s32 value)
 {
     sSaturnPtr entry = cellDataEA;
@@ -2426,7 +2426,7 @@ static void dispatchCellEntities_C8(p_workArea gridCell, sSaturnPtr cellDataEA, 
     }
 }
 
-// 06079e26 — setup field with data tables and per-cell visibility registration
+// 06079e26 - setup field with data tables and per-cell visibility registration
 void setupFieldC8(sSaturnPtr dataTable3EA, sSaturnPtr visibilityEA, void(*createFunc)(p_workArea))
 {
     s_DataTable3* pDT3 = readDataTable3(dataTable3EA);
@@ -2448,33 +2448,33 @@ void setupFieldC8(sSaturnPtr dataTable3EA, sSaturnPtr visibilityEA, void(*create
             sSaturnPtr cellDataEA = readSaturnEA(ptrArray + i * 4);
             if (!cellDataEA.isNull())
             {
-                // 06079dfe — iterate function pointer list for this cell
+                // 06079dfe - iterate function pointer list for this cell
                 dispatchCellEntities_C8(pGrid->m3C_cellRenderingTasks[i], cellDataEA, value);
             }
         }
     }
 }
 
-// 06055bb4 — camera config
+// 06055bb4 - camera config
 static void setupCameraConfig_C8_0()
 {
     setupFieldCameraConfigs(readCameraConfig(gFLD_C8->getSaturnPtr(0x0608AF64)), 1);
 }
 
-// 06078784 — tower clipping: always visible (returns 0)
+// 06078784 - tower clipping: always visible (returns 0)
 static s32 clipCheck_C8_alwaysVisible(const sVec3_FP* r4, s32 r5)
 {
     return 0;
 }
 
-// 0606a5c2 — get camera view matrix
-// 06078a26 — set clipping function on visibility grid
+// 0606a5c2 - get camera view matrix
+// 06078a26 - set clipping function on visibility grid
 static void setClipFunction_C8()
 {
     getFieldTaskPtr()->m8_pSubFieldData->m348_pFieldCameraTask1->m12FC_isObjectClipped = clipCheck_C8_alwaysVisible;
 }
 
-// 06054210 — clip distances and overlay init
+// 06054210 - clip distances and overlay init
 static void initClipAndOverlay_C8(p_workArea workArea)
 {
     graphicEngineStatus.m405C.m10_nearClipDistance = 0x3000;
@@ -2487,7 +2487,7 @@ static void initClipAndOverlay_C8(p_workArea workArea)
     fieldRadar_setEncounterDistance(fixedPoint(0x12C000));
 }
 
-// 06057f1a — set field-specific data flags
+// 06057f1a - set field-specific data flags
 static void setFieldDataFlags_C8()
 {
     s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
@@ -2498,10 +2498,10 @@ static void setFieldDataFlags_C8()
     }
 }
 
-// 0605cbec — empty function
+// 0605cbec - empty function
 static void emptyFunc_C8() {}
 
-// 0605e678 — push dragon away from tower center if too close
+// 0605e678 - push dragon away from tower center if too close
 static void dragonTowerPushback(s_dragonTaskWorkArea* pDragon, sSaturnPtr towerCenterEA, fixedPoint minDistance)
 {
     sVec3_FP towerCenter;
@@ -2533,13 +2533,13 @@ static void dragonTowerPushback(s_dragonTaskWorkArea* pDragon, sSaturnPtr towerC
     pDragon->m3C_targetAngles[0] = pDragon->m20_angle[0]; // only pitch target, NOT yaw/roll
 }
 
-// 0605e7be — tower-specific dragon update
+// 0605e7be - tower-specific dragon update
 static void dragonUpdateC8(s_dragonTaskWorkArea* pDragon)
 {
     dragonTowerPushback(pDragon, gFLD_C8->getSaturnPtr(0x060B29B4), 0xA1000);
 }
 
-// 0607d684 — setupDragonPosition from Saturn data
+// 0607d684 - setupDragonPosition from Saturn data
 static void setupDragonPositionFromSaturn(sSaturnPtr posEA, sSaturnPtr rotEA)
 {
     sVec3_FP pos = { readSaturnS32(posEA), readSaturnS32(posEA + 4), readSaturnS32(posEA + 8) };
@@ -2547,7 +2547,7 @@ static void setupDragonPositionFromSaturn(sSaturnPtr posEA, sSaturnPtr rotEA)
     setupDragonPosition(&pos, &rot);
 }
 
-// 060542e6 — cutscene start based on entry point
+// 060542e6 - cutscene start based on entry point
 static void startCutsceneFromEntryPoint_C8(sSaturnPtr data)
 {
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
@@ -2593,7 +2593,7 @@ static void startCutsceneFromEntryPoint_C8(sSaturnPtr data)
     FUN_FLD_C8_0605cb58(pGrid->m38, &camArg);
 }
 
-// 0607baa0 — random battle init
+// 0607baa0 - random battle init
 static void initRandomBattle_C8(s32 scriptIndex)
 {
     fieldRadar_initRandomBattle(scriptIndex);

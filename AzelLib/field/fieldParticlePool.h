@@ -12,7 +12,7 @@ struct sParticleSlot
     void* m20_heapData;   // 0x20
     s32(*m24_updateFunc)(sParticleSlot*);
     void(*m28_drawFunc)(sParticleSlot*);
-    sAnimatedQuad m2C_animQuad; // 0x2C — size 8
+    sAnimatedQuad m2C_animQuad; // 0x2C - size 8
     // size 0x34
 };
 

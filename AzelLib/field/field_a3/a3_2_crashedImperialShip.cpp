@@ -13,7 +13,7 @@
 #include "field/fieldParticlePool.h"
 #include "field/fieldVisibilityGrid.h"
 
-// 06059584 — random ambient sound at crashed ship position
+// 06059584 - random ambient sound at crashed ship position
 struct sCrashedShipAmbientSound : public s_workAreaTemplate<sCrashedShipAmbientSound>
 {
     static void Update(sCrashedShipAmbientSound* pThis)
@@ -41,7 +41,7 @@ void createCrashedShipAmbientSoundTask(p_workArea parent, sVec3_FP* position)
     }
 }
 
-// 0605A046 — periodic explosion particle spawner on the crashed ship
+// 0605A046 - periodic explosion particle spawner on the crashed ship
 struct sCrashedShipExplosionSpawner : public s_workAreaTemplate<sCrashedShipExplosionSpawner>
 {
     static void Update(sCrashedShipExplosionSpawner* pThis)
@@ -107,7 +107,7 @@ void createCrashedShipExplosionSpawner(p_workArea parent)
     }
 }
 
-// 06059e44 — spawn explosion particles at a position
+// 06059e44 - spawn explosion particles at a position
 static void spawnCrashedShipExplosion(sVec3_FP* position)
 {
     sVec3_FP velocity = { 0, 0, 0 };
@@ -311,7 +311,7 @@ struct fieldA3_2_crashedImpertialShip2 : public s_workAreaTemplate<fieldA3_2_cra
     // size 0x84
 };
 
-// 06059be0 — smoke/steam particle spawner for the second crashed ship piece
+// 06059be0 - smoke/steam particle spawner for the second crashed ship piece
 struct sCrashedShip2SmokeSpawner : public s_workAreaTemplate<sCrashedShip2SmokeSpawner>
 {
     static void Update(sCrashedShip2SmokeSpawner* pThis)

@@ -1,6 +1,6 @@
 #pragma once
 
-// Beam spark effect — shared across all field overlays.
+// Beam spark effect - shared across all field overlays.
 // A short-lived VDP1 spark particle with position, velocity, color fade.
 
 struct sBeamSparkArg

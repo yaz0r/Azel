@@ -170,12 +170,12 @@ void BTL_A3_UrchinFormation_Update_Mode0(BTL_A3_UrchinFormation* pThis)
 
                 if (pEnemyEntry->m24_beamHitAttackData)
                 {
-                    // bVar3 flag — handled after loop (same as Init)
+                    // bVar3 flag - handled after loop (same as Init)
                 }
 
                 if (pEnemyEntry->m2)
                 {
-                    // bVar2 flag — handled after loop
+                    // bVar2 flag - handled after loop
                 }
             }
         }
@@ -349,7 +349,7 @@ bool BTL_A3_UrchinFormation_Update_Mode1Sub2(BTL_A3_UrchinFormation* pThis)
             {
                 if (animData.m14_quadrantFlags[quadrant])
                 {
-                    // Quadrant attack counter threshold reached → advance to next attack anim
+                    // Quadrant attack counter threshold reached -> advance to next attack anim
                     s8& counter = pThis->m8_quadrantAttackCounters[typeIndex][quadrant];
                     counter++;
                     if (counter >= animData.m14_quadrantFlags[quadrant])
@@ -603,7 +603,7 @@ void BTL_A3_UrchinFormation_Update_Mode1(BTL_A3_UrchinFormation* pThis)
     pThis->m2_subState = 1;
 }
 
-// 0607897a — melee/physical attack execution (types 2,3,6,7)
+// 0607897a - melee/physical attack execution (types 2,3,6,7)
 static void urchinFormation_executeAttack(BTL_A3_UrchinFormation* pThis)
 {
     sAttackCommand* pAttack = pThis->m18.m0_currentAttack;
@@ -690,7 +690,7 @@ static void urchinFormation_executeAttack(BTL_A3_UrchinFormation* pThis)
                 }
             }
 
-            // All dispatched — clear beam hit flags if needed
+            // All dispatched - clear beam hit flags if needed
             if (pThis->m6_attackFlag != 0)
             {
                 for (int i = 0; i < pThis->m3_formationSize; i++)
@@ -1198,7 +1198,7 @@ static void urchinFormation_createImpactEffect(BTL_A3_UrchinFormation* pThis, sP
     }
 }
 
-// 06078b96 — ranged/beam attack execution (type 5)
+// 06078b96 - ranged/beam attack execution (type 5)
 static void urchinFormation_executeRangedAttack(BTL_A3_UrchinFormation* pThis)
 {
     sAttackCommand* pAttack = pThis->m18.m0_currentAttack;
@@ -1346,7 +1346,7 @@ void BTL_A3_UrchinFormation_Update_Mode2(BTL_A3_UrchinFormation* pThis)
 
     if (subState == 0x1E)
     {
-        // Attack animation finished — clear flags and process post-attack effects
+        // Attack animation finished - clear flags and process post-attack effects
         for (int i = 0; i < pThis->m3_formationSize; i++)
         {
             pThis->m18.m14[i].m19_attackFlags &= ~1;
@@ -1372,7 +1372,7 @@ void BTL_A3_UrchinFormation_Update_Mode2(BTL_A3_UrchinFormation* pThis)
     }
     else if (subState == 0x1F)
     {
-        // Post-attack with special effect — wait for intro, then process flags
+        // Post-attack with special effect - wait for intro, then process flags
         if (!battleEngine_isBattleIntroFinished())
             return;
         if (pThis->m18.m0_currentAttack->m9_flags & 0x38)
@@ -1514,7 +1514,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x1B])
     {
-        // Debug: force specific attack — not implemented
+        // Debug: force specific attack - not implemented
     }
 
     gBattleManager->m10_battleOverlay->m4_battleEngine->m3B2_numBattleFormationRunning++;
@@ -1559,7 +1559,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
                 {
                     if (pThis->m30_config->m1C)
                     {
-                        // Special formation with m1C set — create pending task
+                        // Special formation with m1C set - create pending task
                         Unimplemented(); // calls config->m1C as Saturn function pointer; never reached (all formations have m1C=0)
                     }
                     pThis->m2_subState++;
@@ -1637,7 +1637,7 @@ void BTL_A3_UrchinFormation_Update(BTL_A3_UrchinFormation* pThis)
         BTL_A3_UrchinFormation_Update_Mode2(pThis);
         break;
     case 3:
-        // Death state — all enemies dead, waiting for cleanup
+        // Death state - all enemies dead, waiting for cleanup
         break;
     default:
         break;

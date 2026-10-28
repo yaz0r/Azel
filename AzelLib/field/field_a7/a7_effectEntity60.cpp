@@ -29,7 +29,7 @@ static const s32 kAngleBOffsets[4]   = { 0, 0x4000000, 0xC000000, 0x2000000 };
 static const s32 kCenterX[4] = { 0xA00000, 0xA00000, 0xB00000, 0x900000 };
 static const s32 kCenterZ[4] = { -0xB00000, -0xB00000, -0xA00000, -0xA00000 };
 // Note: Z signs are negative because the negation applies differently per slot
-// Slot 0: X=+0xA00000, Z=-0xB00000 (sin result subtracted from base → +sin+base = base-(-sin))
+// Slot 0: X=+0xA00000, Z=-0xB00000 (sin result subtracted from base -> +sin+base = base-(-sin))
 // The Ghidra code shows: slot0 Z = sinA*0x100000 + sinB*fade*0x28000 + (-0xB00000)
 
 // 0605E126

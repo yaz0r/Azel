@@ -49,7 +49,7 @@ struct sCampDragon : public sTownDragon
 };
 
 
-// 06054af8 — camp-specific: populate mE0 pairs AND mF8 collision bodies
+// 06054af8 - camp-specific: populate mE0 pairs AND mF8 collision bodies
 void initCampDragonHotpoints(sCampDragon* pThis) {
     s_3dModel& model = gDragonState->m28_dragon3dModel;
     if (!model.m40) return;

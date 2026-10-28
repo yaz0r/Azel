@@ -86,7 +86,7 @@ static void debrisInitBones(sDebrisBone* bones, s_3dModel* model, sModelHierarch
     }
 }
 
-// 060364ac — extract Euler rotation from current matrix
+// 060364ac - extract Euler rotation from current matrix
 // Simplified: returns zero rotation (exact implementation requires atan2 decomposition)
 void extractRotationFromMatrix(sVec3_FP* output)
 {
@@ -286,7 +286,7 @@ static void debrisInitBonesZeroRotation(sDebrisBone* bones, s_3dModel* model, sM
             bone->m4_position[0] = pCurrentMatrix->m[0][3];
             bone->m4_position[1] = pCurrentMatrix->m[1][3];
             bone->m4_position[2] = pCurrentMatrix->m[2][3];
-            extractRotationFromMatrix(&bone->m1C_rotation); // 060364ac — zeroes rotation
+            extractRotationFromMatrix(&bone->m1C_rotation); // 060364ac - zeroes rotation
         }
 
         (*boneIndex)++;

@@ -9,20 +9,20 @@
 // draw=0605e9d6, delete=0605ea46}.
 struct sA7DialogChoiceTask : public s_workAreaTemplate<sA7DialogChoiceTask>
 {
-    p_workArea m0_parent;             // 0x00 — paused parent workArea
-    u32        m4_dialogScriptEA;     // 0x04 — Saturn EA: current script cursor
-    u32        m8_drawnNameEA;        // 0x08 — Saturn EA of last parsed name string
-    u8         mC_drawSubState;       // 0x0C — draw-side state (0 = parse, 1 = draw)
-    u8         mD_state;              // 0x0D — input/wait countdown
+    p_workArea m0_parent;             // 0x00 - paused parent workArea
+    u32        m4_dialogScriptEA;     // 0x04 - Saturn EA: current script cursor
+    u32        m8_drawnNameEA;        // 0x08 - Saturn EA of last parsed name string
+    u8         mC_drawSubState;       // 0x0C - draw-side state (0 = parse, 1 = draw)
+    u8         mD_state;              // 0x0D - input/wait countdown
     u8         mE_pad[2];              // 0x0E..0x0F
     // size 0x10
 };
 
-// 0605eab0 — pull the next opcode from the choice script and act on it.
-//   0x01      → terminate (mD_state = 0, returns 0)
-//   0x15 ptr  → 4-byte aligned name pointer (mD_state = 0, returns name EA)
-//   0x18      → pause for 10 frames, switch to dialog HUD slot 3 (returns 0)
-//   default   → mD_state = 0, returns 0
+// 0605eab0 - pull the next opcode from the choice script and act on it.
+//   0x01      -> terminate (mD_state = 0, returns 0)
+//   0x15 ptr  -> 4-byte aligned name pointer (mD_state = 0, returns name EA)
+//   0x18      -> pause for 10 frames, switch to dialog HUD slot 3 (returns 0)
+//   default   -> mD_state = 0, returns 0
 static u32 a7DialogChoiceScriptStep_0605eab0(sA7DialogChoiceTask* pThis)
 {
     sSaturnPtr cursor = gFLD_A7->getSaturnPtr(pThis->m4_dialogScriptEA);
@@ -63,7 +63,7 @@ static void a7DialogChoiceSetupTextArea_0605eb2e()
     clearVdp2TextArea();
 }
 
-// 0605eaf6 — render the parsed name into the dialog text area.
+// 0605eaf6 - render the parsed name into the dialog text area.
 static bool a7DialogChoiceRenderName_0605eaf6(sA7DialogChoiceTask* pThis)
 {
     vdp2StringContext.m1C = vdp2StringContext.m0;

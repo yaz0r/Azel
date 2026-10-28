@@ -15,7 +15,7 @@ struct sA5SceneryEntity : public s_workAreaTemplate<sA5SceneryEntity>
     s_memoryAreaOutput m0_memoryArea;          // 0x00
     sVec3_FP           m8_position;            // 0x08
     sVec3_FP           m14_rotation;           // 0x14
-    s32                m20_triggerState;        // 0x20 — 0 = idle, 1 = triggered by callback
+    s32                m20_triggerState;        // 0x20 - 0 = idle, 1 = triggered by callback
     sFieldModelRenderContext m24_modelCtx;      // 0x24
     // Saturn size 0x58
 };
@@ -56,7 +56,7 @@ static void a5SceneryEntity_setupParticles(sA5SceneryEntity* pThis)
     a5SceneryEntity_setupParticlesSub(pThis, gFLD_A5->getSaturnPtr(0x06098ff0));
 }
 
-// 0605ec0a — render context callback. Sets visibility and triggers
+// 0605ec0a - render context callback. Sets visibility and triggers
 // the effect on the next update frame.
 static void a5SceneryEntity_contextCallback(sA5SceneryEntity* pThis)
 {
@@ -64,7 +64,7 @@ static void a5SceneryEntity_contextCallback(sA5SceneryEntity* pThis)
     pThis->m20_triggerState = 1;
 }
 
-// 0605ebd0 — update: runs the model render context, and when the
+// 0605ebd0 - update: runs the model render context, and when the
 // callback has set m20 to 1, dispatches the trigger effect.
 static void a5SceneryEntity_Update(sA5SceneryEntity* pThis)
 {
@@ -76,7 +76,7 @@ static void a5SceneryEntity_Update(sA5SceneryEntity* pThis)
     }
 }
 
-// 0605ec60 — create the scenery entity for subfield 9.
+// 0605ec60 - create the scenery entity for subfield 9.
 p_workArea createA5_sceneryEntity(p_workArea parent)
 {
     sA5SceneryEntity* pThis = createSubTaskFromFunction<sA5SceneryEntity>(parent, &a5SceneryEntity_Update);

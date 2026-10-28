@@ -7,7 +7,7 @@
 #include "town/camp/campDragon.h"
 #include "town/exca/twn_exca.h"
 
-// 060541f2 — populate mE0 hotpoint pairs from dragon model (shared across all town overlays)
+// 060541f2 - populate mE0 hotpoint pairs from dragon model (shared across all town overlays)
 void initDragonHotpoints(sTownDragon* pThis) {
     s_3dModel& model = gDragonState->m28_dragon3dModel;
     if (!model.m40) return;
@@ -78,7 +78,7 @@ void initDragonForTown(sTownDragon* pThis)
             reinitModel(&gDragonState->m28_dragon3dModel, readRiderDefinitionSub(readSaturnEA(gCurrentTownOverlay->getSaturnPtr(0x6064608 + gDragonState->mC_dragonType * 0x1C))));
         }
         else if (gCurrentTownOverlay->m_name == "TWN_E006.PRG") {
-            // E006 is a sub-scene of excavation — on Saturn it shared EXCA's memory space.
+            // E006 is a sub-scene of excavation - on Saturn it shared EXCA's memory space.
             // Use the persisted EXCA overlay data for dragon script/hotpoint addresses.
             sSaturnMemoryFile* excaData = getExcaOverlayData();
             pThis->m20_scriptEA = readSaturnEA(excaData->getSaturnPtr(0x606471C) + gDragonState->mC_dragonType * 4);

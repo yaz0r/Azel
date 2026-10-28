@@ -44,7 +44,7 @@ struct s_skyTransporterSegment : public s_workAreaTemplate<s_skyTransporterSegme
     // size 0x68
 };
 
-// 0605c650 — look up a bit index from the classification table at 06086260
+// 0605c650 - look up a bit index from the classification table at 06086260
 // and return the tested bit from mainGameState.bitField.
 static s32 skyTransporterSegment_classify_0605c650(s32 index)
 {
@@ -53,7 +53,7 @@ static s32 skyTransporterSegment_classify_0605c650(s32 index)
     return (s32)(s8)(bitMasks[adjusted & 7] & mainGameState.bitField[adjusted >> 3]);
 }
 
-// 0605c828 — compute 2D velocity aimed toward anchor (0x5FFFFF, _, -0x5FFFFF)
+// 0605c828 - compute 2D velocity aimed toward anchor (0x5FFFFF, _, -0x5FFFFF)
 static void skyTransporterSegment_aimAtAnchor_0605c828(s_skyTransporterSegment* pThis)
 {
     s32 dx =  0x5FFFFF - pThis->mC_pos.m0_X.m_value;
@@ -73,7 +73,7 @@ static void skyTransporterSegment_aimAtAnchor_0605c828(s_skyTransporterSegment* 
     pThis->m2C_counter = FP_Div(0x2F68, len).m_value;
 }
 
-// 0605c8dc — copy seed pos from pData, aim velocity at anchor, fast-forward
+// 0605c8dc - copy seed pos from pData, aim velocity at anchor, fast-forward
 // position by velocity until the counter drops into the final 0x1E window.
 static void skyTransporterSegment_flipVelocity_0605c8dc(s_skyTransporterSegment* pThis)
 {
@@ -88,7 +88,7 @@ static void skyTransporterSegment_flipVelocity_0605c8dc(s_skyTransporterSegment*
     } while (i > 0x1E);
 }
 
-// 0605c918 — per-frame orbital update around the anchor (0x5FFFFF, _, -0x5FFFFF)
+// 0605c918 - per-frame orbital update around the anchor (0x5FFFFF, _, -0x5FFFFF)
 static void skyTransporterSegment_perFrame_0605c918(s_skyTransporterSegment* pThis)
 {
     s_fieldSpecificData_A7* pFieldData = getFieldSpecificData_A7();
@@ -98,7 +98,7 @@ static void skyTransporterSegment_perFrame_0605c918(s_skyTransporterSegment* pTh
     pThis->mC_pos.m8_Z = fixedPoint(MTH_Mul(fixedPoint(pThis->m24_radius), -getCos(idx)).m_value - 0x5FFFFF);
 }
 
-// 0605cdcc — spawn a trail particle at a jittered forward offset from pPos
+// 0605cdcc - spawn a trail particle at a jittered forward offset from pPos
 static void skyTransporterSegment_spawnTrail_0605cdcc(s_skyTransporterSegment* /*pThis*/, sVec3_FP* pPos, sVec3_FP* pVel, s32 radius)
 {
     s32 angle = atan2_FP(pVel->m0_X.asS32(), pVel->m8_Z.asS32());
@@ -123,7 +123,7 @@ static void skyTransporterSegment_spawnTrail_0605cdcc(s_skyTransporterSegment* /
     spawnParticleProjected(pManager, &desc, &pos, &vel);
 }
 
-// 0605c686 — set or clear a mainGameState bit for the classification-table
+// 0605c686 - set or clear a mainGameState bit for the classification-table
 // index. Uses the same table (06086260) as skyTransporterSegment_classify_0605c650.
 static void skyTransporterSegment_stateAction_0605c686(s32 index, s32 set)
 {
@@ -139,7 +139,7 @@ static void skyTransporterSegment_stateAction_0605c686(s32 index, s32 set)
     }
 }
 
-// 060658c6 — copy 9-dword camera waypoint entries (0-terminated) from src to dst
+// 060658c6 - copy 9-dword camera waypoint entries (0-terminated) from src to dst
 static void copyCameraWaypoints(const s32* pSrc, s32* pDst)
 {
     if (pSrc == nullptr) return;
@@ -153,7 +153,7 @@ static void copyCameraWaypoints(const s32* pSrc, s32* pDst)
     *pDst = *pSrc; // copy terminator
 }
 
-// 06066404 — copy camera waypoints and adjust Y positions by height offset
+// 06066404 - copy camera waypoints and adjust Y positions by height offset
 static void loadCameraWaypointsWithYOffset(const s32* pSrc, s32* pDst, s32 yOffset)
 {
     copyCameraWaypoints(pSrc, pDst);
@@ -164,14 +164,14 @@ static void loadCameraWaypointsWithYOffset(const s32* pSrc, s32* pDst, s32 yOffs
     }
 }
 
-// 06069106 — start cutscene camera with waypoint data
+// 06069106 - start cutscene camera with waypoint data
 static void startCutsceneCameraFromWaypoints(s_skyTransporterSegment* pThis,
     s32* pWaypointSrc, s32 param3, sVec3_FP* pPos, s32 param5)
 {
     Unimplemented(); // complex cutscene task creation
 }
 
-// 0605c9b4 — render context callback: triggered when the sky transporter segment comes into view.
+// 0605c9b4 - render context callback: triggered when the sky transporter segment comes into view.
 static void skyTransporterSegment_contextCallback_0605c9b4(s_skyTransporterSegment* pThis)
 {
     pThis->m30_modelCtx.m18_visibilityFlags |= 1;
@@ -213,7 +213,7 @@ skipCutscene:
     pThis->m64_state = 4;
 }
 
-// 0605cac0 — update state machine
+// 0605cac0 - update state machine
 static void skyTransporterSegment_Update(s_skyTransporterSegment* pThis)
 {
     s_DataTable2Sub0* pData = pThis->m8_pData;
@@ -271,7 +271,7 @@ static void skyTransporterSegment_Update(s_skyTransporterSegment* pThis)
         break;
 
     case 3:
-        // Stall state — waits for an external bump of m64_state.
+        // Stall state - waits for an external bump of m64_state.
         break;
 
     case 4:
@@ -323,7 +323,7 @@ static void skyTransporterSegment_Update(s_skyTransporterSegment* pThis)
     updateFieldModelRenderContext(&pThis->m30_modelCtx);
 }
 
-// 0605c96e — draw
+// 0605c96e - draw
 static void skyTransporterSegment_Draw(s_skyTransporterSegment* pThis)
 {
     if (pThis->m65_visible != 0)

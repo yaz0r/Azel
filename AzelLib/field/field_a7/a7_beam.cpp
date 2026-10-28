@@ -7,24 +7,24 @@
 
 struct sA7Beam : public s_workAreaTemplateWithArg<sA7Beam, sA7BeamArg*>
 {
-    s_memoryAreaOutput   m0_memoryArea;      // 0x00..0x07 — bundle + VDP1 character area
-    sVec3_FP             m8_ring[21];        // 0x08..0x103 — ring buffer, m8_ring[0] is also the position
+    s_memoryAreaOutput   m0_memoryArea;      // 0x00..0x07 - bundle + VDP1 character area
+    sVec3_FP             m8_ring[21];        // 0x08..0x103 - ring buffer, m8_ring[0] is also the position
     s32                  m104_progress;      // 0x104
     s32                  m108_stepDelta;     // 0x108
     u32                  m10C_paramA;        // 0x10C
     u32                  m110_paramB;        // 0x110
-    u32                  m114_paramC;        // 0x114 — Saturn EA: u16 sprite char table
-    u32                  m118_paramD;        // 0x118 — Saturn EA: u16 sprite size table
-    sFieldSplineAlloc m11C_alloc;          // 0x11C — 32 bytes
+    u32                  m114_paramC;        // 0x114 - Saturn EA: u16 sprite char table
+    u32                  m118_paramD;        // 0x118 - Saturn EA: u16 sprite size table
+    sFieldSplineAlloc m11C_alloc;          // 0x11C - 32 bytes
     u16                  m13C_frameCounter;  // 0x13C
     u8                   m13E_head;          // 0x13E
     u8                   m13F_tail;          // 0x13F
-    u8                   m140_flags;         // 0x140 — bit 0: use tail sprite slot 2 instead of 1
+    u8                   m140_flags;         // 0x140 - bit 0: use tail sprite slot 2 instead of 1
     u8                   m141_pad[3];        // 0x141..0x143
     // size 0x144
 };
 
-// 060553bc — state-init: populates the 6-entry srcX/Y/Z keyframe arrays
+// 060553bc - state-init: populates the 6-entry srcX/Y/Z keyframe arrays
 static void a7Beam_stateInit_060553bc(sA7Beam* pThis, s8 stateIndex)
 {
     s32* pX = pThis->m11C_alloc.m8_srcX;
@@ -56,7 +56,7 @@ static void a7Beam_stateInit_060553bc(sA7Beam* pThis, s8 stateIndex)
     }
 }
 
-// 060557e8 — beam wind-down: advance tail until it catches head, then kill the task
+// 060557e8 - beam wind-down: advance tail until it catches head, then kill the task
 static void a7Beam_UpdateFade_060557e8(sA7Beam* pThis)
 {
     pThis->m13F_tail = (u8)performModulo(0x15, (u32)pThis->m13F_tail + 1);
@@ -77,7 +77,7 @@ static void a7Beam_spawnParticle_trampoline(sA7Beam* pThis, sVec3_FP* pSlot, u16
     a7BeamChargeWobble_spawn_0605533c((p_workArea)pThis, pSlot, fixedPoint((s32)rndSeed), &desc);
 }
 
-// 06055704 — trail update: spawns sub-fx and advances the ring buffer
+// 06055704 - trail update: spawns sub-fx and advances the ring buffer
 static void a7Beam_Update_06055704(sA7Beam* pThis)
 {
     pThis->m13C_frameCounter += 1;
@@ -112,7 +112,7 @@ static void a7Beam_Update_06055704(sA7Beam* pThis)
     }
 }
 
-// 06055848 — trail draw: walks the ring backward from head to tail.
+// 06055848 - trail draw: walks the ring backward from head to tail.
 //
 // Saturn constants (pool @ FLD_A7::0605590a):
 //   width     = 0x2800
@@ -171,14 +171,14 @@ static void a7Beam_Draw_06055848(sA7Beam* pThis)
             if (idx < 0) idx += 21;
         }
         segment[0] = segment[1];
-        segment[1] = ring[idx]; // ring[tail] — final reload, matches Saturn
+        segment[1] = ring[idx]; // ring[tail] - final reload, matches Saturn
         u16 cmdsrca, cmdsize;
         fetchSpriteParams((pThis->m140_flags & 1) ? 4 : 2, cmdsrca, cmdsize);
         displayRaySegmentFromWorldSpace(segment, width, cmdsrca, cmdsize, cmdcolr, colorMode);
     }
 }
 
-// 0605565c — trail init (task definition at 060843e0, size 0x144)
+// 0605565c - trail init (task definition at 060843e0, size 0x144)
 static void a7Beam_Init_0605565c(sA7Beam* pThis, sA7BeamArg* pArg)
 {
     // Saturn's createSiblingTaskWithArg (FUN_06031118) calls `copyTask`
@@ -211,7 +211,7 @@ static void a7Beam_Init_0605565c(sA7Beam* pThis, sA7BeamArg* pArg)
     fieldSpline_finalize(&pThis->m11C_alloc);
 }
 
-// 06055a38 — creator wrapper: task definition @ 060843e0, size 0x144
+// 06055a38 - creator wrapper: task definition @ 060843e0, size 0x144
 void a7BeamEmitter_spawnBeam_06055a38(p_workArea parent, sA7BeamArg* pArg)
 {
     static const sA7Beam::TypedTaskDefinition definition = {

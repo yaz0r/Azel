@@ -71,7 +71,7 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     sVec3_FP m14_oldPos; // 14
     sVec3_FP m20_angle; // 20-24-28
     fixedPoint m2C_savedPitch;
-    fixedPoint m30; // saved yaw — updated each frame, used as neutral yaw for roll banking
+    fixedPoint m30; // saved yaw - updated each frame, used as neutral yaw for roll banking
     fixedPoint m34_savedRoll;
     fixedPoint m38_distanceAccum;
     sVec3_FP m3C_targetAngles; // smoothing targets for pitch[0], yaw[1], roll[2]
@@ -90,8 +90,8 @@ struct s_dragonTaskWorkArea : s_workAreaTemplateWithArg<s_dragonTaskWorkArea, s3
     s_RGB8 mD1_falloffColor2;
     s_RGB8 mD4;
     u8 mD7_pad;
-    sVec3_FP mD8_sparklePosition; // D8 — light sparkle position in camera space
-    fixedPoint mE4_sparkleScale; // E4 — light sparkle intensity scale
+    sVec3_FP mD8_sparklePosition; // D8 - light sparkle position in camera space
+    fixedPoint mE4_sparkleScale; // E4 - light sparkle intensity scale
     s_RGB8 m_E8_specialColor;
     u8 m_EB_useSpecialColor;
     u8 m_EC;

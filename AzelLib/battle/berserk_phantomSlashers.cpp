@@ -1284,7 +1284,7 @@ updateEnd:
     }
 
     // FIXME 1: end-of-frame termination checks (was completely missing)
-    // Count inactive projectiles — terminate when all are done
+    // Count inactive projectiles - terminate when all are done
     u32 inactiveCount = 0;
     for (s32 i = 0; i < pThis->m54_numProjectiles; i++)
     {

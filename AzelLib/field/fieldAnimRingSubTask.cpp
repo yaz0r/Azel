@@ -1,7 +1,7 @@
 #include "PDS.h"
 #include "fieldAnimRingSubTask.h"
 
-// Animated ring lerp subtask — shared across all field overlays.
+// Animated ring lerp subtask - shared across all field overlays.
 // Moved from field_a7/a7_envEntity2C.cpp; byte-identical in A3.
 
 struct sAnimRingSubTask : public s_workAreaTemplateWithArg<sAnimRingSubTask, sAnimRingArg*>
@@ -18,7 +18,7 @@ struct sAnimRingSubTask : public s_workAreaTemplateWithArg<sAnimRingSubTask, sAn
     // Saturn size 0x4c
 };
 
-// 0607fafc (A7) / 06081530 (A3) — alternate update (mode-1)
+// 0607fafc (A7) / 06081530 (A3) - alternate update (mode-1)
 static void animRingSubTask_UpdateAlt(sAnimRingSubTask* pThis)
 {
     pThis->m44++;
@@ -28,13 +28,13 @@ static void animRingSubTask_UpdateAlt(sAnimRingSubTask* pThis)
     }
 }
 
-// 0607fb28 (A7) / 0608155c (A3) — alternate draw (mode-1)
+// 0607fb28 (A7) / 0608155c (A3) - alternate draw (mode-1)
 static void animRingSubTask_DrawAlt(sAnimRingSubTask* /*pThis*/)
 {
     Unimplemented();
 }
 
-// 0607f8ae (A7) / 060812e2 (A3) — default update: lerp position
+// 0607f8ae (A7) / 060812e2 (A3) - default update: lerp position
 static void animRingSubTask_Update(sAnimRingSubTask* pThis)
 {
     pThis->m44++;
@@ -51,13 +51,13 @@ static void animRingSubTask_Update(sAnimRingSubTask* pThis)
     }
 }
 
-// 0607f904 (A7) / 06081338 (A3) — default draw
+// 0607f904 (A7) / 06081338 (A3) - default draw
 static void animRingSubTask_Draw(sAnimRingSubTask* /*pThis*/)
 {
     Unimplemented();
 }
 
-// 0607f824 (A7) / 06081258 (A3) — init
+// 0607f824 (A7) / 06081258 (A3) - init
 static void animRingSubTask_Init(sAnimRingSubTask* pThis, sAnimRingArg* pArg)
 {
     pThis->m8_center   = pArg->m00_center;
@@ -87,7 +87,7 @@ static void animRingSubTask_Init(sAnimRingSubTask* pThis, sAnimRingArg* pArg)
     pThis->m48_lifetime = pArg->m30_lifetime;
 }
 
-// 0607fe24 (A7) / 06081858 (A3) — spawn
+// 0607fe24 (A7) / 06081858 (A3) - spawn
 void spawnAnimRingSubTask(p_workArea parent, sAnimRingArg* pArg)
 {
     static sAnimRingSubTask::TypedTaskDefinition td = {

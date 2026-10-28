@@ -11,7 +11,7 @@
 // createFieldItemBox helper, which finds the owning grid cell
 // task and creates an s_itemBoxType1 sub-task.
 
-// 06059eb8 — create 10 item boxes for subfield 0
+// 06059eb8 - create 10 item boxes for subfield 0
 void createA7_itemBoxes_0(p_workArea parent)
 {
     createFieldItemBox(readItemBoxDefinition({ 0x06085d20, gFLD_A7 }));
@@ -26,7 +26,7 @@ void createA7_itemBoxes_0(p_workArea parent)
     createFieldItemBox(readItemBoxDefinition({ 0x06085fa8, gFLD_A7 }));
 }
 
-// 06059f00 — create 4 item boxes for subfield 1
+// 06059f00 - create 4 item boxes for subfield 1
 void createA7_itemBoxes_1(void)
 {
     createFieldItemBox(readItemBoxDefinition({ 0x06085ff0, gFLD_A7 }));

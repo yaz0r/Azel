@@ -249,7 +249,7 @@ void computeDragonDeltaTranslation(s_dragonTaskWorkArea* r14)
 }
 
 // ============================================================
-// Dragon movement — no input
+// Dragon movement - no input
 // ============================================================
 
 void updateDragonMovementNoInputSub1(s_dragonTaskWorkArea* r14)
@@ -459,7 +459,7 @@ void handleBarrelRollInputAnalog(s_dragonTaskWorkArea* r4)
 }
 
 // ============================================================
-// Dragon pitch/yaw/roll — analog
+// Dragon pitch/yaw/roll - analog
 // ============================================================
 
 void interpolateYawWithBanking(s_dragonTaskWorkArea* r14); // forward decl
@@ -636,7 +636,7 @@ static void startBarrelRollMode(s_dragonTaskWorkArea* r14)
 }
 
 // ============================================================
-// Dragon pitch/yaw/roll — digital
+// Dragon pitch/yaw/roll - digital
 // ============================================================
 
 // 0607e718
@@ -827,7 +827,7 @@ void applyDragonPitchYawRoll(s_dragonTaskWorkArea* r14)
 }
 
 // ============================================================
-// Dragon movement — digital and analog
+// Dragon movement - digital and analog
 // ============================================================
 
 void updateDragonMovementDigital(s_dragonTaskWorkArea* r14)
@@ -2001,13 +2001,13 @@ static void fieldTerrainCallback(s32 subFieldIndex, sVec3_FP* pPos, sVec3_FP* pA
     Unimplemented();
 }
 
-// 002161f4 — zone lookup table: maps subfield index to zone ID
+// 002161f4 - zone lookup table: maps subfield index to zone ID
 static const u8 subfieldZoneLookup[] = {
     0x0F, 0x00, 0x00, 0x01, 0x02, 0x03, 0x10, 0x04,
     0x05, 0x11, 0x06, 0x06, 0x06, 0x07, 0x07, 0x07,
 };
 
-// 00216218 — zone position offsets (X, Z) indexed by zone
+// 00216218 - zone position offsets (X, Z) indexed by zone
 static const s32 zonePositionOffsets[][2] = {
     { (s32)0xFFFC4800, (s32)0xFFE3799A }, // zone 0
     { (s32)0x005B4999, (s32)0xFF98A800 }, // zone 1
@@ -2020,7 +2020,7 @@ static const s32 zonePositionOffsets[][2] = {
     { (s32)0x00155666, (s32)0xFFBEA667 }, // zone 8
 };
 
-// 00216290 — subfield position offsets (X, Z) indexed by subfield
+// 00216290 - subfield position offsets (X, Z) indexed by subfield
 static const s32 subfieldPositionOffsets[][2] = {
     { (s32)0x0004A000, (s32)0x00000000 }, // subfield 0
     { (s32)0x00410000, (s32)0xFFE10000 }, // subfield 1
@@ -2040,7 +2040,7 @@ static const s32 subfieldPositionOffsets[][2] = {
     { (s32)0x00000000, (s32)0x00000000 }, // subfield 15
 };
 
-// 0602f87c — transform position based on subfield offsets
+// 0602f87c - transform position based on subfield offsets
 static u32 transformPositionBySubfield(sVec3_FP* pPos)
 {
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();

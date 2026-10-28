@@ -23,9 +23,9 @@ struct sBTL_X0_EnemyModel : public s_workAreaTemplateWithCopy<sBTL_X0_EnemyModel
     u8 m64_pad1[0x18];
     sVec3_FP m7C_position;
     u8 m88_pad[0x10];
-    // m98_models[0] = Atolm body (main enemy dragon) — has hotpoint bundle for targeting
-    // m98_models[1] = Atolm debug/alternate model — drawn in place of [0] when m30D_flag1 is set (debug toggle 0xC5)
-    // m98_models[2] = Azel (rider) — drawn at a world-space position anchored to body bone 10's hotpoint 0 (Atolm's head)
+    // m98_models[0] = Atolm body (main enemy dragon) - has hotpoint bundle for targeting
+    // m98_models[1] = Atolm debug/alternate model - drawn in place of [0] when m30D_flag1 is set (debug toggle 0xC5)
+    // m98_models[2] = Azel (rider) - drawn at a world-space position anchored to body bone 10's hotpoint 0 (Atolm's head)
     std::vector<s_3dModel> m98_models;
     u8 mAA_modelCount;
     u8 mAB_pad[0x41];
@@ -47,7 +47,7 @@ struct sBTL_X0_EnemyModel : public s_workAreaTemplateWithCopy<sBTL_X0_EnemyModel
     u8 mFA_pad2[0xA6];
     void* m1A0_targetableArray;
     void* m1A4_targetablePositionData;
-    void* m1A8_attackDataBuffer;  // 0x1A8 — heap buffer: 0x54 bytes for variants 0/1/3, 0xB4 bytes for variant 2
+    void* m1A8_attackDataBuffer;  // 0x1A8 - heap buffer: 0x54 bytes for variants 0/1/3, 0xB4 bytes for variant 2
     u8 m1AC_padAfterAttackBuf[0xC0];
     sVec3_FP m26C_scale;  // 0x26C - Ghidra Draw reads scale rows at 0x26C/0x270/0x274
     u8 m278_pad[0x18];
@@ -121,7 +121,7 @@ struct sBTL_X0_AttackSubTask : public s_workAreaTemplate<sBTL_X0_AttackSubTask>
 
 // 060b73d8 task definition: {null, 06059444, 06059b12, 06059b8e}
 // Per-part sub-task for attack sub-parts (appendages). Saturn size 0x308.
-// Minimal definition — will be expanded when per-part logic is implemented.
+// Minimal definition - will be expanded when per-part logic is implemented.
 struct sBTL_X0_AttackSubPart : public s_workAreaTemplateWithCopy<sBTL_X0_AttackSubPart>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()

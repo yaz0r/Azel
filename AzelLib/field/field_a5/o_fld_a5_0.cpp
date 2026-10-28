@@ -13,7 +13,7 @@ static void fieldA5_0_startTasks(p_workArea workArea)
     createA5_envObjects_sub0(workArea);
     createA5_proximityAlert_day(workArea);
     createA5_wormPassageEntrances_day(workArea);
-    // 0605971c — empty
+    // 0605971c - empty
     createA5_sandParticlePoolTask(workArea);
     createA5_dragonSandDustTask(workArea);
     createA5_exitEntityTask(workArea);

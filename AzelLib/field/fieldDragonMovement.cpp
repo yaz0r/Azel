@@ -1,7 +1,7 @@
 #include "PDS.h"
 #include "fieldDragonMovement.h"
 
-// 0608904c — dragon type 8 (floater) movement
+// 0608904c - dragon type 8 (floater) movement
 void floaterFlightUpdate(s_dragonTaskWorkArea* r14)
 {
     r14->m24A_runningCameraScript = 0;
@@ -27,7 +27,7 @@ void floaterFlightUpdate(s_dragonTaskWorkArea* r14)
     integrateDragonMovement(r14);
 }
 
-// Activate dragon flight mode — selects normal or floater update function
+// Activate dragon flight mode - selects normal or floater update function
 void activateDragonFlight()
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;

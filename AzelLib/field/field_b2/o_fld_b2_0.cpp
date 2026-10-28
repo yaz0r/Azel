@@ -6,7 +6,7 @@
 #include "field/fieldItemBoxDefinition.h"
 #include "audio/soundDriver.h"
 
-// 0605fb0c — create item boxes for subfield 0 (desert day)
+// 0605fb0c - create item boxes for subfield 0 (desert day)
 static void createB2ItemBoxes_0()
 {
     createFieldItemBox(readItemBoxDefinition(gFLD_B2->getSaturnPtr(0x0608c940)));
@@ -22,7 +22,7 @@ static void createB2ItemBoxes_0()
     createFieldItemBox(readItemBoxDefinition(gFLD_B2->getSaturnPtr(0x0608cc58)));
 }
 
-// 06059e34 — subfield 0 startTasks callback
+// 06059e34 - subfield 0 startTasks callback
 static void b2_startTasks_0(p_workArea workArea)
 {
     createFieldSpecificDataTask_B2(workArea);
@@ -30,21 +30,21 @@ static void b2_startTasks_0(p_workArea workArea)
     s_fieldSpecificData_B2* pFieldData = getFieldSpecificData_B2();
     pFieldData->m3C_particlePool = createParticlePoolTask(workArea, 2, 0x40);
 
-    Unimplemented(); // FUN_FLD_B2__06060d36 — create 0x8C model render context task (stored at mC->m40)
+    Unimplemented(); // FUN_FLD_B2__06060d36 - create 0x8C model render context task (stored at mC->m40)
     pFieldData->mA0_flag = 1;
 
-    Unimplemented(); // FUN_FLD_B2__06056a96 — create item box manager task (0xB8C)
-    Unimplemented(); // FUN_FLD_B2__0605e8c8 — create env object (0x190C terrain task)
-    Unimplemented(); // FUN_FLD_B2__0605f2a2 — create env object (0x98C scenery task)
-    // 0606de6c — encounter config (empty function)
-    Unimplemented(); // FUN_FLD_B2__0605d92a — create env object (0x4014 desert ruins task)
+    Unimplemented(); // FUN_FLD_B2__06056a96 - create item box manager task (0xB8C)
+    Unimplemented(); // FUN_FLD_B2__0605e8c8 - create env object (0x190C terrain task)
+    Unimplemented(); // FUN_FLD_B2__0605f2a2 - create env object (0x98C scenery task)
+    // 0606de6c - encounter config (empty function)
+    Unimplemented(); // FUN_FLD_B2__0605d92a - create env object (0x4014 desert ruins task)
     createB2ItemBoxes_0();
     createB2AmbientSoundTask(workArea);
 
     setSoundDistanceParams(0x200000, 0x6E);
 }
 
-// 06054280 — subfield 0 (desert)
+// 06054280 - subfield 0 (desert)
 void subfieldB2_0(p_workArea workArea)
 {
     mainGameState.bitField[0xA5] = (mainGameState.bitField[0xA5] & 0x7F) | 0x40;

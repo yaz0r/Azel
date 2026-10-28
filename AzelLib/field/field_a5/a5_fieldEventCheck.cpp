@@ -11,13 +11,13 @@ struct sA5FieldEventCheckTask : public s_workAreaTemplate<sA5FieldEventCheckTask
     // Saturn size 0x4
 };
 
-// 060656F8 — empty init
+// 060656F8 - empty init
 static void a5FieldEventCheckInit(sA5FieldEventCheckTask* /*pThis*/)
 {
-    // empty — confirmed from Ghidra
+    // empty - confirmed from Ghidra
 }
 
-// 060656FC — return 1 iff the dragon's (oldPos+pos) pair forms a
+// 060656FC - return 1 iff the dragon's (oldPos+pos) pair forms a
 // barycentric-valid triangle with the two vertices stored at `pData`.
 // Each vertex is a sVec3_FP; only X and Z components participate.
 static s32 a5CheckProximityToPoint(sSaturnPtr pData)
@@ -58,7 +58,7 @@ static s32 a5CheckProximityToPoint(sSaturnPtr pData)
     return 1;
 }
 
-// 0606580C — field event check: detects dragon in 3 landmark zones,
+// 0606580C - field event check: detects dragon in 3 landmark zones,
 // latches each into m2_flags, and sets mainGameState bit 0xA2.8 when
 // all 3 latches are set within the 0x96 countdown window.
 static void a5FieldEventCheckUpdate(sA5FieldEventCheckTask* pThis)
@@ -104,7 +104,7 @@ static void a5FieldEventCheckUpdate(sA5FieldEventCheckTask* pThis)
     }
 }
 
-// 060658c4 — create field event check task (subfields 0, 7)
+// 060658c4 - create field event check task (subfields 0, 7)
 void createA5_fieldEventCheck(p_workArea parent)
 {
     static sA5FieldEventCheckTask::TypedTaskDefinition td = { &a5FieldEventCheckInit, &a5FieldEventCheckUpdate, nullptr, nullptr };

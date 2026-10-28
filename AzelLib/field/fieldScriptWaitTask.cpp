@@ -1,7 +1,7 @@
 #include "PDS.h"
 #include "fieldScriptWaitTask.h"
 
-// Script-wait task — shared across all field overlays.
+// Script-wait task - shared across all field overlays.
 // Moved from field_a7/a7_envEntity2C.cpp and field_a5/o_fld_a5.cpp.
 
 static void scriptWaitTask_Init(sScriptWaitTask*) {}

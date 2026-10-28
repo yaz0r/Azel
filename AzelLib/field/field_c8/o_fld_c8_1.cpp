@@ -9,12 +9,12 @@ static void fieldC8_1_startTasks(p_workArea workArea) { Unimplemented(); }
 // 06054502
 void subfieldC8_1(p_workArea workArea)
 {
-    // 0605f026 — create VDP2 task (different from subfield 0)
+    // 0605f026 - create VDP2 task (different from subfield 0)
     Unimplemented(); // creates task with definition at 060b2ab4
 
-    // 060544e0 — shared subfield init
+    // 060544e0 - shared subfield init
     {
-        // 06054274 — clip distances
+        // 06054274 - clip distances
         graphicEngineStatus.m405C.m10_nearClipDistance = 0x3000;
         graphicEngineStatus.m405C.m30_oneOverNearClip = FP_Div(0x10000, graphicEngineStatus.m405C.m10_nearClipDistance);
 
@@ -26,23 +26,23 @@ void subfieldC8_1(p_workArea workArea)
             graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
         }
 
-        // 06055bdc — camera config
+        // 06055bdc - camera config
         setupFieldCameraConfigs(readCameraConfig(gFLD_C8->getSaturnPtr(0x0608B11C)), 1);
         getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex = eCameraFollowMode_default;
         // 0607b4e0
         fieldRadar_setEncounterDistance(fixedPoint(0x200000));
 
-        // 06079e26 — setupFieldC8 with visibility grid
+        // 06079e26 - setupFieldC8 with visibility grid
         setupFieldC8(gFLD_C8->getSaturnPtr(0x06090120), gFLD_C8->getSaturnPtr(0x0608FEE0), fieldC8_1_startTasks);
 
-        // 0607d8ca — adjustVerticalLimits
+        // 0607d8ca - adjustVerticalLimits
         adjustVerticalLimits(0, 0);
 
-        // 0607baa0 — random battle init
+        // 0607baa0 - random battle init
         fieldRadar_initRandomBattle(0x37);
     }
 
-    // 06057f1a — set field-specific data flags
+    // 06057f1a - set field-specific data flags
     {
         s_fieldSpecificData_C8* pFieldData = (s_fieldSpecificData_C8*)getFieldTaskPtr()->mC;
         if (pFieldData)

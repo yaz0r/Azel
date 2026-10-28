@@ -45,7 +45,7 @@ void BattleEnd_deleteSub0();
 void battleEngine_updateQuadrantFromAngle(s_battleEngine* pThis, fixedPoint uParm2, s32 r6);
 s32 createBattleCommandMenuSub2(s32 param1);
 
-// BTL_A3::06096048 — particle effect for certain berserks (laser storm, etc.)
+// BTL_A3::06096048 - particle effect for certain berserks (laser storm, etc.)
 void FUN_06096048(s_battleEngine* pThis);
 
 struct sBattleCinematicBars : public s_workAreaTemplate<sBattleCinematicBars>
@@ -847,7 +847,7 @@ void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x16])
     {
         bool changed = false;
-        if (readKeyboardTable1(0x10B)) // page up — large speed increase
+        if (readKeyboardTable1(0x10B)) // page up - large speed increase
         {
             if (pThis->m1A0_battleAutoScrollDelta[2] < 0)
                 pThis->m1A0_battleAutoScrollDelta[2] += 0x17B;
@@ -855,7 +855,7 @@ void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
                 pThis->m1A0_battleAutoScrollDelta[2] = 0;
             changed = true;
         }
-        else if (readKeyboardTable1(0x10C)) // page down — large speed decrease
+        else if (readKeyboardTable1(0x10C)) // page down - large speed decrease
         {
             if (pThis->m1A0_battleAutoScrollDelta[2] < -0x4A11)
                 pThis->m1A0_battleAutoScrollDelta[2] = -0x4A12 + 1;
@@ -863,7 +863,7 @@ void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
                 pThis->m1A0_battleAutoScrollDelta[2] -= 0x17B;
             changed = true;
         }
-        else if (readKeyboardTable1(0x109)) // up — small speed increase
+        else if (readKeyboardTable1(0x109)) // up - small speed increase
         {
             if (pThis->m1A0_battleAutoScrollDelta[2] < -0x4A11)
                 pThis->m1A0_battleAutoScrollDelta[2] = -0x4A12 + 1;
@@ -871,7 +871,7 @@ void battleEngine_ApplyBattleAutoScrollDelta(s_battleEngine* pThis)
                 pThis->m1A0_battleAutoScrollDelta[2] -= 0x25;
             changed = true;
         }
-        else if (readKeyboardTable1(0x10A)) // down — small speed decrease
+        else if (readKeyboardTable1(0x10A)) // down - small speed decrease
         {
             if (pThis->m1A0_battleAutoScrollDelta[2] < 0)
                 pThis->m1A0_battleAutoScrollDelta[2] += 0x25;
@@ -3444,7 +3444,7 @@ struct sHealVisualEffectTask : public s_workAreaTemplateWithCopy<sHealVisualEffe
     // size 0x38
 };
 
-// BTL_A3::0608cd6c (simplified — particle movement and rendering stubbed)
+// BTL_A3::0608cd6c (simplified - particle movement and rendering stubbed)
 static void sHealVisualEffectTask_Update(sHealVisualEffectTask* pThis)
 {
     pThis->m2C_frameCounter++;
@@ -3468,7 +3468,7 @@ static void sHealVisualEffectTask_Update(sHealVisualEffectTask* pThis)
     }
 }
 
-// BTL_A3::0608d4c8 (draw — particle rendering)
+// BTL_A3::0608d4c8 (draw - particle rendering)
 static void sHealVisualEffectTask_Draw(sHealVisualEffectTask* pThis)
 {
     Unimplemented();
@@ -3552,7 +3552,7 @@ static void createStatusCureVisualEffect(s_battleEngine* pEngine, u8 effectId)
         gBattleManager->m10_battleOverlay->m18_dragon->m1C4 |= 0x40;
         gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m20000 = 1;
 
-        // TODO: FUN_06099aa0 — creates secondary sparkle particle effect task
+        // TODO: FUN_06099aa0 - creates secondary sparkle particle effect task
     }
 
     refreshBattleGaugeAfterHeal();
@@ -3566,7 +3566,7 @@ struct sBlastChipEffectTask : public s_workAreaTemplateWithCopy<sBlastChipEffect
     // size 0x44
 };
 
-// BTL_A3::0607fe8c (simplified — full particle/light animation stubbed)
+// BTL_A3::0607fe8c (simplified - full particle/light animation stubbed)
 static void sBlastChipEffectTask_Update(sBlastChipEffectTask* pThis)
 {
     pThis->m2C_frameCounter++;
@@ -3930,7 +3930,7 @@ static void useItemSub0(s8 param1, u32 param2)
     pBattleEngine->m3D0 = createItemVisualEffect(dramAllocatorEnd[0].mC_fileBundle, effectIndex, &pBattleEngine->m104_dragonPosition, &pBattleEngine->m104_dragonPosition, 1, 1);
 }
 
-// 0601e0b4 — triggers M68K sound CPU sync for visual effect lighting
+// 0601e0b4 - triggers M68K sound CPU sync for visual effect lighting
 void syncM68KSoundCPU()
 {
     // Original: FUN_0601fdd0() + waits for M68K flag + addSlaveCommand(0,0,0,FUN_0601f04c)
@@ -3947,7 +3947,7 @@ static s16 computeBPCost(s16 baseCost)
     return (s16)((u32)(actualCost + 0x8000) >> 16);
 }
 
-// BTL_A3::06066aa2 — deduct BP cost and decrement combo counter
+// BTL_A3::06066aa2 - deduct BP cost and decrement combo counter
 static void berserkConsumeBP(s_battleEngine* pThis, s8 comboCount)
 {
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x15] == 0)
@@ -3961,7 +3961,7 @@ static void berserkConsumeBP(s_battleEngine* pThis, s8 comboCount)
     increaseStatsCount(3);
 }
 
-// BTL_A3::06066af6 — frame counter for berserk attack startup
+// BTL_A3::06066af6 - frame counter for berserk attack startup
 static s32 berserkBeginAttack(s_battleEngine* pThis, s32 attackType)
 {
     s_battleGrid* pGrid = gBattleManager->m10_battleOverlay->m8_gridTask;
@@ -3993,7 +3993,7 @@ static s32 berserkBeginAttack(s_battleEngine* pThis, s32 attackType)
     return 0;
 }
 
-// BTL_A3::060653a8 — apply HP or BP heal with visual effect
+// BTL_A3::060653a8 - apply HP or BP heal with visual effect
 static void berserkApplyHealEffect(s_battleEngine* pThis, s32 healAmount, s8 healType)
 {
     s16 amount = (s16)healAmount;
@@ -4144,18 +4144,18 @@ static void battleEngine_useBerserkApplyEffect(s_battleEngine* pThis)
         s32 berserkIndex = (s32)berserkId - 0x94;
         switch (berserkIndex)
         {
-        case 0: // 0x94 vengeance orbs — shield
+        case 0: // 0x94 vengeance orbs - shield
             pDragon->m1C0_statusModifiers |= 0x400;
             berserk_createVengeanceOrbsShield(pThis);
             berserkConsumeBP(pThis, 2);
             return;
-        case 6: // 0x9A assault wing — attack buff
+        case 6: // 0x9A assault wing - attack buff
             pDragon->m1C0_statusModifiers |= 0x80;
             pDragon->m1E6_attackBuffTimer = -1;
             pThis->m188_flags.m100_attackAnimationFinished = 1;
             berserkConsumeBP(pThis, 3);
             return;
-        case 0xF: // 0xA3 astral phantoms — shield
+        case 0xF: // 0xA3 astral phantoms - shield
             pDragon->m1C0_statusModifiers |= 0x400;
             berserk_createAstralPhantomsShield(pThis);
             berserkConsumeBP(pThis, 2);
@@ -4170,7 +4170,7 @@ static void battleEngine_useBerserkApplyEffect(s_battleEngine* pThis)
         case 0x17: // 0xAB genesis
         case 0x18: // 0xAC berserker wing
         {
-            // HP heal — amount from lookup table
+            // HP heal - amount from lookup table
             s32 healAmount = setDividend((s32)mainGameState.gameStats.mB8_maxHP << 16, 0x20000, 0x30000);
             healAmount = (s16)((u32)(healAmount + 0x8000) >> 16);
             berserkApplyHealEffect(pThis, healAmount, 0);
@@ -4180,7 +4180,7 @@ static void battleEngine_useBerserkApplyEffect(s_battleEngine* pThis)
                 berserkConsumeBP(pThis, 3);
             return;
         }
-        case 0x19: // 0xAD recover — cure all status
+        case 0x19: // 0xAD recover - cure all status
         {
             berserkConsumeBP(pThis, 1);
             pDragon->m1C0_statusModifiers &= ~0x7F;
@@ -4195,7 +4195,7 @@ static void battleEngine_useBerserkApplyEffect(s_battleEngine* pThis)
             createStatusCureVisualEffect(pThis, 10);
             return;
         }
-        case 0x1A: // 0xAE protection wing — BP restore
+        case 0x1A: // 0xAE protection wing - BP restore
         {
             s32 healAmount = FP_Div((s32)mainGameState.gameStats.mBA_maxBP << 16, 0x50000);
             healAmount = (s16)((u32)(healAmount + 0x8000) >> 16);
@@ -4203,13 +4203,13 @@ static void battleEngine_useBerserkApplyEffect(s_battleEngine* pThis)
             berserkConsumeBP(pThis, 1);
             return;
         }
-        case 0x1B: // 0xAF swift wing — defense buff
+        case 0x1B: // 0xAF swift wing - defense buff
             pDragon->m1C0_statusModifiers |= 0x100;
             pDragon->m1E8_defenseBuffTimer = -1;
             pThis->m188_flags.m100_attackAnimationFinished = 1;
             berserkConsumeBP(pThis, 3);
             return;
-        case 0x1C: // 0xB0 escape — agility buff + cure poison
+        case 0x1C: // 0xB0 escape - agility buff + cure poison
             pDragon->m1EA_agilityBuffTimer = -1;
             pDragon->m1DC_poisonTimer = 0;
             pDragon->m1C0_statusModifiers &= ~0x4;
@@ -4221,7 +4221,7 @@ static void battleEngine_useBerserkApplyEffect(s_battleEngine* pThis)
             pThis->m188_flags.m100_attackAnimationFinished = 1;
             berserkConsumeBP(pThis, 3);
             return;
-        case 0x1E: // 0xB2 field map — HP restore
+        case 0x1E: // 0xB2 field map - HP restore
         {
             s32 healAmount = setDividend((s32)mainGameState.gameStats.mB8_maxHP << 16, 0x20000, 0x30000);
             healAmount = (s16)((u32)(healAmount + 0x8000) >> 16);
@@ -4239,7 +4239,7 @@ static void battleEngine_useBerserkApplyEffect(s_battleEngine* pThis)
     }
     else
     {
-        // Unknown type — just set m100
+        // Unknown type - just set m100
         pThis->m188_flags.m100_attackAnimationFinished = 1;
     }
 }
@@ -4259,7 +4259,7 @@ p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
 
     if (itemId16 == 1 || itemId16 == 0xa1)
     {
-        // dragonY > envHeight+0x23000 → category 0, else category 1
+        // dragonY > envHeight+0x23000 -> category 0, else category 1
         if (gBattleManager->m10_battleOverlay->mC_targetSystem->m204_cameraMaxAltitude + 0x23000 <
             pThis->mC_battleCenter.m4_Y)
             category = 0;
@@ -4302,7 +4302,7 @@ p_workArea loadItemResources(s_battleEngine* pThis, eItems itemId)
     }
     else
     {
-        // unsupported item — mark task finished, return null
+        // unsupported item - mark task finished, return null
         if (psVar1 != nullptr)
             psVar1->getTask()->markFinished();
         return nullptr;
@@ -4876,7 +4876,7 @@ void updateBattleIntro(s_battleEngine* pThis)
         battleEngine_updateBattleMode_E_battleIntro(pThis);
         break;
     case eBattleModes::mF_tutorialTextInput:
-        // 0605d5a8 — tutorial text input mode: wait for attack-finished flag, then return to position mode
+        // 0605d5a8 - tutorial text input mode: wait for attack-finished flag, then return to position mode
         if (gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished)
         {
             battleEngine_SetBattleMode16();
@@ -5605,7 +5605,7 @@ static void battleEngine_drawDisplayDebug(s_battleEngine* pThis)
     }
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x16])
     {
-        Unimplemented(); // encounter data display — needs encounter data table pointer
+        Unimplemented(); // encounter data display - needs encounter data table pointer
     }
 }
 
@@ -5669,18 +5669,18 @@ static void battleEngine_controlDebug2(s_battleEngine* pThis)
 void battleEngine_Draw(s_battleEngine* pThis)
 {
     battleEngine_drawDisplayDebug(pThis);
-    Unimplemented(); // battleEngine_drawLines — VDP1 debug line rendering
+    Unimplemented(); // battleEngine_drawLines - VDP1 debug line rendering
     battleEngine_controlDebug(pThis);
     battleEngine_controlDebug2(pThis);
-    // 0606226c — debug cheats (F3=open menu, F4=heal, etc.)
+    // 0606226c - debug cheats (F3=open menu, F4=heal, etc.)
     {
         vdp2PrintStatus.m14_oldPalette = vdp2PrintStatus.m10_palette;
         vdp2PrintStatus.m10_palette = 0xC000;
-        if (readKeyboardToggle(0x86)) // F3 — open battle debug menu
+        if (readKeyboardToggle(0x86)) // F3 - open battle debug menu
         {
             graphicEngineStatus.m40AC.m0_menuId = 3;
         }
-        if (readKeyboardToggle(0x83)) // F4 — heal HP/BP
+        if (readKeyboardToggle(0x83)) // F4 - heal HP/BP
         {
             if (keyboardIsKeyDown(0xDB)) // shift held = half heal
             {

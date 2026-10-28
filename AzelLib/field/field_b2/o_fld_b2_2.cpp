@@ -6,26 +6,26 @@
 #include "audio/soundDriver.h"
 #include "3dEngine.h"
 
-// 0605fb6c — create item boxes for subfield 2 (underground)
+// 0605fb6c - create item boxes for subfield 2 (underground)
 static void createB2ItemBoxes_2()
 {
     createFieldItemBox(readItemBoxDefinition(gFLD_B2->getSaturnPtr(0x0608cca0)));
     createFieldItemBox(readItemBoxDefinition(gFLD_B2->getSaturnPtr(0x0608cce8)));
 }
 
-// 06059eec — subfield 2 startTasks callback
+// 06059eec - subfield 2 startTasks callback
 static void b2_startTasks_2(p_workArea workArea)
 {
     createFieldSpecificDataTask_B2(workArea);
 
     createB2ItemBoxes_2();
-    Unimplemented(); // FUN_FLD_B2__060594a0 — create env object (0x40 underground task)
+    Unimplemented(); // FUN_FLD_B2__060594a0 - create env object (0x40 underground task)
     createB2AmbientSoundTask(workArea);
 
     setSoundDistanceParams(0x200000, 0x6E);
 }
 
-// 060545D0 — subfield 2 (underground)
+// 060545D0 - subfield 2 (underground)
 void subfieldB2_2(p_workArea workArea)
 {
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();

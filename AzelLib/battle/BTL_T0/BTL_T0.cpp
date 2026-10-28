@@ -156,7 +156,7 @@ struct sTutorialControllerTask : public s_workAreaTemplate<sTutorialControllerTa
 
 struct sTutorialTextInputTask : public s_workAreaTemplate<sTutorialTextInputTask>
 {
-    p_workArea m0_parent;  // 0x00 — pointer to controller
+    p_workArea m0_parent;  // 0x00 - pointer to controller
     u8         m4_pad[4];  // 0x04..0x07
     u8         m8_subState;// 0x08
     u8         m9_pad[3];  // 0x09..0x0B
@@ -226,7 +226,7 @@ static void tutorialController_setTextOverlay(sTutorialControllerTask* pThis, u8
     pThis->m20_flags |= 8;
 }
 
-// 0605a5ba — text input sub-task draw
+// 0605a5ba - text input sub-task draw
 static void tutorialTextInput_draw(sTutorialTextInputTask* pThis)
 {
     u8 subState = pThis->m8_subState;
@@ -247,7 +247,7 @@ static void tutorialTextInput_draw(sTutorialTextInputTask* pThis)
     pThis->m8_subState++;
 }
 
-// 0605a606 — text input sub-task delete
+// 0605a606 - text input sub-task delete
 static void tutorialTextInput_delete(sTutorialTextInputTask* pThis)
 {
     clearBlueBox(3, 4, 0x28, 0xc);
@@ -480,7 +480,7 @@ static void tutorialController_periodicTextDisplay(sTutorialControllerTask* pThi
 // Phase functions
 // ============================================================
 
-// 06058c3c — phase 0: basic combat tutorial
+// 06058c3c - phase 0: basic combat tutorial
 static void tutorialPhase0(sTutorialControllerTask* pThis)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -599,7 +599,7 @@ phase0_99_after_pack:
     }
 }
 
-// 06059044 — phase 1: movement/position tutorial
+// 06059044 - phase 1: movement/position tutorial
 static void tutorialPhase1(sTutorialControllerTask* pThis)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -720,7 +720,7 @@ static void tutorialPhase1(sTutorialControllerTask* pThis)
     }
 }
 
-// 06059464 — phase 2: berserk/laser tutorial
+// 06059464 - phase 2: berserk/laser tutorial
 static void tutorialPhase2(sTutorialControllerTask* pThis)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -908,7 +908,7 @@ static void tutorialPhase2(sTutorialControllerTask* pThis)
     }
 }
 
-// 060599fc — phase 3: magic (berserk) tutorial
+// 060599fc - phase 3: magic (berserk) tutorial
 static void tutorialPhase3(sTutorialControllerTask* pThis)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -1042,7 +1042,7 @@ static void tutorialPhase3(sTutorialControllerTask* pThis)
     }
 }
 
-// 06059e88 — phase 4: item tutorial
+// 06059e88 - phase 4: item tutorial
 static void tutorialPhase4(sTutorialControllerTask* pThis)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -1778,7 +1778,7 @@ static void BTL_T0_env_Init(sVdp2PlaneTask* pThis)
     pThis->m58 = envFile;
     initGridForBattle(envFile, g_BTL_T0->m_grid, 2, 2, 0x400000);
 
-    // 060544a2 — water/overlay effect sub-task
+    // 060544a2 - water/overlay effect sub-task
     BTL_T0_createWaterEffect(envFile);
 
     gBattleManager->m10_battleOverlay->m8_gridTask->m1C8_flags |= 0x10;
@@ -1810,7 +1810,7 @@ p_workArea overlayStart_BTL_T0(p_workArea parent)
 }
 
 
-// 060549dc — T0-specific Baldor init.
+// 060549dc - T0-specific Baldor init.
 // Same logic as Baldor_init (BTL_A3) but with T0 overlay data addresses.
 // BTL_A3's Baldor_init has an additional queen-baldor branch (subBattleId == 8/9)
 // with different oscillation frequencies and random initial rotations; T0 is always

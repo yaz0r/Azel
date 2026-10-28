@@ -37,7 +37,7 @@ struct sA5SandfallSubtask : public s_workAreaTemplate<sA5SandfallSubtask>
     // size 0xC
 };
 
-// 0605A236 — sandfall discovery callback: sets visibility, game state, starts script + cutscene camera
+// 0605A236 - sandfall discovery callback: sets visibility, game state, starts script + cutscene camera
 static void a5SandfallEntity_discoveryCallback(sA5SandfallEntity* pThis, sFieldModelRenderContext* pCtx)
 {
     pCtx->m18_visibilityFlags |= 1;
@@ -250,7 +250,7 @@ static void a5SandfallEntity_Draw(sA5SandfallEntity* p)
 
     if ((mainGameState.bitField[0x95] & 2) == 0)
     {
-        // Not stopped — animated waterfall
+        // Not stopped - animated waterfall
         if (lod == 0)
         {
             addObjectToDrawList(pBundle->get3DModel(a5Sandfall_mainModelOffsets[p->m54]));
@@ -282,7 +282,7 @@ static void a5SandfallEntity_Draw(sA5SandfallEntity* p)
     }
     else
     {
-        // Stopped — static waterfall
+        // Stopped - static waterfall
         if (lod == 0)
         {
             addObjectToDrawList(pBundle->get3DModel(0x99C));

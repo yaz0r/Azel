@@ -517,7 +517,7 @@ void resolveDragonTerrainCollision()
         return;
     }
 
-    // No collision — clear flags
+    // No collision - clear flags
     r14_pDragonTask->mF8_Flags &= ~0x300;
 
     if (gDragonState->mC_dragonType == DR_LEVEL_8_FLOATER)

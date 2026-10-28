@@ -506,7 +506,7 @@ void flushRayLines3D()
 {
     if (gPendingRayLines.empty()) return;
 
-    // Forward declarations from 3dEngine_flush.cpp — same pattern as
+    // Forward declarations from 3dEngine_flush.cpp - same pattern as
     // flushRayQuads3D.
     glm::mat4 getProjectionMatrix();
     bgfx::ProgramHandle GetWorldSpaceVertexColorShaderBGFX();
@@ -630,7 +630,7 @@ void displayRaySegmentFromWorldSpace(sVec3_FP* pVerts,
     transformAndAddVecByCurrentMatrix(&pVerts[0], &viewA);
     transformAndAddVecByCurrentMatrix(&pVerts[1], &viewB);
 
-    // Behind-camera rejection — if either vertex sits at or behind the near
+    // Behind-camera rejection - if either vertex sits at or behind the near
     // plane, drop the whole segment rather than producing garbage coordinates.
     if (viewA.m8_Z.m_value <= 0 || viewB.m8_Z.m_value <= 0)
     {

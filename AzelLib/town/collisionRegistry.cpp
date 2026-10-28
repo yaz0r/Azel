@@ -1,4 +1,4 @@
-﻿#include "PDS.h"
+#include "PDS.h"
 #include "collisionRegistry.h"
 #include "townScript.h"
 #include "town.h"
@@ -359,7 +359,7 @@ void recordContactPosY(sCollisionBody* r13, fixedPoint r12, sVec3_FP* r6, sVec3_
 }
 
 // Projects a face plane normal onto r4's AABB half-extents then dispatches to the
-// appropriate axis-contact recorder (Sub0–Sub5) based on penetration direction.
+// appropriate axis-contact recorder (Sub0-Sub5) based on penetration direction.
 void processContactFace(sCollisionBody* r4, fixedPoint r5)
 {
     sVec3_FP var4;
@@ -426,7 +426,7 @@ void processContactFace(sCollisionBody* r4, fixedPoint r5)
     }
 }
 
-// Returns a sub-cell index (0–3) encoding which quadrant of the cell the position is in.
+// Returns a sub-cell index (0-3) encoding which quadrant of the cell the position is in.
 s32 getSubCellQuadrant(fixedPoint r4_x, fixedPoint r5_z)
 {
     s32 r8 = MTH_Mul32(r4_x, gTownGrid.m30_worldToCellIndex * 2) & 1;
@@ -488,7 +488,7 @@ struct sProcessedVertice
 };
 
 // Transforms all mesh vertices by the current matrix, outputs fixed-point positions and
-// clip flags; returns the bitwise-AND of all clip flags (non-zero ⟹ all vertices off-screen).
+// clip flags; returns the bitwise-AND of all clip flags (non-zero => all vertices off-screen).
 s32 transformTownMeshVertices(const std::vector<sVec3_S16_12_4>& r4_vertices, std::array<sProcessedVertice, 255>& r5_outputConverted, s32 r6_numVertices, const sVec3_FP& r7_clip)
 {
     fixedPoint* r1 = &pCurrentMatrix->m[0][0];

@@ -14,7 +14,7 @@ void clearVdp2VRam(u32 offset, u32 size); // defined in VDP2.cpp
 void displayMemoryLayout(); // defined in PDS.cpp
 
 // ============================================================================
-// CPK file name table (50 entries, indexed 0x00–0x31)
+// CPK file name table (50 entries, indexed 0x00-0x31)
 // 06054d30 / 06054ea8
 // ============================================================================
 static const char* g_cpkFileNames[] = {
@@ -71,7 +71,7 @@ static const char* g_cpkFileNames[] = {
 };
 
 // ============================================================================
-// Movie timing table (33 entries) – {cpkIndex, countdown, fadePalTarget}
+// Movie timing table (33 entries) - {cpkIndex, countdown, fadePalTarget}
 // 06054df8
 // ============================================================================
 struct s_movieTimingEntry
@@ -119,7 +119,7 @@ static const s_movieTimingEntry g_movieTimingTable[] = {
 
 // ============================================================================
 // Subtitle FNT / VRAM destination table (50 entries, 8 bytes each)
-// {const char* fntName, u32 vramDest}  – null fntName = no subtitle
+// {const char* fntName, u32 vramDest}  - null fntName = no subtitle
 // 06055184 / 0605536c
 // ============================================================================
 struct s_movieFntEntry
@@ -135,7 +135,7 @@ static const s_movieFntEntry g_movieFntTable[] = {
     {"EVT000_4.FNT", 0x002502C8}, // 0x03
     {"EVT000_5.FNT", 0x00250390}, // 0x04
     {"EVT002.FNT",   0x00250438}, // 0x05
-    {nullptr,        0x00000000}, // 0x06 – EVT004_1 has no subtitle
+    {nullptr,        0x00000000}, // 0x06 - EVT004_1 has no subtitle
     {"EVT004_2.FNT", 0x00250460}, // 0x07
     {"EVT008.FNT",   0x00250478}, // 0x08
     {"EVT016_1.FNT", 0x00250560}, // 0x09
@@ -168,7 +168,7 @@ static const s_movieFntEntry g_movieFntTable[] = {
     {"EVT137.FNT",   0x002516A8}, // 0x24
     {"EVT144.FNT",   0x00251730}, // 0x25
     {"EVT152.FNT",   0x00251890}, // 0x26
-    {nullptr,        0x00000000}, // 0x27 – EVT153 has no subtitle
+    {nullptr,        0x00000000}, // 0x27 - EVT153 has no subtitle
     {"EVT155_1.FNT", 0x00251940}, // 0x28
     {"EVT155_2.FNT", 0x00251958}, // 0x29
     {"EVT155_3.FNT", 0x00251970}, // 0x2A
@@ -178,7 +178,7 @@ static const s_movieFntEntry g_movieFntTable[] = {
     {"EVT160_2.FNT", 0x00251A98}, // 0x2E
     {"EVT161_1.FNT", 0x00251AC0}, // 0x2F
     {"EVT161_2.FNT", 0x00251B10}, // 0x30
-    {nullptr,        0x00000000}, // 0x31 – MOVIE1 has no subtitle
+    {nullptr,        0x00000000}, // 0x31 - MOVIE1 has no subtitle
 };
 
 // ============================================================================
@@ -204,7 +204,7 @@ static void killTask(p_workArea pTask)
 }
 
 // ============================================================================
-// openMovieStream  –  060106c0
+// openMovieStream  -  060106c0
 // ============================================================================
 
 static void clearMovieVdp2Vram();
@@ -243,7 +243,7 @@ static void openMovieStream(const char* cpkFileName)
                           (s32)fileInfoStruct.m20_videoWidth) * 4) >> 1;
     fileInfoStruct.m1C_vramDest = vramDest + 0x25E00000u;
 
-    // VDP2 window registers — center video in 352×224 display
+    // VDP2 window registers - center video in 352x224 display
     s_VDP2Regs* pRegs = vdp2Controls.m4_pendingVdp2Regs;
     s32 w = (s32)fileInfoStruct.m20_videoWidth;
     s32 h = (s32)fileInfoStruct.m24_videoHeight;
@@ -276,7 +276,7 @@ static void openMovieStream(const char* cpkFileName)
 }
 
 // ============================================================================
-// closeMovieStream  –  06010870
+// closeMovieStream  -  06010870
 // ============================================================================
 
 // 06010870
@@ -311,7 +311,7 @@ void closeMovieStream()
 }
 
 // ============================================================================
-// clearMovieVdp2Vram  –  06010584
+// clearMovieVdp2Vram  -  06010584
 // ============================================================================
 
 // 06010584
@@ -321,7 +321,7 @@ static void clearMovieVdp2Vram()
 }
 
 // ============================================================================
-// setNBG0MapOffset  –  06028c54
+// setNBG0MapOffset  -  06028c54
 // ============================================================================
 
 // 06028c54
@@ -341,7 +341,7 @@ static void setNBG0MapOffset(s32 layer, u32 saturnVramAddr)
 }
 
 // ============================================================================
-// setupMovieVdp2  –  0601058e
+// setupMovieVdp2  -  0601058e
 // ============================================================================
 
 // 0601058e
@@ -377,7 +377,7 @@ void setupMovieVdp2()
 }
 
 // ============================================================================
-// Text sprite batch task  –  06055324 / 06054784
+// Text sprite batch task  -  06055324 / 06054784
 // On Saturn the work area is raw { s16 count, entries[][3] : {x, y, tileAddrDiv8} }.
 // In C++ we use proper struct members since the work area has base class overhead.
 // ============================================================================
@@ -422,7 +422,7 @@ struct s_movieTextSpriteBatchWorkArea : public s_workAreaTemplate<s_movieTextSpr
 };
 
 // ============================================================================
-// createTextSpriteTask  –  0605480c
+// createTextSpriteTask  -  0605480c
 // Scans VDP2 text memory and builds a VDP1 sprite draw list for subtitle glyphs.
 // ============================================================================
 
@@ -490,7 +490,7 @@ static p_workArea createTextSpriteTask(p_workArea pParent, s32 startX, s32 start
 }
 
 // ============================================================================
-// Video decoder notify task  –  0605533c / 0605494c
+// Video decoder notify task  -  0605533c / 0605494c
 // Kills old text sprite task and (in debug mode) prints frame counter.
 // ============================================================================
 
@@ -521,7 +521,7 @@ struct s_videoDecoderNotifyWorkArea : public s_workAreaTemplate<s_videoDecoderNo
 };
 
 // ============================================================================
-// Subtitle overlay task  –  06054e98 / 06054564
+// Subtitle overlay task  -  06054e98 / 06054564
 // Emits a VDP1 user-clipping command to mask the subtitle area.
 // ============================================================================
 
@@ -574,7 +574,7 @@ struct s_subtitleOverlayWorkArea : public s_workAreaTemplate<s_subtitleOverlayWo
 };
 
 // ============================================================================
-// Subtitle data task  –  06055314 / 06054640 / 06054684 / 06054732
+// Subtitle data task  -  06055314 / 06054640 / 06054684 / 06054732
 // ============================================================================
 
 struct s_subtitleDataWorkArea : public s_workAreaTemplateWithArg<s_subtitleDataWorkArea, s32>
@@ -666,7 +666,7 @@ struct s_subtitleDataWorkArea : public s_workAreaTemplateWithArg<s_subtitleDataW
 };
 
 // ============================================================================
-// Movie editor task  –  0605535c / 060549b0 / 06054a90 / 06054cf6
+// Movie editor task  -  0605535c / 060549b0 / 06054a90 / 06054cf6
 // Debug tool for adjusting subtitle timing with keyboard.
 // ============================================================================
 
@@ -790,7 +790,7 @@ struct s_movieEditorWorkArea : public s_workAreaTemplateWithArg<s_movieEditorWor
 };
 
 // ============================================================================
-// Main movie task  –  06054e7c / 06054010 / 060540fa / 06054514
+// Main movie task  -  06054e7c / 06054010 / 060540fa / 06054514
 // ============================================================================
 
 s_movieMainWorkArea::TypedTaskDefinition* s_movieMainWorkArea::getTypedTaskDefinition()
@@ -894,13 +894,13 @@ void s_movieMainWorkArea::Draw(s_movieMainWorkArea* pThis)
     case 3:
         if (!fileInfoStruct.mC_gfsHandle)
         {
-            // Movie stream finished — kill subtitle task and advance to state 4
+            // Movie stream finished - kill subtitle task and advance to state 4
             if (pThis->mC_subtask)
             {
                 if (!(pThis->mC_subtask->getTask()->m14_flags & 1))
                     pThis->mC_subtask->getTask()->markFinished();
             }
-            // Note: do NOT reset m3_countdown here — the table value is used
+            // Note: do NOT reset m3_countdown here - the table value is used
             // by state 4 to determine how many sequential CPKs to play
         }
         else
@@ -957,7 +957,7 @@ void s_movieMainWorkArea::Draw(s_movieMainWorkArea* pThis)
                 closeMovieStream();
             }
         }
-        // Increment state (state 2→3, 3→4)
+        // Increment state (state 2->3, 3->4)
         pThis->m0_state++;
         break;
 
@@ -1093,7 +1093,7 @@ void s_movieMainWorkArea::Delete(s_movieMainWorkArea* pThis)
 }
 
 // ============================================================================
-// overlayStart_MOVIE  –  MOVIE::06054000
+// overlayStart_MOVIE  -  MOVIE::06054000
 // ============================================================================
 
 // MOVIE::06054000
@@ -1103,7 +1103,7 @@ p_workArea overlayStart_MOVIE(p_workArea pWorkArea, s32 movieIndex)
 }
 
 // ============================================================================
-// Base-binary movie wrapper task  –  0602a0b2 / 0602a14c
+// Base-binary movie wrapper task  -  0602a0b2 / 0602a14c
 // Wraps the overlay call; when overlay finishes, triggers title screen.
 // ============================================================================
 
@@ -1136,7 +1136,7 @@ struct s_movieWrapperWorkArea : public s_workAreaTemplate<s_movieWrapperWorkArea
 };
 
 // ============================================================================
-// startTitleScreenVideo  –  0602a166
+// startTitleScreenVideo  -  0602a166
 // ============================================================================
 
 // 0602a166
@@ -1146,7 +1146,7 @@ p_workArea startTitleScreenVideo(p_workArea pWorkArea)
 }
 
 // ============================================================================
-// loadMovieOverlay  –  0602773e
+// loadMovieOverlay  -  0602773e
 // ============================================================================
 
 // 0602773e
@@ -1156,7 +1156,7 @@ p_workArea loadMovieOverlay(p_workArea pWorkArea, s32 movieIndex)
 }
 
 // ============================================================================
-// lastUpdateFunction  –  060108a8
+// lastUpdateFunction  -  060108a8
 // Per-frame file I/O / movie decoder polling.
 // On Saturn this polls async CD reads and the CPK decoder; on PC file loads
 // are synchronous so states 2 (file loading) and 4 (CD audio) are stubs.
@@ -1165,7 +1165,7 @@ p_workArea loadMovieOverlay(p_workArea pWorkArea, s32 movieIndex)
 // 060108a8
 u32 lastUpdateFunction()
 {
-    // Saturn: CDC_GetHirqReq() & 0x20 → FUN_0603a008(0)  — CD interrupt handling, skip on PC
+    // Saturn: CDC_GetHirqReq() & 0x20 -> FUN_0603a008(0)  - CD interrupt handling, skip on PC
 
     if (fileInfoStruct.m0 == 0)
     {
@@ -1188,7 +1188,7 @@ u32 lastUpdateFunction()
     {
 state2:
         // Saturn: polls GFS async file loading (GFS_NwExecOne / GFS_NwGetStat)
-        // On PC, file loading is synchronous — m2C_allocatedHead is always null here.
+        // On PC, file loading is synchronous - m2C_allocatedHead is always null here.
         // If somehow we get here, just clear state.
         if (fileInfoStruct.m2C_allocatedHead == nullptr)
         {
@@ -1202,10 +1202,10 @@ state2:
     else if (fileInfoStruct.m0 == 3)
     {
 state3:
-        // Movie decoder countdown — on Saturn, waits for sound driver heartbeat
+        // Movie decoder countdown - on Saturn, waits for sound driver heartbeat
         if (fileInfoStruct.m28_countdown != 0)
         {
-            // FUN_0602c114: checks soundEngine counter update — stub as true on PC
+            // FUN_0602c114: checks soundEngine counter update - stub as true on PC
             fileInfoStruct.m28_countdown = 0;
         }
 
@@ -1252,7 +1252,7 @@ state3:
     {
 state4:
         // Saturn: CD audio play / seek commands (CDC_CdPlay, CDC_CdSeek, SCSP commands)
-        // Not applicable on PC — sound bank loading is handled by the audio subsystem.
+        // Not applicable on PC - sound bank loading is handled by the audio subsystem.
         (void)0;
     }
     else
@@ -1285,7 +1285,7 @@ done:
 }
 
 // ============================================================================
-// createMovieDebugTask  –  0602a314
+// createMovieDebugTask  -  0602a314
 // ============================================================================
 
 // 0602a314

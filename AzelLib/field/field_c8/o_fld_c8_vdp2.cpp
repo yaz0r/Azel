@@ -8,7 +8,7 @@
 
 static sSaturnPtr g_c8TowerDataArg;
 
-// 0605f07c — VDP2 register setup
+// 0605f07c - VDP2 register setup
 static void c8Vdp2Setup(sVdp2PlaneTask* pThis)
 {
     static const sLayerConfig rgbSetup[] = {
@@ -96,7 +96,7 @@ static void c8VdpInitWithArg(sVdp2PlaneTask* pThis, sSaturnPtr param)
 
     c8Vdp2Setup(pThis);
 
-    // 0605f876 — create fog/fade subtask
+    // 0605f876 - create fog/fade subtask
     Unimplemented(); // createSubTaskFromFunction(pThis, 0605f872, 0xC), stores towerData param
 }
 
@@ -111,7 +111,7 @@ static void c8VdpUpdate(sVdp2PlaneTask* pThis)
     // empty
 }
 
-// 0605f46c — standard rotation pass sub (takes rotation as separate param)
+// 0605f46c - standard rotation pass sub (takes rotation as separate param)
 static void c8RotationMatrixSetup(sVdp2PlaneTask* pThis, sVec3_FP* pRotation)
 {
     sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
@@ -142,7 +142,7 @@ static void c8RotationMatrixSetup(sVdp2PlaneTask* pThis, sVec3_FP* pRotation)
         + (s32)(s16)t.m40 * -0x10000;
 }
 
-// 0605f6b0 — C8-specific rotation pass (adjusts camera relative to tower center, then calls 0605f46c)
+// 0605f6b0 - C8-specific rotation pass (adjusts camera relative to tower center, then calls 0605f46c)
 static void c8RotationPassSub(sVdp2PlaneTask* pThis)
 {
     sVec3_FP rotation;
@@ -177,7 +177,7 @@ static void c8RotationPassSub(sVdp2PlaneTask* pThis)
 // 0605F666
 static void c8VdpDraw(sVdp2PlaneTask* pThis)
 {
-    // 0605f2a0 — copy camera state
+    // 0605f2a0 - copy camera state
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
     pThis->m18_cameraRotation = cameraProperties2.mC_rotation.toSVec3_FP();
 
@@ -193,7 +193,7 @@ static void c8VdpDraw(sVdp2PlaneTask* pThis)
 
     pThis->m34 = computeRotationScrollOffset();
 
-    Unimplemented(); // 06080cac — horizon gauge VDP1 overlay (complex, calls sub-functions)
+    Unimplemented(); // 06080cac - horizon gauge VDP1 overlay (complex, calls sub-functions)
 
     pThis->m34 = computeRotationScrollOffset();
 
@@ -224,7 +224,7 @@ static void c8VdpDraw(sVdp2PlaneTask* pThis)
     regs->mC6_WPEY0 = pThis->m24_vdp1Clipping[3];
 }
 
-// 0605f794 — create C8 VDP2 task for subfield 0
+// 0605f794 - create C8 VDP2 task for subfield 0
 void createC8Vdp2Task(p_workArea parent, sSaturnPtr towerData)
 {
     g_c8TowerDataArg = towerData;

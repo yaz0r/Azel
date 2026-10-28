@@ -14,7 +14,7 @@ static void fieldA5_8_startTasks(p_workArea workArea)
     createA5_sandParticlePoolTask(workArea);
     createA5_exitEntityTask(workArea);
     createA5_triggerZones_night(workArea);
-    // 0605efe0 — init worm color tables for subfield 8
+    // 0605efe0 - init worm color tables for subfield 8
     {
         s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;
         pFieldData->mC_wormColorTable0 = getSaturnPtr(gFLD_A5->getSaturnPtr(0x0609C640));

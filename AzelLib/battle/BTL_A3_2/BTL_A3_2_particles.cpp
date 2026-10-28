@@ -49,7 +49,7 @@ static void battleParticle_draw(sBattleParticle* pThis)
 // 06074664
 static void battleParticle_drawWithScale(sBattleParticle* pThis)
 {
-    // TODO: scale support — for now just draw normally
+    // TODO: scale support - for now just draw normally
     drawProjectedParticle(&pThis->m8_quad, &pThis->m10_position);
 }
 

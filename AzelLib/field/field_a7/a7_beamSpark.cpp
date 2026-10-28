@@ -4,7 +4,7 @@
 
 // This file only contains the A7-specific spawn wrapper.
 
-// 06055aea — A7 beam emitter spark spawner (overlay-specific arg setup)
+// 06055aea - A7 beam emitter spark spawner (overlay-specific arg setup)
 void a7BeamEmitter_spawnSpark_06055aea(p_workArea parent, sVec3_FP* pPos)
 {
     sBeamSparkArg arg;

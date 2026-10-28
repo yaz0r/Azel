@@ -5,7 +5,7 @@
 
 extern s32 battleIndex; // todo: cleanup
 
-// 06066e4e — battle trigger helper. Two-arm dispatch:
+// 06066e4e - battle trigger helper. Two-arm dispatch:
 // If encounters are disabled (m28_status & 1 == 0), stamps battleIndex.
 // Otherwise creates a shared sBattleLoadingTask (same as A3's battleStart).
 static void a7TriggerBattle_06066e4e(s32 enemyId, s32 param2)

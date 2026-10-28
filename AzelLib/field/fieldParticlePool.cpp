@@ -1,7 +1,7 @@
 #include "PDS.h"
 #include "fieldParticlePool.h"
 
-// Shared scene manager update — iterates entries, calls per-entry update, cleans up finished ones
+// Shared scene manager update - iterates entries, calls per-entry update, cleans up finished ones
 static void particlePoolUpdate(sParticlePoolManager* pThis)
 {
     sParticleSlot* pEntry = pThis->m8_slotsBase;
@@ -37,7 +37,7 @@ static void particlePoolUpdate(sParticlePoolManager* pThis)
     }
 }
 
-// Shared scene manager draw — iterates entries, calls per-entry draw for active ones
+// Shared scene manager draw - iterates entries, calls per-entry draw for active ones
 static void particlePoolDraw(sParticlePoolManager* pThis)
 {
     sParticleSlot* pEntry = pThis->m8_slotsBase;
@@ -87,7 +87,7 @@ sParticlePoolManager* createParticlePoolTask(p_workArea parent, s32 areaIndex, s
 // Moved from field_a7/a7_sceneParticle.cpp
 // ============================================================================
 
-// 06076f28 (A7) / 0607895c (A3) — physics step: pos += vel, advance animated quad
+// 06076f28 (A7) / 0607895c (A3) - physics step: pos += vel, advance animated quad
 s32 particleUpdateMoving(sParticleSlot* pEntry)
 {
     pEntry->m0_position.m0_X = fixedPoint(pEntry->m0_position.m0_X.m_value + pEntry->mC_velocity.m0_X.m_value);
@@ -96,19 +96,19 @@ s32 particleUpdateMoving(sParticleSlot* pEntry)
     return sGunShotTask_UpdateSub4(&pEntry->m2C_animQuad) & 2;
 }
 
-// 06076fe8 (A7) / 06078a1c (A3) — projected particle draw
+// 06076fe8 (A7) / 06078a1c (A3) - projected particle draw
 static void particleDrawSimple(sParticleSlot* pEntry)
 {
     drawProjectedParticle(&pEntry->m2C_animQuad, &pEntry->m0_position);
 }
 
-// 06076ff6 (A7) / 06078a2a (A3) — billboard particle draw
+// 06076ff6 (A7) / 06078a2a (A3) - billboard particle draw
 static void particleDrawBillboard(sParticleSlot* pEntry)
 {
     drawProjectedParticle(&pEntry->m2C_animQuad, &pEntry->m0_position);
 }
 
-// 06077008 (A7) / 06078a3c (A3) — allocate a scene-particle slot
+// 06077008 (A7) / 06078a3c (A3) - allocate a scene-particle slot
 s32 spawnParticleInPool(sParticlePoolManager* pManager, sParticleSpawnConfig* pDesc, s32 mode)
 {
     if (pManager->m18_activeCount >= pManager->m14_maxParticles)
@@ -159,7 +159,7 @@ s32 spawnParticleInPool(sParticlePoolManager* pManager, sParticleSpawnConfig* pD
     return 1;
 }
 
-// 060770e2 (A7) / 06078b16 (A3) — spawn projected particle
+// 060770e2 (A7) / 06078b16 (A3) - spawn projected particle
 void spawnParticleProjected(sParticlePoolManager* pManager, sParticleSpawnConfig* pDesc,
                                    sVec3_FP* pPosition, sVec3_FP* pVelocity)
 {

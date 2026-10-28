@@ -8,12 +8,12 @@ extern void setAnimationFrame(s_3dModel* r4, s32 r5);
 // Bird init data from Saturn table at 0x06090cf4 (0x18 bytes per bird, 16 birds)
 struct sBirdInitData
 {
-    s32 m0;  // → m20
-    s32 m4;  // → m24
-    s32 m8;  // → m28
-    s32 mC;  // → m34
-    s32 m10; // → m2C
-    s32 m14; // → m30
+    s32 m0;  // -> m20
+    s32 m4;  // -> m24
+    s32 m8;  // -> m28
+    s32 mC;  // -> m34
+    s32 m10; // -> m2C
+    s32 m14; // -> m30
 };
 
 struct sBirdTask : public s_workAreaTemplateWithArg<sBirdTask, sBirdInitData*>
@@ -87,11 +87,11 @@ struct sBirdTask : public s_workAreaTemplateWithArg<sBirdTask, sBirdInitData*>
 
     s_memoryAreaOutput m0_memoryArea; // 0x00
     sVec3_FP m8_position;            // 0x08
-    sVec3_FP m14_rotation;           // 0x14 — rotation angles (big-endian: upper16 of each = Y, X, Z)
-    sVec3_FP m20_center;             // 0x20 — orbit center position
-    s32 m2C;                         // 0x2C — current angle
-    s32 m30;                         // 0x30 — angular velocity
-    s32 m34;                         // 0x34 — orbit radius
+    sVec3_FP m14_rotation;           // 0x14 - rotation angles (big-endian: upper16 of each = Y, X, Z)
+    sVec3_FP m20_center;             // 0x20 - orbit center position
+    s32 m2C;                         // 0x2C - current angle
+    s32 m30;                         // 0x30 - angular velocity
+    s32 m34;                         // 0x34 - orbit radius
     s_3dModel m38_model;             // 0x38
     // size 0x88
 };

@@ -241,15 +241,15 @@ static void s_battleDebug_Draw(s_battleDebug* pThis)
             pThis->mFlags[1]++;
             if (pThis->mFlags[1] > 0x1C) pThis->mFlags[1] = 0;
         }
-        if (readKeyboardToggle(0x106)) // left — disable flag
+        if (readKeyboardToggle(0x106)) // left - disable flag
         {
             pThis->mFlags[pThis->mFlags[1] + 5] = 0;
         }
-        if (readKeyboardToggle(0x10D)) // right — enable flag
+        if (readKeyboardToggle(0x10D)) // right - enable flag
         {
             pThis->mFlags[pThis->mFlags[1] + 5] = 1;
         }
-        if (readKeyboardToggle(0x84)) // F1 — close menu
+        if (readKeyboardToggle(0x84)) // F1 - close menu
         {
             pThis->mFlags[0] = 0;
             clearVdp2TextMemory();

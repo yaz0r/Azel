@@ -45,7 +45,7 @@ struct sBerserkerRageTask : public s_workAreaTemplate<sBerserkerRageTask>
     sVec3_FP m20_springAccel;  // 0x20
     sVec3_FP m2C_cameraTarget; // 0x2C -- camera desired position
     sVec3_FP m38_cameraPosition; // 0x38 -- camera current position
-    sVec3_FP m44_cameraAngle;  // 0x44 — also used as sVec3_FP for battleEngineSub1_UpdateSub2
+    sVec3_FP m44_cameraAngle;  // 0x44 - also used as sVec3_FP for battleEngineSub1_UpdateSub2
     sVec3_FP* m50_pSourcePos;  // 0x50 -- pointer to source position (dragon or battleCenter)
     sVec3_FP* m54_pTargetPos;  // 0x54 -- pointer to target position
     sVec3_FP* m58_pHotpoint;   // 0x58 -- hotpoint for bolt origin

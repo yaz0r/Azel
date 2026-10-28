@@ -31,8 +31,8 @@ struct BTL_GenericData : public sSaturnMemoryFile
 
     // laser data
     static sLaserData mLaserData;
-    static sLaserData mBoltLaserData0; // 060acb74 — berserker rage bolt type 0
-    static sLaserData mBoltLaserData1; // 060acb98 — berserker rage bolt type 1
+    static sLaserData mBoltLaserData0; // 060acb74 - berserker rage bolt type 0
+    static sLaserData mBoltLaserData1; // 060acb98 - berserker rage bolt type 1
 
     static void parseLaserData(sLaserData& out, sSaturnPtr ea);
 

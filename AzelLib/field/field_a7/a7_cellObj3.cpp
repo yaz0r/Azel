@@ -6,7 +6,7 @@
 #include "3dModels.h"
 #include "field/fieldVisibilityGrid.h"
 
-// 06055230 — check if game state bit is set for object at given index
+// 06055230 - check if game state bit is set for object at given index
 bool isObjectDestroyedA7(s32 index)
 {
     s16 bitIndex = readSaturnS16(gFLD_A7->getSaturnPtr(0x060843d0) + index * 2);
@@ -36,11 +36,11 @@ struct s_A7_CellObj3 : public s_workAreaTemplate<s_A7_CellObj3>
 
         if (pThis->mF_destroyed)
         {
-            // 06055f70 — spinning behavior when destroyed
+            // 06055f70 - spinning behavior when destroyed
             pThis->mC_rotation += 0x1F;
         }
 
-        // 0606e2f4 — visibility check against far clip
+        // 0606e2f4 - visibility check against far clip
         s32 vis = checkPositionVisibilityAgainstFarPlane(&pThis->m8->m4_position);
         pThis->mE_visible = (vis == 0);
     }
@@ -56,7 +56,7 @@ struct s_A7_CellObj3 : public s_workAreaTemplate<s_A7_CellObj3>
 
         if (pThis->mF_destroyed)
         {
-            // 06055eba — draw with Y rotation when destroyed
+            // 06055eba - draw with Y rotation when destroyed
             rotateCurrentMatrixY(pThis->mC_rotation);
         }
 

@@ -62,7 +62,7 @@ static void s_battlePrgTask_Update(s_battlePrgTask* pThis)
         // Select battle module (next)
         if (graphicEngineStatus.m4514.m0_inputDevices[0].m0_current.mC_newButtonDown2 & 0x20)
         {
-            // 06006da4 — clear sub-battle list, advance to next active battle overlay
+            // 06006da4 - clear sub-battle list, advance to next active battle overlay
             int numSubBattle = gCommonFile->battleOverlaySetup[pBattleManager->mA_pendingBattleOverlayId].mC_numSubBattles;
             for (int i = 0; i < numSubBattle; i++)
             {

@@ -3,7 +3,7 @@
 // 0x14-byte entry in the destination/encounter list
 struct sRadarDestEntry
 {
-    const char* m0_text;     // 0x00 — display string
+    const char* m0_text;     // 0x00 - display string
     s32 m4;                  // 0x04
     s32 m8;                  // 0x08
     s32 mC;                  // 0x0C
@@ -12,7 +12,7 @@ struct sRadarDestEntry
     // Accessed via raw offsets from entry base:
     //   offset 0x14 (entry[5]) = script arg / choice value (next entry's m0)
     //   offset 0x18 (entry[6]) = bit index for availability check (next entry's m4)
-    // These overlap with the NEXT entry — the list is read as flat s32 array
+    // These overlap with the NEXT entry - the list is read as flat s32 array
 };
 
 struct s_FieldRadar : public s_workAreaTemplate<s_FieldRadar>

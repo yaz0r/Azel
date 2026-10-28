@@ -29,7 +29,7 @@ int sGunShotTask_UpdateSub4(sAnimatedQuad* pThis);
 int drawProjectedParticle(sAnimatedQuad* pThis, sVec3_FP* position);
 int vdp1DrawQuadScaled(sAnimatedQuad* pThis, sVec3_FP* position, fixedPoint scale);
 
-// 0602f610 — draws a rotated billboard sprite between two view-space points
+// 0602f610 - draws a rotated billboard sprite between two view-space points
 struct sBillboardSpriteParams
 {
     fixedPoint m0_halfWidth;
@@ -42,6 +42,6 @@ struct sBillboardSpriteParams
 };
 int drawImmediateBillboardSprite(const sVec3_FP* points, const sBillboardSpriteParams* params);
 
-// 0602d0dc — draw a projected particle with gouraud support
+// 0602d0dc - draw a projected particle with gouraud support
 int drawProjectedParticleWithGouraud(sAnimatedQuad* pQuad, sVec3_FP* position, const quadColor* gouraudColors = nullptr);
 void flushParticleBillboards();

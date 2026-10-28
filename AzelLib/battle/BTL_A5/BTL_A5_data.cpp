@@ -24,7 +24,7 @@ void BTL_A5_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32
         BTL_A5_createFormation_single(pParent, arg0);
         break;
     case 0x060585e8:
-        Unimplemented(); // BTL_A5_createFormation_multi — 0x50 task with dual NPC allocations
+        Unimplemented(); // BTL_A5_createFormation_multi - 0x50 task with dual NPC allocations
         break;
     case 0x060547da:
         BTL_A5_createFormation_variant(pParent, arg0);
@@ -33,10 +33,10 @@ void BTL_A5_data::invoke(sSaturnPtr Func, s_workAreaCopy* pParent, u32 arg0, u32
         BTL_A5_createFormation_dual(pParent, arg0);
         break;
     case 0x06058df8:
-        // 06058df8 — conditional: only fires when arg == 0xF (Pgoraias boss)
+        // 06058df8 - conditional: only fires when arg == 0xF (Pgoraias boss)
         if (arg0 == 0xF)
         {
-            Unimplemented(); // BTL_A5_createPgoraias — 0x4C boss task with createSubTaskWithArg
+            Unimplemented(); // BTL_A5_createPgoraias - 0x4C boss task with createSubTaskWithArg
         }
         break;
     default:

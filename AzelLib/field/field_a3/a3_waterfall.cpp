@@ -25,7 +25,7 @@ static const s32 waterfallPositionOffsets[][2] = {
     {  0x4000, 0x15000 }, {  0xA000, 0x15000 }, {  0x12000, 0x14000 }, {  0x1C000, 0x14000 },
 };
 
-// 0605baea — spawn mist particle (type A)
+// 0605baea - spawn mist particle (type A)
 static void waterfallSpawnMistA(s_workArea* pThis, sVec3_FP* pPos, sVec3_FP* pVel, s32 velScale)
 {
     s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
@@ -44,7 +44,7 @@ static void waterfallSpawnMistA(s_workArea* pThis, sVec3_FP* pPos, sVec3_FP* pVe
     }
 }
 
-// 0605bbca — spawn mist particle (type B)
+// 0605bbca - spawn mist particle (type B)
 static void waterfallSpawnMistB(s_workArea* pThis, sVec3_FP* pPos, sVec3_FP* pVel, s32 velScale)
 {
     s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
@@ -63,7 +63,7 @@ static void waterfallSpawnMistB(s_workArea* pThis, sVec3_FP* pPos, sVec3_FP* pVe
     }
 }
 
-// 0605bb64 — spawn falling waterfall particle
+// 0605bb64 - spawn falling waterfall particle
 static void waterfallSpawnFalling(s_workArea* pThis, sVec3_FP* pPos, s32 velScale)
 {
     s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
@@ -83,7 +83,7 @@ static void waterfallSpawnFalling(s_workArea* pThis, sVec3_FP* pPos, s32 velScal
     }
 }
 
-// 0605bc28 — waterfall type 0: spawn rising mist particle
+// 0605bc28 - waterfall type 0: spawn rising mist particle
 static void waterfallSpawnRisingMist(s_workArea* pThis)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
@@ -96,7 +96,7 @@ static void waterfallSpawnRisingMist(s_workArea* pThis)
     waterfallSpawnMistA(pThis, &pos, &vel, velScale);
 }
 
-// 0605bd8a — waterfall type 0: spawn splash mist particle
+// 0605bd8a - waterfall type 0: spawn splash mist particle
 static void waterfallSpawnSplashMist(s_workArea* pThis)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
@@ -112,7 +112,7 @@ static void waterfallSpawnSplashMist(s_workArea* pThis)
     waterfallSpawnMistB(pThis, &pos, &vel, velScale);
 }
 
-// 0605be38 — waterfall type 1: spawn rising mist particle variant
+// 0605be38 - waterfall type 1: spawn rising mist particle variant
 static void waterfallSpawnRisingMistVariant(s_workArea* pThis)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
@@ -128,7 +128,7 @@ static void waterfallSpawnRisingMistVariant(s_workArea* pThis)
     waterfallSpawnMistB(pThis, &pos, &vel, velScale);
 }
 
-// 0605bcc4 — waterfall type 1: spawn frame-indexed droplet particle
+// 0605bcc4 - waterfall type 1: spawn frame-indexed droplet particle
 static void waterfallSpawnDroplet(s_workArea* pThis)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
@@ -142,7 +142,7 @@ static void waterfallSpawnDroplet(s_workArea* pThis)
     waterfallSpawnFalling(pThis, &pos, velScale);
 }
 
-// 0605bd2e — waterfall type 2 (large): spawn periodic falling particle
+// 0605bd2e - waterfall type 2 (large): spawn periodic falling particle
 static void waterfallLargeSpawnFalling(s_workArea* pThis)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
@@ -157,7 +157,7 @@ static void waterfallLargeSpawnFalling(s_workArea* pThis)
     waterfallSpawnFalling(pThis, &pos, velScale);
 }
 
-// 0605beaa — waterfall type 2 (large): spawn random splash particle
+// 0605beaa - waterfall type 2 (large): spawn random splash particle
 static void waterfallLargeSpawnSplash(s_workArea* pThis, s32 spreadParam)
 {
     s_DataTable2Sub0* pData = *(s_DataTable2Sub0**)((u8*)pThis + 8);
@@ -205,7 +205,7 @@ struct s_A3_Waterfall0 : public s_workAreaTemplate<s_A3_Waterfall0>
 
         waterfallSpawnRisingMist(pThis);
         waterfallSpawnSplashMist(pThis);
-        // FUN_0605b9e8 — update nearest waterfall sound 0x6B position
+        // FUN_0605b9e8 - update nearest waterfall sound 0x6B position
         s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
         sVec3_FP* waterfallPos = &pThis->m8->m4_position;
         s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -289,7 +289,7 @@ struct s_A3_Waterfall1 : public s_workAreaTemplate<s_A3_Waterfall1>
 
         waterfallSpawnRisingMistVariant(pThis);
         waterfallSpawnDroplet(pThis);
-        // FUN_0605b9e8 — update nearest waterfall sound 0x6B position
+        // FUN_0605b9e8 - update nearest waterfall sound 0x6B position
         s_fieldSpecificData_A3* pFieldData = getFieldSpecificData_A3();
         sVec3_FP* waterfallPos = &pThis->m8->m4_position;
         s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -520,7 +520,7 @@ struct s_A3_Obj1 : public s_workAreaTemplate<s_A3_Obj1>
 
     s_memoryAreaOutput m0;     // 0
     s_DataTable2Sub0* m8;      // 8
-    u32* mC;                   // C — pointer into fieldSpecificData_A3.m50[]
+    u32* mC;                   // C - pointer into fieldSpecificData_A3.m50[]
     sVec3_FP m10_position;     // 10
     sVec3_S16_12_4 m1C_rotation; // 1C
     s32 m24_angle;             // 24

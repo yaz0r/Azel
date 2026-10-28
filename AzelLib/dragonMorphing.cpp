@@ -48,7 +48,7 @@ static void morphDragonVertice(sVec3_FP& pDst, const sVec3_FP& pA, const sVec3_F
         + MTH_Mul(morphDragonAccumulator[2], pC);
 }
 
-// 060134cc — morph normals (s16 weighted blend)
+// 060134cc - morph normals (s16 weighted blend)
 static void morphDragonNormals(std::vector<sVec3_S16_12_4>& pDst, const std::vector<sVec3_S16_12_4>& pA, const std::vector<sVec3_S16_12_4>& pB, const std::vector<sVec3_S16_12_4>& pC, s32 count)
 {
     assert((count % 3) == 0);
@@ -106,7 +106,7 @@ static void morphDragonNormals(std::vector<sProcessed3dModel::sQuadExtra>& pDst,
 }
 
 
-// 0601344e — morph a single 3D model node (vertices + normals + polygon data)
+// 0601344e - morph a single 3D model node (vertices + normals + polygon data)
 static void morphDragonProcessNode(sProcessed3dModel* pDst, sProcessed3dModel* pA, sProcessed3dModel* pB, sProcessed3dModel* pC)
 {
     if (pDst->m4_numVertices == 0) // m4_vertexCount
@@ -123,7 +123,7 @@ static void morphDragonProcessNode(sProcessed3dModel* pDst, sProcessed3dModel* p
     // Morph normal data
     morphDragonNormals(pDst->m8_vertices, pA->m8_vertices, pB->m8_vertices, pC->m8_vertices, pDst->m4_numVertices * 3);
 
-    // Morph polygon vertex coordinates — iterate VDP1 polygon commands
+    // Morph polygon vertex coordinates - iterate VDP1 polygon commands
     // Layout: [header 5 u32s][vertex data...] per polygon, terminated by sentinel
     auto pCmdDst = pDst->mC_Quads.begin();
     auto pCmdA = pA->mC_Quads.begin();
@@ -213,7 +213,7 @@ static void morphDragonHotpoints(std::vector<s_hotpointDefinition>* pDstPairs, s
     }
 }
 
-// 060133a8 — blend three RGB555 palettes by the morph weights (each channel blended in place)
+// 060133a8 - blend three RGB555 palettes by the morph weights (each channel blended in place)
 void morphDragonTexture(u16* dest, u16* pA, u16* pB, u16* pC, s32 count)
 {
     for (int i = 0; i < count * 16; i++) {
@@ -267,7 +267,7 @@ void morphDragon(sDragonMorphData* pLoadDragonWorkArea, s_3dModel* pOutputDragon
     const sDragonMorphModels* pA = pCenter;
     s_fileBundle* pBundle = pLoadDragonWorkArea->m0_dramAllocation->m0_dramData;
 
-    // Morph model hierarchy vertices (first call — sub-models)
+    // Morph model hierarchy vertices (first call - sub-models)
     morphDragonTraverseHierarchy(
         pOutputDragonModel->m4_pModelFile->getModelHierarchy(pOutput->m0_modelIndex),
         pBundle->getModelHierarchy(pA->m0_modelIndex),
@@ -275,7 +275,7 @@ void morphDragon(sDragonMorphData* pLoadDragonWorkArea, s_3dModel* pOutputDragon
         pBundle->getModelHierarchy(pC->m0_modelIndex)
     );
 
-    // Morph model hierarchy vertices (second call — shadow models)
+    // Morph model hierarchy vertices (second call - shadow models)
     morphDragonTraverseHierarchy(
         pOutputDragonModel->m4_pModelFile->getModelHierarchy(pOutput->m2_shadowModelIndex),
         pBundle->getModelHierarchy(pA->m2_shadowModelIndex),
@@ -283,7 +283,7 @@ void morphDragon(sDragonMorphData* pLoadDragonWorkArea, s_3dModel* pOutputDragon
         pBundle->getModelHierarchy(pC->m2_shadowModelIndex)
     );
 
-    // Morph bone pose data — reads raw pose offsets from bundle
+    // Morph bone pose data - reads raw pose offsets from bundle
     int numBones = pOutputDragonModel->m4_pModelFile->getModelHierarchy(pOutput->m2_shadowModelIndex)->countNumberOfBones();
     morphDragonBonePoses(
         pOutputDragonModel,

@@ -152,7 +152,7 @@ s8 LCSItemBox_shouldSpin(s_itemBoxType1* pThis)
     return 1;
 }
 
-// 0607730a — per-node draw: cull against dragon, copy matrix, queue entry.
+// 0607730a - per-node draw: cull against dragon, copy matrix, queue entry.
 // Assumes caller already switched to camera space.
 static void LCSItemBox_UpdateType0Sub0_drawNode(sProcessed3dModel* pModel, fixedPoint scale)
 {
@@ -177,7 +177,7 @@ static void LCSItemBox_UpdateType0Sub0_drawNode(sProcessed3dModel* pModel, fixed
     }
 }
 
-// 060774cc — recursive model hierarchy walker.
+// 060774cc - recursive model hierarchy walker.
 static void LCSItemBox_UpdateType0Sub0_drawHierarchy(sModelHierarchy* pHierarchy,
     std::vector<sStaticPoseData::sBonePoseData>::const_iterator& pBone, fixedPoint scale)
 {
@@ -208,7 +208,7 @@ static void LCSItemBox_UpdateType0Sub0_drawHierarchy(sModelHierarchy* pHierarchy
     }
 }
 
-// 0606fa32 / 06077626 — deferred draw for model hierarchies. Switches to
+// 0606fa32 / 06077626 - deferred draw for model hierarchies. Switches to
 // camera space, multiplies the current world matrix, and recursively walks
 // the hierarchy submitting each visible node to the collision/LCS queue.
 void LCSItemBox_UpdateType0Sub0(s_fileBundle* pBundle, s32 r5, s32 r6, fixedPoint r7)

@@ -26,7 +26,7 @@
 // Shared helpers used by all berserk effect files
 //=============================================================================
 
-// BTL_A3::060a2fc8 — inner camera orbit computation
+// BTL_A3::060a2fc8 - inner camera orbit computation
 // param_1 = output position, param_2 = 28-bit angle, param_3 = per-quadrant altitude array
 void berserkCameraOrbitInner(sVec3_FP* pOut, u32 angle, s32* pPerQuadrantAltitude)
 {
@@ -79,7 +79,7 @@ void berserkCameraOrbitInner(sVec3_FP* pOut, u32 angle, s32* pPerQuadrantAltitud
         + pTargetSystem->m204_cameraMaxAltitude);
 }
 
-// BTL_A3::060a3120 — quadrant-based camera orbit wrapper
+// BTL_A3::060a3120 - quadrant-based camera orbit wrapper
 void berserkCameraOrbit(sVec3_FP* pOut, s32 rotAngle, s32* pPerQuadrantAltitude)
 {
     s_battleEngine* pEngine = gBattleManager->m10_battleOverlay->m4_battleEngine;
@@ -208,7 +208,7 @@ u8 fpToColorByte(fixedPoint v)
     return (u8)(((u32)(s32)v >> 16) & 0xFF);
 }
 
-// 060073f8 — scale base damage by dragon SPR stat
+// 060073f8 - scale base damage by dragon SPR stat
 // formula: baseDamage * (dragonSpr/200 * 0.4 + 0.8)
 s16 computeSprScaledDamage(s16 baseDamage)
 {
@@ -218,7 +218,7 @@ s16 computeSprScaledDamage(s16 baseDamage)
     return (s16)(((s32)result + 0x8000) >> 16);
 }
 
-// BTL_A3::0608d7f0 — compute berserk base damage scaled by SPR
+// BTL_A3::0608d7f0 - compute berserk base damage scaled by SPR
 s16 phantomSlasher_getBaseDamage(s16 baseDamage)
 {
     return computeSprScaledDamage(baseDamage);
@@ -234,7 +234,7 @@ s32 battleTypeId_match(u16 battleId, u8 category)
     return 0;
 }
 
-// BTL_A3::060a2eb6 — get current battle type ID
+// BTL_A3::060a2eb6 - get current battle type ID
 // Table at 060b1884: 14 entries of {u8 typeId, pad, u16 battleId(BE), u8 category, pad}
 static const u8 battleTypeTable[] = {
     0x00, 0x00, 0x00, 0x0A, 0x00, 0x00,
@@ -269,7 +269,7 @@ s8 getBattleTypeId()
     return 0xE;
 }
 
-// BTL_A3::060a2efc — random spherical offset for bolt scatter
+// BTL_A3::060a2efc - random spherical offset for bolt scatter
 sVec3_FP randomSphericalOffset(s32 maxRadius)
 {
     u32 rnd1 = randomNumber();
@@ -294,7 +294,7 @@ sVec3_FP randomSphericalOffset(s32 maxRadius)
     return sVec3_FP(fixedPoint(cosCos), fixedPoint(sinR), fixedPoint(sinCos));
 }
 
-// BTL_A3::060a2efc — init per-quadrant camera altitude deltas
+// BTL_A3::060a2efc - init per-quadrant camera altitude deltas
 // Each entry = (altitude[nextQuadrant] - altitude[thisQuadrant]) / 0x4000000
 void initPerQuadrantCameraAltitude(s32* pOut)
 {
@@ -307,7 +307,7 @@ void initPerQuadrantCameraAltitude(s32* pOut)
     }
 }
 
-// BTL_A3::06096048 — particle effect for certain berserks (0x95, 0x96, 0xA1)
+// BTL_A3::06096048 - particle effect for certain berserks (0x95, 0x96, 0xA1)
 void FUN_06096048(s_battleEngine* pThis)
 {
     Unimplemented();
@@ -316,7 +316,7 @@ void FUN_06096048(s_battleEngine* pThis)
 //=============================================================================
 // Shared VDP2 background + palette fade helpers
 // Each berserk uses a specific palette color for its visual tint.
-// These are separate functions in the Saturn binary — keep boundaries.
+// These are separate functions in the Saturn binary - keep boundaries.
 //=============================================================================
 
 // BTL_A3::0607f720
@@ -394,14 +394,14 @@ static void energyPrism_restoreLighting()
     g_fadeControls.m_4D = 5;
 }
 
-// BTL_A3::0607df10 — Plasma Vortex
+// BTL_A3::0607df10 - Plasma Vortex
 // Task (0x204 createSubTask) with 16 particle entries, dual-mode,
 // target tracking, computeLookAt orientation, camera orbit, homing toward targets.
 //
 // FIXME audit findings (63 issues across 5 berserks in this file):
 //
 // --- Plasma Vortex ---
-// 1. [CRITICAL] Missing attackType param — clobbering m1FC flags
+// 1. [CRITICAL] Missing attackType param - clobbering m1FC flags
 // 2. [CRITICAL] Missing particle trail system
 //
 // --- Plasma Swarm (line ~701) ---
@@ -420,26 +420,26 @@ static void energyPrism_restoreLighting()
 
 struct sPlasmaVortexTask : public s_workAreaTemplate<sPlasmaVortexTask>
 {
-    sVec3_FP m0_position;              // 0x00 — current position
+    sVec3_FP m0_position;              // 0x00 - current position
     u8 mC_particles[0xB4];             // 0x0C..0xBF: 16 particle entries (various data)
     u8 mC0_particleState[0x40];        // 0xC0..0xFF: particle state arrays
     u8 m100_particleData2[0x40];       // 0x100..0x13F
     u8 m140_particleData3[0x40];       // 0x140..0x17F
     u8 m180_pad[0x48];                 // 0x180..0x1C7
     s32 m1C8_targetIndex;              // 0x1C8
-    sVec3_FP m1CC_sourcePosition;      // 0x1CC — source position (minus autoScroll)
-    sVec3_FP m1D8_targetPosition;      // 0x1D8 — target position
-    sVec3_FP* m1E4_pSourcePos;         // 0x1E4 — pointer to source (dragon or battleCenter)
-    sVec3_FP* m1E8_pTargetPos;         // 0x1E8 — pointer to target
-    s32 m1EC_trackSpeed;               // 0x1EC — ramps up, damage when >= 0x10000
-    s32 m1F0_yGravity;                 // 0x1F0 — Y velocity component
+    sVec3_FP m1CC_sourcePosition;      // 0x1CC - source position (minus autoScroll)
+    sVec3_FP m1D8_targetPosition;      // 0x1D8 - target position
+    sVec3_FP* m1E4_pSourcePos;         // 0x1E4 - pointer to source (dragon or battleCenter)
+    sVec3_FP* m1E8_pTargetPos;         // 0x1E8 - pointer to target
+    s32 m1EC_trackSpeed;               // 0x1EC - ramps up, damage when >= 0x10000
+    s32 m1F0_yGravity;                 // 0x1F0 - Y velocity component
     s8 m1F4_state;                     // 0x1F4
     u8 m1F5_pad;
     u16 m1F6_hitCount;                 // 0x1F6
     u16 m1F8_timer;                    // 0x1F8
     u16 m1FA_pad;
-    u32 m1FC_flags;                    // 0x1FC — bit 0x8: camera active, 0x10: single target, 0x20: has camera setup
-    s32 m200_attackType;               // 0x200 — 0=dragon→enemy, 1=enemy→dragon
+    u32 m1FC_flags;                    // 0x1FC - bit 0x8: camera active, 0x10: single target, 0x20: has camera setup
+    s32 m200_attackType;               // 0x200 - 0=dragon->enemy, 1=enemy->dragon
     // size 0x204
 };
 
@@ -449,8 +449,8 @@ static void sPlasmaVortexTask_Delete(sPlasmaVortexTask* pThis)
     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
 }
 
-// BTL_A3::060acc1c — per-attack-type base damage for Plasma Vortex
-static const s16 plasmaVortexDamageTable[] = { 0x50, 0x3C }; // [0]=dragon→enemy, [1]=enemy→dragon
+// BTL_A3::060acc1c - per-attack-type base damage for Plasma Vortex
+static const s16 plasmaVortexDamageTable[] = { 0x50, 0x3C }; // [0]=dragon->enemy, [1]=enemy->dragon
 
 // BTL_A3::0607e5f4
 static void sPlasmaVortexTask_Update(sPlasmaVortexTask* pThis)
@@ -466,7 +466,7 @@ static void sPlasmaVortexTask_Update(sPlasmaVortexTask* pThis)
     // Track target position
     if ((pThis->m1FC_flags & 0x10) != 0)
     {
-        // Single target mode — read from pointer
+        // Single target mode - read from pointer
         pThis->m1D8_targetPosition = *pThis->m1E8_pTargetPos;
     }
 
@@ -484,7 +484,7 @@ static void sPlasmaVortexTask_Update(sPlasmaVortexTask* pThis)
     {
     case 0:
     {
-        // State 0: init — wait for file loading, setup lighting, init draw
+        // State 0: init - wait for file loading, setup lighting, init draw
         pThis->m0_position = pThis->m1CC_sourcePosition;
         if (fileInfoStruct.m2C_allocatedHead != nullptr)
             break;
@@ -504,7 +504,7 @@ static void sPlasmaVortexTask_Update(sPlasmaVortexTask* pThis)
     }
     case 1:
     {
-        // State 1: main loop — trail shift, homing, damage
+        // State 1: main loop - trail shift, homing, damage
 
         // TODO: 16-particle trail shifting (complex stride-based array operations)
 
@@ -528,7 +528,7 @@ static void sPlasmaVortexTask_Update(sPlasmaVortexTask* pThis)
 
         pThis->m1F8_timer++;
 
-        // Check for convergence — damage when tracking speed >= 0x10000
+        // Check for convergence - damage when tracking speed >= 0x10000
         if (pThis->m1EC_trackSpeed >= 0x10000 && pThis->m1F6_hitCount <= 0xE)
         {
             pThis->m1F6_hitCount++;
@@ -579,7 +579,7 @@ static void sPlasmaVortexTask_Update(sPlasmaVortexTask* pThis)
             }
         }
 
-        // Check for completion — restore lighting when tracking speed > 0x34000
+        // Check for completion - restore lighting when tracking speed > 0x34000
         if (pThis->m1EC_trackSpeed > 0x34000)
         {
             battleGrid_setupLightInterpolation(0x1E, pGrid->m1CC_lightColor,
@@ -702,7 +702,7 @@ void berserk_createPlasmaVortex(s_battleEngine* pThis)
     sSaturnPtr camData = getOverlayCameraData(pThis);
     if (camData.m_offset == 0)
     {
-        // No camera data — debug message
+        // No camera data - debug message
     }
     else
     {
@@ -718,7 +718,7 @@ void berserk_createPlasmaVortex(s_battleEngine* pThis)
     pNewTask->m1F0_yGravity = {};
 }
 
-// BTL_A3::06094f68 — Plasma Swarm
+// BTL_A3::06094f68 - Plasma Swarm
 
 struct sPlasmaSwarmTask : public s_workAreaTemplate<sPlasmaSwarmTask>
 {
@@ -768,8 +768,8 @@ static void sPlasmaSwarmTask_Update(sPlasmaSwarmTask* pThis)
     if (((u32)pThis->mD4_rotationAngle & 0xFFFFFFF) > 0xEAAAAAA)
         pThis->mD8_rotationSpeed = (s32)0xFFF49F4A;
 
-    // Camera orbit — output to byte 0x40 (within m0_pad), altitude from byte 0x00
-    // NOTE: these fields are within m0_pad blob — using raw cast since struct covers 0x00..0xBB
+    // Camera orbit - output to byte 0x40 (within m0_pad), altitude from byte 0x00
+    // NOTE: these fields are within m0_pad blob - using raw cast since struct covers 0x00..0xBB
     sVec3_FP* pCameraPos = (sVec3_FP*)((u8*)pThis + 0x40);
     berserkCameraOrbit(pCameraPos, pThis->mD4_rotationAngle, (s32*)pThis);
 
@@ -785,17 +785,17 @@ static void sPlasmaSwarmTask_Update(sPlasmaSwarmTask* pThis)
     pThis->mDC_lookAtRotation[2] = 0;
 
     // Activate camera tracking once particles start moving
-    // NOTE: m2C is within m0_pad (byte 0x2C) — particle first-move flag
+    // NOTE: m2C is within m0_pad (byte 0x2C) - particle first-move flag
     if (pThis->mC4_cameraActive == 0 && *((s8*)pThis + 0x2C) != 0)
     {
         pThis->mC4_cameraActive = 1;
         battleEngine_setDesiredCameraPositionPointer((sVec3_FP*)((u8*)pThis + 0x80));
     }
 
-    // FUN_060956aa — update swarm particle visual state
+    // FUN_060956aa - update swarm particle visual state
     // TODO: implement faithfully (updates particle positions/velocities)
 
-    // FUN_06095872 — update per-target tracking
+    // FUN_06095872 - update per-target tracking
     // TODO: implement faithfully (updates target positions, checks hits)
 
     // State machine
@@ -803,7 +803,7 @@ static void sPlasmaSwarmTask_Update(sPlasmaSwarmTask* pThis)
     {
     case 0:
     {
-        // State 0: particles active — check for completion
+        // State 0: particles active - check for completion
         // FUN_060955c4 checks if all 8 particles have hit their targets
         // TODO: implement faithfully
         // For now, use timer as fallback
@@ -850,22 +850,22 @@ void berserk_createPlasmaSwarm(s_battleEngine* pThis)
 
     s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
 
-    // Zero flags block (bytes 0xC0..0xCF: 2 iterations × 8 bytes)
+    // Zero flags block (bytes 0xC0..0xCF: 2 iterations x 8 bytes)
     pNewTask->mBC_cameraFlags[0] = 0;
     pNewTask->mBC_cameraFlags[1] = 0;
     pNewTask->mC4_cameraActive = 0;
     pNewTask->mCC_visualFlags = 0;
 
-    // FUN_060952b4 — init target positions from enemies
+    // FUN_060952b4 - init target positions from enemies
     // TODO: implement faithfully (allocates target array at 0xBC, fills with enemy positions)
 
-    // FUN_06095548 — init camera from overlay data
+    // FUN_06095548 - init camera from overlay data
     // TODO: implement faithfully (sets up camera orbit, overlay data check)
 
-    // FUN_06095446 — init particle spawn positions
+    // FUN_06095446 - init particle spawn positions
     // TODO: implement faithfully (initializes 8 particle positions around dragon)
 
-    // FUN_060955f0 — init visual state (lighting, palette)
+    // FUN_060955f0 - init visual state (lighting, palette)
     // TODO: implement faithfully
 
     // Set m_shouldSetM100 flag (big-endian s32 = 1 at byte 0xCC)
@@ -890,26 +890,26 @@ void berserk_createPlasmaSwarm(s_battleEngine* pThis)
     // Create 8 swarm particle sub-tasks
     for (s32 i = 0; i < 8; i++)
     {
-        // FUN_060959bc — creates individual particle sibling task
+        // FUN_060959bc - creates individual particle sibling task
         // TODO: implement faithfully (creates WithCopy sub-task with particle homing + damage)
     }
 }
 
-// BTL_A3::06083b08 — Hunting Scythe
+// BTL_A3::06083b08 - Hunting Scythe
 
 struct sHuntingScytheTask : public s_workAreaTemplateWithCopy<sHuntingScytheTask>
 {
     u8 m8_pad[0x794];              // 0x08..0x79B: scythe model + 16 trail entries at 0x6C stride
-    s32 m79C_timer;                // 0x79C — countdown timer (starts 0x147)
+    s32 m79C_timer;                // 0x79C - countdown timer (starts 0x147)
     s32 m7A0_frameCounter;         // 0x7A0
     s8 m7A4_state;                 // 0x7A4
     u8 m7A5_subState;              // 0x7A5
-    u16 m7A6_targetIndex;          // 0x7A6 — current enemy target index
+    u16 m7A6_targetIndex;          // 0x7A6 - current enemy target index
     u8 m7A8_pad[2];
     u16 m7AA_globalTimer;          // 0x7AA
     u16 m7AC_hitCount;             // 0x7AC
     u8 m7AE_pad[2];
-    s32 m7B0_finished;             // 0x7B0 — set to 1 when no valid targets remain
+    s32 m7B0_finished;             // 0x7B0 - set to 1 when no valid targets remain
     s32 m7B4_shouldSetM100;        // 0x7B4
     s32 m7B8_hasCamera;            // 0x7B8
     // size 0x7BC
@@ -977,7 +977,7 @@ static void sHuntingScytheTask_Update(sHuntingScytheTask* pThis)
                     (enemy->m4_targetable->m50_flags & 0x140003) == 0 &&
                     enemy->m0_isActive > 0)
                 {
-                    // Valid target — scythe homes toward it
+                    // Valid target - scythe homes toward it
                     // TODO: homing physics, collision detection
                     // On hit: phantomSlasher_getBaseDamage + computeResistanceDamage + applyDamageToEnnemy
                     break;
@@ -991,7 +991,7 @@ static void sHuntingScytheTask_Update(sHuntingScytheTask* pThis)
             }
         }
 
-        // Timer check — finish when expired
+        // Timer check - finish when expired
         if (pThis->m7B0_finished != 0)
         {
             pThis->m79C_timer--;
@@ -1026,7 +1026,7 @@ void berserk_createHuntingScythe(s_battleEngine* pThis)
 
     sBattleOverlayTask_C* pTargetSystem = gBattleManager->m10_battleOverlay->mC_targetSystem;
 
-    // Init fields — faithful to Ghidra
+    // Init fields - faithful to Ghidra
     pNewTask->m7B8_hasCamera = 0;
     pNewTask->m7A6_targetIndex = 0;
     pNewTask->m7B0_finished = 0;
@@ -1040,7 +1040,7 @@ void berserk_createHuntingScythe(s_battleEngine* pThis)
 
     if (pTargetSystem->m20A_numSelectableEnemies == 0)
     {
-        // No enemies — mark as finished immediately
+        // No enemies - mark as finished immediately
         pNewTask->m7B0_finished = 1;
     }
     else
@@ -1076,21 +1076,21 @@ struct sEnergyPrismTask : public s_workAreaTemplateWithCopy<sEnergyPrismTask>
 {
     // 0x00: m0_fileBundle (inherited)
     // 0x04: m4_vd1Allocation (inherited)
-    std::array<s32, 4> m8_perQuadrantAltitude; // 0x08 — per-quadrant camera altitude (param_3 to orbit)
-    void (*m18_transformFunc)(sVec3_FP*, sVec3_FP*); // 0x18 — model transform function
-    sVec3_FP m1C_transformOutput;   // 0x1C — transform result
+    std::array<s32, 4> m8_perQuadrantAltitude; // 0x08 - per-quadrant camera altitude (param_3 to orbit)
+    void (*m18_transformFunc)(sVec3_FP*, sVec3_FP*); // 0x18 - model transform function
+    sVec3_FP m1C_transformOutput;   // 0x1C - transform result
     u8 m28_pad[4];
-    fixedPoint m2C_trackSpeedSource; // 0x2C — base tracking speed
+    fixedPoint m2C_trackSpeedSource; // 0x2C - base tracking speed
     u8 m30_pad[0x40];              // 0x30..0x6F: model data
-    u8 m70_trailData[0x18];        // 0x70 — trail rendering data (passed to FUN_0609d57c)
-    sVec3_FP m88_beamSource;       // 0x88 — beam source position (auto-scrolled)
-    sVec3_FP m94_targetPosition;   // 0x94 — target position (tracked or auto-scrolled)
-    sVec3_FP mA0_beamEndpoint;     // 0xA0 — interpolated beam endpoint
-    sVec3_FP mAC_cameraPosition;   // 0xAC — camera orbit output
-    fixedPoint mB8_trackProgress;  // 0xB8 — tracking progress (0→0x10000)
-    fixedPoint mBC_trackSpeed;     // 0xBC — current tracking speed
-    s32 mC0_rotationAngle;         // 0xC0 — oscillating rotation angle
-    s32 mC4_rotationSpeed;         // 0xC4 — rotation speed (flips at boundaries)
+    u8 m70_trailData[0x18];        // 0x70 - trail rendering data (passed to FUN_0609d57c)
+    sVec3_FP m88_beamSource;       // 0x88 - beam source position (auto-scrolled)
+    sVec3_FP m94_targetPosition;   // 0x94 - target position (tracked or auto-scrolled)
+    sVec3_FP mA0_beamEndpoint;     // 0xA0 - interpolated beam endpoint
+    sVec3_FP mAC_cameraPosition;   // 0xAC - camera orbit output
+    fixedPoint mB8_trackProgress;  // 0xB8 - tracking progress (0->0x10000)
+    fixedPoint mBC_trackSpeed;     // 0xBC - current tracking speed
+    s32 mC0_rotationAngle;         // 0xC0 - oscillating rotation angle
+    s32 mC4_rotationSpeed;         // 0xC4 - rotation speed (flips at boundaries)
     s8 mC8_state;                  // 0xC8
     u8 mC9_pad[7];
     s16 mD0_timer;                 // 0xD0
@@ -1116,7 +1116,7 @@ static void sEnergyPrismTask_Delete(sEnergyPrismTask* pThis)
     gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
 }
 
-// BTL_A3::0608b9d0 — apply damage to target (Energy Prism specific)
+// BTL_A3::0608b9d0 - apply damage to target (Energy Prism specific)
 static void energyPrism_applyDamage(sEnergyPrismTask* pThis)
 {
     // TODO: faithful implementation of FUN_0608b9d0
@@ -1194,7 +1194,7 @@ static void sEnergyPrismTask_Update(sEnergyPrismTask* pThis)
         // Check if beam reached target (progress > 0xFFFF) or timer expired
         if ((s32)pThis->mB8_trackProgress > 0xFFFF)
         {
-            // Beam hit — apply damage
+            // Beam hit - apply damage
             s_battleEnemy* enemy = pTargetSystem->m0_enemyTargetables[pThis->mD2_targetIndex];
             if (enemy->m4_targetable != nullptr &&
                 (enemy->m4_targetable->m50_flags & 0x140003) == 0 &&
@@ -1215,7 +1215,7 @@ static void sEnergyPrismTask_Update(sEnergyPrismTask* pThis)
             pThis->mD0_timer = t - 1;
             if (t < 0)
             {
-                // Timer expired — same as hit
+                // Timer expired - same as hit
                 s_battleEnemy* enemy = pTargetSystem->m0_enemyTargetables[pThis->mD2_targetIndex];
                 if (enemy->m4_targetable != nullptr &&
                     (enemy->m4_targetable->m50_flags & 0x140003) == 0 &&
@@ -1289,7 +1289,7 @@ static void sEnergyPrismTask_Draw(sEnergyPrismTask* pThis)
     // Render beam trail if active
     if (pThis->mDC_hasCamera != 0)
     {
-        // FUN_0609d778 — renders beam trail VDP1 quads (at task offset 0x70)
+        // FUN_0609d778 - renders beam trail VDP1 quads (at task offset 0x70)
         // TODO: implement beam trail renderer
     }
     // Render lens flare at beam endpoint if light effect active
@@ -1334,7 +1334,7 @@ void berserk_createEnergyPrism(s_battleEngine* pThis)
     pNewTask->mE0_hasLightEffect = 0;
     pNewTask->mD4_hasHit = 0;
 
-    // FUN_0608b5ac — find first valid enemy target, stores index in mD2
+    // FUN_0608b5ac - find first valid enemy target, stores index in mD2
     // TODO: implement faithfully (iterates enemies, finds first valid)
     pNewTask->mD2_targetIndex = 0;
 
@@ -1342,20 +1342,20 @@ void berserk_createEnergyPrism(s_battleEngine* pThis)
     pNewTask->m88_beamSource = pDragon->mFC_hotpoints[2];
     pNewTask->m88_beamSource -= pThis->m1A0_battleAutoScrollDelta;
 
-    // FUN_0608b7c0 — init beam endpoint tracking (stores target position)
+    // FUN_0608b7c0 - init beam endpoint tracking (stores target position)
     // TODO: implement faithfully
 
     // Init beam endpoint at dragon hotpoint
     pNewTask->mA0_beamEndpoint = pDragon->mFC_hotpoints[2];
 
-    // FUN_0609d4dc — init trail segment data at offset 0x70
+    // FUN_0609d4dc - init trail segment data at offset 0x70
     // TODO: implement trail init
 
     // Init rotation and tracking
     pNewTask->mC0_rotationAngle = 0x1555555;
     pNewTask->mC4_rotationSpeed = 0x111111;
 
-    // FUN_060a2efc — init per-quadrant altitude data at m8
+    // FUN_060a2efc - init per-quadrant altitude data at m8
     // TODO: implement faithfully
 
     // Camera orbit setup
@@ -1400,10 +1400,10 @@ struct sVengeanceOrbsTask : public s_workAreaTemplateWithCopy<sVengeanceOrbsTask
     // 0x00: m0_fileBundle (inherited)
     // 0x04: m4_vd1Allocation (inherited)
     u8 m8_pad[4];                 // 0x08..0x0B
-    s8 mC_state;                  // 0x0C — main state (0-5)
+    s8 mC_state;                  // 0x0C - main state (0-5)
     u8 mD_pad[5];
     u16 m12_timer;                // 0x12
-    s16 m14_damageAccum;          // 0x14 — accumulated damage from dragon
+    s16 m14_damageAccum;          // 0x14 - accumulated damage from dragon
     u8 m16_pad[0x4A];             // 0x16..0x5F
     u8 m60_orbData[0x578];        // 0x60..0x5D7: 7 orbs at stride ~200 bytes each
     // Per-orb: offset base + 0xB9 (=0x119 from task start) = state byte
@@ -1428,7 +1428,7 @@ static void sVengeanceOrbsTask_Update(sVengeanceOrbsTask* pThis)
     {
     case 0:
     {
-        // State 0: orbs spawning — count ready orbs
+        // State 0: orbs spawning - count ready orbs
         s32 readyCount = 0;
         for (s32 i = 0; i < 7; i++)
         {
@@ -1441,7 +1441,7 @@ static void sVengeanceOrbsTask_Update(sVengeanceOrbsTask* pThis)
 
         if (readyCount == 0)
         {
-            // All orbs ready → set m100 and advance
+            // All orbs ready -> set m100 and advance
             gBattleManager->m10_battleOverlay->m4_battleEngine->m188_flags.m100_attackAnimationFinished = 1;
             pThis->m5E0_shouldSetM100 = 0;
             pThis->mC_state = 1;
@@ -1453,14 +1453,14 @@ static void sVengeanceOrbsTask_Update(sVengeanceOrbsTask* pThis)
     }
     case 1:
     {
-        // State 1: shield active — monitor for attack or timeout
+        // State 1: shield active - monitor for attack or timeout
         if (battleEngine_isPlayerTurnActive() == 0)
         {
             u16 t = pThis->m12_timer;
             pThis->m12_timer = t + 1;
             if (t > 500)
             {
-                // Timeout — start fade out
+                // Timeout - start fade out
                 pThis->mC_state = 5;
                 for (s32 i = 0; i < 7; i++)
                 {
@@ -1490,7 +1490,7 @@ static void sVengeanceOrbsTask_Update(sVengeanceOrbsTask* pThis)
     }
     case 2:
     {
-        // State 2: attack detected — check shield still active, trigger battle mode
+        // State 2: attack detected - check shield still active, trigger battle mode
         if ((pDragon->m1C0_statusModifiers & 0x400) == 0)
         {
             pThis->mC_state = 5;
@@ -1504,7 +1504,7 @@ static void sVengeanceOrbsTask_Update(sVengeanceOrbsTask* pThis)
         // Check for incoming attack
         if ((pDragon->m8C.m50_flags & 0x80000) != 0)
         {
-            // FUN_060915f0 — init counterattack visual
+            // FUN_060915f0 - init counterattack visual
             // TODO: implement faithfully
         }
 
@@ -1529,7 +1529,7 @@ static void sVengeanceOrbsTask_Update(sVengeanceOrbsTask* pThis)
             *(s8*)(taskBase + 0x119) == 3 &&
             *(u16*)(taskBase + 0x114) > 10)
         {
-            // FUN_0608fc54 — init counterattack damage camera
+            // FUN_0608fc54 - init counterattack damage camera
             // TODO: implement faithfully
             pThis->mC_state = 4;
         }
@@ -1538,15 +1538,15 @@ static void sVengeanceOrbsTask_Update(sVengeanceOrbsTask* pThis)
     case 4:
     {
         // State 4: apply damage per orb
-        // FUN_0609008e — per-orb damage application
+        // FUN_0609008e - per-orb damage application
         // TODO: implement faithfully (applies SPR-scaled damage per enemy)
         break;
     }
     case 5:
     {
-        // State 5: fade out — clear camera, wait for orbs to finish
+        // State 5: fade out - clear camera, wait for orbs to finish
         pThis->m5D8_hasCamera = 0;
-        // FUN_0608fbf6 — check if all orbs finished fading
+        // FUN_0608fbf6 - check if all orbs finished fading
         // TODO: implement faithfully
         // When done, finish task
         // For now, finish after a timeout
@@ -1562,7 +1562,7 @@ static void sVengeanceOrbsTask_Update(sVengeanceOrbsTask* pThis)
     }
 
     // Per-orb update (runs every frame)
-    // FUN_06090546 — per-orb orbit/animation update, called 7 times at stride 0xC8
+    // FUN_06090546 - per-orb orbit/animation update, called 7 times at stride 0xC8
     // TODO: implement faithfully
 }
 
@@ -1606,20 +1606,20 @@ void berserk_createVengeanceOrbsShield(s_battleEngine* pThis)
     }
 
     // Init orb parameters
-    // Ghidra: psVar1[0xd].m_nextNode = byte 0x68 → orb data table pointer
-    // psVar1[0x21].m_nextNode = byte 0x108 → animation data pointer
+    // Ghidra: psVar1[0xd].m_nextNode = byte 0x68 -> orb data table pointer
+    // psVar1[0x21].m_nextNode = byte 0x108 -> animation data pointer
     // Random timer at byte 0x112: range [25..34]
     u32 rnd = randomNumber();
     s32 timerOffset = (s32)MTH_Mul(rnd >> 16, fixedPoint(10));
     // *(s16*)((u8*)pNewTask + 0x112) = (s16)(timerOffset + 0x19);
-    // NOTE: can't access 0x112 through proper members — within m8_pad blob
+    // NOTE: can't access 0x112 through proper members - within m8_pad blob
 
-    // FUN_06090358 — init orb visual state (VDP1 setup, model loading)
+    // FUN_06090358 - init orb visual state (VDP1 setup, model loading)
     // TODO: implement faithfully
 
     // Second orb setup
-    // psVar1[0x26].m_nextNode = byte 0x130 → second orb data
-    // psVar1[0x3a].m_nextNode = byte 0x1D0 → second orb animation
+    // psVar1[0x26].m_nextNode = byte 0x130 -> second orb data
+    // psVar1[0x3a].m_nextNode = byte 0x1D0 -> second orb animation
     rnd = randomNumber();
     MTH_Mul(rnd >> 16, fixedPoint(7)); // random variant for second orb
 

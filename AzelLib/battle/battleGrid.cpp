@@ -273,7 +273,7 @@ void battleGrid_updateSub1(s_battleGrid* pThis)
         }
         else
         {
-            Unimplemented(); // battleGrid_updateSub1Sub4 — alternate camera mode (flags & 2)
+            Unimplemented(); // battleGrid_updateSub1Sub4 - alternate camera mode (flags & 2)
         }
         rotateMatrixYXZ(&pThis->mB4_cameraRotation, &pThis->m150_cameraMatrix);
 
@@ -343,11 +343,11 @@ void battleGrid_draw(s_battleGrid* pThis)
     {
         battleGrid_updateSub1Sub1(pThis);
         initMatrixToIdentity(&pThis->m150_cameraMatrix);
-        Unimplemented(); // battleGrid_debugCamera — controller 2 camera adjustment
+        Unimplemented(); // battleGrid_debugCamera - controller 2 camera adjustment
         translateMatrix(&pThis->m180_cameraTranslation, &pThis->m150_cameraMatrix);
-        Unimplemented(); // battleGrid_debugCamera2 — controller 2 camera orbit
+        Unimplemented(); // battleGrid_debugCamera2 - controller 2 camera orbit
         rotateMatrixYXZ(&pThis->mB4_cameraRotation, &pThis->m150_cameraMatrix);
-        Unimplemented(); // battleGrid_debugCamera3 — debug camera display text
+        Unimplemented(); // battleGrid_debugCamera3 - debug camera display text
 
         if (readKeyboardToggle(0xA1))
             pThis->m1C8_flags ^= 0x800; // toggle debug draw
@@ -397,7 +397,7 @@ void battleGrid_draw(s_battleGrid* pThis)
 
     if (gBattleManager->m10_battleOverlay->m10_inBattleDebug->mFlags[0x12])
     {
-        // 0607c93c — cycle debug camera mode (0-4) with controller 2 L/R
+        // 0607c93c - cycle debug camera mode (0-4) with controller 2 L/R
         if (graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.m8_newButtonDown & 0x800)
         {
             pThis->m214_debugCameraMode--;
@@ -409,10 +409,10 @@ void battleGrid_draw(s_battleGrid* pThis)
             if ((u8)pThis->m214_debugCameraMode > 4) pThis->m214_debugCameraMode = 0;
         }
 
-        // 0607c9b8 — display debug camera info (mode-dependent)
+        // 0607c9b8 - display debug camera info (mode-dependent)
         Unimplemented(); // VDP2 text display of camera parameters per debug mode
 
-        // 0607cb64 — adjust light angles in mode 4
+        // 0607cb64 - adjust light angles in mode 4
         if (pThis->m214_debugCameraMode == 4)
         {
             if (graphicEngineStatus.m4514.m0_inputDevices[1].m0_current.mC_newButtonDown2 & 0x4000)

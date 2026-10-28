@@ -10,7 +10,7 @@ struct sParticleBillboard
     float positions[3]; // view-space position
     float halfWidth;
     float halfHeight;
-    float color[4][4];  // per-vertex gouraud tint (4 vertices × RGBA float)
+    float color[4][4];  // per-vertex gouraud tint (4 vertices x RGBA float)
     u16 CMDPMOD;
     u16 CMDCOLR;
     u16 CMDSRCA;

@@ -95,13 +95,13 @@ void fieldA3_2_createExitLCSTask(p_workArea workArea)
     createSubTask<fieldA3_2_exitLCSTask>(workArea);
 }
 
-// 06055a42 — LCS callback: triggers waterfall splash (mode 0 → mode 1)
+// 06055a42 - LCS callback: triggers waterfall splash (mode 0 -> mode 1)
 static void waterfallLCSCallback(p_workArea pWorkArea, sLCSTarget*);
 
-// Animation frame → model offset lookup table (big-endian shorts at 060834fc)
+// Animation frame -> model offset lookup table (big-endian shorts at 060834fc)
 static const u16 waterfallModelOffsets[] = { 0x00F0, 0x00F4, 0x00F8, 0x00FC, 0x0100 };
 
-// 06055924 — quadratic bezier interpolation: output = (1-t)²·P0 + 2t(1-t)·P1 + t²·P2
+// 06055924 - quadratic bezier interpolation: output = (1-t)^2*P0 + 2t(1-t)*P1 + t^2*P2
 // Control points are 3 consecutive sVec3_FP in Saturn big-endian format
 static void bezierInterpolateFromSaturn(sVec3_FP* output, sSaturnPtr controlPointsEA, fixedPoint t)
 {
@@ -126,7 +126,7 @@ static void bezierInterpolateFromSaturn(sVec3_FP* output, sSaturnPtr controlPoin
                    MTH_Mul(p2.m8_Z, tSquared);
 }
 
-// Waterfall decoration task — animated 3D models / billboard sprites
+// Waterfall decoration task - animated 3D models / billboard sprites
 // 06055CC6 (init), 06055B62 (update), 06055AD2 (draw)
 struct sWaterfallTask : public s_workAreaTemplateWithArg<sWaterfallTask, sSaturnPtr>
 {
@@ -256,20 +256,20 @@ struct sWaterfallTask : public s_workAreaTemplateWithArg<sWaterfallTask, sSaturn
     }
 
     s_memoryAreaOutput m0_memArea;    // 0x00
-    sVec3_FP m8_position;            // 0x08 — rendering position
-    sVec3_FP m14_LCSPosition;        // 0x14 — LCS target position
-    fixedPoint m20_rotAngle;         // 0x20 — accumulating rotation angle
-    fixedPoint m24_computedY;        // 0x24 — computed rotation for draw
-    fixedPoint m28_amplitude;        // 0x28 — sin amplitude
+    sVec3_FP m8_position;            // 0x08 - rendering position
+    sVec3_FP m14_LCSPosition;        // 0x14 - LCS target position
+    fixedPoint m20_rotAngle;         // 0x20 - accumulating rotation angle
+    fixedPoint m24_computedY;        // 0x24 - computed rotation for draw
+    fixedPoint m28_amplitude;        // 0x28 - sin amplitude
     fixedPoint m2C_param;            // 0x2C
     fixedPoint m30_param2;           // 0x30
-    fixedPoint m34_rotSpeed;         // 0x34 — rotation speed per frame
-    fixedPoint m38_animProgress;     // 0x38 — mode 1 animation progress
-    u16 m3C_animFrame;               // 0x3C — mode 0 frame counter (0-9)
-    s8 m3E_mode;                     // 0x3E — 0=model, 1=splash billboard
-    s8 m3F_direction;                // 0x3F — billboard flip direction
+    fixedPoint m34_rotSpeed;         // 0x34 - rotation speed per frame
+    fixedPoint m38_animProgress;     // 0x38 - mode 1 animation progress
+    u16 m3C_animFrame;               // 0x3C - mode 0 frame counter (0-9)
+    s8 m3E_mode;                     // 0x3E - 0=model, 1=splash billboard
+    s8 m3F_direction;                // 0x3F - billboard flip direction
     sLCSTarget m40_LCSTarget;        // 0x40
-    sAnimatedQuad m74_animQuad;      // 0x74 — mode 1 billboard particle
+    sAnimatedQuad m74_animQuad;      // 0x74 - mode 1 billboard particle
     // size 0x7C
 };
 
@@ -305,7 +305,7 @@ static void waterfallLCSCallback(p_workArea pWorkArea, sLCSTarget*)
     }
 }
 
-// Simpler waterfall element — follows a bezier curve
+// Simpler waterfall element - follows a bezier curve
 // 06055D82 (init), 06055D4E (update), 06055D3A (draw)
 struct sWaterfallSimpleTask : public s_workAreaTemplateWithArg<sWaterfallSimpleTask, sSaturnPtr>
 {
@@ -368,11 +368,11 @@ struct sWaterfallSimpleTask : public s_workAreaTemplateWithArg<sWaterfallSimpleT
     }
 
     s_memoryAreaOutput m0_memArea;    // 0x00
-    sVec3_FP m8_position;            // 0x08 — current interpolated position
-    sSaturnPtr m14_pControlPoints;   // 0x14 — Saturn pointer to 3 control points
-    fixedPoint m18_t;                // 0x18 — interpolation parameter (0 to 0x10000)
-    fixedPoint m1C_stepSize;         // 0x1C — step per frame
-    sAnimatedQuad m20_animQuad;      // 0x20 — billboard particle
+    sVec3_FP m8_position;            // 0x08 - current interpolated position
+    sSaturnPtr m14_pControlPoints;   // 0x14 - Saturn pointer to 3 control points
+    fixedPoint m18_t;                // 0x18 - interpolation parameter (0 to 0x10000)
+    fixedPoint m1C_stepSize;         // 0x1C - step per frame
+    sAnimatedQuad m20_animQuad;      // 0x20 - billboard particle
     // size 0x28
 };
 
@@ -450,7 +450,7 @@ void fieldA3_2_createItemBoxes(p_workArea workArea)
     createFieldItemBox(readItemBoxDefinition({ 0x609222C, gFLD_A3 }));
 }
 
-// 0606848a — waits for hasEncounterData, then sets battleIndex
+// 0606848a - waits for hasEncounterData, then sets battleIndex
 struct sFlagBattleTask : public s_workAreaTemplate<sFlagBattleTask>
 {
     static void Update(sFlagBattleTask* pThis)
@@ -464,7 +464,7 @@ struct sFlagBattleTask : public s_workAreaTemplate<sFlagBattleTask>
     s8 m0_enemyId;
 };
 
-// 06068728 — waits for m28_status to clear, then creates battle loading task
+// 06068728 - waits for m28_status to clear, then creates battle loading task
 struct sDelayedBattleTask : public s_workAreaTemplate<sDelayedBattleTask>
 {
     static void Update(sDelayedBattleTask* pThis)
@@ -487,7 +487,7 @@ struct sDelayedBattleTask : public s_workAreaTemplate<sDelayedBattleTask>
 // 060687f0
 void startBaldorQueenBattle(int param_1, int param_2) {
     if ((fieldTaskPtr->m28_status & 1) == 0) {
-        // Battle encounters disabled — set battleIndex when encounter data becomes available
+        // Battle encounters disabled - set battleIndex when encounter data becomes available
         s_randomBattleWorkArea* pRandomBattleTask = getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask;
         sFlagBattleTask* pTask = createSubTaskFromFunction<sFlagBattleTask>((p_workArea)pRandomBattleTask, &sFlagBattleTask::Update);
         if (pTask)
@@ -497,7 +497,7 @@ void startBaldorQueenBattle(int param_1, int param_2) {
         }
     }
     else if ((fieldTaskPtr->m28_status & ~1) == 0) {
-        // Normal — create battle loading task directly
+        // Normal - create battle loading task directly
         sBattleLoadingTask* pNewTask = createSubTaskWithArg<sBattleLoadingTask, s32>(getFieldTaskPtr(), param_1, &battleStartTaskDefinition);
         if (pNewTask)
         {
@@ -505,7 +505,7 @@ void startBaldorQueenBattle(int param_1, int param_2) {
         }
     }
     else {
-        // Other status bits set — delay until they clear
+        // Other status bits set - delay until they clear
         s_randomBattleWorkArea* pRandomBattleTask = getFieldTaskPtr()->m8_pSubFieldData->m344_randomBattleTask;
         sDelayedBattleTask* pTask = createSubTaskFromFunction<sDelayedBattleTask>((p_workArea)pRandomBattleTask, &sDelayedBattleTask::Update);
         if (pTask)
@@ -572,7 +572,7 @@ struct sFieldA3_2_task8 : public s_workAreaTemplate<sFieldA3_2_task8> {
     static void Update(sFieldA3_2_task8* pThis) {
         // bitField[0x11] & 1 = getBit(0x11 * 8 + 7)
         if (mainGameState.getBit(0x11 * 8 + 7) == 0) {
-            // Not yet triggered — set update to no-op
+            // Not yet triggered - set update to no-op
             pThis->m_UpdateMethod = nullptr;
         }
         else {
@@ -596,7 +596,7 @@ static const sWaterRegion waterRegions[] = {
     { 0, 0, 0, 0 }, // sentinel
 };
 
-// 060585d8 — check if dragon is inside a water region
+// 060585d8 - check if dragon is inside a water region
 static bool isDragonInWaterRegion(const sVec3_FP& pos, s32 regionIndex)
 {
     const sWaterRegion& r = waterRegions[regionIndex];
@@ -604,7 +604,7 @@ static bool isDragonInWaterRegion(const sVec3_FP& pos, s32 regionIndex)
             r.zMin < pos.m8_Z && pos.m8_Z < r.zMax);
 }
 
-// 0605867a — check if dragon is looking sideways (at the water)
+// 0605867a - check if dragon is looking sideways (at the water)
 static bool isDragonLookingSideways(s_dragonTaskWorkArea* pDragon)
 {
     s32 angle = pDragon->m20_angle[1];
@@ -623,7 +623,7 @@ static bool isDragonLookingSideways(s_dragonTaskWorkArea* pDragon)
 
 // 060586d8
 struct sFieldA3_2_waterEffect : public s_workAreaTemplate<sFieldA3_2_waterEffect> {
-    // 0605860a — fade water intensity down (decrease)
+    // 0605860a - fade water intensity down (decrease)
     bool fadeDown()
     {
         m6_intensity--;
@@ -635,7 +635,7 @@ struct sFieldA3_2_waterEffect : public s_workAreaTemplate<sFieldA3_2_waterEffect
         return m6_intensity != 0x19;
     }
 
-    // 06058642 — fade water intensity up (increase)
+    // 06058642 - fade water intensity up (increase)
     bool fadeUp()
     {
         m6_intensity++;
@@ -652,7 +652,7 @@ struct sFieldA3_2_waterEffect : public s_workAreaTemplate<sFieldA3_2_waterEffect
 
         switch (pThis->m4_state)
         {
-        case 0: // idle — scan for dragon entering water region
+        case 0: // idle - scan for dragon entering water region
             for (s32 i = 2; i >= 0; i--)
             {
                 if (isDragonInWaterRegion(pDragon->m8_pos, i))
@@ -668,7 +668,7 @@ struct sFieldA3_2_waterEffect : public s_workAreaTemplate<sFieldA3_2_waterEffect
                 }
             }
             break;
-        case 1: // in water — wait for dragon to look sideways
+        case 1: // in water - wait for dragon to look sideways
             if (!isDragonInWaterRegion(pDragon->m8_pos, pThis->m5_regionIndex))
             {
                 pThis->m4_state = 5;
@@ -690,7 +690,7 @@ struct sFieldA3_2_waterEffect : public s_workAreaTemplate<sFieldA3_2_waterEffect
                 pThis->m4_state = 3;
             }
             break;
-        case 3: // fully visible — wait for dragon to stop looking sideways
+        case 3: // fully visible - wait for dragon to stop looking sideways
             if (!isDragonInWaterRegion(pDragon->m8_pos, pThis->m5_regionIndex))
             {
                 pThis->m4_state = 5;
@@ -712,7 +712,7 @@ struct sFieldA3_2_waterEffect : public s_workAreaTemplate<sFieldA3_2_waterEffect
                 pThis->m4_state = 1;
             }
             break;
-        case 5: // exiting water — fade out fully
+        case 5: // exiting water - fade out fully
             if (!pThis->fadeUp())
             {
                 vdp2Controls.m4_pendingVdp2Regs->m20_BGON &= ~1;
@@ -744,7 +744,7 @@ void fieldA3_2_createWaterReflectionTask(p_workArea workArea) {
     }
 }
 
-// Sound task for A3_2 — handles positional waterfall sounds
+// Sound task for A3_2 - handles positional waterfall sounds
 struct sFieldA3_2_soundTask : public s_workAreaTemplate<sFieldA3_2_soundTask> {
     // 0605C3B0
     static void Init(sFieldA3_2_soundTask*) {

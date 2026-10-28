@@ -106,7 +106,7 @@ static void BTL_A7_env0_Update(sVdp2PlaneTask* pThis)
 // 060572c0
 static void BTL_A7_env0_Draw(sVdp2PlaneTask* pThis)
 {
-    Unimplemented(); // VDP2 rotation scroll draw — same pattern as exca/camp/e011
+    Unimplemented(); // VDP2 rotation scroll draw - same pattern as exca/camp/e011
 }
 
 // 06057788

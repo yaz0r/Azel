@@ -69,7 +69,7 @@ struct sBTL_A5_SingleEnemy : public s_workAreaTemplateWithCopy<sBTL_A5_SingleEne
     // size 0x1C0
 };
 
-// 060a3bc0 — shared main model draw
+// 060a3bc0 - shared main model draw
 static void BTL_A5_singleEnemy_DrawMain(sBTL_A5_SingleEnemy* pThis)
 {
     if (pThis->m14_flags & 0x800000)
@@ -190,7 +190,7 @@ static void BTL_A5_enemy_debugDisplay(sBTL_A5_SingleEnemy* pThis, const char** n
     vdp2PrintfSmallFont("%s", nameTable[pThis->m28_state]);
     vdp2DebugPrintSetPosition(8, row);
     vdp2PrintfSmallFont("%4d", (s32)pThis->mB2_health);
-    Unimplemented(); // FUN_060a3d58 — per-targetable debug display
+    Unimplemented(); // FUN_060a3d58 - per-targetable debug display
 }
 
 // 06061cf0

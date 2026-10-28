@@ -5,7 +5,7 @@
 // Shared segmented-body primitive used by monsters (A3 Baldor, T0 middle
 // boss), several town cutscene props, and A5 subfield-0 worm-hole decor.
 // Named "monsterPart" after the default update/draw/drawPart callbacks
-// (monsterPart_defaultUpdate / Draw / DrawPart) — callers that wanted the
+// (monsterPart_defaultUpdate / Draw / DrawPart) - callers that wanted the
 // spring-damping physics variant switch the callbacks to baldorPart_* via
 // monsterBody_loadPartData(body, 1, ...).
 
@@ -41,20 +41,20 @@ struct sMonsterBody
 
 // --- Construction ---
 
-// 06013C72 — allocate a new sMonsterBody with `numEntries` parts linked
-// head→tail, default callbacks installed.
+// 06013C72 - allocate a new sMonsterBody with `numEntries` parts linked
+// head->tail, default callbacks installed.
 sMonsterBody* monsterBody_create(p_workArea parent, int numEntries);
 
-// 06013D80 — load per-part data from a Saturn array. When arg2 == 1 the
+// 06013D80 - load per-part data from a Saturn array. When arg2 == 1 the
 // callbacks are swapped for baldorPart_update/draw/drawPart (spring/damping
 // physics), otherwise they stay as the monsterPart_default* stubs.
 void monsterBody_loadPartData(sMonsterBody* pThis, int arg2, sSaturnPtr arg3);
 
-// 06013E02 — copy a single 0x14-byte Saturn record into a part
+// 06013E02 - copy a single 0x14-byte Saturn record into a part
 // (`m40_modelIndex`, `m44_springStiffness`, `m50_damping`).
 void monsterBodyPart_loadTemplate(sMonsterBodyPart* dest, sSaturnPtr source);
 
-// 06013C70 — seed the body's translation/rotation/rotationTarget from
+// 06013C70 - seed the body's translation/rotation/rotationTarget from
 // `pPos`/`pRot`, reset every linked part's rotation state, then kick the
 // body's update callback once so the parts settle into the initial pose.
 void monsterBody_initPose(sMonsterBody* pBody, const sVec3_FP* pPos, const sVec3_FP* pRot);

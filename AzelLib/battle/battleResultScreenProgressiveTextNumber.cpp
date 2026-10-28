@@ -65,7 +65,7 @@ void battleResultScreenProgressiveTextNumber_update(sBattleResultProgressiveText
             pThis->m5++;
             if ((u8)pThis->m5 > 2)
             {
-                Unimplemented(); // FUN_06070788 — digit reveal sound/visual effect
+                Unimplemented(); // FUN_06070788 - digit reveal sound/visual effect
                 pThis->m6++;
                 pThis->m5 = 0;
             }

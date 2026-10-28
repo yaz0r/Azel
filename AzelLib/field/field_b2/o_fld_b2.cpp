@@ -19,7 +19,7 @@ static const s_MCB_CGB fieldFileList_B2[] =
 
 // --- Dragon light parameter setup functions ---
 
-// 060540c4 — dragon light params for subfields 0 and 3
+// 060540c4 - dragon light params for subfields 0 and 3
 void initDragonParams_B2_desert()
 {
     s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -29,7 +29,7 @@ void initDragonParams_B2_desert()
     p->mD1_falloffColor2 = { 0xC, 0xC, 0xC };
 }
 
-// 06054160 — dragon light params for subfield 1
+// 06054160 - dragon light params for subfield 1
 void initDragonParams_B2_oasis()
 {
     s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -41,7 +41,7 @@ void initDragonParams_B2_oasis()
     p->mD1_falloffColor2 = { 1, 1, 1 };
 }
 
-// 060541b8 — dragon light params for subfield 1 storm variant
+// 060541b8 - dragon light params for subfield 1 storm variant
 void initDragonParams_B2_oasisStorm()
 {
     s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -52,7 +52,7 @@ void initDragonParams_B2_oasisStorm()
     p->mD1_falloffColor2 = { 7, 7, 7 };
 }
 
-// 06054210 — dragon light params for subfield 2
+// 06054210 - dragon light params for subfield 2
 void initDragonParams_B2_underground()
 {
     s_dragonTaskWorkArea* p = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -66,7 +66,7 @@ void initDragonParams_B2_underground()
 
 // --- Shared field data creation ---
 
-// 0605490c — create field-specific data task for B2 (size 0xA4)
+// 0605490c - create field-specific data task for B2 (size 0xA4)
 void createFieldSpecificDataTask_B2(p_workArea parent)
 {
     s_fieldSpecificData_B2* p = createSubTaskFromFunction<s_fieldSpecificData_B2>(parent, nullptr);
@@ -78,7 +78,7 @@ void createFieldSpecificDataTask_B2(p_workArea parent)
 
 // --- Shared camera/scene setup ---
 
-// 06072f0e — setup field grid + camera visibility from overlay data
+// 06072f0e - setup field grid + camera visibility from overlay data
 void setupB2CameraConfigs(sSaturnPtr configEA, sSaturnPtr visibilityEA, void(*startTasks)(p_workArea))
 {
     s_DataTable3* pDT3 = readDataTable3(configEA);
@@ -86,25 +86,25 @@ void setupB2CameraConfigs(sSaturnPtr configEA, sSaturnPtr visibilityEA, void(*st
     setupField3(pDT3, startTasks, pVisibility);
 }
 
-// 06056e7c — camera config setup (desert)
+// 06056e7c - camera config setup (desert)
 void setupCameraVisibility_B2_desert()
 {
     setupFieldCameraConfigs(readCameraConfig(gFLD_B2->getSaturnPtr(0x06083de4)), 1);
 }
 
-// 06056e88 — camera config setup (underground)
+// 06056e88 - camera config setup (underground)
 void setupCameraVisibility_B2_underground()
 {
     setupFieldCameraConfigs(readCameraConfig(gFLD_B2->getSaturnPtr(0x06083e94)), 1);
 }
 
-// 06057084 — empty post-battle sound callback (subfields 0, 3)
+// 06057084 - empty post-battle sound callback (subfields 0, 3)
 void postBattleSound_B2_empty()
 {
-    // empty — confirmed from Ghidra
+    // empty - confirmed from Ghidra
 }
 
-// 06076b80 — load camera script and activate camera script mode on dragon
+// 06076b80 - load camera script and activate camera script mode on dragon
 void activateCameraScript_B2(sSaturnPtr scriptDataEA)
 {
     s_dragonTaskWorkArea* pDragon = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -135,7 +135,7 @@ p_workArea overlayStart_FLD_B2(p_workArea workArea, u32 arg)
     gFieldCameraDrawFunc = &cameraFollowMode_default;
     gCurrentFieldOverlay = gFLD_A3;
 
-    // 0606cfe4 — check if coming from field 6, subfield 0, entry 0, previous -1
+    // 0606cfe4 - check if coming from field 6, subfield 0, entry 0, previous -1
     // If so, redirect to subfield 3
     s_fieldTaskWorkArea* pFieldTask = getFieldTaskPtr();
     if (pFieldTask->m2C_currentFieldIndex == 6)
@@ -145,7 +145,7 @@ p_workArea overlayStart_FLD_B2(p_workArea workArea, u32 arg)
             pFieldTask->m30_fieldEntryPoint == 0 &&
             pFieldTask->m32_previousSubField == (s16)0xFFFF)
         {
-            // 0606d01e — redirect to subfield 3
+            // 0606d01e - redirect to subfield 3
             pFieldTask = getFieldTaskPtr();
             pFieldTask->m2E_currentSubFieldIndex = 3;
             pFieldTask = getFieldTaskPtr();

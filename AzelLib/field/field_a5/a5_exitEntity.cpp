@@ -18,11 +18,11 @@ static const std::vector<sVdp1Quad>* a5GetOrParseQuadList(const sSaturnPtr& ea)
     return &it->second;
 }
 
-// sA5ExitEntity is declared in o_fld_a5.h — this file owns its implementation.
+// sA5ExitEntity is declared in o_fld_a5.h - this file owns its implementation.
 // The entity is created by createA5_exitEntityTask (shared) for every A5 subfield
 // and drives the wind-state machine + per-mode particle spawning near the exit.
 
-// 06058514 — exit entity init: sets up orbit params and stores self in field data
+// 06058514 - exit entity init: sets up orbit params and stores self in field data
 static void a5ExitEntity_Init(sA5ExitEntity* p)
 {
     p->m30_radius = 0xAAA;
@@ -44,7 +44,7 @@ static void a5ExitEntity_Init(sA5ExitEntity* p)
     pFieldData->m4_pExitEntity = p;
 }
 
-// 060586a0 — wind state machine: manages wind speed transitions
+// 060586a0 - wind state machine: manages wind speed transitions
 static void a5ExitEntity_WindStateMachine(sA5ExitEntity* p)
 {
     switch (p->m35)
@@ -83,7 +83,7 @@ static void a5ExitEntity_WindStateMachine(sA5ExitEntity* p)
         p->m30_radius = 0x2AAA;
         p->m35 = 3;
         break;
-    case 3: // strong — wait for speed to reach threshold
+    case 3: // strong - wait for speed to reach threshold
         if (p->m18 > 0x27FF)
         {
             playSystemSoundEffect(0x67);
@@ -108,7 +108,7 @@ static void a5ExitEntity_WindStateMachine(sA5ExitEntity* p)
 // Quad list table at 060992b4 (4 entries, Saturn EAs)
 static const u32 s_windQuadListAddrs[] = { 0x06099804, 0x06099820, 0x0609983C, 0x06099858 };
 
-// 06058c10 — spawn a type-2 falling particle (gravity = 0xFFFFF334 on Y axis)
+// 06058c10 - spawn a type-2 falling particle (gravity = 0xFFFFF334 on Y axis)
 static void a5ExitEntity_spawnFallingParticle(sVec3_FP* pPos, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
 {
     sA5SandParticlePool* pSystem = getSandParticlePool();
@@ -132,7 +132,7 @@ static void a5ExitEntity_spawnFallingParticle(sVec3_FP* pPos, s32 lifetime, cons
     pSystem->m3728_drawCount++;
 }
 
-// 06058d32 — spawn a type-1 directional particle (velocity from angle, position offset from exit)
+// 06058d32 - spawn a type-1 directional particle (velocity from angle, position offset from exit)
 static void a5ExitEntity_spawnDirectionalParticle(s32 speed, s32 angle, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
 {
     sA5SandParticlePool* pSystem = getSandParticlePool();
@@ -167,7 +167,7 @@ static void a5ExitEntity_spawnDirectionalParticle(s32 speed, s32 angle, s32 life
     pSystem->m3728_drawCount++;
 }
 
-// 06058cb4 — spawn a worm sand particle at the given position with quad/lifetime params.
+// 06058cb4 - spawn a worm sand particle at the given position with quad/lifetime params.
 // pArgs layout: [0..2]=position, [5]=lifetime(s8), [6]=quadListPtr
 static void a5ExitEntity_spawnWormParticle(sVec3_FP* pPos, s32 lifetime, const std::vector<sVdp1Quad>* pQuadList)
 {
@@ -192,7 +192,7 @@ static void a5ExitEntity_spawnWormParticle(sVec3_FP* pPos, s32 lifetime, const s
     pSystem->m3728_drawCount++;
 }
 
-// 060587A8 — exit mode 0: wind particles near camera
+// 060587A8 - exit mode 0: wind particles near camera
 static void a5ExitEntity_Mode0(sA5ExitEntity* p)
 {
     a5ExitEntity_WindStateMachine(p);
@@ -220,7 +220,7 @@ static void a5ExitEntity_Mode0(sA5ExitEntity* p)
     }
 }
 
-// 0605887C — exit mode 1: directional particles near exit target
+// 0605887C - exit mode 1: directional particles near exit target
 static void a5ExitEntity_Mode1(sA5ExitEntity* p)
 {
     a5ExitEntity_WindStateMachine(p);
@@ -229,7 +229,7 @@ static void a5ExitEntity_Mode1(sA5ExitEntity* p)
     const std::vector<sVdp1Quad>* pQuadList =
         a5GetOrParseQuadList(gFLD_A5->getSaturnPtr(0x06099714));
 
-    // Spawn 4 particles (2 iterations × 2 per iteration) near exit target
+    // Spawn 4 particles (2 iterations x 2 per iteration) near exit target
     for (s32 i = 2; i != 0; i -= 2)
     {
         sVec3_FP pos;
@@ -259,7 +259,7 @@ static void a5ExitEntity_Mode1(sA5ExitEntity* p)
     }
 }
 
-// 06058944 — exit mode 3: periodic falling particle spawning near camera
+// 06058944 - exit mode 3: periodic falling particle spawning near camera
 static void a5ExitEntity_Mode3(sA5ExitEntity* p)
 {
     p->m34++;
@@ -292,7 +292,7 @@ static void a5ExitEntity_Update(sA5ExitEntity* p)
         && getFieldTaskPtr()->m8_pSubFieldData->m37E_debugMenuStatus2_a == 0
         && getFieldTaskPtr()->m8_pSubFieldData->m369 == 0)
     {
-        // Debug wind info display — skipped in non-debug builds
+        // Debug wind info display - skipped in non-debug builds
     }
 
     // Dispatch to exit mode handler
@@ -300,7 +300,7 @@ static void a5ExitEntity_Update(sA5ExitEntity* p)
     {
     case 0: a5ExitEntity_Mode0(p); break;
     case 1: a5ExitEntity_Mode1(p); break;
-    case 2: break; // 06058940 — empty
+    case 2: break; // 06058940 - empty
     case 3: a5ExitEntity_Mode3(p); break;
     default: break;
     }
@@ -321,7 +321,7 @@ void createA5_exitEntityTask(p_workArea parent)
     createSubTask<sA5ExitEntity>(parent, &td);
 }
 
-// 060584ca — set field exit configuration
+// 060584ca - set field exit configuration
 void setFieldExitConfig_A5(s32 mode, s32* pParams)
 {
     s_fieldSpecificData_A5* pFieldData = (s_fieldSpecificData_A5*)getFieldTaskPtr()->mC;

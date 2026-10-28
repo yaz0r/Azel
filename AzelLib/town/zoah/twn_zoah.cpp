@@ -110,14 +110,6 @@ static void zoahCamera_draw(sCameraTask* pThis)
     //addSlaveCommand(0, 0, 0, copyFalloffTableToSlave);
 }
 
-int updateWorldGridFromEdgeTask()
-{
-    if (twnMainLogicTask->m14_EdgeTask) {
-        updateWorldGrid(twnMainLogicTask->m14_EdgeTask->mE8.m0_position[0], twnMainLogicTask->m14_EdgeTask->mE8.m0_position[2]);
-    }
-    return fileInfoStruct.m2C_allocatedHead == 0;
-}
-
 // scriptFunction_060989f8 is functionally identical to scriptFunction_6057058_sub0
 // (sets draw method, inits camera from Edge position, sets follow mode 0, calls setupCameraUpdateForCurrentMode)
 
@@ -304,7 +296,7 @@ struct TWN_ZOAH_data : public sTownOverlay
 
     TWN_ZOAH_data() : sTownOverlay("TWN_ZOAH.PRG")
     {
-        overlayScriptFunctions.m_zeroArg[0x06098f30] = {&updateWorldGridFromEdgeTask, "updateWorldGridFromEdgeTask"};
+        overlayScriptFunctions.m_zeroArg[0x06098f30] = {&hasLoadingCompleted, "hasLoadingCompleted"};
         overlayScriptFunctions.m_zeroArg[0x06096a98] = {&enableRBG0, "enableRBG0"};
         overlayScriptFunctions.m_zeroArg[0x060989f8] = {&setupCameraFollowMode, "setupCameraFollowMode"};
         overlayScriptFunctions.m_zeroArg[0x06098d2e] = {&disableCameraUpdate, "disableCameraUpdate"};

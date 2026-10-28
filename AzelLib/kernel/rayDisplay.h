@@ -22,7 +22,7 @@ void enqueueRayLine3D(const sVec3_FP& viewSpaceP0, const sVec3_FP& viewSpaceP1,
                       u16 cmdcolr, u16 gouraud0, u16 gouraud1);
 void flushRayLines3D();
 
-// 0602e136 — transform two world-space vertices and emit a textured ray
+// 0602e136 - transform two world-space vertices and emit a textured ray
 // segment (when cmdsrca != 0) or a colour-only line (when cmdsrca == 0).
 void displayRaySegmentFromWorldSpace(sVec3_FP* pVerts,
                                      s32 width     = 0,

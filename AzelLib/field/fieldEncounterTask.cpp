@@ -301,7 +301,7 @@ void encounterTaskUpdate(sEncouterTask* pThis)
         pThis->m0_status = 6;
         break;
     }
-    case 6: // final cleanup — wait for sound, restore field state
+    case 6: // final cleanup - wait for sound, restore field state
         if (!isSoundLoadingFinished())
             return;
         clearVdp2TextMemory();

@@ -104,7 +104,7 @@ static void battleBerserkScrollEffect_update(sBattleBerserkScrollTask* pThis)
         pThis->m1_fadeFrames = cfg.m1D_fadeFrames;
 
         // Create palette fade sub-task
-        Unimplemented(); // FUN_BTL_A3__0607a434 — palette fade subtask
+        Unimplemented(); // FUN_BTL_A3__0607a434 - palette fade subtask
 
         // Load scroll tile data
         {
@@ -198,10 +198,10 @@ static void battleBerserkScrollEffect_update(sBattleBerserkScrollTask* pThis)
             pThis->m4_numCycles--;
             if (pThis->m4_numCycles < 1)
             {
-                // Last cycle done — set final palette and start fade out
+                // Last cycle done - set final palette and start fade out
                 pThis->m3_paletteIndex = pThis->m5_palettesPerCycle - 1;
                 pThis->m1_fadeFrames = cfg.m1D_fadeFrames;
-                Unimplemented(); // FUN_BTL_A3__0607a434 — final palette fade
+                Unimplemented(); // FUN_BTL_A3__0607a434 - final palette fade
                 pThis->m0_state++;
                 return;
             }

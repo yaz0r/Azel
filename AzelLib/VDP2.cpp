@@ -1699,7 +1699,7 @@ void printVdp2String(s_stringStatusQuery* vars)
         case '%':
         {
             u8 fmtChar = *(vars->m20_string++) & 0xFF;
-            if (fmtChar == '%') // '%%' → render literal '%'
+            if (fmtChar == '%') // '%%' -> render literal '%'
             {
                 s16 sVar5 = (s16)r11;
                 setVdp2VramU16(vars->m24_vdp2MemoryOffset, sVar5 + 10);
@@ -1707,11 +1707,11 @@ void printVdp2String(s_stringStatusQuery* vars)
                 vars->m24_vdp2MemoryOffset += 2;
                 vars->m0_cursorX++;
             }
-            else if (fmtChar == 0x61) // '%a<digit>' → string substitution
+            else if (fmtChar == 0x61) // '%a<digit>' -> string substitution
             {
                 printVdp2StringSub2(*(vars->m20_string++) - 0x30);
             }
-            else if (fmtChar == 0x63) // '%c<digit>' → color change
+            else if (fmtChar == 0x63) // '%c<digit>' -> color change
             {
                 u8 colorDigit = *(vars->m20_string++) & 0xFF;
                 vars->m28 = (colorDigit - 0x30) & 7;
@@ -1773,13 +1773,13 @@ s32 computeStringLength(const char* pString, s32 r5)
         {
             u8 nextChar = *pString & 0xFF;
             pString++;
-            if (nextChar == 0x25) // '%%' → literal '%'
+            if (nextChar == 0x25) // '%%' -> literal '%'
             {
                 // counts as 1 visible char, but we already increment below
                 // net: no adjustment needed
                 break;
             }
-            else if (nextChar == 0x61) // '%a<digit>' → string substitution
+            else if (nextChar == 0x61) // '%a<digit>' -> string substitution
             {
                 u8 digit = *pString & 0xFF;
                 pString++;
@@ -1790,7 +1790,7 @@ s32 computeStringLength(const char* pString, s32 r5)
                 }
                 break;
             }
-            else if (nextChar == 0x63) // '%c<x>' → color code
+            else if (nextChar == 0x63) // '%c<x>' -> color code
             {
                 pString++; // skip color byte
                 r14 -= 2;

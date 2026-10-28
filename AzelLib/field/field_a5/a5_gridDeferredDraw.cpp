@@ -9,7 +9,7 @@
 #include "3dModels.h"
 #include "processModel.h"
 
-// 06077074 — variant of gridCellDraw_normalSub2 that takes an explicit
+// 06077074 - variant of gridCellDraw_normalSub2 that takes an explicit
 // world-space (pos, rot) pair. Culls against the dragon's m8_pos
 // directly (axis-aligned), builds a local world matrix, copies it to
 // the grid's per-object cache, and enqueues the draw with depth 0x10000.

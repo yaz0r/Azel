@@ -58,7 +58,7 @@ static void a5WormPassageEntrance_Draw(sA5WormPassageEntrance* pThis)
     u32 lod = gridCellDraw_GetDepthRange(pCurrentMatrix->m[2][3]);
     if (lod < 2)
     {
-        // data[0x18] or data[0x1A] depending on LOD — a s16 bundle offset
+        // data[0x18] or data[0x1A] depending on LOD - a s16 bundle offset
         // to the sProcessed3dModel that should be drawn at this range.
         s16 modelOffset = readSaturnS16(data + 0x18 + lod * 2);
         sProcessed3dModel* pModel = pThis->m0_memoryArea.m0_mainMemoryBundle->get3DModel(modelOffset);

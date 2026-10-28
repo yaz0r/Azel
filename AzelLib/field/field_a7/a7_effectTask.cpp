@@ -46,10 +46,10 @@ struct sA7EffectSpawnDesc
     s32 m1C_param4;
 };
 
-// Forward declaration — defined after the phase update functions
+// Forward declaration - defined after the phase update functions
 static s32 a7EffectTask_particleStep_06057054(sA7Particle* pParticle, u32* pArrayA, u32 arrayBLifetime);
 
-// 06057158 — final-stage update: wind down the particle pool by pulling tail slots
+// 06057158 - final-stage update: wind down the particle pool by pulling tail slots
 // over dead particles, kill the task when m4_tick reaches zero.
 static void a7EffectTask_UpdatePhase2_06057158(sA7EffectTask* pThis)
 {
@@ -82,7 +82,7 @@ static void a7EffectTask_UpdatePhase2_06057158(sA7EffectTask* pThis)
     }
 }
 
-// 0605725c — phase-1 update: full particle loop, swaps to phase 2 once m2C_flags is set
+// 0605725c - phase-1 update: full particle loop, swaps to phase 2 once m2C_flags is set
 static void a7EffectTask_UpdatePhase1_0605725c(sA7EffectTask* pThis)
 {
     if ((s8)pThis->m2C_flags != 0)
@@ -129,7 +129,7 @@ static void a7EffectTask_UpdatePhase1_0605725c(sA7EffectTask* pThis)
     }
 }
 
-// 06057054 — per-particle physics step (Y accumulator + velocity ramp)
+// 06057054 - per-particle physics step (Y accumulator + velocity ramp)
 static s32 a7EffectTask_particleStep_06057054(sA7Particle* pParticle, u32* pArrayA, u32 arrayBLifetime)
 {
     if (*pArrayA < arrayBLifetime)
@@ -148,7 +148,7 @@ static s32 a7EffectTask_particleStep_06057054(sA7Particle* pParticle, u32* pArra
     return baseY;
 }
 
-// 06057270 — main particle update
+// 06057270 - main particle update
 static void a7EffectTask_Update_06057270(sA7EffectTask* pThis)
 {
     pThis->m28 = pThis->m28 + 1;
@@ -203,13 +203,13 @@ static void a7EffectTask_Update_06057270(sA7EffectTask* pThis)
     }
 }
 
-// 06056e7c — draw a trail segment from a transformed base vec3 with color/avgZ/cfg
+// 06056e7c - draw a trail segment from a transformed base vec3 with color/avgZ/cfg
 static void a7EffectTask_drawSegment_06056e7c(sVec3_FP* pBaseView, u16 color, s32 avgZ, s16* pCfg)
 {
     Unimplemented();
 }
 
-// 06056ff8 — iterate particles and submit a trail segment per particle
+// 06056ff8 - iterate particles and submit a trail segment per particle
 static void a7EffectTask_Draw_06056ff8(sA7EffectTask* pThis)
 {
     for (s32 i = 0; i < pThis->m0_count; i++)
@@ -226,7 +226,7 @@ static void a7EffectTask_Draw_06056ff8(sA7EffectTask* pThis)
     }
 }
 
-// 06057296 — spawner core
+// 06057296 - spawner core
 static sA7EffectTask* a7EffectTask_spawnerCore_06057296(p_workArea parent, sA7EffectSpawnDesc* desc)
 {
     sA7EffectTask* pTask = createSiblingTaskFromFunction<sA7EffectTask>(parent, nullptr);

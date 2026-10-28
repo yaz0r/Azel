@@ -45,7 +45,7 @@ void battleResultScreenProgressiveText_update(sBattleResultProgressiveText* pThi
             pThis->m4_currentCounter = 0;
             if (pThis->m11)
             {
-                Unimplemented(); // battleResultScreen_createParticles — sparkle on character reveal
+                Unimplemented(); // battleResultScreen_createParticles - sparkle on character reveal
             }
             battleResultScreenProgressiveText_printCharacter(pThis);
             pThis->mD_positionInString++;
@@ -56,7 +56,7 @@ void battleResultScreenProgressiveText_update(sBattleResultProgressiveText* pThi
                 {
                     for (s32 i = 0; i < (s32)((u8)pThis->m11 - 1); i++)
                     {
-                        Unimplemented(); // battleResultScreen_createParticles2 — burst on text complete
+                        Unimplemented(); // battleResultScreen_createParticles2 - burst on text complete
                     }
                 }
                 pThis->getTask()->markFinished();

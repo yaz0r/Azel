@@ -185,7 +185,7 @@ void baldorQueenFormation_updateMode0(BTL_A3_BaldorQueenFormation* pThis) {
         break;
     case 2:
     {
-        // 06057500 — reposition all baldors to dragon's quadrant (sets m18 target position only)
+        // 06057500 - reposition all baldors to dragon's quadrant (sets m18 target position only)
         pThis->mB_baldorsQuadrant = gBattleManager->m10_battleOverlay->m4_battleEngine->m22C_dragonCurrentQuadrant;
         sSaturnPtr posTable = g_BTL_A3->getSaturnPtr(0x060a8d78);
         for (int i = 0; i < 6; i++)
@@ -516,7 +516,7 @@ void BTL_A3_BaldorQueenFormation_Update(BTL_A3_BaldorQueenFormation* pThis) {
         gBattleManager->m10_battleOverlay->m4_battleEngine->m3B2_numBattleFormationRunning++;
     }
     
-    // 06058ab8 — periodic baldor position shuffle
+    // 06058ab8 - periodic baldor position shuffle
     if (--pThis->m12_shuffleTimer < 0)
     {
         int idx1 = performModulo2(6, randomNumber());
@@ -553,7 +553,7 @@ void BTL_A3_BaldorQueenFormation_Update(BTL_A3_BaldorQueenFormation* pThis) {
     case 3:
         baldorQueenFormation_updateMode3(pThis); // Vile brood (spawn new baldors)
         break;
-    case 4: // death/completion — 06058998
+    case 4: // death/completion - 06058998
         baldorQueenFormation_updateMode4(pThis);
         break;
     default:
