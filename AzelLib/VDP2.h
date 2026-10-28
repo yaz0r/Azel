@@ -331,6 +331,7 @@ s32 setActiveFont(u16 r4);
 void unpackGraphicsToVDP2(u8* compressedData, u8* destination);
 
 void resetVdp2Strings();
+void resetCharacterMaps();
 
 u32 getVdp2VramU32(u32 offset);
 u16 getVdp2VramU16(u32 offset);

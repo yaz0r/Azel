@@ -168,7 +168,7 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
     struct s_receivedItemTask* m40_receivedItemTask;
     s_multiChoice* m44_multiChoiceData;
     s_workArea* m48_cutsceneTask; // s_cutsceneTask or s_cutsceneTask2 or s_cutsceneTask3
-    struct sFieldPCMTask* m4C_PCMTask;
+    struct sPCMVoiceTask* m4C_PCMTask;
     s32 m50_scriptDelay;
     s32 m54_currentResult;
     s32 m58_debugFastForward;

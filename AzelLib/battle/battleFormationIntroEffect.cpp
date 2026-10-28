@@ -80,53 +80,6 @@ static void formationIntroEffect_ResetFrameCounters(sFormationIntroEffectTask* p
     pThis->mC_remainingFrames = 0;
 }
 
-// 06077214
-void sBattleVoiceOverTask::Init(sBattleVoiceOverTask* pThis, u32 filenameRaw)
-{
-    pThis->m1D4_buffer = dramAllocate(0x8000);
-    pThis->m1D8_state = 0;
-
-    sSaturnPtr filenamePtr = sSaturnPtr::createFromRaw(filenameRaw, gCurrentBattleOverlay);
-    const char* filename = (const char*)getSaturnPtr(filenamePtr);
-
-    s32 sampleRate = (azelCdNumber == 3) ? 18000 : 22050;
-
-    sStreamingFile* psVar1 = openPCMFileForStreaming(&pThis->m4, pThis->m1D4_buffer, 0x8000, &pThis->m1BC_metadata, filename, sampleRate);
-    pThis->m0 = psVar1;
-}
-
-// 0607728e
-void sBattleVoiceOverTask::Draw(sBattleVoiceOverTask* pThis)
-{
-    drawPCMDebugDisplay(pThis->m0);
-
-    s32 state = pThis->m1D8_state;
-    if (state == 0)
-    {
-        scriptFunction_60573d8Sub0(pThis->m0);
-        s32 streamState = scriptFunction_605861eSub0Sub0(pThis->m0);
-        if (streamState > 1)
-        {
-            pThis->m1D8_state++;
-        }
-    }
-    else if (state == 1)
-    {
-        s32 streamState = scriptFunction_605861eSub0Sub0(pThis->m0);
-        if (streamState == 5)
-        {
-            pThis->getTask()->markFinished();
-        }
-    }
-}
-
-// 060772e4
-void sBattleVoiceOverTask::Delete(sBattleVoiceOverTask* pThis)
-{
-    stopPCMStreaming(pThis->m0);
-    dramFree(pThis->m1D4_buffer);
-}
-
 // 0607750c  formationIntroEffect_SetupString
 static void formationIntroEffect_SetupString(sFormationIntroEffectTask* pThis)
 {
@@ -144,8 +97,8 @@ static void formationIntroEffect_SetupString(sFormationIntroEffectTask* pThis)
     }
     else
     {
-        sBattleVoiceOverTask* pSubTask = createSubTaskWithArg<sBattleVoiceOverTask>(
-            (p_workArea)pThis, pThis->m14_cutsceneFilenameRaw);
+        sPCMVoiceTask* pSubTask = createSubTaskWithArg<sPCMVoiceTask>(
+            (p_workArea)pThis, sSaturnPtr::createFromRaw(pThis->m14_cutsceneFilenameRaw, gCurrentBattleOverlay));
         pThis->m20_cutsceneTask = pSubTask;
         pThis->m2_flag = 2;
         pThis->m4_totalFrames = pSubTask->m1BC_metadata.m10_totalFrames;

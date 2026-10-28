@@ -28,6 +28,14 @@ GfsHn GFS_Open(const std::string& name)
     return temp;
 }
 
+void GFS_Close(GfsHn handle)
+{
+    if (handle.fHandle)
+    {
+        fclose(handle.fHandle);
+    }
+}
+
 void GFS_GetFileSize(GfsHn handle, s32* sectorSize, s32* numSector, s32* lastSize)
 {
     u32 position = ftell(handle.fHandle);
@@ -89,7 +97,7 @@ sStreamingFile* initStreamingHandle(sStreamingFile* param_1, u8* buffer, u32 buf
     (param_1->m28).mC = 0;
     (param_1->m28).m10 = 0;
     (param_1->m28).m1C = 0;
-    param_1->m28.m20_vdp2StringControl = pVdp2StringControl;
+    param_1->m28.m20_vdp2StringIndex = pVdp2StringControl->m0_index;
     (param_1->m28).m28 = 0;
     (param_1->m28).m24_currentPositionInFile = 0;
     u8* puVar2 = param_1->m0_buffer;
@@ -252,25 +260,93 @@ void drawPCMDebugDisplay(sStreamingFile* param_1)
             param_1->m28.m84_frameIndex = (u32)(elapsed * param_1->m194->mC_frameRate);
             if (elapsed >= param_1->m_durationSeconds)
             {
-                param_1->m28.m84_frameIndex = param_1->m194->m10_totalFrames;
-                param_1->m28.m0 = 5;
+                stopPCMStreaming(param_1);
             }
         }
     }
 }
 
+// 06036224
+static void decrementR4(s32 count)
+{
+    while (--count)
+    {
+    }
+}
+
+// 0602c4d6
+static u8 executeCutsceneCommandsSub2Sub0(u8 channel)
+{
+    Unimplemented(); // SCSP command 0x86; PCM playback goes through SoLoud instead
+    return 0;
+}
+
+// 0600e174
+void executeCutsceneCommandsSub2(sStreamingFile* pStreamingFile)
+{
+    if (pStreamingFile->m28.m50 != 0)
+    {
+        while (executeCutsceneCommandsSub2Sub0((u8)pStreamingFile->m14) == 1)
+        {
+            decrementR4(0x100);
+        }
+    }
+}
+
+// 0600e6d4
 void stopPCMStreaming(sStreamingFile* pStreamingFile)
 {
+    sPCMStreamMetadata* pMetadata = pStreamingFile->m194;
+    if (pStreamingFile->m28.m0 == 5)
+    {
+        return;
+    }
+
+    executeCutsceneCommandsSub2(pStreamingFile);
+    pStreamingFile->m28.m24_currentPositionInFile = pStreamingFile->m198.m18_fileSize;
+    pStreamingFile->m28.m50 = 0;
+    pStreamingFile->m28.m84_frameIndex = pMetadata->m10_totalFrames;
+    if (pStreamingFile->m28.m1C)
+    {
+        clearVdp2TextArea();
+        pStreamingFile->m28.m1C = 0;
+    }
+
+    for (int i = 0; i < 0x10; i++)
+    {
+        sStreamingFile_C8& entity = pStreamingFile->mC8_cutsceneEntities[i];
+        if ((entity.m0_compressionType == 1) && entity.m4_pOwner)
+        {
+            entity.m4_pOwner->getTask()->markFinished();
+        }
+    }
+
+    while ((s32)pVdp2StringControl->m0_index > pStreamingFile->m28.m20_vdp2StringIndex)
+    {
+        if ((pVdp2StringControl->m15 & 1) == 0)
+        {
+            u16* pFontData = pVdp2StringControl->m8;
+            unloadFnt();
+            freeHeap(pFontData);
+        }
+        else
+        {
+            unloadFnt();
+        }
+    }
+
+    GFS_Close(pStreamingFile->m198.m0_gfsHandle);
+
+    // C++ only: SoLoud playback state (replaces the SCSP stream)
     if (pStreamingFile->m_soloudHandle != 0 && gSoloud.isValidVoiceHandle(pStreamingFile->m_soloudHandle))
     {
         gSoloud.stop(pStreamingFile->m_soloudHandle);
-        pStreamingFile->m_soloudHandle = 0;
     }
-    if (pStreamingFile->m_pWav != nullptr)
-    {
-        delete pStreamingFile->m_pWav;
-        pStreamingFile->m_pWav = nullptr;
-    }
+    pStreamingFile->m_soloudHandle = 0;
+    delete pStreamingFile->m_pWav;
+    pStreamingFile->m_pWav = nullptr;
+
+    pStreamingFile->m28.m0 = 5;
 }
 
 s32 gCutsceneFlags = 0;
@@ -295,10 +371,6 @@ void getNextStreamingBuffer(sStreamingFile* iParm1, u8** pBuffer, int* pBufferSi
     return;
 }
 
-void updateStreamingFileReadSub0(sStreamingFile* iParm1)
-{
-    Unimplemented();
-}
 
 void incrementReadPosition(sStreamingFile* param_1, s32 param_2)
 {
@@ -346,7 +418,7 @@ void updateStreamingFileRead(sStreamingFile* iParm1)
         }
         else
         {
-            updateStreamingFileReadSub0(iParm1);
+            stopPCMStreaming(iParm1);
             return;
         }
 
@@ -356,7 +428,7 @@ void updateStreamingFileRead(sStreamingFile* iParm1)
         s32 completed = GFS_NwExecOne(psVar4->m0_gfsHandle);
         if (completed < 0)
         {
-            updateStreamingFileReadSub0(iParm1);
+            stopPCMStreaming(iParm1);
             return;
         }
 
@@ -995,7 +1067,7 @@ void executeCutsceneCommands(sStreamingFile* psParm1)
     }
 
     if (((psParm1->m28).m88 != 0) && (psParm1->m194->m10_totalFrames <= (psParm1->m28).m84_frameIndex)) {
-        updateStreamingFileReadSub0(psParm1);
+        stopPCMStreaming(psParm1);
         return;
     }
 
@@ -1193,7 +1265,7 @@ void sCutsceneTask::Draw(sCutsceneTask* pThis)
 // 06057336
 void sCutsceneTask::Delete(sCutsceneTask* pThis)
 {
-    updateStreamingFileReadSub0(pThis->m0);
+    stopPCMStreaming(pThis->m0);
     if (pThis->m1D4)
     {
         dramFree(pThis->m1D4);
@@ -1288,7 +1360,7 @@ s32 townDeleteCutscene()
 {
     if (gCutsceneTask != nullptr) {
         npcData0.mF4 = 0;
-        updateStreamingFileReadSub0(gCutsceneTask->m0);
+        stopPCMStreaming(gCutsceneTask->m0);
         sCutsceneTask* temp = gCutsceneTask;
         gCutsceneTask = nullptr;
         temp->getTask()->markFinished();

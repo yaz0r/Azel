@@ -15,28 +15,7 @@
 
 struct sFormationTaskBase;
 
-#include "town/townCutscene.h"
-
-// 060ba1d0 task definition: {06077214, 00000000, 0607728e, 060772e4}
-struct sBattleVoiceOverTask : public s_workAreaTemplateWithArg<sBattleVoiceOverTask, u32>
-{
-    static TypedTaskDefinition* getTypedTaskDefinition()
-    {
-        static TypedTaskDefinition taskDefinition = { &Init, nullptr, &Draw, &Delete };
-        return &taskDefinition;
-    }
-
-    static void Init(sBattleVoiceOverTask* pThis, u32 filenameRaw);
-    static void Draw(sBattleVoiceOverTask* pThis);
-    static void Delete(sBattleVoiceOverTask* pThis);
-
-    sStreamingFile* m0;              // 0x00
-    sStreamingFile m4;               // 0x04 (0x1B8 bytes on Saturn)
-    sPCMStreamMetadata m1BC_metadata; // 0x1BC
-    u8* m1D4_buffer;                 // 0x1D4
-    s32 m1D8_state;                  // 0x1D8
-    // Saturn size 0x1DC
-};
+#include "audio/pcmVoiceTask.h"
 
 struct sFormationIntroEffectTask : public s_workAreaTemplateWithArg<sFormationIntroEffectTask, sSaturnPtr>
 {
@@ -82,7 +61,7 @@ struct sFormationIntroEffectTask : public s_workAreaTemplateWithArg<sFormationIn
     // task+0x1C
     sSaturnPtr m1C_dataPtr;
     // task+0x20 (PCM streaming subtask)
-    sBattleVoiceOverTask* m20_cutsceneTask;
+    sPCMVoiceTask* m20_cutsceneTask;
     // task+0x24
     s16 m24_savedCounter;
     // task+0x26 (pad)

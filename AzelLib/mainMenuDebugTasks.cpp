@@ -1437,9 +1437,44 @@ u16 loadFnt(const char* filename)
     return index;
 }
 
+// 0602502c
+static void unloadFntSub0(sVdp2StringControl* pControl)
+{
+    if (pControl->m8 == nullptr)
+    {
+        return;
+    }
+
+    if (pControl->m15 & 1)
+    {
+        freeHeap(pControl->m8);
+    }
+
+    if (pControl->pPrevious)
+    {
+        if (pVdp2StringControl == pControl)
+        {
+            pVdp2StringControl = pControl->pPrevious;
+            pVdp2StringControl->pNext = pControl->pNext;
+        }
+        else
+        {
+            if (pControl->pNext)
+            {
+                pControl->pNext->pPrevious = pControl->pPrevious;
+            }
+            pControl->pPrevious->pNext = pControl->pNext;
+        }
+        freeHeap(pControl);
+    }
+
+    resetCharacterMaps();
+}
+
+// 060250e0
 void unloadFnt()
 {
-    PDS_unimplemented("Unimplemented unloadFnt");
+    unloadFntSub0(pVdp2StringControl);
 }
 
 u8 fieldSubTaskVar0;

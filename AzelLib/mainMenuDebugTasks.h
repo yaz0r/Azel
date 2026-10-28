@@ -59,6 +59,7 @@ u32 performModulo(u32 r0, u32 r1);
 u32 performModulo2(u32 r0, u32 r1);
 void resetTempAllocators();
 u16 loadFnt(const char* filename);
+void unloadFnt();
 void clearVdp2Menu();
 
 struct s_fileEntry

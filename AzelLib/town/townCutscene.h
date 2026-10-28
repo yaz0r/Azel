@@ -17,7 +17,7 @@ struct sStreamingFile_28
     u32 m14;
     u32 m18;
     s32 m1C;
-    sVdp2StringControl* m20_vdp2StringControl;
+    s32 m20_vdp2StringIndex;
     u32 m24_currentPositionInFile;
     u32 m28;
     u8* m2C_pBufferWrite;
@@ -135,7 +135,6 @@ void stopPCMStreaming(sStreamingFile* pStreamingFile);
 
 void scriptFunction_60573d8Sub0(sStreamingFile* r4);
 s32 scriptFunction_605861eSub0Sub0(sStreamingFile* r4);
-void updateStreamingFileReadSub0(sStreamingFile* iParm1);
 s32 getCutsceneFrameIndex(sStreamingFile*);
 s32 getPositionInEDK(sStreamingFile* iParm1);
 void setupCutsceneModelType2(sStreamingFile* r4, u32 r5, p_workArea r6, s_3dModel* pModel);
