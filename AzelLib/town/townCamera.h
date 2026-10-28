@@ -10,3 +10,4 @@ s32 TwnFadeOut(s32 arg0);
 s32 TwnFadeIn(s32 arg0);
 s32 SetupColorOffset(s32 r4);
 u16 computeTimeOfDayColor(s32 time);
+s32 toggleDayNight();

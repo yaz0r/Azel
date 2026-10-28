@@ -760,34 +760,10 @@ struct TWN_SEEK_data : public sTownOverlay
     }
 };
 
-// 06054114
-static void initCameraTimerFromDayNight_Seek(sCameraTask* pCamera) {
-    if (mainGameState.bitField[0] & 1) {
-        pCamera->m4_dayNightTimer = 0x1518;
-    }
-    else {
-        pCamera->m4_dayNightTimer = 0;
-    }
-}
-
-// 0605412c
-static void seekerToggleDayNight() {
-    initCameraTimerFromDayNight_Seek(cameraTaskPtr);
-    if (mainGameState.bitField[0] & 1) {
-        return;
-    }
-    if (mainGameState.bitField[1] & 0x80) {
-        mainGameState.bitField[1] &= 0x7F;
-    }
-    else {
-        mainGameState.bitField[1] |= 0x80;
-    }
-}
-
 // 060540d4
 static void townOverlayDelete_TwnSeek(townDebugTask2Function* pThis)
 {
-    seekerToggleDayNight();
+    toggleDayNight();
     freeRamResources(pThis);
     vdp1FreeLastAllocation(pThis);
     unloadFnt();

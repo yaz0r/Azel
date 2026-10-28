@@ -40,6 +40,19 @@ void townCamera_setupLight(sCameraTask* pThis, sSaturnPtr lightData)
     generateLightFalloffMap(readSaturnRGB8(lightData + 3).toU32(), readSaturnRGB8(lightData + 6).toU32(), readSaturnRGB8(lightData + 9).toU32());
 }
 
+// 0605c4fa (RUIN), 0605d43e (EXCA), 06071ade (CAMP), 06075b96 (CARA), 06075c0a (SEEK), 0609deba (ZOAH)
+s32 toggleDayNight()
+{
+    sCameraTask::Init(cameraTaskPtr);
+    if (mainGameState.bitField[0] & 1)
+        return 0;
+    if ((mainGameState.bitField[1] & 0x80) == 0)
+        mainGameState.bitField[1] |= 0x80;
+    else
+        mainGameState.bitField[1] &= 0x7F;
+    return 1;
+}
+
 s32 townCamera_setupWithPosition(sSaturnPtr arg)
 {
     townCamera_setupLight(cameraTaskPtr, arg + 0x14);

@@ -26,31 +26,6 @@ int scriptFunction_60541c4(int arg);
 sTownObject* createCampFire(s_workAreaCopy* parent, sSaturnPtr arg); //todo: clean
 static sTownObject* createCampParticle(s_workAreaCopy* parent, sSaturnPtr arg);
 
-static void cameraUpdate_noop(sMainLogic*)
-{
-}
-
-int scriptFunction_0606c952()
-{
-    twnMainLogicTask->m10 = &cameraUpdate_noop;
-    return 0;
-}
-
-int scriptFunction_06071ade_toggleDayNight()
-{
-    sCameraTask::Init(cameraTaskPtr);
-    if (mainGameState.bitField[0] & 1) {
-        return 0;
-    }
-    if (mainGameState.bitField[1] & 0x80) {
-        mainGameState.bitField[1] &= 0x7f;
-    }
-    else {
-        mainGameState.bitField[1] |= 0x80;
-    }
-    return 1;
-}
-
 // 0606d608
 s32 getGameStat(s32 statIndex) {
     switch (statIndex) {
@@ -242,9 +217,9 @@ struct TWN_CAMP_data : public sTownOverlay
     TWN_CAMP_data() : sTownOverlay("TWN_CAMP.PRG")
     {
         overlayScriptFunctions.m_zeroArg[0x0606cb54] = {&hasLoadingCompleted, "hasLoadingCompleted"};
-        overlayScriptFunctions.m_zeroArg[0x0606c952] = {&scriptFunction_0606c952, "scriptFunction_0606c952"};
+        overlayScriptFunctions.m_zeroArg[0x0606c952] = {&disableCameraUpdate, "disableCameraUpdate"};
         overlayScriptFunctions.m_zeroArg[0x0606c95c] = {&setupCameraUpdateForCurrentMode, "setupCameraUpdateForCurrentMode"};
-        overlayScriptFunctions.m_zeroArg[0x06071ade] = {&scriptFunction_06071ade_toggleDayNight, "scriptFunction_06071ade_toggleDayNight"};
+        overlayScriptFunctions.m_zeroArg[0x06071ade] = {&toggleDayNight, "toggleDayNight"};
         overlayScriptFunctions.m_zeroArg[0x0606d5bc] = {&canCurrentResActivate, "canCurrentResActivate"};
         overlayScriptFunctions.m_zeroArg[0x0606d5f2] = {&isCurrentResInactive, "isCurrentResInactive"};
         overlayScriptFunctions.m_zeroArg[0x06057f46] = {&startDragonNameEntryTask, "startDragonNameEntryTask"};
@@ -619,19 +594,6 @@ void increaseGameResource(s32 resourceType, s32 amount)
         if (val > 0x7C) val = 0x7C;
         mainGameState.gameStats.m7C_overallRating = (u32)val;
     }
-}
-
-// 06071ade
-static s32 toggleDayNight()
-{
-    sCameraTask::Init(cameraTaskPtr);
-    if (mainGameState.bitField[0] & 1)
-        return 0;
-    if ((mainGameState.bitField[1] & 0x80) == 0)
-        mainGameState.bitField[1] |= 0x80;
-    else
-        mainGameState.bitField[1] &= 0x7F;
-    return 1;
 }
 
 // 06054180

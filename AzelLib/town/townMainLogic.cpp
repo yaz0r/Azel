@@ -10,8 +10,16 @@
 
 sMainLogic* twnMainLogicTask;
 
+// 06055db2 (RUIN), 0606b396 (CAMP), 0606f44e (CARA), 06097772 (ZOAH)
 void mainLogicDummy(struct sMainLogic*)
 {
+}
+
+// 0606c952 (CAMP), 06070a0a (CARA), 06098d2e (ZOAH)
+s32 disableCameraUpdate()
+{
+    twnMainLogicTask->m10 = &mainLogicDummy;
+    return 0;
 }
 
 void initTownProjection()

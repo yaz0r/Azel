@@ -63,6 +63,7 @@ void setupNPCWalkInZDirection(s32 r4_npcIndex, s32 r5_zDirection, s32 r6_distanc
 s32 setupCameraFollowAndWalk();
 s32 setupAutoWalk();
 s32 hasLoadingCompleted();
+s32 disableCameraUpdate();
 s32 disableMainLogic();
 s32 enableMainLogic();
 int setupCameraUpdateForCurrentMode();

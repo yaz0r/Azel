@@ -113,16 +113,6 @@ static void zoahCamera_draw(sCameraTask* pThis)
 // scriptFunction_060989f8 is functionally identical to scriptFunction_6057058_sub0
 // (sets draw method, inits camera from Edge position, sets follow mode 0, calls setupCameraUpdateForCurrentMode)
 
-static void cameraUpdate_noop(sMainLogic*)
-{
-}
-
-int disableCameraUpdate()
-{
-    twnMainLogicTask->m10 = &cameraUpdate_noop;
-    return 0;
-}
-
 int enableRBG0()
 {
     vdp2Controls.m4_pendingVdp2Regs->m20_BGON = vdp2Controls.m4_pendingVdp2Regs->m20_BGON | 0x10;
@@ -159,21 +149,6 @@ int disableRBG0()
     setVdp2VramU16(0x25002, 0x8000);
     vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA = (vdp2Controls.m4_pendingVdp2Regs->mAC_BKTA & 0xFFF80000) | 0x12801;
     return 0;
-}
-
-static s32 toggleDayNight()
-{
-    sCameraTask::Init(cameraTaskPtr);
-    if (mainGameState.bitField[0] & 1) {
-        return 0;
-    }
-    if (mainGameState.bitField[1] & 0x80) {
-        mainGameState.bitField[1] &= 0x7f;
-    }
-    else {
-        mainGameState.bitField[1] |= 0x80;
-    }
-    return 1;
 }
 
 s32 setupCameraModeFixed(s32 arg0, s32 arg1, s32 arg2)
@@ -1436,16 +1411,7 @@ static void startZoahBackgroundTask(p_workArea pParent)
 // 060540d2
 static void townOverlayDelete_TwnZoah(townDebugTask2Function* pThis)
 {
-    // toggleDayNight (0609deba)
-    sCameraTask::Init(cameraTaskPtr);
-    if ((mainGameState.bitField[0] & 1) == 0)
-    {
-        if ((mainGameState.bitField[1] & 0x80) == 0)
-            mainGameState.bitField[1] |= 0x80;
-        else
-            mainGameState.bitField[1] &= 0x7F;
-    }
-
+    toggleDayNight();
     freeRamResources(pThis);
     vdp1FreeLastAllocation(pThis);
     unloadFnt();

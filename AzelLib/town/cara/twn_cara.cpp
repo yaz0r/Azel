@@ -31,10 +31,6 @@ static s32 returnZero() {
     return 0;
 }
 
-static void cameraUpdate_noop(sMainLogic*)
-{
-}
-
 static s32 caravanCameraSetup(s32 rotationEA, s32 lightData);
 s32 setupCameraModeFixed(s32 arg0, s32 arg1, s32 arg2);
 s32 setupZoahCamera(s32 param_1);
@@ -133,12 +129,6 @@ static s32 createCutsceneWaitTask(s32 param_1) {
     if (townIsCutsceneDone() == 0) {
         Unimplemented(); // creates a timer sub-task on townVar0
     }
-    return 0;
-}
-
-// 06070a0a
-static s32 disableCameraUpdate_Cara() {
-    twnMainLogicTask->m10 = &cameraUpdate_noop;
     return 0;
 }
 
@@ -1115,7 +1105,7 @@ struct TWN_CARA_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x06070c0c] = {&hasLoadingCompleted, "hasLoadingCompleted"};
         overlayScriptFunctions.m_zeroArg[0x060706d4] = {&setupCameraFollowMode, "setupCameraFollowMode"};
         overlayScriptFunctions.m_zeroArg[0x060709ec] = {&disableMainLogic, "disableMainLogic"};
-        overlayScriptFunctions.m_zeroArg[0x06070a0a] = {&disableCameraUpdate_Cara, "disableCameraUpdate_Cara"};
+        overlayScriptFunctions.m_zeroArg[0x06070a0a] = {&disableCameraUpdate, "disableCameraUpdate"};
 
         overlayScriptFunctions.m_oneArg[0x06075e60] = {&TwnFadeIn, "TwnFadeIn"};
         overlayScriptFunctions.m_oneArg[0x06075ed8] = {&TwnFadeOut, "TwnFadeOut"};
@@ -1207,34 +1197,10 @@ struct TWN_CARA_data : public sTownOverlay
     }
 };
 
-// 06075b7e
-static void initCameraTimerFromDayNight(sCameraTask* pCamera) {
-    if (mainGameState.bitField[0] & 1) {
-        pCamera->m4_dayNightTimer = 5400;
-    }
-    else {
-        pCamera->m4_dayNightTimer = 0;
-    }
-}
-
-// 06075b96
-static void caravanToggleDayNight() {
-    initCameraTimerFromDayNight(cameraTaskPtr);
-    if (mainGameState.bitField[0] & 1) {
-        return;
-    }
-    if (mainGameState.bitField[1] & 0x80) {
-        mainGameState.bitField[1] &= 0x7F;
-    }
-    else {
-        mainGameState.bitField[1] |= 0x80;
-    }
-}
-
 // 060540d4
 static void townOverlayDelete_TwnCara(townDebugTask2Function* pThis)
 {
-    caravanToggleDayNight();
+    toggleDayNight();
     freeRamResources(pThis);
     vdp1FreeLastAllocation(pThis);
     unloadFnt();
