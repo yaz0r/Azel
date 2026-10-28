@@ -87,7 +87,7 @@ static void a5_sandWorm_pickNextTarget(sVec3_FP* pPos, u8* pArgFlag)
         bool oob = pPos->m0_X.m_value < 0x4F5000
                 || pPos->m0_X.m_value > 0x6F5000
                 || pPos->m8_Z.m_value < -0x700000
-                || pPos->m8_Z.m_value >= -0x100000;
+                || pPos->m8_Z.m_value > -0x100000;
 
         if (oob)
         {
@@ -263,8 +263,8 @@ static void a5_sandWorm_spawnBreachSand(sA5SandWorm* /*pThis*/, sVec3_FP* pPos)
     {
         sVec3_FP vel;
         vel.m0_X = fixedPoint(centeredRandom(0x7FF));
-        vel.m4_Y = fixedPoint(randomNumber() & 0x7FF);
         vel.m8_Z = fixedPoint(centeredRandom(0x7FF));
+        vel.m4_Y = fixedPoint(randomNumber() & 0x7FF);
 
         sParticleSpawnConfig desc = {};
         desc.m0_pPosition = pPos;
@@ -536,9 +536,7 @@ static void a5_createSandWorm(p_workArea parent, const sSandWormSpawn& arg)
     pThis->m141_argFlag = arg.m20_argFlag;
     pThis->m140_state   = 0;
     pThis->m28_param10  = arg.m14_param10;
-    pThis->m5C_velocity.m0_X = 0;
-    pThis->m5C_velocity.m4_Y = 0;
-    pThis->m5C_velocity.m8_Z = 0;
+    pThis->m4C_rotationTarget.m8_Z = 0;
     pThis->m24          = 0;
     pThis->m142_subState = 0;
     pThis->m38          = 0;

@@ -59,30 +59,6 @@ s32 s_cutsceneTask2::UpdateSub0()
     return 1;
 }
 
-void s_cutsceneTask2::UpdateSub1()
-{
-    getTask()->markFinished();
-
-    if (getFieldTaskPtr()->m8_pSubFieldData)
-    {
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = NULL;
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 0;
-        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m78)
-        {
-            return;
-        }
-
-        if (m0 & 2)
-        {
-            endCutsceneCameraWithRestore();
-        }
-        else
-        {
-            endCutsceneCameraNoRestore();
-        }
-    }
-}
-
 void s_cutsceneTask2::Update(s_cutsceneTask2* pThis)
 {
     switch (pThis->m34)
@@ -127,7 +103,7 @@ void s_cutsceneTask2::Update(s_cutsceneTask2* pThis)
     default:
         if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C)
             return;
-        pThis->UpdateSub1();
+        endCutsceneTask(pThis);
         break;
     }
 }

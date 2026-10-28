@@ -1589,6 +1589,6 @@ void clearCutsceneKeyFrame()
 // 06079044 (A5) / 06071450 (A3) — enable script skipping and trigger field exit
 void enableScriptSkippingAndExit(s32 fieldIndex, s32 param, s32 exitNumber, s16 r7)
 {
-    enableFieldScriptSkipping();
+    setFieldExiting();
     exitCutsceneTaskUpdateSub0Sub1(fieldIndex, param, exitNumber, r7);
 }

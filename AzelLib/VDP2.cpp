@@ -1037,18 +1037,21 @@ void copyFontToVdp2()
     asyncDmaCopy(defaultFontPalettes, vdp2FontPalettes, 0x200, 0);
 }
 
+// 060251ee
 void setFontDefaultColor(u32 paletteIndex, u16 color0, u16 color1)
 {
+    // The G average lands in bits 10-14 and the B average in bits 5-9: the original code does the same.
     u16 uVar1 = (u16)((((color1 & 0xffff) >> 5 & 0x1f) + (color0 >> 5 & 0x1f) >> 1) << 10) |
         (u16)((((color1 & 0xffff) >> 10 & 0x1f) + (color0 >> 10 & 0x1f) >> 1) << 5) |
         (u16)((color0 & 0x1f) + (color1 & 0x1f) >> 1) | 0x8000;
-    defaultFontPalettes[paletteIndex * 0x10 + 1] = color0;
-    defaultFontPalettes[paletteIndex * 0x10 + 2] = uVar1;
-    defaultFontPalettes[paletteIndex * 0x10 + 3] = color0;
-    defaultFontPalettes[paletteIndex * 0x10 + 4] = vdp2StringContext.m3C;
-    defaultFontPalettes[paletteIndex * 0x10 + 5] = color0;
-    defaultFontPalettes[paletteIndex * 0x10 + 6] = uVar1;
-    defaultFontPalettes[paletteIndex * 0x10 + 7] = color0;
+    u8* palette = defaultFontPalettes + paletteIndex * 0x20;
+    WRITE_BE_U16(palette + 1 * 2, color0);
+    WRITE_BE_U16(palette + 2 * 2, uVar1);
+    WRITE_BE_U16(palette + 3 * 2, color0);
+    WRITE_BE_U16(palette + 4 * 2, vdp2StringContext.m3C);
+    WRITE_BE_U16(palette + 5 * 2, color0);
+    WRITE_BE_U16(palette + 6 * 2, uVar1);
+    WRITE_BE_U16(palette + 7 * 2, color0);
 }
 
 void setFontDefaultColors()

@@ -23,7 +23,8 @@
 #include "field/fieldVisibilityGrid.h"
 
 #include "audio/soundDriver.h"
-#include "audio/pcmPlayer.h"
+#include "field/fieldPCMTask.h"
+#include "town/townCutscene.h"
 
 #include "items.h"
 
@@ -1309,7 +1310,7 @@ void initDragonMovementMode()
 
 void subfieldA3_1Sub0Sub2(s32 r4, s32 r5)
 {
-    exitCutsceneTaskUpdateSub0Sub0();
+    setFieldExiting();
     exitCutsceneTaskUpdateSub0Sub1(getFieldTaskPtr()->m2C_currentFieldIndex, r4, 0, r5);
 }
 
@@ -1435,7 +1436,7 @@ s32 queueNewFieldScript(sSaturnPtr r4, s32 r5)
     r13->m60_canSkipScript = 0;
     r13->m4_currentScript = r4;
     r13->m2C_bitToSet = r5;
-    r13->m58 = 0;
+    r13->m58_debugFastForward = 0;
     r13->m50_scriptDelay = 0;
 
     return 1;
@@ -1459,7 +1460,7 @@ s32 queueNewFieldScriptSkippable(sSaturnPtr r4, s32 r5)
 
     r14->m4_currentScript = r4;
     r14->m2C_bitToSet = r5;
-    r14->m58 = 0;
+    r14->m58_debugFastForward = 0;
     r14->m50_scriptDelay = 0;
     return 1;
 }
@@ -2192,26 +2193,28 @@ void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub3()
         m2C_bitToSet = -1;
     }
 
-    m58 = 0;
+    m58_debugFastForward = 0;
     m50_scriptDelay = 0;
 }
 
+// 0606b162 (A3)
 void endScript()
 {
     s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
-    if (pScript->m4C_PCMPlaying)
+    if (pScript->m4C_PCMTask)
     {
-        pScript->getTask()->markFinished();
+        pScript->m4C_PCMTask->getTask()->markFinished();
     }
 }
 
+// 06069804 (A3)
 void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub2()
 {
     fieldScriptTaskUpdateSub2Sub1();
 
-    if (readKeyboardToggle(KEY_CODE_F12))
+    if (readKeyboardToggle(KEY_CODE_F12) && ((gCutsceneFlags & 4) == 0))
     {
-        assert(0);
+        m58_debugFastForward = 1;
     }
 
     if (graphicEngineStatus.m4514.m0_inputDevices->m0_current.m8_newButtonDown & 6)
@@ -2219,8 +2222,8 @@ void s_fieldScriptWorkArea::fieldScriptTaskUpdateSub2()
         if (m60_canSkipScript)
         {
             endScript();
+            m50_scriptDelay = 0;
         }
-        m50_scriptDelay = 0;
     }
 }
 
@@ -2747,10 +2750,7 @@ s32 FLD_A3_data::executeNative(sSaturnPtr ptr)
             {
                 if (r14->m5C == 0)
                 {
-                    PDS_unimplemented("!!!!!!!!!!!!!!!!!! Casting cutscenes!");
-                    //TODO: this is widely incorrect!
-                    s_cutsceneTask2* r4 = static_cast<s_cutsceneTask2*>(r14->m48_cutsceneTask);
-                    r4->UpdateSub1();
+                    endCutsceneTask(r14->m48_cutsceneTask);
                 }
             }
         }
@@ -2866,13 +2866,6 @@ void createMultiChoice(s32 r4, s32 r5)
 void createMultiChoiceDefault(s32 r4)
 {
     createMultiChoice(r4, -1);
-}
-
-s32 fieldPlayPCM(sSaturnPtr pPcmNameEA)
-{
-    const char* pPcmName = (const char*)getSaturnPtr(pPcmNameEA);
-    playPCMFile(pPcmName);
-    return 0;
 }
 
 sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
@@ -3053,7 +3046,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
             if (m38_dialogStringTask)
             {
                 //6068E76
-                if ((m38_dialogStringTask->m0_status == 4) || m58)
+                if ((m38_dialogStringTask->m0_status == 4) || m58_debugFastForward)
                 {
                     pScript = pScript + 1;
                     pScript.m_offset &= ~1;
@@ -3169,7 +3162,7 @@ sSaturnPtr s_fieldScriptWorkArea::runFieldScript()
                 }
             }
         case 34: // play PCM
-            if (!m4C_PCMPlaying)
+            if (!m4C_PCMTask)
             {
                 pScript = pScript + 3;
                 pScript.m_offset &= ~3;
@@ -3231,9 +3224,18 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
         }
     }
 
-    if (readKeyboardToggle(KEY_CODE_F12))
+    if (readKeyboardToggle(KEY_CODE_F12) && ((gCutsceneFlags & 4) == 0))
     {
-        assert(0);
+        if (pThis->m48_cutsceneTask)
+        {
+            endCutsceneTask(pThis->m48_cutsceneTask);
+        }
+        if (pThis->m38_dialogStringTask)
+        {
+            pThis->m38_dialogStringTask->getTask()->markFinished();
+            pThis->m38_dialogStringTask = nullptr;
+        }
+        endScript();
     }
 
     s_LCSTask* pLCS = getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS;
@@ -3241,7 +3243,7 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
     {
         pThis->fieldScriptTaskUpdateSub2();
 
-        if ((pThis->m50_scriptDelay == 0) || (pThis->m58 != 0))
+        if ((pThis->m50_scriptDelay == 0) || (pThis->m58_debugFastForward != 0))
         {
             pThis->m4_currentScript = pThis->runFieldScript();
 
@@ -3272,7 +3274,7 @@ void s_fieldScriptWorkArea::Update(s_fieldScriptWorkArea* pThis)
     }
 
     if (getFieldTaskPtr()->m8_pSubFieldData->m340_pLCS->m8 ||
-        pThis->m64 || pThis->m30_cinematicBarTask || pThis->m34 || pThis->m38_dialogStringTask || pThis->m3C_multichoiceTask || pThis->m40_receivedItemTask ||
+        pThis->m64_isExitingField || pThis->m30_cinematicBarTask || pThis->m34 || pThis->m38_dialogStringTask || pThis->m3C_multichoiceTask || pThis->m40_receivedItemTask ||
         getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask->mF8_Flags & 0x20000)
     {
         graphicEngineStatus.m40AC.m1_isMenuAllowed = 0;

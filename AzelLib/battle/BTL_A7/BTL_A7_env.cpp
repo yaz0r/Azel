@@ -8,7 +8,6 @@
 #include "field/field_a3/o_fld_a3.h"
 #include "kernel/cinematicBarsTask.h"
 
-void setupCinematicBarData(int param1, std::array<u32, 256>& dataArray, u32 vdpOffset, int numEntries);
 
 // 06056d8c
 static void BTL_A7_env0_Init(sVdp2PlaneTask* pThis)
@@ -64,7 +63,7 @@ static void BTL_A7_env0_Init(sVdp2PlaneTask* pThis)
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
     initRotationCoefficientTables(5, getVdp2Vram(0x2A000));
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m78_ptr, 0x25E24000, 0xC0);
+    setupCinematicBarData(1, { (u32*)pThis->m78_ptr, 0xC00 / 4 }, 0x25E24000, 0xC0);
 
     *(u16*)getVdp2Vram(0x2A400) = 0x0700;
     regs->mA8_LCTA = (regs->mA8_LCTA & 0xFFF80000) | 0x15200;

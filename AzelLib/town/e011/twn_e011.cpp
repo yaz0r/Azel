@@ -21,7 +21,6 @@
 // https://youtu.be/Txks9hG21qs?t=2980
 
 void setupVdp1Proj(fixedPoint fov); // TODO: cleanup
-void setupCinematicBarData(int param1, std::array<u32, 256>& dataArray, u32 vdpOffset, int numEntries);
 
 struct TWN_E011_data* gTWN_E011 = nullptr;
 
@@ -411,7 +410,7 @@ struct sE011BackgroundTask : public s_workAreaTemplate<sE011BackgroundTask>
         setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
         initRotationCoefficientTables(5, getVdp2Vram(0x2A000));
 
-        setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m40_heapPtr, 0x25E24000, 0xC0);
+        setupCinematicBarData(1, { (u32*)pThis->m40_heapPtr, 0xC00 / 4 }, 0x25E24000, 0xC0);
 
         *(u16*)getVdp2Vram(0x2A400) = 0x0700;
         regs->mA8_LCTA = (regs->mA8_LCTA & 0xFFF80000) | 0x15200;

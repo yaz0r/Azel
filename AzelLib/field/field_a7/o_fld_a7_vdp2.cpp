@@ -9,7 +9,6 @@
 #include "kernel/cinematicBarsTask.h"
 #include "kernel/loadSavegameScreen.h"
 
-void setupCinematicBarData(int param1, std::array<u32, 256>& dataArray, u32 vdpOffset, int numEntries);
 
 // VDP2 background task for field A7 — uses shared sVdp2PlaneTask from field.h
 
@@ -86,7 +85,7 @@ static void initVdp2_A7_0(sVdp2PlaneTask* pThis)
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
     initRotationCoefficientTables(5, getVdp2Vram(0x2a000));
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollParams.m0_buffer, 0x25e24000, 0xc0);
+    setupCinematicBarData(1, { (u32*)pThis->m50_lineScrollParams.m0_buffer, 0xC00 / 4 }, 0x25e24000, 0xc0);
 
     setVdp2VramU16(0x25e2a400, 0x700);
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
@@ -290,7 +289,7 @@ static void initVdp2_A7_1(sVdp2PlaneTask* pThis)
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
     initRotationCoefficientTables(5, getVdp2Vram(0x2a000));
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollParams.m0_buffer, 0x25e24000, 0xc0);
+    setupCinematicBarData(1, { (u32*)pThis->m50_lineScrollParams.m0_buffer, 0xC00 / 4 }, 0x25e24000, 0xc0);
 
     setVdp2VramU16(0x25e2a400, 0x700);
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;
@@ -574,7 +573,7 @@ static void initVdp2_A7_2(sVdp2PlaneTask* pThis)
     setupVdp2Table(6, coefficientA0, coefficientA1, getVdp2Vram(0x20000), 0x80);
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
     initRotationCoefficientTables(5, getVdp2Vram(0x2a000));
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollParams.m0_buffer, 0x25e24000, 0xc0);
+    setupCinematicBarData(1, { (u32*)pThis->m50_lineScrollParams.m0_buffer, 0xC00 / 4 }, 0x25e24000, 0xc0);
 
     setVdp2VramU16(0x25e2a400, 0x700);
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;

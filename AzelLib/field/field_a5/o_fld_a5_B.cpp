@@ -131,6 +131,5 @@ void subfieldA5_B(p_workArea workArea)
     graphicEngineStatus.m405C.m38_oneOverFarClip = FP_Div(0x8000, graphicEngineStatus.m405C.m14_farClipDistance);
     graphicEngineStatus.m405C.m34_oneOverFarClip256 = graphicEngineStatus.m405C.m38_oneOverFarClip << 8;
 
-    // 06072d80
-    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m64 = 1;
+    setFieldExiting();
 }

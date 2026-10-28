@@ -60,3 +60,4 @@ void updateCutsceneCameraInterpolation(sFieldCameraManager* r4, sFieldCameraStat
 void startCutsceneCameraTracking(sVec3_FP* r4, sVec3_FP* r5);
 void endCutsceneCameraWithRestore();
 void endCutsceneCameraNoRestore();
+void endCutsceneTask(p_workArea pCutsceneTask);

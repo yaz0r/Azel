@@ -168,13 +168,13 @@ struct s_fieldScriptWorkArea : public s_workAreaTemplate<s_fieldScriptWorkArea>
     struct s_receivedItemTask* m40_receivedItemTask;
     s_multiChoice* m44_multiChoiceData;
     s_workArea* m48_cutsceneTask; // s_cutsceneTask or s_cutsceneTask2 or s_cutsceneTask3
-    s32 m4C_PCMPlaying;
+    struct sFieldPCMTask* m4C_PCMTask;
     s32 m50_scriptDelay;
     s32 m54_currentResult;
-    s32 m58;
+    s32 m58_debugFastForward;
     s32 m5C;
     s32 m60_canSkipScript;
-    s32 m64;
+    s32 m64_isExitingField;
 
     u32 m6C;
     u32 m70;
@@ -568,7 +568,6 @@ void gridCellDraw_normalSub2(s_fileBundle* r4, s32 r5, s32 r6);
 void callGridCellDraw_normalSub2(s_fileBundle* r4, s32 r5);
 void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6);
 void fieldNoop();
-void exitCutsceneTaskUpdateSub0Sub0();
 void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s32 r7);
 
 int findMandatoryFileOnDisc(const char* fileName);
@@ -580,7 +579,7 @@ u32 getFileSizeFromFileId(const char* fileName);
 // Shared field script/cutscene queries
 bool isNoCutsceneActive();
 s32 isScriptActive();
-void enableFieldScriptSkipping();
+void setFieldExiting();
 
 // Shared dragon getters
 void getDragonPosition(sVec3_FP* pOut);

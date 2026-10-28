@@ -6,7 +6,6 @@
 #include "kernel/cinematicBarsTask.h"
 #include "kernel/loadSavegameScreen.h"
 
-void setupCinematicBarData(int param1, std::array<u32, 256>& dataArray, u32 vdpOffset, int numEntries);
 
 // ============================================================
 // Subfield 0 VDP2 task (desert)
@@ -396,7 +395,7 @@ static void b2Vdp3Init(sVdp2PlaneTask* pThis)
     setupVdp2Table(7, coefficientB0, coefficientB1, getVdp2Vram(0x22000), 0x80);
 
     initRotationCoefficientTables(5, getVdp2Vram(0x2A000));
-    setupCinematicBarData(1, *(std::array<u32, 256>*)pThis->m50_lineScrollParams.m0_buffer, 0x25E24000, 0xC0);
+    setupCinematicBarData(1, { (u32*)pThis->m50_lineScrollParams.m0_buffer, 0xC00 / 4 }, 0x25E24000, 0xC0);
 
     setVdp2VramU16(0x25E2A400, 0x700);
     vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA = (vdp2Controls.m4_pendingVdp2Regs->mA8_LCTA & 0xFFF80000) | 0x15200;

@@ -12,7 +12,6 @@ struct s_cutsceneTask2 : public s_workAreaTemplateWithArg<s_cutsceneTask2, std::
     static void Draw(s_cutsceneTask2*);
 
     s32 UpdateSub0();
-    void UpdateSub1();
 
     u32 m0;
     std::vector<s_scriptData1>* m4;

@@ -9,7 +9,6 @@ struct s_cutsceneTask3 : public s_workAreaTemplate<s_cutsceneTask3>
     }
     static void Init(s_cutsceneTask3*);
     s32 UpdateSub0();
-    void UpdateSub1();
     static void Update(s_cutsceneTask3*);
     static void Draw(s_cutsceneTask3*);
 

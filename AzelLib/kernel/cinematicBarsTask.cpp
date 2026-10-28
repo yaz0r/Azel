@@ -15,7 +15,8 @@ void cinematicBars_startClosing(s_cinematicBarTask* pCinematicBar, s32 r5)
     pCinematicBar->m0_status = s_cinematicBarTask::m2_opening;
 }
 
-std::array<u32, 256> interpolateCinematicBarData;
+// Only 0xE0 entries are used, but writeCinematicBarsToVdp2 transfers 0x100 * 0x10 bytes from here
+std::array<u32, 0x400> interpolateCinematicBarData;
 
 void s_cinematicBarTask::interpolateCinematicBarSub1()
 {
@@ -111,12 +112,14 @@ void s_cinematicBarTask::Draw(s_cinematicBarTask* pThis)
     }
 }
 
-void setupCinematicBarData(int param1, std::array<u32, 256>& dataArray, u32 vdpOffset, int numEntries)
+// 060324f0
+void setupCinematicBarData(int param1, std::span<u32> dataArray, u32 vdpOffset, int numEntries)
 {
+    assert(numEntries * 0x10 <= dataArray.size_bytes());
     vdpVar1[param1].mE_isDoubleBuffered = 0;
-    vdpVar1[param1].m0_source[0] = &dataArray[0];
+    vdpVar1[param1].m0_source[0] = dataArray.data();
     vdpVar1[param1].m8_destination = getVdp2Vram(vdpOffset);
-    vdpVar1[param1].mC_size = numEntries / 0x10;
+    vdpVar1[param1].mC_size = numEntries; // in 0x10-byte units
     vdpVar1[param1].m10_nextTransfert = nullptr;
     setVdp2TableAddress(param1, getVdp2Vram(vdpOffset));
 }

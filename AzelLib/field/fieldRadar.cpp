@@ -433,7 +433,7 @@ void createFieldRadar(s_workArea* pWorkArea)
     createSubTask<s_FieldRadar>(pWorkArea, &definition);
 }
 
-// 06068f0c
+// 060727ec
 void fieldRadar_setEncounterDistance(fixedPoint distance)
 {
     s_FieldRadar* pRadar = getFieldTaskPtr()->m8_pSubFieldData->m33C_fieldRadar;

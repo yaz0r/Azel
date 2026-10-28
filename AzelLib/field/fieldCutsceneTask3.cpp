@@ -2,31 +2,6 @@
 #include "fieldCutsceneTask3.h"
 #include "field_a3/o_fld_a3.h"
 
-// TODO: this is shared between s_cutsceneTask2 and 3
-void s_cutsceneTask3::UpdateSub1()
-{
-    getTask()->markFinished();
-
-    if (getFieldTaskPtr()->m8_pSubFieldData)
-    {
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = NULL;
-        getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C = 0;
-        if (getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m78)
-        {
-            return;
-        }
-
-        if (m0 & 2)
-        {
-            endCutsceneCameraWithRestore();
-        }
-        else
-        {
-            endCutsceneCameraNoRestore();
-        }
-    }
-}
-
 void s_cutsceneTask3::Init(s_cutsceneTask3* pThis)
 {
     getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m48_cutsceneTask = pThis;
@@ -104,7 +79,7 @@ void s_cutsceneTask3::Update(s_cutsceneTask3* pThis)
     default:
         if (!getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m5C)
         {
-            pThis->UpdateSub1();
+            endCutsceneTask(pThis);
         }
         break;
     }

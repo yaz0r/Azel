@@ -118,6 +118,36 @@ void endCutsceneCameraNoRestore()
     setCameraFollowMode_cut(getFieldTaskPtr()->m8_pSubFieldData->m334->m50E_followModeIndex);
 }
 
+// 06069e42 (A3)
+void endCutsceneTask(p_workArea pCutsceneTask)
+{
+    if (pCutsceneTask)
+    {
+        pCutsceneTask->getTask()->markFinished();
+    }
+
+    if (getFieldTaskPtr()->m8_pSubFieldData)
+    {
+        s_fieldScriptWorkArea* pScript = getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE;
+        pScript->m48_cutsceneTask = nullptr;
+        pScript->m5C = 0;
+        if (pScript->m78)
+        {
+            return;
+        }
+
+        // s_cutsceneTask, s_cutsceneTask2 and s_cutsceneTask3 all start with m0
+        if (static_cast<s_cutsceneTask*>(pCutsceneTask)->m0 & 2)
+        {
+            endCutsceneCameraWithRestore();
+        }
+        else
+        {
+            endCutsceneCameraNoRestore();
+        }
+    }
+}
+
 void s_cutsceneTask::Init(s_cutsceneTask* pThis, s_cutsceneData* pCutsceneData)
 {
     s_dragonTaskWorkArea* r14 = getFieldTaskPtr()->m8_pSubFieldData->m338_pDragonTask;
@@ -171,7 +201,7 @@ void cutsceneTaskUpdateSub0()
 
 static void cutsceneTaskUpdateSub1(s32 fieldIndex, s32 fieldParam, s32 fieldExitIndex, s32 r7)
 {
-    exitCutsceneTaskUpdateSub0Sub0();
+    setFieldExiting();
     exitCutsceneTaskUpdateSub0Sub1(fieldIndex, fieldParam, fieldExitIndex, r7);
 }
 

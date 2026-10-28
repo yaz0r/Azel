@@ -171,11 +171,6 @@ void getMemoryArea(s_memoryAreaOutput* pOutput, u32 areaIndex)
     pOutput->m4_characterArea = fieldTaskPtr->m8_pSubFieldData->mC_characterArea[areaIndex];
 }
 
-void exitCutsceneTaskUpdateSub0Sub0()
-{
-    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m64 = 1;
-}
-
 //kernel
 void exitCutsceneTaskUpdateSub0Sub1Sub0Sub0(s32 fieldIndex)
 {
@@ -297,7 +292,7 @@ void exitCutsceneTaskUpdateSub0Sub1(s32 fieldIndex, s32 param, s32 exitNumber, s
 
 void exitCutsceneTaskUpdateSub0(s32 param, s32 exitNumber, s16 r6)
 {
-    exitCutsceneTaskUpdateSub0Sub0();
+    setFieldExiting();
     exitCutsceneTaskUpdateSub0Sub1(getFieldTaskPtr()->m2C_currentFieldIndex, param, exitNumber, r6);
 }
 
@@ -395,9 +390,10 @@ s32 isScriptActive()
     return 1;
 }
 
-void enableFieldScriptSkipping()
+// 0606b18c (A3)
+void setFieldExiting()
 {
-    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m64 = 1;
+    getFieldTaskPtr()->m8_pSubFieldData->m34C_ptrToE->m64_isExitingField = 1;
 }
 
 // --- Shared dragon getters ---
@@ -447,7 +443,7 @@ void setDragonSpeedIndex(s32 speedIndex)
 
 void triggerSubfieldChange(s32 destSubfield, s16 param)
 {
-    enableFieldScriptSkipping();
+    setFieldExiting();
     exitCutsceneTaskUpdateSub0Sub1(getFieldTaskPtr()->m2C_currentFieldIndex, destSubfield, 0, param);
 }
 
@@ -524,7 +520,7 @@ s32 startFieldScriptWithFlagCheck(s32 scriptIndex, u32 flagBit)
 
     pScript->m4_currentScript = pScript->m0_pScripts[scriptIndex];
     pScript->m2C_bitToSet = flagBit;
-    pScript->m58 = 0;
+    pScript->m58_debugFastForward = 0;
     pScript->m50_scriptDelay = 0;
     return 1;
 }
