@@ -19,8 +19,8 @@
 #include "town/collisionRegistry.h"
 #include "campVdp2Plane.h"
 #include "kernel/vdp1AnimatedQuad.h"
+#include "mainMenuDebugTasks.h"
 
-void unloadFnt(); // TODO: fix
 int scriptFunction_60541c4(int arg);
 
 sTownObject* createCampFire(s_workAreaCopy* parent, sSaturnPtr arg); //todo: clean
@@ -608,6 +608,8 @@ void townOverlayDelete_TwnCamp(townDebugTask2Function* pThis)
     freeRamResources(pThis);
     vdp1FreeLastAllocation(pThis);
     unloadFnt();
+
+    clearModuleManagerOverlayTask(pThis); // Fix use after free in the original code
 }
 
 p_workArea overlayStart_TWN_CAMP(p_workArea pUntypedThis, u32 arg)

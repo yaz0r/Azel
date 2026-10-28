@@ -21,7 +21,6 @@
 #include "kernel/fileBundle.h"
 #include "kernel/animation.h"
 
-void unloadFnt(); // TODO: fix
 
 struct sCaraVdp2Plane;
 static p_workArea gCaraVdp2PlaneTask;
@@ -1197,15 +1196,6 @@ struct TWN_CARA_data : public sTownOverlay
     }
 };
 
-// 060540d4
-static void townOverlayDelete_TwnCara(townDebugTask2Function* pThis)
-{
-    toggleDayNight();
-    freeRamResources(pThis);
-    vdp1FreeLastAllocation(pThis);
-    unloadFnt();
-}
-
 // 06054000
 p_workArea overlayStart_TWN_CARA(p_workArea pUntypedThis, u32 arg)
 {
@@ -1213,7 +1203,7 @@ p_workArea overlayStart_TWN_CARA(p_workArea pUntypedThis, u32 arg)
 
     townDebugTask2Function* pThis = static_cast<townDebugTask2Function*>(pUntypedThis);
 
-    pThis->m_DeleteMethod = &townOverlayDelete_TwnCara;
+    pThis->m_DeleteMethod = &townOverlayDeleteWithDayNight;
 
     loadSoundBanks(-1, 0);
     loadSoundBanks(0x3F, 0);

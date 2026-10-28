@@ -13,7 +13,6 @@
 #include "kernel/loadSavegameScreen.h"
 #include "kernel/cinematicBarsTask.h"
 
-void unloadFnt(); // TODO: fix
 
 // 060297f0
 static void applySkyColorGradient(s32 scrollOffset, const s8* gradientTable)
@@ -760,15 +759,6 @@ struct TWN_SEEK_data : public sTownOverlay
     }
 };
 
-// 060540d4
-static void townOverlayDelete_TwnSeek(townDebugTask2Function* pThis)
-{
-    toggleDayNight();
-    freeRamResources(pThis);
-    vdp1FreeLastAllocation(pThis);
-    unloadFnt();
-}
-
 // 06054000
 p_workArea overlayStart_TWN_SEEK(p_workArea pUntypedThis, u32 arg)
 {
@@ -776,7 +766,7 @@ p_workArea overlayStart_TWN_SEEK(p_workArea pUntypedThis, u32 arg)
 
     townDebugTask2Function* pThis = static_cast<townDebugTask2Function*>(pUntypedThis);
 
-    pThis->m_DeleteMethod = &townOverlayDelete_TwnSeek;
+    pThis->m_DeleteMethod = &townOverlayDeleteWithDayNight;
 
     loadSoundBanks(-1, 0);
     loadSoundBanks(0x41, 0);

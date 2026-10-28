@@ -353,7 +353,7 @@ p_workArea overlayStart_TWN_EXCA(p_workArea pUntypedThis, u32 arg)
 
     townDebugTask2Function* pThis = static_cast<townDebugTask2Function*>(pUntypedThis);
 
-    pThis->m_DeleteMethod = &townOverlayDelete;
+    pThis->m_DeleteMethod = &townOverlayDeleteWithDayNight;
 
     loadSoundBanks(-1, 0);
     loadSoundBanks(59, 0);

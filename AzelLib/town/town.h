@@ -266,3 +266,5 @@ void initNPCSub0(npcFileDeleter* buffer, const sGrid* pGrid, u8 gridSizeX, u8 gr
 fixedPoint generateObjectMatrix(sSaturnPtr r4, sSaturnPtr r5);
 
 void townOverlayDelete(townDebugTask2Function* pThis);
+void townOverlayDeleteWithDayNight(townDebugTask2Function* pThis);
+void clearModuleManagerOverlayTask(townDebugTask2Function* pThis);

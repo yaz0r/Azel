@@ -23,7 +23,6 @@
 #include "audio/systemSounds.h"
 #include "town/townCutscene.h"
 
-void unloadFnt(); // TODO: fix
 
 void zoahCamera_update(sCameraTask* pThis)
 {
@@ -1408,22 +1407,13 @@ static void startZoahBackgroundTask(p_workArea pParent)
     createSubTask<sZoahVdp2Plane>(pParent, &definition);
 }
 
-// 060540d2
-static void townOverlayDelete_TwnZoah(townDebugTask2Function* pThis)
-{
-    toggleDayNight();
-    freeRamResources(pThis);
-    vdp1FreeLastAllocation(pThis);
-    unloadFnt();
-}
-
 p_workArea overlayStart_TWN_ZOAH(p_workArea pUntypedThis, u32 arg)
 {
     gTWN_ZOAH->makeCurrent();
 
     townDebugTask2Function* pThis = static_cast<townDebugTask2Function*>(pUntypedThis);
 
-    pThis->m_DeleteMethod = &townOverlayDelete_TwnZoah;
+    pThis->m_DeleteMethod = &townOverlayDeleteWithDayNight;
 
     loadSoundBanks(-1, 0);
     loadSoundBanks(0x3d, 0);

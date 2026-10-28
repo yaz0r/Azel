@@ -17,6 +17,8 @@
 #include "kernel/grid.h"
 #include "kernel/graphicalObject.h"
 #include "commonOverlay.h"
+#include "townCamera.h"
+#include "mainMenuDebugTasks.h"
 
 sTownOverlay* gCurrentTownOverlay = nullptr;
 
@@ -616,18 +618,34 @@ p_workArea startCameraTask(p_workArea pParent)
     return cameraTaskPtr;
 }
 
-void townOverlayDelete(townDebugTask2Function* pThis)
+void clearModuleManagerOverlayTask(townDebugTask2Function* pThis)
 {
-    freeRamResources(pThis);
-    vdp1FreeLastAllocation(pThis);
-    initVDP1Projection(fixedPoint(0x1C71C71), 0);
-
-    //FIX:
     if(gModuleManager && gModuleManager->m8)
     {
         assert(gModuleManager->m8 == pThis);
         gModuleManager->m8 = nullptr;
     }
+}
+
+// 060540b6 (E006, E011, E014)
+void townOverlayDelete(townDebugTask2Function* pThis)
+{
+    freeRamResources(pThis);
+    vdp1FreeLastAllocation(pThis);
+    initTownProjection();
+
+    clearModuleManagerOverlayTask(pThis); // Fix use after free in the original code
+}
+
+// 060540da (RUIN, SEEK), 060540d2 (EXCA, ZOAH), 060540d4 (CARA)
+void townOverlayDeleteWithDayNight(townDebugTask2Function* pThis)
+{
+    toggleDayNight();
+    freeRamResources(pThis);
+    vdp1FreeLastAllocation(pThis);
+    unloadFnt();
+
+    clearModuleManagerOverlayTask(pThis); // Fix use after free in the original code
 }
 
 s32 setupAutoWalk()
