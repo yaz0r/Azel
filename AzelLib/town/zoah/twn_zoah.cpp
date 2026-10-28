@@ -101,20 +101,13 @@ void zoahCamera_update(sCameraTask* pThis)
     pThis->m10.m2 = (s8)(((u32)((s32)d[2] + 0x8000) >> 16) & 0xFF);
 }
 
+static void zoahCamera_drawSetupLight(sCameraTask* pThis);
+
 static void zoahCamera_draw(sCameraTask* pThis)
 {
-    // Same as townCamera_draw: transform light vector and set up light
-    sVec3_FP stack16;
-    transformVecByCurrentMatrix(pThis->m14, stack16);
-    setupLight(stack16[0], stack16[1], stack16[2], pThis->m10.toU32());
-
-    // Generate light falloff map from interpolated data at m34[3..11]
-    fixedPoint* d = pThis->m34_interpolatedLightData;
-    auto fpToU8 = [](fixedPoint fp) -> u32 { return ((u32)((s32)fp + 0x8000) >> 16) & 0xFF; };
-    u32 f0 = fpToU8(d[3]) | (fpToU8(d[4]) << 8) | (fpToU8(d[5]) << 16);
-    u32 f1 = fpToU8(d[6]) | (fpToU8(d[7]) << 8) | (fpToU8(d[8]) << 16);
-    u32 f2 = fpToU8(d[9]) | (fpToU8(d[10]) << 8) | (fpToU8(d[11]) << 16);
-    generateLightFalloffMap(f0, f1, f2);
+    zoahCamera_drawSetupLight(pThis);
+    generateMasterLightFalloffMapInterpolated(&pThis->m34_interpolatedLightData[3]);
+    //addSlaveCommand(0, 0, 0, copyFalloffTableToSlave);
 }
 
 int updateWorldGridFromEdgeTask()
@@ -249,7 +242,7 @@ static void zoahCamera_drawSetupLight(sCameraTask* pThis)
 
 // zoahCamera_drawWithPosition / setupCameraWithPosition
 // factored into shared townCamera_drawWithPosition / townCamera_setupWithPosition
-// (zoah's draw was missing m2C arg — fixed in shared version)
+// (zoah's draw was missing m2C arg - fixed in shared version)
 
 s32 setupZoahCamera(s32 param_1);
 static s32 disableNpcLookAtDecay(s32 npcIndex);
@@ -294,15 +287,6 @@ static s32 createTimerSubTask(s32 param_1) {
     pTask->m8_pad = 0;
     pTask->mC_timer = 0;
     pTask->m10_frameIndex = 0;
-    return 0;
-}
-
-void setupNPCWalkInZDirection(s32 r4_npcIndex, s32 r5_zDirection, s32 r6_distance); // from twn_ruin.cpp
-
-// 06098a18
-static s32 setupCameraFollowAndWalk() {
-    setupCameraFollowMode();
-    setupNPCWalkInZDirection(0, 227, 36);
     return 0;
 }
 
@@ -664,7 +648,7 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
         return &taskDefinition;
     }
 
-    // 0609B7CC — same code as initEdgeNPC? TODO: recheck
+    // 0609B7CC - same code as initEdgeNPC? TODO: recheck
     static void Init(sZoahNPC* pThis, sSaturnPtr arg)
     {
         initEdgeNPC(pThis, arg);
@@ -899,7 +883,7 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
         }
     }
 
-    // All fields in sNPC base — size 0x17C
+    // All fields in sNPC base - size 0x17C
 };
 
 static sTownObject* createZoahNPC(npcFileDeleter* parent, sSaturnPtr arg) {

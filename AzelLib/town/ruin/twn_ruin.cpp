@@ -97,7 +97,7 @@ static void ruinBgDrawPass0Sub(sVdp2PlaneTask* pThis)
                     + (s32)(s16)t.m40 * -0x10000;
 }
 
-// 06054b40 — moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
+// 06054b40 - moved to shared/vdp2PlaneTask.cpp as vdp2ApplyWaveDistortion
 
 // 06054bd8
 static void ruinBgInit(sVdp2PlaneTask* pThis)
@@ -436,39 +436,6 @@ s32 isObjectCloseEnoughToActivate()
     return !canCurrentResActivate();
 }
 
-void setupNPCWalkInZDirection(s32 r4_npcIndex, s32 r5_zDirection, s32 r6_distance)
-{
-    sNPC* r13 = getNpcDataByIndex(r4_npcIndex);
-    sNPCE8* r14 = &r13->mE8;
-    r14->m30_stepTranslation[0] = 0;
-    r14->m30_stepTranslation[1] = 0;
-    r14->m30_stepTranslation[2] = -r5_zDirection;
-
-    sMatrix4x3 var10;
-    initMatrixToIdentity(&var10);
-    rotateMatrixShiftedY(r14->mC_rotation[1], &var10);
-    rotateMatrixShiftedX(r14->mC_rotation[0], &var10);
-    sVec3_FP var4;
-    transformVec(r14->m30_stepTranslation, var4, var10);
-
-    r14->m3C_targetPosition[0] = r14->m0_position[0] + var4[0] * r6_distance;
-    r14->m3C_targetPosition[1] = r14->m0_position[1] + var4[1] * r6_distance;
-    r14->m3C_targetPosition[2] = r14->m0_position[2] + var4[2] * r6_distance;
-
-    r14->m48_targetRotation = r14->mC_rotation;
-
-    r13->mF &= ~0x6;
-    r13->mF |= 1;
-    r13->mC |= 4;
-}
-
-s32 scriptFunction_6057058()
-{
-    setupCameraFollowMode();
-    setupNPCWalkInZDirection(0, 227, 36);
-
-    return 0;
-}
 
 void updateEdgeControls(sEdgeTask* r4)
 {
@@ -1009,7 +976,7 @@ s32 scriptFunction_605B320(s32 arg0, s32 arg1)
 TWN_RUIN_data::TWN_RUIN_data() : sTownOverlay("TWN_RUIN.PRG")
 {
     overlayScriptFunctions.m_zeroArg[0x6057570] = {&hasLoadingCompleted, "hasLoadingCompleted"};
-    overlayScriptFunctions.m_zeroArg[0x6057058] = {&scriptFunction_6057058, "scriptFunction_6057058"};
+    overlayScriptFunctions.m_zeroArg[0x6057058] = {&setupCameraFollowAndWalk, "setupCameraFollowAndWalk"};
     overlayScriptFunctions.m_zeroArg[0x605762A] = {&setupAutoWalk, "scriptFunction_605762A"};
     overlayScriptFunctions.m_zeroArg[0x605800E] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
 

@@ -793,6 +793,57 @@ int setupCameraFollowMode()
     return 0; // dummy
 }
 
+// 0605ab0c (RUIN), 0609c4cc (ZOAH), 060741a8 (CARA)
+void setupNPCWalkInZDirection(s32 r4_npcIndex, s32 r5_zDirection, s32 r6_distance)
+{
+    sNPC* r13 = getNpcDataByIndex(r4_npcIndex);
+    sNPCE8* r14 = &r13->mE8;
+    r14->m30_stepTranslation[0] = 0;
+    r14->m30_stepTranslation[1] = 0;
+    r14->m30_stepTranslation[2] = -r5_zDirection;
+
+    sMatrix4x3 var10;
+    initMatrixToIdentity(&var10);
+    rotateMatrixShiftedY(r14->mC_rotation[1], &var10);
+    rotateMatrixShiftedX(r14->mC_rotation[0], &var10);
+    sVec3_FP var4;
+    transformVec(r14->m30_stepTranslation, var4, var10);
+
+    r14->m3C_targetPosition[0] = r14->m0_position[0] + var4[0] * r6_distance;
+    r14->m3C_targetPosition[1] = r14->m0_position[1] + var4[1] * r6_distance;
+    r14->m3C_targetPosition[2] = r14->m0_position[2] + var4[2] * r6_distance;
+
+    r14->m48_targetRotation = r14->mC_rotation;
+
+    r13->mF &= ~0x6;
+    r13->mF |= 1;
+    r13->mC |= 4;
+}
+
+// 06057058 (RUIN), 06098a18 (ZOAH), 060706f4 (CARA)
+s32 setupCameraFollowAndWalk()
+{
+    setupCameraFollowMode();
+    setupNPCWalkInZDirection(0, 227, 36);
+    return 0;
+}
+
+// 06056918 (E006), 060709ec (CARA)
+s32 disableMainLogic()
+{
+    twnMainLogicTask->m_UpdateMethod = nullptr;
+    twnMainLogicTask->m_DrawMethod = nullptr;
+    return 0;
+}
+
+// 06056926 (E006), 060709fa (CARA)
+s32 enableMainLogic()
+{
+    twnMainLogicTask->m_UpdateMethod = &sMainLogic::Update;
+    twnMainLogicTask->m_DrawMethod = &sMainLogic::Draw;
+    return 0;
+}
+
 s32 hasLoadingCompleted()
 {
     if (twnMainLogicTask->m14_EdgeTask)

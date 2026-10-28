@@ -130,7 +130,7 @@ void setupVdp1LocalCoordinatesAndClipping()
     }
 }
 
-// 32 entries × 4 s16 words (RGB + padding), matching Saturn layout at 0x0601FBDC
+// 32 entries x 4 s16 words (RGB + padding), matching Saturn layout at 0x0601FBDC
 s16 lightFalloffMap[32][4];
 
 // 0601fb06
@@ -155,6 +155,37 @@ void generateMasterLightFalloffMap(u32 r4, u32 r5, u32 r6)
     for (int i = 0; i < 32; i++)
     {
         // Store upper 16 bits as s16 words, matching Saturn format
+        lightFalloffMap[i][0] = (s16)((u32)r5t >> 16);
+        lightFalloffMap[i][1] = (s16)((u32)r6t >> 16);
+        lightFalloffMap[i][2] = (s16)((u32)r7t >> 16);
+
+        r1t += r9t;
+        r2t += r10t;
+        r3t += r11t;
+
+        r5t += r1t;
+        r6t += r2t;
+        r7t += r3t;
+    }
+}
+
+// 0601fe78
+void generateMasterLightFalloffMapInterpolated(const fixedPoint* pData)
+{
+    s32 r9t  = (s32)(((s64)((s32)pData[3] - (s32)pData[6]) * 0x8421) >> 16);
+    s32 r10t = (s32)(((s64)((s32)pData[4] - (s32)pData[7]) * 0x8421) >> 16);
+    s32 r11t = (s32)(((s64)((s32)pData[5] - (s32)pData[8]) * 0x8421) >> 16);
+
+    s32 r1t = (s32)(((s64)((s32)pData[6] - (s32)pData[0]) * 0x84210) >> 16);
+    s32 r2t = (s32)(((s64)((s32)pData[7] - (s32)pData[1]) * 0x84210) >> 16);
+    s32 r3t = (s32)(((s64)((s32)pData[8] - (s32)pData[2]) * 0x84210) >> 16);
+
+    s32 r5t = (s32)pData[0] << 8;
+    s32 r6t = (s32)pData[1] << 8;
+    s32 r7t = (s32)pData[2] << 8;
+
+    for (int i = 0; i < 32; i++)
+    {
         lightFalloffMap[i][0] = (s16)((u32)r5t >> 16);
         lightFalloffMap[i][1] = (s16)((u32)r6t >> 16);
         lightFalloffMap[i][2] = (s16)((u32)r7t >> 16);
@@ -864,7 +895,7 @@ void s_dragonMenuDragonWorkArea::dragonMenuDragonDraw(s_dragonMenuDragonWorkArea
     submitModelAndShadowModelToRendering(&gDragonState->m28_dragon3dModel, gDragonState->m14_modelIndex, gDragonState->m18_shadowModelIndex, &pWorkArea->modelTranslation, &pWorkArea->modelRotation, 0);
 }
 
-// 0600b250 — restore saved graphic engine state
+// 0600b250 - restore saved graphic engine state
 static void restoreGraphicEngineState(s_dragonMenuDragonWorkAreaSub1* pSaved)
 {
     memcpy_dma(&pSaved->m120, &graphicEngineStatus.m405C, sizeof(s_graphicEngineStatus_405C));

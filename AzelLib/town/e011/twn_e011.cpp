@@ -134,7 +134,7 @@ s32 e011_scriptFunction_06059b7a(s32 param1)
 TWN_E011_data::TWN_E011_data() : sTownOverlay("TWN_E011.PRG")
 {
     overlayScriptFunctions.m_zeroArg[0x6058484] = {&e006_scriptFunction_60573d8, "e006_scriptFunction_60573d8"};
-    overlayScriptFunctions.m_zeroArg[0x60579c4] = {&e006_scriptFunction_6056918, "e006_scriptFunction_6056918"};
+    overlayScriptFunctions.m_zeroArg[0x60579c4] = {&disableMainLogic, "disableMainLogic"};
     overlayScriptFunctions.m_zeroArg[0x60584a6] = {&e006_scriptFunction_605861eSub0, "e006_scriptFunction_605861eSub0"};
 
     overlayScriptFunctions.m_oneArg[0x605ceb0] = {&TwnFadeOut, "TwnFadeOut"};

@@ -45,6 +45,7 @@ static void cameraUpdate_noop(sMainLogic*)
 
 static s32 caravanCameraSetup(s32 rotationEA, s32 lightData);
 s32 setupCameraModeFixed(s32 arg0, s32 arg1, s32 arg2);
+s32 setupZoahCamera(s32 param_1);
 
 // 0602c308
 static s32 playSoundEffect_bank5(s32 soundId, s32 volume, s32 unk) {
@@ -53,42 +54,6 @@ static s32 playSoundEffect_bank5(s32 soundId, s32 volume, s32 unk) {
 }
 
 // cutscene functions factored into townCutscene.cpp
-
-// 0606ed3a
-static void caravanMainLogicDraw(sMainLogic* pThis) {
-    if (pThis->m14_EdgeTask) {
-        sNPCE8& edge = pThis->m14_EdgeTask->mE8;
-        updateWorldGrid(edge.m0_position.m0_X, edge.m0_position.m8_Z);
-        pThis->m18_position.m0_X = edge.m0_position.m0_X;
-        pThis->m18_position.m4_Y = edge.m0_position.m4_Y + 0x1800;
-        pThis->m18_position.m8_Z = edge.m0_position.m8_Z;
-    }
-    Unimplemented(); // FUN_TWN_CARA__0606edae, 0606eec4, 0606ef84 — camera interpolation
-    pThis->m10(pThis); // call camera update function pointer
-    Unimplemented(); // copy interpolated position, FUN_TWN_CARA__06070c50
-}
-
-// 06070434
-static void caravanMainLogicUpdate(sMainLogic* pThis) {
-    sVec3_FP lookAt;
-    lookAt.m0_X = pThis->m44_cameraTarget.m0_X * 0x10 + pThis->m38_interpolatedCameraPosition.m0_X * -0xF;
-    lookAt.m4_Y = pThis->m44_cameraTarget.m4_Y * 0x10 + pThis->m38_interpolatedCameraPosition.m4_Y * -0xF;
-    lookAt.m8_Z = pThis->m44_cameraTarget.m8_Z * 0x10 + pThis->m38_interpolatedCameraPosition.m8_Z * -0xF;
-
-    generateCameraMatrix(&cameraProperties2, pThis->m38_interpolatedCameraPosition, lookAt, pThis->m50_upVector);
-    drawLcs();
-
-    if (enableDebugTask) {
-        Unimplemented(); // debug info display
-    }
-}
-
-// 060709fa
-static s32 setupCameraFollowMode_Cara() {
-    twnMainLogicTask->m_DrawMethod = &caravanMainLogicDraw;
-    twnMainLogicTask->m_UpdateMethod = &caravanMainLogicUpdate;
-    return 0;
-}
 
 // 060749ea
 static s32 enableNpcLookAtDecay_Cara(s32 npcIndex) {
@@ -114,16 +79,39 @@ struct sCaraAtmosphereTask : public s_workAreaTemplate<sCaraAtmosphereTask>
     // 0607232c
     static void Update(sCaraAtmosphereTask* pThis)
     {
-        Unimplemented(); // camera color modulation + position oscillation with sin table
+        u32 random = randomNumber();
+
+        sSaturnPtr config = pThis->m0_config;
+        s32 sin = getSin(pThis->m8_colorPhase >> 16).asS32();
+        u32 color = ((((s16)(((u32)readSaturnU16(config + 0xA) * sin) >> 16) + readSaturnU16(config + 4)) & 0xFF) << 16)
+            | ((((s16)(((u32)readSaturnU16(config + 8) * sin) >> 16) + readSaturnU16(config + 2)) & 0xFF) << 8)
+            | ((readSaturnU16(config + 0) + (s16)(((u32)readSaturnU16(config + 6) * sin) >> 16)) & 0xFF);
+        cameraTaskPtr->m10.m0 = color & 0xFF;
+        cameraTaskPtr->m10.m1 = (color >> 8) & 0xFF;
+        cameraTaskPtr->m10.m2 = (color >> 16) & 0xFF;
+
+        pThis->m8_colorPhase += readSaturnS32(config + 0xC) + pThis->mC_colorPhaseJitter;
+        if (pThis->m8_colorPhase >= 0x10000000) {
+            pThis->m8_colorPhase &= 0xFFFFFFF;
+            pThis->mC_colorPhaseJitter = performModulo(readSaturnU32(config + 0x10), random);
+        }
+
+        cameraTaskPtr->m2C = readSaturnS32(config + 0x14) + MTH_Mul(readSaturnS32(config + 0x18) + pThis->m18_pointLightAmplitudeJitter, getSin(pThis->m10_pointLightPhase >> 16));
+        pThis->m10_pointLightPhase += readSaturnS32(config + 0x1C) + pThis->m14_pointLightPhaseJitter;
+        if (pThis->m10_pointLightPhase >= 0x10000000) {
+            pThis->m10_pointLightPhase &= 0xFFFFFFF;
+            pThis->m18_pointLightAmplitudeJitter = performModulo(readSaturnU32(config + 0x20), random);
+            pThis->m14_pointLightPhaseJitter = performModulo(readSaturnU32(config + 0x24), random);
+        }
     }
 
     sSaturnPtr m0_config;
     s32 m4;
     s32 m8_colorPhase;
-    s32 mC_colorPhaseStep;
-    s32 m10_posPhase;
-    s32 m14_posPhaseStep;
-    s32 m18_posAmplitude;
+    s32 mC_colorPhaseJitter;
+    s32 m10_pointLightPhase;
+    s32 m14_pointLightPhaseJitter;
+    s32 m18_pointLightAmplitudeJitter;
     // size 0x1C
 };
 
@@ -131,35 +119,6 @@ struct sCaraAtmosphereTask : public s_workAreaTemplate<sCaraAtmosphereTask>
 static s32 createCaraSubTask(s32 param_1) {
     sCaraAtmosphereTask* pTask = createSubTask<sCaraAtmosphereTask>(townVar0);
     pTask->m0_config = sSaturnPtr::createFromRaw(param_1, gCurrentTownOverlay);
-    return 0;
-}
-
-// 060706f4
-static s32 setupNpcWalkForward() {
-    setupCameraUpdateForCurrentMode();
-    sNPC* pNPC = getNpcDataByIndex(0);
-    // Set step translation to {0, 0, -0xE3} (forward in local space)
-    pNPC->mE8.m18_stepTranslationInWorld = { 0, 0, fixedPoint(0xFFFFFF1D) };
-
-    // Transform step by NPC rotation to get world-space direction
-    sMatrix4x3 mat;
-    initMatrixToIdentity(&mat);
-    rotateMatrixShiftedY(pNPC->mE8.mC_rotation.m4_Y, &mat);
-    rotateMatrixShiftedX(pNPC->mE8.mC_rotation.m0_X, &mat);
-    sVec3_FP transformed;
-    transformVec(pNPC->mE8.m18_stepTranslationInWorld, transformed, mat);
-
-    // Compute target position = current position + transformed * 0x24
-    pNPC->mE8.m3C_targetPosition.m0_X = transformed.m0_X * 0x24 + pNPC->mE8.m0_position.m0_X;
-    pNPC->mE8.m3C_targetPosition.m4_Y = transformed.m4_Y * 0x24 + pNPC->mE8.m0_position.m4_Y;
-    pNPC->mE8.m3C_targetPosition.m8_Z = transformed.m8_Z * 0x24 + pNPC->mE8.m0_position.m8_Z;
-
-    // Copy current rotation to target rotation
-    pNPC->mE8.m48_targetRotation = pNPC->mE8.mC_rotation;
-
-    // Set movement flags
-    pNPC->mF = (pNPC->mF & 0xF9) | 1;
-    pNPC->mC |= 4;
     return 0;
 }
 
@@ -280,96 +239,6 @@ static s32 setupCaravanBackground(s32 param_1) {
 
     loadFile(scbFiles[param_1], getVdp2Vram(0x40000), 0);
     return loadFile(pnbFiles[param_1], getVdp2Vram(0x60000), 0);
-}
-
-// 060760da — same as zoahCamera_update
-static void caravanCamera_update(sCameraTask* pThis)
-{
-    townCamera_update(pThis);
-
-    sSaturnPtr colorSet0, colorSet1;
-    u32 baseAddr = pThis->mC_colorTableBase;
-    if (!mainGameState.getBit(8)) {
-        colorSet0 = sSaturnPtr::createFromRaw(baseAddr, gCurrentTownOverlay);
-        colorSet1 = sSaturnPtr::createFromRaw(baseAddr + 0x10, gCurrentTownOverlay);
-    } else {
-        colorSet0 = sSaturnPtr::createFromRaw(baseAddr + 0x30, gCurrentTownOverlay);
-        colorSet1 = sSaturnPtr::createFromRaw(baseAddr + 0x40, gCurrentTownOverlay);
-    }
-
-    s32 time = pThis->m4_dayNightTimer;
-    if (time > 0xe10) time = 0xe10;
-
-    s32 fadeTime = 0x708;
-    if (time > 0x707) {
-        colorSet0 = colorSet0 + 0x10;
-        colorSet1 = colorSet1 + 0x10;
-        time = time - 0x708;
-        fadeTime = 0xe10;
-    }
-
-    if (pThis->m1_fadeActive != 0 && g_fadeControls.m24_fade1.m20_stopped != 0 && (0x708 - time) > 0) {
-        u16 fadeColor = computeTimeOfDayColor(fadeTime);
-        s32 curColor = convertColorToU32ForFade(g_fadeControls.m24_fade1.m0_color);
-        fadePalette(&g_fadeControls.m24_fade1, curColor, fadeColor, 0x708 - time);
-    }
-
-    fixedPoint t = FP_Div(time, 0x708);
-    s32 invT = 0x10000 - (s32)t;
-
-    for (int i = 0; i < 12; i++) {
-        s8 c_target = readSaturnS8(colorSet1 + 4 + i);
-        s8 c_source = readSaturnS8(colorSet0 + 4 + i);
-        pThis->m34_interpolatedLightData[i] = fixedPoint((s32)c_target * (s32)t + (s32)c_source * invT);
-    }
-
-    s16 rotX_target = readSaturnS16(colorSet1);
-    s16 rotX_source = readSaturnS16(colorSet0);
-    s16 rotY_target = readSaturnS16(colorSet1 + 2);
-    s16 rotY_source = readSaturnS16(colorSet0 + 2);
-
-    sMatrix4x3 mat;
-    initMatrixToIdentity(&mat);
-    rotateMatrixShiftedY(fixedPoint((s32)rotY_target * (s32)t + (s32)rotY_source * invT), &mat);
-    rotateMatrixShiftedX(fixedPoint((s32)rotX_target * (s32)t + (s32)rotX_source * invT), &mat);
-
-    pThis->m14[0] = mat.m[0][2];
-    pThis->m14[1] = mat.m[1][2];
-    pThis->m14[2] = mat.m[2][2];
-
-    fixedPoint* d = pThis->m34_interpolatedLightData;
-    pThis->m10.m0 = (s8)(((u32)((s32)d[0] + 0x8000) >> 16) & 0xFF);
-    pThis->m10.m1 = (s8)(((u32)((s32)d[1] + 0x8000) >> 16) & 0xFF);
-    pThis->m10.m2 = (s8)(((u32)((s32)d[2] + 0x8000) >> 16) & 0xFF);
-}
-
-// 06076284 — same as zoahCamera_draw
-static void caravanCamera_draw(sCameraTask* pThis)
-{
-    townCamera_draw(pThis);
-
-    fixedPoint* d = pThis->m34_interpolatedLightData;
-    auto fpToU8 = [](fixedPoint fp) -> u32 { return ((u32)((s32)fp + 0x8000) >> 16) & 0xFF; };
-    u32 f0 = fpToU8(d[3]) | (fpToU8(d[4]) << 8) | (fpToU8(d[5]) << 16);
-    u32 f1 = fpToU8(d[6]) | (fpToU8(d[7]) << 8) | (fpToU8(d[8]) << 16);
-    u32 f2 = fpToU8(d[9]) | (fpToU8(d[10]) << 8) | (fpToU8(d[11]) << 16);
-    generateLightFalloffMap(f0, f1, f2);
-}
-
-// 06075cda
-static s32 setupCaravanCamera(s32 param_1) {
-    cameraTaskPtr->mC_colorTableBase = param_1;
-    cameraTaskPtr->m30_colorIntensity = 0x8000;
-    cameraTaskPtr->m_UpdateMethod = caravanCamera_update;
-    cameraTaskPtr->m_DrawMethod = caravanCamera_draw;
-    if (g_fadeControls.m_4C <= g_fadeControls.m_4D) {
-        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
-        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
-    }
-    resetProjectVector();
-    cameraTaskPtr->m2 = 0;
-    cameraTaskPtr->m0_colorMode = 1;
-    return 0;
 }
 
 static const char* listOfFilesToLoad[] = {
@@ -656,7 +525,7 @@ static sAnimationData* getAnimFromTable(sNPC* pThis, s32 animIndex) {
     return pBundle->getAnimation(animOffset);
 }
 
-// 06075858 — idle animation randomizer (when NPC stops walking)
+// 06075858 - idle animation randomizer (when NPC stops walking)
 static void updateNPCIdleAnimation(sNPC* pThis) {
     pThis->m14E--;
     if (pThis->m14E == 0 || pThis->m2C_currentAnimation < 5 || pThis->m2C_currentAnimation > 8) {
@@ -691,7 +560,7 @@ static void updateNPCIdleAnimation(sNPC* pThis) {
     updateAndInterpolateAnimation(&pThis->m34_3dModel);
 }
 
-// 06075976 — walk/run animation controller (control state 4)
+// 06075976 - walk/run animation controller (control state 4)
 static void updateNPCWalkRun(sNPC* pThis) {
     sVec3_FP delta;
     delta.m0_X = pThis->mE8.m0_position.m0_X - pThis->mE8.m54_oldPosition.m0_X;
@@ -705,16 +574,16 @@ static void updateNPCWalkRun(sNPC* pThis) {
     pThis->m28_animationLeftOver = (oldAccum + speed) & 0xFFFF;
 
     if (speed > 0x666) {
-        // Moving — switch between walk (1) and run (2)
+        // Moving - switch between walk (1) and run (2)
         if (pThis->m2C_currentAnimation == 2) {
             if (speed < 0x28000) {
-                // Slow down: run → walk
+                // Slow down: run -> walk
                 pThis->m2C_currentAnimation = 1;
                 playAnimationGeneric(&pThis->m34_3dModel, getAnimFromTable(pThis, 1), 5);
             }
         } else if (pThis->m2C_currentAnimation == 1) {
             if (speed > 0x30000) {
-                // Speed up: walk → run
+                // Speed up: walk -> run
                 pThis->m2C_currentAnimation = 2;
                 playAnimationGeneric(&pThis->m34_3dModel, getAnimFromTable(pThis, 2), 5);
             }
@@ -746,7 +615,7 @@ static void updateNPCWalkRun(sNPC* pThis) {
         interpolateAnimation(&pThis->m34_3dModel);
         pThis->m14E = 0;
     } else {
-        // Stopped — idle animation
+        // Stopped - idle animation
         updateNPCIdleAnimation(pThis);
     }
 }
@@ -870,7 +739,7 @@ static s32 isNpcDoneMoving(s32 npcIndex) {
     return 1;
 }
 
-// 06073b68 / 06073cf4 — same as shared applyEdgeAnimation / applyEdgeAnimation2 in townEdge.cpp
+// 06073b68 / 06073cf4 - same as shared applyEdgeAnimation / applyEdgeAnimation2 in townEdge.cpp
 // (CARA version also adds lookAtAngle[0] to head pitch, minor difference)
 
 // CARA entity type - small static object (size 0x28)
@@ -894,11 +763,11 @@ struct sCaraEntitySmall : public s_workAreaTemplateWithArgAndBase<sCaraEntitySma
         }
     }
 
-    // 06073292 — loading state
+    // 06073292 - loading state
     static void Update(sCaraEntitySmall* pThis)
     {
         if (isDataLoaded(readSaturnS32(pThis->mC))) {
-            Unimplemented(); // particleInitSub — needs VDP1 memory pointer from file bundle
+            Unimplemented(); // particleInitSub - needs VDP1 memory pointer from file bundle
             pThis->m_UpdateMethod = &sCaraEntitySmall::Update2;
             pThis->m_DrawMethod = &sCaraEntitySmall::Draw;
         }
@@ -957,7 +826,7 @@ struct sCaraEntityMedium : public s_workAreaTemplateWithArgAndBase<sCaraEntityMe
         }
     }
 
-    // 06072f9a — loading state
+    // 06072f9a - loading state
     static void Update(sCaraEntityMedium* pThis)
     {
         if (isDataLoaded(readSaturnS32(pThis->mC))) {
@@ -1030,7 +899,7 @@ static sTownObject* createCaraEntityMedium(s_workAreaCopy* parent, sSaturnPtr ar
     return createSubTaskWithArgWithCopy<sCaraEntityMedium, sSaturnPtr>(parent, arg);
 }
 
-// 060734a8 is initEdgeNPC — CARA NPCs use the standard sNPC/sEdgeTask layout
+// 060734a8 is initEdgeNPC - CARA NPCs use the standard sNPC/sEdgeTask layout
 struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -1045,7 +914,7 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
         initEdgeNPC(pThis, arg);
     }
 
-    // 060735e8 — loading state, waits for data then inits model
+    // 060735e8 - loading state, waits for data then inits model
     static void Update(sCaraNPC* pThis)
     {
         sSaturnPtr entityArg = pThis->m10_InitPtr;
@@ -1063,7 +932,7 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
         }
     }
 
-    // 06073652 — main update: handles animation, movement, collision
+    // 06073652 - main update: handles animation, movement, collision
     static void Update2(sCaraNPC* pThis)
     {
         pThis->mE8.m54_oldPosition = pThis->mE8.m0_position;
@@ -1079,7 +948,7 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
                 pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
             }
             if (pThis->mC & 2) {
-                Unimplemented(); // FUN_TWN_CARA__06074106 — movement towards target
+                Unimplemented(); // FUN_TWN_CARA__06074106 - movement towards target
             }
             if (pThis->mC & 4) {
                 updateNPCRotationAndMovement(pThis);
@@ -1121,7 +990,7 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
             }
         }
         else if (controlState == 1) {
-            // Walking — step animation based on distance moved
+            // Walking - step animation based on distance moved
             sVec3_FP delta;
             delta.m0_X = pThis->mE8.m0_position.m0_X - pThis->mE8.m54_oldPosition.m0_X;
             delta.m4_Y = pThis->mE8.m0_position.m4_Y - pThis->mE8.m54_oldPosition.m4_Y;
@@ -1133,7 +1002,7 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
 
             u32 steps;
             if (dist * 0x1E1 == 0) {
-                // Stopped — switch to idle animation
+                // Stopped - switch to idle animation
                 if (pThis->m1C != 0) {
                     pThis->m1C = 0;
                     sSaturnPtr animEntry = pThis->m30_animationTable;
@@ -1144,7 +1013,7 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
                 steps = 1;
             }
             else {
-                // Moving — switch to walk animation
+                // Moving - switch to walk animation
                 if (pThis->m1C != 1) {
                     pThis->m1C = 1;
                     sSaturnPtr animEntry = pThis->m30_animationTable + 4;
@@ -1252,14 +1121,14 @@ struct TWN_CARA_data : public sTownOverlay
         // Script functions
         overlayScriptFunctions.m_zeroArg[0x060540f8] = {&returnZero, "returnZero"};
         overlayScriptFunctions.m_zeroArg[0x06070c0c] = {&updateWorldGridFromEdgeTask, "updateWorldGridFromEdgeTask"};
-        overlayScriptFunctions.m_zeroArg[0x060706d4] = {&setupCameraUpdateForCurrentMode, "setupCameraUpdateForCurrentMode"};
-        overlayScriptFunctions.m_zeroArg[0x060709ec] = {&setupCameraFollowMode, "setupCameraFollowMode"};
+        overlayScriptFunctions.m_zeroArg[0x060706d4] = {&setupCameraFollowMode, "setupCameraFollowMode"};
+        overlayScriptFunctions.m_zeroArg[0x060709ec] = {&disableMainLogic, "disableMainLogic"};
         overlayScriptFunctions.m_zeroArg[0x06070a0a] = {&disableCameraUpdate_Cara, "disableCameraUpdate_Cara"};
 
         overlayScriptFunctions.m_oneArg[0x06075e60] = {&TwnFadeIn, "TwnFadeIn"};
         overlayScriptFunctions.m_oneArg[0x06075ed8] = {&TwnFadeOut, "TwnFadeOut"};
         overlayScriptFunctions.m_oneArg[0x0606e6d4] = {&setupCaravanBackground, "setupCaravanBackground"};
-        overlayScriptFunctions.m_oneArg[0x06075cda] = {&setupCaravanCamera, "setupCaravanCamera"};
+        overlayScriptFunctions.m_oneArg[0x06075cda] = {&setupZoahCamera, "setupZoahCamera"};
         overlayScriptFunctions.m_oneArg[0x06070bd0] = {&setFieldOfView, "setFieldOfView"};
         overlayScriptFunctions.m_oneArg[0x060749d6] = {&disableNpcLookAtDecay_Cara, "disableNpcLookAtDecay_Cara"};
         overlayScriptFunctions.m_oneArg[0x06071484] = {&createCutscene_Cara, "createCutscene_Cara"};
@@ -1274,9 +1143,9 @@ struct TWN_CARA_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x060714ce] = {&townIsCutsceneDone, "townIsCutsceneDone"};
         overlayScriptFunctions.m_zeroArg[0x0607150c] = {&townGetCutsceneHalfPosition, "townGetCutsceneHalfPosition"};
         overlayScriptFunctions.m_zeroArg[0x06071544] = {&townDeleteCutscene, "townDeleteCutscene"};
-        overlayScriptFunctions.m_zeroArg[0x060709fa] = {&setupCameraFollowMode_Cara, "setupCameraFollowMode_Cara"};
+        overlayScriptFunctions.m_zeroArg[0x060709fa] = {&enableMainLogic, "enableMainLogic"};
         overlayScriptFunctions.m_zeroArg[0x06070bfc] = {&resetFieldOfView, "resetFieldOfView"};
-        overlayScriptFunctions.m_zeroArg[0x060706f4] = {&setupNpcWalkForward, "setupNpcWalkForward"};
+        overlayScriptFunctions.m_zeroArg[0x060706f4] = {&setupCameraFollowAndWalk, "setupCameraFollowAndWalk"};
 
         overlayScriptFunctions.m_twoArg[0x06075bf8] = {&caravanCameraSetup, "caravanCameraSetup"};
 

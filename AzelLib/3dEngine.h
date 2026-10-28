@@ -5,11 +5,12 @@ void resetCamera(u32 x0, u32 y0, u32 x1, u32 y1, u32 centerX, u32 centerY);
 void reset3dEngine();
 void resetProjectVector();
 void pushProjectionStack();
-void dragonFieldTaskDrawSub3Sub1(); // 0601e1c8 — popProjectionStack + Saturn VDP sync
+void dragonFieldTaskDrawSub3Sub1(); // 0601e1c8 - popProjectionStack + Saturn VDP sync
 
 void setupLight(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7);
 void setupLightColor(u32 r4);
 void generateLightFalloffMap(u32 r4, u32 r5, u32 r6);
+void generateMasterLightFalloffMapInterpolated(const fixedPoint* pData);
 
 void dragonFieldTaskDrawSub1Sub0();
 void dragonFieldTaskDrawSub1Sub1(fixedPoint r4, fixedPoint r5, fixedPoint r6, u32 r7 = 0);

@@ -188,20 +188,6 @@ s32 e006_scriptFunction_60573d8()
     return 0;
 }
 
-s32 e006_scriptFunction_6056918()
-{
-    twnMainLogicTask->m_UpdateMethod = nullptr;
-    twnMainLogicTask->m_DrawMethod = nullptr;
-    return 0;
-}
-
-s32 scriptFunction_6056926()
-{
-    twnMainLogicTask->m_UpdateMethod = &sMainLogic::Update;
-    twnMainLogicTask->m_DrawMethod = &sMainLogic::Draw;
-    return 0;
-}
-
 s32 e006_scriptFunction_6057438()
 {
     if (gCutsceneTask)
@@ -230,10 +216,10 @@ s32 scriptFunction_6057470()
 TWN_E006_data::TWN_E006_data() : sTownOverlay("TWN_E006.PRG")
 {
     overlayScriptFunctions.m_zeroArg[0x60573d8] = {&e006_scriptFunction_60573d8, "e006_scriptFunction_60573d8"};
-    overlayScriptFunctions.m_zeroArg[0x6056918] = {&e006_scriptFunction_6056918, "e006_scriptFunction_6056918"};
+    overlayScriptFunctions.m_zeroArg[0x6056918] = {&disableMainLogic, "disableMainLogic"};
     overlayScriptFunctions.m_zeroArg[0x6057438] = {&e006_scriptFunction_6057438, "e006_scriptFunction_6057438"};
     overlayScriptFunctions.m_zeroArg[0x6057470] = {&scriptFunction_6057470, "scriptFunction_6057470"};
-    overlayScriptFunctions.m_zeroArg[0x6056926] = {&scriptFunction_6056926, "scriptFunction_6056926"};
+    overlayScriptFunctions.m_zeroArg[0x6056926] = {&enableMainLogic, "enableMainLogic"};
 
     overlayScriptFunctions.m_oneArg[0x60573b0] = {&createEPKPlayer, "createEPKPlayer"};
     overlayScriptFunctions.m_oneArg[0x605861e] = {&setupDragonEntityForCutscene, "setupDragonEntityForCutscene"};
@@ -273,7 +259,7 @@ static const char* listOfFilesToLoad[] = {
     nullptr
 };
 
-// 06054292 — identical to startExcaBackgroundTask (same excavation environment)
+// 06054292 - identical to startExcaBackgroundTask (same excavation environment)
 static void startE006BackgroundTask(p_workArea pThis)
 {
     startExcaBackgroundTask(pThis);
