@@ -171,7 +171,7 @@ static void BTL_X0_env_DrawRotationPass0(sVdp2PlaneTask* pThis)
     t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C_scale);
+    scaleRotationMatrix(pThis->m3C_scale, pThis->m3C_scale);
     writeRotationParams(-rotZ);
 
     s32 dX = (s32)t.m34 - (s32)t.m3C;
@@ -239,8 +239,8 @@ static void BTL_X0_env_Draw(sVdp2PlaneTask* pThis)
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
 
-    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0xE00000);
-    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x1600000));
+    fixedPoint scaleY = intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0xE00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x1600000), scaleY);
 
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
@@ -498,8 +498,8 @@ static void BTL_X0_env2_Draw(sVdp2PlaneTask* pThis)
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
 
-    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0xE00000);
-    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x1600000));
+    fixedPoint scaleY = intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0xE00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x1600000), scaleY);
 
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();

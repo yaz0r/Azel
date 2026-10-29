@@ -512,7 +512,7 @@ static void BaldorProjectile_update(sBaldorProjectile* pThis);
 static void BaldorProjectile_drawParticle(sBaldorProjectile* pThis);
 static void BaldorProjectile_drawModel(sBaldorProjectile* pThis);
 
-s32 sGunShotTask_UpdateSub0(sVec3_FP* param1, sVec3_FP* param2, sVec3_FP* param3); // from gunShotRootTask.cpp
+s32 sGunShotTask_UpdateSub0(sVec3_FP* param1, fixedPoint radius1, sVec3_FP* param2, fixedPoint radius2, sVec3_FP* param3); // from gunShotRootTask.cpp
 
 // 060a44de
 static void BaldorProjectile_update(sBaldorProjectile* pThis)
@@ -549,7 +549,7 @@ static void BaldorProjectile_update(sBaldorProjectile* pThis)
     dragonView.radius = 0x5000;
 
     sVec3_FP hitInfo = {};
-    s32 hitResult = sGunShotTask_UpdateSub0(&projView.pos, &dragonView.pos, &hitInfo);
+    s32 hitResult = sGunShotTask_UpdateSub0(&projView.pos, fixedPoint(projView.radius), &dragonView.pos, fixedPoint(dragonView.radius), &hitInfo);
     if (hitResult > 0)
     {
         // hit the dragon - apply damage
@@ -1138,7 +1138,7 @@ void Baldor_update(sBaldorBase* pThisBase)
         }
         pThis->m44_translationTarget[0] += MTH_Mul(0xA000, getSin(pThis->m6C_oscillationPhase[0].getInteger()));
         pThis->m44_translationTarget[1] += MTH_Mul(0xA000, getSin(pThis->m6C_oscillationPhase[1].getInteger()));
-        pThis->m44_translationTarget[2] += MTH_Mul(0xF000, getCos(pThis->m6C_oscillationPhase[2].getInteger()));
+        pThis->m44_translationTarget[2] += MTH_Mul(0xF000, getCos(pThis->m6C_oscillationPhase[0].getInteger()));
     }
 
     pThis->m68_body->m0_translation = *pThis->m1C_translation.m0_current;

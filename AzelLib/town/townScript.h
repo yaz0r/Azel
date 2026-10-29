@@ -29,6 +29,12 @@ extern sScriptTask* currentResTask;
 
 s32 setNpcLocation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z);
 s32 setNpcOrientation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z);
+s32 disableNpcLookAtDecay(s32 npcIndex);
+s32 enableNpcLookAtDecay(s32 npcIndex);
+s32 setupNpcAnimation(s32 npcIndex, s32 animIndex, s32 controlState);
+s32 turnNpcTowardsNpc(s32 npcIndex, s32 targetIndex, s32 mode);
+s32 turnNpcBackToSavedAngle(s32 npcIndex, s32 mode);
+s32 isNpcDoneMoving(s32 npcIndex);
 
 s32 setSomethingInNpc0(s32 arg0, s32 arg1);
 void startScriptTask(p_workArea r4);

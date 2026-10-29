@@ -166,7 +166,7 @@ static void b2Vdp0Draw(sVdp2PlaneTask* pThis)
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
     fixedPoint scaleY = intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], fixedPoint(0xE00000));
     fixedPoint scaleX = intDivide((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], fixedPoint(0x1600000));
-    scaleRotationMatrix(scaleX);
+    scaleRotationMatrix(scaleX, scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
@@ -506,7 +506,7 @@ static void b2Vdp3Draw(sVdp2PlaneTask* pThis)
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
     fixedPoint scaleY = intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], fixedPoint(0xE00000));
     fixedPoint scaleX = intDivide((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], fixedPoint(0x1600000));
-    scaleRotationMatrix(scaleX);
+    scaleRotationMatrix(scaleX, scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 

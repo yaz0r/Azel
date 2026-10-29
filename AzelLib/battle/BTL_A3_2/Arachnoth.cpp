@@ -540,7 +540,7 @@ void arachnoth_startEnrage(sArachnothFormation* pThis)
     battleEngine_SetBattleMode(m7);
     battleEngine_displayAttackName(2, 0x5a, 0);
     pThis->m2D8[0] = -0x1000000;
-    pThis->m2D8[1] = 0x4000000;
+    pThis->m2D8[1] = fixedPoint((s32)0xFC000000);
     pThis->m2D8[2] = 0;
 
     pThis->m2CC[0] = MTH_Mul_5_6(getCos(pThis->m2D8[0].getInteger()), getSin(pThis->m2D8[1].getInteger()), 0x3C000);
@@ -667,9 +667,11 @@ void arachnoth_digestiveFluidAttack_update(sArachnothFormation* pThis)
                 source += pThis->m224_translation;
 
                 sVec3_FP target;
-                target[0] = MTH_Mul(randomNumber() >> 0x10, 0x14000) - 0xA000 + gBattleManager->m10_battleOverlay->m18_dragon->m8_position[0];
-                target[1] = MTH_Mul(randomNumber() >> 0x10, 0x14000) - 0xA000 + gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1];
-                target[2] = MTH_Mul(randomNumber() >> 0x10, 0x14000) - 0xA000 + gBattleManager->m10_battleOverlay->m18_dragon->m8_position[2];
+                target[0] = MTH_Mul(randomNumber() >> 0x10, 0x14000) - 0xA000;
+                s32 offsetZ = MTH_Mul(randomNumber() >> 0x10, 0x14000);
+                target[0] += gBattleManager->m10_battleOverlay->m18_dragon->m8_position[0];
+                target[1] = gBattleManager->m10_battleOverlay->m18_dragon->m8_position[1];
+                target[2] = offsetZ - 0xA000 + gBattleManager->m10_battleOverlay->m18_dragon->m8_position[2];
 
                 createArachnothDigestiveEffect(pThis, &source, &target, 5);
                 playSystemSoundEffect(0x71);
@@ -682,14 +684,17 @@ void arachnoth_digestiveFluidAttack_update(sArachnothFormation* pThis)
         if (--pThis->m2C4_currentAttackDelay < 0)
         {
             sVec3_FP local_2c;
-            fixedPoint local_68 = MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x1000);
-            local_2c[1] = MTH_Mul(getSin(MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x10000000).toInteger()), local_68);
+            fixedPoint radius = MTH_Mul(randomNumber() >> 16, 0x1000);
+            fixedPoint angle = MTH_Mul(randomNumber() >> 16, 0x10000000);
+            local_2c[1] = MTH_Mul(getSin(angle.getInteger()), radius);
 
-            local_68 = MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x1000);
-            local_68 = MTH_Mul(getCos(MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x10000000).toInteger()), local_68);
-            local_2c[2] = MTH_Mul(getSin(MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x10000000).toInteger()), local_68);
-
-            local_2c[0] = MTH_Mul(getSin(MTH_Mul(fixedPoint(randomNumber()).toInteger(), 0x10000000).toInteger()), local_68);
+            radius = MTH_Mul(randomNumber() >> 16, 0x1000);
+            angle = MTH_Mul(randomNumber() >> 16, 0x10000000);
+            radius = MTH_Mul(getCos(angle.getInteger()), radius);
+            angle = MTH_Mul(randomNumber() >> 16, 0x10000000);
+            local_2c[2] = MTH_Mul(getSin(angle.getInteger()), radius);
+            angle = MTH_Mul(randomNumber() >> 16, 0x10000000);
+            local_2c[0] = MTH_Mul(getCos(angle.getInteger()), radius);
 
             applyDamageToDragon(gBattleManager->m10_battleOverlay->m18_dragon->m8C, 40, gBattleManager->m10_battleOverlay->m18_dragon->m8_position, 3, local_2c, 0);
             pThis->m2C0_currentAttackState++;
@@ -918,8 +923,12 @@ void arachnoth_chargeAttack_update(sArachnothFormation* pThis)
             pThis->m254[2] += MTH_Mul(randomNumber() >> 16, 0x71C71C) - 0x38E38E;
             arachnoth_createChargeImpact(pThis);
         }
-        MTH_Mul(-pThis->m288[2], 0x28F); // result discarded in original
-        return; // early return - case 3 loops until outer timer expires, skips common tail
+        pThis->m288[0] += MTH_Mul(-pThis->m288[2], 0x28F);
+        if (--pThis->m2C4_currentAttackDelay < 1)
+        {
+            pThis->m2C0_currentAttackState++;
+        }
+        break;
     }
     case 4: // Unconscious
         if (pThis->m2BC_attackTimer == 0x1E)
@@ -1674,6 +1683,7 @@ static void arachnoth_transitionToState9(sArachnothFormation* pThis)
     pThis->m2BC_attackTimer = 0x10E;
     pThis->m2B0_arachnothState = ARACHNOTH_DEATH_REWARD;
     pThis->m2C0_currentAttackState = 0;
+    pThis->m2C4_currentAttackDelay = 0x3C;
 }
 
 // 06058f10 - state 8 finish
@@ -2129,7 +2139,7 @@ void arachnothFormation_update(sArachnothFormation* pThis)
 
         if (pThis->m314_tentacles[0][0])
         {
-            pThis->m288[0] = pThis->m254[0] + 0x12345;
+            pThis->m254[0] += 0x12345;
         }
     }
 

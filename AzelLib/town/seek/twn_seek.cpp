@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "shared/vdp2PlaneTask.h"
 #include "twn_seek.h"
 #include "town/town.h"
 #include "town/townScript.h"
@@ -72,7 +73,7 @@ struct sSeekVdp2Plane : public s_workAreaTemplate<sSeekVdp2Plane> {
     sVec3_FP m18_cameraRotation;
     std::array<s16, 4> m24_vdp1Clipping;
     std::array<s16, 2> m2C_vdp1LocalCoords;
-    s16 m30_vdp1ProjectionParam[1];
+    s16 m30_vdp1ProjectionParam[2];
     s32 m34_groundY;
     s32 m38_scale;
     s32 m3C;
@@ -236,7 +237,7 @@ static void seekBgDrawSub0(sSeekVdp2Plane* pThis) {
     coeff.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - pThis->m18_cameraRotation.m0_X.asS32(), -pThis->m18_cameraRotation.m4_Y.asS32());
-    scaleRotationMatrix(pThis->m38_scale >> 2);
+    scaleRotationMatrix(pThis->m38_scale >> 2, pThis->m38_scale >> 2);
     writeRotationParams(-pThis->m18_cameraRotation.m8_Z.asS32());
 
     s32 dx = coeff.m34 - coeff.m3C;
@@ -258,15 +259,6 @@ static void seekBgDrawSub0(sSeekVdp2Plane* pThis) {
         gVdp2RotationMatrix.m[2][2].asS32() * dz) + coeff.m40 * -0x10000;
 }
 
-// 0606d584 - compute ground Y (same pattern as CARA)
-static s32 seekComputeGroundY() {
-    auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
-    s32 iVar2 = gVdp2RotationMatrix.m[2][0].asS32() * coeff.m34;
-    s32 iVar3 = gVdp2RotationMatrix.m[2][1].asS32() * coeff.m36;
-    s32 iVar1 = MTH_Mul(gVdp2RotationMatrix.m[2][2], fixedPoint(coeff.m38 * 0x10000 - coeff.m8_Zst));
-    return FP_Div(iVar2 + iVar3 + iVar1, gVdp2RotationMatrix.m[2][1]).getInteger();
-}
-
 // 0606d86c
 static void seekBgMode0_Draw(sSeekVdp2Plane* pThis) {
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
@@ -282,14 +274,15 @@ static void seekBgMode0_Draw(sSeekVdp2Plane* pThis) {
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34_groundY = seekComputeGroundY();
+    // The original keeps this at +0x2C, which mode 1 uses for the VDP1 local coordinates; m34 stays untouched here
+    s32 groundY = computeRotationScrollOffset();
 
     // Sky gradient update
-    applySkyColorGradient(((pThis->mC_cameraPosition.m4_Y.asS32() - 0xCCC) >> 6) + pThis->m34_groundY,
+    applySkyColorGradient(((pThis->mC_cameraPosition.m4_Y.asS32() - 0xCCC) >> 6) + groundY,
         (const s8*)getSaturnPtr(gCurrentTownOverlay->getSaturnPtr(0x06080b60)));
 
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
-    pThis->m4_scrollY = (0x15A - pThis->m34_groundY) * 0x10000;
+    pThis->m4_scrollY = (0x15A - groundY) * 0x10000;
 
     projScale = intDivide((s32)pThis->m30_vdp1ProjectionParam[0], (s32)pThis->m30_vdp1ProjectionParam[1] << 16);
     beginRotationPass(1, projScale);
@@ -303,9 +296,9 @@ static void seekBgMode0_Draw(sSeekVdp2Plane* pThis) {
     coeff.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z.asS32());
-    intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
+    fixedPoint scaleY = intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
     fixedPoint scaleVal = intDivide((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], 0x1600000);
-    scaleRotationMatrix(scaleVal);
+    scaleRotationMatrix(scaleVal, scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
@@ -433,7 +426,7 @@ static void seekBgMode1DrawSub0(sSeekVdp2Plane* pThis) {
     coeff.m40 = 0;
 
     buildRotationMatrixPitchYaw(0, 0x4000000); // fixed: pitch=0, yaw=90 deg
-    scaleRotationMatrix(pThis->m3C);
+    scaleRotationMatrix(pThis->m3C, pThis->m3C);
     writeRotationParams(-rotZ);
 
     s32 dx = coeff.m34 - coeff.m3C;
@@ -453,28 +446,6 @@ static void seekBgMode1DrawSub0(sSeekVdp2Plane* pThis) {
     gVdp2RotationMatrix.Mz = ((((pThis->mC_cameraPosition.m4_Y.asS32() - pThis->m38_scale) * 0x10 -
         gVdp2RotationMatrix.m[2][0].asS32() * dx) - gVdp2RotationMatrix.m[2][1].asS32() * dy) -
         gVdp2RotationMatrix.m[2][2].asS32() * dz) + coeff.m40 * -0x10000;
-}
-
-// 0606dc8a - indoor compute ground Y
-static s32 seekBgMode1ComputeGroundY() {
-    auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
-    s32 iVar2 = gVdp2RotationMatrix.m[2][0].asS32() * coeff.m34;
-    s32 iVar3 = gVdp2RotationMatrix.m[2][1].asS32() * coeff.m36;
-    s32 iVar1 = MTH_Mul(gVdp2RotationMatrix.m[2][2], fixedPoint(coeff.m38 * 0x10000 - coeff.m8_Zst));
-    return FP_Div(iVar2 + iVar3 + iVar1, gVdp2RotationMatrix.m[2][1]).getInteger();
-}
-
-// 06028986
-static void setVdp2ScrollPosition(s32 scrollX, s32 scrollY) {
-    s_VDP2Regs* regs = vdp2Controls.m4_pendingVdp2Regs;
-    if (gCurrentVDP2ScrollLayer == 0) {
-        regs->m70_SCXN0 = scrollX;
-        regs->m74_SCYN0 = scrollY;
-    }
-    else if (gCurrentVDP2ScrollLayer == 1) {
-        regs->m80_SCXN1 = scrollX;
-        regs->m84_SCYN1 = scrollY;
-    }
 }
 
 // 0606dc10 - apply sinusoidal distortion to rotation coefficient table
@@ -505,7 +476,7 @@ static void seekBgMode1_Draw(sSeekVdp2Plane* pThis) {
     drawCinematicBar(6);
     commitRotationPass();
 
-    s32 groundY = seekBgMode1ComputeGroundY();
+    s32 groundY = computeRotationScrollOffset();
     pThis->m34_groundY = groundY;
 
     seekBgMode1DistortCoefficients(pThis);
@@ -525,9 +496,9 @@ static void seekBgMode1_Draw(sSeekVdp2Plane* pThis) {
     coeff.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z.asS32());
-    intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
+    fixedPoint scaleY = intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
     fixedPoint scaleVal = intDivide((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], 0x1600000);
-    scaleRotationMatrix(scaleVal);
+    scaleRotationMatrix(scaleVal, scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
@@ -574,38 +545,6 @@ static s32 setupCameraModeFixedExtended(sSaturnPtr arg) {
     twnMainLogicTask->mF8[1] = readSaturnFP(arg + 0x20);
     twnMainLogicTask->m2_cameraFollowMode = sMainLogic::TrackingMode_Indoor;
     setupCameraUpdateForCurrentMode();
-    return 0;
-}
-
-// 060724d4
-static s32 setupColorOffset_Seek(s32 param_1) {
-    if (g_fadeControls.m_4C <= g_fadeControls.m_4D) {
-        vdp2Controls.m20_registers[0].m112_CLOFSL = param_1;
-        vdp2Controls.m20_registers[1].m112_CLOFSL = param_1;
-    }
-    return 0;
-}
-
-// 06070768
-static s32 setupNpcWalkForward_Seek() {
-    setupCameraFollowMode();
-    sNPC* pNPC = getNpcDataByIndex(0);
-    pNPC->mE8.m30_stepTranslation = { 0, 0, fixedPoint(0xFFFFFF1D) };
-
-    sMatrix4x3 mat;
-    initMatrixToIdentity(&mat);
-    rotateMatrixShiftedY(pNPC->mE8.mC_rotation.m4_Y, &mat);
-    rotateMatrixShiftedX(pNPC->mE8.mC_rotation.m0_X, &mat);
-    sVec3_FP transformed;
-    transformVec(pNPC->mE8.m30_stepTranslation, transformed, mat);
-
-    pNPC->mE8.m3C_targetPosition.m0_X = transformed.m0_X * 0x24 + pNPC->mE8.m0_position.m0_X;
-    pNPC->mE8.m3C_targetPosition.m4_Y = transformed.m4_Y * 0x24 + pNPC->mE8.m0_position.m4_Y;
-    pNPC->mE8.m3C_targetPosition.m8_Z = transformed.m8_Z * 0x24 + pNPC->mE8.m0_position.m8_Z;
-
-    pNPC->mE8.m48_targetRotation = pNPC->mE8.mC_rotation;
-    pNPC->mF = (pNPC->mF & 0xF9) | 1;
-    pNPC->mC |= 4;
     return 0;
 }
 
@@ -704,9 +643,9 @@ struct TWN_SEEK_data : public sTownOverlay
         overlayScriptFunctions.m_oneArg[0x06075f4c] = {&TwnFadeOut, "TwnFadeOut"};
         overlayScriptFunctions.m_oneArg[0x0606e5a4] = {&setupSeekerBackground, "setupSeekerBackground"};
         overlayScriptFunctions.m_oneArg[0x0607257e] = {&setFarClipDistance, "setFarClipDistance"};
-        overlayScriptFunctions.m_oneArg[0x060724d4] = {&setupColorOffset_Seek, "setupColorOffset_Seek"};
+        overlayScriptFunctions.m_oneArg[0x060724d4] = {&SetupColorOffset, "SetupColorOffset"};
 
-        overlayScriptFunctions.m_zeroArg[0x06070768] = {&setupNpcWalkForward_Seek, "setupNpcWalkForward_Seek"};
+        overlayScriptFunctions.m_zeroArg[0x06070768] = {&setupCameraFollowAndWalk, "setupCameraFollowAndWalk"};
         overlayScriptFunctions.m_zeroArg[0x0600cddc] = {&getNpcData5E, "getNpcData5E"};
         overlayScriptFunctions.m_zeroArg[0x060725b4] = {&updateWorldGridFromNpc0, "updateWorldGridFromNpc0"};
 

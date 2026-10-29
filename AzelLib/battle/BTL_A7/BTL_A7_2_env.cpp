@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "shared/vdp2PlaneTask.h"
 #include "BTL_A7_2_env.h"
 #include "BTL_A7_2_data.h"
 #include "battle/battleManager.h"
@@ -172,7 +173,7 @@ static void BTL_A7_2_env_DrawRotationPass0(sVdp2PlaneTask* pThis)
     *(s16*)((u8*)&gCoefficientTables[0][0].m40 + coeffIdx) = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C_scale);
+    scaleRotationMatrix(pThis->m3C_scale, pThis->m3C_scale);
     writeRotationParams(-rotZ);
 
     s16 Px = *(s16*)((u8*)&gCoefficientTables[0][0].m34 + coeffIdx);
@@ -207,23 +208,6 @@ static void BTL_A7_2_env_DrawRotationPass0(sVdp2PlaneTask* pThis)
         + Cz * -0x10000;
 }
 
-// 060579f6
-static s32 BTL_A7_2_env_ComputeGroundY()
-{
-    s32 coeffIdx = (s16)((gRotationPassState.m0_planeIndex * 2 + (s16)vdp2Controls.m0_doubleBufferIndex) * 0x70);
-
-    s16 Px = *(s16*)((u8*)&gCoefficientTables[0][0].m34 + coeffIdx);
-    s16 Py = *(s16*)((u8*)&gCoefficientTables[0][0].m36 + coeffIdx);
-    s16 Pz = *(s16*)((u8*)&gCoefficientTables[0][0].m38 + coeffIdx);
-    s32 Zst = *(s32*)((u8*)&gCoefficientTables[0][0].m8_Zst + coeffIdx);
-
-    s32 val = gVdp2RotationMatrix.m[2][0] * Px
-            + gVdp2RotationMatrix.m[2][1] * Py
-            + MTH_Mul(gVdp2RotationMatrix.m[2][2], (s32)Pz * 0x10000 - Zst);
-
-    return FP_Div(val, gVdp2RotationMatrix.m[2][1]).getInteger();
-}
-
 // 060580E4
 static void BTL_A7_2_env_Draw(sVdp2PlaneTask* pThis)
 {
@@ -243,7 +227,7 @@ static void BTL_A7_2_env_Draw(sVdp2PlaneTask* pThis)
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34 = BTL_A7_2_env_ComputeGroundY();
+    pThis->m34 = computeRotationScrollOffset();
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
     pThis->m4_scrollY = (0xFE - pThis->m34) * 0x10000;
 
@@ -264,8 +248,8 @@ static void BTL_A7_2_env_Draw(sVdp2PlaneTask* pThis)
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
 
-    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0xE00000);
-    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x1600000));
+    fixedPoint scaleY = intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0xE00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x1600000), scaleY);
 
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();

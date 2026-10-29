@@ -1052,6 +1052,7 @@ void updateDragonSpeed(s_dragonTaskWorkArea* r14)
 // Dragon movement integration
 // ============================================================
 
+// 0607fdcc (FLD_A3), 060879c0 (FLD_A5), 0607e398 (FLD_A7)
 void integrateDragonMovement(s_dragonTaskWorkArea* r14)
 {
     getFieldTaskPtr()->m28_status &= ~0x10000;

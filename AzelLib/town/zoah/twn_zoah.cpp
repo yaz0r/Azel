@@ -26,15 +26,7 @@
 
 void zoahCamera_update(sCameraTask* pThis)
 {
-    // Step 1: Increment day/night timer (same as townCamera_update)
-    if ((npcData0.mFC & 1) == 0)
-    {
-        pThis->m4_dayNightTimer++;
-        if (pThis->m4_dayNightTimer > 5400)
-        {
-            pThis->m4_dayNightTimer = 5400;
-        }
-    }
+    townCamera_update(pThis);
 
     // Step 2: Select day/night color set from color table
     sSaturnPtr colorSet0;
@@ -100,11 +92,9 @@ void zoahCamera_update(sCameraTask* pThis)
     pThis->m10.m2 = (s8)(((u32)((s32)d[2] + 0x8000) >> 16) & 0xFF);
 }
 
-static void zoahCamera_drawSetupLight(sCameraTask* pThis);
-
 static void zoahCamera_draw(sCameraTask* pThis)
 {
-    zoahCamera_drawSetupLight(pThis);
+    townCamera_draw(pThis);
     generateMasterLightFalloffMapInterpolated(&pThis->m34_interpolatedLightData[3]);
     //addSlaveCommand(0, 0, 0, copyFalloffTableToSlave);
 }
@@ -167,62 +157,16 @@ s32 setupCameraModeFixed(s32 arg0, s32 arg1, s32 arg2)
     return 0;
 }
 
-static void zoahCamera_setupLight(sCameraTask* pThis, sSaturnPtr lightData)
-{
-    pThis->m8_colorData = lightData;
-
-    sMatrix4x3 mat;
-    initMatrixToIdentity(&mat);
-
-    pThis->m14[0] = mat.m[0][2];
-    pThis->m14[1] = mat.m[1][2];
-    pThis->m14[2] = mat.m[2][2];
-
-    pThis->m10.m0 = readSaturnU8(lightData);
-    pThis->m10.m1 = readSaturnU8(lightData + 1);
-    pThis->m10.m2 = readSaturnU8(lightData + 2);
-    pThis->m30_colorIntensity = 0x8000;
-
-    u32 f0 = (u32)readSaturnU8(lightData + 5) << 16 | (u32)readSaturnU8(lightData + 4) << 8 | (u32)readSaturnU8(lightData + 3);
-    u32 f1 = (u32)readSaturnU8(lightData + 8) << 16 | (u32)readSaturnU8(lightData + 7) << 8 | (u32)readSaturnU8(lightData + 6);
-    u32 f2 = (u32)readSaturnU8(lightData + 11) << 16 | (u32)readSaturnU8(lightData + 10) << 8 | (u32)readSaturnU8(lightData + 9);
-    generateLightFalloffMap(f0, f1, f2);
-}
-
-static void zoahCamera_updateTimeOnly(sCameraTask* pThis)
-{
-    if ((npcData0.mFC & 1) == 0) {
-        pThis->m4_dayNightTimer++;
-        if (pThis->m4_dayNightTimer > 5400) {
-            pThis->m4_dayNightTimer = 5400;
-        }
-    }
-}
-
-static void zoahCamera_drawSetupLight(sCameraTask* pThis)
-{
-    sVec3_FP stack16;
-    transformVecByCurrentMatrix(pThis->m14, stack16);
-    setupLight(stack16[0], stack16[1], stack16[2], pThis->m10.toU32());
-}
-
 // zoahCamera_drawWithPosition / setupCameraWithPosition
 // factored into shared townCamera_drawWithPosition / townCamera_setupWithPosition
 // (zoah's draw was missing m2C arg - fixed in shared version)
 
 s32 setupZoahCamera(s32 param_1);
-static s32 disableNpcLookAtDecay(s32 npcIndex);
-static s32 isNpcDoneMoving(s32 npcIndex);
-static s32 turnNpcTowardsNpc(s32 npcIndex, s32 targetIndex, s32 mode);
-static s32 setupZoahNPCAnimation(s32 npcIndex, s32 animIndex, s32 controlState);
-static s32 turnNpcBackToSavedAngle(s32 npcIndex, s32 mode);
 static s32 scheduleNpcAnimation(s32 npcIndex, s32 animIndex, s32 controlState);
-static s32 enableNpcLookAtDecay(s32 npcIndex);
 static s32 getDistanceToPlayerTier();
 int enableRBG0();
 static sTownObject* createZoahEntity(s_workAreaCopy* parent, sSaturnPtr arg);
 
-void initEdgeNPC(sNPC* pThis, sSaturnPtr arg); // from townEdge.cpp
 static sTownObject* createZoahNPC(npcFileDeleter* parent, sSaturnPtr arg);
 
 struct sZoahPaletteAnimTask : public s_workAreaTemplate<sZoahPaletteAnimTask>
@@ -297,7 +241,7 @@ struct TWN_ZOAH_data : public sTownOverlay
 
         overlayScriptFunctions.m_threeArg[0x06098a5c] = {&setupCameraModeFixed, "setupCameraModeFixed"};
         overlayScriptFunctions.m_threeArg[0x0609c574] = {&turnNpcTowardsNpc, "turnNpcTowardsNpc"};
-        overlayScriptFunctions.m_threeArg[0x0609c93c] = {&setupZoahNPCAnimation, "setupZoahNPCAnimation"};
+        overlayScriptFunctions.m_threeArg[0x0609c93c] = {&setupNpcAnimation, "setupNpcAnimation"};
         overlayScriptFunctions.m_threeArg[0x0609ca40] = {&scheduleNpcAnimation, "scheduleNpcAnimation"};
 
         overlayScriptFunctions.m_zeroArg[0x06098a18] = {&setupCameraFollowAndWalk, "setupCameraFollowAndWalk"};
@@ -614,7 +558,7 @@ struct sZoahNPC : public s_workAreaTemplateWithArgAndBase<sZoahNPC, sNPC, sSatur
         return &taskDefinition;
     }
 
-    // 0609B7CC - same code as initEdgeNPC? TODO: recheck
+    // The original task definition points straight at initEdgeNPC
     static void Init(sZoahNPC* pThis, sSaturnPtr arg)
     {
         initEdgeNPC(pThis, arg);
@@ -856,124 +800,8 @@ static sTownObject* createZoahNPC(npcFileDeleter* parent, sSaturnPtr arg) {
     return createSubTaskWithArgWithCopy<sZoahNPC, sSaturnPtr>(parent, arg);
 }
 
-// Set NPC animation and control state
-static s32 setupZoahNPCAnimation(s32 npcIndex, s32 animIndex, s32 controlState)
-{
-    sNPC* pNPC = getNpcDataByIndex(npcIndex);
-    sZoahNPC* pZoah = static_cast<sZoahNPC*>(pNPC);
-    pZoah->m179 = 0;
-    pZoah->m178 = 0;
-    pZoah->m17A = 0;
-    if (animIndex == 0)
-    {
-        playAnimationGeneric(&pNPC->m34_3dModel, nullptr, 10);
-        controlState = 2;
-        pNPC->m2C_currentAnimation = 0;
-    }
-    else
-    {
-        pNPC->m2C_currentAnimation = animIndex;
-        {
-            sSaturnPtr animEntry = pNPC->m30_animationTable + animIndex * 4;
-            u16 animFileIdx = readSaturnU16(animEntry);
-            u16 animOffset = readSaturnU16(animEntry + 2);
-            sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pNPC->m0_fileBundle->getAnimation(animOffset);
-            playAnimationGeneric(&pNPC->m34_3dModel, pAnim, 10);
-        }
-    }
-    pNPC->mE_controlState = controlState;
-    return 0;
-}
-
-// Script: disable look-at decay for NPC
-static s32 disableNpcLookAtDecay(s32 npcIndex)
-{
-    sNPC* pNPC = getNpcDataByIndex(npcIndex);
-    pNPC->mC |= 8;
-    return 0;
-}
-
-// Script: turn NPC towards another NPC
-static s32 turnNpcTowardsNpc(s32 npcIndex, s32 targetIndex, s32 mode)
-{
-    sNPC* pNPC1 = getNpcDataByIndex(npcIndex);
-    sNPC* pNPC2 = getNpcDataByIndex(targetIndex);
-
-    fixedPoint angle = atan2_FP(pNPC1->mE8.m0_position[0] - pNPC2->mE8.m0_position[0],
-                                pNPC1->mE8.m0_position[2] - pNPC2->mE8.m0_position[2]);
-    if (mode != 0)
-    {
-        angle = angle - pNPC1->mE8.mC_rotation[1];
-    }
-
-    pNPC1 = getNpcDataByIndex(npcIndex);
-    sZoahNPC* pZoah = static_cast<sZoahNPC*>(pNPC1);
-    pNPC1->mE8.m48_targetRotation[1] = angle;
-    if (mode == 0)
-    {
-        pZoah->m148_savedAngle = pNPC1->mE8.mC_rotation[1];
-    }
-    else
-    {
-        pZoah->m148_savedAngle = pNPC1->m20_lookAtAngle[1];
-    }
-    pNPC1->mF &= ~4; // clear bit 0x04
-    if (mode == 0)
-    {
-        pNPC1->mF |= 2;
-        setupZoahNPCAnimation(npcIndex, 3, 2);
-    }
-    else
-    {
-        pNPC1->mF |= 6; // set bits 0x02 and 0x04
-    }
-    pNPC1->mC |= 4;
-    return 0;
-}
-
-// Script: check if NPC is done moving/turning
-static s32 isNpcDoneMoving(s32 npcIndex)
-{
-    sNPC* pNPC = getNpcDataByIndex(npcIndex);
-    if (pNPC->mC & 6)
-        return 0; // still moving
-    return 1; // done
-}
-
 // Script: create cutscene EPK player
 // createCutscene / isCutsceneDone / deleteCutscene factored into townCutscene.cpp
-
-// Script: turn NPC back to saved angle
-static s32 turnNpcBackToSavedAngle(s32 npcIndex, s32 mode)
-{
-    sNPC* pNPC = getNpcDataByIndex(npcIndex);
-    sZoahNPC* pZoah = static_cast<sZoahNPC*>(pNPC);
-    fixedPoint savedAngle = pZoah->m148_savedAngle;
-
-    pNPC = getNpcDataByIndex(npcIndex);
-    pZoah = static_cast<sZoahNPC*>(pNPC);
-    pNPC->mE8.m48_targetRotation[1] = savedAngle;
-    if (mode == 0)
-    {
-        pZoah->m148_savedAngle = pNPC->mE8.mC_rotation[1];
-    }
-    else
-    {
-        pZoah->m148_savedAngle = pNPC->m20_lookAtAngle[1];
-    }
-    pNPC->mF &= ~4;
-    if (mode == 0)
-    {
-        pNPC->mF |= 2;
-        setupZoahNPCAnimation(npcIndex, 3, 2);
-    }
-    else
-    {
-        pNPC->mF |= 6;
-    }
-    pNPC->mC |= 4;
-    return 0;
-}
 
 // Script: schedule NPC animation
 static s32 scheduleNpcAnimation(s32 npcIndex, s32 animIndex, s32 controlState)
@@ -996,14 +824,6 @@ static s32 scheduleNpcAnimation(s32 npcIndex, s32 animIndex, s32 controlState)
     {
         pZoah->m158_animQueue[1] = (s8)controlState;
     }
-    return 0;
-}
-
-// Script: re-enable look-at decay for NPC (clear mC bit 8)
-static s32 enableNpcLookAtDecay(s32 npcIndex)
-{
-    sNPC* pNPC = getNpcDataByIndex(npcIndex);
-    pNPC->mC &= ~8;
     return 0;
 }
 
@@ -1206,7 +1026,7 @@ struct sZoahVdp2Plane : public s_workAreaTemplate<sZoahVdp2Plane>
     sVec3_FP m18_cameraRotation;
     std::array<s16, 4> m24_vdp1Clipping;
     s32 m2C_scrollValue;
-    s16 m30_vdp1ProjectionParam[1];
+    s16 m30_vdp1ProjectionParam[2];
     s32 m34;
     fixedPoint m38;
     // size 0x40
@@ -1331,7 +1151,7 @@ static void setupZoahRotationAndScroll(sZoahVdp2Plane* pThis)
     t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m38 / 4);
+    scaleRotationMatrix(pThis->m38 >> 2, pThis->m38 >> 2);
     writeRotationParams(-rotZ);
 
     s32 diffX = (s32)t.m34 - (s32)t.m3C;
@@ -1384,8 +1204,8 @@ void sZoahVdp2Plane::Draw(sZoahVdp2Plane* pThis)
     t.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
-    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
-    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
+    fixedPoint scaleY = intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000), scaleY);
     setRotationScrollOffset(scrollX, scrollY);
     commitRotationPass();
 

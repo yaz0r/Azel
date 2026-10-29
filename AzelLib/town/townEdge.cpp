@@ -228,7 +228,7 @@ void updateEdgeNPCMode4_Cara(sNPC* pThis)
     pThis->m20_lookAtAngle[1] = MTH_Mul(pThis->m20_lookAtAngle[1], 0xB333);
     if (pThis->mE_controlState == 0) {
         u32 rng = randomNumber();
-        s8 tableIndex = *((s8*)&pThis->m14C_inputFlags + 1); // offset 0x14D
+        s8 tableIndex = (s8)pThis->m14C_inputFlags; // Saturn byte 0x14D, the low byte of the big-endian s16
         sSaturnPtr entry = dataTable + tableIndex * 0x10;
         u32 modResult = performModulo2(readSaturnU16(entry + 0xC), rng);
         s8 animId;
@@ -316,6 +316,7 @@ void initEdgeNPCSub1(sNPC* pThis)
     pThis->m17A = 0;
 }
 
+// 0606f3f0 (CAMP), 0605ad50 (EXCA), 06059e0c (RUIN), 060593d4 (E006), 0605a480 (E011), 060734a8 (CARA), 0607351c (SEEK), 0609b7cc (ZOAH)
 void initEdgeNPC(sNPC* pThis, sSaturnPtr arg)
 {
     npcData0.m70_npcPointerArray[readSaturnU8(arg + 0x20)].workArea = pThis;

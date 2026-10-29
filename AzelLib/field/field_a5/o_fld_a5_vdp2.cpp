@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "shared/vdp2PlaneTask.h"
 #include "o_fld_a5.h"
 #include "field/field_a3/o_fld_a3.h"
 #include "battle/BTL_A3/BTL_A3_map6.h"
@@ -299,8 +300,8 @@ static void a5VdpDraw(sVdp2PlaneTask* pThis)
     t.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
-    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
-    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
+    fixedPoint scaleY = intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000), scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
@@ -519,7 +520,7 @@ static void a5NightSetupRotationPass0(sVdp2PlaneTask* pThis)
     coeff.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - camRotX, -camRotY);
-    scaleRotationMatrix(pThis->m3C_scale);
+    scaleRotationMatrix(pThis->m3C_scale, pThis->m3C_scale);
     writeRotationParams(-camRotZ);
 
     // Compute Mx, My, Mz
@@ -549,18 +550,6 @@ static void a5NightSetupRotationPass0(sVdp2PlaneTask* pThis)
         + coeff.m40 * -0x10000);
 }
 
-// 0605D4EC - night scroll offset computation
-static s32 a5NightComputeScrollOffset()
-{
-    sCoefficientTableData& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
-
-    s32 term1 = gVdp2RotationMatrix.m[2][0].asS32() * coeff.m34;
-    s32 term2 = gVdp2RotationMatrix.m[2][1].asS32() * coeff.m36;
-    s32 term3 = MTH_Mul(gVdp2RotationMatrix.m[2][2], fixedPoint((s32)coeff.m38 * 0x10000 - coeff.m8_Zst)).asS32();
-
-    return FP_Div(term1 + term2 + term3, gVdp2RotationMatrix.m[2][1]).getInteger();
-}
-
 // 0605D8FC
 static void a5NightVdpDraw(sVdp2PlaneTask* pThis)
 {
@@ -577,7 +566,7 @@ static void a5NightVdpDraw(sVdp2PlaneTask* pThis)
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34 = a5NightComputeScrollOffset();
+    pThis->m34 = computeRotationScrollOffset();
 
     // Pass 1: sky scroll
     pThis->m0_scrollX = ((s32)pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
@@ -596,8 +585,8 @@ static void a5NightVdpDraw(sVdp2PlaneTask* pThis)
     t.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
-    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
-    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
+    fixedPoint scaleY = intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000), scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
@@ -765,8 +754,8 @@ static void a5BossVdpDraw(sVdp2PlaneTask* pThis)
     t.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
-    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
-    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
+    fixedPoint scaleY = intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000), scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 

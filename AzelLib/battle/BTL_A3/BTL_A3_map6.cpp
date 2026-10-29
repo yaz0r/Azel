@@ -836,14 +836,15 @@ void buildRotationMatrixPitchYaw(fixedPoint pitchAngle, fixedPoint yawAngle)
     gRotationPassState.m2_matrixMode = eRMM_pitchYaw;
 }
 
-void scaleRotationMatrix(fixedPoint scale)
+// 06028fda
+void scaleRotationMatrix(fixedPoint scaleX, fixedPoint scaleY)
 {
-    gVdp2RotationMatrix.m[0][0] = MTH_Mul(gVdp2RotationMatrix.m[0][0], scale);
-    gVdp2RotationMatrix.m[0][1] = MTH_Mul(gVdp2RotationMatrix.m[0][1], scale);
-    gVdp2RotationMatrix.m[0][2] = MTH_Mul(gVdp2RotationMatrix.m[0][2], scale);
-    gVdp2RotationMatrix.m[1][0] = MTH_Mul(gVdp2RotationMatrix.m[1][0], scale);
-    gVdp2RotationMatrix.m[1][1] = MTH_Mul(gVdp2RotationMatrix.m[1][1], scale);
-    gVdp2RotationMatrix.m[1][2] = MTH_Mul(gVdp2RotationMatrix.m[1][2], scale);
+    gVdp2RotationMatrix.m[0][0] = MTH_Mul(gVdp2RotationMatrix.m[0][0], scaleX);
+    gVdp2RotationMatrix.m[0][1] = MTH_Mul(gVdp2RotationMatrix.m[0][1], scaleX);
+    gVdp2RotationMatrix.m[0][2] = MTH_Mul(gVdp2RotationMatrix.m[0][2], scaleX);
+    gVdp2RotationMatrix.m[1][0] = MTH_Mul(gVdp2RotationMatrix.m[1][0], scaleY);
+    gVdp2RotationMatrix.m[1][1] = MTH_Mul(gVdp2RotationMatrix.m[1][1], scaleY);
+    gVdp2RotationMatrix.m[1][2] = MTH_Mul(gVdp2RotationMatrix.m[1][2], scaleY);
 }
 
 void buildGroundRotation(sVdp2PlaneTask* pThis)
@@ -867,7 +868,7 @@ void buildGroundRotation(sVdp2PlaneTask* pThis)
     t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C_scale);
+    scaleRotationMatrix(pThis->m3C_scale, pThis->m3C_scale);
     writeRotationParams(-rotZ);
 
     s32 diffX = (s32)t.m34 - (s32)t.m3C;
@@ -885,30 +886,6 @@ void buildGroundRotation(sVdp2PlaneTask* pThis)
                     + (s32)(s16)t.m40 * -0x10000;
 }
 
-s32 computeRotationScrollOffset()
-{
-    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
-
-    s32 pivotX = (s32)gVdp2RotationMatrix.m[2][0] * (s32)t.m34;
-    s32 pivotY = (s32)gVdp2RotationMatrix.m[2][1] * (s32)t.m36;
-    s32 depthTerm = MTH_Mul(gVdp2RotationMatrix.m[2][2], (s32)t.m38 * 0x10000 - t.m8_Zst);
-
-    return FP_Div(pivotX + pivotY + depthTerm, gVdp2RotationMatrix.m[2][1]).getInteger();
-}
-
-// 060549c0
-static void BTL_A3_Env_DrawSub4(sVdp2PlaneTask* pThis)
-{
-    auto& table = *gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
-    s32 phase = pThis->m4C_wavePhase;
-    for (int i = 0; i < 0x1A8; i++) {
-        fixedPoint wave = MTH_Mul(pThis->m48, getSin(phase >> 16));
-        table[i] = MTH_Mul(table[i], wave + 0x10000);
-        phase += pThis->m44_waveFreq;
-    }
-    pThis->m4C_wavePhase += pThis->m40_waveSpeed;
-}
-
 void BTL_A3_Env_Draw(sVdp2PlaneTask* pThis)
 {
     pThis->mC_cameraPosition = cameraProperties2.m0_position;
@@ -923,10 +900,10 @@ void BTL_A3_Env_Draw(sVdp2PlaneTask* pThis)
     commitRotationPass();
 
     pThis->m34 = computeRotationScrollOffset();
-    BTL_A3_Env_DrawSub4(pThis);
+    vdp2ApplyWaveDistortion(pThis);
 
-    s32 scrollX = (pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
-    s32 scrollY = (0x1EF - pThis->m34) * 0x10000;
+    pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y >> 0xC) * -0x400;
+    pThis->m4_scrollY = (0x1EF - pThis->m34) * 0x10000;
 
     beginRotationPass(1, intDivide(pThis->m30_vdp1ProjectionParam[0], fixedPoint::fromInteger(pThis->m30_vdp1ProjectionParam[1])));
 
@@ -941,13 +918,13 @@ void BTL_A3_Env_Draw(sVdp2PlaneTask* pThis)
     t.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
-    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
-    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
-    setRotationScrollOffset(scrollX, scrollY);
+    fixedPoint scaleY = intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000), scaleY);
+    setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
     gCurrentVDP2ScrollLayer = 0;
-    setupVDP2CoordinatesIncrement2(scrollX, 0);
+    setupVDP2CoordinatesIncrement2(pThis->m0_scrollX, 0);
     gCurrentVDP2ScrollLayer = 4;
 
     auto* regs = vdp2Controls.m4_pendingVdp2Regs;

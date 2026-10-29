@@ -3,7 +3,7 @@
 #include "battle/BTL_A3/BTL_A3_map6.h"
 #include "trigo.h"
 
-// 060588e0
+// 060588e0 (FLD_A3), 0605441c (BTL_A3)
 void vdp2ApplyWaveDistortion(sVdp2PlaneTask* pThis)
 {
     std::vector<fixedPoint>& coefficients = *gVdp2CoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
@@ -95,7 +95,7 @@ void vdp2SetupRotationPass(sVdp2PlaneTask* pThis)
     t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C_scale);
+    scaleRotationMatrix(pThis->m3C_scale, pThis->m3C_scale);
     writeRotationParams(-rotZ);
 
     s32 diffX = (s32)t.m34 - (s32)t.m3C;
@@ -111,4 +111,15 @@ void vdp2SetupRotationPass(sVdp2PlaneTask* pThis)
     gVdp2RotationMatrix.Mz = ((pThis->mC_cameraPosition.m4_Y - pThis->m38) * 0x10)
                     - gVdp2RotationMatrix.m[2][0] * diffX - gVdp2RotationMatrix.m[2][1] * diffY - gVdp2RotationMatrix.m[2][2] * diffZ
                     + (s32)(s16)t.m40 * -0x10000;
+}
+
+// 060540ac (BTL_A3), 06054090 (BTL_A3_2), 060540c8/06054a2e (BTL_X0), 060579f6 (BTL_A7_2), 0605d4ec (FLD_A5), 06057e76/06058b02 (FLD_A7),
+// 0606dd7c (TWN_CARA), 06054230 (TWN_E006), 06054b80 (TWN_E011), 0605456c (TWN_E014), 06055bac (TWN_EXCA), 0606d584/0606dc8a (TWN_SEEK)
+s32 computeRotationScrollOffset()
+{
+    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
+    s32 pivotX = (s32)gVdp2RotationMatrix.m[2][0] * (s32)t.m34;
+    s32 pivotY = (s32)gVdp2RotationMatrix.m[2][1] * (s32)t.m36;
+    s32 depthTerm = MTH_Mul(gVdp2RotationMatrix.m[2][2], (s32)t.m38 * 0x10000 - t.m8_Zst);
+    return FP_Div(pivotX + pivotY + depthTerm, gVdp2RotationMatrix.m[2][1]).getInteger();
 }

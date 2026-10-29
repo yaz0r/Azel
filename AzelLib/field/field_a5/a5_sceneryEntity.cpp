@@ -40,12 +40,15 @@ static void a5SceneryEntity_setupParticlesSub(sA5SceneryEntity* pThis, sSaturnPt
     u32 treeRootAddr = READ_BE_U32(pRaw + bundleOffset);
     config.m8_spread = MTH_Mul(readMaxScalarFromBundleTree(pRaw, treeRootAddr), 0x20000);
 
-    config.m10_pPosition = (sVec3_FP*)getSaturnPtr(readSaturnEA(pConfig + 4));
-    config.m14_pRotation = (sVec3_FP*)getSaturnPtr(readSaturnEA(pConfig + 16));
+    // The position and rotation are stored inline in the config
+    sVec3_FP position = readSaturnVec3(pConfig + 4);
+    sVec3_FP rotation = readSaturnVec3(pConfig + 0x10);
+    config.m10_pPosition = &position;
+    config.m14_pRotation = &rotation;
     config.m38 = 0xa000;
     config.m_pBundle = pBundle;
 
-    createDebrisScatterTask(pThis, &config, false);
+    createDebrisScatterTask(pThis, &config, true);
 }
 
 // 060583a8

@@ -335,8 +335,8 @@ void sBTL_X0_Projectile::Update(sBTL_X0_Projectile* pThis)
         sVec3_FP screenPos;
         transformAndAddVecByCurrentMatrix(&pThis->m8_position, &screenPos);
         sVec3_FP hitResult;
-        s32 hit = sGunShotTask_UpdateSub0(&screenPos,
-            (sVec3_FP*)((u8*)pThis->m8C_pDragon + 0x40), &hitResult);
+        s32 hit = sGunShotTask_UpdateSub0(&screenPos, fixedPoint(pThis->mE0_value),
+            &pThis->m8C_pDragonTargetable->m40, fixedPoint(pThis->m8C_pDragonTargetable->m4C), &hitResult);
 
         if (hit < 1)
         {
@@ -410,7 +410,7 @@ static void BTL_X0_fireProjectile(sBTL_X0_EnemyModel* pThis, void* hotpointData,
 
     s_battleDragon* pDragon = gBattleManager->m10_battleOverlay->m18_dragon;
     pProj->m90_pDragonPosition2 = &pDragon->m8_position;
-    pProj->m8C_pDragon = pDragon;
+    pProj->m8C_pDragonTargetable = &pDragon->m8C;
     pProj->mE4_timer1 = 10;
     pProj->mE0_value = 0x1000;
     pProj->mF0_damageType = param3;

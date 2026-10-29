@@ -13,8 +13,8 @@ static void darkenLightData(s8* output, s32 amount) {
     }
 }
 
-// computeModulatedColor - takes 12-byte light data + intensity, returns VDP2 color
-static u16 computeModulatedColor(s8* lightData, u32 intensity) {
+// 06071d3e - takes light data + intensity, returns VDP2 color
+u16 computeModulatedColor(s8* lightData, u32 intensity) {
     s32 r = MTH_Mul((s32)lightData[0], intensity);
     s32 g = MTH_Mul((s32)lightData[1], intensity);
     s32 b = MTH_Mul((s32)lightData[2], intensity);

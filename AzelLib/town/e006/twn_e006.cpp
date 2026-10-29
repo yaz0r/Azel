@@ -30,28 +30,6 @@ struct TWN_E006_data : public sTownOverlay
     sTownObject* createObjectTaskFromEA_subTaskWithEAArg(npcFileDeleter* parent, sSaturnPtr definitionEA, s32 size, sSaturnPtr arg) override;
 };
 
-s32 createEPKPlayer(s32 r4)
-{
-    npcData0.mF4 = 1;
-    npcData0.mF0 = 0;
-
-    gCutsceneTask = createSubTaskWithArg<sCutsceneTask>(twnMainLogicTask, r4);
-
-    return 0;
-}
-
-s32 e006_scriptFunction_605861eSub0()
-{
-    if ((gCutsceneTask != nullptr) && (npcData0.mF0 == 0))
-    {
-        s32 iVar1 = scriptFunction_605861eSub0Sub0(gCutsceneTask->m0);
-        if ((iVar1 != 5) && (iVar1 != -1))
-            return 0;
-    }
-
-    return 1;
-}
-
 struct sDragonCutsceneData
 {
     s16 m0;
@@ -164,7 +142,7 @@ struct sE006Task1 : public s_workAreaTemplate<sE006Task1>
 s32 setupDragonEntityForCutscene(s32 r4)
 {
     sSaturnPtr r4Ptr = sSaturnPtr::createFromRaw(r4, gCurrentTownOverlay);
-    if (e006_scriptFunction_605861eSub0() == 0)
+    if (townIsCutsceneDone() == 0)
     {
         sE006Task1* pNewSubTask = createSubTask<sE006Task1>(currentResTask);
         pNewSubTask->m0 = r4Ptr;
@@ -177,48 +155,12 @@ s32 setupDragonEntityForCutscene(s32 r4)
     return 0;
 }
 
-s32 e006_scriptFunction_60573d8()
-{
-    npcData0.mF0 = 0;
-    if (gCutsceneTask != nullptr)
-    {
-        scriptFunction_60573d8Sub0(gCutsceneTask->m0);
-    }
-    npcData0.mF0 = 0;
-    return 0;
-}
-
-s32 e006_scriptFunction_6057438()
-{
-    if (gCutsceneTask)
-    {
-        if (npcData0.mF0 == 0)
-        {
-            s32 iVar1 = getPositionInEDK(gCutsceneTask->m0);
-            return (int)(iVar1 + (u32)(iVar1 < 0)) >> 1;
-        }
-    }
-    return 0;
-}
-
-// 06057470
-s32 scriptFunction_6057470()
-{
-    if (gCutsceneTask != nullptr)
-    {
-        npcData0.mF4 = 0;
-        gCutsceneTask->getTask()->markFinished();
-        gCutsceneTask = nullptr;
-    }
-    return 0;
-}
-
 TWN_E006_data::TWN_E006_data() : sTownOverlay("TWN_E006.PRG")
 {
-    overlayScriptFunctions.m_zeroArg[0x60573d8] = {&e006_scriptFunction_60573d8, "e006_scriptFunction_60573d8"};
+    overlayScriptFunctions.m_zeroArg[0x60573d8] = {&townStartCutscenePlayback, "townStartCutscenePlayback"};
     overlayScriptFunctions.m_zeroArg[0x6056918] = {&disableMainLogic, "disableMainLogic"};
-    overlayScriptFunctions.m_zeroArg[0x6057438] = {&e006_scriptFunction_6057438, "e006_scriptFunction_6057438"};
-    overlayScriptFunctions.m_zeroArg[0x6057470] = {&scriptFunction_6057470, "scriptFunction_6057470"};
+    overlayScriptFunctions.m_zeroArg[0x6057438] = {&townGetCutsceneHalfPosition, "townGetCutsceneHalfPosition"};
+    overlayScriptFunctions.m_zeroArg[0x6057470] = {&townDeleteCutscene, "townDeleteCutscene"};
     overlayScriptFunctions.m_zeroArg[0x6056926] = {&enableMainLogic, "enableMainLogic"};
 
     overlayScriptFunctions.m_oneArg[0x60573b0] = {&createEPKPlayer, "createEPKPlayer"};

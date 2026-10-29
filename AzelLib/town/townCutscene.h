@@ -141,6 +141,7 @@ void setupCutsceneModelType2(sStreamingFile* r4, u32 r5, p_workArea r6, s_3dMode
 void setupCutsceneDragon(sStreamingFile* r4, u32 r5, p_workArea r6, s_3dModel* pModel);
 
 s32 townCreateCutscene(s32 arg);
+s32 createEPKPlayer(s32 arg);
 s32 townIsCutsceneDone();
 s32 townDeleteCutscene();
 s32 townStartCutscenePlayback();

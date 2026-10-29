@@ -1281,15 +1281,6 @@ void sCampDragon_applyBoneChainMatrices(s3DModelAnimData* pAnimData) {
     updateBoneChainDynamics(pAnimData, curEntry, prevVec18, entries[0].m0_root, (s8)pAnimData->count2);
 }
 
-// 060360a0
-static s32 transformVecGetY(const sVec3_FP& vec, const sMatrix4x3& mat) {
-    s64 mac = 0;
-    mac += (s64)mat.m[1][0].asS32() * (s64)vec[0].asS32();
-    mac += (s64)mat.m[1][1].asS32() * (s64)vec[1].asS32();
-    mac += (s64)mat.m[1][2].asS32() * (s64)vec[2].asS32();
-    return (s32)(mac >> 16) + mat.m[1][3].asS32();
-}
-
 // 06054a3c
 s32 sCampDragon_computeNearestHotpointDistance(sCampDragon* pThis) {
     if ((gDragonState->mC_dragonType < 0) || (7 < gDragonState->mC_dragonType)) {
@@ -1342,19 +1333,12 @@ void sCampDragon_Draw(sTownDragon* pThisBase) {
     }
 }
 
-// 060563f2
-void sCampDragon_Delete(sTownDragon* pThis) {
-    playAnimation(&gDragonState->m28_dragon3dModel, nullptr, 0);
-    reinitModel(&gDragonState->m28_dragon3dModel,
-        gDragonMorphDataPerLevel[gDragonState->mC_dragonType].m_m8[0].m8_hotPoints);
-}
-
 sTownObject* createCampDragon(p_workArea parent, sSaturnPtr arg) {
     static const sCampDragon::TypedTaskDefinition definition = {
         &sCampDragon_Init,
         &sCampDragon_Update,
         &sCampDragon_Draw,
-        &sCampDragon_Delete,
+        &sTownDragon_Delete,
     };
 
     return createSubTaskWithArg<sCampDragon, sSaturnPtr>(parent, arg, &definition);

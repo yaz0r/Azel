@@ -404,6 +404,23 @@ void cameraUpdate_follow(sMainLogic* r14_townTask)
                 r14_townTask->m30 = 0xC000000;
             }
         }
+
+        if (r14_townTask->m4_flags & 0x20000000)
+        {
+            r14_townTask->m1_cameraParamsIndex++;
+            if (r14_townTask->m1_cameraParamsIndex > 1)
+            {
+                r14_townTask->m1_cameraParamsIndex = 0;
+            }
+            if (r14_townTask->m1_cameraParamsIndex == 0)
+            {
+                mainGameState.bitField[0x274] &= 0xFE;
+            }
+            else
+            {
+                mainGameState.bitField[0x274] |= 1;
+            }
+        }
     }
 
     //6055E90
@@ -425,6 +442,7 @@ void cameraUpdate_follow(sMainLogic* r14_townTask)
     r14_townTask->m24_distance = sqrt_F(MTH_Product3d_FP(var4, var4));
 
     computeLookAt(var4, r14_townTask->m68_cameraRotation);
+    r14_townTask->m68_cameraRotation[2] = 0;
 
     s32 r4 = atan2_FP(0x147, r14_townTask->m24_distance);
     if (r4 > 0x1555555)
@@ -801,7 +819,7 @@ int setupCameraFollowMode()
     return 0; // dummy
 }
 
-// 0605ab0c (RUIN), 0609c4cc (ZOAH), 060741a8 (CARA)
+// 0605ab0c (RUIN), 0605ba50 (EXCA), 0605a0d4 (E006), 060741a8 (CARA), 0607421c (SEEK), 0609c4cc (ZOAH)
 void setupNPCWalkInZDirection(s32 r4_npcIndex, s32 r5_zDirection, s32 r6_distance)
 {
     sNPC* r13 = getNpcDataByIndex(r4_npcIndex);
@@ -828,7 +846,7 @@ void setupNPCWalkInZDirection(s32 r4_npcIndex, s32 r5_zDirection, s32 r6_distanc
     r13->mC |= 4;
 }
 
-// 06057058 (RUIN), 06098a18 (ZOAH), 060706f4 (CARA)
+// 06057058 (RUIN), 06057f9c (EXCA), 06056620 (E006), 060706f4 (CARA), 06070768 (SEEK), 06098a18 (ZOAH)
 s32 setupCameraFollowAndWalk()
 {
     setupCameraFollowMode();

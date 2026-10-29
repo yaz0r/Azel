@@ -20,5 +20,6 @@ struct sEdgeTask : public s_workAreaTemplateWithArgAndBase<sEdgeTask, sNPC, sSat
 sEdgeTask* startEdgeTask(sSaturnPtr r4);
 
 void stepNPCForward(sNPCE8* pThis);
+void initEdgeNPC(sNPC* pThis, sSaturnPtr arg);
 void applyEdgeAnimation(s_3dModel* pModel, sVec2_FP* r5);
 void applyEdgeAnimation2(s_3dModel* pModel, sVec2_FP* r5);

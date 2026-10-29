@@ -56,11 +56,6 @@ s32 getDragonAffinityOffset(s32 npcIndex) {
     return (s32)pDragon->mF_affinityLevel - 2;
 }
 
-// 0606d5f2
-s32 isCurrentResInactive() {
-    return canCurrentResActivate() == 0;
-}
-
 // 0605664a
 s32 dragonTurnTowardsPlayer(s32 npcIndex) {
     sTownDragon* pDragon = (sTownDragon*)getNpcDataByIndex(npcIndex);
@@ -221,7 +216,7 @@ struct TWN_CAMP_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x0606c95c] = {&setupCameraUpdateForCurrentMode, "setupCameraUpdateForCurrentMode"};
         overlayScriptFunctions.m_zeroArg[0x06071ade] = {&toggleDayNight, "toggleDayNight"};
         overlayScriptFunctions.m_zeroArg[0x0606d5bc] = {&canCurrentResActivate, "canCurrentResActivate"};
-        overlayScriptFunctions.m_zeroArg[0x0606d5f2] = {&isCurrentResInactive, "isCurrentResInactive"};
+        overlayScriptFunctions.m_zeroArg[0x0606d5f2] = {&isObjectCloseEnoughToActivate, "isObjectCloseEnoughToActivate"};
         overlayScriptFunctions.m_zeroArg[0x06057f46] = {&startDragonNameEntryTask, "startDragonNameEntryTask"};
 
         overlayScriptFunctions.m_oneArg[0x6071e20] = {&TwnFadeOut, "TwnFadeOut"};
@@ -392,17 +387,6 @@ struct sCampFire : public s_workAreaTemplateWithArgAndBase<sCampFire, sTownObjec
         }
     }
 
-    static u16 computeModulatedColor(s8 interpolatedR, s8 interpolatedG, s8 interpolatedB, s8 baseR, s8 baseG, s8 baseB, u32 intensity)
-    {
-        s32 r = ((s32)interpolatedR * (s32)intensity) >> 16;
-        s32 g = ((s32)interpolatedG * (s32)intensity) >> 16;
-        s32 b = ((s32)interpolatedB * (s32)intensity) >> 16;
-        r = ((r + baseR) >> 1) + 8;
-        g = ((g + baseG) >> 1) + 8;
-        b = ((b + baseB) >> 1) + 8;
-        return 0x8000 | (r & 0x1F) | ((g & 0x1F) << 5) | ((b & 0x1F) << 10);
-    }
-
     static void Update2(sCampFire* pThis)
     {
         registerCollisionBody(&pThis->m7C_scriptContext);
@@ -454,12 +438,17 @@ struct sCampFire : public s_workAreaTemplateWithArgAndBase<sCampFire, sTownObjec
         cameraTaskPtr->m30_colorIntensity = (s32)MTH_Mul(fixedPoint(tgtParam2 - srcParam2), t) + srcParam2;
 
         if (g_fadeControls.m24_fade1.m20_stopped && cameraTaskPtr->m1_fadeActive) {
-            s8 baseR = readSaturnS8(cameraTaskPtr->m8_colorData + 3);
-            s8 baseG = readSaturnS8(cameraTaskPtr->m8_colorData + 4);
-            s8 baseB = readSaturnS8(cameraTaskPtr->m8_colorData + 5);
+            s8 lightData[6];
+            lightData[0] = (s8)r;
+            lightData[1] = (s8)g;
+            lightData[2] = (s8)b;
+            lightData[3] = readSaturnS8(cameraTaskPtr->m8_colorData + 3);
+            lightData[4] = readSaturnS8(cameraTaskPtr->m8_colorData + 4);
+            lightData[5] = readSaturnS8(cameraTaskPtr->m8_colorData + 5);
 
-            u16 color = computeModulatedColor((s8)r, (s8)g, (s8)b, baseR, baseG, baseB, cameraTaskPtr->m30_colorIntensity);
-            fadePalette(&g_fadeControls.m24_fade1, color, color, 1);
+            u16 color1 = computeModulatedColor(lightData, cameraTaskPtr->m30_colorIntensity);
+            u16 color2 = computeModulatedColor(lightData, cameraTaskPtr->m30_colorIntensity);
+            fadePalette(&g_fadeControls.m24_fade1, color2, color1, 1);
         }
 
         stepAnimation(&pThis->m2C_model);

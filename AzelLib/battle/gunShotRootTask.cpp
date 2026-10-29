@@ -121,11 +121,12 @@ void sGunShotTask_UpdateSub0Sub0(sVec3_FP* param_1, sVec3_FP* param_2, sVec3_FP*
     *param_3 = sum + sum / 2;
 }
 
-s32 sGunShotTask_UpdateSub0(sVec3_FP* param1, sVec3_FP* param2, sVec3_FP* param3)
+// The original passes each position followed by its radius at +0xC
+s32 sGunShotTask_UpdateSub0(sVec3_FP* param1, fixedPoint radius1, sVec3_FP* param2, fixedPoint radius2, sVec3_FP* param3)
 {
     sVec3_FP local_20 = *param2 - *param1;
 
-    fixedPoint distance = (*param1)[0] + (*param2)[0];
+    fixedPoint distance = radius1 + radius2;
 
     if (MTH_Mul(distance, distance) < dot3_FP(&local_20, &local_20))
     {
@@ -362,7 +363,7 @@ void sGunShotTask_Update(sGunShotTask* pThis)
                     sVec3_FP local_3c;
                     sVec3_FP sStack72;
                     transformAndAddVecByCurrentMatrix(&pThis->m14, &local_3c);
-                    if (sGunShotTask_UpdateSub0(&local_3c, &pThis->m68->m40, &sStack72) > 0)
+                    if (sGunShotTask_UpdateSub0(&local_3c, fixedPoint(pThis->m44), &pThis->m68->m40, fixedPoint(pThis->m68->m4C), &sStack72) > 0)
                     {
                         sGunShotTask_UpdateSub2(pThis, sGunShotTask_UpdateSub1(pThis), &sStack72);
                     }
@@ -375,7 +376,7 @@ void sGunShotTask_Update(sGunShotTask* pThis)
                     sVec3_FP local_3c;
                     sVec3_FP sStack72;
                     transformAndAddVecByCurrentMatrix(&pThis->m14, &local_3c);
-                    if (sGunShotTask_UpdateSub0(&local_3c, &pThis->m68->m40, &sStack72) > 0)
+                    if (sGunShotTask_UpdateSub0(&local_3c, fixedPoint(pThis->m44), &pThis->m68->m40, fixedPoint(pThis->m68->m4C), &sStack72) > 0)
                     {
                         sGunShotTask_UpdateSub2(pThis, sGunShotTask_UpdateSub1(pThis), &sStack72);
                     }

@@ -55,7 +55,7 @@ void applyDamageToDragon(sBattleTargetable& pThis, s32 damageValue, sVec3_FP& pa
 
 fixedPoint sGunShotTask_UpdateSub2Sub0Sub0(sBattleTargetable* pThis, s16 param_1)
 {
-    return MTH_Mul(fixedPoint::fromInteger(param_1), setDividend(0x10000, fixedPoint::fromInteger(pThis->m60), 0xA0000)).toInteger();
+    return MTH_Mul(fixedPoint::fromInteger(param_1), setDividend(0x10000, fixedPoint::fromInteger((u8)pThis->m60), 0xA0000)).toInteger();
 }
 
 void applyDamageToEnnemy(sBattleTargetable* pThis, s16 param_2, sVec3_FP* param_3, s8 param_4, const sVec3_FP& param_5, fixedPoint param_8)

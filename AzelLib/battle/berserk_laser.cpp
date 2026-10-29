@@ -313,7 +313,7 @@ static void sLaserBerserkTask_Update(sLaserBerserkTask* pThis)
             sVec3_FP screenPos;
             transformAndAddVecByCurrentMatrix(&pThis->m18_laserOrigin, &screenPos);
             sVec3_FP hitPos;
-            s32 hitResult = sGunShotTask_UpdateSub0(&screenPos, &pThis->m4C_pTargetable->m40, &hitPos);
+            s32 hitResult = sGunShotTask_UpdateSub0(&screenPos, fixedPoint(pThis->mC8), &pThis->m4C_pTargetable->m40, fixedPoint(pThis->m4C_pTargetable->m4C), &hitPos);
 
             if (hitResult > 0)
             {

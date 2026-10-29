@@ -98,7 +98,7 @@ struct sDebrisScatterTask : public s_workAreaTemplate<sDebrisScatterTask>
 // 0607e136 - extract Euler rotation from matrix
 static void extractRotationFromMatrix(sVec3_FP& outRotation, const sMatrix4x3& mat)
 {
-    outRotation.m0_X = atan_FP(MTH_Mul(mat.m[2][0], -0x10000));
+    outRotation.m0_X = atan_FP(MTH_Mul(mat.m[1][2], -0x10000));
     outRotation.m4_Y = atan2_FP(mat.m[0][2], mat.m[2][2]);
     outRotation.m8_Z = atan2_FP(mat.m[1][0], mat.m[1][1]);
 }

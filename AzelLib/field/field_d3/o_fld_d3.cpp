@@ -432,7 +432,7 @@ static void d3VdpRotationPassSub(sVdp2PlaneTask* pThis, s32 yOffset)
     t.m3C = t.m34; t.m3E = t.m36; t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-    scaleRotationMatrix(pThis->m3C_scale);
+    scaleRotationMatrix(pThis->m3C_scale, pThis->m3C_scale);
     writeRotationParams(-rotZ);
 
     s32 diffX = (s32)t.m34 - (s32)t.m3C;

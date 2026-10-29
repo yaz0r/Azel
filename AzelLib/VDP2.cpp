@@ -2166,3 +2166,29 @@ void printVdp2String2(const char* string)
     moveVdp2TextCursor(&vars);
 }
 
+// 06028986
+void setVdp2ScrollPosition(s32 scrollX, s32 scrollY)
+{
+    s_VDP2Regs* regs = vdp2Controls.m4_pendingVdp2Regs;
+    switch (gCurrentVDP2ScrollLayer)
+    {
+    case 0:
+        regs->m70_SCXN0 = scrollX;
+        regs->m74_SCYN0 = scrollY;
+        break;
+    case 1:
+        regs->m80_SCXN1 = scrollX;
+        regs->m84_SCYN1 = scrollY;
+        break;
+    case 2:
+        regs->m90_SCXN2 = scrollX;
+        regs->m92_SCYN2 = scrollY;
+        break;
+    case 3:
+        regs->m94_SCXN3 = scrollX;
+        regs->m96_SCYN3 = scrollY;
+        break;
+    default:
+        break;
+    }
+}

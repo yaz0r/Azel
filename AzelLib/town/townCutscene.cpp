@@ -1332,6 +1332,16 @@ s32 getCutsceneFrameIndex(sStreamingFile* pStreamingFile)
 
 // --- Town cutscene script functions ---
 
+// 060576fc (E014), 060573b0 (E006), 0605845c (E011), 06071484 (CARA)
+s32 createEPKPlayer(s32 arg)
+{
+    npcData0.mF4 = 1;
+    npcData0.mF0 = 0;
+    gCutsceneTask = createSubTaskWithArg<sCutsceneTask>(twnMainLogicTask, arg);
+    return 0;
+}
+
+// 0609991e (ZOAH)
 s32 townCreateCutscene(s32 arg)
 {
     if (npcData0.mF0 != 0) {
@@ -1345,6 +1355,7 @@ s32 townCreateCutscene(s32 arg)
     return 0;
 }
 
+// 0606d416 (CAMP), 06058d76 (EXCA), 06057e32 (RUIN), 060573fa (E006), 060584a6 (E011), 06057746 (E014), 060714ce (CARA), 06071542 (SEEK), 060997f2 (ZOAH)
 s32 townIsCutsceneDone()
 {
     if ((gCutsceneTask != nullptr) && (npcData0.mF0 == 0)) {
@@ -1356,18 +1367,19 @@ s32 townIsCutsceneDone()
     return 1;
 }
 
+// 06057470 (E006), 06071544 (CARA), 06099868 (ZOAH)
 s32 townDeleteCutscene()
 {
-    if (gCutsceneTask != nullptr) {
+    sCutsceneTask* pTask = gCutsceneTask;
+    if (pTask != nullptr) {
         npcData0.mF4 = 0;
-        stopPCMStreaming(gCutsceneTask->m0);
-        sCutsceneTask* temp = gCutsceneTask;
-        gCutsceneTask = nullptr;
-        temp->getTask()->markFinished();
+        sCutsceneTask::Delete(pTask);
+        pTask->getTask()->markFinished();
     }
     return 0;
 }
 
+// 060573d8 (E006), 06058484 (E011), 06057724 (E014), 060714ac (CARA)
 s32 townStartCutscenePlayback()
 {
     npcData0.mF0 = 0;
@@ -1377,6 +1389,7 @@ s32 townStartCutscenePlayback()
     return 0;
 }
 
+// 0606d454 (CAMP), 06058db4 (EXCA), 06057e70 (RUIN), 06057438 (E006), 060584e4 (E011), 06057784 (E014), 0607150c (CARA), 06071580 (SEEK), 06099830 (ZOAH)
 s32 townGetCutsceneHalfPosition()
 {
     if (gCutsceneTask != nullptr && npcData0.mF0 == 0) {

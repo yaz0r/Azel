@@ -185,7 +185,7 @@ void s_battleDragon_UpdateSub1(s_battleDragon* pThis)
     
     pushCurrentMatrix();
     translateCurrentMatrix(pBattleEngine->m234);
-    rotateCurrentMatrixZYX(pBattleEngine->m220_battleVector);
+    rotateCurrentMatrixYXZ(pBattleEngine->m220_battleVector);
     sVec3_FP auStack56;
     transformAndAddVecByCurrentMatrix(&local_44, &auStack56);
     transformAndAddVec(auStack56, pThis->m8_position, cameraProperties2.m28[0]);
@@ -632,7 +632,7 @@ int computeDragonDamage(int damageValue)
         computedDamage = MTH_Mul(computedDamage, 0x20000);
     }
 
-    int finalComputedDamage = computedDamage.toInteger();
+    int finalComputedDamage = (s16)((u32)(computedDamage.asS32() + 0x8000) >> 16);
     if (finalComputedDamage > 9999)
     {
         finalComputedDamage = 9999;

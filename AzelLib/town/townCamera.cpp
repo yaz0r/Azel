@@ -112,6 +112,7 @@ s32 townCamera_setup(s32 r4, s32 r5)
     return 0;
 }
 
+// 0605838c (E006), 06059d08 (EXCA), 060724d4 (SEEK)
 s32 SetupColorOffset(s32 r4)
 {
     if (g_fadeControls.m_4D >= g_fadeControls.m_4C)

@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "shared/vdp2PlaneTask.h"
 #include "twn_cara.h"
 #include "town/town.h"
 #include "town/townScript.h"
@@ -30,7 +31,6 @@ static s32 returnZero() {
     return 0;
 }
 
-static s32 caravanCameraSetup(s32 rotationEA, s32 lightData);
 s32 setupCameraModeFixed(s32 arg0, s32 arg1, s32 arg2);
 s32 setupZoahCamera(s32 param_1);
 
@@ -41,13 +41,6 @@ static s32 playSoundEffect_bank5(s32 soundId, s32 volume, s32 unk) {
 }
 
 // cutscene functions factored into townCutscene.cpp
-
-// 060749ea
-static s32 enableNpcLookAtDecay_Cara(s32 npcIndex) {
-    sNPC* pNPC = getNpcDataByIndex(npcIndex);
-    pNPC->mC &= ~8;
-    return 0;
-}
 
 // 06070bfc
 static s32 resetFieldOfView() {
@@ -131,68 +124,15 @@ static s32 createCutsceneWaitTask(s32 param_1) {
     return 0;
 }
 
-// 06075bf8
-static s32 caravanCameraSetup(s32 rotationEA, s32 lightData) {
-    sSaturnPtr rotPtr = gCurrentTownOverlay->getSaturnPtr(rotationEA);
-    sSaturnPtr lightPtr = gCurrentTownOverlay->getSaturnPtr(lightData);
-
-    cameraTaskPtr->m8_colorData = lightPtr;
-
-    sMatrix4x3 mat;
-    initMatrixToIdentity(&mat);
-    rotateMatrixShiftedY(readSaturnFP(rotPtr + 4), &mat);
-    rotateMatrixShiftedX(readSaturnFP(rotPtr), &mat);
-    cameraTaskPtr->m14.m0_X = mat.m[0][2];
-    cameraTaskPtr->m14.m4_Y = mat.m[1][2];
-    cameraTaskPtr->m14.m8_Z = mat.m[2][2];
-
-    cameraTaskPtr->m10.m0 = readSaturnU8(lightPtr);
-    cameraTaskPtr->m10.m1 = readSaturnU8(lightPtr + 1);
-    cameraTaskPtr->m10.m2 = readSaturnU8(lightPtr + 2);
-    cameraTaskPtr->m30_colorIntensity = 0x8000;
-
-    u32 f0 = (u32)readSaturnU8(lightPtr + 5) << 16 | (u32)readSaturnU8(lightPtr + 4) << 8 | (u32)readSaturnU8(lightPtr + 3);
-    u32 f1 = (u32)readSaturnU8(lightPtr + 8) << 16 | (u32)readSaturnU8(lightPtr + 7) << 8 | (u32)readSaturnU8(lightPtr + 6);
-    u32 f2 = (u32)readSaturnU8(lightPtr + 11) << 16 | (u32)readSaturnU8(lightPtr + 10) << 8 | (u32)readSaturnU8(lightPtr + 9);
-    generateLightFalloffMap(f0, f1, f2);
-
-    cameraTaskPtr->m_UpdateMethod = townCamera_update;
-    cameraTaskPtr->m_DrawMethod = townCamera_draw;
-
-    if (g_fadeControls.m_4C <= g_fadeControls.m_4D) {
-        vdp2Controls.m20_registers[0].m112_CLOFSL = 0x10;
-        vdp2Controls.m20_registers[1].m112_CLOFSL = 0x10;
-    }
-    resetProjectVector();
-    cameraTaskPtr->m2 = 0;
-    cameraTaskPtr->m0_colorMode = 0;
-    return 0;
-}
-
 // 06070bd0
 static s32 setFieldOfView(s32 fov) {
     initVDP1Projection(fov, 0);
     return 0;
 }
 
-// 060749d6
-static s32 disableNpcLookAtDecay_Cara(s32 npcIndex) {
-    sNPC* pNPC = getNpcDataByIndex(npcIndex);
-    pNPC->mC |= 8;
-    return 0;
-}
-
 // 06073f5c
 static s32 setNpcDrawMode(s32 npcIndex, s32 mode) {
     Unimplemented(); // Sets overlay-specific draw method on NPC based on mode (0-3)
-    return 0;
-}
-
-// 06071484
-static s32 createCutscene_Cara(s32 arg) {
-    npcData0.mF4 = 1;
-    npcData0.mF0 = 0;
-    gCutsceneTask = createSubTaskWithArg<sCutsceneTask>(twnMainLogicTask, arg);
     return 0;
 }
 
@@ -251,29 +191,6 @@ static const char* listOfFilesToLoad[] = {
     "X_A_TB.CGB",
     nullptr
 };
-
-// 06028986
-static void setVdp2ScrollPosition(s32 scrollX, s32 scrollY) {
-    s_VDP2Regs* regs = vdp2Controls.m4_pendingVdp2Regs;
-    if (gCurrentVDP2ScrollLayer == 0) {
-        regs->m70_SCXN0 = scrollX;
-        regs->m74_SCYN0 = scrollY;
-    }
-    else if (gCurrentVDP2ScrollLayer == 1) {
-        regs->m80_SCXN1 = scrollX;
-        regs->m84_SCYN1 = scrollY;
-    }
-}
-
-// 0606dd7c
-static s32 computeGroundY() {
-    auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][vdp2Controls.m0_doubleBufferIndex];
-    s32 iVar2 = gVdp2RotationMatrix.m[2][0].asS32() * coeff.m34;
-    s32 iVar3 = gVdp2RotationMatrix.m[2][1].asS32() * coeff.m36;
-    s32 iVar1 = MTH_Mul(gVdp2RotationMatrix.m[2][2],
-                        fixedPoint(coeff.m38 * 0x10000 - coeff.m8_Zst));
-    return FP_Div(iVar2 + iVar3 + iVar1, gVdp2RotationMatrix.m[2][1]).getInteger();
-}
 
 // Caravan VDP2 background plane task
 struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
@@ -371,9 +288,9 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
         if (pThis->m40_timer > 0) {
             s32 iVar1;
             if (townIsCutsceneDone() == 0) {
-                s32 curPos = e006_scriptFunction_6057438();
+                s32 curPos = townGetCutsceneHalfPosition();
                 iVar1 = pThis->m44 - curPos;
-                pThis->m44 = e006_scriptFunction_6057438();
+                pThis->m44 = townGetCutsceneHalfPosition();
             } else {
                 iVar1 = 1;
             }
@@ -402,7 +319,7 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
         coeff.m40 = 0;
 
         buildRotationMatrixPitchYaw(-0x4000000 - rotX, -rotY);
-        scaleRotationMatrix(pThis->m3C_scale >> 2);
+        scaleRotationMatrix(pThis->m3C_scale >> 2, pThis->m3C_scale >> 2);
         writeRotationParams(-rotZ);
 
         s32 dx = coeff.m34 - coeff.m3C;
@@ -440,7 +357,7 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
         drawCinematicBar(6);
         commitRotationPass();
 
-        pThis->m34_groundY = computeGroundY();
+        pThis->m34_groundY = computeRotationScrollOffset();
         pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
         pThis->m4_scrollY = (0x1FF - pThis->m34_groundY) * 0x10000;
 
@@ -457,9 +374,9 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
         coeff.m40 = 0;
 
         buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z.asS32());
-        intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
+        fixedPoint scaleY = intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
         fixedPoint scaleVal = intDivide((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], 0x1600000);
-        scaleRotationMatrix(scaleVal);
+        scaleRotationMatrix(scaleVal, scaleY);
         setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
         commitRotationPass();
 
@@ -479,7 +396,7 @@ struct sCaraVdp2Plane : public s_workAreaTemplate<sCaraVdp2Plane>
     sVec3_FP mC_cameraPosition;
     sVec3_FP m18_cameraRotation;
     std::array<s16, 4> m24_vdp1Clipping;
-    s16 m30_vdp1ProjectionParam[1];
+    s16 m30_vdp1ProjectionParam[2];
     s32 m34_groundY;
     s32 m38;
     s32 m3C_scale;
@@ -495,7 +412,6 @@ static void createCaravanVdp2Plane(p_workArea pParent)
     gCaraVdp2PlaneTask = createSubTask<sCaraVdp2Plane>(pParent);
 }
 
-void initEdgeNPC(sNPC* pThis, sSaturnPtr arg); // from townEdge.cpp
 
 // Helper: get animation from table entry
 static sAnimationData* getAnimFromTable(sNPC* pThis, s32 animIndex) {
@@ -686,40 +602,6 @@ static void updateNPCRotationAndMovement(sNPC* pThis)
     }
 }
 
-// 06074250
-static s32 turnNpcTowardsNpc_Cara(s32 npcIndex, s32 targetIndex, s32 mode) {
-    sNPC* pNPC1 = getNpcDataByIndex(npcIndex);
-    sNPC* pNPC2 = getNpcDataByIndex(targetIndex);
-    s32 angle = atan2_FP(pNPC1->mE8.m0_position.m0_X - pNPC2->mE8.m0_position.m0_X,
-                         pNPC1->mE8.m0_position.m8_Z - pNPC2->mE8.m0_position.m8_Z);
-    if (mode != 0) {
-        angle = angle - pNPC1->mE8.mC_rotation.m4_Y.asS32();
-    }
-    pNPC1 = getNpcDataByIndex(npcIndex);
-    pNPC1->mE8.m48_targetRotation.m4_Y = angle;
-    if (mode == 0) {
-        pNPC1->m148_savedAngle = pNPC1->mE8.mC_rotation.m4_Y;
-    } else {
-        pNPC1->m148_savedAngle = pNPC1->m20_lookAtAngle[1];
-    }
-    pNPC1->mF = (pNPC1->mF & ~4);
-    if (mode == 0) {
-        pNPC1->mF |= 2;
-        scheduleNPCAnimationFromTable(pNPC1, 3, 2);
-    } else {
-        pNPC1->mF |= 6;
-    }
-    pNPC1->mC |= 4;
-    return 0;
-}
-
-// 060749fe
-static s32 isNpcDoneMoving(s32 npcIndex) {
-    sNPC* pNPC = getNpcDataByIndex(npcIndex);
-    if ((pNPC->mC & 6) != 0) return 0;
-    return 1;
-}
-
 // 06073b68 / 06073cf4 - same as shared applyEdgeAnimation / applyEdgeAnimation2 in townEdge.cpp
 // (CARA version also adds lookAtAngle[0] to head pitch, minor difference)
 
@@ -880,7 +762,6 @@ static sTownObject* createCaraEntityMedium(s_workAreaCopy* parent, sSaturnPtr ar
     return createSubTaskWithArgWithCopy<sCaraEntityMedium, sSaturnPtr>(parent, arg);
 }
 
-// 060734a8 is initEdgeNPC - CARA NPCs use the standard sNPC/sEdgeTask layout
 struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSaturnPtr>
 {
     static TypedTaskDefinition* getTypedTaskDefinition()
@@ -889,7 +770,7 @@ struct sCaraNPC : public s_workAreaTemplateWithArgAndBase<sCaraNPC, sNPC, sSatur
         return &taskDefinition;
     }
 
-    // 060734a8
+    // The original task definition points straight at initEdgeNPC
     static void Init(sCaraNPC* pThis, sSaturnPtr arg)
     {
         initEdgeNPC(pThis, arg);
@@ -1111,11 +992,11 @@ struct TWN_CARA_data : public sTownOverlay
         overlayScriptFunctions.m_oneArg[0x0606e6d4] = {&setupCaravanBackground, "setupCaravanBackground"};
         overlayScriptFunctions.m_oneArg[0x06075cda] = {&setupZoahCamera, "setupZoahCamera"};
         overlayScriptFunctions.m_oneArg[0x06070bd0] = {&setFieldOfView, "setFieldOfView"};
-        overlayScriptFunctions.m_oneArg[0x060749d6] = {&disableNpcLookAtDecay_Cara, "disableNpcLookAtDecay_Cara"};
-        overlayScriptFunctions.m_oneArg[0x06071484] = {&createCutscene_Cara, "createCutscene_Cara"};
+        overlayScriptFunctions.m_oneArg[0x060749d6] = {&disableNpcLookAtDecay, "disableNpcLookAtDecay"};
+        overlayScriptFunctions.m_oneArg[0x06071484] = {&createEPKPlayer, "createEPKPlayer"};
         overlayScriptFunctions.m_oneArg[0x0606e8a8] = {&enableBackgroundWithTimer, "enableBackgroundWithTimer"};
         overlayScriptFunctions.m_oneArg[0x060710c6] = {&createCutsceneWaitTask, "createCutsceneWaitTask"};
-        overlayScriptFunctions.m_oneArg[0x060749ea] = {&enableNpcLookAtDecay_Cara, "enableNpcLookAtDecay_Cara"};
+        overlayScriptFunctions.m_oneArg[0x060749ea] = {&enableNpcLookAtDecay, "enableNpcLookAtDecay"};
         overlayScriptFunctions.m_oneArg[0x06072440] = {&createCaraSubTask, "createCaraSubTask"};
 
         overlayScriptFunctions.m_oneArgPtr[0x06075d5c] = {&townCamera_setupWithPosition, "townCamera_setupWithPosition"};
@@ -1128,10 +1009,10 @@ struct TWN_CARA_data : public sTownOverlay
         overlayScriptFunctions.m_zeroArg[0x06070bfc] = {&resetFieldOfView, "resetFieldOfView"};
         overlayScriptFunctions.m_zeroArg[0x060706f4] = {&setupCameraFollowAndWalk, "setupCameraFollowAndWalk"};
 
-        overlayScriptFunctions.m_twoArg[0x06075bf8] = {&caravanCameraSetup, "caravanCameraSetup"};
+        overlayScriptFunctions.m_twoArg[0x06075bf8] = {&townCamera_setup, "townCamera_setup"};
 
         overlayScriptFunctions.m_threeArg[0x0602c308] = {&playSoundEffect_bank5, "playSoundEffect_bank5"};
-        overlayScriptFunctions.m_threeArg[0x06074250] = {&turnNpcTowardsNpc_Cara, "turnNpcTowardsNpc_Cara"};
+        overlayScriptFunctions.m_threeArg[0x06074250] = {&turnNpcTowardsNpc, "turnNpcTowardsNpc"};
         overlayScriptFunctions.m_threeArg[0x06070738] = {&setupCameraModeFixed, "setupCameraModeFixed"};
         overlayScriptFunctions.m_twoArg[0x06073f5c] = {&setNpcDrawMode, "setNpcDrawMode"};
 

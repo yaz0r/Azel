@@ -49,7 +49,6 @@ void dragonDPadPitchRoll(s_dragonTaskWorkArea* pDragon);
 void dragonAnalogPitchRoll(s_dragonTaskWorkArea* pDragon);
 
 // Dragon update shared tail
-void dragonUpdate_normalTail(s_dragonTaskWorkArea* pDragon);
 void setDragonAnimationFromSpeed(s_dragonTaskWorkArea* pDragon);
 
 // Dragon update state machine

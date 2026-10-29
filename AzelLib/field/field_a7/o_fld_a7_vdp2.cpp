@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "shared/vdp2PlaneTask.h"
 #include "o_fld_a7.h"
 #include "field/field_a3/o_fld_a3.h"
 #include "field/fieldRadar.h"
@@ -205,9 +206,9 @@ static void drawVdp2_A7_0(sVdp2PlaneTask* pThis)
     coeff.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z.asS32());
-    intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
+    fixedPoint scaleY = intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
     fixedPoint scaleVal = intDivide((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], 0x1600000);
-    scaleRotationMatrix(scaleVal);
+    scaleRotationMatrix(scaleVal, scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
@@ -421,7 +422,7 @@ static void drawVdp2Sub_setupRotationPass0_A7_1(sVdp2PlaneTask* pThis)
     coeff.m40 = 0;
 
     buildRotationMatrixPitchYaw(fixedPoint(-0x4000000) - camRotX, -(camRotY + fixedPoint(skyRotation)));
-    scaleRotationMatrix(pThis->m3C_scale);
+    scaleRotationMatrix(pThis->m3C_scale, pThis->m3C_scale);
     writeRotationParams(-camRotZ);
 
     // Compute Mx, My, Mz
@@ -492,9 +493,9 @@ static void drawVdp2_A7_1(sVdp2PlaneTask* pThis)
     coeff.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z.asS32());
-    intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
+    fixedPoint scaleY = intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
     fixedPoint scaleVal = intDivide((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], 0x1600000);
-    scaleRotationMatrix(scaleVal);
+    scaleRotationMatrix(scaleVal, scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 
@@ -654,7 +655,7 @@ static void drawVdp2Sub_setupRotationPass0_A7_2(sVdp2PlaneTask* pThis)
     coeff.m40 = 0;
 
     buildRotationMatrixPitchYaw(fixedPoint(-0x4000000) - camRotX, -camRotY);
-    scaleRotationMatrix(pThis->m3C_scale);
+    scaleRotationMatrix(pThis->m3C_scale, pThis->m3C_scale);
     writeRotationParams(-camRotZ);
 
     // Compute Mx, My, Mz
@@ -684,13 +685,6 @@ static void drawVdp2Sub_setupRotationPass0_A7_2(sVdp2PlaneTask* pThis)
         + coeff.m40 * -0x10000);
 }
 
-// 06058b02 - simplified scroll offset for A7 subfield 2 (depth term only, no pivot)
-static s32 computeGroundY_A7_2()
-{
-    sCoefficientTableData& t = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
-    return MTH_Mul(gVdp2RotationMatrix.m[2][2], (s32)t.m38 * 0x10000 - t.m8_Zst);
-}
-
 // 06059018
 static void drawVdp2_A7_2(sVdp2PlaneTask* pThis)
 {
@@ -708,7 +702,7 @@ static void drawVdp2_A7_2(sVdp2PlaneTask* pThis)
     drawCinematicBar(6);
     commitRotationPass();
 
-    pThis->m34 = computeGroundY_A7_2();
+    pThis->m34 = computeRotationScrollOffset();
 
     pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
     pThis->m4_scrollY = (0xFE - pThis->m34) * 0x10000;

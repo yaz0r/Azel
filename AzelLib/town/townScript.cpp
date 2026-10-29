@@ -6,6 +6,8 @@
 #include "town/ruin/twn_ruin.h"
 #include "kernel/cinematicBarsTask.h"
 #include "kernel/fileBundle.h"
+#include "kernel/animation.h"
+#include "kernel/graphicalObject.h"
 #include "kernel/dialogTask.h"
 #include "kernel/debug/trace.h"
 #include "audio/soundDriver.h"
@@ -31,6 +33,12 @@ s32 canCurrentResActivate()
         }
     }
     return 0;
+}
+
+// 0605800e (RUIN), 06058f52 (EXCA), 060575d6 (E006), 0606d5f2 (CAMP), 060716aa (CARA), 060999ce (ZOAH)
+s32 isObjectCloseEnoughToActivate()
+{
+    return !canCurrentResActivate();
 }
 
 void addBackgroundScript(sSaturnPtr r4, s32 r5, p_workArea r6, const sVec3_S16_12_4* r7)
@@ -147,6 +155,107 @@ s32 setNpcOrientation(s32 r4_npcIndex, s32 r5_X, s32 r6_Y, s32 r7_Z)
     }
 
     return 0;
+}
+
+// 060749d6 (CARA), 0609ccfa (ZOAH)
+s32 disableNpcLookAtDecay(s32 npcIndex)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    pNPC->mC |= 8;
+    return 0;
+}
+
+// 060749ea (CARA), 0609cd0e (ZOAH)
+s32 enableNpcLookAtDecay(s32 npcIndex)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    pNPC->mC &= ~8;
+    return 0;
+}
+
+// 0605bec0 (EXCA), 0605a544 (E006), 06074618 (CARA), 0609c93c (ZOAH)
+s32 setupNpcAnimation(s32 npcIndex, s32 animIndex, s32 controlState)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    pNPC->m179 = 0;
+    pNPC->m178 = 0;
+    pNPC->m17A = 0;
+    if (animIndex == 0)
+    {
+        playAnimationGeneric(&pNPC->m34_3dModel, nullptr, 10);
+        controlState = 2;
+        pNPC->m2C_currentAnimation = 0;
+    }
+    else
+    {
+        pNPC->m2C_currentAnimation = animIndex;
+        sSaturnPtr animEntry = pNPC->m30_animationTable + animIndex * 4;
+        u16 animFileIdx = readSaturnU16(animEntry);
+        u16 animOffset = readSaturnU16(animEntry + 2);
+        sAnimationData* pAnim = animFileIdx ? dramAllocatorEnd[0].mC_fileBundle->m0_fileBundle->getAnimation(animOffset) : pNPC->m0_fileBundle->getAnimation(animOffset);
+        playAnimationGeneric(&pNPC->m34_3dModel, pAnim, 10);
+        pNPC->m2C_currentAnimation = animIndex;
+    }
+    pNPC->mE_controlState = controlState;
+    return 0;
+}
+
+// 0605bb48 (EXCA), 0605a1cc (E006), 060742a0 (CARA), 0609c5c4 (ZOAH)
+static void turnNpcToAngle(s32 npcIndex, fixedPoint angle, s32 mode)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    pNPC->mE8.m48_targetRotation[1] = angle;
+    if (mode == 0)
+    {
+        pNPC->m148_savedAngle = pNPC->mE8.mC_rotation[1];
+    }
+    else
+    {
+        pNPC->m148_savedAngle = pNPC->m20_lookAtAngle[1];
+    }
+    pNPC->mF &= ~4;
+    if (mode == 0)
+    {
+        pNPC->mF |= 2;
+        setupNpcAnimation(npcIndex, 3, 2);
+    }
+    else
+    {
+        pNPC->mF |= 6;
+    }
+    pNPC->mC |= 4;
+}
+
+// 0605baf8 (EXCA), 0605a17c (E006), 06074250 (CARA), 0609c574 (ZOAH)
+s32 turnNpcTowardsNpc(s32 npcIndex, s32 targetIndex, s32 mode)
+{
+    sNPC* pNPC1 = getNpcDataByIndex(npcIndex);
+    sNPC* pNPC2 = getNpcDataByIndex(targetIndex);
+    fixedPoint angle = atan2_FP(pNPC1->mE8.m0_position[0] - pNPC2->mE8.m0_position[0],
+                                pNPC1->mE8.m0_position[2] - pNPC2->mE8.m0_position[2]);
+    if (mode != 0)
+    {
+        angle = angle - pNPC1->mE8.mC_rotation[1];
+    }
+    turnNpcToAngle(npcIndex, angle, mode);
+    return 0;
+}
+
+// 0605bbc8 (EXCA), 0605a24c (E006), 0609c644 (ZOAH)
+s32 turnNpcBackToSavedAngle(s32 npcIndex, s32 mode)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    turnNpcToAngle(npcIndex, pNPC->m148_savedAngle, mode);
+    return 0;
+}
+
+// 0605a92a (E006), 060749fe (CARA), 0609cd22 (ZOAH)
+s32 isNpcDoneMoving(s32 npcIndex)
+{
+    sNPC* pNPC = getNpcDataByIndex(npcIndex);
+    if (pNPC->mC & 6)
+        return 0;
+    return 1;
 }
 
 s32 terminateTown()

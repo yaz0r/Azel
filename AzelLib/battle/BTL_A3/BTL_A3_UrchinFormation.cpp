@@ -941,7 +941,7 @@ static void impactParticle_init(sImpactParticle* p, int numOrbitalPoints)
     p->mC_velocity.zeroize();
     p->m18_position.zeroize();
     p->m30_orbitalIndex = MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(numOrbitalPoints - 1));
-    p->m34_startFrame = (u16)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x32)).getInteger();
+    p->m34_startFrame = (u16)MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0x32)).asS32();
     p->m2C_yVelocity = -0x28 - MTH_Mul(fixedPoint(randomNumber() >> 16), fixedPoint(0xa4));
     p->m36_state = 0;
 }

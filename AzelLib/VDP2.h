@@ -397,6 +397,7 @@ void displayObjectIcon(s32 r4, s32 r5_x, s32 r6_y, s32 r7_iconId);
 u32 rotateRightR0ByR1(u32 r0, u32 r1);
 
 void interruptVDP2Update();
+void setVdp2ScrollPosition(s32 scrollX, s32 scrollY);
 
 void printVdp2Number2(int value, int length);
 void printVdp2String2(const char* string);

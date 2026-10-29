@@ -72,7 +72,7 @@ struct s_d5StarfieldTask : public s_workAreaTemplate<s_d5StarfieldTask>
     std::array<s16, 4> m24_vdp1Clipping;  // 0x24
     std::array<s16, 2> m2C_vdp1LocalCoords; // 0x2C
     ;             // 0x30
-    s16 m30_vdp1ProjectionParam[1];             // 0x32
+    s16 m30_vdp1ProjectionParam[2];             // 0x32
     s32 m34;                        // 0x34
     s32 m38;                        // 0x38
     fixedPoint m3C_focalScale;      // 0x3C
@@ -107,7 +107,7 @@ static void setupStarfieldRotationPass(s_d5StarfieldTask* pThis, fixedPoint foca
     t.m40 = 0;
 
     buildRotationMatrixPitchYaw(0, 0);
-    scaleRotationMatrix(pThis->m3C_focalScale);
+    scaleRotationMatrix(pThis->m3C_focalScale, pThis->m3C_focalScale);
 
     setRotationScrollOffset(scrollX, scrollY);
 

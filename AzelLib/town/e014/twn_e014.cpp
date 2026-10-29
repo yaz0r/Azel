@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "shared/vdp2PlaneTask.h"
 #include "twn_e014.h"
 #include "town/town.h"
 #include "audio/soundDriver.h"
@@ -11,17 +12,6 @@
 #include "field/field_a3/o_fld_a3.h"
 
 void setupVdp1Proj(fixedPoint fov); // TODO: cleanup
-
-// 06054dc4
-static s32 e014_computeGroundY()
-{
-    auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
-    s32 iVar2 = gVdp2RotationMatrix.m[2][0].asS32() * coeff.m34;
-    s32 iVar3 = gVdp2RotationMatrix.m[2][1].asS32() * coeff.m36;
-    s32 iVar1 = MTH_Mul(gVdp2RotationMatrix.m[2][2],
-                        fixedPoint(coeff.m38 * 0x10000 - coeff.m8_Zst));
-    return FP_Div(iVar2 + iVar3 + iVar1, gVdp2RotationMatrix.m[2][1]).getInteger();
-}
 
 // https://www.youtube.com/watch?v=Txks9hG21qs&feature=youtu.be&t=3345
 
@@ -145,7 +135,7 @@ struct E014_groundTask : public s_workAreaTemplate<E014_groundTask> {
         drawCinematicBar(6);
         commitRotationPass();
 
-        pThis->m2C_groundY = e014_computeGroundY();
+        pThis->m2C_groundY = computeRotationScrollOffset();
         pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
         pThis->m4_scrollY = (0x1FF - pThis->m2C_groundY) * 0x10000;
 
@@ -165,9 +155,9 @@ struct E014_groundTask : public s_workAreaTemplate<E014_groundTask> {
         *(s16*)((u8*)&t.m40 + iVar4) = 0;
 
         buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z.asS32());
-        intDivide((s32)pThis->m24_clippingCoordinates[3] - (s32)pThis->m24_clippingCoordinates[1], 0xE00000);
+        fixedPoint scaleY = intDivide((s32)pThis->m24_clippingCoordinates[3] - (s32)pThis->m24_clippingCoordinates[1], 0xE00000);
         fixedPoint scaleVal = intDivide((s32)pThis->m24_clippingCoordinates[2] - (s32)pThis->m24_clippingCoordinates[0], 0x1600000);
-        scaleRotationMatrix(scaleVal);
+        scaleRotationMatrix(scaleVal, scaleY);
         setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
         commitRotationPass();
 
@@ -198,7 +188,7 @@ struct E014_groundTask : public s_workAreaTemplate<E014_groundTask> {
         *(s16*)((u8*)&t.m40 + iVar5) = 0;
 
         buildRotationMatrixPitchYaw(fixedPoint(-0x4000000 - rotX), fixedPoint(-rotY));
-        scaleRotationMatrix(fixedPoint(pThis->m38_scale >> 2));
+        scaleRotationMatrix(fixedPoint(pThis->m38_scale >> 2), fixedPoint(pThis->m38_scale >> 2));
         writeRotationParams(fixedPoint(-rotZ));
 
         s32 diffX = (s32)*(s16*)((u8*)&t.m34 + iVar5) - (s32)*(s16*)((u8*)&t.m3C + iVar5);
@@ -245,10 +235,10 @@ TWN_E014_data::TWN_E014_data() : sTownOverlay("TWN_E014.PRG")
 {
     mTownSetups.push_back(readTownSetup(getSaturnPtr(0x0605e114), 1));
 
-    overlayScriptFunctions.m_zeroArg[0x6057724] = {&e006_scriptFunction_60573d8, "e006_scriptFunction_60573d8"};
+    overlayScriptFunctions.m_zeroArg[0x6057724] = {&townStartCutscenePlayback, "townStartCutscenePlayback"};
     overlayScriptFunctions.m_zeroArg[0x6056c64] = {&disableMainLogic, "disableMainLogic"};
-    overlayScriptFunctions.m_zeroArg[0x6057746] = {&e006_scriptFunction_605861eSub0, "e006_scriptFunction_605861eSub0"};
-    overlayScriptFunctions.m_zeroArg[0x6057784] = {&e006_scriptFunction_6057438, "e006_scriptFunction_6057438"};
+    overlayScriptFunctions.m_zeroArg[0x6057746] = {&townIsCutsceneDone, "townIsCutsceneDone"};
+    overlayScriptFunctions.m_zeroArg[0x6057784] = {&townGetCutsceneHalfPosition, "townGetCutsceneHalfPosition"};
 
     overlayScriptFunctions.m_oneArg[0x605c0d8] = {&TwnFadeIn, "TwnFadeIn"};
     overlayScriptFunctions.m_oneArg[0x605C150] = {&TwnFadeOut, "TwnFadeOut"};

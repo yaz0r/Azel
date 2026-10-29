@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "fieldDragonMovement.h"
 #include "fieldDragonInput.h"
 #include "field/field_a3/o_fld_a3.h"
 #include "field/fieldScriptWaitTask.h"
@@ -269,7 +270,7 @@ void setYawInterpMode(s_dragonTaskWorkArea* pDragon)
 void interpYawWithBanking(s_dragonTaskWorkArea* pDragon)
 {
     fixedPoint turnRate = pDragon->m178_turnRate;
-    pDragon->m20_angle.m4_Y = interpolateRotation(pDragon->m20_angle.m4_Y, fixedPoint(pDragon->m250), fixedPoint(0x2000), fixedPoint(0x444444), 0);
+    pDragon->m20_angle.m4_Y = interpolateRotation(pDragon->m20_angle.m4_Y, fixedPoint(pDragon->m250), fixedPoint(0x2000), fixedPoint(0x888889), 0x10);
 
     s32 yawDelta = pDragon->m30.m_value - pDragon->m20_angle.m4_Y.m_value;
     if (yawDelta < turnRate.m_value)
@@ -656,103 +657,6 @@ void dragonAnalogPitchRoll(s_dragonTaskWorkArea* pDragon)
     pDragon->m247 = input.m4;
 }
 
-// 060879c0 (A5) / 0607e398 (A7)
-void dragonUpdate_normalTail(s_dragonTaskWorkArea* pDragon)
-{
-    getFieldTaskPtr()->m28_status &= ~0x10000;
-
-    buildDragonRotationMatrix(&pDragon->m48, &pDragon->m20_angle);
-    copyMatrix(&pDragon->m48.m0_matrix, &pDragon->m88_matrix);
-
-    if (isDragonScriptBlocked() != 0)
-    {
-        clearDragonVelocity();
-    }
-
-    if (isDragonFreeFlying() == 0)
-    {
-        s32 speed = pDragon->m154_dragonSpeed.m_value;
-        s32 decel;
-        if (speed < 0)
-            decel = -MTH_Mul(fixedPoint(speed), pDragon->m230).m_value;
-        else
-            decel = MTH_Mul(fixedPoint(-speed), pDragon->m230).m_value;
-        pDragon->m15C_dragonSpeedIncrement = decel;
-    }
-    else
-    {
-        if ((pDragon->mF8_Flags & 0x10000) == 0)
-        {
-            dragonSpeedControl(pDragon);
-        }
-
-        if (pDragon->m235_dragonSpeedIndex < 0)
-        {
-            pDragon->m15C_dragonSpeedIncrement = MTH_Mul(
-                fixedPoint(-0x1284 - pDragon->m154_dragonSpeed.m_value), pDragon->m230).m_value;
-        }
-        else
-        {
-            s32 targetSpeed;
-            if (pDragon->m25C & 1)
-                targetSpeed = pDragon->m158.m_value;
-            else
-                targetSpeed = pDragon->m21C_DragonSpeedValues[pDragon->m235_dragonSpeedIndex].m_value;
-
-            s32 diff = pDragon->m154_dragonSpeed.m_value - targetSpeed;
-            if (diff < 0)
-                pDragon->m15C_dragonSpeedIncrement = -MTH_Mul(fixedPoint(diff), pDragon->m230).m_value;
-            else
-                pDragon->m15C_dragonSpeedIncrement = MTH_Mul(fixedPoint(-diff), pDragon->m230).m_value;
-        }
-    }
-
-    pDragon->m154_dragonSpeed = fixedPoint(pDragon->m154_dragonSpeed.m_value + pDragon->m15C_dragonSpeedIncrement);
-
-    if (keyboardIsKeyDown(0xA9))
-    {
-        pDragon->m154_dragonSpeed = fixedPoint(pDragon->m154_dragonSpeed.m_value << 2);
-    }
-
-    if (pDragon->m154_dragonSpeed.m_value < -0x7000)
-        pDragon->m154_dragonSpeed = fixedPoint(-0x7000);
-    else if (pDragon->m154_dragonSpeed.m_value > 0x7000)
-        pDragon->m154_dragonSpeed = fixedPoint(0x7000);
-
-    // Dampen rotation velocity
-    pDragon->m1AC.m0_X = interpolateRotation(pDragon->m1AC.m0_X, fixedPoint(0), fixedPoint(0x2000), fixedPoint(0x444444), 0);
-    pDragon->m1AC.m4_Y = interpolateRotation(pDragon->m1AC.m4_Y, fixedPoint(0), fixedPoint(0x2000), fixedPoint(0x444444), 0);
-    pDragon->m1AC.m8_Z = interpolateRotation(pDragon->m1AC.m8_Z, fixedPoint(0), fixedPoint(0x2000), fixedPoint(0x444444), 0);
-
-    pDragon->m1AC.m0_X = fixedPoint(pDragon->m1AC.m0_X.m_value + pDragon->m1A0.m0_X.m_value);
-    pDragon->m1AC.m4_Y = fixedPoint(pDragon->m1AC.m4_Y.m_value + pDragon->m1A0.m4_Y.m_value);
-    pDragon->m1AC.m8_Z = fixedPoint(pDragon->m1AC.m8_Z.m_value + pDragon->m1A0.m8_Z.m_value);
-
-    pDragon->m20_angle.m0_X = fixedPoint(pDragon->m20_angle.m0_X.m_value + pDragon->m1AC.m0_X.m_value);
-    pDragon->m20_angle.m4_Y = fixedPoint(pDragon->m20_angle.m4_Y.m_value + pDragon->m1AC.m4_Y.m_value);
-    pDragon->m20_angle.m8_Z = fixedPoint(pDragon->m20_angle.m8_Z.m_value + pDragon->m1AC.m8_Z.m_value);
-
-    pDragon->m1A0 = {};
-
-    // Dampen position velocity
-    pDragon->m194.m0_X = interpolateDistance(pDragon->m194.m0_X, fixedPoint(0), fixedPoint(0x2000), fixedPoint(0x444444), 0);
-    pDragon->m194.m4_Y = interpolateDistance(pDragon->m194.m4_Y, fixedPoint(0), fixedPoint(0x2000), fixedPoint(0x444444), 0);
-    pDragon->m194.m8_Z = interpolateDistance(pDragon->m194.m8_Z, fixedPoint(0), fixedPoint(0x2000), fixedPoint(0x444444), 0);
-
-    pDragon->m194.m0_X = fixedPoint(pDragon->m194.m0_X.m_value + pDragon->m188.m0_X.m_value);
-    pDragon->m194.m4_Y = fixedPoint(pDragon->m194.m4_Y.m_value + pDragon->m188.m4_Y.m_value);
-    pDragon->m194.m8_Z = fixedPoint(pDragon->m194.m8_Z.m_value + pDragon->m188.m8_Z.m_value);
-
-    if (pDragon->m154_dragonSpeed.m_value >= 0)
-    {
-        MTH_Mul(fixedPoint(pDragon->m88_matrix.m[2][0].m_value), pDragon->m154_dragonSpeed);
-    }
-    else
-    {
-        MTH_Mul(fixedPoint(pDragon->m88_matrix.m[2][0].m_value), pDragon->m154_dragonSpeed);
-    }
-}
-
 // ============================================================================
 // Dragon update state machine
 // ============================================================================
@@ -822,7 +726,7 @@ inputPhase:
     else
         dragonInput_default(pDragon);
 
-    dragonUpdate_normalTail(pDragon);
+    integrateDragonMovement(pDragon);
 }
 
 // 06087f4c (A5) / 06080358 (A3) - dragon update: normal gameplay (dragonType == 8)
@@ -848,7 +752,7 @@ void dragonUpdate_normal_type8(s_dragonTaskWorkArea* pDragon)
     else
         dragonInput_default(pDragon);
 
-    dragonUpdate_normalTail(pDragon);
+    integrateDragonMovement(pDragon);
 }
 
 // 0608604a (A5) - set dragon animation state based on current speed vs mid-speed threshold
@@ -1246,9 +1150,9 @@ steering:
 
     // Compute direction to grid target
     sVec3_FP toTarget;
-    toTarget.m0_X = fixedPoint(pGrid->m1294.mC - pDragon->m8_pos.m0_X.m_value);
+    toTarget.m0_X = fixedPoint(pGrid->mC.m0_X.m_value - pDragon->m8_pos.m0_X.m_value);
     toTarget.m4_Y = 0;
-    toTarget.m8_Z = fixedPoint(pGrid->m1294.m14 - pDragon->m8_pos.m8_Z.m_value);
+    toTarget.m8_Z = fixedPoint(pGrid->mC.m8_Z.m_value - pDragon->m8_pos.m8_Z.m_value);
 
     sVec2_FP lookAt;
     computeLookAt(toTarget, lookAt);
@@ -1257,7 +1161,7 @@ steering:
     pDragon->m20_angle.m0_X = interpolateAngle28(pDragon->m20_angle.m0_X, pDragon->m3C_targetAngles.m0_X);
 
     // Interpolate yaw toward look-at direction
-    pDragon->m20_angle.m4_Y = interpolateRotation(pDragon->m20_angle.m4_Y, lookAt[1], fixedPoint(0x2000), fixedPoint(0x444444), 0);
+    pDragon->m20_angle.m4_Y = interpolateRotation(pDragon->m20_angle.m4_Y, lookAt[1], fixedPoint(0x2000), fixedPoint(0x444444), 0x10);
 
     // Interpolate roll toward target
     pDragon->m20_angle.m8_Z = interpolateAngle28(pDragon->m20_angle.m8_Z, pDragon->m3C_targetAngles.m8_Z);

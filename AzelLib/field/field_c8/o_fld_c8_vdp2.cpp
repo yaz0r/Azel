@@ -124,7 +124,7 @@ static void c8RotationMatrixSetup(sVdp2PlaneTask* pThis, sVec3_FP* pRotation)
     t.m3C = t.m34; t.m3E = t.m36; t.m40 = 0;
 
     buildRotationMatrixPitchYaw(-0x4000000 - pRotation->m0_X, -pRotation->m4_Y);
-    scaleRotationMatrix(pThis->m3C_scale);
+    scaleRotationMatrix(pThis->m3C_scale, pThis->m3C_scale);
     writeRotationParams(-pRotation->m8_Z);
 
     s32 diffX = (s32)t.m34 - (s32)t.m3C;
@@ -212,8 +212,8 @@ static void c8VdpDraw(sVdp2PlaneTask* pThis)
     t.m3C = t.m34; t.m3E = t.m36; t.m40 = 0;
 
     buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z);
-    intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
-    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000));
+    fixedPoint scaleY = intDivide(pThis->m24_vdp1Clipping[3] - pThis->m24_vdp1Clipping[1], 0x00E00000);
+    scaleRotationMatrix(intDivide(pThis->m24_vdp1Clipping[2] - pThis->m24_vdp1Clipping[0], 0x01600000), scaleY);
     setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
     commitRotationPass();
 

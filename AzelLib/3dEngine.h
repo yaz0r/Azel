@@ -104,6 +104,7 @@ void transformVecByCurrentMatrix(const sVec3_FP& r4, sVec3_FP& r5);
 
 fixedPoint transformByMatrixRow0(const sVec3_FP& r4);
 fixedPoint transformByMatrixRow1(const sVec3_FP& r4);
+s32 transformVecGetY(const sVec3_FP& vec, const sMatrix4x3& mat);
 fixedPoint transformByMatrixRow2(const sVec3_FP& r4);
 
 fixedPoint MulVec2(const sVec2_FP& r4, const sVec2_FP& r5);

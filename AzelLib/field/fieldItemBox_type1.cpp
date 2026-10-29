@@ -122,7 +122,7 @@ void LCSItemBox_UpdateType1(s_itemBoxType1* pThis)
         popMatrix();
     }
 
-    if ((pThis->m88_poseIdx == 0) || mainGameState.getBit(pThis->m88_poseIdx + 243))
+    if ((pThis->m8D_visibilityFlag != 0) || mainGameState.getBit(pThis->m88_poseIdx + 0xF3))
     {
         pThis->m20 |= 1;
     }

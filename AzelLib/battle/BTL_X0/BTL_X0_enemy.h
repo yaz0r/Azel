@@ -160,7 +160,7 @@ struct sBTL_X0_Projectile : public s_workAreaTemplateWithCopy<sBTL_X0_Projectile
     u8 m38_pad[0x10];
     sVec3_FP* m48_pDragonPosition;
     u8 m4C_pad[0x40];
-    s_battleDragon* m8C_pDragon;
+    sBattleTargetable* m8C_pDragonTargetable;
     sVec3_FP* m90_pDragonPosition2;
     u8 m94_trailData[0x4C];
     s32 mE0_value;

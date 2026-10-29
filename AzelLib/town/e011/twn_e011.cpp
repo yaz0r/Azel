@@ -1,4 +1,5 @@
 #include "PDS.h"
+#include "shared/vdp2PlaneTask.h"
 #include "twn_e011.h"
 #include "town/e006/twn_e006.h"
 #include "town/town.h"
@@ -102,7 +103,7 @@ struct sE011Task1 : public s_workAreaTemplate<sE011Task1>
 s32 e011_scriptFunction_6059af0(s32 r4)
 {
     sSaturnPtr r4Ptr = sSaturnPtr::createFromRaw(r4, gCurrentTownOverlay);
-    if (e006_scriptFunction_605861eSub0() == 0)
+    if (townIsCutsceneDone() == 0)
     {
         sE011Task1* pNewSubTask = createSubTask<sE011Task1>(currentResTask);
         s_fileBundle* pBundle = dramAllocatorEnd[readSaturnU8(r4Ptr)].mC_fileBundle->m0_fileBundle;
@@ -122,7 +123,7 @@ s32 e011_scriptFunction_6059af0(s32 r4)
 
 s32 e011_scriptFunction_06059b7a(s32 param1)
 {
-    if ((e006_scriptFunction_605861eSub0() == 0) && (npcData0.m70_npcPointerArray[param1].workArea != nullptr))
+    if ((townIsCutsceneDone() == 0) && (npcData0.m70_npcPointerArray[param1].workArea != nullptr))
     {
         npcData0.m70_npcPointerArray[param1].workArea->getTask()->markFinished();
         npcData0.m70_npcPointerArray[param1].workArea = nullptr;
@@ -133,9 +134,9 @@ s32 e011_scriptFunction_06059b7a(s32 param1)
 
 TWN_E011_data::TWN_E011_data() : sTownOverlay("TWN_E011.PRG")
 {
-    overlayScriptFunctions.m_zeroArg[0x6058484] = {&e006_scriptFunction_60573d8, "e006_scriptFunction_60573d8"};
+    overlayScriptFunctions.m_zeroArg[0x6058484] = {&townStartCutscenePlayback, "townStartCutscenePlayback"};
     overlayScriptFunctions.m_zeroArg[0x60579c4] = {&disableMainLogic, "disableMainLogic"};
-    overlayScriptFunctions.m_zeroArg[0x60584a6] = {&e006_scriptFunction_605861eSub0, "e006_scriptFunction_605861eSub0"};
+    overlayScriptFunctions.m_zeroArg[0x60584a6] = {&townIsCutsceneDone, "townIsCutsceneDone"};
 
     overlayScriptFunctions.m_oneArg[0x605ceb0] = {&TwnFadeOut, "TwnFadeOut"};
     overlayScriptFunctions.m_oneArg[0x605ce38] = {&TwnFadeIn, "TwnFadeIn"};
@@ -176,17 +177,6 @@ static const char* listOfFilesToLoad[] = {
     "EVT011MP.CGB",
     nullptr
 };
-
-// 06054d7c
-static s32 e011_computeGroundY()
-{
-    auto& coeff = gCoefficientTables[gRotationPassState.m0_planeIndex][(s32)vdp2Controls.m0_doubleBufferIndex];
-    s32 iVar2 = gVdp2RotationMatrix.m[2][0].asS32() * coeff.m34;
-    s32 iVar3 = gVdp2RotationMatrix.m[2][1].asS32() * coeff.m36;
-    s32 iVar1 = MTH_Mul(gVdp2RotationMatrix.m[2][2],
-                        fixedPoint(coeff.m38 * 0x10000 - coeff.m8_Zst));
-    return FP_Div(iVar2 + iVar3 + iVar1, gVdp2RotationMatrix.m[2][1]).getInteger();
-}
 
 // 06054dc4
 static void e011_fieldPaletteNegateCoefficients()
@@ -327,7 +317,7 @@ struct sE011BackgroundTask : public s_workAreaTemplate<sE011BackgroundTask>
         *(s16*)((u8*)&t.m40 + iVar5) = 0;
 
         buildRotationMatrixPitchYaw(fixedPoint(-0x4000000 - rotX), fixedPoint(-rotY));
-        scaleRotationMatrix(fixedPoint(pThis->m3C_scale >> 2));
+        scaleRotationMatrix(fixedPoint(pThis->m3C_scale >> 2), fixedPoint(pThis->m3C_scale >> 2));
         writeRotationParams(fixedPoint(-rotZ));
 
         s32 diffX = (s32)*(s16*)((u8*)&t.m34 + iVar5) - (s32)*(s16*)((u8*)&t.m3C + iVar5);
@@ -447,11 +437,11 @@ struct sE011BackgroundTask : public s_workAreaTemplate<sE011BackgroundTask>
         if (pThis->m70_counter > 0)
         {
             s32 iVar2;
-            if (e006_scriptFunction_605861eSub0() == 0)
+            if (townIsCutsceneDone() == 0)
             {
-                s32 curPos = e006_scriptFunction_6057438();
+                s32 curPos = townGetCutsceneHalfPosition();
                 iVar2 = pThis->m74_cutscenePos - curPos;
-                pThis->m74_cutscenePos = e006_scriptFunction_6057438();
+                pThis->m74_cutscenePos = townGetCutsceneHalfPosition();
             }
             else
             {
@@ -496,7 +486,7 @@ struct sE011BackgroundTask : public s_workAreaTemplate<sE011BackgroundTask>
         drawCinematicBar(6);
         commitRotationPass();
 
-        pThis->m34_groundY = e011_computeGroundY();
+        pThis->m34_groundY = computeRotationScrollOffset();
         e011_fieldPaletteNegateCoefficients();
 
         pThis->m0_scrollX = (pThis->m18_cameraRotation.m4_Y.asS32() >> 12) * -0x400;
@@ -518,9 +508,9 @@ struct sE011BackgroundTask : public s_workAreaTemplate<sE011BackgroundTask>
         *(s16*)((u8*)&t.m40 + iVar8) = 0;
 
         buildRotationMatrixRoll(-pThis->m18_cameraRotation.m8_Z.asS32());
-        intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
+        fixedPoint scaleY = intDivide((s32)pThis->m24_vdp1Clipping[3] - (s32)pThis->m24_vdp1Clipping[1], 0xE00000);
         fixedPoint scaleVal = intDivide((s32)pThis->m24_vdp1Clipping[2] - (s32)pThis->m24_vdp1Clipping[0], 0x1600000);
-        scaleRotationMatrix(scaleVal);
+        scaleRotationMatrix(scaleVal, scaleY);
         setRotationScrollOffset(pThis->m0_scrollX, pThis->m4_scrollY);
         commitRotationPass();
 

@@ -483,6 +483,16 @@ fixedPoint transformByMatrixRow0(const sVec3_FP& r4)
     return (mac >> 16) + pCurrentMatrix->m[0][3];
 }
 
+// 060360a0
+s32 transformVecGetY(const sVec3_FP& vec, const sMatrix4x3& mat)
+{
+    s64 mac = 0;
+    mac += (s64)mat.m[1][0].asS32() * (s64)vec[0].asS32();
+    mac += (s64)mat.m[1][1].asS32() * (s64)vec[1].asS32();
+    mac += (s64)mat.m[1][2].asS32() * (s64)vec[2].asS32();
+    return (s32)(mac >> 16) + mat.m[1][3].asS32();
+}
+
 fixedPoint transformByMatrixRow1(const sVec3_FP& r4)
 {
     s64 mac = 0;

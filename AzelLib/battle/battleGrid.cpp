@@ -389,8 +389,8 @@ void battleGrid_draw(s_battleGrid* pThis)
 
     if (gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude + pThis->m134_desiredCameraPosition[2] < transformedCameraPosition[1])
     {
-        transformedCameraTarget[1] -= gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
-        transformedCameraPosition[1] -= gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude - pThis->m134_desiredCameraPosition[2];
+        transformedCameraTarget[1] -= (transformedCameraPosition[1] - gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude) - pThis->m134_desiredCameraPosition[2];
+        transformedCameraPosition[1] = gBattleManager->m10_battleOverlay->mC_targetSystem->m200_cameraMinAltitude + pThis->m134_desiredCameraPosition[2];
     }
 
     generateCameraMatrix(&cameraProperties2, transformedCameraPosition, transformedCameraTarget, transformedCameraUp);

@@ -477,9 +477,9 @@ void resolveDragonTerrainCollision()
         var10[2] = -r14_pDragonTask->m88_matrix.m[2][2];
 
         sVec3_FP var1C;
-        var1C[0] = r14_pDragonTask->m160_deltaTranslation[0] << 16;
-        var1C[1] = r14_pDragonTask->m160_deltaTranslation[1] << 16;
-        var1C[2] = r14_pDragonTask->m160_deltaTranslation[2] << 16;
+        var1C[0] = r14_pDragonTask->m160_deltaTranslation[0] << 8;
+        var1C[1] = r14_pDragonTask->m160_deltaTranslation[1] << 8;
+        var1C[2] = r14_pDragonTask->m160_deltaTranslation[2] << 8;
 
         // Cap dragon speed at the speed tier limit
         fixedPoint varDragonSpeedValue = r14_pDragonTask->m21C_DragonSpeedValues[var4_speedIndex];

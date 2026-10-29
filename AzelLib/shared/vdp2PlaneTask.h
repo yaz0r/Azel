@@ -79,6 +79,7 @@ struct sVdp2PlaneTask : public s_workAreaTemplate<sVdp2PlaneTask>
 };
 
 void vdp2ApplyWaveDistortion(sVdp2PlaneTask* pThis);
+s32 computeRotationScrollOffset();
 void vdp2SetupRotationPass(sVdp2PlaneTask* pThis);
 void updateWaveDistortionParams(sVdp2PlaneTask::sLineScrollParams* pParams);
 void updateLineScrollTable(sVdp2PlaneTask* pThis);
